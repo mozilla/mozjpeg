@@ -1,7 +1,7 @@
 /*
  * jutils.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -11,14 +11,30 @@
  * a surrounding application.
  */
 
+#define JPEG_INTERNALS
 #include "jinclude.h"
+#include "jpeglib.h"
+
+
+/*
+ * Arithmetic utilities
+ */
+
+GLOBAL long
+jdiv_round_up (long a, long b)
+/* Compute a/b rounded up to next integer, ie, ceil(a/b) */
+/* Assumes a >= 0, b > 0 */
+{
+  return (a + b - 1L) / b;
+}
 
 
 GLOBAL long
 jround_up (long a, long b)
-/* Compute a rounded up to next multiple of b; a >= 0, b > 0 */
+/* Compute a rounded up to next multiple of b, ie, ceil(a/b)*b */
+/* Assumes a >= 0, b > 0 */
 {
-  a += b-1;
+  a += b - 1L;
   return a - (a % b);
 }
 
@@ -46,10 +62,10 @@ jround_up (long a, long b)
 GLOBAL void
 jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 		   JSAMPARRAY output_array, int dest_row,
-		   int num_rows, long num_cols)
+		   int num_rows, JDIMENSION num_cols)
 /* Copy some rows of samples from one place to another.
  * num_rows rows are copied from input_array[source_row++]
- * to output_array[dest_row++]; these areas should not overlap.
+ * to output_array[dest_row++]; these areas may overlap for duplication.
  * The source and destination arrays must be at least as wide as num_cols.
  */
 {
@@ -57,7 +73,7 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 #ifdef FMEMCOPY
   register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
 #else
-  register long count;
+  register JDIMENSION count;
 #endif
   register int row;
 
@@ -78,7 +94,8 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 
 
 GLOBAL void
-jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
+jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
+		 JDIMENSION num_blocks)
 /* Copy a row of coefficient blocks from one place to another. */
 {
 #ifdef FMEMCOPY
@@ -89,7 +106,7 @@ jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
 
   inptr = (JCOEFPTR) input_row;
   outptr = (JCOEFPTR) output_row;
-  for (count = num_blocks * DCTSIZE2; count > 0; count--) {
+  for (count = (long) num_blocks * DCTSIZE2; count > 0; count--) {
     *outptr++ = *inptr++;
   }
 #endif

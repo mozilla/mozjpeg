@@ -4,60 +4,58 @@
 ; Thanks to Frank Moehle (Frank.Moehle@arbi.informatik.uni-oldenburg.de)
 ; and to Dr. B. Setzepfandt (bernd@gina.uni-muenster.de).
 ;
-; To use this file, rename it to LIB_JPEG.PRJ.
-; Read SETUP instructions before trying to make the library!
+; To use this file, rename it to LIBJPEG.PRJ.
+; Read installation instructions before trying to make the program!
 ;
 ;
 ;      * * * Output file * * *
-jpeg.lib
-;
-;      * * * DEFINES * * * 
-.C[-DHAVE_STDC]
-.C[-DINCLUDES_ARE_ANSI]
+libjpeg.lib
 ;
 ; * * * COMPILER OPTIONS * * *  
 .C[-P]        ; absolute calls
 .C[-M]        ; and no string merging, folks
-.C[-w-par]    ; no "parameter xxxx unused"
-.C[-DINCOMPLETE_TYPES_BROKEN] ; suppress warnings about undefined structures
-.C[-wsig]     ; warn if significant digits may be lost
 .C[-w-cln]    ; no "constant is long" warnings
+.C[-w-par]    ; no "parameter xxxx unused"
+.C[-w-rch]    ; no "unreachable code"
+.C[-wsig]     ; warn if significant digits may be lost
 .L[-J]        ; link new Obj-format (so we get a library)
 =
 ; * * * * List of modules * * * * 
-jbsmooth.c		(jinclude.h,jconfig.h,jpegdata.h)
-jcarith.c		(jinclude.h,jconfig.h,jpegdata.h)
-jccolor.c		(jinclude.h,jconfig.h,jpegdata.h)
-jcdeflts.c		(jinclude.h,jconfig.h,jpegdata.h)
-jcexpand.c		(jinclude.h,jconfig.h,jpegdata.h)
-jchuff.c		(jinclude.h,jconfig.h,jpegdata.h)
-jcmaster.c		(jinclude.h,jconfig.h,jpegdata.h)
-jcmcu.c		(jinclude.h,jconfig.h,jpegdata.h)
-jcpipe.c		(jinclude.h,jconfig.h,jpegdata.h)
-jcsample.c		(jinclude.h,jconfig.h,jpegdata.h)
-jdarith.c		(jinclude.h,jconfig.h,jpegdata.h)
-jdcolor.c		(jinclude.h,jconfig.h,jpegdata.h)
-jddeflts.c		(jinclude.h,jconfig.h,jpegdata.h)
-jdhuff.c		(jinclude.h,jconfig.h,jpegdata.h)
-jdmaster.c		(jinclude.h,jconfig.h,jpegdata.h)
-jdmcu.c		(jinclude.h,jconfig.h,jpegdata.h)
-jdpipe.c		(jinclude.h,jconfig.h,jpegdata.h)
-jdsample.c		(jinclude.h,jconfig.h,jpegdata.h)
-jerror.c		(jinclude.h,jconfig.h,jpegdata.h)
-jquant1.c		(jinclude.h,jconfig.h,jpegdata.h)
-jquant2.c		(jinclude.h,jconfig.h,jpegdata.h)
-jfwddct.c		(jinclude.h,jconfig.h,jpegdata.h)
-jrevdct.c		(jinclude.h,jconfig.h,jpegdata.h)
-jutils.c		(jinclude.h,jconfig.h,jpegdata.h)
-jmemmgr.c		(jinclude.h,jconfig.h,jpegdata.h,jmemsys.h)
-jrdjfif.c		(jinclude.h,jconfig.h,jpegdata.h)
-jrdgif.c		(jinclude.h,jconfig.h,jpegdata.h)
-jrdppm.c		(jinclude.h,jconfig.h,jpegdata.h)
-jrdrle.c		(jinclude.h,jconfig.h,jpegdata.h)
-jrdtarga.c		(jinclude.h,jconfig.h,jpegdata.h)
-jwrjfif.c		(jinclude.h,jconfig.h,jpegdata.h)
-jwrgif.c		(jinclude.h,jconfig.h,jpegdata.h)
-jwrppm.c		(jinclude.h,jconfig.h,jpegdata.h)
-jwrrle.c		(jinclude.h,jconfig.h,jpegdata.h)
-jwrtarga.c		(jinclude.h,jconfig.h,jpegdata.h)
-jmemsys.c		(jinclude.h,jconfig.h,jpegdata.h,jmemsys.h)
+jcapi.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jccoefct.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jccolor.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcdctmgr.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jchuff.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcmainct.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcmarker.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcmaster.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcomapi.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcparam.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcprepct.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jcsample.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdapi.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdatasrc.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h)
+jdatadst.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h)
+jdcoefct.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdcolor.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jddctmgr.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jdhuff.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdmainct.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdmarker.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdmaster.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdpostct.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdsample.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jerror.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jversion.h,jerror.h)
+jutils.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jfdctfst.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jfdctflt.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jfdctint.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jidctfst.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jidctflt.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jidctint.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jidctred.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jdct.h)
+jquant1.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jquant2.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jdmerge.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h)
+jmemmgr.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jmemsys.h)
+jmemansi.c	(jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jpegint.h,jerror.h,jmemsys.h)

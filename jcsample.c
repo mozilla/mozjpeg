@@ -1,13 +1,28 @@
 /*
  * jcsample.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains downsampling routines.
- * These routines are invoked via the downsample and
- * downsample_init/term methods.
+ *
+ * Downsampling input data is counted in "row groups".  A row group
+ * is defined to be max_v_samp_factor pixel rows of each component,
+ * from which the downsampler produces v_samp_factor sample rows.
+ * A single row group is processed in each call to the downsampler module.
+ *
+ * The downsampler is responsible for edge-expansion of its output data
+ * to fill an integral number of DCT blocks horizontally.  The source buffer
+ * may be modified if it is helpful for this purpose (the source buffer is
+ * allocated wide enough to correspond to the desired output width).
+ * The caller (the prep controller) is responsible for vertical padding.
+ *
+ * The downsampler may request "context rows" by setting need_context_rows
+ * during startup.  In this case, the input arrays will contain at least
+ * one row group's worth of pixels above and below the passed-in data;
+ * the caller will create dummy rows at image top and bottom by replicating
+ * the first or last real pixel row.
  *
  * An excellent reference for image resampling is
  *   Digital Image Warping, George Wolberg, 1990.
@@ -30,55 +45,121 @@
  * Currently, smoothing is only supported for 2h2v sampling factors.
  */
 
+#define JPEG_INTERNALS
 #include "jinclude.h"
+#include "jpeglib.h"
+
+
+/* Pointer to routine to downsample a single component */
+typedef JMETHOD(void, downsample1_ptr,
+		(j_compress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY input_data, JSAMPARRAY output_data));
+
+/* Private subobject */
+
+typedef struct {
+  struct jpeg_downsampler pub;	/* public fields */
+
+  /* Downsampling method pointers, one per component */
+  downsample1_ptr methods[MAX_COMPONENTS];
+} my_downsampler;
+
+typedef my_downsampler * my_downsample_ptr;
 
 
 /*
- * Initialize for downsampling a scan.
+ * Initialize for a downsampling pass.
  */
 
 METHODDEF void
-downsample_init (compress_info_ptr cinfo)
+start_pass_downsample (j_compress_ptr cinfo)
 {
   /* no work for now */
 }
 
 
 /*
+ * Expand a component horizontally from width input_cols to width output_cols,
+ * by duplicating the rightmost samples.
+ */
+
+LOCAL void
+expand_right_edge (JSAMPARRAY image_data, int num_rows,
+		   JDIMENSION input_cols, JDIMENSION output_cols)
+{
+  register JSAMPROW ptr;
+  register JSAMPLE pixval;
+  register int count;
+  int row;
+  int numcols = (int) (output_cols - input_cols);
+
+  if (numcols > 0) {
+    for (row = 0; row < num_rows; row++) {
+      ptr = image_data[row] + input_cols;
+      pixval = ptr[-1];		/* don't need GETJSAMPLE() here */
+      for (count = numcols; count > 0; count--)
+	*ptr++ = pixval;
+    }
+  }
+}
+
+
+/*
+ * Do downsampling for a whole row group (all components).
+ *
+ * In this version we simply downsample each component independently.
+ */
+
+METHODDEF void
+sep_downsample (j_compress_ptr cinfo,
+		JSAMPIMAGE input_buf, JDIMENSION in_row_index,
+		JSAMPIMAGE output_buf, JDIMENSION out_row_group_index)
+{
+  my_downsample_ptr downsample = (my_downsample_ptr) cinfo->downsample;
+  int ci;
+  jpeg_component_info * compptr;
+  JSAMPARRAY in_ptr, out_ptr;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    in_ptr = input_buf[ci] + in_row_index;
+    out_ptr = output_buf[ci] + (out_row_group_index * compptr->v_samp_factor);
+    (*downsample->methods[ci]) (cinfo, compptr, in_ptr, out_ptr);
+  }
+}
+
+
+/*
  * Downsample pixel values of a single component.
+ * One row group is processed per call.
  * This version handles arbitrary integral sampling ratios, without smoothing.
  * Note that this version is not actually used for customary sampling ratios.
  */
 
 METHODDEF void
-int_downsample (compress_info_ptr cinfo, int which_component,
-		long input_cols, int input_rows,
-		long output_cols, int output_rows,
-		JSAMPARRAY above, JSAMPARRAY input_data, JSAMPARRAY below,
-		JSAMPARRAY output_data)
+int_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
-  jpeg_component_info * compptr = cinfo->cur_comp_info[which_component];
   int inrow, outrow, h_expand, v_expand, numpix, numpix2, h, v;
-  long outcol, outcol_h;	/* outcol_h == outcol*h_expand */
+  JDIMENSION outcol, outcol_h;	/* outcol_h == outcol*h_expand */
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   JSAMPROW inptr, outptr;
   INT32 outvalue;
-
-#ifdef DEBUG			/* for debugging pipeline controller */
-  if (output_rows != compptr->v_samp_factor ||
-      input_rows != cinfo->max_v_samp_factor ||
-      (output_cols % compptr->h_samp_factor) != 0 ||
-      (input_cols % cinfo->max_h_samp_factor) != 0 ||
-      input_cols*compptr->h_samp_factor != output_cols*cinfo->max_h_samp_factor)
-    ERREXIT(cinfo->emethods, "Bogus downsample parameters");
-#endif
 
   h_expand = cinfo->max_h_samp_factor / compptr->h_samp_factor;
   v_expand = cinfo->max_v_samp_factor / compptr->v_samp_factor;
   numpix = h_expand * v_expand;
   numpix2 = numpix/2;
 
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, output_cols * h_expand);
+
   inrow = 0;
-  for (outrow = 0; outrow < output_rows; outrow++) {
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
     outptr = output_data[outrow];
     for (outcol = 0, outcol_h = 0; outcol < output_cols;
 	 outcol++, outcol_h += h_expand) {
@@ -98,37 +179,60 @@ int_downsample (compress_info_ptr cinfo, int which_component,
 
 /*
  * Downsample pixel values of a single component.
- * This version handles the common case of 2:1 horizontal and 1:1 vertical,
+ * This version handles the special case of a full-size component,
  * without smoothing.
  */
 
 METHODDEF void
-h2v1_downsample (compress_info_ptr cinfo, int which_component,
-		 long input_cols, int input_rows,
-		 long output_cols, int output_rows,
-		 JSAMPARRAY above, JSAMPARRAY input_data, JSAMPARRAY below,
-		 JSAMPARRAY output_data)
+fullsize_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		     JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+  /* Copy the data */
+  jcopy_sample_rows(input_data, 0, output_data, 0,
+		    cinfo->max_v_samp_factor, cinfo->image_width);
+  /* Edge-expand */
+  expand_right_edge(output_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, compptr->width_in_blocks * DCTSIZE);
+}
+
+
+/*
+ * Downsample pixel values of a single component.
+ * This version handles the common case of 2:1 horizontal and 1:1 vertical,
+ * without smoothing.
+ *
+ * A note about the "bias" calculations: when rounding fractional values to
+ * integer, we do not want to always round 0.5 up to the next integer.
+ * If we did that, we'd introduce a noticeable bias towards larger values.
+ * Instead, this code is arranged so that 0.5 will be rounded up or down at
+ * alternate pixel locations (a simple ordered dither pattern).
+ */
+
+METHODDEF void
+h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int outrow;
-  long outcol;
+  JDIMENSION outcol;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   register JSAMPROW inptr, outptr;
+  register int bias;
 
-#ifdef DEBUG			/* for debugging pipeline controller */
-  jpeg_component_info * compptr = cinfo->cur_comp_info[which_component];
-  if (output_rows != compptr->v_samp_factor ||
-      input_rows != cinfo->max_v_samp_factor ||
-      (output_cols % compptr->h_samp_factor) != 0 ||
-      (input_cols % cinfo->max_h_samp_factor) != 0 ||
-      input_cols*compptr->h_samp_factor != output_cols*cinfo->max_h_samp_factor)
-    ERREXIT(cinfo->emethods, "Bogus downsample parameters");
-#endif
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, output_cols * 2);
 
-  for (outrow = 0; outrow < output_rows; outrow++) {
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
     outptr = output_data[outrow];
     inptr = input_data[outrow];
+    bias = 0;			/* bias = 0,1,0,1,... for successive samples */
     for (outcol = 0; outcol < output_cols; outcol++) {
       *outptr++ = (JSAMPLE) ((GETJSAMPLE(*inptr) + GETJSAMPLE(inptr[1])
-			      + 1) >> 1);
+			      + bias) >> 1);
+      bias ^= 1;		/* 0=>1, 1=>0 */
       inptr += 2;
     }
   }
@@ -142,61 +246,37 @@ h2v1_downsample (compress_info_ptr cinfo, int which_component,
  */
 
 METHODDEF void
-h2v2_downsample (compress_info_ptr cinfo, int which_component,
-		 long input_cols, int input_rows,
-		 long output_cols, int output_rows,
-		 JSAMPARRAY above, JSAMPARRAY input_data, JSAMPARRAY below,
-		 JSAMPARRAY output_data)
+h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int inrow, outrow;
-  long outcol;
+  JDIMENSION outcol;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   register JSAMPROW inptr0, inptr1, outptr;
+  register int bias;
 
-#ifdef DEBUG			/* for debugging pipeline controller */
-  jpeg_component_info * compptr = cinfo->cur_comp_info[which_component];
-  if (output_rows != compptr->v_samp_factor ||
-      input_rows != cinfo->max_v_samp_factor ||
-      (output_cols % compptr->h_samp_factor) != 0 ||
-      (input_cols % cinfo->max_h_samp_factor) != 0 ||
-      input_cols*compptr->h_samp_factor != output_cols*cinfo->max_h_samp_factor)
-    ERREXIT(cinfo->emethods, "Bogus downsample parameters");
-#endif
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, output_cols * 2);
 
   inrow = 0;
-  for (outrow = 0; outrow < output_rows; outrow++) {
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
     outptr = output_data[outrow];
     inptr0 = input_data[inrow];
     inptr1 = input_data[inrow+1];
+    bias = 1;			/* bias = 1,2,1,2,... for successive samples */
     for (outcol = 0; outcol < output_cols; outcol++) {
       *outptr++ = (JSAMPLE) ((GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[1]) +
 			      GETJSAMPLE(*inptr1) + GETJSAMPLE(inptr1[1])
-			      + 2) >> 2);
+			      + bias) >> 2);
+      bias ^= 3;		/* 1=>2, 2=>1 */
       inptr0 += 2; inptr1 += 2;
     }
     inrow += 2;
   }
-}
-
-
-/*
- * Downsample pixel values of a single component.
- * This version handles the special case of a full-size component,
- * without smoothing.
- */
-
-METHODDEF void
-fullsize_downsample (compress_info_ptr cinfo, int which_component,
-		     long input_cols, int input_rows,
-		     long output_cols, int output_rows,
-		     JSAMPARRAY above, JSAMPARRAY input_data, JSAMPARRAY below,
-		     JSAMPARRAY output_data)
-{
-#ifdef DEBUG			/* for debugging pipeline controller */
-  if (input_cols != output_cols || input_rows != output_rows)
-    ERREXIT(cinfo->emethods, "Pipeline controller messed up");
-#endif
-
-  jcopy_sample_rows(input_data, 0, output_data, 0, output_rows, output_cols);
 }
 
 
@@ -205,30 +285,25 @@ fullsize_downsample (compress_info_ptr cinfo, int which_component,
 /*
  * Downsample pixel values of a single component.
  * This version handles the standard case of 2:1 horizontal and 2:1 vertical,
- * with smoothing.
+ * with smoothing.  One row of context is required.
  */
 
 METHODDEF void
-h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
-			long input_cols, int input_rows,
-			long output_cols, int output_rows,
-			JSAMPARRAY above, JSAMPARRAY input_data, JSAMPARRAY below,
-			JSAMPARRAY output_data)
+h2v2_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+			JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int inrow, outrow;
-  long colctr;
+  JDIMENSION colctr;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   register JSAMPROW inptr0, inptr1, above_ptr, below_ptr, outptr;
   INT32 membersum, neighsum, memberscale, neighscale;
 
-#ifdef DEBUG			/* for debugging pipeline controller */
-  jpeg_component_info * compptr = cinfo->cur_comp_info[which_component];
-  if (output_rows != compptr->v_samp_factor ||
-      input_rows != cinfo->max_v_samp_factor ||
-      (output_cols % compptr->h_samp_factor) != 0 ||
-      (input_cols % cinfo->max_h_samp_factor) != 0 ||
-      input_cols*compptr->h_samp_factor != output_cols*cinfo->max_h_samp_factor)
-    ERREXIT(cinfo->emethods, "Bogus downsample parameters");
-#endif
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data - 1, cinfo->max_v_samp_factor + 2,
+		    cinfo->image_width, output_cols * 2);
 
   /* We don't bother to form the individual "smoothed" input pixel values;
    * we can directly compute the output which is the average of the four
@@ -247,18 +322,12 @@ h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
   neighscale = cinfo->smoothing_factor * 16; /* scaled SF/4 */
 
   inrow = 0;
-  for (outrow = 0; outrow < output_rows; outrow++) {
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
     outptr = output_data[outrow];
     inptr0 = input_data[inrow];
     inptr1 = input_data[inrow+1];
-    if (inrow == 0)
-      above_ptr = above[input_rows-1];
-    else
-      above_ptr = input_data[inrow-1];
-    if (inrow >= input_rows-2)
-      below_ptr = below[0];
-    else
-      below_ptr = input_data[inrow+2];
+    above_ptr = input_data[inrow-1];
+    below_ptr = input_data[inrow+2];
 
     /* Special case for first column: pretend column -1 is same as column 0 */
     membersum = GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[1]) +
@@ -271,7 +340,7 @@ h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
     neighsum += GETJSAMPLE(*above_ptr) + GETJSAMPLE(above_ptr[2]) +
 		GETJSAMPLE(*below_ptr) + GETJSAMPLE(below_ptr[2]);
     membersum = membersum * memberscale + neighsum * neighscale;
-    *outptr++ = (JSAMPLE) ((membersum + 32768L) >> 16);
+    *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
     inptr0 += 2; inptr1 += 2; above_ptr += 2; below_ptr += 2;
 
     for (colctr = output_cols - 2; colctr > 0; colctr--) {
@@ -291,7 +360,7 @@ h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
       /* form final output scaled up by 2^16 */
       membersum = membersum * memberscale + neighsum * neighscale;
       /* round, descale and output it */
-      *outptr++ = (JSAMPLE) ((membersum + 32768L) >> 16);
+      *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
       inptr0 += 2; inptr1 += 2; above_ptr += 2; below_ptr += 2;
     }
 
@@ -306,7 +375,7 @@ h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
     neighsum += GETJSAMPLE(above_ptr[-1]) + GETJSAMPLE(above_ptr[1]) +
 		GETJSAMPLE(below_ptr[-1]) + GETJSAMPLE(below_ptr[1]);
     membersum = membersum * memberscale + neighsum * neighscale;
-    *outptr = (JSAMPLE) ((membersum + 32768L) >> 16);
+    *outptr = (JSAMPLE) ((membersum + 32768) >> 16);
 
     inrow += 2;
   }
@@ -316,26 +385,26 @@ h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
 /*
  * Downsample pixel values of a single component.
  * This version handles the special case of a full-size component,
- * with smoothing.
+ * with smoothing.  One row of context is required.
  */
 
 METHODDEF void
-fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
-			    long input_cols, int input_rows,
-			    long output_cols, int output_rows,
-			    JSAMPARRAY above, JSAMPARRAY input_data, JSAMPARRAY below,
-			    JSAMPARRAY output_data)
+fullsize_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
+			    JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int outrow;
-  long colctr;
+  JDIMENSION colctr;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   register JSAMPROW inptr, above_ptr, below_ptr, outptr;
   INT32 membersum, neighsum, memberscale, neighscale;
   int colsum, lastcolsum, nextcolsum;
 
-#ifdef DEBUG			/* for debugging pipeline controller */
-  if (input_cols != output_cols || input_rows != output_rows)
-    ERREXIT(cinfo->emethods, "Pipeline controller messed up");
-#endif
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data - 1, cinfo->max_v_samp_factor + 2,
+		    cinfo->image_width, output_cols);
 
   /* Each of the eight neighbor pixels contributes a fraction SF to the
    * smoothed pixel, while the main pixel contributes (1-8*SF).  In order
@@ -346,17 +415,11 @@ fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
   memberscale = 65536L - cinfo->smoothing_factor * 512L; /* scaled 1-8*SF */
   neighscale = cinfo->smoothing_factor * 64; /* scaled SF */
 
-  for (outrow = 0; outrow < output_rows; outrow++) {
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
     outptr = output_data[outrow];
     inptr = input_data[outrow];
-    if (outrow == 0)
-      above_ptr = above[input_rows-1];
-    else
-      above_ptr = input_data[outrow-1];
-    if (outrow >= input_rows-1)
-      below_ptr = below[0];
-    else
-      below_ptr = input_data[outrow+1];
+    above_ptr = input_data[outrow-1];
+    below_ptr = input_data[outrow+1];
 
     /* Special case for first column */
     colsum = GETJSAMPLE(*above_ptr++) + GETJSAMPLE(*below_ptr++) +
@@ -366,7 +429,7 @@ fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
 		 GETJSAMPLE(*inptr);
     neighsum = colsum + (colsum - membersum) + nextcolsum;
     membersum = membersum * memberscale + neighsum * neighscale;
-    *outptr++ = (JSAMPLE) ((membersum + 32768L) >> 16);
+    *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
     lastcolsum = colsum; colsum = nextcolsum;
 
     for (colctr = output_cols - 2; colctr > 0; colctr--) {
@@ -376,7 +439,7 @@ fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
 		   GETJSAMPLE(*inptr);
       neighsum = lastcolsum + (colsum - membersum) + nextcolsum;
       membersum = membersum * memberscale + neighsum * neighscale;
-      *outptr++ = (JSAMPLE) ((membersum + 32768L) >> 16);
+      *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
       lastcolsum = colsum; colsum = nextcolsum;
     }
 
@@ -384,7 +447,7 @@ fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
     membersum = GETJSAMPLE(*inptr);
     neighsum = lastcolsum + (colsum - membersum) + colsum;
     membersum = membersum * memberscale + neighsum * neighscale;
-    *outptr = (JSAMPLE) ((membersum + 32768L) >> 16);
+    *outptr = (JSAMPLE) ((membersum + 32768) >> 16);
 
   }
 }
@@ -393,68 +456,64 @@ fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
 
 
 /*
- * Clean up after a scan.
- */
-
-METHODDEF void
-downsample_term (compress_info_ptr cinfo)
-{
-  /* no work for now */
-}
-
-
-
-/*
- * The method selection routine for downsampling.
+ * Module initialization routine for downsampling.
  * Note that we must select a routine for each component.
  */
 
 GLOBAL void
-jseldownsample (compress_info_ptr cinfo)
+jinit_downsampler (j_compress_ptr cinfo)
 {
-  short ci;
+  my_downsample_ptr downsample;
+  int ci;
   jpeg_component_info * compptr;
   boolean smoothok = TRUE;
 
-  if (cinfo->CCIR601_sampling)
-    ERREXIT(cinfo->emethods, "CCIR601 downsampling not implemented yet");
+  downsample = (my_downsample_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_downsampler));
+  cinfo->downsample = (struct jpeg_downsampler *) downsample;
+  downsample->pub.start_pass = start_pass_downsample;
+  downsample->pub.downsample = sep_downsample;
+  downsample->pub.need_context_rows = FALSE;
 
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    compptr = cinfo->cur_comp_info[ci];
+  if (cinfo->CCIR601_sampling)
+    ERREXIT(cinfo, JERR_CCIR601_NOTIMPL);
+
+  /* Verify we can handle the sampling factors, and set up method pointers */
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
     if (compptr->h_samp_factor == cinfo->max_h_samp_factor &&
 	compptr->v_samp_factor == cinfo->max_v_samp_factor) {
 #ifdef INPUT_SMOOTHING_SUPPORTED
-      if (cinfo->smoothing_factor)
-	cinfo->methods->downsample[ci] = fullsize_smooth_downsample;
-      else
+      if (cinfo->smoothing_factor) {
+	downsample->methods[ci] = fullsize_smooth_downsample;
+	downsample->pub.need_context_rows = TRUE;
+      } else
 #endif
-	cinfo->methods->downsample[ci] = fullsize_downsample;
+	downsample->methods[ci] = fullsize_downsample;
     } else if (compptr->h_samp_factor * 2 == cinfo->max_h_samp_factor &&
-	     compptr->v_samp_factor == cinfo->max_v_samp_factor) {
+	       compptr->v_samp_factor == cinfo->max_v_samp_factor) {
       smoothok = FALSE;
-      cinfo->methods->downsample[ci] = h2v1_downsample;
+      downsample->methods[ci] = h2v1_downsample;
     } else if (compptr->h_samp_factor * 2 == cinfo->max_h_samp_factor &&
-	     compptr->v_samp_factor * 2 == cinfo->max_v_samp_factor) {
+	       compptr->v_samp_factor * 2 == cinfo->max_v_samp_factor) {
 #ifdef INPUT_SMOOTHING_SUPPORTED
-      if (cinfo->smoothing_factor)
-	cinfo->methods->downsample[ci] = h2v2_smooth_downsample;
-      else
+      if (cinfo->smoothing_factor) {
+	downsample->methods[ci] = h2v2_smooth_downsample;
+	downsample->pub.need_context_rows = TRUE;
+      } else
 #endif
-	cinfo->methods->downsample[ci] = h2v2_downsample;
+	downsample->methods[ci] = h2v2_downsample;
     } else if ((cinfo->max_h_samp_factor % compptr->h_samp_factor) == 0 &&
-	     (cinfo->max_v_samp_factor % compptr->v_samp_factor) == 0) {
+	       (cinfo->max_v_samp_factor % compptr->v_samp_factor) == 0) {
       smoothok = FALSE;
-      cinfo->methods->downsample[ci] = int_downsample;
+      downsample->methods[ci] = int_downsample;
     } else
-      ERREXIT(cinfo->emethods, "Fractional downsampling not implemented yet");
+      ERREXIT(cinfo, JERR_FRACT_SAMPLE_NOTIMPL);
   }
 
 #ifdef INPUT_SMOOTHING_SUPPORTED
   if (cinfo->smoothing_factor && !smoothok)
-    TRACEMS(cinfo->emethods, 0,
-	    "Smoothing not supported with nonstandard sampling ratios");
+    TRACEMS(cinfo, 0, JTRC_SMOOTH_NOTIMPL);
 #endif
-
-  cinfo->methods->downsample_init = downsample_init;
-  cinfo->methods->downsample_term = downsample_term;
 }

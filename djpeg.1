@@ -1,43 +1,10 @@
-.TH DJPEG 1 "17 February 1993"
+.TH DJPEG 1 "28 August 1994"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
 .B djpeg
 [
-.BI \-colors " N"
-]
-[
-.B \-gif
-]
-[
-.B \-pnm
-]
-[
-.B \-rle
-]
-[
-.B \-targa
-]
-[
-.B \-blocksmooth
-]
-[
-.B \-grayscale
-]
-[
-.BI \-maxmemory " N"
-]
-[
-.B \-nodither
-]
-[
-.B \-onepass
-]
-[
-.B \-verbose
-]
-[
-.B \-debug
+.I options
 ]
 [
 .I filename
@@ -47,9 +14,9 @@ djpeg \- decompress a JPEG file to an image file
 .LP
 .B djpeg
 decompresses the named JPEG file, or the standard input if no file is named,
-and produces an image file on the standard output.  PBMPLUS (PPM/PGM), GIF,
-Targa, or RLE (Utah Raster Toolkit) output format can be selected.  (RLE is
-supported only if the URT library is available.)
+and produces an image file on the standard output.  PBMPLUS (PPM/PGM), BMP,
+GIF, Targa, or RLE (Utah Raster Toolkit) output format can be selected.
+(RLE is supported only if the URT library is available.)
 .SH OPTIONS
 All switch names may be abbreviated; for example,
 .B \-grayscale
@@ -82,10 +49,46 @@ is the recommended name,
 .B \-quantize
 is provided only for backwards compatibility.
 .TP
+.B \-fast
+Select recommended processing options for fast, low quality output.  (The
+default options are chosen for highest quality output.)  Currently, this is
+equivalent to \fB\-dct fast \-nosmooth \-onepass \-dither ordered\fR.
+.TP
+.B \-grayscale
+Force gray-scale output even if JPEG file is color.  Useful for viewing on
+monochrome displays; also,
+.B djpeg
+runs noticeably faster in this mode.
+.TP
+.BI \-scale " M/N"
+Scale the output image by a factor M/N.  Currently the scale factor must be
+1/1, 1/2, 1/4, or 1/8.  Scaling is handy if the image is larger than your
+screen; also,
+.B djpeg
+runs much faster when scaling down the output.
+.TP
+.B \-bmp
+Select BMP output format (Windows flavor).  8-bit colormapped format is
+emitted if
+.B \-colors
+or
+.B \-grayscale
+is specified, or if the JPEG file is gray-scale; otherwise, 24-bit full-color
+format is emitted.
+.TP
 .B \-gif
 Select GIF output format.  Since GIF does not support more than 256 colors,
 .B \-colors 256
 is assumed (unless you specify a smaller number of colors).
+.TP
+.B \-os2
+Select BMP output format (OS/2 1.x flavor).  8-bit colormapped format is
+emitted if
+.B \-colors
+or
+.B \-grayscale
+is specified, or if the JPEG file is gray-scale; otherwise, 24-bit full-color
+format is emitted.
 .TP
 .B \-pnm
 Select PBMPLUS (PPM/PGM) output format (this is the default format).
@@ -106,32 +109,48 @@ is specified; otherwise, 24-bit full-color format is emitted.
 .PP
 Switches for advanced users:
 .TP
-.B \-blocksmooth
-Perform cross-block smoothing.  This is slow, quite memory-intensive, and only
-seems to improve the image at very low quality settings (\fB\-quality\fR 10 to
-20 or so).  At normal quality settings it may make the image worse.
+.B \-dct int
+Use integer DCT method (default).
 .TP
-.B \-grayscale
-Force gray-scale output even if JPEG file is color.
-Useful for viewing on monochrome displays.
+.B \-dct fast
+Use fast integer DCT (less accurate).
 .TP
-.BI \-maxmemory " N"
-Set limit for amount of memory to use in processing large images.  Value is
-in thousands of bytes, or millions of bytes if "M" is attached to the
-number.  For example,
-.B \-max 4m
-selects 4000000 bytes.  If more space is needed, temporary files will be used.
+.B \-dct float
+Use floating-point DCT method.
+The floating-point method is the most accurate, but will be the slowest unless
+your machine has very fast floating-point hardware.  Also note that results of
+the floating-point method may vary slightly across machines, while the integer
+methods should give the same results everywhere.  The fast integer method is
+much less accurate than the other two.
 .TP
-.B \-nodither
-Do not use dithering in color quantization.  By default, Floyd-Steinberg
-dithering is applied when quantizing colors, but on some images dithering may
-result in objectionable "graininess".  If that happens, you can turn off
-dithering with
-.BR \-nodither .
-.B \-nodither
-is ignored unless you also say
+.B \-dither fs
+Use Floyd-Steinberg dithering in color quantization.
+.TP
+.B \-dither ordered
+Use ordered dithering in color quantization.
+.TP
+.B \-dither none
+Do not use dithering in color quantization.
+By default, Floyd-Steinberg dithering is applied when quantizing colors; this
+is slow but usually produces the best results.  Ordered dither is a compromise
+between speed and quality; no dithering is fast but usually looks awful.  Note
+that these switches have no effect unless color quantization is being done.
+Ordered dither is only available in
+.B \-onepass
+mode.
+.TP
+.BI \-map " file"
+Quantize to the colors used in the specified image file.  This is useful for
+producing multiple files with identical color maps, or for forcing a
+predefined set of colors to be used.  The
+.I file
+must be a GIF or PPM file. This option overrides
 .B \-colors
-.IR N .
+and
+.BR \-onepass .
+.TP
+.B \-nosmooth
+Use a faster, lower-quality upsampling routine.
 .TP
 .B \-onepass
 Use one-pass instead of two-pass color quantization.  The one-pass method is
@@ -142,6 +161,16 @@ is ignored unless you also say
 .IR N .
 Also, the one-pass method is always used for gray-scale output (the two-pass
 method is no improvement then).
+.TP
+.BI \-maxmemory " N"
+Set limit for amount of memory to use in processing large images.  Value is
+in thousands of bytes, or millions of bytes if "M" is attached to the
+number.  For example,
+.B \-max 4m
+selects 4000000 bytes.  If more space is needed, temporary files will be used.
+.TP
+.BI \-outfile " name"
+Send output image to the named file, not to standard output.
 .TP
 .B \-verbose
 Enable debug printout.  More
@@ -160,6 +189,33 @@ This example decompresses the JPEG file foo.jpg, automatically quantizes to
 .I foo.jpg
 .B >
 .I foo.gif
+.SH HINTS
+To get a quick preview of an image, use the
+.B \-grayscale
+and/or
+.B \-scale
+switches.
+.B \-grayscale \-scale 1/8
+is the fastest case.
+.PP
+Several options are available that trade off image quality to gain speed.
+.B \-fast
+turns on the recommended settings.
+.PP
+.B \-dct fast
+and/or
+.B \-nosmooth
+gain speed at a small sacrifice in quality.
+When producing a color-quantized image,
+.B \-onepass \-dither ordered
+is fast but much lower quality than the default behavior.
+.B \-dither none
+may give acceptable results in two-pass mode, but is seldom tolerable in
+one-pass mode.
+.PP
+If you are fortunate enough to have very fast floating point hardware,
+.B \-dct float
+may be even faster than \fB\-dct fast\fR.
 .SH ENVIRONMENT
 .TP
 .B JPEGMEM
@@ -172,7 +228,9 @@ overrides the default value specified when the program was compiled, and
 itself is overridden by an explicit
 .BR \-maxmemory .
 .SH SEE ALSO
-.BR cjpeg (1)
+.BR cjpeg (1),
+.BR rdjpgcom (1),
+.BR wrjpgcom (1)
 .br
 .BR ppm (5),
 .BR pgm (5)

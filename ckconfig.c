@@ -1,7 +1,7 @@
 /*
  * ckconfig.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  */
@@ -11,12 +11,8 @@
  * software for installation on a particular system.  The idea is to try to
  * compile and execute this program.  If your compiler fails to compile the
  * program, make changes as indicated in the comments below.  Once you can
- * compile the program, run it, and it will tell you how to set the various
- * switches in jconfig.h and in your Makefile.
- *
- * This could all be done automatically if we could assume we were on a Unix
- * system, but we don't want to assume that, so you'll have to edit and
- * recompile this program until it works.
+ * compile the program, run it, and it will produce a "jconfig.h" file for
+ * your system.
  *
  * As a general rule, each time you try to compile this program,
  * pay attention only to the *first* error message you get from the compiler.
@@ -31,66 +27,58 @@
 
 
 /* First we must see if your system has the include files we need.
- * We start out with the assumption that your system follows the ANSI
- * conventions for include files.  If you get any error in the next dozen
- * lines, undefine INCLUDES_ARE_ANSI.
+ * We start out with the assumption that your system has all the ANSI-standard
+ * include files.  If you get any error trying to include one of these files,
+ * undefine the corresponding HAVE_xxx symbol.
  */
 
-#define INCLUDES_ARE_ANSI	/* replace 'define' by 'undef' if error here */
-
-#ifdef INCLUDES_ARE_ANSI	/* this will be skipped if you undef... */
-#include <stdio.h>		/* If you ain't got this, you ain't got C. */
-#ifdef __SASC			/* Amiga SAS C provides size_t in stddef.h. */
-#include <stddef.h>		/* (They are wrong...) */
-#endif
-#include <string.h>		/* size_t might be here too. */
-typedef size_t my_size_t;	/* The payoff: do we have size_t now? */
-#include <stdlib.h>		/* Check other ANSI includes we use. */
+#define HAVE_STDDEF_H		/* replace 'define' by 'undef' if error here */
+#ifdef HAVE_STDDEF_H		/* next line will be skipped if you undef... */
+#include <stddef.h>
 #endif
 
-
-/* If your system doesn't follow the ANSI conventions, we have to figure out
- * what it does follow.  If you didn't get an error before this line, you can
- * ignore everything down to "#define HAVE_ANSI_DEFINITIONS".
- */
-
-#ifndef INCLUDES_ARE_ANSI	/* skip these tests if INCLUDES_ARE_ANSI */
+#define HAVE_STDLIB_H		/* same thing for stdlib.h */
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 #include <stdio.h>		/* If you ain't got this, you ain't got C. */
-
-/* jinclude.h will try to include <sys/types.h> if you don't set
- * INCLUDES_ARE_ANSI.  We need to test whether that include file is provided.
- * If you get an error here, undefine HAVE_TYPES_H.
- */
-
-#define HAVE_TYPES_H
-
-#ifdef HAVE_TYPES_H
-#include <sys/types.h>
-#endif
 
 /* We have to see if your string functions are defined by
- * strings.h (BSD convention) or string.h (everybody else).
- * We try the non-BSD convention first; define BSD if the compiler
- * says it can't find string.h.
+ * strings.h (old BSD convention) or string.h (everybody else).
+ * We try the non-BSD convention first; define NEED_BSD_STRINGS
+ * if the compiler says it can't find string.h.
  */
 
-#undef BSD
+#undef NEED_BSD_STRINGS
 
-#ifdef BSD
+#ifdef NEED_BSD_STRINGS
 #include <strings.h>
 #else
 #include <string.h>
 #endif
 
-/* Usually size_t is defined in stdio.h, sys/types.h, and/or string.h.
- * If not, you'll get an error on the "typedef size_t my_size_t;" line below.
- * In that case, you'll have to search through your system library to
- * figure out which include file defines "size_t".  Look for a line that
- * says "typedef something-or-other size_t;" (stddef.h and stdlib.h are
- * good places to look first).  Then, change the line below that says
- * "#include <someincludefile.h>" to instead include the file
- * you found size_t in, and define NEED_SPECIAL_INCLUDE.
+/* On some systems (especially older Unix machines), type size_t is
+ * defined only in the include file <sys/types.h>.  If you get a failure
+ * on the size_t test below, try defining NEED_SYS_TYPES_H.
+ */
+
+#undef NEED_SYS_TYPES_H		/* start by assuming we don't need it */
+#ifdef NEED_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+
+/* Usually type size_t is defined in one of the include files we've included
+ * above.  If not, you'll get an error on the "typedef size_t my_size_t;" line.
+ * In that case, first try defining NEED_SYS_TYPES_H just above.
+ * If that doesn't work, you'll have to search through your system library
+ * to figure out which include file defines "size_t".  Look for a line that
+ * says "typedef something-or-other size_t;".  Then, change the line below
+ * that says "#include <someincludefile.h>" to instead include the file
+ * you found size_t in, and define NEED_SPECIAL_INCLUDE.  If you can't find
+ * type size_t anywhere, try replacing "#include <someincludefile.h>" with
+ * "typedef unsigned int size_t;".
  */
 
 #undef NEED_SPECIAL_INCLUDE	/* assume we DON'T need it, for starters */
@@ -102,20 +90,16 @@ typedef size_t my_size_t;	/* The payoff: do we have size_t now? */
 typedef size_t my_size_t;	/* The payoff: do we have size_t now? */
 
 
-#endif /* INCLUDES_ARE_ANSI */
-
-
-
 /* The next question is whether your compiler supports ANSI-style function
- * definitions.  You need to know this in order to choose between using
+ * prototypes.  You need to know this in order to choose between using
  * makefile.ansi and using makefile.unix.
- * The #define line below is set to assume you have ANSI function definitions.
- * If you get an error in this group of lines, undefine HAVE_ANSI_DEFINITIONS.
+ * The #define line below is set to assume you have ANSI function prototypes.
+ * If you get an error in this group of lines, undefine HAVE_PROTOTYPES.
  */
 
-#define HAVE_ANSI_DEFINITIONS
+#define HAVE_PROTOTYPES
 
-#ifdef HAVE_ANSI_DEFINITIONS
+#ifdef HAVE_PROTOTYPES
 int testfunction (int arg1, int * arg2); /* check prototypes */
 
 struct methods_struct {		/* check method-pointer declarations */
@@ -129,7 +113,7 @@ int testfunction (int arg1, int * arg2) /* check definitions */
   return arg2[arg1];
 }
 
-int testfunction1 (void)	/* check void arg list */
+int test2function (void)	/* check void arg list */
 {
   return 0;
 }
@@ -167,12 +151,21 @@ unsigned short un_short;
 #define HAVE_VOID
 
 #ifdef HAVE_VOID
+/* Caution: a C++ compiler will insist on complete prototypes */
 typedef void * void_ptr;	/* check void * */
-typedef void (*void_func) ();	/* check ptr to function returning void */
+#ifdef HAVE_PROTOTYPES		/* check ptr to function returning void */
+typedef void (*void_func) (int a, int b);
+#else
+typedef void (*void_func) ();
+#endif
 
-void testfunction2 (arg1, arg2)	/* check void function result */
+#ifdef HAVE_PROTOTYPES		/* check void function result */
+void test3function (void_ptr arg1, void_func arg2)
+#else
+void test3function (arg1, arg2)
      void_ptr arg1;
      void_func arg2;
+#endif
 {
   char * locptr = (char *) arg1; /* check casting to and from void * */
   arg1 = (void *) locptr;
@@ -190,11 +183,47 @@ void testfunction2 (arg1, arg2)	/* check void function result */
 #ifdef HAVE_CONST
 static const int carray[3] = {1, 2, 3};
 
-int testfunction3 (arg1)
+#ifdef HAVE_PROTOTYPES
+int test4function (const int arg1)
+#else
+int test4function (arg1)
      const int arg1;
+#endif
 {
   return carray[arg1];
 }
+#endif
+
+
+/* If you get an error or warning about this structure definition,
+ * define INCOMPLETE_TYPES_BROKEN.
+ */
+
+#undef INCOMPLETE_TYPES_BROKEN
+
+#ifndef INCOMPLETE_TYPES_BROKEN
+typedef struct undefined_structure * undef_struct_ptr;
+#endif
+
+
+/* If you get an error about duplicate names,
+ * define NEED_SHORT_EXTERNAL_NAMES.
+ */
+
+#undef NEED_SHORT_EXTERNAL_NAMES
+
+#ifndef NEED_SHORT_EXTERNAL_NAMES
+
+int possibly_duplicate_function ()
+{
+  return 0;
+}
+
+int possibly_dupli_function ()
+{
+  return 1;
+}
+
 #endif
 
 
@@ -204,201 +233,170 @@ int testfunction3 (arg1)
  *  point in order to compile and execute this program.  (You might get
  *  some warnings, but you can ignore them.)
  *  When you run the program, it will make a couple more tests that it
- *  can do automatically, and then it will print out a summary of the changes
- *  that you need to make to the makefile and jconfig.h.
+ *  can do automatically, and then it will create jconfig.h and print out
+ *  any additional suggestions it has.
  ************************************************************************
  */
 
 
-static int any_changes = 0;
-
-int new_change ()
-{
-  if (! any_changes) {
-    printf("\nMost of the changes recommended by this program can be made either\n");
-    printf("by editing jconfig.h, or by adding -Dsymbol switches to the CFLAGS\n");
-    printf("line in your Makefile.  (Some PC compilers expect /Dsymbol instead.)\n");
-    printf("The CFLAGS method is simpler, but if your compiler doesn't support -D,\n");
-    printf("then you must change jconfig.h.  Also, it's best to change jconfig.h\n");
-    printf("if you plan to use the JPEG software as a library for other programs.\n");
-    any_changes = 1;
-  }
-  printf("\n");			/* blank line before each problem report */
-  return 0;
-}
-
-
-int test_char_sign (arg)
+#ifdef HAVE_PROTOTYPES
+int is_char_signed (int arg)
+#else
+int is_char_signed (arg)
      int arg;
+#endif
 {
   if (arg == 189) {		/* expected result for unsigned char */
-    new_change();
-    printf("You should add -DCHAR_IS_UNSIGNED to CFLAGS,\n");
-    printf("or else remove the /* */ comment marks from the line\n");
-    printf("/* #define CHAR_IS_UNSIGNED */  in jconfig.h.\n");
-    printf("(Be sure to delete the space before the # character too.)\n");
+    return 0;			/* type char is unsigned */
   }
   else if (arg != -67) {	/* expected result for signed char */
-    new_change();
-    printf("Hmm, it seems 'char' is less than eight bits wide on your machine.\n");
-    printf("I fear the JPEG software will not work at all.\n");
+    printf("Hmm, it seems 'char' is not eight bits wide on your machine.\n");
+    printf("I fear the JPEG software will not work at all.\n\n");
   }
-  return 0;
+  return 1;			/* assume char is signed otherwise */
 }
 
 
-int test_shifting (arg)
+#ifdef HAVE_PROTOTYPES
+int is_shifting_signed (long arg)
+#else
+int is_shifting_signed (arg)
      long arg;
+#endif
 /* See whether right-shift on a long is signed or not. */
 {
   long res = arg >> 4;
 
-  if (res == 0x80817F4L) {	/* expected result for unsigned */
-    new_change();
-    printf("You must add -DRIGHT_SHIFT_IS_UNSIGNED to CFLAGS,\n");
-    printf("or else remove the /* */ comment marks from the line\n");
-    printf("/* #define RIGHT_SHIFT_IS_UNSIGNED */  in jconfig.h.\n");
+  if (res == -0x7F7E80CL) {	/* expected result for signed shift */
+    return 1;			/* right shift is signed */
   }
-  else if (res != -0x7F7E80CL) { /* expected result for signed */
-    new_change();
-    printf("Right shift isn't acting as I expect it to.\n");
-    printf("I fear the JPEG software will not work at all.\n");
+  /* see if unsigned-shift hack will fix it. */
+  /* we can't just test exact value since it depends on width of long... */
+  res |= (~0L) << (32-4);
+  if (res == -0x7F7E80CL) {	/* expected result now? */
+    return 0;			/* right shift is unsigned */
   }
-  return 0;
+  printf("Right shift isn't acting as I expect it to.\n");
+  printf("I fear the JPEG software will not work at all.\n\n");
+  return 0;			/* try it with unsigned anyway */
 }
 
 
+#ifdef HAVE_PROTOTYPES
+int main (int argc, char ** argv)
+#else
 int main (argc, argv)
      int argc;
      char ** argv;
+#endif
 {
   char signed_char_check = (char) (-67);
+  FILE *outfile;
 
-  printf("Results of configuration check for Independent JPEG Group's software:\n");
-  printf("\nIf there's not a specific makefile provided for your compiler,\n");
-#ifdef HAVE_ANSI_DEFINITIONS
-  printf("you should use makefile.ansi as the starting point for your Makefile.\n");
-#else
-  printf("you should use makefile.unix as the starting point for your Makefile.\n");
-#endif
-
-  /* Check whether we have all the ANSI features, */
-  /* and whether this agrees with __STDC__ being predefined. */
-#ifdef __STDC__
-#define HAVE_STDC	/* ANSI compilers won't allow redefining __STDC__ */
-#endif
-
-#ifdef HAVE_ANSI_DEFINITIONS
-#ifdef HAVE_UNSIGNED_CHAR
-#ifdef HAVE_UNSIGNED_SHORT
-#ifdef HAVE_CONST
-#define HAVE_ALL_ANSI_FEATURES
-#endif
-#endif
-#endif
-#endif
-
-#ifdef HAVE_ALL_ANSI_FEATURES
-#ifndef HAVE_STDC
-  new_change();
-  printf("Your compiler doesn't claim to be ANSI-compliant, but it is close enough\n");
-  printf("for me.  Either add -DHAVE_STDC to CFLAGS, or add #define HAVE_STDC at the\n");
-  printf("beginning of jconfig.h.\n");
-#define HAVE_STDC
-#endif
-#else /* !HAVE_ALL_ANSI_FEATURES */
-#ifdef HAVE_STDC
-  new_change();
-  printf("Your compiler claims to be ANSI-compliant, but it is lying!\n");
-  printf("Delete the line  #define HAVE_STDC  near the beginning of jconfig.h.\n");
-#undef HAVE_STDC
-#endif
-#endif /* HAVE_ALL_ANSI_FEATURES */
-
-#ifndef HAVE_STDC
-
-#ifdef HAVE_ANSI_DEFINITIONS
-  new_change();
-  printf("You should add -DPROTO to CFLAGS, or else take out the several\n");
-  printf("#ifdef/#else/#endif lines surrounding #define PROTO in jconfig.h.\n");
-  printf("(Leave only one #define PROTO line.)\n");
-#endif
-
-#ifdef HAVE_UNSIGNED_CHAR
-#ifdef HAVE_UNSIGNED_SHORT
-  new_change();
-  printf("You should add -DHAVE_UNSIGNED_CHAR and -DHAVE_UNSIGNED_SHORT\n");
-  printf("to CFLAGS, or else take out the #ifdef HAVE_STDC/#endif lines\n");
-  printf("surrounding #define HAVE_UNSIGNED_CHAR and #define HAVE_UNSIGNED_SHORT\n");
-  printf("in jconfig.h.\n");
-#else /* only unsigned char */
-  new_change();
-  printf("You should add -DHAVE_UNSIGNED_CHAR to CFLAGS,\n");
-  printf("or else move #define HAVE_UNSIGNED_CHAR outside the\n");
-  printf("#ifdef HAVE_STDC/#endif lines surrounding it in jconfig.h.\n");
-#endif
-#else /* !HAVE_UNSIGNED_CHAR */
-#ifdef HAVE_UNSIGNED_SHORT
-  new_change();
-  printf("You should add -DHAVE_UNSIGNED_SHORT to CFLAGS,\n");
-  printf("or else move #define HAVE_UNSIGNED_SHORT outside the\n");
-  printf("#ifdef HAVE_STDC/#endif lines surrounding it in jconfig.h.\n");
-#endif
-#endif /* HAVE_UNSIGNED_CHAR */
-
-#ifdef HAVE_CONST
-  new_change();
-  printf("You should delete the  #define const  line from jconfig.h.\n");
-#endif
-
-#endif /* HAVE_STDC */
-
-  test_char_sign((int) signed_char_check);
-
-  test_shifting(-0x7F7E80B1L);
-
-#ifndef HAVE_VOID
-  new_change();
-  printf("You should add -Dvoid=char to CFLAGS,\n");
-  printf("or else remove the /* */ comment marks from the line\n");
-  printf("/* #define void char */  in jconfig.h.\n");
-  printf("(Be sure to delete the space before the # character too.)\n");
-#endif
-
-#ifdef INCLUDES_ARE_ANSI
-#ifndef __STDC__
-  new_change();
-  printf("You should add -DINCLUDES_ARE_ANSI to CFLAGS, or else add\n");
-  printf("#define INCLUDES_ARE_ANSI at the beginning of jinclude.h (NOT jconfig.h).\n");
-#endif
-#else /* !INCLUDES_ARE_ANSI */
-#ifdef __STDC__
-  new_change();
-  printf("You should add -DNONANSI_INCLUDES to CFLAGS, or else add\n");
-  printf("#define NONANSI_INCLUDES at the beginning of jinclude.h (NOT jconfig.h).\n");
-#endif
-#ifdef NEED_SPECIAL_INCLUDE
-  new_change();
-  printf("In jinclude.h, change the line reading #include <sys/types.h>\n");
-  printf("to instead include the file you found size_t in.\n");
-#else /* !NEED_SPECIAL_INCLUDE */
-#ifndef HAVE_TYPES_H
-  new_change();
-  printf("In jinclude.h, delete the line reading #include <sys/types.h>.\n");
-#endif
-#endif /* NEED_SPECIAL_INCLUDE */
-#ifdef BSD
-  new_change();
-  printf("You should add -DBSD to CFLAGS, or else add\n");
-  printf("#define BSD at the beginning of jinclude.h (NOT jconfig.h).\n");
-#endif
-#endif /* INCLUDES_ARE_ANSI */
-
-  if (any_changes) {
-    printf("\nI think that's everything...\n");
-  } else {
-    printf("\nI think jconfig.h is OK as distributed.\n");
+  /* Attempt to write jconfig.h */
+  if ((outfile = fopen("jconfig.h", "w")) == NULL) {
+    printf("Failed to write jconfig.h\n");
+    return 1;
   }
 
-  return any_changes;
+  /* Write out all the info */
+  fprintf(outfile, "/* jconfig.h --- generated by ckconfig.c */\n");
+  fprintf(outfile, "/* see jconfig.doc for explanations */\n\n");
+#ifdef HAVE_PROTOTYPES
+  fprintf(outfile, "#define HAVE_PROTOTYPES\n");
+#else
+  fprintf(outfile, "#undef HAVE_PROTOTYPES\n");
+#endif
+#ifdef HAVE_UNSIGNED_CHAR
+  fprintf(outfile, "#define HAVE_UNSIGNED_CHAR\n");
+#else
+  fprintf(outfile, "#undef HAVE_UNSIGNED_CHAR\n");
+#endif
+#ifdef HAVE_UNSIGNED_SHORT
+  fprintf(outfile, "#define HAVE_UNSIGNED_SHORT\n");
+#else
+  fprintf(outfile, "#undef HAVE_UNSIGNED_SHORT\n");
+#endif
+#ifdef HAVE_VOID
+  fprintf(outfile, "/* #define void char */\n");
+#else
+  fprintf(outfile, "#define void char\n");
+#endif
+#ifdef HAVE_CONST
+  fprintf(outfile, "/* #define const */\n");
+#else
+  fprintf(outfile, "#define const\n");
+#endif
+  if (is_char_signed((int) signed_char_check))
+    fprintf(outfile, "#undef CHAR_IS_UNSIGNED\n");
+  else
+    fprintf(outfile, "#define CHAR_IS_UNSIGNED\n");
+#ifdef HAVE_STDDEF_H
+  fprintf(outfile, "#define HAVE_STDDEF_H\n");
+#else
+  fprintf(outfile, "#undef HAVE_STDDEF_H\n");
+#endif
+#ifdef HAVE_STDLIB_H
+  fprintf(outfile, "#define HAVE_STDLIB_H\n");
+#else
+  fprintf(outfile, "#undef HAVE_STDLIB_H\n");
+#endif
+#ifdef NEED_BSD_STRINGS
+  fprintf(outfile, "#define NEED_BSD_STRINGS\n");
+#else
+  fprintf(outfile, "#undef NEED_BSD_STRINGS\n");
+#endif
+#ifdef NEED_SYS_TYPES_H
+  fprintf(outfile, "#define NEED_SYS_TYPES_H\n");
+#else
+  fprintf(outfile, "#undef NEED_SYS_TYPES_H\n");
+#endif
+  fprintf(outfile, "#undef NEED_FAR_POINTERS\n");
+#ifdef NEED_SHORT_EXTERNAL_NAMES
+  fprintf(outfile, "#define NEED_SHORT_EXTERNAL_NAMES\n");
+#else
+  fprintf(outfile, "#undef NEED_SHORT_EXTERNAL_NAMES\n");
+#endif
+#ifdef INCOMPLETE_TYPES_BROKEN
+  fprintf(outfile, "#define INCOMPLETE_TYPES_BROKEN\n");
+#else
+  fprintf(outfile, "#undef INCOMPLETE_TYPES_BROKEN\n");
+#endif
+  fprintf(outfile, "\n#ifdef JPEG_INTERNALS\n\n");
+  if (is_shifting_signed(-0x7F7E80B1L))
+    fprintf(outfile, "#undef RIGHT_SHIFT_IS_UNSIGNED\n");
+  else
+    fprintf(outfile, "#define RIGHT_SHIFT_IS_UNSIGNED\n");
+  fprintf(outfile, "\n#endif /* JPEG_INTERNALS */\n");
+  fprintf(outfile, "\n#ifdef JPEG_CJPEG_DJPEG\n\n");
+  fprintf(outfile, "#define BMP_SUPPORTED		/* BMP image file format */\n");
+  fprintf(outfile, "#define GIF_SUPPORTED		/* GIF image file format */\n");
+  fprintf(outfile, "#define PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */\n");
+  fprintf(outfile, "#undef RLE_SUPPORTED		/* Utah RLE image file format */\n");
+  fprintf(outfile, "#define TARGA_SUPPORTED		/* Targa image file format */\n\n");
+  fprintf(outfile, "#undef TWO_FILE_COMMANDLINE	/* You may need this on non-Unix systems */\n");
+  fprintf(outfile, "#undef NEED_SIGNAL_CATCHER	/* Define this if you use jmemname.c */\n");
+  fprintf(outfile, "#undef DONT_USE_B_MODE\n");
+  fprintf(outfile, "/* #define PROGRESS_REPORT */	/* optional */\n");
+  fprintf(outfile, "\n#endif /* JPEG_CJPEG_DJPEG */\n");
+
+  /* Close the jconfig.h file */
+  fclose(outfile);
+
+  /* User report */
+  printf("Configuration check for Independent JPEG Group's software done.\n");
+  printf("\nI have written the jconfig.h file for you.\n\n");
+#ifdef HAVE_PROTOTYPES
+  printf("You should use makefile.ansi as the starting point for your Makefile.\n");
+#else
+  printf("You should use makefile.unix as the starting point for your Makefile.\n");
+#endif
+
+#ifdef NEED_SPECIAL_INCLUDE
+  printf("\nYou'll need to change jconfig.h to include the system include file\n");
+  printf("that you found type size_t in, or add a direct definition of type\n");
+  printf("size_t if that's what you used.  Just add it to the end.\n");
+#endif
+
+  return 0;
 }

@@ -1,7 +1,7 @@
 /*
- * jmemname.c  (jmemsys.c)
+ * jmemname.c
  *
- * Copyright (C) 1992, Thomas G. Lane.
+ * Copyright (C) 1992-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -12,14 +12,14 @@
  * is shoved onto the user.
  */
 
+#define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jmemsys.h"
+#include "jpeglib.h"
+#include "jmemsys.h"		/* import the system-dependent declarations */
 
-#ifdef INCLUDES_ARE_ANSI
-#include <stdlib.h>		/* to declare malloc(), free() */
-#else
-extern void * malloc PP((size_t size));
-extern void free PP((void *ptr));
+#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
+extern void * malloc JPP((size_t size));
+extern void free JPP((void *ptr));
 #endif
 
 #ifndef SEEK_SET		/* pre-ANSI systems may not define this; */
@@ -35,11 +35,6 @@ extern void free PP((void *ptr));
 #endif
 
 
-static external_methods_ptr methods; /* saved for access to error_exit */
-
-static long total_used;		/* total memory requested so far */
-
-
 /*
  * Selection of a file name for a temporary file.
  * This is system-dependent!
@@ -50,14 +45,7 @@ static long total_used;		/* total memory requested so far */
  *      The default value is /usr/tmp, which is the conventional place for
  *      creating large temp files on Unix.  On other systems you'll probably
  *      want to change the file location.  You can do this by editing the
- *      #define, or by defining TEMP_DIRECTORY in CFLAGS in the Makefile.
- *      For example, you might say
- *          CFLAGS= ... '-DTEMP_DIRECTORY="/tmp/"'
- *      Note that double quotes are needed in the text of the macro.
- *      With most make systems you have to put single quotes around the
- *      -D construct to preserve the double quotes.
- *	(Amiga SAS C has trouble with ":" and such in command-line options,
- *	so we've put in a special case for the preferred Amiga temp directory.)
+ *      #define, or (preferred) by defining TEMP_DIRECTORY in jconfig.h.
  *
  *  2.  If you need to change the file name as well as its location,
  *      you can override the TEMP_FILE_NAME macro.  (Note that this is
@@ -68,23 +56,19 @@ static long total_used;		/* total memory requested so far */
  *      simultaneously won't select the same file names.  If your system
  *      doesn't have mktemp(), define NO_MKTEMP to do it the hard way.
  *
- *  4.  You probably want to define NEED_SIGNAL_CATCHER so that jcmain/jdmain
+ *  4.  You probably want to define NEED_SIGNAL_CATCHER so that cjpeg.c/djpeg.c
  *      will cause the temp files to be removed if you stop the program early.
  */
 
-#ifndef TEMP_DIRECTORY		/* so can override from Makefile */
-#ifdef AMIGA
-#define TEMP_DIRECTORY  "JPEGTMP:"  /* recommended setting for Amiga */
-#else
+#ifndef TEMP_DIRECTORY		/* can override from jconfig.h or Makefile */
 #define TEMP_DIRECTORY  "/usr/tmp/" /* recommended setting for Unix */
-#endif
 #endif
 
 static int next_file_num;	/* to distinguish among several temp files */
 
 #ifdef NO_MKTEMP
 
-#ifndef TEMP_FILE_NAME		/* so can override from Makefile */
+#ifndef TEMP_FILE_NAME		/* can override from jconfig.h or Makefile */
 #define TEMP_FILE_NAME  "%sJPG%03d.TMP"
 #endif
 
@@ -106,7 +90,7 @@ select_file_name (char * fname)
 #else /* ! NO_MKTEMP */
 
 /* Note that mktemp() requires the initial filename to end in six X's */
-#ifndef TEMP_FILE_NAME		/* so can override from Makefile */
+#ifndef TEMP_FILE_NAME		/* can override from jconfig.h or Makefile */
 #define TEMP_FILE_NAME  "%sJPG%dXXXXXX"
 #endif
 
@@ -128,22 +112,36 @@ select_file_name (char * fname)
  */
 
 GLOBAL void *
-jget_small (size_t sizeofobject)
+jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
-  total_used += sizeofobject;
   return (void *) malloc(sizeofobject);
 }
 
 GLOBAL void
-jfree_small (void * object)
+jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 {
   free(object);
 }
 
+
 /*
- * We assume NEED_FAR_POINTERS is not defined and so the separate entry points
- * jget_large, jfree_large are not needed.
+ * "Large" objects are treated the same as "small" ones.
+ * NB: although we include FAR keywords in the routine declarations,
+ * this file won't actually work in 80x86 small/medium model; at least,
+ * you probably won't be able to process useful-size images in only 64KB.
  */
+
+GLOBAL void FAR *
+jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
+{
+  return (void FAR *) malloc(sizeofobject);
+}
+
+GLOBAL void
+jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
+{
+  free(object);
+}
 
 
 /*
@@ -159,46 +157,49 @@ jfree_small (void * object)
 #endif
 
 GLOBAL long
-jmem_available (long min_bytes_needed, long max_bytes_needed)
+jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
+		    long max_bytes_needed, long already_allocated)
 {
-  return methods->max_memory_to_use - total_used;
+  return cinfo->mem->max_memory_to_use - already_allocated;
 }
 
 
 /*
  * Backing store (temporary file) management.
  * Backing store objects are only used when the value returned by
- * jmem_available is less than the total space needed.  You can dispense
+ * jpeg_mem_available is less than the total space needed.  You can dispense
  * with these routines if you have plenty of virtual memory; see jmemnobs.c.
  */
 
 
 METHODDEF void
-read_backing_store (backing_store_ptr info, void FAR * buffer_address,
+read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+		    void FAR * buffer_address,
 		    long file_offset, long byte_count)
 {
   if (fseek(info->temp_file, file_offset, SEEK_SET))
-    ERREXIT(methods, "fseek failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
   if (JFREAD(info->temp_file, buffer_address, byte_count)
       != (size_t) byte_count)
-    ERREXIT(methods, "fread failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_READ);
 }
 
 
 METHODDEF void
-write_backing_store (backing_store_ptr info, void FAR * buffer_address,
+write_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+		     void FAR * buffer_address,
 		     long file_offset, long byte_count)
 {
   if (fseek(info->temp_file, file_offset, SEEK_SET))
-    ERREXIT(methods, "fseek failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
   if (JFWRITE(info->temp_file, buffer_address, byte_count)
       != (size_t) byte_count)
-    ERREXIT(methods, "fwrite failed on temporary file --- out of disk space?");
+    ERREXIT(cinfo, JERR_TFILE_WRITE);
 }
 
 
 METHODDEF void
-close_backing_store (backing_store_ptr info)
+close_backing_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   fclose(info->temp_file);	/* close the file */
   unlink(info->temp_name);	/* delete the file */
@@ -206,46 +207,42 @@ close_backing_store (backing_store_ptr info)
  * remove() is the ANSI-standard name for this function, but if
  * your system was ANSI you'd be using jmemansi.c, right?
  */
+  TRACEMSS(cinfo, 1, JTRC_TFILE_CLOSE, info->temp_name);
 }
 
 
-GLOBAL void
-jopen_backing_store (backing_store_ptr info, long total_bytes_needed)
-{
-  char tracemsg[TEMP_NAME_LENGTH+40];
+/*
+ * Initial opening of a backing-store object.
+ */
 
+GLOBAL void
+jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+			 long total_bytes_needed)
+{
   select_file_name(info->temp_name);
-  if ((info->temp_file = fopen(info->temp_name, RW_BINARY)) == NULL) {
-    /* hack to get around ERREXIT's inability to handle string parameters */
-    sprintf(tracemsg, "Failed to create temporary file %s", info->temp_name);
-    ERREXIT(methods, tracemsg);
-  }
+  if ((info->temp_file = fopen(info->temp_name, RW_BINARY)) == NULL)
+    ERREXITS(cinfo, JERR_TFILE_CREATE, info->temp_name);
   info->read_backing_store = read_backing_store;
   info->write_backing_store = write_backing_store;
   info->close_backing_store = close_backing_store;
-  /* hack to get around TRACEMS' inability to handle string parameters */
-  sprintf(tracemsg, "Using temp file %s", info->temp_name);
-  TRACEMS(methods, 1, tracemsg);
+  TRACEMSS(cinfo, 1, JTRC_TFILE_OPEN, info->temp_name);
 }
 
 
 /*
  * These routines take care of any system-dependent initialization and
- * cleanup required.  Keep in mind that jmem_term may be called more than
- * once.
+ * cleanup required.
  */
 
-GLOBAL void
-jmem_init (external_methods_ptr emethods)
+GLOBAL long
+jpeg_mem_init (j_common_ptr cinfo)
 {
-  methods = emethods;		/* save struct addr for error exit access */
-  emethods->max_memory_to_use = DEFAULT_MAX_MEM;
-  total_used = 0;
-  next_file_num = 0;
+  next_file_num = 0;		/* initialize temp file name generator */
+  return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
 }
 
 GLOBAL void
-jmem_term (void)
+jpeg_mem_term (j_common_ptr cinfo)
 {
   /* no work */
 }

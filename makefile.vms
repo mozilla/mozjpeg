@@ -1,72 +1,102 @@
 $! Makefile for Independent JPEG Group's software
 $!
-$! This is a command procedure for use on VAX/VMS systems that do not have MMS.
+$! This is a command procedure for Digital VMS systems that do not have MMS.
 $! It builds the JPEG software by brute force, recompiling everything whether
 $! or not it is necessary.  It then runs the basic self-test.
 $! Thanks to Rick Dyson (dyson@iowasp.physics.uiowa.edu)
 $! and Tim Bell (tbell@netcom.com) for their help.
 $!
-$! Read SETUP instructions before running this!!
+$! Read installation instructions before running this!!
 $!
-$ DoCompile := CC /NoDebug /Optimize /Define = (TWO_FILE_COMMANDLINE,HAVE_STDC,INCLUDES_ARE_ANSI)
+$ If F$GetSyi ("HW_MODEL") .gt. 1023 
+$   Then
+$       OPT = ""
+$   Else
+$       OPT = ",Sys$Disk:[]makvms.opt/Option"
+$ EndIf
+$ 
+$ DoCompile := CC /NoDebug /Optimize
 $!
-$ DoCompile jcmain.c
-$ DoCompile jdmain.c
+$ DoCompile jcapi.c
+$ DoCompile jcparam.c
+$ DoCompile jdatadst.c
 $ DoCompile jcmaster.c
-$ DoCompile jcdeflts.c
-$ DoCompile jcarith.c
+$ DoCompile jcmarker.c
+$ DoCompile jcmainct.c
+$ DoCompile jcprepct.c
+$ DoCompile jccoefct.c
 $ DoCompile jccolor.c
-$ DoCompile jcexpand.c
-$ DoCompile jchuff.c
-$ DoCompile jcmcu.c
-$ DoCompile jcpipe.c
 $ DoCompile jcsample.c
-$ DoCompile jfwddct.c
-$ DoCompile jwrjfif.c
-$ DoCompile jrdgif.c
-$ DoCompile jrdppm.c
-$ DoCompile jrdrle.c
-$ DoCompile jrdtarga.c
+$ DoCompile jchuff.c
+$ DoCompile jcdctmgr.c
+$ DoCompile jfdctfst.c
+$ DoCompile jfdctflt.c
+$ DoCompile jfdctint.c
+$ DoCompile jdapi.c
+$ DoCompile jdatasrc.c
 $ DoCompile jdmaster.c
-$ DoCompile jddeflts.c
-$ DoCompile jbsmooth.c
-$ DoCompile jdarith.c
-$ DoCompile jdcolor.c
+$ DoCompile jdmarker.c
+$ DoCompile jdmainct.c
+$ DoCompile jdcoefct.c
+$ DoCompile jdpostct.c
+$ DoCompile jddctmgr.c
+$ DoCompile jidctfst.c
+$ DoCompile jidctflt.c
+$ DoCompile jidctint.c
+$ DoCompile jidctred.c
 $ DoCompile jdhuff.c
-$ DoCompile jdmcu.c
-$ DoCompile jdpipe.c
 $ DoCompile jdsample.c
+$ DoCompile jdcolor.c
 $ DoCompile jquant1.c
 $ DoCompile jquant2.c
-$ DoCompile jrevdct.c
-$ DoCompile jrdjfif.c
-$ DoCompile jwrgif.c
-$ DoCompile jwrppm.c
-$ DoCompile jwrrle.c
-$ DoCompile jwrtarga.c
+$ DoCompile jdmerge.c
+$ DoCompile jcomapi.c
 $ DoCompile jutils.c
 $ DoCompile jerror.c
 $ DoCompile jmemmgr.c
-$ DoCompile jmemsys.c
+$ DoCompile jmemnobs.c
 $!
-$ Library /Create libjpeg.olb  jcmaster.obj,jcdeflts.obj,jcarith.obj, -
-          jccolor.obj,jcexpand.obj,jchuff.obj,jcmcu.obj,jcpipe.obj, -
-          jcsample.obj,jfwddct.obj,jwrjfif.obj,jrdgif.obj,jrdppm.obj, -
-          jrdrle.obj,jrdtarga.obj,jdmaster.obj,jddeflts.obj,jbsmooth.obj, -
-          jdarith.obj,jdcolor.obj,jdhuff.obj,jdmcu.obj,jdpipe.obj, -
-          jdsample.obj,jquant1.obj,jquant2.obj,jrevdct.obj,jrdjfif.obj, -
-          jwrgif.obj,jwrppm.obj,jwrrle.obj,jwrtarga.obj,jutils.obj, -
-          jerror.obj,jmemmgr.obj,jmemsys.obj
+$ Library /Create libjpeg.olb  jcapi.obj,jcparam.obj,jdatadst.obj, -
+          jcmaster.obj,jcmarker.obj,jcmainct.obj,jcprepct.obj,jccoefct.obj, -
+          jccolor.obj,jcsample.obj,jchuff.obj,jcdctmgr.obj,jfdctfst.obj, -
+          jfdctflt.obj,jfdctint.obj,jdapi.obj,jdatasrc.obj,jdmaster.obj, -
+          jdmarker.obj,jdmainct.obj,jdcoefct.obj,jdpostct.obj,jddctmgr.obj, -
+          jidctfst.obj,jidctflt.obj,jidctint.obj,jidctred.obj,jdhuff.obj, -
+          jdsample.obj,jdcolor.obj,jquant1.obj,jquant2.obj,jdmerge.obj, -
+          jcomapi.obj,jutils.obj,jerror.obj,jmemmgr.obj,jmemnobs.obj
 $!
-$ Link /Executable = cjpeg.exe  jcmain.obj,libjpeg.olb/Library,Sys$Disk:[]MAKVMS.OPT/Option
+$ DoCompile cjpeg.c
+$ DoCompile rdppm.c
+$ DoCompile rdgif.c
+$ DoCompile rdtarga.c
+$ DoCompile rdrle.c
+$ DoCompile rdbmp.c
 $!
-$ Link /Executable = djpeg.exe  jdmain.obj,libjpeg.olb/Library,Sys$Disk:[]MAKVMS.OPT/Option
+$ Link /Executable = cjpeg.exe  cjpeg.obj,rdppm.obj,rdgif.obj,rdtarga.obj, -
+          rdrle.obj,rdbmp.obj,libjpeg.olb/Library'OPT'
+$!
+$ DoCompile djpeg.c
+$ DoCompile wrppm.c
+$ DoCompile wrgif.c
+$ DoCompile wrtarga.c
+$ DoCompile wrrle.c
+$ DoCompile wrbmp.c
+$ DoCompile rdcolmap.c
+$!
+$ Link /Executable = djpeg.exe  djpeg.obj,wrppm.obj,wrgif.obj,wrtarga.obj, -
+          wrrle.obj,wrbmp.obj,rdcolmap.obj,libjpeg.olb/Library'OPT'
+$!
+$ DoCompile rdjpgcom.c
+$ Link /Executable = rdjpgcom.exe  rdjpgcom.obj'OPT'
+$!
+$ DoCompile wrjpgcom.c
+$ Link /Executable = wrjpgcom.exe  wrjpgcom.obj'OPT'
 $!
 $! Run the self-test
 $!
-$ mcr sys$disk:[]djpeg      testorig.jpg testout.ppm
-$ mcr sys$disk:[]djpeg -gif testorig.jpg testout.gif
-$ mcr sys$disk:[]cjpeg      testimg.ppm testout.jpg
+$ mcr sys$disk:[]djpeg -dct int -ppm -outfile testout.ppm testorig.jpg
+$ mcr sys$disk:[]djpeg -dct int -gif -outfile testout.gif testorig.jpg
+$ mcr sys$disk:[]cjpeg -dct int      -outfile testout.jpg testimg.ppm
 $ Backup /Compare/Log testimg.ppm testout.ppm
 $ Backup /Compare/Log testimg.gif testout.gif
 $ Backup /Compare/Log testimg.jpg testout.jpg

@@ -1,5 +1,29 @@
 CHANGELOG for Independent JPEG Group's JPEG software
 
+
+Version 4A 18-Feb-93
+--------------------
+
+Substantial speedup for grayscale output from color JPEG file (suppress
+processing of chrominance components).  Lesser speedups in Huffman decoding
+and in compression quantization.
+
+Can switch stdin/stdout to binary mode with either fdopen() or setmode();
+this allows use of one-file command line style on a wider range of systems.
+Also added -outfile switch so that makefile test scripts don't have to depend
+on the command line style.
+
+New makefile.icc for Code Builder; makefile.sas is updated for SAS C 6.x.
+
+Hook added to allow surrounding application to read and write COM (comment)
+blocks.
+
+Bugfixes (DOS only): jmemdos.c code for accessing expanded memory only worked
+if struct fields are packed on byte boundaries.  This is not true by default
+for Microsoft C.  Furthermore, Microsoft C needs an _fheapmin() call to clean
+up the far heap correctly.
+
+
 Version 4  10-Dec-92
 --------------------
 

@@ -1,4 +1,4 @@
-.TH DJPEG 1 "2 August 1992"
+.TH DJPEG 1 "17 February 1993"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -107,9 +107,9 @@ is specified; otherwise, 24-bit full-color format is emitted.
 Switches for advanced users:
 .TP
 .B \-blocksmooth
-Perform cross-block smoothing.  This is quite memory-intensive and only seems
-to improve the image at very low quality settings (\fB\-quality\fR 10 to 20 or
-so).  At normal quality settings it may make the image worse.
+Perform cross-block smoothing.  This is slow, quite memory-intensive, and only
+seems to improve the image at very low quality settings (\fB\-quality\fR 10 to
+20 or so).  At normal quality settings it may make the image worse.
 .TP
 .B \-grayscale
 Force gray-scale output even if JPEG file is color.

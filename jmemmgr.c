@@ -297,7 +297,7 @@ free_medium (void FAR *ptr)
   hdr--;			/* point back to header */
 
   /* Remove item from list -- linear search is fast enough */
-  llink = &medium_list;
+  llink = (medium_ptr FAR *) &medium_list;
   while (*llink != hdr) {
     if (*llink == NULL)
       ERREXIT(methods, "Bogus free_medium request");

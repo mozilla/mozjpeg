@@ -1,7 +1,7 @@
 /*
  * jdmaster.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -31,22 +31,8 @@ d_initial_method_selection (decompress_info_ptr cinfo)
   /* JPEG file scanning method selection is already done. */
   /* So is output file format selection (both are done by user interface). */
 
-  /* Entropy decoding: either Huffman or arithmetic coding. */
-#ifdef D_ARITH_CODING_SUPPORTED
-  jseldarithmetic(cinfo);
-#else
-  if (cinfo->arith_code) {
-    ERREXIT(cinfo->emethods, "Arithmetic coding not supported");
-  }
-#endif
-  jseldhuffman(cinfo);
-  /* Cross-block smoothing */
-#ifdef BLOCK_SMOOTHING_SUPPORTED
-  jselbsmooth(cinfo);
-#else
-  cinfo->do_block_smoothing = FALSE;
-#endif
   /* Gamma and color space conversion */
+  /* NB: this may change the component_needed flags */
   jseldcolor(cinfo);
 
   /* Color quantization selection rules */
@@ -76,6 +62,23 @@ d_initial_method_selection (decompress_info_ptr cinfo)
 #ifdef QUANT_2PASS_SUPPORTED
   jsel2quantize(cinfo);
 #endif
+
+  /* Cross-block smoothing */
+#ifdef BLOCK_SMOOTHING_SUPPORTED
+  jselbsmooth(cinfo);
+#else
+  cinfo->do_block_smoothing = FALSE;
+#endif
+
+  /* Entropy decoding: either Huffman or arithmetic coding. */
+#ifdef D_ARITH_CODING_SUPPORTED
+  jseldarithmetic(cinfo);
+#else
+  if (cinfo->arith_code) {
+    ERREXIT(cinfo->emethods, "Arithmetic coding not supported");
+  }
+#endif
+  jseldhuffman(cinfo);
 
   /* Pipeline control */
   jseldpipeline(cinfo);

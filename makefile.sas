@@ -1,37 +1,41 @@
 # Makefile for Independent JPEG Group's software
 
-# This makefile is for Amiga systems using SAS C 5.10b.
-# Use jmemname.c as the system-dependent memory manager.
-# Contributed by Ed Hanway (sisd!jeh@uunet.uu.net).
+# This makefile is for Amiga systems using SAS C 6.0 and up.
+# Thanks to Ed Hanway, Mark Rinfret, and Jim Zepeda.
 
 # Read SETUP instructions before saying "make" !!
+# Use jmemname.c as the system-dependent memory manager.
 
 # The name of your C compiler:
-CC= lc
+CC= sc
 
 # Uncomment the following lines for generic 680x0 version
-ARCHFLAGS=
+ARCHFLAGS= cpu=any
 SUFFIX=
 
 # Uncomment the following lines for 68030-only version
-#ARCHFLAGS= -m3
+#ARCHFLAGS= cpu=68030
 #SUFFIX=.030
 
 # You may need to adjust these cc options:
-CFLAGS= -v -b -rr -O -j104 $(ARCHFLAGS) -DHAVE_STDC -DINCLUDES_ARE_ANSI \
-	-DAMIGA -DTWO_FILE_COMMANDLINE -DINCOMPLETE_TYPES_BROKEN \
-	-DNO_MKTEMP -DNEED_SIGNAL_CATCHER -DSHORTxSHORT_32
-# -j104 disables warnings for mismatched const qualifiers
+CFLAGS= nostackcheck data=near parms=register optimize $(ARCHFLAGS) \
+	ignore=104 ignore=304 ignore=306 \
+	define HAVE_STDC define INCLUDES_ARE_ANSI \
+	define AMIGA define TWO_FILE_COMMANDLINE \
+	define NO_MKTEMP define NEED_SIGNAL_CATCHER define SHORTxSHORT_32
+# ignore=104 disables warnings for mismatched const qualifiers
+# ignore=304 disables warnings for variables being optimized out
+# ignore=306 disables warnings for the inlining of functions
 
 # Link-time cc options:
 LDFLAGS= SC SD ND BATCH
 
 # To link any special libraries, add the necessary commands here.
-LDLIBS= LIB LIB:lcr.lib
+LDLIBS= LIB LIB:scm.lib LIB:sc.lib
 
 # miscellaneous OS-dependent stuff
 # linker
-LN= blink
+LN= slink
 # file deletion command
 RM= delete quiet
 # library (.lib) file creation command
@@ -56,7 +60,8 @@ INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
         makcjpeg.st makdjpeg.st makljpeg.st makefile.mc5 makefile.mc6 \
-        makefile.bcc makefile.mms makefile.vms makvms.opt
+        makefile.bcc makefile.icc makljpeg.icc makefile.mms makefile.vms \
+        makvms.opt
 OTHERFILES= ansi2knr.c ckconfig.c example.c
 TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
 DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \
@@ -119,9 +124,9 @@ distribute:
 
 test: cjpeg djpeg
 	-$(RM) testout.ppm testout.gif testout.jpg
-	djpeg testorig.jpg testout.ppm
-	djpeg -gif testorig.jpg testout.gif
-	cjpeg testimg.ppm testout.jpg
+	djpeg -outfile testout.ppm  testorig.jpg
+	djpeg -gif -outfile testout.gif  testorig.jpg
+	cjpeg -outfile testout.jpg  testimg.ppm
 	cmp testimg.ppm testout.ppm
 	cmp testimg.gif testout.gif
 	cmp testimg.jpg testout.jpg

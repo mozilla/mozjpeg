@@ -1,7 +1,7 @@
 /*
  * jconfig.h
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -106,8 +106,10 @@
  */
 
 #ifdef MSDOS			/* two-file style is needed for PCs */
-#ifndef USE_SETMODE		/* unless you have setmode() */
+#ifndef USE_FDOPEN		/* unless you have fdopen() or setmode() */
+#ifndef USE_SETMODE
 #define TWO_FILE_COMMANDLINE
+#endif
 #endif
 #endif
 #ifdef THINK_C			/* it's needed for Macintosh too */

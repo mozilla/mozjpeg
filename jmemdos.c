@@ -13,6 +13,8 @@
  * if you compile in a small-data memory model; it should NOT be defined if
  * you use a large-data memory model.  This file is not recommended if you
  * are using a flat-memory-space 386 environment such as DJGCC or Watcom C.
+ * Also, this code will NOT work if struct fields are aligned on greater than
+ * 2-byte boundaries.
  *
  * Based on code contributed by Ge' Weijers.
  */
@@ -447,20 +449,34 @@ open_xms_store (backing_store_ptr info, long total_bytes_needed)
 
 #if EMS_SUPPORTED
 
-typedef union {			/* either offset/page or real-mode pointer */
-	struct { unsigned short offset, page; } ems;
-	void far * ptr;
-      } EMSPTR;
+/* The EMS move specification structure requires word and long fields aligned
+ * at odd byte boundaries.  Some compilers will align struct fields at even
+ * byte boundaries.  While it's usually possible to force byte alignment,
+ * that causes an overall performance penalty and may pose problems in merging
+ * JPEG into a larger application.  Instead we accept some rather dirty code
+ * here.  Note this code would fail if the hardware did not allow odd-byte
+ * word & long accesses, but all 80x86 CPUs do.
+ */
 
-typedef struct {		/* EMS move specification structure */
-	long length;
-	char src_type;		/* 1 = EMS, 0 = conventional memory */
-	EMSH src_handle;	/* use 0 if conventional memory */
-	EMSPTR src;
-	char dst_type;
-	EMSH dst_handle;
-	EMSPTR dst;
+typedef void far * EMSPTR;
+
+typedef union {			/* EMS move specification structure */
+	long length;		/* It's easy to access first 4 bytes */
+	char bytes[18];		/* Misaligned fields in here! */
       } EMSspec;
+
+/* Macros for accessing misaligned fields */
+#define FIELD_AT(spec,offset,type)  (*((type *) &(spec.bytes[offset])))
+#define SRC_TYPE(spec)		FIELD_AT(spec,4,char)
+#define SRC_HANDLE(spec)	FIELD_AT(spec,5,EMSH)
+#define SRC_OFFSET(spec)	FIELD_AT(spec,7,unsigned short)
+#define SRC_PAGE(spec)		FIELD_AT(spec,9,unsigned short)
+#define SRC_PTR(spec)		FIELD_AT(spec,7,EMSPTR)
+#define DST_TYPE(spec)		FIELD_AT(spec,11,char)
+#define DST_HANDLE(spec)	FIELD_AT(spec,12,EMSH)
+#define DST_OFFSET(spec)	FIELD_AT(spec,14,unsigned short)
+#define DST_PAGE(spec)		FIELD_AT(spec,16,unsigned short)
+#define DST_PTR(spec)		FIELD_AT(spec,14,EMSPTR)
 
 #define EMSPAGESIZE	16384L	/* gospel, see the EMS specs */
 
@@ -476,13 +492,13 @@ read_ems_store (backing_store_ptr info, void FAR * buffer_address,
   EMSspec spec;
 
   spec.length = byte_count;
-  spec.src_type = 1;
-  spec.src_handle = info->handle.ems_handle;
-  spec.src.ems.page = (unsigned short) (file_offset / EMSPAGESIZE);
-  spec.src.ems.offset = (unsigned short) (file_offset % EMSPAGESIZE);
-  spec.dst_type = 0;
-  spec.dst_handle = 0;
-  spec.dst.ptr = buffer_address;
+  SRC_TYPE(spec) = 1;
+  SRC_HANDLE(spec) = info->handle.ems_handle;
+  SRC_PAGE(spec)   = (unsigned short) (file_offset / EMSPAGESIZE);
+  SRC_OFFSET(spec) = (unsigned short) (file_offset % EMSPAGESIZE);
+  DST_TYPE(spec) = 0;
+  DST_HANDLE(spec) = 0;
+  DST_PTR(spec)    = buffer_address;
   
   ctx.ds_si = (void far *) & spec;
   ctx.ax = 0x5700;		/* move memory region */
@@ -500,13 +516,13 @@ write_ems_store (backing_store_ptr info, void FAR * buffer_address,
   EMSspec spec;
 
   spec.length = byte_count;
-  spec.src_type = 0;
-  spec.src_handle = 0;
-  spec.src.ptr = buffer_address;
-  spec.dst_type = 1;
-  spec.dst_handle = info->handle.ems_handle;
-  spec.dst.ems.page = (unsigned short) (file_offset / EMSPAGESIZE);
-  spec.dst.ems.offset = (unsigned short) (file_offset % EMSPAGESIZE);
+  SRC_TYPE(spec) = 0;
+  SRC_HANDLE(spec) = 0;
+  SRC_PTR(spec)    = buffer_address;
+  DST_TYPE(spec) = 1;
+  DST_HANDLE(spec) = info->handle.ems_handle;
+  DST_PAGE(spec)   = (unsigned short) (file_offset / EMSPAGESIZE);
+  DST_OFFSET(spec) = (unsigned short) (file_offset % EMSPAGESIZE);
   
   ctx.ds_si = (void far *) & spec;
   ctx.ax = 0x5700;		/* move memory region */
@@ -609,5 +625,10 @@ jmem_init (external_methods_ptr emethods)
 GLOBAL void
 jmem_term (void)
 {
-  /* no work */
+  /* Microsoft C, at least in v6.00A, will not successfully reclaim freed
+   * blocks of size > 32Kbytes unless we give it a kick in the rear, like so:
+   */
+#ifdef NEED_FHEAPMIN
+  _fheapmin();
+#endif
 }

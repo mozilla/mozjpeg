@@ -52,6 +52,12 @@ style is a little more foolproof, and it loses no functionality if you don't
 have pipes.  (You can get this style on Unix too, if you prefer, by defining
 TWO_FILE_COMMANDLINE when you compile the programs; see SETUP.)
 
+You can also say:
+	cjpeg [switches] -outfile jpegfile  imagefile
+or
+	djpeg [switches] -outfile imagefile  jpegfile
+This syntax works on all systems, so it is useful for scripts.
+
 The currently supported image file formats are: PPM (PBMPLUS color format),
 PGM (PBMPLUS gray-scale format), GIF, Targa, and RLE (Utah Raster Toolkit
 format).  (RLE is supported only if the URT library is available.)
@@ -212,8 +218,8 @@ The basic command line switches for djpeg are:
 
 Switches for advanced users:
 
-	-blocksmooth	Perform cross-block smoothing.  This is quite
-			memory-intensive and only seems to improve the image
+	-blocksmooth	Perform cross-block smoothing.  This is slow, quite
+			memory-intensive, and only seems to improve the image
 			at very low quality settings (-quality 10 to 20 or so).
 			At normal quality settings it may make things worse.
 

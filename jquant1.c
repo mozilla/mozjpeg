@@ -1,7 +1,7 @@
 /*
  * jquant1.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -81,37 +81,39 @@ static JSAMPARRAY input_buffer;	/* color conversion workspace */
 
 /* Declarations for Floyd-Steinberg dithering.
  *
- * Errors are accumulated into the arrays evenrowerrs[] and oddrowerrs[].
- * These have resolutions of 1/16th of a pixel count.  The error at a given
- * pixel is propagated to its unprocessed neighbors using the standard F-S
- * fractions,
+ * Errors are accumulated into the array fserrors[], at a resolution of
+ * 1/16th of a pixel count.  The error at a given pixel is propagated
+ * to its not-yet-processed neighbors using the standard F-S fractions,
  *		...	(here)	7/16
  *		3/16	5/16	1/16
  * We work left-to-right on even rows, right-to-left on odd rows.
  *
- * In each of the xxxrowerrs[] arrays, indexing is [component#][position].
+ * We can get away with a single array (holding one row's worth of errors)
+ * by using it to store the current row's errors at pixel columns not yet
+ * processed, but the next row's errors at columns already processed.  We
+ * need only a few extra variables to hold the errors immediately around the
+ * current column.  (If we are lucky, those variables are in registers, but
+ * even if not, they're probably cheaper to access than array elements are.)
+ *
+ * The fserrors[] array is indexed [component#][position].
  * We provide (#columns + 2) entries per component; the extra entry at each
  * end saves us from special-casing the first and last pixels.
- * In evenrowerrs[], the entries for a component are stored left-to-right, but
- * in oddrowerrs[] they are stored right-to-left.  This means we always
- * process the current row's error entries in increasing order and the next
- * row's error entries in decreasing order, regardless of whether we are
- * working L-to-R or R-to-L in the pixel data!
  *
  * Note: on a wide image, we might not have enough room in a PC's near data
- * segment to hold the error arrays; so they are allocated with alloc_medium.
+ * segment to hold the error array; so it is allocated with alloc_medium.
  */
 
 #ifdef EIGHT_BIT_SAMPLES
 typedef INT16 FSERROR;		/* 16 bits should be enough */
+typedef int LOCFSERROR;		/* use 'int' for calculation temps */
 #else
-typedef INT32 FSERROR;		/* may need more than 16 bits? */
+typedef INT32 FSERROR;		/* may need more than 16 bits */
+typedef INT32 LOCFSERROR;	/* be sure calculation temps are big enough */
 #endif
 
 typedef FSERROR FAR *FSERRPTR;	/* pointer to error array (in FAR storage!) */
 
-static FSERRPTR evenrowerrs[MAX_COMPONENTS]; /* errors for even rows */
-static FSERRPTR oddrowerrs[MAX_COMPONENTS];  /* errors for odd rows */
+static FSERRPTR fserrors[MAX_COMPONENTS]; /* accumulated errors */
 static boolean on_odd_row;	/* flag to remember which row we are on */
 
 
@@ -349,10 +351,9 @@ color_quant_init (decompress_info_ptr cinfo)
     size_t arraysize = (size_t) ((cinfo->image_width + 2L) * SIZEOF(FSERROR));
 
     for (i = 0; i < cinfo->color_out_comps; i++) {
-      evenrowerrs[i] = (FSERRPTR) (*cinfo->emethods->alloc_medium) (arraysize);
-      oddrowerrs[i]  = (FSERRPTR) (*cinfo->emethods->alloc_medium) (arraysize);
-      /* we only need to zero the forward contribution for current row. */
-      jzero_far((void FAR *) evenrowerrs[i], arraysize);
+      fserrors[i] = (FSERRPTR) (*cinfo->emethods->alloc_medium) (arraysize);
+      /* Initialize the propagated errors to zero. */
+      jzero_far((void FAR *) fserrors[i], arraysize);
     }
     on_odd_row = FALSE;
   }
@@ -426,6 +427,9 @@ color_quantize3 (decompress_info_ptr cinfo, int num_rows,
   register JSAMPROW ptr0, ptr1, ptr2, ptrout;
   register long col;
   int row;
+  JSAMPROW colorindex0 = colorindex[0];
+  JSAMPROW colorindex1 = colorindex[1];
+  JSAMPROW colorindex2 = colorindex[2];
   long width = cinfo->image_width;
 
   for (row = 0; row < num_rows; row++) {
@@ -435,9 +439,9 @@ color_quantize3 (decompress_info_ptr cinfo, int num_rows,
     ptr2 = input_buffer[2];
     ptrout = output_data[row];
     for (col = width; col > 0; col--) {
-      pixcode  = GETJSAMPLE(colorindex[0][GETJSAMPLE(*ptr0++)]);
-      pixcode += GETJSAMPLE(colorindex[1][GETJSAMPLE(*ptr1++)]);
-      pixcode += GETJSAMPLE(colorindex[2][GETJSAMPLE(*ptr2++)]);
+      pixcode  = GETJSAMPLE(colorindex0[GETJSAMPLE(*ptr0++)]);
+      pixcode += GETJSAMPLE(colorindex1[GETJSAMPLE(*ptr1++)]);
+      pixcode += GETJSAMPLE(colorindex2[GETJSAMPLE(*ptr2++)]);
       *ptrout++ = (JSAMPLE) pixcode;
     }
   }
@@ -449,21 +453,24 @@ color_quantize_dither (decompress_info_ptr cinfo, int num_rows,
 		       JSAMPIMAGE input_data, JSAMPARRAY output_data)
 /* General case, with Floyd-Steinberg dithering */
 {
-  register FSERROR val;
-  FSERROR two_val;
-  register FSERRPTR thisrowerr, nextrowerr;
+  register LOCFSERROR cur;	/* current error or pixel value */
+  LOCFSERROR belowerr;		/* error for pixel below cur */
+  LOCFSERROR bpreverr;		/* error for below/prev col */
+  LOCFSERROR bnexterr;		/* error for below/next col */
+  LOCFSERROR delta;
+  register FSERRPTR errorptr;	/* => fserrors[] at column before current */
   register JSAMPROW input_ptr;
   register JSAMPROW output_ptr;
-  JSAMPLE *range_limit = cinfo->sample_range_limit;
   JSAMPROW colorindex_ci;
   JSAMPROW colormap_ci;
-  register int pixcode;
+  int pixcode;
   int dir;			/* 1 for left-to-right, -1 for right-to-left */
   int ci;
   int nc = cinfo->color_out_comps;
   int row;
   long col_counter;
   long width = cinfo->image_width;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
   SHIFT_TEMPS
 
   for (row = 0; row < num_rows; row++) {
@@ -472,56 +479,74 @@ color_quantize_dither (decompress_info_ptr cinfo, int num_rows,
     jzero_far((void FAR *) output_data[row],
 	      (size_t) (width * SIZEOF(JSAMPLE)));
     for (ci = 0; ci < nc; ci++) {
+      input_ptr = input_buffer[ci];
+      output_ptr = output_data[row];
       if (on_odd_row) {
 	/* work right to left in this row */
+	input_ptr += width - 1;	/* so point to rightmost pixel */
+	output_ptr += width - 1;
 	dir = -1;
-	input_ptr = input_buffer[ci] + (width-1);
-	output_ptr = output_data[row] + (width-1);
-	thisrowerr = oddrowerrs[ci] + 1;
-	nextrowerr = evenrowerrs[ci] + width;
+	errorptr = fserrors[ci] + (width+1); /* point to entry after last column */
       } else {
 	/* work left to right in this row */
 	dir = 1;
-	input_ptr = input_buffer[ci];
-	output_ptr = output_data[row];
-	thisrowerr = evenrowerrs[ci] + 1;
-	nextrowerr = oddrowerrs[ci] + width;
+	errorptr = fserrors[ci]; /* point to entry before first real column */
       }
       colorindex_ci = colorindex[ci];
       colormap_ci = colormap[ci];
-      *nextrowerr = 0;		/* need only initialize this one entry */
+      /* Preset error values: no error propagated to first pixel from left */
+      cur = 0;
+      /* and no error propagated to row below yet */
+      belowerr = bpreverr = 0;
+
       for (col_counter = width; col_counter > 0; col_counter--) {
-	/* Get accumulated error for this component, round to integer.
+	/* cur holds the error propagated from the previous pixel on the
+	 * current line.  Add the error propagated from the previous line
+	 * to form the complete error correction term for this pixel, and
+	 * round the error term (which is expressed * 16) to an integer.
 	 * RIGHT_SHIFT rounds towards minus infinity, so adding 8 is correct
 	 * for either sign of the error value.
+	 * Note: errorptr points to *previous* column's array entry.
 	 */
-	val = RIGHT_SHIFT(*thisrowerr + 8, 4);
-	/* Compute pixel value + error compensation, range-limit to
-	 * 0..MAXJSAMPLE.  Note max error value is +- MAXJSAMPLE.
+	cur = RIGHT_SHIFT(cur + errorptr[dir] + 8, 4);
+	/* Form pixel value + error, and range-limit to 0..MAXJSAMPLE.
+	 * The maximum error is +- MAXJSAMPLE; this sets the required size
+	 * of the range_limit array.
 	 */
-	val = GETJSAMPLE(range_limit[GETJSAMPLE(*input_ptr) + val]);
+	cur += GETJSAMPLE(*input_ptr);
+	cur = GETJSAMPLE(range_limit[cur]);
 	/* Select output value, accumulate into output code for this pixel */
-	pixcode = GETJSAMPLE(*output_ptr) + GETJSAMPLE(colorindex_ci[val]);
-	*output_ptr = (JSAMPLE) pixcode;
+	pixcode = GETJSAMPLE(colorindex_ci[cur]);
+	*output_ptr += (JSAMPLE) pixcode;
 	/* Compute actual representation error at this pixel */
-	/* Note: we can do this even though we don't yet have the final */
-	/* value of pixcode, because the colormap is orthogonal. */
-	val -= GETJSAMPLE(colormap_ci[pixcode]);
-	/* Propagate error to (same component of) adjacent pixels */
-	/* Remember that nextrowerr entries are in reverse order! */
-	two_val = val * 2;
-	nextrowerr[-1]  = val; /* not +=, since not initialized yet */
-	val += two_val;		/* form error * 3 */
-	nextrowerr[ 1] += val;
-	val += two_val;		/* form error * 5 */
-	nextrowerr[ 0] += val;
-	val += two_val;		/* form error * 7 */
-	thisrowerr[ 1] += val;
+	/* Note: we can do this even though we don't have the final */
+	/* pixel code, because the colormap is orthogonal. */
+	cur -= GETJSAMPLE(colormap_ci[pixcode]);
+	/* Compute error fractions to be propagated to adjacent pixels.
+	 * Add these into the running sums, and simultaneously shift the
+	 * next-line error sums left by 1 column.
+	 */
+	bnexterr = cur;
+	delta = cur * 2;
+	cur += delta;		/* form error * 3 */
+	errorptr[0] = (FSERROR) (bpreverr + cur);
+	cur += delta;		/* form error * 5 */
+	bpreverr = belowerr + cur;
+	belowerr = bnexterr;
+	cur += delta;		/* form error * 7 */
+	/* At this point cur contains the 7/16 error value to be propagated
+	 * to the next pixel on the current line, and all the errors for the
+	 * next line have been shifted over. We are therefore ready to move on.
+	 */
 	input_ptr += dir;	/* advance input ptr to next column */
 	output_ptr += dir;	/* advance output ptr to next column */
-	thisrowerr++;		/* cur-row error ptr advances to right */
-	nextrowerr--;		/* next-row error ptr advances to left */
+	errorptr += dir;	/* advance errorptr to current column */
       }
+      /* Post-loop cleanup: we must unload the final error value into the
+       * final fserrors[] entry.  Note we need not unload belowerr because
+       * it is for the dummy column before or after the actual array.
+       */
+      errorptr[0] = (FSERROR) bpreverr; /* unload prev err into array */
     }
     on_odd_row = (on_odd_row ? FALSE : TRUE);
   }

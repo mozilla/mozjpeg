@@ -1,7 +1,7 @@
 /*
  * jdmcu.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -102,14 +102,19 @@ reverse_DCT (decompress_info_ptr cinfo,
   DCTBLOCK block;
   JBLOCKROW browptr;
   JSAMPARRAY srowptr;
+  jpeg_component_info * compptr;
   long blocksperrow, bi;
   short numrows, ri;
   short ci;
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
+    compptr = cinfo->cur_comp_info[ci];
+    /* don't bother to IDCT an uninteresting component */
+    if (! compptr->component_needed)
+      continue;
     /* calculate size of an MCU row in this component */
-    blocksperrow = cinfo->cur_comp_info[ci]->downsampled_width / DCTSIZE;
-    numrows = cinfo->cur_comp_info[ci]->MCU_height;
+    blocksperrow = compptr->downsampled_width / DCTSIZE;
+    numrows = compptr->MCU_height;
     /* iterate through all blocks in MCU row */
     for (ri = 0; ri < numrows; ri++) {
       browptr = coeff_data[ci][ri];

@@ -1,7 +1,7 @@
 /*
  * jwrrle.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -208,7 +208,7 @@ output_term (decompress_info_ptr cinfo)
   rle_puteof(&header);
   fflush(cinfo->output_file);
   if (ferror(cinfo->output_file))
-    ERREXIT(cinfo->emethods, "Output file write error");
+    ERREXIT(cinfo->emethods, "Output file write error --- out of disk space?");
 
   /* Release memory */
   /* no work (we let free_all release the workspace) */

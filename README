@@ -1,10 +1,10 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 4 of 10-Dec-92
-=================================
+README for release 4A of 18-Feb-93
+==================================
 
-This distribution contains the fourth public release of the Independent JPEG
+This distribution contains a BETA TEST release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
 to use it for any purpose, subject to the conditions under LEGAL ISSUES, below.
 
@@ -24,8 +24,9 @@ larger programs) should contact jpeg-info@uunet.uu.net to be added to our
 electronic mailing list.  Mailing list members are notified of updates and
 have a chance to participate in technical discussions, etc.
 
-This software is the work of Tom Lane, Philip Gladstone, Luis Ortiz,
-Lee Crocker, Ge' Weijers, and other members of the Independent JPEG Group.
+This software is the work of Tom Lane, Philip Gladstone, Luis Ortiz, Lee
+Crocker, George Phillips, Ge' Weijers, and other members of the Independent
+JPEG Group.
 
 
 DISCLAIMER
@@ -106,6 +107,9 @@ products; no royalty is required.
 
 ARCHIVE LOCATIONS
 =================
+
+[Version 4A is a beta-test release and will not be publicly archived.
+The following paragraphs refer to the most recent official release.]
 
 The "official" archive site for this software is ftp.uu.net (Internet
 address 137.39.1.9 or 192.48.96.9).  The most recent released version can

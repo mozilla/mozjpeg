@@ -1,7 +1,7 @@
 /*
  * jpegdata.h
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -165,6 +165,10 @@ typedef struct {		/* Basic info about one component */
 	/* the MCU dimensions; these are the working dimensions of the array */
 	/* as it is passed through the DCT or IDCT step.  NOTE: these values */
 	/* differ depending on whether the component is interleaved or not!! */
+  /* This flag is used only for decompression.  In cases where some of the */
+  /* components will be ignored (eg grayscale output from YCbCr image), */
+  /* we can skip IDCT etc. computations for the unused components. */
+	boolean component_needed; /* do we need the value of this component? */
 } jpeg_component_info;
 
 
@@ -184,7 +188,12 @@ typedef QUANT_VAL QUANT_TBL[DCTSIZE2];	/* A quantization table */
 typedef QUANT_VAL * QUANT_TBL_PTR;	/* pointer to same */
 
 
-typedef struct {		/* A Huffman coding table */
+/* Huffman coding tables.
+ */
+
+#define HUFF_LOOKAHEAD	8	/* # of bits of lookahead */
+
+typedef struct {
   /* These two fields directly represent the contents of a JPEG DHT marker */
 	UINT8 bits[17];		/* bits[k] = # of symbols with codes of */
 				/* length k bits; bits[0] is unused */
@@ -195,16 +204,29 @@ typedef struct {		/* A Huffman coding table */
 	boolean sent_table;	/* TRUE when table has been output */
   /* The remaining fields are computed from the above to allow more efficient
    * coding and decoding.  These fields should be considered private to the
-   * Huffman compression & decompression modules.
+   * Huffman compression & decompression modules.  We use a union since only
+   * one set of fields is needed at a time.
    */
-	/* encoding tables: */
-	UINT16 ehufco[256];	/* code for each symbol */
-	char ehufsi[256];	/* length of code for each symbol */
-	/* decoding tables: (element [0] of each array is unused) */
-	UINT16 mincode[17];	/* smallest code of length k */
-	INT32 maxcode[18];	/* largest code of length k (-1 if none) */
-	/* (maxcode[17] is a sentinel to ensure huff_DECODE terminates) */
-	short valptr[17];	/* huffval[] index of 1st symbol of length k */
+	union {
+	  struct {		/* encoding tables: */
+	    UINT16 ehufco[256];	/* code for each symbol */
+	    char ehufsi[256];	/* length of code for each symbol */
+	  } enc;
+	  struct {		/* decoding tables: */
+	    /* Basic tables: (element [0] of each array is unused) */
+	    INT32 mincode[17];	/* smallest code of length k */
+	    INT32 maxcode[18];	/* largest code of length k (-1 if none) */
+	    /* (maxcode[17] is a sentinel to ensure huff_DECODE terminates) */
+	    int valptr[17];	/* huffval[] index of 1st symbol of length k */
+	    /* Lookahead tables: indexed by the next HUFF_LOOKAHEAD bits of
+	     * the input data stream.  If the next Huffman code is no more
+	     * than HUFF_LOOKAHEAD bits long, we can obtain its length and
+	     * the corresponding symbol directly from these tables.
+	     */
+	    int look_nbits[1<<HUFF_LOOKAHEAD]; /* # bits, or 0 if too long */
+	    UINT8 look_sym[1<<HUFF_LOOKAHEAD]; /* symbol, or unused */
+	  } dec;
+	} priv;
 } HUFF_TBL;
 
 
@@ -253,6 +275,10 @@ struct Compress_info_struct {
 	UINT8 density_unit;	/* JFIF code for pixel size units */
 	UINT16 X_density;	/* Horizontal pixel density */
 	UINT16 Y_density;	/* Vertical pixel density */
+
+	char * comment_text;	/* Text for COM block, or NULL for no COM */
+	/* note: JPEG library will not free() the comment string, */
+	/* unless you allocate it via alloc_small(). */
 
 	short num_components;	/* # of color components in JPEG image */
 	jpeg_component_info * comp_info;
@@ -739,6 +765,9 @@ struct Compress_methods_struct {
 struct Decompress_methods_struct {
 	/* Hook for user interface to get control after reading file header */
 	METHOD(void, d_ui_method_selection, (decompress_info_ptr cinfo));
+	/* Hook for user interface to process comment blocks */
+	METHOD(void, process_comment, (decompress_info_ptr cinfo,
+				       long comment_length));
 	/* Hook for user interface to do progress monitoring */
 	METHOD(void, progress_monitor, (decompress_info_ptr cinfo,
 					long loopcounter, long looplimit));

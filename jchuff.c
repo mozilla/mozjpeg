@@ -1,7 +1,7 @@
 /*
  * jchuff.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -66,15 +66,12 @@ fix_huff_tbl (HUFF_TBL * htbl)
   /* Set any codeless symbols to have code length 0;
    * this allows emit_bits to detect any attempt to emit such symbols.
    */
-  MEMZERO(htbl->ehufsi, SIZEOF(htbl->ehufsi));
+  MEMZERO(htbl->priv.enc.ehufsi, SIZEOF(htbl->priv.enc.ehufsi));
 
   for (p = 0; p < lastp; p++) {
-    htbl->ehufco[htbl->huffval[p]] = huffcode[p];
-    htbl->ehufsi[htbl->huffval[p]] = huffsize[p];
+    htbl->priv.enc.ehufco[htbl->huffval[p]] = huffcode[p];
+    htbl->priv.enc.ehufsi[htbl->huffval[p]] = huffsize[p];
   }
-  
-  /* We don't bother to fill in the decoding tables mincode[], maxcode[], */
-  /* and valptr[], since they are not used for encoding. */
 }
 
 
@@ -179,7 +176,7 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
   }
   
   /* Emit the Huffman-coded symbol for the number of bits */
-  emit_bits(dctbl->ehufco[nbits], dctbl->ehufsi[nbits]);
+  emit_bits(dctbl->priv.enc.ehufco[nbits], dctbl->priv.enc.ehufsi[nbits]);
 
   /* Emit that number of bits of the value, if positive, */
   /* or the complement of its magnitude, if negative. */
@@ -196,7 +193,7 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
     } else {
       /* if run length > 15, must emit special run-length-16 codes (0xF0) */
       while (r > 15) {
-	emit_bits(actbl->ehufco[0xF0], actbl->ehufsi[0xF0]);
+	emit_bits(actbl->priv.enc.ehufco[0xF0], actbl->priv.enc.ehufsi[0xF0]);
 	r -= 16;
       }
 
@@ -214,7 +211,7 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
       
       /* Emit Huffman symbol for run length / number of bits */
       i = (r << 4) + nbits;
-      emit_bits(actbl->ehufco[i], actbl->ehufsi[i]);
+      emit_bits(actbl->priv.enc.ehufco[i], actbl->priv.enc.ehufsi[i]);
       
       /* Emit that number of bits of the value, if positive, */
       /* or the complement of its magnitude, if negative. */
@@ -226,7 +223,7 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
 
   /* If the last coef(s) were zero, emit an end-of-block code */
   if (r > 0)
-    emit_bits(actbl->ehufco[0], actbl->ehufsi[0]);
+    emit_bits(actbl->priv.enc.ehufco[0], actbl->priv.enc.ehufsi[0]);
 }
 
 

@@ -105,7 +105,7 @@ read_pbm_integer (compress_info_ptr cinfo)
     ch = pbm_getc(cinfo->input_file);
     if (ch == EOF)
       ERREXIT(cinfo->emethods, "Premature EOF in PPM file");
-  } while (ch == ' ' || ch == '\t' || ch == '\n');
+  } while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r');
   
   if (ch < '0' || ch > '9')
     ERREXIT(cinfo->emethods, "Bogus data in PPM file");

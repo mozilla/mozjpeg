@@ -340,7 +340,7 @@ error_exit (const char *msgtext)
  * Colormapped mode is also useful for reducing grayscale output to a small
  * number of gray levels: when using the 1-pass quantizer on grayscale data,
  * the colormap entries will be evenly spaced from 0 to MAX_JSAMPLE, so you
- * can regard the indexes are directly representing gray levels at reduced
+ * can regard the indexes as directly representing gray levels at reduced
  * precision.  In any other case, you should not depend on the colormap
  * entries having any particular order.
  * To get colormapped output, set cinfo->quantize_colors to TRUE and set

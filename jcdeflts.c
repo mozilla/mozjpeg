@@ -1,7 +1,7 @@
 /*
  * jcdeflts.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -298,9 +298,11 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
 
   cinfo->input_gamma = 1.0;	/* no gamma correction by default */
 
+  cinfo->write_JFIF_header = TRUE; /* write a JFIF marker */
+  cinfo->comment_text = NULL;	/* but no COM block */
+
   /* Prepare three color components; first is luminance which is also usable */
   /* for grayscale.  The others are assumed to be UV or similar chrominance. */
-  cinfo->write_JFIF_header = TRUE;
   cinfo->jpeg_color_space = CS_YCbCr;
   cinfo->num_components = 3;
   cinfo->comp_info = (jpeg_component_info *)

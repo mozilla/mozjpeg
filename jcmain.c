@@ -1,7 +1,7 @@
 /*
  * jcmain.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -18,6 +18,9 @@
  * The second style is convenient on Unix but is unhelpful on systems that
  * don't support pipes.  Also, you MUST use the first style if your system
  * doesn't do binary I/O to stdin/stdout.
+ * To simplify script writing, the "-outfile" switch is provided.  The syntax
+ *	cjpeg [options]  -outfile outputfile  inputfile
+ * works regardless of which command line style is used.
  */
 
 #include "jinclude.h"
@@ -218,6 +221,7 @@ progress_monitor (compress_info_ptr cinfo, long loopcounter, long looplimit)
 
 
 static char * progname;		/* program name for error messages */
+static char * outfilename;	/* for -outfile switch */
 
 
 LOCAL void
@@ -448,6 +452,7 @@ parse_switches (compress_info_ptr cinfo, int last_file_arg_seen,
    */
   j_c_defaults(cinfo, 75, FALSE); /* default quality level = 75 */
   is_targa = FALSE;
+  outfilename = NULL;
 
   /* Scan command line options, adjust parameters */
 
@@ -455,8 +460,10 @@ parse_switches (compress_info_ptr cinfo, int last_file_arg_seen,
     arg = argv[argn];
     if (*arg != '-') {
       /* Not a switch, must be a file name argument */
-      if (argn <= last_file_arg_seen)
-	continue;		/* ignore it if previously processed */
+      if (argn <= last_file_arg_seen) {
+	outfilename = NULL;	/* -outfile applies to just one input file */
+	continue;		/* ignore this name if previously processed */
+      }
       break;			/* else done parsing switches */
     }
     arg++;			/* advance past switch marker character */
@@ -515,6 +522,12 @@ parse_switches (compress_info_ptr cinfo, int last_file_arg_seen,
 	      progname);
       exit(EXIT_FAILURE);
 #endif
+
+    } else if (keymatch(arg, "outfile", 3)) {
+      /* Set output file name. */
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      outfilename = argv[argn];	/* save it away for later use */
 
     } else if (keymatch(arg, "quality", 1)) {
       /* Quality factor (quantization table scaling factor). */
@@ -624,47 +637,75 @@ main (int argc, char **argv)
 #endif
 #endif
 
-  /* Scan command line: set up compression parameters, input & output files. */
+  /* Scan command line: set up compression parameters, find file names. */
 
   file_index = parse_switches(&cinfo, 0, argc, argv);
 
 #ifdef TWO_FILE_COMMANDLINE
-
-  if (file_index != argc-2) {
-    fprintf(stderr, "%s: must name one input and one output file\n", progname);
-    usage();
+  /* Must have either -outfile switch or explicit output file name */
+  if (outfilename == NULL) {
+    if (file_index != argc-2) {
+      fprintf(stderr, "%s: must name one input and one output file\n",
+	      progname);
+      usage();
+    }
+    outfilename = argv[file_index+1];
+  } else {
+    if (file_index != argc-1) {
+      fprintf(stderr, "%s: must name one input and one output file\n",
+	      progname);
+      usage();
+    }
   }
-  if ((cinfo.input_file = fopen(argv[file_index], READ_BINARY)) == NULL) {
-    fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index]);
-    exit(EXIT_FAILURE);
-  }
-  if ((cinfo.output_file = fopen(argv[file_index+1], WRITE_BINARY)) == NULL) {
-    fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index+1]);
-    exit(EXIT_FAILURE);
-  }
-
-#else /* not TWO_FILE_COMMANDLINE -- use Unix style */
-
-  cinfo.input_file = stdin;	/* default input file */
-  cinfo.output_file = stdout;	/* always the output file */
-
-#ifdef USE_SETMODE		/* need to hack file mode? */
-  setmode(fileno(stdin), O_BINARY);
-  setmode(fileno(stdout), O_BINARY);
-#endif
-
+#else
+  /* Unix style: expect zero or one file name */
   if (file_index < argc-1) {
     fprintf(stderr, "%s: only one input file\n", progname);
     usage();
   }
+#endif /* TWO_FILE_COMMANDLINE */
+
+  /* Open the input file. */
   if (file_index < argc) {
     if ((cinfo.input_file = fopen(argv[file_index], READ_BINARY)) == NULL) {
       fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index]);
       exit(EXIT_FAILURE);
     }
+  } else {
+    /* default input file is stdin */
+#ifdef USE_SETMODE		/* need to hack file mode? */
+    setmode(fileno(stdin), O_BINARY);
+#endif
+#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
+    if ((cinfo.input_file = fdopen(fileno(stdin), READ_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open stdin\n", progname);
+      exit(EXIT_FAILURE);
+    }
+#else
+    cinfo.input_file = stdin;
+#endif
   }
 
-#endif /* TWO_FILE_COMMANDLINE */
+  /* Open the output file. */
+  if (outfilename != NULL) {
+    if ((cinfo.output_file = fopen(outfilename, WRITE_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open %s\n", progname, outfilename);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    /* default output file is stdout */
+#ifdef USE_SETMODE		/* need to hack file mode? */
+    setmode(fileno(stdout), O_BINARY);
+#endif
+#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
+    if ((cinfo.output_file = fdopen(fileno(stdout), WRITE_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open stdout\n", progname);
+      exit(EXIT_FAILURE);
+    }
+#else
+    cinfo.output_file = stdout;
+#endif
+  }
 
   /* Figure out the input file format, and set up to read it. */
   select_file_type(&cinfo);

@@ -1,7 +1,7 @@
 /*
  * jdpipe.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -362,6 +362,10 @@ expand (decompress_info_ptr cinfo,
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
+    /* don't bother to upsample an uninteresting component */
+    if (! compptr->component_needed)
+      continue;
+
     vs = compptr->v_samp_factor; /* row group height */
 
     if (above >= 0)
@@ -474,6 +478,10 @@ smooth_mcu_row (decompress_info_ptr cinfo,
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
+    /* don't bother to smooth an uninteresting component */
+    if (! compptr->component_needed)
+      continue;
+
     last = compptr->MCU_height - 1;
 
     if (above == NULL)
@@ -593,6 +601,7 @@ simple_dcontroller (decompress_info_ptr cinfo)
   cinfo->total_passes++;
 
   /* Allocate working memory: */
+  prepare_range_limit_table(cinfo);
   /* coeff_data holds a single MCU row of coefficient blocks */
   coeff_data = alloc_MCU_row(cinfo);
   /* if doing cross-block smoothing, need extra space for its input */
@@ -611,7 +620,6 @@ simple_dcontroller (decompress_info_ptr cinfo)
   /* output_workspace is the color-processed data */
   output_workspace = alloc_sampimage(cinfo, (int) cinfo->final_out_comps,
 				     (long) rows_in_mem, fullsize_width);
-  prepare_range_limit_table(cinfo);
 
   /* Tell the memory manager to instantiate big arrays.
    * We don't need any big arrays in this controller,
@@ -773,10 +781,10 @@ complex_dcontroller (decompress_info_ptr cinfo)
 			     (long) (cinfo->max_h_samp_factor * DCTSIZE));
 
   /* Allocate all working memory that doesn't depend on scan info */
+  prepare_range_limit_table(cinfo);
   /* output_workspace is the color-processed data */
   output_workspace = alloc_sampimage(cinfo, (int) cinfo->final_out_comps,
 				     (long) rows_in_mem, fullsize_width);
-  prepare_range_limit_table(cinfo);
 
   /* Get a big image: fullsize_image is sample data after upsampling. */
   fullsize_image = (big_sarray_ptr *) (*cinfo->emethods->alloc_small)

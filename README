@@ -1,7 +1,7 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 5 of 24-Sep-94
+README for release 5a of 7-Dec-94
 =================================
 
 This distribution contains the fifth public release of the Independent JPEG
@@ -9,9 +9,9 @@ Group's free JPEG software.  You are welcome to redistribute this software and
 to use it for any purpose, subject to the conditions under LEGAL ISSUES, below.
 
 Serious users of this software (particularly those incorporating it into
-larger programs) should contact jpeg-info@uunet.uu.net to be added to our
-electronic mailing list.  Mailing list members are notified of updates and
-have a chance to participate in technical discussions, etc.
+larger programs) should contact IJG at jpeg-info@uunet.uu.net to be added to
+our electronic mailing list.  Mailing list members are notified of updates
+and have a chance to participate in technical discussions, etc.
 
 This software is the work of Tom Lane, Philip Gladstone, Luis Ortiz, Jim
 Boucher, Lee Crocker, George Phillips, Davide Rossi, Ge' Weijers, and other
@@ -164,9 +164,8 @@ ansi2knr.c for full details.)  However, since ansi2knr.c is not needed as part
 of any program generated from the IJG code, this does not limit you more than
 the foregoing paragraphs do.
 
-The configuration script "configure" was produced by GNU Autoconf.  Again,
-the FSF copyright terms apply only to configure, not to the IJG code; and
-again, that does not limit your use of the object code.
+The configuration script "configure" was produced with GNU Autoconf.  It
+is copyright by the Free Software Foundation but is freely distributable.
 
 It appears that the arithmetic coding option of the JPEG spec is covered by
 patents owned by IBM, AT&T, and Mitsubishi.  Hence arithmetic coding cannot
@@ -194,12 +193,12 @@ The best short technical introduction to the JPEG compression algorithm is
 	Communications of the ACM, April 1991 (vol. 34 no. 4), pp. 30-44.
 (Adjacent articles in that issue discuss MPEG motion picture compression,
 applications of JPEG, and related topics.)  If you don't have the CACM issue
-handy, a PostScript file containing a revised version of Wallace's article is
-available at ftp.uu.net, graphics/jpeg/wallace.ps.gz.  The file (actually a
-preprint for an article to appear in IEEE Trans. Consumer Electronics) omits
-the sample images that appeared in CACM, but it includes corrections and some
-added material.  Note: the Wallace article is copyright ACM and IEEE, and it
-may not be used for commercial purposes.
+handy, a PostScript file containing a revised version of Wallace's article
+is available at ftp.uu.net, graphics/jpeg/wallace.ps.gz.  The file (actually
+a preprint for an article that appeared in IEEE Trans. Consumer Electronics)
+omits the sample images that appeared in CACM, but it includes corrections
+and some added material.  Note: the Wallace article is copyright ACM and
+IEEE, and it may not be used for commercial purposes.
 
 A somewhat less technical, more leisurely introduction to JPEG can be found in
 "The Data Compression Book" by Mark Nelson, published by M&T Books (Redwood
@@ -264,7 +263,7 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is ftp.uu.net (Internet
 address 192.48.96.9).  The most recent released version can always be found
 there in directory graphics/jpeg.  This particular version will be archived
-as graphics/jpeg/jpegsrc.v5.tar.gz.  If you are on the Internet, you
+as graphics/jpeg/jpegsrc.v5a.tar.gz.  If you are on the Internet, you
 can retrieve files from ftp.uu.net by standard anonymous FTP.  If you don't
 have FTP access, UUNET's archives are also available via UUCP; contact
 help@uunet.uu.net for information on retrieving files that way.
@@ -274,18 +273,21 @@ you can probably find a copy at any site that archives comp.sources.misc
 submissions.  However, only ftp.uu.net is guaranteed to have the latest
 official version.
 
-You can also obtain this software from CompuServe, in the GRAPHSUPPORT forum
-(GO GRAPHSUP); this version will be file jpsrc5.zip in library 15.  Again,
-CompuServe is not guaranteed to have the very latest version.
+You can also obtain this software from CompuServe, in the GRAPHSUPPORT
+forum (GO GRAPHSUP), probably in library 15 (there are rumors of a pending
+reorganization there).  Again, CompuServe is not guaranteed to have the
+very latest version.
 
 The JPEG FAQ (Frequently Asked Questions) article is a useful source of
-general information about JPEG.  It is updated constantly and therefore
-is not included in this distribution.  The FAQ is posted every two weeks
-to Usenet newsgroups comp.graphics, news.answers, and other groups.  You
-can always obtain the latest version from the news.answers archive at
-rtfm.mit.edu (18.181.0.24).  By FTP, fetch /pub/usenet/news.answers/jpeg-faq.
-If you don't have FTP, send e-mail to mail-server@rtfm.mit.edu with body
-"send usenet/news.answers/jpeg-faq".
+general information about JPEG.  It is updated constantly and therefore is
+not included in this distribution.  The FAQ is posted every two weeks to
+Usenet newsgroups comp.graphics, news.answers, and other groups.  You can
+always obtain the latest version from the news.answers archive at
+rtfm.mit.edu.  By FTP, fetch /pub/usenet/news.answers/jpeg-faq/part1 and
+.../part2.  If you don't have FTP, send e-mail to mail-server@rtfm.mit.edu
+with body
+	send usenet/news.answers/jpeg-faq/part1
+	send usenet/news.answers/jpeg-faq/part2
 
 
 RELATED SOFTWARE

@@ -1,6 +1,34 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 5a  7-Dec-94
+--------------------
+
+Changed color conversion roundoff behavior so that grayscale values are
+represented exactly.  (This causes test image files to change.)
+
+Make ordered dither use 16x16 instead of 4x4 pattern for a small quality
+improvement.
+
+New configure script based on latest GNU Autoconf.
+Fix configure script to handle CFLAGS correctly.
+Rename *.auto files to *.cfg, so that configure script still works if
+file names have been truncated for DOS.
+
+Fix bug in rdbmp.c: didn't allow for extra data between header and image.
+
+Modify rdppm.c/wrppm.c to handle 2-byte raw PPM/PGM formats for 12-bit data.
+
+Fix several bugs in rdrle.c.
+
+NEED_SHORT_EXTERNAL_NAMES option was broken.
+
+Revise jerror.h/jerror.c for more flexibility in message table.
+
+Repair oversight in jmemname.c NO_MKTEMP case: file could be there
+but unreadable.
+
+
 Version 5  24-Sep-94
 --------------------
 

@@ -24,8 +24,6 @@
  */
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
-#define JMAKE_MSG_TABLE
-#include "cderror.h"		/* create message string table */
 #include "jversion.h"		/* for version message */
 
 #include <ctype.h>		/* to declare isupper(), tolower() */
@@ -72,6 +70,16 @@
 #define EXIT_WARNING  2
 #endif
 #endif
+
+
+/* Create the add-on message string table. */
+
+#define JMESSAGE(code,string)	string ,
+
+static const char * const cdjpeg_message_table[] = {
+#include "cderror.h"
+  NULL
+};
 
 
 /*
@@ -726,7 +734,7 @@ main (int argc, char **argv)
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
   /* Add some application-specific error messages (from cderror.h) */
-  jerr.addon_message_table = addon_message_table;
+  jerr.addon_message_table = cdjpeg_message_table;
   jerr.first_addon_message = JMSG_FIRSTADDONCODE;
   jerr.last_addon_message = JMSG_LASTADDONCODE;
 
@@ -862,6 +870,12 @@ main (int argc, char **argv)
   (*src_mgr->finish_input) (&cinfo, src_mgr);
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
+
+  /* Close files, if we opened them */
+  if (input_file != stdin)
+    fclose(input_file);
+  if (output_file != stdout)
+    fclose(output_file);
 
 #ifdef PROGRESS_REPORT
   /* Clear away progress display */

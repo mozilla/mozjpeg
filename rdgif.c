@@ -352,9 +352,14 @@ ReadColorMap (gif_source_ptr sinfo, int cmaplen, JSAMPARRAY cmap)
   int i;
 
   for (i = 0; i < cmaplen; i++) {
-    cmap[CM_RED][i]   = (JSAMPLE) ReadByte(sinfo);
-    cmap[CM_GREEN][i] = (JSAMPLE) ReadByte(sinfo);
-    cmap[CM_BLUE][i]  = (JSAMPLE) ReadByte(sinfo);
+#if BITS_IN_JSAMPLE == 8
+#define UPSCALE(x)  (x)
+#else
+#define UPSCALE(x)  ((x) << (BITS_IN_JSAMPLE-8))
+#endif
+    cmap[CM_RED][i]   = (JSAMPLE) UPSCALE(ReadByte(sinfo));
+    cmap[CM_GREEN][i] = (JSAMPLE) UPSCALE(ReadByte(sinfo));
+    cmap[CM_BLUE][i]  = (JSAMPLE) UPSCALE(ReadByte(sinfo));
   }
 }
 
@@ -508,7 +513,7 @@ start_input_gif (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Return info about the image. */
   cinfo->in_color_space = JCS_RGB;
   cinfo->input_components = NUMCOLORS;
-  cinfo->data_precision = 8;
+  cinfo->data_precision = BITS_IN_JSAMPLE; /* we always rescale data to this */
   cinfo->image_width = width;
   cinfo->image_height = height;
 

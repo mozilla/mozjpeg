@@ -12,29 +12,29 @@
  * some other language.
  */
 
-
-/* To define the enum list of message codes, include this file without
- * defining JMAKE_MSG_TABLE.  To create the message string table, include it
- * again with JMAKE_MSG_TABLE defined (this should be done in just one module).
+/*
+ * To define the enum list of message codes, include this file without
+ * defining macro JMESSAGE.  To create a message string table, include it
+ * again with a suitable JMESSAGE definition (see jerror.c for an example).
  */
+#ifndef JMESSAGE
+#ifndef CDERROR_H
+#define CDERROR_H
+/* First time through, define the enum list */
+#define JMAKE_ENUM_LIST
+#else
+/* Repeated inclusions of this file are no-ops unless JMESSAGE is defined */
+#define JMESSAGE(code,string)
+#endif /* CDERROR_H */
+#endif /* JMESSAGE */
 
-#ifdef JMAKE_MSG_TABLE
-
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define addon_message_table	cdMsgTable
-#endif
-
-const char * const addon_message_table[] = {
-
-#define JMESSAGE(code,string)	string ,
-
-#else /* not JMAKE_MSG_TABLE */
+#ifdef JMAKE_ENUM_LIST
 
 typedef enum {
 
 #define JMESSAGE(code,string)	code ,
 
-#endif /* JMAKE_MSG_TABLE */
+#endif /* JMAKE_ENUM_LIST */
 
 JMESSAGE(JMSG_FIRSTADDONCODE=1000, NULL) /* Must be first entry! */
 
@@ -120,16 +120,13 @@ JMESSAGE(JERR_UNKNOWN_FORMAT, "Unrecognized input file format")
 #endif
 JMESSAGE(JERR_UNSUPPORTED_FORMAT, "Unsupported output file format")
 
-#ifdef JMAKE_MSG_TABLE
-
-  NULL
-};
-
-#else /* not JMAKE_MSG_TABLE */
+#ifdef JMAKE_ENUM_LIST
 
   JMSG_LASTADDONCODE
 } ADDON_MESSAGE_CODE;
 
-#endif /* JMAKE_MSG_TABLE */
+#undef JMAKE_ENUM_LIST
+#endif /* JMAKE_ENUM_LIST */
 
+/* Zap JMESSAGE macro so that future re-inclusions do nothing by default */
 #undef JMESSAGE

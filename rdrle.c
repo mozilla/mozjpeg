@@ -66,6 +66,7 @@ typedef struct _rle_source_struct {
 
   rle_kind visual;              /* actual type of input file */
   jvirt_sarray_ptr image;       /* virtual array to hold the image */
+  JDIMENSION row;		/* current row # in the virtual array */
   rle_hdr header;               /* Input file information */
   rle_pixel** rle_row;          /* holds a row returned by rle_getrow() */
 
@@ -187,8 +188,9 @@ get_rle_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   rle_source_ptr source = (rle_source_ptr) sinfo;
 
+  source->row--;
   source->pub.buffer = (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, source->image, cinfo->next_scanline, FALSE);
+    ((j_common_ptr) cinfo, source->image, source->row, FALSE);
 
   return 1;
 }
@@ -210,14 +212,15 @@ get_pseudocolor_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   colormap = source->header.cmap;
   dest_row = source->pub.buffer[0];
+  source->row--;
   src_row = * (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, source->image, cinfo->next_scanline, FALSE);
+    ((j_common_ptr) cinfo, source->image, source->row, FALSE);
 
   for (col = cinfo->image_width; col > 0; col--) {
     val = GETJSAMPLE(*src_row++);
-    *dest_row++ = colormap[val      ] >> 8;
-    *dest_row++ = colormap[val + 256] >> 8;
-    *dest_row++ = colormap[val + 512] >> 8;
+    *dest_row++ = (JSAMPLE) (colormap[val      ] >> 8);
+    *dest_row++ = (JSAMPLE) (colormap[val + 256] >> 8);
+    *dest_row++ = (JSAMPLE) (colormap[val + 512] >> 8);
   }
 
   return 1;
@@ -249,7 +252,6 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   colormap = source->header.cmap;
   rle_row = source->rle_row;
-  row = cinfo->image_height;
 
   /* Read the RLE data into our virtual array.
    * We assume here that (a) rle_pixel is represented the same as JSAMPLE,
@@ -269,7 +271,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   case GRAYSCALE:
   case PSEUDOCOLOR:
-    while (row--) {
+    for (row = 0; row < cinfo->image_height; row++) {
       rle_row = (rle_pixel **) (*cinfo->mem->access_virt_sarray)
          ((j_common_ptr) cinfo, source->image, row, TRUE);
       rle_getrow(&source->header, rle_row);
@@ -284,7 +286,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   case MAPPEDGRAY:
   case TRUECOLOR:
-    while (row--) {
+    for (row = 0; row < cinfo->image_height; row++) {
       scanline = * (*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, source->image, row, TRUE);
       rle_row = source->rle_row;
@@ -293,7 +295,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       for (col = 0; col < cinfo->image_width; col++) {
         for (channel = 0; channel < source->header.ncolors; channel++) {
           *scanline++ = (JSAMPLE)
-            colormap[GETJSAMPLE(rle_row[channel][col]) + 256 * channel] >> 8;
+            (colormap[GETJSAMPLE(rle_row[channel][col]) + 256 * channel] >> 8);
         }
       }
 
@@ -307,7 +309,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
 
   case DIRECTCOLOR:
-    while (row--) {
+    for (row = 0; row < cinfo->image_height; row++) {
       scanline = * (*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, source->image, row, TRUE);
       rle_getrow(&source->header, rle_row);
@@ -343,6 +345,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   } else {
     source->pub.get_pixel_rows = get_rle_row;
   }
+  source->row = cinfo->image_height;
 
   /* And fetch the topmost (bottommost) row */
   return (*source->pub.get_pixel_rows) (cinfo, sinfo);   

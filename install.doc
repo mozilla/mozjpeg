@@ -102,13 +102,16 @@ For example, on HP-UX you probably want to say
 	./configure CC='cc -Aa'
 to get HP's compiler to run in ANSI mode.
 
+* The default CFLAGS setting is "-O".  You can override this by saying,
+for example, ./configure CFLAGS='-O2'.
+
 * Configure will set up the makefile so that "make install" will install files
 into /usr/local/bin, /usr/local/man, etc.  You can specify an installation
 prefix other than "/usr/local" by giving configure the option "--prefix=PATH".
 
 * If you don't have a lot of swap space, you may need to enable the IJG
 software's internal virtual memory mechanism.  To do this, give the option
-"--with-maxmem=N" where N is the default maxmemory limit in megabytes.
+"--enable-maxmem=N" where N is the default maxmemory limit in megabytes.
 This is discussed in more detail under "Selecting a memory manager", below.
 You probably don't need to worry about this on reasonably-sized Unix machines,
 unless you plan to process very large images.
@@ -499,6 +502,10 @@ Amiga:
 
 SAS C 6.50 reportedly is too buggy to compile the IJG code properly.
 A patch to update to 6.51 is available from SAS or AmiNet FTP sites.
+
+The supplied config files are set up to use jmemname.c as the memory
+manager, with temporary files being created on the device named by
+"JPEGTMP:".
 
 
 Atari ST/STE/TT:

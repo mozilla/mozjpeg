@@ -10,6 +10,9 @@
  * and perhaps jerror.h if they want to know the exact error codes.
  */
 
+#ifndef JPEGLIB_H
+#define JPEGLIB_H
+
 /*
  * First we include the configuration files that record how this
  * installation of the JPEG library is set up.  jconfig.h can be
@@ -27,7 +30,7 @@
  * Might be useful for tests like "#if JPEG_LIB_VERSION >= 60".
  */
 
-#define JPEG_LIB_VERSION  50	/* Version 5.0 */
+#define JPEG_LIB_VERSION  51	/* Version 5a */
 
 
 /* Various constants determining the sizes of things.
@@ -928,3 +931,5 @@ struct jpeg_color_quantizer { long dummy; };
 #include "jpegint.h"		/* fetch private declarations */
 #include "jerror.h"		/* fetch error codes too */
 #endif
+
+#endif /* JPEGLIB_H */

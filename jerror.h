@@ -13,29 +13,28 @@
  * and/or the macros.
  */
 
-
-/* To define the enum list of message codes, include this file without
- * defining JMAKE_MSG_TABLE.  To create the message string table, include it
- * again with JMAKE_MSG_TABLE defined (this should be done in just one module).
+/*
+ * To define the enum list of message codes, include this file without
+ * defining macro JMESSAGE.  To create a message string table, include it
+ * again with a suitable JMESSAGE definition (see jerror.c for an example).
  */
+#ifndef JMESSAGE
+#ifndef JERROR_H
+/* First time through, define the enum list */
+#define JMAKE_ENUM_LIST
+#else
+/* Repeated inclusions of this file are no-ops unless JMESSAGE is defined */
+#define JMESSAGE(code,string)
+#endif /* JERROR_H */
+#endif /* JMESSAGE */
 
-#ifdef JMAKE_MSG_TABLE
-
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_message_table	jMsgTable
-#endif
-
-const char * const jpeg_message_table[] = {
-
-#define JMESSAGE(code,string)	string ,
-
-#else /* not JMAKE_MSG_TABLE */
+#ifdef JMAKE_ENUM_LIST
 
 typedef enum {
 
 #define JMESSAGE(code,string)	code ,
 
-#endif /* JMAKE_MSG_TABLE */
+#endif /* JMAKE_ENUM_LIST */
 
 JMESSAGE(JMSG_NOMESSAGE, "Bogus message code %d") /* Must be first entry! */
 
@@ -160,22 +159,20 @@ JMESSAGE(JWRN_MUST_RESYNC,
 JMESSAGE(JWRN_NOT_SEQUENTIAL, "Invalid SOS parameters for sequential JPEG")
 JMESSAGE(JWRN_TOO_MUCH_DATA, "Application transferred too many scanlines")
 
-#ifdef JMAKE_MSG_TABLE
-
-  NULL
-};
-
-#else /* not JMAKE_MSG_TABLE */
+#ifdef JMAKE_ENUM_LIST
 
   JMSG_LASTMSGCODE
 } J_MESSAGE_CODE;
 
-#endif /* JMAKE_MSG_TABLE */
+#undef JMAKE_ENUM_LIST
+#endif /* JMAKE_ENUM_LIST */
 
+/* Zap JMESSAGE macro so that future re-inclusions do nothing by default */
 #undef JMESSAGE
 
 
-#ifndef JMAKE_MSG_TABLE
+#ifndef JERROR_H
+#define JERROR_H
 
 /* Macros to simplify using the error and trace message stuff */
 /* The first parameter is either type of cinfo pointer */
@@ -261,4 +258,4 @@ JMESSAGE(JWRN_TOO_MUCH_DATA, "Application transferred too many scanlines")
    strncpy((cinfo)->err->msg_parm.s, (str), JMSG_STR_PARM_MAX), \
    (*(cinfo)->err->emit_message) ((j_common_ptr) (cinfo), (lvl)))
 
-#endif /* JMAKE_MSG_TABLE */
+#endif /* JERROR_H */

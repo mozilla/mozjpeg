@@ -1,0 +1,22 @@
+jdmain.obj +
+jerror.obj +
+jrdjfif.obj +
+jwrgif.obj +
+jwrppm.obj +
+jbsmooth.obj +
+jdarith.obj +
+jdcolor.obj +
+jdhuff.obj +
+jdmaster.obj +
+jdmcu.obj +
+jdpipe.obj +
+jdsample.obj +
+jquant1.obj +
+jquant2.obj +
+jrevdct.obj +
+jutils.obj +
+jvirtmem.obj /NOI
+djpeg.exe
+nul.map
+
+nul.def

@@ -1,0 +1,5 @@
+jbsmooth.mix,jcarith.mix,jccolor.mix,jcdeflts.mix,jcexpand.mix,jchuff.mix
+jcmaster.mix,jcmcu.mix,jcpipe.mix,jcsample.mix,jdarith.mix,jdcolor.mix
+jdhuff.mix,jdmaster.mix,jdmcu.mix,jdpipe.mix,jdsample.mix,jerror.mix
+jfwddct.mix,jquant1.mix,jquant2.mix,jrdgif.mix,jrdjfif.mix,jrdppm.mix
+jrevdct.mix,jutils.mix,jvirtmem.mix,jwrgif.mix,jwrjfif.mix,jwrppm.mix

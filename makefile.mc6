@@ -1,0 +1,79 @@
+# Makefile for Independent JPEG Group's software
+
+# This makefile is for Microsoft C for MS-DOS, version 6.x (use NMAKE).
+# Thanks to Alan Wright and Chris Turner of Olivetti Research Ltd.
+
+# See README and edit jconfig.h before saying "make" !!
+
+all: cjpeg.exe djpeg.exe
+
+# compiler flags. -D gives a #define to the sources:
+#       -O              default optimisation
+#       -W3             warning level 3
+#       -Za             ANSI conformance, defines__STDC__ but undefines far
+#                       and near!
+#       -D__STDC__      pretend we have full ANSI compliance. MSC is near
+#                       enough anyway
+#       -DMSDOS         we are on an MSDOS machine
+#       -DMEM_STATS     enable memory usage statistics (optional)
+#       -DHAVE_GETOPT   library has getopt routine to parse cmnd line options
+#       -c              compile, don't link (implicit in inference rules)
+
+CFLAGS = -c -O -W3 -DMSDOS -D__STDC__ -DMEM_STATS
+
+
+# compression objectfiles
+COBJECTS = jcmain.obj jcmaster.obj jcdeflts.obj jcarith.obj jccolor.obj jcexpand.obj \
+	   jchuff.obj jcmcu.obj jcpipe.obj jcsample.obj jfwddct.obj \
+	   jrdgif.obj jrdppm.obj jwrjfif.obj \
+	   jutils.obj jvirtmem.obj jerror.obj
+# decompression objectfiles
+DOBJECTS = jdmain.obj jdmaster.obj jbsmooth.obj jdarith.obj jdcolor.obj jdhuff.obj \
+	   jdmcu.obj jdpipe.obj jdsample.obj jquant1.obj jquant2.obj jrevdct.obj \
+	   jrdjfif.obj jwrgif.obj jwrppm.obj \
+	   jutils.obj jvirtmem.obj jerror.obj
+
+
+# default rules in nmake will use cflags and compile the list below
+
+jbsmooth.o : jbsmooth.c jinclude.h jconfig.h jpegdata.h 
+jcarith.o : jcarith.c jinclude.h jconfig.h jpegdata.h 
+jccolor.o : jccolor.c jinclude.h jconfig.h jpegdata.h 
+jcdeflts.o : jcdeflts.c jinclude.h jconfig.h jpegdata.h 
+jcexpand.o : jcexpand.c jinclude.h jconfig.h jpegdata.h 
+jchuff.o : jchuff.c jinclude.h jconfig.h jpegdata.h 
+jcmain.o : jcmain.c jinclude.h jconfig.h jpegdata.h egetopt.c 
+jcmaster.o : jcmaster.c jinclude.h jconfig.h jpegdata.h 
+jcmcu.o : jcmcu.c jinclude.h jconfig.h jpegdata.h 
+jcpipe.o : jcpipe.c jinclude.h jconfig.h jpegdata.h 
+jcsample.o : jcsample.c jinclude.h jconfig.h jpegdata.h 
+jdarith.o : jdarith.c jinclude.h jconfig.h jpegdata.h 
+jdcolor.o : jdcolor.c jinclude.h jconfig.h jpegdata.h 
+jdhuff.o : jdhuff.c jinclude.h jconfig.h jpegdata.h 
+jdmain.o : jdmain.c jinclude.h jconfig.h jpegdata.h egetopt.c
+jdmaster.o : jdmaster.c jinclude.h jconfig.h jpegdata.h 
+jdmcu.o : jdmcu.c jinclude.h jconfig.h jpegdata.h 
+jdpipe.o : jdpipe.c jinclude.h jconfig.h jpegdata.h 
+jdsample.o : jdsample.c jinclude.h jconfig.h jpegdata.h 
+jerror.o : jerror.c jinclude.h jconfig.h jpegdata.h 
+jfwddct.o : jfwddct.c jinclude.h jconfig.h jpegdata.h 
+jquant1.o : jquant1.c jinclude.h jconfig.h jpegdata.h 
+jquant2.o : jquant2.c jinclude.h jconfig.h jpegdata.h 
+jrdjfif.o : jrdjfif.c jinclude.h jconfig.h jpegdata.h 
+jrdgif.o : jrdgif.c jinclude.h jconfig.h jpegdata.h 
+jrdppm.o : jrdppm.c jinclude.h jconfig.h jpegdata.h 
+jrevdct.o : jrevdct.c jinclude.h jconfig.h jpegdata.h 
+jutils.o : jutils.c jinclude.h jconfig.h jpegdata.h 
+jvirtmem.o : jvirtmem.c jinclude.h jconfig.h jpegdata.h 
+jwrjfif.o : jwrjfif.c jinclude.h jconfig.h jpegdata.h 
+jwrgif.o : jwrgif.c jinclude.h jconfig.h jpegdata.h 
+jwrppm.o : jwrppm.c jinclude.h jconfig.h jpegdata.h 
+
+
+# use linker response files because file list > 128 chars
+
+cjpeg.exe: $(COBJECTS)
+        link /STACK:8192 @makcjpeg.lnk
+
+djpeg.exe: $(DOBJECTS)
+        link /STACK:8192 @makdjpeg.lnk

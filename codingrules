@@ -1,0 +1,99 @@
+
+	JPEG SYSTEM CODING RULES		27-SEP-91
+
+Since numerous people will be contributing code and bug fixes, it's important
+to establish a common coding style.  The goal of using similar coding styles
+is much more important than the details of just what that style is.
+
+I suggest we follow the recommendations of "Recommended C Style and Coding
+Standards" revision 6.1 (Cannon et al. as modified by Spencer, Keppel and
+Brader).  I have placed a copy of this document in the jpeg FTP archive (see
+jpeg/doc/cstyle.ms.tbl.Z, or cstyle.txt.Z for those without nroff/tbl).
+
+Unless someone has a real strong objection, let's do block comments thusly:
+
+/*
+ *  Block comments in this style.
+ */
+
+and indent statements in K&R style, e.g.,
+
+	if (test) {
+	    then-part;
+	} else {
+	    else-part;
+	}
+
+I suggest that multi-word names be written in the style multi_word_name
+rather than multiWordName, but I am open to argument on this.
+
+
+I would like to use function prototypes everywhere, and rely on automatic
+source code transformation to feed non-ANSI C compilers.  The best tool
+I have so far found for this is 'ansi2knr.c', which is part of Ghostscript.
+ansi2knr is not very bright, so it imposes a format requirement on function
+declarations: the function name MUST BEGIN IN COLUMN 1.  Thus all functions
+should be written in the following style:
+
+static int *
+function_name (int a, char *b)
+{
+    code...
+}
+
+ansi2knr won't help with method declarations (function pointers in structs).
+I suggest we use a macro to declare method pointers, something like this:
+
+#ifdef PROTO
+#define METHOD(type,methodname,arglist)  type (*methodname) arglist
+#else
+#define METHOD(type,methodname,arglist)  type (*methodname) ()
+#endif
+
+which is used like this:
+
+struct function_pointers {
+	METHOD(void, init_entropy_encoder, (functptrs fptrs, jparms *jp));
+	METHOD(void, term_entropy_encoder, (void));
+};
+
+Note the set of parentheses surrounding the parameter list.
+
+A similar solution is used for external function declarations (see the PP
+macro in jpegdata.h).
+
+If the code is to work on non-ANSI compilers, you cannot rely on a prototype
+declaration to coerce actual parameters into the right types.  Therefore, use
+explicit casts on actual parameters whenever the actual parameter type is not
+identical to the formal parameter.  Beware of implicit conversions to "int".
+
+It seems there are some non-ANSI compilers in which the sizeof() operator
+is defined to return int, while size_t is defined as long.  Needless to say,
+this is brain-damaged.  Always use the SIZEOF() macro in place of sizeof(),
+so that the result is guaranteed to be of type size_t.
+
+
+We can expect that the JPEG compressor and decompressor will be incorporated
+into larger programs.  Therefore, the following rules are important:
+
+1. Avoid direct use of any file I/O, "malloc", error report printouts, etc;
+pass these through the common routines provided.
+
+2. Assume that the JPEG code may be invoked more than once per program run;
+therefore, do not rely on static initialization of variables, and be careful
+to release all allocated storage at the end of processing.
+
+3. Minimize global namespace pollution.  Functions should be declared static
+wherever possible.  (Note that our method-based calling conventions help this
+a lot: in many modules only the method-selector function will ever need to be
+called directly, so only that function need be externally visible.)  All
+global function names should begin with "j", and should be unique in the first
+six characters for portability reasons.
+Don't use global variables at all; anything that must be used in another
+module should be put into parameters (there'll be some large structs passed
+around for this purpose).
+
+4. Source file names should also begin with "j"; remember to keep them to
+eight characters (plus ".c" or ".h", etc) to make life easy for MS-DOSers.
+Do not put code for both compression and decompression into the same source
+file.

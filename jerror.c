@@ -1,81 +1,211 @@
 /*
  * jerror.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains simple error-reporting and trace-message routines.
  * These are suitable for Unix-like systems and others where writing to
- * stderr is the right thing to do.  If the JPEG software is integrated
- * into a larger application, you may well need to replace these.
- *
- * The error_exit() routine should not return to its caller.  Within a
- * larger application, you might want to have it do a longjmp() to return
- * control to the outer user interface routine.  This should work since
- * the portable JPEG code doesn't use setjmp/longjmp.  You should make sure
- * that free_all is called either within error_exit or after the return to
- * the outer-level routine.
+ * stderr is the right thing to do.  Many applications will want to replace
+ * some or all of these routines.
  *
  * These routines are used by both the compression and decompression code.
  */
 
+/* this is not a core library module, so it doesn't define JPEG_INTERNALS */
 #include "jinclude.h"
-#ifdef INCLUDES_ARE_ANSI
-#include <stdlib.h>		/* to declare exit() */
-#endif
+#include "jpeglib.h"
+#include "jversion.h"
+
+#include "jerror.h"		/* get error codes */
+#define JMAKE_MSG_TABLE
+#include "jerror.h"		/* create message string table */
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */
 #define EXIT_FAILURE  1
 #endif
 
 
-static external_methods_ptr methods; /* saved for access to message_parm, free_all */
-
-
-METHODDEF void
-trace_message (const char *msgtext)
-{
-  fprintf(stderr, msgtext,
-	  methods->message_parm[0], methods->message_parm[1],
-	  methods->message_parm[2], methods->message_parm[3],
-	  methods->message_parm[4], methods->message_parm[5],
-	  methods->message_parm[6], methods->message_parm[7]);
-  fprintf(stderr, "\n");
-}
-
+/*
+ * Error exit handler: must not return to caller.
+ *
+ * Applications may override this if they want to get control back after
+ * an error.  Typically one would longjmp somewhere instead of exiting.
+ * The setjmp buffer can be made a private field within an expanded error
+ * handler object.  Note that the info needed to generate an error message
+ * is stored in the error object, so you can generate the message now or
+ * later, at your convenience.
+ * You should make sure that the JPEG object is cleaned up (with jpeg_abort
+ * or jpeg_destroy) at some point.
+ */
 
 METHODDEF void
-error_exit (const char *msgtext)
+error_exit (j_common_ptr cinfo)
 {
-  (*methods->trace_message) (msgtext);
-  (*methods->free_all) ();	/* clean up memory allocation */
+  /* Always display the message */
+  (*cinfo->err->output_message) (cinfo);
+
+  /* Let the memory manager delete any temp files before we die */
+  jpeg_destroy(cinfo);
+
   exit(EXIT_FAILURE);
 }
 
 
 /*
- * The method selection routine for simple error handling.
- * The system-dependent setup routine should call this routine
- * to install the necessary method pointers in the supplied struct.
+ * Actual output of an error or trace message.
+ * Applications may override this method to send JPEG messages somewhere
+ * other than stderr.
  */
 
-GLOBAL void
-jselerror (external_methods_ptr emethods)
+METHODDEF void
+output_message (j_common_ptr cinfo)
 {
-  methods = emethods;		/* save struct addr for later access */
+  char buffer[JMSG_LENGTH_MAX];
 
-  emethods->error_exit = error_exit;
-  emethods->trace_message = trace_message;
+  /* Create the message */
+  (*cinfo->err->format_message) (cinfo, buffer);
 
-  emethods->trace_level = 0;	/* default = no tracing */
+  /* Send it to stderr, adding a newline */
+  fprintf(stderr, "%s\n", buffer);
+}
 
-  emethods->num_warnings = 0;	/* no warnings emitted yet */
-  /* By default, the first corrupt-data warning will be displayed,
-   * but additional ones will appear only if trace level is at least 3.
-   * A corrupt data file could generate many warnings, so it's a good idea
-   * to suppress additional messages except at high tracing levels.
-   */
-  emethods->first_warning_level = 0;
-  emethods->more_warning_level = 3;
+
+/*
+ * Decide whether to emit a trace or warning message.
+ * msg_level is one of:
+ *   -1: recoverable corrupt-data warning, may want to abort.
+ *    0: important advisory messages (always display to user).
+ *    1: first level of tracing detail.
+ *    2,3,...: successively more detailed tracing messages.
+ * An application might override this method if it wanted to abort on warnings
+ * or change the policy about which messages to display.
+ */
+
+METHODDEF void
+emit_message (j_common_ptr cinfo, int msg_level)
+{
+  struct jpeg_error_mgr * err = cinfo->err;
+
+  if (msg_level < 0) {
+    /* It's a warning message.  Since corrupt files may generate many warnings,
+     * the policy implemented here is to show only the first warning,
+     * unless trace_level >= 3.
+     */
+    if (err->num_warnings == 0 || err->trace_level >= 3)
+      (*err->output_message) (cinfo);
+    /* Always count warnings in num_warnings. */
+    err->num_warnings++;
+  } else {
+    /* It's a trace message.  Show it if trace_level >= msg_level. */
+    if (err->trace_level >= msg_level)
+      (*err->output_message) (cinfo);
+  }
+}
+
+
+/*
+ * Format a message string for the most recent JPEG error or message.
+ * The message is stored into buffer, which should be at least JMSG_LENGTH_MAX
+ * characters.  Note that no '\n' character is added to the string.
+ * Few applications should need to override this method.
+ */
+
+METHODDEF void
+format_message (j_common_ptr cinfo, char * buffer)
+{
+  struct jpeg_error_mgr * err = cinfo->err;
+  int msg_code = err->msg_code;
+  const char * msgtext = NULL;
+  const char * msgptr;
+  char ch;
+  boolean isstring;
+
+  /* Look up message string in proper table */
+  if (msg_code > 0 && msg_code <= err->last_jpeg_message) {
+    msgtext = err->jpeg_message_table[msg_code];
+  } else if (err->addon_message_table != NULL &&
+	     msg_code >= err->first_addon_message &&
+	     msg_code <= err->last_addon_message) {
+    msgtext = err->addon_message_table[msg_code - err->first_addon_message];
+  }
+
+  /* Defend against bogus message number */
+  if (msgtext == NULL) {
+    err->msg_parm.i[0] = msg_code;
+    msgtext = err->jpeg_message_table[0];
+  }
+
+  /* Check for string parameter, as indicated by %s in the message text */
+  isstring = FALSE;
+  msgptr = msgtext;
+  while ((ch = *msgptr++) != '\0') {
+    if (ch == '%') {
+      if (*msgptr == 's') isstring = TRUE;
+      break;
+    }
+  }
+
+  /* Format the message into the passed buffer */
+  if (isstring)
+    sprintf(buffer, msgtext, err->msg_parm.s);
+  else
+    sprintf(buffer, msgtext,
+	    err->msg_parm.i[0], err->msg_parm.i[1],
+	    err->msg_parm.i[2], err->msg_parm.i[3],
+	    err->msg_parm.i[4], err->msg_parm.i[5],
+	    err->msg_parm.i[6], err->msg_parm.i[7]);
+}
+
+
+/*
+ * Reset error state variables at start of a new image.
+ * This is called during compression startup to reset trace/error
+ * processing to default state, without losing any application-specific
+ * method pointers.  An application might possibly want to override
+ * this method if it has additional error processing state.
+ */
+
+METHODDEF void
+reset_error_mgr (j_common_ptr cinfo)
+{
+  cinfo->err->num_warnings = 0;
+  /* trace_level is not reset since it is an application-supplied parameter */
+  cinfo->err->msg_code = 0;	/* may be useful as a flag for "no error" */
+}
+
+
+/*
+ * Fill in the standard error-handling methods in a jpeg_error_mgr object.
+ * Typical call is:
+ *	struct jpeg_compress_struct cinfo;
+ *	struct jpeg_error_mgr err;
+ *
+ *	cinfo.err = jpeg_std_error(&err);
+ * after which the application may override some of the methods.
+ */
+
+GLOBAL struct jpeg_error_mgr *
+jpeg_std_error (struct jpeg_error_mgr * err)
+{
+  err->error_exit = error_exit;
+  err->emit_message = emit_message;
+  err->output_message = output_message;
+  err->format_message = format_message;
+  err->reset_error_mgr = reset_error_mgr;
+
+  err->trace_level = 0;		/* default = no tracing */
+  err->num_warnings = 0;	/* no warnings emitted yet */
+  err->msg_code = 0;		/* may be useful as a flag for "no error" */
+
+  /* Initialize message table pointers */
+  err->jpeg_message_table = jpeg_message_table;
+  err->last_jpeg_message = (int) JMSG_LASTMSGCODE - 1;
+
+  err->addon_message_table = NULL;
+  err->first_addon_message = 0;	/* for safety */
+  err->last_addon_message = 0;
+
+  return err;
 }

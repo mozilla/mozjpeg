@@ -6,32 +6,31 @@
 ;
 ; To use this file, rename it to DJPEG.PRJ.
 ; If you are using Turbo C, change filenames beginning with "PC..." to "TC..."
-; Read SETUP instructions before trying to make the program!
+; Read installation instructions before trying to make the program!
 ;
 ;
 ;      * * * Output file * * *
 djpeg.ttp
 ;
-;      * * * DEFINES * * * 
-.C[-DHAVE_STDC]
-.C[-DINCLUDES_ARE_ANSI]
-.C[-DNEED_SIGNAL_CATCHER]  ; It's safer to have a signal catcher.
-.C[-DTWO_FILE_COMMANDLINE] ; If you like the UNIX - style with
-                           ; I/O redirection, comment this line out.
-.C[-DPROGRESS_REPORT]      ; This enables the % progress indicator
-;
 ; * * * COMPILER OPTIONS * * *  
 .C[-P]        ; absolute calls
 .C[-M]        ; and no string merging, folks
-.C[-w-par]    ; no "parameter xxxx unused"
-.C[-DINCOMPLETE_TYPES_BROKEN] ; suppress warnings about undefined structures
-.C[-wsig]     ; warn if significant digits may be lost
 .C[-w-cln]    ; no "constant is long" warnings
+.C[-w-par]    ; no "parameter xxxx unused"
+.C[-w-rch]    ; no "unreachable code"
+.C[-wsig]     ; warn if significant digits may be lost
 =
 ; * * * * List of modules * * * * 
 PCSTART.O
-jdmain.c		(jinclude.h,jconfig.h,jpegdata.h,jversion.h)
-JPEG.LIB           ; built by LIB_JPEG.PRJ
-;PCFLTLIB.LIB      ; floating point library -- you shouldn't need this
+djpeg.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h,jversion.h)
+rdcolmap.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
+wrppm.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
+wrgif.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
+wrtarga.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
+wrbmp.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
+wrrle.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
+LIBJPEG.LIB        ; built by LIBJPEG.PRJ
+PCFLTLIB.LIB       ; floating point library
+; the float library can be omitted if you've turned off DCT_FLOAT_SUPPORTED
 PCSTDLIB.LIB       ; standard library
 PCEXTLIB.LIB       ; extended library

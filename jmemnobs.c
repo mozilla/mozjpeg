@@ -1,7 +1,7 @@
 /*
- * jmemnobs.c  (jmemsys.c)
+ * jmemnobs.c
  *
- * Copyright (C) 1992, Thomas G. Lane.
+ * Copyright (C) 1992-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -15,18 +15,15 @@
  * Note that the max_memory_to_use option is ignored by this implementation.
  */
 
+#define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jmemsys.h"
+#include "jpeglib.h"
+#include "jmemsys.h"		/* import the system-dependent declarations */
 
-#ifdef INCLUDES_ARE_ANSI
-#include <stdlib.h>		/* to declare malloc(), free() */
-#else
-extern void * malloc PP((size_t size));
-extern void free PP((void *ptr));
+#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
+extern void * malloc JPP((size_t size));
+extern void free JPP((void *ptr));
 #endif
-
-
-static external_methods_ptr methods; /* saved for access to error_exit */
 
 
 /*
@@ -35,21 +32,36 @@ static external_methods_ptr methods; /* saved for access to error_exit */
  */
 
 GLOBAL void *
-jget_small (size_t sizeofobject)
+jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
   return (void *) malloc(sizeofobject);
 }
 
 GLOBAL void
-jfree_small (void * object)
+jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 {
   free(object);
 }
 
+
 /*
- * We assume NEED_FAR_POINTERS is not defined and so the separate entry points
- * jget_large, jfree_large are not needed.
+ * "Large" objects are treated the same as "small" ones.
+ * NB: although we include FAR keywords in the routine declarations,
+ * this file won't actually work in 80x86 small/medium model; at least,
+ * you probably won't be able to process useful-size images in only 64KB.
  */
+
+GLOBAL void FAR *
+jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
+{
+  return (void FAR *) malloc(sizeofobject);
+}
+
+GLOBAL void
+jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
+{
+  free(object);
+}
 
 
 /*
@@ -58,7 +70,8 @@ jfree_small (void * object)
  */
 
 GLOBAL long
-jmem_available (long min_bytes_needed, long max_bytes_needed)
+jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
+		    long max_bytes_needed, long already_allocated)
 {
   return max_bytes_needed;
 }
@@ -66,31 +79,31 @@ jmem_available (long min_bytes_needed, long max_bytes_needed)
 
 /*
  * Backing store (temporary file) management.
- * This should never be called and we just error out.
+ * Since jpeg_mem_available always promised the moon,
+ * this should never be called and we can just error out.
  */
 
 GLOBAL void
-jopen_backing_store (backing_store_ptr info, long total_bytes_needed)
+jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+			 long total_bytes_needed)
 {
-  ERREXIT(methods, "Backing store not supported");
+  ERREXIT(cinfo, JERR_NO_BACKING_STORE);
 }
 
 
 /*
  * These routines take care of any system-dependent initialization and
- * cleanup required.  Keep in mind that jmem_term may be called more than
- * once.
+ * cleanup required.  Here, there isn't any.
  */
 
-GLOBAL void
-jmem_init (external_methods_ptr emethods)
+GLOBAL long
+jpeg_mem_init (j_common_ptr cinfo)
 {
-  methods = emethods;		/* save struct addr for error exit access */
-  emethods->max_memory_to_use = 0;
+  return 0;			/* just set max_memory_to_use to 0 */
 }
 
 GLOBAL void
-jmem_term (void)
+jpeg_mem_term (j_common_ptr cinfo)
 {
   /* no work */
 }

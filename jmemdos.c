@@ -1,7 +1,7 @@
 /*
- * jmemdos.c  (jmemsys.c)
+ * jmemdos.c
  *
- * Copyright (C) 1992, Thomas G. Lane.
+ * Copyright (C) 1992-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -39,15 +39,15 @@
 #endif
 
 
+#define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jmemsys.h"
+#include "jpeglib.h"
+#include "jmemsys.h"		/* import the system-dependent declarations */
 
-#ifdef INCLUDES_ARE_ANSI
-#include <stdlib.h>		/* to declare malloc(), free(), getenv() */
-#else
-extern void * malloc PP((size_t size));
-extern void free PP((void *ptr));
-extern char * getenv PP((const char * name));
+#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare these */
+extern void * malloc JPP((size_t size));
+extern void free JPP((void *ptr));
+extern char * getenv JPP((const char * name));
 #endif
 
 #ifdef NEED_FAR_POINTERS
@@ -64,12 +64,21 @@ extern char * getenv PP((const char * name));
 #define far_free(x)	_ffree(x)
 #endif
 
-#endif
+#else /* not NEED_FAR_POINTERS */
+
+#define far_malloc(x)	malloc(x)
+#define far_free(x)	free(x)
+
+#endif /* NEED_FAR_POINTERS */
 
 #ifdef DONT_USE_B_MODE		/* define mode parameters for fopen() */
 #define READ_BINARY	"r"
 #else
 #define READ_BINARY	"rb"
+#endif
+
+#if MAX_ALLOC_CHUNK >= 65535L	/* make sure jconfig.h got this right */
+  MAX_ALLOC_CHUNK should be less than 64K. /* deliberate syntax error */
 #endif
 
 
@@ -91,22 +100,17 @@ typedef struct {		/* registers for calling EMS driver */
 	void far * ds_si;
       } EMScontext;
 
-EXTERN short far jdos_open PP((short far * handle, char far * filename));
-EXTERN short far jdos_close PP((short handle));
-EXTERN short far jdos_seek PP((short handle, long offset));
-EXTERN short far jdos_read PP((short handle, void far * buffer,
-			       unsigned short count));
-EXTERN short far jdos_write PP((short handle, void far * buffer,
+EXTERN short far jdos_open JPP((short far * handle, char far * filename));
+EXTERN short far jdos_close JPP((short handle));
+EXTERN short far jdos_seek JPP((short handle, long offset));
+EXTERN short far jdos_read JPP((short handle, void far * buffer,
 				unsigned short count));
-EXTERN void far jxms_getdriver PP((XMSDRIVER far *));
-EXTERN void far jxms_calldriver PP((XMSDRIVER, XMScontext far *));
-EXTERN short far jems_available PP((void));
-EXTERN void far jems_calldriver PP((EMScontext far *));
-
-
-static external_methods_ptr methods; /* saved for access to error_exit */
-
-static long total_used;		/* total FAR memory requested so far */
+EXTERN short far jdos_write JPP((short handle, void far * buffer,
+				 unsigned short count));
+EXTERN void far jxms_getdriver JPP((XMSDRIVER far *));
+EXTERN void far jxms_calldriver JPP((XMSDRIVER, XMScontext far *));
+EXTERN short far jems_available JPP((void));
+EXTERN void far jems_calldriver JPP((EMScontext far *));
 
 
 /*
@@ -155,42 +159,33 @@ select_file_name (char * fname)
  */
 
 GLOBAL void *
-jget_small (size_t sizeofobject)
+jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
-  /* near data space is NOT counted in total_used */
-#ifndef NEED_FAR_POINTERS
-  total_used += sizeofobject;
-#endif
   return (void *) malloc(sizeofobject);
 }
 
 GLOBAL void
-jfree_small (void * object)
+jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 {
   free(object);
 }
 
 
 /*
- * Far-memory allocation and freeing
+ * "Large" objects are allocated in far memory, if possible
  */
 
-#ifdef NEED_FAR_POINTERS
-
 GLOBAL void FAR *
-jget_large (size_t sizeofobject)
+jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
 {
-  total_used += sizeofobject;
   return (void FAR *) far_malloc(sizeofobject);
 }
 
 GLOBAL void
-jfree_large (void FAR * object)
+jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 {
   far_free(object);
 }
-
-#endif
 
 
 /*
@@ -206,16 +201,17 @@ jfree_large (void FAR * object)
 #endif
 
 GLOBAL long
-jmem_available (long min_bytes_needed, long max_bytes_needed)
+jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
+		    long max_bytes_needed, long already_allocated)
 {
-  return methods->max_memory_to_use - total_used;
+  return cinfo->mem->max_memory_to_use - already_allocated;
 }
 
 
 /*
  * Backing store (temporary file) management.
  * Backing store objects are only used when the value returned by
- * jmem_available is less than the total space needed.  You can dispense
+ * jpeg_mem_available is less than the total space needed.  You can dispense
  * with these routines if you have plenty of virtual memory; see jmemnobs.c.
  */
 
@@ -228,8 +224,9 @@ jmem_available (long min_bytes_needed, long max_bytes_needed)
  *   2. Extended memory, accessed per the XMS V2.0 specification.
  *   3. Expanded memory, accessed per the LIM/EMS 4.0 specification.
  * You'll need copies of those specs to make sense of the related code.
- * The specs are available by Internet FTP from SIMTEL20 and its various
- * mirror sites; see microsoft/xms20.arc and info/limems41.zip.
+ * The specs are available by Internet FTP from the SIMTEL archives 
+ * (oak.oakland.edu and its various mirror sites).  See files
+ * pub/msdos/microsoft/xms20.arc and pub/msdos/info/limems41.zip.
  */
 
 
@@ -239,37 +236,39 @@ jmem_available (long min_bytes_needed, long max_bytes_needed)
 
 
 METHODDEF void
-read_file_store (backing_store_ptr info, void FAR * buffer_address,
+read_file_store (j_common_ptr cinfo, backing_store_ptr info,
+		 void FAR * buffer_address,
 		 long file_offset, long byte_count)
 {
   if (jdos_seek(info->handle.file_handle, file_offset))
-    ERREXIT(methods, "seek failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
   /* Since MAX_ALLOC_CHUNK is less than 64K, byte_count will be too. */
   if (byte_count > 65535L)	/* safety check */
-    ERREXIT(methods, "MAX_ALLOC_CHUNK should be less than 64K");
+    ERREXIT(cinfo, JERR_BAD_ALLOC_CHUNK);
   if (jdos_read(info->handle.file_handle, buffer_address,
 		(unsigned short) byte_count))
-    ERREXIT(methods, "read failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_READ);
 }
 
 
 METHODDEF void
-write_file_store (backing_store_ptr info, void FAR * buffer_address,
+write_file_store (j_common_ptr cinfo, backing_store_ptr info,
+		  void FAR * buffer_address,
 		  long file_offset, long byte_count)
 {
   if (jdos_seek(info->handle.file_handle, file_offset))
-    ERREXIT(methods, "seek failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
   /* Since MAX_ALLOC_CHUNK is less than 64K, byte_count will be too. */
   if (byte_count > 65535L)	/* safety check */
-    ERREXIT(methods, "MAX_ALLOC_CHUNK should be less than 64K");
+    ERREXIT(cinfo, JERR_BAD_ALLOC_CHUNK);
   if (jdos_write(info->handle.file_handle, buffer_address,
 		 (unsigned short) byte_count))
-    ERREXIT(methods, "write failed on temporary file --- out of disk space?");
+    ERREXIT(cinfo, JERR_TFILE_WRITE);
 }
 
 
 METHODDEF void
-close_file_store (backing_store_ptr info)
+close_file_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   jdos_close(info->handle.file_handle);	/* close the file */
   remove(info->temp_name);	/* delete the file */
@@ -277,30 +276,27 @@ close_file_store (backing_store_ptr info)
  * remove() is the ANSI-standard name for this function, but
  * unlink() was more common in pre-ANSI systems.
  */
-  TRACEMS1(methods, 1, "Closed DOS file %d", info->handle.file_handle);
+  TRACEMSS(cinfo, 1, JTRC_TFILE_CLOSE, info->temp_name);
 }
 
 
 LOCAL boolean
-open_file_store (backing_store_ptr info, long total_bytes_needed)
+open_file_store (j_common_ptr cinfo, backing_store_ptr info,
+		 long total_bytes_needed)
 {
   short handle;
-  char tracemsg[TEMP_NAME_LENGTH+40];
 
   select_file_name(info->temp_name);
   if (jdos_open((short far *) & handle, (char far *) info->temp_name)) {
-    /* hack to get around TRACEMS' inability to handle string parameters */
-    sprintf(tracemsg, "Failed to create temporary file %s", info->temp_name);
-    ERREXIT(methods, tracemsg);	/* jopen_backing_store will fail anyway */
+    /* might as well exit since jpeg_open_backing_store will fail anyway */
+    ERREXITS(cinfo, JERR_TFILE_CREATE, info->temp_name);
     return FALSE;
   }
   info->handle.file_handle = handle;
   info->read_backing_store = read_file_store;
   info->write_backing_store = write_file_store;
   info->close_backing_store = close_file_store;
-  /* hack to get around TRACEMS' inability to handle string parameters */
-  sprintf(tracemsg, "Opened DOS file %d  %s", handle, info->temp_name);
-  TRACEMS(methods, 1, tracemsg);
+  TRACEMSS(cinfo, 1, JTRC_TFILE_OPEN, info->temp_name);
   return TRUE;			/* succeeded */
 }
 
@@ -330,7 +326,8 @@ typedef struct {		/* XMS move specification structure */
 
 
 METHODDEF void
-read_xms_store (backing_store_ptr info, void FAR * buffer_address,
+read_xms_store (j_common_ptr cinfo, backing_store_ptr info,
+		void FAR * buffer_address,
 		long file_offset, long byte_count)
 {
   XMScontext ctx;
@@ -351,10 +348,10 @@ read_xms_store (backing_store_ptr info, void FAR * buffer_address,
   ctx.ax = 0x0b00;		/* EMB move */
   jxms_calldriver(xms_driver, (XMScontext far *) & ctx);
   if (ctx.ax != 1)
-    ERREXIT(methods, "read from extended memory failed");
+    ERREXIT(cinfo, JERR_XMS_READ);
 
   if (ODD(byte_count)) {
-    read_xms_store(info, (void FAR *) endbuffer,
+    read_xms_store(cinfo, info, (void FAR *) endbuffer,
 		   file_offset + byte_count - 1L, 2L);
     ((char FAR *) buffer_address)[byte_count - 1L] = endbuffer[0];
   }
@@ -362,7 +359,8 @@ read_xms_store (backing_store_ptr info, void FAR * buffer_address,
 
 
 METHODDEF void
-write_xms_store (backing_store_ptr info, void FAR * buffer_address,
+write_xms_store (j_common_ptr cinfo, backing_store_ptr info,
+		 void FAR * buffer_address,
 		 long file_offset, long byte_count)
 {
   XMScontext ctx;
@@ -383,33 +381,34 @@ write_xms_store (backing_store_ptr info, void FAR * buffer_address,
   ctx.ax = 0x0b00;		/* EMB move */
   jxms_calldriver(xms_driver, (XMScontext far *) & ctx);
   if (ctx.ax != 1)
-    ERREXIT(methods, "write to extended memory failed");
+    ERREXIT(cinfo, JERR_XMS_WRITE);
 
   if (ODD(byte_count)) {
-    read_xms_store(info, (void FAR *) endbuffer,
+    read_xms_store(cinfo, info, (void FAR *) endbuffer,
 		   file_offset + byte_count - 1L, 2L);
     endbuffer[0] = ((char FAR *) buffer_address)[byte_count - 1L];
-    write_xms_store(info, (void FAR *) endbuffer,
+    write_xms_store(cinfo, info, (void FAR *) endbuffer,
 		    file_offset + byte_count - 1L, 2L);
   }
 }
 
 
 METHODDEF void
-close_xms_store (backing_store_ptr info)
+close_xms_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   XMScontext ctx;
 
   ctx.dx = info->handle.xms_handle;
   ctx.ax = 0x0a00;
   jxms_calldriver(xms_driver, (XMScontext far *) & ctx);
-  TRACEMS1(methods, 1, "Freed XMS handle %u", info->handle.xms_handle);
+  TRACEMS1(cinfo, 1, JTRC_XMS_CLOSE, info->handle.xms_handle);
   /* we ignore any error return from the driver */
 }
 
 
 LOCAL boolean
-open_xms_store (backing_store_ptr info, long total_bytes_needed)
+open_xms_store (j_common_ptr cinfo, backing_store_ptr info,
+		long total_bytes_needed)
 {
   XMScontext ctx;
 
@@ -436,7 +435,7 @@ open_xms_store (backing_store_ptr info, long total_bytes_needed)
   info->read_backing_store = read_xms_store;
   info->write_backing_store = write_xms_store;
   info->close_backing_store = close_xms_store;
-  TRACEMS1(methods, 1, "Obtained XMS handle %u", ctx.dx);
+  TRACEMS1(cinfo, 1, JTRC_XMS_OPEN, ctx.dx);
   return TRUE;			/* succeeded */
 }
 
@@ -485,7 +484,8 @@ typedef union {			/* EMS move specification structure */
 
 
 METHODDEF void
-read_ems_store (backing_store_ptr info, void FAR * buffer_address,
+read_ems_store (j_common_ptr cinfo, backing_store_ptr info,
+		void FAR * buffer_address,
 		long file_offset, long byte_count)
 {
   EMScontext ctx;
@@ -504,12 +504,13 @@ read_ems_store (backing_store_ptr info, void FAR * buffer_address,
   ctx.ax = 0x5700;		/* move memory region */
   jems_calldriver((EMScontext far *) & ctx);
   if (HIBYTE(ctx.ax) != 0)
-    ERREXIT(methods, "read from expanded memory failed");
+    ERREXIT(cinfo, JERR_EMS_READ);
 }
 
 
 METHODDEF void
-write_ems_store (backing_store_ptr info, void FAR * buffer_address,
+write_ems_store (j_common_ptr cinfo, backing_store_ptr info,
+		 void FAR * buffer_address,
 		 long file_offset, long byte_count)
 {
   EMScontext ctx;
@@ -528,25 +529,26 @@ write_ems_store (backing_store_ptr info, void FAR * buffer_address,
   ctx.ax = 0x5700;		/* move memory region */
   jems_calldriver((EMScontext far *) & ctx);
   if (HIBYTE(ctx.ax) != 0)
-    ERREXIT(methods, "write to expanded memory failed");
+    ERREXIT(cinfo, JERR_EMS_WRITE);
 }
 
 
 METHODDEF void
-close_ems_store (backing_store_ptr info)
+close_ems_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   EMScontext ctx;
 
   ctx.ax = 0x4500;
   ctx.dx = info->handle.ems_handle;
   jems_calldriver((EMScontext far *) & ctx);
-  TRACEMS1(methods, 1, "Freed EMS handle %u", info->handle.ems_handle);
+  TRACEMS1(cinfo, 1, JTRC_EMS_CLOSE, info->handle.ems_handle);
   /* we ignore any error return from the driver */
 }
 
 
 LOCAL boolean
-open_ems_store (backing_store_ptr info, long total_bytes_needed)
+open_ems_store (j_common_ptr cinfo, backing_store_ptr info,
+		long total_bytes_needed)
 {
   EMScontext ctx;
 
@@ -578,7 +580,7 @@ open_ems_store (backing_store_ptr info, long total_bytes_needed)
   info->read_backing_store = read_ems_store;
   info->write_backing_store = write_ems_store;
   info->close_backing_store = close_ems_store;
-  TRACEMS1(methods, 1, "Obtained EMS handle %u", ctx.dx);
+  TRACEMS1(cinfo, 1, JTRC_EMS_OPEN, ctx.dx);
   return TRUE;			/* succeeded */
 }
 
@@ -590,40 +592,38 @@ open_ems_store (backing_store_ptr info, long total_bytes_needed)
  */
 
 GLOBAL void
-jopen_backing_store (backing_store_ptr info, long total_bytes_needed)
+jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+			 long total_bytes_needed)
 {
   /* Try extended memory, then expanded memory, then regular file. */
 #if XMS_SUPPORTED
-  if (open_xms_store(info, total_bytes_needed))
+  if (open_xms_store(cinfo, info, total_bytes_needed))
     return;
 #endif
 #if EMS_SUPPORTED
-  if (open_ems_store(info, total_bytes_needed))
+  if (open_ems_store(cinfo, info, total_bytes_needed))
     return;
 #endif
-  if (open_file_store(info, total_bytes_needed))
+  if (open_file_store(cinfo, info, total_bytes_needed))
     return;
-  ERREXIT(methods, "Failed to create temporary file");
+  ERREXITS(cinfo, JERR_TFILE_CREATE, "");
 }
 
 
 /*
  * These routines take care of any system-dependent initialization and
- * cleanup required.  Keep in mind that jmem_term may be called more than
- * once.
+ * cleanup required.
  */
 
-GLOBAL void
-jmem_init (external_methods_ptr emethods)
+GLOBAL long
+jpeg_mem_init (j_common_ptr cinfo)
 {
-  methods = emethods;		/* save struct addr for error exit access */
-  emethods->max_memory_to_use = DEFAULT_MAX_MEM;
-  total_used = 0;
-  next_file_num = 0;
+  next_file_num = 0;		/* initialize temp file name generator */
+  return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
 }
 
 GLOBAL void
-jmem_term (void)
+jpeg_mem_term (j_common_ptr cinfo)
 {
   /* Microsoft C, at least in v6.00A, will not successfully reclaim freed
    * blocks of size > 32Kbytes unless we give it a kick in the rear, like so:

@@ -1,53 +1,72 @@
 /*
  * jinclude.h
  *
- * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
+ * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
- * This is the central file that's #include'd by all the JPEG .c files.
- * Its purpose is to provide a single place to fix any problems with
- * including the wrong system include files.
- * You can edit these declarations if you use a system with nonstandard
- * system include files.
+ * This file exists to provide a single place to fix any problems with
+ * including the wrong system include files.  (Common problems are taken
+ * care of by the standard jconfig symbols, but on really weird systems
+ * you may have to edit this file.)
+ *
+ * NOTE: this file is NOT intended to be included by applications using the
+ * JPEG library.  Most applications need only include jpeglib.h.
  */
 
+
+/* Include auto-config file to find out which system include files we need. */
+
+#include "jconfig.h"		/* auto configuration options */
+#define JCONFIG_INCLUDED	/* so that jpeglib.h doesn't do it again */
 
 /*
- * Normally the __STDC__ macro can be taken as indicating that the system
- * include files conform to the ANSI C standard.  However, if you are running
- * GCC on a machine with non-ANSI system include files, that is not the case.
- * In that case change the following, or add -DNONANSI_INCLUDES to your CFLAGS.
+ * We need the NULL macro and size_t typedef.
+ * On an ANSI-conforming system it is sufficient to include <stddef.h>.
+ * Otherwise, we get them from <stdlib.h> or <stdio.h>; we may have to
+ * pull in <sys/types.h> as well.
+ * Note that the core JPEG library does not require <stdio.h>;
+ * only the default error handler and data source/destination modules do.
+ * But we must pull it in because of the references to FILE in jpeglib.h.
+ * You can remove those references if you want to compile without <stdio.h>.
  */
 
-#ifdef __STDC__
-#ifndef NONANSI_INCLUDES
-#define INCLUDES_ARE_ANSI	/* this is what's tested before including */
-#endif
+#ifdef HAVE_STDDEF_H
+#include <stddef.h>
 #endif
 
-/*
- * <stdio.h> is included to get the FILE typedef and NULL macro.
- * Note that the core portable-JPEG files do not actually do any I/O
- * using the stdio library; only the user interface, error handler,
- * and file reading/writing modules invoke any stdio functions.
- * (Well, we did cheat a bit in jmemmgr.c, but only if MEM_STATS is defined.)
- */
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef NEED_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 
 #include <stdio.h>
 
 /*
- * We need the size_t typedef, which defines the parameter type of malloc().
- * In an ANSI-conforming implementation this is provided by <stdio.h>,
- * but on non-ANSI systems it's more likely to be in <sys/types.h>.
- * On some not-quite-ANSI systems you may find it in <stddef.h>.
+ * We need memory copying and zeroing functions, plus strncpy().
+ * ANSI and System V implementations declare these in <string.h>.
+ * BSD doesn't have the mem() functions, but it does have bcopy()/bzero().
+ * Some systems may declare memset and memcpy in <memory.h>.
+ *
+ * NOTE: we assume the size parameters to these functions are of type size_t.
+ * Change the casts in these macros if not!
  */
 
-#ifndef INCLUDES_ARE_ANSI	/* shouldn't need this if ANSI C */
-#include <sys/types.h>
-#endif
-#ifdef __SASC			/* Amiga SAS C provides it in stddef.h. */
-#include <stddef.h>
+#ifdef NEED_BSD_STRINGS
+
+#include <strings.h>
+#define MEMZERO(target,size)	bzero((void *)(target), (size_t)(size))
+#define MEMCOPY(dest,src,size)	bcopy((const void *)(src), (void *)(dest), (size_t)(size))
+
+#else /* not BSD, assume ANSI/SysV string lib */
+
+#include <string.h>
+#define MEMZERO(target,size)	memset((void *)(target), 0, (size_t)(size))
+#define MEMCOPY(dest,src,size)	memcpy((void *)(dest), (const void *)(src), (size_t)(size))
+
 #endif
 
 /*
@@ -58,12 +77,11 @@
  * we always use this SIZEOF() macro in place of using sizeof() directly.
  */
 
-#undef SIZEOF			/* in case you included X11/xmd.h */
 #define SIZEOF(object)	((size_t) sizeof(object))
 
 /*
- * fread() and fwrite() are always invoked through these macros.
- * On some systems you may need to twiddle the argument casts.
+ * The modules that use fread() and fwrite() always invoke them through
+ * these macros.  On some systems you may need to twiddle the argument casts.
  * CAUTION: argument order is different from underlying functions!
  */
 
@@ -71,36 +89,3 @@
   ((size_t) fread((void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
 #define JFWRITE(file,buf,sizeofbuf)  \
   ((size_t) fwrite((const void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
-
-/*
- * We need the memcpy() and strcmp() functions, plus memory zeroing.
- * ANSI and System V implementations declare these in <string.h>.
- * BSD doesn't have the mem() functions, but it does have bcopy()/bzero().
- * Some systems may declare memset and memcpy in <memory.h>.
- *
- * NOTE: we assume the size parameters to these functions are of type size_t.
- * Change the casts in these macros if not!
- */
-
-#ifdef INCLUDES_ARE_ANSI
-#include <string.h>
-#define MEMZERO(target,size)	memset((void *)(target), 0, (size_t)(size))
-#define MEMCOPY(dest,src,size)	memcpy((void *)(dest), (const void *)(src), (size_t)(size))
-#else /* not ANSI */
-#ifdef BSD
-#include <strings.h>
-#define MEMZERO(target,size)	bzero((void *)(target), (size_t)(size))
-#define MEMCOPY(dest,src,size)	bcopy((const void *)(src), (void *)(dest), (size_t)(size))
-#else /* not BSD, assume Sys V or compatible */
-#include <string.h>
-#define MEMZERO(target,size)	memset((void *)(target), 0, (size_t)(size))
-#define MEMCOPY(dest,src,size)	memcpy((void *)(dest), (const void *)(src), (size_t)(size))
-#endif /* BSD */
-#endif /* ANSI */
-
-
-/* Now include the portable JPEG definition files. */
-
-#include "jconfig.h"
-
-#include "jpegdata.h"

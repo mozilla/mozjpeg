@@ -1,24 +1,26 @@
-/* Copyright (C) 1989, 1991 Aladdin Enterprises.  All rights reserved.
-   Distributed by Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1991, 1993 Aladdin Enterprises. All rights reserved. */
 
-This file is part of Ghostscript.
+/* ansi2knr.c */
+/* Convert ANSI function declarations to K&R syntax */
 
-Ghostscript is distributed in the hope that it will be useful, but
+/*
+ansi2knr is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY.  No author or distributor accepts responsibility
 to anyone for the consequences of using it or for whether it serves any
 particular purpose or works at all, unless he says so in writing.  Refer
-to the Ghostscript General Public License for full details.
+to the GNU General Public License for full details.
 
 Everyone is granted permission to copy, modify and redistribute
-Ghostscript, but only under the conditions described in the Ghostscript
+ansi2knr, but only under the conditions described in the GNU
 General Public License.  A copy of this license is supposed to have been
-given to you along with Ghostscript so you can know your rights and
+given to you along with ansi2knr so you can know your rights and
 responsibilities.  It should be in a file named COPYING.  Among other
 things, the copyright notice and this notice must be preserved on all
-copies.  */
+copies.
+*/
 
 /*
----------- Here is the GhostScript file COPYING, referred to above ----------
+---------- Here is the GNU GPL file COPYING, referred to above ----------
 ----- These terms do NOT apply to the JPEG software itself; see README ------
 
 		    GHOSTSCRIPT GENERAL PUBLIC LICENSE
@@ -163,28 +165,26 @@ INACCURATE OR LOSSES SUSTAINED BY THIRD PARTIES OR A FAILURE OF THE
 PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS) GHOSTSCRIPT, EVEN IF YOU
 HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, OR FOR ANY CLAIM
 BY ANY OTHER PARTY.
+
 -------------------- End of file COPYING ------------------------------
 */
 
-
-/* ansi2knr.c */
-/* Convert ANSI function declarations to K&R syntax */
 
 #include <stdio.h>
 #include <ctype.h>
 
 #ifdef BSD
 #include <strings.h>
-#define strchr index
 #else
 #ifdef VMS
-	extern char *strcat(), *strchr(), *strcpy(), *strupr();
-	extern int strcmp(), strlen(), strncmp();
+	extern int strlen(), strncmp();
 #else
 #include <string.h>
 #endif
 #endif
 
+/* malloc and free should be declared in stdlib.h, */
+/* but if you've got a K&R compiler, they probably aren't. */
 #ifdef MSDOS
 #include <malloc.h>
 #else
@@ -198,27 +198,35 @@ BY ANY OTHER PARTY.
 #endif
 
 /* Usage:
-	ansi2knr input_file output_file
+	ansi2knr input_file [output_file]
  * If no output_file is supplied, output goes to stdout.
  * There are no error messages.
  *
  * ansi2knr recognizes functions by seeing a non-keyword identifier
  * at the left margin, followed by a left parenthesis,
  * with a right parenthesis as the last character on the line.
- * It will recognize a multi-line header if the last character
- * on each line but the last is a left parenthesis or comma.
+ * It will recognize a multi-line header provided that the last character
+ * of the last line of the header is a right parenthesis,
+ * and no intervening line ends with a left brace or a semicolon.
  * These algorithms ignore whitespace and comments, except that
  * the function name must be the first thing on the line.
  * The following constructs will confuse it:
-	- Any other construct that starts at the left margin and
-	    follows the above syntax (such as a macro or function call).
-	- Macros that tinker with the syntax of the function header.
+ *	- Any other construct that starts at the left margin and
+ *	    follows the above syntax (such as a macro or function call).
+ *	- Macros that tinker with the syntax of the function header.
  */
 
 /* Scanning macros */
 #define isidchar(ch) (isalnum(ch) || (ch) == '_')
 #define isidfirstchar(ch) (isalpha(ch) || (ch) == '_')
 
+/* Forward references */
+char *skipspace();
+int writeblanks();
+int test1();
+int convert1();
+
+/* The main program */
 main(argc, argv)
     int argc;
     char *argv[];
@@ -324,9 +332,9 @@ test1(buf)
 	switch ( *bend )
 	   {
 	case ')': contin = 1; break;
-	case '(':
-	case ',': contin = -1; break;
-	default: return 0;		/* not a function */
+	case '{':
+	case ';': return 0;		/* not a function */
+	default: contin = -1;
 	   }
 	while ( isidchar(*p) ) p++;
 	endfn = p;
@@ -362,13 +370,16 @@ int
 convert1(buf, out)
     char *buf;
     FILE *out;
-{	char *endfn = strchr(buf, '(') + 1;
+{	char *endfn;
 	register char *p;
 	char **breaks;
 	unsigned num_breaks = 2;	/* for testing */
 	char **btop;
 	char **bp;
 	char **ap;
+	/* Pre-ANSI implementations don't agree on whether strchr */
+	/* is called strchr or index, so we open-code it here. */
+	for ( endfn = buf; *(endfn++) != '('; ) ;
 top:	p = endfn;
 	breaks = (char **)malloc(sizeof(char *) * num_breaks * 2);
 	if ( breaks == 0 )

@@ -1,19 +1,28 @@
 /*
  * jccolor.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains input colorspace conversion routines.
- * These routines are invoked via the methods get_sample_rows
- * and colorin_init/term.
  */
 
+#define JPEG_INTERNALS
 #include "jinclude.h"
+#include "jpeglib.h"
 
 
-static JSAMPARRAY pixel_row;	/* Workspace for a pixel row in input format */
+/* Private subobject */
+
+typedef struct {
+  struct jpeg_color_converter pub; /* public fields */
+
+  /* Private state for RGB->YCC conversion */
+  INT32 * rgb_ycc_tab;		/* => table for RGB to YCbCr conversion */
+} my_color_converter;
+
+typedef my_color_converter * my_cconvert_ptr;
 
 
 /**************** RGB -> YCbCr conversion: most common case **************/
@@ -41,11 +50,7 @@ static JSAMPARRAY pixel_row;	/* Workspace for a pixel row in input format */
  * in the tables to save adding them separately in the inner loop.
  */
 
-#ifdef SIXTEEN_BIT_SAMPLES
-#define SCALEBITS	14	/* avoid overflow */
-#else
-#define SCALEBITS	16	/* speedier right-shift on some machines */
-#endif
+#define SCALEBITS	16	/* speediest right-shift on some machines */
 #define ONE_HALF	((INT32) 1 << (SCALEBITS-1))
 #define FIX(x)		((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
 
@@ -55,7 +60,6 @@ static JSAMPARRAY pixel_row;	/* Workspace for a pixel row in input format */
  * machines (more than can hold all eight addresses, anyway).
  */
 
-static INT32 * rgb_ycc_tab;	/* => table for RGB to YCbCr conversion */
 #define R_Y_OFF		0			/* offset to R => Y section */
 #define G_Y_OFF		(1*(MAXJSAMPLE+1))	/* offset to G => Y section */
 #define B_Y_OFF		(2*(MAXJSAMPLE+1))	/* etc. */
@@ -69,21 +73,20 @@ static INT32 * rgb_ycc_tab;	/* => table for RGB to YCbCr conversion */
 
 
 /*
- * Initialize for colorspace conversion.
+ * Initialize for RGB->YCC colorspace conversion.
  */
 
 METHODDEF void
-rgb_ycc_init (compress_info_ptr cinfo)
+rgb_ycc_start (j_compress_ptr cinfo)
 {
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
+  INT32 * rgb_ycc_tab;
   INT32 i;
 
-  /* Allocate a workspace for the result of get_input_row. */
-  pixel_row = (*cinfo->emethods->alloc_small_sarray)
-		(cinfo->image_width, (long) cinfo->input_components);
-
   /* Allocate and fill in the conversion tables. */
-  rgb_ycc_tab = (INT32 *) (*cinfo->emethods->alloc_small)
-				(TABLE_SIZE * SIZEOF(INT32));
+  cconvert->rgb_ycc_tab = rgb_ycc_tab = (INT32 *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				(TABLE_SIZE * SIZEOF(INT32)));
 
   for (i = 0; i <= MAXJSAMPLE; i++) {
     rgb_ycc_tab[i+R_Y_OFF] = FIX(0.29900) * i;
@@ -102,40 +105,41 @@ rgb_ycc_init (compress_info_ptr cinfo)
 
 
 /*
- * Fetch some rows of pixels from get_input_row and convert to the
- * JPEG colorspace.
+ * Convert some rows of samples to the JPEG colorspace.
+ *
+ * Note that we change from the application's interleaved-pixel format
+ * to our internal noninterleaved, one-plane-per-component format.
+ * The input buffer is therefore three times as wide as the output buffer.
+ *
+ * A starting row offset is provided only for the output buffer.  The caller
+ * can easily adjust the passed input_buf value to accommodate any row
+ * offset required on that side.
  */
 
 METHODDEF void
-get_rgb_ycc_rows (compress_info_ptr cinfo,
-		  int rows_to_read, JSAMPIMAGE image_data)
+rgb_ycc_convert (j_compress_ptr cinfo,
+		 JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+		 JDIMENSION output_row, int num_rows)
 {
-#ifdef SIXTEEN_BIT_SAMPLES
-  register UINT16 r, g, b;
-#else
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
   register int r, g, b;
-#endif
-  register INT32 * ctab = rgb_ycc_tab;
-  register JSAMPROW inptr0, inptr1, inptr2;
+  register INT32 * ctab = cconvert->rgb_ycc_tab;
+  register JSAMPROW inptr;
   register JSAMPROW outptr0, outptr1, outptr2;
-  register long col;
-  long width = cinfo->image_width;
-  int row;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->image_width;
 
-  for (row = 0; row < rows_to_read; row++) {
-    /* Read one row from the source file */
-    (*cinfo->methods->get_input_row) (cinfo, pixel_row);
-    /* Convert colorspace */
-    inptr0 = pixel_row[0];
-    inptr1 = pixel_row[1];
-    inptr2 = pixel_row[2];
-    outptr0 = image_data[0][row];
-    outptr1 = image_data[1][row];
-    outptr2 = image_data[2][row];
-    for (col = 0; col < width; col++) {
-      r = GETJSAMPLE(inptr0[col]);
-      g = GETJSAMPLE(inptr1[col]);
-      b = GETJSAMPLE(inptr2[col]);
+  while (--num_rows >= 0) {
+    inptr = *input_buf++;
+    outptr0 = output_buf[0][output_row];
+    outptr1 = output_buf[1][output_row];
+    outptr2 = output_buf[2][output_row];
+    output_row++;
+    for (col = 0; col < num_cols; col++) {
+      r = GETJSAMPLE(inptr[RGB_RED]);
+      g = GETJSAMPLE(inptr[RGB_GREEN]);
+      b = GETJSAMPLE(inptr[RGB_BLUE]);
+      inptr += RGB_PIXELSIZE;
       /* If the inputs are 0..MAXJSAMPLE, the outputs of these equations
        * must be too; we do not need an explicit range-limiting operation.
        * Hence the value being shifted is never negative, and we don't
@@ -162,46 +166,34 @@ get_rgb_ycc_rows (compress_info_ptr cinfo,
 
 
 /*
- * Fetch some rows of pixels from get_input_row and convert to the
- * JPEG colorspace.
+ * Convert some rows of samples to the JPEG colorspace.
  * This version handles RGB->grayscale conversion, which is the same
  * as the RGB->Y portion of RGB->YCbCr.
- * We assume rgb_ycc_init has been called (we only use the Y tables).
+ * We assume rgb_ycc_start has been called (we only use the Y tables).
  */
 
 METHODDEF void
-get_rgb_gray_rows (compress_info_ptr cinfo,
-		   int rows_to_read, JSAMPIMAGE image_data)
+rgb_gray_convert (j_compress_ptr cinfo,
+		  JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+		  JDIMENSION output_row, int num_rows)
 {
-#ifdef SIXTEEN_BIT_SAMPLES
-  register UINT16 r, g, b;
-#else
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
   register int r, g, b;
-#endif
-  register INT32 * ctab = rgb_ycc_tab;
-  register JSAMPROW inptr0, inptr1, inptr2;
+  register INT32 * ctab = cconvert->rgb_ycc_tab;
+  register JSAMPROW inptr;
   register JSAMPROW outptr;
-  register long col;
-  long width = cinfo->image_width;
-  int row;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->image_width;
 
-  for (row = 0; row < rows_to_read; row++) {
-    /* Read one row from the source file */
-    (*cinfo->methods->get_input_row) (cinfo, pixel_row);
-    /* Convert colorspace */
-    inptr0 = pixel_row[0];
-    inptr1 = pixel_row[1];
-    inptr2 = pixel_row[2];
-    outptr = image_data[0][row];
-    for (col = 0; col < width; col++) {
-      r = GETJSAMPLE(inptr0[col]);
-      g = GETJSAMPLE(inptr1[col]);
-      b = GETJSAMPLE(inptr2[col]);
-      /* If the inputs are 0..MAXJSAMPLE, the outputs of these equations
-       * must be too; we do not need an explicit range-limiting operation.
-       * Hence the value being shifted is never negative, and we don't
-       * need the general RIGHT_SHIFT macro.
-       */
+  while (--num_rows >= 0) {
+    inptr = *input_buf++;
+    outptr = output_buf[0][output_row];
+    output_row++;
+    for (col = 0; col < num_cols; col++) {
+      r = GETJSAMPLE(inptr[RGB_RED]);
+      g = GETJSAMPLE(inptr[RGB_GREEN]);
+      b = GETJSAMPLE(inptr[RGB_BLUE]);
+      inptr += RGB_PIXELSIZE;
       /* Y */
       outptr[col] = (JSAMPLE)
 		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])
@@ -212,150 +204,246 @@ get_rgb_gray_rows (compress_info_ptr cinfo,
 
 
 /*
- * Initialize for colorspace conversion.
+ * Convert some rows of samples to the JPEG colorspace.
+ * This version handles Adobe-style CMYK->YCCK conversion,
+ * where we convert R=1-C, G=1-M, and B=1-Y to YCbCr using the same
+ * conversion as above, while passing K (black) unchanged.
+ * We assume rgb_ycc_start has been called.
  */
 
 METHODDEF void
-colorin_init (compress_info_ptr cinfo)
+cmyk_ycck_convert (j_compress_ptr cinfo,
+		   JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+		   JDIMENSION output_row, int num_rows)
 {
-  /* Allocate a workspace for the result of get_input_row. */
-  pixel_row = (*cinfo->emethods->alloc_small_sarray)
-		(cinfo->image_width, (long) cinfo->input_components);
-}
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
+  register int r, g, b;
+  register INT32 * ctab = cconvert->rgb_ycc_tab;
+  register JSAMPROW inptr;
+  register JSAMPROW outptr0, outptr1, outptr2, outptr3;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->image_width;
 
-
-/*
- * Fetch some rows of pixels from get_input_row and convert to the
- * JPEG colorspace.
- * This version handles grayscale output with no conversion.
- * The source can be either plain grayscale or YCbCr (since Y == gray).
- */
-
-METHODDEF void
-get_grayscale_rows (compress_info_ptr cinfo,
-		    int rows_to_read, JSAMPIMAGE image_data)
-{
-  int row;
-
-  for (row = 0; row < rows_to_read; row++) {
-    /* Read one row from the source file */
-    (*cinfo->methods->get_input_row) (cinfo, pixel_row);
-    /* Convert colorspace (gamma mapping needed here) */
-    jcopy_sample_rows(pixel_row, 0, image_data[0], row,
-		      1, cinfo->image_width);
-  }
-}
-
-
-/*
- * Fetch some rows of pixels from get_input_row and convert to the
- * JPEG colorspace.
- * This version handles multi-component colorspaces without conversion.
- */
-
-METHODDEF void
-get_noconvert_rows (compress_info_ptr cinfo,
-		    int rows_to_read, JSAMPIMAGE image_data)
-{
-  int row, ci;
-
-  for (row = 0; row < rows_to_read; row++) {
-    /* Read one row from the source file */
-    (*cinfo->methods->get_input_row) (cinfo, pixel_row);
-    /* Convert colorspace (gamma mapping needed here) */
-    for (ci = 0; ci < cinfo->input_components; ci++) {
-      jcopy_sample_rows(pixel_row, ci, image_data[ci], row,
-			1, cinfo->image_width);
+  while (--num_rows >= 0) {
+    inptr = *input_buf++;
+    outptr0 = output_buf[0][output_row];
+    outptr1 = output_buf[1][output_row];
+    outptr2 = output_buf[2][output_row];
+    outptr3 = output_buf[3][output_row];
+    output_row++;
+    for (col = 0; col < num_cols; col++) {
+      r = MAXJSAMPLE - GETJSAMPLE(inptr[0]);
+      g = MAXJSAMPLE - GETJSAMPLE(inptr[1]);
+      b = MAXJSAMPLE - GETJSAMPLE(inptr[2]);
+      /* K passes through as-is */
+      outptr3[col] = inptr[3];	/* don't need GETJSAMPLE here */
+      inptr += 4;
+      /* If the inputs are 0..MAXJSAMPLE, the outputs of these equations
+       * must be too; we do not need an explicit range-limiting operation.
+       * Hence the value being shifted is never negative, and we don't
+       * need the general RIGHT_SHIFT macro.
+       */
+      /* Y */
+      outptr0[col] = (JSAMPLE)
+		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])
+		 >> SCALEBITS);
+      /* Cb */
+      outptr1[col] = (JSAMPLE)
+		((ctab[r+R_CB_OFF] + ctab[g+G_CB_OFF] + ctab[b+B_CB_OFF])
+		 >> SCALEBITS);
+      /* Cr */
+      outptr2[col] = (JSAMPLE)
+		((ctab[r+R_CR_OFF] + ctab[g+G_CR_OFF] + ctab[b+B_CR_OFF])
+		 >> SCALEBITS);
     }
   }
 }
 
 
 /*
- * Finish up at the end of the file.
+ * Convert some rows of samples to the JPEG colorspace.
+ * This version handles grayscale output with no conversion.
+ * The source can be either plain grayscale or YCbCr (since Y == gray).
  */
 
 METHODDEF void
-colorin_term (compress_info_ptr cinfo)
+grayscale_convert (j_compress_ptr cinfo,
+		   JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+		   JDIMENSION output_row, int num_rows)
 {
-  /* no work (we let free_all release the workspace) */
+  register JSAMPROW inptr;
+  register JSAMPROW outptr;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->image_width;
+  int instride = cinfo->input_components;
+
+  while (--num_rows >= 0) {
+    inptr = *input_buf++;
+    outptr = output_buf[0][output_row];
+    output_row++;
+    for (col = 0; col < num_cols; col++) {
+      outptr[col] = inptr[0];	/* don't need GETJSAMPLE() here */
+      inptr += instride;
+    }
+  }
 }
 
 
 /*
- * The method selection routine for input colorspace conversion.
+ * Convert some rows of samples to the JPEG colorspace.
+ * This version handles multi-component colorspaces without conversion.
+ * We assume input_components == num_components.
+ */
+
+METHODDEF void
+null_convert (j_compress_ptr cinfo,
+	      JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+	      JDIMENSION output_row, int num_rows)
+{
+  register JSAMPROW inptr;
+  register JSAMPROW outptr;
+  register JDIMENSION col;
+  register int ci;
+  int nc = cinfo->num_components;
+  JDIMENSION num_cols = cinfo->image_width;
+
+  while (--num_rows >= 0) {
+    /* It seems fastest to make a separate pass for each component. */
+    for (ci = 0; ci < nc; ci++) {
+      inptr = *input_buf;
+      outptr = output_buf[ci][output_row];
+      for (col = 0; col < num_cols; col++) {
+	outptr[col] = inptr[ci]; /* don't need GETJSAMPLE() here */
+	inptr += nc;
+      }
+    }
+    input_buf++;
+    output_row++;
+  }
+}
+
+
+/*
+ * Empty method for start_pass.
+ */
+
+METHODDEF void
+null_method (j_compress_ptr cinfo)
+{
+  /* no work needed */
+}
+
+
+/*
+ * Module initialization routine for input colorspace conversion.
  */
 
 GLOBAL void
-jselccolor (compress_info_ptr cinfo)
+jinit_color_converter (j_compress_ptr cinfo)
 {
+  my_cconvert_ptr cconvert;
+
+  cconvert = (my_cconvert_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_color_converter));
+  cinfo->cconvert = (struct jpeg_color_converter *) cconvert;
+  /* set start_pass to null method until we find out differently */
+  cconvert->pub.start_pass = null_method;
+
   /* Make sure input_components agrees with in_color_space */
   switch (cinfo->in_color_space) {
-  case CS_GRAYSCALE:
+  case JCS_GRAYSCALE:
     if (cinfo->input_components != 1)
-      ERREXIT(cinfo->emethods, "Bogus input colorspace");
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     break;
 
-  case CS_RGB:
-  case CS_YCbCr:
-  case CS_YIQ:
+  case JCS_RGB:
+#if RGB_PIXELSIZE != 3
+    if (cinfo->input_components != RGB_PIXELSIZE)
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
+    break;
+#endif /* else share code with YCbCr */
+
+  case JCS_YCbCr:
     if (cinfo->input_components != 3)
-      ERREXIT(cinfo->emethods, "Bogus input colorspace");
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     break;
 
-  case CS_CMYK:
+  case JCS_CMYK:
+  case JCS_YCCK:
     if (cinfo->input_components != 4)
-      ERREXIT(cinfo->emethods, "Bogus input colorspace");
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     break;
 
-  default:
-    ERREXIT(cinfo->emethods, "Unsupported input colorspace");
+  default:			/* JCS_UNKNOWN can be anything */
+    if (cinfo->input_components < 1)
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     break;
   }
 
-  /* Standard init/term methods (may override below) */
-  cinfo->methods->colorin_init = colorin_init;
-  cinfo->methods->colorin_term = colorin_term;
-
   /* Check num_components, set conversion method based on requested space */
   switch (cinfo->jpeg_color_space) {
-  case CS_GRAYSCALE:
+  case JCS_GRAYSCALE:
     if (cinfo->num_components != 1)
-      ERREXIT(cinfo->emethods, "Bogus JPEG colorspace");
-    if (cinfo->in_color_space == CS_GRAYSCALE)
-      cinfo->methods->get_sample_rows = get_grayscale_rows;
-    else if (cinfo->in_color_space == CS_RGB) {
-      cinfo->methods->colorin_init = rgb_ycc_init;
-      cinfo->methods->get_sample_rows = get_rgb_gray_rows;
-    } else if (cinfo->in_color_space == CS_YCbCr)
-      cinfo->methods->get_sample_rows = get_grayscale_rows;
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    if (cinfo->in_color_space == JCS_GRAYSCALE)
+      cconvert->pub.color_convert = grayscale_convert;
+    else if (cinfo->in_color_space == JCS_RGB) {
+      cconvert->pub.start_pass = rgb_ycc_start;
+      cconvert->pub.color_convert = rgb_gray_convert;
+    } else if (cinfo->in_color_space == JCS_YCbCr)
+      cconvert->pub.color_convert = grayscale_convert;
     else
-      ERREXIT(cinfo->emethods, "Unsupported color conversion request");
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;
 
-  case CS_YCbCr:
+  case JCS_RGB:
     if (cinfo->num_components != 3)
-      ERREXIT(cinfo->emethods, "Bogus JPEG colorspace");
-    if (cinfo->in_color_space == CS_RGB) {
-      cinfo->methods->colorin_init = rgb_ycc_init;
-      cinfo->methods->get_sample_rows = get_rgb_ycc_rows;
-    } else if (cinfo->in_color_space == CS_YCbCr)
-      cinfo->methods->get_sample_rows = get_noconvert_rows;
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    if (cinfo->in_color_space == JCS_RGB && RGB_PIXELSIZE == 3)
+      cconvert->pub.color_convert = null_convert;
     else
-      ERREXIT(cinfo->emethods, "Unsupported color conversion request");
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;
 
-  case CS_CMYK:
+  case JCS_YCbCr:
+    if (cinfo->num_components != 3)
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    if (cinfo->in_color_space == JCS_RGB) {
+      cconvert->pub.start_pass = rgb_ycc_start;
+      cconvert->pub.color_convert = rgb_ycc_convert;
+    } else if (cinfo->in_color_space == JCS_YCbCr)
+      cconvert->pub.color_convert = null_convert;
+    else
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    break;
+
+  case JCS_CMYK:
     if (cinfo->num_components != 4)
-      ERREXIT(cinfo->emethods, "Bogus JPEG colorspace");
-    if (cinfo->in_color_space == CS_CMYK)
-      cinfo->methods->get_sample_rows = get_noconvert_rows;
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    if (cinfo->in_color_space == JCS_CMYK)
+      cconvert->pub.color_convert = null_convert;
     else
-      ERREXIT(cinfo->emethods, "Unsupported color conversion request");
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;
 
-  default:
-    ERREXIT(cinfo->emethods, "Unsupported JPEG colorspace");
+  case JCS_YCCK:
+    if (cinfo->num_components != 4)
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    if (cinfo->in_color_space == JCS_CMYK) {
+      cconvert->pub.start_pass = rgb_ycc_start;
+      cconvert->pub.color_convert = cmyk_ycck_convert;
+    } else if (cinfo->in_color_space == JCS_YCCK)
+      cconvert->pub.color_convert = null_convert;
+    else
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    break;
+
+  default:			/* allow null conversion of JCS_UNKNOWN */
+    if (cinfo->jpeg_color_space != cinfo->in_color_space ||
+	cinfo->num_components != cinfo->input_components)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    cconvert->pub.color_convert = null_convert;
     break;
   }
 }

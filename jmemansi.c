@@ -1,7 +1,7 @@
 /*
- * jmemansi.c  (jmemsys.c)
+ * jmemansi.c
  *
- * Copyright (C) 1992, Thomas G. Lane.
+ * Copyright (C) 1992-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -12,24 +12,19 @@
  * is shoved onto the user.
  */
 
+#define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jmemsys.h"
+#include "jpeglib.h"
+#include "jmemsys.h"		/* import the system-dependent declarations */
 
-#ifdef INCLUDES_ARE_ANSI
-#include <stdlib.h>		/* to declare malloc(), free() */
-#else
-extern void * malloc PP((size_t size));
-extern void free PP((void *ptr));
+#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
+extern void * malloc JPP((size_t size));
+extern void free JPP((void *ptr));
 #endif
 
 #ifndef SEEK_SET		/* pre-ANSI systems may not define this; */
 #define SEEK_SET  0		/* if not, assume 0 is correct */
 #endif
-
-
-static external_methods_ptr methods; /* saved for access to error_exit */
-
-static long total_used;		/* total memory requested so far */
 
 
 /*
@@ -38,22 +33,36 @@ static long total_used;		/* total memory requested so far */
  */
 
 GLOBAL void *
-jget_small (size_t sizeofobject)
+jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
-  total_used += sizeofobject;
   return (void *) malloc(sizeofobject);
 }
 
 GLOBAL void
-jfree_small (void * object)
+jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 {
   free(object);
 }
 
+
 /*
- * We assume NEED_FAR_POINTERS is not defined and so the separate entry points
- * jget_large, jfree_large are not needed.
+ * "Large" objects are treated the same as "small" ones.
+ * NB: although we include FAR keywords in the routine declarations,
+ * this file won't actually work in 80x86 small/medium model; at least,
+ * you probably won't be able to process useful-size images in only 64KB.
  */
+
+GLOBAL void FAR *
+jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
+{
+  return (void FAR *) malloc(sizeofobject);
+}
+
+GLOBAL void
+jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
+{
+  free(object);
+}
 
 
 /*
@@ -69,46 +78,49 @@ jfree_small (void * object)
 #endif
 
 GLOBAL long
-jmem_available (long min_bytes_needed, long max_bytes_needed)
+jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
+		    long max_bytes_needed, long already_allocated)
 {
-  return methods->max_memory_to_use - total_used;
+  return cinfo->mem->max_memory_to_use - already_allocated;
 }
 
 
 /*
  * Backing store (temporary file) management.
  * Backing store objects are only used when the value returned by
- * jmem_available is less than the total space needed.  You can dispense
+ * jpeg_mem_available is less than the total space needed.  You can dispense
  * with these routines if you have plenty of virtual memory; see jmemnobs.c.
  */
 
 
 METHODDEF void
-read_backing_store (backing_store_ptr info, void FAR * buffer_address,
+read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+		    void FAR * buffer_address,
 		    long file_offset, long byte_count)
 {
   if (fseek(info->temp_file, file_offset, SEEK_SET))
-    ERREXIT(methods, "fseek failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
   if (JFREAD(info->temp_file, buffer_address, byte_count)
       != (size_t) byte_count)
-    ERREXIT(methods, "fread failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_READ);
 }
 
 
 METHODDEF void
-write_backing_store (backing_store_ptr info, void FAR * buffer_address,
+write_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+		     void FAR * buffer_address,
 		     long file_offset, long byte_count)
 {
   if (fseek(info->temp_file, file_offset, SEEK_SET))
-    ERREXIT(methods, "fseek failed on temporary file");
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
   if (JFWRITE(info->temp_file, buffer_address, byte_count)
       != (size_t) byte_count)
-    ERREXIT(methods, "fwrite failed on temporary file --- out of disk space?");
+    ERREXIT(cinfo, JERR_TFILE_WRITE);
 }
 
 
 METHODDEF void
-close_backing_store (backing_store_ptr info)
+close_backing_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   fclose(info->temp_file);
   /* Since this implementation uses tmpfile() to create the file,
@@ -121,15 +133,16 @@ close_backing_store (backing_store_ptr info)
  * Initial opening of a backing-store object.
  *
  * This version uses tmpfile(), which constructs a suitable file name
- * behind the scenes.  We don't have to use temp_name[] at all;
+ * behind the scenes.  We don't have to use info->temp_name[] at all;
  * indeed, we can't even find out the actual name of the temp file.
  */
 
 GLOBAL void
-jopen_backing_store (backing_store_ptr info, long total_bytes_needed)
+jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+			 long total_bytes_needed)
 {
   if ((info->temp_file = tmpfile()) == NULL)
-    ERREXIT(methods, "Failed to create temporary file");
+    ERREXITS(cinfo, JERR_TFILE_CREATE, "");
   info->read_backing_store = read_backing_store;
   info->write_backing_store = write_backing_store;
   info->close_backing_store = close_backing_store;
@@ -138,20 +151,17 @@ jopen_backing_store (backing_store_ptr info, long total_bytes_needed)
 
 /*
  * These routines take care of any system-dependent initialization and
- * cleanup required.  Keep in mind that jmem_term may be called more than
- * once.
+ * cleanup required.
  */
 
-GLOBAL void
-jmem_init (external_methods_ptr emethods)
+GLOBAL long
+jpeg_mem_init (j_common_ptr cinfo)
 {
-  methods = emethods;		/* save struct addr for error exit access */
-  emethods->max_memory_to_use = DEFAULT_MAX_MEM;
-  total_used = 0;
+  return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
 }
 
 GLOBAL void
-jmem_term (void)
+jpeg_mem_term (j_common_ptr cinfo)
 {
   /* no work */
 }

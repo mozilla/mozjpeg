@@ -1,6 +1,6 @@
 USING THE IJG JPEG LIBRARY
 
-Copyright (C) 1994, Thomas G. Lane.
+Copyright (C) 1994-1995, Thomas G. Lane.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -189,7 +189,10 @@ The standard input image format is a rectangular array of pixels, with each
 pixel having the same number of "component" values (color channels).  You
 must specify how many components there are and the colorspace interpretation
 of the components.  Most applications will use RGB data (three components
-per pixel) or grayscale data (one component per pixel).
+per pixel) or grayscale data (one component per pixel).  PLEASE NOTE THAT
+RGB DATA IS THREE SAMPLES PER PIXEL, GRAYSCALE ONLY ONE.  A remarkable
+number of people manage to miss this, only to find that their programs don't
+work with grayscale JPEG files.
 
 Note that there is no provision for colormapped input.  You can feed in a
 colormapped image by expanding it to full-color format.  However JPEG often
@@ -644,7 +647,8 @@ one or more times.  At each call, you pass in the maximum number of scanlines
 to be read (ie, the height of your working buffer); jpeg_read_scanlines()
 will return up to that many lines.  The return value is the number of lines
 actually read.  The format of the returned data is discussed under "Data
-formats", above.
+formats", above.  Don't forget that grayscale and color JPEGs will return
+different data formats!
 
 Image data is returned in top-to-bottom scanline order.  If you must write
 out the image in bottom-to-top order, you can use the JPEG library's virtual
@@ -855,10 +859,10 @@ J_DCT_METHOD dct_method
 		JDCT_FLOAT: floating-point method
 		JDCT_DEFAULT: default method (normally JDCT_ISLOW)
 		JDCT_FASTEST: fastest method (normally JDCT_IFAST)
-	The floating-point method is the most accurate, but may give slightly
-	different results on different machines due to varying roundoff
-	behavior.  The integer methods should give the same results on all
-	machines.  On machines with sufficiently fast FP hardware, the
+	The FLOAT method is very slightly more accurate than the ISLOW method,
+	but may give different results on different machines due to varying
+	roundoff behavior.  The integer methods should give the same results
+	on all machines.  On machines with sufficiently fast FP hardware, the
 	floating-point method may also be the fastest.  The IFAST method is
 	considerably less accurate than the other two; its use is not
 	recommended if high quality is a concern.  JDCT_DEFAULT and
@@ -1050,6 +1054,9 @@ only accepted for 3-component output color spaces.]
 JSAMPARRAY colormap
 	The color map, represented as a 2-D pixel array of out_color_components
 	rows and actual_number_of_colors columns.  Ignored if not quantizing.
+	CAUTION: if the JPEG library creates its own colormap, the storage
+	pointed to by this field is released by jpeg_finish_decompress().
+	Copy the colormap somewhere else first, if you want to save it.
 
 int actual_number_of_colors
 	The number of colors in the color map.
@@ -1889,8 +1896,9 @@ of Y data is dummy, so it doesn't matter what you pass for it in the data
 arrays, but the scanlines count must total up to 112 so that all of the Cb
 and Cr data gets passed.
 
-Currently, output suspension is not supported with raw data output: an error
-will result if the data destination module tries to suspend.
+Output suspension is supported with raw-data compression: if the data
+destination module suspends, jpeg_write_raw_data() will return 0.
+In this case the same data rows must be passed again on the next call.
 
 
 Decompression with raw data output implies bypassing all postprocessing:
@@ -2048,13 +2056,18 @@ BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
 larger than a char, so it affects the surrounding application's image data.
 The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
 and GIF file formats; you must disable the other file formats to compile a
-12-bit cjpeg or djpeg.  At present, a 12-bit library can handle *only*
-12-bit images, not both precisions.  (If you need to include both 8- and
-12-bit libraries in a single application, you could probably do it by
-defining NEED_SHORT_EXTERNAL_NAMES for just one of the copies.  You'd have
-to access the 8-bit and 12-bit copies from separate application source
-files.  This is untested ... if you try it, we'd like to hear whether it
-works!)
+12-bit cjpeg or djpeg.  (install.doc has more information about that.)
+At present, a 12-bit library can handle *only* 12-bit images, not both
+precisions.  (If you need to include both 8- and 12-bit libraries in a single
+application, you could probably do it by defining NEED_SHORT_EXTERNAL_NAMES
+for just one of the copies.  You'd have to access the 8-bit and 12-bit copies
+from separate application source files.  This is untested ... if you try it,
+we'd like to hear whether it works!)
+
+Note that a 12-bit library always compresses in Huffman optimization mode,
+in order to generate valid Huffman tables.  This is necessary because our
+default Huffman tables only cover 8-bit data.  If you need to output 12-bit
+files in one pass, you'll have to supply suitable default Huffman tables.
 
 The maximum number of components (color channels) in the image is determined
 by MAX_COMPONENTS.  The JPEG standard allows up to 255 components, but we

@@ -1346,6 +1346,12 @@ if test $ac_cv_header_string_h = no; then
 else
   ANSI2KNRFLAGS=""
 fi
+# Set up -I directives
+if test "x$srcdir" = x.; then
+  INCLUDEFLAGS='-I$(srcdir)'
+else
+  INCLUDEFLAGS='-I. -I$(srcdir)'
+fi
 trap '' 1 2 15
 
 trap 'rm -fr conftest* confdefs* core $ac_clean_files; exit 1' 1 2 15
@@ -1426,6 +1432,7 @@ s%@MEMORYMGR@%$MEMORYMGR%g
 s%@ANSI2KNR@%$ANSI2KNR%g
 s%@ISANSICOM@%$ISANSICOM%g
 s%@ANSI2KNRFLAGS@%$ANSI2KNRFLAGS%g
+s%@INCLUDEFLAGS@%$INCLUDEFLAGS%g
 
 CEOF
 EOF

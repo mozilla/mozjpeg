@@ -1,35 +1,63 @@
 # Makefile for Independent JPEG Group's software
 
-# This makefile is suitable for Borland C (Turbo C) on MS-DOS.
-# It is set up for Borland C++, revision 3.0 or later.
-# For older versions (pre-3.0), replace "-O2" with "-O -G -Z" in CFLAGS.
-# If you have an even older version of Turbo C, you may be able to make it
-# work by saying "CC= tcc" below.  (Very early versions of Turbo C++,
-# like 1.01, are so buggy that you may as well forget it.)
-# Thanks to Tom Wright and Ge' Weijers for this file.
+# This makefile is suitable for Borland C on MS-DOS or OS/2.
+# It works with Borland C++ for DOS, revision 3.0 or later,
+# and has been tested with Borland C++ for OS/2, revision 2.0.
+# Thanks to Tom Wright and Ge' Weijers (original DOS) and
+# Ken Porter (OS/2) for this file.
 
 # Read installation instructions before saying "make" !!
+
+# Are we under DOS or OS/2?
+!if !$d(DOS) && !$d(OS2)
+!if $d(__MSDOS__)
+DOS=1
+!else
+OS2=1
+!endif
+!endif
 
 # The name of your C compiler:
 CC= bcc
 
 # You may need to adjust these cc options:
-CFLAGS= -mm -w-par -O2
-# -mm selects medium memory model (near data, far code pointers)
+!if $d(DOS)
+CFLAGS= -O2 -mm -w-par -w-stu -w-ccc -w-rch
+!else
+CFLAGS= -O1 -w-par -w-stu -w-ccc -w-rch
+!endif
+# -O2 enables full code optimization (for pre-3.0 Borland C++, use -O -G -Z).
+# -O2 is buggy in Borland OS/2 C++ revision 2.0, so use -O1 for now.
+# -mm selects medium memory model (near data, far code pointers; DOS only!)
 # -w-par suppresses warnings about unused function parameters
-# -O2 enables full code optimization (for pre-3.0 Borland C++, use -O -G -Z)
+# -w-stu suppresses warnings about incomplete structures
+# -w-ccc suppresses warnings about compile-time-constant conditions
+# -w-rch suppresses warnings about unreachable code
 # Generally, we recommend defining any configuration symbols in jconfig.h,
 # NOT via -D switches here.
 
 # Link-time cc options:
+!if $d(DOS)
 LDFLAGS= -mm
 # memory model option here must match CFLAGS!
+!else
+LDFLAGS=
+# -lai full-screen app
+# -lc case-significant link
+!endif
 
 # Put here the object file name for the correct system-dependent memory
-# manager file.  For DOS, we recommend jmemdos.c and jmemdosa.asm.
-# If you change this, you'll need to modify the linker response file
-# name list, below, by hand!
+# manager file.
+# For DOS, we recommend jmemdos.c and jmemdosa.asm.
+# For OS/2, we recommend jmemnobs.c (flat memory!)
+# SYSDEPMEMLIB must list the same files with "+" signs for the librarian.
+!if $d(DOS)
 SYSDEPMEM= jmemdos.obj jmemdosa.obj
+SYSDEPMEMLIB= +jmemdos.obj +jmemdosa.obj
+!else
+SYSDEPMEM= jmemnobs.obj
+SYSDEPMEMLIB= +jmemnobs.obj
+!endif
 
 # End of configurable options.
 
@@ -81,31 +109,22 @@ COBJECTS= cjpeg.obj rdppm.obj rdgif.obj rdtarga.obj rdrle.obj rdbmp.obj
 DOBJECTS= djpeg.obj wrppm.obj wrgif.obj wrtarga.obj wrrle.obj wrbmp.obj \
         rdcolmap.obj
 
-# need linker response file because file list > 128 chars
-RFILE= libjpeg.ans
-
 
 all: libjpeg.lib cjpeg.exe djpeg.exe rdjpgcom.exe wrjpgcom.exe
 
-libjpeg.lib: $(LIBOBJECTS) $(RFILE)
-	del libjpeg.lib
-	tlib @$(RFILE)
-
-# linker response file for building libjpeg.lib
-$(RFILE) : Makefile
-	del $(RFILE)
-	echo libjpeg.lib & >$(RFILE)
-	echo +jcapi.obj +jcparam.obj +jdatadst.obj +jcmaster.obj & >>$(RFILE)
-	echo +jcmarker.obj +jcmainct.obj +jcprepct.obj & >>$(RFILE)
-	echo +jccoefct.obj +jccolor.obj +jcsample.obj +jchuff.obj & >>$(RFILE)
-	echo +jcdctmgr.obj +jfdctfst.obj +jfdctflt.obj & >>$(RFILE)
-	echo +jfdctint.obj +jdapi.obj +jdatasrc.obj +jdmaster.obj & >>$(RFILE)
-	echo +jdmarker.obj +jdmainct.obj +jdcoefct.obj & >>$(RFILE)
-	echo +jdpostct.obj +jddctmgr.obj +jidctfst.obj & >>$(RFILE)
-	echo +jidctflt.obj +jidctint.obj +jidctred.obj +jdhuff.obj & >>$(RFILE)
-	echo +jdsample.obj +jdcolor.obj +jquant1.obj +jquant2.obj & >>$(RFILE)
-	echo +jdmerge.obj +jcomapi.obj +jutils.obj +jerror.obj & >>$(RFILE)
-	echo +jmemmgr.obj +jmemdos.obj +jmemdosa.obj >>$(RFILE)
+libjpeg.lib: $(LIBOBJECTS)
+	- del libjpeg.lib
+	tlib libjpeg.lib /E /C @&&|
++jcapi.obj +jcparam.obj +jdatadst.obj +jcmaster.obj +jcmarker.obj &
++jcmainct.obj +jcprepct.obj +jccoefct.obj +jccolor.obj +jcsample.obj &
++jchuff.obj +jcdctmgr.obj +jfdctfst.obj +jfdctflt.obj +jfdctint.obj &
++jdapi.obj +jdatasrc.obj +jdmaster.obj +jdmarker.obj +jdmainct.obj &
++jdcoefct.obj +jdpostct.obj +jddctmgr.obj +jidctfst.obj +jidctflt.obj &
++jidctint.obj +jidctred.obj +jdhuff.obj +jdsample.obj +jdcolor.obj &
++jquant1.obj +jquant2.obj +jdmerge.obj +jcomapi.obj +jutils.obj &
++jerror.obj +jmemmgr.obj &
+$(SYSDEPMEMLIB)
+|
 
 cjpeg.exe: $(COBJECTS) libjpeg.lib
 	$(CC) $(LDFLAGS) -ecjpeg.exe $(COBJECTS) libjpeg.lib
@@ -114,14 +133,24 @@ djpeg.exe: $(DOBJECTS) libjpeg.lib
 	$(CC) $(LDFLAGS) -edjpeg.exe $(DOBJECTS) libjpeg.lib
 
 rdjpgcom.exe: rdjpgcom.c
+!if $d(DOS)
 	$(CC) -ms -O rdjpgcom.c
+!else
+	$(CC) $(CFLAGS) rdjpgcom.c
+!endif
 
-# wrjpgcom needs large model so it can malloc a 64K chunk
+# On DOS, wrjpgcom needs large model so it can malloc a 64K chunk
 wrjpgcom.exe: wrjpgcom.c
+!if $d(DOS)
 	$(CC) -ml -O wrjpgcom.c
+!else
+	$(CC) $(CFLAGS) wrjpgcom.c
+!endif
 
+# This "{}" syntax allows Borland Make to "batch" source files.
+# In this way, each run of the compiler can build many modules.
 .c.obj:
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c{ $<}
 
 jconfig.h: jconfig.doc
 	echo You must prepare a system-dependent jconfig.h file.
@@ -129,22 +158,30 @@ jconfig.h: jconfig.doc
 	exit 1
 
 clean:
-	del *.obj
-	del libjpeg.lib
-	del cjpeg.exe
-	del djpeg.exe
-	del rdjpgcom.exe
-	del wrjpgcom.exe
-	del testout.*
+	- del *.obj
+	- del libjpeg.lib
+	- del cjpeg.exe
+	- del djpeg.exe
+	- del rdjpgcom.exe
+	- del wrjpgcom.exe
+	- del testout.*
 
 test: cjpeg.exe djpeg.exe
-	del testout.*
+	- del testout.*
 	djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg
 	djpeg -dct int -gif -outfile testout.gif  testorig.jpg
 	cjpeg -dct int -outfile testout.jpg  testimg.ppm
+!if $d(DOS)
 	fc /b testimg.ppm testout.ppm
 	fc /b testimg.gif testout.gif
 	fc /b testimg.jpg testout.jpg
+!else
+	echo n > n.tmp
+	comp testimg.ppm testout.ppm < n.tmp
+	comp testimg.gif testout.gif < n.tmp
+	comp testimg.jpg testout.jpg < n.tmp
+	del n.tmp
+!endif
 
 
 jcapi.obj : jcapi.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h

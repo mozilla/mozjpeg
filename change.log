@@ -1,6 +1,23 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 5b  15-Mar-95
+---------------------
+
+Correct bugs with grayscale images having v_samp_factor > 1.
+
+jpeg_write_raw_data() now supports output suspension.
+
+Correct bugs in "configure" script for case of compiling in
+a directory other than the one containing the source files.
+
+Repair bug in jquant1.c: sometimes didn't use as many colors as it could.
+
+Borland C makefile and jconfig file work under either MS-DOS or OS/2.
+
+Miscellaneous improvements to documentation.
+
+
 Version 5a  7-Dec-94
 --------------------
 

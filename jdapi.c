@@ -1,7 +1,7 @@
 /*
  * jdapi.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -345,14 +345,14 @@ jpeg_read_scanlines (j_decompress_ptr cinfo, JSAMPARRAY scanlines,
 
 /*
  * Alternate entry point to read raw data.
- * Processes exactly one MCU row per call.
+ * Processes exactly one iMCU row per call, unless suspended.
  */
 
 GLOBAL JDIMENSION
 jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
 		    JDIMENSION max_lines)
 {
-  JDIMENSION lines_per_MCU_row;
+  JDIMENSION lines_per_iMCU_row;
 
   if (cinfo->global_state != DSTATE_RAW_OK)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
@@ -368,18 +368,18 @@ jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
     (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
   }
 
-  /* Verify that at least one MCU row can be returned. */
-  lines_per_MCU_row = cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size;
-  if (max_lines < lines_per_MCU_row)
+  /* Verify that at least one iMCU row can be returned. */
+  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size;
+  if (max_lines < lines_per_iMCU_row)
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Decompress directly into user's buffer. */
   if (! (*cinfo->coef->decompress_data) (cinfo, data))
     return 0;			/* suspension forced, can do nothing more */
 
-  /* OK, we processed one MCU row. */
-  cinfo->output_scanline += lines_per_MCU_row;
-  return lines_per_MCU_row;
+  /* OK, we processed one iMCU row. */
+  cinfo->output_scanline += lines_per_iMCU_row;
+  return lines_per_iMCU_row;
 }
 
 

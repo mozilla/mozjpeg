@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  SYSTEM ARCHITECTURE
 
-Copyright (C) 1991-1994, Thomas G. Lane.
+Copyright (C) 1991-1995, Thomas G. Lane.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -362,7 +362,9 @@ The objects shown above are:
   This controller handles MCU assembly, including insertion of dummy DCT
   blocks when needed at the right or bottom edge.  When performing
   Huffman-code optimization or emitting a multiscan JPEG file, this
-  controller is responsible for buffering the full image.
+  controller is responsible for buffering the full image.  The equivalent of
+  one fully interleaved MCU row of subsampled data is processed per call,
+  even when the JPEG file is noninterleaved.
 
 * Forward DCT and quantization: Perform DCT, quantize, and emit coefficients
   in zigzag block order.  Works on one or more DCT blocks at a time.

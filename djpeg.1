@@ -1,4 +1,4 @@
-.TH DJPEG 1 "28 August 1994"
+.TH DJPEG 1 "12 December 1994"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -117,11 +117,11 @@ Use fast integer DCT (less accurate).
 .TP
 .B \-dct float
 Use floating-point DCT method.
-The floating-point method is the most accurate, but will be the slowest unless
-your machine has very fast floating-point hardware.  Also note that results of
-the floating-point method may vary slightly across machines, while the integer
-methods should give the same results everywhere.  The fast integer method is
-much less accurate than the other two.
+The float method is very slightly more accurate than the int method, but is
+much slower unless your machine has very fast floating-point hardware.  Also
+note that results of the floating-point method may vary slightly across
+machines, while the integer methods should give the same results everywhere.
+The fast integer method is much less accurate than the other two.
 .TP
 .B \-dither fs
 Use Floyd-Steinberg dithering in color quantization.
@@ -214,8 +214,10 @@ may give acceptable results in two-pass mode, but is seldom tolerable in
 one-pass mode.
 .PP
 If you are fortunate enough to have very fast floating point hardware,
-.B \-dct float
-may be even faster than \fB\-dct fast\fR.
+\fB\-dct float\fR may be even faster than \fB\-dct fast\fR.  But on most
+machines \fB\-dct float\fR is slower than \fB\-dct int\fR; in this case it is
+not worth using, because its theoretical accuracy advantage is too small to be
+significant in practice.
 .SH ENVIRONMENT
 .TP
 .B JPEGMEM

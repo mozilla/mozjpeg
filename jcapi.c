@@ -1,7 +1,7 @@
 /*
  * jcapi.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -199,14 +199,14 @@ jpeg_write_scanlines (j_compress_ptr cinfo, JSAMPARRAY scanlines,
 
 /*
  * Alternate entry point to write raw data.
- * Processes exactly one iMCU row per call.
+ * Processes exactly one iMCU row per call, unless suspended.
  */
 
 GLOBAL JDIMENSION
 jpeg_write_raw_data (j_compress_ptr cinfo, JSAMPIMAGE data,
 		     JDIMENSION num_lines)
 {
-  JDIMENSION mcu_ctr, lines_per_MCU_row;
+  JDIMENSION lines_per_iMCU_row;
 
   if (cinfo->global_state != CSTATE_RAW_OK)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
@@ -231,22 +231,19 @@ jpeg_write_raw_data (j_compress_ptr cinfo, JSAMPIMAGE data,
     (*cinfo->master->pass_startup) (cinfo);
 
   /* Verify that at least one iMCU row has been passed. */
-  lines_per_MCU_row = cinfo->max_v_samp_factor * DCTSIZE;
-  if (num_lines < lines_per_MCU_row)
+  lines_per_iMCU_row = cinfo->max_v_samp_factor * DCTSIZE;
+  if (num_lines < lines_per_iMCU_row)
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Directly compress the row. */
-  mcu_ctr = 0;
-  (*cinfo->coef->compress_data) (cinfo, data, &mcu_ctr);
-  /* If compressor did not consume the whole row, then we must need to
-   * suspend processing; this is not currently supported.
-   */
-  if (mcu_ctr != cinfo->MCUs_per_row)
-    ERREXIT(cinfo, JERR_CANT_SUSPEND);
+  if (! (*cinfo->coef->compress_data) (cinfo, data)) {
+    /* If compressor did not consume the whole row, suspend processing. */
+    return 0;
+  }
 
   /* OK, we processed one iMCU row. */
-  cinfo->next_scanline += lines_per_MCU_row;
-  return lines_per_MCU_row;
+  cinfo->next_scanline += lines_per_iMCU_row;
+  return lines_per_iMCU_row;
 }
 
 
@@ -260,7 +257,7 @@ jpeg_write_raw_data (j_compress_ptr cinfo, JSAMPIMAGE data,
 GLOBAL void
 jpeg_finish_compress (j_compress_ptr cinfo)
 {
-  JDIMENSION iMCU_row, mcu_ctr;
+  JDIMENSION iMCU_row;
 
   if (cinfo->global_state != CSTATE_SCANNING && 
       cinfo->global_state != CSTATE_RAW_OK)
@@ -281,9 +278,7 @@ jpeg_finish_compress (j_compress_ptr cinfo)
       /* We bypass the main controller and invoke coef controller directly;
        * all work is being done from the coefficient buffer.
        */
-      mcu_ctr = 0;
-      (*cinfo->coef->compress_data) (cinfo, (JSAMPIMAGE) NULL, &mcu_ctr);
-      if (mcu_ctr != cinfo->MCUs_per_row)
+      if (! (*cinfo->coef->compress_data) (cinfo, (JSAMPIMAGE) NULL))
 	ERREXIT(cinfo, JERR_CANT_SUSPEND);
     }
     (*cinfo->master->finish_pass) (cinfo);

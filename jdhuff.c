@@ -142,6 +142,7 @@ start_pass_huff_decoder (j_decompress_ptr cinfo)
 
   /* Initialize private state variables */
   entropy->saved.bits_left = 0;
+  entropy->saved.get_buffer = 0; /* unnecessary, but keeps Purify quiet */
   entropy->printed_eod = FALSE;
 
   /* Initialize restart counter */

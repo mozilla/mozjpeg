@@ -34,6 +34,7 @@ distribution:
 	makefile.mc5:	for Microsoft C 5.x under MS-DOS.
 	makefile.mc6:	for Microsoft C 6.x and up under MS-DOS.
 	makefile.bcc:	for Borland C (Turbo C) under MS-DOS.
+	makefile.icc:	for Intel's Code Builder C under MS-DOS.
 	makefile.manx:	for Manx Aztec C on Amigas.
 	makefile.sas:	for SAS C on Amigas.
 	makcjpeg.st:	project file for Atari ST/STE/TT Pure C or Turbo C.
@@ -101,7 +102,10 @@ If it's not defined, the output image goes to standard output, and the input
 can optionally come from standard input.  You MUST use two-file style on any
 system that doesn't cope well with binary data fed through stdin/stdout; this
 is true for most MS-DOS compilers, for example.  If you're not on a Unix
-system, it's probably safest to assume you need two-file style.
+system, it's probably safest to assume you need two-file style.  (But if your
+compiler provides either the Posix-standard fdopen() library routine or a
+Microsoft-compatible setmode() routine, you can use the Unix command line
+style, by defining USE_FDOPEN or USE_SETMODE respectively.)
 
 
 STEP 3: SELECT SYSTEM-DEPENDENT FILES
@@ -197,14 +201,26 @@ generate duplicates of the testimg.* files then you probably have working
 programs.
 
 With most of the makefiles, "make test" will perform the necessary
-comparisons.  If you're using a makefile that doesn't provide this option, run
-djpeg and cjpeg to generate testout.ppm, testout.gif, and testout.jpg, then
+comparisons.  If you started with makefile.ansi or makefile.unix, and you
+defined TWO_FILE_COMMANDLINE, then change the makefile's test script to use
+two-file syntax (i.e., delete the ">" character from the invocations of cjpeg
+and djpeg).  The other makefiles will work with either command-line syntax.
+
+If you're using a makefile that doesn't provide the test option, run djpeg and
+cjpeg by hand to generate testout.ppm, testout.gif, and testout.jpg, then
 compare these to testimg.* with whatever binary file comparison tool you have.
 The files should be bit-for-bit identical.
 
 If the cjpeg test run fails with "Missing Huffman code table entry", it's a
 good bet that you needed to define RIGHT_SHIFT_IS_UNSIGNED.  Go back to step 2
 and run ckconfig.c.  (This is a good plan for any other test failure, too.)
+
+If you are using Unix (one-file) command line style on a non-Unix system,
+it's a good idea to check that binary I/O through stdin/stdout actually works.
+You should get the same results from "djpeg <testorig.jpg >out.ppm" as from
+"djpeg -outfile out.ppm  testorig.jpg".  Note that the non-Unix makefiles use
+the latter style and therefore do not exercise stdin/stdout.  If this test
+fails, try recompiling jcmain.c & jdmain.c with USE_SETMODE and/or USE_FDOPEN.
 
 If your choice of jmemsys.c was anything other than jmemnobs.c, you should
 test that temporary-file usage works.  Try "djpeg -gif -max 0 testorig.jpg"
@@ -227,7 +243,10 @@ corresponding manual directory.  (The makefiles don't support this step since
 there's such a wide variety of installation procedures on different systems.)
 
 To learn to use the programs, read the file USAGE (or manual pages cjpeg(1)
-and djpeg(1) on Unix).
+and djpeg(1) on Unix).  Note that the man pages cjpeg.1/djpeg.1 only describe
+the Unix-style command line syntax; if you want to use these files with a
+version that uses two-file command line syntax, you'll have to modify the text
+accordingly.  The USAGE file describes both styles.
 
 
 OPTIMIZATION
@@ -373,7 +392,7 @@ compiler bug in Cray's Standard C versions prior to 3.1.  You'll need to
 insert a line reading "#pragma novector" just before the loop	
     for (i = 1; i <= (int) htbl->bits[l]; i++)
       huffsize[p++] = (char) l;
-in fix_huff_tbl (in V3, line 42 of jchuff.c and line 38 of jdhuff.c).  The
+in fix_huff_tbl (in V4A, line 42 of jchuff.c and line 39 of jdhuff.c).  The
 usual symptom of not adding this line is a core-dump.  See Cray's SPR 48222.
 
 
@@ -461,9 +480,13 @@ jmemdos.c.  Use jmemnobs.c if the environment supplies adequate virtual
 memory, otherwise use jmemansi.c or jmemname.c.
 
 Most MS-DOS compilers treat stdin/stdout as text files, so you must use
-two-file command line style.  But if your compiler has the setmode() library
-routine, you can define USE_SETMODE to get one-file style.  (Don't forget to
-change the "make test" script in the Makefile if you do so.)
+two-file command line style.  But if your compiler has either fdopen() or
+setmode(), you can use one-file style if you like.  To do this, define
+USE_FDOPEN or USE_SETMODE so that stdin/stdout will be set to binary mode.
+(USE_SETMODE seems to work with more DOS compilers than USE_FDOPEN.)  You
+should test that I/O through stdin/stdout produces the same results as I/O
+to explicitly named files... the "make test" procedures in the DOS-specific
+makefiles do NOT use stdin/stdout.
 
 If you add more switches to CFLAGS in the DOS-specific makefiles, you are
 likely to run up against DOS' 128-byte command line length limit.  In that
@@ -482,16 +505,18 @@ Some versions of Borland's MAKE erroneously display the warning message about
 creating jmemsys.c, even after you have done so.  If this happens to you,
 delete the four lines beginning with "jmemsys.c:" from the Makefile.
 
+If you want one-file command line style, define USE_SETMODE.  fdopen() does
+not work correctly.
+
 
 MS-DOS, DJGPP:
 
 Use makefile.ansi and jmemnobs.c, and put "-UMSDOS" in CFLAGS to undo the
 compiler's automatic definition of MSDOS.  Also put either "-DUSE_SETMODE" or
 "-DTWO_FILE_COMMANDLINE" in CFLAGS, depending on whether you prefer one-file
-or two-file command line style.  (If you choose two-file style, change the
-"make test" section of the Makefile accordingly.)  You'll also need to put the
-object-file lists into response files in order to circumvent DOS's 128-byte
-command line length limit at the final linking step.
+or two-file command line style.  You'll also need to put the object-file lists
+into response files in order to circumvent DOS's 128-byte command line length
+limit at the final linking step.
 
 
 MS-DOS, Microsoft C:
@@ -506,6 +531,9 @@ Original MS C 6.0 is buggy; it compiles incorrect code unless you turn off
 optimization (remove -O from CFLAGS).  That problem seems to have been fixed
 in 6.00A and later versions.  6.00A still generates a bogus "conditional
 expression is constant" warning in jrdppm.c, but the emitted code seems OK.
+
+If you want one-file command line style, define USE_SETMODE.  fdopen() does
+not work correctly, at least not in 6.00A.
 
 
 SGI:

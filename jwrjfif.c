@@ -1,7 +1,7 @@
 /*
  * jwrjfif.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -38,13 +38,13 @@
 #define WRITE_BYTES(cinfo,dataptr,datacount)  \
   { if (JFWRITE(cinfo->output_file, dataptr, datacount) \
 	!= (size_t) (datacount)) \
-      ERREXIT(cinfo->emethods, "Output file write error"); }
+      ERREXIT(cinfo->emethods, "Output file write error --- out of disk space?"); }
 
 /* Clean up and verify successful output */
 #define CHECK_OUTPUT(cinfo)  \
   { fflush(cinfo->output_file); \
     if (ferror(cinfo->output_file)) \
-      ERREXIT(cinfo->emethods, "Output file write error"); }
+      ERREXIT(cinfo->emethods, "Output file write error --- out of disk space?"); }
 
 
 /* End of stdio-specific code. */
@@ -328,6 +328,23 @@ emit_jfif_app0 (compress_info_ptr cinfo)
 }
 
 
+LOCAL void
+emit_com (compress_info_ptr cinfo, char * dataptr, size_t datalen)
+/* Emit a COM marker */
+{
+  if ((unsigned) datalen <= (unsigned) 65533) {	/* safety check */
+    emit_marker(cinfo, M_COM);
+  
+    emit_2bytes(cinfo, (int) (datalen + 2)); /* length */
+
+    while (datalen--) {
+      emit_byte(cinfo, *dataptr);
+      dataptr++;
+    }
+  }
+}
+
+
 /*
  * Write the file header.
  */
@@ -344,6 +361,10 @@ write_file_header (compress_info_ptr cinfo)
 
   if (cinfo->write_JFIF_header)	/* next an optional JFIF APP0 */
     emit_jfif_app0(cinfo);
+
+  if (cinfo->comment_text != NULL) /* and an optional COM block */
+    emit_com(cinfo, cinfo->comment_text,
+	     (size_t) (strlen(cinfo->comment_text)));
 
   /* Emit DQT for each quantization table. */
   /* Note that doing it here means we can't adjust the QTs on-the-fly. */

@@ -1,7 +1,7 @@
 /*
  * jdcolor.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -223,6 +223,8 @@ null_term (decompress_info_ptr cinfo)
 GLOBAL void
 jseldcolor (decompress_info_ptr cinfo)
 {
+  int ci;
+
   /* Make sure num_components agrees with jpeg_color_space */
   switch (cinfo->jpeg_color_space) {
   case CS_GRAYSCALE:
@@ -247,7 +249,10 @@ jseldcolor (decompress_info_ptr cinfo)
     break;
   }
 
-  /* Set color_out_comps and conversion method based on requested space */
+  /* Set color_out_comps and conversion method based on requested space. */
+  /* Also clear the component_needed flags for any unused components, */
+  /* so that earlier pipeline stages can avoid useless computation. */
+
   switch (cinfo->out_color_space) {
   case CS_GRAYSCALE:
     cinfo->color_out_comps = 1;
@@ -257,6 +262,9 @@ jseldcolor (decompress_info_ptr cinfo)
       cinfo->methods->color_convert = grayscale_convert;
       cinfo->methods->colorout_init = null_init;
       cinfo->methods->colorout_term = null_term;
+      /* For color->grayscale conversion, only the Y (0) component is needed */
+      for (ci = 1; ci < cinfo->num_components; ci++)
+	cinfo->cur_comp_info[ci]->component_needed = FALSE;
     } else
       ERREXIT(cinfo->emethods, "Unsupported color conversion request");
     break;

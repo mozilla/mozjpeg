@@ -1,7 +1,7 @@
 /*
  * jddeflts.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -39,6 +39,25 @@ METHODDEF void
 progress_monitor (decompress_info_ptr cinfo, long loopcounter, long looplimit)
 {
   /* do nothing */
+}
+
+
+/* Default comment-block processing routine.
+ * This can be overridden by an application that wishes to examine
+ * COM blocks found in the JPEG file.  The default routine does nothing.
+ * CAUTION: the comment processing routine MUST call JGETC() exactly
+ * comment_length times to read the comment data, whether it intends
+ * to do anything with the data or not!
+ * Keep in mind that (a) there may be more than one COM block in a file;
+ * (b) there's no guarantee that what's in the block is ASCII data.
+ */
+
+METHODDEF void
+process_comment (decompress_info_ptr cinfo, long comment_length)
+{
+  while (comment_length-- > 0) {
+    (void) JGETC(cinfo);
+  }
 }
 
 
@@ -160,4 +179,7 @@ j_d_defaults (decompress_info_ptr cinfo, boolean standard_buffering)
 
   /* Install default do-nothing progress monitoring method. */
   cinfo->methods->progress_monitor = progress_monitor;
+
+  /* Install default comment-block processing method. */
+  cinfo->methods->process_comment = process_comment;
 }

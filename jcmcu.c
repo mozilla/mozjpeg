@@ -32,7 +32,7 @@ static int dctcoefcount;	/* This will probably overflow on a 16-bit-int machine 
 
 /* ZAG[i] is the natural-order position of the i'th element of zigzag order. */
 
-static const short ZAG[DCTSIZE2] = {
+static const int ZAG[DCTSIZE2] = {
   0,  1,  8, 16,  9,  2,  3, 10,
  17, 24, 32, 25, 18, 11,  4,  5,
  12, 19, 26, 33, 40, 48, 41, 34,
@@ -58,9 +58,6 @@ extract_block (JSAMPARRAY input_data, int start_row, long start_col,
 
   { register JSAMPROW elemptr;
     register DCTELEM *localblkptr = block;
-#if DCTSIZE != 8
-    register int elemc;
-#endif
     register int elemr;
 
     for (elemr = DCTSIZE; elemr > 0; elemr--) {
@@ -75,8 +72,10 @@ extract_block (JSAMPARRAY input_data, int start_row, long start_col,
       *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
       *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
 #else
-      for (elemc = DCTSIZE; elemc > 0; elemc--) {
-	*localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      { register int elemc;
+	for (elemc = DCTSIZE; elemc > 0; elemc--) {
+	  *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	}
       }
 #endif
     }
@@ -89,22 +88,39 @@ extract_block (JSAMPARRAY input_data, int start_row, long start_col,
   j_fwd_dct(block);
 
   { register JCOEF temp;
-    register short i;
+    register QUANT_VAL qval;
+    register int i;
 
     for (i = 0; i < DCTSIZE2; i++) {
+      qval = *quanttbl++;
       temp = (JCOEF) block[ZAG[i]];
-      /* divide by *quanttbl, ensuring proper rounding */
+      /* Divide the coefficient value by qval, ensuring proper rounding.
+       * Since C does not specify the direction of rounding for negative
+       * quotients, we have to force the dividend positive for portability.
+       *
+       * In most files, at least half of the output values will be zero
+       * (at default quantization settings, more like three-quarters...)
+       * so we should ensure that this case is fast.  On many machines,
+       * a comparison is enough cheaper than a divide to make a special test
+       * a win.  Since both inputs will be nonnegative, we need only test
+       * for a < b to discover whether a/b is 0.
+       * If your machine's division is fast enough, define FAST_DIVIDE.
+       */
+#ifdef FAST_DIVIDE
+#define DIVIDE_BY(a,b)	a /= b
+#else
+#define DIVIDE_BY(a,b)	(a >= b) ? (a /= b) : (a = 0)
+#endif
       if (temp < 0) {
 	temp = -temp;
-	temp += *quanttbl>>1;
-	temp /= *quanttbl;
+	temp += qval>>1;	/* for rounding */
+	DIVIDE_BY(temp, qval);
 	temp = -temp;
       } else {
-	temp += *quanttbl>>1;
-	temp /= *quanttbl;
+	temp += qval>>1;	/* for rounding */
+	DIVIDE_BY(temp, qval);
       }
       *output_data++ = temp;
-      quanttbl++;
     }
   }
 
@@ -112,7 +128,7 @@ extract_block (JSAMPARRAY input_data, int start_row, long start_col,
   j_rev_dct(block);
 
   { register int diff;
-    register short i;
+    register int i;
 
     for (i = 0; i < DCTSIZE2; i++) {
       diff = block[i] - svblock[i];

@@ -1,7 +1,7 @@
 /*
  * jrdjfif.c
  *
- * Copyright (C) 1991, 1992, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, 1993, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -178,6 +178,8 @@ get_dht (decompress_info_ptr cinfo)
       count += bits[i];
     }
 
+    length -= 1 + 16;
+
     TRACEMS8(cinfo->emethods, 2, "        %3d %3d %3d %3d %3d %3d %3d %3d",
 	     bits[1], bits[2], bits[3], bits[4],
 	     bits[5], bits[6], bits[7], bits[8]);
@@ -185,13 +187,13 @@ get_dht (decompress_info_ptr cinfo)
 	     bits[9], bits[10], bits[11], bits[12],
 	     bits[13], bits[14], bits[15], bits[16]);
 
-    if (count > 256)
+    if (count > 256 || ((INT32) count) > length)
       ERREXIT(cinfo->emethods, "Bogus DHT counts");
 
     for (i = 0; i < count; i++)
       huffval[i] = (UINT8) JGETC(cinfo);
 
-    length -= 1 + 16 + count;
+    length -= count;
 
     if (index & 0x10) {		/* AC table definition */
       index -= 0x10;
@@ -357,8 +359,23 @@ get_app0 (decompress_info_ptr cinfo)
     TRACEMS1(cinfo->emethods, 1, "Short APP0 marker, length %u", (int) length);
   }
 
-  while (length-- > 0)		/* skip any remaining data */
+  while (--length >= 0)		/* skip any remaining data */
     (void) JGETC(cinfo);
+}
+
+
+LOCAL void
+get_com (decompress_info_ptr cinfo)
+/* Process a COM marker */
+/* Actually we just pass this off to an application-supplied routine */
+{
+  INT32 length;
+  
+  length = get_2bytes(cinfo) - 2;
+  
+  TRACEMS1(cinfo->emethods, 1, "Comment, length %u", (int) length);
+  
+  (*cinfo->methods->process_comment) (cinfo, (long) length);
 }
 
 
@@ -417,7 +434,8 @@ get_sof (decompress_info_ptr cinfo, int code)
     compptr->h_samp_factor = (c >> 4) & 15;
     compptr->v_samp_factor = (c     ) & 15;
     compptr->quant_tbl_no  = JGETC(cinfo);
-      
+    compptr->component_needed = TRUE; /* assume all components are wanted */
+
     TRACEMS4(cinfo->emethods, 1, "    Component %d: %dhx%dv q=%d",
 	     compptr->component_id, compptr->h_samp_factor,
 	     compptr->v_samp_factor, compptr->quant_tbl_no);
@@ -526,14 +544,14 @@ next_marker (decompress_info_ptr cinfo)
 }
 
 
-LOCAL JPEG_MARKER
+LOCAL int
 process_tables (decompress_info_ptr cinfo)
 /* Scan and process JPEG markers that can appear in any order */
 /* Return when an SOI, EOI, SOFn, or SOS is found */
 {
   int c;
 
-  while (TRUE) {
+  for (;;) {
     c = next_marker(cinfo);
       
     switch (c) {
@@ -554,7 +572,7 @@ process_tables (decompress_info_ptr cinfo)
     case M_SOI:
     case M_EOI:
     case M_SOS:
-      return ((JPEG_MARKER) c);
+      return c;
       
     case M_DHT:
       get_dht(cinfo);
@@ -575,6 +593,10 @@ process_tables (decompress_info_ptr cinfo)
     case M_APP0:
       get_app0(cinfo);
       break;
+      
+    case M_COM:
+      get_com(cinfo);
+      break;
 
     case M_RST0:		/* these are all parameterless */
     case M_RST1:
@@ -588,7 +610,7 @@ process_tables (decompress_info_ptr cinfo)
       TRACEMS1(cinfo->emethods, 1, "Unexpected marker 0x%02x", c);
       break;
 
-    default:	/* must be DNL, DHP, EXP, APPn, JPGn, COM, or RESn */
+    default:	/* must be DNL, DHP, EXP, APPn, JPGn, or RESn */
       skip_variable(cinfo, c);
       break;
     }
@@ -611,7 +633,7 @@ read_file_header (decompress_info_ptr cinfo)
    * nonstandard headers in front of the SOI, it must skip over them itself
    * before calling jpeg_decompress().
    */
-  if (JGETC(cinfo) != 0xFF  ||  JGETC(cinfo) != M_SOI)
+  if (JGETC(cinfo) != 0xFF  ||  JGETC(cinfo) != (int) M_SOI)
     ERREXIT(cinfo->emethods, "Not a JPEG file");
 
   get_soi(cinfo);		/* OK, process SOI */
@@ -759,16 +781,16 @@ resync_to_restart (decompress_info_ptr cinfo, int marker)
 	  marker, desired);
   /* Outer loop handles repeated decision after scanning forward. */
   for (;;) {
-    if (marker < M_SOF0)
+    if (marker < (int) M_SOF0)
       action = 2;		/* invalid marker */
-    else if (marker < M_RST0 || marker > M_RST7)
+    else if (marker < (int) M_RST0 || marker > (int) M_RST7)
       action = 3;		/* valid non-restart marker */
     else {
-      if (marker == (M_RST0 + ((desired+1) & 7)) ||
-	  marker == (M_RST0 + ((desired+2) & 7)))
+      if (marker == ((int) M_RST0 + ((desired+1) & 7)) ||
+	  marker == ((int) M_RST0 + ((desired+2) & 7)))
 	action = 3;		/* one of the next two expected restarts */
-      else if (marker == (M_RST0 + ((desired-1) & 7)) ||
-	       marker == (M_RST0 + ((desired-2) & 7)))
+      else if (marker == ((int) M_RST0 + ((desired-1) & 7)) ||
+	       marker == ((int) M_RST0 + ((desired-2) & 7)))
 	action = 2;		/* a prior restart, so advance */
       else
 	action = 1;		/* desired restart or too far away */

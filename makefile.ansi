@@ -54,7 +54,8 @@ INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
         makcjpeg.st makdjpeg.st makljpeg.st makefile.mc5 makefile.mc6 \
-        makefile.bcc makefile.mms makefile.vms makvms.opt
+        makefile.bcc makefile.icc makljpeg.icc makefile.mms makefile.vms \
+        makvms.opt
 OTHERFILES= ansi2knr.c ckconfig.c example.c
 TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
 DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \

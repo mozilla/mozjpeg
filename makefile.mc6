@@ -16,11 +16,15 @@
 #       -DINCLUDES_ARE_ANSI    and all the ANSI include files.
 #       -DMSDOS         we are on an MSDOS machine
 #       -DUSE_FMEM      we have _fmemcpy() and _fmemset()
+#       -DNEED_FHEAPMIN        our heap management routines are broken
 #       -DSHORTxLCONST_32      enables compiler-specific multiply optimization
 #       -DMEM_STATS     enable memory usage statistics (optional)
 # You might also want to add -G2 if you have an 80286, etc.
+# If you run up against DOS' 128-character limit on command line length,
+# you can get rid of some of the -D switches by adding equivalent #define
+# commands to the head of jinclude.h.
 
-CFLAGS = -AS -Ox -W3 -DHAVE_STDC -DINCLUDES_ARE_ANSI -DMSDOS -DUSE_FMEM -DSHORTxLCONST_32
+CFLAGS = -AS -Ox -W3 -DHAVE_STDC -DINCLUDES_ARE_ANSI -DMSDOS -DUSE_FMEM -DNEED_FHEAPMIN -DSHORTxLCONST_32
 
 # need linker response file because file list > 128 chars
 RFILE = libjpeg.ans
@@ -44,7 +48,8 @@ INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
         makcjpeg.st makdjpeg.st makljpeg.st makefile.mc5 makefile.mc6 \
-        makefile.bcc makefile.mms makefile.vms makvms.opt
+        makefile.bcc makefile.icc makljpeg.icc makefile.mms makefile.vms \
+        makvms.opt
 OTHERFILES= ansi2knr.c ckconfig.c example.c
 TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
 DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \
@@ -112,12 +117,12 @@ clean:
 
 test:
         del testout.*
-        djpeg testorig.jpg testout.ppm
-        djpeg -gif testorig.jpg testout.gif
-        cjpeg testimg.ppm testout.jpg
-        fc testimg.ppm testout.ppm
-        fc testimg.gif testout.gif
-        fc testimg.jpg testout.jpg
+	djpeg -outfile testout.ppm  testorig.jpg
+	djpeg -gif -outfile testout.gif  testorig.jpg
+	cjpeg -outfile testout.jpg  testimg.ppm
+        fc /b testimg.ppm testout.ppm
+        fc /b testimg.gif testout.gif
+        fc /b testimg.jpg testout.jpg
 
 
 jbsmooth.obj : jbsmooth.c jinclude.h jconfig.h jpegdata.h

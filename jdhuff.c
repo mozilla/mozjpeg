@@ -17,7 +17,7 @@
 
 static decompress_info_ptr dcinfo;
 
-static unsigned int get_buffer; /* current bit-extraction buffer */
+static INT32 get_buffer;	/* current bit-extraction buffer */
 static int bits_left;		/* # of unused bits in it */
 
 
@@ -35,8 +35,8 @@ fix_huff_tbl (HUFF_TBL * htbl)
 
   p = 0;
   for (l = 1; l <= 16; l++) {
-    for (i = 1; i <= htbl->bits[l]; i++)
-      huffsize[p++] = l;
+    for (i = 1; i <= (int) htbl->bits[l]; i++)
+      huffsize[p++] = (char) l;
   }
   huffsize[p] = 0;
   lastp = p;
@@ -48,7 +48,7 @@ fix_huff_tbl (HUFF_TBL * htbl)
   si = huffsize[0];
   p = 0;
   while (huffsize[p]) {
-    while (huffsize[p] == si) {
+    while (((int) huffsize[p]) == si) {
       huffcode[p++] = code;
       code++;
     }
@@ -77,10 +77,11 @@ fix_huff_tbl (HUFF_TBL * htbl)
       htbl->maxcode[l] = -1;
     }
   }
+  htbl->maxcode[17] = 0xFFFFFL;	/* ensures huff_DECODE terminates */
 }
 
 
-/* Extract the next N bits from the input stream (N <= 8) */
+/* Extract the next N bits from the input stream (N <= 15) */
 
 LOCAL int
 get_bits (int nbits)
@@ -90,7 +91,8 @@ get_bits (int nbits)
   while (nbits > bits_left) {
     int c = JGETC(dcinfo);
     
-    get_buffer = (get_buffer << 8) + c;
+    get_buffer <<= 8;
+    get_buffer |= c;
     bits_left += 8;
     /* If it's 0xFF, check and discard stuffed zero byte */
     if (c == 0xff) {
@@ -102,14 +104,14 @@ get_bits (int nbits)
   }
   
   bits_left -= nbits;
-  result = (get_buffer >> bits_left) & ((1 << nbits) - 1);
+  result = ((int) (get_buffer >> bits_left)) & ((1 << nbits) - 1);
   return result;
 }
 
 /* Macro to make things go at some speed! */
 
 #define get_bit()	(bits_left ? \
-			 ((get_buffer >> (--bits_left)) & 1) : \
+			 ((int) (get_buffer >> (--bits_left))) & 1 : \
 			 get_bits(1))
 
 
@@ -127,14 +129,22 @@ huff_DECODE (HUFF_TBL * htbl)
     code = (code << 1) + get_bit();
     l++;
   }
+
+  /* With garbage input we may reach the sentinel value l = 17. */
+
+  if (l > 16) {
+    ERREXIT(dcinfo->emethods, "Corrupted data in JPEG file");
+  }
+
+  p = (int) (htbl->valptr[l] + (code - htbl->mincode[l]));
   
-  p = htbl->valptr[l] + (code - htbl->mincode[l]);
-  
-  return htbl->huffval[p];
+  return (int) htbl->huffval[p];
 }
 
 
 /* Figure 13.4.2.1.1: extend sign bit */
+
+/* NB: on some compilers this will only work for s > 0 */
 
 #define huff_EXTEND(x, s)	((x) < (1 << ((s)-1)) ? \
 				 (x) + (-1 << (s)) + 1 : \
@@ -156,9 +166,12 @@ decode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
   /* Section 13.4.2.1: decode the DC coefficient difference */
 
   s = huff_DECODE(dctbl);
-  r = get_bits(s);
-  block[0] = huff_EXTEND(r, s);
-  
+  if (s) {
+    r = get_bits(s);
+    s = huff_EXTEND(r, s);
+  }
+  block[0] = s;
+
   /* Section 13.4.2.2: decode the AC coefficients */
   
   for (k = 1; k < DCTSIZE2; k++) {
@@ -168,7 +181,7 @@ decode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
     n = r >> 4;
     
     if (s) {
-      k = k + n;
+      k += n;
       r = get_bits(s);
       block[k] = huff_EXTEND(r, s);
     } else {

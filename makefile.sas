@@ -1,37 +1,38 @@
 # Makefile for Independent JPEG Group's software
 
-# This makefile is suitable for Unix-like systems with non-ANSI compilers.
-# If you have an ANSI compiler, makefile.ansi is a better starting point.
+# This makefile is for Amiga systems using SAS C 5.10b.
+# Contributed by Ed Hanway (sisd!jeh@uunet.uu.net).
 
 # Read SETUP instructions before saying "make" !!
 
 # The name of your C compiler:
-CC= cc
+CC= lc
+
+# Uncomment the following lines for generic 680x0 version
+ARCHFLAGS=
+SUFFIX=
+
+# Uncomment the following lines for 68030-only version
+#ARCHFLAGS= -m3
+#SUFFIX=.030
 
 # You may need to adjust these cc options:
-CFLAGS= -O
-# In particular:
-#   Add -DBSD if on a pure BSD system (see jinclude.h).
-#   Add -DVMS if on a VMS system (see ansi2knr.c).
-#   Add -DMSDOS if on an MSDOS system (see ansi2knr.c).
-#   Add -DMEM_STATS to enable gathering of memory usage statistics.
-#   You may also want to add -DTWO_FILE_COMMANDLINE or -D switches for other
-#   symbols listed in jconfig.h, if you prefer not to change jconfig.h.
+CFLAGS= -v -b -rr -O -j104 -D__STDC__ -DTWO_FILE_COMMANDLINE -DINCOMPLETE_TYPES_BROKEN $(ARCHFLAGS)
+# -j104 disables warnings for mismatched const qualifiers
 
 # Link-time cc options:
-LDFLAGS= 
+LDFLAGS= SC SD ND BATCH
 
-# To link any special libraries, add the necessary -l commands here.
-# In particular, on some versions of HP-UX (and probably other SysV-derived
-# systems) there is a faster alternate malloc(3) library that you can use
-# by adding "-lmalloc" to this line.
-LDLIBS= 
+# To link any special libraries, add the necessary commands here.
+LDLIBS= LIB LIB:lcr.lib
 
 # miscellaneous OS-dependent stuff
-LN= $(CC)	# linker
-RM= rm -f	# file deletion command
-AR= ar rc	# library (.a) file creation command
-AR2= ranlib	# second step in .a creation (use "touch" if not needed)
+# linker
+LN= blink
+# file deletion command
+RM= delete quiet
+# library (.lib) file creation command
+AR= oml
 
 
 # source files (independently compilable files)
@@ -65,53 +66,49 @@ DLIBOBJECTS= jdmaster.o jddeflts.o jbsmooth.o jdarith.o jdcolor.o jdhuff.o \
         jdmcu.o jdpipe.o jdsample.o jquant1.o jquant2.o jrevdct.o jrdjfif.o \
         jwrgif.o jwrppm.o jwrrle.o jwrtarga.o
 DOBJECTS= jdmain.o $(DLIBOBJECTS) $(COMOBJECTS)
-# These objectfiles are included in libjpeg.a
+# These objectfiles are included in libjpeg.lib
 LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 
 
-all: ansi2knr cjpeg djpeg
-# By default, libjpeg.a is not built unless you explicitly request it.
-# You can add libjpeg.a to the line above if you want it built by default.
+all: cjpeg$(SUFFIX) djpeg$(SUFFIX)
+# By default, libjpeg.lib is not built unless you explicitly request it.
+# You can add libjpeg.lib to the line above if you want it built by default.
 
 
-# This rule causes ansi2knr to be invoked.  If you use this makefile,
-# make sure PROTO is not defined by jconfig.h.
+cjpeg$(SUFFIX): $(COBJECTS)
+	$(LN) <WITH <
+$(LDFLAGS)
+TO cjpeg$(SUFFIX)
+FROM LIB:c.o $(COBJECTS)
+$(LDLIBS)
+<
 
-.c.o:
-	./ansi2knr $*.c tmpansi.c
-	$(CC) $(CFLAGS) -c tmpansi.c
-	mv tmpansi.o $*.o
-	$(RM) tmpansi.c
+djpeg$(SUFFIX): $(DOBJECTS)
+	$(LN) <WITH <
+$(LDFLAGS)
+TO djpeg$(SUFFIX)
+FROM LIB:c.o $(DOBJECTS)
+$(LDLIBS)
+<
 
-ansi2knr: ansi2knr.c
-	$(CC) $(CFLAGS) -o ansi2knr ansi2knr.c
-
-
-cjpeg: ansi2knr $(COBJECTS)
-	$(LN) $(LDFLAGS) -o cjpeg $(COBJECTS) $(LDLIBS)
-
-djpeg: ansi2knr $(DOBJECTS)
-	$(LN) $(LDFLAGS) -o djpeg $(DOBJECTS) $(LDLIBS)
-
-# libjpeg.a is useful if you are including the JPEG software in a larger
+# libjpeg.lib is useful if you are including the JPEG software in a larger
 # program; you'd include it in your link, rather than the individual modules.
-libjpeg.a: ansi2knr $(LIBOBJECTS)
-	$(RM) libjpeg.a
-	$(AR) libjpeg.a  $(LIBOBJECTS)
-	$(AR2) libjpeg.a
+libjpeg.lib: $(LIBOBJECTS)
+	-$(RM) libjpeg.lib
+	$(AR) libjpeg.lib r $(LIBOBJECTS)
 
 clean:
-	$(RM) *.o cjpeg djpeg libjpeg.a ansi2knr core tmpansi.* testout.ppm testout.jpg
+	-$(RM) *.o cjpeg djpeg cjpeg.030 djpeg.030 libjpeg.lib core testout.ppm testout.jpg
 
 distribute:
-	$(RM) jpegsrc.tar*
+	-$(RM) jpegsrc.tar*
 	tar cvf jpegsrc.tar $(DISTFILES)
 	compress -v jpegsrc.tar
 
 test: cjpeg djpeg
-	$(RM) testout.ppm testout.jpg
-	./djpeg testorig.jpg >testout.ppm
-	./cjpeg testimg.ppm >testout.jpg
+	-$(RM) testout.ppm testout.jpg
+	djpeg testorig.jpg testout.ppm
+	cjpeg testimg.ppm testout.jpg
 	cmp testimg.ppm testout.ppm
 	cmp testimg.jpg testout.jpg
 

@@ -1,0 +1,4 @@
+jdmain.obj jdmaster.obj jddeflts.obj jbsmooth.obj jdarith.obj jdcolor.obj
+jdhuff.obj jdmcu.obj jdpipe.obj jdsample.obj jquant1.obj jquant2.obj
+jrevdct.obj jrdjfif.obj jwrgif.obj jwrppm.obj jwrrle.obj jwrtarga.obj
+jutils.obj jvirtmem.obj jerror.obj

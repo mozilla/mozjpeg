@@ -40,21 +40,27 @@
  *	UUCP:		...!ames!fxgrp!ljz
  *
  *    	May, 1988
+ *
+ * Modified for use in free JPEG code:
+ *
+ *	Ed Hanway
+ *	UUCP:	uunet!sisd!jeh
+ *
+ *	October, 1991
  */
 
-/*
- * If you want, include stdio.h or something where EOF and NULL are defined.
- * However, egetopt() is written so as not to need stdio.h, which should
- * make it significantly smaller on some systems.
+/* The original egetopt.c was written not to need stdio.h.
+ * For the JPEG code this is an unnecessary and unportable assumption.
+ * Also, we make all the variables and routines "static" to avoid
+ * possible conflicts with a system-library version of getopt.
+ *
+ * In the JPEG code, this file is compiled by #including it in jcmain.c
+ * or jdmain.c.  Since ANSI2KNR does not process include files, we can't
+ * rely on it to convert function definitions to K&R style.  Hence we
+ * provide both styles of function header with an explicit #ifdef PROTO (ick).
  */
 
-#ifndef EOF
-# define EOF		(-1)
-#endif /* ! EOF */
-
-#ifndef NULL
-# define NULL		(char *)0
-#endif /* ! NULL */
+#define GVAR static		/* make empty to export these variables */
 
 /*
  * None of these constants are referenced in the executable portion of
@@ -63,23 +69,21 @@
 #define BADCH		(int)'?'
 #define NEEDSEP		(int)':'
 #define MAYBESEP	(int)'\0'
-#define ERRFD		2
 #define EMSG		""
 #define START		"-"
 
 /*
  * Here are all the pertinent global variables.
  */
-int opterr = 1;		/* if true, output error message */
-int optind = 1;		/* index into parent argv vector */
-int optopt;		/* character checked for validity */
-int optbad = BADCH;	/* character returned on error */
-int optchar = 0;	/* character that begins returned option */
-int optneed = NEEDSEP;	/* flag for mandatory argument */
-int optmaybe = MAYBESEP;/* flag for optional argument */
-int opterrfd = ERRFD;	/* file descriptor for error text */
-char *optarg;		/* argument associated with option */
-char *optstart = START;	/* list of characters that start options */
+GVAR int opterr = 1;		/* if true, output error message */
+GVAR int optind = 1;		/* index into parent argv vector */
+GVAR int optopt;		/* character checked for validity */
+GVAR int optbad = BADCH;	/* character returned on error */
+GVAR int optchar = 0;		/* character that begins returned option */
+GVAR int optneed = NEEDSEP;	/* flag for mandatory argument */
+GVAR int optmaybe = MAYBESEP;	/* flag for optional argument */
+GVAR const char *optarg;	/* argument associated with option */
+GVAR const char *optstart = START; /* list of characters that start options */
 
 
 /*
@@ -88,17 +92,11 @@ char *optstart = START;	/* list of characters that start options */
 
 /*
  * Conditionally print out an error message and return (depends on the
- * setting of 'opterr' and 'opterrfd').  Note that this version of
- * TELL() doesn't require the existence of stdio.h.
+ * setting of 'opterr').
  */
 #define TELL(S)	{ \
-	if (opterr && opterrfd >= 0) { \
-		char option = optopt; \
-		write(opterrfd, *nargv, strlen(*nargv)); \
-		write(opterrfd, (S), strlen(S)); \
-		write(opterrfd, &option, 1); \
-		write(opterrfd, "\n", 1); \
-	} \
+	if (opterr) \
+		fprintf(stderr, "%s%s%c\n", *nargv, (S), optopt); \
 	return (optbad); \
 }
 
@@ -106,10 +104,16 @@ char *optstart = START;	/* list of characters that start options */
  * This works similarly to index() and strchr().  I include it so that you
  * don't need to be concerned as to which one your system has.
  */
-static char *
-_sindex(string, ch)
-char *string;
-int ch;
+
+#ifdef PROTO
+LOCAL const char *
+_sindex (const char *string, int ch)
+#else
+LOCAL const char *
+_sindex (string, ch)
+     const char *string;
+     int ch;
+#endif
 {
 	if (string != NULL) {
 		for (; *string != '\0'; ++string) {
@@ -125,15 +129,21 @@ int ch;
 /*
  * Here it is:
  */
-int
-egetopt(nargc, nargv, ostr)
-int nargc;
-char **nargv;
-char *ostr;
+
+#ifdef PROTO
+LOCAL int
+egetopt (int nargc, char **nargv, const char *ostr)
+#else
+LOCAL int
+egetopt (nargc, nargv, ostr)
+     int nargc;
+     char **nargv;
+     const char *ostr;
+#endif
 {
-	static char *place = EMSG;	/* option letter processing */
-	register char *oli;		/* option letter list index */
-	register char *osi = NULL;	/* option start list index */
+	static const char *place = EMSG; /* option letter processing */
+	register const char *oli;	 /* option letter list index */
+	register const char *osi = NULL; /* option start list index */
 
 	if (nargv == (char **)NULL) {
 		return (EOF);

@@ -1230,7 +1230,8 @@ multi_dcontroller (decompress_info_ptr cinfo)
     }
 
     emit_1pass (cinfo,
-		(int) MIN(rows_in_mem, cinfo->image_height-pixel_rows_output),
+		(int) MIN((long) rows_in_mem,
+			  cinfo->image_height - pixel_rows_output),
 		fullsize_ptrs, color_data);
   }
 

@@ -94,7 +94,7 @@ smooth_coefficients (decompress_info_ptr cinfo,
 
 #define ABS(x)	((x) < 0 ? -(x) : (x))
 
-#define COND_ASSIGN(_ac,_n,_z)   if ((ABS(output[col][_n] - (_ac))<<1) <= Qptr[_z]) output[col][_n] = (_ac)
+#define COND_ASSIGN(_ac,_n,_z)   if ((ABS(output[col][_n] - (_ac))<<1) <= Qptr[_z]) output[col][_n] = (JCOEF) (_ac)
 
       COND_ASSIGN(AC01,  1, 1);
       COND_ASSIGN(AC02,  2, 5);

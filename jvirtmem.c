@@ -17,9 +17,11 @@
  * They should exit to error_exit if unsuccessful.
  */
 
+#define AM_MEMORY_MANAGER	/* we define big_Xarray_control structs */
+
 #include "jinclude.h"
 
-#ifdef __STDC__
+#ifdef INCLUDES_ARE_ANSI
 #include <stdlib.h>		/* to declare malloc(), free() */
 #else
 extern void * malloc PP((size_t size));
@@ -51,6 +53,20 @@ extern void free PP((void *ptr));
 #endif
 
 #endif /* NEED_FAR_POINTERS */
+
+/*
+ * When allocating 2-D arrays we can either ask malloc() for each row
+ * individually, or grab the whole space in one chunk.  The latter is
+ * a lot faster on large arrays, but fails if malloc can't handle big
+ * requests, as is typically true on MS-DOS.
+ * We assume here that big malloc requests are safe whenever
+ * NEED_FAR_POINTERS is not defined, but you can change this if you are
+ * on a weird machine.
+ */
+
+#ifndef NEED_FAR_POINTERS
+#define BIG_MALLOCS_OK		/* safe to ask far_malloc for > 64Kb */
+#endif
 
 
 /*
@@ -220,12 +236,20 @@ alloc_small_sarray (long samplesperrow, long numrows)
 /* Allocate a "small" (all-in-memory) 2-D sample array */
 {
   JSAMPARRAY result;
+#ifdef BIG_MALLOCS_OK
+  JSAMPROW workspace;
+#endif
   long i;
 
 #ifdef MEM_STATS
   total_num_sarray++;
+#ifdef BIG_MALLOCS_OK
+  total_bytes_sarray += numrows * samplesperrow * SIZEOF(JSAMPLE)
+			+ MALLOC_FAR_OVERHEAD;
+#else
   total_bytes_sarray += (samplesperrow * SIZEOF(JSAMPLE) + MALLOC_FAR_OVERHEAD)
 			* numrows;
+#endif
   cur_num_sarray++;
   if (cur_num_sarray > max_num_sarray) max_num_sarray = cur_num_sarray;
 #endif
@@ -234,11 +258,24 @@ alloc_small_sarray (long samplesperrow, long numrows)
   result = (JSAMPARRAY) alloc_small((size_t) (numrows * SIZEOF(JSAMPROW)));
 
   /* Get the rows themselves; on 80x86 these are "far" */
+
+#ifdef BIG_MALLOCS_OK
+  workspace = (JSAMPROW) far_malloc((size_t)
+				(numrows * samplesperrow * SIZEOF(JSAMPLE)));
+  if (workspace == NULL)
+    out_of_memory(3);
   for (i = 0; i < numrows; i++) {
-    result[i] = (JSAMPROW) far_malloc((size_t) (samplesperrow * SIZEOF(JSAMPLE)));
+    result[i] = workspace;
+    workspace += samplesperrow;
+  }
+#else
+  for (i = 0; i < numrows; i++) {
+    result[i] = (JSAMPROW) far_malloc((size_t)
+				      (samplesperrow * SIZEOF(JSAMPLE)));
     if (result[i] == NULL)
       out_of_memory(3);
   }
+#endif
 
   return result;
 }
@@ -248,12 +285,16 @@ METHODDEF void
 free_small_sarray (JSAMPARRAY ptr, long numrows)
 /* Free a "small" (all-in-memory) 2-D sample array */
 {
+  /* Free the rows themselves; on 80x86 these are "far" */
+#ifdef BIG_MALLOCS_OK
+  far_free((void FAR *) ptr[0]);
+#else
   long i;
 
-  /* Free the rows themselves; on 80x86 these are "far" */
   for (i = 0; i < numrows; i++) {
     far_free((void FAR *) ptr[i]);
   }
+#endif
 
   /* Free space for row pointers; this is always "near" on 80x86 */
   free_small((void *) ptr);
@@ -269,12 +310,20 @@ alloc_small_barray (long blocksperrow, long numrows)
 /* Allocate a "small" (all-in-memory) 2-D coefficient-block array */
 {
   JBLOCKARRAY result;
+#ifdef BIG_MALLOCS_OK
+  JBLOCKROW workspace;
+#endif
   long i;
 
 #ifdef MEM_STATS
   total_num_barray++;
+#ifdef BIG_MALLOCS_OK
+  total_bytes_barray += numrows * blocksperrow * SIZEOF(JBLOCK)
+			+ MALLOC_FAR_OVERHEAD;
+#else
   total_bytes_barray += (blocksperrow * SIZEOF(JBLOCK) + MALLOC_FAR_OVERHEAD)
 			* numrows;
+#endif
   cur_num_barray++;
   if (cur_num_barray > max_num_barray) max_num_barray = cur_num_barray;
 #endif
@@ -283,11 +332,24 @@ alloc_small_barray (long blocksperrow, long numrows)
   result = (JBLOCKARRAY) alloc_small((size_t) (numrows * SIZEOF(JBLOCKROW)));
 
   /* Get the rows themselves; on 80x86 these are "far" */
+
+#ifdef BIG_MALLOCS_OK
+  workspace = (JBLOCKROW) far_malloc((size_t)
+				(numrows * blocksperrow * SIZEOF(JBLOCK)));
+  if (workspace == NULL)
+    out_of_memory(4);
   for (i = 0; i < numrows; i++) {
-    result[i] = (JBLOCKROW) far_malloc((size_t) (blocksperrow * SIZEOF(JBLOCK)));
+    result[i] = workspace;
+    workspace += blocksperrow;
+  }
+#else
+  for (i = 0; i < numrows; i++) {
+    result[i] = (JBLOCKROW) far_malloc((size_t)
+				       (blocksperrow * SIZEOF(JBLOCK)));
     if (result[i] == NULL)
       out_of_memory(4);
   }
+#endif
 
   return result;
 }
@@ -297,12 +359,16 @@ METHODDEF void
 free_small_barray (JBLOCKARRAY ptr, long numrows)
 /* Free a "small" (all-in-memory) 2-D coefficient-block array */
 {
+  /* Free the rows themselves; on 80x86 these are "far" */
+#ifdef BIG_MALLOCS_OK
+  far_free((void FAR *) ptr[0]);
+#else
   long i;
 
-  /* Free the rows themselves; on 80x86 these are "far" */
   for (i = 0; i < numrows; i++) {
     far_free((void FAR *) ptr[i]);
   }
+#endif
 
   /* Free space for row pointers; this is always "near" on 80x86 */
   free_small((void *) ptr);

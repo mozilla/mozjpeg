@@ -36,7 +36,8 @@
 
 /* Write some bytes from a (char *) buffer */
 #define WRITE_BYTES(cinfo,dataptr,datacount)  \
-  { if (fwrite((dataptr), 1, (datacount), cinfo->output_file) != (datacount)) \
+  { if (FWRITE(cinfo->output_file, dataptr, datacount) \
+	!= (size_t) (datacount)) \
       ERREXIT(cinfo->emethods, "Output file write error"); }
 
 /* Clean up and verify successful output */
@@ -246,6 +247,9 @@ emit_sof (compress_info_ptr cinfo, JPEG_MARKER code)
   emit_marker(cinfo, code);
   
   emit_2bytes(cinfo, 3 * cinfo->num_components + 2 + 5 + 1); /* length */
+
+  if (cinfo->image_height > 65535L || cinfo->image_width > 65535L)
+    ERREXIT(cinfo->emethods, "Maximum image dimension for JFIF is 65535 pixels");
 
   emit_byte(cinfo, cinfo->data_precision);
   emit_2bytes(cinfo, (int) cinfo->image_height);

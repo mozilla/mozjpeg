@@ -97,8 +97,9 @@ flush_packet (void)
 /* flush any accumulated data */
 {
   if (bytesinpkt > 0) {		/* never write zero-length packet */
-    packetbuf[0] = bytesinpkt++;
-    if (fwrite(packetbuf, 1, bytesinpkt, dcinfo->output_file) != bytesinpkt)
+    packetbuf[0] = (char) bytesinpkt++;
+    if (FWRITE(dcinfo->output_file, packetbuf, bytesinpkt)
+	!= (size_t) bytesinpkt)
       ERREXIT(dcinfo->emethods, "Output file write error");
     bytesinpkt = 0;
   }
@@ -106,7 +107,7 @@ flush_packet (void)
 
 
 LOCAL void
-char_out (int c)
+char_out (char c)
 /* Add a character to current packet; flush to disk if necessary */
 {
   packetbuf[++bytesinpkt] = c;
@@ -133,7 +134,7 @@ output (code_int code)
   cur_bits += n_bits;
 
   while (cur_bits >= 8) {
-    char_out((int) (cur_accum & 0xFF));
+    char_out((char) (cur_accum & 0xFF));
     cur_accum >>= 8;
     cur_bits -= 8;
   }
@@ -225,7 +226,7 @@ compress_byte (int c)
     i -= HSIZE;
   
   if (hash_code[i] != 0) {	/* is first probed slot empty? */
-    if (hash_prefix[i] == waiting_code && hash_suffix[i] == c) {
+    if (hash_prefix[i] == waiting_code && hash_suffix[i] == (UINT8) c) {
       waiting_code = hash_code[i];
       return;
     }
@@ -239,7 +240,7 @@ compress_byte (int c)
 	i += HSIZE;
       if (hash_code[i] == 0)
 	break;			/* hit empty slot */
-      if (hash_prefix[i] == waiting_code && hash_suffix[i] == c) {
+      if (hash_prefix[i] == waiting_code && hash_suffix[i] == (UINT8) c) {
 	waiting_code = hash_code[i];
 	return;
       }
@@ -251,7 +252,7 @@ compress_byte (int c)
   if (free_code < LZW_TABLE_SIZE) {
     hash_code[i] = free_code++;	/* add symbol to hashtable */
     hash_prefix[i] = waiting_code;
-    hash_suffix[i] = c;
+    hash_suffix[i] = (UINT8) c;
   } else
     clear_block();
   waiting_code = c;
@@ -269,7 +270,7 @@ compress_term (void)
   output(EOFCode);
   /* Flush the bit-packing buffer */
   if (cur_bits > 0) {
-    char_out((int) (cur_accum & 0xFF));
+    char_out((char) (cur_accum & 0xFF));
   }
   /* Flush the packet buffer */
   flush_packet();
@@ -334,7 +335,7 @@ emit_header (int num_colors, JSAMPARRAY colormap)
    * Write the GIF header.
    * Note that we generate a plain GIF87 header for maximum compatibility.
    */
-  fwrite("GIF87a", 1, 6, dcinfo->output_file);
+  (void) FWRITE(dcinfo->output_file, "GIF87a", 6);
   /* Write the Logical Screen Descriptor */
   put_word((UINT16) dcinfo->image_width);
   put_word((UINT16) dcinfo->image_height);

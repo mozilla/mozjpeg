@@ -1,7 +1,7 @@
 # Makefile for Independent JPEG Group's software
 
-# This makefile is suitable for Unix-like systems with non-ANSI compilers.
-# If you have an ANSI compiler, makefile.ansi is a better starting point.
+# This makefile is suitable for Unix-like systems with ANSI-capable compilers.
+# If you have a non-ANSI compiler, makefile.unix is a better starting point.
 
 # Read SETUP instructions before saying "make" !!
 
@@ -12,8 +12,6 @@ CC= cc
 CFLAGS= -O
 # In particular:
 #   Add -DBSD if on a pure BSD system (see jinclude.h).
-#   Add -DVMS if on a VMS system (see ansi2knr.c).
-#   Add -DMSDOS if on an MSDOS system (see ansi2knr.c).
 #   Add -DMEM_STATS to enable gathering of memory usage statistics.
 #   You may also want to add -DTWO_FILE_COMMANDLINE or -D switches for other
 #   symbols listed in jconfig.h, if you prefer not to change jconfig.h.
@@ -69,39 +67,26 @@ DOBJECTS= jdmain.o $(DLIBOBJECTS) $(COMOBJECTS)
 LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 
 
-all: ansi2knr cjpeg djpeg
+all: cjpeg djpeg
 # By default, libjpeg.a is not built unless you explicitly request it.
 # You can add libjpeg.a to the line above if you want it built by default.
 
 
-# This rule causes ansi2knr to be invoked.  If you use this makefile,
-# make sure PROTO is not defined by jconfig.h.
-
-.c.o:
-	./ansi2knr $*.c tmpansi.c
-	$(CC) $(CFLAGS) -c tmpansi.c
-	mv tmpansi.o $*.o
-	$(RM) tmpansi.c
-
-ansi2knr: ansi2knr.c
-	$(CC) $(CFLAGS) -o ansi2knr ansi2knr.c
-
-
-cjpeg: ansi2knr $(COBJECTS)
+cjpeg: $(COBJECTS)
 	$(LN) $(LDFLAGS) -o cjpeg $(COBJECTS) $(LDLIBS)
 
-djpeg: ansi2knr $(DOBJECTS)
+djpeg: $(DOBJECTS)
 	$(LN) $(LDFLAGS) -o djpeg $(DOBJECTS) $(LDLIBS)
 
 # libjpeg.a is useful if you are including the JPEG software in a larger
 # program; you'd include it in your link, rather than the individual modules.
-libjpeg.a: ansi2knr $(LIBOBJECTS)
+libjpeg.a: $(LIBOBJECTS)
 	$(RM) libjpeg.a
 	$(AR) libjpeg.a  $(LIBOBJECTS)
 	$(AR2) libjpeg.a
 
 clean:
-	$(RM) *.o cjpeg djpeg libjpeg.a ansi2knr core tmpansi.* testout.ppm testout.jpg
+	$(RM) *.o cjpeg djpeg libjpeg.a core testout.ppm testout.jpg
 
 distribute:
 	$(RM) jpegsrc.tar*

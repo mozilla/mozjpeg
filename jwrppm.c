@@ -21,6 +21,16 @@
 #ifdef PPM_SUPPORTED
 
 
+/*
+ * Haven't yet got around to making this work with text-format output,
+ * hence cannot handle pixels wider than 8 bits.
+ */
+
+#ifndef EIGHT_BIT_SAMPLES
+  Sorry, this code only copes with 8-bit JSAMPLEs. /* deliberate syntax err */
+#endif
+
+
 static JSAMPARRAY color_map;	/* saves color map passed by quantizer */
 
 

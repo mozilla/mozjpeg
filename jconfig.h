@@ -21,7 +21,7 @@
  */
 
 /* Does your compiler support function prototypes? */
-/* (If not, you also need to use ansi2knr, see README) */
+/* (If not, you also need to use ansi2knr, see SETUP) */
 
 #ifdef __STDC__			/* ANSI C compilers always have prototypes */
 #define PROTO
@@ -139,6 +139,8 @@
  */
 
 typedef int boolean;
+#undef FALSE			/* in case these macros already exist */
+#undef TRUE
 #define FALSE	0		/* values of boolean */
 #define TRUE	1
 
@@ -171,8 +173,10 @@ typedef int boolean;
 #define JFIF_SUPPORTED		/* JFIF or "raw JPEG" files */
 #undef  JTIFF_SUPPORTED		/* JPEG-in-TIFF (not yet implemented) */
 /* these defines indicate which image (non-JPEG) file formats are allowed */
-#define PPM_SUPPORTED		/* PPM/PGM image file format */
 #define GIF_SUPPORTED		/* GIF image file format */
+/* #define RLE_SUPPORTED */	/* RLE image file format */
+#define PPM_SUPPORTED		/* PPM/PGM image file format */
+#define TARGA_SUPPORTED		/* Targa image file format */
 #undef  TIFF_SUPPORTED		/* TIFF image file format (not yet impl.) */
 
 /* more capability options later, no doubt */
@@ -205,6 +209,8 @@ typedef int boolean;
 /* First define the representation of a single pixel element value. */
 
 #ifdef EIGHT_BIT_SAMPLES
+#define BITS_IN_JSAMPLE  8
+
 /* JSAMPLE should be the smallest type that will hold the values 0..255.
  * You can use a signed char by having GETJSAMPLE mask it with 0xFF.
  * If you have only signed chars, and you are more worried about speed than
@@ -237,6 +243,8 @@ typedef char JSAMPLE;
 
 
 #ifdef TWELVE_BIT_SAMPLES
+#define BITS_IN_JSAMPLE  12
+
 /* JSAMPLE should be the smallest type that will hold the values 0..4095. */
 /* On nearly all machines "short" will do nicely. */
 
@@ -250,6 +258,8 @@ typedef short JSAMPLE;
 
 
 #ifdef SIXTEEN_BIT_SAMPLES
+#define BITS_IN_JSAMPLE  16
+
 /* JSAMPLE should be the smallest type that will hold the values 0..65535. */
 
 #ifdef HAVE_UNSIGNED_SHORT
@@ -312,9 +322,13 @@ typedef unsigned int UINT16;
 
 /* INT16 must hold at least the values -32768..32767. */
 
+#ifndef XMD_H			/* X11/xmd.h correctly defines INT16 */
 typedef short INT16;
+#endif
 
 /* INT32 must hold signed 32-bit values; if your machine happens */
 /* to have 64-bit longs, you might want to change this. */
 
+#ifndef XMD_H			/* X11/xmd.h correctly defines INT32 */
 typedef long INT32;
+#endif

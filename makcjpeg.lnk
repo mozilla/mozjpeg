@@ -1,0 +1,21 @@
+jcmain.obj +
+jerror.obj +
+jcdeflts.obj +
+jrdgif.obj +
+jrdppm.obj +
+jwrjfif.obj +
+jcarith.obj +
+jccolor.obj +
+jcexpand.obj +
+jchuff.obj +
+jcmaster.obj +
+jcmcu.obj +
+jcpipe.obj +
+jcsample.obj +
+jfwddct.obj +
+jutils.obj +
+jvirtmem.obj
+cjpeg.exe /NOI
+nul.map
+
+nul.def

@@ -1,7 +1,7 @@
 /*
  * jpegint.h
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -118,15 +118,16 @@ struct jpeg_entropy_encoder {
 
 /* Marker writing */
 struct jpeg_marker_writer {
-  /* write_any_marker is exported for use by applications */
-  /* Probably only COM and APPn markers should be written */
-  JMETHOD(void, write_any_marker, (j_compress_ptr cinfo, int marker,
-				   const JOCTET *dataptr, unsigned int datalen));
   JMETHOD(void, write_file_header, (j_compress_ptr cinfo));
   JMETHOD(void, write_frame_header, (j_compress_ptr cinfo));
   JMETHOD(void, write_scan_header, (j_compress_ptr cinfo));
   JMETHOD(void, write_file_trailer, (j_compress_ptr cinfo));
   JMETHOD(void, write_tables_only, (j_compress_ptr cinfo));
+  /* These routines are exported to allow insertion of extra markers */
+  /* Probably only COM and APPn markers should be written this way */
+  JMETHOD(void, write_marker_header, (j_compress_ptr cinfo, int marker,
+				      unsigned int datalen));
+  JMETHOD(void, write_marker_byte, (j_compress_ptr cinfo, int val));
 };
 
 
@@ -194,9 +195,6 @@ struct jpeg_marker_reader {
   JMETHOD(int, read_markers, (j_decompress_ptr cinfo));
   /* Read a restart marker --- exported for use by entropy decoder only */
   jpeg_marker_parser_method read_restart_marker;
-  /* Application-overridable marker processing methods */
-  jpeg_marker_parser_method process_COM;
-  jpeg_marker_parser_method process_APPn[16];
 
   /* State of marker reader --- nominally internal, but applications
    * supplying COM or APPn handlers might like to know the state.
@@ -212,6 +210,10 @@ struct jpeg_entropy_decoder {
   JMETHOD(void, start_pass, (j_decompress_ptr cinfo));
   JMETHOD(boolean, decode_mcu, (j_decompress_ptr cinfo,
 				JBLOCKROW *MCU_data));
+
+  /* This is here to share code between baseline and progressive decoders; */
+  /* other modules probably should not use it */
+  boolean insufficient_data;	/* set TRUE after emitting warning */
 };
 
 /* Inverse DCT (also performs dequantization) */
@@ -375,7 +377,9 @@ EXTERN(void) jcopy_block_row JPP((JBLOCKROW input_row, JBLOCKROW output_row,
 				  JDIMENSION num_blocks));
 EXTERN(void) jzero_far JPP((void FAR * target, size_t bytestozero));
 /* Constant tables in jutils.c */
+#if 0				/* This table is not actually needed in v6a */
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */
+#endif
 extern const int jpeg_natural_order[]; /* zigzag coef order to natural order */
 
 /* Suppress undefined-structure complaints if necessary. */

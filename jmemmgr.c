@@ -1,7 +1,7 @@
 /*
  * jmemmgr.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -1075,6 +1075,9 @@ jinit_memory_mgr (j_common_ptr cinfo)
   mem->pub.access_virt_barray = access_virt_barray;
   mem->pub.free_pool = free_pool;
   mem->pub.self_destruct = self_destruct;
+
+  /* Make MAX_ALLOC_CHUNK accessible to other modules */
+  mem->pub.max_alloc_chunk = MAX_ALLOC_CHUNK;
 
   /* Initialize working state */
   mem->pub.max_memory_to_use = max_to_use;

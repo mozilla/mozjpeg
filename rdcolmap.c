@@ -204,9 +204,9 @@ read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
   case '6':			/* it's a raw-format PPM file */
     for (row = 0; row < h; row++) {
       for (col = 0; col < w; col++) {
-	R = pbm_getc(infile);
-	G = pbm_getc(infile);
-	B = pbm_getc(infile);
+	R = getc(infile);
+	G = getc(infile);
+	B = getc(infile);
 	if (R == EOF || G == EOF || B == EOF)
 	  ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
 	add_map_entry(cinfo, R, G, B);

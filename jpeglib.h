@@ -1,7 +1,7 @@
 /*
  * jpeglib.h
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -30,7 +30,7 @@
  * Might be useful for tests like "#if JPEG_LIB_VERSION >= 60".
  */
 
-#define JPEG_LIB_VERSION  61	/* Version 6a */
+#define JPEG_LIB_VERSION  62	/* Version 6b */
 
 
 /* Various constants determining the sizes of things.
@@ -188,6 +188,18 @@ typedef struct {
   int Ah, Al;			/* progressive JPEG successive approx. parms */
 } jpeg_scan_info;
 
+/* The decompressor can save APPn and COM markers in a list of these: */
+
+typedef struct jpeg_marker_struct FAR * jpeg_saved_marker_ptr;
+
+struct jpeg_marker_struct {
+  jpeg_saved_marker_ptr next;	/* next in list, or NULL */
+  UINT8 marker;			/* marker code: JPEG_COM, or JPEG_APP0+n */
+  unsigned int original_length;	/* # bytes of data in the file */
+  unsigned int data_length;	/* # bytes of data saved at data[] */
+  JOCTET FAR * data;		/* the data contained in the marker */
+  /* the marker length word is not counted in data_length or original_length */
+};
 
 /* Known color spaces. */
 
@@ -230,8 +242,9 @@ typedef enum {
   struct jpeg_error_mgr * err;	/* Error handler module */\
   struct jpeg_memory_mgr * mem;	/* Memory manager module */\
   struct jpeg_progress_mgr * progress; /* Progress monitor, or NULL if none */\
-  boolean is_decompressor;	/* so common code can tell which is which */\
-  int global_state		/* for checking call sequence validity */
+  void * client_data;		/* Available for use by application */\
+  boolean is_decompressor;	/* So common code can tell which is which */\
+  int global_state		/* For checking call sequence validity */
 
 /* Routines that are to be used by both halves of the library are declared
  * to receive a pointer to this structure.  There are no actual instances of
@@ -322,6 +335,8 @@ struct jpeg_compress_struct {
   /* Parameters controlling emission of special markers. */
 
   boolean write_JFIF_header;	/* should a JFIF marker be written? */
+  UINT8 JFIF_major_version;	/* What to write for the JFIF version number */
+  UINT8 JFIF_minor_version;
   /* These three values are not used by the JPEG code, merely copied */
   /* into the JFIF APP0 marker.  density_unit can be 0 for unknown, */
   /* 1 for dots/inch, or 2 for dots/cm.  Note that the pixel aspect */
@@ -386,6 +401,8 @@ struct jpeg_compress_struct {
   struct jpeg_downsampler * downsample;
   struct jpeg_forward_dct * fdct;
   struct jpeg_entropy_encoder * entropy;
+  jpeg_scan_info * script_space; /* workspace for jpeg_simple_progression */
+  int script_space_size;
 };
 
 
@@ -531,7 +548,9 @@ struct jpeg_decompress_struct {
    * the JPEG library.
    */
   boolean saw_JFIF_marker;	/* TRUE iff a JFIF APP0 marker was found */
-  /* Data copied from JFIF marker: */
+  /* Data copied from JFIF marker; only valid if saw_JFIF_marker is TRUE: */
+  UINT8 JFIF_major_version;	/* JFIF version number */
+  UINT8 JFIF_minor_version;
   UINT8 density_unit;		/* JFIF code for pixel size units */
   UINT16 X_density;		/* Horizontal pixel density */
   UINT16 Y_density;		/* Vertical pixel density */
@@ -539,6 +558,12 @@ struct jpeg_decompress_struct {
   UINT8 Adobe_transform;	/* Color transform code from Adobe marker */
 
   boolean CCIR601_sampling;	/* TRUE=first samples are cosited */
+
+  /* Aside from the specific data retained from APPn markers known to the
+   * library, the uninterpreted contents of any or all APPn and COM markers
+   * can be saved in a list for examination by the application.
+   */
+  jpeg_saved_marker_ptr marker_list; /* Head of list of saved markers */
 
   /* Remaining fields are known throughout decompressor, but generally
    * should not be touched by a surrounding application.
@@ -772,6 +797,9 @@ struct jpeg_memory_mgr {
    * after creating the JPEG object.
    */
   long max_memory_to_use;
+
+  /* Maximum allocation request accepted by alloc_large. */
+  long max_alloc_chunk;
 };
 
 
@@ -824,6 +852,8 @@ typedef JMETHOD(boolean, jpeg_marker_parser_method, (j_decompress_ptr cinfo));
 #define jpeg_finish_compress	jFinCompress
 #define jpeg_write_raw_data	jWrtRawData
 #define jpeg_write_marker	jWrtMarker
+#define jpeg_write_m_header	jWrtMHeader
+#define jpeg_write_m_byte	jWrtMByte
 #define jpeg_write_tables	jWrtTables
 #define jpeg_read_header	jReadHeader
 #define jpeg_start_decompress	jStrtDecompress
@@ -837,6 +867,7 @@ typedef JMETHOD(boolean, jpeg_marker_parser_method, (j_decompress_ptr cinfo));
 #define jpeg_new_colormap	jNewCMap
 #define jpeg_consume_input	jConsumeInput
 #define jpeg_calc_output_dimensions	jCalcDimensions
+#define jpeg_save_markers	jSaveMarkers
 #define jpeg_set_marker_processor	jSetMarker
 #define jpeg_read_coefficients	jReadCoefs
 #define jpeg_write_coefficients	jWrtCoefs
@@ -918,6 +949,11 @@ EXTERN(JDIMENSION) jpeg_write_raw_data JPP((j_compress_ptr cinfo,
 EXTERN(void) jpeg_write_marker
 	JPP((j_compress_ptr cinfo, int marker,
 	     const JOCTET * dataptr, unsigned int datalen));
+/* Same, but piecemeal. */
+EXTERN(void) jpeg_write_m_header
+	JPP((j_compress_ptr cinfo, int marker, unsigned int datalen));
+EXTERN(void) jpeg_write_m_byte
+	JPP((j_compress_ptr cinfo, int val));
 
 /* Alternate compression function: just write an abbreviated table file */
 EXTERN(void) jpeg_write_tables JPP((j_compress_ptr cinfo));
@@ -964,6 +1000,11 @@ EXTERN(int) jpeg_consume_input JPP((j_decompress_ptr cinfo));
 
 /* Precalculate output dimensions for current decompression parameters. */
 EXTERN(void) jpeg_calc_output_dimensions JPP((j_decompress_ptr cinfo));
+
+/* Control saving of COM and APPn markers into marker_list. */
+EXTERN(void) jpeg_save_markers
+	JPP((j_decompress_ptr cinfo, int marker_code,
+	     unsigned int length_limit));
 
 /* Install a special processing method for COM or APPn markers. */
 EXTERN(void) jpeg_set_marker_processor

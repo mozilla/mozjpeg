@@ -1,7 +1,7 @@
 /*
  * cdjpeg.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -47,7 +47,9 @@ GLOBAL(void)
 enable_signal_catcher (j_common_ptr cinfo)
 {
   sig_cinfo = cinfo;
+#ifdef SIGINT			/* not all systems have SIGINT */
   signal(SIGINT, signal_catcher);
+#endif
 #ifdef SIGTERM			/* not all systems have SIGTERM */
   signal(SIGTERM, signal_catcher);
 #endif

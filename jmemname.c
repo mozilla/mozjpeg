@@ -1,7 +1,7 @@
 /*
  * jmemname.c
  *
- * Copyright (C) 1992-1996, Thomas G. Lane.
+ * Copyright (C) 1992-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -30,8 +30,13 @@ extern void free JPP((void *ptr));
 #define READ_BINARY	"r"
 #define RW_BINARY	"w+"
 #else
+#ifdef VMS			/* VMS is very nonstandard */
+#define READ_BINARY	"rb", "ctx=stm"
+#define RW_BINARY	"w+b", "ctx=stm"
+#else				/* standard ANSI-compliant case */
 #define READ_BINARY	"rb"
 #define RW_BINARY	"w+b"
+#endif
 #endif
 
 

@@ -1,7 +1,7 @@
 /*
  * jdcoefct.c
  *
- * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Copyright (C) 1994-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -139,8 +139,8 @@ start_output_pass (j_decompress_ptr cinfo)
  * Input and output must run in lockstep since we have only a one-MCU buffer.
  * Return value is JPEG_ROW_COMPLETED, JPEG_SCAN_COMPLETED, or JPEG_SUSPENDED.
  *
- * NB: output_buf contains a plane for each component in image.
- * For single pass, this is the same as the components in the scan.
+ * NB: output_buf contains a plane for each component in image,
+ * which we index according to the component's SOF position.
  */
 
 METHODDEF(int)
@@ -186,7 +186,8 @@ decompress_onepass (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
 	inverse_DCT = cinfo->idct->inverse_DCT[compptr->component_index];
 	useful_width = (MCU_col_num < last_MCU_col) ? compptr->MCU_width
 						    : compptr->last_col_width;
-	output_ptr = output_buf[ci] + yoffset * compptr->DCT_scaled_size;
+	output_ptr = output_buf[compptr->component_index] +
+	  yoffset * compptr->DCT_scaled_size;
 	start_col = MCU_col_num * compptr->MCU_sample_width;
 	for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
 	  if (cinfo->input_iMCU_row < last_iMCU_row ||

@@ -1,7 +1,7 @@
 /*
  * jdinput.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -301,7 +301,7 @@ consume_markers (j_decompress_ptr cinfo)
       initial_setup(cinfo);
       inputctl->inheaders = FALSE;
       /* Note: start_input_pass must be called by jdmaster.c
-       * before any more input can be consumed.  jdapi.c is
+       * before any more input can be consumed.  jdapimin.c is
        * responsible for enforcing this sequencing.
        */
     } else {			/* 2nd or later SOS marker */

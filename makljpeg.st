@@ -1,10 +1,11 @@
 ; Project file for Independent JPEG Group's software
 ;
 ; This project file is for Atari ST/STE/TT systems using Pure C or Turbo C.
-; Thanks to Frank Moehle (Frank.Moehle@arbi.informatik.uni-oldenburg.de)
-; and to Dr. B. Setzepfandt (bernd@gina.uni-muenster.de).
+; Thanks to Frank Moehle (Frank.Moehle@arbi.informatik.uni-oldenburg.de),
+; Dr. B. Setzepfandt (bernd@gina.uni-muenster.de),
+; and Guido Vollbeding (guivol@esc.de).
 ;
-; To use this file, rename it to LIBJPEG.PRJ.
+; To use this file, rename it to libjpeg.prj.
 ; Read installation instructions before trying to make the program!
 ;
 ;

@@ -48,28 +48,31 @@ LIBSOURCES= jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c &
 # memmgr back ends: compile only one of these into a working library
 SYSDEPSOURCES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemmac.c
 # source files: cjpeg/djpeg/jpegtran applications, also rdjpgcom/wrjpgcom
-APPSOURCES= cjpeg.c djpeg.c jpegtran.c cdjpeg.c rdcolmap.c rdswitch.c &
-        rdjpgcom.c wrjpgcom.c rdppm.c wrppm.c rdgif.c wrgif.c rdtarga.c &
-        wrtarga.c rdbmp.c wrbmp.c rdrle.c wrrle.c
+APPSOURCES= cjpeg.c djpeg.c jpegtran.c rdjpgcom.c wrjpgcom.c cdjpeg.c &
+        rdcolmap.c rdswitch.c transupp.c rdppm.c wrppm.c rdgif.c wrgif.c &
+        rdtarga.c wrtarga.c rdbmp.c wrbmp.c rdrle.c wrrle.c
 SOURCES= $(LIBSOURCES) $(SYSDEPSOURCES) $(APPSOURCES)
 # files included by source files
 INCLUDES= jchuff.h jdhuff.h jdct.h jerror.h jinclude.h jmemsys.h jmorecfg.h &
-        jpegint.h jpeglib.h jversion.h cdjpeg.h cderror.h
+        jpegint.h jpeglib.h jversion.h cdjpeg.h cderror.h transupp.h
 # documentation, test, and support files
 DOCS= README install.doc usage.doc cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 &
         wrjpgcom.1 wizard.doc example.c libjpeg.doc structure.doc &
         coderules.doc filelist.doc change.log
 MKFILES= configure makefile.cfg makefile.ansi makefile.unix makefile.bcc &
-        makefile.mc6 makefile.dj makefile.wat makcjpeg.st makdjpeg.st &
-        makljpeg.st maktjpeg.st makefile.manx makefile.sas makefile.mms &
-        makefile.vms makvms.opt
-CONFIGFILES= jconfig.cfg jconfig.manx jconfig.sas jconfig.st jconfig.bcc &
-        jconfig.mc6 jconfig.dj jconfig.wat jconfig.vms
+        makefile.mc6 makefile.dj makefile.wat makefile.vc makelib.ds &
+        makeapps.ds makeproj.mac makcjpeg.st makdjpeg.st makljpeg.st &
+        maktjpeg.st makefile.manx makefile.sas makefile.mms makefile.vms &
+        makvms.opt
+CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat &
+        jconfig.vc jconfig.mac jconfig.st jconfig.manx jconfig.sas &
+        jconfig.vms
+CONFIGUREFILES= config.guess config.sub install-sh ltconfig ltmain.sh
 OTHERFILES= jconfig.doc ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm
-TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg testprog.jpg &
+TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg &
         testimgp.jpg
 DISTFILES= $(DOCS) $(MKFILES) $(CONFIGFILES) $(SOURCES) $(INCLUDES) &
-        $(OTHERFILES) $(TESTFILES)
+        $(CONFIGUREFILES) $(OTHERFILES) $(TESTFILES)
 # library object files common to compression and decompression
 COMOBJECTS= jcomapi.obj jutils.obj jerror.obj jmemmgr.obj $(SYSDEPMEM)
 # compression library object files
@@ -90,7 +93,7 @@ COBJECTS= cjpeg.obj rdppm.obj rdgif.obj rdtarga.obj rdrle.obj rdbmp.obj &
         rdswitch.obj cdjpeg.obj
 DOBJECTS= djpeg.obj wrppm.obj wrgif.obj wrtarga.obj wrrle.obj wrbmp.obj &
         rdcolmap.obj cdjpeg.obj
-TROBJECTS= jpegtran.obj rdswitch.obj cdjpeg.obj
+TROBJECTS= jpegtran.obj rdswitch.obj cdjpeg.obj transupp.obj
 
 
 all: libjpeg.lib cjpeg.exe djpeg.exe jpegtran.exe rdjpgcom.exe wrjpgcom.exe
@@ -135,14 +138,14 @@ clean: .SYMBOLIC
 test: cjpeg.exe djpeg.exe jpegtran.exe  .SYMBOLIC
 	- del testout*.*
 	djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg
-	djpeg -dct int -gif -outfile testout.gif  testorig.jpg
+	djpeg -dct int -bmp -colors 256 -outfile testout.bmp  testorig.jpg
 	cjpeg -dct int -outfile testout.jpg  testimg.ppm
 	djpeg -dct int -ppm -outfile testoutp.ppm testprog.jpg
 	cjpeg -dct int -progressive -opt -outfile testoutp.jpg testimg.ppm
 	jpegtran -outfile testoutt.jpg testprog.jpg
 !ifeq SYSTEM DOS
 	fc /b testimg.ppm testout.ppm
-	fc /b testimg.gif testout.gif
+	fc /b testimg.bmp testout.bmp
 	fc /b testimg.jpg testout.jpg
 	fc /b testimg.ppm testoutp.ppm
 	fc /b testimgp.jpg testoutp.jpg
@@ -150,7 +153,7 @@ test: cjpeg.exe djpeg.exe jpegtran.exe  .SYMBOLIC
 !else
 	echo n > n.tmp
 	comp testimg.ppm testout.ppm < n.tmp
-	comp testimg.gif testout.gif < n.tmp
+	comp testimg.bmp testout.bmp < n.tmp
 	comp testimg.jpg testout.jpg < n.tmp
 	comp testimg.ppm testoutp.ppm < n.tmp
 	comp testimgp.jpg testoutp.jpg < n.tmp
@@ -211,12 +214,13 @@ jmemdos.obj: jmemdos.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerro
 jmemmac.obj: jmemmac.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
 cjpeg.obj: cjpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h
 djpeg.obj: djpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h
-jpegtran.obj: jpegtran.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h
+jpegtran.obj: jpegtran.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h transupp.h jversion.h
+rdjpgcom.obj: rdjpgcom.c jinclude.h jconfig.h
+wrjpgcom.obj: wrjpgcom.c jinclude.h jconfig.h
 cdjpeg.obj: cdjpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
 rdcolmap.obj: rdcolmap.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
 rdswitch.obj: rdswitch.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
-rdjpgcom.obj: rdjpgcom.c jinclude.h jconfig.h
-wrjpgcom.obj: wrjpgcom.c jinclude.h jconfig.h
+transupp.obj: transupp.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h transupp.h
 rdppm.obj: rdppm.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
 wrppm.obj: wrppm.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
 rdgif.obj: rdgif.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h

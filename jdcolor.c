@@ -1,7 +1,7 @@
 /*
  * jdcolor.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -208,6 +208,33 @@ grayscale_convert (j_decompress_ptr cinfo,
 
 
 /*
+ * Convert grayscale to RGB: just duplicate the graylevel three times.
+ * This is provided to support applications that don't want to cope
+ * with grayscale as a separate case.
+ */
+
+METHODDEF(void)
+gray_rgb_convert (j_decompress_ptr cinfo,
+		  JSAMPIMAGE input_buf, JDIMENSION input_row,
+		  JSAMPARRAY output_buf, int num_rows)
+{
+  register JSAMPROW inptr, outptr;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->output_width;
+
+  while (--num_rows >= 0) {
+    inptr = input_buf[0][input_row++];
+    outptr = *output_buf++;
+    for (col = 0; col < num_cols; col++) {
+      /* We can dispense with GETJSAMPLE() here */
+      outptr[RGB_RED] = outptr[RGB_GREEN] = outptr[RGB_BLUE] = inptr[col];
+      outptr += RGB_PIXELSIZE;
+    }
+  }
+}
+
+
+/*
  * Adobe-style YCCK->CMYK conversion.
  * We convert YCbCr to R=1-C, G=1-M, and B=1-Y using the same
  * conversion as above, while passing K (black) unchanged.
@@ -333,6 +360,8 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     if (cinfo->jpeg_color_space == JCS_YCbCr) {
       cconvert->pub.color_convert = ycc_rgb_convert;
       build_ycc_rgb_table(cinfo);
+    } else if (cinfo->jpeg_color_space == JCS_GRAYSCALE) {
+      cconvert->pub.color_convert = gray_rgb_convert;
     } else if (cinfo->jpeg_color_space == JCS_RGB && RGB_PIXELSIZE == 3) {
       cconvert->pub.color_convert = null_convert;
     } else

@@ -1,7 +1,7 @@
 /*
  * cdjpeg.h
  *
- * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Copyright (C) 1994-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -156,8 +156,13 @@ EXTERN(FILE *) write_stdout JPP((void));
 #define READ_BINARY	"r"
 #define WRITE_BINARY	"w"
 #else
+#ifdef VMS			/* VMS is very nonstandard */
+#define READ_BINARY	"rb", "ctx=stm"
+#define WRITE_BINARY	"wb", "ctx=stm"
+#else				/* standard ANSI-compliant case */
 #define READ_BINARY	"rb"
 #define WRITE_BINARY	"wb"
+#endif
 #endif
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */

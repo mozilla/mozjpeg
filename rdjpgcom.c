@@ -1,7 +1,7 @@
 /*
  * rdjpgcom.c
  *
- * Copyright (C) 1994-1995, Thomas G. Lane.
+ * Copyright (C) 1994-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -34,7 +34,11 @@
 #ifdef DONT_USE_B_MODE		/* define mode parameters for fopen() */
 #define READ_BINARY	"r"
 #else
+#ifdef VMS			/* VMS is very nonstandard */
+#define READ_BINARY	"rb", "ctx=stm"
+#else				/* standard ANSI-compliant case */
 #define READ_BINARY	"rb"
+#endif
 #endif
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */
@@ -115,6 +119,8 @@ read_2_bytes (void)
 #define M_SOI   0xD8		/* Start Of Image (beginning of datastream) */
 #define M_EOI   0xD9		/* End Of Image (end of datastream) */
 #define M_SOS   0xDA		/* Start Of Scan (begins compressed data) */
+#define M_APP0	0xE0		/* Application-specific marker, type N */
+#define M_APP12	0xEC		/* (we don't bother to list all 16 APPn's) */
 #define M_COM   0xFE		/* COMment */
 
 
@@ -208,7 +214,7 @@ skip_variable (void)
 /*
  * Process a COM marker.
  * We want to print out the marker contents as legible text;
- * we must guard against random junk and varying newline representations.
+ * we must guard against non-text junk and varying newline representations.
  */
 
 static void
@@ -327,6 +333,9 @@ scan_JPEG_header (int verbose)
   for (;;) {
     marker = next_marker();
     switch (marker) {
+      /* Note that marker codes 0xC4, 0xC8, 0xCC are not, and must not be,
+       * treated as SOFn.  C4 in particular is actually DHT.
+       */
     case M_SOF0:		/* Baseline */
     case M_SOF1:		/* Extended sequential, Huffman */
     case M_SOF2:		/* Progressive, Huffman */
@@ -354,6 +363,17 @@ scan_JPEG_header (int verbose)
 
     case M_COM:
       process_COM();
+      break;
+
+    case M_APP12:
+      /* Some digital camera makers put useful textual information into
+       * APP12 markers, so we print those out too when in -verbose mode.
+       */
+      if (verbose) {
+	printf("APP12 contains:\n");
+	process_COM();
+      } else
+	skip_variable();
       break;
 
     default:			/* Anything else just gets skipped */

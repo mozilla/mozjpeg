@@ -1,16 +1,18 @@
 /*
  * jpegtran.c
  *
- * Copyright (C) 1995-1996, Thomas G. Lane.
+ * Copyright (C) 1995-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for JPEG transcoding.
  * It is very similar to cjpeg.c, but provides lossless transcoding between
- * different JPEG file formats.
+ * different JPEG file formats.  It also provides some lossless and sort-of-
+ * lossless transformations of JPEG data.
  */
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "transupp.h"		/* Support routines for jpegtran */
 #include "jversion.h"		/* for version message */
 
 #ifdef USE_CCOMMAND		/* command-line reader for Macintosh */
@@ -35,6 +37,8 @@
 
 static const char * progname;	/* program name for error messages */
 static char * outfilename;	/* for -outfile switch */
+static JCOPY_OPTION copyoption;	/* -copy switch */
+static jpeg_transform_info transformoption; /* image transformation options */
 
 
 LOCAL(void)
@@ -49,12 +53,24 @@ usage (void)
 #endif
 
   fprintf(stderr, "Switches (names may be abbreviated):\n");
+  fprintf(stderr, "  -copy none     Copy no extra markers from source file\n");
+  fprintf(stderr, "  -copy comments Copy only comment markers (default)\n");
+  fprintf(stderr, "  -copy all      Copy all extra markers\n");
 #ifdef ENTROPY_OPT_SUPPORTED
   fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
 #endif
 #ifdef C_PROGRESSIVE_SUPPORTED
   fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
 #endif
+#if TRANSFORMS_SUPPORTED
+  fprintf(stderr, "Switches for modifying the image:\n");
+  fprintf(stderr, "  -grayscale     Reduce to grayscale (omit color data)\n");
+  fprintf(stderr, "  -flip [horizontal|vertical]  Mirror image (left-right or top-bottom)\n");
+  fprintf(stderr, "  -rotate [90|180|270]         Rotate image (degrees clockwise)\n");
+  fprintf(stderr, "  -transpose     Transpose image\n");
+  fprintf(stderr, "  -transverse    Transverse transpose image\n");
+  fprintf(stderr, "  -trim          Drop non-transformable edge blocks\n");
+#endif /* TRANSFORMS_SUPPORTED */
   fprintf(stderr, "Switches for advanced users:\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
@@ -68,6 +84,29 @@ usage (void)
   fprintf(stderr, "  -scans file    Create multi-scan JPEG per script file\n");
 #endif
   exit(EXIT_FAILURE);
+}
+
+
+LOCAL(void)
+select_transform (JXFORM_CODE transform)
+/* Silly little routine to detect multiple transform options,
+ * which we can't handle.
+ */
+{
+#if TRANSFORMS_SUPPORTED
+  if (transformoption.transform == JXFORM_NONE ||
+      transformoption.transform == transform) {
+    transformoption.transform = transform;
+  } else {
+    fprintf(stderr, "%s: can only do one image transformation at a time\n",
+	    progname);
+    usage();
+  }
+#else
+  fprintf(stderr, "%s: sorry, image transformation was not compiled\n",
+	  progname);
+  exit(EXIT_FAILURE);
+#endif
 }
 
 
@@ -91,6 +130,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
   simple_progressive = FALSE;
   outfilename = NULL;
+  copyoption = JCOPYOPT_DEFAULT;
+  transformoption.transform = JXFORM_NONE;
+  transformoption.trim = FALSE;
+  transformoption.force_grayscale = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -117,6 +160,19 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       exit(EXIT_FAILURE);
 #endif
 
+    } else if (keymatch(arg, "copy", 1)) {
+      /* Select which extra markers to copy. */
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      if (keymatch(argv[argn], "none", 1)) {
+	copyoption = JCOPYOPT_NONE;
+      } else if (keymatch(argv[argn], "comments", 1)) {
+	copyoption = JCOPYOPT_COMMENTS;
+      } else if (keymatch(argv[argn], "all", 1)) {
+	copyoption = JCOPYOPT_ALL;
+      } else
+	usage();
+
     } else if (keymatch(arg, "debug", 1) || keymatch(arg, "verbose", 1)) {
       /* Enable debug printouts. */
       /* On first -d, print version identification */
@@ -128,6 +184,25 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	printed_version = TRUE;
       }
       cinfo->err->trace_level++;
+
+    } else if (keymatch(arg, "flip", 1)) {
+      /* Mirror left-right or top-bottom. */
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      if (keymatch(argv[argn], "horizontal", 1))
+	select_transform(JXFORM_FLIP_H);
+      else if (keymatch(argv[argn], "vertical", 1))
+	select_transform(JXFORM_FLIP_V);
+      else
+	usage();
+
+    } else if (keymatch(arg, "grayscale", 1) || keymatch(arg, "greyscale",1)) {
+      /* Force to grayscale. */
+#if TRANSFORMS_SUPPORTED
+      transformoption.force_grayscale = TRUE;
+#else
+      select_transform(JXFORM_NONE);	/* force an error */
+#endif
 
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */
@@ -188,7 +263,20 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	/* restart_interval will be computed during startup */
       }
 
-    } else if (keymatch(arg, "scans", 2)) {
+    } else if (keymatch(arg, "rotate", 2)) {
+      /* Rotate 90, 180, or 270 degrees (measured clockwise). */
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      if (keymatch(argv[argn], "90", 2))
+	select_transform(JXFORM_ROT_90);
+      else if (keymatch(argv[argn], "180", 3))
+	select_transform(JXFORM_ROT_180);
+      else if (keymatch(argv[argn], "270", 3))
+	select_transform(JXFORM_ROT_270);
+      else
+	usage();
+
+    } else if (keymatch(arg, "scans", 1)) {
       /* Set scan script. */
 #ifdef C_MULTISCAN_FILES_SUPPORTED
       if (++argn >= argc)	/* advance to next argument */
@@ -200,6 +288,18 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	      progname);
       exit(EXIT_FAILURE);
 #endif
+
+    } else if (keymatch(arg, "transpose", 1)) {
+      /* Transpose (across UL-to-LR axis). */
+      select_transform(JXFORM_TRANSPOSE);
+
+    } else if (keymatch(arg, "transverse", 6)) {
+      /* Transverse transpose (across UR-to-LL axis). */
+      select_transform(JXFORM_TRANSVERSE);
+
+    } else if (keymatch(arg, "trim", 3)) {
+      /* Trim off any partial edge MCUs that the transform can't handle. */
+      transformoption.trim = TRUE;
 
     } else {
       usage();			/* bogus switch */
@@ -239,7 +339,8 @@ main (int argc, char **argv)
 #ifdef PROGRESS_REPORT
   struct cdjpeg_progress_mgr progress;
 #endif
-  jvirt_barray_ptr * coef_arrays;
+  jvirt_barray_ptr * src_coef_arrays;
+  jvirt_barray_ptr * dst_coef_arrays;
   int file_index;
   FILE * input_file;
   FILE * output_file;
@@ -269,8 +370,10 @@ main (int argc, char **argv)
 
   /* Scan command line to find file names.
    * It is convenient to use just one switch-parsing routine, but the switch
-   * values read here are ignored; we will rescan the switches after opening
-   * the input file.
+   * values read here are mostly ignored; we will rescan the switches after
+   * opening the input file.  Also note that most of the switches affect the
+   * destination JPEG object, so we parse into that and then copy over what
+   * needs to affects the source too.
    */
 
   file_index = parse_switches(&dstinfo, argc, argv, 0, FALSE);
@@ -330,14 +433,35 @@ main (int argc, char **argv)
   /* Specify data source for decompression */
   jpeg_stdio_src(&srcinfo, input_file);
 
+  /* Enable saving of extra markers that we want to copy */
+  jcopy_markers_setup(&srcinfo, copyoption);
+
   /* Read file header */
   (void) jpeg_read_header(&srcinfo, TRUE);
 
+  /* Any space needed by a transform option must be requested before
+   * jpeg_read_coefficients so that memory allocation will be done right.
+   */
+#if TRANSFORMS_SUPPORTED
+  jtransform_request_workspace(&srcinfo, &transformoption);
+#endif
+
   /* Read source file as DCT coefficients */
-  coef_arrays = jpeg_read_coefficients(&srcinfo);
+  src_coef_arrays = jpeg_read_coefficients(&srcinfo);
 
   /* Initialize destination compression parameters from source values */
   jpeg_copy_critical_parameters(&srcinfo, &dstinfo);
+
+  /* Adjust destination parameters if required by transform options;
+   * also find out which set of coefficient arrays will hold the output.
+   */
+#if TRANSFORMS_SUPPORTED
+  dst_coef_arrays = jtransform_adjust_parameters(&srcinfo, &dstinfo,
+						 src_coef_arrays,
+						 &transformoption);
+#else
+  dst_coef_arrays = src_coef_arrays;
+#endif
 
   /* Adjust default compression parameters by re-parsing the options */
   file_index = parse_switches(&dstinfo, argc, argv, 0, TRUE);
@@ -345,10 +469,18 @@ main (int argc, char **argv)
   /* Specify data destination for compression */
   jpeg_stdio_dest(&dstinfo, output_file);
 
-  /* Start compressor */
-  jpeg_write_coefficients(&dstinfo, coef_arrays);
+  /* Start compressor (note no image data is actually written here) */
+  jpeg_write_coefficients(&dstinfo, dst_coef_arrays);
 
-  /* ought to copy source comments here... */
+  /* Copy to the output file any extra markers that we want to preserve */
+  jcopy_markers_execute(&srcinfo, &dstinfo, copyoption);
+
+  /* Execute image transformation, if any */
+#if TRANSFORMS_SUPPORTED
+  jtransform_execute_transformation(&srcinfo, &dstinfo,
+				    src_coef_arrays,
+				    &transformoption);
+#endif
 
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);

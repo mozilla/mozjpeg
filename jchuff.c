@@ -1,7 +1,7 @@
 /*
  * jchuff.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -86,13 +86,13 @@ typedef struct {
 
 
 /* Forward declarations */
-METHODDEF boolean encode_mcu_huff JPP((j_compress_ptr cinfo,
-				       JBLOCKROW *MCU_data));
-METHODDEF void finish_pass_huff JPP((j_compress_ptr cinfo));
+METHODDEF(boolean) encode_mcu_huff JPP((j_compress_ptr cinfo,
+					JBLOCKROW *MCU_data));
+METHODDEF(void) finish_pass_huff JPP((j_compress_ptr cinfo));
 #ifdef ENTROPY_OPT_SUPPORTED
-METHODDEF boolean encode_mcu_gather JPP((j_compress_ptr cinfo,
-					 JBLOCKROW *MCU_data));
-METHODDEF void finish_pass_gather JPP((j_compress_ptr cinfo));
+METHODDEF(boolean) encode_mcu_gather JPP((j_compress_ptr cinfo,
+					  JBLOCKROW *MCU_data));
+METHODDEF(void) finish_pass_gather JPP((j_compress_ptr cinfo));
 #endif
 
 
@@ -102,7 +102,7 @@ METHODDEF void finish_pass_gather JPP((j_compress_ptr cinfo));
  * just count the Huffman symbols used and generate Huffman code tables.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -175,7 +175,7 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
  * Note this is also used by jcphuff.c.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_make_c_derived_tbl (j_compress_ptr cinfo, JHUFF_TBL * htbl,
 			 c_derived_tbl ** pdtbl)
 {
@@ -243,7 +243,7 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, JHUFF_TBL * htbl,
 	      { action; } }
 
 
-LOCAL boolean
+LOCAL(boolean)
 dump_buffer (working_state * state)
 /* Empty the output buffer; return TRUE if successful, FALSE if must suspend */
 {
@@ -267,7 +267,7 @@ dump_buffer (working_state * state)
  */
 
 INLINE
-LOCAL boolean
+LOCAL(boolean)
 emit_bits (working_state * state, unsigned int code, int size)
 /* Emit some bits; return TRUE if successful, FALSE if must suspend */
 {
@@ -305,7 +305,7 @@ emit_bits (working_state * state, unsigned int code, int size)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 flush_bits (working_state * state)
 {
   if (! emit_bits(state, 0x7F, 7)) /* fill any partial byte with ones */
@@ -318,7 +318,7 @@ flush_bits (working_state * state)
 
 /* Encode a single block's worth of coefficients */
 
-LOCAL boolean
+LOCAL(boolean)
 encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
 		  c_derived_tbl *dctbl, c_derived_tbl *actbl)
 {
@@ -408,7 +408,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
  * Emit a restart marker & resynchronize predictions.
  */
 
-LOCAL boolean
+LOCAL(boolean)
 emit_restart (working_state * state, int restart_num)
 {
   int ci;
@@ -433,7 +433,7 @@ emit_restart (working_state * state, int restart_num)
  * Encode and output one MCU's worth of Huffman-compressed coefficients.
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 encode_mcu_huff (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -490,7 +490,7 @@ encode_mcu_huff (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * Finish up at the end of a Huffman-compressed scan.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_pass_huff (j_compress_ptr cinfo)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -536,7 +536,7 @@ finish_pass_huff (j_compress_ptr cinfo)
 
 /* Process a single block's worth of coefficients */
 
-LOCAL void
+LOCAL(void)
 htest_one_block (JCOEFPTR block, int last_dc_val,
 		 long dc_counts[], long ac_counts[])
 {
@@ -601,7 +601,7 @@ htest_one_block (JCOEFPTR block, int last_dc_val,
  * No data is actually output, so no suspension return is possible.
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 encode_mcu_gather (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -638,7 +638,7 @@ encode_mcu_gather (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * Note this is also used by jcphuff.c.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
 {
 #define MAX_CLEN 32		/* assumed maximum initial code length */
@@ -779,7 +779,7 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
  * Finish up a statistics-gathering pass and create the new Huffman tables.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_pass_gather (j_compress_ptr cinfo)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -824,7 +824,7 @@ finish_pass_gather (j_compress_ptr cinfo)
  * Module initialization routine for Huffman entropy encoding.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_huff_encoder (j_compress_ptr cinfo)
 {
   huff_entropy_ptr entropy;

@@ -1,6 +1,6 @@
 USING THE IJG JPEG LIBRARY
 
-Copyright (C) 1994-1995, Thomas G. Lane.
+Copyright (C) 1994-1996, Thomas G. Lane.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -186,19 +186,20 @@ Before diving into procedural details, it is helpful to understand the
 image data format that the JPEG library expects or returns.
 
 The standard input image format is a rectangular array of pixels, with each
-pixel having the same number of "component" values (color channels).  You
-must specify how many components there are and the colorspace interpretation
-of the components.  Most applications will use RGB data (three components
-per pixel) or grayscale data (one component per pixel).  PLEASE NOTE THAT
-RGB DATA IS THREE SAMPLES PER PIXEL, GRAYSCALE ONLY ONE.  A remarkable
-number of people manage to miss this, only to find that their programs don't
-work with grayscale JPEG files.
+pixel having the same number of "component" or "sample" values (color
+channels).  You must specify how many components there are and the colorspace
+interpretation of the components.  Most applications will use RGB data
+(three components per pixel) or grayscale data (one component per pixel).
+PLEASE NOTE THAT RGB DATA IS THREE SAMPLES PER PIXEL, GRAYSCALE ONLY ONE.
+A remarkable number of people manage to miss this, only to find that their
+programs don't work with grayscale JPEG files.
 
-Note that there is no provision for colormapped input.  You can feed in a
-colormapped image by expanding it to full-color format.  However JPEG often
-doesn't work very well with colormapped source data, because of dithering
-noise.  This is discussed in more detail in the JPEG FAQ and the other
-references mentioned in the README file.
+There is no provision for colormapped input.  JPEG files are always full-color
+or full grayscale (or sometimes another colorspace such as CMYK).  You can
+feed in a colormapped image by expanding it to full-color format.  However
+JPEG often doesn't work very well with source data that has been colormapped,
+because of dithering noise.  This is discussed in more detail in the JPEG FAQ
+and the other references mentioned in the README file.
 
 Pixels are stored by scanlines, with each scanline running from left to
 right.  The component values for each pixel are adjacent in the row; for
@@ -227,8 +228,11 @@ byte before passing it to the compressor.  If you need to compress data
 that has more than 8 bits/channel, compile with BITS_IN_JSAMPLE = 12.
 (See "Library compile-time options", later.)
 
+
 The data format returned by the decompressor is the same in all details,
-except that colormapped data is supported.  If you request colormapped
+except that colormapped output is supported.  (Again, a JPEG file is never
+colormapped.  But you can ask the decompressor to perform on-the-fly color
+quantization to deliver colormapped output.)  If you request colormapped
 output then the returned data array contains a single JSAMPLE per pixel;
 its value is an index into a color map.  The color map is represented as
 a 2-D JSAMPARRAY in which each row holds the values of one color component,
@@ -666,12 +670,13 @@ The return value always equals the change in the value of output_scanline.
 
 If you don't use a suspending data source, it is safe to assume that
 jpeg_read_scanlines() reads at least one scanline per call, until the
-bottom of the image has been reached.  If you use a buffer larger than one
-scanline, it is NOT safe to assume that jpeg_read_scanlines() fills it.
-(The current implementation won't return more than cinfo.rec_outbuf_height
-scanlines per call, no matter how large a buffer you pass.)  So you must
-always provide a loop that calls jpeg_read_scanlines() repeatedly until
-the whole image has been read.
+bottom of the image has been reached.
+
+If you use a buffer larger than one scanline, it is NOT safe to assume that
+jpeg_read_scanlines() fills it.  (The current implementation won't return
+more than cinfo.rec_outbuf_height scanlines per call, no matter how large
+a buffer you pass.)  So you must always provide a loop that calls
+jpeg_read_scanlines() repeatedly until the whole image has been read.
 
 
 7. jpeg_finish_decompress(...);
@@ -831,9 +836,14 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
 		      int scale_factor, boolean force_baseline)
 	Allows an arbitrary quantization table to be created.  which_tbl
 	indicates which table slot to fill.  basic_table points to an array
-	of 64 unsigned ints given in JPEG zigzag order.  These values are
+	of 64 unsigned ints given in normal array order.  These values are
 	multiplied by scale_factor/100 and then clamped to the range 1..65535
 	(or to 1..255 if force_baseline is TRUE).
+	CAUTION: prior to library version 6a, jpeg_add_quant_table expected
+	the basic table to be given in JPEG zigzag order.  If you need to
+	write code that works with either older or newer versions of this
+	routine, you must check the library version number.  Something like
+	"#if JPEG_LIB_VERSION >= 61" is the right test.
 
 jpeg_simple_progression (j_compress_ptr cinfo)
 	Generates a default scan script for writing a progressive-JPEG file.
@@ -1825,7 +1835,7 @@ JPEG_REACHED_EOI.
 The target scan number passed to jpeg_start_output() is saved in the
 cinfo.output_scan_number field.  The library's output processing calls
 jpeg_consume_input() whenever the current input scan number and row within
-the scan is less than or equal to the current output scan number and row.
+that scan is less than or equal to the current output scan number and row.
 Thus, input processing can "get ahead" of the output processing but is not
 allowed to "fall behind".  You can achieve several different effects by
 manipulating this interlock rule.  For example, if you pass a target scan
@@ -1844,10 +1854,26 @@ processor to simply display whatever it finds in the image buffer, without
 waiting for input.  (However, the library will not accept a target scan
 number less than one, so you can't avoid waiting for the first scan.)
 
-When using jpeg_consume_input(), you'll typically want to be sure that you
-perform a final output pass after receiving all the data; otherwise your last
-display may not be full quality across the whole screen.  So the right outer
-loop logic is something like this:
+When data is arriving faster than the output display processing can advance
+through the image, jpeg_consume_input() will store data into the buffered
+image beyond the point at which the output processing is reading data out
+again.  If the input arrives fast enough, it may "wrap around" the buffer to
+the point where the input is more than one whole scan ahead of the output.
+If the output processing simply proceeds through its display pass without
+paying attention to the input, the effect seen on-screen is that the lower
+part of the image is one or more scans better in quality than the upper part.
+Then, when the next output scan is started, you have a choice of what target
+scan number to use.  The recommended choice is to use the current input scan
+number at that time, which implies that you've skipped the output scans
+corresponding to the input scans that were completed while you processed the
+previous output scan.  In this way, the decoder automatically adapts its
+speed to the arriving data, by skipping output scans as necessary to keep up
+with the arriving data.
+
+When using this strategy, you'll want to be sure that you perform a final
+output pass after receiving all the data; otherwise your last display may not
+be full quality across the whole screen.  So the right outer loop logic is
+something like this:
 	do {
 	    absorb any waiting input by calling jpeg_consume_input()
 	    final_pass = jpeg_input_complete(&cinfo);
@@ -1869,15 +1895,15 @@ the final pass, the right loop logic is like this:
 	        cinfo.input_scan_number == cinfo.output_scan_number)
 	      break;
 	}
-In this case you don't need to know in advance whether an output pass is
-the last one, so it's not necessary to have reached EOF before starting the
-final output pass; rather, what you want to test is whether the output pass
-was performed in sync with the final input scan.  This form of the loop
-will avoid an extra output pass whenever the decoder is able (or nearly
-able) to keep up with the incoming data.
+In this case you don't need to know in advance whether an output pass is to
+be the last one, so it's not necessary to have reached EOF before starting
+the final output pass; rather, what you want to test is whether the output
+pass was performed in sync with the final input scan.  This form of the loop
+will avoid an extra output pass whenever the decoder is able (or nearly able)
+to keep up with the incoming data.
 
 When the data transmission speed is high, you might begin a display pass,
-then find that much or all of the image has arrived before you can complete
+then find that much or all of the file has arrived before you can complete
 the pass.  (You can detect this by noting the JPEG_REACHED_EOI return code
 from jpeg_consume_input(), or equivalently by testing jpeg_input_complete().)
 In this situation you may wish to abort the current display pass and start a
@@ -1916,10 +1942,10 @@ routines:
 * jpeg_read_scanlines(), as always, returns the number of scanlines that it
   was able to produce before suspending.
 * jpeg_finish_output() will read any markers following the target scan,
-  up to the end of the image or the SOS marker that begins another scan.
+  up to the end of the file or the SOS marker that begins another scan.
   (But it reads no input if jpeg_consume_input() has already reached the
-  end of the image or a SOS marker beyond the target output scan.)
-* jpeg_finish_decompress() will read until the end of image, and thus can
+  end of the file or a SOS marker beyond the target output scan.)
+* jpeg_finish_decompress() will read until the end of file, and thus can
   suspend if the end hasn't already been reached (as can be tested by
   calling jpeg_input_complete()).
 jpeg_start_output(), jpeg_finish_output(), and jpeg_finish_decompress()
@@ -2153,7 +2179,8 @@ In some cases you might want to compress an image using tables which are
 not stored in the application, but are defined in an interchange or
 tables-only file readable by the application.  This can be done by setting up
 a JPEG decompression object to read the specification file, then copying the
-tables into your compression object.
+tables into your compression object.  See jpeg_copy_critical_parameters()
+for an example of copying quantization tables.
 
 
 To read abbreviated image files, you simply need to load the proper tables
@@ -2603,8 +2630,9 @@ DOS will require a reboot to recover the memory.)  Thus, with these memory
 managers, it's a good idea to provide a signal handler that will trap any
 early exit from your program.  The handler should call either jpeg_abort()
 or jpeg_destroy() for any active JPEG objects.  A handler is not needed with
-jmemnobs.c, and shouldn't be necessary with jmemansi.c either, since the C
-library is supposed to take care of deleting files made with tmpfile().
+jmemnobs.c, and shouldn't be necessary with jmemansi.c or jmemmac.c either,
+since the C library is supposed to take care of deleting files made with
+tmpfile().
 
 
 Library compile-time options

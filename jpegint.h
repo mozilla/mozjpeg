@@ -1,7 +1,7 @@
 /*
  * jpegint.h
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -329,51 +329,51 @@ struct jpeg_color_quantizer {
 
 
 /* Compression module initialization routines */
-EXTERN void jinit_compress_master JPP((j_compress_ptr cinfo));
-EXTERN void jinit_c_master_control JPP((j_compress_ptr cinfo,
-					boolean transcode_only));
-EXTERN void jinit_c_main_controller JPP((j_compress_ptr cinfo,
-					 boolean need_full_buffer));
-EXTERN void jinit_c_prep_controller JPP((j_compress_ptr cinfo,
-					 boolean need_full_buffer));
-EXTERN void jinit_c_coef_controller JPP((j_compress_ptr cinfo,
-					 boolean need_full_buffer));
-EXTERN void jinit_color_converter JPP((j_compress_ptr cinfo));
-EXTERN void jinit_downsampler JPP((j_compress_ptr cinfo));
-EXTERN void jinit_forward_dct JPP((j_compress_ptr cinfo));
-EXTERN void jinit_huff_encoder JPP((j_compress_ptr cinfo));
-EXTERN void jinit_phuff_encoder JPP((j_compress_ptr cinfo));
-EXTERN void jinit_marker_writer JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_compress_master JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_c_master_control JPP((j_compress_ptr cinfo,
+					 boolean transcode_only));
+EXTERN(void) jinit_c_main_controller JPP((j_compress_ptr cinfo,
+					  boolean need_full_buffer));
+EXTERN(void) jinit_c_prep_controller JPP((j_compress_ptr cinfo,
+					  boolean need_full_buffer));
+EXTERN(void) jinit_c_coef_controller JPP((j_compress_ptr cinfo,
+					  boolean need_full_buffer));
+EXTERN(void) jinit_color_converter JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_downsampler JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_forward_dct JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_huff_encoder JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_phuff_encoder JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_marker_writer JPP((j_compress_ptr cinfo));
 /* Decompression module initialization routines */
-EXTERN void jinit_master_decompress JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_d_main_controller JPP((j_decompress_ptr cinfo,
-					 boolean need_full_buffer));
-EXTERN void jinit_d_coef_controller JPP((j_decompress_ptr cinfo,
-					 boolean need_full_buffer));
-EXTERN void jinit_d_post_controller JPP((j_decompress_ptr cinfo,
-					 boolean need_full_buffer));
-EXTERN void jinit_input_controller JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_marker_reader JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_huff_decoder JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_phuff_decoder JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_inverse_dct JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_upsampler JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_color_deconverter JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_1pass_quantizer JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_2pass_quantizer JPP((j_decompress_ptr cinfo));
-EXTERN void jinit_merged_upsampler JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_master_decompress JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_d_main_controller JPP((j_decompress_ptr cinfo,
+					  boolean need_full_buffer));
+EXTERN(void) jinit_d_coef_controller JPP((j_decompress_ptr cinfo,
+					  boolean need_full_buffer));
+EXTERN(void) jinit_d_post_controller JPP((j_decompress_ptr cinfo,
+					  boolean need_full_buffer));
+EXTERN(void) jinit_input_controller JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_marker_reader JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_huff_decoder JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_phuff_decoder JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_inverse_dct JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_upsampler JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_color_deconverter JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_1pass_quantizer JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_2pass_quantizer JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_merged_upsampler JPP((j_decompress_ptr cinfo));
 /* Memory manager initialization */
-EXTERN void jinit_memory_mgr JPP((j_common_ptr cinfo));
+EXTERN(void) jinit_memory_mgr JPP((j_common_ptr cinfo));
 
 /* Utility routines in jutils.c */
-EXTERN long jdiv_round_up JPP((long a, long b));
-EXTERN long jround_up JPP((long a, long b));
-EXTERN void jcopy_sample_rows JPP((JSAMPARRAY input_array, int source_row,
-				   JSAMPARRAY output_array, int dest_row,
-				   int num_rows, JDIMENSION num_cols));
-EXTERN void jcopy_block_row JPP((JBLOCKROW input_row, JBLOCKROW output_row,
-				 JDIMENSION num_blocks));
-EXTERN void jzero_far JPP((void FAR * target, size_t bytestozero));
+EXTERN(long) jdiv_round_up JPP((long a, long b));
+EXTERN(long) jround_up JPP((long a, long b));
+EXTERN(void) jcopy_sample_rows JPP((JSAMPARRAY input_array, int source_row,
+				    JSAMPARRAY output_array, int dest_row,
+				    int num_rows, JDIMENSION num_cols));
+EXTERN(void) jcopy_block_row JPP((JBLOCKROW input_row, JBLOCKROW output_row,
+				  JDIMENSION num_blocks));
+EXTERN(void) jzero_far JPP((void FAR * target, size_t bytestozero));
 /* Constant tables in jutils.c */
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */
 extern const int jpeg_natural_order[]; /* zigzag coef order to natural order */

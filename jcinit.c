@@ -1,7 +1,7 @@
 /*
  * jcinit.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -26,7 +26,7 @@
  * which modules will be used and give them appropriate initialization calls.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_compress_master (j_compress_ptr cinfo)
 {
   /* Initialize master control (includes parameter checking/processing) */

@@ -1,7 +1,7 @@
 /*
  * jdhuff.h
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -43,7 +43,7 @@ typedef struct {
 } d_derived_tbl;
 
 /* Expand a Huffman table definition into the derived format */
-EXTERN void jpeg_make_d_derived_tbl JPP((j_decompress_ptr cinfo,
+EXTERN(void) jpeg_make_d_derived_tbl JPP((j_decompress_ptr cinfo,
 				JHUFF_TBL * htbl, d_derived_tbl ** pdtbl));
 
 
@@ -152,9 +152,9 @@ typedef struct {		/* Bitreading working state within an MCU */
 	(bits_left -= (nbits))
 
 /* Load up the bit buffer to a depth of at least nbits */
-EXTERN boolean jpeg_fill_bit_buffer JPP((bitread_working_state * state,
-		register bit_buf_type get_buffer, register int bits_left,
-		int nbits));
+EXTERN(boolean) jpeg_fill_bit_buffer
+	JPP((bitread_working_state * state, register bit_buf_type get_buffer,
+	     register int bits_left, int nbits));
 
 
 /*
@@ -197,6 +197,6 @@ slowlabel: \
 }
 
 /* Out-of-line case for Huffman code fetching */
-EXTERN int jpeg_huff_decode JPP((bitread_working_state * state,
-		register bit_buf_type get_buffer, register int bits_left,
-		d_derived_tbl * htbl, int min_bits));
+EXTERN(int) jpeg_huff_decode
+	JPP((bitread_working_state * state, register bit_buf_type get_buffer,
+	     register int bits_left, d_derived_tbl * htbl, int min_bits));

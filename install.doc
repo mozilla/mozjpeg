@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-1995, Thomas G. Lane.
+Copyright (C) 1991-1996, Thomas G. Lane.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -216,7 +216,7 @@ Selecting a memory manager
 
 The IJG code is capable of working on images that are too big to fit in main
 memory; data is swapped out to temporary files as necessary.  However, the
-code to do this is rather system-dependent.  We provide four different
+code to do this is rather system-dependent.  We provide five different
 memory managers:
 
 * jmemansi.c	This version uses the ANSI-standard library routine tmpfile(),
@@ -240,7 +240,10 @@ memory managers:
 		IMPORTANT: if you use this, define USE_MSDOS_MEMMGR in
 		jconfig.h, and include the assembly file jmemdosa.asm in the
 		programs.  The supplied makefiles and jconfig files for
-		MS-DOS compilers already do both.
+		16-bit MS-DOS compilers already do both.
+
+* jmemmac.c	Custom version for Apple Macintosh; see the system-specific
+		notes for Macintosh for more info.
 
 To use a particular memory manager, change the SYSDEPMEM variable in your
 makefile to equal the corresponding object file name (for example, jmemansi.o
@@ -253,8 +256,8 @@ If yours doesn't, try jmemansi.c first.  If that doesn't compile, you'll have
 to use jmemname.c; be sure to adjust select_file_name() for local conditions.
 You may also need to change unlink() to remove() in close_backing_store().
 
-Except with jmemnobs.c, you need to adjust the DEFAULT_MAX_MEM setting to a
-reasonable value for your system (either by adding a #define for
+Except with jmemnobs.c or jmemmac.c, you need to adjust the DEFAULT_MAX_MEM
+setting to a reasonable value for your system (either by adding a #define for
 DEFAULT_MAX_MEM to jconfig.h, or by adding a -D switch to the Makefile).
 This value limits the amount of data space the program will attempt to
 allocate.  Code and static data space isn't counted, so the actual memory
@@ -627,6 +630,25 @@ to A.08.07.  If you get complaints about "not a typedef name", you'll have to
 use makefile.unix, or run configure without the CC option.
 
 
+Macintosh, generic comments:
+
+The supplied user-interface files (cjpeg.c, djpeg.c, etc) are set up to
+provide a Unix-style command line interface.  You can use this interface on
+the Mac by means of the ccommand() library routine provided by Metrowerks
+CodeWarrior or Think C.  This is only appropriate for testing the library,
+however; to make a user-friendly equivalent of cjpeg/djpeg you'd really want
+to develop a Mac-style user interface.  Such an interface exists for pre-v5
+IJG libraries (see the Think C entry, below) but at this writing it has not
+been updated to work with the current release.
+
+We recommend replacing "malloc" and "free" by "NewPtr" and "DisposePtr" in
+whichever memory manager back end you use, because Mac C libraries often
+have inferior implementations of malloc/free.  jmemmac.c is recommended;
+it is a customized version of jmemansi.c with this change and a Mac-specific
+implementation of jpeg_mem_available().  You can also use jmemnobs.c if you
+don't care about handling images larger than available memory.
+
+
 Macintosh, MPW:
 
 We don't directly support MPW in the current release, but Larry Rosenstein
@@ -640,8 +662,10 @@ Macintosh, Metrowerks CodeWarrior:
 Metrowerks release DR2 has problems with the IJG code; don't use it.  Release
 DR3.5 or later should be OK.
 
-The command-line-style interface can be used by defining USE_CCOMMAND and
-TWO_FILE_COMMANDLINE (see next entry for more details).
+The Unix-command-line-style interface can be used by defining USE_CCOMMAND.
+You'll also need to define either TWO_FILE_COMMANDLINE (to avoid stdin/stdout)
+or USE_FDOPEN (to make stdin/stdout work in binary mode).  See the Think C
+entry for more details.
 
 On 680x0 Macs, Metrowerks defines type "double" as a 10-byte IEEE extended
 float.  jmemmgr.c won't like this: it wants sizeof(ALIGN_TYPE) to be a power
@@ -650,15 +674,12 @@ of 2.  Add "#define ALIGN_TYPE long" to jconfig.h to eliminate the complaint.
 
 Macintosh, Think C:
 
-The supplied user-interface files (cjpeg.c and djpeg.c) are set up to provide
-a Unix-style command line interface.  You can use this interface on the Mac
-by means of Think's ccommand() library routine.  However, a much better
-Mac-style user interface has been prepared by Jim Brunner.  You can obtain
-the additional source code needed for that user interface by FTP to
-sumex-aim.stanford.edu, file /info-mac/dev/src/jpeg-convert-c.hqx.  Jim's
-documentation also includes more detailed build instructions for Think C.
-(Jim is working on updating this code to work with v5 of the IJG library,
-but it wasn't ready as of v5 release time.  Should be out before too long.)
+Jim Brunner has prepared a Mac-style user interface for the IJG library.
+Unfortunately, the released version of it only works with pre-v5 libraries;
+still, it may be a useful starting point.  You can obtain Jim's additional
+source code from the Info-Mac archives, at sumex-aim.stanford.edu or mirrors
+thereof; see file /info-mac/dev/src/jpeg-convert-c.hqx.  Jim's documentation
+also includes more detailed build instructions for Think C.
 
 If you want to build the minimal command line version, proceed as follows.
 You'll have to prepare project files for the programs; we don't include any
@@ -770,6 +791,14 @@ go32.exe to do "make standalone".
 
 MS-DOS, Microsoft C:
 
+makefile.mc6 works with Microsoft C, Visual C++, etc.  Note that this
+makefile assumes that the working copy of itself is called "makefile".
+If you want to call it something else, say "makefile.mak", be sure to adjust
+the dependency line that reads "$(RFILE) : makefile".  Otherwise the make
+will fail because it doesn't know how to create "makefile".  Worse, some
+releases of Microsoft's make utilities give an incorrect error message in
+this situation.
+
 If you want one-file command line style, just undefine TWO_FILE_COMMANDLINE.
 jconfig.mc6 already includes #define USE_SETMODE to make this work.
 (fdopen does not work correctly.)
@@ -801,6 +830,28 @@ making that part of jmorecfg.h read like this:
 	#ifndef __RPCNDR_H__	/* don't conflict if rpcndr.h already read */
 	typedef unsigned char boolean;
 	#endif
+In v6a and later, using incompatible definitions of boolean will usually lead
+to the failure message "JPEG parameter struct mismatch", rather than the
+difficult-to-diagnose bugs it caused with earlier versions.
+
+When using the library in a Windows application, you will almost certainly
+want to modify or replace the error handler module jerror.c, since our
+default error handler does a couple of inappropriate things:
+  1. it tries to write error and warning messages on stderr;
+  2. in event of a fatal error, it exits by calling exit().
+A simple stopgap solution for problem 1 is to replace the line
+	fprintf(stderr, "%s\n", buffer);
+(in output_message in jerror.c) with something like
+	MessageBox(GetActiveWindow(),buffer,"JPEG Error",MB_OK);
+It's highly recommended that you at least do that much, since otherwise
+error messages will disappear into nowhere.
+The proper solution for problem 2 is to return control to your calling
+application after a library error.  This can be done with the setjmp/longjmp
+technique discussed in libjpeg.doc and illustrated in example.c.
+
+You may also want to modify jdatasrc.c and jdatadst.c to use Windows file
+operations rather than fread/fwrite.  This is only necessary if your C
+compiler doesn't provide a competent implementation of C stdio functions.
 
 Many people want to convert the IJG library into a DLL.  This is reasonably
 straightforward, but watch out for the following:
@@ -813,6 +864,20 @@ that isn't true in a medium-model DLL.
 jdatadst.c don't work if you open a file in your application and then pass
 the pointer to the DLL.  One workaround is to make jdatasrc.c/jdatadst.c
 part of your main application rather than part of the DLL.
+  3. You'll probably need to modify the macros GLOBAL() and EXTERN() to
+attach suitable linkage keywords to the exported routine names.  Similarly,
+you'll want to modify METHODDEF() and JMETHOD() to ensure function pointers
+are declared in a way that lets application routines be called back through
+the function pointers.  These macros are in jmorecfg.h.  Typical definitions
+for a 16-bit DLL are:
+	#define GLOBAL(type)		type _far _pascal _loadds _export
+	#define EXTERN(type)		extern type _far _pascal
+	#define METHODDEF(type)		static type _far _pascal
+	#define JMETHOD(type,methodname,arglist)  \
+		type (_far _pascal *methodname) arglist
+Although not all the GLOBAL routines are actually intended to be called by
+the application, the performance cost of making them all DLL entry points is
+negligible.
 
 The unmodified IJG library presents a very C-specific application interface,
 so the resulting DLL is only usable from C or C++ applications.  There has
@@ -824,22 +889,27 @@ but hasn't been very high priority --- any volunteers out there?
 Microsoft Windows, Borland C:
 
 Borland C++ 4.5 fails with an internal compiler error when trying to compile
-jdmerge.c.  If enough people complain, perhaps Borland will fix it.
-In the meantime, you can work around the problem by undefining
-UPSAMPLE_MERGING_SUPPORTED in jmorecfg.h, at the price of losing most of the
-speedup from the "-nosmooth" decompression option.  Alternatively, I'm told
-that replacing three or more uses of h2v1_merged_upsample()'s variable
-"range_limit" with direct references to "cinfo->sample_range_limit" makes
-the problem go away, though the routine is then a little slower than it
-should be.  Pretty bizarre, especially since the very similar routine
-h2v2_merged_upsample doesn't trigger the bug.
+jdmerge.c in 32-bit mode.  If enough people complain, perhaps Borland will fix
+it.  In the meantime, the simplest known workaround is to add a redundant
+definition of the variable range_limit in h2v1_merged_upsample(), at the head
+of the block that handles odd image width (about line 268 in v6 jdmerge.c):
+  /* If image width is odd, do the last output column separately */
+  if (cinfo->output_width & 1) {
+    register JSAMPLE * range_limit = cinfo->sample_range_limit; /* ADD THIS */
+    cb = GETJSAMPLE(*inptr1);
+Pretty bizarre, especially since the very similar routine h2v2_merged_upsample
+doesn't trigger the bug.
+Recent reports suggest that this bug does not occur with "bcc32a" (the
+Pentium-optimized version of the compiler).
 
 
 SGI:
 
-Set "AR2= ar -ts" rather than "AR2= ranlib" in the Makefile.  If you are
-using configure, you should say
+On some SGI systems, you may need to set "AR2= ar -ts" in the Makefile.
+If you are using configure, you can do this by saying
 	./configure RANLIB='ar -ts'
+This change is not needed on all SGIs.  Use it only if the make fails at the
+stage of linking the completed programs.
 
 On the MIPS R4000 architecture (Indy, etc.), the compiler option "-mips2"
 reportedly speeds up the float DCT method substantially, enough to make it

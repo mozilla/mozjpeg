@@ -1,7 +1,7 @@
 /*
  * djpeg.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -30,7 +30,8 @@
 
 #ifdef USE_CCOMMAND		/* command-line reader for Macintosh */
 #ifdef __MWERKS__
-#include <SIOUX.h>              /* Metrowerks declares it here */
+#include <SIOUX.h>              /* Metrowerks needs this */
+#include <console.h>		/* ... and this */
 #endif
 #ifdef THINK_C
 #include <console.h>		/* Think declares it here */
@@ -85,7 +86,7 @@ static const char * progname;	/* program name for error messages */
 static char * outfilename;	/* for -outfile switch */
 
 
-LOCAL void
+LOCAL(void)
 usage (void)
 /* complain about bad command line */
 {
@@ -157,7 +158,7 @@ usage (void)
 }
 
 
-LOCAL int
+LOCAL(int)
 parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
 		int last_file_arg_seen, boolean for_real)
 /* Parse optional switches.
@@ -349,7 +350,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
  * Note this code relies on a non-suspending data source.
  */
 
-LOCAL unsigned int
+LOCAL(unsigned int)
 jpeg_getc (j_decompress_ptr cinfo)
 /* Read next byte */
 {
@@ -364,7 +365,7 @@ jpeg_getc (j_decompress_ptr cinfo)
 }
 
 
-METHODDEF boolean
+METHODDEF(boolean)
 COM_handler (j_decompress_ptr cinfo)
 {
   boolean traceit = (cinfo->err->trace_level >= 1);
@@ -414,7 +415,7 @@ COM_handler (j_decompress_ptr cinfo)
  * The main program.
  */
 
-GLOBAL int
+int
 main (int argc, char **argv)
 {
   struct jpeg_decompress_struct cinfo;

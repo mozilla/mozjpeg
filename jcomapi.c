@@ -1,7 +1,7 @@
 /*
  * jcomapi.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -25,7 +25,7 @@
  * responsibility.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_abort (j_common_ptr cinfo)
 {
   int pool;
@@ -53,7 +53,7 @@ jpeg_abort (j_common_ptr cinfo)
  * responsibility.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_destroy (j_common_ptr cinfo)
 {
   /* We need only tell the memory manager to release everything. */
@@ -70,7 +70,7 @@ jpeg_destroy (j_common_ptr cinfo)
  * (Would jutils.c be a more reasonable place to put these?)
  */
 
-GLOBAL JQUANT_TBL *
+GLOBAL(JQUANT_TBL *)
 jpeg_alloc_quant_table (j_common_ptr cinfo)
 {
   JQUANT_TBL *tbl;
@@ -82,7 +82,7 @@ jpeg_alloc_quant_table (j_common_ptr cinfo)
 }
 
 
-GLOBAL JHUFF_TBL *
+GLOBAL(JHUFF_TBL *)
 jpeg_alloc_huff_table (j_common_ptr cinfo)
 {
   JHUFF_TBL *tbl;

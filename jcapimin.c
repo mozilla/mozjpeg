@@ -1,7 +1,7 @@
 /*
  * jcapimin.c
  *
- * Copyright (C) 1994-1995, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -26,10 +26,18 @@
  * The error manager must already be set up (in case memory manager fails).
  */
 
-GLOBAL void
-jpeg_create_compress (j_compress_ptr cinfo)
+GLOBAL(void)
+jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
 {
   int i;
+
+  /* Guard against version mismatches between library and caller. */
+  cinfo->mem = NULL;		/* so jpeg_destroy knows mem mgr not called */
+  if (version != JPEG_LIB_VERSION)
+    ERREXIT2(cinfo, JERR_BAD_LIB_VERSION, JPEG_LIB_VERSION, version);
+  if (structsize != SIZEOF(struct jpeg_compress_struct))
+    ERREXIT2(cinfo, JERR_BAD_STRUCT_SIZE, 
+	     (int) SIZEOF(struct jpeg_compress_struct), (int) structsize);
 
   /* For debugging purposes, zero the whole master structure.
    * But error manager pointer is already there, so save and restore it.
@@ -69,7 +77,7 @@ jpeg_create_compress (j_compress_ptr cinfo)
  * Destruction of a JPEG compression object
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_destroy_compress (j_compress_ptr cinfo)
 {
   jpeg_destroy((j_common_ptr) cinfo); /* use common routine */
@@ -81,7 +89,7 @@ jpeg_destroy_compress (j_compress_ptr cinfo)
  * but don't destroy the object itself.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_abort_compress (j_compress_ptr cinfo)
 {
   jpeg_abort((j_common_ptr) cinfo); /* use common routine */
@@ -100,7 +108,7 @@ jpeg_abort_compress (j_compress_ptr cinfo)
  * jcparam.o would be linked whether the application used it or not.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_suppress_tables (j_compress_ptr cinfo, boolean suppress)
 {
   int i;
@@ -128,7 +136,7 @@ jpeg_suppress_tables (j_compress_ptr cinfo, boolean suppress)
  * work including most of the actual output.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_finish_compress (j_compress_ptr cinfo)
 {
   JDIMENSION iMCU_row;
@@ -173,7 +181,7 @@ jpeg_finish_compress (j_compress_ptr cinfo)
  * first call to jpeg_write_scanlines() or jpeg_write_raw_data().
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_write_marker (j_compress_ptr cinfo, int marker,
 		   const JOCTET *dataptr, unsigned int datalen)
 {
@@ -208,7 +216,7 @@ jpeg_write_marker (j_compress_ptr cinfo, int marker,
  * will not re-emit the tables unless it is passed write_all_tables=TRUE.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_write_tables (j_compress_ptr cinfo)
 {
   if (cinfo->global_state != CSTATE_START)

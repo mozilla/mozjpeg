@@ -8,6 +8,15 @@ $! and Tim Bell (tbell@netcom.com) for their help.
 $!
 $! Read installation instructions before running this!!
 $!
+$ If F$Mode () .eqs. "INTERACTIVE"
+$   Then
+$       VERIFY = F$Verify (0)
+$   Else
+$       VERIFY = F$Verify (1)
+$ EndIf
+$ On Control_Y Then GoTo End
+$ On Error     Then GoTo End
+$
 $ If F$GetSyi ("HW_MODEL") .gt. 1023 
 $   Then
 $       OPT = ""
@@ -15,7 +24,7 @@ $   Else
 $       OPT = ",Sys$Disk:[]makvms.opt/Option"
 $ EndIf
 $ 
-$ DoCompile := CC /NoDebug /Optimize
+$ DoCompile := CC /NoDebug /Optimize /NoList
 $!
 $ DoCompile jcapimin.c
 $ DoCompile jcapistd.c
@@ -84,8 +93,8 @@ $ DoCompile rdbmp.c
 $ DoCompile rdswitch.c
 $ DoCompile cdjpeg.c
 $!
-$ Link /Executable = cjpeg.exe  cjpeg.obj,rdppm.obj,rdgif.obj,rdtarga.obj, -
-          rdrle.obj,rdbmp.obj,rdswitch.obj,cdjpeg.obj,libjpeg.olb/Library'OPT'
+$ Link /NoMap /Executable = cjpeg.exe  cjpeg.obj,rdppm.obj,rdgif.obj, -
+          rdtarga.obj,rdrle.obj,rdbmp.obj,rdswitch.obj,cdjpeg.obj,libjpeg.olb/Library'OPT'
 $!
 $ DoCompile djpeg.c
 $ DoCompile wrppm.c
@@ -96,20 +105,21 @@ $ DoCompile wrbmp.c
 $ DoCompile rdcolmap.c
 $ DoCompile cdjpeg.c
 $!
-$ Link /Executable = djpeg.exe  djpeg.obj,wrppm.obj,wrgif.obj,wrtarga.obj, -
-          wrrle.obj,wrbmp.obj,rdcolmap.obj,cdjpeg.obj,libjpeg.olb/Library'OPT'
+$ Link /NoMap /Executable = djpeg.exe  djpeg.obj,wrppm.obj,wrgif.obj, -
+          wrtarga.obj,wrrle.obj,wrbmp.obj,rdcolmap.obj,cdjpeg.obj,libjpeg.olb/Library'OPT'
 $!
 $ DoCompile jpegtran.c
 $ DoCompile rdswitch.c
 $ DoCompile cdjpeg.c
 $!
-$ Link /Executable = jpegtran.exe  jpegtran.obj,rdswitch.obj,cdjpeg.obj,libjpeg.olb/Library'OPT'
+$ Link /NoMap /Executable = jpegtran.exe  jpegtran.obj,rdswitch.obj, -
+          cdjpeg.obj,libjpeg.olb/Library'OPT'
 $!
 $ DoCompile rdjpgcom.c
-$ Link /Executable = rdjpgcom.exe  rdjpgcom.obj'OPT'
+$ Link /NoMap /Executable = rdjpgcom.exe  rdjpgcom.obj'OPT'
 $!
 $ DoCompile wrjpgcom.c
-$ Link /Executable = wrjpgcom.exe  wrjpgcom.obj'OPT'
+$ Link /NoMap /Executable = wrjpgcom.exe  wrjpgcom.obj'OPT'
 $!
 $! Run the self-test
 $!
@@ -126,4 +136,6 @@ $ Backup /Compare/Log testimg.ppm testoutp.ppm
 $ Backup /Compare/Log testimgp.jpg testoutp.jpg
 $ Backup /Compare/Log testorig.jpg testoutt.jpg
 $!
+$End:
+$   If Verify Then Set Verify
 $ Exit

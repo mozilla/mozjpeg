@@ -1,6 +1,46 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 6a  7-Feb-96
+--------------------
+
+Library initialization sequence modified to detect version mismatches
+and struct field packing mismatches between library and calling application.
+This change requires applications to be recompiled, but does not require
+any application source code change.
+
+All routine declarations changed to the style "GLOBAL(type) name ...",
+that is, GLOBAL, LOCAL, METHODDEF, EXTERN are now macros taking the
+routine's return type as an argument.  This makes it possible to add
+Microsoft-style linkage keywords to all the routines by changing just
+these macros.  Note that any application code that was using these macros
+will have to be changed.
+
+DCT coefficient quantization tables are now stored in normal array order
+rather than zigzag order.  Application code that calls jpeg_add_quant_table,
+or otherwise manipulates quantization tables directly, will need to be
+changed.  If you need to make such code work with either older or newer
+versions of the library, a test like "#if JPEG_LIB_VERSION >= 61" is
+recommended.
+
+djpeg's trace capability now dumps DQT tables in natural order, not zigzag
+order.  This allows the trace output to be made into a "-qtables" file
+more easily.
+
+New system-dependent memory manager module for use on Apple Macintosh.
+
+Fix bug in cjpeg's -smooth option: last one or two scanlines would be
+duplicates of the prior line unless the image height mod 16 was 1 or 2.
+
+Repair minor problems in VMS, BCC, MC6 makefiles.
+
+New configure script based on latest GNU Autoconf.
+
+Correct the list of include files needed by MetroWerks C for ccommand().
+
+Numerous small documentation updates.
+
+
 Version 6  2-Aug-95
 -------------------
 

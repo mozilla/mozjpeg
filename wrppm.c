@@ -1,7 +1,7 @@
 /*
  * wrppm.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -86,7 +86,7 @@ typedef ppm_dest_struct * ppm_dest_ptr;
  * output buffer is physically the same as the fwrite buffer.
  */
 
-METHODDEF void
+METHODDEF(void)
 put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 		JDIMENSION rows_supplied)
 {
@@ -101,7 +101,7 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  * format translation.  Typically this only happens in 12-bit mode.
  */
 
-METHODDEF void
+METHODDEF(void)
 copy_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 		 JDIMENSION rows_supplied)
 {
@@ -124,7 +124,7 @@ copy_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  * We have to demap the color index values to straight data.
  */
 
-METHODDEF void
+METHODDEF(void)
 put_demapped_rgb (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 		  JDIMENSION rows_supplied)
 {
@@ -149,7 +149,7 @@ put_demapped_rgb (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 }
 
 
-METHODDEF void
+METHODDEF(void)
 put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 		   JDIMENSION rows_supplied)
 {
@@ -172,7 +172,7 @@ put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  * Startup: write the file header.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_output_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
@@ -201,7 +201,7 @@ start_output_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * Finish up at the end of the file.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_output_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   /* Make sure we wrote the output file OK */
@@ -215,7 +215,7 @@ finish_output_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * The module selection routine for PPM format output.
  */
 
-GLOBAL djpeg_dest_ptr
+GLOBAL(djpeg_dest_ptr)
 jinit_write_ppm (j_decompress_ptr cinfo)
 {
   ppm_dest_ptr dest;

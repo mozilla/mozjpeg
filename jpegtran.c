@@ -1,7 +1,7 @@
 /*
  * jpegtran.c
  *
- * Copyright (C) 1995, Thomas G. Lane.
+ * Copyright (C) 1995-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -15,7 +15,8 @@
 
 #ifdef USE_CCOMMAND		/* command-line reader for Macintosh */
 #ifdef __MWERKS__
-#include <SIOUX.h>              /* Metrowerks declares it here */
+#include <SIOUX.h>              /* Metrowerks needs this */
+#include <console.h>		/* ... and this */
 #endif
 #ifdef THINK_C
 #include <console.h>		/* Think declares it here */
@@ -36,7 +37,7 @@ static const char * progname;	/* program name for error messages */
 static char * outfilename;	/* for -outfile switch */
 
 
-LOCAL void
+LOCAL(void)
 usage (void)
 /* complain about bad command line */
 {
@@ -70,7 +71,7 @@ usage (void)
 }
 
 
-LOCAL int
+LOCAL(int)
 parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 		int last_file_arg_seen, boolean for_real)
 /* Parse optional switches.
@@ -229,7 +230,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
  * The main program.
  */
 
-GLOBAL int
+int
 main (int argc, char **argv)
 {
   struct jpeg_decompress_struct srcinfo;
@@ -274,6 +275,7 @@ main (int argc, char **argv)
 
   file_index = parse_switches(&dstinfo, argc, argv, 0, FALSE);
   jsrcerr.trace_level = jdsterr.trace_level;
+  srcinfo.mem->max_memory_to_use = dstinfo.mem->max_memory_to_use;
 
 #ifdef TWO_FILE_COMMANDLINE
   /* Must have either -outfile switch or explicit output file name */

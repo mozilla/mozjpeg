@@ -1,7 +1,7 @@
 /*
  * jdhuff.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -73,7 +73,7 @@ typedef huff_entropy_decoder * huff_entropy_ptr;
  * Initialize for a Huffman-compressed scan.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_pass_huff_decoder (j_decompress_ptr cinfo)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -124,7 +124,7 @@ start_pass_huff_decoder (j_decompress_ptr cinfo)
  * Note this is also used by jdphuff.c.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl,
 			 d_derived_tbl ** pdtbl)
 {
@@ -230,7 +230,7 @@ jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl,
 #endif
 
 
-GLOBAL boolean
+GLOBAL(boolean)
 jpeg_fill_bit_buffer (bitread_working_state * state,
 		      register bit_buf_type get_buffer, register int bits_left,
 		      int nbits)
@@ -318,7 +318,7 @@ jpeg_fill_bit_buffer (bitread_working_state * state,
  * See jdhuff.h for info about usage.
  */
 
-GLOBAL int
+GLOBAL(int)
 jpeg_huff_decode (bitread_working_state * state,
 		  register bit_buf_type get_buffer, register int bits_left,
 		  d_derived_tbl * htbl, int min_bits)
@@ -389,7 +389,7 @@ static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
  * Returns FALSE if must suspend.
  */
 
-LOCAL boolean
+LOCAL(boolean)
 process_restart (j_decompress_ptr cinfo)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -433,7 +433,7 @@ process_restart (j_decompress_ptr cinfo)
  * this module, since we'll just re-assign them on the next call.)
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
@@ -554,7 +554,7 @@ skip_ACs:
  * Module initialization routine for Huffman entropy decoding.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_huff_decoder (j_decompress_ptr cinfo)
 {
   huff_entropy_ptr entropy;

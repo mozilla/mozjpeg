@@ -1,7 +1,7 @@
 /*
  * wrtarga.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -50,7 +50,7 @@ typedef struct {
 typedef tga_dest_struct * tga_dest_ptr;
 
 
-LOCAL void
+LOCAL(void)
 write_header (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
 /* Create and write a Targa header */
 {
@@ -95,7 +95,7 @@ write_header (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
  * In this module rows_supplied will always be 1.
  */
 
-METHODDEF void
+METHODDEF(void)
 put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 		JDIMENSION rows_supplied)
 /* used for unquantized full-color output */
@@ -116,7 +116,7 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   (void) JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
 
-METHODDEF void
+METHODDEF(void)
 put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 	       JDIMENSION rows_supplied)
 /* used for grayscale OR quantized color output */
@@ -140,7 +140,7 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  * For Targa, this is only applied to grayscale data.
  */
 
-METHODDEF void
+METHODDEF(void)
 put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 		   JDIMENSION rows_supplied)
 {
@@ -163,7 +163,7 @@ put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  * Startup: write the file header.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   tga_dest_ptr dest = (tga_dest_ptr) dinfo;
@@ -207,7 +207,7 @@ start_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * Finish up at the end of the file.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   /* Make sure we wrote the output file OK */
@@ -221,7 +221,7 @@ finish_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * The module selection routine for Targa format output.
  */
 
-GLOBAL djpeg_dest_ptr
+GLOBAL(djpeg_dest_ptr)
 jinit_write_targa (j_decompress_ptr cinfo)
 {
   tga_dest_ptr dest;

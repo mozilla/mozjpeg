@@ -1,7 +1,7 @@
 /*
  * jmemdos.c
  *
- * Copyright (C) 1992-1994, Thomas G. Lane.
+ * Copyright (C) 1992-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -85,7 +85,7 @@ extern char * getenv JPP((const char * name));
 /*
  * Declarations for assembly-language support routines (see jmemdosa.asm).
  *
- * The functions are declared "far" as are all pointer arguments;
+ * The functions are declared "far" as are all their pointer arguments;
  * this ensures the assembly source code will work regardless of the
  * compiler memory model.  We assume "short" is 16 bits, "long" is 32.
  */
@@ -100,17 +100,17 @@ typedef struct {		/* registers for calling EMS driver */
 	void far * ds_si;
       } EMScontext;
 
-EXTERN short far jdos_open JPP((short far * handle, char far * filename));
-EXTERN short far jdos_close JPP((short handle));
-EXTERN short far jdos_seek JPP((short handle, long offset));
-EXTERN short far jdos_read JPP((short handle, void far * buffer,
+extern short far jdos_open JPP((short far * handle, char far * filename));
+extern short far jdos_close JPP((short handle));
+extern short far jdos_seek JPP((short handle, long offset));
+extern short far jdos_read JPP((short handle, void far * buffer,
 				unsigned short count));
-EXTERN short far jdos_write JPP((short handle, void far * buffer,
+extern short far jdos_write JPP((short handle, void far * buffer,
 				 unsigned short count));
-EXTERN void far jxms_getdriver JPP((XMSDRIVER far *));
-EXTERN void far jxms_calldriver JPP((XMSDRIVER, XMScontext far *));
-EXTERN short far jems_available JPP((void));
-EXTERN void far jems_calldriver JPP((EMScontext far *));
+extern void far jxms_getdriver JPP((XMSDRIVER far *));
+extern void far jxms_calldriver JPP((XMSDRIVER, XMScontext far *));
+extern short far jems_available JPP((void));
+extern void far jems_calldriver JPP((EMScontext far *));
 
 
 /*
@@ -120,7 +120,7 @@ EXTERN void far jems_calldriver JPP((EMScontext far *));
 
 static int next_file_num;	/* to distinguish among several temp files */
 
-LOCAL void
+LOCAL(void)
 select_file_name (char * fname)
 {
   const char * env;
@@ -158,13 +158,13 @@ select_file_name (char * fname)
  * routines malloc() and free().
  */
 
-GLOBAL void *
+GLOBAL(void *)
 jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
   return (void *) malloc(sizeofobject);
 }
 
-GLOBAL void
+GLOBAL(void)
 jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 {
   free(object);
@@ -175,13 +175,13 @@ jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
  * "Large" objects are allocated in far memory, if possible
  */
 
-GLOBAL void FAR *
+GLOBAL(void FAR *)
 jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
 {
   return (void FAR *) far_malloc(sizeofobject);
 }
 
-GLOBAL void
+GLOBAL(void)
 jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 {
   far_free(object);
@@ -200,7 +200,7 @@ jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 #define DEFAULT_MAX_MEM		300000L /* for total usage about 450K */
 #endif
 
-GLOBAL long
+GLOBAL(long)
 jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
 		    long max_bytes_needed, long already_allocated)
 {
@@ -235,7 +235,7 @@ jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
  */
 
 
-METHODDEF void
+METHODDEF(void)
 read_file_store (j_common_ptr cinfo, backing_store_ptr info,
 		 void FAR * buffer_address,
 		 long file_offset, long byte_count)
@@ -251,7 +251,7 @@ read_file_store (j_common_ptr cinfo, backing_store_ptr info,
 }
 
 
-METHODDEF void
+METHODDEF(void)
 write_file_store (j_common_ptr cinfo, backing_store_ptr info,
 		  void FAR * buffer_address,
 		  long file_offset, long byte_count)
@@ -267,7 +267,7 @@ write_file_store (j_common_ptr cinfo, backing_store_ptr info,
 }
 
 
-METHODDEF void
+METHODDEF(void)
 close_file_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   jdos_close(info->handle.file_handle);	/* close the file */
@@ -280,7 +280,7 @@ close_file_store (j_common_ptr cinfo, backing_store_ptr info)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 open_file_store (j_common_ptr cinfo, backing_store_ptr info,
 		 long total_bytes_needed)
 {
@@ -325,7 +325,7 @@ typedef struct {		/* XMS move specification structure */
 #define ODD(X)	(((X) & 1L) != 0)
 
 
-METHODDEF void
+METHODDEF(void)
 read_xms_store (j_common_ptr cinfo, backing_store_ptr info,
 		void FAR * buffer_address,
 		long file_offset, long byte_count)
@@ -358,7 +358,7 @@ read_xms_store (j_common_ptr cinfo, backing_store_ptr info,
 }
 
 
-METHODDEF void
+METHODDEF(void)
 write_xms_store (j_common_ptr cinfo, backing_store_ptr info,
 		 void FAR * buffer_address,
 		 long file_offset, long byte_count)
@@ -393,7 +393,7 @@ write_xms_store (j_common_ptr cinfo, backing_store_ptr info,
 }
 
 
-METHODDEF void
+METHODDEF(void)
 close_xms_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   XMScontext ctx;
@@ -406,7 +406,7 @@ close_xms_store (j_common_ptr cinfo, backing_store_ptr info)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 open_xms_store (j_common_ptr cinfo, backing_store_ptr info,
 		long total_bytes_needed)
 {
@@ -483,7 +483,7 @@ typedef union {			/* EMS move specification structure */
 #define LOBYTE(W)  ((W) & 0xFF)
 
 
-METHODDEF void
+METHODDEF(void)
 read_ems_store (j_common_ptr cinfo, backing_store_ptr info,
 		void FAR * buffer_address,
 		long file_offset, long byte_count)
@@ -508,7 +508,7 @@ read_ems_store (j_common_ptr cinfo, backing_store_ptr info,
 }
 
 
-METHODDEF void
+METHODDEF(void)
 write_ems_store (j_common_ptr cinfo, backing_store_ptr info,
 		 void FAR * buffer_address,
 		 long file_offset, long byte_count)
@@ -533,7 +533,7 @@ write_ems_store (j_common_ptr cinfo, backing_store_ptr info,
 }
 
 
-METHODDEF void
+METHODDEF(void)
 close_ems_store (j_common_ptr cinfo, backing_store_ptr info)
 {
   EMScontext ctx;
@@ -546,7 +546,7 @@ close_ems_store (j_common_ptr cinfo, backing_store_ptr info)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 open_ems_store (j_common_ptr cinfo, backing_store_ptr info,
 		long total_bytes_needed)
 {
@@ -591,7 +591,7 @@ open_ems_store (j_common_ptr cinfo, backing_store_ptr info,
  * Initial opening of a backing-store object.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 			 long total_bytes_needed)
 {
@@ -615,14 +615,14 @@ jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
  * cleanup required.
  */
 
-GLOBAL long
+GLOBAL(long)
 jpeg_mem_init (j_common_ptr cinfo)
 {
   next_file_num = 0;		/* initialize temp file name generator */
   return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
 }
 
-GLOBAL void
+GLOBAL(void)
 jpeg_mem_term (j_common_ptr cinfo)
 {
   /* Microsoft C, at least in v6.00A, will not successfully reclaim freed

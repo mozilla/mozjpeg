@@ -1,7 +1,7 @@
 /*
  * jcphuff.c
  *
- * Copyright (C) 1995, Thomas G. Lane.
+ * Copyright (C) 1995-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -86,23 +86,23 @@ typedef phuff_entropy_encoder * phuff_entropy_ptr;
 #endif
 
 /* Forward declarations */
-METHODDEF boolean encode_mcu_DC_first JPP((j_compress_ptr cinfo,
-					   JBLOCKROW *MCU_data));
-METHODDEF boolean encode_mcu_AC_first JPP((j_compress_ptr cinfo,
-					   JBLOCKROW *MCU_data));
-METHODDEF boolean encode_mcu_DC_refine JPP((j_compress_ptr cinfo,
+METHODDEF(boolean) encode_mcu_DC_first JPP((j_compress_ptr cinfo,
 					    JBLOCKROW *MCU_data));
-METHODDEF boolean encode_mcu_AC_refine JPP((j_compress_ptr cinfo,
+METHODDEF(boolean) encode_mcu_AC_first JPP((j_compress_ptr cinfo,
 					    JBLOCKROW *MCU_data));
-METHODDEF void finish_pass_phuff JPP((j_compress_ptr cinfo));
-METHODDEF void finish_pass_gather_phuff JPP((j_compress_ptr cinfo));
+METHODDEF(boolean) encode_mcu_DC_refine JPP((j_compress_ptr cinfo,
+					     JBLOCKROW *MCU_data));
+METHODDEF(boolean) encode_mcu_AC_refine JPP((j_compress_ptr cinfo,
+					     JBLOCKROW *MCU_data));
+METHODDEF(void) finish_pass_phuff JPP((j_compress_ptr cinfo));
+METHODDEF(void) finish_pass_gather_phuff JPP((j_compress_ptr cinfo));
 
 
 /*
  * Initialize for a Huffman-compressed scan using progressive JPEG.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
 {  
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
@@ -208,7 +208,7 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
 	    dump_buffer(entropy); }
 
 
-LOCAL void
+LOCAL(void)
 dump_buffer (phuff_entropy_ptr entropy)
 /* Empty the output buffer; we do not support suspension in this module. */
 {
@@ -231,7 +231,7 @@ dump_buffer (phuff_entropy_ptr entropy)
  */
 
 INLINE
-LOCAL void
+LOCAL(void)
 emit_bits (phuff_entropy_ptr entropy, unsigned int code, int size)
 /* Emit some bits, unless we are in gather mode */
 {
@@ -270,7 +270,7 @@ emit_bits (phuff_entropy_ptr entropy, unsigned int code, int size)
 }
 
 
-LOCAL void
+LOCAL(void)
 flush_bits (phuff_entropy_ptr entropy)
 {
   emit_bits(entropy, 0x7F, 7); /* fill any partial byte with ones */
@@ -284,7 +284,7 @@ flush_bits (phuff_entropy_ptr entropy)
  */
 
 INLINE
-LOCAL void
+LOCAL(void)
 emit_symbol (phuff_entropy_ptr entropy, int tbl_no, int symbol)
 {
   if (entropy->gather_statistics)
@@ -300,7 +300,7 @@ emit_symbol (phuff_entropy_ptr entropy, int tbl_no, int symbol)
  * Emit bits from a correction bit buffer.
  */
 
-LOCAL void
+LOCAL(void)
 emit_buffered_bits (phuff_entropy_ptr entropy, char * bufstart,
 		    unsigned int nbits)
 {
@@ -319,7 +319,7 @@ emit_buffered_bits (phuff_entropy_ptr entropy, char * bufstart,
  * Emit any pending EOBRUN symbol.
  */
 
-LOCAL void
+LOCAL(void)
 emit_eobrun (phuff_entropy_ptr entropy)
 {
   register int temp, nbits;
@@ -347,7 +347,7 @@ emit_eobrun (phuff_entropy_ptr entropy)
  * Emit a restart marker & resynchronize predictions.
  */
 
-LOCAL void
+LOCAL(void)
 emit_restart (phuff_entropy_ptr entropy, int restart_num)
 {
   int ci;
@@ -377,7 +377,7 @@ emit_restart (phuff_entropy_ptr entropy, int restart_num)
  * or first pass of successive approximation).
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
@@ -459,7 +459,7 @@ encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * or first pass of successive approximation).
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
@@ -563,7 +563,7 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * is not very clear on the point.
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
@@ -610,7 +610,7 @@ encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * MCU encoding for AC successive approximation refinement scan.
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
@@ -738,7 +738,7 @@ encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * Finish up at the end of a Huffman-compressed progressive scan.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_pass_phuff (j_compress_ptr cinfo)
 {   
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
@@ -759,7 +759,7 @@ finish_pass_phuff (j_compress_ptr cinfo)
  * Finish up a statistics-gathering pass and create the new Huffman tables.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_pass_gather_phuff (j_compress_ptr cinfo)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
@@ -806,7 +806,7 @@ finish_pass_gather_phuff (j_compress_ptr cinfo)
  * Module initialization routine for progressive Huffman entropy encoding.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_phuff_encoder (j_compress_ptr cinfo)
 {
   phuff_entropy_ptr entropy;

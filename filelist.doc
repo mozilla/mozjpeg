@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  FILE LIST
 
-Copyright (C) 1994-1995, Thomas G. Lane.
+Copyright (C) 1994-1996, Thomas G. Lane.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -115,6 +115,7 @@ jmemansi.c	Makes temporary files with ANSI-standard routine tmpfile().
 jmemname.c	Makes temporary files with program-generated file names.
 jmemdos.c	Custom implementation for MS-DOS: knows about extended and
 		expanded memory as well as temporary files.
+jmemmac.c	Custom implementation for Apple Macintosh.
 
 Exactly one of the system-dependent modules should be configured into an
 installed JPEG library (see install.doc for hints about which one to use).

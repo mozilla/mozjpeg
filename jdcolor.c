@@ -37,7 +37,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
  *	R = Y                + 1.40200 * Cr
  *	G = Y - 0.34414 * Cb - 0.71414 * Cr
  *	B = Y + 1.77200 * Cb
- * where Cb and Cr represent the incoming values less MAXJSAMPLE/2.
+ * where Cb and Cr represent the incoming values less CENTERJSAMPLE.
  * (These numbers are derived from TIFF 6.0 section 21, dated 3-June-92.)
  *
  * To avoid floating-point arithmetic, we represent the fractional constants
@@ -70,7 +70,7 @@ METHODDEF void
 ycc_rgb_start (j_decompress_ptr cinfo)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  INT32 i, x2;
+  INT32 i, x;
   SHIFT_TEMPS
 
   cconvert->Cr_r_tab = (int *)
@@ -86,21 +86,20 @@ ycc_rgb_start (j_decompress_ptr cinfo)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				(MAXJSAMPLE+1) * SIZEOF(INT32));
 
-  for (i = 0; i <= MAXJSAMPLE; i++) {
+  for (i = 0, x = -CENTERJSAMPLE; i <= MAXJSAMPLE; i++, x++) {
     /* i is the actual input pixel value, in the range 0..MAXJSAMPLE */
-    /* The Cb or Cr value we are thinking of is x = i - MAXJSAMPLE/2 */
-    x2 = 2*i - MAXJSAMPLE;	/* twice x */
+    /* The Cb or Cr value we are thinking of is x = i - CENTERJSAMPLE */
     /* Cr=>R value is nearest int to 1.40200 * x */
     cconvert->Cr_r_tab[i] = (int)
-		    RIGHT_SHIFT(FIX(1.40200/2) * x2 + ONE_HALF, SCALEBITS);
+		    RIGHT_SHIFT(FIX(1.40200) * x + ONE_HALF, SCALEBITS);
     /* Cb=>B value is nearest int to 1.77200 * x */
     cconvert->Cb_b_tab[i] = (int)
-		    RIGHT_SHIFT(FIX(1.77200/2) * x2 + ONE_HALF, SCALEBITS);
+		    RIGHT_SHIFT(FIX(1.77200) * x + ONE_HALF, SCALEBITS);
     /* Cr=>G value is scaled-up -0.71414 * x */
-    cconvert->Cr_g_tab[i] = (- FIX(0.71414/2)) * x2;
+    cconvert->Cr_g_tab[i] = (- FIX(0.71414)) * x;
     /* Cb=>G value is scaled-up -0.34414 * x */
     /* We also add in ONE_HALF so that need not do it in inner loop */
-    cconvert->Cb_g_tab[i] = (- FIX(0.34414/2)) * x2 + ONE_HALF;
+    cconvert->Cb_g_tab[i] = (- FIX(0.34414)) * x + ONE_HALF;
   }
 }
 
@@ -145,10 +144,7 @@ ycc_rgb_convert (j_decompress_ptr cinfo,
       y  = GETJSAMPLE(inptr0[col]);
       cb = GETJSAMPLE(inptr1[col]);
       cr = GETJSAMPLE(inptr2[col]);
-      /* Note: if the inputs were computed directly from RGB values,
-       * range-limiting would be unnecessary here; but due to possible
-       * noise in the DCT/IDCT phase, we do need to apply range limits.
-       */
+      /* Range-limiting is essential due to noise introduced by DCT losses. */
       outptr[RGB_RED] =   range_limit[y + Crrtab[cr]];
       outptr[RGB_GREEN] = range_limit[y +
 			      ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],
@@ -247,10 +243,7 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
       y  = GETJSAMPLE(inptr0[col]);
       cb = GETJSAMPLE(inptr1[col]);
       cr = GETJSAMPLE(inptr2[col]);
-      /* Note: if the inputs were computed directly from RGB values,
-       * range-limiting would be unnecessary here; but due to possible
-       * noise in the DCT/IDCT phase, we do need to apply range limits.
-       */
+      /* Range-limiting is essential due to noise introduced by DCT losses. */
       outptr[0] = range_limit[MAXJSAMPLE - (y + Crrtab[cr])];	/* red */
       outptr[1] = range_limit[MAXJSAMPLE - (y +			/* green */
 			      ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],

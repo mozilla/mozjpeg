@@ -55,6 +55,7 @@ extern void free JPP((void *ptr));
  *  3.  mktemp() is used to ensure that multiple processes running
  *      simultaneously won't select the same file names.  If your system
  *      doesn't have mktemp(), define NO_MKTEMP to do it the hard way.
+ *      (If you don't have <errno.h>, also define NO_ERRNO_H.)
  *
  *  4.  You probably want to define NEED_SIGNAL_CATCHER so that cjpeg.c/djpeg.c
  *      will cause the temp files to be removed if you stop the program early.
@@ -72,6 +73,19 @@ static int next_file_num;	/* to distinguish among several temp files */
 #define TEMP_FILE_NAME  "%sJPG%03d.TMP"
 #endif
 
+#ifndef NO_ERRNO_H
+#include <errno.h>		/* to define ENOENT */
+#endif
+
+/* ANSI C specifies that errno is a macro, but on older systems it's more
+ * likely to be a plain int variable.  And not all versions of errno.h
+ * bother to declare it, so we have to in order to be most portable.  Thus:
+ */
+#ifndef errno
+extern int errno;
+#endif
+
+
 LOCAL void
 select_file_name (char * fname)
 {
@@ -81,8 +95,17 @@ select_file_name (char * fname)
   for (;;) {
     next_file_num++;		/* advance counter */
     sprintf(fname, TEMP_FILE_NAME, TEMP_DIRECTORY, next_file_num);
-    if ((tfile = fopen(fname, READ_BINARY)) == NULL)
+    if ((tfile = fopen(fname, READ_BINARY)) == NULL) {
+      /* fopen could have failed for a reason other than the file not
+       * being there; for example, file there but unreadable.
+       * If <errno.h> isn't available, then we cannot test the cause.
+       */
+#ifdef ENOENT
+      if (errno != ENOENT)
+	continue;
+#endif
       break;
+    }
     fclose(tfile);		/* oops, it's there; close tfile & try again */
   }
 }

@@ -246,6 +246,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 			       (((INT32) UCH(array[offset+1])) << 8) + \
 			       (((INT32) UCH(array[offset+2])) << 16) + \
 			       (((INT32) UCH(array[offset+3])) << 24))
+  INT32 bfOffBits;
   INT32 headerSize;
   INT32 biWidth = 0;		/* initialize to avoid compiler warning */
   INT32 biHeight = 0;
@@ -254,6 +255,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   INT32 biXPelsPerMeter,biYPelsPerMeter;
   INT32 biClrUsed = 0;
   int mapentrysize = 0;		/* 0 indicates no colormap */
+  INT32 bPad;
   JDIMENSION row_width;
 
   /* Read and verify the bitmap file header */
@@ -261,6 +263,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     ERREXIT(cinfo, JERR_INPUT_EOF);
   if (GET_2B(bmpfileheader,0) != 0x4D42) /* 'BM' */
     ERREXIT(cinfo, JERR_BMP_NOT);
+  bfOffBits = (INT32) GET_4B(bmpfileheader,10);
   /* We ignore the remaining fileheader fields */
 
   /* The infoheader might be 12 bytes (OS/2 1.x), 40 bytes (Windows),
@@ -340,6 +343,9 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
   }
 
+  /* Compute distance to bitmap data --- will adjust for colormap below */
+  bPad = bfOffBits - (headerSize + 14);
+
   /* Read the colormap, if any */
   if (mapentrysize > 0) {
     if (biClrUsed <= 0)
@@ -352,6 +358,15 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
        (JDIMENSION) biClrUsed, (JDIMENSION) 3);
     /* and read it from the file */
     read_colormap(source, (int) biClrUsed, mapentrysize);
+    /* account for size of colormap */
+    bPad -= biClrUsed * mapentrysize;
+  }
+
+  /* Skip any remaining pad bytes */
+  if (bPad < 0)			/* incorrect bfOffBits value? */
+    ERREXIT(cinfo, JERR_BMP_BADHEADER);
+  while (--bPad >= 0) {
+    (void) read_byte(source);
   }
 
   /* Compute row width in file, including padding to 4-byte boundary */

@@ -17,14 +17,31 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jversion.h"
-
-#include "jerror.h"		/* get error codes */
-#define JMAKE_MSG_TABLE
-#include "jerror.h"		/* create message string table */
+#include "jerror.h"
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */
 #define EXIT_FAILURE  1
 #endif
+
+
+/*
+ * Create the message string table.
+ * We do this from the master message list in jerror.h by re-reading
+ * jerror.h with a suitable definition for macro JMESSAGE.
+ * The message table is made an external symbol just in case any applications
+ * want to refer to it directly.
+ */
+
+#ifdef NEED_SHORT_EXTERNAL_NAMES
+#define jpeg_std_message_table	jMsgTable
+#endif
+
+#define JMESSAGE(code,string)	string ,
+
+const char * const jpeg_std_message_table[] = {
+#include "jerror.h"
+  NULL
+};
 
 
 /*
@@ -200,7 +217,7 @@ jpeg_std_error (struct jpeg_error_mgr * err)
   err->msg_code = 0;		/* may be useful as a flag for "no error" */
 
   /* Initialize message table pointers */
-  err->jpeg_message_table = jpeg_message_table;
+  err->jpeg_message_table = jpeg_std_message_table;
   err->last_jpeg_message = (int) JMSG_LASTMSGCODE - 1;
 
   err->addon_message_table = NULL;

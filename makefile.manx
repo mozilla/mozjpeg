@@ -58,10 +58,10 @@ INCLUDES= jdct.h jerror.h jinclude.h jmemsys.h jmorecfg.h jpegint.h \
 DOCS= README install.doc usage.doc cjpeg.1 djpeg.1 rdjpgcom.1 wrjpgcom.1 \
         example.c libjpeg.doc structure.doc coderules.doc filelist.doc \
         change.log
-MKFILES= configure makefile.auto makefile.ansi makefile.unix makefile.manx \
+MKFILES= configure makefile.cfg makefile.ansi makefile.unix makefile.manx \
         makefile.sas makcjpeg.st makdjpeg.st makljpeg.st makefile.bcc \
         makefile.mc6 makefile.dj makefile.mms makefile.vms makvms.opt
-CONFIGFILES= jconfig.auto jconfig.manx jconfig.sas jconfig.st jconfig.bcc \
+CONFIGFILES= jconfig.cfg jconfig.manx jconfig.sas jconfig.st jconfig.bcc \
         jconfig.mc6 jconfig.dj jconfig.vms
 OTHERFILES= jconfig.doc ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm
 TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg

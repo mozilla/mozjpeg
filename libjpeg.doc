@@ -657,13 +657,16 @@ this variable as the loop counter, so that the loop test looks like
 "while (cinfo.output_scanline < cinfo.output_height)".  (Note that the test
 should NOT be against image_height, unless you never use scaling.  The
 image_height field is the height of the original unscaled image.)
+The return value always equals the change in the value of output_scanline.
 
 If you don't use a suspending data source, it is safe to assume that
 jpeg_read_scanlines() reads at least one scanline per call, until the
 bottom of the image has been reached.  If you use a buffer larger than one
 scanline, it is NOT safe to assume that jpeg_read_scanlines() fills it.
-In any case, the return value is the same as the change in the value of
-output_scanline.
+(The current implementation won't return more than cinfo.rec_outbuf_height
+scanlines per call, no matter how large a buffer you pass.)  So you must
+always provide a loop that calls jpeg_read_scanlines() repeatedly until
+the whole image has been read.
 
 
 7. jpeg_finish_decompress(...);
@@ -1561,6 +1564,22 @@ application for the case that the input buffer is completely full and yet the
 decoder has suspended without consuming any data --- otherwise, if this
 situation did occur, it would lead to an endless loop.
 
+Multiple-buffer management:
+
+In some applications it is desirable to store the compressed data in a linked
+list of buffer areas, so as to avoid data copying.  This can be handled by
+having empty_output_buffer() or fill_input_buffer() set the pointer and count
+to reference the next available buffer; FALSE is returned only if no more
+buffers are available.  Although seemingly straightforward, there is a
+pitfall in this approach: the backtrack that occurs when FALSE is returned
+could back up into an earlier buffer.  Do not discard "completed" buffers in
+the empty_output_buffer() or fill_input_buffer() routine, unless you can tell
+from the saved pointer/bytecount that the JPEG library will no longer attempt
+to backtrack that far.  It's probably simplest to postpone releasing any
+buffers until the library returns to its caller; then you can use the final
+bytecount to tell how much data has been fully processed, and release buffers
+on that basis.
+
 
 Abbreviated datastreams and multiple images
 -------------------------------------------
@@ -2027,12 +2046,15 @@ The JPEG standard provides for both the baseline 8-bit DCT process and
 a 12-bit DCT process.  12-bit lossy JPEG is supported if you define
 BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
 larger than a char, so it affects the surrounding application's image data.
-At present, a 12-bit library can handle *only* 12-bit images, not both
-precisions.  (If you need to include both 8- and 12-bit libraries in a
-single application, you could probably do it by defining
-NEED_SHORT_EXTERNAL_NAMES for just one of the copies.  You'd have to access
-the 8-bit and 12-bit copies from separate application source files.  This is
-untested ... if you try it, we'd like to hear whether it works!)
+The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
+and GIF file formats; you must disable the other file formats to compile a
+12-bit cjpeg or djpeg.  At present, a 12-bit library can handle *only*
+12-bit images, not both precisions.  (If you need to include both 8- and
+12-bit libraries in a single application, you could probably do it by
+defining NEED_SHORT_EXTERNAL_NAMES for just one of the copies.  You'd have
+to access the 8-bit and 12-bit copies from separate application source
+files.  This is untested ... if you try it, we'd like to hear whether it
+works!)
 
 The maximum number of components (color channels) in the image is determined
 by MAX_COMPONENTS.  The JPEG standard allows up to 255 components, but we
@@ -2120,7 +2142,9 @@ The JPEG library typically needs 2Kb-3Kb of stack space.  It will also
 malloc about 20K-30K of near heap space while executing (and lots of far
 heap, but that doesn't count in this calculation).  This figure will vary
 depending on selected operating mode, and to a lesser extent on image size.
-Thus you have perhaps 25K available for static data and other modules' near
+There is also about 5Kb-6Kb of constant data which will be allocated in the
+near data segment (about 4Kb of this is the error message table).
+Thus you have perhaps 20K available for other modules' static data and near
 heap space before you need to go to a larger memory model.  The C library's
 static data will account for several K of this, but that still leaves a good
 deal for your needs.  (If you are tight on space, you could reduce the sizes

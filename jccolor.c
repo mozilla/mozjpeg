@@ -32,9 +32,14 @@ typedef my_color_converter * my_cconvert_ptr;
  * normalized to the range 0..MAXJSAMPLE rather than -0.5 .. 0.5.
  * The conversion equations to be implemented are therefore
  *	Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B
- *	Cb = -0.16874 * R - 0.33126 * G + 0.50000 * B  + MAXJSAMPLE/2
- *	Cr =  0.50000 * R - 0.41869 * G - 0.08131 * B  + MAXJSAMPLE/2
+ *	Cb = -0.16874 * R - 0.33126 * G + 0.50000 * B  + CENTERJSAMPLE
+ *	Cr =  0.50000 * R - 0.41869 * G - 0.08131 * B  + CENTERJSAMPLE
  * (These numbers are derived from TIFF 6.0 section 21, dated 3-June-92.)
+ * Note: older versions of the IJG code used a zero offset of MAXJSAMPLE/2,
+ * rather than CENTERJSAMPLE, for Cb and Cr.  This gave equal positive and
+ * negative swings for Cb/Cr, but meant that grayscale values (Cb=Cr=0)
+ * were not represented exactly.  Now we sacrifice exact representation of
+ * maximum red and maximum blue in order to get exact grayscales.
  *
  * To avoid floating-point arithmetic, we represent the fractional constants
  * as integers scaled up by 2^16 (about 4 digits precision); we have to divide
@@ -46,11 +51,12 @@ typedef my_color_converter * my_cconvert_ptr;
  * for 12-bit samples it is still acceptable.  It's not very reasonable for
  * 16-bit samples, but if you want lossless storage you shouldn't be changing
  * colorspace anyway.
- * The MAXJSAMPLE/2 offsets and the rounding fudge-factor of 0.5 are included
+ * The CENTERJSAMPLE offsets and the rounding fudge-factor of 0.5 are included
  * in the tables to save adding them separately in the inner loop.
  */
 
 #define SCALEBITS	16	/* speediest right-shift on some machines */
+#define CBCR_OFFSET	((INT32) CENTERJSAMPLE << SCALEBITS)
 #define ONE_HALF	((INT32) 1 << (SCALEBITS-1))
 #define FIX(x)		((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
 
@@ -94,9 +100,13 @@ rgb_ycc_start (j_compress_ptr cinfo)
     rgb_ycc_tab[i+B_Y_OFF] = FIX(0.11400) * i     + ONE_HALF;
     rgb_ycc_tab[i+R_CB_OFF] = (-FIX(0.16874)) * i;
     rgb_ycc_tab[i+G_CB_OFF] = (-FIX(0.33126)) * i;
-    rgb_ycc_tab[i+B_CB_OFF] = FIX(0.50000) * i    + ONE_HALF*(MAXJSAMPLE+1);
+    /* We use a rounding fudge-factor of 0.5-epsilon for Cb and Cr.
+     * This ensures that the maximum output will round to MAXJSAMPLE
+     * not MAXJSAMPLE+1, and thus that we don't have to range-limit.
+     */
+    rgb_ycc_tab[i+B_CB_OFF] = FIX(0.50000) * i    + CBCR_OFFSET + ONE_HALF-1;
 /*  B=>Cb and R=>Cr tables are the same
-    rgb_ycc_tab[i+R_CR_OFF] = FIX(0.50000) * i    + ONE_HALF*(MAXJSAMPLE+1);
+    rgb_ycc_tab[i+R_CR_OFF] = FIX(0.50000) * i    + CBCR_OFFSET + ONE_HALF-1;
 */
     rgb_ycc_tab[i+G_CR_OFF] = (-FIX(0.41869)) * i;
     rgb_ycc_tab[i+B_CR_OFF] = (-FIX(0.08131)) * i;

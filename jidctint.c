@@ -1,7 +1,7 @@
 /*
  * jidctint.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -144,7 +144,7 @@
  * Perform dequantization and inverse DCT on one block of coefficients.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 		 JCOEFPTR coef_block,
 		 JSAMPARRAY output_buf, JDIMENSION output_col)

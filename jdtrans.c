@@ -1,7 +1,7 @@
 /*
  * jdtrans.c
  *
- * Copyright (C) 1995, Thomas G. Lane.
+ * Copyright (C) 1995-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -16,7 +16,7 @@
 
 
 /* Forward declarations */
-LOCAL void transdecode_master_selection JPP((j_decompress_ptr cinfo));
+LOCAL(void) transdecode_master_selection JPP((j_decompress_ptr cinfo));
 
 
 /*
@@ -34,7 +34,7 @@ LOCAL void transdecode_master_selection JPP((j_decompress_ptr cinfo));
  * a suspending data source is used.
  */
 
-GLOBAL jvirt_barray_ptr *
+GLOBAL(jvirt_barray_ptr *)
 jpeg_read_coefficients (j_decompress_ptr cinfo)
 {
   if (cinfo->global_state == DSTATE_READY) {
@@ -75,7 +75,7 @@ jpeg_read_coefficients (j_decompress_ptr cinfo)
  * This substitutes for jdmaster.c's initialization of the full decompressor.
  */
 
-LOCAL void
+LOCAL(void)
 transdecode_master_selection (j_decompress_ptr cinfo)
 {
   /* Entropy decoding: either Huffman or arithmetic coding. */

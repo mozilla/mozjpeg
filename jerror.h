@@ -49,6 +49,8 @@ JMESSAGE(JERR_BAD_DCTSIZE, "IDCT output block size %d not supported")
 JMESSAGE(JERR_BAD_IN_COLORSPACE, "Bogus input colorspace")
 JMESSAGE(JERR_BAD_J_COLORSPACE, "Bogus JPEG colorspace")
 JMESSAGE(JERR_BAD_LENGTH, "Bogus marker length")
+JMESSAGE(JERR_BAD_LIB_VERSION,
+	 "Wrong JPEG library version: library is %d, caller expects %d")
 JMESSAGE(JERR_BAD_MCU_SIZE, "Sampling factors too large for interleaved scan")
 JMESSAGE(JERR_BAD_POOL_ID, "Invalid memory pool code %d")
 JMESSAGE(JERR_BAD_PRECISION, "Unsupported JPEG data precision %d")
@@ -59,6 +61,8 @@ JMESSAGE(JERR_BAD_PROG_SCRIPT,
 JMESSAGE(JERR_BAD_SAMPLING, "Bogus sampling factors")
 JMESSAGE(JERR_BAD_SCAN_SCRIPT, "Invalid scan script at entry %d")
 JMESSAGE(JERR_BAD_STATE, "Improper call to JPEG library in state %d")
+JMESSAGE(JERR_BAD_STRUCT_SIZE,
+	 "JPEG parameter struct mismatch: library thinks size is %u, caller expects %u")
 JMESSAGE(JERR_BAD_VIRTUAL_ACCESS, "Bogus virtual array access")
 JMESSAGE(JERR_BUFFER_SIZE, "Buffer passed to JPEG library is too small")
 JMESSAGE(JERR_CANT_SUSPEND, "Suspension not allowed here")

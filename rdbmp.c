@@ -1,7 +1,7 @@
 /*
  * rdbmp.c
  *
- * Copyright (C) 1994-1995, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -64,7 +64,7 @@ typedef struct _bmp_source_struct {
 } bmp_source_struct;
 
 
-LOCAL int
+LOCAL(int)
 read_byte (bmp_source_ptr sinfo)
 /* Read next byte from BMP file */
 {
@@ -77,7 +77,7 @@ read_byte (bmp_source_ptr sinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 read_colormap (bmp_source_ptr sinfo, int cmaplen, int mapentrysize)
 /* Read the colormap from a BMP file */
 {
@@ -115,7 +115,7 @@ read_colormap (bmp_source_ptr sinfo, int cmaplen, int mapentrysize)
  * it is an 8-bit image, we must expand colormapped pixels to 24bit format.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 get_8bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading 8-bit colormap indexes */
 {
@@ -146,7 +146,7 @@ get_8bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 }
 
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading 24-bit pixels */
 {
@@ -183,7 +183,7 @@ get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * get_8bit_row or get_24bit_row on subsequent calls.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   bmp_source_ptr source = (bmp_source_ptr) sinfo;
@@ -237,7 +237,7 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * Read the file header; return image size and component count.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   bmp_source_ptr source = (bmp_source_ptr) sinfo;
@@ -408,7 +408,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * Finish up at the end of the file.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   /* no work */
@@ -419,7 +419,7 @@ finish_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * The module selection routine for BMP format input.
  */
 
-GLOBAL cjpeg_source_ptr
+GLOBAL(cjpeg_source_ptr)
 jinit_read_bmp (j_compress_ptr cinfo)
 {
   bmp_source_ptr source;

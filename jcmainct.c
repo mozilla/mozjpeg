@@ -1,7 +1,7 @@
 /*
  * jcmainct.c
  *
- * Copyright (C) 1994-1995, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -51,11 +51,11 @@ typedef my_main_controller * my_main_ptr;
 
 
 /* Forward declarations */
-METHODDEF void process_data_simple_main
+METHODDEF(void) process_data_simple_main
 	JPP((j_compress_ptr cinfo, JSAMPARRAY input_buf,
 	     JDIMENSION *in_row_ctr, JDIMENSION in_rows_avail));
 #ifdef FULL_MAIN_BUFFER_SUPPORTED
-METHODDEF void process_data_buffer_main
+METHODDEF(void) process_data_buffer_main
 	JPP((j_compress_ptr cinfo, JSAMPARRAY input_buf,
 	     JDIMENSION *in_row_ctr, JDIMENSION in_rows_avail));
 #endif
@@ -65,7 +65,7 @@ METHODDEF void process_data_buffer_main
  * Initialize for a processing pass.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_pass_main (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
 {
   my_main_ptr main = (my_main_ptr) cinfo->main;
@@ -109,7 +109,7 @@ start_pass_main (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
  * where we have only a strip buffer.
  */
 
-METHODDEF void
+METHODDEF(void)
 process_data_simple_main (j_compress_ptr cinfo,
 			  JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
 			  JDIMENSION in_rows_avail)
@@ -165,7 +165,7 @@ process_data_simple_main (j_compress_ptr cinfo,
  * This routine handles all of the modes that use a full-size buffer.
  */
 
-METHODDEF void
+METHODDEF(void)
 process_data_buffer_main (j_compress_ptr cinfo,
 			  JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
 			  JDIMENSION in_rows_avail)
@@ -241,7 +241,7 @@ process_data_buffer_main (j_compress_ptr cinfo,
  * Initialize main buffer controller.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 {
   my_main_ptr main;

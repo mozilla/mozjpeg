@@ -1,15 +1,31 @@
 /*
- * jmemansi.c
+ * jmemmac.c
  *
  * Copyright (C) 1992-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
- * This file provides a simple generic implementation of the system-
- * dependent portion of the JPEG memory manager.  This implementation
- * assumes that you have the ANSI-standard library routine tmpfile().
- * Also, the problem of determining the amount of memory available
- * is shoved onto the user.
+ * jmemmac.c provides an Apple Macintosh implementation of the system-
+ * dependent portion of the JPEG memory manager.
+ *
+ * jmemmac.c uses the Macintosh toolbox routines NewPtr and DisposePtr
+ * instead of malloc and free.  It accurately determines the amount of
+ * memory available by using CompactMem.  Notice that if left to its
+ * own devices, this code can chew up all available space in the
+ * application's zone, with the exception of the rather small "slop"
+ * factor computed in jpeg_mem_available().  The application can ensure
+ * that more space is left over by reducing max_memory_to_use.
+ *
+ * Large images are swapped to disk using temporary files created with
+ * tmpfile(); that part of the module is the same as in jmemansi.c.
+ * Metrowerks CodeWarrior's implementation of tmpfile() isn't quite what
+ * we want: it puts the files in the local directory and makes them
+ * user-visible -- and only deletes them when the application quits,
+ * which means they stick around in the event of a crash.
+ * It would be better to create the temp files in the system's temporary
+ * items folder.  Perhaps someday we'll get around to doing that.
+ *
+ * Contributed by Sam Bushell (jsam@iagu.on.net).
  */
 
 #define JPEG_INTERNALS
@@ -17,10 +33,7 @@
 #include "jpeglib.h"
 #include "jmemsys.h"		/* import the system-dependent declarations */
 
-#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
-extern void * malloc JPP((size_t size));
-extern void free JPP((void *ptr));
-#endif
+#include <Memory.h>		/* we use the MacOS memory manager */
 
 #ifndef SEEK_SET		/* pre-ANSI systems may not define this; */
 #define SEEK_SET  0		/* if not, assume 0 is correct */
@@ -28,60 +41,73 @@ extern void free JPP((void *ptr));
 
 
 /*
- * Memory allocation and freeing are controlled by the regular library
- * routines malloc() and free().
+ * Memory allocation and freeing are controlled by the MacOS library
+ * routines NewPtr() and DisposePtr(), which allocate fixed-address
+ * storage.  Unfortunately, the IJG library isn't smart enough to cope
+ * with relocatable storage.
  */
 
 GLOBAL(void *)
 jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
-  return (void *) malloc(sizeofobject);
+  return (void *) NewPtr(sizeofobject);
 }
 
 GLOBAL(void)
 jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 {
-  free(object);
+  DisposePtr((Ptr) object);
 }
 
 
 /*
  * "Large" objects are treated the same as "small" ones.
- * NB: although we include FAR keywords in the routine declarations,
- * this file won't actually work in 80x86 small/medium model; at least,
- * you probably won't be able to process useful-size images in only 64KB.
+ * NB: we include FAR keywords in the routine declarations simply for
+ * consistency with the rest of the IJG code; FAR should expand to empty
+ * on rational architectures like the Mac.
  */
 
 GLOBAL(void FAR *)
 jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
 {
-  return (void FAR *) malloc(sizeofobject);
+  return (void FAR *) NewPtr(sizeofobject);
 }
 
 GLOBAL(void)
 jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 {
-  free(object);
+  DisposePtr((Ptr) object);
 }
 
 
 /*
  * This routine computes the total memory space available for allocation.
- * It's impossible to do this in a portable way; our current solution is
- * to make the user tell us (with a default value set at compile time).
- * If you can actually get the available space, it's a good idea to subtract
- * a slop factor of 5% or so.
  */
-
-#ifndef DEFAULT_MAX_MEM		/* so can override from makefile */
-#define DEFAULT_MAX_MEM		1000000L /* default: one megabyte */
-#endif
 
 GLOBAL(long)
 jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
 		    long max_bytes_needed, long already_allocated)
 {
-  return cinfo->mem->max_memory_to_use - already_allocated;
+  long limit = cinfo->mem->max_memory_to_use - already_allocated;
+  long slop, mem;
+
+  /* Don't ask for more than what application has told us we may use */
+  if (max_bytes_needed > limit && limit > 0)
+    max_bytes_needed = limit;
+  /* Find whether there's a big enough free block in the heap.
+   * CompactMem tries to create a contiguous block of the requested size,
+   * and then returns the size of the largest free block (which could be
+   * much more or much less than we asked for).
+   * We add some slop to ensure we don't use up all available memory.
+   */
+  slop = max_bytes_needed / 16 + 32768L;
+  mem = CompactMem(max_bytes_needed + slop) - slop;
+  if (mem < 0)
+    mem = 0;			/* sigh, couldn't even get the slop */
+  /* Don't take more than the application says we can have */
+  if (mem > limit && limit > 0)
+    mem = limit;
+  return mem;
 }
 
 
@@ -157,7 +183,13 @@ jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 GLOBAL(long)
 jpeg_mem_init (j_common_ptr cinfo)
 {
-  return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
+  /* max_memory_to_use will be initialized to FreeMem()'s result;
+   * the calling application might later reduce it, for example
+   * to leave room to invoke multiple JPEG objects.
+   * Note that FreeMem returns the total number of free bytes;
+   * it may not be possible to allocate a single block of this size.
+   */
+  return FreeMem();
 }
 
 GLOBAL(void)

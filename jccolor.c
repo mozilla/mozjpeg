@@ -1,7 +1,7 @@
 /*
  * jccolor.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -82,7 +82,7 @@ typedef my_color_converter * my_cconvert_ptr;
  * Initialize for RGB->YCC colorspace conversion.
  */
 
-METHODDEF void
+METHODDEF(void)
 rgb_ycc_start (j_compress_ptr cinfo)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
@@ -126,7 +126,7 @@ rgb_ycc_start (j_compress_ptr cinfo)
  * offset required on that side.
  */
 
-METHODDEF void
+METHODDEF(void)
 rgb_ycc_convert (j_compress_ptr cinfo,
 		 JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
 		 JDIMENSION output_row, int num_rows)
@@ -182,7 +182,7 @@ rgb_ycc_convert (j_compress_ptr cinfo,
  * We assume rgb_ycc_start has been called (we only use the Y tables).
  */
 
-METHODDEF void
+METHODDEF(void)
 rgb_gray_convert (j_compress_ptr cinfo,
 		  JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
 		  JDIMENSION output_row, int num_rows)
@@ -221,7 +221,7 @@ rgb_gray_convert (j_compress_ptr cinfo,
  * We assume rgb_ycc_start has been called.
  */
 
-METHODDEF void
+METHODDEF(void)
 cmyk_ycck_convert (j_compress_ptr cinfo,
 		   JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
 		   JDIMENSION output_row, int num_rows)
@@ -276,7 +276,7 @@ cmyk_ycck_convert (j_compress_ptr cinfo,
  * The source can be either plain grayscale or YCbCr (since Y == gray).
  */
 
-METHODDEF void
+METHODDEF(void)
 grayscale_convert (j_compress_ptr cinfo,
 		   JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
 		   JDIMENSION output_row, int num_rows)
@@ -305,7 +305,7 @@ grayscale_convert (j_compress_ptr cinfo,
  * We assume input_components == num_components.
  */
 
-METHODDEF void
+METHODDEF(void)
 null_convert (j_compress_ptr cinfo,
 	      JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
 	      JDIMENSION output_row, int num_rows)
@@ -337,7 +337,7 @@ null_convert (j_compress_ptr cinfo,
  * Empty method for start_pass.
  */
 
-METHODDEF void
+METHODDEF(void)
 null_method (j_compress_ptr cinfo)
 {
   /* no work needed */
@@ -348,7 +348,7 @@ null_method (j_compress_ptr cinfo)
  * Module initialization routine for input colorspace conversion.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_color_converter (j_compress_ptr cinfo)
 {
   my_cconvert_ptr cconvert;

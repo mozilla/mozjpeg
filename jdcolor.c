@@ -1,7 +1,7 @@
 /*
  * jdcolor.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -66,7 +66,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
  * Initialize tables for YCC->RGB colorspace conversion.
  */
 
-LOCAL void
+LOCAL(void)
 build_ycc_rgb_table (j_decompress_ptr cinfo)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
@@ -116,7 +116,7 @@ build_ycc_rgb_table (j_decompress_ptr cinfo)
  * offset required on that side.
  */
 
-METHODDEF void
+METHODDEF(void)
 ycc_rgb_convert (j_decompress_ptr cinfo,
 		 JSAMPIMAGE input_buf, JDIMENSION input_row,
 		 JSAMPARRAY output_buf, int num_rows)
@@ -165,7 +165,7 @@ ycc_rgb_convert (j_decompress_ptr cinfo,
  * converting from separate-planes to interleaved representation.
  */
 
-METHODDEF void
+METHODDEF(void)
 null_convert (j_decompress_ptr cinfo,
 	      JSAMPIMAGE input_buf, JDIMENSION input_row,
 	      JSAMPARRAY output_buf, int num_rows)
@@ -197,7 +197,7 @@ null_convert (j_decompress_ptr cinfo,
  * we just copy the Y (luminance) component and ignore chrominance.
  */
 
-METHODDEF void
+METHODDEF(void)
 grayscale_convert (j_decompress_ptr cinfo,
 		   JSAMPIMAGE input_buf, JDIMENSION input_row,
 		   JSAMPARRAY output_buf, int num_rows)
@@ -214,7 +214,7 @@ grayscale_convert (j_decompress_ptr cinfo,
  * We assume build_ycc_rgb_table has been called.
  */
 
-METHODDEF void
+METHODDEF(void)
 ycck_cmyk_convert (j_decompress_ptr cinfo,
 		   JSAMPIMAGE input_buf, JDIMENSION input_row,
 		   JSAMPARRAY output_buf, int num_rows)
@@ -262,7 +262,7 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
  * Empty method for start_pass.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_pass_dcolor (j_decompress_ptr cinfo)
 {
   /* no work needed */
@@ -273,7 +273,7 @@ start_pass_dcolor (j_decompress_ptr cinfo)
  * Module initialization routine for output colorspace conversion.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_color_deconverter (j_decompress_ptr cinfo)
 {
   my_cconvert_ptr cconvert;

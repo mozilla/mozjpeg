@@ -23,7 +23,8 @@
 
 #ifdef USE_CCOMMAND		/* command-line reader for Macintosh */
 #ifdef __MWERKS__
-#include <SIOUX.h>              /* Metrowerks declares it here */
+#include <SIOUX.h>              /* Metrowerks needs this */
+#include <console.h>		/* ... and this */
 #endif
 #ifdef THINK_C
 #include <console.h>		/* Think declares it here */

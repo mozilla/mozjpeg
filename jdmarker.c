@@ -1,7 +1,7 @@
 /*
  * jdmarker.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -162,7 +162,7 @@ typedef enum {			/* JPEG marker codes */
  */
 
 
-LOCAL boolean
+LOCAL(boolean)
 get_soi (j_decompress_ptr cinfo)
 /* Process an SOI marker */
 {
@@ -200,7 +200,7 @@ get_soi (j_decompress_ptr cinfo)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 get_sof (j_decompress_ptr cinfo, boolean is_prog, boolean is_arith)
 /* Process a SOFn marker */
 {
@@ -264,7 +264,7 @@ get_sof (j_decompress_ptr cinfo, boolean is_prog, boolean is_arith)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 get_sos (j_decompress_ptr cinfo)
 /* Process a SOS marker */
 {
@@ -334,7 +334,7 @@ get_sos (j_decompress_ptr cinfo)
 }
 
 
-METHODDEF boolean
+METHODDEF(boolean)
 get_app0 (j_decompress_ptr cinfo)
 /* Process an APP0 marker */
 {
@@ -393,7 +393,7 @@ get_app0 (j_decompress_ptr cinfo)
 }
 
 
-METHODDEF boolean
+METHODDEF(boolean)
 get_app14 (j_decompress_ptr cinfo)
 /* Process an APP14 marker */
 {
@@ -440,7 +440,7 @@ get_app14 (j_decompress_ptr cinfo)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 get_dac (j_decompress_ptr cinfo)
 /* Process a DAC marker */
 {
@@ -477,7 +477,7 @@ get_dac (j_decompress_ptr cinfo)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 get_dht (j_decompress_ptr cinfo)
 /* Process a DHT marker */
 {
@@ -542,7 +542,7 @@ get_dht (j_decompress_ptr cinfo)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 get_dqt (j_decompress_ptr cinfo)
 /* Process a DQT marker */
 {
@@ -574,15 +574,18 @@ get_dqt (j_decompress_ptr cinfo)
 	INPUT_2BYTES(cinfo, tmp, return FALSE);
       else
 	INPUT_BYTE(cinfo, tmp, return FALSE);
-      quant_ptr->quantval[i] = (UINT16) tmp;
+      /* We convert the zigzag-order table to natural array order. */
+      quant_ptr->quantval[jpeg_natural_order[i]] = (UINT16) tmp;
     }
 
-    for (i = 0; i < DCTSIZE2; i += 8) {
-      TRACEMS8(cinfo, 2, JTRC_QUANTVALS,
-	       quant_ptr->quantval[i  ], quant_ptr->quantval[i+1],
-	       quant_ptr->quantval[i+2], quant_ptr->quantval[i+3],
-	       quant_ptr->quantval[i+4], quant_ptr->quantval[i+5],
-	       quant_ptr->quantval[i+6], quant_ptr->quantval[i+7]);
+    if (cinfo->err->trace_level >= 2) {
+      for (i = 0; i < DCTSIZE2; i += 8) {
+	TRACEMS8(cinfo, 2, JTRC_QUANTVALS,
+		 quant_ptr->quantval[i],   quant_ptr->quantval[i+1],
+		 quant_ptr->quantval[i+2], quant_ptr->quantval[i+3],
+		 quant_ptr->quantval[i+4], quant_ptr->quantval[i+5],
+		 quant_ptr->quantval[i+6], quant_ptr->quantval[i+7]);
+      }
     }
 
     length -= DCTSIZE2+1;
@@ -594,7 +597,7 @@ get_dqt (j_decompress_ptr cinfo)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 get_dri (j_decompress_ptr cinfo)
 /* Process a DRI marker */
 {
@@ -618,7 +621,7 @@ get_dri (j_decompress_ptr cinfo)
 }
 
 
-METHODDEF boolean
+METHODDEF(boolean)
 skip_variable (j_decompress_ptr cinfo)
 /* Skip over an unknown or uninteresting variable-length marker */
 {
@@ -645,7 +648,7 @@ skip_variable (j_decompress_ptr cinfo)
  * but it will never be 0 or FF.
  */
 
-LOCAL boolean
+LOCAL(boolean)
 next_marker (j_decompress_ptr cinfo)
 {
   int c;
@@ -692,7 +695,7 @@ next_marker (j_decompress_ptr cinfo)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 first_marker (j_decompress_ptr cinfo)
 /* Like next_marker, but used to obtain the initial SOI marker. */
 /* For this marker, we do not allow preceding garbage or fill; otherwise,
@@ -723,7 +726,7 @@ first_marker (j_decompress_ptr cinfo)
  * JPEG_SUSPENDED, JPEG_REACHED_SOS, or JPEG_REACHED_EOI.
  */
 
-METHODDEF int
+METHODDEF(int)
 read_markers (j_decompress_ptr cinfo)
 {
   /* Outer loop repeats once for each marker. */
@@ -883,7 +886,7 @@ read_markers (j_decompress_ptr cinfo)
  * it holds a marker which the decoder will be unable to read past.
  */
 
-METHODDEF boolean
+METHODDEF(boolean)
 read_restart_marker (j_decompress_ptr cinfo)
 {
   /* Obtain a marker unless we already did. */
@@ -896,7 +899,7 @@ read_restart_marker (j_decompress_ptr cinfo)
   if (cinfo->unread_marker ==
       ((int) M_RST0 + cinfo->marker->next_restart_num)) {
     /* Normal case --- swallow the marker and let entropy decoder continue */
-    TRACEMS1(cinfo, 2, JTRC_RST, cinfo->marker->next_restart_num);
+    TRACEMS1(cinfo, 3, JTRC_RST, cinfo->marker->next_restart_num);
     cinfo->unread_marker = 0;
   } else {
     /* Uh-oh, the restart markers have been messed up. */
@@ -962,7 +965,7 @@ read_restart_marker (j_decompress_ptr cinfo)
  * any other marker would have to be bogus data in that case.
  */
 
-GLOBAL boolean
+GLOBAL(boolean)
 jpeg_resync_to_restart (j_decompress_ptr cinfo, int desired)
 {
   int marker = cinfo->unread_marker;
@@ -1012,7 +1015,7 @@ jpeg_resync_to_restart (j_decompress_ptr cinfo, int desired)
  * Reset marker processing state to begin a fresh datastream.
  */
 
-METHODDEF void
+METHODDEF(void)
 reset_marker_reader (j_decompress_ptr cinfo)
 {
   cinfo->comp_info = NULL;		/* until allocated by get_sof */
@@ -1029,7 +1032,7 @@ reset_marker_reader (j_decompress_ptr cinfo)
  * This is called only once, when the decompression object is created.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_marker_reader (j_decompress_ptr cinfo)
 {
   int i;

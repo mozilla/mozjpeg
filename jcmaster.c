@@ -1,7 +1,7 @@
 /*
  * jcmaster.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -42,7 +42,7 @@ typedef my_comp_master * my_master_ptr;
  * Support routines that do various essential calculations.
  */
 
-LOCAL void
+LOCAL(void)
 initial_setup (j_compress_ptr cinfo)
 /* Do computations that are needed before master selection phase */
 {
@@ -126,7 +126,7 @@ initial_setup (j_compress_ptr cinfo)
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED
 
-LOCAL void
+LOCAL(void)
 validate_script (j_compress_ptr cinfo)
 /* Verify that the scan script in cinfo->scan_info[] is valid; also
  * determine whether it uses progressive JPEG, and set cinfo->progressive_mode.
@@ -251,7 +251,7 @@ validate_script (j_compress_ptr cinfo)
 #endif /* C_MULTISCAN_FILES_SUPPORTED */
 
 
-LOCAL void
+LOCAL(void)
 select_scan_parameters (j_compress_ptr cinfo)
 /* Set up the scan parameters for the current scan */
 {
@@ -292,7 +292,7 @@ select_scan_parameters (j_compress_ptr cinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 per_scan_setup (j_compress_ptr cinfo)
 /* Do computations that are needed before processing a JPEG scan */
 /* cinfo->comps_in_scan and cinfo->cur_comp_info[] are already set */
@@ -385,7 +385,7 @@ per_scan_setup (j_compress_ptr cinfo)
  * required.
  */
 
-METHODDEF void
+METHODDEF(void)
 prepare_for_pass (j_compress_ptr cinfo)
 {
   my_master_ptr master = (my_master_ptr) cinfo->master;
@@ -473,7 +473,7 @@ prepare_for_pass (j_compress_ptr cinfo)
  * In multi-pass processing, this routine is not used.
  */
 
-METHODDEF void
+METHODDEF(void)
 pass_startup (j_compress_ptr cinfo)
 {
   cinfo->master->call_pass_startup = FALSE; /* reset flag so call only once */
@@ -487,7 +487,7 @@ pass_startup (j_compress_ptr cinfo)
  * Finish up at end of pass.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_pass_master (j_compress_ptr cinfo)
 {
   my_master_ptr master = (my_master_ptr) cinfo->master;
@@ -527,7 +527,7 @@ finish_pass_master (j_compress_ptr cinfo)
  * Initialize master compression control.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
 {
   my_master_ptr master;

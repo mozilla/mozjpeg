@@ -1,8 +1,8 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 6 of 2-Aug-95
-================================
+README for release 6a of 7-Feb-96
+=================================
 
 This distribution contains the sixth public release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
@@ -126,7 +126,7 @@ with respect to this software, its quality, accuracy, merchantability, or
 fitness for a particular purpose.  This software is provided "AS IS", and you,
 its user, assume the entire risk as to its quality and accuracy.
 
-This software is copyright (C) 1991, 1992, 1993, 1994, 1995, Thomas G. Lane.
+This software is copyright (C) 1991-1996, Thomas G. Lane.
 All Rights Reserved except as specified below.
 
 Permission is hereby granted to use, copy, modify, and distribute this
@@ -227,23 +227,25 @@ and draft DIS 10918-2).  This is by far the most complete exposition of JPEG
 in existence, and we highly recommend it.
 
 The JPEG standard itself is not available electronically; you must order a
-paper copy through ISO.  (Unless you feel a need to own a certified official
-copy, we recommend buying the Pennebaker and Mitchell book instead; it's much
-cheaper and includes a great deal of useful explanatory material.)  In the US,
-copies of the standard may be ordered from ANSI Sales at (212) 642-4900, or
-from Global Engineering Documents at (800) 854-7179.  (ANSI doesn't take
-credit card orders, but Global does.)  It's not cheap: as of 1992, ANSI was
-charging $95 for Part 1 and $47 for Part 2, plus 7% shipping/handling.  The
-standard is divided into two parts, Part 1 being the actual specification,
-while Part 2 covers compliance testing methods.  Part 1 is titled "Digital
-Compression and Coding of Continuous-tone Still Images, Part 1: Requirements
-and guidelines" and has document number ISO/IEC IS 10918-1.  Part 2 is titled
-"Digital Compression and Coding of Continuous-tone Still Images, Part 2:
-Compliance testing" and has document number ISO/IEC IS 10918-2.
+paper copy through ISO or ITU.  (Unless you feel a need to own a certified
+official copy, we recommend buying the Pennebaker and Mitchell book instead;
+it's much cheaper and includes a great deal of useful explanatory material.)
+In the USA, copies of the standard may be ordered from ANSI Sales at (212)
+642-4900, or from Global Engineering Documents at (800) 854-7179.  (ANSI
+doesn't take credit card orders, but Global does.)  It's not cheap: as of
+1992, ANSI was charging $95 for Part 1 and $47 for Part 2, plus 7%
+shipping/handling.  The standard is divided into two parts, Part 1 being the
+actual specification, while Part 2 covers compliance testing methods.  Part 1
+is titled "Digital Compression and Coding of Continuous-tone Still Images,
+Part 1: Requirements and guidelines" and has document numbers ISO/IEC IS
+10918-1, ITU-T T.81.  Part 2 is titled "Digital Compression and Coding of
+Continuous-tone Still Images, Part 2: Compliance testing" and has document
+numbers ISO/IEC IS 10918-2, ITU-T T.83.
 
-Extensions to the original JPEG standard are defined in Part 3, a new ISO
+Extensions to the original JPEG standard are defined in JPEG Part 3, a new ISO
 document.  Part 3 is undergoing ISO balloting and is expected to be approved
-by the end of 1995.  IJG currently does not support any Part 3 extensions.
+by the end of 1995; it will have document numbers ISO/IEC IS 10918-3, ITU-T
+T.84.  IJG currently does not support any Part 3 extensions.
 
 The JPEG standard does not specify all details of an interchangeable file
 format.  For the omitted details we follow the "JFIF" conventions, revision
@@ -279,26 +281,24 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is ftp.uu.net (Internet
 address 192.48.96.9).  The most recent released version can always be found
 there in directory graphics/jpeg.  This particular version will be archived
-as graphics/jpeg/jpegsrc.v6.tar.gz.  If you are on the Internet, you
+as graphics/jpeg/jpegsrc.v6a.tar.gz.  If you are on the Internet, you
 can retrieve files from ftp.uu.net by standard anonymous FTP.  If you don't
 have FTP access, UUNET's archives are also available via UUCP; contact
 help@uunet.uu.net for information on retrieving files that way.
 
-Numerous Internet sites maintain copies of the UUNET files; in particular,
-you can probably find a copy at any site that archives comp.sources.misc
-submissions.  However, only ftp.uu.net is guaranteed to have the latest
-official version.
+Numerous Internet sites maintain copies of the UUNET files.  However, only
+ftp.uu.net is guaranteed to have the latest official version.
 
 You can also obtain this software in DOS-compatible "zip" archive format from
 the SimTel archives (ftp.coast.net:/SimTel/msdos/graphics/), or on CompuServe
-in the GRAPHSUPPORT forum (GO GRAPHSUP), library 12 "JPEG Tools".  Again,
-these versions may sometimes lag behind the ftp.uu.net release.
+in the Graphics Support forum (GO CIS:GRAPHSUP), library 12 "JPEG Tools".
+Again, these versions may sometimes lag behind the ftp.uu.net release.
 
 The JPEG FAQ (Frequently Asked Questions) article is a useful source of
 general information about JPEG.  It is updated constantly and therefore is
 not included in this distribution.  The FAQ is posted every two weeks to
-Usenet newsgroups comp.graphics, news.answers, and other groups.  You can
-always obtain the latest version from the news.answers archive at
+Usenet newsgroups comp.graphics.misc, news.answers, and other groups.
+You can always obtain the latest version from the news.answers archive at
 rtfm.mit.edu.  By FTP, fetch /pub/usenet/news.answers/jpeg-faq/part1 and
 .../part2.  If you don't have FTP, send e-mail to mail-server@rtfm.mit.edu
 with body

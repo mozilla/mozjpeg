@@ -1,7 +1,7 @@
 /*
  * rdrle.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -77,7 +77,7 @@ typedef struct _rle_source_struct {
  * Read the file header; return image size and component count.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_input_rle (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   rle_source_ptr source = (rle_source_ptr) sinfo;
@@ -183,7 +183,7 @@ start_input_rle (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * Used for GRAYSCALE, MAPPEDGRAY, TRUECOLOR, and DIRECTCOLOR images.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 get_rle_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   rle_source_ptr source = (rle_source_ptr) sinfo;
@@ -201,7 +201,7 @@ get_rle_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * Used for PSEUDOCOLOR images.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 get_pseudocolor_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   rle_source_ptr source = (rle_source_ptr) sinfo;
@@ -237,7 +237,7 @@ get_pseudocolor_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * the appropriate row-reading routine.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   rle_source_ptr source = (rle_source_ptr) sinfo;
@@ -356,7 +356,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * Finish up at the end of the file.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_input_rle (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   /* no work */
@@ -367,7 +367,7 @@ finish_input_rle (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * The module selection routine for RLE format input.
  */
 
-GLOBAL cjpeg_source_ptr
+GLOBAL(cjpeg_source_ptr)
 jinit_read_rle (j_compress_ptr cinfo)
 {
   rle_source_ptr source;

@@ -1,7 +1,7 @@
 /*
  * rdgif.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -126,15 +126,15 @@ typedef gif_source_struct * gif_source_ptr;
 
 
 /* Forward declarations */
-METHODDEF JDIMENSION get_pixel_rows
+METHODDEF(JDIMENSION) get_pixel_rows
 	JPP((j_compress_ptr cinfo, cjpeg_source_ptr sinfo));
-METHODDEF JDIMENSION load_interlaced_image
+METHODDEF(JDIMENSION) load_interlaced_image
 	JPP((j_compress_ptr cinfo, cjpeg_source_ptr sinfo));
-METHODDEF JDIMENSION get_interlaced_row
+METHODDEF(JDIMENSION) get_interlaced_row
 	JPP((j_compress_ptr cinfo, cjpeg_source_ptr sinfo));
 
 
-LOCAL int
+LOCAL(int)
 ReadByte (gif_source_ptr sinfo)
 /* Read next byte from GIF file */
 {
@@ -147,7 +147,7 @@ ReadByte (gif_source_ptr sinfo)
 }
 
 
-LOCAL int
+LOCAL(int)
 GetDataBlock (gif_source_ptr sinfo, char *buf)
 /* Read a GIF data block, which has a leading count byte */
 /* A zero-length block marks the end of a data block sequence */
@@ -163,7 +163,7 @@ GetDataBlock (gif_source_ptr sinfo, char *buf)
 }
 
 
-LOCAL void
+LOCAL(void)
 SkipDataBlocks (gif_source_ptr sinfo)
 /* Skip a series of data blocks, until a block terminator is found */
 {
@@ -174,7 +174,7 @@ SkipDataBlocks (gif_source_ptr sinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 ReInitLZW (gif_source_ptr sinfo)
 /* (Re)initialize LZW state; shared code for startup and Clear processing */
 {
@@ -185,7 +185,7 @@ ReInitLZW (gif_source_ptr sinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 InitLZWCode (gif_source_ptr sinfo)
 /* Initialize for a series of LZWReadByte (and hence GetCode) calls */
 {
@@ -204,7 +204,7 @@ InitLZWCode (gif_source_ptr sinfo)
 }
 
 
-LOCAL int
+LOCAL(int)
 GetCode (gif_source_ptr sinfo)
 /* Fetch the next code_size bits from the GIF data */
 /* We assume code_size is less than 16 */
@@ -258,7 +258,7 @@ GetCode (gif_source_ptr sinfo)
 }
 
 
-LOCAL int
+LOCAL(int)
 LZWReadByte (gif_source_ptr sinfo)
 /* Read an LZW-compressed byte */
 {
@@ -350,7 +350,7 @@ LZWReadByte (gif_source_ptr sinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 ReadColorMap (gif_source_ptr sinfo, int cmaplen, JSAMPARRAY cmap)
 /* Read a GIF colormap */
 {
@@ -369,7 +369,7 @@ ReadColorMap (gif_source_ptr sinfo, int cmaplen, JSAMPARRAY cmap)
 }
 
 
-LOCAL void
+LOCAL(void)
 DoExtension (gif_source_ptr sinfo)
 /* Process an extension block */
 /* Currently we ignore 'em all */
@@ -388,7 +388,7 @@ DoExtension (gif_source_ptr sinfo)
  * Read the file header; return image size and component count.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_input_gif (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   gif_source_ptr source = (gif_source_ptr) sinfo;
@@ -532,7 +532,7 @@ start_input_gif (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * we read directly from the GIF file.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 get_pixel_rows (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   gif_source_ptr source = (gif_source_ptr) sinfo;
@@ -558,7 +558,7 @@ get_pixel_rows (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * reading an interlaced GIF file: we read the whole image into memory.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 load_interlaced_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   gif_source_ptr source = (gif_source_ptr) sinfo;
@@ -604,7 +604,7 @@ load_interlaced_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * we read from the virtual array.
  */
 
-METHODDEF JDIMENSION
+METHODDEF(JDIMENSION)
 get_interlaced_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   gif_source_ptr source = (gif_source_ptr) sinfo;
@@ -652,7 +652,7 @@ get_interlaced_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * Finish up at the end of the file.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_input_gif (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   /* no work */
@@ -663,7 +663,7 @@ finish_input_gif (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * The module selection routine for GIF format input.
  */
 
-GLOBAL cjpeg_source_ptr
+GLOBAL(cjpeg_source_ptr)
 jinit_read_gif (j_compress_ptr cinfo)
 {
   gif_source_ptr source;

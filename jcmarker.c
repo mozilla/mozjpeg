@@ -1,7 +1,7 @@
 /*
  * jcmarker.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -93,7 +93,7 @@ typedef enum {			/* JPEG marker codes */
  * points where markers will be written.
  */
 
-LOCAL void
+LOCAL(void)
 emit_byte (j_compress_ptr cinfo, int val)
 /* Emit a byte */
 {
@@ -107,7 +107,7 @@ emit_byte (j_compress_ptr cinfo, int val)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_marker (j_compress_ptr cinfo, JPEG_MARKER mark)
 /* Emit a marker code */
 {
@@ -116,7 +116,7 @@ emit_marker (j_compress_ptr cinfo, JPEG_MARKER mark)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_2bytes (j_compress_ptr cinfo, int value)
 /* Emit a 2-byte integer; these are always MSB first in JPEG files */
 {
@@ -129,7 +129,7 @@ emit_2bytes (j_compress_ptr cinfo, int value)
  * Routines to write specific marker types.
  */
 
-LOCAL int
+LOCAL(int)
 emit_dqt (j_compress_ptr cinfo, int index)
 /* Emit a DQT marker */
 /* Returns the precision used (0 = 8bits, 1 = 16bits) for baseline checking */
@@ -155,9 +155,11 @@ emit_dqt (j_compress_ptr cinfo, int index)
     emit_byte(cinfo, index + (prec<<4));
 
     for (i = 0; i < DCTSIZE2; i++) {
+      /* The table entries must be emitted in zigzag order. */
+      unsigned int qval = qtbl->quantval[jpeg_natural_order[i]];
       if (prec)
-	emit_byte(cinfo, qtbl->quantval[i] >> 8);
-      emit_byte(cinfo, qtbl->quantval[i] & 0xFF);
+	emit_byte(cinfo, qval >> 8);
+      emit_byte(cinfo, qval & 0xFF);
     }
 
     qtbl->sent_table = TRUE;
@@ -167,7 +169,7 @@ emit_dqt (j_compress_ptr cinfo, int index)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
 /* Emit a DHT marker */
 {
@@ -205,7 +207,7 @@ emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_dac (j_compress_ptr cinfo)
 /* Emit a DAC marker */
 /* Since the useful info is so small, we want to emit all the tables in */
@@ -248,7 +250,7 @@ emit_dac (j_compress_ptr cinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_dri (j_compress_ptr cinfo)
 /* Emit a DRI marker */
 {
@@ -260,7 +262,7 @@ emit_dri (j_compress_ptr cinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_sof (j_compress_ptr cinfo, JPEG_MARKER code)
 /* Emit a SOF marker */
 {
@@ -291,7 +293,7 @@ emit_sof (j_compress_ptr cinfo, JPEG_MARKER code)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_sos (j_compress_ptr cinfo)
 /* Emit a SOS marker */
 {
@@ -332,7 +334,7 @@ emit_sos (j_compress_ptr cinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_jfif_app0 (j_compress_ptr cinfo)
 /* Emit a JFIF-compliant APP0 marker */
 {
@@ -370,7 +372,7 @@ emit_jfif_app0 (j_compress_ptr cinfo)
 }
 
 
-LOCAL void
+LOCAL(void)
 emit_adobe_app14 (j_compress_ptr cinfo)
 /* Emit an Adobe APP14 marker */
 {
@@ -424,7 +426,7 @@ emit_adobe_app14 (j_compress_ptr cinfo)
  * Other uses are not guaranteed to produce desirable results.
  */
 
-METHODDEF void
+METHODDEF(void)
 write_any_marker (j_compress_ptr cinfo, int marker,
 		  const JOCTET *dataptr, unsigned int datalen)
 /* Emit an arbitrary marker with parameters */
@@ -453,7 +455,7 @@ write_any_marker (j_compress_ptr cinfo, int marker,
  * jpeg_start_compress returns.
  */
 
-METHODDEF void
+METHODDEF(void)
 write_file_header (j_compress_ptr cinfo)
 {
   emit_marker(cinfo, M_SOI);	/* first the SOI */
@@ -473,7 +475,7 @@ write_file_header (j_compress_ptr cinfo)
  * try to error-check the quant table numbers as soon as they see the SOF.
  */
 
-METHODDEF void
+METHODDEF(void)
 write_frame_header (j_compress_ptr cinfo)
 {
   int ci, prec;
@@ -530,7 +532,7 @@ write_frame_header (j_compress_ptr cinfo)
  * Compressed data will be written following the SOS.
  */
 
-METHODDEF void
+METHODDEF(void)
 write_scan_header (j_compress_ptr cinfo)
 {
   int i;
@@ -579,7 +581,7 @@ write_scan_header (j_compress_ptr cinfo)
  * Write datastream trailer.
  */
 
-METHODDEF void
+METHODDEF(void)
 write_file_trailer (j_compress_ptr cinfo)
 {
   emit_marker(cinfo, M_EOI);
@@ -593,7 +595,7 @@ write_file_trailer (j_compress_ptr cinfo)
  * emitted.  Note that all tables will be marked sent_table = TRUE at exit.
  */
 
-METHODDEF void
+METHODDEF(void)
 write_tables_only (j_compress_ptr cinfo)
 {
   int i;
@@ -622,7 +624,7 @@ write_tables_only (j_compress_ptr cinfo)
  * Initialize the marker writer module.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_marker_writer (j_compress_ptr cinfo)
 {
   /* Create the subobject */

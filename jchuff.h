@@ -1,7 +1,7 @@
 /*
  * jchuff.h
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -26,9 +26,9 @@ typedef struct {
 #endif /* NEED_SHORT_EXTERNAL_NAMES */
 
 /* Expand a Huffman table definition into the derived format */
-EXTERN void jpeg_make_c_derived_tbl JPP((j_compress_ptr cinfo,
-				JHUFF_TBL * htbl, c_derived_tbl ** pdtbl));
+EXTERN(void) jpeg_make_c_derived_tbl
+	JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl, c_derived_tbl ** pdtbl));
 
 /* Generate an optimal table definition given the specified counts */
-EXTERN void jpeg_gen_optimal_table JPP((j_compress_ptr cinfo,
-					JHUFF_TBL * htbl, long freq[]));
+EXTERN(void) jpeg_gen_optimal_table
+	JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]));

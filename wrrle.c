@@ -1,7 +1,7 @@
 /*
  * wrrle.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -62,7 +62,7 @@ typedef struct {
 typedef rle_dest_struct * rle_dest_ptr;
 
 /* Forward declarations */
-METHODDEF void rle_put_pixel_rows
+METHODDEF(void) rle_put_pixel_rows
     JPP((j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 	 JDIMENSION rows_supplied));
 
@@ -73,7 +73,7 @@ METHODDEF void rle_put_pixel_rows
  * In this module it's easier to wait till finish_output to write anything.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   rle_dest_ptr dest = (rle_dest_ptr) dinfo;
@@ -149,7 +149,7 @@ start_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * This routine just saves the data away in a virtual array.
  */
 
-METHODDEF void
+METHODDEF(void)
 rle_put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 		    JDIMENSION rows_supplied)
 {
@@ -168,7 +168,7 @@ rle_put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  * Here is where we really output the RLE file.
  */
 
-METHODDEF void
+METHODDEF(void)
 finish_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   rle_dest_ptr dest = (rle_dest_ptr) dinfo;
@@ -273,7 +273,7 @@ finish_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * The module selection routine for RLE format output.
  */
 
-GLOBAL djpeg_dest_ptr
+GLOBAL(djpeg_dest_ptr)
 jinit_write_rle (j_decompress_ptr cinfo)
 {
   rle_dest_ptr dest;

@@ -1,7 +1,7 @@
 /*
  * jcdctmgr.c
  *
- * Copyright (C) 1994-1995, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -27,8 +27,7 @@ typedef struct {
 
   /* The actual post-DCT divisors --- not identical to the quant table
    * entries, because of scaling (especially for an unnormalized DCT).
-   * Each table is given in normal array order; note that this must
-   * be converted from the zigzag order of the quantization tables.
+   * Each table is given in normal array order.
    */
   DCTELEM * divisors[NUM_QUANT_TBLS];
 
@@ -51,7 +50,7 @@ typedef my_fdct_controller * my_fdct_ptr;
  * first scan.  Hence all components should be examined here.
  */
 
-METHODDEF void
+METHODDEF(void)
 start_pass_fdctmgr (j_compress_ptr cinfo)
 {
   my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
@@ -83,7 +82,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
       }
       dtbl = fdct->divisors[qtblno];
       for (i = 0; i < DCTSIZE2; i++) {
-	dtbl[i] = ((DCTELEM) qtbl->quantval[jpeg_zigzag_order[i]]) << 3;
+	dtbl[i] = ((DCTELEM) qtbl->quantval[i]) << 3;
       }
       break;
 #endif
@@ -98,7 +97,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 	 */
 #define CONST_BITS 14
 	static const INT16 aanscales[DCTSIZE2] = {
-	  /* precomputed values scaled up by 14 bits: in natural order */
+	  /* precomputed values scaled up by 14 bits */
 	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
 	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
 	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
@@ -118,7 +117,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 	dtbl = fdct->divisors[qtblno];
 	for (i = 0; i < DCTSIZE2; i++) {
 	  dtbl[i] = (DCTELEM)
-	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[jpeg_zigzag_order[i]],
+	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
 				  (INT32) aanscales[i]),
 		    CONST_BITS-3);
 	}
@@ -153,7 +152,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 	for (row = 0; row < DCTSIZE; row++) {
 	  for (col = 0; col < DCTSIZE; col++) {
 	    fdtbl[i] = (FAST_FLOAT)
-	      (1.0 / (((double) qtbl->quantval[jpeg_zigzag_order[i]] *
+	      (1.0 / (((double) qtbl->quantval[i] *
 		       aanscalefactor[row] * aanscalefactor[col] * 8.0)));
 	    i++;
 	  }
@@ -177,7 +176,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
  * blocks. The quantized coefficients are returned in coef_blocks[].
  */
 
-METHODDEF void
+METHODDEF(void)
 forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
 	     JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
 	     JDIMENSION start_row, JDIMENSION start_col,
@@ -267,7 +266,7 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
 #ifdef DCT_FLOAT_SUPPORTED
 
-METHODDEF void
+METHODDEF(void)
 forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 		   JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
 		   JDIMENSION start_row, JDIMENSION start_col,
@@ -342,7 +341,7 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
  * Initialize FDCT manager.
  */
 
-GLOBAL void
+GLOBAL(void)
 jinit_forward_dct (j_compress_ptr cinfo)
 {
   my_fdct_ptr fdct;

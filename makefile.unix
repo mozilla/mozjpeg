@@ -49,13 +49,14 @@ LIBSOURCES= jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c \
         jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c \
         jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c \
         jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c jquant1.c \
-        jquant2.c jutils.c jmemmgr.c jmemansi.c jmemname.c jmemnobs.c \
-        jmemdos.c
+        jquant2.c jutils.c jmemmgr.c
+# memmgr back ends: compile only one of these into a working library
+SYSDEPSOURCES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemmac.c
 # source files: cjpeg/djpeg/jpegtran applications, also rdjpgcom/wrjpgcom
 APPSOURCES= cjpeg.c djpeg.c jpegtran.c cdjpeg.c rdcolmap.c rdswitch.c \
         rdjpgcom.c wrjpgcom.c rdppm.c wrppm.c rdgif.c wrgif.c rdtarga.c \
         wrtarga.c rdbmp.c wrbmp.c rdrle.c wrrle.c
-SOURCES= $(LIBSOURCES) $(APPSOURCES)
+SOURCES= $(LIBSOURCES) $(SYSDEPSOURCES) $(APPSOURCES)
 # files included by source files
 INCLUDES= jchuff.h jdhuff.h jdct.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
         jpegint.h jpeglib.h jversion.h cdjpeg.h cderror.h
@@ -202,6 +203,7 @@ jmemansi.o: jmemansi.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerro
 jmemname.o: jmemname.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
 jmemnobs.o: jmemnobs.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
 jmemdos.o: jmemdos.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
+jmemmac.o: jmemmac.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
 cjpeg.o: cjpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h
 djpeg.o: djpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h
 jpegtran.o: jpegtran.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h

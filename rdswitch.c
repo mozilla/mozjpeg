@@ -1,7 +1,7 @@
 /*
  * rdswitch.c
  *
- * Copyright (C) 1991-1995, Thomas G. Lane.
+ * Copyright (C) 1991-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -17,16 +17,7 @@
 #include <ctype.h>		/* to declare isdigit(), isspace() */
 
 
-/* Hack: get access to jpeg_zigzag_order[] table in jutils.c.
- * Since it's declared in jpegint.h, normally can't see it from an application.
- */
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_zigzag_order	jZIGTable
-#endif
-extern const int jpeg_zigzag_order[];
-
-
-LOCAL int
+LOCAL(int)
 text_getc (FILE * file)
 /* Read next char, skipping over any comments (# to end of line) */
 /* A comment/newline sequence is returned as a newline */
@@ -43,7 +34,7 @@ text_getc (FILE * file)
 }
 
 
-LOCAL boolean
+LOCAL(boolean)
 read_text_integer (FILE * file, long * result, int * termchar)
 /* Read an unsigned decimal integer from a file, store it in result */
 /* Reads one trailing character after the integer; returns it in termchar */
@@ -78,7 +69,7 @@ read_text_integer (FILE * file, long * result, int * termchar)
 }
 
 
-GLOBAL boolean
+GLOBAL(boolean)
 read_quant_tables (j_compress_ptr cinfo, char * filename,
 		   int scale_factor, boolean force_baseline)
 /* Read a set of quantization tables from the specified file.
@@ -115,8 +106,7 @@ read_quant_tables (j_compress_ptr cinfo, char * filename,
 	fclose(fp);
 	return FALSE;
       }
-      /* Convert from natural order in the file to zigzag table order. */
-      table[jpeg_zigzag_order[i]] = (unsigned int) val;
+      table[i] = (unsigned int) val;
     }
     jpeg_add_quant_table(cinfo, tblno, table, scale_factor, force_baseline);
     tblno++;
@@ -135,7 +125,7 @@ read_quant_tables (j_compress_ptr cinfo, char * filename,
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED
 
-LOCAL boolean
+LOCAL(boolean)
 read_scan_integer (FILE * file, long * result, int * termchar)
 /* Variant of read_text_integer that always looks for a non-space termchar;
  * this simplifies parsing of punctuation in scan scripts.
@@ -164,7 +154,7 @@ read_scan_integer (FILE * file, long * result, int * termchar)
 }
 
 
-GLOBAL boolean
+GLOBAL(boolean)
 read_scan_script (j_compress_ptr cinfo, char * filename)
 /* Read a scan script from the specified text file.
  * Each entry in the file defines one scan to be emitted.
@@ -272,7 +262,7 @@ bogus:
 #endif /* C_MULTISCAN_FILES_SUPPORTED */
 
 
-GLOBAL boolean
+GLOBAL(boolean)
 set_quant_slots (j_compress_ptr cinfo, char *arg)
 /* Process a quantization-table-selectors parameter string, of the form
  *     N[,N,...]
@@ -307,7 +297,7 @@ set_quant_slots (j_compress_ptr cinfo, char *arg)
 }
 
 
-GLOBAL boolean
+GLOBAL(boolean)
 set_sample_factors (j_compress_ptr cinfo, char *arg)
 /* Process a sample-factors parameter string, of the form
  *     HxV[,HxV,...]

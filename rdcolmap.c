@@ -1,7 +1,7 @@
 /*
  * rdcolmap.c
  *
- * Copyright (C) 1994-1995, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -42,7 +42,7 @@
  * Add a (potentially) new color to the color map.
  */
 
-LOCAL void
+LOCAL(void)
 add_map_entry (j_decompress_ptr cinfo, int R, int G, int B)
 {
   JSAMPROW colormap0 = cinfo->colormap[0];
@@ -75,7 +75,7 @@ add_map_entry (j_decompress_ptr cinfo, int R, int G, int B)
  * Extract color map from a GIF file.
  */
 
-LOCAL void
+LOCAL(void)
 read_gif_map (j_decompress_ptr cinfo, FILE * infile)
 {
   int header[13];
@@ -117,7 +117,7 @@ read_gif_map (j_decompress_ptr cinfo, FILE * infile)
 /* Support routines for reading PPM */
 
 
-LOCAL int
+LOCAL(int)
 pbm_getc (FILE * infile)
 /* Read next char, skipping over any comments */
 /* A comment/newline sequence is returned as a newline */
@@ -134,7 +134,7 @@ pbm_getc (FILE * infile)
 }
 
 
-LOCAL unsigned int
+LOCAL(unsigned int)
 read_pbm_integer (j_decompress_ptr cinfo, FILE * infile)
 /* Read an unsigned decimal integer from the PPM file */
 /* Swallows one trailing character after the integer */
@@ -167,7 +167,7 @@ read_pbm_integer (j_decompress_ptr cinfo, FILE * infile)
  * Extract color map from a PPM file.
  */
 
-LOCAL void
+LOCAL(void)
 read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
 {
   int c;
@@ -227,7 +227,7 @@ read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
  *  Output: colormap and actual_number_of_colors fields are set in cinfo.
  */
 
-GLOBAL void
+GLOBAL(void)
 read_color_map (j_decompress_ptr cinfo, FILE * infile)
 {
   /* Allocate space for a color map of maximum supported size. */

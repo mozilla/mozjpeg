@@ -1,4 +1,4 @@
-.TH CJPEG 1 "30 August 1994"
+.TH CJPEG 1 "12 December 1994"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -115,11 +115,11 @@ Use fast integer DCT (less accurate).
 .TP
 .B \-dct float
 Use floating-point DCT method.
-The floating-point method is the most accurate, but will be the slowest unless
-your machine has very fast floating-point hardware.  Also note that results of
-the floating-point method may vary slightly across machines, while the integer
-methods should give the same results everywhere.  The fast integer method is
-much less accurate than the other two.
+The float method is very slightly more accurate than the int method, but is
+much slower unless your machine has very fast floating-point hardware.  Also
+note that results of the floating-point method may vary slightly across
+machines, while the integer methods should give the same results everywhere.
+The fast integer method is much less accurate than the other two.
 .TP
 .BI \-restart " N"
 Emit a JPEG restart marker every N MCU rows, or every N MCU blocks if "B" is

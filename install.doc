@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-1994, Thomas G. Lane.
+Copyright (C) 1991-1995, Thomas G. Lane.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -132,7 +132,7 @@ Makefile	jconfig file	System and/or compiler
 makefile.manx	jconfig.manx	Amiga, Manx Aztec C
 makefile.sas	jconfig.sas	Amiga, SAS C
 mak*jpeg.st	jconfig.st	Atari ST/STE/TT, Pure C or Turbo C
-makefile.bcc	jconfig.bcc	MS-DOS, Borland C (Turbo C)
+makefile.bcc	jconfig.bcc	MS-DOS or OS/2, Borland C
 makefile.dj	jconfig.dj	MS-DOS, DJGPP (Delorie's port of GNU C)
 makefile.mc6	jconfig.mc6	MS-DOS, Microsoft C version 6.x and up
 makefile.mms	jconfig.vms	Digital VMS, with MMS software
@@ -392,6 +392,55 @@ support as follows:
 	3.  Add -L... -lrle to LDLIBS in the Makefile, where ... specifies
 	    the directory containing the URT "librle.a" file (typically the
 	    "lib" subdirectory of the URT distribution).
+
+Support for 12-bit-deep pixel data:
+
+The JPEG standard allows either 8-bit or 12-bit data precision.  (For color,
+this means 8 or 12 bits per channel, of course.)  If you need to work with
+deeper than 8-bit data, you can compile the IJG code for 12-bit operation.
+To do so:
+  1. In jmorecfg.h, define BITS_IN_JSAMPLE as 12 rather than 8.
+  2. In jconfig.h, undefine BMP_SUPPORTED, RLE_SUPPORTED, and TARGA_SUPPORTED,
+     because the code for those formats doesn't handle 12-bit data and won't
+     even compile.  (The PPM code does work, as explained below.  The GIF
+     code works too; it scales 8-bit GIF data to and from 12-bit depth
+     automatically.)
+  3. Compile.  Don't expect "make test" to pass, since the supplied test
+     files are for 8-bit data.
+
+Currently, 12-bit support does not work on 16-bit-int machines.
+
+Note that a 12-bit version will not read 8-bit JPEG files, nor vice versa;
+so you'll want to keep around a regular 8-bit compilation as well.
+(Run-time selection of data depth, to allow a single copy that does both,
+is possible but would probably slow things down considerably; it's very low
+on our to-do list.)
+
+The PPM reader (rdppm.c) can read 12-bit data from either text-format or
+binary-format PPM and PGM files.  Binary-format PPM/PGM files which have a
+maxval greater than 255 are assumed to use 2 bytes per sample, LSB first
+(little-endian order).  As of early 1995, 2-byte binary format is not
+officially supported by the PBMPLUS library, but it is expected that the
+next release of PBMPLUS will support it.  Note that the PPM reader will
+read files of any maxval regardless of the BITS_IN_JSAMPLE setting; incoming
+data is automatically rescaled to either maxval=255 or maxval=4095 as
+appropriate for the cjpeg bit depth.
+
+The PPM writer (wrppm.c) will normally write 2-byte binary PPM or PGM
+format, maxval 4095, when compiled with BITS_IN_JSAMPLE=12.  Since this
+format is not yet widely supported, you can disable it by compiling wrppm.c
+with PPM_NORAWWORD defined; then the data is scaled down to 8 bits to make a
+standard 1-byte/sample PPM or PGM file.  (Yes, this means still another copy
+of djpeg to keep around.  But hopefully you won't need it for very long.
+Poskanzer's supposed to get that new PBMPLUS release out Real Soon Now.)
+
+Of course, if you are working with 12-bit data, you probably have it stored
+in some other, nonstandard format.  In that case you'll probably want to
+write your own I/O modules to read and write your format.
+
+Note that a 12-bit version of cjpeg always runs in "-optimize" mode, in
+order to generate valid Huffman tables.  This is necessary because our
+default Huffman tables only cover 8-bit data.
 
 Removing code:
 
@@ -737,6 +786,12 @@ SGI:
 Set "AR2= ar -ts" rather than "AR2= ranlib" in the Makefile.  If you are
 using configure, you should say
 	./configure RANLIB='ar -ts'
+
+On the MIPS R4000 architecture (Indy, etc.), the compiler option "-mips2"
+reportedly speeds up the float DCT method substantially, enough to make it
+faster than the default int method (but still slower than the fast int
+method).  If you use -mips2, you may want to alter the default DCT method to
+be float.  To do this, put "#define JDCT_DEFAULT JDCT_FLOAT" in jconfig.h.
 
 
 VMS:

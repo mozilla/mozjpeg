@@ -1,7 +1,7 @@
 /*
  * jcmaster.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -134,7 +134,12 @@ per_scan_setup (j_compress_ptr cinfo)
     compptr->MCU_blocks = 1;
     compptr->MCU_sample_width = DCTSIZE;
     compptr->last_col_width = 1;
-    compptr->last_row_height = 1;
+    /* For noninterleaved scans, it is convenient to define last_row_height
+     * as the number of block rows present in the last iMCU row.
+     */
+    tmp = (int) (compptr->height_in_blocks % compptr->v_samp_factor);
+    if (tmp == 0) tmp = compptr->v_samp_factor;
+    compptr->last_row_height = tmp;
     
     /* Prepare array describing MCU composition */
     cinfo->blocks_in_MCU = 1;

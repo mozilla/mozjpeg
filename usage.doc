@@ -131,13 +131,13 @@ Switches for advanced users:
 	-dct int	Use integer DCT method (default).
 	-dct fast	Use fast integer DCT (less accurate).
 	-dct float	Use floating-point DCT method.
-			The floating-point method is the most accurate, but
-			will be the slowest unless your machine has very fast
-			floating-point hardware.  Also note that results of
-			the floating-point method may vary slightly across
-			machines, while the integer methods should give the
-			same results everywhere.  The fast integer method is
-			much less accurate than the other two.
+			The float method is very slightly more accurate than
+			the int method, but is much slower unless your machine
+			has very fast floating-point hardware.  Also note that
+			results of the floating-point method may vary slightly
+			across machines, while the integer methods should give
+			the same results everywhere.  The fast integer method
+			is much less accurate than the other two.
 
 	-restart N	Emit a JPEG restart marker every N MCU rows, or every
 			N MCU blocks if "B" is attached to the number.
@@ -266,13 +266,13 @@ Switches for advanced users:
 	-dct int	Use integer DCT method (default).
 	-dct fast	Use fast integer DCT (less accurate).
 	-dct float	Use floating-point DCT method.
-			The floating-point method is the most accurate, but
-			will be the slowest unless your machine has very fast
-			floating-point hardware.  Also note that results of
-			the floating-point method may vary slightly across
-			machines, while the integer methods should give the
-			same results everywhere.  The fast integer method is
-			much less accurate than the other two.
+			The float method is very slightly more accurate than
+			the int method, but is much slower unless your machine
+			has very fast floating-point hardware.  Also note that
+			results of the floating-point method may vary slightly
+			across machines, while the integer methods should give
+			the same results everywhere.  The fast integer method
+			is much less accurate than the other two.
 
 	-dither fs	Use Floyd-Steinberg dithering in color quantization.
 	-dither ordered	Use ordered dithering in color quantization.
@@ -346,7 +346,10 @@ much lower quality than the default behavior.  "-dither none" may give
 acceptable results in two-pass mode, but is seldom tolerable in one-pass mode.
 
 If you are fortunate enough to have very fast floating point hardware,
-"-dct float" may be even faster than "-dct fast".
+"-dct float" may be even faster than "-dct fast".  But on most machines
+"-dct float" is slower than "-dct int"; in this case it is not worth using,
+because its theoretical accuracy advantage is too small to be significant
+in practice.
 
 Two-pass color quantization requires a good deal of memory; on MS-DOS machines
 it may run out of memory even with -maxmemory 0.  In that case you can still

@@ -5,6 +5,11 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ **************************************************************************
+ * WARNING: You will need an LZW patent license from Unisys in order to   *
+ * use this file legally in any commercial or shareware application.      *
+ **************************************************************************
+ *
  * This file contains routines to write output images in GIF format.
  *
  * These routines may need modification for non-Unix environments or

@@ -83,6 +83,8 @@ write_JPEG_file (char * filename, int quality)
    * (see the second half of this file for an example).  But here we just
    * take the easy way out and use the standard error handler, which will
    * print a message on stderr and call exit() if compression fails.
+   * Note that this struct must live as long as the main JPEG parameter
+   * struct, to avoid dangling-pointer problems.
    */
   struct jpeg_error_mgr jerr;
   /* More stuff */
@@ -281,7 +283,10 @@ read_JPEG_file (char * filename)
    * working space (which is allocated as needed by the JPEG library).
    */
   struct jpeg_decompress_struct cinfo;
-  /* We use our private extension JPEG error handler. */
+  /* We use our private extension JPEG error handler.
+   * Note that this struct must live as long as the main JPEG parameter
+   * struct, to avoid dangling-pointer problems.
+   */
   struct my_error_mgr jerr;
   /* More stuff */
   FILE * infile;		/* source file */

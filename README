@@ -1,8 +1,8 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 5a of 7-Dec-94
-=================================
+README for release 5b of 15-Mar-95
+==================================
 
 This distribution contains the fifth public release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
@@ -82,7 +82,7 @@ although some uncommon parameter settings aren't implemented yet.  For legal
 reasons, we are not distributing code for the arithmetic-coding process; see
 LEGAL ISSUES.  At present we have made no provision for supporting the
 progressive, hierarchical, or lossless processes defined in the standard.
-(Support for progressive mode may be offered in a future release.)
+(Support for progressive mode will be offered in a future release.)
 
 In order to support file conversion and viewing software, we have included
 considerable functionality beyond the bare JPEG coding/decoding capability;
@@ -124,7 +124,7 @@ with respect to this software, its quality, accuracy, merchantability, or
 fitness for a particular purpose.  This software is provided "AS IS", and you,
 its user, assume the entire risk as to its quality and accuracy.
 
-This software is copyright (C) 1991, 1992, 1993, 1994, Thomas G. Lane.
+This software is copyright (C) 1991, 1992, 1993, 1994, 1995, Thomas G. Lane.
 All Rights Reserved except as specified below.
 
 Permission is hereby granted to use, copy, modify, and distribute this
@@ -175,6 +175,14 @@ support for arithmetic coding has been removed from the free JPEG software.
 Huffman mode, it is unlikely that very many implementations will support it.)
 So far as we are aware, there are no patent restrictions on the remaining
 code.
+
+WARNING: Unisys has begun to enforce their patent on LZW compression against
+GIF encoders and decoders.  You will need a license from Unisys to use the
+included rdgif.c or wrgif.c files in a commercial or shareware application.
+At this time, Unisys is not enforcing their patent against freeware, so
+distribution of this package remains legal.  However, we intend to remove
+GIF support from the IJG package as soon as a suitable replacement format
+becomes reasonably popular.
 
 We are required to state that
     "The Graphics Interchange Format(c) is the Copyright property of
@@ -263,7 +271,7 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is ftp.uu.net (Internet
 address 192.48.96.9).  The most recent released version can always be found
 there in directory graphics/jpeg.  This particular version will be archived
-as graphics/jpeg/jpegsrc.v5a.tar.gz.  If you are on the Internet, you
+as graphics/jpeg/jpegsrc.v5b.tar.gz.  If you are on the Internet, you
 can retrieve files from ftp.uu.net by standard anonymous FTP.  If you don't
 have FTP access, UUNET's archives are also available via UUCP; contact
 help@uunet.uu.net for information on retrieving files that way.
@@ -273,10 +281,9 @@ you can probably find a copy at any site that archives comp.sources.misc
 submissions.  However, only ftp.uu.net is guaranteed to have the latest
 official version.
 
-You can also obtain this software from CompuServe, in the GRAPHSUPPORT
-forum (GO GRAPHSUP), probably in library 15 (there are rumors of a pending
-reorganization there).  Again, CompuServe is not guaranteed to have the
-very latest version.
+You can also obtain this software from CompuServe, in the GRAPHSUPPORT forum
+(GO GRAPHSUP), library 12 "JPEG Tools".  Again, CompuServe is not guaranteed
+to have the very latest version.
 
 The JPEG FAQ (Frequently Asked Questions) article is a useful source of
 general information about JPEG.  It is updated constantly and therefore is

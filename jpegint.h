@@ -1,7 +1,7 @@
 /*
  * jpegint.h
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -70,9 +70,8 @@ struct jpeg_c_prep_controller {
 /* Coefficient buffer control */
 struct jpeg_c_coef_controller {
   JMETHOD(void, start_pass, (j_compress_ptr cinfo, J_BUF_MODE pass_mode));
-  JMETHOD(void, compress_data, (j_compress_ptr cinfo,
-				JSAMPIMAGE input_buf,
-				JDIMENSION *in_mcu_ctr));
+  JMETHOD(boolean, compress_data, (j_compress_ptr cinfo,
+				   JSAMPIMAGE input_buf));
 };
 
 /* Colorspace conversion */

@@ -43,19 +43,18 @@ SOURCES= jbsmooth.c jcarith.c jccolor.c jcdeflts.c jcexpand.c jchuff.c \
         jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c jmemmgr.c \
         jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c jwrjfif.c jwrgif.c \
         jwrppm.c jwrrle.c jwrtarga.c
-# virtual source files (not present in distribution file)
+# virtual source files (not present in distribution file, see SETUP)
 VIRTSOURCES= jmemsys.c
-# system-dependent implementations of source files
+# system-dependent implementations of virtual source files
 SYSDEPFILES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemdos.h \
         jmemdosa.asm
 # files included by source files
-INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h egetopt.c
+INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h
 # documentation, test, and support files
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
-        makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.bcc \
-        makcjpeg.lst makdjpeg.lst makefile.pwc makcjpeg.cf makdjpeg.cf \
-        makljpeg.cf makefile.mms makefile.vms makvms.opt
+        makcjpeg.st makdjpeg.st makljpeg.st makefile.mc5 makefile.mc6 \
+        makefile.bcc makefile.mms makefile.vms makvms.opt
 OTHERFILES= ansi2knr.c ckconfig.c example.c
 TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
 DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \
@@ -94,6 +93,11 @@ libjpeg.a: $(LIBOBJECTS)
 	$(AR) libjpeg.a  $(LIBOBJECTS)
 	$(AR2) libjpeg.a
 
+jmemsys.c:
+	echo You must select a system-dependent jmemsys.c file.
+	echo Please read the SETUP directions.
+	exit 1
+
 clean:
 	$(RM) *.o cjpeg djpeg libjpeg.a core testout.*
 
@@ -105,7 +109,7 @@ distribute:
 test: cjpeg djpeg
 	$(RM) testout.ppm testout.gif testout.jpg
 	./djpeg testorig.jpg >testout.ppm
-	./djpeg -G testorig.jpg >testout.gif
+	./djpeg -gif testorig.jpg >testout.gif
 	./cjpeg testimg.ppm >testout.jpg
 	cmp testimg.ppm testout.ppm
 	cmp testimg.gif testout.gif
@@ -118,7 +122,7 @@ jccolor.o : jccolor.c jinclude.h jconfig.h jpegdata.h
 jcdeflts.o : jcdeflts.c jinclude.h jconfig.h jpegdata.h 
 jcexpand.o : jcexpand.c jinclude.h jconfig.h jpegdata.h 
 jchuff.o : jchuff.c jinclude.h jconfig.h jpegdata.h 
-jcmain.o : jcmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c 
+jcmain.o : jcmain.c jinclude.h jconfig.h jpegdata.h jversion.h 
 jcmaster.o : jcmaster.c jinclude.h jconfig.h jpegdata.h 
 jcmcu.o : jcmcu.c jinclude.h jconfig.h jpegdata.h 
 jcpipe.o : jcpipe.c jinclude.h jconfig.h jpegdata.h 
@@ -127,7 +131,7 @@ jdarith.o : jdarith.c jinclude.h jconfig.h jpegdata.h
 jdcolor.o : jdcolor.c jinclude.h jconfig.h jpegdata.h 
 jddeflts.o : jddeflts.c jinclude.h jconfig.h jpegdata.h 
 jdhuff.o : jdhuff.c jinclude.h jconfig.h jpegdata.h 
-jdmain.o : jdmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c 
+jdmain.o : jdmain.c jinclude.h jconfig.h jpegdata.h jversion.h 
 jdmaster.o : jdmaster.c jinclude.h jconfig.h jpegdata.h 
 jdmcu.o : jdmcu.c jinclude.h jconfig.h jpegdata.h 
 jdpipe.o : jdpipe.c jinclude.h jconfig.h jpegdata.h 

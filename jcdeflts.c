@@ -39,7 +39,7 @@ progress_monitor (compress_info_ptr cinfo, long loopcounter, long looplimit)
 
 
 /*
- * Table setup routines
+ * Huffman table setup routines
  */
 
 LOCAL void
@@ -50,10 +50,8 @@ add_huff_table (compress_info_ptr cinfo,
   if (*htblptr == NULL)
     *htblptr = (HUFF_TBL *) (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
   
-  memcpy((void *) (*htblptr)->bits, (const void *) bits,
-	 SIZEOF((*htblptr)->bits));
-  memcpy((void *) (*htblptr)->huffval, (const void *) val,
-	 SIZEOF((*htblptr)->huffval));
+  MEMCOPY((*htblptr)->bits, bits, SIZEOF((*htblptr)->bits));
+  MEMCOPY((*htblptr)->huffval, val, SIZEOF((*htblptr)->huffval));
 
   /* Initialize sent_table FALSE so table will be written to JPEG file.
    * In an application where we are writing non-interchange JPEG files,
@@ -141,43 +139,19 @@ std_huff_tables (compress_info_ptr cinfo)
 }
 
 
-/* This is the sample quantization table given in the JPEG spec section K.1,
- * but expressed in zigzag order (as are all of our quant. tables).
- * The spec says that the values given produce "good" quality, and
- * when divided by 2, "very good" quality.  (These two settings are
- * selected by quality=50 and quality=75 in j_set_quality, below.)
+/*
+ * Quantization table setup routines
  */
 
-
-static const QUANT_VAL std_luminance_quant_tbl[DCTSIZE2] = {
-  16,  11,  12,  14,  12,  10,  16,  14,
-  13,  14,  18,  17,  16,  19,  24,  40,
-  26,  24,  22,  22,  24,  49,  35,  37,
-  29,  40,  58,  51,  61,  60,  57,  51,
-  56,  55,  64,  72,  92,  78,  64,  68,
-  87,  69,  55,  56,  80, 109,  81,  87,
-  95,  98, 103, 104, 103,  62,  77, 113,
- 121, 112, 100, 120,  92, 101, 103,  99
-};
-
-static const QUANT_VAL std_chrominance_quant_tbl[DCTSIZE2] = {
-  17,  18,  18,  24,  21,  24,  47,  26,
-  26,  47,  99,  66,  56,  66,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99
-};
-
-
-LOCAL void
-add_quant_table (compress_info_ptr cinfo, int which_tbl,
-		 const QUANT_VAL *basic_table, int scale_factor,
-		 boolean force_baseline)
-/* Define a quantization table equal to the basic_table times */
-/* a scale factor (given as a percentage) */
+GLOBAL void
+j_add_quant_table (compress_info_ptr cinfo, int which_tbl,
+		   const QUANT_VAL *basic_table, int scale_factor,
+		   boolean force_baseline)
+/* Define a quantization table equal to the basic_table times
+ * a scale factor (given as a percentage).
+ * If force_baseline is TRUE, the computed quantization table entries
+ * are limited to 1..255 for JPEG baseline compatibility.
+ */
 {
   QUANT_TBL_PTR * qtblptr = & cinfo->quant_tbl_ptrs[which_tbl];
   int i;
@@ -202,24 +176,20 @@ add_quant_table (compress_info_ptr cinfo, int which_tbl,
 }
 
 
-GLOBAL void
-j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
-/* Set or change the 'quality' (quantization) setting. */
-/* The 'quality' factor should be 0 (terrible) to 100 (very good). */
-/* Quality 50 corresponds to the JPEG basic tables given above; */
-/* quality 100 results in no quantization scaling at all. */
-/* If force_baseline is TRUE, quantization table entries are limited */
-/* to 0..255 for JPEG baseline compatibility; this is only an issue */
-/* for quality settings below 24. */
+GLOBAL int
+j_quality_scaling (int quality)
+/* Convert a user-specified quality rating to a percentage scaling factor
+ * for an underlying quantization table, using our recommended scaling curve.
+ * The input 'quality' factor should be 0 (terrible) to 100 (very good).
+ */
 {
   /* Safety limit on quality factor.  Convert 0 to 1 to avoid zero divide. */
   if (quality <= 0) quality = 1;
   if (quality > 100) quality = 100;
 
-  /* Convert quality rating to a percentage scaling of the basic tables.
-   * The basic table is used as-is (scaling 100) for a quality of 50.
+  /* The basic table is used as-is (scaling 100) for a quality of 50.
    * Qualities 50..100 are converted to scaling percentage 200 - 2*Q;
-   * note that at Q=100 the scaling is 0, which will cause add_quant_table
+   * note that at Q=100 the scaling is 0, which will cause j_add_quant_table
    * to make all the table entries 1 (hence, no quantization loss).
    * Qualities 1..50 are converted to scaling percentage 5000/Q.
    */
@@ -228,9 +198,53 @@ j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
   else
     quality = 200 - quality*2;
 
+  return quality;
+}
+
+
+GLOBAL void
+j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
+/* Set or change the 'quality' (quantization) setting, using default tables.
+ * This is the standard quality-adjusting entry point for typical user
+ * interfaces; only those who want detailed control over quantization tables
+ * would use the preceding two routines directly.
+ */
+{
+  /* This is the sample quantization table given in the JPEG spec section K.1,
+   * but expressed in zigzag order (as are all of our quant. tables).
+   * The spec says that the values given produce "good" quality, and
+   * when divided by 2, "very good" quality.  (These two settings are
+   * selected by quality=50 and quality=75 respectively.)
+   */
+  static const QUANT_VAL std_luminance_quant_tbl[DCTSIZE2] = {
+    16,  11,  12,  14,  12,  10,  16,  14,
+    13,  14,  18,  17,  16,  19,  24,  40,
+    26,  24,  22,  22,  24,  49,  35,  37,
+    29,  40,  58,  51,  61,  60,  57,  51,
+    56,  55,  64,  72,  92,  78,  64,  68,
+    87,  69,  55,  56,  80, 109,  81,  87,
+    95,  98, 103, 104, 103,  62,  77, 113,
+    121, 112, 100, 120,  92, 101, 103,  99
+    };
+  static const QUANT_VAL std_chrominance_quant_tbl[DCTSIZE2] = {
+    17,  18,  18,  24,  21,  24,  47,  26,
+    26,  47,  99,  66,  56,  66,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99
+    };
+
+  /* Convert user 0-100 rating to percentage scaling */
+  quality = j_quality_scaling(quality);
+
   /* Set up two quantization tables using the specified quality scaling */
-  add_quant_table(cinfo, 0, std_luminance_quant_tbl, quality, force_baseline);
-  add_quant_table(cinfo, 1, std_chrominance_quant_tbl, quality, force_baseline);
+  j_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
+		    quality, force_baseline);
+  j_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
+		    quality, force_baseline);
 }
 
 
@@ -347,8 +361,12 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
   /* By default, use the simpler non-cosited sampling alignment */
   cinfo->CCIR601_sampling = FALSE;
 
+  /* No input smoothing */
+  cinfo->smoothing_factor = 0;
+
   /* No restart markers */
   cinfo->restart_interval = 0;
+  cinfo->restart_in_rows = 0;
 
   /* Install default do-nothing progress monitoring method. */
   cinfo->methods->progress_monitor = progress_monitor;

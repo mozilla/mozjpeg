@@ -1,23 +1,29 @@
 # Makefile for Independent JPEG Group's software
 
-# This makefile is for Microsoft C for MS-DOS, version 6.x (use NMAKE).
+# This makefile is for Microsoft C for MS-DOS, version 6.00A and up.
+# Use NMAKE, not Microsoft's brain-damaged MAKE.
 # Thanks to Alan Wright and Chris Turner of Olivetti Research Ltd.
 
-# Read SETUP instructions before saying "make" !!
+# Read SETUP instructions before saying "nmake" !!
 
 # compiler flags. -D gives a #define to the sources:
-#       -O              default optimisation
+#       -AS             small memory model (or use -AM for medium model)
+#       -Ox             maximum safe optimisation
 #       -W3             warning level 3
 #       -Za             ANSI conformance, defines __STDC__ but undefines far
 #                       and near, so we DON'T use it.
 #       -DHAVE_STDC     indicate we do have all the ANSI language features
-#       -DINCLUDES_ARE_ANSI	and all the ANSI include files.
+#       -DINCLUDES_ARE_ANSI    and all the ANSI include files.
 #       -DMSDOS         we are on an MSDOS machine
+#       -DUSE_FMEM      we have _fmemcpy() and _fmemset()
+#       -DSHORTxLCONST_32      enables compiler-specific multiply optimization
 #       -DMEM_STATS     enable memory usage statistics (optional)
-#       -c              compile, don't link (implicit in inference rules)
 # You might also want to add -G2 if you have an 80286, etc.
 
-CFLAGS = -c -O -W3 -DHAVE_STDC -DINCLUDES_ARE_ANSI -DMSDOS
+CFLAGS = -AS -Ox -W3 -DHAVE_STDC -DINCLUDES_ARE_ANSI -DMSDOS -DUSE_FMEM -DSHORTxLCONST_32
+
+# need linker response file because file list > 128 chars
+RFILE = libjpeg.ans
 
 
 # source files (independently compilable files)
@@ -27,19 +33,18 @@ SOURCES= jbsmooth.c jcarith.c jccolor.c jcdeflts.c jcexpand.c jchuff.c \
         jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c jmemmgr.c \
         jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c jwrjfif.c jwrgif.c \
         jwrppm.c jwrrle.c jwrtarga.c
-# virtual source files (not present in distribution file)
+# virtual source files (not present in distribution file, see SETUP)
 VIRTSOURCES= jmemsys.c
-# system-dependent implementations of source files
+# system-dependent implementations of virtual source files
 SYSDEPFILES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemdos.h \
         jmemdosa.asm
 # files included by source files
-INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h egetopt.c
+INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h
 # documentation, test, and support files
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
-        makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.bcc \
-        makcjpeg.lst makdjpeg.lst makefile.pwc makcjpeg.cf makdjpeg.cf \
-        makljpeg.cf makefile.mms makefile.vms makvms.opt
+        makcjpeg.st makdjpeg.st makljpeg.st makefile.mc5 makefile.mc6 \
+        makefile.bcc makefile.mms makefile.vms makvms.opt
 OTHERFILES= ansi2knr.c ckconfig.c example.c
 TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
 DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \
@@ -63,7 +68,57 @@ LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 
 all: cjpeg.exe djpeg.exe
 
-# default rules in nmake will use cflags and compile the list below
+
+# libjpeg.lib is useful if you are including the JPEG software in a larger
+# program; you'd include it in your link, rather than the individual modules.
+libjpeg.lib: $(LIBOBJECTS) $(RFILE)
+    del libjpeg.lib
+    lib @$(RFILE) ;
+
+# linker response file for same
+$(RFILE) : Makefile
+    del $(RFILE)
+    echo libjpeg.lib >$(RFILE)
+# silly want-to-create-it prompt:
+    echo y >>$(RFILE)
+    echo +jcmaster.obj +jcdeflts.obj +jcarith.obj +jccolor.obj & >>$(RFILE)
+    echo +jcexpand.obj +jchuff.obj +jcmcu.obj +jcpipe.obj & >>$(RFILE)
+    echo +jcsample.obj +jfwddct.obj +jwrjfif.obj +jrdgif.obj & >>$(RFILE)
+    echo +jrdppm.obj +jrdrle.obj +jrdtarga.obj +jdmaster.obj & >>$(RFILE)
+    echo +jddeflts.obj +jbsmooth.obj +jdarith.obj +jdcolor.obj & >>$(RFILE)
+    echo +jdhuff.obj +jdmcu.obj +jdpipe.obj +jdsample.obj & >>$(RFILE)
+    echo +jquant1.obj +jquant2.obj +jrevdct.obj +jrdjfif.obj & >>$(RFILE)
+    echo +jwrgif.obj +jwrppm.obj +jwrrle.obj +jwrtarga.obj & >>$(RFILE)
+    echo +jutils.obj +jerror.obj +jmemmgr.obj +jmemsys.obj & >>$(RFILE)
+    echo +jmemdosa.obj >>$(RFILE)
+
+cjpeg.exe: jcmain.obj libjpeg.lib
+    link /STACK:4096 /EXEPACK jcmain.obj, cjpeg.exe, , libjpeg.lib, ;
+
+djpeg.exe: jdmain.obj libjpeg.lib
+    link /STACK:4096 /EXEPACK jdmain.obj, djpeg.exe, , libjpeg.lib, ;
+
+jmemsys.c:
+	echo You must select a system-dependent jmemsys.c file.
+	echo Please read the SETUP directions.
+	exit 1
+
+clean:
+	del *.obj
+	del libjpeg.lib
+	del cjpeg.exe
+	del djpeg.exe
+	del testout.*
+
+test:
+        del testout.*
+        djpeg testorig.jpg testout.ppm
+        djpeg -gif testorig.jpg testout.gif
+        cjpeg testimg.ppm testout.jpg
+        fc testimg.ppm testout.ppm
+        fc testimg.gif testout.gif
+        fc testimg.jpg testout.jpg
+
 
 jbsmooth.obj : jbsmooth.c jinclude.h jconfig.h jpegdata.h
 jcarith.obj : jcarith.c jinclude.h jconfig.h jpegdata.h
@@ -71,7 +126,7 @@ jccolor.obj : jccolor.c jinclude.h jconfig.h jpegdata.h
 jcdeflts.obj : jcdeflts.c jinclude.h jconfig.h jpegdata.h
 jcexpand.obj : jcexpand.c jinclude.h jconfig.h jpegdata.h
 jchuff.obj : jchuff.c jinclude.h jconfig.h jpegdata.h
-jcmain.obj : jcmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+jcmain.obj : jcmain.c jinclude.h jconfig.h jpegdata.h jversion.h
 jcmaster.obj : jcmaster.c jinclude.h jconfig.h jpegdata.h
 jcmcu.obj : jcmcu.c jinclude.h jconfig.h jpegdata.h
 jcpipe.obj : jcpipe.c jinclude.h jconfig.h jpegdata.h
@@ -80,7 +135,7 @@ jdarith.obj : jdarith.c jinclude.h jconfig.h jpegdata.h
 jdcolor.obj : jdcolor.c jinclude.h jconfig.h jpegdata.h
 jddeflts.obj : jddeflts.c jinclude.h jconfig.h jpegdata.h
 jdhuff.obj : jdhuff.c jinclude.h jconfig.h jpegdata.h
-jdmain.obj : jdmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+jdmain.obj : jdmain.c jinclude.h jconfig.h jpegdata.h jversion.h
 jdmaster.obj : jdmaster.c jinclude.h jconfig.h jpegdata.h
 jdmcu.obj : jdmcu.c jinclude.h jconfig.h jpegdata.h
 jdpipe.obj : jdpipe.c jinclude.h jconfig.h jpegdata.h
@@ -103,24 +158,5 @@ jwrppm.obj : jwrppm.c jinclude.h jconfig.h jpegdata.h
 jwrrle.obj : jwrrle.c jinclude.h jconfig.h jpegdata.h
 jwrtarga.obj : jwrtarga.c jinclude.h jconfig.h jpegdata.h
 jmemsys.obj : jmemsys.c jinclude.h jconfig.h jpegdata.h jmemsys.h
-
 jmemdosa.obj : jmemdosa.asm
-	masm /mx $*;
-
-
-# use linker response files because file list > 128 chars
-
-cjpeg.exe: $(COBJECTS)
-        link /STACK:8192 @makcjpeg.lnk
-
-djpeg.exe: $(DOBJECTS)
-        link /STACK:8192 @makdjpeg.lnk
-
-test:
-        del testout.*
-        djpeg testorig.jpg testout.ppm
-        djpeg -G testorig.jpg testout.gif
-        cjpeg testimg.ppm testout.jpg
-        fc testimg.ppm testout.ppm
-        fc testimg.gif testout.gif
-        fc testimg.jpg testout.jpg
+    masm /mx $*;

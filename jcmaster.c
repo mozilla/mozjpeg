@@ -19,8 +19,8 @@ c_per_scan_method_selection (compress_info_ptr cinfo)
 {
   /* Edge expansion */
   jselexpand(cinfo);
-  /* Subsampling of pixels */
-  jselsubsample(cinfo);
+  /* Downsampling of pixels */
+  jseldownsample(cinfo);
   /* MCU extraction */
   jselcmcu(cinfo);
 }
@@ -36,7 +36,7 @@ c_initial_method_selection (compress_info_ptr cinfo)
   /* Gamma and color space conversion */
   jselccolor(cinfo);
   /* Entropy encoding: either Huffman or arithmetic coding. */
-#ifdef ARITH_CODING_SUPPORTED
+#ifdef C_ARITH_CODING_SUPPORTED
   jselcarithmetic(cinfo);
 #else
   cinfo->arith_code = FALSE;	/* force Huffman mode */
@@ -71,7 +71,7 @@ initial_setup (compress_info_ptr cinfo)
 
   }
 
-  /* Compute logical subsampled dimensions of components */
+  /* Compute logical downsampled dimensions of components */
   for (ci = 0; ci < cinfo->num_components; ci++) {
     compptr = &cinfo->comp_info[ci];
     compptr->true_comp_width = (cinfo->image_width * compptr->h_samp_factor

@@ -30,15 +30,15 @@
 /*
  * About the data structures:
  *
- * The processing chunk size for subsampling is referred to in this file as
+ * The processing chunk size for downsampling is referred to in this file as
  * a "row group": a row group is defined as Vk (v_samp_factor) sample rows of
- * any component after subsampling, or Vmax (max_v_samp_factor) unsubsampled
+ * any component after downsampling, or Vmax (max_v_samp_factor) unsubsampled
  * rows.  In an interleaved scan each MCU row contains exactly DCTSIZE row
  * groups of each component in the scan.  In a noninterleaved scan an MCU row
  * is one row of blocks, which might not be an integral number of row groups;
  * for convenience we use a buffer of the same size as in interleaved scans,
- * and process Vk MCU rows in each burst of subsampling.
- * To provide context for the subsampling step, we have to retain the last
+ * and process Vk MCU rows in each burst of downsampling.
+ * To provide context for the downsampling step, we have to retain the last
  * two row groups of the previous MCU row while reading in the next MCU row
  * (or set of Vk MCU rows).  To do this without copying data about, we create
  * a rather strange data structure.  Exactly DCTSIZE+2 row groups of samples
@@ -82,12 +82,12 @@ interleaved_scan_setup (compress_info_ptr cinfo)
     compptr->MCU_height = compptr->v_samp_factor;
     compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
     /* compute physical dimensions of component */
-    compptr->subsampled_width = jround_up(compptr->true_comp_width,
-					  (long) (compptr->MCU_width*DCTSIZE));
-    compptr->subsampled_height = jround_up(compptr->true_comp_height,
-					   (long) (compptr->MCU_height*DCTSIZE));
+    compptr->downsampled_width = jround_up(compptr->true_comp_width,
+					   (long) (compptr->MCU_width*DCTSIZE));
+    compptr->downsampled_height = jround_up(compptr->true_comp_height,
+					    (long) (compptr->MCU_height*DCTSIZE));
     /* Sanity check */
-    if (compptr->subsampled_width !=
+    if (compptr->downsampled_width !=
 	(cinfo->MCUs_per_row * (compptr->MCU_width*DCTSIZE)))
       ERREXIT(cinfo->emethods, "I'm confused about the image width");
     /* Prepare array describing MCU composition */
@@ -97,6 +97,13 @@ interleaved_scan_setup (compress_info_ptr cinfo)
     while (mcublks-- > 0) {
       cinfo->MCU_membership[cinfo->blocks_in_MCU++] = ci;
     }
+  }
+
+  /* Convert restart specified in rows to actual MCU count. */
+  /* Note that count must fit in 16 bits, so we provide limiting. */
+  if (cinfo->restart_in_rows > 0) {
+    long nominal = cinfo->restart_in_rows * cinfo->MCUs_per_row;
+    cinfo->restart_interval = (UINT16) MIN(nominal, 65535L);
   }
 
   (*cinfo->methods->c_per_scan_method_selection) (cinfo);
@@ -115,17 +122,24 @@ noninterleaved_scan_setup (compress_info_ptr cinfo)
   compptr->MCU_height = 1;
   compptr->MCU_blocks = 1;
   /* compute physical dimensions of component */
-  compptr->subsampled_width = jround_up(compptr->true_comp_width,
-					(long) DCTSIZE);
-  compptr->subsampled_height = jround_up(compptr->true_comp_height,
+  compptr->downsampled_width = jround_up(compptr->true_comp_width,
 					 (long) DCTSIZE);
+  compptr->downsampled_height = jround_up(compptr->true_comp_height,
+					  (long) DCTSIZE);
 
-  cinfo->MCUs_per_row = compptr->subsampled_width / DCTSIZE;
-  cinfo->MCU_rows_in_scan = compptr->subsampled_height / DCTSIZE;
+  cinfo->MCUs_per_row = compptr->downsampled_width / DCTSIZE;
+  cinfo->MCU_rows_in_scan = compptr->downsampled_height / DCTSIZE;
 
   /* Prepare array describing MCU composition */
   cinfo->blocks_in_MCU = 1;
   cinfo->MCU_membership[0] = 0;
+
+  /* Convert restart specified in rows to actual MCU count. */
+  /* Note that count must fit in 16 bits, so we provide limiting. */
+  if (cinfo->restart_in_rows > 0) {
+    long nominal = cinfo->restart_in_rows * cinfo->MCUs_per_row;
+    cinfo->restart_interval = (UINT16) MIN(nominal, 65535L);
+  }
 
   (*cinfo->methods->c_per_scan_method_selection) (cinfo);
 }
@@ -135,7 +149,7 @@ noninterleaved_scan_setup (compress_info_ptr cinfo)
 LOCAL void
 alloc_sampling_buffer (compress_info_ptr cinfo, JSAMPIMAGE fullsize_data[2],
 		       long fullsize_width)
-/* Create a pre-subsampling data buffer having the desired structure */
+/* Create a pre-downsampling data buffer having the desired structure */
 /* (see comments at head of file) */
 {
   short ci, vs, i;
@@ -193,18 +207,18 @@ free_sampling_buffer (compress_info_ptr cinfo, JSAMPIMAGE fullsize_data[2])
 
 
 LOCAL void
-subsample (compress_info_ptr cinfo,
-	   JSAMPIMAGE fullsize_data, JSAMPIMAGE subsampled_data,
-	   long fullsize_width,
-	   short above, short current, short below, short out)
-/* Do subsampling of a single row group (of each component). */
+downsample (compress_info_ptr cinfo,
+	    JSAMPIMAGE fullsize_data, JSAMPIMAGE sampled_data,
+	    long fullsize_width,
+	    short above, short current, short below, short out)
+/* Do downsampling of a single row group (of each component). */
 /* above, current, below are indexes of row groups in fullsize_data;      */
-/* out is the index of the target row group in subsampled_data.           */
+/* out is the index of the target row group in sampled_data.              */
 /* Special case: above, below can be -1 to indicate top, bottom of image. */
 {
   jpeg_component_info *compptr;
   JSAMPARRAY above_ptr, below_ptr;
-  JSAMPROW dummy[MAX_SAMP_FACTOR]; /* for subsample expansion at top/bottom */
+  JSAMPROW dummy[MAX_SAMP_FACTOR]; /* for downsample expansion at top/bottom */
   short ci, vs, i;
 
   vs = cinfo->max_v_samp_factor; /* row group height */
@@ -231,25 +245,27 @@ subsample (compress_info_ptr cinfo,
       below_ptr = (JSAMPARRAY) dummy; /* possible near->far pointer conv */
     }
 
-    (*cinfo->methods->subsample[ci])
+    (*cinfo->methods->downsample[ci])
 		(cinfo, (int) ci,
 		 fullsize_width, (int) vs,
-		 compptr->subsampled_width, (int) compptr->v_samp_factor,
+		 compptr->downsampled_width, (int) compptr->v_samp_factor,
 		 above_ptr,
 		 fullsize_data[ci] + current * vs,
 		 below_ptr,
-		 subsampled_data[ci] + out * compptr->v_samp_factor);
+		 sampled_data[ci] + out * compptr->v_samp_factor);
   }
 }
 
 
-/* These vars are initialized by the pipeline controller for use by
+/* These variables are initialized by the pipeline controller for use by
  * MCU_output_catcher.
  * To avoid a lot of row-pointer overhead, we cram as many MCUs into each
- * row of whole_scan_MCUs as we can get without exceeding 64KB per row.
+ * row of whole_scan_MCUs as we can get without exceeding 32Kbytes per row.
+ * NOTE: the "arbitrary" constant here must not exceed MAX_ALLOC_CHUNK
+ * defined in jmemsys.h, which is 64K-epsilon in most DOS implementations.
  */
 
-#define MAX_WHOLE_ROW_BLOCKS	((int) (65500 / SIZEOF(JBLOCK))) /* max blocks/row */
+#define MAX_WHOLE_ROW_BLOCKS	((int) (32768L / SIZEOF(JBLOCK))) /* max blocks/row */
 
 static big_barray_ptr whole_scan_MCUs; /* Big array for saving the MCUs */
 static int MCUs_in_big_row;	/* # of MCUs in each row of whole_scan_MCUs */
@@ -342,10 +358,10 @@ single_ccontroller (compress_info_ptr cinfo)
   long cur_pixel_row;		/* counts # of pixel rows processed */
   long mcu_rows_output;		/* # of MCU rows actually emitted */
   int mcu_rows_per_loop;	/* # of MCU rows processed per outer loop */
-  /* Work buffer for pre-subsampling data (see comments at head of file) */
+  /* Work buffer for pre-downsampling data (see comments at head of file) */
   JSAMPIMAGE fullsize_data[2];
-  /* Work buffer for subsampled data */
-  JSAMPIMAGE subsampled_data;
+  /* Work buffer for downsampled data */
+  JSAMPIMAGE sampled_data;
   int rows_this_time;
   short ci, whichss, i;
 
@@ -374,14 +390,14 @@ single_ccontroller (compress_info_ptr cinfo)
 			     (long) (cinfo->max_h_samp_factor * DCTSIZE));
 
   /* Allocate working memory: */
-  /* fullsize_data is sample data before subsampling */
+  /* fullsize_data is sample data before downsampling */
   alloc_sampling_buffer(cinfo, fullsize_data, fullsize_width);
-  /* subsampled_data is sample data after subsampling */
-  subsampled_data = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
+  /* sampled_data is sample data after downsampling */
+  sampled_data = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
 				(cinfo->num_components * SIZEOF(JSAMPARRAY));
   for (ci = 0; ci < cinfo->num_components; ci++) {
-    subsampled_data[ci] = (*cinfo->emethods->alloc_small_sarray)
-			(cinfo->comp_info[ci].subsampled_width,
+    sampled_data[ci] = (*cinfo->emethods->alloc_small_sarray)
+			(cinfo->comp_info[ci].downsampled_width,
 			 (long) (cinfo->comp_info[ci].v_samp_factor * DCTSIZE));
   }
 
@@ -398,8 +414,8 @@ single_ccontroller (compress_info_ptr cinfo)
 
   (*cinfo->methods->write_scan_header) (cinfo);
   cinfo->methods->entropy_output = cinfo->methods->write_jpeg_data;
-  (*cinfo->methods->entropy_encoder_init) (cinfo);
-  (*cinfo->methods->subsample_init) (cinfo);
+  (*cinfo->methods->entropy_encode_init) (cinfo);
+  (*cinfo->methods->downsample_init) (cinfo);
   (*cinfo->methods->extract_init) (cinfo);
 
   /* Loop over input image: rows_in_mem pixel rows are processed per loop */
@@ -415,7 +431,7 @@ single_ccontroller (compress_info_ptr cinfo)
     whichss ^= 1;		/* switch to other fullsize_data buffer */
     
     /* Obtain rows_this_time pixel rows and expand to rows_in_mem rows. */
-    /* Then we have exactly DCTSIZE row groups for subsampling. */   
+    /* Then we have exactly DCTSIZE row groups for downsampling. */   
     rows_this_time = (int) MIN((long) rows_in_mem,
 			       cinfo->image_height - cur_pixel_row);
  
@@ -426,51 +442,51 @@ single_ccontroller (compress_info_ptr cinfo)
 				    fullsize_width, rows_in_mem,
 				    fullsize_data[whichss]);
     
-    /* Subsample the data (all components) */
+    /* Downsample the data (all components) */
     /* First time through is a special case */
     
     if (cur_pixel_row) {
-      /* Subsample last row group of previous set */
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
-		(short) (DCTSIZE-1));
-      /* and dump the previous set's subsampled data */
-      (*cinfo->methods->extract_MCUs) (cinfo, subsampled_data, 
+      /* Downsample last row group of previous set */
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
+		 (short) (DCTSIZE-1));
+      /* and dump the previous set's downsampled data */
+      (*cinfo->methods->extract_MCUs) (cinfo, sampled_data, 
 				       mcu_rows_per_loop,
 				       cinfo->methods->entropy_encode);
       mcu_rows_output += mcu_rows_per_loop;
-      /* Subsample first row group of this set */
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) (DCTSIZE+1), (short) 0, (short) 1,
-		(short) 0);
+      /* Downsample first row group of this set */
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) (DCTSIZE+1), (short) 0, (short) 1,
+		 (short) 0);
     } else {
-      /* Subsample first row group with dummy above-context */
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) (-1), (short) 0, (short) 1,
-		(short) 0);
+      /* Downsample first row group with dummy above-context */
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) (-1), (short) 0, (short) 1,
+		 (short) 0);
     }
-    /* Subsample second through next-to-last row groups of this set */
+    /* Downsample second through next-to-last row groups of this set */
     for (i = 1; i <= DCTSIZE-2; i++) {
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) (i-1), (short) i, (short) (i+1),
-		(short) i);
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) (i-1), (short) i, (short) (i+1),
+		 (short) i);
     }
   } /* end of outer loop */
   
-  /* Subsample the last row group with dummy below-context */
+  /* Downsample the last row group with dummy below-context */
   /* Note whichss points to last buffer side used */
-  subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-	    (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
-	    (short) (DCTSIZE-1));
+  downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+	     (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
+	     (short) (DCTSIZE-1));
   /* Dump the remaining data (may be less than full height if uninterleaved) */
-  (*cinfo->methods->extract_MCUs) (cinfo, subsampled_data, 
+  (*cinfo->methods->extract_MCUs) (cinfo, sampled_data, 
 		(int) (cinfo->MCU_rows_in_scan - mcu_rows_output),
 		cinfo->methods->entropy_encode);
 
   /* Finish output file */
   (*cinfo->methods->extract_term) (cinfo);
-  (*cinfo->methods->subsample_term) (cinfo);
-  (*cinfo->methods->entropy_encoder_term) (cinfo);
+  (*cinfo->methods->downsample_term) (cinfo);
+  (*cinfo->methods->entropy_encode_term) (cinfo);
   (*cinfo->methods->write_scan_trailer) (cinfo);
   cinfo->completed_passes++;
 
@@ -494,10 +510,10 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
   long cur_pixel_row;		/* counts # of pixel rows processed */
   long mcu_rows_output;		/* # of MCU rows actually emitted */
   int mcu_rows_per_loop;	/* # of MCU rows processed per outer loop */
-  /* Work buffer for pre-subsampling data (see comments at head of file) */
+  /* Work buffer for pre-downsampling data (see comments at head of file) */
   JSAMPIMAGE fullsize_data[2];
-  /* Work buffer for subsampled data */
-  JSAMPIMAGE subsampled_data;
+  /* Work buffer for downsampled data */
+  JSAMPIMAGE sampled_data;
   int rows_this_time;
   int blocks_in_big_row;
   short ci, whichss, i;
@@ -527,14 +543,14 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
 			     (long) (cinfo->max_h_samp_factor * DCTSIZE));
 
   /* Allocate working memory: */
-  /* fullsize_data is sample data before subsampling */
+  /* fullsize_data is sample data before downsampling */
   alloc_sampling_buffer(cinfo, fullsize_data, fullsize_width);
-  /* subsampled_data is sample data after subsampling */
-  subsampled_data = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
+  /* sampled_data is sample data after downsampling */
+  sampled_data = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
 				(cinfo->num_components * SIZEOF(JSAMPARRAY));
   for (ci = 0; ci < cinfo->num_components; ci++) {
-    subsampled_data[ci] = (*cinfo->emethods->alloc_small_sarray)
-			(cinfo->comp_info[ci].subsampled_width,
+    sampled_data[ci] = (*cinfo->emethods->alloc_small_sarray)
+			(cinfo->comp_info[ci].downsampled_width,
 			 (long) (cinfo->comp_info[ci].v_samp_factor * DCTSIZE));
   }
 
@@ -560,7 +576,7 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
 
   /* Do per-scan object init */
 
-  (*cinfo->methods->subsample_init) (cinfo);
+  (*cinfo->methods->downsample_init) (cinfo);
   (*cinfo->methods->extract_init) (cinfo);
 
   /* Loop over input image: rows_in_mem pixel rows are processed per loop */
@@ -577,7 +593,7 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
     whichss ^= 1;		/* switch to other fullsize_data buffer */
     
     /* Obtain rows_this_time pixel rows and expand to rows_in_mem rows. */
-    /* Then we have exactly DCTSIZE row groups for subsampling. */   
+    /* Then we have exactly DCTSIZE row groups for downsampling. */   
     rows_this_time = (int) MIN((long) rows_in_mem,
 			       cinfo->image_height - cur_pixel_row);
  
@@ -588,51 +604,51 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
 				    fullsize_width, rows_in_mem,
 				    fullsize_data[whichss]);
     
-    /* Subsample the data (all components) */
+    /* Downsample the data (all components) */
     /* First time through is a special case */
     
     if (cur_pixel_row) {
-      /* Subsample last row group of previous set */
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
-		(short) (DCTSIZE-1));
-      /* and dump the previous set's subsampled data */
-      (*cinfo->methods->extract_MCUs) (cinfo, subsampled_data, 
+      /* Downsample last row group of previous set */
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
+		 (short) (DCTSIZE-1));
+      /* and dump the previous set's downsampled data */
+      (*cinfo->methods->extract_MCUs) (cinfo, sampled_data, 
 				       mcu_rows_per_loop,
 				       MCU_output_catcher);
       mcu_rows_output += mcu_rows_per_loop;
-      /* Subsample first row group of this set */
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) (DCTSIZE+1), (short) 0, (short) 1,
-		(short) 0);
+      /* Downsample first row group of this set */
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) (DCTSIZE+1), (short) 0, (short) 1,
+		 (short) 0);
     } else {
-      /* Subsample first row group with dummy above-context */
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) (-1), (short) 0, (short) 1,
-		(short) 0);
+      /* Downsample first row group with dummy above-context */
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) (-1), (short) 0, (short) 1,
+		 (short) 0);
     }
-    /* Subsample second through next-to-last row groups of this set */
+    /* Downsample second through next-to-last row groups of this set */
     for (i = 1; i <= DCTSIZE-2; i++) {
-      subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-		(short) (i-1), (short) i, (short) (i+1),
-		(short) i);
+      downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+		 (short) (i-1), (short) i, (short) (i+1),
+		 (short) i);
     }
   } /* end of outer loop */
   
-  /* Subsample the last row group with dummy below-context */
+  /* Downsample the last row group with dummy below-context */
   /* Note whichss points to last buffer side used */
-  subsample(cinfo, fullsize_data[whichss], subsampled_data, fullsize_width,
-	    (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
-	    (short) (DCTSIZE-1));
+  downsample(cinfo, fullsize_data[whichss], sampled_data, fullsize_width,
+	     (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
+	     (short) (DCTSIZE-1));
   /* Dump the remaining data (may be less than full height if uninterleaved) */
-  (*cinfo->methods->extract_MCUs) (cinfo, subsampled_data, 
+  (*cinfo->methods->extract_MCUs) (cinfo, sampled_data, 
 		(int) (cinfo->MCU_rows_in_scan - mcu_rows_output),
 		MCU_output_catcher);
 
   /* Clean up after that stuff, then find the optimal entropy parameters */
 
   (*cinfo->methods->extract_term) (cinfo);
-  (*cinfo->methods->subsample_term) (cinfo);
+  (*cinfo->methods->downsample_term) (cinfo);
 
   cinfo->completed_passes++;
 
@@ -643,9 +659,9 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
 
   (*cinfo->methods->write_scan_header) (cinfo);
   cinfo->methods->entropy_output = cinfo->methods->write_jpeg_data;
-  (*cinfo->methods->entropy_encoder_init) (cinfo);
+  (*cinfo->methods->entropy_encode_init) (cinfo);
   dump_scan_MCUs(cinfo, cinfo->methods->entropy_encode);
-  (*cinfo->methods->entropy_encoder_term) (cinfo);
+  (*cinfo->methods->entropy_encode_term) (cinfo);
   (*cinfo->methods->write_scan_trailer) (cinfo);
 
   /* Release working memory */
@@ -660,7 +676,7 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
  * with no optimization of entropy parameters.
  */
 
-#ifdef MULTISCAN_FILES_SUPPORTED
+#ifdef C_MULTISCAN_FILES_SUPPORTED
 
 METHODDEF void
 multi_ccontroller (compress_info_ptr cinfo)
@@ -668,7 +684,7 @@ multi_ccontroller (compress_info_ptr cinfo)
   ERREXIT(cinfo->emethods, "Not implemented yet");
 }
 
-#endif /* MULTISCAN_FILES_SUPPORTED */
+#endif /* C_MULTISCAN_FILES_SUPPORTED */
 
 
 /*
@@ -676,7 +692,7 @@ multi_ccontroller (compress_info_ptr cinfo)
  * with optimization of entropy parameters.
  */
 
-#ifdef MULTISCAN_FILES_SUPPORTED
+#ifdef C_MULTISCAN_FILES_SUPPORTED
 #ifdef ENTROPY_OPT_SUPPORTED
 
 METHODDEF void
@@ -686,7 +702,7 @@ multi_eopt_ccontroller (compress_info_ptr cinfo)
 }
 
 #endif /* ENTROPY_OPT_SUPPORTED */
-#endif /* MULTISCAN_FILES_SUPPORTED */
+#endif /* C_MULTISCAN_FILES_SUPPORTED */
 
 
 /*
@@ -706,7 +722,7 @@ jselcpipeline (compress_info_ptr cinfo)
       cinfo->methods->c_pipeline_controller = single_ccontroller;
   } else {
     /* multiple scans needed */
-#ifdef MULTISCAN_FILES_SUPPORTED
+#ifdef C_MULTISCAN_FILES_SUPPORTED
 #ifdef ENTROPY_OPT_SUPPORTED
     if (cinfo->optimize_coding)
       cinfo->methods->c_pipeline_controller = multi_eopt_ccontroller;

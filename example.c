@@ -185,9 +185,9 @@ write_JPEG_file (char * filename)
    * call to jpeg_compress; typically, making them local data in the
    * calling routine is the best strategy.
    */
-  struct compress_info_struct cinfo;
-  struct compress_methods_struct c_methods;
-  struct external_methods_struct e_methods;
+  struct Compress_info_struct cinfo;
+  struct Compress_methods_struct c_methods;
+  struct External_methods_struct e_methods;
 
   /* Initialize the system-dependent method pointers. */
   cinfo.methods = &c_methods;	/* links to method structs */
@@ -314,7 +314,7 @@ trace_message (const char *msgtext)
 /*
  * The error_exit() routine should not return to its caller.  The default
  * routine calls exit(), but here we assume that we want to return to
- * read_JPEG_data, which has set up a setjmp context for the purpose.
+ * read_JPEG_file, which has set up a setjmp context for the purpose.
  * You should make sure that the free_all method is called, either within
  * error_exit or after the return to the outer-level routine.
  */
@@ -525,9 +525,9 @@ read_JPEG_file (char * filename)
    * call to jpeg_decompress; typically, making them local data in the
    * calling routine is the best strategy.
    */
-  struct decompress_info_struct cinfo;
-  struct decompress_methods_struct dc_methods;
-  struct external_methods_struct e_methods;
+  struct Decompress_info_struct cinfo;
+  struct Decompress_methods_struct dc_methods;
+  struct External_methods_struct e_methods;
 
   /* Select the input and output files.
    * In this example we want to open the input file before doing anything else,
@@ -554,6 +554,10 @@ read_JPEG_file (char * filename)
   emethods = &e_methods;	/* save struct addr for possible access */
   e_methods.error_exit = error_exit; /* supply error-exit routine */
   e_methods.trace_message = trace_message; /* supply trace-message routine */
+  e_methods.trace_level = 0;	/* default = no tracing */
+  e_methods.num_warnings = 0;	/* no warnings emitted yet */
+  e_methods.first_warning_level = 0; /* display first corrupt-data warning */
+  e_methods.more_warning_level = 3; /* but suppress additional ones */
 
   /* prepare setjmp context for possible exit from error_exit */
   if (setjmp(setjmp_buffer)) {
@@ -614,6 +618,9 @@ read_JPEG_file (char * filename)
   /* Here we assume only the input file need be closed. */
   fclose(cinfo.input_file);
 
+  /* You might want to test e_methods.num_warnings to see if bad data was
+   * detected.  In this example, we just blindly forge ahead.
+   */
   return 1;			/* indicate success */
 
   /* Note: if you want to decompress more than one image, we recommend you

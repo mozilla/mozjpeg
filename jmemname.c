@@ -215,8 +215,11 @@ jopen_backing_store (backing_store_ptr info, long total_bytes_needed)
   char tracemsg[TEMP_NAME_LENGTH+40];
 
   select_file_name(info->temp_name);
-  if ((info->temp_file = fopen(info->temp_name, RW_BINARY)) == NULL)
-    ERREXIT(methods, "Failed to create temporary file");
+  if ((info->temp_file = fopen(info->temp_name, RW_BINARY)) == NULL) {
+    /* hack to get around ERREXIT's inability to handle string parameters */
+    sprintf(tracemsg, "Failed to create temporary file %s", info->temp_name);
+    ERREXIT(methods, tracemsg);
+  }
   info->read_backing_store = read_backing_store;
   info->write_backing_store = write_backing_store;
   info->close_backing_store = close_backing_store;

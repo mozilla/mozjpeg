@@ -1,5 +1,50 @@
 CHANGELOG for Independent JPEG Group's JPEG software
 
+Version 4  10-Dec-92
+--------------------
+
+Revised user interface: switches now use names instead of single letters.
+(Old switch letters are acceptable abbreviations of new switch names, EXCEPT
+for djpeg's old -g, -D, -1 switches.)  cjpeg has several new switches.
+
+Provision for smoothing the input image added to cjpeg.  This helps a lot with
+converting dithered GIFs to JPEG.
+
+Decoder upsampling now uses interpolation instead of pixel replication; this
+improves rendering of sharp colored edges.
+
+The decompressor will now try to continue after detecting an error in the
+compressed data, instead of just aborting.  If the input file has restart
+markers, full synchronization will usually be regained at the next undamaged
+restart marker.  (But you're still out of luck if any of the header markers
+are corrupt.)
+
+Substantial improvements in speed; DCT accuracy improved too.
+
+Numerous minor changes to improve portability.  egetopt.c, which was by far
+the worst portability problem, is gone altogether.
+
+A few bugfixes, sigh (mostly affecting DOS implementations only).
+Bugfix: on DOS machines, cjpeg -o would fail on grayscale input files.
+Bugfix: one-pass quantization to more than 64 color levels would fail on
+16-bit-int machines.  This could only happen with quantized grayscale output.
+
+A couple of changes affect code that calls the JPEG subroutine library:
+
+1. The parameter struct tag names are now capitalized (Compress_info_struct,
+Compress_methods_struct, Decompress_info_struct, Decompress_methods_struct,
+and External_methods_struct).  This makes it easier to live with brain-damaged
+compilers with short identifier lengths.  (All identifiers used in the JPEG
+code are now unique within the first 16 characters.)
+
+2. If you are not calling jselerror(), you need to initialize three new fields
+in the emethods structure, typically as follows:
+    e_methods.num_warnings = 0; /* no warnings emitted yet */
+    e_methods.first_warning_level = 0; /* display first corrupt-data warning */
+    e_methods.more_warning_level = 3; /* but suppress additional ones */
+These fields control handling of corrupt-data warnings.
+
+
 Version 3  17-Mar-92
 --------------------
 

@@ -23,6 +23,26 @@ jround_up (long a, long b)
 }
 
 
+/* On normal machines we can apply MEMCOPY() and MEMZERO() to sample arrays
+ * and coefficient-block arrays.  This won't work on 80x86 because the arrays
+ * are FAR and we're assuming a small-pointer memory model.  However, some
+ * DOS compilers provide far-pointer versions of memcpy() and memset() even
+ * in the small-model libraries.  These will be used if USE_FMEM is defined.
+ * Otherwise, the routines below do it the hard way.  (The performance cost
+ * is not all that great, because these routines aren't very heavily used.)
+ */
+
+#ifndef NEED_FAR_POINTERS	/* normal case, same as regular macros */
+#define FMEMCOPY(dest,src,size)	MEMCOPY(dest,src,size)
+#define FMEMZERO(target,size)	MEMZERO(target,size)
+#else				/* 80x86 case, define if we can */
+#ifdef USE_FMEM
+#define FMEMCOPY(dest,src,size)	_fmemcpy((void FAR *)(dest), (const void FAR *)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((void FAR *)(target), 0, (size_t)(size))
+#endif
+#endif
+
+
 GLOBAL void
 jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 		   JSAMPARRAY output_array, int dest_row,
@@ -33,14 +53,11 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
  * The source and destination arrays must be at least as wide as num_cols.
  */
 {
-  /* On normal machines we can use memcpy().  This won't work on 80x86 because
-   * the sample arrays are FAR and we're assuming a small-pointer memory model.
-   */
   register JSAMPROW inptr, outptr;
-#ifdef NEED_FAR_POINTERS
-  register long count;
-#else
+#ifdef FMEMCOPY
   register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+#else
+  register long count;
 #endif
   register int row;
 
@@ -50,11 +67,11 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
   for (row = num_rows; row > 0; row--) {
     inptr = *input_array++;
     outptr = *output_array++;
-#ifdef NEED_FAR_POINTERS
+#ifdef FMEMCOPY
+    FMEMCOPY(outptr, inptr, count);
+#else
     for (count = num_cols; count > 0; count--)
       *outptr++ = *inptr++;	/* needn't bother with GETJSAMPLE() here */
-#else
-    memcpy((void *) outptr, (void *) inptr, count);
 #endif
   }
 }
@@ -64,10 +81,9 @@ GLOBAL void
 jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
 /* Copy a row of coefficient blocks from one place to another. */
 {
-  /* On normal machines we can use memcpy().  This won't work on 80x86 because
-   * the block arrays are FAR and we're assuming a small-pointer memory model.
-   */
-#ifdef NEED_FAR_POINTERS
+#ifdef FMEMCOPY
+  FMEMCOPY(output_row, input_row, num_blocks * (DCTSIZE2 * SIZEOF(JCOEF)));
+#else
   register JCOEFPTR inptr, outptr;
   register long count;
 
@@ -76,9 +92,6 @@ jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
   for (count = num_blocks * DCTSIZE2; count > 0; count--) {
     *outptr++ = *inptr++;
   }
-#else
-    memcpy((void *) output_row, (void *) input_row,
-	   (size_t) (num_blocks * (DCTSIZE2 * SIZEOF(JCOEF))));
 #endif
 }
 
@@ -88,17 +101,14 @@ jzero_far (void FAR * target, size_t bytestozero)
 /* Zero out a chunk of FAR memory. */
 /* This might be sample-array data, block-array data, or alloc_medium data. */
 {
-  /* On normal machines we can use MEMZERO().  This won't work on 80x86
-   * because we're assuming a small-pointer memory model.
-   */
-#ifdef NEED_FAR_POINTERS
+#ifdef FMEMZERO
+  FMEMZERO(target, bytestozero);
+#else
   register char FAR * ptr = (char FAR *) target;
   register size_t count;
 
   for (count = bytestozero; count > 0; count--) {
     *ptr++ = 0;
   }
-#else
-  MEMZERO((void *) target, bytestozero);
 #endif
 }

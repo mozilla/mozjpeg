@@ -1,24 +1,28 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 3 of  17-Mar-92
-==================================
+README for release 4 of 10-Dec-92
+=================================
 
-This distribution contains the third official release of the Independent JPEG
+This distribution contains the fourth public release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
 to use it for any purpose, subject to the conditions under LEGAL ISSUES, below.
 
-For installation instructions, see file SETUP; for usage instructions, see
-file USAGE (or the cjpeg.1 and djpeg.1 manual pages).
+For installation instructions, see file SETUP.
+
+For usage instructions, see file USAGE (or the cjpeg.1 and djpeg.1 manual
+pages; but USAGE contains a "hints" section not found in the manual pages).
+Useful information can also be found in the JPEG FAQ (Frequently Asked
+Questions) article; see ARCHIVE LOCATIONS below to obtain the FAQ article.
 
 This software is still undergoing revision.  Updated versions may be obtained
 by FTP or UUCP to UUNET and other archive sites; see ARCHIVE LOCATIONS below
 for details.
 
-If you intend to become a serious user of this software, please contact
-jpeg-info@uunet.uu.net to be added to our electronic mailing list.  Then
-you'll be notified of updates and have a chance to participate in discussions,
-etc.
+Serious users of this software (particularly those incorporating it into
+larger programs) should contact jpeg-info@uunet.uu.net to be added to our
+electronic mailing list.  Mailing list members are notified of updates and
+have a chance to participate in technical discussions, etc.
 
 This software is the work of Tom Lane, Philip Gladstone, Luis Ortiz,
 Lee Crocker, Ge' Weijers, and other members of the Independent JPEG Group.
@@ -32,7 +36,9 @@ useful for anything, nor to be compatible with subsequent releases, nor to be
 an accurate implementation of the JPEG standard.  (See LEGAL ISSUES for even
 more disclaimers.)
 
-Please report any problems with this software to jpeg-info@uunet.uu.net.
+Despite that, we believe that this software is pretty good, and if you find
+any problems with it, we'd like to know about them.  Please report problems
+by e-mail to jpeg-info@uunet.uu.net.
 
 
 WHAT'S HERE
@@ -40,15 +46,15 @@ WHAT'S HERE
 
 This distribution contains C software to implement JPEG image compression and
 decompression.  JPEG (pronounced "jay-peg") is a standardized compression
-method for full-color and gray-scale images.  JPEG is intended for
+method for full-color and gray-scale images.  JPEG is intended for compressing
 "real-world" scenes; cartoons and other non-realistic images are not its
 strong suit.  JPEG is lossy, meaning that the output image is not necessarily
-identical to the input image.  Hence you should not use JPEG if you have to
-have identical output bits.  However, on typical images of real-world scenes,
-very good compression levels can be obtained with no visible change, and
-amazingly high compression levels can be obtained if you can tolerate a
-low-quality image.  For more details, see the references, or just experiment
-with various compression settings.
+identical to the input image.  Hence you must not use JPEG if you have to have
+identical output bits.  However, on typical images of real-world scenes, very
+good compression levels can be obtained with no visible change, and amazingly
+high compression levels are possible if you can tolerate a low-quality image.
+For more details, see the references, or just experiment with various
+compression settings.
 
 The software implements JPEG baseline and extended-sequential compression
 processes.  Provision is made for supporting all variants of these processes,
@@ -57,14 +63,19 @@ reasons, we are not distributing code for the arithmetic-coding process; see
 LEGAL ISSUES.  At present we have made no provision for supporting the
 progressive, hierarchical, or lossless processes defined in the standard.
 
-The present software is not far beyond the prototype stage.  It does not
-support all possible variants of the JPEG standard, and some functions have
-rather slow and/or crude implementations.  However, it is useful already.
+In order to support file conversion and viewing software, we have included
+considerable functionality beyond the bare JPEG coding/decoding capability;
+for example, the color quantization modules are not strictly part of JPEG
+decoding, but they are essential for output to colormapped file formats or
+colormapped displays.  These extra functions can be compiled out if not
+required for a particular application.
 
 The emphasis in designing this software has been on achieving portability and
-flexibility, while also making it fast enough to be useful.  We have not yet
-undertaken serious performance measurement or tuning; we intend to do so in
-the future.
+flexibility, while also making it fast enough to be useful.  In particular,
+the software is not intended to be read as a tutorial on JPEG.  (See the
+REFERENCES section for introductory material.)  While we hope that the entire
+package will someday be industrial-strength code, much remains to be done in
+performance tuning and in improving the capabilities of individual modules.
 
 
 This software can be used on several levels:
@@ -99,27 +110,28 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is ftp.uu.net (Internet
 address 137.39.1.9 or 192.48.96.9).  The most recent released version can
 always be found there in directory graphics/jpeg.  This particular version
-will be archived as jpegsrc.v3.tar.Z.  If you are on the Internet, you can
+will be archived as jpegsrc.v4.tar.Z.  If you are on the Internet, you can
 retrieve files from UUNET by anonymous FTP.  If you don't have FTP access,
 UUNET's archives are also available via UUCP; contact postmaster@uunet.uu.net
 for information on retrieving files that way.
 
-Various other Internet sites maintain copies of the UUNET file, which may or
-may not be up-to-date.  In Europe, try nic.funet.fi (128.214.6.100; look in
-directory pub/graphics/programs/jpeg).
+Numerous Internet sites maintain copies of the UUNET files; in particular,
+you can probably find a copy at any site that archives comp.sources.misc
+submissions.  However, only ftp.uu.net is guaranteed to have the latest
+official version.
 
 You can also obtain this software from CompuServe, in the GRAPHSUPPORT forum
-(GO PICS), library 10; this version will be file jpsrc3.zip.
+(GO PICS), library 15; this version will be file jpsrc4.zip.  Again,
+CompuServe is not guaranteed to have the very latest version.
 
-If you are not reasonably handy at configuring and installing portable C
-programs, you may have some difficulty installing this package.  You may
-prefer to obtain a pre-built executable version.  A collection of pre-built
-executables for various machines is currently available for anonymous FTP at
-procyon.cis.ksu.edu (129.130.10.80 --- this number is due to change soon);
-look under /pub/JPEG.  The administrators of this system ask that FTP traffic
-be limited to non-prime hours.  For more information on this archive, please
-contact Steve Davis (strat@cis.ksu.edu).  This collection is not maintained by
-the Independent JPEG Group, and programs in it may not be the latest version.
+The JPEG FAQ (Frequently Asked Questions) article is a useful source of
+general information about JPEG.  It is updated constantly and therefore
+is not included in this distribution.  The FAQ is posted every two weeks
+to Usenet newsgroups comp.graphics, news.answers, and other groups.  You
+can always obtain the latest version from the news.answers archive at
+rtfm.mit.edu (18.172.1.27).  By FTP, fetch /pub/usenet/news.answers/jpeg-faq.
+If you don't have FTP, send e-mail to mail-server@rtfm.mit.edu with body
+"send usenet/news.answers/jpeg-faq".
 
 
 SUPPORTING SOFTWARE
@@ -138,8 +150,10 @@ to save yourself the trouble of converting PPM to some other format.  Both of
 these can be found in the contrib directory at export.lcs.mit.edu.  Actually,
 xv version 2.00 and up incorporates our software and thus can read and write
 JPEG files directly.  (NOTE: since xv internally reduces all images to 8
-bits/pixel, a JPEG file written by xv will not be very high quality; you may
-also prefer xloadimage for viewing if you have a 24-bit display.  Caveat user.)
+bits/pixel, a JPEG file written by xv will not be very high quality; and xv
+cannot fully exploit a 24-bit display.  These problems are expected to go away
+in the next xv release, planned for early 1993.  In the meantime, use
+xloadimage for 24-bit displays.)
 
 For DOS machines, Lee Crocker's free Piclab program is a useful companion to
 the JPEG software.  The latest version, currently 1.91, is available by FTP
@@ -157,26 +171,25 @@ to produce compatible files with its -j switch, and their decompression
 program JPG2GIF can read our files (at least ones produced with our default
 option settings).
 
-Unfortunately, many commercial JPEG implementations are also incompatible as
-of this writing, especially programs released before summer 1991.  The root of
-the problem is that the ISO JPEG committee failed to specify a concrete file
-format.  Some vendors "filled in the blanks" on their own, creating
-proprietary formats that no one else could read.  (For example, none of the
-early commercial JPEG implementations for the Macintosh were able to exchange
-compressed files.)
+Some commercial JPEG implementations are also incompatible as of this writing,
+especially programs released before summer 1991.  The root of the problem is
+that the ISO JPEG committee failed to specify a concrete file format.  Some
+vendors "filled in the blanks" on their own, creating proprietary formats that
+no one else could read.  (For example, none of the early commercial JPEG
+implementations for the Macintosh were able to exchange compressed files.)
 
 The file format we have adopted is called JFIF (see REFERENCES).  This format
 has been agreed to by a number of major commercial JPEG vendors, and we expect
 that it will become the de facto standard.  JFIF is a minimal representation;
-work is also going forward to incorporate JPEG compression into the TIFF
+work is also going forward to incorporate JPEG compression into the TIFF 6.0
 standard, for use in "high end" applications that need to record a lot of
-additional data about an image.  We intend to support JPEG-in-TIFF in the
-future.  We hope that these two formats will be sufficient and that other,
-incompatible JPEG file formats will not proliferate.
+additional data about an image.  We intend to support TIFF 6.0 in the future.
+We hope that these two formats will be sufficient and that other, incompatible
+JPEG file formats will not proliferate.
 
 Indeed, part of the reason for developing and releasing this free software is
 to help force rapid convergence to de facto standards for JPEG file formats.
-SUPPORT STANDARD, NON-PROPRIETARY FORMATS: demand JFIF or JPEG-in-TIFF!
+SUPPORT STANDARD, NON-PROPRIETARY FORMATS: demand JFIF or TIFF 6.0!
 
 
 USING JPEG AS A SUBROUTINE IN A LARGER PROGRAM
@@ -195,17 +208,18 @@ Most likely, you will want the uncompressed image to come from memory (for
 compression) or go to memory or the screen (for decompression).  For this
 purpose you must provide image reading or writing routines that match the
 interface used by the image file I/O modules (jrdXXX or jwrXXX); again,
-example.c shows a skeleton of what is required.
+example.c shows a skeleton of what is required.  In this situation, you
+won't need any of the non-JPEG image file I/O modules used by cjpeg and djpeg.
 
 By default, any error detected inside the JPEG routines will cause a message
 to be printed on stderr, followed by exit().  You can override this behavior
 by supplying your own message-printing and/or error-exit routines; again,
 example.c shows how.
 
-Mechanics: we recommend you create libjpeg.a as shown in the Makefile, then
-link that with your surrounding program.  (If your linker is at all
-reasonable, only the code you actually need will get loaded.)  Include the
-files jconfig.h and jpegdata.h in C files that need to call the JPEG routines.
+We recommend you create libjpeg.a as shown in the Makefile, then link that
+with your surrounding program.  (If your linker is at all reasonable, only the
+code you actually need will get loaded.)  Include the files jconfig.h and
+jpegdata.h in C files that need to call the JPEG routines.
 
 CAUTION: some people have tried to compile JPEG and their surrounding code
 with different compilers, e.g., cc for JPEG and c++ or gcc for the rest.  This
@@ -228,52 +242,75 @@ add or subtract fields in the parameter structures.
 REFERENCES
 ==========
 
-The best and most readily available introduction to the JPEG compression
-algorithm is Wallace's article in the April '91 CACM:
+We highly recommend reading one or more of these references before trying to
+understand the innards of any JPEG software.
+
+The best short technical introduction to the JPEG compression algorithm is
 	Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
 	Communications of the ACM, April 1991 (vol. 34 no. 4), pp. 30-44.
 (Adjacent articles in that issue discuss MPEG motion picture compression,
-applications of JPEG, and related topics.)  We highly recommend reading that
-article before trying to understand the innards of any JPEG software.
-If you don't have the CACM issue handy, a PostScript file containing a revised
-version of the article is available at ftp.uu.net, graphics/jpeg/wallace.ps.Z.
-The file (actually a preprint for an article to appear in IEEE Trans. Consumer
-Electronics) omits the sample images that appeared in CACM, but it includes
-corrections and some added material.  Note: the Wallace article is copyright
-ACM and IEEE, and it may not be used for commercial purposes.
+applications of JPEG, and related topics.)  If you don't have the CACM issue
+handy, a PostScript file containing a revised version of the article is
+available at ftp.uu.net, graphics/jpeg/wallace.ps.Z.  The file (actually a
+preprint for an article to appear in IEEE Trans. Consumer Electronics) omits
+the sample images that appeared in CACM, but it includes corrections and some
+added material.  Note: the Wallace article is copyright ACM and IEEE, and it
+may not be used for commercial purposes.
 
-For more detail about the JPEG standard you pretty much have to go to the
-draft standard (which is not nearly as intelligible as Wallace's article).
-The standard is not now available electronically; you must order a paper copy
-through ISO.  In the US, copies may be ordered from ANSI Sales at (212)
-642-4900.  The standard is divided into two parts: Part 1 is the actual
-specification, and Part 2 covers compliance testing methods.  The current
-"committee draft" version of Part 1 is titled "Digital Compression and Coding
-of Continuous-tone Still Images, Part 1: Requirements and guidelines" and has
-document number ISO/IEC CD 10918-1.  (The alternate number SC2 N2215 should
-also be mentioned when ordering.)  This draft is expected to be superseded by
-the Draft International Standard version around the end of November 1991.
-Ordering info will be the same as above, but replace "CD" with "DIS" in the
-document number (alternate number not yet known).  The committee draft of
-Part 2 is expected to be available around the end of December 1991.  It will
-be titled "Digital Compression and Coding of Continuous-tone Still Images,
-Part 2: Compliance testing" and will have document number ISO/IEC CD 10918-2
-(alternate number not yet known).
+A somewhat less technical, more leisurely introduction to JPEG can be found in
+"The Data Compression Book" by Mark Nelson, published by M&T Books (Redwood
+City, CA), 1991, ISBN 1-55851-216-0.  This book provides good explanations and
+example C code for a multitude of compression methods including JPEG.  It is
+an excellent source if you are comfortable reading C code but don't know much
+about data compression in general.  The book's JPEG sample code is far from
+industrial-strength, but when you are ready to look at a full implementation,
+you've got one here...
+
+A new textbook about JPEG is "JPEG Still Image Data Compression Standard" by
+William B. Pennebaker and Joan L. Mitchell, published by Van Nostrand
+Reinhold, 1993, ISBN 0-442-01272-1.  Price US$59.95.  This book includes the
+complete text of the ISO JPEG standards (DIS 10918-1 and draft DIS 10918-2).
+This is by far the most complete exposition of JPEG in existence, and I highly
+recommend it.  If you read the entire book, you will probably know more about
+JPEG than I do.
+
+The JPEG standard itself is not available electronically; you must order a
+paper copy through ISO.  (Unless you are concerned about having a certified
+official copy, I recommend buying the Pennebaker and Mitchell book instead;
+it's much cheaper and includes a great deal of useful explanatory material.)
+In the US, copies of the standard may be ordered from ANSI Sales at (212)
+642-4900.  It's not cheap: as of 1992, Part 1 is $95 and Part 2 is $47, plus
+7% shipping/handling.  The standard is divided into two parts, Part 1 being
+the actual specification, while Part 2 covers compliance testing methods.
+As of early 1992, Part 1 has Draft International Standard status.  It is
+titled "Digital Compression and Coding of Continuous-tone Still Images, Part
+1: Requirements and guidelines" and has document number ISO/IEC DIS 10918-1.
+Part 2 is still at Committee Draft status.  It is titled "Digital Compression
+and Coding of Continuous-tone Still Images, Part 2: Compliance testing" and
+has document number ISO/IEC CD 10918-2.  (NOTE: I'm told that the final
+version of Part 2 will differ considerably from the CD draft.)
 
 The JPEG standard does not specify all details of an interchangeable file
 format.  For the omitted details we follow the "JFIF" conventions, revision
-1.01.  A copy of the JFIF spec is available from:
+1.02.  A copy of the JFIF spec is available from:
 	Literature Department
 	C-Cube Microsystems, Inc.
 	399A West Trimble Road
 	San Jose, CA  95131
 	(408) 944-6300
-The same source can supply copies of the draft JPEG-in-TIFF documents
-(Appendixes O and P to the TIFF spec).  PostScript versions of these
-documents can also be obtained by e-mail from the C-Cube mail server,
-netlib@c3.pla.ca.us.  Send the message "send jfif_ps from jpeg" to obtain the
-JFIF document; "send app_o_ps from jpeg" and "send app_p_ps from jpeg" will
-produce the TIFF documents.  Send the message "help" if you have trouble.
+A PostScript version of this document is available at ftp.uu.net, file
+graphics/jpeg/jfif.ps.Z.  It can also be obtained by e-mail from the C-Cube
+mail server, netlib@c3.pla.ca.us.  Send the message "send jfif_ps from jpeg"
+to the server to obtain the JFIF document; send the message "help" if you have
+trouble.
+
+The TIFF 6.0 file format specification can be obtained by FTP from sgi.com
+(192.48.153.1), file graphics/tiff/TIFF6.ps.Z; or you can order a printed copy
+from Aldus Corp. at (206) 628-6593.  It should be noted that the TIFF 6.0 spec
+of 3-June-92 has a number of serious problems in its JPEG features.  A
+clarification note will probably be needed to ensure that TIFF JPEG files are
+compatible across different implementations.  The IJG does not intend to
+support TIFF 6.0 until these problems are resolved.
 
 If you want to understand this implementation, start by reading the
 "architecture" documentation file.  Please read "codingrules" if you want to
@@ -305,10 +342,10 @@ the Independent JPEG Group".
 full responsibility for any undesirable consequences; the authors accept
 NO LIABILITY for damages of any kind.
 
-Permission is NOT granted for the use of any author's name or author's company
-name in advertising or publicity relating to this software or products derived
-from it.  This software may be referred to only as "the Independent JPEG
-Group's software".
+Permission is NOT granted for the use of any IJG author's name or company name
+in advertising or publicity relating to this software or products derived from
+it.  This software may be referred to only as "the Independent JPEG Group's
+software".
 
 We specifically permit and encourage the use of this software as the basis of
 commercial products, provided that all warranty or liability claims are
@@ -321,7 +358,7 @@ ansi2knr.c is NOT covered by the above copyright and conditions, but instead
 by the usual distribution terms of the Free Software Foundation; principally,
 that you must include source code if you redistribute it.  (See the file
 ansi2knr.c for full details.)  However, since ansi2knr.c is not needed as part
-of any product generated from the JPEG code, this does not limit you more than
+of any program generated from the JPEG code, this does not limit you more than
 the foregoing paragraphs do.
 
 
@@ -331,7 +368,7 @@ Mitsubishi.  Hence arithmetic coding cannot legally be used without obtaining
 one or more licenses.  For this reason, support for arithmetic coding has been
 removed from the free JPEG software.  (Since arithmetic coding provides only a
 marginal gain over the unpatented Huffman mode, it is unlikely that very many
-people will choose to use it.  If you do obtain the necessary licenses,
+implementors will support it.  If you do obtain the necessary licenses,
 contact jpeg-info@uunet.uu.net for a copy of our arithmetic coding modules.)
 So far as we are aware, there are no patent restrictions on the remaining
 code.
@@ -346,9 +383,13 @@ We are required to state that
 TO DO
 =====
 
+The next major release will probably be a significant rewrite to allow use of
+this code in conjunction with Sam Leffler's free TIFF library (assuming the
+bugs in the TIFF 6.0 specification get resolved).
+
 Many of the modules need fleshing out to provide more complete
 implementations, or to provide faster paths for common cases.
-Improving the speed will be the next big work item for the JPEG group.
+Speeding things up is still high on our priority list.
 
 We'd appreciate it if people would compile and check out the code on as wide a
 variety of systems as possible, and report any portability problems

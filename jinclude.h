@@ -76,21 +76,25 @@
  * We need the memcpy() and strcmp() functions, plus memory zeroing.
  * ANSI and System V implementations declare these in <string.h>.
  * BSD doesn't have the mem() functions, but it does have bcopy()/bzero().
+ * Some systems may declare memset and memcpy in <memory.h>.
+ *
  * NOTE: we assume the size parameters to these functions are of type size_t.
- * Insert casts in these macros if not!
+ * Change the casts in these macros if not!
  */
 
 #ifdef INCLUDES_ARE_ANSI
 #include <string.h>
-#define MEMZERO(voidptr,size)	memset((voidptr), 0, (size))
+#define MEMZERO(target,size)	memset((void *)(target), 0, (size_t)(size))
+#define MEMCOPY(dest,src,size)	memcpy((void *)(dest), (const void *)(src), (size_t)(size))
 #else /* not ANSI */
 #ifdef BSD
 #include <strings.h>
-#define MEMZERO(voidptr,size)	bzero((voidptr), (size))
-#define memcpy(dest,src,size)	bcopy((src), (dest), (size))
+#define MEMZERO(target,size)	bzero((void *)(target), (size_t)(size))
+#define MEMCOPY(dest,src,size)	bcopy((const void *)(src), (void *)(dest), (size_t)(size))
 #else /* not BSD, assume Sys V or compatible */
 #include <string.h>
-#define MEMZERO(voidptr,size)	memset((voidptr), 0, (size))
+#define MEMZERO(target,size)	memset((void *)(target), 0, (size_t)(size))
+#define MEMCOPY(dest,src,size)	memcpy((void *)(dest), (const void *)(src), (size_t)(size))
 #endif /* BSD */
 #endif /* ANSI */
 

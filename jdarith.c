@@ -7,12 +7,12 @@
  *
  * This file contains arithmetic entropy decoding routines.
  * These routines are invoked via the methods entropy_decode
- * and entropy_decoder_init/term.
+ * and entropy_decode_init/term.
  */
 
 #include "jinclude.h"
 
-#ifdef ARITH_CODING_SUPPORTED
+#ifdef D_ARITH_CODING_SUPPORTED
 
 
 /*
@@ -39,4 +39,4 @@ jseldarithmetic (decompress_info_ptr cinfo)
   }
 }
 
-#endif /* ARITH_CODING_SUPPORTED */
+#endif /* D_ARITH_CODING_SUPPORTED */

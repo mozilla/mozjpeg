@@ -59,31 +59,31 @@ extract_block (JSAMPARRAY input_data, int start_row, long start_col,
   { register JSAMPROW elemptr;
     register DCTELEM *localblkptr = block;
 #if DCTSIZE != 8
-    register short elemc;
+    register int elemc;
 #endif
-    register short elemr;
+    register int elemr;
 
     for (elemr = DCTSIZE; elemr > 0; elemr--) {
       elemptr = input_data[start_row++] + start_col;
 #if DCTSIZE == 8		/* unroll the inner loop */
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-      *localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+      *localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
 #else
       for (elemc = DCTSIZE; elemc > 0; elemc--) {
-	*localblkptr++ = (DCTELEM) GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*localblkptr++ = (DCTELEM) (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
       }
 #endif
     }
   }
 
 #ifdef DCT_ERR_STATS
-  memcpy((void *) svblock, (void *) block, SIZEOF(DCTBLOCK));
+  MEMCOPY(svblock, block, SIZEOF(DCTBLOCK));
 #endif
 
   j_fwd_dct(block);

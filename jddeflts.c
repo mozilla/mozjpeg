@@ -44,7 +44,12 @@ progress_monitor (decompress_info_ptr cinfo, long loopcounter, long looplimit)
 
 /*
  * Reload the input buffer after it's been emptied, and return the next byte.
- * See the JGETC macro for calling conditions.
+ * See the JGETC macro for calling conditions.  Note in particular that
+ * read_jpeg_data may NOT return EOF.  If no more data is available, it must
+ * exit via ERREXIT, or perhaps synthesize fake data (such as an RST marker).
+ * In the present implementation, we insert an EOI marker; this might not be
+ * appropriate for non-JFIF file formats, but it usually allows us to handle
+ * a truncated JFIF file.
  *
  * This routine can be overridden by the system-dependent user interface,
  * in case the data source is not a stdio stream or some other special
@@ -63,8 +68,12 @@ read_jpeg_data (decompress_info_ptr cinfo)
 					cinfo->next_input_byte,
 					JPEG_BUF_SIZE);
   
-  if (cinfo->bytes_in_buffer <= 0)
-    ERREXIT(cinfo->emethods, "Unexpected EOF in JPEG file");
+  if (cinfo->bytes_in_buffer <= 0) {
+    WARNMS(cinfo->emethods, "Premature EOF in JPEG file");
+    cinfo->next_input_byte[0] = (char) 0xFF;
+    cinfo->next_input_byte[1] = (char) 0xD9; /* EOI marker */
+    cinfo->bytes_in_buffer = 2;
+  }
 
   return JGETC(cinfo);
 }

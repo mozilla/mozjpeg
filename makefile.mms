@@ -1,7 +1,8 @@
 # Makefile for Independent JPEG Group's software
 
 # This makefile is for use with MMS on VAX/VMS systems.
-# Thanks to Rick Dyson (dyson@iowasp.physics.uiowa.edu) for his help.
+# Thanks to Rick Dyson (dyson@iowasp.physics.uiowa.edu)
+# and Tim Bell (tbell@netcom.com) for their help.
 
 # Read SETUP instructions before saying "MMS" !!
 
@@ -16,19 +17,18 @@ SOURCES= jbsmooth.c jcarith.c jccolor.c jcdeflts.c jcexpand.c jchuff.c \
         jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c jmemmgr.c \
         jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c jwrjfif.c jwrgif.c \
         jwrppm.c jwrrle.c jwrtarga.c
-# virtual source files (not present in distribution file)
+# virtual source files (not present in distribution file, see SETUP)
 VIRTSOURCES= jmemsys.c
-# system-dependent implementations of source files
+# system-dependent implementations of virtual source files
 SYSDEPFILES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemdos.h \
         jmemdosa.asm
 # files included by source files
-INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h egetopt.c
+INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h
 # documentation, test, and support files
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
-        makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.bcc \
-        makcjpeg.lst makdjpeg.lst makefile.pwc makcjpeg.cf makdjpeg.cf \
-        makljpeg.cf makefile.mms makefile.vms makvms.opt
+        makcjpeg.st makdjpeg.st makljpeg.st makefile.mc5 makefile.mc6 \
+        makefile.bcc makefile.mms makefile.vms makvms.opt
 OTHERFILES= ansi2knr.c ckconfig.c example.c
 TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
 DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \
@@ -93,6 +93,14 @@ clean :
 	- Purge /NoLog /NoConfirm *.*
 	- Delete /NoLog /NoConfirm *.OBJ;
 
+test : cjpeg.exe djpeg.exe
+	mcr sys$disk:[]djpeg      testorig.jpg testout.ppm
+	mcr sys$disk:[]djpeg -gif testorig.jpg testout.gif
+	mcr sys$disk:[]cjpeg      testimg.ppm testout.jpg
+	- Backup /Compare/Log	  testimg.ppm testout.ppm
+	- Backup /Compare/Log	  testimg.gif testout.gif
+	- Backup /Compare/Log	  testimg.jpg testout.jpg
+
 
 jbsmooth.obj : jbsmooth.c jinclude.h jconfig.h jpegdata.h
 jcarith.obj : jcarith.c jinclude.h jconfig.h jpegdata.h
@@ -100,7 +108,7 @@ jccolor.obj : jccolor.c jinclude.h jconfig.h jpegdata.h
 jcdeflts.obj : jcdeflts.c jinclude.h jconfig.h jpegdata.h
 jcexpand.obj : jcexpand.c jinclude.h jconfig.h jpegdata.h
 jchuff.obj : jchuff.c jinclude.h jconfig.h jpegdata.h
-jcmain.obj : jcmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+jcmain.obj : jcmain.c jinclude.h jconfig.h jpegdata.h jversion.h
 jcmaster.obj : jcmaster.c jinclude.h jconfig.h jpegdata.h
 jcmcu.obj : jcmcu.c jinclude.h jconfig.h jpegdata.h
 jcpipe.obj : jcpipe.c jinclude.h jconfig.h jpegdata.h
@@ -109,7 +117,7 @@ jdarith.obj : jdarith.c jinclude.h jconfig.h jpegdata.h
 jdcolor.obj : jdcolor.c jinclude.h jconfig.h jpegdata.h
 jddeflts.obj : jddeflts.c jinclude.h jconfig.h jpegdata.h
 jdhuff.obj : jdhuff.c jinclude.h jconfig.h jpegdata.h
-jdmain.obj : jdmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+jdmain.obj : jdmain.c jinclude.h jconfig.h jpegdata.h jversion.h
 jdmaster.obj : jdmaster.c jinclude.h jconfig.h jpegdata.h
 jdmcu.obj : jdmcu.c jinclude.h jconfig.h jpegdata.h
 jdpipe.obj : jdpipe.c jinclude.h jconfig.h jpegdata.h

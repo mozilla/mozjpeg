@@ -41,10 +41,11 @@
 #include "jmemsys.h"
 
 #ifdef INCLUDES_ARE_ANSI
-#include <stdlib.h>		/* to declare malloc(), free() */
+#include <stdlib.h>		/* to declare malloc(), free(), getenv() */
 #else
 extern void * malloc PP((size_t size));
 extern void free PP((void *ptr));
+extern char * getenv PP((const char * name));
 #endif
 
 #ifdef NEED_FAR_POINTERS
@@ -285,8 +286,12 @@ open_file_store (backing_store_ptr info, long total_bytes_needed)
   char tracemsg[TEMP_NAME_LENGTH+40];
 
   select_file_name(info->temp_name);
-  if (jdos_open((short far *) & handle, (char far *) info->temp_name))
+  if (jdos_open((short far *) & handle, (char far *) info->temp_name)) {
+    /* hack to get around TRACEMS' inability to handle string parameters */
+    sprintf(tracemsg, "Failed to create temporary file %s", info->temp_name);
+    ERREXIT(methods, tracemsg);	/* jopen_backing_store will fail anyway */
     return FALSE;
+  }
   info->handle.file_handle = handle;
   info->read_backing_store = read_file_store;
   info->write_backing_store = write_file_store;

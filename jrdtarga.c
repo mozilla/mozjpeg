@@ -369,6 +369,8 @@ input_init (compress_info_ptr cinfo)
       get_pixel_row = get_8bit_row;
     else
       ERREXIT(cinfo->emethods, "Invalid or unsupported Targa file");
+    TRACEMS2(cinfo->emethods, 1, "%ux%u colormapped Targa image",
+	     width, height);
     break;
   case 2:			/* RGB image */
     switch (pixel_size) {
@@ -385,6 +387,8 @@ input_init (compress_info_ptr cinfo)
       ERREXIT(cinfo->emethods, "Invalid or unsupported Targa file");
       break;
     }
+    TRACEMS2(cinfo->emethods, 1, "%ux%u RGB Targa image",
+	     width, height);
     break;
   case 3:			/* Grayscale image */
     components = 1;
@@ -393,6 +397,8 @@ input_init (compress_info_ptr cinfo)
       get_pixel_row = get_8bit_gray_row;
     else
       ERREXIT(cinfo->emethods, "Invalid or unsupported Targa file");
+    TRACEMS2(cinfo->emethods, 1, "%ux%u grayscale Targa image",
+	     width, height);
     break;
   default:
     ERREXIT(cinfo->emethods, "Invalid or unsupported Targa file");

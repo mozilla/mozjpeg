@@ -106,9 +106,11 @@
  */
 
 #ifdef MSDOS			/* two-file style is needed for PCs */
+#ifndef USE_SETMODE		/* unless you have setmode() */
 #define TWO_FILE_COMMANDLINE
 #endif
-#ifdef THINK_C			/* needed for Macintosh too */
+#endif
+#ifdef THINK_C			/* it's needed for Macintosh too */
 #define TWO_FILE_COMMANDLINE
 #endif
 
@@ -134,6 +136,17 @@
  * worry about.  Go fix the makefile and compile.
  */
 
+
+/* If your compiler supports inline functions, define INLINE
+ * as the inline keyword; otherwise define it as empty.
+ */
+
+#ifdef __GNUC__			/* for instance, GNU C knows about inline */
+#define INLINE __inline__
+#endif
+#ifndef INLINE			/* default is to define it as empty */
+#define INLINE
+#endif
 
 /* On a few systems, type boolean and/or macros FALSE, TRUE may appear
  * in standard header files.  Or you may have conflicts with application-
@@ -166,10 +179,16 @@ typedef int boolean;
  */
 
 /* Arithmetic coding is unsupported for legal reasons.  Complaints to IBM. */
-#undef  ARITH_CODING_SUPPORTED	/* Arithmetic coding back end? */
-#define MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
-#define ENTROPY_OPT_SUPPORTED	/* Optimization of entropy coding parms? */
-#define BLOCK_SMOOTHING_SUPPORTED /* Block smoothing during decoding? */
+
+/* Encoder capability options: */
+#undef  C_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
+#undef  C_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files?  (NYI) */
+#define ENTROPY_OPT_SUPPORTED	    /* Optimization of entropy coding parms? */
+#define INPUT_SMOOTHING_SUPPORTED   /* Input image smoothing option? */
+/* Decoder capability options: */
+#undef  D_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
+#define D_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
+#define BLOCK_SMOOTHING_SUPPORTED   /* Block smoothing during decoding? */
 #define QUANT_1PASS_SUPPORTED	/* 1-pass color quantization? */
 #define QUANT_2PASS_SUPPORTED	/* 2-pass color quantization? */
 /* these defines indicate which JPEG file formats are allowed */

@@ -49,7 +49,7 @@ EXTERN void jfree_large PP((void FAR * object));
  * On machines with flat address spaces, any large constant may be used here.
  */
 
-#define MAX_ALLOC_CHUNK		65400L
+#define MAX_ALLOC_CHUNK		65440L	/* leave room for malloc overhead */
 
 /*
  * This routine computes the total space available for allocation by

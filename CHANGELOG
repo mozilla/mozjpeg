@@ -1,0 +1,37 @@
+CHANGELOG for Independent JPEG Group's JPEG software
+
+Version 2  13-Dec-91
+--------------------
+
+Documentation improved a little --- there are man pages now.
+Installation instructions moved from README to a separate file SETUP.
+
+New program config.c is provided to help you get the configuration options
+right.  This should make installation a lot more foolproof.
+
+Sense of djpeg -D switch reversed: dithering is now ON by default.
+
+RLE image file support added (thanks to Mike Lijewski).
+
+Targa image file support added (thanks to Lee Crocker).
+
+PPM input now accepts all PPM and PGM files.
+
+Bug fix: on machines where 'int' is 16 bits, high-Q-setting JPEG files
+were not decoded correctly.
+
+Numerous changes to improve portability.  There should be few or no compiler
+warnings now.
+
+Makefiles cleaned up; defaults now appropriate for production use rather than
+debugging.
+
+Subroutine interface cleaned up.  If you wrote code based on version 1's
+jcmain/jdmain, you'll need to change it, but it should get a little shorter
+and simpler.
+
+
+Version 1   7-Oct-91
+--------------------
+
+Initial public release.

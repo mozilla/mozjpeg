@@ -14,6 +14,19 @@
 
 
 /*
+ * Normally the __STDC__ macro can be taken as indicating that the system
+ * include files conform to the ANSI C standard.  However, if you are running
+ * GCC on a machine with non-ANSI system include files, that is not the case.
+ * In that case change the following, or add -DNONANSI_INCLUDES to your CFLAGS.
+ */
+
+#ifdef __STDC__
+#ifndef NONANSI_INCLUDES
+#define INCLUDES_ARE_ANSI	/* this is what's tested before including */
+#endif
+#endif
+
+/*
  * <stdio.h> is included to get the FILE typedef and NULL macro.
  * Note that the core portable-JPEG files do not actually do any I/O
  * using the stdio library; only the user interface, error handler,
@@ -27,10 +40,14 @@
  * We need the size_t typedef, which defines the parameter type of malloc().
  * In an ANSI-conforming implementation this is provided by <stdio.h>,
  * but on non-ANSI systems it's more likely to be in <sys/types.h>.
+ * On some not-quite-ANSI systems you may find it in <stddef.h>.
  */
 
-#ifndef __STDC__		/* shouldn't need this if __STDC__ */
+#ifndef INCLUDES_ARE_ANSI	/* shouldn't need this if ANSI C */
 #include <sys/types.h>
+#endif
+#ifdef __SASC			/* Amiga SAS C provides it in stddef.h. */
+#include <stddef.h>
 #endif
 
 /*
@@ -41,7 +58,19 @@
  * we always use this SIZEOF() macro in place of using sizeof() directly.
  */
 
+#undef SIZEOF			/* in case you included X11/xmd.h */
 #define SIZEOF(object)	((size_t) sizeof(object))
+
+/*
+ * fread() and fwrite() are always invoked through these macros.
+ * On some systems you may need to twiddle the argument casts.
+ * CAUTION: argument order is different from underlying functions!
+ */
+
+#define FREAD(file,buf,sizeofbuf)  \
+  ((size_t) fread((void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
+#define FWRITE(file,buf,sizeofbuf)  \
+  ((size_t) fwrite((const void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
 
 /*
  * We need the memcpy() and strcmp() functions, plus memory zeroing.
@@ -51,10 +80,10 @@
  * Insert casts in these macros if not!
  */
 
-#ifdef __STDC__
+#ifdef INCLUDES_ARE_ANSI
 #include <string.h>
 #define MEMZERO(voidptr,size)	memset((voidptr), 0, (size))
-#else /* not STDC */
+#else /* not ANSI */
 #ifdef BSD
 #include <strings.h>
 #define MEMZERO(voidptr,size)	bzero((voidptr), (size))
@@ -63,7 +92,7 @@
 #include <string.h>
 #define MEMZERO(voidptr,size)	memset((voidptr), 0, (size))
 #endif /* BSD */
-#endif /* STDC */
+#endif /* ANSI */
 
 
 /* Now include the portable JPEG definition files. */

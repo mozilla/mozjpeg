@@ -60,7 +60,7 @@ static JSAMPARRAY colorindex;	/* Precomputed mapping for speed */
  */
 
 #ifdef EIGHT_BIT_SAMPLES
-typedef short FSERROR;		/* 16 bits should be enough */
+typedef INT16 FSERROR;		/* 16 bits should be enough */
 #else
 typedef INT32 FSERROR;		/* may need more than 16 bits? */
 #endif
@@ -135,11 +135,13 @@ color_quant_init (decompress_info_ptr cinfo)
     nci = Ncolors[i];		/* # of distinct values for this color */
     blksize = blkdist / nci;
     for (j = 0; j < nci; j++) {
-      val = (j * MAXJSAMPLE + (nci-1)/2) / (nci-1); /* j'th value of color */
+      /* Compute j'th output value (out of nci) for component */
+      val = (j * MAXJSAMPLE + (nci-1)/2) / (nci-1);
+      /* Fill in all colormap entries that have this value of this component */
       for (ptr = j * blksize; ptr < total_colors; ptr += blkdist) {
 	/* fill in blksize entries beginning at ptr */
 	for (k = 0; k < blksize; k++)
-	  colormap[i][ptr+k] = val;
+	  colormap[i][ptr+k] = (JSAMPLE) val;
       }
     }
     blkdist = blksize;		/* blksize of this color is blkdist of next */
@@ -149,8 +151,7 @@ color_quant_init (decompress_info_ptr cinfo)
       /* compute index of color closest to pixel value j */
       val = (j * (nci-1) + CENTERJSAMPLE) / MAXJSAMPLE;
       /* premultiply so that no multiplication needed in main processing */
-      val *= blksize;
-      colorindex[i][j] = val;
+      colorindex[i][j] = (JSAMPLE) (val * blksize);
     }
   }
 
@@ -196,7 +197,7 @@ color_quantize (decompress_info_ptr cinfo, int num_rows,
 	pixcode += GETJSAMPLE(colorindex[ci]
 			      [GETJSAMPLE(input_data[ci][row][col])]);
       }
-      output_data[row][col] = pixcode;
+      output_data[row][col] = (JSAMPLE) pixcode;
     }
   }
 }
@@ -222,7 +223,7 @@ color_quantize3 (decompress_info_ptr cinfo, int num_rows,
       pixcode  = GETJSAMPLE(colorindex[0][GETJSAMPLE(*ptr0++)]);
       pixcode += GETJSAMPLE(colorindex[1][GETJSAMPLE(*ptr1++)]);
       pixcode += GETJSAMPLE(colorindex[2][GETJSAMPLE(*ptr2++)]);
-      *ptrout++ = pixcode;
+      *ptrout++ = (JSAMPLE) pixcode;
     }
   }
 }
@@ -255,7 +256,7 @@ color_quantize_dither (decompress_info_ptr cinfo, int num_rows,
 	  /* compute pixel value + accumulated error */
 	  val = (((FSERROR) GETJSAMPLE(input_data[ci][row][col])) << 4)
 		+ thisrowerr[ci];
-	  if (val < 0) val = 0;	/* must watch for range overflow! */
+	  if (val <= 0) val = 0; /* must watch for range overflow! */
 	  else {
 	    val += 8;		/* divide by 16 with proper rounding */
 	    val >>= 4;
@@ -264,10 +265,10 @@ color_quantize_dither (decompress_info_ptr cinfo, int num_rows,
 	  thisrowerr[ci] = val;	/* save for error propagation */
 	  pixcode += GETJSAMPLE(colorindex[ci][val]);
 	}
-	output_data[row][col] = pixcode;
+	output_data[row][col] = (JSAMPLE) pixcode;
 	/* propagate error to adjacent pixels */
 	for (ci = 0; ci < nc; ci++) {
-	  val = thisrowerr[ci] - GETJSAMPLE(colormap[ci][pixcode]);
+	  val = thisrowerr[ci] - (FSERROR) GETJSAMPLE(colormap[ci][pixcode]);
 	  thisrowerr[ci-nc] += val * 7;
 	  nextrowerr[ci+nc] += val * 3;
 	  nextrowerr[ci   ] += val * 5;
@@ -290,7 +291,7 @@ color_quantize_dither (decompress_info_ptr cinfo, int num_rows,
 	  /* compute pixel value + accumulated error */
 	  val = (((FSERROR) GETJSAMPLE(input_data[ci][row][col])) << 4)
 		+ thisrowerr[ci];
-	  if (val < 0) val = 0;	/* must watch for range overflow! */
+	  if (val <= 0) val = 0; /* must watch for range overflow! */
 	  else {
 	    val += 8;		/* divide by 16 with proper rounding */
 	    val >>= 4;
@@ -299,10 +300,10 @@ color_quantize_dither (decompress_info_ptr cinfo, int num_rows,
 	  thisrowerr[ci] = val;	/* save for error propagation */
 	  pixcode += GETJSAMPLE(colorindex[ci][val]);
 	}
-	output_data[row][col] = pixcode;
+	output_data[row][col] = (JSAMPLE) pixcode;
 	/* propagate error to adjacent pixels */
 	for (ci = 0; ci < nc; ci++) {
-	  val = thisrowerr[ci] - GETJSAMPLE(colormap[ci][pixcode]);
+	  val = thisrowerr[ci] - (FSERROR) GETJSAMPLE(colormap[ci][pixcode]);
 	  thisrowerr[ci+nc] += val * 7;
 	  nextrowerr[ci-nc] += val * 3;
 	  nextrowerr[ci   ] += val * 5;

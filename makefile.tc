@@ -1,37 +1,21 @@
 # Makefile for Independent JPEG Group's software
 
-# This makefile is suitable for Unix-like systems with non-ANSI compilers.
-# If you have an ANSI compiler, makefile.ansi is a better starting point.
+# This makefile is suitable for Borland C (Turbo C) on MS-DOS.
+# It is set up for Borland C++ revision 2.0; if you have an older
+# version of Turbo C, you need to say "CC= tc" below.
+# Thanks to Tom Wright for this version.
 
 # Read SETUP instructions before saying "make" !!
 
 # The name of your C compiler:
-CC= cc
+CC= bcc
 
 # You may need to adjust these cc options:
-CFLAGS= -O
-# In particular:
-#   Add -DBSD if on a pure BSD system (see jinclude.h).
-#   Add -DVMS if on a VMS system (see ansi2knr.c).
-#   Add -DMSDOS if on an MSDOS system (see ansi2knr.c).
-#   Add -DMEM_STATS to enable gathering of memory usage statistics.
-#   You may also want to add -DTWO_FILE_COMMANDLINE or -D switches for other
-#   symbols listed in jconfig.h, if you prefer not to change jconfig.h.
+CFLAGS= -c -ml -DINCOMPLETE_TYPES_BROKEN
+# -DINCOMPLETE_TYPES_BROKEN suppresses warnings about undefined structures
 
 # Link-time cc options:
-LDFLAGS= 
-
-# To link any special libraries, add the necessary -l commands here.
-# In particular, on some versions of HP-UX (and probably other SysV-derived
-# systems) there is a faster alternate malloc(3) library that you can use
-# by adding "-lmalloc" to this line.
-LDLIBS= 
-
-# miscellaneous OS-dependent stuff
-LN= $(CC)	# linker
-RM= rm -f	# file deletion command
-AR= ar rc	# library (.a) file creation command
-AR2= ranlib	# second step in .a creation (use "touch" if not needed)
+LDFLAGS= -ml
 
 
 # source files (independently compilable files)
@@ -54,66 +38,40 @@ TESTFILES= testorig.jpg testimg.ppm testimg.jpg
 DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(INCLUDES) $(OTHERFILES) \
         $(TESTFILES)
 # objectfiles common to cjpeg and djpeg
-COMOBJECTS= jutils.o jvirtmem.o jerror.o
+COMOBJECTS= jutils.obj jvirtmem.obj jerror.obj
 # compression objectfiles
-CLIBOBJECTS= jcmaster.o jcdeflts.o jcarith.o jccolor.o jcexpand.o jchuff.o \
-        jcmcu.o jcpipe.o jcsample.o jfwddct.o jwrjfif.o jrdgif.o jrdppm.o \
-        jrdrle.o jrdtarga.o
-COBJECTS= jcmain.o $(CLIBOBJECTS) $(COMOBJECTS)
+CLIBOBJECTS= jcmaster.obj jcdeflts.obj jcarith.obj jccolor.obj jcexpand.obj \
+        jchuff.obj jcmcu.obj jcpipe.obj jcsample.obj jfwddct.obj \
+        jwrjfif.obj jrdgif.obj jrdppm.obj jrdrle.obj jrdtarga.obj
+COBJECTS= jcmain.obj $(CLIBOBJECTS) $(COMOBJECTS)
 # decompression objectfiles
-DLIBOBJECTS= jdmaster.o jddeflts.o jbsmooth.o jdarith.o jdcolor.o jdhuff.o \
-        jdmcu.o jdpipe.o jdsample.o jquant1.o jquant2.o jrevdct.o jrdjfif.o \
-        jwrgif.o jwrppm.o jwrrle.o jwrtarga.o
-DOBJECTS= jdmain.o $(DLIBOBJECTS) $(COMOBJECTS)
-# These objectfiles are included in libjpeg.a
+DLIBOBJECTS= jdmaster.obj jddeflts.obj jbsmooth.obj jdarith.obj jdcolor.obj \
+        jdhuff.obj jdmcu.obj jdpipe.obj jdsample.obj jquant1.obj \
+        jquant2.obj jrevdct.obj jrdjfif.obj jwrgif.obj jwrppm.obj \
+        jwrrle.obj jwrtarga.obj
+DOBJECTS= jdmain.obj $(DLIBOBJECTS) $(COMOBJECTS)
+# These objectfiles are included in libjpeg.lib
 LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 
 
-all: ansi2knr cjpeg djpeg
-# By default, libjpeg.a is not built unless you explicitly request it.
-# You can add libjpeg.a to the line above if you want it built by default.
+all: cjpeg.exe djpeg.exe
 
 
-# This rule causes ansi2knr to be invoked.  If you use this makefile,
-# make sure PROTO is not defined by jconfig.h.
+cjpeg.exe: $(COBJECTS)
+	$(CC) $(LDFLAGS) -ecjpeg.exe @makcjpeg.lst
 
-.c.o:
-	./ansi2knr $*.c tmpansi.c
-	$(CC) $(CFLAGS) -c tmpansi.c
-	mv tmpansi.o $*.o
-	$(RM) tmpansi.c
+djpeg.exe: $(DOBJECTS)
+	$(CC) $(LDFLAGS) -edjpeg.exe @makdjpeg.lst
 
-ansi2knr: ansi2knr.c
-	$(CC) $(CFLAGS) -o ansi2knr ansi2knr.c
+.c.obj:
+	$(CC) $(CFLAGS) $<
 
-
-cjpeg: ansi2knr $(COBJECTS)
-	$(LN) $(LDFLAGS) -o cjpeg $(COBJECTS) $(LDLIBS)
-
-djpeg: ansi2knr $(DOBJECTS)
-	$(LN) $(LDFLAGS) -o djpeg $(DOBJECTS) $(LDLIBS)
-
-# libjpeg.a is useful if you are including the JPEG software in a larger
-# program; you'd include it in your link, rather than the individual modules.
-libjpeg.a: ansi2knr $(LIBOBJECTS)
-	$(RM) libjpeg.a
-	$(AR) libjpeg.a  $(LIBOBJECTS)
-	$(AR2) libjpeg.a
-
-clean:
-	$(RM) *.o cjpeg djpeg libjpeg.a ansi2knr core tmpansi.* testout.ppm testout.jpg
-
-distribute:
-	$(RM) jpegsrc.tar*
-	tar cvf jpegsrc.tar $(DISTFILES)
-	compress -v jpegsrc.tar
-
-test: cjpeg djpeg
-	$(RM) testout.ppm testout.jpg
-	./djpeg testorig.jpg >testout.ppm
-	./cjpeg testimg.ppm >testout.jpg
-	cmp testimg.ppm testout.ppm
-	cmp testimg.jpg testout.jpg
+test:
+	del testout.*
+	djpeg testorig.jpg testout.ppm
+	cjpeg testimg.ppm testout.jpg
+	fc testimg.ppm testout.ppm
+	fc testimg.jpg testout.jpg
 
 
 jbsmooth.o : jbsmooth.c jinclude.h jconfig.h jpegdata.h 

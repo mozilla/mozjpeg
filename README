@@ -1,27 +1,27 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release of  7-Oct-91
-===============================
+README for release 2 of 13-Dec-91
+=================================
 
-This distribution contains the first public release of the Independent JPEG
+This distribution contains the second public release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
 to use it for any purpose, subject to the conditions under LEGAL ISSUES, below.
 
-This software is still undergoing revision.  Updated versions may be obtained
-by anonymous FTP to uunet.uu.net; look under directory /graphics/jpeg.  This
-particular version will be archived as jpegsrc.v1.tar.Z.  If you don't have
-access to Internet FTP, UUNET's archives are also available via UUCP; contact
-postmaster@uunet.uu.net for information on retrieving files that way.
+For installation instructions, see file SETUP; for usage instructions, see
+file USAGE (or the cjpeg.1 and djpeg.1 manual pages).
 
-Please report any problems with this software to jpeg-info@uunet.uu.net.
+This software is still undergoing revision.  Updated versions may be obtained
+by FTP or UUCP to uunet.uu.net and other archive sites; see ARCHIVE LOCATIONS
+below for details.
 
 If you intend to become a serious user of this software, please contact
-jpeg-info@uunet to be added to our electronic mailing list.  Then you'll be
-notified of updates and have a chance to participate in discussions, etc.
+jpeg-info@uunet.uu.net to be added to our electronic mailing list.  Then
+you'll be notified of updates and have a chance to participate in discussions,
+etc.
 
-This software is the work of Tom Lane, Philip Gladstone, Luis Ortiz, and other
-members of the independent JPEG group.
+This software is the work of Tom Lane, Philip Gladstone, Luis Ortiz,
+Lee Crocker, and other members of the Independent JPEG Group.
 
 
 DISCLAIMER
@@ -32,20 +32,23 @@ useful for anything, nor to be compatible with subsequent releases, nor to be
 an accurate implementation of the JPEG standard.  (See LEGAL ISSUES for even
 more disclaimers.)
 
+Please report any problems with this software to jpeg-info@uunet.uu.net.
+
 
 WHAT'S HERE
 ===========
 
 This distribution contains software to implement JPEG image compression and
-decompression.  JPEG is a standardized compression method for full-color and
-gray-scale images.  JPEG is intended for "real-world" scenes; cartoons and
-other non-realistic images are not its strong suit.  JPEG is lossy, meaning
-that the output image is not necessarily identical to the input image.  Hence
-you should not use JPEG if you have to have identical output bits.  However,
-on typical images of real-world scenes, very good compression levels can be
-obtained with hardly any visible change, and amazingly high compression levels
-can be obtained if you can tolerate a low-quality image.  For more details,
-see the references, or just experiment with various compression settings.
+decompression.  JPEG (pronounced "jay-peg") is a standardized compression
+method for full-color and gray-scale images.  JPEG is intended for
+"real-world" scenes; cartoons and other non-realistic images are not its
+strong suit.  JPEG is lossy, meaning that the output image is not necessarily
+identical to the input image.  Hence you should not use JPEG if you have to
+have identical output bits.  However, on typical images of real-world scenes,
+very good compression levels can be obtained with no visible change, and
+amazingly high compression levels can be obtained if you can tolerate a
+low-quality image.  For more details, see the references, or just experiment
+with various compression settings.
 
 The software implements JPEG baseline and extended-sequential compression
 processes.  Provision is made for supporting all variants of these processes,
@@ -67,9 +70,9 @@ the future.
 This software can be used on several levels:
 
 * As canned software for JPEG compression and decompression.  Just edit the
-  Makefile and configuration files as needed (see SETUP), compile and go.
+  Makefile and configuration files as needed (see file SETUP), compile and go.
   Members of the independent JPEG group will improve the out-of-the-box
-  functionality as time goes on.
+  functionality and speed as time goes on.
 
 * As the basis for other JPEG programs.  For example, you could incorporate
   the decompressor into a general image viewing package by replacing the
@@ -77,7 +80,7 @@ This software can be used on several levels:
   specific hardware, you might want to replace some of the inner loops with
   assembly code.  For a non-command-line-driven system, you might want a
   different user interface.  (Members of the group will be producing Macintosh
-  and Amiga versions with appropriate user interfaces, for example.)
+  and Amiga versions with more appropriate user interfaces, for example.)
 
 * As a toolkit for experimentation with JPEG and JPEG-like algorithms.  Most
   of the individual decisions you might want to mess with are packaged up into
@@ -90,181 +93,85 @@ In particular, we welcome the use of this software as the basis for commercial
 products; no royalty is required.
 
 
-SETUP
-=====
+ARCHIVE LOCATIONS
+=================
 
-The installation process is not very automatic; you will need at least some
-familiarity with C programming and program build procedures for your system.
-(Volunteers to work on improving this situation are welcome.  Also, we will
-probably start distributing pre-built binaries for popular systems at some
-point.)
+The "official" archive site for this software is uunet.uu.net (Internet
+address 137.39.1.2 or 192.48.96.2).  The most recent released version can
+always be found there in directory graphics/jpeg.  This particular version
+will be archived as jpegsrc.v2.tar.Z.  If you are on the Internet, you can
+retrieve files from UUNET by anonymous FTP.  If you don't have FTP access,
+UUNET's archives are also available via UUCP; contact postmaster@uunet.uu.net
+for information on retrieving files that way.
 
-First, select a makefile and copy it to "Makefile".  "makefile.unix"
-is appropriate for most Unix and Unix-like systems.  Special makefiles are
-included for various PC compilers.  If you don't see a makefile for your
-system, we recommend starting from makefile.unix.
+Various other Internet sites maintain copies of the UUNET file, which may or
+may not be up-to-date.  In Europe, try nic.funet.fi (128.214.6.100; look in
+directory pub/graphics/programs/jpeg).
 
-Look over the Makefile and adjust options as needed.  In particular, you'll
-need to change the CC= and CFLAGS= definitions if you don't have gcc
-(makefile.unix only).  If you have a function-prototype-less compiler, be sure
-to uncomment the .c.o rule and say "make ansi2knr".  This will cause the
-source files to be preprocessed to change our ANSI-style function definitions
-to old-style definitions.  (Thanks to Peter Deutsch of Aladdin Enterprises for
-ansi2knr.)
+You can also obtain this software from CompuServe, in the GRAPHSUPPORT forum
+(GO PICS), library 10; this version will be file jpsrc2.zip.
 
-Also look over jconfig.h and adjust #defines as necessary.  If you have an
-ANSI-compliant C compiler (gcc for instance), no changes should be necessary
-except perhaps for RIGHT_SHIFT_IS_UNSIGNED and TWO_FILE_COMMANDLINE.  For
-older compilers other mods may be needed, depending on what ANSI features are
-supported.  If you prefer, you can usually leave jconfig.h unmodified and add
--D switches to the Makefile's CFLAGS= definition.
-
-Then say "make".
-
-If you have trouble with missing system include files or inclusion of the
-wrong ones, you can fix it in jinclude.h.  In particular, if you are using
-gcc on a machine with non-ANSI system include files, you are likely to find
-that jinclude.h tries to include the wrong files (because gcc defines
-__STDC__).  There's no good automatic solution to this, so you'll just have
-to hand-edit jinclude.h.
-
-As a quick test of functionality we've included three sample files:
-	testorig.jpg	same as blkint.jpg from JPEG validation floppy.
-	testimg.ppm	output of djpeg testorig.jpg
-	testimg.jpg	output of cjpeg testimg.ppm
-The two .jpg files aren't identical due to different parameter choices (and
-wouldn't be anyway, since JPEG is lossy).  However, if you can generate
-duplicates of testimg.ppm and testimg.jpg then you probably have a working
-port.  "make test" will perform the necessary comparisons (by generating
-testout.ppm and testout.jpg and comparing these to testimg.*).  NOTE: this
-is far from an exhaustive test of the JPEG software; some modules, such as
-color quantization and GIF I/O, are not exercised at all.  It's just a quick
-test to give you some confidence that you haven't missed something major.
-
-If you need to make a smaller version of the JPEG software, some optional
-functions can be removed at compile time.  See the xxx_SUPPORTED #defines
-in jconfig.h.  (Not a lot is actually removed right now, but as more optional
-stuff gets added, this mechanism will start to make a difference.)
-
-If you want to incorporate the JPEG code as subroutines in a larger program,
-we recommend that you make libjpeg.a.  Then use the .h files and libjpeg.a as
-your interface to the JPEG functions.  Your surrounding program will have to
-provide functionality similar to what's in jcmain.c or jdmain.c, and you may
-want to replace jerror.c and possibly other modules depending on your needs.
-See the "architecture" file for more info.  If it seems to you that the system
-structure doesn't accommodate what you want to do, please contact the authors.
-
-Special notes for Macintosh Think C users: If you have version 5.0 you should
-be able to just turn on __STDC__ through the compiler switch that enables
-that.  With version 4.0 you must manually edit jconfig.h to define PROTO,
-HAVE_UNSIGNED_CHAR, HAVE_UNSIGNED_SHORT, and const.  (It seems to be safe to
-just define __STDC__ to take care of the first three.)  When setting up
-project files, use the COBJECTS and DOBJECTS lists in makefile.unix as a guide
-to which files need to be included, and add the ANSI and Unix C libraries in a
-separate segment.  You may need to divide the JPEG files into more than one
-segment; you can do this pretty much as you please.
+If you are not reasonably handy at configuring and installing portable C
+programs, you may have some difficulty installing this package.  You may
+prefer to obtain a pre-built executable version.  A collection of pre-built
+executables for various machines is currently available for anonymous FTP at
+procyon.cis.ksu.edu (129.130.10.80 --- this number is due to change soon);
+look under /pub/JPEG.  The administrators of this system ask that FTP traffic
+be limited to non-prime hours.  For more information on this archive, please
+contact Steve Davis (strat@cis.ksu.edu).  This collection is not maintained by
+the Independent JPEG Group, and programs in it may not be the latest version.
 
 
-USAGE
-=====
+SUPPORTING SOFTWARE
+===================
 
-The user interface is pretty minimal at this point.  We haven't bothered to
-generate manual-page files since the switches badly need redesign.  At the
-moment, things work like this:
+You will probably want Jef Poskanzer's PBMPLUS image software, which provides
+many useful operations on PPM-format image files.  In particular, it can
+convert PPM images to and from a wide range of other formats.  You can FTP
+this free software from export.lcs.mit.edu (contrib/pbmplus*.tar.Z) or
+ftp.ee.lbl.gov (pbmplus*.tar.Z).  Unfortunately PBMPLUS is not nearly as
+portable as the JPEG software is; you are likely to have difficulty making it
+work on any non-Unix machine.
 
-There are two programs, cjpeg to compress an image file into JPEG format,
-and djpeg to decompress.
+If you are using X Windows you might want to use the xv or xloadimage viewers
+to save yourself the trouble of converting PPM to some other format.  Both of
+these can be found in the contrib directory at export.lcs.mit.edu.
+There will soon be a new release of xv that incorporates our software and thus
+can read and write JPEG files directly.  (NOTE: since xv internally reduces
+all images to 8 bits/pixel, a JPEG file written by xv will not be very high
+quality.  Caveat user.)
 
-On Unix systems, you say:
-	cjpeg [switches] [imagefile] >jpegfile
-	djpeg [switches] [jpegfile]  >imagefile
-The programs read the specified input file, or standard input if none is
-named.  They always write to standard output (with trace/error messages to
-standard error).  These conventions are handy for piping images between
-programs.
 
-On PC, Macintosh, and Amiga systems, you say:
-	cjpeg [switches] imagefile jpegfile
-	djpeg [switches] jpegfile  imagefile
-i.e., both input and output files are named on the command line.  This style
-is a little more foolproof, and it loses no functionality if you don't have
-pipes.  You can get this style on Unix too, if you prefer, by defining
-TWO_FILE_COMMANDLINE in jconfig.h or in the Makefile.  You MUST use this style
-on any system that doesn't cope well with binary data fed through
-stdin/stdout.
+SOFTWARE THAT'S NO HELP AT ALL
+==============================
 
-Currently supported image file formats include raw-format PPM, raw-format PGM
-(for monochrome images), and GIF.  cjpeg recognizes the input image format
-automatically, but you have to tell djpeg which format to generate.
+Handmade Software's shareware PC program GIF2JPG produces files that are
+totally incompatible with our programs.  They use a proprietary format that is
+an amalgam of GIF and JPEG representations.  However, you can force GIF2JPG
+to produce compatible files with its -j switch, and their decompression
+program JPG2GIF can read our files (at least ones produced with our default
+option settings).
 
-The only JPEG file format currently supported is a raw JPEG data stream.
-Unless modified, the programs use the JFIF conventions for variables left
-unspecified by the JPEG standard.  (In particular, cjpeg generates a JFIF APP0
-marker.)  Support for the JPEG-in-TIFF format will probably be added at some
-future date.
+Unfortunately, most commercial JPEG implementations are also incompatible as
+of this writing, especially programs released before summer 1991.  The root of
+the problem is that the ISO JPEG committee failed to specify a concrete file
+format.  Many vendors "filled in the blanks" on their own, creating
+proprietary formats that no one else could read.  (For example, none of the
+early commercial JPEG implementations for the Macintosh were able to exchange
+compressed files.)
 
-The command line switches for cjpeg are:
+The file format we have adopted is called JFIF (see REFERENCES).  This format
+has been agreed to by a number of major commercial JPEG vendors, and we expect
+that it will become the de facto standard.  JFIF is a minimal representation;
+work is also going forward to incorporate JPEG compression into the TIFF
+standard, for use in "high end" applications that need to record a lot of
+additional data about an image.  We intend to support JPEG-in-TIFF in the
+future.  We hope that these two formats will be sufficient and that other,
+incompatible JPEG file formats will not proliferate.
 
-	-I		Generate noninterleaved JPEG file (not yet supported).
-
-	-Q quality	Scale quantization tables to adjust quality.
-			Quality is 0 (worst) to 100 (best); default is 75.
-			(See below for more info.)
-
-	-a		Use arithmetic coding rather than Huffman coding.
-			(Not currently supported, see LEGAL ISSUES.)
-
-	-o		Perform optimization of entropy encoding parameters.
-			Without this, default Huffman or arithmetic
-			parameters are used.  -o makes the JPEG file a tad
-			smaller, but compression uses much more memory.
-			Image quality is unaffected by -o.
-
-	-d		Enable debug printout.  More -d's give more printout.
-
-Typically you'd use -Q settings of 50 or 75 or so.  -Q 100 will generate a
-quantization table of all 1's, meaning no quantization loss; then any
-differences between input and output images are due to subsampling or to
-roundoff error in the DCT or colorspace-conversion steps.  -Q values below 50
-may be useful for making real small, low-quality images.  Try -Q 2 (or so) for
-some amusing Cubist effects.  (Note that -Q values below about 25 generate
-2-byte quantization tables, which are not decodable by pure baseline JPEG
-decoders.  cjpeg emits a warning message when you give such a -Q value.)
-
-The command line switches for djpeg are:
-
-	-G		Select GIF output format (implies -q, with default
-			of 256 colors).
-
-	-b		Perform cross-block smoothing.  This is quite
-			memory-intensive and only seems to improve the image
-			at very low quality settings (-Q 10 to 20 or so).
-
-	-g		Force gray-scale output even if input is color.
-
-	-q N		Quantize to N colors.
-
-	-D		Use Floyd-Steinberg dithering in color quantization.
-
-	-2		Use two-pass color quantization (not yet supported).
-
-	-d		Enable debug printout.  More -d's give more printout.
-
-Color quantization currently uses a rather shoddy algorithm (although it's not
-so horrible when dithered).  Because of this, the GIF output mode is not
-recommended in the current release, except for gray-scale output.  You can get
-better results by applying ppmquant to the unquantized (PPM) output of djpeg,
-then converting to GIF with ppmtogif.  We expect to provide a considerably
-better quantization algorithm in a future release.
-
-Note that djpeg *can* read noninterleaved JPEG files even though cjpeg can't
-yet generate them.  For most applications this is a nonissue, since hardly
-anybody seems to be using noninterleaved format.
-
-On a non-virtual-memory machine, you may run out of memory if you use -I or -o
-in cjpeg, or -q ... -2 in djpeg, or try to read an interlaced GIF file.  This
-will be addressed eventually by replacing jvirtmem.c with something that uses
-temporary files for large images (see TO DO).
+Indeed, part of the reason for developing and releasing this free software is
+to help force rapid convergence to de facto standards for JPEG file formats.
+SUPPORT STANDARD, NON-PROPRIETARY FORMATS: demand JFIF or JPEG-in-TIFF!
 
 
 REFERENCES
@@ -276,13 +183,25 @@ algorithm is Wallace's article in the April '91 CACM:
 	Communications of the ACM, April 1991 (vol. 34 no. 4), pp. 30-44.
 (Adjacent articles in that issue discuss MPEG motion picture compression,
 applications of JPEG, and related topics.)  We highly recommend reading that
-article before looking at any of the JPEG software.
+article before trying to understand the innards of any JPEG software.
 
 For more detail about the JPEG standard you pretty much have to go to the
-draft standard, which is not nearly as intelligible as Wallace's article.
-The current version is ISO/IEC Committee Draft CD 10918-1 dated 1991-03-15.
-The standard is not presently available electronically; you must order a paper
-copy through ISO.
+draft standard (which is not nearly as intelligible as Wallace's article).
+The standard is not now available electronically; you must order a paper copy
+through ISO.  In the US, copies may be ordered from ANSI Sales at (212)
+642-4900.  The standard is divided into two parts: Part 1 is the actual
+specification, and Part 2 covers compliance testing methods.  The current
+"committee draft" version of Part 1 is titled "Digital Compression and Coding
+of Continuous-tone Still Images, Part 1: Requirements and guidelines" and has
+document number ISO/IEC CD 10918-1.  (The alternate number SC2 N2215 should
+also be mentioned when ordering.)  This draft is expected to be superseded by
+the Draft International Standard version around the end of November 1991.
+Ordering info will be the same as above, but replace "CD" with "DIS" in the
+document number (alternate number not yet known).  The committee draft of
+Part 2 is expected to be available around the end of December 1991.  It will
+be titled "Digital Compression and Coding of Continuous-tone Still Images,
+Part 2: Compliance testing" and will have document number ISO/IEC CD 10918-2
+(alternate number not yet known).
 
 The JPEG standard does not specify all details of an interchangeable file
 format.  For the omitted details we follow the "JFIF" conventions, revision
@@ -292,26 +211,12 @@ format.  For the omitted details we follow the "JFIF" conventions, revision
 	399A West Trimble Road
 	San Jose, CA  95131
 	(408) 944-6300
-Requests can also be e-mailed to info@c3.pla.ca.us (this address good after
-10/10/91).  The same source can supply copies of the draft JPEG-in-TIFF specs.
+Requests can also be e-mailed to info@c3.pla.ca.us.  The same source can
+supply copies of the draft JPEG-in-TIFF specs.
 
 If you want to understand this implementation, start by reading the
 "architecture" documentation file.  Please read "codingrules" if you want to
 contribute any code.
-
-
-SUPPORTING SOFTWARE
-===================
-
-You will probably want Jef Poskanzer's PBMPLUS image software; this provides
-many useful operations on PPM-format image files.  In particular, it can
-convert PPM images to and from a wide range of other formats.  You can FTP
-this free software from export.lcs.mit.edu (contrib/pbmplus*.tar.Z) or
-ftp.ee.lbl.gov (pbmplus*.tar.Z).
-
-If you are using X Windows you might want to use the xv or xloadimage viewers
-to save yourself the trouble of converting PPM to some other format.
-Both of these can be found in the contrib directory at export.lcs.mit.edu.
 
 
 LEGAL ISSUES
@@ -360,14 +265,21 @@ the foregoing paragraphs do.
 
 
 It appears that the arithmetic coding option of the JPEG spec is covered by
-patents held by IBM, and possibly also patents of AT&T and Mitsubishi.  Hence
-arithmetic coding cannot legally be used without obtaining one or more
-licenses.  For this reason, support for arithmetic coding has been removed
-from the free JPEG software.  (Since arithmetic coding provides only a
+patents owned by IBM and AT&T, as well as a pending Japanese patent of
+Mitsubishi.  Hence arithmetic coding cannot legally be used without obtaining
+one or more licenses.  For this reason, support for arithmetic coding has been
+removed from the free JPEG software.  (Since arithmetic coding provides only a
 marginal gain over the unpatented Huffman mode, it is unlikely that very many
-people will choose to use it.  If you do obtain such a license, contact
-jpeg-info@uunet.uu.net for a copy of our arithmetic coding modules.)  So far
-as we are aware, there are no patent restrictions on the remaining code.
+people will choose to use it.  If you do obtain the necessary licenses,
+contact jpeg-info@uunet.uu.net for a copy of our arithmetic coding modules.)
+So far as we are aware, there are no patent restrictions on the remaining
+code.
+
+
+We are required to state that
+    "The Graphics Interchange Format(c) is the Copyright property of
+    CompuServe Incorporated.  GIF(sm) is a Service Mark property of
+    CompuServe Incorporated."
 
 
 TO DO

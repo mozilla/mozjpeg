@@ -62,7 +62,7 @@ static JSAMPARRAY colormap;	/* the colormap to use */
 #define INTERLACE	0x40	/* mask for bit signifying interlaced image */
 #define COLORMAPFLAG	0x80	/* mask for bit signifying colormap presence */
 
-#define	ReadOK(file,buffer,len)	(fread(buffer, 1, len, file) == (len))
+#define	ReadOK(file,buffer,len)	(FREAD(file,buffer,len) == ((size_t) (len)))
 
 /* Static vars for GetCode and LZWReadByte */
 
@@ -261,7 +261,7 @@ LZWReadByte (compress_info_ptr cinfo)
 
   /* If any codes are stacked from a previously read symbol, return them */
   if (sp > symbol_stack)
-    return *(--sp);
+    return (int) *(--sp);
 
   code = GetCode(cinfo);
 
@@ -286,7 +286,7 @@ LZWReadByte (compress_info_ptr cinfo)
   incode = code;		/* save for a moment */
   
   if (code >= max_code) {	/* special case for not-yet-defined symbol */
-    *sp++ = firstcode;		/* it will be defined as oldcode/firstcode */
+    *sp++ = (UINT8) firstcode;	/* it will be defined as oldcode/firstcode */
     code = oldcode;
   }
 
@@ -302,7 +302,7 @@ LZWReadByte (compress_info_ptr cinfo)
   if ((code = max_code) < LZW_TABLE_SIZE) {
     /* Define a new symbol = prev sym + head of this sym's expansion */
     symbol_head[code] = oldcode;
-    symbol_tail[code] = firstcode;
+    symbol_tail[code] = (UINT8) firstcode;
     max_code++;
     /* Is it time to increase code_size? */
     if ((max_code >= limit_code) && (code_size < MAX_LZW_BITS)) {
@@ -323,9 +323,9 @@ ReadColorMap (compress_info_ptr cinfo, int cmaplen, JSAMPARRAY cmap)
   int i;
 
   for (i = 0; i < cmaplen; i++) {
-    cmap[CM_RED][i]   = ReadByte(cinfo);
-    cmap[CM_GREEN][i] = ReadByte(cinfo);
-    cmap[CM_BLUE][i]  = ReadByte(cinfo);
+    cmap[CM_RED][i]   = (JSAMPLE) ReadByte(cinfo);
+    cmap[CM_GREEN][i] = (JSAMPLE) ReadByte(cinfo);
+    cmap[CM_BLUE][i]  = (JSAMPLE) ReadByte(cinfo);
   }
 }
 
@@ -457,7 +457,7 @@ input_init (compress_info_ptr cinfo)
      * of get_input_row.
      */
     interlaced_image = (*cinfo->emethods->request_big_sarray)
-		((long) width, (long) height, (long) 1);
+		((long) width, (long) height, 1L);
     cinfo->methods->get_input_row = load_interlaced_image;
   }
 
@@ -519,7 +519,7 @@ load_interlaced_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
     for (col = cinfo->image_width; col > 0; col--) {
       if ((c = LZWReadByte(cinfo)) < 0)
 	ERREXIT(cinfo->emethods, "Premature end of GIF image");
-      *sptr++ = c;
+      *sptr++ = (JSAMPLE) c;
     }
   }
 

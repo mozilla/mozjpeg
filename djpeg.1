@@ -1,0 +1,114 @@
+.TH DJPEG 1 "11 December 1991"
+.SH NAME
+djpeg \- decompress a JPEG file to an image file
+.SH SYNOPSIS
+.B djpeg
+[
+.B \-GPRTbgD2d
+]
+[
+.BI \-q " N"
+]
+[
+.I filename
+]
+.LP
+.SH DESCRIPTION
+.LP
+.B djpeg
+decompresses the named JPEG file, or the standard input if no file is named,
+and produces an image file on the standard output.  PPM, GIF, Targa, or RLE
+output format can be selected.  (RLE is supported only if the URT library is
+available.)
+.LP
+The color quantization algorithm is currently shoddy.  Because of this, the
+GIF output mode is not recommended in the current release, except for
+gray-scale output (obtained with
+.BR \-g ).
+.SH OPTIONS
+.TP
+.B \-G
+Select GIF output format (implies
+.BR \-q ,
+with default of 256 colors).
+Currently the color quantization uses a shoddy algorithm and external
+quantization (e.g.
+.IR ppmquant ,
+.IR rlequant )
+is recommended before conversion to GIF format.
+.TP
+.B \-P
+Select PPM or PGM output format (this is the default).  PGM is emitted if the
+JPEG file is gray-scale or if
+.B \-g
+is specified.
+.TP
+.B \-R
+Select RLE output format.  Requires URT library.
+.TP
+.B \-T
+Select Targa output format.  Gray-scale format is emitted if the JPEG file is
+gray-scale or if
+.B \-g
+is specified; otherwise, colormapped format is emitted if
+.B \-q
+is specified; otherwise, 24-bit full-color format is emitted.
+.TP
+.B \-b
+Perform cross-block smoothing.  This is quite memory-intensive and only seems
+to improve the image at low quality settings (\fB\-Q\fR 10 to 20 or so).
+At normal
+.B \-Q
+settings it may make the image worse.
+.TP
+.B \-g
+Force gray-scale output even if input is color.
+.TP
+.BI \-q " N"
+Quantize to N colors.
+.TP
+.B \-D
+Do not use dithering in color quantization.  By default, Floyd-Steinberg
+dithering is applied when quantizing colors, but on some images dithering may
+result in objectionable "graininess".  If that happens, you can turn off
+dithering with
+.BR \-D .
+.TP
+.B \-2
+Use two-pass color quantization (not yet supported).
+.TP
+.B \-d
+Enable debug printout.  More
+.BR \-d 's
+give more output.  Also, version information is printed at startup.
+.SH EXAMPLES
+.LP
+This example decompresses the JPEG file foo.jpg and saves the output
+as a gray-scale image in foo.pgm:
+.IP
+.B djpeg \-g
+.I foo.jpg
+.B >
+.I foo.pgm
+.SH SEE ALSO
+.BR cjpeg (1)
+.br
+.BR ppmquant (1)
+[From the PBMplus distribution]
+.br
+.BR rlequant (1)
+[From the Utah Raster Toolkit distribution]
+.br
+Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
+Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
+.SH AUTHOR
+Independent JPEG Group
+.SH BUGS
+.B djpeg
+currently uses a shoddy color quantization algorithm.  This leads to
+poor GIF file output.  Two-pass color quantization is not yet
+supported.
+.PP
+Arithmetic coding is not supported for legal reasons.
+.PP
+Not as fast as we'd like.

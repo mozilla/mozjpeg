@@ -98,11 +98,11 @@ typedef enum {			/* JPEG marker codes */
 METHODDEF int
 read_jpeg_data (decompress_info_ptr cinfo)
 {
-  cinfo->bytes_in_buffer = fread(cinfo->input_buffer + MIN_UNGET,
-				 1, JPEG_BUF_SIZE,
-				 cinfo->input_file);
-  
   cinfo->next_input_byte = cinfo->input_buffer + MIN_UNGET;
+
+  cinfo->bytes_in_buffer = (int) FREAD(cinfo->input_file,
+				       cinfo->next_input_byte,
+				       JPEG_BUF_SIZE);
   
   if (cinfo->bytes_in_buffer <= 0)
     ERREXIT(cinfo->emethods, "Unexpected EOF in JPEG file");
@@ -138,7 +138,7 @@ skip_variable (decompress_info_ptr cinfo, int code)
   length = get_2bytes(cinfo);
   
   TRACEMS2(cinfo->emethods, 1,
-	   "Skipping marker 0x%02x, length %d", code, length);
+	   "Skipping marker 0x%02x, length %u", code, (int) length);
   
   for (length -= 2; length > 0; length--)
     (void) JGETC(cinfo);
@@ -165,7 +165,7 @@ get_dht (decompress_info_ptr cinfo)
     bits[0] = 0;
     count = 0;
     for (i = 1; i <= 16; i++) {
-      bits[i] = JGETC(cinfo);
+      bits[i] = (UINT8) JGETC(cinfo);
       count += bits[i];
     }
 
@@ -180,7 +180,7 @@ get_dht (decompress_info_ptr cinfo)
       ERREXIT(cinfo->emethods, "Bogus DHT counts");
 
     for (i = 0; i < count; i++)
-      huffval[i] = JGETC(cinfo);
+      huffval[i] = (UINT8) JGETC(cinfo);
 
     length -= 1 + 16 + count;
 
@@ -195,7 +195,7 @@ get_dht (decompress_info_ptr cinfo)
       ERREXIT1(cinfo->emethods, "Bogus DHT index %d", index);
 
     if (*htblptr == NULL)
-      *htblptr = (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
+      *htblptr = (HUFF_TBL *) (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
   
     memcpy((void *) (*htblptr)->bits, (void *) bits,
 	   SIZEOF((*htblptr)->bits));
@@ -225,10 +225,10 @@ get_dac (decompress_info_ptr cinfo)
       ERREXIT1(cinfo->emethods, "Bogus DAC index %d", index);
 
     if (index >= NUM_ARITH_TBLS) { /* define AC table */
-      cinfo->arith_ac_K[index-NUM_ARITH_TBLS] = val;
+      cinfo->arith_ac_K[index-NUM_ARITH_TBLS] = (UINT8) val;
     } else {			/* define DC table */
-      cinfo->arith_dc_L[index] = val & 0x0F;
-      cinfo->arith_dc_U[index] = val >> 4;
+      cinfo->arith_dc_L[index] = (UINT8) (val & 0x0F);
+      cinfo->arith_dc_U[index] = (UINT8) (val >> 4);
       if (cinfo->arith_dc_L[index] > cinfo->arith_dc_U[index])
 	ERREXIT1(cinfo->emethods, "Bogus DAC value 0x%x", val);
     }
@@ -261,7 +261,8 @@ get_dqt (decompress_info_ptr cinfo)
       ERREXIT1(cinfo->emethods, "Bogus table number %d", n);
       
     if (cinfo->quant_tbl_ptrs[n] == NULL)
-      cinfo->quant_tbl_ptrs[n] = (*cinfo->emethods->alloc_small) (SIZEOF(QUANT_TBL));
+      cinfo->quant_tbl_ptrs[n] = (QUANT_TBL_PTR)
+	(*cinfo->emethods->alloc_small) (SIZEOF(QUANT_TBL));
     quant_ptr = cinfo->quant_tbl_ptrs[n];
 
     for (i = 0; i < DCTSIZE2; i++) {
@@ -290,7 +291,7 @@ get_dri (decompress_info_ptr cinfo)
   if (get_2bytes(cinfo) != 4)
     ERREXIT(cinfo->emethods, "Bogus length in DRI");
 
-  cinfo->restart_interval = get_2bytes(cinfo);
+  cinfo->restart_interval = (UINT16) get_2bytes(cinfo);
 
   TRACEMS1(cinfo->emethods, 1,
 	   "Define Restart Interval %d", cinfo->restart_interval);
@@ -312,7 +313,7 @@ get_app0 (decompress_info_ptr cinfo)
 
   if (length >= JFIF_LEN) {
     for (buffp = 0; buffp < JFIF_LEN; buffp++)
-      b[buffp] = JGETC(cinfo);
+      b[buffp] = (UINT8) JGETC(cinfo);
     length -= JFIF_LEN;
 
     if (b[0]=='J' && b[1]=='F' && b[2]=='I' && b[3]=='F' && b[4]==0) {
@@ -364,8 +365,8 @@ get_sof (decompress_info_ptr cinfo, int code)
   cinfo->num_components = JGETC(cinfo);
 
   TRACEMS4(cinfo->emethods, 1,
-	   "Start Of Frame 0x%02x: width=%d, height=%d, components=%d",
-	   code, cinfo->image_width, cinfo->image_height,
+	   "Start Of Frame 0x%02x: width=%u, height=%u, components=%d",
+	   code, (int) cinfo->image_width, (int) cinfo->image_height,
 	   cinfo->num_components);
 
   /* We don't support files in which the image height is initially specified */
@@ -391,7 +392,7 @@ get_sof (decompress_info_ptr cinfo, int code)
   if (length != (cinfo->num_components * 3 + 8))
     ERREXIT(cinfo->emethods, "Bogus SOF length");
 
-  cinfo->comp_info = (*cinfo->emethods->alloc_small)
+  cinfo->comp_info = (jpeg_component_info *) (*cinfo->emethods->alloc_small)
 			(cinfo->num_components * SIZEOF(jpeg_component_info));
   
   for (ci = 0; ci < cinfo->num_components; ci++) {
@@ -538,7 +539,7 @@ process_tables (decompress_info_ptr cinfo)
     case M_SOI:
     case M_EOI:
     case M_SOS:
-      return c;
+      return ((JPEG_MARKER) c);
       
     case M_DHT:
       get_dht(cinfo);

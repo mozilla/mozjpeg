@@ -21,7 +21,7 @@
  */
 
 #include "jinclude.h"
-#ifdef __STDC__
+#ifdef INCLUDES_ARE_ANSI
 #include <stdlib.h>		/* to declare exit() */
 #endif
 
@@ -37,20 +37,14 @@
 #define WRITE_BINARY	"wb"
 #endif
 
+#include "jversion.h"		/* for version message */
+
 
 /*
- * If your system has getopt(3), you can use your library version by
- * defining HAVE_GETOPT.  By default, we use the PD 'egetopt'.
+ * PD version of getopt(3).
  */
 
-#ifdef HAVE_GETOPT
-extern int getopt PP((int argc, char **argv, char *optstring));
-extern char * optarg;
-extern int optind;
-#else
 #include "egetopt.c"
-#define getopt(argc,argv,opt)	egetopt(argc,argv,opt)
-#endif
 
 
 /*
@@ -58,23 +52,43 @@ extern int optind;
  * and selects the appropriate input-reading module.
  *
  * To determine which family of input formats the file belongs to,
- * we look only at the first byte of the file, since C does not
+ * we may look only at the first byte of the file, since C does not
  * guarantee that more than one character can be pushed back with ungetc.
- * This is sufficient for the currently envisioned set of input formats.
- *
- * If you need to look at more than one character to select an input module,
- * you can either
- *     1) assume you can fseek() the input file (may fail for piped input);
- *     2) assume you can push back more than one character (works in
+ * Looking at additional bytes would require one of these approaches:
+ *     1) assume we can fseek() the input file (fails for piped input);
+ *     2) assume we can push back more than one character (works in
  *        some C implementations, but unportable);
- * or  3) don't put back the data, and modify the various input_init
- *        methods to assume they start reading after the start of file.
+ *     3) provide our own buffering as is done in djpeg (breaks input readers
+ *        that want to use stdio directly, such as the RLE library);
+ * or  4) don't put back the data, and modify the input_init methods to assume
+ *        they start reading after the start of file (also breaks RLE library).
+ * #1 is attractive for MS-DOS but is untenable on Unix.
+ *
+ * The most portable solution for file types that can't be identified by their
+ * first byte is to make the user tell us what they are.  This is also the
+ * only approach for "raw" file types that contain only arbitrary values.
+ * We presently apply this method for Targa files.  Most of the time Targa
+ * files start with 0x00, so we recognize that case.  Potentially, however,
+ * a Targa file could start with any byte value (byte 0 is the length of the
+ * seldom-used ID field), so we accept a -T switch to force Targa input mode.
  */
+
+static boolean is_targa;	/* records user -T switch */
+
 
 LOCAL void
 select_file_type (compress_info_ptr cinfo)
 {
   int c;
+
+  if (is_targa) {
+#ifdef TARGA_SUPPORTED
+    jselrtarga(cinfo);
+#else
+    ERREXIT(cinfo->emethods, "Targa support was not compiled");
+#endif
+    return;
+  }
 
   if ((c = getc(cinfo->input_file)) == EOF)
     ERREXIT(cinfo->emethods, "Empty input file");
@@ -90,8 +104,22 @@ select_file_type (compress_info_ptr cinfo)
     jselrppm(cinfo);
     break;
 #endif
+#ifdef RLE_SUPPORTED
+  case 'R':
+    jselrrle(cinfo);
+    break;
+#endif
+#ifdef TARGA_SUPPORTED
+  case 0x00:
+    jselrtarga(cinfo);
+    break;
+#endif
   default:
-    ERREXIT(cinfo->emethods, "Unsupported input file format");
+#ifdef TARGA_SUPPORTED
+    ERREXIT(cinfo->emethods, "Unrecognized input file format --- did you forget -T ?");
+#else
+    ERREXIT(cinfo->emethods, "Unrecognized input file format");
+#endif
     break;
   }
 
@@ -126,7 +154,7 @@ usage (char * progname)
 /* complain about bad command line */
 {
   fprintf(stderr, "usage: %s ", progname);
-  fprintf(stderr, "[-I] [-Q quality 0..100] [-a] [-o] [-d]");
+  fprintf(stderr, "[-Q quality 0..100] [-o] [-T] [-I] [-a] [-d]");
 #ifdef TWO_FILE_COMMANDLINE
   fprintf(stderr, " inputfile outputfile\n");
 #else
@@ -160,18 +188,13 @@ main (int argc, char **argv)
   jselvirtmem(&e_methods);	/* memory allocation routines */
   c_methods.c_ui_method_selection = c_ui_method_selection;
 
-  /* Set up default input and output file references. */
-  /* (These may be overridden below.) */
-  cinfo.input_file = stdin;
-  cinfo.output_file = stdout;
+  /* Set up default JPEG parameters. */
+  j_c_defaults(&cinfo, 75, FALSE); /* default quality level = 75 */
+  is_targa = FALSE;
 
-  /* Set up default parameters. */
-  e_methods.trace_level = 0;
-  j_default_compression(&cinfo, 75); /* default quality level */
-
-  /* Scan parameters */
+  /* Scan command line options, adjust parameters */
   
-  while ((c = getopt(argc, argv, "IQ:aod")) != EOF)
+  while ((c = egetopt(argc, argv, "IQ:Taod")) != EOF)
     switch (c) {
     case 'I':			/* Create noninterleaved file. */
 #ifdef MULTISCAN_FILES_SUPPORTED
@@ -188,12 +211,15 @@ main (int argc, char **argv)
 	  usage(argv[0]);
 	if (sscanf(optarg, "%d", &val) != 1)
 	  usage(argv[0]);
-	/* Note: for now, we leave force_baseline FALSE.
-	 * In a production user interface, probably should make it TRUE
-	 * unless overridden by a separate switch.
+	/* Note: for now, we make force_baseline FALSE.
+	 * This means non-baseline JPEG files can be created with low Q values.
+	 * To ensure only baseline files are generated, pass TRUE instead.
 	 */
 	j_set_quality(&cinfo, val, FALSE);
       }
+      break;
+    case 'T':			/* Input file is Targa format. */
+      is_targa = TRUE;
       break;
     case 'a':			/* Use arithmetic coding. */
 #ifdef ARITH_CODING_SUPPORTED
@@ -222,6 +248,11 @@ main (int argc, char **argv)
       break;
     }
 
+  /* If -d appeared, print version identification */
+  if (e_methods.trace_level > 0)
+    fprintf(stderr, "Independent JPEG Group's CJPEG, version %s\n%s\n",
+	    JVERSION, JCOPYRIGHT);
+
   /* Select the input and output files */
 
 #ifdef TWO_FILE_COMMANDLINE
@@ -240,6 +271,9 @@ main (int argc, char **argv)
   }
 
 #else /* not TWO_FILE_COMMANDLINE -- use Unix style */
+
+  cinfo.input_file = stdin;	/* default input file */
+  cinfo.output_file = stdout;	/* always the output file */
 
   if (optind < argc-1) {
     fprintf(stderr, "%s: only one input file\n", argv[0]);
@@ -261,9 +295,9 @@ main (int argc, char **argv)
   jpeg_compress(&cinfo);
 
   /* Release memory. */
-  j_free_defaults(&cinfo);
+  j_c_free_defaults(&cinfo);
 #ifdef MEM_STATS
-  if (e_methods.trace_level > 0)
+  if (e_methods.trace_level > 0) /* Optional memory-usage statistics */
     j_mem_stats();
 #endif
 

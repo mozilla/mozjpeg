@@ -66,11 +66,14 @@ get_rgb_ycc_rows (compress_info_ptr cinfo,
        * must be too; do not need an explicit range-limiting operation.
        */
       /* Y */
-      *outptr0++ = (   306*r +  601*g +  117*b + (INT32) 512) >> 10;
+      *outptr0++ = (JSAMPLE)
+	((   306*r +  601*g +  117*b + (INT32) 512) >> 10);
       /* Cb */
-      *outptr1++ = ((-173)*r -  339*g +  512*b + (INT32) 512*(MAXJSAMPLE+1)) >> 10;
+      *outptr1++ = (JSAMPLE)
+	(((-173)*r -  339*g +  512*b + (INT32) 512*(MAXJSAMPLE+1)) >> 10);
       /* Cr */
-      *outptr2++ = (   512*r -  429*g -   83*b + (INT32) 512*(MAXJSAMPLE+1)) >> 10;
+      *outptr2++ = (JSAMPLE)
+	((   512*r -  429*g -   83*b + (INT32) 512*(MAXJSAMPLE+1)) >> 10);
     }
   }
 }

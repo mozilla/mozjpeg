@@ -1,6 +1,7 @@
 /*
  * Received from Peter Deutsch (ghost@aladdin.com)
  * Fri, 26 Apr 91 10:10:10 PDT
+ * Small portability improvements by Tom Lane
  */
 
 /* Copyright (C) 1989, 1991 Aladdin Enterprises.  All rights reserved.
@@ -174,34 +175,32 @@ BY ANY OTHER PARTY.
 
 /* ansi2knr.c */
 /* Convert ANSI function declarations to K&R syntax */
+
 #include <stdio.h>
 #include <ctype.h>
 
 #ifdef BSD
-#  include <strings.h>
-#  define strchr index
+#include <strings.h>
+#define strchr index
 #else
-#  ifdef VMS
+#ifdef VMS
 	extern char *strcat(), *strchr(), *strcpy(), *strupr();
 	extern int strcmp(), strlen(), strncmp();
-#  else
-#    include <string.h>
-#  endif
+#else
+#include <string.h>
+#endif
 #endif
 
 #ifdef MSDOS
-#  include <malloc.h>
+#include <malloc.h>
 #else
-#  ifdef VMS
+#ifdef VMS
      extern char *malloc();
      extern void free();
-#  else
-#    ifdef BSD
-       extern char *malloc();
-#    else
-#      include <malloc.h>
-#    endif
-#  endif
+#else
+     extern char *malloc();
+     extern int free();
+#endif
 #endif
 
 /* Usage:
@@ -226,12 +225,13 @@ BY ANY OTHER PARTY.
 #define isidchar(ch) (isalnum(ch) || (ch) == '_')
 #define isidfirstchar(ch) (isalpha(ch) || (ch) == '_')
 
+int
 main(argc, argv)
     int argc;
     char *argv[];
 {	FILE *in, *out;
 #define bufsize 500			/* arbitrary size */
-	char buf[bufsize];
+	char buf[bufsize+1];
 	char *line;
 	switch ( argc )
 	   {
@@ -296,12 +296,13 @@ skipspace(p, dir)
 /*
  * Write blanks over part of a string.
  */
-void
+int
 writeblanks(start, end)
     char *start;
     char *end;
 {	char *p;
 	for ( p = start; p < end; p++ ) *p = ' ';
+	return 0;
 }
 
 /*
@@ -313,6 +314,7 @@ writeblanks(start, end)
  *	-1 - may be the beginning of a function definition,
  *		append another line and look again.
  */
+int
 test1(buf)
     char *buf;
 {	register char *p = buf;
@@ -359,6 +361,7 @@ test1(buf)
 	return contin;
 }
 
+int
 convert1(buf, out)
     char *buf;
     FILE *out;

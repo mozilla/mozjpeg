@@ -1,0 +1,235 @@
+SETUP instructions for the Independent JPEG Group's JPEG software
+=================================================================
+
+This file explains how to configure and compile the JPEG software.  We have
+tried to make this software extremely portable and flexible, so that it can be
+adapted to almost any environment.  The downside of this decision is that the
+installation process is not very automatic; you will need at least a little
+familiarity with C programming and program build procedures for your system.
+
+This file contains general instructions, then sections of specific hints for
+certain systems.  You may save yourself considerable time if you scan the
+whole file before starting to do anything.
+
+Before installing the software you must unpack the distributed source code.
+Since you are reading this file, you have probably already succeeded in this
+task.  However, there is one potential trap if you are on a non-Unix system:
+you may need to convert these files to the local standard text file format
+(for example, if you are on MS-DOS you probably have to convert LF end-of-line
+to CR/LF).  If so, apply the conversion to all the files EXCEPT those whose
+names begin with "test".  The test files contain binary data; if you change
+them in any way then the self-test will give bad results.
+
+
+STEP 1: PREPARE A MAKEFILE
+==========================
+
+First, select a makefile and copy it to "Makefile" (or whatever your version
+of make uses as the default makefile name; for example, "makefile.mak" for
+Borland C).  We include several standard makefiles in the distribution:
+
+	makefile.ansi: for Unix systems with ANSI-compatible C compilers.
+	makefile.unix: for Unix systems with non-ANSI C compilers.
+	makefile.mc5:  for Microsoft C 5.x under MS-DOS.
+	makefile.mc6:  for Microsoft C 6.x under MS-DOS.
+	makefile.tc:   for Borland's Turbo C under MS-DOS.
+	makefile.pwc:  for Mix Software's Power C under MS-DOS.
+	makefile.manx: for Manx Aztec C on Amigas.
+	makefile.sas:  for SAS C on Amigas.
+
+If you don't see a makefile for your system, we recommend starting from either
+makefile.ansi or makefile.unix, depending on whether your compiler accepts
+ANSI C or not.  Actually you should start with makefile.ansi whenever your
+compiler supports ANSI-style function definitions; you don't need full ANSI
+compatibility.  The difference between the two makefiles is that makefile.unix
+preprocesses the source code to convert function definitions to old-style C.
+(Our thanks to Peter Deutsch of Aladdin Enterprises for the ansi2knr program.)
+
+If you don't know whether your compiler supports ANSI-style function
+definitions, then take a look at config.c.  It is a test program that will
+help you figure out this fact, as well as some other facts you'll need in
+later steps.  You must compile and execute config.c by hand; the makefiles
+don't provide any support for this.  config.c may not compile the first try
+(in fact, the whole idea is for it to fail if anything is going to).  If you
+get compile errors, fix them by editing config.c according to the directions
+given in config.c.  Once you get it to run, select a makefile according to the
+advice it prints out, and make any other changes it recommends.
+
+Look over the selected Makefile and adjust options as needed.  In particular
+you may want to change the CC and CFLAGS definitions.  For instance, if you
+are using GCC, set CC=gcc.
+
+If you are on a system that doesn't use makefiles, you'll need to set up
+project files (or whatever you do use) to compile all the source files and
+link them into executable files cjpeg and djpeg.  See the file lists in any of
+the makefiles to find out which files go into each program (makcjpeg.lst and
+makdjpeg.lst are handy summaries).
+
+
+STEP 2: EDIT JCONFIG.H
+======================
+
+Look over jconfig.h and adjust #defines to reflect the properties of your
+system and C compiler.  (If you prefer, you can usually leave jconfig.h
+unmodified and add -Dsymbol switches to the Makefile's CFLAGS definition.)
+
+If you have an ANSI-compliant C compiler, no changes should be necessary
+except perhaps for RIGHT_SHIFT_IS_UNSIGNED and TWO_FILE_COMMANDLINE.  For
+older compilers other changes may be needed, depending on what ANSI features
+are supported.
+
+If you don't know enough about C programming to understand the questions in
+jconfig.h, then use config.c to figure out what to change.  (See description
+of config.c in step 1.)
+
+A note about TWO_FILE_COMMANDLINE: defining this selects the command line
+syntax in which the input and output files are both named on the command line.
+If it's not defined, the output image goes to standard output, and the input
+can optionally come from standard input.  You MUST use two-file style on any
+system that doesn't cope well with binary data fed through stdin/stdout; this
+is true for most MS-DOS compilers, for example.  If you're not on a Unix
+system, it's probably safest to assume you need two-file style.
+
+
+STEP 3: MAKE
+============
+
+Now you should be able to "make" the software.
+
+If you have trouble with missing system include files or inclusion of the
+wrong ones, look at jinclude.h (or use config.c, if you are not a C expert).
+
+If your compiler complains about big_sarray_control and big_barray_control
+being undefined structures, you should be able to shut it up by adding
+-DINCOMPLETE_TYPES_BROKEN to CFLAGS (or add #define INCOMPLETE_TYPES_BROKEN
+to jconfig.h).
+
+There are a fair number of routines that do not use all of their parameters;
+some compilers will issue warnings about this, which you can ignore.  Any
+other warning deserves investigation.
+
+
+STEP 4: TEST
+============
+
+As a quick test of functionality we've included three small sample files:
+	testorig.jpg	A reduced section of the well-known Lenna picture.
+	testimg.ppm	The output of djpeg testorig.jpg
+	testimg.jpg	The output of cjpeg testimg.ppm
+(The two .jpg files aren't identical since JPEG is lossy.)  If you can
+generate duplicates of testimg.ppm and testimg.jpg then you probably have a
+working port.
+
+With most of the makefiles, "make test" will perform the necessary
+comparisons.  If you're using a makefile that doesn't provide this option, run
+djpeg and cjpeg to generate testout.ppm and testout.jpg, then compare these to
+testimg.* with whatever file comparison tool you have.  The files should be
+bit-for-bit identical.
+
+NOTE: this is far from an exhaustive test of the JPEG software; some modules,
+such as color quantization and GIF I/O, are not exercised at all.  It's just a
+quick test to give you some confidence that you haven't missed something
+major.
+
+If the test passes, you can copy the executable files cjpeg and djpeg to
+wherever you normally install programs.  Read the file USAGE to learn more
+about using the programs.
+
+
+OPTIONAL STUFF
+==============
+
+We distribute the software with support for RLE image files (Utah Raster
+Toolkit format) disabled, because the RLE support won't compile without the
+Utah library.  If you have URT version 3.0, you can enable RLE support as
+follows:
+	1.  #define RLE_SUPPORTED in jconfig.h or in the Makefile.
+	2.  Add a -I option to CFLAGS in the Makefile for the directory
+	    containing the URT .h files (typically the "include"
+	    subdirectory of the URT distribution).
+	3.  Add -L... -lrle to LDLIBS in the Makefile, where ... specifies
+	    the directory containing the URT "librle.a" file (typically the
+	    "lib" subdirectory of the URT distribution).
+
+If you want to incorporate the JPEG code as subroutines in a larger program,
+we recommend that you make libjpeg.a.  Then use the jconfig.h and jpegdata.h
+files as your interface to the JPEG functions, and link libjpeg.a with your
+program.  Your surrounding program will have to provide functionality similar
+to what's in jcmain.c or jdmain.c, and you may want to replace jerror.c and
+possibly other modules depending on your needs.  See the "architecture" file
+for more info.  If it seems to you that the system structure doesn't
+accommodate what you want to do, please contact the authors.
+
+CAUTION: When you use the JPEG code as subroutines, we recommend that you make
+any required configuration changes by modifying jconfig.h, not by adding -D
+switches to the Makefile.  Otherwise you must be sure to provide the same -D
+switches when compiling any program that includes the JPEG .h files.
+
+If you need to make a smaller version of the JPEG software, some optional
+functions can be removed at compile time.  See the xxx_SUPPORTED #defines in
+jconfig.h.  If at all possible, we recommend that you leave in decoder support
+for all valid JPEG files, to ensure that you can read anyone's output.
+Restricting your encoder, or removing optional functions like block smoothing,
+won't hurt compatibility.  Taking out support for image file formats that you
+don't use is the most painless way to make the programs smaller.
+
+
+NOTES FOR SPECIFIC SYSTEMS
+==========================
+
+We welcome reports on changes needed for systems not mentioned here.
+Submit 'em to jpeg-info@uunet.uu.net.  Also, config.c is fairly new and not
+yet thoroughly tested; if it's wrong about how to configure the JPEG software
+for your system, please let us know.
+
+
+HP/Apollo DOMAIN:
+
+At least in version 10.3.5, the C compiler is ANSI but the system include
+files are not.  Use makefile.ansi and add -DNONANSI_INCLUDES to CFLAGS.
+
+HP-UX:
+
+If you have HP-UX 7.05 or later with the "software development" C compiler,
+then you can use makefile.ansi.  Add "-Aa" to the CFLAGS line in the
+makefile.  If you have a pre-7.05 system, or if you are using the non-ANSI C
+compiler delivered with a minimum HP-UX 8.0 system, then you must use
+makefile.unix (and do NOT add -Aa).  Also, adding "-lmalloc" to LDLIBS is
+recommended if you have libmalloc.a (it seems not to be present in minimum
+8.0).
+
+On HP series 800 machines, the HP C compiler is buggy in revisions prior to
+A.08.07.  If you get complaints about "not a typedef name", you'll have to
+convert the code to K&R style (i.e., use makefile.unix).
+
+IBM RS/6000 AIX:
+
+The CFLAGS switch to make the compiler define __STDC__ is "-qlanglvl=ansi".
+
+Macintosh Think C:
+
+You'll have to prepare project files for cjpeg and djpeg; we don't include
+those in the distribution since they are not text files.  The COBJECTS and
+DOBJECTS lists in makefile.unix show which files should be included in each
+project.  Also add the ANSI and Unix C libraries in a separate segment.  You
+may need to divide the JPEG files into more than one segment; you can do this
+pretty much as you please.
+
+If you have Think C version 5.0 you should be able to just turn on __STDC__
+through the compiler switch that enables that.  With version 4.0 you must
+manually edit jconfig.h.  (You can #define __STDC__, but also #define const.)
+
+Microsoft C for MS-DOS:
+
+Some versions of MS C fail with an "out of macro expansion space" error
+because they can't cope with the macro TRACEMS8 (defined in jpegdata.h).
+If this happens to you, the easiest solution is to change TRACEMS8 to
+expand to nothing.  You'll lose the ability to dump out JPEG coefficient
+tables with djpeg -d -d, but at least you can compile.
+
+Sun:
+
+Don't forget to add -DBSD to CFLAGS.  If you are using GCC on SunOS 4.0.1 or
+earlier, you will need to add -DNONANSI_INCLUDES to CFLAGS (your compiler may
+be ANSI, but your system include files aren't).  I've gotten conflicting
+reports on whether this is still necessary on SunOS 4.1 or later.

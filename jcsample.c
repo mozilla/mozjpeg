@@ -63,10 +63,10 @@ subsample (compress_info_ptr cinfo, int which_component,
       for (v = 0; v < v_expand; v++) {
 	inptr = input_data[inrow+v] + (outcol*h_expand);
 	for (h = 0; h < h_expand; h++) {
-	  outvalue += GETJSAMPLE(*inptr++);
+	  outvalue += (INT32) GETJSAMPLE(*inptr++);
 	}
       }
-      *outptr++ = (outvalue + numpix2) / numpix;
+      *outptr++ = (JSAMPLE) ((outvalue + numpix2) / numpix);
     }
     inrow += v_expand;
   }

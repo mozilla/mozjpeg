@@ -61,15 +61,15 @@ ycc_rgb_convert (decompress_info_ptr cinfo, int num_rows,
       x = y          + 1436*v + 512; /* red */
       if (x < 0) x = 0;
       if (x > ((INT32) MAXJSAMPLE*1024)) x = (INT32) MAXJSAMPLE*1024;
-      *outptr0++ = x >> 10;
+      *outptr0++ = (JSAMPLE) (x >> 10);
       x = y -  352*u -  731*v + 512; /* green */
       if (x < 0) x = 0;
       if (x > ((INT32) MAXJSAMPLE*1024)) x = (INT32) MAXJSAMPLE*1024;
-      *outptr1++ = x >> 10;
+      *outptr1++ = (JSAMPLE) (x >> 10);
       x = y + 1815*u          + 512; /* blue */
       if (x < 0) x = 0;
       if (x > ((INT32) MAXJSAMPLE*1024)) x = (INT32) MAXJSAMPLE*1024;
-      *outptr2++ = x >> 10;
+      *outptr2++ = (JSAMPLE) (x >> 10);
     }
   }
 }

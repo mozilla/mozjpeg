@@ -200,7 +200,8 @@ typedef struct {		/* A Huffman coding table */
 	UINT16 ehufco[256];	/* code for each symbol */
 	char ehufsi[256];	/* length of code for each symbol */
 	UINT16 mincode[17];	/* smallest code of length k */
-	INT32 maxcode[17];	/* largest code of length k (-1 if none) */
+	INT32 maxcode[18];	/* largest code of length k (-1 if none) */
+	/* maxcode[17] is a sentinel to ensure huff_DECODE terminates */
 	short valptr[17];	/* huffval[] index of 1st symbol of length k */
 } HUFF_TBL;
 
@@ -220,7 +221,7 @@ struct compress_info_struct {
  * All of these fields shall be established by the user interface before
  * calling jpeg_compress, or by the input_init or c_ui_method_selection
  * methods.
- * Most parameters can be set to reasonable defaults by j_default_compression.
+ * Most parameters can be set to reasonable defaults by j_c_defaults.
  * Note that the UI must supply the storage for the main methods struct,
  * though it sets only a few of the methods there.
  */
@@ -309,8 +310,10 @@ typedef struct compress_info_struct * compress_info_ptr;
 struct decompress_info_struct {
 /*
  * These fields shall be established by the user interface before
- * calling jpeg_decompress.  Note that the UI must supply the storage for
- * the main methods struct, though it sets only a few of the methods there.
+ * calling jpeg_decompress.
+ * Most parameters can be set to reasonable defaults by j_d_defaults.
+ * Note that the UI must supply the storage for the main methods struct,
+ * though it sets only a few of the methods there.
  */
 	decompress_methods_ptr methods; /* Points to list of methods to use */
 
@@ -425,7 +428,7 @@ typedef struct decompress_info_struct * decompress_info_ptr;
 #ifdef CHAR_IS_UNSIGNED
 #define JGETC(cinfo)	( --(cinfo)->bytes_in_buffer < 0 ? \
 			 (*(cinfo)->methods->read_jpeg_data) (cinfo) : \
-			 (int) *(cinfo)->next_input_byte++ )
+			 (int) (*(cinfo)->next_input_byte++) )
 #else
 #define JGETC(cinfo)	( --(cinfo)->bytes_in_buffer < 0 ? \
 			 (*(cinfo)->methods->read_jpeg_data) (cinfo) : \
@@ -435,16 +438,33 @@ typedef struct decompress_info_struct * decompress_info_ptr;
 #define JUNGETC(ch,cinfo)  ((cinfo)->bytes_in_buffer++, \
 			    *(--((cinfo)->next_input_byte)) = (ch))
 
-#define MIN_UNGET	2	/* may always do at least 2 JUNGETCs */
+#define MIN_UNGET	4	/* may always do at least 4 JUNGETCs */
 
 
 /* A virtual image has a control block whose contents are private to the
  * memory manager module (and may differ between managers).  The rest of the
- * code only refers to virtual images by these pointer types.
+ * code only refers to virtual images by these pointer types, and never
+ * dereferences the pointer.
  */
 
 typedef struct big_sarray_control * big_sarray_ptr;
 typedef struct big_barray_control * big_barray_ptr;
+
+/* Although a real ANSI C compiler can deal perfectly well with pointers to
+ * unspecified structures (see "incomplete types" in the spec), a few pre-ANSI
+ * and pseudo-ANSI compilers get confused.  To keep one of these bozos happy,
+ * add -DINCOMPLETE_TYPES_BROKEN to CFLAGS in your Makefile.  Then we will
+ * pseudo-define the structs as containing a single "dummy" field.
+ * The memory manager(s) #define AM_MEMORY_MANAGER before including this file,
+ * so that they can make their own definitions of the structs.
+ */
+
+#ifdef INCOMPLETE_TYPES_BROKEN
+#ifndef AM_MEMORY_MANAGER
+struct big_sarray_control { long dummy; };
+struct big_barray_control { long dummy; };
+#endif
+#endif
 
 
 /* Method types that need typedefs */
@@ -490,8 +510,8 @@ struct external_methods_struct {
 	/* by an enumerated-type code so that non-English error messages */
 	/* can be substituted easily.  This will not be done until all the */
 	/* code is in place, so that we know what messages are needed. */
-	METHOD(void, error_exit, (char *msgtext));
-	METHOD(void, trace_message, (char *msgtext));
+	METHOD(void, error_exit, (const char *msgtext));
+	METHOD(void, trace_message, (const char *msgtext));
 
 	/* Working data for error/trace facility */
 	/* See macros below for the usage of these variables */
@@ -559,42 +579,36 @@ struct external_methods_struct {
 					 (emeth)->message_parm[3] = (p4), \
 					 (*(emeth)->error_exit) (msg))
 
+#define MAKESTMT(stuff)		do { stuff } while (0)
+
 #define TRACEMS(emeth,lvl,msg)    \
-  ( (emeth)->trace_level >= (lvl) ? \
-   ((*(emeth)->trace_message) (msg), 0) : 0)
+  MAKESTMT( if ((emeth)->trace_level >= (lvl)) { \
+		(*(emeth)->trace_message) (msg); } )
 #define TRACEMS1(emeth,lvl,msg,p1)    \
-  ( (emeth)->trace_level >= (lvl) ? \
-   ((emeth)->message_parm[0] = (p1), \
-    (*(emeth)->trace_message) (msg), 0) : 0)
+  MAKESTMT( if ((emeth)->trace_level >= (lvl)) { \
+		(emeth)->message_parm[0] = (p1); \
+		(*(emeth)->trace_message) (msg); } )
 #define TRACEMS2(emeth,lvl,msg,p1,p2)    \
-  ( (emeth)->trace_level >= (lvl) ? \
-   ((emeth)->message_parm[0] = (p1), \
-    (emeth)->message_parm[1] = (p2), \
-    (*(emeth)->trace_message) (msg), 0) : 0)
+  MAKESTMT( if ((emeth)->trace_level >= (lvl)) { \
+		(emeth)->message_parm[0] = (p1); \
+		(emeth)->message_parm[1] = (p2); \
+		(*(emeth)->trace_message) (msg); } )
 #define TRACEMS3(emeth,lvl,msg,p1,p2,p3)    \
-  ( (emeth)->trace_level >= (lvl) ? \
-   ((emeth)->message_parm[0] = (p1), \
-    (emeth)->message_parm[1] = (p2), \
-    (emeth)->message_parm[2] = (p3), \
-    (*(emeth)->trace_message) (msg), 0) : 0)
+  MAKESTMT( if ((emeth)->trace_level >= (lvl)) { \
+		int * _mp = (emeth)->message_parm; \
+		*_mp++ = (p1); *_mp++ = (p2); *_mp = (p3); \
+		(*(emeth)->trace_message) (msg); } )
 #define TRACEMS4(emeth,lvl,msg,p1,p2,p3,p4)    \
-  ( (emeth)->trace_level >= (lvl) ? \
-   ((emeth)->message_parm[0] = (p1), \
-    (emeth)->message_parm[1] = (p2), \
-    (emeth)->message_parm[2] = (p3), \
-    (emeth)->message_parm[3] = (p4), \
-    (*(emeth)->trace_message) (msg), 0) : 0)
+  MAKESTMT( if ((emeth)->trace_level >= (lvl)) { \
+		int * _mp = (emeth)->message_parm; \
+		*_mp++ = (p1); *_mp++ = (p2); *_mp++ = (p3); *_mp = (p4); \
+		(*(emeth)->trace_message) (msg); } )
 #define TRACEMS8(emeth,lvl,msg,p1,p2,p3,p4,p5,p6,p7,p8)    \
-  ( (emeth)->trace_level >= (lvl) ? \
-   ((emeth)->message_parm[0] = (p1), \
-    (emeth)->message_parm[1] = (p2), \
-    (emeth)->message_parm[2] = (p3), \
-    (emeth)->message_parm[3] = (p4), \
-    (emeth)->message_parm[4] = (p5), \
-    (emeth)->message_parm[5] = (p6), \
-    (emeth)->message_parm[6] = (p7), \
-    (emeth)->message_parm[7] = (p8), \
-    (*(emeth)->trace_message) (msg), 0) : 0)
+  MAKESTMT( if ((emeth)->trace_level >= (lvl)) { \
+		int * _mp = (emeth)->message_parm; \
+		*_mp++ = (p1); *_mp++ = (p2); *_mp++ = (p3); *_mp++ = (p4); \
+		*_mp++ = (p5); *_mp++ = (p6); *_mp++ = (p7); *_mp = (p8); \
+		(*(emeth)->trace_message) (msg); } )
 
 
 /* Methods used during JPEG compression. */
@@ -740,15 +754,23 @@ struct decompress_methods_struct {
 
 /* main entry for compression */
 EXTERN void jpeg_compress PP((compress_info_ptr cinfo));
+
 /* default parameter setup for compression */
-EXTERN void j_default_compression PP((compress_info_ptr cinfo, int quality));
+EXTERN void j_c_defaults PP((compress_info_ptr cinfo, int quality,
+			     boolean force_baseline));
 EXTERN void j_monochrome_default PP((compress_info_ptr cinfo));
 EXTERN void j_set_quality PP((compress_info_ptr cinfo, int quality,
 			      boolean force_baseline));
-EXTERN void j_free_defaults PP((compress_info_ptr cinfo));
+EXTERN void j_c_free_defaults PP((compress_info_ptr cinfo));
 
 /* main entry for decompression */
 EXTERN void jpeg_decompress PP((decompress_info_ptr cinfo));
+
+/* default parameter setup for decompression */
+EXTERN void j_d_defaults PP((decompress_info_ptr cinfo,
+			     boolean standard_buffering));
+EXTERN void j_d_free_defaults PP((decompress_info_ptr cinfo,
+				  boolean standard_buffering));
 
 /* forward DCT */
 EXTERN void j_fwd_dct PP((DCTBLOCK data));
@@ -775,6 +797,8 @@ EXTERN void jselccolor PP((compress_info_ptr cinfo));	/* jccolor.c */
 /* The user interface should call one of these to select input format: */
 EXTERN void jselrgif PP((compress_info_ptr cinfo)); /* jrdgif.c */
 EXTERN void jselrppm PP((compress_info_ptr cinfo)); /* jrdppm.c */
+EXTERN void jselrrle PP((compress_info_ptr cinfo)); /* jrdrle.c */
+EXTERN void jselrtarga PP((compress_info_ptr cinfo)); /* jrdtarga.c */
 /* and one of these to select output header format: */
 EXTERN void jselwjfif PP((compress_info_ptr cinfo)); /* jwrjfif.c */
 
@@ -793,6 +817,8 @@ EXTERN void jselrjfif PP((decompress_info_ptr cinfo)); /* jrdjfif.c */
 /* and one of these to select output image format: */
 EXTERN void jselwgif PP((decompress_info_ptr cinfo)); /* jwrgif.c */
 EXTERN void jselwppm PP((decompress_info_ptr cinfo)); /* jwrppm.c */
+EXTERN void jselwrle PP((decompress_info_ptr cinfo)); /* jwrrle.c */
+EXTERN void jselwtarga PP((decompress_info_ptr cinfo)); /* jwrtarga.c */
 
 /* method selection routines for system-dependent modules */
 EXTERN void jselerror PP((external_methods_ptr emethods)); /* jerror.c */
@@ -805,7 +831,9 @@ EXTERN void j_mem_stats PP((void));
 
 /* Miscellaneous useful macros */
 
+#undef MAX
 #define MAX(a,b)	((a) > (b) ? (a) : (b))
+#undef MIN
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 
 

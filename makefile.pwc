@@ -4,22 +4,19 @@
 # and Dan Grayson's pd make 2.14 under MS-DOS.
 # Thanks to Bob Hardy for this version.
 
-# See README and edit jconfig.h before saying "make" !!
+# Read SETUP instructions before saying "make" !!
 
-# NOTE: make sure you have converted end-of-line markers to CR/LF in this file
-# and in the three mak*.cf files; otherwise pd make and the Mix linker will
-# choke.  Power C doesn't seem to care whether end-of-lines are CR/LF or just
-# LF in the *.h and *.c files.  If you blindly converted LF to CR/LF in ALL
-# the files, then you broke the test*.* files, which contain binary data.
-
+# The name of your C compiler:
 CC=pc
 
 # You may need to adjust these cc options:
 MODEL=m
-CFLAGS=-dMEM_STATS -dMSDOS -m$(MODEL)
-LDFLAGS=
+CFLAGS= -dMSDOS -m$(MODEL)
 # In particular:
-#   -dMEM_STATS is optional -- it enables gathering of memory usage statistics.
+#   Add -dMEM_STATS to enable gathering of memory usage statistics.
+
+# Link-time cc options:
+LDFLAGS=
 LDLIBS=
 
 # miscellaneous OS-dependent stuff
@@ -31,16 +28,31 @@ RM=del
 AR=merge
 
 
+# source files (independently compilable files)
+SOURCES= jbsmooth.c jcarith.c jccolor.c jcdeflts.c jcexpand.c jchuff.c jcmain.c jcmaster.c jcmcu.c jcpipe.c jcsample.c jdarith.c jdcolor.c jddeflts.c jdhuff.c jdmain.c jdmaster.c jdmcu.c jdpipe.c jdsample.c jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c jvirtmem.c jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c jwrjfif.c jwrgif.c jwrppm.c jwrrle.c jwrtarga.c
+# files included by source files
+INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+# documentation, test, and support files
+DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
+MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.tc makcjpeg.lst makdjpeg.lst makefile.pwc makcjpeg.cf makdjpeg.cf makljpeg.cf
+OTHERFILES= ansi2knr.c config.c
+TESTFILES= testorig.jpg testimg.ppm testimg.jpg
+DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(INCLUDES) $(OTHERFILES) $(TESTFILES)
+# objectfiles common to cjpeg and djpeg
+COMOBJECTS= jutils.mix jvirtmem.mix jerror.mix
 # compression objectfiles
-COBJECTS = jcmain.mix jcmaster.mix jcdeflts.mix jcarith.mix jccolor.mix jcexpand.mix jchuff.mix jcmcu.mix jcpipe.mix jcsample.mix jfwddct.mix jrdgif.mix jrdppm.mix jwrjfif.mix jutils.mix jvirtmem.mix jerror.mix
+CLIBOBJECTS= jcmaster.mix jcdeflts.mix jcarith.mix jccolor.mix jcexpand.mix jchuff.mix jcmcu.mix jcpipe.mix jcsample.mix jfwddct.mix jwrjfif.mix jrdgif.mix jrdppm.mix jrdrle.mix jrdtarga.mix
+COBJECTS= jcmain.mix $(CLIBOBJECTS) $(COMOBJECTS)
 # decompression objectfiles
-DOBJECTS = jdmain.mix jdmaster.mix jbsmooth.mix jdarith.mix jdcolor.mix jdhuff.mix jdmcu.mix jdpipe.mix jdsample.mix jquant1.mix jquant2.mix jrevdct.mix jrdjfif.mix jwrgif.mix jwrppm.mix jutils.mix jvirtmem.mix jerror.mix
-# These objectfiles are included in libjpeg.mix (all but jcmain, jdmain)
-LIBOBJECTS = jcmaster.mix jcdeflts.mix jcarith.mix jccolor.mix jcexpand.mix jchuff.mix jcmcu.mix jcpipe.mix jcsample.mix jfwddct.mix jrdgif.mix jrdppm.mix jwrjfif.mix jdmaster.mix jbsmooth.mix jdarith.mix jdcolor.mix jdhuff.mix jdmcu.mix jdpipe.mix jdsample.mix jquant1.mix jquant2.mix jrevdct.mix jrdjfif.mix jwrgif.mix jwrppm.mix jutils.mix jvirtmem.mix jerror.mix
+DLIBOBJECTS= jdmaster.mix jddeflts.mix jbsmooth.mix jdarith.mix jdcolor.mix jdhuff.mix jdmcu.mix jdpipe.mix jdsample.mix jquant1.mix jquant2.mix jrevdct.mix jrdjfif.mix jwrgif.mix jwrppm.mix jwrrle.mix jwrtarga.mix
+DOBJECTS= jdmain.mix $(DLIBOBJECTS) $(COMOBJECTS)
+# These objectfiles are included in libjpeg.mix
+LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 
 
-all: cjpeg.exe djpeg.exe test
+all: cjpeg.exe djpeg.exe
 # By default, libjpeg.mix is not built unless you explicitly request it.
+# You can add libjpeg.mix to the line above if you want it built by default.
 
 
 cjpeg.exe: $(COBJECTS)
@@ -66,35 +78,40 @@ test:
 	fc testimg.jpg testout.jpg
 
 
-jbsmooth.mix : jbsmooth.c jinclude.h jconfig.h jpegdata.h 
-jcarith.mix : jcarith.c jinclude.h jconfig.h jpegdata.h 
-jccolor.mix : jccolor.c jinclude.h jconfig.h jpegdata.h 
-jcdeflts.mix : jcdeflts.c jinclude.h jconfig.h jpegdata.h 
-jcexpand.mix : jcexpand.c jinclude.h jconfig.h jpegdata.h 
-jchuff.mix : jchuff.c jinclude.h jconfig.h jpegdata.h 
-jcmain.mix : jcmain.c jinclude.h jconfig.h jpegdata.h egetopt.c 
-jcmaster.mix : jcmaster.c jinclude.h jconfig.h jpegdata.h 
-jcmcu.mix : jcmcu.c jinclude.h jconfig.h jpegdata.h 
-jcpipe.mix : jcpipe.c jinclude.h jconfig.h jpegdata.h 
-jcsample.mix : jcsample.c jinclude.h jconfig.h jpegdata.h 
-jdarith.mix : jdarith.c jinclude.h jconfig.h jpegdata.h 
-jdcolor.mix : jdcolor.c jinclude.h jconfig.h jpegdata.h 
-jdhuff.mix : jdhuff.c jinclude.h jconfig.h jpegdata.h 
-jdmain.mix : jdmain.c jinclude.h jconfig.h jpegdata.h egetopt.c
-jdmaster.mix : jdmaster.c jinclude.h jconfig.h jpegdata.h 
-jdmcu.mix : jdmcu.c jinclude.h jconfig.h jpegdata.h 
-jdpipe.mix : jdpipe.c jinclude.h jconfig.h jpegdata.h 
-jdsample.mix : jdsample.c jinclude.h jconfig.h jpegdata.h 
-jerror.mix : jerror.c jinclude.h jconfig.h jpegdata.h 
-jfwddct.mix : jfwddct.c jinclude.h jconfig.h jpegdata.h 
-jquant1.mix : jquant1.c jinclude.h jconfig.h jpegdata.h 
-jquant2.mix : jquant2.c jinclude.h jconfig.h jpegdata.h 
-jrdjfif.mix : jrdjfif.c jinclude.h jconfig.h jpegdata.h 
-jrdgif.mix : jrdgif.c jinclude.h jconfig.h jpegdata.h 
-jrdppm.mix : jrdppm.c jinclude.h jconfig.h jpegdata.h 
-jrevdct.mix : jrevdct.c jinclude.h jconfig.h jpegdata.h 
-jutils.mix : jutils.c jinclude.h jconfig.h jpegdata.h 
-jvirtmem.mix : jvirtmem.c jinclude.h jconfig.h jpegdata.h 
-jwrjfif.mix : jwrjfif.c jinclude.h jconfig.h jpegdata.h 
-jwrgif.mix : jwrgif.c jinclude.h jconfig.h jpegdata.h 
-jwrppm.mix : jwrppm.c jinclude.h jconfig.h jpegdata.h 
+jbsmooth.mix : jbsmooth.c jinclude.h jconfig.h jpegdata.h
+jcarith.mix : jcarith.c jinclude.h jconfig.h jpegdata.h
+jccolor.mix : jccolor.c jinclude.h jconfig.h jpegdata.h
+jcdeflts.mix : jcdeflts.c jinclude.h jconfig.h jpegdata.h
+jcexpand.mix : jcexpand.c jinclude.h jconfig.h jpegdata.h
+jchuff.mix : jchuff.c jinclude.h jconfig.h jpegdata.h
+jcmain.mix : jcmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+jcmaster.mix : jcmaster.c jinclude.h jconfig.h jpegdata.h
+jcmcu.mix : jcmcu.c jinclude.h jconfig.h jpegdata.h
+jcpipe.mix : jcpipe.c jinclude.h jconfig.h jpegdata.h
+jcsample.mix : jcsample.c jinclude.h jconfig.h jpegdata.h
+jdarith.mix : jdarith.c jinclude.h jconfig.h jpegdata.h
+jdcolor.mix : jdcolor.c jinclude.h jconfig.h jpegdata.h
+jddeflts.mix : jddeflts.c jinclude.h jconfig.h jpegdata.h
+jdhuff.mix : jdhuff.c jinclude.h jconfig.h jpegdata.h
+jdmain.mix : jdmain.c jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+jdmaster.mix : jdmaster.c jinclude.h jconfig.h jpegdata.h
+jdmcu.mix : jdmcu.c jinclude.h jconfig.h jpegdata.h
+jdpipe.mix : jdpipe.c jinclude.h jconfig.h jpegdata.h
+jdsample.mix : jdsample.c jinclude.h jconfig.h jpegdata.h
+jerror.mix : jerror.c jinclude.h jconfig.h jpegdata.h
+jquant1.mix : jquant1.c jinclude.h jconfig.h jpegdata.h
+jquant2.mix : jquant2.c jinclude.h jconfig.h jpegdata.h
+jfwddct.mix : jfwddct.c jinclude.h jconfig.h jpegdata.h
+jrevdct.mix : jrevdct.c jinclude.h jconfig.h jpegdata.h
+jutils.mix : jutils.c jinclude.h jconfig.h jpegdata.h
+jvirtmem.mix : jvirtmem.c jinclude.h jconfig.h jpegdata.h
+jrdjfif.mix : jrdjfif.c jinclude.h jconfig.h jpegdata.h
+jrdgif.mix : jrdgif.c jinclude.h jconfig.h jpegdata.h
+jrdppm.mix : jrdppm.c jinclude.h jconfig.h jpegdata.h
+jrdrle.mix : jrdrle.c jinclude.h jconfig.h jpegdata.h
+jrdtarga.mix : jrdtarga.c jinclude.h jconfig.h jpegdata.h
+jwrjfif.mix : jwrjfif.c jinclude.h jconfig.h jpegdata.h
+jwrgif.mix : jwrgif.c jinclude.h jconfig.h jpegdata.h
+jwrppm.mix : jwrppm.c jinclude.h jconfig.h jpegdata.h
+jwrrle.mix : jwrrle.c jinclude.h jconfig.h jpegdata.h
+jwrtarga.mix : jwrtarga.c jinclude.h jconfig.h jpegdata.h

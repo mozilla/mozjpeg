@@ -248,7 +248,7 @@ subsample (compress_info_ptr cinfo,
  * row of whole_scan_MCUs as we can get without exceeding 64KB per row.
  */
 
-#define MAX_WHOLE_ROW_BLOCKS	(65500 / SIZEOF(JBLOCK)) /* max blocks/row */
+#define MAX_WHOLE_ROW_BLOCKS	((int) (65500 / SIZEOF(JBLOCK))) /* max blocks/row */
 
 static big_barray_ptr whole_scan_MCUs; /* Big array for saving the MCUs */
 static int MCUs_in_big_row;	/* # of MCUs in each row of whole_scan_MCUs */
@@ -407,7 +407,8 @@ single_ccontroller (compress_info_ptr cinfo)
     
     /* Obtain rows_this_time pixel rows and expand to rows_in_mem rows. */
     /* Then we have exactly DCTSIZE row groups for subsampling. */   
-    rows_this_time = MIN(rows_in_mem, cinfo->image_height - cur_pixel_row);
+    rows_this_time = (int) MIN((long) rows_in_mem,
+			       cinfo->image_height - cur_pixel_row);
  
     (*cinfo->methods->get_sample_rows) (cinfo, rows_this_time,
 					fullsize_data[whichss]);
@@ -569,7 +570,8 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
     
     /* Obtain rows_this_time pixel rows and expand to rows_in_mem rows. */
     /* Then we have exactly DCTSIZE row groups for subsampling. */   
-    rows_this_time = MIN(rows_in_mem, cinfo->image_height - cur_pixel_row);
+    rows_this_time = (int) MIN((long) rows_in_mem,
+			       cinfo->image_height - cur_pixel_row);
  
     (*cinfo->methods->get_sample_rows) (cinfo, rows_this_time,
 					fullsize_data[whichss]);

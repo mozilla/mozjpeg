@@ -1,0 +1,162 @@
+USAGE instructions for the Independent JPEG Group's JPEG software
+=================================================================
+
+This distribution contains software to implement JPEG image compression and
+decompression.  JPEG (pronounced "jay-peg") is a standardized compression
+method for full-color and gray-scale images.  JPEG is intended for
+"real-world" scenes; cartoons and other non-realistic images are not its
+strong suit.  JPEG is lossy, meaning that the output image is not necessarily
+identical to the input image.  Hence you should not use JPEG if you have to
+have identical output bits.  However, on typical images of real-world scenes,
+very good compression levels can be obtained with no visible change, and
+amazingly high compression levels can be obtained if you can tolerate a
+low-quality image.
+
+This file describes usage of the standard programs "cjpeg" and "djpeg" that
+can be built directly from the distributed software.  See the README file for
+hints on incorporating the JPEG software into other programs.
+
+If you are on a Unix machine you may prefer to read the Unix-style manual
+pages in files cjpeg.1 and djpeg.1.
+
+NOTE: at some point we will probably redesign the user interface, so the
+command line switches described here will change.
+
+
+We provide two programs, cjpeg to compress an image file into JPEG format,
+and djpeg to decompress a JPEG file back into a conventional image format.
+
+On Unix-like systems, you say:
+	cjpeg [switches] [imagefile] >jpegfile
+or
+	djpeg [switches] [jpegfile]  >imagefile
+The programs read the specified input file, or standard input if none is
+named.  They always write to standard output (with trace/error messages to
+standard error).  These conventions are handy for piping images between
+programs.
+
+On PC, Macintosh, and Amiga systems, you say:
+	cjpeg [switches] imagefile jpegfile
+or
+	djpeg [switches] jpegfile  imagefile
+i.e., both input and output files are named on the command line.  This style
+is a little more foolproof, and it loses no functionality if you don't have
+pipes.  (You can get this style on Unix too, if you prefer, by defining
+TWO_FILE_COMMANDLINE; see SETUP.)
+
+The currently supported image file formats are: PPM (PBMPLUS color format),
+PGM (PBMPLUS gray-scale format), GIF, Targa, and RLE (Utah Raster Toolkit
+format).  (RLE is supported only if the URT library is available.)
+cjpeg recognizes the input image format automatically, with the exception
+of some Targa-format files.
+
+The only JPEG file format currently supported is the JFIF format.  Support for
+the TIFF/JPEG format will probably be added at some future date.
+
+
+The command line switches for cjpeg are:
+
+	-Q quality	Scale quantization tables to adjust image quality.
+			Quality is 0 (worst) to 100 (best); default is 75.
+			(See below for more info.)
+
+	-o		Perform optimization of entropy encoding parameters.
+			Without this, default encoding parameters are used.
+			-o usually makes the JPEG file a little smaller, but
+			cjpeg runs much slower.  Image quality and speed of
+			decompression are unaffected by -o.
+
+	-T		Input file is Targa format.  Targa files that contain
+			an "identification" field will not be automatically
+			recognized by cjpeg; for such files you must specify
+			-T to force cjpeg to treat the input as Targa format.
+
+	-I		Generate noninterleaved JPEG file (not yet supported).
+
+	-a		Use arithmetic coding rather than Huffman coding.
+			(Not currently supported for legal reasons.)
+
+	-d		Enable debug printout.  More -d's give more printout.
+			Also, version information is printed at startup.
+
+The -Q switch lets you trade off compressed file size against quality of the
+reconstructed image: the higher the -Q setting, the larger the JPEG file, and
+the closer the output image will be to the original input.  Normally you want
+to use the lowest -Q setting (smallest file) that decompresses into something
+visually indistinguishable from the original image.  For this purpose the -Q
+setting should be between 50 and 95; the default of 75 is often about right.
+If you see defects at -Q 75, then go up 5 or 10 counts at a time until you are
+happy with the output image.  (The optimal setting will vary from one image to
+another.)
+
+-Q 100 will generate a quantization table of all 1's, eliminating loss in the
+quantization step (but there is still information loss in subsampling, as well
+as roundoff error).  This setting is mainly of interest for experimental
+purposes.  -Q values above about 95 are NOT recommended for normal use; the
+compressed file size goes up dramatically for hardly any gain in output image
+quality.
+
+In the other direction, -Q values below 50 will produce very small files of
+low image quality.  Settings around 5 to 10 might be useful in preparing an
+index of a large image library, for example.  Try -Q 2 (or so) for some
+amusing Cubist effects.  (Note: -Q values below about 25 generate 2-byte
+quantization tables, which are considered optional in the JPEG standard.
+cjpeg emits a warning message when you give such a -Q value, because some
+commercial JPEG programs may be unable to decode the resulting file.)
+
+
+The command line switches for djpeg are:
+
+	-G		Select GIF output format (implies -q, with default
+			of 256 colors).
+
+	-P		Select PPM or PGM output format (this is the default).
+			PGM is emitted if the JPEG file is gray-scale or if -g
+			is specified.
+
+	-R		Select RLE output format.  Requires URT library.
+
+	-T		Select Targa output format.  Gray-scale format is
+			emitted if the JPEG file is gray-scale or if -g is
+			specified; otherwise, colormapped format is emitted
+			if -q is specified; otherwise, 24-bit full-color
+			format is emitted.
+
+	-b		Perform cross-block smoothing.  This is quite
+			memory-intensive and only seems to improve the image
+			at very low quality settings (-Q 10 to 20 or so).
+			At normal -Q settings it may make the image worse.
+
+	-g		Force gray-scale output even if input is color.
+
+	-q N		Quantize to N colors.
+
+	-D		Do NOT use dithering in color quantization.
+			By default, Floyd-Steinberg dithering is applied when
+			quantizing colors, but on some images dithering may
+			result in objectionable "graininess".  If that
+			happens, you can turn off dithering with -D.
+
+	-2		Use two-pass color quantization (not yet supported).
+
+	-d		Enable debug printout.  More -d's give more printout.
+			Also, version information is printed at startup.
+
+Color quantization currently uses a rather shoddy algorithm (although it's not
+as horrible when dithered).  Because of this, the GIF output mode is NOT
+RECOMMENDED in the current release, except for gray-scale output.  You can get
+better results by applying ppmquant to the unquantized (PPM) output of djpeg,
+then converting to GIF with ppmtogif.  (See SUPPORTING SOFTWARE in the README
+file.)  We expect to provide a considerably better quantization algorithm in a
+future release.  (The same applies to colormapped RLE or Targa output, of
+course.)
+
+Note that djpeg *can* read noninterleaved JPEG files even though cjpeg can't
+yet generate them.  For most applications this is a nonissue, since hardly
+anybody seems to be using noninterleaved format.
+
+On a non-virtual-memory machine, you may run out of memory if you use -I or -o
+in cjpeg, or -q ... -2 in djpeg, or try to read an interlaced GIF file, or try
+to read or write an RLE file, or try to read an interlaced or bottom-up Targa
+file.  This will be addressed soon by replacing jvirtmem.c with something that
+uses temporary files for large images.

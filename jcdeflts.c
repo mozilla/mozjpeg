@@ -6,6 +6,8 @@
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains optional default-setting code for the JPEG compressor.
+ * User interfaces do not have to use this file, but those that don't use it
+ * must know a lot more about the innards of the JPEG code.
  */
 
 #include "jinclude.h"
@@ -17,11 +19,11 @@ add_huff_table (compress_info_ptr cinfo,
 /* Define a Huffman table */
 {
   if (*htblptr == NULL)
-    *htblptr = (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
+    *htblptr = (HUFF_TBL *) (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
   
-  memcpy((void *) (*htblptr)->bits, (void *) bits,
+  memcpy((void *) (*htblptr)->bits, (const void *) bits,
 	 SIZEOF((*htblptr)->bits));
-  memcpy((void *) (*htblptr)->huffval, (void *) val,
+  memcpy((void *) (*htblptr)->huffval, (const void *) val,
 	 SIZEOF((*htblptr)->huffval));
 
   /* Initialize sent_table FALSE so table will be written to JPEG file.
@@ -152,7 +154,7 @@ add_quant_table (compress_info_ptr cinfo, int which_tbl,
   long temp;
 
   if (*qtblptr == NULL)
-    *qtblptr = (*cinfo->emethods->alloc_small) (SIZEOF(QUANT_TBL));
+    *qtblptr = (QUANT_TBL_PTR) (*cinfo->emethods->alloc_small) (SIZEOF(QUANT_TBL));
 
   for (i = 0; i < DCTSIZE2; i++) {
     temp = ((long) basic_table[i] * scale_factor + 50L) / 100L;
@@ -207,14 +209,16 @@ j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
  *
  * User interfaces that don't choose to use this routine must do their
  * own setup of all these parameters.  Alternately, you can call this
- * to establish defaults and then alter parameters selectively.
+ * to establish defaults and then alter parameters selectively.  This
+ * is the recommended approach since, if we add any new parameters,
+ * your code will still work (they'll be set to reasonable defaults).
  *
- * See above for the meaning of the 'quality' parameter.  Typically,
- * the application's default quality setting will be passed to this
- * routine.  A later call on j_set_quality() can be used to change to
- * a user-specified quality setting.
+ * See above for the meaning of the 'quality' and 'force_baseline' parameters.
+ * Typically, the application's default quality setting will be passed to this
+ * routine.  A later call on j_set_quality() can be used to change to a
+ * user-specified quality setting.
  *
- * This sets up for a color image; to output a grayscale image,
+ * This routine sets up for a color image; to output a grayscale image,
  * do this first and call j_monochrome_default() afterwards.
  * (The latter can be called within c_ui_method_selection, so the
  * choice can depend on the input file header.)
@@ -223,17 +227,17 @@ j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
  * a JFIF header (set write_JFIF_header = FALSE).
  *
  * CAUTION: if you want to compress multiple images per run, it's safest
- * to call j_default_compression before *each* call to jpeg_compress (and
- * j_free_defaults afterwards).  If this isn't practical, you'll have to
+ * to call j_c_defaults before *each* call to jpeg_compress (and
+ * j_c_free_defaults afterwards).  If this isn't practical, you'll have to
  * be careful to reset any individual parameters that may change during
- * the compression run.  The main thing you need to worry about as this
- * is written is that the sent_table boolean in each Huffman table must
- * be reset to FALSE before each compression; otherwise, Huffman tables
- * won't get emitted for the second and subsequent images.
+ * the compression run.  The main thing you need to worry about at present
+ * is that the sent_table boolean in each Huffman table must be reset to
+ * FALSE before each compression; otherwise, Huffman tables won't get
+ * emitted for the second and subsequent images.
  */
 
 GLOBAL void
-j_default_compression (compress_info_ptr cinfo, int quality)
+j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
 /* NB: the external methods must already be set up. */
 {
   short i;
@@ -260,8 +264,8 @@ j_default_compression (compress_info_ptr cinfo, int quality)
   cinfo->write_JFIF_header = TRUE;
   cinfo->jpeg_color_space = CS_YCbCr;
   cinfo->num_components = 3;
-  cinfo->comp_info = (*cinfo->emethods->alloc_small)
-			(4 * SIZEOF(jpeg_component_info));
+  cinfo->comp_info = (jpeg_component_info *)
+    (*cinfo->emethods->alloc_small) (4 * SIZEOF(jpeg_component_info));
   /* Note: we allocate a 4-entry comp_info array so that user interface can
    * easily change over to CMYK color space if desired.
    */
@@ -294,8 +298,7 @@ j_default_compression (compress_info_ptr cinfo, int quality)
   compptr->ac_tbl_no = 1;
 
   /* Set up two quantization tables using the specified quality scaling */
-  /* Baseline compatibility is forced (a nonissue for reasonable defaults) */
-  j_set_quality(cinfo, quality, TRUE);
+  j_set_quality(cinfo, quality, force_baseline);
 
   /* Set up two Huffman tables in case user interface wants Huffman coding */
   std_huff_tables(cinfo);
@@ -327,7 +330,7 @@ j_default_compression (compress_info_ptr cinfo, int quality)
 
 GLOBAL void
 j_monochrome_default (compress_info_ptr cinfo)
-/* Change the j_default_compression() values to emit a monochrome JPEG file. */
+/* Change the j_c_defaults() values to emit a monochrome JPEG file. */
 {
   jpeg_component_info * compptr;
 
@@ -341,13 +344,13 @@ j_monochrome_default (compress_info_ptr cinfo)
 
 
 
-/* This routine releases storage allocated by j_default_compression.
+/* This routine releases storage allocated by j_c_defaults.
  * Note that freeing the method pointer structs and the compress_info_struct
  * itself are the responsibility of the user interface.
  */
 
 GLOBAL void
-j_free_defaults (compress_info_ptr cinfo)
+j_c_free_defaults (compress_info_ptr cinfo)
 {
   short i;
 

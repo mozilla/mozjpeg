@@ -6,7 +6,8 @@
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to read input images in PPM format.
- * The PBMPLUS library is required (well, it will be in the real version).
+ * The PBMPLUS library is NOT required to compile this software,
+ * but it is highly useful as a set of PPM image manipulation programs.
  *
  * These routines may need modification for non-Unix environments or
  * specialized applications.  As they stand, they assume input from
@@ -24,6 +25,194 @@
 #ifdef PPM_SUPPORTED
 
 
+static JSAMPLE * rescale;	/* => maxval-remapping array, or NULL */
+
+
+/* Portions of this code are based on the PBMPLUS library, which is:
+**
+** Copyright (C) 1988 by Jef Poskanzer.
+**
+** Permission to use, copy, modify, and distribute this software and its
+** documentation for any purpose and without fee is hereby granted, provided
+** that the above copyright notice appear in all copies and that both that
+** copyright notice and this permission notice appear in supporting
+** documentation.  This software is provided "as is" without express or
+** implied warranty.
+*/
+
+
+LOCAL int
+pbm_getc (FILE * file)
+/* Read next char, skipping over any comments */
+/* A comment/newline sequence is returned as a newline */
+{
+  register int ch;
+  
+  ch = getc(file);
+  if (ch == '#') {
+    do {
+      ch = getc(file);
+    } while (ch != '\n' && ch != EOF);
+  }
+  return ch;
+}
+
+
+LOCAL unsigned int
+read_pbm_integer (compress_info_ptr cinfo)
+/* Read an unsigned decimal integer from the PPM file */
+/* Swallows one trailing character after the integer */
+/* Note that on a 16-bit-int machine, only values up to 64k can be read. */
+/* This should not be a problem in practice. */
+{
+  register int ch;
+  register unsigned int val;
+  
+  /* Skip any leading whitespace */
+  do {
+    ch = pbm_getc(cinfo->input_file);
+    if (ch == EOF)
+      ERREXIT(cinfo->emethods, "Premature EOF in PPM file");
+  } while (ch == ' ' || ch == '\t' || ch == '\n');
+  
+  if (ch < '0' || ch > '9')
+    ERREXIT(cinfo->emethods, "Bogus data in PPM file");
+  
+  val = ch - '0';
+  while ((ch = pbm_getc(cinfo->input_file)) >= '0' && ch <= '9') {
+    val *= 10;
+    val += ch - '0';
+  }
+  return val;
+}
+
+
+/*
+ * Read one row of pixels.
+ *
+ * We provide several different versions depending on input file format.
+ * In all cases, input is scaled to the size of JSAMPLE; it's possible that
+ * when JSAMPLE is 12 bits, this would not really be desirable.
+ *
+ * Note that a really fast path is provided for reading raw files with
+ * maxval = MAXJSAMPLE, which is the normal case (at least for 8-bit JSAMPLEs).
+ */
+
+
+METHODDEF void
+get_text_gray_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading text-format PGM files with any maxval */
+{
+  register JSAMPROW ptr0;
+  register unsigned int val;
+  register long col;
+  
+  ptr0 = pixel_row[0];
+  for (col = cinfo->image_width; col > 0; col--) {
+    val = read_pbm_integer(cinfo);
+    if (rescale != NULL)
+      val = rescale[val];
+    *ptr0++ = (JSAMPLE) val;
+  }
+}
+
+
+METHODDEF void
+get_text_rgb_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading text-format PPM files with any maxval */
+{
+  register JSAMPROW ptr0, ptr1, ptr2;
+  register unsigned int val;
+  register long col;
+  
+  ptr0 = pixel_row[0];
+  ptr1 = pixel_row[1];
+  ptr2 = pixel_row[2];
+  for (col = cinfo->image_width; col > 0; col--) {
+    val = read_pbm_integer(cinfo);
+    if (rescale != NULL)
+      val = rescale[val];
+    *ptr0++ = (JSAMPLE) val;
+    val = read_pbm_integer(cinfo);
+    if (rescale != NULL)
+      val = rescale[val];
+    *ptr1++ = (JSAMPLE) val;
+    val = read_pbm_integer(cinfo);
+    if (rescale != NULL)
+      val = rescale[val];
+    *ptr2++ = (JSAMPLE) val;
+  }
+}
+
+
+METHODDEF void
+get_scaled_gray_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PGM files with any maxval */
+{
+  register FILE * infile = cinfo->input_file;
+  register JSAMPROW ptr0;
+  register long col;
+  
+  ptr0 = pixel_row[0];
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = rescale[getc(infile)];
+  }
+}
+
+
+METHODDEF void
+get_scaled_rgb_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PPM files with any maxval */
+{
+  register FILE * infile = cinfo->input_file;
+  register JSAMPROW ptr0, ptr1, ptr2;
+  register long col;
+  
+  ptr0 = pixel_row[0];
+  ptr1 = pixel_row[1];
+  ptr2 = pixel_row[2];
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = rescale[getc(infile)];
+    *ptr1++ = rescale[getc(infile)];
+    *ptr2++ = rescale[getc(infile)];
+  }
+}
+
+
+METHODDEF void
+get_raw_gray_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PGM files with maxval = MAXJSAMPLE */
+{
+  register FILE * infile = cinfo->input_file;
+  register JSAMPROW ptr0;
+  register long col;
+  
+  ptr0 = pixel_row[0];
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = (JSAMPLE) getc(infile);
+  }
+}
+
+
+METHODDEF void
+get_raw_rgb_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PPM files with maxval = MAXJSAMPLE */
+{
+  register FILE * infile = cinfo->input_file;
+  register JSAMPROW ptr0, ptr1, ptr2;
+  register long col;
+  
+  ptr0 = pixel_row[0];
+  ptr1 = pixel_row[1];
+  ptr2 = pixel_row[2];
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = (JSAMPLE) getc(infile);
+    *ptr1++ = (JSAMPLE) getc(infile);
+    *ptr2++ = (JSAMPLE) getc(infile);
+  }
+}
+
+
 /*
  * Read the file header; return image size and component count.
  */
@@ -31,19 +220,45 @@
 METHODDEF void
 input_init (compress_info_ptr cinfo)
 {
-  int c, w, h, prec;
+  int c;
+  unsigned int w, h, maxval;
 
   if (getc(cinfo->input_file) != 'P')
     ERREXIT(cinfo->emethods, "Not a PPM file");
 
-  c = getc(cinfo->input_file);
+  c = getc(cinfo->input_file);	/* save format discriminator for a sec */
+
+  w = read_pbm_integer(cinfo);	/* while we fetch the header info */
+  h = read_pbm_integer(cinfo);
+  maxval = read_pbm_integer(cinfo);
+
   switch (c) {
-  case '5':			/* it's a PGM file */
+  case '2':			/* it's a text-format PGM file */
+    cinfo->methods->get_input_row = get_text_gray_row;
     cinfo->input_components = 1;
     cinfo->in_color_space = CS_GRAYSCALE;
     break;
 
-  case '6':			/* it's a PPM file */
+  case '3':			/* it's a text-format PPM file */
+    cinfo->methods->get_input_row = get_text_rgb_row;
+    cinfo->input_components = 3;
+    cinfo->in_color_space = CS_RGB;
+    break;
+
+  case '5':			/* it's a raw-format PGM file */
+    if (maxval == MAXJSAMPLE)
+      cinfo->methods->get_input_row = get_raw_gray_row;
+    else
+      cinfo->methods->get_input_row = get_scaled_gray_row;
+    cinfo->input_components = 1;
+    cinfo->in_color_space = CS_GRAYSCALE;
+    break;
+
+  case '6':			/* it's a raw-format PPM file */
+    if (maxval == MAXJSAMPLE)
+      cinfo->methods->get_input_row = get_raw_rgb_row;
+    else
+      cinfo->methods->get_input_row = get_scaled_rgb_row;
     cinfo->input_components = 3;
     cinfo->in_color_space = CS_RGB;
     break;
@@ -53,44 +268,29 @@ input_init (compress_info_ptr cinfo)
     break;
   }
 
-  if (fscanf(cinfo->input_file, " %d %d %d", &w, &h, &prec) != 3)
+  if (w <= 0 || h <= 0 || maxval <= 0) /* error check */
     ERREXIT(cinfo->emethods, "Not a PPM file");
 
-  if (getc(cinfo->input_file) != '\n' || w <= 0 || h <= 0 || prec != 255)
-    ERREXIT(cinfo->emethods, "Not a PPM file");
+  /* Compute the rescaling array if necessary */
+  /* This saves per-pixel calculation */
+  if (maxval == MAXJSAMPLE)
+    rescale = NULL;		/* no rescaling required */
+  else {
+    INT32 val, half_maxval;
+
+    /* On 16-bit-int machines we have to be careful of maxval = 65535 */
+    rescale = (JSAMPLE *) (*cinfo->emethods->alloc_small)
+			((size_t) (((long) maxval + 1L) * SIZEOF(JSAMPLE)));
+    half_maxval = maxval / 2;
+    for (val = 0; val <= (INT32) maxval; val++) {
+      /* The multiplication here must be done in 32 bits to avoid overflow */
+      rescale[val] = (JSAMPLE) ((val * MAXJSAMPLE + half_maxval) / maxval);
+    }
+  }
 
   cinfo->image_width = w;
   cinfo->image_height = h;
-  cinfo->data_precision = 8;
-}
-
-
-/*
- * Read one row of pixels.
- */
-
-METHODDEF void
-get_input_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
-{
-  register FILE * infile = cinfo->input_file;
-  register JSAMPROW ptr0, ptr1, ptr2;
-  register long col;
-  
-  if (cinfo->input_components == 1) {
-    ptr0 = pixel_row[0];
-    for (col = cinfo->image_width; col > 0; col--) {
-      *ptr0++ = getc(infile);
-    }
-  } else {
-    ptr0 = pixel_row[0];
-    ptr1 = pixel_row[1];
-    ptr2 = pixel_row[2];
-    for (col = cinfo->image_width; col > 0; col--) {
-      *ptr0++ = getc(infile);
-      *ptr1++ = getc(infile);
-      *ptr2++ = getc(infile);
-    }
-  }
+  cinfo->data_precision = BITS_IN_JSAMPLE;
 }
 
 
@@ -101,7 +301,8 @@ get_input_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 METHODDEF void
 input_term (compress_info_ptr cinfo)
 {
-  /* no work required */
+  if (rescale != NULL)
+    (*cinfo->emethods->free_small) ((void *) rescale);
 }
 
 
@@ -117,7 +318,7 @@ GLOBAL void
 jselrppm (compress_info_ptr cinfo)
 {
   cinfo->methods->input_init = input_init;
-  cinfo->methods->get_input_row = get_input_row;
+  /* cinfo->methods->get_input_row is set by input_init */
   cinfo->methods->input_term = input_term;
 }
 

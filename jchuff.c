@@ -39,8 +39,8 @@ fix_huff_tbl (HUFF_TBL * htbl)
 
   p = 0;
   for (l = 1; l <= 16; l++) {
-    for (i = 1; i <= htbl->bits[l]; i++)
-      huffsize[p++] = l;
+    for (i = 1; i <= (int) htbl->bits[l]; i++)
+      huffsize[p++] = (char) l;
   }
   huffsize[p] = 0;
   lastp = p;
@@ -52,7 +52,7 @@ fix_huff_tbl (HUFF_TBL * htbl)
   si = huffsize[0];
   p = 0;
   while (huffsize[p]) {
-    while (huffsize[p] == si) {
+    while (((int) huffsize[p]) == si) {
       huffcode[p++] = code;
       code++;
     }
@@ -95,10 +95,10 @@ flush_bytes (void)
 }
 
 
-#define emit_byte(val)	((bytes_in_buffer >= JPEG_BUF_SIZE ? \
-				(flush_bytes(), 0) : 0), \
-			 output_buffer[bytes_in_buffer] = (val), \
-			 bytes_in_buffer++)
+#define emit_byte(val)  \
+  MAKESTMT( if (bytes_in_buffer >= JPEG_BUF_SIZE) \
+	      flush_bytes(); \
+	    output_buffer[bytes_in_buffer++] = (char) (val); )
 
 
 
@@ -157,16 +157,22 @@ flush_bits (void)
 LOCAL void
 encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
 {
-  register INT32 temp;
+  register int temp, temp2;
   register int nbits;
   register int k, r, i;
   
   /* Encode the DC coefficient difference per section 7.3.5.1 */
   
-  /* Find the number of bits needed for the magnitude of the coefficient */
-  temp = block[0];
-  if (temp < 0) temp = -temp;
+  temp = temp2 = block[0];
+
+  if (temp < 0) {
+    temp = -temp;		/* temp is abs value of input */
+    /* For a negative input, want temp2 = bitwise complement of abs(input) */
+    /* This code assumes we are on a two's complement machine */
+    temp2--;
+  }
   
+  /* Find the number of bits needed for the magnitude of the coefficient */
   nbits = 0;
   while (temp) {
     nbits++;
@@ -175,13 +181,10 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
   
   /* Emit the Huffman-coded symbol for the number of bits */
   emit_bits(dctbl->ehufco[nbits], dctbl->ehufsi[nbits]);
-  
-  /* If positive, emit nbits low order bits; */
-  /* if negative, emit nbits low order bits of value-1 */
-  if ((temp = block[0]) < 0)
-    temp--;
-  
-  emit_bits((UINT16) temp, nbits);
+
+  /* Emit that number of bits of the value, if positive, */
+  /* or the complement of its magnitude, if negative. */
+  emit_bits((UINT16) temp2, nbits);
   
   /* Encode the AC coefficients per section 7.3.5.2 */
   
@@ -196,10 +199,15 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
 	emit_bits(actbl->ehufco[0xF0], actbl->ehufsi[0xF0]);
 	r -= 16;
       }
+
+      temp2 = temp;
+      if (temp < 0) {
+	temp = -temp;		/* temp is abs value of input */
+	/* This code assumes we are on a two's complement machine */
+	temp2--;
+      }
       
       /* Find the number of bits needed for the magnitude of the coefficient */
-      if (temp < 0) temp = -temp;
-
       nbits = 1;		/* there must be at least one 1 bit */
       while (temp >>= 1)
 	nbits++;
@@ -208,12 +216,9 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
       i = (r << 4) + nbits;
       emit_bits(actbl->ehufco[i], actbl->ehufsi[i]);
       
-      /* If positive, emit nbits low order bits; */
-      /* if negative, emit nbits low order bits of value-1 */
-      if ((temp = block[k]) < 0)
-	temp--;
-      
-      emit_bits((UINT16) temp, nbits);
+      /* Emit that number of bits of the value, if positive, */
+      /* or the complement of its magnitude, if negative. */
+      emit_bits((UINT16) temp2, nbits);
       
       r = 0;
     }
@@ -488,7 +493,7 @@ gen_huff_coding (compress_info_ptr cinfo, HUFF_TBL *htbl, long freq[])
   for (i = 1; i <= MAX_CLEN; i++) {
     for (j = 0; j <= 255; j++) {
       if (codesize[j] == i) {
-	htbl->huffval[p] = j;
+	htbl->huffval[p] = (UINT8) j;
 	p++;
       }
     }
@@ -645,7 +650,7 @@ huff_optimize (compress_info_ptr cinfo, MCU_output_caller_ptr source_method)
     if (dc_count_ptrs[tbl] != NULL) {
       htblptr = & cinfo->dc_huff_tbl_ptrs[tbl];
       if (*htblptr == NULL)
-	*htblptr = (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
+	*htblptr = (HUFF_TBL *) (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
       /* Set sent_table FALSE so updated table will be written to JPEG file. */
       (*htblptr)->sent_table = FALSE;
       /* Compute the optimal Huffman encoding */
@@ -656,7 +661,7 @@ huff_optimize (compress_info_ptr cinfo, MCU_output_caller_ptr source_method)
     if (ac_count_ptrs[tbl] != NULL) {
       htblptr = & cinfo->ac_huff_tbl_ptrs[tbl];
       if (*htblptr == NULL)
-	*htblptr = (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
+	*htblptr = (HUFF_TBL *) (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
       /* Set sent_table FALSE so updated table will be written to JPEG file. */
       (*htblptr)->sent_table = FALSE;
       /* Compute the optimal Huffman encoding */

@@ -17,96 +17,145 @@
 #include "jinclude.h"
 
 
-/* The poop on this scaling stuff is as follows:
- *
- * Most of the numbers (after multiplication by the constants) are
- * (logically) shifted left by LG2_DCT_SCALE. This is undone by UNFIXH
- * before assignment to the output array. Note that we want an additional
- * division by 2 on the output (required by the equations).
- *
- * If right shifts are unsigned, then there is a potential problem.
- * However, shifting right by 16 and then assigning to a short
- * (assuming short = 16 bits) will keep the sign right!!
- *
- * For other shifts,
- *
- *     ((x + (1 << 30)) >> shft) - (1 << (30 - shft))
- *
- * gives a nice right shift with sign (assuming no overflow). However, all the
- * scaling is such that this isn't a problem. (Is this true?)
+/* We assume that right shift corresponds to signed division by 2 with
+ * rounding towards minus infinity.  This is correct for typical "arithmetic
+ * shift" instructions that shift in copies of the sign bit.  But some
+ * C compilers implement >> with an unsigned shift.  For these machines you
+ * must define RIGHT_SHIFT_IS_UNSIGNED.
+ * RIGHT_SHIFT provides a signed right shift of an INT32 quantity.
+ * It is only applied with constant shift counts.
  */
 
-
-#define ONE 1L			/* remove L if long > 32 bits */
-
 #ifdef RIGHT_SHIFT_IS_UNSIGNED
-#define LG2_DCT_SCALE 15
-#define RIGHT_SHIFT(_x,_shft)   ((((_x) + (ONE << 30)) >> (_shft)) - (ONE << (30 - (_shft))))
+#define SHIFT_TEMPS	INT32 shift_temp;
+#define RIGHT_SHIFT(x,shft)  \
+	((shift_temp = (x)) < 0 ? \
+	 (shift_temp >> (shft)) | ((~0) << (32-(shft))) : \
+	 (shift_temp >> (shft)))
 #else
-#define LG2_DCT_SCALE 16
-#define RIGHT_SHIFT(_x,_shft)   ((_x) >> (_shft))
+#define SHIFT_TEMPS
+#define RIGHT_SHIFT(x,shft)	((x) >> (shft))
 #endif
+
+
+/* The poop on this scaling stuff is as follows:
+ *
+ * We have to do addition and subtraction of the integer inputs, which
+ * is no problem, and multiplication by fractional constants, which is
+ * a problem to do in integer arithmetic.  We multiply all the constants
+ * by DCT_SCALE and convert them to integer constants (thus retaining
+ * LG2_DCT_SCALE bits of precision in the constants).  After doing a
+ * multiplication we have to divide the product by DCT_SCALE, with proper
+ * rounding, to produce the correct output.  The division can be implemented
+ * cheaply as a right shift of LG2_DCT_SCALE bits.  The DCT equations also
+ * specify an additional division by 2 on the final outputs; this can be
+ * folded into the right-shift by shifting one more bit (see UNFIXH).
+ *
+ * If you are planning to recode this in assembler, you might want to set
+ * LG2_DCT_SCALE to 15.  This loses a bit of precision, but then all the
+ * multiplications are between 16-bit quantities (given 8-bit JSAMPLEs!)
+ * so you could use a signed 16x16=>32 bit multiply instruction instead of
+ * full 32x32 multiply.  Unfortunately there's no way to describe such a
+ * multiply portably in C, so we've gone for the extra bit of accuracy here.
+ */
+
+#ifdef EIGHT_BIT_SAMPLES
+#define LG2_DCT_SCALE 16
+#else
+#define LG2_DCT_SCALE 15	/* lose a little precision to avoid overflow */
+#endif
+
+#define ONE	((INT32) 1)
 
 #define DCT_SCALE (ONE << LG2_DCT_SCALE)
 
+/* In some places we shift the inputs left by a couple more bits, */
+/* so that they can be added to fractional results without too much */
+/* loss of precision. */
 #define LG2_OVERSCALE 2
-#define OVERSCALE (ONE << LG2_OVERSCALE)
+#define OVERSCALE  (ONE << LG2_OVERSCALE)
+#define OVERSHIFT(x)  ((x) <<= LG2_OVERSCALE)
 
-#define FIX(x)  ((INT32) ((x) * DCT_SCALE + 0.5))
+/* Scale a fractional constant by DCT_SCALE */
+#define FIX(x)	((INT32) ((x) * DCT_SCALE + 0.5))
+
+/* Scale a fractional constant by DCT_SCALE/OVERSCALE */
+/* Such a constant can be multiplied with an overscaled input */
+/* to produce something that's scaled by DCT_SCALE */
 #define FIXO(x)  ((INT32) ((x) * DCT_SCALE / OVERSCALE + 0.5))
-#define UNFIX(x)   RIGHT_SHIFT((x) + (ONE << (LG2_DCT_SCALE-1)), LG2_DCT_SCALE)
-#define UNFIXH(x)  RIGHT_SHIFT((x) + (ONE << LG2_DCT_SCALE), LG2_DCT_SCALE+1)
-#define UNFIXO(x)  RIGHT_SHIFT((x) + (ONE << (LG2_DCT_SCALE-1-LG2_OVERSCALE)), LG2_DCT_SCALE-LG2_OVERSCALE)
-#define OVERSH(x)   ((x) << LG2_OVERSCALE)
 
-#define SIN_1_4 FIX(0.7071067811856476)
+/* Descale and correctly round a value that's scaled by DCT_SCALE */
+#define UNFIX(x)   RIGHT_SHIFT((x) + (ONE << (LG2_DCT_SCALE-1)), LG2_DCT_SCALE)
+
+/* Same with an additional division by 2, ie, correctly rounded UNFIX(x/2) */
+#define UNFIXH(x)  RIGHT_SHIFT((x) + (ONE << LG2_DCT_SCALE), LG2_DCT_SCALE+1)
+
+/* Take a value scaled by DCT_SCALE and round to integer scaled by OVERSCALE */
+#define UNFIXO(x)  RIGHT_SHIFT((x) + (ONE << (LG2_DCT_SCALE-1-LG2_OVERSCALE)),\
+			       LG2_DCT_SCALE-LG2_OVERSCALE)
+
+/* Here are the constants we need */
+/* SIN_i_j is sine of i*pi/j, scaled by DCT_SCALE */
+/* COS_i_j is cosine of i*pi/j, scaled by DCT_SCALE */
+
+#define SIN_1_4 FIX(0.707106781)
 #define COS_1_4 SIN_1_4
 
-#define SIN_1_8 FIX(0.3826834323650898)
-#define COS_1_8 FIX(0.9238795325112870)
+#define SIN_1_8 FIX(0.382683432)
+#define COS_1_8 FIX(0.923879533)
 #define SIN_3_8 COS_1_8
 #define COS_3_8 SIN_1_8
 
-#define SIN_1_16 FIX(0.1950903220161282)
-#define COS_1_16 FIX(0.9807852804032300)
+#define SIN_1_16 FIX(0.195090322)
+#define COS_1_16 FIX(0.980785280)
 #define SIN_7_16 COS_1_16
 #define COS_7_16 SIN_1_16
 
-#define SIN_3_16 FIX(0.5555702330196022)
-#define COS_3_16 FIX(0.8314696123025450)
+#define SIN_3_16 FIX(0.555570233)
+#define COS_3_16 FIX(0.831469612)
 #define SIN_5_16 COS_3_16
 #define COS_5_16 SIN_3_16
 
-#define OSIN_1_4 FIXO(0.707106781185647)
+/* OSIN_i_j is sine of i*pi/j, scaled by DCT_SCALE/OVERSCALE */
+/* OCOS_i_j is cosine of i*pi/j, scaled by DCT_SCALE/OVERSCALE */
+
+#define OSIN_1_4 FIXO(0.707106781)
 #define OCOS_1_4 OSIN_1_4
 
-#define OSIN_1_8 FIXO(0.3826834323650898)
-#define OCOS_1_8 FIXO(0.9238795325112870)
+#define OSIN_1_8 FIXO(0.382683432)
+#define OCOS_1_8 FIXO(0.923879533)
 #define OSIN_3_8 OCOS_1_8
 #define OCOS_3_8 OSIN_1_8
 
-#define OSIN_1_16 FIXO(0.1950903220161282)
-#define OCOS_1_16 FIXO(0.9807852804032300)
+#define OSIN_1_16 FIXO(0.195090322)
+#define OCOS_1_16 FIXO(0.980785280)
 #define OSIN_7_16 OCOS_1_16
 #define OCOS_7_16 OSIN_1_16
 
-#define OSIN_3_16 FIXO(0.5555702330196022)
-#define OCOS_3_16 FIXO(0.8314696123025450)
+#define OSIN_3_16 FIXO(0.555570233)
+#define OCOS_3_16 FIXO(0.831469612)
 #define OSIN_5_16 OCOS_3_16
 #define OCOS_5_16 OSIN_3_16
 
+
+/*
+ * Perform a 1-dimensional DCT.
+ * Note that this code is specialized to the case DCTSIZE = 8.
+ */
 
 INLINE
 LOCAL void
 fast_dct_8 (DCTELEM *in, int stride)
 {
-  /* tmp1x are new values of tmpx -- flashy register colourers
+  /* many tmps have nonoverlapping lifetime -- flashy register colourers
    * should be able to do this lot very well
    */
-  INT32 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-  INT32 tmp10, tmp11, tmp12, tmp13, tmp14, tmp15, tmp16, tmp17;
-  INT32 tmp25, tmp26;
   INT32 in0, in1, in2, in3, in4, in5, in6, in7;
+  INT32 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+  INT32 tmp10, tmp11, tmp12, tmp13;
+  INT32 tmp14, tmp15, tmp16, tmp17;
+  INT32 tmp25, tmp26;
+  SHIFT_TEMPS
   
   in0 = in[       0];
   in1 = in[stride  ];
@@ -126,44 +175,42 @@ fast_dct_8 (DCTELEM *in, int stride)
   tmp6 = in1 - in6;
   tmp7 = in0 - in7;
   
-  tmp10 = tmp3 + tmp0 ;
-  tmp11 = tmp2 + tmp1 ;
-  tmp12 = tmp1 - tmp2 ;
-  tmp13 = tmp0 - tmp3 ;
+  tmp10 = tmp3 + tmp0;
+  tmp11 = tmp2 + tmp1;
+  tmp12 = tmp1 - tmp2;
+  tmp13 = tmp0 - tmp3;
   
-  /* Now using tmp10, tmp11, tmp12, tmp13 */
+  in[       0] = (DCTELEM) UNFIXH((tmp10 + tmp11) * SIN_1_4);
+  in[stride*4] = (DCTELEM) UNFIXH((tmp10 - tmp11) * COS_1_4);
   
-  in[       0] = UNFIXH((tmp10 + tmp11) * SIN_1_4);
-  in[stride*4] = UNFIXH((tmp10 - tmp11) * COS_1_4);
-  
-  in[stride*2] = UNFIXH(tmp13*COS_1_8 + tmp12*SIN_1_8);
-  in[stride*6] = UNFIXH(tmp13*SIN_1_8 - tmp12*COS_1_8);
-  
+  in[stride*2] = (DCTELEM) UNFIXH(tmp13*COS_1_8 + tmp12*SIN_1_8);
+  in[stride*6] = (DCTELEM) UNFIXH(tmp13*SIN_1_8 - tmp12*COS_1_8);
+
   tmp16 = UNFIXO((tmp6 + tmp5) * SIN_1_4);
   tmp15 = UNFIXO((tmp6 - tmp5) * COS_1_4);
+
+  OVERSHIFT(tmp4);
+  OVERSHIFT(tmp7);
+
+  /* tmp4, tmp7, tmp15, tmp16 are overscaled by OVERSCALE */
+
+  tmp14 = tmp4 + tmp15;
+  tmp25 = tmp4 - tmp15;
+  tmp26 = tmp7 - tmp16;
+  tmp17 = tmp7 + tmp16;
   
-  /* Now using tmp10, tmp11, tmp13, tmp14, tmp15, tmp16 */
-  
-  tmp14 = OVERSH(tmp4) + tmp15;
-  tmp25 = OVERSH(tmp4) - tmp15;
-  tmp26 = OVERSH(tmp7) - tmp16;
-  tmp17 = OVERSH(tmp7) + tmp16;
-  
-  /* These are now overscaled by OVERSCALE */
-  
-  /* tmp10, tmp11, tmp12, tmp13, tmp14, tmp25, tmp26, tmp17 */
-  
-  in[stride  ] = UNFIXH(tmp17*OCOS_1_16 + tmp14*OSIN_1_16);
-  in[stride*7] = UNFIXH(tmp17*OCOS_7_16 - tmp14*OSIN_7_16);
-  in[stride*5] = UNFIXH(tmp26*OCOS_5_16 + tmp25*OSIN_5_16);
-  in[stride*3] = UNFIXH(tmp26*OCOS_3_16 - tmp25*OSIN_3_16);
+  in[stride  ] = (DCTELEM) UNFIXH(tmp17*OCOS_1_16 + tmp14*OSIN_1_16);
+  in[stride*7] = (DCTELEM) UNFIXH(tmp17*OCOS_7_16 - tmp14*OSIN_7_16);
+  in[stride*5] = (DCTELEM) UNFIXH(tmp26*OCOS_5_16 + tmp25*OSIN_5_16);
+  in[stride*3] = (DCTELEM) UNFIXH(tmp26*OCOS_3_16 - tmp25*OSIN_3_16);
 }
 
 
 /*
  * Perform the forward DCT on one block of samples.
  *
- * Note that this code is specialized to the case DCTSIZE = 8.
+ * A 2-D DCT can be done by 1-D DCT on each row
+ * followed by 1-D DCT on each column.
  */
 
 GLOBAL void

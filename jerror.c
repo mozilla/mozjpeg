@@ -21,7 +21,7 @@
  */
 
 #include "jinclude.h"
-#ifdef __STDC__
+#ifdef INCLUDES_ARE_ANSI
 #include <stdlib.h>		/* to declare exit() */
 #endif
 
@@ -30,7 +30,7 @@ static external_methods_ptr methods; /* saved for access to message_parm */
 
 
 METHODDEF void
-trace_message (char *msgtext)
+trace_message (const char *msgtext)
 {
   fprintf(stderr, msgtext,
 	  methods->message_parm[0], methods->message_parm[1],
@@ -42,7 +42,7 @@ trace_message (char *msgtext)
 
 
 METHODDEF void
-error_exit (char *msgtext)
+error_exit (const char *msgtext)
 {
   trace_message(msgtext);
   exit(1);

@@ -142,11 +142,18 @@ typedef FSERROR FAR *FSERRPTR;	/* pointer to error array (in FAR storage!) */
 typedef struct {
   struct jpeg_color_quantizer pub; /* public fields */
 
+  /* Initially allocated colormap is saved here */
+  JSAMPARRAY sv_colormap;	/* The color map as a 2-D pixel array */
+  int sv_actual;		/* number of entries in use */
+
   JSAMPARRAY colorindex;	/* Precomputed mapping for speed */
   /* colorindex[i][j] = index of color closest to pixel value j in component i,
    * premultiplied as described above.  Since colormap indexes must fit into
    * JSAMPLEs, the entries of this array will too.
    */
+  boolean is_padded;		/* is the colorindex padded for odither? */
+
+  int Ncolors[MAX_Q_COMPS];	/* # of values alloced to each component */
 
   /* Variables for ordered dithering */
   int row_index;		/* cur row's vertical index in dither matrix */
@@ -161,9 +168,9 @@ typedef my_cquantizer * my_cquantize_ptr;
 
 
 /*
- * Policy-making subroutines for create_colormap: these routines determine
- * the colormap to be used.  The rest of the module only assumes that the
- * colormap is orthogonal.
+ * Policy-making subroutines for create_colormap and create_colorindex.
+ * These routines determine the colormap to be used.  The rest of the module
+ * only assumes that the colormap is orthogonal.
  *
  *  * select_ncolors decides how to divvy up the available colors
  *    among the components.
@@ -259,6 +266,128 @@ largest_input_value (j_decompress_ptr cinfo, int ci, int j, int maxj)
 
 
 /*
+ * Create the colormap.
+ */
+
+LOCAL void
+create_colormap (j_decompress_ptr cinfo)
+{
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  JSAMPARRAY colormap;		/* Created colormap */
+  int total_colors;		/* Number of distinct output colors */
+  int i,j,k, nci, blksize, blkdist, ptr, val;
+
+  /* Select number of colors for each component */
+  total_colors = select_ncolors(cinfo, cquantize->Ncolors);
+
+  /* Report selected color counts */
+  if (cinfo->out_color_components == 3)
+    TRACEMS4(cinfo, 1, JTRC_QUANT_3_NCOLORS,
+	     total_colors, cquantize->Ncolors[0],
+	     cquantize->Ncolors[1], cquantize->Ncolors[2]);
+  else
+    TRACEMS1(cinfo, 1, JTRC_QUANT_NCOLORS, total_colors);
+
+  /* Allocate and fill in the colormap. */
+  /* The colors are ordered in the map in standard row-major order, */
+  /* i.e. rightmost (highest-indexed) color changes most rapidly. */
+
+  colormap = (*cinfo->mem->alloc_sarray)
+    ((j_common_ptr) cinfo, JPOOL_IMAGE,
+     (JDIMENSION) total_colors, (JDIMENSION) cinfo->out_color_components);
+
+  /* blksize is number of adjacent repeated entries for a component */
+  /* blkdist is distance between groups of identical entries for a component */
+  blkdist = total_colors;
+
+  for (i = 0; i < cinfo->out_color_components; i++) {
+    /* fill in colormap entries for i'th color component */
+    nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
+    blksize = blkdist / nci;
+    for (j = 0; j < nci; j++) {
+      /* Compute j'th output value (out of nci) for component */
+      val = output_value(cinfo, i, j, nci-1);
+      /* Fill in all colormap entries that have this value of this component */
+      for (ptr = j * blksize; ptr < total_colors; ptr += blkdist) {
+	/* fill in blksize entries beginning at ptr */
+	for (k = 0; k < blksize; k++)
+	  colormap[i][ptr+k] = (JSAMPLE) val;
+      }
+    }
+    blkdist = blksize;		/* blksize of this color is blkdist of next */
+  }
+
+  /* Save the colormap in private storage,
+   * where it will survive color quantization mode changes.
+   */
+  cquantize->sv_colormap = colormap;
+  cquantize->sv_actual = total_colors;
+}
+
+
+/*
+ * Create the color index table.
+ */
+
+LOCAL void
+create_colorindex (j_decompress_ptr cinfo)
+{
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  JSAMPROW indexptr;
+  int i,j,k, nci, blksize, val, pad;
+
+  /* For ordered dither, we pad the color index tables by MAXJSAMPLE in
+   * each direction (input index values can be -MAXJSAMPLE .. 2*MAXJSAMPLE).
+   * This is not necessary in the other dithering modes.  However, we
+   * flag whether it was done in case user changes dithering mode.
+   */
+  if (cinfo->dither_mode == JDITHER_ORDERED) {
+    pad = MAXJSAMPLE*2;
+    cquantize->is_padded = TRUE;
+  } else {
+    pad = 0;
+    cquantize->is_padded = FALSE;
+  }
+
+  cquantize->colorindex = (*cinfo->mem->alloc_sarray)
+    ((j_common_ptr) cinfo, JPOOL_IMAGE,
+     (JDIMENSION) (MAXJSAMPLE+1 + pad),
+     (JDIMENSION) cinfo->out_color_components);
+
+  /* blksize is number of adjacent repeated entries for a component */
+  blksize = cquantize->sv_actual;
+
+  for (i = 0; i < cinfo->out_color_components; i++) {
+    /* fill in colorindex entries for i'th color component */
+    nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
+    blksize = blksize / nci;
+
+    /* adjust colorindex pointers to provide padding at negative indexes. */
+    if (pad)
+      cquantize->colorindex[i] += MAXJSAMPLE;
+
+    /* in loop, val = index of current output value, */
+    /* and k = largest j that maps to current val */
+    indexptr = cquantize->colorindex[i];
+    val = 0;
+    k = largest_input_value(cinfo, i, 0, nci-1);
+    for (j = 0; j <= MAXJSAMPLE; j++) {
+      while (j > k)		/* advance val if past boundary */
+	k = largest_input_value(cinfo, i, ++val, nci-1);
+      /* premultiply so that no multiplication needed in main processing */
+      indexptr[j] = (JSAMPLE) (val * blksize);
+    }
+    /* Pad at both ends if necessary */
+    if (pad)
+      for (j = 1; j <= MAXJSAMPLE; j++) {
+	indexptr[-j] = indexptr[0];
+	indexptr[MAXJSAMPLE+j] = indexptr[MAXJSAMPLE];
+      }
+  }
+}
+
+
+/*
  * Create an ordered-dither array for a component having ncolors
  * distinct output values.
  */
@@ -294,114 +423,30 @@ make_odither_array (j_decompress_ptr cinfo, int ncolors)
 
 
 /*
- * Create the colormap and color index table.
- * Also creates the ordered-dither tables, if required.
+ * Create the ordered-dither tables.
+ * Components having the same number of representative colors may 
+ * share a dither table.
  */
 
 LOCAL void
-create_colormap (j_decompress_ptr cinfo)
+create_odither_tables (j_decompress_ptr cinfo)
 {
   my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
-  JSAMPARRAY colormap;		/* Created colormap */
-  JSAMPROW indexptr;
-  int total_colors;		/* Number of distinct output colors */
-  int Ncolors[MAX_Q_COMPS];	/* # of values alloced to each component */
   ODITHER_MATRIX_PTR odither;
-  int i,j,k, nci, blksize, blkdist, ptr, val, pad;
-
-  /* Select number of colors for each component */
-  total_colors = select_ncolors(cinfo, Ncolors);
-
-  /* Report selected color counts */
-  if (cinfo->out_color_components == 3)
-    TRACEMS4(cinfo, 1, JTRC_QUANT_3_NCOLORS,
-	     total_colors, Ncolors[0], Ncolors[1], Ncolors[2]);
-  else
-    TRACEMS1(cinfo, 1, JTRC_QUANT_NCOLORS, total_colors);
-
-  /* For ordered dither, we pad the color index tables by MAXJSAMPLE in
-   * each direction (input index values can be -MAXJSAMPLE .. 2*MAXJSAMPLE).
-   * This is not necessary in the other dithering modes.
-   */
-  pad = (cinfo->dither_mode == JDITHER_ORDERED) ? MAXJSAMPLE*2 : 0;
-
-  /* Allocate and fill in the colormap and color index. */
-  /* The colors are ordered in the map in standard row-major order, */
-  /* i.e. rightmost (highest-indexed) color changes most rapidly. */
-
-  colormap = (*cinfo->mem->alloc_sarray)
-    ((j_common_ptr) cinfo, JPOOL_IMAGE,
-     (JDIMENSION) total_colors, (JDIMENSION) cinfo->out_color_components);
-  cquantize->colorindex = (*cinfo->mem->alloc_sarray)
-    ((j_common_ptr) cinfo, JPOOL_IMAGE,
-     (JDIMENSION) (MAXJSAMPLE+1 + pad),
-     (JDIMENSION) cinfo->out_color_components);
-
-  /* blksize is number of adjacent repeated entries for a component */
-  /* blkdist is distance between groups of identical entries for a component */
-  blkdist = total_colors;
+  int i, j, nci;
 
   for (i = 0; i < cinfo->out_color_components; i++) {
-    /* fill in colormap entries for i'th color component */
-    nci = Ncolors[i];		/* # of distinct values for this color */
-    blksize = blkdist / nci;
-    for (j = 0; j < nci; j++) {
-      /* Compute j'th output value (out of nci) for component */
-      val = output_value(cinfo, i, j, nci-1);
-      /* Fill in all colormap entries that have this value of this component */
-      for (ptr = j * blksize; ptr < total_colors; ptr += blkdist) {
-	/* fill in blksize entries beginning at ptr */
-	for (k = 0; k < blksize; k++)
-	  colormap[i][ptr+k] = (JSAMPLE) val;
+    nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
+    odither = NULL;		/* search for matching prior component */
+    for (j = 0; j < i; j++) {
+      if (nci == cquantize->Ncolors[j]) {
+	odither = cquantize->odither[j];
+	break;
       }
     }
-    blkdist = blksize;		/* blksize of this color is blkdist of next */
-
-    /* adjust colorindex pointers to provide padding at negative indexes. */
-    if (pad)
-      cquantize->colorindex[i] += MAXJSAMPLE;
-
-    /* fill in colorindex entries for i'th color component */
-    /* in loop, val = index of current output value, */
-    /* and k = largest j that maps to current val */
-    indexptr = cquantize->colorindex[i];
-    val = 0;
-    k = largest_input_value(cinfo, i, 0, nci-1);
-    for (j = 0; j <= MAXJSAMPLE; j++) {
-      while (j > k)		/* advance val if past boundary */
-	k = largest_input_value(cinfo, i, ++val, nci-1);
-      /* premultiply so that no multiplication needed in main processing */
-      indexptr[j] = (JSAMPLE) (val * blksize);
-    }
-    /* Pad at both ends if necessary */
-    if (pad)
-      for (j = 1; j <= MAXJSAMPLE; j++) {
-	indexptr[-j] = indexptr[0];
-	indexptr[MAXJSAMPLE+j] = indexptr[MAXJSAMPLE];
-      }
-  }
-
-  /* Make the colormap available to the application. */
-  cinfo->colormap = colormap;
-  cinfo->actual_number_of_colors = total_colors;
-
-  if (cinfo->dither_mode == JDITHER_ORDERED) {
-    /* Allocate and fill in the ordered-dither tables.  Components having
-     * the same number of representative colors may share a dither table.
-     */
-    for (i = 0; i < cinfo->out_color_components; i++) {
-      nci = Ncolors[i];		/* # of distinct values for this color */
-      odither = NULL;		/* search for matching prior component */
-      for (j = 0; j < i; j++) {
-	if (nci == Ncolors[j]) {
-	  odither = cquantize->odither[j];
-	  break;
-	}
-      }
-      if (odither == NULL)	/* need a new table? */
-	odither = make_odither_array(cinfo, nci);
-      cquantize->odither[i] = odither;
-    }
+    if (odither == NULL)	/* need a new table? */
+      odither = make_odither_array(cinfo, nci);
+    cquantize->odither[i] = odither;
   }
 }
 
@@ -609,7 +654,7 @@ quantize_fs_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 	errorptr = cquantize->fserrors[ci]; /* => entry before first column */
       }
       colorindex_ci = cquantize->colorindex[ci];
-      colormap_ci = cinfo->colormap[ci];
+      colormap_ci = cquantize->sv_colormap[ci];
       /* Preset error values: no error propagated to first pixel from left */
       cur = 0;
       /* and no error propagated to row below yet */
@@ -670,51 +715,38 @@ quantize_fs_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 
 
 /*
+ * Allocate workspace for Floyd-Steinberg errors.
+ */
+
+LOCAL void
+alloc_fs_workspace (j_decompress_ptr cinfo)
+{
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  size_t arraysize;
+  int i;
+
+  arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
+  for (i = 0; i < cinfo->out_color_components; i++) {
+    cquantize->fserrors[i] = (FSERRPTR)
+      (*cinfo->mem->alloc_large)((j_common_ptr) cinfo, JPOOL_IMAGE, arraysize);
+  }
+}
+
+
+/*
  * Initialize for one-pass color quantization.
  */
 
 METHODDEF void
 start_pass_1_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
 {
-  /* no work in 1-pass case */
-}
-
-
-/*
- * Finish up at the end of the pass.
- */
-
-METHODDEF void
-finish_pass_1_quant (j_decompress_ptr cinfo)
-{
-  /* no work in 1-pass case */
-}
-
-
-/*
- * Module initialization routine for 1-pass color quantization.
- */
-
-GLOBAL void
-jinit_1pass_quantizer (j_decompress_ptr cinfo)
-{
-  my_cquantize_ptr cquantize;
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
   size_t arraysize;
   int i;
 
-  cquantize = (my_cquantize_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_cquantizer));
-  cinfo->cquantize = (struct jpeg_color_quantizer *) cquantize;
-  cquantize->pub.start_pass = start_pass_1_quant;
-  cquantize->pub.finish_pass = finish_pass_1_quant;
-
-  /* Make sure my internal arrays won't overflow */
-  if (cinfo->out_color_components > MAX_Q_COMPS)
-    ERREXIT1(cinfo, JERR_QUANT_COMPONENTS, MAX_Q_COMPS);
-  /* Make sure colormap indexes can be represented by JSAMPLEs */
-  if (cinfo->desired_number_of_colors > (MAXJSAMPLE+1))
-    ERREXIT1(cinfo, JERR_QUANT_MANY_COLORS, MAXJSAMPLE+1);
+  /* Install my colormap. */
+  cinfo->colormap = cquantize->sv_colormap;
+  cinfo->actual_number_of_colors = cquantize->sv_actual;
 
   /* Initialize for desired dithering mode. */
   switch (cinfo->dither_mode) {
@@ -730,28 +762,95 @@ jinit_1pass_quantizer (j_decompress_ptr cinfo)
     else
       cquantize->pub.color_quantize = quantize_ord_dither;
     cquantize->row_index = 0;	/* initialize state for ordered dither */
+    /* If user changed to ordered dither from another mode,
+     * we must recreate the color index table with padding.
+     * This will cost extra space, but probably isn't very likely.
+     */
+    if (! cquantize->is_padded)
+      create_colorindex(cinfo);
+    /* Create ordered-dither tables if we didn't already. */
+    if (cquantize->odither[0] == NULL)
+      create_odither_tables(cinfo);
     break;
   case JDITHER_FS:
     cquantize->pub.color_quantize = quantize_fs_dither;
     cquantize->on_odd_row = FALSE; /* initialize state for F-S dither */
-    /* Allocate Floyd-Steinberg workspace if necessary. */
-    /* We do this now since it is FAR storage and may affect the memory */
-    /* manager's space calculations. */
+    /* Allocate Floyd-Steinberg workspace if didn't already. */
+    if (cquantize->fserrors[0] == NULL)
+      alloc_fs_workspace(cinfo);
+    /* Initialize the propagated errors to zero. */
     arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
-    for (i = 0; i < cinfo->out_color_components; i++) {
-      cquantize->fserrors[i] = (FSERRPTR) (*cinfo->mem->alloc_large)
-	((j_common_ptr) cinfo, JPOOL_IMAGE, arraysize);
-      /* Initialize the propagated errors to zero. */
+    for (i = 0; i < cinfo->out_color_components; i++)
       jzero_far((void FAR *) cquantize->fserrors[i], arraysize);
-    }
     break;
   default:
     ERREXIT(cinfo, JERR_NOT_COMPILED);
     break;
   }
+}
 
-  /* Create the colormap. */
+
+/*
+ * Finish up at the end of the pass.
+ */
+
+METHODDEF void
+finish_pass_1_quant (j_decompress_ptr cinfo)
+{
+  /* no work in 1-pass case */
+}
+
+
+/*
+ * Switch to a new external colormap between output passes.
+ * Shouldn't get to this module!
+ */
+
+METHODDEF void
+new_color_map_1_quant (j_decompress_ptr cinfo)
+{
+  ERREXIT(cinfo, JERR_MODE_CHANGE);
+}
+
+
+/*
+ * Module initialization routine for 1-pass color quantization.
+ */
+
+GLOBAL void
+jinit_1pass_quantizer (j_decompress_ptr cinfo)
+{
+  my_cquantize_ptr cquantize;
+
+  cquantize = (my_cquantize_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_cquantizer));
+  cinfo->cquantize = (struct jpeg_color_quantizer *) cquantize;
+  cquantize->pub.start_pass = start_pass_1_quant;
+  cquantize->pub.finish_pass = finish_pass_1_quant;
+  cquantize->pub.new_color_map = new_color_map_1_quant;
+  cquantize->fserrors[0] = NULL; /* Flag FS workspace not allocated */
+  cquantize->odither[0] = NULL;	/* Also flag odither arrays not allocated */
+
+  /* Make sure my internal arrays won't overflow */
+  if (cinfo->out_color_components > MAX_Q_COMPS)
+    ERREXIT1(cinfo, JERR_QUANT_COMPONENTS, MAX_Q_COMPS);
+  /* Make sure colormap indexes can be represented by JSAMPLEs */
+  if (cinfo->desired_number_of_colors > (MAXJSAMPLE+1))
+    ERREXIT1(cinfo, JERR_QUANT_MANY_COLORS, MAXJSAMPLE+1);
+
+  /* Create the colormap and color index table. */
   create_colormap(cinfo);
+  create_colorindex(cinfo);
+
+  /* Allocate Floyd-Steinberg workspace now if requested.
+   * We do this now since it is FAR storage and may affect the memory
+   * manager's space calculations.  If the user changes to FS dither
+   * mode in a later pass, we will allocate the space then, and will
+   * possibly overrun the max_memory_to_use setting.
+   */
+  if (cinfo->dither_mode == JDITHER_FS)
+    alloc_fs_workspace(cinfo);
 }
 
 #endif /* QUANT_1PASS_SUPPORTED */

@@ -1,7 +1,7 @@
 /*
  * jdmarker.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -201,13 +201,16 @@ get_soi (j_decompress_ptr cinfo)
 
 
 LOCAL boolean
-get_sof (j_decompress_ptr cinfo)
+get_sof (j_decompress_ptr cinfo, boolean is_prog, boolean is_arith)
 /* Process a SOFn marker */
 {
   INT32 length;
   int c, ci;
   jpeg_component_info * compptr;
   INPUT_VARS(cinfo);
+
+  cinfo->progressive_mode = is_prog;
+  cinfo->arith_code = is_arith;
 
   INPUT_2BYTES(cinfo, length, return FALSE);
 
@@ -231,20 +234,6 @@ get_sof (j_decompress_ptr cinfo)
   if (cinfo->image_height <= 0 || cinfo->image_width <= 0
       || cinfo->num_components <= 0)
     ERREXIT(cinfo, JERR_EMPTY_IMAGE);
-
-  /* Make sure image isn't bigger than I can handle */
-  if ((long) cinfo->image_height > (long) JPEG_MAX_DIMENSION ||
-      (long) cinfo->image_width > (long) JPEG_MAX_DIMENSION)
-    ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int) JPEG_MAX_DIMENSION);
-
-  /* For now, precision must match compiled-in value... */
-  if (cinfo->data_precision != BITS_IN_JSAMPLE)
-    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
-
-  /* Check that number of components won't exceed internal array sizes */
-  if (cinfo->num_components > MAX_COMPONENTS)
-    ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
-	     MAX_COMPONENTS);
 
   if (length != (cinfo->num_components * 3))
     ERREXIT(cinfo, JERR_BAD_LENGTH);
@@ -280,7 +269,7 @@ get_sos (j_decompress_ptr cinfo)
 /* Process a SOS marker */
 {
   INT32 length;
-  int i, ci, n, c, cc, ccc;
+  int i, ci, n, c, cc;
   jpeg_component_info * compptr;
   INPUT_VARS(cinfo);
 
@@ -322,20 +311,23 @@ get_sos (j_decompress_ptr cinfo)
 	     compptr->dc_tbl_no, compptr->ac_tbl_no);
   }
 
-  /* Collect the additional scan parameters Ss, Se, Ah/Al.
-   * Currently we just validate that they are right for sequential JPEG.
-   * This ought to be an error condition, but we make it a warning because
-   * there are some baseline files out there with all zeroes in these bytes.
-   * (Thank you, Logitech :-(.)
-   */
+  /* Collect the additional scan parameters Ss, Se, Ah/Al. */
   INPUT_BYTE(cinfo, c, return FALSE);
-  INPUT_BYTE(cinfo, cc, return FALSE);
-  INPUT_BYTE(cinfo, ccc, return FALSE);
-  if (c != 0 || cc != DCTSIZE2-1 || ccc != 0)
-    WARNMS(cinfo, JWRN_NOT_SEQUENTIAL);
+  cinfo->Ss = c;
+  INPUT_BYTE(cinfo, c, return FALSE);
+  cinfo->Se = c;
+  INPUT_BYTE(cinfo, c, return FALSE);
+  cinfo->Ah = (c >> 4) & 15;
+  cinfo->Al = (c     ) & 15;
+
+  TRACEMS4(cinfo, 1, JTRC_SOS_PARAMS, cinfo->Ss, cinfo->Se,
+	   cinfo->Ah, cinfo->Al);
 
   /* Prepare to scan data & restart markers */
   cinfo->marker->next_restart_num = 0;
+
+  /* Count another SOS marker */
+  cinfo->input_scan_number++;
 
   INPUT_SYNC(cinfo);
   return TRUE;
@@ -364,11 +356,14 @@ get_app0 (j_decompress_ptr cinfo)
 
     if (b[0]==0x4A && b[1]==0x46 && b[2]==0x49 && b[3]==0x46 && b[4]==0) {
       /* Found JFIF APP0 marker: check version */
-      /* Major version must be 1 */
+      /* Major version must be 1, anything else signals an incompatible change.
+       * We used to treat this as an error, but now it's a nonfatal warning,
+       * because some bozo at Hijaak couldn't read the spec.
+       * Minor version should be 0..2, but process anyway if newer.
+       */
       if (b[5] != 1)
-	ERREXIT2(cinfo, JERR_JFIF_MAJOR, b[5], b[6]);
-      /* Minor version should be 0..2, but try to process anyway if newer */
-      if (b[6] > 2)
+	WARNMS2(cinfo, JWRN_JFIF_MAJOR, b[5], b[6]);
+      else if (b[6] > 2)
 	TRACEMS2(cinfo, 1, JTRC_JFIF_MINOR, b[5], b[6]);
       /* Save info */
       cinfo->saw_JFIF_marker = TRUE;
@@ -724,9 +719,8 @@ first_marker (j_decompress_ptr cinfo)
 /*
  * Read markers until SOS or EOI.
  *
- * Returns same codes as are defined for jpeg_read_header,
- * but HEADER_OK and HEADER_TABLES_ONLY merely indicate which marker type
- * stopped the scan --- they do not necessarily mean the file is valid.
+ * Returns same codes as are defined for jpeg_consume_input:
+ * JPEG_SUSPENDED, JPEG_REACHED_SOS, or JPEG_REACHED_EOI.
  */
 
 METHODDEF int
@@ -757,25 +751,31 @@ read_markers (j_decompress_ptr cinfo)
 
     case M_SOF0:		/* Baseline */
     case M_SOF1:		/* Extended sequential, Huffman */
-      cinfo->arith_code = FALSE;
-      if (! get_sof(cinfo))
+      if (! get_sof(cinfo, FALSE, FALSE))
+	return JPEG_SUSPENDED;
+      break;
+
+    case M_SOF2:		/* Progressive, Huffman */
+      if (! get_sof(cinfo, TRUE, FALSE))
 	return JPEG_SUSPENDED;
       break;
 
     case M_SOF9:		/* Extended sequential, arithmetic */
-      cinfo->arith_code = TRUE;
-      if (! get_sof(cinfo))
+      if (! get_sof(cinfo, FALSE, TRUE))
+	return JPEG_SUSPENDED;
+      break;
+
+    case M_SOF10:		/* Progressive, arithmetic */
+      if (! get_sof(cinfo, TRUE, TRUE))
 	return JPEG_SUSPENDED;
       break;
 
     /* Currently unsupported SOFn types */
-    case M_SOF2:		/* Progressive, Huffman */
     case M_SOF3:		/* Lossless, Huffman */
     case M_SOF5:		/* Differential sequential, Huffman */
     case M_SOF6:		/* Differential progressive, Huffman */
     case M_SOF7:		/* Differential lossless, Huffman */
     case M_JPG:			/* Reserved for JPEG extensions */
-    case M_SOF10:		/* Progressive, arithmetic */
     case M_SOF11:		/* Lossless, arithmetic */
     case M_SOF13:		/* Differential sequential, arithmetic */
     case M_SOF14:		/* Differential progressive, arithmetic */
@@ -787,12 +787,12 @@ read_markers (j_decompress_ptr cinfo)
       if (! get_sos(cinfo))
 	return JPEG_SUSPENDED;
       cinfo->unread_marker = 0;	/* processed the marker */
-      return JPEG_HEADER_OK;	/* return value for SOS found */
+      return JPEG_REACHED_SOS;
     
     case M_EOI:
       TRACEMS(cinfo, 1, JTRC_EOI);
       cinfo->unread_marker = 0;	/* processed the marker */
-      return JPEG_HEADER_TABLES_ONLY; /* return value for EOI found */
+      return JPEG_REACHED_EOI;
       
     case M_DAC:
       if (! get_dac(cinfo))
@@ -901,7 +901,8 @@ read_restart_marker (j_decompress_ptr cinfo)
   } else {
     /* Uh-oh, the restart markers have been messed up. */
     /* Let the data source manager determine how to resync. */
-    if (! (*cinfo->src->resync_to_restart) (cinfo))
+    if (! (*cinfo->src->resync_to_restart) (cinfo,
+					    cinfo->marker->next_restart_num))
       return FALSE;
   }
 
@@ -923,7 +924,7 @@ read_restart_marker (j_decompress_ptr cinfo)
  * the restart marker it was expecting.  (This code is *not* used unless
  * a nonzero restart interval has been declared.)  cinfo->unread_marker is
  * the marker code actually found (might be anything, except 0 or FF).
- * The desired restart marker is indicated by cinfo->marker->next_restart_num.
+ * The desired restart marker number (0..7) is passed as a parameter.
  * This routine is supposed to apply whatever error recovery strategy seems
  * appropriate in order to position the input stream to the next data segment.
  * Note that cinfo->unread_marker is treated as a marker appearing before
@@ -962,10 +963,9 @@ read_restart_marker (j_decompress_ptr cinfo)
  */
 
 GLOBAL boolean
-jpeg_resync_to_restart (j_decompress_ptr cinfo)
+jpeg_resync_to_restart (j_decompress_ptr cinfo, int desired)
 {
   int marker = cinfo->unread_marker;
-  int desired = cinfo->marker->next_restart_num;
   int action = 1;
   
   /* Always put up a warning. */
@@ -1015,16 +1015,18 @@ jpeg_resync_to_restart (j_decompress_ptr cinfo)
 METHODDEF void
 reset_marker_reader (j_decompress_ptr cinfo)
 {
-  cinfo->unread_marker = 0;	    /* no pending marker */
-  cinfo->marker->saw_SOI = FALSE;   /* set internal state too */
+  cinfo->comp_info = NULL;		/* until allocated by get_sof */
+  cinfo->input_scan_number = 0;		/* no SOS seen yet */
+  cinfo->unread_marker = 0;		/* no pending marker */
+  cinfo->marker->saw_SOI = FALSE;	/* set internal state too */
   cinfo->marker->saw_SOF = FALSE;
   cinfo->marker->discarded_bytes = 0;
-  cinfo->comp_info = NULL;	    /* until allocated by get_sof */
 }
 
 
 /*
  * Initialize the marker reader module.
+ * This is called only once, when the decompression object is created.
  */
 
 GLOBAL void
@@ -1033,11 +1035,9 @@ jinit_marker_reader (j_decompress_ptr cinfo)
   int i;
 
   /* Create subobject in permanent pool */
-  if (cinfo->marker == NULL) {	/* first time for this JPEG object? */
-    cinfo->marker = (struct jpeg_marker_reader *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  SIZEOF(struct jpeg_marker_reader));
-  }
+  cinfo->marker = (struct jpeg_marker_reader *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+				SIZEOF(struct jpeg_marker_reader));
   /* Initialize method pointers */
   cinfo->marker->reset_marker_reader = reset_marker_reader;
   cinfo->marker->read_markers = read_markers;

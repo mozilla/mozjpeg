@@ -1,7 +1,7 @@
 /*
  * cjpeg.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -26,48 +26,12 @@
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"		/* for version message */
 
-#include <ctype.h>		/* to declare isupper(), tolower() */
-#ifdef NEED_SIGNAL_CATCHER
-#include <signal.h>		/* to declare signal() */
-#endif
-#ifdef USE_SETMODE
-#include <fcntl.h>		/* to declare setmode()'s parameter macros */
-/* If you have setmode() but not <io.h>, just delete this line: */
-#include <io.h>			/* to declare setmode() */
-#endif
-
 #ifdef USE_CCOMMAND		/* command-line reader for Macintosh */
 #ifdef __MWERKS__
 #include <SIOUX.h>              /* Metrowerks declares it here */
 #endif
 #ifdef THINK_C
 #include <console.h>		/* Think declares it here */
-#endif
-#endif
-
-#ifdef DONT_USE_B_MODE		/* define mode parameters for fopen() */
-#define READ_BINARY	"r"
-#define WRITE_BINARY	"w"
-#else
-#define READ_BINARY	"rb"
-#define WRITE_BINARY	"wb"
-#endif
-
-#ifndef EXIT_FAILURE		/* define exit() codes if not provided */
-#define EXIT_FAILURE  1
-#endif
-#ifndef EXIT_SUCCESS
-#ifdef VMS
-#define EXIT_SUCCESS  1		/* VMS is very nonstandard */
-#else
-#define EXIT_SUCCESS  0
-#endif
-#endif
-#ifndef EXIT_WARNING
-#ifdef VMS
-#define EXIT_WARNING  1		/* VMS is very nonstandard */
-#else
-#define EXIT_WARNING  2
 #endif
 #endif
 
@@ -160,59 +124,6 @@ select_file_type (j_compress_ptr cinfo, FILE * infile)
 
 
 /*
- * Signal catcher to ensure that temporary files are removed before aborting.
- * NB: for Amiga Manx C this is actually a global routine named _abort();
- * we put "#define signal_catcher _abort" in jconfig.h.  Talk about bogus...
- */
-
-#ifdef NEED_SIGNAL_CATCHER
-
-static j_common_ptr sig_cinfo;
-
-GLOBAL void
-signal_catcher (int signum)
-{
-  if (sig_cinfo != NULL) {
-    if (sig_cinfo->err != NULL) /* turn off trace output */
-      sig_cinfo->err->trace_level = 0;
-    jpeg_destroy(sig_cinfo);	/* clean up memory allocation & temp files */
-  }
-  exit(EXIT_FAILURE);
-}
-
-#endif
-
-
-/*
- * Optional routine to display a percent-done figure on stderr.
- */
-
-#ifdef PROGRESS_REPORT
-
-METHODDEF void
-progress_monitor (j_common_ptr cinfo)
-{
-  cd_progress_ptr prog = (cd_progress_ptr) cinfo->progress;
-  int total_passes = prog->pub.total_passes + prog->total_extra_passes;
-  int percent_done = (int) (prog->pub.pass_counter*100L/prog->pub.pass_limit);
-
-  if (percent_done != prog->percent_done) {
-    prog->percent_done = percent_done;
-    if (total_passes > 1) {
-      fprintf(stderr, "\rPass %d/%d: %3d%% ",
-	      prog->pub.completed_passes + prog->completed_extra_passes + 1,
-	      total_passes, percent_done);
-    } else {
-      fprintf(stderr, "\r %3d%% ", percent_done);
-    }
-    fflush(stderr);
-  }
-}
-
-#endif
-
-
-/*
  * Argument-parsing code.
  * The switch parser is designed to be useful with DOS-style command line
  * syntax, ie, intermixed switches and file names, where only the switches
@@ -242,6 +153,9 @@ usage (void)
 #ifdef ENTROPY_OPT_SUPPORTED
   fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
 #endif
+#ifdef C_PROGRESSIVE_SUPPORTED
+  fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
+#endif
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
@@ -270,209 +184,13 @@ usage (void)
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
   fprintf(stderr, "  -baseline      Force baseline output\n");
-#ifdef C_MULTISCAN_FILES_SUPPORTED
-  fprintf(stderr, "  -nointerleave  Create noninterleaved JPEG file\n");
-#endif
   fprintf(stderr, "  -qtables file  Use quantization tables given in file\n");
   fprintf(stderr, "  -qslots N[,...]    Set component quantization tables\n");
   fprintf(stderr, "  -sample HxV[,...]  Set component sampling factors\n");
+#ifdef C_MULTISCAN_FILES_SUPPORTED
+  fprintf(stderr, "  -scans file    Create multi-scan JPEG per script file\n");
+#endif
   exit(EXIT_FAILURE);
-}
-
-
-LOCAL boolean
-keymatch (char * arg, const char * keyword, int minchars)
-/* Case-insensitive matching of (possibly abbreviated) keyword switches. */
-/* keyword is the constant keyword (must be lower case already), */
-/* minchars is length of minimum legal abbreviation. */
-{
-  register int ca, ck;
-  register int nmatched = 0;
-
-  while ((ca = *arg++) != '\0') {
-    if ((ck = *keyword++) == '\0')
-      return FALSE;		/* arg longer than keyword, no good */
-    if (isupper(ca))		/* force arg to lcase (assume ck is already) */
-      ca = tolower(ca);
-    if (ca != ck)
-      return FALSE;		/* no good */
-    nmatched++;			/* count matched characters */
-  }
-  /* reached end of argument; fail if it's too short for unique abbrev */
-  if (nmatched < minchars)
-    return FALSE;
-  return TRUE;			/* A-OK */
-}
-
-
-LOCAL int
-qt_getc (FILE * file)
-/* Read next char, skipping over any comments (# to end of line) */
-/* A comment/newline sequence is returned as a newline */
-{
-  register int ch;
-  
-  ch = getc(file);
-  if (ch == '#') {
-    do {
-      ch = getc(file);
-    } while (ch != '\n' && ch != EOF);
-  }
-  return ch;
-}
-
-
-LOCAL long
-read_qt_integer (FILE * file)
-/* Read an unsigned decimal integer from a quantization-table file */
-/* Swallows one trailing character after the integer */
-{
-  register int ch;
-  register long val;
-  
-  /* Skip any leading whitespace, detect EOF */
-  do {
-    ch = qt_getc(file);
-    if (ch == EOF)
-      return EOF;
-  } while (isspace(ch));
-  
-  if (! isdigit(ch)) {
-    fprintf(stderr, "%s: bogus data in quantization file\n", progname);
-    exit(EXIT_FAILURE);
-  }
-
-  val = ch - '0';
-  while (ch = qt_getc(file), isdigit(ch)) {
-    val *= 10;
-    val += ch - '0';
-  }
-  return val;
-}
-
-
-LOCAL void
-read_quant_tables (j_compress_ptr cinfo, char * filename, int scale_factor,
-		   boolean force_baseline)
-/* Read a set of quantization tables from the specified file.
- * The file is plain ASCII text: decimal numbers with whitespace between.
- * Comments preceded by '#' may be included in the file.
- * There may be one to NUM_QUANT_TBLS tables in the file, each of 64 values.
- * The tables are implicitly numbered 0,1,etc.
- * NOTE: does not affect the qslots mapping, which will default to selecting
- * table 0 for luminance (or primary) components, 1 for chrominance components.
- * You must use -qslots if you want a different component->table mapping.
- */
-{
-  /* ZIG[i] is the zigzag-order position of the i'th element of a DCT block */
-  /* read in natural order (left to right, top to bottom). */
-  static const int ZIG[DCTSIZE2] = {
-     0,  1,  5,  6, 14, 15, 27, 28,
-     2,  4,  7, 13, 16, 26, 29, 42,
-     3,  8, 12, 17, 25, 30, 41, 43,
-     9, 11, 18, 24, 31, 40, 44, 53,
-    10, 19, 23, 32, 39, 45, 52, 54,
-    20, 22, 33, 38, 46, 51, 55, 60,
-    21, 34, 37, 47, 50, 56, 59, 61,
-    35, 36, 48, 49, 57, 58, 62, 63
-    };
-  FILE * fp;
-  int tblno, i;
-  long val;
-  unsigned int table[DCTSIZE2];
-
-  if ((fp = fopen(filename, "r")) == NULL) {
-    fprintf(stderr, "%s: can't open %s\n", progname, filename);
-    exit(EXIT_FAILURE);
-  }
-  tblno = 0;
-
-  while ((val = read_qt_integer(fp)) != EOF) { /* read 1st element of table */
-    if (tblno >= NUM_QUANT_TBLS) {
-      fprintf(stderr, "%s: too many tables in file %s\n", progname, filename);
-      exit(EXIT_FAILURE);
-    }
-    table[0] = (unsigned int) val;
-    for (i = 1; i < DCTSIZE2; i++) {
-      if ((val = read_qt_integer(fp)) == EOF) {
-	fprintf(stderr, "%s: incomplete table in file %s\n", progname, filename);
-	exit(EXIT_FAILURE);
-      }
-      table[ZIG[i]] = (unsigned int) val;
-    }
-    jpeg_add_quant_table(cinfo, tblno, table, scale_factor, force_baseline);
-    tblno++;
-  }
-
-  fclose(fp);
-}
-
-
-LOCAL void
-set_quant_slots (j_compress_ptr cinfo, char *arg)
-/* Process a quantization-table-selectors parameter string, of the form
- *     N[,N,...]
- * If there are more components than parameters, the last value is replicated.
- */
-{
-  int val = 0;			/* default table # */
-  int ci;
-  char ch;
-
-  for (ci = 0; ci < MAX_COMPONENTS; ci++) {
-    if (*arg) {
-      ch = ',';			/* if not set by sscanf, will be ',' */
-      if (sscanf(arg, "%d%c", &val, &ch) < 1)
-	usage();
-      if (ch != ',')
-	usage();		/* syntax check */
-      if (val < 0 || val >= NUM_QUANT_TBLS) {
-	fprintf(stderr, "JPEG quantization tables are numbered 0..%d\n",
-		NUM_QUANT_TBLS-1);
-	exit(EXIT_FAILURE);
-      }
-      cinfo->comp_info[ci].quant_tbl_no = val;
-      while (*arg && *arg++ != ',') /* advance to next segment of arg string */
-	;
-    } else {
-      /* reached end of parameter, set remaining components to last table */
-      cinfo->comp_info[ci].quant_tbl_no = val;
-    }
-  }
-}
-
-
-LOCAL void
-set_sample_factors (j_compress_ptr cinfo, char *arg)
-/* Process a sample-factors parameter string, of the form
- *     HxV[,HxV,...]
- * If there are more components than parameters, "1x1" is assumed.
- */
-{
-  int ci, val1, val2;
-  char ch1, ch2;
-
-  for (ci = 0; ci < MAX_COMPONENTS; ci++) {
-    if (*arg) {
-      ch2 = ',';		/* if not set by sscanf, will be ',' */
-      if (sscanf(arg, "%d%c%d%c", &val1, &ch1, &val2, &ch2) < 3)
-	usage();
-      if ((ch1 != 'x' && ch1 != 'X') || ch2 != ',')
-	usage();		/* syntax check */
-      if (val1 <= 0 || val1 > 4 || val2 <= 0 || val2 > 4) {
-	fprintf(stderr, "JPEG sampling factors must be 1..4\n");
-	exit(EXIT_FAILURE);
-      }
-      cinfo->comp_info[ci].h_samp_factor = val1;
-      cinfo->comp_info[ci].v_samp_factor = val2;
-      while (*arg && *arg++ != ',') /* advance to next segment of arg string */
-	;
-    } else {
-      /* reached end of parameter, set remaining components to 1x1 sampling */
-      cinfo->comp_info[ci].h_samp_factor = 1;
-      cinfo->comp_info[ci].v_samp_factor = 1;
-    }
-  }
 }
 
 
@@ -493,9 +211,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   int quality;			/* -quality parameter */
   int q_scale_factor;		/* scaling percentage for -qtables */
   boolean force_baseline;
+  boolean simple_progressive;
   char * qtablefile = NULL;	/* saves -qtables filename if any */
   char * qslotsarg = NULL;	/* saves -qslots parm if any */
   char * samplearg = NULL;	/* saves -sample parm if any */
+  char * scansarg = NULL;	/* saves -scans parm if any */
 
   /* Set up default JPEG parameters. */
   /* Note that default -quality level need not, and does not,
@@ -504,6 +224,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   quality = 75;			/* default -quality value */
   q_scale_factor = 100;		/* default to no scaling for -qtables */
   force_baseline = FALSE;	/* by default, allow 16-bit quantizers */
+  simple_progressive = FALSE;
   is_targa = FALSE;
   outfilename = NULL;
   cinfo->err->trace_level = 0;
@@ -578,16 +299,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
-    } else if (keymatch(arg, "nointerleave", 3)) {
-      /* Create noninterleaved file. */
-#ifdef C_MULTISCAN_FILES_SUPPORTED
-      cinfo->interleave = FALSE;
-#else
-      fprintf(stderr, "%s: sorry, multiple-scan support was not compiled\n",
-	      progname);
-      exit(EXIT_FAILURE);
-#endif
-
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */
 #ifdef ENTROPY_OPT_SUPPORTED
@@ -603,6 +314,17 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       if (++argn >= argc)	/* advance to next argument */
 	usage();
       outfilename = argv[argn];	/* save it away for later use */
+
+    } else if (keymatch(arg, "progressive", 1)) {
+      /* Select simple progressive mode. */
+#ifdef C_PROGRESSIVE_SUPPORTED
+      simple_progressive = TRUE;
+      /* We must postpone execution until num_components is known. */
+#else
+      fprintf(stderr, "%s: sorry, progressive output was not compiled\n",
+	      progname);
+      exit(EXIT_FAILURE);
+#endif
 
     } else if (keymatch(arg, "quality", 1)) {
       /* Quality factor (quantization table scaling factor). */
@@ -659,6 +381,19 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
        * default sampling factors.
        */
 
+    } else if (keymatch(arg, "scans", 2)) {
+      /* Set scan script. */
+#ifdef C_MULTISCAN_FILES_SUPPORTED
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      scansarg = argv[argn];
+      /* We must postpone reading the file in case -progressive appears. */
+#else
+      fprintf(stderr, "%s: sorry, multi-scan output was not compiled\n",
+	      progname);
+      exit(EXIT_FAILURE);
+#endif
+
     } else if (keymatch(arg, "smooth", 2)) {
       /* Set input smoothing factor. */
       int val;
@@ -689,14 +424,28 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     jpeg_set_quality(cinfo, quality, force_baseline);
 
     if (qtablefile != NULL)	/* process -qtables if it was present */
-      read_quant_tables(cinfo, qtablefile, q_scale_factor, force_baseline);
+      if (! read_quant_tables(cinfo, qtablefile,
+			      q_scale_factor, force_baseline))
+	usage();
 
     if (qslotsarg != NULL)	/* process -qslots if it was present */
-      set_quant_slots(cinfo, qslotsarg);
+      if (! set_quant_slots(cinfo, qslotsarg))
+	usage();
 
     if (samplearg != NULL)	/* process -sample if it was present */
-      set_sample_factors(cinfo, samplearg);
+      if (! set_sample_factors(cinfo, samplearg))
+	usage();
 
+#ifdef C_PROGRESSIVE_SUPPORTED
+    if (simple_progressive)	/* process -progressive; -scans can override */
+      jpeg_simple_progression(cinfo);
+#endif
+
+#ifdef C_MULTISCAN_FILES_SUPPORTED
+    if (scansarg != NULL)	/* process -scans if it was present */
+      if (! read_scan_script(cinfo, scansarg))
+	usage();
+#endif
   }
 
   return argn;			/* return index of next arg (file name) */
@@ -740,11 +489,7 @@ main (int argc, char **argv)
 
   /* Now safe to enable signal catcher. */
 #ifdef NEED_SIGNAL_CATCHER
-  sig_cinfo = (j_common_ptr) &cinfo;
-  signal(SIGINT, signal_catcher);
-#ifdef SIGTERM			/* not all systems have SIGTERM */
-  signal(SIGTERM, signal_catcher);
-#endif
+  enable_signal_catcher((j_common_ptr) &cinfo);
 #endif
 
   /* Initialize JPEG parameters.
@@ -796,17 +541,7 @@ main (int argc, char **argv)
     }
   } else {
     /* default input file is stdin */
-#ifdef USE_SETMODE		/* need to hack file mode? */
-    setmode(fileno(stdin), O_BINARY);
-#endif
-#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
-    if ((input_file = fdopen(fileno(stdin), READ_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open stdin\n", progname);
-      exit(EXIT_FAILURE);
-    }
-#else
-    input_file = stdin;
-#endif
+    input_file = read_stdin();
   }
 
   /* Open the output file. */
@@ -817,28 +552,11 @@ main (int argc, char **argv)
     }
   } else {
     /* default output file is stdout */
-#ifdef USE_SETMODE		/* need to hack file mode? */
-    setmode(fileno(stdout), O_BINARY);
-#endif
-#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
-    if ((output_file = fdopen(fileno(stdout), WRITE_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open stdout\n", progname);
-      exit(EXIT_FAILURE);
-    }
-#else
-    output_file = stdout;
-#endif
+    output_file = write_stdout();
   }
 
 #ifdef PROGRESS_REPORT
-  /* Enable progress display, unless trace output is on */
-  if (jerr.trace_level == 0) {
-    progress.pub.progress_monitor = progress_monitor;
-    progress.completed_extra_passes = 0;
-    progress.total_extra_passes = 0;
-    progress.percent_done = -1;
-    cinfo.progress = &progress.pub;
-  }
+  start_progress_monitor((j_common_ptr) &cinfo, &progress);
 #endif
 
   /* Figure out the input file format, and set up to read it. */
@@ -878,11 +596,7 @@ main (int argc, char **argv)
     fclose(output_file);
 
 #ifdef PROGRESS_REPORT
-  /* Clear away progress display */
-  if (jerr.trace_level == 0) {
-    fprintf(stderr, "\r                \r");
-    fflush(stderr);
-  }
+  end_progress_monitor((j_common_ptr) &cinfo);
 #endif
 
   /* All done. */

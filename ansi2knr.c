@@ -4,19 +4,27 @@
 /* Convert ANSI function declarations to K&R syntax */
 
 /*
-ansi2knr is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY.  No author or distributor accepts responsibility
-to anyone for the consequences of using it or for whether it serves any
-particular purpose or works at all, unless he says so in writing.  Refer
-to the GNU General Public License for full details.
+ansi2knr is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY.  No author or distributor accepts responsibility to anyone for the
+consequences of using it or for whether it serves any particular purpose or
+works at all, unless he says so in writing.  Refer to the GNU General Public
+License (the "GPL") for full details.
 
-Everyone is granted permission to copy, modify and redistribute
-ansi2knr, but only under the conditions described in the GNU
-General Public License.  A copy of this license is supposed to have been
-given to you along with ansi2knr so you can know your rights and
-responsibilities.  It should be in a file named COPYING.  Among other
-things, the copyright notice and this notice must be preserved on all
-copies.
+Everyone is granted permission to copy, modify and redistribute ansi2knr,
+but only under the conditions described in the GPL.  A copy of this license
+is supposed to have been given to you along with ansi2knr so you can know
+your rights and responsibilities.  It should be in a file named COPYLEFT.
+[In the IJG distribution, the GPL appears below, not in a separate file.]
+Among other things, the copyright notice and this notice must be preserved
+on all copies.
+
+We explicitly state here what we believe is already implied by the GPL: if
+the ansi2knr program is distributed as a separate set of sources and a
+separate executable file which are aggregated on a storage medium together
+with another program, this in itself does not bring the other program under
+the GPL, nor does the mere fact that such a program or the procedures for
+constructing it invoke the ansi2knr executable bring any other part of the
+program under the GPL.
 */
 
 /*

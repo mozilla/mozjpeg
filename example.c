@@ -154,6 +154,10 @@ write_JPEG_file (char * filename, int quality)
   row_stride = image_width * 3;	/* JSAMPLEs per row in image_buffer */
 
   while (cinfo.next_scanline < cinfo.image_height) {
+    /* jpeg_write_scanlines expects an array of pointers to scanlines.
+     * Here the array is only one element long, but you could pass
+     * more than one scanline at a time if that's more convenient.
+     */
     row_pointer[0] = & image_buffer[cinfo.next_scanline * row_stride];
     (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
   }
@@ -188,7 +192,7 @@ write_JPEG_file (char * filename, int quality)
  * (If you don't know what that's for, you don't need it.)
  *
  * If the compressor requires full-image buffers (for entropy-coding
- * optimization or a noninterleaved JPEG file), it will create temporary
+ * optimization or a multi-scan JPEG file), it will create temporary
  * files for anything that doesn't fit within the maximum-memory setting.
  * (Note that temp files are NOT needed if you use the default parameters.)
  * On some systems you may need to set up a signal handler to ensure that
@@ -342,7 +346,10 @@ read_JPEG_file (char * filename)
 
   /* Step 5: Start decompressor */
 
-  jpeg_start_decompress(&cinfo);
+  (void) jpeg_start_decompress(&cinfo);
+  /* We can ignore the return value since suspension is not possible
+   * with the stdio data source.
+   */
 
   /* We may need to do some setup of our own at this point before reading
    * the data.  After jpeg_start_decompress() we have the correct scaled
@@ -363,6 +370,10 @@ read_JPEG_file (char * filename)
    * loop counter, so that we don't have to keep track ourselves.
    */
   while (cinfo.output_scanline < cinfo.output_height) {
+    /* jpeg_read_scanlines expects an array of pointers to scanlines.
+     * Here the array is only one element long, but you could ask for
+     * more than one scanline at a time if that's more convenient.
+     */
     (void) jpeg_read_scanlines(&cinfo, buffer, 1);
     /* Assume put_scanline_someplace wants a pointer and sample count. */
     put_scanline_someplace(buffer[0], row_stride);

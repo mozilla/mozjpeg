@@ -1,7 +1,7 @@
 /*
  * rdtarga.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -76,10 +76,10 @@ typedef struct _tga_source_struct {
 /* For expanding 5-bit pixel values to 8-bit with best rounding */
 
 static const UINT8 c5to8bits[32] = {
-    0,   8,  16,  24,  32,  41,  49,  57,
-   65,  74,  82,  90,  98, 106, 115, 123,
-  131, 139, 148, 156, 164, 172, 180, 189,
-  197, 205, 213, 222, 230, 238, 246, 255
+    0,   8,  16,  25,  33,  41,  49,  58,
+   66,  74,  82,  90,  99, 107, 115, 123,
+  132, 140, 148, 156, 165, 173, 181, 189,
+  197, 206, 214, 222, 230, 239, 247, 255
 };
 
 
@@ -282,7 +282,8 @@ get_memory_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   /* Fetch that row from virtual array */
   source->pub.buffer = (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, source->whole_image, source_row, FALSE);
+    ((j_common_ptr) cinfo, source->whole_image,
+     source_row, (JDIMENSION) 1, FALSE);
 
   source->current_row++;
   return 1;
@@ -310,7 +311,7 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       (*progress->pub.progress_monitor) ((j_common_ptr) cinfo);
     }
     source->pub.buffer = (*cinfo->mem->access_virt_sarray)
-      ((j_common_ptr) cinfo, source->whole_image, row, TRUE);
+      ((j_common_ptr) cinfo, source->whole_image, row, (JDIMENSION) 1, TRUE);
     (*source->get_pixel_rows) (cinfo, sinfo);
   }
   if (progress != NULL)
@@ -421,7 +422,7 @@ start_input_tga (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (is_bottom_up) {
     /* Create a virtual array to buffer the upside-down image. */
     source->whole_image = (*cinfo->mem->request_virt_sarray)
-      ((j_common_ptr) cinfo, JPOOL_IMAGE,
+      ((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
        (JDIMENSION) width * components, (JDIMENSION) height, (JDIMENSION) 1);
     if (cinfo->progress != NULL) {
       cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;

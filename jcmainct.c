@@ -182,7 +182,8 @@ process_data_buffer_main (j_compress_ptr cinfo,
 	   ci++, compptr++) {
 	main->buffer[ci] = (*cinfo->mem->access_virt_sarray)
 	  ((j_common_ptr) cinfo, main->whole_image[ci],
-	   main->cur_iMCU_row * (compptr->v_samp_factor * DCTSIZE), writing);
+	   main->cur_iMCU_row * (compptr->v_samp_factor * DCTSIZE),
+	   (JDIMENSION) (compptr->v_samp_factor * DCTSIZE), writing);
       }
       /* In a read pass, pretend we just read some source data. */
       if (! writing) {
@@ -263,13 +264,14 @@ jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
   if (need_full_buffer) {
 #ifdef FULL_MAIN_BUFFER_SUPPORTED
     /* Allocate a full-image virtual array for each component */
-    /* Note we implicitly pad the bottom to a multiple of the iMCU height */
+    /* Note we pad the bottom to a multiple of the iMCU height */
     for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
 	 ci++, compptr++) {
       main->whole_image[ci] = (*cinfo->mem->request_virt_sarray)
-	((j_common_ptr) cinfo, JPOOL_IMAGE,
+	((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
 	 compptr->width_in_blocks * DCTSIZE,
-	 compptr->height_in_blocks * DCTSIZE,
+	 (JDIMENSION) jround_up((long) compptr->height_in_blocks,
+				(long) compptr->v_samp_factor) * DCTSIZE,
 	 (JDIMENSION) (compptr->v_samp_factor * DCTSIZE));
     }
 #else

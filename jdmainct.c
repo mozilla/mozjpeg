@@ -1,13 +1,16 @@
 /*
  * jdmainct.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the main buffer controller for decompression.
  * The main buffer lies between the JPEG decompressor proper and the
  * post-processor; it holds downsampled data in the JPEG colorspace.
+ *
+ * Note that this code is bypassed in raw-data mode, since the application
+ * supplies the equivalent of the main buffer in that case.
  */
 
 #define JPEG_INTERNALS
@@ -143,11 +146,6 @@ METHODDEF void process_data_simple_main
 METHODDEF void process_data_context_main
 	JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
 	     JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
-#ifdef D_MULTISCAN_FILES_SUPPORTED
-METHODDEF void process_data_input_only
-	JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
-	     JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
-#endif
 #ifdef QUANT_2PASS_SUPPORTED
 METHODDEF void process_data_crank_post
 	JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
@@ -156,17 +154,16 @@ METHODDEF void process_data_crank_post
 
 
 LOCAL void
-make_funny_pointers (j_decompress_ptr cinfo)
-/* Create the funny pointer lists discussed in the comments above.
- * The actual workspace is already allocated (in main->buffer),
- * we just have to make the curiously ordered lists.
+alloc_funny_pointers (j_decompress_ptr cinfo)
+/* Allocate space for the funny pointer lists.
+ * This is done only once, not once per pass.
  */
 {
   my_main_ptr main = (my_main_ptr) cinfo->main;
-  int ci, i, rgroup;
+  int ci, rgroup;
   int M = cinfo->min_DCT_scaled_size;
   jpeg_component_info *compptr;
-  JSAMPARRAY buf, xbuf0, xbuf1;
+  JSAMPARRAY xbuf;
 
   /* Get top-level space for component array pointers.
    * We alloc both arrays with one call to save a few cycles.
@@ -183,13 +180,38 @@ make_funny_pointers (j_decompress_ptr cinfo)
     /* Get space for pointer lists --- M+4 row groups in each list.
      * We alloc both pointer lists with one call to save a few cycles.
      */
-    xbuf0 = (JSAMPARRAY)
+    xbuf = (JSAMPARRAY)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				  2 * (rgroup * (M + 4)) * SIZEOF(JSAMPROW));
-    xbuf0 += rgroup;		/* want one row group at negative offsets */
-    main->xbuffer[0][ci] = xbuf0;
-    xbuf1 = xbuf0 + (rgroup * (M + 4));
-    main->xbuffer[1][ci] = xbuf1;
+    xbuf += rgroup;		/* want one row group at negative offsets */
+    main->xbuffer[0][ci] = xbuf;
+    xbuf += rgroup * (M + 4);
+    main->xbuffer[1][ci] = xbuf;
+  }
+}
+
+
+LOCAL void
+make_funny_pointers (j_decompress_ptr cinfo)
+/* Create the funny pointer lists discussed in the comments above.
+ * The actual workspace is already allocated (in main->buffer),
+ * and the space for the pointer lists is allocated too.
+ * This routine just fills in the curiously ordered lists.
+ * This will be repeated at the beginning of each pass.
+ */
+{
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+  int ci, i, rgroup;
+  int M = cinfo->min_DCT_scaled_size;
+  jpeg_component_info *compptr;
+  JSAMPARRAY buf, xbuf0, xbuf1;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
+      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    xbuf0 = main->xbuffer[0][ci];
+    xbuf1 = main->xbuffer[1][ci];
     /* First copy the workspace pointers as-is */
     buf = main->buffer[ci];
     for (i = 0; i < rgroup * (M + 2); i++) {
@@ -286,14 +308,8 @@ start_pass_main (j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
 {
   my_main_ptr main = (my_main_ptr) cinfo->main;
 
-  /* Processing chunks are output rows except in JBUF_CRANK_SOURCE mode. */
-  main->pub.num_chunks = cinfo->output_height;
-
   switch (pass_mode) {
   case JBUF_PASS_THRU:
-    /* Do nothing if raw-data mode. */
-    if (cinfo->raw_data_out)
-      return;
     if (cinfo->upsample->need_context_rows) {
       main->pub.process_data = process_data_context_main;
       make_funny_pointers(cinfo); /* Create the xbuffer[] lists */
@@ -307,14 +323,6 @@ start_pass_main (j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
     main->buffer_full = FALSE;	/* Mark buffer empty */
     main->rowgroup_ctr = 0;
     break;
-#ifdef D_MULTISCAN_FILES_SUPPORTED
-  case JBUF_CRANK_SOURCE:
-    /* Reading a multi-scan file, just crank the decompressor */
-    main->pub.process_data = process_data_input_only;
-    /* decompressor needs to be called once for each (equivalent) iMCU row */
-    main->pub.num_chunks = cinfo->total_iMCU_rows;
-    break;
-#endif
 #ifdef QUANT_2PASS_SUPPORTED
   case JBUF_CRANK_DEST:
     /* For last pass of 2-pass quantization, just crank the postprocessor */
@@ -441,27 +449,6 @@ process_data_context_main (j_decompress_ptr cinfo,
 
 /*
  * Process some data.
- * Initial passes in a multiple-scan file: just call the decompressor,
- * which will save data in its internal buffer, but return nothing.
- */
-
-#ifdef D_MULTISCAN_FILES_SUPPORTED
-
-METHODDEF void
-process_data_input_only (j_decompress_ptr cinfo,
-			 JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-			 JDIMENSION out_rows_avail)
-{
-  if (! (*cinfo->coef->decompress_data) (cinfo, (JSAMPIMAGE) NULL))
-    return;			/* suspension forced, can do nothing more */
-  *out_row_ctr += 1;		/* OK, we did one iMCU row */
-}
-
-#endif /* D_MULTISCAN_FILES_SUPPORTED */
-
-
-/*
- * Process some data.
  * Final pass of two-pass quantization: just call the postprocessor.
  * Source data will be the postprocessor controller's internal buffer.
  */
@@ -501,19 +488,13 @@ jinit_d_main_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
   if (need_full_buffer)		/* shouldn't happen */
     ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
 
-  /* In raw-data mode, we don't need a workspace.  This module doesn't
-   * do anything useful in that mode, except pass calls through to the
-   * coef controller in CRANK_SOURCE mode (ie, reading a multiscan file).
-   */
-  if (cinfo->raw_data_out)
-    return;
-
   /* Allocate the workspace.
    * ngroups is the number of row groups we need.
    */
   if (cinfo->upsample->need_context_rows) {
     if (cinfo->min_DCT_scaled_size < 2) /* unsupported, see comments above */
       ERREXIT(cinfo, JERR_NOTIMPL);
+    alloc_funny_pointers(cinfo); /* Alloc space for xbuffer[] lists */
     ngroups = cinfo->min_DCT_scaled_size + 2;
   } else {
     ngroups = cinfo->min_DCT_scaled_size;

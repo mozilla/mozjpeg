@@ -1,7 +1,7 @@
 /*
  * rdgif.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -498,7 +498,7 @@ start_input_gif (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
      * image is postponed until the first call to get_pixel_rows.
      */
     source->interlaced_image = (*cinfo->mem->request_virt_sarray)
-      ((j_common_ptr) cinfo, JPOOL_IMAGE,
+      ((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
        (JDIMENSION) width, (JDIMENSION) height, (JDIMENSION) 1);
     if (cinfo->progress != NULL) {
       cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;
@@ -576,7 +576,8 @@ load_interlaced_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       (*progress->pub.progress_monitor) ((j_common_ptr) cinfo);
     }
     image_ptr = (*cinfo->mem->access_virt_sarray)
-      ((j_common_ptr) cinfo, source->interlaced_image, row, TRUE);
+      ((j_common_ptr) cinfo, source->interlaced_image,
+       row, (JDIMENSION) 1, TRUE);
     sptr = image_ptr[0];
     for (col = cinfo->image_width; col > 0; col--) {
       *sptr++ = (JSAMPLE) LZWReadByte(source);
@@ -631,7 +632,8 @@ get_interlaced_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
   }
   image_ptr = (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, source->interlaced_image, irow, FALSE);
+    ((j_common_ptr) cinfo, source->interlaced_image,
+     irow, (JDIMENSION) 1, FALSE);
   /* Scan the row, expand colormap, and output */
   sptr = image_ptr[0];
   ptr = source->pub.buffer[0];

@@ -1,7 +1,7 @@
 /*
  * jcdctmgr.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -27,7 +27,8 @@ typedef struct {
 
   /* The actual post-DCT divisors --- not identical to the quant table
    * entries, because of scaling (especially for an unnormalized DCT).
-   * Each table is given in zigzag order.
+   * Each table is given in normal array order; note that this must
+   * be converted from the zigzag order of the quantization tables.
    */
   DCTELEM * divisors[NUM_QUANT_TBLS];
 
@@ -39,20 +40,6 @@ typedef struct {
 } my_fdct_controller;
 
 typedef my_fdct_controller * my_fdct_ptr;
-
-
-/* ZAG[i] is the natural-order position of the i'th element of zigzag order. */
-
-static const int ZAG[DCTSIZE2] = {
-  0,  1,  8, 16,  9,  2,  3, 10,
- 17, 24, 32, 25, 18, 11,  4,  5,
- 12, 19, 26, 33, 40, 48, 41, 34,
- 27, 20, 13,  6,  7, 14, 21, 28,
- 35, 42, 49, 56, 57, 50, 43, 36,
- 29, 22, 15, 23, 30, 37, 44, 51,
- 58, 59, 52, 45, 38, 31, 39, 46,
- 53, 60, 61, 54, 47, 55, 62, 63
-};
 
 
 /*
@@ -96,7 +83,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
       }
       dtbl = fdct->divisors[qtblno];
       for (i = 0; i < DCTSIZE2; i++) {
-	dtbl[i] = ((DCTELEM) qtbl->quantval[i]) << 3;
+	dtbl[i] = ((DCTELEM) qtbl->quantval[jpeg_zigzag_order[i]]) << 3;
       }
       break;
 #endif
@@ -131,8 +118,8 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 	dtbl = fdct->divisors[qtblno];
 	for (i = 0; i < DCTSIZE2; i++) {
 	  dtbl[i] = (DCTELEM)
-	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
-				  (INT32) aanscales[ZAG[i]]),
+	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[jpeg_zigzag_order[i]],
+				  (INT32) aanscales[i]),
 		    CONST_BITS-3);
 	}
       }
@@ -162,12 +149,14 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 					DCTSIZE2 * SIZEOF(FAST_FLOAT));
 	}
 	fdtbl = fdct->float_divisors[qtblno];
-	for (i = 0; i < DCTSIZE2; i++) {
-	  row = ZAG[i] >> 3;
-	  col = ZAG[i] & 7;
-	  fdtbl[i] = (FAST_FLOAT)
-	    (1.0 / (((double) qtbl->quantval[i] *
-		     aanscalefactor[row] * aanscalefactor[col] * 8.0)));
+	i = 0;
+	for (row = 0; row < DCTSIZE; row++) {
+	  for (col = 0; col < DCTSIZE; col++) {
+	    fdtbl[i] = (FAST_FLOAT)
+	      (1.0 / (((double) qtbl->quantval[jpeg_zigzag_order[i]] *
+		       aanscalefactor[row] * aanscalefactor[col] * 8.0)));
+	    i++;
+	  }
 	}
       }
       break;
@@ -185,7 +174,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
  *
  * The input samples are taken from the sample_data[] array starting at
  * position start_row/start_col, and moving to the right for any additional
- * blocks. The quantized, zigzagged coefficients are returned in coef_blocks[].
+ * blocks. The quantized coefficients are returned in coef_blocks[].
  */
 
 METHODDEF void
@@ -242,7 +231,7 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
       for (i = 0; i < DCTSIZE2; i++) {
 	qval = divisors[i];
-	temp = workspace[ZAG[i]];
+	temp = workspace[i];
 	/* Divide the coefficient value by qval, ensuring proper rounding.
 	 * Since C does not specify the direction of rounding for negative
 	 * quotients, we have to force the dividend positive for portability.
@@ -304,18 +293,19 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
       for (elemr = 0; elemr < DCTSIZE; elemr++) {
 	elemptr = sample_data[elemr] + start_col;
 #if DCTSIZE == 8		/* unroll the inner loop */
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
-	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
 #else
 	{ register int elemc;
 	  for (elemc = DCTSIZE; elemc > 0; elemc--) {
-	    *workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	    *workspaceptr++ = (FAST_FLOAT)
+	      (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
 	  }
 	}
 #endif
@@ -332,7 +322,7 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
       for (i = 0; i < DCTSIZE2; i++) {
 	/* Apply the quantization and scaling factor */
-	temp = workspace[ZAG[i]] * divisors[i];
+	temp = workspace[i] * divisors[i];
 	/* Round to nearest integer.
 	 * Since C does not specify the direction of rounding for negative
 	 * quotients, we have to force the dividend positive for portability.

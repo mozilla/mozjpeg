@@ -1,7 +1,7 @@
 /*
  * jmemmgr.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -151,10 +151,12 @@ struct jvirt_sarray_control {
   JSAMPARRAY mem_buffer;	/* => the in-memory buffer */
   JDIMENSION rows_in_array;	/* total virtual array height */
   JDIMENSION samplesperrow;	/* width of array (and of memory buffer) */
-  JDIMENSION unitheight;	/* # of rows accessed by access_virt_sarray */
+  JDIMENSION maxaccess;		/* max rows accessed by access_virt_sarray */
   JDIMENSION rows_in_mem;	/* height of memory buffer */
   JDIMENSION rowsperchunk;	/* allocation chunk size in mem_buffer */
   JDIMENSION cur_start_row;	/* first logical row # in the buffer */
+  JDIMENSION first_undef_row;	/* row # of first uninitialized row */
+  boolean pre_zero;		/* pre-zero mode requested? */
   boolean dirty;		/* do current buffer contents need written? */
   boolean b_s_open;		/* is backing-store data valid? */
   jvirt_sarray_ptr next;	/* link to next virtual sarray control block */
@@ -165,10 +167,12 @@ struct jvirt_barray_control {
   JBLOCKARRAY mem_buffer;	/* => the in-memory buffer */
   JDIMENSION rows_in_array;	/* total virtual array height */
   JDIMENSION blocksperrow;	/* width of array (and of memory buffer) */
-  JDIMENSION unitheight;	/* # of rows accessed by access_virt_barray */
+  JDIMENSION maxaccess;		/* max rows accessed by access_virt_barray */
   JDIMENSION rows_in_mem;	/* height of memory buffer */
   JDIMENSION rowsperchunk;	/* allocation chunk size in mem_buffer */
   JDIMENSION cur_start_row;	/* first logical row # in the buffer */
+  JDIMENSION first_undef_row;	/* row # of first uninitialized row */
+  boolean pre_zero;		/* pre-zero mode requested? */
   boolean dirty;		/* do current buffer contents need written? */
   boolean b_s_open;		/* is backing-store data valid? */
   jvirt_barray_ptr next;	/* link to next virtual barray control block */
@@ -481,21 +485,17 @@ alloc_barray (j_common_ptr cinfo, int pool_id,
 /*
  * About virtual array management:
  *
- * To allow machines with limited memory to handle large images, all
- * processing in the JPEG system is done a few pixel or block rows at a time.
  * The above "normal" array routines are only used to allocate strip buffers
- * (as wide as the image, but just a few rows high).
- * In some cases multiple passes must be made over the data.  In these
- * cases the virtual array routines are used.  The array is still accessed
- * a strip at a time, but the memory manager must save the whole array
- * for repeated accesses.  The intended implementation is that there is
- * a strip buffer in memory (as high as is possible given the desired memory
- * limit), plus a backing file that holds the rest of the array.
+ * (as wide as the image, but just a few rows high).  Full-image-sized buffers
+ * are handled as "virtual" arrays.  The array is still accessed a strip at a
+ * time, but the memory manager must save the whole array for repeated
+ * accesses.  The intended implementation is that there is a strip buffer in
+ * memory (as high as is possible given the desired memory limit), plus a
+ * backing file that holds the rest of the array.
  *
  * The request_virt_array routines are told the total size of the image and
- * the unit height, which is the number of rows that will be accessed at once;
- * the in-memory buffer should be made a multiple of this height for best
- * efficiency.
+ * the maximum number of rows that will be accessed at once.  The in-memory
+ * buffer must be at least as large as the maxaccess value.
  *
  * The request routines create control blocks but not the in-memory buffers.
  * That is postponed until realize_virt_arrays is called.  At that time the
@@ -506,30 +506,23 @@ alloc_barray (j_common_ptr cinfo, int pool_id,
  * area accessible (after reading or writing the backing file, if necessary).
  * Note that the access routines are told whether the caller intends to modify
  * the accessed strip; during a read-only pass this saves having to rewrite
- * data to disk.
+ * data to disk.  The access routines are also responsible for pre-zeroing
+ * any newly accessed rows, if pre-zeroing was requested.
  *
- * The typical access pattern is one top-to-bottom pass to write the data,
- * followed by one or more read-only top-to-bottom passes.  However, other
- * access patterns may occur while reading.  For example, translation of image
- * formats that use bottom-to-top scan order will require bottom-to-top read
- * passes.  The memory manager need not support multiple write passes nor
- * funny write orders (meaning that rearranging rows must be handled while
- * reading data out of the virtual array, not while putting it in).  THIS WILL
- * PROBABLY NEED TO CHANGE ... will need multiple write passes for progressive
- * JPEG decoding.
- *
- * In current usage, the access requests are always for nonoverlapping strips;
- * that is, successive access start_row numbers always differ by exactly the
- * unitheight.  This allows fairly simple buffer dump/reload logic if the
- * in-memory buffer is made a multiple of the unitheight.  The code below
- * would work with overlapping access requests, but not very efficiently.
+ * In current usage, the access requests are usually for nonoverlapping
+ * strips; that is, successive access start_row numbers differ by exactly
+ * num_rows = maxaccess.  This means we can get good performance with simple
+ * buffer dump/reload logic, by making the in-memory buffer be a multiple
+ * of the access height; then there will never be accesses across bufferload
+ * boundaries.  The code will still work with overlapping access requests,
+ * but it doesn't handle bufferload overlaps very efficiently.
  */
 
 
 METHODDEF jvirt_sarray_ptr
-request_virt_sarray (j_common_ptr cinfo, int pool_id,
+request_virt_sarray (j_common_ptr cinfo, int pool_id, boolean pre_zero,
 		     JDIMENSION samplesperrow, JDIMENSION numrows,
-		     JDIMENSION unitheight)
+		     JDIMENSION maxaccess)
 /* Request a virtual 2-D sample array */
 {
   my_mem_ptr mem = (my_mem_ptr) cinfo->mem;
@@ -539,9 +532,6 @@ request_virt_sarray (j_common_ptr cinfo, int pool_id,
   if (pool_id != JPOOL_IMAGE)
     ERREXIT1(cinfo, JERR_BAD_POOL_ID, pool_id);	/* safety check */
 
-  /* Round array size up to a multiple of unitheight */
-  numrows = (JDIMENSION) jround_up((long) numrows, (long) unitheight);
-
   /* get control block */
   result = (jvirt_sarray_ptr) alloc_small(cinfo, pool_id,
 					  SIZEOF(struct jvirt_sarray_control));
@@ -549,7 +539,8 @@ request_virt_sarray (j_common_ptr cinfo, int pool_id,
   result->mem_buffer = NULL;	/* marks array not yet realized */
   result->rows_in_array = numrows;
   result->samplesperrow = samplesperrow;
-  result->unitheight = unitheight;
+  result->maxaccess = maxaccess;
+  result->pre_zero = pre_zero;
   result->b_s_open = FALSE;	/* no associated backing-store object */
   result->next = mem->virt_sarray_list; /* add to list of virtual arrays */
   mem->virt_sarray_list = result;
@@ -559,9 +550,9 @@ request_virt_sarray (j_common_ptr cinfo, int pool_id,
 
 
 METHODDEF jvirt_barray_ptr
-request_virt_barray (j_common_ptr cinfo, int pool_id,
+request_virt_barray (j_common_ptr cinfo, int pool_id, boolean pre_zero,
 		     JDIMENSION blocksperrow, JDIMENSION numrows,
-		     JDIMENSION unitheight)
+		     JDIMENSION maxaccess)
 /* Request a virtual 2-D coefficient-block array */
 {
   my_mem_ptr mem = (my_mem_ptr) cinfo->mem;
@@ -571,9 +562,6 @@ request_virt_barray (j_common_ptr cinfo, int pool_id,
   if (pool_id != JPOOL_IMAGE)
     ERREXIT1(cinfo, JERR_BAD_POOL_ID, pool_id);	/* safety check */
 
-  /* Round array size up to a multiple of unitheight */
-  numrows = (JDIMENSION) jround_up((long) numrows, (long) unitheight);
-
   /* get control block */
   result = (jvirt_barray_ptr) alloc_small(cinfo, pool_id,
 					  SIZEOF(struct jvirt_barray_control));
@@ -581,7 +569,8 @@ request_virt_barray (j_common_ptr cinfo, int pool_id,
   result->mem_buffer = NULL;	/* marks array not yet realized */
   result->rows_in_array = numrows;
   result->blocksperrow = blocksperrow;
-  result->unitheight = unitheight;
+  result->maxaccess = maxaccess;
+  result->pre_zero = pre_zero;
   result->b_s_open = FALSE;	/* no associated backing-store object */
   result->next = mem->virt_barray_list; /* add to list of virtual arrays */
   mem->virt_barray_list = result;
@@ -595,67 +584,67 @@ realize_virt_arrays (j_common_ptr cinfo)
 /* Allocate the in-memory buffers for any unrealized virtual arrays */
 {
   my_mem_ptr mem = (my_mem_ptr) cinfo->mem;
-  long space_per_unitheight, maximum_space, avail_mem;
-  long unitheights, max_unitheights;
+  long space_per_minheight, maximum_space, avail_mem;
+  long minheights, max_minheights;
   jvirt_sarray_ptr sptr;
   jvirt_barray_ptr bptr;
 
-  /* Compute the minimum space needed (unitheight rows in each buffer)
+  /* Compute the minimum space needed (maxaccess rows in each buffer)
    * and the maximum space needed (full image height in each buffer).
    * These may be of use to the system-dependent jpeg_mem_available routine.
    */
-  space_per_unitheight = 0;
+  space_per_minheight = 0;
   maximum_space = 0;
   for (sptr = mem->virt_sarray_list; sptr != NULL; sptr = sptr->next) {
     if (sptr->mem_buffer == NULL) { /* if not realized yet */
-      space_per_unitheight += (long) sptr->unitheight *
-			      (long) sptr->samplesperrow * SIZEOF(JSAMPLE);
+      space_per_minheight += (long) sptr->maxaccess *
+			     (long) sptr->samplesperrow * SIZEOF(JSAMPLE);
       maximum_space += (long) sptr->rows_in_array *
 		       (long) sptr->samplesperrow * SIZEOF(JSAMPLE);
     }
   }
   for (bptr = mem->virt_barray_list; bptr != NULL; bptr = bptr->next) {
     if (bptr->mem_buffer == NULL) { /* if not realized yet */
-      space_per_unitheight += (long) bptr->unitheight *
-			      (long) bptr->blocksperrow * SIZEOF(JBLOCK);
+      space_per_minheight += (long) bptr->maxaccess *
+			     (long) bptr->blocksperrow * SIZEOF(JBLOCK);
       maximum_space += (long) bptr->rows_in_array *
 		       (long) bptr->blocksperrow * SIZEOF(JBLOCK);
     }
   }
 
-  if (space_per_unitheight <= 0)
+  if (space_per_minheight <= 0)
     return;			/* no unrealized arrays, no work */
 
   /* Determine amount of memory to actually use; this is system-dependent. */
-  avail_mem = jpeg_mem_available(cinfo, space_per_unitheight, maximum_space,
+  avail_mem = jpeg_mem_available(cinfo, space_per_minheight, maximum_space,
 				 mem->total_space_allocated);
 
   /* If the maximum space needed is available, make all the buffers full
-   * height; otherwise parcel it out with the same number of unitheights
+   * height; otherwise parcel it out with the same number of minheights
    * in each buffer.
    */
   if (avail_mem >= maximum_space)
-    max_unitheights = 1000000000L;
+    max_minheights = 1000000000L;
   else {
-    max_unitheights = avail_mem / space_per_unitheight;
+    max_minheights = avail_mem / space_per_minheight;
     /* If there doesn't seem to be enough space, try to get the minimum
      * anyway.  This allows a "stub" implementation of jpeg_mem_available().
      */
-    if (max_unitheights <= 0)
-      max_unitheights = 1;
+    if (max_minheights <= 0)
+      max_minheights = 1;
   }
 
   /* Allocate the in-memory buffers and initialize backing store as needed. */
 
   for (sptr = mem->virt_sarray_list; sptr != NULL; sptr = sptr->next) {
     if (sptr->mem_buffer == NULL) { /* if not realized yet */
-      unitheights = ((long) sptr->rows_in_array - 1L) / sptr->unitheight + 1L;
-      if (unitheights <= max_unitheights) {
+      minheights = ((long) sptr->rows_in_array - 1L) / sptr->maxaccess + 1L;
+      if (minheights <= max_minheights) {
 	/* This buffer fits in memory */
 	sptr->rows_in_mem = sptr->rows_in_array;
       } else {
 	/* It doesn't fit in memory, create backing store. */
-	sptr->rows_in_mem = (JDIMENSION) (max_unitheights * sptr->unitheight);
+	sptr->rows_in_mem = (JDIMENSION) (max_minheights * sptr->maxaccess);
 	jpeg_open_backing_store(cinfo, & sptr->b_s_info,
 				(long) sptr->rows_in_array *
 				(long) sptr->samplesperrow *
@@ -666,19 +655,20 @@ realize_virt_arrays (j_common_ptr cinfo)
 				      sptr->samplesperrow, sptr->rows_in_mem);
       sptr->rowsperchunk = mem->last_rowsperchunk;
       sptr->cur_start_row = 0;
+      sptr->first_undef_row = 0;
       sptr->dirty = FALSE;
     }
   }
 
   for (bptr = mem->virt_barray_list; bptr != NULL; bptr = bptr->next) {
     if (bptr->mem_buffer == NULL) { /* if not realized yet */
-      unitheights = ((long) bptr->rows_in_array - 1L) / bptr->unitheight + 1L;
-      if (unitheights <= max_unitheights) {
+      minheights = ((long) bptr->rows_in_array - 1L) / bptr->maxaccess + 1L;
+      if (minheights <= max_minheights) {
 	/* This buffer fits in memory */
 	bptr->rows_in_mem = bptr->rows_in_array;
       } else {
 	/* It doesn't fit in memory, create backing store. */
-	bptr->rows_in_mem = (JDIMENSION) (max_unitheights * bptr->unitheight);
+	bptr->rows_in_mem = (JDIMENSION) (max_minheights * bptr->maxaccess);
 	jpeg_open_backing_store(cinfo, & bptr->b_s_info,
 				(long) bptr->rows_in_array *
 				(long) bptr->blocksperrow *
@@ -689,6 +679,7 @@ realize_virt_arrays (j_common_ptr cinfo)
 				      bptr->blocksperrow, bptr->rows_in_mem);
       bptr->rowsperchunk = mem->last_rowsperchunk;
       bptr->cur_start_row = 0;
+      bptr->first_undef_row = 0;
       bptr->dirty = FALSE;
     }
   }
@@ -699,7 +690,7 @@ LOCAL void
 do_sarray_io (j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)
 /* Do backing store read or write of a virtual sample array */
 {
-  long bytesperrow, file_offset, byte_count, rows, i;
+  long bytesperrow, file_offset, byte_count, rows, thisrow, i;
 
   bytesperrow = (long) ptr->samplesperrow * SIZEOF(JSAMPLE);
   file_offset = ptr->cur_start_row * bytesperrow;
@@ -707,9 +698,11 @@ do_sarray_io (j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)
   for (i = 0; i < (long) ptr->rows_in_mem; i += ptr->rowsperchunk) {
     /* One chunk, but check for short chunk at end of buffer */
     rows = MIN((long) ptr->rowsperchunk, (long) ptr->rows_in_mem - i);
+    /* Transfer no more than is currently defined */
+    thisrow = (long) ptr->cur_start_row + i;
+    rows = MIN(rows, (long) ptr->first_undef_row - thisrow);
     /* Transfer no more than fits in file */
-    rows = MIN(rows, (long) ptr->rows_in_array -
-		    ((long) ptr->cur_start_row + i));
+    rows = MIN(rows, (long) ptr->rows_in_array - thisrow);
     if (rows <= 0)		/* this chunk might be past end of file! */
       break;
     byte_count = rows * bytesperrow;
@@ -730,7 +723,7 @@ LOCAL void
 do_barray_io (j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)
 /* Do backing store read or write of a virtual coefficient-block array */
 {
-  long bytesperrow, file_offset, byte_count, rows, i;
+  long bytesperrow, file_offset, byte_count, rows, thisrow, i;
 
   bytesperrow = (long) ptr->blocksperrow * SIZEOF(JBLOCK);
   file_offset = ptr->cur_start_row * bytesperrow;
@@ -738,9 +731,11 @@ do_barray_io (j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)
   for (i = 0; i < (long) ptr->rows_in_mem; i += ptr->rowsperchunk) {
     /* One chunk, but check for short chunk at end of buffer */
     rows = MIN((long) ptr->rowsperchunk, (long) ptr->rows_in_mem - i);
+    /* Transfer no more than is currently defined */
+    thisrow = (long) ptr->cur_start_row + i;
+    rows = MIN(rows, (long) ptr->first_undef_row - thisrow);
     /* Transfer no more than fits in file */
-    rows = MIN(rows, (long) ptr->rows_in_array -
-		    ((long) ptr->cur_start_row + i));
+    rows = MIN(rows, (long) ptr->rows_in_array - thisrow);
     if (rows <= 0)		/* this chunk might be past end of file! */
       break;
     byte_count = rows * bytesperrow;
@@ -759,18 +754,23 @@ do_barray_io (j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)
 
 METHODDEF JSAMPARRAY
 access_virt_sarray (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
-		    JDIMENSION start_row, boolean writable)
+		    JDIMENSION start_row, JDIMENSION num_rows,
+		    boolean writable)
 /* Access the part of a virtual sample array starting at start_row */
-/* and extending for ptr->unitheight rows.  writable is true if  */
+/* and extending for num_rows rows.  writable is true if  */
 /* caller intends to modify the accessed area. */
 {
+  JDIMENSION end_row = start_row + num_rows;
+  JDIMENSION undef_row;
+
   /* debugging check */
-  if (start_row >= ptr->rows_in_array || ptr->mem_buffer == NULL)
+  if (end_row > ptr->rows_in_array || num_rows > ptr->maxaccess ||
+      ptr->mem_buffer == NULL)
     ERREXIT(cinfo, JERR_BAD_VIRTUAL_ACCESS);
 
   /* Make the desired part of the virtual array accessible */
   if (start_row < ptr->cur_start_row ||
-      start_row+ptr->unitheight > ptr->cur_start_row+ptr->rows_in_mem) {
+      end_row > ptr->cur_start_row+ptr->rows_in_mem) {
     if (! ptr->b_s_open)
       ERREXIT(cinfo, JERR_VIRTUAL_BUG);
     /* Flush old buffer contents if necessary */
@@ -791,18 +791,42 @@ access_virt_sarray (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
       /* use long arithmetic here to avoid overflow & unsigned problems */
       long ltemp;
 
-      ltemp = (long) start_row + (long) ptr->unitheight -
-	      (long) ptr->rows_in_mem;
+      ltemp = (long) end_row - (long) ptr->rows_in_mem;
       if (ltemp < 0)
 	ltemp = 0;		/* don't fall off front end of file */
       ptr->cur_start_row = (JDIMENSION) ltemp;
     }
-    /* If reading, read in the selected part of the array. 
-     * If we are writing, we need not pre-read the selected portion,
-     * since the access sequence constraints ensure it would be garbage.
+    /* Read in the selected part of the array.
+     * During the initial write pass, we will do no actual read
+     * because the selected part is all undefined.
      */
-    if (! writable) {
-      do_sarray_io(cinfo, ptr, FALSE);
+    do_sarray_io(cinfo, ptr, FALSE);
+  }
+  /* Ensure the accessed part of the array is defined; prezero if needed.
+   * To improve locality of access, we only prezero the part of the array
+   * that the caller is about to access, not the entire in-memory array.
+   */
+  if (ptr->first_undef_row < end_row) {
+    if (ptr->first_undef_row < start_row) {
+      if (writable)		/* writer skipped over a section of array */
+	ERREXIT(cinfo, JERR_BAD_VIRTUAL_ACCESS);
+      undef_row = start_row;	/* but reader is allowed to read ahead */
+    } else {
+      undef_row = ptr->first_undef_row;
+    }
+    if (writable)
+      ptr->first_undef_row = end_row;
+    if (ptr->pre_zero) {
+      size_t bytesperrow = (size_t) ptr->samplesperrow * SIZEOF(JSAMPLE);
+      undef_row -= ptr->cur_start_row; /* make indexes relative to buffer */
+      end_row -= ptr->cur_start_row;
+      while (undef_row < end_row) {
+	jzero_far((void FAR *) ptr->mem_buffer[undef_row], bytesperrow);
+	undef_row++;
+      }
+    } else {
+      if (! writable)		/* reader looking at undefined data */
+	ERREXIT(cinfo, JERR_BAD_VIRTUAL_ACCESS);
     }
   }
   /* Flag the buffer dirty if caller will write in it */
@@ -815,18 +839,23 @@ access_virt_sarray (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
 
 METHODDEF JBLOCKARRAY
 access_virt_barray (j_common_ptr cinfo, jvirt_barray_ptr ptr,
-		    JDIMENSION start_row, boolean writable)
+		    JDIMENSION start_row, JDIMENSION num_rows,
+		    boolean writable)
 /* Access the part of a virtual block array starting at start_row */
-/* and extending for ptr->unitheight rows.  writable is true if  */
+/* and extending for num_rows rows.  writable is true if  */
 /* caller intends to modify the accessed area. */
 {
+  JDIMENSION end_row = start_row + num_rows;
+  JDIMENSION undef_row;
+
   /* debugging check */
-  if (start_row >= ptr->rows_in_array || ptr->mem_buffer == NULL)
+  if (end_row > ptr->rows_in_array || num_rows > ptr->maxaccess ||
+      ptr->mem_buffer == NULL)
     ERREXIT(cinfo, JERR_BAD_VIRTUAL_ACCESS);
 
   /* Make the desired part of the virtual array accessible */
   if (start_row < ptr->cur_start_row ||
-      start_row+ptr->unitheight > ptr->cur_start_row+ptr->rows_in_mem) {
+      end_row > ptr->cur_start_row+ptr->rows_in_mem) {
     if (! ptr->b_s_open)
       ERREXIT(cinfo, JERR_VIRTUAL_BUG);
     /* Flush old buffer contents if necessary */
@@ -847,18 +876,42 @@ access_virt_barray (j_common_ptr cinfo, jvirt_barray_ptr ptr,
       /* use long arithmetic here to avoid overflow & unsigned problems */
       long ltemp;
 
-      ltemp = (long) start_row + (long) ptr->unitheight -
-	      (long) ptr->rows_in_mem;
+      ltemp = (long) end_row - (long) ptr->rows_in_mem;
       if (ltemp < 0)
 	ltemp = 0;		/* don't fall off front end of file */
       ptr->cur_start_row = (JDIMENSION) ltemp;
     }
-    /* If reading, read in the selected part of the array. 
-     * If we are writing, we need not pre-read the selected portion,
-     * since the access sequence constraints ensure it would be garbage.
+    /* Read in the selected part of the array.
+     * During the initial write pass, we will do no actual read
+     * because the selected part is all undefined.
      */
-    if (! writable) {
-      do_barray_io(cinfo, ptr, FALSE);
+    do_barray_io(cinfo, ptr, FALSE);
+  }
+  /* Ensure the accessed part of the array is defined; prezero if needed.
+   * To improve locality of access, we only prezero the part of the array
+   * that the caller is about to access, not the entire in-memory array.
+   */
+  if (ptr->first_undef_row < end_row) {
+    if (ptr->first_undef_row < start_row) {
+      if (writable)		/* writer skipped over a section of array */
+	ERREXIT(cinfo, JERR_BAD_VIRTUAL_ACCESS);
+      undef_row = start_row;	/* but reader is allowed to read ahead */
+    } else {
+      undef_row = ptr->first_undef_row;
+    }
+    if (writable)
+      ptr->first_undef_row = end_row;
+    if (ptr->pre_zero) {
+      size_t bytesperrow = (size_t) ptr->blocksperrow * SIZEOF(JBLOCK);
+      undef_row -= ptr->cur_start_row; /* make indexes relative to buffer */
+      end_row -= ptr->cur_start_row;
+      while (undef_row < end_row) {
+	jzero_far((void FAR *) ptr->mem_buffer[undef_row], bytesperrow);
+	undef_row++;
+      }
+    } else {
+      if (! writable)		/* reader looking at undefined data */
+	ERREXIT(cinfo, JERR_BAD_VIRTUAL_ACCESS);
     }
   }
   /* Flag the buffer dirty if caller will write in it */

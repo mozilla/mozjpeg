@@ -1,7 +1,7 @@
 /*
  * jerror.h
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -52,7 +52,12 @@ JMESSAGE(JERR_BAD_LENGTH, "Bogus marker length")
 JMESSAGE(JERR_BAD_MCU_SIZE, "Sampling factors too large for interleaved scan")
 JMESSAGE(JERR_BAD_POOL_ID, "Invalid memory pool code %d")
 JMESSAGE(JERR_BAD_PRECISION, "Unsupported JPEG data precision %d")
+JMESSAGE(JERR_BAD_PROGRESSION,
+	 "Invalid progressive parameters Ss=%d Se=%d Ah=%d Al=%d")
+JMESSAGE(JERR_BAD_PROG_SCRIPT,
+	 "Invalid progressive parameters at scan script entry %d")
 JMESSAGE(JERR_BAD_SAMPLING, "Bogus sampling factors")
+JMESSAGE(JERR_BAD_SCAN_SCRIPT, "Invalid scan script at entry %d")
 JMESSAGE(JERR_BAD_STATE, "Improper call to JPEG library in state %d")
 JMESSAGE(JERR_BAD_VIRTUAL_ACCESS, "Bogus virtual array access")
 JMESSAGE(JERR_BUFFER_SIZE, "Buffer passed to JPEG library is too small")
@@ -77,7 +82,10 @@ JMESSAGE(JERR_HUFF_MISSING_CODE, "Missing Huffman code table entry")
 JMESSAGE(JERR_IMAGE_TOO_BIG, "Maximum supported image dimension is %u pixels")
 JMESSAGE(JERR_INPUT_EMPTY, "Empty input file")
 JMESSAGE(JERR_INPUT_EOF, "Premature end of input file")
-JMESSAGE(JERR_JFIF_MAJOR, "Unsupported JFIF revision number %d.%02d")
+JMESSAGE(JERR_MISMATCHED_QUANT_TABLE,
+	 "Cannot transcode due to multiple use of quantization table %d")
+JMESSAGE(JERR_MISSING_DATA, "Scan script does not transmit all data")
+JMESSAGE(JERR_MODE_CHANGE, "Invalid color quantization mode change")
 JMESSAGE(JERR_NOTIMPL, "Not implemented yet")
 JMESSAGE(JERR_NOT_COMPILED, "Requested feature was omitted at compile time")
 JMESSAGE(JERR_NO_BACKING_STORE, "Backing store not supported")
@@ -125,7 +133,7 @@ JMESSAGE(JTRC_HUFFBITS, "        %3d %3d %3d %3d %3d %3d %3d %3d")
 JMESSAGE(JTRC_JFIF, "JFIF APP0 marker, density %dx%d  %d")
 JMESSAGE(JTRC_JFIF_BADTHUMBNAILSIZE,
 	 "Warning: thumbnail image size does not match data length %u")
-JMESSAGE(JTRC_JFIF_MINOR, "Warning: unknown JFIF revision number %d.%02d")
+JMESSAGE(JTRC_JFIF_MINOR, "Unknown JFIF minor revision number %d.%02d")
 JMESSAGE(JTRC_JFIF_THUMBNAIL, "    with %d x %d thumbnail image")
 JMESSAGE(JTRC_MISC_MARKER, "Skipping marker 0x%02x, length %u")
 JMESSAGE(JTRC_PARMLESS_MARKER, "Unexpected marker 0x%02x")
@@ -142,6 +150,7 @@ JMESSAGE(JTRC_SOF_COMPONENT, "    Component %d: %dhx%dv q=%d")
 JMESSAGE(JTRC_SOI, "Start of Image")
 JMESSAGE(JTRC_SOS, "Start Of Scan: %d components")
 JMESSAGE(JTRC_SOS_COMPONENT, "    Component %d: dc=%d ac=%d")
+JMESSAGE(JTRC_SOS_PARAMS, "  Ss=%d, Se=%d, Ah=%d, Al=%d")
 JMESSAGE(JTRC_TFILE_CLOSE, "Closed temporary file %s")
 JMESSAGE(JTRC_TFILE_OPEN, "Opened temporary file %s")
 JMESSAGE(JTRC_UNKNOWN_IDS,
@@ -149,10 +158,13 @@ JMESSAGE(JTRC_UNKNOWN_IDS,
 JMESSAGE(JTRC_XMS_CLOSE, "Freed XMS handle %u")
 JMESSAGE(JTRC_XMS_OPEN, "Obtained XMS handle %u")
 JMESSAGE(JWRN_ADOBE_XFORM, "Unknown Adobe color transform code %d")
+JMESSAGE(JWRN_BOGUS_PROGRESSION,
+	 "Inconsistent progression sequence for component %d coefficient %d")
 JMESSAGE(JWRN_EXTRANEOUS_DATA,
 	 "Corrupt JPEG data: %u extraneous bytes before marker 0x%02x")
 JMESSAGE(JWRN_HIT_MARKER, "Corrupt JPEG data: premature end of data segment")
 JMESSAGE(JWRN_HUFF_BAD_CODE, "Corrupt JPEG data: bad Huffman code")
+JMESSAGE(JWRN_JFIF_MAJOR, "Warning: unknown JFIF revision number %d.%02d")
 JMESSAGE(JWRN_JPEG_EOF, "Premature end of JPEG file")
 JMESSAGE(JWRN_MUST_RESYNC,
 	 "Corrupt JPEG data: found marker 0x%02x instead of RST%d")

@@ -1,7 +1,7 @@
 /*
  * jchuff.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -17,15 +17,8 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jchuff.h"		/* Declarations shared with jcphuff.c */
 
-
-/* Derived data constructed for each Huffman table */
-
-typedef struct {
-  unsigned int ehufco[256];	/* code for each symbol */
-  char ehufsi[256];		/* length of code for each symbol */
-  /* If no code has been allocated for a symbol S, ehufsi[S] contains 0 */
-} C_DERIVED_TBL;
 
 /* Expanded entropy encoder object for Huffman encoding.
  *
@@ -69,8 +62,8 @@ typedef struct {
   int next_restart_num;		/* next restart number to write (0-7) */
 
   /* Pointers to derived tables (these workspaces have image lifespan) */
-  C_DERIVED_TBL * dc_derived_tbls[NUM_HUFF_TBLS];
-  C_DERIVED_TBL * ac_derived_tbls[NUM_HUFF_TBLS];
+  c_derived_tbl * dc_derived_tbls[NUM_HUFF_TBLS];
+  c_derived_tbl * ac_derived_tbls[NUM_HUFF_TBLS];
 
 #ifdef ENTROPY_OPT_SUPPORTED	/* Statistics tables for optimization */
   long * dc_count_ptrs[NUM_HUFF_TBLS];
@@ -101,8 +94,6 @@ METHODDEF boolean encode_mcu_gather JPP((j_compress_ptr cinfo,
 					 JBLOCKROW *MCU_data));
 METHODDEF void finish_pass_gather JPP((j_compress_ptr cinfo));
 #endif
-LOCAL void fix_huff_tbl JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl,
-			     C_DERIVED_TBL ** pdtbl));
 
 
 /*
@@ -145,7 +136,7 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
     if (gather_statistics) {
 #ifdef ENTROPY_OPT_SUPPORTED
       /* Allocate and zero the statistics tables */
-      /* Note that gen_huff_coding expects 257 entries in each table! */
+      /* Note that jpeg_gen_optimal_table expects 257 entries in each table! */
       if (entropy->dc_count_ptrs[dctbl] == NULL)
 	entropy->dc_count_ptrs[dctbl] = (long *)
 	  (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
@@ -160,10 +151,10 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
     } else {
       /* Compute derived values for Huffman tables */
       /* We may do this more than once for a table, but it's not expensive */
-      fix_huff_tbl(cinfo, cinfo->dc_huff_tbl_ptrs[dctbl],
-		   & entropy->dc_derived_tbls[dctbl]);
-      fix_huff_tbl(cinfo, cinfo->ac_huff_tbl_ptrs[actbl],
-		   & entropy->ac_derived_tbls[actbl]);
+      jpeg_make_c_derived_tbl(cinfo, cinfo->dc_huff_tbl_ptrs[dctbl],
+			      & entropy->dc_derived_tbls[dctbl]);
+      jpeg_make_c_derived_tbl(cinfo, cinfo->ac_huff_tbl_ptrs[actbl],
+			      & entropy->ac_derived_tbls[actbl]);
     }
     /* Initialize DC predictions to 0 */
     entropy->saved.last_dc_val[ci] = 0;
@@ -179,11 +170,16 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
 }
 
 
-LOCAL void
-fix_huff_tbl (j_compress_ptr cinfo, JHUFF_TBL * htbl, C_DERIVED_TBL ** pdtbl)
-/* Compute the derived values for a Huffman table */
+/*
+ * Compute the derived values for a Huffman table.
+ * Note this is also used by jcphuff.c.
+ */
+
+GLOBAL void
+jpeg_make_c_derived_tbl (j_compress_ptr cinfo, JHUFF_TBL * htbl,
+			 c_derived_tbl ** pdtbl)
 {
-  C_DERIVED_TBL *dtbl;
+  c_derived_tbl *dtbl;
   int p, i, l, lastp, si;
   char huffsize[257];
   unsigned int huffcode[257];
@@ -191,9 +187,9 @@ fix_huff_tbl (j_compress_ptr cinfo, JHUFF_TBL * htbl, C_DERIVED_TBL ** pdtbl)
 
   /* Allocate a workspace if we haven't already done so. */
   if (*pdtbl == NULL)
-    *pdtbl = (C_DERIVED_TBL *)
+    *pdtbl = (c_derived_tbl *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(C_DERIVED_TBL));
+				  SIZEOF(c_derived_tbl));
   dtbl = *pdtbl;
   
   /* Figure C.1: make table of Huffman code length for each symbol */
@@ -324,7 +320,7 @@ flush_bits (working_state * state)
 
 LOCAL boolean
 encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
-		  C_DERIVED_TBL *dctbl, C_DERIVED_TBL *actbl)
+		  c_derived_tbl *dctbl, c_derived_tbl *actbl)
 {
   register int temp, temp2;
   register int nbits;
@@ -363,7 +359,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
   r = 0;			/* r = run length of zeros */
   
   for (k = 1; k < DCTSIZE2; k++) {
-    if ((temp = block[k]) == 0) {
+    if ((temp = block[jpeg_natural_order[k]]) == 0) {
       r++;
     } else {
       /* if run length > 15, must emit special run-length-16 codes (0xF0) */
@@ -569,7 +565,7 @@ htest_one_block (JCOEFPTR block, int last_dc_val,
   r = 0;			/* r = run length of zeros */
   
   for (k = 1; k < DCTSIZE2; k++) {
-    if ((temp = block[k]) == 0) {
+    if ((temp = block[jpeg_natural_order[k]]) == 0) {
       r++;
     } else {
       /* if run length > 15, must emit special run-length-16 codes (0xF0) */
@@ -637,10 +633,13 @@ encode_mcu_gather (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 }
 
 
-/* Generate the optimal coding for the given counts, initialize htbl */
+/*
+ * Generate the optimal coding for the given counts, fill htbl.
+ * Note this is also used by jcphuff.c.
+ */
 
-LOCAL void
-gen_huff_coding (j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
+GLOBAL void
+jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
 {
 #define MAX_CLEN 32		/* assumed maximum initial code length */
   UINT8 bits[MAX_CLEN+1];	/* bits[k] = # of symbols with code length k */
@@ -790,8 +789,8 @@ finish_pass_gather (j_compress_ptr cinfo)
   boolean did_dc[NUM_HUFF_TBLS];
   boolean did_ac[NUM_HUFF_TBLS];
 
-  /* It's important not to apply gen_huff_coding more than once per table,
-   * because it clobbers the input frequency counts!
+  /* It's important not to apply jpeg_gen_optimal_table more than once
+   * per table, because it clobbers the input frequency counts!
    */
   MEMZERO(did_dc, SIZEOF(did_dc));
   MEMZERO(did_ac, SIZEOF(did_ac));
@@ -804,14 +803,14 @@ finish_pass_gather (j_compress_ptr cinfo)
       htblptr = & cinfo->dc_huff_tbl_ptrs[dctbl];
       if (*htblptr == NULL)
 	*htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
-      gen_huff_coding(cinfo, *htblptr, entropy->dc_count_ptrs[dctbl]);
+      jpeg_gen_optimal_table(cinfo, *htblptr, entropy->dc_count_ptrs[dctbl]);
       did_dc[dctbl] = TRUE;
     }
     if (! did_ac[actbl]) {
       htblptr = & cinfo->ac_huff_tbl_ptrs[actbl];
       if (*htblptr == NULL)
 	*htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
-      gen_huff_coding(cinfo, *htblptr, entropy->ac_count_ptrs[actbl]);
+      jpeg_gen_optimal_table(cinfo, *htblptr, entropy->ac_count_ptrs[actbl]);
       did_ac[actbl] = TRUE;
     }
   }

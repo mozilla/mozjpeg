@@ -87,7 +87,10 @@ typedef enum {			/* JPEG marker codes */
 /*
  * Reload the input buffer after it's been emptied, and return the next byte.
  * This is exported for direct use by the entropy decoder.
- * See the JGETC macro for calling conditions.
+ * See the JGETC macro for calling conditions.  Note in particular that
+ * read_jpeg_data may NOT return EOF.  If no more data is available, it must
+ * exit via ERREXIT, or perhaps synthesize fake data (such as an RST marker).
+ * For error recovery purposes, synthesizing an EOI marker is probably best.
  *
  * For this header control module, read_jpeg_data is supplied by the
  * user interface.  However, header formats that require random access
@@ -106,8 +109,12 @@ read_jpeg_data (decompress_info_ptr cinfo)
 					cinfo->next_input_byte,
 					JPEG_BUF_SIZE);
   
-  if (cinfo->bytes_in_buffer <= 0)
-    ERREXIT(cinfo->emethods, "Unexpected EOF in JPEG file");
+  if (cinfo->bytes_in_buffer <= 0) {
+    WARNMS(cinfo->emethods, "Premature EOF in JPEG file");
+    cinfo->next_input_byte[0] = (char) 0xFF;
+    cinfo->next_input_byte[1] = (char) M_EOI;
+    cinfo->bytes_in_buffer = 2;
+  }
 
   return JGETC(cinfo);
 }
@@ -199,10 +206,8 @@ get_dht (decompress_info_ptr cinfo)
     if (*htblptr == NULL)
       *htblptr = (HUFF_TBL *) (*cinfo->emethods->alloc_small) (SIZEOF(HUFF_TBL));
   
-    memcpy((void *) (*htblptr)->bits, (void *) bits,
-	   SIZEOF((*htblptr)->bits));
-    memcpy((void *) (*htblptr)->huffval, (void *) huffval,
-	   SIZEOF((*htblptr)->huffval));
+    MEMCOPY((*htblptr)->bits, bits, SIZEOF((*htblptr)->bits));
+    MEMCOPY((*htblptr)->huffval, huffval, SIZEOF((*htblptr)->huffval));
     }
 }
 
@@ -275,7 +280,7 @@ get_dqt (decompress_info_ptr cinfo)
     }
 
     for (i = 0; i < DCTSIZE2; i += 8) {
-      TRACEMS8(cinfo->emethods, 2, "        %4d %4d %4d %4d %4d %4d %4d %4d",
+      TRACEMS8(cinfo->emethods, 2, "        %4u %4u %4u %4u %4u %4u %4u %4u",
 	       quant_ptr[i  ], quant_ptr[i+1], quant_ptr[i+2], quant_ptr[i+3],
 	       quant_ptr[i+4], quant_ptr[i+5], quant_ptr[i+6], quant_ptr[i+7]);
     }
@@ -296,7 +301,7 @@ get_dri (decompress_info_ptr cinfo)
   cinfo->restart_interval = (UINT16) get_2bytes(cinfo);
 
   TRACEMS1(cinfo->emethods, 1,
-	   "Define Restart Interval %d", cinfo->restart_interval);
+	   "Define Restart Interval %u", cinfo->restart_interval);
 }
 
 
@@ -318,15 +323,15 @@ get_app0 (decompress_info_ptr cinfo)
       b[buffp] = (UINT8) JGETC(cinfo);
     length -= JFIF_LEN;
 
-    if (b[0]=='J' && b[1]=='F' && b[2]=='I' && b[3]=='F' && b[4]==0) {
+    if (b[0]==0x4A && b[1]==0x46 && b[2]==0x49 && b[3]==0x46 && b[4]==0) {
       /* Found JFIF APP0 marker: check version */
       /* Major version must be 1 */
       if (b[5] != 1)
 	ERREXIT2(cinfo->emethods, "Unsupported JFIF revision number %d.%02d",
 		 b[5], b[6]);
-      /* Minor version should be 0 or 1, but try to process anyway if newer */
-      if (b[6] != 0 && b[6] != 1)
-	TRACEMS2(cinfo->emethods, 0, "Warning: unknown JFIF revision number %d.%02d",
+      /* Minor version should be 0..2, but try to process anyway if newer */
+      if (b[6] > 2)
+	TRACEMS2(cinfo->emethods, 1, "Warning: unknown JFIF revision number %d.%02d",
 		 b[5], b[6]);
       /* Save info */
       cinfo->density_unit = b[7];
@@ -337,12 +342,19 @@ get_app0 (decompress_info_ptr cinfo)
 	cinfo->jpeg_color_space = CS_YCbCr;
       TRACEMS3(cinfo->emethods, 1, "JFIF APP0 marker, density %dx%d  %d",
 	       cinfo->X_density, cinfo->Y_density, cinfo->density_unit);
+      if (b[12] | b[13])
+	TRACEMS2(cinfo->emethods, 1, "    with %d x %d thumbnail image",
+		 b[12], b[13]);
+      if (length != ((INT32) b[12] * (INT32) b[13] * (INT32) 3))
+	TRACEMS1(cinfo->emethods, 1,
+		 "Warning: thumbnail image size does not match data length %u",
+		 (int) length);
     } else {
-      TRACEMS(cinfo->emethods, 1, "Unknown APP0 marker (not JFIF)");
+      TRACEMS1(cinfo->emethods, 1, "Unknown APP0 marker (not JFIF), length %u",
+	       (int) length + JFIF_LEN);
     }
   } else {
-    TRACEMS1(cinfo->emethods, 1,
-	     "Short APP0 marker, length %d", (int) length);
+    TRACEMS1(cinfo->emethods, 1, "Short APP0 marker, length %u", (int) length);
   }
 
   while (length-- > 0)		/* skip any remaining data */
@@ -500,14 +512,15 @@ next_marker (decompress_info_ptr cinfo)
       c = JGETC(cinfo);
     } while (c != 0xFF);
     do {			/* skip any duplicate FFs */
-      nbytes++;
+      /* we don't increment nbytes here since extra FFs are legal */
       c = JGETC(cinfo);
     } while (c == 0xFF);
   } while (c == 0);		/* repeat if it was a stuffed FF/00 */
 
-  if (nbytes != 2)
-    TRACEMS2(cinfo->emethods, 1, "Skipped %d bytes before marker 0x%02x",
-	     nbytes-2, c);
+  if (nbytes != 1)
+    WARNMS2(cinfo->emethods,
+	    "Corrupt JPEG data: %d extraneous bytes before marker 0x%02x",
+	    nbytes-1, c);
 
   return c;
 }
@@ -644,7 +657,7 @@ read_file_header (decompress_info_ptr cinfo)
       else if (cid0 == 1 && cid1 == 4 && cid2 == 5)
 	cinfo->jpeg_color_space = CS_YIQ; /* prototype's YIQ matrix */
       else {
-	TRACEMS3(cinfo->emethods, 0,
+	TRACEMS3(cinfo->emethods, 1,
 		 "Unrecognized component IDs %d %d %d, assuming YCbCr",
 		 cid0, cid1, cid2);
 	cinfo->jpeg_color_space = CS_YCbCr;
@@ -694,6 +707,94 @@ read_scan_header (decompress_info_ptr cinfo)
 
 
 /*
+ * The entropy decoder calls this routine if it finds a marker other than
+ * the restart marker it was expecting.  (This code is *not* used unless
+ * a nonzero restart interval has been declared.)  The passed parameter is
+ * the marker code actually found (might be anything, except 0 or FF).
+ * The desired restart marker is that indicated by cinfo->next_restart_num.
+ * This routine is supposed to apply whatever error recovery strategy seems
+ * appropriate in order to position the input stream to the next data segment.
+ * For some file formats (eg, TIFF) extra information such as tile boundary
+ * pointers may be available to help in this decision.
+ *
+ * This implementation is substantially constrained by wanting to treat the
+ * input as a data stream; this means we can't back up.  (For instance, we
+ * generally can't fseek() if the input is a Unix pipe.)  Therefore, we have
+ * only the following actions to work with:
+ *   1. Do nothing, let the entropy decoder resume at next byte of file.
+ *   2. Read forward until we find another marker, discarding intervening
+ *      data.  (In theory we could look ahead within the current bufferload,
+ *      without having to discard data if we don't find the desired marker.
+ *      This idea is not implemented here, in part because it makes behavior
+ *      dependent on buffer size and chance buffer-boundary positions.)
+ *   3. Push back the passed marker (with JUNGETC).  This will cause the
+ *      entropy decoder to process an empty data segment, inserting dummy
+ *      zeroes, and then re-read the marker we pushed back.
+ * #2 is appropriate if we think the desired marker lies ahead, while #3 is
+ * appropriate if the found marker is a future restart marker (indicating
+ * that we have missed the desired restart marker, probably because it got
+ * corrupted).
+
+ * We apply #2 or #3 if the found marker is a restart marker no more than
+ * two counts behind or ahead of the expected one.  We also apply #2 if the
+ * found marker is not a legal JPEG marker code (it's certainly bogus data).
+ * If the found marker is a restart marker more than 2 counts away, we do #1
+ * (too much risk that the marker is erroneous; with luck we will be able to
+ * resync at some future point).
+ * For any valid non-restart JPEG marker, we apply #3.  This keeps us from
+ * overrunning the end of a scan.  An implementation limited to single-scan
+ * files might find it better to apply #2 for markers other than EOI, since
+ * any other marker would have to be bogus data in that case.
+ */
+
+METHODDEF void
+resync_to_restart (decompress_info_ptr cinfo, int marker)
+{
+  int desired = cinfo->next_restart_num;
+  int action = 1;
+
+  /* Always put up a warning. */
+  WARNMS2(cinfo->emethods,
+	  "Corrupt JPEG data: found 0x%02x marker instead of RST%d",
+	  marker, desired);
+  /* Outer loop handles repeated decision after scanning forward. */
+  for (;;) {
+    if (marker < M_SOF0)
+      action = 2;		/* invalid marker */
+    else if (marker < M_RST0 || marker > M_RST7)
+      action = 3;		/* valid non-restart marker */
+    else {
+      if (marker == (M_RST0 + ((desired+1) & 7)) ||
+	  marker == (M_RST0 + ((desired+2) & 7)))
+	action = 3;		/* one of the next two expected restarts */
+      else if (marker == (M_RST0 + ((desired-1) & 7)) ||
+	       marker == (M_RST0 + ((desired-2) & 7)))
+	action = 2;		/* a prior restart, so advance */
+      else
+	action = 1;		/* desired restart or too far away */
+    }
+    TRACEMS2(cinfo->emethods, 4,
+	     "At marker 0x%02x, recovery action %d", marker, action);
+    switch (action) {
+    case 1:
+      /* Let entropy decoder resume processing. */
+      return;
+    case 2:
+      /* Scan to the next marker, and repeat the decision loop. */
+      marker = next_marker(cinfo);
+      break;
+    case 3:
+      /* Put back this marker & return. */
+      /* Entropy decoder will be forced to process an empty segment. */
+      JUNGETC(marker, cinfo);
+      JUNGETC(0xFF, cinfo);
+      return;
+    }
+  }
+}
+
+
+/*
  * Finish up after a compressed scan (series of read_jpeg_data calls);
  * prepare for another read_scan_header call.
  */
@@ -733,6 +834,7 @@ jselrjfif (decompress_info_ptr cinfo)
 #if 0
   cinfo->methods->read_jpeg_data = read_jpeg_data;
 #endif
+  cinfo->methods->resync_to_restart = resync_to_restart;
   cinfo->methods->read_scan_trailer = read_scan_trailer;
   cinfo->methods->read_file_trailer = read_file_trailer;
 }

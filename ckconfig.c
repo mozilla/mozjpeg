@@ -218,8 +218,9 @@ int new_change ()
     printf("\nMost of the changes recommended by this program can be made either\n");
     printf("by editing jconfig.h, or by adding -Dsymbol switches to the CFLAGS\n");
     printf("line in your Makefile.  (Some PC compilers expect /Dsymbol instead.)\n");
-    printf("The CFLAGS method is simpler, but if your system doesn't use makefiles,\n");
-    printf("or if your compiler doesn't support -D, then you must change jconfig.h.\n");
+    printf("The CFLAGS method is simpler, but if your compiler doesn't support -D,\n");
+    printf("then you must change jconfig.h.  Also, it's best to change jconfig.h\n");
+    printf("if you plan to use the JPEG software as a library for other programs.\n");
     any_changes = 1;
   }
   printf("\n");			/* blank line before each problem report */

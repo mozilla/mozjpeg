@@ -2,8 +2,9 @@ $! Makefile for Independent JPEG Group's software
 $!
 $! This is a command procedure for use on VAX/VMS systems that do not have MMS.
 $! It builds the JPEG software by brute force, recompiling everything whether
-$! or not it is necessary.
-$! Thanks to Rick Dyson (dyson@iowasp.physics.uiowa.edu) for his help.
+$! or not it is necessary.  It then runs the basic self-test.
+$! Thanks to Rick Dyson (dyson@iowasp.physics.uiowa.edu)
+$! and Tim Bell (tbell@netcom.com) for their help.
 $!
 $! Read SETUP instructions before running this!!
 $!
@@ -60,5 +61,14 @@ $!
 $ Link /Executable = cjpeg.exe  jcmain.obj,libjpeg.olb/Library,Sys$Disk:[]MAKVMS.OPT/Option
 $!
 $ Link /Executable = djpeg.exe  jdmain.obj,libjpeg.olb/Library,Sys$Disk:[]MAKVMS.OPT/Option
+$!
+$! Run the self-test
+$!
+$ mcr sys$disk:[]djpeg      testorig.jpg testout.ppm
+$ mcr sys$disk:[]djpeg -gif testorig.jpg testout.gif
+$ mcr sys$disk:[]cjpeg      testimg.ppm testout.jpg
+$ Backup /Compare/Log testimg.ppm testout.ppm
+$ Backup /Compare/Log testimg.gif testout.gif
+$ Backup /Compare/Log testimg.jpg testout.jpg
 $!
 $ Exit

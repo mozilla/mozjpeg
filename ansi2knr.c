@@ -1,9 +1,3 @@
-/*
- * Received from Peter Deutsch (ghost@aladdin.com)
- * Fri, 26 Apr 91 10:10:10 PDT
- * Small portability improvements by Tom Lane
- */
-
 /* Copyright (C) 1989, 1991 Aladdin Enterprises.  All rights reserved.
    Distributed by Free Software Foundation, Inc.
 
@@ -225,13 +219,12 @@ BY ANY OTHER PARTY.
 #define isidchar(ch) (isalnum(ch) || (ch) == '_')
 #define isidfirstchar(ch) (isalpha(ch) || (ch) == '_')
 
-int
 main(argc, argv)
     int argc;
     char *argv[];
 {	FILE *in, *out;
-#define bufsize 500			/* arbitrary size */
-	char buf[bufsize+1];
+#define bufsize 5000			/* arbitrary size */
+	char *buf;
 	char *line;
 	switch ( argc )
 	   {
@@ -253,6 +246,7 @@ main(argc, argv)
 		exit(1);
 	   }
 	fprintf(out, "#line 1 \"%s\"\n", argv[1]);
+	buf = malloc(bufsize);
 	line = buf;
 	while ( fgets(line, (unsigned)(buf + bufsize - line), in) != NULL )
 	   {	switch ( test1(buf) )
@@ -262,7 +256,9 @@ main(argc, argv)
 			break;
 		case -1:		/* maybe the start of a function */
 			line = buf + strlen(buf);
-			continue;
+			if ( line != buf + (bufsize - 1) ) /* overflow check */
+				continue;
+			/* falls through */
 		default:		/* not a function */
 			fputs(buf, out);
 			break;
@@ -270,6 +266,7 @@ main(argc, argv)
 		line = buf;
 	   }
 	if ( line != buf ) fputs(buf, out);
+	free(buf);
 	fclose(out);
 	fclose(in);
 	return 0;

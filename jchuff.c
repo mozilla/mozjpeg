@@ -7,7 +7,7 @@
  *
  * This file contains Huffman entropy encoding routines.
  * These routines are invoked via the methods entropy_encode,
- * entropy_encoder_init/term, and entropy_optimize.
+ * entropy_encode_init/term, and entropy_optimize.
  */
 
 #include "jinclude.h"
@@ -66,7 +66,7 @@ fix_huff_tbl (HUFF_TBL * htbl)
   /* Set any codeless symbols to have code length 0;
    * this allows emit_bits to detect any attempt to emit such symbols.
    */
-  MEMZERO((void *) htbl->ehufsi, SIZEOF(htbl->ehufsi));
+  MEMZERO(htbl->ehufsi, SIZEOF(htbl->ehufsi));
 
   for (p = 0; p < lastp; p++) {
     htbl->ehufco[htbl->huffval[p]] = huffcode[p];
@@ -104,6 +104,7 @@ flush_bytes (void)
  * between calls, so 24 bits are sufficient.
  */
 
+INLINE
 LOCAL void
 emit_bits (UINT16 code, int size)
 {
@@ -379,8 +380,8 @@ gen_huff_coding (compress_info_ptr cinfo, HUFF_TBL *htbl, long freq[])
 
   /* This algorithm is explained in section K.2 of the JPEG standard */
 
-  MEMZERO((void *) bits, SIZEOF(bits));
-  MEMZERO((void *) codesize, SIZEOF(codesize));
+  MEMZERO(bits, SIZEOF(bits));
+  MEMZERO(codesize, SIZEOF(codesize));
   for (i = 0; i < 257; i++)
     others[i] = -1;		/* init links to empty */
   
@@ -482,7 +483,7 @@ gen_huff_coding (compress_info_ptr cinfo, HUFF_TBL *htbl, long freq[])
   bits[i]--;
   
   /* Return final symbol counts (only for lengths 0..16) */
-  memcpy((void *) htbl->bits, (void *) bits, SIZEOF(htbl->bits));
+  MEMCOPY(htbl->bits, bits, SIZEOF(htbl->bits));
   
   /* Return a list of the symbols sorted by code length */
   /* It's not real clear to me why we don't need to consider the codelength
@@ -623,14 +624,14 @@ huff_optimize (compress_info_ptr cinfo, MCU_output_caller_ptr source_method)
     if (dc_count_ptrs[tbl] == NULL) {
       dc_count_ptrs[tbl] = (long *) (*cinfo->emethods->alloc_small)
 					(257 * SIZEOF(long));
-      MEMZERO((void *) dc_count_ptrs[tbl], 257 * SIZEOF(long));
+      MEMZERO(dc_count_ptrs[tbl], 257 * SIZEOF(long));
     }
     /* Create AC table */
     tbl = cinfo->cur_comp_info[i]->ac_tbl_no;
     if (ac_count_ptrs[tbl] == NULL) {
       ac_count_ptrs[tbl] = (long *) (*cinfo->emethods->alloc_small)
 					(257 * SIZEOF(long));
-      MEMZERO((void *) ac_count_ptrs[tbl], 257 * SIZEOF(long));
+      MEMZERO(ac_count_ptrs[tbl], 257 * SIZEOF(long));
     }
   }
 
@@ -683,9 +684,9 @@ GLOBAL void
 jselchuffman (compress_info_ptr cinfo)
 {
   if (! cinfo->arith_code) {
-    cinfo->methods->entropy_encoder_init = huff_init;
+    cinfo->methods->entropy_encode_init = huff_init;
     cinfo->methods->entropy_encode = huff_encode;
-    cinfo->methods->entropy_encoder_term = huff_term;
+    cinfo->methods->entropy_encode_term = huff_term;
 #ifdef ENTROPY_OPT_SUPPORTED
     cinfo->methods->entropy_optimize = huff_optimize;
     /* The standard Huffman tables are only valid for 8-bit data precision.

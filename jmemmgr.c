@@ -35,6 +35,14 @@
 #include "jinclude.h"
 #include "jmemsys.h"		/* import the system-dependent declarations */
 
+#ifndef NO_GETENV
+#ifdef INCLUDES_ARE_ANSI
+#include <stdlib.h>		/* to declare getenv() */
+#else
+extern char * getenv PP((const char * name));
+#endif
+#endif
+
 
 /*
  * On many systems it is not necessary to distinguish alloc_small from
@@ -48,6 +56,24 @@
 #ifdef NEED_FAR_POINTERS
 #define NEED_ALLOC_MEDIUM	/* flags alloc_medium really exists */
 #endif
+
+
+/*
+ * Many machines require storage alignment: longs must start on 4-byte
+ * boundaries, doubles on 8-byte boundaries, etc.  On such machines, malloc()
+ * always returns pointers that are multiples of the worst-case alignment
+ * requirement, and we had better do so too.  This means the headers that
+ * we tack onto allocated structures had better have length a multiple of
+ * the alignment requirement.
+ * There isn't any really portable way to determine the worst-case alignment
+ * requirement.  In this code we assume that the alignment requirement is
+ * multiples of sizeof(align_type).  Here we define align_type as double;
+ * with this definition, the code will run on all machines known to me.
+ * If your machine has lesser alignment needs, you can save a few bytes
+ * by making align_type smaller.
+ */
+
+typedef double align_type;
 
 
 /*
@@ -152,10 +178,11 @@ out_of_memory (int which)
  * These are all-in-memory, and are in near-heap space on an 80x86.
  */
 
-typedef struct small_struct * small_ptr;
+typedef union small_struct * small_ptr;
 
-typedef struct small_struct {
+typedef union small_struct {
 	small_ptr next;		/* next in list of allocated objects */
+	align_type dummy;	/* ensures alignment of following storage */
       } small_hdr;
 
 static small_ptr small_list;	/* head of list */
@@ -222,10 +249,11 @@ free_small (void *ptr)
 
 #ifdef NEED_ALLOC_MEDIUM
 
-typedef struct medium_struct FAR * medium_ptr;
+typedef union medium_struct FAR * medium_ptr;
 
-typedef struct medium_struct {
+typedef union medium_struct {
 	medium_ptr next;	/* next in list of allocated objects */
+	align_type dummy;	/* ensures alignment of following storage */
       } medium_hdr;
 
 static medium_ptr medium_list;	/* head of list */
@@ -304,6 +332,7 @@ typedef struct small_sarray_struct {
 	small_sarray_ptr next;	/* next in list of allocated sarrays */
 	long numrows;		/* # of rows in this array */
 	long rowsperchunk;	/* max # of rows per allocation chunk */
+	JSAMPROW dummy;		/* ensures alignment of following storage */
       } small_sarray_hdr;
 
 static small_sarray_ptr small_sarray_list; /* head of list */
@@ -411,6 +440,7 @@ typedef struct small_barray_struct {
 	small_barray_ptr next;	/* next in list of allocated barrays */
 	long numrows;		/* # of rows in this array */
 	long rowsperchunk;	/* max # of rows per allocation chunk */
+	JBLOCKROW dummy;	/* ensures alignment of following storage */
       } small_barray_hdr;
 
 static small_barray_ptr small_barray_list; /* head of list */
@@ -551,7 +581,7 @@ free_small_barray (JBLOCKARRAY ptr)
  * that is, successive access start_row numbers always differ by exactly the
  * unitheight.  This allows fairly simple buffer dump/reload logic if the
  * in-memory buffer is made a multiple of the unitheight.  It would be
- * possible to keep subsampled rather than fullsize data in the "big" arrays,
+ * possible to keep downsampled rather than fullsize data in the "big" arrays,
  * thus reducing temp file size, if we supported overlapping strip access
  * (access requests differing by less than the unitheight).  At the moment
  * I don't believe this is worth the extra complexity.
@@ -712,8 +742,8 @@ alloc_big_arrays (long extra_small_samples, long extra_small_blocks,
 	/* It doesn't fit in memory, create backing store. */
 	sptr->rows_in_mem = max_unitheights * sptr->unitheight;
 	jopen_backing_store(& sptr->b_s_info,
-			    sptr->rows_in_array
-			    * sptr->samplesperrow * SIZEOF(JSAMPLE));
+			    (long) (sptr->rows_in_array *
+				    sptr->samplesperrow * SIZEOF(JSAMPLE)));
 	sptr->b_s_open = TRUE;
       }
       sptr->mem_buffer = alloc_small_sarray(sptr->samplesperrow,
@@ -739,8 +769,8 @@ alloc_big_arrays (long extra_small_samples, long extra_small_blocks,
 	/* It doesn't fit in memory, create backing store. */
 	bptr->rows_in_mem = max_unitheights * bptr->unitheight;
 	jopen_backing_store(& bptr->b_s_info,
-			    bptr->rows_in_array
-			    * bptr->blocksperrow * SIZEOF(JBLOCK));
+			    (long) (bptr->rows_in_array *
+				    bptr->blocksperrow * SIZEOF(JBLOCK)));
 	bptr->b_s_open = TRUE;
       }
       bptr->mem_buffer = alloc_small_barray(bptr->blocksperrow,
@@ -1046,4 +1076,27 @@ jselmemmgr (external_methods_ptr emethods)
   big_barray_list = NULL;
 
   jmem_init(emethods);		/* system-dependent initialization */
+
+  /* Check for an environment variable JPEGMEM; if found, override the
+   * default max_memory setting from jmem_init.  Note that a command line
+   * -m argument may again override this value.
+   * If your system doesn't support getenv(), define NO_GETENV to disable
+   * this feature.
+   */
+#ifndef NO_GETENV
+  { char * memenv;
+
+    if ((memenv = getenv("JPEGMEM")) != NULL) {
+      long lval;
+      char ch = 'x';
+
+      if (sscanf(memenv, "%ld%c", &lval, &ch) > 0) {
+	if (ch == 'm' || ch == 'M')
+	  lval *= 1000L;
+	emethods->max_memory_to_use = lval * 1000L;
+      }
+    }
+  }
+#endif
+
 }

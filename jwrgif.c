@@ -318,7 +318,12 @@ emit_header (int num_colors, JSAMPARRAY colormap)
    * Write the GIF header.
    * Note that we generate a plain GIF87 header for maximum compatibility.
    */
-  (void) JFWRITE(dcinfo->output_file, "GIF87a", 6);
+  putc('G', dcinfo->output_file);
+  putc('I', dcinfo->output_file);
+  putc('F', dcinfo->output_file);
+  putc('8', dcinfo->output_file);
+  putc('7', dcinfo->output_file);
+  putc('a', dcinfo->output_file);
   /* Write the Logical Screen Descriptor */
   put_word((UINT16) dcinfo->image_width);
   put_word((UINT16) dcinfo->image_height);

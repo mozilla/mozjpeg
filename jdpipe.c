@@ -24,7 +24,7 @@
 #include "jinclude.h"
 
 
-#ifdef MULTISCAN_FILES_SUPPORTED /* wish we could assume ANSI's defined() */
+#ifdef D_MULTISCAN_FILES_SUPPORTED /* wish we could assume ANSI's defined() */
 #define NEED_COMPLEX_CONTROLLER
 #else
 #ifdef QUANT_2PASS_SUPPORTED
@@ -36,15 +36,15 @@
 /*
  * About the data structures:
  *
- * The processing chunk size for unsubsampling is referred to in this file as
+ * The processing chunk size for upsampling is referred to in this file as
  * a "row group": a row group is defined as Vk (v_samp_factor) sample rows of
- * any component while subsampled, or Vmax (max_v_samp_factor) unsubsampled
+ * any component while downsampled, or Vmax (max_v_samp_factor) unsubsampled
  * rows.  In an interleaved scan each MCU row contains exactly DCTSIZE row
  * groups of each component in the scan.  In a noninterleaved scan an MCU row
  * is one row of blocks, which might not be an integral number of row groups;
  * therefore, we read in Vk MCU rows to obtain the same amount of data as we'd
  * have in an interleaved scan.
- * To provide context for the unsubsampling step, we have to retain the last
+ * To provide context for the upsampling step, we have to retain the last
  * two row groups of the previous MCU row while reading in the next MCU row
  * (or set of Vk MCU rows).  To do this without copying data about, we create
  * a rather strange data structure.  Exactly DCTSIZE+2 row groups of samples
@@ -76,7 +76,7 @@ static int rows_in_mem;		/* # of sample rows in full-size buffers */
 static JSAMPIMAGE output_workspace;
 
 #ifdef NEED_COMPLEX_CONTROLLER
-/* Full-size image array holding desubsampled, but not color-processed data. */
+/* Full-size image array holding upsampled, but not color-processed data. */
 static big_sarray_ptr *fullsize_image;
 static JSAMPIMAGE fullsize_ptrs; /* workspace for access_big_sarray() result */
 #endif
@@ -114,12 +114,12 @@ interleaved_scan_setup (decompress_info_ptr cinfo)
     compptr->MCU_height = compptr->v_samp_factor;
     compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
     /* compute physical dimensions of component */
-    compptr->subsampled_width = jround_up(compptr->true_comp_width,
-					  (long) (compptr->MCU_width*DCTSIZE));
-    compptr->subsampled_height = jround_up(compptr->true_comp_height,
-					   (long) (compptr->MCU_height*DCTSIZE));
+    compptr->downsampled_width = jround_up(compptr->true_comp_width,
+					   (long) (compptr->MCU_width*DCTSIZE));
+    compptr->downsampled_height = jround_up(compptr->true_comp_height,
+					    (long) (compptr->MCU_height*DCTSIZE));
     /* Sanity check */
-    if (compptr->subsampled_width !=
+    if (compptr->downsampled_width !=
 	(cinfo->MCUs_per_row * (compptr->MCU_width*DCTSIZE)))
       ERREXIT(cinfo->emethods, "I'm confused about the image width");
     /* Prepare array describing MCU composition */
@@ -147,13 +147,13 @@ noninterleaved_scan_setup (decompress_info_ptr cinfo)
   compptr->MCU_height = 1;
   compptr->MCU_blocks = 1;
   /* compute physical dimensions of component */
-  compptr->subsampled_width = jround_up(compptr->true_comp_width,
-					(long) DCTSIZE);
-  compptr->subsampled_height = jround_up(compptr->true_comp_height,
+  compptr->downsampled_width = jround_up(compptr->true_comp_width,
 					 (long) DCTSIZE);
+  compptr->downsampled_height = jround_up(compptr->true_comp_height,
+					  (long) DCTSIZE);
 
-  cinfo->MCUs_per_row = compptr->subsampled_width / DCTSIZE;
-  cinfo->MCU_rows_in_scan = compptr->subsampled_height / DCTSIZE;
+  cinfo->MCUs_per_row = compptr->downsampled_width / DCTSIZE;
+  cinfo->MCU_rows_in_scan = compptr->downsampled_height / DCTSIZE;
 
   /* Prepare array describing MCU composition */
   cinfo->blocks_in_MCU = 1;
@@ -209,7 +209,7 @@ alloc_MCU_row (decompress_info_ptr cinfo)
 				(cinfo->comps_in_scan * SIZEOF(JBLOCKARRAY));
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     image[ci] = (*cinfo->emethods->alloc_small_barray)
-			(cinfo->cur_comp_info[ci]->subsampled_width / DCTSIZE,
+			(cinfo->cur_comp_info[ci]->downsampled_width / DCTSIZE,
 			 (long) cinfo->cur_comp_info[ci]->MCU_height);
   }
   return image;
@@ -234,35 +234,35 @@ free_MCU_row (decompress_info_ptr cinfo, JBLOCKIMAGE image)
 
 
 LOCAL void
-alloc_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE subsampled_data[2])
-/* Create a subsampled-data buffer having the desired structure */
+alloc_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE sampled_data[2])
+/* Create a downsampled-data buffer having the desired structure */
 /* (see comments at head of file) */
 {
   short ci, vs, i;
 
   /* Get top-level space for array pointers */
-  subsampled_data[0] = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
+  sampled_data[0] = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
 				(cinfo->comps_in_scan * SIZEOF(JSAMPARRAY));
-  subsampled_data[1] = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
+  sampled_data[1] = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
 				(cinfo->comps_in_scan * SIZEOF(JSAMPARRAY));
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     vs = cinfo->cur_comp_info[ci]->v_samp_factor; /* row group height */
     /* Allocate the real storage */
-    subsampled_data[0][ci] = (*cinfo->emethods->alloc_small_sarray)
-				(cinfo->cur_comp_info[ci]->subsampled_width,
+    sampled_data[0][ci] = (*cinfo->emethods->alloc_small_sarray)
+				(cinfo->cur_comp_info[ci]->downsampled_width,
 				(long) (vs * (DCTSIZE+2)));
     /* Create space for the scrambled-order pointers */
-    subsampled_data[1][ci] = (JSAMPARRAY) (*cinfo->emethods->alloc_small)
+    sampled_data[1][ci] = (JSAMPARRAY) (*cinfo->emethods->alloc_small)
 				(vs * (DCTSIZE+2) * SIZEOF(JSAMPROW));
     /* Duplicate the first DCTSIZE-2 row groups */
     for (i = 0; i < vs * (DCTSIZE-2); i++) {
-      subsampled_data[1][ci][i] = subsampled_data[0][ci][i];
+      sampled_data[1][ci][i] = sampled_data[0][ci][i];
     }
     /* Copy the last four row groups in swapped order */
     for (i = 0; i < vs * 2; i++) {
-      subsampled_data[1][ci][vs*DCTSIZE + i] = subsampled_data[0][ci][vs*(DCTSIZE-2) + i];
-      subsampled_data[1][ci][vs*(DCTSIZE-2) + i] = subsampled_data[0][ci][vs*DCTSIZE + i];
+      sampled_data[1][ci][vs*DCTSIZE + i] = sampled_data[0][ci][vs*(DCTSIZE-2) + i];
+      sampled_data[1][ci][vs*(DCTSIZE-2) + i] = sampled_data[0][ci][vs*DCTSIZE + i];
     }
   }
 }
@@ -271,24 +271,62 @@ alloc_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE subsampled_data[2])
 #ifdef NEED_COMPLEX_CONTROLLER	/* not used by simple controller */
 
 LOCAL void
-free_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE subsampled_data[2])
+free_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE sampled_data[2])
 /* Release a sampling buffer created by alloc_sampling_buffer */
 {
   short ci;
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     /* Free the real storage */
-    (*cinfo->emethods->free_small_sarray) (subsampled_data[0][ci]);
+    (*cinfo->emethods->free_small_sarray) (sampled_data[0][ci]);
     /* Free the scrambled-order pointers */
-    (*cinfo->emethods->free_small) ((void *) subsampled_data[1][ci]);
+    (*cinfo->emethods->free_small) ((void *) sampled_data[1][ci]);
   }
 
   /* Free the top-level space */
-  (*cinfo->emethods->free_small) ((void *) subsampled_data[0]);
-  (*cinfo->emethods->free_small) ((void *) subsampled_data[1]);
+  (*cinfo->emethods->free_small) ((void *) sampled_data[0]);
+  (*cinfo->emethods->free_small) ((void *) sampled_data[1]);
 }
 
 #endif
+
+
+/*
+ * Several decompression processes need to range-limit values to the range
+ * 0..MAXJSAMPLE; the input value may fall somewhat outside this range
+ * due to noise introduced by quantization, roundoff error, etc.  These
+ * processes are inner loops and need to be as fast as possible.  On most
+ * machines, particularly CPUs with pipelines or instruction prefetch,
+ * a (range-check-less) C table lookup
+ *		x = sample_range_limit[x];
+ * is faster than explicit tests
+ *		if (x < 0)  x = 0;
+ *		else if (x > MAXJSAMPLE)  x = MAXJSAMPLE;
+ * These processes all use a common table prepared by the routine below.
+ *
+ * The table will work correctly for x within MAXJSAMPLE+1 of the legal
+ * range.  This is a much wider range than is needed for most cases,
+ * but the wide range is handy for color quantization.
+ * Note that the table is allocated in near data space on PCs; it's small
+ * enough and used often enough to justify this.
+ */
+
+LOCAL void
+prepare_range_limit_table (decompress_info_ptr cinfo)
+/* Allocate and fill in the sample_range_limit table */
+{
+  JSAMPLE * table;
+  int i;
+
+  table = (JSAMPLE *) (*cinfo->emethods->alloc_small)
+			(3 * (MAXJSAMPLE+1) * SIZEOF(JSAMPLE));
+  cinfo->sample_range_limit = table + (MAXJSAMPLE+1);
+  for (i = 0; i <= MAXJSAMPLE; i++) {
+    table[i] = 0;			/* sample_range_limit[x] = 0 for x<0 */
+    table[i+(MAXJSAMPLE+1)] = (JSAMPLE) i;	/* sample_range_limit[x] = x */
+    table[i+(MAXJSAMPLE+1)*2] = MAXJSAMPLE;	/* x beyond MAXJSAMPLE */
+  }
+}
 
 
 LOCAL void
@@ -309,17 +347,17 @@ duplicate_row (JSAMPARRAY image_data,
 
 LOCAL void
 expand (decompress_info_ptr cinfo,
-	JSAMPIMAGE subsampled_data, JSAMPIMAGE fullsize_data,
+	JSAMPIMAGE sampled_data, JSAMPIMAGE fullsize_data,
 	long fullsize_width,
 	short above, short current, short below, short out)
-/* Do unsubsampling expansion of a single row group (of each component).  */
-/* above, current, below are indexes of row groups in subsampled_data;    */
+/* Do upsampling expansion of a single row group (of each component). */
+/* above, current, below are indexes of row groups in sampled_data;       */
 /* out is the index of the target row group in fullsize_data.             */
 /* Special case: above, below can be -1 to indicate top, bottom of image. */
 {
   jpeg_component_info *compptr;
   JSAMPARRAY above_ptr, below_ptr;
-  JSAMPROW dummy[MAX_SAMP_FACTOR]; /* for subsample expansion at top/bottom */
+  JSAMPROW dummy[MAX_SAMP_FACTOR]; /* for downsample expansion at top/bottom */
   short ci, vs, i;
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
@@ -327,30 +365,30 @@ expand (decompress_info_ptr cinfo,
     vs = compptr->v_samp_factor; /* row group height */
 
     if (above >= 0)
-      above_ptr = subsampled_data[ci] + above * vs;
+      above_ptr = sampled_data[ci] + above * vs;
     else {
       /* Top of image: make a dummy above-context with copies of 1st row */
       /* We assume current=0 in this case */
       for (i = 0; i < vs; i++)
-	dummy[i] = subsampled_data[ci][0];
+	dummy[i] = sampled_data[ci][0];
       above_ptr = (JSAMPARRAY) dummy; /* possible near->far pointer conv */
     }
 
     if (below >= 0)
-      below_ptr = subsampled_data[ci] + below * vs;
+      below_ptr = sampled_data[ci] + below * vs;
     else {
       /* Bot of image: make a dummy below-context with copies of last row */
       for (i = 0; i < vs; i++)
-	dummy[i] = subsampled_data[ci][(current+1)*vs-1];
+	dummy[i] = sampled_data[ci][(current+1)*vs-1];
       below_ptr = (JSAMPARRAY) dummy; /* possible near->far pointer conv */
     }
 
-    (*cinfo->methods->unsubsample[ci])
+    (*cinfo->methods->upsample[ci])
 		(cinfo, (int) ci,
-		 compptr->subsampled_width, (int) vs,
+		 compptr->downsampled_width, (int) vs,
 		 fullsize_width, (int) cinfo->max_v_samp_factor,
 		 above_ptr,
-		 subsampled_data[ci] + current * vs,
+		 sampled_data[ci] + current * vs,
 		 below_ptr,
 		 fullsize_data[ci] + out * cinfo->max_v_samp_factor);
   }
@@ -529,9 +567,9 @@ simple_dcontroller (decompress_info_ptr cinfo)
   JBLOCKIMAGE bsmooth[3];	/* this is optional */
   int whichb;
 #endif
-  /* Work buffer for subsampled image data (see comments at head of file) */
-  JSAMPIMAGE subsampled_data[2];
-  /* Work buffer for desubsampled data */
+  /* Work buffer for downsampled image data (see comments at head of file) */
+  JSAMPIMAGE sampled_data[2];
+  /* Work buffer for upsampled data */
   JSAMPIMAGE fullsize_data;
   int whichss, ri;
   short i;
@@ -565,14 +603,15 @@ simple_dcontroller (decompress_info_ptr cinfo)
     bsmooth[2] = alloc_MCU_row(cinfo);
   }
 #endif
-  /* subsampled_data is sample data before unsubsampling */
-  alloc_sampling_buffer(cinfo, subsampled_data);
-  /* fullsize_data is sample data after unsubsampling */
+  /* sampled_data is sample data before upsampling */
+  alloc_sampling_buffer(cinfo, sampled_data);
+  /* fullsize_data is sample data after upsampling */
   fullsize_data = alloc_sampimage(cinfo, (int) cinfo->num_components,
 				  (long) rows_in_mem, fullsize_width);
   /* output_workspace is the color-processed data */
   output_workspace = alloc_sampimage(cinfo, (int) cinfo->final_out_comps,
 				     (long) rows_in_mem, fullsize_width);
+  prepare_range_limit_table(cinfo);
 
   /* Tell the memory manager to instantiate big arrays.
    * We don't need any big arrays in this controller,
@@ -587,27 +626,27 @@ simple_dcontroller (decompress_info_ptr cinfo)
 
   /* Initialize to read scan data */
 
-  (*cinfo->methods->entropy_decoder_init) (cinfo);
-  (*cinfo->methods->unsubsample_init) (cinfo);
+  (*cinfo->methods->entropy_decode_init) (cinfo);
+  (*cinfo->methods->upsample_init) (cinfo);
   (*cinfo->methods->disassemble_init) (cinfo);
 
   /* Loop over scan's data: rows_in_mem pixel rows are processed per loop */
 
   pixel_rows_output = 0;
-  whichss = 1;			/* arrange to start with subsampled_data[0] */
+  whichss = 1;			/* arrange to start with sampled_data[0] */
 
   for (cur_mcu_row = 0; cur_mcu_row < cinfo->MCU_rows_in_scan;
        cur_mcu_row += mcu_rows_per_loop) {
     (*cinfo->methods->progress_monitor) (cinfo, cur_mcu_row,
 					 cinfo->MCU_rows_in_scan);
 
-    whichss ^= 1;		/* switch to other subsample buffer */
+    whichss ^= 1;		/* switch to other downsampled-data buffer */
 
     /* Obtain v_samp_factor block rows of each component in the scan. */
     /* This is a single MCU row if interleaved, multiple MCU rows if not. */
     /* In the noninterleaved case there might be fewer than v_samp_factor */
     /* block rows remaining; if so, pad with copies of the last pixel row */
-    /* so that unsubsampling doesn't have to treat it as a special case. */
+    /* so that upsampling doesn't have to treat it as a special case. */
 
     for (ri = 0; ri < mcu_rows_per_loop; ri++) {
       if (cur_mcu_row + ri < cinfo->MCU_rows_in_scan) {
@@ -621,41 +660,41 @@ simple_dcontroller (decompress_info_ptr cinfo)
 	  (*cinfo->methods->disassemble_MCU) (cinfo, coeff_data);
       
 	(*cinfo->methods->reverse_DCT) (cinfo, coeff_data,
-					subsampled_data[whichss],
+					sampled_data[whichss],
 					ri * DCTSIZE);
       } else {
-	/* Need to pad out with copies of the last subsampled row. */
+	/* Need to pad out with copies of the last downsampled row. */
 	/* This can only happen if there is just one component. */
-	duplicate_row(subsampled_data[whichss][0],
-		      cinfo->cur_comp_info[0]->subsampled_width,
+	duplicate_row(sampled_data[whichss][0],
+		      cinfo->cur_comp_info[0]->downsampled_width,
 		      ri * DCTSIZE - 1, DCTSIZE);
       }
     }
 
-    /* Unsubsample the data */
+    /* Upsample the data */
     /* First time through is a special case */
 
     if (cur_mcu_row) {
       /* Expand last row group of previous set */
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
+      expand(cinfo, sampled_data[whichss], fullsize_data, fullsize_width,
 	     (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
 	     (short) (DCTSIZE-1));
       /* and dump the previous set's expanded data */
-      emit_1pass (cinfo, rows_in_mem, fullsize_data, NULL);
+      emit_1pass (cinfo, rows_in_mem, fullsize_data, (JSAMPARRAY) NULL);
       pixel_rows_output += rows_in_mem;
       /* Expand first row group of this set */
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
+      expand(cinfo, sampled_data[whichss], fullsize_data, fullsize_width,
 	     (short) (DCTSIZE+1), (short) 0, (short) 1,
 	     (short) 0);
     } else {
       /* Expand first row group with dummy above-context */
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
+      expand(cinfo, sampled_data[whichss], fullsize_data, fullsize_width,
 	     (short) (-1), (short) 0, (short) 1,
 	     (short) 0);
     }
     /* Expand second through next-to-last row groups of this set */
     for (i = 1; i <= DCTSIZE-2; i++) {
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
+      expand(cinfo, sampled_data[whichss], fullsize_data, fullsize_width,
 	     (short) (i-1), (short) i, (short) (i+1),
 	     (short) i);
     }
@@ -663,23 +702,23 @@ simple_dcontroller (decompress_info_ptr cinfo)
 
   /* Expand the last row group with dummy below-context */
   /* Note whichss points to last buffer side used */
-  expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
+  expand(cinfo, sampled_data[whichss], fullsize_data, fullsize_width,
 	 (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
 	 (short) (DCTSIZE-1));
   /* and dump the remaining data (may be less than full height) */
   emit_1pass (cinfo, (int) (cinfo->image_height - pixel_rows_output),
-	      fullsize_data, NULL);
+	      fullsize_data, (JSAMPARRAY) NULL);
 
   /* Clean up after the scan */
   (*cinfo->methods->disassemble_term) (cinfo);
-  (*cinfo->methods->unsubsample_term) (cinfo);
-  (*cinfo->methods->entropy_decoder_term) (cinfo);
+  (*cinfo->methods->upsample_term) (cinfo);
+  (*cinfo->methods->entropy_decode_term) (cinfo);
   (*cinfo->methods->read_scan_trailer) (cinfo);
   cinfo->completed_passes++;
 
   /* Verify that we've seen the whole input file */
   if ((*cinfo->methods->read_scan_header) (cinfo))
-    ERREXIT(cinfo->emethods, "Didn't expect more than one scan");
+    WARNMS(cinfo->emethods, "Didn't expect more than one scan");
 
   /* Release working memory */
   /* (no work -- we let free_all release what's needful) */
@@ -691,13 +730,13 @@ simple_dcontroller (decompress_info_ptr cinfo)
  * and/or 2-pass color quantization.
  *
  * The current implementation places the "big" buffer at the stage of
- * desubsampled, non-color-processed data.  This is the only place that
+ * upsampled, non-color-processed data.  This is the only place that
  * makes sense when doing 2-pass quantization.  For processing multiple-scan
  * files without 2-pass quantization, it would be possible to develop another
- * controller that buffers the subsampled data instead, thus reducing the size
+ * controller that buffers the downsampled data instead, thus reducing the size
  * of the temp files (by about a factor of 2 in typical cases).  However,
- * our present unsubsampling logic is dependent on the assumption that
- * unsubsampling occurs during a scan, so it's much easier to do the
+ * our present upsampling logic is dependent on the assumption that
+ * upsampling occurs during a scan, so it's much easier to do the
  * enlargement as the JPEG file is read.  This also simplifies life for the
  * memory manager, which would otherwise have to deal with overlapping
  * access_big_sarray() requests.
@@ -721,8 +760,8 @@ complex_dcontroller (decompress_info_ptr cinfo)
   JBLOCKIMAGE bsmooth[3];	/* this is optional */
   int whichb;
 #endif
-  /* Work buffer for subsampled image data (see comments at head of file) */
-  JSAMPIMAGE subsampled_data[2];
+  /* Work buffer for downsampled image data (see comments at head of file) */
+  JSAMPIMAGE sampled_data[2];
   int whichss, ri;
   short ci, i;
   boolean single_scan;
@@ -737,8 +776,9 @@ complex_dcontroller (decompress_info_ptr cinfo)
   /* output_workspace is the color-processed data */
   output_workspace = alloc_sampimage(cinfo, (int) cinfo->final_out_comps,
 				     (long) rows_in_mem, fullsize_width);
+  prepare_range_limit_table(cinfo);
 
-  /* Get a big image: fullsize_image is sample data after unsubsampling. */
+  /* Get a big image: fullsize_image is sample data after upsampling. */
   fullsize_image = (big_sarray_ptr *) (*cinfo->emethods->alloc_small)
 			(cinfo->num_components * SIZEOF(big_sarray_ptr));
   for (ci = 0; ci < cinfo->num_components; ci++) {
@@ -753,7 +793,7 @@ complex_dcontroller (decompress_info_ptr cinfo)
 
   /* Tell the memory manager to instantiate big arrays */
   (*cinfo->emethods->alloc_big_arrays)
-	 /* extra sarray space is for subsampled-data buffers: */
+	 /* extra sarray space is for downsampled-data buffers: */
 	((long) (fullsize_width			/* max width in samples */
 	 * cinfo->max_v_samp_factor*(DCTSIZE+2)	/* max height */
 	 * cinfo->num_components),		/* max components per scan */
@@ -818,8 +858,8 @@ complex_dcontroller (decompress_info_ptr cinfo)
       bsmooth[2] = alloc_MCU_row(cinfo);
     }
 #endif
-    /* subsampled_data is sample data before unsubsampling */
-    alloc_sampling_buffer(cinfo, subsampled_data);
+    /* sampled_data is sample data before upsampling */
+    alloc_sampling_buffer(cinfo, sampled_data);
 
     /* line up the big buffers for components in this scan */
     for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
@@ -830,27 +870,27 @@ complex_dcontroller (decompress_info_ptr cinfo)
     
     /* Initialize to read scan data */
     
-    (*cinfo->methods->entropy_decoder_init) (cinfo);
-    (*cinfo->methods->unsubsample_init) (cinfo);
+    (*cinfo->methods->entropy_decode_init) (cinfo);
+    (*cinfo->methods->upsample_init) (cinfo);
     (*cinfo->methods->disassemble_init) (cinfo);
     
     /* Loop over scan's data: rows_in_mem pixel rows are processed per loop */
     
     pixel_rows_output = 0;
-    whichss = 1;		/* arrange to start with subsampled_data[0] */
+    whichss = 1;		/* arrange to start with sampled_data[0] */
     
     for (cur_mcu_row = 0; cur_mcu_row < cinfo->MCU_rows_in_scan;
 	 cur_mcu_row += mcu_rows_per_loop) {
       (*cinfo->methods->progress_monitor) (cinfo, cur_mcu_row,
 					   cinfo->MCU_rows_in_scan);
 
-      whichss ^= 1;		/* switch to other subsample buffer */
+      whichss ^= 1;		/* switch to other downsampled-data buffer */
 
       /* Obtain v_samp_factor block rows of each component in the scan. */
       /* This is a single MCU row if interleaved, multiple MCU rows if not. */
       /* In the noninterleaved case there might be fewer than v_samp_factor */
       /* block rows remaining; if so, pad with copies of the last pixel row */
-      /* so that unsubsampling doesn't have to treat it as a special case. */
+      /* so that upsampling doesn't have to treat it as a special case. */
       
       for (ri = 0; ri < mcu_rows_per_loop; ri++) {
 	if (cur_mcu_row + ri < cinfo->MCU_rows_in_scan) {
@@ -864,23 +904,23 @@ complex_dcontroller (decompress_info_ptr cinfo)
 	    (*cinfo->methods->disassemble_MCU) (cinfo, coeff_data);
 	  
 	  (*cinfo->methods->reverse_DCT) (cinfo, coeff_data,
-					  subsampled_data[whichss],
+					  sampled_data[whichss],
 					  ri * DCTSIZE);
 	} else {
-	  /* Need to pad out with copies of the last subsampled row. */
+	  /* Need to pad out with copies of the last downsampled row. */
 	  /* This can only happen if there is just one component. */
-	  duplicate_row(subsampled_data[whichss][0],
-			cinfo->cur_comp_info[0]->subsampled_width,
+	  duplicate_row(sampled_data[whichss][0],
+			cinfo->cur_comp_info[0]->downsampled_width,
 			ri * DCTSIZE - 1, DCTSIZE);
 	}
       }
       
-      /* Unsubsample the data */
+      /* Upsample the data */
       /* First time through is a special case */
       
       if (cur_mcu_row) {
 	/* Expand last row group of previous set */
-	expand(cinfo, subsampled_data[whichss], fullsize_ptrs, fullsize_width,
+	expand(cinfo, sampled_data[whichss], fullsize_ptrs, fullsize_width,
 	       (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
 	       (short) (DCTSIZE-1));
 	/* If single scan, can do color quantization prescan on-the-fly */
@@ -896,18 +936,18 @@ complex_dcontroller (decompress_info_ptr cinfo)
 	     pixel_rows_output, TRUE);
 	}
 	/* Expand first row group of this set */
-	expand(cinfo, subsampled_data[whichss], fullsize_ptrs, fullsize_width,
+	expand(cinfo, sampled_data[whichss], fullsize_ptrs, fullsize_width,
 	       (short) (DCTSIZE+1), (short) 0, (short) 1,
 	       (short) 0);
       } else {
 	/* Expand first row group with dummy above-context */
-	expand(cinfo, subsampled_data[whichss], fullsize_ptrs, fullsize_width,
+	expand(cinfo, sampled_data[whichss], fullsize_ptrs, fullsize_width,
 	       (short) (-1), (short) 0, (short) 1,
 	       (short) 0);
       }
       /* Expand second through next-to-last row groups of this set */
       for (i = 1; i <= DCTSIZE-2; i++) {
-	expand(cinfo, subsampled_data[whichss], fullsize_ptrs, fullsize_width,
+	expand(cinfo, sampled_data[whichss], fullsize_ptrs, fullsize_width,
 	       (short) (i-1), (short) i, (short) (i+1),
 	       (short) i);
       }
@@ -915,7 +955,7 @@ complex_dcontroller (decompress_info_ptr cinfo)
     
     /* Expand the last row group with dummy below-context */
     /* Note whichss points to last buffer side used */
-    expand(cinfo, subsampled_data[whichss], fullsize_ptrs, fullsize_width,
+    expand(cinfo, sampled_data[whichss], fullsize_ptrs, fullsize_width,
 	   (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
 	   (short) (DCTSIZE-1));
     /* If single scan, finish on-the-fly color quantization prescan */
@@ -926,8 +966,8 @@ complex_dcontroller (decompress_info_ptr cinfo)
     
     /* Clean up after the scan */
     (*cinfo->methods->disassemble_term) (cinfo);
-    (*cinfo->methods->unsubsample_term) (cinfo);
-    (*cinfo->methods->entropy_decoder_term) (cinfo);
+    (*cinfo->methods->upsample_term) (cinfo);
+    (*cinfo->methods->entropy_decode_term) (cinfo);
     (*cinfo->methods->read_scan_trailer) (cinfo);
     if (single_scan)
       cinfo->completed_passes++;
@@ -943,7 +983,7 @@ complex_dcontroller (decompress_info_ptr cinfo)
       free_MCU_row(cinfo, bsmooth[2]);
     }
 #endif
-    free_sampling_buffer(cinfo, subsampled_data);
+    free_sampling_buffer(cinfo, sampled_data);
     
     /* Repeat if there is another scan */
   } while ((!single_scan) && (*cinfo->methods->read_scan_header) (cinfo));
@@ -951,7 +991,7 @@ complex_dcontroller (decompress_info_ptr cinfo)
   if (single_scan) {
     /* If we expected just one scan, make SURE there's just one */
     if ((*cinfo->methods->read_scan_header) (cinfo))
-      ERREXIT(cinfo->emethods, "Didn't expect more than one scan");
+      WARNMS(cinfo->emethods, "Didn't expect more than one scan");
     /* We did the CQ prescan on-the-fly, so we are all set. */
   } else {
     /* For multiple-scan file, do the CQ prescan as a separate pass. */

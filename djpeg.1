@@ -1,16 +1,43 @@
-.TH DJPEG 1 "28 February 1992"
+.TH DJPEG 1 "2 August 1992"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
 .B djpeg
 [
-.B \-GPRTgD1bd
+.BI \-colors " N"
 ]
 [
-.BI \-q " colors"
+.B \-gif
 ]
 [
-.BI \-m " memory"
+.B \-pnm
+]
+[
+.B \-rle
+]
+[
+.B \-targa
+]
+[
+.B \-blocksmooth
+]
+[
+.B \-grayscale
+]
+[
+.BI \-maxmemory " N"
+]
+[
+.B \-nodither
+]
+[
+.B \-onepass
+]
+[
+.B \-verbose
+]
+[
+.B \-debug
 ]
 [
 .I filename
@@ -20,92 +47,130 @@ djpeg \- decompress a JPEG file to an image file
 .LP
 .B djpeg
 decompresses the named JPEG file, or the standard input if no file is named,
-and produces an image file on the standard output.  PPM, GIF, Targa, or RLE
-output format can be selected.  (RLE is supported only if the URT library is
-available.)
+and produces an image file on the standard output.  PBMPLUS (PPM/PGM), GIF,
+Targa, or RLE (Utah Raster Toolkit) output format can be selected.  (RLE is
+supported only if the URT library is available.)
 .SH OPTIONS
+All switch names may be abbreviated; for example,
+.B \-grayscale
+may be written
+.B \-gray
+or
+.BR \-gr .
+Most of the "basic" switches can be abbreviated to as little as one letter.
+Upper and lower case are equivalent (thus
+.B \-GIF
+is the same as
+.BR \-gif ).
+British spellings are also accepted (e.g.,
+.BR \-greyscale ),
+though for brevity these are not mentioned below.
+.PP
+The basic switches are:
 .TP
-.B \-G
-Select GIF output format (implies
-.BR \-q ,
-with default of 256 colors).
+.BI \-colors " N"
+Reduce image to at most N colors.  This reduces the number of colors used in
+the output image, so that it can be displayed on a colormapped display or
+stored in a colormapped file format.  For example, if you have an 8-bit
+display, you'd need to reduce to 256 or fewer colors.
 .TP
-.B \-P
-Select PPM or PGM output format (this is the default).  PGM is emitted if the
-JPEG file is gray-scale or if
-.B \-g
-is specified.
+.BI \-quantize " N"
+Same as
+.BR \-colors .
+.B \-colors
+is the recommended name,
+.B \-quantize
+is provided only for backwards compatibility.
 .TP
-.B \-R
-Select RLE output format.  Requires URT library.
+.B \-gif
+Select GIF output format.  Since GIF does not support more than 256 colors,
+.B \-colors 256
+is assumed (unless you specify a smaller number of colors).
 .TP
-.B \-T
+.B \-pnm
+Select PBMPLUS (PPM/PGM) output format (this is the default format).
+PGM is emitted if the JPEG file is gray-scale or if
+.B \-grayscale
+is specified; otherwise PPM is emitted.
+.TP
+.B \-rle
+Select RLE output format.  (Requires URT library.)
+.TP
+.B \-targa
 Select Targa output format.  Gray-scale format is emitted if the JPEG file is
 gray-scale or if
-.B \-g
+.B \-grayscale
 is specified; otherwise, colormapped format is emitted if
-.B \-q
+.B \-colors
 is specified; otherwise, 24-bit full-color format is emitted.
+.PP
+Switches for advanced users:
 .TP
-.B \-g
-Force gray-scale output even if input is color.
+.B \-blocksmooth
+Perform cross-block smoothing.  This is quite memory-intensive and only seems
+to improve the image at very low quality settings (\fB\-quality\fR 10 to 20 or
+so).  At normal quality settings it may make the image worse.
 .TP
-.BI \-q " N"
-Quantize to N colors.  This reduces the number of colors in the output image
-so that it can be displayed on a colormapped display or stored in a
-colormapped file format.  For example, if you have an 8-bit display, you'd
-need to quantize to 256 or fewer colors.
+.B \-grayscale
+Force gray-scale output even if JPEG file is color.
+Useful for viewing on monochrome displays.
 .TP
-.B \-D
+.BI \-maxmemory " N"
+Set limit for amount of memory to use in processing large images.  Value is
+in thousands of bytes, or millions of bytes if "M" is attached to the
+number.  For example,
+.B \-max 4m
+selects 4000000 bytes.  If more space is needed, temporary files will be used.
+.TP
+.B \-nodither
 Do not use dithering in color quantization.  By default, Floyd-Steinberg
 dithering is applied when quantizing colors, but on some images dithering may
 result in objectionable "graininess".  If that happens, you can turn off
 dithering with
-.BR \-D .
-.B \-D
+.BR \-nodither .
+.B \-nodither
 is ignored unless you also say
-.B \-q
-or
-.BR \-G .
+.B \-colors
+.IR N .
 .TP
-.B \-1
+.B \-onepass
 Use one-pass instead of two-pass color quantization.  The one-pass method is
 faster and needs less memory, but it produces a lower-quality image.
-.B \-1
+.B \-onepass
 is ignored unless you also say
-.B \-q
-or
-.BR \-G .
+.B \-colors
+.IR N .
 Also, the one-pass method is always used for gray-scale output (the two-pass
 method is no improvement then).
 .TP
-.B \-b
-Perform cross-block smoothing.  This is quite memory-intensive and only seems
-to improve the image at low quality settings (\fB\-Q\fR 10 to 20 or so).
-At normal
-.B \-Q
-settings it may make the image worse.
-.TP
-.B \-d
+.B \-verbose
 Enable debug printout.  More
-.BR \-d 's
+.BR \-v 's
 give more output.  Also, version information is printed at startup.
 .TP
-.BI \-m " memory"
-Set limit for amount of memory to use in processing large images.  Value is
-in thousands of bytes, or millions of bytes if "M" is attached to the
-number.  For example,
-.B \-m 4m
-selects 4000000 bytes.  If more space is needed, temporary files will be used.
+.B \-debug
+Same as
+.BR \-verbose .
 .SH EXAMPLES
 .LP
-This example decompresses the JPEG file foo.jpg, quantizes to 256 colors,
-and saves the output in GIF format in foo.gif:
+This example decompresses the JPEG file foo.jpg, automatically quantizes to
+256 colors, and saves the output in GIF format in foo.gif:
 .IP
-.B djpeg \-G
+.B djpeg \-gif
 .I foo.jpg
 .B >
 .I foo.gif
+.SH ENVIRONMENT
+.TP
+.B JPEGMEM
+If this environment variable is set, its value is the default memory limit.
+The value is specified as described for the
+.B \-maxmemory
+switch.
+.B JPEGMEM
+overrides the default value specified when the program was compiled, and
+itself is overridden by an explicit
+.BR \-maxmemory .
 .SH SEE ALSO
 .BR cjpeg (1)
 .br
@@ -119,4 +184,4 @@ Independent JPEG Group
 .SH BUGS
 Arithmetic coding is not supported for legal reasons.
 .PP
-Not as fast as we'd like.
+Still not as fast as we'd like.

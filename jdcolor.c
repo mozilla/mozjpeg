@@ -23,31 +23,35 @@
  *	G = Y - 0.34414 * Cb - 0.71414 * Cr
  *	B = Y + 1.77200 * Cb
  * where Cb and Cr represent the incoming values less MAXJSAMPLE/2.
- * (These numbers are derived from TIFF Appendix O, draft of 4/10/91.)
+ * (These numbers are derived from TIFF 6.0 section 21, dated 3-June-92.)
  *
  * To avoid floating-point arithmetic, we represent the fractional constants
- * as integers scaled up by 2^14 (about 4 digits precision); we have to divide
- * the products by 2^14, with appropriate rounding, to get the correct answer.
+ * as integers scaled up by 2^16 (about 4 digits precision); we have to divide
+ * the products by 2^16, with appropriate rounding, to get the correct answer.
  * Notice that Y, being an integral input, does not contribute any fraction
  * so it need not participate in the rounding.
  *
  * For even more speed, we avoid doing any multiplications in the inner loop
  * by precalculating the constants times Cb and Cr for all possible values.
- * For 8-bit JSAMPLEs this is very reasonable (only 256 table entries); for
- * 12-bit samples it is still acceptable.  It's not very reasonable for 16-bit
- * samples, but if you want lossless storage you shouldn't be changing
+ * For 8-bit JSAMPLEs this is very reasonable (only 256 entries per table);
+ * for 12-bit samples it is still acceptable.  It's not very reasonable for
+ * 16-bit samples, but if you want lossless storage you shouldn't be changing
  * colorspace anyway.
  * The Cr=>R and Cb=>B values can be rounded to integers in advance; the
  * values for the G calculation are left scaled up, since we must add them
  * together before rounding.
  */
 
-#define SCALEBITS	14
+#ifdef SIXTEEN_BIT_SAMPLES
+#define SCALEBITS	14	/* avoid overflow */
+#else
+#define SCALEBITS	16	/* speedier right-shift on some machines */
+#endif
 #define ONE_HALF	((INT32) 1 << (SCALEBITS-1))
 #define FIX(x)		((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
 
-static INT16 * Cr_r_tab;	/* => table for Cr to R conversion */
-static INT16 * Cb_b_tab;	/* => table for Cb to B conversion */
+static int * Cr_r_tab;		/* => table for Cr to R conversion */
+static int * Cb_b_tab;		/* => table for Cb to B conversion */
 static INT32 * Cr_g_tab;	/* => table for Cr to G conversion */
 static INT32 * Cb_g_tab;	/* => table for Cb to G conversion */
 
@@ -59,17 +63,13 @@ static INT32 * Cb_g_tab;	/* => table for Cb to G conversion */
 METHODDEF void
 ycc_rgb_init (decompress_info_ptr cinfo)
 {
-#ifdef SIXTEEN_BIT_SAMPLES
   INT32 i, x2;
-#else
-  int i, x2;			/* smart compiler may do 16x16=>32 multiply */
-#endif
   SHIFT_TEMPS
 
-  Cr_r_tab = (INT16 *) (*cinfo->emethods->alloc_small)
-				((MAXJSAMPLE+1) * SIZEOF(INT16));
-  Cb_b_tab = (INT16 *) (*cinfo->emethods->alloc_small)
-				((MAXJSAMPLE+1) * SIZEOF(INT16));
+  Cr_r_tab = (int *) (*cinfo->emethods->alloc_small)
+				((MAXJSAMPLE+1) * SIZEOF(int));
+  Cb_b_tab = (int *) (*cinfo->emethods->alloc_small)
+				((MAXJSAMPLE+1) * SIZEOF(int));
   Cr_g_tab = (INT32 *) (*cinfo->emethods->alloc_small)
 				((MAXJSAMPLE+1) * SIZEOF(INT32));
   Cb_g_tab = (INT32 *) (*cinfo->emethods->alloc_small)
@@ -80,10 +80,10 @@ ycc_rgb_init (decompress_info_ptr cinfo)
     /* The Cb or Cr value we are thinking of is x = i - MAXJSAMPLE/2 */
     x2 = 2*i - MAXJSAMPLE;	/* twice x */
     /* Cr=>R value is nearest int to 1.40200 * x */
-    Cr_r_tab[i] = (INT16)
+    Cr_r_tab[i] = (int)
 		    RIGHT_SHIFT(FIX(1.40200/2) * x2 + ONE_HALF, SCALEBITS);
     /* Cb=>B value is nearest int to 1.77200 * x */
-    Cb_b_tab[i] = (INT16)
+    Cb_b_tab[i] = (int)
 		    RIGHT_SHIFT(FIX(1.77200/2) * x2 + ONE_HALF, SCALEBITS);
     /* Cr=>G value is scaled-up -0.71414 * x */
     Cr_g_tab[i] = (- FIX(0.71414/2)) * x2;
@@ -103,15 +103,20 @@ ycc_rgb_convert (decompress_info_ptr cinfo, int num_rows, long num_cols,
 		 JSAMPIMAGE input_data, JSAMPIMAGE output_data)
 {
 #ifdef SIXTEEN_BIT_SAMPLES
-  register UINT16 y, cb, cr;
-  register INT32 x;
+  register INT32 y;
+  register UINT16 cb, cr;
 #else
   register int y, cb, cr;
-  register int x;
 #endif
   register JSAMPROW inptr0, inptr1, inptr2;
   register JSAMPROW outptr0, outptr1, outptr2;
-  long col;
+  register long col;
+  /* copy these pointers into registers if possible */
+  register JSAMPLE * range_limit = cinfo->sample_range_limit;
+  register int * Crrtab = Cr_r_tab;
+  register int * Cbbtab = Cb_b_tab;
+  register INT32 * Crgtab = Cr_g_tab;
+  register INT32 * Cbgtab = Cb_g_tab;
   int row;
   SHIFT_TEMPS
   
@@ -122,26 +127,19 @@ ycc_rgb_convert (decompress_info_ptr cinfo, int num_rows, long num_cols,
     outptr0 = output_data[0][row];
     outptr1 = output_data[1][row];
     outptr2 = output_data[2][row];
-    for (col = num_cols; col > 0; col--) {
-      y  = GETJSAMPLE(*inptr0++);
-      cb = GETJSAMPLE(*inptr1++);
-      cr = GETJSAMPLE(*inptr2++);
+    for (col = 0; col < num_cols; col++) {
+      y  = GETJSAMPLE(inptr0[col]);
+      cb = GETJSAMPLE(inptr1[col]);
+      cr = GETJSAMPLE(inptr2[col]);
       /* Note: if the inputs were computed directly from RGB values,
        * range-limiting would be unnecessary here; but due to possible
        * noise in the DCT/IDCT phase, we do need to apply range limits.
        */
-      x = y + Cr_r_tab[cr];	/* red */
-      if (x < 0) x = 0;
-      else if (x > MAXJSAMPLE) x = MAXJSAMPLE;
-      *outptr0++ = (JSAMPLE) x;
-      x = y + ((int) RIGHT_SHIFT(Cb_g_tab[cb] + Cr_g_tab[cr], SCALEBITS));
-      if (x < 0) x = 0;
-      else if (x > MAXJSAMPLE) x = MAXJSAMPLE;
-      *outptr1++ = (JSAMPLE) x;
-      x = y + Cb_b_tab[cb];	/* blue */
-      if (x < 0) x = 0;
-      else if (x > MAXJSAMPLE) x = MAXJSAMPLE;
-      *outptr2++ = (JSAMPLE) x;
+      outptr0[col] = range_limit[y + Crrtab[cr]];	/* red */
+      outptr1[col] = range_limit[y +			/* green */
+				 ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],
+						    SCALEBITS))];
+      outptr2[col] = range_limit[y + Cbbtab[cb]];	/* blue */
     }
   }
 }

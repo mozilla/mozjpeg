@@ -25,9 +25,6 @@
 #ifdef PPM_SUPPORTED
 
 
-static JSAMPLE * rescale;	/* => maxval-remapping array, or NULL */
-
-
 /* Portions of this code are based on the PBMPLUS library, which is:
 **
 ** Copyright (C) 1988 by Jef Poskanzer.
@@ -39,6 +36,41 @@ static JSAMPLE * rescale;	/* => maxval-remapping array, or NULL */
 ** documentation.  This software is provided "as is" without express or
 ** implied warranty.
 */
+
+
+/* Macros to deal with unsigned chars as efficiently as compiler allows */
+
+#ifdef HAVE_UNSIGNED_CHAR
+typedef unsigned char U_CHAR;
+#define UCH(x)	((int) (x))
+#else /* !HAVE_UNSIGNED_CHAR */
+#ifdef CHAR_IS_UNSIGNED
+typedef char U_CHAR;
+#define UCH(x)	((int) (x))
+#else
+typedef char U_CHAR;
+#define UCH(x)	((int) (x) & 0xFF)
+#endif
+#endif /* HAVE_UNSIGNED_CHAR */
+
+
+#define	ReadOK(file,buffer,len)	(JFREAD(file,buffer,len) == ((size_t) (len)))
+
+
+/*
+ * On most systems, reading individual bytes with getc() is drastically less
+ * efficient than buffering a row at a time with fread().  But we must
+ * allocate the row buffer in near data space on PCs, because we are assuming
+ * small-data memory model, wherein fread() can't reach far memory.  If you
+ * need to process very wide images on a PC, you may have to use the getc()
+ * approach.  In that case, define USE_GETC_INPUT.
+ */
+
+#ifndef USE_GETC_INPUT
+static U_CHAR * row_buffer;	/* holds 1 pixel row's worth of raw input */
+#endif
+
+static JSAMPLE * rescale;	/* => maxval-remapping array, or NULL */
 
 
 LOCAL int
@@ -145,6 +177,9 @@ get_text_rgb_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 }
 
 
+#ifdef USE_GETC_INPUT
+
+
 METHODDEF void
 get_scaled_gray_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 /* This version is for reading raw-format PGM files with any maxval */
@@ -213,6 +248,92 @@ get_raw_rgb_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 }
 
 
+#else /* use row buffering */
+
+
+METHODDEF void
+get_scaled_gray_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PGM files with any maxval */
+{
+  register JSAMPROW ptr0;
+  register U_CHAR * row_bufferptr;
+  register long col;
+  
+  if (! ReadOK(cinfo->input_file, row_buffer, cinfo->image_width))
+    ERREXIT(cinfo->emethods, "Premature EOF in PPM file");
+  ptr0 = pixel_row[0];
+  row_bufferptr = row_buffer;
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = rescale[UCH(*row_bufferptr++)];
+  }
+}
+
+
+METHODDEF void
+get_scaled_rgb_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PPM files with any maxval */
+{
+  register JSAMPROW ptr0, ptr1, ptr2;
+  register U_CHAR * row_bufferptr;
+  register long col;
+  
+  if (! ReadOK(cinfo->input_file, row_buffer, 3 * cinfo->image_width))
+    ERREXIT(cinfo->emethods, "Premature EOF in PPM file");
+  ptr0 = pixel_row[0];
+  ptr1 = pixel_row[1];
+  ptr2 = pixel_row[2];
+  row_bufferptr = row_buffer;
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = rescale[UCH(*row_bufferptr++)];
+    *ptr1++ = rescale[UCH(*row_bufferptr++)];
+    *ptr2++ = rescale[UCH(*row_bufferptr++)];
+  }
+}
+
+
+METHODDEF void
+get_raw_gray_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PGM files with maxval = MAXJSAMPLE */
+{
+  register JSAMPROW ptr0;
+  register U_CHAR * row_bufferptr;
+  register long col;
+  
+  if (! ReadOK(cinfo->input_file, row_buffer, cinfo->image_width))
+    ERREXIT(cinfo->emethods, "Premature EOF in PPM file");
+  ptr0 = pixel_row[0];
+  row_bufferptr = row_buffer;
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = (JSAMPLE) UCH(*row_bufferptr++);
+  }
+}
+
+
+METHODDEF void
+get_raw_rgb_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
+/* This version is for reading raw-format PPM files with maxval = MAXJSAMPLE */
+{
+  register JSAMPROW ptr0, ptr1, ptr2;
+  register U_CHAR * row_bufferptr;
+  register long col;
+  
+  if (! ReadOK(cinfo->input_file, row_buffer, 3 * cinfo->image_width))
+    ERREXIT(cinfo->emethods, "Premature EOF in PPM file");
+  ptr0 = pixel_row[0];
+  ptr1 = pixel_row[1];
+  ptr2 = pixel_row[2];
+  row_bufferptr = row_buffer;
+  for (col = cinfo->image_width; col > 0; col--) {
+    *ptr0++ = (JSAMPLE) UCH(*row_bufferptr++);
+    *ptr1++ = (JSAMPLE) UCH(*row_bufferptr++);
+    *ptr2++ = (JSAMPLE) UCH(*row_bufferptr++);
+  }
+}
+
+
+#endif /* USE_GETC_INPUT */
+
+
 /*
  * Read the file header; return image size and component count.
  */
@@ -232,17 +353,22 @@ input_init (compress_info_ptr cinfo)
   h = read_pbm_integer(cinfo);
   maxval = read_pbm_integer(cinfo);
 
+  if (w <= 0 || h <= 0 || maxval <= 0) /* error check */
+    ERREXIT(cinfo->emethods, "Not a PPM file");
+
   switch (c) {
   case '2':			/* it's a text-format PGM file */
     cinfo->methods->get_input_row = get_text_gray_row;
     cinfo->input_components = 1;
     cinfo->in_color_space = CS_GRAYSCALE;
+    TRACEMS2(cinfo->emethods, 1, "%ux%u text PGM image", w, h);
     break;
 
   case '3':			/* it's a text-format PPM file */
     cinfo->methods->get_input_row = get_text_rgb_row;
     cinfo->input_components = 3;
     cinfo->in_color_space = CS_RGB;
+    TRACEMS2(cinfo->emethods, 1, "%ux%u text PPM image", w, h);
     break;
 
   case '5':			/* it's a raw-format PGM file */
@@ -252,6 +378,12 @@ input_init (compress_info_ptr cinfo)
       cinfo->methods->get_input_row = get_scaled_gray_row;
     cinfo->input_components = 1;
     cinfo->in_color_space = CS_GRAYSCALE;
+#ifndef USE_GETC_INPUT
+    /* allocate space for row buffer: 1 byte/pixel */
+    row_buffer = (U_CHAR *) (*cinfo->emethods->alloc_small)
+			((size_t) (SIZEOF(U_CHAR) * (long) w));
+#endif
+    TRACEMS2(cinfo->emethods, 1, "%ux%u PGM image", w, h);
     break;
 
   case '6':			/* it's a raw-format PPM file */
@@ -261,15 +393,18 @@ input_init (compress_info_ptr cinfo)
       cinfo->methods->get_input_row = get_scaled_rgb_row;
     cinfo->input_components = 3;
     cinfo->in_color_space = CS_RGB;
+#ifndef USE_GETC_INPUT
+    /* allocate space for row buffer: 3 bytes/pixel */
+    row_buffer = (U_CHAR *) (*cinfo->emethods->alloc_small)
+			((size_t) (3 * SIZEOF(U_CHAR) * (long) w));
+#endif
+    TRACEMS2(cinfo->emethods, 1, "%ux%u PPM image", w, h);
     break;
 
   default:
     ERREXIT(cinfo->emethods, "Not a PPM file");
     break;
   }
-
-  if (w <= 0 || h <= 0 || maxval <= 0) /* error check */
-    ERREXIT(cinfo->emethods, "Not a PPM file");
 
   /* Compute the rescaling array if necessary */
   /* This saves per-pixel calculation */

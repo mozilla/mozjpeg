@@ -67,7 +67,7 @@ typedef FILE * IFILEREF;	/* source or dest of non-JPEG image data */
 
 /*
  * NOTE: if you have an ancient, strict-K&R C compiler, it may choke on the
- * similarly-named fields in compress_info_struct and decompress_info_struct.
+ * similarly-named fields in Compress_info_struct and Decompress_info_struct.
  * If this happens, you can get around it by rearranging the two structs so
  * that the similarly-named fields appear first and in the same order in
  * each struct.  Since such compilers are now pretty rare, we haven't done
@@ -87,9 +87,9 @@ typedef FILE * IFILEREF;	/* source or dest of non-JPEG image data */
 #endif
 
 /* Forward references to lists of method pointers */
-typedef struct external_methods_struct * external_methods_ptr;
-typedef struct compress_methods_struct * compress_methods_ptr;
-typedef struct decompress_methods_struct * decompress_methods_ptr;
+typedef struct External_methods_struct * external_methods_ptr;
+typedef struct Compress_methods_struct * compress_methods_ptr;
+typedef struct Decompress_methods_struct * decompress_methods_ptr;
 
 
 /* Data structures for images containing either samples or coefficients. */
@@ -154,13 +154,13 @@ typedef struct {		/* Basic info about one component */
   /* These values are computed during compression or decompression startup */
 	long true_comp_width;	/* component's image width in samples */
 	long true_comp_height;	/* component's image height in samples */
-	/* the above are the logical dimensions of the subsampled image */
+	/* the above are the logical dimensions of the downsampled image */
   /* These values are computed before starting a scan of the component */
 	short MCU_width;	/* number of blocks per MCU, horizontally */
 	short MCU_height;	/* number of blocks per MCU, vertically */
 	short MCU_blocks;	/* MCU_width * MCU_height */
-	long subsampled_width;	/* image width in samples, after expansion */
-	long subsampled_height;	/* image height in samples, after expansion */
+	long downsampled_width;	/* image width in samples, after expansion */
+	long downsampled_height; /* image height in samples, after expansion */
 	/* the above are the true_comp_xxx values rounded up to multiples of */
 	/* the MCU dimensions; these are the working dimensions of the array */
 	/* as it is passed through the DCT or IDCT step.  NOTE: these values */
@@ -218,7 +218,7 @@ typedef struct {		/* A Huffman coding table */
 
 /* Working data for compression */
 
-struct compress_info_struct {
+struct Compress_info_struct {
 /*
  * All of these fields shall be established by the user interface before
  * calling jpeg_compress, or by the input_init or c_ui_method_selection
@@ -273,8 +273,15 @@ struct compress_info_struct {
 	boolean interleave;	/* TRUE=interleaved output, FALSE=not */
 	boolean optimize_coding; /* TRUE=optimize entropy encoding parms */
 	boolean CCIR601_sampling; /* TRUE=first samples are cosited */
+	int smoothing_factor;	/* 1..100, or 0 for no input smoothing */
 
-	UINT16 restart_interval;/* MDUs per restart interval, or 0 for no restart */
+	/* The restart interval can be specified in absolute MCUs by setting
+	 * restart_interval, or in MCU rows by setting restart_in_rows
+	 * (in which case the correct restart_interval will be figured
+	 * for each scan).
+	 */
+	UINT16 restart_interval;/* MCUs per restart interval, or 0 for no restart */
+	int restart_in_rows;	/* if > 0, MCU rows per restart interval */
 
 /*
  * These fields are computed during jpeg_compress startup
@@ -307,16 +314,16 @@ struct compress_info_struct {
 	/* these fields are private data for the entropy encoder */
 	JCOEF last_dc_val[MAX_COMPS_IN_SCAN]; /* last DC coef for each comp */
 	JCOEF last_dc_diff[MAX_COMPS_IN_SCAN]; /* last DC diff for each comp */
-	UINT16 restarts_to_go;	/* MDUs left in this restart interval */
+	UINT16 restarts_to_go;	/* MCUs left in this restart interval */
 	short next_restart_num;	/* # of next RSTn marker (0..7) */
 };
 
-typedef struct compress_info_struct * compress_info_ptr;
+typedef struct Compress_info_struct * compress_info_ptr;
 
 
 /* Working data for decompression */
 
-struct decompress_info_struct {
+struct Decompress_info_struct {
 /*
  * These fields shall be established by the user interface before
  * calling jpeg_decompress.
@@ -344,7 +351,7 @@ struct decompress_info_struct {
 	int desired_number_of_colors;	/* max number of colors to use */
 
 	boolean do_block_smoothing; /* T = apply cross-block smoothing */
-	boolean do_pixel_smoothing; /* T = apply post-subsampling smoothing */
+	boolean do_pixel_smoothing; /* T = apply post-upsampling smoothing */
 
 /*
  * These fields are used for efficient buffering of data between read_jpeg_data
@@ -395,7 +402,7 @@ struct decompress_info_struct {
 	boolean arith_code;	/* TRUE=arithmetic coding, FALSE=Huffman */
 	boolean CCIR601_sampling; /* TRUE=first samples are cosited */
 
-	UINT16 restart_interval;/* MDUs per restart interval, or 0 for no restart */
+	UINT16 restart_interval;/* MCUs per restart interval, or 0 for no restart */
 
 /*
  * These fields are computed during jpeg_decompress startup
@@ -407,6 +414,8 @@ struct decompress_info_struct {
 				/* (need not match num_components) */
 	short final_out_comps;	/* # of color components sent to put_pixel_rows */
 	/* (1 when quantizing colors, else same as color_out_comps) */
+
+	JSAMPLE * sample_range_limit; /* table for fast range-limiting */
 
 /*
  * When quantizing colors, the color quantizer leaves a pointer to the output
@@ -443,11 +452,11 @@ struct decompress_info_struct {
 	/* these fields are private data for the entropy encoder */
 	JCOEF last_dc_val[MAX_COMPS_IN_SCAN]; /* last DC coef for each comp */
 	JCOEF last_dc_diff[MAX_COMPS_IN_SCAN]; /* last DC diff for each comp */
-	UINT16 restarts_to_go;	/* MDUs left in this restart interval */
+	UINT16 restarts_to_go;	/* MCUs left in this restart interval */
 	short next_restart_num;	/* # of next RSTn marker (0..7) */
 };
 
-typedef struct decompress_info_struct * decompress_info_ptr;
+typedef struct Decompress_info_struct * decompress_info_ptr;
 
 
 /* Macros for reading data from the decompression input buffer */
@@ -463,7 +472,7 @@ typedef struct decompress_info_struct * decompress_info_ptr;
 #endif
 
 #define JUNGETC(ch,cinfo)  ((cinfo)->bytes_in_buffer++, \
-			    *(--((cinfo)->next_input_byte)) = (ch))
+			    *(--((cinfo)->next_input_byte)) = (char) (ch))
 
 #define MIN_UNGET	4	/* may always do at least 4 JUNGETCs */
 
@@ -500,22 +509,22 @@ typedef METHOD(void, MCU_output_method_ptr, (compress_info_ptr cinfo,
 					     JBLOCK *MCU_data));
 typedef METHOD(void, MCU_output_caller_ptr, (compress_info_ptr cinfo,
 					     MCU_output_method_ptr output_method));
-typedef METHOD(void, subsample_ptr, (compress_info_ptr cinfo,
-				     int which_component,
-				     long input_cols, int input_rows,
-				     long output_cols, int output_rows,
-				     JSAMPARRAY above,
-				     JSAMPARRAY input_data,
-				     JSAMPARRAY below,
-				     JSAMPARRAY output_data));
-typedef METHOD(void, unsubsample_ptr, (decompress_info_ptr cinfo,
-				       int which_component,
-				       long input_cols, int input_rows,
-				       long output_cols, int output_rows,
-				       JSAMPARRAY above,
-				       JSAMPARRAY input_data,
-				       JSAMPARRAY below,
-				       JSAMPARRAY output_data));
+typedef METHOD(void, downsample_ptr, (compress_info_ptr cinfo,
+				      int which_component,
+				      long input_cols, int input_rows,
+				      long output_cols, int output_rows,
+				      JSAMPARRAY above,
+				      JSAMPARRAY input_data,
+				      JSAMPARRAY below,
+				      JSAMPARRAY output_data));
+typedef METHOD(void, upsample_ptr, (decompress_info_ptr cinfo,
+				    int which_component,
+				    long input_cols, int input_rows,
+				    long output_cols, int output_rows,
+				    JSAMPARRAY above,
+				    JSAMPARRAY input_data,
+				    JSAMPARRAY below,
+				    JSAMPARRAY output_data));
 typedef METHOD(void, quantize_method_ptr, (decompress_info_ptr cinfo,
 					   int num_rows,
 					   JSAMPIMAGE input_data,
@@ -531,20 +540,29 @@ typedef METHOD(void, quantize_caller_ptr, (decompress_info_ptr cinfo,
  * decompression.
  */
 
-struct external_methods_struct {
+struct External_methods_struct {
 	/* User interface: error exit and trace message routines */
-	/* NOTE: the string msgtext parameters will eventually be replaced */
-	/* by an enumerated-type code so that non-English error messages */
-	/* can be substituted easily.  This will not be done until all the */
-	/* code is in place, so that we know what messages are needed. */
+	/* NOTE: the string msgtext parameters will eventually be replaced
+	 * by an enumerated-type code so that non-English error messages
+	 * can be substituted easily.  This will not be done until all the
+	 * code is in place, so that we know what messages are needed.
+	 */
 	METHOD(void, error_exit, (const char *msgtext));
 	METHOD(void, trace_message, (const char *msgtext));
 
 	/* Working data for error/trace facility */
 	/* See macros below for the usage of these variables */
 	int trace_level;	/* level of detail of tracing messages */
-	/* Use level 0 for unsuppressable messages (nonfatal errors) */
+	/* Use level 0 for important warning messages (nonfatal errors) */
 	/* Use levels 1, 2, 3 for successively more detailed trace options */
+
+	/* For recoverable corrupt-data errors, we emit a warning message and
+	 * keep going.  A surrounding application can check for bad data by
+	 * seeing if num_warnings is nonzero at the end of processing.
+	 */
+	long num_warnings;	/* number of corrupt-data warnings */
+	int first_warning_level; /* trace level for first warning */
+	int more_warning_level;	/* trace level for subsequent warnings */
 
 	int message_parm[8];	/* store numeric parms for messages here */
 
@@ -586,6 +604,7 @@ struct external_methods_struct {
 /* Macros to simplify using the error and trace message stuff */
 /* The first parameter is generally cinfo->emethods */
 
+/* Fatal errors (print message and exit) */
 #define ERREXIT(emeth,msg)		((*(emeth)->error_exit) (msg))
 #define ERREXIT1(emeth,msg,p1)		((emeth)->message_parm[0] = (p1), \
 					 (*(emeth)->error_exit) (msg))
@@ -604,6 +623,25 @@ struct external_methods_struct {
 
 #define MAKESTMT(stuff)		do { stuff } while (0)
 
+/* Nonfatal errors (we'll keep going, but the data is probably corrupt) */
+/* Note that warning count is incremented as a side-effect! */
+#define WARNMS(emeth,msg)    \
+  MAKESTMT( if ((emeth)->trace_level >= ((emeth)->num_warnings++ ? \
+		(emeth)->more_warning_level : (emeth)->first_warning_level)){ \
+		(*(emeth)->trace_message) (msg); } )
+#define WARNMS1(emeth,msg,p1)    \
+  MAKESTMT( if ((emeth)->trace_level >= ((emeth)->num_warnings++ ? \
+		(emeth)->more_warning_level : (emeth)->first_warning_level)){ \
+		(emeth)->message_parm[0] = (p1); \
+		(*(emeth)->trace_message) (msg); } )
+#define WARNMS2(emeth,msg,p1,p2)    \
+  MAKESTMT( if ((emeth)->trace_level >= ((emeth)->num_warnings++ ? \
+		(emeth)->more_warning_level : (emeth)->first_warning_level)){ \
+		(emeth)->message_parm[0] = (p1); \
+		(emeth)->message_parm[1] = (p2); \
+		(*(emeth)->trace_message) (msg); } )
+
+/* Informational/debugging messages */
 #define TRACEMS(emeth,lvl,msg)    \
   MAKESTMT( if ((emeth)->trace_level >= (lvl)) { \
 		(*(emeth)->trace_message) (msg); } )
@@ -636,7 +674,7 @@ struct external_methods_struct {
 
 /* Methods used during JPEG compression. */
 
-struct compress_methods_struct {
+struct Compress_methods_struct {
 	/* Hook for user interface to get control after input_init */
 	METHOD(void, c_ui_method_selection, (compress_info_ptr cinfo));
 	/* Hook for user interface to do progress monitoring */
@@ -658,11 +696,11 @@ struct compress_methods_struct {
 				   long input_cols, int input_rows,
 				   long output_cols, int output_rows,
 				   JSAMPIMAGE image_data));
-	/* Subsample pixel values of a single component */
-	/* There can be a different subsample method for each component */
-	METHOD(void, subsample_init, (compress_info_ptr cinfo));
-	subsample_ptr subsample[MAX_COMPS_IN_SCAN];
-	METHOD(void, subsample_term, (compress_info_ptr cinfo));
+	/* Downsample pixel values of a single component */
+	/* There can be a different downsample method for each component */
+	METHOD(void, downsample_init, (compress_info_ptr cinfo));
+	downsample_ptr downsample[MAX_COMPS_IN_SCAN];
+	METHOD(void, downsample_term, (compress_info_ptr cinfo));
 	/* Extract samples in MCU order, process & hand off to output_method */
 	/* The input is always exactly N MCU rows worth of data */
 	METHOD(void, extract_init, (compress_info_ptr cinfo));
@@ -675,10 +713,10 @@ struct compress_methods_struct {
 	METHOD(void, entropy_optimize, (compress_info_ptr cinfo,
 					MCU_output_caller_ptr source_method));
 	/* Entropy encoding */
-	METHOD(void, entropy_encoder_init, (compress_info_ptr cinfo));
+	METHOD(void, entropy_encode_init, (compress_info_ptr cinfo));
 	METHOD(void, entropy_encode, (compress_info_ptr cinfo,
 				      JBLOCK *MCU_data));
-	METHOD(void, entropy_encoder_term, (compress_info_ptr cinfo));
+	METHOD(void, entropy_encode_term, (compress_info_ptr cinfo));
 	/* JPEG file header construction */
 	METHOD(void, write_file_header, (compress_info_ptr cinfo));
 	METHOD(void, write_scan_header, (compress_info_ptr cinfo));
@@ -698,7 +736,7 @@ struct compress_methods_struct {
 
 /* Methods used during JPEG decompression. */
 
-struct decompress_methods_struct {
+struct Decompress_methods_struct {
 	/* Hook for user interface to get control after reading file header */
 	METHOD(void, d_ui_method_selection, (decompress_info_ptr cinfo));
 	/* Hook for user interface to do progress monitoring */
@@ -708,13 +746,15 @@ struct decompress_methods_struct {
 	METHOD(void, read_file_header, (decompress_info_ptr cinfo));
 	METHOD(boolean, read_scan_header, (decompress_info_ptr cinfo));
 	METHOD(int, read_jpeg_data, (decompress_info_ptr cinfo));
+	METHOD(void, resync_to_restart, (decompress_info_ptr cinfo,
+					 int marker));
 	METHOD(void, read_scan_trailer, (decompress_info_ptr cinfo));
 	METHOD(void, read_file_trailer, (decompress_info_ptr cinfo));
 	/* Entropy decoding */
-	METHOD(void, entropy_decoder_init, (decompress_info_ptr cinfo));
+	METHOD(void, entropy_decode_init, (decompress_info_ptr cinfo));
 	METHOD(void, entropy_decode, (decompress_info_ptr cinfo,
-				      JBLOCK *MCU_data));
-	METHOD(void, entropy_decoder_term, (decompress_info_ptr cinfo));
+				      JBLOCKROW *MCU_data));
+	METHOD(void, entropy_decode_term, (decompress_info_ptr cinfo));
 	/* MCU disassembly: fetch MCUs from entropy_decode, build coef array */
 	/* The reverse_DCT step is in the same module for symmetry reasons */
 	METHOD(void, disassemble_init, (decompress_info_ptr cinfo));
@@ -731,11 +771,11 @@ struct decompress_methods_struct {
 					   JBLOCKROW currow,
 					   JBLOCKROW below,
 					   JBLOCKROW output));
-	/* Un-subsample pixel values of a single component */
-	/* There can be a different unsubsample method for each component */
-	METHOD(void, unsubsample_init, (decompress_info_ptr cinfo));
-	unsubsample_ptr unsubsample[MAX_COMPS_IN_SCAN];
-	METHOD(void, unsubsample_term, (decompress_info_ptr cinfo));
+	/* Upsample pixel values of a single component */
+	/* There can be a different upsample method for each component */
+	METHOD(void, upsample_init, (decompress_info_ptr cinfo));
+	upsample_ptr upsample[MAX_COMPS_IN_SCAN];
+	METHOD(void, upsample_term, (decompress_info_ptr cinfo));
 	/* Color space and gamma conversion */
 	METHOD(void, colorout_init, (decompress_info_ptr cinfo));
 	METHOD(void, color_convert, (decompress_info_ptr cinfo,
@@ -791,6 +831,11 @@ EXTERN void j_c_defaults PP((compress_info_ptr cinfo, int quality,
 EXTERN void j_monochrome_default PP((compress_info_ptr cinfo));
 EXTERN void j_set_quality PP((compress_info_ptr cinfo, int quality,
 			      boolean force_baseline));
+/* advanced compression parameter setup aids */
+EXTERN void j_add_quant_table PP((compress_info_ptr cinfo, int which_tbl,
+				  const QUANT_VAL *basic_table,
+				  int scale_factor, boolean force_baseline));
+EXTERN int j_quality_scaling PP((int quality));
 
 /* main entry for decompression */
 EXTERN void jpeg_decompress PP((decompress_info_ptr cinfo));
@@ -818,7 +863,7 @@ EXTERN void jselcpipeline PP((compress_info_ptr cinfo)); /* jcpipe.c */
 EXTERN void jselchuffman PP((compress_info_ptr cinfo)); /* jchuff.c */
 EXTERN void jselcarithmetic PP((compress_info_ptr cinfo)); /* jcarith.c */
 EXTERN void jselexpand PP((compress_info_ptr cinfo)); /* jcexpand.c */
-EXTERN void jselsubsample PP((compress_info_ptr cinfo)); /* jcsample.c */
+EXTERN void jseldownsample PP((compress_info_ptr cinfo)); /* jcsample.c */
 EXTERN void jselcmcu PP((compress_info_ptr cinfo)); /* jcmcu.c */
 EXTERN void jselccolor PP((compress_info_ptr cinfo));	/* jccolor.c */
 /* The user interface should call one of these to select input format: */
@@ -835,7 +880,7 @@ EXTERN void jseldhuffman PP((decompress_info_ptr cinfo)); /* jdhuff.c */
 EXTERN void jseldarithmetic PP((decompress_info_ptr cinfo)); /* jdarith.c */
 EXTERN void jseldmcu PP((decompress_info_ptr cinfo)); /* jdmcu.c */
 EXTERN void jselbsmooth PP((decompress_info_ptr cinfo)); /* jbsmooth.c */
-EXTERN void jselunsubsample PP((decompress_info_ptr cinfo)); /* jdsample.c */
+EXTERN void jselupsample PP((decompress_info_ptr cinfo)); /* jdsample.c */
 EXTERN void jseldcolor PP((decompress_info_ptr cinfo));	/* jdcolor.c */
 EXTERN void jsel1quantize PP((decompress_info_ptr cinfo)); /* jquant1.c */
 EXTERN void jsel2quantize PP((decompress_info_ptr cinfo)); /* jquant2.c */

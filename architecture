@@ -1,5 +1,5 @@
 
-	JPEG SYSTEM ARCHITECTURE		29-FEB-92
+	JPEG SYSTEM ARCHITECTURE		1-DEC-92
 
 
 This file provides an overview of the "architecture" of the portable JPEG
@@ -84,7 +84,7 @@ The *logical* steps needed in (non-lossless) JPEG compression are:
    grayscale (unless we support mapping color inputs to grayscale, which
    would most easily be done here).  Gamma adjustment may also be needed here.
 
-3. Subsampling (reduction of number of samples in some color components).
+3. Downsampling (reduction of number of samples in some color components).
    This step operates independently on each color component.
 
 4. MCU extraction (creation of a single sequence of 8x8 sample blocks).
@@ -132,7 +132,7 @@ C. Compression parameter selection: some parameters should be chosen
 
 D. A memory management module to deal with small-memory machines.  This must
    create the illusion of virtual memory for certain large data structures
-   (e.g., the subsampled image or the transformed coefficients).
+   (e.g., the downsampled image or the transformed coefficients).
    The interface to this must be defined to minimize the overhead incurred,
    especially on virtual-memory machines where the module won't do much.
 
@@ -175,10 +175,10 @@ The *logical* steps needed in (non-lossless) JPEG decompression are:
 
 6. Inverse DCT transformation of each 8x8 block.
 
-7. De-subsampling.  At this point a pixel image of the original dimensions
+7. Upsampling.  At this point a pixel image of the original dimensions
    has been recreated.
 
-8. Post-subsampling smoothing.  This can be combined with de-subsampling,
+8. Post-upsampling smoothing.  This can be combined with upsampling,
    by using a convolution-like calculation to generate each output pixel
    directly from one or more input pixels.
 
@@ -279,7 +279,7 @@ values should be coded as "GETJSAMPLE(value)", where the macro will be defined
 as "((value)&0xFF)" on signed-char machines and "(value)" elsewhere.
 
 With these conventions, JSAMPLE values can be assumed to be >= 0.  This should
-simplify correct rounding during subsampling, etc.  The JPEG draft's
+simplify correct rounding during downsampling, etc.  The JPEG draft's
 specification that sample values run from -128..127 will be accommodated by
 subtracting 128 just as the sample value is copied into the source array for
 the DCT step (this will be an array of signed shorts or longs).  Similarly,
@@ -459,9 +459,9 @@ an interleaved scan, an MCU row consists of all the data for one horizontal
 row of MCUs; this may be from one to four blocks high (eight to thirty-two
 samples) depending on the sampling factors.  The height and width of an MCU
 row may be different in each component.  (Note that the height and width of an
-MCU row changes at the subsampling and de-subsampling steps.  An unsubsampled
+MCU row changes at the downsampling and upsampling steps.  An unsubsampled
 image has the same size in each component.  The preceding statements apply to
-the subsampled dimensions.)
+the downsampled dimensions.)
 
 For example, consider a 1024-pixel-wide image using (2h:2v)(1h:1v)(1h:1v)
 subsampling.  In the noninterleaved case, an MCU row of Y would contain 8x1024
@@ -502,7 +502,7 @@ specified in numbers of MCU).
 For similar reasons, one MCU is also the best chunk size for the frequency
 coefficient quantization and dequantization steps.
 
-For subsampling and desubsampling, the best chunk size is to have each call
+For downsampling and upsampling, the best chunk size is to have each call
 transform Vk sample rows from or to Vmax sample rows (Vk = this component's
 vertical sampling factor, Vmax = largest vertical sampling factor).  There are
 eight such chunks in each MCU row.  Using a whole MCU row as the chunk size
@@ -578,12 +578,12 @@ memory manager's free_all cleanup will free it.)
    subroutine instead of a method.  Depends on whether we want to be able to
    use alternative, optimized methods.)
 
-4. Subsampling: this will be applied to one component at a time.
-	subsample_init: initialize (precalculate convolution factors, for
-			example).  This will be called once per scan.
-	subsample: Given a sample array, reduce it to a smaller number of
-		   samples using specified sampling factors.
-	subsample_term: clean up at the end of a scan.
+4. Downsampling: this will be applied to one component at a time.
+	downsample_init: initialize (precalculate convolution factors, for
+			 example).  This will be called once per scan.
+	downsample: Given a sample array, reduce it to a smaller number of
+		    samples using specified sampling factors.
+	downsample_term: clean up at the end of a scan.
    If the current component has vertical sampling factor Vk and the largest
    sampling factor is Vmax, then the input is always Vmax sample rows (whose
    width is a multiple of Hmax) and the output is always Vk sample rows.
@@ -621,11 +621,11 @@ memory manager's free_all cleanup will free it.)
    MCU extraction; hard to see a need for multiple instantiations here.)
 
 8. Entropy encoding (Huffman or arithmetic).
-	entropy_encoder_init: prepare for one scan.
+	entropy_encode_init: prepare for one scan.
 	entropy_encode: accepts an MCU's worth of quantized coefficients,
 			encodes and outputs them.
-	entropy_encoder_term: finish up at end of a scan (dump any buffered
-			      bytes, for example).
+	entropy_encode_term: finish up at end of a scan (dump any buffered
+			     bytes, for example).
    The data output by this module will be sent to the entropy_output method
    provided by the pipeline controller.  (It will probably be worth using
    buffering to pass multiple bytes per call of the output method.)  The
@@ -819,6 +819,7 @@ comments at the top of the compression object section also apply here.
 			  after read_file_header and again after each scan;
 			  it returns TRUE if it finds SOS, FALSE if EOI.
 	read_jpeg_data: fetch data for entropy decoder.
+	resync_to_restart: try to recover from bogus data (see below).
 	read_scan_trailer: finish up after one scan, prepare for another call
 			   of read_scan_header (may be a no-op).
 	read_file_trailer: finish up at end of file (probably a no-op).
@@ -836,6 +837,19 @@ comments at the top of the compression object section also apply here.
    opened the input file and possibly read part of the header before
    read_file_header is called.)
 
+   When reading a file with a nonzero restart interval, the entropy decoder
+   expects to see a correct sequence of restart markers.  In some cases, these
+   markers may be synthesized by the file-format module (a TIFF reader might
+   do so, for example, using tile boundary pointers to determine where the
+   restart intervals fall).  If the incoming data is corrupted, the entropy
+   decoder will read as far as the next JPEG marker, which may or may not be
+   the expected next restart marker.  If it isn't, resync_to_restart is called
+   to try to locate a good place to resume reading.  We make this heuristic a
+   file-format-dependent operation since some file formats may have special
+   info that's not available to the entropy decoder (again, TIFF is an
+   example).  Note that resync_to_restart is NOT called at the end of a scan;
+   it is read_scan_trailer's responsibility to resync there.
+
    NOTE: for JFIF/raw-JPEG file format, the read_jpeg_data routine is actually
    supplied by the user interface; the jrdjfif module uses read_jpeg_data
    internally to scan the input stream.  This makes it possible for the user
@@ -847,17 +861,18 @@ comments at the top of the compression object section also apply here.
    header module, if indeed it is practical at all.
 
 2. Entropy (Huffman or arithmetic) decoding of the coefficient sequence.
-	entropy_decoder_init: prepare for one scan.
+	entropy_decode_init: prepare for one scan.
 	entropy_decode: decodes and returns an MCU's worth of quantized
 			coefficients per call.
-	entropy_decoder_term: finish up after a scan (may be a no-op).
+	entropy_decode_term: finish up after a scan (may be a no-op).
    This will read raw data by calling the read_jpeg_data method (I don't see
    any reason to provide a further level of indirection).
    (This hides which entropy encoding method is in use.)
 
 3. Quantization descaling and zigzag reordering of the elements in each 8x8
-   block.  (This can probably be a plain subroutine called once per block;
-   hard to see a need for multiple instantiations here.)
+   block.  This will be folded into entropy_decode for efficiency reasons:
+   many of the coefficients are zeroes, and this can be exploited most easily
+   within entropy_decode since the encoding explicitly skips zeroes.
 
 4. MCU disassembly (conversion of a possibly interleaved sequence of 8x8
    blocks back to separate components in pixel map order).
@@ -867,7 +882,7 @@ comments at the top of the compression object section also apply here.
 			  coefficient image array.
 	disassemble_term: clean up at the end of a scan.
    Probably this should be called once per MCU row and should call the
-   preceding two objects repeatedly to obtain the row's data.  The output is
+   entropy decoder repeatedly to obtain the row's data.  The output is
    always a multiple of an MCU's dimensions.
    (An object on the grounds that multiple instantiations might be useful.)
 
@@ -889,14 +904,14 @@ comments at the top of the compression object section also apply here.
    labor in compression.  Note that the actual IDCT code is a separate source
    file.
 
-7. De-subsampling and smoothing: this will be applied to one component at a
+7. Upsampling and smoothing: this will be applied to one component at a
    time.  Note that cross-pixel smoothing, which was a separate step in the
    prototype code, will now be performed simultaneously with expansion.
-	unsubsample_init: initialize (precalculate convolution factors, for
-			  example).  This will be called once per scan.
-	unsubsample: Given a sample array, enlarge it by specified sampling
-		     factors.
-	unsubsample_term: clean up at the end of a scan.
+	upsample_init: initialize (precalculate convolution factors, for
+		       example).  This will be called once per scan.
+	upsample: Given a sample array, enlarge it by specified sampling
+		  factors.
+	upsample_term: clean up at the end of a scan.
    If the current component has vertical sampling factor Vk and the largest
    sampling factor is Vmax, then the input is always Vk sample rows (whose
    width is a multiple of Hk) and the output is always Vmax sample rows.

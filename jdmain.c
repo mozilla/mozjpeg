@@ -5,7 +5,7 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
- * This file contains a trivial test user interface for the JPEG decompressor.
+ * This file contains a command-line user interface for the JPEG decompressor.
  * It should work on any system with Unix- or MS-DOS-style command lines.
  *
  * Two different command line styles are permitted, depending on the
@@ -24,8 +24,12 @@
 #ifdef INCLUDES_ARE_ANSI
 #include <stdlib.h>		/* to declare exit() */
 #endif
+#include <ctype.h>		/* to declare isupper(), tolower() */
 #ifdef NEED_SIGNAL_CATCHER
 #include <signal.h>		/* to declare signal() */
+#endif
+#ifdef USE_SETMODE
+#include <fcntl.h>		/* to declare setmode() */
 #endif
 
 #ifdef THINK_C
@@ -53,13 +57,6 @@
 
 
 #include "jversion.h"		/* for version message */
-
-
-/*
- * PD version of getopt(3).
- */
-
-#include "egetopt.c"
 
 
 /*
@@ -145,26 +142,228 @@ static external_methods_ptr emethods; /* for access to free_all */
 GLOBAL void
 signal_catcher (int signum)
 {
-  emethods->trace_level = 0;	/* turn off trace output */
-  (*emethods->free_all) ();	/* clean up memory allocation & temp files */
+  if (emethods != NULL) {
+    emethods->trace_level = 0;	/* turn off trace output */
+    (*emethods->free_all) ();	/* clean up memory allocation & temp files */
+  }
   exit(EXIT_FAILURE);
 }
 
 #endif
 
 
+/*
+ * Optional routine to display a percent-done figure on stderr.
+ * See jddeflts.c for explanation of the information used.
+ */
+
+#ifdef PROGRESS_REPORT
+
+METHODDEF void
+progress_monitor (decompress_info_ptr cinfo, long loopcounter, long looplimit)
+{
+  if (cinfo->total_passes > 1) {
+    fprintf(stderr, "\rPass %d/%d: %3d%% ",
+	    cinfo->completed_passes+1, cinfo->total_passes,
+	    (int) (loopcounter*100L/looplimit));
+  } else {
+    fprintf(stderr, "\r %3d%% ",
+	    (int) (loopcounter*100L/looplimit));
+  }
+  fflush(stderr);
+}
+
+#endif
+
+
+/*
+ * Argument-parsing code.
+ * The switch parser is designed to be useful with DOS-style command line
+ * syntax, ie, intermixed switches and file names, where only the switches
+ * to the left of a given file name affect processing of that file.
+ * The main program in this file doesn't actually use this capability...
+ */
+
+
+static char * progname;		/* program name for error messages */
+
+
 LOCAL void
-usage (char * progname)
+usage (void)
 /* complain about bad command line */
 {
-  fprintf(stderr, "usage: %s ", progname);
-  fprintf(stderr, "[-G] [-P] [-R] [-T] [-b] [-g] [-q colors] [-1] [-D] [-d] [-m mem]");
+  fprintf(stderr, "usage: %s [switches] ", progname);
 #ifdef TWO_FILE_COMMANDLINE
-  fprintf(stderr, " inputfile outputfile\n");
+  fprintf(stderr, "inputfile outputfile\n");
 #else
-  fprintf(stderr, " [inputfile]\n");
+  fprintf(stderr, "[inputfile]\n");
 #endif
+
+  fprintf(stderr, "Switches (names may be abbreviated):\n");
+  fprintf(stderr, "  -colors N      Reduce image to no more than N colors\n");
+#ifdef GIF_SUPPORTED
+  fprintf(stderr, "  -gif           Select GIF output format\n");
+#endif
+#ifdef PPM_SUPPORTED
+  fprintf(stderr, "  -pnm           Select PBMPLUS (PPM/PGM) output format (default)\n");
+#endif
+  fprintf(stderr, "  -quantize N    Same as -colors N\n");
+#ifdef RLE_SUPPORTED
+  fprintf(stderr, "  -rle           Select Utah RLE output format\n");
+#endif
+#ifdef TARGA_SUPPORTED
+  fprintf(stderr, "  -targa         Select Targa output format\n");
+#endif
+  fprintf(stderr, "Switches for advanced users:\n");
+#ifdef BLOCK_SMOOTHING_SUPPORTED
+  fprintf(stderr, "  -blocksmooth   Apply cross-block smoothing\n");
+#endif
+  fprintf(stderr, "  -grayscale     Force grayscale output\n");
+  fprintf(stderr, "  -nodither      Don't use dithering in quantization\n");
+#ifdef QUANT_1PASS_SUPPORTED
+  fprintf(stderr, "  -onepass       Use 1-pass quantization (fast, low quality)\n");
+#endif
+  fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
+  fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   exit(EXIT_FAILURE);
+}
+
+
+LOCAL boolean
+keymatch (char * arg, const char * keyword, int minchars)
+/* Case-insensitive matching of (possibly abbreviated) keyword switches. */
+/* keyword is the constant keyword (must be lower case already), */
+/* minchars is length of minimum legal abbreviation. */
+{
+  register int ca, ck;
+  register int nmatched = 0;
+
+  while ((ca = *arg++) != '\0') {
+    if ((ck = *keyword++) == '\0')
+      return FALSE;		/* arg longer than keyword, no good */
+    if (isupper(ca))		/* force arg to lcase (assume ck is already) */
+      ca = tolower(ca);
+    if (ca != ck)
+      return FALSE;		/* no good */
+    nmatched++;			/* count matched characters */
+  }
+  /* reached end of argument; fail if it's too short for unique abbrev */
+  if (nmatched < minchars)
+    return FALSE;
+  return TRUE;			/* A-OK */
+}
+
+
+LOCAL int
+parse_switches (decompress_info_ptr cinfo, int last_file_arg_seen,
+		int argc, char **argv)
+/* Initialize cinfo with default switch settings, then parse option switches.
+ * Returns argv[] index of first file-name argument (== argc if none).
+ * Any file names with indexes <= last_file_arg_seen are ignored;
+ * they have presumably been processed in a previous iteration.
+ * (Pass 0 for last_file_arg_seen on the first or only iteration.)
+ */
+{
+  int argn;
+  char * arg;
+
+  /* (Re-)initialize the system-dependent error and memory managers. */
+  jselerror(cinfo->emethods);	/* error/trace message routines */
+  jselmemmgr(cinfo->emethods);	/* memory allocation routines */
+  cinfo->methods->d_ui_method_selection = d_ui_method_selection;
+
+  /* Now OK to enable signal catcher. */
+#ifdef NEED_SIGNAL_CATCHER
+  emethods = cinfo->emethods;
+#endif
+
+  /* Set up default JPEG parameters. */
+  j_d_defaults(cinfo, TRUE);
+  requested_fmt = DEFAULT_FMT;	/* set default output file format */
+
+  /* Scan command line options, adjust parameters */
+
+  for (argn = 1; argn < argc; argn++) {
+    arg = argv[argn];
+    if (*arg != '-') {
+      /* Not a switch, must be a file name argument */
+      if (argn <= last_file_arg_seen)
+	continue;		/* ignore it if previously processed */
+      break;			/* else done parsing switches */
+    }
+    arg++;			/* advance past switch marker character */
+
+    if (keymatch(arg, "blocksmooth", 1)) {
+      /* Enable cross-block smoothing. */
+      cinfo->do_block_smoothing = TRUE;
+
+    } else if (keymatch(arg, "colors", 1) || keymatch(arg, "colours", 1) ||
+	       keymatch(arg, "quantize", 1) || keymatch(arg, "quantise", 1)) {
+      /* Do color quantization. */
+      int val;
+
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      if (sscanf(argv[argn], "%d", &val) != 1)
+	usage();
+      cinfo->desired_number_of_colors = val;
+      cinfo->quantize_colors = TRUE;
+
+    } else if (keymatch(arg, "debug", 1) || keymatch(arg, "verbose", 1)) {
+      /* Enable debug printouts. */
+      /* On first -d, print version identification */
+      if (last_file_arg_seen == 0 && cinfo->emethods->trace_level == 0)
+	fprintf(stderr, "Independent JPEG Group's DJPEG, version %s\n%s\n",
+		JVERSION, JCOPYRIGHT);
+      cinfo->emethods->trace_level++;
+
+    } else if (keymatch(arg, "gif", 1)) {
+      /* GIF output format. */
+      requested_fmt = FMT_GIF;
+
+    } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
+      /* Force monochrome output. */
+      cinfo->out_color_space = CS_GRAYSCALE;
+
+    } else if (keymatch(arg, "maxmemory", 1)) {
+      /* Maximum memory in Kb (or Mb with 'm'). */
+      long lval;
+      char ch = 'x';
+
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      if (sscanf(argv[argn], "%ld%c", &lval, &ch) < 1)
+	usage();
+      if (ch == 'm' || ch == 'M')
+	lval *= 1000L;
+      cinfo->emethods->max_memory_to_use = lval * 1000L;
+
+    } else if (keymatch(arg, "nodither", 3)) {
+      /* Suppress dithering in color quantization. */
+      cinfo->use_dithering = FALSE;
+
+    } else if (keymatch(arg, "onepass", 1)) {
+      /* Use fast one-pass quantization. */
+      cinfo->two_pass_quantize = FALSE;
+
+    } else if (keymatch(arg, "pnm", 1)) {
+      /* PPM/PGM output format. */
+      requested_fmt = FMT_PPM;
+
+    } else if (keymatch(arg, "rle", 1)) {
+      /* RLE output format. */
+      requested_fmt = FMT_RLE;
+
+    } else if (keymatch(arg, "targa", 1)) {
+      /* Targa output format. */
+      requested_fmt = FMT_TARGA;
+
+    } else {
+      usage();			/* bogus switch */
+    }
+  }
+
+  return argn;			/* return index of next arg (file name) */
 }
 
 
@@ -175,115 +374,47 @@ usage (char * progname)
 GLOBAL int
 main (int argc, char **argv)
 {
-  struct decompress_info_struct cinfo;
-  struct decompress_methods_struct dc_methods;
-  struct external_methods_struct e_methods;
-  int c;
+  struct Decompress_info_struct cinfo;
+  struct Decompress_methods_struct dc_methods;
+  struct External_methods_struct e_methods;
+  int file_index;
 
   /* On Mac, fetch a command line. */
 #ifdef THINK_C
   argc = ccommand(&argv);
 #endif
 
-  /* Initialize the system-dependent method pointers. */
+  progname = argv[0];
+
+  /* Set up links to method structures. */
   cinfo.methods = &dc_methods;
   cinfo.emethods = &e_methods;
-  jselerror(&e_methods);	/* error/trace message routines */
-  jselmemmgr(&e_methods);	/* memory allocation routines */
-  dc_methods.d_ui_method_selection = d_ui_method_selection;
 
-  /* Now OK to enable signal catcher. */
+  /* Install, but don't yet enable signal catcher. */
 #ifdef NEED_SIGNAL_CATCHER
-  emethods = &e_methods;
+  emethods = NULL;
   signal(SIGINT, signal_catcher);
 #ifdef SIGTERM			/* not all systems have SIGTERM */
   signal(SIGTERM, signal_catcher);
 #endif
 #endif
 
-  /* Set up default JPEG parameters. */
-  j_d_defaults(&cinfo, TRUE);
-  requested_fmt = DEFAULT_FMT;	/* set default output file format */
+  /* Scan command line: set up compression parameters, input & output files. */
 
-  /* Scan command line options, adjust parameters */
-  
-  while ((c = egetopt(argc, argv, "GPRTbgq:1Dm:d")) != EOF)
-    switch (c) {
-    case 'G':			/* GIF output format. */
-      requested_fmt = FMT_GIF;
-      break;
-    case 'P':			/* PPM output format. */
-      requested_fmt = FMT_PPM;
-      break;
-    case 'R':			/* RLE output format. */
-      requested_fmt = FMT_RLE;
-      break;
-    case 'T':			/* Targa output format. */
-      requested_fmt = FMT_TARGA;
-      break;
-    case 'b':			/* Enable cross-block smoothing. */
-      cinfo.do_block_smoothing = TRUE;
-      break;
-    case 'g':			/* Force grayscale output. */
-      cinfo.out_color_space = CS_GRAYSCALE;
-      break;
-    case 'q':			/* Do color quantization. */
-      { int val;
-	if (optarg == NULL)
-	  usage(argv[0]);
-	if (sscanf(optarg, "%d", &val) != 1)
-	  usage(argv[0]);
-	cinfo.desired_number_of_colors = val;
-      }
-      cinfo.quantize_colors = TRUE;
-      break;
-    case '1':			/* Use fast one-pass quantization. */
-      cinfo.two_pass_quantize = FALSE;
-      break;
-    case 'D':			/* Suppress dithering in color quantization. */
-      cinfo.use_dithering = FALSE;
-      break;
-    case 'm':			/* Maximum memory in Kb (or Mb with 'm'). */
-      { long lval;
-	char ch = 'x';
-
-	if (optarg == NULL)
-	  usage(argv[0]);
-	if (sscanf(optarg, "%ld%c", &lval, &ch) < 1)
-	  usage(argv[0]);
-	if (ch == 'm' || ch == 'M')
-	  lval *= 1000L;
-	e_methods.max_memory_to_use = lval * 1000L;
-      }
-      break;
-    case 'd':			/* Debugging. */
-      e_methods.trace_level++;
-      break;
-    case '?':
-    default:
-      usage(argv[0]);
-      break;
-    }
-
-  /* If -d appeared, print version identification */
-  if (e_methods.trace_level > 0)
-    fprintf(stderr, "Independent JPEG Group's DJPEG, version %s\n%s\n",
-	    JVERSION, JCOPYRIGHT);
-
-  /* Select the input and output files */
+  file_index = parse_switches(&cinfo, 0, argc, argv);
 
 #ifdef TWO_FILE_COMMANDLINE
 
-  if (optind != argc-2) {
-    fprintf(stderr, "%s: must name one input and one output file\n", argv[0]);
-    usage(argv[0]);
+  if (file_index != argc-2) {
+    fprintf(stderr, "%s: must name one input and one output file\n", progname);
+    usage();
   }
-  if ((cinfo.input_file = fopen(argv[optind], READ_BINARY)) == NULL) {
-    fprintf(stderr, "%s: can't open %s\n", argv[0], argv[optind]);
+  if ((cinfo.input_file = fopen(argv[file_index], READ_BINARY)) == NULL) {
+    fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index]);
     exit(EXIT_FAILURE);
   }
-  if ((cinfo.output_file = fopen(argv[optind+1], WRITE_BINARY)) == NULL) {
-    fprintf(stderr, "%s: can't open %s\n", argv[0], argv[optind+1]);
+  if ((cinfo.output_file = fopen(argv[file_index+1], WRITE_BINARY)) == NULL) {
+    fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index+1]);
     exit(EXIT_FAILURE);
   }
 
@@ -292,13 +423,18 @@ main (int argc, char **argv)
   cinfo.input_file = stdin;	/* default input file */
   cinfo.output_file = stdout;	/* always the output file */
 
-  if (optind < argc-1) {
-    fprintf(stderr, "%s: only one input file\n", argv[0]);
-    usage(argv[0]);
+#ifdef USE_SETMODE		/* need to hack file mode? */
+  setmode(fileno(stdin), O_BINARY);
+  setmode(fileno(stdout), O_BINARY);
+#endif
+
+  if (file_index < argc-1) {
+    fprintf(stderr, "%s: only one input file\n", progname);
+    usage();
   }
-  if (optind < argc) {
-    if ((cinfo.input_file = fopen(argv[optind], READ_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open %s\n", argv[0], argv[optind]);
+  if (file_index < argc) {
+    if ((cinfo.input_file = fopen(argv[file_index], READ_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index]);
       exit(EXIT_FAILURE);
     }
   }
@@ -314,8 +450,22 @@ main (int argc, char **argv)
   You shoulda defined JFIF_SUPPORTED.   /* deliberate syntax error */
 #endif
 
+#ifdef PROGRESS_REPORT
+  /* Start up progress display, unless trace output is on */
+  if (e_methods.trace_level == 0)
+    dc_methods.progress_monitor = progress_monitor;
+#endif
+
   /* Do it to it! */
   jpeg_decompress(&cinfo);
+
+#ifdef PROGRESS_REPORT
+  /* Clear away progress display */
+  if (e_methods.trace_level == 0) {
+    fprintf(stderr, "\r                \r");
+    fflush(stderr);
+  }
+#endif
 
   /* All done. */
   exit(EXIT_SUCCESS);

@@ -27,7 +27,7 @@ smooth_coefficients (decompress_info_ptr cinfo,
 		     JBLOCKROW output)
 {
   QUANT_TBL_PTR Qptr = cinfo->quant_tbl_ptrs[compptr->quant_tbl_no];
-  long blocks_in_row = compptr->subsampled_width / DCTSIZE;
+  long blocks_in_row = compptr->downsampled_width / DCTSIZE;
   long col;
 
   /* First, copy the block row as-is.

@@ -7,12 +7,12 @@
  *
  * This file contains arithmetic entropy encoding routines.
  * These routines are invoked via the methods entropy_encode,
- * entropy_encoder_init/term, and entropy_optimize.
+ * entropy_encode_init/term, and entropy_optimize.
  */
 
 #include "jinclude.h"
 
-#ifdef ARITH_CODING_SUPPORTED
+#ifdef C_ARITH_CODING_SUPPORTED
 
 
 /*
@@ -39,4 +39,4 @@ jselcarithmetic (compress_info_ptr cinfo)
   }
 }
 
-#endif /* ARITH_CODING_SUPPORTED */
+#endif /* C_ARITH_CODING_SUPPORTED */

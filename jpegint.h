@@ -345,6 +345,7 @@ EXTERN(void) jinit_downsampler JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_forward_dct JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_huff_encoder JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_phuff_encoder JPP((j_compress_ptr cinfo));
+EXTERN(void) jinit_arith_encoder JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_marker_writer JPP((j_compress_ptr cinfo));
 /* Decompression module initialization routines */
 EXTERN(void) jinit_master_decompress JPP((j_decompress_ptr cinfo));
@@ -358,6 +359,7 @@ EXTERN(void) jinit_input_controller JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_marker_reader JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_huff_decoder JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_phuff_decoder JPP((j_decompress_ptr cinfo));
+EXTERN(void) jinit_arith_decoder JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_inverse_dct JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_upsampler JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_color_deconverter JPP((j_decompress_ptr cinfo));

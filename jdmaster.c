@@ -373,7 +373,7 @@ master_selection (j_decompress_ptr cinfo)
   jinit_inverse_dct(cinfo);
   /* Entropy decoding: either Huffman or arithmetic coding. */
   if (cinfo->arith_code) {
-    ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
+    jinit_arith_decoder(cinfo);
   } else {
     if (cinfo->progressive_mode) {
 #ifdef D_PROGRESSIVE_SUPPORTED

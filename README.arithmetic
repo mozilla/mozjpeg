@@ -1,0 +1,215 @@
+JPEG arithmetic encoding and decoding portable software implementation
+======================================================================
+
+Release of 28-Mar-98 by Guido Vollbeding <guido@jpegclub.org>
+=============================================================
+
+Primary URLs:
+
+	http://sylvana.net/jpeg-ari/
+	(directory containing the actual archive files:)
+
+	http://sylvana.net/jpeg-ari/jpeg-ari-28mar98.tar.gz
+
+	http://sylvana.net/jpeg-ari/jpeg-ari.zip
+
+
+DISCLAIMER
+==========
+
+This package is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+It is possible that certain products which can be built using this
+software modules might form inventions protected by patent rights in
+some countries (e.g. by patents about arithmetic coding algorithms
+owned by IBM and AT&T in the USA). Provision of this software by the
+author does NOT include any licenses for any patents.
+In those countries where a patent license is required for certain
+applications of this software modules, you will have to obtain such
+a license yourself.
+
+See Annex L in the JPEG spec for further information
+and a list of relevant patents.
+
+
+What is it?
+===========
+
+This is my implementation of the arithmetic encoding and decoding
+back-end for JPEG as specified in the
+
+  ISO/IEC International Standard 10918-1 and CCITT Recommendation
+  ITU-T T.81, "Information Technology - Digital Compression and
+  Coding of Continuous-tone Still Images, Part 1: Requirements
+  and Guidelines".
+
+Arithmetic coding is a state-of-the-art lossless entropy data
+compression method which offers better compression performance
+than the well-established Huffman entropy coding process.
+
+The JPEG standard specifies a particular arithmetic coding scheme
+to be used optionally as alternative to Huffman coding.
+
+
+Who needs it?
+=============
+
+This package might be of interest for people who are looking for
+enhanced state-of-the-art image compression technologies.
+
+It is intended to provide a reasonable tool for experimental,
+comparison and evaluation purposes.
+
+See the Disclaimer above for restricted conditions of usage.
+
+
+How does it work?
+=================
+
+This distribution is organized as add-on to the widespread
+Independent JPEG Group's JPEG software.
+
+Thus, once you managed to install the IJG software distribution
+successfully, there should be no additional problems (portability
+issues etc.) to incorporate this package into the library,
+and usage is straightforward.
+
+Transcode given JPEG files simply with a command like
+
+  jpegtran -arithmetic [-progressive] < orig.jpg > arit.jpg
+
+into an arithmetic coded version LOSSLESSLY! Since there are
+practically no applications in existence which can handle such
+files, you can only transform it back with the same tool
+
+  jpegtran [-optimize] [-progressive] < arit.jpg > orig2.jpg
+
+to verify correct operation.
+
+Thus, you can easily verify the enhanced compression performance
+of the arithmetic coding version compared to the Huffman (with
+fixed or custom tables) version.
+
+The claim to evaluate was that arithmetic coding gives an average
+5-10% compression improvement against Huffman.
+Early tests with this implementation support this claim, and you
+can perform tests with own material.
+
+Here are some actual results:
+
+% ./jpegtran -optimize < testorig.jpg > testopt.jpg
+% ./jpegtran -arithmetic < testorig.jpg > testarit.jpg
+% ./jpegtran < testarit.jpg > testorig2.jpg
+% ./jpegtran -arithmetic -progressive < testorig.jpg > testaritp.jpg
+% ./jpegtran < testaritp.jpg > testorig3.jpg
+% ./jpegtran -optimize < ../butterfly.jpg > ../buttopt.jpg
+% ./jpegtran -progressive < ../butterfly.jpg > ../buttprog.jpg
+% ./jpegtran -arithmetic < ../butterfly.jpg > ../buttarit.jpg
+% ./jpegtran < ../buttarit.jpg > ../butterfly2.jpg
+% ./jpegtran -arithmetic -progressive < ../butterfly.jpg > ../buttaritp.jpg
+% ./jpegtran < ../buttaritp.jpg > ../butterfly3.jpg
+% ls -l test*.jpg
+-rw-r--r--  1 guivol       5153 Apr 13 18:51 testarit.jpg
+-rw-r--r--  1 guivol       5186 Apr 13 18:51 testaritp.jpg
+-rw-r--r--  1 guivol       5756 Apr  2 15:10 testimg.jpg
+-rw-r--r--  1 guivol       5645 Apr  2 15:10 testimgp.jpg
+-rw-r--r--  1 guivol       5463 Apr 13 18:51 testopt.jpg
+-rw-r--r--  1 guivol       5770 Apr  2 15:10 testorig.jpg
+-rw-r--r--  1 guivol       5770 Apr 13 18:51 testorig2.jpg
+-rw-r--r--  1 guivol       5770 Apr 13 18:51 testorig3.jpg
+-rw-r--r--  1 guivol       5655 Apr  2 15:10 testprog.jpg
+% ls -l ../butt*.jpg
+-rw-r--r--  1 guivol     460091 Apr 13 18:52 ../buttarit.jpg
+-rw-r--r--  1 guivol     453703 Apr 13 18:52 ../buttaritp.jpg
+-rw-r--r--  1 guivol     527823 Nov 19 18:41 ../butterfly.jpg
+-rw-r--r--  1 guivol     527823 Apr 13 18:52 ../butterfly2.jpg
+-rw-r--r--  1 guivol     527823 Apr 13 18:52 ../butterfly3.jpg
+-rw-r--r--  1 guivol     511834 Apr 13 18:52 ../buttopt.jpg
+-rw-r--r--  1 guivol     492237 Apr 13 18:52 ../buttprog.jpg
+% 
+
+Note that arithmetic coding requires only a single processing
+pass due to its fully-adaptive nature, and compared to one-pass
+(fixed tables) Huffman the arithmetic coded version consistently
+achieves 10% compression improvement.
+Compared with two-pass (custom tables) Huffman the improvement
+is 5-10%.
+
+Note that I wasn't able yet to cross-check interoperability of
+the produced files with other implementations.
+Thus, I can't be sure that the files are compliant to the spec,
+but I hope so and the tests support it.
+The encoding and decoding processes should be correct anyway,
+however, in the sense that they are complementary to each other
+and thus retain data integrity.
+
+I would appreciate any indications for compliance or interoperability
+with other implementations from somebody.
+Please let me know if you are able to cross-check something.
+
+
+Installation
+============
+
+The installation is a 2-stage procedure:
+
+1. Preparing the IJG package for potential incorporation
+   of the arithmetic coding feature.
+
+2. Incorporation of the actual arithmetic coding modules
+   and enabling the feature for usage.
+
+The reason for this 2-stage process is the hope to make
+step 1 obsolete in future IJG releases.
+The actual implementation should remain separate IMHO due
+to the different usage conditions.
+
+Step 1:
+
+1.1. Copy all files from the subdirectory 'patchv6b' into
+     the IJG software's v6b source directory.
+     This includes minor patches to some files and 3 extra
+     files which hold place for the actual implementation.
+
+1.2. Update your Makefile/Projectfile for the inclusion of
+     the 3 extra files. This will be done automatically
+     if you use a configure-generated makefile and type
+     './configure' (reconfigure).
+
+1.3. Recompile ('make').
+
+See the file 'PATCHES' in 'patchv6b' for details.
+
+Step 2:
+
+2.1. Replace the 3 placeholder files by the actual implementation
+     modules.
+
+2.2. Enable application support of the new features by #defining
+     C_ARITH_CODING_SUPPORTED and D_ARITH_CODING_SUPPORTED
+     in 'jmorecfg.h'.
+
+2.3. Recompile ('make').
+
+Note that I suggest to add 3 placeholder files to the IJG
+distribution. This would remove the need for system-dependent
+changes (Makefiles) and thus considerably simplify the actual
+installation for systems without a configure-generated makefile.
+
+
+References
+==========
+
+- The Independent JPEG Group's software
+
+- JBIG-KIT lossless image compression library by Markus Kuhn
+
+- William B. Pennebaker, Joan L. Mitchell:
+  "JPEG Still Image Data Compression Standard",
+  Van Nostrand Reinhold, 1993, ISBN 0-442-01272-1.
+
+- jpeg-faq (http://www.faqs.org/faqs/jpeg-faq/)
+
+- compression-faq (http://www.faqs.org/faqs/compression-faq/)

@@ -100,9 +100,9 @@ transdecode_master_selection (j_decompress_ptr cinfo)
   cinfo->buffered_image = TRUE;
 
   /* Entropy decoding: either Huffman or arithmetic coding. */
-  if (cinfo->arith_code) {
-    ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
-  } else {
+  if (cinfo->arith_code)
+    jinit_arith_decoder(cinfo);
+  else {
     if (cinfo->progressive_mode) {
 #ifdef D_PROGRESSIVE_SUPPORTED
       jinit_phuff_decoder(cinfo);

@@ -167,7 +167,7 @@ transencode_master_selection (j_compress_ptr cinfo,
 
   /* Entropy encoding: either Huffman or arithmetic coding. */
   if (cinfo->arith_code) {
-    ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
+    jinit_arith_encoder(cinfo);
   } else {
     if (cinfo->progressive_mode) {
 #ifdef C_PROGRESSIVE_SUPPORTED

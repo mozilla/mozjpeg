@@ -529,7 +529,10 @@ write_frame_header (j_compress_ptr cinfo)
 
   /* Emit the proper SOF marker */
   if (cinfo->arith_code) {
-    emit_sof(cinfo, M_SOF9);	/* SOF code for arithmetic coding */
+    if (cinfo->progressive_mode)
+      emit_sof(cinfo, M_SOF10); /* SOF code for progressive arithmetic */
+    else
+      emit_sof(cinfo, M_SOF9);  /* SOF code for sequential arithmetic */
   } else {
     if (cinfo->progressive_mode)
       emit_sof(cinfo, M_SOF2);	/* SOF code for progressive Huffman */

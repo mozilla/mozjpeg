@@ -433,7 +433,7 @@ prepare_for_pass (j_compress_ptr cinfo)
     /* Do Huffman optimization for a scan after the first one. */
     select_scan_parameters(cinfo);
     per_scan_setup(cinfo);
-    if (cinfo->Ss != 0 || cinfo->Ah == 0 || cinfo->arith_code) {
+    if (cinfo->Ss != 0 || cinfo->Ah == 0) {
       (*cinfo->entropy->start_pass) (cinfo, TRUE);
       (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
       master->pub.call_pass_startup = FALSE;
@@ -567,7 +567,7 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     cinfo->num_scans = 1;
   }
 
-  if (cinfo->progressive_mode)	/*  TEMPORARY HACK ??? */
+  if (cinfo->progressive_mode && cinfo->arith_code == 0)	/*  TEMPORARY HACK ??? */
     cinfo->optimize_coding = TRUE; /* assume default tables no good for progressive mode */
 
   /* Initialize my private state */

@@ -1,7 +1,7 @@
 /*
  * jconfig.h
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -20,10 +20,23 @@
  * predefined by such compilers.
  */
 
+/*
+ * HAVE_STDC is tested below to see whether ANSI features are available.
+ * We avoid testing __STDC__ directly for arcane reasons of portability.
+ * (On some compilers, __STDC__ is only defined if a switch is given,
+ * but the switch also disables machine-specific features we need to get at.
+ * In that case, -DHAVE_STDC in the Makefile is a convenient solution.)
+ */
+
+#ifdef __STDC__			/* if compiler claims to be ANSI, believe it */
+#define HAVE_STDC
+#endif
+
+
 /* Does your compiler support function prototypes? */
 /* (If not, you also need to use ansi2knr, see SETUP) */
 
-#ifdef __STDC__			/* ANSI C compilers always have prototypes */
+#ifdef HAVE_STDC		/* ANSI C compilers always have prototypes */
 #define PROTO
 #else
 #ifdef __cplusplus		/* So do C++ compilers */
@@ -34,7 +47,7 @@
 /* Does your compiler support the declaration "unsigned char" ? */
 /* How about "unsigned short" ? */
 
-#ifdef __STDC__			/* ANSI C compilers must support both */
+#ifdef HAVE_STDC		/* ANSI C compilers must support both */
 #define HAVE_UNSIGNED_CHAR
 #define HAVE_UNSIGNED_SHORT
 #endif
@@ -49,7 +62,6 @@
 /* Define this if your compiler implements ">>" on signed values as a logical
  * (unsigned) shift; leave it undefined if ">>" is a signed (arithmetic) shift,
  * which is the normal and rational definition.
- * The DCT and IDCT routines will compute wrong values if you get this wrong!
  */
 
 /* #define RIGHT_SHIFT_IS_UNSIGNED */
@@ -64,7 +76,7 @@
 /* Define const as empty if your compiler doesn't know the "const" keyword. */
 /* (Even if it does, defining const as empty won't break anything.) */
 
-#ifndef __STDC__		/* ANSI C and C++ compilers should know it. */
+#ifndef HAVE_STDC		/* ANSI C and C++ compilers should know it. */
 #ifndef __cplusplus
 #define const
 #endif
@@ -77,16 +89,12 @@
  * "far" pointers and to be allocated with a special version of malloc.)
  */
 
-#ifdef MSDOS			/* Microsoft C and compatibles */
+#ifdef MSDOS
 #define NEED_FAR_POINTERS
-#else
-#ifdef __TURBOC__		/* Turbo C doesn't define MSDOS */
-#define NEED_FAR_POINTERS
-#endif
 #endif
 
 
-/* The next couple of symbols only affect the system-dependent user interface
+/* The next three symbols only affect the system-dependent user interface
  * modules (jcmain.c, jdmain.c).  You can ignore these if you are supplying
  * your own user interface code.
  */
@@ -99,13 +107,18 @@
 
 #ifdef MSDOS			/* two-file style is needed for PCs */
 #define TWO_FILE_COMMANDLINE
-#else
-#ifdef __TURBOC__		/* Turbo C doesn't define MSDOS */
-#define TWO_FILE_COMMANDLINE
-#endif
 #endif
 #ifdef THINK_C			/* needed for Macintosh too */
 #define TWO_FILE_COMMANDLINE
+#endif
+
+/* Define this if your system needs explicit cleanup of temporary files.
+ * This is crucial under MS-DOS, where the temporary "files" may be areas
+ * of extended memory; on most other systems it's not as important.
+ */
+
+#ifdef MSDOS
+#define NEED_SIGNAL_CATCHER
 #endif
 
 /* By default, we open image files with fopen(...,"rb") or fopen(...,"wb").
@@ -121,16 +134,6 @@
  * worry about.  Go fix the makefile and compile.
  */
 
-
-/* If your compiler supports inline functions, define INLINE as
- * the inline keyword; otherwise define it as empty.
- */
-
-#ifdef __GNUC__			/* GNU C has inline... */
-#define INLINE inline
-#else				/* ...but I don't think anyone else does. */
-#define INLINE
-#endif
 
 /* On a few systems, type boolean and/or macros FALSE, TRUE may appear
  * in standard header files.  Or you may have conflicts with application-
@@ -168,13 +171,13 @@ typedef int boolean;
 #define ENTROPY_OPT_SUPPORTED	/* Optimization of entropy coding parms? */
 #define BLOCK_SMOOTHING_SUPPORTED /* Block smoothing during decoding? */
 #define QUANT_1PASS_SUPPORTED	/* 1-pass color quantization? */
-#undef  QUANT_2PASS_SUPPORTED	/* 2-pass color quantization? (not yet impl.) */
+#define QUANT_2PASS_SUPPORTED	/* 2-pass color quantization? */
 /* these defines indicate which JPEG file formats are allowed */
 #define JFIF_SUPPORTED		/* JFIF or "raw JPEG" files */
 #undef  JTIFF_SUPPORTED		/* JPEG-in-TIFF (not yet implemented) */
 /* these defines indicate which image (non-JPEG) file formats are allowed */
 #define GIF_SUPPORTED		/* GIF image file format */
-/* #define RLE_SUPPORTED */	/* RLE image file format */
+/* #define RLE_SUPPORTED */	/* RLE image file format (by default, no) */
 #define PPM_SUPPORTED		/* PPM/PGM image file format */
 #define TARGA_SUPPORTED		/* Targa image file format */
 #undef  TIFF_SUPPORTED		/* TIFF image file format (not yet impl.) */
@@ -190,6 +193,11 @@ typedef int boolean;
  * color value.  16-bit should only be used for the lossless JPEG mode (not
  * currently supported).  Note that 12- and 16-bit values take up twice as
  * much memory as 8-bit!
+ * Note: if you select 12- or 16-bit precision, it is dangerous to turn off
+ * ENTROPY_OPT_SUPPORTED.  The standard Huffman tables are only good for 8-bit
+ * precision, so jchuff.c normally uses entropy optimization to compute
+ * usable tables for higher precision.  If you don't want to do optimization,
+ * you'll have to supply different default Huffman tables.
  */
 
 #define EIGHT_BIT_SAMPLES
@@ -209,8 +217,6 @@ typedef int boolean;
 /* First define the representation of a single pixel element value. */
 
 #ifdef EIGHT_BIT_SAMPLES
-#define BITS_IN_JSAMPLE  8
-
 /* JSAMPLE should be the smallest type that will hold the values 0..255.
  * You can use a signed char by having GETJSAMPLE mask it with 0xFF.
  * If you have only signed chars, and you are more worried about speed than
@@ -236,6 +242,7 @@ typedef char JSAMPLE;
 #endif /* CHAR_IS_UNSIGNED */
 #endif /* HAVE_UNSIGNED_CHAR */
 
+#define BITS_IN_JSAMPLE   8
 #define MAXJSAMPLE	255
 #define CENTERJSAMPLE	128
 
@@ -243,14 +250,13 @@ typedef char JSAMPLE;
 
 
 #ifdef TWELVE_BIT_SAMPLES
-#define BITS_IN_JSAMPLE  12
-
 /* JSAMPLE should be the smallest type that will hold the values 0..4095. */
 /* On nearly all machines "short" will do nicely. */
 
 typedef short JSAMPLE;
 #define GETJSAMPLE(value)  (value)
 
+#define BITS_IN_JSAMPLE   12
 #define MAXJSAMPLE	4095
 #define CENTERJSAMPLE	2048
 
@@ -258,8 +264,6 @@ typedef short JSAMPLE;
 
 
 #ifdef SIXTEEN_BIT_SAMPLES
-#define BITS_IN_JSAMPLE  16
-
 /* JSAMPLE should be the smallest type that will hold the values 0..65535. */
 
 #ifdef HAVE_UNSIGNED_SHORT
@@ -278,6 +282,7 @@ typedef unsigned int JSAMPLE;
 
 #endif /* HAVE_UNSIGNED_SHORT */
 
+#define BITS_IN_JSAMPLE    16
 #define MAXJSAMPLE	65535
 #define CENTERJSAMPLE	32768
 

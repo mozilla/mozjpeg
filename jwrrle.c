@@ -1,7 +1,7 @@
 /*
  * jwrrle.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -87,6 +87,8 @@ output_init (decompress_info_ptr cinfo)
   output_colormap = NULL;	/* No output colormap as yet */
   number_colors = 0;
   cur_output_row = 0;		/* Start filling virtual arrays at row 0 */
+
+  cinfo->total_passes++;	/* count file writing as separate pass */
 }
 
 
@@ -192,12 +194,15 @@ output_term (decompress_info_ptr cinfo)
    * and (b) we are not on a machine where FAR pointers differ from regular.
    */
   for (row = cinfo->image_height-1; row >= 0; row--) {
+    (*cinfo->methods->progress_monitor) (cinfo, cinfo->image_height-row-1,
+					 cinfo->image_height);
     for (ci = 0; ci < cinfo->final_out_comps; ci++) {
       output_rows[ci] = (rle_pixel *) *((*cinfo->emethods->access_big_sarray)
 					(channels[ci], row, FALSE));
     }
     rle_putrow(output_rows, (int) cinfo->image_width, &header);
   }
+  cinfo->completed_passes++;
 
   /* Emit file trailer */
   rle_puteof(&header);
@@ -206,11 +211,7 @@ output_term (decompress_info_ptr cinfo)
     ERREXIT(cinfo->emethods, "Output file write error");
 
   /* Release memory */
-  for (ci = 0; ci < cinfo->final_out_comps; ci++) {
-    (*cinfo->emethods->free_big_sarray) (channels[ci]);
-  }
-  if (output_colormap != NULL)
-    (*cinfo->emethods->free_small) ((void *) output_colormap);
+  /* no work (we let free_all release the workspace) */
 }
 
 

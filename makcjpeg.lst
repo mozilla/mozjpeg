@@ -1,4 +1,4 @@
 jcmain.obj jcmaster.obj jcdeflts.obj jcarith.obj jccolor.obj jcexpand.obj
 jchuff.obj jcmcu.obj jcpipe.obj jcsample.obj jfwddct.obj jwrjfif.obj
-jrdgif.obj jrdppm.obj jrdrle.obj jrdtarga.obj jutils.obj jvirtmem.obj
-jerror.obj
+jrdgif.obj jrdppm.obj jrdrle.obj jrdtarga.obj jutils.obj jerror.obj
+jmemmgr.obj jmemsys.obj jmemdosa.obj

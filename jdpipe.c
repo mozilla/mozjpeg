@@ -1,31 +1,36 @@
 /*
  * jdpipe.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains decompression pipeline controllers.
  * These routines are invoked via the d_pipeline_controller method.
  *
- * There are four basic pipeline controllers, one for each combination of:
- *	single-scan JPEG file (single component or fully interleaved)
- *  vs. multiple-scan JPEG file (noninterleaved or partially interleaved).
+ * There are two basic pipeline controllers.  The simpler one handles a
+ * single-scan JPEG file (single component or fully interleaved) with no
+ * color quantization or 1-pass quantization.  In this case, the file can
+ * be processed in one top-to-bottom pass.  The more complex controller is
+ * used when 2-pass color quantization is requested and/or the JPEG file
+ * has multiple scans (noninterleaved or partially interleaved).  In this
+ * case, the entire image must be buffered up in a "big" array.
  *
- *	2-pass color quantization
- *  vs. no color quantization or 1-pass quantization.
- *
- * Note that these conditions determine the needs for "big" images:
- * multiple scans imply a big image for recombining the color components;
- * 2-pass color quantization needs a big image for saving the data for pass 2.
- *
- * All but the simplest controller (single-scan, no 2-pass quantization) can be
- * compiled out through configuration options, if you need to make a minimal
- * implementation.  You should leave in multiple-scan support if at all
- * possible, so that you can handle all legal JPEG files.
+ * If you need to make a minimal implementation, the more complex controller
+ * can be compiled out by disabling the appropriate configuration options.
+ * We don't recommend this, since then you can't handle all legal JPEG files.
  */
 
 #include "jinclude.h"
+
+
+#ifdef MULTISCAN_FILES_SUPPORTED /* wish we could assume ANSI's defined() */
+#define NEED_COMPLEX_CONTROLLER
+#else
+#ifdef QUANT_2PASS_SUPPORTED
+#define NEED_COMPLEX_CONTROLLER
+#endif
+#endif
 
 
 /*
@@ -62,15 +67,19 @@
  * These variables are logically local to the pipeline controller,
  * but we make them static so that scan_big_image can use them
  * without having to pass them through the quantization routines.
- * If you don't support 2-pass quantization, you could make them locals.
  */
 
 static int rows_in_mem;		/* # of sample rows in full-size buffers */
-/* Full-size image array holding desubsampled, color-converted data. */
-static big_sarray_ptr *fullsize_cnvt_image;
-static JSAMPIMAGE fullsize_cnvt_ptrs; /* workspace for access_big_sarray() results */
-/* Work buffer for color quantization output (full size, only 1 component). */
-static JSAMPARRAY quantize_out;
+/* Work buffer for data being passed to output module. */
+/* This has color_out_comps components if not quantizing, */
+/* but only one component when quantizing. */
+static JSAMPIMAGE output_workspace;
+
+#ifdef NEED_COMPLEX_CONTROLLER
+/* Full-size image array holding desubsampled, but not color-processed data. */
+static big_sarray_ptr *fullsize_image;
+static JSAMPIMAGE fullsize_ptrs; /* workspace for access_big_sarray() result */
+#endif
 
 
 /*
@@ -154,74 +163,6 @@ noninterleaved_scan_setup (decompress_info_ptr cinfo)
 }
 
 
-LOCAL void
-reverse_DCT (decompress_info_ptr cinfo,
-	     JBLOCKIMAGE coeff_data, JSAMPIMAGE output_data,
-	     int start_row)
-/* Perform inverse DCT on each block in an MCU row's worth of data; */
-/* output the results into a sample array starting at row start_row. */
-/* NB: start_row can only be nonzero when dealing with a single-component */
-/* scan; otherwise we'd have to provide for different offsets for different */
-/* components, since the heights of interleaved MCU rows can vary. */
-{
-  DCTBLOCK block;
-  JBLOCKROW browptr;
-  JSAMPARRAY srowptr;
-  long blocksperrow, bi;
-  short numrows, ri;
-  short ci;
-
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    /* calc size of an MCU row in this component */
-    blocksperrow = cinfo->cur_comp_info[ci]->subsampled_width / DCTSIZE;
-    numrows = cinfo->cur_comp_info[ci]->MCU_height;
-    /* iterate through all blocks in MCU row */
-    for (ri = 0; ri < numrows; ri++) {
-      browptr = coeff_data[ci][ri];
-      srowptr = output_data[ci] + (ri * DCTSIZE + start_row);
-      for (bi = 0; bi < blocksperrow; bi++) {
-	/* copy the data into a local DCTBLOCK.  This allows for change of
-	 * representation (if DCTELEM != JCOEF).  On 80x86 machines it also
-	 * brings the data back from FAR storage to NEAR storage.
-	 */
-	{ register JCOEFPTR elemptr = browptr[bi];
-	  register DCTELEM *localblkptr = block;
-	  register short elem = DCTSIZE2;
-
-	  while (--elem >= 0)
-	    *localblkptr++ = (DCTELEM) *elemptr++;
-	}
-
-	j_rev_dct(block);	/* perform inverse DCT */
-
-	/* output the data into the sample array.
-	 * Note change from signed to unsigned representation:
-	 * DCT calculation works with values +-CENTERJSAMPLE,
-	 * but sample arrays always hold 0..MAXJSAMPLE.
-	 * Have to do explicit range-limiting because of quantization errors
-	 * and so forth in the DCT/IDCT phase.
-	 */
-	{ register JSAMPROW elemptr;
-	  register DCTELEM *localblkptr = block;
-	  register short elemr, elemc;
-	  register DCTELEM temp;
-
-	  for (elemr = 0; elemr < DCTSIZE; elemr++) {
-	    elemptr = srowptr[elemr] + (bi * DCTSIZE);
-	    for (elemc = 0; elemc < DCTSIZE; elemc++) {
-	      temp = (*localblkptr++) + CENTERJSAMPLE;
-	      if (temp < 0) temp = 0;
-	      else if (temp > MAXJSAMPLE) temp = MAXJSAMPLE;
-	      *elemptr++ = (JSAMPLE) temp;
-	    }
-	  }
-	}
-      }
-    }
-  }
-}
-
-
 
 LOCAL JSAMPIMAGE
 alloc_sampimage (decompress_info_ptr cinfo,
@@ -240,18 +181,21 @@ alloc_sampimage (decompress_info_ptr cinfo,
 }
 
 
+#if 0				/* this routine not currently needed */
+
 LOCAL void
-free_sampimage (decompress_info_ptr cinfo, JSAMPIMAGE image,
-		int num_comps, long num_rows)
+free_sampimage (decompress_info_ptr cinfo, JSAMPIMAGE image, int num_comps)
 /* Release a sample image created by alloc_sampimage */
 {
   int ci;
 
   for (ci = 0; ci < num_comps; ci++) {
-      (*cinfo->emethods->free_small_sarray) (image[ci], num_rows);
+      (*cinfo->emethods->free_small_sarray) (image[ci]);
   }
   (*cinfo->emethods->free_small) ((void *) image);
 }
+
+#endif
 
 
 LOCAL JBLOCKIMAGE
@@ -272,6 +216,8 @@ alloc_MCU_row (decompress_info_ptr cinfo)
 }
 
 
+#ifdef NEED_COMPLEX_CONTROLLER	/* not used by simple controller */
+
 LOCAL void
 free_MCU_row (decompress_info_ptr cinfo, JBLOCKIMAGE image)
 /* Release a coefficient block array created by alloc_MCU_row */
@@ -279,11 +225,12 @@ free_MCU_row (decompress_info_ptr cinfo, JBLOCKIMAGE image)
   int ci;
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    (*cinfo->emethods->free_small_barray)
-		(image[ci], (long) cinfo->cur_comp_info[ci]->MCU_height);
+    (*cinfo->emethods->free_small_barray) (image[ci]);
   }
   (*cinfo->emethods->free_small) ((void *) image);
 }
+
+#endif
 
 
 LOCAL void
@@ -321,17 +268,17 @@ alloc_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE subsampled_data[2])
 }
 
 
+#ifdef NEED_COMPLEX_CONTROLLER	/* not used by simple controller */
+
 LOCAL void
 free_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE subsampled_data[2])
 /* Release a sampling buffer created by alloc_sampling_buffer */
 {
-  short ci, vs;
+  short ci;
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    vs = cinfo->cur_comp_info[ci]->v_samp_factor; /* row group height */
     /* Free the real storage */
-    (*cinfo->emethods->free_small_sarray)
-		(subsampled_data[0][ci], (long) (vs * (DCTSIZE+2)));
+    (*cinfo->emethods->free_small_sarray) (subsampled_data[0][ci]);
     /* Free the scrambled-order pointers */
     (*cinfo->emethods->free_small) ((void *) subsampled_data[1][ci]);
   }
@@ -340,6 +287,8 @@ free_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE subsampled_data[2])
   (*cinfo->emethods->free_small) ((void *) subsampled_data[0]);
   (*cinfo->emethods->free_small) ((void *) subsampled_data[1]);
 }
+
+#endif
 
 
 LOCAL void
@@ -409,82 +358,62 @@ expand (decompress_info_ptr cinfo,
 
 
 LOCAL void
-emit_1pass (decompress_info_ptr cinfo, int num_rows,
-	    JSAMPIMAGE fullsize_data, JSAMPIMAGE color_data)
-/* Do color conversion and output of num_rows full-size rows. */
-/* This is not used for 2-pass color quantization. */
+emit_1pass (decompress_info_ptr cinfo, int num_rows, JSAMPIMAGE fullsize_data,
+	    JSAMPARRAY dummy)
+/* Do color processing and output of num_rows full-size rows. */
+/* This is not used when doing 2-pass color quantization. */
+/* The dummy argument simply lets this be called via scan_big_image. */
 {
-  (*cinfo->methods->color_convert) (cinfo, num_rows,
-				    fullsize_data, color_data);
-
   if (cinfo->quantize_colors) {
-    (*cinfo->methods->color_quantize) (cinfo, num_rows,
-				       color_data, quantize_out);
-
-    (*cinfo->methods->put_pixel_rows) (cinfo, num_rows,
-				       &quantize_out);
+    (*cinfo->methods->color_quantize) (cinfo, num_rows, fullsize_data,
+				       output_workspace[0]);
   } else {
-    (*cinfo->methods->put_pixel_rows) (cinfo, num_rows,
-				       color_data);
+    (*cinfo->methods->color_convert) (cinfo, num_rows, cinfo->image_width,
+				      fullsize_data, output_workspace);
   }
+    
+  (*cinfo->methods->put_pixel_rows) (cinfo, num_rows, output_workspace);
 }
 
 
 /*
- * Support routines for 2-pass color quantization.
+ * Support routines for complex controller.
  */
 
-#ifdef QUANT_2PASS_SUPPORTED
-
-LOCAL void
-emit_2pass (decompress_info_ptr cinfo, long top_row, int num_rows,
-	    JSAMPIMAGE fullsize_data)
-/* Do color conversion and output data to the quantization buffer image. */
-/* This is used only with 2-pass color quantization. */
-{
-  short ci;
-
-  /* Realign the big buffers */
-  for (ci = 0; ci < cinfo->num_components; ci++) {
-    fullsize_cnvt_ptrs[ci] = (*cinfo->emethods->access_big_sarray)
-      (fullsize_cnvt_image[ci], top_row, TRUE);
-  }
-
-  /* Do colorspace conversion */
-  (*cinfo->methods->color_convert) (cinfo, num_rows,
-				    fullsize_data, fullsize_cnvt_ptrs);
-  /* Let quantizer get first-pass peek at the data. */
-  /* (Quantizer could change data if it wants to.)  */
-  (*cinfo->methods->color_quant_prescan) (cinfo, num_rows, fullsize_cnvt_ptrs);
-}
-
+#ifdef NEED_COMPLEX_CONTROLLER
 
 METHODDEF void
 scan_big_image (decompress_info_ptr cinfo, quantize_method_ptr quantize_method)
-/* This is the "iterator" routine used by the quantizer. */
+/* Apply quantize_method to entire image stored in fullsize_image[]. */
+/* This is the "iterator" routine used by the 2-pass color quantizer. */
+/* We also use it directly in some cases. */
 {
   long pixel_rows_output;
   short ci;
 
   for (pixel_rows_output = 0; pixel_rows_output < cinfo->image_height;
        pixel_rows_output += rows_in_mem) {
+    (*cinfo->methods->progress_monitor) (cinfo, pixel_rows_output,
+					 cinfo->image_height);
     /* Realign the big buffers */
     for (ci = 0; ci < cinfo->num_components; ci++) {
-      fullsize_cnvt_ptrs[ci] = (*cinfo->emethods->access_big_sarray)
-	(fullsize_cnvt_image[ci], pixel_rows_output, FALSE);
+      fullsize_ptrs[ci] = (*cinfo->emethods->access_big_sarray)
+	(fullsize_image[ci], pixel_rows_output, FALSE);
     }
     /* Let the quantizer have its way with the data.
-     * Note that quantize_out is simply workspace for the quantizer;
+     * Note that output_workspace is simply workspace for the quantizer;
      * when it's ready to output, it must call put_pixel_rows itself.
      */
     (*quantize_method) (cinfo,
-			(int) MIN(rows_in_mem,
+			(int) MIN((long) rows_in_mem,
 				  cinfo->image_height - pixel_rows_output),
-			fullsize_cnvt_ptrs, quantize_out);
+			fullsize_ptrs, output_workspace[0]);
   }
+
+  cinfo->completed_passes++;
 }
 
-#endif /* QUANT_2PASS_SUPPORTED */
+#endif /* NEED_COMPLEX_CONTROLLER */
 
 
 /*
@@ -587,7 +516,7 @@ get_smoothed_row (decompress_info_ptr cinfo, JBLOCKIMAGE coeff_data,
  */
 
 METHODDEF void
-single_dcontroller (decompress_info_ptr cinfo)
+simple_dcontroller (decompress_info_ptr cinfo)
 {
   long fullsize_width;		/* # of samples per row in full-size buffers */
   long cur_mcu_row;		/* counts # of MCU rows processed */
@@ -604,14 +533,14 @@ single_dcontroller (decompress_info_ptr cinfo)
   JSAMPIMAGE subsampled_data[2];
   /* Work buffer for desubsampled data */
   JSAMPIMAGE fullsize_data;
-  /* Work buffer for color conversion output (full size) */
-  JSAMPIMAGE color_data;
   int whichss, ri;
   short i;
 
-  /* Initialize for 1-pass color quantization, if needed */
-  if (cinfo->quantize_colors)
-    (*cinfo->methods->color_quant_init) (cinfo);
+  /* Compute dimensions of full-size pixel buffers */
+  /* Note these are the same whether interleaved or not. */
+  rows_in_mem = cinfo->max_v_samp_factor * DCTSIZE;
+  fullsize_width = jround_up(cinfo->image_width,
+			     (long) (cinfo->max_h_samp_factor * DCTSIZE));
 
   /* Prepare for single scan containing all components */
   if (cinfo->comps_in_scan == 1) {
@@ -623,12 +552,7 @@ single_dcontroller (decompress_info_ptr cinfo)
     /* in an interleaved scan, one MCU row provides Vk block rows */
     mcu_rows_per_loop = 1;
   }
-
-  /* Compute dimensions of full-size pixel buffers */
-  /* Note these are the same whether interleaved or not. */
-  rows_in_mem = cinfo->max_v_samp_factor * DCTSIZE;
-  fullsize_width = jround_up(cinfo->image_width,
-			     (long) (cinfo->max_h_samp_factor * DCTSIZE));
+  cinfo->total_passes++;
 
   /* Allocate working memory: */
   /* coeff_data holds a single MCU row of coefficient blocks */
@@ -646,13 +570,9 @@ single_dcontroller (decompress_info_ptr cinfo)
   /* fullsize_data is sample data after unsubsampling */
   fullsize_data = alloc_sampimage(cinfo, (int) cinfo->num_components,
 				  (long) rows_in_mem, fullsize_width);
-  /* color_data is the result of the colorspace conversion step */
-  color_data = alloc_sampimage(cinfo, (int) cinfo->color_out_comps,
-			       (long) rows_in_mem, fullsize_width);
-  /* if quantizing colors, also need a one-component output area for that. */
-  if (cinfo->quantize_colors)
-    quantize_out = (*cinfo->emethods->alloc_small_sarray)
-				(fullsize_width, (long) rows_in_mem);
+  /* output_workspace is the color-processed data */
+  output_workspace = alloc_sampimage(cinfo, (int) cinfo->final_out_comps,
+				     (long) rows_in_mem, fullsize_width);
 
   /* Tell the memory manager to instantiate big arrays.
    * We don't need any big arrays in this controller,
@@ -662,7 +582,8 @@ single_dcontroller (decompress_info_ptr cinfo)
 	((long) 0,				/* no more small sarrays */
 	 (long) 0,				/* no more small barrays */
 	 (long) 0);				/* no more "medium" objects */
-	 /* NB: quantizer must get any such objects at color_quant_init time */
+  /* NB: if quantizer needs any "medium" size objects, it must get them */
+  /* at color_quant_init time */
 
   /* Initialize to read scan data */
 
@@ -677,6 +598,9 @@ single_dcontroller (decompress_info_ptr cinfo)
 
   for (cur_mcu_row = 0; cur_mcu_row < cinfo->MCU_rows_in_scan;
        cur_mcu_row += mcu_rows_per_loop) {
+    (*cinfo->methods->progress_monitor) (cinfo, cur_mcu_row,
+					 cinfo->MCU_rows_in_scan);
+
     whichss ^= 1;		/* switch to other subsample buffer */
 
     /* Obtain v_samp_factor block rows of each component in the scan. */
@@ -696,8 +620,9 @@ single_dcontroller (decompress_info_ptr cinfo)
 #endif
 	  (*cinfo->methods->disassemble_MCU) (cinfo, coeff_data);
       
-	reverse_DCT(cinfo, coeff_data, subsampled_data[whichss],
-		    ri * DCTSIZE);
+	(*cinfo->methods->reverse_DCT) (cinfo, coeff_data,
+					subsampled_data[whichss],
+					ri * DCTSIZE);
       } else {
 	/* Need to pad out with copies of the last subsampled row. */
 	/* This can only happen if there is just one component. */
@@ -716,7 +641,7 @@ single_dcontroller (decompress_info_ptr cinfo)
 	     (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
 	     (short) (DCTSIZE-1));
       /* and dump the previous set's expanded data */
-      emit_1pass (cinfo, rows_in_mem, fullsize_data, color_data);
+      emit_1pass (cinfo, rows_in_mem, fullsize_data, NULL);
       pixel_rows_output += rows_in_mem;
       /* Expand first row group of this set */
       expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
@@ -743,273 +668,47 @@ single_dcontroller (decompress_info_ptr cinfo)
 	 (short) (DCTSIZE-1));
   /* and dump the remaining data (may be less than full height) */
   emit_1pass (cinfo, (int) (cinfo->image_height - pixel_rows_output),
-	      fullsize_data, color_data);
+	      fullsize_data, NULL);
 
   /* Clean up after the scan */
   (*cinfo->methods->disassemble_term) (cinfo);
   (*cinfo->methods->unsubsample_term) (cinfo);
   (*cinfo->methods->entropy_decoder_term) (cinfo);
   (*cinfo->methods->read_scan_trailer) (cinfo);
+  cinfo->completed_passes++;
 
   /* Verify that we've seen the whole input file */
   if ((*cinfo->methods->read_scan_header) (cinfo))
     ERREXIT(cinfo->emethods, "Didn't expect more than one scan");
 
   /* Release working memory */
-  free_MCU_row(cinfo, coeff_data);
-#ifdef BLOCK_SMOOTHING_SUPPORTED
-  if (cinfo->do_block_smoothing) {
-    free_MCU_row(cinfo, bsmooth[0]);
-    free_MCU_row(cinfo, bsmooth[1]);
-    free_MCU_row(cinfo, bsmooth[2]);
-  }
-#endif
-  free_sampling_buffer(cinfo, subsampled_data);
-  free_sampimage(cinfo, fullsize_data, (int) cinfo->num_components,
-		 (long) rows_in_mem);
-  free_sampimage(cinfo, color_data, (int) cinfo->color_out_comps,
-		 (long) rows_in_mem);
-  if (cinfo->quantize_colors)
-    (*cinfo->emethods->free_small_sarray)
-		(quantize_out, (long) rows_in_mem);
-
-  /* Close up shop */
-  if (cinfo->quantize_colors)
-    (*cinfo->methods->color_quant_term) (cinfo);
+  /* (no work -- we let free_all release what's needful) */
 }
-
-
-/*
- * Decompression pipeline controller used for single-scan files
- * with 2-pass color quantization.
- */
-
-#ifdef QUANT_2PASS_SUPPORTED
-
-METHODDEF void
-single_2quant_dcontroller (decompress_info_ptr cinfo)
-{
-  long fullsize_width;		/* # of samples per row in full-size buffers */
-  long cur_mcu_row;		/* counts # of MCU rows processed */
-  long pixel_rows_output;	/* # of pixel rows actually emitted */
-  int mcu_rows_per_loop;	/* # of MCU rows processed per outer loop */
-  /* Work buffer for dequantized coefficients (IDCT input) */
-  JBLOCKIMAGE coeff_data;
-  /* Work buffer for cross-block smoothing input */
-#ifdef BLOCK_SMOOTHING_SUPPORTED
-  JBLOCKIMAGE bsmooth[3];	/* this is optional */
-  int whichb;
-#endif
-  /* Work buffer for subsampled image data (see comments at head of file) */
-  JSAMPIMAGE subsampled_data[2];
-  /* Work buffer for desubsampled data */
-  JSAMPIMAGE fullsize_data;
-  int whichss, ri;
-  short ci, i;
-
-  /* Initialize for 2-pass color quantization */
-  (*cinfo->methods->color_quant_init) (cinfo);
-
-  /* Prepare for single scan containing all components */
-  if (cinfo->comps_in_scan == 1) {
-    noninterleaved_scan_setup(cinfo);
-    /* Need to read Vk MCU rows to obtain Vk block rows */
-    mcu_rows_per_loop = cinfo->cur_comp_info[0]->v_samp_factor;
-  } else {
-    interleaved_scan_setup(cinfo);
-    /* in an interleaved scan, one MCU row provides Vk block rows */
-    mcu_rows_per_loop = 1;
-  }
-
-  /* Compute dimensions of full-size pixel buffers */
-  /* Note these are the same whether interleaved or not. */
-  rows_in_mem = cinfo->max_v_samp_factor * DCTSIZE;
-  fullsize_width = jround_up(cinfo->image_width,
-			     (long) (cinfo->max_h_samp_factor * DCTSIZE));
-
-  /* Allocate working memory: */
-  /* coeff_data holds a single MCU row of coefficient blocks */
-  coeff_data = alloc_MCU_row(cinfo);
-  /* if doing cross-block smoothing, need extra space for its input */
-#ifdef BLOCK_SMOOTHING_SUPPORTED
-  if (cinfo->do_block_smoothing) {
-    bsmooth[0] = alloc_MCU_row(cinfo);
-    bsmooth[1] = alloc_MCU_row(cinfo);
-    bsmooth[2] = alloc_MCU_row(cinfo);
-  }
-#endif
-  /* subsampled_data is sample data before unsubsampling */
-  alloc_sampling_buffer(cinfo, subsampled_data);
-  /* fullsize_data is sample data after unsubsampling */
-  fullsize_data = alloc_sampimage(cinfo, (int) cinfo->num_components,
-				  (long) rows_in_mem, fullsize_width);
-  /* Also need a one-component output area for color quantizer. */
-  quantize_out = (*cinfo->emethods->alloc_small_sarray)
-				(fullsize_width, (long) rows_in_mem);
-
-  /* Get a big image for quantizer input: desubsampled, color-converted data */
-  fullsize_cnvt_image = (big_sarray_ptr *) (*cinfo->emethods->alloc_small)
-			(cinfo->num_components * SIZEOF(big_sarray_ptr));
-  for (ci = 0; ci < cinfo->num_components; ci++) {
-    fullsize_cnvt_image[ci] = (*cinfo->emethods->request_big_sarray)
-			(fullsize_width,
-			 jround_up(cinfo->image_height, (long) rows_in_mem),
-			 (long) rows_in_mem);
-  }
-  /* Also get an area for pointers to currently accessible chunks */
-  fullsize_cnvt_ptrs = (JSAMPIMAGE) (*cinfo->emethods->alloc_small)
-				(cinfo->num_components * SIZEOF(JSAMPARRAY));
-
-  /* Tell the memory manager to instantiate big arrays */
-  (*cinfo->emethods->alloc_big_arrays)
-	((long) 0,				/* no more small sarrays */
-	 (long) 0,				/* no more small barrays */
-	 (long) 0);				/* no more "medium" objects */
-	 /* NB: quantizer must get any such objects at color_quant_init time */
-
-  /* Initialize to read scan data */
-
-  (*cinfo->methods->entropy_decoder_init) (cinfo);
-  (*cinfo->methods->unsubsample_init) (cinfo);
-  (*cinfo->methods->disassemble_init) (cinfo);
-
-  /* Loop over scan's data: rows_in_mem pixel rows are processed per loop */
-
-  pixel_rows_output = 0;
-  whichss = 1;			/* arrange to start with subsampled_data[0] */
-
-  for (cur_mcu_row = 0; cur_mcu_row < cinfo->MCU_rows_in_scan;
-       cur_mcu_row += mcu_rows_per_loop) {
-    whichss ^= 1;		/* switch to other subsample buffer */
-
-    /* Obtain v_samp_factor block rows of each component in the scan. */
-    /* This is a single MCU row if interleaved, multiple MCU rows if not. */
-    /* In the noninterleaved case there might be fewer than v_samp_factor */
-    /* block rows remaining; if so, pad with copies of the last pixel row */
-    /* so that unsubsampling doesn't have to treat it as a special case. */
-
-    for (ri = 0; ri < mcu_rows_per_loop; ri++) {
-      if (cur_mcu_row + ri < cinfo->MCU_rows_in_scan) {
-	/* OK to actually read an MCU row. */
-#ifdef BLOCK_SMOOTHING_SUPPORTED
-	if (cinfo->do_block_smoothing)
-	  get_smoothed_row(cinfo, coeff_data,
-			   bsmooth, &whichb, cur_mcu_row + ri);
-	else
-#endif
-	  (*cinfo->methods->disassemble_MCU) (cinfo, coeff_data);
-      
-	reverse_DCT(cinfo, coeff_data, subsampled_data[whichss],
-		    ri * DCTSIZE);
-      } else {
-	/* Need to pad out with copies of the last subsampled row. */
-	/* This can only happen if there is just one component. */
-	duplicate_row(subsampled_data[whichss][0],
-		      cinfo->cur_comp_info[0]->subsampled_width,
-		      ri * DCTSIZE - 1, DCTSIZE);
-      }
-    }
-
-    /* Unsubsample the data */
-    /* First time through is a special case */
-
-    if (cur_mcu_row) {
-      /* Expand last row group of previous set */
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
-	     (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
-	     (short) (DCTSIZE-1));
-      /* and dump the previous set's expanded data */
-      emit_2pass (cinfo, pixel_rows_output, rows_in_mem, fullsize_data);
-      pixel_rows_output += rows_in_mem;
-      /* Expand first row group of this set */
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
-	     (short) (DCTSIZE+1), (short) 0, (short) 1,
-	     (short) 0);
-    } else {
-      /* Expand first row group with dummy above-context */
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
-	     (short) (-1), (short) 0, (short) 1,
-	     (short) 0);
-    }
-    /* Expand second through next-to-last row groups of this set */
-    for (i = 1; i <= DCTSIZE-2; i++) {
-      expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
-	     (short) (i-1), (short) i, (short) (i+1),
-	     (short) i);
-    }
-  } /* end of outer loop */
-
-  /* Expand the last row group with dummy below-context */
-  /* Note whichss points to last buffer side used */
-  expand(cinfo, subsampled_data[whichss], fullsize_data, fullsize_width,
-	 (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
-	 (short) (DCTSIZE-1));
-  /* and dump the remaining data (may be less than full height) */
-  emit_2pass (cinfo, pixel_rows_output,
-	      (int) (cinfo->image_height - pixel_rows_output),
-	      fullsize_data);
-
-  /* Clean up after the scan */
-  (*cinfo->methods->disassemble_term) (cinfo);
-  (*cinfo->methods->unsubsample_term) (cinfo);
-  (*cinfo->methods->entropy_decoder_term) (cinfo);
-  (*cinfo->methods->read_scan_trailer) (cinfo);
-
-  /* Verify that we've seen the whole input file */
-  if ((*cinfo->methods->read_scan_header) (cinfo))
-    ERREXIT(cinfo->emethods, "Didn't expect more than one scan");
-
-  /* Now that we've collected the data, let the color quantizer do its thing */
-  (*cinfo->methods->color_quant_doit) (cinfo, scan_big_image);
-
-  /* Release working memory */
-  free_MCU_row(cinfo, coeff_data);
-#ifdef BLOCK_SMOOTHING_SUPPORTED
-  if (cinfo->do_block_smoothing) {
-    free_MCU_row(cinfo, bsmooth[0]);
-    free_MCU_row(cinfo, bsmooth[1]);
-    free_MCU_row(cinfo, bsmooth[2]);
-  }
-#endif
-  free_sampling_buffer(cinfo, subsampled_data);
-  free_sampimage(cinfo, fullsize_data, (int) cinfo->num_components,
-		 (long) rows_in_mem);
-  (*cinfo->emethods->free_small_sarray)
-		(quantize_out, (long) rows_in_mem);
-  for (ci = 0; ci < cinfo->num_components; ci++) {
-    (*cinfo->emethods->free_big_sarray) (fullsize_cnvt_image[ci]);
-  }
-  (*cinfo->emethods->free_small) ((void *) fullsize_cnvt_image);
-  (*cinfo->emethods->free_small) ((void *) fullsize_cnvt_ptrs);
-
-  /* Close up shop */
-  (*cinfo->methods->color_quant_term) (cinfo);
-}
-
-#endif /* QUANT_2PASS_SUPPORTED */
 
 
 /*
  * Decompression pipeline controller used for multiple-scan files
- * without 2-pass color quantization.
+ * and/or 2-pass color quantization.
  *
  * The current implementation places the "big" buffer at the stage of
- * desubsampled data.  Buffering subsampled data instead would reduce the
- * size of temp files (by about a factor of 2 in typical cases).  However,
- * the unsubsampling logic is dependent on the assumption that unsubsampling
- * occurs during a scan, so it's much easier to do the enlargement as the
- * JPEG file is read.  This also simplifies life for the memory manager,
- * which would otherwise have to deal with overlapping access_big_sarray()
- * requests.
- *
- * At present it appears that most JPEG files will be single-scan, so
- * it doesn't seem worthwhile to try to make this implementation smarter.
+ * desubsampled, non-color-processed data.  This is the only place that
+ * makes sense when doing 2-pass quantization.  For processing multiple-scan
+ * files without 2-pass quantization, it would be possible to develop another
+ * controller that buffers the subsampled data instead, thus reducing the size
+ * of the temp files (by about a factor of 2 in typical cases).  However,
+ * our present unsubsampling logic is dependent on the assumption that
+ * unsubsampling occurs during a scan, so it's much easier to do the
+ * enlargement as the JPEG file is read.  This also simplifies life for the
+ * memory manager, which would otherwise have to deal with overlapping
+ * access_big_sarray() requests.
+ * At present it appears that most JPEG files will be single-scan,
+ * so it doesn't seem worthwhile to worry about this optimization.
  */
 
-#ifdef MULTISCAN_FILES_SUPPORTED
+#ifdef NEED_COMPLEX_CONTROLLER
 
 METHODDEF void
-multi_dcontroller (decompress_info_ptr cinfo)
+complex_dcontroller (decompress_info_ptr cinfo)
 {
   long fullsize_width;		/* # of samples per row in full-size buffers */
   long cur_mcu_row;		/* counts # of MCU rows processed */
@@ -1024,17 +723,9 @@ multi_dcontroller (decompress_info_ptr cinfo)
 #endif
   /* Work buffer for subsampled image data (see comments at head of file) */
   JSAMPIMAGE subsampled_data[2];
-  /* Full-image buffer holding desubsampled, but not color-converted, data */
-  big_sarray_ptr *fullsize_image;
-  JSAMPIMAGE fullsize_ptrs;	/* workspace for access_big_sarray() results */
-  /* Work buffer for color conversion output (full size) */
-  JSAMPIMAGE color_data;
   int whichss, ri;
   short ci, i;
-
-  /* Initialize for 1-pass color quantization, if needed */
-  if (cinfo->quantize_colors)
-    (*cinfo->methods->color_quant_init) (cinfo);
+  boolean single_scan;
 
   /* Compute dimensions of full-size pixel buffers */
   /* Note these are the same whether interleaved or not. */
@@ -1043,13 +734,9 @@ multi_dcontroller (decompress_info_ptr cinfo)
 			     (long) (cinfo->max_h_samp_factor * DCTSIZE));
 
   /* Allocate all working memory that doesn't depend on scan info */
-  /* color_data is the result of the colorspace conversion step */
-  color_data = alloc_sampimage(cinfo, (int) cinfo->color_out_comps,
-			       (long) rows_in_mem, fullsize_width);
-  /* if quantizing colors, also need a one-component output area for that. */
-  if (cinfo->quantize_colors)
-    quantize_out = (*cinfo->emethods->alloc_small_sarray)
-				(fullsize_width, (long) rows_in_mem);
+  /* output_workspace is the color-processed data */
+  output_workspace = alloc_sampimage(cinfo, (int) cinfo->final_out_comps,
+				     (long) rows_in_mem, fullsize_width);
 
   /* Get a big image: fullsize_image is sample data after unsubsampling. */
   fullsize_image = (big_sarray_ptr *) (*cinfo->emethods->alloc_small)
@@ -1076,9 +763,34 @@ multi_dcontroller (decompress_info_ptr cinfo)
 	 * cinfo->num_components		/* max components per scan */
 	 * (cinfo->do_block_smoothing ? 4 : 1)),/* how many of these we need */
 	 /* no extra "medium"-object space */
-	 /* NB: quantizer must get any such objects at color_quant_init time */
 	 (long) 0);
+  /* NB: if quantizer needs any "medium" size objects, it must get them */
+  /* at color_quant_init time */
 
+  /* If file is single-scan, we can do color quantization prescan on-the-fly
+   * during the scan (we must be doing 2-pass quantization, else this method
+   * would not have been selected).  If it is multiple scans, we have to make
+   * a separate pass after we've collected all the components.  (We could save
+   * some I/O by doing CQ prescan during the last scan, but the extra logic
+   * doesn't seem worth the trouble.)
+   */
+
+  single_scan = (cinfo->comps_in_scan == cinfo->num_components);
+
+  /* Account for passes needed (color quantizer adds its passes separately).
+   * If multiscan file, we guess that each component has its own scan,
+   * and increment completed_passes by the number of components in the scan.
+   */
+
+  if (single_scan)
+    cinfo->total_passes++;	/* the single scan */
+  else {
+    cinfo->total_passes += cinfo->num_components; /* guessed # of scans */
+    if (cinfo->two_pass_quantize)
+      cinfo->total_passes++;	/* account for separate CQ prescan pass */
+  }
+  if (! cinfo->two_pass_quantize)
+    cinfo->total_passes++;	/* count output pass unless quantizer does it */
 
   /* Loop over scans in file */
 
@@ -1109,7 +821,7 @@ multi_dcontroller (decompress_info_ptr cinfo)
     /* subsampled_data is sample data before unsubsampling */
     alloc_sampling_buffer(cinfo, subsampled_data);
 
-    /* line up the big buffers */
+    /* line up the big buffers for components in this scan */
     for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
       fullsize_ptrs[ci] = (*cinfo->emethods->access_big_sarray)
 	(fullsize_image[cinfo->cur_comp_info[ci]->component_index],
@@ -1129,6 +841,9 @@ multi_dcontroller (decompress_info_ptr cinfo)
     
     for (cur_mcu_row = 0; cur_mcu_row < cinfo->MCU_rows_in_scan;
 	 cur_mcu_row += mcu_rows_per_loop) {
+      (*cinfo->methods->progress_monitor) (cinfo, cur_mcu_row,
+					   cinfo->MCU_rows_in_scan);
+
       whichss ^= 1;		/* switch to other subsample buffer */
 
       /* Obtain v_samp_factor block rows of each component in the scan. */
@@ -1148,8 +863,9 @@ multi_dcontroller (decompress_info_ptr cinfo)
 #endif
 	    (*cinfo->methods->disassemble_MCU) (cinfo, coeff_data);
 	  
-	  reverse_DCT(cinfo, coeff_data, subsampled_data[whichss],
-		      ri * DCTSIZE);
+	  (*cinfo->methods->reverse_DCT) (cinfo, coeff_data,
+					  subsampled_data[whichss],
+					  ri * DCTSIZE);
 	} else {
 	  /* Need to pad out with copies of the last subsampled row. */
 	  /* This can only happen if there is just one component. */
@@ -1167,6 +883,11 @@ multi_dcontroller (decompress_info_ptr cinfo)
 	expand(cinfo, subsampled_data[whichss], fullsize_ptrs, fullsize_width,
 	       (short) DCTSIZE, (short) (DCTSIZE+1), (short) 0,
 	       (short) (DCTSIZE-1));
+	/* If single scan, can do color quantization prescan on-the-fly */
+	if (single_scan)
+	  (*cinfo->methods->color_quant_prescan) (cinfo, rows_in_mem,
+						  fullsize_ptrs,
+						  output_workspace[0]);
 	/* Realign the big buffers */
 	pixel_rows_output += rows_in_mem;
 	for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
@@ -1190,19 +911,28 @@ multi_dcontroller (decompress_info_ptr cinfo)
 	       (short) (i-1), (short) i, (short) (i+1),
 	       (short) i);
       }
-    } /* end of outer loop */
+    } /* end of loop over scan's data */
     
     /* Expand the last row group with dummy below-context */
     /* Note whichss points to last buffer side used */
     expand(cinfo, subsampled_data[whichss], fullsize_ptrs, fullsize_width,
 	   (short) (DCTSIZE-2), (short) (DCTSIZE-1), (short) (-1),
 	   (short) (DCTSIZE-1));
+    /* If single scan, finish on-the-fly color quantization prescan */
+    if (single_scan)
+      (*cinfo->methods->color_quant_prescan) (cinfo,
+			(int) (cinfo->image_height - pixel_rows_output),
+			fullsize_ptrs, output_workspace[0]);
     
     /* Clean up after the scan */
     (*cinfo->methods->disassemble_term) (cinfo);
     (*cinfo->methods->unsubsample_term) (cinfo);
     (*cinfo->methods->entropy_decoder_term) (cinfo);
     (*cinfo->methods->read_scan_trailer) (cinfo);
+    if (single_scan)
+      cinfo->completed_passes++;
+    else
+      cinfo->completed_passes += cinfo->comps_in_scan;
 
     /* Release scan-local working memory */
     free_MCU_row(cinfo, coeff_data);
@@ -1216,61 +946,32 @@ multi_dcontroller (decompress_info_ptr cinfo)
     free_sampling_buffer(cinfo, subsampled_data);
     
     /* Repeat if there is another scan */
-  } while ((*cinfo->methods->read_scan_header) (cinfo));
+  } while ((!single_scan) && (*cinfo->methods->read_scan_header) (cinfo));
 
-  /* Now that we've collected all the data, color convert & output it. */
-
-  for (pixel_rows_output = 0; pixel_rows_output < cinfo->image_height;
-       pixel_rows_output += rows_in_mem) {
-
-    /* realign the big buffers */
-    for (ci = 0; ci < cinfo->num_components; ci++) {
-      fullsize_ptrs[ci] = (*cinfo->emethods->access_big_sarray)
-	(fullsize_image[ci], pixel_rows_output, FALSE);
-    }
-
-    emit_1pass (cinfo,
-		(int) MIN((long) rows_in_mem,
-			  cinfo->image_height - pixel_rows_output),
-		fullsize_ptrs, color_data);
+  if (single_scan) {
+    /* If we expected just one scan, make SURE there's just one */
+    if ((*cinfo->methods->read_scan_header) (cinfo))
+      ERREXIT(cinfo->emethods, "Didn't expect more than one scan");
+    /* We did the CQ prescan on-the-fly, so we are all set. */
+  } else {
+    /* For multiple-scan file, do the CQ prescan as a separate pass. */
+    /* The main reason why prescan is passed the output_workspace is */
+    /* so that we can use scan_big_image to call it... */
+    if (cinfo->two_pass_quantize)
+      scan_big_image(cinfo, cinfo->methods->color_quant_prescan);
   }
+
+  /* Now that we've collected the data, do color processing and output */
+  if (cinfo->two_pass_quantize)
+    (*cinfo->methods->color_quant_doit) (cinfo, scan_big_image);
+  else
+    scan_big_image(cinfo, emit_1pass);
 
   /* Release working memory */
-  free_sampimage(cinfo, color_data, (int) cinfo->color_out_comps,
-		 (long) rows_in_mem);
-  if (cinfo->quantize_colors)
-    (*cinfo->emethods->free_small_sarray)
-		(quantize_out, (long) rows_in_mem);
-  for (ci = 0; ci < cinfo->num_components; ci++) {
-    (*cinfo->emethods->free_big_sarray) (fullsize_image[ci]);
-  }
-  (*cinfo->emethods->free_small) ((void *) fullsize_image);
-  (*cinfo->emethods->free_small) ((void *) fullsize_ptrs);
-
-  /* Close up shop */
-  if (cinfo->quantize_colors)
-    (*cinfo->methods->color_quant_term) (cinfo);
+  /* (no work -- we let free_all release what's needful) */
 }
 
-#endif /* MULTISCAN_FILES_SUPPORTED */
-
-
-/*
- * Decompression pipeline controller used for multiple-scan files
- * with 2-pass color quantization.
- */
-
-#ifdef MULTISCAN_FILES_SUPPORTED
-#ifdef QUANT_2PASS_SUPPORTED
-
-METHODDEF void
-multi_2quant_dcontroller (decompress_info_ptr cinfo)
-{
-  ERREXIT(cinfo->emethods, "Not implemented yet");
-}
-
-#endif /* QUANT_2PASS_SUPPORTED */
-#endif /* MULTISCAN_FILES_SUPPORTED */
+#endif /* NEED_COMPLEX_CONTROLLER */
 
 
 /*
@@ -1288,21 +989,18 @@ jseldpipeline (decompress_info_ptr cinfo)
   
   if (cinfo->comps_in_scan == cinfo->num_components) {
     /* It's a single-scan file */
-#ifdef QUANT_2PASS_SUPPORTED
-    if (cinfo->two_pass_quantize)
-      cinfo->methods->d_pipeline_controller = single_2quant_dcontroller;
-    else
+    if (cinfo->two_pass_quantize) {
+#ifdef NEED_COMPLEX_CONTROLLER
+      cinfo->methods->d_pipeline_controller = complex_dcontroller;
+#else
+      ERREXIT(cinfo->emethods, "2-pass quantization support was not compiled");
 #endif
-      cinfo->methods->d_pipeline_controller = single_dcontroller;
+    } else
+      cinfo->methods->d_pipeline_controller = simple_dcontroller;
   } else {
     /* It's a multiple-scan file */
-#ifdef MULTISCAN_FILES_SUPPORTED
-#ifdef QUANT_2PASS_SUPPORTED
-    if (cinfo->two_pass_quantize)
-      cinfo->methods->d_pipeline_controller = multi_2quant_dcontroller;
-    else
-#endif
-      cinfo->methods->d_pipeline_controller = multi_dcontroller;
+#ifdef NEED_COMPLEX_CONTROLLER
+    cinfo->methods->d_pipeline_controller = complex_dcontroller;
 #else
     ERREXIT(cinfo->emethods, "Multiple-scan support was not compiled");
 #endif

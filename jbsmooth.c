@@ -1,7 +1,7 @@
 /*
  * jbsmooth.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -43,7 +43,7 @@ smooth_coefficients (decompress_info_ptr cinfo,
   if (above != NULL && below != NULL) {
     for (col = 1; col < blocks_in_row-1; col++) {
 
-      /* See section 13.10 of JPEG-8-R8, or K.8 of JPEG-9-R6.
+      /* See section K.8 of the JPEG standard.
        *
        * As I understand it, this produces approximations
        * for the low frequency AC components, based on the
@@ -51,9 +51,7 @@ smooth_coefficients (decompress_info_ptr cinfo,
        * (Thus it can't be used for blocks on the image edges.)
        */
 
-      /* The layout of these variables corresponds to
-       * the text in 13.10
-       */
+      /* The layout of these variables corresponds to text and figure in K.8 */
       
       JCOEF DC1, DC2, DC3;
       JCOEF DC4, DC5, DC6;

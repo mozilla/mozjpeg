@@ -1,6 +1,6 @@
 L jdmain.mix jdmaster.mix jddeflts.mix jbsmooth.mix jdarith.mix jdcolor.mix
 L jdhuff.mix jdmcu.mix jdpipe.mix jdsample.mix jquant1.mix jquant2.mix
 L jrevdct.mix jrdjfif.mix jwrgif.mix jwrppm.mix jwrrle.mix jwrtarga.mix
-L jutils.mix jvirtmem.mix jerror.mix
+L jutils.mix jerror.mix jmemmgr.mix jmemsys.mix jmemdosa.mix
 fa;
 b djpeg,8K,48K,

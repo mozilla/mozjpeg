@@ -1,19 +1,24 @@
 USAGE instructions for the Independent JPEG Group's JPEG software
 =================================================================
 
+INTRODUCTION
+
 This distribution contains software to implement JPEG image compression and
 decompression.  JPEG (pronounced "jay-peg") is a standardized compression
-method for full-color and gray-scale images.  JPEG is intended for
-"real-world" scenes; cartoons and other non-realistic images are not its
-strong suit.  JPEG is lossy, meaning that the output image is not necessarily
-identical to the input image.  Hence you should not use JPEG if you have to
-have identical output bits.  However, on typical images of real-world scenes,
-very good compression levels can be obtained with no visible change, and
-amazingly high compression levels can be obtained if you can tolerate a
-low-quality image.
+method for full-color and gray-scale images.  JPEG is designed to handle
+"real-world" scenes, for example scanned photographs.  Cartoons, line
+drawings, and other non-realistic images are not JPEG's strong suit; on this
+sort of material you may get poor image quality and/or little compression.
+
+JPEG is lossy, meaning that the output image is not necessarily identical to
+the input image.  Hence you should not use JPEG if you have to have identical
+output bits.  However, on typical real-world images, very good compression
+levels can be obtained with no visible change, and amazingly high compression
+is possible if you can tolerate a low-quality image.  You can trade off image
+quality against file size by adjusting the compressor's "quality" setting.
 
 This file describes usage of the standard programs "cjpeg" and "djpeg" that
-can be built directly from the distributed software.  See the README file for
+can be built directly from the distributed C code.  See the README file for
 hints on incorporating the JPEG software into other programs.
 
 If you are on a Unix machine you may prefer to read the Unix-style manual
@@ -22,6 +27,8 @@ pages in files cjpeg.1 and djpeg.1.
 NOTE: at some point we will probably redesign the user interface, so the
 command line switches described here will change.
 
+
+GENERAL USAGE
 
 We provide two programs, cjpeg to compress an image file into JPEG format,
 and djpeg to decompress a JPEG file back into a conventional image format.
@@ -35,24 +42,26 @@ named.  They always write to standard output (with trace/error messages to
 standard error).  These conventions are handy for piping images between
 programs.
 
-On PC, Macintosh, and Amiga systems, you say:
+On most non-Unix systems, you say:
 	cjpeg [switches] imagefile jpegfile
 or
 	djpeg [switches] jpegfile  imagefile
-i.e., both input and output files are named on the command line.  This style
-is a little more foolproof, and it loses no functionality if you don't have
-pipes.  (You can get this style on Unix too, if you prefer, by defining
-TWO_FILE_COMMANDLINE; see SETUP.)
+i.e., both the input and output files are named on the command line.  This
+style is a little more foolproof, and it loses no functionality if you don't
+have pipes.  (You can get this style on Unix too, if you prefer, by defining
+TWO_FILE_COMMANDLINE when you compile the programs; see SETUP.)
 
 The currently supported image file formats are: PPM (PBMPLUS color format),
 PGM (PBMPLUS gray-scale format), GIF, Targa, and RLE (Utah Raster Toolkit
 format).  (RLE is supported only if the URT library is available.)
 cjpeg recognizes the input image format automatically, with the exception
-of some Targa-format files.
+of some Targa-format files.  You have to tell djpeg which format to generate.
 
 The only JPEG file format currently supported is the JFIF format.  Support for
 the TIFF/JPEG format will probably be added at some future date.
 
+
+CJPEG DETAILS
 
 The command line switches for cjpeg are:
 
@@ -63,8 +72,9 @@ The command line switches for cjpeg are:
 	-o		Perform optimization of entropy encoding parameters.
 			Without this, default encoding parameters are used.
 			-o usually makes the JPEG file a little smaller, but
-			cjpeg runs much slower.  Image quality and speed of
-			decompression are unaffected by -o.
+			cjpeg runs somewhat slower and needs much more memory.
+			Image quality and speed of decompression are unaffected
+			by -o.
 
 	-T		Input file is Targa format.  Targa files that contain
 			an "identification" field will not be automatically
@@ -78,6 +88,12 @@ The command line switches for cjpeg are:
 
 	-d		Enable debug printout.  More -d's give more printout.
 			Also, version information is printed at startup.
+
+	-m memory	Set limit for amount of memory to use in processing
+			large images.  Value is in thousands of bytes, or
+			millions of bytes if "M" is attached to the number.
+			For example, -m 4m selects 4000000 bytes.  If more
+			space is needed, temporary files will be used.
 
 The -Q switch lets you trade off compressed file size against quality of the
 reconstructed image: the higher the -Q setting, the larger the JPEG file, and
@@ -105,6 +121,8 @@ cjpeg emits a warning message when you give such a -Q value, because some
 commercial JPEG programs may be unable to decode the resulting file.)
 
 
+DJPEG DETAILS
+
 The command line switches for djpeg are:
 
 	-G		Select GIF output format (implies -q, with default
@@ -122,41 +140,73 @@ The command line switches for djpeg are:
 			if -q is specified; otherwise, 24-bit full-color
 			format is emitted.
 
+	-g		Force gray-scale output even if input is color.
+
+	-q N		Quantize to N colors.  This reduces the number of
+			colors in the output image so that it can be displayed
+			on a colormapped display or stored in a colormapped
+			file format.  For example, if you have an 8-bit
+			display, you'd need to quantize to 256 or fewer colors.
+
+	-D		Do not use dithering in color quantization.
+			By default, Floyd-Steinberg dithering is applied when
+			quantizing colors, but on some images dithering may
+			result in objectionable "graininess".  If that
+			happens, you can turn off dithering with -D.
+			-D is ignored unless you also say -q or -G.
+
+	-1		Use one-pass instead of two-pass color quantization.
+			The one-pass method is faster and needs less memory,
+			but it produces a lower-quality image.
+			-1 is ignored unless you also say -q or -G.  Also,
+			the one-pass method is always used for gray-scale
+			output (the two-pass method is no improvement then).
+
 	-b		Perform cross-block smoothing.  This is quite
 			memory-intensive and only seems to improve the image
 			at very low quality settings (-Q 10 to 20 or so).
 			At normal -Q settings it may make the image worse.
 
-	-g		Force gray-scale output even if input is color.
-
-	-q N		Quantize to N colors.
-
-	-D		Do NOT use dithering in color quantization.
-			By default, Floyd-Steinberg dithering is applied when
-			quantizing colors, but on some images dithering may
-			result in objectionable "graininess".  If that
-			happens, you can turn off dithering with -D.
-
-	-2		Use two-pass color quantization (not yet supported).
-
 	-d		Enable debug printout.  More -d's give more printout.
 			Also, version information is printed at startup.
 
-Color quantization currently uses a rather shoddy algorithm (although it's not
-as horrible when dithered).  Because of this, the GIF output mode is NOT
-RECOMMENDED in the current release, except for gray-scale output.  You can get
-better results by applying ppmquant to the unquantized (PPM) output of djpeg,
-then converting to GIF with ppmtogif.  (See SUPPORTING SOFTWARE in the README
-file.)  We expect to provide a considerably better quantization algorithm in a
-future release.  (The same applies to colormapped RLE or Targa output, of
-course.)
+	-m memory	Set limit for amount of memory to use in processing
+			large images.  Value is in thousands of bytes, or
+			millions of bytes if "M" is attached to the number.
+			For example, -m 4m selects 4000000 bytes.  If more
+			space is needed, temporary files will be used.
 
-Note that djpeg *can* read noninterleaved JPEG files even though cjpeg can't
-yet generate them.  For most applications this is a nonissue, since hardly
-anybody seems to be using noninterleaved format.
 
-On a non-virtual-memory machine, you may run out of memory if you use -I or -o
-in cjpeg, or -q ... -2 in djpeg, or try to read an interlaced GIF file, or try
-to read or write an RLE file, or try to read an interlaced or bottom-up Targa
-file.  This will be addressed soon by replacing jvirtmem.c with something that
-uses temporary files for large images.
+HINTS
+
+Avoid running an image through a series of JPEG compression/decompression
+cycles.  Image quality loss will accumulate; after ten or so cycles the image
+may be noticeably worse than it was after one cycle.  It's best to use a
+lossless format while manipulating an image, then convert to JPEG format when
+you are ready to file the image away.
+
+The -o option to cjpeg is worth using when you are making a "final" version
+for posting or archiving.  It's also a win when you are using low -Q settings
+to make very small JPEG files; the percentage improvement is often a lot more
+than it is on larger files.
+
+The default memory usage limit (-m) is set when the software is compiled.
+If you get an "insufficient memory" error, try specifying a smaller -m value,
+even -m 0 to use the absolute minimum space.  You may want to recompile with
+a smaller default value if this happens often.
+
+djpeg with two-pass color quantization requires a good deal of space; on
+MS-DOS machines it may run out of memory even with -m 0.  In that case you
+can still decompress, with some loss of image quality, by specifying -1
+for one-pass quantization.
+
+If more space is needed than will fit in the available main memory (as
+determined by -m), temporary files will be used.  (MS-DOS versions will try to
+get extended or expanded memory first.)  The temporary files are often rather
+large: in typical cases they occupy three bytes per pixel, for example
+3*800*600 = 1.44Mb for an 800x600 image.  If you don't have enough free disk
+space, leave out -o (for cjpeg) or specify -1 (for djpeg).  On MS-DOS, the
+temporary files are created in the directory named by the TMP or TEMP
+environment variable, or in the current directory if neither of those exist.
+Amiga implementations put the temp files in the directory named by JPEGTMP:,
+so be sure to assign JPEGTMP: to a disk partition with adequate free space.

@@ -1,7 +1,7 @@
 /*
  * jchuff.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -34,7 +34,7 @@ fix_huff_tbl (HUFF_TBL * htbl)
   UINT16 huffcode[257];
   UINT16 code;
   
-  /* Figure 7.3.5.4.2.1: make table of Huffman code length for each symbol */
+  /* Figure C.1: make table of Huffman code length for each symbol */
   /* Note that this is in code-length order. */
 
   p = 0;
@@ -45,7 +45,7 @@ fix_huff_tbl (HUFF_TBL * htbl)
   huffsize[p] = 0;
   lastp = p;
   
-  /* Figure 7.3.5.4.2.2: generate the codes themselves */
+  /* Figure C.2: generate the codes themselves */
   /* Note that this is in code-length order. */
   
   code = 0;
@@ -60,27 +60,21 @@ fix_huff_tbl (HUFF_TBL * htbl)
     si++;
   }
   
-  /* Figure 7.3.5.4.2.3: generate encoding tables */
+  /* Figure C.3: generate encoding tables */
   /* These are code and size indexed by symbol value */
+
+  /* Set any codeless symbols to have code length 0;
+   * this allows emit_bits to detect any attempt to emit such symbols.
+   */
+  MEMZERO((void *) htbl->ehufsi, SIZEOF(htbl->ehufsi));
 
   for (p = 0; p < lastp; p++) {
     htbl->ehufco[htbl->huffval[p]] = huffcode[p];
     htbl->ehufsi[htbl->huffval[p]] = huffsize[p];
   }
   
-  /* Figure 13.4.2.3.1: generate decoding tables */
-
-  p = 0;
-  for (l = 1; l <= 16; l++) {
-    if (htbl->bits[l]) {
-      htbl->valptr[l] = p;	/* huffval[] index of 1st sym of code len l */
-      htbl->mincode[l] = huffcode[p]; /* minimum code of length l */
-      p += htbl->bits[l];
-      htbl->maxcode[l] = huffcode[p-1];	/* maximum code of length l */
-    } else {
-      htbl->maxcode[l] = -1;
-    }
-  }
+  /* We don't bother to fill in the decoding tables mincode[], maxcode[], */
+  /* and valptr[], since they are not used for encoding. */
 }
 
 
@@ -116,6 +110,10 @@ emit_bits (UINT16 code, int size)
   /* This routine is heavily used, so it's worth coding tightly. */
   register INT32 put_buffer = code;
   register int put_bits = huff_put_bits;
+
+  /* if size is 0, caller used an invalid Huffman table entry */
+  if (size == 0)
+    ERREXIT(cinfo->emethods, "Missing Huffman code table entry");
 
   put_buffer &= (((INT32) 1) << size) - 1; /* Mask off any excess bits in code */
   
@@ -161,7 +159,7 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
   register int nbits;
   register int k, r, i;
   
-  /* Encode the DC coefficient difference per section 7.3.5.1 */
+  /* Encode the DC coefficient difference per section F.1.2.1 */
   
   temp = temp2 = block[0];
 
@@ -184,9 +182,10 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
 
   /* Emit that number of bits of the value, if positive, */
   /* or the complement of its magnitude, if negative. */
-  emit_bits((UINT16) temp2, nbits);
+  if (nbits)			/* emit_bits rejects calls with size 0 */
+    emit_bits((UINT16) temp2, nbits);
   
-  /* Encode the AC coefficients per section 7.3.5.2 */
+  /* Encode the AC coefficients per section F.1.2.2 */
   
   r = 0;			/* r = run length of zeros */
   
@@ -378,7 +377,7 @@ gen_huff_coding (compress_info_ptr cinfo, HUFF_TBL *htbl, long freq[])
   int p, i, j;
   long v;
 
-  /* This algorithm is explained in section 13.2 of JPEG-8-R8 */
+  /* This algorithm is explained in section K.2 of the JPEG standard */
 
   MEMZERO((void *) bits, SIZEOF(bits));
   MEMZERO((void *) codesize, SIZEOF(codesize));
@@ -512,7 +511,7 @@ htest_one_block (JBLOCK block, JCOEF block0,
   register int nbits;
   register int k, r;
   
-  /* Encode the DC coefficient difference per section 7.3.5.1 */
+  /* Encode the DC coefficient difference per section F.1.2.1 */
   
   /* Find the number of bits needed for the magnitude of the coefficient */
   temp = block0;
@@ -524,7 +523,7 @@ htest_one_block (JBLOCK block, JCOEF block0,
   /* Count the Huffman symbol for the number of bits */
   dc_counts[nbits]++;
   
-  /* Encode the AC coefficients per section 7.3.5.2 */
+  /* Encode the AC coefficients per section F.1.2.2 */
   
   r = 0;			/* r = run length of zeros */
   
@@ -689,6 +688,15 @@ jselchuffman (compress_info_ptr cinfo)
     cinfo->methods->entropy_encoder_term = huff_term;
 #ifdef ENTROPY_OPT_SUPPORTED
     cinfo->methods->entropy_optimize = huff_optimize;
+    /* The standard Huffman tables are only valid for 8-bit data precision.
+     * If the precision is higher, force optimization on so that usable
+     * tables will be computed.  This test can be removed if default tables
+     * are supplied that are valid for the desired precision.
+     */
+    if (cinfo->data_precision > 8)
+      cinfo->optimize_coding = TRUE;
+    if (cinfo->optimize_coding)
+      cinfo->total_passes++;	/* one pass needed for entropy optimization */
 #endif
   }
 }

@@ -1,7 +1,7 @@
 /*
  * jpegdata.h
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -197,11 +197,13 @@ typedef struct {		/* A Huffman coding table */
    * coding and decoding.  These fields should be considered private to the
    * Huffman compression & decompression modules.
    */
+	/* encoding tables: */
 	UINT16 ehufco[256];	/* code for each symbol */
 	char ehufsi[256];	/* length of code for each symbol */
+	/* decoding tables: (element [0] of each array is unused) */
 	UINT16 mincode[17];	/* smallest code of length k */
 	INT32 maxcode[18];	/* largest code of length k (-1 if none) */
-	/* maxcode[17] is a sentinel to ensure huff_DECODE terminates */
+	/* (maxcode[17] is a sentinel to ensure huff_DECODE terminates) */
 	short valptr[17];	/* huffval[] index of 1st symbol of length k */
 } HUFF_TBL;
 
@@ -281,6 +283,13 @@ struct compress_info_struct {
 	short max_v_samp_factor; /* largest v_samp_factor */
 
 /*
+ * These fields may be useful for progress monitoring
+ */
+
+	int total_passes;	/* number of passes expected */
+	int completed_passes;	/* number of passes completed so far */
+
+/*
  * These fields are valid during any one scan
  */
 	short comps_in_scan;	/* # of JPEG components output this time */
@@ -332,7 +341,7 @@ struct decompress_info_struct {
 	/* the following are ignored if not quantize_colors: */
 	boolean two_pass_quantize;	/* use two-pass color quantization? */
 	boolean use_dithering;		/* want color dithering? */
-	int desired_number_of_colors;	/* number of colors to use */
+	int desired_number_of_colors;	/* max number of colors to use */
 
 	boolean do_block_smoothing; /* T = apply cross-block smoothing */
 	boolean do_pixel_smoothing; /* T = apply post-subsampling smoothing */
@@ -345,7 +354,8 @@ struct decompress_info_struct {
  * JGETC macro, below.
  * Note: the user interface is expected to allocate the input_buffer and
  * initialize bytes_in_buffer to 0.  Also, for JFIF/raw-JPEG input, the UI
- * actually supplies the read_jpeg_data method.
+ * actually supplies the read_jpeg_data method.  This is all handled by
+ * j_d_defaults in a typical implementation.
  */
 	char * input_buffer;	/* start of buffer (private to input code) */
 	char * next_input_byte;	/* => next byte to read from buffer */
@@ -395,8 +405,25 @@ struct decompress_info_struct {
 
 	short color_out_comps;	/* # of color components output by color_convert */
 				/* (need not match num_components) */
-	short final_out_comps;	/* # of color components in output image */
+	short final_out_comps;	/* # of color components sent to put_pixel_rows */
 	/* (1 when quantizing colors, else same as color_out_comps) */
+
+/*
+ * When quantizing colors, the color quantizer leaves a pointer to the output
+ * colormap in these fields.  The colormap is valid from the time put_color_map
+ * is called (must be before any put_pixel_rows calls) until shutdown (more
+ * specifically, until free_all is called to release memory).
+ */
+	int actual_number_of_colors; /* actual number of entries */
+	JSAMPARRAY colormap;	/* NULL if not valid */
+	/* map has color_out_comps rows * actual_number_of_colors columns */
+
+/*
+ * These fields may be useful for progress monitoring
+ */
+
+	int total_passes;	/* number of passes expected */
+	int completed_passes;	/* number of passes completed so far */
 
 /*
  * These fields are valid during any one scan
@@ -455,7 +482,7 @@ typedef struct big_barray_control * big_barray_ptr;
  * and pseudo-ANSI compilers get confused.  To keep one of these bozos happy,
  * add -DINCOMPLETE_TYPES_BROKEN to CFLAGS in your Makefile.  Then we will
  * pseudo-define the structs as containing a single "dummy" field.
- * The memory manager(s) #define AM_MEMORY_MANAGER before including this file,
+ * The memory managers #define AM_MEMORY_MANAGER before including this file,
  * so that they can make their own definitions of the structs.
  */
 
@@ -526,21 +553,14 @@ struct external_methods_struct {
 	/* error_exit if not successful. */
 	METHOD(void *, alloc_small, (size_t sizeofobject));
 	METHOD(void, free_small, (void *ptr));
-#ifdef NEED_FAR_POINTERS	/* routines for getting far-heap space */
 	METHOD(void FAR *, alloc_medium, (size_t sizeofobject));
 	METHOD(void, free_medium, (void FAR *ptr));
-#else
-#define alloc_medium alloc_small
-#define free_medium  free_small
-#endif
 	METHOD(JSAMPARRAY, alloc_small_sarray, (long samplesperrow,
 						long numrows));
-	METHOD(void, free_small_sarray, (JSAMPARRAY ptr,
-					 long numrows));
+	METHOD(void, free_small_sarray, (JSAMPARRAY ptr));
 	METHOD(JBLOCKARRAY, alloc_small_barray, (long blocksperrow,
 						 long numrows));
-	METHOD(void, free_small_barray, (JBLOCKARRAY ptr,
-					 long numrows));
+	METHOD(void, free_small_barray, (JBLOCKARRAY ptr));
 	METHOD(big_sarray_ptr, request_big_sarray, (long samplesperrow,
 						    long numrows,
 						    long unitheight));
@@ -558,6 +578,9 @@ struct external_methods_struct {
 						boolean writable));
 	METHOD(void, free_big_sarray, (big_sarray_ptr ptr));
 	METHOD(void, free_big_barray, (big_barray_ptr ptr));
+	METHOD(void, free_all, (void));
+
+	long max_memory_to_use;	/* maximum amount of memory to use */
 };
 
 /* Macros to simplify using the error and trace message stuff */
@@ -616,12 +639,15 @@ struct external_methods_struct {
 struct compress_methods_struct {
 	/* Hook for user interface to get control after input_init */
 	METHOD(void, c_ui_method_selection, (compress_info_ptr cinfo));
+	/* Hook for user interface to do progress monitoring */
+	METHOD(void, progress_monitor, (compress_info_ptr cinfo,
+					long loopcounter, long looplimit));
 	/* Input image reading & conversion to standard form */
 	METHOD(void, input_init, (compress_info_ptr cinfo));
 	METHOD(void, get_input_row, (compress_info_ptr cinfo,
 				     JSAMPARRAY pixel_row));
 	METHOD(void, input_term, (compress_info_ptr cinfo));
-	/* Gamma and color space conversion */
+	/* Color space and gamma conversion */
 	METHOD(void, colorin_init, (compress_info_ptr cinfo));
 	METHOD(void, get_sample_rows, (compress_info_ptr cinfo,
 				       int rows_to_read,
@@ -675,11 +701,10 @@ struct compress_methods_struct {
 struct decompress_methods_struct {
 	/* Hook for user interface to get control after reading file header */
 	METHOD(void, d_ui_method_selection, (decompress_info_ptr cinfo));
+	/* Hook for user interface to do progress monitoring */
+	METHOD(void, progress_monitor, (decompress_info_ptr cinfo,
+					long loopcounter, long looplimit));
 	/* JPEG file scanning */
-	/* Note: user interface supplies read_jpeg_data for JFIF/raw-JPEG
-	 * reading.  For file formats that require random access (eg, TIFF)
-	 * the JPEG file header module will override the UI read_jpeg_data.
-	 */
 	METHOD(void, read_file_header, (decompress_info_ptr cinfo));
 	METHOD(boolean, read_scan_header, (decompress_info_ptr cinfo));
 	METHOD(int, read_jpeg_data, (decompress_info_ptr cinfo));
@@ -691,9 +716,13 @@ struct decompress_methods_struct {
 				      JBLOCK *MCU_data));
 	METHOD(void, entropy_decoder_term, (decompress_info_ptr cinfo));
 	/* MCU disassembly: fetch MCUs from entropy_decode, build coef array */
+	/* The reverse_DCT step is in the same module for symmetry reasons */
 	METHOD(void, disassemble_init, (decompress_info_ptr cinfo));
 	METHOD(void, disassemble_MCU, (decompress_info_ptr cinfo,
 				       JBLOCKIMAGE image_data));
+	METHOD(void, reverse_DCT, (decompress_info_ptr cinfo,
+				   JBLOCKIMAGE coeff_data,
+				   JSAMPIMAGE output_data, int start_row));
 	METHOD(void, disassemble_term, (decompress_info_ptr cinfo));
 	/* Cross-block smoothing */
 	METHOD(void, smooth_coefficients, (decompress_info_ptr cinfo,
@@ -707,10 +736,10 @@ struct decompress_methods_struct {
 	METHOD(void, unsubsample_init, (decompress_info_ptr cinfo));
 	unsubsample_ptr unsubsample[MAX_COMPS_IN_SCAN];
 	METHOD(void, unsubsample_term, (decompress_info_ptr cinfo));
-	/* Gamma and color space conversion */
+	/* Color space and gamma conversion */
 	METHOD(void, colorout_init, (decompress_info_ptr cinfo));
 	METHOD(void, color_convert, (decompress_info_ptr cinfo,
-				     int num_rows,
+				     int num_rows, long num_cols,
 				     JSAMPIMAGE input_data,
 				     JSAMPIMAGE output_data));
 	METHOD(void, colorout_term, (decompress_info_ptr cinfo));
@@ -722,7 +751,8 @@ struct decompress_methods_struct {
 				      JSAMPARRAY output_data));
 	METHOD(void, color_quant_prescan, (decompress_info_ptr cinfo,
 					   int num_rows,
-					   JSAMPIMAGE image_data));
+					   JSAMPIMAGE image_data,
+					   JSAMPARRAY workspace));
 	METHOD(void, color_quant_doit, (decompress_info_ptr cinfo,
 					quantize_caller_ptr source_method));
 	METHOD(void, color_quant_term, (decompress_info_ptr cinfo));
@@ -761,7 +791,6 @@ EXTERN void j_c_defaults PP((compress_info_ptr cinfo, int quality,
 EXTERN void j_monochrome_default PP((compress_info_ptr cinfo));
 EXTERN void j_set_quality PP((compress_info_ptr cinfo, int quality,
 			      boolean force_baseline));
-EXTERN void j_c_free_defaults PP((compress_info_ptr cinfo));
 
 /* main entry for decompression */
 EXTERN void jpeg_decompress PP((decompress_info_ptr cinfo));
@@ -769,8 +798,6 @@ EXTERN void jpeg_decompress PP((decompress_info_ptr cinfo));
 /* default parameter setup for decompression */
 EXTERN void j_d_defaults PP((decompress_info_ptr cinfo,
 			     boolean standard_buffering));
-EXTERN void j_d_free_defaults PP((decompress_info_ptr cinfo,
-				  boolean standard_buffering));
 
 /* forward DCT */
 EXTERN void j_fwd_dct PP((DCTBLOCK data));
@@ -822,12 +849,30 @@ EXTERN void jselwtarga PP((decompress_info_ptr cinfo)); /* jwrtarga.c */
 
 /* method selection routines for system-dependent modules */
 EXTERN void jselerror PP((external_methods_ptr emethods)); /* jerror.c */
-EXTERN void jselvirtmem PP((external_methods_ptr emethods)); /* jvirtmem.c */
+EXTERN void jselmemmgr PP((external_methods_ptr emethods)); /* jmemmgr.c */
 
-/* debugging hook in jvirtmem.c */
-#ifdef MEM_STATS
-EXTERN void j_mem_stats PP((void));
+
+/* We assume that right shift corresponds to signed division by 2 with
+ * rounding towards minus infinity.  This is correct for typical "arithmetic
+ * shift" instructions that shift in copies of the sign bit.  But some
+ * C compilers implement >> with an unsigned shift.  For these machines you
+ * must define RIGHT_SHIFT_IS_UNSIGNED.
+ * RIGHT_SHIFT provides a proper signed right shift of an INT32 quantity.
+ * It is only applied with constant shift counts.  SHIFT_TEMPS must be
+ * included in the variables of any routine using RIGHT_SHIFT.
+ */
+
+#ifdef RIGHT_SHIFT_IS_UNSIGNED
+#define SHIFT_TEMPS	INT32 shift_temp;
+#define RIGHT_SHIFT(x,shft)  \
+	((shift_temp = (x)) < 0 ? \
+	 (shift_temp >> (shft)) | ((~((INT32) 0)) << (32-(shft))) : \
+	 (shift_temp >> (shft)))
+#else
+#define SHIFT_TEMPS
+#define RIGHT_SHIFT(x,shft)	((x) >> (shft))
 #endif
+
 
 /* Miscellaneous useful macros */
 

@@ -25,23 +25,28 @@ LDFLAGS= /Fm /F 2000             # /F hhhh  sets stack size (in hex)
 SOURCES= jbsmooth.c jcarith.c jccolor.c jcdeflts.c jcexpand.c jchuff.c \
         jcmain.c jcmaster.c jcmcu.c jcpipe.c jcsample.c jdarith.c jdcolor.c \
         jddeflts.c jdhuff.c jdmain.c jdmaster.c jdmcu.c jdpipe.c jdsample.c \
-        jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c \
-        jvirtmem.c jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c \
-        jwrjfif.c jwrgif.c jwrppm.c jwrrle.c jwrtarga.c
+        jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c jmemmgr.c \
+        jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c jwrjfif.c jwrgif.c \
+        jwrppm.c jwrrle.c jwrtarga.c
+# virtual source files (not present in distribution file)
+VIRTSOURCES= jmemsys.c
+# system-dependent implementations of source files
+SYSDEPFILES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemdos.h \
+        jmemdosa.asm
 # files included by source files
-INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h egetopt.c
 # documentation, test, and support files
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
-        makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.tc \
+        makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.bcc \
         makcjpeg.lst makdjpeg.lst makefile.pwc makcjpeg.cf makdjpeg.cf \
-        makljpeg.cf
-OTHERFILES= ansi2knr.c config.c
-TESTFILES= testorig.jpg testimg.ppm testimg.jpg
-DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(INCLUDES) $(OTHERFILES) \
-        $(TESTFILES)
+        makljpeg.cf makefile.mms makefile.vms makvms.opt
+OTHERFILES= ansi2knr.c ckconfig.c example.c
+TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
+DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \
+        $(OTHERFILES) $(TESTFILES)
 # objectfiles common to cjpeg and djpeg
-COMOBJECTS= jutils.obj jvirtmem.obj jerror.obj
+COMOBJECTS= jutils.obj jerror.obj jmemmgr.obj jmemsys.obj jmemdosa.obj
 # compression objectfiles
 CLIBOBJECTS= jcmaster.obj jcdeflts.obj jcarith.obj jccolor.obj jcexpand.obj \
         jchuff.obj jcmcu.obj jcpipe.obj jcsample.obj jfwddct.obj \
@@ -61,6 +66,11 @@ LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 # notice that objectfile is also inserted into libjpeg.lib
 .c.obj:
 	cl $(CFLAGS) /c $*.c
+	lib libjpeg -+$*.obj;
+
+# inference rule for assembly code
+.asm.obj:
+	masm /mx $*;
 	lib libjpeg -+$*.obj;
 
 
@@ -118,7 +128,7 @@ jrevdct.obj : jrevdct.c jinclude.h jconfig.h jpegdata.h
 
 jutils.obj : jutils.c jinclude.h jconfig.h jpegdata.h
 
-jvirtmem.obj : jvirtmem.c jinclude.h jconfig.h jpegdata.h
+jmemmgr.obj : jmemmgr.c jinclude.h jconfig.h jpegdata.h jmemsys.h
 
 jrdjfif.obj : jrdjfif.c jinclude.h jconfig.h jpegdata.h
 
@@ -140,6 +150,9 @@ jwrrle.obj : jwrrle.c jinclude.h jconfig.h jpegdata.h
 
 jwrtarga.obj : jwrtarga.c jinclude.h jconfig.h jpegdata.h
 
+jmemsys.obj : jmemsys.c jinclude.h jconfig.h jpegdata.h jmemsys.h
+
+jmemdosa.obj : jmemdosa.asm
 
 
 cjpeg.exe: $(COBJECTS)

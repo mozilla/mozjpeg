@@ -1,7 +1,7 @@
 /*
  * jrdrle.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -157,6 +157,8 @@ input_init (compress_info_ptr cinfo)
     cinfo->input_components = 3;
     break;
   }
+
+  cinfo->total_passes++;	/* count file reading as separate pass */
 }
 
 
@@ -282,6 +284,7 @@ load_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
   case GRAYSCALE:
   case PSEUDOCOLOR:
     for (row = 0; row < cinfo->image_height; row++) {
+      (*cinfo->methods->progress_monitor) (cinfo, row, cinfo->image_height);
       /*
        * Read a row of the image directly into our big array.
        * Too bad this doesn't seem to return any indication of errors :-(.
@@ -294,6 +297,7 @@ load_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
   case TRUECOLOR:
   case DIRECTCOLOR:
     for (row = 0; row < cinfo->image_height; row++) {
+      (*cinfo->methods->progress_monitor) (cinfo, row, cinfo->image_height);
       /*
        * Read a row of the image directly into our big arrays.
        * Too bad this doesn't seem to return any indication of errors :-(.
@@ -308,6 +312,7 @@ load_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
     }
     break;
   }
+  cinfo->completed_passes++;
   
   /* Set up to call proper row-extraction routine in future */
   switch (visual) {
@@ -338,18 +343,7 @@ load_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 METHODDEF void
 input_term (compress_info_ptr cinfo)
 {
-  switch (visual) {
-  case GRAYSCALE:
-  case PSEUDOCOLOR:
-    (*cinfo->emethods->free_big_sarray) (image);
-    break;
-  case TRUECOLOR:
-  case DIRECTCOLOR:
-    (*cinfo->emethods->free_big_sarray) (red_channel);
-    (*cinfo->emethods->free_big_sarray) (green_channel);
-    (*cinfo->emethods->free_big_sarray) (blue_channel);
-    break;
-  }
+  /* no work (we let free_all release the workspace) */
 }
 
 

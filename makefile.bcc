@@ -1,23 +1,31 @@
 # Makefile for Independent JPEG Group's software
 
-# This makefile is for Microsoft C for MS-DOS, version 6.x (use NMAKE).
-# Thanks to Alan Wright and Chris Turner of Olivetti Research Ltd.
+# This makefile is suitable for Borland C (Turbo C) on MS-DOS.
+# It is set up for Borland C++, revision 3.0 or later.
+# For older versions (pre-3.0), replace "-O2" with "-O -G -Z" in CFLAGS.
+# If you have an even older version of Turbo C, you may be able to make it
+# work by saying "CC= tcc" below.  (Very early versions of Turbo C++,
+# like 1.01, are so buggy that you may as well forget it.)
+# Thanks to Tom Wright and Ge' Weijers for this file.
 
 # Read SETUP instructions before saying "make" !!
 
-# compiler flags. -D gives a #define to the sources:
-#       -O              default optimisation
-#       -W3             warning level 3
-#       -Za             ANSI conformance, defines __STDC__ but undefines far
-#                       and near, so we DON'T use it.
-#       -DHAVE_STDC     indicate we do have all the ANSI language features
-#       -DINCLUDES_ARE_ANSI	and all the ANSI include files.
-#       -DMSDOS         we are on an MSDOS machine
-#       -DMEM_STATS     enable memory usage statistics (optional)
-#       -c              compile, don't link (implicit in inference rules)
-# You might also want to add -G2 if you have an 80286, etc.
+# The name of your C compiler:
+CC= bcc
 
-CFLAGS = -c -O -W3 -DHAVE_STDC -DINCLUDES_ARE_ANSI -DMSDOS
+# You may need to adjust these cc options:
+CFLAGS= -DHAVE_STDC -DINCLUDES_ARE_ANSI \
+	-ms -DMSDOS -DINCOMPLETE_TYPES_BROKEN -w-par -O2
+# -DHAVE_STDC -DINCLUDES_ARE_ANSI enable ANSI-C features (we DON'T want -A)
+# -ms selects small memory model for most efficient code
+# -DMSDOS enables DOS-specific code
+# -DINCOMPLETE_TYPES_BROKEN suppresses bogus warning about undefined structures
+# -w-par suppresses warnings about unused function parameters
+# -O2 enables full code optimization (for pre-3.0 Borland C++, use -O -G -Z)
+
+# Link-time cc options:
+LDFLAGS= -ms
+# memory model option here must match CFLAGS!
 
 
 # source files (independently compilable files)
@@ -63,7 +71,31 @@ LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 
 all: cjpeg.exe djpeg.exe
 
-# default rules in nmake will use cflags and compile the list below
+
+cjpeg.exe: $(COBJECTS)
+	$(CC) $(LDFLAGS) -ecjpeg.exe @makcjpeg.lst
+
+djpeg.exe: $(DOBJECTS)
+	$(CC) $(LDFLAGS) -edjpeg.exe @makdjpeg.lst
+
+.c.obj:
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	del *.obj
+	del cjpeg.exe
+	del djpeg.exe
+	del testout.*
+
+test:
+	del testout.*
+	djpeg testorig.jpg testout.ppm
+	djpeg -G testorig.jpg testout.gif
+	cjpeg testimg.ppm testout.jpg
+	fc testimg.ppm testout.ppm
+	fc testimg.gif testout.gif
+	fc testimg.jpg testout.jpg
+
 
 jbsmooth.obj : jbsmooth.c jinclude.h jconfig.h jpegdata.h
 jcarith.obj : jcarith.c jinclude.h jconfig.h jpegdata.h
@@ -103,24 +135,5 @@ jwrppm.obj : jwrppm.c jinclude.h jconfig.h jpegdata.h
 jwrrle.obj : jwrrle.c jinclude.h jconfig.h jpegdata.h
 jwrtarga.obj : jwrtarga.c jinclude.h jconfig.h jpegdata.h
 jmemsys.obj : jmemsys.c jinclude.h jconfig.h jpegdata.h jmemsys.h
-
 jmemdosa.obj : jmemdosa.asm
-	masm /mx $*;
-
-
-# use linker response files because file list > 128 chars
-
-cjpeg.exe: $(COBJECTS)
-        link /STACK:8192 @makcjpeg.lnk
-
-djpeg.exe: $(DOBJECTS)
-        link /STACK:8192 @makdjpeg.lnk
-
-test:
-        del testout.*
-        djpeg testorig.jpg testout.ppm
-        djpeg -G testorig.jpg testout.gif
-        cjpeg testimg.ppm testout.jpg
-        fc testimg.ppm testout.ppm
-        fc testimg.gif testout.gif
-        fc testimg.jpg testout.jpg
+	tasm /mx jmemdosa.asm

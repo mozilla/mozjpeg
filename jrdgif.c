@@ -1,7 +1,7 @@
 /*
  * jrdgif.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -62,7 +62,7 @@ static JSAMPARRAY colormap;	/* the colormap to use */
 #define INTERLACE	0x40	/* mask for bit signifying interlaced image */
 #define COLORMAPFLAG	0x80	/* mask for bit signifying colormap presence */
 
-#define	ReadOK(file,buffer,len)	(FREAD(file,buffer,len) == ((size_t) (len)))
+#define	ReadOK(file,buffer,len)	(JFREAD(file,buffer,len) == ((size_t) (len)))
 
 /* Static vars for GetCode and LZWReadByte */
 
@@ -459,6 +459,7 @@ input_init (compress_info_ptr cinfo)
     interlaced_image = (*cinfo->emethods->request_big_sarray)
 		((long) width, (long) height, 1L);
     cinfo->methods->get_input_row = load_interlaced_image;
+    cinfo->total_passes++;	/* count file reading as separate pass */
   }
 
   /* Return info about the image. */
@@ -466,7 +467,7 @@ input_init (compress_info_ptr cinfo)
   cinfo->in_color_space = CS_RGB;
   cinfo->image_width = width;
   cinfo->image_height = height;
-  cinfo->data_precision = 8;
+  cinfo->data_precision = 8;	/* always, even if 12-bit JSAMPLEs */
 }
 
 
@@ -513,6 +514,7 @@ load_interlaced_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 
   /* Read the interlaced image into the big array we've created. */
   for (row = 0; row < cinfo->image_height; row++) {
+    (*cinfo->methods->progress_monitor) (cinfo, row, cinfo->image_height);
     image_ptr = (*cinfo->emethods->access_big_sarray)
 			(interlaced_image, row, TRUE);
     sptr = image_ptr[0];
@@ -522,6 +524,7 @@ load_interlaced_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
       *sptr++ = (JSAMPLE) c;
     }
   }
+  cinfo->completed_passes++;
 
   /* Replace method pointer so subsequent calls don't come here. */
   cinfo->methods->get_input_row = get_interlaced_row;
@@ -590,14 +593,7 @@ get_interlaced_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 METHODDEF void
 input_term (compress_info_ptr cinfo)
 {
-  if (is_interlaced) {
-    (*cinfo->emethods->free_big_sarray) (interlaced_image);
-  }
-  (*cinfo->emethods->free_small_sarray)
-		(colormap, (long) NUMCOLORS);
-  (*cinfo->emethods->free_medium) ((void FAR *) symbol_head);
-  (*cinfo->emethods->free_medium) ((void FAR *) symbol_tail);
-  (*cinfo->emethods->free_medium) ((void FAR *) symbol_stack);
+  /* no work (we let free_all release the workspace) */
 }
 
 

@@ -1,7 +1,7 @@
 /*
  * rdbmp.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -129,7 +129,8 @@ get_8bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Fetch next row from virtual array */
   source->source_row--;
   image_ptr = (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, source->whole_image, source->source_row, FALSE);
+    ((j_common_ptr) cinfo, source->whole_image,
+     source->source_row, (JDIMENSION) 1, FALSE);
 
   /* Expand the colormap indexes to real data */
   inptr = image_ptr[0];
@@ -157,7 +158,8 @@ get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Fetch next row from virtual array */
   source->source_row--;
   image_ptr = (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, source->whole_image, source->source_row, FALSE);
+    ((j_common_ptr) cinfo, source->whole_image,
+     source->source_row, (JDIMENSION) 1, FALSE);
 
   /* Transfer data.  Note source values are in BGR order
    * (even though Microsoft's own documents say the opposite).
@@ -200,7 +202,8 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       (*progress->pub.progress_monitor) ((j_common_ptr) cinfo);
     }
     image_ptr = (*cinfo->mem->access_virt_sarray)
-      ((j_common_ptr) cinfo, source->whole_image, row, TRUE);
+      ((j_common_ptr) cinfo, source->whole_image,
+       row, (JDIMENSION) 1, TRUE);
     out_ptr = image_ptr[0];
     for (col = source->row_width; col > 0; col--) {
       /* inline copy of read_byte() for speed */
@@ -379,7 +382,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   /* Allocate space for inversion array, prepare for preload pass */
   source->whole_image = (*cinfo->mem->request_virt_sarray)
-    ((j_common_ptr) cinfo, JPOOL_IMAGE,
+    ((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
      row_width, (JDIMENSION) biHeight, (JDIMENSION) 1);
   source->pub.get_pixel_rows = preload_image;
   if (cinfo->progress != NULL) {

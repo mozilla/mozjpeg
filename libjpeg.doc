@@ -39,9 +39,12 @@ Advanced features:
 	Error handling
 	Compressed data handling (source and destination managers)
 	I/O suspension
+	Progressive JPEG support
+	Buffered-image mode
 	Abbreviated datastreams and multiple images
 	Special markers
 	Raw (downsampled) image data
+	Really raw data: DCT coefficients
 	Progress monitoring
 	Memory management
 	Library compile-time options
@@ -84,10 +87,9 @@ low-quality modes may not meet the JPEG standard's accuracy requirements;
 nonetheless, they are useful for viewers.
 
 A word about functions *not* provided by the library.  We handle a subset of
-the ISO JPEG standard; most baseline and extended-sequential JPEG processes
-are supported.  (Our subset includes all features now in common use.)
-Unsupported ISO options include:
-	* Progressive storage (may be supported in future versions)
+the ISO JPEG standard; most baseline, extended-sequential, and progressive
+JPEG processes are supported.  (Our subset includes all features now in common
+use.)  Unsupported ISO options include:
 	* Hierarchical storage
 	* Lossless JPEG
 	* Arithmetic entropy coding (unsupported for legal reasons)
@@ -100,9 +102,8 @@ precisions in a single application.
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
 surrounding code to process interchange or abbreviated JPEG datastreams that
-are embedded in more complex file formats.  (For example, we anticipate that
-Sam Leffler's LIBTIFF library will use this code to support the revised TIFF
-JPEG format.)
+are embedded in more complex file formats.  (For example, this library is
+used by the free LIBTIFF library to support JPEG compression in TIFF.)
 
 
 Outline of typical usage
@@ -171,9 +172,8 @@ compression and decompression operations concurrently, using multiple JPEG
 objects.
 
 Both compression and decompression can be done in an incremental memory-to-
-memory fashion, if suitable source/destination managers are used.  However,
-there are some restrictions on the processing that can be done in this mode.
-See the section on "I/O suspension" for more details.
+memory fashion, if suitable source/destination managers are used.  See the
+section on "I/O suspension" for more details.
 
 
 BASIC LIBRARY USAGE
@@ -211,8 +211,8 @@ that file before doing so.)
 A 2-D array of pixels is formed by making a list of pointers to the starts of
 scanlines; so the scanlines need not be physically adjacent in memory.  Even
 if you process just one scanline at a time, you must make a one-element
-pointer array to serve this purpose.  Pointers to JSAMPLE rows are of type
-JSAMPROW, and the pointer to the pointer array is of type JSAMPARRAY.
+pointer array to conform to this structure.  Pointers to JSAMPLE rows are of
+type JSAMPROW, and the pointer to the pointer array is of type JSAMPARRAY.
 
 The library accepts or supplies one or more complete scanlines per call.
 It is not possible to process part of a row at a time.  Scanlines are always
@@ -245,11 +245,12 @@ Here we revisit the JPEG compression outline given in the overview.
 
 1. Allocate and initialize a JPEG compression object.
 
-A JPEG compression object is a "struct jpeg_compress_struct" (plus a bunch of
-subsidiary structures which are allocated via malloc(), but the application
-doesn't control those directly).  This struct can be just a local variable in
-the calling routine, if a single routine is going to execute the whole JPEG
-compression sequence.  Otherwise it can be static or allocated from malloc().
+A JPEG compression object is a "struct jpeg_compress_struct".  (It also has
+a bunch of subsidiary structures which are allocated via malloc(), but the
+application doesn't control those directly.)  This struct can be just a local
+variable in the calling routine, if a single routine is going to execute the
+whole JPEG compression sequence.  Otherwise it can be static or allocated
+from malloc().
 
 You will also need a structure representing a JPEG error handler.  The part
 of this that the library cares about is a "struct jpeg_error_mgr".  If you
@@ -463,7 +464,7 @@ call jpeg_destroy() which works for either compression or decompression
 objects --- this may be more convenient if you are sharing code between
 compression and decompression cases.  (Actually, these routines are equivalent
 except for the declared type of the passed pointer.  To avoid gripes from
-ANSI C compilers, pass a j_common_ptr to jpeg_destroy().)
+ANSI C compilers, jpeg_destroy() should be passed a j_common_ptr.)
 
 If you allocated the jpeg_compress_struct structure from malloc(), freeing
 it is your responsibility --- jpeg_destroy() won't.  Ditto for the error
@@ -592,7 +593,7 @@ If the defaults are appropriate, nothing need be done at this step.
 Note that all default values are set by each call to jpeg_read_header().
 If you reuse a decompression object, you cannot expect your parameter
 settings to be preserved across cycles, as you can for compression.
-You must adjust parameter values each time.
+You must set desired parameter values each time.
 
 
 5. jpeg_start_decompress(...);
@@ -608,7 +609,7 @@ Typical code is just
 If you have requested a multi-pass operating mode, such as 2-pass color
 quantization, jpeg_start_decompress() will do everything needed before data
 output can begin.  In this case jpeg_start_decompress() may take quite a while
-to complete.  With a single-scan (fully interleaved) JPEG file and default
+to complete.  With a single-scan (non progressive) JPEG file and default
 decompression parameters, this will not happen; jpeg_start_decompress() will
 return quickly.
 
@@ -827,30 +828,21 @@ int jpeg_quality_scaling (int quality)
 
 jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
 		      const unsigned int *basic_table,
-		      int scale_factor, boolean force_baseline));
+		      int scale_factor, boolean force_baseline)
 	Allows an arbitrary quantization table to be created.  which_tbl
 	indicates which table slot to fill.  basic_table points to an array
 	of 64 unsigned ints given in JPEG zigzag order.  These values are
 	multiplied by scale_factor/100 and then clamped to the range 1..65535
 	(or to 1..255 if force_baseline is TRUE).
 
+jpeg_simple_progression (j_compress_ptr cinfo)
+	Generates a default scan script for writing a progressive-JPEG file.
+	This is the recommended method of creating a progressive file,
+	unless you want to make a custom scan sequence.  You must ensure that
+	the JPEG color space is set correctly before calling this routine.
+
 
 Compression parameters (cinfo fields) include:
-
-boolean optimize_coding
-	TRUE causes the compressor to compute optimal Huffman coding tables
-	for the image.  This requires an extra pass over the data and
-	therefore costs a good deal of space and time.  The default is
-	FALSE, which tells the compressor to use the supplied or default
-	Huffman tables.  In most cases optimal tables save only a few percent
-	of file size compared to the default tables.  Note that when this is
-	TRUE, you need not supply Huffman tables at all, and any you do
-	supply will be overwritten.
-
-int smoothing_factor
-	If non-zero, the input image is smoothed; the value should be 1 for
-	minimal smoothing to 100 for maximum smoothing.  Consult jcsample.c
-	for details of the smoothing algorithm.  The default is zero.
 
 J_DCT_METHOD dct_method
 	Selects the algorithm used for the DCT step.  Choices are:
@@ -868,6 +860,22 @@ J_DCT_METHOD dct_method
 	recommended if high quality is a concern.  JDCT_DEFAULT and
 	JDCT_FASTEST are macros configurable by each installation.
 
+J_COLOR_SPACE jpeg_color_space
+int num_components
+	The JPEG color space and corresponding number of components; see
+	"Special color spaces", below, for more info.  We recommend using
+	jpeg_set_color_space() if you want to change these.
+
+boolean optimize_coding
+	TRUE causes the compressor to compute optimal Huffman coding tables
+	for the image.  This requires an extra pass over the data and
+	therefore costs a good deal of space and time.  The default is
+	FALSE, which tells the compressor to use the supplied or default
+	Huffman tables.  In most cases optimal tables save only a few percent
+	of file size compared to the default tables.  Note that when this is
+	TRUE, you need not supply Huffman tables at all, and any you do
+	supply will be overwritten.
+
 unsigned int restart_interval
 int restart_in_rows
 	To emit restart markers in the JPEG file, set one of these nonzero.
@@ -876,11 +884,22 @@ int restart_in_rows
 	restart_in_rows is not 0, then restart_interval is set after the
 	image width in MCUs is computed.)  Defaults are zero (no restarts).
 
-J_COLOR_SPACE jpeg_color_space
-int num_components
-	The JPEG color space and corresponding number of components; see
-	"Special color spaces", below, for more info.  We recommend using
-	jpeg_set_color_space() if you want to change these.
+const jpeg_scan_info * scan_info
+int num_scans
+	By default, scan_info is NULL; this causes the compressor to write a
+	single-scan sequential JPEG file.  If not NULL, scan_info points to
+	an array of scan definition records of length num_scans.  The
+	compressor will then write a JPEG file having one scan for each scan
+	definition record.  This is used to generate noninterleaved or
+	progressive JPEG files.  The library checks that the scan array
+	defines a valid JPEG scan sequence.  (jpeg_simple_progression creates
+	a suitable scan definition array for progressive JPEG.)  This is
+	discussed further under "Progressive JPEG support".
+
+int smoothing_factor
+	If non-zero, the input image is smoothed; the value should be 1 for
+	minimal smoothing to 100 for maximum smoothing.  Consult jcsample.c
+	for details of the smoothing algorithm.  The default is zero.
 
 boolean write_JFIF_header
 	If TRUE, a JFIF APP0 marker is emitted.  jpeg_set_defaults() and
@@ -957,7 +976,9 @@ int ac_tbl_no
 	0 for luminance components and 1 for chrominance components.
 
 int component_index
-	Must equal the component's index in comp_info[].
+	Must equal the component's index in comp_info[].  (Beginning in
+	release v6, the compressor library will fill this in automatically;
+	you don't have to.)
 
 
 Decompression parameter selection
@@ -1071,6 +1092,20 @@ boolean do_fancy_upsampling
 	If TRUE, do careful upsampling of chroma components.  If FALSE,
 	a faster but sloppier method is used.  Default is TRUE.  The visual
 	impact of the sloppier method is often very small.
+
+boolean do_block_smoothing
+	If TRUE, interblock smoothing is applied in early stages of decoding
+	progressive JPEG files; if FALSE, not.  Default is TRUE.  Early
+	progression stages look "fuzzy" with smoothing, "blocky" without.
+	In any case, block smoothing ceases to be applied after the first few
+	AC coefficients are known to full accuracy, so it is relevant only
+	when using buffered-image mode for progressive images.
+
+boolean enable_1pass_quant
+boolean enable_external_quant
+boolean enable_2pass_quant
+	These are significant only in buffered-image mode, which is
+	described in its own section below.
 
 
 The output image dimensions are given by the following fields.  These are
@@ -1398,7 +1433,7 @@ skip_input_data (j_decompress_ptr cinfo, long num_bytes)
 	skips are uncommon.  bytes_in_buffer may be zero on return.
 	A zero or negative skip count should be treated as a no-op.
 
-resync_to_restart (j_decompress_ptr cinfo)
+resync_to_restart (j_decompress_ptr cinfo, int desired)
 	This routine is called only when the decompressor has failed to find
 	a restart (RSTn) marker where one is expected.  Its mission is to
 	find a suitable point for resuming decompression.  For most
@@ -1442,17 +1477,15 @@ I/O suspension
 Some applications need to use the JPEG library as an incremental memory-to-
 memory filter: when the compressed data buffer is filled or emptied, they want
 control to return to the outer loop, rather than expecting that the buffer can
-be flushed or reloaded within the data source/destination manager subroutine.
+be emptied or reloaded within the data source/destination manager subroutine.
 The library supports this need by providing an "I/O suspension" mode, which we
 describe in this section.
 
-The I/O suspension mode is a limited solution: it works only in the simplest
-operating modes (namely single-pass processing of single-scan JPEG files), and
-it has several other restrictions which are documented below.  Furthermore,
-nothing is guaranteed about the maximum amount of time spent in any one call
-to the library, so a single-threaded application may still have response-time
-problems.  If you need multi-pass processing or guaranteed response time, we
-suggest you "bite the bullet" and implement a real multi-tasking capability.
+The I/O suspension mode is not a panacea: nothing is guaranteed about the
+maximum amount of time spent in any one call to the library, so it will not
+eliminate response-time problems in single-threaded applications.  If you
+need guaranteed response time, we suggest you "bite the bullet" and implement
+a real multi-tasking capability.
 
 To use I/O suspension, cooperation is needed between the calling application
 and the data source or destination manager; you will always need a custom
@@ -1461,25 +1494,26 @@ already.)  The basic idea is that the empty_output_buffer() or
 fill_input_buffer() routine is a no-op, merely returning FALSE to indicate
 that it has done nothing.  Upon seeing this, the JPEG library suspends
 operation and returns to its caller.  The surrounding application is
-responsible for emptying or refilling the work buffer before calling the JPEG
-library again.
+responsible for emptying or refilling the work buffer before calling the
+JPEG library again.
 
 Compression suspension:
 
-For compression suspension, use an empty_output_buffer() routine that
-returns FALSE; typically it will not do anything else.  This will cause the
-compressor to return to the caller of jpeg_write_scanlines(), with the
-return value indicating that not all the supplied scanlines have been
-accepted.  The application must make more room in the output buffer, adjust
-the buffer pointer/count appropriately, and then call jpeg_write_scanlines()
+For compression suspension, use an empty_output_buffer() routine that returns
+FALSE; typically it will not do anything else.  This will cause the
+compressor to return to the caller of jpeg_write_scanlines(), with the return
+value indicating that not all the supplied scanlines have been accepted.
+The application must make more room in the output buffer, adjust the output
+buffer pointer/count appropriately, and then call jpeg_write_scanlines()
 again, pointing to the first unconsumed scanline.
 
 When forced to suspend, the compressor will backtrack to a convenient stopping
 point (usually the start of the current MCU); it will regenerate some output
-data when restarted.  Therefore, although empty_output_buffer() is only called
-when the buffer is filled, you should NOT dump out the entire buffer, only the
-data up to the current position of next_output_byte/free_in_buffer.  The data
-beyond that point will be regenerated after resumption.
+data when restarted.  Therefore, although empty_output_buffer() is only
+called when the buffer is filled, you should NOT write out the entire buffer
+after a suspension.  Write only the data up to the current position of
+next_output_byte/free_in_buffer.  The data beyond that point will be
+regenerated after resumption.
 
 Because of the backtracking behavior, a good-size output buffer is essential
 for efficiency; you don't want the compressor to suspend often.  (In fact, an
@@ -1490,47 +1524,54 @@ call jpeg_write_scanlines() unless there is a reasonable amount of space in
 the output buffer; in other words, flush the buffer before trying to compress
 more data.
 
-The JPEG compressor does not support suspension while it is trying to write
-JPEG markers at the beginning and end of the file.  This means that
+The compressor does not allow suspension while it is trying to write JPEG
+markers at the beginning and end of the file.  This means that:
   * At the beginning of a compression operation, there must be enough free
     space in the output buffer to hold the header markers (typically 600 or
     so bytes).  The recommended buffer size is bigger than this anyway, so
     this is not a problem as long as you start with an empty buffer.  However,
     this restriction might catch you if you insert large special markers, such
-    as a JFIF thumbnail image.
+    as a JFIF thumbnail image, without flushing the buffer afterwards.
   * When you call jpeg_finish_compress(), there must be enough space in the
     output buffer to emit any buffered data and the final EOI marker.  In the
     current implementation, half a dozen bytes should suffice for this, but
     for safety's sake we recommend ensuring that at least 100 bytes are free
     before calling jpeg_finish_compress().
-Furthermore, since jpeg_finish_compress() cannot suspend, you cannot request
-multi-pass operating modes such as Huffman code optimization or multiple-scan
-output.  That would imply that a large amount of data would be written inside
-jpeg_finish_compress(), which would certainly trigger a buffer overrun.
+
+A more significant restriction is that jpeg_finish_compress() cannot suspend.
+This means you cannot use suspension with multi-pass operating modes, namely
+Huffman code optimization and multiple-scan output.  Those modes write the
+whole file during jpeg_finish_compress(), which will certainly result in
+buffer overrun.  (Note that this restriction applies only to compression,
+not decompression.  The decompressor supports input suspension in all of its
+operating modes.)
 
 Decompression suspension:
 
 For decompression suspension, use a fill_input_buffer() routine that simply
 returns FALSE (except perhaps during error recovery, as discussed below).
 This will cause the decompressor to return to its caller with an indication
-that suspension has occurred.  This can happen at three places:
+that suspension has occurred.  This can happen at four places:
   * jpeg_read_header(): will return JPEG_SUSPENDED.
+  * jpeg_start_decompress(): will return FALSE, rather than its usual TRUE.
   * jpeg_read_scanlines(): will return the number of scanlines already
 	completed (possibly 0).
   * jpeg_finish_decompress(): will return FALSE, rather than its usual TRUE.
 The surrounding application must recognize these cases, load more data into
 the input buffer, and repeat the call.  In the case of jpeg_read_scanlines(),
-adjust the passed pointers to reflect any scanlines successfully read.
+increment the passed pointers past any scanlines successfully read.
 
 Just as with compression, the decompressor will typically backtrack to a
-convenient restart point before suspending.  The data beyond the current
-position of next_input_byte/bytes_in_buffer must NOT be discarded; it will
-be re-read upon resumption.  In most implementations, you'll need to shift
-this data down to the start of your work buffer and then load more data
-after it.  Again, this behavior means that a several-Kbyte work buffer is
-essential for decent performance; furthermore, you should load a reasonable
-amount of new data before resuming decompression.  (If you loaded, say,
-only one new byte each time around, you could waste a LOT of cycles.)
+convenient restart point before suspending.  When fill_input_buffer() is
+called, next_input_byte/bytes_in_buffer point to the current restart point,
+which is where the decompressor will backtrack to if FALSE is returned.
+The data beyond that position must NOT be discarded if you suspend; it needs
+to be re-read upon resumption.  In most implementations, you'll need to shift
+this data down to the start of your work buffer and then load more data after
+it.  Again, this behavior means that a several-Kbyte work buffer is essential
+for decent performance; furthermore, you should load a reasonable amount of
+new data before resuming decompression.  (If you loaded, say, only one new
+byte each time around, you could waste a LOT of cycles.)
 
 The skip_input_data() source manager routine requires special care in a
 suspension scenario.  This routine is NOT granted the ability to suspend the
@@ -1538,11 +1579,11 @@ decompressor; it can decrement bytes_in_buffer to zero, but no more.  If the
 requested skip distance exceeds the amount of data currently in the input
 buffer, then skip_input_data() must set bytes_in_buffer to zero and record the
 additional skip distance somewhere else.  The decompressor will immediately
-call fill_input_buffer(), which will return FALSE, which will cause a
+call fill_input_buffer(), which should return FALSE, which will cause a
 suspension return.  The surrounding application must then arrange to discard
-the right number of bytes before it resumes loading the input buffer.  (Yes,
-this design is rather baroque, but it avoids complexity in the far more common
-case where a non-suspending source manager is used.)
+the recorded number of bytes before it resumes loading the input buffer.
+(Yes, this design is rather baroque, but it avoids complexity in the far more
+common case where a non-suspending source manager is used.)
 
 If the input data has been exhausted, we recommend that you emit a warning
 and insert dummy EOI markers just as a non-suspending data source manager
@@ -1551,11 +1592,6 @@ within fill_input_buffer(); the latter is probably more efficient.  If
 fill_input_buffer() knows that no more data is available, it can set the
 pointer/count to point to a dummy EOI marker and then return TRUE just as
 though it had read more data in a non-suspending situation.
-
-The decompressor does not support suspension within jpeg_start_decompress().
-This means that you cannot use suspension with any multi-pass processing mode
-(eg, two-pass color quantization or multiple-scan JPEG files).  In single-pass
-modes, jpeg_start_decompress() reads no data and thus need never suspend.
 
 The decompressor does not attempt to suspend within any JPEG marker; it will
 backtrack to the start of the marker.  Hence the input buffer must be large
@@ -1579,13 +1615,446 @@ having empty_output_buffer() or fill_input_buffer() set the pointer and count
 to reference the next available buffer; FALSE is returned only if no more
 buffers are available.  Although seemingly straightforward, there is a
 pitfall in this approach: the backtrack that occurs when FALSE is returned
-could back up into an earlier buffer.  Do not discard "completed" buffers in
-the empty_output_buffer() or fill_input_buffer() routine, unless you can tell
-from the saved pointer/bytecount that the JPEG library will no longer attempt
-to backtrack that far.  It's probably simplest to postpone releasing any
-buffers until the library returns to its caller; then you can use the final
-bytecount to tell how much data has been fully processed, and release buffers
-on that basis.
+could back up into an earlier buffer.  For example, when fill_input_buffer()
+is called, the current pointer & count indicate the backtrack restart point.
+Since fill_input_buffer() will set the pointer and count to refer to a new
+buffer, the restart position must be saved somewhere else.  Suppose a second
+call to fill_input_buffer() occurs in the same library call, and no
+additional input data is available, so fill_input_buffer must return FALSE.
+If the JPEG library has not moved the pointer/count forward in the current
+buffer, then *the correct restart point is the saved position in the prior
+buffer*.  Prior buffers may be discarded only after the library establishes
+a restart point within a later buffer.  Similar remarks apply for output into
+a chain of buffers.
+
+The library will never attempt to backtrack over a skip_input_data() call,
+so any skipped data can be permanently discarded.  You still have to deal
+with the case of skipping not-yet-received data, however.
+
+It's much simpler to use only a single buffer; when fill_input_buffer() is
+called, move any unconsumed data (beyond the current pointer/count) down to
+the beginning of this buffer and then load new data into the remaining buffer
+space.  This approach requires a little more data copying but is far easier
+to get right.
+
+
+Progressive JPEG support
+------------------------
+
+Progressive JPEG rearranges the stored data into a series of scans of
+increasing quality.  In situations where a JPEG file is transmitted across a
+slow communications link, a decoder can generate a low-quality image very
+quickly from the first scan, then gradually improve the displayed quality as
+more scans are received.  The final image after all scans are complete is
+identical to that of a regular (sequential) JPEG file of the same quality
+setting.  Progressive JPEG files are often slightly smaller than equivalent
+sequential JPEG files, but the possibility of incremental display is the main
+reason for using progressive JPEG.
+
+The IJG encoder library generates progressive JPEG files when given a
+suitable "scan script" defining how to divide the data into scans.
+Creation of progressive JPEG files is otherwise transparent to the encoder.
+Progressive JPEG files can also be read transparently by the decoder library.
+If the decoding application simply uses the library as defined above, it
+will receive a final decoded image without any indication that the file was
+progressive.  Of course, this approach does not allow incremental display.
+To perform incremental display, an application needs to use the decoder
+library's "buffered-image" mode, in which it receives a decoded image
+multiple times.
+
+Each displayed scan requires about as much work to decode as a full JPEG
+image of the same size, so the decoder must be fairly fast in relation to the
+data transmission rate in order to make incremental display useful.  However,
+it is possible to skip displaying the image and simply add the incoming bits
+to the decoder's coefficient buffer.  This is fast because only Huffman
+decoding need be done, not IDCT, upsampling, colorspace conversion, etc.
+The IJG decoder library allows the application to switch dynamically between
+displaying the image and simply absorbing the incoming bits.  A properly
+coded application can automatically adapt the number of display passes to
+suit the time available as the image is received.  Also, a final
+higher-quality display cycle can be performed from the buffered data after
+the end of the file is reached.
+
+Progressive compression:
+
+To create a progressive JPEG file (or a multiple-scan sequential JPEG file),
+set the scan_info cinfo field to point to an array of scan descriptors, and
+perform compression as usual.  Instead of constructing your own scan list,
+you can call the jpeg_simple_progression() helper routine to create a
+recommended progression sequence; this method should be used by all
+applications that don't want to get involved in the nitty-gritty of
+progressive scan sequence design.  (If you want to provide user control of
+scan sequences, you may wish to borrow the scan script reading code found
+in rdswitch.c, so that you can read scan script files just like cjpeg's.)
+When scan_info is not NULL, the compression library will store DCT'd data
+into a buffer array as jpeg_write_scanlines() is called, and will emit all
+the requested scans during jpeg_finish_compress().  This implies that
+multiple-scan output cannot be created with a suspending data destination
+manager, since jpeg_finish_compress() does not support suspension.  We
+should also note that the compressor currently forces Huffman optimization
+mode when creating a progressive JPEG file, because the default Huffman
+tables are unsuitable for progressive files.
+
+Progressive decompression:
+
+When buffered-image mode is not used, the decoder library will read all of
+a multi-scan file during jpeg_start_decompress(), so that it can provide a
+final decoded image.  (Here "multi-scan" means either progressive or
+multi-scan sequential.)  This makes multi-scan files transparent to the
+decoding application.  However, existing applications that used suspending
+input with version 5 of the IJG library will need to be modified to check
+for a suspension return from jpeg_start_decompress().
+
+To perform incremental display, an application must use the library's
+buffered-image mode.  This is described in the next section.
+
+
+Buffered-image mode
+-------------------
+
+In buffered-image mode, the library stores the partially decoded image in a
+coefficient buffer, from which it can be read out as many times as desired.
+This mode is typically used for incremental display of progressive JPEG files,
+but it can be used with any JPEG file.  Each scan of a progressive JPEG file
+adds more data (more detail) to the buffered image.  The application can
+display in lockstep with the source file (one display pass per input scan),
+or it can allow input processing to outrun display processing.  By making
+input and display processing run independently, it is possible for the
+application to adapt progressive display to a wide range of data transmission
+rates.
+
+The basic control flow for buffered-image decoding is
+
+	jpeg_create_decompress()
+	set data source
+	jpeg_read_header()
+	set overall decompression parameters
+	cinfo.buffered_image = TRUE;	/* select buffered-image mode */
+	jpeg_start_decompress()
+	for (each output pass) {
+	    adjust output decompression parameters if required
+	    jpeg_start_output()		/* start a new output pass */
+	    for (all scanlines in image) {
+	        jpeg_read_scanlines()
+	        display scanlines
+	    }
+	    jpeg_finish_output()	/* terminate output pass */
+	}
+	jpeg_finish_decompress()
+	jpeg_destroy_decompress()
+
+This differs from ordinary unbuffered decoding in that there is an additional
+level of looping.  The application can choose how many output passes to make
+and how to display each pass.
+
+The simplest approach to displaying progressive images is to do one display
+pass for each scan appearing in the input file.  In this case the outer loop
+condition is typically
+	while (! jpeg_input_complete(&cinfo))
+and the start-output call should read
+	jpeg_start_output(&cinfo, cinfo.input_scan_number);
+The second parameter to jpeg_start_output() indicates which scan of the input
+file is to be displayed; the scans are numbered starting at 1 for this
+purpose.  (You can use a loop counter starting at 1 if you like, but using
+the library's input scan counter is easier.)  The library automatically reads
+data as necessary to complete each requested scan, and jpeg_finish_output()
+advances to the next scan or end-of-image marker (hence input_scan_number
+will be incremented by the time control arrives back at jpeg_start_output()).
+With this technique, data is read from the input file only as needed, and
+input and output processing run in lockstep.
+
+After reading the final scan and reaching the end of the input file, the
+buffered image remains available; it can be read additional times by
+repeating the jpeg_start_output()/jpeg_read_scanlines()/jpeg_finish_output()
+sequence.  For example, a useful technique is to use fast one-pass color
+quantization for display passes made while the image is arriving, followed by
+a final display pass using two-pass quantization for highest quality.  This
+is done by changing the library parameters before the final output pass.
+Changing parameters between passes is discussed in detail below.
+
+In general the last scan of a progressive file cannot be recognized as such
+until after it is read, so a post-input display pass is the best approach if
+you want special processing in the final pass.
+
+When done with the image, be sure to call jpeg_finish_decompress() to release
+the buffered image (or just use jpeg_destroy_decompress()).
+
+If input data arrives faster than it can be displayed, the application can
+cause the library to decode input data in advance of what's needed to produce
+output.  This is done by calling the routine jpeg_consume_input().
+The return value is one of the following:
+	JPEG_REACHED_SOS:    reached an SOS marker (the start of a new scan)
+	JPEG_REACHED_EOI:    reached the EOI marker (end of image)
+	JPEG_ROW_COMPLETED:  completed reading one MCU row of compressed data
+	JPEG_SCAN_COMPLETED: completed reading last MCU row of current scan
+	JPEG_SUSPENDED:      suspended before completing any of the above
+(JPEG_SUSPENDED can occur only if a suspending data source is used.)  This
+routine can be called at any time after initializing the JPEG object.  It
+reads some additional data and returns when one of the indicated significant
+events occurs.  (If called after the EOI marker is reached, it will
+immediately return JPEG_REACHED_EOI without attempting to read more data.)
+
+The library's output processing will automatically call jpeg_consume_input()
+whenever the output processing overtakes the input; thus, simple lockstep
+display requires no direct calls to jpeg_consume_input().  But by adding
+calls to jpeg_consume_input(), you can absorb data in advance of what is
+being displayed.  This has two benefits:
+  * You can limit buildup of unprocessed data in your input buffer.
+  * You can eliminate extra display passes by paying attention to the
+    state of the library's input processing.
+
+The first of these benefits only requires interspersing calls to
+jpeg_consume_input() with your display operations and any other processing
+you may be doing.  To avoid wasting cycles due to backtracking, it's best to
+call jpeg_consume_input() only after a hundred or so new bytes have arrived.
+This is discussed further under "I/O suspension", above.  (Note: the JPEG
+library currently is not thread-safe.  You must not call jpeg_consume_input()
+from one thread of control if a different library routine is working on the
+same JPEG object in another thread.)
+
+When input arrives fast enough that more than one new scan is available
+before you start a new output pass, you may as well skip the output pass
+corresponding to the completed scan.  This occurs for free if you pass
+cinfo.input_scan_number as the target scan number to jpeg_start_output().
+The input_scan_number field is simply the index of the scan currently being
+consumed by the input processor.  You can ensure that this is up-to-date by
+emptying the input buffer just before calling jpeg_start_output(): call
+jpeg_consume_input() repeatedly until it returns JPEG_SUSPENDED or
+JPEG_REACHED_EOI.
+
+The target scan number passed to jpeg_start_output() is saved in the
+cinfo.output_scan_number field.  The library's output processing calls
+jpeg_consume_input() whenever the current input scan number and row within
+the scan is less than or equal to the current output scan number and row.
+Thus, input processing can "get ahead" of the output processing but is not
+allowed to "fall behind".  You can achieve several different effects by
+manipulating this interlock rule.  For example, if you pass a target scan
+number greater than the current input scan number, the output processor will
+wait until that scan starts to arrive before producing any output.  (To avoid
+an infinite loop, the target scan number is automatically reset to the last
+scan number when the end of image is reached.  Thus, if you specify a large
+target scan number, the library will just absorb the entire input file and
+then perform an output pass.  This is effectively the same as what
+jpeg_start_decompress() does when you don't select buffered-image mode.)
+When you pass a target scan number equal to the current input scan number,
+the image is displayed no faster than the current input scan arrives.  The
+final possibility is to pass a target scan number less than the current input
+scan number; this disables the input/output interlock and causes the output
+processor to simply display whatever it finds in the image buffer, without
+waiting for input.  (However, the library will not accept a target scan
+number less than one, so you can't avoid waiting for the first scan.)
+
+When using jpeg_consume_input(), you'll typically want to be sure that you
+perform a final output pass after receiving all the data; otherwise your last
+display may not be full quality across the whole screen.  So the right outer
+loop logic is something like this:
+	do {
+	    absorb any waiting input by calling jpeg_consume_input()
+	    final_pass = jpeg_input_complete(&cinfo);
+	    adjust output decompression parameters if required
+	    jpeg_start_output(&cinfo, cinfo.input_scan_number);
+	    ...
+	    jpeg_finish_output()
+	} while (! final_pass);
+rather than quitting as soon as jpeg_input_complete() returns TRUE.  This
+arrangement makes it simple to use higher-quality decoding parameters
+for the final pass.  But if you don't want to use special parameters for
+the final pass, the right loop logic is like this:
+	for (;;) {
+	    absorb any waiting input by calling jpeg_consume_input()
+	    jpeg_start_output(&cinfo, cinfo.input_scan_number);
+	    ...
+	    jpeg_finish_output()
+	    if (jpeg_input_complete(&cinfo) &&
+	        cinfo.input_scan_number == cinfo.output_scan_number)
+	      break;
+	}
+In this case you don't need to know in advance whether an output pass is
+the last one, so it's not necessary to have reached EOF before starting the
+final output pass; rather, what you want to test is whether the output pass
+was performed in sync with the final input scan.  This form of the loop
+will avoid an extra output pass whenever the decoder is able (or nearly
+able) to keep up with the incoming data.
+
+When the data transmission speed is high, you might begin a display pass,
+then find that much or all of the image has arrived before you can complete
+the pass.  (You can detect this by noting the JPEG_REACHED_EOI return code
+from jpeg_consume_input(), or equivalently by testing jpeg_input_complete().)
+In this situation you may wish to abort the current display pass and start a
+new one using the newly arrived information.  To do so, just call
+jpeg_finish_output() and then start a new pass with jpeg_start_output().
+
+A variant strategy is to abort and restart display if more than one complete
+scan arrives during an output pass; this can be detected by noting
+JPEG_REACHED_SOS returns and/or examining cinfo.input_scan_number.  This
+idea should be employed with caution, however, since the display process
+might never get to the bottom of the image before being aborted, resulting
+in the lower part of the screen being several passes worse than the upper.
+In most cases it's probably best to abort an output pass only if the whole
+file has arrived and you want to begin the final output pass immediately.
+
+When receiving data across a communication link, we recommend always using
+the current input scan number for the output target scan number; if a
+higher-quality final pass is to be done, it should be started (aborting any
+incomplete output pass) as soon as the end of file is received.  However,
+many other strategies are possible.  For example, the application can examine
+the parameters of the current input scan and decide whether to display it or
+not.  If the scan contains only chroma data, one might choose not to use it
+as the target scan, expecting that the scan will be small and will arrive
+quickly.  To skip to the next scan, call jpeg_consume_input() until it
+returns JPEG_REACHED_SOS or JPEG_REACHED_EOI.  Or just use the next higher
+number as the target scan for jpeg_start_output(); but that method doesn't
+let you inspect the next scan's parameters before deciding to display it.
+
+
+In buffered-image mode, jpeg_start_decompress() never performs input and
+thus never suspends.  An application that uses input suspension with
+buffered-image mode must be prepared for suspension returns from these
+routines:
+* jpeg_start_output() performs input only if you request 2-pass quantization
+  and the target scan isn't fully read yet.  (This is discussed below.)
+* jpeg_read_scanlines(), as always, returns the number of scanlines that it
+  was able to produce before suspending.
+* jpeg_finish_output() will read any markers following the target scan,
+  up to the end of the image or the SOS marker that begins another scan.
+  (But it reads no input if jpeg_consume_input() has already reached the
+  end of the image or a SOS marker beyond the target output scan.)
+* jpeg_finish_decompress() will read until the end of image, and thus can
+  suspend if the end hasn't already been reached (as can be tested by
+  calling jpeg_input_complete()).
+jpeg_start_output(), jpeg_finish_output(), and jpeg_finish_decompress()
+all return TRUE if they completed their tasks, FALSE if they had to suspend.
+In the event of a FALSE return, the application must load more input data
+and repeat the call.  Applications that use non-suspending data sources need
+not check the return values of these three routines.
+
+
+It is possible to change decoding parameters between output passes in the
+buffered-image mode.  The decoder library currently supports only very
+limited changes of parameters.  ONLY THE FOLLOWING parameter changes are
+allowed after jpeg_start_decompress() is called:
+* dct_method can be changed before each call to jpeg_start_output().
+  For example, one could use a fast DCT method for early scans, changing
+  to a higher quality method for the final scan.
+* dither_mode can be changed before each call to jpeg_start_output();
+  of course this has no impact if not using color quantization.  Typically
+  one would use ordered dither for initial passes, then switch to
+  Floyd-Steinberg dither for the final pass.  Caution: changing dither mode
+  can cause more memory to be allocated by the library.  Although the amount
+  of memory involved is not large (a scanline or so), it may cause the
+  initial max_memory_to_use specification to be exceeded, which in the worst
+  case would result in an out-of-memory failure.
+* do_block_smoothing can be changed before each call to jpeg_start_output().
+  This setting is relevant only when decoding a progressive JPEG image.
+  During the first DC-only scan, block smoothing provides a very "fuzzy" look
+  instead of the very "blocky" look seen without it; which is better seems a
+  matter of personal taste.  But block smoothing is nearly always a win
+  during later stages, especially when decoding a successive-approximation
+  image: smoothing helps to hide the slight blockiness that otherwise shows
+  up on smooth gradients until the lowest coefficient bits are sent.
+* Color quantization mode can be changed under the rules described below.
+  You *cannot* change between full-color and quantized output (because that
+  would alter the required I/O buffer sizes), but you can change which
+  quantization method is used.
+
+When generating color-quantized output, changing quantization method is a
+very useful way of switching between high-speed and high-quality display.
+The library allows you to change among its three quantization methods:
+1. Single-pass quantization to a fixed color cube.
+   Selected by cinfo.two_pass_quantize = FALSE and cinfo.colormap = NULL.
+2. Single-pass quantization to an application-supplied colormap.
+   Selected by setting cinfo.colormap to point to the colormap (the value of
+   two_pass_quantize is ignored); also set cinfo.actual_number_of_colors.
+3. Two-pass quantization to a colormap chosen specifically for the image.
+   Selected by cinfo.two_pass_quantize = TRUE and cinfo.colormap = NULL.
+   (This is the default setting selected by jpeg_read_header, but it is
+   probably NOT what you want for the first pass of progressive display!)
+These methods offer successively better quality and lesser speed.  However,
+only the first method is available for quantizing in non-RGB color spaces.
+
+IMPORTANT: because the different quantizer methods have very different
+working-storage requirements, the library requires you to indicate which
+one(s) you intend to use before you call jpeg_start_decompress().  (If we did
+not require this, the max_memory_to_use setting would be a complete fiction.)
+You do this by setting one or more of these three cinfo fields to TRUE:
+	enable_1pass_quant		Fixed color cube colormap
+	enable_external_quant		Externally-supplied colormap
+	enable_2pass_quant		Two-pass custom colormap
+All three are initialized FALSE by jpeg_read_header().  But
+jpeg_start_decompress() automatically sets TRUE the one selected by the
+current two_pass_quantize and colormap settings, so you only need to set the
+enable flags for any other quantization methods you plan to change to later.
+
+After setting the enable flags correctly at jpeg_start_decompress() time, you
+can change to any enabled quantization method by setting two_pass_quantize
+and colormap properly just before calling jpeg_start_output().  The following
+special rules apply:
+1. You must explicitly set cinfo.colormap to NULL when switching to 1-pass
+   or 2-pass mode from a different mode, or when you want the 2-pass
+   quantizer to be re-run to generate a new colormap.
+2. To switch to an external colormap, or to change to a different external
+   colormap than was used on the prior pass, you must call
+   jpeg_new_colormap() after setting cinfo.colormap.
+NOTE: if you want to use the same colormap as was used in the prior pass,
+you should not do either of these things.  This will save some nontrivial
+switchover costs.
+(These requirements exist because cinfo.colormap will always be non-NULL
+after completing a prior output pass, since both the 1-pass and 2-pass
+quantizers set it to point to their output colormaps.  Thus you have to
+do one of these two things to notify the library that something has changed.
+Yup, it's a bit klugy, but it's necessary to do it this way for backwards
+compatibility.)
+
+Note that in buffered-image mode, the library generates any requested colormap
+during jpeg_start_output(), not during jpeg_start_decompress().
+
+When using two-pass quantization, jpeg_start_output() makes a pass over the
+buffered image to determine the optimum color map; it therefore may take a
+significant amount of time, whereas ordinarily it does little work.  The
+progress monitor hook is called during this pass, if defined.  It is also
+important to realize that if the specified target scan number is greater than
+or equal to the current input scan number, jpeg_start_output() will attempt
+to consume input as it makes this pass.  If you use a suspending data source,
+you need to check for a FALSE return from jpeg_start_output() under these
+conditions.  The combination of 2-pass quantization and a not-yet-fully-read
+target scan is the only case in which jpeg_start_output() will consume input.
+
+
+Application authors who support buffered-image mode may be tempted to use it
+for all JPEG images, even single-scan ones.  This will work, but it is
+inefficient: there is no need to create an image-sized coefficient buffer for
+single-scan images.  Requesting buffered-image mode for such an image wastes
+memory.  Worse, it can cost time on large images, since the buffered data has
+to be swapped out or written to a temporary file.  If you are concerned about
+maximum performance on baseline JPEG files, you should use buffered-image
+mode only when the incoming file actually has multiple scans.  This can be
+tested by calling jpeg_has_multiple_scans(), which will return a correct
+result at any time after jpeg_read_header() completes.
+
+It is also worth noting that when you use jpeg_consume_input() to let input
+processing get ahead of output processing, the resulting pattern of access to
+the coefficient buffer is quite nonsequential.  It's best to use the memory
+manager jmemnobs.c if you can (ie, if you have enough real or virtual main
+memory).  If not, at least make sure that max_memory_to_use is set as high as
+possible.  If the JPEG memory manager has to use a temporary file, you will
+probably see a lot of disk traffic and poor performance.  (This could be
+improved with additional work on the memory manager, but we haven't gotten
+around to it yet.)
+
+In some applications it may be convenient to use jpeg_consume_input() for all
+input processing, including reading the initial markers; that is, you may
+wish to call jpeg_consume_input() instead of jpeg_read_header() during
+startup.  This works, but note that you must check for JPEG_REACHED_SOS and
+JPEG_REACHED_EOI return codes as the equivalent of jpeg_read_header's codes.
+Once the first SOS marker has been reached, you must call
+jpeg_start_decompress() before jpeg_consume_input() will consume more input;
+it'll just keep returning JPEG_REACHED_SOS until you do.  If you read a
+tables-only file this way, jpeg_consume_input() will return JPEG_REACHED_EOI
+without ever returning JPEG_REACHED_SOS; be sure to check for this case.
+If this happens, the decompressor will not read any more input until you call
+jpeg_abort() to reset it.  It is OK to call jpeg_consume_input() even when not
+using buffered-image mode, but in that case it's basically a no-op after the
+initial markers have been read: it will just return JPEG_SUSPENDED.
 
 
 Abbreviated datastreams and multiple images
@@ -1713,7 +2182,7 @@ JPEG_HEADER_TABLES_ONLY if only tables were found.  (A third return value,
 JPEG_SUSPENDED, is possible when using a suspending data source manager.)
 Note that jpeg_read_header() will not complain if you read an abbreviated
 image for which you haven't loaded the missing tables; the missing-table check
-occurs in jpeg_start_decompress().
+occurs later, in jpeg_start_decompress().
 
 
 It is possible to read a series of images from a single source file by
@@ -1756,11 +2225,13 @@ containing non-ASCII junk.  (But yours should not be one of them.)
 For program-supplied data, use an APPn marker, and be sure to begin it with an
 identifying string so that you can tell whether the marker is actually yours.
 It's probably best to avoid using APP0 or APP14 for any private markers.
+(NOTE: the upcoming SPIFF standard will use APP8 markers; we recommend you
+not use APP8 markers for any private purposes, either.)
 
 Keep in mind that at most 65533 bytes can be put into one marker, but you
 can have as many markers as you like.
 
-By default, the JPEG compression library will write a JFIF APP0 marker if the
+By default, the IJG compression library will write a JFIF APP0 marker if the
 selected JPEG colorspace is grayscale or YCbCr, or an Adobe APP14 marker if
 the selected colorspace is RGB, CMYK, or YCCK.  You can disable this, but
 we don't recommend it.  The decompression library will recognize JFIF and
@@ -1770,7 +2241,7 @@ You can write special markers immediately following the datastream header by
 calling jpeg_write_marker() after jpeg_start_compress() and before the first
 call to jpeg_write_scanlines().  When you do this, the markers appear after
 the SOI and the JFIF APP0 and Adobe APP14 markers (if written), but before
-all else.  Write the marker type parameter as "JPEG_COM" for COM or
+all else.  Specify the marker type parameter as "JPEG_COM" for COM or
 "JPEG_APP0 + n" for APPn.  (Actually, jpeg_write_marker will let you write
 any marker type, but we don't recommend writing any other kinds of marker.)
 For example, to write a user comment string pointed to by comment_text:
@@ -1902,10 +2373,11 @@ In this case the same data rows must be passed again on the next call.
 
 
 Decompression with raw data output implies bypassing all postprocessing:
-you cannot ask for color quantization, for instance.  More seriously, you must
-deal with the color space and sampling factors present in the incoming file.
-If your application only handles, say, 2h1v YCbCr data, you must check for
-and fail on other color spaces or other sampling factors.
+you cannot ask for rescaling or color quantization, for instance.  More
+seriously, you must deal with the color space and sampling factors present in
+the incoming file.  If your application only handles, say, 2h1v YCbCr data,
+you must check for and fail on other color spaces or other sampling factors.
+The library will not convert to a different color space for you.
 
 To obtain raw data output, set cinfo->raw_data_out = TRUE before
 jpeg_start_decompress() (it is set FALSE by jpeg_read_header()).  Be sure to
@@ -1923,7 +2395,88 @@ above example of computing buffer dimensions for raw-data compression is
 equally valid for decompression.
 
 Input suspension is supported with raw-data decompression: if the data source
-module suspends, jpeg_read_raw_data() will return 0.
+module suspends, jpeg_read_raw_data() will return 0.  You can also use
+buffered-image mode to read raw data in multiple passes.
+
+
+Really raw data: DCT coefficients
+---------------------------------
+
+It is possible to read or write the contents of a JPEG file as raw DCT
+coefficients.  This facility is mainly intended for use in lossless
+transcoding between different JPEG file formats.  Other possible applications
+include lossless cropping of a JPEG image, lossless reassembly of a
+multi-strip or multi-tile TIFF/JPEG file into a single JPEG datastream, etc.
+
+To read the contents of a JPEG file as DCT coefficients, open the file and do
+jpeg_read_header() as usual.  But instead of calling jpeg_start_decompress()
+and jpeg_read_scanlines(), call jpeg_read_coefficients().  This will read the
+entire image into a set of virtual coefficient-block arrays, one array per
+component.  The return value is a pointer to an array of virtual-array
+descriptors.  Each virtual array can be accessed directly using the JPEG
+memory manager's access_virt_barray method (see Memory management, below,
+and also read structure.doc's discussion of virtual array handling).  Or,
+for simple transcoding to a different JPEG file format, the array list can
+just be handed directly to jpeg_write_coefficients().
+
+When you are done using the virtual arrays, call jpeg_finish_decompress()
+to release the array storage and return the decompression object to an idle
+state; or just call jpeg_destroy() if you don't need to reuse the object.
+
+If you use a suspending data source, jpeg_read_coefficients() will return
+NULL if it is forced to suspend; a non-NULL return value indicates successful
+completion.  You need not test for a NULL return value when using a
+non-suspending data source.
+
+Each block in the block arrays contains quantized coefficient values in
+normal array order (not JPEG zigzag order).  The block arrays contain only
+DCT blocks containing real data; any entirely-dummy blocks added to fill out
+interleaved MCUs at the right or bottom edges of the image are discarded
+during reading and are not stored in the block arrays.  (The size of each
+block array can be determined from the width_in_blocks and height_in_blocks
+fields of the component's comp_info entry.)  This is also the data format
+expected by jpeg_write_coefficients().
+
+To write the contents of a JPEG file as DCT coefficients, you must provide
+the DCT coefficients stored in virtual block arrays.  You can either pass
+block arrays read from an input JPEG file by jpeg_read_coefficients(), or
+allocate virtual arrays from the JPEG compression object and fill them
+yourself.  In either case, jpeg_write_coefficients() is substituted for
+jpeg_start_compress() and jpeg_write_scanlines().  Thus the sequence is
+  * Create compression object
+  * Set all compression parameters as necessary
+  * Request virtual arrays if needed
+  * jpeg_write_coefficients()
+  * jpeg_finish_compress()
+  * Destroy or re-use compression object
+jpeg_write_coefficients() is passed a pointer to an array of virtual block
+array descriptors; the number of arrays is equal to cinfo.num_components.
+
+The virtual arrays need only have been requested, not realized, before
+jpeg_write_coefficients() is called.  A side-effect of
+jpeg_write_coefficients() is to realize any virtual arrays that have been
+requested from the compression object's memory manager.  Thus, when obtaining
+the virtual arrays from the compression object, you should fill the arrays
+after calling jpeg_write_coefficients().  The data is actually written out
+when you call jpeg_finish_compress(); jpeg_write_coefficients() only writes
+the file header.
+
+When writing raw DCT coefficients, it is crucial that the JPEG quantization
+tables and sampling factors match the way the data was encoded, or the
+resulting file will be invalid.  For transcoding from an existing JPEG file,
+we recommend using jpeg_copy_critical_parameters().  This routine initializes
+all the compression parameters to default values (like jpeg_set_defaults()),
+then copies the critical information from a source decompression object.
+The decompression object should have just been used to read the entire
+JPEG input file --- that is, it should be awaiting jpeg_finish_decompress().
+
+jpeg_write_coefficients() marks all tables stored in the compression object
+as needing to be written to the output file (thus, it acts like
+jpeg_start_compress(cinfo, TRUE)).  This is for safety's sake, to avoid
+emitting abbreviated JPEG files by accident.  If you really want to emit an
+abbreviated JPEG file, call jpeg_suppress_tables(), or set the tables'
+individual sent_table flags, between calling jpeg_write_coefficients() and
+jpeg_finish_compress().
 
 
 Progress monitoring
@@ -1943,10 +2496,12 @@ by the library.  No guarantees are made about how often this call will occur,
 so we don't recommend you use it for mouse tracking or anything like that.
 At present, a call will occur once per MCU row, scanline, or sample row
 group, whichever unit is convenient for the current processing mode; so the
-wider the image, the longer the time between calls.  (During the data
+wider the image, the longer the time between calls.  During the data
 transferring pass, only one call occurs per call of jpeg_read_scanlines or
 jpeg_write_scanlines, so don't pass a large number of scanlines at once if
-you want fine resolution in the progress count.)
+you want fine resolution in the progress count.  (If you really need to use
+the callback mechanism for time-critical tasks like mouse tracking, you could
+insert additional calls inside some of the library's inner loops.)
 
 To establish a progress-monitor callback, create a struct jpeg_progress_mgr,
 fill in its progress_monitor field with a pointer to your callback routine,
@@ -1964,8 +2519,8 @@ The jpeg_progress_mgr struct contains four fields which are set by the library:
 	int completed_passes;	/* passes completed so far */
 	int total_passes;	/* total number of passes expected */
 During any one pass, pass_counter increases from 0 up to (not including)
-pass_limit; the step size is not necessarily 1.  Both the step size and the
-limit may differ from one pass to another.  The expected total number of
+pass_limit; the step size is usually but not necessarily 1.  The pass_limit
+value may change from one pass to another.  The expected total number of
 passes is in total_passes, and the number of passes already completed is in
 completed_passes.  Thus the fraction of work completed may be estimated as
 		completed_passes + (pass_counter/pass_limit)
@@ -1973,16 +2528,22 @@ completed_passes.  Thus the fraction of work completed may be estimated as
 				total_passes
 ignoring the fact that the passes may not be equal amounts of work.
 
-When decompressing, the total_passes value is not trustworthy, because it
+When decompressing, pass_limit can even change within a pass, because it
 depends on the number of scans in the JPEG file, which isn't always known in
-advance.  In the current implementation, completed_passes may jump by more
-than one when dealing with a multiple-scan input file.  About all that is
-really safe to assume is that when completed_passes = total_passes - 1, the
-current pass will be the last one.
+advance.  The computed fraction-of-work-done may jump suddenly (if the library
+discovers it has overestimated the number of scans) or even decrease (in the
+opposite case).  It is not wise to put great faith in the work estimate.
 
-If you really need to use the callback mechanism for time-critical tasks
-like mouse tracking, you could insert additional calls inside some of the
-library's inner loops.
+When using the decompressor's buffered-image mode, the progress monitor work
+estimate is likely to be completely unhelpful, because the library has no way
+to know how many output passes will be demanded of it.  Currently, the library
+sets total_passes based on the assumption that there will be one more output
+pass if the input file end hasn't yet been read (jpeg_input_complete() isn't
+TRUE), but no more output passes if the file end has been reached when the
+output pass is started.  This means that total_passes will rise as additional
+output passes are requested.  If you have a way of determining the input file
+size, estimating progress based on the fraction of the file that's been read
+will probably be more useful than using the library's value.
 
 
 Memory management
@@ -2031,7 +2592,8 @@ the minimum space needed.)  If you allocate any large structures yourself, you
 must allocate them before jpeg_start_compress() or jpeg_start_decompress() in
 order to have them counted against the max memory limit.  Also keep in mind
 that space allocated with alloc_small() is ignored, on the assumption that
-it's too small to be worth worrying about.
+it's too small to be worth worrying about; so a reasonable safety margin
+should be left when setting max_memory_to_use.
 
 If you use the jmemname.c or jmemdos.c memory manager back end, it is
 important to clean up the JPEG object properly to ensure that the temporary
@@ -2162,7 +2724,8 @@ heap space before you need to go to a larger memory model.  The C library's
 static data will account for several K of this, but that still leaves a good
 deal for your needs.  (If you are tight on space, you could reduce the sizes
 of the I/O buffers allocated by jdatasrc.c and jdatadst.c, say from 4K to
-1K.)
+1K.  Another possibility is to move the error message table to far memory;
+this should be doable with only localized hacking on jerror.c.)
 
 About 2K of the near heap space is "permanent" memory that will not be
 released until you destroy the JPEG object.  This is only an issue if you

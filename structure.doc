@@ -36,16 +36,15 @@ otherwise result.)
 
 The IJG distribution contains two parts:
   * A subroutine library for JPEG compression and decompression.
-  * cjpeg/djpeg, two simple applications that use the library to transform
+  * cjpeg/djpeg, two sample applications that use the library to transform
     JFIF JPEG files to and from several other image formats.
 cjpeg/djpeg are of no great intellectual complexity: they merely add a simple
 command-line user interface and I/O routines for several uncompressed image
 formats.  This document concentrates on the library itself.
 
-We desire the library to be capable of supporting all JPEG baseline and
-extended sequential DCT processes.  Progressive processes are also allowed
-for in the system architecture, although they are not likely to be
-implemented very soon.  Hierarchical processes are not supported.
+We desire the library to be capable of supporting all JPEG baseline, extended
+sequential, and progressive DCT processes.  Hierarchical processes are not
+supported.
 
 The library does not support the lossless (spatial) JPEG process.  Lossless
 JPEG shares little or no code with lossy JPEG, and would normally be used
@@ -67,9 +66,8 @@ extending the library to include it would be straightforward.
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
 surrounding code to process interchange or abbreviated JPEG datastreams that
-are embedded in more complex file formats.  (For example, we anticipate that
-Sam Leffler's TIFF library will use this code to support the revised TIFF
-JPEG format.)
+are embedded in more complex file formats.  (For example, libtiff uses this
+library to implement JPEG compression within the TIFF file format.)
 
 The library includes a substantial amount of code that is not covered by the
 JPEG standard but is necessary for typical applications of JPEG.  These
@@ -133,13 +131,12 @@ Looking more closely, the compressor library contains the following main
 elements:
 
   Preprocessing:
-    * Color space conversion (e.g., RGB to YCbCr).  This step may also
-      provide gamma adjustment.
+    * Color space conversion (e.g., RGB to YCbCr).
     * Edge expansion and downsampling.  Optionally, this step can do simple
       smoothing --- this is often helpful for low-quality source data.
   JPEG proper:
     * MCU assembly, DCT, quantization.
-    * Entropy coding (Huffman or arithmetic).
+    * Entropy coding (sequential or progressive, Huffman or arithmetic).
 
 In addition to these modules we need overall control, marker generation,
 and support code (memory management & error handling).  There is also a
@@ -150,16 +147,16 @@ do something else with the data.
 The decompressor library contains the following main elements:
 
   JPEG proper:
-    * Entropy decoding (Huffman or arithmetic).
+    * Entropy decoding (sequential or progressive, Huffman or arithmetic).
     * Dequantization, inverse DCT, MCU disassembly.
   Postprocessing:
     * Upsampling.  Optionally, this step may be able to do more general
       rescaling of the image.
     * Color space conversion (e.g., YCbCr to RGB).  This step may also
-      provide gamma adjustment.
+      provide gamma adjustment [ currently it does not ].
     * Optional color quantization (e.g., reduction to 256 colors).
     * Optional color precision reduction (e.g., 24-bit to 15-bit color).
-      [Not implemented in v5.]
+      [This feature is not currently implemented.]
 
 We also need overall control, marker parsing, and a data source module.
 The support code (memory management & error handling) can be shared with
@@ -186,9 +183,11 @@ additional dummy blocks may be used to fill out MCUs, but the MCU assembly and
 disassembly logic will create or discard these blocks internally.  (This is
 advantageous for speed reasons, since we avoid DCTing the dummy blocks.
 It also permits a small reduction in file size, because the compressor can
-choose dummy block contents so as to minimize their size in compressed form.)
-Applications that wish to deal directly with the downsampled data must provide
-similar buffering and padding for odd-sized images.
+choose dummy block contents so as to minimize their size in compressed form.
+Finally, it makes the interface buffer specification independent of whether
+the file is actually interleaved or not.)  Applications that wish to deal
+directly with the downsampled data must provide similar buffering and padding
+for odd-sized images.
 
 
 *** Poor man's object-oriented programming ***
@@ -366,11 +365,17 @@ The objects shown above are:
   one fully interleaved MCU row of subsampled data is processed per call,
   even when the JPEG file is noninterleaved.
 
-* Forward DCT and quantization: Perform DCT, quantize, and emit coefficients
-  in zigzag block order.  Works on one or more DCT blocks at a time.
+* Forward DCT and quantization: Perform DCT, quantize, and emit coefficients.
+  Works on one or more DCT blocks at a time.  (Note: the coefficients are now
+  emitted in normal array order, which the entropy encoder is expected to
+  convert to zigzag order as necessary.  Prior versions of the IJG code did
+  the conversion to zigzag order within the quantization step.)
 
 * Entropy encoding: Perform Huffman or arithmetic entropy coding and emit the
   coded data to the data destination module.  Works on one MCU per call.
+  For progressive JPEG, the same DCT blocks are fed to the entropy coder
+  during each pass, and the coder must emit the appropriate subset of
+  coefficients.
 
 In addition to the above objects, the compression library includes these
 objects:
@@ -444,6 +449,9 @@ shown are:
 
 * Entropy decoding: Read coded data from the data source module and perform
   Huffman or arithmetic entropy decoding.  Works on one MCU per call.
+  For progressive JPEG decoding, the coefficient controller supplies the prior
+  coefficients of each MCU (initially all zeroes), which the entropy decoder
+  modifies in each scan.
 
 * Dequantization and inverse DCT: like it says.  Note that the coefficients
   buffered by the coefficient controller have NOT been dequantized; we
@@ -492,7 +500,9 @@ In addition to the above objects, the decompression library includes these
 objects:
 
 * Master control: determines the number of passes required, controls overall
-  and per-pass initialization of the other modules.
+  and per-pass initialization of the other modules.  This is subdivided into
+  input and output control: jdinput.c controls only input-side processing,
+  while jdmaster.c handles overall initialization and output-side control.
 
 * Marker reading: decodes JPEG markers (except for RSTn).
 
@@ -509,6 +519,54 @@ objects:
 
 As with compression, the data source manager, error handler, and progress
 monitor are candidates for replacement by a surrounding application.
+
+
+*** Decompression input and output separation ***
+
+To support efficient incremental display of progressive JPEG files, the
+decompressor is divided into two sections that can run independently:
+
+1. Data input includes marker parsing, entropy decoding, and input into the
+   coefficient controller's DCT coefficient buffer.  Note that this
+   processing is relatively cheap and fast.
+
+2. Data output reads from the DCT coefficient buffer and performs the IDCT
+   and all postprocessing steps.
+
+For a progressive JPEG file, the data input processing is allowed to get
+arbitrarily far ahead of the data output processing.  (This occurs only
+if the application calls jpeg_consume_input(); otherwise input and output
+run in lockstep, since the input section is called only when the output
+section needs more data.)  In this way the application can avoid making
+extra display passes when data is arriving faster than the display pass
+can run.  Furthermore, it is possible to abort an output pass without
+losing anything, since the coefficient buffer is read-only as far as the
+output section is concerned.  See libjpeg.doc for more detail.
+
+A full-image coefficient array is only created if the JPEG file has multiple
+scans (or if the application specifies buffered-image mode anyway).  When
+reading a single-scan file, the coefficient controller normally creates only
+a one-MCU buffer, so input and output processing must run in lockstep in this
+case.  jpeg_consume_input() is effectively a no-op in this situation.
+
+The main impact of dividing the decompressor in this fashion is that we must
+be very careful with shared variables in the cinfo data structure.  Each
+variable that can change during the course of decompression must be
+classified as belonging to data input or data output, and each section must
+look only at its own variables.  For example, the data output section may not
+depend on any of the variables that describe the current scan in the JPEG
+file, because these may change as the data input section advances into a new
+scan.
+
+The progress monitor is (somewhat arbitrarily) defined to treat input of the
+file as one pass when buffered-image mode is not used, and to ignore data
+input work completely when buffered-image mode is used.  Note that the
+library has no reliable way to predict the number of passes when dealing
+with a progressive JPEG file, nor can it predict the number of output passes
+in buffered-image mode.  So the work estimate is inherently bogus anyway.
+
+No comparable division is currently made in the compression library, because
+there isn't any real need for it.
 
 
 *** Data formats ***
@@ -618,11 +676,11 @@ empty or refill the buffer at arbitrary times.  Instead the application would
 like to have control return from the library at buffer overflow/underrun, and
 then resume compression or decompression at a later time.
 
-This scenario is supported for simple cases, namely, single-pass processing
-of single-scan JPEG files.  (For anything more complex, we recommend that the
-application "bite the bullet" and develop real multitasking capability.)  The
-libjpeg.doc file goes into more detail about the usage and limitations of
-this capability; here we address the implications for library structure.
+This scenario is supported for simple cases.  (For anything more complex, we
+recommend that the application "bite the bullet" and develop real multitasking
+capability.)  The libjpeg.doc file goes into more detail about the usage and
+limitations of this capability; here we address the implications for library
+structure.
 
 The essence of the problem is that the entropy codec (coder or decoder) must
 be prepared to stop at arbitrary times.  In turn, the controllers that call
@@ -648,14 +706,17 @@ specified so as to make this possible.  This also implies that the data buffer
 must be large enough to hold a worst-case compressed MCU; a couple thousand
 bytes should be enough.
 
-This design would probably not work for an arithmetic codec, since its
+In a successive-approximation AC refinement scan, the progressive Huffman
+decoder has to be able to undo assignments of newly nonzero coefficients if it
+suspends before the MCU is complete, since decoding requires distinguishing
+previously-zero and previously-nonzero coefficients.  This is a bit tedious
+but probably won't have much effect on performance.  Other variants of Huffman
+decoding need not worry about this, since they will just store the same values
+again if forced to repeat the MCU.
+
+This approach would probably not work for an arithmetic codec, since its
 modifiable state is quite large and couldn't be copied cheaply.  Instead it
 would have to suspend and resume exactly at the point of the buffer end.
-Also, a progressive JPEG decoder would have some problems with having already
-updated the output DCT coefficient buffer, since progressive decoding depends
-on the prior state of the coefficient buffer.  This case might also have to be
-handled by exact restart.  Currently I expect that IJG will just not support
-suspendable operation in these cases (when and if we implement them at all).
 
 The JPEG marker reader is designed to cope with suspension at an arbitrary
 point.  It does so by backing up to the start of the marker parameter segment,
@@ -670,7 +731,7 @@ this is not necessary; it is much easier simply to require the application to
 ensure there is enough buffer space before starting.  (An empty 2K buffer is
 more than sufficient for the header markers; and ensuring there are a dozen or
 two bytes available before calling jpeg_finish_compress() will suffice for the
-trailer.)  Again, this would not work for writing multi-scan JPEG files, but
+trailer.)  This would not work for writing multi-scan JPEG files, but
 we simply do not intend to support that capability with suspension.
 
 
@@ -747,10 +808,10 @@ grounds that it isn't worth the trouble.)
 To support all this, we establish the following protocol for doing business
 with the memory manager:
   1. Modules must request virtual arrays (which may have only image lifespan)
-     during the global selection phase, i.e., in their jinit_xxx routines.
+     during the initial setup phase, i.e., in their jinit_xxx routines.
   2. All "large" objects (including JSAMPARRAYs and JBLOCKARRAYs) must also be
-     allocated at global selection time.
-  3. realize_virt_arrays will be called at the completion of global selection.
+     allocated during initial setup.
+  3. realize_virt_arrays will be called at the completion of initial setup.
      The above conventions ensure that sufficient information is available
      for it to choose a good size for virtual array buffers.
 Small objects of any lifespan may be allocated at any time.  We expect that
@@ -761,6 +822,22 @@ In a virtual-memory machine, we simply pretend that the available space is
 infinite, thus causing realize_virt_arrays to decide that it can allocate all
 the virtual arrays as full-size in-memory buffers.  The overhead of the
 virtual-array access protocol is very small when no swapping occurs.
+
+A virtual array can be specified to be "pre-zeroed"; when this flag is set,
+never-yet-written sections of the array are set to zero before being made
+available to the caller.  If this flag is not set, never-written sections
+of the array contain garbage.  (This feature exists primarily because the
+equivalent logic would otherwise be needed in jdcoefct.c for progressive
+JPEG mode; we may as well make it available for possible other uses.)
+
+The first write pass on a virtual array is required to occur in top-to-bottom
+order; read passes, as well as any write passes after the first one, may
+access the array in any order.  This restriction exists partly to simplify
+the virtual array control logic, and partly because some file systems may not
+support seeking beyond the current end-of-file in a temporary file.  The main
+implication of this restriction is that rearrangement of rows (such as
+converting top-to-bottom data order to bottom-to-top) must be handled while
+reading data out of the virtual array, not while putting it in.
 
 
 *** Memory manager internal structure ***

@@ -1,7 +1,7 @@
 /*
  * jdhuff.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -10,47 +10,24 @@
  * Much of the complexity here has to do with supporting input suspension.
  * If the data source module demands suspension, we want to be able to back
  * up to the start of the current MCU.  To do this, we copy state variables
- * into local working storage, and update them back to the permanent JPEG
- * objects only upon successful completion of an MCU.
+ * into local working storage, and update them back to the permanent
+ * storage only upon successful completion of an MCU.
  */
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jdhuff.h"		/* Declarations shared with jdphuff.c */
 
 
-/* Derived data constructed for each Huffman table */
-
-#define HUFF_LOOKAHEAD	8	/* # of bits of lookahead */
-
-typedef struct {
-  /* Basic tables: (element [0] of each array is unused) */
-  INT32 mincode[17];		/* smallest code of length k */
-  INT32 maxcode[18];		/* largest code of length k (-1 if none) */
-  /* (maxcode[17] is a sentinel to ensure huff_DECODE terminates) */
-  int valptr[17];		/* huffval[] index of 1st symbol of length k */
-
-  /* Back link to public Huffman table (needed only in slow_DECODE) */
-  JHUFF_TBL *pub;
-
-  /* Lookahead tables: indexed by the next HUFF_LOOKAHEAD bits of
-   * the input data stream.  If the next Huffman code is no more
-   * than HUFF_LOOKAHEAD bits long, we can obtain its length and
-   * the corresponding symbol directly from these tables.
-   */
-  int look_nbits[1<<HUFF_LOOKAHEAD]; /* # bits, or 0 if too long */
-  UINT8 look_sym[1<<HUFF_LOOKAHEAD]; /* symbol, or unused */
-} D_DERIVED_TBL;
-
-/* Expanded entropy decoder object for Huffman decoding.
+/*
+ * Expanded entropy decoder object for Huffman decoding.
  *
  * The savable_state subrecord contains fields that change within an MCU,
  * but must not be updated permanently until we complete the MCU.
  */
 
 typedef struct {
-  INT32 get_buffer;		/* current bit-extraction buffer */
-  int bits_left;		/* # of unused bits in it */
   int last_dc_val[MAX_COMPS_IN_SCAN]; /* last DC coef for each component */
 } savable_state;
 
@@ -64,9 +41,7 @@ typedef struct {
 #else
 #if MAX_COMPS_IN_SCAN == 4
 #define ASSIGN_STATE(dest,src)  \
-	((dest).get_buffer = (src).get_buffer, \
-	 (dest).bits_left = (src).bits_left, \
-	 (dest).last_dc_val[0] = (src).last_dc_val[0], \
+	((dest).last_dc_val[0] = (src).last_dc_val[0], \
 	 (dest).last_dc_val[1] = (src).last_dc_val[1], \
 	 (dest).last_dc_val[2] = (src).last_dc_val[2], \
 	 (dest).last_dc_val[3] = (src).last_dc_val[3])
@@ -77,35 +52,21 @@ typedef struct {
 typedef struct {
   struct jpeg_entropy_decoder pub; /* public fields */
 
-  savable_state saved;		/* Bit buffer & DC state at start of MCU */
+  /* These fields are loaded into local variables at start of each MCU.
+   * In case of suspension, we exit WITHOUT updating them.
+   */
+  bitread_perm_state bitstate;	/* Bit buffer at start of MCU */
+  savable_state saved;		/* Other state at start of MCU */
 
   /* These fields are NOT loaded into local working state. */
   unsigned int restarts_to_go;	/* MCUs left in this restart interval */
-  boolean printed_eod;		/* flag to suppress extra end-of-data msgs */
 
   /* Pointers to derived tables (these workspaces have image lifespan) */
-  D_DERIVED_TBL * dc_derived_tbls[NUM_HUFF_TBLS];
-  D_DERIVED_TBL * ac_derived_tbls[NUM_HUFF_TBLS];
+  d_derived_tbl * dc_derived_tbls[NUM_HUFF_TBLS];
+  d_derived_tbl * ac_derived_tbls[NUM_HUFF_TBLS];
 } huff_entropy_decoder;
 
 typedef huff_entropy_decoder * huff_entropy_ptr;
-
-/* Working state while scanning an MCU.
- * This struct contains all the fields that are needed by subroutines.
- */
-
-typedef struct {
-  int unread_marker;		/* nonzero if we have hit a marker */
-  const JOCTET * next_input_byte; /* => next byte to read from source */
-  size_t bytes_in_buffer;	/* # of bytes remaining in source buffer */
-  savable_state cur;		/* Current bit buffer & DC state */
-  j_decompress_ptr cinfo;	/* fill_bit_buffer needs access to this */
-} working_state;
-
-
-/* Forward declarations */
-LOCAL void fix_huff_tbl JPP((j_decompress_ptr cinfo, JHUFF_TBL * htbl,
-			     D_DERIVED_TBL ** pdtbl));
 
 
 /*
@@ -118,6 +79,14 @@ start_pass_huff_decoder (j_decompress_ptr cinfo)
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
   int ci, dctbl, actbl;
   jpeg_component_info * compptr;
+
+  /* Check that the scan parameters Ss, Se, Ah/Al are OK for sequential JPEG.
+   * This ought to be an error condition, but we make it a warning because
+   * there are some baseline files out there with all zeroes in these bytes.
+   */
+  if (cinfo->Ss != 0 || cinfo->Se != DCTSIZE2-1 ||
+      cinfo->Ah != 0 || cinfo->Al != 0)
+    WARNMS(cinfo, JWRN_NOT_SEQUENTIAL);
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
@@ -132,29 +101,34 @@ start_pass_huff_decoder (j_decompress_ptr cinfo)
       ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, actbl);
     /* Compute derived values for Huffman tables */
     /* We may do this more than once for a table, but it's not expensive */
-    fix_huff_tbl(cinfo, cinfo->dc_huff_tbl_ptrs[dctbl],
-		 & entropy->dc_derived_tbls[dctbl]);
-    fix_huff_tbl(cinfo, cinfo->ac_huff_tbl_ptrs[actbl],
-		 & entropy->ac_derived_tbls[actbl]);
+    jpeg_make_d_derived_tbl(cinfo, cinfo->dc_huff_tbl_ptrs[dctbl],
+			    & entropy->dc_derived_tbls[dctbl]);
+    jpeg_make_d_derived_tbl(cinfo, cinfo->ac_huff_tbl_ptrs[actbl],
+			    & entropy->ac_derived_tbls[actbl]);
     /* Initialize DC predictions to 0 */
     entropy->saved.last_dc_val[ci] = 0;
   }
 
-  /* Initialize private state variables */
-  entropy->saved.bits_left = 0;
-  entropy->saved.get_buffer = 0; /* unnecessary, but keeps Purify quiet */
-  entropy->printed_eod = FALSE;
+  /* Initialize bitread state variables */
+  entropy->bitstate.bits_left = 0;
+  entropy->bitstate.get_buffer = 0; /* unnecessary, but keeps Purify quiet */
+  entropy->bitstate.printed_eod = FALSE;
 
   /* Initialize restart counter */
   entropy->restarts_to_go = cinfo->restart_interval;
 }
 
 
-LOCAL void
-fix_huff_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl, D_DERIVED_TBL ** pdtbl)
-/* Compute the derived values for a Huffman table */
+/*
+ * Compute the derived values for a Huffman table.
+ * Note this is also used by jdphuff.c.
+ */
+
+GLOBAL void
+jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl,
+			 d_derived_tbl ** pdtbl)
 {
-  D_DERIVED_TBL *dtbl;
+  d_derived_tbl *dtbl;
   int p, i, l, si;
   int lookbits, ctr;
   char huffsize[257];
@@ -163,9 +137,9 @@ fix_huff_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl, D_DERIVED_TBL ** pdtbl)
 
   /* Allocate a workspace if we haven't already done so. */
   if (*pdtbl == NULL)
-    *pdtbl = (D_DERIVED_TBL *)
+    *pdtbl = (d_derived_tbl *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(D_DERIVED_TBL));
+				  SIZEOF(d_derived_tbl));
   dtbl = *pdtbl;
   dtbl->pub = htbl;		/* fill in back link */
   
@@ -207,7 +181,7 @@ fix_huff_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl, D_DERIVED_TBL ** pdtbl)
       dtbl->maxcode[l] = -1;	/* -1 if no codes of this length */
     }
   }
-  dtbl->maxcode[17] = 0xFFFFFL; /* ensures huff_DECODE terminates */
+  dtbl->maxcode[17] = 0xFFFFFL; /* ensures jpeg_huff_decode terminates */
 
   /* Compute lookahead tables to speed up decoding.
    * First we set all the table entries to 0, indicating "too long";
@@ -235,20 +209,10 @@ fix_huff_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl, D_DERIVED_TBL ** pdtbl)
 
 
 /*
- * Code for extracting the next N bits from the input stream.
- * (N never exceeds 15 for JPEG data.)
- * This needs to go as fast as possible!
- *
- * We read source bytes into get_buffer and dole out bits as needed.
- * If get_buffer already contains enough bits, they are fetched in-line
- * by the macros check_bit_buffer and get_bits.  When there aren't enough
- * bits, fill_bit_buffer is called; it will attempt to fill get_buffer to
- * the "high water mark" (not just to the number of bits needed; this reduces
- * the function-call overhead cost of entering fill_bit_buffer).
- * Note that fill_bit_buffer may return FALSE to indicate suspension.
- * On TRUE return, fill_bit_buffer guarantees that get_buffer contains
- * at least the requested number of bits --- dummy zeroes are inserted if
- * necessary.
+ * Out-of-line code for bit fetching (shared with jdphuff.c).
+ * See jdhuff.h for info about usage.
+ * Note: current values of get_buffer and bits_left are passed as parameters,
+ * but are returned in the corresponding fields of the state struct.
  *
  * On most machines MIN_GET_BITS should be 25 to allow the full 32-bit width
  * of get_buffer to be used.  (On machines with wider words, an even larger
@@ -256,25 +220,25 @@ fix_huff_tbl (j_decompress_ptr cinfo, JHUFF_TBL * htbl, D_DERIVED_TBL ** pdtbl)
  * quite slow and take time proportional to the number of places shifted.
  * (This is true with most PC compilers, for instance.)  In this case it may
  * be a win to set MIN_GET_BITS to the minimum value of 15.  This reduces the
- * average shift distance at the cost of more calls to fill_bit_buffer.
+ * average shift distance at the cost of more calls to jpeg_fill_bit_buffer.
  */
 
 #ifdef SLOW_SHIFT_32
 #define MIN_GET_BITS  15	/* minimum allowable value */
 #else
-#define MIN_GET_BITS  25	/* max value for 32-bit get_buffer */
+#define MIN_GET_BITS  (BIT_BUF_SIZE-7)
 #endif
 
 
-LOCAL boolean
-fill_bit_buffer (working_state * state, int nbits)
+GLOBAL boolean
+jpeg_fill_bit_buffer (bitread_working_state * state,
+		      register bit_buf_type get_buffer, register int bits_left,
+		      int nbits)
 /* Load up the bit buffer to a depth of at least nbits */
 {
   /* Copy heavily used state fields into locals (hopefully registers) */
   register const JOCTET * next_input_byte = state->next_input_byte;
   register size_t bytes_in_buffer = state->bytes_in_buffer;
-  register INT32 get_buffer = state->cur.get_buffer;
-  register int bits_left = state->cur.bits_left;
   register int c;
 
   /* Attempt to load at least MIN_GET_BITS bits into get_buffer. */
@@ -322,14 +286,13 @@ fill_bit_buffer (working_state * state, int nbits)
 	  break;
 	/* Uh-oh.  Report corrupted data to user and stuff zeroes into
 	 * the data stream, so that we can produce some kind of image.
-	 * Note that this will be repeated for each byte demanded for the
-	 * rest of the segment; this is slow but not unreasonably so.
-	 * The main thing is to avoid getting a zillion warnings, hence
-	 * we use a flag to ensure that only one warning appears.
+	 * Note that this code will be repeated for each byte demanded
+	 * for the rest of the segment.  We use a nonvolatile flag to ensure
+	 * that only one warning message appears.
 	 */
-	if (! ((huff_entropy_ptr) state->cinfo->entropy)->printed_eod) {
+	if (! *(state->printed_eod_ptr)) {
 	  WARNMS(state->cinfo, JWRN_HIT_MARKER);
-	  ((huff_entropy_ptr) state->cinfo->entropy)->printed_eod = TRUE;
+	  *(state->printed_eod_ptr) = TRUE;
 	}
 	c = 0;			/* insert a zero byte into bit buffer */
       }
@@ -343,103 +306,45 @@ fill_bit_buffer (working_state * state, int nbits)
   /* Unload the local registers */
   state->next_input_byte = next_input_byte;
   state->bytes_in_buffer = bytes_in_buffer;
-  state->cur.get_buffer = get_buffer;
-  state->cur.bits_left = bits_left;
+  state->get_buffer = get_buffer;
+  state->bits_left = bits_left;
 
   return TRUE;
 }
 
 
 /*
- * These macros provide the in-line portion of bit fetching.
- * Use check_bit_buffer to ensure there are N bits in get_buffer
- * before using get_bits, peek_bits, or drop_bits.
- *	check_bit_buffer(state,n,action);
- *		Ensure there are N bits in get_buffer; if suspend, take action.
- *      val = get_bits(state,n);
- *		Fetch next N bits.
- *      val = peek_bits(state,n);
- *		Fetch next N bits without removing them from the buffer.
- *	drop_bits(state,n);
- *		Discard next N bits.
- * The value N should be a simple variable, not an expression, because it
- * is evaluated multiple times.
+ * Out-of-line code for Huffman code decoding.
+ * See jdhuff.h for info about usage.
  */
 
-#define check_bit_buffer(state,nbits,action) \
-	{ if ((state).cur.bits_left < (nbits))  \
-	    if (! fill_bit_buffer(&(state), nbits))  \
-	      { action; } }
-
-#define get_bits(state,nbits) \
-	(((int) ((state).cur.get_buffer >> ((state).cur.bits_left -= (nbits)))) & ((1<<(nbits))-1))
-
-#define peek_bits(state,nbits) \
-	(((int) ((state).cur.get_buffer >> ((state).cur.bits_left -  (nbits)))) & ((1<<(nbits))-1))
-
-#define drop_bits(state,nbits) \
-	((state).cur.bits_left -= (nbits))
-
-
-/*
- * Code for extracting next Huffman-coded symbol from input bit stream.
- * We use a lookahead table to process codes of up to HUFF_LOOKAHEAD bits
- * without looping.  Usually, more than 95% of the Huffman codes will be 8
- * or fewer bits long.  The few overlength codes are handled with a loop.
- * The primary case is made a macro for speed reasons; the secondary
- * routine slow_DECODE is rarely entered and need not be inline code.
- *
- * Notes about the huff_DECODE macro:
- * 1. Near the end of the data segment, we may fail to get enough bits
- *    for a lookahead.  In that case, we do it the hard way.
- * 2. If the lookahead table contains no entry, the next code must be
- *    more than HUFF_LOOKAHEAD bits long.
- * 3. slow_DECODE returns -1 if forced to suspend.
- */
-
-#define huff_DECODE(result,state,htbl,donelabel) \
-{ if (state.cur.bits_left < HUFF_LOOKAHEAD) {  \
-    if (! fill_bit_buffer(&state, 0)) return FALSE;  \
-    if (state.cur.bits_left < HUFF_LOOKAHEAD) {  \
-      if ((result = slow_DECODE(&state, htbl, 1)) < 0) return FALSE;  \
-      goto donelabel;  \
-    }  \
-  }  \
-  { register int nb, look;  \
-    look = peek_bits(state, HUFF_LOOKAHEAD);  \
-    if ((nb = htbl->look_nbits[look]) != 0) {  \
-      drop_bits(state, nb);  \
-      result = htbl->look_sym[look];  \
-    } else {  \
-      if ((result = slow_DECODE(&state, htbl, HUFF_LOOKAHEAD+1)) < 0)  \
-	return FALSE;  \
-    }  \
-  }  \
-donelabel:;  \
-}
-
-  
-LOCAL int
-slow_DECODE (working_state * state, D_DERIVED_TBL * htbl, int min_bits)
+GLOBAL int
+jpeg_huff_decode (bitread_working_state * state,
+		  register bit_buf_type get_buffer, register int bits_left,
+		  d_derived_tbl * htbl, int min_bits)
 {
   register int l = min_bits;
   register INT32 code;
 
-  /* huff_DECODE has determined that the code is at least min_bits */
+  /* HUFF_DECODE has determined that the code is at least min_bits */
   /* bits long, so fetch that many bits in one swoop. */
 
-  check_bit_buffer(*state, l, return -1);
-  code = get_bits(*state, l);
+  CHECK_BIT_BUFFER(*state, l, return -1);
+  code = GET_BITS(l);
 
   /* Collect the rest of the Huffman code one bit at a time. */
   /* This is per Figure F.16 in the JPEG spec. */
 
   while (code > htbl->maxcode[l]) {
     code <<= 1;
-    check_bit_buffer(*state, 1, return -1);
-    code |= get_bits(*state, 1);
+    CHECK_BIT_BUFFER(*state, 1, return -1);
+    code |= GET_BITS(1);
     l++;
   }
+
+  /* Unload the local registers */
+  state->get_buffer = get_buffer;
+  state->bits_left = bits_left;
 
   /* With garbage input we may reach the sentinel value l = 17. */
 
@@ -453,17 +358,18 @@ slow_DECODE (working_state * state, D_DERIVED_TBL * htbl, int min_bits)
 }
 
 
-/* Figure F.12: extend sign bit.
+/*
+ * Figure F.12: extend sign bit.
  * On some machines, a shift and add will be faster than a table lookup.
  */
 
 #ifdef AVOID_TABLES
 
-#define huff_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))
+#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))
 
 #else
 
-#define huff_EXTEND(x,s)  ((x) < extend_test[s] ? (x) + extend_offset[s] : (x))
+#define HUFF_EXTEND(x,s)  ((x) < extend_test[s] ? (x) + extend_offset[s] : (x))
 
 static const int extend_test[16] =   /* entry n is 2**(n-1) */
   { 0, 0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080,
@@ -491,8 +397,8 @@ process_restart (j_decompress_ptr cinfo)
 
   /* Throw away any unused bits remaining in bit buffer; */
   /* include any full bytes in next_marker's count of discarded bytes */
-  cinfo->marker->discarded_bytes += entropy->saved.bits_left / 8;
-  entropy->saved.bits_left = 0;
+  cinfo->marker->discarded_bytes += entropy->bitstate.bits_left / 8;
+  entropy->bitstate.bits_left = 0;
 
   /* Advance past the RSTn marker */
   if (! (*cinfo->marker->read_restart_marker) (cinfo))
@@ -505,30 +411,11 @@ process_restart (j_decompress_ptr cinfo)
   /* Reset restart counter */
   entropy->restarts_to_go = cinfo->restart_interval;
 
-  entropy->printed_eod = FALSE; /* next segment can get another warning */
+  /* Next segment can get another out-of-data warning */
+  entropy->bitstate.printed_eod = FALSE;
 
   return TRUE;
 }
-
-
-/* ZAG[i] is the natural-order position of the i'th element of zigzag order.
- * If the incoming data is corrupted, decode_mcu could attempt to
- * reference values beyond the end of the array.  To avoid a wild store,
- * we put some extra zeroes after the real entries.
- */
-
-static const int ZAG[DCTSIZE2+16] = {
-  0,  1,  8, 16,  9,  2,  3, 10,
- 17, 24, 32, 25, 18, 11,  4,  5,
- 12, 19, 26, 33, 40, 48, 41, 34,
- 27, 20, 13,  6,  7, 14, 21, 28,
- 35, 42, 49, 56, 57, 50, 43, 36,
- 29, 22, 15, 23, 30, 37, 44, 51,
- 58, 59, 52, 45, 38, 31, 39, 46,
- 53, 60, 61, 54, 47, 55, 62, 63,
-  0,  0,  0,  0,  0,  0,  0,  0, /* extra entries in case k>63 below */
-  0,  0,  0,  0,  0,  0,  0,  0
-};
 
 
 /*
@@ -543,7 +430,7 @@ static const int ZAG[DCTSIZE2+16] = {
  * Returns FALSE if data source requested suspension.  In that case no
  * changes have been made to permanent state.  (Exception: some output
  * coefficients may already have been assigned.  This is harmless for
- * this module, but would not work for decoding progressive JPEG.)
+ * this module, since we'll just re-assign them on the next call.)
  */
 
 METHODDEF boolean
@@ -553,9 +440,10 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   register int s, k, r;
   int blkn, ci;
   JBLOCKROW block;
-  working_state state;
-  D_DERIVED_TBL * dctbl;
-  D_DERIVED_TBL * actbl;
+  BITREAD_STATE_VARS;
+  savable_state state;
+  d_derived_tbl * dctbl;
+  d_derived_tbl * actbl;
   jpeg_component_info * compptr;
 
   /* Process restart marker if needed; may have to suspend */
@@ -566,11 +454,8 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   }
 
   /* Load up working state */
-  state.unread_marker = cinfo->unread_marker;
-  state.next_input_byte = cinfo->src->next_input_byte;
-  state.bytes_in_buffer = cinfo->src->bytes_in_buffer;
-  ASSIGN_STATE(state.cur, entropy->saved);
-  state.cinfo = cinfo;
+  BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
+  ASSIGN_STATE(state, entropy->saved);
 
   /* Outer loop handles each block in the MCU */
 
@@ -584,11 +469,11 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
     /* Decode a single block's worth of coefficients */
 
     /* Section F.2.2.1: decode the DC coefficient difference */
-    huff_DECODE(s, state, dctbl, label1);
+    HUFF_DECODE(s, br_state, dctbl, return FALSE, label1);
     if (s) {
-      check_bit_buffer(state, s, return FALSE);
-      r = get_bits(state, s);
-      s = huff_EXTEND(r, s);
+      CHECK_BIT_BUFFER(br_state, s, return FALSE);
+      r = GET_BITS(s);
+      s = HUFF_EXTEND(r, s);
     }
 
     /* Shortcut if component's values are not interesting */
@@ -596,9 +481,9 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       goto skip_ACs;
 
     /* Convert DC difference to actual value, update last_dc_val */
-    s += state.cur.last_dc_val[ci];
-    state.cur.last_dc_val[ci] = s;
-    /* Output the DC coefficient (assumes ZAG[0] = 0) */
+    s += state.last_dc_val[ci];
+    state.last_dc_val[ci] = s;
+    /* Output the DC coefficient (assumes jpeg_natural_order[0] = 0) */
     (*block)[0] = (JCOEF) s;
 
     /* Do we need to decode the AC coefficients for this component? */
@@ -607,18 +492,21 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       /* Section F.2.2.2: decode the AC coefficients */
       /* Since zeroes are skipped, output area must be cleared beforehand */
       for (k = 1; k < DCTSIZE2; k++) {
-	huff_DECODE(s, state, actbl, label2);
+	HUFF_DECODE(s, br_state, actbl, return FALSE, label2);
       
 	r = s >> 4;
 	s &= 15;
       
 	if (s) {
 	  k += r;
-	  check_bit_buffer(state, s, return FALSE);
-	  r = get_bits(state, s);
-	  s = huff_EXTEND(r, s);
-	  /* Output coefficient in natural (dezigzagged) order */
-	  (*block)[ZAG[k]] = (JCOEF) s;
+	  CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	  r = GET_BITS(s);
+	  s = HUFF_EXTEND(r, s);
+	  /* Output coefficient in natural (dezigzagged) order.
+	   * Note: the extra entries in jpeg_natural_order[] will save us
+	   * if k >= DCTSIZE2, which could happen if the data is corrupted.
+	   */
+	  (*block)[jpeg_natural_order[k]] = (JCOEF) s;
 	} else {
 	  if (r != 15)
 	    break;
@@ -632,15 +520,15 @@ skip_ACs:
       /* Section F.2.2.2: decode the AC coefficients */
       /* In this path we just discard the values */
       for (k = 1; k < DCTSIZE2; k++) {
-	huff_DECODE(s, state, actbl, label3);
+	HUFF_DECODE(s, br_state, actbl, return FALSE, label3);
       
 	r = s >> 4;
 	s &= 15;
       
 	if (s) {
 	  k += r;
-	  check_bit_buffer(state, s, return FALSE);
-	  drop_bits(state, s);
+	  CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	  DROP_BITS(s);
 	} else {
 	  if (r != 15)
 	    break;
@@ -652,10 +540,8 @@ skip_ACs:
   }
 
   /* Completed MCU, so update state */
-  cinfo->unread_marker = state.unread_marker;
-  cinfo->src->next_input_byte = state.next_input_byte;
-  cinfo->src->bytes_in_buffer = state.bytes_in_buffer;
-  ASSIGN_STATE(entropy->saved, state.cur);
+  BITREAD_SAVE_STATE(cinfo,entropy->bitstate);
+  ASSIGN_STATE(entropy->saved, state);
 
   /* Account for restart interval (no-op if not using restarts) */
   entropy->restarts_to_go--;

@@ -1,10 +1,10 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 5b of 15-Mar-95
-==================================
+README for release 6 of 2-Aug-95
+================================
 
-This distribution contains the fifth public release of the Independent JPEG
+This distribution contains the sixth public release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
 to use it for any purpose, subject to the conditions under LEGAL ISSUES, below.
 
@@ -14,10 +14,10 @@ our electronic mailing list.  Mailing list members are notified of updates
 and have a chance to participate in technical discussions, etc.
 
 This software is the work of Tom Lane, Philip Gladstone, Luis Ortiz, Jim
-Boucher, Lee Crocker, George Phillips, Davide Rossi, Ge' Weijers, and other
-members of the Independent JPEG Group.
+Boucher, Lee Crocker, Julian Minguillon, George Phillips, Davide Rossi,
+Ge' Weijers, and other members of the Independent JPEG Group.
 
-IJG is not associated with the official ISO JPEG standards committee.
+IJG is not affiliated with the official ISO JPEG standards committee.
 
 
 DOCUMENTATION ROADMAP
@@ -37,8 +37,10 @@ Other documentation files in the distribution are:
 
 User documentation:
   install.doc       How to configure and install the IJG software.
-  usage.doc         Usage instructions for cjpeg, djpeg, rdjpgcom, wrjpgcom.
+  usage.doc         Usage instructions for cjpeg, djpeg, jpegtran,
+                    rdjpgcom, and wrjpgcom.
   *.1               Unix-style man pages for programs (same info as usage.doc).
+  wizard.doc        Advanced usage instructions for JPEG wizards only.
   change.log        Version-to-version change highlights.
 Programmer and internal documentation:
   libjpeg.doc       How to use the JPEG library in your own programs.
@@ -62,27 +64,26 @@ OVERVIEW
 This package contains C software to implement JPEG image compression and
 decompression.  JPEG (pronounced "jay-peg") is a standardized compression
 method for full-color and gray-scale images.  JPEG is intended for compressing
-"real-world" scenes; cartoons and other non-realistic images are not its
-strong suit.  JPEG is lossy, meaning that the output image is not necessarily
-identical to the input image.  Hence you must not use JPEG if you have to have
-identical output bits.  However, on typical images of real-world scenes, very
-good compression levels can be obtained with no visible change, and amazingly
-high compression levels are possible if you can tolerate a low-quality image.
-For more details, see the references, or just experiment with various
-compression settings.
+"real-world" scenes; line drawings, cartoons and other non-realistic images
+are not its strong suit.  JPEG is lossy, meaning that the output image is not
+exactly identical to the input image.  Hence you must not use JPEG if you
+have to have identical output bits.  However, on typical photographic images,
+very good compression levels can be obtained with no visible change, and
+remarkably high compression levels are possible if you can tolerate a
+low-quality image.  For more details, see the references, or just experiment
+with various compression settings.
+
+This software implements JPEG baseline, extended-sequential, and progressive
+compression processes.  Provision is made for supporting all variants of these
+processes, although some uncommon parameter settings aren't implemented yet.
+For legal reasons, we are not distributing code for the arithmetic-coding
+variants of JPEG; see LEGAL ISSUES.  We have made no provision for supporting
+the hierarchical or lossless processes defined in the standard.
 
 We provide a set of library routines for reading and writing JPEG image files,
-plus two simple applications "cjpeg" and "djpeg", which use the library to
+plus two sample applications "cjpeg" and "djpeg", which use the library to
 perform conversion between JPEG and some other popular image file formats.
 The library is intended to be reused in other applications.
-
-This software implements JPEG baseline and extended-sequential compression
-processes.  Provision is made for supporting all variants of these processes,
-although some uncommon parameter settings aren't implemented yet.  For legal
-reasons, we are not distributing code for the arithmetic-coding process; see
-LEGAL ISSUES.  At present we have made no provision for supporting the
-progressive, hierarchical, or lossless processes defined in the standard.
-(Support for progressive mode will be offered in a future release.)
 
 In order to support file conversion and viewing software, we have included
 considerable functionality beyond the bare JPEG coding/decoding capability;
@@ -90,15 +91,16 @@ for example, the color quantization modules are not strictly part of JPEG
 decoding, but they are essential for output to colormapped file formats or
 colormapped displays.  These extra functions can be compiled out of the
 library if not required for a particular application.  We have also included
-two simple applications for inserting and extracting textual comments in
-JFIF files.
+"jpegtran", a utility for lossless transcoding between different JPEG
+processes, and "rdjpgcom" and "wrjpgcom", two simple applications for
+inserting and extracting textual comments in JFIF files.
 
 The emphasis in designing this software has been on achieving portability and
 flexibility, while also making it fast enough to be useful.  In particular,
 the software is not intended to be read as a tutorial on JPEG.  (See the
-REFERENCES section for introductory material.)  While we hope that the entire
-package will someday be industrial-strength code, much remains to be done in
-performance tuning and in improving the capabilities of individual modules.
+REFERENCES section for introductory material.)  Rather, it is intended to
+be reliable, portable, industrial-strength code.  We do not claim to have
+achieved that goal in every aspect of the software, but we strive for it.
 
 We welcome the use of this software as a component of commercial products.
 No royalty is required, but we do ask for an acknowledgement in product
@@ -235,12 +237,13 @@ charging $95 for Part 1 and $47 for Part 2, plus 7% shipping/handling.  The
 standard is divided into two parts, Part 1 being the actual specification,
 while Part 2 covers compliance testing methods.  Part 1 is titled "Digital
 Compression and Coding of Continuous-tone Still Images, Part 1: Requirements
-and guidelines" and has document number ISO/IEC IS 10918-1.  As of mid-1994,
-Part 2 is still at Draft International Standard status.  It is titled "Digital
-Compression and Coding of Continuous-tone Still Images, Part 2: Compliance
-testing" and has document number ISO/IEC DIS 10918-2.  (The document number
-will change to IS 10918-2 when final approval is obtained.)  A Part 3,
-covering extensions, is likely to appear in draft form in late 1994.
+and guidelines" and has document number ISO/IEC IS 10918-1.  Part 2 is titled
+"Digital Compression and Coding of Continuous-tone Still Images, Part 2:
+Compliance testing" and has document number ISO/IEC IS 10918-2.
+
+Extensions to the original JPEG standard are defined in Part 3, a new ISO
+document.  Part 3 is undergoing ISO balloting and is expected to be approved
+by the end of 1995.  IJG currently does not support any Part 3 extensions.
 
 The JPEG standard does not specify all details of an interchangeable file
 format.  For the omitted details we follow the "JFIF" conventions, revision
@@ -257,12 +260,17 @@ to the server to obtain the JFIF document; send the message "help" if you have
 trouble.
 
 The TIFF 6.0 file format specification can be obtained by FTP from sgi.com
-(192.48.153.1), file graphics/tiff/TIFF6.ps.Z; or you can order a printed copy
-from Aldus Corp. at (206) 628-6593.  It should be noted that the TIFF 6.0 spec
-of 3-June-92 has a number of serious problems in its JPEG features.  A
-redesign effort is currently underway to correct these problems; it is
-expected to result in a new, incompatible, spec.  IJG intends to support the
-corrected version of TIFF when the new spec is issued.
+(192.48.153.1), file graphics/tiff/TIFF6.ps.Z; or you can order a printed
+copy from Aldus Corp. at (206) 628-6593.  The JPEG incorporation scheme
+found in the TIFF 6.0 spec of 3-June-92 has a number of serious problems.
+IJG does not recommend use of the TIFF 6.0 design (TIFF Compression tag 6).
+Instead, we recommend the JPEG design proposed by TIFF Technical Note #2
+(Compression tag 7).  Copies of this Note can be obtained from sgi.com or
+from ftp.uu.net:/graphics/jpeg/.  It is expected that the next revision of
+the TIFF spec will replace the 6.0 JPEG design with the Note's design.
+Although IJG's own code does not support TIFF/JPEG, the free libtiff library
+uses our library to implement TIFF/JPEG per the Note.  libtiff is available
+from sgi.com:/graphics/tiff/.
 
 
 ARCHIVE LOCATIONS
@@ -271,7 +279,7 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is ftp.uu.net (Internet
 address 192.48.96.9).  The most recent released version can always be found
 there in directory graphics/jpeg.  This particular version will be archived
-as graphics/jpeg/jpegsrc.v5b.tar.gz.  If you are on the Internet, you
+as graphics/jpeg/jpegsrc.v6.tar.gz.  If you are on the Internet, you
 can retrieve files from ftp.uu.net by standard anonymous FTP.  If you don't
 have FTP access, UUNET's archives are also available via UUCP; contact
 help@uunet.uu.net for information on retrieving files that way.
@@ -281,9 +289,10 @@ you can probably find a copy at any site that archives comp.sources.misc
 submissions.  However, only ftp.uu.net is guaranteed to have the latest
 official version.
 
-You can also obtain this software from CompuServe, in the GRAPHSUPPORT forum
-(GO GRAPHSUP), library 12 "JPEG Tools".  Again, CompuServe is not guaranteed
-to have the very latest version.
+You can also obtain this software in DOS-compatible "zip" archive format from
+the SimTel archives (ftp.coast.net:/SimTel/msdos/graphics/), or on CompuServe
+in the GRAPHSUPPORT forum (GO GRAPHSUP), library 12 "JPEG Tools".  Again,
+these versions may sometimes lag behind the ftp.uu.net release.
 
 The JPEG FAQ (Frequently Asked Questions) article is a useful source of
 general information about JPEG.  It is updated constantly and therefore is
@@ -319,8 +328,8 @@ A different free JPEG implementation, written by the PVRG group at Stanford,
 is available from havefun.stanford.edu in directory pub/jpeg.  This program
 is designed for research and experimentation rather than production use;
 it is slower, harder to use, and less portable than the IJG code, but it
-implements a larger subset of the JPEG standard.  In particular, it supports
-lossless JPEG.
+is easier to read and modify.  Also, the PVRG code supports lossless JPEG,
+which we do not.
 
 
 FILE FORMAT WARS
@@ -336,22 +345,38 @@ exchange compressed files.)
 The file format we have adopted is called JFIF (see REFERENCES).  This format
 has been agreed to by a number of major commercial JPEG vendors, and it has
 become the de facto standard.  JFIF is a minimal or "low end" representation.
-Work is also going forward to incorporate JPEG compression into the TIFF
-standard, for use in "high end" applications that need to record a lot of
-additional data about an image.  We intend to support TIFF in the future.
-We hope that these two formats will be sufficient and that other,
-incompatible JPEG file formats will not proliferate.
+We recommend the use of TIFF/JPEG (TIFF revision 6.0 as modified by TIFF
+Technical Note #2) for "high end" applications that need to record a lot of
+additional data about an image.  TIFF/JPEG is fairly new and not yet widely
+supported, unfortunately.
 
-Indeed, part of the reason for developing and releasing this free software is
-to help force rapid convergence to de facto standards for JPEG file formats.
-SUPPORT STANDARD, NON-PROPRIETARY FORMATS: demand JFIF or TIFF/JPEG!
+The upcoming JPEG Part 3 standard defines a file format called SPIFF.
+SPIFF is interoperable with JFIF, in the sense that most JFIF decoders should
+be able to read the most common variant of SPIFF.  SPIFF has some technical
+advantages over JFIF, but its major claim to fame is simply that it is an
+official standard rather than an informal one.  At this point it is unclear
+whether SPIFF will supersede JFIF or whether JFIF will remain the de-facto
+standard.  IJG intends to support SPIFF once the standard is frozen, but we
+have not decided whether it should become our default output format or not.
+(In any case, our decoder will remain capable of reading JFIF indefinitely.)
+
+Various proprietary file formats incorporating JPEG compression also exist.
+We have little or no sympathy for the existence of these formats.  Indeed,
+one of the original reasons for developing this free software was to help
+force convergence on common, open format standards for JPEG files.  Don't
+use a proprietary file format!
 
 
 TO DO
 =====
 
-In future versions, we are considering supporting progressive JPEG
-compression, the upcoming JPEG Part 3 extensions, and other improvements.
+In future versions, we are considering supporting some of the upcoming JPEG
+Part 3 extensions --- principally, variable quantization and the SPIFF file
+format.
+
+Tuning the software for better behavior at low quality/high compression
+settings is also of interest.  The current method for scaling the
+quantization tables is known not to be very good at low Q values.
 
 As always, speeding things up is high on our priority list.
 

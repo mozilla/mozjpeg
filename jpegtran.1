@@ -1,0 +1,150 @@
+.TH JPEGTRAN 1 "15 June 1995"
+.SH NAME
+jpegtran \- lossless transcoding of JPEG files
+.SH SYNOPSIS
+.B jpegtran
+[
+.I options
+]
+[
+.I filename
+]
+.LP
+.SH DESCRIPTION
+.LP
+.B jpegtran
+translates JPEG files from one variant of JPEG to another, for example
+from baseline JPEG to progressive JPEG.  The transformation is lossless:
+no image degradation occurs, which would not be true if you used
+.B djpeg
+followed by
+.BR cjpeg .
+However, you cannot alter the image quality, because that would not be
+a lossless operation.
+.B jpegtran
+reads the named JPEG/JFIF file, or the standard input if no file is
+named, and produces a JPEG/JFIF file on the standard output.
+.SH OPTIONS
+.B jpegtran
+accepts a subset of the switches recognized by
+.BR cjpeg .
+If you specify no switches, you get a plain baseline JPEG output file.
+.PP
+All switch names may be abbreviated; for example,
+.B \-optimize
+may be written
+.B \-opt
+or
+.BR \-o .
+Upper and lower case are equivalent.
+British spellings are also accepted (e.g.,
+.BR \-optimise ),
+though for brevity these are not mentioned below.
+.PP
+The basic switches are:
+.TP
+.B \-optimize
+Perform optimization of entropy encoding parameters.  Without this, default
+encoding parameters are used.
+.B \-optimize
+usually makes the JPEG file a little smaller, but at the price of slower
+compression.  Note that
+.B \-progressive
+implies
+.BR \-optimize .
+.TP
+.B \-progressive
+Create progressive JPEG file (see below).
+.PP
+The
+.B \-progressive
+switch creates a "progressive JPEG" file.  In this type of JPEG file, the data
+is stored in multiple scans of increasing quality.  If the file is being
+transmitted over a slow communications link, the decoder can use the first
+scan to display a low-quality image very quickly, and can then improve the
+display with each subsequent scan.  The final image is exactly equivalent to a
+standard JPEG file of the same quality setting, and the total file size is
+about the same --- often a little smaller.
+.B Caution:
+progressive JPEG is not yet widely implemented, so many decoders will be
+unable to view a progressive JPEG file at all.
+.PP
+Switches for advanced users:
+.TP
+.BI \-restart " N"
+Emit a JPEG restart marker every N MCU rows, or every N MCU blocks if "B" is
+attached to the number.
+.B \-restart 0
+(the default) means no restart markers.
+.TP
+.BI \-maxmemory " N"
+Set limit for amount of memory to use in processing large images.  Value is
+in thousands of bytes, or millions of bytes if "M" is attached to the
+number.  For example,
+.B \-max 4m
+selects 4000000 bytes.  If more space is needed, temporary files will be used.
+.TP
+.BI \-outfile " name"
+Send output image to the named file, not to standard output.
+.TP
+.B \-verbose
+Enable debug printout.  More
+.BR \-v 's
+give more output.  Also, version information is printed at startup.
+.TP
+.B \-debug
+Same as
+.BR \-verbose .
+.PP
+The
+.B \-restart
+option inserts extra markers that allow a JPEG decoder to resynchronize after
+a transmission error.  Without restart markers, any damage to a compressed
+file will usually ruin the image from the point of the error to the end of the
+image; with restart markers, the damage is usually confined to the portion of
+the image up to the next restart marker.  Of course, the restart markers
+occupy extra space.  We recommend
+.B \-restart 1
+for images that will be transmitted across unreliable networks such as Usenet.
+.PP
+Switches for wizards:
+.TP
+.BI \-scans " file"
+Use the scan script given in the specified text file.
+.PP
+The "wizard" switches are intended for experimentation with JPEG.  If you
+don't know what you are doing, \fBdon't use them\fR.  These switches are
+documented further in the file wizard.doc.
+.SH EXAMPLES
+.LP
+This example converts a baseline JPEG file to progressive form:
+.IP
+.B jpegtran \-progressive
+.I foo.jpg
+.B >
+.I fooprog.jpg
+.SH ENVIRONMENT
+.TP
+.B JPEGMEM
+If this environment variable is set, its value is the default memory limit.
+The value is specified as described for the
+.B \-maxmemory
+switch.
+.B JPEGMEM
+overrides the default value specified when the program was compiled, and
+itself is overridden by an explicit
+.BR \-maxmemory .
+.SH SEE ALSO
+.BR cjpeg (1),
+.BR djpeg (1),
+.BR rdjpgcom (1),
+.BR wrjpgcom (1)
+.br
+Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
+Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
+.SH AUTHOR
+Independent JPEG Group
+.SH BUGS
+Arithmetic coding is not supported for legal reasons.
+.PP
+Still not as fast as we'd like.

@@ -1,7 +1,7 @@
 /*
  * jdcolor.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -63,14 +63,15 @@ typedef my_color_deconverter * my_cconvert_ptr;
 
 
 /*
- * Initialize for YCC->RGB colorspace conversion.
+ * Initialize tables for YCC->RGB colorspace conversion.
  */
 
-METHODDEF void
-ycc_rgb_start (j_decompress_ptr cinfo)
+LOCAL void
+build_ycc_rgb_table (j_decompress_ptr cinfo)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  INT32 i, x;
+  int i;
+  INT32 x;
   SHIFT_TEMPS
 
   cconvert->Cr_r_tab = (int *)
@@ -171,7 +172,7 @@ null_convert (j_decompress_ptr cinfo,
 {
   register JSAMPROW inptr, outptr;
   register JDIMENSION count;
-  register int num_components = cinfo->output_components;
+  register int num_components = cinfo->num_components;
   JDIMENSION num_cols = cinfo->output_width;
   int ci;
 
@@ -210,7 +211,7 @@ grayscale_convert (j_decompress_ptr cinfo,
  * Adobe-style YCCK->CMYK conversion.
  * We convert YCbCr to R=1-C, G=1-M, and B=1-Y using the same
  * conversion as above, while passing K (black) unchanged.
- * We assume ycc_rgb_start has been called.
+ * We assume build_ycc_rgb_table has been called.
  */
 
 METHODDEF void
@@ -262,7 +263,7 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
  */
 
 METHODDEF void
-null_method (j_decompress_ptr cinfo)
+start_pass_dcolor (j_decompress_ptr cinfo)
 {
   /* no work needed */
 }
@@ -282,8 +283,7 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(my_color_deconverter));
   cinfo->cconvert = (struct jpeg_color_deconverter *) cconvert;
-  /* set start_pass to null method until we find out differently */
-  cconvert->pub.start_pass = null_method;
+  cconvert->pub.start_pass = start_pass_dcolor;
 
   /* Make sure num_components agrees with jpeg_color_space */
   switch (cinfo->jpeg_color_space) {
@@ -331,8 +331,8 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
   case JCS_RGB:
     cinfo->out_color_components = RGB_PIXELSIZE;
     if (cinfo->jpeg_color_space == JCS_YCbCr) {
-      cconvert->pub.start_pass = ycc_rgb_start;
       cconvert->pub.color_convert = ycc_rgb_convert;
+      build_ycc_rgb_table(cinfo);
     } else if (cinfo->jpeg_color_space == JCS_RGB && RGB_PIXELSIZE == 3) {
       cconvert->pub.color_convert = null_convert;
     } else
@@ -342,8 +342,8 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
   case JCS_CMYK:
     cinfo->out_color_components = 4;
     if (cinfo->jpeg_color_space == JCS_YCCK) {
-      cconvert->pub.start_pass = ycc_rgb_start;
       cconvert->pub.color_convert = ycck_cmyk_convert;
+      build_ycc_rgb_table(cinfo);
     } else if (cinfo->jpeg_color_space == JCS_CMYK) {
       cconvert->pub.color_convert = null_convert;
     } else

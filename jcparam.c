@@ -1,7 +1,7 @@
 /*
  * jcparam.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -279,14 +279,15 @@ jpeg_set_defaults (j_compress_ptr cinfo)
     cinfo->arith_ac_K[i] = 5;
   }
 
+  /* Default is no multiple-scan output */
+  cinfo->scan_info = NULL;
+  cinfo->num_scans = 0;
+
   /* Expect normal source image, not raw downsampled data */
   cinfo->raw_data_in = FALSE;
 
   /* Use Huffman coding, not arithmetic coding, by default */
   cinfo->arith_code = FALSE;
-
-  /* Color images are interleaved by default */
-  cinfo->interleave = TRUE;
 
   /* By default, don't do extra passes to optimize entropy coding */
   cinfo->optimize_coding = FALSE;
@@ -368,7 +369,6 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
 
 #define SET_COMP(index,id,hsamp,vsamp,quant,dctbl,actbl)  \
   (compptr = &cinfo->comp_info[index], \
-   compptr->component_index = (index), \
    compptr->component_id = (id), \
    compptr->h_samp_factor = (hsamp), \
    compptr->v_samp_factor = (vsamp), \
@@ -399,9 +399,9 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
   case JCS_RGB:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag RGB */
     cinfo->num_components = 3;
-    SET_COMP(0, 'R', 1,1, 0, 0,0);
-    SET_COMP(1, 'G', 1,1, 0, 0,0);
-    SET_COMP(2, 'B', 1,1, 0, 0,0);
+    SET_COMP(0, 0x52 /* 'R' */, 1,1, 0, 0,0);
+    SET_COMP(1, 0x47 /* 'G' */, 1,1, 0, 0,0);
+    SET_COMP(2, 0x42 /* 'B' */, 1,1, 0, 0,0);
     break;
   case JCS_YCbCr:
     cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
@@ -415,10 +415,10 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
   case JCS_CMYK:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag CMYK */
     cinfo->num_components = 4;
-    SET_COMP(0, 'C', 1,1, 0, 0,0);
-    SET_COMP(1, 'M', 1,1, 0, 0,0);
-    SET_COMP(2, 'Y', 1,1, 0, 0,0);
-    SET_COMP(3, 'K', 1,1, 0, 0,0);
+    SET_COMP(0, 0x43 /* 'C' */, 1,1, 0, 0,0);
+    SET_COMP(1, 0x4D /* 'M' */, 1,1, 0, 0,0);
+    SET_COMP(2, 0x59 /* 'Y' */, 1,1, 0, 0,0);
+    SET_COMP(3, 0x4B /* 'K' */, 1,1, 0, 0,0);
     break;
   case JCS_YCCK:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag YCCK */
@@ -441,3 +441,135 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
     ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
   }
 }
+
+
+#ifdef C_PROGRESSIVE_SUPPORTED
+
+LOCAL jpeg_scan_info *
+fill_a_scan (jpeg_scan_info * scanptr, int ci,
+	     int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for specified component */
+{
+  scanptr->comps_in_scan = 1;
+  scanptr->component_index[0] = ci;
+  scanptr->Ss = Ss;
+  scanptr->Se = Se;
+  scanptr->Ah = Ah;
+  scanptr->Al = Al;
+  scanptr++;
+  return scanptr;
+}
+
+LOCAL jpeg_scan_info *
+fill_scans (jpeg_scan_info * scanptr, int ncomps,
+	    int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for each component */
+{
+  int ci;
+
+  for (ci = 0; ci < ncomps; ci++) {
+    scanptr->comps_in_scan = 1;
+    scanptr->component_index[0] = ci;
+    scanptr->Ss = Ss;
+    scanptr->Se = Se;
+    scanptr->Ah = Ah;
+    scanptr->Al = Al;
+    scanptr++;
+  }
+  return scanptr;
+}
+
+LOCAL jpeg_scan_info *
+fill_dc_scans (jpeg_scan_info * scanptr, int ncomps, int Ah, int Al)
+/* Support routine: generate interleaved DC scan if possible, else N scans */
+{
+  int ci;
+
+  if (ncomps <= MAX_COMPS_IN_SCAN) {
+    /* Single interleaved DC scan */
+    scanptr->comps_in_scan = ncomps;
+    for (ci = 0; ci < ncomps; ci++)
+      scanptr->component_index[ci] = ci;
+    scanptr->Ss = scanptr->Se = 0;
+    scanptr->Ah = Ah;
+    scanptr->Al = Al;
+    scanptr++;
+  } else {
+    /* Noninterleaved DC scan for each component */
+    scanptr = fill_scans(scanptr, ncomps, 0, 0, Ah, Al);
+  }
+  return scanptr;
+}
+
+
+/*
+ * Create a recommended progressive-JPEG script.
+ * cinfo->num_components and cinfo->jpeg_color_space must be correct.
+ */
+
+GLOBAL void
+jpeg_simple_progression (j_compress_ptr cinfo)
+{
+  int ncomps = cinfo->num_components;
+  int nscans;
+  jpeg_scan_info * scanptr;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* Figure space needed for script.  Calculation must match code below! */
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    /* Custom script for YCbCr color images. */
+    nscans = 10;
+  } else {
+    /* All-purpose script for other color spaces. */
+    if (ncomps > MAX_COMPS_IN_SCAN)
+      nscans = 6 * ncomps;	/* 2 DC + 4 AC scans per component */
+    else
+      nscans = 2 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+  }
+
+  /* Allocate space for script. */
+  /* We use permanent pool just in case application re-uses script. */
+  scanptr = (jpeg_scan_info *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+				nscans * SIZEOF(jpeg_scan_info));
+  cinfo->scan_info = scanptr;
+  cinfo->num_scans = nscans;
+
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    /* Custom script for YCbCr color images. */
+    /* Initial DC scan */
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+    /* Initial AC scan: get some luma data out in a hurry */
+    scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 2);
+    /* Chroma data is too small to be worth expending many scans on */
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 1);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 1);
+    /* Complete spectral selection for luma AC */
+    scanptr = fill_a_scan(scanptr, 0, 6, 63, 0, 2);
+    /* Refine next bit of luma AC */
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
+    /* Finish DC successive approximation */
+    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+    /* Finish AC successive approximation */
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 1, 0);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 1, 0);
+    /* Luma bottom bit comes last since it's usually largest scan */
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
+  } else {
+    /* All-purpose script for other color spaces. */
+    /* Successive approximation first pass */
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+    scanptr = fill_scans(scanptr, ncomps, 1, 5, 0, 2);
+    scanptr = fill_scans(scanptr, ncomps, 6, 63, 0, 2);
+    /* Successive approximation second pass */
+    scanptr = fill_scans(scanptr, ncomps, 1, 63, 2, 1);
+    /* Successive approximation final pass */
+    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+    scanptr = fill_scans(scanptr, ncomps, 1, 63, 1, 0);
+  }
+}
+
+#endif /* C_PROGRESSIVE_SUPPORTED */

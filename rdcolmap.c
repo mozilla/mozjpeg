@@ -1,7 +1,7 @@
 /*
  * rdcolmap.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -152,7 +152,7 @@ read_pbm_integer (j_decompress_ptr cinfo, FILE * infile)
   } while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r');
   
   if (ch < '0' || ch > '9')
-    ERREXIT(cinfo, JERR_PPM_NONNUMERIC);
+    ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
   
   val = ch - '0';
   while ((ch = pbm_getc(infile)) >= '0' && ch <= '9') {

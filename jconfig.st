@@ -32,6 +32,9 @@
 #define TARGA_SUPPORTED		/* Targa image file format */
 
 #define TWO_FILE_COMMANDLINE	/* optional -- undef if you like Unix style */
+/* Note: if you undef TWO_FILE_COMMANDLINE, you may need to define
+ * USE_SETMODE.  Some Atari compilers require it, some do not.
+ */
 #define NEED_SIGNAL_CATCHER	/* needed if you use jmemname.c */
 #undef DONT_USE_B_MODE
 #undef PROGRESS_REPORT		/* optional */

@@ -1,7 +1,7 @@
 /*
  * jdmerge.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -75,24 +75,18 @@ typedef my_upsampler * my_upsample_ptr;
 
 
 /*
- * Initialize for an upsampling pass.
+ * Initialize tables for YCC->RGB colorspace conversion.
+ * This is taken directly from jdcolor.c; see that file for more info.
  */
 
-METHODDEF void
-start_pass_merged_upsample (j_decompress_ptr cinfo)
+LOCAL void
+build_ycc_rgb_table (j_decompress_ptr cinfo)
 {
   my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-  INT32 i, x;
+  int i;
+  INT32 x;
   SHIFT_TEMPS
 
-  /* Mark the spare buffer empty */
-  upsample->spare_full = FALSE;
-  /* Initialize total-height counter for detecting bottom of image */
-  upsample->rows_to_go = cinfo->output_height;
-
-  /* Initialize the YCC=>RGB conversion tables.
-   * This is taken directly from jdcolor.c; see that file for more info.
-   */
   upsample->Cr_r_tab = (int *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				(MAXJSAMPLE+1) * SIZEOF(int));
@@ -121,6 +115,22 @@ start_pass_merged_upsample (j_decompress_ptr cinfo)
     /* We also add in ONE_HALF so that need not do it in inner loop */
     upsample->Cb_g_tab[i] = (- FIX(0.34414)) * x + ONE_HALF;
   }
+}
+
+
+/*
+ * Initialize for an upsampling pass.
+ */
+
+METHODDEF void
+start_pass_merged_upsample (j_decompress_ptr cinfo)
+{
+  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+
+  /* Mark the spare buffer empty */
+  upsample->spare_full = FALSE;
+  /* Initialize total-height counter for detecting bottom of image */
+  upsample->rows_to_go = cinfo->output_height;
 }
 
 
@@ -383,6 +393,8 @@ jinit_merged_upsampler (j_decompress_ptr cinfo)
     /* No spare row needed */
     upsample->spare_row = NULL;
   }
+
+  build_ycc_rgb_table(cinfo);
 }
 
 #endif /* UPSAMPLE_MERGING_SUPPORTED */

@@ -1,6 +1,34 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 6  2-Aug-95
+-------------------
+
+Progressive JPEG support: library can read and write full progressive JPEG
+files.  A "buffered image" mode supports incremental decoding for on-the-fly
+display of progressive images.  Simply recompiling an existing IJG-v5-based
+decoder with v6 should allow it to read progressive files, though of course
+without any special progressive display.
+
+New "jpegtran" application performs lossless transcoding between different
+JPEG formats; primarily, it can be used to convert baseline to progressive
+JPEG and vice versa.  In support of jpegtran, the library now allows lossless
+reading and writing of JPEG files as DCT coefficient arrays.  This ability
+may be of use in other applications.
+
+Notes for programmers:
+* We changed jpeg_start_decompress() to be able to suspend; this makes all
+decoding modes available to suspending-input applications.  However,
+existing applications that use suspending input will need to be changed
+to check the return value from jpeg_start_decompress().  You don't need to
+do anything if you don't use a suspending data source.
+* We changed the interface to the virtual array routines: access_virt_array
+routines now take a count of the number of rows to access this time.  The
+last parameter to request_virt_array routines is now interpreted as the
+maximum number of rows that may be accessed at once, but not necessarily
+the height of every access.
+
+
 Version 5b  15-Mar-95
 ---------------------
 

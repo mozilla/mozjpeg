@@ -1,4 +1,4 @@
-.TH CJPEG 1 "12 December 1994"
+.TH CJPEG 1 "15 June 1995"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -59,6 +59,9 @@ runs somewhat slower and needs much more memory.  Image quality and speed of
 decompression are unaffected by
 .BR \-optimize .
 .TP
+.B \-progressive
+Create progressive JPEG file (see below).
+.TP
 .B \-targa
 Input file is Targa format.  Targa files that contain an "identification"
 field will not be automatically recognized by
@@ -84,7 +87,7 @@ often about right.  If you see defects at
 image.  (The optimal setting will vary from one image to another.)
 .PP
 .B \-quality
-100 will generate a quantization table of all 1's, eliminating loss in the
+100 will generate a quantization table of all 1's, minimizing loss in the
 quantization step (but there is still information loss in subsampling, as well
 as roundoff error).  This setting is mainly of interest for experimental
 purposes.  Quality values above about 95 are
@@ -101,9 +104,22 @@ values below about 25 generate 2-byte quantization tables, which are
 considered optional in the JPEG standard.
 .B cjpeg
 emits a warning message when you give such a quality value, because some
-commercial JPEG programs may be unable to decode the resulting file.  Use
+other JPEG programs may be unable to decode the resulting file.  Use
 .B \-baseline
 if you need to ensure compatibility at low quality values.)
+.PP
+The
+.B \-progressive
+switch creates a "progressive JPEG" file.  In this type of JPEG file, the data
+is stored in multiple scans of increasing quality.  If the file is being
+transmitted over a slow communications link, the decoder can use the first
+scan to display a low-quality image very quickly, and can then improve the
+display with each subsequent scan.  The final image is exactly equivalent to a
+standard JPEG file of the same quality setting, and the total file size is
+about the same --- often a little smaller.
+.B Caution:
+progressive JPEG is not yet widely implemented, so many decoders will be
+unable to view a progressive JPEG file at all.
 .PP
 Switches for advanced users:
 .TP
@@ -171,42 +187,25 @@ blur the image, however.
 .PP
 Switches for wizards:
 .TP
-.B \-arithmetic
-Use arithmetic coding rather than Huffman coding.  (Not currently
-supported for legal reasons.)
-.TP
 .B \-baseline
 Force a baseline JPEG file to be generated.  This clamps quantization values
 to 8 bits even at low quality settings.
 .TP
-.B \-nointerleave
-Generate noninterleaved JPEG file (not yet supported).
-.TP
 .BI \-qtables " file"
-Use the quantization tables given in the specified file.  The file should
-contain one to four tables (64 values each) as plain text.  Comments preceded
-by '#' may be included in the file.  The tables are implicitly numbered
-0,1,etc.  If
-.BI \-quality " N"
-is also specified, the values in the file are scaled according to
-.BR cjpeg 's
-quality scaling curve.
+Use the quantization tables given in the specified text file.
 .TP
 .BI \-qslots " N[,...]"
-Select which quantization table to use for each color component.  By default,
-table 0 is used for luminance and table 1 for chrominance components.
+Select which quantization table to use for each color component.
 .TP
 .BI \-sample " HxV[,...]"
-Set JPEG sampling factors.  If you specify fewer H/V pairs than there are
-components, the remaining components are set to 1x1 sampling.  The default
-setting is equivalent to \fB\-sample 2x2\fR.
+Set JPEG sampling factors for each color component.
+.TP
+.BI \-scans " file"
+Use the scan script given in the specified text file.
 .PP
 The "wizard" switches are intended for experimentation with JPEG.  If you
-don't know what you are doing, \fBdon't use them\fR.  You can easily produce
-files with worse image quality and/or poorer compression than you'll get from
-the default settings.  Furthermore, these switches should not be used when
-making files intended for general use, because not all JPEG implementations
-will support unusual JPEG parameter settings.
+don't know what you are doing, \fBdon't use them\fR.  These switches are
+documented further in the file wizard.doc.
 .SH EXAMPLES
 .LP
 This example compresses the PPM file foo.ppm with a quality factor of
@@ -243,7 +242,9 @@ option to
 is worth using when you are making a "final" version for posting or archiving.
 It's also a win when you are using low quality settings to make very small
 JPEG files; the percentage improvement is often a lot more than it is on
-larger files.
+larger files.  (At present,
+.B \-optimize
+mode is always selected when generating progressive JPEG files.)
 .SH ENVIRONMENT
 .TP
 .B JPEGMEM
@@ -257,6 +258,7 @@ itself is overridden by an explicit
 .BR \-maxmemory .
 .SH SEE ALSO
 .BR djpeg (1),
+.BR jpegtran (1),
 .BR rdjpgcom (1),
 .BR wrjpgcom (1)
 .br

@@ -1,7 +1,7 @@
 /*
  * jidctfst.c
  *
- * Copyright (C) 1994, Thomas G. Lane.
+ * Copyright (C) 1994-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -139,10 +139,15 @@
 
 #ifdef RIGHT_SHIFT_IS_UNSIGNED
 #define ISHIFT_TEMPS	DCTELEM ishift_temp;
+#if BITS_IN_JSAMPLE == 8
+#define DCTELEMBITS  16		/* DCTELEM may be 16 or 32 bits */
+#else
+#define DCTELEMBITS  32		/* DCTELEM must be 32 bits */
+#endif
 #define IRIGHT_SHIFT(x,shft)  \
-	((ishift_temp = (x)) < 0 ? \
-	 (ishift_temp >> (shft)) | ((~((DCTELEM) 0)) << (32-(shft))) : \
-	 (ishift_temp >> (shft)))
+    ((ishift_temp = (x)) < 0 ? \
+     (ishift_temp >> (shft)) | ((~((DCTELEM) 0)) << (DCTELEMBITS-(shft))) : \
+     (ishift_temp >> (shft)))
 #else
 #define ISHIFT_TEMPS
 #define IRIGHT_SHIFT(x,shft)	((x) >> (shft))

@@ -1,7 +1,7 @@
 /*
  * djpeg.c
  *
- * Copyright (C) 1991-1994, Thomas G. Lane.
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -26,15 +26,7 @@
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"		/* for version message */
 
-#include <ctype.h>		/* to declare isupper(),tolower(),isprint() */
-#ifdef NEED_SIGNAL_CATCHER
-#include <signal.h>		/* to declare signal() */
-#endif
-#ifdef USE_SETMODE
-#include <fcntl.h>		/* to declare setmode()'s parameter macros */
-/* If you have setmode() but not <io.h>, just delete this line: */
-#include <io.h>			/* to declare setmode() */
-#endif
+#include <ctype.h>		/* to declare isprint() */
 
 #ifdef USE_CCOMMAND		/* command-line reader for Macintosh */
 #ifdef __MWERKS__
@@ -42,32 +34,6 @@
 #endif
 #ifdef THINK_C
 #include <console.h>		/* Think declares it here */
-#endif
-#endif
-
-#ifdef DONT_USE_B_MODE		/* define mode parameters for fopen() */
-#define READ_BINARY	"r"
-#define WRITE_BINARY	"w"
-#else
-#define READ_BINARY	"rb"
-#define WRITE_BINARY	"wb"
-#endif
-
-#ifndef EXIT_FAILURE		/* define exit() codes if not provided */
-#define EXIT_FAILURE  1
-#endif
-#ifndef EXIT_SUCCESS
-#ifdef VMS
-#define EXIT_SUCCESS  1		/* VMS is very nonstandard */
-#else
-#define EXIT_SUCCESS  0
-#endif
-#endif
-#ifndef EXIT_WARNING
-#ifdef VMS
-#define EXIT_WARNING  1		/* VMS is very nonstandard */
-#else
-#define EXIT_WARNING  2
 #endif
 #endif
 
@@ -104,59 +70,6 @@ typedef enum {
 #endif
 
 static IMAGE_FORMATS requested_fmt;
-
-
-/*
- * Signal catcher to ensure that temporary files are removed before aborting.
- * NB: for Amiga Manx C this is actually a global routine named _abort();
- * we put "#define signal_catcher _abort" in jconfig.h.  Talk about bogus...
- */
-
-#ifdef NEED_SIGNAL_CATCHER
-
-static j_common_ptr sig_cinfo;
-
-GLOBAL void
-signal_catcher (int signum)
-{
-  if (sig_cinfo != NULL) {
-    if (sig_cinfo->err != NULL) /* turn off trace output */
-      sig_cinfo->err->trace_level = 0;
-    jpeg_destroy(sig_cinfo);	/* clean up memory allocation & temp files */
-  }
-  exit(EXIT_FAILURE);
-}
-
-#endif
-
-
-/*
- * Optional routine to display a percent-done figure on stderr.
- */
-
-#ifdef PROGRESS_REPORT
-
-METHODDEF void
-progress_monitor (j_common_ptr cinfo)
-{
-  cd_progress_ptr prog = (cd_progress_ptr) cinfo->progress;
-  int total_passes = prog->pub.total_passes + prog->total_extra_passes;
-  int percent_done = (int) (prog->pub.pass_counter*100L/prog->pub.pass_limit);
-
-  if (percent_done != prog->percent_done) {
-    prog->percent_done = percent_done;
-    if (total_passes > 1) {
-      fprintf(stderr, "\rPass %d/%d: %3d%% ",
-	      prog->pub.completed_passes + prog->completed_extra_passes + 1,
-	      total_passes, percent_done);
-    } else {
-      fprintf(stderr, "\r %3d%% ", percent_done);
-    }
-    fflush(stderr);
-  }
-}
-
-#endif
 
 
 /*
@@ -241,31 +154,6 @@ usage (void)
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   exit(EXIT_FAILURE);
-}
-
-
-LOCAL boolean
-keymatch (char * arg, const char * keyword, int minchars)
-/* Case-insensitive matching of (possibly abbreviated) keyword switches. */
-/* keyword is the constant keyword (must be lower case already), */
-/* minchars is length of minimum legal abbreviation. */
-{
-  register int ca, ck;
-  register int nmatched = 0;
-
-  while ((ca = *arg++) != '\0') {
-    if ((ck = *keyword++) == '\0')
-      return FALSE;		/* arg longer than keyword, no good */
-    if (isupper(ca))		/* force arg to lcase (assume ck is already) */
-      ca = tolower(ca);
-    if (ca != ck)
-      return FALSE;		/* no good */
-    nmatched++;			/* count matched characters */
-  }
-  /* reached end of argument; fail if it's too short for unique abbrev */
-  if (nmatched < minchars)
-    return FALSE;
-  return TRUE;			/* A-OK */
 }
 
 
@@ -561,11 +449,7 @@ main (int argc, char **argv)
 
   /* Now safe to enable signal catcher. */
 #ifdef NEED_SIGNAL_CATCHER
-  sig_cinfo = (j_common_ptr) &cinfo;
-  signal(SIGINT, signal_catcher);
-#ifdef SIGTERM			/* not all systems have SIGTERM */
-  signal(SIGTERM, signal_catcher);
-#endif
+  enable_signal_catcher((j_common_ptr) &cinfo);
 #endif
 
   /* Scan command line to find file names. */
@@ -610,17 +494,7 @@ main (int argc, char **argv)
     }
   } else {
     /* default input file is stdin */
-#ifdef USE_SETMODE		/* need to hack file mode? */
-    setmode(fileno(stdin), O_BINARY);
-#endif
-#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
-    if ((input_file = fdopen(fileno(stdin), READ_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open stdin\n", progname);
-      exit(EXIT_FAILURE);
-    }
-#else
-    input_file = stdin;
-#endif
+    input_file = read_stdin();
   }
 
   /* Open the output file. */
@@ -631,28 +505,11 @@ main (int argc, char **argv)
     }
   } else {
     /* default output file is stdout */
-#ifdef USE_SETMODE		/* need to hack file mode? */
-    setmode(fileno(stdout), O_BINARY);
-#endif
-#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
-    if ((output_file = fdopen(fileno(stdout), WRITE_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open stdout\n", progname);
-      exit(EXIT_FAILURE);
-    }
-#else
-    output_file = stdout;
-#endif
+    output_file = write_stdout();
   }
 
 #ifdef PROGRESS_REPORT
-  /* Enable progress display, unless trace output is on */
-  if (jerr.trace_level == 0) {
-    progress.pub.progress_monitor = progress_monitor;
-    progress.completed_extra_passes = 0;
-    progress.total_extra_passes = 0;
-    progress.percent_done = -1;
-    cinfo.progress = &progress.pub;
-  }
+  start_progress_monitor((j_common_ptr) &cinfo, &progress);
 #endif
 
   /* Specify data source for decompression */
@@ -703,7 +560,7 @@ main (int argc, char **argv)
   dest_mgr->output_file = output_file;
 
   /* Start decompressor */
-  jpeg_start_decompress(&cinfo);
+  (void) jpeg_start_decompress(&cinfo);
 
   /* Write output file header */
   (*dest_mgr->start_output) (&cinfo, dest_mgr);
@@ -727,7 +584,7 @@ main (int argc, char **argv)
    * of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
    */
   (*dest_mgr->finish_output) (&cinfo, dest_mgr);
-  jpeg_finish_decompress(&cinfo);
+  (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
 
   /* Close files, if we opened them */
@@ -737,11 +594,7 @@ main (int argc, char **argv)
     fclose(output_file);
 
 #ifdef PROGRESS_REPORT
-  /* Clear away progress display */
-  if (jerr.trace_level == 0) {
-    fprintf(stderr, "\r                \r");
-    fflush(stderr);
-  }
+  end_progress_monitor((j_common_ptr) &cinfo);
 #endif
 
   /* All done. */

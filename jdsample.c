@@ -1,14 +1,14 @@
 /*
  * jdsample.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains upsampling routines.
  *
  * Upsampling input data is counted in "row groups".  A row group
- * is defined to be (v_samp_factor * DCT_scaled_size / min_DCT_scaled_size)
+ * is defined to be (v_samp_factor * codec_data_unit / min_codec_data_unit)
  * sample rows of each component.  Upsampling will normally produce
  * max_v_samp_factor pixel rows from each row group (but this could vary
  * if the upsampler is applying a scale factor of its own).
@@ -415,10 +415,10 @@ jinit_upsampler (j_decompress_ptr cinfo)
   if (cinfo->CCIR601_sampling)	/* this isn't supported */
     ERREXIT(cinfo, JERR_CCIR601_NOTIMPL);
 
-  /* jdmainct.c doesn't support context rows when min_DCT_scaled_size = 1,
+  /* jdmainct.c doesn't support context rows when min_codec_data_unit = 1,
    * so don't ask for it.
    */
-  do_fancy = cinfo->do_fancy_upsampling && cinfo->min_DCT_scaled_size > 1;
+  do_fancy = cinfo->do_fancy_upsampling && cinfo->min_codec_data_unit > 1;
 
   /* Verify we can handle the sampling factors, select per-component methods,
    * and create storage as needed.
@@ -428,10 +428,10 @@ jinit_upsampler (j_decompress_ptr cinfo)
     /* Compute size of an "input group" after IDCT scaling.  This many samples
      * are to be converted to max_h_samp_factor * max_v_samp_factor pixels.
      */
-    h_in_group = (compptr->h_samp_factor * compptr->DCT_scaled_size) /
-		 cinfo->min_DCT_scaled_size;
-    v_in_group = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
-		 cinfo->min_DCT_scaled_size;
+    h_in_group = (compptr->h_samp_factor * compptr->codec_data_unit) /
+		 cinfo->min_codec_data_unit;
+    v_in_group = (compptr->v_samp_factor * compptr->codec_data_unit) /
+		 cinfo->min_codec_data_unit;
     h_out_group = cinfo->max_h_samp_factor;
     v_out_group = cinfo->max_v_samp_factor;
     upsample->rowgroup_height[ci] = v_in_group; /* save for use later */

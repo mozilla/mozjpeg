@@ -1,13 +1,14 @@
 /*
  * jdhuff.h
  *
- * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains declarations for Huffman entropy decoding routines
- * that are shared between the sequential decoder (jdhuff.c) and the
- * progressive decoder (jdphuff.c).  No other modules need to see these.
+ * that are shared between the sequential decoder (jdhuff.c), the
+ * progressive decoder (jdphuff.c) and the lossless decoder (jdlhuff.c).
+ * No other modules need to see these.
  */
 
 /* Short forms of external names for systems with brain-damaged linkers. */
@@ -199,3 +200,30 @@ slowlabel: \
 EXTERN(int) jpeg_huff_decode
 	JPP((bitread_working_state * state, register bit_buf_type get_buffer,
 	     register int bits_left, d_derived_tbl * htbl, int min_bits));
+
+
+/* Common fields between sequential, progressive and lossless Huffman entropy
+ * decoder master structs.
+ */
+
+#define huffd_common_fields \
+  boolean insufficient_data;	/* set TRUE after emmitting warning */ \
+  /* These fields are loaded into local variables at start of each MCU. \
+   * In case of suspension, we exit WITHOUT updating them. \
+   */ \
+  bitread_perm_state bitstate	/* Bit buffer at start of MCU */
+
+/* Routines that are to be used by any or all of the entropy decoders are
+ * declared to receive a pointer to this structure.  There are no actual
+ * instances of huffd_common_struct, only of shuff_entropy_decoder,
+ * phuff_entropy_decoder and lhuff_entropy_decoder.
+ */
+struct huffd_common_struct {
+  huffd_common_fields;		/* Fields common to all decoder struct types */
+  /* Additional fields follow in an actual shuff_entropy_decoder,
+   * phuff_entropy_decoder or lhuff_entropy_decoder struct.  All four structs
+   * must agree on these initial fields!  (This would be a lot cleaner in C++.)
+   */
+};
+
+typedef struct huffd_common_struct * huffd_common_ptr;

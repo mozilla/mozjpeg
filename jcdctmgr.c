@@ -1,7 +1,7 @@
 /*
  * jcdctmgr.c
  *
- * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Copyright (C) 1994-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -14,14 +14,13 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jlossy.h"		/* Private declarations for lossy codec */
 #include "jdct.h"		/* Private declarations for DCT subsystem */
 
 
 /* Private subobject for this module */
 
 typedef struct {
-  struct jpeg_forward_dct pub;	/* public fields */
-
   /* Pointer to the DCT routine actually in use */
   forward_DCT_method_ptr do_dct;
 
@@ -36,9 +35,9 @@ typedef struct {
   float_DCT_method_ptr do_float_dct;
   FAST_FLOAT * float_divisors[NUM_QUANT_TBLS];
 #endif
-} my_fdct_controller;
+} fdct_controller;
 
-typedef my_fdct_controller * my_fdct_ptr;
+typedef fdct_controller * fdct_ptr;
 
 
 /*
@@ -53,7 +52,8 @@ typedef my_fdct_controller * my_fdct_ptr;
 METHODDEF(void)
 start_pass_fdctmgr (j_compress_ptr cinfo)
 {
-  my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
+  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
+  fdct_ptr fdct = (fdct_ptr) lossyc->fdct_private;
   int ci, qtblno, i;
   jpeg_component_info *compptr;
   JQUANT_TBL * qtbl;
@@ -184,7 +184,8 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
 /* This version is used for integer DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
-  my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
+  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
+  fdct_ptr fdct = (fdct_ptr) lossyc->fdct_private;
   forward_DCT_method_ptr do_dct = fdct->do_dct;
   DCTELEM * divisors = fdct->divisors[compptr->quant_tbl_no];
   DCTELEM workspace[DCTSIZE2];	/* work area for FDCT subroutine */
@@ -274,7 +275,8 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 /* This version is used for floating-point DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
-  my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
+  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
+  fdct_ptr fdct = (fdct_ptr) lossyc->fdct_private;
   float_DCT_method_ptr do_dct = fdct->do_float_dct;
   FAST_FLOAT * divisors = fdct->float_divisors[compptr->quant_tbl_no];
   FAST_FLOAT workspace[DCTSIZE2]; /* work area for FDCT subroutine */
@@ -344,31 +346,32 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(void)
 jinit_forward_dct (j_compress_ptr cinfo)
 {
-  my_fdct_ptr fdct;
+  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
+  fdct_ptr fdct;
   int i;
 
-  fdct = (my_fdct_ptr)
+  fdct = (fdct_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_fdct_controller));
-  cinfo->fdct = (struct jpeg_forward_dct *) fdct;
-  fdct->pub.start_pass = start_pass_fdctmgr;
+				SIZEOF(fdct_controller));
+  lossyc->fdct_private = (struct jpeg_forward_dct *) fdct;
+  lossyc->fdct_start_pass = start_pass_fdctmgr;
 
   switch (cinfo->dct_method) {
 #ifdef DCT_ISLOW_SUPPORTED
   case JDCT_ISLOW:
-    fdct->pub.forward_DCT = forward_DCT;
+    lossyc->fdct_forward_DCT = forward_DCT;
     fdct->do_dct = jpeg_fdct_islow;
     break;
 #endif
 #ifdef DCT_IFAST_SUPPORTED
   case JDCT_IFAST:
-    fdct->pub.forward_DCT = forward_DCT;
+    lossyc->fdct_forward_DCT = forward_DCT;
     fdct->do_dct = jpeg_fdct_ifast;
     break;
 #endif
 #ifdef DCT_FLOAT_SUPPORTED
   case JDCT_FLOAT:
-    fdct->pub.forward_DCT = forward_DCT_float;
+    lossyc->fdct_forward_DCT = forward_DCT_float;
     fdct->do_float_dct = jpeg_fdct_float;
     break;
 #endif

@@ -21,8 +21,10 @@ In this document, JPEG-specific terminology follows the JPEG standard:
   A "sample" is a single component value (i.e., one number in the image data).
   A "coefficient" is a frequency coefficient (a DCT transform output number).
   A "block" is an 8x8 group of samples or coefficients.
-  An "MCU" (minimum coded unit) is an interleaved set of blocks of size
-	determined by the sampling factors, or a single block in a
+  A "data unit" is an abstract data type which is either a block for lossy
+	(DCT-based) codecs or a sample for lossless (predictive) codecs.
+  An "MCU" (minimum coded unit) is an interleaved set of data units of size
+	determined by the sampling factors, or a single data unit in a
 	noninterleaved scan.
 We do not use the terms "pixel" and "sample" interchangeably.  When we say
 pixel, we mean an element of the full-size image, while a sample is an element
@@ -43,13 +45,8 @@ command-line user interface and I/O routines for several uncompressed image
 formats.  This document concentrates on the library itself.
 
 We desire the library to be capable of supporting all JPEG baseline, extended
-sequential, and progressive DCT processes.  Hierarchical processes are not
-supported.
-
-The library does not support the lossless (spatial) JPEG process.  Lossless
-JPEG shares little or no code with lossy JPEG, and would normally be used
-without the extensive pre- and post-processing provided by this library.
-We feel that lossless JPEG is better handled by a separate library.
+sequential, and progressive DCT processes, as well as the lossless (spatial)
+process.  Hierarchical processes are not supported.
 
 Within these limits, any set of compression parameters allowed by the JPEG
 spec should be readable for decompression.  (We can be more restrictive about
@@ -134,9 +131,13 @@ elements:
     * Color space conversion (e.g., RGB to YCbCr).
     * Edge expansion and downsampling.  Optionally, this step can do simple
       smoothing --- this is often helpful for low-quality source data.
-  JPEG proper:
+  Lossy JPEG proper:
     * MCU assembly, DCT, quantization.
     * Entropy coding (sequential or progressive, Huffman or arithmetic).
+  Lossless JPEG proper:
+    * Point transform.
+    * Prediction, differencing.
+    * Entropy coding (Huffman or arithmetic)
 
 In addition to these modules we need overall control, marker generation,
 and support code (memory management & error handling).  There is also a
@@ -146,9 +147,13 @@ do something else with the data.
 
 The decompressor library contains the following main elements:
 
-  JPEG proper:
+  Lossy JPEG proper:
     * Entropy decoding (sequential or progressive, Huffman or arithmetic).
     * Dequantization, inverse DCT, MCU disassembly.
+  Lossless JPEG proper:
+    * Entropy decoding (Huffman or arithmetic).
+    * Prediction, undifferencing.
+    * Point transform, sample size scaling.
   Postprocessing:
     * Upsampling.  Optionally, this step may be able to do more general
       rescaling of the image.
@@ -312,6 +317,21 @@ overall system structuring principle, not as a complete description of the
 task performed by any one controller.
 
 
+*** Codec object structure ***
+
+As noted above, this library supports both the lossy (DCT-based) and lossless
+JPEG processes.  Because these processes have little in common with one another
+(and their implementations share very little code), we need to provide a way to
+isloate the underlying JPEG process from the rest of the library.  This is
+accomplished by introducing an abstract "codec object" which acts a generic
+interface to the JPEG (de)compressor proper.  
+
+Using the power of the object-oriented scheme described above, we build the
+lossy and lossless modules as two separate implementations of the codec object.
+Switching between lossy and lossless processes then becomes as trivial as
+assigning the appropriate method pointers during initialization of the library.
+
+
 *** Compression object structure ***
 
 Here is a sketch of the logical structure of the JPEG compression library:
@@ -319,10 +339,30 @@ Here is a sketch of the logical structure of the JPEG compression library:
                                                  |-- Colorspace conversion
                   |-- Preprocessing controller --|
                   |                              |-- Downsampling
+                  |
 Main controller --|
-                  |                            |-- Forward DCT, quantize
-                  |-- Coefficient controller --|
-                                               |-- Entropy encoding
+                  |                       /--> Lossy codec
+                  |                      /
+                  |-- Compression codec <          *OR*
+                                         \
+                                          \--> Lossless codec
+
+
+where the lossy codec looks like:
+
+                             |-- Forward DCT, quantize
+<-- Coefficient controller --|
+                             |-- Entropy encoding
+
+
+and the lossless codec looks like:
+
+                            |-- Point transformation
+                            |
+<-- Difference controller --|-- Prediction, differencing
+                            |
+                            |-- Lossless entropy encoding
+
 
 This sketch also describes the flow of control (subroutine calls) during
 typical image data processing.  Each of the components shown in the diagram is
@@ -377,6 +417,23 @@ The objects shown above are:
   during each pass, and the coder must emit the appropriate subset of
   coefficients.
 
+* Difference controller: buffer controller for the spatial difference data.
+  When emitting a multiscan JPEG file, this controller is responsible for
+  buffering the full image.  The equivalent of one fully interleaved MCU row
+  of subsampled data is processed per call, even when the JPEG file is
+  noninterleaved.
+
+* Point transformation: Scale the data down by the point transformation
+  parameter.
+
+* Prediction and differencing: Calculate the predictor and subtract it
+  from the input.  Works on one scanline per call.  The difference
+  controller supplies the prior scanline which is used for prediction.
+
+* Lossless entropy encoding: Perform Huffman or arithmetic entropy coding and
+  emit the coded data to the data destination module.  This module handles MCU
+  assembly.  Works on one MCU-row per call.
+
 In addition to the above objects, the compression library includes these
 objects:
 
@@ -418,14 +475,34 @@ decompression; the progress monitor, if used, may be shared as well.
 
 Here is a sketch of the logical structure of the JPEG decompression library:
 
-                                               |-- Entropy decoding
-                  |-- Coefficient controller --|
-                  |                            |-- Dequantize, Inverse DCT
+                                            /--> Lossy codec
+                                           /
+                  |-- Decompression codec <          *OR*
+                  |                        \
+                  |                         \--> Lossless codec
 Main controller --|
+                  |
                   |                               |-- Upsampling
                   |-- Postprocessing controller --|   |-- Colorspace conversion
                                                   |-- Color quantization
                                                   |-- Color precision reduction
+
+
+where the lossy codec looks like:
+
+                             |-- Entropy decoding
+<-- Coefficient controller --|
+                             |-- Dequantize, Inverse DCT
+
+
+and the lossless codec looks like:
+
+                            |-- Lossless entropy decoding
+                            |
+<-- Difference controller --|-- Prediction, undifferencing
+                            |
+                            |-- Point transformation, sample size scaling
+
 
 As before, this diagram also represents typical control flow.  The objects
 shown are:
@@ -459,6 +536,23 @@ shown are:
   When scaled-down output is asked for, simplified DCT algorithms may be used
   that emit only 1x1, 2x2, or 4x4 samples per DCT block, not the full 8x8.
   Works on one DCT block at a time.
+
+* Difference controller: buffer controller for the spatial difference data.
+  When reading a multiscan JPEG file, this controller is responsible for
+  buffering the full image. The equivalent of one fully interleaved MCU row
+  is processed per call, even when the source JPEG file is noninterleaved.
+
+* Lossless entropy decoding: Read coded data from the data source module and
+  perform Huffman or arithmetic entropy decoding.  Works on one MCU-row per
+  call.
+
+* Prediction and undifferencing: Calculate the predictor and add it to the
+  decoded difference.  Works on one scanline per call.  The difference
+  controller supplies the prior scanline which is used for prediction.
+
+* Point transform and sample size scaling: Scale the data up by the point
+  transformation parameter and scale it down to fit into the compiled-in
+  sample size.
 
 * Postprocessing controller: buffer controller for the color quantization
   input buffer, when quantization is in use.  (Without quantization, this

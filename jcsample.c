@@ -1,7 +1,7 @@
 /*
  * jcsample.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -142,7 +142,7 @@ int_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
 {
   int inrow, outrow, h_expand, v_expand, numpix, numpix2, h, v;
   JDIMENSION outcol, outcol_h;	/* outcol_h == outcol*h_expand */
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_data_units * cinfo->data_unit;
   JSAMPROW inptr, outptr;
   INT32 outvalue;
 
@@ -192,7 +192,7 @@ fullsize_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
 		    cinfo->max_v_samp_factor, cinfo->image_width);
   /* Edge-expand */
   expand_right_edge(output_data, cinfo->max_v_samp_factor,
-		    cinfo->image_width, compptr->width_in_blocks * DCTSIZE);
+		    cinfo->image_width, compptr->width_in_data_units * cinfo->data_unit);
 }
 
 
@@ -214,7 +214,7 @@ h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
 {
   int outrow;
   JDIMENSION outcol;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_data_units * cinfo->data_unit;
   register JSAMPROW inptr, outptr;
   register int bias;
 
@@ -251,7 +251,7 @@ h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
 {
   int inrow, outrow;
   JDIMENSION outcol;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_data_units * cinfo->data_unit;
   register JSAMPROW inptr0, inptr1, outptr;
   register int bias;
 
@@ -294,7 +294,7 @@ h2v2_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
 {
   int inrow, outrow;
   JDIMENSION colctr;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_data_units * cinfo->data_unit;
   register JSAMPROW inptr0, inptr1, above_ptr, below_ptr, outptr;
   INT32 membersum, neighsum, memberscale, neighscale;
 
@@ -394,7 +394,7 @@ fullsize_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
 {
   int outrow;
   JDIMENSION colctr;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_data_units * cinfo->data_unit;
   register JSAMPROW inptr, above_ptr, below_ptr, outptr;
   INT32 membersum, neighsum, memberscale, neighscale;
   int colsum, lastcolsum, nextcolsum;

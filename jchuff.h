@@ -22,6 +22,13 @@
 #define MAX_COEF_BITS 14
 #endif
 
+/* The legal range of a spatial difference is
+ * -32767 .. +32768.
+ * Hence the magnitude should always fit in 16 bits.
+ */
+
+#define MAX_DIFF_BITS 16
+
 /* Derived data constructed for each Huffman table */
 
 typedef struct {

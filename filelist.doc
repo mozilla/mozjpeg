@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  FILE LIST
 
-Copyright (C) 1994-1998, Thomas G. Lane.
+Copyright (C) 1994-1997, Thomas G. Lane.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -28,6 +28,8 @@ jerror.h	Declares JPEG library's error and trace message codes.
 jinclude.h	Central include file used by all IJG .c files to reference
 		system include files.
 jpegint.h	JPEG library's internal data structures.
+jlossls.h	JPEG library's lossless codec data structures.
+jlossy.h	JPEG library's lossy codec structures.
 jchuff.h	Private declarations for Huffman encoder modules.
 jdhuff.h	Private declarations for Huffman decoder modules.
 jdct.h		Private declarations for forward & reverse DCT subsystems.
@@ -64,34 +66,40 @@ Compression side of the library:
 jcinit.c	Initialization: determines which other modules to use.
 jcmaster.c	Master control: setup and inter-pass sequencing logic.
 jcmainct.c	Main buffer controller (preprocessor => JPEG compressor).
+jchuff.c	Codec-independent Huffman entropy encoding routines.
 jcprepct.c	Preprocessor buffer controller.
-jccoefct.c	Buffer controller for DCT coefficient buffer.
 jccolor.c	Color space conversion.
 jcsample.c	Downsampling.
+jcmarker.c	JPEG marker writing.
+jdatadst.c	Data destination manager for stdio output.
+
+Lossy (DCT) codec:
+
+jlossy.c	Lossy compressor proper.
+jccoefct.c	Buffer controller for DCT coefficient buffer.
 jcdctmgr.c	DCT manager (DCT implementation selection & control).
 jfdctint.c	Forward DCT using slow-but-accurate integer method.
 jfdctfst.c	Forward DCT using faster, less accurate integer method.
 jfdctflt.c	Forward DCT using floating-point arithmetic.
-jchuff.c	Huffman entropy coding for sequential JPEG.
+jcshuff.c	Huffman entropy coding for sequential JPEG.
 jcphuff.c	Huffman entropy coding for progressive JPEG.
-jcmarker.c	JPEG marker writing.
-jdatadst.c	Data destination manager for stdio output.
+
+Lossless (spatial) codec:
+
+jclossls.c	Lossless compressor proper.
+jcdiffct.c	Buffer controller for difference buffer.
+jcscale.c	Point transformation.
+jcpred.c	Sample predictor and differencer.
+jclhuff.c	Huffman entropy encoding for lossless JPEG.
 
 Decompression side of the library:
 
 jdmaster.c	Master control: determines which other modules to use.
 jdinput.c	Input controller: controls input processing modules.
 jdmainct.c	Main buffer controller (JPEG decompressor => postprocessor).
-jdcoefct.c	Buffer controller for DCT coefficient buffer.
+jdhuff.c	Codec-independent Huffman entropy decoding routines.
 jdpostct.c	Postprocessor buffer controller.
 jdmarker.c	JPEG marker reading.
-jdhuff.c	Huffman entropy decoding for sequential JPEG.
-jdphuff.c	Huffman entropy decoding for progressive JPEG.
-jddctmgr.c	IDCT manager (IDCT implementation selection & control).
-jidctint.c	Inverse DCT using slow-but-accurate integer method.
-jidctfst.c	Inverse DCT using faster, less accurate integer method.
-jidctflt.c	Inverse DCT using floating-point arithmetic.
-jidctred.c	Inverse DCTs with reduced-size outputs.
 jdsample.c	Upsampling.
 jdcolor.c	Color space conversion.
 jdmerge.c	Merged upsampling/color conversion (faster, lower quality).
@@ -100,10 +108,31 @@ jquant2.c	Two-pass color quantization using a custom-generated colormap.
 		Also handles one-pass quantization to an externally given map.
 jdatasrc.c	Data source manager for stdio input.
 
+Lossy (DCT) codec:
+
+jdlossy.c	Lossy decompressor proper.
+jdcoefct.c	Buffer controller for DCT coefficient buffer.
+jdshuff.c	Huffman entropy decoding for sequential JPEG.
+jdphuff.c	Huffman entropy decoding for progressive JPEG.
+jddctmgr.c	IDCT manager (IDCT implementation selection & control).
+jidctint.c	Inverse DCT using slow-but-accurate integer method.
+jidctfst.c	Inverse DCT using faster, less accurate integer method.
+jidctflt.c	Inverse DCT using floating-point arithmetic.
+jidctred.c	Inverse DCTs with reduced-size outputs.
+
+Lossless (spatial) codec:
+
+jdlossls.c	Lossless decompressor proper.
+jddiffct.c	Buffer controller for difference buffers.
+jdlhuff.c	Huffman entropy decoding for lossless JPEG.
+jdpred.c	Sample predictor and undifferencer.
+jdscale.c	Point transformation, sample size scaling.
+
 Support files for both compression and decompression:
 
 jerror.c	Standard error handling routines (application replaceable).
 jmemmgr.c	System-independent (more or less) memory management code.
+jcodec.c	Codec-independent utility routines.
 jutils.c	Miscellaneous utility routines.
 
 jmemmgr.c relies on a system-dependent memory management module.  The IJG

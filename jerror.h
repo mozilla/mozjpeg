@@ -1,7 +1,7 @@
 /*
  * jerror.h
  *
- * Copyright (C) 1994-1997, Thomas G. Lane.
+ * Copyright (C) 1994-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -47,12 +47,17 @@ JMESSAGE(JERR_BAD_BUFFER_MODE, "Bogus buffer control mode")
 JMESSAGE(JERR_BAD_COMPONENT_ID, "Invalid component ID %d in SOS")
 JMESSAGE(JERR_BAD_DCT_COEF, "DCT coefficient out of range")
 JMESSAGE(JERR_BAD_DCTSIZE, "IDCT output block size %d not supported")
+JMESSAGE(JERR_BAD_DIFF, "spatial difference out of range")
 JMESSAGE(JERR_BAD_HUFF_TABLE, "Bogus Huffman table definition")
 JMESSAGE(JERR_BAD_IN_COLORSPACE, "Bogus input colorspace")
 JMESSAGE(JERR_BAD_J_COLORSPACE, "Bogus JPEG colorspace")
 JMESSAGE(JERR_BAD_LENGTH, "Bogus marker length")
 JMESSAGE(JERR_BAD_LIB_VERSION,
 	 "Wrong JPEG library version: library is %d, caller expects %d")
+JMESSAGE(JERR_BAD_LOSSLESS,
+	 "Invalid lossless parameters Ss=%d Se=%d Ah=%d Al=%d")
+JMESSAGE(JERR_BAD_LOSSLESS_SCRIPT,
+	 "Invalid lossless parameters at scan script entry %d")
 JMESSAGE(JERR_BAD_MCU_SIZE, "Sampling factors too large for interleaved scan")
 JMESSAGE(JERR_BAD_POOL_ID, "Invalid memory pool code %d")
 JMESSAGE(JERR_BAD_PRECISION, "Unsupported JPEG data precision %d")
@@ -60,6 +65,7 @@ JMESSAGE(JERR_BAD_PROGRESSION,
 	 "Invalid progressive parameters Ss=%d Se=%d Ah=%d Al=%d")
 JMESSAGE(JERR_BAD_PROG_SCRIPT,
 	 "Invalid progressive parameters at scan script entry %d")
+JMESSAGE(JERR_BAD_RESTART, "Invalid restart interval: %d, must be an integer multiple of the number of MCUs in an MCU_row (%d)")
 JMESSAGE(JERR_BAD_SAMPLING, "Bogus sampling factors")
 JMESSAGE(JERR_BAD_SCAN_SCRIPT, "Invalid scan script at entry %d")
 JMESSAGE(JERR_BAD_STATE, "Improper call to JPEG library in state %d")
@@ -68,6 +74,8 @@ JMESSAGE(JERR_BAD_STRUCT_SIZE,
 JMESSAGE(JERR_BAD_VIRTUAL_ACCESS, "Bogus virtual array access")
 JMESSAGE(JERR_BUFFER_SIZE, "Buffer passed to JPEG library is too small")
 JMESSAGE(JERR_CANT_SUSPEND, "Suspension not allowed here")
+JMESSAGE(JERR_CANT_TRANSCODE,
+	 "Cannot transcode to/from lossless JPEG datastreams")
 JMESSAGE(JERR_CCIR601_NOTIMPL, "CCIR601 sampling not implemented yet")
 JMESSAGE(JERR_COMPONENT_COUNT, "Too many color components: %d, max %d")
 JMESSAGE(JERR_CONVERSION_NOTIMPL, "Unsupported color conversion request")
@@ -96,6 +104,7 @@ JMESSAGE(JERR_NOT_COMPILED, "Requested feature was omitted at compile time")
 JMESSAGE(JERR_NO_BACKING_STORE, "Backing store not supported")
 JMESSAGE(JERR_NO_HUFF_TABLE, "Huffman table 0x%02x was not defined")
 JMESSAGE(JERR_NO_IMAGE, "JPEG datastream contains no image")
+JMESSAGE(JERR_NO_LOSSLESS_SCRIPT, "Lossless encoding was requested but no scan script was supplied")
 JMESSAGE(JERR_NO_QUANT_TABLE, "Quantization table 0x%02x was not defined")
 JMESSAGE(JERR_NO_SOI, "Not a JPEG file: starts with 0x%02x 0x%02x")
 JMESSAGE(JERR_OUT_OF_MEMORY, "Insufficient memory (case %d)")
@@ -165,7 +174,9 @@ JMESSAGE(JTRC_THUMB_PALETTE,
 	 "JFIF extension marker: palette thumbnail image, length %u")
 JMESSAGE(JTRC_THUMB_RGB,
 	 "JFIF extension marker: RGB thumbnail image, length %u")
-JMESSAGE(JTRC_UNKNOWN_IDS,
+JMESSAGE(JTRC_UNKNOWN_LOSSLESS_IDS,
+	 "Unrecognized component IDs %d %d %d, assuming RGB")
+JMESSAGE(JTRC_UNKNOWN_LOSSY_IDS,
 	 "Unrecognized component IDs %d %d %d, assuming YCbCr")
 JMESSAGE(JTRC_XMS_CLOSE, "Freed XMS handle %u")
 JMESSAGE(JTRC_XMS_OPEN, "Obtained XMS handle %u")
@@ -178,6 +189,8 @@ JMESSAGE(JWRN_HIT_MARKER, "Corrupt JPEG data: premature end of data segment")
 JMESSAGE(JWRN_HUFF_BAD_CODE, "Corrupt JPEG data: bad Huffman code")
 JMESSAGE(JWRN_JFIF_MAJOR, "Warning: unknown JFIF revision number %d.%02d")
 JMESSAGE(JWRN_JPEG_EOF, "Premature end of JPEG file")
+JMESSAGE(JWRN_MUST_DOWNSCALE,
+	 "Must downscale data from %d bits to %d")
 JMESSAGE(JWRN_MUST_RESYNC,
 	 "Corrupt JPEG data: found marker 0x%02x instead of RST%d")
 JMESSAGE(JWRN_NOT_SEQUENTIAL, "Invalid SOS parameters for sequential JPEG")

@@ -1,0 +1,13 @@
+List of things to complete for lossless codec:
+
+* How to deal with data_precision vs. BITS_PER_JSAMPLE for compression codec.
+
+* Re-visit use of insufficient_data - see jdhuff.c and jdlhuff.c.
+
+* How to check BITS_PER_JSAMPLE for lossy mode (ie, 16-bit data)? -
+  see jdinput.c.
+
+* Check comment blocks for errors/changes.
+
+* Review new filenames.  Try to avoid filename conflicts with possible JPEG-LS
+  codec.

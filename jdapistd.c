@@ -1,7 +1,7 @@
 /*
  * jdapistd.c
  *
- * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Copyright (C) 1994-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -202,12 +202,12 @@ jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
   }
 
   /* Verify that at least one iMCU row can be returned. */
-  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size;
+  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->min_codec_data_unit;
   if (max_lines < lines_per_iMCU_row)
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Decompress directly into user's buffer. */
-  if (! (*cinfo->coef->decompress_data) (cinfo, data))
+  if (! (*cinfo->codec->decompress_data) (cinfo, data))
     return 0;			/* suspension forced, can do nothing more */
 
   /* OK, we processed one iMCU row. */

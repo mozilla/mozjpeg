@@ -284,6 +284,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 
   /* Initialize everything not dependent on the color space */
 
+  cinfo->lossless = FALSE;
   cinfo->data_precision = BITS_IN_JSAMPLE;
   /* Set up two quantization tables using default quality of 75 */
   jpeg_set_quality(cinfo, 75, TRUE);
@@ -358,27 +359,31 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 GLOBAL(void)
 jpeg_default_colorspace (j_compress_ptr cinfo)
 {
-  switch (cinfo->in_color_space) {
-  case JCS_GRAYSCALE:
-    jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
-    break;
-  case JCS_RGB:
-    jpeg_set_colorspace(cinfo, JCS_YCbCr);
-    break;
-  case JCS_YCbCr:
-    jpeg_set_colorspace(cinfo, JCS_YCbCr);
-    break;
-  case JCS_CMYK:
-    jpeg_set_colorspace(cinfo, JCS_CMYK); /* By default, no translation */
-    break;
-  case JCS_YCCK:
-    jpeg_set_colorspace(cinfo, JCS_YCCK);
-    break;
-  case JCS_UNKNOWN:
-    jpeg_set_colorspace(cinfo, JCS_UNKNOWN);
-    break;
-  default:
-    ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
+  if (cinfo->lossless)
+    jpeg_set_colorspace(cinfo, cinfo->in_color_space);
+  else { /* lossy */
+    switch (cinfo->in_color_space) {
+    case JCS_GRAYSCALE:
+      jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
+      break;
+    case JCS_RGB:
+      jpeg_set_colorspace(cinfo, JCS_YCbCr);
+      break;
+    case JCS_YCbCr:
+      jpeg_set_colorspace(cinfo, JCS_YCbCr);
+      break;
+    case JCS_CMYK:
+      jpeg_set_colorspace(cinfo, JCS_CMYK); /* By default, no translation */
+      break;
+    case JCS_YCCK:
+      jpeg_set_colorspace(cinfo, JCS_YCCK);
+      break;
+    case JCS_UNKNOWN:
+      jpeg_set_colorspace(cinfo, JCS_UNKNOWN);
+      break;
+    default:
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
+    }
   }
 }
 
@@ -433,10 +438,16 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
     cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
     cinfo->num_components = 3;
     /* JFIF specifies component IDs 1,2,3 */
-    /* We default to 2x2 subsamples of chrominance */
-    SET_COMP(0, 1, 2,2, 0, 0,0);
-    SET_COMP(1, 2, 1,1, 1, 1,1);
-    SET_COMP(2, 3, 1,1, 1, 1,1);
+    if (cinfo->lossless) {
+      SET_COMP(0, 1, 1,1, 0, 0,0);
+      SET_COMP(1, 2, 1,1, 1, 1,1);
+      SET_COMP(2, 3, 1,1, 1, 1,1);
+    } else { /* lossy */
+      /* We default to 2x2 subsamples of chrominance */
+      SET_COMP(0, 1, 2,2, 0, 0,0);
+      SET_COMP(1, 2, 1,1, 1, 1,1);
+      SET_COMP(2, 3, 1,1, 1, 1,1);
+    }
     break;
   case JCS_CMYK:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag CMYK */
@@ -449,10 +460,17 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
   case JCS_YCCK:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag YCCK */
     cinfo->num_components = 4;
-    SET_COMP(0, 1, 2,2, 0, 0,0);
-    SET_COMP(1, 2, 1,1, 1, 1,1);
-    SET_COMP(2, 3, 1,1, 1, 1,1);
-    SET_COMP(3, 4, 2,2, 0, 0,0);
+    if (cinfo->lossless) {
+      SET_COMP(0, 1, 1,1, 0, 0,0);
+      SET_COMP(1, 2, 1,1, 1, 1,1);
+      SET_COMP(2, 3, 1,1, 1, 1,1);
+      SET_COMP(3, 4, 1,1, 0, 0,0);
+    } else { /* lossy */
+      SET_COMP(0, 1, 2,2, 0, 0,0);
+      SET_COMP(1, 2, 1,1, 1, 1,1);
+      SET_COMP(2, 3, 1,1, 1, 1,1);
+      SET_COMP(3, 4, 2,2, 0, 0,0);
+    }
     break;
   case JCS_UNKNOWN:
     cinfo->num_components = cinfo->input_components;
@@ -472,21 +490,6 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
 #ifdef C_PROGRESSIVE_SUPPORTED
 
 LOCAL(jpeg_scan_info *)
-fill_a_scan (jpeg_scan_info * scanptr, int ci,
-	     int Ss, int Se, int Ah, int Al)
-/* Support routine: generate one scan for specified component */
-{
-  scanptr->comps_in_scan = 1;
-  scanptr->component_index[0] = ci;
-  scanptr->Ss = Ss;
-  scanptr->Se = Se;
-  scanptr->Ah = Ah;
-  scanptr->Al = Al;
-  scanptr++;
-  return scanptr;
-}
-
-LOCAL(jpeg_scan_info *)
 fill_scans (jpeg_scan_info * scanptr, int ncomps,
 	    int Ss, int Se, int Ah, int Al)
 /* Support routine: generate one scan for each component */
@@ -502,6 +505,22 @@ fill_scans (jpeg_scan_info * scanptr, int ncomps,
     scanptr->Al = Al;
     scanptr++;
   }
+  return scanptr;
+}
+
+
+LOCAL(jpeg_scan_info *)
+fill_a_scan (jpeg_scan_info * scanptr, int ci,
+	     int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for specified component */
+{
+  scanptr->comps_in_scan = 1;
+  scanptr->component_index[0] = ci;
+  scanptr->Ss = Ss;
+  scanptr->Se = Se;
+  scanptr->Ah = Ah;
+  scanptr->Al = Al;
+  scanptr++;
   return scanptr;
 }
 
@@ -608,3 +627,61 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 }
 
 #endif /* C_PROGRESSIVE_SUPPORTED */
+
+
+#ifdef C_LOSSLESS_SUPPORTED
+
+/*
+ * Create a single-entry lossless-JPEG script containing all components.
+ * cinfo->num_components must be correct.
+ */
+
+GLOBAL(void)
+jpeg_simple_lossless (j_compress_ptr cinfo, int predictor, int point_transform)
+{
+  int ncomps = cinfo->num_components;
+  int nscans = 1;
+  int ci;
+  jpeg_scan_info * scanptr;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  cinfo->lossless = TRUE;
+
+  /* Set jpeg_color_space. */
+  jpeg_default_colorspace(cinfo);
+
+  /* Check to ensure that all components will fit in one scan. */
+  if (cinfo->num_components > MAX_COMPS_IN_SCAN)
+    ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
+	     MAX_COMPS_IN_SCAN);
+
+  /* Allocate space for script.
+   * We need to put it in the permanent pool in case the application performs
+   * multiple compressions without changing the settings.  To avoid a memory
+   * leak if jpeg_simple_lossless is called repeatedly for the same JPEG
+   * object, we try to re-use previously allocated space.
+   */
+  if (cinfo->script_space == NULL || cinfo->script_space_size < nscans) {
+    cinfo->script_space_size = nscans;
+    cinfo->script_space = (jpeg_scan_info *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+			cinfo->script_space_size * SIZEOF(jpeg_scan_info));
+  }
+  scanptr = cinfo->script_space;
+  cinfo->scan_info = scanptr;
+  cinfo->num_scans = nscans;
+
+  /* Fill the script. */
+  scanptr->comps_in_scan = ncomps;
+  for (ci = 0; ci < ncomps; ci++)
+    scanptr->component_index[ci] = ci;
+  scanptr->Ss = predictor;
+  scanptr->Se = 0;
+  scanptr->Ah = 0;
+  scanptr->Al = point_transform;
+}
+
+#endif /* C_LOSSLESS_SUPPORTED */

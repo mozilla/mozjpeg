@@ -1,7 +1,7 @@
 /*
  * jdphuff.c
  *
- * Copyright (C) 1995-1997, Thomas G. Lane.
+ * Copyright (C) 1995-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -17,13 +17,14 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jdhuff.h"		/* Declarations shared with jdhuff.c */
+#include "jlossy.h"		/* Private declarations for lossy subsystem */
+#include "jdhuff.h"		/* Declarations shared with jd*huff.c */
 
 
 #ifdef D_PROGRESSIVE_SUPPORTED
 
 /*
- * Expanded entropy decoder object for progressive Huffman decoding.
+ * Private entropy decoder object for progressive Huffman decoding.
  *
  * The savable_state subrecord contains fields that change within an MCU,
  * but must not be updated permanently until we complete the MCU.
@@ -54,12 +55,11 @@ typedef struct {
 
 
 typedef struct {
-  struct jpeg_entropy_decoder pub; /* public fields */
+  huffd_common_fields;		/* Fields shared with other entropy decoders */
 
   /* These fields are loaded into local variables at start of each MCU.
    * In case of suspension, we exit WITHOUT updating them.
    */
-  bitread_perm_state bitstate;	/* Bit buffer at start of MCU */
   savable_state saved;		/* Other state at start of MCU */
 
   /* These fields are NOT loaded into local working state. */
@@ -91,7 +91,8 @@ METHODDEF(boolean) decode_mcu_AC_refine JPP((j_decompress_ptr cinfo,
 METHODDEF(void)
 start_pass_phuff_decoder (j_decompress_ptr cinfo)
 {
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
+  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyd->entropy_private;
   boolean is_DC_band, bad;
   int ci, coefi, tbl;
   int *coef_bit_ptr;
@@ -148,14 +149,14 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
   /* Select MCU decoding routine */
   if (cinfo->Ah == 0) {
     if (is_DC_band)
-      entropy->pub.decode_mcu = decode_mcu_DC_first;
+      lossyd->entropy_decode_mcu = decode_mcu_DC_first;
     else
-      entropy->pub.decode_mcu = decode_mcu_AC_first;
+      lossyd->entropy_decode_mcu = decode_mcu_AC_first;
   } else {
     if (is_DC_band)
-      entropy->pub.decode_mcu = decode_mcu_DC_refine;
+      lossyd->entropy_decode_mcu = decode_mcu_DC_refine;
     else
-      entropy->pub.decode_mcu = decode_mcu_AC_refine;
+      lossyd->entropy_decode_mcu = decode_mcu_AC_refine;
   }
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
@@ -183,7 +184,7 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
   /* Initialize bitread state variables */
   entropy->bitstate.bits_left = 0;
   entropy->bitstate.get_buffer = 0; /* unnecessary, but keeps Purify quiet */
-  entropy->pub.insufficient_data = FALSE;
+  entropy->insufficient_data = FALSE;
 
   /* Initialize private state variables */
   entropy->saved.EOBRUN = 0;
@@ -227,7 +228,8 @@ static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
 LOCAL(boolean)
 process_restart (j_decompress_ptr cinfo)
 {
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
+  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyd->entropy_private;
   int ci;
 
   /* Throw away any unused bits remaining in bit buffer; */
@@ -254,7 +256,7 @@ process_restart (j_decompress_ptr cinfo)
    * leaving the flag set.
    */
   if (cinfo->unread_marker == 0)
-    entropy->pub.insufficient_data = FALSE;
+    entropy->insufficient_data = FALSE;
 
   return TRUE;
 }
@@ -285,7 +287,8 @@ process_restart (j_decompress_ptr cinfo)
 METHODDEF(boolean)
 decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
+  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyd->entropy_private;
   int Al = cinfo->Al;
   register int s, r;
   int blkn, ci;
@@ -305,7 +308,7 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   /* If we've run out of data, just leave the MCU set to zeroes.
    * This way, we return uniform gray for the remainder of the segment.
    */
-  if (! entropy->pub.insufficient_data) {
+  if (! entropy->insufficient_data) {
 
     /* Load up working state */
     BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
@@ -313,7 +316,7 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
     /* Outer loop handles each block in the MCU */
 
-    for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
+    for (blkn = 0; blkn < cinfo->data_units_in_MCU; blkn++) {
       block = MCU_data[blkn];
       ci = cinfo->MCU_membership[blkn];
       compptr = cinfo->cur_comp_info[ci];
@@ -356,7 +359,8 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(boolean)
 decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
+  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyd->entropy_private;
   int Se = cinfo->Se;
   int Al = cinfo->Al;
   register int s, k, r;
@@ -375,7 +379,7 @@ decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   /* If we've run out of data, just leave the MCU set to zeroes.
    * This way, we return uniform gray for the remainder of the segment.
    */
-  if (! entropy->pub.insufficient_data) {
+  if (! entropy->insufficient_data) {
 
     /* Load up working state.
      * We can avoid loading/saving bitread state if in an EOB run.
@@ -441,7 +445,8 @@ decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(boolean)
 decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
+  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyd->entropy_private;
   int p1 = 1 << cinfo->Al;	/* 1 in the bit position being coded */
   int blkn;
   JBLOCKROW block;
@@ -463,7 +468,7 @@ decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
   /* Outer loop handles each block in the MCU */
 
-  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
+  for (blkn = 0; blkn < cinfo->data_units_in_MCU; blkn++) {
     block = MCU_data[blkn];
 
     /* Encoded data is simply the next bit of the two's-complement DC value */
@@ -490,7 +495,8 @@ decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(boolean)
 decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
+  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyd->entropy_private;
   int Se = cinfo->Se;
   int p1 = 1 << cinfo->Al;	/* 1 in the bit position being coded */
   int m1 = (-1) << cinfo->Al;	/* -1 in the bit position being coded */
@@ -512,7 +518,7 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
   /* If we've run out of data, don't modify the MCU.
    */
-  if (! entropy->pub.insufficient_data) {
+  if (! entropy->insufficient_data) {
 
     /* Load up working state */
     BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
@@ -640,6 +646,7 @@ undoit:
 GLOBAL(void)
 jinit_phuff_decoder (j_decompress_ptr cinfo)
 {
+  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
   phuff_entropy_ptr entropy;
   int *coef_bit_ptr;
   int ci, i;
@@ -647,8 +654,8 @@ jinit_phuff_decoder (j_decompress_ptr cinfo)
   entropy = (phuff_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(phuff_entropy_decoder));
-  cinfo->entropy = (struct jpeg_entropy_decoder *) entropy;
-  entropy->pub.start_pass = start_pass_phuff_decoder;
+  lossyd->entropy_private = (void *) entropy;
+  lossyd->entropy_start_pass = start_pass_phuff_decoder;
 
   /* Mark derived tables unallocated */
   for (i = 0; i < NUM_HUFF_TBLS; i++) {

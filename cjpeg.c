@@ -157,6 +157,9 @@ usage (void)
 #ifdef C_PROGRESSIVE_SUPPORTED
   fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
 #endif
+#ifdef C_LOSSLESS_SUPPORTED
+  fprintf(stderr, "  -lossless psv[,Pt]  Create lossless JPEG file\n");
+#endif
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
@@ -217,6 +220,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   char * qslotsarg = NULL;	/* saves -qslots parm if any */
   char * samplearg = NULL;	/* saves -sample parm if any */
   char * scansarg = NULL;	/* saves -scans parm if any */
+  char * losslsarg = NULL;	/* saves -lossless parm if any */
 
   /* Set up default JPEG parameters. */
   /* Note that default -quality level need not, and does not,
@@ -286,6 +290,19 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
+
+    } else if (keymatch(arg, "lossless", 1)) {
+/* Select simple lossless mode. */
+#ifdef C_LOSSLESS_SUPPORTED
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      losslsarg = argv[argn];
+      /* We must postpone execution until num_components is known. */
+#else
+      fprintf(stderr, "%s: sorry, lossless output was not compiled\n",
+	      progname);
+      exit(EXIT_FAILURE);
+#endif
 
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */
@@ -440,6 +457,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 #ifdef C_PROGRESSIVE_SUPPORTED
     if (simple_progressive)	/* process -progressive; -scans can override */
       jpeg_simple_progression(cinfo);
+#endif
+
+#ifdef C_LOSSLESS_SUPPORTED
+    if (losslsarg != NULL)	/* process -lossless if it was present */
+      if (! set_simple_lossless(cinfo, losslsarg))
+	usage();
 #endif
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED

@@ -74,12 +74,12 @@ remarkably high compression levels are possible if you can tolerate a
 low-quality image.  For more details, see the references, or just experiment
 with various compression settings.
 
-This software implements JPEG baseline, extended-sequential, and progressive
-compression processes.  Provision is made for supporting all variants of these
-processes, although some uncommon parameter settings aren't implemented yet.
-For legal reasons, we are not distributing code for the arithmetic-coding
-variants of JPEG; see LEGAL ISSUES.  We have made no provision for supporting
-the hierarchical or lossless processes defined in the standard.
+This software implements JPEG baseline, extended-sequential, progressive
+and lossless compression processes.  Provision is made for supporting all
+variants of these processes, although some uncommon parameter settings aren't
+implemented yet. For legal reasons, we are not distributing code for the
+arithmetic-coding variants of JPEG; see LEGAL ISSUES.  We have made no
+provision for supporting the hierarchical processes defined in the standard.
 
 We provide a set of library routines for reading and writing JPEG image files,
 plus two sample applications "cjpeg" and "djpeg", which use the library to

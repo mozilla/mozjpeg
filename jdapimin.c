@@ -149,8 +149,14 @@ default_decompress_parms (j_decompress_ptr cinfo)
       else if (cid0 == 82 && cid1 == 71 && cid2 == 66)
 	cinfo->jpeg_color_space = JCS_RGB; /* ASCII 'R', 'G', 'B' */
       else {
-	TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);
-	cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+	if (cinfo->process == JPROC_LOSSLESS) {
+	  TRACEMS3(cinfo, 1, JTRC_UNKNOWN_LOSSLESS_IDS, cid0, cid1, cid2);
+	  cinfo->jpeg_color_space = JCS_RGB; /* assume it's RGB */
+	}
+	else {  /* Lossy processes */
+	  TRACEMS3(cinfo, 1, JTRC_UNKNOWN_LOSSY_IDS, cid0, cid1, cid2);
+	  cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+	}
       }
     }
     /* Always guess RGB is proper output colorspace. */

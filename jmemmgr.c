@@ -1,7 +1,7 @@
 /*
  * jmemmgr.c
  *
- * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -42,11 +42,12 @@ extern char * getenv JPP((const char * name));
  *   The allocation routines provided here must never return NULL.
  *   They should exit to error_exit if unsuccessful.
  *
- *   It's not a good idea to try to merge the sarray and barray routines,
- *   even though they are textually almost the same, because samples are
- *   usually stored as bytes while coefficients are shorts or ints.  Thus,
- *   in machines where byte pointers have a different representation from
- *   word pointers, the resulting machine code could not be the same.
+ *   It's not a good idea to try to merge the sarray, barray and darray
+ *   routines, even though they are textually almost the same, because
+ *   samples are usually stored as bytes while coefficients and differenced
+ *   are shorts or ints.  Thus, in machines where byte pointers have a
+ *   different representation from word pointers, the resulting machine
+ *   code could not be the same.
  */
 
 
@@ -480,6 +481,58 @@ alloc_barray (j_common_ptr cinfo, int pool_id,
 
   return result;
 }
+
+
+#ifdef NEED_DARRAY
+
+/*
+ * Creation of 2-D difference arrays.
+ * This is essentially the same as the code for sample arrays, above.
+ */
+
+METHODDEF(JDIFFARRAY)
+alloc_darray (j_common_ptr cinfo, int pool_id,
+	      JDIMENSION diffsperrow, JDIMENSION numrows)
+/* Allocate a 2-D difference array */
+{
+  my_mem_ptr mem = (my_mem_ptr) cinfo->mem;
+  JDIFFARRAY result;
+  JDIFFROW workspace;
+  JDIMENSION rowsperchunk, currow, i;
+  long ltemp;
+
+  /* Calculate max # of rows allowed in one allocation chunk */
+  ltemp = (MAX_ALLOC_CHUNK-SIZEOF(large_pool_hdr)) /
+	  ((long) diffsperrow * SIZEOF(JDIFF));
+  if (ltemp <= 0)
+    ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
+  if (ltemp < (long) numrows)
+    rowsperchunk = (JDIMENSION) ltemp;
+  else
+    rowsperchunk = numrows;
+  mem->last_rowsperchunk = rowsperchunk;
+
+  /* Get space for row pointers (small object) */
+  result = (JDIFFARRAY) alloc_small(cinfo, pool_id,
+				    (size_t) (numrows * SIZEOF(JDIFFROW)));
+
+  /* Get the rows themselves (large objects) */
+  currow = 0;
+  while (currow < numrows) {
+    rowsperchunk = MIN(rowsperchunk, numrows - currow);
+    workspace = (JDIFFROW) alloc_large(cinfo, pool_id,
+	(size_t) ((size_t) rowsperchunk * (size_t) diffsperrow
+		  * SIZEOF(JDIFF)));
+    for (i = rowsperchunk; i > 0; i--) {
+      result[currow++] = workspace;
+      workspace += diffsperrow;
+    }
+  }
+
+  return result;
+}
+
+#endif
 
 
 /*
@@ -1068,6 +1121,9 @@ jinit_memory_mgr (j_common_ptr cinfo)
   mem->pub.alloc_large = alloc_large;
   mem->pub.alloc_sarray = alloc_sarray;
   mem->pub.alloc_barray = alloc_barray;
+#ifdef NEED_DARRAY
+  mem->pub.alloc_darray = alloc_darray;
+#endif
   mem->pub.request_virt_sarray = request_virt_sarray;
   mem->pub.request_virt_barray = request_virt_barray;
   mem->pub.realize_virt_arrays = realize_virt_arrays;

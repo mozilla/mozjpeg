@@ -330,3 +330,29 @@ set_sample_factors (j_compress_ptr cinfo, char *arg)
   }
   return TRUE;
 }
+
+
+#ifdef C_LOSSLESS_SUPPORTED
+
+GLOBAL(boolean)
+set_simple_lossless (j_compress_ptr cinfo, char *arg)
+{
+  int pred, pt = 0;
+  char ch;
+
+  ch = ',';		/* if not set by sscanf, will be ',' */
+  if (sscanf(arg, "%d%c", &pred, &ch) < 1)
+    return FALSE;
+  if (ch != ',')		/* syntax check */
+    return FALSE;
+  while (*arg && *arg++ != ',') /* advance to next segment of arg string */
+    ;
+  if (*arg) {
+    if (sscanf(arg, "%d", &pt) != 1)
+      pt = 0;
+  }
+  jpeg_simple_lossless(cinfo, pred, pt);
+  return TRUE;
+}
+
+#endif /* C_LOSSLESS_SUPPORTED */

@@ -62,6 +62,13 @@ decompression are unaffected by
 .B \-progressive
 Create progressive JPEG file (see below).
 .TP
+.BI \-lossless " psv[,Pt]"
+Create a lossless JPEG file using the specified predictor selection value (1-7)
+and optional point transform.
+.B Caution:
+lossless JPEG is not widely implemented, so many decoders will be
+unable to view a lossless JPEG file at all.
+.TP
 .B \-targa
 Input file is Targa format.  Targa files that contain an "identification"
 field will not be automatically recognized by

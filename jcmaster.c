@@ -1,7 +1,7 @@
 /*
  * jcmaster.c
  *
- * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -14,6 +14,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jlossy.h"		/* Private declarations for lossy codec */
 
 
 /* Private state */
@@ -50,6 +51,7 @@ initial_setup (j_compress_ptr cinfo)
   jpeg_component_info *compptr;
   long samplesperrow;
   JDIMENSION jd_samplesperrow;
+  int data_unit = cinfo->data_unit;
 
   /* Sanity check on image dimensions */
   if (cinfo->image_height <= 0 || cinfo->image_width <= 0
@@ -95,15 +97,15 @@ initial_setup (j_compress_ptr cinfo)
        ci++, compptr++) {
     /* Fill in the correct component_index value; don't rely on application */
     compptr->component_index = ci;
-    /* For compression, we never do DCT scaling. */
-    compptr->DCT_scaled_size = DCTSIZE;
-    /* Size in DCT blocks */
-    compptr->width_in_blocks = (JDIMENSION)
+    /* For compression, we never do any codec-based processing. */
+    compptr->codec_data_unit = data_unit;
+    /* Size in data units */
+    compptr->width_in_data_units = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
-		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
-    compptr->height_in_blocks = (JDIMENSION)
+		    (long) (cinfo->max_h_samp_factor * data_unit));
+    compptr->height_in_data_units = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
-		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
+		    (long) (cinfo->max_v_samp_factor * data_unit));
     /* Size in samples */
     compptr->downsampled_width = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
@@ -120,16 +122,23 @@ initial_setup (j_compress_ptr cinfo)
    */
   cinfo->total_iMCU_rows = (JDIMENSION)
     jdiv_round_up((long) cinfo->image_height,
-		  (long) (cinfo->max_v_samp_factor*DCTSIZE));
+		  (long) (cinfo->max_v_samp_factor*data_unit));
 }
 
-
 #ifdef C_MULTISCAN_FILES_SUPPORTED
+#define NEED_SCAN_SCRIPT
+#else
+#ifdef C_LOSSLESS_SUPPORTED
+#define NEED_SCAN_SCRIPT
+#endif
+#endif
+
+#ifdef NEED_SCAN_SCRIPT
 
 LOCAL(void)
 validate_script (j_compress_ptr cinfo)
 /* Verify that the scan script in cinfo->scan_info[] is valid; also
- * determine whether it uses progressive JPEG, and set cinfo->progressive_mode.
+ * determine whether it uses progressive JPEG, and set cinfo->process.
  */
 {
   const jpeg_scan_info * scanptr;
@@ -145,13 +154,27 @@ validate_script (j_compress_ptr cinfo)
   if (cinfo->num_scans <= 0)
     ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, 0);
 
+#ifndef C_MULTISCAN_FILES_SUPPORTED
+  if (cinfo->num_scans > 1)
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+
+  scanptr = cinfo->scan_info;
+  if (cinfo->lossless) {
+#ifdef C_LOSSLESS_SUPPORTED
+    cinfo->process = JPROC_LOSSLESS;
+    for (ci = 0; ci < cinfo->num_components; ci++) 
+      component_sent[ci] = FALSE;
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+  }
   /* For sequential JPEG, all scans must have Ss=0, Se=DCTSIZE2-1;
    * for progressive JPEG, no scan can have this.
    */
-  scanptr = cinfo->scan_info;
-  if (scanptr->Ss != 0 || scanptr->Se != DCTSIZE2-1) {
+  else if (scanptr->Ss != 0 || scanptr->Se != DCTSIZE2-1) {
 #ifdef C_PROGRESSIVE_SUPPORTED
-    cinfo->progressive_mode = TRUE;
+    cinfo->process = JPROC_PROGRESSIVE;
     last_bitpos_ptr = & last_bitpos[0][0];
     for (ci = 0; ci < cinfo->num_components; ci++) 
       for (coefi = 0; coefi < DCTSIZE2; coefi++)
@@ -160,7 +183,7 @@ validate_script (j_compress_ptr cinfo)
     ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
   } else {
-    cinfo->progressive_mode = FALSE;
+    cinfo->process = JPROC_SEQUENTIAL;
     for (ci = 0; ci < cinfo->num_components; ci++) 
       component_sent[ci] = FALSE;
   }
@@ -183,7 +206,26 @@ validate_script (j_compress_ptr cinfo)
     Se = scanptr->Se;
     Ah = scanptr->Ah;
     Al = scanptr->Al;
-    if (cinfo->progressive_mode) {
+    if (cinfo->process == JPROC_LOSSLESS) {
+#ifdef C_LOSSLESS_SUPPORTED
+      /* The JPEG spec simply gives the range 0..15 for Al (Pt), but that
+       * seems wrong: the upper bound ought to depend on data precision.
+       * Perhaps they really meant 0..N-1 for N-bit precision, which is what
+       * we allow here.
+       */
+      if (Ss < 1 || Ss > 7 ||			/* predictor selector */
+	  Se != 0 || Ah != 0 ||
+	  Al < 0 || Al >= cinfo->data_precision) /* point transform */
+	ERREXIT1(cinfo, JERR_BAD_LOSSLESS_SCRIPT, scanno);
+      /* Make sure components are not sent twice */
+      for (ci = 0; ci < ncomps; ci++) {
+	thisi = scanptr->component_index[ci];
+	if (component_sent[thisi])
+	  ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, scanno);
+	component_sent[thisi] = TRUE;
+      }
+#endif
+    } else if (cinfo->process == JPROC_PROGRESSIVE) {
 #ifdef C_PROGRESSIVE_SUPPORTED
       /* The JPEG spec simply gives the ranges 0..13 for Ah and Al, but that
        * seems wrong: the upper bound ought to depend on data precision.
@@ -240,7 +282,7 @@ validate_script (j_compress_ptr cinfo)
   }
 
   /* Now verify that everything got sent. */
-  if (cinfo->progressive_mode) {
+  if (cinfo->process == JPROC_PROGRESSIVE) {
 #ifdef C_PROGRESSIVE_SUPPORTED
     /* For progressive mode, we only check that at least some DC data
      * got sent for each component; the spec does not require that all bits
@@ -260,7 +302,7 @@ validate_script (j_compress_ptr cinfo)
   }
 }
 
-#endif /* C_MULTISCAN_FILES_SUPPORTED */
+#endif /* NEED_SCAN_SCRIPT */
 
 
 LOCAL(void)
@@ -269,7 +311,7 @@ select_scan_parameters (j_compress_ptr cinfo)
 {
   int ci;
 
-#ifdef C_MULTISCAN_FILES_SUPPORTED
+#ifdef NEED_SCAN_SCRIPT
   if (cinfo->scan_info != NULL) {
     /* Prepare for current scan --- the script is already validated */
     my_master_ptr master = (my_master_ptr) cinfo->master;
@@ -284,8 +326,7 @@ select_scan_parameters (j_compress_ptr cinfo)
     cinfo->Se = scanptr->Se;
     cinfo->Ah = scanptr->Ah;
     cinfo->Al = scanptr->Al;
-  }
-  else
+  } else
 #endif
   {
     /* Prepare for single sequential-JPEG scan containing all components */
@@ -296,10 +337,20 @@ select_scan_parameters (j_compress_ptr cinfo)
     for (ci = 0; ci < cinfo->num_components; ci++) {
       cinfo->cur_comp_info[ci] = &cinfo->comp_info[ci];
     }
-    cinfo->Ss = 0;
-    cinfo->Se = DCTSIZE2-1;
-    cinfo->Ah = 0;
-    cinfo->Al = 0;
+    if (cinfo->lossless) {
+#ifdef C_LOSSLESS_SUPPORTED
+    /* If we fall through to here, the user specified lossless, but did not
+     * provide a scan script.
+     */
+      ERREXIT(cinfo, JERR_NO_LOSSLESS_SCRIPT);
+#endif
+    } else {
+      cinfo->process = JPROC_SEQUENTIAL;
+      cinfo->Ss = 0;
+      cinfo->Se = DCTSIZE2-1;
+      cinfo->Ah = 0;
+      cinfo->Al = 0;
+    }
   }
 }
 
@@ -311,6 +362,7 @@ per_scan_setup (j_compress_ptr cinfo)
 {
   int ci, mcublks, tmp;
   jpeg_component_info *compptr;
+  int data_unit = cinfo->data_unit;
   
   if (cinfo->comps_in_scan == 1) {
     
@@ -318,24 +370,24 @@ per_scan_setup (j_compress_ptr cinfo)
     compptr = cinfo->cur_comp_info[0];
     
     /* Overall image size in MCUs */
-    cinfo->MCUs_per_row = compptr->width_in_blocks;
-    cinfo->MCU_rows_in_scan = compptr->height_in_blocks;
+    cinfo->MCUs_per_row = compptr->width_in_data_units;
+    cinfo->MCU_rows_in_scan = compptr->height_in_data_units;
     
     /* For noninterleaved scan, always one block per MCU */
     compptr->MCU_width = 1;
     compptr->MCU_height = 1;
-    compptr->MCU_blocks = 1;
-    compptr->MCU_sample_width = DCTSIZE;
+    compptr->MCU_data_units = 1;
+    compptr->MCU_sample_width = data_unit;
     compptr->last_col_width = 1;
     /* For noninterleaved scans, it is convenient to define last_row_height
      * as the number of block rows present in the last iMCU row.
      */
-    tmp = (int) (compptr->height_in_blocks % compptr->v_samp_factor);
+    tmp = (int) (compptr->height_in_data_units % compptr->v_samp_factor);
     if (tmp == 0) tmp = compptr->v_samp_factor;
     compptr->last_row_height = tmp;
     
     /* Prepare array describing MCU composition */
-    cinfo->blocks_in_MCU = 1;
+    cinfo->data_units_in_MCU = 1;
     cinfo->MCU_membership[0] = 0;
     
   } else {
@@ -348,33 +400,33 @@ per_scan_setup (j_compress_ptr cinfo)
     /* Overall image size in MCUs */
     cinfo->MCUs_per_row = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width,
-		    (long) (cinfo->max_h_samp_factor*DCTSIZE));
+		    (long) (cinfo->max_h_samp_factor*data_unit));
     cinfo->MCU_rows_in_scan = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_height,
-		    (long) (cinfo->max_v_samp_factor*DCTSIZE));
+		    (long) (cinfo->max_v_samp_factor*data_unit));
     
-    cinfo->blocks_in_MCU = 0;
+    cinfo->data_units_in_MCU = 0;
     
     for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
       compptr = cinfo->cur_comp_info[ci];
       /* Sampling factors give # of blocks of component in each MCU */
       compptr->MCU_width = compptr->h_samp_factor;
       compptr->MCU_height = compptr->v_samp_factor;
-      compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
-      compptr->MCU_sample_width = compptr->MCU_width * DCTSIZE;
+      compptr->MCU_data_units = compptr->MCU_width * compptr->MCU_height;
+      compptr->MCU_sample_width = compptr->MCU_width * data_unit;
       /* Figure number of non-dummy blocks in last MCU column & row */
-      tmp = (int) (compptr->width_in_blocks % compptr->MCU_width);
+      tmp = (int) (compptr->width_in_data_units % compptr->MCU_width);
       if (tmp == 0) tmp = compptr->MCU_width;
       compptr->last_col_width = tmp;
-      tmp = (int) (compptr->height_in_blocks % compptr->MCU_height);
+      tmp = (int) (compptr->height_in_data_units % compptr->MCU_height);
       if (tmp == 0) tmp = compptr->MCU_height;
       compptr->last_row_height = tmp;
       /* Prepare array describing MCU composition */
-      mcublks = compptr->MCU_blocks;
-      if (cinfo->blocks_in_MCU + mcublks > C_MAX_BLOCKS_IN_MCU)
+      mcublks = compptr->MCU_data_units;
+      if (cinfo->data_units_in_MCU + mcublks > C_MAX_DATA_UNITS_IN_MCU)
 	ERREXIT(cinfo, JERR_BAD_MCU_SIZE);
       while (mcublks-- > 0) {
-	cinfo->MCU_membership[cinfo->blocks_in_MCU++] = ci;
+	cinfo->MCU_membership[cinfo->data_units_in_MCU++] = ci;
       }
     }
     
@@ -400,6 +452,7 @@ per_scan_setup (j_compress_ptr cinfo)
 METHODDEF(void)
 prepare_for_pass (j_compress_ptr cinfo)
 {
+  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
   my_master_ptr master = (my_master_ptr) cinfo->master;
 
   switch (master->pass_type) {
@@ -414,11 +467,10 @@ prepare_for_pass (j_compress_ptr cinfo)
       (*cinfo->downsample->start_pass) (cinfo);
       (*cinfo->prep->start_pass) (cinfo, JBUF_PASS_THRU);
     }
-    (*cinfo->fdct->start_pass) (cinfo);
-    (*cinfo->entropy->start_pass) (cinfo, cinfo->optimize_coding);
-    (*cinfo->coef->start_pass) (cinfo,
-				(master->total_passes > 1 ?
-				 JBUF_SAVE_AND_PASS : JBUF_PASS_THRU));
+    (*cinfo->codec->entropy_start_pass) (cinfo, cinfo->optimize_coding);
+    (*cinfo->codec->start_pass) (cinfo,
+				 (master->total_passes > 1 ?
+				  JBUF_SAVE_AND_PASS : JBUF_PASS_THRU));
     (*cinfo->main->start_pass) (cinfo, JBUF_PASS_THRU);
     if (cinfo->optimize_coding) {
       /* No immediate data output; postpone writing frame/scan headers */
@@ -433,9 +485,9 @@ prepare_for_pass (j_compress_ptr cinfo)
     /* Do Huffman optimization for a scan after the first one. */
     select_scan_parameters(cinfo);
     per_scan_setup(cinfo);
-    if (cinfo->Ss != 0 || cinfo->Ah == 0 || cinfo->arith_code) {
-      (*cinfo->entropy->start_pass) (cinfo, TRUE);
-      (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
+    if ((*cinfo->codec->need_optimization_pass) (cinfo) || cinfo->arith_code) {
+      (*cinfo->codec->entropy_start_pass) (cinfo, TRUE);
+      (*cinfo->codec->start_pass) (cinfo, JBUF_CRANK_DEST);
       master->pub.call_pass_startup = FALSE;
       break;
     }
@@ -453,8 +505,8 @@ prepare_for_pass (j_compress_ptr cinfo)
       select_scan_parameters(cinfo);
       per_scan_setup(cinfo);
     }
-    (*cinfo->entropy->start_pass) (cinfo, FALSE);
-    (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
+    (*cinfo->codec->entropy_start_pass) (cinfo, FALSE);
+    (*cinfo->codec->start_pass) (cinfo, JBUF_CRANK_DEST);
     /* We emit frame/scan headers now */
     if (master->scan_number == 0)
       (*cinfo->marker->write_frame_header) (cinfo);
@@ -502,12 +554,13 @@ pass_startup (j_compress_ptr cinfo)
 METHODDEF(void)
 finish_pass_master (j_compress_ptr cinfo)
 {
+  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
   my_master_ptr master = (my_master_ptr) cinfo->master;
 
   /* The entropy coder always needs an end-of-pass call,
    * either to analyze statistics or to flush its output buffer.
    */
-  (*cinfo->entropy->finish_pass) (cinfo);
+  (*lossyc->pub.entropy_finish_pass) (cinfo);
 
   /* Update state for next pass */
   switch (master->pass_type) {
@@ -553,22 +606,26 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   master->pub.finish_pass = finish_pass_master;
   master->pub.is_last_pass = FALSE;
 
+  cinfo->data_unit = cinfo->lossless ? 1 : DCTSIZE;
+
   /* Validate parameters, determine derived values */
   initial_setup(cinfo);
 
   if (cinfo->scan_info != NULL) {
-#ifdef C_MULTISCAN_FILES_SUPPORTED
+#ifdef NEED_SCAN_SCRIPT
     validate_script(cinfo);
 #else
     ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
   } else {
-    cinfo->progressive_mode = FALSE;
+    cinfo->process = JPROC_SEQUENTIAL;
     cinfo->num_scans = 1;
   }
 
-  if (cinfo->progressive_mode)	/*  TEMPORARY HACK ??? */
-    cinfo->optimize_coding = TRUE; /* assume default tables no good for progressive mode */
+  if (cinfo->process == JPROC_PROGRESSIVE ||	/*  TEMPORARY HACK ??? */
+      cinfo->process == JPROC_LOSSLESS)
+    cinfo->optimize_coding = TRUE; /* assume default tables no good for
+				    * progressive mode or lossless mode */
 
   /* Initialize my private state */
   if (transcode_only) {

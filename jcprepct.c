@@ -1,7 +1,7 @@
 /*
  * jcprepct.c
  *
- * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Copyright (C) 1994-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -174,7 +174,7 @@ pre_process_data (j_compress_ptr cinfo,
       for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
 	   ci++, compptr++) {
 	expand_bottom_edge(output_buf[ci],
-			   compptr->width_in_blocks * DCTSIZE,
+			   compptr->width_in_data_units * cinfo->data_unit,
 			   (int) (*out_row_group_ctr * compptr->v_samp_factor),
 			   (int) (out_row_groups_avail * compptr->v_samp_factor));
       }
@@ -288,7 +288,7 @@ create_context_buffer (j_compress_ptr cinfo)
      */
     true_buffer = (*cinfo->mem->alloc_sarray)
       ((j_common_ptr) cinfo, JPOOL_IMAGE,
-       (JDIMENSION) (((long) compptr->width_in_blocks * DCTSIZE *
+       (JDIMENSION) (((long) compptr->width_in_data_units * cinfo->data_unit *
 		      cinfo->max_h_samp_factor) / compptr->h_samp_factor),
        (JDIMENSION) (3 * rgroup_height));
     /* Copy true buffer row pointers into the middle of the fake row array */
@@ -346,7 +346,7 @@ jinit_c_prep_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 	 ci++, compptr++) {
       prep->color_buf[ci] = (*cinfo->mem->alloc_sarray)
 	((j_common_ptr) cinfo, JPOOL_IMAGE,
-	 (JDIMENSION) (((long) compptr->width_in_blocks * DCTSIZE *
+	 (JDIMENSION) (((long) compptr->width_in_data_units * cinfo->data_unit *
 			cinfo->max_h_samp_factor) / compptr->h_samp_factor),
 	 (JDIMENSION) cinfo->max_v_samp_factor);
     }

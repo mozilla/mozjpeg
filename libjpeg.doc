@@ -92,7 +92,6 @@ the ISO JPEG standard; most baseline, extended-sequential, and progressive
 JPEG processes are supported.  (Our subset includes all features now in common
 use.)  Unsupported ISO options include:
 	* Hierarchical storage
-	* Lossless JPEG
 	* Arithmetic entropy coding (unsupported for legal reasons)
 	* DNL marker
 	* Nonintegral subsampling ratios
@@ -867,6 +866,12 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
 jpeg_simple_progression (j_compress_ptr cinfo)
 	Generates a default scan script for writing a progressive-JPEG file.
 	This is the recommended method of creating a progressive file,
+	unless you want to make a custom scan sequence.  You must ensure that
+	the JPEG color space is set correctly before calling this routine.
+
+jpeg_simple_lossless (j_compress_ptr cinfo, int predictor, int point_transform)
+	Generates a default scan script for writing a lossless-JPEG file.
+	This is the recommended method of creating a lossless file,
 	unless you want to make a custom scan sequence.  You must ensure that
 	the JPEG color space is set correctly before calling this routine.
 

@@ -1,0 +1,3 @@
+! a pointer to the VAX/VMS C Run-Time Shareable Library
+! This file is needed by makefile.mms and makefile.vms
+Sys$Library:VAXCRTL.EXE /Share

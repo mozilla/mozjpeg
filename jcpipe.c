@@ -1,7 +1,7 @@
 /*
  * jcpipe.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -169,18 +169,17 @@ alloc_sampling_buffer (compress_info_ptr cinfo, JSAMPIMAGE fullsize_data[2],
 }
 
 
+#if 0				/* this routine not currently needed */
+
 LOCAL void
 free_sampling_buffer (compress_info_ptr cinfo, JSAMPIMAGE fullsize_data[2])
 /* Release a sampling buffer created by alloc_sampling_buffer */
 {
-  short ci, vs;
-
-  vs = cinfo->max_v_samp_factor; /* row group height */
+  short ci;
 
   for (ci = 0; ci < cinfo->num_components; ci++) {
     /* Free the real storage */
-    (*cinfo->emethods->free_small_sarray)
-		(fullsize_data[0][ci], (long) (vs * (DCTSIZE+2)));
+    (*cinfo->emethods->free_small_sarray) (fullsize_data[0][ci]);
     /* Free the scrambled-order pointers */
     (*cinfo->emethods->free_small) ((void *) fullsize_data[1][ci]);
   }
@@ -189,6 +188,8 @@ free_sampling_buffer (compress_info_ptr cinfo, JSAMPIMAGE fullsize_data[2])
   (*cinfo->emethods->free_small) ((void *) fullsize_data[0]);
   (*cinfo->emethods->free_small) ((void *) fullsize_data[1]);
 }
+
+#endif
 
 
 LOCAL void
@@ -302,6 +303,8 @@ dump_scan_MCUs (compress_info_ptr cinfo, MCU_output_method_ptr output_method)
   next_index = MCUs_in_big_row;
 
   for (mcurow = 0; mcurow < cinfo->MCU_rows_in_scan; mcurow++) {
+    (*cinfo->methods->progress_monitor) (cinfo, mcurow,
+					 cinfo->MCU_rows_in_scan);
     for (mcuindex = 0; mcuindex < cinfo->MCUs_per_row; mcuindex++) {
       if (next_index >= MCUs_in_big_row) {
 	rowptr = (*cinfo->emethods->access_big_barray) (whole_scan_MCUs,
@@ -311,7 +314,7 @@ dump_scan_MCUs (compress_info_ptr cinfo, MCU_output_method_ptr output_method)
       }
 #ifdef NEED_FAR_POINTERS
       jcopy_block_row(rowptr[0] + next_index * cinfo->blocks_in_MCU,
-		      (JBLOCKROW) MCU_data, /* note cast */
+		      (JBLOCKROW) MCU_data, /* casts near to far pointer! */
 		      (long) cinfo->blocks_in_MCU);
       (*output_method) (cinfo, MCU_data);
 #else
@@ -320,6 +323,8 @@ dump_scan_MCUs (compress_info_ptr cinfo, MCU_output_method_ptr output_method)
       next_index++;
     }
   }
+
+  cinfo->completed_passes++;
 }
 
 
@@ -360,6 +365,7 @@ single_ccontroller (compress_info_ptr cinfo)
     /* in an interleaved scan, one MCU row contains Vk block rows */
     mcu_rows_per_loop = 1;
   }
+  cinfo->total_passes++;
 
   /* Compute dimensions of full-size pixel buffers */
   /* Note these are the same whether interleaved or not. */
@@ -403,6 +409,9 @@ single_ccontroller (compress_info_ptr cinfo)
 
   for (cur_pixel_row = 0; cur_pixel_row < cinfo->image_height;
        cur_pixel_row += rows_in_mem) {
+    (*cinfo->methods->progress_monitor) (cinfo, cur_pixel_row,
+					 cinfo->image_height);
+
     whichss ^= 1;		/* switch to other fullsize_data buffer */
     
     /* Obtain rows_this_time pixel rows and expand to rows_in_mem rows. */
@@ -463,15 +472,10 @@ single_ccontroller (compress_info_ptr cinfo)
   (*cinfo->methods->subsample_term) (cinfo);
   (*cinfo->methods->entropy_encoder_term) (cinfo);
   (*cinfo->methods->write_scan_trailer) (cinfo);
+  cinfo->completed_passes++;
 
   /* Release working memory */
-  free_sampling_buffer(cinfo, fullsize_data);
-  for (ci = 0; ci < cinfo->num_components; ci++) {
-    (*cinfo->emethods->free_small_sarray)
-		(subsampled_data[ci],
-		 (long) (cinfo->comp_info[ci].v_samp_factor * DCTSIZE));
-  }
-  (*cinfo->emethods->free_small) ((void *) subsampled_data);
+  /* (no work -- we let free_all release what's needful) */
 }
 
 
@@ -514,6 +518,7 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
     /* in an interleaved scan, one MCU row contains Vk block rows */
     mcu_rows_per_loop = 1;
   }
+  cinfo->total_passes += 2;	/* entropy encoder must add # passes it uses */
 
   /* Compute dimensions of full-size pixel buffers */
   /* Note these are the same whether interleaved or not. */
@@ -566,6 +571,9 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
 
   for (cur_pixel_row = 0; cur_pixel_row < cinfo->image_height;
        cur_pixel_row += rows_in_mem) {
+    (*cinfo->methods->progress_monitor) (cinfo, cur_pixel_row,
+					 cinfo->image_height);
+
     whichss ^= 1;		/* switch to other fullsize_data buffer */
     
     /* Obtain rows_this_time pixel rows and expand to rows_in_mem rows. */
@@ -626,6 +634,8 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
   (*cinfo->methods->extract_term) (cinfo);
   (*cinfo->methods->subsample_term) (cinfo);
 
+  cinfo->completed_passes++;
+
   (*cinfo->methods->entropy_optimize) (cinfo, dump_scan_MCUs);
 
   /* Emit scan to output file */
@@ -639,14 +649,7 @@ single_eopt_ccontroller (compress_info_ptr cinfo)
   (*cinfo->methods->write_scan_trailer) (cinfo);
 
   /* Release working memory */
-  free_sampling_buffer(cinfo, fullsize_data);
-  for (ci = 0; ci < cinfo->num_components; ci++) {
-    (*cinfo->emethods->free_small_sarray)
-		(subsampled_data[ci],
-		 (long) (cinfo->comp_info[ci].v_samp_factor * DCTSIZE));
-  }
-  (*cinfo->emethods->free_small) ((void *) subsampled_data);
-  (*cinfo->emethods->free_big_barray) (whole_scan_MCUs);
+  /* (no work -- we let free_all release what's needful) */
 }
 
 #endif /* ENTROPY_OPT_SUPPORTED */

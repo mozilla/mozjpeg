@@ -1,7 +1,7 @@
 /*
  * jwrjfif.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -36,7 +36,7 @@
 
 /* Write some bytes from a (char *) buffer */
 #define WRITE_BYTES(cinfo,dataptr,datacount)  \
-  { if (FWRITE(cinfo->output_file, dataptr, datacount) \
+  { if (JFWRITE(cinfo->output_file, dataptr, datacount) \
 	!= (size_t) (datacount)) \
       ERREXIT(cinfo->emethods, "Output file write error"); }
 
@@ -165,6 +165,9 @@ emit_dht (compress_info_ptr cinfo, int index, boolean is_ac)
   } else {
     htbl = cinfo->dc_huff_tbl_ptrs[index];
   }
+
+  if (htbl == NULL)
+    ERREXIT1(cinfo->emethods, "Huffman table 0x%02x was not defined", index);
   
   if (! htbl->sent_table) {
     emit_marker(cinfo, M_DHT);

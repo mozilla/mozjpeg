@@ -1,7 +1,7 @@
 /*
  * jfwddct.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -16,25 +16,12 @@
 
 #include "jinclude.h"
 
-
-/* We assume that right shift corresponds to signed division by 2 with
- * rounding towards minus infinity.  This is correct for typical "arithmetic
- * shift" instructions that shift in copies of the sign bit.  But some
- * C compilers implement >> with an unsigned shift.  For these machines you
- * must define RIGHT_SHIFT_IS_UNSIGNED.
- * RIGHT_SHIFT provides a signed right shift of an INT32 quantity.
- * It is only applied with constant shift counts.
+/*
+ * This routine is specialized to the case DCTSIZE = 8.
  */
 
-#ifdef RIGHT_SHIFT_IS_UNSIGNED
-#define SHIFT_TEMPS	INT32 shift_temp;
-#define RIGHT_SHIFT(x,shft)  \
-	((shift_temp = (x)) < 0 ? \
-	 (shift_temp >> (shft)) | ((~0) << (32-(shft))) : \
-	 (shift_temp >> (shft)))
-#else
-#define SHIFT_TEMPS
-#define RIGHT_SHIFT(x,shft)	((x) >> (shft))
+#if DCTSIZE != 8
+  Sorry, this code only copes with 8x8 DCTs. /* deliberate syntax err */
 #endif
 
 
@@ -139,74 +126,6 @@
 
 
 /*
- * Perform a 1-dimensional DCT.
- * Note that this code is specialized to the case DCTSIZE = 8.
- */
-
-INLINE
-LOCAL void
-fast_dct_8 (DCTELEM *in, int stride)
-{
-  /* many tmps have nonoverlapping lifetime -- flashy register colourers
-   * should be able to do this lot very well
-   */
-  INT32 in0, in1, in2, in3, in4, in5, in6, in7;
-  INT32 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-  INT32 tmp10, tmp11, tmp12, tmp13;
-  INT32 tmp14, tmp15, tmp16, tmp17;
-  INT32 tmp25, tmp26;
-  SHIFT_TEMPS
-  
-  in0 = in[       0];
-  in1 = in[stride  ];
-  in2 = in[stride*2];
-  in3 = in[stride*3];
-  in4 = in[stride*4];
-  in5 = in[stride*5];
-  in6 = in[stride*6];
-  in7 = in[stride*7];
-  
-  tmp0 = in7 + in0;
-  tmp1 = in6 + in1;
-  tmp2 = in5 + in2;
-  tmp3 = in4 + in3;
-  tmp4 = in3 - in4;
-  tmp5 = in2 - in5;
-  tmp6 = in1 - in6;
-  tmp7 = in0 - in7;
-  
-  tmp10 = tmp3 + tmp0;
-  tmp11 = tmp2 + tmp1;
-  tmp12 = tmp1 - tmp2;
-  tmp13 = tmp0 - tmp3;
-  
-  in[       0] = (DCTELEM) UNFIXH((tmp10 + tmp11) * SIN_1_4);
-  in[stride*4] = (DCTELEM) UNFIXH((tmp10 - tmp11) * COS_1_4);
-  
-  in[stride*2] = (DCTELEM) UNFIXH(tmp13*COS_1_8 + tmp12*SIN_1_8);
-  in[stride*6] = (DCTELEM) UNFIXH(tmp13*SIN_1_8 - tmp12*COS_1_8);
-
-  tmp16 = UNFIXO((tmp6 + tmp5) * SIN_1_4);
-  tmp15 = UNFIXO((tmp6 - tmp5) * COS_1_4);
-
-  OVERSHIFT(tmp4);
-  OVERSHIFT(tmp7);
-
-  /* tmp4, tmp7, tmp15, tmp16 are overscaled by OVERSCALE */
-
-  tmp14 = tmp4 + tmp15;
-  tmp25 = tmp4 - tmp15;
-  tmp26 = tmp7 - tmp16;
-  tmp17 = tmp7 + tmp16;
-  
-  in[stride  ] = (DCTELEM) UNFIXH(tmp17*OCOS_1_16 + tmp14*OSIN_1_16);
-  in[stride*7] = (DCTELEM) UNFIXH(tmp17*OCOS_7_16 - tmp14*OSIN_7_16);
-  in[stride*5] = (DCTELEM) UNFIXH(tmp26*OCOS_5_16 + tmp25*OSIN_5_16);
-  in[stride*3] = (DCTELEM) UNFIXH(tmp26*OCOS_3_16 - tmp25*OSIN_3_16);
-}
-
-
-/*
  * Perform the forward DCT on one block of samples.
  *
  * A 2-D DCT can be done by 1-D DCT on each row
@@ -216,11 +135,74 @@ fast_dct_8 (DCTELEM *in, int stride)
 GLOBAL void
 j_fwd_dct (DCTBLOCK data)
 {
-  int i;
-  
-  for (i = 0; i < DCTSIZE; i++)
-    fast_dct_8(data+i*DCTSIZE, 1);
+  int pass, rowctr;
+  register DCTELEM *inptr, *outptr;
+  DCTBLOCK workspace;
 
-  for (i = 0; i < DCTSIZE; i++)
-    fast_dct_8(data+i, DCTSIZE);
+  /* Each iteration of the inner loop performs one 8-point 1-D DCT.
+   * It reads from a *row* of the input matrix and stores into a *column*
+   * of the output matrix.  In the first pass, we read from the data[] array
+   * and store into the local workspace[].  In the second pass, we read from
+   * the workspace[] array and store into data[], thus performing the
+   * equivalent of a columnar DCT pass with no variable array indexing.
+   */
+
+  inptr = data;			/* initialize pointers for first pass */
+  outptr = workspace;
+  for (pass = 1; pass >= 0; pass--) {
+    for (rowctr = DCTSIZE-1; rowctr >= 0; rowctr--) {
+      /* many tmps have nonoverlapping lifetime -- flashy register colourers
+       * should be able to do this lot very well
+       */
+      INT32 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+      INT32 tmp10, tmp11, tmp12, tmp13;
+      INT32 tmp14, tmp15, tmp16, tmp17;
+      INT32 tmp25, tmp26;
+      SHIFT_TEMPS
+
+      tmp0 = inptr[7] + inptr[0];
+      tmp1 = inptr[6] + inptr[1];
+      tmp2 = inptr[5] + inptr[2];
+      tmp3 = inptr[4] + inptr[3];
+      tmp4 = inptr[3] - inptr[4];
+      tmp5 = inptr[2] - inptr[5];
+      tmp6 = inptr[1] - inptr[6];
+      tmp7 = inptr[0] - inptr[7];
+      
+      tmp10 = tmp3 + tmp0;
+      tmp11 = tmp2 + tmp1;
+      tmp12 = tmp1 - tmp2;
+      tmp13 = tmp0 - tmp3;
+      
+      outptr[        0] = (DCTELEM) UNFIXH((tmp10 + tmp11) * SIN_1_4);
+      outptr[DCTSIZE*4] = (DCTELEM) UNFIXH((tmp10 - tmp11) * COS_1_4);
+      
+      outptr[DCTSIZE*2] = (DCTELEM) UNFIXH(tmp13*COS_1_8 + tmp12*SIN_1_8);
+      outptr[DCTSIZE*6] = (DCTELEM) UNFIXH(tmp13*SIN_1_8 - tmp12*COS_1_8);
+      
+      tmp16 = UNFIXO((tmp6 + tmp5) * SIN_1_4);
+      tmp15 = UNFIXO((tmp6 - tmp5) * COS_1_4);
+      
+      OVERSHIFT(tmp4);
+      OVERSHIFT(tmp7);
+      
+      /* tmp4, tmp7, tmp15, tmp16 are overscaled by OVERSCALE */
+      
+      tmp14 = tmp4 + tmp15;
+      tmp25 = tmp4 - tmp15;
+      tmp26 = tmp7 - tmp16;
+      tmp17 = tmp7 + tmp16;
+      
+      outptr[DCTSIZE  ] = (DCTELEM) UNFIXH(tmp17*OCOS_1_16 + tmp14*OSIN_1_16);
+      outptr[DCTSIZE*7] = (DCTELEM) UNFIXH(tmp17*OCOS_7_16 - tmp14*OSIN_7_16);
+      outptr[DCTSIZE*5] = (DCTELEM) UNFIXH(tmp26*OCOS_5_16 + tmp25*OSIN_5_16);
+      outptr[DCTSIZE*3] = (DCTELEM) UNFIXH(tmp26*OCOS_3_16 - tmp25*OSIN_3_16);
+
+      inptr += DCTSIZE;		/* advance inptr to next row */
+      outptr++;			/* advance outptr to next column */
+    }
+    /* end of pass; in case it was pass 1, set up for pass 2 */
+    inptr = workspace;
+    outptr = data;
+  }
 }

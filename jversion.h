@@ -1,7 +1,7 @@
 /*
  * jversion.h
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -9,6 +9,6 @@
  */
 
 
-#define JVERSION	"2  13-Dec-91"
+#define JVERSION	"3  17-Mar-92"
 
-#define JCOPYRIGHT	"Copyright (C) 1991, Thomas G. Lane"
+#define JCOPYRIGHT	"Copyright (C) 1992, Thomas G. Lane"

@@ -1,6 +1,6 @@
 L jcmain.mix jcmaster.mix jcdeflts.mix jcarith.mix jccolor.mix jcexpand.mix
 L jchuff.mix jcmcu.mix jcpipe.mix jcsample.mix jfwddct.mix jwrjfif.mix
-L jrdgif.mix jrdppm.mix jrdrle.mix jrdtarga.mix jutils.mix jvirtmem.mix
-L jerror.mix
+L jrdgif.mix jrdppm.mix jrdrle.mix jrdtarga.mix jutils.mix jerror.mix
+L jmemmgr.mix jmemsys.mix jmemdosa.mix
 fa;
 b cjpeg,8K,48K,

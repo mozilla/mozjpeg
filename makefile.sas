@@ -1,6 +1,7 @@
 # Makefile for Independent JPEG Group's software
 
 # This makefile is for Amiga systems using SAS C 5.10b.
+# Use jmemname.c as the system-dependent memory manager.
 # Contributed by Ed Hanway (sisd!jeh@uunet.uu.net).
 
 # Read SETUP instructions before saying "make" !!
@@ -17,7 +18,9 @@ SUFFIX=
 #SUFFIX=.030
 
 # You may need to adjust these cc options:
-CFLAGS= -v -b -rr -O -j104 -D__STDC__ -DTWO_FILE_COMMANDLINE -DINCOMPLETE_TYPES_BROKEN $(ARCHFLAGS)
+CFLAGS= -v -b -rr -O -j104 $(ARCHFLAGS) -DHAVE_STDC -DINCLUDES_ARE_ANSI \
+	-DAMIGA -DTWO_FILE_COMMANDLINE -DINCOMPLETE_TYPES_BROKEN \
+	-DNO_MKTEMP -DNEED_SIGNAL_CATCHER
 # -j104 disables warnings for mismatched const qualifiers
 
 # Link-time cc options:
@@ -39,23 +42,28 @@ AR= oml
 SOURCES= jbsmooth.c jcarith.c jccolor.c jcdeflts.c jcexpand.c jchuff.c \
         jcmain.c jcmaster.c jcmcu.c jcpipe.c jcsample.c jdarith.c jdcolor.c \
         jddeflts.c jdhuff.c jdmain.c jdmaster.c jdmcu.c jdpipe.c jdsample.c \
-        jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c \
-        jvirtmem.c jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c \
-        jwrjfif.c jwrgif.c jwrppm.c jwrrle.c jwrtarga.c
+        jerror.c jquant1.c jquant2.c jfwddct.c jrevdct.c jutils.c jmemmgr.c \
+        jrdjfif.c jrdgif.c jrdppm.c jrdrle.c jrdtarga.c jwrjfif.c jwrgif.c \
+        jwrppm.c jwrrle.c jwrtarga.c
+# virtual source files (not present in distribution file)
+VIRTSOURCES= jmemsys.c
+# system-dependent implementations of source files
+SYSDEPFILES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemdos.h \
+        jmemdosa.asm
 # files included by source files
-INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h egetopt.c
+INCLUDES= jinclude.h jconfig.h jpegdata.h jversion.h jmemsys.h egetopt.c
 # documentation, test, and support files
 DOCS= README SETUP USAGE CHANGELOG cjpeg.1 djpeg.1 architecture codingrules
 MAKEFILES= makefile.ansi makefile.unix makefile.manx makefile.sas \
-        makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.tc \
+        makefile.mc5 makefile.mc6 makcjpeg.lnk makdjpeg.lnk makefile.bcc \
         makcjpeg.lst makdjpeg.lst makefile.pwc makcjpeg.cf makdjpeg.cf \
-        makljpeg.cf
-OTHERFILES= ansi2knr.c config.c
-TESTFILES= testorig.jpg testimg.ppm testimg.jpg
-DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(INCLUDES) $(OTHERFILES) \
-        $(TESTFILES)
+        makljpeg.cf makefile.mms makefile.vms makvms.opt
+OTHERFILES= ansi2knr.c ckconfig.c example.c
+TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.jpg
+DISTFILES= $(DOCS) $(MAKEFILES) $(SOURCES) $(SYSDEPFILES) $(INCLUDES) \
+        $(OTHERFILES) $(TESTFILES)
 # objectfiles common to cjpeg and djpeg
-COMOBJECTS= jutils.o jvirtmem.o jerror.o
+COMOBJECTS= jutils.o jerror.o jmemmgr.o jmemsys.o
 # compression objectfiles
 CLIBOBJECTS= jcmaster.o jcdeflts.o jcarith.o jccolor.o jcexpand.o jchuff.o \
         jcmcu.o jcpipe.o jcsample.o jfwddct.o jwrjfif.o jrdgif.o jrdppm.o \
@@ -98,7 +106,7 @@ libjpeg.lib: $(LIBOBJECTS)
 	$(AR) libjpeg.lib r $(LIBOBJECTS)
 
 clean:
-	-$(RM) *.o cjpeg djpeg cjpeg.030 djpeg.030 libjpeg.lib core testout.ppm testout.jpg
+	-$(RM) *.o cjpeg djpeg cjpeg.030 djpeg.030 libjpeg.lib core testout.*
 
 distribute:
 	-$(RM) jpegsrc.tar*
@@ -106,10 +114,12 @@ distribute:
 	compress -v jpegsrc.tar
 
 test: cjpeg djpeg
-	-$(RM) testout.ppm testout.jpg
+	-$(RM) testout.ppm testout.gif testout.jpg
 	djpeg testorig.jpg testout.ppm
+	djpeg -G testorig.jpg testout.gif
 	cjpeg testimg.ppm testout.jpg
 	cmp testimg.ppm testout.ppm
+	cmp testimg.gif testout.gif
 	cmp testimg.jpg testout.jpg
 
 
@@ -139,7 +149,7 @@ jquant2.o : jquant2.c jinclude.h jconfig.h jpegdata.h
 jfwddct.o : jfwddct.c jinclude.h jconfig.h jpegdata.h 
 jrevdct.o : jrevdct.c jinclude.h jconfig.h jpegdata.h 
 jutils.o : jutils.c jinclude.h jconfig.h jpegdata.h 
-jvirtmem.o : jvirtmem.c jinclude.h jconfig.h jpegdata.h 
+jmemmgr.o : jmemmgr.c jinclude.h jconfig.h jpegdata.h jmemsys.h 
 jrdjfif.o : jrdjfif.c jinclude.h jconfig.h jpegdata.h 
 jrdgif.o : jrdgif.c jinclude.h jconfig.h jpegdata.h 
 jrdppm.o : jrdppm.c jinclude.h jconfig.h jpegdata.h 
@@ -150,3 +160,4 @@ jwrgif.o : jwrgif.c jinclude.h jconfig.h jpegdata.h
 jwrppm.o : jwrppm.c jinclude.h jconfig.h jpegdata.h 
 jwrrle.o : jwrrle.c jinclude.h jconfig.h jpegdata.h 
 jwrtarga.o : jwrtarga.c jinclude.h jconfig.h jpegdata.h 
+jmemsys.o : jmemsys.c jinclude.h jconfig.h jpegdata.h jmemsys.h 

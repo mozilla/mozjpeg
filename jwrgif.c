@@ -1,7 +1,7 @@
 /*
  * jwrgif.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -98,7 +98,7 @@ flush_packet (void)
 {
   if (bytesinpkt > 0) {		/* never write zero-length packet */
     packetbuf[0] = (char) bytesinpkt++;
-    if (FWRITE(dcinfo->output_file, packetbuf, bytesinpkt)
+    if (JFWRITE(dcinfo->output_file, packetbuf, bytesinpkt)
 	!= (size_t) bytesinpkt)
       ERREXIT(dcinfo->emethods, "Output file write error");
     bytesinpkt = 0;
@@ -106,14 +106,12 @@ flush_packet (void)
 }
 
 
-LOCAL void
-char_out (char c)
 /* Add a character to current packet; flush to disk if necessary */
-{
-  packetbuf[++bytesinpkt] = c;
-  if (bytesinpkt >= 255)
-    flush_packet();
-}
+#define CHAR_OUT(c)  \
+	{ packetbuf[++bytesinpkt] = (char) (c);  \
+	    if (bytesinpkt >= 255)  \
+	      flush_packet();  \
+	}
 
 
 /* Routine to convert variable-width codes into a byte stream */
@@ -127,14 +125,11 @@ output (code_int code)
 /* Emit a code of n_bits bits */
 /* Uses cur_accum and cur_bits to reblock into 8-bit bytes */
 {
-  if (cur_bits > 0)
-    cur_accum |= ((INT32) code << cur_bits);
-  else
-    cur_accum = code;
+  cur_accum |= ((INT32) code) << cur_bits;
   cur_bits += n_bits;
 
   while (cur_bits >= 8) {
-    char_out((char) (cur_accum & 0xFF));
+    CHAR_OUT(cur_accum & 0xFF);
     cur_accum >>= 8;
     cur_bits -= 8;
   }
@@ -270,7 +265,7 @@ compress_term (void)
   output(EOFCode);
   /* Flush the bit-packing buffer */
   if (cur_bits > 0) {
-    char_out((char) (cur_accum & 0xFF));
+    CHAR_OUT(cur_accum & 0xFF);
   }
   /* Flush the packet buffer */
   flush_packet();
@@ -305,27 +300,15 @@ emit_header (int num_colors, JSAMPARRAY colormap)
 /* If colormap==NULL, synthesize a gray-scale colormap */
 {
   int BitsPerPixel, ColorMapSize, InitCodeSize, FlagByte;
+  int cshift = dcinfo->data_precision - 8;
   int i;
 
   if (num_colors > 256)
     ERREXIT(dcinfo->emethods, "GIF can only handle 256 colors");
   /* Compute bits/pixel and related values */
-  if (num_colors <= 2)
-    BitsPerPixel = 1;
-  else if (num_colors <= 4)
-    BitsPerPixel = 2;
-  else if (num_colors <= 8)
-    BitsPerPixel = 3;
-  else if (num_colors <= 16)
-    BitsPerPixel = 4;
-  else if (num_colors <= 32)
-    BitsPerPixel = 5;
-  else if (num_colors <= 64)
-    BitsPerPixel = 6;
-  else if (num_colors <= 128)
-    BitsPerPixel = 7;
-  else
-    BitsPerPixel = 8;
+  BitsPerPixel = 1;
+  while (num_colors > (1 << BitsPerPixel))
+    BitsPerPixel++;
   ColorMapSize = 1 << BitsPerPixel;
   if (BitsPerPixel <= 1)
     InitCodeSize = 2;
@@ -335,7 +318,7 @@ emit_header (int num_colors, JSAMPARRAY colormap)
    * Write the GIF header.
    * Note that we generate a plain GIF87 header for maximum compatibility.
    */
-  (void) FWRITE(dcinfo->output_file, "GIF87a", 6);
+  (void) JFWRITE(dcinfo->output_file, "GIF87a", 6);
   /* Write the Logical Screen Descriptor */
   put_word((UINT16) dcinfo->image_width);
   put_word((UINT16) dcinfo->image_height);
@@ -346,17 +329,19 @@ emit_header (int num_colors, JSAMPARRAY colormap)
   putc(0, dcinfo->output_file);	/* Background color index */
   putc(0, dcinfo->output_file);	/* Reserved in GIF87 (aspect ratio in GIF89) */
   /* Write the Global Color Map */
+  /* If the color map is more than 8 bits precision, */
+  /* we reduce it to 8 bits by shifting */
   for (i=0; i < ColorMapSize; i++) {
     if (i < num_colors) {
       if (colormap != NULL) {
 	if (dcinfo->out_color_space == CS_RGB) {
 	  /* Normal case: RGB color map */
-	  putc(GETJSAMPLE(colormap[0][i]), dcinfo->output_file);
-	  putc(GETJSAMPLE(colormap[1][i]), dcinfo->output_file);
-	  putc(GETJSAMPLE(colormap[2][i]), dcinfo->output_file);
+	  putc(GETJSAMPLE(colormap[0][i]) >> cshift, dcinfo->output_file);
+	  putc(GETJSAMPLE(colormap[1][i]) >> cshift, dcinfo->output_file);
+	  putc(GETJSAMPLE(colormap[2][i]) >> cshift, dcinfo->output_file);
 	} else {
 	  /* Grayscale "color map": possible if quantizing grayscale image */
-	  put_3bytes(GETJSAMPLE(colormap[0][i]));
+	  put_3bytes(GETJSAMPLE(colormap[0][i]) >> cshift);
 	}
       } else {
 	/* Create a gray-scale map of num_colors values, range 0..255 */
@@ -463,9 +448,7 @@ output_term (decompress_info_ptr cinfo)
   if (ferror(cinfo->output_file))
     ERREXIT(cinfo->emethods, "Output file write error");
   /* Free space */
-  (*cinfo->emethods->free_medium) ((void FAR *) hash_code);
-  (*cinfo->emethods->free_medium) ((void FAR *) hash_prefix);
-  (*cinfo->emethods->free_medium) ((void FAR *) hash_suffix);
+  /* no work (we let free_all release the workspace) */
 }
 
 

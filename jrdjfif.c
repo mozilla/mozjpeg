@@ -1,23 +1,25 @@
 /*
  * jrdjfif.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to decode standard JPEG file headers/markers.
- * This will handle baseline and JFIF-convention JPEG files.
+ * This code will handle "raw JPEG" and JFIF-convention JPEG files.
+ *
+ * You can also use this module to decode a raw-JPEG or JFIF-standard data
+ * stream that is embedded within a larger file.  To do that, you must
+ * position the file to the JPEG SOI marker (0xFF/0xD8) that begins the
+ * data sequence to be decoded.  If nothing better is possible, you can scan
+ * the file until you see the SOI marker, then use JUNGETC to push it back.
  *
  * This module relies on the JGETC macro and the read_jpeg_data method (which
  * is provided by the user interface) to read from the JPEG data stream.
- * Therefore, this module is NOT dependent on any particular assumption about
- * the data source.  This fact does not carry over to more complex JPEG file
- * formats such as JPEG-in-TIFF; those format control modules may well need to
- * assume stdio input.
- *
- * read_file_header assumes that reading begins at the JPEG SOI marker
- * (although it will skip non-FF bytes looking for a JPEG marker).
- * The user interface must position the data stream appropriately.
+ * Therefore, this module is not dependent on any particular assumption about
+ * the data source; it need not be a stdio stream at all.  (This fact does
+ * NOT carry over to more complex JPEG file formats such as JPEG-in-TIFF;
+ * those format control modules may well need to assume stdio input.)
  *
  * These routines are invoked via the methods read_file_header,
  * read_scan_header, read_jpeg_data, read_scan_trailer, and read_file_trailer.
@@ -100,9 +102,9 @@ read_jpeg_data (decompress_info_ptr cinfo)
 {
   cinfo->next_input_byte = cinfo->input_buffer + MIN_UNGET;
 
-  cinfo->bytes_in_buffer = (int) FREAD(cinfo->input_file,
-				       cinfo->next_input_byte,
-				       JPEG_BUF_SIZE);
+  cinfo->bytes_in_buffer = (int) JFREAD(cinfo->input_file,
+					cinfo->next_input_byte,
+					JPEG_BUF_SIZE);
   
   if (cinfo->bytes_in_buffer <= 0)
     ERREXIT(cinfo->emethods, "Unexpected EOF in JPEG file");
@@ -591,11 +593,15 @@ read_file_header (decompress_info_ptr cinfo)
 {
   int c;
 
-  /* Expect an SOI marker first */
-  if (next_marker(cinfo) == M_SOI)
-    get_soi(cinfo);
-  else
-    ERREXIT(cinfo->emethods, "File does not start with JPEG SOI marker");
+  /* Demand an SOI marker at the start of the file --- otherwise it's
+   * probably not a JPEG file at all.  If the user interface wants to support
+   * nonstandard headers in front of the SOI, it must skip over them itself
+   * before calling jpeg_decompress().
+   */
+  if (JGETC(cinfo) != 0xFF  ||  JGETC(cinfo) != M_SOI)
+    ERREXIT(cinfo->emethods, "Not a JPEG file");
+
+  get_soi(cinfo);		/* OK, process SOI */
 
   /* Process markers until SOF */
   c = process_tables(cinfo);

@@ -1,7 +1,7 @@
 /*
  * jinclude.h
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -31,7 +31,7 @@
  * Note that the core portable-JPEG files do not actually do any I/O
  * using the stdio library; only the user interface, error handler,
  * and file reading/writing modules invoke any stdio functions.
- * (Well, we did cheat a bit in jvirtmem.c, but only if MEM_STATS is defined.)
+ * (Well, we did cheat a bit in jmemmgr.c, but only if MEM_STATS is defined.)
  */
 
 #include <stdio.h>
@@ -67,9 +67,9 @@
  * CAUTION: argument order is different from underlying functions!
  */
 
-#define FREAD(file,buf,sizeofbuf)  \
+#define JFREAD(file,buf,sizeofbuf)  \
   ((size_t) fread((void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
-#define FWRITE(file,buf,sizeofbuf)  \
+#define JFWRITE(file,buf,sizeofbuf)  \
   ((size_t) fwrite((const void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
 
 /*

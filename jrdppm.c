@@ -1,7 +1,7 @@
 /*
  * jrdppm.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -301,8 +301,7 @@ input_init (compress_info_ptr cinfo)
 METHODDEF void
 input_term (compress_info_ptr cinfo)
 {
-  if (rescale != NULL)
-    (*cinfo->emethods->free_small) ((void *) rescale);
+  /* no work (we let free_all release the workspace) */
 }
 
 

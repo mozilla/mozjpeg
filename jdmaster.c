@@ -1,7 +1,7 @@
 /*
  * jdmaster.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -49,9 +49,15 @@ d_initial_method_selection (decompress_info_ptr cinfo)
   /* Gamma and color space conversion */
   jseldcolor(cinfo);
 
-  /* Color quantization */
+  /* Color quantization selection rules */
 #ifdef QUANT_1PASS_SUPPORTED
-#ifndef QUANT_2PASS_SUPPORTED
+#ifdef QUANT_2PASS_SUPPORTED
+  /* We have both, check for conditions in which 1-pass should be used */
+  if (cinfo->num_components != 3 || cinfo->jpeg_color_space != CS_YCbCr)
+    cinfo->two_pass_quantize = FALSE; /* 2-pass only handles YCbCr input */
+  if (cinfo->out_color_space == CS_GRAYSCALE)
+    cinfo->two_pass_quantize = FALSE; /* Should use 1-pass for grayscale out */
+#else /* not QUANT_2PASS_SUPPORTED */
   cinfo->two_pass_quantize = FALSE; /* only have 1-pass */
 #endif
 #else /* not QUANT_1PASS_SUPPORTED */
@@ -121,16 +127,9 @@ initial_setup (decompress_info_ptr cinfo)
 GLOBAL void
 jpeg_decompress (decompress_info_ptr cinfo)
 {
-  short i;
-
-  /* Initialize pointers as needed to mark stuff unallocated. */
-  cinfo->comp_info = NULL;
-  for (i = 0; i < NUM_QUANT_TBLS; i++)
-    cinfo->quant_tbl_ptrs[i] = NULL;
-  for (i = 0; i < NUM_HUFF_TBLS; i++) {
-    cinfo->dc_huff_tbl_ptrs[i] = NULL;
-    cinfo->ac_huff_tbl_ptrs[i] = NULL;
-  }
+  /* Init pass counts to 0 --- total_passes is adjusted in method selection */
+  cinfo->total_passes = 0;
+  cinfo->completed_passes = 0;
 
   /* Read the JPEG file header markers; everything up through the first SOS
    * marker is read now.  NOTE: the user interface must have initialized the
@@ -151,30 +150,24 @@ jpeg_decompress (decompress_info_ptr cinfo)
   d_initial_method_selection(cinfo);
 
   /* Initialize the output file & other modules as needed */
-  /* (color_quant and entropy_decoder are inited by pipeline controller) */
+  /* (modules needing per-scan init are called by pipeline controller) */
 
   (*cinfo->methods->output_init) (cinfo);
   (*cinfo->methods->colorout_init) (cinfo);
+  if (cinfo->quantize_colors)
+    (*cinfo->methods->color_quant_init) (cinfo);
 
   /* And let the pipeline controller do the rest. */
   (*cinfo->methods->d_pipeline_controller) (cinfo);
 
   /* Finish output file, release working storage, etc */
+  if (cinfo->quantize_colors)
+    (*cinfo->methods->color_quant_term) (cinfo);
   (*cinfo->methods->colorout_term) (cinfo);
   (*cinfo->methods->output_term) (cinfo);
   (*cinfo->methods->read_file_trailer) (cinfo);
 
-  /* Release allocated storage for tables */
-#define FREE(ptr)  if ((ptr) != NULL) \
-			(*cinfo->emethods->free_small) ((void *) ptr)
-
-  FREE(cinfo->comp_info);
-  for (i = 0; i < NUM_QUANT_TBLS; i++)
-    FREE(cinfo->quant_tbl_ptrs[i]);
-  for (i = 0; i < NUM_HUFF_TBLS; i++) {
-    FREE(cinfo->dc_huff_tbl_ptrs[i]);
-    FREE(cinfo->ac_huff_tbl_ptrs[i]);
-  }
+  (*cinfo->emethods->free_all) ();
 
   /* My, that was easy, wasn't it? */
 }

@@ -1,4 +1,4 @@
-.TH CJPEG 1 "11 December 1991"
+.TH CJPEG 1 "28 February 1992"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -8,6 +8,9 @@ cjpeg \- compress an image file to a JPEG file
 ]
 [
 .B \-oTIad
+]
+[
+.BI \-m " memory"
 ]
 [
 .I filename
@@ -33,7 +36,8 @@ encoding parameters are used.
 .B \-o
 usually makes the JPEG file a little smaller, but
 .B cjpeg
-runs much slower.  Image quality and speed of decompression are unaffected by
+runs somewhat slower and needs much more memory.  Image quality and speed of
+decompression are unaffected by
 .BR \-o .
 .TP
 .B \-T
@@ -57,6 +61,13 @@ supported for legal reasons).
 Enable debug printout.  More
 .BR \-d 's
 give more output.  Also, version information is printed at startup.
+.TP
+.BI \-m " memory"
+Set limit for amount of memory to use in processing large images.  Value is
+in thousands of bytes, or millions of bytes if "M" is attached to the
+number.  For example,
+.B \-m 4m
+selects 4000000 bytes.  If more space is needed, temporary files will be used.
 .PP
 The
 .B \-Q
@@ -112,6 +123,9 @@ This example compresses the PPM file foo.ppm with a quality factor of
 .I foo.jpg
 .SH SEE ALSO
 .BR djpeg (1)
+.br
+.BR ppm (5),
+.BR pgm (5)
 .br
 Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
 Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.

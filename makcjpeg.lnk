@@ -15,8 +15,10 @@ jrdppm.obj +
 jrdrle.obj +
 jrdtarga.obj +
 jutils.obj +
-jvirtmem.obj +
-jerror.obj
+jerror.obj +
+jmemmgr.obj +
+jmemsys.obj +
+jmemdosa.obj
 cjpeg.exe /NOI
 nul.map
 

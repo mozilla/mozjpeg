@@ -1,13 +1,16 @@
-.TH DJPEG 1 "11 December 1991"
+.TH DJPEG 1 "28 February 1992"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
 .B djpeg
 [
-.B \-GPRTbgD2d
+.B \-GPRTgD1bd
 ]
 [
-.BI \-q " N"
+.BI \-q " colors"
+]
+[
+.BI \-m " memory"
 ]
 [
 .I filename
@@ -20,22 +23,12 @@ decompresses the named JPEG file, or the standard input if no file is named,
 and produces an image file on the standard output.  PPM, GIF, Targa, or RLE
 output format can be selected.  (RLE is supported only if the URT library is
 available.)
-.LP
-The color quantization algorithm is currently shoddy.  Because of this, the
-GIF output mode is not recommended in the current release, except for
-gray-scale output (obtained with
-.BR \-g ).
 .SH OPTIONS
 .TP
 .B \-G
 Select GIF output format (implies
 .BR \-q ,
 with default of 256 colors).
-Currently the color quantization uses a shoddy algorithm and external
-quantization (e.g.
-.IR ppmquant ,
-.IR rlequant )
-is recommended before conversion to GIF format.
 .TP
 .B \-P
 Select PPM or PGM output format (this is the default).  PGM is emitted if the
@@ -54,18 +47,14 @@ is specified; otherwise, colormapped format is emitted if
 .B \-q
 is specified; otherwise, 24-bit full-color format is emitted.
 .TP
-.B \-b
-Perform cross-block smoothing.  This is quite memory-intensive and only seems
-to improve the image at low quality settings (\fB\-Q\fR 10 to 20 or so).
-At normal
-.B \-Q
-settings it may make the image worse.
-.TP
 .B \-g
 Force gray-scale output even if input is color.
 .TP
 .BI \-q " N"
-Quantize to N colors.
+Quantize to N colors.  This reduces the number of colors in the output image
+so that it can be displayed on a colormapped display or stored in a
+colormapped file format.  For example, if you have an 8-bit display, you'd
+need to quantize to 256 or fewer colors.
 .TP
 .B \-D
 Do not use dithering in color quantization.  By default, Floyd-Steinberg
@@ -73,42 +62,61 @@ dithering is applied when quantizing colors, but on some images dithering may
 result in objectionable "graininess".  If that happens, you can turn off
 dithering with
 .BR \-D .
+.B \-D
+is ignored unless you also say
+.B \-q
+or
+.BR \-G .
 .TP
-.B \-2
-Use two-pass color quantization (not yet supported).
+.B \-1
+Use one-pass instead of two-pass color quantization.  The one-pass method is
+faster and needs less memory, but it produces a lower-quality image.
+.B \-1
+is ignored unless you also say
+.B \-q
+or
+.BR \-G .
+Also, the one-pass method is always used for gray-scale output (the two-pass
+method is no improvement then).
+.TP
+.B \-b
+Perform cross-block smoothing.  This is quite memory-intensive and only seems
+to improve the image at low quality settings (\fB\-Q\fR 10 to 20 or so).
+At normal
+.B \-Q
+settings it may make the image worse.
 .TP
 .B \-d
 Enable debug printout.  More
 .BR \-d 's
 give more output.  Also, version information is printed at startup.
+.TP
+.BI \-m " memory"
+Set limit for amount of memory to use in processing large images.  Value is
+in thousands of bytes, or millions of bytes if "M" is attached to the
+number.  For example,
+.B \-m 4m
+selects 4000000 bytes.  If more space is needed, temporary files will be used.
 .SH EXAMPLES
 .LP
-This example decompresses the JPEG file foo.jpg and saves the output
-as a gray-scale image in foo.pgm:
+This example decompresses the JPEG file foo.jpg, quantizes to 256 colors,
+and saves the output in GIF format in foo.gif:
 .IP
-.B djpeg \-g
+.B djpeg \-G
 .I foo.jpg
 .B >
-.I foo.pgm
+.I foo.gif
 .SH SEE ALSO
 .BR cjpeg (1)
 .br
-.BR ppmquant (1)
-[From the PBMplus distribution]
-.br
-.BR rlequant (1)
-[From the Utah Raster Toolkit distribution]
+.BR ppm (5),
+.BR pgm (5)
 .br
 Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
 Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
 .SH AUTHOR
 Independent JPEG Group
 .SH BUGS
-.B djpeg
-currently uses a shoddy color quantization algorithm.  This leads to
-poor GIF file output.  Two-pass color quantization is not yet
-supported.
-.PP
 Arithmetic coding is not supported for legal reasons.
 .PP
 Not as fast as we'd like.

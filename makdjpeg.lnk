@@ -17,8 +17,10 @@ jwrppm.obj +
 jwrrle.obj +
 jwrtarga.obj +
 jutils.obj +
-jvirtmem.obj +
-jerror.obj
+jerror.obj +
+jmemmgr.obj +
+jmemsys.obj +
+jmemdosa.obj
 djpeg.exe /NOI
 nul.map
 

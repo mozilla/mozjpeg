@@ -1,7 +1,7 @@
 /*
  * jccolor.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -32,10 +32,34 @@ colorin_init (compress_info_ptr cinfo)
 /*
  * Fetch some rows of pixels from get_input_row and convert to the
  * JPEG colorspace.
+ */
+
+
+/*
  * This version handles RGB -> YCbCr conversion.
  * YCbCr is defined per CCIR 601-1, except that Cb and Cr are
  * normalized to the range 0..MAXJSAMPLE rather than -0.5 .. 0.5.
+ * The conversion equations to be implemented are therefore
+ *	Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B
+ *	Cb = -0.16874 * R - 0.33126 * G + 0.50000 * B
+ *	Cr =  0.50000 * R - 0.41869 * G - 0.08131 * B
+ * where Cb and Cr must be incremented by MAXJSAMPLE/2 to create a
+ * nonnegative output value.
+ * (These numbers are derived from TIFF Appendix O, draft of 4/10/91.)
+ *
+ * To avoid floating-point arithmetic, we represent the fractional constants
+ * as integers scaled up by 2^14 (about 4 digits precision); we have to divide
+ * the products by 2^14, with appropriate rounding, to get the correct answer.
+ *
+ * For even more speed, we could avoid any multiplications in the inner loop
+ * by precalculating the constants times R,G,B for all possible values.
+ * This is not currently implemented.
  */
+
+#define SCALEBITS	14
+#define ONE_HALF	((INT32) 1 << (SCALEBITS-1))
+#define FIX(x)		((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
+
 
 METHODDEF void
 get_rgb_ycc_rows (compress_info_ptr cinfo,
@@ -63,17 +87,22 @@ get_rgb_ycc_rows (compress_info_ptr cinfo,
       g = GETJSAMPLE(*inptr1++);
       b = GETJSAMPLE(*inptr2++);
       /* If the inputs are 0..MAXJSAMPLE, the outputs of these equations
-       * must be too; do not need an explicit range-limiting operation.
+       * must be too; we do not need an explicit range-limiting operation.
+       * Hence the value being shifted is never negative, and we don't
+       * need the general RIGHT_SHIFT macro.
        */
       /* Y */
       *outptr0++ = (JSAMPLE)
-	((   306*r +  601*g +  117*b + (INT32) 512) >> 10);
+	((  FIX(0.29900)*r  + FIX(0.58700)*g + FIX(0.11400)*b
+	  + ONE_HALF) >> SCALEBITS);
       /* Cb */
       *outptr1++ = (JSAMPLE)
-	(((-173)*r -  339*g +  512*b + (INT32) 512*(MAXJSAMPLE+1)) >> 10);
+	(((-FIX(0.16874))*r - FIX(0.33126)*g + FIX(0.50000)*b
+	  + ONE_HALF*(MAXJSAMPLE+1)) >> SCALEBITS);
       /* Cr */
       *outptr2++ = (JSAMPLE)
-	((   512*r -  429*g -   83*b + (INT32) 512*(MAXJSAMPLE+1)) >> 10);
+	((  FIX(0.50000)*r  - FIX(0.41869)*g - FIX(0.08131)*b
+	  + ONE_HALF*(MAXJSAMPLE+1)) >> SCALEBITS);
     }
   }
 }
@@ -132,9 +161,7 @@ get_noconvert_rows (compress_info_ptr cinfo,
 METHODDEF void
 colorin_term (compress_info_ptr cinfo)
 {
-  /* Release the workspace. */
-  (*cinfo->emethods->free_small_sarray)
-		(pixel_row, (long) cinfo->input_components);
+  /* no work (we let free_all release the workspace) */
 }
 
 
@@ -153,6 +180,8 @@ jselccolor (compress_info_ptr cinfo)
     break;
 
   case CS_RGB:
+  case CS_YCbCr:
+  case CS_YIQ:
     if (cinfo->input_components != 3)
       ERREXIT(cinfo->emethods, "Bogus input colorspace");
     break;
@@ -183,6 +212,8 @@ jselccolor (compress_info_ptr cinfo)
       ERREXIT(cinfo->emethods, "Bogus JPEG colorspace");
     if (cinfo->in_color_space == CS_RGB)
       cinfo->methods->get_sample_rows = get_rgb_ycc_rows;
+    else if (cinfo->in_color_space == CS_YCbCr)
+      cinfo->methods->get_sample_rows = get_noconvert_rows;
     else
       ERREXIT(cinfo->emethods, "Unsupported color conversion request");
     break;

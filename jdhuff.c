@@ -1,7 +1,7 @@
 /*
  * jdhuff.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -25,12 +25,12 @@ LOCAL void
 fix_huff_tbl (HUFF_TBL * htbl)
 /* Compute derived values for a Huffman table */
 {
-  int p, i, l, lastp, si;
+  int p, i, l, si;
   char huffsize[257];
   UINT16 huffcode[257];
   UINT16 code;
   
-  /* Figure 7.3.5.4.2.1: make table of Huffman code length for each symbol */
+  /* Figure C.1: make table of Huffman code length for each symbol */
   /* Note that this is in code-length order. */
 
   p = 0;
@@ -39,9 +39,8 @@ fix_huff_tbl (HUFF_TBL * htbl)
       huffsize[p++] = (char) l;
   }
   huffsize[p] = 0;
-  lastp = p;
   
-  /* Figure 7.3.5.4.2.2: generate the codes themselves */
+  /* Figure C.2: generate the codes themselves */
   /* Note that this is in code-length order. */
   
   code = 0;
@@ -55,16 +54,11 @@ fix_huff_tbl (HUFF_TBL * htbl)
     code <<= 1;
     si++;
   }
-  
-  /* Figure 7.3.5.4.2.3: generate encoding tables */
-  /* These are code and size indexed by symbol value */
 
-  for (p = 0; p < lastp; p++) {
-    htbl->ehufco[htbl->huffval[p]] = huffcode[p];
-    htbl->ehufsi[htbl->huffval[p]] = huffsize[p];
-  }
-  
-  /* Figure 13.4.2.3.1: generate decoding tables */
+  /* We don't bother to fill in the encoding tables ehufco[] and ehufsi[], */
+  /* since they are not used for decoding. */
+
+  /* Figure F.15: generate decoding tables */
 
   p = 0;
   for (l = 1; l <= 16; l++) {
@@ -115,7 +109,7 @@ get_bits (int nbits)
 			 get_bits(1))
 
 
-/* Figure 13.4.2.3.2: extract next coded symbol from input stream */
+/* Figure F.16: extract next coded symbol from input stream */
   
 LOCAL int
 huff_DECODE (HUFF_TBL * htbl)
@@ -142,7 +136,7 @@ huff_DECODE (HUFF_TBL * htbl)
 }
 
 
-/* Figure 13.4.2.1.1: extend sign bit */
+/* Figure F.12: extend sign bit */
 
 /* NB: on some compilers this will only work for s > 0 */
 
@@ -163,7 +157,7 @@ decode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
 
   MEMZERO((void *) block, SIZEOF(JBLOCK));
   
-  /* Section 13.4.2.1: decode the DC coefficient difference */
+  /* Section F.2.2.1: decode the DC coefficient difference */
 
   s = huff_DECODE(dctbl);
   if (s) {
@@ -172,7 +166,7 @@ decode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
   }
   block[0] = s;
 
-  /* Section 13.4.2.2: decode the AC coefficients */
+  /* Section F.2.2.2: decode the AC coefficients */
   
   for (k = 1; k < DCTSIZE2; k++) {
     r = huff_DECODE(actbl);

@@ -1,7 +1,7 @@
 /*
  * jcdeflts.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -12,6 +12,35 @@
 
 #include "jinclude.h"
 
+
+/* Default do-nothing progress monitoring routine.
+ * This can be overridden by a user interface that wishes to
+ * provide progress monitoring; just set methods->progress_monitor
+ * after j_c_defaults is done.  The routine will be called periodically
+ * during the compression process.
+ *
+ * During any one pass, loopcounter increases from 0 up to (not including)
+ * looplimit; the step size is not necessarily 1.  Both the step size and
+ * the limit may differ between passes.  The expected total number of passes
+ * is in cinfo->total_passes, and the number of passes already completed is
+ * in cinfo->completed_passes.  Thus the fraction of work completed may be
+ * estimated as
+ *		completed_passes + (loopcounter/looplimit)
+ *		------------------------------------------
+ *				total_passes
+ * ignoring the fact that the passes may not be equal amounts of work.
+ */
+
+METHODDEF void
+progress_monitor (compress_info_ptr cinfo, long loopcounter, long looplimit)
+{
+  /* do nothing */
+}
+
+
+/*
+ * Table setup routines
+ */
 
 LOCAL void
 add_huff_table (compress_info_ptr cinfo,
@@ -38,7 +67,8 @@ add_huff_table (compress_info_ptr cinfo,
 
 LOCAL void
 std_huff_tables (compress_info_ptr cinfo)
-/* Set up the standard Huffman tables (cf. JPEG-8-R8 section 13.3) */
+/* Set up the standard Huffman tables (cf. JPEG standard section K.3) */
+/* IMPORTANT: these are only valid for 8-bit data precision! */
 {
   static const UINT8 dc_luminance_bits[17] =
     { /* 0-base */ 0, 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
@@ -111,7 +141,7 @@ std_huff_tables (compress_info_ptr cinfo)
 }
 
 
-/* This is the sample quantization table given in JPEG-8-R8 sec 13.1,
+/* This is the sample quantization table given in the JPEG spec section K.1,
  * but expressed in zigzag order (as are all of our quant. tables).
  * The spec says that the values given produce "good" quality, and
  * when divided by 2, "very good" quality.  (These two settings are
@@ -226,14 +256,9 @@ j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
  * you should also change the component ID codes, and you should NOT emit
  * a JFIF header (set write_JFIF_header = FALSE).
  *
- * CAUTION: if you want to compress multiple images per run, it's safest
- * to call j_c_defaults before *each* call to jpeg_compress (and
- * j_c_free_defaults afterwards).  If this isn't practical, you'll have to
- * be careful to reset any individual parameters that may change during
- * the compression run.  The main thing you need to worry about at present
- * is that the sent_table boolean in each Huffman table must be reset to
- * FALSE before each compression; otherwise, Huffman tables won't get
- * emitted for the second and subsequent images.
+ * CAUTION: if you want to compress multiple images per run, it's necessary
+ * to call j_c_defaults before *each* call to jpeg_compress, since subsidiary
+ * structures like the Huffman tables are automatically freed during cleanup.
  */
 
 GLOBAL void
@@ -252,7 +277,7 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
     cinfo->ac_huff_tbl_ptrs[i] = NULL;
   }
 
-  cinfo->data_precision = 8;	/* default; can be overridden by input_init */
+  cinfo->data_precision = BITS_IN_JSAMPLE; /* default; can be overridden by input_init */
   cinfo->density_unit = 0;	/* Pixel size is unknown by default */
   cinfo->X_density = 1;		/* Pixel aspect ratio is square by default */
   cinfo->Y_density = 1;
@@ -324,6 +349,9 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
 
   /* No restart markers */
   cinfo->restart_interval = 0;
+
+  /* Install default do-nothing progress monitoring method. */
+  cinfo->methods->progress_monitor = progress_monitor;
 }
 
 
@@ -340,28 +368,4 @@ j_monochrome_default (compress_info_ptr cinfo)
   compptr = &cinfo->comp_info[0];
   compptr->h_samp_factor = 1;
   compptr->v_samp_factor = 1;
-}
-
-
-
-/* This routine releases storage allocated by j_c_defaults.
- * Note that freeing the method pointer structs and the compress_info_struct
- * itself are the responsibility of the user interface.
- */
-
-GLOBAL void
-j_c_free_defaults (compress_info_ptr cinfo)
-{
-  short i;
-
-#define FREE(ptr)  if ((ptr) != NULL) \
-			(*cinfo->emethods->free_small) ((void *) ptr)
-
-  FREE(cinfo->comp_info);
-  for (i = 0; i < NUM_QUANT_TBLS; i++)
-    FREE(cinfo->quant_tbl_ptrs[i]);
-  for (i = 0; i < NUM_HUFF_TBLS; i++) {
-    FREE(cinfo->dc_huff_tbl_ptrs[i]);
-    FREE(cinfo->ac_huff_tbl_ptrs[i]);
-  }
 }

@@ -1,7 +1,7 @@
 /*
- * config.c
+ * ckconfig.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  */
@@ -121,11 +121,17 @@ int testfunction (int arg1, int * arg2); /* check prototypes */
 struct methods_struct {		/* check method-pointer declarations */
   int (*error_exit) (char *msgtext);
   int (*trace_message) (char *msgtext);
+  int (*another_method) (void);
 };
 
 int testfunction (int arg1, int * arg2) /* check definitions */
 {
   return arg2[arg1];
+}
+
+int testfunction1 (void)	/* check void arg list */
+{
+  return 0;
 }
 #endif
 
@@ -278,7 +284,7 @@ int main (argc, argv)
   /* Check whether we have all the ANSI features, */
   /* and whether this agrees with __STDC__ being predefined. */
 #ifdef __STDC__
-#define MY__STDC__	/* ANSI compilers won't allow redefining __STDC__ */
+#define HAVE_STDC	/* ANSI compilers won't allow redefining __STDC__ */
 #endif
 
 #ifdef HAVE_ANSI_DEFINITIONS
@@ -292,28 +298,23 @@ int main (argc, argv)
 #endif
 
 #ifdef HAVE_ALL_ANSI_FEATURES
-#ifndef MY__STDC__
+#ifndef HAVE_STDC
   new_change();
   printf("Your compiler doesn't claim to be ANSI-compliant, but it is close enough\n");
-  printf("for me.  Either add -D__STDC__ to CFLAGS, or add #define __STDC__ at the\n");
-  printf("beginning of jinclude.h (NOT jconfig.h).\n");
-  printf("Some compilers will not let you do this: they will complain that __STDC__\n");
-  printf("is a reserved name.  In that case you have a compiler that really is ANSI,\n");
-  printf("but you have to give it a special switch (often -ansi) to make it so.\n");
-  printf("Check your compiler documentation and add the proper switch to CFLAGS.\n");
-#define MY__STDC__
+  printf("for me.  Either add -DHAVE_STDC to CFLAGS, or add #define HAVE_STDC at the\n");
+  printf("beginning of jconfig.h.\n");
+#define HAVE_STDC
 #endif
 #else /* !HAVE_ALL_ANSI_FEATURES */
-#ifdef MY__STDC__
+#ifdef HAVE_STDC
   new_change();
   printf("Your compiler claims to be ANSI-compliant, but it is lying!\n");
-  printf("Either add -U__STDC__ to CFLAGS, or add #undef __STDC__\n");
-  printf("at the beginning of jinclude.h (NOT jconfig.h).\n");
-#undef MY__STDC__
+  printf("Delete the line  #define HAVE_STDC  near the beginning of jconfig.h.\n");
+#undef HAVE_STDC
 #endif
 #endif /* HAVE_ALL_ANSI_FEATURES */
 
-#ifndef MY__STDC__
+#ifndef HAVE_STDC
 
 #ifdef HAVE_ANSI_DEFINITIONS
   new_change();
@@ -326,31 +327,30 @@ int main (argc, argv)
 #ifdef HAVE_UNSIGNED_SHORT
   new_change();
   printf("You should add -DHAVE_UNSIGNED_CHAR and -DHAVE_UNSIGNED_SHORT\n");
-  printf("to CFLAGS, or else take out the #ifdef __STDC__/#endif lines\n");
+  printf("to CFLAGS, or else take out the #ifdef HAVE_STDC/#endif lines\n");
   printf("surrounding #define HAVE_UNSIGNED_CHAR and #define HAVE_UNSIGNED_SHORT\n");
   printf("in jconfig.h.\n");
 #else /* only unsigned char */
   new_change();
   printf("You should add -DHAVE_UNSIGNED_CHAR to CFLAGS,\n");
   printf("or else move #define HAVE_UNSIGNED_CHAR outside the\n");
-  printf("#ifdef __STDC__/#endif lines surrounding it in jconfig.h.\n");
+  printf("#ifdef HAVE_STDC/#endif lines surrounding it in jconfig.h.\n");
 #endif
 #else /* !HAVE_UNSIGNED_CHAR */
 #ifdef HAVE_UNSIGNED_SHORT
   new_change();
   printf("You should add -DHAVE_UNSIGNED_SHORT to CFLAGS,\n");
   printf("or else move #define HAVE_UNSIGNED_SHORT outside the\n");
-  printf("#ifdef __STDC__/#endif lines surrounding it in jconfig.h.\n");
+  printf("#ifdef HAVE_STDC/#endif lines surrounding it in jconfig.h.\n");
 #endif
 #endif /* HAVE_UNSIGNED_CHAR */
 
 #ifdef HAVE_CONST
   new_change();
-  printf("You can delete the #define const line from jconfig.h.\n");
-  printf("(But things should still work if you don't.)\n");
+  printf("You should delete the  #define const  line from jconfig.h.\n");
 #endif
 
-#endif /* MY__STDC__ */
+#endif /* HAVE_STDC */
 
   test_char_sign((int) signed_char_check);
 
@@ -365,13 +365,13 @@ int main (argc, argv)
 #endif
 
 #ifdef INCLUDES_ARE_ANSI
-#ifndef MY__STDC__
+#ifndef __STDC__
   new_change();
   printf("You should add -DINCLUDES_ARE_ANSI to CFLAGS, or else add\n");
   printf("#define INCLUDES_ARE_ANSI at the beginning of jinclude.h (NOT jconfig.h).\n");
 #endif
 #else /* !INCLUDES_ARE_ANSI */
-#ifdef MY__STDC__
+#ifdef __STDC__
   new_change();
   printf("You should add -DNONANSI_INCLUDES to CFLAGS, or else add\n");
   printf("#define NONANSI_INCLUDES at the beginning of jinclude.h (NOT jconfig.h).\n");

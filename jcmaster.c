@@ -1,7 +1,7 @@
 /*
  * jcmaster.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -92,6 +92,10 @@ initial_setup (compress_info_ptr cinfo)
 GLOBAL void
 jpeg_compress (compress_info_ptr cinfo)
 {
+  /* Init pass counts to 0 --- total_passes is adjusted in method selection */
+  cinfo->total_passes = 0;
+  cinfo->completed_passes = 0;
+
   /* Read the input file header: determine image size & component count.
    * NOTE: the user interface must have initialized the input_init method
    * pointer (eg, by calling jselrppm) before calling me.
@@ -122,6 +126,8 @@ jpeg_compress (compress_info_ptr cinfo)
   (*cinfo->methods->write_file_trailer) (cinfo);
   (*cinfo->methods->colorin_term) (cinfo);
   (*cinfo->methods->input_term) (cinfo);
+
+  (*cinfo->emethods->free_all) ();
 
   /* My, that was easy, wasn't it? */
 }

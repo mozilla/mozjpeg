@@ -1,5 +1,5 @@
 
-	JPEG SYSTEM ARCHITECTURE		3-OCT-91
+	JPEG SYSTEM ARCHITECTURE		29-FEB-92
 
 
 This file provides an overview of the "architecture" of the portable JPEG
@@ -13,7 +13,7 @@ to the mark.  Also, it is frequently the case that several different modules
 present a common interface to callers; the term "object" or "method" refers to
 this common interface (see "Poor man's object-oriented programming", below).
 
-JPEG-specific terminology follows the JPEG R9 draft:
+JPEG-specific terminology follows the JPEG standard:
   A "component" means a color channel, e.g., Red or Luminance.
   A "sample" is a pixel component value (i.e., one number in the image data).
   A "coefficient" is a frequency coefficient (a DCT transform output number).
@@ -52,8 +52,7 @@ real-time, which nobody is going to do with a pure software implementation.
 
 There is some value in supporting the hierarchical mode, which allows for
 successive frames of higher resolution.  This could be of use for including
-"thumbnail" representations.  Also, Storm's JPEG++ files probably use the
-hierarchical mode (I haven't looked).  However, this appears to add a lot more
+"thumbnail" representations.  However, this appears to add a lot more
 complexity than it is worth.
 
 A variety of uncompressed image file formats and user interfaces must be
@@ -79,10 +78,10 @@ baggage.)
 The *logical* steps needed in (non-lossless) JPEG compression are:
 
 1. Conversion from incoming image format to a standardized internal form
-   (either RGB or greyscale).
+   (either RGB or grayscale).
 
 2. Color space conversion (e.g., RGB to YCbCr).  This is a null step for
-   greyscale (unless we support mapping color inputs to greyscale, which
+   grayscale (unless we support mapping color inputs to grayscale, which
    would most easily be done here).  Gamma adjustment may also be needed here.
 
 3. Subsampling (reduction of number of samples in some color components).
@@ -171,7 +170,7 @@ The *logical* steps needed in (non-lossless) JPEG decompression are:
 4. MCU disassembly (conversion of a possibly interleaved sequence of 8x8
    blocks back to separate components in pixel map order).
 
-5. (Optional)  Cross-block smoothing per JPEG section 13.10 or a similar
+5. (Optional)  Cross-block smoothing per JPEG section K.8 or a similar
    algorithm.  (Steps 5-8 operate independently on each component.)
 
 6. Inverse DCT transformation of each 8x8 block.
@@ -189,19 +188,23 @@ The *logical* steps needed in (non-lossless) JPEG decompression are:
    sizes.
 
 10. Color space reconversion (e.g., YCbCr to RGB).  This is a null step for
-    greyscale.  (Note that if we support mapping color JPEG to greyscale,
-    it could be done as part of this step.)  Gamma adjustment may also be
-    needed here.
+    grayscale.  (Note that mapping a color JPEG to grayscale output is most
+    easily done in this step.)  Gamma adjustment may also be needed here.
 
 11. Color quantization (only if a colormapped output format is requested).
-    NOTE: it might be better to do this on the internal color space instead of
-    RGB?  If so, it would need to be performed one step earlier.
+    NOTE: it is probably preferable to perform quantization in the internal
+    (JPEG) colorspace rather than the output colorspace.  Doing it that way,
+    color conversion need only be applied to the colormap entries, not to
+    every pixel; and quantization gets to operate in a non-gamma-corrected
+    space.  But the internal space may not be suitable for some algorithms.
+    The system design is such that only the color quantizer module knows
+    whether color conversion happens before or after quantization.
 
 12. Writing of the desired image format.
 
 As before, some of these will be combined into single steps.  When dealing
 with a noninterleaved JPEG file, steps 2-9 will be performed once for each
-scan; the resulting data will need to be buffered up so that step 10 can
+scan; the resulting data will need to be buffered up so that steps 10-12 can
 process all the color components together.
 
 The same auxiliary modules are needed as before, except for compression
@@ -429,12 +432,8 @@ different instances (choose to execute different modules).
 
 To minimize the number of object pointers that have to be passed around, it
 will be easiest to have just a few big structs containing all the method
-pointers.  We'll actually use two such structs, one for "globally" defined
-methods (applicable to the whole file or to all components of the current
-scan) and one for methods applicable to a single component.  There'll be one
-copy of the second kind of struct for each component of the current scan.
-This is necessary so that preselection of an optimal method can be done based
-on component-specific information (like sampling ratios...)
+pointers.  We'll actually use two such structs, one for "system-dependent"
+methods (memory allocation and error handling) and one for everything else.
 
 Because of this choice, it's best not to think of an "object" as a specific
 data structure.  Rather, an "object" is just a group of related methods.
@@ -528,7 +527,10 @@ aren't described here; see the header files.  Notice that any object that
 might need to allocate working storage receives an "init" and a "term" call;
 "term" should be careful to free all allocated storage so that the JPEG system
 can be used multiple times during a program run.  (For the same reason,
-depending on static initialization of variables is a no-no.)
+depending on static initialization of variables is a no-no.  The only
+exception to the free-all-allocated-storage rule is that storage allocated for
+the entire processing of an image need not be explicitly freed, since the
+memory manager's free_all cleanup will free it.)
 
 1. Input file conversion to standardized form.  This provides these methods:
 	input_init: read the file header, report image size & component count.
@@ -677,8 +679,8 @@ depending on static initialization of variables is a no-no.)
     afresh for each non-Unix-like platform the compressor is ported to.
     The UI is expected to supply input and output files and values for all
     non-automatically-chosen compression parameters.  (Hence defaults are
-    determined by the UI; we should probably provide helpful routines to fill
-    in recommended defaults.)  The UI must also supply error handling
+    determined by the UI; we should provide helpful routines to fill in
+    the recommended defaults.)  The UI must also supply error handling
     routines and some mechanism for trace messages.
     (This module hides the user interface provided --- command line,
     interactive, etc.  Except for error/message handling, the UI calls the
@@ -749,7 +751,8 @@ depending on static initialization of variables is a no-no.)
 	alloc_small:	allocate an object of given size; use for any random
 			data that's not an image array.
 	free_small:	release same.
-	alloc_medium:	like alloc_small, but returns a FAR pointer.
+	alloc_medium:	like alloc_small, but returns a FAR pointer.  Use for
+			any object bigger than a couple kilobytes.
 	free_medium:	release same.
 	alloc_small_sarray: construct an all-in-memory image sample array.
 	free_small_sarray:  release same.
@@ -766,9 +769,13 @@ depending on static initialization of variables is a no-no.)
 			   figure out how much space to leave unallocated.
 	access_big_sarray: obtain access to a specified portion of a virtual
 			   image sample array.
-	access_big_barray: ditto for block (coefficient) arrays.
 	free_big_sarray:   release a virtual sample array.
+	access_big_barray,
 	free_big_barray:   ditto for block (coefficient) arrays.
+	free_all:	   release any remaining storage.  This is called
+			   before normal or error termination; the main reason
+			   why it must exist is to ensure that any temporary
+			   files will be deleted upon error termination.
 
     alloc_big_arrays will be called by the pipeline controller, which does
     most of the memory allocation anyway.  The only reason for having separate
@@ -783,8 +790,8 @@ depending on static initialization of variables is a no-no.)
 
     The distinction between sample and coefficient array routines is annoying,
     but it has to be maintained for machines in which "char *" is represented
-    differently from "int *"... on byte-addressable machines some of these
-    methods could point to the same code.
+    differently from "int *".  On byte-addressable machines some of these
+    methods could perhaps point to the same code.
 
     The array routines will operate on only 2-D arrays (one component at a
     time), since different components may require different-size arrays.
@@ -796,8 +803,8 @@ Note that any given implementation will presumably contain only one
 instantiation of input file header reading, overall control, user interface,
 and memory management.  Thus these could be called as simple subroutines,
 without bothering with an object indirection.  This is essential for overall
-control (which has to initialize the object structure); I'm undecided whether
-to impose objectness on the other three.
+control (which has to initialize the object structure); for consistency we
+will impose objectness on the other three.
 
 
 *** Decompression object structure ***
@@ -835,7 +842,7 @@ comments at the top of the compression object section also apply here.
    interface module to single-handedly implement special applications like
    reading from a non-stdio source.  For JPEG-in-TIFF format, the need for
    random access will make it impossible for this to work; hence the TIFF
-   header module will probably override the UI read_jpeg_data routine.
+   header module will override the UI-supplied read_jpeg_data routine.
    Non-stdio input from a TIFF file will require extensive surgery to the TIFF
    header module, if indeed it is practical at all.
 
@@ -864,7 +871,7 @@ comments at the top of the compression object section also apply here.
    always a multiple of an MCU's dimensions.
    (An object on the grounds that multiple instantiations might be useful.)
 
-5. Cross-block smoothing per JPEG section 13.10 or a similar algorithm.
+5. Cross-block smoothing per JPEG section K.8 or a similar algorithm.
 	smooth_coefficients: Given three block rows' worth of a single
 			     component, emit a smoothed equivalent of the
 			     middle row.  The "above" and "below" pointers
@@ -874,8 +881,13 @@ comments at the top of the compression object section also apply here.
    extra memory is needed to buffer the additional block rows.
    (This object hides the details of the smoothing algorithm.)
 
-6. Inverse DCT transformation of each 8x8 block.  (This can be a plain
-   subroutine processing one block per call.)
+6. Inverse DCT transformation of each 8x8 block.
+	reverse_DCT: given an MCU row's worth of blocks, perform inverse
+		     DCT on each block and output the results into an array
+		     of samples.
+   We put this method into the jdmcu module for symmetry with the division of
+   labor in compression.  Note that the actual IDCT code is a separate source
+   file.
 
 7. De-subsampling and smoothing: this will be applied to one component at a
    time.  Note that cross-pixel smoothing, which was a separate step in the
@@ -905,9 +917,13 @@ comments at the top of the compression object section also apply here.
 		       output are image arrays of same size but possibly
 		       different numbers of components.
 	colorout_term: cleanup (probably a no-op except for memory dealloc).
-   In practice will always be given an MCU row's worth of pixel rows, except
+   In practice will usually be given an MCU row's worth of pixel rows, except
    at the bottom where a smaller number of rows may be left over.  Note that
    this object works on all the components at once.
+   When quantizing colors, color_convert may be applied to the colormap
+   instead of actual pixel data.  color_convert is called by the color
+   quantizer in this case; the pipeline controller calls color_convert
+   directly only when not quantizing.
    (Hides all knowledge of color space semantics and conversion.  Remaining
    modules only need to know the number of JPEG and output components.)
 
@@ -927,33 +943,44 @@ comments at the top of the compression object section also apply here.
 			  "big" sample image, output is via put_color_map and
 			  put_pixel_rows.  (Used only in 2-pass quantization.)
 	color_quant_term: cleanup (probably a no-op except for memory dealloc).
+    The input to the color quantizer is always in the unconverted colorspace;
+    its output colormap must be in the converted colorspace.  The quantizer
+    has the choice of which space to work in internally.  It must call
+    color_convert either on its input data or on the colormap it sends to the
+    output module.
     For one-pass quantization the image is simply processed by color_quantize,
     a few rows at a time.  For two-pass quantization, the pipeline controller
-    accumulates the output of color_convert into a "big" sample image.  The
+    accumulates the output of steps 1-8 into a "big" sample image.  The
     color_quant_prescan method is invoked during this process so that the
-    quantizer can accumulate statistics.  At the end of the image,
-    color_quant_doit is called; it must rescan the "big" image and pass
-    converted data to the output module.  Additional scans of the image could
-    be made before the output pass is done (in fact, prescan could be a no-op).
+    quantizer can accumulate statistics.  (If the input file has multiple
+    scans, the prescan may be done during the final scan or as a separate
+    pass.)  At the end of the image, color_quant_doit is called; it must
+    create and output a colormap, then rescan the "big" image and pass mapped
+    data to the output module.  Additional scans of the image could be made
+    before the output pass is done (in fact, prescan could be a no-op).
     As with entropy parameter optimization, the pipeline controller actually
     passes an iterator function rather than direct access to the big image.
-    NOTE: it might be better to do this on the internal color space instead of
-    RGB?  If so, it would need to be performed one step earlier.
     (Hides color quantization algorithm.)
 
 11. Writing of the desired image format.
 	output_init: produce the file header given data from read_file_header.
 	put_color_map: output colormap, if any (called by color quantizer).
+		       If used, must be called before any pixel data is output.
 	put_pixel_rows: output image data in desired format.
 	output_term: finish up at the end.
+    The actual timing of I/O may differ from that suggested by the routine
+    names; for instance, writing of the file header may be delayed until
+    put_color_map time if the actual number of colors is needed in the header.
+    Also, the colormap is available to put_pixel_rows and output_term as well
+    as put_color_map.
     Note that whether colormapping is needed will be determined by the user
     interface object prior to method selection.  In implementations that
     support multiple output formats, the actual output format will also be
     determined by the user interface.
     (Hides format of output image and mechanism used to write it.  Note that
-    several other objects know the color model used by the output format.  The
-    actual mechanism for writing the file is private to this object and the
-    user interface.)
+    several other objects know the color model used by the output format.
+    The actual mechanism for writing the file is private to this object and
+    the user interface.)
 
 12. Pipeline control.  This object will provide the "main loop" that invokes
     all the pipeline objects.  Note that we will need several different main
@@ -985,9 +1012,6 @@ comments at the top of the compression object section also apply here.
     application program", i.e., that which invokes the JPEG decompressor.
     The UI is expected to supply input and output files and values for all
     operational parameters.  The UI must also supply error handling routines.
-    At the moment I can't think of any nonfatal errors the JPEG code is likely
-    to report, so a single report-this-error-and-exit method should be
-    sufficient.
     (This module hides the user interface provided --- command line,
     interactive, etc.  Except for error handling, the UI calls the portable
     JPEG code, not the other way around.)
@@ -1050,9 +1074,52 @@ needs a lot smaller temp file than is implied by the maximum-height method.
 For this approach we'd simply treat DNL as a no-op in the decompressor (at
 most, check that it matches the SOF image height).
 
-We will not worry about making the compressor capable of outputting DNL.  Note
-that something similar to the first scheme above could be applied if anyone
-ever wants to make that work.
+We will not worry about making the compressor capable of outputting DNL.
+Something similar to the first scheme above could be applied if anyone ever
+wants to make that work.
+
+
+*** Memory manager internal structure ***
+
+The memory manager contains the most potential for system dependencies.
+To isolate system dependencies as much as possible, we have broken the
+memory manager into two parts.  There is a reasonably system-independent
+"front end" (jmemmgr.c) and a "back end" that contains only the code
+likely to change across systems.  All of the memory management methods
+outlined above are implemented by the front end.  The back end provides
+the following routines for use by the front end (none of these routines
+are known to the rest of the JPEG code):
+
+jmem_init, jmem_term	system-dependent initialization/shutdown
+
+jget_small, jfree_small	interface to malloc and free library routines
+
+jget_large, jfree_large	interface to FAR malloc/free in MS-DOS machines;
+			otherwise same as jget_small/jfree_small
+
+jmem_available		estimate available memory
+
+jopen_backing_store	create a backing-store object
+
+read_backing_store,	manipulate a backing store object
+write_backing_store,
+close_backing_store
+
+On some systems there will be more than one type of backing-store object
+(specifically, in MS-DOS a backing store file might be an area of extended
+memory as well as a disk file).  jopen_backing_store is responsible for
+choosing how to implement a given object.  The read/write/close routines
+are method pointers in the structure that describes a given object; this
+lets them be different for different object types.
+
+It may be necessary to ensure that backing store objects are explicitly
+released upon abnormal program termination.  (For example, MS-DOS won't free
+extended memory by itself.)  To support this, we will expect the main program
+or surrounding application to arrange to call the free_all method upon
+abnormal termination; this may require a SIGINT signal handler, for instance.
+(We don't want to have the system-dependent module install its own signal
+handler, because that would pre-empt the surrounding application's ability
+to control signal handling.)
 
 
 *** Notes for MS-DOS implementors ***
@@ -1067,10 +1134,10 @@ significant speed penalty.
 When integrating the JPEG code into a larger application, it's a good idea to
 stay with a small-data-space model if possible.  An 8K stack is much more than
 sufficient for the JPEG code, and its static data requirements are less than
-1K.  When executed, it will typically malloc about 10K worth of near heap
+1K.  When executed, it will typically malloc about 10K-20K worth of near heap
 space (and lots of far heap, but that doesn't count in this calculation).
 This figure will vary depending on image size and other factors, but figuring
-20K should be more than sufficient.  Thus you have about 35K available for
+30K should be more than sufficient.  Thus you have about 25K available for
 other modules' static data and near heap requirements before you need to go to
 a larger memory model.  The C library's static data will account for several K
 of this, but that still leaves a good deal for your needs.  (If you are tight
@@ -1083,6 +1150,13 @@ be allocated as FAR although they would fit in near space if we assumed the
 JPEG code is stand-alone.  (The LZW tables in jrdgif/jwrgif are examples.)
 To make an optimal implementation, you might want to move these structures
 back to near heap if you know there is sufficient space.
+
+FAR data space may also be a tight resource when you are dealing with large
+images.  The most memory-intensive case is decompression with two-pass color
+quantization.  This requires a 128Kb color histogram plus strip buffers
+amounting to about 150 bytes per column for typical sampling ratios (eg, about
+96000 bytes for a 640-pixel-wide image).  You may not be able to process wide
+images if you have large data structures of your own.
 
 
 *** Potential optimizations ***

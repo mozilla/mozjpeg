@@ -1,7 +1,7 @@
 /*
  * jwrppm.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -29,9 +29,6 @@
 #ifndef EIGHT_BIT_SAMPLES
   Sorry, this code only copes with 8-bit JSAMPLEs. /* deliberate syntax err */
 #endif
-
-
-static JSAMPARRAY color_map;	/* saves color map passed by quantizer */
 
 
 /*
@@ -104,10 +101,11 @@ put_demapped_rows (decompress_info_ptr cinfo, int num_rows,
 		   JSAMPIMAGE pixel_data)
 {
   register FILE * outfile = cinfo->output_file;
+  register JSAMPARRAY color_map = cinfo->colormap;
   register JSAMPROW ptr;
   register long col;
-  register long width = cinfo->image_width;
-  register int row;
+  long width = cinfo->image_width;
+  int row;
   
   if (cinfo->out_color_space == CS_GRAYSCALE) {
     for (row = 0; row < num_rows; row++) {
@@ -141,7 +139,6 @@ put_demapped_rows (decompress_info_ptr cinfo, int num_rows,
 METHODDEF void
 put_color_map (decompress_info_ptr cinfo, int num_colors, JSAMPARRAY colormap)
 {
-  color_map = colormap;		/* save for use in output */
   cinfo->methods->put_pixel_rows = put_demapped_rows;
 }
 

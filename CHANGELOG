@@ -1,5 +1,45 @@
 CHANGELOG for Independent JPEG Group's JPEG software
 
+Version 3  17-Mar-92
+--------------------
+
+Memory manager is finally capable of swapping to temp files.  There are
+separate versions of jmemsys.c for no temp files (same behavior as older
+versions), simple temp files with or without tmpfile(), and a DOS-specific
+version (including special code for EMS and XMS).  This is probably much more
+system-dependent than any of the older code; some bugs may surface here.
+
+Hooks added for user interface to install progress monitoring routine
+(percent-done bar, etc).  See comments with dummy progress_monitor
+routines in jcdeflts.c, jddeflts.c.
+
+Two-pass color quantization (finally!).  This is now the default method when
+quantizing; say '-1' to djpeg for quick-and-ugly 1-pass method.  There is
+a test file for checking 2-pass quantization and GIF output.
+
+Fixed bug in jcopy_block_row that broke cjpeg -o option and djpeg -b option
+on MSDOS machines.
+
+Miscellaneous small speedups; notably, DCT computation rearranged so that
+GCC "inline" feature is no longer needed for good code quality.
+
+File config.c renamed ckconfig.c to avoid name conflict with /etc/config
+on Unix systems.
+
+Added example.c to document usage of JPEG subroutines better.
+
+Memory manager now knows how to release all storage during error exit ---
+avoids memory leak when using JPEG as subroutines.  This implies a couple
+small changes to the subroutine interface: the old free_defaults subroutines
+are no longer needed, but if you have a replacement error_exit method then it
+must call the new free_all method.  Also, jselvirtmem renamed to jselmemmgr.
+
+Code for reading Targa files with 32-bit pixels was incorrect.
+
+Colorspace conversion slightly faster and more accurate; because of
+this, old "test" files will no longer match bit-for-bit.
+
+
 Version 2  13-Dec-91
 --------------------
 

@@ -3,4 +3,5 @@ jcmcu.mix,jcpipe.mix,jcsample.mix,jfwddct.mix,jwrjfif.mix,jrdgif.mix
 jrdppm.mix,jrdrle.mix,jrdtarga.mix,jdmaster.mix,jddeflts.mix,jbsmooth.mix
 jdarith.mix,jdcolor.mix,jdhuff.mix,jdmcu.mix,jdpipe.mix,jdsample.mix
 jquant1.mix,jquant2.mix,jrevdct.mix,jrdjfif.mix,jwrgif.mix,jwrppm.mix
-jwrrle.mix,jwrtarga.mix,jutils.mix,jvirtmem.mix,jerror.mix
+jwrrle.mix,jwrtarga.mix,jutils.mix,jerror.mix,jmemmgr.mix,jmemsys.mix
+jmemdosa.mix

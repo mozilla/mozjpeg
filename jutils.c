@@ -1,7 +1,7 @@
 /*
  * jutils.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -40,7 +40,7 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 #ifdef NEED_FAR_POINTERS
   register long count;
 #else
-  register size_t count = num_cols * SIZEOF(JSAMPLE);
+  register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
 #endif
   register int row;
 
@@ -69,14 +69,12 @@ jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
    */
 #ifdef NEED_FAR_POINTERS
   register JCOEFPTR inptr, outptr;
-  register int i;
   register long count;
 
-  for (count = num_blocks; count > 0; count--) {
-    inptr = *input_row++;
-    outptr = *output_row++;
-    for (i = DCTSIZE2; i > 0; i--)
-      *outptr++ = *inptr++;
+  inptr = (JCOEFPTR) input_row;
+  outptr = (JCOEFPTR) output_row;
+  for (count = num_blocks * DCTSIZE2; count > 0; count--) {
+    *outptr++ = *inptr++;
   }
 #else
     memcpy((void *) output_row, (void *) input_row,

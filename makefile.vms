@@ -1,0 +1,64 @@
+$! Makefile for Independent JPEG Group's software
+$!
+$! This is a command procedure for use on VAX/VMS systems that do not have MMS.
+$! It builds the JPEG software by brute force, recompiling everything whether
+$! or not it is necessary.
+$! Thanks to Rick Dyson (dyson@iowasp.physics.uiowa.edu) for his help.
+$!
+$! Read SETUP instructions before running this!!
+$!
+$ DoCompile := CC /NoDebug /Optimize /Define = (TWO_FILE_COMMANDLINE,HAVE_STDC,INCLUDES_ARE_ANSI)
+$!
+$ DoCompile jcmain.c
+$ DoCompile jdmain.c
+$ DoCompile jcmaster.c
+$ DoCompile jcdeflts.c
+$ DoCompile jcarith.c
+$ DoCompile jccolor.c
+$ DoCompile jcexpand.c
+$ DoCompile jchuff.c
+$ DoCompile jcmcu.c
+$ DoCompile jcpipe.c
+$ DoCompile jcsample.c
+$ DoCompile jfwddct.c
+$ DoCompile jwrjfif.c
+$ DoCompile jrdgif.c
+$ DoCompile jrdppm.c
+$ DoCompile jrdrle.c
+$ DoCompile jrdtarga.c
+$ DoCompile jdmaster.c
+$ DoCompile jddeflts.c
+$ DoCompile jbsmooth.c
+$ DoCompile jdarith.c
+$ DoCompile jdcolor.c
+$ DoCompile jdhuff.c
+$ DoCompile jdmcu.c
+$ DoCompile jdpipe.c
+$ DoCompile jdsample.c
+$ DoCompile jquant1.c
+$ DoCompile jquant2.c
+$ DoCompile jrevdct.c
+$ DoCompile jrdjfif.c
+$ DoCompile jwrgif.c
+$ DoCompile jwrppm.c
+$ DoCompile jwrrle.c
+$ DoCompile jwrtarga.c
+$ DoCompile jutils.c
+$ DoCompile jerror.c
+$ DoCompile jmemmgr.c
+$ DoCompile jmemsys.c
+$!
+$ Library /Create libjpeg.olb  jcmaster.obj,jcdeflts.obj,jcarith.obj, -
+          jccolor.obj,jcexpand.obj,jchuff.obj,jcmcu.obj,jcpipe.obj, -
+          jcsample.obj,jfwddct.obj,jwrjfif.obj,jrdgif.obj,jrdppm.obj, -
+          jrdrle.obj,jrdtarga.obj,jdmaster.obj,jddeflts.obj,jbsmooth.obj, -
+          jdarith.obj,jdcolor.obj,jdhuff.obj,jdmcu.obj,jdpipe.obj, -
+          jdsample.obj,jquant1.obj,jquant2.obj,jrevdct.obj,jrdjfif.obj, -
+          jwrgif.obj,jwrppm.obj,jwrrle.obj,jwrtarga.obj,jutils.obj, -
+          jerror.obj,jmemmgr.obj,jmemsys.obj
+$!
+$ Link /Executable = cjpeg.exe  jcmain.obj,libjpeg.olb/Library,Sys$Disk:[]MAKVMS.OPT/Option
+$!
+$ Link /Executable = djpeg.exe  jdmain.obj,libjpeg.olb/Library,Sys$Disk:[]MAKVMS.OPT/Option
+$!
+$ Exit

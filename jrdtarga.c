@@ -1,7 +1,7 @@
 /*
  * jrdtarga.c
  *
- * Copyright (C) 1991, Thomas G. Lane.
+ * Copyright (C) 1991, 1992, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -41,7 +41,7 @@ typedef char U_CHAR;
 #endif /* HAVE_UNSIGNED_CHAR */
 
 
-#define	ReadOK(file,buffer,len)	(FREAD(file,buffer,len) == ((size_t) (len)))
+#define	ReadOK(file,buffer,len)	(JFREAD(file,buffer,len) == ((size_t) (len)))
 
 
 static JSAMPARRAY colormap;	/* Targa colormap (converted to my format) */
@@ -242,34 +242,14 @@ get_24bit_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
   }
 }
 
-METHODDEF void
-get_32bit_row (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
-/* This version is for reading 32-bit pixels */
-/* Attribute bits are ignored for now */
-{
-  register JSAMPROW ptr0, ptr1, ptr2;
-  register long col;
-
-/* NOTE: there seems to be considerable confusion over whether the order
- * of the bytes in a 32-bit Targa file is A,B,G,R or B,G,R,A.
- * On Lee Crocker's authority, we think the attribute byte comes first.
- * Make ATTR_BYTE_FIRST be 0 if you have files in which it comes last.
+/*
+ * Targa also defines a 32-bit pixel format with order B,G,R,A.
+ * We presently ignore the attribute byte, so the code for reading
+ * these pixels is identical to the 24-bit routine above.
+ * This works because the actual pixel length is only known to read_pixel.
  */
-#ifndef ATTR_BYTE_FIRST    /* so you can say -DATTR_BYTE_FIRST=0 in Makefile */
-#define ATTR_BYTE_FIRST  1	/* must be 0 or 1 */
-#endif
-  
-  ptr0 = pixel_row[0];
-  ptr1 = pixel_row[1];
-  ptr2 = pixel_row[2];
-  for (col = cinfo->image_width; col > 0; col--) {
-    (*read_pixel) (cinfo);	/* Load next pixel into tga_pixel */
-    /* convert ABGR (or BGRA) to RGB order */
-    *ptr0++ = (JSAMPLE) UCH(tga_pixel[2+ATTR_BYTE_FIRST]);
-    *ptr1++ = (JSAMPLE) UCH(tga_pixel[1+ATTR_BYTE_FIRST]);
-    *ptr2++ = (JSAMPLE) UCH(tga_pixel[0+ATTR_BYTE_FIRST]);
-  }
-}
+
+#define get_32bit_row  get_24bit_row
 
 
 /*
@@ -314,10 +294,13 @@ preload_image (compress_info_ptr cinfo, JSAMPARRAY pixel_row)
 
   /* Read the data into a virtual array in input-file row order */
   for (row = 0; row < cinfo->image_height; row++) {
+    (*cinfo->methods->progress_monitor) (cinfo, row, cinfo->image_height);
     image_ptr = (*cinfo->emethods->access_big_sarray)
 			(whole_image, row * cinfo->input_components, TRUE);
     (*get_pixel_row) (cinfo, image_ptr);
   }
+  cinfo->completed_passes++;
+
   /* Set up to read from the virtual array in unscrambled order */
   cinfo->methods->get_input_row = get_memory_row;
   current_row = 0;
@@ -421,6 +404,7 @@ input_init (compress_info_ptr cinfo)
 			((long) width, (long) height * components,
 			 (long) components);
     cinfo->methods->get_input_row = preload_image;
+    cinfo->total_passes++;	/* count file reading as separate pass */
   } else {
     whole_image = NULL;
     cinfo->methods->get_input_row = get_pixel_row;
@@ -457,10 +441,7 @@ input_init (compress_info_ptr cinfo)
 METHODDEF void
 input_term (compress_info_ptr cinfo)
 {
-  if (whole_image != NULL)
-    (*cinfo->emethods->free_big_sarray) (whole_image);
-  if (colormap != NULL)
-    (*cinfo->emethods->free_small_sarray) (colormap, 3L);
+  /* no work (we let free_all release the workspace) */
 }
 
 

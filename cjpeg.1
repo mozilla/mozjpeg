@@ -1,4 +1,4 @@
-.TH CJPEG 1 "15 June 1995"
+.TH CJPEG 1 "20 March 1998"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -16,7 +16,7 @@ cjpeg \- compress an image file to a JPEG file
 compresses the named image file, or the standard input if no file is
 named, and produces a JPEG/JFIF file on the standard output.
 The currently supported input file formats are: PPM (PBMPLUS color
-format), PGM (PBMPLUS gray-scale format), BMP, GIF, Targa, and RLE (Utah Raster
+format), PGM (PBMPLUS gray-scale format), BMP, Targa, and RLE (Utah Raster
 Toolkit format).  (RLE is supported only if the URT library is available.)
 .SH OPTIONS
 All switch names may be abbreviated; for example,
@@ -27,9 +27,9 @@ or
 .BR \-gr .
 Most of the "basic" switches can be abbreviated to as little as one letter.
 Upper and lower case are equivalent (thus
-.B \-GIF
+.B \-BMP
 is the same as
-.BR \-gif ).
+.BR \-bmp ).
 British spellings are also accepted (e.g.,
 .BR \-greyscale ),
 though for brevity these are not mentioned below.
@@ -42,9 +42,9 @@ Scale quantization tables to adjust image quality.  Quality is 0 (worst) to
 .TP
 .B \-grayscale
 Create monochrome JPEG file from color input.  Be sure to use this switch when
-compressing a grayscale GIF file, because
+compressing a grayscale BMP file, because
 .B cjpeg
-isn't bright enough to notice whether a GIF file uses only shades of gray.
+isn't bright enough to notice whether a BMP file uses only shades of gray.
 By saying
 .BR \-grayscale ,
 you'll get a smaller JPEG file that takes less time to process.
@@ -180,16 +180,22 @@ for images that will be transmitted across unreliable networks such as Usenet.
 The
 .B \-smooth
 option filters the input to eliminate fine-scale noise.  This is often useful
-when converting GIF files to JPEG: a moderate smoothing factor of 10 to 50
-gets rid of dithering patterns in the input file, resulting in a smaller JPEG
-file and a better-looking image.  Too large a smoothing factor will visibly
-blur the image, however.
+when converting dithered images to JPEG: a moderate smoothing factor of 10 to
+50 gets rid of dithering patterns in the input file, resulting in a smaller
+JPEG file and a better-looking image.  Too large a smoothing factor will
+visibly blur the image, however.
 .PP
 Switches for wizards:
 .TP
 .B \-baseline
-Force a baseline JPEG file to be generated.  This clamps quantization values
-to 8 bits even at low quality settings.
+Force baseline-compatible quantization tables to be generated.  This clamps
+quantization values to 8 bits even at low quality settings.  (This switch is
+poorly named, since it does not ensure that the output is actually baseline
+JPEG.  For example, you can use
+.B \-baseline
+and
+.B \-progressive
+together.)
 .TP
 .BI \-qtables " file"
 Use the quantization tables given in the specified text file.
@@ -271,6 +277,10 @@ Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
 Independent JPEG Group
 .SH BUGS
 Arithmetic coding is not supported for legal reasons.
+.PP
+GIF input files are no longer supported, to avoid the Unisys LZW patent.
+Use a Unisys-licensed program if you need to read a GIF file.  (Conversion
+of GIF files to JPEG is usually a bad idea anyway.)
 .PP
 Not all variants of BMP and Targa file formats are supported.
 .PP

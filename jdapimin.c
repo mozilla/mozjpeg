@@ -1,7 +1,7 @@
 /*
  * jdapimin.c
  *
- * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Copyright (C) 1994-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -39,13 +39,18 @@ jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
     ERREXIT2(cinfo, JERR_BAD_STRUCT_SIZE, 
 	     (int) SIZEOF(struct jpeg_decompress_struct), (int) structsize);
 
-  /* For debugging purposes, zero the whole master structure.
-   * But error manager pointer is already there, so save and restore it.
+  /* For debugging purposes, we zero the whole master structure.
+   * But the application has already set the err pointer, and may have set
+   * client_data, so we have to save and restore those fields.
+   * Note: if application hasn't set client_data, tools like Purify may
+   * complain here.
    */
   {
     struct jpeg_error_mgr * err = cinfo->err;
+    void * client_data = cinfo->client_data; /* ignore Purify complaint here */
     MEMZERO(cinfo, SIZEOF(struct jpeg_decompress_struct));
     cinfo->err = err;
+    cinfo->client_data = client_data;
   }
   cinfo->is_decompressor = TRUE;
 
@@ -67,6 +72,7 @@ jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
   /* Initialize marker processor so application can override methods
    * for COM, APPn markers before calling jpeg_read_header.
    */
+  cinfo->marker_list = NULL;
   jinit_marker_reader(cinfo);
 
   /* And initialize the overall input controller. */
@@ -97,23 +103,6 @@ GLOBAL(void)
 jpeg_abort_decompress (j_decompress_ptr cinfo)
 {
   jpeg_abort((j_common_ptr) cinfo); /* use common routine */
-}
-
-
-/*
- * Install a special processing method for COM or APPn markers.
- */
-
-GLOBAL(void)
-jpeg_set_marker_processor (j_decompress_ptr cinfo, int marker_code,
-			   jpeg_marker_parser_method routine)
-{
-  if (marker_code == JPEG_COM)
-    cinfo->marker->process_COM = routine;
-  else if (marker_code >= JPEG_APP0 && marker_code <= JPEG_APP0+15)
-    cinfo->marker->process_APPn[marker_code-JPEG_APP0] = routine;
-  else
-    ERREXIT1(cinfo, JERR_UNKNOWN_MARKER, marker_code);
 }
 
 

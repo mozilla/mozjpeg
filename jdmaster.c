@@ -1,7 +1,7 @@
 /*
  * jdmaster.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -84,8 +84,10 @@ GLOBAL(void)
 jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
 /* Do computations that are needed before master selection phase */
 {
+#ifdef IDCT_SCALING_SUPPORTED
   int ci;
   jpeg_component_info *compptr;
+#endif
 
   /* Prevent application from calling me at wrong times */
   if (cinfo->global_state != DSTATE_READY)
@@ -429,7 +431,7 @@ master_selection (j_decompress_ptr cinfo)
  * modules will be active during this pass and give them appropriate
  * start_pass calls.  We also set is_dummy_pass to indicate whether this
  * is a "real" output pass or a dummy pass for color quantization.
- * (In the latter case, jdapi.c will crank the pass to completion.)
+ * (In the latter case, jdapistd.c will crank the pass to completion.)
  */
 
 METHODDEF(void)

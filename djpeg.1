@@ -1,4 +1,4 @@
-.TH DJPEG 1 "15 June 1995"
+.TH DJPEG 1 "22 August 1997"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -26,9 +26,9 @@ or
 .BR \-gr .
 Most of the "basic" switches can be abbreviated to as little as one letter.
 Upper and lower case are equivalent (thus
-.B \-GIF
+.B \-BMP
 is the same as
-.BR \-gif ).
+.BR \-bmp ).
 British spellings are also accepted (e.g.,
 .BR \-greyscale ),
 though for brevity these are not mentioned below.
@@ -182,13 +182,13 @@ Same as
 .BR \-verbose .
 .SH EXAMPLES
 .LP
-This example decompresses the JPEG file foo.jpg, automatically quantizes to
-256 colors, and saves the output in GIF format in foo.gif:
+This example decompresses the JPEG file foo.jpg, quantizes it to
+256 colors, and saves the output in 8-bit BMP format in foo.bmp:
 .IP
-.B djpeg \-gif
+.B djpeg \-colors 256 \-bmp
 .I foo.jpg
 .B >
-.I foo.gif
+.I foo.bmp
 .SH HINTS
 To get a quick preview of an image, use the
 .B \-grayscale
@@ -244,5 +244,10 @@ Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
 Independent JPEG Group
 .SH BUGS
 Arithmetic coding is not supported for legal reasons.
+.PP
+To avoid the Unisys LZW patent,
+.B djpeg
+produces uncompressed GIF files.  These are larger than they should be, but
+are readable by standard GIF decoders.
 .PP
 Still not as fast as we'd like.

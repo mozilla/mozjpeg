@@ -1,7 +1,7 @@
 /*
  * cjpeg.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -184,7 +184,7 @@ usage (void)
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
-  fprintf(stderr, "  -baseline      Force baseline output\n");
+  fprintf(stderr, "  -baseline      Force baseline quantization tables\n");
   fprintf(stderr, "  -qtables file  Use quantization tables given in file\n");
   fprintf(stderr, "  -qslots N[,...]    Set component quantization tables\n");
   fprintf(stderr, "  -sample HxV[,...]  Set component sampling factors\n");
@@ -255,7 +255,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 #endif
 
     } else if (keymatch(arg, "baseline", 1)) {
-      /* Force baseline output (8-bit quantizer values). */
+      /* Force baseline-compatible output (8-bit quantizer values). */
       force_baseline = TRUE;
 
     } else if (keymatch(arg, "dct", 2)) {

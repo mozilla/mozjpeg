@@ -1,7 +1,7 @@
 /*
  * rdppm.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -303,7 +303,19 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (getc(source->pub.input_file) != 'P')
     ERREXIT(cinfo, JERR_PPM_NOT);
 
-  c = getc(source->pub.input_file); /* save format discriminator for a sec */
+  c = getc(source->pub.input_file); /* subformat discriminator character */
+
+  /* detect unsupported variants (ie, PBM) before trying to read header */
+  switch (c) {
+  case '2':			/* it's a text-format PGM file */
+  case '3':			/* it's a text-format PPM file */
+  case '5':			/* it's a raw-format PGM file */
+  case '6':			/* it's a raw-format PPM file */
+    break;
+  default:
+    ERREXIT(cinfo, JERR_PPM_NOT);
+    break;
+  }
 
   /* fetch the remaining header info */
   w = read_pbm_integer(cinfo, source->pub.input_file);
@@ -367,10 +379,6 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     } else {
       source->pub.get_pixel_rows = get_scaled_rgb_row;
     }
-    break;
-
-  default:
-    ERREXIT(cinfo, JERR_PPM_NOT);
     break;
   }
 

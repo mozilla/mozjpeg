@@ -1,4 +1,4 @@
-.TH RDJPGCOM 1 "15 June 1995"
+.TH RDJPGCOM 1 "11 October 1997"
 .SH NAME
 rdjpgcom \- display text comments from a JPEG file
 .SH SYNOPSIS
@@ -36,6 +36,15 @@ Switch names may be abbreviated, and are not case sensitive.
 does not depend on the IJG JPEG library.  Its source code is intended as an
 illustration of the minimum amount of code required to parse a JPEG file
 header correctly.
+.PP
+In
+.B \-verbose
+mode,
+.B rdjpgcom
+will also attempt to print the contents of any "APP12" markers as text.
+Some digital cameras produce APP12 markers containing useful textual
+information.  If you like, you can modify the source code to print
+other APPn marker types as well.
 .SH SEE ALSO
 .BR cjpeg (1),
 .BR djpeg (1),

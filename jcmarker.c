@@ -1,7 +1,7 @@
 /*
  * jcmarker.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -81,6 +81,17 @@ typedef enum {			/* JPEG marker codes */
 } JPEG_MARKER;
 
 
+/* Private state */
+
+typedef struct {
+  struct jpeg_marker_writer pub; /* public fields */
+
+  unsigned int last_restart_interval; /* last DRI value emitted; 0 after SOI */
+} my_marker_writer;
+
+typedef my_marker_writer * my_marker_ptr;
+
+
 /*
  * Basic output routines.
  *
@@ -158,8 +169,8 @@ emit_dqt (j_compress_ptr cinfo, int index)
       /* The table entries must be emitted in zigzag order. */
       unsigned int qval = qtbl->quantval[jpeg_natural_order[i]];
       if (prec)
-	emit_byte(cinfo, qval >> 8);
-      emit_byte(cinfo, qval & 0xFF);
+	emit_byte(cinfo, (int) (qval >> 8));
+      emit_byte(cinfo, (int) (qval & 0xFF));
     }
 
     qtbl->sent_table = TRUE;
@@ -342,7 +353,7 @@ emit_jfif_app0 (j_compress_ptr cinfo)
    * Length of APP0 block	(2 bytes)
    * Block ID			(4 bytes - ASCII "JFIF")
    * Zero byte			(1 byte to terminate the ID string)
-   * Version Major, Minor	(2 bytes - 0x01, 0x01)
+   * Version Major, Minor	(2 bytes - major first)
    * Units			(1 byte - 0x00 = none, 0x01 = inch, 0x02 = cm)
    * Xdpu			(2 bytes - dots per unit horizontal)
    * Ydpu			(2 bytes - dots per unit vertical)
@@ -359,11 +370,8 @@ emit_jfif_app0 (j_compress_ptr cinfo)
   emit_byte(cinfo, 0x49);
   emit_byte(cinfo, 0x46);
   emit_byte(cinfo, 0);
-  /* We currently emit version code 1.01 since we use no 1.02 features.
-   * This may avoid complaints from some older decoders.
-   */
-  emit_byte(cinfo, 1);		/* Major version */
-  emit_byte(cinfo, 1);		/* Minor version */
+  emit_byte(cinfo, cinfo->JFIF_major_version); /* Version fields */
+  emit_byte(cinfo, cinfo->JFIF_minor_version);
   emit_byte(cinfo, cinfo->density_unit); /* Pixel size information */
   emit_2bytes(cinfo, (int) cinfo->X_density);
   emit_2bytes(cinfo, (int) cinfo->Y_density);
@@ -419,28 +427,30 @@ emit_adobe_app14 (j_compress_ptr cinfo)
 
 
 /*
- * This routine is exported for possible use by applications.
- * The intended use is to emit COM or APPn markers after calling
- * jpeg_start_compress() and before the first jpeg_write_scanlines() call
- * (hence, after write_file_header but before write_frame_header).
+ * These routines allow writing an arbitrary marker with parameters.
+ * The only intended use is to emit COM or APPn markers after calling
+ * write_file_header and before calling write_frame_header.
  * Other uses are not guaranteed to produce desirable results.
+ * Counting the parameter bytes properly is the caller's responsibility.
  */
 
 METHODDEF(void)
-write_any_marker (j_compress_ptr cinfo, int marker,
-		  const JOCTET *dataptr, unsigned int datalen)
-/* Emit an arbitrary marker with parameters */
+write_marker_header (j_compress_ptr cinfo, int marker, unsigned int datalen)
+/* Emit an arbitrary marker header */
 {
-  if (datalen <= (unsigned int) 65533) { /* safety check */
-    emit_marker(cinfo, (JPEG_MARKER) marker);
-  
-    emit_2bytes(cinfo, (int) (datalen + 2)); /* total length */
+  if (datalen > (unsigned int) 65533)		/* safety check */
+    ERREXIT(cinfo, JERR_BAD_LENGTH);
 
-    while (datalen--) {
-      emit_byte(cinfo, *dataptr);
-      dataptr++;
-    }
-  }
+  emit_marker(cinfo, (JPEG_MARKER) marker);
+
+  emit_2bytes(cinfo, (int) (datalen + 2));	/* total length */
+}
+
+METHODDEF(void)
+write_marker_byte (j_compress_ptr cinfo, int val)
+/* Emit one byte of marker parameters following write_marker_header */
+{
+  emit_byte(cinfo, val);
 }
 
 
@@ -458,7 +468,12 @@ write_any_marker (j_compress_ptr cinfo, int marker,
 METHODDEF(void)
 write_file_header (j_compress_ptr cinfo)
 {
+  my_marker_ptr marker = (my_marker_ptr) cinfo->marker;
+
   emit_marker(cinfo, M_SOI);	/* first the SOI */
+
+  /* SOI is defined to reset restart interval to 0 */
+  marker->last_restart_interval = 0;
 
   if (cinfo->write_JFIF_header)	/* next an optional JFIF APP0 */
     emit_jfif_app0(cinfo);
@@ -535,6 +550,7 @@ write_frame_header (j_compress_ptr cinfo)
 METHODDEF(void)
 write_scan_header (j_compress_ptr cinfo)
 {
+  my_marker_ptr marker = (my_marker_ptr) cinfo->marker;
   int i;
   jpeg_component_info *compptr;
 
@@ -567,11 +583,12 @@ write_scan_header (j_compress_ptr cinfo)
   }
 
   /* Emit DRI if required --- note that DRI value could change for each scan.
-   * If it doesn't, a tiny amount of space is wasted in multiple-scan files.
-   * We assume DRI will never be nonzero for one scan and zero for a later one.
+   * We avoid wasting space with unnecessary DRIs, however.
    */
-  if (cinfo->restart_interval)
+  if (cinfo->restart_interval != marker->last_restart_interval) {
     emit_dri(cinfo);
+    marker->last_restart_interval = cinfo->restart_interval;
+  }
 
   emit_sos(cinfo);
 }
@@ -627,15 +644,21 @@ write_tables_only (j_compress_ptr cinfo)
 GLOBAL(void)
 jinit_marker_writer (j_compress_ptr cinfo)
 {
+  my_marker_ptr marker;
+
   /* Create the subobject */
-  cinfo->marker = (struct jpeg_marker_writer *)
+  marker = (my_marker_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(struct jpeg_marker_writer));
+				SIZEOF(my_marker_writer));
+  cinfo->marker = (struct jpeg_marker_writer *) marker;
   /* Initialize method pointers */
-  cinfo->marker->write_any_marker = write_any_marker;
-  cinfo->marker->write_file_header = write_file_header;
-  cinfo->marker->write_frame_header = write_frame_header;
-  cinfo->marker->write_scan_header = write_scan_header;
-  cinfo->marker->write_file_trailer = write_file_trailer;
-  cinfo->marker->write_tables_only = write_tables_only;
+  marker->pub.write_file_header = write_file_header;
+  marker->pub.write_frame_header = write_frame_header;
+  marker->pub.write_scan_header = write_scan_header;
+  marker->pub.write_file_trailer = write_file_trailer;
+  marker->pub.write_tables_only = write_tables_only;
+  marker->pub.write_marker_header = write_marker_header;
+  marker->pub.write_marker_byte = write_marker_byte;
+  /* Initialize private state */
+  marker->last_restart_interval = 0;
 }

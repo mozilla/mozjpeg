@@ -1,7 +1,7 @@
 /*
  * jcphuff.c
  *
- * Copyright (C) 1995-1996, Thomas G. Lane.
+ * Copyright (C) 1995-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -147,22 +147,19 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
     compptr = cinfo->cur_comp_info[ci];
     /* Initialize DC predictions to 0 */
     entropy->last_dc_val[ci] = 0;
-    /* Make sure requested tables are present */
-    /* (In gather mode, tables need not be allocated yet) */
+    /* Get table index */
     if (is_DC_band) {
       if (cinfo->Ah != 0)	/* DC refinement needs no table */
 	continue;
       tbl = compptr->dc_tbl_no;
-      if (tbl < 0 || tbl >= NUM_HUFF_TBLS ||
-	  (cinfo->dc_huff_tbl_ptrs[tbl] == NULL && !gather_statistics))
-	ERREXIT1(cinfo,JERR_NO_HUFF_TABLE, tbl);
     } else {
       entropy->ac_tbl_no = tbl = compptr->ac_tbl_no;
-      if (tbl < 0 || tbl >= NUM_HUFF_TBLS ||
-          (cinfo->ac_huff_tbl_ptrs[tbl] == NULL && !gather_statistics))
-        ERREXIT1(cinfo,JERR_NO_HUFF_TABLE, tbl);
     }
     if (gather_statistics) {
+      /* Check for invalid table index */
+      /* (make_c_derived_tbl does this in the other path) */
+      if (tbl < 0 || tbl >= NUM_HUFF_TBLS)
+        ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, tbl);
       /* Allocate and zero the statistics tables */
       /* Note that jpeg_gen_optimal_table expects 257 entries in each table! */
       if (entropy->count_ptrs[tbl] == NULL)
@@ -171,14 +168,10 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
 				      257 * SIZEOF(long));
       MEMZERO(entropy->count_ptrs[tbl], 257 * SIZEOF(long));
     } else {
-      /* Compute derived values for Huffman tables */
+      /* Compute derived values for Huffman table */
       /* We may do this more than once for a table, but it's not expensive */
-      if (is_DC_band)
-        jpeg_make_c_derived_tbl(cinfo, cinfo->dc_huff_tbl_ptrs[tbl],
-				& entropy->derived_tbls[tbl]);
-      else
-        jpeg_make_c_derived_tbl(cinfo, cinfo->ac_huff_tbl_ptrs[tbl],
-				& entropy->derived_tbls[tbl]);
+      jpeg_make_c_derived_tbl(cinfo, is_DC_band, tbl,
+			      & entropy->derived_tbls[tbl]);
     }
   }
 
@@ -329,6 +322,9 @@ emit_eobrun (phuff_entropy_ptr entropy)
     nbits = 0;
     while ((temp >>= 1))
       nbits++;
+    /* safety check: shouldn't happen given limited correction-bit buffer */
+    if (nbits > 14)
+      ERREXIT(entropy->cinfo, JERR_HUFF_MISSING_CODE);
 
     emit_symbol(entropy, entropy->ac_tbl_no, nbits << 4);
     if (nbits)
@@ -427,6 +423,11 @@ encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       nbits++;
       temp >>= 1;
     }
+    /* Check for out-of-range coefficient values.
+     * Since we're encoding a difference, the range limit is twice as much.
+     */
+    if (nbits > MAX_COEF_BITS+1)
+      ERREXIT(cinfo, JERR_BAD_DCT_COEF);
     
     /* Count/emit the Huffman-coded symbol for the number of bits */
     emit_symbol(entropy, compptr->dc_tbl_no, nbits);
@@ -523,6 +524,9 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     nbits = 1;			/* there must be at least one 1 bit */
     while ((temp >>= 1))
       nbits++;
+    /* Check for out-of-range coefficient values */
+    if (nbits > MAX_COEF_BITS)
+      ERREXIT(cinfo, JERR_BAD_DCT_COEF);
 
     /* Count/emit Huffman symbol for run length / number of bits */
     emit_symbol(entropy, entropy->ac_tbl_no, (r << 4) + nbits);

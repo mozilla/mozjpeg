@@ -1,7 +1,7 @@
 /*
  * jdtrans.c
  *
- * Copyright (C) 1995-1996, Thomas G. Lane.
+ * Copyright (C) 1995-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -30,6 +30,13 @@ LOCAL(void) transdecode_master_selection JPP((j_decompress_ptr cinfo));
  * To release the memory occupied by the virtual arrays, call
  * jpeg_finish_decompress() when done with the data.
  *
+ * An alternative usage is to simply obtain access to the coefficient arrays
+ * during a buffered-image-mode decompression operation.  This is allowed
+ * after any jpeg_finish_output() call.  The arrays can be accessed until
+ * jpeg_finish_decompress() is called.  (Note that any call to the library
+ * may reposition the arrays, so don't rely on access_virt_barray() results
+ * to stay valid across library calls.)
+ *
  * Returns NULL if suspended.  This case need be checked only if
  * a suspending data source is used.
  */
@@ -41,32 +48,43 @@ jpeg_read_coefficients (j_decompress_ptr cinfo)
     /* First call: initialize active modules */
     transdecode_master_selection(cinfo);
     cinfo->global_state = DSTATE_RDCOEFS;
-  } else if (cinfo->global_state != DSTATE_RDCOEFS)
-    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
-  /* Absorb whole file into the coef buffer */
-  for (;;) {
-    int retcode;
-    /* Call progress monitor hook if present */
-    if (cinfo->progress != NULL)
-      (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
-    /* Absorb some more input */
-    retcode = (*cinfo->inputctl->consume_input) (cinfo);
-    if (retcode == JPEG_SUSPENDED)
-      return NULL;
-    if (retcode == JPEG_REACHED_EOI)
-      break;
-    /* Advance progress counter if appropriate */
-    if (cinfo->progress != NULL &&
-	(retcode == JPEG_ROW_COMPLETED || retcode == JPEG_REACHED_SOS)) {
-      if (++cinfo->progress->pass_counter >= cinfo->progress->pass_limit) {
-	/* startup underestimated number of scans; ratchet up one scan */
-	cinfo->progress->pass_limit += (long) cinfo->total_iMCU_rows;
+  }
+  if (cinfo->global_state == DSTATE_RDCOEFS) {
+    /* Absorb whole file into the coef buffer */
+    for (;;) {
+      int retcode;
+      /* Call progress monitor hook if present */
+      if (cinfo->progress != NULL)
+	(*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+      /* Absorb some more input */
+      retcode = (*cinfo->inputctl->consume_input) (cinfo);
+      if (retcode == JPEG_SUSPENDED)
+	return NULL;
+      if (retcode == JPEG_REACHED_EOI)
+	break;
+      /* Advance progress counter if appropriate */
+      if (cinfo->progress != NULL &&
+	  (retcode == JPEG_ROW_COMPLETED || retcode == JPEG_REACHED_SOS)) {
+	if (++cinfo->progress->pass_counter >= cinfo->progress->pass_limit) {
+	  /* startup underestimated number of scans; ratchet up one scan */
+	  cinfo->progress->pass_limit += (long) cinfo->total_iMCU_rows;
+	}
       }
     }
+    /* Set state so that jpeg_finish_decompress does the right thing */
+    cinfo->global_state = DSTATE_STOPPING;
   }
-  /* Set state so that jpeg_finish_decompress does the right thing */
-  cinfo->global_state = DSTATE_STOPPING;
-  return cinfo->coef->coef_arrays;
+  /* At this point we should be in state DSTATE_STOPPING if being used
+   * standalone, or in state DSTATE_BUFIMAGE if being invoked to get access
+   * to the coefficients during a full buffered-image-mode decompression.
+   */
+  if ((cinfo->global_state == DSTATE_STOPPING ||
+       cinfo->global_state == DSTATE_BUFIMAGE) && cinfo->buffered_image) {
+    return cinfo->coef->coef_arrays;
+  }
+  /* Oops, improper usage */
+  ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  return NULL;			/* keep compiler happy */
 }
 
 
@@ -78,6 +96,9 @@ jpeg_read_coefficients (j_decompress_ptr cinfo)
 LOCAL(void)
 transdecode_master_selection (j_decompress_ptr cinfo)
 {
+  /* This is effectively a buffered-image operation. */
+  cinfo->buffered_image = TRUE;
+
   /* Entropy decoding: either Huffman or arithmetic coding. */
   if (cinfo->arith_code) {
     ERREXIT(cinfo, JERR_ARITH_NOTIMPL);

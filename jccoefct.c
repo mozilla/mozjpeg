@@ -1,7 +1,7 @@
 /*
  * jccoefct.c
  *
- * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Copyright (C) 1994-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -135,8 +135,8 @@ start_pass_coef (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
  * per call, ie, v_samp_factor block rows for each component in the image.
  * Returns TRUE if the iMCU row is completed, FALSE if suspended.
  *
- * NB: input_buf contains a plane for each component in image.
- * For single pass, this is the same as the components in the scan.
+ * NB: input_buf contains a plane for each component in image,
+ * which we index according to the component's SOF position.
  */
 
 METHODDEF(boolean)
@@ -175,7 +175,8 @@ compress_data (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 	  if (coef->iMCU_row_num < last_iMCU_row ||
 	      yoffset+yindex < compptr->last_row_height) {
 	    (*cinfo->fdct->forward_DCT) (cinfo, compptr,
-					 input_buf[ci], coef->MCU_buffer[blkn],
+					 input_buf[compptr->component_index],
+					 coef->MCU_buffer[blkn],
 					 ypos, xpos, (JDIMENSION) blockcnt);
 	    if (blockcnt < compptr->MCU_width) {
 	      /* Create some dummy blocks at the right edge of the image. */

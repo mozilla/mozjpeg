@@ -1,16 +1,17 @@
 /*
  * wrgif.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
- **************************************************************************
- * WARNING: You will need an LZW patent license from Unisys in order to   *
- * use this file legally in any commercial or shareware application.      *
- **************************************************************************
- *
  * This file contains routines to write output images in GIF format.
+ *
+ **************************************************************************
+ * NOTE: to avoid entanglements with Unisys' patent on LZW compression,   *
+ * this code has been modified to output "uncompressed GIF" files.        *
+ * There is no trace of the LZW algorithm in this file.                   *
+ **************************************************************************
  *
  * These routines may need modification for non-Unix environments or
  * specialized applications.  As they stand, they assume output to
@@ -41,40 +42,6 @@
 #ifdef GIF_SUPPORTED
 
 
-#define	MAX_LZW_BITS	12	/* maximum LZW code size (4096 symbols) */
-
-typedef INT16 code_int;		/* must hold -1 .. 2**MAX_LZW_BITS */
-
-#define LZW_TABLE_SIZE	((code_int) 1 << MAX_LZW_BITS)
-
-#define HSIZE		5003	/* hash table size for 80% occupancy */
-
-typedef int hash_int;		/* must hold -2*HSIZE..2*HSIZE */
-
-#define MAXCODE(n_bits)	(((code_int) 1 << (n_bits)) - 1)
-
-
-/*
- * The LZW hash table consists of two parallel arrays:
- *   hash_code[i]	code of symbol in slot i, or 0 if empty slot
- *   hash_value[i]	symbol's value; undefined if empty slot
- * where slot values (i) range from 0 to HSIZE-1.  The symbol value is
- * its prefix symbol's code concatenated with its suffix character.
- *
- * Algorithm:  use open addressing double hashing (no chaining) on the
- * prefix code / suffix character combination.  We do a variant of Knuth's
- * algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime
- * secondary probe.
- *
- * The hash_value[] table is allocated from FAR heap space since it would
- * use up rather a lot of the near data space in a PC.
- */
-
-typedef INT32 hash_entry;	/* must hold (code_int<<8) | byte */
-
-#define HASH_ENTRY(prefix,suffix)  ((((hash_entry) (prefix)) << 8) | (suffix))
-
-
 /* Private version of data destination object */
 
 typedef struct {
@@ -84,23 +51,14 @@ typedef struct {
 
   /* State for packing variable-width codes into a bitstream */
   int n_bits;			/* current number of bits/code */
-  code_int maxcode;		/* maximum code, given n_bits */
-  int init_bits;		/* initial n_bits ... restored after clear */
+  int maxcode;			/* maximum code, given n_bits */
   INT32 cur_accum;		/* holds bits not yet output */
   int cur_bits;			/* # of bits in cur_accum */
 
-  /* LZW string construction */
-  code_int waiting_code;	/* symbol not yet output; may be extendable */
-  boolean first_byte;		/* if TRUE, waiting_code is not valid */
-
-  /* State for LZW code assignment */
-  code_int ClearCode;		/* clear code (doesn't change) */
-  code_int EOFCode;		/* EOF code (ditto) */
-  code_int free_code;		/* first not-yet-used symbol code */
-
-  /* LZW hash table */
-  code_int *hash_code;		/* => hash table of symbol codes */
-  hash_entry FAR *hash_value;	/* => hash table of symbol values */
+  /* State for GIF code assignment */
+  int ClearCode;		/* clear code (doesn't change) */
+  int EOFCode;			/* EOF code (ditto) */
+  int code_counter;		/* counts output symbols */
 
   /* GIF data packet construction buffer */
   int bytesinpkt;		/* # of bytes in current packet */
@@ -110,9 +68,12 @@ typedef struct {
 
 typedef gif_dest_struct * gif_dest_ptr;
 
+/* Largest value that will fit in N bits */
+#define MAXCODE(n_bits)	((1 << (n_bits)) - 1)
+
 
 /*
- * Routines to package compressed data bytes into GIF data blocks.
+ * Routines to package finished data bytes into GIF data blocks.
  * A data block consists of a count byte (1..255) and that many data bytes.
  */
 
@@ -141,7 +102,7 @@ flush_packet (gif_dest_ptr dinfo)
 /* Routine to convert variable-width codes into a byte stream */
 
 LOCAL(void)
-output (gif_dest_ptr dinfo, code_int code)
+output (gif_dest_ptr dinfo, int code)
 /* Emit a code of n_bits bits */
 /* Uses cur_accum and cur_bits to reblock into 8-bit bytes */
 {
@@ -153,123 +114,67 @@ output (gif_dest_ptr dinfo, code_int code)
     dinfo->cur_accum >>= 8;
     dinfo->cur_bits -= 8;
   }
-
-  /*
-   * If the next entry is going to be too big for the code size,
-   * then increase it, if possible.  We do this here to ensure
-   * that it's done in sync with the decoder's codesize increases.
-   */
-  if (dinfo->free_code > dinfo->maxcode) {
-    dinfo->n_bits++;
-    if (dinfo->n_bits == MAX_LZW_BITS)
-      dinfo->maxcode = LZW_TABLE_SIZE; /* free_code will never exceed this */
-    else
-      dinfo->maxcode = MAXCODE(dinfo->n_bits);
-  }
 }
 
 
-/* The LZW algorithm proper */
-
-
-LOCAL(void)
-clear_hash (gif_dest_ptr dinfo)
-/* Fill the hash table with empty entries */
-{
-  /* It's sufficient to zero hash_code[] */
-  MEMZERO(dinfo->hash_code, HSIZE * SIZEOF(code_int));
-}
-
-
-LOCAL(void)
-clear_block (gif_dest_ptr dinfo)
-/* Reset compressor and issue a Clear code */
-{
-  clear_hash(dinfo);			/* delete all the symbols */
-  dinfo->free_code = dinfo->ClearCode + 2;
-  output(dinfo, dinfo->ClearCode);	/* inform decoder */
-  dinfo->n_bits = dinfo->init_bits;	/* reset code size */
-  dinfo->maxcode = MAXCODE(dinfo->n_bits);
-}
-
+/* The pseudo-compression algorithm.
+ *
+ * In this module we simply output each pixel value as a separate symbol;
+ * thus, no compression occurs.  In fact, there is expansion of one bit per
+ * pixel, because we use a symbol width one bit wider than the pixel width.
+ *
+ * GIF ordinarily uses variable-width symbols, and the decoder will expect
+ * to ratchet up the symbol width after a fixed number of symbols.
+ * To simplify the logic and keep the expansion penalty down, we emit a
+ * GIF Clear code to reset the decoder just before the width would ratchet up.
+ * Thus, all the symbols in the output file will have the same bit width.
+ * Note that emitting the Clear codes at the right times is a mere matter of
+ * counting output symbols and is in no way dependent on the LZW patent.
+ *
+ * With a small basic pixel width (low color count), Clear codes will be
+ * needed very frequently, causing the file to expand even more.  So this
+ * simplistic approach wouldn't work too well on bilevel images, for example.
+ * But for output of JPEG conversions the pixel width will usually be 8 bits
+ * (129 to 256 colors), so the overhead added by Clear symbols is only about
+ * one symbol in every 256.
+ */
 
 LOCAL(void)
 compress_init (gif_dest_ptr dinfo, int i_bits)
-/* Initialize LZW compressor */
+/* Initialize pseudo-compressor */
 {
   /* init all the state variables */
-  dinfo->n_bits = dinfo->init_bits = i_bits;
+  dinfo->n_bits = i_bits;
   dinfo->maxcode = MAXCODE(dinfo->n_bits);
-  dinfo->ClearCode = ((code_int) 1 << (i_bits - 1));
+  dinfo->ClearCode = (1 << (i_bits - 1));
   dinfo->EOFCode = dinfo->ClearCode + 1;
-  dinfo->free_code = dinfo->ClearCode + 2;
-  dinfo->first_byte = TRUE;	/* no waiting symbol yet */
+  dinfo->code_counter = dinfo->ClearCode + 2;
   /* init output buffering vars */
   dinfo->bytesinpkt = 0;
   dinfo->cur_accum = 0;
   dinfo->cur_bits = 0;
-  /* clear hash table */
-  clear_hash(dinfo);
   /* GIF specifies an initial Clear code */
   output(dinfo, dinfo->ClearCode);
 }
 
 
 LOCAL(void)
-compress_byte (gif_dest_ptr dinfo, int c)
-/* Accept and compress one 8-bit byte */
+compress_pixel (gif_dest_ptr dinfo, int c)
+/* Accept and "compress" one pixel value.
+ * The given value must be less than n_bits wide.
+ */
 {
-  register hash_int i;
-  register hash_int disp;
-  register hash_entry probe_value;
-
-  if (dinfo->first_byte) {	/* need to initialize waiting_code */
-    dinfo->waiting_code = c;
-    dinfo->first_byte = FALSE;
-    return;
-  }
-
-  /* Probe hash table to see if a symbol exists for
-   * waiting_code followed by c.
-   * If so, replace waiting_code by that symbol and return.
+  /* Output the given pixel value as a symbol. */
+  output(dinfo, c);
+  /* Issue Clear codes often enough to keep the reader from ratcheting up
+   * its symbol size.
    */
-  i = ((hash_int) c << (MAX_LZW_BITS-8)) + dinfo->waiting_code;
-  /* i is less than twice 2**MAX_LZW_BITS, therefore less than twice HSIZE */
-  if (i >= HSIZE)
-    i -= HSIZE;
-
-  probe_value = HASH_ENTRY(dinfo->waiting_code, c);
-  
-  if (dinfo->hash_code[i] != 0) { /* is first probed slot empty? */
-    if (dinfo->hash_value[i] == probe_value) {
-      dinfo->waiting_code = dinfo->hash_code[i];
-      return;
-    }
-    if (i == 0)			/* secondary hash (after G. Knott) */
-      disp = 1;
-    else
-      disp = HSIZE - i;
-    for (;;) {
-      i -= disp;
-      if (i < 0)
-	i += HSIZE;
-      if (dinfo->hash_code[i] == 0)
-	break;			/* hit empty slot */
-      if (dinfo->hash_value[i] == probe_value) {
-	dinfo->waiting_code = dinfo->hash_code[i];
-	return;
-      }
-    }
+  if (dinfo->code_counter < dinfo->maxcode) {
+    dinfo->code_counter++;
+  } else {
+    output(dinfo, dinfo->ClearCode);
+    dinfo->code_counter = dinfo->ClearCode + 2;	/* reset the counter */
   }
-
-  /* here when hashtable[i] is an empty slot; desired symbol not in table */
-  output(dinfo, dinfo->waiting_code);
-  if (dinfo->free_code < LZW_TABLE_SIZE) {
-    dinfo->hash_code[i] = dinfo->free_code++; /* add symbol to hashtable */
-    dinfo->hash_value[i] = probe_value;
-  } else
-    clear_block(dinfo);
-  dinfo->waiting_code = c;
 }
 
 
@@ -277,9 +182,6 @@ LOCAL(void)
 compress_term (gif_dest_ptr dinfo)
 /* Clean up at end */
 {
-  /* Flush out the buffered code */
-  if (! dinfo->first_byte)
-    output(dinfo, dinfo->waiting_code);
   /* Send an EOF code */
   output(dinfo, dinfo->EOFCode);
   /* Flush the bit-packing buffer */
@@ -387,7 +289,7 @@ emit_header (gif_dest_ptr dinfo, int num_colors, JSAMPARRAY colormap)
   /* Write Initial Code Size byte */
   putc(InitCodeSize, dinfo->pub.output_file);
 
-  /* Initialize for LZW compression of image data */
+  /* Initialize for "compression" of image data */
   compress_init(dinfo, InitCodeSize+1);
 }
 
@@ -423,7 +325,7 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
   ptr = dest->pub.buffer[0];
   for (col = cinfo->output_width; col > 0; col--) {
-    compress_byte(dest, GETJSAMPLE(*ptr++));
+    compress_pixel(dest, GETJSAMPLE(*ptr++));
   }
 }
 
@@ -437,7 +339,7 @@ finish_output_gif (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   gif_dest_ptr dest = (gif_dest_ptr) dinfo;
 
-  /* Flush LZW mechanism */
+  /* Flush "compression" mechanism */
   compress_term(dest);
   /* Write a zero-length data block to end the series */
   putc(0, dest->pub.output_file);
@@ -490,14 +392,6 @@ jinit_write_gif (j_decompress_ptr cinfo)
   dest->pub.buffer = (*cinfo->mem->alloc_sarray)
     ((j_common_ptr) cinfo, JPOOL_IMAGE, cinfo->output_width, (JDIMENSION) 1);
   dest->pub.buffer_height = 1;
-
-  /* Allocate space for hash table */
-  dest->hash_code = (code_int *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				HSIZE * SIZEOF(code_int));
-  dest->hash_value = (hash_entry FAR *)
-    (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				HSIZE * SIZEOF(hash_entry));
 
   return (djpeg_dest_ptr) dest;
 }

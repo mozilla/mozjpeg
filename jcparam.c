@@ -1,7 +1,7 @@
 /*
  * jcparam.c
  *
- * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Copyright (C) 1991-1998, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -29,13 +29,18 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
  * are limited to 1..255 for JPEG baseline compatibility.
  */
 {
-  JQUANT_TBL ** qtblptr = & cinfo->quant_tbl_ptrs[which_tbl];
+  JQUANT_TBL ** qtblptr;
   int i;
   long temp;
 
   /* Safety check to ensure start_compress not called yet. */
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  if (which_tbl < 0 || which_tbl >= NUM_QUANT_TBLS)
+    ERREXIT1(cinfo, JERR_DQT_INDEX, which_tbl);
+
+  qtblptr = & cinfo->quant_tbl_ptrs[which_tbl];
 
   if (*qtblptr == NULL)
     *qtblptr = jpeg_alloc_quant_table((j_common_ptr) cinfo);
@@ -148,11 +153,25 @@ add_huff_table (j_compress_ptr cinfo,
 		JHUFF_TBL **htblptr, const UINT8 *bits, const UINT8 *val)
 /* Define a Huffman table */
 {
+  int nsymbols, len;
+
   if (*htblptr == NULL)
     *htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
-  
+
+  /* Copy the number-of-symbols-of-each-code-length counts */
   MEMCOPY((*htblptr)->bits, bits, SIZEOF((*htblptr)->bits));
-  MEMCOPY((*htblptr)->huffval, val, SIZEOF((*htblptr)->huffval));
+
+  /* Validate the counts.  We do this here mainly so we can copy the right
+   * number of symbols from the val[] array, without risking marching off
+   * the end of memory.  jchuff.c will do a more thorough test later.
+   */
+  nsymbols = 0;
+  for (len = 1; len <= 16; len++)
+    nsymbols += bits[len];
+  if (nsymbols < 1 || nsymbols > 256)
+    ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
+
+  MEMCOPY((*htblptr)->huffval, val, nsymbols * SIZEOF(UINT8));
 
   /* Initialize sent_table FALSE so table will be written to JPEG file. */
   (*htblptr)->sent_table = FALSE;
@@ -313,7 +332,15 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 
   /* Fill in default JFIF marker parameters.  Note that whether the marker
    * will actually be written is determined by jpeg_set_colorspace.
+   *
+   * By default, the library emits JFIF version code 1.01.
+   * An application that wants to emit JFIF 1.02 extension markers should set
+   * JFIF_minor_version to 2.  We could probably get away with just defaulting
+   * to 1.02, but there may still be some decoders in use that will complain
+   * about that; saying 1.01 should minimize compatibility problems.
    */
+  cinfo->JFIF_major_version = 1; /* Default JFIF version = 1.01 */
+  cinfo->JFIF_minor_version = 1;
   cinfo->density_unit = 0;	/* Pixel size is unknown by default */
   cinfo->X_density = 1;		/* Pixel aspect ratio is square by default */
   cinfo->Y_density = 1;
@@ -529,11 +556,20 @@ jpeg_simple_progression (j_compress_ptr cinfo)
       nscans = 2 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
   }
 
-  /* Allocate space for script. */
-  /* We use permanent pool just in case application re-uses script. */
-  scanptr = (jpeg_scan_info *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				nscans * SIZEOF(jpeg_scan_info));
+  /* Allocate space for script.
+   * We need to put it in the permanent pool in case the application performs
+   * multiple compressions without changing the settings.  To avoid a memory
+   * leak if jpeg_simple_progression is called repeatedly for the same JPEG
+   * object, we try to re-use previously allocated space, and we allocate
+   * enough space to handle YCbCr even if initially asked for grayscale.
+   */
+  if (cinfo->script_space == NULL || cinfo->script_space_size < nscans) {
+    cinfo->script_space_size = MAX(nscans, 10);
+    cinfo->script_space = (jpeg_scan_info *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+			cinfo->script_space_size * SIZEOF(jpeg_scan_info));
+  }
+  scanptr = cinfo->script_space;
   cinfo->scan_info = scanptr;
   cinfo->num_scans = nscans;
 

@@ -1,7 +1,7 @@
 /*
  * jmemdos.c
  *
- * Copyright (C) 1992-1996, Thomas G. Lane.
+ * Copyright (C) 1992-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -75,6 +75,10 @@ extern char * getenv JPP((const char * name));
 #define READ_BINARY	"r"
 #else
 #define READ_BINARY	"rb"
+#endif
+
+#ifndef USE_MSDOS_MEMMGR	/* make sure user got configuration right */
+  You forgot to define USE_MSDOS_MEMMGR in jconfig.h. /* deliberate syntax error */
 #endif
 
 #if MAX_ALLOC_CHUNK >= 65535L	/* make sure jconfig.h got this right */

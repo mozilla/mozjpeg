@@ -1,11 +1,12 @@
 ; Project file for Independent JPEG Group's software
 ;
 ; This project file is for Atari ST/STE/TT systems using Pure C or Turbo C.
-; Thanks to Frank Moehle (Frank.Moehle@arbi.informatik.uni-oldenburg.de)
-; and to Dr. B. Setzepfandt (bernd@gina.uni-muenster.de).
+; Thanks to Frank Moehle (Frank.Moehle@arbi.informatik.uni-oldenburg.de),
+; Dr. B. Setzepfandt (bernd@gina.uni-muenster.de),
+; and Guido Vollbeding (guivol@esc.de).
 ;
-; To use this file, rename it to DJPEG.PRJ.
-; If you are using Turbo C, change filenames beginning with "PC..." to "TC..."
+; To use this file, rename it to djpeg.prj.
+; If you are using Turbo C, change filenames beginning with "pc..." to "tc..."
 ; Read installation instructions before trying to make the program!
 ;
 ;
@@ -21,7 +22,7 @@ djpeg.ttp
 .C[-wsig]     ; warn if significant digits may be lost
 =
 ; * * * * List of modules * * * * 
-PCSTART.O
+pcstart.o
 djpeg.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h,jversion.h)
 cdjpeg.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
 rdcolmap.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
@@ -30,8 +31,8 @@ wrgif.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
 wrtarga.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
 wrbmp.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
 wrrle.c	(cdjpeg.h,jinclude.h,jconfig.h,jpeglib.h,jmorecfg.h,jerror.h,cderror.h)
-LIBJPEG.LIB        ; built by LIBJPEG.PRJ
-PCFLTLIB.LIB       ; floating point library
+libjpeg.lib        ; built by libjpeg.prj
+pcfltlib.lib       ; floating point library
 ; the float library can be omitted if you've turned off DCT_FLOAT_SUPPORTED
-PCSTDLIB.LIB       ; standard library
-PCEXTLIB.LIB       ; extended library
+pcstdlib.lib       ; standard library
+pcextlib.lib       ; extended library

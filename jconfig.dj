@@ -21,6 +21,13 @@
 
 #endif /* JPEG_INTERNALS */
 
+#if defined(JPEG_INTERNALS) || defined(JPEG_INTERNAL_OPTIONS)
+#undef JSIMD_MMX_NOT_SUPPORTED
+#undef JSIMD_3DNOW_NOT_SUPPORTED
+#undef JSIMD_SSE_NOT_SUPPORTED
+#undef JSIMD_SSE2_NOT_SUPPORTED
+#endif
+
 #ifdef JPEG_CJPEG_DJPEG
 
 #define BMP_SUPPORTED		/* BMP image file format */
@@ -34,5 +41,7 @@
 #undef NEED_SIGNAL_CATCHER	/* Define this if you use jmemname.c */
 #undef DONT_USE_B_MODE
 #undef PROGRESS_REPORT		/* optional */
+
+#define FREE_MEM_ESTIMATE	0	/* for alternate cjpeg/djpeg */
 
 #endif /* JPEG_CJPEG_DJPEG */

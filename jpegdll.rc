@@ -1,0 +1,57 @@
+//
+// jpegdll.rc - version information for Win32 DLL
+//
+
+// from <winver.h>
+#define VS_VERSION_INFO         1
+#define VS_FFI_FILEFLAGSMASK    0x0000003FL
+#define VS_FF_DEBUG             0x00000001L
+#define VOS__WINDOWS32          0x00000004L
+#define VFT_DLL                 0x00000002L
+#define VFT2_UNKNOWN            0x00000000L
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    6,2,1,2
+ PRODUCTVERSION 6,2,1,2
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+ FILEFLAGS      VS_FF_DEBUG
+#else
+ FILEFLAGS      0x00000000L
+#endif
+ FILEOS         VOS__WINDOWS32
+ FILETYPE       VFT_DLL
+ FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "00000000"
+        BEGIN
+            VALUE "LegalCopyright",  "Copyright (C) 1991-1998 Thomas G. Lane\0"
+            VALUE "FileDescription", "Independent JPEG Group's JPEG Library"
+                                     " with SIMD support\0"
+            VALUE "ProductName", "The Independent JPEG Group's JPEG software"
+                                 " release 6b   with x86 SIMD extension for"
+                                 " IJG JPEG library version 1.02\0"
+            VALUE "Comments", "This is not an official binary from IJG.   "
+                              "The SIMD code in this DLL is copyright (C)"
+                              " 1999-2006 MIYASAKA Masaru.\0"
+            VALUE "FileVersion",      "6.2.1.02\0"
+            VALUE "ProductVersion",   "6.2.1.02\0"
+            VALUE "OriginalFilename", "jpeg62.dll\0"
+            VALUE "InternalName",     "jpeg62\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 0
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////

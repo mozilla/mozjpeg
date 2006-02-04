@@ -5,12 +5,20 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : January 5, 2006
+ * ---------------------------------------------------------------------
+ *
  * This file contains output colorspace conversion routines.
  */
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jcolsamp.h"		/* Private declarations */
 
 
 /* Private subobject */
@@ -105,6 +113,17 @@ build_ycc_rgb_table (j_decompress_ptr cinfo)
 }
 
 
+#if RGB_PIXELSIZE == 4
+/* offset of filler byte */
+#define RGB_FILLER  (6 - (RGB_RED) - (RGB_GREEN) - (RGB_BLUE))
+/* byte pattern to fill with */
+#ifdef RGBX_FILLER_0XFF
+#define RGB_FILLER_BYTE 0xFF
+#else
+#define RGB_FILLER_BYTE 0x00
+#endif
+#endif /* RGB_PIXELSIZE == 4 */
+
 /*
  * Convert some rows of samples to the output colorspace.
  *
@@ -151,6 +170,9 @@ ycc_rgb_convert (j_decompress_ptr cinfo,
 			      ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],
 						 SCALEBITS))];
       outptr[RGB_BLUE] =  range_limit[y + Cbbtab[cb]];
+#if RGB_PIXELSIZE == 4
+      outptr[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
       outptr += RGB_PIXELSIZE;
     }
   }
@@ -228,6 +250,9 @@ gray_rgb_convert (j_decompress_ptr cinfo,
     for (col = 0; col < num_cols; col++) {
       /* We can dispense with GETJSAMPLE() here */
       outptr[RGB_RED] = outptr[RGB_GREEN] = outptr[RGB_BLUE] = inptr[col];
+#if RGB_PIXELSIZE == 4
+      outptr[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
       outptr += RGB_PIXELSIZE;
     }
   }
@@ -305,6 +330,7 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
 {
   my_cconvert_ptr cconvert;
   int ci;
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
 
   cconvert = (my_cconvert_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
@@ -358,8 +384,23 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
   case JCS_RGB:
     cinfo->out_color_components = RGB_PIXELSIZE;
     if (cinfo->jpeg_color_space == JCS_YCbCr) {
-      cconvert->pub.color_convert = ycc_rgb_convert;
-      build_ycc_rgb_table(cinfo);
+#if RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4
+#ifdef JDCOLOR_YCCRGB_SSE2_SUPPORTED
+      if (simd & JSIMD_SSE2 &&
+          IS_CONST_ALIGNED_16(jconst_ycc_rgb_convert_sse2)) {
+        cconvert->pub.color_convert = jpeg_ycc_rgb_convert_sse2;
+      } else
+#endif
+#ifdef JDCOLOR_YCCRGB_MMX_SUPPORTED
+      if (simd & JSIMD_MMX) {
+        cconvert->pub.color_convert = jpeg_ycc_rgb_convert_mmx;
+      } else
+#endif
+#endif /* RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4 */
+      {
+        cconvert->pub.color_convert = ycc_rgb_convert;
+        build_ycc_rgb_table(cinfo);
+      }
     } else if (cinfo->jpeg_color_space == JCS_GRAYSCALE) {
       cconvert->pub.color_convert = gray_rgb_convert;
     } else if (cinfo->jpeg_color_space == JCS_RGB && RGB_PIXELSIZE == 3) {
@@ -394,3 +435,28 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
   else
     cinfo->output_components = cinfo->out_color_components;
 }
+
+
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+
+GLOBAL(unsigned int)
+jpeg_simd_color_deconverter (j_decompress_ptr cinfo)
+{
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
+
+#if RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4
+#ifdef JDCOLOR_YCCRGB_SSE2_SUPPORTED
+  if (simd & JSIMD_SSE2 &&
+      IS_CONST_ALIGNED_16(jconst_ycc_rgb_convert_sse2))
+    return JSIMD_SSE2;
+#endif
+#ifdef JDCOLOR_YCCRGB_MMX_SUPPORTED
+  if (simd & JSIMD_MMX)
+    return JSIMD_MMX;
+#endif
+#endif /* RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4 */
+
+  return JSIMD_NONE;
+}
+
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */

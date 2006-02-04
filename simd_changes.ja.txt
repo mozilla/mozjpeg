@@ -1,0 +1,24 @@
+Independent JPEG Group's JPEG software release 6b
+  with x86 SIMD extension for IJG JPEG library version 1.02
+    == CHANGES ==
+-----------------------------------------------------------
+
+IJG R6b with x86SIMD V1.02 (2006-02-04)
+---------------------------------------
+* x86 版 Darwin に対応しました。動作確認は Darwin 8.0.1 for x86 にて
+  行ないました。x86 版 Mac OS X でも、動作するものと思われます。
+  また、Solaris 10 での動作確認も行ないました。
+
+IJG R6b with x86SIMD V1.01 (2006-01-26)
+---------------------------------------
+* jsimdgcc.c を使ったとき、NEED_SHORT_EXTERNAL_NAMES が定義されていると
+  正常にリンクできないバグを修正しました。
+* 圧縮側のコードの一部(jcsammmx.asm, jcsamss2.asm, jcqnt3dn.asm)にやや
+  冗長な箇所があったので、これを修正しました。
+
+IJG R6b with x86SIMD V1.0 (2006-01-10)
+--------------------------------------
+* 最初の公開版。
+
+
+[EOF]

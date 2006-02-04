@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : August 23, 2005
+ * ---------------------------------------------------------------------
+ *
  * This file contains a command-line user interface for the JPEG compressor.
  * It should work on any system with Unix- or MS-DOS-style command lines.
  *
@@ -195,6 +202,22 @@ usage (void)
 }
 
 
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+
+LOCAL(void)
+print_simd_info (FILE * file, char * labelstr, unsigned int simd)
+{
+  fprintf(file, "%s%s%s%s%s%s\n", labelstr,
+	  simd & JSIMD_MMX   ? " MMX"    : "",
+	  simd & JSIMD_3DNOW ? " 3DNow!" : "",
+	  simd & JSIMD_SSE   ? " SSE"    : "",
+	  simd & JSIMD_SSE2  ? " SSE2"   : "",
+	  simd == JSIMD_NONE ? " NONE"   : "");
+}
+
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */
+
+
 LOCAL(int)
 parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 		int last_file_arg_seen, boolean for_real)
@@ -258,6 +281,19 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Force baseline-compatible output (8-bit quantizer values). */
       force_baseline = TRUE;
 
+#ifndef JSIMD_MASKFUNC_NOT_SUPPORTED
+    } else if (keymatch(arg, "nosimd" , 4)) {
+      jpeg_simd_mask((j_common_ptr) cinfo, JSIMD_NONE, JSIMD_ALL);
+    } else if (keymatch(arg, "nommx"  , 3)) {
+      jpeg_simd_mask((j_common_ptr) cinfo, JSIMD_NONE, JSIMD_MMX);
+    } else if (keymatch(arg, "no3dnow", 3)) {
+      jpeg_simd_mask((j_common_ptr) cinfo, JSIMD_NONE, JSIMD_3DNOW);
+    } else if (keymatch(arg, "nosse"  , 4)) {
+      jpeg_simd_mask((j_common_ptr) cinfo, JSIMD_NONE, JSIMD_SSE);
+    } else if (keymatch(arg, "nosse2" , 6)) {
+      jpeg_simd_mask((j_common_ptr) cinfo, JSIMD_NONE, JSIMD_SSE2);
+#endif /* !JSIMD_MASKFUNC_NOT_SUPPORTED */
+
     } else if (keymatch(arg, "dct", 2)) {
       /* Select DCT algorithm. */
       if (++argn >= argc)	/* advance to next argument */
@@ -279,6 +315,32 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       if (! printed_version) {
 	fprintf(stderr, "Independent JPEG Group's CJPEG, version %s\n%s\n",
 		JVERSION, JCOPYRIGHT);
+	fprintf(stderr,
+		"\nx86 SIMD extension for IJG JPEG library, version %s\n\n",
+		JPEG_SIMDEXT_VER_STR);
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+	print_simd_info(stderr, "SIMD instructions supported by the system :",
+			jpeg_simd_support(NULL));
+
+	fprintf(stderr, "\n      === SIMD Operation Modes ===\n");
+#ifdef DCT_ISLOW_SUPPORTED
+	print_simd_info(stderr, "Accurate integer DCT  (-dct int)   :",
+			jpeg_simd_forward_dct(cinfo, JDCT_ISLOW));
+#endif
+#ifdef DCT_IFAST_SUPPORTED
+	print_simd_info(stderr, "Fast integer DCT      (-dct fast)  :",
+			jpeg_simd_forward_dct(cinfo, JDCT_IFAST));
+#endif
+#ifdef DCT_FLOAT_SUPPORTED
+	print_simd_info(stderr, "Floating-point DCT    (-dct float) :",
+			jpeg_simd_forward_dct(cinfo, JDCT_FLOAT));
+#endif
+	print_simd_info(stderr, "Downsampling (-sample 2x2 or 2x1)  :",
+			jpeg_simd_downsampler(cinfo));
+	print_simd_info(stderr, "Colorspace conversion (RGB->YCbCr) :",
+			jpeg_simd_color_converter(cinfo));
+	fprintf(stderr, "\n");
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */
 	printed_version = TRUE;
       }
       cinfo->err->trace_level++;

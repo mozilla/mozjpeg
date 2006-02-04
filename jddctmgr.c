@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : December 24, 2005
+ * ---------------------------------------------------------------------
+ *
  * This file contains the inverse-DCT management logic.
  * This code selects a particular IDCT implementation to be used,
  * and it performs related housekeeping chores.  No code in this file
@@ -94,6 +101,7 @@ start_pass (j_decompress_ptr cinfo)
   int method = 0;
   inverse_DCT_method_ptr method_ptr = NULL;
   JQUANT_TBL * qtbl;
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
@@ -105,34 +113,95 @@ start_pass (j_decompress_ptr cinfo)
       method = JDCT_ISLOW;	/* jidctred uses islow-style table */
       break;
     case 2:
-      method_ptr = jpeg_idct_2x2;
+#ifdef JIDCT_INT_SSE2_SUPPORTED
+      if (simd & JSIMD_SSE2 &&
+          IS_CONST_ALIGNED_16(jconst_idct_red_sse2))
+	method_ptr = jpeg_idct_2x2_sse2;
+      else
+#endif
+#ifdef JIDCT_INT_MMX_SUPPORTED
+      if (simd & JSIMD_MMX)
+	method_ptr = jpeg_idct_2x2_mmx;
+      else
+#endif
+	method_ptr = jpeg_idct_2x2;
       method = JDCT_ISLOW;	/* jidctred uses islow-style table */
       break;
     case 4:
-      method_ptr = jpeg_idct_4x4;
+#ifdef JIDCT_INT_SSE2_SUPPORTED
+      if (simd & JSIMD_SSE2 &&
+          IS_CONST_ALIGNED_16(jconst_idct_red_sse2))
+	method_ptr = jpeg_idct_4x4_sse2;
+      else
+#endif
+#ifdef JIDCT_INT_MMX_SUPPORTED
+      if (simd & JSIMD_MMX)
+	method_ptr = jpeg_idct_4x4_mmx;
+      else
+#endif
+	method_ptr = jpeg_idct_4x4;
       method = JDCT_ISLOW;	/* jidctred uses islow-style table */
       break;
-#endif
+#endif /* IDCT_SCALING_SUPPORTED */
     case DCTSIZE:
       switch (cinfo->dct_method) {
 #ifdef DCT_ISLOW_SUPPORTED
       case JDCT_ISLOW:
-	method_ptr = jpeg_idct_islow;
+#ifdef JIDCT_INT_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE2 &&
+	    IS_CONST_ALIGNED_16(jconst_idct_islow_sse2))
+	  method_ptr = jpeg_idct_islow_sse2;
+	else
+#endif
+#ifdef JIDCT_INT_MMX_SUPPORTED
+	if (simd & JSIMD_MMX)
+	  method_ptr = jpeg_idct_islow_mmx;
+	else
+#endif
+	  method_ptr = jpeg_idct_islow;
 	method = JDCT_ISLOW;
 	break;
-#endif
+#endif /* DCT_ISLOW_SUPPORTED */
 #ifdef DCT_IFAST_SUPPORTED
       case JDCT_IFAST:
-	method_ptr = jpeg_idct_ifast;
+#ifdef JIDCT_INT_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE2 &&
+	    IS_CONST_ALIGNED_16(jconst_idct_ifast_sse2))
+	  method_ptr = jpeg_idct_ifast_sse2;
+	else
+#endif
+#ifdef JIDCT_INT_MMX_SUPPORTED
+	if (simd & JSIMD_MMX)
+	  method_ptr = jpeg_idct_ifast_mmx;
+	else
+#endif
+	  method_ptr = jpeg_idct_ifast;
 	method = JDCT_IFAST;
 	break;
-#endif
+#endif /* DCT_IFAST_SUPPORTED */
 #ifdef DCT_FLOAT_SUPPORTED
       case JDCT_FLOAT:
-	method_ptr = jpeg_idct_float;
+#ifdef JIDCT_FLT_SSE_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE && simd & JSIMD_SSE2 &&
+	    IS_CONST_ALIGNED_16(jconst_idct_float_sse2))
+	  method_ptr = jpeg_idct_float_sse2;
+	else
+#endif
+#ifdef JIDCT_FLT_SSE_MMX_SUPPORTED
+	if (simd & JSIMD_SSE &&
+	    IS_CONST_ALIGNED_16(jconst_idct_float_sse))
+	  method_ptr = jpeg_idct_float_sse;
+	else
+#endif
+#ifdef JIDCT_FLT_3DNOW_MMX_SUPPORTED
+	if (simd & JSIMD_3DNOW)
+	  method_ptr = jpeg_idct_float_3dnow;
+	else
+#endif
+	  method_ptr = jpeg_idct_float;
 	method = JDCT_FLOAT;
 	break;
-#endif
+#endif /* DCT_FLOAT_SUPPORTED */
       default:
 	ERREXIT(cinfo, JERR_NOT_COMPILED);
 	break;
@@ -267,3 +336,78 @@ jinit_inverse_dct (j_decompress_ptr cinfo)
     idct->cur_method[ci] = -1;
   }
 }
+
+
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+
+GLOBAL(unsigned int)
+jpeg_simd_inverse_dct (j_decompress_ptr cinfo, int method)
+{
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
+
+  switch (method) {
+#ifdef DCT_ISLOW_SUPPORTED
+  case JDCT_ISLOW:
+#ifdef JIDCT_INT_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE2 &&
+        IS_CONST_ALIGNED_16(jconst_idct_islow_sse2))
+      return JSIMD_SSE2;
+#endif
+#ifdef JIDCT_INT_MMX_SUPPORTED
+    if (simd & JSIMD_MMX)
+      return JSIMD_MMX;
+#endif
+    return JSIMD_NONE;
+#endif /* DCT_ISLOW_SUPPORTED */
+#ifdef DCT_IFAST_SUPPORTED
+  case JDCT_IFAST:
+#ifdef JIDCT_INT_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE2 &&
+        IS_CONST_ALIGNED_16(jconst_idct_ifast_sse2))
+      return JSIMD_SSE2;
+#endif
+#ifdef JIDCT_INT_MMX_SUPPORTED
+    if (simd & JSIMD_MMX)
+      return JSIMD_MMX;
+#endif
+    return JSIMD_NONE;
+#endif /* DCT_IFAST_SUPPORTED */
+#ifdef DCT_FLOAT_SUPPORTED
+  case JDCT_FLOAT:
+#ifdef JIDCT_FLT_SSE_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE && simd & JSIMD_SSE2 &&
+        IS_CONST_ALIGNED_16(jconst_idct_float_sse2))
+      return JSIMD_SSE;		/* (JSIMD_SSE | JSIMD_SSE2); */
+#endif
+#ifdef JIDCT_FLT_SSE_MMX_SUPPORTED
+    if (simd & JSIMD_SSE &&
+        IS_CONST_ALIGNED_16(jconst_idct_float_sse))
+      return JSIMD_SSE;		/* (JSIMD_SSE | JSIMD_MMX); */
+#endif
+#ifdef JIDCT_FLT_3DNOW_MMX_SUPPORTED
+    if (simd & JSIMD_3DNOW)
+      return JSIMD_3DNOW;	/* (JSIMD_3DNOW | JSIMD_MMX); */
+#endif
+    return JSIMD_NONE;
+#endif /* DCT_FLOAT_SUPPORTED */
+#ifdef IDCT_SCALING_SUPPORTED
+  case JDCT_FLOAT + 1:
+#ifdef JIDCT_INT_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE2 &&
+        IS_CONST_ALIGNED_16(jconst_idct_red_sse2))
+      return JSIMD_SSE2;
+#endif
+#ifdef JIDCT_INT_MMX_SUPPORTED
+    if (simd & JSIMD_MMX)
+      return JSIMD_MMX;
+#endif
+    return JSIMD_NONE;
+#endif /* IDCT_SCALING_SUPPORTED */
+  default:
+    ;
+  }
+
+  return JSIMD_NONE;	/* not compiled */
+}
+
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */

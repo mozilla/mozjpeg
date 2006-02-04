@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : March 28, 2005
+ * ---------------------------------------------------------------------
+ *
  * This file contains additional configuration options that customize the
  * JPEG software for special applications or support machine-dependent
  * optimizations.  Most users will not need to touch this file.
@@ -20,7 +27,9 @@
  * We do not support run-time selection of data precision, sorry.
  */
 
-#define BITS_IN_JSAMPLE  8	/* use 8 or 12 */
+/* SIMD Ext: This SIMD code only copes with 8-bit sample values. */
+
+#define BITS_IN_JSAMPLE  8	/* SIMD Ext: cannot be changed! */
 
 
 /*
@@ -157,7 +166,8 @@ typedef short INT16;
 
 /* INT32 must hold at least signed 32-bit values. */
 
-#ifndef XMD_H			/* X11/xmd.h correctly defines INT32 */
+	/* X11/xmd.h and basetsd.h (Win32 SDK) correctly define INT32 */
+#if !defined(XMD_H) && !defined(_BASETSD_H_) && !defined(_BASETSD_H)
 typedef long INT32;
 #endif
 
@@ -180,14 +190,24 @@ typedef unsigned int JDIMENSION;
  * or code profilers that require it.
  */
 
+#if defined(_MSC_VER) || defined(__BORLANDC__) || \
+    defined(__WATCOMC__) || defined(__MWERKS__) || \
+    defined(__ICC) || defined(__INTEL_COMPILER)
+#define JCDECL  __cdecl
+#elif defined(__GNUC__)
+#define JCDECL  __attribute__((__cdecl__))
+#else
+#define JCDECL
+#endif
+
 /* a function called through method pointers: */
-#define METHODDEF(type)		static type
+#define METHODDEF(type)		static type JCDECL
 /* a function used only in its module: */
 #define LOCAL(type)		static type
 /* a function referenced thru EXTERNs: */
-#define GLOBAL(type)		type
+#define GLOBAL(type)		type JCDECL
 /* a reference to a GLOBAL function: */
-#define EXTERN(type)		extern type
+#define EXTERN(type)		extern type JCDECL
 
 
 /* This macro is used to declare a "method", that is, a function pointer.
@@ -197,9 +217,9 @@ typedef unsigned int JDIMENSION;
  */
 
 #ifdef HAVE_PROTOTYPES
-#define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
+#define JMETHOD(type,methodname,arglist)  type (JCDECL *methodname) arglist
 #else
-#define JMETHOD(type,methodname,arglist)  type (*methodname) ()
+#define JMETHOD(type,methodname,arglist)  type (JCDECL *methodname) ()
 #endif
 
 
@@ -209,11 +229,13 @@ typedef unsigned int JDIMENSION;
  * explicit coding is needed; see uses of the NEED_FAR_POINTERS symbol.
  */
 
+#ifndef FAR
 #ifdef NEED_FAR_POINTERS
 #define FAR  far
 #else
 #define FAR
 #endif
+#endif /* !FAR */
 
 
 /*
@@ -224,8 +246,14 @@ typedef unsigned int JDIMENSION;
  */
 
 #ifndef HAVE_BOOLEAN
-typedef int boolean;
+#ifdef TYPEDEF_UCHAR_BOOLEAN
+#ifndef __RPCNDR_H__		/* don't conflict if rpcndr.h already read */
+typedef unsigned char boolean;
 #endif
+#else /* !TYPEDEF_UCHAR_BOOLEAN */
+typedef int boolean;
+#endif /* TYPEDEF_UCHAR_BOOLEAN */
+#endif /* !HAVE_BOOLEAN */
 #ifndef FALSE			/* in case these macros already exist */
 #define FALSE	0		/* values of boolean */
 #endif
@@ -290,6 +318,7 @@ typedef int boolean;
 #define IDCT_SCALING_SUPPORTED	    /* Output rescaling via IDCT? */
 #undef  UPSAMPLE_SCALING_SUPPORTED  /* Output rescaling at upsample stage? */
 #define UPSAMPLE_MERGING_SUPPORTED  /* Fast path for sloppy upsampling? */
+#define UPSAMPLE_H1V2_SUPPORTED	    /* Fast/fancy processing for 1h2v? */
 #define QUANT_1PASS_SUPPORTED	    /* 1-pass color quantization? */
 #define QUANT_2PASS_SUPPORTED	    /* 2-pass color quantization? */
 
@@ -316,6 +345,84 @@ typedef int boolean;
 #define RGB_BLUE	2	/* Offset of Blue */
 #define RGB_PIXELSIZE	3	/* JSAMPLEs per RGB scanline element */
 
+#undef RGBX_FILLER_0XFF 	/* fill dummy bytes with 0xFF in RGBX format */
+
+
+/* SIMD support options: */
+
+#ifndef JSIMD_MMX_NOT_SUPPORTED
+#define JSIMD_ENCODER_MMX_SUPPORTED	/* Use MMX    in encoding process */
+#define JSIMD_DECODER_MMX_SUPPORTED	/* Use MMX    in decoding process */
+#endif
+#ifndef JSIMD_3DNOW_NOT_SUPPORTED
+#define JSIMD_ENCODER_3DNOW_SUPPORTED	/* Use 3DNow! in encoding process */
+#define JSIMD_DECODER_3DNOW_SUPPORTED	/* Use 3DNow! in decoding process */
+#endif
+#ifndef JSIMD_SSE_NOT_SUPPORTED
+#define JSIMD_ENCODER_SSE_SUPPORTED	/* Use SSE    in encoding process */
+#define JSIMD_DECODER_SSE_SUPPORTED	/* Use SSE    in decoding process */
+#endif
+#ifndef JSIMD_SSE2_NOT_SUPPORTED
+#define JSIMD_ENCODER_SSE2_SUPPORTED	/* Use SSE2   in encoding process */
+#define JSIMD_DECODER_SSE2_SUPPORTED	/* Use SSE2   in decoding process */
+#endif
+
+/* (encoder part): */
+
+#undef JFDCT_INT_QUANTIZE_WITH_DIVISION /* Use general quantization method */
+
+#if defined(JSIMD_ENCODER_MMX_SUPPORTED)
+#define JCCOLOR_RGBYCC_MMX_SUPPORTED	/* RGB->YCC conversion with MMX */
+#define JCSAMPLE_MMX_SUPPORTED		/* downsampling with MMX */
+#define JFDCT_INT_MMX_SUPPORTED		/* forward DCT with MMX */
+#endif
+#if defined(JSIMD_ENCODER_SSE2_SUPPORTED)
+#define JCCOLOR_RGBYCC_SSE2_SUPPORTED	/* RGB->YCC conversion with SSE2 */
+#define JCSAMPLE_SSE2_SUPPORTED		/* downsampling with SSE2 */
+#define JFDCT_INT_SSE2_SUPPORTED	/* forward DCT with SSE2 */
+#endif
+#if defined(JSIMD_ENCODER_3DNOW_SUPPORTED) && \
+    defined(JSIMD_ENCODER_MMX_SUPPORTED)
+#define JFDCT_FLT_3DNOW_MMX_SUPPORTED	/* forward DCT with 3DNow!/MMX */
+#endif
+#if defined(JSIMD_ENCODER_SSE_SUPPORTED) && \
+    defined(JSIMD_ENCODER_MMX_SUPPORTED)
+#define JFDCT_FLT_SSE_MMX_SUPPORTED	/* forward DCT with SSE/MMX */
+#endif
+#if defined(JSIMD_ENCODER_SSE_SUPPORTED) && \
+    defined(JSIMD_ENCODER_SSE2_SUPPORTED)
+#define JFDCT_FLT_SSE_SSE2_SUPPORTED	/* forward DCT with SSE/SSE2 */
+#endif
+
+/* (decoder part): */
+
+#if defined(JSIMD_DECODER_MMX_SUPPORTED)
+#define JDCOLOR_YCCRGB_MMX_SUPPORTED	/* YCC->RGB conversion with MMX */
+#define JDMERGE_MMX_SUPPORTED		/* merged upsampling with MMX */
+#define JDSAMPLE_FANCY_MMX_SUPPORTED	/* fancy upsampling with MMX */
+#define JDSAMPLE_SIMPLE_MMX_SUPPORTED	/* sloppy upsampling with MMX */
+#define JIDCT_INT_MMX_SUPPORTED		/* inverse DCT with MMX */
+#endif
+#if defined(JSIMD_DECODER_SSE2_SUPPORTED)
+#define JDCOLOR_YCCRGB_SSE2_SUPPORTED	/* YCC->RGB conversion with SSE2 */
+#define JDMERGE_SSE2_SUPPORTED		/* merged upsampling with SSE2 */
+#define JDSAMPLE_FANCY_SSE2_SUPPORTED	/* fancy upsampling with SSE2 */
+#define JDSAMPLE_SIMPLE_SSE2_SUPPORTED	/* sloppy upsampling with SSE2 */
+#define JIDCT_INT_SSE2_SUPPORTED	/* inverse DCT with SSE2 */
+#endif
+#if defined(JSIMD_DECODER_3DNOW_SUPPORTED) && \
+    defined(JSIMD_DECODER_MMX_SUPPORTED)
+#define JIDCT_FLT_3DNOW_MMX_SUPPORTED	/* inverse DCT with 3DNow!/MMX */
+#endif
+#if defined(JSIMD_DECODER_SSE_SUPPORTED) && \
+    defined(JSIMD_DECODER_MMX_SUPPORTED)
+#define JIDCT_FLT_SSE_MMX_SUPPORTED	/* inverse DCT with SSE/MMX */
+#endif
+#if defined(JSIMD_DECODER_SSE_SUPPORTED) && \
+    defined(JSIMD_DECODER_SSE2_SUPPORTED)
+#define JIDCT_FLT_SSE_SSE2_SUPPORTED	/* inverse DCT with SSE/SSE2 */
+#endif
+
 
 /* Definitions for speed-related optimizations. */
 
@@ -327,6 +434,9 @@ typedef int boolean;
 #ifndef INLINE
 #ifdef __GNUC__			/* for instance, GNU C knows about inline */
 #define INLINE __inline__
+#endif
+#ifdef _MSC_VER
+#define INLINE __inline
 #endif
 #ifndef INLINE
 #define INLINE			/* default is to define it as empty */

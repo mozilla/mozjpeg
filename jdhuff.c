@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified to improve performance.
+ * Last Modified : October 31, 2004
+ * ---------------------------------------------------------------------
+ *
  * This file contains Huffman entropy decoding routines.
  *
  * Much of the complexity here has to do with supporting input suspension.
@@ -151,8 +158,8 @@ jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
 {
   JHUFF_TBL *htbl;
   d_derived_tbl *dtbl;
-  int p, i, l, si, numsymbols;
-  int lookbits, ctr;
+  int p, i, l, la, lx, si, numsymbols;
+  int lookbits, look_end, sym, val, ctr;
   char huffsize[257];
   unsigned int huffcode[257];
   unsigned int code;
@@ -234,18 +241,34 @@ jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
    * with that code.
    */
 
-  MEMZERO(dtbl->look_nbits, SIZEOF(dtbl->look_nbits));
+  MEMZERO(dtbl->lookx_nbits, SIZEOF(dtbl->lookx_nbits));
 
   p = 0;
-  for (l = 1; l <= HUFF_LOOKAHEAD; l++) {
+  for (l = 1; l <= HUFFX_LOOKAHEAD-1; l++) {
     for (i = 1; i <= (int) htbl->bits[l]; i++, p++) {
       /* l = current code's length, p = its index in huffcode[] & huffval[]. */
       /* Generate left-justified code followed by all possible bit sequences */
-      lookbits = huffcode[p] << (HUFF_LOOKAHEAD-l);
-      for (ctr = 1 << (HUFF_LOOKAHEAD-l); ctr > 0; ctr--) {
-	dtbl->look_nbits[lookbits] = l;
-	dtbl->look_sym[lookbits] = htbl->huffval[p];
-	lookbits++;
+      sym = htbl->huffval[p];		/* current symbol */
+      la = sym & 15;			/* length of additional bits field */
+      lx = HUFFX_LOOKAHEAD - l;
+      lookbits = huffcode[p] << lx;
+      look_end = lookbits + (1 << lx);
+      lx -= la;
+      while (lookbits < look_end) {
+	if (lx >= 0) {
+	  val = (lookbits >>  lx) & ((1 << la) - 1);
+	  ctr = 1 << lx;
+	} else {
+	  val = (lookbits << -lx) & ((1 << la) - 1);
+	  ctr = 1;
+	}
+	val = HUFF_EXTEND(val, la);
+	for (; ctr > 0; ctr--) {
+	  dtbl->lookx_nbits[lookbits] = l + la;
+	  dtbl->lookx_val[lookbits] = val;
+	  dtbl->lookx_sym[lookbits] = sym;
+	  lookbits++;
+	}
       }
     }
   }
@@ -271,22 +294,7 @@ jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
  * See jdhuff.h for info about usage.
  * Note: current values of get_buffer and bits_left are passed as parameters,
  * but are returned in the corresponding fields of the state struct.
- *
- * On most machines MIN_GET_BITS should be 25 to allow the full 32-bit width
- * of get_buffer to be used.  (On machines with wider words, an even larger
- * buffer could be used.)  However, on some machines 32-bit shifts are
- * quite slow and take time proportional to the number of places shifted.
- * (This is true with most PC compilers, for instance.)  In this case it may
- * be a win to set MIN_GET_BITS to the minimum value of 15.  This reduces the
- * average shift distance at the cost of more calls to jpeg_fill_bit_buffer.
  */
-
-#ifdef SLOW_SHIFT_32
-#define MIN_GET_BITS  15	/* minimum allowable value */
-#else
-#define MIN_GET_BITS  (BIT_BUF_SIZE-7)
-#endif
-
 
 GLOBAL(boolean)
 jpeg_fill_bit_buffer (bitread_working_state * state,
@@ -434,32 +442,6 @@ jpeg_huff_decode (bitread_working_state * state,
 
 
 /*
- * Figure F.12: extend sign bit.
- * On some machines, a shift and add will be faster than a table lookup.
- */
-
-#ifdef AVOID_TABLES
-
-#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))
-
-#else
-
-#define HUFF_EXTEND(x,s)  ((x) < extend_test[s] ? (x) + extend_offset[s] : (x))
-
-static const int extend_test[16] =   /* entry n is 2**(n-1) */
-  { 0, 0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080,
-    0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000 };
-
-static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
-  { 0, ((-1)<<1) + 1, ((-1)<<2) + 1, ((-1)<<3) + 1, ((-1)<<4) + 1,
-    ((-1)<<5) + 1, ((-1)<<6) + 1, ((-1)<<7) + 1, ((-1)<<8) + 1,
-    ((-1)<<9) + 1, ((-1)<<10) + 1, ((-1)<<11) + 1, ((-1)<<12) + 1,
-    ((-1)<<13) + 1, ((-1)<<14) + 1, ((-1)<<15) + 1 };
-
-#endif /* AVOID_TABLES */
-
-
-/*
  * Check for a restart marker & resynchronize decoder.
  * Returns FALSE if must suspend.
  */
@@ -548,13 +530,59 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       /* Decode a single block's worth of coefficients */
 
       /* Section F.2.2.1: decode the DC coefficient difference */
-      HUFF_DECODE(s, br_state, dctbl, return FALSE, label1);
-      if (s) {
-	CHECK_BIT_BUFFER(br_state, s, return FALSE);
-	r = GET_BITS(s);
-	s = HUFF_EXTEND(r, s);
+      {		/* HUFFX_DECODE */
+	register int nb, look, t;
+	if (bits_left < HUFFX_LOOKAHEAD) {
+	  register const JOCTET * next_input_byte = br_state.next_input_byte;
+	  register size_t         bytes_in_buffer = br_state.bytes_in_buffer;
+	  if (cinfo->unread_marker == 0) {
+	    while (bits_left < MIN_GET_BITS) {
+	      register int c;
+	      if (bytes_in_buffer == 0 ||
+		  (c = GETJOCTET(*next_input_byte)) == 0xFF) {
+		goto label11; }
+	      bytes_in_buffer--; next_input_byte++;
+	      get_buffer = (get_buffer << 8) | c;
+	      bits_left += 8;
+	    }
+	    br_state.next_input_byte = next_input_byte;
+	    br_state.bytes_in_buffer = bytes_in_buffer;
+	  } else {
+	label11:
+	    br_state.next_input_byte = next_input_byte;
+	    br_state.bytes_in_buffer = bytes_in_buffer;
+	    if (! jpeg_fill_bit_buffer(&br_state,get_buffer,bits_left, 0)) {
+	      return FALSE; }
+	    get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	    if (bits_left < HUFFX_LOOKAHEAD) {
+	      nb = 1; goto label1;
+	    }
+	  }
+	}
+	look = PEEK_BITS(HUFFX_LOOKAHEAD);
+	if ((nb = dctbl->lookx_nbits[look]) != 0) {
+	  s = dctbl->lookx_val[look];
+	  if (nb <= HUFFX_LOOKAHEAD) {
+	    DROP_BITS(nb);
+	  } else {
+	    DROP_BITS(HUFFX_LOOKAHEAD);
+	    nb -= HUFFX_LOOKAHEAD;
+	    CHECK_BIT_BUFFER(br_state, nb, return FALSE);
+	    s += GET_BITS(nb);
+	  }
+	} else {
+	  nb = HUFFX_LOOKAHEAD;
+      label1:
+	  if ((s=jpeg_huff_decode(&br_state,get_buffer,bits_left,dctbl,nb))
+	       < 0) { return FALSE; }
+	  get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	  if (s) {
+	    CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	    t = GET_BITS(s);
+	    s = HUFF_EXTEND(t, s);
+	  }
+	}
       }
-
       if (entropy->dc_needed[blkn]) {
 	/* Convert DC difference to actual value, update last_dc_val */
 	int ci = cinfo->MCU_membership[blkn];
@@ -569,16 +597,65 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 	/* Section F.2.2.2: decode the AC coefficients */
 	/* Since zeroes are skipped, output area must be cleared beforehand */
 	for (k = 1; k < DCTSIZE2; k++) {
-	  HUFF_DECODE(s, br_state, actbl, return FALSE, label2);
-      
-	  r = s >> 4;
-	  s &= 15;
-      
+	  {	/* HUFFX_DECODE */
+	    register int nb, look, t;
+	    if (bits_left < HUFFX_LOOKAHEAD) {
+	      register const JOCTET * next_input_byte
+					      = br_state.next_input_byte;
+	      register size_t bytes_in_buffer = br_state.bytes_in_buffer;
+	      if (cinfo->unread_marker == 0) {
+		while (bits_left < MIN_GET_BITS) {
+		  register int c;
+		  if (bytes_in_buffer == 0 ||
+		      (c = GETJOCTET(*next_input_byte)) == 0xFF) {
+		    goto label21; }
+		  bytes_in_buffer--; next_input_byte++;
+		  get_buffer = (get_buffer << 8) | c;
+		  bits_left += 8;
+		}
+		br_state.next_input_byte = next_input_byte;
+		br_state.bytes_in_buffer = bytes_in_buffer;
+	      } else {
+	    label21:
+		br_state.next_input_byte = next_input_byte;
+		br_state.bytes_in_buffer = bytes_in_buffer;
+		if (! jpeg_fill_bit_buffer(&br_state,get_buffer,bits_left,0)) {
+		  return FALSE; }
+		get_buffer = br_state.get_buffer;
+		bits_left  = br_state.bits_left;
+		if (bits_left < HUFFX_LOOKAHEAD) {
+		  nb = 1; goto label2;
+		}
+	      }
+	    }
+	    look = PEEK_BITS(HUFFX_LOOKAHEAD);
+	    if ((nb = actbl->lookx_nbits[look]) != 0) {
+	      s = actbl->lookx_val[look];
+	      r = actbl->lookx_sym[look] >> 4;
+	      if (nb <= HUFFX_LOOKAHEAD) {
+		DROP_BITS(nb);
+	      } else {
+		DROP_BITS(HUFFX_LOOKAHEAD);
+		nb -= HUFFX_LOOKAHEAD;
+		CHECK_BIT_BUFFER(br_state, nb, return FALSE);
+		s += GET_BITS(nb);
+	      }
+	    } else {
+	      nb = HUFFX_LOOKAHEAD;
+	  label2:
+	      if ((s=jpeg_huff_decode(&br_state,get_buffer,bits_left,actbl,nb))
+		   < 0) { return FALSE; }
+	      get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	      r = s >> 4; s &= 15;
+	      if (s) {
+		CHECK_BIT_BUFFER(br_state, s, return FALSE);
+		t = GET_BITS(s);
+		s = HUFF_EXTEND(t, s);
+	      }
+	    }
+	  }
 	  if (s) {
 	    k += r;
-	    CHECK_BIT_BUFFER(br_state, s, return FALSE);
-	    r = GET_BITS(s);
-	    s = HUFF_EXTEND(r, s);
 	    /* Output coefficient in natural (dezigzagged) order.
 	     * Note: the extra entries in jpeg_natural_order[] will save us
 	     * if k >= DCTSIZE2, which could happen if the data is corrupted.
@@ -596,15 +673,64 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 	/* Section F.2.2.2: decode the AC coefficients */
 	/* In this path we just discard the values */
 	for (k = 1; k < DCTSIZE2; k++) {
-	  HUFF_DECODE(s, br_state, actbl, return FALSE, label3);
-      
-	  r = s >> 4;
-	  s &= 15;
-      
+	  {	/* HUFFX_DECODE */
+	    register int nb, look;
+	    if (bits_left < HUFFX_LOOKAHEAD) {
+	      register const JOCTET * next_input_byte
+					      = br_state.next_input_byte;
+	      register size_t bytes_in_buffer = br_state.bytes_in_buffer;
+	      if (cinfo->unread_marker == 0) {
+		while (bits_left < MIN_GET_BITS) {
+		  register int c;
+		  if (bytes_in_buffer == 0 ||
+		      (c = GETJOCTET(*next_input_byte)) == 0xFF) {
+		    goto label31; }
+		  bytes_in_buffer--; next_input_byte++;
+		  get_buffer = (get_buffer << 8) | c;
+		  bits_left += 8;
+		}
+		br_state.next_input_byte = next_input_byte;
+		br_state.bytes_in_buffer = bytes_in_buffer;
+	      } else {
+	    label31:
+		br_state.next_input_byte = next_input_byte;
+		br_state.bytes_in_buffer = bytes_in_buffer;
+		if (! jpeg_fill_bit_buffer(&br_state,get_buffer,bits_left,0)) {
+		  return FALSE; }
+		get_buffer = br_state.get_buffer;
+		bits_left  = br_state.bits_left;
+		if (bits_left < HUFFX_LOOKAHEAD) {
+		  nb = 1; goto label3;
+		}
+	      }
+	    }
+	    look = PEEK_BITS(HUFFX_LOOKAHEAD);
+	    if ((nb = actbl->lookx_nbits[look]) != 0) {
+	      s = actbl->lookx_sym[look];
+	      r = s >> 4; s &= 15;
+	      if (nb <= HUFFX_LOOKAHEAD) {
+		DROP_BITS(nb);
+	      } else {
+		DROP_BITS(HUFFX_LOOKAHEAD);
+		nb -= HUFFX_LOOKAHEAD;
+		CHECK_BIT_BUFFER(br_state, nb, return FALSE);
+		DROP_BITS(nb);
+	      }
+	    } else {
+	      nb = HUFFX_LOOKAHEAD;
+	  label3:
+	      if ((s=jpeg_huff_decode(&br_state,get_buffer,bits_left,actbl,nb))
+		   < 0) { return FALSE; }
+	      get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	      r = s >> 4; s &= 15;
+	      if (s) {
+		CHECK_BIT_BUFFER(br_state, s, return FALSE);
+		DROP_BITS(s);
+	      }
+	    }
+	  }
 	  if (s) {
 	    k += r;
-	    CHECK_BIT_BUFFER(br_state, s, return FALSE);
-	    DROP_BITS(s);
 	  } else {
 	    if (r != 15)
 	      break;

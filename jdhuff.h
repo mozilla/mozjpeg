@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified to improve performance.
+ * Last Modified : October 31, 2004
+ * ---------------------------------------------------------------------
+ *
  * This file contains declarations for Huffman entropy decoding routines
  * that are shared between the sequential decoder (jdhuff.c) and the
  * progressive decoder (jdphuff.c).  No other modules need to see these.
@@ -21,7 +28,7 @@
 
 /* Derived data constructed for each Huffman table */
 
-#define HUFF_LOOKAHEAD	8	/* # of bits of lookahead */
+#define HUFFX_LOOKAHEAD	9	/* # of bits of lookahead */
 
 typedef struct {
   /* Basic tables: (element [0] of each array is unused) */
@@ -36,13 +43,15 @@ typedef struct {
   /* Link to public Huffman table (needed only in jpeg_huff_decode) */
   JHUFF_TBL *pub;
 
-  /* Lookahead tables: indexed by the next HUFF_LOOKAHEAD bits of
+  /* Lookahead tables: indexed by the next HUFFX_LOOKAHEAD bits of
    * the input data stream.  If the next Huffman code is no more
-   * than HUFF_LOOKAHEAD bits long, we can obtain its length and
-   * the corresponding symbol directly from these tables.
+   * than HUFFX_LOOKAHEAD-1 bits long, we can obtain its length,
+   * the corresponding symbol, and the encoded coefficient value
+   * directly from these tables.
    */
-  int look_nbits[1<<HUFF_LOOKAHEAD]; /* # bits, or 0 if too long */
-  UINT8 look_sym[1<<HUFF_LOOKAHEAD]; /* symbol, or unused */
+  UINT8 lookx_nbits[1<<HUFFX_LOOKAHEAD];  /* # bits, or 0 if too long */
+  INT16 lookx_val[1<<HUFFX_LOOKAHEAD];  /* coefficient value, or unused */
+  UINT8 lookx_sym[1<<HUFFX_LOOKAHEAD];  /* symbol, or unused */
 } d_derived_tbl;
 
 /* Expand a Huffman table definition into the derived format */
@@ -79,6 +88,21 @@ typedef INT32 bit_buf_type;	/* type of bit-extraction buffer */
  * because not all machines measure sizeof in 8-bit bytes.
  */
 
+#ifdef SLOW_SHIFT_32
+#define MIN_GET_BITS  15	/* minimum allowable value */
+#else
+#define MIN_GET_BITS  (BIT_BUF_SIZE-7)
+#endif
+
+/* On most machines MIN_GET_BITS should be 25 to allow the full 32-bit width
+ * of get_buffer to be used.  (On machines with wider words, an even larger
+ * buffer could be used.)  However, on some machines 32-bit shifts are
+ * quite slow and take time proportional to the number of places shifted.
+ * (This is true with most PC compilers, for instance.)  In this case it may
+ * be a win to set MIN_GET_BITS to the minimum value of 15.  This reduces the
+ * average shift distance at the cost of more calls to jpeg_fill_bit_buffer.
+ */
+
 typedef struct {		/* Bitreading state saved across MCUs */
   bit_buf_type get_buffer;	/* current bit-extraction buffer */
   int bits_left;		/* # of unused bits in it */
@@ -109,7 +133,7 @@ typedef struct {		/* Bitreading working state within an MCU */
 	br_state.next_input_byte = cinfop->src->next_input_byte; \
 	br_state.bytes_in_buffer = cinfop->src->bytes_in_buffer; \
 	get_buffer = permstate.get_buffer; \
-	bits_left = permstate.bits_left;
+	bits_left = permstate.bits_left
 
 #define BITREAD_SAVE_STATE(cinfop,permstate)  \
 	cinfop->src->next_input_byte = br_state.next_input_byte; \
@@ -155,47 +179,14 @@ EXTERN(boolean) jpeg_fill_bit_buffer
 	JPP((bitread_working_state * state, register bit_buf_type get_buffer,
 	     register int bits_left, int nbits));
 
-
-/*
- * Code for extracting next Huffman-coded symbol from input bit stream.
- * Again, this is time-critical and we make the main paths be macros.
- *
- * We use a lookahead table to process codes of up to HUFF_LOOKAHEAD bits
- * without looping.  Usually, more than 95% of the Huffman codes will be 8
- * or fewer bits long.  The few overlength codes are handled with a loop,
- * which need not be inline code.
- *
- * Notes about the HUFF_DECODE macro:
- * 1. Near the end of the data segment, we may fail to get enough bits
- *    for a lookahead.  In that case, we do it the hard way.
- * 2. If the lookahead table contains no entry, the next code must be
- *    more than HUFF_LOOKAHEAD bits long.
- * 3. jpeg_huff_decode returns -1 if forced to suspend.
- */
-
-#define HUFF_DECODE(result,state,htbl,failaction,slowlabel) \
-{ register int nb, look; \
-  if (bits_left < HUFF_LOOKAHEAD) { \
-    if (! jpeg_fill_bit_buffer(&state,get_buffer,bits_left, 0)) {failaction;} \
-    get_buffer = state.get_buffer; bits_left = state.bits_left; \
-    if (bits_left < HUFF_LOOKAHEAD) { \
-      nb = 1; goto slowlabel; \
-    } \
-  } \
-  look = PEEK_BITS(HUFF_LOOKAHEAD); \
-  if ((nb = htbl->look_nbits[look]) != 0) { \
-    DROP_BITS(nb); \
-    result = htbl->look_sym[look]; \
-  } else { \
-    nb = HUFF_LOOKAHEAD+1; \
-slowlabel: \
-    if ((result=jpeg_huff_decode(&state,get_buffer,bits_left,htbl,nb)) < 0) \
-	{ failaction; } \
-    get_buffer = state.get_buffer; bits_left = state.bits_left; \
-  } \
-}
-
 /* Out-of-line case for Huffman code fetching */
 EXTERN(int) jpeg_huff_decode
 	JPP((bitread_working_state * state, register bit_buf_type get_buffer,
 	     register int bits_left, d_derived_tbl * htbl, int min_bits));
+
+
+/*
+ * Figure F.12: extend sign bit.
+ */
+
+#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))

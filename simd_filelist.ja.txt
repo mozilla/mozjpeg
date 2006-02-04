@@ -1,0 +1,261 @@
+Independent JPEG Group's JPEG software release 6b
+  with x86 SIMD extension for IJG JPEG library version 1.02
+    == FILELIST ==
+-----------------------------------------------------------
+
+■このファイルは
+
+  このファイルでは、SIMD 版 IJG JPEG software の配布アーカイブに収められて
+  いる各ファイルの概要を解説します。なお、ここでは x86 SIMD extension で
+  新たに追加されたファイルと、x86 SIMD extension で改変が加えられて機能／
+  役割がオリジナル版とは異なるファイルのみを解説します。それ以外のファイル
+  については、オリジナル版の filelist.doc (英文) を参照してください。
+
+    ■マニュアル類
+    ■configure スクリプトに関係するファイル
+    ■Microsoft Visual C++ 6.0 用のプロジェクトファイル群 (vc6proj/)
+    ■特定のコンパイラ用の jconfig.h と Makefile
+    ■ソースファイル
+      ● x86 SIMD extension で新たに追加されたファイル
+      ● x86 SIMD extension で改変が加えられたファイル
+    ■複数ファイル対応版の cjpeg/djpeg (altui/)
+    ■SIMD 版では使われないファイル群 (unused/)
+
+
+■マニュアル類
+
+  以下の SIMD 版のマニュアルの他に、オリジナル版の英文マニュアルも
+  そのまま収録してあります。併せて参照してください。
+
+  simd_README.ja.txt    主マニュアル(x86 SIMD extension の概要など)
+  simd_filelist.ja.txt  SIMD 版 IJG JPEG software のファイルリスト
+  simd_install.ja.txt   SIMD 版 libjpeg ライブラリのコンパイルの仕方
+  simd_internal.ja.txt  SIMD 版 libjpeg ライブラリの、SIMD 拡張部分の詳細
+  simd_cdjpeg.ja.txt    SIMD 版の cjpeg / djpeg に固有の機能の解説
+  simd_changes.ja.txt   SIMD 版 libjpeg ライブラリの改版履歴
+
+
+■ configure スクリプトに関係するファイル
+
+  UNIX 環境で configure スクリプトを走らせる場合に必要となるファイル群
+  です。非 UNIX 環境では、削除してもかまいません。
+
+  configure     configure スクリプト本体
+  config.ver    configure から呼び出されるスクリプトで、共有ライブラリの
+                バージョン番号を定義しています
+  ltmain.sh     configure のサポートスクリプト (from GNU libtool)
+  config.guess          〃
+  config.sub            〃
+  install-sh    install コマンドがない場合の代用スクリプト
+  nasm_lt.sh    nasm を GNU libtool で使う場合のラッパ・スクリプト
+  jconfig.cfg   configure が生成する jconfig.h の雛型ファイル
+  makefile.cfg  configure が生成する Makefile の雛型ファイル
+  configure.in  configure スクリプトのソースファイル (for GNU autoconf)
+  aclocal.m4            〃
+  libjpeg.spec  RPM を採用している linux システム向けの spec ファイル
+
+
+■ Microsoft Visual C++ 6.0 用のプロジェクトファイル群 (vc6proj/)
+
+  これらのファイルを使う場合は、ソースファイルがある一つ上のフォルダに
+  これらのファイルをすべて移動してください。詳しくは、simd_install.ja.txt
+  を参照してください。
+
+  Visual C++ 6.0 以降の統合開発環境(DevStudio)の場合は、これらのファイル
+  を変換(インポート)して使ってください。
+
+  vc6proj/libjpeg.dsw   プロジェクト・ワークスペース
+  vc6proj/makecfg.dsp   libjpeg.dsp (libjpeg.lib) のビルドに必要な
+                        設定ファイル jsimdcfg.inc を作る
+  vc6proj/libjpeg.dsp   libjpeg.lib のプロジェクトファイル
+  vc6proj/cjpeg.dsp     cjpeg.exe のプロジェクトファイル
+  vc6proj/djpeg.dsp     djpeg.exe のプロジェクトファイル
+  vc6proj/jpegtran.dsp  jpegtran.exe のプロジェクトファイル
+  vc6proj/rdjpgcom.dsp  rdjpgcom.exe のプロジェクトファイル
+  vc6proj/wrjpgcom.dsp  wrjpgcom.exe のプロジェクトファイル
+  vc6proj/apptest.dsp   cjpeg, djpeg, jpegtran の動作テスト(make test)
+  vc6proj/jconfig.h     VC++ 用の jconfig.h (jconfig.vc と同じもの)
+
+
+■特定のコンパイラ用の jconfig.h と Makefile
+
+  詳しくは、simd_install.ja.txt を参照してください。これらのファイルには、
+  SIMD 化に伴って新たに追加されたソースファイルに関する記述が追加されて
+  いますから、オリジナル版に付属の jconfig.* と Makefile.* は、
+  この SIMD 版では使用できません。
+
+  jconfig.bc5       Borland C++ Compiler 5.5 (win32) 用の jconfig.h
+  makefile.bc5      Borland C++ Compiler 5.5 (win32) 用の Makefile
+  jconfig.dj        DJGPP v2.0 用の jconfig.h
+  makefile.dj       DJGPP v2.0 用の Makefile
+  jconfig.mgw       MinGW 用の jconfig.h
+  makefile.mgw      MinGW 用の Makefile (静的 JPEG ライブラリを作成)
+  makefile.mgwdll   MinGW 用の Makefile (DLL 版 JPEG ライブラリを作成)
+  jconfig.vc        VC++ 用の jconfig.h
+  makefile.vc       VC++ 用の Makefile (静的 JPEG ライブラリを作成)
+  makefile.vcdll    VC++ 用の Makefile (DLL版 JPEG ライブラリを作成)
+  jconfig.linux     linux 用の jconfig.h (注：configure の使用を推奨)
+  makefile.linux    linux 用の Makefile (注：configure の使用を推奨)
+
+  以下のファイルは、上記以外のコンパイラに対応する jconfig.h と Makefile
+  を新たに作成する場合の雛型となるファイルです。オリジナル版にも存在します
+  が、SIMD 化に伴う変更が施されています。
+
+  ckconfig.c        jconfig.h を生成するプログラム
+  makefile.ansi     Makefile の雛型ファイル (ANSI コンパイラ用)
+  makefile.unix     Makefile の雛型ファイル (非 ANSI コンパイラ用)
+
+
+■ソースファイル
+
+  ● x86 SIMD extension で新たに追加されたファイル
+
+  jccolmmx.asm  RGB->YCbCr 色空間変換 (MMX)
+  jccolss2.asm  RGB->YCbCr 色空間変換 (SSE2)
+  jcsammmx.asm  ダウンサンプリング (MMX)
+  jcsamss2.asm  ダウンサンプリング (SSE2)
+
+  jdcolmmx.asm  YCbCr->RGB 色空間変換 (MMX)
+  jdcolss2.asm  YCbCr->RGB 色空間変換 (SSE2)
+  jdsammmx.asm  アップサンプリング (MMX)
+  jdsamss2.asm  アップサンプリング (SSE2)
+  jdmermmx.asm  色空間変換／アップサンプリング統合 (MMX)
+  jdmerss2.asm  色空間変換／アップサンプリング統合 (SSE2)
+
+  jcqntint.asm  データ変換と量子化 (非SIMD, 整数)
+  jcqntflt.asm  データ変換と量子化 (非SIMD, 浮動小数点)
+  jcqntmmx.asm  データ変換と量子化 (MMX, 整数)
+  jcqnts2i.asm  データ変換と量子化 (SSE2, 整数)
+  jcqnt3dn.asm  データ変換と量子化 (3DNow! & MMX, 浮動小数点)
+  jcqntsse.asm  データ変換と量子化 (SSE & MMX, 浮動小数点)
+  jcqnts2f.asm  データ変換と量子化 (SSE & SSE2, 浮動小数点)
+
+  jfdctint.asm  高精度整数(順方向)DCT (非SIMD)
+  jfmmxint.asm  高精度整数(順方向)DCT (MMX)
+  jfss2int.asm  高精度整数(順方向)DCT (SSE2)
+  jfdctfst.asm  高速整数(順方向)DCT (非SIMD)
+  jfmmxfst.asm  高速整数(順方向)DCT (MMX)
+  jfss2fst.asm  高速整数(順方向)DCT (SSE2)
+  jfdctflt.asm  浮動小数点(順方向)DCT (非SIMD)
+  jf3dnflt.asm  浮動小数点(順方向)DCT (3DNow!)
+  jfsseflt.asm  浮動小数点(順方向)DCT (SSE)
+
+  jidctint.asm  高精度整数(逆方向)DCT (非SIMD)
+  jimmxint.asm  高精度整数(逆方向)DCT (MMX)
+  jiss2int.asm  高精度整数(逆方向)DCT (SSE2)
+  jidctfst.asm  高速整数(逆方向)DCT (非SIMD)
+  jimmxfst.asm  高速整数(逆方向)DCT (MMX)
+  jiss2fst.asm  高速整数(逆方向)DCT (SSE2)
+  jidctflt.asm  浮動小数点(逆方向)DCT (非SIMD)
+  ji3dnflt.asm  浮動小数点(逆方向)DCT (3DNow! & MMX)
+  jisseflt.asm  浮動小数点(逆方向)DCT (SSE & MMX)
+  jiss2flt.asm  浮動小数点(逆方向)DCT (SSE & SSE2)
+  jidctred.asm  縮小展開用(逆方向)DCT (非SIMD)
+  jimmxred.asm  縮小展開用(逆方向)DCT (MMX)
+  jiss2red.asm  縮小展開用(逆方向)DCT (SSE2)
+
+  jsimdcpu.asm  CPU の SIMD サポートチェック
+  jsimddjg.asm  OS の SIMD サポートチェック (for DJGPP V.2)
+  jsimdw32.asm  OS の SIMD サポートチェック (for Win32)
+  jsimdgcc.c    OS の SIMD サポートチェック (for gcc)
+
+  makecfg.c     アセンブリ言語用設定ファイル jsimdcfg.inc を作成する
+
+  jsimdext.inc  アセンブリ言語ソース用の共通ヘッダファイル
+  jdct.inc      DCT 関連ファイル用のヘッダファイル
+  jcolsamp.inc  色空間変換／サンプリング関連ファイル用のヘッダファイル
+
+  jcolsamp.h    色空間変換／サンプリング関連ファイル用のヘッダファイル
+                オリジナル版には存在しないＣ言語ヘッダファイルで、
+                SIMD 化で導入された関数の宣言が記述されています。
+
+  jpegdll.def   DLL 版 JPEG Library 用の関数エクスポート定義ファイル
+  jpegdll.rc    DLL 版 JPEG Library 用のバージョンリソース定義ファイル
+                これらのファイルは、IJG JPEG Library をそのまま DLL に
+                する場合に使用します(makefile.vcdll/makefile.mgwdll)。
+
+  ● x86 SIMD extension で改変が加えられたファイル
+
+  変更内容について特に記述のないファイルには、SIMD 化で新たに導入された
+  関数の宣言やその呼び出し記述、SIMD 化に関連するマクロ定義などが追加
+  されています。
+
+  jpeglib.h     JPEG ライブラリのメインヘッダファイル
+  jpegint.h     JPEG ライブラリの内部用ヘッダファイル
+  jmorecfg.h    JPEG ライブラリの詳細設定ヘッダファイル
+
+  jdct.h        DCT 関連ファイル用のヘッダファイル
+                SIMD 処理に適するように、幾つかの変数の型も変更されて
+                います。
+
+  jcdctmgr.c    順方向DCTのマネージメント処理
+  jddctmgr.c    逆方向DCTのマネージメント処理
+
+  jccolor.c     RGB->YCbCr 色空間変換 (非SIMD)
+  jdcolor.c     YCbCr->RGB 色空間変換 (非SIMD)
+  jdmerge.c     色空間変換／アップサンプリング統合 (非SIMD)
+  jcsample.c    ダウンサンプリング (非SIMD)
+  jdsample.c    アップサンプリング (非SIMD)
+                jdsample.c には、非SIMD版の h1v2 アップサンプリング関数
+                (h1v2_upsample, h1v2_fancy_upsample) も追加されています。
+
+  jdhuff.h      ハフマン符号デコード処理 (ヘッダ)
+  jdhuff.c      ハフマン符号デコード処理 (シーケンシャル)
+  jdphuff.c     ハフマン符号デコード処理 (プログレッシブ)
+                これらの３つのファイルの変更点は、SIMD 化ではありません。
+                デコード処理の方法を効率化させてあります。
+
+  jdcoefct.c    DCTデータブロックのマネージメント
+                SIMD 化とは関係なく、一部のコードを効率化させてあります。
+
+  jcomapi.c     圧縮/展開 共通 API 関数定義
+                SIMD サポートチェック関数などが追加されています。
+
+  jmemmgr.c     JPEG library 用メモリマネージャ (メイン)
+                SIMD 化に伴い、16バイトアドレス境界に合ったメモリ領域を
+                常に16バイト単位で確保するように変更してあります。
+
+  cjpeg.c       JPEG 圧縮用 コマンドライン・ユーティリティ
+  djpeg.c       JPEG 展開用 コマンドライン・ユーティリティ
+                -v オプションでの SIMD 関連情報の表示や、-nosimd などの
+                オプションスイッチが追加されています。
+
+  rdbmp.c       BMP ファイル読み込みモジュール
+  wrbmp.c       BMP ファイル書き出しモジュール
+                SIMD 化とは関係なく、一部のコードを効率化させてあります。
+
+  rdgif.c       GIF ファイル読み込みモジュール(version 6a)
+  wrgif.c       GIF ファイル書き出しモジュール(version 6a)
+                Unisys の GIF (LZW) 特許失効に伴い、version 6a でサポート
+                されていた cjpeg/djpeg での GIF の入出力を復活させました。
+                この GIF モジュールは version 6a のものを流用しています。
+                version 6b の GIF モジュールは unused/ にあります。
+
+
+■複数ファイル対応版の cjpeg/djpeg (altui/)
+
+  altui/ にあるファイルは、元々 jpegaltui.v6b.tar.gz というファイル名で
+  別に配布されていたものです。この SIMD 版では、１ファイル版 cjpeg/djpeg
+  と同様の SIMD 対応化に関する修正と、Borland C++ / Microsoft VC++ に
+  おいてワールドカード展開処理を有効化するためのコードを書き加えたものです。
+
+  altui/cjpeg.c         複数ファイル対応版の cjpeg
+  altui/djpeg.c         複数ファイル対応版の djpeg
+  altui/README.alt      jpegaltui.v6b.tar.gz に同梱されていた README
+  altui/usage.alt       複数ファイル対応版 cjpeg/djpeg のマニュアル(差分)
+
+
+■SIMD 版では使われないファイル群 (unused/)
+
+  unused/ にあるファイルは、オリジナル版の IJG JPEG software に収録されて
+  いたが、この SIMD 版では使われない/使えないファイル群が収められています。
+
+  unused/j?dct???.c     オリジナルのＣ言語版 DCT 関数
+  unused/jmem*.*        システム依存メモリマネージャ(for MS-DOS/Macintosh)
+  unused/??gif.c        version 6b の GIF モジュール
+  unused/jconfig.*      オリジナル版に付属の jconfig.*
+  unused/mak*.*         オリジナル版に付属の Makefile.*
+
+
+
+[EOF]

@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : January 5, 2006
+ * ---------------------------------------------------------------------
+ *
  * This file contains downsampling routines.
  *
  * Downsampling input data is counted in "row groups".  A row group
@@ -48,6 +55,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jcolsamp.h"		/* Private declarations */
 
 
 /* Pointer to routine to downsample a single component */
@@ -467,6 +475,7 @@ jinit_downsampler (j_compress_ptr cinfo)
   int ci;
   jpeg_component_info * compptr;
   boolean smoothok = TRUE;
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
 
   downsample = (my_downsample_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
@@ -494,7 +503,17 @@ jinit_downsampler (j_compress_ptr cinfo)
     } else if (compptr->h_samp_factor * 2 == cinfo->max_h_samp_factor &&
 	       compptr->v_samp_factor == cinfo->max_v_samp_factor) {
       smoothok = FALSE;
-      downsample->methods[ci] = h2v1_downsample;
+#ifdef JCSAMPLE_SSE2_SUPPORTED
+      if (simd & JSIMD_SSE2)
+	downsample->methods[ci] = jpeg_h2v1_downsample_sse2;
+      else
+#endif
+#ifdef JCSAMPLE_MMX_SUPPORTED
+      if (simd & JSIMD_MMX)
+	downsample->methods[ci] = jpeg_h2v1_downsample_mmx;
+      else
+#endif
+	downsample->methods[ci] = h2v1_downsample;
     } else if (compptr->h_samp_factor * 2 == cinfo->max_h_samp_factor &&
 	       compptr->v_samp_factor * 2 == cinfo->max_v_samp_factor) {
 #ifdef INPUT_SMOOTHING_SUPPORTED
@@ -502,6 +521,16 @@ jinit_downsampler (j_compress_ptr cinfo)
 	downsample->methods[ci] = h2v2_smooth_downsample;
 	downsample->pub.need_context_rows = TRUE;
       } else
+#endif
+#ifdef JCSAMPLE_SSE2_SUPPORTED
+      if (simd & JSIMD_SSE2)
+	downsample->methods[ci] = jpeg_h2v2_downsample_sse2;
+      else
+#endif
+#ifdef JCSAMPLE_MMX_SUPPORTED
+      if (simd & JSIMD_MMX)
+	downsample->methods[ci] = jpeg_h2v2_downsample_mmx;
+      else
 #endif
 	downsample->methods[ci] = h2v2_downsample;
     } else if ((cinfo->max_h_samp_factor % compptr->h_samp_factor) == 0 &&
@@ -517,3 +546,25 @@ jinit_downsampler (j_compress_ptr cinfo)
     TRACEMS(cinfo, 0, JTRC_SMOOTH_NOTIMPL);
 #endif
 }
+
+
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+
+GLOBAL(unsigned int)
+jpeg_simd_downsampler (j_compress_ptr cinfo)
+{
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
+
+#ifdef JCSAMPLE_SSE2_SUPPORTED
+  if (simd & JSIMD_SSE2)
+    return JSIMD_SSE2;
+#endif
+#ifdef JCSAMPLE_MMX_SUPPORTED
+  if (simd & JSIMD_MMX)
+    return JSIMD_MMX;
+#endif
+
+  return JSIMD_NONE;
+}
+
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */

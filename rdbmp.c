@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified to improve performance.
+ * Last Modified : October 19, 2004
+ * ---------------------------------------------------------------------
+ *
  * This file contains routines to read input images in Microsoft "BMP"
  * format (MS Windows 3.x, OS/2 1.x, and OS/2 2.x flavors).
  * Currently, only 8-bit and 24-bit images are supported, not 1-bit or
@@ -187,11 +194,14 @@ METHODDEF(JDIMENSION)
 preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   bmp_source_ptr source = (bmp_source_ptr) sinfo;
+#if (BITS_IN_JSAMPLE != 8) || defined(NEED_FAR_POINTERS)
   register FILE *infile = source->pub.input_file;
   register int c;
   register JSAMPROW out_ptr;
+  JDIMENSION col;
+#endif
+  JDIMENSION row;
   JSAMPARRAY image_ptr;
-  JDIMENSION row, col;
   cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;
 
   /* Read the data into a virtual array in input-file row order. */
@@ -204,6 +214,10 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     image_ptr = (*cinfo->mem->access_virt_sarray)
       ((j_common_ptr) cinfo, source->whole_image,
        row, (JDIMENSION) 1, TRUE);
+#if (BITS_IN_JSAMPLE == 8) && !defined(NEED_FAR_POINTERS)
+    if (! ReadOK(source->pub.input_file, image_ptr[0], source->row_width))
+      ERREXIT(cinfo, JERR_INPUT_EOF);
+#else
     out_ptr = image_ptr[0];
     for (col = source->row_width; col > 0; col--) {
       /* inline copy of read_byte() for speed */
@@ -211,6 +225,7 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 	ERREXIT(cinfo, JERR_INPUT_EOF);
       *out_ptr++ = (JSAMPLE) c;
     }
+#endif
   }
   if (progress != NULL)
     progress->completed_extra_passes++;

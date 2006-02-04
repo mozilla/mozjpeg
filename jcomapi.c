@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : March 11, 2005
+ * ---------------------------------------------------------------------
+ *
  * This file contains application interface routines that are used for both
  * compression and decompression.
  */
@@ -104,3 +111,54 @@ jpeg_alloc_huff_table (j_common_ptr cinfo)
   tbl->sent_table = FALSE;	/* make sure this is false in any new table */
   return tbl;
 }
+
+
+/*
+ * SIMD Ext: Checking for support of SIMD instruction set.
+ */
+
+GLOBAL(unsigned int)
+jpeg_simd_support (j_common_ptr cinfo)
+{
+  enum { JSIMD_INVALID = ~0 };
+  static volatile unsigned int simd_supported = JSIMD_INVALID;
+
+  if (simd_supported == JSIMD_INVALID)
+    simd_supported = jpeg_simd_os_support(jpeg_simd_cpu_support());
+
+#ifndef JSIMD_MASKFUNC_NOT_SUPPORTED
+  if (cinfo != NULL)	/* Turn off the masked flags */
+    return simd_supported & ~jpeg_simd_mask(cinfo, JSIMD_NONE, JSIMD_NONE);
+#endif
+  return simd_supported;
+}
+
+#ifndef JSIMD_MASKFUNC_NOT_SUPPORTED
+
+/*
+ * SIMD Ext: modify/retrieve SIMD instruction mask
+ */
+
+GLOBAL(unsigned int)
+jpeg_simd_mask (j_common_ptr cinfo, unsigned int remove, unsigned int add)
+{
+  unsigned long *gp;
+  unsigned int oldmask;
+
+  if (cinfo->is_decompressor)
+    gp = (unsigned long *) &((j_decompress_ptr) cinfo)->output_gamma;
+  else	/* compressor */
+    gp = (unsigned long *) &((j_compress_ptr) cinfo)->input_gamma;
+
+  if ((gp[1] == 0x3FF00000 || gp[1] == 0x00000000) &&	/* +1.0 or +0.0 */
+      (gp[0] & ~JSIMD_ALL) == 0) {
+    oldmask = gp[0];
+    if (((remove | add) & ~JSIMD_ALL) == 0)
+      gp[0] = (oldmask & ~remove) | add;
+  } else {
+    oldmask = 0;	/* error */
+  }
+  return oldmask;
+}
+
+#endif /* !JSIMD_MASKFUNC_NOT_SUPPORTED */

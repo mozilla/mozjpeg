@@ -4,6 +4,13 @@
  * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
+ *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : March 28, 2005
+ * ---------------------------------------------------------------------
  */
 
 /*
@@ -362,12 +369,24 @@ int main (argc, argv)
 #else
   fprintf(outfile, "#undef INCOMPLETE_TYPES_BROKEN\n");
 #endif
+#ifdef _WIN32
+  fprintf(outfile, "\n/* Define "boolean" as unsigned char, not int, per Windows custom */\n");
+  fprintf(outfile, "#define TYPEDEF_UCHAR_BOOLEAN\n");
+#endif
   fprintf(outfile, "\n#ifdef JPEG_INTERNALS\n\n");
   if (is_shifting_signed(-0x7F7E80B1L))
     fprintf(outfile, "#undef RIGHT_SHIFT_IS_UNSIGNED\n");
   else
     fprintf(outfile, "#define RIGHT_SHIFT_IS_UNSIGNED\n");
   fprintf(outfile, "\n#endif /* JPEG_INTERNALS */\n");
+
+  fprintf(outfile, "\n#if defined(JPEG_INTERNALS) || defined(JPEG_INTERNAL_OPTIONS)\n");
+  fprintf(outfile, "#undef JSIMD_MMX_NOT_SUPPORTED\n");
+  fprintf(outfile, "#undef JSIMD_3DNOW_NOT_SUPPORTED\n");
+  fprintf(outfile, "#undef JSIMD_SSE_NOT_SUPPORTED\n");
+  fprintf(outfile, "#undef JSIMD_SSE2_NOT_SUPPORTED\n");
+  fprintf(outfile, "#endif\n");
+
   fprintf(outfile, "\n#ifdef JPEG_CJPEG_DJPEG\n\n");
   fprintf(outfile, "#define BMP_SUPPORTED		/* BMP image file format */\n");
   fprintf(outfile, "#define GIF_SUPPORTED		/* GIF image file format */\n");
@@ -375,6 +394,9 @@ int main (argc, argv)
   fprintf(outfile, "#undef RLE_SUPPORTED		/* Utah RLE image file format */\n");
   fprintf(outfile, "#define TARGA_SUPPORTED		/* Targa image file format */\n\n");
   fprintf(outfile, "#undef TWO_FILE_COMMANDLINE	/* You may need this on non-Unix systems */\n");
+#ifdef _WIN32
+  fprintf(outfile, "#define USE_SETMODE		/* Needed to make one-file style work */\n");
+#endif
   fprintf(outfile, "#undef NEED_SIGNAL_CATCHER	/* Define this if you use jmemname.c */\n");
   fprintf(outfile, "#undef DONT_USE_B_MODE\n");
   fprintf(outfile, "/* #define PROGRESS_REPORT */	/* optional */\n");

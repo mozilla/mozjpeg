@@ -1,0 +1,436 @@
+Independent JPEG Group's JPEG software release 6b
+  with x86 SIMD extension for IJG JPEG library version 1.02
+    == INSTALL ==
+-----------------------------------------------------------
+
+■このファイルは
+
+  このファイルでは、SIMD 版 libjpeg ライブラリのコンパイルの仕方を解説
+  します。勝手ながら、ここではオリジナル版の libjpeg ライブラリの扱い方
+  (コンパイルの仕方／プログラムの中での使い方)をある程度心得ているという
+  人を対象にさせていただきます。オリジナル版の使用法については、
+  install.doc (英文) を参照してください。
+
+    ■アセンブラ NASM の入手／インストール
+    ■コンパイルの仕方
+      ● Microsoft Visual C++ 6.0 以降の統合開発環境(DevStudio)の場合
+      ● jconfig.h と Makefile を選択してコンパイルする
+      ● UNIX 環境で configure スクリプトを使う
+    ■複数ファイル対応版の cjpeg/djpeg (altui/)
+    ■コードサイズを減らすには
+    ■特定の SIMD 命令を使用しないようにするには
+
+
+■アセンブラ NASM の入手／インストール
+
+  この x86 SIMD 版 libjpeg ライブラリの SIMD 拡張部分は、そのほとんどが
+  x86 のアセンブリ言語で書かれています。このアセンブリ言語ソースコードを
+  アセンブルするには、NASM (Netwide Assembler) というアセンブラが必要です。
+  Microsoft の MASM やその互換アセンブラでは扱えませんので注意してください。
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  NASM (Netwide Assembler) は、公式サイト http://nasm.sourceforge.net/ or
+  http://sourceforge.net/project/showfiles.php?group_id=6208 からダウン
+  ロードできます。Ver.0.98.25 以降の比較的新しいバージョンのものが必要です。
+  現時点(2006/02)での最新版は Ver.0.98.39 です。
+
+  なお、x86 版の Darwin や Mac OS X などで使用する場合は、現時点ではまだ
+  正式にリリースされていない Ver.0.98.40 以降のバージョンのものが必要です。
+  現時点では、Ver.0.98.40 は上記の公式サイトの CVS リポジトリからソース
+  コードをダウンロードしてコンパイル／インストールする必要があります。
+
+  Windows 系の場合は、nasm-0.XX.YY-win32.zip (XX.YY にはバージョン番号が入る)
+  という名前のファイルをダウンロードして、それに含まれる nasmw.exe を
+  Ｃコンパイラの実行ファイル群がインストールされている場所にコピーします。
+
+  各種 PC-UNIX の場合は、OS の配布元にて移植済みパッケージが提供されている
+  場合がありますので、まず最初にそちらを確認してみてください。それがない
+  場合は、上記公式サイトからソースコード(nasm-0.XX.YY.tar.gz)をダウンロード
+  してコンパイル／インストールしてください。linux の場合で rpm パッケージを
+  扱えるシステムの場合は、上記公式サイトにて rpm バイナリパッケージも入手
+  できます。
+
+  注意点として、YASM (http://www.tortall.net/projects/yasm/) は使わないで
+  ください。YASM は NASM 互換を謳っていますが、現在のバージョン(0.4.0)では
+  まだ互換度が低い上にバグがある(アドレス計算がまったくデタラメなコードを
+  生成している)ため、当方のテストでは YASM でアセンブルしたコードはまったく
+  動きませんでした。（注：この x86 SIMD extension for IJG JPEG library
+  では、たとえ YASM を用いても AMD64 の 64bit 対応にはなりません。）
+
+
+■コンパイルの仕方
+
+  ほとんどの部分でオリジナル版と変わりありませんので、以下の説明では、
+  この SIMD 拡張版に特有の注意点を中心に述べます。
+
+
+  ● Microsoft Visual C++ 6.0 以降の統合開発環境(DevStudio)の場合
+
+    この配布セットには、Microsoft Visual C++ 6.0 用のプロジェクトファイル
+    が付属しています。V6.0 以降の VC++ の場合は、VC++ 6.0 のファイルを
+    変換(インポート)して使ってください。Microsoft Visual C++ 2005 Express
+    Edition にて、インポート／コンパイルできることを確認しています。
+
+    方法は、まず vc6proj フォルダの中にあるファイルを、ソースファイル群
+    (*.c) のあるフォルダにすべて移動します。そして libjpeg.dsw を開いて
+    (もしくはインポートして)、メニューの ビルド→バッチビルド ですべてに
+    チェックを入れてビルドすればＯＫです。
+
+    ワークスペース libjpeg.dsw には、以下のプロジェクトが収められています。
+
+    ◆ makecfg.dsp
+
+      このプロジェクトは、makecfg.c をコンパイル／リンクして、カスタム
+      ビルドステップでそれ(makecfg.exe)を実行し、libjpeg.dsp のビルドに
+      必要な設定ファイル jsimdcfg.inc を作る働きをしています。
+
+      これは、libjpeg.dsp がコンパイルされる前に必ずコンパイル(実行)
+      されなければなりません。
+
+    ◆ libjpeg.dsp
+
+      JPEG ライブラリ libjpeg.lib をビルドします。makecfg.dsp が出力する
+      設定ファイル jsimdcfg.inc が必要です。
+
+    ◆ cjpeg.dsp, djpeg.dsp, jpegtran.dsp, rdjpgcom.dsp, wrjpgcom.dsp
+
+      IJG JPEG library に付属しているサンプル・アプリケーションです。
+      cjpeg は JPEG 圧縮を、djpeg は JPEG 展開を、jpegtran は JPEG
+      ファイルの変換をします。rdjpgcom と wrjpgcom は、JPEGファイル
+      中のテキストコメント文を操作します。
+
+    ◆ apptest.dsp
+
+      できあがった cjpeg, djpeg, jpegtran に対して簡単な動作テストを
+      します(make test と同等)。まず、これらのソフトで実際に画像ファイル
+      を変換させ、その出力を fc.exe で比較します。"FC: 相違点は検出
+      されませんでした" というメッセージが６回表示されれば、プログラムは
+      正しく動いています。
+
+    JPEG ライブラリ libjpeg.lib を他のソフトにリンクするために libjpeg.dsp
+    を他のワークスペース／ソリューションに含める場合は、makecfg.dsp も
+    必ず同じワークスペース／ソリューションに含め、常に makecfg.dsp が
+    libjpeg.dsp よりも先にビルドされるように、依存関係を設定してください。
+    これは、先に述べたように、libjpeg.dsp は makecfg.dsp が出力する設定
+    ファイル jsimdcfg.inc を必要としているためです。
+
+    設定法は、(VC++ 6.0の場合) メニューの プロジェクト → 依存関係 で
+    libjpeg を選択し、下の一覧の中の makecfg にチェックを入れます。
+
+
+  ● jconfig.h と Makefile を選択してコンパイルする
+
+    Windows 系のコンパイラの場合で、コマンドラインからコンパイルする場合
+    は、この方法をとってください。
+
+    方法は、付属の jconfig.* と Makefile.* の中から適切なものをそれぞれ
+    一つずつ選び、それぞれ jconfig.h と Makefile に名前を変えます。
+    そして、ソースファイルのあるディレクトリ(フォルダ)をカレントディレ
+    クトリにして、コマンドラインで make (VC++ の場合は nmake)とタイプ
+    すればＯＫです。後は自動的に、libjpeg ライブラリと、サンプルアプリ
+    ケーション(cjpeg や djpeg など)がコンパイルされます。
+
+    付属している jconfig.* と Makefile.* は、以下の処理系に対応しています。
+    なお、オリジナル版に付属している jconfig.* と Makefile.* は、この
+    SIMD 対応版では使用できません(ソースファイルの構成が変わっているため)。
+
+    ・ jconfig.dj  & makefile.dj  -- DJGPP v2.0 or later
+    ・ jconfig.bc5 & makefile.bc5 -- Borland C++ Compiler 5.5 (win32)
+    ・ jconfig.mgw & makefile.mgw, makefile.mgwdll -- MinGW
+    ・ jconfig.vc  & makefile.vc , makefile.vcdll  -- VC++ 6.0 or later
+    ・ jconfig.linux & makefile.linux -- linux
+
+    これら以外のコンパイラに対応させる場合は、install.doc に書いてある
+    ように、まず ckconfig.c をコンパイル／実行して jconfig.h を生成し、
+    makefile.unix もしくは makefile.ansi を手作業で編集して Makefile を
+    作成してください。
+
+    以下、各コンパイラに固有の注意点を述べます。
+
+    ◆ jconfig.dj  & makefile.dj  -- DJGPP v2.0 or later.
+
+      可能な限り新しいバージョンを使用してください。DJGPP 2.03 + gcc 3.4.4
+      + binutils 2.16.1 という組み合わせで動作を確認しています。
+
+      makefile.dj には、gcc 3.4.x 向けのコンパイルオプションが書かれて
+      いますので、gcc 3.4.x 以外でうまくコンパイルできない場合は、適当に
+      書き直して使ってください。
+
+    ◆ jconfig.bc5 & makefile.bc5 -- Borland C++ Compiler 5.5 (win32)
+
+      何の問題もなくコンパイルはできるはずですが、この BCC 5.5 の場合は、
+      ほとんどのケースで SSE/SSE2 が動作しません。理由は、BCC 5.5 に付属の
+      リンカ(ilink32.exe)が古く、SSE定数を16バイト境界アドレスに配置する
+      ことができないためです。
+
+      そのため、BCC 5.5 を使う場合は SSE/SSE2 のサポートを削除(後述)して
+      コンパイルすることをお勧めいたします。
+
+    ◆ jconfig.mgw & makefile.mgw, makefile.mgwdll -- MinGW
+
+      可能な限り新しいバージョンを使用してください。gcc 3.4.4 + binutils
+      2.16.91 という組み合わせで動作を確認しています。
+
+      また、GNU make がインストールされていることも必要です。MinGW の場合、
+      (make.exe ではなく) mingw32-make.exe という名前でインストールされ
+      ますので、make ではなく mingw32-make とタイプする必要があります。
+
+      これらの makefile には、gcc 3.4.x 向けのコンパイルオプションが書か
+      れていますので、gcc 3.4.x 以外でうまくコンパイルできない場合は、
+      適当に書き直して使ってください。
+
+      makefile.mgw は、libjpeg ライブラリを静的ライブラリ(libjpeg.a)に
+      コンパイルした上で、この libjpeg.a をリンクした cjpeg, djpeg,
+      jpegtran を作成します。makefile.mgwdll は、libjpeg ライブラリを
+      DLL(jpeg62.dll)にコンパイルした上で、この jpeg62.dll をリンクした
+      cjpeg, djpeg, jpegtran を作成します。
+
+    ◆ jconfig.vc  & makefile.vc , makefile.vcdll  -- VC++ 6.0 or later
+
+      VC++ 6.0 以降なら何の問題もなくコンパイルできるはずです。フリーで
+      公開されている Microsoft Visual C++ Toolkit 2003 でも、nmake.exe
+      がインストールされていればコンパイルできます。
+
+      makefile.vc は、libjpeg ライブラリを静的ライブラリ(libjpeg.lib)に
+      コンパイルした上で、この libjpeg.lib をリンクした cjpeg, djpeg,
+      jpegtran を作成します。makefile.vcdll は、libjpeg ライブラリを
+      DLL(jpeg62.dll)にコンパイルした上で、この jpeg62.dll をリンクした
+      cjpeg, djpeg, jpegtran を作成します。
+
+    ◆ jconfig.linux & makefile.linux -- linux
+
+      各種の linux に対応しますが、linux の場合は configure スクリプトを
+      使うことを強くお勧めいたします。
+
+
+  ● UNIX 環境で configure スクリプトを使う
+
+    各種の PC-UNIX の場合など、シェル・スクリプトを走らせることのできる
+    環境の場合は、configure スクリプトを使うと簡単にコンパイルできます。
+
+      $ ./configure --enable-shared --enable-static
+      $ make
+      $ make test      (←動作テスト；必要に応じて)
+      # make install
+
+    この方法では、以下のプラットフォームでコンパイルできることを確認して
+    います。これ以外の UNIX 系 OS でもコンパイルは可能だと思われますが、
+    若干の手直しが必要になる場合もあるかと思います。
+
+    ・Vine Linux 2.6r4 (gcc 2.95.3) および Vine Linux 3.2 (gcc 3.4.4)
+    ・Fedora core 3 (gcc 3.4.2) および Fedora core 4 (gcc 4.0.0)
+    ・FreeBSD 5.4 (gcc 3.4.2) および FreeBSD 6.0 (gcc 3.4.4)
+    ・NetBSD 2.0 (gcc 3.3.3) および NetBSD 3.0 (gcc 3.3.3)
+    ・Solaris 10 1/06 for x64/x86 (i386-pc-solaris2.10)
+    ・Darwin 8.0.1 for x86 (i386-apple-darwin8.0.1; gcc 3.3)
+    ・MinGW & MSYS (gcc 3.4.4)
+    ・cygwin (gcc 3.4.4)
+
+    同梱の configure スクリプトは GNU autoconf で生成されたものです。
+    この configure スクリプトは、一般的な configure スクリプトが認識する
+    スイッチオプションの他に、以下のスイッチを認識します。
+
+    ○ --enable-shared / --enable-static
+
+      --enable-shared を指定すると、GNU libtool を使って共有ライブラリを
+      作成します。--enable-static を指定すると、同じく GNU libtool を
+      使って静的ライブラリを作成します。両方を指定すると、共有ライブラリ
+      と静的ライブラリの両方を作成します。逆にこの両方とも指定しないと、
+      GNU libtool を使わずに静的ライブラリのみを作成します。
+
+      システムにインストールするライブラリを作成する場合は両方を指定する
+      必要があるでしょう。
+
+    ○ --disable-mmx / --disable-3dnow / --disable-sse / --disable-sse2
+
+      特定の SIMD 命令セットのサポート(コード)を削除してコンパイルします。
+
+    ○ --enable-uchar-boolean
+
+      ソースコード中の bool 型の定義を int 型ではなく unsigned char 型に
+      変更します。このオプションは通常は(特に必要でない限り)使用しないで
+      ください。これは、MinGW などの Windows 上の UNIX 環境にて、bool 型
+      の定義を Windows の習慣に合わせるために用意されているものです。
+
+    以下、各プラットフォームに固有の注意点を述べます。
+
+    ◆ 各種 linux ディストリビューション
+
+      よほど古いものでない限り、上記の手順で何の問題もなくコンパイルできる
+      はずです。
+
+      上記の手順で共有ライブラリを作成した場合、そのバージョン番号は
+      62.1.0 (ファイル名：libjpeg.so.62.1.0) となります。これは前述した
+      とおり、オリジナル版(ファイル名：libjpeg.so.62.0.0)とバイナリレベル
+      での上位互換性がありますので、オリジナル版とそのまま置き換えること
+      ができます。
+
+      rpm を使ったパッケージ管理を採用しているディストリビューションでは、
+      同梱の spec ファイル (libjpeg.spec) もご利用いただけます。これは、
+      Vine Linux 3.2 および Fedora core 4 での動作を確認しています。
+
+    ◆ xBSD ファミリ (FreeBSD/NetBSD/OpenBSD)
+
+      最近のバージョンの FreeBSD と NetBSD に関しては、コンパイルできる
+      ことを確認しています。OpenBSD に関しても問題はないと思います。
+      ただ、オブジェクトフォーマットに a.out を使った古いものに関しては、
+      ファイルフォーマットの種類も一応 configure スクリプトにて検出できる
+      ようにしてありますが、動作は未確認です。
+
+      FreeBSD の場合、上記の手順で共有ライブラリを作成した場合、その
+      バージョン番号は 9 (ファイル名：libjpeg.so.9) となります。これは、
+      ports collection の中にある公式版のバージョン番号に準じたもので、
+      (バイナリ上位互換なので)公式版とそのまま置き換えることができます。
+      NetBSD/OpenBSD の場合のバージョン番号は 62.1.0 (ファイル名：
+      libjpeg.so.62.1.0) になります(バイナリ上位互換)。
+
+    ◆ Solaris 10
+
+      作者のテストでは、正常にコンパイルできて、共有ライブラリがバイナリ
+      互換になることを確認しています(ファイル名：libjpeg.so.62.1.0)。
+      ですが、この SIMD 版 libjpeg ライブラリは AMD64 には現時点では対応
+      していないため、32bit版のライブラリしか作れません。
+
+    ◆ Darwin for x86
+
+      作者のテストでは、正常にコンパイルできて、共有ライブラリがバイナリ
+      互換になることを確認しています(ファイル名：libjpeg.62.1.0.dylib)。
+      x86 版 Mac OS X でも、コンパイルさえできれば動作するものと思われます。
+
+      現時点では、アセンブラ nasm の Darwin へのサポートが十分でないため、
+      ややトリッキーなコードで Darwin / Mac OS X に対応させていますが、
+      動作にはまったく問題ないはずです。
+
+    ◆ MinGW & MSYS (gcc 3.4.4)
+
+      MinGW の場合は、付属の makefile.mgw / makefile.mgwdll を使うことを
+      推奨しますが、MSYS がインストールされていれば configure スクリプト
+      も使えます。この場合は、configure スクリプトを走らせる際に
+      --enable-uchar-boolean を必ず指定してください。こうすることで、
+      他の Windows 系の処理系(VC++など)が出力するコードとバイナリ互換に
+      なります。
+
+    ◆ cygwin (gcc 3.4.4)
+
+      まず注意すべき点は、cygwin の場合、cygwin から公式にリリースされて
+      いる DLL (cygjpeg-62.dll) とはバイナリ互換にはなりません。これは、
+      公式版のバイナリには lossless jpeg patch (ljpeg-6b.tar.gz) という
+      修正パッチが含まれているためで、当SIMD版に対してこのパッチを適用
+      することは困難だからです。
+
+      バイナリ互換ではないため、公式リリース版の DLL をこのSIMD版で置き
+      換えることはできません。そのため当SIMD版の DLL は cygjpeg-162.dll
+      という名前になるようにしてあります。これをシステムにインストールする
+      こともできますが、このSIMD版の DLL を利用するには、JPEG ライブラリを
+      使用しているソフトを再コンパイル／再リンクする必要があります。
+
+      なお、この DLL につけられるバージョン番号を変えたければ、configure
+      スクリプトを走らせる前に config.ver の内容を変更してください。
+
+
+■複数ファイル対応版の cjpeg/djpeg (altui/)
+
+  サンプルアプリケーションの cjpeg と djpeg についてですが、デフォルトの
+  状態でコンパイルされるもの(他のソースファイル群と同じ場所にある cjpeg.c
+  と djpeg.c) は、一度に一つのファイルしか変換できないものです。つまり、
+  入力ファイルはコマンドライン上に一つしか指定できず、出力は標準出力か
+  -outfile オプションで指定したファイルに書き出されます。各種の UNIX 系
+  OS にインストールされ利用されている cjpeg/djpeg はこのタイプのものです。
+
+  一方、IJG から公式にリリースされている MS-DOS 版の cjpeg/djpeg
+  (ftp://ftp.simtel.net/.2/simtelnet/msdos/graphics/jpeg6_b.zip) では、
+  複数の入力ファイルを指定でき、出力は入力ファイルと同じ場所に自動的に
+  作られます。このタイプの cjpeg/djpeg を作りたければ、altui/ の中にある
+  cjpeg.c と djpeg.c を、元からある(１ファイル版の) cjpeg.c / djpeg.c と
+  入れ替えてコンパイルしてください。この altui 版の cjpeg.c / djpeg.c は、
+  元々 jpegaltui.v6b.tar.gz というファイル名で配布されていたものに対して
+  SIMD 対応化に関する修正を加えたものです。
+
+  この複数ファイル対応版の cjpeg/djpeg を Windows 系などの非 UNIX 環境で
+  使用する場合、入力ファイル名をワイルドカードで指定できるようにするには、
+  各コンパイラに固有の特別な設定が必要になる場合があります。なぜなら、
+  MS-DOS系／Windows系の環境では一般に、ワイルドカードの展開処理はコンパイラ
+  に付属のスタートアップコード内で行なわれるためです。
+
+  MinGW や DJGPP V.2 などの場合は、ワイルドカードの展開処理は最初から有効
+  になっているため、特別なことをしなくてもワイルドカードによるファイル指定
+  はできます。Microsoft Visual C++ や Borland C++ の場合は、普通、ワイルド
+  カード展開を有効化するオブジェクトファイルである setargv.obj や
+  wildargs.obj を EXE ファイルのリンク時に他のオブジェクトファイルと一緒に
+  リンクすることで、ワイルドカード展開を有効化できますが、この SIMD 版
+  cjpeg/djpeg の場合は、setargv.obj や wildargs.obj の内容に相当するコードを
+  cjpeg.c/djpeg.c に直接書き込んであるため、プロジェクトファイルや Makefile
+  に上記のオブジェクトファイルを追加しなくても、ワイルドカードによるファイル
+  指定ができるようにしてあります。これら以外のＣコンパイラを使用した場合で、
+  ワイルドカードによるファイル指定ができない場合は、コンパイラのマニュアル
+  を参照して、ワイルドカード展開を有効化する設定でコンパイルしてください。
+
+  一方、linux などの UNIX 環境では、ワイルドカードの展開処理はプログラムが
+  起動される前にコマンドシェルによって行なわれるため、コンパイラの設定など
+  は必要ありません。ワイルドカードによるファイル名指定は常に使えます。
+
+
+■コードサイズを減らすには
+
+  SIMD コードを付加したため、その分だけコードサイズが増えています。ですが、
+  JPEG library を以下のようなデフォルトの状態で常に使用しているのならば、
+  jmorecfg.h の中にある設定項目(マクロ)を以下のように変更してコンパイル
+  することで、使用されないコードを除外することができ、コードサイズを減らす
+  ことができます。
+
+  ○ cinfo.dct_method の値を変更していない場合
+
+    この変数は DCT演算の方法を指定し、cjpeg/djpeg では -dct オプションに
+    対応します。この変数の値はデフォルトでは JDCT_ISLOW で、特に理由の
+    ない限りこのデフォルトの状態で使用することを強く推奨します。以下の
+    マクロを #undef にすることで、JDCT_ISLOW の状態では決して使用されない
+    コードを除外できます。
+
+    #define DCT_IFAST_SUPPORTED  ->  #undef DCT_IFAST_SUPPORTED
+    #define DCT_FLOAT_SUPPORTED  ->  #undef DCT_FLOAT_SUPPORTED
+
+    これだけでもかなりのコードサイズが削減できます。特に DCT_FLOAT_SUPPORTED
+    を #undef にすると、3DNow! と SSE のサポートも自動的に無効になります。
+
+  ○展開処理で cinfo.do_fancy_upsampling の値を変更していない場合
+
+    この変数は djpeg では -nosmooth オプションに相当し、-nosmooth を指定
+    すると FALSE に設定されます。デフォルトでは TRUE で、これも特に理由の
+    ない限りこのデフォルトの状態で使用することを強く推奨します。以下の
+    マクロを #undef にすることで、TRUE の状態では決して使用されないコードを
+    除外できます。
+
+    #define UPSAMPLE_MERGING_SUPPORTED  ->  #undef UPSAMPLE_MERGING_SUPPORTED
+
+  ○展開処理で cinfo.scale_num, cinfo.scale_denom の値を変更していない場合
+
+    これは要するに「JPEG縮小展開」の機能で、djpeg では -scale M/N オプ
+    ションに相当します。サムネイル作成などの場合に利用されることが多い
+    機能ですが、これをまったく使用していない場合は、以下のマクロを #undef
+    にすることで、コード量を削減できます。
+
+    #define IDCT_SCALING_SUPPORTED  ->  #undef IDCT_SCALING_SUPPORTED
+
+  注意点として、これらの設定変数がどのような状態で使われるか予測できない
+  場合、たとえば、システムにインストールする共有ライブラリを作る場合など
+  は、こういったコード削減は行なうべきではありません。コード削減を行なう
+  のは、JPEG ライブラリの使われ方がよくわかっている特定のアプリケーション
+  にリンクする場合のみにしてください。
+
+
+■特定の SIMD 命令を使用しないようにするには
+
+  これは jconfig.h の中程にある、#undef JSIMD_***_NOT_SUPPORTED という
+  マクロを #define にすることで実現できます。configure スクリプトで
+  --disable-mmx などのオプションを指定した場合は、このマクロは自動的に
+  #define されます。
+
+  3DNow! と SSE は元々、浮動小数点DCTにしか利用されていませんので、上述の
+  DCT_FLOAT_SUPPORTED を #undef にしただけでまとめて無効にされます。
+  MMX と SSE2 は、圧縮展開処理の各所に利用されていて、高速化への貢献度が
+  高いので、有効にしておくことをお薦めしますが、組み込み用途など、コード
+  を走らせるプロセッサの種類がわかっている場合は、「通常利用されない方」
+  のサポートを外すことで、コードサイズの削減ができます。
+
+
+
+[EOF]

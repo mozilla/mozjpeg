@@ -1,0 +1,75 @@
+Independent JPEG Group's JPEG software release 6b
+  with x86 SIMD extension for IJG JPEG library version 1.02
+    == CDJPEG ==
+-----------------------------------------------------------
+
+■このファイルは
+
+  このファイルでは、SIMD 版の cjpeg / djpeg に固有の機能を解説します。
+
+    ■ SIMD 動作モード情報 (-v オプション)
+    ■ 特定の SIMD 演算を使用しないようにする (-noXXX オプション)
+    ■ GIF 形式の読み込み／書き出し (djpeg の -gif オプション)
+
+
+■ SIMD 動作モード情報 (-v オプション)
+
+  この SIMD 版 cjpeg / djpeg では、-v オプションをつけて起動すると、以下
+  のような SIMD 動作モード情報がバージョン情報と共に表示されます。
+
+    Independent JPEG Group's DJPEG, version 6b  27-Mar-1998
+    Copyright (C) 1998, Thomas G. Lane
+
+    x86 SIMD extension for IJG JPEG library, version 1.02
+
+    SIMD instructions supported by the system : MMX 3DNow! SSE SSE2
+
+          === SIMD Operation Modes ===
+    Accurate integer DCT  (-dct int)   : SSE2
+    Fast integer DCT      (-dct fast)  : SSE2
+    Floating-point DCT    (-dct float) : SSE
+    Reduced-size DCT      (-scale M/N) : SSE2
+    High-quality upsampling (default)  : SSE2
+    Low-quality upsampling (-nosmooth) : SSE2
+    Colorspace conversion (YCbCr->RGB) : SSE2
+
+  "SIMD instructions supported by the system" の項目で列挙されるのは、
+  システム(CPU/OS)でサポートされている SIMD 演算の種類です。なお、この
+  ソフトでは SSE3 は使用されていませんし SSE3 のサポートの検出も行なわれ
+  ませんので、SSE3 がサポートされていてもこの項目には現れません。
+
+  その下の "SIMD Operation Modes" は、各処理段階で使用される SIMD 演算の
+  種類です。Floating-point DCT では 3DNow! か SSE 、それ以外のところでは
+  MMX か SSE2 が選択されます。一般に、SSE/SSE2 の方が MMX/3DNow! よりも
+  高性能とされるので、この双方が利用可能な場合は SSE/SSE2 が優先的に選択
+  されます。
+
+
+■ 特定の SIMD 演算を使用しないようにする (-noXXX オプション)
+
+  この SIMD 版 cjpeg / djpeg では、以下のようなオプションを指定することで、
+  特定の SIMD 演算を使用しないようにできます。
+
+    -nommx         MMX を使用しない
+    -no3dnow       3DNow! を使用しない
+    -nosse         SSE を使用しない
+    -nosse2        SSE2 を使用しない
+    -nosimd        すべての SIMD 演算を使用しない
+
+  これらのオプションは、cjpeg/djpeg のコマンドラインの先頭に指定するよう
+  にしてください。
+
+
+■ GIF 形式の読み込み／書き出し (djpeg の -gif オプション)
+
+  オリジナル版 cjpeg/djpeg の version 6b では、特許上の問題から、GIF 形式
+  画像の読み込み／書き出しがサポートされなくなっていました。ですが、
+  GIF に関する特許が 2003〜2004 年にかけて世界的に期限切れになったため、
+  当 SIMD 版では GIF 形式の読み込み／書き出しを復活させてあります。
+
+  余談ですが、当 SIMD 版で GIF 形式の読み込み／書き出しに使用している
+  モジュールは、旧版である version 6a のものを流用しています。
+
+
+
+[EOF]

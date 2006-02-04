@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : January 5, 2006
+ * ---------------------------------------------------------------------
+ *
  * This file contains code for merged upsampling/color conversion.
  *
  * This file combines functions from jdsample.c and jdcolor.c;
@@ -35,6 +42,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jcolsamp.h"		/* Private declarations */
 
 #ifdef UPSAMPLE_MERGING_SUPPORTED
 
@@ -218,6 +226,17 @@ merged_1v_upsample (j_decompress_ptr cinfo,
  */
 
 
+#if RGB_PIXELSIZE == 4
+/* offset of filler byte */
+#define RGB_FILLER  (6 - (RGB_RED) - (RGB_GREEN) - (RGB_BLUE))
+/* byte pattern to fill with */
+#ifdef RGBX_FILLER_0XFF
+#define RGB_FILLER_BYTE 0xFF
+#else
+#define RGB_FILLER_BYTE 0x00
+#endif
+#endif /* RGB_PIXELSIZE == 4 */
+
 /*
  * Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
  */
@@ -258,11 +277,17 @@ h2v1_merged_upsample (j_decompress_ptr cinfo,
     outptr[RGB_RED] =   range_limit[y + cred];
     outptr[RGB_GREEN] = range_limit[y + cgreen];
     outptr[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
     outptr += RGB_PIXELSIZE;
     y  = GETJSAMPLE(*inptr0++);
     outptr[RGB_RED] =   range_limit[y + cred];
     outptr[RGB_GREEN] = range_limit[y + cgreen];
     outptr[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
     outptr += RGB_PIXELSIZE;
   }
   /* If image width is odd, do the last output column separately */
@@ -276,6 +301,9 @@ h2v1_merged_upsample (j_decompress_ptr cinfo,
     outptr[RGB_RED] =   range_limit[y + cred];
     outptr[RGB_GREEN] = range_limit[y + cgreen];
     outptr[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
   }
 }
 
@@ -322,21 +350,33 @@ h2v2_merged_upsample (j_decompress_ptr cinfo,
     outptr0[RGB_RED] =   range_limit[y + cred];
     outptr0[RGB_GREEN] = range_limit[y + cgreen];
     outptr0[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr0[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
     outptr0 += RGB_PIXELSIZE;
     y  = GETJSAMPLE(*inptr00++);
     outptr0[RGB_RED] =   range_limit[y + cred];
     outptr0[RGB_GREEN] = range_limit[y + cgreen];
     outptr0[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr0[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
     outptr0 += RGB_PIXELSIZE;
     y  = GETJSAMPLE(*inptr01++);
     outptr1[RGB_RED] =   range_limit[y + cred];
     outptr1[RGB_GREEN] = range_limit[y + cgreen];
     outptr1[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr1[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
     outptr1 += RGB_PIXELSIZE;
     y  = GETJSAMPLE(*inptr01++);
     outptr1[RGB_RED] =   range_limit[y + cred];
     outptr1[RGB_GREEN] = range_limit[y + cgreen];
     outptr1[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr1[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
     outptr1 += RGB_PIXELSIZE;
   }
   /* If image width is odd, do the last output column separately */
@@ -350,10 +390,16 @@ h2v2_merged_upsample (j_decompress_ptr cinfo,
     outptr0[RGB_RED] =   range_limit[y + cred];
     outptr0[RGB_GREEN] = range_limit[y + cgreen];
     outptr0[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr0[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
     y  = GETJSAMPLE(*inptr01);
     outptr1[RGB_RED] =   range_limit[y + cred];
     outptr1[RGB_GREEN] = range_limit[y + cgreen];
     outptr1[RGB_BLUE] =  range_limit[y + cblue];
+#if RGB_PIXELSIZE == 4
+    outptr1[RGB_FILLER] = RGB_FILLER_BYTE;
+#endif
   }
 }
 
@@ -370,6 +416,7 @@ GLOBAL(void)
 jinit_merged_upsampler (j_decompress_ptr cinfo)
 {
   my_upsample_ptr upsample;
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
 
   upsample = (my_upsample_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
@@ -382,19 +429,73 @@ jinit_merged_upsampler (j_decompress_ptr cinfo)
 
   if (cinfo->max_v_samp_factor == 2) {
     upsample->pub.upsample = merged_2v_upsample;
-    upsample->upmethod = h2v2_merged_upsample;
+#if RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4
+#ifdef JDMERGE_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE2 &&
+        IS_CONST_ALIGNED_16(jconst_merged_upsample_sse2)) {
+      upsample->upmethod = jpeg_h2v2_merged_upsample_sse2;
+    } else
+#endif
+#ifdef JDMERGE_MMX_SUPPORTED
+    if (simd & JSIMD_MMX) {
+      upsample->upmethod = jpeg_h2v2_merged_upsample_mmx;
+    } else
+#endif
+#endif /* RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4 */
+    {
+      upsample->upmethod = h2v2_merged_upsample;
+      build_ycc_rgb_table(cinfo);
+    }
     /* Allocate a spare row buffer */
     upsample->spare_row = (JSAMPROW)
       (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 		(size_t) (upsample->out_row_width * SIZEOF(JSAMPLE)));
   } else {
     upsample->pub.upsample = merged_1v_upsample;
-    upsample->upmethod = h2v1_merged_upsample;
+#if RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4
+#ifdef JDMERGE_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE2 &&
+        IS_CONST_ALIGNED_16(jconst_merged_upsample_sse2)) {
+      upsample->upmethod = jpeg_h2v1_merged_upsample_sse2;
+    } else
+#endif
+#ifdef JDMERGE_MMX_SUPPORTED
+    if (simd & JSIMD_MMX) {
+      upsample->upmethod = jpeg_h2v1_merged_upsample_mmx;
+    } else
+#endif
+#endif /* RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4 */
+    {
+      upsample->upmethod = h2v1_merged_upsample;
+      build_ycc_rgb_table(cinfo);
+    }
     /* No spare row needed */
     upsample->spare_row = NULL;
   }
-
-  build_ycc_rgb_table(cinfo);
 }
 
+
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+
+GLOBAL(unsigned int)
+jpeg_simd_merged_upsampler (j_decompress_ptr cinfo)
+{
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
+
+#if RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4
+#ifdef JDMERGE_SSE2_SUPPORTED
+  if (simd & JSIMD_SSE2 &&
+      IS_CONST_ALIGNED_16(jconst_merged_upsample_sse2))
+    return JSIMD_SSE2;
+#endif
+#ifdef JDMERGE_MMX_SUPPORTED
+  if (simd & JSIMD_MMX)
+    return JSIMD_MMX;
+#endif
+#endif /* RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4 */
+
+  return JSIMD_NONE;
+}
+
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */
 #endif /* UPSAMPLE_MERGING_SUPPORTED */

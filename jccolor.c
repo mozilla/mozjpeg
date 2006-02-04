@@ -5,12 +5,20 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : January 5, 2006
+ * ---------------------------------------------------------------------
+ *
  * This file contains input colorspace conversion routines.
  */
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jcolsamp.h"		/* Private declarations */
 
 
 /* Private subobject */
@@ -352,6 +360,7 @@ GLOBAL(void)
 jinit_color_converter (j_compress_ptr cinfo)
 {
   my_cconvert_ptr cconvert;
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
 
   cconvert = (my_cconvert_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
@@ -420,8 +429,23 @@ jinit_color_converter (j_compress_ptr cinfo)
     if (cinfo->num_components != 3)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
     if (cinfo->in_color_space == JCS_RGB) {
-      cconvert->pub.start_pass = rgb_ycc_start;
-      cconvert->pub.color_convert = rgb_ycc_convert;
+#if RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4
+#ifdef JCCOLOR_RGBYCC_SSE2_SUPPORTED
+      if (simd & JSIMD_SSE2 &&
+          IS_CONST_ALIGNED_16(jconst_rgb_ycc_convert_sse2)) {
+        cconvert->pub.color_convert = jpeg_rgb_ycc_convert_sse2;
+      } else
+#endif
+#ifdef JCCOLOR_RGBYCC_MMX_SUPPORTED
+      if (simd & JSIMD_MMX) {
+        cconvert->pub.color_convert = jpeg_rgb_ycc_convert_mmx;
+      } else
+#endif
+#endif /* RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4 */
+      {
+        cconvert->pub.start_pass = rgb_ycc_start;
+        cconvert->pub.color_convert = rgb_ycc_convert;
+      }
     } else if (cinfo->in_color_space == JCS_YCbCr)
       cconvert->pub.color_convert = null_convert;
     else
@@ -457,3 +481,28 @@ jinit_color_converter (j_compress_ptr cinfo)
     break;
   }
 }
+
+
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+
+GLOBAL(unsigned int)
+jpeg_simd_color_converter (j_compress_ptr cinfo)
+{
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
+
+#if RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4
+#ifdef JCCOLOR_RGBYCC_SSE2_SUPPORTED
+  if (simd & JSIMD_SSE2 &&
+      IS_CONST_ALIGNED_16(jconst_rgb_ycc_convert_sse2))
+    return JSIMD_SSE2;
+#endif
+#ifdef JCCOLOR_RGBYCC_MMX_SUPPORTED
+  if (simd & JSIMD_MMX)
+    return JSIMD_MMX;
+#endif
+#endif /* RGB_PIXELSIZE == 3 || RGB_PIXELSIZE == 4 */
+
+  return JSIMD_NONE;
+}
+
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */

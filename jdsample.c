@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : January 5, 2006
+ * ---------------------------------------------------------------------
+ *
  * This file contains upsampling routines.
  *
  * Upsampling input data is counted in "row groups".  A row group
@@ -21,6 +28,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jcolsamp.h"		/* Private declarations */
 
 
 /* Pointer to routine to upsample a single component */
@@ -285,6 +293,37 @@ h2v2_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 }
 
 
+#ifdef UPSAMPLE_H1V2_SUPPORTED
+
+/*
+ * Fast processing for the common case of 1:1 horizontal and 2:1 vertical.
+ * It's still a box filter.
+ *
+ * SIMD Ext: This routine is for files that are rotated or transposed
+ *           by jpegtran.
+ */
+
+METHODDEF(void)
+h1v2_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+	       JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  int inrow, outrow;
+
+  inrow = outrow = 0;
+  while (outrow < cinfo->max_v_samp_factor) {
+    jcopy_sample_rows(input_data, inrow, output_data, outrow,
+		      1, cinfo->output_width);
+    jcopy_sample_rows(input_data, inrow, output_data, outrow+1,
+		      1, cinfo->output_width);
+    inrow++;
+    outrow += 2;
+  }
+}
+
+#endif /* UPSAMPLE_H1V2_SUPPORTED */
+
+
 /*
  * Fancy processing for the common case of 2:1 horizontal and 1:1 vertical.
  *
@@ -391,6 +430,52 @@ h2v2_fancy_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 }
 
 
+#ifdef UPSAMPLE_H1V2_SUPPORTED
+
+/*
+ * Fancy processing for the common case of 1:1 horizontal and 2:1 vertical.
+ * Again a triangle filter; see comments for h2v1 case, above.
+ *
+ * It is OK for us to reference the adjacent input rows because we demanded
+ * context from the main buffer controller (see initialization code).
+ *
+ * SIMD Ext: This routine is for files that are rotated or transposed
+ *           by jpegtran.
+ */
+
+METHODDEF(void)
+h1v2_fancy_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+		     JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  register JSAMPROW inptr0, inptr1, outptr;
+  register int colsum;
+  register JDIMENSION colctr;
+  int inrow, outrow, v;
+
+  inrow = outrow = 0;
+  while (outrow < cinfo->max_v_samp_factor) {
+    for (v = 0; v < 2; v++) {
+      /* inptr0 points to nearest input row, inptr1 points to next nearest */
+      inptr0 = input_data[inrow];
+      if (v == 0)		/* next nearest is row above */
+	inptr1 = input_data[inrow-1];
+      else			/* next nearest is row below */
+	inptr1 = input_data[inrow+1];
+      outptr = output_data[outrow++];
+
+      for (colctr = compptr->downsampled_width; colctr > 0; colctr--) {
+	colsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
+	*outptr++ = (JSAMPLE) ((colsum + v + 1) >> 2);
+      }
+    }
+    inrow++;
+  }
+}
+
+#endif /* UPSAMPLE_H1V2_SUPPORTED */
+
+
 /*
  * Module initialization routine for upsampling.
  */
@@ -403,6 +488,7 @@ jinit_upsampler (j_decompress_ptr cinfo)
   jpeg_component_info * compptr;
   boolean need_buffer, do_fancy;
   int h_in_group, v_in_group, h_out_group, v_out_group;
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
 
   upsample = (my_upsample_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
@@ -447,18 +533,83 @@ jinit_upsampler (j_decompress_ptr cinfo)
     } else if (h_in_group * 2 == h_out_group &&
 	       v_in_group == v_out_group) {
       /* Special cases for 2h1v upsampling */
-      if (do_fancy && compptr->downsampled_width > 2)
-	upsample->methods[ci] = h2v1_fancy_upsample;
-      else
-	upsample->methods[ci] = h2v1_upsample;
+      if (do_fancy && compptr->downsampled_width > 2) {
+#ifdef JDSAMPLE_FANCY_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE2 &&
+	    IS_CONST_ALIGNED_16(jconst_fancy_upsample_sse2))
+	  upsample->methods[ci] = jpeg_h2v1_fancy_upsample_sse2;
+	else
+#endif
+#ifdef JDSAMPLE_FANCY_MMX_SUPPORTED
+	if (simd & JSIMD_MMX)
+	  upsample->methods[ci] = jpeg_h2v1_fancy_upsample_mmx;
+	else
+#endif
+	  upsample->methods[ci] = h2v1_fancy_upsample;
+      } else {
+#ifdef JDSAMPLE_SIMPLE_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE2)
+	  upsample->methods[ci] = jpeg_h2v1_upsample_sse2;
+	else
+#endif
+#ifdef JDSAMPLE_SIMPLE_MMX_SUPPORTED
+	if (simd & JSIMD_MMX)
+	  upsample->methods[ci] = jpeg_h2v1_upsample_mmx;
+	else
+#endif
+	  upsample->methods[ci] = h2v1_upsample;
+      }
     } else if (h_in_group * 2 == h_out_group &&
 	       v_in_group * 2 == v_out_group) {
       /* Special cases for 2h2v upsampling */
       if (do_fancy && compptr->downsampled_width > 2) {
-	upsample->methods[ci] = h2v2_fancy_upsample;
+#ifdef JDSAMPLE_FANCY_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE2 &&
+	    IS_CONST_ALIGNED_16(jconst_fancy_upsample_sse2))
+	  upsample->methods[ci] = jpeg_h2v2_fancy_upsample_sse2;
+	else
+#endif
+#ifdef JDSAMPLE_FANCY_MMX_SUPPORTED
+	if (simd & JSIMD_MMX)
+	  upsample->methods[ci] = jpeg_h2v2_fancy_upsample_mmx;
+	else
+#endif
+	  upsample->methods[ci] = h2v2_fancy_upsample;
+	upsample->pub.need_context_rows = TRUE;
+      } else {
+#ifdef JDSAMPLE_SIMPLE_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE2)
+	  upsample->methods[ci] = jpeg_h2v2_upsample_sse2;
+	else
+#endif
+#ifdef JDSAMPLE_SIMPLE_MMX_SUPPORTED
+	if (simd & JSIMD_MMX)
+	  upsample->methods[ci] = jpeg_h2v2_upsample_mmx;
+	else
+#endif
+	  upsample->methods[ci] = h2v2_upsample;
+      }
+#ifdef UPSAMPLE_H1V2_SUPPORTED
+    } else if (h_in_group == h_out_group &&
+	       v_in_group * 2 == v_out_group) {
+      /* Special cases for 1h2v upsampling */
+      if (do_fancy) {
+#ifdef JDSAMPLE_FANCY_SSE2_SUPPORTED
+	if (simd & JSIMD_SSE2 &&
+	    IS_CONST_ALIGNED_16(jconst_fancy_upsample_sse2))
+	  upsample->methods[ci] = jpeg_h1v2_fancy_upsample_sse2;
+	else
+#endif
+#ifdef JDSAMPLE_FANCY_MMX_SUPPORTED
+	if (simd & JSIMD_MMX)
+	  upsample->methods[ci] = jpeg_h1v2_fancy_upsample_mmx;
+	else
+#endif
+	  upsample->methods[ci] = h1v2_fancy_upsample;
 	upsample->pub.need_context_rows = TRUE;
       } else
-	upsample->methods[ci] = h2v2_upsample;
+	upsample->methods[ci] = h1v2_upsample;
+#endif /* UPSAMPLE_H1V2_SUPPORTED */
     } else if ((h_out_group % h_in_group) == 0 &&
 	       (v_out_group % v_in_group) == 0) {
       /* Generic integral-factors upsampling method */
@@ -468,11 +619,52 @@ jinit_upsampler (j_decompress_ptr cinfo)
     } else
       ERREXIT(cinfo, JERR_FRACT_SAMPLE_NOTIMPL);
     if (need_buffer) {
+      enum { SIZEOF_XMMWORD = 16 };	/* from jsimdext.inc */
       upsample->color_buf[ci] = (*cinfo->mem->alloc_sarray)
 	((j_common_ptr) cinfo, JPOOL_IMAGE,
-	 (JDIMENSION) jround_up((long) cinfo->output_width,
-				(long) cinfo->max_h_samp_factor),
+	 (JDIMENSION) jround_up(jround_up((long) cinfo->output_width,
+					  (long) cinfo->max_h_samp_factor),
+				(long) (2 * SIZEOF_XMMWORD)),
 	 (JDIMENSION) cinfo->max_v_samp_factor);
     }
   }
 }
+
+
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+
+GLOBAL(unsigned int)
+jpeg_simd_upsampler (j_decompress_ptr cinfo, int do_fancy)
+{
+  unsigned int simd = jpeg_simd_support((j_common_ptr) cinfo);
+
+#ifdef UPSAMPLE_MERGING_SUPPORTED
+  if (!do_fancy)
+    return jpeg_simd_merged_upsampler(cinfo);
+#endif
+
+  if (do_fancy) {
+#ifdef JDSAMPLE_FANCY_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE2 &&
+        IS_CONST_ALIGNED_16(jconst_fancy_upsample_sse2))
+      return JSIMD_SSE2;
+#endif
+#ifdef JDSAMPLE_FANCY_MMX_SUPPORTED
+    if (simd & JSIMD_MMX)
+      return JSIMD_MMX;
+#endif
+  } else {
+#ifdef JDSAMPLE_SIMPLE_SSE2_SUPPORTED
+    if (simd & JSIMD_SSE2)
+      return JSIMD_SSE2;
+#endif
+#ifdef JDSAMPLE_SIMPLE_MMX_SUPPORTED
+    if (simd & JSIMD_MMX)
+      return JSIMD_MMX;
+#endif
+  }
+
+  return JSIMD_NONE;
+}
+
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */

@@ -1,0 +1,634 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT([jcmaster.c])
+AC_CONFIG_HEADER([jconfig.h:jconfig.cfg])
+dnl --------------------------------------------------------------------
+AC_PROG_CC
+AC_PROG_CPP
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for function prototypes])
+AC_CACHE_VAL([ijg_cv_have_prototypes],[AC_TRY_COMPILE([
+int testfunction (int arg1, int * arg2); /* check prototypes */
+struct methods_struct {		/* check method-pointer declarations */
+  int (*error_exit) (char *msgtext);
+  int (*trace_message) (char *msgtext);
+  int (*another_method) (void);
+};
+int testfunction (int arg1, int * arg2) /* check definitions */
+{ return arg2[arg1]; }
+int test2function (void)	/* check void arg list */
+{ return 0; }
+],[ ],[ijg_cv_have_prototypes=yes],[ijg_cv_have_prototypes=no])])
+AC_MSG_RESULT([$ijg_cv_have_prototypes])
+if test $ijg_cv_have_prototypes = yes; then
+  AC_DEFINE([HAVE_PROTOTYPES],)
+else
+  echo [Your compiler does not seem to know about function prototypes.]
+  echo [Perhaps it needs a special switch to enable ANSI C mode.]
+  echo [If so, we recommend running configure like this:]
+  echo ["   ./configure  CC='cc -switch'"]
+  echo [where -switch is the proper switch.]
+fi
+dnl --------------------------------------------------------------------
+AC_CHECK_HEADER([stddef.h],[AC_DEFINE([HAVE_STDDEF_H],)])
+AC_CHECK_HEADER([stdlib.h],[AC_DEFINE([HAVE_STDLIB_H],)])
+AC_CHECK_HEADER([string.h],[:],[AC_DEFINE([NEED_BSD_STRINGS],)])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for size_t])
+AC_TRY_COMPILE([
+#ifdef HAVE_STDDEF_H
+#include <stddef.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <stdio.h>
+#ifdef NEED_BSD_STRINGS
+#include <strings.h>
+#else
+#include <string.h>
+#endif
+typedef size_t my_size_t;
+],[ my_size_t foovar; ],
+[ijg_size_t_ok=yes],
+[ijg_size_t_ok="not ANSI, perhaps it is in sys/types.h"])
+AC_MSG_RESULT([$ijg_size_t_ok])
+if test "$ijg_size_t_ok" != yes; then
+AC_CHECK_HEADER([sys/types.h],[AC_DEFINE([NEED_SYS_TYPES_H],)
+AC_EGREP_HEADER([size_t],[sys/types.h],
+[ijg_size_t_ok="size_t is in sys/types.h"],[ijg_size_t_ok=no])],
+[ijg_size_t_ok=no])
+AC_MSG_RESULT([$ijg_size_t_ok])
+if test "$ijg_size_t_ok" = no; then
+  echo [Type size_t is not defined in any of the usual places.]
+  echo [Try putting '"typedef unsigned int size_t;"' in jconfig.h.]
+fi
+fi
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for type unsigned char])
+AC_TRY_COMPILE(,[ unsigned char un_char; ],[AC_MSG_RESULT(yes)
+AC_DEFINE([HAVE_UNSIGNED_CHAR],)],[AC_MSG_RESULT(no)])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for type unsigned short])
+AC_TRY_COMPILE(,[ unsigned short un_short; ],[AC_MSG_RESULT(yes)
+AC_DEFINE([HAVE_UNSIGNED_SHORT],)],[AC_MSG_RESULT(no)])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for type void])
+AC_TRY_COMPILE([
+/* Caution: a C++ compiler will insist on valid prototypes */
+typedef void * void_ptr;	/* check void * */
+#ifdef HAVE_PROTOTYPES		/* check ptr to function returning void */
+typedef void (*void_func) (int a, int b);
+#else
+typedef void (*void_func) ();
+#endif
+
+#ifdef HAVE_PROTOTYPES		/* check void function result */
+void test3function (void_ptr arg1, void_func arg2)
+#else
+void test3function (arg1, arg2)
+     void_ptr arg1;
+     void_func arg2;
+#endif
+{
+  char * locptr = (char *) arg1; /* check casting to and from void * */
+  arg1 = (void *) locptr;
+  (*arg2) (1, 2);		/* check call of fcn returning void */
+}
+],[ ],[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)
+AC_DEFINE([void],[char])])
+
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for working const])
+AC_CACHE_VAL([ac_cv_c_const],[AC_TRY_COMPILE(,[
+/* Ultrix mips cc rejects this.  */
+typedef int charset[2]; const charset x;
+/* SunOS 4.1.1 cc rejects this.  */
+char const *const *ccp;
+char **p;
+/* NEC SVR4.0.2 mips cc rejects this.  */
+struct point {int x, y;};
+static struct point const zero = {0,0};
+/* AIX XL C 1.02.0.0 rejects this.
+   It does not let you subtract one const X* pointer from another in an arm
+   of an if-expression whose if-part is not a constant expression */
+const char *g = "string";
+ccp = &g + (g ? g-g : 0);
+/* HPUX 7.0 cc rejects these. */
+++ccp;
+p = (char**) ccp;
+ccp = (char const *const *) p;
+{ /* SCO 3.2v4 cc rejects this.  */
+  char *t;
+  char const *s = 0 ? (char *) 0 : (char const *) 0;
+
+  *t++ = 0;
+}
+{ /* Someone thinks the Sun supposedly-ANSI compiler will reject this.  */
+  int x[] = {25, 17};
+  const int *foo = &x[0];
+  ++foo;
+}
+{ /* Sun SC1.0 ANSI compiler rejects this -- but not the above. */
+  typedef const int *iptr;
+  iptr p = 0;
+  ++p;
+}
+{ /* AIX XL C 1.02.0.0 rejects this saying
+     "k.c", line 2.27: 1506-025 (S) Operand must be a modifiable lvalue. */
+  struct s { int j; const int *ap[3]; };
+  struct s *b; b->j = 5;
+}
+{ /* ULTRIX-32 V3.1 (Rev 9) vcc rejects this */
+  const int foo = 10;
+}
+],[ac_cv_c_const=yes],[ac_cv_c_const=no])])
+AC_MSG_RESULT([$ac_cv_c_const])
+if test $ac_cv_c_const = no; then
+  AC_DEFINE([const],)
+fi
+
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for inline])
+ijg_cv_inline=""
+AC_TRY_COMPILE(,[} __inline__ int foo() { return 0; }
+int bar() { return foo();],[ijg_cv_inline="__inline__"],
+[AC_TRY_COMPILE(,[} __inline int foo() { return 0; }
+int bar() { return foo();],[ijg_cv_inline="__inline"],
+[AC_TRY_COMPILE(,[} inline int foo() { return 0; }
+int bar() { return foo();],[ijg_cv_inline="inline"],)])])
+AC_MSG_RESULT([$ijg_cv_inline])
+AC_DEFINE_UNQUOTED([INLINE],[$ijg_cv_inline])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for broken incomplete types])
+AC_TRY_COMPILE([ typedef struct undefined_structure * undef_struct_ptr; ],
+,[AC_MSG_RESULT(ok)],[AC_MSG_RESULT(broken)
+AC_DEFINE([INCOMPLETE_TYPES_BROKEN],)])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([for short external names])
+AC_TRY_LINK([
+int possibly_duplicate_function () { return 0; }
+int possibly_dupli_function () { return 1; }
+],[ ],[AC_MSG_RESULT(ok)],[AC_MSG_RESULT(short)
+AC_DEFINE([NEED_SHORT_EXTERNAL_NAMES],)])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([to see if char is signed])
+AC_TRY_RUN([
+#ifdef HAVE_PROTOTYPES
+int is_char_signed (int arg)
+#else
+int is_char_signed (arg)
+     int arg;
+#endif
+{
+  if (arg == 189) {		/* expected result for unsigned char */
+    return 0;			/* type char is unsigned */
+  }
+  else if (arg != -67) {	/* expected result for signed char */
+    printf("Hmm, it seems 'char' is not eight bits wide on your machine.\n");
+    printf("I fear the JPEG software will not work at all.\n\n");
+  }
+  return 1;			/* assume char is signed otherwise */
+}
+char signed_char_check = (char) (-67);
+main() {
+  exit(is_char_signed((int) signed_char_check));
+}],[AC_MSG_RESULT(no)
+AC_DEFINE([CHAR_IS_UNSIGNED],)],[AC_MSG_RESULT(yes)],
+[echo Assuming that char is signed on target machine.
+echo If it is unsigned, this will be a little bit inefficient.
+])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([to see if right shift is signed])
+AC_TRY_RUN([
+#ifdef HAVE_PROTOTYPES
+int is_shifting_signed (long arg)
+#else
+int is_shifting_signed (arg)
+     long arg;
+#endif
+/* See whether right-shift on a long is signed or not. */
+{
+  long res = arg >> 4;
+
+  if (res == -0x7F7E80CL) {	/* expected result for signed shift */
+    return 1;			/* right shift is signed */
+  }
+  /* see if unsigned-shift hack will fix it. */
+  /* we can't just test exact value since it depends on width of long... */
+  res |= (~0L) << (32-4);
+  if (res == -0x7F7E80CL) {	/* expected result now? */
+    return 0;			/* right shift is unsigned */
+  }
+  printf("Right shift isn't acting as I expect it to.\n");
+  printf("I fear the JPEG software will not work at all.\n\n");
+  return 0;			/* try it with unsigned anyway */
+}
+main() {
+  exit(is_shifting_signed(-0x7F7E80B1L));
+}],[AC_MSG_RESULT(no)
+AC_DEFINE([RIGHT_SHIFT_IS_UNSIGNED],)],[AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT([Assuming that right shift is signed on target machine.])])
+dnl --------------------------------------------------------------------
+AC_MSG_CHECKING([to see if fopen accepts b spec])
+AC_TRY_RUN([
+#include <stdio.h>
+main() {
+  if (fopen("conftestdata", "wb") != NULL)
+    exit(0);
+  exit(1);
+}],[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)
+AC_DEFINE([DONT_USE_B_MODE],)],[AC_MSG_RESULT([Assuming that it does.])])
+dnl --------------------------------------------------------------------
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+dnl --------------------------------------------------------------------
+
+AC_CANONICAL_HOST
+AC_EXEEXT
+
+# Decide whether to use libtool,
+# and if so whether to build shared, static, or both flavors of library.
+AC_DISABLE_SHARED
+AC_DISABLE_STATIC
+if test "x$enable_shared" != xno  -o  "x$enable_static" != xno; then
+  USELIBTOOL="yes"
+# LIBTOOL="./libtool"
+  O="lo"
+  A="la"
+  LN='$(LIBTOOL) --mode=link $(CC)'
+  INSTALL_LIB='$(LIBTOOL) --mode=install ${INSTALL}'
+  INSTALL_PROGRAM="\$(LIBTOOL) --mode=install $INSTALL_PROGRAM"
+  UNINSTALL='$(LIBTOOL) --mode=uninstall $(RM)'
+else
+  USELIBTOOL="no"
+  LIBTOOL=""
+  O="o"
+  A="a"
+  LN='$(CC)'
+  INSTALL_LIB="$INSTALL_DATA"
+  UNINSTALL='$(RM)'
+fi
+AC_SUBST([LIBTOOL])
+AC_SUBST([O])
+AC_SUBST([A])
+AC_SUBST([LN])
+AC_SUBST([INSTALL_LIB])
+AC_SUBST([UNINSTALL])
+
+# Configure libtool if needed.
+if test $USELIBTOOL = yes; then
+  AC_LIBTOOL_DLOPEN
+  AC_LIBTOOL_WIN32_DLL
+  AC_PROG_LIBTOOL
+fi
+# if libtool >= 1.5
+TAGCC=ifdef([AC_LIBTOOL_GCJ],[--tag=CC])
+AC_SUBST([TAGCC])
+
+dnl --------------------------------------------------------------------
+# Select memory manager depending on user input.
+# If no "-enable-maxmem", use jmemnobs
+MEMORYMGR='jmemnobs.$(O)'
+MAXMEM="no"
+AC_ARG_ENABLE([maxmem],
+[  --enable-maxmem[=N]     enable use of temp files, set max mem usage to N MB],
+[MAXMEM="$enableval"])
+# support --with-maxmem for backwards compatibility with IJG V5.
+AC_ARG_WITH([maxmem],,[MAXMEM="$withval"])
+if test "x$MAXMEM" = xyes; then
+  MAXMEM=1
+fi
+if test "x$MAXMEM" != xno; then
+  if test -n "`echo $MAXMEM | sed 's/[[0-9]]//g'`"; then
+    AC_MSG_ERROR([non-numeric argument to --enable-maxmem])
+  fi
+  DEFAULTMAXMEM=`expr $MAXMEM \* 1048576`
+AC_DEFINE_UNQUOTED([DEFAULT_MAX_MEM],[${DEFAULTMAXMEM}])
+AC_MSG_CHECKING([for 'tmpfile()'])
+AC_TRY_LINK([#include <stdio.h>],[ FILE * tfile = tmpfile(); ],
+[AC_MSG_RESULT(yes)
+MEMORYMGR='jmemansi.$(O)'],
+[AC_MSG_RESULT(no)
+MEMORYMGR='jmemname.$(O)'
+AC_DEFINE([NEED_SIGNAL_CATCHER],)
+AC_MSG_CHECKING([for 'mktemp()'])
+AC_TRY_LINK(,[ char fname[80]; mktemp(fname); ],
+[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)
+AC_DEFINE([NO_MKTEMP],)])])
+fi
+AC_SUBST([MEMORYMGR])
+
+dnl ====================================================================
+
+AC_MSG_CHECKING([to see if the host cpu type is i386 or compatible])
+case "$host_cpu" in
+  i*86 | x86 | ia32)
+    AC_MSG_RESULT(yes)
+  ;;
+  x86_64 | amd64 | aa64)
+    AC_MSG_RESULT([no (x86_64)])
+    AC_MSG_ERROR([Currently, this version of JPEG library cannot be compiled as 64-bit code. sorry.])
+  ;;
+  *)
+    AC_MSG_RESULT([no ("$host_cpu")])
+    AC_MSG_ERROR([This version of JPEG library is for i386 or compatible processors only.])
+  ;;
+esac
+
+if test -z "$NAFLAGS" ; then
+  AC_MSG_CHECKING([for object file format of host system])
+  case "$host_os" in
+    cygwin* | mingw* | pw32* | interix*)
+      objfmt='Win32-COFF'
+    ;;
+    msdosdjgpp* | go32*)
+      objfmt='COFF'
+    ;;
+    os2-emx*)			# not tested
+      objfmt='MSOMF'		# obj
+    ;;
+    linux*coff* | linux*oldld*)
+      objfmt='COFF'		# ???
+    ;;
+    linux*aout*)
+      objfmt='a.out'
+    ;;
+    linux*)
+      objfmt='ELF'
+    ;;
+    freebsd* | netbsd* | openbsd*)
+      if echo __ELF__ | $CC -E - | grep __ELF__ > /dev/null; then
+        objfmt='BSD-a.out'
+      else
+        objfmt='ELF'
+      fi
+    ;;
+    solaris* | sunos* | sysv* | sco*)
+      objfmt='ELF'
+    ;;
+    darwin* | rhapsody* | nextstep* | openstep* | macos*)
+      objfmt='Mach-O'
+    ;;
+    *)
+      objfmt='ELF ?'
+    ;;
+  esac
+  AC_MSG_RESULT([$objfmt])
+  if test "$objfmt" = 'ELF ?'; then
+    objfmt='ELF'
+    AC_MSG_WARN([unexpected host system. assumed that the format is $objfmt.])
+  fi
+else
+  objfmt=''
+fi
+AC_MSG_CHECKING([for object file format specifier (NAFLAGS) ])
+case "$objfmt" in
+  MSOMF)      NAFLAGS='-fobj -DOBJ32';;
+  Win32-COFF) NAFLAGS='-fwin32 -DWIN32';;
+  COFF)       NAFLAGS='-fcoff -DCOFF';;
+  a.out)      NAFLAGS='-faout -DAOUT';;
+  BSD-a.out)  NAFLAGS='-faoutb -DAOUT';;
+  ELF)        NAFLAGS='-felf -DELF';;
+  RDF)        NAFLAGS='-frdf -DRDF';;
+  Mach-O)     NAFLAGS='-fmacho -DMACHO';;
+esac
+AC_MSG_RESULT([$NAFLAGS])
+AC_SUBST([NAFLAGS])
+
+dnl --------------------------------------------------------------------
+
+AC_CHECK_PROGS(NASM, [nasm nasmw])
+test -z "$NASM" && AC_MSG_ERROR([no nasm (Netwide Assembler) found in \$PATH])
+if echo "$NASM" | grep yasm > /dev/null; then
+  AC_MSG_WARN([DON'T USE YASM! CURRENT VERSION (R0.4.0) IS BUGGY!])
+fi
+
+AC_MSG_CHECKING([whether the assembler ($NASM $NAFLAGS) works])
+cat > conftest.asm <<EOF
+[%line __oline__ "configure"
+        section .text
+        bits    32
+        global  _main,main
+_main:
+main:   xor     eax,eax
+        ret
+]EOF
+try_nasm='$NASM $NAFLAGS -o conftest.o conftest.asm'
+if AC_TRY_EVAL(try_nasm) && test -s conftest.o; then
+  AC_MSG_RESULT(yes)
+else
+  echo "configure: failed program was:" >&AC_FD_CC
+  cat conftest.asm >&AC_FD_CC
+  rm -rf conftest*
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([installation or configuration problem: assembler cannot create object files.])
+fi
+AC_MSG_CHECKING([whether the linker accepts assembler output])
+try_nasm='${CC-cc} -o conftest${ac_exeext} $LDFLAGS conftest.o $LIBS 1>&AC_FD_CC'
+if AC_TRY_EVAL(try_nasm) && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  AC_MSG_RESULT(yes)
+else
+  rm -rf conftest*
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([configuration problem: maybe object file format mismatch.])
+fi
+
+AC_MSG_CHECKING([whether the assembler supports line continuation character])
+cat > conftest.asm <<\EOF
+[%line __oline__ "configure"
+; The line continuation character '\'
+; was introduced in nasm 0.98.25.
+        section .text
+        bits    32
+        global  _zero
+_zero:  xor     \
+                eax,eax
+        ret
+]EOF
+try_nasm='$NASM $NAFLAGS -o conftest.o conftest.asm'
+if AC_TRY_EVAL(try_nasm) && test -s conftest.o; then
+  rm -rf conftest*
+  AC_MSG_RESULT(yes)
+else
+  echo "configure: failed program was:" >&AC_FD_CC
+  cat conftest.asm >&AC_FD_CC
+  rm -rf conftest*
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([you have to use a more recent version of the assembler.])
+fi
+
+dnl --------------------------------------------------------------------
+
+AC_MSG_CHECKING([SIMD instruction sets requested to use])
+simd_to_use=""
+
+AC_ARG_ENABLE(mmx,
+[  --disable-mmx           do not use MMX instruction set],
+[if test "x$enableval" = xno; then
+  AC_DEFINE([JSIMD_MMX_NOT_SUPPORTED],)
+else
+  simd_to_use="$simd_to_use MMX"
+fi], [simd_to_use="$simd_to_use MMX"])
+
+AC_ARG_ENABLE(3dnow,
+[  --disable-3dnow         do not use 3DNow! instruction set],
+[if test "x$enableval" = xno; then
+  AC_DEFINE([JSIMD_3DNOW_NOT_SUPPORTED],)
+else
+  simd_to_use="$simd_to_use 3DNow!"
+fi], [simd_to_use="$simd_to_use 3DNow!"])
+
+AC_ARG_ENABLE(sse,
+[  --disable-sse           do not use SSE instruction set],
+[if test "x$enableval" = xno; then
+  AC_DEFINE([JSIMD_SSE_NOT_SUPPORTED],)
+else
+  simd_to_use="$simd_to_use SSE"
+fi], [simd_to_use="$simd_to_use SSE"])
+
+AC_ARG_ENABLE(sse2,
+[  --disable-sse2          do not use SSE2 instruction set],
+[if test "x$enableval" = xno; then
+  AC_DEFINE([JSIMD_SSE2_NOT_SUPPORTED],)
+else
+  simd_to_use="$simd_to_use SSE2"
+fi], [simd_to_use="$simd_to_use SSE2"])
+
+test -z "$simd_to_use" && simd_to_use="NONE"
+AC_MSG_RESULT([$simd_to_use])
+
+for simd_name in $simd_to_use; do
+case "$simd_name" in
+  MMX)    simd_instruction='psubw mm0,mm0';;
+  3DNow!) simd_instruction='pfsub mm0,mm0';;
+  SSE)    simd_instruction='subps xmm0,xmm0';;
+  SSE2)   simd_instruction='subpd xmm0,xmm0';;
+  *)      continue;;
+esac
+AC_MSG_CHECKING([whether the assembler supports $simd_name instructions])
+cat > conftest.asm <<EOF
+[%line __oline__ "configure"
+        section .text
+        bits    32
+        global  _simd
+_simd:  $simd_instruction
+        ret
+]EOF
+try_nasm='$NASM $NAFLAGS -o conftest.o conftest.asm'
+if AC_TRY_EVAL(try_nasm) && test -s conftest.o; then
+  rm -rf conftest*
+  AC_MSG_RESULT(yes)
+else
+  echo "configure: failed program was:" >&AC_FD_CC
+  cat conftest.asm >&AC_FD_CC
+  rm -rf conftest*
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([you have to use a more recent version of the assembler.])
+fi
+done
+
+dnl --------------------------------------------------------------------
+# Select OS-dependent SIMD instruction support checker.
+# jsimdw32.$(O) (Win32) / jsimddjg.$(O) (DJGPP V.2) / jsimdgcc.$(O) (Unix/gcc)
+if test "x$SIMDCHECKER" = x ; then
+  case "$host_os" in
+    cygwin* | mingw* | pw32* | interix*)
+      SIMDCHECKER='jsimdw32.$(O)'
+    ;;
+    msdosdjgpp* | go32*)
+      SIMDCHECKER='jsimddjg.$(O)'
+    ;;
+    os2-emx*)			# not tested
+      SIMDCHECKER='jsimdgcc.$(O)'
+    ;;
+    *)
+      SIMDCHECKER='jsimdgcc.$(O)'
+    ;;
+  esac
+fi
+AC_SUBST([SIMDCHECKER])
+
+case "$host_os" in
+  cygwin* | mingw* | pw32* | os2-emx* | msdosdjgpp* | go32*)
+    AC_DEFINE([USE_SETMODE],)
+  ;;
+# _host_name_*)
+#   AC_DEFINE([USE_FDOPEN],)
+# ;;
+esac
+
+# This is for UNIX-like environments on Windows platform.
+AC_ARG_ENABLE(uchar-boolean,
+[  --enable-uchar-boolean  define type \"boolean\" as unsigned char (for Windows)],
+[if test "x$enableval" != xno; then
+  AC_DEFINE([TYPEDEF_UCHAR_BOOLEAN],)
+fi])
+
+dnl --------------------------------------------------------------------
+
+JPEG_LIB_VERSION="63:0:1"
+confv_dirs="$srcdir $srcdir/.. $srcdir/../.."
+config_ver=
+for ac_dir in $confv_dirs; do
+  if test -r $ac_dir/config.ver; then
+    config_ver=$ac_dir/config.ver
+    break
+  fi
+done
+if test -z "$config_ver"; then
+  AC_MSG_WARN([cannot find config.ver in $confv_dirs])
+  AC_MSG_WARN([default version number $JPEG_LIB_VERSION is used])
+  AC_MSG_CHECKING([libjpeg version number for libtool])
+  AC_MSG_RESULT([$JPEG_LIB_VERSION])
+else
+  AC_MSG_CHECKING([libjpeg version number for libtool])
+  . $config_ver
+  AC_MSG_RESULT([$JPEG_LIB_VERSION])
+  echo "configure: if you want to change the version number, modify $config_ver" 1>&2
+fi
+AC_SUBST([JPEG_LIB_VERSION])
+
+dnl --------------------------------------------------------------------
+# Prepare to massage makefile.cfg correctly.
+if test $ijg_cv_have_prototypes = yes; then
+  A2K_DEPS=""
+  COM_A2K="# "
+else
+  A2K_DEPS="ansi2knr"
+  COM_A2K=""
+fi
+AC_SUBST([A2K_DEPS])
+AC_SUBST([COM_A2K])
+# ansi2knr needs -DBSD if string.h is missing
+if test $ac_cv_header_string_h = no; then
+  ANSI2KNRFLAGS="-DBSD"
+else
+  ANSI2KNRFLAGS=""
+fi
+AC_SUBST([ANSI2KNRFLAGS])
+# Substitutions to enable or disable libtool-related stuff
+if test $USELIBTOOL = yes -a $ijg_cv_have_prototypes = yes; then
+  COM_LT=""
+else
+  COM_LT="# "
+fi
+AC_SUBST([COM_LT])
+if test "x$enable_shared" != xno; then
+  FORCE_INSTALL_LIB="install-lib"
+  UNINSTALL_LIB="uninstall-lib"
+else
+  FORCE_INSTALL_LIB=""
+  UNINSTALL_LIB=""
+fi
+AC_SUBST([FORCE_INSTALL_LIB])
+AC_SUBST([UNINSTALL_LIB])
+# Set up -I directives
+if test "x$srcdir" = x.; then
+  INCLUDEFLAGS='-I$(srcdir)'
+else
+  INCLUDEFLAGS='-I. -I$(srcdir)'
+fi
+AC_SUBST([INCLUDEFLAGS])
+dnl --------------------------------------------------------------------
+AC_OUTPUT([Makefile:makefile.cfg])

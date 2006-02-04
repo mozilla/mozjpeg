@@ -1,0 +1,298 @@
+# Makefile for Independent JPEG Group's software
+# Modified for x86 SIMD extension
+
+# This makefile is for MinGW.
+
+# Read installation instructions before saying "make" !!
+
+srcdir = .
+VPATH  = $(srcdir)
+
+# The name of your C compiler:
+CC= gcc
+
+# You may need to adjust these cc options:
+# For gcc 3.4.x
+CFLAGS= -O2 -mtune=pentium2 -march=i386 -fomit-frame-pointer -fweb \
+        -mpreferred-stack-boundary=2 -mno-align-stringops -I$(srcdir)
+# For gcc 3.3.x
+#CFLAGS= -O2 -mcpu=pentium2 -march=i386 -fomit-frame-pointer \
+#        -mpreferred-stack-boundary=2 -mno-align-stringops -I$(srcdir)
+# Generally, we recommend defining any configuration symbols in jconfig.h,
+# NOT via -D switches here.
+
+# The executable name of NASM and its options:
+NASM= nasmw
+NAFLAGS= $(NASM_OBJFMT) -I$(srcdir)/
+# object file format specifier for NASM
+# see jsimdext.inc for more details.
+NASM_OBJFMT= -fwin32 -DWIN32
+
+# Link-time cc options:
+LDFLAGS= -s
+
+# To link any special libraries, add the necessary -l commands here.
+LDLIBS= 
+
+# Put here the object file name for the correct system-dependent memory
+# manager file.
+SYSDEPMEM= jmemnobs.o
+
+# OS-dependent SIMD instruction support checker
+# jsimdw32.o (Win32) / jsimddjg.o (DJGPP V.2) / jsimdgcc.o (Unix/gcc)
+SYSDEPSIMDCHK= jsimdw32.o
+
+# miscellaneous OS-dependent stuff
+# linker
+LN= $(CC)
+# file deletion command
+RM= del
+# library (.a) file creation command
+AR= ar rc
+# second step in .a creation (use "touch" if not needed)
+AR2= ranlib
+
+# End of configurable options.
+
+
+# source files: JPEG library proper
+LIBSOURCES= jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c \
+        jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c \
+        jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c \
+        jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c \
+        jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c \
+        jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c \
+        jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c jquant1.c \
+        jquant2.c jutils.c jmemmgr.c
+# memmgr back ends: compile only one of these into a working library
+SYSDEPSOURCES= jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemmac.c
+# source files: cjpeg/djpeg/jpegtran applications, also rdjpgcom/wrjpgcom
+APPSOURCES= cjpeg.c djpeg.c jpegtran.c rdjpgcom.c wrjpgcom.c cdjpeg.c \
+        rdcolmap.c rdswitch.c transupp.c rdppm.c wrppm.c rdgif.c wrgif.c \
+        rdtarga.c wrtarga.c rdbmp.c wrbmp.c rdrle.c wrrle.c
+SOURCES= $(LIBSOURCES) $(SYSDEPSOURCES) $(APPSOURCES)
+# files included by source files
+INCLUDES= jchuff.h jdhuff.h jdct.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
+        jpegint.h jpeglib.h jversion.h cdjpeg.h cderror.h transupp.h
+# documentation, test, and support files
+DOCS= README install.doc usage.doc cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 \
+        wrjpgcom.1 wizard.doc example.c libjpeg.doc structure.doc \
+        coderules.doc filelist.doc change.log
+MKFILES= configure makefile.cfg makefile.ansi makefile.unix makefile.bcc \
+        makefile.mc6 makefile.dj makefile.wat makefile.vc makelib.ds \
+        makeapps.ds makeproj.mac makcjpeg.st makdjpeg.st makljpeg.st \
+        maktjpeg.st makefile.manx makefile.sas makefile.mms makefile.vms \
+        makvms.opt
+CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat \
+        jconfig.vc jconfig.mac jconfig.st jconfig.manx jconfig.sas \
+        jconfig.vms
+CONFIGUREFILES= config.guess config.sub install-sh ltconfig ltmain.sh
+OTHERFILES= jconfig.doc ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm
+TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \
+        testimgp.jpg
+DISTFILES= $(DOCS) $(MKFILES) $(CONFIGFILES) $(SOURCES) $(INCLUDES) \
+        $(CONFIGUREFILES) $(OTHERFILES) $(TESTFILES)
+# library object files common to compression and decompression
+COMOBJECTS= jcomapi.o jutils.o jerror.o jmemmgr.o $(SYSDEPMEM) jsimdcpu.o \
+        $(SYSDEPSIMDCHK)
+# compression library object files
+CLIBOBJECTS= jcapimin.o jcapistd.o jctrans.o jcparam.o jdatadst.o jcinit.o \
+        jcmaster.o jcmarker.o jcmainct.o jcprepct.o jccoefct.o jccolor.o \
+        jcsample.o jchuff.o jcphuff.o jcdctmgr.o jccolmmx.o jccolss2.o \
+        jcsammmx.o jcsamss2.o jcqntint.o jcqntflt.o jcqntmmx.o jcqnt3dn.o \
+        jcqnts2i.o jcqntsse.o jcqnts2f.o jfdctint.o jfdctfst.o jfdctflt.o \
+        jfmmxint.o jfmmxfst.o jf3dnflt.o jfss2int.o jfss2fst.o jfsseflt.o
+# decompression library object files
+DLIBOBJECTS= jdapimin.o jdapistd.o jdtrans.o jdatasrc.o jdmaster.o \
+        jdinput.o jdmarker.o jdhuff.o jdphuff.o jdmainct.o jdcoefct.o \
+        jdpostct.o jddctmgr.o jdsample.o jdcolor.o jquant1.o jquant2.o \
+        jdmerge.o jidctint.o jidctfst.o jidctred.o jidctflt.o jimmxint.o \
+        jimmxfst.o jimmxred.o ji3dnflt.o jiss2int.o jiss2fst.o jiss2red.o \
+        jisseflt.o jiss2flt.o jdsammmx.o jdsamss2.o jdcolmmx.o jdcolss2.o \
+        jdmermmx.o jdmerss2.o
+# These objectfiles are included in libjpeg.a
+LIBOBJECTS= $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
+# object files for sample applications (excluding library files)
+COBJECTS= cjpeg.o rdppm.o rdgif.o rdtarga.o rdrle.o rdbmp.o rdswitch.o \
+        cdjpeg.o
+DOBJECTS= djpeg.o wrppm.o wrgif.o wrtarga.o wrrle.o wrbmp.o rdcolmap.o \
+        cdjpeg.o
+TROBJECTS= jpegtran.o rdswitch.o cdjpeg.o transupp.o
+
+
+all: libjpeg.a cjpeg.exe djpeg.exe jpegtran.exe rdjpgcom.exe wrjpgcom.exe
+
+libjpeg.a: $(LIBOBJECTS)
+	-$(RM) libjpeg.a
+	$(AR)  libjpeg.a  $(LIBOBJECTS)
+	$(AR2) libjpeg.a
+
+cjpeg.exe: $(COBJECTS) libjpeg.a
+	$(LN) $(LDFLAGS) -o cjpeg.exe $(COBJECTS) libjpeg.a $(LDLIBS)
+
+djpeg.exe: $(DOBJECTS) libjpeg.a
+	$(LN) $(LDFLAGS) -o djpeg.exe $(DOBJECTS) libjpeg.a $(LDLIBS)
+
+jpegtran.exe: $(TROBJECTS) libjpeg.a
+	$(LN) $(LDFLAGS) -o jpegtran.exe $(TROBJECTS) libjpeg.a $(LDLIBS)
+
+rdjpgcom.exe: rdjpgcom.o
+	$(LN) $(LDFLAGS) -o rdjpgcom.exe rdjpgcom.o $(LDLIBS)
+
+wrjpgcom.exe: wrjpgcom.o
+	$(LN) $(LDFLAGS) -o wrjpgcom.exe wrjpgcom.o $(LDLIBS)
+
+jconfig.h: jconfig.doc
+	echo You must prepare a system-dependent jconfig.h file.
+	echo Please read the installation directions in install.doc.
+	exit 1
+
+clean:
+	-$(RM) *.o
+	-$(RM) cjpeg.exe
+	-$(RM) djpeg.exe
+	-$(RM) jpegtran.exe
+	-$(RM) rdjpgcom.exe
+	-$(RM) wrjpgcom.exe
+	-$(RM) jsimdcfg.inc
+	-$(RM) libjpeg.a
+	-$(RM) testout*.*
+
+test: cjpeg.exe djpeg.exe jpegtran.exe
+	-$(RM) testout*.*
+	./djpeg -dct int -ppm -outfile testout.ppm $(srcdir)\testorig.jpg
+	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp $(srcdir)\testorig.jpg
+	./cjpeg -dct int -outfile testout.jpg $(srcdir)\testimg.ppm
+	./djpeg -dct int -ppm -outfile testoutp.ppm $(srcdir)\testprog.jpg
+	./cjpeg -dct int -progressive -opt -outfile testoutp.jpg $(srcdir)\testimg.ppm
+	./jpegtran -outfile testoutt.jpg $(srcdir)\testprog.jpg
+	fc /b $(srcdir)\testimg.ppm testout.ppm
+	fc /b $(srcdir)\testimg.bmp testout.bmp
+	fc /b $(srcdir)\testimg.jpg testout.jpg
+	fc /b $(srcdir)\testimg.ppm testoutp.ppm
+	fc /b $(srcdir)\testimgp.jpg testoutp.jpg
+	fc /b $(srcdir)\testorig.jpg testoutt.jpg
+
+
+jsimdcfg.inc: makecfg.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+	$(CC) $(CFLAGS) $(LDFLAGS) -o makecfg.exe $(srcdir)/makecfg.c $(LDLIBS)
+	.\makecfg.exe > jsimdcfg.inc
+	$(RM) makecfg.exe
+
+%.o : %.asm
+	$(NASM) $(NAFLAGS) -o $@ $<
+
+jsimdcpu.o: jsimdcpu.asm jsimdcfg.inc jsimdext.inc
+jsimdw32.o: jsimdw32.asm jsimdcfg.inc jsimdext.inc
+jsimddjg.o: jsimddjg.asm jsimdcfg.inc jsimdext.inc
+jccolmmx.o: jccolmmx.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jccolss2.o: jccolss2.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jcsammmx.o: jcsammmx.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jcsamss2.o: jcsamss2.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jdcolmmx.o: jdcolmmx.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jdcolss2.o: jdcolss2.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jdmermmx.o: jdmermmx.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jdmerss2.o: jdmerss2.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jdsammmx.o: jdsammmx.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jdsamss2.o: jdsamss2.asm jsimdcfg.inc jsimdext.inc jcolsamp.inc
+jcqntint.o: jcqntint.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jcqntflt.o: jcqntflt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jcqntmmx.o: jcqntmmx.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jcqnt3dn.o: jcqnt3dn.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jcqnts2i.o: jcqnts2i.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jcqntsse.o: jcqntsse.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jcqnts2f.o: jcqnts2f.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfdctint.o: jfdctint.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfdctfst.o: jfdctfst.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfdctflt.o: jfdctflt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfmmxint.o: jfmmxint.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfmmxfst.o: jfmmxfst.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jf3dnflt.o: jf3dnflt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfss2int.o: jfss2int.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfss2fst.o: jfss2fst.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jfsseflt.o: jfsseflt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jidctint.o: jidctint.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jidctfst.o: jidctfst.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jidctred.o: jidctred.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jidctflt.o: jidctflt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jimmxint.o: jimmxint.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jimmxfst.o: jimmxfst.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jimmxred.o: jimmxred.asm jsimdcfg.inc jsimdext.inc jdct.inc
+ji3dnflt.o: ji3dnflt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jiss2int.o: jiss2int.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jiss2fst.o: jiss2fst.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jiss2red.o: jiss2red.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jisseflt.o: jisseflt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+jiss2flt.o: jiss2flt.asm jsimdcfg.inc jsimdext.inc jdct.inc
+
+jsimdgcc.o: jsimdgcc.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h
+
+jcapimin.o: jcapimin.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcapistd.o: jcapistd.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jccoefct.o: jccoefct.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jccolor.o: jccolor.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jcolsamp.h
+jcdctmgr.o: jcdctmgr.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+jchuff.o: jchuff.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jchuff.h
+jcinit.o: jcinit.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcmainct.o: jcmainct.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcmarker.o: jcmarker.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcmaster.o: jcmaster.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcomapi.o: jcomapi.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcparam.o: jcparam.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcphuff.o: jcphuff.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jchuff.h
+jcprepct.o: jcprepct.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jcsample.o: jcsample.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jcolsamp.h
+jctrans.o: jctrans.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdapimin.o: jdapimin.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdapistd.o: jdapistd.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdatadst.o: jdatadst.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h
+jdatasrc.o: jdatasrc.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h
+jdcoefct.o: jdcoefct.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdcolor.o: jdcolor.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jcolsamp.h
+jddctmgr.o: jddctmgr.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+jdhuff.o: jdhuff.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdhuff.h
+jdinput.o: jdinput.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdmainct.o: jdmainct.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdmarker.o: jdmarker.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdmaster.o: jdmaster.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdmerge.o: jdmerge.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jcolsamp.h
+jdphuff.o: jdphuff.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdhuff.h
+jdpostct.o: jdpostct.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jdsample.o: jdsample.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jcolsamp.h
+jdtrans.o: jdtrans.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jerror.o: jerror.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jversion.h jerror.h
+# jfdctflt.o: jfdctflt.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+# jfdctfst.o: jfdctfst.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+# jfdctint.o: jfdctint.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+# jidctflt.o: jidctflt.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+# jidctfst.o: jidctfst.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+# jidctint.o: jidctint.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+# jidctred.o: jidctred.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jdct.h
+jquant1.o: jquant1.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jquant2.o: jquant2.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jutils.o: jutils.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h
+jmemmgr.o: jmemmgr.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
+jmemansi.o: jmemansi.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
+jmemname.o: jmemname.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
+jmemnobs.o: jmemnobs.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
+jmemdos.o: jmemdos.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
+jmemmac.o: jmemmac.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h jmemsys.h
+cjpeg.o: cjpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h
+djpeg.o: djpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h jversion.h
+jpegtran.o: jpegtran.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h transupp.h jversion.h
+rdjpgcom.o: rdjpgcom.c jinclude.h jconfig.h
+wrjpgcom.o: wrjpgcom.c jinclude.h jconfig.h
+cdjpeg.o: cdjpeg.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+rdcolmap.o: rdcolmap.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+rdswitch.o: rdswitch.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+transupp.o: transupp.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h transupp.h
+rdppm.o: rdppm.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+wrppm.o: wrppm.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+rdgif.o: rdgif.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+wrgif.o: wrgif.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+rdtarga.o: rdtarga.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+wrtarga.o: wrtarga.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+rdbmp.o: rdbmp.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+wrbmp.o: wrbmp.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+rdrle.o: rdrle.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h
+wrrle.o: wrrle.c cdjpeg.h jinclude.h jconfig.h jpeglib.h jmorecfg.h jerror.h cderror.h

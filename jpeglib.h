@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : February 4, 2006
+ * ---------------------------------------------------------------------
+ *
  * This file defines the application interface for the JPEG library.
  * Most applications using the library need only include this file,
  * and perhaps jerror.h if they want to know the exact error codes.
@@ -12,6 +19,10 @@
 
 #ifndef JPEGLIB_H
 #define JPEGLIB_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * First we include the configuration files that record how this
@@ -31,6 +42,13 @@
  */
 
 #define JPEG_LIB_VERSION  62	/* Version 6b */
+
+
+/* SIMD Ext: Version ID for the SIMD extension.
+ */
+
+#define JPEG_SIMDEXT_VERSION  102	/* version 1.02 */
+#define JPEG_SIMDEXT_VER_STR  "1.02"
 
 
 /* Various constants determining the sizes of things.
@@ -234,6 +252,15 @@ typedef enum {
 	JDITHER_ORDERED,	/* simple ordered dither */
 	JDITHER_FS		/* Floyd-Steinberg error diffusion dither */
 } J_DITHER_MODE;
+
+/* SIMD Ext: bitflags for jpeg_simd_support() and jpeg_simd_mask() */
+
+#define JSIMD_NONE    0x00
+#define JSIMD_MMX     0x01
+#define JSIMD_3DNOW   0x02
+#define JSIMD_SSE     0x04
+#define JSIMD_SSE2    0x08
+#define JSIMD_ALL     (JSIMD_MMX | JSIMD_3DNOW | JSIMD_SSE | JSIMD_SSE2)
 
 
 /* Common fields between JPEG compression and decompression master structs. */
@@ -877,6 +904,18 @@ typedef JMETHOD(boolean, jpeg_marker_parser_method, (j_decompress_ptr cinfo));
 #define jpeg_abort		jAbort
 #define jpeg_destroy		jDestroy
 #define jpeg_resync_to_restart	jResyncRestart
+#define jpeg_simd_support	jSiSupport
+#ifndef JSIMD_MASKFUNC_NOT_SUPPORTED
+#define jpeg_simd_mask		jSiMask
+#endif
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+#define jpeg_simd_color_converter	jSiCColor
+#define jpeg_simd_downsampler		jSiDownsampler
+#define jpeg_simd_forward_dct		jSiFDCT
+#define jpeg_simd_color_deconverter	jSiDColor
+#define jpeg_simd_upsampler		jSiUpsampler
+#define jpeg_simd_inverse_dct		jSiIDCT
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */
 #endif /* NEED_SHORT_EXTERNAL_NAMES */
 
 
@@ -1037,6 +1076,24 @@ EXTERN(void) jpeg_destroy JPP((j_common_ptr cinfo));
 EXTERN(boolean) jpeg_resync_to_restart JPP((j_decompress_ptr cinfo,
 					    int desired));
 
+/* SIMD Ext: retrieve SIMD/CPU information */
+EXTERN(unsigned int) jpeg_simd_support JPP((j_common_ptr cinfo));
+#ifndef JSIMD_MASKFUNC_NOT_SUPPORTED
+EXTERN(unsigned int) jpeg_simd_mask
+	JPP((j_common_ptr cinfo, unsigned int remove, unsigned int add));
+#endif
+#ifndef JSIMD_MODEINFO_NOT_SUPPORTED
+EXTERN(unsigned int) jpeg_simd_color_converter JPP((j_compress_ptr cinfo));
+EXTERN(unsigned int) jpeg_simd_downsampler JPP((j_compress_ptr cinfo));
+EXTERN(unsigned int) jpeg_simd_forward_dct JPP((j_compress_ptr cinfo,
+						int method));
+EXTERN(unsigned int) jpeg_simd_color_deconverter JPP((j_decompress_ptr cinfo));
+EXTERN(unsigned int) jpeg_simd_upsampler JPP((j_decompress_ptr cinfo,
+					      int do_fancy));
+EXTERN(unsigned int) jpeg_simd_inverse_dct JPP((j_decompress_ptr cinfo,
+						int method));
+#endif /* !JSIMD_MODEINFO_NOT_SUPPORTED */
+
 
 /* These marker codes are exported since applications and data source modules
  * are likely to want to use them.
@@ -1091,6 +1148,10 @@ struct jpeg_color_quantizer { long dummy; };
 #ifdef JPEG_INTERNALS
 #include "jpegint.h"		/* fetch private declarations */
 #include "jerror.h"		/* fetch error codes too */
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* JPEGLIB_H */

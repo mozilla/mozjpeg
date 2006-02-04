@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : February 4, 2006
+ * ---------------------------------------------------------------------
+ *
  * This file provides common declarations for the various JPEG modules.
  * These declarations are considered internal to the JPEG library; most
  * applications using the library shouldn't need to include this file.
@@ -291,6 +298,19 @@ struct jpeg_color_quantizer {
 #endif
 
 
+/* SIMD Ext: This macro checks if constants for SSE/SSE2 instructions are
+ * aligned to a 16-byte boundary. Most of SSE/SSE2 instructions require
+ * that the memory operand is aligned to a 16-byte boundary; if not,
+ * a general-protection exception (#GP) is generated.
+ */
+
+#ifdef JSIMD_NO_SSECONST_ALIGNMENT_CHECK
+#define IS_CONST_ALIGNED_16(p)	(1)
+#else
+#define IS_CONST_ALIGNED_16(p)	(((unsigned)(p) & 0x0F) == 0)
+#endif
+
+
 /* Short forms of external names for systems with brain-damaged linkers. */
 
 #ifdef NEED_SHORT_EXTERNAL_NAMES
@@ -327,6 +347,8 @@ struct jpeg_color_quantizer {
 #define jzero_far		jZeroFar
 #define jpeg_zigzag_order	jZIGTable
 #define jpeg_natural_order	jZAGTable
+#define jpeg_simd_cpu_support	jSiCpuSupport
+#define jpeg_simd_os_support	jSiOsSupport
 #endif /* NEED_SHORT_EXTERNAL_NAMES */
 
 
@@ -381,6 +403,10 @@ EXTERN(void) jzero_far JPP((void FAR * target, size_t bytestozero));
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */
 #endif
 extern const int jpeg_natural_order[]; /* zigzag coef order to natural order */
+
+/* SIMD Ext: retrieve SIMD/CPU information */
+EXTERN(unsigned int) jpeg_simd_cpu_support JPP((void));
+EXTERN(unsigned int) jpeg_simd_os_support JPP((unsigned int simd));
 
 /* Suppress undefined-structure complaints if necessary. */
 

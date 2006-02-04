@@ -1,0 +1,44 @@
+
+JPEG_VER_MAJOR=62
+JPEG_VER_MINOR=1
+JPEG_REVISION=0
+
+case $host_os in
+  cygwin*)
+    # The shared library built from this source code is *not* binary
+    # compatible with the cygwin's official binary release (cygjpeg-62.dll).
+    # This is because the official binary has been built with
+    # the lossless jpeg patch which is available as ljpeg-6b.tar.gz .
+    # Therefore we decided to give the shared library the version number
+    # other than 62.
+    #
+    JPEG_VER_MAJOR=162
+    JPEG_VER_MINOR=0
+    ;;
+  freebsd*)
+    # This follows the official binary release in the ports collection.
+    JPEG_VER_MAJOR=9
+    ;;
+esac
+
+# convert absolute version numbers to libtool ages
+case $version_type in
+  freebsd-aout|freebsd-elf|sunos)
+    JPEG_LT_CURRENT=$JPEG_VER_MAJOR
+    JPEG_LT_REVISION=$JPEG_VER_MINOR
+    JPEG_LT_AGE=0
+    ;;
+  irix|nonstopux)
+    JPEG_LT_CURRENT=`expr $JPEG_VER_MAJOR + $JPEG_VER_MINOR - 1`
+    JPEG_LT_AGE=$JPEG_VER_MINOR
+    JPEG_LT_REVISION=$JPEG_VER_MINOR
+    ;;
+  *)
+    JPEG_LT_CURRENT=`expr $JPEG_VER_MAJOR + $JPEG_VER_MINOR`
+    JPEG_LT_AGE=$JPEG_VER_MINOR
+    JPEG_LT_REVISION=$JPEG_REVISION
+    ;;
+esac
+
+JPEG_LIB_VERSION=$JPEG_LT_CURRENT:$JPEG_LT_REVISION:$JPEG_LT_AGE
+

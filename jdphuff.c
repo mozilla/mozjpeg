@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified to improve performance.
+ * Last Modified : October 31, 2004
+ * ---------------------------------------------------------------------
+ *
  * This file contains Huffman entropy decoding routines for progressive JPEG.
  *
  * Much of the complexity here has to do with supporting input suspension.
@@ -69,6 +76,7 @@ typedef struct {
   d_derived_tbl * derived_tbls[NUM_HUFF_TBLS];
 
   d_derived_tbl * ac_derived_tbl; /* active table during an AC scan */
+  d_derived_tbl * dc_derived_tbls[MAX_COMPS_IN_SCAN];
 } phuff_entropy_decoder;
 
 typedef phuff_entropy_decoder * phuff_entropy_ptr;
@@ -168,6 +176,7 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
 	tbl = compptr->dc_tbl_no;
 	jpeg_make_d_derived_tbl(cinfo, TRUE, tbl,
 				& entropy->derived_tbls[tbl]);
+	entropy->dc_derived_tbls[ci] = entropy->derived_tbls[tbl];
       }
     } else {
       tbl = compptr->ac_tbl_no;
@@ -191,32 +200,6 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
   /* Initialize restart counter */
   entropy->restarts_to_go = cinfo->restart_interval;
 }
-
-
-/*
- * Figure F.12: extend sign bit.
- * On some machines, a shift and add will be faster than a table lookup.
- */
-
-#ifdef AVOID_TABLES
-
-#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))
-
-#else
-
-#define HUFF_EXTEND(x,s)  ((x) < extend_test[s] ? (x) + extend_offset[s] : (x))
-
-static const int extend_test[16] =   /* entry n is 2**(n-1) */
-  { 0, 0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080,
-    0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000 };
-
-static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
-  { 0, ((-1)<<1) + 1, ((-1)<<2) + 1, ((-1)<<3) + 1, ((-1)<<4) + 1,
-    ((-1)<<5) + 1, ((-1)<<6) + 1, ((-1)<<7) + 1, ((-1)<<8) + 1,
-    ((-1)<<9) + 1, ((-1)<<10) + 1, ((-1)<<11) + 1, ((-1)<<12) + 1,
-    ((-1)<<13) + 1, ((-1)<<14) + 1, ((-1)<<15) + 1 };
-
-#endif /* AVOID_TABLES */
 
 
 /*
@@ -284,16 +267,12 @@ process_restart (j_decompress_ptr cinfo)
 
 METHODDEF(boolean)
 decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
+{
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   int Al = cinfo->Al;
-  register int s, r;
-  int blkn, ci;
-  JBLOCKROW block;
+  int blkn;
   BITREAD_STATE_VARS;
   savable_state state;
-  d_derived_tbl * tbl;
-  jpeg_component_info * compptr;
 
   /* Process restart marker if needed; may have to suspend */
   if (cinfo->restart_interval) {
@@ -314,21 +293,67 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
     /* Outer loop handles each block in the MCU */
 
     for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-      block = MCU_data[blkn];
-      ci = cinfo->MCU_membership[blkn];
-      compptr = cinfo->cur_comp_info[ci];
-      tbl = entropy->derived_tbls[compptr->dc_tbl_no];
+      JBLOCKROW block = MCU_data[blkn];
+      int ci = cinfo->MCU_membership[blkn];
+      d_derived_tbl * tbl = entropy->dc_derived_tbls[ci];
+      register int s;
 
       /* Decode a single block's worth of coefficients */
 
       /* Section F.2.2.1: decode the DC coefficient difference */
-      HUFF_DECODE(s, br_state, tbl, return FALSE, label1);
-      if (s) {
-	CHECK_BIT_BUFFER(br_state, s, return FALSE);
-	r = GET_BITS(s);
-	s = HUFF_EXTEND(r, s);
+      {		/* HUFFX_DECODE */
+	register int nb, look, t;
+	if (bits_left < HUFFX_LOOKAHEAD) {
+	  register const JOCTET * next_input_byte = br_state.next_input_byte;
+	  register size_t         bytes_in_buffer = br_state.bytes_in_buffer;
+	  if (cinfo->unread_marker == 0) {
+	    while (bits_left < MIN_GET_BITS) {
+	      register int c;
+	      if (bytes_in_buffer == 0 ||
+		  (c = GETJOCTET(*next_input_byte)) == 0xFF) {
+		goto label11; }
+	      bytes_in_buffer--; next_input_byte++;
+	      get_buffer = (get_buffer << 8) | c;
+	      bits_left += 8;
+	    }
+	    br_state.next_input_byte = next_input_byte;
+	    br_state.bytes_in_buffer = bytes_in_buffer;
+	  } else {
+	label11:
+	    br_state.next_input_byte = next_input_byte;
+	    br_state.bytes_in_buffer = bytes_in_buffer;
+	    if (! jpeg_fill_bit_buffer(&br_state,get_buffer,bits_left, 0)) {
+	      return FALSE; }
+	    get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	    if (bits_left < HUFFX_LOOKAHEAD) {
+	      nb = 1; goto label1;
+	    }
+	  }
+	}
+	look = PEEK_BITS(HUFFX_LOOKAHEAD);
+	if ((nb = tbl->lookx_nbits[look]) != 0) {
+	  s = tbl->lookx_val[look];
+	  if (nb <= HUFFX_LOOKAHEAD) {
+	    DROP_BITS(nb);
+	  } else {
+	    DROP_BITS(HUFFX_LOOKAHEAD);
+	    nb -= HUFFX_LOOKAHEAD;
+	    CHECK_BIT_BUFFER(br_state, nb, return FALSE);
+	    s += GET_BITS(nb);
+	  }
+	} else {
+	  nb = HUFFX_LOOKAHEAD;
+      label1:
+	  if ((s=jpeg_huff_decode(&br_state,get_buffer,bits_left,tbl,nb))
+	       < 0) { return FALSE; }
+	  get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	  if (s) {
+	    CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	    t = GET_BITS(s);
+	    s = HUFF_EXTEND(t, s);
+	  }
+	}
       }
-
       /* Convert DC difference to actual value, update last_dc_val */
       s += state.last_dc_val[ci];
       state.last_dc_val[ci] = s;
@@ -355,15 +380,12 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
 METHODDEF(boolean)
 decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
+{
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   int Se = cinfo->Se;
   int Al = cinfo->Al;
-  register int s, k, r;
   unsigned int EOBRUN;
-  JBLOCKROW block;
   BITREAD_STATE_VARS;
-  d_derived_tbl * tbl;
 
   /* Process restart marker if needed; may have to suspend */
   if (cinfo->restart_interval) {
@@ -384,22 +406,74 @@ decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
     /* There is always only one block per MCU */
 
-    if (EOBRUN > 0)		/* if it's a band of zeroes... */
+    if (EOBRUN > 0) {		/* if it's a band of zeroes... */
       EOBRUN--;			/* ...process it now (we do nothing) */
-    else {
+    } else {
+      JBLOCKROW block = MCU_data[0];
+      d_derived_tbl * tbl = entropy->ac_derived_tbl;
+      register int s, k, r;
+
+      /* Load up working state */
       BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
-      block = MCU_data[0];
-      tbl = entropy->ac_derived_tbl;
 
       for (k = cinfo->Ss; k <= Se; k++) {
-	HUFF_DECODE(s, br_state, tbl, return FALSE, label2);
-	r = s >> 4;
-	s &= 15;
+	{	/* HUFFX_DECODE */
+	  register int nb, look, t;
+	  if (bits_left < HUFFX_LOOKAHEAD) {
+	    register const JOCTET * next_input_byte = br_state.next_input_byte;
+	    register size_t         bytes_in_buffer = br_state.bytes_in_buffer;
+	    if (cinfo->unread_marker == 0) {
+	      while (bits_left < MIN_GET_BITS) {
+		register int c;
+		if (bytes_in_buffer == 0 ||
+		    (c = GETJOCTET(*next_input_byte)) == 0xFF) {
+		  goto label21; }
+		bytes_in_buffer--; next_input_byte++;
+		get_buffer = (get_buffer << 8) | c;
+		bits_left += 8;
+	      }
+	      br_state.next_input_byte = next_input_byte;
+	      br_state.bytes_in_buffer = bytes_in_buffer;
+	    } else {
+	  label21:
+	      br_state.next_input_byte = next_input_byte;
+	      br_state.bytes_in_buffer = bytes_in_buffer;
+	      if (! jpeg_fill_bit_buffer(&br_state,get_buffer,bits_left, 0)) {
+		return FALSE; }
+	      get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	      if (bits_left < HUFFX_LOOKAHEAD) {
+		nb = 1; goto label2;
+	      }
+	    }
+	  }
+	  look = PEEK_BITS(HUFFX_LOOKAHEAD);
+	  if ((nb = tbl->lookx_nbits[look]) != 0) {
+	    s = tbl->lookx_val[look];
+	    r = tbl->lookx_sym[look] >> 4;
+	    if (nb <= HUFFX_LOOKAHEAD) {
+	      DROP_BITS(nb);
+	    } else {
+	      DROP_BITS(HUFFX_LOOKAHEAD);
+	      nb -= HUFFX_LOOKAHEAD;
+	      CHECK_BIT_BUFFER(br_state, nb, return FALSE);
+	      s += GET_BITS(nb);
+	    }
+	  } else {
+	    nb = HUFFX_LOOKAHEAD;
+	label2:
+	    if ((s=jpeg_huff_decode(&br_state,get_buffer,bits_left,tbl,nb))
+		 < 0) { return FALSE; }
+	    get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	    r = s >> 4; s &= 15;
+	    if (s) {
+	      CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	      t = GET_BITS(s);
+	      s = HUFF_EXTEND(t, s);
+	    }
+	  }
+	}
 	if (s) {
 	  k += r;
-	  CHECK_BIT_BUFFER(br_state, s, return FALSE);
-	  r = GET_BITS(s);
-	  s = HUFF_EXTEND(r, s);
 	  /* Scale and output coefficient in natural (dezigzagged) order */
 	  (*block)[jpeg_natural_order[k]] = (JCOEF) (s << Al);
 	} else {
@@ -440,11 +514,10 @@ decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
 METHODDEF(boolean)
 decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
+{
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   int p1 = 1 << cinfo->Al;	/* 1 in the bit position being coded */
   int blkn;
-  JBLOCKROW block;
   BITREAD_STATE_VARS;
 
   /* Process restart marker if needed; may have to suspend */
@@ -464,7 +537,7 @@ decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   /* Outer loop handles each block in the MCU */
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    block = MCU_data[blkn];
+    JBLOCKROW block = MCU_data[blkn];
 
     /* Encoded data is simply the next bit of the two's-complement DC value */
     CHECK_BIT_BUFFER(br_state, 1, return FALSE);
@@ -489,17 +562,17 @@ decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
 METHODDEF(boolean)
 decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
+{
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   int Se = cinfo->Se;
-  int p1 = 1 << cinfo->Al;	/* 1 in the bit position being coded */
-  int m1 = (-1) << cinfo->Al;	/* -1 in the bit position being coded */
+  int Al = cinfo->Al;
   register int s, k, r;
   unsigned int EOBRUN;
   JBLOCKROW block;
   JCOEFPTR thiscoef;
   BITREAD_STATE_VARS;
   d_derived_tbl * tbl;
+  int pm1[2];
   int num_newnz;
   int newnz_pos[DCTSIZE2];
 
@@ -522,6 +595,13 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
     block = MCU_data[0];
     tbl = entropy->ac_derived_tbl;
 
+    /* The pm1[] array is indexed by a value from relational operator.
+     * This method eliminates conditional branches depending on random data,
+     * which result in lower performance on recent processors.
+     */
+    pm1[0] =   1  << cinfo->Al;	/* +1 in the bit position being coded */
+    pm1[1] = (-1) << cinfo->Al;	/* -1 in the bit position being coded */
+
     /* If we are forced to suspend, we must undo the assignments to any newly
      * nonzero coefficients in the block, because otherwise we'd get confused
      * next time about which coefficients were already nonzero.
@@ -535,18 +615,63 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
     if (EOBRUN == 0) {
       for (; k <= Se; k++) {
-	HUFF_DECODE(s, br_state, tbl, goto undoit, label3);
-	r = s >> 4;
-	s &= 15;
-	if (s) {
-	  if (s != 1)		/* size of new coef should always be 1 */
-	    WARNMS(cinfo, JWRN_HUFF_BAD_CODE);
-	  CHECK_BIT_BUFFER(br_state, 1, goto undoit);
-	  if (GET_BITS(1))
-	    s = p1;		/* newly nonzero coef is positive */
-	  else
-	    s = m1;		/* newly nonzero coef is negative */
-	} else {
+	{	/* HUFFX_DECODE */
+	  register int nb, look, t;
+	  if (bits_left < HUFFX_LOOKAHEAD) {
+	    register const JOCTET * next_input_byte = br_state.next_input_byte;
+	    register size_t         bytes_in_buffer = br_state.bytes_in_buffer;
+	    if (cinfo->unread_marker == 0) {
+	      while (bits_left < MIN_GET_BITS) {
+		register int c;
+		if (bytes_in_buffer == 0 ||
+		    (c = GETJOCTET(*next_input_byte)) == 0xFF) {
+		  goto label31; }
+		bytes_in_buffer--; next_input_byte++;
+		get_buffer = (get_buffer << 8) | c;
+		bits_left += 8;
+	      }
+	      br_state.next_input_byte = next_input_byte;
+	      br_state.bytes_in_buffer = bytes_in_buffer;
+	    } else {
+	  label31:
+	      br_state.next_input_byte = next_input_byte;
+	      br_state.bytes_in_buffer = bytes_in_buffer;
+	      if (! jpeg_fill_bit_buffer(&br_state,get_buffer,bits_left, 0)) {
+		goto undoit; }
+	      get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	      if (bits_left < HUFFX_LOOKAHEAD) {
+		nb = 1; goto label3;
+	      }
+	    }
+	  }
+	  look = PEEK_BITS(HUFFX_LOOKAHEAD);
+	  if ((nb = tbl->lookx_nbits[look]) != 0) {
+	    t = tbl->lookx_sym[look];
+	    s = tbl->lookx_val[look];
+	    r = t >> 4; t &= 15;
+	    if (t <= 1) {
+	      DROP_BITS(nb);
+	    } else {		  /* size of new coef should always be 1 */
+	      WARNMS(cinfo, JWRN_HUFF_BAD_CODE);
+	      DROP_BITS(nb - (t - 1));
+	      s = (s >= 0) ? 1 : -1;
+	    }
+	  } else {
+	    nb = HUFFX_LOOKAHEAD;
+	label3:
+	    if ((s=jpeg_huff_decode(&br_state,get_buffer,bits_left,tbl,nb))
+		 < 0) { goto undoit; }
+	    get_buffer = br_state.get_buffer; bits_left = br_state.bits_left;
+	    r = s >> 4; s &= 15;
+	    if (s) {
+	      if (s != 1)	    /* size of new coef should always be 1 */
+		WARNMS(cinfo, JWRN_HUFF_BAD_CODE);
+	      CHECK_BIT_BUFFER(br_state, 1, goto undoit);
+	      s = GET_BITS(1) ? 1 : -1;
+	    }
+	  }
+	}
+	if (s == 0) {
 	  if (r != 15) {
 	    EOBRUN = 1 << r;	/* EOBr, run length is 2^r + appended bits */
 	    if (r) {
@@ -567,12 +692,8 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 	  if (*thiscoef != 0) {
 	    CHECK_BIT_BUFFER(br_state, 1, goto undoit);
 	    if (GET_BITS(1)) {
-	      if ((*thiscoef & p1) == 0) { /* do nothing if already set it */
-		if (*thiscoef >= 0)
-		  *thiscoef += p1;
-		else
-		  *thiscoef += m1;
-	      }
+	      if ((*thiscoef & pm1[0]) == 0) /* do nothing if already set it */
+		*thiscoef += pm1[(*thiscoef < 0)];
 	    }
 	  } else {
 	    if (--r < 0)
@@ -583,7 +704,7 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 	if (s) {
 	  int pos = jpeg_natural_order[k];
 	  /* Output newly nonzero coefficient */
-	  (*block)[pos] = (JCOEF) s;
+	  (*block)[pos] = (JCOEF) (s << Al);
 	  /* Remember its position in case we have to suspend */
 	  newnz_pos[num_newnz++] = pos;
 	}
@@ -601,12 +722,8 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 	if (*thiscoef != 0) {
 	  CHECK_BIT_BUFFER(br_state, 1, goto undoit);
 	  if (GET_BITS(1)) {
-	    if ((*thiscoef & p1) == 0) { /* do nothing if already changed it */
-	      if (*thiscoef >= 0)
-		*thiscoef += p1;
-	      else
-		*thiscoef += m1;
-	    }
+	    if ((*thiscoef & pm1[0]) == 0)  /* do nothing if already set it */
+	      *thiscoef += pm1[(*thiscoef < 0)];
 	  }
 	}
       }

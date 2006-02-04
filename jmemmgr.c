@@ -5,6 +5,13 @@
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
+ * ---------------------------------------------------------------------
+ * x86 SIMD extension for IJG JPEG library
+ * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * This file has been modified for SIMD extension.
+ * Last Modified : January 27, 2004
+ * ---------------------------------------------------------------------
+ *
  * This file contains the JPEG system-independent memory management
  * routines.  This code is usable across a wide variety of machines; most
  * of the system dependencies have been isolated in a separate file.
@@ -51,27 +58,12 @@ extern char * getenv JPP((const char * name));
 
 
 /*
- * Many machines require storage alignment: longs must start on 4-byte
- * boundaries, doubles on 8-byte boundaries, etc.  On such machines, malloc()
- * always returns pointers that are multiples of the worst-case alignment
- * requirement, and we had better do so too.
- * There isn't any really portable way to determine the worst-case alignment
- * requirement.  This module assumes that the alignment requirement is
- * multiples of sizeof(ALIGN_TYPE).
- * By default, we define ALIGN_TYPE as double.  This is necessary on some
- * workstations (where doubles really do need 8-byte alignment) and will work
- * fine on nearly everything.  If your machine has lesser alignment needs,
- * you can save a few bytes by making ALIGN_TYPE smaller.
- * The only place I know of where this will NOT work is certain Macintosh
- * 680x0 compilers that define double as a 10-byte IEEE extended float.
- * Doing 10-byte alignment is counterproductive because longwords won't be
- * aligned well.  Put "#define ALIGN_TYPE long" in jconfig.h if you have
- * such a compiler.
+ * SIMD Ext: Most of SSE/SSE2 instructions require that the memory address
+ * is aligned to a 16-byte boundary; if not, a general-protection exception
+ * (#GP) is generated.
  */
 
-#ifndef ALIGN_TYPE		/* so can override from jconfig.h */
-#define ALIGN_TYPE  double
-#endif
+#define ALIGN_SIZE  16		/* sizeof SSE/SSE2 register */
 
 
 /*
@@ -81,31 +73,24 @@ extern char * getenv JPP((const char * name));
  * header with a link to the next pool of the same class.
  * Small and large pool headers are identical except that the latter's
  * link pointer must be FAR on 80x86 machines.
- * Notice that the "real" header fields are union'ed with a dummy ALIGN_TYPE
- * field.  This forces the compiler to make SIZEOF(small_pool_hdr) a multiple
- * of the alignment requirement of ALIGN_TYPE.
  */
 
-typedef union small_pool_struct * small_pool_ptr;
+typedef struct small_pool_struct * small_pool_ptr;
 
-typedef union small_pool_struct {
-  struct {
-    small_pool_ptr next;	/* next in list of pools */
-    size_t bytes_used;		/* how many bytes already used within pool */
-    size_t bytes_left;		/* bytes still available in this pool */
-  } hdr;
-  ALIGN_TYPE dummy;		/* included in union to ensure alignment */
+typedef struct small_pool_struct {
+  small_pool_ptr next;		/* next in list of pools */
+  size_t bytes_used;		/* how many bytes already used within pool */
+  size_t bytes_left;		/* bytes still available in this pool */
+  char dummy[ALIGN_SIZE-1];
 } small_pool_hdr;
 
-typedef union large_pool_struct FAR * large_pool_ptr;
+typedef struct large_pool_struct FAR * large_pool_ptr;
 
-typedef union large_pool_struct {
-  struct {
-    large_pool_ptr next;	/* next in list of pools */
-    size_t bytes_used;		/* how many bytes already used within pool */
-    size_t bytes_left;		/* bytes still available in this pool */
-  } hdr;
-  ALIGN_TYPE dummy;		/* included in union to ensure alignment */
+typedef struct large_pool_struct {
+  large_pool_ptr next;		/* next in list of pools */
+  size_t bytes_used;		/* how many bytes already used within pool */
+  size_t bytes_left;		/* bytes still available in this pool */
+  char dummy[ALIGN_SIZE-1];
 } large_pool_hdr;
 
 
@@ -197,16 +182,16 @@ print_mem_stats (j_common_ptr cinfo, int pool_id)
 	  pool_id, mem->total_space_allocated);
 
   for (lhdr_ptr = mem->large_list[pool_id]; lhdr_ptr != NULL;
-       lhdr_ptr = lhdr_ptr->hdr.next) {
+       lhdr_ptr = lhdr_ptr->next) {
     fprintf(stderr, "  Large chunk used %ld\n",
-	    (long) lhdr_ptr->hdr.bytes_used);
+	    (long) lhdr_ptr->bytes_used);
   }
 
   for (shdr_ptr = mem->small_list[pool_id]; shdr_ptr != NULL;
-       shdr_ptr = shdr_ptr->hdr.next) {
+       shdr_ptr = shdr_ptr->next) {
     fprintf(stderr, "  Small chunk used %ld free %ld\n",
-	    (long) shdr_ptr->hdr.bytes_used,
-	    (long) shdr_ptr->hdr.bytes_left);
+	    (long) shdr_ptr->bytes_used,
+	    (long) shdr_ptr->bytes_left);
   }
 }
 
@@ -266,10 +251,10 @@ alloc_small (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
   if (sizeofobject > (size_t) (MAX_ALLOC_CHUNK-SIZEOF(small_pool_hdr)))
     out_of_memory(cinfo, 1);	/* request exceeds malloc's ability */
 
-  /* Round up the requested size to a multiple of SIZEOF(ALIGN_TYPE) */
-  odd_bytes = sizeofobject % SIZEOF(ALIGN_TYPE);
+  /* Round up the requested size to a multiple of ALIGN_SIZE */
+  odd_bytes = sizeofobject % ALIGN_SIZE;
   if (odd_bytes > 0)
-    sizeofobject += SIZEOF(ALIGN_TYPE) - odd_bytes;
+    sizeofobject += ALIGN_SIZE - odd_bytes;
 
   /* See if space is available in any existing pool */
   if (pool_id < 0 || pool_id >= JPOOL_NUMPOOLS)
@@ -277,10 +262,10 @@ alloc_small (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
   prev_hdr_ptr = NULL;
   hdr_ptr = mem->small_list[pool_id];
   while (hdr_ptr != NULL) {
-    if (hdr_ptr->hdr.bytes_left >= sizeofobject)
+    if (hdr_ptr->bytes_left >= sizeofobject)
       break;			/* found pool with enough space */
     prev_hdr_ptr = hdr_ptr;
-    hdr_ptr = hdr_ptr->hdr.next;
+    hdr_ptr = hdr_ptr->next;
   }
 
   /* Time to make a new pool? */
@@ -305,20 +290,20 @@ alloc_small (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
     }
     mem->total_space_allocated += min_request + slop;
     /* Success, initialize the new pool header and add to end of list */
-    hdr_ptr->hdr.next = NULL;
-    hdr_ptr->hdr.bytes_used = 0;
-    hdr_ptr->hdr.bytes_left = sizeofobject + slop;
+    hdr_ptr->next = NULL;
+    hdr_ptr->bytes_used = 0;
+    hdr_ptr->bytes_left = sizeofobject + slop;
     if (prev_hdr_ptr == NULL)	/* first pool in class? */
       mem->small_list[pool_id] = hdr_ptr;
     else
-      prev_hdr_ptr->hdr.next = hdr_ptr;
+      prev_hdr_ptr->next = hdr_ptr;
   }
 
   /* OK, allocate the object from the current pool */
-  data_ptr = (char *) (hdr_ptr + 1); /* point to first data byte in pool */
-  data_ptr += hdr_ptr->hdr.bytes_used; /* point to place for object */
-  hdr_ptr->hdr.bytes_used += sizeofobject;
-  hdr_ptr->hdr.bytes_left -= sizeofobject;
+  data_ptr = (char *) ((size_t) (hdr_ptr + 1) & -ALIGN_SIZE);
+  data_ptr += hdr_ptr->bytes_used; /* point to place for object */
+  hdr_ptr->bytes_used += sizeofobject;
+  hdr_ptr->bytes_left -= sizeofobject;
 
   return (void *) data_ptr;
 }
@@ -350,10 +335,10 @@ alloc_large (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
   if (sizeofobject > (size_t) (MAX_ALLOC_CHUNK-SIZEOF(large_pool_hdr)))
     out_of_memory(cinfo, 3);	/* request exceeds malloc's ability */
 
-  /* Round up the requested size to a multiple of SIZEOF(ALIGN_TYPE) */
-  odd_bytes = sizeofobject % SIZEOF(ALIGN_TYPE);
+  /* Round up the requested size to a multiple of ALIGN_SIZE */
+  odd_bytes = sizeofobject % ALIGN_SIZE;
   if (odd_bytes > 0)
-    sizeofobject += SIZEOF(ALIGN_TYPE) - odd_bytes;
+    sizeofobject += ALIGN_SIZE - odd_bytes;
 
   /* Always make a new pool */
   if (pool_id < 0 || pool_id >= JPOOL_NUMPOOLS)
@@ -366,15 +351,15 @@ alloc_large (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
   mem->total_space_allocated += sizeofobject + SIZEOF(large_pool_hdr);
 
   /* Success, initialize the new pool header and add to list */
-  hdr_ptr->hdr.next = mem->large_list[pool_id];
+  hdr_ptr->next = mem->large_list[pool_id];
   /* We maintain space counts in each pool header for statistical purposes,
    * even though they are not needed for allocation.
    */
-  hdr_ptr->hdr.bytes_used = sizeofobject;
-  hdr_ptr->hdr.bytes_left = 0;
+  hdr_ptr->bytes_used = sizeofobject;
+  hdr_ptr->bytes_left = 0;
   mem->large_list[pool_id] = hdr_ptr;
 
-  return (void FAR *) (hdr_ptr + 1); /* point to first data byte in pool */
+  return (void FAR *) ((size_t) (hdr_ptr + 1) & -ALIGN_SIZE);
 }
 
 
@@ -401,6 +386,12 @@ alloc_sarray (j_common_ptr cinfo, int pool_id,
   JSAMPROW workspace;
   JDIMENSION rowsperchunk, currow, i;
   long ltemp;
+  JDIMENSION odd_samples;
+
+  /* Round up the row bytes to a multiple of ALIGN_SIZE */
+  odd_samples = samplesperrow % (ALIGN_SIZE / SIZEOF(JSAMPLE));
+  if (odd_samples > 0)
+    samplesperrow += (ALIGN_SIZE / SIZEOF(JSAMPLE)) - odd_samples;
 
   /* Calculate max # of rows allowed in one allocation chunk */
   ltemp = (MAX_ALLOC_CHUNK-SIZEOF(large_pool_hdr)) /
@@ -968,9 +959,9 @@ free_pool (j_common_ptr cinfo, int pool_id)
   mem->large_list[pool_id] = NULL;
 
   while (lhdr_ptr != NULL) {
-    large_pool_ptr next_lhdr_ptr = lhdr_ptr->hdr.next;
-    space_freed = lhdr_ptr->hdr.bytes_used +
-		  lhdr_ptr->hdr.bytes_left +
+    large_pool_ptr next_lhdr_ptr = lhdr_ptr->next;
+    space_freed = lhdr_ptr->bytes_used +
+		  lhdr_ptr->bytes_left +
 		  SIZEOF(large_pool_hdr);
     jpeg_free_large(cinfo, (void FAR *) lhdr_ptr, space_freed);
     mem->total_space_allocated -= space_freed;
@@ -982,9 +973,9 @@ free_pool (j_common_ptr cinfo, int pool_id)
   mem->small_list[pool_id] = NULL;
 
   while (shdr_ptr != NULL) {
-    small_pool_ptr next_shdr_ptr = shdr_ptr->hdr.next;
-    space_freed = shdr_ptr->hdr.bytes_used +
-		  shdr_ptr->hdr.bytes_left +
+    small_pool_ptr next_shdr_ptr = shdr_ptr->next;
+    space_freed = shdr_ptr->bytes_used +
+		  shdr_ptr->bytes_left +
 		  SIZEOF(small_pool_hdr);
     jpeg_free_small(cinfo, (void *) shdr_ptr, space_freed);
     mem->total_space_allocated -= space_freed;
@@ -1035,22 +1026,22 @@ jinit_memory_mgr (j_common_ptr cinfo)
   cinfo->mem = NULL;		/* for safety if init fails */
 
   /* Check for configuration errors.
-   * SIZEOF(ALIGN_TYPE) should be a power of 2; otherwise, it probably
+   * ALIGN_SIZE should be a power of 2; otherwise, it probably
    * doesn't reflect any real hardware alignment requirement.
    * The test is a little tricky: for X>0, X and X-1 have no one-bits
    * in common if and only if X is a power of 2, ie has only one one-bit.
    * Some compilers may give an "unreachable code" warning here; ignore it.
    */
-  if ((SIZEOF(ALIGN_TYPE) & (SIZEOF(ALIGN_TYPE)-1)) != 0)
+  if ((ALIGN_SIZE & (ALIGN_SIZE-1)) != 0)
     ERREXIT(cinfo, JERR_BAD_ALIGN_TYPE);
   /* MAX_ALLOC_CHUNK must be representable as type size_t, and must be
-   * a multiple of SIZEOF(ALIGN_TYPE).
+   * a multiple of ALIGN_SIZE.
    * Again, an "unreachable code" warning may be ignored here.
    * But a "constant too large" warning means you need to fix MAX_ALLOC_CHUNK.
    */
   test_mac = (size_t) MAX_ALLOC_CHUNK;
   if ((long) test_mac != MAX_ALLOC_CHUNK ||
-      (MAX_ALLOC_CHUNK % SIZEOF(ALIGN_TYPE)) != 0)
+      (MAX_ALLOC_CHUNK % ALIGN_SIZE) != 0)
     ERREXIT(cinfo, JERR_BAD_ALLOC_CHUNK);
 
   max_to_use = jpeg_mem_init(cinfo); /* system-dependent initialization */

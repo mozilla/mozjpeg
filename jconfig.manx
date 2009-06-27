@@ -1,5 +1,5 @@
 /* jconfig.manx --- jconfig.h for Amiga systems using Manx Aztec C ver 5.x. */
-/* see jconfig.doc for explanations */
+/* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR

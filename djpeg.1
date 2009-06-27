@@ -1,4 +1,4 @@
-.TH DJPEG 1 "22 August 1997"
+.TH DJPEG 1 "28 March 2009"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -61,9 +61,11 @@ monochrome displays; also,
 runs noticeably faster in this mode.
 .TP
 .BI \-scale " M/N"
-Scale the output image by a factor M/N.  Currently the scale factor must be
-1/1, 1/2, 1/4, or 1/8.  Scaling is handy if the image is larger than your
-screen; also,
+Scale the output image by a factor M/N.  Currently supported scale factors are
+M/8 with all M from 1 to 16.  If the /N part is omitted, then M specifies the
+DCT scaled size to be applied on the given input, which is currently
+equivalent to M/8 scaling, since the source DCT size is currently always 8.
+Scaling is handy if the image is larger than your screen; also,
 .B djpeg
 runs much faster when scaling down the output.
 .TP
@@ -150,7 +152,7 @@ and
 .BR \-onepass .
 .TP
 .B \-nosmooth
-Use a faster, lower-quality upsampling routine.
+Don't use high-quality upsampling.
 .TP
 .B \-onepass
 Use one-pass instead of two-pass color quantization.  The one-pass method is
@@ -243,11 +245,7 @@ Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
 .SH AUTHOR
 Independent JPEG Group
 .SH BUGS
-Arithmetic coding is not supported for legal reasons.
-.PP
 To avoid the Unisys LZW patent,
 .B djpeg
 produces uncompressed GIF files.  These are larger than they should be, but
 are readable by standard GIF decoders.
-.PP
-Still not as fast as we'd like.

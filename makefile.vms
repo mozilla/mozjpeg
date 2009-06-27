@@ -26,8 +26,10 @@ $ EndIf
 $ 
 $ DoCompile := CC /NoDebug /Optimize /NoList
 $!
+$ DoCompile jaricom.c
 $ DoCompile jcapimin.c
 $ DoCompile jcapistd.c
+$ DoCompile jcarith.c
 $ DoCompile jctrans.c
 $ DoCompile jcparam.c
 $ DoCompile jdatadst.c
@@ -40,20 +42,19 @@ $ DoCompile jccoefct.c
 $ DoCompile jccolor.c
 $ DoCompile jcsample.c
 $ DoCompile jchuff.c
-$ DoCompile jcphuff.c
 $ DoCompile jcdctmgr.c
 $ DoCompile jfdctfst.c
 $ DoCompile jfdctflt.c
 $ DoCompile jfdctint.c
 $ DoCompile jdapimin.c
 $ DoCompile jdapistd.c
+$ DoCompile jdarith.c
 $ DoCompile jdtrans.c
 $ DoCompile jdatasrc.c
 $ DoCompile jdmaster.c
 $ DoCompile jdinput.c
 $ DoCompile jdmarker.c
 $ DoCompile jdhuff.c
-$ DoCompile jdphuff.c
 $ DoCompile jdmainct.c
 $ DoCompile jdcoefct.c
 $ DoCompile jdpostct.c
@@ -61,7 +62,6 @@ $ DoCompile jddctmgr.c
 $ DoCompile jidctfst.c
 $ DoCompile jidctflt.c
 $ DoCompile jidctint.c
-$ DoCompile jidctred.c
 $ DoCompile jdsample.c
 $ DoCompile jdcolor.c
 $ DoCompile jquant1.c
@@ -73,14 +73,14 @@ $ DoCompile jerror.c
 $ DoCompile jmemmgr.c
 $ DoCompile jmemnobs.c
 $!
-$ Library /Create libjpeg.olb  jcapimin.obj,jcapistd.obj,jctrans.obj, -
-          jcparam.obj,jdatadst.obj,jcinit.obj,jcmaster.obj,jcmarker.obj, -
-          jcmainct.obj,jcprepct.obj,jccoefct.obj,jccolor.obj,jcsample.obj, -
-          jchuff.obj,jcphuff.obj,jcdctmgr.obj,jfdctfst.obj,jfdctflt.obj, -
-          jfdctint.obj,jdapimin.obj,jdapistd.obj,jdtrans.obj,jdatasrc.obj, -
-          jdmaster.obj,jdinput.obj,jdmarker.obj,jdhuff.obj,jdphuff.obj, -
-          jdmainct.obj,jdcoefct.obj,jdpostct.obj,jddctmgr.obj,jidctfst.obj, -
-          jidctflt.obj,jidctint.obj,jidctred.obj,jdsample.obj,jdcolor.obj, -
+$ Library /Create libjpeg.olb  jaricom.obj,jcapimin.obj,jcapistd.obj, -
+          jcarith.obj,jctrans.obj,jcparam.obj,jdatadst.obj,jcinit.obj, -
+          jcmaster.obj,jcmarker.obj,jcmainct.obj,jcprepct.obj,jccoefct.obj, -
+          jccolor.obj,jcsample.obj,jchuff.obj,jcdctmgr.obj,jfdctfst.obj, -
+          jfdctflt.obj,jfdctint.obj,jdapimin.obj,jdapistd.obj,jdarith.obj, -
+          jdtrans.obj,jdatasrc.obj,jdmaster.obj,jdinput.obj,jdmarker.obj, -
+          jdhuff.obj,jdmainct.obj,jdcoefct.obj,jdpostct.obj,jddctmgr.obj, -
+          jidctfst.obj,jidctflt.obj,jidctint.obj,jdsample.obj,jdcolor.obj, -
           jquant1.obj,jquant2.obj,jdmerge.obj,jcomapi.obj,jutils.obj, -
           jerror.obj,jmemmgr.obj,jmemnobs.obj
 $!

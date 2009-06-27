@@ -53,8 +53,10 @@ on run
 		Set Preferences of panel "PPC Codegen" to {Struct Alignment:PowerPC}
 		Set Preferences of panel "PPC Linker" to {Generate SYM File:false}
 
+		Add Files (ijg_folder as string) & "jaricom.c" To Segment 1
 		Add Files (ijg_folder as string) & "jcapimin.c" To Segment 1
 		Add Files (ijg_folder as string) & "jcapistd.c" To Segment 1
+		Add Files (ijg_folder as string) & "jcarith.c" To Segment 1
 		Add Files (ijg_folder as string) & "jctrans.c" To Segment 1
 		Add Files (ijg_folder as string) & "jcparam.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdatadst.c" To Segment 1
@@ -67,20 +69,19 @@ on run
 		Add Files (ijg_folder as string) & "jccolor.c" To Segment 1
 		Add Files (ijg_folder as string) & "jcsample.c" To Segment 1
 		Add Files (ijg_folder as string) & "jchuff.c" To Segment 1
-		Add Files (ijg_folder as string) & "jcphuff.c" To Segment 1
 		Add Files (ijg_folder as string) & "jcdctmgr.c" To Segment 1
 		Add Files (ijg_folder as string) & "jfdctfst.c" To Segment 1
 		Add Files (ijg_folder as string) & "jfdctflt.c" To Segment 1
 		Add Files (ijg_folder as string) & "jfdctint.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdapimin.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdapistd.c" To Segment 1
+		Add Files (ijg_folder as string) & "jdarith.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdtrans.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdatasrc.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdmaster.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdinput.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdmarker.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdhuff.c" To Segment 1
-		Add Files (ijg_folder as string) & "jdphuff.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdmainct.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdcoefct.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdpostct.c" To Segment 1
@@ -88,7 +89,6 @@ on run
 		Add Files (ijg_folder as string) & "jidctfst.c" To Segment 1
 		Add Files (ijg_folder as string) & "jidctflt.c" To Segment 1
 		Add Files (ijg_folder as string) & "jidctint.c" To Segment 1
-		Add Files (ijg_folder as string) & "jidctred.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdsample.c" To Segment 1
 		Add Files (ijg_folder as string) & "jdcolor.c" To Segment 1
 		Add Files (ijg_folder as string) & "jquant1.c" To Segment 1

@@ -2,13 +2,14 @@
  * jdinput.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Modified 2002-2009 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains input control logic for the JPEG decompressor.
  * These routines are concerned with controlling the decompressor's input
  * processing (marker reading and coefficient decoding).  The actual input
- * reading is done in jdmarker.c, jdhuff.c, and jdphuff.c.
+ * reading is done in jdmarker.c, jdhuff.c, and jdarith.c.
  */
 
 #define JPEG_INTERNALS
@@ -74,12 +75,14 @@ initial_setup (j_decompress_ptr cinfo)
    * In the full decompressor, this will be overridden by jdmaster.c;
    * but in the transcoder, jdmaster.c is not used, so we must do it here.
    */
-  cinfo->min_DCT_scaled_size = DCTSIZE;
+  cinfo->min_DCT_h_scaled_size = DCTSIZE;
+  cinfo->min_DCT_v_scaled_size = DCTSIZE;
 
   /* Compute dimensions of components */
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
-    compptr->DCT_scaled_size = DCTSIZE;
+    compptr->DCT_h_scaled_size = DCTSIZE;
+    compptr->DCT_v_scaled_size = DCTSIZE;
     /* Size in DCT blocks */
     compptr->width_in_blocks = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
@@ -138,7 +141,7 @@ per_scan_setup (j_decompress_ptr cinfo)
     compptr->MCU_width = 1;
     compptr->MCU_height = 1;
     compptr->MCU_blocks = 1;
-    compptr->MCU_sample_width = compptr->DCT_scaled_size;
+    compptr->MCU_sample_width = compptr->DCT_h_scaled_size;
     compptr->last_col_width = 1;
     /* For noninterleaved scans, it is convenient to define last_row_height
      * as the number of block rows present in the last iMCU row.
@@ -174,7 +177,7 @@ per_scan_setup (j_decompress_ptr cinfo)
       compptr->MCU_width = compptr->h_samp_factor;
       compptr->MCU_height = compptr->v_samp_factor;
       compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
-      compptr->MCU_sample_width = compptr->MCU_width * compptr->DCT_scaled_size;
+      compptr->MCU_sample_width = compptr->MCU_width * compptr->DCT_h_scaled_size;
       /* Figure number of non-dummy blocks in last MCU column & row */
       tmp = (int) (compptr->width_in_blocks % compptr->MCU_width);
       if (tmp == 0) tmp = compptr->MCU_width;

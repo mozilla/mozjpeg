@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  SYSTEM ARCHITECTURE
 
-Copyright (C) 1991-1995, Thomas G. Lane.
+Copyright (C) 1991-2009, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -12,9 +12,9 @@ convention, see the include files and comments in the source code.
 
 We assume that the reader is already somewhat familiar with the JPEG standard.
 The README file includes references for learning about JPEG.  The file
-libjpeg.doc describes the library from the viewpoint of an application
+libjpeg.txt describes the library from the viewpoint of an application
 programmer using the library; it's best to read that file before this one.
-Also, the file coderules.doc describes the coding style conventions we use.
+Also, the file coderules.txt describes the coding style conventions we use.
 
 In this document, JPEG-specific terminology follows the JPEG standard:
   A "component" means a color channel, e.g., Red or Luminance.
@@ -59,9 +59,6 @@ never be; nonintegral sampling ratios are the prime example.  Furthermore,
 we treat 8-bit vs. 12-bit data precision as a compile-time switch, not a
 run-time option, because most machines can store 8-bit pixels much more
 compactly than 12-bit.
-
-For legal reasons, JPEG arithmetic coding is not currently supported, but
-extending the library to include it would be straightforward.
 
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
@@ -457,8 +454,8 @@ shown are:
   buffered by the coefficient controller have NOT been dequantized; we
   merge dequantization and inverse DCT into a single step for speed reasons.
   When scaled-down output is asked for, simplified DCT algorithms may be used
-  that emit only 1x1, 2x2, or 4x4 samples per DCT block, not the full 8x8.
-  Works on one DCT block at a time.
+  that need fewer coefficients and emit fewer samples per DCT block, not the
+  full 8x8.  Works on one DCT block at a time.
 
 * Postprocessing controller: buffer controller for the color quantization
   input buffer, when quantization is in use.  (Without quantization, this
@@ -541,7 +538,7 @@ section needs more data.)  In this way the application can avoid making
 extra display passes when data is arriving faster than the display pass
 can run.  Furthermore, it is possible to abort an output pass without
 losing anything, since the coefficient buffer is read-only as far as the
-output section is concerned.  See libjpeg.doc for more detail.
+output section is concerned.  See libjpeg.txt for more detail.
 
 A full-image coefficient array is only created if the JPEG file has multiple
 scans (or if the application specifies buffered-image mode anyway).  When
@@ -589,8 +586,7 @@ as "((value) & 0xFF)" on signed-char machines and "((int) (value))" elsewhere.
 With these conventions, JSAMPLE values can be assumed to be >= 0.  This helps
 simplify correct rounding during downsampling, etc.  The JPEG standard's
 specification that sample values run from -128..127 is accommodated by
-subtracting 128 just as the sample value is copied into the source array for
-the DCT step (this will be an array of signed ints).  Similarly, during
+subtracting 128 from the sample value in the DCT step.  Similarly, during
 decompression the output of the IDCT step will be immediately shifted back to
 0..255.  (NB: different values are required when 12-bit samples are in use.
 The code is written in terms of MAXJSAMPLE and CENTERJSAMPLE, which will be
@@ -685,7 +681,7 @@ then resume compression or decompression at a later time.
 
 This scenario is supported for simple cases.  (For anything more complex, we
 recommend that the application "bite the bullet" and develop real multitasking
-capability.)  The libjpeg.doc file goes into more detail about the usage and
+capability.)  The libjpeg.txt file goes into more detail about the usage and
 limitations of this capability; here we address the implications for library
 structure.
 
@@ -733,13 +729,14 @@ to bypass COM and APPn markers, so these can be larger than the buffer size
 without causing problems; otherwise a 64K buffer would be needed in the worst
 case.)
 
-The JPEG marker writer currently does *not* cope with suspension.  I feel that
-this is not necessary; it is much easier simply to require the application to
-ensure there is enough buffer space before starting.  (An empty 2K buffer is
-more than sufficient for the header markers; and ensuring there are a dozen or
-two bytes available before calling jpeg_finish_compress() will suffice for the
-trailer.)  This would not work for writing multi-scan JPEG files, but
-we simply do not intend to support that capability with suspension.
+The JPEG marker writer currently does *not* cope with suspension.
+We feel that this is not necessary; it is much easier simply to require
+the application to ensure there is enough buffer space before starting.  (An
+empty 2K buffer is more than sufficient for the header markers; and ensuring
+there are a dozen or two bytes available before calling jpeg_finish_compress()
+will suffice for the trailer.)  This would not work for writing multi-scan
+JPEG files, but we simply do not intend to support that capability with
+suspension.
 
 
 *** Memory manager services ***

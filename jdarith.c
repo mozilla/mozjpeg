@@ -1,10 +1,9 @@
 /*
  * jdarith.c
  *
- * Copyright (C) 1997, Guido Vollbeding <guivol@esc.de>.
- * This file is NOT part of the Independent JPEG Group's software
- * for legal reasons.
- * See the accompanying README file for conditions of distribution and use.
+ * Developed 1997 by Guido Vollbeding.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains portable arithmetic entropy decoding routines for JPEG
  * (implementing the ISO/IEC IS 10918-1 and CCITT Recommendation ITU-T T.81).
@@ -462,11 +461,12 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
     for (;;) {
       thiscoef = *block + jpeg_natural_order[k];
       if (*thiscoef) {				/* previously nonzero coef */
-	if (arith_decode(cinfo, st + 2))
+	if (arith_decode(cinfo, st + 2)) {
 	  if (*thiscoef < 0)
 	    *thiscoef += m1;
 	  else
 	    *thiscoef += p1;
+	}
 	break;
       }
       if (arith_decode(cinfo, st + 1)) {	/* newly nonzero coef */

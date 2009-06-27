@@ -1,5 +1,5 @@
 /*
- * jconfig.doc
+ * jconfig.txt
  *
  * Copyright (C) 1991-1994, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
@@ -24,7 +24,7 @@
  */
 
 /* Does your compiler support function prototypes?
- * (If not, you also need to use ansi2knr, see install.doc)
+ * (If not, you also need to use ansi2knr, see install.txt)
  */
 #define HAVE_PROTOTYPES
 

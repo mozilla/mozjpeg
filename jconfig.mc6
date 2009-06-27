@@ -1,5 +1,5 @@
 /* jconfig.mc6 --- jconfig.h for Microsoft C on MS-DOS, version 6.00A & up. */
-/* see jconfig.doc for explanations */
+/* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR

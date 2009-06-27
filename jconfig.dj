@@ -1,5 +1,5 @@
 /* jconfig.dj --- jconfig.h for DJGPP (Delorie's GNU C port) on MS-DOS. */
-/* see jconfig.doc for explanations */
+/* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR

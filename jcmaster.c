@@ -2,6 +2,7 @@
  * jcmaster.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Modified 2003-2009 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -42,23 +43,172 @@ typedef my_comp_master * my_master_ptr;
  * Support routines that do various essential calculations.
  */
 
+/*
+ * Compute JPEG image dimensions and related values.
+ * NOTE: this is exported for possible use by application.
+ * Hence it mustn't do anything that can't be done twice.
+ */
+
+GLOBAL(void)
+jpeg_calc_jpeg_dimensions (j_compress_ptr cinfo)
+/* Do computations that are needed before master selection phase */
+{
+#ifdef DCT_SCALING_SUPPORTED
+
+  /* Compute actual JPEG image dimensions and DCT scaling choices. */
+  if (cinfo->scale_num >= cinfo->scale_denom * 8) {
+    /* Provide 8/1 scaling */
+    cinfo->jpeg_width = cinfo->image_width << 3;
+    cinfo->jpeg_height = cinfo->image_height << 3;
+    cinfo->min_DCT_h_scaled_size = 1;
+    cinfo->min_DCT_v_scaled_size = 1;
+  } else if (cinfo->scale_num >= cinfo->scale_denom * 4) {
+    /* Provide 4/1 scaling */
+    cinfo->jpeg_width = cinfo->image_width << 2;
+    cinfo->jpeg_height = cinfo->image_height << 2;
+    cinfo->min_DCT_h_scaled_size = 2;
+    cinfo->min_DCT_v_scaled_size = 2;
+  } else if (cinfo->scale_num * 3 >= cinfo->scale_denom * 8) {
+    /* Provide 8/3 scaling */
+    cinfo->jpeg_width = (cinfo->image_width << 1) + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 2, 3L);
+    cinfo->jpeg_height = (cinfo->image_height << 1) + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 2, 3L);
+    cinfo->min_DCT_h_scaled_size = 3;
+    cinfo->min_DCT_v_scaled_size = 3;
+  } else if (cinfo->scale_num >= cinfo->scale_denom * 2) {
+    /* Provide 2/1 scaling */
+    cinfo->jpeg_width = cinfo->image_width << 1;
+    cinfo->jpeg_height = cinfo->image_height << 1;
+    cinfo->min_DCT_h_scaled_size = 4;
+    cinfo->min_DCT_v_scaled_size = 4;
+  } else if (cinfo->scale_num * 5 >= cinfo->scale_denom * 8) {
+    /* Provide 8/5 scaling */
+    cinfo->jpeg_width = cinfo->image_width + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 3, 5L);
+    cinfo->jpeg_height = cinfo->image_height + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 3, 5L);
+    cinfo->min_DCT_h_scaled_size = 5;
+    cinfo->min_DCT_v_scaled_size = 5;
+  } else if (cinfo->scale_num * 3 >= cinfo->scale_denom * 4) {
+    /* Provide 4/3 scaling */
+    cinfo->jpeg_width = cinfo->image_width + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width, 3L);
+    cinfo->jpeg_height = cinfo->image_height + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height, 3L);
+    cinfo->min_DCT_h_scaled_size = 6;
+    cinfo->min_DCT_v_scaled_size = 6;
+  } else if (cinfo->scale_num * 7 >= cinfo->scale_denom * 8) {
+    /* Provide 8/7 scaling */
+    cinfo->jpeg_width = cinfo->image_width + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width, 7L);
+    cinfo->jpeg_height = cinfo->image_height + (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height, 7L);
+    cinfo->min_DCT_h_scaled_size = 7;
+    cinfo->min_DCT_v_scaled_size = 7;
+  } else if (cinfo->scale_num >= cinfo->scale_denom) {
+    /* Provide 1/1 scaling */
+    cinfo->jpeg_width = cinfo->image_width;
+    cinfo->jpeg_height = cinfo->image_height;
+    cinfo->min_DCT_h_scaled_size = DCTSIZE;
+    cinfo->min_DCT_v_scaled_size = DCTSIZE;
+  } else if (cinfo->scale_num * 9 >= cinfo->scale_denom * 8) {
+    /* Provide 8/9 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 8, 9L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 8, 9L);
+    cinfo->min_DCT_h_scaled_size = 9;
+    cinfo->min_DCT_v_scaled_size = 9;
+  } else if (cinfo->scale_num * 5 >= cinfo->scale_denom * 4) {
+    /* Provide 4/5 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 4, 5L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 4, 5L);
+    cinfo->min_DCT_h_scaled_size = 10;
+    cinfo->min_DCT_v_scaled_size = 10;
+  } else if (cinfo->scale_num * 11 >= cinfo->scale_denom * 8) {
+    /* Provide 8/11 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 8, 11L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 8, 11L);
+    cinfo->min_DCT_h_scaled_size = 11;
+    cinfo->min_DCT_v_scaled_size = 11;
+  } else if (cinfo->scale_num * 3 >= cinfo->scale_denom * 2) {
+    /* Provide 2/3 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 2, 3L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 2, 3L);
+    cinfo->min_DCT_h_scaled_size = 12;
+    cinfo->min_DCT_v_scaled_size = 12;
+  } else if (cinfo->scale_num * 13 >= cinfo->scale_denom * 8) {
+    /* Provide 8/13 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 8, 13L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 8, 13L);
+    cinfo->min_DCT_h_scaled_size = 13;
+    cinfo->min_DCT_v_scaled_size = 13;
+  } else if (cinfo->scale_num * 7 >= cinfo->scale_denom * 4) {
+    /* Provide 4/7 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 4, 7L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 4, 7L);
+    cinfo->min_DCT_h_scaled_size = 14;
+    cinfo->min_DCT_v_scaled_size = 14;
+  } else if (cinfo->scale_num * 15 >= cinfo->scale_denom * 8) {
+    /* Provide 8/15 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width * 8, 15L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height * 8, 15L);
+    cinfo->min_DCT_h_scaled_size = 15;
+    cinfo->min_DCT_v_scaled_size = 15;
+  } else {
+    /* Provide 1/2 scaling */
+    cinfo->jpeg_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width, 2L);
+    cinfo->jpeg_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height, 2L);
+    cinfo->min_DCT_h_scaled_size = 16;
+    cinfo->min_DCT_v_scaled_size = 16;
+  }
+
+#else /* !DCT_SCALING_SUPPORTED */
+
+  /* Hardwire it to "no scaling" */
+  cinfo->jpeg_width = cinfo->image_width;
+  cinfo->jpeg_height = cinfo->image_height;
+  cinfo->min_DCT_h_scaled_size = DCTSIZE;
+  cinfo->min_DCT_v_scaled_size = DCTSIZE;
+
+#endif /* DCT_SCALING_SUPPORTED */
+}
+
+
 LOCAL(void)
 initial_setup (j_compress_ptr cinfo)
 /* Do computations that are needed before master selection phase */
 {
-  int ci;
+  int ci, ssize;
   jpeg_component_info *compptr;
   long samplesperrow;
   JDIMENSION jd_samplesperrow;
 
+  jpeg_calc_jpeg_dimensions(cinfo);
+
   /* Sanity check on image dimensions */
-  if (cinfo->image_height <= 0 || cinfo->image_width <= 0
+  if (cinfo->jpeg_height <= 0 || cinfo->jpeg_width <= 0
       || cinfo->num_components <= 0 || cinfo->input_components <= 0)
     ERREXIT(cinfo, JERR_EMPTY_IMAGE);
 
   /* Make sure image isn't bigger than I can handle */
-  if ((long) cinfo->image_height > (long) JPEG_MAX_DIMENSION ||
-      (long) cinfo->image_width > (long) JPEG_MAX_DIMENSION)
+  if ((long) cinfo->jpeg_height > (long) JPEG_MAX_DIMENSION ||
+      (long) cinfo->jpeg_width > (long) JPEG_MAX_DIMENSION)
     ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int) JPEG_MAX_DIMENSION);
 
   /* Width of an input scanline must be representable as JDIMENSION. */
@@ -95,22 +245,52 @@ initial_setup (j_compress_ptr cinfo)
        ci++, compptr++) {
     /* Fill in the correct component_index value; don't rely on application */
     compptr->component_index = ci;
-    /* For compression, we never do DCT scaling. */
-    compptr->DCT_scaled_size = DCTSIZE;
+    /* In selecting the actual DCT scaling for each component, we try to
+     * scale down the chroma components via DCT scaling rather than downsampling.
+     * This saves time if the downsampler gets to use 1:1 scaling.
+     * Note this code adapts subsampling ratios which are powers of 2.
+     */
+    ssize = 1;
+#ifdef DCT_SCALING_SUPPORTED
+    while (cinfo->min_DCT_h_scaled_size * ssize <=
+	   (cinfo->do_fancy_downsampling ? DCTSIZE : DCTSIZE / 2) &&
+	   (cinfo->max_h_samp_factor % (compptr->h_samp_factor * ssize * 2)) == 0) {
+      ssize = ssize * 2;
+    }
+#endif
+    compptr->DCT_h_scaled_size = cinfo->min_DCT_h_scaled_size * ssize;
+    ssize = 1;
+#ifdef DCT_SCALING_SUPPORTED
+    while (cinfo->min_DCT_v_scaled_size * ssize <=
+	   (cinfo->do_fancy_downsampling ? DCTSIZE : DCTSIZE / 2) &&
+	   (cinfo->max_v_samp_factor % (compptr->v_samp_factor * ssize * 2)) == 0) {
+      ssize = ssize * 2;
+    }
+#endif
+    compptr->DCT_v_scaled_size = cinfo->min_DCT_v_scaled_size * ssize;
+
+    /* We don't support DCT ratios larger than 2. */
+    if (compptr->DCT_h_scaled_size > compptr->DCT_v_scaled_size * 2)
+	compptr->DCT_h_scaled_size = compptr->DCT_v_scaled_size * 2;
+    else if (compptr->DCT_v_scaled_size > compptr->DCT_h_scaled_size * 2)
+	compptr->DCT_v_scaled_size = compptr->DCT_h_scaled_size * 2;
+
     /* Size in DCT blocks */
     compptr->width_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
+      jdiv_round_up((long) cinfo->jpeg_width * (long) compptr->h_samp_factor,
 		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
     compptr->height_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
+      jdiv_round_up((long) cinfo->jpeg_height * (long) compptr->v_samp_factor,
 		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
     /* Size in samples */
     compptr->downsampled_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
-		    (long) cinfo->max_h_samp_factor);
+      jdiv_round_up((long) cinfo->jpeg_width *
+		    (long) (compptr->h_samp_factor * compptr->DCT_h_scaled_size),
+		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
     compptr->downsampled_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
-		    (long) cinfo->max_v_samp_factor);
+      jdiv_round_up((long) cinfo->jpeg_height *
+		    (long) (compptr->v_samp_factor * compptr->DCT_v_scaled_size),
+		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
     /* Mark component needed (this flag isn't actually used for compression) */
     compptr->component_needed = TRUE;
   }
@@ -119,7 +299,7 @@ initial_setup (j_compress_ptr cinfo)
    * main controller will call coefficient controller).
    */
   cinfo->total_iMCU_rows = (JDIMENSION)
-    jdiv_round_up((long) cinfo->image_height,
+    jdiv_round_up((long) cinfo->jpeg_height,
 		  (long) (cinfo->max_v_samp_factor*DCTSIZE));
 }
 
@@ -325,7 +505,7 @@ per_scan_setup (j_compress_ptr cinfo)
     compptr->MCU_width = 1;
     compptr->MCU_height = 1;
     compptr->MCU_blocks = 1;
-    compptr->MCU_sample_width = DCTSIZE;
+    compptr->MCU_sample_width = compptr->DCT_h_scaled_size;
     compptr->last_col_width = 1;
     /* For noninterleaved scans, it is convenient to define last_row_height
      * as the number of block rows present in the last iMCU row.
@@ -347,10 +527,10 @@ per_scan_setup (j_compress_ptr cinfo)
     
     /* Overall image size in MCUs */
     cinfo->MCUs_per_row = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width,
+      jdiv_round_up((long) cinfo->jpeg_width,
 		    (long) (cinfo->max_h_samp_factor*DCTSIZE));
     cinfo->MCU_rows_in_scan = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height,
+      jdiv_round_up((long) cinfo->jpeg_height,
 		    (long) (cinfo->max_v_samp_factor*DCTSIZE));
     
     cinfo->blocks_in_MCU = 0;
@@ -361,7 +541,7 @@ per_scan_setup (j_compress_ptr cinfo)
       compptr->MCU_width = compptr->h_samp_factor;
       compptr->MCU_height = compptr->v_samp_factor;
       compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
-      compptr->MCU_sample_width = compptr->MCU_width * DCTSIZE;
+      compptr->MCU_sample_width = compptr->MCU_width * compptr->DCT_h_scaled_size;
       /* Figure number of non-dummy blocks in last MCU column & row */
       tmp = (int) (compptr->width_in_blocks % compptr->MCU_width);
       if (tmp == 0) tmp = compptr->MCU_width;

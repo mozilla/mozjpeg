@@ -1,5 +1,5 @@
 /* jconfig.mac --- jconfig.h for CodeWarrior on Apple Macintosh */
-/* see jconfig.doc for explanations */
+/* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR

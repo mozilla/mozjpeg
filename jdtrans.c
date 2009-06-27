@@ -103,14 +103,7 @@ transdecode_master_selection (j_decompress_ptr cinfo)
   if (cinfo->arith_code)
     jinit_arith_decoder(cinfo);
   else {
-    if (cinfo->progressive_mode) {
-#ifdef D_PROGRESSIVE_SUPPORTED
-      jinit_phuff_decoder(cinfo);
-#else
-      ERREXIT(cinfo, JERR_NOT_COMPILED);
-#endif
-    } else
-      jinit_huff_decoder(cinfo);
+    jinit_huff_decoder(cinfo);
   }
 
   /* Always get a full-image coefficient buffer. */

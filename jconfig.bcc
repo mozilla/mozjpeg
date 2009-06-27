@@ -1,5 +1,5 @@
 /* jconfig.bcc --- jconfig.h for Borland C (Turbo C) on MS-DOS or OS/2. */
-/* see jconfig.doc for explanations */
+/* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR

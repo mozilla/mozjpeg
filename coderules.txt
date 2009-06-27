@@ -103,7 +103,7 @@ should be in the common data structures.
 
 4. Don't use static variables except for read-only constant tables.  Variables
 that should be private to a module can be placed into private structures (see
-the system architecture document, structure.doc).
+the system architecture document, structure.txt).
 
 5. Source file names should begin with "j" for files that are part of the
 library proper; source files that are not part of the library, such as cjpeg.c

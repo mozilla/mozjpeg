@@ -1,5 +1,5 @@
 /* jconfig.st --- jconfig.h for Atari ST/STE/TT using Pure C or Turbo C. */
-/* see jconfig.doc for explanations */
+/* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR

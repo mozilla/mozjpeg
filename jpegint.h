@@ -2,6 +2,7 @@
  * jpegint.h
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Modified 1997-2009 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -99,14 +100,16 @@ struct jpeg_downsampler {
 };
 
 /* Forward DCT (also controls coefficient quantization) */
+typedef JMETHOD(void, forward_DCT_ptr,
+		(j_compress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
+		 JDIMENSION start_row, JDIMENSION start_col,
+		 JDIMENSION num_blocks));
+
 struct jpeg_forward_dct {
   JMETHOD(void, start_pass, (j_compress_ptr cinfo));
-  /* perhaps this should be an array??? */
-  JMETHOD(void, forward_DCT, (j_compress_ptr cinfo,
-			      jpeg_component_info * compptr,
-			      JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
-			      JDIMENSION start_row, JDIMENSION start_col,
-			      JDIMENSION num_blocks));
+  /* It is useful to allow each component to have a separate FDCT method. */
+  forward_DCT_ptr forward_DCT[MAX_COMPONENTS];
 };
 
 /* Entropy encoding */
@@ -303,7 +306,7 @@ struct jpeg_color_quantizer {
 #define jinit_downsampler	jIDownsampler
 #define jinit_forward_dct	jIFDCT
 #define jinit_huff_encoder	jIHEncoder
-#define jinit_phuff_encoder	jIPHEncoder
+#define jinit_arith_encoder	jIAEncoder
 #define jinit_marker_writer	jIMWriter
 #define jinit_master_decompress	jIDMaster
 #define jinit_d_main_controller	jIDMainC
@@ -312,7 +315,7 @@ struct jpeg_color_quantizer {
 #define jinit_input_controller	jIInCtlr
 #define jinit_marker_reader	jIMReader
 #define jinit_huff_decoder	jIHDecoder
-#define jinit_phuff_decoder	jIPHDecoder
+#define jinit_arith_decoder	jIADecoder
 #define jinit_inverse_dct	jIIDCT
 #define jinit_upsampler		jIUpsampler
 #define jinit_color_deconverter	jIDColor
@@ -344,7 +347,6 @@ EXTERN(void) jinit_color_converter JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_downsampler JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_forward_dct JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_huff_encoder JPP((j_compress_ptr cinfo));
-EXTERN(void) jinit_phuff_encoder JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_arith_encoder JPP((j_compress_ptr cinfo));
 EXTERN(void) jinit_marker_writer JPP((j_compress_ptr cinfo));
 /* Decompression module initialization routines */
@@ -358,7 +360,6 @@ EXTERN(void) jinit_d_post_controller JPP((j_decompress_ptr cinfo,
 EXTERN(void) jinit_input_controller JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_marker_reader JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_huff_decoder JPP((j_decompress_ptr cinfo));
-EXTERN(void) jinit_phuff_decoder JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_arith_decoder JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_inverse_dct JPP((j_decompress_ptr cinfo));
 EXTERN(void) jinit_upsampler JPP((j_decompress_ptr cinfo));

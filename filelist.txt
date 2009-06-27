@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  FILE LIST
 
-Copyright (C) 1994-1998, Thomas G. Lane.
+Copyright (C) 1994-2009, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -28,8 +28,6 @@ jerror.h	Declares JPEG library's error and trace message codes.
 jinclude.h	Central include file used by all IJG .c files to reference
 		system include files.
 jpegint.h	JPEG library's internal data structures.
-jchuff.h	Private declarations for Huffman encoder modules.
-jdhuff.h	Private declarations for Huffman decoder modules.
 jdct.h		Private declarations for forward & reverse DCT subsystems.
 jmemsys.h	Private declarations for memory management subsystem.
 jversion.h	Version information.
@@ -72,8 +70,8 @@ jcdctmgr.c	DCT manager (DCT implementation selection & control).
 jfdctint.c	Forward DCT using slow-but-accurate integer method.
 jfdctfst.c	Forward DCT using faster, less accurate integer method.
 jfdctflt.c	Forward DCT using floating-point arithmetic.
-jchuff.c	Huffman entropy coding for sequential JPEG.
-jcphuff.c	Huffman entropy coding for progressive JPEG.
+jchuff.c	Huffman entropy coding.
+jcarith.c	Arithmetic entropy coding.
 jcmarker.c	JPEG marker writing.
 jdatadst.c	Data destination manager for stdio output.
 
@@ -85,13 +83,12 @@ jdmainct.c	Main buffer controller (JPEG decompressor => postprocessor).
 jdcoefct.c	Buffer controller for DCT coefficient buffer.
 jdpostct.c	Postprocessor buffer controller.
 jdmarker.c	JPEG marker reading.
-jdhuff.c	Huffman entropy decoding for sequential JPEG.
-jdphuff.c	Huffman entropy decoding for progressive JPEG.
+jdhuff.c	Huffman entropy decoding.
+jdarith.c	Arithmetic entropy decoding.
 jddctmgr.c	IDCT manager (IDCT implementation selection & control).
 jidctint.c	Inverse DCT using slow-but-accurate integer method.
 jidctfst.c	Inverse DCT using faster, less accurate integer method.
 jidctflt.c	Inverse DCT using floating-point arithmetic.
-jidctred.c	Inverse DCTs with reduced-size outputs.
 jdsample.c	Upsampling.
 jdcolor.c	Color space conversion.
 jdmerge.c	Merged upsampling/color conversion (faster, lower quality).
@@ -102,6 +99,8 @@ jdatasrc.c	Data source manager for stdio input.
 
 Support files for both compression and decompression:
 
+jaricom.c	Tables for common use in arithmetic entropy encoding and
+		decoding routines.
 jerror.c	Standard error handling routines (application replaceable).
 jmemmgr.c	System-independent (more or less) memory management code.
 jutils.c	Miscellaneous utility routines.
@@ -118,7 +117,7 @@ jmemdos.c	Custom implementation for MS-DOS (16-bit environment only):
 jmemmac.c	Custom implementation for Apple Macintosh.
 
 Exactly one of the system-dependent modules should be configured into an
-installed JPEG library (see install.doc for hints about which one to use).
+installed JPEG library (see install.txt for hints about which one to use).
 On unusual systems you may find it worthwhile to make a special
 system-dependent memory manager.
 
@@ -184,27 +183,33 @@ ADDITIONAL FILES
 Documentation (see README for a guide to the documentation files):
 
 README		Master documentation file.
-*.doc		Other documentation files.
+*.txt		Other documentation files.
 *.1		Documentation in Unix man page format.
 change.log	Version-to-version change highlights.
 example.c	Sample code for calling JPEG library.
 
-Configuration/installation files and programs (see install.doc for more info):
+Configuration/installation files and programs (see install.txt for more info):
 
 configure	Unix shell script to perform automatic configuration.
-ltconfig	Support scripts for configure (from GNU libtool).
-ltmain.sh
+configure.ac	Source file for use with Autoconf to generate configure.
+ltmain.sh	Support scripts for configure (from GNU libtool).
 config.guess
 config.sub
+depcomp
+missing
 install-sh	Install shell script for those Unix systems lacking one.
+Makefile.in	Makefile input for configure.
+Makefile.am	Source file for use with Automake to generate Makefile.in.
 ckconfig.c	Program to generate jconfig.h on non-Unix systems.
-jconfig.doc	Template for making jconfig.h by hand.
-makefile.*	Sample makefiles for particular systems.
+jconfig.txt	Template for making jconfig.h by hand.
+mak*.*		Sample makefiles for particular systems.
 jconfig.*	Sample jconfig.h for particular systems.
+libjpeg.map	Script to generate shared library with versioned symbols.
+aclocal.m4	M4 macro definitions for use with Autoconf.
 ansi2knr.c	De-ANSIfier for pre-ANSI C compilers (courtesy of
 		L. Peter Deutsch and Aladdin Enterprises).
 
-Test files (see install.doc for test procedure):
+Test files (see install.txt for test procedure):
 
 test*.*		Source and comparison files for confidence test.
 		These are binary image files, NOT text files.

@@ -1,6 +1,6 @@
 USING THE IJG JPEG LIBRARY
 
-Copyright (C) 1994-1998, Thomas G. Lane.
+Copyright (C) 1994-2009, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -93,7 +93,6 @@ JPEG processes are supported.  (Our subset includes all features now in common
 use.)  Unsupported ISO options include:
 	* Hierarchical storage
 	* Lossless JPEG
-	* Arithmetic entropy coding (unsupported for legal reasons)
 	* DNL marker
 	* Nonintegral subsampling ratios
 We support both 8- and 12-bit data precision, but this is a compile-time
@@ -750,7 +749,7 @@ is to prepare a library file ("libjpeg.a", or a corresponding name on non-Unix
 machines) and reference it at your link step.  If you use only half of the
 library (only compression or only decompression), only that much code will be
 included from the library, unless your linker is hopelessly brain-damaged.
-The supplied makefiles build libjpeg.a automatically (see install.doc).
+The supplied makefiles build libjpeg.a automatically (see install.txt).
 
 While you can build the JPEG library as a shared library if the whim strikes
 you, we don't really recommend it.  The trouble with shared libraries is that
@@ -850,6 +849,10 @@ int jpeg_quality_scaling (int quality)
 	can't be expressed as a simple scalar multiplier, in which case the
 	premise of this routine collapses.  Caveat user.
 
+jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
+	Set default quantization tables with linear q_scale_factor[] values
+	(see below).
+
 jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
 		      const unsigned int *basic_table,
 		      int scale_factor, boolean force_baseline)
@@ -888,6 +891,12 @@ J_DCT_METHOD dct_method
 	considerably less accurate than the other two; its use is not
 	recommended if high quality is a concern.  JDCT_DEFAULT and
 	JDCT_FASTEST are macros configurable by each installation.
+
+unsigned int scale_num, scale_denom
+	Scale the image by the fraction scale_num/scale_denom.  Default is
+	1/1, or no scaling.  Currently, the supported scaling ratios are
+	8/N with all N from 1 to 16.  (The library design allows for arbitrary
+	scaling ratios but this is not likely to be implemented any time soon.)
 
 J_COLOR_SPACE jpeg_color_space
 int num_components
@@ -929,6 +938,15 @@ int num_scans
 	defines a valid JPEG scan sequence.  (jpeg_simple_progression creates
 	a suitable scan definition array for progressive JPEG.)  This is
 	discussed further under "Progressive JPEG support".
+
+boolean do_fancy_downsampling
+	If TRUE, use direct DCT scaling with DCT size > 8 for downsampling
+	of chroma components.
+	If FALSE, use only DCT size <= 8 and simple separate downsampling.
+	Default is TRUE.
+	For better image stability in multiple generation compression cycles
+	it is preferable that this value matches the corresponding
+	do_fancy_upsampling value in decompression.
 
 int smoothing_factor
 	If non-zero, the input image is smoothed; the value should be 1 for
@@ -972,6 +990,30 @@ JQUANT_TBL * quant_tbl_ptrs[NUM_QUANT_TBLS]
 	routines will set up table slot 0 for luminance quality and table
 	slot 1 for chrominance.
 
+int q_scale_factor[NUM_QUANT_TBLS]
+	Linear quantization scaling factors (percentage, initialized 100)
+	for use with jpeg_default_qtables().
+	See rdswitch.c and cjpeg.c for an example of usage.
+	Note that the q_scale_factor[] fields are the "linear" scales, so you
+	have to convert from user-defined ratings via jpeg_quality_scaling().
+	Here is an example code which corresponds to cjpeg -quality 90,70:
+
+		jpeg_set_defaults(cinfo);
+
+		/* Set luminance quality 90. */
+		cinfo->q_scale_factor[0] = jpeg_quality_scaling(90);
+		/* Set chrominance quality 70. */
+		cinfo->q_scale_factor[1] = jpeg_quality_scaling(70);
+
+		jpeg_default_qtables(cinfo, force_baseline);
+
+	CAUTION: You must also set 1x1 subsampling for efficient separate
+	color quality selection, since the default value used by library
+	is 2x2:
+
+		cinfo->comp_info[0].v_samp_factor = 1;
+		cinfo->comp_info[0].h_samp_factor = 1;
+
 JHUFF_TBL * dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
 JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
 	Pointers to Huffman coding tables, one per table slot, or NULL if
@@ -982,9 +1024,16 @@ JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
 	by setting optimize_coding, as discussed above; there's seldom
 	any need to mess with providing your own Huffman tables.
 
-There are some additional cinfo fields which are not documented here
-because you currently can't change them; for example, you can't set
-arith_code TRUE because arithmetic coding is unsupported.
+
+The actual dimensions of the JPEG image that will be written to the file are
+given by the following fields.  These are computed from the input image
+dimensions and the compression parameters by jpeg_start_compress().  You can
+also call jpeg_calc_jpeg_dimensions() to obtain the values that will result
+from the current parameter settings.  This can be useful if you are trying
+to pick a scaling ratio that will get close to a desired target size.
+
+JDIMENSION jpeg_width		Actual dimensions of output image.
+JDIMENSION jpeg_height
 
 
 Per-component parameters are stored in the struct cinfo.comp_info[i] for
@@ -1073,12 +1122,17 @@ J_COLOR_SPACE out_color_space
 	unusual conversion.
 
 unsigned int scale_num, scale_denom
-	Scale the image by the fraction scale_num/scale_denom.  Default is
-	1/1, or no scaling.  Currently, the only supported scaling ratios
-	are 1/1, 1/2, 1/4, and 1/8.  (The library design allows for arbitrary
-	scaling ratios but this is not likely to be implemented any time soon.)
-	Smaller scaling ratios permit significantly faster decoding since
-	fewer pixels need be processed and a simpler IDCT method can be used.
+	Scale the image by the fraction scale_num/scale_denom.  Currently,
+	the supported scaling ratios are N/8 with all N from 1 to 16.  (The
+	library design allows for arbitrary scaling ratios but this is not
+	likely to be implemented any time soon.)  The values are initialized
+	by jpeg_read_header() with the source DCT size, which is currently
+	8/8.  If you change only the scale_num value while leaving the other
+	unchanged, then this specifies the DCT scaled size to be applied on
+	the given input, which is currently equivalent to N/8 scaling, since
+	the source DCT size is currently always 8.  Smaller scaling ratios
+	permit significantly faster decoding since fewer pixels need be
+	processed and a simpler IDCT method can be used.
 
 boolean quantize_colors
 	If set TRUE, colormapped output will be delivered.  Default is FALSE,
@@ -1132,9 +1186,13 @@ J_DCT_METHOD dct_method
 	as described above for compression.
 
 boolean do_fancy_upsampling
-	If TRUE, do careful upsampling of chroma components.  If FALSE,
-	a faster but sloppier method is used.  Default is TRUE.  The visual
-	impact of the sloppier method is often very small.
+	If TRUE, use direct DCT scaling with DCT size > 8 for upsampling
+	of chroma components.
+	If FALSE, use only DCT size <= 8 and simple separate upsampling.
+	Default is TRUE.
+	For better image stability in multiple generation compression cycles
+	it is preferable that this value matches the corresponding
+	do_fancy_downsampling value in compression.
 
 boolean do_block_smoothing
 	If TRUE, interblock smoothing is applied in early stages of decoding
@@ -2507,6 +2565,8 @@ jpeg_write_scanlines().  Before calling jpeg_start_compress(), you must do
 the following:
   * Set cinfo->raw_data_in to TRUE.  (It is set FALSE by jpeg_set_defaults().)
     This notifies the library that you will be supplying raw data.
+    Furthermore, set cinfo->do_fancy_downsampling to FALSE if you want to use
+    real downsampled data.  (It is set TRUE by jpeg_set_defaults().)
   * Ensure jpeg_color_space is correct --- an explicit jpeg_set_colorspace()
     call is a good idea.  Note that since color conversion is bypassed,
     in_color_space is ignored, except that jpeg_set_defaults() uses it to
@@ -2565,16 +2625,17 @@ destination module suspends, jpeg_write_raw_data() will return 0.
 In this case the same data rows must be passed again on the next call.
 
 
-Decompression with raw data output implies bypassing all postprocessing:
-you cannot ask for rescaling or color quantization, for instance.  More
-seriously, you must deal with the color space and sampling factors present in
-the incoming file.  If your application only handles, say, 2h1v YCbCr data,
+Decompression with raw data output implies bypassing all postprocessing.
+You must deal with the color space and sampling factors present in the
+incoming file.  If your application only handles, say, 2h1v YCbCr data,
 you must check for and fail on other color spaces or other sampling factors.
 The library will not convert to a different color space for you.
 
 To obtain raw data output, set cinfo->raw_data_out = TRUE before
 jpeg_start_decompress() (it is set FALSE by jpeg_read_header()).  Be sure to
 verify that the color space and sampling factors are ones you can handle.
+Furthermore, set cinfo->do_fancy_upsampling = FALSE if you want to get real
+downsampled data (it is set TRUE by jpeg_read_header()).
 Then call jpeg_read_raw_data() in place of jpeg_read_scanlines().  The
 decompression process is otherwise the same as usual.
 
@@ -2608,7 +2669,7 @@ entire image into a set of virtual coefficient-block arrays, one array per
 component.  The return value is a pointer to an array of virtual-array
 descriptors.  Each virtual array can be accessed directly using the JPEG
 memory manager's access_virt_barray method (see Memory management, below,
-and also read structure.doc's discussion of virtual array handling).  Or,
+and also read structure.txt's discussion of virtual array handling).  Or,
 for simple transcoding to a different JPEG file format, the array list can
 just be handed directly to jpeg_write_coefficients().
 
@@ -2752,7 +2813,7 @@ Memory management
 -----------------
 
 This section covers some key facts about the JPEG library's built-in memory
-manager.  For more info, please read structure.doc's section about the memory
+manager.  For more info, please read structure.txt's section about the memory
 manager, and consult the source code if necessary.
 
 All memory and temporary file allocation within the library is done via the
@@ -2867,7 +2928,7 @@ BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
 larger than a char, so it affects the surrounding application's image data.
 The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
 and GIF file formats; you must disable the other file formats to compile a
-12-bit cjpeg or djpeg.  (install.doc has more information about that.)
+12-bit cjpeg or djpeg.  (install.txt has more information about that.)
 At present, a 12-bit library can handle *only* 12-bit images, not both
 precisions.  (If you need to include both 8- and 12-bit libraries in a single
 application, you could probably do it by defining NEED_SHORT_EXTERNAL_NAMES
@@ -2920,7 +2981,7 @@ about them.)
 
 The code works fine on ANSI C, C++, and pre-ANSI C compilers, using any of
 the popular system include file setups, and some not-so-popular ones too.
-See install.doc for configuration procedures.
+See install.txt for configuration procedures.
 
 The code is not dependent on the exact sizes of the C data types.  As
 distributed, we make the assumptions that
@@ -2959,7 +3020,7 @@ The code generally assumes that C names must be unique in the first 15
 characters.  However, global function names can be made unique in the
 first 6 characters by defining NEED_SHORT_EXTERNAL_NAMES.
 
-More info about porting the code may be gleaned by reading jconfig.doc,
+More info about porting the code may be gleaned by reading jconfig.txt,
 jmorecfg.h, and jinclude.h.
 
 

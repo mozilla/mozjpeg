@@ -1,10 +1,9 @@
 /*
  * jaricom.c
  *
- * Copyright (C) 1997, Guido Vollbeding <guivol@esc.de>.
- * This file is NOT part of the Independent JPEG Group's software
- * for legal reasons.
- * See the accompanying README file for conditions of distribution and use.
+ * Developed 1997 by Guido Vollbeding.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains probability estimation tables for common use in
  * arithmetic entropy encoding and decoding routines.
@@ -21,9 +20,9 @@
 /* The following #define specifies the packing of the four components
  * into the compact INT32 representation.
  * Note that this formula must match the actual arithmetic encoder
- * and decoder implementation. The implementation has to be changed
+ * and decoder implementation.  The implementation has to be changed
  * if this formula is changed.
- * The current organisation is leaned on Markus Kuhn's JBIG
+ * The current organization is leaned on Markus Kuhn's JBIG
  * implementation (jbig_tab.c).
  */
 

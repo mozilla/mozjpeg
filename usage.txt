@@ -12,19 +12,9 @@ pages in files cjpeg.1, djpeg.1, jpegtran.1, rdjpgcom.1, wrjpgcom.1.
 
 INTRODUCTION
 
-These programs implement JPEG image compression and decompression.  JPEG
-(pronounced "jay-peg") is a standardized compression method for full-color
-and gray-scale images.  JPEG is designed to handle "real-world" scenes,
-for example scanned photographs.  Cartoons, line drawings, and other
-non-realistic images are not JPEG's strong suit; on that sort of material
-you may get poor image quality and/or little compression.
-
-JPEG is lossy, meaning that the output image is not necessarily identical to
-the input image.  Hence you should not use JPEG if you have to have identical
-output bits.  However, on typical real-world images, very good compression
-levels can be obtained with no visible change, and amazingly high compression
-is possible if you can tolerate a low-quality image.  You can trade off image
-quality against file size by adjusting the compressor's "quality" setting.
+These programs implement JPEG image encoding, decoding, and transcoding.
+JPEG (pronounced "jay-peg") is a standardized compression method for
+full-color and gray-scale images.
 
 
 GENERAL USAGE
@@ -48,7 +38,7 @@ or
 i.e., both the input and output files are named on the command line.  This
 style is a little more foolproof, and it loses no functionality if you don't
 have pipes.  (You can get this style on Unix too, if you prefer, by defining
-TWO_FILE_COMMANDLINE when you compile the programs; see install.doc.)
+TWO_FILE_COMMANDLINE when you compile the programs; see install.txt.)
 
 You can also say:
 	cjpeg [switches] -outfile jpegfile  imagefile
@@ -76,7 +66,7 @@ CJPEG DETAILS
 
 The basic command line switches for cjpeg are:
 
-	-quality N	Scale quantization tables to adjust image quality.
+	-quality N[,...]  Scale quantization tables to adjust image quality.
 			Quality is 0 (worst) to 100 (best); default is 75.
 			(See below for more info.)
 
@@ -95,6 +85,10 @@ The basic command line switches for cjpeg are:
 			unaffected by -optimize.
 
 	-progressive	Create progressive JPEG file (see below).
+
+	-scale M/N	Scale the output image by a factor M/N.  Currently
+			supported scale factors are 8/N with all N from 1 to
+			16.
 
 	-targa		Input file is Targa format.  Targa files that contain
 			an "identification" field will not be automatically
@@ -128,15 +122,31 @@ cjpeg emits a warning message when you give such a quality value, because some
 other JPEG programs may be unable to decode the resulting file.  Use -baseline
 if you need to ensure compatibility at low quality values.)
 
+The -quality option has been extended in IJG version 7 for support of separate
+quality settings for luminance and chrominance (or in general, for every
+provided quantization table slot).  This feature is useful for high-quality
+applications which cannot accept the damage of color data by coarse
+subsampling settings.  You can now easily reduce the color data amount more
+smoothly with finer control without separate subsampling.  The resulting file
+is fully compliant with standard JPEG decoders.
+Note that the -quality ratings refer to the quantization table slots, and that
+the last value is replicated if there are more q-table slots than parameters.
+The default q-table slots are 0 for luminance and 1 for chrominance with
+default tables as given in the JPEG standard.  This is compatible with the old
+behaviour in case that only one parameter is given, which is then used for
+both luminance and chrominance (slots 0 and 1).  More or custom quantization
+tables can be set with -qtables and assigned to components with -qslots
+parameter (see the "wizard" switches below).
+CAUTION: You must explicitely add -sample 1x1 for efficient separate color
+quality selection, since the default value used by library is 2x2!
+
 The -progressive switch creates a "progressive JPEG" file.  In this type of
 JPEG file, the data is stored in multiple scans of increasing quality.  If the
 file is being transmitted over a slow communications link, the decoder can use
 the first scan to display a low-quality image very quickly, and can then
 improve the display with each subsequent scan.  The final image is exactly
 equivalent to a standard JPEG file of the same quality setting, and the total
-file size is about the same --- often a little smaller.  CAUTION: progressive
-JPEG is not yet widely implemented, so many decoders will be unable to view a
-progressive JPEG file at all.
+file size is about the same --- often a little smaller.
 
 Switches for advanced users:
 
@@ -150,6 +160,8 @@ Switches for advanced users:
 			across machines, while the integer methods should give
 			the same results everywhere.  The fast integer method
 			is much less accurate than the other two.
+
+	-nosmooth	Don't use high-quality downsampling.
 
 	-restart N	Emit a JPEG restart marker every N MCU rows, or every
 			N MCU blocks if "B" is attached to the number.
@@ -184,6 +196,11 @@ factor will visibly blur the image, however.
 
 Switches for wizards:
 
+	-arithmetic	Use arithmetic coding.  CAUTION: arithmetic coded JPEG
+			is not yet widely implemented, so many decoders will
+			be unable to view an arithmetic coded JPEG file at
+			all.
+
 	-baseline	Force baseline-compatible quantization tables to be
 			generated.  This clamps quantization values to 8 bits
 			even at low quality settings.  (This switch is poorly
@@ -203,7 +220,7 @@ Switches for wizards:
 
 The "wizard" switches are intended for experimentation with JPEG.  If you
 don't know what you are doing, DON'T USE THEM.  These switches are documented
-further in the file wizard.doc.
+further in the file wizard.txt.
 
 
 DJPEG DETAILS
@@ -228,7 +245,11 @@ The basic command line switches for djpeg are:
 			djpeg runs noticeably faster in this mode.
 
 	-scale M/N	Scale the output image by a factor M/N.  Currently
-			the scale factor must be 1/1, 1/2, 1/4, or 1/8.
+			supported scale factors are M/8 with all M from 1 to
+			16.  If the /N part is omitted, then M specifies the
+			DCT scaled size to be applied on the given input,
+			which is currently equivalent to M/8 scaling, since
+			the source DCT size is currently always 8.
 			Scaling is handy if the image is larger than your
 			screen; also, djpeg runs much faster when scaling
 			down the output.
@@ -292,7 +313,7 @@ Switches for advanced users:
 			or PPM file.  This option overrides -colors and
 			-onepass.
 
-	-nosmooth	Use a faster, lower-quality upsampling routine.
+	-nosmooth	Don't use high-quality upsampling.
 
 	-onepass	Use one-pass instead of two-pass color quantization.
 			The one-pass method is faster and needs less memory,
@@ -333,8 +354,7 @@ is often a lot more than it is on larger files.  (At present, -optimize
 mode is always selected when generating progressive JPEG files.)
 
 GIF input files are no longer supported, to avoid the Unisys LZW patent.
-Use a Unisys-licensed program if you need to read a GIF file.  (Conversion
-of GIF files to JPEG is usually a bad idea anyway.)
+(Conversion of GIF files to JPEG is usually a bad idea anyway.)
 
 
 HINTS FOR DJPEG
@@ -426,6 +446,7 @@ jpegtran accepts a subset of the switches recognized by cjpeg:
 	-progressive	Create progressive JPEG file.
 	-restart N	Emit a JPEG restart marker every N MCU rows, or every
 			N MCU blocks if "B" is attached to the number.
+	-arithmetic	Use arithmetic coding.
 	-scans file	Use the scan script given in the specified text file.
 See the previous discussion of cjpeg for more details about these switches.
 If you specify none of these switches, you get a plain baseline-JPEG output
@@ -466,6 +487,26 @@ equivalences between the transformations no longer hold.  For example,
 "-rot 270 -trim" trims only the bottom edge, but "-rot 90 -trim" followed by
 "-rot 180 -trim" trims both edges.
 
+If you are only interested in perfect transformation, add the -perfect switch:
+	-perfect	Fails with an error if the transformation is not
+			perfect.
+For example you may want to do
+  jpegtran -rot 90 -perfect foo.jpg || djpeg foo.jpg | pnmflip -r90 | cjpeg
+to do a perfect rotation if available or an approximated one if not.
+
+We also offer a lossless-crop option, which discards data outside a given
+image region but losslessly preserves what is inside.  Like the rotate and
+flip transforms, lossless crop is restricted by the current JPEG format: the
+upper left corner of the selected region must fall on an iMCU boundary.  If
+this does not hold for the given crop parameters, we silently move the upper
+left corner up and/or left to make it so, simultaneously increasing the region
+dimensions to keep the lower right crop corner unchanged.  (Thus, the output
+image covers at least the requested region, but may cover more.)
+
+The image can be losslessly cropped by giving the switch:
+	-crop WxH+X+Y	Crop to a rectangular subarea of width W, height H
+			starting at point X,Y.
+
 Another not-strictly-lossless transformation switch is:
 	-grayscale	Force grayscale output.
 This option discards the chrominance channels if the input image is YCbCr
@@ -484,11 +525,11 @@ markers, such as comment blocks:
 			present in the source file.
 	-copy comments	Copy only comment markers.  This setting copies
 			comments from the source file, but discards
-			any other inessential data. 
+			any other inessential (for image display) data.
 	-copy all	Copy all extra markers.  This setting preserves
 			miscellaneous markers found in the source file, such
-			as JFIF thumbnails and Photoshop settings.  In some
-			files these extra markers can be sizable.
+			as JFIF thumbnails, Exif data, and Photoshop settings.
+			In some files these extra markers can be sizable.
 The default behavior is -copy comments.  (Note: in IJG releases v6 and v6a,
 jpegtran always did the equivalent of -copy none.)
 
@@ -515,7 +556,9 @@ blocks to a JPEG file.
 
 rdjpgcom searches a JPEG file and prints the contents of any COM blocks on
 standard output.  The command line syntax is
-	rdjpgcom [-verbose] [inputfilename]
+	rdjpgcom [-raw] [-verbose] [inputfilename]
+The switch "-raw" (or just "-r") causes rdjpgcom to also output non-printable
+characters in comments, which are normally escaped for security reasons.
 The switch "-verbose" (or just "-v") causes rdjpgcom to also display the JPEG
 image dimensions.  If you omit the input file name from the command line,
 the JPEG file is read from standard input.  (This may not work on some

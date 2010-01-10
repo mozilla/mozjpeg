@@ -2,7 +2,7 @@
  * jdmaster.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * Modified 2002-2008 by Guido Vollbeding.
+ * Modified 2002-2009 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -86,7 +86,9 @@ use_merged_upsample (j_decompress_ptr cinfo)
 
 GLOBAL(void)
 jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
-/* Do computations that are needed before master selection phase */
+/* Do computations that are needed before master selection phase.
+ * This function is used for full decompression.
+ */
 {
 #ifdef IDCT_SCALING_SUPPORTED
   int ci;
@@ -97,134 +99,11 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
   if (cinfo->global_state != DSTATE_READY)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
 
+  /* Compute core output image dimensions and DCT scaling choices. */
+  jpeg_core_output_dimensions(cinfo);
+
 #ifdef IDCT_SCALING_SUPPORTED
 
-  /* Compute actual output image dimensions and DCT scaling choices. */
-  if (cinfo->scale_num * 8 <= cinfo->scale_denom) {
-    /* Provide 1/8 scaling */
-    cinfo->output_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width, 8L);
-    cinfo->output_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height, 8L);
-    cinfo->min_DCT_h_scaled_size = 1;
-    cinfo->min_DCT_v_scaled_size = 1;
-  } else if (cinfo->scale_num * 4 <= cinfo->scale_denom) {
-    /* Provide 1/4 scaling */
-    cinfo->output_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width, 4L);
-    cinfo->output_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height, 4L);
-    cinfo->min_DCT_h_scaled_size = 2;
-    cinfo->min_DCT_v_scaled_size = 2;
-  } else if (cinfo->scale_num * 8 <= cinfo->scale_denom * 3) {
-    /* Provide 3/8 scaling */
-    cinfo->output_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 3L, 8L);
-    cinfo->output_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 3L, 8L);
-    cinfo->min_DCT_h_scaled_size = 3;
-    cinfo->min_DCT_v_scaled_size = 3;
-  } else if (cinfo->scale_num * 2 <= cinfo->scale_denom) {
-    /* Provide 1/2 scaling */
-    cinfo->output_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width, 2L);
-    cinfo->output_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height, 2L);
-    cinfo->min_DCT_h_scaled_size = 4;
-    cinfo->min_DCT_v_scaled_size = 4;
-  } else if (cinfo->scale_num * 8 <= cinfo->scale_denom * 5) {
-    /* Provide 5/8 scaling */
-    cinfo->output_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 5L, 8L);
-    cinfo->output_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 5L, 8L);
-    cinfo->min_DCT_h_scaled_size = 5;
-    cinfo->min_DCT_v_scaled_size = 5;
-  } else if (cinfo->scale_num * 4 <= cinfo->scale_denom * 3) {
-    /* Provide 3/4 scaling */
-    cinfo->output_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 3L, 4L);
-    cinfo->output_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 3L, 4L);
-    cinfo->min_DCT_h_scaled_size = 6;
-    cinfo->min_DCT_v_scaled_size = 6;
-  } else if (cinfo->scale_num * 8 <= cinfo->scale_denom * 7) {
-    /* Provide 7/8 scaling */
-    cinfo->output_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 7L, 8L);
-    cinfo->output_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 7L, 8L);
-    cinfo->min_DCT_h_scaled_size = 7;
-    cinfo->min_DCT_v_scaled_size = 7;
-  } else if (cinfo->scale_num <= cinfo->scale_denom) {
-    /* Provide 1/1 scaling */
-    cinfo->output_width = cinfo->image_width;
-    cinfo->output_height = cinfo->image_height;
-    cinfo->min_DCT_h_scaled_size = DCTSIZE;
-    cinfo->min_DCT_v_scaled_size = DCTSIZE;
-  } else if (cinfo->scale_num * 8 <= cinfo->scale_denom * 9) {
-    /* Provide 9/8 scaling */
-    cinfo->output_width = cinfo->image_width + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width, 8L);
-    cinfo->output_height = cinfo->image_height + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height, 8L);
-    cinfo->min_DCT_h_scaled_size = 9;
-    cinfo->min_DCT_v_scaled_size = 9;
-  } else if (cinfo->scale_num * 4 <= cinfo->scale_denom * 5) {
-    /* Provide 5/4 scaling */
-    cinfo->output_width = cinfo->image_width + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width, 4L);
-    cinfo->output_height = cinfo->image_height + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height, 4L);
-    cinfo->min_DCT_h_scaled_size = 10;
-    cinfo->min_DCT_v_scaled_size = 10;
-  } else if (cinfo->scale_num * 8 <= cinfo->scale_denom * 11) {
-    /* Provide 11/8 scaling */
-    cinfo->output_width = cinfo->image_width + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 3L, 8L);
-    cinfo->output_height = cinfo->image_height + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 3L, 8L);
-    cinfo->min_DCT_h_scaled_size = 11;
-    cinfo->min_DCT_v_scaled_size = 11;
-  } else if (cinfo->scale_num * 2 <= cinfo->scale_denom * 3) {
-    /* Provide 3/2 scaling */
-    cinfo->output_width = cinfo->image_width + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width, 2L);
-    cinfo->output_height = cinfo->image_height + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height, 2L);
-    cinfo->min_DCT_h_scaled_size = 12;
-    cinfo->min_DCT_v_scaled_size = 12;
-  } else if (cinfo->scale_num * 8 <= cinfo->scale_denom * 13) {
-    /* Provide 13/8 scaling */
-    cinfo->output_width = cinfo->image_width + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 5L, 8L);
-    cinfo->output_height = cinfo->image_height + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 5L, 8L);
-    cinfo->min_DCT_h_scaled_size = 13;
-    cinfo->min_DCT_v_scaled_size = 13;
-  } else if (cinfo->scale_num * 4 <= cinfo->scale_denom * 7) {
-    /* Provide 7/4 scaling */
-    cinfo->output_width = cinfo->image_width + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 3L, 4L);
-    cinfo->output_height = cinfo->image_height + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 3L, 4L);
-    cinfo->min_DCT_h_scaled_size = 14;
-    cinfo->min_DCT_v_scaled_size = 14;
-  } else if (cinfo->scale_num * 8 <= cinfo->scale_denom * 15) {
-    /* Provide 15/8 scaling */
-    cinfo->output_width = cinfo->image_width + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * 7L, 8L);
-    cinfo->output_height = cinfo->image_height + (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * 7L, 8L);
-    cinfo->min_DCT_h_scaled_size = 15;
-    cinfo->min_DCT_v_scaled_size = 15;
-  } else {
-    /* Provide 2/1 scaling */
-    cinfo->output_width = cinfo->image_width << 1;
-    cinfo->output_height = cinfo->image_height << 1;
-    cinfo->min_DCT_h_scaled_size = 16;
-    cinfo->min_DCT_v_scaled_size = 16;
-  }
   /* In selecting the actual DCT scaling for each component, we try to
    * scale up the chroma components via IDCT scaling rather than upsampling.
    * This saves time if the upsampler gets to use 1:1 scaling.
@@ -263,21 +142,12 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
     compptr->downsampled_width = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width *
 		    (long) (compptr->h_samp_factor * compptr->DCT_h_scaled_size),
-		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
+		    (long) (cinfo->max_h_samp_factor * cinfo->block_size));
     compptr->downsampled_height = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_height *
 		    (long) (compptr->v_samp_factor * compptr->DCT_v_scaled_size),
-		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
+		    (long) (cinfo->max_v_samp_factor * cinfo->block_size));
   }
-
-#else /* !IDCT_SCALING_SUPPORTED */
-
-  /* Hardwire it to "no scaling" */
-  cinfo->output_width = cinfo->image_width;
-  cinfo->output_height = cinfo->image_height;
-  /* jdinput.c has already initialized DCT_scaled_size to DCTSIZE,
-   * and has computed unscaled downsampled_width and downsampled_height.
-   */
 
 #endif /* IDCT_SCALING_SUPPORTED */
 
@@ -485,9 +355,9 @@ master_selection (j_decompress_ptr cinfo)
   /* Inverse DCT */
   jinit_inverse_dct(cinfo);
   /* Entropy decoding: either Huffman or arithmetic coding. */
-  if (cinfo->arith_code) {
+  if (cinfo->arith_code)
     jinit_arith_decoder(cinfo);
-  } else {
+  else {
     jinit_huff_decoder(cinfo);
   }
 

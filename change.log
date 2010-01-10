@@ -1,6 +1,26 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 8  10-Jan-2010
+----------------------
+
+jpegtran now supports the same -scale option as djpeg for "lossless" resize.
+An implementation of the JPEG SmartScale extension is required for this
+feature.  A (draft) specification of the JPEG SmartScale extension is
+available as a contributed document at ITU and ISO.  Revision 2 or later
+of the document is required (latest document version is Revision 3).
+The SmartScale extension will enable more features beside lossless resize
+in future implementations, as described in the document (new compression
+options).
+
+Add sanity check in BMP reader module to avoid cjpeg crash for empty input
+image (thank to Isaev Ildar of ISP RAS, Moscow, RU for reporting this error).
+
+Add data source and destination managers for read from and write to
+memory buffers.  New API functions jpeg_mem_src and jpeg_mem_dest.
+Thank to Roberto Boni from Italy for the suggestion.
+
+
 Version 7  27-Jun-2009
 ----------------------
 

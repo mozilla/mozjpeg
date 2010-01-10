@@ -1,14 +1,14 @@
 /*
  * jpegtran.c
  *
- * Copyright (C) 1995-2001, Thomas G. Lane.
+ * Copyright (C) 1995-2009, Thomas G. Lane, Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for JPEG transcoding.
- * It is very similar to cjpeg.c, but provides lossless transcoding between
- * different JPEG file formats.  It also provides some lossless and sort-of-
- * lossless transformations of JPEG data.
+ * It is very similar to cjpeg.c, and partly to djpeg.c, but provides
+ * lossless transcoding between different JPEG file formats.  It also
+ * provides some lossless and sort-of-lossless transformations of JPEG data.
  */
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
@@ -37,6 +37,7 @@
 
 static const char * progname;	/* program name for error messages */
 static char * outfilename;	/* for -outfile switch */
+static char * scaleoption;	/* -scale switch */
 static JCOPY_OPTION copyoption;	/* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
 
@@ -69,6 +70,7 @@ usage (void)
   fprintf(stderr, "  -flip [horizontal|vertical]  Mirror image (left-right or top-bottom)\n");
   fprintf(stderr, "  -perfect       Fail if there is non-transformable edge blocks\n");
   fprintf(stderr, "  -rotate [90|180|270]         Rotate image (degrees clockwise)\n");
+  fprintf(stderr, "  -scale M/N     Scale output image by fraction M/N, eg, 1/8\n");
   fprintf(stderr, "  -transpose     Transpose image\n");
   fprintf(stderr, "  -transverse    Transverse transpose image\n");
   fprintf(stderr, "  -trim          Drop non-transformable edge blocks\n");
@@ -132,10 +134,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
   simple_progressive = FALSE;
   outfilename = NULL;
+  scaleoption = NULL;
   copyoption = JCOPYOPT_DEFAULT;
   transformoption.transform = JXFORM_NONE;
-  transformoption.trim = FALSE;
   transformoption.perfect = FALSE;
+  transformoption.trim = FALSE;
   transformoption.force_grayscale = FALSE;
   transformoption.crop = FALSE;
   cinfo->err->trace_level = 0;
@@ -299,6 +302,13 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       else
 	usage();
 
+    } else if (keymatch(arg, "scale", 4)) {
+      /* Scale the output image by a fraction M/N. */
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      scaleoption = argv[argn];
+      /* We must postpone processing until decompression startup. */
+
     } else if (keymatch(arg, "scans", 1)) {
       /* Set scan script. */
 #ifdef C_MULTISCAN_FILES_SUPPORTED
@@ -453,20 +463,22 @@ main (int argc, char **argv)
   /* Read file header */
   (void) jpeg_read_header(&srcinfo, TRUE);
 
+  /* Adjust default decompression parameters */
+  if (scaleoption != NULL)
+    if (sscanf(scaleoption, "%d/%d",
+	&srcinfo.scale_num, &srcinfo.scale_denom) < 1)
+      usage();
+
   /* Any space needed by a transform option must be requested before
    * jpeg_read_coefficients so that memory allocation will be done right.
    */
 #if TRANSFORMS_SUPPORTED
-  /* Fails right away if -perfect is given and transformation is not perfect.
+  /* Fail right away if -perfect is given and transformation is not perfect.
    */
-  if (transformoption.perfect &&
-      !jtransform_perfect_transform(srcinfo.image_width, srcinfo.image_height,
-      srcinfo.max_h_samp_factor * DCTSIZE, srcinfo.max_v_samp_factor * DCTSIZE,
-      transformoption.transform)) {
+  if (!jtransform_request_workspace(&srcinfo, &transformoption)) {
     fprintf(stderr, "%s: transformation is not perfect\n", progname);
     exit(EXIT_FAILURE);
   }
-  jtransform_request_workspace(&srcinfo, &transformoption);
 #endif
 
   /* Read source file as DCT coefficients */

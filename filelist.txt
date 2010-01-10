@@ -73,7 +73,7 @@ jfdctflt.c	Forward DCT using floating-point arithmetic.
 jchuff.c	Huffman entropy coding.
 jcarith.c	Arithmetic entropy coding.
 jcmarker.c	JPEG marker writing.
-jdatadst.c	Data destination manager for stdio output.
+jdatadst.c	Data destination managers for memory and stdio output.
 
 Decompression side of the library:
 
@@ -95,7 +95,7 @@ jdmerge.c	Merged upsampling/color conversion (faster, lower quality).
 jquant1.c	One-pass color quantization using a fixed-spacing colormap.
 jquant2.c	Two-pass color quantization using a custom-generated colormap.
 		Also handles one-pass quantization to an externally given map.
-jdatasrc.c	Data source manager for stdio input.
+jdatasrc.c	Data source managers for memory and stdio input.
 
 Support files for both compression and decompression:
 

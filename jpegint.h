@@ -213,10 +213,6 @@ struct jpeg_entropy_decoder {
   JMETHOD(void, start_pass, (j_decompress_ptr cinfo));
   JMETHOD(boolean, decode_mcu, (j_decompress_ptr cinfo,
 				JBLOCKROW *MCU_data));
-
-  /* This is here to share code between baseline and progressive decoders; */
-  /* other modules probably should not use it */
-  boolean insufficient_data;	/* set TRUE after emitting warning */
 };
 
 /* Inverse DCT (also performs dequantization) */
@@ -330,6 +326,13 @@ struct jpeg_color_quantizer {
 #define jzero_far		jZeroFar
 #define jpeg_zigzag_order	jZIGTable
 #define jpeg_natural_order	jZAGTable
+#define jpeg_natural_order7	jZAGTable7
+#define jpeg_natural_order6	jZAGTable6
+#define jpeg_natural_order5	jZAGTable5
+#define jpeg_natural_order4	jZAGTable4
+#define jpeg_natural_order3	jZAGTable3
+#define jpeg_natural_order2	jZAGTable2
+#define jpeg_aritab		jAriTab
 #endif /* NEED_SHORT_EXTERNAL_NAMES */
 
 
@@ -384,6 +387,15 @@ EXTERN(void) jzero_far JPP((void FAR * target, size_t bytestozero));
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */
 #endif
 extern const int jpeg_natural_order[]; /* zigzag coef order to natural order */
+extern const int jpeg_natural_order7[]; /* zz to natural order for 7x7 block */
+extern const int jpeg_natural_order6[]; /* zz to natural order for 6x6 block */
+extern const int jpeg_natural_order5[]; /* zz to natural order for 5x5 block */
+extern const int jpeg_natural_order4[]; /* zz to natural order for 4x4 block */
+extern const int jpeg_natural_order3[]; /* zz to natural order for 3x3 block */
+extern const int jpeg_natural_order2[]; /* zz to natural order for 2x2 block */
+
+/* Arithmetic coding probability estimation tables in jaricom.c */
+extern const INT32 jpeg_aritab[];
 
 /* Suppress undefined-structure complaints if necessary. */
 

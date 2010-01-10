@@ -1,4 +1,4 @@
-.TH JPEGTRAN 1 "28 March 2009"
+.TH JPEGTRAN 1 "28 December 2009"
 .SH NAME
 jpegtran \- lossless transformation of JPEG files
 .SH SYNOPSIS
@@ -165,7 +165,7 @@ The image can be losslessly cropped by giving the switch:
 .B \-crop WxH+X+Y
 Crop to a rectangular subarea of width W, height H starting at point X,Y.
 .PP
-Another not-strictly-lossless transformation switch is:
+Other not-strictly-lossless transformation switches are:
 .TP
 .B \-grayscale
 Force grayscale output.
@@ -178,6 +178,19 @@ is particularly handy for fixing a monochrome picture that was mistakenly
 encoded as a color JPEG.  (In such a case, the space savings from getting rid
 of the near-empty chroma channels won't be large; but the decoding time for
 a grayscale JPEG is substantially less than that for a color JPEG.)
+.TP
+.BI \-scale " M/N"
+Scale the output image by a factor M/N.
+.IP
+Currently supported scale factors are M/N with all M from 1 to 16, where N is
+the source DCT size, which is 8 for baseline JPEG.  If the /N part is omitted,
+then M specifies the DCT scaled size to be applied on the given input.  For
+baseline JPEG this is equivalent to M/8 scaling, since the source DCT size
+for baseline JPEG is 8.
+.B Caution:
+An implementation of the JPEG SmartScale extension is required for this
+feature.  SmartScale enabled JPEG is not yet widely implemented, so many
+decoders will be unable to view a SmartScale extended JPEG file at all.
 .PP
 .B jpegtran
 also recognizes these switches that control what to do with "extra" markers,

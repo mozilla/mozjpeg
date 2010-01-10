@@ -133,7 +133,8 @@ do_flip_h_no_crop (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
    * mirroring by changing the signs of odd-numbered columns.
    * Partial iMCUs at the right edge are left untouched.
    */
-  MCU_cols = srcinfo->image_width / (dstinfo->max_h_samp_factor * DCTSIZE);
+  MCU_cols = srcinfo->output_width /
+    (dstinfo->max_h_samp_factor * dstinfo->min_DCT_h_scaled_size);
 
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
@@ -198,7 +199,8 @@ do_flip_h (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
    * different rows of a single virtual array simultaneously.  Otherwise,
    * this is essentially the same as the routine above.
    */
-  MCU_cols = srcinfo->image_width / (dstinfo->max_h_samp_factor * DCTSIZE);
+  MCU_cols = srcinfo->output_width /
+    (dstinfo->max_h_samp_factor * dstinfo->min_DCT_h_scaled_size);
 
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
@@ -262,7 +264,8 @@ do_flip_v (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
    * of odd-numbered rows.
    * Partial iMCUs at the bottom edge are copied verbatim.
    */
-  MCU_rows = srcinfo->image_height / (dstinfo->max_v_samp_factor * DCTSIZE);
+  MCU_rows = srcinfo->output_height /
+    (dstinfo->max_v_samp_factor * dstinfo->min_DCT_v_scaled_size);
 
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
@@ -389,7 +392,8 @@ do_rot_90 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
    * at the (output) right edge properly.  They just get transposed and
    * not mirrored.
    */
-  MCU_cols = srcinfo->image_height / (dstinfo->max_h_samp_factor * DCTSIZE);
+  MCU_cols = srcinfo->output_height /
+    (dstinfo->max_h_samp_factor * dstinfo->min_DCT_h_scaled_size);
 
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
@@ -469,7 +473,8 @@ do_rot_270 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
    * at the (output) bottom edge properly.  They just get transposed and
    * not mirrored.
    */
-  MCU_rows = srcinfo->image_width / (dstinfo->max_v_samp_factor * DCTSIZE);
+  MCU_rows = srcinfo->output_width /
+    (dstinfo->max_v_samp_factor * dstinfo->min_DCT_v_scaled_size);
 
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
@@ -536,8 +541,10 @@ do_rot_180 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
   JCOEFPTR src_ptr, dst_ptr;
   jpeg_component_info *compptr;
 
-  MCU_cols = srcinfo->image_width / (dstinfo->max_h_samp_factor * DCTSIZE);
-  MCU_rows = srcinfo->image_height / (dstinfo->max_v_samp_factor * DCTSIZE);
+  MCU_cols = srcinfo->output_width /
+    (dstinfo->max_h_samp_factor * dstinfo->min_DCT_h_scaled_size);
+  MCU_rows = srcinfo->output_height /
+    (dstinfo->max_v_samp_factor * dstinfo->min_DCT_v_scaled_size);
 
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
@@ -645,8 +652,10 @@ do_transverse (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
   JCOEFPTR src_ptr, dst_ptr;
   jpeg_component_info *compptr;
 
-  MCU_cols = srcinfo->image_height / (dstinfo->max_h_samp_factor * DCTSIZE);
-  MCU_rows = srcinfo->image_width / (dstinfo->max_v_samp_factor * DCTSIZE);
+  MCU_cols = srcinfo->output_height /
+    (dstinfo->max_h_samp_factor * dstinfo->min_DCT_h_scaled_size);
+  MCU_rows = srcinfo->output_width /
+    (dstinfo->max_v_samp_factor * dstinfo->min_DCT_v_scaled_size);
 
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
@@ -822,10 +831,10 @@ trim_right_edge (jpeg_transform_info *info, JDIMENSION full_width)
 {
   JDIMENSION MCU_cols;
 
-  MCU_cols = info->output_width / (info->max_h_samp_factor * DCTSIZE);
+  MCU_cols = info->output_width / info->iMCU_sample_width;
   if (MCU_cols > 0 && info->x_crop_offset + MCU_cols ==
-      full_width / (info->max_h_samp_factor * DCTSIZE))
-    info->output_width = MCU_cols * (info->max_h_samp_factor * DCTSIZE);
+      full_width / info->iMCU_sample_width)
+    info->output_width = MCU_cols * info->iMCU_sample_width;
 }
 
 LOCAL(void)
@@ -833,10 +842,10 @@ trim_bottom_edge (jpeg_transform_info *info, JDIMENSION full_height)
 {
   JDIMENSION MCU_rows;
 
-  MCU_rows = info->output_height / (info->max_v_samp_factor * DCTSIZE);
+  MCU_rows = info->output_height / info->iMCU_sample_height;
   if (MCU_rows > 0 && info->y_crop_offset + MCU_rows ==
-      full_height / (info->max_v_samp_factor * DCTSIZE))
-    info->output_height = MCU_rows * (info->max_v_samp_factor * DCTSIZE);
+      full_height / info->iMCU_sample_height)
+    info->output_height = MCU_rows * info->iMCU_sample_height;
 }
 
 
@@ -852,59 +861,89 @@ trim_bottom_edge (jpeg_transform_info *info, JDIMENSION full_height)
  * Hence, this routine must be called after jpeg_read_header (which reads
  * the image dimensions) and before jpeg_read_coefficients (which realizes
  * the source's virtual arrays).
+ *
+ * This function returns FALSE right away if -perfect is given
+ * and transformation is not perfect.  Otherwise returns TRUE.
  */
 
-GLOBAL(void)
+GLOBAL(boolean)
 jtransform_request_workspace (j_decompress_ptr srcinfo,
 			      jpeg_transform_info *info)
 {
-  jvirt_barray_ptr *coef_arrays = NULL;
+  jvirt_barray_ptr *coef_arrays;
   boolean need_workspace, transpose_it;
   jpeg_component_info *compptr;
-  JDIMENSION xoffset, yoffset, width_in_iMCUs, height_in_iMCUs;
+  JDIMENSION xoffset, yoffset;
+  JDIMENSION width_in_iMCUs, height_in_iMCUs;
   JDIMENSION width_in_blocks, height_in_blocks;
   int ci, h_samp_factor, v_samp_factor;
 
   /* Determine number of components in output image */
   if (info->force_grayscale &&
       srcinfo->jpeg_color_space == JCS_YCbCr &&
-      srcinfo->num_components == 3) {
+      srcinfo->num_components == 3)
     /* We'll only process the first component */
     info->num_components = 1;
-  } else {
+  else
     /* Process all the components */
     info->num_components = srcinfo->num_components;
+
+  /* Compute output image dimensions and related values. */
+  jpeg_core_output_dimensions(srcinfo);
+
+  /* Return right away if -perfect is given and transformation is not perfect.
+   */
+  if (info->perfect) {
+    if (info->num_components == 1) {
+      if (!jtransform_perfect_transform(srcinfo->output_width,
+	  srcinfo->output_height,
+	  srcinfo->min_DCT_h_scaled_size,
+	  srcinfo->min_DCT_v_scaled_size,
+	  info->transform))
+	return FALSE;
+    } else {
+      if (!jtransform_perfect_transform(srcinfo->output_width,
+	  srcinfo->output_height,
+	  srcinfo->max_h_samp_factor * srcinfo->min_DCT_h_scaled_size,
+	  srcinfo->max_v_samp_factor * srcinfo->min_DCT_v_scaled_size,
+	  info->transform))
+	return FALSE;
+    }
   }
+
   /* If there is only one output component, force the iMCU size to be 1;
    * else use the source iMCU size.  (This allows us to do the right thing
    * when reducing color to grayscale, and also provides a handy way of
    * cleaning up "funny" grayscale images whose sampling factors are not 1x1.)
    */
-
   switch (info->transform) {
   case JXFORM_TRANSPOSE:
   case JXFORM_TRANSVERSE:
   case JXFORM_ROT_90:
   case JXFORM_ROT_270:
-    info->output_width = srcinfo->image_height;
-    info->output_height = srcinfo->image_width;
+    info->output_width = srcinfo->output_height;
+    info->output_height = srcinfo->output_width;
     if (info->num_components == 1) {
-      info->max_h_samp_factor = 1;
-      info->max_v_samp_factor = 1;
+      info->iMCU_sample_width = srcinfo->min_DCT_v_scaled_size;
+      info->iMCU_sample_height = srcinfo->min_DCT_h_scaled_size;
     } else {
-      info->max_h_samp_factor = srcinfo->max_v_samp_factor;
-      info->max_v_samp_factor = srcinfo->max_h_samp_factor;
+      info->iMCU_sample_width =
+	srcinfo->max_v_samp_factor * srcinfo->min_DCT_v_scaled_size;
+      info->iMCU_sample_height =
+	srcinfo->max_h_samp_factor * srcinfo->min_DCT_h_scaled_size;
     }
     break;
   default:
-    info->output_width = srcinfo->image_width;
-    info->output_height = srcinfo->image_height;
+    info->output_width = srcinfo->output_width;
+    info->output_height = srcinfo->output_height;
     if (info->num_components == 1) {
-      info->max_h_samp_factor = 1;
-      info->max_v_samp_factor = 1;
+      info->iMCU_sample_width = srcinfo->min_DCT_h_scaled_size;
+      info->iMCU_sample_height = srcinfo->min_DCT_v_scaled_size;
     } else {
-      info->max_h_samp_factor = srcinfo->max_h_samp_factor;
-      info->max_v_samp_factor = srcinfo->max_v_samp_factor;
+      info->iMCU_sample_width =
+	srcinfo->max_h_samp_factor * srcinfo->min_DCT_h_scaled_size;
+      info->iMCU_sample_height =
+	srcinfo->max_v_samp_factor * srcinfo->min_DCT_v_scaled_size;
     }
     break;
   }
@@ -942,12 +981,12 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
       yoffset = info->crop_yoffset;
     /* Now adjust so that upper left corner falls at an iMCU boundary */
     info->output_width =
-      info->crop_width + (xoffset % (info->max_h_samp_factor * DCTSIZE));
+      info->crop_width + (xoffset % info->iMCU_sample_width);
     info->output_height =
-      info->crop_height + (yoffset % (info->max_v_samp_factor * DCTSIZE));
+      info->crop_height + (yoffset % info->iMCU_sample_height);
     /* Save x/y offsets measured in iMCUs */
-    info->x_crop_offset = xoffset / (info->max_h_samp_factor * DCTSIZE);
-    info->y_crop_offset = yoffset / (info->max_v_samp_factor * DCTSIZE);
+    info->x_crop_offset = xoffset / info->iMCU_sample_width;
+    info->y_crop_offset = yoffset / info->iMCU_sample_height;
   } else {
     info->x_crop_offset = 0;
     info->y_crop_offset = 0;
@@ -966,14 +1005,14 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
     break;
   case JXFORM_FLIP_H:
     if (info->trim)
-      trim_right_edge(info, srcinfo->image_width);
+      trim_right_edge(info, srcinfo->output_width);
     if (info->y_crop_offset != 0)
       need_workspace = TRUE;
     /* do_flip_h_no_crop doesn't need a workspace array */
     break;
   case JXFORM_FLIP_V:
     if (info->trim)
-      trim_bottom_edge(info, srcinfo->image_height);
+      trim_bottom_edge(info, srcinfo->output_height);
     /* Need workspace arrays having same dimensions as source image. */
     need_workspace = TRUE;
     break;
@@ -985,8 +1024,8 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
     break;
   case JXFORM_TRANSVERSE:
     if (info->trim) {
-      trim_right_edge(info, srcinfo->image_height);
-      trim_bottom_edge(info, srcinfo->image_width);
+      trim_right_edge(info, srcinfo->output_height);
+      trim_bottom_edge(info, srcinfo->output_width);
     }
     /* Need workspace arrays having transposed dimensions. */
     need_workspace = TRUE;
@@ -994,22 +1033,22 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
     break;
   case JXFORM_ROT_90:
     if (info->trim)
-      trim_right_edge(info, srcinfo->image_height);
+      trim_right_edge(info, srcinfo->output_height);
     /* Need workspace arrays having transposed dimensions. */
     need_workspace = TRUE;
     transpose_it = TRUE;
     break;
   case JXFORM_ROT_180:
     if (info->trim) {
-      trim_right_edge(info, srcinfo->image_width);
-      trim_bottom_edge(info, srcinfo->image_height);
+      trim_right_edge(info, srcinfo->output_width);
+      trim_bottom_edge(info, srcinfo->output_height);
     }
     /* Need workspace arrays having same dimensions as source image. */
     need_workspace = TRUE;
     break;
   case JXFORM_ROT_270:
     if (info->trim)
-      trim_bottom_edge(info, srcinfo->image_width);
+      trim_bottom_edge(info, srcinfo->output_width);
     /* Need workspace arrays having transposed dimensions. */
     need_workspace = TRUE;
     transpose_it = TRUE;
@@ -1026,10 +1065,10 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
 		SIZEOF(jvirt_barray_ptr) * info->num_components);
     width_in_iMCUs = (JDIMENSION)
       jdiv_round_up((long) info->output_width,
-		    (long) (info->max_h_samp_factor * DCTSIZE));
+		    (long) info->iMCU_sample_width);
     height_in_iMCUs = (JDIMENSION)
       jdiv_round_up((long) info->output_height,
-		    (long) (info->max_v_samp_factor * DCTSIZE));
+		    (long) info->iMCU_sample_height);
     for (ci = 0; ci < info->num_components; ci++) {
       compptr = srcinfo->comp_info + ci;
       if (info->num_components == 1) {
@@ -1048,9 +1087,11 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
 	((j_common_ptr) srcinfo, JPOOL_IMAGE, FALSE,
 	 width_in_blocks, height_in_blocks, (JDIMENSION) v_samp_factor);
     }
-  }
+    info->workspace_coef_arrays = coef_arrays;
+  } else
+    info->workspace_coef_arrays = NULL;
 
-  info->workspace_coef_arrays = coef_arrays;
+  return TRUE;
 }
 
 
@@ -1062,7 +1103,16 @@ transpose_critical_parameters (j_compress_ptr dstinfo)
   int tblno, i, j, ci, itemp;
   jpeg_component_info *compptr;
   JQUANT_TBL *qtblptr;
+  JDIMENSION jtemp;
   UINT16 qtemp;
+
+  /* Transpose image dimensions */
+  jtemp = dstinfo->image_width;
+  dstinfo->image_width = dstinfo->image_height;
+  dstinfo->image_height = jtemp;
+  itemp = dstinfo->min_DCT_h_scaled_size;
+  dstinfo->min_DCT_h_scaled_size = dstinfo->min_DCT_v_scaled_size;
+  dstinfo->min_DCT_v_scaled_size = itemp;
 
   /* Transpose sampling factors */
   for (ci = 0; ci < dstinfo->num_components; ci++) {
@@ -1296,10 +1346,10 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
   }
 
   /* Correct the destination's image dimensions as necessary
-   * for crop and rotate/flip operations.
+   * for rotate/flip, resize, and crop operations.
    */
-  dstinfo->image_width = info->output_width;
-  dstinfo->image_height = info->output_height;
+  dstinfo->jpeg_width = info->output_width;
+  dstinfo->jpeg_height = info->output_height;
 
   /* Transpose destination image parameters */
   switch (info->transform) {
@@ -1326,12 +1376,12 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
     /* Suppress output of JFIF marker */
     dstinfo->write_JFIF_header = FALSE;
     /* Adjust Exif image parameters */
-    if (dstinfo->image_width != srcinfo->image_width ||
-	dstinfo->image_height != srcinfo->image_height)
+    if (dstinfo->jpeg_width != srcinfo->image_width ||
+	dstinfo->jpeg_height != srcinfo->image_height)
       /* Align data segment to start of TIFF structure for parsing */
       adjust_exif_parameters(srcinfo->marker_list->data + 6,
 	srcinfo->marker_list->data_length - 6,
-	dstinfo->image_width, dstinfo->image_height);
+	dstinfo->jpeg_width, dstinfo->jpeg_height);
   }
 
   /* Return the appropriate output data set */
@@ -1415,8 +1465,8 @@ jtransform_execute_transform (j_decompress_ptr srcinfo,
  * (after reading source header):
  *   image_width = cinfo.image_width
  *   image_height = cinfo.image_height
- *   MCU_width = cinfo.max_h_samp_factor * DCTSIZE
- *   MCU_height = cinfo.max_v_samp_factor * DCTSIZE
+ *   MCU_width = cinfo.max_h_samp_factor * cinfo.block_size
+ *   MCU_height = cinfo.max_v_samp_factor * cinfo.block_size
  * Result:
  *   TRUE = perfect transformation possible
  *   FALSE = perfect transformation not possible

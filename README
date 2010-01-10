@@ -1,10 +1,10 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 7 of 27-Jun-2009
+README for release 8 of 10-Jan-2010
 ===================================
 
-This distribution contains the seventh public release of the Independent JPEG
+This distribution contains the eighth public release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
 to use it for any purpose, subject to the conditions under LEGAL ISSUES, below.
 
@@ -114,7 +114,7 @@ with respect to this software, its quality, accuracy, merchantability, or
 fitness for a particular purpose.  This software is provided "AS IS", and you,
 its user, assume the entire risk as to its quality and accuracy.
 
-This software is copyright (C) 1991-2009, Thomas G. Lane, Guido Vollbeding.
+This software is copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
 All Rights Reserved except as specified below.
 
 Permission is hereby granted to use, copy, modify, and distribute this
@@ -221,16 +221,18 @@ Part 1: Requirements and guidelines" and has document numbers ISO/IEC IS
 10918-1, ITU-T T.81.  Part 2 is titled "Digital Compression and Coding of
 Continuous-tone Still Images, Part 2: Compliance testing" and has document
 numbers ISO/IEC IS 10918-2, ITU-T T.83.
+IJG JPEG 8 introduces an implementation of the JPEG SmartScale extension
+which is specified in a contributed document at ITU and ISO with title "ITU-T
+JPEG-Plus Proposal for Extending ITU-T T.81 for Advanced Image Coding", April
+2006, Geneva, Switzerland.  The latest version of the document is Revision 3.
 
 The JPEG standard does not specify all details of an interchangeable file
 format.  For the omitted details we follow the "JFIF" conventions, revision
-1.02.  A copy of the JFIF spec is available from:
-	Literature Department
-	C-Cube Microsystems, Inc.
-	1778 McCarthy Blvd.
-	Milpitas, CA 95035
-	phone (408) 944-6300,  fax (408) 944-6314
-A PostScript version of this document is available at
+1.02.  JFIF 1.02 has been adopted as an Ecma International Technical Report
+and thus received a formal publication status.  It is available as a free
+download in PDF format from
+http://www.ecma-international.org/publications/techreports/E-TR-098.htm.
+A PostScript version of the JFIF document is available at
 http://www.ijg.org/files/jfif.ps.gz.  There is also a plain text version at
 http://www.ijg.org/files/jfif.txt.gz, but it is missing the figures.
 
@@ -252,8 +254,8 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is www.ijg.org.
 The most recent released version can always be found there in
 directory "files".  This particular version will be archived as
-http://www.ijg.org/files/jpegsrc.v7.tar.gz, and in Windows-compatible
-"zip" archive format as http://www.ijg.org/files/jpegsr7.zip.
+http://www.ijg.org/files/jpegsrc.v8.tar.gz, and in Windows-compatible
+"zip" archive format as http://www.ijg.org/files/jpegsr8.zip.
 
 The JPEG FAQ (Frequently Asked Questions) article is a source of some
 general information about JPEG.
@@ -269,9 +271,8 @@ with body
 ACKNOWLEDGMENTS
 ===============
 
-Thank to Juergen Bruder of the Georg-Cantor-Organization at the
-Martin-Luther-University Halle for providing me with a copy of the common
-DCT algorithm article, only to find out that I had come to the same result
+Thank to Juergen Bruder for providing me with a copy of the common DCT
+algorithm article, only to find out that I had come to the same result
 in a more direct and comprehensible way with a more generative approach.
 
 Thank to Istvan Sebestyen and Joan L. Mitchell for inviting me to the
@@ -283,8 +284,8 @@ Joint Video Team (MPEG & ITU) meeting in Geneva, Switzerland.
 Thank to John Korejwa and Massimo Ballerini for inviting me to
 fruitful consultations in Boston, MA and Milan, Italy.
 
-Thank to Hendrik Elstner, Roland Fassauer, and Simone Zuck for
-corresponding business development.
+Thank to Hendrik Elstner, Roland Fassauer, Simone Zuck, Guenther
+Maier-Gerber, and Walter Stoeber for corresponding business development.
 
 Thank to Nico Zschach and Dirk Stelling of the technical support team
 at the Digital Images company in Halle for providing me with extra
@@ -292,6 +293,8 @@ equipment for configuration tests.
 
 Thank to Richard F. Lyon (then of Foveon Inc.) for fruitful
 communication about JPEG configuration in Sigma Photo Pro software.
+
+Thank to Andrew Finkenstadt for hosting the ijg.org site.
 
 Last but not least special thank to Thomas G. Lane for the original
 design and development of this singular software package.
@@ -301,9 +304,9 @@ FILE FORMAT WARS
 ================
 
 The ISO JPEG standards committee actually promotes different formats like
-JPEG-2000 or JPEG-XR which are incompatible with original DCT-based JPEG
-and which are based on faulty technologies.  IJG therefore does not and
-will not support such momentary mistakes (see REFERENCES).
+"JPEG 2000" or "JPEG XR" which are incompatible with original DCT-based
+JPEG and which are based on faulty technologies.  IJG therefore does not
+and will not support such momentary mistakes (see REFERENCES).
 We have little or no sympathy for the promotion of these formats.  Indeed,
 one of the original reasons for developing this free software was to help
 force convergence on common, interoperable format standards for JPEG files.
@@ -315,8 +318,8 @@ image files indefinitely.)
 TO DO
 =====
 
-v7 is basically just a necessary interim release, paving the way for a
-major breakthrough in image coding technology with the next v8 package
-which is scheduled for release in the year 2010.
+Version 8.0 is the first release of a new generation JPEG standard
+to overcome the limitations of the original JPEG specification.
+More features are being prepared for coming releases...
 
-Please send bug reports, offers of help, etc. to jpeg-info@jpegclub.org.
+Please send bug reports, offers of help, etc. to jpeg-info@uc.ag.

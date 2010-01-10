@@ -1,4 +1,4 @@
-.TH DJPEG 1 "28 March 2009"
+.TH DJPEG 1 "3 October 2009"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -62,9 +62,10 @@ runs noticeably faster in this mode.
 .TP
 .BI \-scale " M/N"
 Scale the output image by a factor M/N.  Currently supported scale factors are
-M/8 with all M from 1 to 16.  If the /N part is omitted, then M specifies the
-DCT scaled size to be applied on the given input, which is currently
-equivalent to M/8 scaling, since the source DCT size is currently always 8.
+M/N with all M from 1 to 16, where N is the source DCT size, which is 8 for
+baseline JPEG.  If the /N part is omitted, then M specifies the DCT scaled
+size to be applied on the given input.  For baseline JPEG this is equivalent
+to M/8 scaling, since the source DCT size for baseline JPEG is 8.
 Scaling is handy if the image is larger than your screen; also,
 .B djpeg
 runs much faster when scaling down the output.

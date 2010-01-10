@@ -1123,16 +1123,17 @@ J_COLOR_SPACE out_color_space
 
 unsigned int scale_num, scale_denom
 	Scale the image by the fraction scale_num/scale_denom.  Currently,
-	the supported scaling ratios are N/8 with all N from 1 to 16.  (The
-	library design allows for arbitrary scaling ratios but this is not
-	likely to be implemented any time soon.)  The values are initialized
-	by jpeg_read_header() with the source DCT size, which is currently
-	8/8.  If you change only the scale_num value while leaving the other
-	unchanged, then this specifies the DCT scaled size to be applied on
-	the given input, which is currently equivalent to N/8 scaling, since
-	the source DCT size is currently always 8.  Smaller scaling ratios
-	permit significantly faster decoding since fewer pixels need be
-	processed and a simpler IDCT method can be used.
+	the supported scaling ratios are M/N with all M from 1 to 16, where
+	N is the source DCT size, which is 8 for baseline JPEG.  (The library
+	design allows for arbitrary scaling ratios but this is not likely
+	to be implemented any time soon.)  The values are initialized by
+	jpeg_read_header() with the source DCT size.  For baseline JPEG
+	this is 8/8.  If you change only the scale_num value while leaving
+	the other unchanged, then this specifies the DCT scaled size to be
+	applied on the given input.  For baseline JPEG this is equivalent
+	to M/8 scaling, since the source DCT size for baseline JPEG is 8.
+	Smaller scaling ratios permit significantly faster decoding since
+	fewer pixels need be processed and a simpler IDCT method can be used.
 
 boolean quantize_colors
 	If set TRUE, colormapped output will be delivered.  Default is FALSE,
@@ -1432,21 +1433,22 @@ Compressed data handling (source and destination managers)
 
 The JPEG compression library sends its compressed data to a "destination
 manager" module.  The default destination manager just writes the data to a
-stdio stream, but you can provide your own manager to do something else.
-Similarly, the decompression library calls a "source manager" to obtain the
-compressed data; you can provide your own source manager if you want the data
-to come from somewhere other than a stdio stream.
+memory buffer or to a stdio stream, but you can provide your own manager to
+do something else.  Similarly, the decompression library calls a "source
+manager" to obtain the compressed data; you can provide your own source
+manager if you want the data to come from somewhere other than a memory
+buffer or a stdio stream.
 
 In both cases, compressed data is processed a bufferload at a time: the
 destination or source manager provides a work buffer, and the library invokes
 the manager only when the buffer is filled or emptied.  (You could define a
 one-character buffer to force the manager to be invoked for each byte, but
 that would be rather inefficient.)  The buffer's size and location are
-controlled by the manager, not by the library.  For example, if you desired to
-decompress a JPEG datastream that was all in memory, you could just make the
-buffer pointer and length point to the original data in memory.  Then the
-buffer-reload procedure would be invoked only if the decompressor ran off the
-end of the datastream, which would indicate an erroneous datastream.
+controlled by the manager, not by the library.  For example, the memory
+source manager just makes the buffer pointer and length point to the original
+data in memory.  In this case the buffer-reload procedure will be invoked
+only if the decompressor ran off the end of the datastream, which would
+indicate an erroneous datastream.
 
 The work buffer is defined as an array of datatype JOCTET, which is generally
 "char" or "unsigned char".  On a machine where char is not exactly 8 bits
@@ -1498,7 +1500,8 @@ You will also need code to create a jpeg_destination_mgr struct, fill in its
 method pointers, and insert a pointer to the struct into the "dest" field of
 the JPEG compression object.  This can be done in-line in your setup code if
 you like, but it's probably cleaner to provide a separate routine similar to
-the jpeg_stdio_dest() routine of the supplied destination manager.
+the jpeg_stdio_dest() or jpeg_mem_dest() routines of the supplied destination
+managers.
 
 Decompression source managers follow a parallel design, but with some
 additional frammishes.  The source manager struct contains a pointer and count
@@ -1574,10 +1577,10 @@ You will also need code to create a jpeg_source_mgr struct, fill in its method
 pointers, and insert a pointer to the struct into the "src" field of the JPEG
 decompression object.  This can be done in-line in your setup code if you
 like, but it's probably cleaner to provide a separate routine similar to the
-jpeg_stdio_src() routine of the supplied source manager.
+jpeg_stdio_src() or jpeg_mem_src() routines of the supplied source managers.
 
-For more information, consult the stdio source and destination managers
-in jdatasrc.c and jdatadst.c.
+For more information, consult the memory and stdio source and destination
+managers in jdatasrc.c and jdatadst.c.
 
 
 I/O suspension

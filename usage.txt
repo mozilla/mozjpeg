@@ -137,7 +137,7 @@ behaviour in case that only one parameter is given, which is then used for
 both luminance and chrominance (slots 0 and 1).  More or custom quantization
 tables can be set with -qtables and assigned to components with -qslots
 parameter (see the "wizard" switches below).
-CAUTION: You must explicitely add -sample 1x1 for efficient separate color
+CAUTION: You must explicitly add -sample 1x1 for efficient separate color
 quality selection, since the default value used by library is 2x2!
 
 The -progressive switch creates a "progressive JPEG" file.  In this type of
@@ -245,14 +245,15 @@ The basic command line switches for djpeg are:
 			djpeg runs noticeably faster in this mode.
 
 	-scale M/N	Scale the output image by a factor M/N.  Currently
-			supported scale factors are M/8 with all M from 1 to
-			16.  If the /N part is omitted, then M specifies the
-			DCT scaled size to be applied on the given input,
-			which is currently equivalent to M/8 scaling, since
-			the source DCT size is currently always 8.
-			Scaling is handy if the image is larger than your
-			screen; also, djpeg runs much faster when scaling
-			down the output.
+			supported scale factors are M/N with all M from 1 to
+			16, where N is the source DCT size, which is 8 for
+			baseline JPEG.  If the /N part is omitted, then M
+			specifies the DCT scaled size to be applied on the
+			given input.  For baseline JPEG this is equivalent to
+			M/8 scaling, since the source DCT size for baseline
+			JPEG is 8.  Scaling is handy if the image is larger
+			than your screen; also, djpeg runs much faster when
+			scaling down the output.
 
 	-bmp		Select BMP output format (Windows flavor).  8-bit
 			colormapped format is emitted if -colors or -grayscale
@@ -507,7 +508,8 @@ The image can be losslessly cropped by giving the switch:
 	-crop WxH+X+Y	Crop to a rectangular subarea of width W, height H
 			starting at point X,Y.
 
-Another not-strictly-lossless transformation switch is:
+Other not-strictly-lossless transformation switches are:
+
 	-grayscale	Force grayscale output.
 This option discards the chrominance channels if the input image is YCbCr
 (ie, a standard color JPEG), resulting in a grayscale JPEG file.  The
@@ -517,6 +519,16 @@ is particularly handy for fixing a monochrome picture that was mistakenly
 encoded as a color JPEG.  (In such a case, the space savings from getting rid
 of the near-empty chroma channels won't be large; but the decoding time for
 a grayscale JPEG is substantially less than that for a color JPEG.)
+
+	-scale M/N	Scale the output image by a factor M/N.
+Currently supported scale factors are M/N with all M from 1 to 16, where N is
+the source DCT size, which is 8 for baseline JPEG.  If the /N part is omitted,
+then M specifies the DCT scaled size to be applied on the given input.  For
+baseline JPEG this is equivalent to M/8 scaling, since the source DCT size
+for baseline JPEG is 8.  CAUTION: An implementation of the JPEG SmartScale
+extension is required for this feature.  SmartScale enabled JPEG is not yet
+widely implemented, so many decoders will be unable to view a SmartScale
+extended JPEG file at all.
 
 jpegtran also recognizes these switches that control what to do with "extra"
 markers, such as comment blocks:

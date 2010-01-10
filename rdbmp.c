@@ -2,6 +2,7 @@
  * rdbmp.c
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Modified 2009 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -251,8 +252,8 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 			       (((INT32) UCH(array[offset+3])) << 24))
   INT32 bfOffBits;
   INT32 headerSize;
-  INT32 biWidth = 0;		/* initialize to avoid compiler warning */
-  INT32 biHeight = 0;
+  INT32 biWidth;
+  INT32 biHeight;
   unsigned int biPlanes;
   INT32 biCompression;
   INT32 biXPelsPerMeter,biYPelsPerMeter;
@@ -300,8 +301,6 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
       break;
     }
-    if (biPlanes != 1)
-      ERREXIT(cinfo, JERR_BMP_BADPLANES);
     break;
   case 40:
   case 64:
@@ -329,8 +328,6 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
       break;
     }
-    if (biPlanes != 1)
-      ERREXIT(cinfo, JERR_BMP_BADPLANES);
     if (biCompression != 0)
       ERREXIT(cinfo, JERR_BMP_COMPRESSED);
 
@@ -343,8 +340,13 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
   default:
     ERREXIT(cinfo, JERR_BMP_BADHEADER);
-    break;
+    return;
   }
+
+  if (biWidth <= 0 || biHeight <= 0)
+    ERREXIT(cinfo, JERR_BMP_EMPTY);
+  if (biPlanes != 1)
+    ERREXIT(cinfo, JERR_BMP_BADPLANES);
 
   /* Compute distance to bitmap data --- will adjust for colormap below */
   bPad = bfOffBits - (headerSize + 14);

@@ -1,18 +1,9 @@
-if WITH_SHARED
-
-lib_LTLIBRARIES = libjpeg.la
+lib_LTLIBRARIES = libjpeg.la libturbojpeg.la
 libjpeg_la_LDFLAGS = -version-number 62:0:0 -no-undefined
-include_HEADERS = jconfig.h jerror.h jmorecfg.h jpeglib.h
-
-else
-
-noinst_LTLIBRARIES = libjpeg.la
-noinst_HEADERS = jconfig.h jerror.h jmorecfg.h jpeglib.h
-
-endif
+include_HEADERS = jconfig.h jerror.h jmorecfg.h jpeglib.h turbojpeg.h
 
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
-	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h turbojpeg.h
+	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h
 
 libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c \
@@ -23,28 +14,32 @@ libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 	jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c \
 	jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c
 
+libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h
+
 if WITH_SIMD
 
 SUBDIRS = simd
 libjpeg_la_LIBADD = simd/libsimd.la
+libturbojpeg_la_LIBADD = simd/libsimd.la
 
 else
 
 libjpeg_la_SOURCES += jsimd_none.c
+libturbojpeg_la_SOURCES += jsimd_none.c
 
 endif
 
-TSTHDRS = turbojpeg.h rrutil.h rrtimer.h
+TSTHDRS = rrutil.h rrtimer.h
 
 noinst_PROGRAMS = jpgtest jpegut cjpeg djpeg
 
-jpgtest_SOURCES = $(TSTHDRS) jpgtest.cxx bmp.h bmp.c turbojpegl.c
+jpgtest_SOURCES = $(TSTHDRS) jpgtest.cxx bmp.h bmp.c
 
-jpgtest_LDADD = $(top_srcdir)/libjpeg.la
+jpgtest_LDADD = $(top_srcdir)/libturbojpeg.la
 
-jpegut_SOURCES = $(TSTHDRS) jpegut.c bmp.h bmp.c turbojpegl.c
+jpegut_SOURCES = $(TSTHDRS) jpegut.c bmp.h bmp.c
 
-jpegut_LDADD = $(top_srcdir)/libjpeg.la
+jpegut_LDADD = $(top_srcdir)/libturbojpeg.la
 
 cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
 	rdppm.c rdswitch.c rdtarga.c 

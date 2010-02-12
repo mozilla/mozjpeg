@@ -17,9 +17,17 @@ libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h
 
+if WITH_SIMD
+
 SUBDIRS = simd
 libjpeg_la_LIBADD = simd/libsimd.la
 libturbojpeg_la_LIBADD = simd/libsimd.la
+
+else
+
+libjpeg_la_SOURCES += jsimd_none.c
+
+endif
 
 TSTHDRS = rrutil.h rrtimer.h
 

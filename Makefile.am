@@ -31,7 +31,7 @@ endif
 
 TSTHDRS = rrutil.h rrtimer.h
 
-noinst_PROGRAMS = jpgtest jpegut cjpeg djpeg
+noinst_PROGRAMS = jpgtest jpegut cjpeg djpeg jpegtran rdjpgcom wrjpgcom
 
 jpgtest_SOURCES = $(TSTHDRS) jpgtest.cxx bmp.h bmp.c
 
@@ -56,3 +56,31 @@ djpeg_LDADD = $(top_srcdir)/libjpeg.la
 
 djpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
 	-DTARGA_SUPPORTED
+
+jpegtran_SOURCES = jpegtran.c rdswitch.c cdjpeg.c transupp.c
+
+jpegtran_LDADD = $(top_srcdir)/libjpeg.la
+
+rdjpgcom_SOURCES = wrjpgcom.c
+
+rdjpgcom_LDADD = $(top_srcdir)/libjpeg.la
+
+wrjpgcom_SOURCES = wrjpgcom.c
+
+wrjpgcom_LDADD = $(top_srcdir)/libjpeg.la
+
+test: cjpeg djpeg jpegtran
+	$(RM) testout*
+	$(top_srcdir)/jpegut
+	$(top_srcdir)/djpeg -dct int -ppm -outfile testout.ppm  $(top_srcdir)/testorig.jpg
+	$(top_srcdir)/djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(top_srcdir)/testorig.jpg
+	$(top_srcdir)/cjpeg -dct int -outfile testout.jpg  $(top_srcdir)/testimg.ppm
+	$(top_srcdir)/djpeg -dct int -ppm -outfile testoutp.ppm $(top_srcdir)/testprog.jpg
+	$(top_srcdir)/cjpeg -dct int -progressive -opt -outfile testoutp.jpg $(top_srcdir)/testimg.ppm
+	$(top_srcdir)/jpegtran -outfile testoutt.jpg $(top_srcdir)/testprog.jpg
+	cmp $(top_srcdir)/testimg.ppm testout.ppm
+	cmp $(top_srcdir)/testimg.bmp testout.bmp
+	cmp $(top_srcdir)/testimg.jpg testout.jpg
+	cmp $(top_srcdir)/testimg.ppm testoutp.ppm
+	cmp $(top_srcdir)/testimgp.jpg testoutp.jpg
+	cmp $(top_srcdir)/testorig.jpg testoutt.jpg

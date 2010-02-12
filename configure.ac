@@ -101,6 +101,8 @@ case "$host_cpu" in
   ;;
 esac
 
+AC_DEFINE([WITH_SIMD], [1], [Use accelerated SIMD routines.])
+
 AM_CONDITIONAL([SIMD_I386], [test "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
 

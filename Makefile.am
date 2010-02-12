@@ -1,5 +1,6 @@
 lib_LTLIBRARIES = libjpeg.la libturbojpeg.la
 libjpeg_la_LDFLAGS = -version-number 62:0:0 -no-undefined
+libturbojpeg_la_LDFLAGS = -avoid-version -no-undefined
 include_HEADERS = jconfig.h jerror.h jmorecfg.h jpeglib.h turbojpeg.h
 
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \

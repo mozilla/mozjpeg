@@ -80,7 +80,7 @@ This will generate the following files under .libs/
 
   libjpeg.so.62.0.0 (Linux, Solaris)
   libjpeg.62.dylib (OS X)
-  libjpeg-0.dll (MinGW)
+  libjpeg-62.dll (MinGW)
   cygjpeg-62.dll (Cygwin)
       Shared library for libjpeg-turbo
 
@@ -177,6 +177,17 @@ Same instructions as above, but add
   --host x86_64-pc-solaris LDFLAGS='-m64'
 
 to the configure command line and replace CFLAGS and CXXFLAGS with '-O3 -m64'. 
+
+
+MinGW Build on Cygwin
+---------------------
+
+Same instructions as above, but add
+
+  --host mingw32
+
+to the configure command line.  This will produce libraries which do not
+depend on cygwin1.dll or other Cygwin DLL's.
 
 
 *******************************************************************************

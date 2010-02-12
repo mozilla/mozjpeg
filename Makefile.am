@@ -69,8 +69,7 @@ wrjpgcom_SOURCES = wrjpgcom.c
 
 wrjpgcom_LDADD = $(top_srcdir)/libjpeg.la
 
-test: cjpeg djpeg jpegtran
-	$(RM) testout*
+test: testclean cjpeg djpeg jpegtran
 	$(top_srcdir)/jpegut
 	$(top_srcdir)/djpeg -dct int -ppm -outfile testout.ppm  $(top_srcdir)/testorig.jpg
 	$(top_srcdir)/djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(top_srcdir)/testorig.jpg
@@ -84,3 +83,18 @@ test: cjpeg djpeg jpegtran
 	cmp $(top_srcdir)/testimg.ppm testoutp.ppm
 	cmp $(top_srcdir)/testimgp.jpg testoutp.jpg
 	cmp $(top_srcdir)/testorig.jpg testoutt.jpg
+
+testclean:
+	$(RM) testout*
+	$(RM) *_GRAYQ[0-9]*.bmp
+	$(RM) *_GRAYQ[0-9]*.ppm
+	$(RM) *_GRAYQ[0-9]*.jpg
+	$(RM) *_420Q[0-9]*.bmp
+	$(RM) *_420Q[0-9]*.ppm
+	$(RM) *_420Q[0-9]*.jpg
+	$(RM) *_422Q[0-9]*.bmp
+	$(RM) *_422Q[0-9]*.ppm
+	$(RM) *_422Q[0-9]*.jpg
+	$(RM) *_444Q[0-9]*.bmp
+	$(RM) *_444Q[0-9]*.ppm
+	$(RM) *_444Q[0-9]*.jpg

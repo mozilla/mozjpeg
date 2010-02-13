@@ -35,16 +35,16 @@ noinst_PROGRAMS = jpgtest jpegut cjpeg djpeg jpegtran rdjpgcom wrjpgcom
 
 jpgtest_SOURCES = $(TSTHDRS) jpgtest.cxx bmp.h bmp.c
 
-jpgtest_LDADD = $(top_srcdir)/libturbojpeg.la
+jpgtest_LDADD = libturbojpeg.la
 
 jpegut_SOURCES = $(TSTHDRS) jpegut.c bmp.h bmp.c
 
-jpegut_LDADD = $(top_srcdir)/libturbojpeg.la
+jpegut_LDADD = libturbojpeg.la
 
 cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
 	rdppm.c rdswitch.c rdtarga.c 
 
-cjpeg_LDADD = $(top_srcdir)/libjpeg.la
+cjpeg_LDADD = libjpeg.la
 
 cjpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
 	-DTARGA_SUPPORTED
@@ -52,31 +52,31 @@ cjpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
 djpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c djpeg.c rdcolmap.c rdswitch.c \
 	wrbmp.c wrgif.c wrppm.c wrtarga.c
 
-djpeg_LDADD = $(top_srcdir)/libjpeg.la
+djpeg_LDADD = libjpeg.la
 
 djpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
 	-DTARGA_SUPPORTED
 
 jpegtran_SOURCES = jpegtran.c rdswitch.c cdjpeg.c transupp.c
 
-jpegtran_LDADD = $(top_srcdir)/libjpeg.la
+jpegtran_LDADD = libjpeg.la
 
 rdjpgcom_SOURCES = wrjpgcom.c
 
-rdjpgcom_LDADD = $(top_srcdir)/libjpeg.la
+rdjpgcom_LDADD = libjpeg.la
 
 wrjpgcom_SOURCES = wrjpgcom.c
 
-wrjpgcom_LDADD = $(top_srcdir)/libjpeg.la
+wrjpgcom_LDADD = libjpeg.la
 
 test: testclean cjpeg djpeg jpegtran
-	$(top_srcdir)/jpegut
-	$(top_srcdir)/djpeg -dct int -ppm -outfile testout.ppm  $(top_srcdir)/testorig.jpg
-	$(top_srcdir)/djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(top_srcdir)/testorig.jpg
-	$(top_srcdir)/cjpeg -dct int -outfile testout.jpg  $(top_srcdir)/testimg.ppm
-	$(top_srcdir)/djpeg -dct int -ppm -outfile testoutp.ppm $(top_srcdir)/testprog.jpg
-	$(top_srcdir)/cjpeg -dct int -progressive -opt -outfile testoutp.jpg $(top_srcdir)/testimg.ppm
-	$(top_srcdir)/jpegtran -outfile testoutt.jpg $(top_srcdir)/testprog.jpg
+	./jpegut
+	./djpeg -dct int -ppm -outfile testout.ppm  $(srcdir)/testorig.jpg
+	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
+	./cjpeg -dct int -outfile testout.jpg  $(srcdir)/testimg.ppm
+	./djpeg -dct int -ppm -outfile testoutp.ppm $(srcdir)/testprog.jpg
+	./cjpeg -dct int -progressive -opt -outfile testoutp.jpg $(srcdir)/testimg.ppm
+	./jpegtran -outfile testoutt.jpg $(srcdir)/testprog.jpg
 	cmp $(top_srcdir)/testimg.ppm testout.ppm
 	cmp $(top_srcdir)/testimg.bmp testout.bmp
 	cmp $(top_srcdir)/testimg.jpg testout.jpg

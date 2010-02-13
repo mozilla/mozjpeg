@@ -4,7 +4,7 @@
 
 libjpeg-turbo is a high-speed version of libjpeg for x86 and x86-64 processors
 which uses SIMD instructions (MMX, SSE2, etc.) to accelerate baseline JPEG
-compression and decompression.  libjpeg-turbo is generally 2-3x as fast
+compression and decompression.  libjpeg-turbo is generally 2-4x as fast
 as the unmodified version of libjpeg, all else being equal.
 
 libjpeg-turbo was originally based on libjpeg/SIMD by Miyasaka Masaru, but
@@ -13,13 +13,24 @@ including improved support for Mac OS X, 64-bit support, support for 32-bit
 and big endian pixel formats, accelerated Huffman encoding/decoding, and
 various bug fixes.  The goal was to produce a fully open source codec that
 could replace the partially closed source TurboJPEG/IPP codec used by VirtualGL
-and TurboVNC.  libjpeg-turbo generally performs in the range of 80-110% of
+and TurboVNC.  libjpeg-turbo generally performs in the range of 80-120% of
 TurboJPEG/IPP.  It is faster in some areas but slower in others.
 
 It was decided to split libjpeg-turbo into a separate SDK so that other
 projects could take advantage of this technology.  The shared libraries
 built from the libjpeg-turbo source can be used as drop-in replacements for
 libjpeg on most systems.
+
+
+*******************************************************************************
+**     License
+*******************************************************************************
+
+Some of the optimizations to the Huffman encoder/decoder were borrowed from
+VirtualGL, and thus libjpeg-turbo, as a whole, falls under the wxWindows
+Library Licence, Version 3.1.  A copy of this license can be found in this
+directory under LICENSE.txt.  The rest of the source code, apart from these
+modifications, falls under a less restrictive license (see README.)
 
 
 *******************************************************************************

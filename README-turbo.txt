@@ -78,7 +78,7 @@ for 64-bit build instructions.)
 
   cd libjpeg-turbo
   autoreconf -fiv
-  sh ./configure CFLAGS='-O3' CXXFLAGS='-O3'
+  sh ./configure
   make
 
 NOTE: Running autoreconf is only necessary if building libjpeg-turbo from the
@@ -155,9 +155,9 @@ Build Recipes
 
 Same instructions as above, but add
 
-  --host i686-pc-linux-gnu
+  --host i686-pc-linux-gnu CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32'
 
-to the configure command line and replace CFLAGS and CXXFLAGS with '-O3 -m32'.
+to the configure command line.
 
 
 64-bit Library Build on 64-bit OS/X
@@ -175,9 +175,9 @@ to the configure command line.  NASM 2.07 from MacPorts must be installed.
 
 Same instructions as above, but add
 
-  LDFLAGS='-m32'
+  CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32' LDFLAGS=-m32
 
-to the configure command line and replace CFLAGS and CXXFLAGS with '-O3 -m32'.
+to the configure command line.
 
 
 64-bit Library Build on 64-bit Solaris
@@ -185,9 +185,9 @@ to the configure command line and replace CFLAGS and CXXFLAGS with '-O3 -m32'.
 
 Same instructions as above, but add
 
-  --host x86_64-pc-solaris LDFLAGS='-m64'
+  --host x86_64-pc-solaris CFLAGS='-O3 -m64' CXXFLAGS='-O3 -m64' LDFLAGS=-m64
 
-to the configure command line and replace CFLAGS and CXXFLAGS with '-O3 -m64'. 
+to the configure command line.
 
 
 MinGW Build on Cygwin

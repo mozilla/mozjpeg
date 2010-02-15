@@ -180,6 +180,20 @@ Same instructions as above, but add
 to the configure command line.
 
 
+32-bit Backward-Compatible Library Build on 64-bit OS/X
+-------------------------------------------------------
+
+Same instructions as above, but add
+
+  CC=gcc-4.0 CXX=g++-4.0 CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
+    -mmacosx-version-min=10.4 -O3 -m32' CXXFLAGS='-isysroot \
+    /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
+    LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
+    -mmacosx-version-min=10.4 -m32'
+
+to the configure command line.  The OS X 10.4 SDK must be installed.
+
+
 64-bit Library Build on 64-bit Solaris
 --------------------------------------
 

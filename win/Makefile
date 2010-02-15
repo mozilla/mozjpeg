@@ -188,6 +188,12 @@ jpegut.exe: jpegut.obj turbojpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
 
+dist: all
+	$(RM) libjpeg-turbo.exe
+	makensis /nocd //DVERSION=$(VERSION) release/libjpeg-turbo.nsi || \
+	makensis /nocd /DVERSION=$(VERSION) release/libjpeg-turbo.nsi  # Cygwin doesn't like the //
+
+
 test: testclean cjpeg.exe djpeg.exe jpegtran.exe
 	jpegut
 	djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg

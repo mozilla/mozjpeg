@@ -9,7 +9,7 @@ ifeq ($(NASM),)
 NASM = nasm
 endif
 
-CFLAGS = -W3 -wd4996 -Iwin -I. -DDLLDEFINE
+CFLAGS = -W3 -wd4996 -Iwin -I.
 CDEFINES = -DWIN32 -D_CRT_SECURE_NO_DEPRECATE
 NAFLAGS = -fwin32 -DWIN32 -Iwin/
 ifeq ($(DEBUG), yes)

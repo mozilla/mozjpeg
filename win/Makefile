@@ -174,7 +174,10 @@ wrjpgcom.exe: wrjpgcom.obj jpeg.lib
 turbojpeg-static.lib: turbojpegl.obj $(LOBJS)
 	$(AR) -out:$@ $^
 
-turbojpeg.dll turbojpeg.lib: turbojpegl.obj $(LOBJS)
+turbojpeg-dll.obj: turbojpegl.c
+	$(CC) $(CFLAGS) -DDLLDEFINE -c $< -Fo$@
+
+turbojpeg.dll turbojpeg.lib: turbojpeg-dll.obj $(LOBJS)
 	$(LINK) $(LDFLAGS) -dll -out:turbojpeg.dll -implib:turbojpeg.lib $^
 
 

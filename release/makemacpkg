@@ -33,7 +33,7 @@ if [ -f $PACKAGE_NAME.dmg ]; then
 fi
 
 umask 022
-TMPDIR=`mktemp -d /tmp/vglbuild.XXXXXX || doexit -1`
+TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX || doexit -1`
 PKGROOT=$TMPDIR/pkg/Package_Root
 mkdir -p $PKGROOT || doexit -1
 mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin || doexit -1

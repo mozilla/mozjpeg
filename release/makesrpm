@@ -18,13 +18,10 @@ usage()
 	exit 1
 }
 
-if [ "$1" = "" ]; then usage $0; fi
+if [ $# -lt 4 ]; then usage $0; fi
 PACKAGE_NAME=$1
-if [ "$2" = "" ]; then usage $0; fi
 VERSION=$2
-if [ "$3" = "" ]; then usage $0; fi
 BUILD=$3
-if [ "$4" = "" ]; then usage $0; fi
 SRCDIR=$4
 
 TARBALL=$PACKAGE_NAME-$VERSION.tar.gz

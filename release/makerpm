@@ -18,15 +18,11 @@ usage()
 	exit 1
 }
 
-if [ "$1" = "" ]; then usage $0; fi
+if [ $# -lt 5 ]; then usage $0; fi
 PACKAGE_NAME=$1
-if [ "$2" = "" ]; then usage $0; fi
 VERSION=$2
-if [ "$3" = "" ]; then usage $0; fi
 BUILD=$3
-if [ "$4" = "" ]; then usage $0; fi
 RPMARCH=$4
-if [ "$5" = "" ]; then usage $0; fi
 SRCDIR=$5
 
 TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX || doexit -1`

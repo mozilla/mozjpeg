@@ -133,13 +133,16 @@ AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
 case "$host_cpu" in
   x86_64)
     RPMARCH=x86_64
+    DEBARCH=amd64
     ;;
   i*86 | x86 | ia32)
     RPMARCH=i386
+    DEBARCH=i386
     ;;
 esac
 
 AC_SUBST(RPMARCH)
+AC_SUBST(DEBARCH)
 AC_SUBST(BUILD)
 
 # jconfig.h is the file we use, but we have another before that to

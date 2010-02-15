@@ -1,0 +1,56 @@
+#!/bin/sh
+
+set -u
+
+TMPDIR=
+
+doexit()
+{
+	if [ ! "$TMPDIR" = "" ]; then
+		sudo rm -rf $TMPDIR
+	fi
+	exit $1
+}
+
+usage()
+{
+	echo "$0 <package name> <version> <build> <DEB architecture> <source dir.>"
+	exit 1
+}
+
+if [ "$1" = "" ]; then usage $0; fi
+PACKAGE_NAME=$1
+if [ "$2" = "" ]; then usage $0; fi
+VERSION=$2
+if [ "$3" = "" ]; then usage $0; fi
+BUILD=$3
+if [ "$4" = "" ]; then usage $0; fi
+DEBARCH=$4
+if [ "$5" = "" ]; then usage $0; fi
+SRCDIR=$5
+
+umask 022
+TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX || doexit -1`
+mkdir $TMPDIR/DEBIAN || doexit -1
+(cat $SRCDIR/release/deb-control.tmpl | sed s/{__PKGNAME}/$PACKAGE_NAME/g \
+	| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
+	| sed s/{__ARCH}/$DEBARCH/g > $TMPDIR/DEBIAN/control) || doexit -1
+
+if [ "$DEBARCH" = "amd64" ]; then
+	__LIB=lib
+else
+	__LIB=lib32
+fi
+make install prefix=$TMPDIR/opt/$PACKAGE_NAME libdir=$TMPDIR/opt/$PACKAGE_NAME/$__LIB || doexit -1
+rm -f $TMPDIR/opt/$PACKAGE_NAME/$__LIB/*.la || doexit -1
+mkdir -p $TMPDIR/usr/$__LIB || doexit -1
+mv $TMPDIR/opt/$PACKAGE_NAME/$__LIB/libturbojpeg.* $TMPDIR/usr/$__LIB || doexit -1
+/sbin/ldconfig -n $TMPDIR/opt/$PACKAGE_NAME/$__LIB
+/sbin/ldconfig -n $TMPDIR/usr/$__LIB
+mkdir -p $TMPDIR/usr/include || doexit -1
+mv $TMPDIR/opt/$PACKAGE_NAME/include/turbojpeg.h $TMPDIR/usr/include || doexit -1
+
+sudo chown -Rh root:root $TMPDIR/* || doexit -1
+dpkg -b $TMPDIR $PACKAGE_NAME\_$DEBARCH.deb || doexit -1
+
+doexit 0

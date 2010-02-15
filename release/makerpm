@@ -1,0 +1,43 @@
+#!/bin/sh
+
+set -u
+
+TMPDIR=
+
+doexit()
+{
+	if [ ! "$TMPDIR" = "" ]; then
+		sudo rm -rf $TMPDIR
+	fi
+	exit $1
+}
+
+usage()
+{
+	echo "$0 <package name> <version> <build> <RPM architecture> <source dir.>"
+	exit 1
+}
+
+if [ "$1" = "" ]; then usage $0; fi
+PACKAGE_NAME=$1
+if [ "$2" = "" ]; then usage $0; fi
+VERSION=$2
+if [ "$3" = "" ]; then usage $0; fi
+BUILD=$3
+if [ "$4" = "" ]; then usage $0; fi
+RPMARCH=$4
+if [ "$5" = "" ]; then usage $0; fi
+SRCDIR=$5
+
+TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX || doexit -1`
+mkdir -p $TMPDIR/RPMS || doexit -1
+ln -fs `pwd` $TMPDIR/BUILD || doexit -1
+rm -f $PACKAGE_NAME.$RPMARCH.rpm
+rpmbuild -bb --define "_name $PACKAGE_NAME" \
+	--define "_blddir $TMPDIR/buildroot" --define "_topdir $TMPDIR" \
+	--define "_version $VERSION" --define "_build $BUILD" \
+	--define "_srcdir $SRCDIR" --target $RPMARCH \
+	$SRCDIR/release/libjpeg-turbo.spec || doexit -1
+cp $TMPDIR/RPMS/$RPMARCH/$PACKAGE_NAME-$VERSION-$BUILD.$RPMARCH.rpm $PACKAGE_NAME.$RPMARCH.rpm
+
+doexit 0

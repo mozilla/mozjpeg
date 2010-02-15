@@ -115,3 +115,11 @@ testclean:
 	$(RM) *_444Q[0-9]*.bmp
 	$(RM) *_444Q[0-9]*.ppm
 	$(RM) *_444Q[0-9]*.jpg
+
+rpm: all
+	sh $(srcdir)/release/makerpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \
+		${RPMARCH} ${srcdir}
+
+srpm: dist
+	sh $(srcdir)/release/makesrpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \
+		${srcdir}

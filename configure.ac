@@ -6,6 +6,7 @@ echo libdir=$libdir
 
 AC_PREREQ([2.56])
 AC_INIT([libjpeg-turbo], [0.0.90])
+BUILD=`date +%Y%m%d`
 
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
 AC_PREFIX_DEFAULT(/opt/libjpeg-turbo)
@@ -128,6 +129,18 @@ fi
 AM_CONDITIONAL([WITH_SIMD], [test "x$with_simd" != "xno"])
 AM_CONDITIONAL([SIMD_I386], [test "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
+
+case "$host_cpu" in
+  x86_64)
+    RPMARCH=x86_64
+    ;;
+  i*86 | x86 | ia32)
+    RPMARCH=i386
+    ;;
+esac
+
+AC_SUBST(RPMARCH)
+AC_SUBST(BUILD)
 
 # jconfig.h is the file we use, but we have another before that to
 # fool autoheader. the reason is that we include this header in our

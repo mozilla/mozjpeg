@@ -123,3 +123,7 @@ rpm: all
 srpm: dist-gzip
 	sh $(srcdir)/release/makesrpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \
 		${srcdir}
+
+deb: all
+	sh $(srcdir)/release/makedpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
+		${DEBARCH} ${srcdir}

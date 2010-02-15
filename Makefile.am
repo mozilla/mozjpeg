@@ -120,6 +120,6 @@ rpm: all
 	sh $(srcdir)/release/makerpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \
 		${RPMARCH} ${srcdir}
 
-srpm: dist
+srpm: dist-gzip
 	sh $(srcdir)/release/makesrpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \
 		${srcdir}

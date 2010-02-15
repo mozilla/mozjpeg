@@ -1,3 +1,5 @@
+VERSION = 0.0.90
+
 CC = "cl" -nologo
 CXX = "cl" -EHsc -nologo
 AR = "link" -lib -nologo

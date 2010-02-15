@@ -1,7 +1,8 @@
 lib_LTLIBRARIES = libjpeg.la libturbojpeg.la
 libjpeg_la_LDFLAGS = -version-number 62:0:0 -no-undefined
 libturbojpeg_la_LDFLAGS = -avoid-version -no-undefined
-include_HEADERS = jconfig.h jerror.h jmorecfg.h jpeglib.h turbojpeg.h
+include_HEADERS = jerror.h jmorecfg.h jpeglib.h turbojpeg.h
+nodist_include_HEADERS = jconfig.h
 
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
 	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h
@@ -57,17 +58,33 @@ djpeg_LDADD = libjpeg.la
 djpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
 	-DTARGA_SUPPORTED
 
-jpegtran_SOURCES = jpegtran.c rdswitch.c cdjpeg.c transupp.c
+jpegtran_SOURCES = jpegtran.c rdswitch.c cdjpeg.c transupp.c transupp.h
 
 jpegtran_LDADD = libjpeg.la
 
-rdjpgcom_SOURCES = wrjpgcom.c
+rdjpgcom_SOURCES = rdjpgcom.c
 
 rdjpgcom_LDADD = libjpeg.la
 
 wrjpgcom_SOURCES = wrjpgcom.c
 
 wrjpgcom_LDADD = libjpeg.la
+
+
+DISTMANS= cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
+
+DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
+	structure.doc coderules.doc filelist.doc jconfig.doc change.log \
+	README-turbo.txt rdrle.c wrrle.c LICENSE.txt LGPL.txt
+
+TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \
+        testimgp.jpg
+
+EXTRA_DIST = win release $(DOCS) $(DISTMANS) $(TESTFILES)
+
+dist-hook:
+	rm -rf `find $(distdir) -name .svn`
+
 
 test: testclean cjpeg djpeg jpegtran
 	./jpegut

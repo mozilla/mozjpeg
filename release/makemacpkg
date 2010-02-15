@@ -14,7 +14,7 @@ doexit()
 
 usage()
 {
-	echo "$0 <package name> <version> <build> <source dir.>"
+	echo "$0 <package name> <version> <build> <source dir.> [universal]"
 	exit 1
 }
 
@@ -25,7 +25,9 @@ PACKAGE_NAME=$1
 VERSION=$2
 BUILD=$3
 SRCDIR=$4
-
+if [ $# -gt 4 ]; then
+	if [ "$5" = "universal" ]; then UNIVERSAL=1; fi
+fi
 PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker
 
 if [ -f $PACKAGE_NAME.dmg ]; then
@@ -38,13 +40,40 @@ PKGROOT=$TMPDIR/pkg/Package_Root
 mkdir -p $PKGROOT || doexit -1
 mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin || doexit -1
 make install prefix=$PKGROOT/opt/$PACKAGE_NAME || doexit -1
-install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.62.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib || doexit -1
 rm -f $PKGROOT/opt/$PACKAGE_NAME/lib/*.la || doexit -1
 mkdir -p $PKGROOT/usr/lib || doexit -1
 mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib || doexit -1
-install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib || doexit -1
 mkdir -p $PKGROOT/usr/include || doexit -1
 mv $PKGROOT/opt/$PACKAGE_NAME/include/turbojpeg.h $PKGROOT/usr/include || doexit -1
+
+if [ $UNIVERSAL = 1 ]; then
+	if [ ! -d $SRCDIR/osxx86 ]; then
+		mkdir -p $SRCDIR/osxx86
+	fi
+	mkdir -p $TMPDIR/dist.x86
+	pushd $SRCDIR/osxx86
+	sh $SRCDIR/configure CC=gcc-4.0 CXX=g++-4.0 \
+		CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
+		CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
+		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32' || doexit -1
+	make prefix=$TMPDIR/dist.x86 install || doexit -1
+	popd
+	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.dylib -arch x86_64 \
+		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
+		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib || doexit -1
+	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.a -arch x86_64 \
+		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
+		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a || doexit -1
+	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libturbojpeg.dylib -arch x86_64 \
+		$PKGROOT/usr/lib/libturbojpeg.dylib \
+		-output $PKGROOT/usr/lib/libturbojpeg.dylib || doexit -1
+	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libturbojpeg.a -arch x86_64 \
+		$PKGROOT/usr/lib/libturbojpeg.a \
+		-output $PKGROOT/usr/lib/libturbojpeg.a || doexit -1
+fi
+
+install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.62.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib || doexit -1
+install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib || doexit -1
 
 mkdir -p $PKGROOT/Library/Documentation/$PACKAGE_NAME || doexit -1
 chmod 1775 $PKGROOT/Library || doexit -1

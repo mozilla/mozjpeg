@@ -129,6 +129,7 @@ fi
 AM_CONDITIONAL([WITH_SIMD], [test "x$with_simd" != "xno"])
 AM_CONDITIONAL([SIMD_I386], [test "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
+AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64"])
 
 case "$host_cpu" in
   x86_64)

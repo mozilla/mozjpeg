@@ -1,0 +1,83 @@
+#!/bin/sh
+
+set -u
+
+TMPDIR=
+
+doexit()
+{
+	if [ ! "$TMPDIR" = "" ]; then
+		sudo rm -rf $TMPDIR
+	fi
+	exit $1
+}
+
+usage()
+{
+	echo "$0 <package name> <version> <build> <source dir.>"
+	exit 1
+}
+
+UNIVERSAL=0
+
+if [ $# -lt 4 ]; then usage $0; fi
+PACKAGE_NAME=$1
+VERSION=$2
+BUILD=$3
+SRCDIR=$4
+
+PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker
+
+if [ -f $PACKAGE_NAME.dmg ]; then
+	rm -f $PACKAGE_NAME.dmg
+fi
+
+umask 022
+TMPDIR=`mktemp -d /tmp/vglbuild.XXXXXX || doexit -1`
+PKGROOT=$TMPDIR/pkg/Package_Root
+mkdir -p $PKGROOT || doexit -1
+mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin || doexit -1
+make install prefix=$PKGROOT/opt/$PACKAGE_NAME || doexit -1
+install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.62.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib || doexit -1
+rm -f $PKGROOT/opt/$PACKAGE_NAME/lib/*.la || doexit -1
+mkdir -p $PKGROOT/usr/lib || doexit -1
+mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib || doexit -1
+install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib || doexit -1
+mkdir -p $PKGROOT/usr/include || doexit -1
+mv $PKGROOT/opt/$PACKAGE_NAME/include/turbojpeg.h $PKGROOT/usr/include || doexit -1
+
+mkdir -p $PKGROOT/Library/Documentation/$PACKAGE_NAME || doexit -1
+chmod 1775 $PKGROOT/Library || doexit -1
+chmod 775 $PKGROOT/Library/Documentation || doexit -1
+mkdir -p $TMPDIR/pkg/Resources || doexit -1
+
+(cat $SRCDIR/release/Description.plist.tmpl | sed s/{__VERSION}/$VERSION/g \
+	| sed s/{__APPNAME}/$PACKAGE_NAME/g \
+	> $TMPDIR/pkg/Description.plist) || doexit -1
+(cat $SRCDIR/release/Info.plist.tmpl | sed s/{__VERSION}/$VERSION/g	\
+	| sed s/{__BUILD}/$BUILD/g > $TMPDIR/pkg/Info.plist) || doexit -1
+(cat $SRCDIR/release/uninstall.sh.tmpl \
+	| sed s/{__APPNAME}/$PACKAGE_NAME/g \
+	> $PKGROOT/opt/$PACKAGE_NAME/bin/uninstall) || doexit -1
+chmod 755 $PKGROOT/opt/$PACKAGE_NAME/bin/uninstall
+
+install -m 644 $SRCDIR/LICENSE.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LICENSE.txt || doexit -1
+install -m 644 $SRCDIR/LGPL.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LGPL.txt || doexit -1
+
+sudo chown -R root:admin $PKGROOT || doexit -1
+sudo chown -R root:0 $PKGROOT/usr || doexit -1
+cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadMe.rtf $TMPDIR/pkg/Resources/ || doexit -1
+
+mkdir $TMPDIR/dmg
+$PACKAGEMAKER -build -v -p $TMPDIR/dmg/$PACKAGE_NAME.pkg \
+	-f $PKGROOT -r $TMPDIR/pkg/Resources \
+	-i $TMPDIR/pkg/Info.plist -d $TMPDIR/pkg/Description.plist || doexit -1
+install -m 644 $SRCDIR/release/uninstall.applescript $TMPDIR || doexit -1
+sudo osacompile -t APPL -o "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" $TMPDIR/uninstall.applescript || doexit -1
+sudo chown -R $USER "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" || doexit -1
+hdiutil create -fs HFS+ -volname $PACKAGE_NAME-$VERSION \
+	-srcfolder "$TMPDIR/dmg" \
+	$TMPDIR/$PACKAGE_NAME.dmg || doexit -1
+cp $TMPDIR/$PACKAGE_NAME.dmg . || doexit -1
+
+doexit 0

@@ -121,9 +121,11 @@ rpm: all
 		${RPMARCH} ${srcdir}
 
 srpm: dist-gzip
-	sh $(srcdir)/release/makesrpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \
-		${srcdir}
+	sh $(srcdir)/release/makesrpm ${PACKAGE_NAME} ${VERSION} ${BUILD} ${srcdir}
 
 deb: all
 	sh $(srcdir)/release/makedpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
 		${DEBARCH} ${srcdir}
+
+dmg: all
+	sh $(srcdir)/release/makemacpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} ${srcdir}

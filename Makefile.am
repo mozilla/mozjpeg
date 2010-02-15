@@ -94,12 +94,12 @@ test: testclean cjpeg djpeg jpegtran
 	./djpeg -dct int -ppm -outfile testoutp.ppm $(srcdir)/testprog.jpg
 	./cjpeg -dct int -progressive -opt -outfile testoutp.jpg $(srcdir)/testimg.ppm
 	./jpegtran -outfile testoutt.jpg $(srcdir)/testprog.jpg
-	cmp $(top_srcdir)/testimg.ppm testout.ppm
-	cmp $(top_srcdir)/testimg.bmp testout.bmp
-	cmp $(top_srcdir)/testimg.jpg testout.jpg
-	cmp $(top_srcdir)/testimg.ppm testoutp.ppm
-	cmp $(top_srcdir)/testimgp.jpg testoutp.jpg
-	cmp $(top_srcdir)/testorig.jpg testoutt.jpg
+	cmp $(srcdir)/testimg.ppm testout.ppm
+	cmp $(srcdir)/testimg.bmp testout.bmp
+	cmp $(srcdir)/testimg.jpg testout.jpg
+	cmp $(srcdir)/testimg.ppm testoutp.ppm
+	cmp $(srcdir)/testimgp.jpg testoutp.jpg
+	cmp $(srcdir)/testorig.jpg testoutt.jpg
 
 testclean:
 	$(RM) testout*

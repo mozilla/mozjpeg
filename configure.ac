@@ -8,6 +8,7 @@ AC_PREREQ([2.56])
 AC_INIT([libjpeg-turbo], [0.0.90])
 
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
+AC_PREFIX_DEFAULT(/opt/libjpeg-turbo)
 
 # Always build with prototypes
 AC_DEFINE([HAVE_PROTOTYPES], 1, [Define if your compiler supports prototypes])

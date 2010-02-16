@@ -26,6 +26,17 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
 
+AC_MSG_CHECKING([whether the linker supports version scripts])
+LDVER=`$LD --help < /dev/null 2>/dev/null | grep version-script`
+if test "$LDVER"; then
+  VERSION_SCRIPT=yes
+  AC_MSG_RESULT(yes)
+else
+  VERSION_SCRIPT=no
+  AC_MSG_RESULT(no)
+fi
+AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")
+
 if test "x${GCC}" = "xyes"; then
   if test "x${SAVED_CFLAGS}" = "x"; then
     CFLAGS=-O3

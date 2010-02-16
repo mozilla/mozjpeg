@@ -16,7 +16,14 @@ libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 	jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c \
 	jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c
 
-libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h
+libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
+	turbojpeg-mapfile
+
+if VERSION_SCRIPT
+
+libturbojpeg_la_LDFLAGS += -Wl,--version-script,$(srcdir)/turbojpeg-mapfile
+
+endif
 
 if WITH_SIMD
 

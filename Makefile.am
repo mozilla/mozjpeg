@@ -21,7 +21,7 @@ libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
 
 if VERSION_SCRIPT
 
-libturbojpeg_la_LDFLAGS += -Wl,--version-script,$(srcdir)/turbojpeg-mapfile
+libturbojpeg_la_LDFLAGS += $(VERSION_SCRIPT_FLAG)$(srcdir)/turbojpeg-mapfile
 
 endif
 

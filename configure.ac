@@ -27,15 +27,25 @@ AC_PROG_LIBTOOL
 AC_PROG_LN_S
 
 AC_MSG_CHECKING([whether the linker supports version scripts])
-LDVER=`$LD --help < /dev/null 2>/dev/null | grep version-script`
+VERSION_SCRIPT=no
+LDVER=`$LD --help </dev/null 2>&1 | grep "\-\-version-script"`
 if test "$LDVER"; then
   VERSION_SCRIPT=yes
+  VERSION_SCRIPT_FLAG=-Wl,--version-script,
   AC_MSG_RESULT(yes)
 else
-  VERSION_SCRIPT=no
-  AC_MSG_RESULT(no)
+  LDVER=`$LD --help </dev/null 2>&1 | grep "\-M"`
+  if test "$LDVER"; then
+    VERSION_SCRIPT=yes
+    VERSION_SCRIPT_FLAG=-Wl,-M,
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
 fi
+
 AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")
+AC_SUBST(VERSION_SCRIPT_FLAG)
 
 if test "x${GCC}" = "xyes"; then
   if test "x${SAVED_CFLAGS}" = "x"; then

@@ -27,6 +27,9 @@ Section "libjpeg-turbo SDK (required)"
 	File "jpeglib.h"
 	File "turbojpeg.h"
 	SetOutPath $INSTDIR
+	File "README"
+	File "README-turbo.txt"
+	File "libjpeg.doc"
 	File "LGPL.txt"
 	File "LICENSE.txt"
 
@@ -58,6 +61,9 @@ Section "Uninstall"
 	Delete $INSTDIR\include\jpeglib.h"
 	Delete $INSTDIR\include\turbojpeg.h"
 	Delete $INSTDIR\uninstall_${VERSION}.exe
+	Delete $INSTDIR\README
+	Delete $INSTDIR\README-turbo.txt
+	Delete $INSTDIR\libjpeg.doc
 	Delete $INSTDIR\LGPL.txt
 	Delete $INSTDIR\LICENSE.txt
 

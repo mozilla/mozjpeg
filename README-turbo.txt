@@ -17,9 +17,8 @@ and TurboVNC.  libjpeg-turbo generally performs in the range of 80-120% of
 TurboJPEG/IPP.  It is faster in some areas but slower in others.
 
 It was decided to split libjpeg-turbo into a separate SDK so that other
-projects could take advantage of this technology.  The shared libraries
-built from the libjpeg-turbo source can be used as drop-in replacements for
-libjpeg on most systems.
+projects could take advantage of this technology.  The libjpeg-turbo shared
+libraries can be used as drop-in replacements for libjpeg on most systems.
 
 
 *******************************************************************************
@@ -27,258 +26,163 @@ libjpeg on most systems.
 *******************************************************************************
 
 Some of the optimizations to the Huffman encoder/decoder were borrowed from
-VirtualGL, and thus libjpeg-turbo, as a whole, falls under the wxWindows
-Library Licence, Version 3.1.  A copy of this license can be found in this
-directory under LICENSE.txt.  The rest of the source code, apart from these
-modifications, falls under a less restrictive license (see README.)
+VirtualGL, and thus the libjpeg-turbo distribution, as a whole, falls under the
+wxWindows Library Licence, Version 3.1.  A copy of this license can be found in
+this directory under LICENSE.txt.  The rest of the source code, apart from
+these modifications, falls under a less restrictive license (see README.)
 
 
 *******************************************************************************
-**     Building on Unix Platforms, Cygwin, and MinGW
+**     Using libjpeg-turbo
 *******************************************************************************
 
-==================
-Build Requirements
-==================
-
--- autoconf 2.56 or later
-   * If using MinGW, this can be obtained by installing the MSYS DTK
-
--- automake 1.7 or later
-   * If using MinGW, this can be obtained by installing the MSYS DTK
-
--- libtool 1.4 or later
-   * If using MinGW, this can be obtained by installing the MSYS DTK
-
--- NASM
-   * 0.98 or later is required for a 32-bit build
-   * NASM 2.05 or later is required for a 64-bit build
-   * NASM 2.07 or later is required for a 64-bit build on OS/X (10.6 "Snow
-     Leopard" or later.)  This can be obtained from MacPorts
-     (http://www.macports.org/).
-
-   The NASM 2.05 RPMs do not work on older Linux systems, such as Enterprise
-   Linux 4.  On such systems, you can easily build and install NASM 2.05
-   from the source RPM by executing the following as root:
-
-     ARCH=`uname -m`
-     wget http://www.nasm.us/pub/nasm/releasebuilds/2.05.01/nasm-2.05.01-1.src.rpm
-     rpmbuild --rebuild nasm-2.05.01-1.src.rpm
-     rpm -Uvh /usr/src/redhat/RPMS/$ARCH/nasm-2.05.01-1.$ARCH.rpm
-
--- GCC v4 or later recommended for best performance
-
-======================
-Building libjpeg-turbo
-======================
-
-The following procedure will build libjpeg-turbo on Linux, 32-bit OS X, and
-Solaris/x86 systems (on Solaris, this generates a 32-bit library.  See below
-for 64-bit build instructions.)
-
-  cd libjpeg-turbo
-  autoreconf -fiv
-  sh ./configure
-  make
-
-NOTE: Running autoreconf is only necessary if building libjpeg-turbo from the
-SVN repository.
-
-This will generate the following files under .libs/
-
-  libjpeg.a
-      Static link library for libjpeg-turbo
-
-  libjpeg.so.62.0.0 (Linux, Solaris)
-  libjpeg.62.dylib (OS X)
-  libjpeg-62.dll (MinGW)
-  cygjpeg-62.dll (Cygwin)
-      Shared library for libjpeg-turbo
-
-  libjpeg.so (Linux, Solaris)
-  libjpeg.dylib (OS X)
-  libjpeg.dll.a (Cygwin, MinGW)
-      Development stub for libjpeg-turbo shared library
-
-  libturbojpeg.a
-      Static link library for TurboJPEG/OSS
-
-  libturbojpeg.so (Linux, Solaris)
-  libturbojpeg.dylib (OS X)
-      Shared library and development stub for TurboJPEG/OSS
-
-  libturbojpeg.dll (MinGW)
-  cygturbojpeg.dll (Cygwin)
-      Shared library for TurboJPEG/OSS
-
-  libturbojpeg.dll.a (Cygwin, MinGW)
-      Development stub for TurboJPEG/OSS shared library
-
-========================
-Installing libjpeg-turbo
-========================
-
-If you intend to install these libraries and the associated header files, then
-replace 'make' in the instructions above with
-
-  make install prefix={base dir} libdir={library directory}
-
-For example,
-
-  make install prefix=/usr libdir=/usr/lib64
-
-will overwrite the system version of libjpeg on a 64-bit RedHat-based Linux
-machine, causing any 64-bit applications that use libjpeg to be instantly
-accelerated.  BACK UP YOUR SYSTEM'S INSTALLATION OF LIBJPEG BEFORE OVERWRITING
-IT. 
-
-The same can be done for 32-bit applications by building libjpeg-turbo as a
-32-bit library (see below) and installing with a libdir of /usr/lib.  On
-Debian-based systems, 64-bit libraries are stored in /usr/lib and 32-bit
-libraries in /usr/lib32.  On Solaris, 64-bit libraries are stored in
-/usr/lib/amd64 and 32-bit libraries in /usr/lib.
-
-Mac applications typically bundle their own copies of libjpeg.62.dylib, so it
-is not possible to globally replace libjpeg on OS X systems.  However, libjpeg
-can be replaced on an application-by-application basis, for those applications
-which use a shared library version of it.  This would generally involve copying
-libjpeg.62.dylib into the appropriate place in the application's Contents and
-using install_name_tool to repoint the dylib to the new directory.  This
-requires an advanced knowledge of OS X and is not recommended for most users.
-
-=============
-Build Recipes
-=============
-
-32-bit Library Build on 64-bit Linux
-------------------------------------
-
-Same instructions as above, but add
-
-  --host i686-pc-linux-gnu CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32'
-
-to the configure command line.
-
-
-64-bit Library Build on 64-bit OS/X
------------------------------------
-
-Same instructions as above, but add
-
-  --host x86_64-apple-darwin10.0.0 NASM=/opt/local/bin/nasm
-
-to the configure command line.  NASM 2.07 from MacPorts must be installed.
-
-
-32-bit Library Build on 64-bit OS/X
------------------------------------
-
-Same instructions as above, but add
-
-  CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32' LDFLAGS=-m32
-
-to the configure command line.
-
-
-32-bit Backward-Compatible Library Build on 64-bit OS/X
--------------------------------------------------------
-
-Same instructions as above, but add
-
-  CC=gcc-4.0 CXX=g++-4.0 CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -O3 -m32' CXXFLAGS='-isysroot \
-    /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
-    LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -m32'
-
-to the configure command line.  The OS X 10.4 SDK must be installed.
-
-
-64-bit Library Build on 64-bit Solaris
---------------------------------------
-
-Same instructions as above, but add
-
-  --host x86_64-pc-solaris CFLAGS='-O3 -m64' CXXFLAGS='-O3 -m64' LDFLAGS=-m64
-
-to the configure command line.
-
-
-MinGW Build on Cygwin
----------------------
-
-Same instructions as above, but add
-
-  --host mingw32
-
-to the configure command line.  This will produce libraries which do not
-depend on cygwin1.dll or other Cygwin DLL's.
-
-
-*******************************************************************************
-**     Windows (Visual C++)
-*******************************************************************************
-
-==================
-Build Requirements
-==================
-
--- GNU Make v3.7 or later
-   * Can be found in MSYS (http://www.mingw.org/download.shtml) or
-     Cygwin (http://www.cygwin.com/)
-
--- Microsoft Visual C++ 2003 or later
-   * Tested with Microsoft Visual C++ 2008 Express Edition (free download):
-
-     http://msdn.microsoft.com/vstudio/express/visualc/
-
-   * Add the compiler binary directories (for instance,
-     c:\Program Files\Microsoft Visual Studio 9.0\VC\BIN;
-     c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE)
-     to the system or user PATH environment variable prior to building
-     libjpeg-turbo.
-   * Add the compiler include directory (for instance,
-     c:\Program Files\Microsoft Visual Studio 9.0\VC\INCLUDE)
-     to the system or user INCLUDE environment variable prior to building
-     libjpeg-turbo.
-   * Add the compiler library directory (for instance,
-     c:\Program Files\Microsoft Visual Studio 9.0\VC\LIB)
-     to the system or user LIB environment variable prior to building
-     libjpeg-turbo.
-
--- Microsoft Windows SDK
-   * This is included with Microsoft Visual C++ 2008 Express Edition, but users
-     of prior editions of Visual C++ can download the SDK from:
-
-     http://msdn2.microsoft.com/en-us/windowsserver/bb980924.aspx
-
-   * Add the SDK binary directory (for instance,
-     c:\Program Files\Microsoft SDKs\Windows\v6.0A\bin)
-     to the system or user PATH environment variable prior to building
-     libjpeg-turbo.
-   * Add the SDK include directory (for instance,
-     c:\Program Files\Microsoft SDKs\Windows\v6.0A\include)
-     to the system or user INCLUDE environment variable prior to building
-     libjpeg-turbo.
-   * Add the SDK library directory (for instance,
-     c:\Program Files\Microsoft SDKs\Windows\v6.0A\lib)
-     to the system or user LIB environment variable prior to building
-     libjpeg-turbo.
-
--- NASM (http://www.nasm.us/) 0.98 or later
-
-======================
-Building libjpeg-turbo
-======================
-
-  cd libjpeg-turbo
-  make -f win/Makefile
-
-This will generate the following files:
-
-  jpeg-static.lib        Static link library for libjpeg-turbo
-  jpeg62.dll             Shared library for libjpeg-turbo
-  jpeg.lib               Development stub for libjpeg-turbo shared library
-  turbojpeg-static.lib   Static link library for TurboJPEG/OSS
-  turbojpeg.dll          Shared library for TurboJPEG/OSS
-  turbojpeg.lib          Development stub for TurboJPEG/OSS shared library
+=============================
+Replacing libjpeg at Run Time
+=============================
+
+If a Unix application is dynamically linked with libjpeg, then you can replace
+libjpeg with libjpeg-turbo at run time by manipulating the LD_LIBRARY_PATH.
+For instance:
+
+  [Using libjpeg]
+  > time cjpeg <vgl_5674_0098.ppm >vgl_5674_0098.jpg
+  real  0m0.392s
+  user  0m0.074s
+  sys   0m0.020s
+
+  [Using libjpeg-turbo]
+  > export LD_LIBRARY_PATH=/opt/libjpeg-turbo/{lib}:$LD_LIBRARY_PATH
+  > time cjpeg <vgl_5674_0098.ppm >vgl_5674_0098.jpg
+  real  0m0.109s
+  user  0m0.029s
+  sys   0m0.010s
+
+NOTE: {lib} can be lib, lib32, lib64, or lib/amd64, depending on the O/S and
+architecture.
+
+System administrators can also replace the libjpeg sym links in /usr/{lib} with
+links to the libjpeg dynamic library located in /opt/libjpeg-turbo/{lib}.  This
+will effectively accelerate every dynamically linked libjpeg application on the
+system.
+
+The Windows version of libjpeg-turbo installs jpeg62.dll into
+%systemroot%\system32.  However, if jpeg62.dll also exists in an application's
+install directory, then Windows will load the application's version of it
+first.  Thus, if an application ships with jpeg62.dll, then back up the
+application's version of jpeg62.dll and copy %systemroot%\system32\jpeg62.dll
+into the application's install directory to accelerate it.
+
+Mac applications typically embed their own copies of libjpeg.62.dylib inside
+the (hidden) application bundle, so it is not possible to globally replace
+libjpeg on OS X systems.  If an application uses a shared library version of
+libjpeg, then it may be possible to replace the application's version of it.
+This would generally involve copying libjpeg.62.dylib into the appropriate
+place in the application bundle and using install_name_tool to repoint the
+dylib to the new directory.  This requires an advanced knowledge of OS X and
+would not survive an upgrade or a re-install of the application.  Thus, it is
+not recommended for most users.
+
+=======================
+Replacing TurboJPEG/IPP
+=======================
+
+libjpeg-turbo is a drop-in replacement for the TurboJPEG/IPP SDK used by
+VirtualGL 2.1.x (and prior) and TurboVNC.  libjpeg-turbo contains a wrapper
+library (TurboJPEG/OSS) that emulates the TurboJPEG API using libjpeg-turbo
+instead of the closed source Intel Performance Primitives.  You can replace the
+TurboJPEG/IPP package on Linux systems with the libjpeg-turbo package in order
+to make existing releases of VirtualGL 2.1.x and TurboVNC use the new codec at
+run time.  Note that the 64-bit libjpeg-turbo packages contain only 64-bit
+binaries, whereas the TurboJPEG/IPP 64-bit packages contain both 64-bit and
+32-bit binaries.  Thus, to replace a TurboJPEG/IPP 64-bit package, install
+both the 64-bit and 32-bit versions of libjpeg-turbo.
+
+You can also build the VirtualGL 2.1.x and TurboVNC source code with
+the libjpeg-turbo SDK instead of TurboJPEG/IPP.  It should work identically.
+libjpeg-turbo also includes static library versions of TurboJPEG/OSS, which
+are used to build VirtualGL 2.2 and later.
+
+========================================
+Using libjpeg-turbo in Your Own Programs
+========================================
+
+For the most part, libjpeg-turbo should work identically to libjpeg, so in
+most cases, an application can be built against libjpeg and then run against
+libjpeg-turbo.  On Unix systems, you can build against libjpeg-turbo instead
+of libjpeg by setting
+
+  CPATH=/opt/libjpeg-turbo/include
+  and
+  LIBRARY_PATH=/opt/libjpeg-turbo/{lib}
+
+({lib} = lib, lib32, lib64, or lib/amd64, as appropriate.)
+
+This is useful, for instance, if you want to build an application that
+leverages the libjpeg-turbo colorspace extensions (see below.)  On Linux and
+Solaris systems, you would still need to manipulate the LD_LIBRARY_PATH or sym
+links appropriately to use libjpeg-turbo at run time.  On such systems, you can
+pass -R /opt/libjpeg-turbo/{lib} to the linker to force the use of
+libjpeg-turbo at run time rather than libjpeg (also useful if you want to
+leverage the colorspace extensions), or you can link against the libjpeg-turbo
+static library.
+
+To force a Linux or Solaris application to link against the static version of
+libjpeg-turbo, you can use the following linker options:
+
+  -Wl,-Bstatic -ljpeg -Wl,-Bdynamic
+
+or you can simply add /opt/libjpeg-turbo/{lib}/libjpeg.a to the linker command
+line (the latter is the only way to link against the static version of
+libjpeg-turbo on OS X.)
+
+To build Visual C++ applications using libjpeg-turbo, add
+c:\libjpeg-turbo\include to your system or user INCLUDE environment variable
+and c:\libjpeg-turbo\lib to your system or user LIB environment variable, and
+then link against either jpeg.lib (to use jpeg62.dll) or jpeg-static.lib (to
+use the static version of libjpeg-turbo.)
+
+If building an application using Cygwin, then set
+
+  CPATH=/cygdrive/c/libjpeg-turbo/include
+  and
+  LIBRARY_PATH=/cygdrive/c/libjpeg-turbo/lib
+
+If using MinGW, then set
+
+  CPATH=/c/libjpeg-turbo/include
+  and
+  LIBRARY_PATH=/c/libjpeg-turbo/lib
+
+and link using -ljpeg in both cases.  NOTE: The static libraries shipped with
+the Windows version of libjpeg-turbo cannot be used with MinGW and Cygwin.  If
+you wish to link statically with libjpeg-turbo using MinGW or Cygwin, then you
+will need to build libjpeg-turbo from source using GCC.
+
+=====================
+Colorspace Extensions
+=====================
+
+libjpeg-turbo includes extensions which allow JPEG images to be compressed
+directly from (and decompressed directly to) buffers which use BGR, BGRA,
+RGBA, ABGR, and ARGB pixel ordering.  This is implemented with six new
+colorspace constants:
+
+  JCS_EXT_RGB   /* red/green/blue */
+  JCS_EXT_RGBX  /* red/green/blue/x */
+  JCS_EXT_BGR   /* blue/green/red */
+  JCS_EXT_BGRX  /* blue/green/red/x */
+  JCS_EXT_XBGR  /* x/blue/green/red */
+  JCS_EXT_XRGB  /* x/red/green/blue */
+
+Setting cinfo.in_color_space (compression) or cinfo.out_color_space
+(decompression) to one of these values will cause libjpeg-turbo to read the
+red, green, and blue values from (or write them to) the appropriate position in
+the pixel when YUV conversion is performed.
+
+Your application can check for the existence of these extensions at compile
+time with:
+
+  #ifdef JCS_EXTENSIONS
+
+At run time, attempting to use these extensions with a version of libjpeg
+that doesn't support them will result in a "Bogus input colorspace" error.

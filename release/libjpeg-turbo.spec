@@ -63,7 +63,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc %{_srcdir}/LICENSE.txt %{_srcdir}/LGPL.txt
+%doc %{_srcdir}/README-turbo.txt %{_srcdir}/README %{_srcdir}/libjpeg.doc %{_srcdir}/LICENSE.txt %{_srcdir}/LGPL.txt
 /opt/%{name}
 /opt/%{name}/%{__lib}
 /opt/%{name}/%{__lib}/libjpeg.so.62.0.0

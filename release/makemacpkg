@@ -92,6 +92,9 @@ chmod 755 $PKGROOT/opt/$PACKAGE_NAME/bin/uninstall
 
 install -m 644 $SRCDIR/LICENSE.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LICENSE.txt || doexit -1
 install -m 644 $SRCDIR/LGPL.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LGPL.txt || doexit -1
+install -m 644 $SRCDIR/README-turbo.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/README-turbo.txt || doexit -1
+install -m 644 $SRCDIR/README $PKGROOT/Library/Documentation/$PACKAGE_NAME/README || doexit -1
+install -m 644 $SRCDIR/libjpeg.doc $PKGROOT/Library/Documentation/$PACKAGE_NAME/libjpeg.doc || doexit -1
 
 sudo chown -R root:admin $PKGROOT || doexit -1
 sudo chown -R root:0 $PKGROOT/usr || doexit -1

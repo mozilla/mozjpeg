@@ -64,6 +64,8 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %doc %{_srcdir}/LICENSE.txt %{_srcdir}/LGPL.txt
+/opt/%{name}
+/opt/%{name}/%{__lib}
 /opt/%{name}/%{__lib}/libjpeg.so.62.0.0
 /opt/%{name}/%{__lib}/libjpeg.so.62
 /opt/%{name}/%{__lib}/libjpeg.so
@@ -71,6 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 /usr/%{__lib}/libturbojpeg.so
 /usr/%{__lib}/libturbojpeg.a
 /usr/include/turbojpeg.h
+/opt/%{name}/include
 /opt/%{name}/include/jconfig.h
 /opt/%{name}/include/jerror.h
 /opt/%{name}/include/jmorecfg.h

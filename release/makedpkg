@@ -29,6 +29,7 @@ DEBARCH=$4
 SRCDIR=$5
 
 umask 022
+rm -f $PACKAGE_NAME\_$DEBARCH.deb
 TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 mkdir $TMPDIR/DEBIAN
 (cat $SRCDIR/release/deb-control.tmpl | sed s/{__PKGNAME}/$PACKAGE_NAME/g \

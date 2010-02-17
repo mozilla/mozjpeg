@@ -1,0 +1,118 @@
+#!/bin/sh
+
+set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
+
+TMPDIR=
+
+onexit()
+{
+	if [ ! "$TMPDIR" = "" ]; then
+		sudo rm -rf $TMPDIR
+	fi
+}
+
+usage()
+{
+	echo "$0 <package name> <version> <build> <package architecture> <source dir.> [combined]"
+	exit 1
+}
+
+COMBINED=0
+
+if [ $# -lt 4 ]; then usage $0; fi
+PACKAGE_NAME=$1
+VERSION=$2
+BUILD=$3
+PKGARCH=$4
+SRCDIR=$5
+CC=$6
+CXX=$7
+if [ $# -gt 7 ]; then
+	if [ "$8" = "combined" ]; then COMBINED=1; fi
+fi
+
+umask 022
+TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
+rm -f $PACKAGE_NAME.pkg.bz2
+PKGROOT=$TMPDIR/pkgbuild/$PACKAGE_NAME
+mkdir -p $PKGROOT
+cp $SRCDIR/release/copyright $TMPDIR
+touch $TMPDIR/depend
+cat $SRCDIR/release/pkginfo.tmpl | sed s/{__VERSION}/$VERSION/g \
+	| sed s/{__BUILD}/$BUILD/g | sed s/{__APPNAME}/$PACKAGE_NAME/g \
+	| sed s/{__PKGNAME}/$PACKAGE_NAME/g > $TMPDIR/pkginfo 
+
+if [ "$PKGARCH" = "i386" ]; then
+	__LIB=lib
+else
+	__LIB=lib/$PKGARCH
+fi
+
+# This mess is to work around a bug in /usr/ccs/bin/make
+make install prefix=$PKGROOT libdir=$PKGROOT/$__LIB AM_MAKEFLAGS="prefix=$PKGROOT libdir=$PKGROOT/$__LIB"
+rm -f $PKGROOT/$__LIB/*.la
+if [ $COMBINED = 1 ]; then
+	if [ ! -d $SRCDIR/solx86 ]; then
+		mkdir -p $SRCDIR/solx86
+	fi
+	PWD=`pwd`
+	cd $SRCDIR/solx86
+	sh $SRCDIR/configure CC=$CC CXX=$CXX
+	make install prefix=$PKGROOT AM_MAKEFLAGS="prefix=$PKGROOT"
+	cd $PWD
+fi
+mkdir -p $PKGROOT/doc
+cp $SRCDIR/LICENSE.txt $SRCDIR/LGPL.txt $SRCDIR/README-turbo.txt $SRCDIR/README $SRCDIR/libjpeg.doc $PKGROOT/doc
+chmod 644 $PKGROOT/doc/*
+
+cat >$TMPDIR/proto <<EOF
+i copyright
+i depend
+i pkginfo
+d none libjpeg-turbo 0755 root bin
+d none libjpeg-turbo/lib 0755 root bin
+EOF
+if [ $COMBINED = 1 ]; then
+cat >>$TMPDIR/proto <<EOF
+f none libjpeg-turbo/lib/libjpeg.so.62.0.0 0755 root bin
+s none libjpeg-turbo/lib/libjpeg.so.62=libjpeg.so.62.0.0
+s none libjpeg-turbo/lib/libjpeg.so=libjpeg.so.62.0.0
+f none libjpeg-turbo/lib/libjpeg.a 0644 root bin
+f none libjpeg-turbo/lib/libturbojpeg.so 0755 root bin
+f none libjpeg-turbo/lib/libturbojpeg.a 0644 root bin
+EOF
+fi
+if [ "${__LIB}" != "lib" ]; then
+echo d none libjpeg-turbo/${__LIB} 0755 root bin >>$TMPDIR/proto
+fi
+cat >>$TMPDIR/proto <<EOF
+f none libjpeg-turbo/${__LIB}/libjpeg.so.62.0.0 0755 root bin
+s none libjpeg-turbo/${__LIB}/libjpeg.so.62=libjpeg.so.62.0.0
+s none libjpeg-turbo/${__LIB}/libjpeg.so=libjpeg.so.62.0.0
+f none libjpeg-turbo/${__LIB}/libjpeg.a 0644 root bin
+f none libjpeg-turbo/${__LIB}/libturbojpeg.so 0755 root bin
+f none libjpeg-turbo/${__LIB}/libturbojpeg.a 0644 root bin
+d none libjpeg-turbo/include 0755 root bin
+f none libjpeg-turbo/include/jconfig.h 0644 root bin
+f none libjpeg-turbo/include/jerror.h 0644 root bin
+f none libjpeg-turbo/include/jmorecfg.h 0644 root bin
+f none libjpeg-turbo/include/jpeglib.h 0644 root bin
+f none libjpeg-turbo/include/turbojpeg.h 0644 root bin
+d none libjpeg-turbo/doc 0755 root bin
+f none libjpeg-turbo/doc/LGPL.txt 0644 root bin
+f none libjpeg-turbo/doc/libjpeg.doc 0644 root bin
+f none libjpeg-turbo/doc/LICENSE.txt 0644 root bin
+f none libjpeg-turbo/doc/README 0644 root bin
+f none libjpeg-turbo/doc/README-turbo.txt 0644 root bin
+EOF
+
+pkgmk -o -r $TMPDIR/pkgbuild -d $TMPDIR -a i386 -f $TMPDIR/proto
+pkgtrans -s $TMPDIR $TMPDIR/$PACKAGE_NAME.pkg $PACKAGE_NAME
+bzip2 $TMPDIR/$PACKAGE_NAME.pkg
+cp $TMPDIR/$PACKAGE_NAME.pkg.bz2 . 
+
+exit

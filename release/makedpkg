@@ -1,15 +1,18 @@
 #!/bin/sh
 
 set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
 
 TMPDIR=
 
-doexit()
+onexit()
 {
 	if [ ! "$TMPDIR" = "" ]; then
 		sudo rm -rf $TMPDIR
 	fi
-	exit $1
 }
 
 usage()
@@ -26,27 +29,27 @@ DEBARCH=$4
 SRCDIR=$5
 
 umask 022
-TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX || doexit -1`
-mkdir $TMPDIR/DEBIAN || doexit -1
+TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
+mkdir $TMPDIR/DEBIAN
 (cat $SRCDIR/release/deb-control.tmpl | sed s/{__PKGNAME}/$PACKAGE_NAME/g \
 	| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
-	| sed s/{__ARCH}/$DEBARCH/g > $TMPDIR/DEBIAN/control) || doexit -1
+	| sed s/{__ARCH}/$DEBARCH/g > $TMPDIR/DEBIAN/control)
 
 if [ "$DEBARCH" = "amd64" ]; then
 	__LIB=lib
 else
 	__LIB=lib32
 fi
-make install prefix=$TMPDIR/opt/$PACKAGE_NAME libdir=$TMPDIR/opt/$PACKAGE_NAME/$__LIB || doexit -1
-rm -f $TMPDIR/opt/$PACKAGE_NAME/$__LIB/*.la || doexit -1
-mkdir -p $TMPDIR/usr/$__LIB || doexit -1
-mv $TMPDIR/opt/$PACKAGE_NAME/$__LIB/libturbojpeg.* $TMPDIR/usr/$__LIB || doexit -1
+make install prefix=$TMPDIR/opt/$PACKAGE_NAME libdir=$TMPDIR/opt/$PACKAGE_NAME/$__LIB
+rm -f $TMPDIR/opt/$PACKAGE_NAME/$__LIB/*.la
+mkdir -p $TMPDIR/usr/$__LIB
+mv $TMPDIR/opt/$PACKAGE_NAME/$__LIB/libturbojpeg.* $TMPDIR/usr/$__LIB
 /sbin/ldconfig -n $TMPDIR/opt/$PACKAGE_NAME/$__LIB
 /sbin/ldconfig -n $TMPDIR/usr/$__LIB
-mkdir -p $TMPDIR/usr/include || doexit -1
-mv $TMPDIR/opt/$PACKAGE_NAME/include/turbojpeg.h $TMPDIR/usr/include || doexit -1
+mkdir -p $TMPDIR/usr/include
+mv $TMPDIR/opt/$PACKAGE_NAME/include/turbojpeg.h $TMPDIR/usr/include
 
-sudo chown -Rh root:root $TMPDIR/* || doexit -1
-dpkg -b $TMPDIR $PACKAGE_NAME\_$DEBARCH.deb || doexit -1
+sudo chown -Rh root:root $TMPDIR/*
+dpkg -b $TMPDIR $PACKAGE_NAME\_$DEBARCH.deb
 
-doexit 0
+exit

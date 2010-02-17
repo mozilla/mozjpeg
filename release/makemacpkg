@@ -1,15 +1,18 @@
 #!/bin/sh
 
 set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
 
 TMPDIR=
 
-doexit()
+onexit()
 {
 	if [ ! "$TMPDIR" = "" ]; then
 		sudo rm -rf $TMPDIR
 	fi
-	exit $1
 }
 
 usage()
@@ -35,16 +38,16 @@ if [ -f $PACKAGE_NAME.dmg ]; then
 fi
 
 umask 022
-TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX || doexit -1`
+TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 PKGROOT=$TMPDIR/pkg/Package_Root
-mkdir -p $PKGROOT || doexit -1
-mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin || doexit -1
-make install prefix=$PKGROOT/opt/$PACKAGE_NAME || doexit -1
-rm -f $PKGROOT/opt/$PACKAGE_NAME/lib/*.la || doexit -1
-mkdir -p $PKGROOT/usr/lib || doexit -1
-mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib || doexit -1
-mkdir -p $PKGROOT/usr/include || doexit -1
-mv $PKGROOT/opt/$PACKAGE_NAME/include/turbojpeg.h $PKGROOT/usr/include || doexit -1
+mkdir -p $PKGROOT
+mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin
+make install prefix=$PKGROOT/opt/$PACKAGE_NAME
+rm -f $PKGROOT/opt/$PACKAGE_NAME/lib/*.la
+mkdir -p $PKGROOT/usr/lib
+mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib
+mkdir -p $PKGROOT/usr/include
+mv $PKGROOT/opt/$PACKAGE_NAME/include/turbojpeg.h $PKGROOT/usr/include
 
 if [ $UNIVERSAL = 1 ]; then
 	if [ ! -d $SRCDIR/osxx86 ]; then
@@ -55,61 +58,61 @@ if [ $UNIVERSAL = 1 ]; then
 	sh $SRCDIR/configure CC=gcc-4.0 CXX=g++-4.0 \
 		CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
 		CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
-		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32' || doexit -1
-	make prefix=$TMPDIR/dist.x86 install || doexit -1
+		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32'
+	make prefix=$TMPDIR/dist.x86 install
 	popd
 	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.dylib -arch x86_64 \
 		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
-		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib || doexit -1
+		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib
 	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.a -arch x86_64 \
 		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a || doexit -1
+		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
 	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libturbojpeg.dylib -arch x86_64 \
 		$PKGROOT/usr/lib/libturbojpeg.dylib \
-		-output $PKGROOT/usr/lib/libturbojpeg.dylib || doexit -1
+		-output $PKGROOT/usr/lib/libturbojpeg.dylib
 	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libturbojpeg.a -arch x86_64 \
 		$PKGROOT/usr/lib/libturbojpeg.a \
-		-output $PKGROOT/usr/lib/libturbojpeg.a || doexit -1
+		-output $PKGROOT/usr/lib/libturbojpeg.a
 fi
 
-install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.62.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib || doexit -1
-install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib || doexit -1
+install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.62.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib
+install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib
 
-mkdir -p $PKGROOT/Library/Documentation/$PACKAGE_NAME || doexit -1
-chmod 1775 $PKGROOT/Library || doexit -1
-chmod 775 $PKGROOT/Library/Documentation || doexit -1
-mkdir -p $TMPDIR/pkg/Resources || doexit -1
+mkdir -p $PKGROOT/Library/Documentation/$PACKAGE_NAME
+chmod 1775 $PKGROOT/Library
+chmod 775 $PKGROOT/Library/Documentation 
+mkdir -p $TMPDIR/pkg/Resources 
 
 (cat $SRCDIR/release/Description.plist.tmpl | sed s/{__VERSION}/$VERSION/g \
 	| sed s/{__APPNAME}/$PACKAGE_NAME/g \
-	> $TMPDIR/pkg/Description.plist) || doexit -1
+	> $TMPDIR/pkg/Description.plist) 
 (cat $SRCDIR/release/Info.plist.tmpl | sed s/{__VERSION}/$VERSION/g	\
-	| sed s/{__BUILD}/$BUILD/g > $TMPDIR/pkg/Info.plist) || doexit -1
+	| sed s/{__BUILD}/$BUILD/g > $TMPDIR/pkg/Info.plist) 
 (cat $SRCDIR/release/uninstall.sh.tmpl \
 	| sed s/{__APPNAME}/$PACKAGE_NAME/g \
-	> $PKGROOT/opt/$PACKAGE_NAME/bin/uninstall) || doexit -1
+	> $PKGROOT/opt/$PACKAGE_NAME/bin/uninstall) 
 chmod 755 $PKGROOT/opt/$PACKAGE_NAME/bin/uninstall
 
-install -m 644 $SRCDIR/LICENSE.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LICENSE.txt || doexit -1
-install -m 644 $SRCDIR/LGPL.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LGPL.txt || doexit -1
-install -m 644 $SRCDIR/README-turbo.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/README-turbo.txt || doexit -1
-install -m 644 $SRCDIR/README $PKGROOT/Library/Documentation/$PACKAGE_NAME/README || doexit -1
-install -m 644 $SRCDIR/libjpeg.doc $PKGROOT/Library/Documentation/$PACKAGE_NAME/libjpeg.doc || doexit -1
+install -m 644 $SRCDIR/LICENSE.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LICENSE.txt 
+install -m 644 $SRCDIR/LGPL.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LGPL.txt 
+install -m 644 $SRCDIR/README-turbo.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/README-turbo.txt 
+install -m 644 $SRCDIR/README $PKGROOT/Library/Documentation/$PACKAGE_NAME/README 
+install -m 644 $SRCDIR/libjpeg.doc $PKGROOT/Library/Documentation/$PACKAGE_NAME/libjpeg.doc 
 
-sudo chown -R root:admin $PKGROOT || doexit -1
-sudo chown -R root:0 $PKGROOT/usr || doexit -1
-cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadMe.rtf $TMPDIR/pkg/Resources/ || doexit -1
+sudo chown -R root:admin $PKGROOT 
+sudo chown -R root:0 $PKGROOT/usr 
+cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadMe.rtf $TMPDIR/pkg/Resources/ 
 
 mkdir $TMPDIR/dmg
 $PACKAGEMAKER -build -v -p $TMPDIR/dmg/$PACKAGE_NAME.pkg \
 	-f $PKGROOT -r $TMPDIR/pkg/Resources \
-	-i $TMPDIR/pkg/Info.plist -d $TMPDIR/pkg/Description.plist || doexit -1
-install -m 644 $SRCDIR/release/uninstall.applescript $TMPDIR || doexit -1
-sudo osacompile -t APPL -o "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" $TMPDIR/uninstall.applescript || doexit -1
-sudo chown -R $USER "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" || doexit -1
+	-i $TMPDIR/pkg/Info.plist -d $TMPDIR/pkg/Description.plist 
+install -m 644 $SRCDIR/release/uninstall.applescript $TMPDIR 
+sudo osacompile -t APPL -o "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" $TMPDIR/uninstall.applescript 
+sudo chown -R $USER "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" 
 hdiutil create -fs HFS+ -volname $PACKAGE_NAME-$VERSION \
 	-srcfolder "$TMPDIR/dmg" \
-	$TMPDIR/$PACKAGE_NAME.dmg || doexit -1
-cp $TMPDIR/$PACKAGE_NAME.dmg . || doexit -1
+	$TMPDIR/$PACKAGE_NAME.dmg 
+cp $TMPDIR/$PACKAGE_NAME.dmg . 
 
-doexit 0
+exit

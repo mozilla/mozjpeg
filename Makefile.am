@@ -144,3 +144,17 @@ endif
 
 dmg: all
 	sh $(srcdir)/release/makemacpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} ${srcdir}
+
+if X86_64
+
+sunpkg: all
+	sh $(srcdir)/release/makesunpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
+		${DEBARCH} ${srcdir} $(CC) $(CXX) combined
+
+else
+
+sunpkg: all
+	sh $(srcdir)/release/makesunpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
+		${DEBARCH} ${srcdir} $(CC) $(CXX)
+
+endif

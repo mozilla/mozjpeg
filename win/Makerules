@@ -30,9 +30,9 @@ endif
 CFLAGS = -W3 -wd4996 -Iwin -I.
 CDEFINES = -DWIN32 -D_CRT_SECURE_NO_DEPRECATE
 ifeq ($(WIN64), yes)
-NAFLAGS = -fwin64 -DWIN64 -D__x86_64__ -Iwin/
+NAFLAGS = -fwin64 -DWIN64 -DMSVC -D__x86_64__ -Iwin/
 else
-NAFLAGS = -fwin32 -DWIN32 -Iwin/
+NAFLAGS = -fwin32 -DWIN32 -DMSVC -Iwin/
 endif
 ifeq ($(DEBUG), yes)
  CFLAGS := $(CFLAGS) -Od -MTd -Zi

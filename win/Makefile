@@ -3,133 +3,152 @@ vpath %.asm simd
 
 include win/Makerules
 
-TARGETS = jpeg62.dll \
-          jpeg.lib \
-          jpeg-static.lib \
-          cjpeg.exe \
-          djpeg.exe \
-          jpegtran.exe \
-          rdjpgcom.exe \
-          wrjpgcom.exe \
-          turbojpeg.dll \
-          turbojpeg.lib \
-          turbojpeg-static.lib \
-          jpgtest.exe \
-          jpegut.exe
+TARGETS = $(ODIR)/jpeg62.dll \
+          $(ODIR)/jpeg.lib \
+          $(ODIR)/jpeg-static.lib \
+          $(ODIR)/cjpeg.exe \
+          $(ODIR)/djpeg.exe \
+          $(ODIR)/jpegtran.exe \
+          $(ODIR)/rdjpgcom.exe \
+          $(ODIR)/wrjpgcom.exe \
+          $(ODIR)/turbojpeg.dll \
+          $(ODIR)/turbojpeg.lib \
+          $(ODIR)/turbojpeg-static.lib \
+          $(ODIR)/jpgtest.exe \
+          $(ODIR)/jpegut.exe
 
-LOBJS = jcapimin.obj \
-        jcapistd.obj \
-        jccoefct.obj \
-        jccolor.obj \
-        jcdctmgr.obj \
-        jchuff.obj \
-        jcinit.obj \
-        jcmainct.obj \
-        jcmarker.obj \
-        jcmaster.obj \
-        jcomapi.obj \
-        jcparam.obj \
-        jcphuff.obj \
-        jcprepct.obj \
-        jcsample.obj \
-        jctrans.obj \
-        jdapimin.obj \
-        jdapistd.obj \
-        jdatadst.obj \
-        jdatasrc.obj \
-        jdcoefct.obj \
-        jdcolor.obj \
-        jddctmgr.obj \
-        jdhuff.obj \
-        jdinput.obj \
-        jdmainct.obj \
-        jdmarker.obj \
-        jdmaster.obj \
-        jdmerge.obj \
-        jdphuff.obj \
-        jdpostct.obj \
-        jdsample.obj \
-        jdtrans.obj \
-        jerror.obj \
-        jfdctflt.obj \
-        jfdctfst.obj \
-        jfdctint.obj \
-        jidctflt.obj \
-        jidctfst.obj \
-        jidctint.obj \
-        jidctred.obj \
-        jquant1.obj \
-        jquant2.obj \
-        jutils.obj \
-        jmemmgr.obj \
-        jmemnobs.obj
+LOBJS = $(ODIR)/jcapimin.obj \
+        $(ODIR)/jcapistd.obj \
+        $(ODIR)/jccoefct.obj \
+        $(ODIR)/jccolor.obj \
+        $(ODIR)/jcdctmgr.obj \
+        $(ODIR)/jchuff.obj \
+        $(ODIR)/jcinit.obj \
+        $(ODIR)/jcmainct.obj \
+        $(ODIR)/jcmarker.obj \
+        $(ODIR)/jcmaster.obj \
+        $(ODIR)/jcomapi.obj \
+        $(ODIR)/jcparam.obj \
+        $(ODIR)/jcphuff.obj \
+        $(ODIR)/jcprepct.obj \
+        $(ODIR)/jcsample.obj \
+        $(ODIR)/jctrans.obj \
+        $(ODIR)/jdapimin.obj \
+        $(ODIR)/jdapistd.obj \
+        $(ODIR)/jdatadst.obj \
+        $(ODIR)/jdatasrc.obj \
+        $(ODIR)/jdcoefct.obj \
+        $(ODIR)/jdcolor.obj \
+        $(ODIR)/jddctmgr.obj \
+        $(ODIR)/jdhuff.obj \
+        $(ODIR)/jdinput.obj \
+        $(ODIR)/jdmainct.obj \
+        $(ODIR)/jdmarker.obj \
+        $(ODIR)/jdmaster.obj \
+        $(ODIR)/jdmerge.obj \
+        $(ODIR)/jdphuff.obj \
+        $(ODIR)/jdpostct.obj \
+        $(ODIR)/jdsample.obj \
+        $(ODIR)/jdtrans.obj \
+        $(ODIR)/jerror.obj \
+        $(ODIR)/jfdctflt.obj \
+        $(ODIR)/jfdctfst.obj \
+        $(ODIR)/jfdctint.obj \
+        $(ODIR)/jidctflt.obj \
+        $(ODIR)/jidctfst.obj \
+        $(ODIR)/jidctint.obj \
+        $(ODIR)/jidctred.obj \
+        $(ODIR)/jquant1.obj \
+        $(ODIR)/jquant2.obj \
+        $(ODIR)/jutils.obj \
+        $(ODIR)/jmemmgr.obj \
+        $(ODIR)/jmemnobs.obj
 
 ifeq ($(WITH_SIMD), yes)
 
- SIMD_OBJS = jsimd_i386.obj \
-             jsimdcpu.obj \
-             jccolmmx.obj \
-             jdcolmmx.obj \
-             jcsammmx.obj \
-             jdsammmx.obj \
-             jdmermmx.obj \
-             jcqntmmx.obj \
-             jfmmxfst.obj \
-             jfmmxint.obj \
-             jimmxred.obj \
-             jimmxint.obj \
-             jimmxfst.obj \
-             jcqnt3dn.obj \
-             jf3dnflt.obj \
-             ji3dnflt.obj \
-             jcqntsse.obj \
-             jfsseflt.obj \
-             jisseflt.obj \
-             jccolss2.obj \
-             jdcolss2.obj \
-             jcsamss2.obj \
-             jdsamss2.obj \
-             jdmerss2.obj \
-             jcqnts2i.obj \
-             jfss2fst.obj \
-             jfss2int.obj \
-             jiss2red.obj \
-             jiss2int.obj \
-             jiss2fst.obj \
-             jcqnts2f.obj \
-             jiss2flt.obj
+ ifeq ($(WIN64), yes)
+  SIMD_OBJS = $(ODIR)/jsimd_x86_64.obj \
+              $(ODIR)/jfsseflt-64.obj \
+              $(ODIR)/jccolss2-64.obj \
+              $(ODIR)/jdcolss2-64.obj \
+              $(ODIR)/jcsamss2-64.obj \
+              $(ODIR)/jdsamss2-64.obj \
+              $(ODIR)/jdmerss2-64.obj \
+              $(ODIR)/jcqnts2i-64.obj \
+              $(ODIR)/jfss2fst-64.obj \
+              $(ODIR)/jfss2int-64.obj \
+              $(ODIR)/jiss2red-64.obj \
+              $(ODIR)/jiss2int-64.obj \
+              $(ODIR)/jiss2fst-64.obj \
+              $(ODIR)/jcqnts2f-64.obj \
+              $(ODIR)/jiss2flt-64.obj
+ else
+  SIMD_OBJS = $(ODIR)/jsimd_i386.obj \
+              $(ODIR)/jsimdcpu.obj \
+              $(ODIR)/jccolmmx.obj \
+              $(ODIR)/jdcolmmx.obj \
+              $(ODIR)/jcsammmx.obj \
+              $(ODIR)/jdsammmx.obj \
+              $(ODIR)/jdmermmx.obj \
+              $(ODIR)/jcqntmmx.obj \
+              $(ODIR)/jfmmxfst.obj \
+              $(ODIR)/jfmmxint.obj \
+              $(ODIR)/jimmxred.obj \
+              $(ODIR)/jimmxint.obj \
+              $(ODIR)/jimmxfst.obj \
+              $(ODIR)/jcqnt3dn.obj \
+              $(ODIR)/jf3dnflt.obj \
+              $(ODIR)/ji3dnflt.obj \
+              $(ODIR)/jcqntsse.obj \
+              $(ODIR)/jfsseflt.obj \
+              $(ODIR)/jisseflt.obj \
+              $(ODIR)/jccolss2.obj \
+              $(ODIR)/jdcolss2.obj \
+              $(ODIR)/jcsamss2.obj \
+              $(ODIR)/jdsamss2.obj \
+              $(ODIR)/jdmerss2.obj \
+              $(ODIR)/jcqnts2i.obj \
+              $(ODIR)/jfss2fst.obj \
+              $(ODIR)/jfss2int.obj \
+              $(ODIR)/jiss2red.obj \
+              $(ODIR)/jiss2int.obj \
+              $(ODIR)/jiss2fst.obj \
+              $(ODIR)/jcqnts2f.obj \
+              $(ODIR)/jiss2flt.obj
+ endif
 
  LOBJS := $(LOBJS) $(SIMD_OBJS)
 
 else
 
- LOBJS := $(LOBJS) jsimd_none.obj
+ LOBJS := $(LOBJS) $(ODIR)/jsimd_none.obj
 
 endif
 
 OBJS := $(LOBJS) \
-        cdjpeg.obj \
-        cjpeg.obj \
-        djpeg.obj \
-        jpegtran.obj \
-        rdbmp.obj \
-        rdcolmap.obj \
-        rdgif.obj \
-        rdjpgcom.obj \
-        rdppm.obj \
-        rdtarga.obj \
-        rdswitch.obj \
-        rdtarga.obj \
-        transupp.obj \
-        wrbmp.obj \
-        wrgif.obj \
-        wrppm.obj \
-        wrtarga.obj \
-        wrjpgcom.obj \
-        turbojpegl.obj \
-        jpgtest.obj \
-        jpegut.obj \
-        bmp.obj
+        $(ODIR)/cdjpeg.obj \
+        $(ODIR)/cjpeg.obj \
+        $(ODIR)/djpeg.obj \
+        $(ODIR)/jpegtran.obj \
+        $(ODIR)/rdbmp.obj \
+        $(ODIR)/rdcolmap.obj \
+        $(ODIR)/rdgif.obj \
+        $(ODIR)/rdjpgcom.obj \
+        $(ODIR)/rdppm.obj \
+        $(ODIR)/rdtarga.obj \
+        $(ODIR)/rdswitch.obj \
+        $(ODIR)/rdtarga.obj \
+        $(ODIR)/transupp.obj \
+        $(ODIR)/wrbmp.obj \
+        $(ODIR)/wrgif.obj \
+        $(ODIR)/wrppm.obj \
+        $(ODIR)/wrtarga.obj \
+        $(ODIR)/wrjpgcom.obj \
+        $(ODIR)/turbojpegl.obj \
+        $(ODIR)/turbojpegl-dll.obj \
+        $(ODIR)/jpgtest.obj \
+        $(ODIR)/jpegut.obj \
+        $(ODIR)/bmp.obj
 
 all: $(TARGETS)
 
@@ -140,61 +159,80 @@ HDRS := $(wildcard *.h)
 $(OBJS): $(HDRS)
 
 ifeq ($(WITH_SIMD), yes)
- SIMD_HDRS := $(wildcard simd/*.inc)
- $(SIMD_OBJS): $(SIMD_HDRS)
+SIMD_HDRS := $(wildcard simd/*.inc)
+$(SIMD_OBJS): $(SIMD_HDRS)
+
+ifeq ($(WIN64), yes)
+$(ODIR)/jccolss2-64.obj: simd/jcclrss2-64.asm
+$(ODIR)/jdcolss2-64.obj: simd/jdclrss2-64.asm
+$(ODIR)/jdmerss2-64.obj: simd/jdmrgss2-64.asm
+else
+$(ODIR)/jccolmmx.obj: simd/jcclrmmx.asm
+$(ODIR)/jccolss2.obj: simd/jcclrss2.asm
+$(ODIR)/jdcolmmx.obj: simd/jdclrmmx.asm
+$(ODIR)/jdcolss2.obj: simd/jdclrss2.asm
+$(ODIR)/jdmermmx.obj: simd/jdmrgmmx.asm
+$(ODIR)/jdmerss2.obj: simd/jdmrgss2.asm
 endif
 
+endif
 
-
-jpeg-static.lib: $(LOBJS)
+$(ODIR)/jpeg-static.lib: $(LOBJS)
 	$(AR) -out:$@ $^
 
-jpeg62.dll jpeg.lib: $(LOBJS) win/jpeg.def
-	$(LINK) $(LDFLAGS) -dll -out:jpeg62.dll -implib:jpeg.lib -def:win/jpeg.def \
-		$(LOBJS)
+$(ODIR)/jpeg62.dll $(ODIR)/jpeg.lib: $(LOBJS) win/jpeg.def
+	$(LINK) $(LDFLAGS) -dll -out:$(ODIR)/jpeg62.dll -implib:$(ODIR)/jpeg.lib \
+		-def:win/jpeg.def $(LOBJS)
 
-cjpeg.exe: cdjpeg.obj cjpeg.obj rdbmp.obj rdgif.obj rdppm.obj rdswitch.obj \
-	rdtarga.obj jpeg.lib
-	$(LINK) $(LDFLAGS) -out:$@ $^
-
-djpeg.exe: cdjpeg.obj djpeg.obj rdcolmap.obj rdswitch.obj wrbmp.obj wrgif.obj \
-	wrppm.obj wrtarga.obj jpeg.lib
-	$(LINK) $(LDFLAGS) -out:$@ $^
-
-jpegtran.exe: cdjpeg.obj jpegtran.obj rdswitch.obj transupp.obj jpeg.lib
-	$(LINK) $(LDFLAGS) -out:$@ $^
-
-rdjpgcom.exe: rdjpgcom.obj jpeg.lib
-	$(LINK) $(LDFLAGS) -out:$@ $^
-
-wrjpgcom.exe: wrjpgcom.obj jpeg.lib
+$(ODIR)/cjpeg.exe: $(ODIR)/cdjpeg.obj $(ODIR)/cjpeg.obj $(ODIR)/rdbmp.obj \
+	$(ODIR)/rdgif.obj $(ODIR)/rdppm.obj $(ODIR)/rdswitch.obj \
+	$(ODIR)/rdtarga.obj $(ODIR)/jpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
 
-turbojpeg-static.lib: turbojpegl.obj $(LOBJS)
+$(ODIR)/djpeg.exe: $(ODIR)/cdjpeg.obj $(ODIR)/djpeg.obj $(ODIR)/rdcolmap.obj \
+	$(ODIR)/rdswitch.obj $(ODIR)/wrbmp.obj $(ODIR)/wrgif.obj $(ODIR)/wrppm.obj \
+	$(ODIR)/wrtarga.obj $(ODIR)/jpeg.lib
+	$(LINK) $(LDFLAGS) -out:$@ $^
+
+
+$(ODIR)/jpegtran.exe: $(ODIR)/cdjpeg.obj $(ODIR)/jpegtran.obj \
+	$(ODIR)/rdswitch.obj $(ODIR)/transupp.obj $(ODIR)/jpeg.lib
+	$(LINK) $(LDFLAGS) -out:$@ $^
+
+$(ODIR)/rdjpgcom.exe: $(ODIR)/rdjpgcom.obj $(ODIR)/jpeg.lib
+	$(LINK) $(LDFLAGS) -out:$@ $^
+
+$(ODIR)/wrjpgcom.exe: $(ODIR)/wrjpgcom.obj $(ODIR)/jpeg.lib
+	$(LINK) $(LDFLAGS) -out:$@ $^
+
+
+$(ODIR)/turbojpeg-static.lib: $(ODIR)/turbojpegl.obj $(LOBJS)
 	$(AR) -out:$@ $^
 
-turbojpeg-dll.obj: turbojpegl.c
+$(ODIR)/turbojpeg-dll.obj: turbojpegl.c
 	$(CC) $(CFLAGS) -DDLLDEFINE -c $< -Fo$@
 
-turbojpeg.dll turbojpeg.lib: turbojpeg-dll.obj $(LOBJS)
-	$(LINK) $(LDFLAGS) -dll -out:turbojpeg.dll -implib:turbojpeg.lib $^
+$(ODIR)/turbojpeg.dll $(ODIR)/turbojpeg.lib: $(ODIR)/turbojpeg-dll.obj $(LOBJS)
+	$(LINK) $(LDFLAGS) -dll -out:$(ODIR)/turbojpeg.dll \
+		-implib:$(ODIR)/turbojpeg.lib $^
 
 
-jpgtest.exe: jpgtest.obj bmp.obj turbojpeg.lib
+$(ODIR)/jpgtest.exe: $(ODIR)/jpgtest.obj $(ODIR)/bmp.obj $(ODIR)/turbojpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
-jpegut.exe: jpegut.obj turbojpeg.lib
+$(ODIR)/jpegut.exe: $(ODIR)/jpegut.obj $(ODIR)/turbojpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
 
 dist: all
-	$(RM) libjpeg-turbo.exe
+	$(RM) $(ODIR)/libjpeg-turbo.exe
 	makensis /nocd //DVERSION=$(VERSION) release/libjpeg-turbo.nsi || \
 	makensis /nocd /DVERSION=$(VERSION) release/libjpeg-turbo.nsi  # Cygwin doesn't like the //
 
 
-test: testclean cjpeg.exe djpeg.exe jpegtran.exe
+test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe
+	cd $(ODIR)
 	jpegut
 	djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg
 	djpeg -dct int -bmp -colors 256 -outfile testout.bmp  testorig.jpg
@@ -210,16 +248,16 @@ test: testclean cjpeg.exe djpeg.exe jpegtran.exe
 	cmp testorig.jpg testoutt.jpg
 
 testclean:
-	$(RM) testout*
-	$(RM) *_GRAYQ[0-9]*.bmp
-	$(RM) *_GRAYQ[0-9]*.ppm
-	$(RM) *_GRAYQ[0-9]*.jpg
-	$(RM) *_420Q[0-9]*.bmp
-	$(RM) *_420Q[0-9]*.ppm
-	$(RM) *_420Q[0-9]*.jpg
-	$(RM) *_422Q[0-9]*.bmp
-	$(RM) *_422Q[0-9]*.ppm
-	$(RM) *_422Q[0-9]*.jpg
-	$(RM) *_444Q[0-9]*.bmp
-	$(RM) *_444Q[0-9]*.ppm
-	$(RM) *_444Q[0-9]*.jpg
+	$(RM) $(ODIR)/testout*
+	$(RM) $(ODIR)/*_GRAYQ[0-9]*.bmp
+	$(RM) $(ODIR)/*_GRAYQ[0-9]*.ppm
+	$(RM) $(ODIR)/*_GRAYQ[0-9]*.jpg
+	$(RM) $(ODIR)/*_420Q[0-9]*.bmp
+	$(RM) $(ODIR)/*_420Q[0-9]*.ppm
+	$(RM) $(ODIR)/*_420Q[0-9]*.jpg
+	$(RM) $(ODIR)/*_422Q[0-9]*.bmp
+	$(RM) $(ODIR)/*_422Q[0-9]*.ppm
+	$(RM) $(ODIR)/*_422Q[0-9]*.jpg
+	$(RM) $(ODIR)/*_444Q[0-9]*.bmp
+	$(RM) $(ODIR)/*_444Q[0-9]*.ppm
+	$(RM) $(ODIR)/*_444Q[0-9]*.jpg

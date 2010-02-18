@@ -1,3 +1,19 @@
+ODIR = windows
+WIN64 = no
+# Win64 doesn't work yet, for unknown reasons
+#ifeq ($(PROCESSOR_ARCHITECTURE), AMD64)
+# WIN64 = yes
+#else
+# ifeq ($(PROCESSOR_ARCHITEW6432), AMD64)
+#  WIN64 = yes
+# endif
+#endif
+ifeq ($(WIN64), yes)
+ODIR = windows64
+endif
+
+_DUMMY := $(shell mkdir -p $(ODIR))
+
 VERSION = 0.0.90
 
 CC = "cl" -nologo
@@ -5,7 +21,7 @@ CXX = "cl" -EHsc -nologo
 AR = "link" -lib -nologo
 LINK = "link" -nologo
 ifeq ($(DEBUG), yes)
- LINK = "link" -nologo -debug
+ LINK = "link" -nologo -debug -nodefaultlib:libcmt
 endif
 ifeq ($(NASM),)
 NASM = nasm
@@ -13,7 +29,11 @@ endif
 
 CFLAGS = -W3 -wd4996 -Iwin -I.
 CDEFINES = -DWIN32 -D_CRT_SECURE_NO_DEPRECATE
+ifeq ($(WIN64), yes)
+NAFLAGS = -fwin64 -DWIN64 -D__x86_64__ -Iwin/
+else
 NAFLAGS = -fwin32 -DWIN32 -Iwin/
+endif
 ifeq ($(DEBUG), yes)
  CFLAGS := $(CFLAGS) -Od -MTd -Zi
  NAFLAGS := $(NAFLAGS) -g
@@ -28,14 +48,14 @@ ifeq ($(WITH_SIMD), yes)
 endif
 
 
-%.obj: %.c
+$(ODIR)/%.obj: %.c
 	$(CC) $(CFLAGS) -c $< -Fo$@
 
-%.obj: %.cxx
+$(ODIR)/%.obj: %.cxx
 	$(CXX) $(CXXFLAGS) -c $< -Fo$@
 
-%.obj: %.asm
+$(ODIR)/%.obj: %.asm
 	$(NASM) $(NAFLAGS) -Isimd/ -o $@ $<
 
-%.lib: %.obj
+$(ODIR)/%.lib: $(ODIR)/%.obj
 	$(AR) -out:$@ $<

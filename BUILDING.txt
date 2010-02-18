@@ -191,8 +191,9 @@ To build a 64-bit version of libjpeg-turbo using Sun Studio, add
 
 to the configure command line.
 
+
 *******************************************************************************
-**     Windows (Visual C++)
+**     Building on Windows (Visual C++)
 *******************************************************************************
 
 ==================
@@ -203,41 +204,29 @@ Build Requirements
    * Can be found in MSYS (http://www.mingw.org/download.shtml) or
      Cygwin (http://www.cygwin.com/)
 
--- Microsoft Visual C++ 2003 or later
-   * Tested with Microsoft Visual C++ 2008 Express Edition (free download):
+-- Windows SDK for Windows Server 2008 and .NET Framework 3.5 (or a later
+   version)
 
-     http://msdn.microsoft.com/vstudio/express/visualc/
+   http://msdn.microsoft.com/en-us/windows/dd146047.aspx
 
-   * Add the compiler binary directories (for instance,
+   * The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
+     everything necessary to build libjpeg-turbo.  If you do not already have
+     Visual C++ installed, then this is the recommended solution.  Also tested
+     with Microsoft Visual C++ 2008 Express Edition (both are free downloads.)
+   * Add the compiler and SDK binary directories (for instance,
      c:\Program Files\Microsoft Visual Studio 9.0\VC\BIN;
-     c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE)
+     c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE;
+     c:\Program Files\Microsoft SDKs\Windows\v6.1\bin)
      to the system or user PATH environment variable prior to building
      libjpeg-turbo.
-   * Add the compiler include directory (for instance,
-     c:\Program Files\Microsoft Visual Studio 9.0\VC\INCLUDE)
+   * Add the compiler and SDK include directories (for instance,
+     c:\Program Files\Microsoft Visual Studio 9.0\VC\INCLUDE;
+     c:\Program Files\Microsoft SDKs\Windows\v6.1\include)
      to the system or user INCLUDE environment variable prior to building
      libjpeg-turbo.
    * Add the compiler library directory (for instance,
-     c:\Program Files\Microsoft Visual Studio 9.0\VC\LIB)
-     to the system or user LIB environment variable prior to building
-     libjpeg-turbo.
-
--- Microsoft Windows SDK
-   * This is included with Microsoft Visual C++ 2008 Express Edition, but users
-     of prior editions of Visual C++ can download the SDK from:
-
-     http://msdn2.microsoft.com/en-us/windowsserver/bb980924.aspx
-
-   * Add the SDK binary directory (for instance,
-     c:\Program Files\Microsoft SDKs\Windows\v6.0A\bin)
-     to the system or user PATH environment variable prior to building
-     libjpeg-turbo.
-   * Add the SDK include directory (for instance,
-     c:\Program Files\Microsoft SDKs\Windows\v6.0A\include)
-     to the system or user INCLUDE environment variable prior to building
-     libjpeg-turbo.
-   * Add the SDK library directory (for instance,
-     c:\Program Files\Microsoft SDKs\Windows\v6.0A\lib)
+     c:\Program Files\Microsoft Visual Studio 9.0\VC\LIB;
+     c:\Program Files\Microsoft SDKs\Windows\v6.1\lib)
      to the system or user LIB environment variable prior to building
      libjpeg-turbo.
 
@@ -250,7 +239,7 @@ Building libjpeg-turbo
   cd libjpeg-turbo
   make -f win/Makefile
 
-This will generate the following files:
+This will generate the following files under libjpeg-turbo\windows\:
 
   jpeg-static.lib        Static link library for libjpeg-turbo
   jpeg62.dll             Shared library for libjpeg-turbo
@@ -258,6 +247,13 @@ This will generate the following files:
   turbojpeg-static.lib   Static link library for TurboJPEG/OSS
   turbojpeg.dll          Shared library for TurboJPEG/OSS
   turbojpeg.lib          Development stub for TurboJPEG/OSS shared library
+
+#If a 64-bit Windows platform is detected, then the build system will attempt
+#to build a 64-bit version of libjpeg-turbo.  You can override this by running
+#
+#  make -f win/Makefile WIN64=no
+
+Win64 doesn't work yet
 
 
 *******************************************************************************

@@ -95,18 +95,24 @@ dist-hook:
 
 test: testclean cjpeg djpeg jpegtran
 	./jpegut
-	./djpeg -dct int -ppm -outfile testout.ppm  $(srcdir)/testorig.jpg
+	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
+	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
+	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgint.jpg testoutint.jpg
+	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
+	cmp $(srcdir)/testimgflt.jpg testoutflt.jpg
+	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
+	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
+	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgint.ppm testoutint.ppm
+	cmp $(srcdir)/testimgfst.ppm testoutfst.ppm
+	cmp $(srcdir)/testorig.ppm testoutflt.ppm
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
-	./cjpeg -dct int -outfile testout.jpg  $(srcdir)/testimg.ppm
-	./djpeg -dct int -ppm -outfile testoutp.ppm $(srcdir)/testprog.jpg
-	./cjpeg -dct int -progressive -opt -outfile testoutp.jpg $(srcdir)/testimg.ppm
-	./jpegtran -outfile testoutt.jpg $(srcdir)/testprog.jpg
-	cmp $(srcdir)/testimg.ppm testout.ppm
 	cmp $(srcdir)/testimg.bmp testout.bmp
-	cmp $(srcdir)/testimg.jpg testout.jpg
-	cmp $(srcdir)/testimg.ppm testoutp.ppm
+	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgp.jpg testoutp.jpg
-	cmp $(srcdir)/testorig.jpg testoutt.jpg
+	./jpegtran -outfile testoutt.jpg testoutp.jpg
+	cmp $(srcdir)/testimgint.jpg testoutt.jpg
 
 testclean:
 	$(RM) testout*

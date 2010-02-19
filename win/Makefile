@@ -231,21 +231,27 @@ dist: all
 	makensis /nocd /DVERSION=$(VERSION) release/libjpeg-turbo.nsi  # Cygwin doesn't like the //
 
 
-test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe
-	cd $(ODIR)
-	jpegut
-	djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg
-	djpeg -dct int -bmp -colors 256 -outfile testout.bmp  testorig.jpg
-	cjpeg -dct int -outfile testout.jpg  testimg.ppm
-	djpeg -dct int -ppm -outfile testoutp.ppm testprog.jpg
-	cjpeg -dct int -progressive -opt -outfile testoutp.jpg testimg.ppm
-	jpegtran -outfile testoutt.jpg testprog.jpg
-	cmp testimg.ppm testout.ppm
-	cmp testimg.bmp testout.bmp
-	cmp testimg.jpg testout.jpg
-	cmp testimg.ppm testoutp.ppm
-	cmp testimgp.jpg testoutp.jpg
-	cmp testorig.jpg testoutt.jpg
+test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe \
+	$(ODIR)/jpegut.exe
+	cd $(ODIR);	./jpegut
+	$(ODIR)/cjpeg -dct int -outfile $(ODIR)/testoutint.jpg testorig.ppm
+	$(ODIR)/cjpeg -dct fast -opt -outfile $(ODIR)/testoutfst.jpg testorig.ppm
+	$(ODIR)/cjpeg -dct float -outfile $(ODIR)/testoutflt.jpg testorig.ppm
+	cmp testimgint.jpg $(ODIR)/testoutint.jpg
+	cmp testimgfst.jpg $(ODIR)/testoutfst.jpg
+	cmp testimgflt.jpg $(ODIR)/testoutflt.jpg
+	$(ODIR)/djpeg -dct int -fast -ppm -outfile $(ODIR)/testoutint.ppm testorig.jpg
+	$(ODIR)/djpeg -dct fast -ppm -outfile $(ODIR)/testoutfst.ppm testorig.jpg
+	$(ODIR)/djpeg -dct float -ppm -outfile $(ODIR)/testoutflt.ppm testorig.jpg
+	cmp testimgint.ppm $(ODIR)/testoutint.ppm
+	cmp testimgfst.ppm $(ODIR)/testoutfst.ppm
+	cmp testorig.ppm $(ODIR)/testoutflt.ppm
+	$(ODIR)/djpeg -dct int -bmp -colors 256 -outfile $(ODIR)/testout.bmp  testorig.jpg
+	cmp testimg.bmp $(ODIR)/testout.bmp
+	$(ODIR)/cjpeg -dct int -progressive -outfile $(ODIR)/testoutp.jpg testorig.ppm
+	cmp testimgp.jpg $(ODIR)/testoutp.jpg
+	$(ODIR)/jpegtran -outfile $(ODIR)/testoutt.jpg $(ODIR)/testoutp.jpg
+	cmp testimgint.jpg $(ODIR)/testoutt.jpg
 
 testclean:
 	$(RM) $(ODIR)/testout*

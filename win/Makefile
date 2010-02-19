@@ -210,10 +210,10 @@ $(ODIR)/wrjpgcom.exe: $(ODIR)/wrjpgcom.obj $(ODIR)/jpeg.lib
 $(ODIR)/turbojpeg-static.lib: $(ODIR)/turbojpegl.obj $(LOBJS)
 	$(AR) -out:$@ $^
 
-$(ODIR)/turbojpeg-dll.obj: turbojpegl.c
+$(ODIR)/turbojpegl-dll.obj: turbojpegl.c
 	$(CC) $(CFLAGS) -DDLLDEFINE -c $< -Fo$@
 
-$(ODIR)/turbojpeg.dll $(ODIR)/turbojpeg.lib: $(ODIR)/turbojpeg-dll.obj $(LOBJS)
+$(ODIR)/turbojpeg.dll $(ODIR)/turbojpeg.lib: $(ODIR)/turbojpegl-dll.obj $(LOBJS)
 	$(LINK) $(LDFLAGS) -dll -out:$(ODIR)/turbojpeg.dll \
 		-implib:$(ODIR)/turbojpeg.lib $^
 

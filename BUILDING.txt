@@ -31,6 +31,8 @@ Build Requirements
      rpmbuild --rebuild nasm-2.05.01-1.src.rpm
      rpm -Uvh /usr/src/redhat/RPMS/$ARCH/nasm-2.05.01-1.$ARCH.rpm
 
+   NOTE: NASM build will fail if texinfo is not installed.
+
 -- GCC v4 or later recommended for best performance
 
 ======================

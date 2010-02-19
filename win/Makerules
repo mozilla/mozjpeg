@@ -19,7 +19,7 @@ VERSION = 0.0.90
 CC = "cl" -nologo
 CXX = "cl" -EHsc -nologo
 AR = "link" -lib -nologo
-LINK = "link" -nologo
+LINK = "link" -nologo -nodefaultlib:libcmt
 ifeq ($(DEBUG), yes)
  LINK = "link" -nologo -debug -nodefaultlib:libcmt
 endif
@@ -35,10 +35,10 @@ else
 NAFLAGS = -fwin32 -DWIN32 -DMSVC -Iwin/
 endif
 ifeq ($(DEBUG), yes)
- CFLAGS := $(CFLAGS) -Od -MTd -Zi
+ CFLAGS := $(CFLAGS) -Od -MDd -Zi
  NAFLAGS := $(NAFLAGS) -g
 else
- CFLAGS := $(CFLAGS) -O2 -MT
+ CFLAGS := $(CFLAGS) -O2 -MD
 endif
 
 WITH_SIMD = yes

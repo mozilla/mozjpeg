@@ -93,7 +93,7 @@ dist-hook:
 	rm -rf `find $(distdir) -name .svn`
 
 
-test: testclean cjpeg djpeg jpegtran
+test: testclean cjpeg djpeg jpegtran jpegut
 	./jpegut
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm

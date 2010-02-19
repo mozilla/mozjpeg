@@ -1,9 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-echo prefix=$prefix
-echo libdir=$libdir
-
 AC_PREREQ([2.56])
 AC_INIT([libjpeg-turbo], [0.0.90])
 BUILD=`date +%Y%m%d`

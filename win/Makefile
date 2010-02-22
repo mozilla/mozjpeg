@@ -254,16 +254,16 @@ test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe \
 	cmp testimgint.jpg $(ODIR)/testoutt.jpg
 
 testclean:
-	$(RM) $(ODIR)/testout*
-	$(RM) $(ODIR)/*_GRAYQ[0-9]*.bmp
-	$(RM) $(ODIR)/*_GRAYQ[0-9]*.ppm
-	$(RM) $(ODIR)/*_GRAYQ[0-9]*.jpg
-	$(RM) $(ODIR)/*_420Q[0-9]*.bmp
-	$(RM) $(ODIR)/*_420Q[0-9]*.ppm
-	$(RM) $(ODIR)/*_420Q[0-9]*.jpg
-	$(RM) $(ODIR)/*_422Q[0-9]*.bmp
-	$(RM) $(ODIR)/*_422Q[0-9]*.ppm
-	$(RM) $(ODIR)/*_422Q[0-9]*.jpg
-	$(RM) $(ODIR)/*_444Q[0-9]*.bmp
-	$(RM) $(ODIR)/*_444Q[0-9]*.ppm
-	$(RM) $(ODIR)/*_444Q[0-9]*.jpg
+	$(RM) $(ODIR)/testout* \
+	$(ODIR)/*_GRAYQ[0-9]*.bmp \
+	$(ODIR)/*_GRAYQ[0-9]*.ppm \
+	$(ODIR)/*_GRAYQ[0-9]*.jpg \
+	$(ODIR)/*_420Q[0-9]*.bmp \
+	$(ODIR)/*_420Q[0-9]*.ppm \
+	$(ODIR)/*_420Q[0-9]*.jpg \
+	$(ODIR)/*_422Q[0-9]*.bmp \
+	$(ODIR)/*_422Q[0-9]*.ppm \
+	$(ODIR)/*_422Q[0-9]*.jpg \
+	$(ODIR)/*_444Q[0-9]*.bmp \
+	$(ODIR)/*_444Q[0-9]*.ppm \
+	$(ODIR)/*_444Q[0-9]*.jpg

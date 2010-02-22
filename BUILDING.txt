@@ -255,7 +255,9 @@ This will generate the following files under libjpeg-turbo\windows\:
 #
 #  make -f win/Makefile WIN64=no
 
-Win64 doesn't work yet
+NOTE:  For unknown reasons, Win64 support doesn't work yet, so at the moment,
+you have to run 'make -f win/Makefile WIN64=yes' to get a 64-bit build on
+64-bit Windows.  The paragraph above will apply once Win64 support is working.
 
 
 *******************************************************************************

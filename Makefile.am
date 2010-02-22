@@ -84,8 +84,8 @@ DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
 	structure.doc coderules.doc filelist.doc jconfig.doc change.log \
 	README-turbo.txt rdrle.c wrrle.c LICENSE.txt LGPL.txt BUILDING.txt
 
-TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \
-        testimgp.jpg
+TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
+	testimgfst.jpg testimgint.jpg testimgp.jpg testimgfst.ppm testimgint.ppm
 
 EXTRA_DIST = win release $(DOCS) $(DISTMANS) $(TESTFILES)
 

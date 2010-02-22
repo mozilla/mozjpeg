@@ -67,8 +67,7 @@ LOBJS = $(ODIR)/jcapimin.obj \
 ifeq ($(WITH_SIMD), yes)
 
  ifeq ($(WIN64), yes)
-  SIMD_OBJS = $(ODIR)/jsimd_x86_64.obj \
-              $(ODIR)/jfsseflt-64.obj \
+  SIMD_OBJS = $(ODIR)/jfsseflt-64.obj \
               $(ODIR)/jccolss2-64.obj \
               $(ODIR)/jdcolss2-64.obj \
               $(ODIR)/jcsamss2-64.obj \
@@ -82,9 +81,9 @@ ifeq ($(WITH_SIMD), yes)
               $(ODIR)/jiss2fst-64.obj \
               $(ODIR)/jcqnts2f-64.obj \
               $(ODIR)/jiss2flt-64.obj
+  LOBJS := $(LOBJS) $(ODIR)/jsimd_x86_64.obj
  else
-  SIMD_OBJS = $(ODIR)/jsimd_i386.obj \
-              $(ODIR)/jsimdcpu.obj \
+  SIMD_OBJS = $(ODIR)/jsimdcpu.obj \
               $(ODIR)/jccolmmx.obj \
               $(ODIR)/jdcolmmx.obj \
               $(ODIR)/jcsammmx.obj \
@@ -115,9 +114,8 @@ ifeq ($(WITH_SIMD), yes)
               $(ODIR)/jiss2fst.obj \
               $(ODIR)/jcqnts2f.obj \
               $(ODIR)/jiss2flt.obj
+  LOBJS := $(LOBJS) $(ODIR)/jsimd_i386.obj
  endif
-
- LOBJS := $(LOBJS) $(SIMD_OBJS)
 
 else
 
@@ -125,7 +123,11 @@ else
 
 endif
 
-OBJS := $(LOBJS) \
+LOBJSSTATIC := $(subst .obj,-static.obj,$(LOBJS))
+LOBJS := $(LOBJS) $(SIMD_OBJS)
+LOBJSSTATIC := $(LOBJSSTATIC) $(SIMD_OBJS)
+
+OBJS := $(LOBJS) $(LOBJSSTATIC) \
         $(ODIR)/cdjpeg.obj \
         $(ODIR)/cjpeg.obj \
         $(ODIR)/djpeg.obj \
@@ -144,15 +146,15 @@ OBJS := $(LOBJS) \
         $(ODIR)/wrppm.obj \
         $(ODIR)/wrtarga.obj \
         $(ODIR)/wrjpgcom.obj \
-        $(ODIR)/turbojpegl.obj \
+        $(ODIR)/turbojpegl-static.obj \
         $(ODIR)/turbojpegl-dll.obj \
         $(ODIR)/jpgtest.obj \
         $(ODIR)/jpegut.obj \
-        $(ODIR)/bmp.obj
+        $(ODIR)/bmp-static.obj
 
 all: $(TARGETS)
 
-clean:
+clean: testclean
 	-$(RM) $(TARGETS) $(OBJS)
 
 HDRS := $(wildcard *.h)
@@ -177,7 +179,7 @@ endif
 
 endif
 
-$(ODIR)/jpeg-static.lib: $(LOBJS)
+$(ODIR)/jpeg-static.lib: $(LOBJSSTATIC)
 	$(AR) -out:$@ $^
 
 $(ODIR)/jpeg62.dll $(ODIR)/jpeg.lib: $(LOBJS) win/jpeg.def
@@ -207,18 +209,20 @@ $(ODIR)/wrjpgcom.exe: $(ODIR)/wrjpgcom.obj $(ODIR)/jpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
 
-$(ODIR)/turbojpeg-static.lib: $(ODIR)/turbojpegl.obj $(LOBJS)
+$(ODIR)/turbojpeg-static.lib: $(ODIR)/turbojpegl-static.obj $(LOBJSSTATIC)
 	$(AR) -out:$@ $^
 
 $(ODIR)/turbojpegl-dll.obj: turbojpegl.c
-	$(CC) $(CFLAGS) -DDLLDEFINE -c $< -Fo$@
+	$(CC) $(CFLAGS) $(LIBCSTATIC) -DDLLDEFINE -c $< -Fo$@
 
-$(ODIR)/turbojpeg.dll $(ODIR)/turbojpeg.lib: $(ODIR)/turbojpegl-dll.obj $(LOBJS)
+$(ODIR)/turbojpeg.dll $(ODIR)/turbojpeg.lib: $(ODIR)/turbojpegl-dll.obj \
+	$(LOBJSSTATIC)
 	$(LINK) $(LDFLAGS) -dll -out:$(ODIR)/turbojpeg.dll \
 		-implib:$(ODIR)/turbojpeg.lib $^
 
 
-$(ODIR)/jpgtest.exe: $(ODIR)/jpgtest.obj $(ODIR)/bmp.obj $(ODIR)/turbojpeg.lib
+$(ODIR)/jpgtest.exe: $(ODIR)/jpgtest.obj $(ODIR)/bmp-static.obj \
+	$(ODIR)/turbojpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
 $(ODIR)/jpegut.exe: $(ODIR)/jpegut.obj $(ODIR)/turbojpeg.lib

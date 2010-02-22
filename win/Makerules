@@ -19,9 +19,9 @@ VERSION = 0.0.90
 CC = "cl" -nologo
 CXX = "cl" -EHsc -nologo
 AR = "link" -lib -nologo
-LINK = "link" -nologo -nodefaultlib:libcmt
+LINK = "link" -nologo
 ifeq ($(DEBUG), yes)
- LINK = "link" -nologo -debug -nodefaultlib:libcmt
+ LINK = "link" -nologo -debug
 endif
 ifeq ($(NASM),)
 NASM = nasm
@@ -35,10 +35,14 @@ else
 NAFLAGS = -fwin32 -DWIN32 -DMSVC -Iwin/
 endif
 ifeq ($(DEBUG), yes)
- CFLAGS := $(CFLAGS) -Od -MDd -Zi
+ CFLAGS := $(CFLAGS) -Od -Zi
  NAFLAGS := $(NAFLAGS) -g
+ LIBCDLL = -MDd
+ LIBCSTATIC = -MTd
 else
- CFLAGS := $(CFLAGS) -O2 -MD
+ CFLAGS := $(CFLAGS) -O2
+ LIBCDLL = -MD
+ LIBCSTATIC = -MT
 endif
 
 WITH_SIMD = yes
@@ -49,10 +53,13 @@ endif
 
 
 $(ODIR)/%.obj: %.c
-	$(CC) $(CFLAGS) -c $< -Fo$@
+	$(CC) $(CFLAGS) $(LIBCDLL) -c $< -Fo$@
+
+$(ODIR)/%-static.obj: %.c
+	$(CC) $(CFLAGS) $(LIBCSTATIC) -c $< -Fo$@
 
 $(ODIR)/%.obj: %.cxx
-	$(CXX) $(CXXFLAGS) -c $< -Fo$@
+	$(CXX) $(CXXFLAGS) $(LIBCSTATIC) -c $< -Fo$@
 
 $(ODIR)/%.obj: %.asm
 	$(NASM) $(NAFLAGS) -Isimd/ -o $@ $<

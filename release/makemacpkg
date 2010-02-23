@@ -61,7 +61,6 @@ if [ $UNIVERSAL = 1 ]; then
 		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32'
 	make prefix=$TMPDIR/dist.x86 install
 	popd
-	ls -l $TMPDIR/dist.x86/lib
 	if [ ! -h $TMPDIR/dist.x86/lib/libjpeg.62.dylib -a \
 		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib ]; then
 		lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.dylib -arch x86_64 \

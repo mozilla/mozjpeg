@@ -61,9 +61,18 @@ if [ $UNIVERSAL = 1 ]; then
 		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32'
 	make prefix=$TMPDIR/dist.x86 install
 	popd
-	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.dylib -arch x86_64 \
-		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
-		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib
+	ls -l $TMPDIR/dist.x86/lib
+	if [ ! -h $TMPDIR/dist.x86/lib/libjpeg.62.dylib -a \
+		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib ]; then
+		lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.dylib -arch x86_64 \
+			$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
+			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib
+	elif [ ! -h $TMPDIR/dist.x86/lib/libjpeg.62.0.0.dylib -a \
+		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib ]; then
+		lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.0.0.dylib \
+			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib \
+			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib
+	fi
 	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.a -arch x86_64 \
 		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
 		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a

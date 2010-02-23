@@ -146,9 +146,10 @@ to the configure command line.
 
 Add
 
-  CC=gcc-4.0 CXX=g++-4.0 CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -O3 -m32' CXXFLAGS='-isysroot \
-    /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
+  CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
+    -mmacosx-version-min=10.4 -O3 -m32' \
+    CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
+    -mmacosx-version-min=10.4 -O3 -m32' \
     LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
     -mmacosx-version-min=10.4 -m32'
 

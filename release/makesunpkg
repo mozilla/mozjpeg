@@ -61,7 +61,7 @@ if [ $COMBINED = 1 ]; then
 	fi
 	PWD=`pwd`
 	cd $SRCDIR/solx86
-	sh $SRCDIR/configure CC=$CC CXX=$CXX
+	sh $SRCDIR/configure CC=$CC CXX=$CXX CFLAGS= CXXFLAGS= LDFLAGS= host_alias=
 	make install prefix=$PKGROOT AM_MAKEFLAGS="prefix=$PKGROOT"
 	cd $PWD
 fi

@@ -1,6 +1,6 @@
 Name "libjpeg-turbo SDK"
-OutFile libjpeg-turbo.exe
-InstallDir c:\libjpeg-turbo
+OutFile ${WSRCDIR}\libjpeg-turbo.exe
+InstallDir ${WINSTDIR}
 
 SetCompressor bzip2
 
@@ -13,13 +13,13 @@ UninstPage instfiles
 Section "libjpeg-turbo SDK (required)"
 	SectionIn RO
 	SetOutPath $SYSDIR
-	File "turbojpeg.dll"
-	File "jpeg62.dll"
+	File "${WSRCDIR}\turbojpeg.dll"
+	File "${WSRCDIR}\jpeg62.dll"
 	SetOutPath $INSTDIR\lib
-	File "turbojpeg.lib"
-	File "turbojpeg-static.lib"
-	File "jpeg.lib"
-	File "jpeg-static.lib"
+	File "${WSRCDIR}\turbojpeg.lib"
+	File "${WSRCDIR}\turbojpeg-static.lib"
+	File "${WSRCDIR}\jpeg.lib"
+	File "${WSRCDIR}\jpeg-static.lib"
 	SetOutPath $INSTDIR\include
 	File "win\jconfig.h"
 	File "jerror.h"

@@ -55,7 +55,7 @@ if [ $UNIVERSAL = 1 ]; then
 	fi
 	mkdir -p $TMPDIR/dist.x86
 	pushd $SRCDIR/osxx86
-	sh $SRCDIR/configure \
+	sh $SRCDIR/configure --with-pic \
 		CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
 		CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
 		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32'

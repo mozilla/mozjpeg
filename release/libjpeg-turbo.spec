@@ -39,7 +39,7 @@ TurboJPEG/IPP.  It is faster in some areas but slower in others.
 #-->%setup -q
 
 #-->%build
-#-->configure prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib}
+#-->configure prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} --with-pic
 #-->make prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib}
 
 %install

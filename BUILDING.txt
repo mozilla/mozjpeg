@@ -293,8 +293,14 @@ make udmg
   later, whereas the 64-bit fork is compatible with OS X 10.6 and later.  OS X
   10.4 compatibility SDK required.
 
+make nsi
+
+  When using MinGW, this creates a Win32 installer for the GCC version of the
+  libjpeg-turbo SDK.  This requires the Nullsoft Install System
+  (http://nsis.sourceforge.net/.)  makensis.exe should be in your PATH.
+
 make -f win/Makefile dist
 
-  This creates a Win32 installer for the libjpeg-turbo SDK.  This requires the
-  Nullsoft Install System (http://nsis.sourceforge.net/.)  makensis.exe should
-  be in your PATH.
+  This creates a Win32 installer for the Visual C++ version of the
+  libjpeg-turbo SDK.  This requires the Nullsoft Install System
+  (http://nsis.sourceforge.net/.)  makensis.exe should be in your PATH.

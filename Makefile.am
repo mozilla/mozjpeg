@@ -164,3 +164,8 @@ sunpkg: all
 		${DEBARCH} ${srcdir} $(CC) $(CXX)
 
 endif
+
+nsi: all
+	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo-gcc \
+		-DWLIBDIR=.libs -DWSRCDIR=$(srcdir) -DWBLDDIR=. -DWHDRDIR=. \
+		-DPLATFORM="GCC" -DGCC $(srcdir)/release/libjpeg-turbo.nsi

@@ -1,6 +1,6 @@
-Name "libjpeg-turbo SDK"
-OutFile ${WSRCDIR}\libjpeg-turbo.exe
-InstallDir ${WINSTDIR}
+Name "libjpeg-turbo SDK for ${PLATFORM}"
+OutFile ${WBLDDIR}\${APPNAME}.exe
+InstallDir c:\${APPNAME}
 
 SetCompressor bzip2
 
@@ -10,35 +10,47 @@ Page instfiles
 UninstPage uninstConfirm
 UninstPage instfiles
 
-Section "libjpeg-turbo SDK (required)"
+Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
 	SectionIn RO
 	SetOutPath $SYSDIR
-	File "${WSRCDIR}\turbojpeg.dll"
-	File "${WSRCDIR}\jpeg62.dll"
+!ifdef GCC
+	File "${WLIBDIR}\libturbojpeg.dll"
+	File "${WLIBDIR}\libjpeg-62.dll"
+!else
+	File "${WLIBDIR}\turbojpeg.dll"
+	File "${WLIBDIR}\jpeg62.dll"
+!endif
 	SetOutPath $INSTDIR\lib
-	File "${WSRCDIR}\turbojpeg.lib"
-	File "${WSRCDIR}\turbojpeg-static.lib"
-	File "${WSRCDIR}\jpeg.lib"
-	File "${WSRCDIR}\jpeg-static.lib"
+!ifdef GCC
+	File "${WLIBDIR}\libturbojpeg.dll.a"
+	File "${WLIBDIR}\libturbojpeg.a"
+	File "${WLIBDIR}\libjpeg.dll.a"
+	File "${WLIBDIR}\libjpeg.a"
+!else
+	File "${WLIBDIR}\turbojpeg.lib"
+	File "${WLIBDIR}\turbojpeg-static.lib"
+	File "${WLIBDIR}\jpeg.lib"
+	File "${WLIBDIR}\jpeg-static.lib"
+!endif
 	SetOutPath $INSTDIR\include
-	File "win\jconfig.h"
-	File "jerror.h"
-	File "jmorecfg.h"
-	File "jpeglib.h"
-	File "turbojpeg.h"
+	File "${WHDRDIR}\jconfig.h"
+	File "${WSRCDIR}\jerror.h"
+	File "${WSRCDIR}\jmorecfg.h"
+	File "${WSRCDIR}\jpeglib.h"
+	File "${WSRCDIR}\turbojpeg.h"
 	SetOutPath $INSTDIR
-	File "README"
-	File "README-turbo.txt"
-	File "libjpeg.doc"
-	File "LGPL.txt"
-	File "LICENSE.txt"
+	File "${WSRCDIR}\README"
+	File "${WSRCDIR}\README-turbo.txt"
+	File "${WSRCDIR}\libjpeg.doc"
+	File "${WSRCDIR}\LGPL.txt"
+	File "${WSRCDIR}\LICENSE.txt"
 
-	WriteRegStr HKLM "SOFTWARE\libjpeg-turbo ${VERSION}" "Install_Dir" "$INSTDIR"
+	WriteRegStr HKLM "SOFTWARE\${APPNAME} ${VERSION}" "Install_Dir" "$INSTDIR"
 
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\libjpeg-turbo ${VERSION}" "DisplayName" "libjpeg-turbo SDK ${VERSION}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\libjpeg-turbo ${VERSION}" "UninstallString" '"$INSTDIR\uninstall_${VERSION}.exe"'
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\libjpeg-turbo ${VERSION}" "NoModify" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\libjpeg-turbo ${VERSION}" "NoRepair" 1
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME} ${VERSION}" "DisplayName" "libjpeg-turbo SDK v${VERSION} for ${PLATFORM}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME} ${VERSION}" "UninstallString" '"$INSTDIR\uninstall_${VERSION}.exe"'
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME} ${VERSION}" "NoModify" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME} ${VERSION}" "NoRepair" 1
 	WriteUninstaller "uninstall_${VERSION}.exe"
 SectionEnd
 
@@ -46,15 +58,24 @@ Section "Uninstall"
 
 	SetShellVarContext all
 
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\libjpeg-turbo ${VERSION}"
-	DeleteRegKey HKLM "SOFTWARE\libjpeg-turbo ${VERSION}"
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME} ${VERSION}"
+	DeleteRegKey HKLM "SOFTWARE\${APPNAME} ${VERSION}"
 
+!ifdef GCC
+	Delete $SYSDIR\libjpeg-62.dll
+	Delete $SYSDIR\libturbojpeg.dll
+	Delete $INSTDIR\lib\libturbojpeg.dll.a"
+	Delete $INSTDIR\lib\libturbojpeg.a"
+	Delete $INSTDIR\lib\libjpeg.dll.a"
+	Delete $INSTDIR\lib\libjpeg.a"
+!else
 	Delete $SYSDIR\jpeg62.dll
 	Delete $SYSDIR\turbojpeg.dll
 	Delete $INSTDIR\lib\jpeg.lib
 	Delete $INSTDIR\lib\jpeg-static.lib
 	Delete $INSTDIR\lib\turbojpeg.lib
 	Delete $INSTDIR\lib\turbojpeg-static.lib
+!endif
 	Delete $INSTDIR\include\jconfig.h"
 	Delete $INSTDIR\include\jerror.h"
 	Delete $INSTDIR\include\jmorecfg.h"

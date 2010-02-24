@@ -229,15 +229,11 @@ $(ODIR)/jpegut.exe: $(ODIR)/jpegut.obj $(ODIR)/turbojpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
 
-WINSTDIR=c:\\libjpeg-turbo
-WSRCDIR=windows
-
 dist: all
 	$(RM) $(ODIR)/libjpeg-turbo.exe
-	makensis /nocd //DVERSION=$(VERSION) //DWINSTDIR=$(WINSTDIR) \
-		//DWSRCDIR=$(WSRCDIR) release/libjpeg-turbo.nsi || \
-	makensis /nocd /DVERSION=$(VERSION) /DWINSTDIR=$(WINSTDIR) \
-		/DWSRCDIR=$(WSRCDIR) release/libjpeg-turbo.nsi  # Cygwin doesn't like the //
+	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo \
+		-DWLIBDIR=windows -DWSRCDIR=. -DWBLDDIR=windows -DWHDRDIR=win \
+		-DPLATFORM="Visual C++" release/libjpeg-turbo.nsi
 
 
 test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe \

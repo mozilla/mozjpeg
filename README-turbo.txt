@@ -117,46 +117,40 @@ of libjpeg by setting
 
 ({lib} = lib, lib32, lib64, or lib/amd64, as appropriate.)
 
-This is useful, for instance, if you want to build an application that
-leverages the libjpeg-turbo colorspace extensions (see below.)  On Linux and
-Solaris systems, you would still need to manipulate the LD_LIBRARY_PATH or sym
-links appropriately to use libjpeg-turbo at run time.  On such systems, you can
-pass -R /opt/libjpeg-turbo/{lib} to the linker to force the use of
-libjpeg-turbo at run time rather than libjpeg (also useful if you want to
-leverage the colorspace extensions), or you can link against the libjpeg-turbo
-static library.
+If using Cygwin, then set
 
-To force a Linux or Solaris application to link against the static version of
-libjpeg-turbo, you can use the following linker options:
+  CPATH=/cygdrive/c/libjpeg-turbo-gcc/include
+  and
+  LIBRARY_PATH=/cygdrive/c/libjpeg-turbo-gcc/lib
+
+If using MinGW, then set
+
+  CPATH=/c/libjpeg-turbo-gcc/include
+  and
+  LIBRARY_PATH=/c/libjpeg-turbo-gcc/lib
+
+Building against libjpeg-turbo is useful, for instance, if you want to build an
+application that leverages the libjpeg-turbo colorspace extensions (see below.)
+On Linux and Solaris systems, you would still need to manipulate the
+LD_LIBRARY_PATH or sym links appropriately to use libjpeg-turbo at run time.
+On such systems, you can pass -R /opt/libjpeg-turbo/{lib} to the linker to
+force the use of libjpeg-turbo at run time rather than libjpeg (also useful if
+you want to leverage the colorspace extensions), or you can link against the
+libjpeg-turbo static library.
+
+To force a Linux, Solaris, or MinGW application to link against the static
+version of libjpeg-turbo, you can use the following linker options:
 
   -Wl,-Bstatic -ljpeg -Wl,-Bdynamic
 
-or you can simply add /opt/libjpeg-turbo/{lib}/libjpeg.a to the linker command
-line (the latter is the only way to link against the static version of
-libjpeg-turbo on OS X.)
+On OS X, simply add /opt/libjpeg-turbo/{lib}/libjpeg.a to the linker command
+line (this also works on Linux and Solaris.)
 
 To build Visual C++ applications using libjpeg-turbo, add
 c:\libjpeg-turbo\include to your system or user INCLUDE environment variable
 and c:\libjpeg-turbo\lib to your system or user LIB environment variable, and
 then link against either jpeg.lib (to use jpeg62.dll) or jpeg-static.lib (to
 use the static version of libjpeg-turbo.)
-
-If building an application using Cygwin, then set
-
-  CPATH=/cygdrive/c/libjpeg-turbo/include
-  and
-  LIBRARY_PATH=/cygdrive/c/libjpeg-turbo/lib
-
-If using MinGW, then set
-
-  CPATH=/c/libjpeg-turbo/include
-  and
-  LIBRARY_PATH=/c/libjpeg-turbo/lib
-
-and link using -ljpeg in both cases.  NOTE: The static libraries shipped with
-the Windows version of libjpeg-turbo cannot be used with MinGW and Cygwin.  If
-you wish to link statically with libjpeg-turbo using MinGW or Cygwin, then you
-will need to build libjpeg-turbo from source using GCC.
 
 =====================
 Colorspace Extensions

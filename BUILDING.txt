@@ -33,7 +33,7 @@ Build Requirements
 
    NOTE: NASM build will fail if texinfo is not installed.
 
--- GCC v4 or later recommended for best performance
+-- GCC v4.1 or later recommended for best performance
 
 ======================
 Building libjpeg-turbo

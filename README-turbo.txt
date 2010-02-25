@@ -65,7 +65,7 @@ links to the libjpeg dynamic library located in /opt/libjpeg-turbo/{lib}.  This
 will effectively accelerate every dynamically linked libjpeg application on the
 system.
 
-The Windows version of libjpeg-turbo installs jpeg62.dll into
+The Windows distribution of the libjpeg-turbo SDK installs jpeg62.dll into
 c:\libjpeg-turbo\bin, and the PATH environment variable can be modified such
 that this directory is searched before any others that might contain
 jpeg62.dll.  However, if jpeg62.dll also exists in an application's install
@@ -74,11 +74,17 @@ if an application ships with jpeg62.dll, then back up the application's version
 of jpeg62.dll and copy c:\libjpeg-turbo\bin\jpeg62.dll into the application's
 install directory to accelerate it.
 
-libjpeg-turbo's version of jpeg62.dll requires the Visual C++ 2008 C run time
-DLL (msvcr90.dll).  This library ships with more recent versions of Windows,
-but users of older versions can obtain it from the Visual C++ 2008
-Redistributable Package, which is available as a free download from Microsoft's
-web site.
+The version of jpeg62.dll distributed in the libjpeg-turbo SDK requires the
+Visual C++ 2008 C run time DLL (msvcr90.dll).  This library ships with more
+recent versions of Windows, but users of older versions can obtain it from the
+Visual C++ 2008 Redistributable Package, which is available as a free download
+from Microsoft's web site.
+
+NOTE:  Features of libjpeg which require passing a C run time structure, such
+as a file handle, from an application to libjpeg will probably not work with
+the distributed version of jpeg62.dll unless the application is also built to
+use the Visual C++ 2008 C run time DLL.  In particular, this affects
+jpeg_stdio_dest() and jpeg_stdio_src().
 
 Mac applications typically embed their own copies of libjpeg.62.dylib inside
 the (hidden) application bundle, so it is not possible to globally replace

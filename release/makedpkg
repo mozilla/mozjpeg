@@ -49,6 +49,12 @@ mv $TMPDIR/opt/$PACKAGE_NAME/$__LIB/libturbojpeg.* $TMPDIR/usr/$__LIB
 /sbin/ldconfig -n $TMPDIR/usr/$__LIB
 mkdir -p $TMPDIR/usr/include
 mv $TMPDIR/opt/$PACKAGE_NAME/include/turbojpeg.h $TMPDIR/usr/include
+mkdir -p $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
+install -m 644 $SRCDIR/LICENSE.txt $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
+install -m 644 $SRCDIR/LGPL.txt $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
+install -m 644 $SRCDIR/README-turbo.txt $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
+install -m 644 $SRCDIR/README $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
+install -m 644 $SRCDIR/libjpeg.doc $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
 
 sudo chown -Rh root:root $TMPDIR/*
 dpkg -b $TMPDIR $PACKAGE_NAME\_$DEBARCH.deb

@@ -12,12 +12,31 @@ UninstPage instfiles
 
 Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
 	SectionIn RO
+!ifdef GCC
+	IfFileExists $SYSDIR/libturbojpeg.dll exists 0
+!else
+	IfFileExists $SYSDIR/turbojpeg.dll exists 0
+!endif
+	goto notexists
+	exists:
+!ifdef GCC
+	MessageBox MB_OK "An existing version of the libjpeg-turbo SDK for ${PLATFORM} is already installed.  Please uninstall it first."
+!else
+	MessageBox MB_OK "An existing version of the libjpeg-turbo SDK for ${PLATFORM} or the TurboJPEG SDK is already installed.  Please uninstall it first."
+!endif
+	quit
+
+	notexists:
 	SetOutPath $SYSDIR
 !ifdef GCC
 	File "${WLIBDIR}\libturbojpeg.dll"
-	File "${WLIBDIR}\libjpeg-62.dll"
 !else
 	File "${WLIBDIR}\turbojpeg.dll"
+!endif
+	SetOutPath $INSTDIR\bin
+!ifdef GCC
+	File "${WLIBDIR}\libjpeg-62.dll"
+!else
 	File "${WLIBDIR}\jpeg62.dll"
 !endif
 	SetOutPath $INSTDIR\lib
@@ -62,14 +81,14 @@ Section "Uninstall"
 	DeleteRegKey HKLM "SOFTWARE\${APPNAME} ${VERSION}"
 
 !ifdef GCC
-	Delete $SYSDIR\libjpeg-62.dll
+	Delete $INSTDIR\bin\libjpeg-62.dll
 	Delete $SYSDIR\libturbojpeg.dll
 	Delete $INSTDIR\lib\libturbojpeg.dll.a"
 	Delete $INSTDIR\lib\libturbojpeg.a"
 	Delete $INSTDIR\lib\libjpeg.dll.a"
 	Delete $INSTDIR\lib\libjpeg.a"
 !else
-	Delete $SYSDIR\jpeg62.dll
+	Delete $INSTDIR\bin\jpeg62.dll
 	Delete $SYSDIR\turbojpeg.dll
 	Delete $INSTDIR\lib\jpeg.lib
 	Delete $INSTDIR\lib\jpeg-static.lib
@@ -90,6 +109,7 @@ Section "Uninstall"
 
 	RMDir "$INSTDIR\include"
 	RMDir "$INSTDIR\lib"
+	RMDir "$INSTDIR\bin"
 	RMDir "$INSTDIR"
 
 SectionEnd

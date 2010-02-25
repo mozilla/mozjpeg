@@ -66,11 +66,19 @@ will effectively accelerate every dynamically linked libjpeg application on the
 system.
 
 The Windows version of libjpeg-turbo installs jpeg62.dll into
-%systemroot%\system32.  However, if jpeg62.dll also exists in an application's
-install directory, then Windows will load the application's version of it
-first.  Thus, if an application ships with jpeg62.dll, then back up the
-application's version of jpeg62.dll and copy %systemroot%\system32\jpeg62.dll
-into the application's install directory to accelerate it.
+c:\libjpeg-turbo\bin, and the PATH environment variable can be modified such
+that this directory is searched before any others that might contain
+jpeg62.dll.  However, if jpeg62.dll also exists in an application's install
+directory, then Windows will load the application's version of it first.  Thus,
+if an application ships with jpeg62.dll, then back up the application's version
+of jpeg62.dll and copy c:\libjpeg-turbo\bin\jpeg62.dll into the application's
+install directory to accelerate it.
+
+libjpeg-turbo's version of jpeg62.dll requires the Visual C++ 2008 C run time
+DLL (msvcr90.dll).  This library ships with more recent versions of Windows,
+but users of older versions can obtain it from the Visual C++ 2008
+Redistributable Package, which is available as a free download from Microsoft's
+web site.
 
 Mac applications typically embed their own copies of libjpeg.62.dylib inside
 the (hidden) application bundle, so it is not possible to globally replace

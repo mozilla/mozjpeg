@@ -1,6 +1,18 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 8a  28-Feb-2010
+-----------------------
+
+Writing tables-only datastreams via jpeg_write_tables works again.
+
+Support 32-bit BMPs (RGB image with Alpha channel) for read in cjpeg.
+Thank to Brett Blackham for the suggestion.
+
+Improve accuracy in floating point IDCT calculation.
+Thank to Robert Hooke for the hint.
+
+
 Version 8  10-Jan-2010
 ----------------------
 

@@ -1,8 +1,8 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 8 of 10-Jan-2010
-===================================
+README for release 8a of 28-Feb-2010
+====================================
 
 This distribution contains the eighth public release of the Independent JPEG
 Group's free JPEG software.  You are welcome to redistribute this software and
@@ -254,8 +254,8 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is www.ijg.org.
 The most recent released version can always be found there in
 directory "files".  This particular version will be archived as
-http://www.ijg.org/files/jpegsrc.v8.tar.gz, and in Windows-compatible
-"zip" archive format as http://www.ijg.org/files/jpegsr8.zip.
+http://www.ijg.org/files/jpegsrc.v8a.tar.gz, and in Windows-compatible
+"zip" archive format as http://www.ijg.org/files/jpegsr8a.zip.
 
 The JPEG FAQ (Frequently Asked Questions) article is a source of some
 general information about JPEG.
@@ -318,7 +318,7 @@ image files indefinitely.)
 TO DO
 =====
 
-Version 8.0 is the first release of a new generation JPEG standard
+Version 8 is the first release of a new generation JPEG standard
 to overcome the limitations of the original JPEG specification.
 More features are being prepared for coming releases...
 

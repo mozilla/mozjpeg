@@ -2,7 +2,7 @@
  * rdbmp.c
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
- * Modified 2009 by Guido Vollbeding.
+ * Modified 2009-2010 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -178,10 +178,41 @@ get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 }
 
 
+METHODDEF(JDIMENSION)
+get_32bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
+/* This version is for reading 32-bit pixels */
+{
+  bmp_source_ptr source = (bmp_source_ptr) sinfo;
+  JSAMPARRAY image_ptr;
+  register JSAMPROW inptr, outptr;
+  register JDIMENSION col;
+
+  /* Fetch next row from virtual array */
+  source->source_row--;
+  image_ptr = (*cinfo->mem->access_virt_sarray)
+    ((j_common_ptr) cinfo, source->whole_image,
+     source->source_row, (JDIMENSION) 1, FALSE);
+  /* Transfer data.  Note source values are in BGR order
+   * (even though Microsoft's own documents say the opposite).
+   */
+  inptr = image_ptr[0];
+  outptr = source->pub.buffer[0];
+  for (col = cinfo->image_width; col > 0; col--) {
+    outptr[2] = *inptr++;	/* can omit GETJSAMPLE() safely */
+    outptr[1] = *inptr++;
+    outptr[0] = *inptr++;
+    inptr++;			/* skip the 4th byte (Alpha channel) */
+    outptr += 3;
+  }
+
+  return 1;
+}
+
+
 /*
  * This method loads the image into whole_image during the first call on
  * get_pixel_rows.  The get_pixel_rows pointer is then adjusted to call
- * get_8bit_row or get_24bit_row on subsequent calls.
+ * get_8bit_row, get_24bit_row, or get_32bit_row on subsequent calls.
  */
 
 METHODDEF(JDIMENSION)
@@ -223,6 +254,9 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
   case 24:
     source->pub.get_pixel_rows = get_24bit_row;
+    break;
+  case 32:
+    source->pub.get_pixel_rows = get_32bit_row;
     break;
   default:
     ERREXIT(cinfo, JERR_BMP_BADDEPTH);
@@ -324,6 +358,9 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     case 24:			/* RGB image */
       TRACEMS2(cinfo, 1, JTRC_BMP, (int) biWidth, (int) biHeight);
       break;
+    case 32:			/* RGB image + Alpha channel */
+      TRACEMS2(cinfo, 1, JTRC_BMP, (int) biWidth, (int) biHeight);
+      break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
       break;
@@ -377,6 +414,8 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Compute row width in file, including padding to 4-byte boundary */
   if (source->bits_per_pixel == 24)
     row_width = (JDIMENSION) (biWidth * 3);
+  else if (source->bits_per_pixel == 32)
+    row_width = (JDIMENSION) (biWidth * 4);
   else
     row_width = (JDIMENSION) biWidth;
   while ((row_width & 3) != 0) row_width++;

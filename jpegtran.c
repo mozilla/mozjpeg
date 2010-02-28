@@ -1,7 +1,7 @@
 /*
  * jpegtran.c
  *
- * Copyright (C) 1995-2009, Thomas G. Lane, Guido Vollbeding.
+ * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -63,18 +63,20 @@ usage (void)
 #ifdef C_PROGRESSIVE_SUPPORTED
   fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
 #endif
-#if TRANSFORMS_SUPPORTED
   fprintf(stderr, "Switches for modifying the image:\n");
+#if TRANSFORMS_SUPPORTED
   fprintf(stderr, "  -crop WxH+X+Y  Crop to a rectangular subarea\n");
   fprintf(stderr, "  -grayscale     Reduce to grayscale (omit color data)\n");
   fprintf(stderr, "  -flip [horizontal|vertical]  Mirror image (left-right or top-bottom)\n");
   fprintf(stderr, "  -perfect       Fail if there is non-transformable edge blocks\n");
   fprintf(stderr, "  -rotate [90|180|270]         Rotate image (degrees clockwise)\n");
+#endif
   fprintf(stderr, "  -scale M/N     Scale output image by fraction M/N, eg, 1/8\n");
+#if TRANSFORMS_SUPPORTED
   fprintf(stderr, "  -transpose     Transpose image\n");
   fprintf(stderr, "  -transverse    Transverse transpose image\n");
   fprintf(stderr, "  -trim          Drop non-transformable edge blocks\n");
-#endif /* TRANSFORMS_SUPPORTED */
+#endif
   fprintf(stderr, "Switches for advanced users:\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");

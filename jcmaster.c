@@ -187,10 +187,6 @@ jpeg_calc_jpeg_dimensions (j_compress_ptr cinfo)
   cinfo->min_DCT_v_scaled_size = DCTSIZE;
 
 #endif /* DCT_SCALING_SUPPORTED */
-
-  cinfo->block_size = DCTSIZE;
-  cinfo->natural_order = jpeg_natural_order;
-  cinfo->lim_Se = DCTSIZE2-1;
 }
 
 

@@ -2,6 +2,7 @@
  * jddctmgr.c
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Modified 2002-2010 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -324,6 +325,7 @@ start_pass (j_decompress_ptr cinfo)
 	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
 	 *   scalefactor[0] = 1
 	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
+	 * We apply a further scale factor of 1/8.
 	 */
 	FLOAT_MULT_TYPE * fmtbl = (FLOAT_MULT_TYPE *) compptr->dct_table;
 	int row, col;
@@ -337,7 +339,7 @@ start_pass (j_decompress_ptr cinfo)
 	  for (col = 0; col < DCTSIZE; col++) {
 	    fmtbl[i] = (FLOAT_MULT_TYPE)
 	      ((double) qtbl->quantval[i] *
-	       aanscalefactor[row] * aanscalefactor[col]);
+	       aanscalefactor[row] * aanscalefactor[col] * 0.125);
 	    i++;
 	  }
 	}

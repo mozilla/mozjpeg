@@ -82,7 +82,8 @@ DISTMANS= cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
 DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
 	structure.doc coderules.doc filelist.doc jconfig.doc change.log \
-	README-turbo.txt rdrle.c wrrle.c LICENSE.txt LGPL.txt BUILDING.txt
+	README-turbo.txt rdrle.c wrrle.c LICENSE.txt LGPL.txt BUILDING.txt \
+	ChangeLog.txt
 
 TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 	testimgfst.jpg testimgint.jpg testimgp.jpg testimgfst.ppm testimgint.ppm

@@ -1,0 +1,7 @@
+Significant changes since 0.0.90
+================================
+
+[1] Added documentation to .deb packages
+
+[2] 2968313: Fixed data corruption issues when decompressing large JPEG images
+and/or using buffered I/O with the libjpeg-turbo decompressor

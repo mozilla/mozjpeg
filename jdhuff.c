@@ -778,7 +778,8 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
    */
   if (! entropy->pub.insufficient_data) {
 
-    if (cinfo->src->bytes_in_buffer >= BUFSIZE) {
+    if (cinfo->src->bytes_in_buffer >= BUFSIZE * cinfo->blocks_in_MCU
+      && !cinfo->restart_interval) {
       if (!decode_mcu_fast(cinfo, MCU_data)) return FALSE;
     }
     else {

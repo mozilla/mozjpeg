@@ -28,8 +28,13 @@ libraries can be used as drop-in replacements for libjpeg on most systems.
 Some of the optimizations to the Huffman encoder/decoder were borrowed from
 VirtualGL, and thus the libjpeg-turbo distribution, as a whole, falls under the
 wxWindows Library Licence, Version 3.1.  A copy of this license can be found in
-this directory under LICENSE.txt.  The rest of the source code, apart from
-these modifications, falls under a less restrictive license (see README.)
+this directory under LICENSE.txt.  The wxWindows Library License is based on
+the LGPL but includes provisions which allow the Library to be statically
+linked into proprietary libraries and applications without requiring the
+resulting binaries to be distributed under the terms of the LGPL.
+
+The rest of the source code, apart from these modifications, falls under a less
+restrictive, BSD-style license (see README.)
 
 
 *******************************************************************************

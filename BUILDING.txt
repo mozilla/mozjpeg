@@ -128,7 +128,8 @@ Add
 
   --host x86_64-apple-darwin10.0.0 NASM=/opt/local/bin/nasm
 
-to the configure command line.  NASM 2.07 from MacPorts must be installed.
+to the configure command line.  NASM 2.07 or later from MacPorts must be
+installed.
 
 
 32-bit Library Build on 64-bit OS/X
@@ -164,6 +165,29 @@ Add
   --host x86_64-pc-solaris CFLAGS='-O3 -m64' CXXFLAGS='-O3 -m64' LDFLAGS=-m64
 
 to the configure command line.
+
+
+64-bit Library Build on 64-bit FreeBSD
+--------------------------------------
+
+Add
+
+  --host x86_64-unknown-freebsd
+
+to the configure command line.  NASM 2.07 or later from FreeBSD ports must be
+installed.
+
+
+32-bit Library Build on 64-bit FreeBSD
+--------------------------------------
+
+Add
+
+  --host i386-unknown-freebsd CC='gcc -B /usr/lib32' CXX='g++ -B/usr/lib32' \
+    CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32' LDFLAGS='-B/usr/lib32'
+
+to the configure command line.  NASM 2.07 or later from FreeBSD ports must be
+installed.
 
 
 MinGW Build on Cygwin

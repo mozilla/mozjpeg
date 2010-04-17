@@ -52,14 +52,14 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
 	collect_args
 	push	rbx
 
-	mov	rcx, r10
+	mov	ecx, r10d
 	test	rcx,rcx
 	jz	near .return
 
 	push	rcx
 
 	mov rsi, r12
-	mov rcx, r13
+	mov ecx, r13d
 	mov	rdi, JSAMPARRAY [rsi+0*SIZEOF_JSAMPARRAY]
 	mov	rbx, JSAMPARRAY [rsi+1*SIZEOF_JSAMPARRAY]
 	mov	rdx, JSAMPARRAY [rsi+2*SIZEOF_JSAMPARRAY]
@@ -70,7 +70,7 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
 	pop	rcx
 
 	mov rsi, r11
-	mov	rax, r14
+	mov	eax, r14d
 	test	rax,rax
 	jle	near .return
 .rowloop:

@@ -67,11 +67,11 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
 	mov	rbp,rsp
 	collect_args
 
-	mov	rax, r11  ; colctr
+	mov	eax, r11d  ; colctr
 	test	rax,rax
 	jz	near .return
 
-	mov	rcx, r10	; rowctr
+	mov	ecx, r10d	; rowctr
 	test	rcx,rcx
 	jz	near .return
 
@@ -214,11 +214,11 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
 	collect_args
 	push	rbx
 
-	mov	rax, r11  ; colctr
+	mov	eax, r11d  ; colctr
 	test	rax,rax
 	jz	near .return
 
-	mov	rcx, r10	; rowctr
+	mov	ecx, r10d	; rowctr
 	test	rcx,rcx
 	jz	near .return
 
@@ -506,12 +506,12 @@ EXTN(jsimd_h2v1_upsample_sse2):
 	mov	rbp,rsp
 	collect_args
 
-	mov	rdx, r11
+	mov	edx, r11d
 	add	rdx, byte (2*SIZEOF_XMMWORD)-1
 	and	rdx, byte -(2*SIZEOF_XMMWORD)
 	jz	near .return
 
-	mov	rcx, r10	; rowctr
+	mov	ecx, r10d	; rowctr
 	test	rcx,rcx
 	jz	short .return
 
@@ -596,12 +596,12 @@ EXTN(jsimd_h2v2_upsample_sse2):
 	collect_args
 	push	rbx
 
-	mov	rdx, r11
+	mov	edx, r11d
 	add	rdx, byte (2*SIZEOF_XMMWORD)-1
 	and	rdx, byte -(2*SIZEOF_XMMWORD)
 	jz	near .return
 
-	mov	rcx, r10	; rowctr
+	mov	ecx, r10d	; rowctr
 	test	rcx,rcx
 	jz	near .return
 

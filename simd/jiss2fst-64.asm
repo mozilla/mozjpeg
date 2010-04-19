@@ -323,7 +323,7 @@ EXTN(jsimd_idct_ifast_sse2):
 
 	mov	rax, [original_rbp]
 	mov	rdi, r12	; (JSAMPROW *)
-	mov	eax, r13d
+	mov	rax, r13
 
 	; -- Even part
 

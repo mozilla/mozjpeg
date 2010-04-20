@@ -14,7 +14,7 @@ endif
 
 _DUMMY := $(shell mkdir -p $(ODIR))
 
-VERSION = 0.0.90
+VERSION = 0.0.93
 
 CC = "cl" -nologo
 CXX = "cl" -EHsc -nologo

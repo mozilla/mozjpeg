@@ -275,14 +275,10 @@ This will generate the following files under libjpeg-turbo\windows\:
   turbojpeg.dll          Shared library for TurboJPEG/OSS
   turbojpeg.lib          Development stub for TurboJPEG/OSS shared library
 
-#If a 64-bit Windows platform is detected, then the build system will attempt
-#to build a 64-bit version of libjpeg-turbo.  You can override this by running
-#
-#  make -f win/Makefile WIN64=no
+If a 64-bit Windows platform is detected, then the build system will attempt
+to build a 64-bit version of libjpeg-turbo.  You can override this by running
 
-NOTE:  For unknown reasons, Win64 support doesn't work yet, so at the moment,
-you have to run 'make -f win/Makefile WIN64=yes' to get a 64-bit build on
-64-bit Windows.  The paragraph above will apply once Win64 support is working.
+  make -f win/Makefile WIN64=no
 
 
 *******************************************************************************

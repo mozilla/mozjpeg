@@ -310,6 +310,19 @@ const_base:
 	mov r13, r9
 	mov r14, [rax+48]
 	mov r15, [rax+56]
+	push rsi
+	push rdi
+%endmacro
+
+%imacro uncollect_args 0
+	pop rdi
+	pop rsi
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop r11
+	pop r10
 %endmacro
 
 %else
@@ -329,8 +342,6 @@ const_base:
 	mov r15, r9
 %endmacro
 
-%endif
-
 %imacro uncollect_args 0
 	pop r15
 	pop r14
@@ -339,6 +350,8 @@ const_base:
 	pop r11
 	pop r10
 %endmacro
+
+%endif
 
 %endif
 

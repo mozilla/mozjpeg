@@ -2,6 +2,7 @@
 ; jsimdext.inc - common declarations
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright 2010 D. R. Commander
 ;
 ; Based on
 ; x86 SIMD extension for IJG JPEG library - version 1.02

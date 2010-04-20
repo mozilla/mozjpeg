@@ -1,13 +1,12 @@
 ODIR = windows
 WIN64 = no
-# Win64 doesn't work yet, for unknown reasons
-#ifeq ($(PROCESSOR_ARCHITECTURE), AMD64)
-# WIN64 = yes
-#else
-# ifeq ($(PROCESSOR_ARCHITEW6432), AMD64)
-#  WIN64 = yes
-# endif
-#endif
+ifeq ($(PROCESSOR_ARCHITECTURE), AMD64)
+ WIN64 = yes
+else
+ ifeq ($(PROCESSOR_ARCHITEW6432), AMD64)
+  WIN64 = yes
+ endif
+endif
 ifeq ($(WIN64), yes)
 ODIR = windows64
 endif

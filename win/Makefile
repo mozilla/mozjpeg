@@ -234,7 +234,7 @@ nsi: all
 	$(RM) $(ODIR)/libjpeg-turbo64.exe
 	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo64 \
 		-DWLIBDIR=windows64 -DWSRCDIR=. -DWBLDDIR=windows64 -DWHDRDIR=win \
-		-DPLATFORM="Visual C++ 64-bit" release/libjpeg-turbo.nsi
+		-DPLATFORM="Visual C++ 64-bit" -DWIN64 release/libjpeg-turbo.nsi
 else
 nsi: all
 	$(RM) $(ODIR)/libjpeg-turbo.exe

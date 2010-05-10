@@ -12,9 +12,11 @@ UninstPage uninstConfirm
 UninstPage instfiles
 
 Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
+!ifdef WIN64
 	${If} ${RunningX64}
 	${DisableX64FSRedirection}
 	${Endif}
+!endif
 	SectionIn RO
 !ifdef GCC
 	IfFileExists $SYSDIR/libturbojpeg.dll exists 0
@@ -78,9 +80,11 @@ Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
 SectionEnd
 
 Section "Uninstall"
+!ifdef WIN64
 	${If} ${RunningX64}
 	${DisableX64FSRedirection}
 	${Endif}
+!endif
 
 	SetShellVarContext all
 

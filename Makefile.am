@@ -160,7 +160,7 @@ sunpkg: all
 
 nsi: all
 	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo-gcc64 \
-		-DWLIBDIR=.libs -DWSRCDIR=$(srcdir) -DWBLDDIR=. -DWHDRDIR=. \
+		-DWLIBDIR=.libs -DWSRCDIR=$(srcdir) -DWBLDDIR=. -DWHDRDIR=. -DWIN64 \
 		-DPLATFORM="GCC 64-bit" -DGCC $(srcdir)/release/libjpeg-turbo.nsi
 
 else

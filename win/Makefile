@@ -229,11 +229,19 @@ $(ODIR)/jpegut.exe: $(ODIR)/jpegut.obj $(ODIR)/turbojpeg.lib
 	$(LINK) $(LDFLAGS) -out:$@ $^
 
 
+ifeq ($(WIN64), yes)
+dist: all
+	$(RM) $(ODIR)/libjpeg-turbo64.exe
+	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo64 \
+		-DWLIBDIR=windows64 -DWSRCDIR=. -DWBLDDIR=windows64 -DWHDRDIR=win \
+		-DPLATFORM="Visual C++ 64-bit" release/libjpeg-turbo.nsi
+else
 dist: all
 	$(RM) $(ODIR)/libjpeg-turbo.exe
 	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo \
 		-DWLIBDIR=windows -DWSRCDIR=. -DWBLDDIR=windows -DWHDRDIR=win \
 		-DPLATFORM="Visual C++" release/libjpeg-turbo.nsi
+endif
 
 
 test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe \

@@ -138,15 +138,15 @@ of libjpeg by setting
 
 If using Cygwin, then set
 
-  CPATH=/cygdrive/c/libjpeg-turbo-gcc/include
+  CPATH=/cygdrive/c/libjpeg-turbo-gcc[64]/include
   and
-  LIBRARY_PATH=/cygdrive/c/libjpeg-turbo-gcc/lib
+  LIBRARY_PATH=/cygdrive/c/libjpeg-turbo-gcc[64]/lib
 
 If using MinGW, then set
 
-  CPATH=/c/libjpeg-turbo-gcc/include
+  CPATH=/c/libjpeg-turbo-gcc[64]/include
   and
-  LIBRARY_PATH=/c/libjpeg-turbo-gcc/lib
+  LIBRARY_PATH=/c/libjpeg-turbo-gcc[64]/lib
 
 Building against libjpeg-turbo is useful, for instance, if you want to build an
 application that leverages the libjpeg-turbo colorspace extensions (see below.)
@@ -166,10 +166,10 @@ On OS X, simply add /opt/libjpeg-turbo/{lib}/libjpeg.a to the linker command
 line (this also works on Linux and Solaris.)
 
 To build Visual C++ applications using libjpeg-turbo, add
-c:\libjpeg-turbo\include to your system or user INCLUDE environment variable
-and c:\libjpeg-turbo\lib to your system or user LIB environment variable, and
-then link against either jpeg.lib (to use jpeg62.dll) or jpeg-static.lib (to
-use the static version of libjpeg-turbo.)
+c:\libjpeg-turbo[64]\include to your system or user INCLUDE environment
+variable and c:\libjpeg-turbo[64]\lib to your system or user LIB environment
+variable, and then link against either jpeg.lib (to use jpeg62.dll) or
+jpeg-static.lib (to use the static version of libjpeg-turbo.)
 
 =====================
 Colorspace Extensions

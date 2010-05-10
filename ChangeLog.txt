@@ -3,6 +3,8 @@ Significant changes since 0.0.91
 
 [1] Fixed x86-64 build on FreeBSD systems
 
+[2] Added support for Windows 64-bit systems
+
 
 Significant changes since 0.0.90
 ================================

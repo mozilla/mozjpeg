@@ -1,3 +1,4 @@
+!include x64.nsh
 Name "libjpeg-turbo SDK for ${PLATFORM}"
 OutFile ${WBLDDIR}\${APPNAME}.exe
 InstallDir c:\${APPNAME}
@@ -11,6 +12,9 @@ UninstPage uninstConfirm
 UninstPage instfiles
 
 Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
+	${If} ${RunningX64}
+	${DisableX64FSRedirection}
+	${Endif}
 	SectionIn RO
 !ifdef GCC
 	IfFileExists $SYSDIR/libturbojpeg.dll exists 0
@@ -74,6 +78,9 @@ Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
 SectionEnd
 
 Section "Uninstall"
+	${If} ${RunningX64}
+	${DisableX64FSRedirection}
+	${Endif}
 
 	SetShellVarContext all
 

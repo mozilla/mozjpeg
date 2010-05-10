@@ -39,7 +39,7 @@ Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
 !endif
 	SetOutPath $INSTDIR\bin
 !ifdef GCC
-	File "${WLIBDIR}\libjpeg-62.dll"
+	File "/oname=libjpeg-62.dll" "${WLIBDIR}\libjpeg-*.dll" 
 !else
 	File "${WLIBDIR}\jpeg62.dll"
 !endif

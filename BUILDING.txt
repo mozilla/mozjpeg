@@ -319,7 +319,7 @@ make nsi
   libjpeg-turbo SDK.  This requires the Nullsoft Install System
   (http://nsis.sourceforge.net/.)  makensis.exe should be in your PATH.
 
-make -f win/Makefile dist
+make -f win/Makefile nsi
 
   This creates a Win32 installer for the Visual C++ version of the
   libjpeg-turbo SDK.  This requires the Nullsoft Install System

@@ -230,13 +230,13 @@ $(ODIR)/jpegut.exe: $(ODIR)/jpegut.obj $(ODIR)/turbojpeg.lib
 
 
 ifeq ($(WIN64), yes)
-dist: all
+nsi: all
 	$(RM) $(ODIR)/libjpeg-turbo64.exe
 	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo64 \
 		-DWLIBDIR=windows64 -DWSRCDIR=. -DWBLDDIR=windows64 -DWHDRDIR=win \
 		-DPLATFORM="Visual C++ 64-bit" release/libjpeg-turbo.nsi
 else
-dist: all
+nsi: all
 	$(RM) $(ODIR)/libjpeg-turbo.exe
 	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo \
 		-DWLIBDIR=windows -DWSRCDIR=. -DWBLDDIR=windows -DWHDRDIR=win \

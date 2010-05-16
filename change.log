@@ -1,6 +1,19 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 8b  16-May-2010
+-----------------------
+
+Repair problem in new memory source manager with corrupt JPEG data.
+Thank to Ted Campbell and Samuel Chun for the report.
+
+Repair problem in Makefile.am test target.
+Thank to anonymous user for the report.
+
+Support MinGW installation with automatic configure.
+Thank to Volker Grabsch for the suggestion.
+
+
 Version 8a  28-Feb-2010
 -----------------------
 

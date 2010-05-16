@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-2009, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -149,7 +149,7 @@ makefile.mc6	jconfig.mc6	MS-DOS, Microsoft C (16-bit only)
 makefile.wat	jconfig.wat	MS-DOS, OS/2, or Windows NT, Watcom C
 makefile.vc	jconfig.vc	Windows NT/95, MS Visual C++
 make*.vc6	jconfig.vc	Windows NT/95, MS Visual C++ 6
-make*.vc9	jconfig.vc	Windows NT/95, MS Visual C++ 2008 (v9)
+make*.v10	jconfig.vc	Windows NT/95, MS Visual C++ 2010 (v10)
 makefile.mms	jconfig.vms	Digital VMS, with MMS software
 makefile.vms	jconfig.vms	Digital VMS, without MMS software
 
@@ -534,17 +534,17 @@ In general, it's worth trying the maximum optimization level of your compiler,
 and experimenting with any optional optimizations such as loop unrolling.
 (Unfortunately, far too many compilers have optimizer bugs ... be prepared to
 back off if the code fails self-test.)  If you do any experimentation along
-these lines, please report the optimal settings to jpeg-info@jpegclub.org so
-we can mention them in future releases.  Be sure to specify your machine and
-compiler version.
+these lines, please report the optimal settings to jpeg-info@uc.ag so we
+can mention them in future releases.  Be sure to specify your machine
+and compiler version.
 
 
 HINTS FOR SPECIFIC SYSTEMS
 ==========================
 
 We welcome reports on changes needed for systems not mentioned here.  Submit
-'em to jpeg-info@jpegclub.org.  Also, if configure or ckconfig.c is wrong
-about how to configure the JPEG software for your system, please let us know.
+'em to jpeg-info@uc.ag.  Also, if configure or ckconfig.c is wrong about how
+to configure the JPEG software for your system, please let us know.
 
 
 Acorn RISC OS:
@@ -998,8 +998,8 @@ model.  makefile.vc is intended for command-line use.  (If you are using
 the Developer Studio environment, you may prefer the DevStudio project
 files; see below.)
 
-v7 adds extern "C" to jpeglib.h.  This avoids the need to put extern "C"
-{ ... } around #include "jpeglib.h" in your C++ application.
+IJG JPEG 7 adds extern "C" to jpeglib.h.  This avoids the need to put
+extern "C" { ... } around #include "jpeglib.h" in your C++ application.
 You can also force VC++ to treat the library as C++ code by renaming
 all the *.c files to *.cpp (and adjusting the makefile to match).
 In this case you also need to define the symbol DONT_USE_EXTERN_C in
@@ -1015,51 +1015,50 @@ as Win32 console applications.  (Even if you only want the library, we
 recommend building the applications so that you can run the self-test.)
 
 To use:
-1. Copy jconfig.vc to jconfig.h, makejdsw.vc6 to jpeg.dsw,
-   makeadsw.vc6 to apps.dsw, makejmak.vc6 to jpeg.mak,
-   makejdep.vc6 to jpeg.dep, makejdsp.vc6 to jpeg.dsp,
-   makecmak.vc6 to cjpeg.mak, makecdep.vc6 to cjpeg.dep,
-   makecdsp.vc6 to cjpeg.dsp, makedmak.vc6 to djpeg.mak,
-   makeddep.vc6 to djpeg.dep, makeddsp.vc6 to djpeg.dsp,
-   maketmak.vc6 to jpegtran.mak, maketdep.vc6 to jpegtran.dep,
-   maketdsp.vc6 to jpegtran.dsp, makermak.vc6 to rdjpgcom.mak,
-   makerdep.vc6 to rdjpgcom.dep, makerdsp.vc6 to rdjpgcom.dsp,
-   makewmak.vc6 to wrjpgcom.mak, makewdep.vc6 to wrjpgcom.dep, and
-   makewdsp.vc6 to wrjpgcom.dsp.  (Note that the renaming is critical!)
-2. Click on jpeg.dsw and apps.dsw to load the project workspaces.
+1. Open the command prompt, change to the main directory and execute the
+   command line
+	NMAKE /f makefile.vc  setup-vc6
+   This will move jconfig.vc to jconfig.h and makefiles to project files.
+   (Note that the renaming is critical!)
+2. Open the workspace file jpeg.dsw, build the library project.
    (If you are using DevStudio more recent than 6.0, you'll probably
    get a message saying that the project files are being updated.)
-3. Build the library project, then the applications project.
-4. Move the application .exe files from `app`\Release to an
+3. Open the workspace file apps.dsw, build the application projects.
+4. To perform the self-test, execute the command line
+	NMAKE /f makefile.vc  test-build
+5. Move the application .exe files from `app`\Release to an
    appropriate location on your path.
-5. To perform the self-test, execute the command line
-	NMAKE /f makefile.vc  test
 
 
-Microsoft Windows, Microsoft Visual C++ 2008 Developer Studio (v9):
+Microsoft Windows, Microsoft Visual C++ 2010 Developer Studio (v10):
 
 We include makefiles that should work as project files in Visual Studio
-2008 or later.  There is a library makefile that builds the IJG library
+2010 or later.  There is a library makefile that builds the IJG library
 as a static Win32 library, and application makefiles that build the sample
 applications as Win32 console applications.  (Even if you only want the
 library, we recommend building the applications so that you can run the
 self-test.)
 
 To use:
-1. Copy jconfig.vc to jconfig.h, makejsln.vc9 to jpeg.sln,
-   makeasln.vc9 to apps.sln, makejvcp.vc9 to jpeg.vcproj,
-   makecvcp.vc9 to cjpeg.vcproj, makedvcp.vc9 to djpeg.vcproj,
-   maketvcp.vc9 to jpegtran.vcproj, makervcp.vc9 to rdjpgcom.vcproj, and
-   makewvcp.vc9 to wrjpgcom.vcproj.  (Note that the renaming is critical!)
-2. Click on jpeg.sln and apps.sln to load the project solutions.
-   (If you are using Visual Studio more recent than 2008 (v9), you'll
-   probably get a message saying that the project files are being
-   updated.)
-3. Build the library project, then the applications project.
-4. Move the application .exe files from `app`\Release to an
+1. Open the command prompt, change to the main directory and execute the
+   command line
+	NMAKE /f makefile.vc  setup-v10
+   This will move jconfig.vc to jconfig.h and makefiles to project files.
+   (Note that the renaming is critical!)
+2. Open the solution file jpeg.sln, build the library project.
+   (If you are using Visual Studio more recent than 2010 (v10), you'll
+   probably get a message saying that the project files are being updated.)
+3. Open the solution file apps.sln, build the application projects.
+4. To perform the self-test, execute the command line
+	NMAKE /f makefile.vc  test-build
+5. Move the application .exe files from `app`\Release to an
    appropriate location on your path.
-5. To perform the self-test, execute the command line
-	NMAKE /f makefile.vc  test
+
+Note:
+There seems to be an optimization bug in the compiler which causes the
+self-test to fail with the color quantization option.
+We have disabled optimization for the file jquant2.c in the library
+project file which causes the self-test to pass properly.
 
 
 OS/2, Borland C++:

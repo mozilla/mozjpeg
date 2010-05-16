@@ -5,7 +5,7 @@
 # Configure script for IJG libjpeg
 #
 
-AC_INIT([libjpeg], [8.0.1])
+AC_INIT([libjpeg], [8.0.2])
 
 # Directory where autotools helper scripts lives.
 AC_CONFIG_AUX_DIR([.])
@@ -309,7 +309,7 @@ AC_SUBST(MEMORYMGR)
 # Extract the library version ID from jpeglib.h.
 AC_MSG_CHECKING([libjpeg version number])
 [JPEG_LIB_VERSION=`sed -e '/^#define JPEG_LIB_VERSION/!d' -e 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/' $srcdir/jpeglib.h`]
-[JPEG_LIB_VERSION="`expr $JPEG_LIB_VERSION / 10`:1"]
+[JPEG_LIB_VERSION="`expr $JPEG_LIB_VERSION / 10`:2"]
 AC_MSG_RESULT([$JPEG_LIB_VERSION])
 AC_SUBST([JPEG_LIB_VERSION])
 

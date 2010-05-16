@@ -38,11 +38,12 @@ MKFILES= configure Makefile.in makefile.ansi makefile.unix makefile.bcc \
         makeadsw.vc6 makejdep.vc6 makejdsp.vc6 makejmak.vc6 makecdep.vc6 \
         makecdsp.vc6 makecmak.vc6 makeddep.vc6 makeddsp.vc6 makedmak.vc6 \
         maketdep.vc6 maketdsp.vc6 maketmak.vc6 makerdep.vc6 makerdsp.vc6 \
-        makermak.vc6 makewdep.vc6 makewdsp.vc6 makewmak.vc6 makejsln.vc9 \
-        makeasln.vc9 makejvcp.vc9 makecvcp.vc9 makedvcp.vc9 maketvcp.vc9 \
-        makervcp.vc9 makewvcp.vc9 makeproj.mac makcjpeg.st makdjpeg.st \
-        makljpeg.st maktjpeg.st makefile.manx makefile.sas makefile.mms \
-        makefile.vms makvms.opt
+        makermak.vc6 makewdep.vc6 makewdsp.vc6 makewmak.vc6 makejsln.v10 \
+        makeasln.v10 makejvcx.v10 makejfil.v10 makecvcx.v10 makecfil.v10 \
+        makedvcx.v10 makedfil.v10 maketvcx.v10 maketfil.v10 makervcx.v10 \
+        makerfil.v10 makewvcx.v10 makewfil.v10 makeproj.mac makcjpeg.st \
+        makdjpeg.st makljpeg.st maktjpeg.st makefile.manx makefile.sas \
+        makefile.mms makefile.vms makvms.opt
 
 # Configuration files
 CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat \
@@ -118,7 +119,7 @@ uninstall-local:
 # Run tests
 test: check-local
 check-local:
-	$(RM) testout*
+	rm -f testout*
 	./djpeg -dct int -ppm -outfile testout.ppm  $(srcdir)/testorig.jpg
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
 	./cjpeg -dct int -outfile testout.jpg  $(srcdir)/testimg.ppm

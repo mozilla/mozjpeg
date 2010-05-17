@@ -1,3 +1,10 @@
+Significant changes since 0.0.93
+================================
+
+[1] Further FreeBSD build tweaks (no longer necessary to specify --host
+when configuring on a 64-bit system)
+
+
 Significant changes since 0.0.91
 ================================
 

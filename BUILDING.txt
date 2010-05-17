@@ -7,13 +7,9 @@ Build Requirements
 ==================
 
 -- autoconf 2.56 or later
-   * If using MinGW, this can be obtained by installing the MSYS DTK
-
 -- automake 1.7 or later
-   * If using MinGW, this can be obtained by installing the MSYS DTK
-
 -- libtool 1.4 or later
-   * If using MinGW, this can be obtained by installing the MSYS DTK
+   * If using MinGW, these can be obtained by installing the MSYS DTK
 
 -- NASM
    * 0.98 or later is required for a 32-bit build
@@ -257,7 +253,8 @@ Build Requirements
      to the system or user LIB environment variable prior to building
      libjpeg-turbo.
 
--- NASM (http://www.nasm.us/) 0.98 or later
+-- NASM (http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
+   a 64-bit build)
 
 ======================
 Building libjpeg-turbo

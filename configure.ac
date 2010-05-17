@@ -133,7 +133,7 @@ if test "x${with_simd}" != "xno"; then
   # Check if we're on a supported CPU
   AC_MSG_CHECKING([if we have SIMD optimisations for cpu type])
   case "$host_cpu" in
-    x86_64)
+    x86_64 | amd64)
       AC_MSG_RESULT([yes (x86_64)])
       AC_PROG_NASM
       simd_arch=x86_64
@@ -157,7 +157,7 @@ fi
 AM_CONDITIONAL([WITH_SIMD], [test "x$with_simd" != "xno"])
 AM_CONDITIONAL([SIMD_I386], [test "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
-AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64"])
+AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 
 case "$host_cpu" in
   x86_64)

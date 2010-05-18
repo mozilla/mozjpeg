@@ -45,10 +45,16 @@ make install prefix=$TMPDIR/opt/$PACKAGE_NAME libdir=$TMPDIR/opt/$PACKAGE_NAME/$
 rm -f $TMPDIR/opt/$PACKAGE_NAME/$__LIB/*.la
 mkdir -p $TMPDIR/usr/$__LIB
 mv $TMPDIR/opt/$PACKAGE_NAME/$__LIB/libturbojpeg.* $TMPDIR/usr/$__LIB
+ln -fs /usr/$__LIB/libturbojpeg.a $TMPDIR/opt/$PACKAGE_NAME/$__LIB/
 /sbin/ldconfig -n $TMPDIR/opt/$PACKAGE_NAME/$__LIB
 /sbin/ldconfig -n $TMPDIR/usr/$__LIB
+if [ "$DEBARCH" = "amd64" ]; then
+	ln -fs $__LIB $TMPDIR/opt/$PACKAGE_NAME/lib64
+fi
+
 mkdir -p $TMPDIR/usr/include
 mv $TMPDIR/opt/$PACKAGE_NAME/include/turbojpeg.h $TMPDIR/usr/include
+ln -fs /usr/include/turbojpeg.h $TMPDIR/opt/$PACKAGE_NAME/include/
 mkdir -p $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
 install -m 644 $SRCDIR/LICENSE.txt $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION
 install -m 644 $SRCDIR/LGPL.txt $TMPDIR/usr/share/doc/$PACKAGE_NAME-$VERSION

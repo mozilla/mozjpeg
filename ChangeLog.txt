@@ -4,6 +4,11 @@ Significant changes since 0.0.93
 [1] Further FreeBSD build tweaks (no longer necessary to specify --host
 when configuring on a 64-bit system)
 
+[2] Created sym. links in the Unix/Linux packages so that the TurboJPEG
+include file can always be found in /opt/libjpeg-turbo/include, the 32-bit
+static libraries can always be found in /opt/libjpeg-turbo/lib32, and the
+64-bit static libraries can always be found in /opt/libjpeg-turbo/lib64.
+
 
 Significant changes since 0.0.91
 ================================

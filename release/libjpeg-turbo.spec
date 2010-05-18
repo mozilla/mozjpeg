@@ -53,6 +53,12 @@ mv $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/libturbojpeg.* $RPM_BUILD_ROOT/usr/%{__l
 /sbin/ldconfig -n $RPM_BUILD_ROOT/usr/%{__lib}
 mkdir -p $RPM_BUILD_ROOT/usr/include
 mv $RPM_BUILD_ROOT/opt/%{name}/include/turbojpeg.h $RPM_BUILD_ROOT/usr/include
+ln -fs /usr/include/turbojpeg.h $RPM_BUILD_ROOT/opt/%{name}/include/
+ln -fs /usr/%{__lib}/libjpegturbo.a $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/
+%ifarch x86_64
+%else
+ln -fs %{__lib} $RPM_BUILD_ROOT/opt/%{name}/lib32
+%endif
 
 %post -p /sbin/ldconfig
 
@@ -66,10 +72,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc %{_srcdir}/README-turbo.txt %{_srcdir}/README %{_srcdir}/libjpeg.doc %{_srcdir}/LICENSE.txt %{_srcdir}/LGPL.txt
 %dir /opt/%{name}
 %dir /opt/%{name}/%{__lib}
+%ifarch x86_64
+%else
+/opt/%{name}/lib32
+%endif
 /opt/%{name}/%{__lib}/libjpeg.so.62.0.0
 /opt/%{name}/%{__lib}/libjpeg.so.62
 /opt/%{name}/%{__lib}/libjpeg.so
 /opt/%{name}/%{__lib}/libjpeg.a
+/opt/%{name}/%{__lib}/libjpegturbo.a
 /usr/%{__lib}/libturbojpeg.so
 /usr/%{__lib}/libturbojpeg.a
 /usr/include/turbojpeg.h
@@ -78,5 +89,6 @@ rm -rf $RPM_BUILD_ROOT
 /opt/%{name}/include/jerror.h
 /opt/%{name}/include/jmorecfg.h
 /opt/%{name}/include/jpeglib.h
+/opt/%{name}/include/turbojpeg.h
 
 %changelog

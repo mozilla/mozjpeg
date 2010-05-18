@@ -11,7 +11,7 @@ TMPDIR=
 onexit()
 {
 	if [ ! "$TMPDIR" = "" ]; then
-		sudo rm -rf $TMPDIR
+		rm -rf $TMPDIR
 	fi
 }
 

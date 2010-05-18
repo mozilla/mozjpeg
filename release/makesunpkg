@@ -88,6 +88,7 @@ EOF
 fi
 if [ "${__LIB}" != "lib" ]; then
 echo d none libjpeg-turbo/${__LIB} 0755 root bin >>$TMPDIR/proto
+echo s none libjpeg-turbo/lib64=${__LIB} >>$TMPDIR/proto
 fi
 cat >>$TMPDIR/proto <<EOF
 f none libjpeg-turbo/${__LIB}/libjpeg.so.62.0.0 0755 root bin
@@ -96,6 +97,7 @@ s none libjpeg-turbo/${__LIB}/libjpeg.so=libjpeg.so.62.0.0
 f none libjpeg-turbo/${__LIB}/libjpeg.a 0644 root bin
 f none libjpeg-turbo/${__LIB}/libturbojpeg.so 0755 root bin
 f none libjpeg-turbo/${__LIB}/libturbojpeg.a 0644 root bin
+s none libjpeg-turbo/lib32=lib
 d none libjpeg-turbo/include 0755 root bin
 f none libjpeg-turbo/include/jconfig.h 0644 root bin
 f none libjpeg-turbo/include/jerror.h 0644 root bin

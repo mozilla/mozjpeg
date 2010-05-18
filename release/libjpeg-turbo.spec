@@ -54,7 +54,7 @@ mv $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/libturbojpeg.* $RPM_BUILD_ROOT/usr/%{__l
 mkdir -p $RPM_BUILD_ROOT/usr/include
 mv $RPM_BUILD_ROOT/opt/%{name}/include/turbojpeg.h $RPM_BUILD_ROOT/usr/include
 ln -fs /usr/include/turbojpeg.h $RPM_BUILD_ROOT/opt/%{name}/include/
-ln -fs /usr/%{__lib}/libjpegturbo.a $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/
+ln -fs /usr/%{__lib}/libturbojpeg.a $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/
 %ifarch x86_64
 %else
 ln -fs %{__lib} $RPM_BUILD_ROOT/opt/%{name}/lib32
@@ -80,7 +80,7 @@ rm -rf $RPM_BUILD_ROOT
 /opt/%{name}/%{__lib}/libjpeg.so.62
 /opt/%{name}/%{__lib}/libjpeg.so
 /opt/%{name}/%{__lib}/libjpeg.a
-/opt/%{name}/%{__lib}/libjpegturbo.a
+/opt/%{name}/%{__lib}/libturbojpeg.a
 /usr/%{__lib}/libturbojpeg.so
 /usr/%{__lib}/libturbojpeg.a
 /usr/include/turbojpeg.h

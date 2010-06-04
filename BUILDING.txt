@@ -112,7 +112,7 @@ Build Recipes
 
 Add
 
-  --host i686-pc-linux-gnu CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32'
+  --host i686-pc-linux-gnu CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32' LDFLAGS=-m32
 
 to the configure command line.
 

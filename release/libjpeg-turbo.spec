@@ -39,13 +39,13 @@ TurboJPEG/IPP.  It is faster in some areas but slower in others.
 #-->%setup -q
 
 #-->%build
-#-->configure prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} --with-pic
-#-->make prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib}
+#-->configure prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} mandir=$RPM_BUILD_ROOT/opt/%{name}/man --with-pic
+#-->make prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} mandir=$RPM_BUILD_ROOT/opt/%{name}/man
 
 %install
 
 rm -rf $RPM_BUILD_ROOT
-make install prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib}
+make install prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} mandir=$RPM_BUILD_ROOT/opt/%{name}/man
 rm -f $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/*.la
 mkdir -p $RPM_BUILD_ROOT/usr/%{__lib}
 mv $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/libturbojpeg.* $RPM_BUILD_ROOT/usr/%{__lib}
@@ -69,8 +69,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc %{_srcdir}/README-turbo.txt %{_srcdir}/README %{_srcdir}/libjpeg.doc %{_srcdir}/LICENSE.txt %{_srcdir}/LGPL.txt
+%doc %{_srcdir}/README-turbo.txt %{_srcdir}/README %{_srcdir}/libjpeg.doc %{_srcdir}/usage.doc %{_srcdir}/LICENSE.txt %{_srcdir}/LGPL.txt
 %dir /opt/%{name}
+%dir /opt/%{name}/bin
+/opt/%{name}/bin/cjpeg
+/opt/%{name}/bin/djpeg
+/opt/%{name}/bin/jpegtran
+/opt/%{name}/bin/rdjpgcom
+/opt/%{name}/bin/wrjpgcom
 %dir /opt/%{name}/%{__lib}
 %ifarch x86_64
 %else
@@ -90,5 +96,12 @@ rm -rf $RPM_BUILD_ROOT
 /opt/%{name}/include/jmorecfg.h
 /opt/%{name}/include/jpeglib.h
 /opt/%{name}/include/turbojpeg.h
+%dir /opt/%{name}/man
+%dir /opt/%{name}/man/man1
+/opt/%{name}/man/man1/cjpeg.1*
+/opt/%{name}/man/man1/djpeg.1*
+/opt/%{name}/man/man1/jpegtran.1*
+/opt/%{name}/man/man1/rdjpgcom.1*
+/opt/%{name}/man/man1/wrjpgcom.1*
 
 %changelog

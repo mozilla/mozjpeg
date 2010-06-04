@@ -39,7 +39,8 @@ endif
 
 TSTHDRS = rrutil.h rrtimer.h
 
-noinst_PROGRAMS = jpgtest jpegut cjpeg djpeg jpegtran rdjpgcom wrjpgcom
+bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom
+noinst_PROGRAMS = jpgtest jpegut
 
 jpgtest_SOURCES = $(TSTHDRS) jpgtest.cxx bmp.h bmp.c
 
@@ -78,7 +79,7 @@ wrjpgcom_SOURCES = wrjpgcom.c
 wrjpgcom_LDADD = libjpeg.la
 
 
-DISTMANS= cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
+man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
 DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
 	structure.doc coderules.doc filelist.doc jconfig.doc change.log \
@@ -88,7 +89,7 @@ DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
 TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 	testimgfst.jpg testimgint.jpg testimgp.jpg testimgfst.ppm testimgint.ppm
 
-EXTRA_DIST = win release $(DOCS) $(DISTMANS) $(TESTFILES)
+EXTRA_DIST = win release $(DOCS) $(TESTFILES)
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`

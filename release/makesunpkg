@@ -53,8 +53,6 @@ else
 fi
 
 # This mess is to work around a bug in /usr/ccs/bin/make
-make install prefix=$PKGROOT libdir=$PKGROOT/$__LIB AM_MAKEFLAGS="prefix=$PKGROOT libdir=$PKGROOT/$__LIB"
-rm -f $PKGROOT/$__LIB/*.la
 if [ $COMBINED = 1 ]; then
 	if [ ! -d $SRCDIR/solx86 ]; then
 		mkdir -p $SRCDIR/solx86
@@ -62,11 +60,13 @@ if [ $COMBINED = 1 ]; then
 	PWD=`pwd`
 	cd $SRCDIR/solx86
 	sh $SRCDIR/configure --with-pic CC=$CC CXX=$CXX CFLAGS= CXXFLAGS= LDFLAGS= host_alias=
-	make install prefix=$PKGROOT AM_MAKEFLAGS="prefix=$PKGROOT"
+	make install prefix=$PKGROOT AM_MAKEFLAGS="prefix=$PKGROOT mandir=$PKGROOT/man"
 	cd $PWD
 fi
+make install prefix=$PKGROOT libdir=$PKGROOT/$__LIB mandir=$PKGROOT/man AM_MAKEFLAGS="prefix=$PKGROOT libdir=$PKGROOT/$__LIB mandir=$PKGROOT/man"
+rm -f $PKGROOT/$__LIB/*.la
 mkdir -p $PKGROOT/doc
-cp $SRCDIR/LICENSE.txt $SRCDIR/LGPL.txt $SRCDIR/README-turbo.txt $SRCDIR/README $SRCDIR/libjpeg.doc $PKGROOT/doc
+cp $SRCDIR/LICENSE.txt $SRCDIR/LGPL.txt $SRCDIR/README-turbo.txt $SRCDIR/README $SRCDIR/libjpeg.doc $SRCDIR/usage.doc $PKGROOT/doc
 chmod 644 $PKGROOT/doc/*
 
 cat >$TMPDIR/proto <<EOF
@@ -74,6 +74,12 @@ i copyright
 i depend
 i pkginfo
 d none libjpeg-turbo 0755 root bin
+d none libjpeg-turbo/bin 0755 root bin
+f none libjpeg-turbo/bin/cjpeg 0755 root bin
+f none libjpeg-turbo/bin/djpeg 0755 root bin
+f none libjpeg-turbo/bin/jpegtran 0755 root bin
+f none libjpeg-turbo/bin/rdjpgcom 0755 root bin
+f none libjpeg-turbo/bin/wrjpgcom 0755 root bin
 d none libjpeg-turbo/lib 0755 root bin
 EOF
 if [ $COMBINED = 1 ]; then
@@ -98,6 +104,13 @@ f none libjpeg-turbo/${__LIB}/libjpeg.a 0644 root bin
 f none libjpeg-turbo/${__LIB}/libturbojpeg.so 0755 root bin
 f none libjpeg-turbo/${__LIB}/libturbojpeg.a 0644 root bin
 s none libjpeg-turbo/lib32=lib
+d none libjpeg-turbo/man 0755 root bin
+d none libjpeg-turbo/man/man1 0755 root bin
+d none libjpeg-turbo/man/man1/cjpeg.1 0644 root bin
+d none libjpeg-turbo/man/man1/djpeg.1 0644 root bin
+d none libjpeg-turbo/man/man1/jpegtran.1 0644 root bin
+d none libjpeg-turbo/man/man1/rdjpgcom.1 0644 root bin
+d none libjpeg-turbo/man/man1/wrjpgcom.1 0644 root bin
 d none libjpeg-turbo/include 0755 root bin
 f none libjpeg-turbo/include/jconfig.h 0644 root bin
 f none libjpeg-turbo/include/jerror.h 0644 root bin
@@ -110,6 +123,7 @@ f none libjpeg-turbo/doc/libjpeg.doc 0644 root bin
 f none libjpeg-turbo/doc/LICENSE.txt 0644 root bin
 f none libjpeg-turbo/doc/README 0644 root bin
 f none libjpeg-turbo/doc/README-turbo.txt 0644 root bin
+f none libjpeg-turbo/doc/usage.doc 0644 root bin
 EOF
 
 pkgmk -o -r $TMPDIR/pkgbuild -d $TMPDIR -a i386 -f $TMPDIR/proto

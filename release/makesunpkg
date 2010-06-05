@@ -38,8 +38,6 @@ fi
 umask 022
 TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 rm -f $PACKAGE_NAME.pkg.bz2
-PKGROOT=$TMPDIR/pkgbuild/$PACKAGE_NAME
-mkdir -p $PKGROOT
 cp $SRCDIR/release/copyright $TMPDIR
 touch $TMPDIR/depend
 cat $SRCDIR/release/pkginfo.tmpl | sed s/{__VERSION}/$VERSION/g \
@@ -60,14 +58,14 @@ if [ $COMBINED = 1 ]; then
 	PWD=`pwd`
 	cd $SRCDIR/solx86
 	sh $SRCDIR/configure --with-pic CC=$CC CXX=$CXX CFLAGS= CXXFLAGS= LDFLAGS= host_alias=
-	make install prefix=$PKGROOT AM_MAKEFLAGS="prefix=$PKGROOT mandir=$PKGROOT/man"
+	make install DESTDIR=$TMPDIR mandir=/opt/$PACKAGE_NAME/man AM_MAKEFLAGS="mandir=/opt/$PACKAGE_NAME/man"
 	cd $PWD
 fi
-make install prefix=$PKGROOT libdir=$PKGROOT/$__LIB mandir=$PKGROOT/man AM_MAKEFLAGS="prefix=$PKGROOT libdir=$PKGROOT/$__LIB mandir=$PKGROOT/man"
-rm -f $PKGROOT/$__LIB/*.la
-mkdir -p $PKGROOT/doc
-cp $SRCDIR/LICENSE.txt $SRCDIR/LGPL.txt $SRCDIR/README-turbo.txt $SRCDIR/README $SRCDIR/libjpeg.doc $SRCDIR/usage.doc $PKGROOT/doc
-chmod 644 $PKGROOT/doc/*
+make install DESTDIR=$TMPDIR libdir=/opt/$PACKAGE_NAME/$__LIB mandir=/opt/$PACKAGE_NAME/man AM_MAKEFLAGS="libdir=/opt/$PACKAGE_NAME/$__LIB mandir=/opt/$PACKAGE_NAME/man"
+rm -f $TMPDIR/opt/$PACKAGE_NAME/$__LIB/*.la
+mkdir -p $TMPDIR/opt/$PACKAGE_NAME/doc
+cp $SRCDIR/LICENSE.txt $SRCDIR/LGPL.txt $SRCDIR/README-turbo.txt $SRCDIR/README $SRCDIR/libjpeg.doc $SRCDIR/usage.doc $TMPDIR/opt/$PACKAGE_NAME/doc
+chmod 644 $TMPDIR/opt/$PACKAGE_NAME/doc/*
 
 cat >$TMPDIR/proto <<EOF
 i copyright
@@ -127,7 +125,7 @@ f none $PACKAGE_NAME/doc/README-turbo.txt 0644 root bin
 f none $PACKAGE_NAME/doc/usage.doc 0644 root bin
 EOF
 
-pkgmk -o -r $TMPDIR/pkgbuild -d $TMPDIR -a i386 -f $TMPDIR/proto
+pkgmk -o -r $TMPDIR/opt -d $TMPDIR -a i386 -f $TMPDIR/proto
 pkgtrans -s $TMPDIR $TMPDIR/$PACKAGE_NAME.pkg $PACKAGE_NAME
 bzip2 $TMPDIR/$PACKAGE_NAME.pkg
 cp $TMPDIR/$PACKAGE_NAME.pkg.bz2 . 

@@ -42,7 +42,7 @@ TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 PKGROOT=$TMPDIR/pkg/Package_Root
 mkdir -p $PKGROOT
 mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin
-make install prefix=$PKGROOT/opt/$PACKAGE_NAME mandir=$PKGROOT/opt/$PACKAGE_NAME/man
+make install DESTDIR=$PKGROOT mandir=/opt/$PACKAGE_NAME/man
 rm -f $PKGROOT/opt/$PACKAGE_NAME/lib/*.la
 mkdir -p $PKGROOT/usr/lib
 mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib
@@ -59,42 +59,52 @@ if [ $UNIVERSAL = 1 ]; then
 		CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
 		CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
 		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32'
-	make prefix=$TMPDIR/dist.x86 install
+	make install DESTDIR=$TMPDIR/dist.x86
 	popd
-	if [ ! -h $TMPDIR/dist.x86/lib/libjpeg.62.dylib -a \
+	if [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib -a \
 		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib ]; then
-		lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.dylib -arch x86_64 \
-			$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
+		lipo -create \
+			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
+			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
 			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib
-	elif [ ! -h $TMPDIR/dist.x86/lib/libjpeg.62.0.0.dylib -a \
+	elif [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib -a \
 		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib ]; then
-		lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.62.0.0.dylib \
+		lipo -create \
+			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib \
 			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib \
 			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib
 	fi
-	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libjpeg.a -arch x86_64 \
-		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.a \
+		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
 		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
-	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libturbojpeg.dylib -arch x86_64 \
-		$PKGROOT/usr/lib/libturbojpeg.dylib \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/usr/lib/libturbojpeg.dylib \
+		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.dylib \
 		-output $PKGROOT/usr/lib/libturbojpeg.dylib
-	lipo -create -arch i386 $TMPDIR/dist.x86/lib/libturbojpeg.a -arch x86_64 \
-		$PKGROOT/usr/lib/libturbojpeg.a \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/usr/lib/libturbojpeg.a \
+		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.a \
 		-output $PKGROOT/usr/lib/libturbojpeg.a
-	lipo -create -arch i386 $TMPDIR/dist.x86/bin/cjpeg -arch x86_64 \
-		$PKGROOT/opt/$PACKAGE_NAME/bin/cjpeg \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/cjpeg \
+		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/cjpeg \
 		-output $PKGROOT/opt/$PACKAGE_NAME/bin/cjpeg
-	lipo -create -arch i386 $TMPDIR/dist.x86/bin/djpeg -arch x86_64 \
-		$PKGROOT/opt/$PACKAGE_NAME/bin/djpeg \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/djpeg \
+		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/djpeg \
 		-output $PKGROOT/opt/$PACKAGE_NAME/bin/djpeg
-	lipo -create -arch i386 $TMPDIR/dist.x86/bin/jpegtran -arch x86_64 \
-		$PKGROOT/opt/$PACKAGE_NAME/bin/jpegtran \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/jpegtran \
+		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/jpegtran \
 		-output $PKGROOT/opt/$PACKAGE_NAME/bin/jpegtran
-	lipo -create -arch i386 $TMPDIR/dist.x86/bin/rdjpgcom -arch x86_64 \
-		$PKGROOT/opt/$PACKAGE_NAME/bin/rdjpgcom \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/rdjpgcom \
+		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/rdjpgcom \
 		-output $PKGROOT/opt/$PACKAGE_NAME/bin/rdjpgcom
-	lipo -create -arch i386 $TMPDIR/dist.x86/bin/wrjpgcom -arch x86_64 \
-		$PKGROOT/opt/$PACKAGE_NAME/bin/wrjpgcom \
+	lipo -create \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/wrjpgcom \
+		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/wrjpgcom \
 		-output $PKGROOT/opt/$PACKAGE_NAME/bin/wrjpgcom
 
 fi

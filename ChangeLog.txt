@@ -1,8 +1,8 @@
 Significant changes since 0.0.93
 ================================
 
-[1] Further FreeBSD build tweaks (no longer necessary to specify --host
-when configuring on a 64-bit system)
+[1] 2983700: Further FreeBSD build tweaks (no longer necessary to specify
+--host when configuring on a 64-bit system)
 
 [2] Created sym. links in the Unix/Linux packages so that the TurboJPEG
 include file can always be found in /opt/libjpeg-turbo/include, the 32-bit
@@ -24,9 +24,9 @@ with PIC code.
 Significant changes since 0.0.91
 ================================
 
-[1] Fixed x86-64 build on FreeBSD systems
+[1] 2982659, Fixed x86-64 build on FreeBSD systems
 
-[2] Added support for Windows 64-bit systems
+[2] 2988188: Added support for Windows 64-bit systems
 
 
 Significant changes since 0.0.90

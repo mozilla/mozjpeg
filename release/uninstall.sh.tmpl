@@ -46,6 +46,9 @@ cd $PWD
 
 echo Removing directories ...
 rmdir /opt/$PKGNAME/bin 2>&1 || RETCODE=-1
+if [ -d /opt/$PKGNAME/bin ]; then
+	rmdir /opt/$PKGNAME/bin 2>&1 || RETCODE=-1
+fi
 if [ -d /opt/$PKGNAME/lib ]; then
 	rmdir /opt/$PKGNAME/lib 2>&1 || RETCODE=-1
 fi
@@ -54,6 +57,12 @@ if [ -d /opt/$PKGNAME/include ]; then
 fi
 rm /opt/$PKGNAME/lib32 2>&1 || RETCODE=-1
 rm /opt/$PKGNAME/lib64 2>&1 || RETCODE=-1
+if [ -d /opt/$PKGNAME/man/man1 ]; then
+	rmdir /opt/$PKGNAME/man/man1 2>&1 || RETCODE=-1
+fi
+if [ -d /opt/$PKGNAME/man ]; then
+	rmdir /opt/$PKGNAME/man 2>&1 || RETCODE=-1
+fi
 rmdir /opt/$PKGNAME 2>&1 || RETCODE=-1
 rmdir /Library/Documentation/$PKGNAME 2>&1 || RETCODE=-1
 

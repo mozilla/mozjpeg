@@ -79,11 +79,11 @@ if [ $UNIVERSAL = 1 ]; then
 		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
 		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/usr/lib/libturbojpeg.dylib \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libturbojpeg.dylib \
 		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.dylib \
 		-output $PKGROOT/usr/lib/libturbojpeg.dylib
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/usr/lib/libturbojpeg.a \
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
 		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.a \
 		-output $PKGROOT/usr/lib/libturbojpeg.a
 	lipo -create \

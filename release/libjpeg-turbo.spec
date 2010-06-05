@@ -39,13 +39,13 @@ TurboJPEG/IPP.  It is faster in some areas but slower in others.
 #-->%setup -q
 
 #-->%build
-#-->configure prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} mandir=$RPM_BUILD_ROOT/opt/%{name}/man --with-pic
-#-->make prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} mandir=$RPM_BUILD_ROOT/opt/%{name}/man
+#-->configure libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man --with-pic
+#-->make DESTDIR=$RPM_BUILD_ROOT libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man
 
 %install
 
 rm -rf $RPM_BUILD_ROOT
-make install prefix=$RPM_BUILD_ROOT/opt/%{name} libdir=$RPM_BUILD_ROOT/opt/%{name}/%{__lib} mandir=$RPM_BUILD_ROOT/opt/%{name}/man
+make install DESTDIR=$RPM_BUILD_ROOT libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man
 rm -f $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/*.la
 mkdir -p $RPM_BUILD_ROOT/usr/%{__lib}
 mv $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/libturbojpeg.* $RPM_BUILD_ROOT/usr/%{__lib}

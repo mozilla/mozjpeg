@@ -62,7 +62,7 @@ For instance:
   user  0m0.029s
   sys   0m0.010s
 
-NOTE: {lib} can be lib, lib32, lib64, or lib/amd64, depending on the O/S and
+NOTE: {lib} can be lib, lib32, lib64, or lib/64, depending on the O/S and
 architecture.
 
 System administrators can also replace the libjpeg sym links in /usr/{lib} with
@@ -106,20 +106,20 @@ Replacing TurboJPEG/IPP
 =======================
 
 libjpeg-turbo is a drop-in replacement for the TurboJPEG/IPP SDK used by
-VirtualGL 2.1.x (and prior) and TurboVNC.  libjpeg-turbo contains a wrapper
+VirtualGL 2.1.x and TurboVNC 0.6 (and prior.)  libjpeg-turbo contains a wrapper
 library (TurboJPEG/OSS) that emulates the TurboJPEG API using libjpeg-turbo
 instead of the closed source Intel Performance Primitives.  You can replace the
 TurboJPEG/IPP package on Linux systems with the libjpeg-turbo package in order
 to make existing releases of VirtualGL 2.1.x and TurboVNC use the new codec at
 run time.  Note that the 64-bit libjpeg-turbo packages contain only 64-bit
-binaries, whereas the TurboJPEG/IPP 64-bit packages contain both 64-bit and
+binaries, whereas the TurboJPEG/IPP 64-bit packages contained both 64-bit and
 32-bit binaries.  Thus, to replace a TurboJPEG/IPP 64-bit package, install
 both the 64-bit and 32-bit versions of libjpeg-turbo.
 
-You can also build the VirtualGL 2.1.x and TurboVNC source code with
+You can also build the VirtualGL 2.1.x and TurboVNC 0.6 source code with
 the libjpeg-turbo SDK instead of TurboJPEG/IPP.  It should work identically.
 libjpeg-turbo also includes static library versions of TurboJPEG/OSS, which
-are used to build VirtualGL 2.2 and later.
+are used to build TurboVNC 1.0 and later.
 
 ========================================
 Using libjpeg-turbo in Your Own Programs
@@ -134,7 +134,8 @@ of libjpeg by setting
   and
   LIBRARY_PATH=/opt/libjpeg-turbo/{lib}
 
-({lib} = lib, lib32, lib64, or lib/amd64, as appropriate.)
+({lib} = lib32 or lib64, depending on whether you are building a 32-bit or a
+64-bit application.)
 
 If using Cygwin, then set
 
@@ -162,7 +163,7 @@ version of libjpeg-turbo, you can use the following linker options:
 
   -Wl,-Bstatic -ljpeg -Wl,-Bdynamic
 
-On OS X, simply add /opt/libjpeg-turbo/{lib}/libjpeg.a to the linker command
+On OS X, simply add /opt/libjpeg-turbo/lib/libjpeg.a to the linker command
 line (this also works on Linux and Solaris.)
 
 To build Visual C++ applications using libjpeg-turbo, add

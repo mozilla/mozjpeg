@@ -95,6 +95,7 @@ fi
 if [ "${__LIB}" != "lib" ]; then
 echo d none $PACKAGE_NAME/${__LIB} 0755 root bin >>$TMPDIR/proto
 echo s none $PACKAGE_NAME/lib64=${__LIB} >>$TMPDIR/proto
+echo s none $PACKAGE_NAME/lib/64=$PKGARCH >>$TMPDIR/proto
 fi
 cat >>$TMPDIR/proto <<EOF
 f none $PACKAGE_NAME/${__LIB}/libjpeg.so.62.0.0 0755 root bin

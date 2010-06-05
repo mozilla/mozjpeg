@@ -79,7 +79,7 @@ wrjpgcom_SOURCES = wrjpgcom.c
 wrjpgcom_LDADD = libjpeg.la
 
 
-man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
+dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
 DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
 	structure.doc coderules.doc filelist.doc jconfig.doc change.log \

@@ -176,3 +176,6 @@ nsi: all
 		-DPLATFORM="GCC" -DGCC $(srcdir)/release/libjpeg-turbo.nsi
 
 endif
+
+cygwinpkg: all
+	sh $(srcdir)/release/makecygwinpkg ${PACKAGE_NAME} ${VERSION} ${srcdir}

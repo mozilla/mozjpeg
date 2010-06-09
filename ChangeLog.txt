@@ -20,6 +20,8 @@ contains just the 32-bit libjpeg-turbo libraries.
 [6] The static libraries in the Debian distribution packages are now built
 with PIC code.
 
+[7] Include distribution package for Cygwin
+
 
 Significant changes since 0.0.91
 ================================

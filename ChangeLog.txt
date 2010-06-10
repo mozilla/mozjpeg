@@ -22,6 +22,9 @@ with PIC code.
 
 [7] Include distribution package for Cygwin
 
+[8] No longer necessary to specify --without-simd on non-x86 architectures, and
+unit tests now work on those architectures.
+
 
 Significant changes since 0.0.91
 ================================

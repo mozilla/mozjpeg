@@ -95,6 +95,8 @@ dist-hook:
 	rm -rf `find $(distdir) -name .svn`
 
 
+if WITH_SIMD
+
 test: testclean cjpeg djpeg jpegtran jpegut
 	./jpegut
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
@@ -115,6 +117,31 @@ test: testclean cjpeg djpeg jpegtran jpegut
 	cmp $(srcdir)/testimgp.jpg testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg
 	cmp $(srcdir)/testimgint.jpg testoutt.jpg
+
+else
+
+test: testclean cjpeg djpeg jpegtran jpegut
+	./jpegut
+	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig-nosimd.ppm
+	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig-nosimd.ppm
+	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig-nosimd.ppm
+	cmp $(srcdir)/testimgint-nosimd.jpg testoutint.jpg
+	cmp $(srcdir)/testimgfst-nosimd.jpg testoutfst.jpg
+	cmp $(srcdir)/testimgflt-nosimd.jpg testoutflt.jpg
+	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
+	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
+	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgint.ppm testoutint.ppm
+	cmp $(srcdir)/testimgfst-nosimd.ppm testoutfst.ppm
+	cmp $(srcdir)/testorig-nosimd.ppm testoutflt.ppm
+	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimg-nosimd.bmp testout.bmp
+	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig-nosimd.ppm
+	cmp $(srcdir)/testimgp-nosimd.jpg testoutp.jpg
+	./jpegtran -outfile testoutt.jpg testoutp.jpg
+	cmp $(srcdir)/testimgint-nosimd.jpg testoutt.jpg
+
+endif
 
 testclean:
 	$(RM) testout*

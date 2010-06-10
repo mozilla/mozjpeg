@@ -145,7 +145,8 @@ if test "x${with_simd}" != "xno"; then
     ;;
     *)
       AC_MSG_RESULT([no ("$host_cpu")])
-      AC_MSG_ERROR([CPU is not supported])
+      AC_MSG_WARN([SIMD support not available for this CPU.  Performance will suffer.])
+      with_simd=no;
     ;;
   esac
 

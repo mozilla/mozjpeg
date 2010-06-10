@@ -147,19 +147,19 @@ test: testclean cjpeg djpeg jpegtran jpegut
 endif
 
 testclean:
-	$(RM) testout*
-	$(RM) *_GRAYQ[0-9]*.bmp
-	$(RM) *_GRAYQ[0-9]*.ppm
-	$(RM) *_GRAYQ[0-9]*.jpg
-	$(RM) *_420Q[0-9]*.bmp
-	$(RM) *_420Q[0-9]*.ppm
-	$(RM) *_420Q[0-9]*.jpg
-	$(RM) *_422Q[0-9]*.bmp
-	$(RM) *_422Q[0-9]*.ppm
-	$(RM) *_422Q[0-9]*.jpg
-	$(RM) *_444Q[0-9]*.bmp
-	$(RM) *_444Q[0-9]*.ppm
-	$(RM) *_444Q[0-9]*.jpg
+	rm -f testout*
+	rm -f *_GRAYQ[0-9]*.bmp
+	rm -f *_GRAYQ[0-9]*.ppm
+	rm -f *_GRAYQ[0-9]*.jpg
+	rm -f *_420Q[0-9]*.bmp
+	rm -f *_420Q[0-9]*.ppm
+	rm -f *_420Q[0-9]*.jpg
+	rm -f *_422Q[0-9]*.bmp
+	rm -f *_422Q[0-9]*.ppm
+	rm -f *_422Q[0-9]*.jpg
+	rm -f *_444Q[0-9]*.bmp
+	rm -f *_444Q[0-9]*.ppm
+	rm -f *_444Q[0-9]*.jpg
 
 rpm: all
 	sh $(srcdir)/release/makerpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \

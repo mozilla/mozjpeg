@@ -14,9 +14,8 @@ Build Requirements
 -- NASM
    * 0.98 or later is required for a 32-bit build
    * NASM 2.05 or later is required for a 64-bit build
-   * NASM 2.07 or later is required for a 64-bit build on OS/X (10.6 "Snow
-     Leopard" or later.)  This can be obtained from MacPorts
-     (http://www.macports.org/).
+   * NASM 2.07 or later is required for a 64-bit build on OS/X.  This can be
+     obtained from MacPorts (http://www.macports.org/).
 
    The NASM 2.05 RPMs do not work on older Linux systems, such as Enterprise
    Linux 4.  On such systems, you can easily build and install NASM 2.05
@@ -122,7 +121,7 @@ to the configure command line.
 
 Add
 
-  --host x86_64-apple-darwin10.0.0 NASM=/opt/local/bin/nasm
+  --host x86_64-apple-darwin NASM=/opt/local/bin/nasm
 
 to the configure command line.  NASM 2.07 or later from MacPorts must be
 installed.
@@ -138,8 +137,24 @@ Add
 to the configure command line.
 
 
-32-bit Backward-Compatible Library Build on 64-bit OS/X
+64-bit Backward-Compatible Library Build on 64-bit OS/X
 -------------------------------------------------------
+
+Add
+
+  --host x86_64-apple-darwin NASM=/opt/local/bin/nasm \
+  CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
+    -mmacosx-version-min=10.4 -O3' \
+    CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
+    -mmacosx-version-min=10.4 -O3' \
+    LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
+    -mmacosx-version-min=10.4'
+
+to the configure command line.  The OS X 10.4 SDK must be installed.
+
+
+32-bit Backward-Compatible Library Build on OS/X
+------------------------------------------------
 
 Add
 
@@ -293,11 +308,11 @@ make dmg
 
 make udmg
 
-  On 64-bit OS X (10.6 "Snow Leopard" or later), this creates a version of the
-  Macintosh package/disk image which contains universal i386/x86-64 binaries.
-  The 32-bit fork of these binaries is backward compatible with OS X 10.4 and
-  later, whereas the 64-bit fork is compatible with OS X 10.6 and later.  OS X
-  10.4 compatibility SDK required.
+  On 64-bit OS X systems, this creates a version of the Macintosh package and
+  disk image which contains universal i386/x86-64 binaries.  The 32-bit fork of
+  these binaries is backward compatible with OS X 10.4 and later.  The 64-bit
+  fork can be made backward compatible as well by using the instructions in
+  the "Build Recipes" section.  OS X 10.4 compatibility SDK required.
 
 make nsi
 

@@ -150,7 +150,8 @@ Add
     LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
     -mmacosx-version-min=10.4'
 
-to the configure command line.  The OS X 10.4 SDK must be installed.
+to the configure command line.  The OS X 10.4 SDK, and NASM 2.07 or later from
+MacPorts, must be installed.
 
 
 32-bit Backward-Compatible Library Build on OS/X

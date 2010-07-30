@@ -1,3 +1,11 @@
+Significant changes since 1.0.0
+===============================
+
+[1] The Huffman decoder will now handle erroneous Huffman codes (for instance,
+from a corrupt JPEG image.)  Previously, these would cause libjpeg-turbo to
+crash under certain circumstances.
+
+
 Significant changes since 0.0.93
 ================================
 

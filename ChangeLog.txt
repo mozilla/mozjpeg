@@ -5,8 +5,8 @@ Significant changes since 1.0.0
 from a corrupt JPEG image.)  Previously, these would cause libjpeg-turbo to
 crash under certain circumstances.
 
-[2] Fixed typo in SIMD dispatch routines which was causing 4:2:0 upsampling to
-be used instead of 4:2:2 when decompressing JPEG images using SSE2 code.
+[2] Fixed typo in SIMD dispatch routines which was causing 4:2:2 upsampling to
+be used instead of 4:2:0 when decompressing JPEG images using SSE2 code.
 
 
 Significant changes since 0.0.93

@@ -113,7 +113,7 @@ test: testclean cjpeg djpeg jpegtran jpegut
 	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimgint.ppm testoutint.ppm
 	cmp $(srcdir)/testimgfst.ppm testoutfst.ppm
-	cmp $(srcdir)/testorig.ppm testoutflt.ppm
+	cmp $(srcdir)/testimgflt.ppm testoutflt.ppm
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimg.bmp testout.bmp
 	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig.ppm
@@ -125,24 +125,24 @@ else
 
 test: testclean cjpeg djpeg jpegtran jpegut
 	./jpegut
-	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig-nosimd.ppm
-	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig-nosimd.ppm
-	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig-nosimd.ppm
-	cmp $(srcdir)/testimgint-nosimd.jpg testoutint.jpg
-	cmp $(srcdir)/testimgfst-nosimd.jpg testoutfst.jpg
+	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
+	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
+	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgint.jpg testoutint.jpg
+	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
 	cmp $(srcdir)/testimgflt-nosimd.jpg testoutflt.jpg
 	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
 	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
 	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimgint.ppm testoutint.ppm
-	cmp $(srcdir)/testimgfst-nosimd.ppm testoutfst.ppm
-	cmp $(srcdir)/testorig-nosimd.ppm testoutflt.ppm
+	cmp $(srcdir)/testimgfst.ppm testoutfst.ppm
+	cmp $(srcdir)/testorig.ppm testoutflt.ppm
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimg-nosimd.bmp testout.bmp
-	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig-nosimd.ppm
-	cmp $(srcdir)/testimgp-nosimd.jpg testoutp.jpg
+	cmp $(srcdir)/testimg.bmp testout.bmp
+	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgp.jpg testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg
-	cmp $(srcdir)/testimgint-nosimd.jpg testoutt.jpg
+	cmp $(srcdir)/testimgint.jpg testoutt.jpg
 
 endif
 

@@ -25,16 +25,21 @@ libraries can be used as drop-in replacements for libjpeg on most systems.
 **     License
 *******************************************************************************
 
-Some of the optimizations to the Huffman encoder/decoder were borrowed from
-VirtualGL, and thus the libjpeg-turbo distribution, as a whole, falls under the
-wxWindows Library Licence, Version 3.1.  A copy of this license can be found in
-this directory under LICENSE.txt.  The wxWindows Library License is based on
-the LGPL but includes provisions which allow the Library to be statically
-linked into proprietary libraries and applications without requiring the
-resulting binaries to be distributed under the terms of the LGPL.
+Some of the optimizations to the Huffman encoder (jchuff.c) and decoder
+(jdhuff.c) were borrowed from VirtualGL, and thus any distribution of
+libjpeg-turbo which includes those optimizations must, as a whole, be subject
+to the terms of the wxWindows Library Licence, Version 3.1.  A copy of this
+license can be found in this directory under LICENSE.txt.  The wxWindows
+Library License is based on the LGPL but includes provisions which allow the
+Library to be statically linked into proprietary libraries and applications
+without requiring the resulting binaries to be distributed under the terms of
+the LGPL.
 
-The rest of the source code, apart from these modifications, falls under a less
-restrictive, BSD-style license (see README.)
+The rest of the source code, apart from the Huffman codec optimizations, falls
+under a less restrictive, BSD-style license (see README.)  You can choose to
+distribute libjpeg-turbo, as a whole, under this BSD-style license by simply
+replacing the optimized jchuff.c and jdhuff.c with their unoptimized
+counterparts from the libjpeg v6b source.
 
 
 *******************************************************************************

@@ -8,6 +8,9 @@ crash under certain circumstances.
 [2] Fixed typo in SIMD dispatch routines which was causing 4:2:2 upsampling to
 be used instead of 4:2:0 when decompressing JPEG images using SSE2 code.
 
+[3] configure script will now automatically determine whether the
+INCOMPLETE_TYPES_BROKEN macro should be defined.
+
 
 Significant changes since 0.0.93
 ================================

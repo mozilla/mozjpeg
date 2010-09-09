@@ -243,7 +243,6 @@ nsi: all
 		-DPLATFORM="Visual C++" release/libjpeg-turbo.nsi
 endif
 
-
 test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe \
 	$(ODIR)/jpegut.exe
 	cd $(ODIR);	./jpegut
@@ -258,7 +257,7 @@ test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe \
 	$(ODIR)/djpeg -dct float -ppm -outfile $(ODIR)/testoutflt.ppm testorig.jpg
 	cmp testimgint.ppm $(ODIR)/testoutint.ppm
 	cmp testimgfst.ppm $(ODIR)/testoutfst.ppm
-	cmp testorig.ppm $(ODIR)/testoutflt.ppm
+	cmp testimgflt.ppm $(ODIR)/testoutflt.ppm
 	$(ODIR)/djpeg -dct int -bmp -colors 256 -outfile $(ODIR)/testout.bmp  testorig.jpg
 	cmp testimg.bmp $(ODIR)/testout.bmp
 	$(ODIR)/cjpeg -dct int -progressive -outfile $(ODIR)/testoutp.jpg testorig.ppm

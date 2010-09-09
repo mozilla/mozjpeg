@@ -87,8 +87,8 @@ DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
 	ChangeLog.txt
 
 TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
-	testimgfst.jpg testimgint.jpg testimgp.jpg testimgfst.ppm testimgint.ppm \
-	testimgflt-nosimd.jpg
+	testimgfst.jpg testimgint.jpg testimgp.jpg testimgflt.ppm testimgfst.ppm \
+	testimgint.ppm testimgflt-nosimd.jpg
 
 EXTRA_DIST = win release $(DOCS) $(TESTFILES)
 

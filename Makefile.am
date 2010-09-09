@@ -98,7 +98,7 @@ dist-hook:
 
 if WITH_SIMD
 
-test: testclean cjpeg djpeg jpegtran jpegut
+test: testclean all
 	./jpegut
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
@@ -121,7 +121,7 @@ test: testclean cjpeg djpeg jpegtran jpegut
 
 else
 
-test: testclean cjpeg djpeg jpegtran jpegut
+test: testclean all
 	./jpegut
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm

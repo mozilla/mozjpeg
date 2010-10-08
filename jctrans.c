@@ -2,6 +2,7 @@
  * jctrans.c
  *
  * Copyright (C) 1995-1998, Thomas G. Lane.
+ * Modified 2000-2009 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -76,6 +77,12 @@ jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
   dstinfo->image_height = srcinfo->image_height;
   dstinfo->input_components = srcinfo->num_components;
   dstinfo->in_color_space = srcinfo->jpeg_color_space;
+#if JPEG_LIB_VERSION >= 70
+  dstinfo->jpeg_width = srcinfo->output_width;
+  dstinfo->jpeg_height = srcinfo->output_height;
+  dstinfo->min_DCT_h_scaled_size = srcinfo->min_DCT_h_scaled_size;
+  dstinfo->min_DCT_v_scaled_size = srcinfo->min_DCT_v_scaled_size;
+#endif
   /* Initialize all parameters to default values */
   jpeg_set_defaults(dstinfo);
   /* jpeg_set_defaults may choose wrong colorspace, eg YCbCr if input is RGB.

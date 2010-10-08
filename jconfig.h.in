@@ -1,3 +1,8 @@
+/* Version ID for the JPEG library.
+ * Might be useful for tests like "#if JPEG_LIB_VERSION >= 60".
+ */
+#define JPEG_LIB_VERSION  62	/* Version 6b */
+
 /* Define if your compiler supports prototypes */
 #undef HAVE_PROTOTYPES
 

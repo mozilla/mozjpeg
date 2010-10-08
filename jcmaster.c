@@ -2,6 +2,8 @@
  * jcmaster.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Modified 2003-2010 by Guido Vollbeding.
+ * Copyright (C) 2010, D. R. Commander.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -42,6 +44,26 @@ typedef my_comp_master * my_master_ptr;
  * Support routines that do various essential calculations.
  */
 
+#if JPEG_LIB_VERSION >= 70
+/*
+ * Compute JPEG image dimensions and related values.
+ * NOTE: this is exported for possible use by application.
+ * Hence it mustn't do anything that can't be done twice.
+ */
+
+GLOBAL(void)
+jpeg_calc_jpeg_dimensions (j_compress_ptr cinfo)
+/* Do computations that are needed before master selection phase */
+{
+  /* Hardwire it to "no scaling" */
+  cinfo->jpeg_width = cinfo->image_width;
+  cinfo->jpeg_height = cinfo->image_height;
+  cinfo->min_DCT_h_scaled_size = DCTSIZE;
+  cinfo->min_DCT_v_scaled_size = DCTSIZE;
+}
+#endif
+
+
 LOCAL(void)
 initial_setup (j_compress_ptr cinfo)
 /* Do computations that are needed before master selection phase */
@@ -50,6 +72,10 @@ initial_setup (j_compress_ptr cinfo)
   jpeg_component_info *compptr;
   long samplesperrow;
   JDIMENSION jd_samplesperrow;
+
+#if JPEG_LIB_VERSION >= 70
+  jpeg_calc_jpeg_dimensions(cinfo);
+#endif
 
   /* Sanity check on image dimensions */
   if (cinfo->image_height <= 0 || cinfo->image_width <= 0
@@ -96,7 +122,11 @@ initial_setup (j_compress_ptr cinfo)
     /* Fill in the correct component_index value; don't rely on application */
     compptr->component_index = ci;
     /* For compression, we never do DCT scaling. */
+#if JPEG_LIB_VERSION >= 70
+    compptr->DCT_h_scaled_size = compptr->DCT_v_scaled_size = DCTSIZE;
+#else
     compptr->DCT_scaled_size = DCTSIZE;
+#endif
     /* Size in DCT blocks */
     compptr->width_in_blocks = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,

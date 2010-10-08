@@ -2,7 +2,7 @@
  * jdmaster.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * Copyright (C) 2009, D. R. Commander.
+ * Copyright (C) 2009-2010, D. R. Commander.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -15,6 +15,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jpegcomp.h"
 
 
 /* Private state */
@@ -68,10 +69,17 @@ use_merged_upsample (j_decompress_ptr cinfo)
       cinfo->comp_info[2].v_samp_factor != 1)
     return FALSE;
   /* furthermore, it doesn't work if we've scaled the IDCTs differently */
+#if JPEG_LIB_VERSION >= 70
+  if (cinfo->comp_info[0].DCT_h_scaled_size != cinfo->min_DCT_h_scaled_size ||
+      cinfo->comp_info[1].DCT_h_scaled_size != cinfo->min_DCT_h_scaled_size ||
+      cinfo->comp_info[2].DCT_h_scaled_size != cinfo->min_DCT_h_scaled_size)
+    return FALSE;
+#else
   if (cinfo->comp_info[0].DCT_scaled_size != cinfo->min_DCT_scaled_size ||
       cinfo->comp_info[1].DCT_scaled_size != cinfo->min_DCT_scaled_size ||
       cinfo->comp_info[2].DCT_scaled_size != cinfo->min_DCT_scaled_size)
     return FALSE;
+#endif
   /* ??? also need to test for upsample-time rescaling, when & if supported */
   return TRUE;			/* by golly, it'll work... */
 #else
@@ -109,26 +117,42 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
       jdiv_round_up((long) cinfo->image_width, 8L);
     cinfo->output_height = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_height, 8L);
+#if JPEG_LIB_VERSION >= 70
+    cinfo->min_DCT_h_scaled_size = cinfo->min_DCT_v_scaled_size = 1;
+#else
     cinfo->min_DCT_scaled_size = 1;
+#endif
   } else if (cinfo->scale_num * 4 <= cinfo->scale_denom) {
     /* Provide 1/4 scaling */
     cinfo->output_width = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width, 4L);
     cinfo->output_height = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_height, 4L);
+#if JPEG_LIB_VERSION >= 70
+    cinfo->min_DCT_h_scaled_size = cinfo->min_DCT_v_scaled_size = 2;
+#else
     cinfo->min_DCT_scaled_size = 2;
+#endif
   } else if (cinfo->scale_num * 2 <= cinfo->scale_denom) {
     /* Provide 1/2 scaling */
     cinfo->output_width = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width, 2L);
     cinfo->output_height = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_height, 2L);
+#if JPEG_LIB_VERSION >= 70
+    cinfo->min_DCT_h_scaled_size = cinfo->min_DCT_v_scaled_size = 4;
+#else
     cinfo->min_DCT_scaled_size = 4;
+#endif
   } else {
     /* Provide 1/1 scaling */
     cinfo->output_width = cinfo->image_width;
     cinfo->output_height = cinfo->image_height;
+#if JPEG_LIB_VERSION >= 70
+    cinfo->min_DCT_h_scaled_size = cinfo->min_DCT_v_scaled_size = DCTSIZE;
+#else
     cinfo->min_DCT_scaled_size = DCTSIZE;
+#endif
   }
   /* In selecting the actual DCT scaling for each component, we try to
    * scale up the chroma components via IDCT scaling rather than upsampling.
@@ -137,15 +161,19 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
    */
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
-    int ssize = cinfo->min_DCT_scaled_size;
+    int ssize = _min_DCT_scaled_size;
     while (ssize < DCTSIZE &&
 	   (compptr->h_samp_factor * ssize * 2 <=
-	    cinfo->max_h_samp_factor * cinfo->min_DCT_scaled_size) &&
+	    cinfo->max_h_samp_factor * _min_DCT_scaled_size) &&
 	   (compptr->v_samp_factor * ssize * 2 <=
-	    cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size)) {
+	    cinfo->max_v_samp_factor * _min_DCT_scaled_size)) {
       ssize = ssize * 2;
     }
+#if JPEG_LIB_VERSION >= 70
+    compptr->DCT_h_scaled_size = compptr->DCT_v_scaled_size = ssize;
+#else
     compptr->DCT_scaled_size = ssize;
+#endif
   }
 
   /* Recompute downsampled dimensions of components;
@@ -156,11 +184,11 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
     /* Size in samples, after IDCT scaling */
     compptr->downsampled_width = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_width *
-		    (long) (compptr->h_samp_factor * compptr->DCT_scaled_size),
+		    (long) (compptr->h_samp_factor * _DCT_scaled_size),
 		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
     compptr->downsampled_height = (JDIMENSION)
       jdiv_round_up((long) cinfo->image_height *
-		    (long) (compptr->v_samp_factor * compptr->DCT_scaled_size),
+		    (long) (compptr->v_samp_factor * _DCT_scaled_size),
 		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
   }
 

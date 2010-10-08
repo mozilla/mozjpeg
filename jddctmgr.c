@@ -3,6 +3,7 @@
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+ * Copyright (C) 2010, D. R. Commander.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -21,6 +22,7 @@
 #include "jpeglib.h"
 #include "jdct.h"		/* Private declarations for DCT subsystem */
 #include "jsimddct.h"
+#include "jpegcomp.h"
 
 
 /*
@@ -100,7 +102,7 @@ start_pass (j_decompress_ptr cinfo)
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
     /* Select the proper IDCT routine for this component's scaling */
-    switch (compptr->DCT_scaled_size) {
+    switch (_DCT_scaled_size) {
 #ifdef IDCT_SCALING_SUPPORTED
     case 1:
       method_ptr = jpeg_idct_1x1;
@@ -156,7 +158,7 @@ start_pass (j_decompress_ptr cinfo)
       }
       break;
     default:
-      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, compptr->DCT_scaled_size);
+      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, _DCT_scaled_size);
       break;
     }
     idct->pub.inverse_DCT[ci] = method_ptr;

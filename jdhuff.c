@@ -2,6 +2,7 @@
  * jdhuff.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Copyright (C) 2010, D. R. Commander.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -14,7 +15,7 @@
  * storage only upon successful completion of an MCU.
  */
 
-/* Modifications:
+/* Performance enhancements:
  * Copyright (C)2007 Sun Microsystems, Inc.
  * Copyright (C)2009-2010 D. R. Commander
  *
@@ -33,6 +34,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jdhuff.h"		/* Declarations shared with jdphuff.c */
+#include "jpegcomp.h"
 
 
 /*
@@ -137,7 +139,7 @@ start_pass_huff_decoder (j_decompress_ptr cinfo)
     if (compptr->component_needed) {
       entropy->dc_needed[blkn] = TRUE;
       /* we don't need the ACs if producing a 1/8th-size image */
-      entropy->ac_needed[blkn] = (compptr->DCT_scaled_size > 1);
+      entropy->ac_needed[blkn] = (_DCT_scaled_size > 1);
     } else {
       entropy->dc_needed[blkn] = entropy->ac_needed[blkn] = FALSE;
     }

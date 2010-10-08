@@ -1,7 +1,7 @@
 /*
  * transupp.c
  *
- * Copyright (C) 1997, Thomas G. Lane.
+ * Copyright (C) 1997-2009, Thomas G. Lane, Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -649,6 +649,11 @@ transpose_critical_parameters (j_compress_ptr dstinfo)
   dtemp = dstinfo->image_width;
   dstinfo->image_width = dstinfo->image_height;
   dstinfo->image_height = dtemp;
+#if JPEG_LIB_VERSION >= 70
+  itemp = dstinfo->min_DCT_h_scaled_size;
+  dstinfo->min_DCT_h_scaled_size = dstinfo->min_DCT_v_scaled_size;
+  dstinfo->min_DCT_v_scaled_size = itemp;
+#endif
 
   /* Transpose sampling factors */
   for (ci = 0; ci < dstinfo->num_components; ci++) {

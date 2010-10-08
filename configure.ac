@@ -131,6 +131,26 @@ case "$host_os" in
 esac
 AM_CONDITIONAL([IS_WIN32], [test "x$is_win32" = "x1"])
 
+AC_ARG_WITH([jpeg7],
+    AC_HELP_STRING([--with-jpeg7], [Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
+AC_ARG_WITH([jpeg8],
+    AC_HELP_STRING([--with-jpeg8], [Emulate libjpeg v8b API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
+if test "x${with_jpeg8}" == "xyes"; then
+    JPEG_LIB_VERSION=80
+    AC_DEFINE([JPEG_LIB_VERSION], [80], [Version 8.0])
+    AC_MSG_NOTICE([libjpeg v8b API/ABI emulation enabled])
+else
+    if test "x${with_jpeg7}" == "xyes"; then
+        JPEG_LIB_VERSION=70
+        AC_DEFINE([JPEG_LIB_VERSION], [70], [Version 7.0])
+        AC_MSG_NOTICE([libjpeg v7 API/ABI emulation enabled])
+    else
+        JPEG_LIB_VERSION=62
+        AC_DEFINE([JPEG_LIB_VERSION], [62], [Version 6b])
+    fi
+fi
+AC_SUBST(JPEG_LIB_VERSION)
+
 # SIMD is optional
 AC_ARG_WITH([simd],
     AC_HELP_STRING([--without-simd],[Omit accelerated SIMD routines.]))

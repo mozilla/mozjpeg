@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libjpeg.la libturbojpeg.la
-libjpeg_la_LDFLAGS = -version-number 62:0:0 -no-undefined
+libjpeg_la_LDFLAGS = -version-number ${JPEG_LIB_VERSION}:0:0 -no-undefined
 libturbojpeg_la_LDFLAGS = -avoid-version -no-undefined
 include_HEADERS = jerror.h jmorecfg.h jpeglib.h turbojpeg.h
 nodist_include_HEADERS = jconfig.h

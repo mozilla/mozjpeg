@@ -13,7 +13,7 @@ endif
 
 _DUMMY := $(shell mkdir -p $(ODIR))
 
-VERSION = 1.0.1
+VERSION = 1.0.80
 
 CC = "cl" -nologo
 CXX = "cl" -EHsc -nologo

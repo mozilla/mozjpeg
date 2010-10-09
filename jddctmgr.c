@@ -102,7 +102,7 @@ start_pass (j_decompress_ptr cinfo)
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
     /* Select the proper IDCT routine for this component's scaling */
-    switch (_DCT_scaled_size) {
+    switch (compptr->_DCT_scaled_size) {
 #ifdef IDCT_SCALING_SUPPORTED
     case 1:
       method_ptr = jpeg_idct_1x1;
@@ -158,7 +158,7 @@ start_pass (j_decompress_ptr cinfo)
       }
       break;
     default:
-      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, _DCT_scaled_size);
+      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, compptr->_DCT_scaled_size);
       break;
     }
     idct->pub.inverse_DCT[ci] = method_ptr;

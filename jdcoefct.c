@@ -192,7 +192,7 @@ decompress_onepass (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
 	useful_width = (MCU_col_num < last_MCU_col) ? compptr->MCU_width
 						    : compptr->last_col_width;
 	output_ptr = output_buf[compptr->component_index] +
-	  yoffset * _DCT_scaled_size;
+	  yoffset * compptr->_DCT_scaled_size;
 	start_col = MCU_col_num * compptr->MCU_sample_width;
 	for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
 	  if (cinfo->input_iMCU_row < last_iMCU_row ||
@@ -202,11 +202,11 @@ decompress_onepass (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
 	      (*inverse_DCT) (cinfo, compptr,
 			      (JCOEFPTR) coef->MCU_buffer[blkn+xindex],
 			      output_ptr, output_col);
-	      output_col += _DCT_scaled_size;
+	      output_col += compptr->_DCT_scaled_size;
 	    }
 	  }
 	  blkn += compptr->MCU_width;
-	  output_ptr += _DCT_scaled_size;
+	  output_ptr += compptr->_DCT_scaled_size;
 	}
       }
     }
@@ -367,9 +367,9 @@ decompress_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
 	(*inverse_DCT) (cinfo, compptr, (JCOEFPTR) buffer_ptr,
 			output_ptr, output_col);
 	buffer_ptr++;
-	output_col += _DCT_scaled_size;
+	output_col += compptr->_DCT_scaled_size;
       }
-      output_ptr += _DCT_scaled_size;
+      output_ptr += compptr->_DCT_scaled_size;
     }
   }
 
@@ -662,9 +662,9 @@ decompress_smooth_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
 	DC4 = DC5; DC5 = DC6;
 	DC7 = DC8; DC8 = DC9;
 	buffer_ptr++, prev_block_row++, next_block_row++;
-	output_col += _DCT_scaled_size;
+	output_col += compptr->_DCT_scaled_size;
       }
-      output_ptr += _DCT_scaled_size;
+      output_ptr += compptr->_DCT_scaled_size;
     }
   }
 

@@ -422,7 +422,7 @@ jinit_upsampler (j_decompress_ptr cinfo)
   /* jdmainct.c doesn't support context rows when min_DCT_scaled_size = 1,
    * so don't ask for it.
    */
-  do_fancy = cinfo->do_fancy_upsampling && _min_DCT_scaled_size > 1;
+  do_fancy = cinfo->do_fancy_upsampling && cinfo->_min_DCT_scaled_size > 1;
 
   /* Verify we can handle the sampling factors, select per-component methods,
    * and create storage as needed.
@@ -432,10 +432,10 @@ jinit_upsampler (j_decompress_ptr cinfo)
     /* Compute size of an "input group" after IDCT scaling.  This many samples
      * are to be converted to max_h_samp_factor * max_v_samp_factor pixels.
      */
-    h_in_group = (compptr->h_samp_factor * _DCT_scaled_size) /
-		 _min_DCT_scaled_size;
-    v_in_group = (compptr->v_samp_factor * _DCT_scaled_size) /
-		 _min_DCT_scaled_size;
+    h_in_group = (compptr->h_samp_factor * compptr->_DCT_scaled_size) /
+		 cinfo->_min_DCT_scaled_size;
+    v_in_group = (compptr->v_samp_factor * compptr->_DCT_scaled_size) /
+		 cinfo->_min_DCT_scaled_size;
     h_out_group = cinfo->max_h_samp_factor;
     v_out_group = cinfo->max_v_samp_factor;
     upsample->rowgroup_height[ci] = v_in_group; /* save for use later */

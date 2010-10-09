@@ -140,35 +140,24 @@ typedef struct {
    */
   JDIMENSION width_in_blocks;
   JDIMENSION height_in_blocks;
-#if JPEG_LIB_VERSION >= 70
-  /* Size of a DCT block in samples,
-   * reflecting any scaling we choose to apply during the DCT step.
-   * Values from 1 to 16 are supported.
-   * Note that different components may receive different DCT scalings.
-   */
-  int DCT_h_scaled_size;
-  int DCT_v_scaled_size;
-  /* The downsampled dimensions are the component's actual, unpadded number
-   * of samples at the main buffer (preprocessing/compression interface);
-   * DCT scaling is included, so
-   * downsampled_width = ceil(image_width * Hi/Hmax * DCT_h_scaled_size/DCTSIZE)
-   * and similarly for height.
-   */
-#else
   /* Size of a DCT block in samples.  Always DCTSIZE for compression.
    * For decompression this is the size of the output from one DCT block,
    * reflecting any scaling we choose to apply during the IDCT step.
    * Values of 1,2,4,8 are likely to be supported.  Note that different
    * components may receive different IDCT scalings.
    */
+#if JPEG_LIB_VERSION >= 70
+  int DCT_h_scaled_size;
+  int DCT_v_scaled_size;
+#else
   int DCT_scaled_size;
+#endif
   /* The downsampled dimensions are the component's actual, unpadded number
    * of samples at the main buffer (preprocessing/compression interface), thus
    * downsampled_width = ceil(image_width * Hi/Hmax)
    * and similarly for height.  For decompression, IDCT scaling is included, so
-   * downsampled_width = ceil(image_width * Hi/Hmax * DCT_scaled_size/DCTSIZE)
+   * downsampled_width = ceil(image_width * Hi/Hmax * DCT_[h_]scaled_size/DCTSIZE)
    */
-#endif
   JDIMENSION downsampled_width;	 /* actual width in samples */
   JDIMENSION downsampled_height; /* actual height in samples */
   /* This flag is used only for decompression.  In cases where some of the

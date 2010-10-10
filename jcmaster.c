@@ -16,6 +16,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jpegcomp.h"
 
 
 /* Private state */
@@ -65,7 +66,7 @@ jpeg_calc_jpeg_dimensions (j_compress_ptr cinfo)
 
 
 LOCAL(void)
-initial_setup (j_compress_ptr cinfo)
+initial_setup (j_compress_ptr cinfo, boolean transcode_only)
 /* Do computations that are needed before master selection phase */
 {
   int ci;
@@ -74,17 +75,18 @@ initial_setup (j_compress_ptr cinfo)
   JDIMENSION jd_samplesperrow;
 
 #if JPEG_LIB_VERSION >= 70
-  jpeg_calc_jpeg_dimensions(cinfo);
+  if (!transcode_only)
+    jpeg_calc_jpeg_dimensions(cinfo);
 #endif
 
   /* Sanity check on image dimensions */
-  if (cinfo->image_height <= 0 || cinfo->image_width <= 0
+  if (cinfo->_jpeg_height <= 0 || cinfo->_jpeg_width <= 0
       || cinfo->num_components <= 0 || cinfo->input_components <= 0)
     ERREXIT(cinfo, JERR_EMPTY_IMAGE);
 
   /* Make sure image isn't bigger than I can handle */
-  if ((long) cinfo->image_height > (long) JPEG_MAX_DIMENSION ||
-      (long) cinfo->image_width > (long) JPEG_MAX_DIMENSION)
+  if ((long) cinfo->_jpeg_height > (long) JPEG_MAX_DIMENSION ||
+      (long) cinfo->_jpeg_width > (long) JPEG_MAX_DIMENSION)
     ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int) JPEG_MAX_DIMENSION);
 
   /* Width of an input scanline must be representable as JDIMENSION. */
@@ -129,17 +131,17 @@ initial_setup (j_compress_ptr cinfo)
 #endif
     /* Size in DCT blocks */
     compptr->width_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
+      jdiv_round_up((long) cinfo->_jpeg_width * (long) compptr->h_samp_factor,
 		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
     compptr->height_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
+      jdiv_round_up((long) cinfo->_jpeg_height * (long) compptr->v_samp_factor,
 		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
     /* Size in samples */
     compptr->downsampled_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
+      jdiv_round_up((long) cinfo->_jpeg_width * (long) compptr->h_samp_factor,
 		    (long) cinfo->max_h_samp_factor);
     compptr->downsampled_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
+      jdiv_round_up((long) cinfo->_jpeg_height * (long) compptr->v_samp_factor,
 		    (long) cinfo->max_v_samp_factor);
     /* Mark component needed (this flag isn't actually used for compression) */
     compptr->component_needed = TRUE;
@@ -149,7 +151,7 @@ initial_setup (j_compress_ptr cinfo)
    * main controller will call coefficient controller).
    */
   cinfo->total_iMCU_rows = (JDIMENSION)
-    jdiv_round_up((long) cinfo->image_height,
+    jdiv_round_up((long) cinfo->_jpeg_height,
 		  (long) (cinfo->max_v_samp_factor*DCTSIZE));
 }
 
@@ -377,10 +379,10 @@ per_scan_setup (j_compress_ptr cinfo)
     
     /* Overall image size in MCUs */
     cinfo->MCUs_per_row = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width,
+      jdiv_round_up((long) cinfo->_jpeg_width,
 		    (long) (cinfo->max_h_samp_factor*DCTSIZE));
     cinfo->MCU_rows_in_scan = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height,
+      jdiv_round_up((long) cinfo->_jpeg_height,
 		    (long) (cinfo->max_v_samp_factor*DCTSIZE));
     
     cinfo->blocks_in_MCU = 0;
@@ -584,7 +586,7 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   master->pub.is_last_pass = FALSE;
 
   /* Validate parameters, determine derived values */
-  initial_setup(cinfo);
+  initial_setup(cinfo, transcode_only);
 
   if (cinfo->scan_info != NULL) {
 #ifdef C_MULTISCAN_FILES_SUPPORTED

@@ -2,6 +2,7 @@
  * jerror.h
  *
  * Copyright (C) 1994-1997, Thomas G. Lane.
+ * Modified 1997-2009 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -45,6 +46,7 @@ JMESSAGE(JERR_BAD_ALIGN_TYPE, "ALIGN_TYPE is wrong, please fix")
 JMESSAGE(JERR_BAD_ALLOC_CHUNK, "MAX_ALLOC_CHUNK is wrong, please fix")
 JMESSAGE(JERR_BAD_BUFFER_MODE, "Bogus buffer control mode")
 JMESSAGE(JERR_BAD_COMPONENT_ID, "Invalid component ID %d in SOS")
+JMESSAGE(JERR_BAD_CROP_SPEC, "Invalid crop request")
 JMESSAGE(JERR_BAD_DCT_COEF, "DCT coefficient out of range")
 JMESSAGE(JERR_BAD_DCTSIZE, "IDCT output block size %d not supported")
 JMESSAGE(JERR_BAD_HUFF_TABLE, "Bogus Huffman table definition")

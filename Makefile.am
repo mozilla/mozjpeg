@@ -118,6 +118,8 @@ test: testclean all
 	cmp $(srcdir)/testimgp.jpg testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg
 	cmp $(srcdir)/testimgint.jpg testoutt.jpg
+	./jpegtran -crop 100x100+10+10 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgcrop.jpg testoutcrop.jpg
 
 else
 
@@ -141,6 +143,8 @@ test: testclean all
 	cmp $(srcdir)/testimgp.jpg testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg
 	cmp $(srcdir)/testimgint.jpg testoutt.jpg
+	./jpegtran -crop 100x100+10+10 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgcrop.jpg testoutcrop.jpg
 
 endif
 

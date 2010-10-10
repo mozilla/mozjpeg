@@ -9,6 +9,7 @@
  * command-line switches.  Switches processed here are:
  *	-qtables file		Read quantization tables from text file
  *	-scans file		Read scan script from text file
+ *	-quality N[,N,...]	Set quality ratings
  *	-qslots N[,N,...]	Set component quantization table selectors
  *	-sample HxV[,HxV,...]	Set component sampling factors
  */
@@ -69,9 +70,12 @@ read_text_integer (FILE * file, long * result, int * termchar)
 }
 
 
+#if JPEG_LIB_VERSION < 70
+static int q_scale_factor = 100;
+#endif
+
 GLOBAL(boolean)
-read_quant_tables (j_compress_ptr cinfo, char * filename,
-		   int scale_factor, boolean force_baseline)
+read_quant_tables (j_compress_ptr cinfo, char * filename, boolean force_baseline)
 /* Read a set of quantization tables from the specified file.
  * The file is plain ASCII text: decimal numbers with whitespace between.
  * Comments preceded by '#' may be included in the file.
@@ -108,7 +112,12 @@ read_quant_tables (j_compress_ptr cinfo, char * filename,
       }
       table[i] = (unsigned int) val;
     }
-    jpeg_add_quant_table(cinfo, tblno, table, scale_factor, force_baseline);
+#if JPEG_LIB_VERSION >= 70
+    jpeg_add_quant_table(cinfo, tblno, table, cinfo->q_scale_factor[tblno],
+			 force_baseline);
+#else
+    jpeg_add_quant_table(cinfo, tblno, table, q_scale_factor, force_baseline);
+#endif
     tblno++;
   }
 
@@ -260,6 +269,46 @@ bogus:
 }
 
 #endif /* C_MULTISCAN_FILES_SUPPORTED */
+
+
+GLOBAL(boolean)
+set_quality_ratings (j_compress_ptr cinfo, char *arg, boolean force_baseline)
+/* Process a quality-ratings parameter string, of the form
+ *     N[,N,...]
+ * If there are more q-table slots than parameters, the last value is replicated.
+ */
+{
+  int val = 75;			/* default value */
+  int tblno;
+  char ch;
+
+  for (tblno = 0; tblno < NUM_QUANT_TBLS; tblno++) {
+    if (*arg) {
+      ch = ',';			/* if not set by sscanf, will be ',' */
+      if (sscanf(arg, "%d%c", &val, &ch) < 1)
+	return FALSE;
+      if (ch != ',')		/* syntax check */
+	return FALSE;
+      /* Convert user 0-100 rating to percentage scaling */
+#if JPEG_LIB_VERSION >= 70
+      cinfo->q_scale_factor[tblno] = jpeg_quality_scaling(val);
+#endif
+      while (*arg && *arg++ != ',') /* advance to next segment of arg string */
+	;
+    } else {
+      /* reached end of parameter, set remaining factors to last value */
+#if JPEG_LIB_VERSION >= 70
+      cinfo->q_scale_factor[tblno] = jpeg_quality_scaling(val);
+#endif
+    }
+  }
+#if JPEG_LIB_VERSION >= 70
+  jpeg_default_qtables(cinfo, force_baseline);
+#else
+  jpeg_set_quality(cinfo, val, force_baseline);
+#endif
+  return TRUE;
+}
 
 
 GLOBAL(boolean)

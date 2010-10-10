@@ -1369,9 +1369,6 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
 #if JPEG_LIB_VERSION >= 70
   dstinfo->jpeg_width = info->output_width;
   dstinfo->jpeg_height = info->output_height;
-#else
-  dstinfo->image_width = info->output_width;
-  dstinfo->image_height = info->output_height;
 #endif
 
   /* Transpose destination image parameters */
@@ -1380,9 +1377,17 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
   case JXFORM_TRANSVERSE:
   case JXFORM_ROT_90:
   case JXFORM_ROT_270:
+#if JPEG_LIB_VERSION < 70
+    dstinfo->image_width = info->output_height;
+    dstinfo->image_height = info->output_width;
+#endif
     transpose_critical_parameters(dstinfo);
     break;
   default:
+#if JPEG_LIB_VERSION < 70
+    dstinfo->image_width = info->output_width;
+    dstinfo->image_height = info->output_height;
+#endif
     break;
   }
 

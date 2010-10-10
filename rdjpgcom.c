@@ -2,6 +2,7 @@
  * rdjpgcom.c
  *
  * Copyright (C) 1994-1997, Thomas G. Lane.
+ * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -14,6 +15,9 @@
 #define JPEG_CJPEG_DJPEG	/* to get the command-line config symbols */
 #include "jinclude.h"		/* get auto-config symbols, <stdio.h> */
 
+#ifdef HAVE_LOCALE_H
+#include <locale.h>		/* Bill Allombert: use locale for isprint */
+#endif
 #include <ctype.h>		/* to declare isupper(), tolower() */
 #ifdef USE_SETMODE
 #include <fcntl.h>		/* to declare setmode()'s parameter macros */
@@ -218,11 +222,16 @@ skip_variable (void)
  */
 
 static void
-process_COM (void)
+process_COM (int raw)
 {
   unsigned int length;
   int ch;
   int lastch = 0;
+
+  /* Bill Allombert: set locale properly for isprint */
+#ifdef HAVE_LOCALE_H
+  setlocale(LC_CTYPE, "");
+#endif
 
   /* Get the marker parameter length count */
   length = read_2_bytes();
@@ -233,12 +242,14 @@ process_COM (void)
 
   while (length > 0) {
     ch = read_1_byte();
+    if (raw) {
+      putc(ch, stdout);
     /* Emit the character in a readable form.
      * Nonprintables are converted to \nnn form,
      * while \ is converted to \\.
      * Newlines in CR, CR/LF, or LF form will be printed as one newline.
      */
-    if (ch == '\r') {
+    } else if (ch == '\r') {
       printf("\n");
     } else if (ch == '\n') {
       if (lastch != '\r')
@@ -254,6 +265,11 @@ process_COM (void)
     length--;
   }
   printf("\n");
+
+  /* Bill Allombert: revert to C locale */
+#ifdef HAVE_LOCALE_H
+  setlocale(LC_CTYPE, "C");
+#endif
 }
 
 
@@ -321,7 +337,7 @@ process_SOFn (int marker)
  */
 
 static int
-scan_JPEG_header (int verbose)
+scan_JPEG_header (int verbose, int raw)
 {
   int marker;
 
@@ -362,7 +378,7 @@ scan_JPEG_header (int verbose)
       return marker;
 
     case M_COM:
-      process_COM();
+      process_COM(raw);
       break;
 
     case M_APP12:
@@ -371,7 +387,7 @@ scan_JPEG_header (int verbose)
        */
       if (verbose) {
 	printf("APP12 contains:\n");
-	process_COM();
+	process_COM(raw);
       } else
 	skip_variable();
       break;
@@ -398,6 +414,7 @@ usage (void)
   fprintf(stderr, "Usage: %s [switches] [inputfile]\n", progname);
 
   fprintf(stderr, "Switches (names may be abbreviated):\n");
+  fprintf(stderr, "  -raw        Display non-printable characters in comments (unsafe)\n");
   fprintf(stderr, "  -verbose    Also display dimensions of JPEG image\n");
 
   exit(EXIT_FAILURE);
@@ -438,7 +455,7 @@ main (int argc, char **argv)
 {
   int argn;
   char * arg;
-  int verbose = 0;
+  int verbose = 0, raw = 0;
 
   /* On Mac, fetch a command line. */
 #ifdef USE_CCOMMAND
@@ -457,6 +474,8 @@ main (int argc, char **argv)
     arg++;			/* advance over '-' */
     if (keymatch(arg, "verbose", 1)) {
       verbose++;
+    } else if (keymatch(arg, "raw", 1)) {
+      raw = 1;
     } else
       usage();
   }
@@ -488,7 +507,7 @@ main (int argc, char **argv)
   }
 
   /* Scan the JPEG headers. */
-  (void) scan_JPEG_header(verbose);
+  (void) scan_JPEG_header(verbose, raw);
 
   /* All done. */
   exit(EXIT_SUCCESS);

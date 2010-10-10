@@ -202,6 +202,7 @@ esac
 AC_SUBST(RPMARCH)
 AC_SUBST(DEBARCH)
 AC_SUBST(BUILD)
+AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 
 # jconfig.h is the file we use, but we have another before that to
 # fool autoheader. the reason is that we include this header in our

@@ -2,6 +2,7 @@
  * djpeg.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Copyright (C) 2010, D. R. Commander.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -25,6 +26,7 @@
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"		/* for version message */
+#include "config.h"
 
 #include <ctype.h>		/* to declare isprint() */
 
@@ -240,7 +242,10 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       static boolean printed_version = FALSE;
 
       if (! printed_version) {
-	fprintf(stderr, "Independent JPEG Group's DJPEG, version %s\n%s\n",
+	fprintf(stderr, "%s version %s (build %s)\n",
+		PACKAGE_NAME, VERSION, BUILD);
+	fprintf(stderr, "%s\n\n", LJTCOPYRIGHT);
+	fprintf(stderr, "Based on Independent JPEG Group's libjpeg, version %s\n%s\n\n",
 		JVERSION, JCOPYRIGHT);
 	printed_version = TRUE;
       }

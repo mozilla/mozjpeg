@@ -1,4 +1,4 @@
-.TH CJPEG 1 "20 March 1998"
+.TH CJPEG 1 "30 December 2009"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -36,7 +36,7 @@ though for brevity these are not mentioned below.
 .PP
 The basic switches are:
 .TP
-.BI \-quality " N"
+.BI \-quality " N[,...]"
 Scale quantization tables to adjust image quality.  Quality is 0 (worst) to
 100 (best); default is 75.  (See below for more info.)
 .TP
@@ -109,6 +109,34 @@ other JPEG programs may be unable to decode the resulting file.  Use
 if you need to ensure compatibility at low quality values.)
 .PP
 The
+.B \-quality
+option has been extended in IJG version 7 for support of separate quality
+settings for luminance and chrominance (or in general, for every provided
+quantization table slot).  This feature is useful for high-quality
+applications which cannot accept the damage of color data by coarse
+subsampling settings.  You can now easily reduce the color data amount more
+smoothly with finer control without separate subsampling.  The resulting file
+is fully compliant with standard JPEG decoders.
+Note that the
+.B \-quality
+ratings refer to the quantization table slots, and that the last value is
+replicated if there are more q-table slots than parameters.  The default
+q-table slots are 0 for luminance and 1 for chrominance with default tables as
+given in the JPEG standard.  This is compatible with the old behaviour in case
+that only one parameter is given, which is then used for both luminance and
+chrominance (slots 0 and 1).  More or custom quantization tables can be set
+with
+.B \-qtables
+and assigned to components with
+.B \-qslots
+parameter (see the "wizard" switches below).
+.B Caution:
+You must explicitly add
+.BI \-sample " 1x1"
+for efficient separate color
+quality selection, since the default value used by library is 2x2!
+.PP
+The
 .B \-progressive
 switch creates a "progressive JPEG" file.  In this type of JPEG file, the data
 is stored in multiple scans of increasing quality.  If the file is being
@@ -117,9 +145,6 @@ scan to display a low-quality image very quickly, and can then improve the
 display with each subsequent scan.  The final image is exactly equivalent to a
 standard JPEG file of the same quality setting, and the total file size is
 about the same --- often a little smaller.
-.B Caution:
-progressive JPEG is not yet widely implemented, so many decoders will be
-unable to view a progressive JPEG file at all.
 .PP
 Switches for advanced users:
 .TP
@@ -279,8 +304,7 @@ Independent JPEG Group
 Arithmetic coding is not supported for legal reasons.
 .PP
 GIF input files are no longer supported, to avoid the Unisys LZW patent.
-Use a Unisys-licensed program if you need to read a GIF file.  (Conversion
-of GIF files to JPEG is usually a bad idea anyway.)
+(Conversion of GIF files to JPEG is usually a bad idea anyway.)
 .PP
 Not all variants of BMP and Targa file formats are supported.
 .PP
@@ -288,5 +312,3 @@ The
 .B \-targa
 switch is not a bug, it's a feature.  (It would be a bug if the Targa format
 designers had not been clueless.)
-.PP
-Still not as fast as we'd like.

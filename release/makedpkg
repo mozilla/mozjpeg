@@ -73,8 +73,8 @@ makedeb()
 		install -m 644 $SRCDIR/LGPL.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 		install -m 644 $SRCDIR/README-turbo.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 		install -m 644 $SRCDIR/README $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/libjpeg.doc $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/usage.doc $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
+		install -m 644 $SRCDIR/libjpeg.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
+		install -m 644 $SRCDIR/usage.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 	fi
 
 	sudo chown -Rh root:root $TMPDIR/*

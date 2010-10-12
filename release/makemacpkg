@@ -136,8 +136,8 @@ install -m 644 $SRCDIR/LICENSE.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/
 install -m 644 $SRCDIR/LGPL.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/LGPL.txt 
 install -m 644 $SRCDIR/README-turbo.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/README-turbo.txt 
 install -m 644 $SRCDIR/README $PKGROOT/Library/Documentation/$PACKAGE_NAME/README 
-install -m 644 $SRCDIR/libjpeg.doc $PKGROOT/Library/Documentation/$PACKAGE_NAME/libjpeg.doc 
-install -m 644 $SRCDIR/usage.doc $PKGROOT/Library/Documentation/$PACKAGE_NAME/usage.doc 
+install -m 644 $SRCDIR/libjpeg.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/libjpeg.txt 
+install -m 644 $SRCDIR/usage.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/usage.txt 
 
 sudo chown -R root:admin $PKGROOT 
 sudo chown -R root:0 $PKGROOT/usr 

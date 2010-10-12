@@ -1,6 +1,6 @@
 USING THE IJG JPEG LIBRARY
 
-Copyright (C) 1994-1998, Thomas G. Lane.
+Copyright (C) 1994-2010, Thomas G. Lane, Guido Vollbeding, D. R. Commander.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -750,7 +750,7 @@ is to prepare a library file ("libjpeg.a", or a corresponding name on non-Unix
 machines) and reference it at your link step.  If you use only half of the
 library (only compression or only decompression), only that much code will be
 included from the library, unless your linker is hopelessly brain-damaged.
-The supplied makefiles build libjpeg.a automatically (see install.doc).
+The supplied makefiles build libjpeg.a automatically (see install.txt).
 
 While you can build the JPEG library as a shared library if the whim strikes
 you, we don't really recommend it.  The trouble with shared libraries is that
@@ -849,6 +849,10 @@ int jpeg_quality_scaling (int quality)
 	in future releases --- IJG may choose to adopt a scaling method that
 	can't be expressed as a simple scalar multiplier, in which case the
 	premise of this routine collapses.  Caveat user.
+
+jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
+	[libjpeg v7/v8 only] Set default quantization tables with linear
+	q_scale_factor[] values (see below).
 
 jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
 		      const unsigned int *basic_table,
@@ -972,6 +976,32 @@ JQUANT_TBL * quant_tbl_ptrs[NUM_QUANT_TBLS]
 	routines will set up table slot 0 for luminance quality and table
 	slot 1 for chrominance.
 
+int q_scale_factor[NUM_QUANT_TBLS]
+	[libjpeg v7+ only] Linear quantization scaling factors (0-100, default
+	100) for use with jpeg_default_qtables().
+	See rdswitch.c and cjpeg.c for an example of usage.
+	Note that the q_scale_factor[] values use "linear" scales, so JPEG
+	quality levels chosen by the user must be converted to these scales
+	using jpeg_quality_scaling().  Here is an example which corresponds to
+	cjpeg -quality 90,70:
+
+		jpeg_set_defaults(cinfo);
+
+		/* Set luminance quality 90. */
+		cinfo->q_scale_factor[0] = jpeg_quality_scaling(90);
+		/* Set chrominance quality 70. */
+		cinfo->q_scale_factor[1] = jpeg_quality_scaling(70);
+
+		jpeg_default_qtables(cinfo, force_baseline);
+
+	CAUTION: Setting separate quality levels for chrominance and luminance
+	is mainly only useful if chrominance subsampling is disabled.  2x2
+	chrominance subsampling (AKA "4:2:0") is the default, but you can
+	explicitly disable subsampling as follows:
+
+		cinfo->comp_info[0].v_samp_factor = 1;
+		cinfo->comp_info[0].h_samp_factor = 1;
+
 JHUFF_TBL * dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
 JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
 	Pointers to Huffman coding tables, one per table slot, or NULL if
@@ -981,6 +1011,17 @@ JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
 	Note that optimal Huffman tables can be computed for an image
 	by setting optimize_coding, as discussed above; there's seldom
 	any need to mess with providing your own Huffman tables.
+
+
+[libjpeg v7+ only] The actual dimensions of the JPEG image that will be written
+to the file are given by the following fields.  These are computed from the
+input image dimensions and the compression parameters by jpeg_start_compress().
+You can also call jpeg_calc_jpeg_dimensions() to obtain the values that will
+result from the current parameter settings.
+
+JDIMENSION jpeg_width		Actual dimensions of output image.
+JDIMENSION jpeg_height
+
 
 There are some additional cinfo fields which are not documented here
 because you currently can't change them; for example, you can't set
@@ -1374,21 +1415,22 @@ Compressed data handling (source and destination managers)
 
 The JPEG compression library sends its compressed data to a "destination
 manager" module.  The default destination manager just writes the data to a
-stdio stream, but you can provide your own manager to do something else.
-Similarly, the decompression library calls a "source manager" to obtain the
-compressed data; you can provide your own source manager if you want the data
-to come from somewhere other than a stdio stream.
+memory buffer or to a stdio stream, but you can provide your own manager to
+do something else.  Similarly, the decompression library calls a "source
+manager" to obtain the compressed data; you can provide your own source
+manager if you want the data to come from somewhere other than a memory
+buffer or a stdio stream.
 
 In both cases, compressed data is processed a bufferload at a time: the
 destination or source manager provides a work buffer, and the library invokes
 the manager only when the buffer is filled or emptied.  (You could define a
 one-character buffer to force the manager to be invoked for each byte, but
 that would be rather inefficient.)  The buffer's size and location are
-controlled by the manager, not by the library.  For example, if you desired to
-decompress a JPEG datastream that was all in memory, you could just make the
-buffer pointer and length point to the original data in memory.  Then the
-buffer-reload procedure would be invoked only if the decompressor ran off the
-end of the datastream, which would indicate an erroneous datastream.
+controlled by the manager, not by the library.  For example, the memory
+source manager just makes the buffer pointer and length point to the original
+data in memory.  In this case the buffer-reload procedure will be invoked
+only if the decompressor ran off the end of the datastream, which would
+indicate an erroneous datastream.
 
 The work buffer is defined as an array of datatype JOCTET, which is generally
 "char" or "unsigned char".  On a machine where char is not exactly 8 bits
@@ -1440,7 +1482,8 @@ You will also need code to create a jpeg_destination_mgr struct, fill in its
 method pointers, and insert a pointer to the struct into the "dest" field of
 the JPEG compression object.  This can be done in-line in your setup code if
 you like, but it's probably cleaner to provide a separate routine similar to
-the jpeg_stdio_dest() routine of the supplied destination manager.
+the jpeg_stdio_dest() or jpeg_mem_dest() routines of the supplied destination
+managers.
 
 Decompression source managers follow a parallel design, but with some
 additional frammishes.  The source manager struct contains a pointer and count
@@ -1516,10 +1559,10 @@ You will also need code to create a jpeg_source_mgr struct, fill in its method
 pointers, and insert a pointer to the struct into the "src" field of the JPEG
 decompression object.  This can be done in-line in your setup code if you
 like, but it's probably cleaner to provide a separate routine similar to the
-jpeg_stdio_src() routine of the supplied source manager.
+jpeg_stdio_src() or jpeg_mem_src() routines of the supplied source managers.
 
-For more information, consult the stdio source and destination managers
-in jdatasrc.c and jdatadst.c.
+For more information, consult the memory and stdio source and destination
+managers in jdatasrc.c and jdatadst.c.
 
 
 I/O suspension
@@ -2608,7 +2651,7 @@ entire image into a set of virtual coefficient-block arrays, one array per
 component.  The return value is a pointer to an array of virtual-array
 descriptors.  Each virtual array can be accessed directly using the JPEG
 memory manager's access_virt_barray method (see Memory management, below,
-and also read structure.doc's discussion of virtual array handling).  Or,
+and also read structure.txt's discussion of virtual array handling).  Or,
 for simple transcoding to a different JPEG file format, the array list can
 just be handed directly to jpeg_write_coefficients().
 
@@ -2752,7 +2795,7 @@ Memory management
 -----------------
 
 This section covers some key facts about the JPEG library's built-in memory
-manager.  For more info, please read structure.doc's section about the memory
+manager.  For more info, please read structure.txt's section about the memory
 manager, and consult the source code if necessary.
 
 All memory and temporary file allocation within the library is done via the
@@ -2867,7 +2910,7 @@ BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
 larger than a char, so it affects the surrounding application's image data.
 The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
 and GIF file formats; you must disable the other file formats to compile a
-12-bit cjpeg or djpeg.  (install.doc has more information about that.)
+12-bit cjpeg or djpeg.  (install.txt has more information about that.)
 At present, a 12-bit library can handle *only* 12-bit images, not both
 precisions.  (If you need to include both 8- and 12-bit libraries in a single
 application, you could probably do it by defining NEED_SHORT_EXTERNAL_NAMES
@@ -2920,7 +2963,7 @@ about them.)
 
 The code works fine on ANSI C, C++, and pre-ANSI C compilers, using any of
 the popular system include file setups, and some not-so-popular ones too.
-See install.doc for configuration procedures.
+See install.txt for configuration procedures.
 
 The code is not dependent on the exact sizes of the C data types.  As
 distributed, we make the assumptions that
@@ -2959,7 +3002,7 @@ The code generally assumes that C names must be unique in the first 15
 characters.  However, global function names can be made unique in the
 first 6 characters by defining NEED_SHORT_EXTERNAL_NAMES.
 
-More info about porting the code may be gleaned by reading jconfig.doc,
+More info about porting the code may be gleaned by reading jconfig.txt,
 jmorecfg.h, and jinclude.h.
 
 

@@ -81,8 +81,8 @@ wrjpgcom_LDADD = libjpeg.la
 
 dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
-DOCS= README install.doc usage.doc wizard.doc example.c libjpeg.doc \
-	structure.doc coderules.doc filelist.doc jconfig.doc change.log \
+DOCS= README install.txt usage.txt wizard.txt example.c libjpeg.txt \
+	structure.txt coderules.txt filelist.txt jconfig.txt change.log \
 	README-turbo.txt rdrle.c wrrle.c LICENSE.txt LGPL.txt BUILDING.txt \
 	ChangeLog.txt
 

@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  SYSTEM ARCHITECTURE
 
-Copyright (C) 1991-1995, Thomas G. Lane.
+Copyright (C) 1991-2009, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -12,9 +12,9 @@ convention, see the include files and comments in the source code.
 
 We assume that the reader is already somewhat familiar with the JPEG standard.
 The README file includes references for learning about JPEG.  The file
-libjpeg.doc describes the library from the viewpoint of an application
+libjpeg.txt describes the library from the viewpoint of an application
 programmer using the library; it's best to read that file before this one.
-Also, the file coderules.doc describes the coding style conventions we use.
+Also, the file coderules.txt describes the coding style conventions we use.
 
 In this document, JPEG-specific terminology follows the JPEG standard:
   A "component" means a color channel, e.g., Red or Luminance.
@@ -541,7 +541,7 @@ section needs more data.)  In this way the application can avoid making
 extra display passes when data is arriving faster than the display pass
 can run.  Furthermore, it is possible to abort an output pass without
 losing anything, since the coefficient buffer is read-only as far as the
-output section is concerned.  See libjpeg.doc for more detail.
+output section is concerned.  See libjpeg.txt for more detail.
 
 A full-image coefficient array is only created if the JPEG file has multiple
 scans (or if the application specifies buffered-image mode anyway).  When
@@ -685,7 +685,7 @@ then resume compression or decompression at a later time.
 
 This scenario is supported for simple cases.  (For anything more complex, we
 recommend that the application "bite the bullet" and develop real multitasking
-capability.)  The libjpeg.doc file goes into more detail about the usage and
+capability.)  The libjpeg.txt file goes into more detail about the usage and
 limitations of this capability; here we address the implications for library
 structure.
 
@@ -733,13 +733,14 @@ to bypass COM and APPn markers, so these can be larger than the buffer size
 without causing problems; otherwise a 64K buffer would be needed in the worst
 case.)
 
-The JPEG marker writer currently does *not* cope with suspension.  I feel that
-this is not necessary; it is much easier simply to require the application to
-ensure there is enough buffer space before starting.  (An empty 2K buffer is
-more than sufficient for the header markers; and ensuring there are a dozen or
-two bytes available before calling jpeg_finish_compress() will suffice for the
-trailer.)  This would not work for writing multi-scan JPEG files, but
-we simply do not intend to support that capability with suspension.
+The JPEG marker writer currently does *not* cope with suspension.
+We feel that this is not necessary; it is much easier simply to require
+the application to ensure there is enough buffer space before starting.  (An
+empty 2K buffer is more than sufficient for the header markers; and ensuring
+there are a dozen or two bytes available before calling jpeg_finish_compress()
+will suffice for the trailer.)  This would not work for writing multi-scan
+JPEG files, but we simply do not intend to support that capability with
+suspension.
 
 
 *** Memory manager services ***

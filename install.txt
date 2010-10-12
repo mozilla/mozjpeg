@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-1998, Thomas G. Lane.
+Copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -94,18 +94,13 @@ Configure was created with GNU Autoconf and it follows the usual conventions
 for GNU configure scripts.  It makes a few assumptions that you may want to
 override.  You can do this by providing optional switches to configure:
 
-* If you want to build libjpeg as a shared library, say
-	./configure --enable-shared
-To get both shared and static libraries, say
-	./configure --enable-shared --enable-static
-Note that these switches invoke GNU libtool to take care of system-dependent
-shared library building methods.  If things don't work this way, please try
-running configure without either switch; that should build a static library
-without using libtool.  If that works, your problem is probably with libtool
-not with the IJG code.  libtool is fairly new and doesn't support all flavors
-of Unix yet.  (You might be able to find a newer version of libtool than the
-one included with libjpeg; see ftp.gnu.org.  Report libtool problems to
-bug-libtool@gnu.org.)
+* Configure will build both static and shared libraries, if possible.
+If you want to build libjpeg only as a static library, say
+	./configure --disable-shared
+If you want to build libjpeg only as a shared library, say
+	./configure --disable-static
+Configure uses GNU libtool to take care of system-dependent shared library
+building methods.
 
 * Configure will use gcc (GNU C compiler) if it's available, otherwise cc.
 To force a particular compiler to be selected, use the CC option, for example
@@ -115,10 +110,10 @@ For example, on HP-UX you probably want to say
 	./configure CC='cc -Aa'
 to get HP's compiler to run in ANSI mode.
 
-* The default CFLAGS setting is "-O" for non-gcc compilers, "-O2" for gcc.
+* The default CFLAGS setting is "-g" for non-gcc compilers, "-g -O2" for gcc.
 You can override this by saying, for example,
-	./configure CFLAGS='-g'
-if you want to compile with debugging support.
+	./configure CFLAGS='-O2'
+if you want to compile without debugging support.
 
 * Configure will set up the makefile so that "make install" will install files
 into /usr/local/bin, /usr/local/man, etc.  You can specify an installation
@@ -153,7 +148,8 @@ makefile.dj	jconfig.dj	MS-DOS, DJGPP (Delorie's port of GNU C)
 makefile.mc6	jconfig.mc6	MS-DOS, Microsoft C (16-bit only)
 makefile.wat	jconfig.wat	MS-DOS, OS/2, or Windows NT, Watcom C
 makefile.vc	jconfig.vc	Windows NT/95, MS Visual C++
-make*.ds	jconfig.vc	Windows NT/95, MS Developer Studio
+make*.vc6	jconfig.vc	Windows NT/95, MS Visual C++ 6
+make*.v10	jconfig.vc	Windows NT/95, MS Visual C++ 2010 (v10)
 makefile.mms	jconfig.vms	Digital VMS, with MMS software
 makefile.vms	jconfig.vms	Digital VMS, without MMS software
 
@@ -166,8 +162,8 @@ Configuring the software by hand
 --------------------------------
 
 First, generate a jconfig.h file.  If you are moderately familiar with C,
-the comments in jconfig.doc should be enough information to do this; just
-copy jconfig.doc to jconfig.h and edit it appropriately.  Otherwise, you may
+the comments in jconfig.txt should be enough information to do this; just
+copy jconfig.txt to jconfig.h and edit it appropriately.  Otherwise, you may
 prefer to use the ckconfig.c program.  You will need to compile and execute
 ckconfig.c by hand --- we hope you know at least enough to do that.
 ckconfig.c may not compile the first try (in fact, the whole idea is for it
@@ -447,8 +443,8 @@ on our to-do list.)
 
 The PPM reader (rdppm.c) can read 12-bit data from either text-format or
 binary-format PPM and PGM files.  Binary-format PPM/PGM files which have a
-maxval greater than 255 are assumed to use 2 bytes per sample, LSB first
-(little-endian order).  As of early 1995, 2-byte binary format is not
+maxval greater than 255 are assumed to use 2 bytes per sample, MSB first
+(big-endian order).  As of early 1995, 2-byte binary format is not
 officially supported by the PBMPLUS library, but it is expected that a
 future release of PBMPLUS will support it.  Note that the PPM reader will
 read files of any maxval regardless of the BITS_IN_JSAMPLE setting; incoming
@@ -521,7 +517,7 @@ that float DCT results may vary slightly across machines.)  To do that, add
 "#define JDCT_DEFAULT JDCT_FLOAT" to jconfig.h.  Even if you don't change
 the default, you should redefine JDCT_FASTEST, which is the method selected
 by djpeg's -fast switch.  Don't forget to update the documentation files
-(usage.doc and/or cjpeg.1, djpeg.1) to agree with what you've done.
+(usage.txt and/or cjpeg.1, djpeg.1) to agree with what you've done.
 
 If access to "short" arrays is slow on your machine, it may be a win to
 define type JCOEF as int rather than short.  This will cost a good deal of
@@ -538,17 +534,17 @@ In general, it's worth trying the maximum optimization level of your compiler,
 and experimenting with any optional optimizations such as loop unrolling.
 (Unfortunately, far too many compilers have optimizer bugs ... be prepared to
 back off if the code fails self-test.)  If you do any experimentation along
-these lines, please report the optimal settings to jpeg-info@uunet.uu.net so
-we can mention them in future releases.  Be sure to specify your machine and
-compiler version.
+these lines, please report the optimal settings to jpeg-info@uc.ag so we
+can mention them in future releases.  Be sure to specify your machine
+and compiler version.
 
 
 HINTS FOR SPECIFIC SYSTEMS
 ==========================
 
 We welcome reports on changes needed for systems not mentioned here.  Submit
-'em to jpeg-info@uunet.uu.net.  Also, if configure or ckconfig.c is wrong
-about how to configure the JPEG software for your system, please let us know.
+'em to jpeg-info@uc.ag.  Also, if configure or ckconfig.c is wrong about how
+to configure the JPEG software for your system, please let us know.
 
 
 Acorn RISC OS:
@@ -568,7 +564,7 @@ Also add a new line '.c.o:; $(cc) $< $(cflags) -c -o $@'.  Remove the
 lines '$(RM) libjpeg.o' and '$(AR2) libjpeg.o' and the 'jconfig.h'
 dependency section.
 
-Copy jconfig.doc to jconfig.h.  Edit jconfig.h to define TWO_FILE_COMMANDLINE
+Copy jconfig.txt to jconfig.h.  Edit jconfig.h to define TWO_FILE_COMMANDLINE
 and CHAR_IS_UNSIGNED.
 
 Run the makefile using !AMU not !Make.  If you want to use the 'clean' and
@@ -587,7 +583,7 @@ manager, with temporary files being created on the device named by
 
 
 Atari ST/STE/TT:
- 
+
 Copy the project files makcjpeg.st, makdjpeg.st, maktjpeg.st, and makljpeg.st
 to cjpeg.prj, djpeg.prj, jpegtran.prj, and libjpeg.prj respectively.  The
 project files should work as-is with Pure C.  For Turbo C, change library
@@ -610,7 +606,8 @@ or jpegtran.ttp.  You'll have to perform the self-test by hand.
 
 We haven't bothered to include project files for rdjpgcom and wrjpgcom.
 Those source files should just be compiled by themselves; they don't
-depend on the JPEG library.
+depend on the JPEG library.  You can use the default.prj project file
+of the Pure C distribution to make the programs.
 
 There is a bug in some older versions of the Turbo C library which causes the
 space used by temporary files created with "tmpfile()" not to be freed after
@@ -872,6 +869,7 @@ Since jmorecfg.h tries to define FAR as empty, you may get a compiler
 warning if you include both jpeglib.h and windef.h (which windows.h
 includes).  To suppress the warning, you can put "#ifndef FAR"/"#endif"
 around the line "#define FAR" in jmorecfg.h.
+(Something like this is already in jmorecfg.h, by the way.)
 
 When using the library in a Windows application, you will almost certainly
 want to modify or replace the error handler module jerror.c, since our
@@ -890,7 +888,7 @@ jconfig.h to enable it.)
 
 The proper solution for problem 2 is to return control to your calling
 application after a library error.  This can be done with the setjmp/longjmp
-technique discussed in libjpeg.doc and illustrated in example.c.  (NOTE:
+technique discussed in libjpeg.txt and illustrated in example.c.  (NOTE:
 some older Windows C compilers provide versions of setjmp/longjmp that
 don't actually work under Windows.  You may need to use the Windows system
 functions Catch and Throw instead.)
@@ -1000,32 +998,67 @@ model.  makefile.vc is intended for command-line use.  (If you are using
 the Developer Studio environment, you may prefer the DevStudio project
 files; see below.)
 
-Some users feel that it's easier to call the library from C++ code if you
-force VC++ to treat the library as C++ code, which you can do by renaming
-all the *.c files to *.cpp (and adjusting the makefile to match).  This
-avoids the need to put extern "C" { ... } around #include "jpeglib.h" in
-your C++ application.
+IJG JPEG 7 adds extern "C" to jpeglib.h.  This avoids the need to put
+extern "C" { ... } around #include "jpeglib.h" in your C++ application.
+You can also force VC++ to treat the library as C++ code by renaming
+all the *.c files to *.cpp (and adjusting the makefile to match).
+In this case you also need to define the symbol DONT_USE_EXTERN_C in
+the configuration to prevent jpeglib.h from using extern "C".
 
 
-Microsoft Windows, Microsoft Developer Studio:
+Microsoft Windows, Microsoft Visual C++ 6 Developer Studio:
 
-We include makefiles that should work as project files in DevStudio 4.2 or
+We include makefiles that should work as project files in DevStudio 6.0 or
 later.  There is a library makefile that builds the IJG library as a static
-Win32 library, and an application makefile that builds the sample applications
+Win32 library, and application makefiles that build the sample applications
 as Win32 console applications.  (Even if you only want the library, we
 recommend building the applications so that you can run the self-test.)
 
 To use:
-1. Copy jconfig.vc to jconfig.h, makelib.ds to jpeg.mak, and
-   makeapps.ds to apps.mak.  (Note that the renaming is critical!)
-2. Click on the .mak files to construct project workspaces.
-   (If you are using DevStudio more recent than 4.2, you'll probably
-   get a message saying that the makefiles are being updated.)
-3. Build the library project, then the applications project.
-4. Move the application .exe files from `app`\Release to an
+1. Open the command prompt, change to the main directory and execute the
+   command line
+	NMAKE /f makefile.vc  setup-vc6
+   This will move jconfig.vc to jconfig.h and makefiles to project files.
+   (Note that the renaming is critical!)
+2. Open the workspace file jpeg.dsw, build the library project.
+   (If you are using DevStudio more recent than 6.0, you'll probably
+   get a message saying that the project files are being updated.)
+3. Open the workspace file apps.dsw, build the application projects.
+4. To perform the self-test, execute the command line
+	NMAKE /f makefile.vc  test-build
+5. Move the application .exe files from `app`\Release to an
    appropriate location on your path.
-5. To perform the self-test, execute the command line
-	NMAKE /f makefile.vc  test
+
+
+Microsoft Windows, Microsoft Visual C++ 2010 Developer Studio (v10):
+
+We include makefiles that should work as project files in Visual Studio
+2010 or later.  There is a library makefile that builds the IJG library
+as a static Win32 library, and application makefiles that build the sample
+applications as Win32 console applications.  (Even if you only want the
+library, we recommend building the applications so that you can run the
+self-test.)
+
+To use:
+1. Open the command prompt, change to the main directory and execute the
+   command line
+	NMAKE /f makefile.vc  setup-v10
+   This will move jconfig.vc to jconfig.h and makefiles to project files.
+   (Note that the renaming is critical!)
+2. Open the solution file jpeg.sln, build the library project.
+   (If you are using Visual Studio more recent than 2010 (v10), you'll
+   probably get a message saying that the project files are being updated.)
+3. Open the solution file apps.sln, build the application projects.
+4. To perform the self-test, execute the command line
+	NMAKE /f makefile.vc  test-build
+5. Move the application .exe files from `app`\Release to an
+   appropriate location on your path.
+
+Note:
+There seems to be an optimization bug in the compiler which causes the
+self-test to fail with the color quantization option.
+We have disabled optimization for the file jquant2.c in the library
+project file which causes the self-test to pass properly.
 
 
 OS/2, Borland C++:

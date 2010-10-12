@@ -205,3 +205,76 @@ time with:
 
 At run time, attempting to use these extensions with a version of libjpeg
 that doesn't support them will result in a "Bogus input colorspace" error.
+
+=================================
+libjpeg v7 and v8 API/ABI support
+=================================
+
+libjpeg v7 and v8 added new features to the API/ABI, and, unfortunately, the
+compression and decompression structures were extended in a backward-
+incompatible manner to accommodate these features.  Thus, programs which are
+built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
+based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
+as widely used as v6b, enough programs (including a few Linux distros) have
+made the switch that it was desirable to provide support for the libjpeg v7/v8
+API/ABI in libjpeg-turbo.
+
+Some of the libjpeg v7 and v8 features -- DCT scaling, to name one -- involve
+deep modifications to the code which cannot be accommodated by libjpeg-turbo
+without either breaking compatibility with libjpeg v6b or producing an
+unsupportable mess.  In order to fully support libjpeg v8 with all of its
+features, we would have to essentially port the SIMD extensions to the libjpeg
+v8 code base and maintain two separate code trees.  We are hesitant to do this
+until/unless the newer libjpeg code bases garner more community support and
+involvement and until/unless we have some notion of whether future libjpeg
+releases will also be backward-incompatible.
+
+By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, you can
+build a version of libjpeg-turbo which emulates the libjpeg v7 or v8b API/ABI,
+so that programs which are built against libjpeg v7 or v8 can be run with
+libjpeg-turbo.  The following section describes which libjpeg v7+ features are
+supported and which aren't.
+
+libjpeg v7 and v8 Features:
+---------------------------
+
+Fully supported:
+
+-- cjpeg: Separate quality settings for luminance and chrominance
+   Note that the libpjeg v7+ API was extended to accommodate this feature only
+   for convenience purposes.  It has always been possible to implement this
+   feature with libjpeg v6b (see rdswitch.c for an example.)
+
+-- cjpeg: 32-bit BMP support
+
+-- jpegtran: lossless cropping
+
+-- jpegtran: -perfect option
+
+-- rdjpgcom: -raw option
+
+-- rdjpgcom: locale awareness
+
+
+Fully supported when using libjpeg v7/v8 emulation:
+
+-- libjpeg: In-memory source and destination managers
+
+
+Not supported:
+
+-- libjpeg: DCT scaling in compressor
+   cinfo.scale_num and cinfo.scale_denom are silently ignored.
+
+-- libjpeg: IDCT scaling extensions in decompressor
+   libjpeg-turbo still supports IDCT scaling with scaling factors of 1/2, 1/4,
+   and 1/8 (same as libjpeg v6b.)
+
+-- libjpeg: Fancy downsampling in compressor
+   cinfo.do_fancy_downsampling is silently ignored.
+
+-- libjpeg: Arithmetic coding/decoding
+   Not supported due to patent concerns.
+
+-- jpegtran: Scaling
+   Seems to depend on the DCT scaling feature, which isn't supported.

@@ -66,7 +66,7 @@ Section "libjpeg-turbo SDK for ${PLATFORM} (required)"
 	SetOutPath $INSTDIR
 	File "${WSRCDIR}\README"
 	File "${WSRCDIR}\README-turbo.txt"
-	File "${WSRCDIR}\libjpeg.doc"
+	File "${WSRCDIR}\libjpeg.txt"
 	File "${WSRCDIR}\LGPL.txt"
 	File "${WSRCDIR}\LICENSE.txt"
 
@@ -114,7 +114,7 @@ Section "Uninstall"
 	Delete $INSTDIR\uninstall_${VERSION}.exe
 	Delete $INSTDIR\README
 	Delete $INSTDIR\README-turbo.txt
-	Delete $INSTDIR\libjpeg.doc
+	Delete $INSTDIR\libjpeg.txt
 	Delete $INSTDIR\LGPL.txt
 	Delete $INSTDIR\LICENSE.txt
 

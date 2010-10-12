@@ -460,7 +460,7 @@ main (int argc, char **argv)
    * APP12 is used by some digital camera makers for textual info,
    * so we provide the ability to display it as text.
    * If you like, additional APPn marker types can be selected for display,
-   * but don't try to override APP0 or APP14 this way (see libjpeg.doc).
+   * but don't try to override APP0 or APP14 this way (see libjpeg.txt).
    */
   jpeg_set_marker_processor(&cinfo, JPEG_COM, print_text_marker);
   jpeg_set_marker_processor(&cinfo, JPEG_APP0+12, print_text_marker);

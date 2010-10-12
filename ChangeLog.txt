@@ -1,3 +1,11 @@
+Significant changes since 1.0.1
+===============================
+
+[1] Added support for the libjpeg v7 and v8b API and ABI, which is optionally
+compiled in by adding --with-jpeg8 to the configure command line.  This feature
+was sponsored by CamTrace SAS.
+
+
 Significant changes since 1.0.0
 ===============================
 

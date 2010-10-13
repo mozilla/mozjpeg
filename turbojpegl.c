@@ -93,7 +93,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 	if(setjmp(j->jerr.jb))
 	{ // this will execute if LIBJPEG has an error
 		if(j) free(j);  return NULL;
-  }
+	}
 
 	jpeg_create_compress(&j->cinfo);
 	j->cinfo.dest=&j->jdms;
@@ -157,7 +157,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	{  // this will execute if LIBJPEG has an error
 		if(row_pointer) free(row_pointer);
 		return -1;
-  }
+	}
 
 	jpeg_set_defaults(&j->cinfo);
 

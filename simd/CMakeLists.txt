@@ -1,3 +1,7 @@
+if(NOT DEFINED NASM)
+  set(NASM nasm)
+endif()
+
 if(SIMD_X86_64)
   set(NAFLAGS -fwin64 -DWIN64 -D__x86_64__ -I${CMAKE_SOURCE_DIR}/win/
     -I${CMAKE_CURRENT_SOURCE_DIR}/)
@@ -41,7 +45,7 @@ foreach(file ${SIMD_BASENAMES})
   set(SIMD_SRC ${CMAKE_CURRENT_SOURCE_DIR}/${file}.asm)
   set(SIMD_OBJ ${OBJDIR}/${file}.obj)
   add_custom_command(OUTPUT ${SIMD_OBJ} DEPENDS ${SIMD_SRC} *.inc
-    COMMAND nasm ${NAFLAGS} ${SIMD_SRC} -o${SIMD_OBJ})
+    COMMAND ${NASM} ${NAFLAGS} ${SIMD_SRC} -o${SIMD_OBJ})
   set(SIMD_OBJS ${SIMD_OBJS} ${SIMD_OBJ})
 endforeach()
 

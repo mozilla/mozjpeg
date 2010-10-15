@@ -1,0 +1,231 @@
+#
+# Setup
+#
+
+cmake_minimum_required(VERSION 2.6)
+
+project(libjpeg-turbo)
+set(VERSION 1.0.80)
+
+if(UNIX OR MINGW OR CYGWIN)
+  execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)
+  string(REGEX REPLACE "\n" "" BUILD ${BUILD})
+elseif(WIN32)
+  execute_process(COMMAND "${CMAKE_SOURCE_DIR}/cmakescripts/getdate.bat"
+    OUTPUT_VARIABLE BUILD)
+  string(REGEX REPLACE "\n" "" BUILD ${BUILD})
+else()
+  message(FATAL_ERROR "date not implemented")
+endif()
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+
+# This only works if building from the command line.  There is currently no way
+# to set a variable's value based on the build type when using the MSVC IDE.
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(BUILD "${BUILD}d")
+endif()
+
+if(NOT DEFINED WITH_SIMD)
+  set(WITH_SIMD 1)
+endif()
+
+set(JPEG_LIB_VERSION 62)
+set(DLL_VERSION ${JPEG_LIB_VERSION})
+if(WITH_JPEG8)
+  set(JPEG_LIB_VERSION 80)
+  set(DLL_VERSION 8)
+  message(STATUS "Emulating libjpeg v8b API/ABI")
+elseif(WITH_JPEG7)
+  set(JPEG_LIB_VERSION 70)
+  set(DLL_VERSION 7)
+  message(STATUS "Emulating libjpeg v7 API/ABI")
+endif(WITH_JPEG8)
+
+if(MSVC)
+  # Use the static C library for all build types
+  foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+    CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
+    CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    if(${var} MATCHES "/MD")
+      string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
+    endif()
+  endforeach()
+
+  add_definitions(-W3 -wd4996)
+endif()
+
+# Detect whether compiler is 64-bit
+if(MSVC AND CMAKE_CL_64)
+  set(SIMD_X86_64 1)
+  set(64BIT 1)
+elseif(CMAKE_SIZEOF_VOID_P MATCHES 8)
+  set(SIMD_X86_64 1)
+  set(64BIT 1)
+endif()
+
+if(64BIT)
+  message(STATUS "64-bit build")
+else()
+  message(STATUS "32-bit build")
+endif()
+
+configure_file(win/jconfig.h.in jconfig.h)
+configure_file(win/config.h.in config.h)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
+
+
+#
+# Targets
+#
+
+set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
+  jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c
+  jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c jdatasrc.c
+  jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c
+  jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c jdtrans.c jerror.c
+  jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c
+  jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
+
+if(WITH_SIMD)
+  add_definitions(-DWITH_SIMD)
+  add_subdirectory(simd)
+  if(SIMD_X86_64)
+    set(JPEG_SOURCES ${JPEG_SOURCES} simd/jsimd_x86_64.c)
+  else()
+    set(JPEG_SOURCES ${JPEG_SOURCES} simd/jsimd_i386.c)
+  endif()
+  # This tells CMake that the "source" files haven't been generated yet
+  set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
+else()
+  set(JPEG_SOURCES ${JPEG_SOURCES} jsimd_none.c)
+endif()
+
+add_subdirectory(sharedlib)
+
+add_library(jpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS})
+add_dependencies(jpeg-static simd)
+if(NOT MSVC)
+  set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
+endif()
+if(WITH_SIMD)
+  add_dependencies(jpeg-static simd)
+endif()
+
+add_library(turbojpeg SHARED turbojpegl.c)
+set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
+target_link_libraries(turbojpeg jpeg-static)
+set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")
+
+add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS}
+  turbojpegl.c)
+add_dependencies(turbojpeg-static simd)
+if(NOT MSVC)
+  set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
+endif()
+if(WITH_SIMD)
+  add_dependencies(turbojpeg-static simd)
+endif()
+
+add_executable(jpegut jpegut.c)
+target_link_libraries(jpegut turbojpeg)
+
+add_executable(jpegut-static jpegut.c)
+target_link_libraries(jpegut-static turbojpeg-static)
+
+add_executable(jpgtest jpgtest.cxx bmp.c)
+target_link_libraries(jpgtest turbojpeg)
+
+add_executable(jpgtest-static jpgtest.cxx bmp.c)
+target_link_libraries(jpgtest-static turbojpeg-static)
+
+add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c rdswitch.c
+  rdtarga.c)
+set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
+  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED")
+target_link_libraries(cjpeg-static jpeg-static)
+
+add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c wrgif.c
+  wrppm.c wrtarga.c)
+set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
+  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED")
+target_link_libraries(djpeg-static jpeg-static)
+
+add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
+target_link_libraries(jpegtran-static jpeg-static)
+
+add_executable(rdjpgcom rdjpgcom.c)
+
+add_executable(wrjpgcom rdjpgcom.c)
+
+
+#
+# Tests
+#
+
+enable_testing()
+add_test(jpegut jpegut)
+add_test(cjpeg-int sharedlib/cjpeg -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-int-cmp cmp ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutint.jpg)
+add_test(cjpeg-fast sharedlib/cjpeg -dct fast -opt -outfile testoutfst.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-fast-cmp cmp ${CMAKE_SOURCE_DIR}/testimgfst.jpg testoutfst.jpg)
+add_test(cjpeg-float sharedlib/cjpeg -dct float -outfile testoutflt.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+if(WITH_SIMD)
+add_test(cjpeg-float-cmp cmp ${CMAKE_SOURCE_DIR}/testimgflt.jpg testoutflt.jpg)
+else()
+add_test(cjpeg-float-cmp cmp ${CMAKE_SOURCE_DIR}/testimgflt-nosimd.jpg testoutflt.jpg)
+endif()
+add_test(djpeg-int sharedlib/djpeg -dct int -fast -ppm -outfile testoutint.ppm ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(djpeg-int-cmp cmp ${CMAKE_SOURCE_DIR}/testimgint.ppm testoutint.ppm)
+add_test(djpeg-fast sharedlib/djpeg -dct fast -ppm -outfile testoutfst.ppm ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(djpeg-fast-cmp cmp ${CMAKE_SOURCE_DIR}/testimgfst.ppm testoutfst.ppm)
+add_test(djpeg-float sharedlib/djpeg -dct float -ppm -outfile testoutflt.ppm ${CMAKE_SOURCE_DIR}/testorig.jpg)
+if(WITH_SIMD)
+add_test(djpeg-float-cmp cmp ${CMAKE_SOURCE_DIR}/testimgflt.ppm testoutflt.ppm)
+else()
+add_test(djpeg-float-cmp cmp ${CMAKE_SOURCE_DIR}/testorig.ppm testoutflt.ppm)
+endif()
+add_test(djpeg-256 sharedlib/djpeg -dct int -bmp -colors 256 -outfile testout.bmp  ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(djpeg-256-cmp cmp ${CMAKE_SOURCE_DIR}/testimg.bmp testout.bmp)
+add_test(cjpeg-prog sharedlib/cjpeg -dct int -progressive -outfile testoutp.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-prog-cmp cmp ${CMAKE_SOURCE_DIR}/testimgp.jpg testoutp.jpg)
+add_test(jpegtran-prog sharedlib/jpegtran -outfile testoutt.jpg testoutp.jpg)
+add_test(jpegtran-prog-cmp cmp ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutt.jpg)
+add_test(jpegtran-crop sharedlib/jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(jpegtran-crop-cmp cmp ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)
+
+add_test(jpegut-static jpegut-static)
+add_test(cjpeg-static-int cjpeg-static -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-static-int-cmp cmp ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutint.jpg)
+add_test(cjpeg-static-fast cjpeg-static -dct fast -opt -outfile testoutfst.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-static-fast-cmp cmp ${CMAKE_SOURCE_DIR}/testimgfst.jpg testoutfst.jpg)
+add_test(cjpeg-static-float cjpeg-static -dct float -outfile testoutflt.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+if(WITH_SIMD)
+add_test(cjpeg-static-float-cmp cmp ${CMAKE_SOURCE_DIR}/testimgflt.jpg testoutflt.jpg)
+else()
+add_test(cjpeg-static-float-cmp cmp ${CMAKE_SOURCE_DIR}/testimgflt-nosimd.jpg testoutflt.jpg)
+endif()
+add_test(djpeg-static-int djpeg-static -dct int -fast -ppm -outfile testoutint.ppm ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(djpeg-static-int-cmp cmp ${CMAKE_SOURCE_DIR}/testimgint.ppm testoutint.ppm)
+add_test(djpeg-static-fast djpeg-static -dct fast -ppm -outfile testoutfst.ppm ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(djpeg-static-fast-cmp cmp ${CMAKE_SOURCE_DIR}/testimgfst.ppm testoutfst.ppm)
+add_test(djpeg-static-float djpeg-static -dct float -ppm -outfile testoutflt.ppm ${CMAKE_SOURCE_DIR}/testorig.jpg)
+if(WITH_SIMD)
+add_test(djpeg-static-float-cmp cmp ${CMAKE_SOURCE_DIR}/testimgflt.ppm testoutflt.ppm)
+else()
+add_test(djpeg-static-float-cmp cmp ${CMAKE_SOURCE_DIR}/testorig.ppm testoutflt.ppm)
+endif()
+add_test(djpeg-static-256 djpeg-static -dct int -bmp -colors 256 -outfile testout.bmp  ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(djpeg-static-256-cmp cmp ${CMAKE_SOURCE_DIR}/testimg.bmp testout.bmp)
+add_test(cjpeg-static-prog cjpeg-static -dct int -progressive -outfile testoutp.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-static-prog-cmp cmp ${CMAKE_SOURCE_DIR}/testimgp.jpg testoutp.jpg)
+add_test(jpegtran-static-prog jpegtran-static -outfile testoutt.jpg testoutp.jpg)
+add_test(jpegtran-static-prog-cmp cmp ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutt.jpg)
+add_test(jpegtran-static-crop jpegtran-static -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testorig.jpg)
+add_test(jpegtran-static-crop-cmp cmp ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)

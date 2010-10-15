@@ -21,14 +21,13 @@ foreach(src ${JPEG_SOURCES})
   set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_SOURCE_DIR}/${src})
 endforeach()
 
-set(JPEG_DEF ../win/jpeg.def)
-
 if(WITH_SIMD)
   # This tells CMake that the "source" files haven't been generated yet
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
 endif()
 
-add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS} ${JPEG_DEF})
+add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
+  ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def)
 if(MSVC)
   set_target_properties(jpeg PROPERTIES SUFFIX ${DLL_VERSION}.dll)
 elseif(MINGW OR CYGWIN)

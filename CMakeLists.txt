@@ -30,6 +30,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(BUILD "${BUILD}d")
 endif()
 
+message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
+
 if(NOT DEFINED WITH_SIMD)
   set(WITH_SIMD 1)
 endif()

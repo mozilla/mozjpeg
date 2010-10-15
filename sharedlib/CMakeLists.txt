@@ -28,6 +28,8 @@ endif()
 
 add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
   ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def)
+set_target_properties(jpeg PROPERTIES SOVERSION ${DLL_VERSION}
+  VERSION ${FULLVERSION})
 if(MSVC)
   set_target_properties(jpeg PROPERTIES SUFFIX ${DLL_VERSION}.dll)
 elseif(MINGW OR CYGWIN)

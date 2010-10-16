@@ -110,12 +110,12 @@ if(WITH_SIMD)
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
 else()
   set(JPEG_SOURCES ${JPEG_SOURCES} jsimd_none.c)
+  message(STATUS "Not using SIMD acceleration")
 endif()
 
 add_subdirectory(sharedlib)
 
 add_library(jpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS})
-add_dependencies(jpeg-static simd)
 if(NOT MSVC)
   set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
 endif()
@@ -130,7 +130,6 @@ set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")
 
 add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS}
   turbojpegl.c)
-add_dependencies(turbojpeg-static simd)
 if(NOT MSVC)
   set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
 endif()

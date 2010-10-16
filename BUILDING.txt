@@ -415,6 +415,28 @@ libjpeg v8.  See README-turbo.txt for more information on libjpeg v7 and v8b
 emulation.
 
 
+========================
+Installing libjpeg-turbo
+========================
+
+You can use the build system to install libjpeg-turbo into a directory of your
+choosing (as opposed to creating an installer.)  To do this, add:
+
+  -DCMAKE_INSTALL_PREFIX={install_directory}
+
+to the cmake command line.
+
+For example,
+
+  cmake -G"NMake Makefiles" -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=c:\libjpeg-turbo {source_directory}
+  nmake install
+
+will install the header files in c:\libjpeg-turbo\include, the library files
+in c:\libjpeg-turbo\lib, the DLL's in c:\libjpeg-turbo\bin, and the
+documentation in c:\libjpeg-turbo\doc.
+
+
 =============
 Build Recipes
 =============

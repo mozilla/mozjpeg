@@ -234,3 +234,37 @@ add_test(jpegtran-static-prog jpegtran-static -outfile testoutt.jpg testoutp.jpg
 add_test(jpegtran-static-prog-cmp cmp ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutt.jpg)
 add_test(jpegtran-static-crop jpegtran-static -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testorig.jpg)
 add_test(jpegtran-static-crop-cmp cmp ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)
+
+
+#
+# Installer
+#
+
+set(INST_NAME ${CMAKE_PROJECT_NAME})
+
+if(MSVC)
+  set(INST_PLATFORM "Visual C++")
+elseif(MINGW)
+  set(INST_PLATFORM GCC)
+  set(INST_NAME ${INST_NAME}-gcc)
+  set(INST_DEFS -DGCC)
+endif()
+
+if(64BIT)
+  set(INST_PLATFORM "${INST_PLATFORM} 64-bit")
+  set(INST_NAME ${INST_NAME}64)
+  set(INST_DEFS ${INST_DEFS} -DWIN64)
+endif()
+
+if(MSVC_IDE)
+  set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=$(OutDir)\\")
+else()
+  set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=")
+endif()
+
+configure_file(release/libjpeg-turbo.nsi.in libjpeg-turbo.nsi @ONLY)
+
+add_custom_target(installer
+  makensis -nocd ${INST_DEFS} libjpeg-turbo.nsi
+  DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static
+  SOURCES libjpeg-turbo.nsi)

@@ -267,3 +267,14 @@ add_custom_target(installer
   makensis -nocd ${INST_DEFS} libjpeg-turbo.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static
   SOURCES libjpeg-turbo.nsi)
+
+install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(FILES ${CMAKE_SOURCE_DIR}/LGPL.txt ${CMAKE_SOURCE_DIR}/LICENSE.txt
+  ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-turbo.txt
+  ${CMAKE_SOURCE_DIR}/libjpeg.txt ${CMAKE_SOURCE_DIR}/usage.txt
+  DESTINATION doc)

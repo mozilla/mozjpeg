@@ -278,3 +278,7 @@ install(FILES ${CMAKE_SOURCE_DIR}/LGPL.txt ${CMAKE_SOURCE_DIR}/LICENSE.txt
   ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-turbo.txt
   ${CMAKE_SOURCE_DIR}/libjpeg.txt ${CMAKE_SOURCE_DIR}/usage.txt
   DESTINATION doc)
+
+install(FILES ${CMAKE_BINARY_DIR}/jconfig.h ${CMAKE_SOURCE_DIR}/jerror.h
+  ${CMAKE_SOURCE_DIR}/jmorecfg.h ${CMAKE_SOURCE_DIR}/jpeglib.h
+  ${CMAKE_SOURCE_DIR}/turbojpeg.h DESTINATION include)

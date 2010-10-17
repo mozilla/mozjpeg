@@ -191,21 +191,11 @@ sunpkg: all
 	sh $(srcdir)/release/makesunpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
 		${DEBARCH} ${srcdir} $(CC) $(CXX) combined
 
-nsi: all
-	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo-gcc64 \
-		-DWLIBDIR=.libs -DWSRCDIR=$(srcdir) -DWBLDDIR=. -DWHDRDIR=. -DWIN64 \
-		-DPLATFORM="GCC 64-bit" -DGCC $(srcdir)/release/libjpeg-turbo.nsi
-
 else
 
 sunpkg: all
 	sh $(srcdir)/release/makesunpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
 		${DEBARCH} ${srcdir} $(CC) $(CXX)
-
-nsi: all
-	makensis -nocd -DVERSION=$(VERSION) -DAPPNAME=libjpeg-turbo-gcc \
-		-DWLIBDIR=.libs -DWSRCDIR=$(srcdir) -DWBLDDIR=. -DWHDRDIR=. \
-		-DPLATFORM="GCC" -DGCC $(srcdir)/release/libjpeg-turbo.nsi
 
 endif
 

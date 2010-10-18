@@ -197,9 +197,11 @@ deb: all
 
 if X86_64
 
+BUILDDIR32=${srcdir}/osxx86
+
 udmg: all
 	sh $(srcdir)/release/makemacpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
-		${srcdir} universal
+		${srcdir} ${BUILDDIR32}
 
 endif
 

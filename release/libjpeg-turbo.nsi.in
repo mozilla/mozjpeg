@@ -1,6 +1,6 @@
 !include x64.nsh
 Name "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@"
-OutFile @CMAKE_BINARY_DIR@\${BUILDDIR}@INST_NAME@.exe
+OutFile "@CMAKE_BINARY_DIR@\${BUILDDIR}@INST_NAME@.exe"
 InstallDir c:\@INST_NAME@
 
 SetCompressor bzip2

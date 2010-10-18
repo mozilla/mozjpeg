@@ -131,28 +131,45 @@ case "$host_os" in
 esac
 AM_CONDITIONAL([IS_WIN32], [test "x$is_win32" = "x1"])
 
-AC_ARG_WITH([jpeg7],
-    AC_HELP_STRING([--with-jpeg7], [Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
-AC_ARG_WITH([jpeg8],
-    AC_HELP_STRING([--with-jpeg8], [Emulate libjpeg v8b API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
-AC_MSG_CHECKING([libjpeg version number])
-if test "x${with_jpeg8}" = "xyes"; then
-    JPEG_LIB_VERSION=80
-    AC_DEFINE([JPEG_LIB_VERSION], [80], [Version 8.0])
-    [JPEG_LIB_VERSION="`expr $JPEG_LIB_VERSION / 10`:2"]
-else
-    if test "x${with_jpeg7}" = "xyes"; then
-        JPEG_LIB_VERSION=70
-        AC_DEFINE([JPEG_LIB_VERSION], [70], [Version 7.0])
-        [JPEG_LIB_VERSION="`expr $JPEG_LIB_VERSION / 10`:`expr $JPEG_LIB_VERSION % 10`"]
+AC_MSG_CHECKING([libjpeg API version])
+AC_ARG_VAR(JPEG_LIB_VERSION, [libjpeg API version (62, 70, or 80)])
+if test "x$JPEG_LIB_VERSION" = "x"; then
+    AC_ARG_WITH([jpeg7],
+        AC_HELP_STRING([--with-jpeg7], [Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
+    AC_ARG_WITH([jpeg8],
+        AC_HELP_STRING([--with-jpeg8], [Emulate libjpeg v8b API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
+    if test "x${with_jpeg8}" = "xyes"; then
+        JPEG_LIB_VERSION=80
     else
-        JPEG_LIB_VERSION=62
-        AC_DEFINE([JPEG_LIB_VERSION], [62], [Version 6b])
-        [JPEG_LIB_VERSION="$JPEG_LIB_VERSION:0:0"]
+        if test "x${with_jpeg7}" = "xyes"; then
+            JPEG_LIB_VERSION=70
+        else
+            JPEG_LIB_VERSION=62
+        fi
     fi
 fi
-AC_MSG_RESULT([$JPEG_LIB_VERSION])
-AC_SUBST(JPEG_LIB_VERSION)
+JPEG_LIB_VERSION_DECIMAL=`expr $JPEG_LIB_VERSION / 10`.`expr $JPEG_LIB_VERSION % 10`
+AC_MSG_RESULT([$JPEG_LIB_VERSION_DECIMAL])
+AC_DEFINE_UNQUOTED(JPEG_LIB_VERSION, [$JPEG_LIB_VERSION], [libjpeg API version])
+
+AC_MSG_CHECKING([libjpeg shared library version])
+AC_ARG_VAR(SO_MAJOR_VERSION, [Major version of the libjpeg-turbo shared library (default is determined by the API version)])
+AC_ARG_VAR(SO_MINOR_VERSION, [Minor version of the libjpeg-turbo shared library (default is determined by the API version)])
+if test "x$SO_MAJOR_VERSION" = "x"; then
+    case "$JPEG_LIB_VERSION" in
+        62)  SO_MAJOR_VERSION=$JPEG_LIB_VERSION ;;
+        *)   SO_MAJOR_VERSION=`expr $JPEG_LIB_VERSION / 10` ;;
+    esac
+fi
+if test "x$SO_MINOR_VERSION" = "x"; then
+    case "$JPEG_LIB_VERSION" in
+        80)  SO_MINOR_VERSION=2 ;;
+        *)   SO_MINOR_VERSION=0 ;;
+    esac
+fi
+AC_MSG_RESULT([$SO_MAJOR_VERSION:$SO_MINOR_VERSION])
+AC_SUBST(SO_MAJOR_VERSION)
+AC_SUBST(SO_MINOR_VERSION)
 
 # SIMD is optional
 AC_ARG_WITH([simd],
@@ -210,5 +227,6 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 # jconfig.h is a minimal version that allows this package to be built
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
+AC_CONFIG_FILES([libjpeg-turbo.spec:release/libjpeg-turbo.spec.in])
 AC_CONFIG_FILES([Makefile simd/Makefile])
 AC_OUTPUT

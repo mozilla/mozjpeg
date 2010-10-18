@@ -17,7 +17,7 @@ onexit()
 
 usage()
 {
-	echo "$0 <package name> <version> <build> <source dir.> [universal]"
+	echo "$0 <package name> <version> <build> <source dir.> [32-bit build dir]"
 	exit 1
 }
 
@@ -29,7 +29,8 @@ VERSION=$2
 BUILD=$3
 SRCDIR=$4
 if [ $# -gt 4 ]; then
-	if [ "$5" = "universal" ]; then UNIVERSAL=1; fi
+	BUILDDIR32=$5
+	UNIVERSAL=1
 fi
 PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker
 
@@ -50,15 +51,16 @@ mkdir -p $PKGROOT/usr/include
 mv $PKGROOT/opt/$PACKAGE_NAME/include/turbojpeg.h $PKGROOT/usr/include
 
 if [ $UNIVERSAL = 1 ]; then
-	if [ ! -d $SRCDIR/osxx86 ]; then
-		mkdir -p $SRCDIR/osxx86
+	if [ ! -d $BUILDDIR32 ]; then
+		echo ERROR: 32-bit build directory $BUILDDIR32 does not exist
+		exit 1
+	fi
+	if [ ! -f $BUILDDIR32/Makefile ]; then
+		echo ERROR: 32-bit build directory $BUILDDIR32 is not configured
+		exit 1
 	fi
 	mkdir -p $TMPDIR/dist.x86
-	pushd $SRCDIR/osxx86
-	sh $SRCDIR/configure --with-pic \
-		CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
-		CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -O3 -m32' \
-		LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4 -m32'
+	pushd $BUILDDIR32
 	make install DESTDIR=$TMPDIR/dist.x86
 	popd
 	if [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib -a \

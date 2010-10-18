@@ -5,13 +5,13 @@
 %endif
 
 Summary: A SIMD-accelerated JPEG codec which provides both the libjpeg and TurboJPEG APIs
-Name: %{_name}
-Version: %{_version}
+Name: @PACKAGE_NAME@
+Version: @VERSION@
 Vendor: The libjpeg-turbo Project
 URL: http://libjpeg-turbo.virtualgl.org
 Group: System Environment/Libraries
 #-->Source0: http://prdownloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-%{version}.tar.gz
-Release: %{_build}
+Release: @BUILD@
 License: wxWindows Library License, v3.1
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
 Prereq: /sbin/ldconfig
@@ -39,7 +39,7 @@ TurboJPEG/IPP.  It is faster in some areas but slower in others.
 #-->%setup -q
 
 #-->%build
-#-->configure libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man --with-pic
+#-->configure libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man JPEG_LIB_VERSION=@JPEG_LIB_VERSION@ SO_MAJOR_VERSION=@SO_MAJOR_VERSION@ SO_MINOR_VERSION=@SO_MINOR_VERSION@ --with-pic
 #-->make DESTDIR=$RPM_BUILD_ROOT libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man
 
 %install
@@ -82,8 +82,8 @@ rm -rf $RPM_BUILD_ROOT
 %else
 /opt/%{name}/lib32
 %endif
-/opt/%{name}/%{__lib}/libjpeg.so.62.0.0
-/opt/%{name}/%{__lib}/libjpeg.so.62
+/opt/%{name}/%{__lib}/libjpeg.so.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@
+/opt/%{name}/%{__lib}/libjpeg.so.@SO_MAJOR_VERSION@
 /opt/%{name}/%{__lib}/libjpeg.so
 /opt/%{name}/%{__lib}/libjpeg.a
 /opt/%{name}/%{__lib}/libturbojpeg.a

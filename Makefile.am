@@ -1,11 +1,11 @@
 lib_LTLIBRARIES = libjpeg.la libturbojpeg.la
-libjpeg_la_LDFLAGS = -version-info ${JPEG_LIB_VERSION} -no-undefined
+libjpeg_la_LDFLAGS = -version-info ${SO_MAJOR_VERSION}:${SO_MINOR_VERSION} -no-undefined
 libturbojpeg_la_LDFLAGS = -avoid-version -no-undefined
 include_HEADERS = jerror.h jmorecfg.h jpeglib.h turbojpeg.h
 nodist_include_HEADERS = jconfig.h
 
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
-	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h
+	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h
 
 libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c \
@@ -88,9 +88,10 @@ DOCS= README install.txt usage.txt wizard.txt example.c libjpeg.txt \
 
 TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 	testimgfst.jpg testimgint.jpg testimgp.jpg testimgflt.ppm testimgfst.ppm \
-	testimgint.ppm testimgflt-nosimd.jpg
+	testimgint.ppm testimgflt-nosimd.jpg testimgcrop.jpg
 
-EXTRA_DIST = win release $(DOCS) $(TESTFILES)
+EXTRA_DIST = win release $(DOCS) $(TESTFILES) CMakeLists.txt \
+	sharedlib/CMakeLists.txt cmakescripts
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
@@ -164,11 +165,31 @@ testclean:
 	rm -f *_444Q[0-9]*.jpg
 
 rpm: all
-	sh $(srcdir)/release/makerpm ${PACKAGE_NAME} ${VERSION} ${BUILD} \
-		${RPMARCH} ${srcdir}
+	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
+	mkdir -p $$TMPDIR/RPMS; \
+	ln -fs `pwd` $$TMPDIR/BUILD; \
+	rm -f ${PACKAGE_NAME}.${RPMARCH}.rpm; \
+	rpmbuild -bb --define "_blddir $$TMPDIR/buildroot"  \
+		--define "_topdir $$TMPDIR" --define "_srcdir ${srcdir}" \
+		--target ${RPMARCH} libjpeg-turbo.spec; \
+	cp $$TMPDIR/RPMS/${RPMARCH}/${PACKAGE_NAME}-${VERSION}-${BUILD}.${RPMARCH}.rpm ${PACKAGE_NAME}.${RPMARCH}.rpm; \
+	rm -rf $$TMPDIR
 
 srpm: dist-gzip
-	sh $(srcdir)/release/makesrpm ${PACKAGE_NAME} ${VERSION} ${BUILD} ${srcdir}
+	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
+	mkdir -p $$TMPDIR/RPMS; \
+	mkdir -p $$TMPDIR/SRPMS; \
+	mkdir -p $$TMPDIR/BUILD; \
+	mkdir -p $$TMPDIR/SOURCES; \
+	mkdir -p $$TMPDIR/SPECS; \
+	rm -f ${PACKAGE_NAME}.src.rpm; \
+	cp ${PACKAGE_NAME}-${VERSION}.tar.gz $$TMPDIR/SOURCES; \
+	cat libjpeg-turbo.spec | sed s/%{_blddir}/%{_tmppath}/g \
+		| sed s@%{_srcdir}/@@g | sed s/#--\>//g \
+		>$$TMPDIR/SPECS/libjpeg-turbo.spec; \
+	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/libjpeg-turbo.spec; \
+	cp $$TMPDIR/SRPMS/${PACKAGE_NAME}-${VERSION}-${BUILD}.src.rpm ${PACKAGE_NAME}.src.rpm; \
+	rm -rf $$TMPDIR
 
 deb: all
 	sh $(srcdir)/release/makedpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \

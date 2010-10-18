@@ -75,36 +75,38 @@ links to the libjpeg dynamic library located in /opt/libjpeg-turbo/{lib}.  This
 will effectively accelerate every dynamically linked libjpeg application on the
 system.
 
-The Windows distribution of the libjpeg-turbo SDK installs jpeg62.dll into
-c:\libjpeg-turbo\bin, and the PATH environment variable can be modified such
-that this directory is searched before any others that might contain
-jpeg62.dll.  However, if jpeg62.dll also exists in an application's install
-directory, then Windows will load the application's version of it first.  Thus,
-if an application ships with jpeg62.dll, then back up the application's version
-of jpeg62.dll and copy c:\libjpeg-turbo\bin\jpeg62.dll into the application's
-install directory to accelerate it.
+The Windows distribution of the libjpeg-turbo SDK installs the libjpeg-turbo
+DLL (jpeg62.dll, jpeg7.dll, or jpeg8.dll, depending on whether libjpeg v6b,
+v7, or v8 emulation is enabled) into c:\libjpeg-turbo[64]\bin, and the PATH
+environment variable can be modified such that this directory is searched
+before any others that might contain a libjpeg DLL.  However, if a libjpeg
+DLL exists in an application's install directory, then Windows will load this
+DLL first whenever the application is launched.  Thus, if an application ships
+with jpeg62.dll, jpeg7.dll, or jpeg8.dll, then back up the application's
+version of this DLL and copy c:\libjpeg-turbo\bin\jpeg*.dll into the
+application's install directory to accelerate it.
 
-The version of jpeg62.dll distributed in the libjpeg-turbo SDK requires the
-Visual C++ 2008 C run time DLL (msvcr90.dll).  This library ships with more
-recent versions of Windows, but users of older versions can obtain it from the
-Visual C++ 2008 Redistributable Package, which is available as a free download
-from Microsoft's web site.
+The version of the libjpeg-turbo DLL distributed with the "official"
+libjpeg-turbo SDK requires the Visual C++ 2008 C run time DLL (msvcr90.dll).
+msvcr90.dll ships with more recent versions of Windows, but users of older
+Windows releases can obtain it from the Visual C++ 2008 Redistributable
+Package, which is available as a free download from Microsoft's web site.
 
 NOTE:  Features of libjpeg which require passing a C run time structure, such
 as a file handle, from an application to libjpeg will probably not work with
-the distributed version of jpeg62.dll unless the application is also built to
-use the Visual C++ 2008 C run time DLL.  In particular, this affects
+the "official" version of the libjpeg-turbo DLL unless the application is also
+built to use the Visual C++ 2008 C run time DLL.  In particular, this affects
 jpeg_stdio_dest() and jpeg_stdio_src().
 
-Mac applications typically embed their own copies of libjpeg.62.dylib inside
+Mac applications typically embed their own copies of the libjpeg dylib inside
 the (hidden) application bundle, so it is not possible to globally replace
 libjpeg on OS X systems.  If an application uses a shared library version of
 libjpeg, then it may be possible to replace the application's version of it.
-This would generally involve copying libjpeg.62.dylib into the appropriate
-place in the application bundle and using install_name_tool to repoint the
-dylib to the new directory.  This requires an advanced knowledge of OS X and
-would not survive an upgrade or a re-install of the application.  Thus, it is
-not recommended for most users.
+This would generally involve copying libjpeg.*.dylib from libjpeg-turbo into
+the appropriate place in the application bundle and using install_name_tool to
+repoint the dylib to the new directory.  This requires an advanced knowledge of
+OS X and would not survive an upgrade or a re-install of the application.
+Thus, it is not recommended for most users.
 
 =======================
 Replacing TurboJPEG/IPP
@@ -132,8 +134,8 @@ Using libjpeg-turbo in Your Own Programs
 
 For the most part, libjpeg-turbo should work identically to libjpeg, so in
 most cases, an application can be built against libjpeg and then run against
-libjpeg-turbo.  On Unix systems, you can build against libjpeg-turbo instead
-of libjpeg by setting
+libjpeg-turbo.  On Unix systems (including Cygwin), you can build against
+libjpeg-turbo instead of libjpeg by setting
 
   CPATH=/opt/libjpeg-turbo/include
   and
@@ -141,12 +143,6 @@ of libjpeg by setting
 
 ({lib} = lib32 or lib64, depending on whether you are building a 32-bit or a
 64-bit application.)
-
-If using Cygwin, then set
-
-  CPATH=/cygdrive/c/libjpeg-turbo-gcc[64]/include
-  and
-  LIBRARY_PATH=/cygdrive/c/libjpeg-turbo-gcc[64]/lib
 
 If using MinGW, then set
 
@@ -174,8 +170,8 @@ line (this also works on Linux and Solaris.)
 To build Visual C++ applications using libjpeg-turbo, add
 c:\libjpeg-turbo[64]\include to your system or user INCLUDE environment
 variable and c:\libjpeg-turbo[64]\lib to your system or user LIB environment
-variable, and then link against either jpeg.lib (to use jpeg62.dll) or
-jpeg-static.lib (to use the static version of libjpeg-turbo.)
+variable, and then link against either jpeg.lib (to use the DLL version of
+libjpeg-turbo) or jpeg-static.lib (to use the static version of libjpeg-turbo.)
 
 =====================
 Colorspace Extensions
@@ -229,11 +225,12 @@ until/unless the newer libjpeg code bases garner more community support and
 involvement and until/unless we have some notion of whether future libjpeg
 releases will also be backward-incompatible.
 
-By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, you can
-build a version of libjpeg-turbo which emulates the libjpeg v7 or v8b API/ABI,
-so that programs which are built against libjpeg v7 or v8 can be run with
-libjpeg-turbo.  The following section describes which libjpeg v7+ features are
-supported and which aren't.
+By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, or an
+argument of -DWITH_JPEG7=1 or -DWITH_JPEG8=1 to cmake, you can build a version
+of libjpeg-turbo which emulates the libjpeg v7 or v8b API/ABI, so that programs
+which are built against libjpeg v7 or v8 can be run with libjpeg-turbo.  The
+following section describes which libjpeg v7+ features are supported and which
+aren't.
 
 libjpeg v7 and v8 Features:
 ---------------------------

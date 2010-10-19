@@ -1,0 +1,4 @@
+LIBJPEG_@JPEG_LIB_VERSION_DECIMAL@ {
+  global:
+    *;
+};

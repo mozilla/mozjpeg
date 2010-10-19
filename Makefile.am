@@ -19,9 +19,15 @@ libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
 	turbojpeg-mapfile
 
+if ANON_VERSION_SCRIPT
+
+libturbojpeg_la_LDFLAGS += $(ANON_VERSION_SCRIPT_FLAG)$(srcdir)/turbojpeg-mapfile
+
+endif
+
 if VERSION_SCRIPT
 
-libturbojpeg_la_LDFLAGS += $(VERSION_SCRIPT_FLAG)$(srcdir)/turbojpeg-mapfile
+libjpeg_la_LDFLAGS += $(VERSION_SCRIPT_FLAG)libjpeg.map
 
 endif
 
@@ -91,7 +97,7 @@ TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 	testimgint.ppm testimgflt-nosimd.jpg testimgcrop.jpg
 
 EXTRA_DIST = win release $(DOCS) $(TESTFILES) CMakeLists.txt \
-	sharedlib/CMakeLists.txt cmakescripts
+	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`

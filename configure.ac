@@ -28,27 +28,6 @@ AC_MSG_RESULT(yes),
 [AC_MSG_RESULT(no)
 AC_DEFINE([INCOMPLETE_TYPES_BROKEN],[1],[Compiler does not support pointers to undefined structures.])])
 
-AC_MSG_CHECKING([whether the linker supports version scripts])
-VERSION_SCRIPT=no
-LDVER=`$LD --help </dev/null 2>&1 | grep "\-\-version-script"`
-if test "$LDVER"; then
-  VERSION_SCRIPT=yes
-  VERSION_SCRIPT_FLAG=-Wl,--version-script,
-  AC_MSG_RESULT(yes)
-else
-  LDVER=`$LD --help </dev/null 2>&1 | grep "\-M"`
-  if test "$LDVER"; then
-    VERSION_SCRIPT=yes
-    VERSION_SCRIPT_FLAG=-Wl,-M,
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-
-AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")
-AC_SUBST(VERSION_SCRIPT_FLAG)
-
 if test "x${GCC}" = "xyes"; then
   if test "x${SAVED_CFLAGS}" = "x"; then
     CFLAGS=-O3
@@ -149,6 +128,7 @@ if test "x$JPEG_LIB_VERSION" = "x"; then
     fi
 fi
 JPEG_LIB_VERSION_DECIMAL=`expr $JPEG_LIB_VERSION / 10`.`expr $JPEG_LIB_VERSION % 10`
+AC_SUBST(JPEG_LIB_VERSION_DECIMAL)
 AC_MSG_RESULT([$JPEG_LIB_VERSION_DECIMAL])
 AC_DEFINE_UNQUOTED(JPEG_LIB_VERSION, [$JPEG_LIB_VERSION], [libjpeg API version])
 
@@ -170,6 +150,66 @@ fi
 AC_MSG_RESULT([$SO_MAJOR_VERSION:$SO_MINOR_VERSION])
 AC_SUBST(SO_MAJOR_VERSION)
 AC_SUBST(SO_MINOR_VERSION)
+
+if test $JPEG_LIB_VERSION -lt 70; then
+  VERSION_SCRIPT=no
+else
+  VERSION_SCRIPT=yes
+  AC_ARG_ENABLE([ld-version-script],
+    AS_HELP_STRING([--disable-ld-version-script],
+      [Disable linker version script for libjpeg-turbo (default is to use linker version script when emulating libjpeg v7/v8b, if the linker supports it)]),
+      [VERSION_SCRIPT=$enableval], [])
+fi
+
+AC_MSG_CHECKING([whether the linker supports version scripts])
+SAVED_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,--version-script,conftest.map"
+cat > conftest.map <<EOF
+VERS_1 {
+  global: *;
+};
+EOF
+AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
+  [VERSION_SCRIPT_FLAG=-Wl,--version-script,; AC_MSG_RESULT([yes (GNU style)])], [])
+if test "x$VERSION_SCRIPT_FLAG" = "x"; then
+  LDFLAGS="$SAVED_LDFLAGS -Wl,-M,conftest.map"
+  AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
+    [VERSION_SCRIPT_FLAG=-Wl,-M,; AC_MSG_RESULT([yes (Sun style)])], [])
+fi
+if test "x$VERSION_SCRIPT_FLAG" = "x"; then
+  VERSION_SCRIPT=no
+  AC_MSG_RESULT(no)
+fi
+
+ANON_VERSION_SCRIPT=yes
+AC_MSG_CHECKING([whether the linker supports anonymous version scripts])
+LDFLAGS="$SAVED_LDFLAGS -Wl,--version-script,conftest.map"
+cat > conftest.map <<EOF
+{
+  global: main;
+  local: *;
+};
+EOF
+AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
+  [ANON_VERSION_SCRIPT_FLAG=-Wl,--version-script,; AC_MSG_RESULT([yes (GNU style)])], [])
+if test "x$ANON_VERSION_SCRIPT_FLAG" = "x"; then
+  LDFLAGS="$SAVED_LDFLAGS -Wl,-M,conftest.map"
+  AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
+    [ANON_VERSION_SCRIPT_FLAG=-Wl,-M,; AC_MSG_RESULT([yes (Sun style)])], [])
+fi
+if test "x$ANON_VERSION_SCRIPT_FLAG" = "x"; then
+  ANON_VERSION_SCRIPT=no
+  AC_MSG_RESULT(no)
+fi
+LDFLAGS="$SAVED_LDFLAGS"
+
+AC_MSG_CHECKING([whether to use version script when building libjpeg])
+AC_MSG_RESULT($VERSION_SCRIPT)
+
+AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")
+AM_CONDITIONAL(ANON_VERSION_SCRIPT, test "x$ANON_VERSION_SCRIPT" = "xyes")
+AC_SUBST(VERSION_SCRIPT_FLAG)
+AC_SUBST(ANON_VERSION_SCRIPT_FLAG)
 
 # SIMD is optional
 AC_ARG_WITH([simd],
@@ -228,5 +268,6 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
 AC_CONFIG_FILES([libjpeg-turbo.spec:release/libjpeg-turbo.spec.in])
+AC_CONFIG_FILES([libjpeg.map])
 AC_CONFIG_FILES([Makefile simd/Makefile])
 AC_OUTPUT

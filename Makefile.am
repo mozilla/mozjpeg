@@ -203,30 +203,23 @@ deb: all
 
 if X86_64
 
-BUILDDIR32=${srcdir}/osxx86
-
 udmg: all
-	sh $(srcdir)/release/makemacpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
-		${srcdir} ${BUILDDIR32}
+	sh makemacpkg universal ${BUILDDIR32}
 
 endif
 
 dmg: all
-	sh $(srcdir)/release/makemacpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} ${srcdir}
+	sh makemacpkg
 
 if X86_64
 
-sunpkg: all
-	sh $(srcdir)/release/makesunpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
-		${DEBARCH} ${srcdir} $(CC) $(CXX) combined
-
-else
-
-sunpkg: all
-	sh $(srcdir)/release/makesunpkg ${PACKAGE_NAME} ${VERSION} ${BUILD} \
-		${DEBARCH} ${srcdir} $(CC) $(CXX)
+csunpkg: all
+	sh makesunpkg combined ${BUILDDIR32}
 
 endif
+
+sunpkg: all
+	sh makesunpkg
 
 cygwinpkg: all
 	sh $(srcdir)/release/makecygwinpkg ${PACKAGE_NAME} ${VERSION} ${srcdir}

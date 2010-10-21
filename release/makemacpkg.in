@@ -17,20 +17,22 @@ onexit()
 
 usage()
 {
-	echo "$0 <package name> <version> <build> <source dir.> [32-bit build dir]"
+	echo "$0 [universal [32-bit build dir]]"
 	exit 1
 }
 
 UNIVERSAL=0
 
-if [ $# -lt 4 ]; then usage $0; fi
-PACKAGE_NAME=$1
-VERSION=$2
-BUILD=$3
-SRCDIR=$4
-if [ $# -gt 4 ]; then
-	BUILDDIR32=$5
-	UNIVERSAL=1
+PACKAGE_NAME=@PACKAGE_NAME@
+VERSION=@VERSION@
+BUILD=@BUILD@
+SRCDIR=@srcdir@
+BUILDDIR32=@srcdir@/osxx86
+if [ $# -gt 0 ]; then
+	if [ "$1" = "universal" ]; then
+		UNIVERSAL=1
+		if [ $# -gt 1 ]; then BUILDDIR32=$2; fi
+	fi
 fi
 PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker
 
@@ -63,18 +65,18 @@ if [ $UNIVERSAL = 1 ]; then
 	pushd $BUILDDIR32
 	make install DESTDIR=$TMPDIR/dist.x86
 	popd
-	if [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib -a \
-		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib ]; then
+	if [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib -a \
+		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib ]; then
 		lipo -create \
-			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
-			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib \
-			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib
-	elif [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib -a \
-		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib ]; then
+			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib \
+			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib \
+			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib
+	elif [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib -a \
+		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib ]; then
 		lipo -create \
-			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib \
-			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib \
-			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.0.0.dylib
+			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib \
+			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib \
+			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib
 	fi
 	lipo -create \
 		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.a \
@@ -111,7 +113,7 @@ if [ $UNIVERSAL = 1 ]; then
 
 fi
 
-install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.62.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.62.dylib
+install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib
 install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib
 
 ln -fs /usr/include/turbojpeg.h $PKGROOT/opt/$PACKAGE_NAME/include/

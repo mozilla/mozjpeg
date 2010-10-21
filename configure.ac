@@ -268,6 +268,8 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
 AC_CONFIG_FILES([libjpeg-turbo.spec:release/libjpeg-turbo.spec.in])
+AC_CONFIG_FILES([makemacpkg:release/makemacpkg.in])
+AC_CONFIG_FILES([makesunpkg:release/makesunpkg.in])
 AC_CONFIG_FILES([libjpeg.map])
 AC_CONFIG_FILES([Makefile simd/Makefile])
 AC_OUTPUT

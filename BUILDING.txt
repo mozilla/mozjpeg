@@ -540,6 +540,20 @@ make udmg [BUILDDIR32={32-bit build directory}]
   {source_directory}/osxx86 by default, but you can override this by setting
   the BUILDDIR32 variable on the make command line as shown above.
 
+make sunpkg
+
+  Build a Solaris package.  This requires pkgmk, pkgtrans, and bzip2.
+
+make csunpkg [BUILDDIR32={32-bit build directory}]
+
+  On 64-bit Solaris systems, this creates a combined package which contains
+  both 32-bit and 64-bit libraries.  You should first configure a 32-bit
+  out-of-tree build of libjpeg-turbo, then configure a 64-bit out-of-tree
+  build, then run 'make csunpkg' from the 64-bit build directory.  The build
+  system will look for the 32-bit build under {source_directory}/solx86 by
+  default, but you can override this by setting the BUILDDIR32 variable on the
+  make command line as shown above.
+
 make cygwinpkg
 
   Build a Cygwin binary package.

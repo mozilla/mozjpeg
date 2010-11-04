@@ -46,6 +46,28 @@ void initbuf(unsigned char *buf, int w, int h, int ps, int flags)
 		_i, j;
 	if(flags&TJ_ALPHAFIRST) {roffset++;  goffset++;  boffset++;}
 	memset(buf, 0, w*h*ps);
+	if(ps==1)
+	{
+		for(_i=0; _i<16; _i++)
+		{
+			if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
+			for(j=0; j<w; j++)
+			{
+				if(((_i/8)+(j/8))%2==0) buf[w*i+j]=255;
+				else buf[w*i+j]=76;
+			}
+		}
+		for(_i=16; _i<h; _i++)
+		{
+			if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
+			for(j=0; j<w; j++)
+			{
+				if(((_i/8)+(j/8))%2==0) buf[w*i+j]=0;
+				else buf[w*i+j]=226;
+			}
+		}
+		return;
+	}
 	for(_i=0; _i<16; _i++)
 	{
 		if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
@@ -93,6 +115,7 @@ int checkbuf(unsigned char *buf, int w, int h, int ps, int subsamp, int flags)
 	int roffset=(flags&TJ_BGR)?2:0, goffset=1, boffset=(flags&TJ_BGR)?0:2, i,
 		_i, j;
 	if(flags&TJ_ALPHAFIRST) {roffset++;  goffset++;  boffset++;}
+	if(ps==1) roffset=goffset=boffset=0;
 	if(subsamp==TJ_GRAYSCALE)
 	{
 		for(_i=0; _i<16; _i++)
@@ -208,6 +231,7 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 		if(ps==3) pixformat="RGB";
 		else {if(flags&TJ_ALPHAFIRST) pixformat="ARGB";  else pixformat="RGBA";}
 	}
+	if(ps==1) pixformat="Grayscale";
 	printf("%s %s -> %s Q%d ... ", pixformat,
 		(flags&TJ_BOTTOMUP)?"Bottom-Up":"Top-Down ", _subnamel[subsamp], qual);
 
@@ -247,6 +271,7 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 		if(ps==3) pixformat="RGB";
 		else {if(flags&TJ_ALPHAFIRST) pixformat="ARGB";  else pixformat="RGBA";}
 	}
+	if(ps==1) pixformat="Grayscale";
 	printf("JPEG -> %s %s ... ", pixformat, (flags&TJ_BOTTOMUP)?"Bottom-Up":"Top-Down ");
 
 	_catch(tjDecompressHeader(hnd, jpegbuf, jpegsize, &_w, &_h));
@@ -291,6 +316,8 @@ void dotest(int w, int h, int ps, int subsamp, char *basefilename)
 
 	gentestjpeg(hnd, jpegbuf, &size, w, h, ps, basefilename, subsamp, 100, 0);
 	gentestbmp(dhnd, jpegbuf, size, w, h, ps, basefilename, subsamp, 100, 0);
+
+	if(ps==1) goto finally;
 
 	gentestjpeg(hnd, jpegbuf, &size, w, h, ps, basefilename, subsamp, 100, TJ_BGR);
 	gentestbmp(dhnd, jpegbuf, size, w, h, ps, basefilename, subsamp, 100, TJ_BGR);
@@ -379,6 +406,7 @@ int main(int argc, char *argv[])
 {
 	dotest(35, 41, 3, TJ_444, "test");
 	dotest(35, 41, 4, TJ_444, "test");
+	dotest(35, 41, 1, TJ_GRAYSCALE, "test");
 	dotest(35, 41, 3, TJ_GRAYSCALE, "test");
 	dotest(35, 41, 4, TJ_GRAYSCALE, "test");
 	dotest1();

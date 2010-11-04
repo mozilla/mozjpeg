@@ -99,7 +99,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
      as long as the pitch is greater than 0.)
   [INPUT] height = height (in pixels) of the source image
   [INPUT] pixelsize = size (in bytes) of each pixel in the source image
-     RGBA and BGRA: 4, RGB and BGR: 3
+     RGBA and BGRA: 4, RGB and BGR: 3, Grayscale: 1
   [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
      the JPEG image.  Use the macro TJBUFSIZE(width, height) to determine
      the appropriate size for this buffer based on the image width and height.
@@ -189,7 +189,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
      as long as the pitch is greater than 0.)
   [INPUT] height = height (in pixels) of the destination image
   [INPUT] pixelsize = size (in bytes) of each pixel in the destination image
-     RGBA/RGBx and BGRA/BGRx: 4, RGB and BGR: 3
+     RGBA/RGBx and BGRA/BGRx: 4, RGB and BGR: 3, Grayscale: 1
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above.
 

@@ -1,6 +1,6 @@
 /* Copyright (C)2004 Landmark Graphics Corporation
  * Copyright (C)2005 Sun Microsystems, Inc.
- * Copyright (C)2009 D. R. Commander
+ * Copyright (C)2009-2010 D. R. Commander
  *
  * This library is free software and may be redistributed and/or modified under
  * the terms of the wxWindows Library License, Version 3.1 or (at your option)
@@ -124,7 +124,8 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 		|| dstbuf==NULL || size==NULL
 		|| jpegsub<0 || jpegsub>=NUMSUBOPT || qual<0 || qual>100)
 		_throw("Invalid argument in tjCompress()");
-	if(ps!=3 && ps!=4) _throw("This compressor can only take 24-bit or 32-bit RGB input");
+	if(ps!=3 && ps!=4 && ps!=1)
+		_throw("This compressor can only handle 24-bit and 32-bit RGB or 8-bit grayscale input");
 	if(!j->initc) _throw("Instance has not been initialized for compression");
 
 	if(pitch==0) pitch=width*ps;
@@ -133,8 +134,9 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	j->cinfo.image_height = height;
 	j->cinfo.input_components = ps;
 
+	if(ps==1) j->cinfo.in_color_space = JCS_GRAYSCALE;
 	#if JCS_EXTENSIONS==1
-	j->cinfo.in_color_space = JCS_EXT_RGB;
+	else j->cinfo.in_color_space = JCS_EXT_RGB;
 	if(ps==3 && (flags&TJ_BGR))
 		j->cinfo.in_color_space = JCS_EXT_BGR;
 	else if(ps==4 && !(flags&TJ_BGR) && !(flags&TJ_ALPHAFIRST))
@@ -287,7 +289,8 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	if(srcbuf==NULL || size<=0
 		|| dstbuf==NULL || width<=0 || pitch<0 || height<=0)
 		_throw("Invalid argument in tjDecompress()");
-	if(ps!=3 && ps!=4) _throw("This compressor can only take 24-bit or 32-bit RGB input");
+	if(ps!=3 && ps!=4 && ps!=1)
+		_throw("This decompressor can only handle 24-bit and 32-bit RGB or 8-bit grayscale output");
 	if(!j->initd) _throw("Instance has not been initialized for decompression");
 
 	if(pitch==0) pitch=width*ps;
@@ -315,8 +318,9 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 		else row_pointer[i]= &dstbuf[i*pitch];
 	}
 
+	if(ps==1) j->dinfo.out_color_space = JCS_GRAYSCALE;
 	#if JCS_EXTENSIONS==1
-	j->dinfo.out_color_space = JCS_EXT_RGB;
+	else j->dinfo.out_color_space = JCS_EXT_RGB;
 	if(ps==3 && (flags&TJ_BGR))
 		j->dinfo.out_color_space = JCS_EXT_BGR;
 	else if(ps==4 && !(flags&TJ_BGR) && !(flags&TJ_ALPHAFIRST))

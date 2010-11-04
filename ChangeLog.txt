@@ -6,6 +6,8 @@ README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
 
 [2] Created a new CMake-based build system for the Visual C++ and MinGW builds.
 
+[3] TurboJPEG/OSS can now compress from/decompress to grayscale bitmaps.
+
 
 Significant changes since 1.0.0
 ===============================

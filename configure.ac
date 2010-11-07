@@ -151,15 +151,11 @@ AC_MSG_RESULT([$SO_MAJOR_VERSION:$SO_MINOR_VERSION])
 AC_SUBST(SO_MAJOR_VERSION)
 AC_SUBST(SO_MINOR_VERSION)
 
-if test $JPEG_LIB_VERSION -lt 70; then
-  VERSION_SCRIPT=no
-else
-  VERSION_SCRIPT=yes
-  AC_ARG_ENABLE([ld-version-script],
-    AS_HELP_STRING([--disable-ld-version-script],
-      [Disable linker version script for libjpeg-turbo (default is to use linker version script when emulating libjpeg v7/v8b, if the linker supports it)]),
-      [VERSION_SCRIPT=$enableval], [])
-fi
+VERSION_SCRIPT=yes
+AC_ARG_ENABLE([ld-version-script],
+  AS_HELP_STRING([--disable-ld-version-script],
+    [Disable linker version script for libjpeg-turbo (default is to use linker version script if the linker supports it)]),
+    [VERSION_SCRIPT=$enableval], [])
 
 AC_MSG_CHECKING([whether the linker supports version scripts])
 SAVED_LDFLAGS="$LDFLAGS"

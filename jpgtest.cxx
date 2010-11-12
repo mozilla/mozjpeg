@@ -359,7 +359,8 @@ void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
 
 void usage(char *progname)
 {
-	printf("USAGE: %s <Inputfile (BMP|PPM|JPG))> <%% Quality>\n\n", progname);
+	printf("USAGE: %s <Inputfile (BMP|PPM))> <%% Quality>\n", progname);
+	printf("       %s <Inputfile (JPG))>\n\n", progname);
 	printf("       [-tile]\n");
 	printf("       Test performance of the codec when the image is encoded\n");
 	printf("       as separate tiles of varying sizes.\n\n");

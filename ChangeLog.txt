@@ -8,6 +8,8 @@ README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
 
 [3] TurboJPEG/OSS can now compress from/decompress to grayscale bitmaps.
 
+[4] jpgtest can now be used to test decompression performance only.
+
 
 Significant changes since 1.0.0
 ===============================

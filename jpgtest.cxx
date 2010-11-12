@@ -1,6 +1,6 @@
 /* Copyright (C)2004 Landmark Graphics Corporation
  * Copyright (C)2005, 2006 Sun Microsystems, Inc.
- * Copyright (C)2009 D. R. Commander
+ * Copyright (C)2009-2010 D. R. Commander
  *
  * This library is free software and may be redistributed and/or modified under
  * the terms of the wxWindows Library License, Version 3.1 or (at your option)
@@ -17,14 +17,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <errno.h>
 #include "./bmp.h"
 #include "./rrutil.h"
 #include "./rrtimer.h"
 #include "./turbojpeg.h"
 
-#define _catch(f) {if((f)==-1) {printf("Error in %s:\n%s\n", #f, tjGetErrorStr());  goto bailout;}}
+#define _throw(op, err) {  \
+	printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err);  goto bailout;}
+#define _throwunix(m) _throw(m, strerror(errno))
+#define _throwtj(m) _throw(m, tjGetErrorStr())
+#define _throwbmp(m) _throw(m, bmpgeterr())
 
-int forcemmx=0, forcesse=0, forcesse2=0, forcesse3=0, fastupsample=0;
+int forcemmx=0, forcesse=0, forcesse2=0, forcesse3=0, fastupsample=0,
+	decomponly=0;
 const int _ps[BMPPIXELFORMATS]={3, 4, 3, 4, 4, 4};
 const int _flags[BMPPIXELFORMATS]={0, 0, TJ_BGR, TJ_BGR,
 	TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST};
@@ -72,10 +78,7 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 	if(bu) flags |= TJ_BOTTOMUP;
 
 	if((rgbbuf=(unsigned char *)malloc(pitch*h)) == NULL)
-	{
-		puts("ERROR: Could not allocate image buffer.");
-		exit(1);
-	}
+		_throwunix("allocating image buffer");
 
 	if(!quiet) printf("\n>>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n", _pfname[pf],
 		bu?"Bottom-up":"Top-down", _subnamel[jpegsub], qual);
@@ -89,18 +92,12 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 		numtilesy=(h+tilesizey-1)/tilesizey;
 		if((comptilesize=(unsigned long *)malloc(sizeof(unsigned long)*numtilesx*numtilesy)) == NULL
 		|| (jpegbuf=(unsigned char **)malloc(sizeof(unsigned char *)*numtilesx*numtilesy)) == NULL)
-		{
-			puts("ERROR: Could not allocate image buffers.");
-			goto bailout;
-		}
+			_throwunix("allocating image buffers");
 		memset(jpegbuf, 0, sizeof(unsigned char *)*numtilesx*numtilesy);
 		for(i=0; i<numtilesx*numtilesy; i++)
 		{
 			if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilesizex, tilesizey))) == NULL)
-			{
-				puts("ERROR: Could not allocate image buffers.");
-				goto bailout;
-			}
+				_throwunix("allocating image buffers");
 		}
 
 		// Compression test
@@ -108,12 +105,10 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 			_subnamel[jpegsub], qual);
 		for(i=0; i<h; i++) memcpy(&rgbbuf[pitch*i], &srcbuf[w*ps*i], w*ps);
 		if((hnd=tjInitCompress())==NULL)
-		{
-			printf("Error in tjInitCompress():\n%s\n", tjGetErrorStr());
-			goto bailout;
-		}
-		_catch(tjCompress(hnd, rgbbuf, tilesizex, pitch, tilesizey, ps,
-			jpegbuf[0], &comptilesize[0], jpegsub, qual, flags));
+			_throwtj("executing tjInitCompress()");
+		if(tjCompress(hnd, rgbbuf, tilesizex, pitch, tilesizey, ps,
+			jpegbuf[0], &comptilesize[0], jpegsub, qual, flags)==-1)
+			_throwtj("executing tjCompress()");
 		ITER=0;
 		timer.start();
 		do
@@ -124,16 +119,18 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 				for(j=0; j<w; j+=tilesizex)
 				{
 					int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-					_catch(tjCompress(hnd, &rgbbuf[pitch*i+j*ps], tempw, pitch,
+					if(tjCompress(hnd, &rgbbuf[pitch*i+j*ps], tempw, pitch,
 						temph, ps, jpegbuf[tilen], &comptilesize[tilen], jpegsub, qual,
-						flags));
+						flags)==-1)
+						_throwtj("executing tjCompress()");
 					jpgbufsize+=comptilesize[tilen];
 					tilen++;
 				}
 			}
 			ITER++;
 		} while((elapsed=timer.elapsed())<5.);
-		_catch(tjDestroy(hnd));
+		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
+		hnd=NULL;
 		if(quiet)
 		{
 			if(tilesizex==w && tilesizey==h) printf("Full     \t");
@@ -160,15 +157,9 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 		{
 			sprintf(tempstr, "%s_%sQ%d.jpg", filename, _subnames[jpegsub], qual);
 			if((outfile=fopen(tempstr, "wb"))==NULL)
-			{
-				puts("ERROR: Could not open reference image");
-				exit(1);
-			}
+				_throwunix("opening reference image");
 			if(fwrite(jpegbuf[0], jpgbufsize, 1, outfile)!=1)
-			{
-				puts("ERROR: Could not write reference image");
-				exit(1);
-			}
+				_throwunix("writing reference image");
 			fclose(outfile);
 			if(!quiet) printf("Reference image written to %s\n", tempstr);
 		}
@@ -176,12 +167,10 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 		// Decompression test
 		memset(rgbbuf, 127, pitch*h);  // Grey image means decompressor did nothing
 		if((hnd=tjInitDecompress())==NULL)
-		{
-			printf("Error in tjInitDecompress():\n%s\n", tjGetErrorStr());
-			goto bailout;
-		}
-		_catch(tjDecompress(hnd, jpegbuf[0], jpgbufsize, rgbbuf, tilesizex, pitch,
-			tilesizey, ps, flags));
+			_throwtj("executing tjInitDecompress()");
+		if(tjDecompress(hnd, jpegbuf[0], jpgbufsize, rgbbuf, tilesizex, pitch,
+			tilesizey, ps, flags)==-1)
+			_throwtj("executing tjDecompress()");
 		ITER=0;
 		timer.start();
 		do
@@ -192,14 +181,16 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 				for(j=0; j<w; j+=tilesizex)
 				{
 					int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-					_catch(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
-						&rgbbuf[pitch*i+ps*j], tempw, pitch, temph, ps, flags));
+					if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
+						&rgbbuf[pitch*i+ps*j], tempw, pitch, temph, ps, flags)==-1)
+						_throwtj("executing tjDecompress()");
 					tilen++;
 				}
 			}
 			ITER++;
 		}	while((elapsed=timer.elapsed())<5.);
-		_catch(tjDestroy(hnd));
+		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
+		hnd=NULL;
 		if(quiet)
 		{
 			printsigfig((double)(w*h)/1000000.*(double)ITER/elapsed, 4);
@@ -217,10 +208,7 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 		else sprintf(tempstr, "%s_%sQ%d_%dx%d.%s", filename, _subnames[jpegsub],
 			qual, tilesizex, tilesizey, useppm?"ppm":"bmp");
 		if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
-		{
-			printf("ERROR saving bitmap: %s\n", bmpgeterr());
-			goto bailout;
-		}
+			_throwbmp("saving bitmap");
 		sprintf(strrchr(tempstr, '.'), "-err.%s", useppm?"ppm":"bmp");
 		if(!quiet)
 			printf("Computing compression error and saving to %s.\n", tempstr);
@@ -246,10 +234,7 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 				rgbbuf[pitch*j+i]=abs(rgbbuf[pitch*j+i]-srcbuf[w*ps*j+i]);
 		}
 		if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
-		{
-			printf("ERROR saving bitmap: %s\n", bmpgeterr());
-			goto bailout;
-		}
+			_throwbmp("saving bitmap");
 
 		// Cleanup
 		if(jpegbuf)
@@ -273,7 +258,123 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 	}
 	if(comptilesize) {free(comptilesize);  comptilesize=NULL;}
 	if(rgbbuf) {free(rgbbuf);  rgbbuf=NULL;}
+	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
 	return;
+}
+
+
+void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
+	int quiet)
+{
+	char tempstr[1024];
+	FILE *file=NULL;  tjhandle hnd;
+	unsigned char *jpegbuf=NULL, *rgbbuf=NULL;
+	rrtimer timer; double elapsed;
+	int w, h, ITER;
+	unsigned long jpgbufsize=0;
+	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
+		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
+		|(fastupsample?TJ_FASTUPSAMPLE:0);
+	int ps=_ps[pf], pitch;
+	fpos_t size=0;  char *temp=NULL;
+
+	flags |= _flags[pf];
+	if(bu) flags |= TJ_BOTTOMUP;
+
+	if((file=fopen(filename, "rb"))==NULL)
+		_throwunix("opening file");
+	if(fseek(file, 0, SEEK_END)<0 || fgetpos(file, &size)<0)
+		_throwunix("determining file size");
+	if((jpegbuf=(unsigned char *)malloc(size))==NULL)
+		_throwunix("allocating memory");
+	if(fseek(file, 0, SEEK_SET)<0)
+		_throwunix("setting file position");
+	if(fread(jpegbuf, size, 1, file)<1)
+		_throwunix("reading JPEG data");
+
+	temp=strrchr(filename, '.');
+	if(temp!=NULL) *temp='\0';
+
+	if((hnd=tjInitDecompress())==NULL) _throwtj("executing tjInitDecompress()");
+	jpgbufsize=(unsigned long)size;
+	if(tjDecompressHeader(hnd, jpegbuf, jpgbufsize, &w, &h)==-1)
+		_throwtj("executing tjDecompressHeader()");
+
+	pitch=w*ps;
+
+	if(quiet)
+	{
+		printf("All performance values in Mpixels/sec\n\n");
+		printf("Bitmap\tBitmap\tImage Size\tDecomp\n"),
+		printf("Format\tOrder\t X    Y  \tPerf\n\n");
+		printf("%s\t%s\t%-4d %-4d\t", _pfname[pf], bu?"BU":"TD", w, h);
+	}
+
+	if((rgbbuf=(unsigned char *)malloc(pitch*h))==NULL)
+		_throwunix("allocating image buffer");
+
+	if(!quiet)
+	{
+		printf("\n>>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
+			bu?"Bottom-up":"Top-down");
+		printf("\nImage size: %d x %d\n", w, h);
+	}
+
+	memset(rgbbuf, 127, pitch*h);  // Grey image means decompressor did nothing
+	if(tjDecompress(hnd, jpegbuf, jpgbufsize, rgbbuf, w, pitch, h, ps, flags)==-1)
+		_throwtj("executing tjDecompress()");
+	ITER=0;
+	timer.start();
+	do
+	{
+		if(tjDecompress(hnd, jpegbuf, jpgbufsize, rgbbuf, w, pitch, h, ps, flags)
+			==-1)
+			_throwtj("executing tjDecompress()");
+		ITER++;
+	}	while((elapsed=timer.elapsed())<5.);
+	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
+	hnd=NULL;
+	if(quiet)
+	{
+		printsigfig((double)(w*h)/1000000.*(double)ITER/elapsed, 4);
+		printf("\n");
+	}
+	else
+	{
+		printf("D--> Frame rate:           %f fps\n", (double)ITER/elapsed);
+		printf("     Dest. throughput:     %f Megapixels/sec\n",
+			(double)(w*h)/1000000.*(double)ITER/elapsed);
+	}
+	sprintf(tempstr, "%s_full.%s", filename, useppm?"ppm":"bmp");
+	if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
+		_throwbmp("saving bitmap");
+
+	bailout:
+	if(jpegbuf) {free(jpegbuf);  jpegbuf=NULL;}
+	if(rgbbuf) {free(rgbbuf);  rgbbuf=NULL;}
+	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
+	return;
+}
+
+
+void usage(char *progname)
+{
+	printf("USAGE: %s <Inputfile (BMP|PPM|JPG))> <%% Quality>\n\n", progname);
+	printf("       [-tile]\n");
+	printf("       Test performance of the codec when the image is encoded\n");
+	printf("       as separate tiles of varying sizes.\n\n");
+	printf("       [-forcemmx] [-forcesse] [-forcesse2] [-forcesse3]\n");
+	printf("       Force MMX, SSE, or SSE2 code paths in Intel codec\n\n");
+	printf("       [-rgb | -bgr | -rgba | -bgra | -abgr | -argb]\n");
+	printf("       Test the specified color conversion path in the codec (default: BGR)\n\n");
+	printf("       [-fastupsample]\n");
+	printf("       Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
+	printf("       YUV decoding in libjpeg decompressor\n\n");
+	printf("       [-quiet]\n");
+	printf("       Output in tabular rather than verbose format\n\n");
+	printf("       NOTE: If the quality is specified as a range, i.e. 90-100, a separate\n");
+	printf("       test will be performed for all quality values in the range.\n");
+	exit(1);
 }
 
 
@@ -282,42 +383,37 @@ int main(int argc, char *argv[])
 	unsigned char *bmpbuf=NULL;  int w, h, i, useppm=0;
 	int qual, dotile=0, quiet=0, hiqual=-1;  char *temp;
 	BMPPIXELFORMAT pf=BMP_BGR;
-	int bu=0;
+	int bu=0, minarg=2;
 
 	printf("\n");
 
-	if(argc<3)
-	{
-		printf("USAGE: %s <Inputfile (BMP|PPM)> <%% Quality>\n\n", argv[0]);
-		printf("       [-tile]\n");
-		printf("       Test performance of the codec when the image is encoded\n");
-		printf("       as separate tiles of varying sizes.\n\n");
-		printf("       [-forcemmx] [-forcesse] [-forcesse2] [-forcesse3]\n");
-		printf("       Force MMX, SSE, or SSE2 code paths in Intel codec\n\n");
-		printf("       [-rgb | -bgr | -rgba | -bgra | -abgr | -argb]\n");
-		printf("       Test the specified color conversion path in the codec (default: BGR)\n\n");
-		printf("       [-fastupsample]\n");
-		printf("       Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
-		printf("       YUV decoding in libjpeg decompressor\n\n");
-		printf("       [-quiet]\n");
-		printf("       Output in tabular rather than verbose format\n\n");
-		printf("       NOTE: If the quality is specified as a range, i.e. 90-100, a separate\n");
-		printf("       test will be performed for all quality values in the range.\n");
-		exit(1);
-	}
-	if((qual=atoi(argv[2]))<1 || qual>100)
-	{
-		puts("ERROR: Quality must be between 1 and 100.");
-		exit(1);
-	}
-	if((temp=strchr(argv[2], '-'))!=NULL && strlen(temp)>1
-		&& sscanf(&temp[1], "%d", &hiqual)==1 && hiqual>qual && hiqual>=1
-		&& hiqual<=100) {}
-	else hiqual=qual;
+	if(argc<minarg) usage(argv[0]);
 
-	if(argc>3)
+	temp=strrchr(argv[1], '.');
+	if(temp!=NULL)
 	{
-		for(i=3; i<argc; i++)
+		if(!stricmp(temp, ".ppm")) useppm=1;
+		if(!stricmp(temp, ".jpg") || !stricmp(temp, ".jpeg")) decomponly=1;
+	}
+
+	if(!decomponly)
+	{
+		minarg=3;
+		if(argc<minarg) usage(argv[0]);
+		if((qual=atoi(argv[2]))<1 || qual>100)
+		{
+			puts("ERROR: Quality must be between 1 and 100.");
+			exit(1);
+		}
+		if((temp=strchr(argv[2], '-'))!=NULL && strlen(temp)>1
+			&& sscanf(&temp[1], "%d", &hiqual)==1 && hiqual>qual && hiqual>=1
+			&& hiqual<=100) {}
+		else hiqual=qual;
+	}
+
+	if(argc>minarg)
+	{
+		for(i=minarg; i<argc; i++)
 		{
 			if(!stricmp(argv[i], "-tile")) dotile=1;
 			if(!stricmp(argv[i], "-forcesse3"))
@@ -356,25 +452,26 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if(loadbmp(argv[1], &bmpbuf, &w, &h, pf, 1, bu)==-1)
+	if(!decomponly)
 	{
-		printf("ERROR loading bitmap: %s\n", bmpgeterr());  exit(1);
+		if(loadbmp(argv[1], &bmpbuf, &w, &h, pf, 1, bu)==-1)
+			_throwbmp("loading bitmap");
+		temp=strrchr(argv[1], '.');
+		if(temp!=NULL) *temp='\0';
 	}
 
-	temp=strrchr(argv[1], '.');
-	if(temp!=NULL)
-	{
-		if(!stricmp(temp, ".ppm")) useppm=1;
-		*temp='\0';
-	}
-
-	if(quiet)
+	if(quiet && !decomponly)
 	{
 		printf("All performance values in Mpixels/sec\n\n");
 		printf("Bitmap\tBitmap\tJPEG\tJPEG\tTile Size\tCompr\tCompr\tDecomp\n");
 		printf("Format\tOrder\tFormat\tQual\t X    Y  \tPerf \tRatio\tPerf\n\n");
 	}
 
+	if(decomponly)
+	{
+		dodecomptest(argv[1], pf, bu, 1, quiet);
+		goto bailout;
+	}
 	for(i=hiqual; i>=qual; i--)
 		dotest(bmpbuf, w, h, pf, bu, TJ_GRAYSCALE, i, argv[1], dotile, useppm, quiet);
 	if(quiet) printf("\n");
@@ -387,6 +484,7 @@ int main(int argc, char *argv[])
 	for(i=hiqual; i>=qual; i--)
 		dotest(bmpbuf, w, h, pf, bu, TJ_444, i, argv[1], dotile, useppm, quiet);
 
+	bailout:
 	if(bmpbuf) free(bmpbuf);
 	return 0;
 }

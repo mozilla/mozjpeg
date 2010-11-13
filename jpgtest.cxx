@@ -276,27 +276,26 @@ void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
 		|(fastupsample?TJ_FASTUPSAMPLE:0);
 	int ps=_ps[pf], pitch;
-	fpos_t size=0;  char *temp=NULL;
+	char *temp=NULL;
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
 
 	if((file=fopen(filename, "rb"))==NULL)
 		_throwunix("opening file");
-	if(fseek(file, 0, SEEK_END)<0 || fgetpos(file, &size)<0)
+	if(fseek(file, 0, SEEK_END)<0 || (jpgbufsize=ftell(file))<0)
 		_throwunix("determining file size");
-	if((jpegbuf=(unsigned char *)malloc(size))==NULL)
+	if((jpegbuf=(unsigned char *)malloc(jpgbufsize))==NULL)
 		_throwunix("allocating memory");
 	if(fseek(file, 0, SEEK_SET)<0)
 		_throwunix("setting file position");
-	if(fread(jpegbuf, size, 1, file)<1)
+	if(fread(jpegbuf, jpgbufsize, 1, file)<1)
 		_throwunix("reading JPEG data");
 
 	temp=strrchr(filename, '.');
 	if(temp!=NULL) *temp='\0';
 
 	if((hnd=tjInitDecompress())==NULL) _throwtj("executing tjInitDecompress()");
-	jpgbufsize=(unsigned long)size;
 	if(tjDecompressHeader(hnd, jpegbuf, jpgbufsize, &w, &h)==-1)
 		_throwtj("executing tjDecompressHeader()");
 

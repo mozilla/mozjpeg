@@ -170,6 +170,30 @@ testclean:
 	rm -f *_444Q[0-9]*.ppm
 	rm -f *_444Q[0-9]*.jpg
 
+if X86_64
+
+install-exec-hook:
+	__PREFIX=`echo ${prefix} | sed -e 's@\/*$$@@'`;  \
+	if [ "$$__PREFIX" = "/opt/libjpeg-turbo" ]; then  \
+		cd $(DESTDIR)/${prefix};  \
+		if [ -d lib -a ! -d lib64 -a ! -h lib64 ]; then  \
+			$(LN_S) lib lib64;  \
+		fi  \
+	fi
+
+else
+
+install-exec-hook:
+	__PREFIX=`echo ${prefix} | sed -e 's@\/*$$@@'`;  \
+	if [ "$$__PREFIX" = "/opt/libjpeg-turbo" ]; then  \
+		cd $(DESTDIR)/${prefix};  \
+		if [ -d lib -a ! -d lib32 -a ! -h lib32 ]; then  \
+			$(LN_S) lib lib32;  \
+		fi  \
+	fi
+
+endif
+
 rpm: all
 	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
 	mkdir -p $$TMPDIR/RPMS; \

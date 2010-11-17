@@ -118,8 +118,12 @@ install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib
 
 ln -fs /usr/include/turbojpeg.h $PKGROOT/opt/$PACKAGE_NAME/include/
 ln -fs /usr/lib/libturbojpeg.a $PKGROOT/opt/$PACKAGE_NAME/lib/
-ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib32
-ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib64
+if [ ! -h $PKGROOT/opt/$PACKAGE_NAME/lib32 ]; then
+	ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib32
+fi
+if [ ! -h $PKGROOT/opt/$PACKAGE_NAME/lib64 ]; then
+	ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib64
+fi
 
 mkdir -p $PKGROOT/Library/Documentation/$PACKAGE_NAME
 chmod 1775 $PKGROOT/Library

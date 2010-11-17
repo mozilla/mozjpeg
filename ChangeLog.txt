@@ -10,6 +10,11 @@ README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
 
 [4] jpgtest can now be used to test decompression performance only.
 
+[5] If the default install prefix (/opt/libjpeg-turbo) is used, then
+'make install' now creates /opt/libjpeg-turbo/lib32 and
+/opt/libjpeg-turbo/lib64 sym links to duplicate the behavior of the binary
+packages.
+
 
 Significant changes since 1.0.0
 ===============================

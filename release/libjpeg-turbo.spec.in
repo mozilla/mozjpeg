@@ -55,10 +55,6 @@ mkdir -p $RPM_BUILD_ROOT/usr/include
 mv $RPM_BUILD_ROOT/opt/%{name}/include/turbojpeg.h $RPM_BUILD_ROOT/usr/include
 ln -fs /usr/include/turbojpeg.h $RPM_BUILD_ROOT/opt/%{name}/include/
 ln -fs /usr/%{__lib}/libturbojpeg.a $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/
-%ifarch x86_64
-%else
-ln -fs %{__lib} $RPM_BUILD_ROOT/opt/%{name}/lib32
-%endif
 
 %post -p /sbin/ldconfig
 

@@ -178,8 +178,8 @@ Colorspace Extensions
 =====================
 
 libjpeg-turbo includes extensions which allow JPEG images to be compressed
-directly from (and decompressed directly to) buffers which use BGR, BGRA,
-RGBA, ABGR, and ARGB pixel ordering.  This is implemented with six new
+directly from (and decompressed directly to) buffers which use BGR, BGRX,
+RGBX, XBGR, and XRGB pixel ordering.  This is implemented with six new
 colorspace constants:
 
   JCS_EXT_RGB   /* red/green/blue */

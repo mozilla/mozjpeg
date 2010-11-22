@@ -15,6 +15,9 @@ README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
 /opt/libjpeg-turbo/lib64 sym links to duplicate the behavior of the binary
 packages.
 
+[6] All symbols in the libjpeg-turbo dynamic library are now versioned, even
+when the library is built with libjpeg v6b emulation.
+
 
 Significant changes since 1.0.0
 ===============================

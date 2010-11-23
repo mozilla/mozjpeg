@@ -270,8 +270,5 @@ Not supported:
 -- libjpeg: Fancy downsampling in compressor
    cinfo.do_fancy_downsampling is silently ignored.
 
--- libjpeg: Arithmetic coding/decoding
-   Not supported due to patent concerns.
-
 -- jpegtran: Scaling
    Seems to depend on the DCT scaling feature, which isn't supported.

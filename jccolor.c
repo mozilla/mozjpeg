@@ -83,7 +83,7 @@ typedef my_color_converter * my_cconvert_ptr;
 
 #if BITS_IN_JSAMPLE == 8
 
-const unsigned char red_lut[256] = {
+static const unsigned char red_lut[256] = {
   0 , 0 , 1 , 1 , 1 , 1 , 2 , 2 , 2 , 3 , 3 , 3 , 4 , 4 , 4 , 4 ,
   5 , 5 , 5 , 6 , 6 , 6 , 7 , 7 , 7 , 7 , 8 , 8 , 8 , 9 , 9 , 9 ,
   10, 10, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 13, 14, 14,
@@ -102,7 +102,7 @@ const unsigned char red_lut[256] = {
   72, 72, 72, 73, 73, 73, 74, 74, 74, 74, 75, 75, 75, 76, 76, 76
 };
 
-const unsigned char green_lut[256] = {
+static const unsigned char green_lut[256] = {
   0  , 1  , 1  , 2  , 2  , 3  , 4  , 4  , 5  , 5  , 6  , 6  ,
   7  , 8  , 8  , 9  , 9  , 10 , 11 , 11 , 12 , 12 , 13 , 14 ,
   14 , 15 , 15 , 16 , 16 , 17 , 18 , 18 , 19 , 19 , 20 , 21 ,
@@ -127,7 +127,7 @@ const unsigned char green_lut[256] = {
   148, 149, 149, 150
 };
 
-const unsigned char blue_lut[256] = {
+static const unsigned char blue_lut[256] = {
   0 , 0 , 0 , 0 , 0 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 2 , 2 ,
   2 , 2 , 2 , 2 , 2 , 2 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 4 ,
   4 , 4 , 4 , 4 , 4 , 4 , 4 , 4 , 5 , 5 , 5 , 5 , 5 , 5 , 5 , 5 ,

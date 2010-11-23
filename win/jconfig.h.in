@@ -2,6 +2,8 @@
 /* see jconfig.txt for explanations */
 
 #define JPEG_LIB_VERSION @JPEG_LIB_VERSION@
+#cmakedefine C_ARITH_CODING_SUPPORTED
+#cmakedefine D_ARITH_CODING_SUPPORTED
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR

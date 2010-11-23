@@ -19,7 +19,7 @@ packages.
 when the library is built with libjpeg v6b emulation.
 
 [7] Added arithmetic encoding and decoding support (can be disabled via
-configure options)
+configure or CMake options)
 
 
 Significant changes since 1.0.0

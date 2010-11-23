@@ -105,6 +105,17 @@ libjpeg v8b.  See README-turbo.txt for more information on libjpeg v7 and v8b
 emulation.
 
 
+Arithmetic Coding Support
+-------------------------
+
+Since the patent on arithmetic coding has expired, this functionality has been
+included in this release of libjpeg-turbo.  libjpeg-turbo's implementation is
+based on the implementation in libjpeg v8b, but it works when emulating libjpeg
+v7 or v6b as well.  The default is to enable both arithmetic encoding and
+decoding, but those who have philosophical objections to arithmetic coding can
+add --without-arith-enc or --without-arith-dec to the configure command line to
+disable encoding or decoding (respectively.)
+
 
 ========================
 Installing libjpeg-turbo
@@ -414,6 +425,18 @@ libjpeg-turbo that is compatible with libjpeg v7.  Add "-DWITH_JPEG8=1" to the
 cmake command to build a version of libjpeg-turbo that is compatible with
 libjpeg v8b.  See README-turbo.txt for more information on libjpeg v7 and v8b
 emulation.
+
+
+Arithmetic Coding Support
+-------------------------
+
+Since the patent on arithmetic coding has expired, this functionality has been
+included in this release of libjpeg-turbo.  libjpeg-turbo's implementation is
+based on the implementation in libjpeg v8b, but it works when emulating libjpeg
+v7 or v6b as well.  The default is to enable both arithmetic encoding and
+decoding, but those who have philosophical objections to arithmetic coding can
+add "-DWITH_ARITH_ENC=0" or "-DWITH_ARITH_DEC=0" to the cmake command line to
+disable encoding or decoding (respectively.)
 
 
 ========================

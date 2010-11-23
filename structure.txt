@@ -60,9 +60,6 @@ we treat 8-bit vs. 12-bit data precision as a compile-time switch, not a
 run-time option, because most machines can store 8-bit pixels much more
 compactly than 12-bit.
 
-For legal reasons, JPEG arithmetic coding is not currently supported, but
-extending the library to include it would be straightforward.
-
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
 surrounding code to process interchange or abbreviated JPEG datastreams that

@@ -7,14 +7,15 @@ nodist_include_HEADERS = jconfig.h
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
 	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h
 
-libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
-	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c \
-	jcomapi.c jcparam.c jcphuff.c jcprepct.c jcsample.c jctrans.c \
-	jdapimin.c jdapistd.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c \
-	jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c \
-	jdmerge.c jdphuff.c jdpostct.c jdsample.c jdtrans.c jerror.c \
-	jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c \
-	jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c
+libjpeg_la_SOURCES = $(HDRS) jaricom.c jcapimin.c jcapistd.c jcarith.c \
+	jccoefct.c jccolor.c jcdctmgr.c jchuff.c jcinit.c jcmainct.c \
+	jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c jcprepct.c \
+	jcsample.c jctrans.c jdapimin.c jdapistd.c jdarith.c \
+	jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c \
+	jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c \
+	jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c \
+	jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c \
+	jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c
 
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
 	turbojpeg-mapfile
@@ -103,49 +104,38 @@ dist-hook:
 	rm -rf `find $(distdir) -name .svn`
 
 
+test: testclean all
+	./jpegut
+	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgint.jpg testoutint.jpg
+	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
+	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
 if WITH_SIMD
-
-test: testclean all
-	./jpegut
-	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
-	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
-	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgint.jpg testoutint.jpg
-	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
 	cmp $(srcdir)/testimgflt.jpg testoutflt.jpg
-	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
-	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
-	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgint.ppm testoutint.ppm
-	cmp $(srcdir)/testimgfst.ppm testoutfst.ppm
-	cmp $(srcdir)/testimgflt.ppm testoutflt.ppm
-	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimg.bmp testout.bmp
-	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgp.jpg testoutp.jpg
-	./jpegtran -outfile testoutt.jpg testoutp.jpg
-	cmp $(srcdir)/testimgint.jpg testoutt.jpg
-	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgcrop.jpg testoutcrop.jpg
-
 else
-
-test: testclean all
-	./jpegut
-	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
-	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
-	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgint.jpg testoutint.jpg
-	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
 	cmp $(srcdir)/testimgflt-nosimd.jpg testoutflt.jpg
+endif
 	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
-	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
-	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimgint.ppm testoutint.ppm
+	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimgfst.ppm testoutfst.ppm
+	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
+if WITH_SIMD
+	cmp $(srcdir)/testimgflt.ppm testoutflt.ppm
+else
 	cmp $(srcdir)/testorig.ppm testoutflt.ppm
+endif
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimg.bmp testout.bmp
+	./cjpeg -dct int -arithmetic -outfile testoutari.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgari.jpg testoutari.jpg
+	./djpeg -dct int -fast -ppm -outfile testoutari.ppm $(srcdir)/testimgari.jpg
+	cmp $(srcdir)/testimgari.ppm testoutari.ppm
+	./jpegtran -arithmetic -outfile testouta.jpg testoutint.jpg
+	cmp $(srcdir)/testimgari.jpg testouta.jpg
+	./jpegtran -outfile testouta.jpg testoutari.jpg
+	cmp $(srcdir)/testimgint.jpg testouta.jpg
 	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgp.jpg testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg
@@ -153,7 +143,6 @@ test: testclean all
 	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimgcrop.jpg testoutcrop.jpg
 
-endif
 
 testclean:
 	rm -f testout*

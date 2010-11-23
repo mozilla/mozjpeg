@@ -201,6 +201,11 @@ factor will visibly blur the image, however.
 
 Switches for wizards:
 
+	-arithmetic	Use arithmetic coding.  CAUTION: arithmetic coded JPEG
+			is not yet widely implemented, so many decoders will
+			be unable to view an arithmetic coded JPEG file at
+			all.
+
 	-baseline	Force baseline-compatible quantization tables to be
 			generated.  This clamps quantization values to 8 bits
 			even at low quality settings.  (This switch is poorly
@@ -444,6 +449,7 @@ jpegtran accepts a subset of the switches recognized by cjpeg:
 	-progressive	Create progressive JPEG file.
 	-restart N	Emit a JPEG restart marker every N MCU rows, or every
 			N MCU blocks if "B" is attached to the number.
+	-arithmetic	Use arithmetic coding.
 	-scans file	Use the scan script given in the specified text file.
 See the previous discussion of cjpeg for more details about these switches.
 If you specify none of these switches, you get a plain baseline-JPEG output

@@ -101,7 +101,11 @@ transdecode_master_selection (j_decompress_ptr cinfo)
 
   /* Entropy decoding: either Huffman or arithmetic coding. */
   if (cinfo->arith_code) {
+#ifdef D_ARITH_CODING_SUPPORTED
+    jinit_arith_decoder(cinfo);
+#else
     ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
+#endif
   } else {
     if (cinfo->progressive_mode) {
 #ifdef D_PROGRESSIVE_SUPPORTED

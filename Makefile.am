@@ -112,7 +112,8 @@ DOCS= README install.txt usage.txt wizard.txt example.c libjpeg.txt \
 
 TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 	testimgfst.jpg testimgint.jpg testimgp.jpg testimgflt.ppm testimgfst.ppm \
-	testimgint.ppm testimgflt-nosimd.jpg testimgcrop.jpg
+	testimgint.ppm testimgflt-nosimd.jpg testimgcrop.jpg testimgari.jpg \
+	testimgari.ppm
 
 EXTRA_DIST = win release $(DOCS) $(TESTFILES) CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in

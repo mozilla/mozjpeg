@@ -229,10 +229,6 @@ Image Data Compression Standard" by William B. Pennebaker and Joan L.
 Mitchell, published by Van Nostrand Reinhold, 1993, ISBN 0-442-01272-1.
 Price US$59.95, 638 pp.  The book includes the complete text of the ISO JPEG
 standards (DIS 10918-1 and draft DIS 10918-2).
-Although this is by far the most detailed and comprehensive exposition of
-JPEG publicly available, we point out that it is still missing an explanation
-of the most essential properties and algorithms of the underlying DCT
-technology.
 
 The original JPEG standard is divided into two parts, Part 1 being the actual
 specification, while Part 2 covers compliance testing methods.  Part 1 is

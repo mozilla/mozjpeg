@@ -36,7 +36,7 @@
 #include <limits.h>
 
 static unsigned char jpeg_first_bit_table[65536];
-int jpeg_first_bit_table_init=0;
+static int jpeg_first_bit_table_init=0;
 
 #ifndef min
  #define min(a,b) ((a)<(b)?(a):(b))
@@ -422,8 +422,6 @@ dump_buffer (working_state * state)
   DUMP_BITS_NOCHECK(t, nbits)                 \
   CHECKBUF15()                                \
  }
-
-int _max=0;
 
 #if __WORDSIZE==64 || defined(_WIN64)
 

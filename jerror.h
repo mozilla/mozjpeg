@@ -41,7 +41,7 @@ JMESSAGE(JMSG_NOMESSAGE, "Bogus message code %d") /* Must be first entry! */
 
 /* For maintenance convenience, list is alphabetical by message code name */
 JMESSAGE(JERR_ARITH_NOTIMPL,
-	 "Sorry, there are legal restrictions on arithmetic coding")
+	 "Sorry, arithmetic coding is not implemented")
 JMESSAGE(JERR_BAD_ALIGN_TYPE, "ALIGN_TYPE is wrong, please fix")
 JMESSAGE(JERR_BAD_ALLOC_CHUNK, "MAX_ALLOC_CHUNK is wrong, please fix")
 JMESSAGE(JERR_BAD_BUFFER_MODE, "Bogus buffer control mode")

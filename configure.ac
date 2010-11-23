@@ -207,6 +207,30 @@ AM_CONDITIONAL(ANON_VERSION_SCRIPT, test "x$ANON_VERSION_SCRIPT" = "xyes")
 AC_SUBST(VERSION_SCRIPT_FLAG)
 AC_SUBST(ANON_VERSION_SCRIPT_FLAG)
 
+AC_MSG_CHECKING([whether to use arithmetic encoding])
+AC_ARG_WITH([arith-enc],
+    AC_HELP_STRING([--without-arith-enc], [Omit arithmetic encoding support]))
+if test "x$with_arith_enc" = "xno"; then
+    AC_MSG_RESULT(no)
+else
+    AC_DEFINE([C_ARITH_CODING_SUPPORTED], [1], [Support arithmetic encoding])
+    AC_MSG_RESULT(yes)
+fi
+AM_CONDITIONAL([WITH_ARITH_ENC], [test "x$with_arith_enc" != "xno"])
+
+AC_MSG_CHECKING([whether to use arithmetic decoding])
+AC_ARG_WITH([arith-dec],
+    AC_HELP_STRING([--without-arith-dec], [Omit arithmetic decoding support]))
+if test "x$with_arith_dec" = "xno"; then
+    AC_MSG_RESULT(no)
+else
+    AC_DEFINE([D_ARITH_CODING_SUPPORTED], [1], [Support arithmetic decoding])
+    AC_MSG_RESULT(yes)
+fi
+AM_CONDITIONAL([WITH_ARITH_DEC], [test "x$with_arith_dec" != "xno"])
+
+AM_CONDITIONAL([WITH_ARITH], [test "x$with_arith_dec" != "xno" -o "x$with_arith_enc" != "xno"])
+
 # SIMD is optional
 AC_ARG_WITH([simd],
     AC_HELP_STRING([--without-simd],[Omit accelerated SIMD routines.]))

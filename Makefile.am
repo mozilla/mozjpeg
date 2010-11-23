@@ -7,15 +7,32 @@ nodist_include_HEADERS = jconfig.h
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
 	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h
 
-libjpeg_la_SOURCES = $(HDRS) jaricom.c jcapimin.c jcapistd.c jcarith.c \
-	jccoefct.c jccolor.c jcdctmgr.c jchuff.c jcinit.c jcmainct.c \
-	jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c jcprepct.c \
-	jcsample.c jctrans.c jdapimin.c jdapistd.c jdarith.c \
-	jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c \
-	jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c \
-	jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c \
-	jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c \
-	jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c
+libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
+	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c \
+	jcomapi.c jcparam.c jcphuff.c jcprepct.c jcsample.c jctrans.c \
+	jdapimin.c jdapistd.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c \
+	jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c \
+	jdmerge.c jdphuff.c jdpostct.c jdsample.c jdtrans.c jerror.c \
+	jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c \
+	jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c
+
+if WITH_ARITH
+
+libjpeg_la_SOURCES += jaricom.c
+
+endif
+
+if WITH_ARITH_ENC
+
+libjpeg_la_SOURCES += jcarith.c
+
+endif
+
+if WITH_ARITH_DEC
+
+libjpeg_la_SOURCES += jdarith.c
+
+endif
 
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
 	turbojpeg-mapfile
@@ -128,14 +145,18 @@ else
 endif
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimg.bmp testout.bmp
+if WITH_ARITH_ENC
 	./cjpeg -dct int -arithmetic -outfile testoutari.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgari.jpg testoutari.jpg
+	./jpegtran -arithmetic -outfile testouta.jpg $(srcdir)/testimgint.jpg
+	cmp $(srcdir)/testimgari.jpg testouta.jpg
+endif
+if WITH_ARITH_DEC
 	./djpeg -dct int -fast -ppm -outfile testoutari.ppm $(srcdir)/testimgari.jpg
 	cmp $(srcdir)/testimgari.ppm testoutari.ppm
-	./jpegtran -arithmetic -outfile testouta.jpg testoutint.jpg
-	cmp $(srcdir)/testimgari.jpg testouta.jpg
-	./jpegtran -outfile testouta.jpg testoutari.jpg
+	./jpegtran -outfile testouta.jpg $(srcdir)/testimgari.jpg
 	cmp $(srcdir)/testimgint.jpg testouta.jpg
+endif
 	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgp.jpg testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg

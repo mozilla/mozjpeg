@@ -90,13 +90,14 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 # Targets
 #
 
-set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
-  jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c
-  jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c jdatasrc.c
-  jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c
-  jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c jdtrans.c jerror.c
-  jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c
-  jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
+set(JPEG_SOURCES jaricom.c jcapimin.c jcapistd.c jcarith.c jccoefct.c jccolor.c
+  jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c
+  jcparam.c jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c
+  jdarith.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c
+  jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c
+  jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c
+  jidctfst.c jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c
+  jmemnobs.c)
 
 if(WITH_SIMD)
   add_definitions(-DWITH_SIMD)
@@ -201,6 +202,14 @@ add_test(cjpeg-prog sharedlib/cjpeg -dct int -progressive -outfile testoutp.jpg 
 add_test(cjpeg-prog-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgp.jpg testoutp.jpg)
 add_test(jpegtran-prog sharedlib/jpegtran -outfile testoutt.jpg testoutp.jpg)
 add_test(jpegtran-prog-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutt.jpg)
+add_test(cjpeg-ari sharedlib/cjpeg -dct int -arithmetic -outfile testoutari.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-ari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgari.jpg testoutari.jpg)
+add_test(djpeg-ari sharedlib/djpeg -dct int -fast -ppm -outfile testoutari.ppm ${CMAKE_SOURCE_DIR}/testimgari.jpg)
+add_test(djpeg-ari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgari.ppm testoutari.ppm)
+add_test(jpegtran-toari sharedlib/jpegtran -arithmetic -outfile testouta.jpg testoutint.jpg)
+add_test(jpegtran-toari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgari.jpg testouta.jpg)
+add_test(jpegtran-fromari	sharedlib/jpegtran -outfile testouta.jpg testoutari.jpg)
+add_test(jpegtran-fromari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testouta.jpg)
 add_test(jpegtran-crop sharedlib/jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testorig.jpg)
 add_test(jpegtran-crop-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)
 
@@ -231,6 +240,14 @@ add_test(cjpeg-static-prog cjpeg-static -dct int -progressive -outfile testoutp.
 add_test(cjpeg-static-prog-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgp.jpg testoutp.jpg)
 add_test(jpegtran-static-prog jpegtran-static -outfile testoutt.jpg testoutp.jpg)
 add_test(jpegtran-static-prog-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutt.jpg)
+add_test(cjpeg-static-ari cjpeg-static -dct int -arithmetic -outfile testoutari.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
+add_test(cjpeg-static-ari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgari.jpg testoutari.jpg)
+add_test(djpeg-static-ari djpeg-static -dct int -fast -ppm -outfile testoutari.ppm ${CMAKE_SOURCE_DIR}/testimgari.jpg)
+add_test(djpeg-static-ari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgari.ppm testoutari.ppm)
+add_test(jpegtran-static-toari jpegtran-static -arithmetic -outfile testouta.jpg testoutint.jpg)
+add_test(jpegtran-static-toari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgari.jpg testouta.jpg)
+add_test(jpegtran-static-fromari	jpegtran-static -outfile testouta.jpg testoutari.jpg)
+add_test(jpegtran-static-fromari-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testouta.jpg)
 add_test(jpegtran-static-crop jpegtran-static -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testorig.jpg)
 add_test(jpegtran-static-crop-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)
 

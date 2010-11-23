@@ -74,6 +74,7 @@ jfdctfst.c	Forward DCT using faster, less accurate integer method.
 jfdctflt.c	Forward DCT using floating-point arithmetic.
 jchuff.c	Huffman entropy coding for sequential JPEG.
 jcphuff.c	Huffman entropy coding for progressive JPEG.
+jcarith.c	Arithmetic entropy coding.
 jcmarker.c	JPEG marker writing.
 jdatadst.c	Data destination managers for memory and stdio output.
 
@@ -87,6 +88,7 @@ jdpostct.c	Postprocessor buffer controller.
 jdmarker.c	JPEG marker reading.
 jdhuff.c	Huffman entropy decoding for sequential JPEG.
 jdphuff.c	Huffman entropy decoding for progressive JPEG.
+jdarith.c	Arithmetic entropy decoding.
 jddctmgr.c	IDCT manager (IDCT implementation selection & control).
 jidctint.c	Inverse DCT using slow-but-accurate integer method.
 jidctfst.c	Inverse DCT using faster, less accurate integer method.
@@ -102,6 +104,8 @@ jdatasrc.c	Data source managers for memory and stdio input.
 
 Support files for both compression and decompression:
 
+jaricom.c	Tables for common use in arithmetic entropy encoding and
+		decoding routines.
 jerror.c	Standard error handling routines (application replaceable).
 jmemmgr.c	System-independent (more or less) memory management code.
 jutils.c	Miscellaneous utility routines.

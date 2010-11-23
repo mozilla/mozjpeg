@@ -214,6 +214,12 @@ visibly blur the image, however.
 .PP
 Switches for wizards:
 .TP
+.B \-arithmetic
+Use arithmetic coding.
+.B Caution:
+arithmetic coded JPEG is not yet widely implemented, so many decoders will be
+unable to view an arithmetic coded JPEG file at all.
+.TP
 .B \-baseline
 Force baseline-compatible quantization tables to be generated.  This clamps
 quantization values to 8 bits even at low quality settings.  (This switch is
@@ -303,8 +309,6 @@ Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
 .SH AUTHOR
 Independent JPEG Group
 .SH BUGS
-Arithmetic coding is not supported for legal reasons.
-.PP
 Support for GIF input files was removed in cjpeg v6b due to concerns over
 the Unisys LZW patent.  Although this patent expired in 2006, cjpeg still
 lacks GIF support, for these historical reasons.  (Conversion of GIF files to

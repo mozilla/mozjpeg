@@ -18,6 +18,8 @@ packages.
 [6] All symbols in the libjpeg-turbo dynamic library are now versioned, even
 when the library is built with libjpeg v6b emulation.
 
+[7] Added arithmetic encoding and decoding support.
+
 
 Significant changes since 1.0.0
 ===============================

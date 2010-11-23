@@ -93,7 +93,6 @@ JPEG processes are supported.  (Our subset includes all features now in common
 use.)  Unsupported ISO options include:
 	* Hierarchical storage
 	* Lossless JPEG
-	* Arithmetic entropy coding (unsupported for legal reasons)
 	* DNL marker
 	* Nonintegral subsampling ratios
 We support both 8- and 12-bit data precision, but this is a compile-time
@@ -1021,11 +1020,6 @@ result from the current parameter settings.
 
 JDIMENSION jpeg_width		Actual dimensions of output image.
 JDIMENSION jpeg_height
-
-
-There are some additional cinfo fields which are not documented here
-because you currently can't change them; for example, you can't set
-arith_code TRUE because arithmetic coding is unsupported.
 
 
 Per-component parameters are stored in the struct cinfo.comp_info[i] for

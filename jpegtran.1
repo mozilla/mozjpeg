@@ -60,6 +60,9 @@ Create progressive JPEG file.
 Emit a JPEG restart marker every N MCU rows, or every N MCU blocks if "B" is
 attached to the number.
 .TP
+.B \-arithmetic
+Use arithmetic coding.
+.TP
 .BI \-scans " file"
 Use the scan script given in the specified text file.
 .PP
@@ -249,8 +252,6 @@ Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
 .SH AUTHOR
 Independent JPEG Group
 .SH BUGS
-Arithmetic coding is not supported for legal reasons.
-.PP
 The transform options can't transform odd-size images perfectly.  Use
 .B \-trim
 or

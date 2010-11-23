@@ -78,9 +78,8 @@ compressor.)
 This software implements JPEG baseline, extended-sequential, and progressive
 compression processes.  Provision is made for supporting all variants of these
 processes, although some uncommon parameter settings aren't implemented yet.
-For legal reasons, we are not distributing code for the arithmetic-coding
-variants of JPEG; see LEGAL ISSUES.  We have made no provision for supporting
-the hierarchical or lossless processes defined in the standard.
+We have made no provision for supporting the hierarchical or lossless
+processes defined in the standard.
 
 We provide a set of library routines for reading and writing JPEG image files,
 plus two sample applications "cjpeg" and "djpeg", which use the library to
@@ -174,15 +173,6 @@ It is copyright by the Free Software Foundation but is freely distributable.
 The same holds for its supporting scripts (config.guess, config.sub,
 ltmain.sh).  Another support script, install-sh, is copyright by X Consortium
 but is also freely distributable.
-
-It appears that the arithmetic coding option of the JPEG spec is covered by
-patents owned by IBM, AT&T, and Mitsubishi.  Hence arithmetic coding cannot
-legally be used without obtaining one or more licenses.  For this reason,
-support for arithmetic coding has been removed from the free JPEG software.
-(Since arithmetic coding provides only a marginal gain over the unpatented
-Huffman mode, it is unlikely that very many implementations will support it.)
-So far as we are aware, there are no patent restrictions on the remaining
-code.
 
 The IJG distribution formerly included code to read and write GIF files.
 To avoid entanglement with the Unisys LZW patent, GIF reading support has

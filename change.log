@@ -36,6 +36,9 @@ settings for luminance and chrominance (or in general, for every provided
 quantization table slot).
 New API function jpeg_default_qtables() and q_scale_factor array in library.
 
+Support arithmetic entropy encoding and decoding.
+Added files jaricom.c, jcarith.c, jdarith.c.
+
 jpegtran has a new "lossless" cropping feature.
 
 Implement -perfect option in jpegtran, new API function

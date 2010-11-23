@@ -95,6 +95,7 @@ JMESSAGE(JERR_MISSING_DATA, "Scan script does not transmit all data")
 JMESSAGE(JERR_MODE_CHANGE, "Invalid color quantization mode change")
 JMESSAGE(JERR_NOTIMPL, "Not implemented yet")
 JMESSAGE(JERR_NOT_COMPILED, "Requested feature was omitted at compile time")
+JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")
 JMESSAGE(JERR_NO_BACKING_STORE, "Backing store not supported")
 JMESSAGE(JERR_NO_HUFF_TABLE, "Huffman table 0x%02x was not defined")
 JMESSAGE(JERR_NO_IMAGE, "JPEG datastream contains no image")
@@ -172,6 +173,7 @@ JMESSAGE(JTRC_UNKNOWN_IDS,
 JMESSAGE(JTRC_XMS_CLOSE, "Freed XMS handle %u")
 JMESSAGE(JTRC_XMS_OPEN, "Obtained XMS handle %u")
 JMESSAGE(JWRN_ADOBE_XFORM, "Unknown Adobe color transform code %d")
+JMESSAGE(JWRN_ARITH_BAD_CODE, "Corrupt JPEG data: bad arithmetic code")
 JMESSAGE(JWRN_BOGUS_PROGRESSION,
 	 "Inconsistent progression sequence for component %d coefficient %d")
 JMESSAGE(JWRN_EXTRANEOUS_DATA,

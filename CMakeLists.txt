@@ -209,6 +209,7 @@ add_executable(wrjpgcom rdjpgcom.c)
 
 enable_testing()
 add_test(jpegut jpegut)
+add_test(jpegut-yuv jpegut -yuv)
 add_test(cjpeg-int sharedlib/cjpeg -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
 add_test(cjpeg-int-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutint.jpg)
 add_test(cjpeg-fast sharedlib/cjpeg -dct fast -opt -outfile testoutfst.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
@@ -251,6 +252,7 @@ add_test(jpegtran-crop sharedlib/jpegtran -crop 120x90+20+50 -transpose -perfect
 add_test(jpegtran-crop-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)
 
 add_test(jpegut-static jpegut-static)
+add_test(jpegut-static-yuv jpegut-static -yuv)
 add_test(cjpeg-static-int cjpeg-static -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
 add_test(cjpeg-static-int-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutint.jpg)
 add_test(cjpeg-static-fast cjpeg-static -dct fast -opt -outfile testoutfst.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)

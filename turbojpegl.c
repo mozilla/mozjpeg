@@ -18,10 +18,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define JPEG_INTERNALS
 #include <jpeglib.h>
 #include <jerror.h>
 #include <setjmp.h>
 #include "./turbojpeg.h"
+#ifdef sun
+#include <malloc.h>
+#endif
+
+void *__memalign(size_t boundary, size_t size)
+{
+	#if defined(_WIN32) || defined(__APPLE__)
+	return malloc(size);
+	#else
+	#ifdef sun
+	return memalign(boundary, size);
+	#else
+	void *ptr=NULL;
+	posix_memalign(&ptr, boundary, size);
+	return ptr;
+	#endif
+	#endif
+}
+
+#ifndef min
+ #define min(a,b) ((a)<(b)?(a):(b))
+#endif
+
+#define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 
 
 // Error handling
@@ -117,8 +142,17 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	int jpegsub, int qual, int flags)
 {
 	int i;  JSAMPROW *row_pointer=NULL;
+	JSAMPLE *_tmpbuf[MAX_COMPONENTS], *_tmpbuf2[MAX_COMPONENTS];
+	JSAMPROW *tmpbuf[MAX_COMPONENTS], *tmpbuf2[MAX_COMPONENTS];
+	JSAMPROW *outbuf[MAX_COMPONENTS];
 
 	checkhandle(h);
+
+	for(i=0; i<MAX_COMPONENTS; i++)
+	{
+		tmpbuf[i]=NULL;  _tmpbuf[i]=NULL;
+		tmpbuf2[i]=NULL;  _tmpbuf2[i]=NULL;  outbuf[i]=NULL;
+	}
 
 	if(srcbuf==NULL || width<=0 || pitch<0 || height<=0
 		|| dstbuf==NULL || size==NULL
@@ -158,6 +192,14 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	if(setjmp(j->jerr.jb))
 	{  // this will execute if LIBJPEG has an error
 		if(row_pointer) free(row_pointer);
+		for(i=0; i<MAX_COMPONENTS; i++)
+		{
+			if(tmpbuf[i]!=NULL) free(tmpbuf[i]);
+			if(_tmpbuf[i]!=NULL) free(_tmpbuf[i]);
+			if(tmpbuf2[i]!=NULL) free(tmpbuf2[i]);
+			if(_tmpbuf2[i]!=NULL) free(_tmpbuf2[i]);
+			if(outbuf[i]!=NULL) free(outbuf[i]);
+		}
 		return -1;
 	}
 
@@ -180,24 +222,105 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	j->jdms.next_output_byte = dstbuf;
 	j->jdms.free_in_buffer = TJBUFSIZE(j->cinfo.image_width, j->cinfo.image_height);
 
-	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
-		_throw("Memory allocation failed in tjInitCompress()");
-	for(i=0; i<height; i++)
-	{
-		if(flags&TJ_BOTTOMUP) row_pointer[i]= &srcbuf[(height-i-1)*pitch];
-		else row_pointer[i]= &srcbuf[i*pitch];
-	}
 	jpeg_start_compress(&j->cinfo, TRUE);
-	while(j->cinfo.next_scanline<j->cinfo.image_height)
+	if(flags&TJ_YUV)
 	{
-		jpeg_write_scanlines(&j->cinfo, &row_pointer[j->cinfo.next_scanline],
-			j->cinfo.image_height-j->cinfo.next_scanline);
+		j_compress_ptr cinfo=&j->cinfo;
+		int row;
+		int pw=PAD(width, cinfo->max_h_samp_factor);
+		int ph=PAD(height, cinfo->max_v_samp_factor);
+		int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS];
+		jpeg_component_info *compptr;
+		JSAMPLE *ptr=dstbuf;  unsigned long yuvsize=0;
+
+		if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ph))==NULL)
+			_throw("Memory allocation failed in tjCompress()");
+		for(i=0; i<height; i++)
+		{
+			if(flags&TJ_BOTTOMUP) row_pointer[i]= &srcbuf[(height-i-1)*pitch];
+			else row_pointer[i]= &srcbuf[i*pitch];
+		}
+		if(height<ph)
+			for(i=height; i<ph; i++) row_pointer[i]=row_pointer[height-1];
+
+		for(i=0; i<cinfo->num_components; i++)
+		{
+			compptr=&cinfo->comp_info[i];
+			_tmpbuf[i]=(JSAMPLE *)__memalign(16,
+				PAD((compptr->width_in_blocks*cinfo->max_h_samp_factor*DCTSIZE)
+					/compptr->h_samp_factor, 16) * cinfo->max_v_samp_factor);
+			if(!_tmpbuf[i]) _throw("Memory allocation failure");
+			tmpbuf[i]=(JSAMPROW *)__memalign(16,
+				sizeof(JSAMPROW)*cinfo->max_v_samp_factor);
+			if(!tmpbuf[i]) _throw("Memory allocation failure");
+			for(row=0; row<cinfo->max_v_samp_factor; row++)
+				tmpbuf[i][row]=&_tmpbuf[i][
+					PAD((compptr->width_in_blocks*cinfo->max_h_samp_factor*DCTSIZE)
+						/compptr->h_samp_factor, 16) * row];
+			_tmpbuf2[i]=(JSAMPLE *)__memalign(16,
+				PAD(compptr->width_in_blocks*DCTSIZE, 16) * compptr->v_samp_factor);
+			if(!_tmpbuf2[i]) _throw("Memory allocation failure");
+			tmpbuf2[i]=(JSAMPROW *)__memalign(16,
+				sizeof(JSAMPROW)*compptr->v_samp_factor);
+			if(!tmpbuf2[i]) _throw("Memory allocation failure");
+			for(row=0; row<compptr->v_samp_factor; row++)
+				tmpbuf2[i][row]=&_tmpbuf2[i][
+					PAD(compptr->width_in_blocks*DCTSIZE, 16) * row];
+			cw[i]=pw*compptr->h_samp_factor/cinfo->max_h_samp_factor;
+			ch[i]=ph*compptr->v_samp_factor/cinfo->max_v_samp_factor;
+			outbuf[i]=(JSAMPROW *)__memalign(16, sizeof(JSAMPROW)*ch[i]);
+			if(!outbuf[i]) _throw("Memory allocation failure");
+			for(row=0; row<ch[i]; row++)
+			{
+				outbuf[i][row]=ptr;
+				ptr+=PAD(cw[i], 4);
+			}
+		}
+		yuvsize=(unsigned long)(ptr-dstbuf);
+
+		for(row=0; row<ph; row+=cinfo->max_v_samp_factor)
+		{
+			(*cinfo->cconvert->color_convert)(cinfo, &row_pointer[row], tmpbuf,
+				0, cinfo->max_v_samp_factor);
+			(cinfo->downsample->downsample)(cinfo, tmpbuf, 0, tmpbuf2, 0);
+			for(i=0, compptr=cinfo->comp_info; i<cinfo->num_components;
+				i++, compptr++)
+				jcopy_sample_rows(tmpbuf2[i], 0, outbuf[i],
+					row*compptr->v_samp_factor/cinfo->max_v_samp_factor,
+					compptr->v_samp_factor, cw[i]);
+		}
+		*size=yuvsize;
+		cinfo->next_scanline+=height;
+	}
+	else
+	{
+		if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
+			_throw("Memory allocation failed in tjCompress()");
+		for(i=0; i<height; i++)
+		{
+			if(flags&TJ_BOTTOMUP) row_pointer[i]= &srcbuf[(height-i-1)*pitch];
+			else row_pointer[i]= &srcbuf[i*pitch];
+		}
+		while(j->cinfo.next_scanline<j->cinfo.image_height)
+		{
+			jpeg_write_scanlines(&j->cinfo, &row_pointer[j->cinfo.next_scanline],
+				j->cinfo.image_height-j->cinfo.next_scanline);
+		}
 	}
 	jpeg_finish_compress(&j->cinfo);
-	*size=TJBUFSIZE(j->cinfo.image_width, j->cinfo.image_height)
-		-(unsigned long)(j->jdms.free_in_buffer);
+	if(!(flags&TJ_YUV))
+		*size=TJBUFSIZE(j->cinfo.image_width, j->cinfo.image_height)
+			-(unsigned long)(j->jdms.free_in_buffer);
 
 	if(row_pointer) free(row_pointer);
+	for(i=0; i<MAX_COMPONENTS; i++)
+	{
+		if(tmpbuf[i]!=NULL) free(tmpbuf[i]);
+		if(_tmpbuf[i]!=NULL) free(_tmpbuf[i]);
+		if(tmpbuf2[i]!=NULL) free(tmpbuf2[i]);
+		if(_tmpbuf2[i]!=NULL) free(_tmpbuf2[i]);
+		if(outbuf[i]!=NULL) free(outbuf[i]);
+	}
 	return 0;
 }
 
@@ -334,6 +457,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	#else
 	#error "TurboJPEG requires JPEG colorspace extensions"
 	#endif
+
 	if(flags&TJ_FASTUPSAMPLE) j->dinfo.do_fancy_upsampling=FALSE;
 
 	jpeg_start_decompress(&j->dinfo);

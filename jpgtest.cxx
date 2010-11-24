@@ -30,7 +30,7 @@
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
 int forcemmx=0, forcesse=0, forcesse2=0, forcesse3=0, fastupsample=0,
-	decomponly=0;
+	decomponly=0, yuv=0;
 const int _ps[BMPPIXELFORMATS]={3, 4, 3, 4, 4, 4};
 const int _flags[BMPPIXELFORMATS]={0, 0, TJ_BGR, TJ_BGR,
 	TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST};
@@ -76,12 +76,20 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
+	if(yuv) flags |= TJ_YUV;
 
 	if((rgbbuf=(unsigned char *)malloc(pitch*h)) == NULL)
 		_throwunix("allocating image buffer");
 
-	if(!quiet) printf("\n>>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n", _pfname[pf],
-		bu?"Bottom-up":"Top-down", _subnamel[jpegsub], qual);
+	if(!quiet)
+	{
+		if(yuv)
+			printf("\n>>>>>  %s (%s) <--> YUV %s  <<<<<\n", _pfname[pf],
+				bu?"Bottom-up":"Top-down", _subnamel[jpegsub]);
+		else
+			printf("\n>>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n", _pfname[pf],
+				bu?"Bottom-up":"Top-down", _subnamel[jpegsub], qual);
+	}
 	if(dotile) {tilesizex=tilesizey=4;}  else {tilesizex=w;  tilesizey=h;}
 
 	do
@@ -155,7 +163,10 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 		}
 		if(tilesizex==w && tilesizey==h)
 		{
-			sprintf(tempstr, "%s_%sQ%d.jpg", filename, _subnames[jpegsub], qual);
+			if(yuv)
+				sprintf(tempstr, "%s_%s.yuv", filename, _subnames[jpegsub]);
+			else
+				sprintf(tempstr, "%s_%sQ%d.jpg", filename, _subnames[jpegsub], qual);
 			if((outfile=fopen(tempstr, "wb"))==NULL)
 				_throwunix("opening reference image");
 			if(fwrite(jpegbuf[0], jpgbufsize, 1, outfile)!=1)
@@ -163,6 +174,7 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 			fclose(outfile);
 			if(!quiet) printf("Reference image written to %s\n", tempstr);
 		}
+		if(yuv) goto bailout;
 
 		// Decompression test
 		memset(rgbbuf, 127, pitch*h);  // Grey image means decompressor did nothing
@@ -371,7 +383,9 @@ void usage(char *progname)
 	printf("       Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
 	printf("       YUV decoding in libjpeg decompressor\n\n");
 	printf("       [-quiet]\n");
-	printf("       Output in tabular rather than verbose format\n\n");
+	printf("       Output in tabular rather than verbose format\n");
+	printf("       [-yuv]\n");
+	printf("       Encode RGB input as planar YUV rather than compressing as JPEG\n\n");
 	printf("       NOTE: If the quality is specified as a range, i.e. 90-100, a separate\n");
 	printf("       test will be performed for all quality values in the range.\n");
 	exit(1);
@@ -440,6 +454,11 @@ int main(int argc, char *argv[])
 			{
 				printf("Using fast upsampling code\n");
 				fastupsample=1;
+			}
+			if(!stricmp(argv[i], "-yuv"))
+			{
+				printf("Testing YUV planar encoding\n");
+				yuv=1;
 			}
 			if(!stricmp(argv[i], "-rgb")) pf=BMP_RGB;
 			if(!stricmp(argv[i], "-rgba")) pf=BMP_RGBA;

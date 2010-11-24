@@ -124,6 +124,7 @@ dist-hook:
 
 test: testclean all
 	./jpegut
+	./jpegut -yuv
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgint.jpg testoutint.jpg
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm

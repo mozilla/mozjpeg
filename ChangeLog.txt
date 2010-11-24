@@ -21,6 +21,9 @@ when the library is built with libjpeg v6b emulation.
 [7] Added arithmetic encoding and decoding support (can be disabled via
 configure or CMake options)
 
+[8] TurboJPEG/OSS can now leverage the SIMD-accelerated color conversion
+routines in libjpeg-turbo to generate planar YUV images from RGB input.
+
 
 Significant changes since 1.0.0
 ===============================

@@ -53,6 +53,15 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
 #define TJ_FASTUPSAMPLE  256
   /* Use fast, inaccurate 4:2:2 and 4:2:0 YUV upsampling routines
      (libjpeg version only) */
+#define TJ_YUV           512
+  /* Use the TurboJPEG YUV encoder to produce a planar YUV image that is
+     suitable for X Video.  Specifically, if either the width or the height is
+     subsampled, then that dimension is padded to 2 in the output image.  Also,
+     each line of each plane in the output image is padded to 4 bytes.
+     Although this will work with any subsampling option, it is really only
+     useful in combination with TJ_420, which produces an image compatible
+     with the I420 format. */
+
 typedef void* tjhandle;
 
 #define TJPAD(p) (((p)+3)&(~3))

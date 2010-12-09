@@ -383,7 +383,7 @@ void usage(char *progname)
 	printf("       Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
 	printf("       YUV decoding in libjpeg decompressor\n\n");
 	printf("       [-quiet]\n");
-	printf("       Output in tabular rather than verbose format\n");
+	printf("       Output in tabular rather than verbose format\n\n");
 	printf("       [-yuv]\n");
 	printf("       Encode RGB input as planar YUV rather than compressing as JPEG\n\n");
 	printf("       NOTE: If the quality is specified as a range, i.e. 90-100, a separate\n");
@@ -410,7 +410,19 @@ int main(int argc, char *argv[])
 		if(!stricmp(temp, ".jpg") || !stricmp(temp, ".jpeg")) decomponly=1;
 	}
 
-	if(!decomponly)
+	if(argc>minarg)
+	{
+		for(i=minarg; i<argc; i++)
+		{
+			if(!stricmp(argv[i], "-yuv"))
+			{
+				printf("Testing YUV planar encoding\n");
+				yuv=1;  hiqual=qual=100;
+			}
+		}
+	}
+
+	if(!decomponly && !yuv)
 	{
 		minarg=3;
 		if(argc<minarg) usage(argv[0]);
@@ -454,11 +466,6 @@ int main(int argc, char *argv[])
 			{
 				printf("Using fast upsampling code\n");
 				fastupsample=1;
-			}
-			if(!stricmp(argv[i], "-yuv"))
-			{
-				printf("Testing YUV planar encoding\n");
-				yuv=1;
 			}
 			if(!stricmp(argv[i], "-rgb")) pf=BMP_RGB;
 			if(!stricmp(argv[i], "-rgba")) pf=BMP_RGBA;

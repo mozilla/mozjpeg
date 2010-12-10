@@ -79,13 +79,15 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 	int ps=_ps[pf];
 	int pitch=w*ps, yuvsize;
 	int hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
-	int pw=PAD(w, 8), ph=PAD(h, 8), cw=PAD(pw/hsf, 8), ch=PAD(ph/vsf, 8);
+	int pw=PAD(w, hsf), ph=PAD(h, vsf);
+	int cw=pw/hsf, ch=ph/vsf;
+	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
 	if(yuv==YUVENCODE) flags |= TJ_YUV;
 
-	yuvsize=pw*ph + (jpegsub==TJ_GRAYSCALE? 0:cw*ch*2);
+	yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
 	if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h))) == NULL)
 		_throwunix("allocating image buffer");
 

@@ -226,13 +226,13 @@ int checkbuf(unsigned char *buf, int w, int h, int ps, int subsamp, int flags)
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 
 int checkbufyuv(unsigned char *buf, unsigned long size, int w, int h,
-	int subsamp, int decode)
+	int subsamp)
 {
 	int i, j;
 	int hsf=_hsf[subsamp], vsf=_vsf[subsamp];
 	int pw=PAD(w, hsf), ph=PAD(h, vsf);
-	int cw=PAD(pw/hsf, decode? 8:1), ch=PAD(ph/vsf, decode? 8:1);
-	int ypitch=PAD(pw, decode? 8:4), uvpitch=PAD(cw, decode? 8:4);
+	int cw=pw/hsf, ch=ph/vsf;
+	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 	int retval=1;
 	unsigned long correctsize=ypitch*ph + (subsamp==TJ_GRAYSCALE? 0:uvpitch*ch*2);
 
@@ -389,7 +389,7 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	writejpeg(jpegbuf, *size, tempstr);
 	if(yuv==YUVENCODE)
 	{
-		if(checkbufyuv(jpegbuf, *size, w, h, subsamp, 0)) printf("Passed.");
+		if(checkbufyuv(jpegbuf, *size, w, h, subsamp)) printf("Passed.");
 		else printf("FAILED!");
 	}
 	else printf("Done.");
@@ -406,7 +406,9 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	const char *pixformat;  int _w=0, _h=0;  double t;
 	unsigned long size=0;
 	int hsf=_hsf[subsamp], vsf=_vsf[subsamp];
-	int pw=PAD(w, 8), ph=PAD(h, 8), cw=PAD(pw/hsf, 8), ch=PAD(ph/vsf, 8);
+	int pw=PAD(w, hsf), ph=PAD(h, vsf);
+	int cw=pw/hsf, ch=ph/vsf;
+	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 
 	if(yuv==YUVDECODE) flags|=TJ_YUV;
 	else if(yuv==YUVENCODE) return;
@@ -435,7 +437,7 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	}
 
 	if(yuv==YUVDECODE)
-		size=pw*ph + (subsamp==TJ_GRAYSCALE? 0:cw*ch*(ps-1));
+		size=ypitch*ph + (subsamp==TJ_GRAYSCALE? 0:uvpitch*ch*2);
 	else
 		size=w*h*ps;
 	if((bmpbuf=(unsigned char *)malloc(size+1))==NULL)
@@ -450,7 +452,7 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 
 	if(yuv==YUVDECODE)
 	{
-		if(checkbufyuv(bmpbuf, size, pw, ph, subsamp, 1))
+		if(checkbufyuv(bmpbuf, size, pw, ph, subsamp))
 			printf("Passed.");
 		else printf("FAILED!");
 	}
@@ -589,7 +591,9 @@ int main(int argc, char *argv[])
 	if(doyuv)
 	{
 		yuv=YUVDECODE;
+		dotest(48, 48, 3, TJ_444, "test");
 		dotest(35, 39, 3, TJ_444, "test");
+		dotest(48, 48, 1, TJ_GRAYSCALE, "test");
 		dotest(39, 41, 1, TJ_GRAYSCALE, "test");
 	}
 

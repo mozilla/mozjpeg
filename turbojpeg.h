@@ -54,13 +54,22 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
   /* Use fast, inaccurate 4:2:2 and 4:2:0 YUV upsampling routines
      (libjpeg version only) */
 #define TJ_YUV           512
-  /* Use the TurboJPEG YUV encoder to produce a planar YUV image that is
-     suitable for X Video.  Specifically, if either the width or the height is
-     subsampled, then that dimension is padded to 2 in the output image.  Also,
-     each line of each plane in the output image is padded to 4 bytes.
+  /* If passed to tjCompress(), this causes TurboJPEG/OSS to use the
+     accelerated color conversion routines in libjpeg-turbo to produce a planar
+     YUV image that is suitable for X Video.  Specifically, if a component is
+     subsampled along the horizontal dimension, then the width of the plane for
+     that component is padded to 2 in the output image (same goes for the
+     height, if the component is subsampled along the vertical dimension.)
+     Also, each line of each plane in the output image is padded to 4 bytes.
      Although this will work with any subsampling option, it is really only
-     useful in combination with TJ_420, which produces an image compatible
-     with the I420 format. */
+     useful in combination with TJ_420, which produces an image compatible with
+     the I420 (AKA "YUV420P") format.
+
+     If passed to tjDecompress(), this tells TurboJPEG/OSS to perform JPEG
+     decompression but to leave out the color conversion step, so a planar YUV
+     image is generated instead of an RGB image.  In this case, the width and
+     height of all planes are padded to 8 in the output image.
+  */
 
 typedef void* tjhandle;
 

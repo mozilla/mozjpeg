@@ -406,11 +406,16 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	int flags)
 {
 	int i, row;  JSAMPROW *row_pointer=NULL, *outbuf[MAX_COMPONENTS];
-	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS];
+	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], iw[MAX_COMPONENTS],
+		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
+	JSAMPLE *_tmpbuf=NULL;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 
 	checkhandle(h);
 
-	for(i=0; i<MAX_COMPONENTS; i++) outbuf[i]=NULL;
+	for(i=0; i<MAX_COMPONENTS; i++)
+	{
+		tmpbuf[i]=NULL;  outbuf[i]=NULL;
+	}
 
 	if(srcbuf==NULL || size<=0
 		|| dstbuf==NULL || width<=0 || pitch<0 || height<=0)
@@ -428,7 +433,11 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	if(setjmp(j->jerr.jb))
 	{  // this will execute if LIBJPEG has an error
 		for(i=0; i<MAX_COMPONENTS; i++)
+		{
+			if(tmpbuf[i]!=NULL) free(tmpbuf[i]);
 			if(outbuf[i]!=NULL) free(outbuf[i]);
+		}
+		if(_tmpbuf) free(_tmpbuf);
 		if(row_pointer) free(row_pointer);
 		return -1;
 	}
@@ -446,14 +455,42 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 		for(i=0; i<dinfo->num_components; i++)
 		{
 			jpeg_component_info *compptr=&dinfo->comp_info[i];
-			cw[i]=compptr->width_in_blocks*DCTSIZE;
-			ch[i]=compptr->height_in_blocks*DCTSIZE;
+			int ih;
+			iw[i]=compptr->width_in_blocks*DCTSIZE;
+			ih=compptr->height_in_blocks*DCTSIZE;
+			cw[i]=PAD(width, dinfo->max_h_samp_factor)*compptr->h_samp_factor
+				/dinfo->max_h_samp_factor;
+			ch[i]=PAD(height, dinfo->max_v_samp_factor)*compptr->v_samp_factor
+				/dinfo->max_v_samp_factor;
+			if(iw[i]!=cw[i] || ih!=ch[i])
+			{
+				usetmpbuf=1;
+				th[i]=compptr->v_samp_factor*DCTSIZE/dinfo->max_v_samp_factor;
+				tmpbufsize+=iw[i]*th[i];
+			}
 			if((outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]))==NULL)
 				_throw("Memory allocation failed in tjInitDecompress()");
 			for(row=0; row<ch[i]; row++)
 			{
 				outbuf[i][row]=ptr;
-				ptr+=cw[i];
+				ptr+=PAD(cw[i], 4);
+			}
+		}
+		if(usetmpbuf)
+		{
+			if((_tmpbuf=(JSAMPLE *)malloc(sizeof(JSAMPLE)*tmpbufsize))==NULL)
+				_throw("Memory allocation failed in tjInitDecompress()");
+			ptr=_tmpbuf;
+			for(i=0; i<dinfo->num_components; i++)
+			{
+				jpeg_component_info *compptr=&dinfo->comp_info[i];
+				if((tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*th[i]))==NULL)
+					_throw("Memory allocation failed in tjInitDecompress()");
+				for(row=0; row<th[i]; row++)
+				{
+					tmpbuf[i][row]=ptr;
+					ptr+=iw[i];
+				}
 			}
 		}
 	}
@@ -491,16 +528,32 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	jpeg_start_decompress(&j->dinfo);
 	if(flags&TJ_YUV)
 	{
-		for(row=0; row<j->dinfo.output_height;
-			row+=j->dinfo.max_v_samp_factor*DCTSIZE)
+		j_decompress_ptr dinfo=&j->dinfo;
+		for(row=0; row<dinfo->output_height;
+			row+=dinfo->max_v_samp_factor*DCTSIZE)
 		{
 			JSAMPARRAY yuvptr[MAX_COMPONENTS];
-			for(i=0; i<j->dinfo.num_components; i++)
+			for(i=0; i<dinfo->num_components; i++)
 			{
-				jpeg_component_info *compptr=&j->dinfo.comp_info[i];
-				yuvptr[i]=&outbuf[i][row*compptr->v_samp_factor/j->dinfo.max_v_samp_factor];
+				jpeg_component_info *compptr=&dinfo->comp_info[i];
+				if(usetmpbuf) yuvptr[i]=tmpbuf[i];
+				else yuvptr[i]=&outbuf[i][row*compptr->v_samp_factor
+					/dinfo->max_v_samp_factor];
 			}
-			jpeg_read_raw_data(&j->dinfo, yuvptr, j->dinfo.max_v_samp_factor*DCTSIZE);
+			jpeg_read_raw_data(dinfo, yuvptr, dinfo->max_v_samp_factor*DCTSIZE);
+			if(usetmpbuf)
+			{
+				int j;
+				for(i=0; i<dinfo->num_components; i++)
+				{
+					jpeg_component_info *compptr=&dinfo->comp_info[i];
+					for(j=0; j<min(th[i], dinfo->output_height-row); j++)
+					{
+						memcpy(outbuf[i][row*compptr->v_samp_factor
+							/dinfo->max_v_samp_factor+j], tmpbuf[i][j], cw[i]);
+					}
+				}
+			}
 		}
 	}
 	else
@@ -514,7 +567,11 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	jpeg_finish_decompress(&j->dinfo);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
+	{
+		if(tmpbuf[i]) free(tmpbuf[i]);
 		if(outbuf[i]) free(outbuf[i]);
+	}
+	if(_tmpbuf) free(_tmpbuf);
 	if(row_pointer) free(row_pointer);
 	return 0;
 }

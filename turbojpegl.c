@@ -86,6 +86,7 @@ typedef struct _jpgstruct
 
 static const int hsampfactor[NUMSUBOPT]={1, 2, 2, 1};
 static const int vsampfactor[NUMSUBOPT]={1, 1, 2, 1};
+static const int pixelsize[NUMSUBOPT]={3, 3, 3, 1};
 
 #define _throw(c) {sprintf(lasterror, "%s", c);  return -1;}
 #define _catch(f) {if((f)==-1) return -1;}
@@ -395,6 +396,60 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle h,
 
 	jpeg_abort_decompress(&j->dinfo);
 
+	if(*width<1 || *height<1) _throw("Invalid data returned in header");
+	return 0;
+}
+
+
+DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle h,
+	unsigned char *srcbuf, unsigned long size,
+	int *width, int *height, int *jpegsub)
+{
+	int i, k;
+
+	checkhandle(h);
+
+	if(srcbuf==NULL || size<=0 || width==NULL || height==NULL || jpegsub==NULL)
+		_throw("Invalid argument in tjDecompressHeader()");
+	if(!j->initd) _throw("Instance has not been initialized for decompression");
+
+	if(setjmp(j->jerr.jb))
+	{  // this will execute if LIBJPEG has an error
+		return -1;
+	}
+
+	j->jsms.bytes_in_buffer = size;
+	j->jsms.next_input_byte = srcbuf;
+
+	jpeg_read_header(&j->dinfo, TRUE);
+
+	*width=j->dinfo.image_width;  *height=j->dinfo.image_height;
+	*jpegsub=-1;
+	for(i=0; i<NUMSUBOPT; i++)
+	{
+		if(j->dinfo.num_components==pixelsize[i])
+		{
+			if(j->dinfo.comp_info[0].h_samp_factor==hsampfactor[i]
+				&& j->dinfo.comp_info[0].v_samp_factor==vsampfactor[i])
+			{
+				int match=0;
+				for(k=1; k<j->dinfo.num_components; k++)
+				{
+					if(j->dinfo.comp_info[k].h_samp_factor==1
+						&& j->dinfo.comp_info[k].v_samp_factor==1)
+						match++;
+				}
+				if(match==j->dinfo.num_components-1)
+				{
+					*jpegsub=i;  break;
+				}
+			}
+		}
+	}
+
+	jpeg_abort_decompress(&j->dinfo);
+
+	if(*jpegsub<0) _throw("Could not determine subsampling type for JPEG image");
 	if(*width<1 || *height<1) _throw("Invalid data returned in header");
 	return 0;
 }

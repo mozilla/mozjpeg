@@ -169,9 +169,9 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
 
 
 /*
-  int tjDecompressHeader(tjhandle j,
+  int tjDecompressHeader2(tjhandle j,
      unsigned char *srcbuf, unsigned long size,
-     int *width, int *height)
+     int *width, int *height, int *jpegsub)
 
   [INPUT] j = instance handle previously returned from a call to
      tjInitDecompress()
@@ -180,8 +180,17 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
   [INPUT] size = size of the JPEG image buffer (in bytes)
   [OUTPUT] width = width (in pixels) of the JPEG image
   [OUTPUT] height = height (in pixels) of the JPEG image
+  [OUTPUT] jpegsub = type of chrominance subsampling used when compressing the
+     JPEG image
 
   RETURNS: 0 on success, -1 on error
+*/
+DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle j,
+	unsigned char *srcbuf, unsigned long size,
+	int *width, int *height, int *jpegsub);
+
+/*
+  Deprecated version of the above function
 */
 DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 	unsigned char *srcbuf, unsigned long size,

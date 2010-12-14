@@ -313,11 +313,13 @@ void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
 		|(fastupsample?TJ_FASTUPSAMPLE:0);
-	int ps=_ps[pf], pitch;
+	int ps=_ps[pf], pitch, jpegsub=-1;
 	char *temp=NULL;
+	int hsf, vsf, pw, ph, cw, ch, ypitch, uvpitch, yuvsize;
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
+	if(yuv==YUVDECODE) flags |= TJ_YUV;
 
 	if((file=fopen(filename, "rb"))==NULL)
 		_throwunix("opening file");
@@ -329,13 +331,20 @@ void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
 		_throwunix("setting file position");
 	if(fread(jpegbuf, jpgbufsize, 1, file)<1)
 		_throwunix("reading JPEG data");
+	fclose(file);  file=NULL;
 
 	temp=strrchr(filename, '.');
 	if(temp!=NULL) *temp='\0';
 
 	if((hnd=tjInitDecompress())==NULL) _throwtj("executing tjInitDecompress()");
-	if(tjDecompressHeader(hnd, jpegbuf, jpgbufsize, &w, &h)==-1)
-		_throwtj("executing tjDecompressHeader()");
+	if(tjDecompressHeader2(hnd, jpegbuf, jpgbufsize, &w, &h, &jpegsub)==-1)
+		_throwtj("executing tjDecompressHeader2()");
+
+	hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
+	pw=PAD(w, hsf), ph=PAD(h, vsf);
+	cw=pw/hsf, ch=ph/vsf;
+	ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
+	yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
 
 	pitch=w*ps;
 
@@ -347,17 +356,20 @@ void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
 		printf("%s\t%s\t%-4d %-4d\t", _pfname[pf], bu?"BU":"TD", w, h);
 	}
 
-	if((rgbbuf=(unsigned char *)malloc(pitch*h))==NULL)
+	if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h)))==NULL)
 		_throwunix("allocating image buffer");
 
 	if(!quiet)
 	{
-		printf("\n>>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
-			bu?"Bottom-up":"Top-down");
+		if(yuv==YUVDECODE)
+			printf("\n>>>>>  JPEG --> YUV %s  <<<<<\n", _subnamel[jpegsub]);
+		else
+			printf("\n>>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
+				bu?"Bottom-up":"Top-down");
 		printf("\nImage size: %d x %d\n", w, h);
 	}
 
-	memset(rgbbuf, 127, pitch*h);  // Grey image means decompressor did nothing
+	memset(rgbbuf, 127, max(yuvsize, pitch*h));  // Grey image means decompressor did nothing
 	if(tjDecompress(hnd, jpegbuf, jpgbufsize, rgbbuf, w, pitch, h, ps, flags)==-1)
 		_throwtj("executing tjDecompress()");
 	ITER=0;
@@ -383,10 +395,23 @@ void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
 			(double)(w*h)/1000000.*(double)ITER/elapsed);
 	}
 	sprintf(tempstr, "%s_full.%s", filename, useppm?"ppm":"bmp");
-	if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
-		_throwbmp("saving bitmap");
+	if(yuv==YUVDECODE)
+	{
+		sprintf(tempstr, "%s_%s.yuv", filename, _subnames[jpegsub]);
+		if((file=fopen(tempstr, "wb"))==NULL)
+			_throwunix("opening YUV image for output");
+		if(fwrite(rgbbuf, yuvsize, 1, file)!=1)
+			_throwunix("writing YUV image");
+		fclose(file);  file=NULL;
+	}
+	else
+	{
+		if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
+			_throwbmp("saving bitmap");
+	}
 
 	bailout:
+	if(file) {fclose(file);  file=NULL;}
 	if(jpegbuf) {free(jpegbuf);  jpegbuf=NULL;}
 	if(rgbbuf) {free(rgbbuf);  rgbbuf=NULL;}
 	if(hnd) {tjDestroy(hnd);  hnd=NULL;}

@@ -29,7 +29,10 @@
 
 void *__memalign(size_t boundary, size_t size)
 {
-	#if defined(_WIN32) || defined(__APPLE__)
+	#ifdef _WIN32
+	return _aligned_malloc(size, boundary);
+	#else
+	#ifdef __APPLE__
 	return malloc(size);
 	#else
 	#ifdef sun
@@ -40,7 +43,12 @@ void *__memalign(size_t boundary, size_t size)
 	return ptr;
 	#endif
 	#endif
+	#endif
 }
+
+#ifndef _WIN32
+#define _aligned_free(addr) free(addr)
+#endif
 
 #ifndef min
  #define min(a,b) ((a)<(b)?(a):(b))
@@ -196,9 +204,9 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 		for(i=0; i<MAX_COMPONENTS; i++)
 		{
 			if(tmpbuf[i]!=NULL) free(tmpbuf[i]);
-			if(_tmpbuf[i]!=NULL) free(_tmpbuf[i]);
+			if(_tmpbuf[i]!=NULL) _aligned_free(_tmpbuf[i]);
 			if(tmpbuf2[i]!=NULL) free(tmpbuf2[i]);
-			if(_tmpbuf2[i]!=NULL) free(_tmpbuf2[i]);
+			if(_tmpbuf2[i]!=NULL) _aligned_free(_tmpbuf2[i]);
 			if(outbuf[i]!=NULL) free(outbuf[i]);
 		}
 		return -1;
@@ -251,8 +259,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 				PAD((compptr->width_in_blocks*cinfo->max_h_samp_factor*DCTSIZE)
 					/compptr->h_samp_factor, 16) * cinfo->max_v_samp_factor);
 			if(!_tmpbuf[i]) _throw("Memory allocation failure");
-			tmpbuf[i]=(JSAMPROW *)__memalign(16,
-				sizeof(JSAMPROW)*cinfo->max_v_samp_factor);
+			tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*cinfo->max_v_samp_factor);
 			if(!tmpbuf[i]) _throw("Memory allocation failure");
 			for(row=0; row<cinfo->max_v_samp_factor; row++)
 				tmpbuf[i][row]=&_tmpbuf[i][
@@ -261,15 +268,14 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 			_tmpbuf2[i]=(JSAMPLE *)__memalign(16,
 				PAD(compptr->width_in_blocks*DCTSIZE, 16) * compptr->v_samp_factor);
 			if(!_tmpbuf2[i]) _throw("Memory allocation failure");
-			tmpbuf2[i]=(JSAMPROW *)__memalign(16,
-				sizeof(JSAMPROW)*compptr->v_samp_factor);
+			tmpbuf2[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*compptr->v_samp_factor);
 			if(!tmpbuf2[i]) _throw("Memory allocation failure");
 			for(row=0; row<compptr->v_samp_factor; row++)
 				tmpbuf2[i][row]=&_tmpbuf2[i][
 					PAD(compptr->width_in_blocks*DCTSIZE, 16) * row];
 			cw[i]=pw*compptr->h_samp_factor/cinfo->max_h_samp_factor;
 			ch[i]=ph*compptr->v_samp_factor/cinfo->max_v_samp_factor;
-			outbuf[i]=(JSAMPROW *)__memalign(16, sizeof(JSAMPROW)*ch[i]);
+			outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]);
 			if(!outbuf[i]) _throw("Memory allocation failure");
 			for(row=0; row<ch[i]; row++)
 			{
@@ -317,9 +323,9 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
 		if(tmpbuf[i]!=NULL) free(tmpbuf[i]);
-		if(_tmpbuf[i]!=NULL) free(_tmpbuf[i]);
+		if(_tmpbuf[i]!=NULL) _aligned_free(_tmpbuf[i]);
 		if(tmpbuf2[i]!=NULL) free(tmpbuf2[i]);
-		if(_tmpbuf2[i]!=NULL) free(_tmpbuf2[i]);
+		if(_tmpbuf2[i]!=NULL) _aligned_free(_tmpbuf2[i]);
 		if(outbuf[i]!=NULL) free(outbuf[i]);
 	}
 	return 0;

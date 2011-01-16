@@ -1,4 +1,4 @@
-.TH CJPEG 1 "30 December 2009"
+.TH CJPEG 1 "14 November 2010"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -64,7 +64,10 @@ Create progressive JPEG file (see below).
 .TP
 .BI \-scale " M/N"
 Scale the output image by a factor M/N.  Currently supported scale factors are
-8/N with all N from 1 to 16.
+M/N with all N from 1 to 16, where M is the destination DCT size, which is 8
+by default (see
+.BI \-block " N"
+switch below).
 .TP
 .B \-targa
 Input file is Targa format.  Targa files that contain an "identification"
@@ -151,6 +154,17 @@ standard JPEG file of the same quality setting, and the total file size is
 about the same --- often a little smaller.
 .PP
 Switches for advanced users:
+.TP
+.BI \-block " N"
+Set DCT block size.  All N from 1 to 16 are possible.
+Default is 8 (baseline format).
+Larger values produce higher compression,
+smaller values produce higher quality
+(exact DCT stage possible with 1 or 2; with the default quality of 75 and
+default Luminance qtable the DCT+Quantization stage is lossless for N=1).
+CAUTION: An implementation of the JPEG SmartScale extension is required for
+this feature.  SmartScale enabled JPEG is not yet widely implemented, so
+many decoders will be unable to view a SmartScale extended JPEG file at all.
 .TP
 .B \-dct int
 Use integer DCT method (default).

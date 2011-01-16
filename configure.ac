@@ -5,7 +5,7 @@
 # Configure script for IJG libjpeg
 #
 
-AC_INIT([libjpeg], [8.0.2])
+AC_INIT([libjpeg], [8.3.0])
 
 # Directory where autotools helper scripts lives.
 AC_CONFIG_AUX_DIR([.])
@@ -63,7 +63,7 @@ VERS_2 {
         global: sym;
 } VERS_1;
 EOF
-  AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
                  [have_ld_version_script=yes], [have_ld_version_script=no])
   rm -f conftest.map
   LDFLAGS="$save_LDFLAGS"
@@ -306,10 +306,11 @@ AC_DEFINE([NO_MKTEMP],[1],[The mktemp() function is not available.])])])
 fi
 AC_SUBST(MEMORYMGR)
 
-# Extract the library version ID from jpeglib.h.
+# Extract the library version IDs from jpeglib.h.
 AC_MSG_CHECKING([libjpeg version number])
-[JPEG_LIB_VERSION=`sed -e '/^#define JPEG_LIB_VERSION/!d' -e 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/' $srcdir/jpeglib.h`]
-[JPEG_LIB_VERSION="`expr $JPEG_LIB_VERSION / 10`:2"]
+[JPEG_LIB_VERSION_MAJOR=`sed -e '/^#define JPEG_LIB_VERSION_MAJOR/!d' -e 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/' $srcdir/jpeglib.h`]
+[JPEG_LIB_VERSION_MINOR=`sed -e '/^#define JPEG_LIB_VERSION_MINOR/!d' -e 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/' $srcdir/jpeglib.h`]
+[JPEG_LIB_VERSION="`expr $JPEG_LIB_VERSION_MAJOR + $JPEG_LIB_VERSION_MINOR`:0:$JPEG_LIB_VERSION_MINOR"]
 AC_MSG_RESULT([$JPEG_LIB_VERSION])
 AC_SUBST([JPEG_LIB_VERSION])
 

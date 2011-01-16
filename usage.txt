@@ -87,8 +87,9 @@ The basic command line switches for cjpeg are:
 	-progressive	Create progressive JPEG file (see below).
 
 	-scale M/N	Scale the output image by a factor M/N.  Currently
-			supported scale factors are 8/N with all N from 1 to
-			16.
+			supported scale factors are M/N with all N from 1 to
+			16, where M is the destination DCT size, which is 8 by
+			default (see -block N switch below).
 
 	-targa		Input file is Targa format.  Targa files that contain
 			an "identification" field will not be automatically
@@ -149,6 +150,19 @@ equivalent to a standard JPEG file of the same quality setting, and the total
 file size is about the same --- often a little smaller.
 
 Switches for advanced users:
+
+	-block N	Set DCT block size.  All N from 1 to 16 are possible.
+			Default is 8 (baseline format).
+			Larger values produce higher compression,
+			smaller values produce higher quality
+			(exact DCT stage possible with 1 or 2; with the
+			default quality of 75 and default Luminance qtable
+			the DCT+Quantization stage is lossless for N=1).
+			CAUTION: An implementation of the JPEG SmartScale
+			extension is required for this feature.  SmartScale
+			enabled JPEG is not yet widely implemented, so many
+			decoders will be unable to view a SmartScale extended
+			JPEG file at all.
 
 	-dct int	Use integer DCT method (default).
 	-dct fast	Use fast integer DCT (less accurate).

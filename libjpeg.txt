@@ -1,6 +1,6 @@
 USING THE IJG JPEG LIBRARY
 
-Copyright (C) 1994-2009, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2010, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -876,6 +876,18 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
 Compression parameters (cinfo fields) include:
 
+int block_size
+	Set DCT block size.  All N from 1 to 16 are possible.
+	Default is 8 (baseline format).
+	Larger values produce higher compression,
+	smaller values produce higher quality.
+	An exact DCT stage is possible with 1 or 2.
+	With the default quality of 75 and default Luminance qtable
+	the DCT+Quantization stage is lossless for value 1.
+	Note that values other than 8 require a SmartScale capable decoder,
+	introduced with IJG JPEG 8.  Setting the block_size parameter for
+	compression works with version 8c and later.
+
 J_DCT_METHOD dct_method
 	Selects the algorithm used for the DCT step.  Choices are:
 		JDCT_ISLOW: slow but accurate integer algorithm
@@ -895,8 +907,10 @@ J_DCT_METHOD dct_method
 unsigned int scale_num, scale_denom
 	Scale the image by the fraction scale_num/scale_denom.  Default is
 	1/1, or no scaling.  Currently, the supported scaling ratios are
-	8/N with all N from 1 to 16.  (The library design allows for arbitrary
-	scaling ratios but this is not likely to be implemented any time soon.)
+	M/N with all N from 1 to 16, where M is the destination DCT size,
+	which is 8 by default (see block_size parameter above).
+	(The library design allows for arbitrary scaling ratios but this
+	is not likely to be implemented any time soon.)
 
 J_COLOR_SPACE jpeg_color_space
 int num_components

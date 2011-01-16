@@ -1,7 +1,7 @@
 The Independent JPEG Group's JPEG software
 ==========================================
 
-README for release 8b of 16-May-2010
+README for release 8c of 16-Jan-2011
 ====================================
 
 This distribution contains the eighth public release of the Independent JPEG
@@ -114,7 +114,7 @@ with respect to this software, its quality, accuracy, merchantability, or
 fitness for a particular purpose.  This software is provided "AS IS", and you,
 its user, assume the entire risk as to its quality and accuracy.
 
-This software is copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
+This software is copyright (C) 1991-2011, Thomas G. Lane, Guido Vollbeding.
 All Rights Reserved except as specified below.
 
 Permission is hereby granted to use, copy, modify, and distribute this
@@ -254,8 +254,8 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is www.ijg.org.
 The most recent released version can always be found there in
 directory "files".  This particular version will be archived as
-http://www.ijg.org/files/jpegsrc.v8b.tar.gz, and in Windows-compatible
-"zip" archive format as http://www.ijg.org/files/jpegsr8b.zip.
+http://www.ijg.org/files/jpegsrc.v8c.tar.gz, and in Windows-compatible
+"zip" archive format as http://www.ijg.org/files/jpegsr8c.zip.
 
 The JPEG FAQ (Frequently Asked Questions) article is a source of some
 general information about JPEG.
@@ -285,8 +285,8 @@ Thank to John Korejwa and Massimo Ballerini for inviting me to
 fruitful consultations in Boston, MA and Milan, Italy.
 
 Thank to Hendrik Elstner, Roland Fassauer, Simone Zuck, Guenther
-Maier-Gerber, Walter Stoeber, and Fred Schmitz for corresponding
-business development.
+Maier-Gerber, Walter Stoeber, Fred Schmitz, and Norbert Braunagel
+for corresponding business development.
 
 Thank to Nico Zschach and Dirk Stelling of the technical support team
 at the Digital Images company in Halle for providing me with extra

@@ -1,3 +1,13 @@
+Significant changes since 1.0.90
+================================
+
+[1] Since the fast integer forward DCT seems to degrade for JPEG qualities
+greater than 95, TurboJPEG/OSS will now automatically use the slow integer
+forward DCT when generating JPEG images of quality 96 or greater.  This
+reduces compression performance by as much as 15% for these high-quality images
+but is necessary to ensure that the images are perceptually lossless.
+
+
 Significant changes since 1.0.1
 ===============================
 

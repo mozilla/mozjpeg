@@ -1,3 +1,9 @@
+Significant changes since 1.0.1
+===============================
+
+[1] Added further protections against invalid Huffman codes.
+
+
 Significant changes since 1.0.0
 ===============================
 

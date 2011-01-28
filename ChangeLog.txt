@@ -1,11 +1,11 @@
-Significant changes since 1.0.1
-===============================
+1.0.2
+=====
 
 [1] Added further protections against invalid Huffman codes.
 
 
-Significant changes since 1.0.0
-===============================
+1.0.1
+=====
 
 [1] The Huffman decoder will now handle erroneous Huffman codes (for instance,
 from a corrupt JPEG image.)  Previously, these would cause libjpeg-turbo to
@@ -18,8 +18,8 @@ be used instead of 4:2:0 when decompressing JPEG images using SSE2 code.
 INCOMPLETE_TYPES_BROKEN macro should be defined.
 
 
-Significant changes since 0.0.93
-================================
+1.0.0
+=====
 
 [1] 2983700: Further FreeBSD build tweaks (no longer necessary to specify
 --host when configuring on a 64-bit system)
@@ -43,18 +43,24 @@ contains just the 32-bit libjpeg-turbo libraries.
 unit tests now work on those architectures.
 
 
-Significant changes since 0.0.91
-================================
+0.0.93
+======
 
 [1] 2982659, Fixed x86-64 build on FreeBSD systems
 
 [2] 2988188: Added support for Windows 64-bit systems
 
 
-Significant changes since 0.0.90
-================================
+0.0.91
+======
 
 [1] Added documentation to .deb packages
 
 [2] 2968313: Fixed data corruption issues when decompressing large JPEG images
 and/or using buffered I/O with the libjpeg-turbo decompressor
+
+
+0.0.90
+======
+
+Initial release

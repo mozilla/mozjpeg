@@ -1,5 +1,5 @@
-Significant changes since 1.0.90
-================================
+Significant changes since 1.1 beta1 (1.0.90)
+============================================
 
 [1] Since the fast integer forward DCT seems to degrade for JPEG qualities
 greater than 95, TurboJPEG/OSS will now automatically use the slow integer
@@ -8,7 +8,7 @@ reduces compression performance by as much as 15% for these high-quality images
 but is necessary to ensure that the images are perceptually lossless.
 
 
-Significant changes since 1.0.1
+Significant changes since 1.0.x
 ===============================
 
 [1] Added emulation of the libjpeg v7 and v8b APIs and ABIs.  See
@@ -38,7 +38,11 @@ decompressor to output planar YUV images.
 [9] Added an extended version of tjDecompressHeader() to TurboJPEG/OSS which
 allows the caller to determine the type of subsampling used in a JPEG image.
 
-[10] Added further protections against invalid Huffman codes.
+
+Significant changes since 1.0.1
+===============================
+
+[1] Added further protections against invalid Huffman codes.
 
 
 Significant changes since 1.0.0

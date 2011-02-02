@@ -6,6 +6,7 @@
  * 
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * For conditions of distribution and use, see copyright notice in jsimdext.inc
  *
  * This file contains the interface between the "normal" portions
  * of the library and the SIMD implementations when running on a
@@ -490,6 +491,9 @@ jsimd_fdct_float (FAST_FLOAT * data)
 GLOBAL(int)
 jsimd_can_quantize (void)
 {
+	char *env=getenv("JSIMD_SLOWQUANTIZE");
+	if(env && strlen(env)==1 && !strcmp(env, "1"))
+		return 0;
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;

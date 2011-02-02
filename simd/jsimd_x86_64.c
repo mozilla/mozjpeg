@@ -491,9 +491,6 @@ jsimd_fdct_float (FAST_FLOAT * data)
 GLOBAL(int)
 jsimd_can_quantize (void)
 {
-	char *env=getenv("JSIMD_SLOWQUANTIZE");
-	if(env && strlen(env)==1 && !strcmp(env, "1"))
-		return 0;
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;

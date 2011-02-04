@@ -30,6 +30,10 @@ Build Requirements
 
 -- GCC v4.1 or later recommended for best performance
 
+-- If building the TurboJPEG/OSS JNI wrapper, the Java Development Kit (JDK)
+   must be installed.  On OS X 10.5 and later, instead install the Java
+   Developer Package, which can be obtained from http://connect.apple.com.
+
 
 ==================
 Out-of-Tree Builds
@@ -115,6 +119,14 @@ v7 or v6b as well.  The default is to enable both arithmetic encoding and
 decoding, but those who have philosophical objections to arithmetic coding can
 add --without-arith-enc or --without-arith-dec to the configure command line to
 disable encoding or decoding (respectively.)
+
+
+TurboJPEG/OSS JNI Wrapper
+-------------------------
+Add --with-jni to the configure command line to incorporate an optional Java
+Native Interface wrapper into the TurboJPEG/OSS dynamic library.  This allows
+the dynamic library to be used directly from Java applications.  See
+java/README for more details.
 
 
 ========================

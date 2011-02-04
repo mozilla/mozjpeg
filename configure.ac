@@ -231,6 +231,16 @@ AM_CONDITIONAL([WITH_ARITH_DEC], [test "x$with_arith_dec" != "xno"])
 
 AM_CONDITIONAL([WITH_ARITH], [test "x$with_arith_dec" != "xno" -o "x$with_arith_enc" != "xno"])
 
+AC_MSG_CHECKING([whether to include JNI wrapper in TurboJPEG/OSS])
+AC_ARG_WITH([jni],
+    AC_HELP_STRING([--with-jni],[Include JNI wrapper in the TurboJPEG/OSS library]))
+if test "x$with_jni" = "xyes"; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+AM_CONDITIONAL([WITH_JNI], [test "x$with_jni" = "xyes"])
+
 # SIMD is optional
 AC_ARG_WITH([simd],
     AC_HELP_STRING([--without-simd],[Omit accelerated SIMD routines.]))

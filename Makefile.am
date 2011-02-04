@@ -34,12 +34,24 @@ libjpeg_la_SOURCES += jdarith.c
 
 endif
 
-libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
-	turbojpeg-mapfile
+libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h
+
+if WITH_JNI
+
+libturbojpeg_la_SOURCES += turbojpeg-jni.c
+TJMAPFILE = turbojpeg-mapfile.jni
+
+else
+
+TJMAPFILE = turbojpeg-mapfile
+
+endif
+
+libturbojpeg_la_SOURCES += $(TJMAPFILE)
 
 if ANON_VERSION_SCRIPT
 
-libturbojpeg_la_LDFLAGS += $(ANON_VERSION_SCRIPT_FLAG)$(srcdir)/turbojpeg-mapfile
+libturbojpeg_la_LDFLAGS += $(ANON_VERSION_SCRIPT_FLAG)$(srcdir)/$(TJMAPFILE)
 
 endif
 

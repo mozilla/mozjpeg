@@ -50,7 +50,7 @@
 }
 
 JNIEXPORT jlong JNICALL Java_TJ_BUFSIZE
-	(JNIEnv *env, jobject obj, jint width, jint height)
+	(JNIEnv *env, jclass cls, jint width, jint height)
 {
 	return TJBUFSIZE(width, height);
 }

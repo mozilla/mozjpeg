@@ -39,7 +39,7 @@ extern "C" {
  * Signature: (II)J
  */
 JNIEXPORT jlong JNICALL Java_TJ_BUFSIZE
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jclass, jint, jint);
 
 #ifdef __cplusplus
 }

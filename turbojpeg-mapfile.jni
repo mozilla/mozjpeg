@@ -1,0 +1,22 @@
+{
+	global:
+		tjInitCompress;
+		tjCompress;
+		TJBUFSIZE;
+		tjInitDecompress;
+		tjDecompressHeader;
+		tjDecompressHeader2;
+		tjDecompress;
+		tjDestroy;
+		tjGetErrorStr;
+		Java_TJ_BUFSIZE;
+		Java_tjCompressor_Init;
+		Java_tjCompressor_Compress;
+		Java_tjCompressor_Destroy;
+		Java_tjDecompressor_Init;
+		Java_tjDecompressor_DecompressHeader;
+		Java_tjDecompressor_Decompress;
+		Java_tjDecompressor_Destroy;		
+	local:
+		*;
+};

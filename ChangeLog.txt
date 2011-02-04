@@ -1,3 +1,9 @@
+1.1.90 (1.2 beta1)
+==================
+
+[1] Added a JNI wrapper for TurboJPEG/OSS.  See java/README for more details.
+
+
 1.1.0
 =====
 

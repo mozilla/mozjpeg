@@ -1,0 +1,27 @@
+TurboJPEG/OSS JNI Wrapper
+=========================
+
+TurboJPEG/OSS can optionally be built with a Java Native Interface wrapper,
+which allows the TurboJPEG/OSS dynamic library to be loaded and used directly
+from Java applications.  The Java front end for this is defined in
+turbojpeg.java, which should be located in the same directory as this README
+file.  turbojpeg.java is licensed under a BSD-style license, so it can be
+incorporated directly into both open source and proprietary projects without
+restriction.
+
+tjexample.java, which should also be located in the same directory as this
+README file, demonstrates how to use the TurboJPEG/OSS Java front end to
+compress and decompress JPEG images in memory.
+
+  javac *.java
+
+builds .class files for both the front end and example code.
+
+
+Note for OS X users
+-------------------
+
+/usr/lib, the directory under which libturbojpeg.dylib is installed on Mac
+systems, is not part of the normal Java library path.  Thus, when running a
+Java application that uses TurboJPEG/OSS on Mac systems, you will need to pass
+an argument of -Djava.library.path=/usr/lib to java.

@@ -80,7 +80,7 @@ JNIEXPORT jlong JNICALL Java_tjCompressor_Compress
 {
 	tjhandle handle=0;
 	unsigned long size=0;
-	jbyte *srcbuf=NULL, *dstbuf=NULL;
+	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
 
@@ -137,7 +137,7 @@ JNIEXPORT jobject JNICALL Java_tjDecompressor_DecompressHeader
 	jclass jhicls=NULL;
 	jfieldID fid;
 	tjhandle handle=0;
-	jbyte *srcbuf=NULL;
+	unsigned char *srcbuf=NULL;
 	int width=0, height=0, jpegsubsamp=-1;
 	jobject jhiobj=NULL;
 
@@ -172,7 +172,7 @@ JNIEXPORT void JNICALL Java_tjDecompressor_Decompress
 		jint width, jint pitch, jint height, jint pixelsize, jint flags)
 {
 	tjhandle handle=0;
-	jbyte *srcbuf=NULL, *dstbuf=NULL;
+	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
 

@@ -39,6 +39,7 @@ libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h
 if WITH_JNI
 
 libturbojpeg_la_SOURCES += turbojpeg-jni.c
+libturbojpeg_la_CFLAGS = ${JAVA_CFLAGS}
 TJMAPFILE = turbojpeg-mapfile.jni
 
 else

@@ -25,3 +25,15 @@ Note for OS X users
 systems, is not part of the normal Java library path.  Thus, when running a
 Java application that uses TurboJPEG/OSS on Mac systems, you will need to pass
 an argument of -Djava.library.path=/usr/lib to java.
+
+
+Note for Solaris users
+----------------------
+
+/opt/libjpeg-turbo/lib, the directory under which libturbojpeg.so is installed
+on Solaris systems, is not part of the normal Java library path.  Thus, when
+running a Java application that uses TurboJPEG/OSS on Solaris systems, you will
+need to pass an argument of -Djava.library.path=/opt/libjpeg-turbo/lib to java.
+If using a 64-bit data model, then instead pass an argument of
+-Djava.library.path=/opt/libjpeg-turbo/lib/amd64 to use the 64-bit version of
+libturbojpeg.so.

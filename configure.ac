@@ -231,9 +231,11 @@ AM_CONDITIONAL([WITH_ARITH_DEC], [test "x$with_arith_dec" != "xno"])
 
 AM_CONDITIONAL([WITH_ARITH], [test "x$with_arith_dec" != "xno" -o "x$with_arith_enc" != "xno"])
 
+BUILDJNILIB=0
 case $host_os in
   darwin*)
     DEFAULT_JAVA_CFLAGS=-I/System/Library/Frameworks/JavaVM.framework/Headers
+    BUILDJNILIB=1
     ;;
   solaris*)
     DEFAULT_JAVA_CFLAGS='-I/usr/java/include -I/usr/java/include/solaris'
@@ -263,6 +265,7 @@ else
     AC_MSG_RESULT(no)
 fi
 AM_CONDITIONAL([WITH_JNI], [test "x$with_jni" = "xyes"])
+AC_SUBST(BUILDJNILIB)
 
 # SIMD is optional
 AC_ARG_WITH([simd],

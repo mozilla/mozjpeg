@@ -58,6 +58,16 @@ else()
   message(STATUS "Arithmetic decoding support disabled")
 endif()
 
+if(NOT DEFINED WITH_JNI)
+  set(WITH_JNI 0)
+endif()
+
+if(WITH_JNI)
+  message(STATUS "TurboJPEG/OSS JNI wrapper enabled")
+else()
+  message(STATUS "TurboJPEG/OSS JNI wrapper disabled")
+endif()
+
 set(JPEG_LIB_VERSION 62)
 set(DLL_VERSION ${JPEG_LIB_VERSION})
 set(FULLVERSION ${DLL_VERSION}.0.0)
@@ -106,6 +116,14 @@ configure_file(win/jconfig.h.in jconfig.h)
 configure_file(win/config.h.in config.h)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
+
+if(WITH_JNI)
+  include(CheckIncludeFiles)
+  check_include_files(jni.h HAVE_JNI_H)
+  if(NOT HAVE_JNI_H)
+    message(FATAL_ERROR "Cannot find jni.h.  Be sure to add the Java include directories to the INCLUDE environment variable (MSVC) or the CPATH environment variable (GCC).")
+  endif()
+endif()
 
 
 #
@@ -157,7 +175,12 @@ if(WITH_SIMD)
   add_dependencies(jpeg-static simd)
 endif()
 
-add_library(turbojpeg SHARED turbojpegl.c)
+set(TURBOJPEG_SOURCES turbojpegl.c)
+if(WITH_JNI)
+  set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
+endif()
+
+add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
 set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
 target_link_libraries(turbojpeg jpeg-static)
 set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")

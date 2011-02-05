@@ -30,12 +30,12 @@ Build Requirements
 
 -- GCC v4.1 or later recommended for best performance
 
--- The TurboJPEG/OSS JNI wrapper requires jni.h.  Some systems, such as OS X
-   10.4 and Solaris 10, have this header pre-installed.  On OS X 10.5 and
-   later, the header can be obtained by installing the Java Developer Package,
-   which can be downloaded from http://connect.apple.com.  On Linux and other
-   systems, the header can be obtained by installing the GCC Java development
-   packages or the Oracle Java Development Kit (JDK).
+-- If building the TurboJPEG/OSS JNI wrapper, jni.h is required.  Some systems,
+   such as OS X 10.4 and Solaris 10, have this header pre-installed.  On OS X
+   10.5 and later, the header can be obtained by installing the Java Developer
+   Package, which can be downloaded from http://connect.apple.com.  On Linux
+   and other systems, the header can be obtained by installing the GCC Java
+   development packages or the Oracle Java Development Kit (JDK).
 
 
 ==================
@@ -315,6 +315,15 @@ Build Requirements
 -- NASM (http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
    a 64-bit build)
 
+-- If building the TurboJPEG/OSS JNI wrapper, jni.h is required.  This header
+   can be obtained by installing the Oracle Java Development Kit (JDK).
+   * If using Visual C++, then add the appropriate Java include directories
+     (Example:  c:\Program Files\Java\jdk1.6.0_23\include;c:\Program Files\Java\jdk1.6.0_23\include\win32)
+     to the INCLUDE environment variable prior to building libjpeg-turbo.
+   * If using MinGW, then add the appropriate Java include directories
+     (Example:  /c/Program Files/Java/jdk1.6.0_23/include:/c/Program Files/Java/jdk1.6.0_23/include/win32)
+     to the CPATH environment variable prior to building libjpeg-turbo.
+
 
 ==================
 Out-of-Tree Builds
@@ -452,6 +461,14 @@ v7 or v6b as well.  The default is to enable both arithmetic encoding and
 decoding, but those who have philosophical objections to arithmetic coding can
 add "-DWITH_ARITH_ENC=0" or "-DWITH_ARITH_DEC=0" to the cmake command line to
 disable encoding or decoding (respectively.)
+
+
+TurboJPEG/OSS JNI Wrapper
+-------------------------
+Add "-DWITH_JNI=1" to the cmake command line to incorporate an optional Java
+Native Interface wrapper into the TurboJPEG/OSS dynamic library.  This allows
+the dynamic library to be used directly from Java applications.  See
+java/README for more details.
 
 
 ========================

@@ -30,9 +30,12 @@ Build Requirements
 
 -- GCC v4.1 or later recommended for best performance
 
--- If building the TurboJPEG/OSS JNI wrapper, the Java Development Kit (JDK)
-   must be installed.  On OS X 10.5 and later, instead install the Java
-   Developer Package, which can be obtained from http://connect.apple.com.
+-- The TurboJPEG/OSS JNI wrapper requires jni.h.  Some systems, such as OS X
+   10.4 and Solaris 10, have this header pre-installed.  On OS X 10.5 and
+   later, the header can be obtained by installing the Java Developer Package,
+   which can be downloaded from http://connect.apple.com.  On Linux and other
+   systems, the header can be obtained by installing the GCC Java development
+   packages or the Oracle Java Development Kit (JDK).
 
 
 ==================

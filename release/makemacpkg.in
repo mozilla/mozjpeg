@@ -28,6 +28,7 @@ VERSION=@VERSION@
 BUILD=@BUILD@
 SRCDIR=@srcdir@
 BUILDDIR32=@srcdir@/osxx86
+BUILDJNILIB=@BUILDJNILIB@
 if [ $# -gt 0 ]; then
 	if [ "$1" = "universal" ]; then
 		UNIVERSAL=1
@@ -118,6 +119,9 @@ install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib
 
 ln -fs /usr/include/turbojpeg.h $PKGROOT/opt/$PACKAGE_NAME/include/
 ln -fs /usr/lib/libturbojpeg.a $PKGROOT/opt/$PACKAGE_NAME/lib/
+if [ $BUILDJNILIB = 1 ]; then
+	ln -fs libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.jnilib
+fi
 if [ ! -h $PKGROOT/opt/$PACKAGE_NAME/lib32 ]; then
 	ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib32
 fi

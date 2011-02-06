@@ -34,8 +34,8 @@ Build Requirements
    such as OS X 10.4 and Solaris 10, have this header pre-installed.  On OS X
    10.5 and later, the header can be obtained by installing the Java Developer
    Package, which can be downloaded from http://connect.apple.com.  On Linux
-   and other systems, the header can be obtained by installing the GCC Java
-   development packages or the Oracle Java Development Kit (JDK).
+   and other systems, the header can be obtained by installing the GCJ
+   (GCC-Java) development packages or the Oracle Java Development Kit (JDK).
 
 
 ==================

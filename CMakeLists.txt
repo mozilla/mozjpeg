@@ -182,6 +182,9 @@ endif()
 
 add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
 set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
+if(MINGW)
+  set_target_properties(turbojpeg PROPERTIES LINK_FLAGS -Wl,--kill-at)
+endif()
 target_link_libraries(turbojpeg jpeg-static)
 set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")
 

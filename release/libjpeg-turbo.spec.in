@@ -39,7 +39,7 @@ TurboJPEG/IPP.  It is faster in some areas but slower in others.
 #-->%setup -q
 
 #-->%build
-#-->configure libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man JPEG_LIB_VERSION=@JPEG_LIB_VERSION@ SO_MAJOR_VERSION=@SO_MAJOR_VERSION@ SO_MINOR_VERSION=@SO_MINOR_VERSION@ --with-pic
+#-->configure libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man JPEG_LIB_VERSION=@JPEG_LIB_VERSION@ SO_MAJOR_VERSION=@SO_MAJOR_VERSION@ SO_MINOR_VERSION=@SO_MINOR_VERSION@ --with-pic @RPM_CONFIG_ARGS@
 #-->make DESTDIR=$RPM_BUILD_ROOT libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man
 
 %install

@@ -238,6 +238,7 @@ AC_ARG_WITH([jni],
     AC_HELP_STRING([--with-jni],[Include JNI wrapper in the TurboJPEG/OSS library]))
 
 BUILDJNILIB=0
+RPM_CONFIG_ARGS=
 if test "x$with_jni" = "xyes"; then
     AC_MSG_RESULT(yes)
 
@@ -263,11 +264,14 @@ if test "x$with_jni" = "xyes"; then
         [AC_MSG_ERROR([Could not find JNI header file])])
     CPPFLAGS=${SAVE_CPPFLAGS}
     AC_SUBST(JAVA_CFLAGS)
+
+    RPM_CONFIG_ARGS=--with-jni
 else
     AC_MSG_RESULT(no)
 fi
 AM_CONDITIONAL([WITH_JNI], [test "x$with_jni" = "xyes"])
 AC_SUBST(BUILDJNILIB)
+AC_SUBST(RPM_CONFIG_ARGS)
 
 # SIMD is optional
 AC_ARG_WITH([simd],

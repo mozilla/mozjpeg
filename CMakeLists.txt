@@ -86,9 +86,7 @@ endif(WITH_JPEG8)
 if(MSVC)
   # Use the static C library for all build types
   foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-    CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
-    CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-    CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
     if(${var} MATCHES "/MD")
       string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
     endif()
@@ -203,10 +201,10 @@ target_link_libraries(jpegut turbojpeg)
 add_executable(jpegut-static jpegut.c)
 target_link_libraries(jpegut-static turbojpeg-static)
 
-add_executable(jpgtest jpgtest.cxx bmp.c)
+add_executable(jpgtest jpgtest.c bmp.c)
 target_link_libraries(jpgtest turbojpeg)
 
-add_executable(jpgtest-static jpgtest.cxx bmp.c)
+add_executable(jpgtest-static jpgtest.c bmp.c)
 target_link_libraries(jpgtest-static turbojpeg-static)
 
 add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c rdswitch.c

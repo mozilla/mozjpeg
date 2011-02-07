@@ -1,6 +1,6 @@
 /* Copyright (C)2004 Landmark Graphics Corporation
  * Copyright (C)2005, 2006 Sun Microsystems, Inc.
- * Copyright (C)2009-2010 D. R. Commander
+ * Copyright (C)2009-2011 D. R. Commander
  *
  * This library is free software and may be redistributed and/or modified under
  * the terms of the wxWindows Library License, Version 3.1 or (at your option)
@@ -64,19 +64,19 @@ void printsigfig(double val, int figs)
 	printf(format, val);
 }
 
-void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
+void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 	int jpegsub, int qual, char *filename, int dotile, int useppm, int quiet)
 {
 	char tempstr[1024];
 	FILE *outfile=NULL;  tjhandle hnd;
 	unsigned char **jpegbuf=NULL, *rgbbuf=NULL;
-	rrtimer timer; double elapsed;
+	double start, elapsed;
 	int jpgbufsize=0, i, j, tilesizex, tilesizey, numtilesx, numtilesy, ITER;
 	unsigned long *comptilesize=NULL;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
 		|(fastupsample?TJ_FASTUPSAMPLE:0);
-	int ps=_ps[pf];
+	int ps=_ps[pf], tilen;
 	int pitch=w*ps, yuvsize;
 	int hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
 	int pw=PAD(w, hsf), ph=PAD(h, vsf);
@@ -129,10 +129,10 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 			jpegbuf[0], &comptilesize[0], jpegsub, qual, flags)==-1)
 			_throwtj("executing tjCompress()");
 		ITER=0;
-		timer.start();
+		start=rrtime();
 		do
 		{
-			jpgbufsize=0;  int tilen=0;
+			jpgbufsize=0;  tilen=0;
 			for(i=0; i<h; i+=tilesizey)
 			{
 				for(j=0; j<w; j+=tilesizex)
@@ -147,7 +147,7 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 				}
 			}
 			ITER++;
-		} while((elapsed=timer.elapsed())<5.);
+		} while((elapsed=rrtime()-start)<5.);
 		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 		hnd=NULL;
 		if(quiet)
@@ -196,7 +196,7 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 			tilesizey, ps, flags)==-1)
 			_throwtj("executing tjDecompress()");
 		ITER=0;
-		timer.start();
+		start=rrtime();
 		do
 		{
 			int tilen=0;
@@ -212,7 +212,7 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 				}
 			}
 			ITER++;
-		}	while((elapsed=timer.elapsed())<5.);
+		}	while((elapsed=rrtime()-start)<5.);
 		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 		hnd=NULL;
 		if(quiet)
@@ -301,13 +301,13 @@ void dotest(unsigned char *srcbuf, int w, int h, BMPPIXELFORMAT pf, int bu,
 }
 
 
-void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
+void dodecomptest(char *filename, int pf, int bu, int useppm,
 	int quiet)
 {
 	char tempstr[1024];
 	FILE *file=NULL;  tjhandle hnd;
 	unsigned char *jpegbuf=NULL, *rgbbuf=NULL;
-	rrtimer timer; double elapsed;
+	double start, elapsed;
 	int w, h, ITER;
 	unsigned long jpgbufsize=0;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
@@ -373,14 +373,14 @@ void dodecomptest(char *filename, BMPPIXELFORMAT pf, int bu, int useppm,
 	if(tjDecompress(hnd, jpegbuf, jpgbufsize, rgbbuf, w, pitch, h, ps, flags)==-1)
 		_throwtj("executing tjDecompress()");
 	ITER=0;
-	timer.start();
+	start=rrtime();
 	do
 	{
 		if(tjDecompress(hnd, jpegbuf, jpgbufsize, rgbbuf, w, pitch, h, ps, flags)
 			==-1)
 			_throwtj("executing tjDecompress()");
 		ITER++;
-	}	while((elapsed=timer.elapsed())<5.);
+	}	while((elapsed=rrtime()-start)<5.);
 	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 	hnd=NULL;
 	if(quiet)
@@ -449,7 +449,7 @@ int main(int argc, char *argv[])
 {
 	unsigned char *bmpbuf=NULL;  int w, h, i, useppm=0;
 	int qual, dotile=0, quiet=0, hiqual=-1;  char *temp;
-	BMPPIXELFORMAT pf=BMP_BGR;
+	int pf=BMP_BGR;
 	int bu=0, minarg=2;
 
 	printf("\n");

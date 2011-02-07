@@ -169,7 +169,7 @@ Build Recipes
 
 Add
 
-  --host i686-pc-linux-gnu CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32' LDFLAGS=-m32
+  --host i686-pc-linux-gnu CFLAGS='-O3 -m32' LDFLAGS=-m32
 
 to the configure command line.
 
@@ -190,7 +190,7 @@ installed.
 
 Add
 
-  CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32' LDFLAGS=-m32
+  CFLAGS='-O3 -m32' LDFLAGS=-m32
 
 to the configure command line.
 
@@ -202,8 +202,6 @@ Add
 
   --host x86_64-apple-darwin NASM=/opt/local/bin/nasm \
   CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -O3' \
-    CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
     -mmacosx-version-min=10.4 -O3' \
     LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
     -mmacosx-version-min=10.4'
@@ -219,8 +217,6 @@ Add
 
   CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
     -mmacosx-version-min=10.4 -O3 -m32' \
-    CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -O3 -m32' \
     LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
     -mmacosx-version-min=10.4 -m32'
 
@@ -232,7 +228,7 @@ to the configure command line.  The OS X 10.4 SDK must be installed.
 
 Add
 
-  --host x86_64-pc-solaris CFLAGS='-O3 -m64' CXXFLAGS='-O3 -m64' LDFLAGS=-m64
+  --host x86_64-pc-solaris CFLAGS='-O3 -m64' LDFLAGS=-m64
 
 to the configure command line.
 
@@ -242,8 +238,8 @@ to the configure command line.
 
 Add
 
-  --host i386-unknown-freebsd CC='gcc -B /usr/lib32' CXX='g++ -B/usr/lib32' \
-    CFLAGS='-O3 -m32' CXXFLAGS='-O3 -m32' LDFLAGS='-B/usr/lib32'
+  --host i386-unknown-freebsd CC='gcc -B /usr/lib32' CFLAGS='-O3 -m32' \
+    LDFLAGS='-B/usr/lib32'
 
 to the configure command line.  NASM 2.07 or later from FreeBSD ports must be
 installed.
@@ -254,15 +250,14 @@ Sun Studio
 
 Add
 
-  CC=cc CXX=CC
+  CC=cc
 
 to the configure command line.  libjpeg-turbo will automatically be built with
-the maximum optimization level (-xO5) unless you override CFLAGS and CXXFLAGS.
+the maximum optimization level (-xO5) unless you override CFLAGS.
 
 To build a 64-bit version of libjpeg-turbo using Sun Studio, add
 
-  --host x86_64-pc-solaris CC=cc CXX=CC CFLAGS='-xO5 -m64' \
-    CXXFLAGS='-xO5 -m64' LDFLAGS=-m64
+  --host x86_64-pc-solaris CC=cc CFLAGS='-xO5 -m64' LDFLAGS=-m64
 
 to the configure command line.
 
@@ -502,7 +497,7 @@ Build Recipes
 ----------------------------
 
   cd {build_directory}
-  CC=/usr/bin/x86_64-w64-mingw32-gcc CXX=/usr/bin/x86_64-w64-mingw32-g++ \
+  CC=/usr/bin/x86_64-w64-mingw32-gcc \
     cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
     -DCMAKE_AR=/usr/bin/x86_64-w64-mingw32-ar \
     -DCMAKE_RANLIB=/usr/bin/x86_64-w64-mingw32-ranlib {source_directory}
@@ -517,7 +512,7 @@ mingw64-x86_64-gcc-g++ packages (and their dependencies) must be installed.
 ----------------------------
 
   cd {build_directory}
-  CC=/usr/bin/i686-w64-mingw32-gcc CXX=/usr/bin/i686-w64-mingw32-g++ \
+  CC=/usr/bin/i686-w64-mingw32-gcc \
     cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
     -DDCMAKE_AR=/usr/bin/i686-w64-mingw32-ar \
     -DCMAKE_RANLIB=/usr/bin/i686-w64-mingw32-ranlib {source_directory}
@@ -536,7 +531,6 @@ toolchain (which is faster than the Cygwin version):
 
   cd {build_directory}
   CC={mingw-w64_binary_path}/x86_64-w64-mingw32-gcc \
-    CXX={mingw-w64_binary_path}/x86_64-w64-mingw32-g++ \
     cmake -G "MSYS Makefiles" \
     -DCMAKE_AR={mingw-w64_binary_path}/x86_64-w64-mingw32-ar \
     -DCMAKE_RANLIB={mingw-w64_binary_path}/x86_64-w64-mingw32-ranlib \
@@ -549,7 +543,6 @@ MinGW Build on Linux
 
   cd {build_directory}
   CC={mingw_binary_path}/i386-mingw32-gcc \
-    CXX={mingw_binary_path}/i386-mingw32-g++ \
     cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
     -DCMAKE_AR={mingw_binary_path}/i386-mingw32-ar \
     -DCMAKE_RANLIB={mingw_binary_path}/i386-mingw32-ranlib \

@@ -3,6 +3,8 @@
 
 [1] Added a JNI wrapper for TurboJPEG/OSS.  See java/README for more details.
 
+[2] Ported jpgtest.cxx to pure C to avoid the need for a C++ compiler.
+
 
 1.1.0
 =====

@@ -7,6 +7,8 @@ forward DCT when generating JPEG images of quality 96 or greater.  This
 reduces compression performance by as much as 15% for these high-quality images
 but is necessary to ensure that the images are perceptually lossless.
 
+[2] Ported jpgtest.cxx to pure C to avoid the need for a C++ compiler.
+
 
 1.0.90 (1.1 beta1)
 ==================

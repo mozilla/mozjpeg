@@ -33,9 +33,9 @@
 
 import java.io.*;
 
-public class tjexample {
+public class TJExample {
 
-  public static final String classname=new tjexample().getClass().getName();
+  public static final String classname=new TJExample().getClass().getName();
 
   public static void main(String argv[]) {
 
@@ -57,8 +57,8 @@ public class tjexample {
       fis.read(inputbuf);
       fis.close();
 
-      tjDecompressor tjd=new tjDecompressor();
-      tjHeaderInfo tji=tjd.DecompressHeader(inputbuf, inputsize);
+      TJDecompressor tjd=new TJDecompressor();
+      TJHeaderInfo tji=tjd.decompressHeader(inputbuf, inputsize);
       System.out.print("Source Image: "+tji.width+" x "+tji.height+ " pixels, ");
       switch(tji.subsamp) {
         case TJ.SAMP444:  System.out.println("4:4:4 subsampling");  break;
@@ -68,13 +68,13 @@ public class tjexample {
         default:  System.out.println("Unknown subsampling");  break;
       }
       byte [] tmpbuf=new byte[tji.width*tji.height*3];
-      tjd.Decompress(inputbuf, inputsize, tmpbuf, tji.width, tji.width*3,
+      tjd.decompress(inputbuf, inputsize, tmpbuf, tji.width, tji.width*3,
         tji.height, 3, TJ.BOTTOMUP);
       tjd.close();
 
-      tjCompressor tjc=new tjCompressor();
-      byte [] outputbuf=new byte[(int)TJ.BUFSIZE(tji.width, tji.height)];
-      long outputsize=tjc.Compress(tmpbuf, tji.width, tji.width*3, tji.height,
+      TJCompressor tjc=new TJCompressor();
+      byte [] outputbuf=new byte[(int)TJ.bufSize(tji.width, tji.height)];
+      long outputsize=tjc.compress(tmpbuf, tji.width, tji.width*3, tji.height,
         3, outputbuf, tji.subsamp, 95, TJ.BOTTOMUP);
       tjc.close();
 

@@ -47,14 +47,14 @@ final class TJ {
     FASTUPSAMPLE = 256,
     YUV          = 512;
 
-  public native final static long BUFSIZE(int width, int height);
+  public native final static long bufSize(int width, int height);
 };
 
-class tjCompressor {
+class TJCompressor {
 
-  tjCompressor() throws Exception {Init();}
+  TJCompressor() throws Exception {init();}
 
-  public void close() throws Exception {Destroy();}
+  public void close() throws Exception {destroy();}
 
   protected void finalize() throws Throwable {
     try {
@@ -66,12 +66,12 @@ class tjCompressor {
     }
   };
 
-  private native void Init() throws Exception;
+  private native void init() throws Exception;
 
-  private native void Destroy() throws Exception;
+  private native void destroy() throws Exception;
 
   // JPEG size in bytes is returned
-  public native long Compress(byte [] srcbuf, int width, int pitch,
+  public native long compress(byte [] srcbuf, int width, int pitch,
     int height, int pixelsize, byte [] dstbuf, int jpegsubsamp, int jpegqual,
     int flags) throws Exception;
 
@@ -82,17 +82,17 @@ class tjCompressor {
   private long handle=0;
 };
 
-class tjHeaderInfo {
+class TJHeaderInfo {
   int subsamp=-1;
   int width=-1;
   int height=-1;
 };
 
-class tjDecompressor {
+class TJDecompressor {
 
-  tjDecompressor() throws Exception {Init();}
+  TJDecompressor() throws Exception {init();}
 
-  public void close() throws Exception {Destroy();}
+  public void close() throws Exception {destroy();}
 
   protected void finalize() throws Throwable {
     try {
@@ -104,14 +104,14 @@ class tjDecompressor {
     }
   };
 
-  private native void Init() throws Exception;
+  private native void init() throws Exception;
 
-  private native void Destroy() throws Exception;
+  private native void destroy() throws Exception;
 
-  public native tjHeaderInfo DecompressHeader(byte [] srcbuf, long size)
+  public native TJHeaderInfo decompressHeader(byte [] srcbuf, long size)
     throws Exception;
 
-  public native void Decompress(byte [] srcbuf, long size, byte [] dstbuf,
+  public native void decompress(byte [] srcbuf, long size, byte [] dstbuf,
     int width, int pitch, int height, int pixelsize, int flags)
     throws Exception;
 

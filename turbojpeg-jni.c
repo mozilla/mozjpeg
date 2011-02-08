@@ -28,8 +28,8 @@
 
 #include "turbojpeg.h"
 #include <jni.h>
-#include "java/tjCompressor.h"
-#include "java/tjDecompressor.h"
+#include "java/TJCompressor.h"
+#include "java/TJDecompressor.h"
 #include "java/TJ.h"
 
 #define _throw(msg) {  \
@@ -49,13 +49,13 @@
 	handle=(tjhandle)(long)(*env)->GetLongField(env, obj, _fid);  \
 }
 
-JNIEXPORT jlong JNICALL Java_TJ_BUFSIZE
+JNIEXPORT jlong JNICALL Java_TJ_bufSize
 	(JNIEnv *env, jclass cls, jint width, jint height)
 {
 	return TJBUFSIZE(width, height);
 }
 
-JNIEXPORT void JNICALL Java_tjCompressor_Init
+JNIEXPORT void JNICALL Java_TJCompressor_init
 	(JNIEnv *env, jobject obj)
 {
 	jclass cls;
@@ -73,7 +73,7 @@ JNIEXPORT void JNICALL Java_tjCompressor_Init
 	return;
 }
 
-JNIEXPORT jlong JNICALL Java_tjCompressor_Compress
+JNIEXPORT jlong JNICALL Java_TJCompressor_compress
 	(JNIEnv *env, jobject obj, jbyteArray src, jint width, jint pitch,
 		jint height, jint pixelsize, jbyteArray dst, jint jpegsubsamp,
 		jint jpegqual, jint flags)
@@ -101,7 +101,7 @@ JNIEXPORT jlong JNICALL Java_tjCompressor_Compress
 	return size;
 }
 
-JNIEXPORT void JNICALL Java_tjCompressor_Destroy
+JNIEXPORT void JNICALL Java_TJCompressor_destroy
 	(JNIEnv *env, jobject obj)
 {
 	tjhandle handle=0;
@@ -114,7 +114,7 @@ JNIEXPORT void JNICALL Java_tjCompressor_Destroy
 	return;
 }
 
-JNIEXPORT void JNICALL Java_tjDecompressor_Init
+JNIEXPORT void JNICALL Java_TJDecompressor_init
 	(JNIEnv *env, jobject obj)
 {
 	jclass cls;
@@ -131,7 +131,7 @@ JNIEXPORT void JNICALL Java_tjDecompressor_Init
 	return;
 }
 
-JNIEXPORT jobject JNICALL Java_tjDecompressor_DecompressHeader
+JNIEXPORT jobject JNICALL Java_TJDecompressor_decompressHeader
 	(JNIEnv *env, jobject obj, jbyteArray src, jlong size)
 {
 	jclass jhicls=NULL;
@@ -153,7 +153,7 @@ JNIEXPORT jobject JNICALL Java_tjDecompressor_DecompressHeader
 	}
 	(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);  srcbuf=NULL;
 
-	bailif0(jhicls=(*env)->FindClass(env, "tjHeaderInfo"));
+	bailif0(jhicls=(*env)->FindClass(env, "TJHeaderInfo"));
 	bailif0(jhiobj=(*env)->AllocObject(env, jhicls));
 
 	bailif0(fid=(*env)->GetFieldID(env, jhicls, "subsamp", "I"));
@@ -167,7 +167,7 @@ JNIEXPORT jobject JNICALL Java_tjDecompressor_DecompressHeader
 	return jhiobj;
 }
 
-JNIEXPORT void JNICALL Java_tjDecompressor_Decompress
+JNIEXPORT void JNICALL Java_TJDecompressor_decompress
 	(JNIEnv *env, jobject obj, jbyteArray src, jlong size, jbyteArray dst,
 		jint width, jint pitch, jint height, jint pixelsize, jint flags)
 {
@@ -193,8 +193,8 @@ JNIEXPORT void JNICALL Java_tjDecompressor_Decompress
 	return;
 }
 
-JNIEXPORT void JNICALL Java_tjDecompressor_Destroy
+JNIEXPORT void JNICALL Java_TJDecompressor_destroy
 	(JNIEnv *env, jobject obj)
 {
-	Java_tjCompressor_Destroy(env, obj);
+	Java_TJCompressor_destroy(env, obj);
 }

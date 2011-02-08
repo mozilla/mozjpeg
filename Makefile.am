@@ -81,7 +81,7 @@ noinst_PROGRAMS = jpgtest jpegut
 
 jpgtest_SOURCES = $(TSTHDRS) jpgtest.c bmp.h bmp.c
 
-jpgtest_LDADD = libturbojpeg.la
+jpgtest_LDADD = libturbojpeg.la -lm
 
 jpegut_SOURCES = $(TSTHDRS) jpegut.c bmp.h bmp.c
 

@@ -9,14 +9,14 @@
 		tjDecompress;
 		tjDestroy;
 		tjGetErrorStr;
-		Java_TJ_BUFSIZE;
-		Java_tjCompressor_Init;
-		Java_tjCompressor_Compress;
-		Java_tjCompressor_Destroy;
-		Java_tjDecompressor_Init;
-		Java_tjDecompressor_DecompressHeader;
-		Java_tjDecompressor_Decompress;
-		Java_tjDecompressor_Destroy;		
+		Java_TJ_bufSize;
+		Java_TJCompressor_init;
+		Java_TJCompressor_compress;
+		Java_TJCompressor_destroy;
+		Java_TJDecompressor_init;
+		Java_TJDecompressor_decompressHeader;
+		Java_TJDecompressor_decompress;
+		Java_TJDecompressor_destroy;		
 	local:
 		*;
 };

@@ -35,10 +35,10 @@ extern "C" {
 #define TJ_YUV 512L
 /*
  * Class:     TJ
- * Method:    BUFSIZE
+ * Method:    bufSize
  * Signature: (II)J
  */
-JNIEXPORT jlong JNICALL Java_TJ_BUFSIZE
+JNIEXPORT jlong JNICALL Java_TJ_bufSize
   (JNIEnv *, jclass, jint, jint);
 
 #ifdef __cplusplus

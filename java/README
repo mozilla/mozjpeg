@@ -3,9 +3,9 @@ TurboJPEG/OSS JNI Wrapper
 
 TurboJPEG/OSS can optionally be built with a Java Native Interface wrapper,
 which allows the TurboJPEG/OSS dynamic library to be loaded and used directly
-from Java applications.  The Java front end for this is defined in
-TurboJPEG.java, which should be located in the same directory as this README
-file.  TurboJPEG.java is licensed under a BSD-style license, so it can be
+from Java applications.  The Java front end for this is defined in several
+classes located under org/libjpegturbo/turbojpeg.  The source code for these
+Java classes is licensed under a BSD-style license, so the files can be
 incorporated directly into both open source and proprietary projects without
 restriction.
 
@@ -13,7 +13,7 @@ TJExample.java, which should also be located in the same directory as this
 README file, demonstrates how to use the TurboJPEG/OSS Java front end to
 compress and decompress JPEG images in memory.
 
-  javac *.java
+  javac TJExample.java
 
 builds .class files for both the front end and example code.
 

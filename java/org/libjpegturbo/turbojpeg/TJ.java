@@ -26,17 +26,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-final class TJ {
+package org.libjpegturbo.turbojpeg;
+
+final public class TJ {
 
   // Subsampling options
-  final static int
+  final public static int
     SAMP444    = 0,
     SAMP422    = 1,
     SAMP420    = 2,
     GRAYSCALE  = 3;
 
   // Flags
-  final static int
+  final public static int
     BGR          = 1,
     BOTTOMUP     = 2,
     FORCEMMX     = 8,
@@ -48,76 +50,4 @@ final class TJ {
     YUV          = 512;
 
   public native final static long bufSize(int width, int height);
-};
-
-class TJCompressor {
-
-  TJCompressor() throws Exception {init();}
-
-  public void close() throws Exception {destroy();}
-
-  protected void finalize() throws Throwable {
-    try {
-      close();
-    } catch(Exception e) {
-    }
-    finally {
-      super.finalize();
-    }
-  };
-
-  private native void init() throws Exception;
-
-  private native void destroy() throws Exception;
-
-  // JPEG size in bytes is returned
-  public native long compress(byte [] srcbuf, int width, int pitch,
-    int height, int pixelsize, byte [] dstbuf, int jpegsubsamp, int jpegqual,
-    int flags) throws Exception;
-
-  static {
-    System.loadLibrary("turbojpeg");
-  }
-
-  private long handle=0;
-};
-
-class TJHeaderInfo {
-  int subsamp=-1;
-  int width=-1;
-  int height=-1;
-};
-
-class TJDecompressor {
-
-  TJDecompressor() throws Exception {init();}
-
-  public void close() throws Exception {destroy();}
-
-  protected void finalize() throws Throwable {
-    try {
-      close();
-    } catch(Exception e) {
-    }
-    finally {
-      super.finalize();
-    }
-  };
-
-  private native void init() throws Exception;
-
-  private native void destroy() throws Exception;
-
-  public native TJHeaderInfo decompressHeader(byte [] srcbuf, long size)
-    throws Exception;
-
-  public native void decompress(byte [] srcbuf, long size, byte [] dstbuf,
-    int width, int pitch, int height, int pixelsize, int flags)
-    throws Exception;
-
-  static {
-    System.loadLibrary("turbojpeg");
-  }
-
-  private long handle=0;
 };

@@ -32,6 +32,7 @@
  */
 
 import java.io.*;
+import org.libjpegturbo.turbojpeg.*;
 
 public class TJExample {
 

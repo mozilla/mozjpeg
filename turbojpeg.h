@@ -190,7 +190,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle j,
 	int *width, int *height, int *jpegsub);
 
 /*
-  Deprecated version of the above function
+  Legacy version of the above function
 */
 DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 	unsigned char *srcbuf, unsigned long size,

@@ -1,6 +1,6 @@
 /* Copyright (C)2004 Landmark Graphics Corporation
  * Copyright (C)2005, 2006 Sun Microsystems, Inc.
- * Copyright (C)2009 D. R. Commander
+ * Copyright (C)2009-2011 D. R. Commander
  *
  * This library is free software and may be redistributed and/or modified under
  * the terms of the wxWindows Library License, Version 3.1 or (at your option)
@@ -117,8 +117,9 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
   [INPUT] pitch = bytes per line of the source image (width*pixelsize if the
      bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
      is padded to the nearest 32-bit boundary, such as is the case for Windows
-     bitmaps.  You can also be clever and use this parameter to skip lines, etc.,
-     as long as the pitch is greater than 0.)
+     bitmaps.  You can also be clever and use this parameter to skip lines,
+     etc.  Setting this parameter to 0 is the equivalent of setting it to
+     width*pixelsize;
   [INPUT] height = height (in pixels) of the source image
   [INPUT] pixelsize = size (in bytes) of each pixel in the source image
      RGBA and BGRA: 4, RGB and BGR: 3, Grayscale: 1
@@ -190,7 +191,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle j,
 	int *width, int *height, int *jpegsub);
 
 /*
-  Deprecated version of the above function
+  Legacy version of the above function
 */
 DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 	unsigned char *srcbuf, unsigned long size,
@@ -198,10 +199,10 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 
 
 /*
-  int tjDecompress(tjhandle j,
+  int tjDecompress2(tjhandle j,
      unsigned char *srcbuf, unsigned long size,
-     unsigned char *dstbuf, int width, int pitch, int height, int pixelsize,
-     int flags)
+     unsigned char *dstbuf, int pitch, int pixelsize,
+     int scale_num, int scale_denom, int flags)
 
   [INPUT] j = instance handle previously returned from a call to
      tjInitDecompress()
@@ -209,22 +210,33 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
      to decompress
   [INPUT] size = size of the JPEG image buffer (in bytes)
   [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
-     the bitmap image.  This buffer should normally be pitch*height
-     bytes in size, although this pointer may also be used to decompress into
-     a specific region of a larger buffer.
-  [INPUT] width =  width (in pixels) of the destination image
-  [INPUT] pitch = bytes per line of the destination image (width*pixelsize if the
-     bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
-     is padded to the nearest 32-bit boundary, such as is the case for Windows
-     bitmaps.  You can also be clever and use this parameter to skip lines, etc.,
-     as long as the pitch is greater than 0.)
-  [INPUT] height = height (in pixels) of the destination image
+     the bitmap image.  This buffer should normally be pitch*scaled_height
+     bytes in size, where scaled_height=ceil(JPEG image height/scale_denom).
+     However, this pointer may also be used to decompress into a specific
+     region of a larger buffer.
+  [INPUT] pitch = bytes per line of the destination image.  Normally, this is
+     scaled_width*pixelsize if the bitmap is unpadded, else
+     TJPAD(scaled_width*pixelsize) if each line of the bitmap is padded to the
+     nearest 32-bit boundary, such as is the case for Windows bitmaps.
+     NOTE: scaled_width=ceil(JPEG image width/scale_denom).  You can also be
+     clever and use this parameter to skip lines, etc.  Setting this parameter
+     to 0 is the equivalent of setting it to scaled_width*pixelsize.
   [INPUT] pixelsize = size (in bytes) of each pixel in the destination image
      RGBA/RGBx and BGRA/BGRx: 4, RGB and BGR: 3, Grayscale: 1
+  [INPUT] scale_num = numerator of scaling factor (currently must be 1)
+  [INPUT] scale_denom = denominator of scaling factor (1, 2, 4, or 8)
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above.
 
   RETURNS: 0 on success, -1 on error
+*/
+DLLEXPORT int DLLCALL tjDecompress2(tjhandle j,
+	unsigned char *srcbuf, unsigned long size,
+	unsigned char *dstbuf, int pitch, int pixelsize,
+	int scale_num, int scale_denom, int flags);
+
+/*
+  Legacy version of the above function
 */
 DLLEXPORT int DLLCALL tjDecompress(tjhandle j,
 	unsigned char *srcbuf, unsigned long size,

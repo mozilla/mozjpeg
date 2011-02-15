@@ -418,10 +418,10 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle h,
 }
 
 
-DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
+DLLEXPORT int DLLCALL tjDecompress2(tjhandle h,
 	unsigned char *srcbuf, unsigned long size,
-	unsigned char *dstbuf, int width, int pitch, int height, int ps,
-	int flags)
+	unsigned char *dstbuf, int pitch, int ps,
+	int scale_num, int scale_denom, int flags)
 {
 	int i, row, retval=0;  JSAMPROW *row_pointer=NULL, *outbuf[MAX_COMPONENTS];
 	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], iw[MAX_COMPONENTS],
@@ -435,14 +435,15 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 		tmpbuf[i]=NULL;  outbuf[i]=NULL;
 	}
 
-	if(srcbuf==NULL || size<=0
-		|| dstbuf==NULL || width<=0 || pitch<0 || height<=0)
-		_throw("Invalid argument in tjDecompress()");
+	if(srcbuf==NULL || size<=0 || dstbuf==NULL || pitch<0)
+		_throw("Invalid argument in tjDecompress2()");
 	if(ps!=3 && ps!=4 && ps!=1)
 		_throw("This decompressor can only handle 24-bit and 32-bit RGB or 8-bit grayscale output");
 	if(!j->initd) _throw("Instance has not been initialized for decompression");
 
-	if(pitch==0) pitch=width*ps;
+	if(scale_num!=1 || scale_denom<1 || scale_denom>8
+		|| (scale_denom&(scale_denom-1))!=0)
+		_throw("Unsupported scaling factor");
 
 	if(flags&TJ_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJ_FORCESSE) putenv("JSIMD_FORCESSE=1");
@@ -470,10 +471,10 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 			int ih;
 			iw[i]=compptr->width_in_blocks*DCTSIZE;
 			ih=compptr->height_in_blocks*DCTSIZE;
-			cw[i]=PAD(width, dinfo->max_h_samp_factor)*compptr->h_samp_factor
-				/dinfo->max_h_samp_factor;
-			ch[i]=PAD(height, dinfo->max_v_samp_factor)*compptr->v_samp_factor
-				/dinfo->max_v_samp_factor;
+			cw[i]=PAD(dinfo->image_width, dinfo->max_h_samp_factor)
+				*compptr->h_samp_factor/dinfo->max_h_samp_factor;
+			ch[i]=PAD(dinfo->image_height, dinfo->max_v_samp_factor)
+				*compptr->v_samp_factor/dinfo->max_v_samp_factor;
 			if(iw[i]!=cw[i] || ih!=ch[i]) usetmpbuf=1;
 			th[i]=compptr->v_samp_factor*DCTSIZE;
 			tmpbufsize+=iw[i]*th[i];
@@ -503,16 +504,6 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 			}
 		}
 	}
-	else
-	{
-		if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
-			_throw("Memory allocation failed in tjInitDecompress()");
-		for(i=0; i<height; i++)
-		{
-			if(flags&TJ_BOTTOMUP) row_pointer[i]= &dstbuf[(height-i-1)*pitch];
-			else row_pointer[i]= &dstbuf[i*pitch];
-		}
-	}
 
 	if(ps==1) j->dinfo.out_color_space = JCS_GRAYSCALE;
 	#if JCS_EXTENSIONS==1
@@ -533,6 +524,11 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 
 	if(flags&TJ_FASTUPSAMPLE) j->dinfo.do_fancy_upsampling=FALSE;
 	if(flags&TJ_YUV) j->dinfo.raw_data_out=TRUE;
+	else
+	{
+		j->dinfo.scale_num=scale_num;
+		j->dinfo.scale_denom=scale_denom;
+	}
 
 	jpeg_start_decompress(&j->dinfo);
 	if(flags&TJ_YUV)
@@ -567,6 +563,19 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	}
 	else
 	{
+		if(pitch==0) pitch=j->dinfo.output_width*ps;
+		if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)
+			*j->dinfo.output_height))==NULL)
+		{
+			jpeg_finish_decompress(&j->dinfo);
+			_throw("Memory allocation failed in tjInitDecompress()");
+		}
+		for(i=0; i<j->dinfo.output_height; i++)
+		{
+			if(flags&TJ_BOTTOMUP)
+				row_pointer[i]= &dstbuf[(j->dinfo.output_height-i-1)*pitch];
+			else row_pointer[i]= &dstbuf[i*pitch];
+		}
 		while(j->dinfo.output_scanline<j->dinfo.output_height)
 		{
 			jpeg_read_scanlines(&j->dinfo, &row_pointer[j->dinfo.output_scanline],
@@ -586,6 +595,19 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	return retval;
 }
 
+
+DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
+	unsigned char *srcbuf, unsigned long size,
+	unsigned char *dstbuf, int width, int pitch, int height, int ps,
+	int flags)
+{
+	if(width<=0 || height<=0)
+	{
+		sprintf(lasterror, "Invalid argument in tjDecompress()");
+		return -1;
+	}
+	return tjDecompress2(h, srcbuf, size, dstbuf, pitch, ps, 1, 1, flags);
+}
 
 // General
 

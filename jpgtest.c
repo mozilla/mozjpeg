@@ -380,8 +380,7 @@ void dodecomptest(char *filename)
 	temp=strrchr(filename, '.');
 	if(temp!=NULL) *temp='\0';
 
-	if((hnd=tjInitDecompress())==NULL)
-		_throwtj("executing tjInitDecompress()");
+	if((hnd=tjInitDecompress())==NULL) _throwtj("executing tjInitDecompress()");
 	if(tjDecompressHeader2(hnd, jpegbuf, jpgbufsize, &w, &h, &jpegsub)==-1)
 		_throwtj("executing tjDecompressHeader2()");
 	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");

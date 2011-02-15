@@ -1,6 +1,6 @@
 /* Copyright (C)2004 Landmark Graphics Corporation
  * Copyright (C)2005 Sun Microsystems, Inc.
- * Copyright (C)2009-2010 D. R. Commander
+ * Copyright (C)2009-2011 D. R. Commander
  *
  * This library is free software and may be redistributed and/or modified under
  * the terms of the wxWindows Library License, Version 3.1 or (at your option)
@@ -390,7 +390,7 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	if(yuv==YUVENCODE)
 	{
 		if(checkbufyuv(jpegbuf, *size, w, h, subsamp)) printf("Passed.");
-		else printf("FAILED!");
+		else {printf("FAILED!");  exitstatus=-1;}
 	}
 	else printf("Done.");
 	printf("  %f ms\n  Result in %s\n", t*1000., tempstr);
@@ -454,12 +454,16 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	{
 		if(checkbufyuv(bmpbuf, size, pw, ph, subsamp))
 			printf("Passed.");
-		else printf("FAILED!");
+		else {printf("FAILED!");  exitstatus=-1;}
 	}
 	else
 	{
 		if(checkbuf(bmpbuf, w, h, ps, subsamp, flags)) printf("Passed.");
-		else {printf("FAILED!");  dumpbuf(bmpbuf, w, h, ps, flags);}
+		else
+		{
+			printf("FAILED!");  exitstatus=-1;
+			dumpbuf(bmpbuf, w, h, ps, flags);
+		}
 	}
 	printf("  %f ms\n\n", t*1000.);
 

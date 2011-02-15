@@ -33,7 +33,7 @@
 
 enum {YUVENCODE=1, YUVDECODE};
 int forcemmx=0, forcesse=0, forcesse2=0, forcesse3=0, fastupsample=0,
-	decomponly=0, yuv=0;
+	decomponly=0, yuv=0, quiet=0, dotile=0, pf=BMP_BGR, bu=0,  useppm=0;
 const int _ps[BMPPIXELFORMATS]={3, 4, 3, 4, 4, 4};
 const int _flags[BMPPIXELFORMATS]={0, 0, TJ_BGR, TJ_BGR,
 	TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST};
@@ -64,8 +64,142 @@ void printsigfig(double val, int figs)
 	printf(format, val);
 }
 
-void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
-	int jpegsub, int qual, char *filename, int dotile, int useppm, int quiet)
+// Decompression test
+int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
+	unsigned long *comptilesize, unsigned char *rgbbuf, int w, int h,
+	int jpegsub, int qual, char *filename, int tilesizex, int tilesizey)
+{
+	char tempstr[1024], qualstr[5]="\0";
+	FILE *outfile=NULL;  tjhandle hnd=NULL;
+	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
+		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
+		|(fastupsample?TJ_FASTUPSAMPLE:0);
+	int i, j, ITER, rgbbufalloc=0;
+	double start, elapsed;
+	int ps=_ps[pf];
+	int pitch=w*ps;
+	int hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
+	int pw=PAD(w, hsf), ph=PAD(h, vsf);
+	int cw=pw/hsf, ch=ph/vsf;
+	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
+	int yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
+
+	if(qual>0)
+	{
+		snprintf(qualstr, 5, "Q%d", qual);
+		qualstr[4]=0;
+	}
+
+	flags |= _flags[pf];
+	if(bu) flags |= TJ_BOTTOMUP;
+	if(yuv==YUVDECODE) flags |= TJ_YUV;
+	if((hnd=tjInitDecompress())==NULL)
+		_throwtj("executing tjInitDecompress()");
+
+	if(rgbbuf==NULL)
+	{
+		if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h))) == NULL)
+			_throwunix("allocating image buffer");
+		rgbbufalloc=1;
+	}
+	memset(rgbbuf, 127, max(yuvsize, pitch*h));  // Grey image means decompressor did nothing
+
+	if(tjDecompress(hnd, jpegbuf[0], comptilesize[0], rgbbuf, tilesizex, pitch,
+		tilesizey, ps, flags)==-1)
+		_throwtj("executing tjDecompress()");
+	ITER=0;
+	start=rrtime();
+	do
+	{
+		int tilen=0;
+		for(i=0; i<h; i+=tilesizey)
+		{
+			for(j=0; j<w; j+=tilesizex)
+			{
+				int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
+				if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
+					&rgbbuf[pitch*i+ps*j], tempw, pitch, temph, ps, flags)==-1)
+					_throwtj("executing tjDecompress()");
+				tilen++;
+			}
+		}
+		ITER++;
+	}	while((elapsed=rrtime()-start)<5.);
+	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
+	hnd=NULL;
+	if(quiet)
+	{
+		printsigfig((double)(w*h)/1000000.*(double)ITER/elapsed, 4);
+		printf("\n");
+	}
+	else
+	{
+		printf("D--> Frame rate:           %f fps\n", (double)ITER/elapsed);
+		printf("     Dest. throughput:     %f Megapixels/sec\n",
+			(double)(w*h)/1000000.*(double)ITER/elapsed);
+	}
+	if(yuv==YUVDECODE)
+	{
+		sprintf(tempstr, "%s_%s%s.yuv", filename, _subnames[jpegsub], qualstr);
+		if((outfile=fopen(tempstr, "wb"))==NULL)
+			_throwunix("opening YUV image for output");
+		if(fwrite(rgbbuf, yuvsize, 1, outfile)!=1)
+			_throwunix("writing YUV image");
+		fclose(outfile);  outfile=NULL;
+	}
+	else
+	{
+		if(tilesizex==w && tilesizey==h)
+			sprintf(tempstr, "%s_%s%s_full.%s", filename, _subnames[jpegsub],
+				qualstr, useppm?"ppm":"bmp");
+		else sprintf(tempstr, "%s_%s%s_%dx%d.%s", filename, _subnames[jpegsub],
+			qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
+		if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
+			_throwbmp("saving bitmap");
+		sprintf(strrchr(tempstr, '.'), "-err.%s", useppm?"ppm":"bmp");
+		if(srcbuf)
+		{
+			if(!quiet)
+				printf("Computing compression error and saving to %s.\n", tempstr);
+			if(jpegsub==TJ_GRAYSCALE)
+			{
+				for(j=0; j<h; j++)
+				{
+					for(i=0; i<w*ps; i+=ps)
+					{
+						int y=(int)((double)srcbuf[w*ps*j+i+_rindex[pf]]*0.299
+							+ (double)srcbuf[w*ps*j+i+_gindex[pf]]*0.587
+							+ (double)srcbuf[w*ps*j+i+_bindex[pf]]*0.114 + 0.5);
+						if(y>255) y=255;  if(y<0) y=0;
+						rgbbuf[pitch*j+i+_rindex[pf]]=abs(rgbbuf[pitch*j+i+_rindex[pf]]-y);
+						rgbbuf[pitch*j+i+_gindex[pf]]=abs(rgbbuf[pitch*j+i+_gindex[pf]]-y);
+						rgbbuf[pitch*j+i+_bindex[pf]]=abs(rgbbuf[pitch*j+i+_bindex[pf]]-y);
+					}
+				}
+			}		
+			else
+			{
+				for(j=0; j<h; j++) for(i=0; i<w*ps; i++)
+					rgbbuf[pitch*j+i]=abs(rgbbuf[pitch*j+i]-srcbuf[w*ps*j+i]);
+			}
+			if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
+				_throwbmp("saving bitmap");
+		}
+	}
+
+	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
+	if(rgbbuf && rgbbufalloc) {free(rgbbuf);  rgbbuf=NULL;}
+	return 0;
+
+	bailout:
+	if(outfile) {fclose(outfile);  outfile=NULL;}
+	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
+	if(rgbbuf && rgbbufalloc) {free(rgbbuf);  rgbbuf=NULL;}
+	return -1;
+}
+
+void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
+	char *filename)
 {
 	char tempstr[1024];
 	FILE *outfile=NULL;  tjhandle hnd;
@@ -188,89 +322,9 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 		if(yuv==YUVENCODE) goto bailout;
 
 		// Decompression test
-		if(yuv==YUVDECODE) flags |= TJ_YUV;
-		memset(rgbbuf, 127, max(yuvsize, pitch*h));  // Grey image means decompressor did nothing
-		if((hnd=tjInitDecompress())==NULL)
-			_throwtj("executing tjInitDecompress()");
-		if(tjDecompress(hnd, jpegbuf[0], jpgbufsize, rgbbuf, tilesizex, pitch,
-			tilesizey, ps, flags)==-1)
-			_throwtj("executing tjDecompress()");
-		ITER=0;
-		start=rrtime();
-		do
-		{
-			int tilen=0;
-			for(i=0; i<h; i+=tilesizey)
-			{
-				for(j=0; j<w; j+=tilesizex)
-				{
-					int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-					if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
-						&rgbbuf[pitch*i+ps*j], tempw, pitch, temph, ps, flags)==-1)
-						_throwtj("executing tjDecompress()");
-					tilen++;
-				}
-			}
-			ITER++;
-		}	while((elapsed=rrtime()-start)<5.);
-		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
-		hnd=NULL;
-		if(quiet)
-		{
-			printsigfig((double)(w*h)/1000000.*(double)ITER/elapsed, 4);
-			printf("\n");
-		}
-		else
-		{
-			printf("D--> Frame rate:           %f fps\n", (double)ITER/elapsed);
-			printf("     Dest. throughput:     %f Megapixels/sec\n",
-				(double)(w*h)/1000000.*(double)ITER/elapsed);
-		}
-		if(yuv==YUVDECODE)
-		{
-			sprintf(tempstr, "%s_%sQ%d.yuv", filename, _subnames[jpegsub], qual);
-			if((outfile=fopen(tempstr, "wb"))==NULL)
-				_throwunix("opening YUV image for output");
-			if(fwrite(rgbbuf, yuvsize, 1, outfile)!=1)
-				_throwunix("writing YUV image");
-			fclose(outfile);  outfile=NULL;
-		}
-		else
-		{
-			if(tilesizex==w && tilesizey==h)
-				sprintf(tempstr, "%s_%sQ%d_full.%s", filename, _subnames[jpegsub], qual,
-					useppm?"ppm":"bmp");
-			else sprintf(tempstr, "%s_%sQ%d_%dx%d.%s", filename, _subnames[jpegsub],
-				qual, tilesizex, tilesizey, useppm?"ppm":"bmp");
-			if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
-				_throwbmp("saving bitmap");
-			sprintf(strrchr(tempstr, '.'), "-err.%s", useppm?"ppm":"bmp");
-			if(!quiet)
-				printf("Computing compression error and saving to %s.\n", tempstr);
-			if(jpegsub==TJ_GRAYSCALE)
-			{
-				for(j=0; j<h; j++)
-				{
-					for(i=0; i<w*ps; i+=ps)
-					{
-						int y=(int)((double)srcbuf[w*ps*j+i+_rindex[pf]]*0.299
-							+ (double)srcbuf[w*ps*j+i+_gindex[pf]]*0.587
-							+ (double)srcbuf[w*ps*j+i+_bindex[pf]]*0.114 + 0.5);
-						if(y>255) y=255;  if(y<0) y=0;
-						rgbbuf[pitch*j+i+_rindex[pf]]=abs(rgbbuf[pitch*j+i+_rindex[pf]]-y);
-						rgbbuf[pitch*j+i+_gindex[pf]]=abs(rgbbuf[pitch*j+i+_gindex[pf]]-y);
-						rgbbuf[pitch*j+i+_bindex[pf]]=abs(rgbbuf[pitch*j+i+_bindex[pf]]-y);
-					}
-				}
-			}		
-			else
-			{
-				for(j=0; j<h; j++) for(i=0; i<w*ps; i++)
-					rgbbuf[pitch*j+i]=abs(rgbbuf[pitch*j+i]-srcbuf[w*ps*j+i]);
-			}
-			if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
-				_throwbmp("saving bitmap");
-		}
+		if(decomptest(srcbuf, jpegbuf, comptilesize, rgbbuf, w, h, jpegsub, qual,
+			filename, tilesizex, tilesizey)==-1)
+			goto bailout;
 
 		// Cleanup
 		if(outfile) {fclose(outfile);  outfile=NULL;}
@@ -301,25 +355,15 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 }
 
 
-void dodecomptest(char *filename, int pf, int bu, int useppm,
-	int quiet)
+void dodecomptest(char *filename)
 {
-	char tempstr[1024];
-	FILE *file=NULL;  tjhandle hnd;
-	unsigned char *jpegbuf=NULL, *rgbbuf=NULL;
-	double start, elapsed;
-	int w, h, ITER;
+	FILE *file=NULL;  tjhandle hnd=NULL;
+	unsigned char *jpegbuf=NULL;
+	int w=0, h=0, jpegsub=-1;
 	unsigned long jpgbufsize=0;
-	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
-		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
-		|(fastupsample?TJ_FASTUPSAMPLE:0);
-	int ps=_ps[pf], pitch, jpegsub=-1;
 	char *temp=NULL;
-	int hsf, vsf, pw, ph, cw, ch, ypitch, uvpitch, yuvsize;
 
-	flags |= _flags[pf];
-	if(bu) flags |= TJ_BOTTOMUP;
-	if(yuv==YUVDECODE) flags |= TJ_YUV;
+	useppm=1;
 
 	if((file=fopen(filename, "rb"))==NULL)
 		_throwunix("opening file");
@@ -336,30 +380,22 @@ void dodecomptest(char *filename, int pf, int bu, int useppm,
 	temp=strrchr(filename, '.');
 	if(temp!=NULL) *temp='\0';
 
-	if((hnd=tjInitDecompress())==NULL) _throwtj("executing tjInitDecompress()");
+	if((hnd=tjInitDecompress())==NULL)
+		_throwtj("executing tjInitDecompress()");
 	if(tjDecompressHeader2(hnd, jpegbuf, jpgbufsize, &w, &h, &jpegsub)==-1)
 		_throwtj("executing tjDecompressHeader2()");
-
-	hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
-	pw=PAD(w, hsf), ph=PAD(h, vsf);
-	cw=pw/hsf, ch=ph/vsf;
-	ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
-	yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
-
-	pitch=w*ps;
+	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
+	hnd=NULL;
 
 	if(quiet)
 	{
 		printf("All performance values in Mpixels/sec\n\n");
-		printf("Bitmap\tBitmap\tImage Size\tDecomp\n"),
-		printf("Format\tOrder\t X    Y  \tPerf\n\n");
-		printf("%s\t%s\t%-4d %-4d\t", _pfname[pf], bu?"BU":"TD", w, h);
+		printf("Bitmap\tBitmap\tJPEG\tImage Size\tDecomp\n"),
+		printf("Format\tOrder\tFormat\t  X    Y  \tPerf\n\n");
+		printf("%s\t%s\t%s\t%-4d  %-4d\t", _pfname[pf], bu?"BU":"TD",
+			_subnamel[jpegsub], w, h);
 	}
-
-	if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h)))==NULL)
-		_throwunix("allocating image buffer");
-
-	if(!quiet)
+	else
 	{
 		if(yuv==YUVDECODE)
 			printf("\n>>>>>  JPEG --> YUV %s  <<<<<\n", _subnamel[jpegsub]);
@@ -369,51 +405,12 @@ void dodecomptest(char *filename, int pf, int bu, int useppm,
 		printf("\nImage size: %d x %d\n", w, h);
 	}
 
-	memset(rgbbuf, 127, max(yuvsize, pitch*h));  // Grey image means decompressor did nothing
-	if(tjDecompress(hnd, jpegbuf, jpgbufsize, rgbbuf, w, pitch, h, ps, flags)==-1)
-		_throwtj("executing tjDecompress()");
-	ITER=0;
-	start=rrtime();
-	do
-	{
-		if(tjDecompress(hnd, jpegbuf, jpgbufsize, rgbbuf, w, pitch, h, ps, flags)
-			==-1)
-			_throwtj("executing tjDecompress()");
-		ITER++;
-	}	while((elapsed=rrtime()-start)<5.);
-	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
-	hnd=NULL;
-	if(quiet)
-	{
-		printsigfig((double)(w*h)/1000000.*(double)ITER/elapsed, 4);
-		printf("\n");
-	}
-	else
-	{
-		printf("D--> Frame rate:           %f fps\n", (double)ITER/elapsed);
-		printf("     Dest. throughput:     %f Megapixels/sec\n",
-			(double)(w*h)/1000000.*(double)ITER/elapsed);
-	}
-	sprintf(tempstr, "%s_full.%s", filename, useppm?"ppm":"bmp");
-	if(yuv==YUVDECODE)
-	{
-		sprintf(tempstr, "%s_%s.yuv", filename, _subnames[jpegsub]);
-		if((file=fopen(tempstr, "wb"))==NULL)
-			_throwunix("opening YUV image for output");
-		if(fwrite(rgbbuf, yuvsize, 1, file)!=1)
-			_throwunix("writing YUV image");
-		fclose(file);  file=NULL;
-	}
-	else
-	{
-		if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
-			_throwbmp("saving bitmap");
-	}
+	decomptest(NULL, &jpegbuf, &jpgbufsize, NULL, w, h, jpegsub, 0, filename, w,
+		h);
 
 	bailout:
 	if(file) {fclose(file);  file=NULL;}
 	if(jpegbuf) {free(jpegbuf);  jpegbuf=NULL;}
-	if(rgbbuf) {free(rgbbuf);  rgbbuf=NULL;}
 	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
 	return;
 }
@@ -447,10 +444,9 @@ void usage(char *progname)
 
 int main(int argc, char *argv[])
 {
-	unsigned char *bmpbuf=NULL;  int w, h, i, useppm=0;
-	int qual, dotile=0, quiet=0, hiqual=-1;  char *temp;
-	int pf=BMP_BGR;
-	int bu=0, minarg=2;
+	unsigned char *bmpbuf=NULL;  int w, h, i;
+	int qual, hiqual=-1;  char *temp;
+	int minarg=2;
 
 	printf("\n");
 
@@ -553,20 +549,20 @@ int main(int argc, char *argv[])
 
 	if(decomponly)
 	{
-		dodecomptest(argv[1], pf, bu, 1, quiet);
+		dodecomptest(argv[1]);
 		goto bailout;
 	}
 	for(i=hiqual; i>=qual; i--)
-		dotest(bmpbuf, w, h, pf, bu, TJ_GRAYSCALE, i, argv[1], dotile, useppm, quiet);
+		dotest(bmpbuf, w, h, TJ_GRAYSCALE, i, argv[1]);
 	if(quiet) printf("\n");
 	for(i=hiqual; i>=qual; i--)
-		dotest(bmpbuf, w, h, pf, bu, TJ_420, i, argv[1], dotile, useppm, quiet);
+		dotest(bmpbuf, w, h, TJ_420, i, argv[1]);
 	if(quiet) printf("\n");
 	for(i=hiqual; i>=qual; i--)
-		dotest(bmpbuf, w, h, pf, bu, TJ_422, i, argv[1], dotile, useppm, quiet);
+		dotest(bmpbuf, w, h, TJ_422, i, argv[1]);
 	if(quiet) printf("\n");
 	for(i=hiqual; i>=qual; i--)
-		dotest(bmpbuf, w, h, pf, bu, TJ_444, i, argv[1], dotile, useppm, quiet);
+		dotest(bmpbuf, w, h, TJ_444, i, argv[1]);
 
 	bailout:
 	if(bmpbuf) free(bmpbuf);

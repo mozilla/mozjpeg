@@ -1,6 +1,6 @@
 /* Copyright (C)2004 Landmark Graphics Corporation
  * Copyright (C)2005, 2006 Sun Microsystems, Inc.
- * Copyright (C)2009 D. R. Commander
+ * Copyright (C)2009-2011 D. R. Commander
  *
  * This library is free software and may be redistributed and/or modified under
  * the terms of the wxWindows Library License, Version 3.1 or (at your option)
@@ -117,8 +117,9 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
   [INPUT] pitch = bytes per line of the source image (width*pixelsize if the
      bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
      is padded to the nearest 32-bit boundary, such as is the case for Windows
-     bitmaps.  You can also be clever and use this parameter to skip lines, etc.,
-     as long as the pitch is greater than 0.)
+     bitmaps.  You can also be clever and use this parameter to skip lines,
+     etc.  Setting this parameter to 0 is the equivalent of setting it to
+     width*pixelsize;
   [INPUT] height = height (in pixels) of the source image
   [INPUT] pixelsize = size (in bytes) of each pixel in the source image
      RGBA and BGRA: 4, RGB and BGR: 3, Grayscale: 1
@@ -216,8 +217,9 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
   [INPUT] pitch = bytes per line of the destination image (width*pixelsize if the
      bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
      is padded to the nearest 32-bit boundary, such as is the case for Windows
-     bitmaps.  You can also be clever and use this parameter to skip lines, etc.,
-     as long as the pitch is greater than 0.)
+     bitmaps.  You can also be clever and use this parameter to skip lines,
+     etc.  Setting this parameter to 0 is the equivalent of setting it to
+     width*pixelsize.
   [INPUT] height = height (in pixels) of the destination image
   [INPUT] pixelsize = size (in bytes) of each pixel in the destination image
      RGBA/RGBx and BGRA/BGRx: 4, RGB and BGR: 3, Grayscale: 1

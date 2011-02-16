@@ -427,7 +427,7 @@ void usage(char *progname)
 	printf("       Test performance of the codec when the image is encoded\n");
 	printf("       as separate tiles of varying sizes.\n\n");
 	printf("       [-forcemmx] [-forcesse] [-forcesse2] [-forcesse3]\n");
-	printf("       Force MMX, SSE, or SSE2 code paths in Intel codec\n\n");
+	printf("       Force MMX, SSE, or SSE2 code paths in TurboJPEG codec\n\n");
 	printf("       [-rgb | -bgr | -rgba | -bgra | -abgr | -argb]\n");
 	printf("       Test the specified color conversion path in the codec (default: BGR)\n\n");
 	printf("       [-fastupsample]\n");

@@ -409,7 +409,10 @@ void dodecomptest(char *filename)
 		else
 			printf("\n>>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
 				bu?"Bottom-up":"Top-down");
-		printf("\nImage size: %d x %d\n", w, h);
+		printf("\nImage size: %d x %d", w, h);
+		if(scalefactor!=1) printf(" --> %d x %d", (w+scalefactor-1)/scalefactor,
+			(h+scalefactor-1)/scalefactor);
+		printf("\n");
 	}
 
 	decomptest(NULL, &jpegbuf, &jpgbufsize, NULL, w, h, jpegsub, 0, filename, w,

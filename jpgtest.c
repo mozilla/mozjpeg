@@ -33,7 +33,8 @@
 
 enum {YUVENCODE=1, YUVDECODE};
 int forcemmx=0, forcesse=0, forcesse2=0, forcesse3=0, fastupsample=0,
-	decomponly=0, yuv=0, quiet=0, dotile=0, pf=BMP_BGR, bu=0,  useppm=0;
+	decomponly=0, yuv=0, quiet=0, dotile=0, pf=BMP_BGR, bu=0, useppm=0,
+	scalefactor=1;
 const int _ps[BMPPIXELFORMATS]={3, 4, 3, 4, 4, 4};
 const int _flags[BMPPIXELFORMATS]={0, 0, TJ_BGR, TJ_BGR,
 	TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST};
@@ -77,12 +78,13 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	int i, j, ITER, rgbbufalloc=0;
 	double start, elapsed;
 	int ps=_ps[pf];
-	int pitch=w*ps;
 	int hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
 	int pw=PAD(w, hsf), ph=PAD(h, vsf);
 	int cw=pw/hsf, ch=ph/vsf;
 	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 	int yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
+	int _w=(w+scalefactor-1)/scalefactor, _h=(h+scalefactor-1)/scalefactor;
+	int pitch=_w*ps;
 
 	if(qual>0)
 	{
@@ -98,11 +100,11 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 
 	if(rgbbuf==NULL)
 	{
-		if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h))) == NULL)
+		if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*_h))) == NULL)
 			_throwunix("allocating image buffer");
 		rgbbufalloc=1;
 	}
-	memset(rgbbuf, 127, max(yuvsize, pitch*h));  // Grey image means decompressor did nothing
+	memset(rgbbuf, 127, max(yuvsize, pitch*_h));  // Grey image means decompressor did nothing
 
 	if(tjDecompress(hnd, jpegbuf[0], comptilesize[0], rgbbuf, tilesizex, pitch,
 		tilesizey, ps, flags)==-1)
@@ -117,9 +119,10 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 			for(j=0; j<w; j+=tilesizex)
 			{
 				int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-				if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
-					&rgbbuf[pitch*i+ps*j], tempw, pitch, temph, ps, flags)==-1)
-					_throwtj("executing tjDecompress()");
+				if(tjDecompress2(hnd, jpegbuf[tilen], comptilesize[tilen],
+					&rgbbuf[pitch*i+ps*j], pitch, ps, 1, (flags&TJ_YUV)? 1:scalefactor,
+					flags)==-1)
+					_throwtj("executing tjDecompress2()");
 				tilen++;
 			}
 		}
@@ -159,10 +162,10 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 		}
 		else sprintf(tempstr, "%s_%s%s_%dx%d.%s", filename, _subnames[jpegsub],
 			qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
-		if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)
+		if(savebmp(tempstr, rgbbuf, _w, _h, pf, pitch, bu)==-1)
 			_throwbmp("saving bitmap");
 		sprintf(strrchr(tempstr, '.'), "-err.%s", useppm?"ppm":"bmp");
-		if(srcbuf)
+		if(srcbuf && scalefactor==1)
 		{
 			if(!quiet)
 				printf("Computing compression error and saving to %s.\n", tempstr);
@@ -422,26 +425,26 @@ void dodecomptest(char *filename)
 
 void usage(char *progname)
 {
-	printf("USAGE: %s <Inputfile (BMP|PPM))> <%% Quality>\n", progname);
-	printf("       %s <Inputfile (JPG))>\n\n", progname);
-	printf("       [-tile]\n");
-	printf("       Test performance of the codec when the image is encoded\n");
-	printf("       as separate tiles of varying sizes.\n\n");
-	printf("       [-forcemmx] [-forcesse] [-forcesse2] [-forcesse3]\n");
-	printf("       Force MMX, SSE, or SSE2 code paths in Intel codec\n\n");
-	printf("       [-rgb | -bgr | -rgba | -bgra | -abgr | -argb]\n");
-	printf("       Test the specified color conversion path in the codec (default: BGR)\n\n");
-	printf("       [-fastupsample]\n");
-	printf("       Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
-	printf("       YUV decoding in libjpeg decompressor\n\n");
-	printf("       [-quiet]\n");
-	printf("       Output in tabular rather than verbose format\n\n");
-	printf("       [-yuvencode]\n");
-	printf("       Encode RGB input as planar YUV rather than compressing as JPEG\n\n");
-	printf("       [-yuvdecode]\n");
-	printf("       Decode JPEG image to planar YUV rather than RGB\n\n");
-	printf("       NOTE: If the quality is specified as a range, i.e. 90-100, a separate\n");
-	printf("       test will be performed for all quality values in the range.\n");
+	printf("USAGE: %s\n", progname);
+	printf("       <Inputfile (BMP|PPM)> <%% Quality> [options]\n\n");
+	printf("       %s\n", progname);
+	printf("       <Inputfile (JPG)> [options]\n\n");
+	printf("Options:\n\n");
+	printf("-tile = Test performance of the codec when the image is encoded as separate\n");
+	printf("     tiles of varying sizes.\n");
+	printf("-forcemmx, -forcesse, -forcesse2, -forcesse3 =\n");
+	printf("     Force MMX, SSE, or SSE2 code paths in TurboJPEG codec\n");
+	printf("-rgb, -bgr, -rgba, -bgra, -abgr, -argb =\n");
+	printf("     Test the specified color conversion path in the codec (default: BGR)\n");
+	printf("-fastupsample = Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
+	printf("     YUV decoding in libjpeg decompressor\n");
+	printf("-quiet = Output results in tabular rather than verbose format\n");
+	printf("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG\n");
+	printf("-yuvdecode = Decode JPEG image to planar YUV rather than RGB\n");
+	printf("-scale 1/N = scale down the width/height of the decompressed JPEG image by a\n");
+	printf("     factor of N (N = 1, 2, 4, or 8}\n\n");
+	printf("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate\n");
+	printf("test will be performed for all quality values in the range.\n\n");
 	exit(1);
 }
 
@@ -533,7 +536,22 @@ int main(int argc, char *argv[])
 			if(!stricmp(argv[i], "-argb")) pf=BMP_ARGB;
 			if(!stricmp(argv[i], "-bottomup")) bu=1;
 			if(!stricmp(argv[i], "-quiet")) quiet=1;
+			if(!stricmp(argv[i], "-scale") && i<argc-1)
+			{
+				int temp1=0, temp2=0;
+				if(sscanf(argv[++i], "%d/%d", &temp1, &temp2)!=2
+					|| temp1!=1 || temp2<1 || temp2>8 || (temp2&(temp2-1))!=0)
+					usage(argv[0]);
+				scalefactor=temp2;
+			}
 		}
+	}
+
+	if(scalefactor!=1 && dotile)
+	{
+		printf("Disabling tiled compression/decompression tests, because these tests do not\n");
+		printf("work when scaled decompression is enabled.\n");
+		dotile=0;
 	}
 
 	if(!decomponly)

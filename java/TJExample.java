@@ -38,13 +38,33 @@ public class TJExample {
 
   public static final String classname=new TJExample().getClass().getName();
 
+  private static void usage() {
+    System.out.println("\nUSAGE: java "+classname+" <Input file> <Output file> [options]\n");
+    System.out.println("Options:\n");
+    System.out.println("-scale 1/N = scale the width/height of the output image by a factor of 1/N");
+    System.out.println("             (N = 1, 2, 4, or 8}\n");
+    System.exit(1);
+  }
+
   public static void main(String argv[]) {
 
     try {
 
       if(argv.length<2) {
-        System.out.println("USAGE: java "+classname+" <Input file> <Output file>");
-        System.exit(1);
+        usage();
+      }
+
+      int scalefactor=1;
+      if(argv.length>2) {
+        for(int i=2; i<argv.length; i++) {
+          if(argv[i].equalsIgnoreCase("-scale") && i<argv.length-1) {
+            String [] scalearg=argv[++i].split("/");      
+            if(scalearg.length!=2 || Integer.parseInt(scalearg[0])!=1
+              || (scalefactor=Integer.parseInt(scalearg[1]))<1
+              || scalefactor>8 || (scalefactor&(scalefactor-1))!=0)
+              usage();
+          }
+        }
       }
 
       File file=new File(argv[0]);
@@ -68,9 +88,18 @@ public class TJExample {
         case TJ.GRAYSCALE:  System.out.println("Grayscale");  break;
         default:  System.out.println("Unknown subsampling");  break;
       }
+
+      if(scalefactor!=1) {
+        tji.width=(tji.width+scalefactor-1)/scalefactor;
+        tji.height=(tji.height+scalefactor-1)/scalefactor;
+        System.out.println("Dest. Image:  "+tji.width+" x "+tji.height
+          +" pixels");
+      }
+
+
       byte [] tmpbuf=new byte[tji.width*tji.height*3];
-      tjd.decompress(inputbuf, inputsize, tmpbuf, tji.width, tji.width*3,
-        tji.height, 3, TJ.BOTTOMUP);
+      tjd.decompress(inputbuf, inputsize, tmpbuf, tji.width*3,
+        3, 1, scalefactor, TJ.BOTTOMUP);
       tjd.close();
 
       TJCompressor tjc=new TJCompressor();

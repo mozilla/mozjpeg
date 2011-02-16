@@ -106,8 +106,8 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	}
 	memset(rgbbuf, 127, max(yuvsize, pitch*_h));  // Grey image means decompressor did nothing
 
-	if(tjDecompress(hnd, jpegbuf[0], comptilesize[0], rgbbuf, tilesizex, pitch,
-		tilesizey, ps, flags)==-1)
+	if(tjDecompress2(hnd, jpegbuf[0], comptilesize[0], rgbbuf, pitch, ps, 1,
+		(flags&TJ_YUV)? 1:scalefactor, flags)==-1)
 		_throwtj("executing tjDecompress()");
 	ITER=0;
 	start=rrtime();

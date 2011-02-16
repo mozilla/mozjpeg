@@ -150,8 +150,13 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	else
 	{
 		if(tilesizex==w && tilesizey==h)
-			sprintf(tempstr, "%s_%s%s_full.%s", filename, _subnames[jpegsub],
-				qualstr, useppm?"ppm":"bmp");
+		{
+			if(decomponly)
+				sprintf(tempstr, "%s_full.%s", filename, useppm?"ppm":"bmp");
+			else
+				sprintf(tempstr, "%s_%s%s_full.%s", filename, _subnames[jpegsub],
+					qualstr, useppm?"ppm":"bmp");
+		}
 		else sprintf(tempstr, "%s_%s%s_%dx%d.%s", filename, _subnames[jpegsub],
 			qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
 		if(savebmp(tempstr, rgbbuf, w, h, pf, pitch, bu)==-1)

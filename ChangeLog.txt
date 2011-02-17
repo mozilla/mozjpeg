@@ -3,6 +3,9 @@
 
 [1] Added further protections against invalid Huffman codes.
 
+[2] Fixed visual artifacts in grayscale JPEG compression caused by a typo in
+the RGB-to-chrominance lookup tables.
+
 
 1.0.1
 =====

@@ -142,6 +142,8 @@ test: testclean all
 	cmp $(srcdir)/testimgint.jpg testoutint.jpg
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
+	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
 	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
 if WITH_SIMD
 	cmp $(srcdir)/testimgflt.jpg testoutflt.jpg

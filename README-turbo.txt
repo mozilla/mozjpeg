@@ -2,22 +2,23 @@
 **     Background
 *******************************************************************************
 
-libjpeg-turbo is a high-speed version of libjpeg for x86 and x86-64 processors
-which uses SIMD instructions (MMX, SSE2, etc.) to accelerate baseline JPEG
-compression and decompression.  libjpeg-turbo is generally 2-4x as fast
-as the unmodified version of libjpeg v6b, all else being equal.
+libjpeg-turbo is a derivative of libjpeg which uses SIMD instructions (MMX,
+SSE2, etc.) to accelerate baseline JPEG compression and decompression on x86
+and x86-64 systems.  On such systems, libjpeg-turbo is generally 2-4x as fast
+as the unmodified version of libjpeg, all else being equal.
 
 libjpeg-turbo was originally based on libjpeg/SIMD by Miyasaka Masaru, but
-the TigerVNC and VirtualGL projects made numerous enhancements to the codec,
-including improved support for Mac OS X, 64-bit support, support for 32-bit
-and big endian pixel formats, accelerated Huffman encoding/decoding, and
-various bug fixes.  The goal was to produce a fully open source codec that
-could replace the partially closed source TurboJPEG/IPP codec used by VirtualGL
-and TurboVNC.  libjpeg-turbo generally performs in the range of 80-120% of
-TurboJPEG/IPP.  It is faster in some areas but slower in others.
+the TigerVNC and VirtualGL projects made numerous enhancements to the codec in
+2009, including improved support for Mac OS X, 64-bit support, support for
+32-bit and big endian pixel formats (RGBX, XBGR, etc.), accelerated Huffman
+encoding/decoding, and various bug fixes.  The goal was to produce a fully open
+source codec that could replace the partially closed source TurboJPEG/IPP codec
+used by VirtualGL and TurboVNC.  libjpeg-turbo generally performs in the range
+of 80-120% of TurboJPEG/IPP.  It is faster in some areas but slower in others.
 
-It was decided to split libjpeg-turbo into a separate SDK so that other
-projects could take advantage of this technology.  The libjpeg-turbo shared
+In early 2010, libjpeg-turbo spun off into its own independent project, with
+the goal of making high-speed JPEG compression/decompression technology
+available to a broader range of users and developers.  The libjpeg-turbo shared
 libraries can be used as drop-in replacements for libjpeg on most systems.
 
 

@@ -3,13 +3,17 @@
 
 [1] The algorithm used by the SIMD quantization function cannot produce correct
 results when the JPEG quality is >= 98 and the fast integer forward DCT is
-used.  Thus, the non-SIMD quantization function is now used for those cases.
+used.  Thus, the non-SIMD quantization function is now used for those cases,
+and libjpeg-turbo should now produce identical output to libjpeg v6b in all
+cases.
 
 [2] Despite the above, the fast integer forward DCT still degrades somewhat for
 JPEG qualities greater than 95, so TurboJPEG/OSS will now automatically use the
 slow integer forward DCT when generating JPEG images of quality 96 or greater.
 This reduces compression performance by as much as 15% for these high-quality
 images but is necessary to ensure that the images are perceptually lossless.
+It also ensures that the library can avoid the performance pitfall created by
+[1].
 
 [3] Ported jpgtest.cxx to pure C to avoid the need for a C++ compiler.
 

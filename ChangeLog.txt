@@ -1,15 +1,19 @@
 1.1.0
 =====
 
-[1] Since the fast integer forward DCT seems to degrade for JPEG qualities
-greater than 95, TurboJPEG/OSS will now automatically use the slow integer
-forward DCT when generating JPEG images of quality 96 or greater.  This
-reduces compression performance by as much as 15% for these high-quality images
-but is necessary to ensure that the images are perceptually lossless.
+[1] The algorithm used by the SIMD quantization function cannot produce correct
+results when the JPEG quality is >= 98 and the fast integer forward DCT is
+used.  Thus, the non-SIMD quantization function is now used for those cases.
 
-[2] Ported jpgtest.cxx to pure C to avoid the need for a C++ compiler.
+[2] Despite the above, the fast integer forward DCT still degrades somewhat for
+JPEG qualities greater than 95, so TurboJPEG/OSS will now automatically use the
+slow integer forward DCT when generating JPEG images of quality 96 or greater.
+This reduces compression performance by as much as 15% for these high-quality
+images but is necessary to ensure that the images are perceptually lossless.
 
-[3] Fixed visual artifacts in grayscale JPEG compression caused by a typo in
+[3] Ported jpgtest.cxx to pure C to avoid the need for a C++ compiler.
+
+[4] Fixed visual artifacts in grayscale JPEG compression caused by a typo in
 the RGB-to-chrominance lookup tables.
 
 

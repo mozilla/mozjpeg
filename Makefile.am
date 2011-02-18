@@ -103,10 +103,10 @@ test: testclean all
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
 	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgint.jpg testoutint.jpg
 	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
+	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
 	cmp $(srcdir)/testimgflt.jpg testoutflt.jpg
 	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
 	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
@@ -128,10 +128,10 @@ test: testclean all
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
 	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgint.jpg testoutint.jpg
 	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
+	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
 	cmp $(srcdir)/testimgflt-nosimd.jpg testoutflt.jpg
 	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
 	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg

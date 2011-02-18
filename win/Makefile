@@ -248,9 +248,11 @@ test: testclean $(ODIR)/cjpeg.exe $(ODIR)/djpeg.exe $(ODIR)/jpegtran.exe \
 	cd $(ODIR);	./jpegut
 	$(ODIR)/cjpeg -dct int -outfile $(ODIR)/testoutint.jpg testorig.ppm
 	$(ODIR)/cjpeg -dct fast -opt -outfile $(ODIR)/testoutfst.jpg testorig.ppm
+	$(ODIR)/cjpeg -dct fast -quality 100 -opt -outfile $(ODIR)/testoutfst100.jpg testorig.ppm
 	$(ODIR)/cjpeg -dct float -outfile $(ODIR)/testoutflt.jpg testorig.ppm
 	cmp testimgint.jpg $(ODIR)/testoutint.jpg
 	cmp testimgfst.jpg $(ODIR)/testoutfst.jpg
+	cmp testimgfst100.jpg $(ODIR)/testoutfst100.jpg
 	cmp testimgflt.jpg $(ODIR)/testoutflt.jpg
 	$(ODIR)/djpeg -dct int -fast -ppm -outfile $(ODIR)/testoutint.ppm testorig.jpg
 	$(ODIR)/djpeg -dct fast -ppm -outfile $(ODIR)/testoutfst.ppm testorig.jpg

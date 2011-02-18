@@ -32,7 +32,7 @@ the RGB-to-chrominance lookup tables.
 1.0.90 (1.1 beta1)
 ==================
 
-[1] Added emulation of the libjpeg v7 and v8b APIs and ABIs.  See
+[1] Added emulation of the libjpeg v7 and v8 APIs and ABIs.  See
 README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
 
 [2] Created a new CMake-based build system for the Visual C++ and MinGW builds.

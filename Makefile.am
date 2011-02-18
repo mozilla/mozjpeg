@@ -127,6 +127,8 @@ test: testclean all
 	./jpegut
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
+	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
 	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgint.jpg testoutint.jpg
 	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg

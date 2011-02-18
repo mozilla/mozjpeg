@@ -108,7 +108,7 @@ if test "x$JPEG_LIB_VERSION" = "x"; then
     AC_ARG_WITH([jpeg7],
         AC_HELP_STRING([--with-jpeg7], [Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
     AC_ARG_WITH([jpeg8],
-        AC_HELP_STRING([--with-jpeg8], [Emulate libjpeg v8b API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
+        AC_HELP_STRING([--with-jpeg8], [Emulate libjpeg v8 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
     if test "x${with_jpeg8}" = "xyes"; then
         JPEG_LIB_VERSION=80
     else

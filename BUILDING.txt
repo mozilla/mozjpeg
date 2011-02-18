@@ -98,17 +98,17 @@ This will generate the following files under .libs/
       Development stub for TurboJPEG/OSS shared library
 
 {version} is 62.0.0, 7.0.0, or 8.0.2, depending on whether libjpeg v6b
-(default), v7, or v8b emulation is enabled.  If using Cygwin, {version} is
+(default), v7, or v8 emulation is enabled.  If using Cygwin, {version} is
 62, 7, or 8.
 
 
-libjpeg v7 or v8b Emulation
----------------------------
+libjpeg v7 or v8 Emulation
+--------------------------
 
 Add --with-jpeg7 to the configure command line to build a version of
 libjpeg-turbo that is compatible with libjpeg v7.  Add --with-jpeg8 to the
 configure command to build a version of libjpeg-turbo that is compatible with
-libjpeg v8b.  See README-turbo.txt for more information on libjpeg v7 and v8b
+libjpeg v8.  See README-turbo.txt for more information on libjpeg v7 and v8
 emulation.
 
 
@@ -117,7 +117,7 @@ Arithmetic Coding Support
 
 Since the patent on arithmetic coding has expired, this functionality has been
 included in this release of libjpeg-turbo.  libjpeg-turbo's implementation is
-based on the implementation in libjpeg v8b, but it works when emulating libjpeg
+based on the implementation in libjpeg v8, but it works when emulating libjpeg
 v7 or v6b as well.  The default is to enable both arithmetic encoding and
 decoding, but those who have philosophical objections to arithmetic coding can
 add --without-arith-enc or --without-arith-dec to the configure command line to
@@ -365,7 +365,7 @@ The following files will be generated under {build_directory}:
       Import library for TurboJPEG/OSS DLL
 
 {version} is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or
-v8b emulation is enabled.
+v8 emulation is enabled.
 
 
 Visual C++ (IDE)
@@ -399,7 +399,7 @@ This will generate the following files under {build_directory}:
 
 {configuration} is Debug, Release, RelWithDebInfo, or MinSizeRel, depending on
 the configuration you built in the IDE, and {version} is 62, 7, or 8,
-depending on whether libjpeg v6b (default), v7, or v8b emulation is enabled.
+depending on whether libjpeg v6b (default), v7, or v8 emulation is enabled.
 
 
 MinGW
@@ -425,7 +425,7 @@ This will generate the following files under {build_directory}
       Import library for TurboJPEG/OSS DLL
 
 {version} is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or
-v8b emulation is enabled.
+v8 emulation is enabled.
 
 
 Debug Build
@@ -436,13 +436,13 @@ NMake, remove "-DCMAKE_BUILD_TYPE=Release" (Debug builds are the default with
 NMake.)
 
 
-libjpeg v7 or v8b Emulation
----------------------------
+libjpeg v7 or v8 Emulation
+--------------------------
 
 Add "-DWITH_JPEG7=1" to the cmake command line to build a version of
 libjpeg-turbo that is compatible with libjpeg v7.  Add "-DWITH_JPEG8=1" to the
 cmake command to build a version of libjpeg-turbo that is compatible with
-libjpeg v8b.  See README-turbo.txt for more information on libjpeg v7 and v8b
+libjpeg v8.  See README-turbo.txt for more information on libjpeg v7 and v8
 emulation.
 
 
@@ -451,7 +451,7 @@ Arithmetic Coding Support
 
 Since the patent on arithmetic coding has expired, this functionality has been
 included in this release of libjpeg-turbo.  libjpeg-turbo's implementation is
-based on the implementation in libjpeg v8b, but it works when emulating libjpeg
+based on the implementation in libjpeg v8, but it works when emulating libjpeg
 v7 or v6b as well.  The default is to enable both arithmetic encoding and
 decoding, but those who have philosophical objections to arithmetic coding can
 add "-DWITH_ARITH_ENC=0" or "-DWITH_ARITH_DEC=0" to the cmake command line to

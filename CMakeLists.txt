@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(libjpeg-turbo)
+project(libjpeg-turbo C)
 set(VERSION 1.1.0)
 
 if(MINGW OR CYGWIN)

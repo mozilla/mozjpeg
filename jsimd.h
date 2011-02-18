@@ -13,8 +13,10 @@
 
 #ifdef NEED_SHORT_EXTERNAL_NAMES
 #define jsimd_can_rgb_ycc                 jSCanRgbYcc
+#define jsimd_can_rgb_gray                jSCanRgbGry
 #define jsimd_can_ycc_rgb                 jSCanYccRgb
 #define jsimd_rgb_ycc_convert             jSRgbYccConv
+#define jsimd_rgb_gray_convert            jSRgbGryConv
 #define jsimd_ycc_rgb_convert             jSYccRgbConv
 #define jsimd_can_h2v2_downsample         jSCanH2V2Down
 #define jsimd_can_h2v1_downsample         jSCanH2V1Down
@@ -35,9 +37,14 @@
 #endif /* NEED_SHORT_EXTERNAL_NAMES */
 
 EXTERN(int) jsimd_can_rgb_ycc JPP((void));
+EXTERN(int) jsimd_can_rgb_gray JPP((void));
 EXTERN(int) jsimd_can_ycc_rgb JPP((void));
 
 EXTERN(void) jsimd_rgb_ycc_convert
+        JPP((j_compress_ptr cinfo,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+EXTERN(void) jsimd_rgb_gray_convert
         JPP((j_compress_ptr cinfo,
              JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
              JDIMENSION output_row, int num_rows));

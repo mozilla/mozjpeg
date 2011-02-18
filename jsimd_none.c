@@ -25,6 +25,12 @@ jsimd_can_rgb_ycc (void)
 }
 
 GLOBAL(int)
+jsimd_can_rgb_gray (void)
+{
+  return 0;
+}
+
+GLOBAL(int)
 jsimd_can_ycc_rgb (void)
 {
   return 0;
@@ -34,6 +40,13 @@ GLOBAL(void)
 jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                        JDIMENSION output_row, int num_rows)
+{
+}
+
+GLOBAL(void)
+jsimd_rgb_gray_convert (j_compress_ptr cinfo,
+                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+                        JDIMENSION output_row, int num_rows)
 {
 }
 

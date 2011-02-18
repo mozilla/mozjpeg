@@ -148,6 +148,8 @@ if WITH_SIMD
 else
 	cmp $(srcdir)/testimgflt-nosimd.jpg testoutflt.jpg
 endif
+	./cjpeg -dct int -grayscale -outfile testoutgray.jpg $(srcdir)/testorig.ppm
+	cmp $(srcdir)/testimggray.jpg testoutgray.jpg
 	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimgint.ppm testoutint.ppm
 	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg

@@ -11,7 +11,7 @@ if SIMD_X86_64
 libsimd_la_SOURCES = jsimd_x86_64.c \
 	jsimd.h jsimdcfg.inc.h \
 	jsimdext.inc jcolsamp.inc jdct.inc \
-	jfsseflt-64.asm \
+	jfsseflt-64.asm jcgrass2-64.asm \
 	jccolss2-64.asm jdcolss2-64.asm \
 	jcsamss2-64.asm jdsamss2-64.asm jdmerss2-64.asm \
 	jcqnts2i-64.asm jfss2fst-64.asm jfss2int-64.asm \
@@ -20,6 +20,7 @@ libsimd_la_SOURCES = jsimd_x86_64.c \
 
 jccolss2-64.lo: jcclrss2-64.asm
 jdcolss2-64.lo: jdclrss2-64.asm
+jcgrass2-64.lo: jcgryss2-64.asm
 jdmerss2-64.lo: jdmrgss2-64.asm
 endif
 
@@ -29,20 +30,22 @@ libsimd_la_SOURCES = jsimd_i386.c \
 	jsimd.h jsimdcfg.inc.h \
 	jsimdext.inc jcolsamp.inc jdct.inc \
 	jsimdcpu.asm \
-	jccolmmx.asm jdcolmmx.asm \
+	jccolmmx.asm jdcolmmx.asm jcgrammx.asm \
 	jcsammmx.asm jdsammmx.asm jdmermmx.asm \
 	jcqntmmx.asm jfmmxfst.asm jfmmxint.asm \
 	jimmxred.asm jimmxint.asm jimmxfst.asm \
 	jcqnt3dn.asm jf3dnflt.asm ji3dnflt.asm \
 	jcqntsse.asm jfsseflt.asm jisseflt.asm \
-	jccolss2.asm jdcolss2.asm \
+	jccolss2.asm jdcolss2.asm jcgrass2.asm \
 	jcsamss2.asm jdsamss2.asm jdmerss2.asm \
 	jcqnts2i.asm jfss2fst.asm jfss2int.asm \
 	jiss2red.asm jiss2int.asm jiss2fst.asm \
 	jcqnts2f.asm jiss2flt.asm
 
 jccolmmx.lo: jcclrmmx.asm
+jcgrammx.lo: jcgrymmx.asm
 jccolss2.lo: jcclrss2.asm
+jcgrass2.lo: jcgryss2.asm
 jdcolmmx.lo: jdclrmmx.asm
 jdcolss2.lo: jdclrss2.asm
 jdmermmx.lo: jdmrgmmx.asm

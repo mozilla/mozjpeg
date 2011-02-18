@@ -2,7 +2,7 @@
  * jsimd_x86_64.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009 D. R. Commander
+ * Copyright 2009-2011 D. R. Commander
  * 
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.

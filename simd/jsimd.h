@@ -2,6 +2,7 @@
  * simd/jsimd.h
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+ * Copyright 2011 D. R. Commander
  * 
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.

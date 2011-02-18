@@ -330,7 +330,7 @@ add_custom_target(installer
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static
   SOURCES libjpeg-turbo.nsi)
 
-install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
+install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom jpgtest
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

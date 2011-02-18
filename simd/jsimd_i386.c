@@ -84,6 +84,28 @@ jsimd_can_rgb_ycc (void)
 }
 
 GLOBAL(int)
+jsimd_can_rgb_gray (void)
+{
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_rgb_gray_convert_sse2))
+    return 1;
+  if (simd_support & JSIMD_MMX)
+    return 1;
+
+  return 0;
+}
+
+GLOBAL(int)
 jsimd_can_ycc_rgb (void)
 {
   init_simd();
@@ -147,6 +169,55 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
 
   if ((simd_support & JSIMD_SSE2) &&
       IS_ALIGNED_SSE(jconst_rgb_ycc_convert_sse2))
+    sse2fct(cinfo->image_width, input_buf,
+        output_buf, output_row, num_rows);
+  else if (simd_support & JSIMD_MMX)
+    mmxfct(cinfo->image_width, input_buf,
+        output_buf, output_row, num_rows);
+}
+
+GLOBAL(void)
+jsimd_rgb_gray_convert (j_compress_ptr cinfo,
+                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+                        JDIMENSION output_row, int num_rows)
+{
+  void (*sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+  void (*mmxfct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch(cinfo->in_color_space)
+  {
+    case JCS_EXT_RGB:
+      sse2fct=jsimd_extrgb_gray_convert_sse2;
+      mmxfct=jsimd_extrgb_gray_convert_mmx;
+      break;
+    case JCS_EXT_RGBX:
+      sse2fct=jsimd_extrgbx_gray_convert_sse2;
+      mmxfct=jsimd_extrgbx_gray_convert_mmx;
+      break;
+    case JCS_EXT_BGR:
+      sse2fct=jsimd_extbgr_gray_convert_sse2;
+      mmxfct=jsimd_extbgr_gray_convert_mmx;
+      break;
+    case JCS_EXT_BGRX:
+      sse2fct=jsimd_extbgrx_gray_convert_sse2;
+      mmxfct=jsimd_extbgrx_gray_convert_mmx;
+      break;
+    case JCS_EXT_XBGR:
+      sse2fct=jsimd_extxbgr_gray_convert_sse2;
+      mmxfct=jsimd_extxbgr_gray_convert_mmx;
+      break;
+    case JCS_EXT_XRGB:
+      sse2fct=jsimd_extxrgb_gray_convert_sse2;
+      mmxfct=jsimd_extxrgb_gray_convert_mmx;
+      break;
+    default:
+      sse2fct=jsimd_rgb_gray_convert_sse2;
+      mmxfct=jsimd_rgb_gray_convert_mmx;
+      break;
+  }
+
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_rgb_gray_convert_sse2))
     sse2fct(cinfo->image_width, input_buf,
         output_buf, output_row, num_rows);
   else if (simd_support & JSIMD_MMX)

@@ -85,10 +85,10 @@ of jpeg62.dll and copy c:\libjpeg-turbo[64]\bin\jpeg62.dll into the
 application's install directory to accelerate it.
 
 The version of jpeg62.dll distributed in the libjpeg-turbo SDK for Visual C++
-requires the Visual C++ 2008 C run time DLL (msvcr90.dll).  This library ships
-with more recent versions of Windows, but users of older versions can obtain it
-from the Visual C++ 2008 Redistributable Package, which is available as a free
-download from Microsoft's web site.
+requires the Visual C++ 2008 C run time DLL (msvcr90.dll).  msvcr90.dll ships
+with more recent versions of Windows, but users of older Windows releases can
+obtain it from the Visual C++ 2008 Redistributable Package, which is available
+as a free download from Microsoft's web site.
 
 NOTE:  Features of libjpeg which require passing a C run time structure, such
 as a file handle, from an application to libjpeg will probably not work with
@@ -100,11 +100,11 @@ Mac applications typically embed their own copies of libjpeg.62.dylib inside
 the (hidden) application bundle, so it is not possible to globally replace
 libjpeg on OS X systems.  If an application uses a shared library version of
 libjpeg, then it may be possible to replace the application's version of it.
-This would generally involve copying libjpeg.62.dylib into the appropriate
-place in the application bundle and using install_name_tool to repoint the
-dylib to the new directory.  This requires an advanced knowledge of OS X and
-would not survive an upgrade or a re-install of the application.  Thus, it is
-not recommended for most users.
+This would generally involve copying libjpeg.62.dylib from libjpeg-turbo into
+the appropriate place in the application bundle and using install_name_tool to
+repoint the dylib to the new directory.  This requires an advanced knowledge of
+OS X and would not survive an upgrade or a re-install of the application.
+Thus, it is not recommended for most users.
 
 =======================
 Replacing TurboJPEG/IPP

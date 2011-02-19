@@ -63,8 +63,8 @@ endif
 
 TSTHDRS = rrutil.h rrtimer.h
 
-bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom
-noinst_PROGRAMS = jpgtest jpegut
+bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom jpgtest
+noinst_PROGRAMS = jpegut
 
 jpgtest_SOURCES = $(TSTHDRS) jpgtest.c bmp.h bmp.c
 

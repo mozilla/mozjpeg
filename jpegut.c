@@ -358,12 +358,12 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	if(flags&TJ_BGR)
 	{
 		if(ps==3) pixformat="BGR";
-		else {if(flags&TJ_ALPHAFIRST) pixformat="ABGR";  else pixformat="BGRA";}
+		else {if(flags&TJ_ALPHAFIRST) pixformat="XBGR";  else pixformat="BGRX";}
 	}
 	else
 	{
 		if(ps==3) pixformat="RGB";
-		else {if(flags&TJ_ALPHAFIRST) pixformat="ARGB";  else pixformat="RGBA";}
+		else {if(flags&TJ_ALPHAFIRST) pixformat="XRGB";  else pixformat="RGBX";}
 	}
 	if(ps==1) pixformat="Grayscale";
 	if(yuv==YUVENCODE)
@@ -423,12 +423,12 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	if(flags&TJ_BGR)
 	{
 		if(ps==3) pixformat="BGR";
-		else {if(flags&TJ_ALPHAFIRST) pixformat="ABGR";  else pixformat="BGRA";}
+		else {if(flags&TJ_ALPHAFIRST) pixformat="XBGR";  else pixformat="BGRX";}
 	}
 	else
 	{
 		if(ps==3) pixformat="RGB";
-		else {if(flags&TJ_ALPHAFIRST) pixformat="ARGB";  else pixformat="RGBA";}
+		else {if(flags&TJ_ALPHAFIRST) pixformat="XRGB";  else pixformat="RGBX";}
 	}
 	if(ps==1) pixformat="Grayscale";
 	if(yuv==YUVDECODE)

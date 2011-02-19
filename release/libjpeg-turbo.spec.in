@@ -75,6 +75,7 @@ rm -rf $RPM_BUILD_ROOT
 /opt/%{name}/bin/cjpeg
 /opt/%{name}/bin/djpeg
 /opt/%{name}/bin/jpegtran
+/opt/%{name}/bin/jpgtest
 /opt/%{name}/bin/rdjpgcom
 /opt/%{name}/bin/wrjpgcom
 %dir /opt/%{name}/%{__lib}

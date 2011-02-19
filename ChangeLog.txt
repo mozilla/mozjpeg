@@ -23,7 +23,7 @@ the RGB-to-chrominance lookup tables.
 [5] The Windows distribution packages now include the libjpeg run-time programs
 (cjpeg, etc.)
 
-[6] All packages now contain jpgtest.
+[6] All packages now include jpgtest.
 
 
 1.0.90 (1.1 beta1)

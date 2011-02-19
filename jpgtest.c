@@ -120,7 +120,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 		}
 
 		// Compression test
-		if(quiet) printf("%s\t%s\t%s\t%d\t",  _pfname[pf], bu?"BU":"TD",
+		if(quiet==1) printf("%s\t%s\t%s\t%d\t",  _pfname[pf], bu?"BU":"TD",
 			_subnamel[jpegsub], qual);
 		for(i=0; i<h; i++) memcpy(&rgbbuf[pitch*i], &srcbuf[w*ps*i], w*ps);
 		if((hnd=tjInitCompress())==NULL)
@@ -150,14 +150,17 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 		} while((elapsed=rrtime()-start)<5.);
 		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 		hnd=NULL;
-		if(quiet)
+		if(quiet==1)
 		{
 			if(tilesizex==w && tilesizey==h) printf("Full     \t");
 			else printf("%-4d %-4d\t", tilesizex, tilesizey);
+		}
+		if(quiet)
+		{
 			printsigfig((double)(w*h)/1000000.*(double)ITER/elapsed, 4);
-			printf("\t");
+			printf("%c", quiet==2? '\n':'\t');
 			printsigfig((double)(w*h*ps)/(double)jpgbufsize, 4);
-			printf("\t");
+			printf("%c", quiet==2? '\n':'\t');
 		}
 		else
 		{
@@ -348,9 +351,9 @@ void dodecomptest(char *filename, int pf, int bu, int useppm,
 
 	pitch=w*ps;
 
-	if(quiet)
+	if(quiet==1)
 	{
-		printf("All performance values in Mpixels/sec\n\n");
+		printf("\nAll performance values in Mpixels/sec\n\n");
 		printf("Bitmap\tBitmap\tImage Size\tDecomp\n"),
 		printf("Format\tOrder\t X    Y  \tPerf\n\n");
 		printf("%s\t%s\t%-4d %-4d\t", _pfname[pf], bu?"BU":"TD", w, h);
@@ -452,8 +455,6 @@ int main(int argc, char *argv[])
 	int pf=BMP_BGR;
 	int bu=0, minarg=2;
 
-	printf("\n");
-
 	if(argc<minarg) usage(argv[0]);
 
 	temp=strrchr(argv[1], '.');
@@ -533,6 +534,7 @@ int main(int argc, char *argv[])
 			if(!stricmp(argv[i], "-argb")) pf=BMP_ARGB;
 			if(!stricmp(argv[i], "-bottomup")) bu=1;
 			if(!stricmp(argv[i], "-quiet")) quiet=1;
+			if(!stricmp(argv[i], "-qq")) quiet=2;
 		}
 	}
 
@@ -544,9 +546,9 @@ int main(int argc, char *argv[])
 		if(temp!=NULL) *temp='\0';
 	}
 
-	if(quiet && !decomponly)
+	if(quiet==1 && !decomponly)
 	{
-		printf("All performance values in Mpixels/sec\n\n");
+		printf("\nAll performance values in Mpixels/sec\n\n");
 		printf("Bitmap\tBitmap\tJPEG\tJPEG\tTile Size\tCompr\tCompr\tDecomp\n");
 		printf("Format\tOrder\tFormat\tQual\t X    Y  \tPerf \tRatio\tPerf\n\n");
 	}

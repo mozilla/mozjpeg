@@ -40,7 +40,7 @@ const int _flags[BMPPIXELFORMATS]={0, 0, TJ_BGR, TJ_BGR,
 const int _rindex[BMPPIXELFORMATS]={0, 0, 2, 2, 3, 1};
 const int _gindex[BMPPIXELFORMATS]={1, 1, 1, 1, 2, 2};
 const int _bindex[BMPPIXELFORMATS]={2, 2, 0, 0, 1, 3};
-const char *_pfname[]={"RGB", "RGBA", "BGR", "BGRA", "ABGR", "ARGB"};
+const char *_pfname[]={"RGB", "RGBX", "BGR", "BGRX", "XBGR", "XRGB"};
 const char *_subnamel[NUMSUBOPT]={"4:4:4", "4:2:2", "4:2:0", "GRAY"};
 const char *_subnames[NUMSUBOPT]={"444", "422", "420", "GRAY"};
 const int _hsf[NUMSUBOPT]={1, 2, 2, 1};
@@ -430,8 +430,8 @@ void usage(char *progname)
 	printf("       Test performance of the codec when the image is encoded\n");
 	printf("       as separate tiles of varying sizes.\n\n");
 	printf("       [-forcemmx] [-forcesse] [-forcesse2] [-forcesse3]\n");
-	printf("       Force MMX, SSE, or SSE2 code paths in TurboJPEG codec\n\n");
-	printf("       [-rgb | -bgr | -rgba | -bgra | -abgr | -argb]\n");
+	printf("       Force MMX, SSE, SSE2, or SSE3 code paths in the underlying codec\n\n");
+	printf("       [-rgb | -bgr | -rgbx | -bgrx | -xbgr | -xrgb]\n");
 	printf("       Test the specified color conversion path in the codec (default: BGR)\n\n");
 	printf("       [-fastupsample]\n");
 	printf("       Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
@@ -527,11 +527,11 @@ int main(int argc, char *argv[])
 				fastupsample=1;
 			}
 			if(!stricmp(argv[i], "-rgb")) pf=BMP_RGB;
-			if(!stricmp(argv[i], "-rgba")) pf=BMP_RGBA;
+			if(!stricmp(argv[i], "-rgbx")) pf=BMP_RGBX;
 			if(!stricmp(argv[i], "-bgr")) pf=BMP_BGR;
-			if(!stricmp(argv[i], "-bgra")) pf=BMP_BGRA;
-			if(!stricmp(argv[i], "-abgr")) pf=BMP_ABGR;
-			if(!stricmp(argv[i], "-argb")) pf=BMP_ARGB;
+			if(!stricmp(argv[i], "-bgrx")) pf=BMP_BGRX;
+			if(!stricmp(argv[i], "-xbgr")) pf=BMP_XBGR;
+			if(!stricmp(argv[i], "-xrgb")) pf=BMP_XRGB;
 			if(!stricmp(argv[i], "-bottomup")) bu=1;
 			if(!stricmp(argv[i], "-quiet")) quiet=1;
 			if(!stricmp(argv[i], "-qq")) quiet=2;

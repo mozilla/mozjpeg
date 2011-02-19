@@ -111,40 +111,40 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
 
   [INPUT] j = instance handle previously returned from a call to
      tjInitCompress()
-  [INPUT] srcbuf = pointer to user-allocated image buffer containing pixels in
-     RGB(A) or BGR(A) form
+  [INPUT] srcbuf = pointer to user-allocated image buffer containing RGB or
+     grayscale pixels to be compressed
   [INPUT] width =  width (in pixels) of the source image
   [INPUT] pitch = bytes per line of the source image (width*pixelsize if the
      bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
      is padded to the nearest 32-bit boundary, such as is the case for Windows
      bitmaps.  You can also be clever and use this parameter to skip lines,
      etc.  Setting this parameter to 0 is the equivalent of setting it to
-     width*pixelsize;
+     width*pixelsize.
   [INPUT] height = height (in pixels) of the source image
   [INPUT] pixelsize = size (in bytes) of each pixel in the source image
-     RGBA and BGRA: 4, RGB and BGR: 3, Grayscale: 1
+     RGBX/BGRX/XRGB/XBGR: 4, RGB/BGR: 3, Grayscale: 1
   [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
-     the JPEG image.  Use the macro TJBUFSIZE(width, height) to determine
+     the JPEG image.  Use the TJBUFSIZE(width, height) function to determine
      the appropriate size for this buffer based on the image width and height.
   [OUTPUT] size = pointer to unsigned long which receives the size (in bytes)
      of the compressed image
   [INPUT] jpegsubsamp = Specifies either 4:2:0, 4:2:2, or 4:4:4 subsampling.
-     When the image is converted from the RGB to YCbCr colorspace as part of the
-     JPEG compression process, every other Cb and Cr (chrominance) pixel can be
-     discarded to produce a smaller image with little perceptible loss of
-     image clarity (the human eye is more sensitive to small changes in
+     When the image is converted from the RGB to YCbCr colorspace as part of
+     the JPEG compression process, every other Cb and Cr (chrominance) pixel
+     can be discarded to produce a smaller image with little perceptible loss
+     of image clarity (the human eye is more sensitive to small changes in
      brightness than small changes in color.)
 
      TJ_420: 4:2:0 subsampling.  Discards every other Cb, Cr pixel in both
-        horizontal and vertical directions.
+        horizontal and vertical directions
      TJ_422: 4:2:2 subsampling.  Discards every other Cb, Cr pixel only in
-        the horizontal direction.
-     TJ_444: no subsampling.
+        the horizontal direction
+     TJ_444: no subsampling
      TJ_GRAYSCALE: Generate grayscale JPEG image
 
-  [INPUT] jpegqual = JPEG quality (an integer between 0 and 100 inclusive.)
+  [INPUT] jpegqual = JPEG quality (an integer between 0 and 100 inclusive)
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
-     "Flags" section above.
+     "Flags" section above
 
   RETURNS: 0 on success, -1 on error
 */
@@ -172,7 +172,7 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
 /*
   int tjDecompressHeader2(tjhandle j,
      unsigned char *srcbuf, unsigned long size,
-     int *width, int *height, int *jpegsub)
+     int *width, int *height, int *jpegsubsamp)
 
   [INPUT] j = instance handle previously returned from a call to
      tjInitDecompress()
@@ -181,14 +181,14 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
   [INPUT] size = size of the JPEG image buffer (in bytes)
   [OUTPUT] width = width (in pixels) of the JPEG image
   [OUTPUT] height = height (in pixels) of the JPEG image
-  [OUTPUT] jpegsub = type of chrominance subsampling used when compressing the
-     JPEG image
+  [OUTPUT] jpegsubsamp = type of chrominance subsampling used when compressing
+     the JPEG image
 
   RETURNS: 0 on success, -1 on error
 */
 DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle j,
 	unsigned char *srcbuf, unsigned long size,
-	int *width, int *height, int *jpegsub);
+	int *width, int *height, int *jpegsubsamp);
 
 /*
   Legacy version of the above function
@@ -214,15 +214,15 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
      bytes in size, although this pointer may also be used to decompress into
      a specific region of a larger buffer.
   [INPUT] width =  width (in pixels) of the destination image
-  [INPUT] pitch = bytes per line of the destination image (width*pixelsize if the
-     bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
-     is padded to the nearest 32-bit boundary, such as is the case for Windows
-     bitmaps.  You can also be clever and use this parameter to skip lines,
-     etc.  Setting this parameter to 0 is the equivalent of setting it to
-     width*pixelsize.
+  [INPUT] pitch = bytes per line of the destination image (width*pixelsize if
+     the bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the
+     bitmap is padded to the nearest 32-bit boundary, such as is the case for
+     Windows bitmaps.  You can also be clever and use this parameter to skip
+     lines, etc.  Setting this parameter to 0 is the equivalent of setting it
+     to width*pixelsize.
   [INPUT] height = height (in pixels) of the destination image
   [INPUT] pixelsize = size (in bytes) of each pixel in the destination image
-     RGBA/RGBx and BGRA/BGRx: 4, RGB and BGR: 3, Grayscale: 1
+     RGBX/BGRX/XRGB/XBGR: 4, RGB/BGR: 3, Grayscale: 1
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above.
 

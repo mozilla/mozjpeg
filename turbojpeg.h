@@ -281,6 +281,9 @@ DLLEXPORT int DLLCALL tjScaledSize(int input_width, int input_height,
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above.
 
+  NOTE: The width, pitch, height, and pixelsize parameters are ignored if
+  decompressing to a YUV planar image.
+
   RETURNS: 0 on success, -1 on error
 */
 DLLEXPORT int DLLCALL tjDecompress(tjhandle j,

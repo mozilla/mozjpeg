@@ -12,6 +12,7 @@
 		tjDestroy;
 		tjGetErrorStr;
 		Java_org_libjpegturbo_turbojpeg_TJ_bufSize;
+		Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_init;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_compress;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy;
@@ -19,6 +20,8 @@
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy;		
+		Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledHeight;
+		Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledWidth;
 	local:
 		*;
 };

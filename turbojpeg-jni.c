@@ -52,7 +52,21 @@
 JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 	(JNIEnv *env, jclass cls, jint width, jint height)
 {
-	return TJBUFSIZE(width, height);
+	jlong retval=TJBUFSIZE(width, height);
+	if(retval==-1) _throw(tjGetErrorStr());
+
+	bailout:
+	return retval;
+}
+
+JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
+	(JNIEnv *env, jclass cls, jint width, jint height, jint subsamp)
+{
+	jlong retval=TJBUFSIZEYUV(width, height, subsamp);
+	if(retval==-1) _throw(tjGetErrorStr());
+
+	bailout:
+	return retval;
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
@@ -129,6 +143,30 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 
 	bailout:
 	return;
+}
+
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledWidth
+	(JNIEnv *env, jobject obj, jint input_width, jint input_height,
+		jint output_width, jint output_height)
+{
+	if(tjScaledSize(input_width, input_height, &output_width, &output_height)
+		==-1)
+		_throw(tjGetErrorStr());
+
+	bailout:
+	return output_width;
+}
+
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledHeight
+	(JNIEnv *env, jobject obj, jint input_width, jint input_height,
+		jint output_width, jint output_height)
+{
+	if(tjScaledSize(input_width, input_height, &output_width, &output_height)
+		==-1)
+		_throw(tjGetErrorStr());
+
+	bailout:
+	return output_height;
 }
 
 JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader

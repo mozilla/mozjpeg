@@ -39,6 +39,22 @@ JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompr
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
   (JNIEnv *, jobject, jbyteArray, jlong, jbyteArray, jint, jint, jint, jint, jint);
 
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJDecompressor
+ * Method:    getScaledWidth
+ * Signature: (IIII)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledWidth
+  (JNIEnv *, jobject, jint, jint, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJDecompressor
+ * Method:    getScaledHeight
+ * Signature: (IIII)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledHeight
+  (JNIEnv *, jobject, jint, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

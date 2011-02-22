@@ -153,7 +153,27 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle j,
 	unsigned char *dstbuf, unsigned long *size,
 	int jpegsubsamp, int jpegqual, int flags);
 
+/*
+  unsigned long TJBUFSIZE(int width, int height)
+
+  Convenience function which returns the maximum size of the buffer required to
+  hold a JPEG image with the given width and height
+
+  RETURNS: -1 if arguments are out of bounds
+*/
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
+
+/*
+  unsigned long TJBUFSIZEYUV(int width, int height, int subsamp)
+
+  Convenience function which returns the size of the buffer required to
+  hold a YUV planar image with the given width, height, and level of
+  chrominance subsampling
+
+  RETURNS: -1 if arguments are out of bounds
+*/
+DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
+  int subsamp);
 
 /*
   tjhandle tjInitDecompress(void)

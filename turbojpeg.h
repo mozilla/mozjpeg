@@ -153,6 +153,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle j,
 	unsigned char *dstbuf, unsigned long *size,
 	int jpegsubsamp, int jpegqual, int flags);
 
+
 /*
   unsigned long TJBUFSIZE(int width, int height)
 
@@ -162,6 +163,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle j,
   RETURNS: -1 if arguments are out of bounds
 */
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
+
 
 /*
   unsigned long TJBUFSIZEYUV(int width, int height, int subsamp)
@@ -174,6 +176,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
 */
 DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
   int subsamp);
+
 
 /*
   tjhandle tjInitDecompress(void)
@@ -196,8 +199,7 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
 
   [INPUT] j = instance handle previously returned from a call to
      tjInitDecompress()
-  [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
-     to decompress
+  [INPUT] srcbuf = pointer to a user-allocated buffer containing a JPEG image
   [INPUT] size = size of the JPEG image buffer (in bytes)
   [OUTPUT] width = width (in pixels) of the JPEG image
   [OUTPUT] height = height (in pixels) of the JPEG image
@@ -219,10 +221,30 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 
 
 /*
-  int tjDecompress2(tjhandle j,
+  int tjScaledSize(int input_width, int input_height,
+     int *output_width, int *output_height)
+
+  [INPUT] input_width = width (in pixels) of the JPEG image
+  [INPUT] input_height = height (in pixels) of the JPEG image
+  [INPUT/OUTPUT] output_width, output_height = Before calling this function,
+     *output_width and *output_height should be set to the desired dimensions
+     of the output image.  Upon returning from this function, they will be set
+     to the dimensions of the largest scaled down image that TurboJPEG can
+     produce without exceeding the desired dimensions.  If either *output_width
+     or *output_height is set to 0, then the corresponding dimension will not
+     be considered when determining the scaled image size.
+
+  RETURNS: 0 on success, -1 if arguments are out of bounds
+*/
+DLLEXPORT int DLLCALL tjScaledSize(int input_width, int input_height,
+	int *output_width, int *output_height);
+
+
+/*
+  int tjDecompress(tjhandle j,
      unsigned char *srcbuf, unsigned long size,
-     unsigned char *dstbuf, int pitch, int pixelsize,
-     int scale_num, int scale_denom, int flags)
+     unsigned char *dstbuf, int width, int pitch, int height, int pixelsize,
+     int flags)
 
   [INPUT] j = instance handle previously returned from a call to
      tjInitDecompress()
@@ -231,32 +253,35 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
   [INPUT] size = size of the JPEG image buffer (in bytes)
   [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
      the bitmap image.  This buffer should normally be pitch*scaled_height
-     bytes in size, where scaled_height=ceil(JPEG image height/scale_denom).
-     However, this pointer may also be used to decompress into a specific
-     region of a larger buffer.
+     bytes in size, where scaled_height is determined by calling
+     tjScaledSize() with the height of the desired output image.  This pointer
+     may also be used to decompress into a specific region of a
+     larger buffer.
+  [INPUT] width = desired width (in pixels) of the destination image.  If this
+     is smaller than the width of the JPEG image being decompressed, then
+     TurboJPEG will use scaling in the JPEG decompressor to generate the
+     largest possible image that will fit within the desired width.  If width
+     is set to 0, then only the height will be considered when determining the
+     scaled image size.
   [INPUT] pitch = bytes per line of the destination image.  Normally, this is
-     scaled_width*pixelsize if the bitmap is unpadded, else
+     scaled_width*pixelsize if the bitmap image is unpadded, else
      TJPAD(scaled_width*pixelsize) if each line of the bitmap is padded to the
      nearest 32-bit boundary, such as is the case for Windows bitmaps.
-     NOTE: scaled_width=ceil(JPEG image width/scale_denom).  You can also be
-     clever and use this parameter to skip lines, etc.  Setting this parameter
-     to 0 is the equivalent of setting it to scaled_width*pixelsize.
+     (NOTE: scaled_width can be determined by calling tjScaledSize().)  You can
+     also be clever and use this parameter to skip lines, etc.  Setting this
+     parameter to 0 is the equivalent of setting it to scaled_width*pixelsize.
+  [INPUT] height = desired height (in pixels) of the destination image.  If
+     this is smaller than the height of the JPEG image being decompressed, then
+     TurboJPEG will use scaling in the JPEG decompressor to generate the
+     largest possible image that will fit within the desired height.  If
+     height is set to 0, then only the width will be considered when
+     determining the scaled image size.
   [INPUT] pixelsize = size (in bytes) of each pixel in the destination image
      RGBX/BGRX/XRGB/XBGR: 4, RGB/BGR: 3, Grayscale: 1
-  [INPUT] scale_num = numerator of scaling factor (currently must be 1)
-  [INPUT] scale_denom = denominator of scaling factor (1, 2, 4, or 8)
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above.
 
   RETURNS: 0 on success, -1 on error
-*/
-DLLEXPORT int DLLCALL tjDecompress2(tjhandle j,
-	unsigned char *srcbuf, unsigned long size,
-	unsigned char *dstbuf, int pitch, int pixelsize,
-	int scale_num, int scale_denom, int flags);
-
-/*
-  Legacy version of the above function
 */
 DLLEXPORT int DLLCALL tjDecompress(tjhandle j,
 	unsigned char *srcbuf, unsigned long size,

@@ -7,7 +7,6 @@
 		tjDecompressHeader;
 		tjDecompressHeader2;
 		tjDecompress;
-		tjDecompress2;
 		tjDestroy;
 		tjGetErrorStr;
 	local:

@@ -52,10 +52,10 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
      (64-bit IPP version only) */
 #define TJ_FASTUPSAMPLE  256
   /* Use fast, inaccurate 4:2:2 and 4:2:0 YUV upsampling routines
-     (libjpeg version only) */
+     (libjpeg and libjpeg-turbo versions only) */
 #define TJ_YUV           512
-  /* If passed to tjCompress(), this causes TurboJPEG/OSS to use the
-     accelerated color conversion routines in libjpeg-turbo to produce a planar
+  /* If passed to tjCompress(), this causes TurboJPEG to use the accelerated
+     color conversion routines in the underlying codec to produce a planar
      YUV image that is suitable for X Video.  Specifically, if the chrominance
      components are subsampled along the horizontal dimension, then the width
      of the luminance plane is padded to 2 in the output image (same goes for
@@ -66,13 +66,13 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
      TJ_420, which produces an image compatible with the I420 (AKA "YUV420P")
      format.
 
-     If passed to tjDecompress(), this tells TurboJPEG/OSS to perform JPEG
+     If passed to tjDecompress(), this tells TurboJPEG to perform JPEG
      decompression but to leave out the color conversion step, so a planar YUV
      image is generated instead of an RGB image.  The padding of the planes in
      this image is the same as in the above case.  Note that, if the width or
      height of the output image is not a multiple of 8 (or a multiple of 16
      along any dimension in which chrominance subsampling is used), then an
-     intermediate buffer copy will be performed within TurboJPEG/OSS.
+     intermediate buffer copy will be performed within TurboJPEG.
   */
 
 typedef void* tjhandle;

@@ -34,6 +34,32 @@ public class TJCompressor {
     init();
   }
 
+  public TJCompressor(byte [] buf, int width, int pitch, int height,
+    int pixelFormat) throws Exception {
+    setBitmapBuffer(buf, width, pitch, height, pixelFormat);
+  }
+
+  public void setBitmapBuffer(byte [] buf, int width, int pitch, int height,
+    int pixelFormat) throws Exception {
+    if(handle == 0) init();
+    if(buf == null || width < 1 || height < 1 || pitch < 0 || pixelFormat < 0
+      || pixelFormat >= TJ.NUMPIXFORMATS)
+      throw new Exception("Invalid argument in setBitmapBuffer()");
+    bitmapBuf = buf;
+    bitmapWidth = width;
+    if(pitch == 0) bitmapPitch = width * TJ.getPixelSize(pixelFormat);
+    else bitmapPitch = pitch;
+    bitmapHeight = height;
+    bitmapPixelFormat = pixelFormat;
+  }
+
+  public long compress(byte [] dstBuf, int jpegSubsamp, int jpegQual,
+    int flags) throws Exception {
+    return compress(bitmapBuf, bitmapWidth, bitmapPitch, bitmapHeight,
+      TJ.getPixelSize(bitmapPixelFormat), dstBuf, jpegSubsamp, jpegQual,
+        flags | TJ.getFlags(bitmapPixelFormat));
+  }
+
   public void close() throws Exception {
     destroy();
   }
@@ -53,8 +79,8 @@ public class TJCompressor {
   private native void destroy() throws Exception;
 
   // JPEG size in bytes is returned
-  public native long compress(byte [] srcbuf, int width, int pitch,
-    int height, int pixelsize, byte [] dstbuf, int jpegsubsamp, int jpegqual,
+  private native long compress(byte [] srcBuf, int width, int pitch,
+    int height, int pixelSize, byte [] dstbuf, int jpegSubsamp, int jpegQual,
     int flags) throws Exception;
 
   static {
@@ -62,4 +88,9 @@ public class TJCompressor {
   }
 
   private long handle = 0;
+  private byte [] bitmapBuf = null;
+  private int bitmapWidth = 0;
+  private int bitmapHeight = 0;
+  private int bitmapPitch = 0;
+  private int bitmapPixelFormat = -1;
 };

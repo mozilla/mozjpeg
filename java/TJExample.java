@@ -78,10 +78,12 @@ public class TJExample {
       fis.read(inputbuf);
       fis.close();
 
-      TJDecompressor tjd=new TJDecompressor();
-      TJHeaderInfo tji=tjd.decompressHeader(inputbuf, inputsize);
-      System.out.print("Source Image: "+tji.width+" x "+tji.height+ " pixels, ");
-      switch(tji.subsamp) {
+      TJDecompressor tjd=new TJDecompressor(inputbuf);
+      int width=tjd.getWidth();
+      int height=tjd.getHeight();
+      int subsamp=tjd.getSubsamp();
+      System.out.print("Source Image: "+width+" x "+height+" pixels, ");
+      switch(subsamp) {
         case TJ.SAMP444:  System.out.println("4:4:4 subsampling");  break;
         case TJ.SAMP422:  System.out.println("4:2:2 subsampling");  break;
         case TJ.SAMP420:  System.out.println("4:2:0 subsampling");  break;
@@ -90,22 +92,18 @@ public class TJExample {
       }
 
       if(scalefactor!=1) {
-        tji.width=(tji.width+scalefactor-1)/scalefactor;
-        tji.height=(tji.height+scalefactor-1)/scalefactor;
-        System.out.println("Dest. Image:  "+tji.width+" x "+tji.height
+        width=(width+scalefactor-1)/scalefactor;
+        height=(height+scalefactor-1)/scalefactor;
+        System.out.println("Dest. Image:  "+width+" x "+height
           +" pixels");
       }
 
-
-      byte [] tmpbuf=new byte[tji.width*tji.height*3];
-      tjd.decompress(inputbuf, inputsize, tmpbuf, tji.width, tji.width*3,
-        tji.height, 3, TJ.BOTTOMUP);
+      byte [] tmpbuf=tjd.decompress(width, 0, height, TJ.BGR, TJ.BOTTOMUP);
       tjd.close();
 
-      TJCompressor tjc=new TJCompressor();
-      byte [] outputbuf=new byte[(int)TJ.bufSize(tji.width, tji.height)];
-      long outputsize=tjc.compress(tmpbuf, tji.width, tji.width*3, tji.height,
-        3, outputbuf, tji.subsamp, 95, TJ.BOTTOMUP);
+      TJCompressor tjc=new TJCompressor(tmpbuf, width, 0, height, TJ.BGR);
+      byte [] outputbuf=new byte[(int)TJ.bufSize(width, height)];
+      long outputsize=tjc.compress(outputbuf, subsamp, 95, TJ.BOTTOMUP);
       tjc.close();
 
       file=new File(argv[1]);

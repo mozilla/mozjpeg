@@ -3,9 +3,11 @@
 		tjInitCompress;
 		tjCompress;
 		TJBUFSIZE;
+		TJBUFSIZEYUV;
 		tjInitDecompress;
 		tjDecompressHeader;
 		tjDecompressHeader2;
+		tjScaledSize;
 		tjDecompress;
 		tjDestroy;
 		tjGetErrorStr;

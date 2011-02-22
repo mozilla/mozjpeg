@@ -114,8 +114,33 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
-	// This allows enough room in case the image doesn't compress
-	return ((width+15)&(~15)) * ((height+15)&(~15)) * 6 + 2048;
+	unsigned long retval=0;
+	if(width<1 || height<1)
+		_throw("Invalid argument in TJBUFSIZE()");
+
+	// This allows for rare corner cases in which a JPEG image can actually be
+	// larger than the uncompressed input (we wouldn't mention it if it hadn't
+	// happened.)
+	retval=((width+15)&(~15)) * ((height+15)&(~15)) * 6 + 2048;
+
+	bailout:
+	return retval;
+}
+
+DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
+	int subsamp)
+{
+	unsigned long retval=0;
+	int pw, ph, cw, ch;
+	if(width<1 || height<1 || subsamp<0 || subsamp>=NUMSUBOPT)
+		_throw("Invalid argument in TJBUFSIZEYUV()");
+	pw=PAD(width, hsampfactor[subsamp]);
+	ph=PAD(height, vsampfactor[subsamp]);
+	cw=pw/hsampfactor[subsamp];  ch=ph/vsampfactor[subsamp];
+	retval=PAD(pw, 4)*ph + (subsamp==TJ_GRAYSCALE? 0:PAD(cw, 4)*ch*2);
+
+	bailout:
+	return retval;
 }
 
 DLLEXPORT int DLLCALL tjCompress(tjhandle h,

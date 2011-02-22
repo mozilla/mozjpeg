@@ -410,12 +410,8 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 {
 	unsigned char *bmpbuf=NULL;
 	const char *pixformat;  int _hdrw=0, _hdrh=0, _hdrsubsamp=-1;  double t;
-	unsigned long size=0;
-	int hsf=_hsf[subsamp], vsf=_vsf[subsamp];
-	int pw=PAD(w, hsf), ph=PAD(h, vsf);
 	int _w=(w+scalefactor-1)/scalefactor, _h=(h+scalefactor-1)/scalefactor;
-	int cw=pw/hsf, ch=ph/vsf;
-	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
+	unsigned long size=0;
 
 	if(yuv==YUVDECODE) flags|=TJ_YUV;
 	else if(yuv==YUVENCODE) return;
@@ -449,7 +445,7 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	}
 
 	if(yuv==YUVDECODE)
-		size=ypitch*ph + (subsamp==TJ_GRAYSCALE? 0:uvpitch*ch*2);
+		size=TJBUFSIZEYUV(w, h, subsamp);
 	else
 		size=_w*_h*ps;
 	if((bmpbuf=(unsigned char *)malloc(size+1))==NULL)
@@ -465,7 +461,7 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 
 	if(yuv==YUVDECODE)
 	{
-		if(checkbufyuv(bmpbuf, size, pw, ph, subsamp))
+		if(checkbufyuv(bmpbuf, size, w, h, subsamp))
 			printf("Passed.");
 		else {printf("FAILED!");  exitstatus=-1;}
 	}

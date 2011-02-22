@@ -98,8 +98,8 @@ public class TJExample {
 
 
       byte [] tmpbuf=new byte[tji.width*tji.height*3];
-      tjd.decompress(inputbuf, inputsize, tmpbuf, tji.width*3,
-        3, 1, scalefactor, TJ.BOTTOMUP);
+      tjd.decompress(inputbuf, inputsize, tmpbuf, tji.width, tji.width*3,
+        tji.height, 3, TJ.BOTTOMUP);
       tjd.close();
 
       TJCompressor tjc=new TJCompressor();

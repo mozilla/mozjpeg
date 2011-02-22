@@ -410,7 +410,8 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 {
 	unsigned char *bmpbuf=NULL;
 	const char *pixformat;  int _hdrw=0, _hdrh=0, _hdrsubsamp=-1;  double t;
-	int _w=(w+scalefactor-1)/scalefactor, _h=(h+scalefactor-1)/scalefactor;
+	int scaledw=(w+scalefactor-1)/scalefactor, scaledh=(h+scalefactor-1)/scalefactor;
+	int temp1, temp2;
 	unsigned long size=0;
 
 	if(yuv==YUVDECODE) flags|=TJ_YUV;
@@ -444,10 +445,17 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 		printf("Incorrect JPEG header\n");  bailout();
 	}
 
+	temp1=scaledw;  temp2=scaledh;
+	_catch(tjScaledSize(w, h, &temp1, &temp2));
+	if(temp1!=scaledw || temp2!=scaledh)
+	{
+		printf("Scaled size mismatch\n");  bailout();
+	}
+
 	if(yuv==YUVDECODE)
 		size=TJBUFSIZEYUV(w, h, subsamp);
 	else
-		size=_w*_h*ps;
+		size=scaledw*scaledh*ps;
 	if((bmpbuf=(unsigned char *)malloc(size+1))==NULL)
 	{
 		printf("ERROR: Could not allocate buffer\n");  bailout();
@@ -455,8 +463,8 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	memset(bmpbuf, 0, size+1);
 
 	t=rrtime();
-	_catch(tjDecompress2(hnd, jpegbuf, jpegsize, bmpbuf, 0, ps, 1,
-		scalefactor, flags));
+	_catch(tjDecompress(hnd, jpegbuf, jpegsize, bmpbuf, scaledw, 0, scaledh, ps,
+		flags));
 	t=rrtime()-t;
 
 	if(yuv==YUVDECODE)
@@ -467,12 +475,12 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	}
 	else
 	{
-		if(checkbuf(bmpbuf, _w, _h, ps, subsamp, scalefactor, flags))
+		if(checkbuf(bmpbuf, scaledw, scaledh, ps, subsamp, scalefactor, flags))
 			printf("Passed.");
 		else
 		{
 			printf("FAILED!");  exitstatus=-1;
-			dumpbuf(bmpbuf, _w, _h, ps, scalefactor, flags);
+			dumpbuf(bmpbuf, scaledw, scaledh, ps, scalefactor, flags);
 		}
 	}
 	printf("  %f ms\n", t*1000.);

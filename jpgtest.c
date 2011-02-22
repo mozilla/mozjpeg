@@ -83,8 +83,9 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	int cw=pw/hsf, ch=ph/vsf;
 	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 	int yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
-	int _w=(w+scalefactor-1)/scalefactor, _h=(h+scalefactor-1)/scalefactor;
-	int pitch=_w*ps;
+	int scaledw=(flags&TJ_YUV)? w : (w+scalefactor-1)/scalefactor;
+	int scaledh=(flags&TJ_YUV)? h : (h+scalefactor-1)/scalefactor;
+	int pitch=scaledw*ps;
 
 	if(qual>0)
 	{
@@ -100,14 +101,15 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 
 	if(rgbbuf==NULL)
 	{
-		if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*_h))) == NULL)
+		if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*scaledh))) == NULL)
 			_throwunix("allocating image buffer");
 		rgbbufalloc=1;
 	}
-	memset(rgbbuf, 127, max(yuvsize, pitch*_h));  // Grey image means decompressor did nothing
+	// Grey image means decompressor did nothing
+	memset(rgbbuf, 127, max(yuvsize, pitch*scaledh));
 
-	if(tjDecompress2(hnd, jpegbuf[0], comptilesize[0], rgbbuf, pitch, ps, 1,
-		(flags&TJ_YUV)? 1:scalefactor, flags)==-1)
+	if(tjDecompress(hnd, jpegbuf[0], comptilesize[0], rgbbuf, scaledw, pitch,
+		scaledh, ps, flags)==-1)
 		_throwtj("executing tjDecompress()");
 	ITER=0;
 	start=rrtime();
@@ -119,10 +121,9 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 			for(j=0; j<w; j+=tilesizex)
 			{
 				int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-				if(tjDecompress2(hnd, jpegbuf[tilen], comptilesize[tilen],
-					&rgbbuf[pitch*i+ps*j], pitch, ps, 1, (flags&TJ_YUV)? 1:scalefactor,
-					flags)==-1)
-					_throwtj("executing tjDecompress2()");
+				if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
+					&rgbbuf[pitch*i+ps*j], scaledw, pitch, scaledh, ps, flags)==-1)
+					_throwtj("executing tjDecompress()");
 				tilen++;
 			}
 		}
@@ -162,7 +163,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 		}
 		else sprintf(tempstr, "%s_%s%s_%dx%d.%s", filename, _subnames[jpegsub],
 			qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
-		if(savebmp(tempstr, rgbbuf, _w, _h, pf, pitch, bu)==-1)
+		if(savebmp(tempstr, rgbbuf, scaledw, scaledh, pf, pitch, bu)==-1)
 			_throwbmp("saving bitmap");
 		sprintf(strrchr(tempstr, '.'), "-err.%s", useppm?"ppm":"bmp");
 		if(srcbuf && scalefactor==1)

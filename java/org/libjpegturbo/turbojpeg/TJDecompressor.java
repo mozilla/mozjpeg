@@ -56,7 +56,7 @@ public class TJDecompressor {
     throws Exception;
 
   public native void decompress(byte [] srcbuf, long size, byte [] dstbuf,
-    int pitch, int pixelsize, int scale_num, int scale_denom, int flags)
+    int width, int pitch, int height, int pixelsize, int flags)
     throws Exception;
 
   static {

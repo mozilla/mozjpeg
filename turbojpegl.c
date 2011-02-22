@@ -120,7 +120,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 
 	// This allows for rare corner cases in which a JPEG image can actually be
 	// larger than the uncompressed input (we wouldn't mention it if it hadn't
-	// happened.)
+	// happened before.)
 	retval=((width+15)&(~15)) * ((height+15)&(~15)) * 6 + 2048;
 
 	bailout:
@@ -319,6 +319,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 			-(unsigned long)(j->jdms.free_in_buffer);
 
 	bailout:
+	if(j->cinfo.global_state>CSTATE_START) jpeg_abort_compress(&j->cinfo);
 	if(row_pointer) free(row_pointer);
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -443,15 +444,44 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle h,
 }
 
 
-DLLEXPORT int DLLCALL tjDecompress2(tjhandle h,
+DLLEXPORT int DLLCALL tjScaledSize(int input_width, int input_height,
+	int *output_width, int *output_height)
+{
+	int i, retval=0, scaledw=0, scaledh=0;
+
+	if(input_width<1 || input_height<1 || output_width==NULL
+		|| output_height==NULL || *output_width<0 || *output_height<0)
+		_throw("Invalid argument in tjScaledSize()");
+
+	if(*output_width==0) *output_width=input_width;
+	if(*output_height==0) *output_height=input_height;
+	if(*output_width<input_width || *output_height<input_height)
+	{
+		for(i=1; i<=8; i*=2)
+		{
+			scaledw=(input_width+i-1)/i;
+			scaledh=(input_height+i-1)/i;
+			if(scaledw<=*output_width && scaledh<=*output_height)
+				break;
+		}
+		*output_width=scaledw;  *output_height=scaledh;
+	}
+
+	bailout:
+	return retval;
+}
+
+
+DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	unsigned char *srcbuf, unsigned long size,
-	unsigned char *dstbuf, int pitch, int ps,
-	int scale_num, int scale_denom, int flags)
+	unsigned char *dstbuf, int width, int pitch, int height, int ps,
+	int flags)
 {
 	int i, row, retval=0;  JSAMPROW *row_pointer=NULL, *outbuf[MAX_COMPONENTS];
 	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], iw[MAX_COMPONENTS],
 		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
 	JSAMPLE *_tmpbuf=NULL;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
+	int scale_num=1, scale_denom=1, jpegwidth, jpegheight, scaledw, scaledh;
 
 	checkhandle(h);
 
@@ -460,15 +490,12 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle h,
 		tmpbuf[i]=NULL;  outbuf[i]=NULL;
 	}
 
-	if(srcbuf==NULL || size<=0 || dstbuf==NULL || pitch<0)
-		_throw("Invalid argument in tjDecompress2()");
+	if(srcbuf==NULL || size<=0
+		|| dstbuf==NULL || width<0 || pitch<0 || height<0)
+		_throw("Invalid argument in tjDecompress()");
 	if(ps!=3 && ps!=4 && ps!=1)
 		_throw("This decompressor can only handle 24-bit and 32-bit RGB or 8-bit grayscale output");
 	if(!j->initd) _throw("Instance has not been initialized for decompression");
-
-	if(scale_num!=1 || scale_denom<1 || scale_denom>8
-		|| (scale_denom&(scale_denom-1))!=0)
-		_throw("Unsupported scaling factor");
 
 	if(flags&TJ_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJ_FORCESSE) putenv("JSIMD_FORCESSE=1");
@@ -484,6 +511,24 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle h,
 	j->jsms.next_input_byte = srcbuf;
 
 	jpeg_read_header(&j->dinfo, TRUE);
+
+	jpegwidth=j->dinfo.image_width;  jpegheight=j->dinfo.image_height;
+	if(width==0) width=jpegwidth;
+	if(height==0) height=jpegheight;
+	if(width<jpegwidth || height<jpegheight)
+	{
+		for(i=1; i<=8; i*=2)
+		{
+			scaledw=(jpegwidth+i-1)/i;
+			scaledh=(jpegheight+i-1)/i;
+			if(scaledw<=width && scaledh<=height)
+				break;
+		}
+		if(scaledw>width || scaledh>height)
+			_throw("Could not scale down to desired image dimensions");
+		width=scaledw;  height=scaledh;
+		scale_denom=i;
+	}
 
 	if(flags&TJ_YUV)
 	{
@@ -591,10 +636,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle h,
 		if(pitch==0) pitch=j->dinfo.output_width*ps;
 		if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)
 			*j->dinfo.output_height))==NULL)
-		{
-			jpeg_finish_decompress(&j->dinfo);
 			_throw("Memory allocation failed in tjInitDecompress()");
-		}
 		for(i=0; i<j->dinfo.output_height; i++)
 		{
 			if(flags&TJ_BOTTOMUP)
@@ -610,6 +652,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle h,
 	jpeg_finish_decompress(&j->dinfo);
 
 	bailout:
+	if(j->dinfo.global_state>DSTATE_START) jpeg_abort_decompress(&j->dinfo);
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
 		if(tmpbuf[i]) free(tmpbuf[i]);
@@ -620,19 +663,6 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle h,
 	return retval;
 }
 
-
-DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
-	unsigned char *srcbuf, unsigned long size,
-	unsigned char *dstbuf, int width, int pitch, int height, int ps,
-	int flags)
-{
-	if(width<=0 || height<=0)
-	{
-		sprintf(lasterror, "Invalid argument in tjDecompress()");
-		return -1;
-	}
-	return tjDecompress2(h, srcbuf, size, dstbuf, pitch, ps, 1, 1, flags);
-}
 
 // General
 

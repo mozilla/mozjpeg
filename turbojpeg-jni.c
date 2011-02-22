@@ -169,7 +169,7 @@ JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompr
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	(JNIEnv *env, jobject obj, jbyteArray src, jlong size, jbyteArray dst,
-		jint pitch, jint pixelsize, jint scale_num, jint scale_denom, jint flags)
+		jint width, jint pitch, jint height, jint pixelsize, jint flags)
 {
 	tjhandle handle=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
@@ -179,8 +179,8 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
-	if(tjDecompress2(handle, srcbuf, (unsigned long)size, dstbuf, pitch,
-		pixelsize, scale_num, scale_denom, flags)==-1)
+	if(tjDecompress(handle, srcbuf, (unsigned long)size, dstbuf, width, pitch,
+		height, pixelsize, flags)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
 		(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);

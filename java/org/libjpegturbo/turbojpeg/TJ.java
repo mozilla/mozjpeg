@@ -30,31 +30,31 @@ package org.libjpegturbo.turbojpeg;
 
 final public class TJ {
 
-  // Subsampling options
+  // Chrominance subsampling options
   final public static int
-    NUMSUBOPT  = 4,
-    SAMP444    = 0,
-    SAMP422    = 1,
-    SAMP420    = 2,
-    GRAYSCALE  = 3;
+    NUMSAMPOPT = 4,
+    SAMP_444   = 0,
+    SAMP_422   = 1,
+    SAMP_420   = 2,
+    SAMP_GRAY  = 3;
 
-  // Pixel formats
+  // Bitmap pixel formats
   final public static int
-    NUMPIXFORMATS = 7,
-    RGB           = 0,
-    BGR           = 1,
-    RGBX          = 2,
-    BGRX          = 3,
-    XBGR          = 4,
-    XRGB          = 5,
-    YUV           = 6;
+    NUMPFOPT = 7,
+    PF_RGB   = 0,
+    PF_BGR   = 1,
+    PF_RGBX  = 2,
+    PF_BGRX  = 3,
+    PF_XBGR  = 4,
+    PF_XRGB  = 5,
+    PF_GRAY  = 6;
 
   final public static int pixelSize[] = {
-    3, 3, 4, 4, 4, 4, 3
+    3, 3, 4, 4, 4, 4, 1
   };
 
-  public static int getPixelSize(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPIXFORMATS)
+  final public static int getPixelSize(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
       throw new Exception("Invalid pixel format");
     return pixelSize[pixelFormat];
   }
@@ -66,27 +66,31 @@ final public class TJ {
     FORCESSE     = 16,
     FORCESSE2    = 32,
     FORCESSE3    = 128,
-    FASTUPSAMPLE = 256;
+    FASTUPSAMPLE = 256,
+    YUV          = 512;
 
   final private static int
     TJ_BGR        = 1,
-    TJ_ALPHAFIRST = 64,
-    TJ_YUV        = 512;
+    TJ_ALPHAFIRST = 64;
 
   final private static int flags[] = {
-    0, TJ_BGR, 0, TJ_BGR, TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST, TJ_YUV
+    0, TJ_BGR, 0, TJ_BGR, TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST, 0
   };
 
-  public static int getFlags(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPIXFORMATS)
+  final public static int getFlags(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
       throw new Exception("Invalid pixel format");
     return flags[pixelFormat];
   }
 
-  public native final static long bufSize(int width, int height)
+  public native final static int bufSize(int width, int height)
     throws Exception;
 
-  public native final static long bufSizeYUV(int width, int height,
+  public native final static int bufSizeYUV(int width, int height,
     int subsamp)
     throws Exception;
+
+  static {
+    System.loadLibrary("turbojpeg");
+  }
 };

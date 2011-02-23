@@ -7,32 +7,32 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef org_libjpegturbo_turbojpeg_TJ_NUMSUBOPT
-#define org_libjpegturbo_turbojpeg_TJ_NUMSUBOPT 4L
-#undef org_libjpegturbo_turbojpeg_TJ_SAMP444
-#define org_libjpegturbo_turbojpeg_TJ_SAMP444 0L
-#undef org_libjpegturbo_turbojpeg_TJ_SAMP422
-#define org_libjpegturbo_turbojpeg_TJ_SAMP422 1L
-#undef org_libjpegturbo_turbojpeg_TJ_SAMP420
-#define org_libjpegturbo_turbojpeg_TJ_SAMP420 2L
-#undef org_libjpegturbo_turbojpeg_TJ_GRAYSCALE
-#define org_libjpegturbo_turbojpeg_TJ_GRAYSCALE 3L
-#undef org_libjpegturbo_turbojpeg_TJ_NUMPIXFORMATS
-#define org_libjpegturbo_turbojpeg_TJ_NUMPIXFORMATS 7L
-#undef org_libjpegturbo_turbojpeg_TJ_RGB
-#define org_libjpegturbo_turbojpeg_TJ_RGB 0L
-#undef org_libjpegturbo_turbojpeg_TJ_BGR
-#define org_libjpegturbo_turbojpeg_TJ_BGR 1L
-#undef org_libjpegturbo_turbojpeg_TJ_RGBX
-#define org_libjpegturbo_turbojpeg_TJ_RGBX 2L
-#undef org_libjpegturbo_turbojpeg_TJ_BGRX
-#define org_libjpegturbo_turbojpeg_TJ_BGRX 3L
-#undef org_libjpegturbo_turbojpeg_TJ_XBGR
-#define org_libjpegturbo_turbojpeg_TJ_XBGR 4L
-#undef org_libjpegturbo_turbojpeg_TJ_XRGB
-#define org_libjpegturbo_turbojpeg_TJ_XRGB 5L
-#undef org_libjpegturbo_turbojpeg_TJ_YUV
-#define org_libjpegturbo_turbojpeg_TJ_YUV 6L
+#undef org_libjpegturbo_turbojpeg_TJ_NUMSAMPOPT
+#define org_libjpegturbo_turbojpeg_TJ_NUMSAMPOPT 4L
+#undef org_libjpegturbo_turbojpeg_TJ_SAMP_444
+#define org_libjpegturbo_turbojpeg_TJ_SAMP_444 0L
+#undef org_libjpegturbo_turbojpeg_TJ_SAMP_422
+#define org_libjpegturbo_turbojpeg_TJ_SAMP_422 1L
+#undef org_libjpegturbo_turbojpeg_TJ_SAMP_420
+#define org_libjpegturbo_turbojpeg_TJ_SAMP_420 2L
+#undef org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY
+#define org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY 3L
+#undef org_libjpegturbo_turbojpeg_TJ_NUMPFOPT
+#define org_libjpegturbo_turbojpeg_TJ_NUMPFOPT 7L
+#undef org_libjpegturbo_turbojpeg_TJ_PF_RGB
+#define org_libjpegturbo_turbojpeg_TJ_PF_RGB 0L
+#undef org_libjpegturbo_turbojpeg_TJ_PF_BGR
+#define org_libjpegturbo_turbojpeg_TJ_PF_BGR 1L
+#undef org_libjpegturbo_turbojpeg_TJ_PF_RGBX
+#define org_libjpegturbo_turbojpeg_TJ_PF_RGBX 2L
+#undef org_libjpegturbo_turbojpeg_TJ_PF_BGRX
+#define org_libjpegturbo_turbojpeg_TJ_PF_BGRX 3L
+#undef org_libjpegturbo_turbojpeg_TJ_PF_XBGR
+#define org_libjpegturbo_turbojpeg_TJ_PF_XBGR 4L
+#undef org_libjpegturbo_turbojpeg_TJ_PF_XRGB
+#define org_libjpegturbo_turbojpeg_TJ_PF_XRGB 5L
+#undef org_libjpegturbo_turbojpeg_TJ_PF_GRAY
+#define org_libjpegturbo_turbojpeg_TJ_PF_GRAY 6L
 #undef org_libjpegturbo_turbojpeg_TJ_BOTTOMUP
 #define org_libjpegturbo_turbojpeg_TJ_BOTTOMUP 2L
 #undef org_libjpegturbo_turbojpeg_TJ_FORCEMMX
@@ -45,26 +45,26 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_FORCESSE3 128L
 #undef org_libjpegturbo_turbojpeg_TJ_FASTUPSAMPLE
 #define org_libjpegturbo_turbojpeg_TJ_FASTUPSAMPLE 256L
+#undef org_libjpegturbo_turbojpeg_TJ_YUV
+#define org_libjpegturbo_turbojpeg_TJ_YUV 512L
 #undef org_libjpegturbo_turbojpeg_TJ_TJ_BGR
 #define org_libjpegturbo_turbojpeg_TJ_TJ_BGR 1L
 #undef org_libjpegturbo_turbojpeg_TJ_TJ_ALPHAFIRST
 #define org_libjpegturbo_turbojpeg_TJ_TJ_ALPHAFIRST 64L
-#undef org_libjpegturbo_turbojpeg_TJ_TJ_YUV
-#define org_libjpegturbo_turbojpeg_TJ_TJ_YUV 512L
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJ
  * Method:    bufSize
- * Signature: (II)J
+ * Signature: (II)I
  */
-JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
   (JNIEnv *, jclass, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJ
  * Method:    bufSizeYUV
- * Signature: (III)J
+ * Signature: (III)I
  */
-JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
   (JNIEnv *, jclass, jint, jint, jint);
 
 #ifdef __cplusplus

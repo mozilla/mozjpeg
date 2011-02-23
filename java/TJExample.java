@@ -191,6 +191,7 @@ public class TJExample {
         fos.close();
       }
       else {
+        System.out.print("\n");
         file = new File(argv[1]);
         ImageIO.write(img, outFormat, file);
       }

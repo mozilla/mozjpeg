@@ -65,6 +65,8 @@ public class TJDecompressor {
 
   public int getSubsamp() throws Exception {
     if(jpegSubsamp < 0) throw new Exception("JPEG buffer not initialized");
+    if(jpegSubsamp >= TJ.NUMSAMPOPT)
+      throw new Exception("JPEG header information is invalid");
     return jpegSubsamp;
   }
 

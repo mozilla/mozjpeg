@@ -35,70 +35,76 @@ public class TJDecompressor {
   }
 
   public TJDecompressor(byte [] buf) throws Exception {
-    setJPEGBuffer(buf);
+    setJPEGBuffer(buf, buf.length);
   }
 
-  public void setJPEGBuffer(byte [] buf) throws Exception {
+  public TJDecompressor(byte [] buf, int bufSize) throws Exception {
+    setJPEGBuffer(buf, bufSize);
+  }
+
+  public void setJPEGBuffer(byte [] buf, int bufSize) throws Exception {
     if(handle == 0) init();
-    if(buf == null) throw new Exception("Invalid argument in setJPEGBuffer()");
+    if(buf == null || bufSize < 1)
+      throw new Exception("Invalid argument in setJPEGBuffer()");
     jpegBuf = buf;
-    decompressHeader();
+    jpegBufSize = bufSize;
+    decompressHeader(jpegBuf, jpegBufSize);
   }
 
   public int getWidth() throws Exception {
-    if(header.width < 1) throw new Exception("JPEG buffer not initialized");
-    return header.width;
+    if(jpegWidth < 1) throw new Exception("JPEG buffer not initialized");
+    return jpegWidth;
   }
 
   public int getHeight() throws Exception {
-    if(header.height < 1) throw new Exception("JPEG buffer not initialized");
-    return header.height;
+    if(jpegHeight < 1) throw new Exception("JPEG buffer not initialized");
+    return jpegHeight;
   }
 
   public int getSubsamp() throws Exception {
-    if(header.subsamp < 0) throw new Exception("JPEG buffer not initialized");
-    return header.subsamp;
+    if(jpegSubsamp < 0) throw new Exception("JPEG buffer not initialized");
+    return jpegSubsamp;
   }
 
   public int getScaledWidth(int desired_width, int desired_height)
     throws Exception {
-    if(header.width < 1 || header.height < 1)
+    if(jpegWidth < 1 || jpegHeight < 1)
       throw new Exception("JPEG buffer not initialized");
-    return getScaledWidth(header.width, header.height, desired_width,
+    return getScaledWidth(jpegWidth, jpegHeight, desired_width,
       desired_height);
   }
 
   public int getScaledHeight(int output_width, int output_height)
     throws Exception {
-    if(header.width < 1 || header.height < 1)
+    if(jpegWidth < 1 || jpegHeight < 1)
       throw new Exception("JPEG buffer not initialized");
-    return getScaledHeight(header.width, header.height, output_width,
+    return getScaledHeight(jpegWidth, jpegHeight, output_width,
       output_height);
   }
 
   public void decompress(byte [] dstBuf, int width, int pitch,
     int height, int pixelFormat, int flags) throws Exception {
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
-    decompress(jpegBuf, jpegBuf.length, dstBuf, width, pitch, height,
+    decompress(jpegBuf, jpegBufSize, dstBuf, width, pitch, height,
       TJ.getPixelSize(pixelFormat), flags | TJ.getFlags(pixelFormat));
   }
 
   public byte [] decompress(int width, int pitch, int height,
     int pixelFormat, int flags) throws Exception {
     if(width < 0 || height < 0 || pitch < 0 || pixelFormat < 0
-      || pixelFormat >= TJ.NUMPIXFORMATS)
+      || pixelFormat >= TJ.NUMPFOPT)
       throw new Exception("Invalid argument in decompress()");
     int pixelSize = TJ.getPixelSize(pixelFormat);
     int scaledWidth = getScaledWidth(width, height);
     int scaledHeight = getScaledHeight(width, height);
     if(pitch == 0) pitch = scaledWidth * pixelSize;
-    long bufSize;
-    if(pixelFormat == TJ.YUV)
-      bufSize = TJ.bufSizeYUV(width, height, header.subsamp);
+    int bufSize;
+    if((flags&TJ.YUV)!=0)
+      bufSize = TJ.bufSizeYUV(width, height, jpegSubsamp);
     else bufSize = pitch * scaledHeight;
-    byte [] buf = new byte[(int)bufSize];
+    byte [] buf = new byte[bufSize];
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
-    decompress(jpegBuf, jpegBuf.length, buf, width, pitch, height,
+    decompress(jpegBuf, jpegBufSize, buf, width, pitch, height,
       TJ.getPixelSize(pixelFormat), flags | TJ.getFlags(pixelFormat));
     return buf;
   }
@@ -121,14 +127,10 @@ public class TJDecompressor {
 
   private native void destroy() throws Exception;
 
-  private native TJHeaderInfo decompressHeader(byte [] srcBuf, long size)
+  private native void decompressHeader(byte [] srcBuf, int size)
     throws Exception;
 
-  private void decompressHeader() throws Exception {
-    header = decompressHeader(jpegBuf, jpegBuf.length);
-  }
-
-  private native void decompress(byte [] srcBuf, long size, byte [] dstBuf,
+  private native void decompress(byte [] srcBuf, int size, byte [] dstBuf,
     int width, int pitch, int height, int pixelSize, int flags)
     throws Exception;
 
@@ -144,5 +146,8 @@ public class TJDecompressor {
 
   private long handle = 0;
   private byte [] jpegBuf = null;
-  TJHeaderInfo header = null;
+  private int jpegBufSize = 0;
+  private int jpegWidth = 0;
+  private int jpegHeight = 0;
+  private int jpegSubsamp = -1;
 };

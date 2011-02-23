@@ -84,10 +84,10 @@ public class TJExample {
       int subsamp=tjd.getSubsamp();
       System.out.print("Source Image: "+width+" x "+height+" pixels, ");
       switch(subsamp) {
-        case TJ.SAMP444:  System.out.println("4:4:4 subsampling");  break;
-        case TJ.SAMP422:  System.out.println("4:2:2 subsampling");  break;
-        case TJ.SAMP420:  System.out.println("4:2:0 subsampling");  break;
-        case TJ.GRAYSCALE:  System.out.println("Grayscale");  break;
+        case TJ.SAMP_444:  System.out.println("4:4:4 subsampling");  break;
+        case TJ.SAMP_422:  System.out.println("4:2:2 subsampling");  break;
+        case TJ.SAMP_420:  System.out.println("4:2:0 subsampling");  break;
+        case TJ.SAMP_GRAY:  System.out.println("Grayscale");  break;
         default:  System.out.println("Unknown subsampling");  break;
       }
 
@@ -98,17 +98,17 @@ public class TJExample {
           +" pixels");
       }
 
-      byte [] tmpbuf=tjd.decompress(width, 0, height, TJ.BGR, TJ.BOTTOMUP);
+      byte [] tmpbuf=tjd.decompress(width, 0, height, TJ.PF_BGR, TJ.BOTTOMUP);
       tjd.close();
 
-      TJCompressor tjc=new TJCompressor(tmpbuf, width, 0, height, TJ.BGR);
-      byte [] outputbuf=new byte[(int)TJ.bufSize(width, height)];
-      long outputsize=tjc.compress(outputbuf, subsamp, 95, TJ.BOTTOMUP);
+      TJCompressor tjc=new TJCompressor(tmpbuf, width, 0, height, TJ.PF_BGR);
+      byte [] outputbuf=new byte[TJ.bufSize(width, height)];
+      int outputsize=tjc.compress(outputbuf, subsamp, 95, TJ.BOTTOMUP);
       tjc.close();
 
       file=new File(argv[1]);
       FileOutputStream fos=new FileOutputStream(file);
-      fos.write(outputbuf, 0, (int)outputsize);
+      fos.write(outputbuf, 0, outputsize);
       fos.close();
 
     } catch(Exception e) {

@@ -41,28 +41,27 @@
 
 #define bailif0(f) {if(!(f)) goto bailout;}
 
-#define gethandle() {  \
+#define gethandle()  \
 	jclass _cls=(*env)->GetObjectClass(env, obj);  \
 	jfieldID _fid;  \
 	if(!_cls) goto bailout;  \
 	bailif0(_fid=(*env)->GetFieldID(env, _cls, "handle", "J"));  \
 	handle=(tjhandle)(long)(*env)->GetLongField(env, obj, _fid);  \
-}
 
-JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 	(JNIEnv *env, jclass cls, jint width, jint height)
 {
-	jlong retval=TJBUFSIZE(width, height);
+	jint retval=(jint)TJBUFSIZE(width, height);
 	if(retval==-1) _throw(tjGetErrorStr());
 
 	bailout:
 	return retval;
 }
 
-JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
 	(JNIEnv *env, jclass cls, jint width, jint height, jint subsamp)
 {
-	jlong retval=TJBUFSIZEYUV(width, height, subsamp);
+	jint retval=(jint)TJBUFSIZEYUV(width, height, subsamp);
 	if(retval==-1) _throw(tjGetErrorStr());
 
 	bailout:
@@ -87,7 +86,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 	return;
 }
 
-JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress
 	(JNIEnv *env, jobject obj, jbyteArray src, jint width, jint pitch,
 		jint height, jint pixelsize, jbyteArray dst, jint jpegsubsamp,
 		jint jpegqual, jint flags)
@@ -112,7 +111,7 @@ JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress
 	bailout:
 	if(dstbuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
 	if(srcbuf) (*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
-	return size;
+	return (jint)size;
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
@@ -123,6 +122,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
 	gethandle();
 
 	if(tjDestroy(handle)==-1) _throw(tjGetErrorStr());
+	(*env)->SetLongField(env, obj, _fid, 0);
 
 	bailout:
 	return;
@@ -169,15 +169,12 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledH
 	return output_height;
 }
 
-JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader
-	(JNIEnv *env, jobject obj, jbyteArray src, jlong size)
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader
+	(JNIEnv *env, jobject obj, jbyteArray src, jint size)
 {
-	jclass jhicls=NULL;
-	jfieldID fid;
 	tjhandle handle=0;
 	unsigned char *srcbuf=NULL;
 	int width=0, height=0, jpegsubsamp=-1;
-	jobject jhiobj=NULL;
 
 	gethandle();
 
@@ -191,22 +188,19 @@ JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompr
 	}
 	(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);  srcbuf=NULL;
 
-	bailif0(jhicls=(*env)->FindClass(env, "org/libjpegturbo/turbojpeg/TJHeaderInfo"));
-	bailif0(jhiobj=(*env)->AllocObject(env, jhicls));
-
-	bailif0(fid=(*env)->GetFieldID(env, jhicls, "subsamp", "I"));
-	(*env)->SetIntField(env, jhiobj, fid, jpegsubsamp);
-	bailif0(fid=(*env)->GetFieldID(env, jhicls, "width", "I"));
-	(*env)->SetIntField(env, jhiobj, fid, width);
-	bailif0(fid=(*env)->GetFieldID(env, jhicls, "height", "I"));
-	(*env)->SetIntField(env, jhiobj, fid, height);
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
+	(*env)->SetIntField(env, obj, _fid, jpegsubsamp);
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
+	(*env)->SetIntField(env, obj, _fid, width);
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
+	(*env)->SetIntField(env, obj, _fid, height);
 
 	bailout:
-	return jhiobj;
+	return;
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
-	(JNIEnv *env, jobject obj, jbyteArray src, jlong size, jbyteArray dst,
+	(JNIEnv *env, jobject obj, jbyteArray src, jint size, jbyteArray dst,
 		jint width, jint pitch, jint height, jint pixelsize, jint flags)
 {
 	tjhandle handle=0;

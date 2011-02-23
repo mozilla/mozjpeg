@@ -26,18 +26,18 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJDecompressor
  * Method:    decompressHeader
- * Signature: ([BJ)Lorg/libjpegturbo/turbojpeg/TJHeaderInfo;
+ * Signature: ([BI)V
  */
-JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader
-  (JNIEnv *, jobject, jbyteArray, jlong);
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader
+  (JNIEnv *, jobject, jbyteArray, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJDecompressor
  * Method:    decompress
- * Signature: ([BJ[BIIIII)V
+ * Signature: ([BI[BIIIII)V
  */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
-  (JNIEnv *, jobject, jbyteArray, jlong, jbyteArray, jint, jint, jint, jint, jint);
+  (JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jint, jint, jint, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJDecompressor

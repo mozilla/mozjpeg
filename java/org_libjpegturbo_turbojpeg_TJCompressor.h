@@ -26,9 +26,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    compress
- * Signature: ([BIIII[BIII)J
+ * Signature: ([BIIII[BIII)I
  */
-JNIEXPORT jlong JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress
   (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
 
 #ifdef __cplusplus

@@ -114,7 +114,7 @@ void dumpbuf(unsigned char *buf, int w, int h, int ps, int scalefactor,
 		for(j=0; j<w; j++)
 		{
 			printf("%.3d/%.3d/%.3d ", buf[(w*i+j)*ps+roffset],
-				buf[(w*i+j)*ps+roffset], buf[(w*i+j)*ps+roffset]);
+				buf[(w*i+j)*ps+goffset], buf[(w*i+j)*ps+boffset]);
 		}
 		printf("\n");
 	}

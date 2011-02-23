@@ -86,7 +86,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 	return;
 }
 
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3BIIII_3BIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint width, jint pitch,
 		jint height, jint pixelsize, jbyteArray dst, jint jpegsubsamp,
 		jint jpegqual, jint flags)
@@ -102,6 +102,33 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress
 
 	if(tjCompress(handle, srcbuf, width, pitch, height, pixelsize, dstbuf,
 		&size, jpegsubsamp, jpegqual, flags)==-1)
+	{
+		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
+		(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
+		_throw(tjGetErrorStr());
+	}
+
+	bailout:
+	if(dstbuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
+	if(srcbuf) (*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
+	return (jint)size;
+}
+
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3IIII_3BIII
+	(JNIEnv *env, jobject obj, jintArray src, jint width, jint pitch,
+		jint height, jbyteArray dst, jint jpegsubsamp, jint jpegqual, jint flags)
+{
+	tjhandle handle=0;
+	unsigned long size=0;
+	unsigned char *srcbuf=NULL, *dstbuf=NULL;
+
+	gethandle();
+
+	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
+	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
+
+	if(tjCompress(handle, srcbuf, width, pitch*sizeof(jint), height,
+		sizeof(jint),	dstbuf, &size, jpegsubsamp, jpegqual, flags)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
 		(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
@@ -199,7 +226,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	return;
 }
 
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3BIIIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint size, jbyteArray dst,
 		jint width, jint pitch, jint height, jint pixelsize, jint flags)
 {
@@ -223,6 +250,33 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	if(dstbuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
 	if(srcbuf) (*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
 	return;
+}
+
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3IIIII
+	(JNIEnv *env, jobject obj, jbyteArray src, jint size, jintArray dst,
+		jint width, jint pitch, jint height, jint flags)
+{
+	tjhandle handle=0;
+	unsigned char *srcbuf=NULL, *dstbuf=NULL;
+
+	gethandle();
+
+	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
+	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
+
+	if(tjDecompress(handle, srcbuf, (unsigned long)size, dstbuf, width,
+    pitch*sizeof(jint), height, sizeof(jint), flags)==-1)
+	{
+		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
+		(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
+		_throw(tjGetErrorStr());
+	}
+
+	bailout:
+	if(dstbuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
+	if(srcbuf) (*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
+	return;
+
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy

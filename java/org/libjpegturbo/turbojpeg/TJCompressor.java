@@ -28,6 +28,8 @@
 
 package org.libjpegturbo.turbojpeg;
 
+import java.awt.image.*;
+
 public class TJCompressor {
 
   public TJCompressor() throws Exception {
@@ -60,6 +62,50 @@ public class TJCompressor {
         flags | TJ.getFlags(bitmapPixelFormat));
   }
 
+  public int compress(BufferedImage srcImage, byte [] dstBuf, int jpegSubsamp,
+    int jpegQual, int flags) throws Exception {
+    if(srcImage == null || flags < 0)
+      throw new Exception("Invalid argument in decompress()");
+    flags &= ~(TJ.YUV);
+    int width = srcImage.getWidth();
+    int height = srcImage.getHeight();
+    int pixelFormat;  boolean intPixels=false;
+    switch(srcImage.getType()) {
+      case BufferedImage.TYPE_3BYTE_BGR:
+        pixelFormat=TJ.PF_BGR;  break;
+      case BufferedImage.TYPE_BYTE_GRAY:
+        pixelFormat=TJ.PF_GRAY;  break;
+      case BufferedImage.TYPE_INT_BGR:
+        pixelFormat=TJ.PF_RGBX;  intPixels=true;  break;
+      case BufferedImage.TYPE_INT_RGB:
+        pixelFormat=TJ.PF_BGRX;  intPixels=true;  break;
+      default:
+        throw new Exception("Unsupported BufferedImage format");
+    }
+    WritableRaster wr = srcImage.getRaster();
+    if(intPixels) {
+      SinglePixelPackedSampleModel sm =
+        (SinglePixelPackedSampleModel)srcImage.getSampleModel();
+      int pitch = sm.getScanlineStride();
+      DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
+      int [] buf = db.getData();
+      return compress(buf, width, pitch, height, dstBuf, jpegSubsamp, jpegQual,
+        flags | TJ.getFlags(pixelFormat));
+    }
+    else {
+      ComponentSampleModel sm =
+        (ComponentSampleModel)srcImage.getSampleModel();
+      int pixelSize = sm.getPixelStride();
+      if(pixelSize != TJ.pixelSize[pixelFormat])
+        throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
+      int pitch = sm.getScanlineStride();
+      DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
+      byte [] buf = db.getData();
+      return compress(buf, width, pitch, height, TJ.getPixelSize(pixelFormat),
+        dstBuf, jpegSubsamp, jpegQual, flags | TJ.getFlags(pixelFormat));
+    }
+  }
+
   public void close() throws Exception {
     destroy();
   }
@@ -82,6 +128,10 @@ public class TJCompressor {
   private native int compress(byte [] srcBuf, int width, int pitch,
     int height, int pixelSize, byte [] dstbuf, int jpegSubsamp, int jpegQual,
     int flags) throws Exception;
+
+  private native int compress(int [] srcBuf, int width, int pitch,
+    int height, byte [] dstbuf, int jpegSubsamp, int jpegQual, int flags)
+    throws Exception;
 
   static {
     System.loadLibrary("turbojpeg");

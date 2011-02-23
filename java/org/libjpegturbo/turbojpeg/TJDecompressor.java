@@ -28,6 +28,8 @@
 
 package org.libjpegturbo.turbojpeg;
 
+import java.awt.image.*;
+
 public class TJDecompressor {
 
   public TJDecompressor() throws Exception {
@@ -66,47 +68,94 @@ public class TJDecompressor {
     return jpegSubsamp;
   }
 
-  public int getScaledWidth(int desired_width, int desired_height)
+  public int getScaledWidth(int desiredWidth, int desiredHeight)
     throws Exception {
     if(jpegWidth < 1 || jpegHeight < 1)
       throw new Exception("JPEG buffer not initialized");
-    return getScaledWidth(jpegWidth, jpegHeight, desired_width,
-      desired_height);
+    return getScaledWidth(jpegWidth, jpegHeight, desiredWidth,
+      desiredHeight);
   }
 
-  public int getScaledHeight(int output_width, int output_height)
+  public int getScaledHeight(int desiredWidth, int desiredHeight)
     throws Exception {
     if(jpegWidth < 1 || jpegHeight < 1)
       throw new Exception("JPEG buffer not initialized");
-    return getScaledHeight(jpegWidth, jpegHeight, output_width,
-      output_height);
+    return getScaledHeight(jpegWidth, jpegHeight, desiredWidth,
+      desiredHeight);
   }
 
-  public void decompress(byte [] dstBuf, int width, int pitch,
-    int height, int pixelFormat, int flags) throws Exception {
+  public void decompress(byte [] dstBuf, int desiredWidth, int pitch,
+    int desiredHeight, int pixelFormat, int flags) throws Exception {
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
-    decompress(jpegBuf, jpegBufSize, dstBuf, width, pitch, height,
-      TJ.getPixelSize(pixelFormat), flags | TJ.getFlags(pixelFormat));
+    decompress(jpegBuf, jpegBufSize, dstBuf, desiredWidth, pitch,
+      desiredHeight, TJ.getPixelSize(pixelFormat),
+      flags | TJ.getFlags(pixelFormat));
   }
 
-  public byte [] decompress(int width, int pitch, int height,
+  public byte [] decompress(int desiredWidth, int pitch, int desiredHeight,
     int pixelFormat, int flags) throws Exception {
-    if(width < 0 || height < 0 || pitch < 0 || pixelFormat < 0
-      || pixelFormat >= TJ.NUMPFOPT)
+    if(desiredWidth < 0 || desiredHeight < 0 || pitch < 0 || pixelFormat < 0
+      || pixelFormat >= TJ.NUMPFOPT || flags < 0)
       throw new Exception("Invalid argument in decompress()");
     int pixelSize = TJ.getPixelSize(pixelFormat);
-    int scaledWidth = getScaledWidth(width, height);
-    int scaledHeight = getScaledHeight(width, height);
+    int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
+    int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
     if(pitch == 0) pitch = scaledWidth * pixelSize;
     int bufSize;
     if((flags&TJ.YUV)!=0)
-      bufSize = TJ.bufSizeYUV(width, height, jpegSubsamp);
+      bufSize = TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp);
     else bufSize = pitch * scaledHeight;
     byte [] buf = new byte[bufSize];
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
-    decompress(jpegBuf, jpegBufSize, buf, width, pitch, height,
+    decompress(jpegBuf, jpegBufSize, buf, desiredWidth, pitch, desiredHeight,
       TJ.getPixelSize(pixelFormat), flags | TJ.getFlags(pixelFormat));
     return buf;
+  }
+
+  public void decompress(BufferedImage dstImage, int flags) throws Exception {
+    if(dstImage == null || flags < 0)
+      throw new Exception("Invalid argument in decompress()");
+    flags &= ~(TJ.YUV);
+    int desiredWidth = dstImage.getWidth();
+    int desiredHeight = dstImage.getHeight();
+    int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
+    int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
+    if(scaledWidth != desiredWidth || scaledHeight != desiredHeight)
+      throw new Exception("BufferedImage dimensions do not match a scaled image size that TurboJPEG is capable of generating.");
+    int pixelFormat;  boolean intPixels=false;
+    switch(dstImage.getType()) {
+      case BufferedImage.TYPE_3BYTE_BGR:
+        pixelFormat=TJ.PF_BGR;  break;
+      case BufferedImage.TYPE_BYTE_GRAY:
+        pixelFormat=TJ.PF_GRAY;  break;
+      case BufferedImage.TYPE_INT_BGR:
+        pixelFormat=TJ.PF_RGBX;  intPixels=true;  break;
+      case BufferedImage.TYPE_INT_RGB:
+        pixelFormat=TJ.PF_BGRX;  intPixels=true;  break;
+      default:
+        throw new Exception("Unsupported BufferedImage format");
+    }
+    WritableRaster wr = dstImage.getRaster();
+    if(intPixels) {
+      SinglePixelPackedSampleModel sm =
+        (SinglePixelPackedSampleModel)dstImage.getSampleModel();
+      int pitch = sm.getScanlineStride();
+      DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
+      int [] buf = db.getData();
+      decompress(jpegBuf, jpegBufSize, buf, scaledWidth, pitch, scaledHeight,
+        flags | TJ.getFlags(pixelFormat));
+    }
+    else {
+      ComponentSampleModel sm =
+        (ComponentSampleModel)dstImage.getSampleModel();
+      int pixelSize = sm.getPixelStride();
+      if(pixelSize != TJ.pixelSize[pixelFormat])
+        throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
+      int pitch = sm.getScanlineStride();
+      DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
+      byte [] buf = db.getData();
+      decompress(buf, scaledWidth, pitch, scaledHeight, pixelFormat, flags);
+    }
   }
 
   public void close() throws Exception {
@@ -131,14 +180,18 @@ public class TJDecompressor {
     throws Exception;
 
   private native void decompress(byte [] srcBuf, int size, byte [] dstBuf,
-    int width, int pitch, int height, int pixelSize, int flags)
+    int desiredWidth, int pitch, int desiredHeight, int pixelSize, int flags)
     throws Exception;
 
-  private native int getScaledWidth(int input_width, int input_height,
-    int output_width, int output_height) throws Exception;
+  private native void decompress(byte [] srcBuf, int size, int [] dstBuf,
+    int desiredWidth, int pitch, int desiredHeight, int flags)
+    throws Exception;
 
-  private native int getScaledHeight(int input_width, int input_height,
-    int output_width, int output_height) throws Exception;
+  private native int getScaledWidth(int jpegWidth, int jpegHeight,
+    int desiredWidth, int desiredHeight) throws Exception;
+
+  private native int getScaledHeight(int jpegWidth, int jpegHeight,
+    int desiredWidth, int desiredHeight) throws Exception;
 
   static {
     System.loadLibrary("turbojpeg");

@@ -94,10 +94,10 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 	if(!quiet)
 	{
 		if(yuv==YUVENCODE)
-			printf("\n>>>>>  %s (%s) <--> YUV %s  <<<<<\n", _pfname[pf],
+			printf(">>>>>  %s (%s) <--> YUV %s  <<<<<\n", _pfname[pf],
 				bu?"Bottom-up":"Top-down", _subnamel[jpegsub]);
 		else
-			printf("\n>>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n", _pfname[pf],
+			printf(">>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n", _pfname[pf],
 				bu?"Bottom-up":"Top-down", _subnamel[jpegsub], qual);
 	}
 	if(yuv==YUVDECODE) dotile=0;
@@ -188,7 +188,10 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 			fclose(outfile);  outfile=NULL;
 			if(!quiet) printf("Reference image written to %s\n", tempstr);
 		}
-		if(yuv==YUVENCODE) goto bailout;
+		if(yuv==YUVENCODE)
+		{
+			if(quiet==1) printf("\n");  goto bailout;
+		}
 
 		// Decompression test
 		if(yuv==YUVDECODE) flags |= TJ_YUV;
@@ -353,7 +356,7 @@ void dodecomptest(char *filename, int pf, int bu, int useppm,
 
 	if(quiet==1)
 	{
-		printf("\nAll performance values in Mpixels/sec\n\n");
+		printf("All performance values in Mpixels/sec\n\n");
 		printf("Bitmap\tBitmap\tImage Size\tDecomp\n"),
 		printf("Format\tOrder\t X    Y  \tPerf\n\n");
 		printf("%s\t%s\t%-4d %-4d\t", _pfname[pf], bu?"BU":"TD", w, h);
@@ -365,9 +368,9 @@ void dodecomptest(char *filename, int pf, int bu, int useppm,
 	if(!quiet)
 	{
 		if(yuv==YUVDECODE)
-			printf("\n>>>>>  JPEG --> YUV %s  <<<<<\n", _subnamel[jpegsub]);
+			printf(">>>>>  JPEG --> YUV %s  <<<<<\n", _subnamel[jpegsub]);
 		else
-			printf("\n>>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
+			printf(">>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
 				bu?"Bottom-up":"Top-down");
 		printf("\nImage size: %d x %d\n", w, h);
 	}
@@ -464,18 +467,20 @@ int main(int argc, char *argv[])
 		if(!stricmp(temp, ".jpg") || !stricmp(temp, ".jpeg")) decomponly=1;
 	}
 
+	printf("\n");
+
 	if(argc>minarg)
 	{
 		for(i=minarg; i<argc; i++)
 		{
 			if(!stricmp(argv[i], "-yuvencode"))
 			{
-				printf("Testing YUV planar encoding\n");
+				printf("Testing YUV planar encoding\n\n");
 				yuv=YUVENCODE;  hiqual=qual=100;
 			}
 			if(!stricmp(argv[i], "-yuvdecode"))
 			{
-				printf("Testing YUV planar decoding\n");
+				printf("Testing YUV planar decoding\n\n");
 				yuv=YUVDECODE;
 			}
 		}
@@ -503,27 +508,27 @@ int main(int argc, char *argv[])
 			if(!stricmp(argv[i], "-tile")) dotile=1;
 			if(!stricmp(argv[i], "-forcesse3"))
 			{
-				printf("Using SSE3 code\n");
+				printf("Using SSE3 code\n\n");
 				forcesse3=1;
 			}
 			if(!stricmp(argv[i], "-forcesse2"))
 			{
-				printf("Using SSE2 code\n");
+				printf("Using SSE2 code\n\n");
 				forcesse2=1;
 			}
 			if(!stricmp(argv[i], "-forcesse"))
 			{
-				printf("Using SSE code\n");
+				printf("Using SSE code\n\n");
 				forcesse=1;
 			}
 			if(!stricmp(argv[i], "-forcemmx"))
 			{
-				printf("Using MMX code\n");
+				printf("Using MMX code\n\n");
 				forcemmx=1;
 			}
 			if(!stricmp(argv[i], "-fastupsample"))
 			{
-				printf("Using fast upsampling code\n");
+				printf("Using fast upsampling code\n\n");
 				fastupsample=1;
 			}
 			if(!stricmp(argv[i], "-rgb")) pf=BMP_RGB;
@@ -548,7 +553,7 @@ int main(int argc, char *argv[])
 
 	if(quiet==1 && !decomponly)
 	{
-		printf("\nAll performance values in Mpixels/sec\n\n");
+		printf("All performance values in Mpixels/sec\n\n");
 		printf("Bitmap\tBitmap\tJPEG\tJPEG\tTile Size\tCompr\tCompr\tDecomp\n");
 		printf("Format\tOrder\tFormat\tQual\t X    Y  \tPerf \tRatio\tPerf\n\n");
 	}
@@ -556,19 +561,21 @@ int main(int argc, char *argv[])
 	if(decomponly)
 	{
 		dodecomptest(argv[1], pf, bu, 1, quiet);
+		printf("\n");
 		goto bailout;
 	}
 	for(i=hiqual; i>=qual; i--)
 		dotest(bmpbuf, w, h, pf, bu, TJ_GRAYSCALE, i, argv[1], dotile, useppm, quiet);
-	if(quiet) printf("\n");
+	printf("\n");
 	for(i=hiqual; i>=qual; i--)
 		dotest(bmpbuf, w, h, pf, bu, TJ_420, i, argv[1], dotile, useppm, quiet);
-	if(quiet) printf("\n");
+	printf("\n");
 	for(i=hiqual; i>=qual; i--)
 		dotest(bmpbuf, w, h, pf, bu, TJ_422, i, argv[1], dotile, useppm, quiet);
-	if(quiet) printf("\n");
+	printf("\n");
 	for(i=hiqual; i>=qual; i--)
 		dotest(bmpbuf, w, h, pf, bu, TJ_444, i, argv[1], dotile, useppm, quiet);
+	printf("\n");
 
 	bailout:
 	if(bmpbuf) free(bmpbuf);

@@ -294,6 +294,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 			-(unsigned long)(j->jdms.free_in_buffer);
 
 	bailout:
+	if(j->cinfo.global_state>CSTATE_START) jpeg_abort_compress(&j->cinfo);
 	if(row_pointer) free(row_pointer);
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -576,6 +577,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	jpeg_finish_decompress(&j->dinfo);
 
 	bailout:
+	if(j->dinfo.global_state>DSTATE_START) jpeg_abort_decompress(&j->dinfo);
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
 		if(tmpbuf[i]) free(tmpbuf[i]);

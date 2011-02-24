@@ -100,7 +100,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 			printf(">>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n", _pfname[pf],
 				bu?"Bottom-up":"Top-down", _subnamel[jpegsub], qual);
 	}
-	if(yuv==YUVDECODE) dotile=0;
+	if(yuv) dotile=0;
 	if(dotile) {tilesizex=tilesizey=4;}  else {tilesizex=w;  tilesizey=h;}
 
 	do

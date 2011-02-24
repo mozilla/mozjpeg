@@ -37,14 +37,9 @@ endif
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
 	turbojpeg-mapfile
 
-if ANON_VERSION_SCRIPT
-
-libturbojpeg_la_LDFLAGS += $(ANON_VERSION_SCRIPT_FLAG)$(srcdir)/turbojpeg-mapfile
-
-endif
-
 if VERSION_SCRIPT
 
+libturbojpeg_la_LDFLAGS += $(VERSION_SCRIPT_FLAG)$(srcdir)/turbojpeg-mapfile
 libjpeg_la_LDFLAGS += $(VERSION_SCRIPT_FLAG)libjpeg.map
 
 endif

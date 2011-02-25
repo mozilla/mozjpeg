@@ -133,7 +133,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 			}
 		}
 		ITER++;
-	}	while((elapsed=rrtime()-start)<0.05);
+	}	while((elapsed=rrtime()-start)<5.);
 	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 	hnd=NULL;
 	if(quiet)
@@ -306,7 +306,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 				}
 			}
 			ITER++;
-		} while((elapsed=rrtime()-start)<0.05);
+		} while((elapsed=rrtime()-start)<5.);
 		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 		hnd=NULL;
 		if(quiet==1)

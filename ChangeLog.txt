@@ -25,6 +25,11 @@ the RGB-to-chrominance lookup tables.
 
 [6] All packages now include jpgtest.
 
+[7] The TurboJPEG dynamic library now uses versioned symbols.
+
+[8] Added two new TurboJPEG API functions, tjEncodeYUV() and
+tjDecompressToYUV(), to replace the somewhat hackish TJ_YUV flag.
+
 
 1.0.90 (1.1 beta1)
 ==================

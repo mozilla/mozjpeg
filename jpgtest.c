@@ -44,8 +44,6 @@ const int _bindex[BMPPIXELFORMATS]={2, 2, 0, 0, 1, 3};
 const char *_pfname[]={"RGB", "RGBX", "BGR", "BGRX", "XBGR", "XRGB"};
 const char *_subnamel[NUMSUBOPT]={"4:4:4", "4:2:2", "4:2:0", "GRAY"};
 const char *_subnames[NUMSUBOPT]={"444", "422", "420", "GRAY"};
-const int _hsf[NUMSUBOPT]={1, 2, 2, 1};
-const int _vsf[NUMSUBOPT]={1, 1, 2, 1};
 
 void printsigfig(double val, int figs)
 {
@@ -78,13 +76,9 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	int i, j, ITER, rgbbufalloc=0;
 	double start, elapsed;
 	int ps=_ps[pf];
-	int hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
-	int pw=PAD(w, hsf), ph=PAD(h, vsf);
-	int cw=pw/hsf, ch=ph/vsf;
-	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
-	int yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
-	int scaledw=(flags&TJ_YUV)? w : (w+scalefactor-1)/scalefactor;
-	int scaledh=(flags&TJ_YUV)? h : (h+scalefactor-1)/scalefactor;
+	int yuvsize=TJBUFSIZEYUV(w, h, jpegsub), bufsize;
+	int scaledw=(yuv==YUVDECODE)? w : (w+scalefactor-1)/scalefactor;
+	int scaledh=(yuv==YUVDECODE)? h : (h+scalefactor-1)/scalefactor;
 	int pitch=scaledw*ps;
 
 	if(qual>0)
@@ -95,21 +89,26 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
-	if(yuv==YUVDECODE) flags |= TJ_YUV;
 	if((hnd=tjInitDecompress())==NULL)
 		_throwtj("executing tjInitDecompress()");
 
 	if(rgbbuf==NULL)
 	{
-		if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*scaledh))) == NULL)
+		bufsize=(yuv==YUVDECODE? yuvsize:pitch*h);
+		if((rgbbuf=(unsigned char *)malloc(bufsize)) == NULL)
 			_throwunix("allocating image buffer");
 		rgbbufalloc=1;
 	}
 	// Grey image means decompressor did nothing
-	memset(rgbbuf, 127, max(yuvsize, pitch*scaledh));
+	memset(rgbbuf, 127, bufsize);
 
-	if(tjDecompress(hnd, jpegbuf[0], comptilesize[0], rgbbuf, scaledw, pitch,
-		scaledh, ps, flags)==-1)
+	if(yuv==YUVDECODE)
+	{
+		if(tjDecompressToYUV(hnd, jpegbuf[0], comptilesize[0], rgbbuf, flags)==-1)
+			_throwtj("executing tjDecompressToYUV()");
+	}
+	else if(tjDecompress(hnd, jpegbuf[0], comptilesize[0], rgbbuf, scaledw,
+		pitch, scaledh, ps, flags)==-1)
 		_throwtj("executing tjDecompress()");
 	ITER=0;
 	start=rrtime();
@@ -121,14 +120,20 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 			for(j=0; j<w; j+=tilesizex)
 			{
 				int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-				if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
+				if(yuv==YUVDECODE)
+				{
+					if(tjDecompressToYUV(hnd, jpegbuf[tilen], comptilesize[tilen],
+						&rgbbuf[pitch*i+ps*j], flags)==-1)
+						_throwtj("executing tjDecompressToYUV()");
+				}
+				else if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
 					&rgbbuf[pitch*i+ps*j], scaledw, pitch, scaledh, ps, flags)==-1)
 					_throwtj("executing tjDecompress()");
 				tilen++;
 			}
 		}
 		ITER++;
-	}	while((elapsed=rrtime()-start)<5.);
+	}	while((elapsed=rrtime()-start)<0.05);
 	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 	hnd=NULL;
 	if(quiet)
@@ -221,17 +226,12 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 		|(fastupsample?TJ_FASTUPSAMPLE:0);
 	int ps=_ps[pf], tilen;
 	int pitch=w*ps, yuvsize;
-	int hsf=_hsf[jpegsub], vsf=_vsf[jpegsub];
-	int pw=PAD(w, hsf), ph=PAD(h, vsf);
-	int cw=pw/hsf, ch=ph/vsf;
-	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
-	if(yuv==YUVENCODE) flags |= TJ_YUV;
 
-	yuvsize=ypitch*ph + (jpegsub==TJ_GRAYSCALE? 0:uvpitch*ch*2);
-	if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h))) == NULL)
+	if(yuv==YUVENCODE) yuvsize=TJBUFSIZEYUV(w, h, jpegsub);
+	if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h+1))) == NULL)
 		_throwunix("allocating image buffer");
 
 	if(!quiet)
@@ -258,7 +258,9 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 		memset(jpegbuf, 0, sizeof(unsigned char *)*numtilesx*numtilesy);
 		for(i=0; i<numtilesx*numtilesy; i++)
 		{
-			if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilesizex, tilesizey))) == NULL)
+			if((jpegbuf[i]=(unsigned char *)malloc(
+				yuv==YUVENCODE? TJBUFSIZEYUV(tilesizex, tilesizey, jpegsub)
+					: TJBUFSIZE(tilesizex, tilesizey))) == NULL)
 				_throwunix("allocating image buffers");
 		}
 
@@ -268,7 +270,14 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 		for(i=0; i<h; i++) memcpy(&rgbbuf[pitch*i], &srcbuf[w*ps*i], w*ps);
 		if((hnd=tjInitCompress())==NULL)
 			_throwtj("executing tjInitCompress()");
-		if(tjCompress(hnd, rgbbuf, tilesizex, pitch, tilesizey, ps,
+		if(yuv==YUVENCODE)
+		{
+			if(tjEncodeYUV(hnd, rgbbuf, tilesizex, pitch, tilesizey, ps,
+				jpegbuf[0], jpegsub, flags)==-1)
+				_throwtj("executing tjEncodeYUV()");
+			comptilesize[0]=TJBUFSIZEYUV(tilesizex, tilesizey, jpegsub);
+		}
+		else if(tjCompress(hnd, rgbbuf, tilesizex, pitch, tilesizey, ps,
 			jpegbuf[0], &comptilesize[0], jpegsub, qual, flags)==-1)
 			_throwtj("executing tjCompress()");
 		ITER=0;
@@ -281,7 +290,14 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 				for(j=0; j<w; j+=tilesizex)
 				{
 					int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-					if(tjCompress(hnd, &rgbbuf[pitch*i+j*ps], tempw, pitch,
+					if(yuv==YUVENCODE)
+					{
+						if(tjEncodeYUV(hnd, &rgbbuf[pitch*i+j*ps], tempw, pitch,
+							temph, ps, jpegbuf[tilen], jpegsub, flags)==-1)
+							_throwtj("executing tjEncodeYUV()");
+						comptilesize[tilen]=TJBUFSIZEYUV(tempw, temph, jpegsub);
+					}
+					else if(tjCompress(hnd, &rgbbuf[pitch*i+j*ps], tempw, pitch,
 						temph, ps, jpegbuf[tilen], &comptilesize[tilen], jpegsub, qual,
 						flags)==-1)
 						_throwtj("executing tjCompress()");
@@ -290,7 +306,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 				}
 			}
 			ITER++;
-		} while((elapsed=rrtime()-start)<5.);
+		} while((elapsed=rrtime()-start)<0.05);
 		if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
 		hnd=NULL;
 		if(quiet==1)

@@ -112,6 +112,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 	return (tjhandle)j;
 }
 
+
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
 	unsigned long retval=0;
@@ -126,6 +127,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 	bailout:
 	return retval;
 }
+
 
 DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 	int subsamp)
@@ -142,6 +144,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 	bailout:
 	return retval;
 }
+
 
 DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	unsigned char *srcbuf, int width, int pitch, int height, int ps,
@@ -333,6 +336,16 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 }
 
 
+DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle h,
+	unsigned char *srcbuf, int width, int pitch, int height, int ps,
+	unsigned char *dstbuf, int subsamp, int flags)
+{
+	unsigned long size;
+	return tjCompress(h, srcbuf, width, pitch, height, ps, dstbuf, &size,
+		subsamp, 0, flags|TJ_YUV);
+}
+
+
 // DEC
 
 static boolean fill_input_buffer (struct jpeg_decompress_struct *dinfo)
@@ -512,24 +525,6 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 
 	jpeg_read_header(&j->dinfo, TRUE);
 
-	jpegwidth=j->dinfo.image_width;  jpegheight=j->dinfo.image_height;
-	if(width==0) width=jpegwidth;
-	if(height==0) height=jpegheight;
-	if(width<jpegwidth || height<jpegheight)
-	{
-		for(i=1; i<=8; i*=2)
-		{
-			scaledw=(jpegwidth+i-1)/i;
-			scaledh=(jpegheight+i-1)/i;
-			if(scaledw<=width && scaledh<=height)
-				break;
-		}
-		if(scaledw>width || scaledh>height)
-			_throw("Could not scale down to desired image dimensions");
-		width=scaledw;  height=scaledh;
-		scale_denom=i;
-	}
-
 	if(flags&TJ_YUV)
 	{
 		j_decompress_ptr dinfo=&j->dinfo;
@@ -549,7 +544,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 			th[i]=compptr->v_samp_factor*DCTSIZE;
 			tmpbufsize+=iw[i]*th[i];
 			if((outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]))==NULL)
-				_throw("Memory allocation failed in tjInitDecompress()");
+				_throw("Memory allocation failed in tjDecompress()");
 			for(row=0; row<ch[i]; row++)
 			{
 				outbuf[i][row]=ptr;
@@ -559,13 +554,13 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 		if(usetmpbuf)
 		{
 			if((_tmpbuf=(JSAMPLE *)malloc(sizeof(JSAMPLE)*tmpbufsize))==NULL)
-				_throw("Memory allocation failed in tjInitDecompress()");
+				_throw("Memory allocation failed in tjDecompress()");
 			ptr=_tmpbuf;
 			for(i=0; i<dinfo->num_components; i++)
 			{
 				jpeg_component_info *compptr=&dinfo->comp_info[i];
 				if((tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*th[i]))==NULL)
-					_throw("Memory allocation failed in tjInitDecompress()");
+					_throw("Memory allocation failed in tjDecompress()");
 				for(row=0; row<th[i]; row++)
 				{
 					tmpbuf[i][row]=ptr;
@@ -596,6 +591,23 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	if(flags&TJ_YUV) j->dinfo.raw_data_out=TRUE;
 	else
 	{
+		jpegwidth=j->dinfo.image_width;  jpegheight=j->dinfo.image_height;
+		if(width==0) width=jpegwidth;
+		if(height==0) height=jpegheight;
+		if(width<jpegwidth || height<jpegheight)
+		{
+			for(i=1; i<=8; i*=2)
+			{
+				scaledw=(jpegwidth+i-1)/i;
+				scaledh=(jpegheight+i-1)/i;
+				if(scaledw<=width && scaledh<=height)
+					break;
+			}
+			if(scaledw>width || scaledh>height)
+				_throw("Could not scale down to desired image dimensions");
+			width=scaledw;  height=scaledh;
+			scale_denom=i;
+		}
 		j->dinfo.scale_num=scale_num;
 		j->dinfo.scale_denom=scale_denom;
 	}
@@ -661,6 +673,14 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	if(_tmpbuf) free(_tmpbuf);
 	if(row_pointer) free(row_pointer);
 	return retval;
+}
+
+
+DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle h,
+	unsigned char *srcbuf, unsigned long size,
+	unsigned char *dstbuf, int flags)
+{
+	return tjDecompress(h, srcbuf, size, dstbuf, 1, 0, 1, 3, flags|TJ_YUV);
 }
 
 

@@ -54,26 +54,7 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
   /* Use fast, inaccurate 4:2:2 and 4:2:0 YUV upsampling routines
      (libjpeg and libjpeg-turbo versions only) */
 #define TJ_YUV           512
-  /* If passed to tjCompress(), this causes TurboJPEG to use the accelerated
-     color conversion routines in the underlying codec to produce a planar
-     YUV image that is suitable for X Video.  Specifically, if the chrominance
-     components are subsampled along the horizontal dimension, then the width
-     of the luminance plane is padded to 2 in the output image (same goes for
-     the height of the luminance plane, if the chrominance components are
-     subsampled along the vertical dimension.)  Also, each line of each plane
-     in the output image is padded to 4 bytes.  Although this will work with
-     any subsampling option, it is really only useful in combination with
-     TJ_420, which produces an image compatible with the I420 (AKA "YUV420P")
-     format.
-
-     If passed to tjDecompress(), this tells TurboJPEG to perform JPEG
-     decompression but to leave out the color conversion step, so a planar YUV
-     image is generated instead of an RGB image.  The padding of the planes in
-     this image is the same as in the above case.  Note that, if the width or
-     height of the output image is not a multiple of 8 (or a multiple of 16
-     along any dimension in which chrominance subsampling is used), then an
-     intermediate buffer copy will be performed within TurboJPEG.
-  */
+  /* Nothing to see here.  Pay no attention to the man behind the curtain. */
 
 typedef void* tjhandle;
 
@@ -96,7 +77,8 @@ extern "C" {
   and returns a handle to the instance.  Most applications will only
   need to call this once at the beginning of the program or once for each
   concurrent thread.  Don't try to create a new instance every time you
-  compress an image, because this will cause performance to suffer.
+  compress an image, because this may cause performance to suffer in some
+  TurboJPEG implementations.
 
   RETURNS: NULL on error
 */
@@ -113,7 +95,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
      tjInitCompress()
   [INPUT] srcbuf = pointer to user-allocated image buffer containing RGB or
      grayscale pixels to be compressed
-  [INPUT] width =  width (in pixels) of the source image
+  [INPUT] width = width (in pixels) of the source image
   [INPUT] pitch = bytes per line of the source image (width*pixelsize if the
      bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
      is padded to the nearest 32-bit boundary, such as is the case for Windows
@@ -128,12 +110,12 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
      the appropriate size for this buffer based on the image width and height.
   [OUTPUT] size = pointer to unsigned long which receives the size (in bytes)
      of the compressed image
-  [INPUT] jpegsubsamp = Specifies either 4:2:0, 4:2:2, or 4:4:4 subsampling.
-     When the image is converted from the RGB to YCbCr colorspace as part of
-     the JPEG compression process, every other Cb and Cr (chrominance) pixel
-     can be discarded to produce a smaller image with little perceptible loss
-     of image clarity (the human eye is more sensitive to small changes in
-     brightness than small changes in color.)
+  [INPUT] jpegsubsamp = Specifies either 4:2:0, 4:2:2, 4:4:4, or grayscale
+     subsampling.  When the image is converted from the RGB to YCbCr colorspace
+     as part of the JPEG compression process, every other Cb and Cr
+     (chrominance) pixel can be discarded to produce a smaller image with
+     little perceptible loss of image clarity (the human eye is more sensitive
+     to small changes in brightness than small changes in color.)
 
      TJ_420: 4:2:0 subsampling.  Discards every other Cb, Cr pixel in both
         horizontal and vertical directions
@@ -179,13 +161,60 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 
 
 /*
+  int tjEncodeYUV(tjhandle j,
+     unsigned char *srcbuf, int width, int pitch, int height, int pixelsize,
+     unsigned char *dstbuf, int subsamp, int flags)
+
+  This function uses the accelerated color conversion routines in TurboJPEG's
+  underlying codec to produce a planar YUV image that is suitable for X Video.
+  Specifically, if the chrominance components are subsampled along the
+  horizontal dimension, then the width of the luminance plane is padded to 2 in
+  the output image (same goes for the height of the luminance plane, if the
+  chrominance components are subsampled along the vertical dimension.)  Also,
+  each line of each plane in the output image is padded to 4 bytes.  Although
+  this will work with any subsampling option, it is really only useful in
+  combination with TJ_420, which produces an image compatible with the I420
+  (AKA "YUV420P") format.
+
+  [INPUT] j = instance handle previously returned from a call to
+     tjInitCompress()
+  [INPUT] srcbuf = pointer to user-allocated image buffer containing RGB or
+     grayscale pixels to be encoded
+  [INPUT] width = width (in pixels) of the source image
+  [INPUT] pitch = bytes per line of the source image (width*pixelsize if the
+     bitmap is unpadded, else TJPAD(width*pixelsize) if each line of the bitmap
+     is padded to the nearest 32-bit boundary, such as is the case for Windows
+     bitmaps.  You can also be clever and use this parameter to skip lines,
+     etc.  Setting this parameter to 0 is the equivalent of setting it to
+     width*pixelsize.
+  [INPUT] height = height (in pixels) of the source image
+  [INPUT] pixelsize = size (in bytes) of each pixel in the source image
+     RGBX/BGRX/XRGB/XBGR: 4, RGB/BGR: 3, Grayscale: 1
+  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
+     the YUV image.  Use the TJBUFSIZEYUV(width, height, subsamp) function to
+     determine the appropriate size for this buffer based on the image width,
+     height, and level of subsampling.
+  [INPUT] subsamp = Specifies either 4:2:0, 4:2:2, 4:4:4, or grayscale
+     subsampling (see description under tjCompress())
+  [INPUT] flags = the bitwise OR of one or more of the flags described in the
+     "Flags" section above
+
+  RETURNS: 0 on success, -1 on error
+*/
+DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle j,
+	unsigned char *srcbuf, int width, int pitch, int height, int pixelsize,
+	unsigned char *dstbuf, int subsamp, int flags);
+
+
+/*
   tjhandle tjInitDecompress(void)
 
   Creates a new JPEG decompressor instance, allocates memory for the
   structures, and returns a handle to the instance.  Most applications will
   only need to call this once at the beginning of the program or once for each
   concurrent thread.  Don't try to create a new instance every time you
-  decompress an image, because this will cause performance to suffer.
+  decompress an image, because this may cause performance to suffer in some
+  TurboJPEG implementations.
 
   RETURNS: NULL on error
 */
@@ -281,15 +310,43 @@ DLLEXPORT int DLLCALL tjScaledSize(int input_width, int input_height,
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above.
 
-  NOTE: The width, pitch, height, and pixelsize parameters are ignored if
-  decompressing to a YUV planar image.
-
   RETURNS: 0 on success, -1 on error
 */
 DLLEXPORT int DLLCALL tjDecompress(tjhandle j,
 	unsigned char *srcbuf, unsigned long size,
 	unsigned char *dstbuf, int width, int pitch, int height, int pixelsize,
 	int flags);
+
+
+/*
+  int tjDecompressToYUV(tjhandle j,
+     unsigned char *srcbuf, unsigned long size,
+     unsigned char *dstbuf, int flags)
+
+  This function performs JPEG decompression but leaves out the color conversion
+  step, so a planar YUV image is generated instead of an RGB image.  The
+  padding of the planes in this image is the same as in tjEncodeYUV().
+  Note that, if the width or height of the output image is not a multiple of 8
+  (or a multiple of 16 along any dimension in which chrominance subsampling is
+  used), then an intermediate buffer copy will be performed within TurboJPEG.
+
+  [INPUT] j = instance handle previously returned from a call to
+     tjInitDecompress()
+  [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
+     to decompress
+  [INPUT] size = size of the JPEG image buffer (in bytes)
+  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
+     the YUV image.  Use the TJBUFSIZEYUV(width, height, subsamp) function to
+     determine the appropriate size for this buffer based on the image width,
+     height, and level of subsampling.
+  [INPUT] flags = the bitwise OR of one or more of the flags described in the
+     "Flags" section above.
+
+  RETURNS: 0 on success, -1 on error
+*/
+DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle j,
+	unsigned char *srcbuf, unsigned long size,
+	unsigned char *dstbuf, int flags);
 
 
 /*

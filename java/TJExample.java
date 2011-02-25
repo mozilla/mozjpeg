@@ -150,10 +150,8 @@ public class TJExample {
           height = (height + scaleFactor - 1)/scaleFactor;
         }
 
-        if(!outFormat.equalsIgnoreCase("jpg")) {
-          img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-          tjd.decompress(img, 0);
-        }
+        if(!outFormat.equalsIgnoreCase("jpg"))
+          img = tjd.decompress(width, height, BufferedImage.TYPE_INT_RGB, 0);
         else bmpBuf = tjd.decompress(width, 0, height, TJ.PF_BGRX, 0);
         tjd.close();
       }
@@ -175,14 +173,17 @@ public class TJExample {
           + " subsampling, quality = " + outQual);
         TJCompressor tjc = new TJCompressor();
         int jpegSize;
-        byte [] jpegBuf = new byte[TJ.bufSize(width, height)];
+        byte [] jpegBuf;
 
+        tjc.setSubsamp(outSubsamp);
+        tjc.setJPEGQuality(outQual);
         if(img != null)
-          jpegSize = tjc.compress(img, jpegBuf, outSubsamp, outQual, 0);
+          jpegBuf = tjc.compress(img, 0);
         else {
           tjc.setBitmapBuffer(bmpBuf, width, 0, height, TJ.PF_BGRX);
-          jpegSize = tjc.compress(jpegBuf, outSubsamp, outQual, 0);
+          jpegBuf = tjc.compress(0);
         }
+        jpegSize = tjc.getCompressedSize();
         tjc.close();
 
         file = new File(argv[1]);

@@ -45,12 +45,6 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_FORCESSE3 128L
 #undef org_libjpegturbo_turbojpeg_TJ_FASTUPSAMPLE
 #define org_libjpegturbo_turbojpeg_TJ_FASTUPSAMPLE 256L
-#undef org_libjpegturbo_turbojpeg_TJ_YUV
-#define org_libjpegturbo_turbojpeg_TJ_YUV 512L
-#undef org_libjpegturbo_turbojpeg_TJ_TJ_BGR
-#define org_libjpegturbo_turbojpeg_TJ_TJ_BGR 1L
-#undef org_libjpegturbo_turbojpeg_TJ_TJ_ALPHAFIRST
-#define org_libjpegturbo_turbojpeg_TJ_TJ_ALPHAFIRST 64L
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJ
  * Method:    bufSize

@@ -49,7 +49,7 @@ final public class TJ {
     PF_XRGB  = 5,
     PF_GRAY  = 6;
 
-  final public static int pixelSize[] = {
+  final private static int pixelSize[] = {
     3, 3, 4, 4, 4, 4, 1
   };
 
@@ -59,6 +59,36 @@ final public class TJ {
     return pixelSize[pixelFormat];
   }
 
+  final private static int redShift[] = {
+    0, 16, 0, 16, 24, 8, 0
+  };
+
+  final public static int getRedShift(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
+      throw new Exception("Invalid pixel format");
+    return redShift[pixelFormat];
+  }
+
+  final private static int greenShift[] = {
+    8, 8, 8, 8, 16, 16, 0
+  };
+
+  final public static int getGreenShift(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
+      throw new Exception("Invalid pixel format");
+    return greenShift[pixelFormat];
+  }
+
+  final private static int blueShift[] = {
+    16, 0, 16, 0, 8, 24, 0
+  };
+
+  final public static int getBlueShift(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
+      throw new Exception("Invalid pixel format");
+    return blueShift[pixelFormat];
+  }
+
   // Flags
   final public static int
     BOTTOMUP     = 2,
@@ -66,22 +96,7 @@ final public class TJ {
     FORCESSE     = 16,
     FORCESSE2    = 32,
     FORCESSE3    = 128,
-    FASTUPSAMPLE = 256,
-    YUV          = 512;
-
-  final private static int
-    TJ_BGR        = 1,
-    TJ_ALPHAFIRST = 64;
-
-  final private static int flags[] = {
-    0, TJ_BGR, 0, TJ_BGR, TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST, 0
-  };
-
-  final public static int getFlags(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
-      throw new Exception("Invalid pixel format");
-    return flags[pixelFormat];
-  }
+    FASTUPSAMPLE = 256;
 
   public native final static int bufSize(int width, int height)
     throws Exception;

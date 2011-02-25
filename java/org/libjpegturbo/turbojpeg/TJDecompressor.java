@@ -74,6 +74,8 @@ public class TJDecompressor {
     throws Exception {
     if(jpegWidth < 1 || jpegHeight < 1)
       throw new Exception("JPEG buffer not initialized");
+    if(desiredWidth < 0 || desiredHeight < 0)
+      throw new Exception("Invalid argument in getScaledWidth()");
     return getScaledWidth(jpegWidth, jpegHeight, desiredWidth,
       desiredHeight);
   }
@@ -82,6 +84,8 @@ public class TJDecompressor {
     throws Exception {
     if(jpegWidth < 1 || jpegHeight < 1)
       throw new Exception("JPEG buffer not initialized");
+    if(desiredWidth < 0 || desiredHeight < 0)
+      throw new Exception("Invalid argument in getScaledHeight()");
     return getScaledHeight(jpegWidth, jpegHeight, desiredWidth,
       desiredHeight);
   }
@@ -89,35 +93,49 @@ public class TJDecompressor {
   public void decompress(byte [] dstBuf, int desiredWidth, int pitch,
     int desiredHeight, int pixelFormat, int flags) throws Exception {
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
+    if(dstBuf == null || desiredWidth < 0 || pitch < 0 || desiredHeight < 0
+      || pixelFormat < 0 || pixelFormat >= TJ.NUMPFOPT || flags < 0)
+      throw new Exception("Invalid argument in decompress()");
     decompress(jpegBuf, jpegBufSize, dstBuf, desiredWidth, pitch,
-      desiredHeight, TJ.getPixelSize(pixelFormat),
-      flags | TJ.getFlags(pixelFormat));
+      desiredHeight, pixelFormat, flags);
   }
 
   public byte [] decompress(int desiredWidth, int pitch, int desiredHeight,
     int pixelFormat, int flags) throws Exception {
-    if(desiredWidth < 0 || desiredHeight < 0 || pitch < 0 || pixelFormat < 0
-      || pixelFormat >= TJ.NUMPFOPT || flags < 0)
+    if(desiredWidth < 0 || pitch < 0 || desiredHeight < 0
+      || pixelFormat < 0 || pixelFormat >= TJ.NUMPFOPT || flags < 0)
       throw new Exception("Invalid argument in decompress()");
     int pixelSize = TJ.getPixelSize(pixelFormat);
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
     if(pitch == 0) pitch = scaledWidth * pixelSize;
-    int bufSize;
-    if((flags&TJ.YUV)!=0)
-      bufSize = TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp);
-    else bufSize = pitch * scaledHeight;
-    byte [] buf = new byte[bufSize];
+    byte [] buf = new byte[pitch * scaledHeight];
+    decompress(buf, desiredWidth, pitch, desiredHeight, pixelFormat, flags);
+    return buf;
+  }
+
+  public void decompressToYUV(byte [] dstBuf, int flags) throws Exception {
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
-    decompress(jpegBuf, jpegBufSize, buf, desiredWidth, pitch, desiredHeight,
-      TJ.getPixelSize(pixelFormat), flags | TJ.getFlags(pixelFormat));
+    if(dstBuf == null || flags < 0)
+      throw new Exception("Invalid argument in decompressToYUV()");
+    decompressToYUV(jpegBuf, jpegBufSize, dstBuf, flags);
+  }
+
+  public byte [] decompressToYUV(int flags) throws Exception {
+    if(flags < 0)
+      throw new Exception("Invalid argument in decompressToYUV()");
+    if(jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
+      throw new Exception("JPEG buffer not initialized");
+    if(jpegSubsamp >= TJ.NUMSAMPOPT)
+      throw new Exception("JPEG header information is invalid");
+    byte [] buf = new byte[TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp)];
+    decompressToYUV(buf, flags);
     return buf;
   }
 
   public void decompress(BufferedImage dstImage, int flags) throws Exception {
     if(dstImage == null || flags < 0)
       throw new Exception("Invalid argument in decompress()");
-    flags &= ~(TJ.YUV);
     int desiredWidth = dstImage.getWidth();
     int desiredHeight = dstImage.getHeight();
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
@@ -144,20 +162,33 @@ public class TJDecompressor {
       int pitch = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int [] buf = db.getData();
+      if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
       decompress(jpegBuf, jpegBufSize, buf, scaledWidth, pitch, scaledHeight,
-        flags | TJ.getFlags(pixelFormat));
+        pixelFormat, flags);
     }
     else {
       ComponentSampleModel sm =
         (ComponentSampleModel)dstImage.getSampleModel();
       int pixelSize = sm.getPixelStride();
-      if(pixelSize != TJ.pixelSize[pixelFormat])
+      if(pixelSize != TJ.getPixelSize(pixelFormat))
         throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
       int pitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
       byte [] buf = db.getData();
       decompress(buf, scaledWidth, pitch, scaledHeight, pixelFormat, flags);
     }
+  }
+
+  public BufferedImage decompress(int desiredWidth, int desiredHeight,
+    int bufferedImageType, int flags) throws Exception {
+    if(desiredWidth < 0 || desiredHeight < 0 || flags < 0)
+      throw new Exception("Invalid argument in decompress()");
+    int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
+    int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
+    BufferedImage img = new BufferedImage(scaledWidth, scaledHeight,
+      bufferedImageType);
+    decompress(img, flags);
+    return img;
   }
 
   public void close() throws Exception {
@@ -182,11 +213,15 @@ public class TJDecompressor {
     throws Exception;
 
   private native void decompress(byte [] srcBuf, int size, byte [] dstBuf,
-    int desiredWidth, int pitch, int desiredHeight, int pixelSize, int flags)
+    int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
     throws Exception;
 
   private native void decompress(byte [] srcBuf, int size, int [] dstBuf,
-    int desiredWidth, int pitch, int desiredHeight, int flags)
+    int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
+    throws Exception;
+
+  private native void decompressToYUV(byte [] srcBuf, int size, byte [] dstBuf,
+    int flags)
     throws Exception;
 
   private native int getScaledWidth(int jpegWidth, int jpegHeight,

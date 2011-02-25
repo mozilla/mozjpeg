@@ -547,9 +547,9 @@ void dotest1(void)
 			{
 				bmpbuf[i2*4]=pixels[i2%9][2];
 				bmpbuf[i2*4+1]=pixels[i2%9][1];
-				bmpbuf[i2*2+2]=pixels[i2%9][0];
+				bmpbuf[i2*4+2]=pixels[i2%9][0];
 			}
-			_catch(tjCompress(hnd, bmpbuf, i, i*4, j, 4,
+			_catch(tjCompress(hnd, bmpbuf, i, 0, j, 4,
 				jpgbuf, &size, TJ_444, 100, TJ_BGR));
 			free(bmpbuf);  bmpbuf=NULL;  free(jpgbuf);  jpgbuf=NULL;
 
@@ -558,12 +558,12 @@ void dotest1(void)
 			{
 				printf("Memory allocation failure\n");  bailout();
 			}
-			for(i2=0; i2<j*i*4; i2++)
+			for(i2=0; i2<j*i; i2++)
 			{
-				if(i2%2==0) bmpbuf[i2]=0xFF;
-				else bmpbuf[i2]=0;
+				if(i2%2==0) bmpbuf[i2*4]=bmpbuf[i2*4+1]=bmpbuf[i2*4+2]=0xFF;
+				else bmpbuf[i2*4]=bmpbuf[i2*4+1]=bmpbuf[i2*4+2]=0;
 			}
-			_catch(tjCompress(hnd, bmpbuf, j, j*4, i, 4,
+			_catch(tjCompress(hnd, bmpbuf, j, 0, i, 4,
 				jpgbuf, &size, TJ_444, 100, TJ_BGR));
 			free(bmpbuf);  bmpbuf=NULL;  free(jpgbuf);  jpgbuf=NULL;
 		}

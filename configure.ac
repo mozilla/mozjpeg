@@ -168,36 +168,13 @@ if test "x$VERSION_SCRIPT_FLAG" = "x"; then
   VERSION_SCRIPT=no
   AC_MSG_RESULT(no)
 fi
-
-ANON_VERSION_SCRIPT=yes
-AC_MSG_CHECKING([whether the linker supports anonymous version scripts])
-LDFLAGS="$SAVED_LDFLAGS -Wl,--version-script,conftest.map"
-cat > conftest.map <<EOF
-{
-  global: main;
-  local: *;
-};
-EOF
-AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
-  [ANON_VERSION_SCRIPT_FLAG=-Wl,--version-script,; AC_MSG_RESULT([yes (GNU style)])], [])
-if test "x$ANON_VERSION_SCRIPT_FLAG" = "x"; then
-  LDFLAGS="$SAVED_LDFLAGS -Wl,-M,conftest.map"
-  AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
-    [ANON_VERSION_SCRIPT_FLAG=-Wl,-M,; AC_MSG_RESULT([yes (Sun style)])], [])
-fi
-if test "x$ANON_VERSION_SCRIPT_FLAG" = "x"; then
-  ANON_VERSION_SCRIPT=no
-  AC_MSG_RESULT(no)
-fi
 LDFLAGS="$SAVED_LDFLAGS"
 
-AC_MSG_CHECKING([whether to use version script when building libjpeg])
+AC_MSG_CHECKING([whether to use version script when building libjpeg-turbo])
 AC_MSG_RESULT($VERSION_SCRIPT)
 
 AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")
-AM_CONDITIONAL(ANON_VERSION_SCRIPT, test "x$ANON_VERSION_SCRIPT" = "xyes")
 AC_SUBST(VERSION_SCRIPT_FLAG)
-AC_SUBST(ANON_VERSION_SCRIPT_FLAG)
 
 AC_MSG_CHECKING([whether to include arithmetic encoding support])
 AC_ARG_WITH([arith-enc],

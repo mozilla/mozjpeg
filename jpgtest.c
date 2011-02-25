@@ -79,10 +79,9 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
-	if(yuv==YUVENCODE) flags |= TJ_YUV;
 
-	yuvsize=TJBUFSIZEYUV(w, h, jpegsub);
-	if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h))) == NULL)
+	if(yuv==YUVENCODE) yuvsize=TJBUFSIZEYUV(w, h, jpegsub);
+	if((rgbbuf=(unsigned char *)malloc(max(yuvsize, pitch*h+1))) == NULL)
 		_throwunix("allocating image buffer");
 
 	if(!quiet)

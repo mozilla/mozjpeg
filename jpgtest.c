@@ -109,7 +109,9 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 		memset(jpegbuf, 0, sizeof(unsigned char *)*numtilesx*numtilesy);
 		for(i=0; i<numtilesx*numtilesy; i++)
 		{
-			if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilesizex, tilesizey))) == NULL)
+			if((jpegbuf[i]=(unsigned char *)malloc(
+				yuv==YUVENCODE? TJBUFSIZEYUV(tilesizex, tilesizey, jpegsub)
+					: TJBUFSIZE(tilesizex, tilesizey))) == NULL)
 				_throwunix("allocating image buffers");
 		}
 

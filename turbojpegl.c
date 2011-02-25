@@ -517,7 +517,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 			th[i]=compptr->v_samp_factor*DCTSIZE;
 			tmpbufsize+=iw[i]*th[i];
 			if((outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]))==NULL)
-				_throw("Memory allocation failed in tjInitDecompress()");
+				_throw("Memory allocation failed in tjDecompress()");
 			for(row=0; row<ch[i]; row++)
 			{
 				outbuf[i][row]=ptr;
@@ -527,13 +527,13 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 		if(usetmpbuf)
 		{
 			if((_tmpbuf=(JSAMPLE *)malloc(sizeof(JSAMPLE)*tmpbufsize))==NULL)
-				_throw("Memory allocation failed in tjInitDecompress()");
+				_throw("Memory allocation failed in tjDecompress()");
 			ptr=_tmpbuf;
 			for(i=0; i<dinfo->num_components; i++)
 			{
 				jpeg_component_info *compptr=&dinfo->comp_info[i];
 				if((tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*th[i]))==NULL)
-					_throw("Memory allocation failed in tjInitDecompress()");
+					_throw("Memory allocation failed in tjDecompress()");
 				for(row=0; row<th[i]; row++)
 				{
 					tmpbuf[i][row]=ptr;
@@ -545,7 +545,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	else
 	{
 		if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
-			_throw("Memory allocation failed in tjInitDecompress()");
+			_throw("Memory allocation failed in tjDecompress()");
 		for(i=0; i<height; i++)
 		{
 			if(flags&TJ_BOTTOMUP) row_pointer[i]= &dstbuf[(height-i-1)*pitch];

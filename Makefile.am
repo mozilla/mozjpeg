@@ -50,14 +50,9 @@ endif
 
 libturbojpeg_la_SOURCES += $(TJMAPFILE)
 
-if ANON_VERSION_SCRIPT
-
-libturbojpeg_la_LDFLAGS += $(ANON_VERSION_SCRIPT_FLAG)$(srcdir)/$(TJMAPFILE)
-
-endif
-
 if VERSION_SCRIPT
 
+libturbojpeg_la_LDFLAGS += $(VERSION_SCRIPT_FLAG)$(srcdir)/$(TJMAPFILE)
 libjpeg_la_LDFLAGS += $(VERSION_SCRIPT_FLAG)libjpeg.map
 
 endif

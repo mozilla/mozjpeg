@@ -105,6 +105,7 @@ void initbuf(unsigned char *buf, int w, int h, int ps, int flags)
 
 void dumpbuf(unsigned char *buf, int w, int h, int ps, int flags)
 {
+	printf("\n");
 	int roffset=(flags&TJ_BGR)?2:0, goffset=1, boffset=(flags&TJ_BGR)?0:2, i,
 		j;
 	for(i=0; i<h; i++)
@@ -602,8 +603,10 @@ int main(int argc, char *argv[])
 		dotest(39, 41, 3, TJ_422, "test");
 		dotest(48, 48, 3, TJ_420, "test");
 		dotest(41, 35, 3, TJ_420, "test");
+		dotest(48, 48, 3, TJ_GRAYSCALE, "test");
+		dotest(35, 39, 3, TJ_GRAYSCALE, "test");
 		dotest(48, 48, 1, TJ_GRAYSCALE, "test");
-		dotest(35, 39, 1, TJ_GRAYSCALE, "test");
+		dotest(39, 41, 1, TJ_GRAYSCALE, "test");
 	}
 
 	return exitstatus;

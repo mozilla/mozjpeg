@@ -112,11 +112,39 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 	return (tjhandle)j;
 }
 
+
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
-	// This allows enough room in case the image doesn't compress
-	return ((width+15)&(~15)) * ((height+15)&(~15)) * 6 + 2048;
+	unsigned long retval=0;
+	if(width<1 || height<1)
+		_throw("Invalid argument in TJBUFSIZE()");
+
+	// This allows for rare corner cases in which a JPEG image can actually be
+	// larger than the uncompressed input (we wouldn't mention it if it hadn't
+	// happened before.)
+	retval=((width+15)&(~15)) * ((height+15)&(~15)) * 6 + 2048;
+
+	bailout:
+	return retval;
 }
+
+
+DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
+	int subsamp)
+{
+	unsigned long retval=0;
+	int pw, ph, cw, ch;
+	if(width<1 || height<1 || subsamp<0 || subsamp>=NUMSUBOPT)
+		_throw("Invalid argument in TJBUFSIZEYUV()");
+	pw=PAD(width, hsampfactor[subsamp]);
+	ph=PAD(height, vsampfactor[subsamp]);
+	cw=pw/hsampfactor[subsamp];  ch=ph/vsampfactor[subsamp];
+	retval=PAD(pw, 4)*ph + (subsamp==TJ_GRAYSCALE? 0:PAD(cw, 4)*ch*2);
+
+	bailout:
+	return retval;
+}
+
 
 DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	unsigned char *srcbuf, int width, int pitch, int height, int ps,
@@ -308,6 +336,16 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 }
 
 
+DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle h,
+	unsigned char *srcbuf, int width, int pitch, int height, int ps,
+	unsigned char *dstbuf, int subsamp, int flags)
+{
+	unsigned long size;
+	return tjCompress(h, srcbuf, width, pitch, height, ps, dstbuf, &size,
+		subsamp, 0, flags|TJ_YUV);
+}
+
+
 // DEC
 
 static boolean fill_input_buffer (struct jpeg_decompress_struct *dinfo)
@@ -471,10 +509,10 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 			int ih;
 			iw[i]=compptr->width_in_blocks*DCTSIZE;
 			ih=compptr->height_in_blocks*DCTSIZE;
-			cw[i]=PAD(width, dinfo->max_h_samp_factor)*compptr->h_samp_factor
-				/dinfo->max_h_samp_factor;
-			ch[i]=PAD(height, dinfo->max_v_samp_factor)*compptr->v_samp_factor
-				/dinfo->max_v_samp_factor;
+			cw[i]=PAD(dinfo->image_width, dinfo->max_h_samp_factor)
+				*compptr->h_samp_factor/dinfo->max_h_samp_factor;
+			ch[i]=PAD(dinfo->image_height, dinfo->max_v_samp_factor)
+				*compptr->v_samp_factor/dinfo->max_v_samp_factor;
 			if(iw[i]!=cw[i] || ih!=ch[i]) usetmpbuf=1;
 			th[i]=compptr->v_samp_factor*DCTSIZE;
 			tmpbufsize+=iw[i]*th[i];
@@ -586,6 +624,14 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	if(_tmpbuf) free(_tmpbuf);
 	if(row_pointer) free(row_pointer);
 	return retval;
+}
+
+
+DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle h,
+	unsigned char *srcbuf, unsigned long size,
+	unsigned char *dstbuf, int flags)
+{
+	return tjDecompress(h, srcbuf, size, dstbuf, 1, 0, 1, 3, flags|TJ_YUV);
 }
 
 

@@ -225,8 +225,7 @@ int checkbuf(unsigned char *buf, int w, int h, int ps, int subsamp, int flags)
 
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 
-int checkbufyuv(unsigned char *buf, unsigned long size, int w, int h,
-	int subsamp)
+int checkbufyuv(unsigned char *buf, int w, int h, int subsamp)
 {
 	int i, j;
 	int hsf=_hsf[subsamp], vsf=_vsf[subsamp];
@@ -234,13 +233,6 @@ int checkbufyuv(unsigned char *buf, unsigned long size, int w, int h,
 	int cw=pw/hsf, ch=ph/vsf;
 	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 	int retval=1;
-	unsigned long correctsize=ypitch*ph + (subsamp==TJ_GRAYSCALE? 0:uvpitch*ch*2);
-
-	if(size!=correctsize)
-	{
-		printf("\nIncorrect size %lu.  Should be %lu\n", size, correctsize);
-		retval=0;  goto bailout;
-	}
 
 	for(i=0; i<16; i++)
 	{
@@ -349,8 +341,6 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	char tempstr[1024];  unsigned char *bmpbuf=NULL;
 	const char *pixformat;  double t;
 
-	if(yuv==YUVENCODE) flags|=TJ_YUV;
-
 	if(flags&TJ_BGR)
 	{
 		if(ps==3) pixformat="BGR";
@@ -374,10 +364,20 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 		printf("ERROR: Could not allocate buffer\n");  bailout();
 	}
 	initbuf(bmpbuf, w, h, ps, flags);
-	memset(jpegbuf, 0, TJBUFSIZE(w, h));
+	memset(jpegbuf, 0,
+		yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
 
 	t=rrtime();
-	_catch(tjCompress(hnd, bmpbuf, w, 0, h, ps, jpegbuf, size, subsamp, qual, flags));
+	if(yuv==YUVENCODE)
+	{
+		_catch(tjEncodeYUV(hnd, bmpbuf, w, 0, h, ps, jpegbuf, subsamp, flags));
+		*size=TJBUFSIZEYUV(w, h, subsamp);
+	}
+	else
+	{
+		_catch(tjCompress(hnd, bmpbuf, w, 0, h, ps, jpegbuf, size, subsamp, qual,
+			flags));
+	}
 	t=rrtime()-t;
 
 	if(yuv==YUVENCODE)
@@ -389,7 +389,7 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	writejpeg(jpegbuf, *size, tempstr);
 	if(yuv==YUVENCODE)
 	{
-		if(checkbufyuv(jpegbuf, *size, w, h, subsamp)) printf("Passed.");
+		if(checkbufyuv(jpegbuf, w, h, subsamp)) printf("Passed.");
 		else {printf("FAILED!");  exitstatus=-1;}
 	}
 	else printf("Done.");
@@ -405,13 +405,8 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	unsigned char *bmpbuf=NULL;
 	const char *pixformat;  int _w=0, _h=0;  double t;
 	unsigned long size=0;
-	int hsf=_hsf[subsamp], vsf=_vsf[subsamp];
-	int pw=PAD(w, hsf), ph=PAD(h, vsf);
-	int cw=pw/hsf, ch=ph/vsf;
-	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 
-	if(yuv==YUVDECODE) flags|=TJ_YUV;
-	else if(yuv==YUVENCODE) return;
+	if(yuv==YUVENCODE) return;
 
 	if(flags&TJ_BGR)
 	{
@@ -436,24 +431,29 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 		printf("Incorrect JPEG header\n");  bailout();
 	}
 
-	if(yuv==YUVDECODE)
-		size=ypitch*ph + (subsamp==TJ_GRAYSCALE? 0:uvpitch*ch*2);
-	else
-		size=w*h*ps;
-	if((bmpbuf=(unsigned char *)malloc(size+1))==NULL)
+	if(yuv==YUVDECODE) size=TJBUFSIZEYUV(w, h, subsamp);
+	else size=w*h*ps+1;
+	if((bmpbuf=(unsigned char *)malloc(size))==NULL)
 	{
 		printf("ERROR: Could not allocate buffer\n");  bailout();
 	}
-	memset(bmpbuf, 0, size+1);
+	memset(bmpbuf, 0, size);
 
 	t=rrtime();
-	_catch(tjDecompress(hnd, jpegbuf, jpegsize, bmpbuf, w, w*ps, h, ps, flags));
+	if(yuv==YUVDECODE)
+	{
+		_catch(tjDecompressToYUV(hnd, jpegbuf, jpegsize, bmpbuf, flags));
+	}
+	else
+	{
+		_catch(tjDecompress(hnd, jpegbuf, jpegsize, bmpbuf, w, w*ps, h, ps,
+			flags));
+	}
 	t=rrtime()-t;
 
 	if(yuv==YUVDECODE)
 	{
-		if(checkbufyuv(bmpbuf, size, pw, ph, subsamp))
-			printf("Passed.");
+		if(checkbufyuv(bmpbuf, w, h, subsamp)) printf("Passed.");
 		else {printf("FAILED!");  exitstatus=-1;}
 	}
 	else
@@ -476,7 +476,8 @@ void dotest(int w, int h, int ps, int subsamp, char *basefilename)
 	tjhandle hnd=NULL, dhnd=NULL;  unsigned char *jpegbuf=NULL;
 	unsigned long size;
 
-	if((jpegbuf=(unsigned char *)malloc(TJBUFSIZE(w, h))) == NULL)
+	size=(yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
+	if((jpegbuf=(unsigned char *)malloc(size)) == NULL)
 	{
 		puts("ERROR: Could not allocate buffer.");  bailout();
 	}

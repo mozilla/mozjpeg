@@ -119,7 +119,8 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 		{
 			for(j=0; j<w; j+=tilesizex)
 			{
-				int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
+				int tempw=dotile? min(tilesizex, w-j):scaledw;
+				int temph=dotile? min(tilesizey, h-i):scaledh;
 				if(yuv==YUVDECODE)
 				{
 					if(tjDecompressToYUV(hnd, jpegbuf[tilen], comptilesize[tilen],
@@ -127,7 +128,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 						_throwtj("executing tjDecompressToYUV()");
 				}
 				else if(tjDecompress(hnd, jpegbuf[tilen], comptilesize[tilen],
-					&rgbbuf[pitch*i+ps*j], scaledw, pitch, scaledh, ps, flags)==-1)
+					&rgbbuf[pitch*i+ps*j], tempw, pitch, temph, ps, flags)==-1)
 					_throwtj("executing tjDecompress()");
 				tilen++;
 			}
@@ -390,61 +391,167 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 void dodecomptest(char *filename)
 {
 	FILE *file=NULL;  tjhandle hnd=NULL;
-	unsigned char *jpegbuf=NULL;
+	unsigned char **jpegbuf=NULL, *srcbuf=NULL;
+	unsigned long *comptilesize=NULL, srcbufsize, jpgbufsize;
 	int w=0, h=0, jpegsub=-1;
-	unsigned long jpgbufsize=0;
 	char *temp=NULL;
+	int i, j, tilesizex, tilesizey, numtilesx, numtilesy;
+	double start, elapsed;
+	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
+		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0);
+	int ps=_ps[pf], tilen;
 
 	useppm=1;
 
 	if((file=fopen(filename, "rb"))==NULL)
 		_throwunix("opening file");
-	if(fseek(file, 0, SEEK_END)<0 || (jpgbufsize=ftell(file))<0)
+	if(fseek(file, 0, SEEK_END)<0 || (srcbufsize=ftell(file))<0)
 		_throwunix("determining file size");
-	if((jpegbuf=(unsigned char *)malloc(jpgbufsize))==NULL)
+	if((srcbuf=(unsigned char *)malloc(srcbufsize))==NULL)
 		_throwunix("allocating memory");
 	if(fseek(file, 0, SEEK_SET)<0)
 		_throwunix("setting file position");
-	if(fread(jpegbuf, jpgbufsize, 1, file)<1)
+	if(fread(srcbuf, srcbufsize, 1, file)<1)
 		_throwunix("reading JPEG data");
 	fclose(file);  file=NULL;
 
 	temp=strrchr(filename, '.');
 	if(temp!=NULL) *temp='\0';
 
-	if((hnd=tjInitDecompress())==NULL) _throwtj("executing tjInitDecompress()");
-	if(tjDecompressHeader2(hnd, jpegbuf, jpgbufsize, &w, &h, &jpegsub)==-1)
+	if((hnd=tjInitTransform())==NULL) _throwtj("executing tjInitTransform()");
+	if(tjDecompressHeader2(hnd, srcbuf, srcbufsize, &w, &h, &jpegsub)==-1)
 		_throwtj("executing tjDecompressHeader2()");
-	if(tjDestroy(hnd)==-1) _throwtj("executing tjDestroy()");
-	hnd=NULL;
 
-	if(quiet==1)
+	if(yuv) dotile=0;
+
+	if(dotile)
 	{
-		printf("All performance values in Mpixels/sec\n\n");
-		printf("Bitmap\tBitmap\tJPEG\tImage Size\tDecomp\n"),
-		printf("Format\tOrder\tFormat\t  X    Y  \tPerf\n\n");
-		printf("%s\t%s\t%s\t%-4d  %-4d\t", _pfname[pf], bu?"BU":"TD",
-			_subnamel[jpegsub], w, h);
+		tilesizex=tilesizey=512;
+		if(quiet==1)
+		{
+			printf("All performance values in Mpixels/sec\n\n");
+			printf("Bitmap\tBitmap\tJPEG\tTile Size\tXform\tCompr\tDecomp\n");
+			printf("Format\tOrder\tFormat\t X    Y  \tPerf \tRatio\tPerf\n\n");
+		}
+		else if(!quiet)
+		{
+			printf(">>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
+				bu?"Bottom-up":"Top-down");
+		}
+		do
+		{
+			tilesizex*=2;  if(tilesizex>w) tilesizex=w;
+			tilesizey*=2;  if(tilesizey>h) tilesizey=h;
+			numtilesx=(w+tilesizex-1)/tilesizex;
+			numtilesy=(h+tilesizey-1)/tilesizey;
+			if((comptilesize=(unsigned long *)malloc(sizeof(unsigned long)
+				*numtilesx*numtilesy))==NULL
+				|| (jpegbuf=(unsigned char **)malloc(sizeof(unsigned char *)
+				*numtilesx*numtilesy))==NULL)
+				_throwunix("allocating image buffers");
+			memset(jpegbuf, 0, sizeof(unsigned char *)*numtilesx*numtilesy);
+
+			for(i=0; i<numtilesx*numtilesy; i++)
+			{
+				if((jpegbuf[i]=(unsigned char *)malloc(
+					TJBUFSIZE(tilesizex, tilesizey))) == NULL)
+					_throwunix("allocating image buffers");
+			}
+
+			if(quiet==1)
+			{
+				printf("%s\t%s\t%s\t",  _pfname[pf], bu?"BU":"TD", _subnamel[jpegsub]);
+				if(tilesizex==w && tilesizey==h) printf("Full     \t");
+				else printf("%-4d %-4d\t", tilesizex, tilesizey);
+			}
+
+			start=rrtime();
+			jpgbufsize=0;  tilen=0;
+			for(i=0; i<h; i+=tilesizey)
+			{
+				for(j=0; j<w; j+=tilesizex)
+					{
+						int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
+						if(tjTransform(hnd, srcbuf, srcbufsize, jpegbuf[tilen],
+							&comptilesize[tilen], j, i, tempw, temph, TJXFORM_NONE,
+							TJXFORM_CROP, flags)
+							==-1)
+						_throwtj("executing tjTransform()");
+					jpgbufsize+=comptilesize[tilen];
+					tilen++;
+				}
+			}
+			elapsed=rrtime()-start;
+
+			if(quiet)
+			{
+				printsigfig((double)(w*h)/1000000./elapsed, 4);
+				printf("%c", quiet==2? '\n':'\t');
+				printsigfig((double)(w*h*ps)/(double)jpgbufsize, 4);
+				printf("%c", quiet==2? '\n':'\t');
+			}
+			else if(!quiet)
+			{
+				if(tilesizex==w && tilesizey==h) printf("\nFull image\n");
+				else printf("\nTile size: %d x %d\n", tilesizex, tilesizey);
+				printf("X--> Frame rate:           %f fps\n", 1.0/elapsed);
+				printf("     Output image size:    %lu bytes\n", jpgbufsize);
+				printf("     Compression ratio:    %f:1\n",
+					(double)(w*h*ps)/(double)jpgbufsize);
+				printf("     Source throughput:    %f Megapixels/sec\n",
+					(double)(w*h)/1000000./elapsed);
+				printf("     Output bit stream:    %f Megabits/sec\n",
+					(double)jpgbufsize*8./1000000./elapsed);
+			}
+
+			if(decomptest(NULL, jpegbuf, comptilesize, NULL, w, h, jpegsub, 0,
+				filename, tilesizex, tilesizey)==-1)
+				goto bailout;
+
+			// Cleanup
+			for(i=0; i<numtilesx*numtilesy; i++)
+				{free(jpegbuf[i]);  jpegbuf[i]=NULL;}
+			free(jpegbuf);  jpegbuf=NULL;
+			if(comptilesize) {free(comptilesize);  comptilesize=NULL;}
+		} while(tilesizex<w || tilesizey<h);
 	}
 	else
 	{
-		if(yuv==YUVDECODE)
-			printf(">>>>>  JPEG --> YUV %s  <<<<<\n", _subnamel[jpegsub]);
-		else
-			printf(">>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
-				bu?"Bottom-up":"Top-down");
-		printf("\nImage size: %d x %d", w, h);
-		if(scalefactor!=1) printf(" --> %d x %d", (w+scalefactor-1)/scalefactor,
-			(h+scalefactor-1)/scalefactor);
-		printf("\n");
-	}
+		if(quiet==1)
+		{
+			printf("All performance values in Mpixels/sec\n\n");
+			printf("Bitmap\tBitmap\tJPEG\tImage Size\tDecomp\n");
+			printf("Format\tOrder\tFormat\t  X    Y  \tPerf\n\n");
+			printf("%s\t%s\t%s\t%-4d  %-4d\t", _pfname[pf], bu?"BU":"TD",
+				_subnamel[jpegsub], w, h);
+		}
+		else if(!quiet)
+		{
+			if(yuv==YUVDECODE)
+				printf(">>>>>  JPEG --> YUV %s  <<<<<\n", _subnamel[jpegsub]);
+			else
+				printf(">>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
+					bu?"Bottom-up":"Top-down");
+			printf("\nImage size: %d x %d", w, h);
+			if(scalefactor!=1) printf(" --> %d x %d", (w+scalefactor-1)/scalefactor,
+				(h+scalefactor-1)/scalefactor);
+			printf("\n");
+		}
 
-	decomptest(NULL, &jpegbuf, &jpgbufsize, NULL, w, h, jpegsub, 0, filename, w,
-		h);
+		decomptest(NULL, &srcbuf, &srcbufsize, NULL, w, h, jpegsub, 0, filename,
+			w, h);
+	}
 
 	bailout:
 	if(file) {fclose(file);  file=NULL;}
-	if(jpegbuf) {free(jpegbuf);  jpegbuf=NULL;}
+	if(jpegbuf)
+	{
+		for(i=0; i<numtilesx*numtilesy; i++)
+			{if(jpegbuf[i]) free(jpegbuf[i]);  jpegbuf[i]=NULL;}
+		free(jpegbuf);  jpegbuf=NULL;
+	}
+	if(comptilesize) {free(comptilesize);  comptilesize=NULL;}
+	if(srcbuf) {free(srcbuf);  srcbuf=NULL;}
 	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
 	return;
 }

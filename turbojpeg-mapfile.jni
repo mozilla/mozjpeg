@@ -26,6 +26,7 @@ TURBOJPEG_1.1
 TURBOJPEG_1.2
 {
 	global:
+		tjGetScaledSize;
 		Java_org_libjpegturbo_turbojpeg_TJ_bufSize;
 		Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_init;

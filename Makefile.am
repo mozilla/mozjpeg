@@ -34,7 +34,8 @@ libjpeg_la_SOURCES += jdarith.c
 
 endif
 
-libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h
+libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
+	transupp.c transupp.h
 
 if WITH_JNI
 

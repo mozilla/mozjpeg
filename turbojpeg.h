@@ -56,6 +56,55 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
 #define TJ_YUV           512
   /* Nothing to see here.  Pay no attention to the man behind the curtain. */
 
+/* Transform operations for tjTransform() */
+#define NUMXFORMOPT 8
+
+enum {
+TJXFORM_NONE=0,     /* Do not transform the position of the image pixels */
+TJXFORM_HFLIP,      /* Flip (mirror) image horizontally.  This transform is
+                       imperfect if there are any partial MCU blocks on the
+                       right edge (see below for explanation.) */
+TJXFORM_VFLIP,      /* Flip (mirror) image vertically.  This transform is
+                       imperfect if there are any partial MCU blocks on the
+                       bottom edge. */
+TJXFORM_TRANSPOSE,  /* Transpose image (flip/mirror along upper left to lower
+                       right axis.)  This transform is always perfect. */
+TJXFORM_TRANSVERSE, /* Transpose image (flip/mirror along upper right to lower
+                       left axis.)  This transform is imperfect if there are
+                       any partial MCU blocks in the image. */
+TJXFORM_ROT90,      /* Rotate image clockwise by 90 degrees.  This transform
+                       is imperfect if there are any partial MCU blocks on the
+                       bottom edge. */
+TJXFORM_ROT180,     /* Rotate image 180 degrees.  This transform is imperfect
+                       if there are any partial MCU blocks in the image. */
+TJXFORM_ROT270      /* Rotate image counter-clockwise by 90 degrees.  This
+                       transform is imperfect if there are any partial MCU
+                       blocks on the right edge. */
+};
+
+/* Transform options (these can be OR'ed together) */
+#define TJXFORM_PERFECT  1
+  /* This will cause the tjTransform() function to return an error if the
+     transform is not perfect.  Lossless transforms operate on MCU blocks,
+     which are 8x8 pixels if no chrominance subsampling is used, or 16x8 for
+     4:2:2 or 16x16 for 4:2:0.  If the image's width or height is not evenly
+     divisible by the MCU size, then there will be partial MCU blocks on the
+     right and/or bottom edges.  It is not possible to move these partial MCU
+     blocks to the top or left of the image, so any transform that would
+     require that is "imperfect."  If this option is not specified, then any
+     partial MCU blocks that cannot be transformed will be left in place, which
+     will create odd-looking strips on the right or bottom edge of the image.
+     */
+#define TJXFORM_TRIM     2
+  /* This option will cause tjTransform() to discard any partial MCU blocks
+     that cannot be transformed. */
+#define TJXFORM_CROP     4
+  /* This option will enable lossless cropping.  See the description of
+     tjTransform() below for more information. */
+#define TJXFORM_GRAY     8
+  /* This option will discard the color data in the input image and produce
+     a grayscale output image. */
+
 typedef void* tjhandle;
 
 #define TJPAD(p) (((p)+3)&(~3))
@@ -92,7 +141,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
      int jpegsubsamp, int jpegqual, int flags)
 
   [INPUT] j = instance handle previously returned from a call to
-     tjInitCompress()
+     tjInitCompress() or tjInitTransform()
   [INPUT] srcbuf = pointer to user-allocated image buffer containing RGB or
      grayscale pixels to be compressed
   [INPUT] width = width (in pixels) of the source image
@@ -177,7 +226,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
   (AKA "YUV420P") format.
 
   [INPUT] j = instance handle previously returned from a call to
-     tjInitCompress()
+     tjInitCompress() or tjInitTransform()
   [INPUT] srcbuf = pointer to user-allocated image buffer containing RGB or
      grayscale pixels to be encoded
   [INPUT] width = width (in pixels) of the source image
@@ -227,7 +276,7 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
      int *width, int *height, int *jpegsubsamp)
 
   [INPUT] j = instance handle previously returned from a call to
-     tjInitDecompress()
+     tjInitDecompress() or tjInitTransform()
   [INPUT] srcbuf = pointer to a user-allocated buffer containing a JPEG image
   [INPUT] size = size of the JPEG image buffer (in bytes)
   [OUTPUT] width = width (in pixels) of the JPEG image
@@ -276,7 +325,7 @@ DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
      int flags)
 
   [INPUT] j = instance handle previously returned from a call to
-     tjInitDecompress()
+     tjInitDecompress() or tjInitTransform()
   [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
      to decompress
   [INPUT] size = size of the JPEG image buffer (in bytes)
@@ -332,7 +381,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle j,
   used), then an intermediate buffer copy will be performed within TurboJPEG.
 
   [INPUT] j = instance handle previously returned from a call to
-     tjInitDecompress()
+     tjInitDecompress() or tjInitTransform()
   [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
      to decompress
   [INPUT] size = size of the JPEG image buffer (in bytes)
@@ -351,12 +400,65 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle j,
 
 
 /*
+  tjhandle tjInitTransform(void)
+
+  Creates a new JPEG transformer instance, allocates memory for the structures,
+  and returns a handle to the instance.  Most applications will only need to
+  call this once at the beginning of the program or once for each concurrent
+  thread.  Don't try to create a new instance every time you transform an
+  image, because this may cause performance to suffer in some TurboJPEG
+  implementations.
+
+  RETURNS: NULL on error
+*/
+DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
+
+
+/*
+  int tjTransform(tjhandle j,
+     unsigned char *srcbuf, unsigned long srcsize,
+     unsigned char *dstbuf, unsigned long *dstsize, 
+     int x, int y, int w, int h, int op, int options, int flags)
+
+  [INPUT] j = instance handle previously returned from a call to
+     tjInitTransform()
+  [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
+     to transform
+  [INPUT] srcsize = size of the source JPEG image buffer (in bytes)
+  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
+     the transformed JPEG image.  Use the TJBUFSIZE(width, height) function to
+     determine the appropriate size for this buffer based on the cropped width
+     and height.
+  [OUTPUT] dstsize = pointer to unsigned long which receives the size (in
+     bytes) of the transformed image
+  [INPUT] x, y, w, h = the left edge, top edge, width, and height of the
+     cropping region.  If (x, y) does not fall on an MCU boundary, then x and
+     y will be silently moved left and/or up to the nearest MCU boundary.  You
+     can call tjGetCroppedSize() to determine how (or if) x, y, w, and h will
+     be modified ahead of time, so you can allocate the output buffer
+     appropriately.
+  [INPUT] op = one of the transform operations described in the "Transform
+     operations" section above.
+  [INPUT] options = the bitwise OR of one or more of the transform options
+     described in the "Transform options" section above.
+  [INPUT] flags = the bitwise OR of one or more of the flags described in the
+     "Flags" section above.
+
+  RETURNS: 0 on success, -1 on error
+*/
+DLLEXPORT int DLLCALL tjTransform(tjhandle j,
+	unsigned char *srcbuf, unsigned long size,
+	unsigned char *dstbuf, unsigned long *dstsize,
+	int x, int y, int w, int h, int op, int options, int flags);
+
+
+/*
   int tjDestroy(tjhandle h)
 
   Frees structures associated with a compression or decompression instance
   
   [INPUT] h = instance handle (returned from a previous call to
-     tjInitCompress() or tjInitDecompress()
+     tjInitCompress(), tjInitDecompress(), or tjInitTransform()
 
   RETURNS: 0 on success, -1 on error
 */

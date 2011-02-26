@@ -66,7 +66,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 	int jpegsub, int qual, char *filename, int dotile, int useppm, int quiet)
 {
 	char tempstr[1024];
-	FILE *outfile=NULL;  tjhandle hnd;
+	FILE *outfile=NULL;  tjhandle hnd=NULL;
 	unsigned char **jpegbuf=NULL, *rgbbuf=NULL;
 	double start, elapsed;
 	int jpgbufsize=0, i, j, tilesizex, tilesizey, numtilesx, numtilesy, ITER;
@@ -75,7 +75,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
 		|(fastupsample?TJ_FASTUPSAMPLE:0);
 	int ps=_ps[pf], tilen;
-	int pitch=w*ps, yuvsize;
+	int pitch=w*ps, yuvsize=0;
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
@@ -330,7 +330,7 @@ void dodecomptest(char *filename, int pf, int bu, int useppm,
 	int quiet)
 {
 	char tempstr[1024];
-	FILE *file=NULL;  tjhandle hnd;
+	FILE *file=NULL;  tjhandle hnd=NULL;
 	unsigned char *jpegbuf=NULL, *rgbbuf=NULL;
 	double start, elapsed;
 	int w, h, ITER;
@@ -480,7 +480,7 @@ void usage(char *progname)
 int main(int argc, char *argv[])
 {
 	unsigned char *bmpbuf=NULL;  int w, h, i, useppm=0;
-	int qual, dotile=0, quiet=0, hiqual=-1;  char *temp;
+	int qual=-1, dotile=0, quiet=0, hiqual=-1;  char *temp;
 	int pf=BMP_BGR;
 	int bu=0, minarg=2;
 

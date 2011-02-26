@@ -250,7 +250,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 
 
 /*
-  int tjScaledSize(int input_width, int input_height,
+  int tjGetScaledSize(int input_width, int input_height,
      int *output_width, int *output_height)
 
   [INPUT] input_width = width (in pixels) of the JPEG image
@@ -265,7 +265,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 
   RETURNS: 0 on success, -1 if arguments are out of bounds
 */
-DLLEXPORT int DLLCALL tjScaledSize(int input_width, int input_height,
+DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
 	int *output_width, int *output_height);
 
 

@@ -6,7 +6,6 @@ TURBOJPEG_1.0
 		TJBUFSIZE;
 		tjInitDecompress;
 		tjDecompressHeader;
-		tjScaledSize;
 		tjDecompress;
 		tjDestroy;
 		tjGetErrorStr;

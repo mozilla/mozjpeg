@@ -283,8 +283,8 @@ DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
   [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
      the bitmap image.  This buffer should normally be pitch*scaled_height
      bytes in size, where scaled_height is determined by calling
-     tjScaledSize() with the height of the desired output image.  This pointer
-     may also be used to decompress into a specific region of a
+     tjGetScaledSize() with the height of the desired output image.  This
+     pointer may also be used to decompress into a specific region of a
      larger buffer.
   [INPUT] width = desired width (in pixels) of the destination image.  If this
      is smaller than the width of the JPEG image being decompressed, then
@@ -296,9 +296,10 @@ DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
      scaled_width*pixelsize if the bitmap image is unpadded, else
      TJPAD(scaled_width*pixelsize) if each line of the bitmap is padded to the
      nearest 32-bit boundary, such as is the case for Windows bitmaps.
-     (NOTE: scaled_width can be determined by calling tjScaledSize().)  You can
-     also be clever and use this parameter to skip lines, etc.  Setting this
-     parameter to 0 is the equivalent of setting it to scaled_width*pixelsize.
+     (NOTE: scaled_width can be determined by calling tjGetScaledSize().)  You
+     can also be clever and use this parameter to skip lines, etc.  Setting
+     this parameter to 0 is the equivalent of setting it to
+     scaled_width*pixelsize.
   [INPUT] height = desired height (in pixels) of the destination image.  If
      this is smaller than the height of the JPEG image being decompressed, then
      TurboJPEG will use scaling in the JPEG decompressor to generate the

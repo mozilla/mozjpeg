@@ -92,9 +92,9 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	if((hnd=tjInitDecompress())==NULL)
 		_throwtj("executing tjInitDecompress()");
 
+	bufsize=(yuv==YUVDECODE? yuvsize:pitch*h);
 	if(rgbbuf==NULL)
 	{
-		bufsize=(yuv==YUVDECODE? yuvsize:pitch*h);
 		if((rgbbuf=(unsigned char *)malloc(bufsize)) == NULL)
 			_throwunix("allocating image buffer");
 		rgbbufalloc=1;
@@ -216,16 +216,17 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 	char *filename)
 {
 	char tempstr[1024];
-	FILE *outfile=NULL;  tjhandle hnd;
+	FILE *outfile=NULL;  tjhandle hnd=NULL;
 	unsigned char **jpegbuf=NULL, *rgbbuf=NULL;
 	double start, elapsed;
-	int jpgbufsize=0, i, j, tilesizex, tilesizey, numtilesx, numtilesy, ITER;
+	int jpgbufsize=0, i, j, tilesizex=w, tilesizey=h, numtilesx=1, numtilesy=1,
+		ITER;
 	unsigned long *comptilesize=NULL;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
 		|(fastupsample?TJ_FASTUPSAMPLE:0);
 	int ps=_ps[pf], tilen;
-	int pitch=w*ps, yuvsize;
+	int pitch=w*ps, yuvsize=0;
 
 	flags |= _flags[pf];
 	if(bu) flags |= TJ_BOTTOMUP;
@@ -478,7 +479,7 @@ void usage(char *progname)
 int main(int argc, char *argv[])
 {
 	unsigned char *bmpbuf=NULL;  int w, h, i;
-	int qual, hiqual=-1;  char *temp;
+	int qual=-1, hiqual=-1;  char *temp;
 	int minarg=2;
 
 	if(argc<minarg) usage(argv[0]);

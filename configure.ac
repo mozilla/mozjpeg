@@ -13,6 +13,7 @@ AC_DEFINE([HAVE_PROTOTYPES], 1, [Define if your compiler supports prototypes])
 
 # Checks for programs.
 SAVED_CFLAGS=${CFLAGS}
+SAVED_CPPFLAGS=${CPPFLAGS}
 AC_PROG_CPP
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -29,6 +30,9 @@ AC_DEFINE([INCOMPLETE_TYPES_BROKEN],[1],[Compiler does not support pointers to u
 if test "x${GCC}" = "xyes"; then
   if test "x${SAVED_CFLAGS}" = "x"; then
     CFLAGS=-O3
+  fi
+  if test "x${SAVED_CPPFLAGS}" = "x"; then
+    CPPFLAGS=-Wall
   fi
 fi
 

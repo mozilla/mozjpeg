@@ -69,7 +69,8 @@ void dotest(unsigned char *srcbuf, int w, int h, int pf, int bu,
 	FILE *outfile=NULL;  tjhandle hnd=NULL;
 	unsigned char **jpegbuf=NULL, *rgbbuf=NULL;
 	double start, elapsed;
-	int jpgbufsize=0, i, j, tilesizex, tilesizey, numtilesx, numtilesy, ITER;
+	int jpgbufsize=0, i, j, tilesizex=w, tilesizey=h, numtilesx=1, numtilesy=1,
+		ITER;
 	unsigned long *comptilesize=NULL;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)

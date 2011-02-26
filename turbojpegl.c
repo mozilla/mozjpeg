@@ -531,7 +531,6 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 			ptr=_tmpbuf;
 			for(i=0; i<dinfo->num_components; i++)
 			{
-				jpeg_component_info *compptr=&dinfo->comp_info[i];
 				if((tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*th[i]))==NULL)
 					_throw("Memory allocation failed in tjDecompress()");
 				for(row=0; row<th[i]; row++)
@@ -595,7 +594,6 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 				int j;
 				for(i=0; i<dinfo->num_components; i++)
 				{
-					jpeg_component_info *compptr=&dinfo->comp_info[i];
 					for(j=0; j<min(th[i], ch[i]-crow[i]); j++)
 					{
 						memcpy(outbuf[i][crow[i]+j], tmpbuf[i][j], cw[i]);

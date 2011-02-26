@@ -258,14 +258,12 @@ rgb_gray_convert (j_compress_ptr cinfo,
 		  JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
 		  JDIMENSION output_row, int num_rows)
 {
-  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
   #if BITS_IN_JSAMPLE != 8
   register INT32 * ctab = cconvert->rgb_ycc_tab;
   #endif
   register JSAMPROW inptr;
   register JSAMPROW outptr;
   JSAMPLE *maxoutptr;
-  register JDIMENSION col;
   JDIMENSION num_cols = cinfo->image_width;
   int rindex = rgb_red[cinfo->in_color_space];
   int gindex = rgb_green[cinfo->in_color_space];

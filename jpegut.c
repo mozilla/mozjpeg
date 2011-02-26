@@ -444,7 +444,7 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	}
 
 	temp1=scaledw;  temp2=scaledh;
-	_catch(tjScaledSize(w, h, &temp1, &temp2));
+	_catch(tjGetScaledSize(w, h, &temp1, &temp2));
 	if(temp1!=scaledw || temp2!=scaledh)
 	{
 		printf("Scaled size mismatch\n");  bailout();

@@ -259,7 +259,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledW
 	(JNIEnv *env, jobject obj, jint input_width, jint input_height,
 		jint output_width, jint output_height)
 {
-	if(tjScaledSize(input_width, input_height, &output_width, &output_height)
+	if(tjGetScaledSize(input_width, input_height, &output_width, &output_height)
 		==-1)
 		_throw(tjGetErrorStr());
 
@@ -271,7 +271,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledH
 	(JNIEnv *env, jobject obj, jint input_width, jint input_height,
 		jint output_width, jint output_height)
 {
-	if(tjScaledSize(input_width, input_height, &output_width, &output_height)
+	if(tjGetScaledSize(input_width, input_height, &output_width, &output_height)
 		==-1)
 		_throw(tjGetErrorStr());
 

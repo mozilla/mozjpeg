@@ -457,14 +457,14 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle h,
 }
 
 
-DLLEXPORT int DLLCALL tjScaledSize(int input_width, int input_height,
+DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
 	int *output_width, int *output_height)
 {
 	int i, retval=0, scaledw=0, scaledh=0;
 
 	if(input_width<1 || input_height<1 || output_width==NULL
 		|| output_height==NULL || *output_width<0 || *output_height<0)
-		_throw("Invalid argument in tjScaledSize()");
+		_throw("Invalid argument in tjGetScaledSize()");
 
 	if(*output_width==0) *output_width=input_width;
 	if(*output_height==0) *output_height=input_height;

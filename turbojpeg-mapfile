@@ -22,3 +22,9 @@ TURBOJPEG_1.1
 		tjDecompressToYUV;
 		tjEncodeYUV;
 } TURBOJPEG_1.0;
+
+TURBOJPEG_1.2
+{
+	global:
+		tjGetScaledSize;
+} TURBOJPEG_1.1;

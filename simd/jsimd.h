@@ -29,6 +29,13 @@
 #define jsimd_extbgrx_ycc_convert_mmx         jSEXTBGRXYCCM
 #define jsimd_extxbgr_ycc_convert_mmx         jSEXTXBGRYCCM
 #define jsimd_extxrgb_ycc_convert_mmx         jSEXTXRGBYCCM
+#define jsimd_rgb_gray_convert_mmx            jSRGBGRYM
+#define jsimd_extrgb_gray_convert_mmx         jSEXTRGBGRYM
+#define jsimd_extrgbx_gray_convert_mmx        jSEXTRGBXGRYM
+#define jsimd_extbgr_gray_convert_mmx         jSEXTBGRGRYM
+#define jsimd_extbgrx_gray_convert_mmx        jSEXTBGRXGRYM
+#define jsimd_extxbgr_gray_convert_mmx        jSEXTXBGRGRYM
+#define jsimd_extxrgb_gray_convert_mmx        jSEXTXRGBGRYM
 #define jsimd_ycc_rgb_convert_mmx             jSYCCRGBM
 #define jsimd_ycc_extrgb_convert_mmx          jSYCCEXTRGBM
 #define jsimd_ycc_extrgbx_convert_mmx         jSYCCEXTRGBXM

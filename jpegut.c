@@ -105,9 +105,9 @@ void initbuf(unsigned char *buf, int w, int h, int ps, int flags)
 
 void dumpbuf(unsigned char *buf, int w, int h, int ps, int flags)
 {
-	printf("\n");
 	int roffset=(flags&TJ_BGR)?2:0, goffset=1, boffset=(flags&TJ_BGR)?0:2, i,
 		j;
+	printf("\n");
 	for(i=0; i<h; i++)
 	{
 		for(j=0; j<w; j++)

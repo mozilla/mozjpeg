@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009 D. R. Commander
+ * Copyright 2009-2011 D. R. Commander
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -141,6 +141,10 @@ rgb_ycc_convert (j_compress_ptr cinfo,
   register JSAMPROW outptr0, outptr1, outptr2;
   register JDIMENSION col;
   JDIMENSION num_cols = cinfo->image_width;
+  int rindex = rgb_red[cinfo->in_color_space];
+  int gindex = rgb_green[cinfo->in_color_space];
+  int bindex = rgb_blue[cinfo->in_color_space];
+  int rgbstride = rgb_pixelsize[cinfo->in_color_space];
 
   while (--num_rows >= 0) {
     inptr = *input_buf++;
@@ -149,10 +153,10 @@ rgb_ycc_convert (j_compress_ptr cinfo,
     outptr2 = output_buf[2][output_row];
     output_row++;
     for (col = 0; col < num_cols; col++) {
-      r = GETJSAMPLE(inptr[rgb_red[cinfo->in_color_space]]);
-      g = GETJSAMPLE(inptr[rgb_green[cinfo->in_color_space]]);
-      b = GETJSAMPLE(inptr[rgb_blue[cinfo->in_color_space]]);
-      inptr += rgb_pixelsize[cinfo->in_color_space];
+      r = GETJSAMPLE(inptr[rindex]);
+      g = GETJSAMPLE(inptr[gindex]);
+      b = GETJSAMPLE(inptr[bindex]);
+      inptr += rgbstride;
       /* If the inputs are 0..MAXJSAMPLE, the outputs of these equations
        * must be too; we do not need an explicit range-limiting operation.
        * Hence the value being shifted is never negative, and we don't
@@ -197,16 +201,20 @@ rgb_gray_convert (j_compress_ptr cinfo,
   register JSAMPROW outptr;
   register JDIMENSION col;
   JDIMENSION num_cols = cinfo->image_width;
+  int rindex = rgb_red[cinfo->in_color_space];
+  int gindex = rgb_green[cinfo->in_color_space];
+  int bindex = rgb_blue[cinfo->in_color_space];
+  int rgbstride = rgb_pixelsize[cinfo->in_color_space];
 
   while (--num_rows >= 0) {
     inptr = *input_buf++;
     outptr = output_buf[0][output_row];
     output_row++;
     for (col = 0; col < num_cols; col++) {
-      r = GETJSAMPLE(inptr[rgb_red[cinfo->in_color_space]]);
-      g = GETJSAMPLE(inptr[rgb_green[cinfo->in_color_space]]);
-      b = GETJSAMPLE(inptr[rgb_blue[cinfo->in_color_space]]);
-      inptr += rgb_pixelsize[cinfo->in_color_space];
+      r = GETJSAMPLE(inptr[rindex]);
+      g = GETJSAMPLE(inptr[gindex]);
+      b = GETJSAMPLE(inptr[bindex]);
+      inptr += rgbstride;
       /* Y */
       outptr[col] = (JSAMPLE)
 		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])

@@ -1,5 +1,5 @@
 ;
-; jcclrmmx.asm - grayscale colorspace conversion (MMX)
+; jcgrymmx.asm - grayscale colorspace conversion (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
 ; Copyright 2011 D. R. Commander

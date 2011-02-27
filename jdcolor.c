@@ -130,6 +130,10 @@ ycc_rgb_convert (j_decompress_ptr cinfo,
   register JSAMPROW inptr0, inptr1, inptr2;
   register JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
+  int rindex = rgb_red[cinfo->out_color_space];
+  int gindex = rgb_green[cinfo->out_color_space];
+  int bindex = rgb_blue[cinfo->out_color_space];
+  int rgbstride = rgb_pixelsize[cinfo->out_color_space];
   /* copy these pointers into registers if possible */
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   register int * Crrtab = cconvert->Cr_r_tab;
@@ -149,12 +153,12 @@ ycc_rgb_convert (j_decompress_ptr cinfo,
       cb = GETJSAMPLE(inptr1[col]);
       cr = GETJSAMPLE(inptr2[col]);
       /* Range-limiting is essential due to noise introduced by DCT losses. */
-      outptr[rgb_red[cinfo->out_color_space]] =   range_limit[y + Crrtab[cr]];
-      outptr[rgb_green[cinfo->out_color_space]] = range_limit[y +
+      outptr[rindex] =   range_limit[y + Crrtab[cr]];
+      outptr[gindex] = range_limit[y +
 			      ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],
 						 SCALEBITS))];
-      outptr[rgb_blue[cinfo->out_color_space]] =  range_limit[y + Cbbtab[cb]];
-      outptr += rgb_pixelsize[cinfo->out_color_space];
+      outptr[bindex] =  range_limit[y + Cbbtab[cb]];
+      outptr += rgbstride;
     }
   }
 }

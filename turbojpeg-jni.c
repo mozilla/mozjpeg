@@ -81,7 +81,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 	jfieldID fid;
 	tjhandle handle;
 
-  if((handle=tjInitCompress())==NULL)
+	if((handle=tjInitCompress())==NULL)
 		_throw(tjGetErrorStr());
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
@@ -164,7 +164,6 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 		jint height, jint pf, jbyteArray dst, jint jpegsubsamp, jint flags)
 {
 	tjhandle handle=0;  int pixelsize;
-	unsigned long size=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
@@ -196,7 +195,6 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 		jint height, jint pf, jbyteArray dst, jint jpegsubsamp, jint flags)
 {
 	tjhandle handle=0;
-	unsigned long size=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
@@ -245,7 +243,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 	jfieldID fid;
 	tjhandle handle;
 
-  if((handle=tjInitDecompress())==NULL) _throw(tjGetErrorStr());
+	if((handle=tjInitDecompress())==NULL) _throw(tjGetErrorStr());
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
@@ -344,7 +342,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	(JNIEnv *env, jobject obj, jbyteArray src, jint size, jintArray dst,
 		jint width, jint pitch, jint height, jint pf, jint flags)
 {
-	tjhandle handle=0;  int ps;
+	tjhandle handle=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
@@ -359,7 +357,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
 	if(tjDecompress(handle, srcbuf, (unsigned long)size, dstbuf, width,
-    pitch*sizeof(jint), height, sizeof(jint), flags)==-1)
+		pitch*sizeof(jint), height, sizeof(jint), flags)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
 		(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);

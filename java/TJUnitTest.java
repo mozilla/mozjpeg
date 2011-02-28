@@ -201,7 +201,7 @@ public class TJUnitTest {
 		if(imgtype==BufferedImage.TYPE_INT_RGB
 			|| imgtype==BufferedImage.TYPE_INT_BGR)
 		{
-      SinglePixelPackedSampleModel sm=
+			SinglePixelPackedSampleModel sm=
 				(SinglePixelPackedSampleModel)img.getSampleModel();
 			int pitch=sm.getScanlineStride();
 			DataBufferInt db=(DataBufferInt)wr.getDataBuffer();

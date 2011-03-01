@@ -64,7 +64,7 @@ public class TJExample {
 
   public static void main(String argv[]) {
 
-    BufferedImage img = null;  byte [] bmpBuf = null;
+    BufferedImage img = null;  byte[] bmpBuf = null;
 
     try {
 
@@ -82,7 +82,7 @@ public class TJExample {
           if(argv[i].length() > 2
             && argv[i].substring(0, 3).equalsIgnoreCase("-sc")) {
             if(i < argv.length - 1) {
-              String [] scaleArg = argv[++i].split("/");
+              String[] scaleArg = argv[++i].split("/");
               if(scaleArg.length != 2 || Integer.parseInt(scaleArg[0]) != 1
                 || (scaleFactor = Integer.parseInt(scaleArg[1])) < 1
                 || scaleFactor > 8 || (scaleFactor & (scaleFactor - 1)) != 0)
@@ -116,10 +116,10 @@ public class TJExample {
           }
         }
       }
-      String [] inFileTokens = argv[0].split("\\.");
+      String[] inFileTokens = argv[0].split("\\.");
       if(inFileTokens.length > 1)
         inFormat = inFileTokens[inFileTokens.length - 1];
-      String [] outFileTokens = argv[1].split("\\.");
+      String[] outFileTokens = argv[1].split("\\.");
       if(outFileTokens.length > 1)
         outFormat = outFileTokens[outFileTokens.length - 1];
 
@@ -133,7 +133,7 @@ public class TJExample {
           System.out.println("Input file contains no data");
           System.exit(1);
         }
-        byte [] inputBuf = new byte[inputSize];
+        byte[] inputBuf = new byte[inputSize];
         fis.read(inputBuf);
         fis.close();
 
@@ -146,8 +146,8 @@ public class TJExample {
         if(outSubsamp < 0) outSubsamp = inSubsamp;
 
         if(scaleFactor != 1) {
-          width = (width + scaleFactor - 1)/scaleFactor;
-          height = (height + scaleFactor - 1)/scaleFactor;
+          width = (width + scaleFactor - 1) / scaleFactor;
+          height = (height + scaleFactor - 1) / scaleFactor;
         }
 
         if(!outFormat.equalsIgnoreCase("jpg"))
@@ -173,7 +173,7 @@ public class TJExample {
           + " subsampling, quality = " + outQual);
         TJCompressor tjc = new TJCompressor();
         int jpegSize;
-        byte [] jpegBuf;
+        byte[] jpegBuf;
 
         tjc.setSubsamp(outSubsamp);
         tjc.setJPEGQuality(outQual);
@@ -197,7 +197,8 @@ public class TJExample {
         ImageIO.write(img, outFormat, file);
       }
 
-    } catch(Exception e) {
+    }
+    catch(Exception e) {
       System.out.println(e);
     }
   }

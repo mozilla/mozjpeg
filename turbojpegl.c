@@ -74,6 +74,13 @@ static const JXFORM_CODE xformtypes[NUMXFORMOPT]={
 	JXFORM_NONE, JXFORM_FLIP_H, JXFORM_FLIP_V, JXFORM_TRANSPOSE,
 	JXFORM_TRANSVERSE, JXFORM_ROT_90, JXFORM_ROT_180, JXFORM_ROT_270
 };
+#define NUMSF 4
+static const tjscalingfactor sf[NUMSF]={
+	{1, 1},
+	{1, 2},
+	{1, 4},
+	{1, 8}
+};
 
 #define _throw(c) {sprintf(lasterror, "%s", c);  retval=-1;  goto bailout;}
 #define checkhandle(h) jpgstruct *j=(jpgstruct *)h; \
@@ -472,31 +479,16 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle h,
 }
 
 
-DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
-	int *output_width, int *output_height)
+DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors)
 {
-	int i, retval=0, scaledw=0, scaledh=0;
-
-	if(input_width<1 || input_height<1 || output_width==NULL
-		|| output_height==NULL || *output_width<0 || *output_height<0)
-		_throw("Invalid argument in tjGetScaledSize()");
-
-	if(*output_width==0) *output_width=input_width;
-	if(*output_height==0) *output_height=input_height;
-	if(*output_width<input_width || *output_height<input_height)
+	if(numscalingfactors==NULL)
 	{
-		for(i=1; i<=8; i*=2)
-		{
-			scaledw=(input_width+i-1)/i;
-			scaledh=(input_height+i-1)/i;
-			if(scaledw<=*output_width && scaledh<=*output_height)
-				break;
-		}
-		*output_width=scaledw;  *output_height=scaledh;
+		sprintf(lasterror, "Invalid argument in tjGetScalingFactors()");
+		return NULL;
 	}
 
-	bailout:
-	return retval;
+	*numscalingfactors=NUMSF;
+	return (tjscalingfactor *)sf;
 }
 
 
@@ -509,7 +501,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], iw[MAX_COMPONENTS],
 		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
 	JSAMPLE *_tmpbuf=NULL;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
-	int scale_num=1, scale_denom=1, jpegwidth, jpegheight, scaledw, scaledh;
+	int jpegwidth, jpegheight, scaledw, scaledh;
 
 	checkhandle(h);
 
@@ -608,22 +600,18 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 		jpegwidth=j->dinfo.image_width;  jpegheight=j->dinfo.image_height;
 		if(width==0) width=jpegwidth;
 		if(height==0) height=jpegheight;
-		if(width<jpegwidth || height<jpegheight)
+		for(i=0; i<NUMSF; i++)
 		{
-			for(i=1; i<=8; i*=2)
-			{
-				scaledw=(jpegwidth+i-1)/i;
-				scaledh=(jpegheight+i-1)/i;
-				if(scaledw<=width && scaledh<=height)
+			scaledw=(jpegwidth*sf[i].num+sf[i].denom-1)/sf[i].denom;
+			scaledh=(jpegheight*sf[i].num+sf[i].denom-1)/sf[i].denom;
+			if(scaledw<=width && scaledh<=height)
 					break;
-			}
-			if(scaledw>width || scaledh>height)
-				_throw("Could not scale down to desired image dimensions");
-			width=scaledw;  height=scaledh;
-			scale_denom=i;
 		}
-		j->dinfo.scale_num=scale_num;
-		j->dinfo.scale_denom=scale_denom;
+		if(scaledw>width || scaledh>height)
+			_throw("Could not scale down to desired image dimensions");
+		width=scaledw;  height=scaledh;
+		j->dinfo.scale_num=sf[i].num;
+		j->dinfo.scale_denom=sf[i].denom;
 	}
 
 	jpeg_start_decompress(&j->dinfo);

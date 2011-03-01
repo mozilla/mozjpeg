@@ -253,28 +253,32 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 	return;
 }
 
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledWidth
-	(JNIEnv *env, jobject obj, jint input_width, jint input_height,
-		jint output_width, jint output_height)
+JNIEXPORT jobjectArray JNICALL Java_org_libjpegturbo_turbojpeg_TJ_getScalingFactors
+	(JNIEnv *env, jclass cls)
 {
-	if(tjGetScaledSize(input_width, input_height, &output_width, &output_height)
-		==-1)
+  jclass sfcls=NULL;  jfieldID fid=0;
+	tjscalingfactor *sf=NULL;  int n=0, i;
+	jobject sfobj=NULL;
+	jobjectArray sfjava=NULL;
+
+	if((sf=tjGetScalingFactors(&n))==NULL || n==0)
 		_throw(tjGetErrorStr());
 
-	bailout:
-	return output_width;
-}
+	bailif0(sfcls=(*env)->FindClass(env, "org/libjpegturbo/turbojpeg/TJ$ScalingFactor"));
+	bailif0(sfjava=(jobjectArray)(*env)->NewObjectArray(env, n, sfcls, 0));
 
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledHeight
-	(JNIEnv *env, jobject obj, jint input_width, jint input_height,
-		jint output_width, jint output_height)
-{
-	if(tjGetScaledSize(input_width, input_height, &output_width, &output_height)
-		==-1)
-		_throw(tjGetErrorStr());
+	for(i=0; i<n; i++)
+	{
+		bailif0(sfobj=(*env)->AllocObject(env, sfcls));
+		bailif0(fid=(*env)->GetFieldID(env, sfcls, "num", "I"));
+		(*env)->SetIntField(env, sfobj, fid, sf[i].num);
+		bailif0(fid=(*env)->GetFieldID(env, sfcls, "denom", "I"));
+		(*env)->SetIntField(env, sfobj, fid, sf[i].denom);
+		(*env)->SetObjectArrayElement(env, sfjava, i, sfobj);
+	}
 
 	bailout:
-	return output_height;
+	return sfjava;
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader

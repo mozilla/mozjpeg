@@ -61,6 +61,14 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
   (JNIEnv *, jclass, jint, jint, jint);
 
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJ
+ * Method:    getScalingFactors
+ * Signature: ()[Lorg/libjpegturbo/turbojpeg/TJ/ScalingFactor;
+ */
+JNIEXPORT jobjectArray JNICALL Java_org_libjpegturbo_turbojpeg_TJ_getScalingFactors
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

@@ -34,7 +34,7 @@
 enum {YUVENCODE=1, YUVDECODE};
 int forcemmx=0, forcesse=0, forcesse2=0, forcesse3=0, fastupsample=0,
 	decomponly=0, yuv=0, quiet=0, dotile=0, pf=BMP_BGR, bu=0, useppm=0,
-	scalefactor=1;
+	scale_num=1, scale_denom=1;
 const int _ps[BMPPIXELFORMATS]={3, 4, 3, 4, 4, 4};
 const int _flags[BMPPIXELFORMATS]={0, 0, TJ_BGR, TJ_BGR,
 	TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST};
@@ -44,6 +44,7 @@ const int _bindex[BMPPIXELFORMATS]={2, 2, 0, 0, 1, 3};
 const char *_pfname[]={"RGB", "RGBX", "BGR", "BGRX", "XBGR", "XRGB"};
 const char *_subnamel[NUMSUBOPT]={"4:4:4", "4:2:2", "4:2:0", "GRAY"};
 const char *_subnames[NUMSUBOPT]={"444", "422", "420", "GRAY"};
+tjscalingfactor *sf=NULL;  int nsf=0;
 
 void printsigfig(double val, int figs)
 {
@@ -77,8 +78,8 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	double start, elapsed;
 	int ps=_ps[pf];
 	int yuvsize=TJBUFSIZEYUV(w, h, jpegsub), bufsize;
-	int scaledw=(yuv==YUVDECODE)? w : (w+scalefactor-1)/scalefactor;
-	int scaledh=(yuv==YUVDECODE)? h : (h+scalefactor-1)/scalefactor;
+	int scaledw=(yuv==YUVDECODE)? w : (w*scale_num+scale_denom-1)/scale_denom;
+	int scaledh=(yuv==YUVDECODE)? h : (h*scale_num+scale_denom-1)/scale_denom;
 	int pitch=scaledw*ps;
 
 	if(qual>0)
@@ -172,7 +173,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 		if(savebmp(tempstr, rgbbuf, scaledw, scaledh, pf, pitch, bu)==-1)
 			_throwbmp("saving bitmap");
 		sprintf(strrchr(tempstr, '.'), "-err.%s", useppm?"ppm":"bmp");
-		if(srcbuf && scalefactor==1)
+		if(srcbuf && scale_num==1 && scale_denom==1)
 		{
 			if(!quiet)
 				printf("Computing compression error and saving to %s.\n", tempstr);
@@ -533,8 +534,9 @@ void dodecomptest(char *filename)
 				printf(">>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
 					bu?"Bottom-up":"Top-down");
 			printf("\nImage size: %d x %d", w, h);
-			if(scalefactor!=1) printf(" --> %d x %d", (w+scalefactor-1)/scalefactor,
-				(h+scalefactor-1)/scalefactor);
+			if(scale_num!=1 || scale_denom!=1)
+				printf(" --> %d x %d", (w*scale_num+scale_denom-1)/scale_denom,
+					(h*scale_num+scale_denom-1)/scale_denom);
 			printf("\n");
 		}
 
@@ -559,6 +561,7 @@ void dodecomptest(char *filename)
 
 void usage(char *progname)
 {
+	int i;
 	printf("USAGE: %s\n", progname);
 	printf("       <Inputfile (BMP|PPM)> <%% Quality> [options]\n\n");
 	printf("       %s\n", progname);
@@ -575,8 +578,19 @@ void usage(char *progname)
 	printf("-quiet = Output results in tabular rather than verbose format\n");
 	printf("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG\n");
 	printf("-yuvdecode = Decode JPEG image to planar YUV rather than RGB\n");
-	printf("-scale 1/N = scale down the width/height of the decompressed JPEG image by a\n");
-	printf("     factor of N (N = 1, 2, 4, or 8}\n\n");
+	printf("-scale M/N = scale down the width/height of the decompressed JPEG image by a\n");
+	printf("     factor of M/N (M/N = ");
+	for(i=0; i<nsf; i++)
+	{
+		printf("%d/%d", sf[i].num, sf[i].denom);
+		if(nsf==2 && i!=nsf-1) printf(" or ");
+		else if(nsf>2)
+		{
+			if(i!=nsf-1) printf(", ");
+			if(i==nsf-2) printf("or ");
+		}
+	}
+	printf(")\n\n");
 	printf("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate\n");
 	printf("test will be performed for all quality values in the range.\n\n");
 	exit(1);
@@ -585,9 +599,12 @@ void usage(char *progname)
 
 int main(int argc, char *argv[])
 {
-	unsigned char *bmpbuf=NULL;  int w, h, i;
+	unsigned char *bmpbuf=NULL;  int w, h, i, j;
 	int qual=-1, hiqual=-1;  char *temp;
 	int minarg=2;
+
+	if((sf=tjGetScalingFactors(&nsf))==NULL || nsf==0)
+		_throwtj("executing tjGetScalingFactors()");
 
 	if(argc<minarg) usage(argv[0]);
 
@@ -673,16 +690,25 @@ int main(int argc, char *argv[])
 			if(!stricmp(argv[i], "-qq")) quiet=2;
 			if(!stricmp(argv[i], "-scale") && i<argc-1)
 			{
-				int temp1=0, temp2=0;
-				if(sscanf(argv[++i], "%d/%d", &temp1, &temp2)!=2
-					|| temp1!=1 || temp2<1 || temp2>8 || (temp2&(temp2-1))!=0)
-					usage(argv[0]);
-				scalefactor=temp2;
+				int temp1=0, temp2=0, match=0;
+				if(sscanf(argv[++i], "%d/%d", &temp1, &temp2)==2)
+				{
+					for(j=0; j<nsf; j++)
+					{
+						if(temp1==sf[j].num && temp2==sf[j].denom)
+						{
+							scale_num=temp1;  scale_denom=temp2;
+							match=1;  break;
+						}
+					}
+					if(!match) usage(argv[0]);
+				}
+				else usage(argv[0]);
 			}
 		}
 	}
 
-	if(scalefactor!=1 && dotile)
+	if((scale_num!=1 || scale_denom!=1) && dotile)
 	{
 		printf("Disabling tiled compression/decompression tests, because these tests do not\n");
 		printf("work when scaled decompression is enabled.\n");
@@ -723,7 +749,10 @@ int main(int argc, char *argv[])
 		dotest(bmpbuf, w, h, TJ_444, i, argv[1]);
 	printf("\n");
 
-	bailout:
 	if(bmpbuf) free(bmpbuf);
 	return 0;
+
+	bailout:
+	if(bmpbuf) free(bmpbuf);
+	return 1;
 }

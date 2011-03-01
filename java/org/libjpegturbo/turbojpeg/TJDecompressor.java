@@ -76,8 +76,19 @@ public class TJDecompressor {
       throw new Exception("JPEG buffer not initialized");
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledWidth()");
-    return getScaledWidth(jpegWidth, jpegHeight, desiredWidth,
-      desiredHeight);
+    TJ.ScalingFactor sf [] = TJ.getScalingFactors();
+    if(desiredWidth == 0) desiredWidth = jpegWidth;
+    if(desiredHeight == 0) desiredHeight = jpegHeight;
+    int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
+    for(int i=0; i<sf.length; i++) {
+      scaledWidth = (jpegWidth * sf[i].num + sf[i].denom - 1) / sf[i].denom;
+      scaledHeight = (jpegHeight * sf[i].num + sf[i].denom - 1) / sf[i].denom;
+      if(scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
+        break;
+    }
+    if(scaledWidth > desiredWidth || scaledHeight > desiredHeight)
+      throw new Exception("Could not scale down to desired image dimensions");
+    return scaledWidth;
   }
 
   public int getScaledHeight(int desiredWidth, int desiredHeight)
@@ -86,8 +97,19 @@ public class TJDecompressor {
       throw new Exception("JPEG buffer not initialized");
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledHeight()");
-    return getScaledHeight(jpegWidth, jpegHeight, desiredWidth,
-      desiredHeight);
+    TJ.ScalingFactor sf [] = TJ.getScalingFactors();
+    if(desiredWidth == 0) desiredWidth = jpegWidth;
+    if(desiredHeight == 0) desiredHeight = jpegHeight;
+    int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
+    for(int i=0; i<sf.length; i++) {
+      scaledWidth = (jpegWidth * sf[i].num + sf[i].denom - 1) / sf[i].denom;
+      scaledHeight = (jpegHeight * sf[i].num + sf[i].denom - 1) / sf[i].denom;
+      if(scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
+        break;
+    }
+    if(scaledWidth > desiredWidth || scaledHeight > desiredHeight)
+      throw new Exception("Could not scale down to desired image dimensions");
+    return scaledHeight;
   }
 
   public void decompress(byte [] dstBuf, int desiredWidth, int pitch,
@@ -223,12 +245,6 @@ public class TJDecompressor {
   private native void decompressToYUV(byte [] srcBuf, int size, byte [] dstBuf,
     int flags)
     throws Exception;
-
-  private native int getScaledWidth(int jpegWidth, int jpegHeight,
-    int desiredWidth, int desiredHeight) throws Exception;
-
-  private native int getScaledHeight(int jpegWidth, int jpegHeight,
-    int desiredWidth, int desiredHeight) throws Exception;
 
   static {
     System.loadLibrary("turbojpeg");

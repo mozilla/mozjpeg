@@ -253,14 +253,14 @@ public class TJUnitTest {
 	}
 
 	private static int checkbuf(byte [] buf, int w, int pitch, int h, int pf,
-		int subsamp, int scalefactor, int flags) throws Exception
+		int subsamp, int scale_num, int scale_denom, int flags) throws Exception
 	{
 		int roffset=TJ.getRedShift(pf)/8;
 		int goffset=TJ.getGreenShift(pf)/8;
 		int boffset=TJ.getBlueShift(pf)/8;
 		int ps=TJ.getPixelSize(pf);
 		int i, _i, j, retval=1;
-		int halfway=16/scalefactor, blocksize=8/scalefactor;
+		int halfway=16*scale_num/scale_denom, blocksize=8*scale_num/scale_denom;
 
 		try
 		{
@@ -350,13 +350,13 @@ public class TJUnitTest {
 	}
 
 	private static int checkintbuf(int [] buf, int w, int pitch, int h, int pf,
-		int subsamp, int scalefactor, int flags) throws Exception
+		int subsamp, int scale_num, int scale_denom, int flags) throws Exception
 	{
 		int rshift=TJ.getRedShift(pf);
 		int gshift=TJ.getGreenShift(pf);
 		int bshift=TJ.getBlueShift(pf);
 		int i, _i, j, retval=1;
-		int halfway=16/scalefactor, blocksize=8/scalefactor;
+		int halfway=16*scale_num/scale_denom, blocksize=8*scale_num/scale_denom;
 
 		try
 		{
@@ -448,7 +448,7 @@ public class TJUnitTest {
 	}
 
 	private static int checkimg(BufferedImage img, int pf,
-		int subsamp, int scalefactor, int flags) throws Exception
+		int subsamp, int scale_num, int scale_denom, int flags) throws Exception
 	{
 		WritableRaster wr=img.getRaster();
 		int imgtype=img.getType();
@@ -461,7 +461,7 @@ public class TJUnitTest {
 			DataBufferInt db=(DataBufferInt)wr.getDataBuffer();
 			int [] buf = db.getData();
 			return checkintbuf(buf, img.getWidth(), pitch, img.getHeight(), pf,
-				subsamp, scalefactor, flags);
+				subsamp, scale_num, scale_denom, flags);
 		}
 		else
 		{
@@ -471,7 +471,7 @@ public class TJUnitTest {
 			DataBufferByte db=(DataBufferByte)wr.getDataBuffer();
 			byte [] buf = db.getData();
 			return checkbuf(buf, img.getWidth(), pitch, img.getHeight(), pf, subsamp,
-				scalefactor, flags);
+				scale_num, scale_denom, flags);
 		}
 	}
 
@@ -681,12 +681,12 @@ public class TJUnitTest {
 
 	private static void _gentestbmp(TJDecompressor tjd, byte [] jpegbuf,
 		int jpegsize, int w, int h, int pf, String basefilename, int subsamp,
-		int flags, int scalefactor) throws Exception
+		int flags, int scale_num, int scale_denom) throws Exception
 	{
 		String pixformat, tempstr;  int _hdrw=0, _hdrh=0, _hdrsubsamp=-1;
 		double t;
-		int scaledw=(w+scalefactor-1)/scalefactor;
-		int scaledh=(h+scalefactor-1)/scalefactor;
+		int scaledw=(w*scale_num+scale_denom-1)/scale_denom;
+		int scaledh=(h*scale_num+scale_denom-1)/scale_denom;
 		int temp1, temp2;
 		BufferedImage img=null;  byte [] bmpbuf=null;
 
@@ -701,7 +701,8 @@ public class TJUnitTest {
 			System.out.print(pixformat+" ");
 			if((flags&TJ.BOTTOMUP)!=0) System.out.print("Bottom-Up ");
 			else System.out.print("Top-Down  ");
-			if(scalefactor!=1) System.out.print("1/"+scalefactor+" ... ");
+			if(scale_num!=1 || scale_denom!=1)
+				System.out.print(scale_num+"/"+scale_denom+" ... ");
 			else System.out.print("... ");
 		}
 
@@ -728,7 +729,7 @@ public class TJUnitTest {
 		{
 			tempstr=basefilename+"_dec_"+pixformat+"_"
 				+(((flags&TJ.BOTTOMUP)!=0)? "BU":"TD")+"_"+_subnames[subsamp]
-				+"_"+scalefactor+"x"+".png";
+				+"_"+(double)scale_num/(double)scale_denom+"x"+".png";
 			File file=new File(tempstr);
 			ImageIO.write(img, "png", file);
 		}
@@ -741,9 +742,9 @@ public class TJUnitTest {
 		}
 		else
 		{
-			if((bi && checkimg(img, pf, subsamp, scalefactor, flags)==1)
+			if((bi && checkimg(img, pf, subsamp, scale_num, scale_denom, flags)==1)
 				|| (!bi && checkbuf(bmpbuf, scaledw, scaledw*TJ.getPixelSize(pf),
-					scaledh, pf, subsamp, scalefactor, flags)==1))
+					scaledh, pf, subsamp, scale_num, scale_denom, flags)==1))
 				System.out.print("Passed.");
 			else
 			{
@@ -760,13 +761,14 @@ public class TJUnitTest {
 		int i;
 		if((subsamp==TJ.SAMP_444 || subsamp==TJ.SAMP_GRAY) && yuv==0)
 		{
-			for(i=1; i<=8; i*=2)
+			TJ.ScalingFactor sf []=TJ.getScalingFactors();
+			for(i=0; i<sf.length; i++)
 				_gentestbmp(tjd, jpegbuf, jpegsize, w, h, pf, basefilename, subsamp,
-					flags, i);
+					flags, sf[i].num, sf[i].denom);
 		}
 		else
 			_gentestbmp(tjd, jpegbuf, jpegsize, w, h, pf, basefilename, subsamp,
-				flags, 1);
+				flags, 1, 1);
 		System.out.print("\n");
 	}
 

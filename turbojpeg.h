@@ -56,6 +56,12 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
 #define TJ_YUV           512
   /* Nothing to see here.  Pay no attention to the man behind the curtain. */
 
+/* Scaling factor structure */
+typedef struct
+{
+	int num, denom;
+} tjscalingfactor;
+
 /* Transform operations for tjTransform() */
 #define NUMXFORMOPT 8
 
@@ -299,23 +305,16 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
 
 
 /*
-  int tjGetScaledSize(int input_width, int input_height,
-     int *output_width, int *output_height)
+  tjscalingfactor *tjGetScalingFactors(int *numscalingfactors)
 
-  [INPUT] input_width = width (in pixels) of the JPEG image
-  [INPUT] input_height = height (in pixels) of the JPEG image
-  [INPUT/OUTPUT] output_width, output_height = Before calling this function,
-     *output_width and *output_height should be set to the desired dimensions
-     of the output image.  Upon returning from this function, they will be set
-     to the dimensions of the largest scaled down image that TurboJPEG can
-     produce without exceeding the desired dimensions.  If either *output_width
-     or *output_height is set to 0, then the corresponding dimension will not
-     be considered when determining the scaled image size.
+  Returns a list of fractional scaling factors that the JPEG decompressor in
+  this implementation of TurboJPEG supports.
 
-  RETURNS: 0 on success, -1 if arguments are out of bounds
+  [OUTPUT] numscalingfactors = the size of the list
+
+  RETURNS: NULL on error
 */
-DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
-	int *output_width, int *output_height);
+DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
 
 
 /*
@@ -331,10 +330,10 @@ DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
   [INPUT] size = size of the JPEG image buffer (in bytes)
   [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
      the bitmap image.  This buffer should normally be pitch*scaled_height
-     bytes in size, where scaled_height is determined by calling
-     tjGetScaledSize() with the height of the desired output image.  This
-     pointer may also be used to decompress into a specific region of a
-     larger buffer.
+     bytes in size, where scaled_height is ceil(jpeg_height*scaling_factor),
+     and the supported scaling factors can be determined by calling
+     tjGetScalingFactors().  The dstbuf pointer may also be used to decompress
+     into a specific region of a larger buffer.
   [INPUT] width = desired width (in pixels) of the destination image.  If this
      is smaller than the width of the JPEG image being decompressed, then
      TurboJPEG will use scaling in the JPEG decompressor to generate the
@@ -345,10 +344,9 @@ DLLEXPORT int DLLCALL tjGetScaledSize(int input_width, int input_height,
      scaled_width*pixelsize if the bitmap image is unpadded, else
      TJPAD(scaled_width*pixelsize) if each line of the bitmap is padded to the
      nearest 32-bit boundary, such as is the case for Windows bitmaps.
-     (NOTE: scaled_width can be determined by calling tjGetScaledSize().)  You
-     can also be clever and use this parameter to skip lines, etc.  Setting
-     this parameter to 0 is the equivalent of setting it to
-     scaled_width*pixelsize.
+     (NOTE: scaled_width = ceil(jpeg_width*scaling_factor).)  You can also be
+     clever and use this parameter to skip lines, etc.  Setting this parameter
+     to 0 is the equivalent of setting it to scaled_width*pixelsize.
   [INPUT] height = desired height (in pixels) of the destination image.  If
      this is smaller than the height of the JPEG image being decompressed, then
      TurboJPEG will use scaling in the JPEG decompressor to generate the

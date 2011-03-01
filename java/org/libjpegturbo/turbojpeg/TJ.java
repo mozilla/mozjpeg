@@ -30,6 +30,11 @@ package org.libjpegturbo.turbojpeg;
 
 final public class TJ {
 
+  final public class ScalingFactor {
+    public int num = 1;
+    public int denom = 1;
+  };
+
   // Chrominance subsampling options
   final public static int
     NUMSAMPOPT = 4,
@@ -103,6 +108,9 @@ final public class TJ {
 
   public native final static int bufSizeYUV(int width, int height,
     int subsamp)
+    throws Exception;
+
+  public native final static ScalingFactor [] getScalingFactors()
     throws Exception;
 
   static {

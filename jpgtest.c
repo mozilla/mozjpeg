@@ -24,7 +24,8 @@
 #include "./turbojpeg.h"
 
 #define _throw(op, err) {  \
-	printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err);  goto bailout;}
+	printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err);  \
+  retval=-1;  goto bailout;}
 #define _throwunix(m) _throw(m, strerror(errno))
 #define _throwtj(m) _throw(m, tjGetErrorStr())
 #define _throwbmp(m) _throw(m, bmpgeterr())
@@ -74,7 +75,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
 		|(fastupsample?TJ_FASTUPSAMPLE:0);
-	int i, j, ITER, rgbbufalloc=0;
+	int i, j, ITER, rgbbufalloc=0, retval=0;
 	double start, elapsed;
 	int ps=_ps[pf];
 	int yuvsize=TJBUFSIZEYUV(w, h, jpegsub), bufsize;
@@ -203,15 +204,11 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 		}
 	}
 
-	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
-	if(rgbbuf && rgbbufalloc) {free(rgbbuf);  rgbbuf=NULL;}
-	return 0;
-
 	bailout:
 	if(outfile) {fclose(outfile);  outfile=NULL;}
 	if(hnd) {tjDestroy(hnd);  hnd=NULL;}
 	if(rgbbuf && rgbbufalloc) {free(rgbbuf);  rgbbuf=NULL;}
-	return -1;
+	return retval;
 }
 
 void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
@@ -222,7 +219,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 	unsigned char **jpegbuf=NULL, *rgbbuf=NULL;
 	double start, elapsed;
 	int jpgbufsize=0, i, j, tilesizex=w, tilesizey=h, numtilesx=1, numtilesy=1,
-		ITER;
+		ITER, retval=0;
 	unsigned long *comptilesize=NULL;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
@@ -361,18 +358,11 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 			goto bailout;
 
 		// Cleanup
-		if(outfile) {fclose(outfile);  outfile=NULL;}
-		if(jpegbuf)
-		{
-			for(i=0; i<numtilesx*numtilesy; i++)
-				{if(jpegbuf[i]) free(jpegbuf[i]);  jpegbuf[i]=NULL;}
-			free(jpegbuf);  jpegbuf=NULL;
-		}
-		if(comptilesize) {free(comptilesize);  comptilesize=NULL;}
+		for(i=0; i<numtilesx*numtilesy; i++)
+			{if(jpegbuf[i]) free(jpegbuf[i]);  jpegbuf[i]=NULL;}
+		free(jpegbuf);  jpegbuf=NULL;
+		free(comptilesize);  comptilesize=NULL;
 	} while(tilesizex<w || tilesizey<h);
-
-	if(rgbbuf) {free(rgbbuf);  rgbbuf=NULL;}
-	return;
 
 	bailout:
 	if(outfile) {fclose(outfile);  outfile=NULL;}
@@ -396,7 +386,7 @@ void dodecomptest(char *filename)
 	unsigned long *comptilesize=NULL, srcbufsize, jpgbufsize;
 	int w=0, h=0, jpegsub=-1;
 	char *temp=NULL;
-	int i, j, tilesizex, tilesizey, numtilesx, numtilesy;
+	int i, j, tilesizex, tilesizey, numtilesx, numtilesy, retval=0;
 	double start, elapsed;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0);
@@ -601,7 +591,7 @@ int main(int argc, char *argv[])
 {
 	unsigned char *bmpbuf=NULL;  int w, h, i, j;
 	int qual=-1, hiqual=-1;  char *temp;
-	int minarg=2;
+	int minarg=2;  int retval=0;
 
 	if((sf=tjGetScalingFactors(&nsf))==NULL || nsf==0)
 		_throwtj("executing tjGetScalingFactors()");
@@ -749,10 +739,7 @@ int main(int argc, char *argv[])
 		dotest(bmpbuf, w, h, TJ_444, i, argv[1]);
 	printf("\n");
 
-	if(bmpbuf) free(bmpbuf);
-	return 0;
-
 	bailout:
 	if(bmpbuf) free(bmpbuf);
-	return 1;
+	return retval;
 }

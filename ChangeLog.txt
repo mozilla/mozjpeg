@@ -6,6 +6,13 @@
 [2] TurboJPEG/OSS can now scale down images during decompression.
 
 
+1.1.1
+=====
+
+[1] Fixed a 1-pixel error in row 0, column 21 of the luminance plane generated
+by tjEncodeYUV().
+
+
 1.1.0
 =====
 

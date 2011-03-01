@@ -42,6 +42,5 @@ TURBOJPEG_1.2
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3IIIIII;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy;		
-		Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledHeight;
-		Java_org_libjpegturbo_turbojpeg_TJDecompressor_getScaledWidth;
+		Java_org_libjpegturbo_turbojpeg_TJ_getScalingFactors;
 } TURBOJPEG_1.1;

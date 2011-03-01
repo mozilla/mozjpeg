@@ -33,7 +33,7 @@ enum {YUVENCODE=1, YUVDECODE};
 int yuv=0;
 
 int exitstatus=0;
-#define bailout() {exitstatus=-1;  goto finally;}
+#define bailout() {exitstatus=-1;  goto bailout;}
 
 int pixels[9][3]=
 {
@@ -306,7 +306,7 @@ void writejpeg(unsigned char *jpegbuf, unsigned long jpgbufsize, char *filename)
 		bailout();
 	}
 
-	finally:
+	bailout:
 	if(outfile) fclose(outfile);
 }
 
@@ -370,7 +370,7 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	else printf("Done.");
 	printf("  %f ms\n  Result in %s\n", t*1000., tempstr);
 
-	finally:
+	bailout:
 	if(bmpbuf) free(bmpbuf);
 }
 
@@ -448,7 +448,7 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	}
 	printf("  %f ms\n", t*1000.);
 
-	finally:
+	bailout:
 	if(bmpbuf) free(bmpbuf);
 }
 
@@ -473,7 +473,7 @@ void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 		_gentestbmp(hnd, jpegbuf, jpegsize, w, h, ps, basefilename, subsamp,
 			flags, 1, 1);
 
-	finally:
+	bailout:
 	printf("\n");
 }
 
@@ -496,7 +496,7 @@ void dotest(int w, int h, int ps, int subsamp, char *basefilename)
 	gentestjpeg(hnd, jpegbuf, &size, w, h, ps, basefilename, subsamp, 100, 0);
 	gentestbmp(dhnd, jpegbuf, size, w, h, ps, basefilename, subsamp, 0);
 
-	if(ps==1 || yuv==YUVDECODE) goto finally;
+	if(ps==1 || yuv==YUVDECODE) goto bailout;
 
 	gentestjpeg(hnd, jpegbuf, &size, w, h, ps, basefilename, subsamp, 100, TJ_BGR);
 	gentestbmp(dhnd, jpegbuf, size, w, h, ps, basefilename, subsamp, TJ_BGR);
@@ -522,7 +522,7 @@ void dotest(int w, int h, int ps, int subsamp, char *basefilename)
 		gentestbmp(dhnd, jpegbuf, size, w, h, ps, basefilename, subsamp, TJ_ALPHAFIRST|TJ_BGR|TJ_BOTTOMUP);
 	}
 
-	finally:
+	bailout:
 	if(hnd) tjDestroy(hnd);
 	if(dhnd) tjDestroy(dhnd);
 
@@ -576,7 +576,7 @@ void dotest1(void)
 	}
 	printf("Done.      \n");
 
-	finally:
+	bailout:
 	if(bmpbuf) free(bmpbuf);  if(jpgbuf) free(jpgbuf);
 	if(hnd) tjDestroy(hnd);
 }

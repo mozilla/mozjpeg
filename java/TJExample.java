@@ -40,14 +40,23 @@ public class TJExample {
 
   public static final String classname = new TJExample().getClass().getName();
 
-  private static void usage() {
+  private static void usage() throws Exception {
     System.out.println("\nUSAGE: java " + classname + " <Input file> <Output file> [options]\n");
     System.out.println("Input and output files can be any image format that the Java Image I/O");
     System.out.println("extensions understand.  If either filename ends in a .jpg extension, then");
     System.out.println("TurboJPEG will be used to compress or decompress the file.\n");
     System.out.println("Options:\n");
-    System.out.println("-scale 1/N = if the input image is a JPEG file, scale the width/height of the");
-    System.out.println("             output image by a factor of 1/N (N = 1, 2, 4, or 8}\n");
+    System.out.println("-scale M/N = if the input image is a JPEG file, scale the width/height of the");
+    System.out.print("             output image by a factor of M/N (M/N = ");
+    for(int i = 0; i < sf.length; i++) {
+      System.out.print(sf[i].num + "/" + sf[i].denom);
+      if(sf.length == 2 && i != sf.length - 1) System.out.print(" or ");
+      else if(sf.length > 2) {
+        if(i != sf.length - 1) System.out.print(", ");
+        if(i == sf.length - 2) System.out.print("or ");
+      }
+    }
+    System.out.println(")\n");
     System.out.println("-samp <444|422|420|gray> = If the output image is a JPEG file, this specifies");
     System.out.println("                           the level of chrominance subsampling to use when");
     System.out.println("                           recompressing it.  Default is to use the same level");
@@ -68,11 +77,13 @@ public class TJExample {
 
     try {
 
+      sf = TJ.getScalingFactors();
+
       if(argv.length < 2) {
         usage();
       }
 
-      int scaleFactor = 1;
+      int scaleNum = 1, scaleDenom = 1;
       String inFormat = "jpg", outFormat = "jpg";
       int outSubsamp = -1, outQual = 95;
 
@@ -81,14 +92,22 @@ public class TJExample {
           if(argv[i].length() < 2) continue;
           if(argv[i].length() > 2
             && argv[i].substring(0, 3).equalsIgnoreCase("-sc")) {
+            int match = 0;
             if(i < argv.length - 1) {
+              int temp1 = 0, temp2 = 0;
               String[] scaleArg = argv[++i].split("/");
-              if(scaleArg.length != 2 || Integer.parseInt(scaleArg[0]) != 1
-                || (scaleFactor = Integer.parseInt(scaleArg[1])) < 1
-                || scaleFactor > 8 || (scaleFactor & (scaleFactor - 1)) != 0)
-                usage();
+              if(scaleArg.length == 2) {
+                temp1 = Integer.parseInt(scaleArg[0]);
+                temp2 = Integer.parseInt(scaleArg[1]);
+                for(int j = 0; j < sf.length; j++) {
+                  if(temp1 == sf[j].num && temp2 == sf[j].denom) {
+                    scaleNum = temp1;  scaleDenom = temp2;
+                    match = 1;  break;
+                  }
+                }
+              }
             }
-            else usage();
+            if(match != 1) usage();
           }
           if(argv[i].substring(0, 2).equalsIgnoreCase("-h")
             || argv[i].equalsIgnoreCase("-?"))
@@ -145,9 +164,9 @@ public class TJExample {
           + " pixels, " + sampName[inSubsamp] + " subsampling");
         if(outSubsamp < 0) outSubsamp = inSubsamp;
 
-        if(scaleFactor != 1) {
-          width = (width + scaleFactor - 1) / scaleFactor;
-          height = (height + scaleFactor - 1) / scaleFactor;
+        if(scaleNum != 1 || scaleDenom != 1) {
+          width = (width * scaleNum + scaleDenom - 1) / scaleDenom;
+          height = (height * scaleNum + scaleDenom - 1) / scaleDenom;
         }
 
         if(!outFormat.equalsIgnoreCase("jpg"))
@@ -203,4 +222,5 @@ public class TJExample {
     }
   }
 
+  static TJ.ScalingFactor sf [] = null;
 };

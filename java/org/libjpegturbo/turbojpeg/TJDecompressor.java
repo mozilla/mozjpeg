@@ -36,15 +36,15 @@ public class TJDecompressor {
     init();
   }
 
-  public TJDecompressor(byte [] buf) throws Exception {
+  public TJDecompressor(byte[] buf) throws Exception {
     setJPEGBuffer(buf, buf.length);
   }
 
-  public TJDecompressor(byte [] buf, int bufSize) throws Exception {
+  public TJDecompressor(byte[] buf, int bufSize) throws Exception {
     setJPEGBuffer(buf, bufSize);
   }
 
-  public void setJPEGBuffer(byte [] buf, int bufSize) throws Exception {
+  public void setJPEGBuffer(byte[] buf, int bufSize) throws Exception {
     if(handle == 0) init();
     if(buf == null || bufSize < 1)
       throw new Exception("Invalid argument in setJPEGBuffer()");
@@ -76,11 +76,11 @@ public class TJDecompressor {
       throw new Exception("JPEG buffer not initialized");
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledWidth()");
-    TJ.ScalingFactor sf [] = TJ.getScalingFactors();
+    TJ.ScalingFactor sf[] = TJ.getScalingFactors();
     if(desiredWidth == 0) desiredWidth = jpegWidth;
     if(desiredHeight == 0) desiredHeight = jpegHeight;
     int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
-    for(int i=0; i<sf.length; i++) {
+    for(int i = 0; i < sf.length; i++) {
       scaledWidth = (jpegWidth * sf[i].num + sf[i].denom - 1) / sf[i].denom;
       scaledHeight = (jpegHeight * sf[i].num + sf[i].denom - 1) / sf[i].denom;
       if(scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
@@ -97,11 +97,11 @@ public class TJDecompressor {
       throw new Exception("JPEG buffer not initialized");
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledHeight()");
-    TJ.ScalingFactor sf [] = TJ.getScalingFactors();
+    TJ.ScalingFactor sf[] = TJ.getScalingFactors();
     if(desiredWidth == 0) desiredWidth = jpegWidth;
     if(desiredHeight == 0) desiredHeight = jpegHeight;
     int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
-    for(int i=0; i<sf.length; i++) {
+    for(int i = 0; i < sf.length; i++) {
       scaledWidth = (jpegWidth * sf[i].num + sf[i].denom - 1) / sf[i].denom;
       scaledHeight = (jpegHeight * sf[i].num + sf[i].denom - 1) / sf[i].denom;
       if(scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
@@ -112,7 +112,7 @@ public class TJDecompressor {
     return scaledHeight;
   }
 
-  public void decompress(byte [] dstBuf, int desiredWidth, int pitch,
+  public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
     int desiredHeight, int pixelFormat, int flags) throws Exception {
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
     if(dstBuf == null || desiredWidth < 0 || pitch < 0 || desiredHeight < 0
@@ -122,7 +122,7 @@ public class TJDecompressor {
       desiredHeight, pixelFormat, flags);
   }
 
-  public byte [] decompress(int desiredWidth, int pitch, int desiredHeight,
+  public byte[] decompress(int desiredWidth, int pitch, int desiredHeight,
     int pixelFormat, int flags) throws Exception {
     if(desiredWidth < 0 || pitch < 0 || desiredHeight < 0
       || pixelFormat < 0 || pixelFormat >= TJ.NUMPFOPT || flags < 0)
@@ -131,26 +131,26 @@ public class TJDecompressor {
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
     if(pitch == 0) pitch = scaledWidth * pixelSize;
-    byte [] buf = new byte[pitch * scaledHeight];
+    byte[] buf = new byte[pitch * scaledHeight];
     decompress(buf, desiredWidth, pitch, desiredHeight, pixelFormat, flags);
     return buf;
   }
 
-  public void decompressToYUV(byte [] dstBuf, int flags) throws Exception {
+  public void decompressToYUV(byte[] dstBuf, int flags) throws Exception {
     if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
     if(dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in decompressToYUV()");
     decompressToYUV(jpegBuf, jpegBufSize, dstBuf, flags);
   }
 
-  public byte [] decompressToYUV(int flags) throws Exception {
+  public byte[] decompressToYUV(int flags) throws Exception {
     if(flags < 0)
       throw new Exception("Invalid argument in decompressToYUV()");
     if(jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
       throw new Exception("JPEG buffer not initialized");
     if(jpegSubsamp >= TJ.NUMSAMPOPT)
       throw new Exception("JPEG header information is invalid");
-    byte [] buf = new byte[TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp)];
+    byte[] buf = new byte[TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp)];
     decompressToYUV(buf, flags);
     return buf;
   }
@@ -164,16 +164,16 @@ public class TJDecompressor {
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
     if(scaledWidth != desiredWidth || scaledHeight != desiredHeight)
       throw new Exception("BufferedImage dimensions do not match a scaled image size that TurboJPEG is capable of generating.");
-    int pixelFormat;  boolean intPixels=false;
+    int pixelFormat;  boolean intPixels = false;
     switch(dstImage.getType()) {
       case BufferedImage.TYPE_3BYTE_BGR:
-        pixelFormat=TJ.PF_BGR;  break;
+        pixelFormat = TJ.PF_BGR;  break;
       case BufferedImage.TYPE_BYTE_GRAY:
-        pixelFormat=TJ.PF_GRAY;  break;
+        pixelFormat = TJ.PF_GRAY;  break;
       case BufferedImage.TYPE_INT_BGR:
-        pixelFormat=TJ.PF_RGBX;  intPixels=true;  break;
+        pixelFormat = TJ.PF_RGBX;  intPixels = true;  break;
       case BufferedImage.TYPE_INT_RGB:
-        pixelFormat=TJ.PF_BGRX;  intPixels=true;  break;
+        pixelFormat = TJ.PF_BGRX;  intPixels = true;  break;
       default:
         throw new Exception("Unsupported BufferedImage format");
     }
@@ -183,7 +183,7 @@ public class TJDecompressor {
         (SinglePixelPackedSampleModel)dstImage.getSampleModel();
       int pitch = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
-      int [] buf = db.getData();
+      int[] buf = db.getData();
       if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
       decompress(jpegBuf, jpegBufSize, buf, scaledWidth, pitch, scaledHeight,
         pixelFormat, flags);
@@ -196,7 +196,7 @@ public class TJDecompressor {
         throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
       int pitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
-      byte [] buf = db.getData();
+      byte[] buf = db.getData();
       decompress(buf, scaledWidth, pitch, scaledHeight, pixelFormat, flags);
     }
   }
@@ -220,8 +220,8 @@ public class TJDecompressor {
   protected void finalize() throws Throwable {
     try {
       close();
-    } catch(Exception e) {
     }
+    catch(Exception e) {}
     finally {
       super.finalize();
     }
@@ -231,18 +231,18 @@ public class TJDecompressor {
 
   private native void destroy() throws Exception;
 
-  private native void decompressHeader(byte [] srcBuf, int size)
+  private native void decompressHeader(byte[] srcBuf, int size)
     throws Exception;
 
-  private native void decompress(byte [] srcBuf, int size, byte [] dstBuf,
+  private native void decompress(byte[] srcBuf, int size, byte[] dstBuf,
     int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
     throws Exception;
 
-  private native void decompress(byte [] srcBuf, int size, int [] dstBuf,
+  private native void decompress(byte[] srcBuf, int size, int[] dstBuf,
     int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
     throws Exception;
 
-  private native void decompressToYUV(byte [] srcBuf, int size, byte [] dstBuf,
+  private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
     int flags)
     throws Exception;
 
@@ -251,7 +251,7 @@ public class TJDecompressor {
   }
 
   private long handle = 0;
-  private byte [] jpegBuf = null;
+  private byte[] jpegBuf = null;
   private int jpegBufSize = 0;
   private int jpegWidth = 0;
   private int jpegHeight = 0;

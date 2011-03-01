@@ -110,7 +110,7 @@ final public class TJ {
     int subsamp)
     throws Exception;
 
-  public native final static ScalingFactor [] getScalingFactors()
+  public native final static ScalingFactor[] getScalingFactors()
     throws Exception;
 
   static {

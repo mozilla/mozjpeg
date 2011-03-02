@@ -115,6 +115,17 @@ TJXFORM_ROT270      /* Rotate image counter-clockwise by 90 degrees.  This
   /* This option will discard the color data in the input image and produce
      a grayscale output image. */
 
+typedef struct
+{
+	int x, y, w, h;
+} tjregion;
+
+typedef struct
+{
+	tjregion r;
+	int op, options;
+} tjtransform;
+
 typedef void* tjhandle;
 
 #define TJPAD(p) (((p)+3)&(~3))

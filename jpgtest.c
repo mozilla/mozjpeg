@@ -170,8 +170,14 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 				snprintf(tempstr, 1024, "%s_%s%s_full.%s", filename,
 					_subnames[jpegsub], qualstr, useppm?"ppm":"bmp");
 		}
-		else snprintf(tempstr, 1024, "%s_%s%s_%dx%d.%s", filename,
-			_subnames[jpegsub], qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
+		else
+		{
+			if(decomponly)
+				snprintf(tempstr, 1024, "%s_%dx%d.%s", filename, tilesizex, tilesizey,
+					useppm?"ppm":"bmp");
+			else snprintf(tempstr, 1024, "%s_%s%s_%dx%d.%s", filename,
+				_subnames[jpegsub], qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
+		}
 		if(savebmp(tempstr, rgbbuf, scaledw, scaledh, pf, pitch, bu)==-1)
 			_throwbmp("saving bitmap");
 		ptr=strrchr(tempstr, '.');
@@ -387,6 +393,7 @@ void dodecomptest(char *filename)
 	FILE *file=NULL;  tjhandle hnd=NULL;
 	unsigned char **jpegbuf=NULL, *srcbuf=NULL;
 	unsigned long *comptilesize=NULL, srcbufsize, jpgbufsize;
+	tjtransform *t=NULL;
 	int w=0, h=0, jpegsub=-1;
 	char *temp=NULL;
 	int i, j, tilesizex, tilesizey, numtilesx, numtilesy, retval=0;
@@ -420,7 +427,7 @@ void dodecomptest(char *filename)
 
 	if(dotile)
 	{
-		tilesizex=tilesizey=512;
+		tilesizex=tilesizey=8;
 		if(quiet==1)
 		{
 			printf("All performance values in Mpixels/sec\n\n");
@@ -429,8 +436,8 @@ void dodecomptest(char *filename)
 		}
 		else if(!quiet)
 		{
-			printf(">>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
-				bu?"Bottom-up":"Top-down");
+			printf(">>>>>  JPEG %s --> %s (%s)  <<<<<\n", _subnamel[jpegsub],
+				_pfname[pf], bu?"Bottom-up":"Top-down");
 		}
 		do
 		{
@@ -438,11 +445,16 @@ void dodecomptest(char *filename)
 			tilesizey*=2;  if(tilesizey>h) tilesizey=h;
 			numtilesx=(w+tilesizex-1)/tilesizex;
 			numtilesy=(h+tilesizey-1)/tilesizey;
-			if((comptilesize=(unsigned long *)malloc(sizeof(unsigned long)
-				*numtilesx*numtilesy))==NULL
-				|| (jpegbuf=(unsigned char **)malloc(sizeof(unsigned char *)
+
+			if((jpegbuf=(unsigned char **)malloc(sizeof(unsigned char *)
 				*numtilesx*numtilesy))==NULL)
-				_throwunix("allocating image buffers");
+				_throwunix("allocating image buffer array");
+			if((comptilesize=(unsigned long *)malloc(sizeof(unsigned long)
+				*numtilesx*numtilesy))==NULL)
+				_throwunix("allocating image size array");
+			if((t=(tjtransform *)malloc(sizeof(tjtransform)*numtilesx*numtilesy))
+				==NULL)
+				_throwunix("allocating image transform array");
 			memset(jpegbuf, 0, sizeof(unsigned char *)*numtilesx*numtilesy);
 
 			for(i=0; i<numtilesx*numtilesy; i++)
@@ -459,23 +471,29 @@ void dodecomptest(char *filename)
 				else printf("%-4d %-4d\t", tilesizex, tilesizey);
 			}
 
-			start=rrtime();
-			jpgbufsize=0;  tilen=0;
-			for(i=0; i<h; i+=tilesizey)
+			for(i=0, tilen=0; i<h; i+=tilesizey)
 			{
-				for(j=0; j<w; j+=tilesizex)
-					{
-						int tempw=min(tilesizex, w-j), temph=min(tilesizey, h-i);
-						if(tjTransform(hnd, srcbuf, srcbufsize, jpegbuf[tilen],
-							&comptilesize[tilen], j, i, tempw, temph, TJXFORM_NONE,
-							TJXFORM_CROP, flags)
-							==-1)
-						_throwtj("executing tjTransform()");
-					jpgbufsize+=comptilesize[tilen];
-					tilen++;
+				for(j=0; j<w; j+=tilesizex, tilen++)
+				{
+					t[tilen].r.x=j;
+					t[tilen].r.y=i;
+					t[tilen].r.w=min(tilesizex, w-j);
+					t[tilen].r.h=min(tilesizey, h-i);
+					t[tilen].op=TJXFORM_NONE;
+					t[tilen].options=TJXFORM_CROP;
 				}
 			}
+
+			start=rrtime();
+			if(tjTransform(hnd, srcbuf, srcbufsize, numtilesx*numtilesy, jpegbuf,
+				comptilesize, t, flags)==-1)
+				_throwtj("executing tjTransform()");
 			elapsed=rrtime()-start;
+
+			for(tilen=0, jpgbufsize=0; tilen<numtilesx*numtilesy; tilen++)
+			{
+				jpgbufsize+=comptilesize[tilen];
+			}
 
 			if(quiet)
 			{
@@ -524,8 +542,8 @@ void dodecomptest(char *filename)
 			if(yuv==YUVDECODE)
 				printf(">>>>>  JPEG --> YUV %s  <<<<<\n", _subnamel[jpegsub]);
 			else
-				printf(">>>>>  JPEG --> %s (%s)  <<<<<\n", _pfname[pf],
-					bu?"Bottom-up":"Top-down");
+				printf(">>>>>  JPEG %s --> %s (%s)  <<<<<\n", _subnamel[jpegsub],
+					_pfname[pf], bu?"Bottom-up":"Top-down");
 			printf("\nImage size: %d x %d", w, h);
 			if(scale_num!=1 || scale_denom!=1)
 				printf(" --> %d x %d", (w*scale_num+scale_denom-1)/scale_denom,

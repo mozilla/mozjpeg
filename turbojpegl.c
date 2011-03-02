@@ -23,6 +23,7 @@
 #include <jerror.h>
 #include <setjmp.h>
 #include "./turbojpeg.h"
+#include "./rrutil.h"
 #include "transupp.h"
 
 #ifndef min
@@ -82,9 +83,10 @@ static const tjscalingfactor sf[NUMSF]={
 	{1, 8}
 };
 
-#define _throw(c) {sprintf(lasterror, "%s", c);  retval=-1;  goto bailout;}
+#define _throw(c) {snprintf(lasterror, JMSG_LENGTH_MAX, "%s", c);  \
+	retval=-1;  goto bailout;}
 #define checkhandle(h) jpgstruct *j=(jpgstruct *)h; \
-	if(!j) {sprintf(lasterror, "Invalid handle");  return -1;}
+	if(!j) {snprintf(lasterror, JMSG_LENGTH_MAX, "Invalid handle");  return -1;}
 
 
 // CO
@@ -124,7 +126,10 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 {
 	jpgstruct *j=NULL;
 	if((j=(jpgstruct *)malloc(sizeof(jpgstruct)))==NULL)
-		{sprintf(lasterror, "Memory allocation failure");  return NULL;}
+	{
+		snprintf(lasterror, JMSG_LENGTH_MAX, "Memory allocation failure");
+		return NULL;
+	}
 	memset(j, 0, sizeof(jpgstruct));
 	return _tjInitCompress(j);
 }
@@ -408,7 +413,10 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void)
 {
 	jpgstruct *j;
 	if((j=(jpgstruct *)malloc(sizeof(jpgstruct)))==NULL)
-		{sprintf(lasterror, "Memory allocation failure");  return NULL;}
+	{
+		snprintf(lasterror, JMSG_LENGTH_MAX, "Memory allocation failure");
+		return NULL;
+	}
 	memset(j, 0, sizeof(jpgstruct));
 	return _tjInitDecompress(j);
 }
@@ -483,7 +491,8 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors)
 {
 	if(numscalingfactors==NULL)
 	{
-		sprintf(lasterror, "Invalid argument in tjGetScalingFactors()");
+		snprintf(lasterror, JMSG_LENGTH_MAX,
+			"Invalid argument in tjGetScalingFactors()");
 		return NULL;
 	}
 
@@ -691,7 +700,10 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void)
 {
 	jpgstruct *j=NULL;  tjhandle tj=NULL;
 	if((j=(jpgstruct *)malloc(sizeof(jpgstruct)))==NULL)
-		{sprintf(lasterror, "Memory allocation failure");  return NULL;}
+	{
+		snprintf(lasterror, JMSG_LENGTH_MAX, "Memory allocation failure");
+		return NULL;
+	}
 	memset(j, 0, sizeof(jpgstruct));
 	tj=_tjInitCompress(j);
 	if(!tj) return NULL;
@@ -773,7 +785,8 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle hnd,
 	{
 		if((x%xinfo.iMCU_sample_width)!=0 || (y%xinfo.iMCU_sample_height)!=0)
 		{
-			sprintf(lasterror, "To crop this JPEG image, x must be a multiple of %d and y must be a multiple\n"
+			snprintf(lasterror, JMSG_LENGTH_MAX,
+				"To crop this JPEG image, x must be a multiple of %d and y must be a multiple\n"
 				"of %d.\n", xinfo.iMCU_sample_width, xinfo.iMCU_sample_height);
 			retval=-1;  goto bailout;
 		}

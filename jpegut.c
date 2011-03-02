@@ -17,10 +17,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "./rrtimer.h"
+#include "./rrutil.h"
 #include "./turbojpeg.h"
-#ifndef _WIN32
- #define stricmp strcasecmp
-#endif
 
 #define _catch(f) {if((f)==-1) {printf("TJPEG: %s\n", tjGetErrorStr());  bailout();}}
 
@@ -126,9 +124,10 @@ int checkbuf(unsigned char *buf, int w, int h, int ps, int subsamp,
 {
 	int roffset=(flags&TJ_BGR)?2:0, goffset=1, boffset=(flags&TJ_BGR)?0:2, i,
 		_i, j, retval=1;
+	int halfway=16*scale_num/scale_denom, blocksize=8*scale_num/scale_denom;
+
 	if(flags&TJ_ALPHAFIRST) {roffset++;  goffset++;  boffset++;}
 	if(ps==1) roffset=goffset=boffset=0;
-	int halfway=16*scale_num/scale_denom, blocksize=8*scale_num/scale_denom;
 
 	for(_i=0; _i<halfway; _i++)
 	{
@@ -356,10 +355,10 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	t=rrtime()-t;
 
 	if(yuv==YUVENCODE)
-		sprintf(tempstr, "%s_enc_%s_%s_%s.yuv", basefilename, pixformat,
+		snprintf(tempstr, 1024, "%s_enc_%s_%s_%s.yuv", basefilename, pixformat,
 			(flags&TJ_BOTTOMUP)? "BU":"TD", _subnames[subsamp]);
 	else
-		sprintf(tempstr, "%s_enc_%s_%s_%sQ%d.jpg", basefilename, pixformat,
+		snprintf(tempstr, 1024, "%s_enc_%s_%s_%sQ%d.jpg", basefilename, pixformat,
 			(flags&TJ_BOTTOMUP)? "BU":"TD", _subnames[subsamp], qual);
 	writejpeg(jpegbuf, *size, tempstr);
 	if(yuv==YUVENCODE)

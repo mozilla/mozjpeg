@@ -346,13 +346,14 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 	t=rrtime();
 	if(yuv==YUVENCODE)
 	{
-		_catch(tjEncodeYUV(hnd, bmpbuf, w, 0, h, ps, jpegbuf, subsamp, flags));
+		_catch(tjEncodeYUV(hnd, bmpbuf, w, 0, h, ps, jpegbuf, subsamp,
+			flags|_flags[pf]));
 		*size=TJBUFSIZEYUV(w, h, subsamp);
 	}
 	else
 	{
 		_catch(tjCompress(hnd, bmpbuf, w, 0, h, ps, jpegbuf, size, subsamp, qual,
-			flags));
+			flags|_flags[pf]));
 	}
 	t=rrtime()-t;
 
@@ -417,12 +418,13 @@ void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
 	t=rrtime();
 	if(yuv==YUVDECODE)
 	{
-		_catch(tjDecompressToYUV(hnd, jpegbuf, jpegsize, bmpbuf, flags));
+		_catch(tjDecompressToYUV(hnd, jpegbuf, jpegsize, bmpbuf,
+			flags|_flags[pf]));
 	}
 	else
 	{
 		_catch(tjDecompress(hnd, jpegbuf, jpegsize, bmpbuf, scaledw, 0, scaledh,
-			ps, flags));
+			ps, flags|_flags[pf]));
 	}
 	t=rrtime()-t;
 
@@ -497,9 +499,8 @@ void dotest(int w, int h, const int *formats, int nformats, int subsamp,
 			}
 			pf=formats[pfi];
 			gentestjpeg(hnd, jpegbuf, &size, w, h, pf, basefilename, subsamp, 100,
-				flags|_flags[pf]);
-			gentestbmp(dhnd, jpegbuf, size, w, h, pf, basefilename, subsamp,
-				flags|_flags[pf]);
+				flags);
+			gentestbmp(dhnd, jpegbuf, size, w, h, pf, basefilename, subsamp, flags);
 		}
 	}
 

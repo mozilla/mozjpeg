@@ -28,6 +28,9 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
 #define TJ_411 TJ_420  /* for backward compatibility with VirtualGL <= 2.1.x,
                           TurboVNC <= 0.6, and TurboJPEG/IPP */
 
+static const int tjmcuw[NUMSUBOPT]={8, 16, 16, 8};
+static const int tjmcuh[NUMSUBOPT]={8, 8, 16, 8};
+
 /* Flags */
 #define TJ_BGR             1
   /* The components of each pixel in the uncompressed source/destination image
@@ -413,41 +416,64 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
 
 
 /*
-  int tjTransform(tjhandle j,
+  int tjTransform(tjhandle hnd,
      unsigned char *srcbuf, unsigned long srcsize,
-     unsigned char *dstbuf, unsigned long *dstsize, 
-     int x, int y, int w, int h, int op, int options, int flags)
+     int n, unsigned char **dstbufs, unsigned long *dstsizes,
+     tjtransform *transforms, int flags);
 
-  [INPUT] j = instance handle previously returned from a call to
+  This function can losslessly transform a JPEG image into another JPEG image.
+  Lossless transforms work by moving the raw coefficients from one JPEG image
+  structure to another without altering the values of the coefficients.  While
+  this is typically faster than decompressing the image, transforming it, and
+  re-compressing it, lossless transforms are not free.  Each lossless transform
+  requires reading and Huffman decoding all of the coefficients in the source
+  image, regardless of the size of the destination image.  Thus, this function
+  provides a means of generating multiple transformed images from the same
+  source or of applying multiple transformations simultaneously, in order to
+  eliminate the need to read the source coefficients multiple times.
+
+  [INPUT] hnd = instance handle previously returned from a call to
      tjInitTransform()
   [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
      to transform
   [INPUT] srcsize = size of the source JPEG image buffer (in bytes)
-  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
-     the transformed JPEG image.  Use the TJBUFSIZE(width, height) function to
-     determine the appropriate size for this buffer based on the cropped width
-     and height.
-  [OUTPUT] dstsize = pointer to unsigned long which receives the size (in
-     bytes) of the transformed image
-  [INPUT] x, y, w, h = the left edge, top edge, width, and height of the
-     cropping region.  If (x, y) does not fall on an MCU boundary, then x and
-     y will be silently moved left and/or up to the nearest MCU boundary.  You
-     can call tjGetCroppedSize() to determine how (or if) x, y, w, and h will
-     be modified ahead of time, so you can allocate the output buffer
-     appropriately.
-  [INPUT] op = one of the transform operations described in the "Transform
-     operations" section above.
-  [INPUT] options = the bitwise OR of one or more of the transform options
-     described in the "Transform options" section above.
+  [INPUT] n = the number of transformed JPEG images to generate
+  [INPUT] dstbufs = pointer to an array of n user-allocated image buffers.
+     dstbufs[i] will receive a JPEG image that has been transformed using the
+     parameters in transforms[i].  Use the TJBUFSIZE(width, height) function to
+     determine the maximum size for each buffer based on the cropped width and
+     height.
+  [OUTPUT] dstsizes = pointer to an array of n unsigned longs which will
+     receive the actual sizes (in bytes) of each transformed JPEG image
+  [INPUT] transforms = pointer to an array of n tjtransform structures, each of
+     which specifies the transform parameters and/or cropping region for the
+     corresponding transformed output image.  The structure members are as
+     follows:
+
+     r.x = the left boundary of the cropping region.  This must be evenly
+        divisible by tjmcuw[subsamp] (the MCU block width corresponding to the
+        level of chrominance subsampling used in the source image)
+     r.y = the upper boundary of the cropping region.  This must be evenly
+        divisible by tjmcuh[subsamp] (the MCU block height corresponding to the
+        level of chrominance subsampling used in the source image)
+     r.w = the width of the cropping region.  Setting this to 0 is the
+        equivalent of setting it to the width of the source JPEG image.
+     r.h = the height of the cropping region.  Setting this to 0 is the
+        equivalent of setting it to the height of the source JPEG image.
+     op = one of the transform operations described in the
+        "Transform operations" section above
+     options = the bitwise OR of one or more of the transform options described
+        in the "Transform options" section above.
+
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above.
 
   RETURNS: 0 on success, -1 on error
 */
-DLLEXPORT int DLLCALL tjTransform(tjhandle j,
-	unsigned char *srcbuf, unsigned long size,
-	unsigned char *dstbuf, unsigned long *dstsize,
-	int x, int y, int w, int h, int op, int options, int flags);
+DLLEXPORT int DLLCALL tjTransform(tjhandle hnd,
+	unsigned char *srcbuf, unsigned long srcsize,
+	int n, unsigned char **dstbufs, unsigned long *dstsizes,
+	tjtransform *transforms, int flags);
 
 
 /*

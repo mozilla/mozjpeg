@@ -68,8 +68,6 @@ typedef struct _jpgstruct
 	int initc, initd;
 } jpgstruct;
 
-static const int hsampfactor[NUMSUBOPT]={1, 2, 2, 1};
-static const int vsampfactor[NUMSUBOPT]={1, 1, 2, 1};
 static const int pixelsize[NUMSUBOPT]={3, 3, 3, 1};
 static const JXFORM_CODE xformtypes[NUMXFORMOPT]={
 	JXFORM_NONE, JXFORM_FLIP_H, JXFORM_FLIP_V, JXFORM_TRANSPOSE,
@@ -85,7 +83,7 @@ static const tjscalingfactor sf[NUMSF]={
 
 #define _throw(c) {snprintf(lasterror, JMSG_LENGTH_MAX, "%s", c);  \
 	retval=-1;  goto bailout;}
-#define checkhandle(h) jpgstruct *j=(jpgstruct *)h; \
+#define checkhandle(hnd) jpgstruct *j=(jpgstruct *)hnd; \
 	if(!j) {snprintf(lasterror, JMSG_LENGTH_MAX, "Invalid handle");  return -1;}
 
 
@@ -158,9 +156,9 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 	int pw, ph, cw, ch;
 	if(width<1 || height<1 || subsamp<0 || subsamp>=NUMSUBOPT)
 		_throw("Invalid argument in TJBUFSIZEYUV()");
-	pw=PAD(width, hsampfactor[subsamp]);
-	ph=PAD(height, vsampfactor[subsamp]);
-	cw=pw/hsampfactor[subsamp];  ch=ph/vsampfactor[subsamp];
+	pw=PAD(width, tjmcuw[subsamp]/8);
+	ph=PAD(height, tjmcuh[subsamp]/8);
+	cw=pw*8/tjmcuw[subsamp];  ch=ph*8/tjmcuh[subsamp];
 	retval=PAD(pw, 4)*ph + (subsamp==TJ_GRAYSCALE? 0:PAD(cw, 4)*ch*2);
 
 	bailout:
@@ -168,7 +166,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 }
 
 
-DLLEXPORT int DLLCALL tjCompress(tjhandle h,
+DLLEXPORT int DLLCALL tjCompress(tjhandle hnd,
 	unsigned char *srcbuf, int width, int pitch, int height, int ps,
 	unsigned char *dstbuf, unsigned long *size,
 	int jpegsub, int qual, int flags)
@@ -178,7 +176,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	JSAMPROW *tmpbuf[MAX_COMPONENTS], *tmpbuf2[MAX_COMPONENTS];
 	JSAMPROW *outbuf[MAX_COMPONENTS];
 
-	checkhandle(h);
+	checkhandle(hnd);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -237,10 +235,10 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 	if(qual>=96) j->cinfo.dct_method=JDCT_ISLOW;
 	else j->cinfo.dct_method=JDCT_FASTEST;
 
-	j->cinfo.comp_info[0].h_samp_factor=hsampfactor[jpegsub];
+	j->cinfo.comp_info[0].h_samp_factor=tjmcuw[jpegsub]/8;
 	j->cinfo.comp_info[1].h_samp_factor=1;
 	j->cinfo.comp_info[2].h_samp_factor=1;
-	j->cinfo.comp_info[0].v_samp_factor=vsampfactor[jpegsub];
+	j->cinfo.comp_info[0].v_samp_factor=tjmcuh[jpegsub]/8;
 	j->cinfo.comp_info[1].v_samp_factor=1;
 	j->cinfo.comp_info[2].v_samp_factor=1;
 
@@ -358,12 +356,12 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle h,
 }
 
 
-DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle h,
+DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle hnd,
 	unsigned char *srcbuf, int width, int pitch, int height, int ps,
 	unsigned char *dstbuf, int subsamp, int flags)
 {
 	unsigned long size;
-	return tjCompress(h, srcbuf, width, pitch, height, ps, dstbuf, &size,
+	return tjCompress(hnd, srcbuf, width, pitch, height, ps, dstbuf, &size,
 		subsamp, 0, flags|TJ_YUV);
 }
 
@@ -422,13 +420,13 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void)
 }
 
 
-DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle h,
+DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle hnd,
 	unsigned char *srcbuf, unsigned long size,
 	int *width, int *height, int *jpegsub)
 {
 	int i, k, retval=0;
 
-	checkhandle(h);
+	checkhandle(hnd);
 
 	if(srcbuf==NULL || size<=0 || width==NULL || height==NULL || jpegsub==NULL)
 		_throw("Invalid argument in tjDecompressHeader2()");
@@ -450,8 +448,8 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle h,
 	{
 		if(j->dinfo.num_components==pixelsize[i])
 		{
-			if(j->dinfo.comp_info[0].h_samp_factor==hsampfactor[i]
-				&& j->dinfo.comp_info[0].v_samp_factor==vsampfactor[i])
+			if(j->dinfo.comp_info[0].h_samp_factor==tjmcuw[i]/8
+				&& j->dinfo.comp_info[0].v_samp_factor==tjmcuh[i]/8)
 			{
 				int match=0;
 				for(k=1; k<j->dinfo.num_components; k++)
@@ -478,12 +476,12 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle h,
 }
 
 
-DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle h,
+DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle hnd,
 	unsigned char *srcbuf, unsigned long size,
 	int *width, int *height)
 {
 	int jpegsub;
-	return tjDecompressHeader2(h, srcbuf, size, width, height, &jpegsub);
+	return tjDecompressHeader2(hnd, srcbuf, size, width, height, &jpegsub);
 }
 
 
@@ -501,7 +499,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors)
 }
 
 
-DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
+DLLEXPORT int DLLCALL tjDecompress(tjhandle hnd,
 	unsigned char *srcbuf, unsigned long size,
 	unsigned char *dstbuf, int width, int pitch, int height, int ps,
 	int flags)
@@ -512,7 +510,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	JSAMPLE *_tmpbuf=NULL;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 	int jpegwidth, jpegheight, scaledw, scaledh;
 
-	checkhandle(h);
+	checkhandle(hnd);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -686,11 +684,11 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 }
 
 
-DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle h,
+DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle hnd,
 	unsigned char *srcbuf, unsigned long size,
 	unsigned char *dstbuf, int flags)
 {
-	return tjDecompress(h, srcbuf, size, dstbuf, 1, 0, 1, 3, flags|TJ_YUV);
+	return tjDecompress(hnd, srcbuf, size, dstbuf, 1, 0, 1, 3, flags|TJ_YUV);
 }
 
 
@@ -714,18 +712,17 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void)
 
 DLLEXPORT int DLLCALL tjTransform(tjhandle hnd,
 	unsigned char *srcbuf, unsigned long srcsize,
-	unsigned char *dstbuf, unsigned long *dstsize,
-	int x, int y, int w, int h, int op, int options, int flags)
+	int n, unsigned char **dstbufs, unsigned long *dstsizes,
+	tjtransform *t, int flags)
 {
-	jpeg_transform_info xinfo;
+	jpeg_transform_info *xinfo=NULL;
 	jvirt_barray_ptr *srccoefs, *dstcoefs;
-	int retval=0;
+	int retval=0, i;
 
 	checkhandle(hnd);
 
-	if(srcbuf==NULL || srcsize<=0 || dstbuf==NULL || dstsize==NULL
-		|| x<0 || y<0 || w<0 || h<0 || op<0 || op>=NUMXFORMOPT
-		|| flags<0)
+	if(srcbuf==NULL || srcsize<=0 || n<1 || dstbufs==NULL || dstsizes==NULL
+		|| t==NULL || flags<0)
 		_throw("Invalid argument in tjTransform()");
 	if(!j->initc || !j->initd)
 		_throw("Instance has not been initialized for transformation");
@@ -743,71 +740,88 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle hnd,
 	j->jsms.bytes_in_buffer=srcsize;
 	j->jsms.next_input_byte=srcbuf;
 
-	xinfo.transform=xformtypes[op];
-	xinfo.perfect=(options&TJXFORM_PERFECT)? 1:0;
-	xinfo.trim=(options&TJXFORM_TRIM)? 1:0;
-	xinfo.force_grayscale=(options&TJXFORM_GRAY)? 1:0;
-	xinfo.crop=(options&TJXFORM_CROP)? 1:0;
+	if((xinfo=(jpeg_transform_info *)malloc(sizeof(jpeg_transform_info)*n))
+		==NULL)
+		_throw("Memory allocation failed in tjTransform()");
 
-	if(xinfo.crop)
+	for(i=0; i<n; i++)
 	{
-		xinfo.crop_xoffset=x;  xinfo.crop_xoffset_set=JCROP_POS;
-		xinfo.crop_yoffset=y;  xinfo.crop_yoffset_set=JCROP_POS;
-		if(w!=0)
+		xinfo[i].transform=xformtypes[t[i].op];
+		xinfo[i].perfect=(t[i].options&TJXFORM_PERFECT)? 1:0;
+		xinfo[i].trim=(t[i].options&TJXFORM_TRIM)? 1:0;
+		xinfo[i].force_grayscale=(t[i].options&TJXFORM_GRAY)? 1:0;
+		xinfo[i].crop=(t[i].options&TJXFORM_CROP)? 1:0;
+
+		if(xinfo[i].crop)
 		{
-			xinfo.crop_width=w;  xinfo.crop_width_set=JCROP_POS;
-		}
-		if(h!=0)
-		{
-			xinfo.crop_height=h; xinfo.crop_height_set=JCROP_POS;
+			xinfo[i].crop_xoffset=t[i].r.x;  xinfo[i].crop_xoffset_set=JCROP_POS;
+			xinfo[i].crop_yoffset=t[i].r.y;  xinfo[i].crop_yoffset_set=JCROP_POS;
+			if(t[i].r.w!=0)
+			{
+				xinfo[i].crop_width=t[i].r.w;  xinfo[i].crop_width_set=JCROP_POS;
+			}
+			if(t[i].r.h!=0)
+			{
+				xinfo[i].crop_height=t[i].r.h;  xinfo[i].crop_height_set=JCROP_POS;
+			}
 		}
 	}
 
-	jcopy_markers_setup(&j->dinfo, JCOPYOPT_NONE);
+	jcopy_markers_setup(&j->dinfo, JCOPYOPT_ALL);
 	jpeg_read_header(&j->dinfo, TRUE);
 
-	if(!jtransform_request_workspace(&j->dinfo, &xinfo))
-		_throw("Transform is not perfect");
-
-	if(!xinfo.crop)
+	for(i=0; i<n; i++)
 	{
-		w=j->dinfo.image_width;  h=j->dinfo.image_height;
-	}
-	else
-	{
-		w=xinfo.crop_width;  h=xinfo.crop_height;
-	}
+		if(!jtransform_request_workspace(&j->dinfo, &xinfo[i]))
+			_throw("Transform is not perfect");
 
-	j->jdms.next_output_byte=dstbuf;
-	j->jdms.free_in_buffer=TJBUFSIZE(w, h);
-
-	if(xinfo.crop)
-	{
-		if((x%xinfo.iMCU_sample_width)!=0 || (y%xinfo.iMCU_sample_height)!=0)
+		if(xinfo[i].crop)
 		{
-			snprintf(lasterror, JMSG_LENGTH_MAX,
-				"To crop this JPEG image, x must be a multiple of %d and y must be a multiple\n"
-				"of %d.\n", xinfo.iMCU_sample_width, xinfo.iMCU_sample_height);
-			retval=-1;  goto bailout;
+			if((t[i].r.x%xinfo[i].iMCU_sample_width)!=0
+				|| (t[i].r.y%xinfo[i].iMCU_sample_height)!=0)
+			{
+				snprintf(lasterror, JMSG_LENGTH_MAX,
+					"To crop this JPEG image, x must be a multiple of %d\n"
+					"and y must be a multiple of %d.\n",
+					xinfo[i].iMCU_sample_width, xinfo[i].iMCU_sample_height);
+				retval=-1;  goto bailout;
+			}
 		}
 	}
 
 	srccoefs=jpeg_read_coefficients(&j->dinfo);
-	jpeg_copy_critical_parameters(&j->dinfo, &j->cinfo);
-	dstcoefs=jtransform_adjust_parameters(&j->dinfo, &j->cinfo, srccoefs,
-		&xinfo);
-	jpeg_write_coefficients(&j->cinfo, dstcoefs);
-	jcopy_markers_execute(&j->dinfo, &j->cinfo, JCOPYOPT_ALL);
-	jtransform_execute_transformation(&j->dinfo, &j->cinfo, srccoefs, &xinfo);
 
-	jpeg_finish_compress(&j->cinfo);
+	for(i=0; i<n; i++)
+	{
+		int w, h;
+		j->jdms.next_output_byte=dstbufs[i];
+		if(!xinfo[i].crop)
+		{
+			w=j->dinfo.image_width;  h=j->dinfo.image_height;
+		}
+		else
+		{
+			w=xinfo[i].crop_width;  h=xinfo[i].crop_height;
+		}
+		j->jdms.free_in_buffer=TJBUFSIZE(w, h);
+		jpeg_copy_critical_parameters(&j->dinfo, &j->cinfo);
+		dstcoefs=jtransform_adjust_parameters(&j->dinfo, &j->cinfo, srccoefs,
+			&xinfo[i]);
+		jpeg_write_coefficients(&j->cinfo, dstcoefs);
+		jcopy_markers_execute(&j->dinfo, &j->cinfo, JCOPYOPT_ALL);
+		jtransform_execute_transformation(&j->dinfo, &j->cinfo, srccoefs,
+			&xinfo[i]);
+		jpeg_finish_compress(&j->cinfo);
+
+		dstsizes[i]=TJBUFSIZE(w, h)-(unsigned long)(j->jdms.free_in_buffer);
+	}
+
 	jpeg_finish_decompress(&j->dinfo);
-
-	*dstsize=TJBUFSIZE(w, h)-(unsigned long)(j->jdms.free_in_buffer);
 
 	bailout:
 	if(j->cinfo.global_state>CSTATE_START) jpeg_abort_compress(&j->cinfo);
 	if(j->dinfo.global_state>DSTATE_START) jpeg_abort_decompress(&j->dinfo);
+	if(xinfo) free(xinfo);
 	return retval;
 }
 
@@ -819,9 +833,9 @@ DLLEXPORT char* DLLCALL tjGetErrorStr(void)
 	return lasterror;
 }
 
-DLLEXPORT int DLLCALL tjDestroy(tjhandle h)
+DLLEXPORT int DLLCALL tjDestroy(tjhandle hnd)
 {
-	checkhandle(h);
+	checkhandle(hnd);
 	if(setjmp(j->jerr.jb)) return -1;
 	if(j->initc) jpeg_destroy_compress(&j->cinfo);
 	if(j->initd) jpeg_destroy_decompress(&j->dinfo);

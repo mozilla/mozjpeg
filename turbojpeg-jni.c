@@ -98,15 +98,22 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 		jint flags)
 {
 	tjhandle handle=0;  int pixelsize;
-	unsigned long size=0;
+	unsigned long size=0, arraysize=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT)
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+		|| pitch<0)
 		_throw("Invalid argument in compress()");
 	flags|=_flags[pf];
 	pixelsize=_pixelsize[pf];
+
+	arraysize=(pitch==0)? width*pixelsize*height:pitch*height;
+	if((*env)->GetArrayLength(env, src)<arraysize)
+		_throw("Source buffer is not large enough");
+	if((*env)->GetArrayLength(env, dst)<TJBUFSIZE(width, height))
+		_throw("Destination buffer is not large enough");
 
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
@@ -131,16 +138,23 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 		jint flags)
 {
 	tjhandle handle=0;
-	unsigned long size=0;
+	unsigned long size=0, arraysize=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT)
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+		|| pitch<0)
 		_throw("Invalid argument in compress()");
 	if(_pixelsize[pf]!=sizeof(jint))
 		_throw("Pixel format must be 32-bit when compressing from an integer buffer.");
 	flags|=_flags[pf];
+
+	arraysize=(pitch==0)? width*height:pitch*height;
+	if((*env)->GetArrayLength(env, src)<arraysize)
+		_throw("Source buffer is not large enough");
+	if((*env)->GetArrayLength(env, dst)<TJBUFSIZE(width, height))
+		_throw("Destination buffer is not large enough");
 
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
@@ -161,23 +175,31 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIII_3BII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint width, jint pitch,
-		jint height, jint pf, jbyteArray dst, jint jpegsubsamp, jint flags)
+		jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
 {
 	tjhandle handle=0;  int pixelsize;
+	unsigned long arraysize=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT)
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+		|| pitch<0)
 		_throw("Invalid argument in encodeYUV()");
 	flags|=_flags[pf];
 	pixelsize=_pixelsize[pf];
+
+	arraysize=(pitch==0)? width*pixelsize*height:pitch*height;
+	if((*env)->GetArrayLength(env, src)<arraysize)
+		_throw("Source buffer is not large enough");
+	if((*env)->GetArrayLength(env, dst)<TJBUFSIZEYUV(width, height, subsamp))
+		_throw("Destination buffer is not large enough");
 
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
 	if(tjEncodeYUV(handle, srcbuf, width, pitch, height, pixelsize, dstbuf,
-		jpegsubsamp, flags)==-1)
+		subsamp, flags)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
 		(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
@@ -192,24 +214,32 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIII_3BII
 	(JNIEnv *env, jobject obj, jintArray src, jint width, jint pitch,
-		jint height, jint pf, jbyteArray dst, jint jpegsubsamp, jint flags)
+		jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
 {
 	tjhandle handle=0;
+	unsigned long arraysize=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT)
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+		|| pitch<0)
 		_throw("Invalid argument in compress()");
 	if(_pixelsize[pf]!=sizeof(jint))
 		_throw("Pixel format must be 32-bit when encoding from an integer buffer.");
 	flags|=_flags[pf];
 
+	arraysize=(pitch==0)? width*height:pitch*height;
+	if((*env)->GetArrayLength(env, src)<arraysize)
+		_throw("Source buffer is not large enough");
+	if((*env)->GetArrayLength(env, dst)<TJBUFSIZEYUV(width, height, subsamp))
+		_throw("Destination buffer is not large enough");
+
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
 	if(tjEncodeYUV(handle, srcbuf, width, pitch*sizeof(jint), height,
-		sizeof(jint),	dstbuf, jpegsubsamp, flags)==-1)
+		sizeof(jint),	dstbuf, subsamp, flags)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstbuf, 0);
 		(*env)->ReleasePrimitiveArrayCritical(env, src, srcbuf, 0);
@@ -290,6 +320,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
 	gethandle();
 
+	if((*env)->GetArrayLength(env, src)<size)
+		_throw("Source buffer is not large enough");
+
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 
 	if(tjDecompressHeader2(handle, srcbuf, (unsigned long)size, 
@@ -316,6 +349,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 		jint width, jint pitch, jint height, jint pf, jint flags)
 {
 	tjhandle handle=0;  int pixelsize;
+	unsigned long arraysize=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
@@ -324,6 +358,12 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 		_throw("Invalid argument in decompress()");
 	flags|=_flags[pf];
 	pixelsize=_pixelsize[pf];
+
+	if((*env)->GetArrayLength(env, src)<size)
+		_throw("Source buffer is not large enough");
+	arraysize=(pitch==0)? width*pixelsize*height:pitch*height;
+	if((*env)->GetArrayLength(env, dst)<arraysize)
+		_throw("Destination buffer is not large enough");
 
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
@@ -347,6 +387,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 		jint width, jint pitch, jint height, jint pf, jint flags)
 {
 	tjhandle handle=0;
+	unsigned long arraysize=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
 
 	gethandle();
@@ -356,6 +397,12 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	if(_pixelsize[pf]!=sizeof(jint))
 		_throw("Pixel format must be 32-bit when decompressing to an integer buffer.");
 	flags|=_flags[pf];
+
+	if((*env)->GetArrayLength(env, src)<size)
+		_throw("Source buffer is not large enough");
+	arraysize=(pitch==0)? width*height:pitch*height;
+	if((*env)->GetArrayLength(env, dst)<arraysize)
+		_throw("Destination buffer is not large enough");
 
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
@@ -380,8 +427,21 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 {
 	tjhandle handle=0;
 	unsigned char *srcbuf=NULL, *dstbuf=NULL;
+	int jpegSubsamp=-1, jpegWidth=0, jpegHeight=0;
 
 	gethandle();
+
+	if((*env)->GetArrayLength(env, src)<size)
+		_throw("Source buffer is not large enough");
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
+	jpegSubsamp=(int)(*env)->GetIntField(env, obj, _fid);
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
+	jpegWidth=(int)(*env)->GetIntField(env, obj, _fid);
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
+	jpegHeight=(int)(*env)->GetIntField(env, obj, _fid);
+	if((*env)->GetArrayLength(env, dst)
+		<TJBUFSIZEYUV(jpegWidth, jpegHeight, jpegSubsamp))
+		_throw("Destination buffer is not large enough");
 
 	bailif0(srcbuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstbuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));

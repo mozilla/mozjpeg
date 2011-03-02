@@ -618,7 +618,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 	if(flags&TJ_YUV)
 	{
 		j_decompress_ptr dinfo=&j->dinfo;
-		for(row=0; row<dinfo->output_height;
+		for(row=0; row<(int)dinfo->output_height;
 			row+=dinfo->max_v_samp_factor*DCTSIZE)
 		{
 			JSAMPARRAY yuvptr[MAX_COMPONENTS];
@@ -650,7 +650,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle h,
 		if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)
 			*j->dinfo.output_height))==NULL)
 			_throw("Memory allocation failed in tjInitDecompress()");
-		for(i=0; i<j->dinfo.output_height; i++)
+		for(i=0; i<(int)j->dinfo.output_height; i++)
 		{
 			if(flags&TJ_BOTTOMUP)
 				row_pointer[i]= &dstbuf[(j->dinfo.output_height-i-1)*pitch];

@@ -18,8 +18,8 @@
 
 #ifdef _WIN32
 	#include <windows.h>
-	#define sleep(t) Sleep((t)*1000)
-	#define usleep(t) Sleep((t)/1000)
+	#define snprintf(str, n, format, ...)  \
+		_snprintf_s(str, n, _TRUNCATE, format, __VA_ARGS__)
 #else
 	#include <unistd.h>
 	#define stricmp strcasecmp
@@ -37,29 +37,9 @@
 #define pow2(i) (1<<(i))
 #define isPow2(x) (((x)&(x-1))==0)
 
-#ifdef sgi
-#define _SC_NPROCESSORS_CONF _SC_NPROC_CONF
-#endif
-
 #ifdef sun
 #define __inline inline
 #endif
-
-static __inline int numprocs(void)
-{
-	#ifdef _WIN32
-	DWORD_PTR ProcAff, SysAff, i;  int count=0;
-	if(!GetProcessAffinityMask(GetCurrentProcess(), &ProcAff, &SysAff)) return(1);
-	for(i=0; i<sizeof(long*)*8; i++) if(ProcAff&(1LL<<i)) count++;
-	return(count);
-	#elif defined (__APPLE__)
-	return(1);
-	#else
-	long count=1;
-	if((count=sysconf(_SC_NPROCESSORS_CONF))!=-1) return((int)count);
-	else return(1);
-	#endif
-}
 
 #define byteswap(i) ( \
 	(((i) & 0xff000000) >> 24) | \

@@ -54,13 +54,13 @@ void printsigfig(double val, int figs)
 	if(_l<0.)
 	{
 		l=(int)fabs(_l);
-		sprintf(format, "%%%d.%df", figs+l+2, figs+l);
+		snprintf(format, 80, "%%%d.%df", figs+l+2, figs+l);
 	}
 	else
 	{
 		l=(int)_l+1;
-		if(figs<=l) sprintf(format, "%%.0f");
-		else sprintf(format, "%%%d.%df", figs+1, figs-l);
+		if(figs<=l) snprintf(format, 80, "%%.0f");
+		else snprintf(format, 80, "%%%d.%df", figs+1, figs-l);
 	}	
 	printf(format, val);
 }
@@ -70,7 +70,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	unsigned long *comptilesize, unsigned char *rgbbuf, int w, int h,
 	int jpegsub, int qual, char *filename, int tilesizex, int tilesizey)
 {
-	char tempstr[1024], qualstr[5]="\0";
+	char tempstr[1024], qualstr[5]="\0", *ptr;
 	FILE *outfile=NULL;  tjhandle hnd=NULL;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
@@ -152,7 +152,8 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	}
 	if(yuv==YUVDECODE)
 	{
-		sprintf(tempstr, "%s_%s%s.yuv", filename, _subnames[jpegsub], qualstr);
+		snprintf(tempstr, 1024, "%s_%s%s.yuv", filename, _subnames[jpegsub],
+			qualstr);
 		if((outfile=fopen(tempstr, "wb"))==NULL)
 			_throwunix("opening YUV image for output");
 		if(fwrite(rgbbuf, yuvsize, 1, outfile)!=1)
@@ -164,16 +165,17 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 		if(tilesizex==w && tilesizey==h)
 		{
 			if(decomponly)
-				sprintf(tempstr, "%s_full.%s", filename, useppm?"ppm":"bmp");
+				snprintf(tempstr, 1024, "%s_full.%s", filename, useppm?"ppm":"bmp");
 			else
-				sprintf(tempstr, "%s_%s%s_full.%s", filename, _subnames[jpegsub],
-					qualstr, useppm?"ppm":"bmp");
+				snprintf(tempstr, 1024, "%s_%s%s_full.%s", filename,
+					_subnames[jpegsub], qualstr, useppm?"ppm":"bmp");
 		}
-		else sprintf(tempstr, "%s_%s%s_%dx%d.%s", filename, _subnames[jpegsub],
-			qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
+		else snprintf(tempstr, 1024, "%s_%s%s_%dx%d.%s", filename,
+			_subnames[jpegsub], qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
 		if(savebmp(tempstr, rgbbuf, scaledw, scaledh, pf, pitch, bu)==-1)
 			_throwbmp("saving bitmap");
-		sprintf(strrchr(tempstr, '.'), "-err.%s", useppm?"ppm":"bmp");
+		ptr=strrchr(tempstr, '.');
+		snprintf(ptr, 1024-(ptr-tempstr), "-err.%s", useppm?"ppm":"bmp");
 		if(srcbuf && scale_num==1 && scale_denom==1)
 		{
 			if(!quiet)
@@ -337,9 +339,10 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 		if(tilesizex==w && tilesizey==h)
 		{
 			if(yuv==YUVENCODE)
-				sprintf(tempstr, "%s_%s.yuv", filename, _subnames[jpegsub]);
+				snprintf(tempstr, 1024, "%s_%s.yuv", filename, _subnames[jpegsub]);
 			else
-				sprintf(tempstr, "%s_%sQ%d.jpg", filename, _subnames[jpegsub], qual);
+				snprintf(tempstr, 1024, "%s_%sQ%d.jpg", filename, _subnames[jpegsub],
+					qual);
 			if((outfile=fopen(tempstr, "wb"))==NULL)
 				_throwunix("opening reference image");
 			if(fwrite(jpegbuf[0], jpgbufsize, 1, outfile)!=1)

@@ -71,6 +71,16 @@ public class TJDecompressor {
     return jpegSubsamp;
   }
 
+  public byte[] getJPEGBuf() throws Exception {
+    if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
+    return jpegBuf;
+  }
+
+  public int getJPEGSize() throws Exception {
+    if(jpegBufSize < 1) throw new Exception("JPEG buffer not initialized");
+    return jpegBufSize;
+  }
+
   public int getScaledWidth(int desiredWidth, int desiredHeight)
     throws Exception {
     if(jpegWidth < 1 || jpegHeight < 1)

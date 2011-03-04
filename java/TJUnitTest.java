@@ -836,7 +836,7 @@ public class TJUnitTest {
       }
     }
     catch(Exception e) {
-      System.out.println(e);
+      e.printStackTrace();
       exitStatus = -1;
     }
     System.exit(exitStatus);

@@ -22,14 +22,19 @@
 #define DLLCALL
 
 /* Subsampling */
-#define NUMSUBOPT 4
+#define NUMSUBOPT 5
 
-enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
+enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE, TJ_440};
 #define TJ_411 TJ_420  /* for backward compatibility with VirtualGL <= 2.1.x,
                           TurboVNC <= 0.6, and TurboJPEG/IPP */
 
-static const int tjmcuw[NUMSUBOPT]={8, 16, 16, 8};
-static const int tjmcuh[NUMSUBOPT]={8, 8, 16, 8};
+/* MCU block sizes:
+   8x8 for no subsampling or grayscale
+   16x8 for 4:2:2
+   8x16 for 4:4:0
+   16x16 for 4:2:0 */
+static const int tjmcuw[NUMSUBOPT]={8, 16, 16, 8, 8};
+static const int tjmcuh[NUMSUBOPT]={8, 8, 16, 8, 16};
 
 /* Flags */
 #define TJ_BGR             1
@@ -55,7 +60,7 @@ static const int tjmcuh[NUMSUBOPT]={8, 8, 16, 8};
   /* Turn off CPU auto-detection and force TurboJPEG to use SSE3 code
      (64-bit IPP version only) */
 #define TJ_FASTUPSAMPLE  256
-  /* Use fast, inaccurate 4:2:2 and 4:2:0 YUV upsampling routines in the JPEG
+  /* Use fast, inaccurate chrominance upsampling routines in the JPEG
      decompressor (libjpeg and libjpeg-turbo versions only) */
 #define TJ_YUV           512
   /* Nothing to see here.  Pay no attention to the man behind the curtain. */
@@ -96,11 +101,11 @@ TJXFORM_ROT270      /* Rotate image counter-clockwise by 90 degrees.  This
 #define TJXFORM_PERFECT  1
   /* This will cause the tjTransform() function to return an error if the
      transform is not perfect.  Lossless transforms operate on MCU blocks,
-     which are 8x8 pixels if no chrominance subsampling is used, or 16x8 for
-     4:2:2 or 16x16 for 4:2:0.  If the image's width or height is not evenly
-     divisible by the MCU size, then there will be partial MCU blocks on the
-     right and/or bottom edges.  It is not possible to move these partial MCU
-     blocks to the top or left of the image, so any transform that would
+     whose size depends on the level of chrominance subsampling used (see
+     "MCU block sizes" above).  If the image's width or height is not evenly
+     divisible by the MCU block size, then there will be partial MCU blocks on
+     the right and/or bottom edges.  It is not possible to move these partial
+     MCU blocks to the top or left of the image, so any transform that would
      require that is "imperfect."  If this option is not specified, then any
      partial MCU blocks that cannot be transformed will be left in place, which
      will create odd-looking strips on the right or bottom edge of the image.
@@ -177,17 +182,19 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
      the maximum size for this buffer based on the image width and height.
   [OUTPUT] size = pointer to unsigned long which receives the actual size (in
      bytes) of the JPEG image
-  [INPUT] jpegsubsamp = Specifies either 4:2:0, 4:2:2, 4:4:4, or grayscale
-     subsampling.  When the image is converted from the RGB to YCbCr colorspace
-     as part of the JPEG compression process, every other Cb and Cr
-     (chrominance) pixel can be discarded to produce a smaller image with
-     little perceptible loss of image clarity (the human eye is more sensitive
-     to small changes in brightness than small changes in color.)
+  [INPUT] jpegsubsamp = Specifies the level of chrominance subsampling.  When
+     the image is converted from the RGB to YCbCr colorspace as part of the
+     JPEG compression process, every other Cb and Cr (chrominance) pixel can be
+     discarded to produce a smaller image with little perceptible loss of image
+     clarity (the human eye is more sensitive to small changes in brightness
+     than small changes in color.)
 
      TJ_420: 4:2:0 subsampling.  Discards every other Cb, Cr pixel in both
         horizontal and vertical directions
      TJ_422: 4:2:2 subsampling.  Discards every other Cb, Cr pixel only in
         the horizontal direction
+     TJ_440: 4:4:0 subsampling.  Discards every other Cb, Cr pixel only in
+        the vertical direction
      TJ_444: no subsampling
      TJ_GRAYSCALE: Generate grayscale JPEG image
 
@@ -262,8 +269,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
      determine the appropriate size for this buffer based on the image width,
      height, and level of subsampling.
   [INPUT] subsamp = specifies the level of chrominance subsampling for the
-     YUV image (4:2:0, 4:2:2, 4:4:4, or grayscale.)  See description under
-     tjCompress())
+     YUV image.  See description under tjCompress())
   [INPUT] flags = the bitwise OR of one or more of the flags described in the
      "Flags" section above
 
@@ -388,9 +394,8 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle hnd,
   step, so a planar YUV image is generated instead of an RGB image.  The
   padding of the planes in this image is the same as the images generated
   by tjEncodeYUV().  Note that, if the width or height of the image is not an
-  even multiple of the MCU block size (8x8 if the JPEG image was compressed
-  using grayscale or no subsampling, or 16x8 for 4:2:2 or 16x16 for 4:2:0),
-  then an intermediate buffer copy will be performed within TurboJPEG.
+  even multiple of the MCU block size (see "MCU block sizes" above), then an
+  intermediate buffer copy will be performed within TurboJPEG.
 
   [INPUT] hnd = instance handle previously returned from a call to
      tjInitDecompress() or tjInitTransform()

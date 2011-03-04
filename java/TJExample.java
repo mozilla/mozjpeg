@@ -64,6 +64,18 @@ public class TJExample {
     System.out.println("                           file, or 4:4:4 otherwise.\n");
     System.out.println("-q <1-100> = If the output image is a JPEG file, this specifies the JPEG");
     System.out.println("             quality to use when recompressing it (default = 95).\n");
+    System.out.println("-hflip, -vflip, -transpose, -transverse, -rot90, -rot180, -rot270 =");
+    System.out.println("     If the input image is a JPEG file, perform the corresponding lossless");
+    System.out.println("     transform prior to decompression (these options are mutually exclusive)\n");
+    System.out.println("-grayscale = If the input image is a JPEG file, perform lossless grayscale");
+    System.out.println("     conversion prior to decompression (can be combined with the other");
+    System.out.println("     transforms above)\n");
+    System.out.println("-crop X,Y,WxH = If the input image is a JPEG file, perform lossless cropping");
+    System.out.println("     prior to decompression.  X,Y specifies the upper left corner of the");
+    System.out.println("     cropping region, and WxH specifies its width and height.  X,Y must be");
+    System.out.println("     evenly divible by the MCU block size (8x8 if the source image was");
+    System.out.println("     compressed using no subsampling or grayscale, or 16x8 for 4:2:2 or 16x16");
+    System.out.println("     for 4:2:0.)\n");
     System.exit(1);
   }
 
@@ -74,6 +86,7 @@ public class TJExample {
   public static void main(String argv[]) {
 
     BufferedImage img = null;  byte[] bmpBuf = null;
+    TJTransform xform = new TJTransform();
 
     try {
 
@@ -133,6 +146,38 @@ public class TJExample {
             }
             else usage();
           }
+          if(argv[i].substring(0, 2).equalsIgnoreCase("-g"))
+            xform.options |= TJ.XFORM_GRAY;
+          if(argv[i].equalsIgnoreCase("-hflip"))
+            xform.op = TJ.XFORM_HFLIP;
+          if(argv[i].equalsIgnoreCase("-vflip"))
+            xform.op = TJ.XFORM_VFLIP;
+          if(argv[i].equalsIgnoreCase("-transpose"))
+            xform.op = TJ.XFORM_TRANSPOSE;
+          if(argv[i].equalsIgnoreCase("-transverse"))
+            xform.op = TJ.XFORM_TRANSVERSE;
+          if(argv[i].equalsIgnoreCase("-rot90"))
+            xform.op = TJ.XFORM_ROT90;
+          if(argv[i].equalsIgnoreCase("-rot180"))
+            xform.op = TJ.XFORM_ROT180;
+          if(argv[i].equalsIgnoreCase("-rot270"))
+            xform.op = TJ.XFORM_ROT270;
+          if(argv[i].length() > 2
+            && argv[i].substring(0, 2).equalsIgnoreCase("-c")) {
+            if(i >= argv.length - 1) usage();
+            String[] cropArg = argv[++i].split(",");
+            if(cropArg.length != 3) usage();
+            String[] dimArg = cropArg[2].split("[xX]");
+            if(dimArg.length != 2) usage();
+            int tempx = Integer.parseInt(cropArg[0]);
+            int tempy = Integer.parseInt(cropArg[1]);
+            int tempw = Integer.parseInt(dimArg[0]);
+            int temph = Integer.parseInt(dimArg[1]);
+            if(tempx < 0 || tempy < 0 || tempw < 1 || temph < 1) usage();
+            xform.x = tempx;  xform.y = tempy;
+            xform.width = tempw;  xform.height = temph;
+            xform.options |= TJ.XFORM_CROP;
+          }
         }
       }
       String[] inFileTokens = argv[0].split("\\.");
@@ -156,7 +201,18 @@ public class TJExample {
         fis.read(inputBuf);
         fis.close();
 
-        TJDecompressor tjd = new TJDecompressor(inputBuf);
+        TJDecompressor tjd;
+				TJ.ScalingFactor sf;
+        if(xform.op != TJ.XFORM_NONE || xform.options != 0) {
+          TJTransformer tjt = new TJTransformer(inputBuf);
+          TJTransform t[] = new TJTransform[1];
+          t[0] = xform;
+          t[0].options |= TJ.XFORM_TRIM;
+          TJDecompressor[] tjdx = tjt.transform(t, 0);
+          tjd = tjdx[0];
+        }
+        else tjd = new TJDecompressor(inputBuf);
+
         width = tjd.getWidth();
         height = tjd.getHeight();
         int inSubsamp = tjd.getSubsamp();
@@ -184,6 +240,7 @@ public class TJExample {
           else outSubsamp = TJ.SAMP_444;
         }
       }
+      System.gc();
       System.out.print("Dest. Image (" + outFormat + "):  " + width + " x "
         + height + " pixels");
 
@@ -218,7 +275,8 @@ public class TJExample {
 
     }
     catch(Exception e) {
-      System.out.println(e);
+      e.printStackTrace();
+      System.exit(-1);
     }
   }
 

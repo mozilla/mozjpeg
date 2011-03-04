@@ -72,7 +72,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	unsigned long *comptilesize, unsigned char *rgbbuf, int w, int h,
 	int jpegsub, int qual, char *filename, int tilesizex, int tilesizey)
 {
-	char tempstr[1024], qualstr[5]="\0", *ptr;
+	char tempstr[1024], sizestr[20]="\0", qualstr[5]="\0", *ptr;
 	FILE *outfile=NULL;  tjhandle hnd=NULL;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
@@ -164,22 +164,17 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	}
 	else
 	{
-		if(tilesizex==w && tilesizey==h)
-		{
-			if(decomponly)
-				snprintf(tempstr, 1024, "%s_full.%s", filename, useppm?"ppm":"bmp");
-			else
-				snprintf(tempstr, 1024, "%s_%s%s_full.%s", filename,
-					_subnames[jpegsub], qualstr, useppm?"ppm":"bmp");
-		}
+		if(scale_num!=1 || scale_denom!=1)
+			snprintf(sizestr, 20, "%d_%d", scale_num, scale_denom);
+		else if(tilesizex!=w || tilesizey!=h)
+			snprintf(sizestr, 20, "%dx%d", tilesizex, tilesizey);
+		else snprintf(sizestr, 20, "full");
+		if(decomponly)
+			snprintf(tempstr, 1024, "%s_%s.%s", filename, sizestr,
+				useppm?"ppm":"bmp");
 		else
-		{
-			if(decomponly)
-				snprintf(tempstr, 1024, "%s_%dx%d.%s", filename, tilesizex, tilesizey,
-					useppm?"ppm":"bmp");
-			else snprintf(tempstr, 1024, "%s_%s%s_%dx%d.%s", filename,
-				_subnames[jpegsub], qualstr, tilesizex, tilesizey, useppm?"ppm":"bmp");
-		}
+			snprintf(tempstr, 1024, "%s_%s%s_%s.%s", filename,
+				_subnames[jpegsub], qualstr, sizestr, useppm?"ppm":"bmp");
 		if(savebmp(tempstr, rgbbuf, scaledw, scaledh, pf, pitch, bu)==-1)
 			_throwbmp("saving bitmap");
 		ptr=strrchr(tempstr, '.');

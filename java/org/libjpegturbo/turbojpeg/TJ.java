@@ -58,7 +58,7 @@ final public class TJ {
     3, 3, 4, 4, 4, 4, 1
   };
 
-  final public static int getPixelSize(int pixelFormat) throws Exception {
+  public static int getPixelSize(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
       throw new Exception("Invalid pixel format");
     return pixelSize[pixelFormat];
@@ -68,7 +68,7 @@ final public class TJ {
     0, 16, 0, 16, 24, 8, 0
   };
 
-  final public static int getRedShift(int pixelFormat) throws Exception {
+  public static int getRedShift(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
       throw new Exception("Invalid pixel format");
     return redShift[pixelFormat];
@@ -78,7 +78,7 @@ final public class TJ {
     8, 8, 8, 8, 16, 16, 0
   };
 
-  final public static int getGreenShift(int pixelFormat) throws Exception {
+  public static int getGreenShift(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
       throw new Exception("Invalid pixel format");
     return greenShift[pixelFormat];
@@ -103,14 +103,14 @@ final public class TJ {
     FORCESSE3    = 128,
     FASTUPSAMPLE = 256;
 
-  public native final static int bufSize(int width, int height)
+  public native static int bufSize(int width, int height)
     throws Exception;
 
-  public native final static int bufSizeYUV(int width, int height,
+  public native static int bufSizeYUV(int width, int height,
     int subsamp)
     throws Exception;
 
-  public native final static ScalingFactor[] getScalingFactors()
+  public native static ScalingFactor[] getScalingFactors()
     throws Exception;
 
   static {

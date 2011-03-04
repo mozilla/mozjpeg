@@ -30,8 +30,6 @@
 #define _throwtj(m) _throw(m, tjGetErrorStr())
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
-#define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
-
 enum {YUVENCODE=1, YUVDECODE};
 int forcemmx=0, forcesse=0, forcesse2=0, forcesse3=0, fastupsample=0,
 	decomponly=0, yuv=0, quiet=0, dotile=0, pf=BMP_BGR, bu=0, useppm=0,

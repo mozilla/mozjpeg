@@ -54,7 +54,7 @@ static const int _flags[org_libjpegturbo_turbojpeg_TJ_NUMPFOPT]=
 	jfieldID _fid;  \
 	if(!_cls) goto bailout;  \
 	bailif0(_fid=(*env)->GetFieldID(env, _cls, "handle", "J"));  \
-	handle=(tjhandle)(long)(*env)->GetLongField(env, obj, _fid);  \
+	handle=(tjhandle)(jlong)(*env)->GetLongField(env, obj, _fid);  \
 
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 	(JNIEnv *env, jclass cls, jint width, jint height)
@@ -88,7 +88,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
-	(*env)->SetLongField(env, obj, fid, (long)handle);
+	(*env)->SetLongField(env, obj, fid, (jlong)handle);
 
 	bailout:
 	return;
@@ -285,7 +285,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
-	(*env)->SetLongField(env, obj, fid, (long)handle);
+	(*env)->SetLongField(env, obj, fid, (jlong)handle);
 
 	bailout:
 	return;
@@ -481,7 +481,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_init
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
-	(*env)->SetLongField(env, obj, fid, (long)handle);
+	(*env)->SetLongField(env, obj, fid, (jlong)handle);
 
 	bailout:
 	return;

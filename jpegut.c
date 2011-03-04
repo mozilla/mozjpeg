@@ -22,8 +22,8 @@
 
 #define _catch(f) {if((f)==-1) {printf("TJPEG: %s\n", tjGetErrorStr());  bailout();}}
 
-const char *_subnamel[NUMSUBOPT]={"4:4:4", "4:2:2", "4:2:0", "GRAY"};
-const char *_subnames[NUMSUBOPT]={"444", "422", "420", "GRAY"};
+const char *_subnamel[NUMSUBOPT]={"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"};
+const char *_subnames[NUMSUBOPT]={"444", "422", "420", "GRAY", "440"};
 
 #define NUMPF 7
 enum {RGB=0, BGR, RGBX, BGRX, XBGR, XRGB, GRAY};
@@ -576,6 +576,8 @@ int main(int argc, char *argv[])
 		dotest(35, 39, _4byteformats, 4, TJ_422, "test");
 		dotest(39, 41, _3byteformats, 2, TJ_420, "test");
 		dotest(41, 35, _4byteformats, 4, TJ_420, "test");
+		dotest(35, 39, _3byteformats, 2, TJ_440, "test");
+		dotest(39, 41, _4byteformats, 4, TJ_440, "test");
 	}
 	dotest(35, 39, _onlygray, 1, TJ_GRAYSCALE, "test");
 	dotest(39, 41, _3byteformats, 2, TJ_GRAYSCALE, "test");
@@ -590,6 +592,8 @@ int main(int argc, char *argv[])
 		dotest(39, 41, _onlyrgb, 1, TJ_422, "test_yuv1");
 		dotest(48, 48, _onlyrgb, 1, TJ_420, "test_yuv0");
 		dotest(41, 35, _onlyrgb, 1, TJ_420, "test_yuv1");
+		dotest(48, 48, _onlyrgb, 1, TJ_440, "test_yuv0");
+		dotest(35, 39, _onlyrgb, 1, TJ_440, "test_yuv1");
 		dotest(48, 48, _onlyrgb, 1, TJ_GRAYSCALE, "test_yuv0");
 		dotest(35, 39, _onlyrgb, 1, TJ_GRAYSCALE, "test_yuv1");
 		dotest(48, 48, _onlygray, 1, TJ_GRAYSCALE, "test_yuv0");

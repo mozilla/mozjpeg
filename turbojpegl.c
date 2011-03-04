@@ -68,7 +68,7 @@ typedef struct _jpgstruct
 	int initc, initd;
 } jpgstruct;
 
-static const int pixelsize[NUMSUBOPT]={3, 3, 3, 1};
+static const int pixelsize[NUMSUBOPT]={3, 3, 3, 1, 3};
 static const JXFORM_CODE xformtypes[NUMXFORMOPT]={
 	JXFORM_NONE, JXFORM_FLIP_H, JXFORM_FLIP_V, JXFORM_TRANSPOSE,
 	JXFORM_TRANSVERSE, JXFORM_ROT_90, JXFORM_ROT_180, JXFORM_ROT_270

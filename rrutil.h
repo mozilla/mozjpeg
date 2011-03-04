@@ -16,12 +16,10 @@
 #ifndef __RRUTIL_H__
 #define __RRUTIL_H__
 
-#ifdef _WIN32
-	#include <windows.h>
-	#ifndef __MINGW32__
-		#define snprintf(str, n, format, ...)  \
-			_snprintf_s(str, n, _TRUNCATE, format, __VA_ARGS__)
-	#endif
+#if defined(_WIN32) && !defined(__MINGW32__)
+	#include <stdio.h>
+	#define snprintf(str, n, format, ...)  \
+		_snprintf_s(str, n, _TRUNCATE, format, __VA_ARGS__)
 #else
 	#include <unistd.h>
 	#define stricmp strcasecmp

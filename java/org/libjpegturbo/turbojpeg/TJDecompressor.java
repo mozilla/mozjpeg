@@ -37,15 +37,16 @@ public class TJDecompressor {
   }
 
   public TJDecompressor(byte[] buf) throws Exception {
+    init();
     setJPEGBuffer(buf, buf.length);
   }
 
   public TJDecompressor(byte[] buf, int bufSize) throws Exception {
+    init();
     setJPEGBuffer(buf, bufSize);
   }
 
   public void setJPEGBuffer(byte[] buf, int bufSize) throws Exception {
-    if(handle == 0) init();
     if(buf == null || bufSize < 1)
       throw new Exception("Invalid argument in setJPEGBuffer()");
     jpegBuf = buf;
@@ -250,10 +251,10 @@ public class TJDecompressor {
     System.loadLibrary("turbojpeg");
   }
 
-  private long handle = 0;
-  private byte[] jpegBuf = null;
-  private int jpegBufSize = 0;
-  private int jpegWidth = 0;
-  private int jpegHeight = 0;
-  private int jpegSubsamp = -1;
+  protected long handle = 0;
+  protected byte[] jpegBuf = null;
+  protected int jpegBufSize = 0;
+  protected int jpegWidth = 0;
+  protected int jpegHeight = 0;
+  protected int jpegSubsamp = -1;
 };

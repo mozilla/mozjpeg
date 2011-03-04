@@ -88,11 +88,30 @@ final public class TJ {
     16, 0, 16, 0, 8, 24, 0
   };
 
-  final public static int getBlueShift(int pixelFormat) throws Exception {
+  public static int getBlueShift(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
       throw new Exception("Invalid pixel format");
     return blueShift[pixelFormat];
   }
+
+  // Transform operations
+  final public static int
+    NUMXFORMOPT      = 8,
+    XFORM_NONE       = 0,
+    XFORM_HFLIP      = 1,
+    XFORM_VFLIP      = 2,
+    XFORM_TRANSPOSE  = 3,
+    XFORM_TRANSVERSE = 4,
+    XFORM_ROT90      = 5,
+    XFORM_ROT180     = 6,
+    XFORM_ROT270     = 7;
+
+  // Transform options
+  final public static int
+    XFORM_PERFECT    = 1,
+    XFORM_TRIM       = 2,
+    XFORM_CROP       = 4,
+    XFORM_GRAY       = 8;
 
   // Flags
   final public static int

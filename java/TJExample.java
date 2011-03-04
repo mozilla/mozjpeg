@@ -80,7 +80,7 @@ public class TJExample {
   }
 
   private final static String sampName[] = {
-    "4:4:4", "4:2:2", "4:2:0", "Grayscale"
+    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0"
   };
 
   public static void main(String argv[]) {
@@ -122,8 +122,7 @@ public class TJExample {
             }
             if(match != 1) usage();
           }
-          if(argv[i].substring(0, 2).equalsIgnoreCase("-h")
-            || argv[i].equalsIgnoreCase("-?"))
+          if(argv[i].equalsIgnoreCase("-h") || argv[i].equalsIgnoreCase("-?"))
             usage();
           if(argv[i].length() > 2
             && argv[i].substring(0, 3).equalsIgnoreCase("-sa")) {
@@ -219,6 +218,15 @@ public class TJExample {
         System.out.println("Source Image: " + width + " x " + height
           + " pixels, " + sampName[inSubsamp] + " subsampling");
         if(outSubsamp < 0) outSubsamp = inSubsamp;
+
+        if(outFormat.equalsIgnoreCase("jpg") && (xform.op != TJ.XFORM_NONE
+          || xform.options != 0)) {
+          file = new File(argv[1]);
+          FileOutputStream fos = new FileOutputStream(file);
+          fos.write(tjd.getJPEGBuf(), 0, tjd.getJPEGSize());
+          fos.close();
+          System.exit(0);
+        }
 
         if(scaleNum != 1 || scaleDenom != 1) {
           width = (width * scaleNum + scaleDenom - 1) / scaleDenom;

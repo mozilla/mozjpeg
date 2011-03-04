@@ -37,11 +37,32 @@ final public class TJ {
 
   // Chrominance subsampling options
   final public static int
-    NUMSAMPOPT = 4,
+    NUMSAMPOPT = 5,
     SAMP_444   = 0,
     SAMP_422   = 1,
     SAMP_420   = 2,
-    SAMP_GRAY  = 3;
+    SAMP_GRAY  = 3,
+    SAMP_440   = 4;
+
+  final private static int mcuWidth[] = {
+    8, 16, 16, 8, 8
+  };
+
+  public static int getMCUWidth(int subsamp) throws Exception {
+    if(subsamp < 0 || subsamp >= NUMSAMPOPT)
+      throw new Exception("Invalid subsampling type");
+    return mcuWidth[subsamp];
+  }
+
+  final private static int mcuHeight[] = {
+    8, 8, 16, 8, 16
+  };
+
+  public static int getMCUHeight(int subsamp) throws Exception {
+    if(subsamp < 0 || subsamp >= NUMSAMPOPT)
+      throw new Exception("Invalid subsampling type");
+    return mcuHeight[subsamp];
+  }
 
   // Bitmap pixel formats
   final public static int

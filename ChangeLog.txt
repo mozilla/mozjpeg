@@ -5,6 +5,25 @@
 
 [2] TurboJPEG/OSS can now scale down images during decompression.
 
+[3] Added SIMD routines for RGB-to-grayscale color conversion, which
+significantly improves the performance of grayscale JPEG compression from an
+RGB source image.
+
+[4] Improved performance for non-x86 machines.
+
+[5] Added a function to the TurboJPEG API which performs lossless transforms.
+This function uses the same back end as jpegtran, but it performs transcoding
+entirely in memory and allows multiple transforms and/or crop operations to be
+batched together, so the source coefficients only need to be read once.  This
+is useful when generating image tiles from a single source JPEG.
+
+[6] Modified jpgtest to benchmark the new scaled decompression and lossless
+transform features in TurboJPEG/OSS.
+
+[7] Added support for 4:4:0 (transposed 4:2:2) subsampling in TurboJPEG, which
+was necessary in order for it to read 4:2:2 JPEG files that had been losslessly
+transposed or rotated 90 degrees.
+
 
 1.1.1
 =====

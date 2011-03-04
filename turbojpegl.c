@@ -751,6 +751,8 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle hnd,
 		xinfo[i].trim=(t[i].options&TJXFORM_TRIM)? 1:0;
 		xinfo[i].force_grayscale=(t[i].options&TJXFORM_GRAY)? 1:0;
 		xinfo[i].crop=(t[i].options&TJXFORM_CROP)? 1:0;
+		if(n!=1 && t[i].op==TJXFORM_HFLIP) xinfo[i].slow_hflip=1;
+		else xinfo[i].slow_hflip=0;
 
 		if(xinfo[i].crop)
 		{

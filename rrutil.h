@@ -18,8 +18,10 @@
 
 #ifdef _WIN32
 	#include <windows.h>
-	#define snprintf(str, n, format, ...)  \
-		_snprintf_s(str, n, _TRUNCATE, format, __VA_ARGS__)
+	#ifndef __MINGW32__
+		#define snprintf(str, n, format, ...)  \
+			_snprintf_s(str, n, _TRUNCATE, format, __VA_ARGS__)
+	#endif
 #else
 	#include <unistd.h>
 	#define stricmp strcasecmp

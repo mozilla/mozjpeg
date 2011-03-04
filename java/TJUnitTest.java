@@ -50,16 +50,10 @@ public class TJUnitTest {
   }
 
   private final static String subNameLong[] = {
-    "4:4:4", "4:2:2", "4:2:0", "GRAY"
+    "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"
   };
   private final static String subName[] = {
-    "444", "422", "420", "GRAY"
-  };
-  private final static int horizSampFactor[] = {
-    1, 2, 2, 1
-  };
-  private final static int vertSampFactor[] = {
-    1, 1, 2, 1
+    "444", "422", "420", "GRAY", "440"
   };
 
   private final static String pixFormatStr[] = {
@@ -439,9 +433,9 @@ public class TJUnitTest {
   }
 
   private static int checkBufYUV(byte[] buf, int size, int w, int h,
-    int subsamp) {
+    int subsamp) throws Exception {
     int i, j;
-    int hsf = horizSampFactor[subsamp], vsf = vertSampFactor[subsamp];
+    int hsf = TJ.getMCUWidth(subsamp)/8, vsf = TJ.getMCUHeight(subsamp)/8;
     int pw = PAD(w, hsf), ph = PAD(h, vsf);
     int cw = pw / hsf, ch = ph / vsf;
     int ypitch = PAD(pw, 4), uvpitch = PAD(cw, 4);
@@ -814,6 +808,10 @@ public class TJUnitTest {
           "test");
         doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_420,
           "test");
+        doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_440,
+          "test");
+        doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_440,
+          "test");
       }
       doTest(35, 39, onlyGray, TJ.SAMP_GRAY, "test");
       doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
@@ -829,6 +827,8 @@ public class TJUnitTest {
         doTest(39, 41, onlyRGB, TJ.SAMP_422, "test");
         doTest(48, 48, onlyRGB, TJ.SAMP_420, "test");
         doTest(41, 35, onlyRGB, TJ.SAMP_420, "test");
+        doTest(48, 48, onlyRGB, TJ.SAMP_440, "test");
+        doTest(35, 39, onlyRGB, TJ.SAMP_440, "test");
         doTest(48, 48, onlyRGB, TJ.SAMP_GRAY, "test");
         doTest(35, 39, onlyRGB, TJ.SAMP_GRAY, "test");
         doTest(48, 48, onlyGray, TJ.SAMP_GRAY, "test");

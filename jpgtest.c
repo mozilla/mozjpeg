@@ -399,7 +399,7 @@ void dodecomptest(char *filename)
 	unsigned long *comptilesize=NULL, srcbufsize, jpgbufsize;
 	tjtransform *t=NULL;
 	int w=0, h=0, jpegsub=-1, _w, _h, _tilesizex, _tilesizey,
-		_numtilesx, _numtilesy;
+		_numtilesx, _numtilesy, _jpegsub;
 	char *temp=NULL;
 	int i, j, tilesizex, tilesizey, numtilesx, numtilesy, retval=0;
 	double start, elapsed;
@@ -482,6 +482,7 @@ void dodecomptest(char *filename)
 			printf("%-4d  %-4d\t", tilesizex, tilesizey);
 		}
 
+		_jpegsub=jpegsub;
 		if(dotile || xformop!=TJXFORM_NONE || xformopt!=0)
 		{
 			if((t=(tjtransform *)malloc(sizeof(tjtransform)*numtilesx*numtilesy))
@@ -494,14 +495,15 @@ void dodecomptest(char *filename)
 				_w=h;  _h=w;  _tilesizex=tilesizey;  _tilesizey=tilesizex;
 			}
 
+			if(xformopt&TJXFORM_GRAY) _jpegsub=TJ_GRAYSCALE;
 			if(xformop==TJXFORM_HFLIP || xformop==TJXFORM_ROT180)
-				_w=_w-(_w%tjmcuw[jpegsub]);
+				_w=_w-(_w%tjmcuw[_jpegsub]);
 			if(xformop==TJXFORM_VFLIP || xformop==TJXFORM_ROT180)
-				_h=_h-(_h%tjmcuh[jpegsub]);
+				_h=_h-(_h%tjmcuh[_jpegsub]);
 			if(xformop==TJXFORM_TRANSVERSE || xformop==TJXFORM_ROT90)
-				_w=_w-(_w%tjmcuh[jpegsub]);
+				_w=_w-(_w%tjmcuh[_jpegsub]);
 			if(xformop==TJXFORM_TRANSVERSE || xformop==TJXFORM_ROT270)
-				_h=_h-(_h%tjmcuw[jpegsub]);
+				_h=_h-(_h%tjmcuw[_jpegsub]);
 			_numtilesx=(_w+_tilesizex-1)/_tilesizex;
 			_numtilesy=(_h+_tilesizey-1)/_tilesizey;
 
@@ -555,7 +557,7 @@ void dodecomptest(char *filename)
 
 		if(w==tilesizex) _tilesizex=_w;
 		if(h==tilesizey) _tilesizey=_h;
-		if(decomptest(NULL, jpegbuf, comptilesize, NULL, _w, _h, jpegsub, 0,
+		if(decomptest(NULL, jpegbuf, comptilesize, NULL, _w, _h, _jpegsub, 0,
 			filename, _tilesizex, _tilesizey)==-1)
 			goto bailout;
 

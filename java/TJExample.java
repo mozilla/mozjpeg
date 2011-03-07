@@ -220,7 +220,7 @@ public class TJExample {
         if(outSubsamp < 0) outSubsamp = inSubsamp;
 
         if(outFormat.equalsIgnoreCase("jpg") && (xform.op != TJ.XFORM_NONE
-          || xform.options != 0)) {
+          || xform.options != 0) && (scaleNum == 1 && scaleDenom == 1)) {
           file = new File(argv[1]);
           FileOutputStream fos = new FileOutputStream(file);
           fos.write(tjd.getJPEGBuf(), 0, tjd.getJPEGSize());

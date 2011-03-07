@@ -34,6 +34,7 @@
 import java.io.*;
 import java.awt.image.*;
 import javax.imageio.*;
+import javax.swing.*;
 import org.libjpegturbo.turbojpeg.*;
 
 public class TJExample {
@@ -76,6 +77,8 @@ public class TJExample {
     System.out.println("     evenly divible by the MCU block size (8x8 if the source image was");
     System.out.println("     compressed using no subsampling or grayscale, or 16x8 for 4:2:2 or 16x16");
     System.out.println("     for 4:2:0.)\n");
+    System.out.println("-display = Display output image (Output file need not be specified in this");
+    System.out.println("     case.)\n");
     System.exit(1);
   }
 
@@ -99,9 +102,10 @@ public class TJExample {
       int scaleNum = 1, scaleDenom = 1;
       String inFormat = "jpg", outFormat = "jpg";
       int outSubsamp = -1, outQual = 95;
+      boolean display = false;
 
-      if(argv.length > 2) {
-        for(int i = 2; i < argv.length; i++) {
+      if(argv.length > 1) {
+        for(int i = 1; i < argv.length; i++) {
           if(argv[i].length() < 2) continue;
           if(argv[i].length() > 2
             && argv[i].substring(0, 3).equalsIgnoreCase("-sc")) {
@@ -177,14 +181,20 @@ public class TJExample {
             xform.width = tempw;  xform.height = temph;
             xform.options |= TJ.XFORM_CROP;
           }
+          if(argv[i].substring(0, 2).equalsIgnoreCase("-d"))
+            display = true;
         }
       }
       String[] inFileTokens = argv[0].split("\\.");
       if(inFileTokens.length > 1)
         inFormat = inFileTokens[inFileTokens.length - 1];
-      String[] outFileTokens = argv[1].split("\\.");
-      if(outFileTokens.length > 1)
-        outFormat = outFileTokens[outFileTokens.length - 1];
+      String[] outFileTokens;
+      if(display) outFormat = "bmp";
+      else {
+        outFileTokens = argv[1].split("\\.");
+        if(outFileTokens.length > 1)
+          outFormat = outFileTokens[outFileTokens.length - 1];
+      }
 
       File file = new File(argv[0]);
       int width, height, subsamp = TJ.SAMP_444;
@@ -249,10 +259,17 @@ public class TJExample {
         }
       }
       System.gc();
-      System.out.print("Dest. Image (" + outFormat + "):  " + width + " x "
-        + height + " pixels");
+      if(!display)
+        System.out.print("Dest. Image (" + outFormat + "):  " + width + " x "
+          + height + " pixels");
 
-      if(outFormat.equalsIgnoreCase("jpg")) {
+      if(display) {
+        ImageIcon icon = new ImageIcon(img);
+        JLabel label = new JLabel(icon, JLabel.CENTER);
+        JOptionPane.showMessageDialog(null, label, "Output Image",
+          JOptionPane.PLAIN_MESSAGE);
+      }
+      else if(outFormat.equalsIgnoreCase("jpg")) {
         System.out.println(", " + sampName[outSubsamp]
           + " subsampling, quality = " + outQual);
         TJCompressor tjc = new TJCompressor();

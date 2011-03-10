@@ -18,6 +18,25 @@ compress and decompress JPEG images in memory.
 builds .class files for both the front end and example code.
 
 
+Performance Pitfalls
+--------------------
+
+The TurboJPEG Java front end defines several convenience methods which can
+allocate image buffers or instantiate classes to hold the result of compress,
+decompress, or transform operations.  However, if you use these methods, then
+be mindful of the amount of new data you are creating on the heap.  It may be
+necessary to manually invoke the garbage collector to prevent heap exhaustion
+or to prevent performance degradation.  Background garbage collection can kill
+performance, particularly in a multi-threaded environment (Java pauses all
+threads when the GC runs.)
+
+The Java front end always gives you the option of pre-allocating your own
+source and destination buffers, which allows you to re-use these buffers for
+compressing/decompressing multiple images.  If the image sequence you are
+compressing or decompressing consists of images of the same size, then
+pre-allocating the buffers is recommended.
+
+
 Note for OS X users
 -------------------
 

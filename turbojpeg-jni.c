@@ -34,10 +34,10 @@
 #include "java/org_libjpegturbo_turbojpeg_TJDecompressor.h"
 #include "java/org_libjpegturbo_turbojpeg_TJ.h"
 
-static const int _pixelsize[org_libjpegturbo_turbojpeg_TJ_NUMPFOPT]=
+static const int _pixelsize[org_libjpegturbo_turbojpeg_TJ_NUMPF]=
 	{3, 3, 4, 4, 4, 4, 1};
 
-static const int _flags[org_libjpegturbo_turbojpeg_TJ_NUMPFOPT]=
+static const int _flags[org_libjpegturbo_turbojpeg_TJ_NUMPF]=
 	{0, TJ_BGR, 0, TJ_BGR, TJ_BGR|TJ_ALPHAFIRST, TJ_ALPHAFIRST, 0};
 
 #define _throw(msg) {  \
@@ -105,7 +105,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF || width<1 || height<1
 		|| pitch<0)
 		_throw("Invalid argument in compress()");
 	flags|=_flags[pf];
@@ -146,7 +146,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF || width<1 || height<1
 		|| pitch<0)
 		_throw("Invalid argument in compress()");
 	if(_pixelsize[pf]!=sizeof(jint))
@@ -187,7 +187,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF || width<1 || height<1
 		|| pitch<0)
 		_throw("Invalid argument in encodeYUV()");
 	flags|=_flags[pf];
@@ -228,7 +228,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT || width<1 || height<1
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF || width<1 || height<1
 		|| pitch<0)
 		_throw("Invalid argument in compress()");
 	if(_pixelsize[pf]!=sizeof(jint))
@@ -362,7 +362,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT)
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF)
 		_throw("Invalid argument in decompress()");
 	flags|=_flags[pf];
 	pixelsize=_pixelsize[pf];
@@ -401,7 +401,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
 	gethandle();
 
-	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPFOPT)
+	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF)
 		_throw("Invalid argument in decompress()");
 	if(_pixelsize[pf]!=sizeof(jint))
 		_throw("Pixel format must be 32-bit when decompressing to an integer buffer.");

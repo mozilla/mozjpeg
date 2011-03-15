@@ -117,7 +117,7 @@ public class TJUnitTest {
     Arrays.fill(buf, (byte)0);
     if(pf == TJ.PF_GRAY) {
       for(_i = 0; _i < 16; _i++) {
-        if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+        if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
         else i = _i;
         for(j = 0; j < w; j++) {
           if(((_i / 8) + (j / 8)) % 2 == 0) buf[pitch * i + j] = (byte)255;
@@ -125,7 +125,7 @@ public class TJUnitTest {
         }
       }
       for(_i = 16; _i < h; _i++) {
-        if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+        if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
         else i = _i;
         for(j = 0; j < w; j++) {
           if(((_i / 8) + (j / 8)) % 2 == 0) buf[pitch * i + j] = 0;
@@ -135,7 +135,7 @@ public class TJUnitTest {
       return;
     }
     for(_i = 0; _i < 16; _i++) {
-      if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+      if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
       else i = _i;
       for(j = 0; j < w; j++) {
         buf[pitch * i + j * ps + roffset] = (byte)255;
@@ -146,7 +146,7 @@ public class TJUnitTest {
       }
     }
     for(_i = 16; _i < h; _i++) {
-      if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+      if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
       else i = _i;
       for(j = 0; j < w; j++) {
         if(((_i / 8) + (j / 8)) % 2 != 0) {
@@ -166,7 +166,7 @@ public class TJUnitTest {
 
     Arrays.fill(buf, 0);
     for(_i = 0; _i < 16; _i++) {
-      if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+      if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
       else i = _i;
       for(j = 0; j < w; j++) {
         buf[pitch * i + j] = (255 << rshift);
@@ -177,7 +177,7 @@ public class TJUnitTest {
       }
     }
     for(_i = 16; _i < h; _i++) {
-      if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+      if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
       else i = _i;
       for(j = 0; j < w; j++) {
         if(((_i / 8) + (j / 8)) % 2 != 0) {
@@ -249,7 +249,7 @@ public class TJUnitTest {
 
     try {
       for(_i = 0; _i < halfway; _i++) {
-        if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+        if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
         else i = _i;
         for(j = 0; j < w; j++) {
           byte r = buf[pitch * i + j * ps + roffset];
@@ -275,7 +275,7 @@ public class TJUnitTest {
         }
       }
       for(_i = halfway; _i < h; _i++) {
-        if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+        if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
         else i = _i;
         for(j = 0; j < w; j++) {
           byte r = buf[pitch * i + j * ps + roffset];
@@ -332,7 +332,7 @@ public class TJUnitTest {
 
     try {
       for(_i = 0; _i < halfway; _i++) {
-        if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+        if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
         else i = _i;
         for(j = 0; j < w; j++) {
           int r = (buf[pitch * i + j] >> rshift) & 0xFF;
@@ -358,7 +358,7 @@ public class TJUnitTest {
         }
       }
       for(_i = halfway; _i < h; _i++) {
-        if((flags & TJ.BOTTOMUP) != 0) i = h - _i - 1;
+        if((flags & TJ.FLAG_BOTTOMUP) != 0) i = h - _i - 1;
         else i = _i;
         for(j = 0; j < w; j++) {
           int r = (buf[pitch * i + j] >> rshift) & 0xFF;
@@ -548,7 +548,7 @@ public class TJUnitTest {
     pfStr = pixFormatStr[pf];
 
     System.out.print(pfStr + " ");
-    if((flags & TJ.BOTTOMUP) != 0) System.out.print("Bottom-Up");
+    if((flags & TJ.FLAG_BOTTOMUP) != 0) System.out.print("Bottom-Up");
     else System.out.print("Top-Down ");
     System.out.print(" -> " + subNameLong[subsamp] + " ");
     if(yuv == YUVENCODE) System.out.print("YUV ... ");
@@ -558,7 +558,7 @@ public class TJUnitTest {
       img = new BufferedImage(w, h, biType[pf]);
       initImg(img, pf, flags);
       tempstr = baseFilename + "_enc_" + pfStr + "_"
-        + (((flags & TJ.BOTTOMUP) != 0) ? "BU" : "TD") + "_"
+        + (((flags & TJ.FLAG_BOTTOMUP) != 0) ? "BU" : "TD") + "_"
         + subName[subsamp] + "_Q" + qual + ".png";
       File file = new File(tempstr);
       ImageIO.write(img, "png", file);
@@ -586,11 +586,11 @@ public class TJUnitTest {
 
     if(yuv == YUVENCODE)
       tempstr = baseFilename + "_enc_" + pfStr + "_"
-        + (((flags & TJ.BOTTOMUP) != 0) ? "BU" : "TD") + "_"
+        + (((flags & TJ.FLAG_BOTTOMUP) != 0) ? "BU" : "TD") + "_"
         + subName[subsamp] + ".yuv";
     else
       tempstr = baseFilename + "_enc_" + pfStr + "_"
-        + (((flags & TJ.BOTTOMUP) != 0) ? "BU" : "TD") + "_"
+        + (((flags & TJ.FLAG_BOTTOMUP) != 0) ? "BU" : "TD") + "_"
         + subName[subsamp] + "_Q" + qual + ".jpg";
     writeJPEG(jpegBuf, size, tempstr);
 
@@ -627,7 +627,7 @@ public class TJUnitTest {
       System.out.print("YUV " + subName[subsamp] + " ... ");
     else {
       System.out.print(pfStr + " ");
-      if((flags & TJ.BOTTOMUP) != 0) System.out.print("Bottom-Up ");
+      if((flags & TJ.FLAG_BOTTOMUP) != 0) System.out.print("Bottom-Up ");
       else System.out.print("Top-Down  ");
       if(scaleNum != 1 || scaleDenom != 1)
         System.out.print(scaleNum + "/" + scaleDenom + " ... ");
@@ -657,7 +657,7 @@ public class TJUnitTest {
 
     if(bi) {
       tempstr = baseFilename + "_dec_" + pfStr + "_"
-        + (((flags & TJ.BOTTOMUP) != 0) ? "BU" : "TD") + "_"
+        + (((flags & TJ.FLAG_BOTTOMUP) != 0) ? "BU" : "TD") + "_"
         + subName[subsamp] + "_" + (double)scaleNum / (double)scaleDenom
         + "x" + ".png";
       File file = new File(tempstr);
@@ -721,7 +721,7 @@ public class TJUnitTest {
             if(yuv == YUVDECODE) {
               tjc.close();  tjd.close();  return;
             }
-            else flags |= TJ.BOTTOMUP;
+            else flags |= TJ.FLAG_BOTTOMUP;
           }
           size = genTestJPEG(tjc, jpegBuf, w, h, pf, baseFilename, subsamp,
             100, flags);

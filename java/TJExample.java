@@ -150,21 +150,21 @@ public class TJExample {
             else usage();
           }
           if(argv[i].substring(0, 2).equalsIgnoreCase("-g"))
-            xform.options |= TJ.XFORM_GRAY;
+            xform.options |= TJTransform.OPT_GRAY;
           if(argv[i].equalsIgnoreCase("-hflip"))
-            xform.op = TJ.XFORM_HFLIP;
+            xform.op = TJTransform.OP_HFLIP;
           if(argv[i].equalsIgnoreCase("-vflip"))
-            xform.op = TJ.XFORM_VFLIP;
+            xform.op = TJTransform.OP_VFLIP;
           if(argv[i].equalsIgnoreCase("-transpose"))
-            xform.op = TJ.XFORM_TRANSPOSE;
+            xform.op = TJTransform.OP_TRANSPOSE;
           if(argv[i].equalsIgnoreCase("-transverse"))
-            xform.op = TJ.XFORM_TRANSVERSE;
+            xform.op = TJTransform.OP_TRANSVERSE;
           if(argv[i].equalsIgnoreCase("-rot90"))
-            xform.op = TJ.XFORM_ROT90;
+            xform.op = TJTransform.OP_ROT90;
           if(argv[i].equalsIgnoreCase("-rot180"))
-            xform.op = TJ.XFORM_ROT180;
+            xform.op = TJTransform.OP_ROT180;
           if(argv[i].equalsIgnoreCase("-rot270"))
-            xform.op = TJ.XFORM_ROT270;
+            xform.op = TJTransform.OP_ROT270;
           if(argv[i].length() > 2
             && argv[i].substring(0, 2).equalsIgnoreCase("-c")) {
             if(i >= argv.length - 1) usage();
@@ -176,10 +176,10 @@ public class TJExample {
             int tempy = Integer.parseInt(cropArg[1]);
             int tempw = Integer.parseInt(dimArg[0]);
             int temph = Integer.parseInt(dimArg[1]);
-            if(tempx < 0 || tempy < 0 || tempw < 1 || temph < 1) usage();
+            if(tempx < 0 || tempy < 0 || tempw < 0 || temph < 0) usage();
             xform.x = tempx;  xform.y = tempy;
             xform.width = tempw;  xform.height = temph;
-            xform.options |= TJ.XFORM_CROP;
+            xform.options |= TJTransform.OPT_CROP;
           }
           if(argv[i].substring(0, 2).equalsIgnoreCase("-d"))
             display = true;
@@ -212,11 +212,11 @@ public class TJExample {
 
         TJDecompressor tjd;
 				TJ.ScalingFactor sf;
-        if(xform.op != TJ.XFORM_NONE || xform.options != 0) {
+        if(xform.op != TJTransform.OP_NONE || xform.options != 0) {
           TJTransformer tjt = new TJTransformer(inputBuf);
           TJTransform t[] = new TJTransform[1];
           t[0] = xform;
-          t[0].options |= TJ.XFORM_TRIM;
+          t[0].options |= TJTransform.OPT_TRIM;
           TJDecompressor[] tjdx = tjt.transform(t, 0);
           tjd = tjdx[0];
         }
@@ -229,8 +229,9 @@ public class TJExample {
           + " pixels, " + sampName[inSubsamp] + " subsampling");
         if(outSubsamp < 0) outSubsamp = inSubsamp;
 
-        if(outFormat.equalsIgnoreCase("jpg") && (xform.op != TJ.XFORM_NONE
-          || xform.options != 0) && (scaleNum == 1 && scaleDenom == 1)) {
+        if(outFormat.equalsIgnoreCase("jpg")
+          && (xform.op != TJTransform.OP_NONE || xform.options != 0)
+          && (scaleNum == 1 && scaleDenom == 1)) {
           file = new File(argv[1]);
           FileOutputStream fos = new FileOutputStream(file);
           fos.write(tjd.getJPEGBuf(), 0, tjd.getJPEGSize());

@@ -7,8 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef org_libjpegturbo_turbojpeg_TJ_NUMSAMPOPT
-#define org_libjpegturbo_turbojpeg_TJ_NUMSAMPOPT 4L
+#undef org_libjpegturbo_turbojpeg_TJ_NUMSAMP
+#define org_libjpegturbo_turbojpeg_TJ_NUMSAMP 5L
 #undef org_libjpegturbo_turbojpeg_TJ_SAMP_444
 #define org_libjpegturbo_turbojpeg_TJ_SAMP_444 0L
 #undef org_libjpegturbo_turbojpeg_TJ_SAMP_422
@@ -17,8 +17,10 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_SAMP_420 2L
 #undef org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY
 #define org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY 3L
-#undef org_libjpegturbo_turbojpeg_TJ_NUMPFOPT
-#define org_libjpegturbo_turbojpeg_TJ_NUMPFOPT 7L
+#undef org_libjpegturbo_turbojpeg_TJ_SAMP_440
+#define org_libjpegturbo_turbojpeg_TJ_SAMP_440 4L
+#undef org_libjpegturbo_turbojpeg_TJ_NUMPF
+#define org_libjpegturbo_turbojpeg_TJ_NUMPF 7L
 #undef org_libjpegturbo_turbojpeg_TJ_PF_RGB
 #define org_libjpegturbo_turbojpeg_TJ_PF_RGB 0L
 #undef org_libjpegturbo_turbojpeg_TJ_PF_BGR
@@ -33,18 +35,18 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_PF_XRGB 5L
 #undef org_libjpegturbo_turbojpeg_TJ_PF_GRAY
 #define org_libjpegturbo_turbojpeg_TJ_PF_GRAY 6L
-#undef org_libjpegturbo_turbojpeg_TJ_BOTTOMUP
-#define org_libjpegturbo_turbojpeg_TJ_BOTTOMUP 2L
-#undef org_libjpegturbo_turbojpeg_TJ_FORCEMMX
-#define org_libjpegturbo_turbojpeg_TJ_FORCEMMX 8L
-#undef org_libjpegturbo_turbojpeg_TJ_FORCESSE
-#define org_libjpegturbo_turbojpeg_TJ_FORCESSE 16L
-#undef org_libjpegturbo_turbojpeg_TJ_FORCESSE2
-#define org_libjpegturbo_turbojpeg_TJ_FORCESSE2 32L
-#undef org_libjpegturbo_turbojpeg_TJ_FORCESSE3
-#define org_libjpegturbo_turbojpeg_TJ_FORCESSE3 128L
-#undef org_libjpegturbo_turbojpeg_TJ_FASTUPSAMPLE
-#define org_libjpegturbo_turbojpeg_TJ_FASTUPSAMPLE 256L
+#undef org_libjpegturbo_turbojpeg_TJ_FLAG_BOTTOMUP
+#define org_libjpegturbo_turbojpeg_TJ_FLAG_BOTTOMUP 2L
+#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCEMMX
+#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCEMMX 8L
+#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE
+#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE 16L
+#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE2
+#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE2 32L
+#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE3
+#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE3 128L
+#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FASTUPSAMPLE
+#define org_libjpegturbo_turbojpeg_TJ_FLAG_FASTUPSAMPLE 256L
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJ
  * Method:    bufSize

@@ -28,128 +28,294 @@
 
 package org.libjpegturbo.turbojpeg;
 
+/**
+ * TurboJPEG utility class (cannot be instantiated)
+ */
 final public class TJ {
 
+
+  /**
+   * Fractional scaling factor
+   */
   final public class ScalingFactor {
+    /**
+     * Numerator
+     */
     public int num = 1;
+    /**
+     * Denominator
+     */
     public int denom = 1;
   };
 
-  // Chrominance subsampling options
-  final public static int
-    NUMSAMPOPT = 5,
-    SAMP_444   = 0,
-    SAMP_422   = 1,
-    SAMP_420   = 2,
-    SAMP_GRAY  = 3,
-    SAMP_440   = 4;
+
+  /**
+   * The number of chrominance subsampling options
+   */
+  final public static int NUMSAMP   = 5;
+  /**
+   * 4:4:4 chrominance subsampling (no chrominance subsampling).  The JPEG
+   * or YUV image will contain one chrominance component for every pixel in the
+   * source image.
+   */
+  final public static int SAMP_444  = 0;
+  /**
+   * 4:2:2 chrominance subsampling.  The JPEG or YUV image will contain one
+   * chrominance component for every 2x1 block of pixels in the source image.
+   */
+  final public static int SAMP_422  = 1;
+  /**
+   * 4:2:0 chrominance subsampling.  The JPEG or YUV image will contain one
+   * chrominance component for every 2x2 block of pixels in the source image.
+   */
+  final public static int SAMP_420  = 2;
+  /**
+   * Grayscale.  The JPEG or YUV image will contain no chrominance components.
+   */
+  final public static int SAMP_GRAY = 3;
+  /**
+   * 4:4:0 chrominance subsampling.  The JPEG or YUV image will contain one
+   * chrominance component for every 1x2 block of pixels in the source image.
+   */
+  final public static int SAMP_440  = 4;
+
+
+  /**
+   * Returns the MCU block width for the given level of chrominance
+   * subsampling.
+   *
+   * @param subsamp the level of chrominance subsampling
+   *
+   * @return the MCU block width for the given level of chrominance subsampling
+   */
+  public static int getMCUWidth(int subsamp) throws Exception {
+    if(subsamp < 0 || subsamp >= NUMSAMP)
+      throw new Exception("Invalid subsampling type");
+    return mcuWidth[subsamp];
+  }
 
   final private static int mcuWidth[] = {
     8, 16, 16, 8, 8
   };
 
-  public static int getMCUWidth(int subsamp) throws Exception {
-    if(subsamp < 0 || subsamp >= NUMSAMPOPT)
+
+  /**
+   * Returns the MCU block height for the given level of chrominance
+   * subsampling.
+   *
+   * @param subsamp the level of chrominance subsampling
+   *
+   * @return the MCU block height for the given level of chrominance
+   * subsampling
+   */
+  public static int getMCUHeight(int subsamp) throws Exception {
+    if(subsamp < 0 || subsamp >= NUMSAMP)
       throw new Exception("Invalid subsampling type");
-    return mcuWidth[subsamp];
+    return mcuHeight[subsamp];
   }
 
   final private static int mcuHeight[] = {
     8, 8, 16, 8, 16
   };
 
-  public static int getMCUHeight(int subsamp) throws Exception {
-    if(subsamp < 0 || subsamp >= NUMSAMPOPT)
-      throw new Exception("Invalid subsampling type");
-    return mcuHeight[subsamp];
-  }
 
-  // Bitmap pixel formats
-  final public static int
-    NUMPFOPT = 7,
-    PF_RGB   = 0,
-    PF_BGR   = 1,
-    PF_RGBX  = 2,
-    PF_BGRX  = 3,
-    PF_XBGR  = 4,
-    PF_XRGB  = 5,
-    PF_GRAY  = 6;
+  /**
+   * The number of pixel formats
+   */
+  final public static int NUMPF    = 7;
+  /**
+   * RGB pixel format.  The red, green, and blue components in the image are
+   * stored in 3-byte pixels in the order R, G, B from lowest to highest byte
+   * address within each pixel.
+   */
+  final public static int PF_RGB  = 0;
+  /**
+   * BGR pixel format.  The red, green, and blue components in the image are
+   * stored in 3-byte pixels in the order B, G, R from lowest to highest byte
+   * address within each pixel.
+   */
+  final public static int PF_BGR  = 1;
+  /**
+   * RGBX pixel format.  The red, green, and blue components in the image are
+   * stored in 4-byte pixels in the order R, G, B from lowest to highest byte
+   * address within each pixel.
+   */
+  final public static int PF_RGBX = 2;
+  /**
+   * BGRX pixel format.  The red, green, and blue components in the image are
+   * stored in 4-byte pixels in the order B, G, R from lowest to highest byte
+   * address within each pixel.
+   */
+  final public static int PF_BGRX = 3;
+  /**
+   * XBGR pixel format.  The red, green, and blue components in the image are
+   * stored in 4-byte pixels in the order R, G, B from highest to lowest byte
+   * address within each pixel.
+   */
+  final public static int PF_XBGR = 4;
+  /**
+   * XRGB pixel format.  The red, green, and blue components in the image are
+   * stored in 4-byte pixels in the order B, G, R from highest to lowest byte
+   * address within each pixel.
+   */
+  final public static int PF_XRGB = 5;
+  /**
+   * Grayscale pixel format.  Each 1-byte pixel represents a luminance
+   * (brightness) level from 0 to 255.
+   */
+  final public static int PF_GRAY = 6;
+
+
+  /**
+   * Returns the pixel size (in bytes) for the given pixel format.
+   * @param pixelFormat the pixel format
+   * @return the pixel size (in bytes) of the given pixel format
+   */
+  public static int getPixelSize(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPF)
+      throw new Exception("Invalid pixel format");
+    return pixelSize[pixelFormat];
+  }
 
   final private static int pixelSize[] = {
     3, 3, 4, 4, 4, 4, 1
   };
 
-  public static int getPixelSize(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
+
+  /**
+   * Returns the red shift for the given pixel format.  For instance, if a
+   * pixel of format <code>TJ.PF_BGRX</code> is stored as an int, then the red
+   * component will be
+   * <code>(pixel >> TJ.getRedShift(TJ.PF_BGRX)) & 0xFF</code>.
+   *
+   * @param pixelFormat the pixel format
+   *
+   * @return the red shift for the given pixel format
+   */
+  public static int getRedShift(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
-    return pixelSize[pixelFormat];
+    return redShift[pixelFormat];
   }
 
   final private static int redShift[] = {
     0, 16, 0, 16, 24, 8, 0
   };
 
-  public static int getRedShift(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
+
+  /**
+   * Returns the green shift for the given pixel format.  For instance, if a
+   * pixel of format <code>TJ.PF_BGRX</code> is stored as an int, then the
+   * green component will be
+   * <code>(pixel >> TJ.getGreenShift(TJ.PF_BGRX)) & 0xFF</code>.
+   *
+   * @param pixelFormat the pixel format
+   *
+   * @return the green shift for the given pixel format
+   */
+  public static int getGreenShift(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
-    return redShift[pixelFormat];
+    return greenShift[pixelFormat];
   }
 
   final private static int greenShift[] = {
     8, 8, 8, 8, 16, 16, 0
   };
 
-  public static int getGreenShift(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
+
+  /**
+   * Returns the blue shift for the given pixel format.  For instance, if a
+   * pixel of format <code>TJ.PF_BGRX</code> is stored as an int, then the blue
+   * component will be
+   * <code>(pixel >> TJ.getBlueShift(TJ.PF_BGRX)) & 0xFF</code>.
+   *
+   * @param pixelFormat the pixel format
+   *
+   * @return the blue shift for the given pixel format
+   */
+  public static int getBlueShift(int pixelFormat) throws Exception {
+    if(pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
-    return greenShift[pixelFormat];
+    return blueShift[pixelFormat];
   }
 
   final private static int blueShift[] = {
     16, 0, 16, 0, 8, 24, 0
   };
 
-  public static int getBlueShift(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPFOPT)
-      throw new Exception("Invalid pixel format");
-    return blueShift[pixelFormat];
-  }
 
-  // Transform operations
-  final public static int
-    NUMXFORMOPT      = 8,
-    XFORM_NONE       = 0,
-    XFORM_HFLIP      = 1,
-    XFORM_VFLIP      = 2,
-    XFORM_TRANSPOSE  = 3,
-    XFORM_TRANSVERSE = 4,
-    XFORM_ROT90      = 5,
-    XFORM_ROT180     = 6,
-    XFORM_ROT270     = 7;
+  /**
+   * The uncompressed source/destination image is stored in bottom-up (Windows,
+   * OpenGL) order, not top-down (X11) order.
+   */
+  final public static int FLAG_BOTTOMUP     = 2;
+  /**
+   * Turn off CPU auto-detection and force TurboJPEG to use MMX code
+   * (IPP and 32-bit libjpeg-turbo versions only.)
+   */
+  final public static int FLAG_FORCEMMX     = 8;
+  /**
+   * Turn off CPU auto-detection and force TurboJPEG to use SSE code
+   * (32-bit IPP and 32-bit libjpeg-turbo versions only.)
+   */
+  final public static int FLAG_FORCESSE     = 16;
+  /**
+   * Turn off CPU auto-detection and force TurboJPEG to use SSE2 code
+   * (32-bit IPP and 32-bit libjpeg-turbo versions only.)
+   */
+  final public static int FLAG_FORCESSE2    = 32;
+  /**
+   * Turn off CPU auto-detection and force TurboJPEG to use SSE3 code
+   *(64-bit IPP version only.)
+   */
+  final public static int FLAG_FORCESSE3    = 128;
+  /**
+   * Use fast, inaccurate chrominance upsampling routines in the JPEG
+   * decompressor (libjpeg and libjpeg-turbo versions only.)
+   */
+  final public static int FLAG_FASTUPSAMPLE = 256;
 
-  // Transform options
-  final public static int
-    XFORM_PERFECT    = 1,
-    XFORM_TRIM       = 2,
-    XFORM_CROP       = 4,
-    XFORM_GRAY       = 8;
 
-  // Flags
-  final public static int
-    BOTTOMUP     = 2,
-    FORCEMMX     = 8,
-    FORCESSE     = 16,
-    FORCESSE2    = 32,
-    FORCESSE3    = 128,
-    FASTUPSAMPLE = 256;
-
+  /**
+   * Returns the maximum size of the buffer (in bytes) required to hold a JPEG
+   * image with the given width and height.
+   *
+   * @param width the width (in pixels) of the JPEG image
+   *
+   * @param height the height (in pixels) of the JPEG image
+   *
+   * @return the maximum size of the buffer (in bytes) required to hold a JPEG
+   * image with the given width and height 
+   */
   public native static int bufSize(int width, int height)
     throws Exception;
 
+  /**
+   * Returns the size of the buffer required to hold a YUV planar image with
+   * the given width, height, and level of chrominance subsampling.
+   *
+   * @param width the width (in pixels) of the YUV image
+   *
+   * @param height the height (in pixels) of the YUV image
+   *
+   * @param subsamp the level of chrominance subsampling used in the YUV
+   * image
+   *
+   * @return the size of the buffer required to hold a YUV planar image with
+   * the given width, height, and level of chrominance subsampling
+   */
   public native static int bufSizeYUV(int width, int height,
     int subsamp)
     throws Exception;
 
+  /**
+   * Returns a list of fractional scaling factors that the JPEG decompressor in
+   * this implementation of TurboJPEG supports.
+   *
+   * @return a list of fractional scaling factors that the JPEG decompressor in
+   * this implementation of TurboJPEG supports
+   */
   public native static ScalingFactor[] getScalingFactors()
     throws Exception;
 

@@ -475,9 +475,9 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
         divisible by tjmcuh[subsamp] (the MCU block height corresponding to the
         level of chrominance subsampling used in the source image)
      r.w = the width of the cropping region.  Setting this to 0 is the
-        equivalent of setting it to the width of the source JPEG image.
+        equivalent of setting it to the width of the source JPEG image - r.x.
      r.h = the height of the cropping region.  Setting this to 0 is the
-        equivalent of setting it to the height of the source JPEG image.
+        equivalent of setting it to the height of the source JPEG image - r.y.
      op = one of the transform operations described in the
         "Transform operations" section above
      options = the bitwise OR of one or more of the transform options described

@@ -743,6 +743,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle hnd,
 	if((xinfo=(jpeg_transform_info *)malloc(sizeof(jpeg_transform_info)*n))
 		==NULL)
 		_throw("Memory allocation failed in tjTransform()");
+	memset(xinfo, 0, sizeof(jpeg_transform_info)*n);
 
 	for(i=0; i<n; i++)
 	{
@@ -762,10 +763,12 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle hnd,
 			{
 				xinfo[i].crop_width=t[i].r.w;  xinfo[i].crop_width_set=JCROP_POS;
 			}
+			else xinfo[i].crop_width=JCROP_UNSET;
 			if(t[i].r.h!=0)
 			{
 				xinfo[i].crop_height=t[i].r.h;  xinfo[i].crop_height_set=JCROP_POS;
 			}
+			else xinfo[i].crop_height=JCROP_UNSET;
 		}
 	}
 

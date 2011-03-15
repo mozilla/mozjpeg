@@ -84,9 +84,9 @@ TJXFORM_VFLIP,      /* Flip (mirror) image vertically.  This transform is
                        bottom edge. */
 TJXFORM_TRANSPOSE,  /* Transpose image (flip/mirror along upper left to lower
                        right axis.)  This transform is always perfect. */
-TJXFORM_TRANSVERSE, /* Transpose image (flip/mirror along upper right to lower
-                       left axis.)  This transform is imperfect if there are
-                       any partial MCU blocks in the image. */
+TJXFORM_TRANSVERSE, /* Transverse transpose image (flip/mirror along upper
+                       right to lower left axis.)  This transform is imperfect
+                       if there are any partial MCU blocks in the image. */
 TJXFORM_ROT90,      /* Rotate image clockwise by 90 degrees.  This transform
                        is imperfect if there are any partial MCU blocks on the
                        bottom edge. */
@@ -184,19 +184,21 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
      bytes) of the JPEG image
   [INPUT] jpegsubsamp = Specifies the level of chrominance subsampling.  When
      the image is converted from the RGB to YCbCr colorspace as part of the
-     JPEG compression process, every other Cb and Cr (chrominance) pixel can be
-     discarded to produce a smaller image with little perceptible loss of image
-     clarity (the human eye is more sensitive to small changes in brightness
-     than small changes in color.)
+     JPEG compression process, some of the Cb and Cr (chrominance) components
+     can be discarded or averaged together to produce a smaller image with
+     little perceptible loss of image clarity (the human eye is more sensitive
+     to small changes in brightness than small changes in color.)
 
-     TJ_420: 4:2:0 subsampling.  Discards every other Cb, Cr pixel in both
-        horizontal and vertical directions
-     TJ_422: 4:2:2 subsampling.  Discards every other Cb, Cr pixel only in
-        the horizontal direction
-     TJ_440: 4:4:0 subsampling.  Discards every other Cb, Cr pixel only in
-        the vertical direction
-     TJ_444: no subsampling
-     TJ_GRAYSCALE: Generate grayscale JPEG image
+     TJ_420: 4:2:0 subsampling.  The JPEG image will contain one chrominance
+        component for every 2x2 block of pixels in the source image.
+     TJ_422: 4:2:2 subsampling.  The JPEG image will contain one chrominance
+        component for every 2x1 block of pixels in the source image.
+     TJ_440: 4:4:0 subsampling.  The JPEG image will contain one chrominance
+        component for every 1x2 block of pixels in the source image.
+     TJ_444: no subsampling.  The JPEG image will contain one chrominance
+        component for every pixel in the source image.
+     TJ_GRAYSCALE: Generate grayscale JPEG image.  The JPEG image will contain
+        no chrominance components.
 
   [INPUT] jpegqual = JPEG quality (an integer between 0 and 100 inclusive)
   [INPUT] flags = the bitwise OR of one or more of the flags described in the

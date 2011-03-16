@@ -108,9 +108,9 @@ public class TJUnitTest {
 
   private static void initBuf(byte[] buf, int w, int pitch, int h, int pf,
     int flags) throws Exception {
-    int roffset = TJ.getRedShift(pf) / 8;
-    int goffset = TJ.getGreenShift(pf) / 8;
-    int boffset = TJ.getBlueShift(pf) / 8;
+    int roffset = TJ.getRedOffset(pf);
+    int goffset = TJ.getGreenOffset(pf);
+    int boffset = TJ.getBlueOffset(pf);
     int ps = TJ.getPixelSize(pf);
     int i, _i, j;
 
@@ -159,9 +159,9 @@ public class TJUnitTest {
 
   private static void initIntBuf(int[] buf, int w, int pitch, int h, int pf,
     int flags) throws Exception {
-    int rshift = TJ.getRedShift(pf);
-    int gshift = TJ.getGreenShift(pf);
-    int bshift = TJ.getBlueShift(pf);
+    int rshift = TJ.getRedOffset(pf) * 8;
+    int gshift = TJ.getGreenOffset(pf) * 8;
+    int bshift = TJ.getBlueOffset(pf) * 8;
     int i, _i, j;
 
     Arrays.fill(buf, 0);
@@ -239,9 +239,9 @@ public class TJUnitTest {
 
   private static int checkBuf(byte[] buf, int w, int pitch, int h, int pf,
     int subsamp, int scaleNum, int scaleDenom, int flags) throws Exception {
-    int roffset = TJ.getRedShift(pf) / 8;
-    int goffset = TJ.getGreenShift(pf) / 8;
-    int boffset = TJ.getBlueShift(pf) / 8;
+    int roffset = TJ.getRedOffset(pf);
+    int goffset = TJ.getGreenOffset(pf);
+    int boffset = TJ.getBlueOffset(pf);
     int ps = TJ.getPixelSize(pf);
     int i, _i, j, retval = 1;
     int halfway = 16 * scaleNum / scaleDenom;
@@ -323,9 +323,9 @@ public class TJUnitTest {
 
   private static int checkIntBuf(int[] buf, int w, int pitch, int h, int pf,
     int subsamp, int scaleNum, int scaleDenom, int flags) throws Exception {
-    int rshift = TJ.getRedShift(pf);
-    int gshift = TJ.getGreenShift(pf);
-    int bshift = TJ.getBlueShift(pf);
+    int rshift = TJ.getRedOffset(pf) * 8;
+    int gshift = TJ.getGreenOffset(pf) * 8;
+    int bshift = TJ.getBlueOffset(pf) * 8;
     int i, _i, j, retval = 1;
     int halfway = 16 * scaleNum / scaleDenom;
     int blockSize = 8 * scaleNum / scaleDenom;
@@ -577,7 +577,7 @@ public class TJUnitTest {
       else tjc.compress(img, jpegBuf, flags);
     }
     else {
-      tjc.setBitmapBuffer(bmpBuf, w, 0, h, pf);
+      tjc.setSourceImage(bmpBuf, w, 0, h, pf);
       if(yuv == YUVENCODE) tjc.encodeYUV(jpegBuf, flags);
       else tjc.compress(jpegBuf, flags);
     }
@@ -635,7 +635,7 @@ public class TJUnitTest {
     }
 
     t = getTime();
-    tjd.setJPEGBuffer(jpegBuf, jpegsize);
+    tjd.setJPEGImage(jpegBuf, jpegsize);
     if(tjd.getWidth() != w || tjd.getHeight() != h
       || tjd.getSubsamp() != subsamp)
       throw new Exception("Incorrect JPEG header");
@@ -761,7 +761,7 @@ public class TJUnitTest {
             bmpBuf[i2 * 4 + 1] = pixels[i2 % 9][1];
             bmpBuf[i2 * 4 + 2] = pixels[i2 % 9][0];
           }
-          tjc.setBitmapBuffer(bmpBuf, i, 0, j, TJ.PF_BGRX);
+          tjc.setSourceImage(bmpBuf, i, 0, j, TJ.PF_BGRX);
           tjc.setSubsamp(TJ.SAMP_444);
           tjc.setJPEGQuality(100);
           tjc.compress(jpegBuf, 0);
@@ -773,7 +773,7 @@ public class TJUnitTest {
                 bmpBuf[i2 * 4 + 1] = bmpBuf[i2 * 4 + 2] = (byte)0xFF;
             else bmpBuf[i2 * 4] = bmpBuf[i2 * 4 + 1] = bmpBuf[i2 * 4 + 2] = 0;
           }
-          tjc.setBitmapBuffer(bmpBuf, j, 0, i, TJ.PF_BGRX);
+          tjc.setSourceImage(bmpBuf, j, 0, i, TJ.PF_BGRX);
           tjc.compress(jpegBuf, 0);
         }
       }

@@ -44,12 +44,12 @@ public class TJTransformer extends TJDecompressor {
    * Create a TurboJPEG lossless transformer instance and associate the JPEG
    * image stored in <code>jpegImage</code> with the newly-created instance.
    *
-   * @param jpegImage JPEG image buffer (size of JPEG image is assumed to be
-   * the length of the buffer)
+   * @param jpegImage JPEG image buffer (size of the JPEG image is assumed to
+   * be the length of the array)
    */
   public TJTransformer(byte[] jpegImage) throws Exception {
     init();
-    setJPEGBuffer(jpegImage, jpegImage.length);
+    setJPEGImage(jpegImage, jpegImage.length);
   }
 
   /**
@@ -59,11 +59,11 @@ public class TJTransformer extends TJDecompressor {
    *
    * @param jpegImage JPEG image buffer
    *
-   * @param imageSize size of JPEG image (in bytes)
+   * @param imageSize size of the JPEG image (in bytes)
    */
   public TJTransformer(byte[] jpegImage, int imageSize) throws Exception {
     init();
-    setJPEGBuffer(jpegImage, imageSize);
+    setJPEGImage(jpegImage, imageSize);
   }
 
   /**
@@ -75,22 +75,21 @@ public class TJTransformer extends TJDecompressor {
    * image, transforming it, and re-compressing it, lossless transforms are not
    * free.  Each lossless transform requires reading and Huffman decoding all
    * of the coefficients in the source image, regardless of the size of the
-   * destination image.  Thus, this function provides a means of generating
+   * destination image.  Thus, this method provides a means of generating
    * multiple transformed images from the same source or of applying multiple
    * transformations simultaneously, in order to eliminate the need to read the
    * source coefficients multiple times.
    *
-   * @param dstBufs an array of n image buffers.  <code>dstbufs[i]</code> will
+   * @param dstBufs an array of image buffers.  <code>dstbufs[i]</code> will
    * receive a JPEG image that has been transformed using the parameters in
-   * <code>transforms[i]</code>.  Use {@link TJ#bufSizeYUV} to determine the
+   * <code>transforms[i]</code>.  Use {@link TJ#bufSize} to determine the
    * maximum size for each buffer based on the cropped width and height.
    *
-   * @param transforms an array of n {@link TJTransform} instances, each of
+   * @param transforms an array of {@link TJTransform} instances, each of
    * which specifies the transform parameters and/or cropping region for the
    * corresponding transformed output image
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void transform(byte[][] dstBufs, TJTransform[] transforms,
     int flags) throws Exception {
@@ -104,15 +103,14 @@ public class TJTransformer extends TJDecompressor {
    * instance and return an array of {@link TJDecompressor} instances, each of
    * which has a transformed JPEG image associated with it.
    *
-   * @param transforms an array of n {@link TJTransform} instances, each of
+   * @param transforms an array of {@link TJTransform} instances, each of
    * which specifies the transform parameters and/or cropping region for the
    * corresponding transformed output image
    *
    * @return an array of {@link TJDecompressor} instances, each of
    * which has a transformed JPEG image associated with it
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public TJDecompressor[] transform(TJTransform[] transforms, int flags)
     throws Exception {

@@ -35,6 +35,9 @@ import java.awt.image.*;
  */
 public class TJCompressor {
 
+  private final static String NO_ASSOC_ERROR =
+    "No source image is associated with this instance";
+
   /**
    * Create a TurboJPEG compressor instance.
    */
@@ -44,27 +47,28 @@ public class TJCompressor {
 
   /**
    * Create a TurboJPEG compressor instance and associate the uncompressed
-   * source image stored in <code>buf</code> with the newly-created instance.
+   * source image stored in <code>srcImage</code> with the newly-created
+   * instance.
    *
-   * @param buf see {@link #setBitmapBuffer} for description
+   * @param srcImage see {@link #setSourceImage} for description
    *
-   * @param width see {@link #setBitmapBuffer} for description
+   * @param width see {@link #setSourceImage} for description
    *
-   * @param pitch see {@link #setBitmapBuffer} for description
+   * @param pitch see {@link #setSourceImage} for description
    *
-   * @param height see {@link #setBitmapBuffer} for description
+   * @param height see {@link #setSourceImage} for description
    *
-   * @param pixelFormat see {@link #setBitmapBuffer} for description
+   * @param pixelFormat see {@link #setSourceImage} for description
    */
-  public TJCompressor(byte[] buf, int width, int pitch, int height,
+  public TJCompressor(byte[] srcImage, int width, int pitch, int height,
     int pixelFormat) throws Exception {
-    setBitmapBuffer(buf, width, pitch, height, pixelFormat);
+    setSourceImage(srcImage, width, pitch, height, pixelFormat);
   }
 
   /**
    * Associate an uncompressed source image with this compressor instance.
    *
-   * @param buf image buffer containing RGB or grayscale pixels to be
+   * @param srcImage image buffer containing RGB or grayscale pixels to be
    * compressed
    *
    * @param width width (in pixels) of the source image
@@ -80,32 +84,32 @@ public class TJCompressor {
    *
    * @param height height (in pixels) of the source image
    *
-   * @param pixelFormat pixel format of the source image (see
-   * {@link TJ})
+   * @param pixelFormat pixel format of the source image (one of
+   * {@link TJ TJ.PF_*})
    */
-  public void setBitmapBuffer(byte[] buf, int width, int pitch, int height,
-    int pixelFormat) throws Exception {
+  public void setSourceImage(byte[] srcImage, int width, int pitch,
+    int height, int pixelFormat) throws Exception {
     if(handle == 0) init();
-    if(buf == null || width < 1 || height < 1 || pitch < 0 || pixelFormat < 0
-      || pixelFormat >= TJ.NUMPFOPT)
-      throw new Exception("Invalid argument in setBitmapBuffer()");
-    bitmapBuf = buf;
-    bitmapWidth = width;
-    if(pitch == 0) bitmapPitch = width * TJ.getPixelSize(pixelFormat);
-    else bitmapPitch = pitch;
-    bitmapHeight = height;
-    bitmapPixelFormat = pixelFormat;
+    if(srcImage == null || width < 1 || height < 1 || pitch < 0
+      || pixelFormat < 0 || pixelFormat >= TJ.NUMPF)
+      throw new Exception("Invalid argument in setSourceImage()");
+    srcBuf = srcImage;
+    srcWidth = width;
+    if(pitch == 0) srcPitch = width * TJ.getPixelSize(pixelFormat);
+    else srcPitch = pitch;
+    srcHeight = height;
+    srcPixelFormat = pixelFormat;
   }
 
   /**
    * Set the level of chrominance subsampling for subsequent compress/encode
    * operations.
    *
-   * @param newSubsamp the new level of chrominance subsampling (see
-   * {@link TJ})
+   * @param newSubsamp the new level of chrominance subsampling (one of
+   * {@link TJ TJ.SAMP_*})
    */
   public void setSubsamp(int newSubsamp) throws Exception {
-    if(newSubsamp < 0 || newSubsamp >= TJ.NUMSAMPOPT)
+    if(newSubsamp < 0 || newSubsamp >= TJ.NUMSAMP)
       throw new Exception("Invalid argument in setSubsamp()");
     subsamp = newSubsamp;
   }
@@ -130,34 +134,32 @@ public class TJCompressor {
    * {@link TJ#bufSize} to determine the maximum size for this buffer based on
    * the image width and height.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void compress(byte[] dstBuf, int flags) throws Exception {
     if(dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in compress()");
-    if(bitmapBuf == null) throw new Exception("Bitmap buffer not initialized");
+    if(srcBuf == null) throw new Exception(NO_ASSOC_ERROR);
     if(jpegQuality < 0) throw new Exception("JPEG Quality not set");
     if(subsamp < 0) throw new Exception("Subsampling level not set");
-    compressedSize = compress(bitmapBuf, bitmapWidth, bitmapPitch,
-      bitmapHeight, bitmapPixelFormat, dstBuf, subsamp, jpegQuality, flags);
+    compressedSize = compress(srcBuf, srcWidth, srcPitch,
+      srcHeight, srcPixelFormat, dstBuf, subsamp, jpegQuality, flags);
   }
 
   /**
    * Compress the uncompressed source image associated with this compressor
    * instance and return a buffer containing a JPEG image.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a buffer containing a JPEG image.  The length of this buffer will
    * not be equal to the size of the JPEG image.  Use {@link
    * #getCompressedSize} to obtain the size of the JPEG image.
    */
   public byte[] compress(int flags) throws Exception {
-    if(bitmapWidth < 1 || bitmapHeight < 1)
-      throw new Exception("Bitmap buffer not initialized");
-    byte[] buf = new byte[TJ.bufSize(bitmapWidth, bitmapHeight)];
+    if(srcWidth < 1 || srcHeight < 1)
+      throw new Exception(NO_ASSOC_ERROR);
+    byte[] buf = new byte[TJ.bufSize(srcWidth, srcHeight)];
     compress(buf, flags);
     return buf;
   }
@@ -173,8 +175,7 @@ public class TJCompressor {
    * {@link TJ#bufSize} to determine the maximum size for this buffer based on
    * the image width and height.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void compress(BufferedImage srcImage, byte[] dstBuf, int flags)
     throws Exception {
@@ -228,8 +229,7 @@ public class TJCompressor {
    * @param srcImage a <code>BufferedImage</code> instance containing RGB or
    * grayscale pixels to be compressed
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a buffer containing a JPEG image.  The length of this buffer will
    * not be equal to the size of the JPEG image.  Use {@link
@@ -246,7 +246,7 @@ public class TJCompressor {
   /**
    * Encode the uncompressed source image associated with this compressor
    * instance and output a YUV planar image to the given destination buffer.
-   * This function uses the accelerated color conversion routines in
+   * This method uses the accelerated color conversion routines in
    * TurboJPEG's underlying codec to produce a planar YUV image that is
    * suitable for direct video display.  Specifically, if the chrominance
    * components are subsampled along the horizontal dimension, then the width
@@ -262,17 +262,16 @@ public class TJCompressor {
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
    * based on the image width, height, and level of chrominance subsampling.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void encodeYUV(byte[] dstBuf, int flags) throws Exception {
     if(dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in compress()");
-    if(bitmapBuf == null) throw new Exception("Bitmap buffer not initialized");
+    if(srcBuf == null) throw new Exception(NO_ASSOC_ERROR);
     if(subsamp < 0) throw new Exception("Subsampling level not set");
-    encodeYUV(bitmapBuf, bitmapWidth, bitmapPitch, bitmapHeight,
-      bitmapPixelFormat, dstBuf, subsamp, flags);
-    compressedSize = TJ.bufSizeYUV(bitmapWidth, bitmapHeight, subsamp);
+    encodeYUV(srcBuf, srcWidth, srcPitch, srcHeight,
+      srcPixelFormat, dstBuf, subsamp, flags);
+    compressedSize = TJ.bufSizeYUV(srcWidth, srcHeight, subsamp);
   }
 
   /**
@@ -280,16 +279,15 @@ public class TJCompressor {
    * instance and return a buffer containing a YUV planar image.  See
    * {@link #encodeYUV(byte[], int)} for more detail.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a buffer containing a YUV planar image
    */
   public byte[] encodeYUV(int flags) throws Exception {
-    if(bitmapWidth < 1 || bitmapHeight < 1)
-      throw new Exception("Bitmap buffer not initialized");
+    if(srcWidth < 1 || srcHeight < 1)
+      throw new Exception(NO_ASSOC_ERROR);
     if(subsamp < 0) throw new Exception("Subsampling level not set");
-    byte[] buf = new byte[TJ.bufSizeYUV(bitmapWidth, bitmapHeight, subsamp)];
+    byte[] buf = new byte[TJ.bufSizeYUV(srcWidth, srcHeight, subsamp)];
     encodeYUV(buf, flags);
     return buf;
   }
@@ -306,8 +304,7 @@ public class TJCompressor {
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
    * based on the image width, height, and level of chrominance subsampling.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void encodeYUV(BufferedImage srcImage, byte[] dstBuf, int flags)
     throws Exception {
@@ -362,8 +359,7 @@ public class TJCompressor {
    * @param srcImage a <code>BufferedImage</code> instance containing RGB or
    * grayscale pixels to be encoded
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a buffer containing a YUV planar image
    */
@@ -431,11 +427,11 @@ public class TJCompressor {
   }
 
   private long handle = 0;
-  private byte[] bitmapBuf = null;
-  private int bitmapWidth = 0;
-  private int bitmapHeight = 0;
-  private int bitmapPitch = 0;
-  private int bitmapPixelFormat = -1;
+  private byte[] srcBuf = null;
+  private int srcWidth = 0;
+  private int srcHeight = 0;
+  private int srcPitch = 0;
+  private int srcPixelFormat = -1;
   private int subsamp = -1;
   private int jpegQuality = -1;
   private int compressedSize = 0;

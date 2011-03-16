@@ -35,6 +35,9 @@ import java.awt.image.*;
  */
 public class TJDecompressor {
 
+  private final static String NO_ASSOC_ERROR =
+    "No JPEG image is associated with this instance";
+
   /**
    * Create a TurboJPEG decompresssor instance.
    */
@@ -46,12 +49,12 @@ public class TJDecompressor {
    * Create a TurboJPEG decompressor instance and associate the JPEG image
    * stored in <code>jpegImage</code> with the newly-created instance.
    *
-   * @param jpegImage JPEG image buffer (size of JPEG image is assumed to be
-   * the length of the buffer)
+   * @param jpegImage JPEG image buffer (size of the JPEG image is assumed to
+   * be the length of the array)
    */
   public TJDecompressor(byte[] jpegImage) throws Exception {
     init();
-    setJPEGBuffer(jpegImage, jpegImage.length);
+    setJPEGImage(jpegImage, jpegImage.length);
   }
 
   /**
@@ -61,25 +64,25 @@ public class TJDecompressor {
    *
    * @param jpegImage JPEG image buffer
    *
-   * @param imageSize size of JPEG image (in bytes)
+   * @param imageSize size of the JPEG image (in bytes)
    */
   public TJDecompressor(byte[] jpegImage, int imageSize) throws Exception {
     init();
-    setJPEGBuffer(jpegImage, imageSize);
+    setJPEGImage(jpegImage, imageSize);
   }
 
   /**
-   * Associate a JPEG image buffer with this decompressor instance.  This
-   * buffer will be used as the source buffer for subsequent decompress
-   * operations.
+   * Associate the JPEG image of length <code>imageSize</code> bytes stored in
+   * <code>jpegImage</code> with this decompressor instance.  This image will
+   * be used as the source image for subsequent decompress operations.
    *
    * @param jpegImage JPEG image buffer
    *
-   * @param imageSize size of JPEG image (in bytes)
+   * @param imageSize size of the JPEG image (in bytes)
    */
-  public void setJPEGBuffer(byte[] jpegImage, int imageSize) throws Exception {
+  public void setJPEGImage(byte[] jpegImage, int imageSize) throws Exception {
     if(jpegImage == null || imageSize < 1)
-      throw new Exception("Invalid argument in setJPEGBuffer()");
+      throw new Exception("Invalid argument in setJPEGImage()");
     jpegBuf = jpegImage;
     jpegBufSize = imageSize;
     decompressHeader(jpegBuf, jpegBufSize);
@@ -93,7 +96,7 @@ public class TJDecompressor {
    * instance
    */
   public int getWidth() throws Exception {
-    if(jpegWidth < 1) throw new Exception("JPEG buffer not initialized");
+    if(jpegWidth < 1) throw new Exception(NO_ASSOC_ERROR);
     return jpegWidth;
   }
 
@@ -105,7 +108,7 @@ public class TJDecompressor {
    * instance
    */
   public int getHeight() throws Exception {
-    if(jpegHeight < 1) throw new Exception("JPEG buffer not initialized");
+    if(jpegHeight < 1) throw new Exception(NO_ASSOC_ERROR);
     return jpegHeight;
   }
 
@@ -117,8 +120,8 @@ public class TJDecompressor {
    * associated with this decompressor instance
    */
   public int getSubsamp() throws Exception {
-    if(jpegSubsamp < 0) throw new Exception("JPEG buffer not initialized");
-    if(jpegSubsamp >= TJ.NUMSAMPOPT)
+    if(jpegSubsamp < 0) throw new Exception(NO_ASSOC_ERROR);
+    if(jpegSubsamp >= TJ.NUMSAMP)
       throw new Exception("JPEG header information is invalid");
     return jpegSubsamp;
   }
@@ -129,7 +132,7 @@ public class TJDecompressor {
    * @return the JPEG image buffer associated with this decompressor instance
    */
   public byte[] getJPEGBuf() throws Exception {
-    if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
+    if(jpegBuf == null) throw new Exception(NO_ASSOC_ERROR);
     return jpegBuf;
   }
 
@@ -141,7 +144,7 @@ public class TJDecompressor {
    * decompressor instance
    */
   public int getJPEGSize() throws Exception {
-    if(jpegBufSize < 1) throw new Exception("JPEG buffer not initialized");
+    if(jpegBufSize < 1) throw new Exception(NO_ASSOC_ERROR);
     return jpegBufSize;
   }
 
@@ -152,12 +155,14 @@ public class TJDecompressor {
    * height.
    *
    * @param desiredWidth desired width (in pixels) of the decompressed image.
-   * If this is set to 0, then only the height will be considered when
-   * determining the scaled image size.
+   * Setting this to 0 is the same as setting it to the width of the JPEG image
+   * (in other words, the width will not be considered when determining the
+   * scaled image size.)
    *
    * @param desiredHeight desired height (in pixels) of the decompressed image.
-   * If this is set to 0, then only the width will be considered when
-   * determining the scaled image size.
+   * Setting this to 0 is the same as setting it to the height of the JPEG
+   * image (in other words, the height will not be considered when determining
+   * the scaled image size.)
    *
    * @return the width of the largest scaled down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
@@ -166,7 +171,7 @@ public class TJDecompressor {
   public int getScaledWidth(int desiredWidth, int desiredHeight)
     throws Exception {
     if(jpegWidth < 1 || jpegHeight < 1)
-      throw new Exception("JPEG buffer not initialized");
+      throw new Exception(NO_ASSOC_ERROR);
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledWidth()");
     TJ.ScalingFactor sf[] = TJ.getScalingFactors();
@@ -190,12 +195,14 @@ public class TJDecompressor {
    * height.
    *
    * @param desiredWidth desired width (in pixels) of the decompressed image.
-   * If this is set to 0, then only the height will be considered when
-   * determining the scaled image size.
+   * Setting this to 0 is the same as setting it to the width of the JPEG image
+   * (in other words, the width will not be considered when determining the
+   * scaled image size.)
    *
    * @param desiredHeight desired height (in pixels) of the decompressed image.
-   * If this is set to 0, then only the width will be considered when
-   * determining the scaled image size.
+   * Setting this to 0 is the same as setting it to the height of the JPEG
+   * image (in other words, the height will not be considered when determining
+   * the scaled image size.)
    *
    * @return the height of the largest scaled down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
@@ -204,7 +211,7 @@ public class TJDecompressor {
   public int getScaledHeight(int desiredWidth, int desiredHeight)
     throws Exception {
     if(jpegWidth < 1 || jpegHeight < 1)
-      throw new Exception("JPEG buffer not initialized");
+      throw new Exception(NO_ASSOC_ERROR);
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledHeight()");
     TJ.ScalingFactor sf[] = TJ.getScalingFactors();
@@ -236,8 +243,9 @@ public class TJDecompressor {
    * If the desired image dimensions are smaller than the dimensions of the
    * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
    * decompressor to generate the largest possible image that will fit within
-   * the desired dimensions.  If desiredWidth is set to 0, then only the height
-   * will be considered when determining the scaled image size.
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the width of the JPEG image (in other words, the width will not be
+   * considered when determining the scaled image size.)
    *
    * @param pitch bytes per line of the destination image.  Normally, this
    * should be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code> if
@@ -245,26 +253,26 @@ public class TJDecompressor {
    * pad each line of the decompressed image to a 4-byte boundary.  NOTE:
    * <code>scaledWidth = ceil(jpegWidth * scalingFactor)</code>.  Setting this
    * parameter to 0 is the equivalent of setting it to
-   * <code>scaledWidth * pixelSize</code>.
+   * <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>.
    *
    * @param desiredHeight desired height (in pixels) of the decompressed image.
    * If the desired image dimensions are smaller than the dimensions of the
    * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
    * decompressor to generate the largest possible image that will fit within
-   * the desired dimensions.  If desiredHeight is set to 0, then only the
-   * width will be considered when determining the scaled image size.
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the height of the JPEG image (in other words, the height will not be
+   * considered when determining the scaled image size.)
    *
-   * @param pixelFormat Pixel format of the decompressed image (see
-   * {@link TJ})
+   * @param pixelFormat pixel format of the decompressed image (one of
+   * {@link TJ TJ.PF_*})
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
     int desiredHeight, int pixelFormat, int flags) throws Exception {
-    if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
+    if(jpegBuf == null) throw new Exception(NO_ASSOC_ERROR);
     if(dstBuf == null || desiredWidth < 0 || pitch < 0 || desiredHeight < 0
-      || pixelFormat < 0 || pixelFormat >= TJ.NUMPFOPT || flags < 0)
+      || pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
       throw new Exception("Invalid argument in decompress()");
     decompress(jpegBuf, jpegBufSize, dstBuf, desiredWidth, pitch,
       desiredHeight, pixelFormat, flags);
@@ -283,18 +291,17 @@ public class TJDecompressor {
    * @param desiredHeight see
    * {@link #decompress(byte[], int, int, int, int, int)} for description
    *
-   * @param pixelFormat Pixel format of the decompressed image (see
-   * {@link TJ})
+   * @param pixelFormat pixel format of the decompressed image (one of
+   * {@link TJ TJ.PF_*})
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a buffer containing the decompressed image
    */
   public byte[] decompress(int desiredWidth, int pitch, int desiredHeight,
     int pixelFormat, int flags) throws Exception {
     if(desiredWidth < 0 || pitch < 0 || desiredHeight < 0
-      || pixelFormat < 0 || pixelFormat >= TJ.NUMPFOPT || flags < 0)
+      || pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
       throw new Exception("Invalid argument in decompress()");
     int pixelSize = TJ.getPixelSize(pixelFormat);
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
@@ -320,11 +327,10 @@ public class TJDecompressor {
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
    * based on the image width, height, and level of chrominance subsampling.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void decompressToYUV(byte[] dstBuf, int flags) throws Exception {
-    if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
+    if(jpegBuf == null) throw new Exception(NO_ASSOC_ERROR);
     if(dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in decompressToYUV()");
     decompressToYUV(jpegBuf, jpegBufSize, dstBuf, flags);
@@ -336,8 +342,7 @@ public class TJDecompressor {
    * instance and return a buffer containing a YUV planar image.  See {@link
    * #decompressToYUV(byte[], int)} for more detail.
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a buffer containing a YUV planar image
    */
@@ -345,8 +350,8 @@ public class TJDecompressor {
     if(flags < 0)
       throw new Exception("Invalid argument in decompressToYUV()");
     if(jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
-      throw new Exception("JPEG buffer not initialized");
-    if(jpegSubsamp >= TJ.NUMSAMPOPT)
+      throw new Exception(NO_ASSOC_ERROR);
+    if(jpegSubsamp >= TJ.NUMSAMP)
       throw new Exception("JPEG header information is invalid");
     byte[] buf = new byte[TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp)];
     decompressToYUV(buf, flags);
@@ -361,8 +366,7 @@ public class TJDecompressor {
    * @param dstImage a <code>BufferedImage</code> instance which will receive
    * the decompressed image
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void decompress(BufferedImage dstImage, int flags) throws Exception {
     if(dstImage == null || flags < 0)
@@ -393,7 +397,7 @@ public class TJDecompressor {
       int pitch = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
-      if(jpegBuf == null) throw new Exception("JPEG buffer not initialized");
+      if(jpegBuf == null) throw new Exception(NO_ASSOC_ERROR);
       decompress(jpegBuf, jpegBufSize, buf, scaledWidth, pitch, scaledHeight,
         pixelFormat, flags);
     }
@@ -421,11 +425,11 @@ public class TJDecompressor {
    * @param desiredHeight see
    * {@link #decompress(byte[], int, int, int, int, int)} for description
    *
-   * @param bufferedImageType the image type of the <code>BufferedImage</code>
-   * instance to create (for instance, <code>BufferedImage.TYPE_INT_RGB</code>)
+   * @param bufferedImageType the image type of the newly-created
+   * <code>BufferedImage</code> instance (for instance,
+   * <code>BufferedImage.TYPE_INT_RGB</code>)
    *
-   * @param flags the bitwise OR of one or more of the flags described in
-   * {@link TJ}
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a <code>BufferedImage</code> instance containing the
    * decompressed image

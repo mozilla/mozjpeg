@@ -282,7 +282,7 @@ public class TJExample {
         if(img != null)
           jpegBuf = tjc.compress(img, 0);
         else {
-          tjc.setBitmapBuffer(bmpBuf, width, 0, height, TJ.PF_BGRX);
+          tjc.setSourceImage(bmpBuf, width, 0, height, TJ.PF_BGRX);
           jpegBuf = tjc.compress(0);
         }
         jpegSize = tjc.getCompressedSize();

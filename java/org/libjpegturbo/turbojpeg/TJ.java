@@ -84,7 +84,8 @@ final public class TJ {
    * Returns the MCU block width for the given level of chrominance
    * subsampling.
    *
-   * @param subsamp the level of chrominance subsampling
+   * @param subsamp the level of chrominance subsampling (one of
+   * <code>SAMP_*</code>)
    *
    * @return the MCU block width for the given level of chrominance subsampling
    */
@@ -103,7 +104,8 @@ final public class TJ {
    * Returns the MCU block height for the given level of chrominance
    * subsampling.
    *
-   * @param subsamp the level of chrominance subsampling
+   * @param subsamp the level of chrominance subsampling (one of
+   * <code>SAMP_*</code>)
    *
    * @return the MCU block height for the given level of chrominance
    * subsampling
@@ -167,8 +169,10 @@ final public class TJ {
 
 
   /**
-   * Returns the pixel size (in bytes) for the given pixel format.
-   * @param pixelFormat the pixel format
+   * Returns the pixel size (in bytes) of the given pixel format.
+   *
+   * @param pixelFormat the pixel format (one of <code>PF_*</code>)
+   *
    * @return the pixel size (in bytes) of the given pixel format
    */
   public static int getPixelSize(int pixelFormat) throws Exception {
@@ -183,65 +187,68 @@ final public class TJ {
 
 
   /**
-   * Returns the red shift for the given pixel format.  For instance, if a
-   * pixel of format <code>TJ.PF_BGRX</code> is stored as an int, then the red
-   * component will be
-   * <code>(pixel >> TJ.getRedShift(TJ.PF_BGRX)) & 0xFF</code>.
+   * For the given pixel format, returns the number of bytes that the red
+   * component is offset from the start of the pixel.  For instance, if a pixel
+   * of format <code>TJ.PF_BGRX</code> is stored in <code>char pixel[]</code>,
+   * then the red component will be
+   * <code>pixel[TJ.getRedOffset(TJ.PF_BGRX)]</code>.
    *
-   * @param pixelFormat the pixel format
+   * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the red shift for the given pixel format
+   * @return the red offset for the given pixel format
    */
-  public static int getRedShift(int pixelFormat) throws Exception {
+  public static int getRedOffset(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
-    return redShift[pixelFormat];
+    return redOffset[pixelFormat];
   }
 
-  final private static int redShift[] = {
-    0, 16, 0, 16, 24, 8, 0
+  final private static int redOffset[] = {
+    0, 2, 0, 2, 3, 1, 0
   };
 
 
   /**
-   * Returns the green shift for the given pixel format.  For instance, if a
-   * pixel of format <code>TJ.PF_BGRX</code> is stored as an int, then the
-   * green component will be
-   * <code>(pixel >> TJ.getGreenShift(TJ.PF_BGRX)) & 0xFF</code>.
+   * For the given pixel format, returns the number of bytes that the green
+   * component is offset from the start of the pixel.  For instance, if a pixel
+   * of format <code>TJ.PF_BGRX</code> is stored in <code>char pixel[]</code>,
+   * then the green component will be
+   * <code>pixel[TJ.getGreenOffset(TJ.PF_BGRX)]</code>.
    *
-   * @param pixelFormat the pixel format
+   * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the green shift for the given pixel format
+   * @return the green offset for the given pixel format
    */
-  public static int getGreenShift(int pixelFormat) throws Exception {
+  public static int getGreenOffset(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
-    return greenShift[pixelFormat];
+    return greenOffset[pixelFormat];
   }
 
-  final private static int greenShift[] = {
-    8, 8, 8, 8, 16, 16, 0
+  final private static int greenOffset[] = {
+    1, 1, 1, 1, 2, 2, 0
   };
 
 
   /**
-   * Returns the blue shift for the given pixel format.  For instance, if a
-   * pixel of format <code>TJ.PF_BGRX</code> is stored as an int, then the blue
-   * component will be
-   * <code>(pixel >> TJ.getBlueShift(TJ.PF_BGRX)) & 0xFF</code>.
+   * For the given pixel format, returns the number of bytes that the blue
+   * component is offset from the start of the pixel.  For instance, if a pixel
+   * of format <code>TJ.PF_BGRX</code> is stored in <code>char pixel[]</code>,
+   * then the blue component will be
+   * <code>pixel[TJ.getBlueOffset(TJ.PF_BGRX)]</code>.
    *
-   * @param pixelFormat the pixel format
+   * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the blue shift for the given pixel format
+   * @return the blue offset for the given pixel format
    */
-  public static int getBlueShift(int pixelFormat) throws Exception {
+  public static int getBlueOffset(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
-    return blueShift[pixelFormat];
+    return blueOffset[pixelFormat];
   }
 
-  final private static int blueShift[] = {
-    16, 0, 16, 0, 8, 24, 0
+  final private static int blueOffset[] = {
+    2, 0, 2, 0, 1, 3, 0
   };
 
 
@@ -292,8 +299,8 @@ final public class TJ {
     throws Exception;
 
   /**
-   * Returns the size of the buffer required to hold a YUV planar image with
-   * the given width, height, and level of chrominance subsampling.
+   * Returns the size of the buffer (in bytes) required to hold a YUV planar
+   * image with the given width, height, and level of chrominance subsampling.
    *
    * @param width the width (in pixels) of the YUV image
    *
@@ -302,8 +309,8 @@ final public class TJ {
    * @param subsamp the level of chrominance subsampling used in the YUV
    * image
    *
-   * @return the size of the buffer required to hold a YUV planar image with
-   * the given width, height, and level of chrominance subsampling
+   * @return the size of the buffer (in bytes) required to hold a YUV planar
+   * image with the given width, height, and level of chrominance subsampling
    */
   public native static int bufSizeYUV(int width, int height,
     int subsamp)

@@ -29,6 +29,7 @@
 package org.libjpegturbo.turbojpeg;
 
 import java.awt.image.*;
+import java.nio.*;
 
 /**
  * TurboJPEG compressor
@@ -184,15 +185,25 @@ public class TJCompressor {
     int width = srcImage.getWidth();
     int height = srcImage.getHeight();
     int pixelFormat;  boolean intPixels = false;
+    if(byteOrder == null)
+      byteOrder = ByteOrder.nativeOrder();
     switch(srcImage.getType()) {
       case BufferedImage.TYPE_3BYTE_BGR:
         pixelFormat = TJ.PF_BGR;  break;
       case BufferedImage.TYPE_BYTE_GRAY:
         pixelFormat = TJ.PF_GRAY;  break;
       case BufferedImage.TYPE_INT_BGR:
-        pixelFormat = TJ.PF_RGBX;  intPixels = true;  break;
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XBGR;
+        else
+          pixelFormat = TJ.PF_RGBX;
+        intPixels = true;  break;
       case BufferedImage.TYPE_INT_RGB:
-        pixelFormat = TJ.PF_BGRX;  intPixels = true;  break;
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XRGB;
+        else
+          pixelFormat = TJ.PF_BGRX;
+        intPixels = true;  break;
       default:
         throw new Exception("Unsupported BufferedImage format");
     }
@@ -313,15 +324,25 @@ public class TJCompressor {
     int width = srcImage.getWidth();
     int height = srcImage.getHeight();
     int pixelFormat;  boolean intPixels = false;
+    if(byteOrder == null)
+      byteOrder = ByteOrder.nativeOrder();
     switch(srcImage.getType()) {
       case BufferedImage.TYPE_3BYTE_BGR:
         pixelFormat = TJ.PF_BGR;  break;
       case BufferedImage.TYPE_BYTE_GRAY:
         pixelFormat = TJ.PF_GRAY;  break;
       case BufferedImage.TYPE_INT_BGR:
-        pixelFormat = TJ.PF_RGBX;  intPixels = true;  break;
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XBGR;
+        else
+          pixelFormat = TJ.PF_RGBX;
+        intPixels = true;  break;
       case BufferedImage.TYPE_INT_RGB:
-        pixelFormat = TJ.PF_BGRX;  intPixels = true;  break;
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XRGB;
+        else
+          pixelFormat = TJ.PF_BGRX;
+        intPixels = true;  break;
       default:
         throw new Exception("Unsupported BufferedImage format");
     }
@@ -435,4 +456,5 @@ public class TJCompressor {
   private int subsamp = -1;
   private int jpegQuality = -1;
   private int compressedSize = 0;
+  private ByteOrder byteOrder = null;
 };

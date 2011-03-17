@@ -29,6 +29,7 @@
 package org.libjpegturbo.turbojpeg;
 
 import java.awt.image.*;
+import java.nio.*;
 
 /**
  * TurboJPEG decompressor
@@ -378,15 +379,25 @@ public class TJDecompressor {
     if(scaledWidth != desiredWidth || scaledHeight != desiredHeight)
       throw new Exception("BufferedImage dimensions do not match a scaled image size that TurboJPEG is capable of generating.");
     int pixelFormat;  boolean intPixels = false;
+    if(byteOrder == null)
+      byteOrder = ByteOrder.nativeOrder();
     switch(dstImage.getType()) {
       case BufferedImage.TYPE_3BYTE_BGR:
         pixelFormat = TJ.PF_BGR;  break;
       case BufferedImage.TYPE_BYTE_GRAY:
         pixelFormat = TJ.PF_GRAY;  break;
       case BufferedImage.TYPE_INT_BGR:
-        pixelFormat = TJ.PF_RGBX;  intPixels = true;  break;
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XBGR;
+        else
+          pixelFormat = TJ.PF_RGBX;
+        intPixels = true;  break;
       case BufferedImage.TYPE_INT_RGB:
-        pixelFormat = TJ.PF_BGRX;  intPixels = true;  break;
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XRGB;
+        else
+          pixelFormat = TJ.PF_BGRX;
+        intPixels = true;  break;
       default:
         throw new Exception("Unsupported BufferedImage format");
     }
@@ -492,4 +503,5 @@ public class TJDecompressor {
   protected int jpegWidth = 0;
   protected int jpegHeight = 0;
   protected int jpegSubsamp = -1;
+  private ByteOrder byteOrder = null;
 };

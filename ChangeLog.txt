@@ -20,6 +20,10 @@ It also ensures that the library can avoid the performance pitfall created by
 [4] Fixed visual artifacts in grayscale JPEG compression caused by a typo in
 the RGB-to-chrominance lookup tables.
 
+[5] Fixed the accelerated Huffman decoder so that it mimics the behavior of
+the unaccelerated decoder and throws a warning if an unexpected marker is found
+in the middle of the JPEG data stream.
+
 
 1.0.1
 =====

@@ -4,6 +4,9 @@
 [1] Fixed a 1-pixel error in row 0, column 21 of the luminance plane generated
 by tjEncodeYUV().
 
+[2] Fixed the accelerated Huffman decoder so that it mimics the behavior of
+the unaccelerated decoder and throws a warning if an unexpected marker is found
+in the middle of the JPEG data stream.
 
 1.1.0
 =====

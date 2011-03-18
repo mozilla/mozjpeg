@@ -623,6 +623,7 @@ decode_mcu_slow (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   if (val0 == 0xFF) {                                   \
     buffer++;                                           \
     if (val1 != 0) {                                    \
+      cinfo->unread_marker = val1;                      \
       buffer   -= 2;                                    \
       get_buffer      &= ~0xFF;                         \
     }                                                   \
@@ -737,6 +738,11 @@ decode_mcu_fast (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
         }
       }
     }
+  }
+
+  if (cinfo->unread_marker != 0 && ! cinfo->entropy->insufficient_data) {
+    WARNMS(cinfo, JWRN_HIT_MARKER);
+    cinfo->entropy->insufficient_data = TRUE;
   }
 
   br_state.bytes_in_buffer -= (buffer - br_state.next_input_byte);

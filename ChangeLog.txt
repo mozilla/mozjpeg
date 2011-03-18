@@ -35,6 +35,7 @@ by tjEncodeYUV().
 the unaccelerated decoder and throws a warning if an unexpected marker is found
 in the middle of the JPEG data stream.
 
+
 1.1.0
 =====
 

@@ -1,8 +1,8 @@
-Package: {__PKGNAME}
-Version: {__VERSION}-{__BUILD}
+Package: @PACKAGE_NAME@
+Version: @VERSION@-@BUILD@
 Section: misc
 Priority: optional
-Architecture: {__ARCH}
+Architecture: @DEBARCH@
 Essential: no
 Maintainer: The libjpeg-turbo Project [http://libjpeg-turbo.VirtualGL.org]
 Description: A SIMD-accelerated JPEG codec which provides both the libjpeg and TurboJPEG APIs

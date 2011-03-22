@@ -5,8 +5,8 @@
 	<key>IFPkgDescriptionDescription</key>
 	<string>A SIMD-accelerated JPEG codec which provides both the libjpeg and TurboJPEG APIs</string>
 	<key>IFPkgDescriptionTitle</key>
-	<string>{__APPNAME}</string>
+	<string>@PACKAGE_NAME@</string>
 	<key>IFPkgDescriptionVersion</key>
-	<string>{__VERSION}</string>
+	<string>@VERSION@</string>
 </dict>
 </plist>

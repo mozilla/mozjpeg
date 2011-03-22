@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleGetInfoString</key>
-	<string>{__VERSION}, The libjpeg-turbo Project</string>
+	<string>@VERSION@, The libjpeg-turbo Project</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.libjpeg-turbo.libjpeg-turbo</string>
 	<key>CFBundleShortVersionString</key>
-	<string>{__VERSION}</string>
+	<string>@VERSION@</string>
 	<key>IFMajorVersion</key>
 	<integer>1</integer>
 	<key>IFMinorVersion</key>
-	<integer>{__BUILD}</integer>
+	<integer>@BUILD@</integer>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>

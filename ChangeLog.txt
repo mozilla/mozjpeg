@@ -35,6 +35,14 @@ by tjEncodeYUV().
 the unaccelerated decoder and throws a warning if an unexpected marker is found
 in the middle of the JPEG data stream.
 
+[3] Older versions of MinGW64 prefixed symbol names with underscores by
+default, which differed from the behavior of 64-bit Visual C++.  MinGW64 1.0
+has adopted the behavior of 64-bit Visual C++ as the default, so to accommodate
+this, the libjpeg-turbo SIMD function names are no longer prefixed with an
+underscore when building with MinGW64.  This means that, when building
+libjpeg-turbo with older versions of MinGW64, you will now have to add
+-fno-leading-underscore to the CFLAGS.
+
 
 1.1.0
 =====

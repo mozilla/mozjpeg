@@ -40,7 +40,7 @@ umask 022
 TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 cp $SRCDIR/release/copyright $TMPDIR
 touch $TMPDIR/depend
-cp release/pkginfo $TMPDIR/pkginfo 
+cp pkgscripts/pkginfo $TMPDIR/pkginfo 
 
 if [ "$PKGARCH" = "i386" ]; then
 	__LIB=lib

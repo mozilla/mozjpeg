@@ -32,7 +32,7 @@ makedeb()
 	rm -f $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
 	TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 	mkdir $TMPDIR/DEBIAN
-	cp release/deb-control $TMPDIR/DEBIAN/control
+	cp pkgscripts/deb-control $TMPDIR/DEBIAN/control
 
 	make install prefix=$TMPDIR/opt/$DIRNAME libdir=$TMPDIR/opt/$DIRNAME/$__LIB mandir=$TMPDIR/opt/$DIRNAME/man
 	rm -f $TMPDIR/opt/$DIRNAME/$__LIB/*.la

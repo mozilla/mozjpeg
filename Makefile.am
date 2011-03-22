@@ -210,7 +210,7 @@ rpm: all
 	rm -f ${PACKAGE_NAME}-${VERSION}.${RPMARCH}.rpm; \
 	rpmbuild -bb --define "_blddir $$TMPDIR/buildroot"  \
 		--define "_topdir $$TMPDIR" --define "_srcdir ${srcdir}" \
-		--target ${RPMARCH} release/libjpeg-turbo.spec; \
+		--target ${RPMARCH} pkgscripts/libjpeg-turbo.spec; \
 	cp $$TMPDIR/RPMS/${RPMARCH}/${PACKAGE_NAME}-${VERSION}-${BUILD}.${RPMARCH}.rpm \
 		${PACKAGE_NAME}-${VERSION}.${RPMARCH}.rpm; \
 	rm -rf $$TMPDIR
@@ -224,7 +224,7 @@ srpm: dist-gzip
 	mkdir -p $$TMPDIR/SPECS; \
 	rm -f ${PACKAGE_NAME}-${VERSION}.src.rpm; \
 	cp ${PACKAGE_NAME}-${VERSION}.tar.gz $$TMPDIR/SOURCES; \
-	cat release/libjpeg-turbo.spec | sed s/%{_blddir}/%{_tmppath}/g \
+	cat pkgscripts/libjpeg-turbo.spec | sed s/%{_blddir}/%{_tmppath}/g \
 		| sed s@%{_srcdir}/@@g | sed s/#--\>//g \
 		> $$TMPDIR/SPECS/libjpeg-turbo.spec; \
 	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/libjpeg-turbo.spec; \
@@ -233,27 +233,27 @@ srpm: dist-gzip
 	rm -rf $$TMPDIR
 
 deb: all
-	sh release/makedpkg
+	sh pkgscripts/makedpkg
 
 if X86_64
 
 udmg: all
-	sh release/makemacpkg universal ${BUILDDIR32}
+	sh pkgscripts/makemacpkg universal ${BUILDDIR32}
 
 endif
 
 dmg: all
-	sh release/makemacpkg
+	sh pkgscripts/makemacpkg
 
 if X86_64
 
 csunpkg: all
-	sh release/makesunpkg combined ${BUILDDIR32}
+	sh pkgscripts/makesunpkg combined ${BUILDDIR32}
 
 endif
 
 sunpkg: all
-	sh release/makesunpkg
+	sh pkgscripts/makesunpkg
 
 cygwinpkg: all
-	sh release/makecygwinpkg
+	sh pkgscripts/makecygwinpkg

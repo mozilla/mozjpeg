@@ -15,16 +15,9 @@ onexit()
 	fi
 }
 
-usage()
-{
-	echo "$0 <package name> <version> <source dir.>"
-	exit 1
-}
-
-if [ $# -lt 3 ]; then usage $0; fi
-PACKAGE_NAME=$1
-VERSION=$2
-SRCDIR=$3
+PACKAGE_NAME=@PACKAGE_NAME@
+VERSION=@VERSION@
+SRCDIR=@abs_top_srcdir@
 
 umask 022
 rm -f $PACKAGE_NAME-$VERSION-cygwin.tar.bz2

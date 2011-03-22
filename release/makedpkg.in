@@ -15,12 +15,6 @@ onexit()
 	fi
 }
 
-usage()
-{
-	echo "$0 <package name> <version> <build> <DEB architecture> <source dir.>"
-	exit 1
-}
-
 makedeb()
 {
 	SUPPLEMENT=$1
@@ -35,12 +29,10 @@ makedeb()
 	fi
 
 	umask 022
-	rm -f $PACKAGE_NAME\_$DEBARCH.deb
+	rm -f $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
 	TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 	mkdir $TMPDIR/DEBIAN
-	(cat $SRCDIR/release/deb-control.tmpl | sed s/{__PKGNAME}/$PACKAGE_NAME/g \
-		| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
-		| sed s/{__ARCH}/$DEBARCH/g > $TMPDIR/DEBIAN/control)
+	cp pkgscripts/deb-control $TMPDIR/DEBIAN/control
 
 	make install prefix=$TMPDIR/opt/$DIRNAME libdir=$TMPDIR/opt/$DIRNAME/$__LIB mandir=$TMPDIR/opt/$DIRNAME/man
 	rm -f $TMPDIR/opt/$DIRNAME/$__LIB/*.la
@@ -78,15 +70,14 @@ makedeb()
 	fi
 
 	sudo chown -Rh root:root $TMPDIR/*
-	dpkg -b $TMPDIR $PACKAGE_NAME\_$DEBARCH.deb
+	dpkg -b $TMPDIR $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
 }
 
-if [ $# -lt 5 ]; then usage $0; fi
-PACKAGE_NAME=$1
-VERSION=$2
-BUILD=$3
-DEBARCH=$4
-SRCDIR=$5
+PACKAGE_NAME=@PACKAGE_NAME@
+VERSION=@VERSION@
+BUILD=@BUILD@
+DEBARCH=@DEBARCH@
+SRCDIR=@abs_top_srcdir@
 
 makedeb 0
 if [ "$DEBARCH" = "i386" ]; then makedeb 1; fi

@@ -1,7 +1,7 @@
 ARCH=i386
-PKG={__PKGNAME}
-NAME={__APPNAME} SDK and run time libraries
-VERSION={__VERSION},REV={__BUILD}
+PKG=@PACKAGE_NAME@
+NAME=@PACKAGE_NAME@ SDK and run time libraries
+VERSION=@VERSION@,REV=@BUILD@
 SUNW_PKGVERS=1.0
 DESC=A SIMD-accelerated JPEG codec which provides both the libjpeg and TurboJPEG APIs
 VENDOR=The libjpeg-turbo Project

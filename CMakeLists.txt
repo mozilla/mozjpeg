@@ -301,10 +301,11 @@ add_test(jpegtran-static-crop-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOUR
 # Installer
 #
 
-set(INST_NAME ${CMAKE_PROJECT_NAME})
+set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION})
 
 if(MSVC)
   set(INST_PLATFORM "Visual C++")
+  set(INST_NAME ${INST_NAME}-vc)
 elseif(MINGW)
   set(INST_PLATFORM GCC)
   set(INST_NAME ${INST_NAME}-gcc)
@@ -327,7 +328,8 @@ configure_file(release/libjpeg-turbo.nsi.in libjpeg-turbo.nsi @ONLY)
 
 add_custom_target(installer
   makensis -nocd ${INST_DEFS} libjpeg-turbo.nsi
-  DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static
+  DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
+    cjpeg djpeg jpegtran jpgtest
   SOURCES libjpeg-turbo.nsi)
 
 install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom jpgtest

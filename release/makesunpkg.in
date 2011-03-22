@@ -38,19 +38,16 @@ fi
 
 umask 022
 TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
+rm -f $PACKAGE_NAME.pkg.bz2
 cp $SRCDIR/release/copyright $TMPDIR
 touch $TMPDIR/depend
 cp pkgscripts/pkginfo $TMPDIR/pkginfo 
 
 if [ "$PKGARCH" = "i386" ]; then
 	__LIB=lib
-	PKGEXT=-x86;
-elif [ "$PKGARCH" = "amd64" ]; then
+else
 	__LIB=lib/$PKGARCH
-	PKGEXT=-x64;
 fi
-
-rm -f $PACKAGE_NAME-$VERSION$PKGEXT.pkg.bz2
 
 if [ $COMBINED = 1 ]; then
 	if [ ! -d $BUILDDIR32 ]; then
@@ -133,8 +130,8 @@ f none $PACKAGE_NAME/doc/usage.txt 0644 root bin
 EOF
 
 pkgmk -o -r $TMPDIR/opt -d $TMPDIR -a i386 -f $TMPDIR/proto
-pkgtrans -s $TMPDIR $TMPDIR/$PACKAGE_NAME-$VERSION$PKGEXT.pkg $PACKAGE_NAME
-bzip2 $TMPDIR/$PACKAGE_NAME-$VERSION$PKGEXT.pkg
-cp $TMPDIR/$PACKAGE_NAME-$VERSION$PKGEXT.pkg.bz2 . 
+pkgtrans -s $TMPDIR $TMPDIR/$PACKAGE_NAME-$VERSION$.pkg $PACKAGE_NAME
+bzip2 $TMPDIR/$PACKAGE_NAME-$VERSION$.pkg
+cp $TMPDIR/$PACKAGE_NAME-$VERSION$.pkg.bz2 . 
 
 exit

@@ -130,8 +130,8 @@ f none $PACKAGE_NAME/doc/usage.txt 0644 root bin
 EOF
 
 pkgmk -o -r $TMPDIR/opt -d $TMPDIR -a i386 -f $TMPDIR/proto
-pkgtrans -s $TMPDIR $TMPDIR/$PACKAGE_NAME-$VERSION$.pkg $PACKAGE_NAME
-bzip2 $TMPDIR/$PACKAGE_NAME-$VERSION$.pkg
-cp $TMPDIR/$PACKAGE_NAME-$VERSION$.pkg.bz2 . 
+pkgtrans -s $TMPDIR $TMPDIR/$PACKAGE_NAME-$VERSION.pkg $PACKAGE_NAME
+bzip2 $TMPDIR/$PACKAGE_NAME-$VERSION.pkg
+cp $TMPDIR/$PACKAGE_NAME-$VERSION.pkg.bz2 . 
 
 exit

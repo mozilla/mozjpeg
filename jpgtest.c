@@ -70,7 +70,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	unsigned long *comptilesize, unsigned char *rgbbuf, int w, int h,
 	int jpegsub, int qual, char *filename, int tilesizex, int tilesizey)
 {
-	char tempstr[1024], sizestr[20]="\0", qualstr[5]="\0", *ptr;
+	char tempstr[1024], sizestr[20]="\0", qualstr[6]="\0", *ptr;
 	FILE *outfile=NULL;  tjhandle hnd=NULL;
 	int flags=(forcemmx?TJ_FORCEMMX:0)|(forcesse?TJ_FORCESSE:0)
 		|(forcesse2?TJ_FORCESSE2:0)|(forcesse3?TJ_FORCESSE3:0)
@@ -85,7 +85,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 
 	if(qual>0)
 	{
-		snprintf(qualstr, 5, "Q%d", qual);
+		snprintf(qualstr, 6, "_Q%d", qual);
 		qualstr[4]=0;
 	}
 
@@ -344,7 +344,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int jpegsub, int qual,
 			if(yuv==YUVENCODE)
 				snprintf(tempstr, 1024, "%s_%s.yuv", filename, _subnames[jpegsub]);
 			else
-				snprintf(tempstr, 1024, "%s_%sQ%d.jpg", filename, _subnames[jpegsub],
+				snprintf(tempstr, 1024, "%s_%s_Q%d.jpg", filename, _subnames[jpegsub],
 					qual);
 			if((outfile=fopen(tempstr, "wb"))==NULL)
 				_throwunix("opening reference image");
@@ -463,11 +463,12 @@ void dodecomptest(char *filename)
 		_w=w;  _h=h;  _tilesizex=tilesizex;  _tilesizey=tilesizey;
 		if(!quiet)
 		{
-			printf("\n%s size: %d x %d\n", dotile? "Tile":"Image", _tilesizex,
+			printf("\n%s size: %d x %d", dotile? "Tile":"Image", _tilesizex,
 				_tilesizey);
 			if(scale_num!=1 || scale_denom!=1)
 				printf(" --> %d x %d", (_w*scale_num+scale_denom-1)/scale_denom,
 					(_h*scale_num+scale_denom-1)/scale_denom);
+			printf("\n");
 		}
 		else if(quiet==1)
 		{

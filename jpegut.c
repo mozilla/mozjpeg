@@ -361,7 +361,7 @@ void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
 		snprintf(tempstr, 1024, "%s_enc_%s_%s_%s.yuv", basefilename, _pfstr[pf],
 			(flags&TJ_BOTTOMUP)? "BU":"TD", _subnames[subsamp]);
 	else
-		snprintf(tempstr, 1024, "%s_enc_%s_%s_%sQ%d.jpg", basefilename, _pfstr[pf],
+		snprintf(tempstr, 1024, "%s_enc_%s_%s_%s_Q%d.jpg", basefilename, _pfstr[pf],
 			(flags&TJ_BOTTOMUP)? "BU":"TD", _subnames[subsamp], qual);
 	writejpeg(jpegbuf, *size, tempstr);
 	if(yuv==YUVENCODE)

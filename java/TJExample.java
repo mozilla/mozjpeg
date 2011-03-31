@@ -197,7 +197,7 @@ public class TJExample {
       }
 
       File file = new File(argv[0]);
-      int width, height, subsamp = TJ.SAMP_444;
+      int width, height;
 
       if(inFormat.equalsIgnoreCase("jpg")) {
         FileInputStream fis = new FileInputStream(file);
@@ -211,7 +211,6 @@ public class TJExample {
         fis.close();
 
         TJDecompressor tjd;
-				TJ.ScalingFactor sf;
         if(xform.op != TJTransform.OP_NONE || xform.options != 0) {
           TJTransformer tjt = new TJTransformer(inputBuf);
           TJTransform t[] = new TJTransform[1];

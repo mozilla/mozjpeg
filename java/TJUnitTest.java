@@ -788,51 +788,55 @@ public class TJUnitTest {
 
   public static void main(String argv[]) {
     try {
+      String testName = "javatest";
       boolean doyuv = false;
       for(int i = 0; i < argv.length; i++) {
         if(argv[i].equalsIgnoreCase("-yuv")) doyuv = true;
         if(argv[i].substring(0, 1).equalsIgnoreCase("-h")
           || argv[i].equalsIgnoreCase("-?"))
           usage();
-        if(argv[i].equalsIgnoreCase("-bi")) bi = true;
+        if(argv[i].equalsIgnoreCase("-bi")) {
+          bi = true;
+          testName = "javabitest";
+        }
       }
       if(doyuv) yuv = YUVENCODE;
-      doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_444, "test");
-      doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_444, "test");
+      doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_444, testName);
+      doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_444, testName);
       if(doyuv) {
         doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_422,
-          "test");
+          testName);
         doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_422,
-          "test");
+          testName);
         doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_420,
-          "test");
+          testName);
         doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_420,
-          "test");
+          testName);
         doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_440,
-          "test");
+          testName);
         doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_440,
-          "test");
+          testName);
       }
-      doTest(35, 39, onlyGray, TJ.SAMP_GRAY, "test");
+      doTest(35, 39, onlyGray, TJ.SAMP_GRAY, testName);
       doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
-        "test");
+        testName);
       doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,
-        "test");
+        testName);
       if(!doyuv && !bi) doTest1();
       if(doyuv && !bi) {
         yuv = YUVDECODE;
-        doTest(48, 48, onlyRGB, TJ.SAMP_444, "test");
-        doTest(35, 39, onlyRGB, TJ.SAMP_444, "test");
-        doTest(48, 48, onlyRGB, TJ.SAMP_422, "test");
-        doTest(39, 41, onlyRGB, TJ.SAMP_422, "test");
-        doTest(48, 48, onlyRGB, TJ.SAMP_420, "test");
-        doTest(41, 35, onlyRGB, TJ.SAMP_420, "test");
-        doTest(48, 48, onlyRGB, TJ.SAMP_440, "test");
-        doTest(35, 39, onlyRGB, TJ.SAMP_440, "test");
-        doTest(48, 48, onlyRGB, TJ.SAMP_GRAY, "test");
-        doTest(35, 39, onlyRGB, TJ.SAMP_GRAY, "test");
-        doTest(48, 48, onlyGray, TJ.SAMP_GRAY, "test");
-        doTest(39, 41, onlyGray, TJ.SAMP_GRAY, "test");
+        doTest(48, 48, onlyRGB, TJ.SAMP_444, "javatest_yuv0");
+        doTest(35, 39, onlyRGB, TJ.SAMP_444, "javatest_yuv1");
+        doTest(48, 48, onlyRGB, TJ.SAMP_422, "javatest_yuv0");
+        doTest(39, 41, onlyRGB, TJ.SAMP_422, "javatest_yuv1");
+        doTest(48, 48, onlyRGB, TJ.SAMP_420, "javatest_yuv0");
+        doTest(41, 35, onlyRGB, TJ.SAMP_420, "javatest_yuv1");
+        doTest(48, 48, onlyRGB, TJ.SAMP_440, "javatest_yuv0");
+        doTest(35, 39, onlyRGB, TJ.SAMP_440, "javatest_yuv1");
+        doTest(48, 48, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv0");
+        doTest(35, 39, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv1");
+        doTest(48, 48, onlyGray, TJ.SAMP_GRAY, "javatest_yuv0");
+        doTest(39, 41, onlyGray, TJ.SAMP_GRAY, "javatest_yuv1");
       }
     }
     catch(Exception e) {

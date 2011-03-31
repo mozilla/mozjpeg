@@ -98,14 +98,6 @@ AC_CHECK_FUNCS([memset memcpy], [],
 	[AC_DEFINE([NEED_BSD_STRINGS], 1,
 		   [Define if you have BSD-like bzero and bcopy])])
 
-# Set flags to indicate platform
-case "$host_os" in
-  cygwin* | mingw* | pw32* | interix*)
-    is_win32=1
-  ;;
-esac
-AM_CONDITIONAL([IS_WIN32], [test "x$is_win32" = "x1"])
-
 AC_MSG_CHECKING([libjpeg API version])
 AC_ARG_VAR(JPEG_LIB_VERSION, [libjpeg API version (62, 70, or 80)])
 if test "x$JPEG_LIB_VERSION" = "x"; then

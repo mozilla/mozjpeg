@@ -704,7 +704,7 @@ public class TJUnitTest {
     String baseFilename) throws Exception {
     TJCompressor tjc = null;
     TJDecompressor tjd = null;
-    int size, pfstart, pfend;
+    int size;
     byte[] jpegBuf;
 
     if(yuv == YUVENCODE) jpegBuf = new byte[TJ.bufSizeYUV(w, h, subsamp)];

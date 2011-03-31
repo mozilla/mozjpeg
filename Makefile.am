@@ -169,15 +169,19 @@ testclean:
 	rm -f *_GRAYQ[0-9]*.bmp
 	rm -f *_GRAYQ[0-9]*.ppm
 	rm -f *_GRAYQ[0-9]*.jpg
+	rm -f *_GRAY.yuv
 	rm -f *_420Q[0-9]*.bmp
 	rm -f *_420Q[0-9]*.ppm
 	rm -f *_420Q[0-9]*.jpg
+	rm -f *_420.yuv
 	rm -f *_422Q[0-9]*.bmp
 	rm -f *_422Q[0-9]*.ppm
 	rm -f *_422Q[0-9]*.jpg
+	rm -f *_422.yuv
 	rm -f *_444Q[0-9]*.bmp
 	rm -f *_444Q[0-9]*.ppm
 	rm -f *_444Q[0-9]*.jpg
+	rm -f *_444.yuv
 
 if X86_64
 

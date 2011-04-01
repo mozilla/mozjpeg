@@ -35,6 +35,8 @@ import java.awt.*;
  */
 public class TJTransform extends Rectangle {
 
+  private static final long serialVersionUID = -127367705761430371L;
+
 
   /**
    * The number of lossless transform operations

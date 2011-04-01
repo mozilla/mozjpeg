@@ -37,14 +37,16 @@ endif
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
 	transupp.c transupp.h
 
-if WITH_JNI
+if WITH_JAVA
 
+SUBDIRS = java
 libturbojpeg_la_SOURCES += turbojpeg-jni.c
 libturbojpeg_la_CFLAGS = ${JNI_CFLAGS}
 TJMAPFILE = turbojpeg-mapfile.jni
 
 else
 
+SUBDIRS =
 TJMAPFILE = turbojpeg-mapfile
 
 endif
@@ -60,7 +62,7 @@ endif
 
 if WITH_SIMD
 
-SUBDIRS = simd
+SUBDIRS += simd
 libjpeg_la_LIBADD = simd/libsimd.la
 libturbojpeg_la_LIBADD = simd/libsimd.la
 
@@ -132,6 +134,12 @@ dist-hook:
 
 
 test: testclean all
+if WITH_JAVA
+	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest
+	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -bi
+	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv
+	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi
+endif
 	./jpegut
 	./jpegut -yuv
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
@@ -182,25 +190,30 @@ endif
 
 testclean:
 	rm -f testout*
-	rm -f *_GRAYQ[0-9]*.bmp
-	rm -f *_GRAYQ[0-9]*.ppm
-	rm -f *_GRAYQ[0-9]*.jpg
+	rm -f *_GRAY_*.bmp
+	rm -f *_GRAY_*.png
+	rm -f *_GRAY_*.ppm
+	rm -f *_GRAY_*.jpg
 	rm -f *_GRAY.yuv
-	rm -f *_420Q[0-9]*.bmp
-	rm -f *_420Q[0-9]*.ppm
-	rm -f *_420Q[0-9]*.jpg
+	rm -f *_420_*.bmp
+	rm -f *_420_*.png
+	rm -f *_420_*.ppm
+	rm -f *_420_*.jpg
 	rm -f *_420.yuv
-	rm -f *_422Q[0-9]*.bmp
-	rm -f *_422Q[0-9]*.ppm
-	rm -f *_422Q[0-9]*.jpg
+	rm -f *_422_*.bmp
+	rm -f *_422_*.png
+	rm -f *_422_*.ppm
+	rm -f *_422_*.jpg
 	rm -f *_422.yuv
-	rm -f *_444Q[0-9]*.bmp
-	rm -f *_444Q[0-9]*.ppm
-	rm -f *_444Q[0-9]*.jpg
+	rm -f *_444_*.bmp
+	rm -f *_444_*.png
+	rm -f *_444_*.ppm
+	rm -f *_444_*.jpg
 	rm -f *_444.yuv
-	rm -f *_440Q[0-9]*.bmp
-	rm -f *_440Q[0-9]*.ppm
-	rm -f *_440Q[0-9]*.jpg
+	rm -f *_440_*.bmp
+	rm -f *_440_*.png
+	rm -f *_440_*.ppm
+	rm -f *_440_*.jpg
 	rm -f *_440.yuv
 
 if X86_64

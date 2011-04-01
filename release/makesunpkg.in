@@ -29,6 +29,7 @@ BUILD=@BUILD@
 PKGARCH=@DEBARCH@
 SRCDIR=@abs_top_srcdir@
 BUILDDIR32=@abs_top_srcdir@/solx86
+WITH_JAVA=@WITH_JAVA@
 if [ $# -gt 0 ]; then
 	if [ "$1" = "combined" ]; then
 		COMBINED=1
@@ -128,6 +129,10 @@ f none $PACKAGE_NAME/doc/README 0644 root bin
 f none $PACKAGE_NAME/doc/README-turbo.txt 0644 root bin
 f none $PACKAGE_NAME/doc/usage.txt 0644 root bin
 EOF
+if [ $WITH_JAVA = 1 ]; then
+echo d none $PACKAGE_NAME/classes 0755 root bin >>$TMPDIR/proto
+echo f none $PACKAGE_NAME/classes/turbojpeg.jar 0644 root bin >>$TMPDIR/proto
+fi
 
 pkgmk -o -r $TMPDIR/opt -d $TMPDIR -a i386 -f $TMPDIR/proto
 pkgtrans -s $TMPDIR $TMPDIR/$PACKAGE_NAME-$VERSION.pkg $PACKAGE_NAME

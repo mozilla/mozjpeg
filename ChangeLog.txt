@@ -24,6 +24,9 @@ transform features in TurboJPEG/OSS.
 was necessary in order for it to read 4:2:2 JPEG files that had been losslessly
 transposed or rotated 90 degrees.
 
+[8] Fixed a regression bug in the NSIS script that caused the Windows installer
+build to fail when using the Visual Studio IDE.
+
 
 1.1.1
 =====

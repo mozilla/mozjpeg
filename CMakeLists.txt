@@ -58,14 +58,14 @@ else()
   message(STATUS "Arithmetic decoding support disabled")
 endif()
 
-if(NOT DEFINED WITH_JNI)
-  set(WITH_JNI 0)
+if(NOT DEFINED WITH_JAVA)
+  set(WITH_JAVA 0)
 endif()
 
-if(WITH_JNI)
-  message(STATUS "TurboJPEG/OSS JNI wrapper enabled")
+if(WITH_JAVA)
+  message(STATUS "TurboJPEG/OSS Java wrapper enabled")
 else()
-  message(STATUS "TurboJPEG/OSS JNI wrapper disabled")
+  message(STATUS "TurboJPEG/OSS Java wrapper disabled")
 endif()
 
 set(JPEG_LIB_VERSION 62)
@@ -115,12 +115,9 @@ configure_file(win/config.h.in config.h)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 
-if(WITH_JNI)
-  include(CheckIncludeFiles)
-  check_include_files(jni.h HAVE_JNI_H)
-  if(NOT HAVE_JNI_H)
-    message(FATAL_ERROR "Cannot find jni.h.  Be sure to add the Java include directories to the INCLUDE environment variable (MSVC) or the CPATH environment variable (GCC).")
-  endif()
+if(WITH_JAVA)
+  find_package(Java)
+  find_package(JNI)
 endif()
 
 
@@ -163,6 +160,10 @@ else()
   message(STATUS "Not using SIMD acceleration")
 endif()
 
+if(WITH_JAVA)
+  add_subdirectory(java)
+endif()
+
 add_subdirectory(sharedlib)
 
 add_library(jpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS})
@@ -174,8 +175,9 @@ if(WITH_SIMD)
 endif()
 
 set(TURBOJPEG_SOURCES turbojpegl.c transupp.c)
-if(WITH_JNI)
+if(WITH_JAVA)
   set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
+  include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
 endif()
 
 add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
@@ -231,7 +233,19 @@ add_executable(wrjpgcom rdjpgcom.c)
 # Tests
 #
 
+if(MSVC_IDE)
+  set(OBJDIR "\${CTEST_CONFIGURATION_TYPE}/")
+else()
+  set(OBJDIR "")
+endif()
+
 enable_testing()
+if(WITH_JAVA)
+add_test(TJUnitTest ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest)
+add_test(TJUnitTest-yuv ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -yuv)
+add_test(TJUnitTest-bi ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -bi)
+add_test(TJUnitTest-bi-yuv ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -bi -yuv)
+endif()
 add_test(jpegut jpegut)
 add_test(jpegut-yuv jpegut -yuv)
 add_test(cjpeg-int sharedlib/cjpeg -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
@@ -347,6 +361,10 @@ if(64BIT)
   set(INST_NAME ${INST_NAME}64)
   set(INST_DIR ${INST_DIR}64)
   set(INST_DEFS ${INST_DEFS} -DWIN64)
+endif()
+
+if(WITH_JAVA)
+  set(INST_DEFS ${INST_DEFS} -DJAVA)
 endif()
 
 if(MSVC_IDE)

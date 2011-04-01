@@ -196,21 +196,37 @@ AM_CONDITIONAL([WITH_ARITH_DEC], [test "x$with_arith_dec" != "xno"])
 
 AM_CONDITIONAL([WITH_ARITH], [test "x$with_arith_dec" != "xno" -o "x$with_arith_enc" != "xno"])
 
-AC_ARG_VAR(JNI_CFLAGS, [Compiler flags needed to find jni.h (default: -I/System/Library/Frameworks/JavaVM.framework/Headers on OS X, '-I/usr/java/include -I/usr/java/include/solaris' on Solaris, and '-I/usr/java/default/include -I/usr/java/default/include/linux' on Linux)])
+AC_ARG_VAR(JAVAC, [Java compiler command (default: javac)])
+if test "x$JAVAC" = "x"; then
+  JAVAC=javac
+fi
+AC_SUBST(JAVAC)
+AC_ARG_VAR(JAVACFLAGS, [Java compiler flags])
+AC_SUBST(JAVACFLAGS)
+AC_ARG_VAR(JAR, [Java archive command (default: jar)])
+if test "x$JAR" = "x"; then
+  JAR=jar
+fi
+AC_SUBST(JAR)
+AC_ARG_VAR(JAVA, [Java runtime command (default: java)])
+if test "x$JAVA" = "x"; then
+  JAVA=java
+fi
+AC_SUBST(JAVA)
+AC_ARG_VAR(JNI_CFLAGS, [C compiler flags needed to include jni.h (default: -I/System/Library/Frameworks/JavaVM.framework/Headers on OS X, '-I/usr/java/include -I/usr/java/include/solaris' on Solaris, and '-I/usr/java/default/include -I/usr/java/default/include/linux' on Linux)])
 
-AC_MSG_CHECKING([whether to include JNI wrapper in TurboJPEG/OSS])
-AC_ARG_WITH([jni],
-    AC_HELP_STRING([--with-jni],[Include JNI wrapper in the TurboJPEG/OSS library]))
+AC_MSG_CHECKING([whether to build TurboJPEG/OSS Java wrapper])
+AC_ARG_WITH([java],
+    AC_HELP_STRING([--with-java],[Build Java wrapper for the TurboJPEG/OSS library]))
 
-BUILDJNILIB=0
 RPM_CONFIG_ARGS=
-if test "x$with_jni" = "xyes"; then
+WITH_JAVA=0
+if test "x$with_java" = "xyes"; then
     AC_MSG_RESULT(yes)
 
     case $host_os in
       darwin*)
         DEFAULT_JNI_CFLAGS=-I/System/Library/Frameworks/JavaVM.framework/Headers
-        BUILDJNILIB=1
         ;;
       solaris*)
         DEFAULT_JNI_CFLAGS='-I/usr/java/include -I/usr/java/include/solaris'
@@ -230,12 +246,17 @@ if test "x$with_jni" = "xyes"; then
     CPPFLAGS=${SAVE_CPPFLAGS}
     AC_SUBST(JNI_CFLAGS)
 
-    RPM_CONFIG_ARGS=--with-jni
+    RPM_CONFIG_ARGS=--with-java
+    JAVA_RPM_CONTENTS_1='%dir /opt/%{name}/classes'
+    JAVA_RPM_CONTENTS_2=/opt/%{name}/classes/turbojpeg.jar
+    WITH_JAVA=1
 else
     AC_MSG_RESULT(no)
 fi
-AM_CONDITIONAL([WITH_JNI], [test "x$with_jni" = "xyes"])
-AC_SUBST(BUILDJNILIB)
+AM_CONDITIONAL([WITH_JAVA], [test "x$with_java" = "xyes"])
+AC_SUBST(WITH_JAVA)
+AC_SUBST(JAVA_RPM_CONTENTS_1)
+AC_SUBST(JAVA_RPM_CONTENTS_2)
 AC_SUBST(RPM_CONFIG_ARGS)
 
 # SIMD is optional
@@ -306,4 +327,7 @@ AC_CONFIG_FILES([pkgscripts/makesunpkg:release/makesunpkg.in])
 AC_CONFIG_FILES([pkgscripts/pkginfo:release/pkginfo.in])
 AC_CONFIG_FILES([libjpeg.map])
 AC_CONFIG_FILES([Makefile simd/Makefile])
+if test "x$with_java" = "xyes"; then
+  AC_CONFIG_FILES([java/Makefile])
+fi
 AC_OUTPUT

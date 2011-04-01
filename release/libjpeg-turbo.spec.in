@@ -104,5 +104,7 @@ rm -rf $RPM_BUILD_ROOT
 /opt/%{name}/man/man1/jpegtran.1*
 /opt/%{name}/man/man1/rdjpgcom.1*
 /opt/%{name}/man/man1/wrjpgcom.1*
+@JAVA_RPM_CONTENTS_1@
+@JAVA_RPM_CONTENTS_2@
 
 %changelog

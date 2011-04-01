@@ -63,6 +63,9 @@ fi
 if [ -d /opt/$PKGNAME/man ]; then
 	rmdir /opt/$PKGNAME/man 2>&1 || RETCODE=-1
 fi
+if [ -d /opt/$PKGNAME/classes ]; then
+	rmdir /opt/$PKGNAME/classes 2>&1 || RETCODE=-1
+fi
 rmdir /opt/$PKGNAME 2>&1 || RETCODE=-1
 rmdir /Library/Documentation/$PKGNAME 2>&1 || RETCODE=-1
 

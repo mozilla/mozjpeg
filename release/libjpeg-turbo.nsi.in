@@ -63,6 +63,10 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpeg.lib"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}jpeg-static.lib"
 !endif
+!ifdef JAVA
+	SetOutPath $INSTDIR\classes
+	File "@CMAKE_BINARY_DIR@\java\${BUILDDIR}turbojpeg.jar"
+!endif
 	SetOutPath $INSTDIR\include
 	File "@CMAKE_BINARY_DIR@\jconfig.h"
 	File "@CMAKE_SOURCE_DIR@\jerror.h"
@@ -113,6 +117,9 @@ Section "Uninstall"
 	Delete $INSTDIR\lib\turbojpeg.lib
 	Delete $INSTDIR\lib\turbojpeg-static.lib
 !endif
+!ifdef JAVA
+	Delete $INSTDIR\classes\turbojpeg.jar
+!endif
 	Delete $INSTDIR\bin\cjpeg.exe
 	Delete $INSTDIR\bin\djpeg.exe
 	Delete $INSTDIR\bin\jpegtran.exe
@@ -135,6 +142,9 @@ Section "Uninstall"
 	RMDir "$INSTDIR\include"
 	RMDir "$INSTDIR\lib"
 	RMDir "$INSTDIR\doc"
+!ifdef JAVA
+	RMDir "$INSTDIR\classes"
+!endif
 	RMDir "$INSTDIR\bin"
 	RMDir "$INSTDIR"
 

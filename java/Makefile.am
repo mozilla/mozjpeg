@@ -44,4 +44,4 @@ uninstall-local:
 
 endif
 
-EXTRA_DIST = MANIFEST.MF ${JAVASOURCES} ${JNIHEADERS} doc
+EXTRA_DIST = MANIFEST.MF ${JAVASOURCES} ${JNIHEADERS} doc CMakeLists.txt

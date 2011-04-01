@@ -126,10 +126,18 @@ disable encoding or decoding (respectively.)
 
 TurboJPEG/OSS JNI Wrapper
 -------------------------
-Add --with-jni to the configure command line to incorporate an optional Java
-Native Interface wrapper into the TurboJPEG/OSS dynamic library.  This allows
-the dynamic library to be used directly from Java applications.  See
-java/README for more details.
+Add --with-java to the configure command line to incorporate an optional Java
+Native Interface wrapper into the TurboJPEG/OSS dynamic library and build the
+Java front-end classes to support it.  This allows the TurboJPEG/OSS dynamic
+library to be used directly from Java applications.  See java/README for more
+details.
+
+You can set the JAVAC, JAR, and JAVA configure variables to specify
+alternate commands for javac, jar, and java (respectively.)  You can also
+set the JAVACFLAGS configure variable to specify arguments that should be
+passed to the Java compiler when building the front-end classes, and JNI_CFLAGS
+to specify arguments that should be passed to the C compiler when building the
+JNI wrapper.  Run 'configure --help' for more details.
 
 
 ========================

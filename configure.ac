@@ -327,7 +327,5 @@ AC_CONFIG_FILES([pkgscripts/makesunpkg:release/makesunpkg.in])
 AC_CONFIG_FILES([pkgscripts/pkginfo:release/pkginfo.in])
 AC_CONFIG_FILES([libjpeg.map])
 AC_CONFIG_FILES([Makefile simd/Makefile])
-if test "x$with_java" = "xyes"; then
-  AC_CONFIG_FILES([java/Makefile])
-fi
+AC_CONFIG_FILES([java/Makefile])
 AC_OUTPUT

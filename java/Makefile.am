@@ -1,12 +1,21 @@
 JAVAROOT = .
 
-dist_noinst_JAVA = org/libjpegturbo/turbojpeg/TJ.java \
+JAVASOURCES = org/libjpegturbo/turbojpeg/TJ.java \
 	org/libjpegturbo/turbojpeg/TJCompressor.java \
 	org/libjpegturbo/turbojpeg/TJDecompressor.java \
 	org/libjpegturbo/turbojpeg/TJTransform.java \
 	org/libjpegturbo/turbojpeg/TJTransformer.java \
 	TJExample.java \
 	TJUnitTest.java
+
+JNIHEADERS = org_libjpegturbo_turbojpeg_TJ.h \
+	org_libjpegturbo_turbojpeg_TJCompressor.h \
+	org_libjpegturbo_turbojpeg_TJDecompressor.h \
+	org_libjpegturbo_turbojpeg_TJTransformer.h
+
+if WITH_JAVA
+
+dist_noinst_JAVA = ${JAVASOURCES}
 
 JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 	org/libjpegturbo/turbojpeg/TJCompressor.class \
@@ -32,3 +41,7 @@ install-exec-local: turbojpeg.jar
 uninstall-local:
 	rm -f $(DESTDIR)/$(prefix)/classes/turbojpeg.jar
 	if [ -d $(DESTDIR)/$(prefix)/classes ]; then rmdir $(DESTDIR)/$(prefix)/classes; fi
+
+endif
+
+EXTRA_DIST = MANIFEST.MF ${JAVASOURCES} ${JNIHEADERS} doc

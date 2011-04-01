@@ -37,16 +37,16 @@ endif
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
 	transupp.c transupp.h
 
+SUBDIRS = java
+
 if WITH_JAVA
 
-SUBDIRS = java
 libturbojpeg_la_SOURCES += turbojpeg-jni.c
 libturbojpeg_la_CFLAGS = ${JNI_CFLAGS}
 TJMAPFILE = turbojpeg-mapfile.jni
 
 else
 
-SUBDIRS =
 TJMAPFILE = turbojpeg-mapfile
 
 endif
@@ -126,7 +126,7 @@ TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 	testimgint.ppm testimgflt-nosimd.jpg testimgcrop.jpg testimgari.jpg \
 	testimgari.ppm testimgfst100.jpg testimggray.jpg
 
-EXTRA_DIST = win release java $(DOCS) $(TESTFILES) CMakeLists.txt \
+EXTRA_DIST = win release $(DOCS) $(TESTFILES) CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in
 
 dist-hook:

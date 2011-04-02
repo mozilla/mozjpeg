@@ -111,7 +111,6 @@ public class TJExample {
             && argv[i].substring(0, 3).equalsIgnoreCase("-sc")) {
             int match = 0;
             if(i < argv.length - 1) {
-              int temp1 = 0, temp2 = 0;
               String[] scaleArg = argv[++i].split("/");
               if(scaleArg.length == 2) {
                 TJScalingFactor tempsf =

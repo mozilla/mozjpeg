@@ -58,4 +58,5 @@ docs: all
 
 endif
 
-EXTRA_DIST = MANIFEST.MF ${JAVASOURCES} ${JNIHEADERS} doc CMakeLists.txt
+EXTRA_DIST = MANIFEST.MF ${JAVASOURCES} ${JNIHEADERS} doc CMakeLists.txt \
+	org/libjpegturbo/turbojpeg/TJLoader.java.in

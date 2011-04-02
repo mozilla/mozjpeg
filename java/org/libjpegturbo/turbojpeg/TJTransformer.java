@@ -151,7 +151,7 @@ public class TJTransformer extends TJDecompressor {
     TJTransform[] transforms, int flags) throws Exception;
 
   static {
-    System.loadLibrary("turbojpeg");
+    TJLoader.load();
   }
 
   private int[] transformedSizes = null;

@@ -302,7 +302,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_libjpegturbo_turbojpeg_TJ_getScalingFact
 	if((sf=tjGetScalingFactors(&n))==NULL || n==0)
 		_throw(tjGetErrorStr());
 
-	bailif0(sfcls=(*env)->FindClass(env, "org/libjpegturbo/turbojpeg/TJ$ScalingFactor"));
+	bailif0(sfcls=(*env)->FindClass(env, "org/libjpegturbo/turbojpeg/TJScalingFactor"));
 	bailif0(sfjava=(jobjectArray)(*env)->NewObjectArray(env, n, sfcls, 0));
 
 	for(i=0; i<n; i++)

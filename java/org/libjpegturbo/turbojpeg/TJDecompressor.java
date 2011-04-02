@@ -175,13 +175,13 @@ public class TJDecompressor {
       throw new Exception(NO_ASSOC_ERROR);
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledWidth()");
-    TJ.ScalingFactor sf[] = TJ.getScalingFactors();
+    TJScalingFactor sf[] = TJ.getScalingFactors();
     if(desiredWidth == 0) desiredWidth = jpegWidth;
     if(desiredHeight == 0) desiredHeight = jpegHeight;
     int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
     for(int i = 0; i < sf.length; i++) {
-      scaledWidth = (jpegWidth * sf[i].num + sf[i].denom - 1) / sf[i].denom;
-      scaledHeight = (jpegHeight * sf[i].num + sf[i].denom - 1) / sf[i].denom;
+      scaledWidth = sf[i].getScaled(jpegWidth);
+      scaledHeight = sf[i].getScaled(jpegHeight);
       if(scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
         break;
     }
@@ -215,13 +215,13 @@ public class TJDecompressor {
       throw new Exception(NO_ASSOC_ERROR);
     if(desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledHeight()");
-    TJ.ScalingFactor sf[] = TJ.getScalingFactors();
+    TJScalingFactor sf[] = TJ.getScalingFactors();
     if(desiredWidth == 0) desiredWidth = jpegWidth;
     if(desiredHeight == 0) desiredHeight = jpegHeight;
     int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
     for(int i = 0; i < sf.length; i++) {
-      scaledWidth = (jpegWidth * sf[i].num + sf[i].denom - 1) / sf[i].denom;
-      scaledHeight = (jpegHeight * sf[i].num + sf[i].denom - 1) / sf[i].denom;
+      scaledWidth = sf[i].getScaled(jpegWidth);
+      scaledHeight = sf[i].getScaled(jpegHeight);
       if(scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
         break;
     }
@@ -236,9 +236,10 @@ public class TJDecompressor {
    *
    * @param dstBuf buffer which will receive the decompressed image.  This
    * buffer should normally be <code>pitch * scaledHeight</code> bytes in size,
-   * where <code>scaledHeight = ceil(jpegHeight * scalingFactor)</code>, and
-   * the supported scaling factors can be determined by calling {@link
-   * TJ#getScalingFactors}.
+   * where <code>scaledHeight</code> can be determined by calling <code>
+   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegHeight)
+   * </code> with one of the scaling factors returned from {@link
+   * TJ#getScalingFactors} or by calling {@link #getScaledHeight}.
    *
    * @param desiredWidth desired width (in pixels) of the decompressed image.
    * If the desired image dimensions are smaller than the dimensions of the
@@ -252,9 +253,11 @@ public class TJDecompressor {
    * should be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code> if
    * the decompressed image is unpadded, but you can use this to, for instance,
    * pad each line of the decompressed image to a 4-byte boundary.  NOTE:
-   * <code>scaledWidth = ceil(jpegWidth * scalingFactor)</code>.  Setting this
-   * parameter to 0 is the equivalent of setting it to
-   * <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>.
+   * <code>scaledWidth</code> can be determined by calling <code>
+   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegWidth)
+   * </code> or by calling {@link #getScaledWidth}.  Setting this parameter to
+   * 0 is the equivalent of setting it to <code>scaledWidth *
+   * TJ.pixelSize(pixelFormat)</code>.
    *
    * @param desiredHeight desired height (in pixels) of the decompressed image.
    * If the desired image dimensions are smaller than the dimensions of the
@@ -494,7 +497,7 @@ public class TJDecompressor {
     throws Exception;
 
   static {
-    System.loadLibrary("turbojpeg");
+    TJLoader.load();
   }
 
   protected long handle = 0;

@@ -50,7 +50,7 @@ public class TJExample {
     System.out.println("-scale M/N = if the input image is a JPEG file, scale the width/height of the");
     System.out.print("             output image by a factor of M/N (M/N = ");
     for(int i = 0; i < sf.length; i++) {
-      System.out.print(sf[i].num + "/" + sf[i].denom);
+      System.out.print(sf[i].getNum() + "/" + sf[i].getDenom());
       if(sf.length == 2 && i != sf.length - 1) System.out.print(" or ");
       else if(sf.length > 2) {
         if(i != sf.length - 1) System.out.print(", ");
@@ -99,7 +99,7 @@ public class TJExample {
         usage();
       }
 
-      int scaleNum = 1, scaleDenom = 1;
+      TJScalingFactor scaleFactor = new TJScalingFactor(1, 1);
       String inFormat = "jpg", outFormat = "jpg";
       int outSubsamp = -1, outQual = 95;
       boolean display = false;
@@ -114,11 +114,12 @@ public class TJExample {
               int temp1 = 0, temp2 = 0;
               String[] scaleArg = argv[++i].split("/");
               if(scaleArg.length == 2) {
-                temp1 = Integer.parseInt(scaleArg[0]);
-                temp2 = Integer.parseInt(scaleArg[1]);
+                TJScalingFactor tempsf =
+                  new TJScalingFactor(Integer.parseInt(scaleArg[0]),
+                    Integer.parseInt(scaleArg[1]));
                 for(int j = 0; j < sf.length; j++) {
-                  if(temp1 == sf[j].num && temp2 == sf[j].denom) {
-                    scaleNum = temp1;  scaleDenom = temp2;
+                  if(tempsf.equals(sf[j])) {
+                    scaleFactor = sf[j];
                     match = 1;  break;
                   }
                 }
@@ -230,7 +231,7 @@ public class TJExample {
 
         if(outFormat.equalsIgnoreCase("jpg")
           && (xform.op != TJTransform.OP_NONE || xform.options != 0)
-          && (scaleNum == 1 && scaleDenom == 1)) {
+          && scaleFactor.isOne()) {
           file = new File(argv[1]);
           FileOutputStream fos = new FileOutputStream(file);
           fos.write(tjd.getJPEGBuf(), 0, tjd.getJPEGSize());
@@ -238,10 +239,8 @@ public class TJExample {
           System.exit(0);
         }
 
-        if(scaleNum != 1 || scaleDenom != 1) {
-          width = (width * scaleNum + scaleDenom - 1) / scaleDenom;
-          height = (height * scaleNum + scaleDenom - 1) / scaleDenom;
-        }
+        width = scaleFactor.getScaled(width);
+        height = scaleFactor.getScaled(height);
 
         if(!outFormat.equalsIgnoreCase("jpg"))
           img = tjd.decompress(width, height, BufferedImage.TYPE_INT_RGB, 0);
@@ -305,5 +304,5 @@ public class TJExample {
     }
   }
 
-  static TJ.ScalingFactor sf [] = null;
+  static TJScalingFactor sf [] = null;
 };

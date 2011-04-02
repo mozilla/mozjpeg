@@ -27,6 +27,11 @@ transposed or rotated 90 degrees.
 [8] Fixed a regression bug in the NSIS script that caused the Windows installer
 build to fail when using the Visual Studio IDE.
 
+[9] Fixed a bug in jpeg_read_coefficients() whereby it would not initialize
+cinfo->image_width and cinfo->image_height if libjpeg v8 emulation was enabled.
+This specifically caused the jpegoptim program to fail if it was linked against
+a version of libjpeg-turbo that was built with libjpeg v8 emulation.
+
 
 1.1.1
 =====

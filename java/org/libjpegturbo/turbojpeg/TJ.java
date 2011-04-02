@@ -35,21 +35,6 @@ final public class TJ {
 
 
   /**
-   * Fractional scaling factor
-   */
-  final public class ScalingFactor {
-    /**
-     * Numerator
-     */
-    public int num = 1;
-    /**
-     * Denominator
-     */
-    public int denom = 1;
-  };
-
-
-  /**
    * The number of chrominance subsampling options
    */
   final public static int NUMSAMP   = 5;
@@ -323,10 +308,10 @@ final public class TJ {
    * @return a list of fractional scaling factors that the JPEG decompressor in
    * this implementation of TurboJPEG supports
    */
-  public native static ScalingFactor[] getScalingFactors()
+  public native static TJScalingFactor[] getScalingFactors()
     throws Exception;
 
   static {
-    System.loadLibrary("turbojpeg");
+    TJLoader.load();
   }
 };

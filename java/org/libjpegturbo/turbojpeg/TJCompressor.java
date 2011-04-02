@@ -444,7 +444,7 @@ public class TJCompressor {
     throws Exception;
 
   static {
-    System.loadLibrary("turbojpeg");
+    TJLoader.load();
   }
 
   private long handle = 0;

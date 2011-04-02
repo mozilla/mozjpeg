@@ -340,6 +340,9 @@ endif()
 add_test(jpegtran-static-crop jpegtran-static -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testorig.jpg)
 add_test(jpegtran-static-crop-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)
 
+add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
+  ${CMAKE_SOURCE_DIR}/cmakescripts/testclean.cmake)
+
 
 #
 # Installer

@@ -36,6 +36,8 @@ public class TJScalingFactor {
   public TJScalingFactor(int num, int denom) throws Exception {
     if(num < 1 || denom < 1)
       throw new Exception("Numerator and denominator must be >= 1");
+    this.num = num;
+    this.denom = denom;
   }
 
   /**

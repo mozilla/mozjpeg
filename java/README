@@ -1,5 +1,5 @@
-TurboJPEG/OSS JNI Wrapper
-=========================
+TurboJPEG/OSS Java Wrapper
+==========================
 
 TurboJPEG/OSS can optionally be built with a Java Native Interface wrapper,
 which allows the TurboJPEG/OSS dynamic library to be loaded and used directly
@@ -7,15 +7,12 @@ from Java applications.  The Java front end for this is defined in several
 classes located under org/libjpegturbo/turbojpeg.  The source code for these
 Java classes is licensed under a BSD-style license, so the files can be
 incorporated directly into both open source and proprietary projects without
-restriction.
+restriction.  A Java archive (JAR) file containing these classes is also
+shipped with the "official" distribution packages of libjpeg-turbo.
 
 TJExample.java, which should also be located in the same directory as this
 README file, demonstrates how to use the TurboJPEG/OSS Java front end to
 compress and decompress JPEG images in memory.
-
-  javac TJExample.java
-
-builds .class files for both the front end and example code.
 
 
 Performance Pitfalls
@@ -56,16 +53,3 @@ need to pass an argument of -Djava.library.path=/opt/libjpeg-turbo/lib to java.
 If using a 64-bit data model, then instead pass an argument of
 -Djava.library.path=/opt/libjpeg-turbo/lib/amd64 to use the 64-bit version of
 libturbojpeg.so.
-
-
-Note for MinGW users
---------------------
-
-When libjpeg-turbo is built with MinGW, the TurboJPEG/OSS dynamic library is
-named libturbojpeg.dll instead of turbojpeg.dll.  This is in keeping with the
-convention of MinGW, and it also avoids a filename conflict when the GCC and
-Visual C++ versions of the libjpeg-turbo SDK are installed on the same system.
-However, the TurboJPEG/OSS JNI wrapper will not work on Windows unless the DLL
-is named turbojpeg.dll.  You can work around this by renaming the DLL or by
-simply changing the LoadLibrary() calls in TurboJPEG.java so that they load
-"libturbojpeg" instead of "turbojpeg".

@@ -118,6 +118,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 if(WITH_JAVA)
   find_package(Java)
   find_package(JNI)
+  if(DEFINED JAVACFLAGS)
+    message(STATUS "Java compiler flags = ${JAVACFLAGS}")
+  endif()
 endif()
 
 

@@ -73,7 +73,7 @@ It also ensures that the library can avoid the performance pitfall created by
 [3] Ported jpgtest.cxx to pure C to avoid the need for a C++ compiler.
 
 [4] Fixed visual artifacts in grayscale JPEG compression caused by a typo in
-the RGB-to-chrominance lookup tables.
+the RGB-to-luminance lookup tables.
 
 [5] The Windows distribution packages now include the libjpeg run-time programs
 (cjpeg, etc.)

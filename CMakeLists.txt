@@ -320,7 +320,7 @@ if(64BIT)
 endif()
 
 if(MSVC_IDE)
-  set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=$(OutDir)\\")
+  set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=${CMAKE_CFG_INTDIR}\\")
 else()
   set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=")
 endif()

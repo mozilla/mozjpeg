@@ -261,7 +261,7 @@ AC_SUBST(RPM_CONFIG_ARGS)
 
 # SIMD is optional
 AC_ARG_WITH([simd],
-    AC_HELP_STRING([--without-simd],[Omit accelerated SIMD routines.]))
+    AC_HELP_STRING([--without-simd],[Omit SIMD extensions.]))
 if test "x${with_simd}" != "xno"; then
   # Check if we're on a supported CPU
   AC_MSG_CHECKING([if we have SIMD optimisations for cpu type])

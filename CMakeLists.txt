@@ -32,17 +32,11 @@ endif()
 
 message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 
-if(NOT DEFINED WITH_SIMD)
-  set(WITH_SIMD 1)
-endif()
-
-if(NOT DEFINED WITH_ARITH_ENC)
-  set(WITH_ARITH_ENC 1)
-endif()
-
-if(NOT DEFINED WITH_ARITH_DEC)
-  set(WITH_ARITH_DEC 1)
-endif()
+option(WITH_SIMD "Include SIMD extensions" TRUE)
+option(WITH_ARITH_ENC "Include arithmetic encoding support" TRUE)
+option(WITH_ARITH_DEC "Include arithmetic decoding support" TRUE)
+option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b)" FALSE)
 
 if(WITH_ARITH_ENC)
   set(C_ARITH_CODING_SUPPORTED 1)

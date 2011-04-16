@@ -14,7 +14,7 @@ Build Requirements
 -- NASM
    * 0.98, or 2.01 or later is required for a 32-bit build
    * NASM 2.00 or later is required for a 64-bit build
-   * NASM 2.07 or later is required for a 64-bit build on OS/X.  This can be
+   * NASM 2.07 or later is required for a 64-bit build on OS X.  This can be
      obtained from MacPorts (http://www.macports.org/).
 
    The binary RPMs released by the NASM project do not work on older Linux
@@ -120,7 +120,7 @@ Add
 to the configure command line.
 
 
-64-bit Library Build on 64-bit OS/X
+64-bit Library Build on 64-bit OS X
 -----------------------------------
 
 Add
@@ -131,7 +131,7 @@ to the configure command line.  NASM 2.07 or later from MacPorts must be
 installed.
 
 
-32-bit Library Build on 64-bit OS/X
+32-bit Library Build on 64-bit OS X
 -----------------------------------
 
 Add
@@ -141,7 +141,7 @@ Add
 to the configure command line.
 
 
-64-bit Backward-Compatible Library Build on 64-bit OS/X
+64-bit Backward-Compatible Library Build on 64-bit OS X
 -------------------------------------------------------
 
 Add
@@ -158,7 +158,7 @@ to the configure command line.  The OS X 10.4 SDK, and NASM 2.07 or later from
 MacPorts, must be installed.
 
 
-32-bit Backward-Compatible Library Build on OS/X
+32-bit Backward-Compatible Library Build on OS X
 ------------------------------------------------
 
 Add

@@ -784,7 +784,8 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
     usefast = 0;
   }
 
-  if (cinfo->src->bytes_in_buffer < BUFSIZE * cinfo->blocks_in_MCU)
+  if (cinfo->src->bytes_in_buffer < BUFSIZE * cinfo->blocks_in_MCU
+    || cinfo->unread_marker != 0)
     usefast = 0;
 
   /* If we've run out of data, just leave the MCU set to zeroes.

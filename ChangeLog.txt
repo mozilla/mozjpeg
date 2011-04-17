@@ -20,9 +20,11 @@ It also ensures that the library can avoid the performance pitfall created by
 [4] Fixed visual artifacts in grayscale JPEG compression caused by a typo in
 the RGB-to-chrominance lookup tables.
 
-[5] Fixed the accelerated Huffman decoder so that it mimics the behavior of
-the unaccelerated decoder and throws a warning if an unexpected marker is found
-in the middle of the JPEG data stream.
+[5] libjpeg-turbo's accelerated Huffman decoder previously ignored unexpected
+markers found in the middle of the JPEG data stream during decompression.  It
+will now hand off decoding of a particular block to the unaccelerated Huffman
+decoder if an unexpected marker is found, so that the unaccelerated Huffman
+decoder can generate an appropriate warning.
 
 [6] Older versions of MinGW64 prefixed symbol names with underscores by
 default, which differed from the behavior of 64-bit Visual C++.  MinGW64 1.0

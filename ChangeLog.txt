@@ -4,9 +4,11 @@
 [1] Fixed a 1-pixel error in row 0, column 21 of the luminance plane generated
 by tjEncodeYUV().
 
-[2] Fixed the accelerated Huffman decoder so that it mimics the behavior of
-the unaccelerated decoder and throws a warning if an unexpected marker is found
-in the middle of the JPEG data stream.
+[2] libjpeg-turbo's accelerated Huffman decoder previously ignored unexpected
+markers found in the middle of the JPEG data stream during decompression.  It
+will now hand off decoding of a particular block to the unaccelerated Huffman
+decoder if an unexpected marker is found, so that the unaccelerated Huffman
+decoder can generate an appropriate warning.
 
 [3] Older versions of MinGW64 prefixed symbol names with underscores by
 default, which differed from the behavior of 64-bit Visual C++.  MinGW64 1.0

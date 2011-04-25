@@ -166,6 +166,18 @@ if WITH_SIMD
 else
 	cmp $(srcdir)/testorig.ppm testoutflt.ppm
 endif
+	./djpeg -dct int -scale 1/2 -ppm -outfile testoutint1_2.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgint1_2.ppm testoutint1_2.ppm
+	./djpeg -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgfst1_2.ppm testoutfst1_2.ppm
+	./djpeg -dct int -scale 1/4 -ppm -outfile testoutint1_4.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgint1_4.ppm testoutint1_4.ppm
+	./djpeg -dct fast -scale 1/4 -ppm -outfile testoutfst1_4.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgfst1_4.ppm testoutfst1_4.ppm
+	./djpeg -dct int -scale 1/8 -ppm -outfile testoutint1_8.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgint1_8.ppm testoutint1_8.ppm
+	./djpeg -dct fast -scale 1/8 -ppm -outfile testoutfst1_8.ppm $(srcdir)/testorig.jpg
+	cmp $(srcdir)/testimgfst1_8.ppm testoutfst1_8.ppm
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimg.bmp testout.bmp
 if WITH_ARITH_ENC

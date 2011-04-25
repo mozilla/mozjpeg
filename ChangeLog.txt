@@ -63,6 +63,9 @@ enabled.  This specifically caused the jpegoptim program to fail if it was
 linked against a version of libjpeg-turbo that was built with libjpeg v7 or v8
 emulation.
 
+[6] Eliminated excessive I/O overhead that occurred when reading BMP files in
+cjpeg.
+
 
 1.1.0
 =====

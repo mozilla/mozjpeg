@@ -33,6 +33,11 @@ enabled.  This specifically caused the jpegoptim program to fail if it was
 linked against a version of libjpeg-turbo that was built with libjpeg v7 or v8
 emulation.
 
+[10] jchuff.c and jdhuff.c have been re-factored and re-licensed under the
+libjpeg BSD-style license, so the libjpeg-turbo library itself (libjpeg) is no
+longer subject to the terms of the wxWindows Library License (libturbojpeg
+still is-- see README-turbo.txt.)
+
 
 1.1.1
 =====

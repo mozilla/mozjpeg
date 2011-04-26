@@ -26,20 +26,25 @@ libraries can be used as drop-in replacements for libjpeg on most systems.
 **     License
 *******************************************************************************
 
-The TurboJPEG/OSS wrapper, as well as some of the optimizations to the Huffman
-encoder (jchuff.c), were borrowed from VirtualGL, and thus any distribution of
-libjpeg-turbo which includes those files must, as a whole, be subject to the
-terms of the wxWindows Library Licence, Version 3.1.  A copy of this license
-can be found in this directory under LICENSE.txt.  The wxWindows Library
-License is based on the LGPL but includes provisions which allow the Library to
-be statically linked into proprietary libraries and applications without
-requiring the resulting binaries to be distributed under the terms of the LGPL.
+The TurboJPEG/OSS C library (libturbojpeg), its associated test programs, and
+the Mac packaging scripts (under release/) were borrowed from VirtualGL, and
+thus these files are subject to the terms of the wxWindows Library License,
+Version 3.1.  A copy of this license can be found in this directory under
+LICENSE.txt.  The wxWindows Library License is based on the LGPL v2.1, but it
+eliminates the LGPL's restrictions regarding statically linking with closed
+source code.
 
-The rest of the source code, apart from TurboJPEG/OSS and the Huffman codec
-optimizations, falls under a less restrictive, BSD-style license (see README.)
-You can choose to distribute libjpeg-turbo, as a whole, under this BSD-style
-license by simply removing TurboJPEG/OSS and replacing the optimized jchuff.c
-with its unoptimized counterpart from the libjpeg v6b source.
+What this means, in a nutshell, is that if you distribute a binary version of
+TurboJPEG/OSS (libturbojpeg), an application that statically links with
+TurboJPEG/OSS, or an OS X package built using the libjpeg-turbo packaging
+scripts, then you must also distribute the source code for libjpeg-turbo,
+including any modifications you may have made to it.  The source distribution
+(including modifications) must not violate the terms of the LGPL v2.1.
+
+The rest of the source code, apart from the files described above, falls under
+a less restrictive, BSD-style license (see README.)  Likewise, binary versions
+of the libjpeg-turbo library (libjpeg) and its associated test programs (cjpeg,
+djpeg, etc.) fall under this less restrictive license.
 
 
 *******************************************************************************

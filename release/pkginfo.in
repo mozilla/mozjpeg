@@ -5,8 +5,8 @@ VERSION=@VERSION@,REV=@BUILD@
 SUNW_PKGVERS=1.0
 DESC=A SIMD-accelerated JPEG codec which provides both the libjpeg and TurboJPEG APIs
 VENDOR=The libjpeg-turbo Project
-HOTLINE=http://libjpeg-turbo.VirtualGL.org
-EMAIL=information@virtualgl.org
+HOTLINE=http://www.libjpeg-turbo.org
+EMAIL=information@libjpeg-turbo.org
 MAXINST=1
 CATEGORY=application
 BASEDIR=/opt

@@ -8,7 +8,7 @@ Summary: A SIMD-accelerated JPEG codec which provides both the libjpeg and Turbo
 Name: %{_name}
 Version: %{_version}
 Vendor: The libjpeg-turbo Project
-URL: http://libjpeg-turbo.virtualgl.org
+URL: http://www.libjpeg-turbo.org
 Group: System Environment/Libraries
 #-->Source0: http://prdownloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-%{version}.tar.gz
 Release: %{_build}

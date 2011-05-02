@@ -71,6 +71,9 @@ emulation.
 [6] Eliminated excessive I/O overhead that occurred when reading BMP files in
 cjpeg.
 
+[7] Eliminated errors in the output of cjpeg on Windows that occurred when the
+application was invoked using I/O redirection (cjpeg <inputfile >output.jpeg).
+
 
 1.1.0
 =====

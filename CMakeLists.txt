@@ -178,13 +178,13 @@ target_link_libraries(jpgtest-static turbojpeg-static)
 add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c rdswitch.c
   rdtarga.c)
 set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
-  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED")
+  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
 target_link_libraries(cjpeg-static jpeg-static)
 
 add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c wrgif.c
   wrppm.c wrtarga.c)
 set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
-  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED")
+  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
 target_link_libraries(djpeg-static jpeg-static)
 
 add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)

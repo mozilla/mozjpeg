@@ -12,11 +12,12 @@
 
 /* Bitmask for supported acceleration methods */
 
-#define JSIMD_NONE    0x00
-#define JSIMD_MMX     0x01
-#define JSIMD_3DNOW   0x02
-#define JSIMD_SSE     0x04
-#define JSIMD_SSE2    0x08
+#define JSIMD_NONE       0x00
+#define JSIMD_MMX        0x01
+#define JSIMD_3DNOW      0x02
+#define JSIMD_SSE        0x04
+#define JSIMD_SSE2       0x08
+#define JSIMD_ARM_NEON   0x10
 
 /* Short forms of external names for systems with brain-damaged linkers. */
 
@@ -327,6 +328,35 @@ EXTERN(void) jsimd_ycc_extxrgb_convert_sse2
              JSAMPIMAGE input_buf, JDIMENSION input_row,
              JSAMPARRAY output_buf, int num_rows));
 
+EXTERN(void) jsimd_ycc_rgb_convert_neon
+        JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extrgb_convert_neon
+        JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extrgbx_convert_neon
+        JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extbgr_convert_neon
+        JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extbgrx_convert_neon
+        JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extxbgr_convert_neon
+        JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extxrgb_convert_neon
+        JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+
 /* SIMD Downsample */
 EXTERN(void) jsimd_h2v2_downsample_mmx
         JPP((JDIMENSION image_width, int max_v_samp_factor,
@@ -556,6 +586,11 @@ EXTERN(void) jsimd_idct_islow_sse2 JPP((void * dct_table,
                                         JDIMENSION output_col));
 extern const int jconst_idct_ifast_sse2[];
 EXTERN(void) jsimd_idct_ifast_sse2 JPP((void * dct_table,
+                                        JCOEFPTR coef_block,
+                                        JSAMPARRAY output_buf,
+                                        JDIMENSION output_col));
+
+EXTERN(void) jsimd_idct_ifast_neon JPP((void * dct_table,
                                         JCOEFPTR coef_block,
                                         JSAMPARRAY output_buf,
                                         JDIMENSION output_col));

@@ -40,6 +40,10 @@ still is-- see README-turbo.txt.)
 
 [11] libjpeg-turbo can now be built with YASM.
 
+[12] Added SIMD-accelerated fast integer inverse DCT and YCbCr-to-RGB color
+conversion routines to accelerate JPEG decoding on ARM Linux platforms that
+have NEON instructions.
+
 
 1.1.1
 =====

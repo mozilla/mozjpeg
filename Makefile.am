@@ -149,7 +149,7 @@ endif
 	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
 	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
-if WITH_SIMD
+if WITH_SSE_FLOAT_DCT
 	cmp $(srcdir)/testimgflt.jpg testoutflt.jpg
 else
 	cmp $(srcdir)/testimgflt-nosimd.jpg testoutflt.jpg
@@ -161,7 +161,7 @@ endif
 	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
 	cmp $(srcdir)/testimgfst.ppm testoutfst.ppm
 	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
-if WITH_SIMD
+if WITH_SSE_FLOAT_DCT
 	cmp $(srcdir)/testimgflt.ppm testoutflt.ppm
 else
 	cmp $(srcdir)/testorig.ppm testoutflt.ppm

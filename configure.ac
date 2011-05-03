@@ -16,6 +16,7 @@ SAVED_CFLAGS=${CFLAGS}
 SAVED_CPPFLAGS=${CPPFLAGS}
 AC_PROG_CPP
 AC_PROG_CC
+AM_PROG_AS
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
@@ -276,6 +277,16 @@ if test "x${with_simd}" != "xno"; then
       AC_PROG_NASM
       simd_arch=i386
     ;;
+    arm*)
+      AC_MSG_RESULT([yes (arm)])
+      AC_MSG_CHECKING([if the assembler is GNU-compatible and can be used])
+      AC_CHECK_COMPATIBLE_ARM_ASSEMBLER_IFELSE(
+        [AC_MSG_RESULT([yes])
+         simd_arch=arm],
+        [AC_MSG_RESULT([no])
+         with_simd=no
+         AC_MSG_WARN([SIMD support can't be enabled.  Performance will suffer.])])
+    ;;
     *)
       AC_MSG_RESULT([no ("$host_cpu")])
       AC_MSG_WARN([SIMD support not available for this CPU.  Performance will suffer.])
@@ -289,8 +300,10 @@ if test "x${with_simd}" != "xno"; then
 fi
 
 AM_CONDITIONAL([WITH_SIMD], [test "x$with_simd" != "xno"])
+AM_CONDITIONAL([WITH_SSE_FLOAT_DCT], [test "x$simd_arch" = "xx86_64" -o "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_I386], [test "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
+AM_CONDITIONAL([SIMD_ARM], [test "x$simd_arch" = "xarm"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 
 case "$host_cpu" in

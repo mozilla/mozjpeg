@@ -134,3 +134,27 @@ else
 fi
 
 ])
+
+# AC_CHECK_COMPATIBLE_ARM_ASSEMBLER_IFELSE
+# --------------------------
+# Test whether the assembler is suitable and supports NEON instructions
+AC_DEFUN([AC_CHECK_COMPATIBLE_ARM_ASSEMBLER_IFELSE],[
+  ac_good_gnu_arm_assembler=no
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-x assembler-with-cpp $CFLAGS"
+  AC_COMPILE_IFELSE([[
+    .text
+    .fpu neon
+    .arch armv7a
+    .object_arch armv4
+    .arm
+    .altmacro
+    pld [r0]
+    vmovn.u16 d0, q0]], ac_good_gnu_arm_assembler=yes)
+  CFLAGS="$ac_save_CFLAGS"
+  if test "x$ac_good_gnu_arm_assembler" = "xyes" ; then
+    $1
+  else
+    $2
+  fi
+])

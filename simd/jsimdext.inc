@@ -38,16 +38,26 @@
 
 ; -- segment definition --
 ;
+%ifdef __YASM_VER__
+%define SEG_TEXT    .text  align=16
+%define SEG_CONST   .rdata align=16
+%else
 %define SEG_TEXT    .text  align=16 public use32 class=CODE
 %define SEG_CONST   .rdata align=16 public use32 class=CONST
+%endif
 
 %elifdef WIN64	; ----(nasm -fwin64 -DWIN64 ...)--------
 ; * Microsoft Visual C++
 
 ; -- segment definition --
 ;
+%ifdef __YASM_VER__
+%define SEG_TEXT    .text  align=16
+%define SEG_CONST   .rdata align=16
+%else
 %define SEG_TEXT    .text  align=16 public use64 class=CODE
 %define SEG_CONST   .rdata align=16 public use64 class=CONST
+%endif
 %define EXTN(name)  name			; foo() -> foo
 
 %elifdef OBJ32	; ----(nasm -fobj -DOBJ32 ...)----------

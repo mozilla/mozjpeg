@@ -38,6 +38,8 @@ libjpeg BSD-style license, so the libjpeg-turbo library itself (libjpeg) is no
 longer subject to the terms of the wxWindows Library License (libturbojpeg
 still is-- see README-turbo.txt.)
 
+[11] libjpeg-turbo can now be built with YASM.
+
 
 1.1.1
 =====

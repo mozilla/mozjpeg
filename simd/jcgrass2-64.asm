@@ -41,6 +41,9 @@ PD_ONEHALF	times 4 dd  (1 << (SCALEBITS-1))
 	alignz	16
 
 ; --------------------------------------------------------------------------
+	SECTION	SEG_TEXT
+	BITS	64
+
 %include "jcgryss2-64.asm"
 
 %undef RGB_RED

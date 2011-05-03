@@ -48,6 +48,9 @@ PD_ONEHALF	times 4 dd  (1 << (SCALEBITS-1))
 	alignz	16
 
 ; --------------------------------------------------------------------------
+	SECTION	SEG_TEXT
+	BITS	32
+
 %include "jcclrss2.asm"
 
 %undef RGB_RED

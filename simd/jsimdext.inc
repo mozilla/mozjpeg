@@ -307,8 +307,6 @@ const_base:
 %ifdef WIN64
 
 %imacro collect_args 0
-	push r10
-	push r11
 	push r12
 	push r13
 	push r14
@@ -338,8 +336,6 @@ const_base:
 	pop r14
 	pop r13
 	pop r12
-	pop r11
-	pop r10
 %endmacro
 
 %else

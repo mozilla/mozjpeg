@@ -90,7 +90,7 @@ typedef struct _tjinstance
 
 static const int pixelsize[NUMSUBOPT]={3, 3, 3, 1, 3};
 
-static const JXFORM_CODE xformtypes[NUMXFORMOPT]={
+static const JXFORM_CODE xformtypes[TJ_NUMXOP]={
 	JXFORM_NONE, JXFORM_FLIP_H, JXFORM_FLIP_V, JXFORM_TRANSPOSE,
 	JXFORM_TRANSVERSE, JXFORM_ROT_90, JXFORM_ROT_180, JXFORM_ROT_270
 };
@@ -113,23 +113,23 @@ static const tjscalingfactor sf[NUMSF]={
 
 static int getPixelFormat(int pixelSize, int flags)
 {
-	if(pixelSize==1) return TJ_GRAY;
+	if(pixelSize==1) return TJPF_GRAY;
 	if(pixelSize==3)
 	{
-		if(flags&TJ_BGR) return TJ_BGR;
-		else return TJ_RGB;
+		if(flags&TJ_BGR) return TJPF_BGR;
+		else return TJPF_RGB;
 	}
 	if(pixelSize==4)
 	{
 		if(flags&TJ_ALPHAFIRST)
 		{
-			if(flags&TJ_BGR) return TJ_XBGR;
-			else return TJ_XRGB;
+			if(flags&TJ_BGR) return TJPF_XBGR;
+			else return TJPF_XRGB;
 		}
 		else
 		{
-			if(flags&TJ_BGR) return TJ_BGRX;
-			else return TJ_RGBX;
+			if(flags&TJ_BGR) return TJPF_BGRX;
+			else return TJPF_RGBX;
 		}
 	}
 	return -1;
@@ -140,23 +140,23 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
 {
 	switch(pixelFormat)
 	{
-		case TJ_GRAY:
+		case TJPF_GRAY:
 			cinfo->in_color_space=JCS_GRAYSCALE;  break;
 		#if JCS_EXTENSIONS==1
-		case TJ_RGB:
+		case TJPF_RGB:
 			cinfo->in_color_space=JCS_EXT_RGB;  break;
-		case TJ_BGR:
+		case TJPF_BGR:
 			cinfo->in_color_space=JCS_EXT_BGR;  break;
-		case TJ_RGBX:
+		case TJPF_RGBX:
 			cinfo->in_color_space=JCS_EXT_RGBX;  break;
-		case TJ_BGRX:
+		case TJPF_BGRX:
 			cinfo->in_color_space=JCS_EXT_BGRX;  break;
-		case TJ_XRGB:
+		case TJPF_XRGB:
 			cinfo->in_color_space=JCS_EXT_XRGB;  break;
-		case TJ_XBGR:
+		case TJPF_XBGR:
 			cinfo->in_color_space=JCS_EXT_XBGR;  break;
 		#else
-		case TJ_RGB:
+		case TJPF_RGB:
 			if(RGB_RED==0 && RGB_GREEN==1 && RGB_BLUE==2 && RGB_PIXELSIZE==3)
 			{
 				cinfo->in_color_space=JCS_RGB;  break;
@@ -174,7 +174,7 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
 		if(jpegQual>=96) cinfo->dct_method=JDCT_ISLOW;
 		else cinfo->dct_method=JDCT_FASTEST;
 	}
-	if(subsamp==TJ_GRAYSCALE)
+	if(subsamp==TJSAMP_GRAY)
 		jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
 	else
 		jpeg_set_colorspace(cinfo, JCS_YCbCr);
@@ -192,23 +192,23 @@ static void setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 {
 	switch(pixelFormat)
 	{
-		case TJ_GRAY:
+		case TJPF_GRAY:
 			dinfo->out_color_space=JCS_GRAYSCALE;  break;
 		#if JCS_EXTENSIONS==1
-		case TJ_RGB:
+		case TJPF_RGB:
 			dinfo->out_color_space=JCS_EXT_RGB;  break;
-		case TJ_BGR:
+		case TJPF_BGR:
 			dinfo->out_color_space=JCS_EXT_BGR;  break;
-		case TJ_RGBX:
+		case TJPF_RGBX:
 			dinfo->out_color_space=JCS_EXT_RGBX;  break;
-		case TJ_BGRX:
+		case TJPF_BGRX:
 			dinfo->out_color_space=JCS_EXT_BGRX;  break;
-		case TJ_XRGB:
+		case TJPF_XRGB:
 			dinfo->out_color_space=JCS_EXT_XRGB;  break;
-		case TJ_XBGR:
+		case TJPF_XBGR:
 			dinfo->out_color_space=JCS_EXT_XBGR;  break;
 		#else
-		case TJ_RGB:
+		case TJPF_RGB:
 			if(RGB_RED==0 && RGB_GREEN==1 && RGB_BLUE==2 && RGB_PIXELSIZE==3)
 			{
 				dinfo->out_color_space=JCS_RGB;  break;
@@ -303,7 +303,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 	pw=PAD(width, tjMCUWidth[subsamp]/8);
 	ph=PAD(height, tjMCUHeight[subsamp]/8);
 	cw=pw*8/tjMCUWidth[subsamp];  ch=ph*8/tjMCUHeight[subsamp];
-	retval=PAD(pw, 4)*ph + (subsamp==TJ_GRAYSCALE? 0:PAD(cw, 4)*ch*2);
+	retval=PAD(pw, 4)*ph + (subsamp==TJSAMP_GRAY? 0:PAD(cw, 4)*ch*2);
 
 	bailout:
 	return retval;
@@ -337,11 +337,11 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	cinfo->image_width=width;
 	cinfo->image_height=height;
 
-	if(flags&TJ_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
-	else if(flags&TJ_FORCESSE) putenv("JSIMD_FORCESSE=1");
-	else if(flags&TJ_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
+	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
+	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
-	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, (flags&TJ_NOREALLOC)==0);
+	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, (flags&TJFLAG_NOREALLOC)==0);
 	setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual);
 
 	jpeg_start_compress(cinfo, TRUE);
@@ -349,7 +349,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 		_throw("Memory allocation failed in tjCompress()");
 	for(i=0; i<height; i++)
 	{
-		if(flags&TJ_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
+		if(flags&TJFLAG_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
 		else row_pointer[i]=&srcBuf[i*pitch];
 	}
 	while(cinfo->next_scanline<cinfo->image_height)
@@ -381,7 +381,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle handle, unsigned char *srcBuf,
 		size=TJBUFSIZE(width, height);
 		retval=tjCompress2(handle, srcBuf, width, pitch, height,
 			getPixelFormat(pixelSize, flags), &jpegBuf, &size, jpegSubsamp, jpegQual,
-			flags|TJ_NOREALLOC);
+			flags|TJFLAG_NOREALLOC);
 	}
 	*jpegSize=size;
 	return retval;
@@ -428,9 +428,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	cinfo->image_width=width;
 	cinfo->image_height=height;
 
-	if(flags&TJ_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
-	else if(flags&TJ_FORCESSE) putenv("JSIMD_FORCESSE=1");
-	else if(flags&TJ_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
+	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
+	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
 	yuvsize=TJBUFSIZEYUV(width, height, subsamp);
 	jpeg_mem_dest_tj(cinfo, &dstBuf, &yuvsize, 0);
@@ -444,7 +444,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		_throw("Memory allocation failed in tjCompress()");
 	for(i=0; i<height; i++)
 	{
-		if(flags&TJ_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
+		if(flags&TJFLAG_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
 		else row_pointer[i]=&srcBuf[i*pitch];
 	}
 	if(height<ph)
@@ -662,9 +662,9 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 		|| height<0 || pixelFormat<0 || pixelFormat>=TJ_NUMPF)
 		_throw("tjDecompress2(): Invalid argument");
 
-	if(flags&TJ_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
-	else if(flags&TJ_FORCESSE) putenv("JSIMD_FORCESSE=1");
-	else if(flags&TJ_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
+	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
+	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -677,8 +677,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 	jpeg_read_header(dinfo, TRUE);
 	setDecompDefaults(dinfo, pixelFormat);
 
-	if(flags&TJ_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
-	if(flags&TJ_YUV) dinfo->raw_data_out=TRUE;
+	if(flags&TJFLAG_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
 
 	jpegwidth=dinfo->image_width;  jpegheight=dinfo->image_height;
 	if(width==0) width=jpegwidth;
@@ -703,7 +702,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 		_throw("Memory allocation failed in tjInitDecompress()");
 	for(i=0; i<(int)dinfo->output_height; i++)
 	{
-		if(flags&TJ_BOTTOMUP)
+		if(flags&TJFLAG_BOTTOMUP)
 			row_pointer[i]=&dstBuf[(dinfo->output_height-i-1)*pitch];
 		else row_pointer[i]=&dstBuf[i*pitch];
 	}
@@ -753,9 +752,9 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 	if(jpegBuf==NULL || jpegSize<=0 || dstBuf==NULL)
 		_throw("tjDecompressToYUV(): Invalid argument");
 
-	if(flags&TJ_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
-	else if(flags&TJ_FORCESSE) putenv("JSIMD_FORCESSE=1");
-	else if(flags&TJ_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
+	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
+	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -805,7 +804,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 		}
 	}
 
-	if(flags&TJ_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
+	if(flags&TJFLAG_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
 	dinfo->raw_data_out=TRUE;
 
 	jpeg_start_decompress(dinfo);
@@ -882,9 +881,9 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 		|| t==NULL || flags<0)
 		_throw("tjTransform(): Invalid argument");
 
-	if(flags&TJ_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
-	else if(flags&TJ_FORCESSE) putenv("JSIMD_FORCESSE=1");
-	else if(flags&TJ_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
+	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
+	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -903,11 +902,11 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 	for(i=0; i<n; i++)
 	{
 		xinfo[i].transform=xformtypes[t[i].op];
-		xinfo[i].perfect=(t[i].options&TJXFORM_PERFECT)? 1:0;
-		xinfo[i].trim=(t[i].options&TJXFORM_TRIM)? 1:0;
-		xinfo[i].force_grayscale=(t[i].options&TJXFORM_GRAY)? 1:0;
-		xinfo[i].crop=(t[i].options&TJXFORM_CROP)? 1:0;
-		if(n!=1 && t[i].op==TJXFORM_HFLIP) xinfo[i].slow_hflip=1;
+		xinfo[i].perfect=(t[i].options&TJXOPT_PERFECT)? 1:0;
+		xinfo[i].trim=(t[i].options&TJXOPT_TRIM)? 1:0;
+		xinfo[i].force_grayscale=(t[i].options&TJXOPT_GRAY)? 1:0;
+		xinfo[i].crop=(t[i].options&TJXOPT_CROP)? 1:0;
+		if(n!=1 && t[i].op==TJXOP_HFLIP) xinfo[i].slow_hflip=1;
 		else xinfo[i].slow_hflip=0;
 
 		if(xinfo[i].crop)
@@ -955,7 +954,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 	{
 		int w, h;
 		jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i],
-			(flags&TJ_NOREALLOC)==0);
+			(flags&TJFLAG_NOREALLOC)==0);
 		if(!xinfo[i].crop)
 		{
 			w=dinfo->image_width;  h=dinfo->image_height;

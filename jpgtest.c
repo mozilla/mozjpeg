@@ -44,7 +44,7 @@ const char *_pfname[]={"RGB", "RGBX", "BGR", "BGRX", "XBGR", "XRGB"};
 const char *_subnamel[NUMSUBOPT]={"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"};
 const char *_subnames[NUMSUBOPT]={"444", "422", "420", "GRAY", "440"};
 tjscalingfactor *sf=NULL;  int nsf=0;
-int xformop=TJXFORM_NONE, xformopt=0;
+int xformop=TJXOP_NONE, xformopt=0;
 double benchtime=5.0;
 
 void printsigfig(double val, int figs)
@@ -477,26 +477,26 @@ void dodecomptest(char *filename)
 		}
 
 		_jpegsub=jpegsub;
-		if(dotile || xformop!=TJXFORM_NONE || xformopt!=0)
+		if(dotile || xformop!=TJXOP_NONE || xformopt!=0)
 		{
 			if((t=(tjtransform *)malloc(sizeof(tjtransform)*numtilesx*numtilesy))
 				==NULL)
 				_throwunix("allocating image transform array");
 
-			if(xformop==TJXFORM_TRANSPOSE || xformop==TJXFORM_TRANSVERSE
-				|| xformop==TJXFORM_ROT90 || xformop==TJXFORM_ROT270)
+			if(xformop==TJXOP_TRANSPOSE || xformop==TJXOP_TRANSVERSE
+				|| xformop==TJXOP_ROT90 || xformop==TJXOP_ROT270)
 			{
 				_w=h;  _h=w;  _tilesizex=tilesizey;  _tilesizey=tilesizex;
 			}
 
-			if(xformopt&TJXFORM_GRAY) _jpegsub=TJ_GRAYSCALE;
-			if(xformop==TJXFORM_HFLIP || xformop==TJXFORM_ROT180)
+			if(xformopt&TJXOPT_GRAY) _jpegsub=TJ_GRAYSCALE;
+			if(xformop==TJXOP_HFLIP || xformop==TJXOP_ROT180)
 				_w=_w-(_w%tjMCUWidth[_jpegsub]);
-			if(xformop==TJXFORM_VFLIP || xformop==TJXFORM_ROT180)
+			if(xformop==TJXOP_VFLIP || xformop==TJXOP_ROT180)
 				_h=_h-(_h%tjMCUHeight[_jpegsub]);
-			if(xformop==TJXFORM_TRANSVERSE || xformop==TJXFORM_ROT90)
+			if(xformop==TJXOP_TRANSVERSE || xformop==TJXOP_ROT90)
 				_w=_w-(_w%tjMCUHeight[_jpegsub]);
-			if(xformop==TJXFORM_TRANSVERSE || xformop==TJXFORM_ROT270)
+			if(xformop==TJXOP_TRANSVERSE || xformop==TJXOP_ROT270)
 				_h=_h-(_h%tjMCUWidth[_jpegsub]);
 			_numtilesx=(_w+_tilesizex-1)/_tilesizex;
 			_numtilesy=(_h+_tilesizey-1)/_tilesizey;
@@ -510,7 +510,7 @@ void dodecomptest(char *filename)
 					t[tilen].r.x=j;
 					t[tilen].r.y=i;
 					t[tilen].op=xformop;
-					t[tilen].options=xformopt|TJXFORM_TRIM;
+					t[tilen].options=xformopt|TJXOPT_TRIM;
 				}
 			}
 
@@ -679,7 +679,7 @@ int main(int argc, char *argv[])
 		{
 			if(!stricmp(argv[i], "-tile"))
 			{
-				dotile=1;  xformopt|=TJXFORM_CROP;
+				dotile=1;  xformopt|=TJXOPT_CROP;
 			}
 			if(!stricmp(argv[i], "-forcesse3"))
 			{
@@ -732,14 +732,14 @@ int main(int argc, char *argv[])
 				}
 				else usage(argv[0]);
 			}
-			if(!stricmp(argv[i], "-hflip")) xformop=TJXFORM_HFLIP;
-			if(!stricmp(argv[i], "-vflip")) xformop=TJXFORM_VFLIP;
-			if(!stricmp(argv[i], "-transpose")) xformop=TJXFORM_TRANSPOSE;
-			if(!stricmp(argv[i], "-transverse")) xformop=TJXFORM_TRANSVERSE;
-			if(!stricmp(argv[i], "-rot90")) xformop=TJXFORM_ROT90;
-			if(!stricmp(argv[i], "-rot180")) xformop=TJXFORM_ROT180;
-			if(!stricmp(argv[i], "-rot270")) xformop=TJXFORM_ROT270;
-			if(!stricmp(argv[i], "-grayscale")) xformopt|=TJXFORM_GRAY;
+			if(!stricmp(argv[i], "-hflip")) xformop=TJXOP_HFLIP;
+			if(!stricmp(argv[i], "-vflip")) xformop=TJXOP_VFLIP;
+			if(!stricmp(argv[i], "-transpose")) xformop=TJXOP_TRANSPOSE;
+			if(!stricmp(argv[i], "-transverse")) xformop=TJXOP_TRANSVERSE;
+			if(!stricmp(argv[i], "-rot90")) xformop=TJXOP_ROT90;
+			if(!stricmp(argv[i], "-rot180")) xformop=TJXOP_ROT180;
+			if(!stricmp(argv[i], "-rot270")) xformop=TJXOP_ROT270;
+			if(!stricmp(argv[i], "-grayscale")) xformopt|=TJXOPT_GRAY;
 			if(!stricmp(argv[i], "-benchtime") && i<argc-1)
 			{
 				double temp=atof(argv[++i]);

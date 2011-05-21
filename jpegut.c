@@ -214,7 +214,7 @@ int checkbuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 int checkbufyuv(unsigned char *buf, int w, int h, int subsamp)
 {
 	int i, j;
-	int hsf=tjmcuw[subsamp]/8, vsf=tjmcuh[subsamp]/8;
+	int hsf=tjMCUWidth[subsamp]/8, vsf=tjMCUHeight[subsamp]/8;
 	int pw=PAD(w, hsf), ph=PAD(h, vsf);
 	int cw=pw/hsf, ch=ph/vsf;
 	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);

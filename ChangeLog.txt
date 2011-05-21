@@ -35,6 +35,11 @@ still is-- see README-turbo.txt.)
 conversion routines to accelerate JPEG decoding on ARM Linux platforms that
 have NEON instructions.
 
+[11] Refactored the TurboJPEG C API so that it uses pixel formats to define the
+size and component order of the uncompressed source/destination images as well
+as uses the libjpeg memory source and destination managers.  The latter allows
+the TurboJPEG compressor to grow the JPEG buffer as necessary.
+
 
 1.1.1
 =====

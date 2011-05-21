@@ -25,6 +25,9 @@ TURBOJPEG_1.1
 TURBOJPEG_1.2
 {
 	global:
+		tjCompress2
+		tjDecompress2
+		tjEncodeYUV2
 		tjGetScalingFactors;
 		tjInitTransform;
 		tjTransform;

@@ -491,13 +491,13 @@ void dodecomptest(char *filename)
 
 			if(xformopt&TJXFORM_GRAY) _jpegsub=TJ_GRAYSCALE;
 			if(xformop==TJXFORM_HFLIP || xformop==TJXFORM_ROT180)
-				_w=_w-(_w%tjmcuw[_jpegsub]);
+				_w=_w-(_w%tjMCUWidth[_jpegsub]);
 			if(xformop==TJXFORM_VFLIP || xformop==TJXFORM_ROT180)
-				_h=_h-(_h%tjmcuh[_jpegsub]);
+				_h=_h-(_h%tjMCUHeight[_jpegsub]);
 			if(xformop==TJXFORM_TRANSVERSE || xformop==TJXFORM_ROT90)
-				_w=_w-(_w%tjmcuh[_jpegsub]);
+				_w=_w-(_w%tjMCUHeight[_jpegsub]);
 			if(xformop==TJXFORM_TRANSVERSE || xformop==TJXFORM_ROT270)
-				_h=_h-(_h%tjmcuw[_jpegsub]);
+				_h=_h-(_h%tjMCUWidth[_jpegsub]);
 			_numtilesx=(_w+_tilesizex-1)/_tilesizex;
 			_numtilesy=(_h+_tilesizey-1)/_tilesizey;
 

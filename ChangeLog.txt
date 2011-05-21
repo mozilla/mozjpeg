@@ -24,23 +24,14 @@ transform features in TurboJPEG/OSS.
 was necessary in order for it to read 4:2:2 JPEG files that had been losslessly
 transposed or rotated 90 degrees.
 
-[8] Fixed a regression bug in the NSIS script that caused the Windows installer
-build to fail when using the Visual Studio IDE.
-
-[9] Fixed a bug in jpeg_read_coefficients() whereby it would not initialize
-cinfo->image_width and cinfo->image_height if libjpeg v7 or v8 emulation was
-enabled.  This specifically caused the jpegoptim program to fail if it was
-linked against a version of libjpeg-turbo that was built with libjpeg v7 or v8
-emulation.
-
-[10] jchuff.c and jdhuff.c have been re-factored and re-licensed under the
+[8] jchuff.c and jdhuff.c have been re-factored and re-licensed under the
 libjpeg BSD-style license, so the libjpeg-turbo library itself (libjpeg) is no
 longer subject to the terms of the wxWindows Library License (libturbojpeg
 still is-- see README-turbo.txt.)
 
-[11] libjpeg-turbo can now be built with YASM.
+[9] libjpeg-turbo can now be built with YASM.
 
-[12] Added SIMD-accelerated fast integer inverse DCT and YCbCr-to-RGB color
+[10] Added SIMD-accelerated fast integer inverse DCT and YCbCr-to-RGB color
 conversion routines to accelerate JPEG decoding on ARM Linux platforms that
 have NEON instructions.
 

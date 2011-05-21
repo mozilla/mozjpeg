@@ -50,7 +50,6 @@
 
 /**
  * Chrominance subsampling options.
- * @anchor subsamp
  * When an image is converted from the RGB to the YCbCr colorspace as part of
  * the JPEG compression process, some of the Cb and Cr (chrominance) components
  * can be discarded or averaged together to produce a smaller image with little
@@ -58,33 +57,33 @@
  * changes in brightness than small changes in color.)  This is called
  * "chrominance subsampling".
  */
-enum
+enum TJSAMP
 {
   /**
    * 4:4:4 chrominance subsampling (no chrominance subsampling).  The JPEG or
    * YUV image will contain one chrominance component for every pixel in the
    * source image.
    */
-  TJ_444=0,
+  TJSAMP_444=0,
   /**
    * 4:2:2 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 2x1 block of pixels in the source image.
    */
-  TJ_422,
+  TJSAMP_422,
   /**
    * 4:2:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 2x2 block of pixels in the source image.
    */
-  TJ_420,
+  TJSAMP_420,
   /**
    * Grayscale.  The JPEG or YUV image will contain no chrominance components.
    */
-  TJ_GRAYSCALE,
+  TJSAMP_GRAY,
   /**
    * 4:4:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 1x2 block of pixels in the source image.
    */
-  TJ_440
+  TJSAMP_440
 };
 
 /**
@@ -115,51 +114,50 @@ static const int tjMCUHeight[TJ_NUMSAMP] = {8, 8, 16, 8, 16};
 
 /**
  * Pixel formats
- * @anchor pixelformats
  */
-enum
+enum TJPF
 {
   /**
    * RGB pixel format.  The red, green, and blue components in the image are
    * stored in 3-byte pixels in the order R, G, B from lowest to highest byte
    * address within each pixel.
    */
-  TJ_RGB=0,
+  TJPF_RGB=0,
   /**
    * BGR pixel format.  The red, green, and blue components in the image are
    * stored in 3-byte pixels in the order B, G, R from lowest to highest byte
    * address within each pixel.
    */
-  TJ_BGR,
+  TJPF_BGR,
   /**
    * RGBX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from lowest to highest byte
    * address within each pixel.
    */
-  TJ_RGBX,
+  TJPF_RGBX,
   /**
    * BGRX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from lowest to highest byte
    * address within each pixel.
    */
-  TJ_BGRX,
+  TJPF_BGRX,
   /**
    * XBGR pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from highest to lowest byte
    * address within each pixel.
    */
-  TJ_XBGR,
+  TJPF_XBGR,
   /**
    * XRGB pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from highest to lowest byte
    * address within each pixel.
    */
-  TJ_XRGB,
+  TJPF_XRGB,
   /**
    * Grayscale pixel format.  Each 1-byte pixel represents a luminance
    * (brightness) level from 0 to 255.
    */
-  TJ_GRAY
+  TJPF_GRAY
 };
 
 /**
@@ -192,105 +190,102 @@ static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1};
 
 
 /**
- * Bottom-up flag.
- * @anchor flags
  * The uncompressed source/destination image is stored in bottom-up (Windows,
  * OpenGL) order, not top-down (X11) order.
  */
-#define TJ_BOTTOMUP        2
+#define TJFLAG_BOTTOMUP        2
 /**
- * Force MMX flag.  Turn off CPU auto-detection and force TurboJPEG to use MMX
- * code (IPP and 32-bit libjpeg-turbo versions only.)
+ * Turn off CPU auto-detection and force TurboJPEG to use MMX code (IPP and
+ * 32-bit libjpeg-turbo versions only.)
  */
-#define TJ_FORCEMMX        8
+#define TJFLAG_FORCEMMX        8
 /**
- * Force SSE flag.  Turn off CPU auto-detection and force TurboJPEG to use SSE
- * code (32-bit IPP and 32-bit libjpeg-turbo versions only)
+ * Turn off CPU auto-detection and force TurboJPEG to use SSE code (32-bit IPP
+ * and 32-bit libjpeg-turbo versions only)
  */
-#define TJ_FORCESSE       16
+#define TJFLAG_FORCESSE       16
 /**
- * Force SSE2 flag.  Turn off CPU auto-detection and force TurboJPEG to use
- * SSE2 code (32-bit IPP and 32-bit libjpeg-turbo versions only)
+ * Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (32-bit IPP
+ * and 32-bit libjpeg-turbo versions only)
  */
-#define TJ_FORCESSE2      32
+#define TJFLAG_FORCESSE2      32
 /**
- * Force SSE3 flag.  Turn off CPU auto-detection and force TurboJPEG to use
- * SSE3 code (64-bit IPP version only)
+ * Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (64-bit IPP
+ * version only)
  */
-#define TJ_FORCESSE3     128
+#define TJFLAG_FORCESSE3     128
 /**
- * Fast upsampling flag.  Use fast, inaccurate chrominance upsampling routines
- * in the JPEG decompressor (libjpeg and libjpeg-turbo versions only)
+ * Use fast, inaccurate chrominance upsampling routines in the JPEG
+ * decompressor (libjpeg and libjpeg-turbo versions only)
  */
-#define TJ_FASTUPSAMPLE  256
+#define TJFLAG_FASTUPSAMPLE  256
 /**
- * No reallocation flag.  If passed to #tjCompress2() or #tjTransform(), this
- * flag will cause those functions to generate an error if the JPEG image
- * buffer is invalid or too small rather than attempting to allocate or
- * reallocate that buffer.  This reproduces the behavior of earlier versions of
- * TurboJPEG.
+ * Disable buffer (re)allocation.  If passed to #tjCompress2() or
+ * #tjTransform(), this flag will cause those functions to generate an error if
+ * the JPEG image buffer is invalid or too small rather than attempting to
+ * allocate or reallocate that buffer.  This reproduces the behavior of earlier
+ * versions of TurboJPEG.
  */
-#define TJ_NOREALLOC     1024
+#define TJFLAG_NOREALLOC     1024
 
 
 /**
  * Number of transform operations
  */
-#define NUMXFORMOPT 8
+#define TJ_NUMXOP 8
 
 /**
- * Transform operations for #tjTransform
- * @anchor xformop
+ * Transform operations for #tjTransform()
  */
-enum
+enum TJXOP
 {
   /**
    * Do not transform the position of the image pixels
    */
-  TJXFORM_NONE=0,
+  TJXOP_NONE=0,
   /**
    * Flip (mirror) image horizontally.  This transform is imperfect if there
-   * are any partial MCU blocks on the right edge (see #TJXFORM_PERFECT.)
+   * are any partial MCU blocks on the right edge (see #TJXOPT_PERFECT.)
    */
-  TJXFORM_HFLIP,
+  TJXOP_HFLIP,
   /**
    * Flip (mirror) image vertically.  This transform is imperfect if there are
-   * any partial MCU blocks on the bottom edge (see #TJXFORM_PERFECT.)
+   * any partial MCU blocks on the bottom edge (see #TJXOPT_PERFECT.)
    */
-  TJXFORM_VFLIP,
+  TJXOP_VFLIP,
   /**
    * Transpose image (flip/mirror along upper left to lower right axis.)  This
    * transform is always perfect.
    */
-  TJXFORM_TRANSPOSE,
+  TJXOP_TRANSPOSE,
   /**
    * Transverse transpose image (flip/mirror along upper right to lower left
    * axis.)  This transform is imperfect if there are any partial MCU blocks in
-   * the image (see #TJXFORM_PERFECT.)
+   * the image (see #TJXOPT_PERFECT.)
    */
-  TJXFORM_TRANSVERSE,
+  TJXOP_TRANSVERSE,
   /**
    * Rotate image clockwise by 90 degrees.  This transform is imperfect if
    * there are any partial MCU blocks on the bottom edge (see
-   * #TJXFORM_PERFECT.)
+   * #TJXOPT_PERFECT.)
    */
-  TJXFORM_ROT90,
+  TJXOP_ROT90,
   /**
    * Rotate image 180 degrees.  This transform is imperfect if there are any
-   * partial MCU blocks in the image (see #TJXFORM_PERFECT.)
+   * partial MCU blocks in the image (see #TJXOPT_PERFECT.)
    */
-  TJXFORM_ROT180,
+  TJXOP_ROT180,
   /**
    * Rotate image counter-clockwise by 90 degrees.  This transform is imperfect
    * if there are any partial MCU blocks on the right edge (see
-   * #TJXFORM_PERFECT.)
+   * #TJXOPT_PERFECT.)
    */
-  TJXFORM_ROT270
+  TJXOP_ROT270
 };
 
 
 /**
- * This option will cause #tjTransform to return an error if the transform is
+ * This option will cause #tjTransform() to return an error if the transform is
  * not perfect.  Lossless transforms operate on MCU blocks, whose size depends
  * on the level of chrominance subsampling used (see #tjMCUWidth
  * and #tjMCUHeight.)  If the image's width or height is not evenly divisible
@@ -301,23 +296,22 @@ enum
  * that cannot be transformed will be left in place, which will create
  * odd-looking strips on the right or bottom edge of the image.
  */
-#define TJXFORM_PERFECT  1
+#define TJXOPT_PERFECT  1
 /**
- * This option will cause #tjTransform to discard any partial MCU blocks that
+ * This option will cause #tjTransform() to discard any partial MCU blocks that
  * cannot be transformed.
  */
-#define TJXFORM_TRIM     2
+#define TJXOPT_TRIM     2
 /**
- * This option will enable lossless cropping.  See #tjTransform for more
+ * This option will enable lossless cropping.  See #tjTransform() for more
  * information.
  */
-#define TJXFORM_CROP     4
+#define TJXOPT_CROP     4
 /**
  * This option will discard the color data in the input image and produce
  * a grayscale output image.
- * @anchor xformopt
  */
-#define TJXFORM_GRAY     8
+#define TJXOPT_GRAY     8
 
 
 /**
@@ -372,12 +366,11 @@ typedef struct
    */
   tjregion r;
   /**
-   * One of the transform operations (see @ref xformop "Transform operations".)
+   * One of the @ref TJXOP "transform operations"
    */
   int op;
   /**
-   * The bitwise OR of one of more of the transform options (see @ref xformopt
-   * "Transform options".)
+   * The bitwise OR of one of more of the @ref TJXOPT_CROP "transform options"
    */
   int options;
 } tjtransform;
@@ -394,8 +387,8 @@ typedef void* tjhandle;
 #define TJPAD(width) (((width)+3)&(~3))
 
 /**
- * Compute the scaled value of dimension using the given scaling factor.  This
- * macro performs the integer equivalent of <tt>ceil(dimension *
+ * Compute the scaled value of <tt>dimension</tt> using the given scaling
+ * factor.  This macro performs the integer equivalent of <tt>ceil(dimension *
  * scalingFactor)</tt>. 
  */
 #define TJSCALED(dimension, scalingFactor) ((dimension * scalingFactor.num \
@@ -431,7 +424,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  *        to skip lines, etc.  Setting this parameter to 0 is the equivalent of
  *        setting it to <tt>width * #tjPixelSize[pixelFormat]</tt>.
  * @param height height (in pixels) of the source image
- * @param pixelFormat pixel format of the source image (see @ref pixelformats
+ * @param pixelFormat pixel format of the source image (see @ref TJPF
  *        "Pixel formats".)
  * @param jpegBuf address of a pointer to an image buffer that will receive the
  *        JPEG image.  TurboJPEG has the ability to reallocate the JPEG buffer
@@ -442,24 +435,24 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  *        buffer for you, or
  *        -# pre-allocate the buffer to a "worst case" size determined by
  *        calling #TJBUFSIZE().  This should ensure that the buffer never has
- *        to be re-allocated (setting the #TJ_NOREALLOC flag guarantees this.)
+ *        to be re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
  *        .
  *        If you choose option 1 or 3, <tt>*jpegSize</tt> should be set to the
  *        size of your pre-allocated buffer.  In any case, unless you have
- *        set the #TJ_NOREALLOC flag, you should always check
- *        <tt>*jpegBuf</tt> upon return from this function, as it may have
- *        changed.
+ *        set #TJFLAG_NOREALLOC, you should always check <tt>*jpegBuf</tt> upon
+ *        return from this function, as it may have changed.
  * @param jpegSize pointer to an unsigned long variable which holds the size of
  *        the JPEG image buffer.  If <tt>*jpegBuf</tt> points to a
  *        pre-allocated buffer, then <tt>*jpegSize</tt> should be set to the
  *        size of the buffer.  Upon return, <tt>*jpegSize</tt> will contain the
  *        size of the JPEG image (in bytes.)
  * @param jpegSubsamp the level of chrominance subsampling to be used when
- *        generating the JPEG image (see @ref subsamp
+ *        generating the JPEG image (see @ref TJSAMP
  *        "Chrominance subsampling options".)
  * @param jpegQual the image quality of the generated JPEG image (1 = worst,
           100 = best)
- * @param flags the bitwise OR of one or more of the @ref flags.
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -488,7 +481,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
  * @param width width of the image (in pixels)
  * @param height height of the image (in pixels)
  * @param jpegSubsamp level of chrominance subsampling in the image (see
- *        @ref subsamp "Chrominance subsampling options".)
+ *        @ref TJSAMP "Chrominance subsampling options".)
  *
  * @return the size of the buffer (in bytes) required to hold the image, or
  * -1 if the arguments are out of bounds.
@@ -522,16 +515,17 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
  *        to skip lines, etc.  Setting this parameter to 0 is the equivalent of
  *        setting it to <tt>width * #tjPixelSize[pixelFormat]</tt>.
  * @param height height (in pixels) of the source image
- * @param pixelFormat pixel format of the source image (see @ref pixelformats
+ * @param pixelFormat pixel format of the source image (see @ref TJPF
  *        "Pixel formats".)
  * @param dstBuf pointer to an image buffer which will receive the YUV image.
  *        Use #TJBUFSIZEYUV() to determine the appropriate size for this buffer
  *        based on the image width, height, and level of chrominance
  *        subsampling.
  * @param subsamp the level of chrominance subsampling to be used when
- *        generating the YUV image (see @ref subsamp
+ *        generating the YUV image (see @ref TJSAMP
  *        "Chrominance subsampling options".)
- * @param flags the bitwise OR of one or more of the @ref flags.
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -561,7 +555,7 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
  *        (in pixels) of the JPEG image
  * @param jpegSubsamp pointer to an integer variable which will receive the
  *        level of chrominance subsampling used when compressing the JPEG image
- *        (see @ref subsamp "Chrominance subsampling options".)
+ *        (see @ref TJSAMP "Chrominance subsampling options".)
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -619,8 +613,9 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  *        height is set to 0, then only the width will be considered when
  *        determining the scaled image size.
  * @param pixelFormat pixel format of the destination image (see @ref
- *        pixelformats "Pixel formats".)
- * @param flags the bitwise OR of one or more of the @ref flags.
+ *        TJPF "Pixel formats".)
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -644,7 +639,8 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * @param dstBuf pointer to an image buffer which will receive the YUV image.
  *        Use #TJBUFSIZEYUV to determine the appropriate size for this buffer
  *        based on the image width, height, and level of subsampling.
- * @param flags the bitwise OR of one or more of the @ref flags.
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -690,14 +686,13 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *        buffer for you, or
  *        -# pre-allocate the buffer to a "worst case" size determined by
  *        calling #TJBUFSIZE() with the cropped width and height.  This should
- *        ensure that the buffer never has to be re-allocated (setting the
- *        #TJ_NOREALLOC flag guarantees this.)
+ *        ensure that the buffer never has to be re-allocated (setting
+ *        #TJFLAG_NOREALLOC guarantees this.)
  *        .
  *        If you choose option 1 or 3, <tt>dstSizes[i]</tt> should be set to
  *        the size of your pre-allocated buffer.  In any case, unless you have
- *        set the #TJ_NOREALLOC flag, you should always check
- *        <tt>dstBufs[i]</tt> upon return from this function, as it may have
- *        changed.
+ *        set #TJFLAG_NOREALLOC, you should always check <tt>dstBufs[i]</tt>
+ *        upon return from this function, as it may have changed.
  * @param dstSizes pointer to an array of n unsigned long variables which will
  *        receive the actual sizes (in bytes) of each transformed JPEG image.
  *        If <tt>dstBufs[i]</tt> points to a pre-allocated buffer, then
@@ -707,7 +702,8 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  * @param transforms pointer to an array of n tjtransform structures, each of
  *        which specifies the transform parameters and/or cropping region for
  *        the corresponding transformed output image.
- * @param flags the bitwise OR of one or more of the @ref flags.
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -737,9 +733,20 @@ DLLEXPORT char* DLLCALL tjGetErrorStr(void);
 
 /* Backward compatibility functions and macros (nothing to see here) */
 #define NUMSUBOPT TJ_NUMSAMP
-#define TJ_411 TJ_420
+#define TJ_444 TJSAMP_444
+#define TJ_422 TJSAMP_422
+#define TJ_420 TJSAMP_420
+#define TJ_411 TJSAMP_420
+#define TJ_GRAYSCALE TJSAMP_GRAY
 
+#define TJ_BGR 1
+#define TJ_BOTTOMUP TJFLAG_BOTTOMUP
+#define TJ_FORCEMMX TJFLAG_FORCEMMX
+#define TJ_FORCESSE TJFLAG_FORCESSE
+#define TJ_FORCESSE2 TJFLAG_FORCESSE2
 #define TJ_ALPHAFIRST 64
+#define TJ_FORCESSE3 TJFLAG_FORCESSE3
+#define TJ_FASTUPSAMPLE TJFLAG_FASTUPSAMPLE
 #define TJ_YUV 512
 
 DLLEXPORT int DLLCALL tjCompress(tjhandle handle, unsigned char *srcBuf,

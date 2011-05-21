@@ -116,7 +116,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 	bailif0(jpegBuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
 	if(tjCompress2(handle, srcBuf, width, pitch, height, pf, &jpegBuf,
-		&jpegSize, jpegSubsamp, jpegQual, flags|TJ_NOREALLOC)==-1)
+		&jpegSize, jpegSubsamp, jpegQual, flags|TJFLAG_NOREALLOC)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, jpegBuf, 0);
 		(*env)->ReleasePrimitiveArrayCritical(env, src, srcBuf, 0);
@@ -160,7 +160,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 	bailif0(jpegBuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
 	if(tjCompress2(handle, srcBuf, width, pitch*sizeof(jint), height, pf,
-		&jpegBuf, &jpegSize, jpegSubsamp, jpegQual, flags|TJ_NOREALLOC)==-1)
+		&jpegBuf, &jpegSize, jpegSubsamp, jpegQual, flags|TJFLAG_NOREALLOC)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, jpegBuf, 0);
 		(*env)->ReleasePrimitiveArrayCritical(env, src, srcBuf, 0);

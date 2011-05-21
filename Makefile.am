@@ -35,7 +35,7 @@ libjpeg_la_SOURCES += jdarith.c
 endif
 
 libturbojpeg_la_SOURCES = $(libjpeg_la_SOURCES) turbojpegl.c turbojpeg.h \
-	transupp.c transupp.h
+	transupp.c transupp.h jdatadst-tj.c jdatasrc-tj.c
 
 SUBDIRS = java
 

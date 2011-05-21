@@ -170,7 +170,7 @@ if(WITH_SIMD)
   add_dependencies(jpeg-static simd)
 endif()
 
-set(TURBOJPEG_SOURCES turbojpegl.c transupp.c)
+set(TURBOJPEG_SOURCES turbojpegl.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
 if(WITH_JAVA)
   set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
   include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
@@ -185,7 +185,7 @@ target_link_libraries(turbojpeg jpeg-static)
 set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")
 
 add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS}
-  turbojpegl.c transupp.c)
+  turbojpegl.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
 if(NOT MSVC)
   set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
 endif()

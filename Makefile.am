@@ -81,7 +81,7 @@ jpgtest_SOURCES = $(TSTHDRS) jpgtest.c bmp.h bmp.c
 
 jpgtest_LDADD = libturbojpeg.la -lm
 
-jpegut_SOURCES = $(TSTHDRS) jpegut.c bmp.h bmp.c
+jpegut_SOURCES = $(TSTHDRS) jpegut.c bmp.h bmp.c tjutil.h tjutil.c
 
 jpegut_LDADD = libturbojpeg.la
 
@@ -144,6 +144,7 @@ if WITH_JAVA
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi
 endif
 	./jpegut
+	./jpegut -alloc
 	./jpegut -yuv
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgint.jpg testoutint.jpg

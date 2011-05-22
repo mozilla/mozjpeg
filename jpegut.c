@@ -1,192 +1,216 @@
-/* Copyright (C)2004 Landmark Graphics Corporation
- * Copyright (C)2005 Sun Microsystems, Inc.
- * Copyright (C)2009-2011 D. R. Commander
+/*
+ * Copyright (C)2009-2011 D. R. Commander.  All Rights Reserved.
  *
- * This library is free software and may be redistributed and/or modified under
- * the terms of the wxWindows Library License, Version 3.1 or (at your option)
- * any later version.  The full license is in the LICENSE.txt file included
- * with this distribution.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * wxWindows Library License for more details.
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ * - Neither the name of the libjpeg-turbo Project nor the names of its
+ *   contributors may be used to endorse or promote products derived from this
+ *   software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS",
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * This program tests the various code paths in the TurboJPEG JNI Wrapper
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "./rrtimer.h"
-#include "./rrutil.h"
+#include <errno.h>
+#include "./tjutil.h"
 #include "./turbojpeg.h"
 
-#define _catch(f) {if((f)==-1) {printf("TJPEG: %s\n", tjGetErrorStr());  bailout();}}
 
-const char *_subnamel[NUMSUBOPT]={"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"};
-const char *_subnames[NUMSUBOPT]={"444", "422", "420", "GRAY", "440"};
+void usage(char *progName)
+{
+	printf("\nUSAGE: %s [options]\n", progName);
+	printf("Options:\n");
+	printf("-yuv = test YUV encoding/decoding support\n");
+	printf("-alloc = test automatic buffer allocation\n");
+	exit(1);
+}
 
-#define NUMPF 7
-enum {RGB=0, BGR, RGBX, BGRX, XBGR, XRGB, GRAY};
-const int _ps[NUMPF]={3, 3, 4, 4, 4, 4, 1};
-const int _roffset[NUMPF]={0, 2, 0, 2, 3, 1, 0};
-const int _goffset[NUMPF]={1, 1, 1, 1, 2, 2, 0};
-const int _boffset[NUMPF]={2, 0, 2, 0, 1, 3, 0};
-const int _flags[NUMPF]={0, TJ_BGR, 0, TJ_BGR, TJ_BGR|TJ_ALPHAFIRST,
-	TJ_ALPHAFIRST, 0};
-const char *_pfstr[NUMPF]={"RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB",
-	"Grayscale"};
 
-const int _3byteformats[]={RGB, BGR};
-const int _4byteformats[]={RGBX, BGRX, XBGR, XRGB};
-const int _onlygray[]={GRAY};
-const int _onlyrgb[]={RGB};
+#define _throwtj() {printf("TurboJPEG ERROR:\n%s\n", tjGetErrorStr());  \
+	bailout();}
+#define _tj(f) {if((f)==-1) _throwtj();}
+#define _throw(m) {printf("ERROR: %s\n", m);  bailout();}
+
+const char *subNameLong[TJ_NUMSAMP]=
+{
+	"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"
+};
+const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440"};
+
+const char *pixFormatStr[TJ_NUMPF]=
+{
+	"RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale"
+};
+
+const int _3byteFormats[]={TJPF_RGB, TJPF_BGR};
+const int _4byteFormats[]={TJPF_RGBX, TJPF_BGRX, TJPF_XBGR, TJPF_XRGB};
+const int _onlyGray[]={TJPF_GRAY};
+const int _onlyRGB[]={TJPF_RGB};
 
 enum {YUVENCODE=1, YUVDECODE};
-int yuv=0;
+int yuv=0, alloc=0;
 
-int exitstatus=0;
-#define bailout() {exitstatus=-1;  goto bailout;}
+int exitStatus=0;
+#define bailout() {exitStatus=-1;  goto bailout;}
 
 int pixels[9][3]=
 {
 	{0, 255, 0},
 	{255, 0, 255},
-	{255, 255, 0},
-	{0, 0, 255},
 	{0, 255, 255},
 	{255, 0, 0},
+	{255, 255, 0},
+	{0, 0, 255},
 	{255, 255, 255},
 	{0, 0, 0},
-	{255, 0, 0}
+	{0, 0, 255}
 };
 
-void initbuf(unsigned char *buf, int w, int h, int pf, int flags)
+
+void initBuf(unsigned char *buf, int w, int h, int pf, int flags)
 {
-	int ps=_ps[pf], i, _i, j;
-	int roffset=_roffset[pf], goffset=_goffset[pf], boffset=_boffset[pf];
+	int roffset=tjRedOffset[pf];
+	int goffset=tjGreenOffset[pf];
+	int boffset=tjBlueOffset[pf];
+	int ps=tjPixelSize[pf];
+	int index, row, col, halfway=16;
 
 	memset(buf, 0, w*h*ps);
-	if(pf==GRAY)
+	if(pf==TJPF_GRAY)
 	{
-		for(_i=0; _i<16; _i++)
+		for(row=0; row<h; row++)
 		{
-			if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
-			for(j=0; j<w; j++)
+			for(col=0; col<w; col++)
 			{
-				if(((_i/8)+(j/8))%2==0) buf[w*i+j]=255;
-				else buf[w*i+j]=76;
-			}
-		}
-		for(_i=16; _i<h; _i++)
-		{
-			if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
-			for(j=0; j<w; j++)
-			{
-				if(((_i/8)+(j/8))%2==0) buf[w*i+j]=0;
-				else buf[w*i+j]=226;
-			}
-		}
-		return;
-	}
-	for(_i=0; _i<16; _i++)
-	{
-		if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
-		for(j=0; j<w; j++)
-		{
-			buf[(w*i+j)*ps+roffset]=255;
-			if(((_i/8)+(j/8))%2==0)
-			{
-				buf[(w*i+j)*ps+goffset]=255;
-				buf[(w*i+j)*ps+boffset]=255;
+				if(flags&TJFLAG_BOTTOMUP) index=(h-row-1)*w+col;
+				else index=row*w+col;
+				if(((row/8)+(col/8))%2==0) buf[index]=(row<halfway)? 255:0;
+				else buf[index]=(row<halfway)? 76:226;
 			}
 		}
 	}
-	for(_i=16; _i<h; _i++)
+	else
 	{
-		if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
-		for(j=0; j<w; j++)
+		for(row=0; row<h; row++)
 		{
-			if(((_i/8)+(j/8))%2!=0)
+			for(col=0; col<w; col++)
 			{
-				buf[(w*i+j)*ps+roffset]=255;
-				buf[(w*i+j)*ps+goffset]=255;
+				if(flags&TJFLAG_BOTTOMUP) index=(h-row-1)*w+col;
+				else index=row*w+col;
+				if(((row/8)+(col/8))%2==0)
+				{
+					buf[index*ps+roffset]=(row<halfway)? 255:0;
+					buf[index*ps+goffset]=(row<halfway)? 255:0;
+					buf[index*ps+boffset]=(row<halfway)? 255:0;
+				}
+				else
+				{
+					buf[index*ps+roffset]=(row<halfway)? 255:255;
+					buf[index*ps+goffset]=(row<halfway)? 0:255;
+					buf[index*ps+boffset]=0;
+				}
 			}
 		}
 	}
 }
 
+
 #define checkval(v, cv) { \
 	if(v<cv-1 || v>cv+1) { \
-		printf("\nComp. %s at %d,%d should be %d, not %d\n", #v, i, j, cv, v); \
-		retval=0;  goto bailout; \
+		printf("\nComp. %s at %d,%d should be %d, not %d\n",  \
+			#v, row, col, cv, v); \
+		retval=0;  exitStatus=-1;  goto bailout; \
 	}}
 
 #define checkval0(v) { \
 	if(v>1) { \
-		printf("\nComp. %s at %d,%d should be 0, not %d\n", #v, i, j, v); \
-		retval=0;  goto bailout; \
+		printf("\nComp. %s at %d,%d should be 0, not %d\n", #v, row, col, v); \
+		retval=0;  exitStatus=-1;  goto bailout; \
 	}}
 
 #define checkval255(v) { \
 	if(v<254) { \
-		printf("\nComp. %s at %d,%d should be 255, not %d\n", #v, i, j, v); \
-		retval=0;  goto bailout; \
+		printf("\nComp. %s at %d,%d should be 255, not %d\n", #v, row, col, v); \
+		retval=0;  exitStatus=-1;  goto bailout; \
 	}}
 
-int checkbuf(unsigned char *buf, int w, int h, int pf, int subsamp,
-	int scale_num, int scale_denom, int flags)
-{
-	int ps=_ps[pf];
-	int roffset=_roffset[pf], goffset=_goffset[pf], boffset=_boffset[pf];
-	int i, _i, j, retval=1;
-	int halfway=16*scale_num/scale_denom, blocksize=8*scale_num/scale_denom;
 
-	for(_i=0; _i<halfway; _i++)
+int checkBuf(unsigned char *buf, int w, int h, int pf, int subsamp,
+	tjscalingfactor sf, int flags)
+{
+	int roffset=tjRedOffset[pf];
+	int goffset=tjGreenOffset[pf];
+	int boffset=tjBlueOffset[pf];
+	int ps=tjPixelSize[pf];
+	int index, row, col, retval=1;
+	int halfway=16*sf.num/sf.denom;
+	int blocksize=8*sf.num/sf.denom;
+
+	for(row=0; row<h; row++)
 	{
-		if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
-		for(j=0; j<w; j++)
+		for(col=0; col<w; col++)
 		{
-			unsigned char r=buf[(w*i+j)*ps+roffset],
-				g=buf[(w*i+j)*ps+goffset],
-				b=buf[(w*i+j)*ps+boffset];
-			if(((_i/blocksize)+(j/blocksize))%2==0)
+			if(flags&TJFLAG_BOTTOMUP) index=(h-row-1)*w+col;
+			else index=row*w+col;
+			unsigned char r=buf[index*ps+roffset];
+			unsigned char g=buf[index*ps+goffset];
+			unsigned char b=buf[index*ps+boffset];
+			if(((row/blocksize)+(col/blocksize))%2==0)
 			{
-				checkval255(r);  checkval255(g);  checkval255(b);
-			}
-			else
-			{
-				if(subsamp==TJ_GRAYSCALE)
+				if(row<halfway)
 				{
-					checkval(r, 76);  checkval(g, 76);  checkval(b, 76);
+					checkval255(r);  checkval255(g);  checkval255(b);
 				}
 				else
 				{
-					checkval255(r);  checkval0(g);  checkval0(b);
+					checkval0(r);  checkval0(g);  checkval0(b);
 				}
-			}
-		}
-	}
-	for(_i=halfway; _i<h; _i++)
-	{
-		if(flags&TJ_BOTTOMUP) i=h-_i-1;  else i=_i;
-		for(j=0; j<w; j++)
-		{
-			unsigned char r=buf[(w*i+j)*ps+roffset],
-				g=buf[(w*i+j)*ps+goffset],
-				b=buf[(w*i+j)*ps+boffset];
-			if(((_i/blocksize)+(j/blocksize))%2==0)
-			{
-				checkval0(r);  checkval0(g);  checkval0(b);
 			}
 			else
 			{
-				if(subsamp==TJ_GRAYSCALE)
+				if(subsamp==TJSAMP_GRAY)
 				{
-					checkval(r, 226);  checkval(g, 226);  checkval(b, 226);
+					if(row<halfway)
+					{
+						checkval(r, 76);  checkval(g, 76);  checkval(b, 76);
+					}
+					else
+					{
+						checkval(r, 226);  checkval(g, 226);  checkval(b, 226);
+					}
 				}
 				else
 				{
-					checkval255(r);  checkval255(g);  checkval0(b);
+					if(row<halfway)
+					{
+						checkval255(r);  checkval0(g);  checkval0(b);
+					}
+					else
+					{
+						checkval255(r);  checkval255(g);  checkval0(b);
+					}
 				}
 			}
 		}
@@ -196,12 +220,12 @@ int checkbuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 	if(retval==0)
 	{
 		printf("\n");
-		for(i=0; i<h; i++)
+		for(row=0; row<h; row++)
 		{
-			for(j=0; j<w; j++)
+			for(col=0; col<w; col++)
 			{
-				printf("%.3d/%.3d/%.3d ", buf[(w*i+j)*ps+roffset],
-					buf[(w*i+j)*ps+goffset], buf[(w*i+j)*ps+boffset]);
+				printf("%.3d/%.3d/%.3d ", buf[(row*w+col)*ps+roffset],
+					buf[(row*w+col)*ps+goffset], buf[(row*w+col)*ps+boffset]);
 			}
 			printf("\n");
 		}
@@ -209,44 +233,45 @@ int checkbuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 	return retval;
 }
 
+
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 
-int checkbufyuv(unsigned char *buf, int w, int h, int subsamp)
+int checkBufYUV(unsigned char *buf, int w, int h, int subsamp)
 {
-	int i, j;
+	int row, col;
 	int hsf=tjMCUWidth[subsamp]/8, vsf=tjMCUHeight[subsamp]/8;
 	int pw=PAD(w, hsf), ph=PAD(h, vsf);
 	int cw=pw/hsf, ch=ph/vsf;
 	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 	int retval=1;
 
-	for(i=0; i<16; i++)
+	for(row=0; row<16; row++)
 	{
-		for(j=0; j<pw; j++)
+		for(col=0; col<pw; col++)
 		{
-			unsigned char y=buf[ypitch*i+j];
-			if(((i/8)+(j/8))%2==0) checkval255(y)
+			unsigned char y=buf[ypitch*row+col];
+			if(((row/8)+(col/8))%2==0) checkval255(y)
 			else checkval(y, 76)
 		}
 	}
-	for(i=16; i<ph; i++)
+	for(row=16; row<ph; row++)
 	{
-		for(j=0; j<pw; j++)
+		for(col=0; col<pw; col++)
 		{
-			unsigned char y=buf[ypitch*i+j];
-			if(((i/8)+(j/8))%2==0) checkval0(y)
+			unsigned char y=buf[ypitch*row+col];
+			if(((row/8)+(col/8))%2==0) checkval0(y)
 			else checkval(y, 226)
 		}
 	}
-	if(subsamp!=TJ_GRAYSCALE)
+	if(subsamp!=TJSAMP_GRAY)
 	{
-		for(i=0; i<16/vsf; i++)
+		for(row=0; row<16/vsf; row++)
 		{
-			for(j=0; j<cw; j++)
+			for(col=0; col<cw; col++)
 			{
-				unsigned char u=buf[ypitch*ph + (uvpitch*i+j)],
-					v=buf[ypitch*ph + uvpitch*ch + (uvpitch*i+j)];
-				if(((i*vsf/8)+(j*hsf/8))%2==0)
+				unsigned char u=buf[ypitch*ph + (uvpitch*row+col)],
+					v=buf[ypitch*ph + uvpitch*ch + (uvpitch*row+col)];
+				if(((row*vsf/8)+(col*hsf/8))%2==0)
 				{
 					checkval(u, 128);  checkval(v, 128);
 				}
@@ -256,13 +281,13 @@ int checkbufyuv(unsigned char *buf, int w, int h, int subsamp)
 				}
 			}
 		}
-		for(i=16/vsf; i<ch; i++)
+		for(row=16/vsf; row<ch; row++)
 		{
-			for(j=0; j<cw; j++)
+			for(col=0; col<cw; col++)
 			{
-				unsigned char u=buf[ypitch*ph + (uvpitch*i+j)],
-					v=buf[ypitch*ph + uvpitch*ch + (uvpitch*i+j)];
-				if(((i*vsf/8)+(j*hsf/8))%2==0)
+				unsigned char u=buf[ypitch*ph + (uvpitch*row+col)],
+					v=buf[ypitch*ph + uvpitch*ch + (uvpitch*row+col)];
+				if(((row*vsf/8)+(col*hsf/8))%2==0)
 				{
 					checkval(u, 128);  checkval(v, 128);
 				}
@@ -277,24 +302,24 @@ int checkbufyuv(unsigned char *buf, int w, int h, int subsamp)
 	bailout:
 	if(retval==0)
 	{
-		for(i=0; i<ph; i++)
+		for(row=0; row<ph; row++)
 		{
-			for(j=0; j<pw; j++)
-				printf("%.3d ", buf[ypitch*i+j]);
+			for(col=0; col<pw; col++)
+				printf("%.3d ", buf[ypitch*row+col]);
 			printf("\n");
 		}
 		printf("\n");
-		for(i=0; i<ch; i++)
+		for(row=0; row<ch; row++)
 		{
-			for(j=0; j<cw; j++)
-				printf("%.3d ", buf[ypitch*ph + (uvpitch*i+j)]);
+			for(col=0; col<cw; col++)
+				printf("%.3d ", buf[ypitch*ph + (uvpitch*row+col)]);
 			printf("\n");
 		}
 		printf("\n");
-		for(i=0; i<ch; i++)
+		for(row=0; row<ch; row++)
 		{
-			for(j=0; j<cw; j++)
-				printf("%.3d ", buf[ypitch*ph + uvpitch*ch + (uvpitch*i+j)]);
+			for(col=0; col<cw; col++)
+				printf("%.3d ", buf[ypitch*ph + uvpitch*ch + (uvpitch*row+col)]);
 			printf("\n");
 		}
 		printf("\n");
@@ -303,189 +328,182 @@ int checkbufyuv(unsigned char *buf, int w, int h, int subsamp)
 	return retval;
 }
 
-void writejpeg(unsigned char *jpegbuf, unsigned long jpgbufsize,
-	char *filename)
+
+void writeJPEG(unsigned char *jpegBuf, unsigned long jpegSize, char *filename)
 {
-	FILE *outfile=NULL;
-	if((outfile=fopen(filename, "wb"))==NULL)
+	FILE *file=fopen(filename, "wb");
+	if(!file || fwrite(jpegBuf, jpegSize, 1, file)!=1)
 	{
-		printf("ERROR: Could not open %s for writing.\n", filename);
-		bailout();
-	}
-	if(fwrite(jpegbuf, jpgbufsize, 1, outfile)!=1)
-	{
-		printf("ERROR: Could not write to %s.\n", filename);
+		printf("ERROR: Could not write to %s.\n%s\n", filename, strerror(errno));
 		bailout();
 	}
 
 	bailout:
-	if(outfile) fclose(outfile);
+	if(file) fclose(file);
 }
 
-void gentestjpeg(tjhandle hnd, unsigned char *jpegbuf, unsigned long *size,
-	int w, int h, int pf, char *basefilename, int subsamp, int qual, int flags)
+
+void compTest(tjhandle handle, unsigned char **dstBuf,
+	unsigned long *dstSize, int w, int h, int pf, char *basename,
+	int subsamp, int jpegQual, int flags)
 {
-	char tempstr[1024];  unsigned char *bmpbuf=NULL;
-	int ps=_ps[pf];  double t;
+	char tempStr[1024];  unsigned char *srcBuf=NULL;
+	double t;
 
 	if(yuv==YUVENCODE)
-		printf("%s %s -> %s YUV ... ", _pfstr[pf],
-			(flags&TJ_BOTTOMUP)?"Bottom-Up":"Top-Down ", _subnamel[subsamp]);
+		printf("%s %s -> %s YUV ... ", pixFormatStr[pf],
+			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp]);
 	else
-		printf("%s %s -> %s Q%d ... ", _pfstr[pf],
-			(flags&TJ_BOTTOMUP)?"Bottom-Up":"Top-Down ", _subnamel[subsamp], qual);
+		printf("%s %s -> %s Q%d ... ", pixFormatStr[pf],
+			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp],
+			jpegQual);
 
-	if((bmpbuf=(unsigned char *)malloc(w*h*ps+1))==NULL)
-	{
-		printf("ERROR: Could not allocate buffer\n");  bailout();
-	}
-	initbuf(bmpbuf, w, h, pf, flags);
-	memset(jpegbuf, 0,
-		yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
+	if((srcBuf=(unsigned char *)malloc(w*h*tjPixelSize[pf]))==NULL)
+		_throw("Memory allocation failure");
+	initBuf(srcBuf, w, h, pf, flags);
+	if(*dstBuf && *dstSize>0) memset(*dstBuf, 0, *dstSize);
 
-	t=rrtime();
+	t=gettime();
 	if(yuv==YUVENCODE)
 	{
-		_catch(tjEncodeYUV(hnd, bmpbuf, w, 0, h, ps, jpegbuf, subsamp,
-			flags|_flags[pf]));
-		*size=TJBUFSIZEYUV(w, h, subsamp);
+		_tj(tjEncodeYUV2(handle, srcBuf, w, 0, h, pf, *dstBuf, subsamp, flags));
 	}
 	else
 	{
-		_catch(tjCompress(hnd, bmpbuf, w, 0, h, ps, jpegbuf, size, subsamp, qual,
-			flags|_flags[pf]));
+		if(!alloc)
+		{
+			flags|=TJFLAG_NOREALLOC;
+			*dstSize=(yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
+		}
+		_tj(tjCompress2(handle, srcBuf, w, 0, h, pf, dstBuf, dstSize, subsamp,
+			jpegQual, flags));
 	}
-	t=rrtime()-t;
+	t=gettime()-t;
 
 	if(yuv==YUVENCODE)
-		snprintf(tempstr, 1024, "%s_enc_%s_%s_%s.yuv", basefilename, _pfstr[pf],
-			(flags&TJ_BOTTOMUP)? "BU":"TD", _subnames[subsamp]);
+		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s.yuv", basename, pixFormatStr[pf],
+			(flags&TJFLAG_BOTTOMUP)? "BU":"TD", subName[subsamp]);
 	else
-		snprintf(tempstr, 1024, "%s_enc_%s_%s_%s_Q%d.jpg", basefilename, _pfstr[pf],
-			(flags&TJ_BOTTOMUP)? "BU":"TD", _subnames[subsamp], qual);
-	writejpeg(jpegbuf, *size, tempstr);
+		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s_Q%d.jpg", basename,
+			pixFormatStr[pf], (flags&TJFLAG_BOTTOMUP)? "BU":"TD", subName[subsamp],
+			jpegQual);
+	writeJPEG(*dstBuf, *dstSize, tempStr);
 	if(yuv==YUVENCODE)
 	{
-		if(checkbufyuv(jpegbuf, w, h, subsamp)) printf("Passed.");
-		else {printf("FAILED!");  exitstatus=-1;}
+		if(checkBufYUV(*dstBuf, w, h, subsamp)) printf("Passed.");
+		else printf("FAILED!");
 	}
 	else printf("Done.");
-	printf("  %f ms\n  Result in %s\n", t*1000., tempstr);
+	printf("  %f ms\n  Result in %s\n", t*1000., tempStr);
 
 	bailout:
-	if(bmpbuf) free(bmpbuf);
+	if(srcBuf) free(srcBuf);
 }
 
-void _gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
-	int w, int h, int pf, char *basefilename, int subsamp, int flags,
-	int scale_num, int scale_denom)
+
+void _decompTest(tjhandle handle, unsigned char *jpegBuf,
+	unsigned long jpegSize, int w, int h, int pf, char *basename, int subsamp,
+	int flags, tjscalingfactor sf)
 {
-	unsigned char *bmpbuf=NULL;
+	unsigned char *dstBuf=NULL;
 	int _hdrw=0, _hdrh=0, _hdrsubsamp=-1;  double t;
-	int scaledw=(w*scale_num+scale_denom-1)/scale_denom;
-	int scaledh=(h*scale_num+scale_denom-1)/scale_denom;
-	int ps=_ps[pf];
-	unsigned long size=0;
+	int scaledWidth=TJSCALED(w, sf);
+	int scaledHeight=TJSCALED(h, sf);
+	unsigned long dstSize=0;
 
 	if(yuv==YUVENCODE) return;
 
 	if(yuv==YUVDECODE)
-		printf("JPEG -> YUV %s ... ", _subnames[subsamp]);
+		printf("JPEG -> YUV %s ... ", subName[subsamp]);
 	else
 	{
-		printf("JPEG -> %s %s ", _pfstr[pf],
-			(flags&TJ_BOTTOMUP)?"Bottom-Up":"Top-Down ");
-		if(scale_num!=1 || scale_denom!=1)
-			printf("%d/%d ... ", scale_num, scale_denom);
+		printf("JPEG -> %s %s ", pixFormatStr[pf],
+			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ");
+		if(sf.num!=1 || sf.denom!=1)
+			printf("%d/%d ... ", sf.num, sf.denom);
 		else printf("... ");
 	}
 
-	_catch(tjDecompressHeader2(hnd, jpegbuf, jpegsize, &_hdrw, &_hdrh,
+	_tj(tjDecompressHeader2(handle, jpegBuf, jpegSize, &_hdrw, &_hdrh,
 		&_hdrsubsamp));
 	if(_hdrw!=w || _hdrh!=h || _hdrsubsamp!=subsamp)
-	{
-		printf("Incorrect JPEG header\n");  bailout();
-	}
+		_throw("Incorrect JPEG header");
 
-	if(yuv==YUVDECODE) size=TJBUFSIZEYUV(w, h, subsamp);
-	else size=scaledw*scaledh*ps+1;
-	if((bmpbuf=(unsigned char *)malloc(size))==NULL)
-	{
-		printf("ERROR: Could not allocate buffer\n");  bailout();
-	}
-	memset(bmpbuf, 0, size);
+	if(yuv==YUVDECODE) dstSize=TJBUFSIZEYUV(w, h, subsamp);
+	else dstSize=scaledWidth*scaledHeight*tjPixelSize[pf];
+	if((dstBuf=(unsigned char *)malloc(dstSize))==NULL)
+		_throw("Memory allocation failure");
+	memset(dstBuf, 0, dstSize);
 
-	t=rrtime();
+	t=gettime();
 	if(yuv==YUVDECODE)
 	{
-		_catch(tjDecompressToYUV(hnd, jpegbuf, jpegsize, bmpbuf,
-			flags|_flags[pf]));
+		_tj(tjDecompressToYUV(handle, jpegBuf, jpegSize, dstBuf, flags));
 	}
 	else
 	{
-		_catch(tjDecompress(hnd, jpegbuf, jpegsize, bmpbuf, scaledw, 0, scaledh,
-			ps, flags|_flags[pf]));
+		_tj(tjDecompress2(handle, jpegBuf, jpegSize, dstBuf, scaledWidth, 0,
+			scaledHeight, pf, flags));
 	}
-	t=rrtime()-t;
+	t=gettime()-t;
 
 	if(yuv==YUVDECODE)
 	{
-		if(checkbufyuv(bmpbuf, w, h, subsamp)) printf("Passed.");
-		else {printf("FAILED!");  exitstatus=-1;}
+		if(checkBufYUV(dstBuf, w, h, subsamp)) printf("Passed.");
+		printf("FAILED!");
 	}
 	else
 	{
-		if(checkbuf(bmpbuf, scaledw, scaledh, pf, subsamp, scale_num, scale_denom,
-			flags)) printf("Passed.");
-		else {printf("FAILED!");  exitstatus=-1;}
+		if(checkBuf(dstBuf, scaledWidth, scaledHeight, pf, subsamp, sf, flags))
+			printf("Passed.");
+		else printf("FAILED!");
 	}
 	printf("  %f ms\n", t*1000.);
 
 	bailout:
-	if(bmpbuf) free(bmpbuf);
+	if(dstBuf) free(dstBuf);
 }
 
-void gentestbmp(tjhandle hnd, unsigned char *jpegbuf, unsigned long jpegsize,
-	int w, int h, int pf, char *basefilename, int subsamp, int flags)
+
+void decompTest(tjhandle handle, unsigned char *jpegBuf,
+	unsigned long jpegSize, int w, int h, int pf, char *basename, int subsamp,
+	int flags)
 {
 	int i, n=0;
-	tjscalingfactor *sf=tjGetScalingFactors(&n);
-	if(!sf || !n) 
-	{
-		printf("Error in tjGetScalingFactors():\n%s\n", tjGetErrorStr());
-		bailout();
-	}
+	tjscalingfactor *sf=tjGetScalingFactors(&n), sf1={1, 1};
+	if(!sf || !n) _throwtj();
 
-	if((subsamp==TJ_444 || subsamp==TJ_GRAYSCALE) && !yuv)
+	if((subsamp==TJSAMP_444 || subsamp==TJSAMP_GRAY) && !yuv)
 	{
 		for(i=0; i<n; i++)
-			_gentestbmp(hnd, jpegbuf, jpegsize, w, h, pf, basefilename, subsamp,
-				flags, sf[i].num, sf[i].denom);
+			_decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp,
+				flags, sf[i]);
 	}
 	else
-		_gentestbmp(hnd, jpegbuf, jpegsize, w, h, pf, basefilename, subsamp,
-			flags, 1, 1);
+		_decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp, flags,
+			sf1);
 
 	bailout:
 	printf("\n");
 }
 
-void dotest(int w, int h, const int *formats, int nformats, int subsamp,
-	char *basefilename)
-{
-	tjhandle hnd=NULL, dhnd=NULL;  unsigned char *jpegbuf=NULL;
-	unsigned long size;  int pfi, pf, i;
 
-	size=(yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
-	if((jpegbuf=(unsigned char *)malloc(size)) == NULL)
+void doTest(int w, int h, const int *formats, int nformats, int subsamp,
+	char *basename)
+{
+	tjhandle chandle=NULL, dhandle=NULL;
+	unsigned char *dstBuf=NULL;
+	unsigned long size=0;  int pfi, pf, i;
+
+	if(!alloc)
 	{
-		puts("ERROR: Could not allocate buffer.");  bailout();
+		size=(yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
+		if((dstBuf=(unsigned char *)malloc(size))==NULL)
+			_throw("Memory allocation failure.");
 	}
 
-	if((hnd=tjInitCompress())==NULL)
-		{printf("Error in tjInitCompress():\n%s\n", tjGetErrorStr());  bailout();}
-	if((dhnd=tjInitDecompress())==NULL)
-		{printf("Error in tjInitDecompress():\n%s\n", tjGetErrorStr());  bailout();}
+	if((chandle=tjInitCompress())==NULL || (dhandle=tjInitDecompress())==NULL)
+		_throwtj();
 
 	for(pfi=0; pfi<nformats; pfi++)
 	{
@@ -495,110 +513,132 @@ void dotest(int w, int h, const int *formats, int nformats, int subsamp,
 			if(i==1)
 			{
 				if(yuv==YUVDECODE) goto bailout;
-				else flags|=TJ_BOTTOMUP;
+				else flags|=TJFLAG_BOTTOMUP;
 			}
 			pf=formats[pfi];
-			gentestjpeg(hnd, jpegbuf, &size, w, h, pf, basefilename, subsamp, 100,
+			compTest(chandle, &dstBuf, &size, w, h, pf, basename, subsamp, 100,
 				flags);
-			gentestbmp(dhnd, jpegbuf, size, w, h, pf, basefilename, subsamp, flags);
+			decompTest(dhandle, dstBuf, size, w, h, pf, basename, subsamp,
+				flags);
 		}
 	}
 
 	bailout:
-	if(hnd) tjDestroy(hnd);
-	if(dhnd) tjDestroy(dhnd);
+	if(chandle) tjDestroy(chandle);
+	if(dhandle) tjDestroy(dhandle);
 
-	if(jpegbuf) free(jpegbuf);
+	if(dstBuf) free(dstBuf);
 }
 
-#define MAXLENGTH 2048
 
-void dotest1(void)
+void doTest1(void)
 {
-	int i, j, i2;  unsigned char *bmpbuf=NULL, *jpgbuf=NULL;
-	tjhandle hnd=NULL;  unsigned long size;
-	if((hnd=tjInitCompress())==NULL)
-		{printf("Error in tjInitCompress():\n%s\n", tjGetErrorStr());  bailout();}
-	printf("Buffer size regression test\n");
-	for(j=1; j<48; j++)
-	{
-		for(i=1; i<(j==1?MAXLENGTH:48); i++)
-		{
-			if(i%100==0) printf("%.4d x %.4d\b\b\b\b\b\b\b\b\b\b\b", i, j);
-			if((bmpbuf=(unsigned char *)malloc(i*j*4))==NULL
-			|| (jpgbuf=(unsigned char *)malloc(TJBUFSIZE(i, j)))==NULL)
-			{
-				printf("Memory allocation failure\n");  bailout();
-			}
-			memset(bmpbuf, 0, i*j*4);
-			for(i2=0; i2<i*j; i2++)
-			{
-				bmpbuf[i2*4]=pixels[i2%9][2];
-				bmpbuf[i2*4+1]=pixels[i2%9][1];
-				bmpbuf[i2*4+2]=pixels[i2%9][0];
-			}
-			_catch(tjCompress(hnd, bmpbuf, i, 0, j, 4,
-				jpgbuf, &size, TJ_444, 100, TJ_BGR));
-			free(bmpbuf);  bmpbuf=NULL;  free(jpgbuf);  jpgbuf=NULL;
+	int w, h, i;
+	unsigned char *srcBuf=NULL, *jpegBuf=NULL;
+	tjhandle handle=NULL;
+	unsigned long jpegSize=0;
 
-			if((bmpbuf=(unsigned char *)malloc(j*i*4))==NULL
-			|| (jpgbuf=(unsigned char *)malloc(TJBUFSIZE(j, i)))==NULL)
+	if((handle=tjInitCompress())==NULL) _throwtj();
+
+	printf("Buffer size regression test\n");
+	for(w=1; w<48; w++)
+	{
+		int maxh=(w==1)? 2048:48;
+		for(h=1; h<maxh; h++)
+		{
+			if(h%100==0) printf("%.4d x %.4d\b\b\b\b\b\b\b\b\b\b\b", w, h);
+			if((srcBuf=(unsigned char *)malloc(w*h*4))==NULL)
+				_throw("Memory allocation failure");
+			if(!alloc)
 			{
-				printf("Memory allocation failure\n");  bailout();
+				if((jpegBuf=(unsigned char *)malloc(TJBUFSIZE(w, h)))==NULL)
+					_throw("Memory allocation failure");
+				jpegSize=TJBUFSIZE(w, h);
 			}
-			for(i2=0; i2<j*i; i2++)
+			memset(srcBuf, 0, w*h*4);
+
+			for(i=0; i<w*h; i++) memcpy(srcBuf, &pixels[i%9], 3);
+
+			_tj(tjCompress2(handle, srcBuf, w, 0, h, TJPF_BGRX, &jpegBuf, &jpegSize,
+				TJSAMP_444, 100, alloc? 0:TJFLAG_NOREALLOC));
+			free(srcBuf);  srcBuf=NULL;
+			free(jpegBuf);  jpegBuf=NULL;
+
+			if((srcBuf=(unsigned char *)malloc(h*w*4))==NULL)
+				_throw("Memory allocation failure");
+			if(!alloc)
 			{
-				if(i2%2==0) bmpbuf[i2*4]=bmpbuf[i2*4+1]=bmpbuf[i2*4+2]=0xFF;
-				else bmpbuf[i2*4]=bmpbuf[i2*4+1]=bmpbuf[i2*4+2]=0;
+				if((jpegBuf=(unsigned char *)malloc(TJBUFSIZE(h, w)))==NULL)
+					_throw("Memory allocation failure");
+				jpegSize=TJBUFSIZE(h, w);
 			}
-			_catch(tjCompress(hnd, bmpbuf, j, 0, i, 4,
-				jpgbuf, &size, TJ_444, 100, TJ_BGR));
-			free(bmpbuf);  bmpbuf=NULL;  free(jpgbuf);  jpgbuf=NULL;
+
+			for(i=0; i<h*w; i++)
+			{
+				if(i%2==0) srcBuf[i*4]=srcBuf[i*4+1]=srcBuf[i*4+2]=0xFF;
+				else srcBuf[i*4]=srcBuf[i*4+1]=srcBuf[i*4+2]=0;
+			}
+			_tj(tjCompress2(handle, srcBuf, h, 0, w, TJPF_BGRX, &jpegBuf, &jpegSize,
+				TJSAMP_444, 100, alloc? 0:TJFLAG_NOREALLOC));
+			free(srcBuf);  srcBuf=NULL;
+			free(jpegBuf);  jpegBuf=NULL;
 		}
 	}
 	printf("Done.      \n");
 
 	bailout:
-	if(bmpbuf) free(bmpbuf);  if(jpgbuf) free(jpgbuf);
-	if(hnd) tjDestroy(hnd);
+	if(srcBuf) free(srcBuf);
+	if(jpegBuf) free(jpegBuf);
+	if(handle) tjDestroy(handle);
 }
+
 
 int main(int argc, char *argv[])
 {
-	int doyuv=0;
-	if(argc>1 && !stricmp(argv[1], "-yuv")) doyuv=1;
-	if(doyuv) yuv=YUVENCODE;
-	dotest(35, 39, _3byteformats, 2, TJ_444, "test");
-	dotest(39, 41, _4byteformats, 4, TJ_444, "test");
+	int doyuv=0, i;
+	if(argc>1)
+	{
+		for(i=1; i<argc; i++)
+		{
+			if(!strcasecmp(argv[i], "-yuv")) doyuv=1;
+			if(!strcasecmp(argv[i], "-alloc")) alloc=1;
+			if(!strncasecmp(argv[i], "-h", 2) || !strcasecmp(argv[i], "-?"))
+				usage(argv[0]);
+		}
+	}
+	if(alloc) printf("Testing automatic buffer allocation\n");
+	if(doyuv) {yuv=YUVENCODE;  alloc=0;}
+	doTest(35, 39, _3byteFormats, 2, TJSAMP_444, "test");
+	doTest(39, 41, _4byteFormats, 4, TJSAMP_444, "test");
 	if(doyuv)
 	{
-		dotest(41, 35, _3byteformats, 2, TJ_422, "test");
-		dotest(35, 39, _4byteformats, 4, TJ_422, "test");
-		dotest(39, 41, _3byteformats, 2, TJ_420, "test");
-		dotest(41, 35, _4byteformats, 4, TJ_420, "test");
-		dotest(35, 39, _3byteformats, 2, TJSAMP_440, "test");
-		dotest(39, 41, _4byteformats, 4, TJSAMP_440, "test");
+		doTest(41, 35, _3byteFormats, 2, TJSAMP_422, "test");
+		doTest(35, 39, _4byteFormats, 4, TJSAMP_422, "test");
+		doTest(39, 41, _3byteFormats, 2, TJSAMP_420, "test");
+		doTest(41, 35, _4byteFormats, 4, TJSAMP_420, "test");
+		doTest(35, 39, _3byteFormats, 2, TJSAMP_440, "test");
+		doTest(39, 41, _4byteFormats, 4, TJSAMP_440, "test");
 	}
-	dotest(35, 39, _onlygray, 1, TJ_GRAYSCALE, "test");
-	dotest(39, 41, _3byteformats, 2, TJ_GRAYSCALE, "test");
-	dotest(41, 35, _4byteformats, 4, TJ_GRAYSCALE, "test");
-	if(!doyuv) dotest1();
+	doTest(35, 39, _onlyGray, 1, TJSAMP_GRAY, "test");
+	doTest(39, 41, _3byteFormats, 2, TJSAMP_GRAY, "test");
+	doTest(41, 35, _4byteFormats, 4, TJSAMP_GRAY, "test");
+	if(!doyuv) doTest1();
 	if(doyuv)
 	{
 		yuv=YUVDECODE;
-		dotest(48, 48, _onlyrgb, 1, TJ_444, "test_yuv0");
-		dotest(35, 39, _onlyrgb, 1, TJ_444, "test_yuv1");
-		dotest(48, 48, _onlyrgb, 1, TJ_422, "test_yuv0");
-		dotest(39, 41, _onlyrgb, 1, TJ_422, "test_yuv1");
-		dotest(48, 48, _onlyrgb, 1, TJ_420, "test_yuv0");
-		dotest(41, 35, _onlyrgb, 1, TJ_420, "test_yuv1");
-		dotest(48, 48, _onlyrgb, 1, TJSAMP_440, "test_yuv0");
-		dotest(35, 39, _onlyrgb, 1, TJSAMP_440, "test_yuv1");
-		dotest(48, 48, _onlyrgb, 1, TJ_GRAYSCALE, "test_yuv0");
-		dotest(35, 39, _onlyrgb, 1, TJ_GRAYSCALE, "test_yuv1");
-		dotest(48, 48, _onlygray, 1, TJ_GRAYSCALE, "test_yuv0");
-		dotest(39, 41, _onlygray, 1, TJ_GRAYSCALE, "test_yuv1");
+		doTest(48, 48, _onlyRGB, 1, TJSAMP_444, "test_yuv0");
+		doTest(35, 39, _onlyRGB, 1, TJSAMP_444, "test_yuv1");
+		doTest(48, 48, _onlyRGB, 1, TJSAMP_422, "test_yuv0");
+		doTest(39, 41, _onlyRGB, 1, TJSAMP_422, "test_yuv1");
+		doTest(48, 48, _onlyRGB, 1, TJSAMP_420, "test_yuv0");
+		doTest(41, 35, _onlyRGB, 1, TJSAMP_420, "test_yuv1");
+		doTest(48, 48, _onlyRGB, 1, TJSAMP_440, "test_yuv0");
+		doTest(35, 39, _onlyRGB, 1, TJSAMP_440, "test_yuv1");
+		doTest(48, 48, _onlyRGB, 1, TJSAMP_GRAY, "test_yuv0");
+		doTest(35, 39, _onlyRGB, 1, TJSAMP_GRAY, "test_yuv1");
+		doTest(48, 48, _onlyGray, 1, TJSAMP_GRAY, "test_yuv0");
+		doTest(39, 41, _onlyGray, 1, TJSAMP_GRAY, "test_yuv1");
 	}
 
-	return exitstatus;
+	return exitStatus;
 }

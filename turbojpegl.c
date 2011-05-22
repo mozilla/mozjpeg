@@ -30,11 +30,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #define JPEG_INTERNALS
 #include <jpeglib.h>
 #include <jerror.h>
 #include <setjmp.h>
+#include <jinclude.h>
 #include "./turbojpeg.h"
 #include "./rrutil.h"
 #include "transupp.h"
@@ -88,9 +88,10 @@ typedef struct _tjinstance
 	int init;
 } tjinstance;
 
-static const int pixelsize[NUMSUBOPT]={3, 3, 3, 1, 3};
+static const int pixelsize[TJ_NUMSAMP]={3, 3, 3, 1, 3};
 
-static const JXFORM_CODE xformtypes[TJ_NUMXOP]={
+static const JXFORM_CODE xformtypes[TJ_NUMXOP]=
+{
 	JXFORM_NONE, JXFORM_FLIP_H, JXFORM_FLIP_V, JXFORM_TRANSPOSE,
 	JXFORM_TRANSVERSE, JXFORM_ROT_90, JXFORM_ROT_180, JXFORM_ROT_270
 };
@@ -260,7 +261,7 @@ static tjhandle _tjInitCompress(tjinstance *this)
 	/* Make an initial call so it will create the destination manager */
 	jpeg_mem_dest_tj(&this->cinfo, &buf, &size, 0);
 
-	this->init=COMPRESS;
+	this->init|=COMPRESS;
 	return (tjhandle)this;
 }
 
@@ -269,10 +270,11 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 	tjinstance *this=NULL;
 	if((this=(tjinstance *)malloc(sizeof(tjinstance)))==NULL)
 	{
-		snprintf(errStr, JMSG_LENGTH_MAX, "Memory allocation failure");
+		snprintf(errStr, JMSG_LENGTH_MAX,
+			"tjInitCompress(): Memory allocation failure");
 		return NULL;
 	}
-	memset(this, 0, sizeof(tjinstance));
+	MEMZERO(this, sizeof(tjinstance));
 	return _tjInitCompress(this);
 }
 
@@ -281,12 +283,12 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
 	unsigned long retval=0;
 	if(width<1 || height<1)
-		_throw("Invalid argument in TJBUFSIZE()");
+		_throw("TJBUFSIZE(): Invalid argument");
 
 	// This allows for rare corner cases in which a JPEG image can actually be
 	// larger than the uncompressed input (we wouldn't mention it if it hadn't
 	// happened before.)
-	retval=((width+15)&(~15)) * ((height+15)&(~15)) * 6 + 2048;
+	retval=PAD(width, 16) * PAD(height, 16) * 6 + 2048;
 
 	bailout:
 	return retval;
@@ -299,7 +301,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 	unsigned long retval=0;
 	int pw, ph, cw, ch;
 	if(width<1 || height<1 || subsamp<0 || subsamp>=NUMSUBOPT)
-		_throw("Invalid argument in TJBUFSIZEYUV()");
+		_throw("TJBUFSIZEYUV(): Invalid argument");
 	pw=PAD(width, tjMCUWidth[subsamp]/8);
 	ph=PAD(height, tjMCUHeight[subsamp]/8);
 	cw=pw*8/tjMCUWidth[subsamp];  ch=ph*8/tjMCUHeight[subsamp];
@@ -318,12 +320,12 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 
 	getinstance(handle)
 	if((this->init&COMPRESS)==0)
-		_throw("Instance has not been initialized for compression");
+		_throw("tjCompress2(): Instance has not been initialized for compression");
 
 	if(srcBuf==NULL || width<=0 || pitch<0 || height<=0 || pixelFormat<0
 		|| pixelFormat>=TJ_NUMPF || jpegBuf==NULL || jpegSize==NULL
 		|| jpegSubsamp<0 || jpegSubsamp>=NUMSUBOPT || jpegQual<0 || jpegQual>100)
-		_throw("tjCompress(): Invalid argument");
+		_throw("tjCompress2(): Invalid argument");
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -346,7 +348,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 
 	jpeg_start_compress(cinfo, TRUE);
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
-		_throw("Memory allocation failed in tjCompress()");
+		_throw("tjCompress2(): Memory allocation failure");
 	for(i=0; i<height; i++)
 	{
 		if(flags&TJFLAG_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
@@ -403,7 +405,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 
 	getinstance(handle);
 	if((this->init&COMPRESS)==0)
-		_throw("Instance has not been initialized for compression");
+		_throw("tjEncodeYUV2(): Instance has not been initialized for compression");
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -441,7 +443,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	ph=PAD(height, cinfo->max_v_samp_factor);
 
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ph))==NULL)
-		_throw("Memory allocation failed in tjCompress()");
+		_throw("tjEncodeYUV2(): Memory allocation failure");
 	for(i=0; i<height; i++)
 	{
 		if(flags&TJFLAG_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
@@ -456,9 +458,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		_tmpbuf[i]=(JSAMPLE *)malloc(
 			PAD((compptr->width_in_blocks*cinfo->max_h_samp_factor*DCTSIZE)
 				/compptr->h_samp_factor, 16) * cinfo->max_v_samp_factor + 16);
-		if(!_tmpbuf[i]) _throw("Memory allocation failure");
+		if(!_tmpbuf[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
 		tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*cinfo->max_v_samp_factor);
-		if(!tmpbuf[i]) _throw("Memory allocation failure");
+		if(!tmpbuf[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
 		for(row=0; row<cinfo->max_v_samp_factor; row++)
 		{
 			unsigned char *_tmpbuf_aligned=
@@ -469,9 +471,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		}
 		_tmpbuf2[i]=(JSAMPLE *)malloc(PAD(compptr->width_in_blocks*DCTSIZE, 16)
 			* compptr->v_samp_factor + 16);
-		if(!_tmpbuf2[i]) _throw("Memory allocation failure");
+		if(!_tmpbuf2[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
 		tmpbuf2[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*compptr->v_samp_factor);
-		if(!tmpbuf2[i]) _throw("Memory allocation failure");
+		if(!tmpbuf2[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
 		for(row=0; row<compptr->v_samp_factor; row++)
 		{
 			unsigned char *_tmpbuf2_aligned=
@@ -482,7 +484,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		cw[i]=pw*compptr->h_samp_factor/cinfo->max_h_samp_factor;
 		ch[i]=ph*compptr->v_samp_factor/cinfo->max_v_samp_factor;
 		outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]);
-		if(!outbuf[i]) _throw("Memory allocation failure");
+		if(!outbuf[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
 		for(row=0; row<ch[i]; row++)
 		{
 			outbuf[i][row]=ptr;
@@ -549,7 +551,7 @@ static tjhandle _tjInitDecompress(tjinstance *this)
 	/* Make an initial call so it will create the source manager */
 	jpeg_mem_src_tj(&this->dinfo, buffer, 1);
 
-	this->init=DECOMPRESS;
+	this->init|=DECOMPRESS;
 	return (tjhandle)this;
 }
 
@@ -558,10 +560,11 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void)
 	tjinstance *this;
 	if((this=(tjinstance *)malloc(sizeof(tjinstance)))==NULL)
 	{
-		snprintf(errStr, JMSG_LENGTH_MAX, "Memory allocation failure");
+		snprintf(errStr, JMSG_LENGTH_MAX,
+			"tjInitDecompress(): Memory allocation failure");
 		return NULL;
 	}
-	memset(this, 0, sizeof(tjinstance));
+	MEMZERO(this, sizeof(tjinstance));
 	return _tjInitDecompress(this);
 }
 
@@ -574,7 +577,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle handle,
 
 	getinstance(handle);
 	if((this->init&DECOMPRESS)==0)
-		_throw("Instance has not been initialized for decompression");
+		_throw("tjDecompressHeader2(): Instance has not been initialized for decompression");
 
 	if(jpegBuf==NULL || jpegSize<=0 || width==NULL || height==NULL
 		|| jpegSubsamp==NULL)
@@ -617,8 +620,9 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle handle,
 	jpeg_abort_decompress(dinfo);
 
 	if(*jpegSubsamp<0)
-		_throw("Could not determine subsampling type for JPEG image");
-	if(*width<1 || *height<1) _throw("Invalid data returned in header");
+		_throw("tjDecompressHeader2(): Could not determine subsampling type for JPEG image");
+	if(*width<1 || *height<1)
+		_throw("tjDecompressHeader2(): Invalid data returned in header");
 
 	bailout:
 	return retval;
@@ -638,7 +642,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors)
 	if(numscalingfactors==NULL)
 	{
 		snprintf(errStr, JMSG_LENGTH_MAX,
-			"Invalid argument in tjGetScalingFactors()");
+			"tjGetScalingFactors(): Invalid argument");
 		return NULL;
 	}
 
@@ -656,7 +660,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 
 	getinstance(handle);
 	if((this->init&DECOMPRESS)==0)
-		_throw("Instance has not been initialized for decompression");
+		_throw("tjDecompress2(): Instance has not been initialized for decompression");
 
 	if(jpegBuf==NULL || jpegSize<=0 || dstBuf==NULL || width<0 || pitch<0
 		|| height<0 || pixelFormat<0 || pixelFormat>=TJ_NUMPF)
@@ -690,7 +694,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 				break;
 	}
 	if(scaledw>width || scaledh>height)
-		_throw("Could not scale down to desired image dimensions");
+		_throw("tjDecompress2(): Could not scale down to desired image dimensions");
 	width=scaledw;  height=scaledh;
 	dinfo->scale_num=sf[i].num;
 	dinfo->scale_denom=sf[i].denom;
@@ -699,7 +703,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 	if(pitch==0) pitch=dinfo->output_width*tjPixelSize[pixelFormat];
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)
 		*dinfo->output_height))==NULL)
-		_throw("Memory allocation failed in tjInitDecompress()");
+		_throw("tjDecompress2(): Memory allocation failure");
 	for(i=0; i<(int)dinfo->output_height; i++)
 	{
 		if(flags&TJFLAG_BOTTOMUP)
@@ -742,7 +746,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 
 	getinstance(handle);
 	if((this->init&DECOMPRESS)==0)
-		_throw("Instance has not been initialized for decompression");
+		_throw("tjDecompressToYUV(): Instance has not been initialized for decompression");
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -780,7 +784,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 		th[i]=compptr->v_samp_factor*DCTSIZE;
 		tmpbufsize+=iw[i]*th[i];
 		if((outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]))==NULL)
-			_throw("Memory allocation failed in tjDecompress()");
+			_throw("tjDecompressToYUV(): Memory allocation failure");
 		for(row=0; row<ch[i]; row++)
 		{
 			outbuf[i][row]=ptr;
@@ -790,12 +794,12 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 	if(usetmpbuf)
 	{
 		if((_tmpbuf=(JSAMPLE *)malloc(sizeof(JSAMPLE)*tmpbufsize))==NULL)
-			_throw("Memory allocation failed in tjDecompress()");
+			_throw("tjDecompressToYUV(): Memory allocation failure");
 		ptr=_tmpbuf;
 		for(i=0; i<dinfo->num_components; i++)
 		{
 			if((tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*th[i]))==NULL)
-				_throw("Memory allocation failed in tjDecompress()");
+				_throw("tjDecompressToYUV(): Memory allocation failure");
 			for(row=0; row<th[i]; row++)
 			{
 				tmpbuf[i][row]=ptr;
@@ -854,10 +858,11 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void)
 	tjinstance *this=NULL;  tjhandle handle=NULL;
 	if((this=(tjinstance *)malloc(sizeof(tjinstance)))==NULL)
 	{
-		snprintf(errStr, JMSG_LENGTH_MAX, "Memory allocation failure");
+		snprintf(errStr, JMSG_LENGTH_MAX,
+			"tjInitTransform(): Memory allocation failure");
 		return NULL;
 	}
-	memset(this, 0, sizeof(tjinstance));
+	MEMZERO(this, sizeof(tjinstance));
 	handle=_tjInitCompress(this);
 	if(!handle) return NULL;
 	handle=_tjInitDecompress(this);
@@ -875,7 +880,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 
 	getinstance(handle);
 	if((this->init&COMPRESS)==0 || (this->init&DECOMPRESS)==0)
-		_throw("Instance has not been initialized for transformation");
+		_throw("tjTransform(): Instance has not been initialized for transformation");
 
 	if(jpegBuf==NULL || jpegSize<=0 || n<1 || dstBufs==NULL || dstSizes==NULL
 		|| t==NULL || flags<0)
@@ -896,8 +901,8 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 
 	if((xinfo=(jpeg_transform_info *)malloc(sizeof(jpeg_transform_info)*n))
 		==NULL)
-		_throw("Memory allocation failed in tjTransform()");
-	memset(xinfo, 0, sizeof(jpeg_transform_info)*n);
+		_throw("tjTransform(): Memory allocation failure");
+	MEMZERO(xinfo, sizeof(jpeg_transform_info)*n);
 
 	for(i=0; i<n; i++)
 	{
@@ -932,7 +937,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 	for(i=0; i<n; i++)
 	{
 		if(!jtransform_request_workspace(dinfo, &xinfo[i]))
-			_throw("Transform is not perfect");
+			_throw("tjTransform(): Transform is not perfect");
 
 		if(xinfo[i].crop)
 		{

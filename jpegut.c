@@ -121,15 +121,17 @@ void initBuf(unsigned char *buf, int w, int h, int pf, int flags)
 				else index=row*w+col;
 				if(((row/8)+(col/8))%2==0)
 				{
-					buf[index*ps+roffset]=(row<halfway)? 255:0;
-					buf[index*ps+goffset]=(row<halfway)? 255:0;
-					buf[index*ps+boffset]=(row<halfway)? 255:0;
+					if(row<halfway)
+					{
+						buf[index*ps+roffset]=255;
+						buf[index*ps+goffset]=255;
+						buf[index*ps+boffset]=255;
+					}
 				}
 				else
 				{
-					buf[index*ps+roffset]=(row<halfway)? 255:255;
-					buf[index*ps+goffset]=(row<halfway)? 0:255;
-					buf[index*ps+boffset]=0;
+					buf[index*ps+roffset]=255;
+					if(row>=halfway) buf[index*ps+goffset]=255;
 				}
 			}
 		}

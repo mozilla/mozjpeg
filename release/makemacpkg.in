@@ -157,9 +157,6 @@ mkdir $TMPDIR/dmg
 $PACKAGEMAKER -build -v -p $TMPDIR/dmg/$PACKAGE_NAME.pkg \
 	-f $PKGROOT -r $TMPDIR/pkg/Resources \
 	-i $TMPDIR/pkg/Info.plist -d $TMPDIR/pkg/Description.plist 
-install -m 644 $SRCDIR/release/uninstall.applescript $TMPDIR 
-sudo osacompile -t APPL -o "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" $TMPDIR/uninstall.applescript 
-sudo chown -R $USER "$TMPDIR/dmg/Uninstall $PACKAGE_NAME.app" 
 hdiutil create -fs HFS+ -volname $PACKAGE_NAME-$VERSION \
 	-srcfolder "$TMPDIR/dmg" $TMPDIR/$PACKAGE_NAME-$VERSION.dmg 
 cp $TMPDIR/$PACKAGE_NAME-$VERSION.dmg . 

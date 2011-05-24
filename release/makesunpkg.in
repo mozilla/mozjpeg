@@ -68,7 +68,7 @@ fi
 make install DESTDIR=$TMPDIR libdir=/opt/$PACKAGE_NAME/$__LIB mandir=/opt/$PACKAGE_NAME/man AM_MAKEFLAGS="libdir=/opt/$PACKAGE_NAME/$__LIB mandir=/opt/$PACKAGE_NAME/man"
 rm -f $TMPDIR/opt/$PACKAGE_NAME/$__LIB/*.la
 mkdir -p $TMPDIR/opt/$PACKAGE_NAME/doc
-cp $SRCDIR/LICENSE.txt $SRCDIR/LGPL.txt $SRCDIR/README-turbo.txt $SRCDIR/README $SRCDIR/libjpeg.txt $SRCDIR/usage.txt $TMPDIR/opt/$PACKAGE_NAME/doc
+cp $SRCDIR/README-turbo.txt $SRCDIR/README $SRCDIR/libjpeg.txt $SRCDIR/usage.txt $TMPDIR/opt/$PACKAGE_NAME/doc
 chmod 644 $TMPDIR/opt/$PACKAGE_NAME/doc/*
 
 cat >$TMPDIR/proto <<EOF
@@ -122,9 +122,7 @@ f none $PACKAGE_NAME/include/jmorecfg.h 0644 root bin
 f none $PACKAGE_NAME/include/jpeglib.h 0644 root bin
 f none $PACKAGE_NAME/include/turbojpeg.h 0644 root bin
 d none $PACKAGE_NAME/doc 0755 root bin
-f none $PACKAGE_NAME/doc/LGPL.txt 0644 root bin
 f none $PACKAGE_NAME/doc/libjpeg.txt 0644 root bin
-f none $PACKAGE_NAME/doc/LICENSE.txt 0644 root bin
 f none $PACKAGE_NAME/doc/README 0644 root bin
 f none $PACKAGE_NAME/doc/README-turbo.txt 0644 root bin
 f none $PACKAGE_NAME/doc/usage.txt 0644 root bin

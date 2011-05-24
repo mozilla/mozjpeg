@@ -61,8 +61,6 @@ makedeb()
 		mv $TMPDIR/opt/$DIRNAME/include/turbojpeg.h $TMPDIR/usr/include
 		ln -fs /usr/include/turbojpeg.h $TMPDIR/opt/$DIRNAME/include/
 		mkdir -p $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/LICENSE.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/LGPL.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 		install -m 644 $SRCDIR/README-turbo.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 		install -m 644 $SRCDIR/README $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 		install -m 644 $SRCDIR/libjpeg.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION

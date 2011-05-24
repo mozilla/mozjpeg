@@ -37,11 +37,12 @@ static double getfreq(void)
 	return (double)freq.QuadPart;
 }
 
-static double f=getfreq();
+static double f=-1.0;
 
 double gettime(void)
 {
 	LARGE_INTEGER t;
+	if(f<0.0) f=getfreq();
 	if(f==0.0) return (double)GetTickCount()/1000.;
 	else
 	{

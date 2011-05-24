@@ -174,11 +174,12 @@ int checkBuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 	{
 		for(col=0; col<w; col++)
 		{
+			unsigned char r, g, b;
 			if(flags&TJFLAG_BOTTOMUP) index=(h-row-1)*w+col;
 			else index=row*w+col;
-			unsigned char r=buf[index*ps+roffset];
-			unsigned char g=buf[index*ps+goffset];
-			unsigned char b=buf[index*ps+boffset];
+			r=buf[index*ps+roffset];
+			g=buf[index*ps+goffset];
+			b=buf[index*ps+boffset];
 			if(((row/blocksize)+(col/blocksize))%2==0)
 			{
 				if(row<halfway)
@@ -452,7 +453,7 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 	if(yuv==YUVDECODE)
 	{
 		if(checkBufYUV(dstBuf, w, h, subsamp)) printf("Passed.");
-		printf("FAILED!");
+		else printf("FAILED!");
 	}
 	else
 	{

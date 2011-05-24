@@ -31,7 +31,5 @@
 #endif
 
 #define LJTCOPYRIGHT	"Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
-			"Copyright (C) 2004 Landmark Graphics Corporation\n" \
-			"Copyright (C) 2005-2007 Sun Microsystems, Inc.\n" \
 			"Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
 			"Copyright (C) 2009-2011 D. R. Commander"

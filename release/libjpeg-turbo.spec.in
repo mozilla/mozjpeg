@@ -12,7 +12,7 @@ URL: http://www.libjpeg-turbo.org
 Group: System Environment/Libraries
 #-->Source0: http://prdownloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-%{version}.tar.gz
 Release: @BUILD@
-License: wxWindows Library License, v3.1
+License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
 Prereq: /sbin/ldconfig
 Provides: %{name} = %{version}-%{release}, turbojpeg = 2.00

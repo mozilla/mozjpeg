@@ -26,25 +26,33 @@ libraries can be used as drop-in replacements for libjpeg on most systems.
 **     License
 *******************************************************************************
 
-The TurboJPEG/OSS C library (libturbojpeg), its associated test programs, and
-the Mac packaging scripts (under release/) were borrowed from VirtualGL, and
-thus these files are subject to the terms of the wxWindows Library License,
-Version 3.1.  A copy of this license can be found in this directory under
-LICENSE.txt.  The wxWindows Library License is based on the LGPL v2.1, but it
-eliminates the LGPL's restrictions regarding statically linking with closed
-source code.
+libjpeg-turbo is licensed under a non-restrictive, BSD-style license
+(see README.)  The TurboJPEG/OSS wrapper (both C and Java versions) and
+associated test programs bear a similar license, which is reproduced below:
 
-What this means, in a nutshell, is that if you distribute a binary version of
-TurboJPEG/OSS (libturbojpeg), an application that statically links with
-TurboJPEG/OSS, or an OS X package built using the libjpeg-turbo packaging
-scripts, then you must also distribute the source code for libjpeg-turbo,
-including any modifications you may have made to it.  The source distribution
-(including modifications) must not violate the terms of the LGPL v2.1.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-The rest of the source code, apart from the files described above, falls under
-a less restrictive, BSD-style license (see README.)  Likewise, binary versions
-of the libjpeg-turbo library (libjpeg) and its associated test programs (cjpeg,
-djpeg, etc.) fall under this less restrictive license.
+- Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer.
+- Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+- Neither the name of the libjpeg-turbo Project nor the names of its
+  contributors may be used to endorse or promote products derived from this
+  software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS",
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 
 
 *******************************************************************************

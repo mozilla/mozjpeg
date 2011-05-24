@@ -176,6 +176,10 @@ Functions</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Losslessly transform a JPEG image into another JPEG image.  <a href="#gae403193ceb4aafb7e0f56ab587b48616"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga674adee917b95ad4a896f1ba39e12540">tjDestroy</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy a TurboJPEG compressor, decompressor, or transformer instance.  <a href="#ga674adee917b95ad4a896f1ba39e12540"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT unsigned char *DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga5c9234bda6d993cdaffdd89bf81a00ff">tjAlloc</a> (int bytes)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate an image buffer for use with TurboJPEG.  <a href="#ga5c9234bda6d993cdaffdd89bf81a00ff"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT void DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga8c4a1231dc06a450514c835f6471f137">tjFree</a> (unsigned char *buffer)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Free an image buffer previously allocated by TurboJPEG.  <a href="#ga8c4a1231dc06a450514c835f6471f137"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT char *DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga9af79c908ec131b1ae8d52fe40375abf">tjGetErrorStr</a> (void)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a descriptive error message explaining why the last command failed.  <a href="#ga9af79c908ec131b1ae8d52fe40375abf"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="var-members"></a>
@@ -612,6 +616,33 @@ Variables</h2></td></tr>
 </div>
 </div>
 <hr/><h2>Function Documentation</h2>
+<a class="anchor" id="ga5c9234bda6d993cdaffdd89bf81a00ff"></a><!-- doxytag: member="turbojpeg.h::tjAlloc" ref="ga5c9234bda6d993cdaffdd89bf81a00ff" args="(int bytes)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DLLEXPORT unsigned char* DLLCALL tjAlloc </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>bytes</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Allocate an image buffer for use with TurboJPEG. </p>
+<p>You should always use this function to allocate the JPEG destination buffer(s) for <a class="el" href="group___turbo_j_p_e_g.html#gaba62b7a98f960839b588579898495cf2" title="Compress an RGB or grayscale image into a JPEG image.">tjCompress2()</a> and <a class="el" href="group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a> unless you are disabling automatic buffer (re)allocation (by setting <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>.)</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bytes</td><td>the number of bytes to allocate</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>a pointer to a newly-allocated buffer with the specified number of bytes </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga68f4761dc5213cb9653a2f6ce236716e"></a><!-- doxytag: member="turbojpeg.h::TJBUFSIZE" ref="ga68f4761dc5213cb9653a2f6ce236716e" args="(int width, int height)" -->
 <div class="memitem">
 <div class="memproto">
@@ -782,7 +813,7 @@ Variables</h2></td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source image </td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the source image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.) </td></tr>
     <tr><td class="paramname">jpegBuf</td><td>address of a pointer to an image buffer that will receive the JPEG image. TurboJPEG has the ability to reallocate the JPEG buffer to accommodate the size of the JPEG image. Thus, you can choose to:<ol type="1">
-<li>pre-allocate the JPEG buffer with an arbitrary size and let TurboJPEG grow the buffer as needed,</li>
+<li>pre-allocate the JPEG buffer with an arbitrary size using <a class="el" href="group___turbo_j_p_e_g.html#ga5c9234bda6d993cdaffdd89bf81a00ff" title="Allocate an image buffer for use with TurboJPEG.">tjAlloc()</a> and let TurboJPEG grow the buffer as needed,</li>
 <li>set <code>*jpegBuf</code> to NULL to tell TurboJPEG to allocate the buffer for you, or</li>
 <li>pre-allocate the buffer to a "worst case" size determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga68f4761dc5213cb9653a2f6ce236716e" title="The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters...">TJBUFSIZE()</a>. This should ensure that the buffer never has to be re-allocated (setting <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a> guarantees this.)</li>
 </ol>
@@ -1121,6 +1152,32 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 
 </div>
 </div>
+<a class="anchor" id="ga8c4a1231dc06a450514c835f6471f137"></a><!-- doxytag: member="turbojpeg.h::tjFree" ref="ga8c4a1231dc06a450514c835f6471f137" args="(unsigned char *buffer)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DLLEXPORT void DLLCALL tjFree </td>
+          <td>(</td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>buffer</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Free an image buffer previously allocated by TurboJPEG. </p>
+<p>You should always use this function to free JPEG destination buffer(s) that were automatically (re)allocated by <a class="el" href="group___turbo_j_p_e_g.html#gaba62b7a98f960839b588579898495cf2" title="Compress an RGB or grayscale image into a JPEG image.">tjCompress2()</a> or <a class="el" href="group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a> or that were manually allocated using <a class="el" href="group___turbo_j_p_e_g.html#ga5c9234bda6d993cdaffdd89bf81a00ff" title="Allocate an image buffer for use with TurboJPEG.">tjAlloc()</a>.</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buffer</td><td>address of the buffer to free </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga9af79c908ec131b1ae8d52fe40375abf"></a><!-- doxytag: member="turbojpeg.h::tjGetErrorStr" ref="ga9af79c908ec131b1ae8d52fe40375abf" args="(void)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1297,7 +1354,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes) </td></tr>
     <tr><td class="paramname">n</td><td>the number of transformed JPEG images to generate </td></tr>
     <tr><td class="paramname">dstBufs</td><td>pointer to an array of n image buffers. <code>dstBufs[i]</code> will receive a JPEG image that has been transformed using the parameters in <code>transforms[i]</code>. TurboJPEG has the ability to reallocate the JPEG buffer to accommodate the size of the JPEG image. Thus, you can choose to:<ol type="1">
-<li>pre-allocate the JPEG buffer with an arbitrary size and let TurboJPEG grow the buffer as needed,</li>
+<li>pre-allocate the JPEG buffer with an arbitrary size using <a class="el" href="group___turbo_j_p_e_g.html#ga5c9234bda6d993cdaffdd89bf81a00ff" title="Allocate an image buffer for use with TurboJPEG.">tjAlloc()</a> and let TurboJPEG grow the buffer as needed,</li>
 <li>set <code>dstBufs[i]</code> to NULL to tell TurboJPEG to allocate the buffer for you, or</li>
 <li>pre-allocate the buffer to a "worst case" size determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga68f4761dc5213cb9653a2f6ce236716e" title="The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters...">TJBUFSIZE()</a> with the cropped width and height. This should ensure that the buffer never has to be re-allocated (setting <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a> guarantees this.)</li>
 </ol>
@@ -1435,7 +1492,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Tue May 24 2011 05:15:41 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue May 24 2011 11:42:39 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

@@ -432,8 +432,8 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  * @param jpegBuf address of a pointer to an image buffer that will receive the
  *        JPEG image.  TurboJPEG has the ability to reallocate the JPEG buffer
  *        to accommodate the size of the JPEG image.  Thus, you can choose to:
- *        -# pre-allocate the JPEG buffer with an arbitrary size and let
- *        TurboJPEG grow the buffer as needed,
+ *        -# pre-allocate the JPEG buffer with an arbitrary size using
+ *        #tjAlloc() and let TurboJPEG grow the buffer as needed,
  *        -# set <tt>*jpegBuf</tt> to NULL to tell TurboJPEG to allocate the
  *        buffer for you, or
  *        -# pre-allocate the buffer to a "worst case" size determined by
@@ -683,8 +683,8 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *        parameters in <tt>transforms[i]</tt>.  TurboJPEG has the ability to
  *        reallocate the JPEG buffer to accommodate the size of the JPEG image.
  *        Thus, you can choose to:
- *        -# pre-allocate the JPEG buffer with an arbitrary size and let
- *        TurboJPEG grow the buffer as needed,
+ *        -# pre-allocate the JPEG buffer with an arbitrary size using
+ *        #tjAlloc() and let TurboJPEG grow the buffer as needed,
  *        -# set <tt>dstBufs[i]</tt> to NULL to tell TurboJPEG to allocate the
  *        buffer for you, or
  *        -# pre-allocate the buffer to a "worst case" size determined by
@@ -724,6 +724,31 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
 DLLEXPORT int DLLCALL tjDestroy(tjhandle handle);
+
+
+/**
+ * Allocate an image buffer for use with TurboJPEG.  You should always use
+ * this function to allocate the JPEG destination buffer(s) for #tjCompress2()
+ * and #tjTransform() unless you are disabling automatic buffer
+ * (re)allocation (by setting #TJFLAG_NOREALLOC.)
+ *
+ * @param bytes the number of bytes to allocate
+ * 
+ * @return a pointer to a newly-allocated buffer with the specified number of
+ *         bytes
+ */
+DLLEXPORT unsigned char* DLLCALL tjAlloc(int bytes);
+
+
+/**
+ * Free an image buffer previously allocated by TurboJPEG.  You should always
+ * use this function to free JPEG destination buffer(s) that were automatically
+ * (re)allocated by #tjCompress2() or #tjTransform() or that were manually
+ * allocated using #tjAlloc().
+ *
+ * @param buffer address of the buffer to free
+ */
+DLLEXPORT void DLLCALL tjFree(unsigned char *buffer);
 
 
 /**

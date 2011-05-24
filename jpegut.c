@@ -500,7 +500,7 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 	if(!alloc)
 	{
 		size=(yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
-		if((dstBuf=(unsigned char *)malloc(size))==NULL)
+		if((dstBuf=(unsigned char *)tjAlloc(size))==NULL)
 			_throw("Memory allocation failure.");
 	}
 
@@ -529,7 +529,7 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 	if(chandle) tjDestroy(chandle);
 	if(dhandle) tjDestroy(dhandle);
 
-	if(dstBuf) free(dstBuf);
+	if(dstBuf) tjFree(dstBuf);
 }
 
 
@@ -553,7 +553,7 @@ void doTest1(void)
 				_throw("Memory allocation failure");
 			if(!alloc)
 			{
-				if((jpegBuf=(unsigned char *)malloc(TJBUFSIZE(w, h)))==NULL)
+				if((jpegBuf=(unsigned char *)tjAlloc(TJBUFSIZE(w, h)))==NULL)
 					_throw("Memory allocation failure");
 				jpegSize=TJBUFSIZE(w, h);
 			}
@@ -564,13 +564,13 @@ void doTest1(void)
 			_tj(tjCompress2(handle, srcBuf, w, 0, h, TJPF_BGRX, &jpegBuf, &jpegSize,
 				TJSAMP_444, 100, alloc? 0:TJFLAG_NOREALLOC));
 			free(srcBuf);  srcBuf=NULL;
-			free(jpegBuf);  jpegBuf=NULL;
+			tjFree(jpegBuf);  jpegBuf=NULL;
 
 			if((srcBuf=(unsigned char *)malloc(h*w*4))==NULL)
 				_throw("Memory allocation failure");
 			if(!alloc)
 			{
-				if((jpegBuf=(unsigned char *)malloc(TJBUFSIZE(h, w)))==NULL)
+				if((jpegBuf=(unsigned char *)tjAlloc(TJBUFSIZE(h, w)))==NULL)
 					_throw("Memory allocation failure");
 				jpegSize=TJBUFSIZE(h, w);
 			}
@@ -583,7 +583,7 @@ void doTest1(void)
 			_tj(tjCompress2(handle, srcBuf, h, 0, w, TJPF_BGRX, &jpegBuf, &jpegSize,
 				TJSAMP_444, 100, alloc? 0:TJFLAG_NOREALLOC));
 			free(srcBuf);  srcBuf=NULL;
-			free(jpegBuf);  jpegBuf=NULL;
+			tjFree(jpegBuf);  jpegBuf=NULL;
 		}
 	}
 	printf("Done.      \n");

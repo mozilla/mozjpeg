@@ -236,6 +236,23 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle handle)
 }
 
 
+/* These are exposed mainly because Windows can't malloc() and free() across
+   DLL boundaries except when the CRT DLL is used, and we don't use the CRT DLL
+   with turbojpeg.dll for compatibility reasons.  However, these functions
+   can potentially be used for other purposes by different implementations. */
+
+DLLEXPORT void DLLCALL tjFree(unsigned char *buf)
+{
+	if(buf) free(buf);
+}
+
+
+DLLEXPORT unsigned char *DLLCALL tjAlloc(int bytes)
+{
+	return (unsigned char *)malloc(bytes);
+}
+
+
 /* Compressor  */
 
 static tjhandle _tjInitCompress(tjinstance *this)

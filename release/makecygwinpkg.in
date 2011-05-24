@@ -31,8 +31,6 @@ install -m 644 $SRCDIR/README-turbo.txt $DOCDIR
 install -m 644 $SRCDIR/README $DOCDIR
 install -m 644 $SRCDIR/libjpeg.txt $DOCDIR
 install -m 644 $SRCDIR/usage.txt $DOCDIR
-install -m 644 $SRCDIR/LICENSE.txt $DOCDIR
-install -m 644 $SRCDIR/LGPL.txt $DOCDIR
 ln -fs lib $TMPDIR/pkg/opt/$PACKAGE_NAME/lib32
 cd $TMPDIR/pkg
 tar cfj ../$PACKAGE_NAME-$VERSION-cygwin.tar.bz2 *

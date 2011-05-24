@@ -24,10 +24,8 @@ transform features in TurboJPEG/OSS.
 was necessary in order for it to read 4:2:2 JPEG files that had been losslessly
 transposed or rotated 90 degrees.
 
-[8] jchuff.c and jdhuff.c have been re-factored and re-licensed under the
-libjpeg BSD-style license, so the libjpeg-turbo library itself (libjpeg) is no
-longer subject to the terms of the wxWindows Library License (libturbojpeg
-still is-- see README-turbo.txt.)
+[8] All legacy VirtualGL code has been re-factored, and this has allowed
+libjpeg-turbo, in its entirety, to be re-licensed under a BSD-style license.
 
 [9] libjpeg-turbo can now be built with YASM.
 

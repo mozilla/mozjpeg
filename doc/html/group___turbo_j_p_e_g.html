@@ -786,7 +786,7 @@ Variables</h2></td></tr>
 <li>set <code>*jpegBuf</code> to NULL to tell TurboJPEG to allocate the buffer for you, or</li>
 <li>pre-allocate the buffer to a "worst case" size determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga68f4761dc5213cb9653a2f6ce236716e" title="The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters...">TJBUFSIZE()</a>. This should ensure that the buffer never has to be re-allocated (setting <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a> guarantees this.)</li>
 </ol>
-If you choose option 1 or 3, <code>*jpegSize</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>*jpegBuf</code> upon return from this function, as it may have changed. </td></tr>
+If you choose option 1, <code>*jpegSize</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>*jpegBuf</code> upon return from this function, as it may have changed. </td></tr>
     <tr><td class="paramname">jpegSize</td><td>pointer to an unsigned long variable which holds the size of the JPEG image buffer. If <code>*jpegBuf</code> points to a pre-allocated buffer, then <code>*jpegSize</code> should be set to the size of the buffer. Upon return, <code>*jpegSize</code> will contain the size of the JPEG image (in bytes.) </td></tr>
     <tr><td class="paramname">jpegSubsamp</td><td>the level of chrominance subsampling to be used when generating the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.) </td></tr>
     <tr><td class="paramname">jpegQual</td><td>the image quality of the generated JPEG image (1 = worst, 100 = best) </td></tr>
@@ -1301,7 +1301,7 @@ If you choose option 1 or 3, <code>*jpegSize</code> should be set to the size of
 <li>set <code>dstBufs[i]</code> to NULL to tell TurboJPEG to allocate the buffer for you, or</li>
 <li>pre-allocate the buffer to a "worst case" size determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga68f4761dc5213cb9653a2f6ce236716e" title="The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters...">TJBUFSIZE()</a> with the cropped width and height. This should ensure that the buffer never has to be re-allocated (setting <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a> guarantees this.)</li>
 </ol>
-If you choose option 1 or 3, <code>dstSizes[i]</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>dstBufs[i]</code> upon return from this function, as it may have changed. </td></tr>
+If you choose option 1, <code>dstSizes[i]</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>dstBufs[i]</code> upon return from this function, as it may have changed. </td></tr>
     <tr><td class="paramname">dstSizes</td><td>pointer to an array of n unsigned long variables which will receive the actual sizes (in bytes) of each transformed JPEG image. If <code>dstBufs[i]</code> points to a pre-allocated buffer, then <code>dstSizes[i]</code> should be set to the size of the buffer. Upon return, <code>dstSizes[i]</code> will contain the size of the JPEG image (in bytes.) </td></tr>
     <tr><td class="paramname">transforms</td><td>pointer to an array of n tjtransform structures, each of which specifies the transform parameters and/or cropping region for the corresponding transformed output image. </td></tr>
     <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
@@ -1435,7 +1435,7 @@ If you choose option 1 or 3, <code>dstSizes[i]</code> should be set to the size 
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sat May 21 2011 10:32:20 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue May 24 2011 05:15:41 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

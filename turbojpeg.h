@@ -440,7 +440,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  *        calling #TJBUFSIZE().  This should ensure that the buffer never has
  *        to be re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
  *        .
- *        If you choose option 1 or 3, <tt>*jpegSize</tt> should be set to the
+ *        If you choose option 1, <tt>*jpegSize</tt> should be set to the
  *        size of your pre-allocated buffer.  In any case, unless you have
  *        set #TJFLAG_NOREALLOC, you should always check <tt>*jpegBuf</tt> upon
  *        return from this function, as it may have changed.
@@ -692,7 +692,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *        ensure that the buffer never has to be re-allocated (setting
  *        #TJFLAG_NOREALLOC guarantees this.)
  *        .
- *        If you choose option 1 or 3, <tt>dstSizes[i]</tt> should be set to
+ *        If you choose option 1, <tt>dstSizes[i]</tt> should be set to
  *        the size of your pre-allocated buffer.  In any case, unless you have
  *        set #TJFLAG_NOREALLOC, you should always check <tt>dstBufs[i]</tt>
  *        upon return from this function, as it may have changed.

@@ -312,7 +312,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	int width, int pitch, int height, int pixelFormat, unsigned char **jpegBuf,
 	unsigned long *jpegSize, int jpegSubsamp, int jpegQual, int flags)
 {
-	int i, retval=0;  JSAMPROW *row_pointer=NULL;
+	int i, retval=0, alloc=1;  JSAMPROW *row_pointer=NULL;
 
 	getinstance(handle)
 	if((this->init&COMPRESS)==0)
@@ -339,7 +339,11 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
-	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, (flags&TJFLAG_NOREALLOC)==0);
+	if(flags&TJFLAG_NOREALLOC)
+	{
+		alloc=0;  *jpegSize=TJBUFSIZE(width, height);
+	}
+	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
 	setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual);
 
 	jpeg_start_compress(cinfo, TRUE);
@@ -376,7 +380,6 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle handle, unsigned char *srcBuf,
 	}
 	else
 	{
-		size=TJBUFSIZE(width, height);
 		retval=tjCompress2(handle, srcBuf, width, pitch, height,
 			getPixelFormat(pixelSize, flags), &jpegBuf, &size, jpegSubsamp, jpegQual,
 			flags|TJFLAG_NOREALLOC);
@@ -953,9 +956,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 
 	for(i=0; i<n; i++)
 	{
-		int w, h;
-		jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i],
-			(flags&TJFLAG_NOREALLOC)==0);
+		int w, h, alloc=1;
 		if(!xinfo[i].crop)
 		{
 			w=dinfo->image_width;  h=dinfo->image_height;
@@ -964,6 +965,11 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 		{
 			w=xinfo[i].crop_width;  h=xinfo[i].crop_height;
 		}
+		if(flags&TJFLAG_NOREALLOC)
+		{
+			alloc=0;  dstSizes[i]=TJBUFSIZE(w, h);
+		}
+		jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i], alloc);
 		jpeg_copy_critical_parameters(dinfo, cinfo);
 		dstcoefs=jtransform_adjust_parameters(dinfo, cinfo, srccoefs,
 			&xinfo[i]);

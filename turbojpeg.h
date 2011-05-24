@@ -26,6 +26,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef __TURBOJPEG_H__
+#define __TURBOJPEG_H__
+
 #if defined(_WIN32) && defined(DLLDEFINE)
 #define DLLEXPORT __declspec(dllexport)
 #else
@@ -771,4 +774,6 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle handle,
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

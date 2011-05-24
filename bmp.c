@@ -33,6 +33,7 @@
 #include <jpeglib.h>
 #include <jpegint.h>
 #include "cdjpeg.h"
+#include "tjutil.h"
 #include "bmp.h"
 
 

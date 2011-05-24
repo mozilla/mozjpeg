@@ -193,17 +193,23 @@ if(WITH_SIMD)
   add_dependencies(turbojpeg-static simd)
 endif()
 
-add_executable(jpegut jpegut.c)
+add_executable(jpegut jpegut.c tjutil.c)
 target_link_libraries(jpegut turbojpeg)
 
-add_executable(jpegut-static jpegut.c)
+add_executable(jpegut-static jpegut.c tjutil.c)
 target_link_libraries(jpegut-static turbojpeg-static)
 
-add_executable(jpgtest jpgtest.c bmp.c)
-target_link_libraries(jpgtest turbojpeg)
+add_executable(jpgtest jpgtest.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
+  wrppm.c)
+target_link_libraries(jpgtest turbojpeg jpeg)
+set_property(TARGET jpgtest PROPERTY COMPILE_FLAGS
+  "-DBMP_SUPPORTED -DPPM_SUPPORTED")
 
-add_executable(jpgtest-static jpgtest.c bmp.c)
-target_link_libraries(jpgtest-static turbojpeg-static)
+add_executable(jpgtest-static jpgtest.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
+  wrppm.c)
+target_link_libraries(jpgtest-static turbojpeg-static jpeg-static)
+set_property(TARGET jpgtest-static PROPERTY COMPILE_FLAGS
+  "-DBMP_SUPPORTED -DPPM_SUPPORTED")
 
 add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c rdswitch.c
   rdtarga.c)
@@ -243,6 +249,7 @@ add_test(TJUnitTest-bi ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.li
 add_test(TJUnitTest-bi-yuv ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -bi -yuv)
 endif()
 add_test(jpegut jpegut)
+add_test(jpegut-alloc jpegut -alloc)
 add_test(jpegut-yuv jpegut -yuv)
 add_test(cjpeg-int sharedlib/cjpeg -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
 add_test(cjpeg-int-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutint.jpg)
@@ -302,6 +309,7 @@ add_test(jpegtran-crop sharedlib/jpegtran -crop 120x90+20+50 -transpose -perfect
 add_test(jpegtran-crop-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgcrop.jpg testoutcrop.jpg)
 
 add_test(jpegut-static jpegut-static)
+add_test(jpegut-static-alloc jpegut-static -alloc)
 add_test(jpegut-static-yuv jpegut-static -yuv)
 add_test(cjpeg-static-int cjpeg-static -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testorig.ppm)
 add_test(cjpeg-static-int-cmp ${CMAKE_COMMAND} -E compare_files ${CMAKE_SOURCE_DIR}/testimgint.jpg testoutint.jpg)

@@ -72,19 +72,17 @@ libjpeg_la_SOURCES += jsimd_none.c
 
 endif
 
-TSTHDRS = rrutil.h rrtimer.h
-
 bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom jpgtest
 noinst_PROGRAMS = jpegut
 
-jpgtest_SOURCES = $(TSTHDRS) jpgtest.c bmp.h bmp.c tjutil.h tjutil.c \
-	rdbmp.c rdppm.c wrbmp.c wrppm.c
+jpgtest_SOURCES = jpgtest.c bmp.h bmp.c tjutil.h tjutil.c rdbmp.c rdppm.c \
+	wrbmp.c wrppm.c
 
 jpgtest_LDADD = libturbojpeg.la libjpeg.la -lm
 
 jpgtest_CFLAGS = -DBMP_SUPPORTED -DPPM_SUPPORTED
 
-jpegut_SOURCES = $(TSTHDRS) jpegut.c tjutil.h tjutil.c
+jpegut_SOURCES = jpegut.c tjutil.h tjutil.c
 
 jpegut_LDADD = libturbojpeg.la
 

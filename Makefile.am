@@ -119,8 +119,7 @@ dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
 DOCS= README install.txt usage.txt wizard.txt example.c libjpeg.txt \
 	structure.txt coderules.txt filelist.txt jconfig.txt change.log \
-	README-turbo.txt rdrle.c wrrle.c LICENSE.txt LGPL.txt BUILDING.txt \
-	ChangeLog.txt
+	README-turbo.txt rdrle.c wrrle.c BUILDING.txt ChangeLog.txt
 
 TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 	testimgfst.jpg testimgint.jpg testimgp.jpg testimgflt.ppm testimgfst.ppm \

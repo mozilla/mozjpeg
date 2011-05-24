@@ -77,11 +77,14 @@ TSTHDRS = rrutil.h rrtimer.h
 bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom jpgtest
 noinst_PROGRAMS = jpegut
 
-jpgtest_SOURCES = $(TSTHDRS) jpgtest.c bmp.h bmp.c
+jpgtest_SOURCES = $(TSTHDRS) jpgtest.c bmp.h bmp.c tjutil.h tjutil.c \
+	rdbmp.c rdppm.c wrbmp.c wrppm.c
 
-jpgtest_LDADD = libturbojpeg.la -lm
+jpgtest_LDADD = libturbojpeg.la libjpeg.la -lm
 
-jpegut_SOURCES = $(TSTHDRS) jpegut.c bmp.h bmp.c tjutil.h tjutil.c
+jpgtest_CFLAGS = -DBMP_SUPPORTED -DPPM_SUPPORTED
+
+jpegut_SOURCES = $(TSTHDRS) jpegut.c tjutil.h tjutil.c
 
 jpegut_LDADD = libturbojpeg.la
 

@@ -736,6 +736,8 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle handle);
  * 
  * @return a pointer to a newly-allocated buffer with the specified number of
  *         bytes
+ *
+ * @sa tjFree()
  */
 DLLEXPORT unsigned char* DLLCALL tjAlloc(int bytes);
 
@@ -747,6 +749,8 @@ DLLEXPORT unsigned char* DLLCALL tjAlloc(int bytes);
  * allocated using #tjAlloc().
  *
  * @param buffer address of the buffer to free
+ *
+ * @sa tjAlloc()
  */
 DLLEXPORT void DLLCALL tjFree(unsigned char *buffer);
 

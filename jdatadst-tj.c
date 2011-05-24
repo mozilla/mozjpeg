@@ -160,6 +160,8 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
 				  SIZEOF(my_mem_destination_mgr));
+    dest = (my_mem_dest_ptr) cinfo->dest;
+    dest->newbuffer = NULL;
   }
 
   dest = (my_mem_dest_ptr) cinfo->dest;
@@ -168,7 +170,6 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
   dest->pub.term_destination = term_mem_destination;
   dest->outbuffer = outbuffer;
   dest->outsize = outsize;
-  dest->newbuffer = NULL;
   dest->alloc = alloc;
 
   if (*outbuffer == NULL || *outsize == 0) {

@@ -52,6 +52,7 @@ double gettime(void)
 
 #else
 
+#include <stdlib.h>
 #include <sys/time.h>
 
 double gettime(void)

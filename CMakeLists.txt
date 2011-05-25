@@ -225,6 +225,7 @@ target_link_libraries(djpeg-static jpeg-static)
 
 add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
 target_link_libraries(jpegtran-static jpeg-static)
+set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
 
 add_executable(rdjpgcom rdjpgcom.c)
 

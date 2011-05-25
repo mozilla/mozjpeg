@@ -45,7 +45,8 @@
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
 enum {YUVENCODE=1, YUVDECODE};
-int flags=0, decomponly=0, yuv=0, quiet=0, dotile=0, pf=TJPF_BGR;
+int flags=TJFLAG_NOREALLOC, decomponly=0, yuv=0, quiet=0, dotile=0,
+	pf=TJPF_BGR;
 char *ext="ppm";
 const char *pixFormatStr[TJ_NUMPF]=
 {
@@ -305,7 +306,7 @@ void dotestyuv(unsigned char *srcbuf, int w, int h, int subsamp,
 void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	char *filename)
 {
-	char tempstr[1024];
+	char tempstr[1024], tempstr2[80];
 	FILE *file=NULL;  tjhandle handle=NULL;
 	unsigned char **jpegbuf=NULL, *tmpbuf=NULL, *srcptr, *srcptr2;
 	double start, elapsed;
@@ -331,16 +332,18 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 		if((jpegbuf=(unsigned char **)malloc(sizeof(unsigned char *)
 			*ntilesw*ntilesh))==NULL)
 			_throwunix("allocating JPEG tile array");
+		memset(jpegbuf, 0, sizeof(unsigned char *)*ntilesw*ntilesh);
 		if((jpegsize=(unsigned long *)malloc(sizeof(unsigned long)
 			*ntilesw*ntilesh))==NULL)
 			_throwunix("allocating JPEG size array");
-		memset(jpegbuf, 0, sizeof(unsigned char *)*ntilesw*ntilesh);
+		memset(jpegsize, 0, sizeof(unsigned long)*ntilesw*ntilesh);
 
-		for(i=0; i<ntilesw*ntilesh; i++)
-		{
-			if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilew, tileh)))==NULL)
-				_throwunix("allocating JPEG tiles");
-		}
+		if((flags&TJFLAG_NOREALLOC)!=0)
+			for(i=0; i<ntilesw*ntilesh; i++)
+			{
+				if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilew, tileh)))==NULL)
+					_throwunix("allocating JPEG tiles");
+			}
 
 		/* Compression test */
 		if(quiet==1)
@@ -353,7 +356,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 
 		/* Execute once to preload cache */
 		if(tjCompress2(handle, srcbuf, tilew, pitch, tileh, pf, &jpegbuf[0],
-			&jpegsize[0], subsamp, jpegqual, flags|TJFLAG_NOREALLOC)==-1)
+			&jpegsize[0], subsamp, jpegqual, flags)==-1)
 			_throwtj("executing tjCompress2()");
 
 		/* Benchmark */
@@ -369,8 +372,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 					int width=min(tilew, w-col*tilew);
 					int height=min(tileh, h-row*tileh);
 					if(tjCompress2(handle, srcptr2, width, pitch, height, pf,
-						&jpegbuf[tile], &jpegsize[tile], subsamp, jpegqual,
-						flags|TJFLAG_NOREALLOC)==-1)
+						&jpegbuf[tile], &jpegsize[tile], subsamp, jpegqual, flags)==-1)
 						_throwtj("executing tjCompress()2");
 					totaljpegsize+=jpegsize[tile];
 				}
@@ -386,7 +388,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 			printf("%s%c%s%c",
 				sigfig((double)(w*h)/1000000.*(double)i/elapsed, 4, tempstr, 1024),
 				quiet==2? '\n':'\t',
-				sigfig((double)(w*h*ps)/(double)totaljpegsize, 4, tempstr, 1024),
+				sigfig((double)(w*h*ps)/(double)totaljpegsize, 4, tempstr2, 80),
 				quiet==2? '\n':'\t');
 		}
 		else
@@ -500,16 +502,18 @@ void dodecomptest(char *filename)
 		if((jpegbuf=(unsigned char **)malloc(sizeof(unsigned char *)
 			*ntilesw*ntilesh))==NULL)
 			_throwunix("allocating JPEG tile array");
+		memset(jpegbuf, 0, sizeof(unsigned char *)*ntilesw*ntilesh);
 		if((jpegsize=(unsigned long *)malloc(sizeof(unsigned long)
 			*ntilesw*ntilesh))==NULL)
 			_throwunix("allocating JPEG size array");
-		memset(jpegbuf, 0, sizeof(unsigned char *)*ntilesw*ntilesh);
+		memset(jpegsize, 0, sizeof(unsigned long)*ntilesw*ntilesh);
 
-		for(i=0; i<ntilesw*ntilesh; i++)
-		{
-			if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilew, tileh)))==NULL)
-				_throwunix("allocating JPEG tiles");
-		}
+		if((flags&TJFLAG_NOREALLOC)!=0)
+			for(i=0; i<ntilesw*ntilesh; i++)
+			{
+				if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilew, tileh)))==NULL)
+					_throwunix("allocating JPEG tiles");
+			}
 
 		_w=w;  _h=h;  _tilew=tilew;  _tileh=tileh;
 		if(!quiet)
@@ -571,6 +575,8 @@ void dodecomptest(char *filename)
 				_throwtj("executing tjTransform()");
 			elapsed=gettime()-start;
 
+			free(t);  t=NULL;
+
 			for(tile=0, totaljpegsize=0; tile<_ntilesw*_ntilesh; tile++)
 				totaljpegsize+=jpegsize[tile];
 
@@ -629,6 +635,7 @@ void dodecomptest(char *filename)
 	}
 	if(jpegsize) {free(jpegsize);  jpegsize=NULL;}
 	if(srcbuf) {free(srcbuf);  srcbuf=NULL;}
+	if(t) {free(t);  t=NULL;}
 	if(handle) {tjDestroy(handle);  handle=NULL;}
 	return;
 }
@@ -642,6 +649,7 @@ void usage(char *progname)
 	printf("       %s\n", progname);
 	printf("       <Inputfile (JPG)> [options]\n\n");
 	printf("Options:\n\n");
+	printf("-alloc = Dynamically allocate JPEG image buffers\n");
 	printf("-bmp = Generate output images in Windows Bitmap format (default=PPM)\n");
 	printf("-bottomup = Test bottom-up compression/decompression\n");
 	printf("-tile = Test performance of the codec when the image is encoded as separate\n");
@@ -806,6 +814,7 @@ int main(int argc, char *argv[])
 				else usage(argv[0]);
 			}
 			if(!strcmp(argv[i], "-?")) usage(argv[0]);
+			if(!strcasecmp(argv[i], "-alloc")) flags&=(~TJFLAG_NOREALLOC);
 		}
 	}
 

@@ -51,6 +51,7 @@ target_link_libraries(djpeg jpeg)
 
 add_executable(jpegtran ../jpegtran.c ../cdjpeg.c ../rdswitch.c ../transupp.c)
 target_link_libraries(jpegtran jpeg)
+set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
 
 install(TARGETS jpeg cjpeg djpeg jpegtran
   ARCHIVE DESTINATION lib

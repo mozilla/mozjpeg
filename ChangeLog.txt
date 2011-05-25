@@ -1,3 +1,11 @@
+1.1.2
+=====
+
+[1] Eliminated errors in the output of jpegtran on Windows that occurred when
+the application was invoked using I/O redirection
+(jpegtran <input.jpg >output.jpg).
+
+
 1.1.1
 =====
 

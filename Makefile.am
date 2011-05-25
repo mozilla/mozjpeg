@@ -72,19 +72,19 @@ libjpeg_la_SOURCES += jsimd_none.c
 
 endif
 
-bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom jpgtest
-noinst_PROGRAMS = jpegut
+bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom tjbench
+noinst_PROGRAMS = tjunittest
 
-jpgtest_SOURCES = jpgtest.c bmp.h bmp.c tjutil.h tjutil.c rdbmp.c rdppm.c \
+tjbench_SOURCES = tjbench.c bmp.h bmp.c tjutil.h tjutil.c rdbmp.c rdppm.c \
 	wrbmp.c wrppm.c
 
-jpgtest_LDADD = libturbojpeg.la libjpeg.la -lm
+tjbench_LDADD = libturbojpeg.la libjpeg.la -lm
 
-jpgtest_CFLAGS = -DBMP_SUPPORTED -DPPM_SUPPORTED
+tjbench_CFLAGS = -DBMP_SUPPORTED -DPPM_SUPPORTED
 
-jpegut_SOURCES = jpegut.c tjutil.h tjutil.c
+tjunittest_SOURCES = tjunittest.c tjutil.h tjutil.c
 
-jpegut_LDADD = libturbojpeg.la
+tjunittest_LDADD = libturbojpeg.la
 
 cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
 	rdppm.c rdswitch.c rdtarga.c 
@@ -143,9 +143,9 @@ if WITH_JAVA
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi
 endif
-	./jpegut
-	./jpegut -alloc
-	./jpegut -yuv
+	./tjunittest
+	./tjunittest -alloc
+	./tjunittest -yuv
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
 	cmp $(srcdir)/testimgint.jpg testoutint.jpg
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm

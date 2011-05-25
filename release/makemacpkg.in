@@ -104,9 +104,9 @@ if [ $UNIVERSAL = 1 ]; then
 		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/jpegtran \
 		-output $PKGROOT/opt/$PACKAGE_NAME/bin/jpegtran
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/jpgtest \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/jpgtest \
-		-output $PKGROOT/opt/$PACKAGE_NAME/bin/jpgtest
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/tjbench \
+		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/tjbench \
+		-output $PKGROOT/opt/$PACKAGE_NAME/bin/tjbench
 	lipo -create \
 		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/rdjpgcom \
 		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/rdjpgcom \

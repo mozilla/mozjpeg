@@ -48,7 +48,7 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}cjpeg.exe"
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}djpeg.exe"
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpegtran.exe"
-	File "@CMAKE_BINARY_DIR@\${BUILDDIR}jpgtest.exe"
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}tjbench.exe"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}rdjpgcom.exe"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}wrjpgcom.exe"
 	SetOutPath $INSTDIR\lib
@@ -121,7 +121,7 @@ Section "Uninstall"
 	Delete $INSTDIR\bin\cjpeg.exe
 	Delete $INSTDIR\bin\djpeg.exe
 	Delete $INSTDIR\bin\jpegtran.exe
-	Delete $INSTDIR\bin\jpgtest.exe
+	Delete $INSTDIR\bin\tjbench.exe
 	Delete $INSTDIR\bin\rdjpgcom.exe
 	Delete $INSTDIR\bin\wrjpgcom.exe
 	Delete $INSTDIR\include\jconfig.h"

@@ -815,6 +815,7 @@ int main(int argc, char *argv[])
 			}
 			if(!strcmp(argv[i], "-?")) usage(argv[0]);
 			if(!strcasecmp(argv[i], "-alloc")) flags&=(~TJFLAG_NOREALLOC);
+			if(!strcasecmp(argv[i], "-bmp")) ext="bmp";
 		}
 	}
 

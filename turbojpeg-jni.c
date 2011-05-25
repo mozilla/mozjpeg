@@ -558,7 +558,7 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 	}
 
 	if(tjTransform(handle, jpegBuf, jpegSize, n, dstBufs, dstSizes, t,
-		flags)==-1)
+		flags|TJFLAG_NOREALLOC)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, jsrcBuf, jpegBuf, 0);
 		jpegBuf=NULL;

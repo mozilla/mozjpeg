@@ -38,6 +38,10 @@ size and component order of the uncompressed source/destination images as well
 as uses the libjpeg memory source and destination managers.  The latter allows
 the TurboJPEG compressor to grow the JPEG buffer as necessary.
 
+[12] Eliminated errors in the output of jpegtran on Windows that occurred when
+the application was invoked using I/O redirection
+(jpegtran <input.jpg >output.jpg).
+
 
 1.1.1
 =====

@@ -21,8 +21,8 @@
 #include "jchuff.h"		/* Declarations shared with jcphuff.c */
 #include <limits.h>
 
-static unsigned char jpeg_first_bit_table[65536];
-static int jpeg_first_bit_table_init = 0;
+static unsigned char jpeg_nbits_table[65536];
+static int jpeg_nbits_table_init = 0;
 
 #ifndef min
  #define min(a,b) ((a)<(b)?(a):(b))
@@ -271,13 +271,13 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
     dtbl->ehufsi[i] = huffsize[p];
   }
 
-  if(!jpeg_first_bit_table_init) {
+  if(!jpeg_nbits_table_init) {
     for(i = 0; i < 65536; i++) {
-      int bit = 0, val = i;
-      while (val) {val >>= 1;  bit++;}
-      jpeg_first_bit_table[i] = bit;
+      int nbits = 0, temp = i;
+      while (temp) {temp >>= 1;  nbits++;}
+      jpeg_nbits_table[i] = nbits;
     }
-    jpeg_first_bit_table_init = 1;
+    jpeg_nbits_table_init = 1;
   }
 }
 
@@ -483,7 +483,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
   temp2 += temp3;
 
   /* Find the number of bits needed for the magnitude of the coefficient */
-  nbits = jpeg_first_bit_table[temp];
+  nbits = jpeg_nbits_table[temp];
 
   /* Emit the Huffman-coded symbol for the number of bits */
   code = dctbl->ehufco[nbits];
@@ -517,7 +517,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
     temp ^= temp3; \
     temp -= temp3; \
     temp2 += temp3; \
-    nbits = jpeg_first_bit_table[temp]; \
+    nbits = jpeg_nbits_table[temp]; \
     /* if run length > 15, must emit special run-length-16 codes (0xF0) */ \
     while (r > 15) { \
       EMIT_BITS(code_0xf0, size_0xf0) \

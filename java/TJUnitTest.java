@@ -412,7 +412,7 @@ public class TJUnitTest {
 
   private static int checkBufYUV(byte[] buf, int size, int w, int h,
     int subsamp) throws Exception {
-    int i, j;
+    int row, col;
     int hsf = TJ.getMCUWidth(subsamp)/8, vsf = TJ.getMCUHeight(subsamp)/8;
     int pw = PAD(w, hsf), ph = PAD(h, vsf);
     int cw = pw / hsf, ch = ph / vsf;
@@ -420,48 +420,45 @@ public class TJUnitTest {
     int retval = 1;
     int correctsize = ypitch * ph
       + (subsamp == TJ.SAMP_GRAY ? 0 : uvpitch * ch * 2);
+    int halfway = 16;
 
     try {
       if(size != correctsize)
         throw new Exception("\nIncorrect size " + size + ".  Should be "
           + correctsize);
 
-      for(i = 0; i < 16; i++) {
-        for(j = 0; j < pw; j++) {
-          byte y = buf[ypitch * i + j];
-          if(((i / 8) + (j / 8)) % 2 == 0) checkVal255(i, j, y, "Y");
-          else checkVal(i, j, y, "Y", 76);
-        }
-      }
-      for(i = 16; i < ph; i++) {
-        for(j = 0; j < pw; j++) {
-          byte y = buf[ypitch * i + j];
-          if(((i / 8) + (j / 8)) % 2 == 0) checkVal0(i, j, y, "Y");
-          else checkVal(i, j, y, "Y", 226);
+      for(row = 0; row < ph; row++) {
+        for(col = 0; col < pw; col++) {
+          byte y = buf[ypitch * row + col];
+          if(((row / 8) + (col / 8)) % 2 == 0) {
+            if(row < halfway) checkVal255(row, col, y, "Y");
+            else checkVal0(row, col, y, "Y");
+          }
+          else {
+            if(row < halfway) checkVal(row, col, y, "Y", 76);
+            else checkVal(row, col, y, "Y", 226);
+          }
         }
       }
       if(subsamp != TJ.SAMP_GRAY) {
-        for(i = 0; i < 16 / vsf; i++) {
-          for(j = 0; j < cw; j++) {
-            byte u = buf[ypitch * ph + (uvpitch * i + j)],
-              v = buf[ypitch * ph + uvpitch * ch + (uvpitch * i + j)];
-            if(((i * vsf / 8) + (j * hsf / 8)) % 2 == 0) {
-              checkVal(i, j, u, "U", 128);  checkVal(i, j, v, "V", 128);
+        halfway = 16 / vsf;
+        for(row = 0; row < ch; row++) {
+          for(col = 0; col < cw; col++) {
+            byte u = buf[ypitch * ph + (uvpitch * row + col)],
+              v = buf[ypitch * ph + uvpitch * ch + (uvpitch * row + col)];
+            if(((row * vsf / 8) + (col * hsf / 8)) % 2 == 0) {
+              checkVal(row, col, u, "U", 128);
+              checkVal(row, col, v, "V", 128);
             }
             else {
-              checkVal(i, j, u, "U", 85);  checkVal255(i, j, v, "V");
-            }
-          }
-        }
-        for(i = 16 / vsf; i < ch; i++) {
-          for(j = 0; j < cw; j++) {
-            byte u = buf[ypitch * ph + (uvpitch * i + j)],
-              v = buf[ypitch * ph + uvpitch * ch + (uvpitch * i + j)];
-            if(((i * vsf / 8) + (j * hsf / 8)) % 2 == 0) {
-              checkVal(i, j, u, "U", 128);  checkVal(i, j, v, "V", 128);
-            }
-            else {
-              checkVal0(i, j, u, "U");  checkVal(i, j, v, "V", 149);
+              if(row < halfway) {
+                checkVal(row, col, u, "U", 85);
+                checkVal255(row, col, v, "V");
+              }
+              else {
+                checkVal0(row, col, u, "U");
+                checkVal(row, col, v, "V", 149);
+              }
             }
           }
         }
@@ -473,27 +470,27 @@ public class TJUnitTest {
     }
 
     if(retval == 0) {
-      for(i = 0; i < ph; i++) {
-        for(j = 0; j < pw; j++) {
-          int y = buf[ypitch * i + j];
+      for(row = 0; row < ph; row++) {
+        for(col = 0; col < pw; col++) {
+          int y = buf[ypitch * row + col];
           if(y < 0) y += 256;
           System.out.format("%3d ", y);
         }
         System.out.print("\n");
       }
       System.out.print("\n");
-      for(i = 0; i < ch; i++) {
-        for(j = 0; j < cw; j++) {
-          int u = buf[ypitch * ph + (uvpitch * i + j)];
+      for(row = 0; row < ch; row++) {
+        for(col = 0; col < cw; col++) {
+          int u = buf[ypitch * ph + (uvpitch * row + col)];
           if(u < 0) u += 256;
           System.out.format("%3d ", u);
         }
         System.out.print("\n");
       }
       System.out.print("\n");
-      for(i = 0; i < ch; i++) {
-        for(j = 0; j < cw; j++) {
-          int v = buf[ypitch * ph + uvpitch * ch + (uvpitch * i + j)];
+      for(row = 0; row < ch; row++) {
+        for(col = 0; col < cw; col++) {
+          int v = buf[ypitch * ph + uvpitch * ch + (uvpitch * row + col)];
           if(v < 0) v += 256;
           System.out.format("%3d ", v);
         }

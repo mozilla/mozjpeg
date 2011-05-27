@@ -247,28 +247,27 @@ int checkBufYUV(unsigned char *buf, int w, int h, int subsamp)
 	int cw=pw/hsf, ch=ph/vsf;
 	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
 	int retval=1;
+	int halfway=16;
 
-	for(row=0; row<16; row++)
+	for(row=0; row<ph; row++)
 	{
 		for(col=0; col<pw; col++)
 		{
 			unsigned char y=buf[ypitch*row+col];
-			if(((row/8)+(col/8))%2==0) checkval255(y)
-			else checkval(y, 76)
-		}
-	}
-	for(row=16; row<ph; row++)
-	{
-		for(col=0; col<pw; col++)
-		{
-			unsigned char y=buf[ypitch*row+col];
-			if(((row/8)+(col/8))%2==0) checkval0(y)
-			else checkval(y, 226)
+			if(((row/8)+(col/8))%2==0)
+			{
+				if(row<halfway) checkval255(y)  else checkval0(y);
+			}
+			else
+			{
+				if(row<halfway) checkval(y, 76)  else checkval(y, 226);
+			}
 		}
 	}
 	if(subsamp!=TJSAMP_GRAY)
 	{
-		for(row=0; row<16/vsf; row++)
+		halfway=16/vsf;
+		for(row=0; row<ch; row++)
 		{
 			for(col=0; col<cw; col++)
 			{
@@ -280,23 +279,14 @@ int checkBufYUV(unsigned char *buf, int w, int h, int subsamp)
 				}
 				else
 				{
-					checkval(u, 85);  checkval255(v);
-				}
-			}
-		}
-		for(row=16/vsf; row<ch; row++)
-		{
-			for(col=0; col<cw; col++)
-			{
-				unsigned char u=buf[ypitch*ph + (uvpitch*row+col)],
-					v=buf[ypitch*ph + uvpitch*ch + (uvpitch*row+col)];
-				if(((row*vsf/8)+(col*hsf/8))%2==0)
-				{
-					checkval(u, 128);  checkval(v, 128);
-				}
-				else
-				{
-					checkval0(u);  checkval(v, 149);
+					if(row<halfway)
+					{
+						checkval(u, 85);  checkval255(v);
+					}
+					else
+					{
+						checkval0(u);  checkval(v, 149);
+					}
 				}
 			}
 		}

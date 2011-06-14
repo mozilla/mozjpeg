@@ -260,6 +260,21 @@ AC_SUBST(JAVA_RPM_CONTENTS_1)
 AC_SUBST(JAVA_RPM_CONTENTS_2)
 AC_SUBST(RPM_CONFIG_ARGS)
 
+# optionally force using gas-preprocessor.pl for compatibility testing
+AC_ARG_WITH([gas-preprocessor],
+    AC_HELP_STRING([--with-gas-preprocessor],[Force using gas-preprocessor.pl on ARM.]))
+if test "x${with_gas_preprocessor}" = "xyes"; then
+  case $host_os in
+    darwin*)
+      CCAS="gas-preprocessor.pl -fix-unreq $CC"
+      ;;
+    *)
+      CCAS="gas-preprocessor.pl -no-fix-unreq $CC"
+      ;;
+  esac
+  AC_SUBST([CCAS])
+fi
+
 # SIMD is optional
 AC_ARG_WITH([simd],
     AC_HELP_STRING([--without-simd],[Omit SIMD extensions.]))

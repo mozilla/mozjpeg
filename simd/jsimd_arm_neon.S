@@ -30,28 +30,33 @@
 .fpu neon
 .arch armv7a
 .object_arch armv4
-.altmacro
 .arm
 
 /*****************************************************************************/
 
 /* Supplementary macro for setting function attributes */
 .macro asm_function fname
-    .func fname
-    .global fname
+#ifdef __APPLE__
+    .func _\fname
+    .globl _\fname
+_\fname:
+#else
+    .func \fname
+    .global \fname
 #ifdef __ELF__
-    .hidden fname
-    .type fname, %function
+    .hidden \fname
+    .type \fname, %function
 #endif
-fname:
+\fname:
+#endif
 .endm
 
 /* Transpose a block of 4x4 coefficients in four 64-bit registers */
 .macro transpose_4x4 x0, x1, x2, x3
-    vtrn.16 x0, x1
-    vtrn.16 x2, x3
-    vtrn.32 x0, x2
-    vtrn.32 x1, x3
+    vtrn.16 \x0, \x1
+    vtrn.16 \x2, \x3
+    vtrn.32 \x0, \x2
+    vtrn.32 \x1, \x3
 .endm
 
 /*****************************************************************************/
@@ -224,7 +229,7 @@ asm_function jsimd_idct_ifast_neon
     .irp            x, d4, d6, d8, d10, d12, d14, d16, d18
     ldr             TMP, [OUTPUT_BUF], #4
     add             TMP, TMP, OUTPUT_COL
-    vst1.8          {x}, [TMP]!
+    vst1.8          {\x}, [TMP]!
     .endr
 
     vpop            {d8-d15}
@@ -252,22 +257,16 @@ asm_function jsimd_idct_ifast_neon
  * Colorspace conversion YCbCr -> RGB
  */
 
-.balign 16
-jsimd_ycc_rgb_neon_consts:
-    .short          0,      0,     0,      0
-    .short          22971, -11277, -23401, 29033
-    .short          -128,  -128,   -128,   -128
-    .short          -128,  -128,   -128,   -128
 
 .macro do_load size
-    .if size == 8
+    .if \size == 8
         vld1.8  {d4}, [U]!
         vld1.8  {d5}, [V]!
         vld1.8  {d0}, [Y]!
         pld     [Y, #64]
         pld     [U, #64]
         pld     [V, #64]
-    .elseif size == 4
+    .elseif \size == 4
         vld1.8  {d4[0]}, [U]!
         vld1.8  {d4[1]}, [U]!
         vld1.8  {d4[2]}, [U]!
@@ -280,14 +279,14 @@ jsimd_ycc_rgb_neon_consts:
         vld1.8  {d0[1]}, [Y]!
         vld1.8  {d0[2]}, [Y]!
         vld1.8  {d0[3]}, [Y]!
-    .elseif size == 2
+    .elseif \size == 2
         vld1.8  {d4[4]}, [U]!
         vld1.8  {d4[5]}, [U]!
         vld1.8  {d5[4]}, [V]!
         vld1.8  {d5[5]}, [V]!
         vld1.8  {d0[4]}, [Y]!
         vld1.8  {d0[5]}, [Y]!
-    .elseif size == 1
+    .elseif \size == 1
         vld1.8  {d4[6]}, [U]!
         vld1.8  {d5[6]}, [V]!
         vld1.8  {d0[6]}, [Y]!
@@ -297,34 +296,34 @@ jsimd_ycc_rgb_neon_consts:
 .endm
 
 .macro do_store bpp, size
-    .if bpp == 24
-        .if size == 8
+    .if \bpp == 24
+        .if \size == 8
             vst3.8  {d10, d11, d12}, [RGB]!
-        .elseif size == 4
+        .elseif \size == 4
             vst3.8  {d10[0], d11[0], d12[0]}, [RGB]!
             vst3.8  {d10[1], d11[1], d12[1]}, [RGB]!
             vst3.8  {d10[2], d11[2], d12[2]}, [RGB]!
             vst3.8  {d10[3], d11[3], d12[3]}, [RGB]!
-        .elseif size == 2
+        .elseif \size == 2
             vst3.8  {d10[4], d11[4], d12[4]}, [RGB]!
             vst3.8  {d10[5], d11[5], d12[5]}, [RGB]!
-        .elseif size == 1
+        .elseif \size == 1
             vst3.8  {d10[6], d11[6], d12[6]}, [RGB]!
         .else
             .error unsupported macroblock size
         .endif
-    .elseif bpp == 32
-        .if size == 8
+    .elseif \bpp == 32
+        .if \size == 8
             vst4.8  {d10, d11, d12, d13}, [RGB]!
-        .elseif size == 4
+        .elseif \size == 4
             vst4.8  {d10[0], d11[0], d12[0], d13[0]}, [RGB]!
             vst4.8  {d10[1], d11[1], d12[1], d13[1]}, [RGB]!
             vst4.8  {d10[2], d11[2], d12[2], d13[2]}, [RGB]!
             vst4.8  {d10[3], d11[3], d12[3], d13[3]}, [RGB]!
-        .elseif size == 2
+        .elseif \size == 2
             vst4.8  {d10[4], d11[4], d12[4], d13[4]}, [RGB]!
             vst4.8  {d10[5], d11[5], d12[5], d13[5]}, [RGB]!
-        .elseif size == 1
+        .elseif \size == 1
             vst4.8  {d10[6], d11[6], d12[6], d13[6]}, [RGB]!
         .else
             .error unsupported macroblock size
@@ -356,12 +355,23 @@ jsimd_ycc_rgb_neon_consts:
     vaddw.u8        q10, q10, d0
     vaddw.u8        q12, q12, d0
     vaddw.u8        q14, q14, d0
-    vqmovun.s16     d1&g_offs, q10
-    vqmovun.s16     d1&r_offs, q12
-    vqmovun.s16     d1&b_offs, q14
+    vqmovun.s16     d1\g_offs, q10
+    vqmovun.s16     d1\r_offs, q12
+    vqmovun.s16     d1\b_offs, q14
 .endm
 
-asm_function jsimd_ycc_&colorid&_convert_neon
+/* Apple gas crashes on adrl, work around that by using adr.
+ * But this requires a copy of these constants for each function.
+ */
+
+.balign 16
+jsimd_ycc_\colorid\()_neon_consts:
+    .short          0,      0,     0,      0
+    .short          22971, -11277, -23401, 29033
+    .short          -128,  -128,   -128,   -128
+    .short          -128,  -128,   -128,   -128
+
+asm_function jsimd_ycc_\colorid\()_convert_neon
     OUTPUT_WIDTH    .req r0
     INPUT_BUF       .req r1
     INPUT_ROW       .req r2
@@ -379,7 +389,7 @@ asm_function jsimd_ycc_&colorid&_convert_neon
     N               .req ip
 
     /* Load constants to d1, d2, d3 (d0 is just used for padding) */
-    adrl            ip, jsimd_ycc_rgb_neon_consts
+    adr             ip, jsimd_ycc_\colorid\()_neon_consts
     vld1.16         {d0, d1, d2, d3}, [ip, :128]
 
     /* Save ARM registers and handle input arguments */
@@ -414,7 +424,7 @@ asm_function jsimd_ycc_&colorid&_convert_neon
 1:
     do_load         8
     do_yuv_to_rgb
-    do_store        bpp, 8
+    do_store        \bpp, 8
     subs            N, N, #8
     bge             1b
     tst             N, #7
@@ -435,15 +445,15 @@ asm_function jsimd_ycc_&colorid&_convert_neon
     do_yuv_to_rgb
     tst             N, #4
     beq             6f
-    do_store        bpp, 4
+    do_store        \bpp, 4
 6:
     tst             N, #2
     beq             7f
-    do_store        bpp, 2
+    do_store        \bpp, 2
 7:
     tst             N, #1
     beq             8f
-    do_store        bpp, 1
+    do_store        \bpp, 1
 8:
     subs            NUM_ROWS, NUM_ROWS, #1
     bgt             0b

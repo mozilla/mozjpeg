@@ -27,7 +27,7 @@
  */
 
 /*
- * This program tests the various code paths in the TurboJPEG JNI Wrapper
+ * This program tests the various code paths in the TurboJPEG C Wrapper
  */
 
 #include <stdio.h>

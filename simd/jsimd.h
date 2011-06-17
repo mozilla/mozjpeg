@@ -569,6 +569,15 @@ EXTERN(void) jsimd_idct_4x4_sse2 JPP((void * dct_table,
                                       JSAMPARRAY output_buf,
                                       JDIMENSION output_col));
 
+EXTERN(void) jsimd_idct_2x2_neon JPP((void * dct_table,
+                                      JCOEFPTR coef_block,
+                                      JSAMPARRAY output_buf,
+                                      JDIMENSION output_col));
+EXTERN(void) jsimd_idct_4x4_neon JPP((void * dct_table,
+                                      JCOEFPTR coef_block,
+                                      JSAMPARRAY output_buf,
+                                      JDIMENSION output_col));
+
 /* SIMD Inverse DCT */
 EXTERN(void) jsimd_idct_islow_mmx JPP((void * dct_table,
                                        JCOEFPTR coef_block,

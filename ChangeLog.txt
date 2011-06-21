@@ -53,6 +53,10 @@ v7 or v8 emulation or arithmetic coding support was enabled.  Note that to
 achieve full ABI compatibility with jpeg-6b, it is necessary to build
 libjpeg-turbo without arithmetic coding support.
 
+[14] Fixed an issue whereby Windows applications that used libjpeg-turbo would
+fail to compile if the Windows system headers were included before jpeglib.h.
+This issue was caused by a conflict in the definition of the INT32 type.
+
 
 1.1.1
 =====

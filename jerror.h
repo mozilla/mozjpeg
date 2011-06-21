@@ -103,7 +103,7 @@ JMESSAGE(JERR_MISSING_DATA, "Scan script does not transmit all data")
 JMESSAGE(JERR_MODE_CHANGE, "Invalid color quantization mode change")
 JMESSAGE(JERR_NOTIMPL, "Not implemented yet")
 JMESSAGE(JERR_NOT_COMPILED, "Requested feature was omitted at compile time")
-#if defined(C_ARITH_CODING_SUPPORTED) || defined(D_ARITH_CODING_SUPPORTED) || JPEG_LIB_VERSION >= 70
+#if JPEG_LIB_VERSION >= 70
 JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")
 #endif
 JMESSAGE(JERR_NO_BACKING_STORE, "Backing store not supported")
@@ -183,7 +183,7 @@ JMESSAGE(JTRC_UNKNOWN_IDS,
 JMESSAGE(JTRC_XMS_CLOSE, "Freed XMS handle %u")
 JMESSAGE(JTRC_XMS_OPEN, "Obtained XMS handle %u")
 JMESSAGE(JWRN_ADOBE_XFORM, "Unknown Adobe color transform code %d")
-#if defined(C_ARITH_CODING_SUPPORTED) || defined(D_ARITH_CODING_SUPPORTED) || JPEG_LIB_VERSION >= 70
+#if JPEG_LIB_VERSION >= 70
 JMESSAGE(JWRN_ARITH_BAD_CODE, "Corrupt JPEG data: bad arithmetic code")
 #endif
 JMESSAGE(JWRN_BOGUS_PROGRESSION,
@@ -200,6 +200,10 @@ JMESSAGE(JWRN_NOT_SEQUENTIAL, "Invalid SOS parameters for sequential JPEG")
 JMESSAGE(JWRN_TOO_MUCH_DATA, "Application transferred too many scanlines")
 #if JPEG_LIB_VERSION < 70
 JMESSAGE(JERR_BAD_CROP_SPEC, "Invalid crop request")
+#if defined(C_ARITH_CODING_SUPPORTED) || defined(D_ARITH_CODING_SUPPORTED)
+JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")
+JMESSAGE(JWRN_ARITH_BAD_CODE, "Corrupt JPEG data: bad arithmetic code")
+#endif
 #endif
 
 #ifdef JMAKE_ENUM_LIST

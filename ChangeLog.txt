@@ -45,13 +45,11 @@ the application was invoked using I/O redirection
 [13] The inclusion of libjpeg v7 and v8 emulation as well as arithmetic coding
 support in libjpeg-turbo v1.1.0 introduced several new error constants in
 jerror.h, and these were mistakenly enabled for all emulation modes, causing
-the error enum in libjpeg-turbo to have different values than the same enum in
-libjpeg.  This represents an ABI incompatibility, and it caused problems with
-applications that took specific action based on libjpeg error values.  The fix
-was to include the new error constants conditionally based on whether libjpeg
-v7 or v8 emulation or arithmetic coding support was enabled.  Note that to
-achieve full ABI compatibility with jpeg-6b, it is necessary to build
-libjpeg-turbo without arithmetic coding support.
+the error enum in libjpeg-turbo to sometimes have different values than the
+same enum in libjpeg.  This represents an ABI incompatibility, and it caused
+problems with rare applications that took specific action based on a particular
+error value.  The fix was to include the new error constants conditionally
+based on whether libjpeg v7 or v8 emulation was enabled.
 
 [14] Fixed an issue whereby Windows applications that used libjpeg-turbo would
 fail to compile if the Windows system headers were included before jpeglib.h.

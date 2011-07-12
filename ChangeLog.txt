@@ -55,6 +55,9 @@ based on whether libjpeg v7 or v8 emulation was enabled.
 fail to compile if the Windows system headers were included before jpeglib.h.
 This issue was caused by a conflict in the definition of the INT32 type.
 
+[15] Implemented a more efficient version of TJBUFSIZE() which computes a
+worst-case JPEG size based on the level of chrominance subsampling.
+
 
 1.1.1
 =====

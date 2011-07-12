@@ -217,6 +217,34 @@ static void setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 }
 
 
+static int getSubsamp(j_decompress_ptr dinfo)
+{
+	int retval=-1, i, k;
+	for(i=0; i<NUMSUBOPT; i++)
+	{
+		if(dinfo->num_components==pixelsize[i])
+		{
+			if(dinfo->comp_info[0].h_samp_factor==tjMCUWidth[i]/8
+				&& dinfo->comp_info[0].v_samp_factor==tjMCUHeight[i]/8)
+			{
+				int match=0;
+				for(k=1; k<dinfo->num_components; k++)
+				{
+					if(dinfo->comp_info[k].h_samp_factor==1
+						&& dinfo->comp_info[k].v_samp_factor==1)
+						match++;
+				}
+				if(match==dinfo->num_components-1)
+				{
+					retval=i;  break;
+				}
+			}
+		}
+	}
+	return retval;
+}
+
+
 /* General API functions */
 
 DLLEXPORT char* DLLCALL tjGetErrorStr(void)
@@ -292,6 +320,26 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 }
 
 
+DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
+	int jpegSubsamp)
+{
+	unsigned long retval=0;  int mcuw, mcuh, chromasf;
+	if(width<1 || height<1 || jpegSubsamp<0 || jpegSubsamp>=NUMSUBOPT)
+		_throw("tjBufSize(): Invalid argument");
+
+	// This allows for rare corner cases in which a JPEG image can actually be
+	// larger than the uncompressed input (we wouldn't mention it if it hadn't
+	// happened before.)
+	mcuw=tjMCUWidth[jpegSubsamp];
+	mcuh=tjMCUHeight[jpegSubsamp];
+	chromasf=jpegSubsamp==TJSAMP_GRAY? 0: 4*64/(mcuw*mcuh);
+	retval=PAD(width, mcuw) * PAD(height, mcuh) * (2 + chromasf) + 2048;
+
+	bailout:
+	return retval;
+}
+
+
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
 	unsigned long retval=0;
@@ -308,13 +356,13 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 }
 
 
-DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
+DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
 	int subsamp)
 {
 	unsigned long retval=0;
 	int pw, ph, cw, ch;
 	if(width<1 || height<1 || subsamp<0 || subsamp>=NUMSUBOPT)
-		_throw("TJBUFSIZEYUV(): Invalid argument");
+		_throw("tjBufSizeYUV(): Invalid argument");
 	pw=PAD(width, tjMCUWidth[subsamp]/8);
 	ph=PAD(height, tjMCUHeight[subsamp]/8);
 	cw=pw*8/tjMCUWidth[subsamp];  ch=ph*8/tjMCUHeight[subsamp];
@@ -322,6 +370,13 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 
 	bailout:
 	return retval;
+}
+
+
+DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
+	int subsamp)
+{
+	return tjBufSizeYUV(width, height, subsamp);
 }
 
 
@@ -358,7 +413,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 
 	if(flags&TJFLAG_NOREALLOC)
 	{
-		alloc=0;  *jpegSize=TJBUFSIZE(width, height);
+		alloc=0;  *jpegSize=tjBufSize(width, height, jpegSubsamp);
 	}
 	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
 	setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual);
@@ -391,7 +446,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle handle, unsigned char *srcBuf,
 	int retval=0;  unsigned long size;
 	if(flags&TJ_YUV)
 	{
-		size=TJBUFSIZEYUV(width, height, jpegSubsamp);
+		size=tjBufSizeYUV(width, height, jpegSubsamp);
 		retval=tjEncodeYUV2(handle, srcBuf, width, pitch, height,
 			getPixelFormat(pixelSize, flags), jpegBuf, jpegSubsamp, flags);
 	}
@@ -450,7 +505,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
-	yuvsize=TJBUFSIZEYUV(width, height, subsamp);
+	yuvsize=tjBufSizeYUV(width, height, subsamp);
 	jpeg_mem_dest_tj(cinfo, &dstBuf, &yuvsize, 0);
 	setCompDefaults(cinfo, pixelFormat, subsamp, -1);
 
@@ -589,7 +644,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle handle,
 	unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height,
 	int *jpegSubsamp)
 {
-	int i, k, retval=0;
+	int retval=0;
 
 	getinstance(handle);
 	if((this->init&DECOMPRESS)==0)
@@ -610,28 +665,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle handle,
 
 	*width=dinfo->image_width;
 	*height=dinfo->image_height;
-	*jpegSubsamp=-1;
-	for(i=0; i<NUMSUBOPT; i++)
-	{
-		if(dinfo->num_components==pixelsize[i])
-		{
-			if(dinfo->comp_info[0].h_samp_factor==tjMCUWidth[i]/8
-				&& dinfo->comp_info[0].v_samp_factor==tjMCUHeight[i]/8)
-			{
-				int match=0;
-				for(k=1; k<dinfo->num_components; k++)
-				{
-					if(dinfo->comp_info[k].h_samp_factor==1
-						&& dinfo->comp_info[k].v_samp_factor==1)
-						match++;
-				}
-				if(match==dinfo->num_components-1)
-				{
-					*jpegSubsamp=i;  break;
-				}
-			}
-		}
-	}
+	*jpegSubsamp=getSubsamp(dinfo);
 
 	jpeg_abort_decompress(dinfo);
 
@@ -892,7 +926,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 {
 	jpeg_transform_info *xinfo=NULL;
 	jvirt_barray_ptr *srccoefs, *dstcoefs;
-	int retval=0, i;
+	int retval=0, i, jpegSubsamp;
 
 	getinstance(handle);
 	if((this->init&COMPRESS)==0 || (this->init&DECOMPRESS)==0)
@@ -949,6 +983,9 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 
 	jcopy_markers_setup(dinfo, JCOPYOPT_ALL);
 	jpeg_read_header(dinfo, TRUE);
+	jpegSubsamp=getSubsamp(dinfo);
+	if(jpegSubsamp<0)
+		_throw("tjTransform(): Could not determine subsampling type for JPEG image");
 
 	for(i=0; i<n; i++)
 	{
@@ -984,7 +1021,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 		}
 		if(flags&TJFLAG_NOREALLOC)
 		{
-			alloc=0;  dstSizes[i]=TJBUFSIZE(w, h);
+			alloc=0;  dstSizes[i]=tjBufSize(w, h, jpegSubsamp);
 		}
 		jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i], alloc);
 		jpeg_copy_critical_parameters(dinfo, cinfo);

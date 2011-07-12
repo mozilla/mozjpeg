@@ -83,7 +83,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	int row, col, i, dstbufalloc=0, retval=0;
 	double start, elapsed;
 	int ps=tjPixelSize[pf];
-	int yuvsize=TJBUFSIZEYUV(w, h, subsamp), bufsize;
+	int yuvsize=tjBufSizeYUV(w, h, subsamp), bufsize;
 	int scaledw=(yuv==YUVDECODE)? w : TJSCALED(w, sf);
 	int scaledh=(yuv==YUVDECODE)? h : TJSCALED(h, sf);
 	int pitch=scaledw*ps;
@@ -237,7 +237,7 @@ void dotestyuv(unsigned char *srcbuf, int w, int h, int subsamp,
 	int i, retval=0, ps=tjPixelSize[pf];
 	int yuvsize=0;
 
-	yuvsize=TJBUFSIZEYUV(w, h, subsamp);
+	yuvsize=tjBufSizeYUV(w, h, subsamp);
 	if((dstbuf=(unsigned char *)malloc(yuvsize)) == NULL)
 		_throwunix("allocating image buffer");
 
@@ -341,7 +341,8 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 		if((flags&TJFLAG_NOREALLOC)!=0)
 			for(i=0; i<ntilesw*ntilesh; i++)
 			{
-				if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilew, tileh)))==NULL)
+				if((jpegbuf[i]=(unsigned char *)malloc(tjBufSize(tilew, tileh,
+					subsamp)))==NULL)
 					_throwunix("allocating JPEG tiles");
 			}
 
@@ -511,7 +512,8 @@ void dodecomptest(char *filename)
 		if((flags&TJFLAG_NOREALLOC)!=0)
 			for(i=0; i<ntilesw*ntilesh; i++)
 			{
-				if((jpegbuf[i]=(unsigned char *)malloc(TJBUFSIZE(tilew, tileh)))==NULL)
+				if((jpegbuf[i]=(unsigned char *)malloc(tjBufSize(tilew, tileh,
+					subsamp)))==NULL)
 					_throwunix("allocating JPEG tiles");
 			}
 

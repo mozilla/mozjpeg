@@ -123,7 +123,7 @@ public class TJTransformer extends TJDecompressor {
         if(transforms[i].width != 0) w = transforms[i].width;
         if(transforms[i].height != 0) h = transforms[i].height;
       }
-      dstBufs[i] = new byte[TJ.bufSize(w, h)];
+      dstBufs[i] = new byte[TJ.bufSize(w, h, jpegSubsamp)];
     }
     TJDecompressor[] tjd = new TJDecompressor[transforms.length];
     transform(dstBufs, transforms, flags);

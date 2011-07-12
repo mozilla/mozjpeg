@@ -682,7 +682,7 @@ public class TJUnitTest {
     byte[] dstBuf;
 
     if(yuv == YUVENCODE) dstBuf = new byte[TJ.bufSizeYUV(w, h, subsamp)];
-    else dstBuf = new byte[TJ.bufSize(w, h)];
+    else dstBuf = new byte[TJ.bufSize(w, h, subsamp)];
 
     try {
       tjc = new TJCompressor();
@@ -726,7 +726,7 @@ public class TJUnitTest {
           if(h % 100 == 0)
             System.out.format("%04d x %04d\b\b\b\b\b\b\b\b\b\b\b", w, h);
           srcBuf = new byte[w * h * 4];
-          jpegBuf = new byte[TJ.bufSize(w, h)];
+          jpegBuf = new byte[TJ.bufSize(w, h, TJ.SAMP_444)];
           Arrays.fill(srcBuf, (byte)0);
           for(i = 0; i < w * h; i++) {
             srcBuf[i * 4] = pixels[i % 9][0];
@@ -739,7 +739,7 @@ public class TJUnitTest {
           tjc.compress(jpegBuf, 0);
 
           srcBuf = new byte[h * w * 4];
-          jpegBuf = new byte[TJ.bufSize(h, w)];
+          jpegBuf = new byte[TJ.bufSize(h, w, TJ.SAMP_444)];
           for(i = 0; i < h * w; i++) {
             if(i % 2 == 0) srcBuf[i * 4] =
                 srcBuf[i * 4 + 1] = srcBuf[i * 4 + 2] = (byte)0xFF;

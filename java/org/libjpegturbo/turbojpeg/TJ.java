@@ -271,16 +271,21 @@ final public class TJ {
 
   /**
    * Returns the maximum size of the buffer (in bytes) required to hold a JPEG
-   * image with the given width and height.
+   * image with the given width and height, and level of chrominance
+   * subsampling.
    *
    * @param width the width (in pixels) of the JPEG image
    *
    * @param height the height (in pixels) of the JPEG image
    *
+   * @param jpegSubsamp the level of chrominance subsampling to be used when
+   * generating the JPEG image (one of {@link TJ TJ.SAMP_*})
+   *
    * @return the maximum size of the buffer (in bytes) required to hold a JPEG
-   * image with the given width and height 
+   * image with the given width and height, and level of chrominance
+   * subsampling
    */
-  public native static int bufSize(int width, int height)
+  public native static int bufSize(int width, int height, int jpegSubsamp)
     throws Exception;
 
   /**
@@ -292,7 +297,7 @@ final public class TJ {
    * @param height the height (in pixels) of the YUV image
    *
    * @param subsamp the level of chrominance subsampling used in the YUV
-   * image
+   * image (one of {@link TJ TJ.SAMP_*})
    *
    * @return the size of the buffer (in bytes) required to hold a YUV planar
    * image with the given width, height, and level of chrominance subsampling

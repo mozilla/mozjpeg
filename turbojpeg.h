@@ -437,7 +437,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  *        -# set <tt>*jpegBuf</tt> to NULL to tell TurboJPEG to allocate the
  *        buffer for you, or
  *        -# pre-allocate the buffer to a "worst case" size determined by
- *        calling #TJBUFSIZE().  This should ensure that the buffer never has
+ *        calling #tjBufSize().  This should ensure that the buffer never has
  *        to be re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
  *        .
  *        If you choose option 1, <tt>*jpegSize</tt> should be set to the
@@ -466,15 +466,26 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 
 /**
  * The maximum size of the buffer (in bytes) required to hold a JPEG image with
- * the given parameters.
+ * the given parameters.  The number of bytes returned by this function is
+ * larger than the size of the uncompressed source image.  The reason for this
+ * is that the JPEG format uses 16-bit coefficients, and it is thus possible
+ * for a very high-quality JPEG image with very high frequency content to
+ * expand rather than compress when converted to the JPEG format.  Such images
+ * represent a very rare corner case, but since there is no way to predict the
+ * size of a JPEG image prior to compression, the corner case has to be
+ * handled.
  *
  * @param width width of the image (in pixels)
  * @param height height of the image (in pixels)
+ * @param jpegSubsamp the level of chrominance subsampling to be used when
+ *        generating the JPEG image (see @ref TJSAMP
+ *        "Chrominance subsampling options".)
  *
  * @return the maximum size of the buffer (in bytes) required to hold the
  * image, or -1 if the arguments are out of bounds.
  */
-DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
+DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
+  int jpegSubsamp);
 
 
 /**
@@ -483,14 +494,14 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
  *
  * @param width width of the image (in pixels)
  * @param height height of the image (in pixels)
- * @param jpegSubsamp level of chrominance subsampling in the image (see
+ * @param subsamp level of chrominance subsampling in the image (see
  *        @ref TJSAMP "Chrominance subsampling options".)
  *
  * @return the size of the buffer (in bytes) required to hold the image, or
  * -1 if the arguments are out of bounds.
  */
-DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
-  int jpegSubsamp);
+DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
+  int subsamp);
 
 
 /**
@@ -521,7 +532,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
  * @param pixelFormat pixel format of the source image (see @ref TJPF
  *        "Pixel formats".)
  * @param dstBuf pointer to an image buffer which will receive the YUV image.
- *        Use #TJBUFSIZEYUV() to determine the appropriate size for this buffer
+ *        Use #tjBufSizeYUV() to determine the appropriate size for this buffer
  *        based on the image width, height, and level of chrominance
  *        subsampling.
  * @param subsamp the level of chrominance subsampling to be used when
@@ -640,7 +651,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
  * @param jpegSize size of the JPEG image (in bytes)
  * @param dstBuf pointer to an image buffer which will receive the YUV image.
- *        Use #TJBUFSIZEYUV to determine the appropriate size for this buffer
+ *        Use #tjBufSizeYUV to determine the appropriate size for this buffer
  *        based on the image width, height, and level of subsampling.
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  *        "flags".
@@ -688,7 +699,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *        -# set <tt>dstBufs[i]</tt> to NULL to tell TurboJPEG to allocate the
  *        buffer for you, or
  *        -# pre-allocate the buffer to a "worst case" size determined by
- *        calling #TJBUFSIZE() with the cropped width and height.  This should
+ *        calling #tjBufSize() with the cropped width and height.  This should
  *        ensure that the buffer never has to be re-allocated (setting
  *        #TJFLAG_NOREALLOC guarantees this.)
  *        .
@@ -780,6 +791,11 @@ DLLEXPORT char* DLLCALL tjGetErrorStr(void);
 #define TJ_FORCESSE3 TJFLAG_FORCESSE3
 #define TJ_FASTUPSAMPLE TJFLAG_FASTUPSAMPLE
 #define TJ_YUV 512
+
+DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
+
+DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
+  int jpegSubsamp);
 
 DLLEXPORT int DLLCALL tjCompress(tjhandle handle, unsigned char *srcBuf,
   int width, int pitch, int height, int pixelSize, unsigned char *dstBuf,

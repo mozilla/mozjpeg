@@ -366,7 +366,8 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 		if(!alloc)
 		{
 			flags|=TJFLAG_NOREALLOC;
-			*dstSize=(yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
+			*dstSize=(yuv==YUVENCODE? tjBufSizeYUV(w, h, subsamp)
+				: tjBufSize(w, h, subsamp));
 		}
 		_tj(tjCompress2(handle, srcBuf, w, 0, h, pf, dstBuf, dstSize, subsamp,
 			jpegQual, flags));
@@ -422,7 +423,7 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 	if(_hdrw!=w || _hdrh!=h || _hdrsubsamp!=subsamp)
 		_throw("Incorrect JPEG header");
 
-	if(yuv==YUVDECODE) dstSize=TJBUFSIZEYUV(w, h, subsamp);
+	if(yuv==YUVDECODE) dstSize=tjBufSizeYUV(w, h, subsamp);
 	else dstSize=scaledWidth*scaledHeight*tjPixelSize[pf];
 	if((dstBuf=(unsigned char *)malloc(dstSize))==NULL)
 		_throw("Memory allocation failure");
@@ -490,7 +491,8 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 
 	if(!alloc)
 	{
-		size=(yuv==YUVENCODE? TJBUFSIZEYUV(w, h, subsamp):TJBUFSIZE(w, h));
+		size=(yuv==YUVENCODE? tjBufSizeYUV(w, h, subsamp)
+			: tjBufSize(w, h, subsamp));
 		if((dstBuf=(unsigned char *)tjAlloc(size))==NULL)
 			_throw("Memory allocation failure.");
 	}
@@ -544,9 +546,10 @@ void doTest1(void)
 				_throw("Memory allocation failure");
 			if(!alloc)
 			{
-				if((jpegBuf=(unsigned char *)tjAlloc(TJBUFSIZE(w, h)))==NULL)
+				if((jpegBuf=(unsigned char *)tjAlloc(tjBufSize(w, h, TJSAMP_444)))
+					==NULL)
 					_throw("Memory allocation failure");
-				jpegSize=TJBUFSIZE(w, h);
+				jpegSize=tjBufSize(w, h, TJSAMP_444);
 			}
 			memset(srcBuf, 0, w*h*4);
 
@@ -561,9 +564,10 @@ void doTest1(void)
 				_throw("Memory allocation failure");
 			if(!alloc)
 			{
-				if((jpegBuf=(unsigned char *)tjAlloc(TJBUFSIZE(h, w)))==NULL)
+				if((jpegBuf=(unsigned char *)tjAlloc(tjBufSize(h, w, TJSAMP_444)))
+					==NULL)
 					_throw("Memory allocation failure");
-				jpegSize=TJBUFSIZE(h, w);
+				jpegSize=tjBufSize(h, w, TJSAMP_444);
 			}
 
 			for(i=0; i<h*w; i++)

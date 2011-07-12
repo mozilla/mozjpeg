@@ -160,7 +160,7 @@ public class TJCompressor {
   public byte[] compress(int flags) throws Exception {
     if(srcWidth < 1 || srcHeight < 1)
       throw new Exception(NO_ASSOC_ERROR);
-    byte[] buf = new byte[TJ.bufSize(srcWidth, srcHeight)];
+    byte[] buf = new byte[TJ.bufSize(srcWidth, srcHeight, subsamp)];
     compress(buf, flags);
     return buf;
   }
@@ -249,7 +249,7 @@ public class TJCompressor {
   public byte[] compress(BufferedImage srcImage, int flags) throws Exception {
     int width = srcImage.getWidth();
     int height = srcImage.getHeight();
-    byte[] buf = new byte[TJ.bufSize(width, height)];
+    byte[] buf = new byte[TJ.bufSize(width, height, subsamp)];
     compress(srcImage, buf, flags);
     return buf;
   }

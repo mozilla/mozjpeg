@@ -26,6 +26,8 @@ TURBOJPEG_1.2
 {
 	global:
 		tjAlloc;
+		tjBufSize;
+		tjBufSizeYUV;
 		tjCompress2;
 		tjDecompress2;
 		tjEncodeYUV2;

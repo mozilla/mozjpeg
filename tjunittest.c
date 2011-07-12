@@ -75,19 +75,6 @@ int yuv=0, alloc=0;
 int exitStatus=0;
 #define bailout() {exitStatus=-1;  goto bailout;}
 
-int pixels[9][3]=
-{
-	{0, 255, 0},
-	{255, 0, 255},
-	{0, 255, 255},
-	{255, 0, 0},
-	{255, 255, 0},
-	{0, 0, 255},
-	{255, 255, 255},
-	{0, 0, 0},
-	{0, 0, 255}
-};
-
 
 void initBuf(unsigned char *buf, int w, int h, int pf, int flags)
 {
@@ -526,9 +513,9 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 }
 
 
-void doTest1(void)
+void bufSizeTest(void)
 {
-	int w, h, i;
+	int w, h, i, subsamp;
 	unsigned char *srcBuf=NULL, *jpegBuf=NULL;
 	tjhandle handle=NULL;
 	unsigned long jpegSize=0;
@@ -536,49 +523,56 @@ void doTest1(void)
 	if((handle=tjInitCompress())==NULL) _throwtj();
 
 	printf("Buffer size regression test\n");
-	for(w=1; w<48; w++)
+	for(subsamp=0; subsamp<TJ_NUMSAMP; subsamp++)
 	{
-		int maxh=(w==1)? 2048:48;
-		for(h=1; h<maxh; h++)
+		for(w=1; w<48; w++)
 		{
-			if(h%100==0) printf("%.4d x %.4d\b\b\b\b\b\b\b\b\b\b\b", w, h);
-			if((srcBuf=(unsigned char *)malloc(w*h*4))==NULL)
-				_throw("Memory allocation failure");
-			if(!alloc)
+			int maxh=(w==1)? 2048:48;
+			for(h=1; h<maxh; h++)
 			{
-				if((jpegBuf=(unsigned char *)tjAlloc(tjBufSize(w, h, TJSAMP_444)))
-					==NULL)
+				if(h%100==0) printf("%.4d x %.4d\b\b\b\b\b\b\b\b\b\b\b", w, h);
+				if((srcBuf=(unsigned char *)malloc(w*h*4))==NULL)
 					_throw("Memory allocation failure");
-				jpegSize=tjBufSize(w, h, TJSAMP_444);
-			}
-			memset(srcBuf, 0, w*h*4);
+				if(!alloc)
+				{
+					if((jpegBuf=(unsigned char *)tjAlloc(tjBufSize(w, h, subsamp)))
+						==NULL)
+						_throw("Memory allocation failure");
+					jpegSize=tjBufSize(w, h, subsamp);
+				}
 
-			for(i=0; i<w*h; i++) memcpy(srcBuf, &pixels[i%9], 3);
+				for(i=0; i<w*h*4; i++)
+				{
+					if(random()<RAND_MAX/2) srcBuf[i]=0;
+					else srcBuf[i]=255;
+				}
 
-			_tj(tjCompress2(handle, srcBuf, w, 0, h, TJPF_BGRX, &jpegBuf, &jpegSize,
-				TJSAMP_444, 100, alloc? 0:TJFLAG_NOREALLOC));
-			free(srcBuf);  srcBuf=NULL;
-			tjFree(jpegBuf);  jpegBuf=NULL;
+				_tj(tjCompress2(handle, srcBuf, w, 0, h, TJPF_BGRX, &jpegBuf,
+					&jpegSize, subsamp, 100, alloc? 0:TJFLAG_NOREALLOC));
+				free(srcBuf);  srcBuf=NULL;
+				tjFree(jpegBuf);  jpegBuf=NULL;
 
-			if((srcBuf=(unsigned char *)malloc(h*w*4))==NULL)
-				_throw("Memory allocation failure");
-			if(!alloc)
-			{
-				if((jpegBuf=(unsigned char *)tjAlloc(tjBufSize(h, w, TJSAMP_444)))
-					==NULL)
+				if((srcBuf=(unsigned char *)malloc(h*w*4))==NULL)
 					_throw("Memory allocation failure");
-				jpegSize=tjBufSize(h, w, TJSAMP_444);
-			}
+				if(!alloc)
+				{
+					if((jpegBuf=(unsigned char *)tjAlloc(tjBufSize(h, w, subsamp)))
+						==NULL)
+						_throw("Memory allocation failure");
+					jpegSize=tjBufSize(h, w, subsamp);
+				}
 
-			for(i=0; i<h*w; i++)
-			{
-				if(i%2==0) srcBuf[i*4]=srcBuf[i*4+1]=srcBuf[i*4+2]=0xFF;
-				else srcBuf[i*4]=srcBuf[i*4+1]=srcBuf[i*4+2]=0;
+				for(i=0; i<h*w*4; i++)
+				{
+					if(random()<RAND_MAX/2) srcBuf[i]=0;
+					else srcBuf[i]=255;
+				}
+
+				_tj(tjCompress2(handle, srcBuf, h, 0, w, TJPF_BGRX, &jpegBuf,
+					&jpegSize, subsamp, 100, alloc? 0:TJFLAG_NOREALLOC));
+				free(srcBuf);  srcBuf=NULL;
+				tjFree(jpegBuf);  jpegBuf=NULL;
 			}
-			_tj(tjCompress2(handle, srcBuf, h, 0, w, TJPF_BGRX, &jpegBuf, &jpegSize,
-				TJSAMP_444, 100, alloc? 0:TJFLAG_NOREALLOC));
-			free(srcBuf);  srcBuf=NULL;
-			tjFree(jpegBuf);  jpegBuf=NULL;
 		}
 	}
 	printf("Done.      \n");
@@ -619,7 +613,7 @@ int main(int argc, char *argv[])
 	doTest(35, 39, _onlyGray, 1, TJSAMP_GRAY, "test");
 	doTest(39, 41, _3byteFormats, 2, TJSAMP_GRAY, "test");
 	doTest(41, 35, _4byteFormats, 4, TJSAMP_GRAY, "test");
-	if(!doyuv) doTest1();
+	if(!doyuv) bufSizeTest();
 	if(doyuv)
 	{
 		yuv=YUVDECODE;

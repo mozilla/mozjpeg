@@ -94,18 +94,6 @@ public class TJUnitTest {
     return (double)System.nanoTime() / 1.0e9;
   }
 
-  private final static byte pixels[][] = {
-    {0, (byte)255, 0},
-    {(byte)255, 0, (byte)255},
-    {0, (byte)255, (byte)255},
-    {(byte)255, 0, 0},
-    {(byte)255, (byte)255, 0},
-    {0, 0, (byte)255},
-    {(byte)255, (byte)255, (byte)255},
-    {0, 0, 0},
-    {0, 0, (byte)255}
-  };
-
   private static void initBuf(byte[] buf, int w, int pitch, int h, int pf,
     int flags) throws Exception {
     int roffset = TJ.getRedOffset(pf);
@@ -712,41 +700,39 @@ public class TJUnitTest {
     if(tjd != null) tjd.close();
   }
 
-  private static void doTest1() throws Exception {
-    int w, h, i;
+  private static void bufSizeTest() throws Exception {
+    int w, h, i, subsamp;
     byte[] srcBuf, jpegBuf;
     TJCompressor tjc = null;
+    Random r = new Random();
 
     try {
       tjc = new TJCompressor();
       System.out.println("Buffer size regression test");
-      for(w = 1; w < 48; w++) {
-        int maxh = (w == 1) ? 2048 : 48;
-        for(h = 1; h < maxh; h++) {
-          if(h % 100 == 0)
-            System.out.format("%04d x %04d\b\b\b\b\b\b\b\b\b\b\b", w, h);
-          srcBuf = new byte[w * h * 4];
-          jpegBuf = new byte[TJ.bufSize(w, h, TJ.SAMP_444)];
-          Arrays.fill(srcBuf, (byte)0);
-          for(i = 0; i < w * h; i++) {
-            srcBuf[i * 4] = pixels[i % 9][0];
-            srcBuf[i * 4 + 1] = pixels[i % 9][1];
-            srcBuf[i * 4 + 2] = pixels[i % 9][2];
-          }
-          tjc.setSourceImage(srcBuf, w, 0, h, TJ.PF_BGRX);
-          tjc.setSubsamp(TJ.SAMP_444);
-          tjc.setJPEGQuality(100);
-          tjc.compress(jpegBuf, 0);
+      for(subsamp = 0; subsamp < TJ.NUMSAMP; subsamp++) {
+        for(w = 1; w < 48; w++) {
+          int maxh = (w == 1) ? 2048 : 48;
+          for(h = 1; h < maxh; h++) {
+            if(h % 100 == 0)
+              System.out.format("%04d x %04d\b\b\b\b\b\b\b\b\b\b\b", w, h);
+            srcBuf = new byte[w * h * 4];
+            jpegBuf = new byte[TJ.bufSize(w, h, subsamp)];
+            for(i = 0; i < w * h * 4; i++) {
+              srcBuf[i] = (byte)(r.nextInt(2) * 255);
+            }
+            tjc.setSourceImage(srcBuf, w, 0, h, TJ.PF_BGRX);
+            tjc.setSubsamp(subsamp);
+            tjc.setJPEGQuality(100);
+            tjc.compress(jpegBuf, 0);
 
-          srcBuf = new byte[h * w * 4];
-          jpegBuf = new byte[TJ.bufSize(h, w, TJ.SAMP_444)];
-          for(i = 0; i < h * w; i++) {
-            if(i % 2 == 0) srcBuf[i * 4] =
-                srcBuf[i * 4 + 1] = srcBuf[i * 4 + 2] = (byte)0xFF;
-            else srcBuf[i * 4] = srcBuf[i * 4 + 1] = srcBuf[i * 4 + 2] = 0;
+            srcBuf = new byte[h * w * 4];
+            jpegBuf = new byte[TJ.bufSize(h, w, subsamp)];
+            for(i = 0; i < h * w * 4; i++) {
+              srcBuf[i] = (byte)(r.nextInt(2) * 255);
+            }
+            tjc.setSourceImage(srcBuf, h, 0, w, TJ.PF_BGRX);
+            tjc.compress(jpegBuf, 0);
           }
-          tjc.setSourceImage(srcBuf, h, 0, w, TJ.PF_BGRX);
-          tjc.compress(jpegBuf, 0);
         }
       }
       System.out.println("Done.      ");
@@ -794,7 +780,7 @@ public class TJUnitTest {
         testName);
       doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,
         testName);
-      if(!doyuv && !bi) doTest1();
+      if(!doyuv && !bi) bufSizeTest();
       if(doyuv && !bi) {
         yuv = YUVDECODE;
         doTest(48, 48, onlyRGB, TJ.SAMP_444, "javatest_yuv0");

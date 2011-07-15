@@ -35,19 +35,6 @@ int yuv=0;
 int exitstatus=0;
 #define bailout() {exitstatus=-1;  goto finally;}
 
-int pixels[9][3]=
-{
-	{0, 255, 0},
-	{255, 0, 255},
-	{255, 255, 0},
-	{0, 0, 255},
-	{0, 255, 255},
-	{255, 0, 0},
-	{255, 255, 255},
-	{0, 0, 0},
-	{255, 0, 0}
-};
-
 void initbuf(unsigned char *buf, int w, int h, int ps, int flags)
 {
 	int roffset=(flags&TJ_BGR)?2:0, goffset=1, boffset=(flags&TJ_BGR)?0:2, i,
@@ -544,11 +531,10 @@ void dotest1(void)
 				printf("Memory allocation failure\n");  bailout();
 			}
 			memset(bmpbuf, 0, i*j*4);
-			for(i2=0; i2<i*j; i2++)
+			for(i2=0; i2<i*j*4; i2++)
 			{
-				bmpbuf[i2*4]=pixels[i2%9][2];
-				bmpbuf[i2*4+1]=pixels[i2%9][1];
-				bmpbuf[i2*4+2]=pixels[i2%9][0];
+				if(random()<RAND_MAX/2) bmpbuf[i2]=0;
+				else bmpbuf[i2]=255;
 			}
 			_catch(tjCompress(hnd, bmpbuf, i, 0, j, 4,
 				jpgbuf, &size, TJ_444, 100, TJ_BGR));
@@ -559,10 +545,10 @@ void dotest1(void)
 			{
 				printf("Memory allocation failure\n");  bailout();
 			}
-			for(i2=0; i2<j*i; i2++)
+			for(i2=0; i2<j*i*4; i2++)
 			{
-				if(i2%2==0) bmpbuf[i2*4]=bmpbuf[i2*4+1]=bmpbuf[i2*4+2]=0xFF;
-				else bmpbuf[i2*4]=bmpbuf[i2*4+1]=bmpbuf[i2*4+2]=0;
+				if(random()<RAND_MAX/2) bmpbuf[i2]=0;
+				else bmpbuf[i2]=255;
 			}
 			_catch(tjCompress(hnd, bmpbuf, j, 0, i, 4,
 				jpgbuf, &size, TJ_444, 100, TJ_BGR));

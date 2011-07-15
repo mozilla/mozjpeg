@@ -36,6 +36,10 @@
 #include <errno.h>
 #include "./tjutil.h"
 #include "./turbojpeg.h"
+#ifdef _WIN32
+ #include <time.h>
+ #define random() rand()
+#endif
 
 
 void usage(char *progName)
@@ -587,6 +591,9 @@ void bufSizeTest(void)
 int main(int argc, char *argv[])
 {
 	int doyuv=0, i;
+	#ifdef _WIN32
+	srand((unsigned int)time(NULL));
+	#endif
 	if(argc>1)
 	{
 		for(i=1; i<argc; i++)

@@ -43,6 +43,7 @@ makedeb()
 		rm -rf $TMPDIR/opt/$DIRNAME/include
 		rm -rf $TMPDIR/opt/$DIRNAME/man
 		rm -rf $TMPDIR/opt/$DIRNAME/bin
+		rm -rf $TMPDIR/opt/$DIRNAME/classes
 	fi
 
 	mkdir -p $TMPDIR/usr/$__LIB

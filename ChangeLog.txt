@@ -58,6 +58,9 @@ This issue was caused by a conflict in the definition of the INT32 type.
 [15] Implemented a more efficient version of TJBUFSIZE() which computes a
 worst-case JPEG size based on the level of chrominance subsampling.
 
+[16] Fixed 32-bit supplementary package for amd64 Debian systems which was
+broken by enhancements to the packaging system in 1.1.
+
 
 1.1.1
 =====

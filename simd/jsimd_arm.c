@@ -345,6 +345,19 @@ jsimd_can_convsamp (void)
 {
   init_simd();
 
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ARM_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -360,6 +373,8 @@ GLOBAL(void)
 jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
                 DCTELEM * workspace)
 {
+  if (simd_support & JSIMD_ARM_NEON)
+    jsimd_convsamp_neon(sample_data, start_col, workspace);
 }
 
 GLOBAL(void)
@@ -381,6 +396,15 @@ jsimd_can_fdct_ifast (void)
 {
   init_simd();
 
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ARM_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -400,6 +424,8 @@ jsimd_fdct_islow (DCTELEM * data)
 GLOBAL(void)
 jsimd_fdct_ifast (DCTELEM * data)
 {
+  if (simd_support & JSIMD_ARM_NEON)
+    jsimd_fdct_ifast_neon(data);
 }
 
 GLOBAL(void)

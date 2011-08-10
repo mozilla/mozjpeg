@@ -502,6 +502,10 @@ EXTERN(void) jsimd_convsamp_sse2 JPP((JSAMPARRAY sample_data,
                                       JDIMENSION start_col,
                                       DCTELEM * workspace));
 
+EXTERN(void) jsimd_convsamp_neon JPP((JSAMPARRAY sample_data,
+                                      JDIMENSION start_col,
+                                      DCTELEM * workspace));
+
 EXTERN(void) jsimd_convsamp_float_3dnow JPP((JSAMPARRAY sample_data,
                                              JDIMENSION start_col,
                                              FAST_FLOAT * workspace));
@@ -522,6 +526,8 @@ extern const int jconst_fdct_ifast_sse2[];
 EXTERN(void) jsimd_fdct_islow_sse2 JPP((DCTELEM * data));
 extern const int jconst_fdct_islow_sse2[];
 EXTERN(void) jsimd_fdct_ifast_sse2 JPP((DCTELEM * data));
+
+EXTERN(void) jsimd_fdct_ifast_neon JPP((DCTELEM * data));
 
 EXTERN(void) jsimd_fdct_float_3dnow JPP((FAST_FLOAT * data));
 

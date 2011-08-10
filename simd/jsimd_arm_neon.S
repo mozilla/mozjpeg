@@ -863,3 +863,189 @@ generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, 2, 3
 .purgem do_store
 
 /*****************************************************************************/
+
+/*
+ * Load data into workspace, applying unsigned->signed conversion
+ *
+ * TODO: can be combined with 'jsimd_fdct_ifast_neon' to get
+ *       rid of VST1.16 instructions
+ */
+
+asm_function jsimd_convsamp_neon
+    SAMPLE_DATA     .req r0
+    START_COL       .req r1
+    WORKSPACE       .req r2
+    TMP1            .req r3
+    TMP2            .req r4
+    TMP3            .req r5
+    TMP4            .req ip
+
+    push            {r4, r5}
+    vmov.u8         d0, #128
+
+    ldmia           SAMPLE_DATA!, {TMP1, TMP2, TMP3, TMP4}
+    add             TMP1, TMP1, START_COL
+    add             TMP2, TMP2, START_COL
+    add             TMP3, TMP3, START_COL
+    add             TMP4, TMP4, START_COL
+    vld1.8          {d16}, [TMP1]
+    vsubl.u8        q8, d16, d0
+    vld1.8          {d18}, [TMP2]
+    vsubl.u8        q9, d18, d0
+    vld1.8          {d20}, [TMP3]
+    vsubl.u8        q10, d20, d0
+    vld1.8          {d22}, [TMP4]
+    ldmia           SAMPLE_DATA!, {TMP1, TMP2, TMP3, TMP4}
+    vsubl.u8        q11, d22, d0
+    vst1.16         {d16, d17, d18, d19}, [WORKSPACE, :128]!
+    add             TMP1, TMP1, START_COL
+    add             TMP2, TMP2, START_COL
+    vst1.16         {d20, d21, d22, d23}, [WORKSPACE, :128]!
+    add             TMP3, TMP3, START_COL
+    add             TMP4, TMP4, START_COL
+    vld1.8          {d24}, [TMP1]
+    vsubl.u8        q12, d24, d0
+    vld1.8          {d26}, [TMP2]
+    vsubl.u8        q13, d26, d0
+    vld1.8          {d28}, [TMP3]
+    vsubl.u8        q14, d28, d0
+    vld1.8          {d30}, [TMP4]
+    vsubl.u8        q15, d30, d0
+    vst1.16         {d24, d25, d26, d27}, [WORKSPACE, :128]!
+    vst1.16         {d28, d29, d30, d31}, [WORKSPACE, :128]!
+    pop             {r4, r5}
+    bx              lr
+
+    .unreq          SAMPLE_DATA
+    .unreq          START_COL
+    .unreq          WORKSPACE
+    .unreq          TMP1
+    .unreq          TMP2
+    .unreq          TMP3
+    .unreq          TMP4
+.endfunc
+
+/*****************************************************************************/
+
+/*
+ * jsimd_fdct_ifast_neon
+ *
+ * This function contains a fast, not so accurate integer implementation of
+ * the forward DCT (Discrete Cosine Transform). It uses the same calculations
+ * and produces exactly the same output as IJG's original 'jpeg_fdct_ifast'
+ * function from jfdctfst.c
+ *
+ * TODO: can be combined with 'jsimd_convsamp_neon' to get
+ *       rid of a bunch of VLD1.16 instructions
+ */
+
+#define XFIX_0_382683433 d0[0]
+#define XFIX_0_541196100 d0[1]
+#define XFIX_0_707106781 d0[2]
+#define XFIX_1_306562965 d0[3]
+
+.balign 16
+jsimd_fdct_ifast_neon_consts:
+    .short (98 * 128)              /* XFIX_0_382683433 */
+    .short (139 * 128)             /* XFIX_0_541196100 */
+    .short (181 * 128)             /* XFIX_0_707106781 */
+    .short (334 * 128 - 256 * 128) /* XFIX_1_306562965 */
+
+asm_function jsimd_fdct_ifast_neon
+
+    DATA            .req r0
+    TMP             .req ip
+
+    vpush           {d8-d15}
+
+    /* Load constants */
+    adr             TMP, jsimd_fdct_ifast_neon_consts
+    vld1.16         {d0}, [TMP, :64]
+
+    /* Load all DATA into NEON registers with the following allocation:
+     *       0 1 2 3 | 4 5 6 7
+     *      ---------+--------
+     *   0 | d16     | d17    | q8
+     *   1 | d18     | d19    | q9
+     *   2 | d20     | d21    | q10
+     *   3 | d22     | d23    | q11
+     *   4 | d24     | d25    | q12
+     *   5 | d26     | d27    | q13
+     *   6 | d28     | d29    | q14
+     *   7 | d30     | d31    | q15
+     */
+
+    vld1.16         {d16, d17, d18, d19}, [DATA, :128]!
+    vld1.16         {d20, d21, d22, d23}, [DATA, :128]!
+    vld1.16         {d24, d25, d26, d27}, [DATA, :128]!
+    vld1.16         {d28, d29, d30, d31}, [DATA, :128]
+    sub             DATA, DATA, #(128 - 32)
+
+    mov             TMP, #2
+1:
+    /* Transpose */
+    vtrn.16         q12, q13
+    vtrn.16         q10, q11
+    vtrn.16         q8,  q9
+    vtrn.16         q14, q15
+    vtrn.32         q9,  q11
+    vtrn.32         q13, q15
+    vtrn.32         q8,  q10
+    vtrn.32         q12, q14
+    vswp            d30, d23
+    vswp            d24, d17
+    vswp            d26, d19
+      /* 1-D FDCT */
+      vadd.s16        q2,  q11, q12
+    vswp            d28, d21
+      vsub.s16        q12, q11, q12
+      vsub.s16        q6,  q10, q13
+      vadd.s16        q10, q10, q13
+      vsub.s16        q7,  q9,  q14
+      vadd.s16        q9,  q9,  q14
+      vsub.s16        q1,  q8,  q15
+      vadd.s16        q8,  q8,  q15
+      vsub.s16        q4,  q9,  q10
+      vsub.s16        q5,  q8,  q2
+      vadd.s16        q3,  q9,  q10
+      vadd.s16        q4,  q4,  q5
+      vadd.s16        q2,  q8,  q2
+      vqdmulh.s16     q4,  q4,  XFIX_0_707106781
+      vadd.s16        q11, q12, q6
+      vadd.s16        q8,  q2,  q3
+      vsub.s16        q12, q2,  q3
+      vadd.s16        q3,  q6,  q7
+      vadd.s16        q7,  q7,  q1
+      vqdmulh.s16     q3,  q3,  XFIX_0_707106781
+      vsub.s16        q6,  q11, q7
+      vadd.s16        q10, q5,  q4
+      vqdmulh.s16     q6,  q6,  XFIX_0_382683433
+      vsub.s16        q14, q5,  q4
+      vqdmulh.s16     q11, q11, XFIX_0_541196100
+      vqdmulh.s16     q5,  q7,  XFIX_1_306562965
+      vadd.s16        q4,  q1,  q3
+      vsub.s16        q3,  q1,  q3
+      vadd.s16        q7,  q7,  q6
+      vadd.s16        q11, q11, q6
+      vadd.s16        q7,  q7,  q5
+      vadd.s16        q13, q3,  q11
+      vsub.s16        q11, q3,  q11
+      vadd.s16        q9,  q4,  q7
+      vsub.s16        q15, q4,  q7
+    subs            TMP, TMP, #1
+    bne             1b
+
+    /* store results */
+    vst1.16         {d16, d17, d18, d19}, [DATA, :128]!
+    vst1.16         {d20, d21, d22, d23}, [DATA, :128]!
+    vst1.16         {d24, d25, d26, d27}, [DATA, :128]!
+    vst1.16         {d28, d29, d30, d31}, [DATA, :128]
+
+    vpop            {d8-d15}
+    bx              lr
+
+    .unreq          DATA
+    .unreq          TMP
+.endfunc
+
+/*****************************************************************************/

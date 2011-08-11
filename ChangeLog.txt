@@ -61,7 +61,7 @@ worst-case JPEG size based on the level of chrominance subsampling.
 [16] Fixed 32-bit supplementary package for amd64 Debian systems which was
 broken by enhancements to the packaging system in 1.1.
 
-[17] Support for decoding JPEG images that use the YMCK or YCCK colorspaces.
+[17] Support for decoding JPEG images that use the CMYK or YCCK colorspaces.
 
 
 1.1.1

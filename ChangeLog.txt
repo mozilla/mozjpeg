@@ -29,9 +29,9 @@ libjpeg-turbo, in its entirety, to be re-licensed under a BSD-style license.
 
 [9] libjpeg-turbo can now be built with YASM.
 
-[10] Added SIMD-accelerated fast integer DCT/iDCT and YCbCr-to-RGB color
-conversion routines to accelerate JPEG decoding on ARM Linux and iOS platforms
-that have NEON instructions.
+[10] Added SIMD-accelerated fast integer DCT/iDCT and color conversion routines
+to accelerate JPEG encoding and decoding on ARM Linux and iOS platforms that
+have NEON instructions.
 
 [11] Refactored the TurboJPEG C API so that it uses pixel formats to define the
 size and component order of the uncompressed source/destination images as well

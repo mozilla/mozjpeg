@@ -33,3 +33,4 @@
 #define LJTCOPYRIGHT	"Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
 			"Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
 			"Copyright (C) 2009-2011 D. R. Commander"
+			"Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)"

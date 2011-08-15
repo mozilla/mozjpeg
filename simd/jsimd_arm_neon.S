@@ -69,10 +69,15 @@ _\fname:
  *
  * This function contains a fast, not so accurate integer implementation of
  * the inverse DCT (Discrete Cosine Transform). It uses the same calculations
- * and produces exactly the same output as IJG's original 'jpeg_idct_fast'
+ * and produces exactly the same output as IJG's original 'jpeg_idct_ifast'
  * function from jidctfst.c
  *
- * TODO: a bit better instructions scheduling is needed.
+ * Normally 1-D AAN DCT needs 5 multiplications and 29 additions.
+ * But in ARM NEON case some extra additions are required because VQDMULH
+ * instruction can't handle the constants larger than 1. So the expressions
+ * like "x * 1.082392200" have to be converted to "x * 0.082392200 + x",
+ * which introduces an extra addition. Overall, there are 6 extra additions
+ * per 1-D IDCT pass, totalling to 5 VQDMULH and 35 VADD/VSUB instructions.
  */
 
 #define XFIX_1_082392200 d0[0]
@@ -87,165 +92,207 @@ jsimd_idct_ifast_neon_consts:
     .short (473 * 128 - 256 * 128) /* XFIX_1_847759065 */
     .short (669 * 128 - 512 * 128) /* XFIX_2_613125930 */
 
-/* 1-D IDCT helper macro */
-
-.macro idct_helper  x0, x1, x2, x3, x4, x5, x6, x7, \
-                    t10, t11, t12, t13, t14
-
-    vsub.s16        \t10, \x0, \x4
-    vadd.s16        \x4,  \x0, \x4
-    vswp.s16        \t10, \x0
-    vsub.s16        \t11, \x2, \x6
-    vadd.s16        \x6,  \x2, \x6
-    vswp.s16        \t11, \x2
-    vsub.s16        \t10, \x3, \x5
-    vadd.s16        \x5,  \x3, \x5
-    vswp.s16        \t10, \x3
-    vsub.s16        \t11, \x1, \x7
-    vadd.s16        \x7,  \x1, \x7
-    vswp.s16        \t11, \x1
-
-    vqdmulh.s16     \t13, \x2,  d0[1]
-    vadd.s16        \t12, \x3,  \x3
-    vadd.s16        \x2,  \x2,  \t13
-    vqdmulh.s16     \t13, \x3,  d0[3]
-    vsub.s16        \t10,  \x1, \x3
-    vadd.s16        \t12, \t12, \t13
-    vqdmulh.s16     \t13, \t10, d0[2]
-    vsub.s16        \t11, \x7,  \x5
-    vadd.s16        \t10, \t10, \t13
-    vqdmulh.s16     \t13, \t11, d0[1]
-    vadd.s16        \t11, \t11, \t13
-
-    vqdmulh.s16     \t13, \x1,  d0[0]
-    vsub.s16        \x2,  \x6,  \x2
-    vsub.s16        \t14, \x0,  \x2
-    vadd.s16        \x2,  \x0,  \x2
-    vadd.s16        \x0,  \x4,  \x6
-    vsub.s16        \x4,  \x4,  \x6
-    vadd.s16        \x1,  \x1,  \t13
-    vadd.s16        \t13, \x7,  \x5
-    vsub.s16        \t12, \t13, \t12
-    vsub.s16        \t12, \t12, \t10
-    vadd.s16        \t11, \t12, \t11
-    vsub.s16        \t10, \x1,  \t10
-    vadd.s16        \t10, \t10, \t11
-
-    vsub.s16        \x7,  \x0,  \t13
-    vadd.s16        \x0,  \x0,  \t13
-    vadd.s16        \x6,  \t14, \t12
-    vsub.s16        \x1,  \t14, \t12
-    vsub.s16        \x5,  \x2,  \t11
-    vadd.s16        \x2,  \x2,  \t11
-    vsub.s16        \x3,  \x4,  \t10
-    vadd.s16        \x4,  \x4,  \t10
-.endm
-
 asm_function jsimd_idct_ifast_neon
 
     DCT_TABLE       .req r0
     COEF_BLOCK      .req r1
     OUTPUT_BUF      .req r2
     OUTPUT_COL      .req r3
-    TMP             .req ip
+    TMP1            .req r0
+    TMP2            .req r1
+    TMP3            .req r2
+    TMP4            .req ip
 
-    vpush           {d8-d15}
-
-    /* Load constants */
-    adr             TMP, jsimd_idct_ifast_neon_consts
-    vld1.16         {d0}, [TMP, :64]
-
-    /* Load all COEF_BLOCK into NEON registers with the following allocation:
+    /* Load and dequantize coefficients into NEON registers
+     * with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
-     *   0 | d4      | d5
-     *   1 | d6      | d7
-     *   2 | d8      | d9
-     *   3 | d10     | d11
-     *   4 | d12     | d13
-     *   5 | d14     | d15
-     *   6 | d16     | d17
-     *   7 | d18     | d19
+     *   0 | d16     | d17     ( q8  )
+     *   1 | d18     | d19     ( q9  )
+     *   2 | d20     | d21     ( q10 )
+     *   3 | d22     | d23     ( q11 )
+     *   4 | d24     | d25     ( q12 )
+     *   5 | d26     | d27     ( q13 )
+     *   6 | d28     | d29     ( q14 )
+     *   7 | d30     | d31     ( q15 )
      */
-    vld1.16         {d4, d5, d6, d7}, [COEF_BLOCK]!
-    vld1.16         {d8, d9, d10, d11}, [COEF_BLOCK]!
-    vld1.16         {d12, d13, d14, d15}, [COEF_BLOCK]!
-    vld1.16         {d16, d17, d18, d19}, [COEF_BLOCK]!
-    /* Dequantize */
-    vld1.16         {d20, d21, d22, d23}, [DCT_TABLE]!
-    vmul.s16        q2, q2, q10
-    vld1.16         {d24, d25, d26, d27}, [DCT_TABLE]!
-    vmul.s16        q3, q3, q11
-    vmul.s16        q4, q4, q12
-    vld1.16         {d28, d29, d30, d31}, [DCT_TABLE]!
-    vmul.s16        q5, q5, q13
-    vmul.s16        q6, q6, q14
-    vld1.16         {d20, d21, d22, d23}, [DCT_TABLE]!
-    vmul.s16        q7, q7, q15
-    vmul.s16        q8, q8, q10
-    vmul.s16        q9, q9, q11
-
-    /* Pass 1 */
-    idct_helper     q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14
-    /* Transpose */
-    transpose_4x4   d4,  d6,  d8,  d10
-    transpose_4x4   d5,  d7,  d9,  d11
-    transpose_4x4   d12, d14, d16, d18
-    transpose_4x4   d13, d15, d17, d19
-    vswp            d12, d5
-    vswp            d14, d7
-    vswp            d16, d9
-    vswp            d18, d11
-
-    /* Pass 2 */
-    idct_helper     q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14
-    /* Transpose */
-    transpose_4x4   d4,  d6,  d8,  d10
-    transpose_4x4   d5,  d7,  d9,  d11
-    transpose_4x4   d12, d14, d16, d18
-    transpose_4x4   d13, d15, d17, d19
-    vswp            d12, d5
-    vswp            d14, d7
-    vswp            d16, d9
-    vswp            d18, d11
-
+    adr             ip, jsimd_idct_ifast_neon_consts
+    vld1.16         {d16, d17, d18, d19}, [COEF_BLOCK, :128]!
+    vld1.16         {d0, d1, d2, d3}, [DCT_TABLE, :128]!
+    vld1.16         {d20, d21, d22, d23}, [COEF_BLOCK, :128]!
+    vmul.s16        q8,  q8,  q0
+    vld1.16         {d4, d5, d6, d7}, [DCT_TABLE, :128]!
+    vmul.s16        q9,  q9,  q1
+    vld1.16         {d24, d25, d26, d27}, [COEF_BLOCK, :128]!
+    vmul.s16        q10, q10, q2
+    vld1.16         {d0, d1, d2, d3}, [DCT_TABLE, :128]!
+    vmul.s16        q11, q11, q3
+    vld1.16         {d28, d29, d30, d31}, [COEF_BLOCK, :128]
+    vmul.s16        q12, q12, q0
+    vld1.16         {d4, d5, d6, d7}, [DCT_TABLE, :128]!
+    vmul.s16        q14, q14, q2
+    vmul.s16        q13, q13, q1
+    vld1.16         {d0}, [ip, :64] /* load constants */
+    vmul.s16        q15, q15, q3
+    vpush           {d8-d13}        /* save NEON registers */
+    /* 1-D IDCT, pass 1 */
+    vsub.s16        q2,  q10, q14
+    vadd.s16        q14, q10, q14
+    vsub.s16        q1,  q11, q13
+    vadd.s16        q13, q11, q13
+    vsub.s16        q5,  q9,  q15
+    vadd.s16        q15, q9,  q15
+    vqdmulh.s16     q4,  q2,  XFIX_1_414213562
+    vqdmulh.s16     q6,  q1,  XFIX_2_613125930
+    vadd.s16        q3,  q1,  q1
+    vsub.s16        q1,  q5,  q1
+    vadd.s16        q10, q2,  q4
+    vqdmulh.s16     q4,  q1,  XFIX_1_847759065
+    vsub.s16        q2,  q15, q13
+    vadd.s16        q3,  q3,  q6
+    vqdmulh.s16     q6,  q2,  XFIX_1_414213562
+    vadd.s16        q1,  q1,  q4
+    vqdmulh.s16     q4,  q5,  XFIX_1_082392200
+    vsub.s16        q10, q10, q14
+    vadd.s16        q2,  q2,  q6
+    vsub.s16        q6,  q8,  q12
+    vadd.s16        q12, q8,  q12
+    vadd.s16        q9,  q5,  q4
+    vadd.s16        q5,  q6,  q10
+    vsub.s16        q10, q6,  q10
+    vadd.s16        q6,  q15, q13
+    vadd.s16        q8,  q12, q14
+    vsub.s16        q3,  q6,  q3
+    vsub.s16        q12, q12, q14
+    vsub.s16        q3,  q3,  q1
+    vsub.s16        q1,  q9,  q1
+    vadd.s16        q2,  q3,  q2
+    vsub.s16        q15, q8,  q6
+    vadd.s16        q1,  q1,  q2
+    vadd.s16        q8,  q8,  q6
+    vadd.s16        q14, q5,  q3
+    vsub.s16        q9,  q5,  q3
+    vsub.s16        q13, q10, q2
+    vadd.s16        q10, q10, q2
+      /* Transpose */
+      vtrn.16         q8,  q9
+    vsub.s16        q11, q12, q1
+      vtrn.16         q14, q15
+    vadd.s16        q12, q12, q1
+      vtrn.16         q10, q11
+      vtrn.16         q12, q13
+      vtrn.32         q9,  q11
+      vtrn.32         q12, q14
+      vtrn.32         q8,  q10
+      vtrn.32         q13, q15
+      vswp            d28, d21
+      vswp            d26, d19
+    /* 1-D IDCT, pass 2 */
+    vsub.s16        q2,  q10, q14
+      vswp            d30, d23
+    vadd.s16        q14, q10, q14
+      vswp            d24, d17
+    vsub.s16        q1,  q11, q13
+    vadd.s16        q13, q11, q13
+    vsub.s16        q5,  q9,  q15
+    vadd.s16        q15, q9,  q15
+    vqdmulh.s16     q4,  q2,  XFIX_1_414213562
+    vqdmulh.s16     q6,  q1,  XFIX_2_613125930
+    vadd.s16        q3,  q1,  q1
+    vsub.s16        q1,  q5,  q1
+    vadd.s16        q10, q2,  q4
+    vqdmulh.s16     q4,  q1,  XFIX_1_847759065
+    vsub.s16        q2,  q15, q13
+    vadd.s16        q3,  q3,  q6
+    vqdmulh.s16     q6,  q2,  XFIX_1_414213562
+    vadd.s16        q1,  q1,  q4
+    vqdmulh.s16     q4,  q5,  XFIX_1_082392200
+    vsub.s16        q10, q10, q14
+    vadd.s16        q2,  q2,  q6
+    vsub.s16        q6,  q8,  q12
+    vadd.s16        q12, q8,  q12
+    vadd.s16        q9,  q5,  q4
+    vadd.s16        q5,  q6,  q10
+    vsub.s16        q10, q6,  q10
+    vadd.s16        q6,  q15, q13
+    vadd.s16        q8,  q12, q14
+    vsub.s16        q3,  q6,  q3
+    vsub.s16        q12, q12, q14
+    vsub.s16        q3,  q3,  q1
+    vsub.s16        q1,  q9,  q1
+    vadd.s16        q2,  q3,  q2
+    vsub.s16        q15, q8,  q6
+    vadd.s16        q1,  q1,  q2
+    vadd.s16        q8,  q8,  q6
+    vadd.s16        q14, q5,  q3
+    vsub.s16        q9,  q5,  q3
+    vsub.s16        q13, q10, q2
+    vpop            {d8-d13}        /* restore NEON registers */
+    vadd.s16        q10, q10, q2
+      /* Transpose */
+      vtrn.16         q8,  q9
+    vsub.s16        q11, q12, q1
+      vtrn.16         q14, q15
+    vadd.s16        q12, q12, q1
+      vtrn.16         q10, q11
+      vtrn.16         q12, q13
     /* Descale and range limit */
-    vmov.s16        q15, #(0x80 << 5)
-    vqadd.s16       q2, q2, q15
-    vqadd.s16       q3, q3, q15
-    vqadd.s16       q4, q4, q15
-    vqadd.s16       q5, q5, q15
-    vqadd.s16       q6, q6, q15
-    vqadd.s16       q7, q7, q15
-    vqadd.s16       q8, q8, q15
-    vqadd.s16       q9, q9, q15
-    vqshrun.s16     d4, q2, #5
-    vqshrun.s16     d6, q3, #5
-    vqshrun.s16     d8, q4, #5
-    vqshrun.s16     d10, q5, #5
-    vqshrun.s16     d12, q6, #5
-    vqshrun.s16     d14, q7, #5
-    vqshrun.s16     d16, q8, #5
-    vqshrun.s16     d18, q9, #5
-
-    /* Store results to the output buffer */
-    .irp            x, d4, d6, d8, d10, d12, d14, d16, d18
-    ldr             TMP, [OUTPUT_BUF], #4
-    add             TMP, TMP, OUTPUT_COL
-    vst1.8          {\x}, [TMP]!
-    .endr
-
-    vpop            {d8-d15}
+    vmov.s16        q0,  #(0x80 << 5)
+      vtrn.32         q9,  q11
+      vtrn.32         q12, q14
+      vtrn.32         q8,  q10
+      vtrn.32         q13, q15
+      vswp            d24, d17
+      vswp            d26, d19
+    vqadd.s16       q8,  q8,  q0
+      vswp            d28, d21
+    vqadd.s16       q9,  q9,  q0
+      vswp            d30, d23
+    vqadd.s16       q10, q10, q0
+    vqadd.s16       q11, q11, q0
+      /* Store results to the output buffer */
+      ldmia           OUTPUT_BUF!, {TMP1, TMP2}
+      add             TMP1, TMP1, OUTPUT_COL
+      add             TMP2, TMP2, OUTPUT_COL
+    vqshrun.s16     d16, q8,  #5
+    vqshrun.s16     d17, q9,  #5
+    vqshrun.s16     d18, q10, #5
+    vqshrun.s16     d19, q11, #5
+      vst1.8          {d16}, [TMP1]
+    vqadd.s16       q12, q12, q0
+    vqadd.s16       q13, q13, q0
+      vst1.8          {d17}, [TMP2]
+    vqadd.s16       q14, q14, q0
+    vqadd.s16       q15, q15, q0
+      ldmia           OUTPUT_BUF!, {TMP1, TMP2}
+      add             TMP1, TMP1, OUTPUT_COL
+      add             TMP2, TMP2, OUTPUT_COL
+      vst1.8          {d18}, [TMP1]
+    vqshrun.s16     d20, q12, #5
+    vqshrun.s16     d21, q13, #5
+      vst1.8          {d19}, [TMP2]
+    vqshrun.s16     d22, q14, #5
+      ldmia           OUTPUT_BUF, {TMP1, TMP2, TMP3, TMP4}
+      add             TMP1, TMP1, OUTPUT_COL
+      add             TMP2, TMP2, OUTPUT_COL
+      add             TMP3, TMP3, OUTPUT_COL
+      add             TMP4, TMP4, OUTPUT_COL
+      vst1.8          {d20}, [TMP1]
+    vqshrun.s16     d23, q15, #5
+      vst1.8          {d21}, [TMP2]
+      vst1.8          {d22}, [TMP3]
+      vst1.8          {d23}, [TMP4]
     bx              lr
 
     .unreq          DCT_TABLE
     .unreq          COEF_BLOCK
     .unreq          OUTPUT_BUF
     .unreq          OUTPUT_COL
-    .unreq          TMP
+    .unreq          TMP1
+    .unreq          TMP2
+    .unreq          TMP3
+    .unreq          TMP4
 .endfunc
-
-.purgem idct_helper
 
 /*****************************************************************************/
 

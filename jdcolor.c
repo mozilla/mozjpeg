@@ -115,7 +115,7 @@ cmyk_rgb_convert (j_decompress_ptr cinfo,
                   JSAMPIMAGE input_buf, JDIMENSION input_row,
                   JSAMPARRAY output_buf, int num_rows)
 {
-  double cyan, magenta, yellow, black;
+  JSAMPLE cyan, magenta, yellow, black;
   register JSAMPROW outptr;
   register JSAMPROW inptr0, inptr1, inptr2, inptr3;
   register JDIMENSION col;
@@ -133,14 +133,14 @@ cmyk_rgb_convert (j_decompress_ptr cinfo,
     input_row++;
     outptr = *output_buf++;
     for (col = 0; col < num_cols; col++) {
-      cyan    = (double) GETJSAMPLE(inptr0[col]);
-      magenta = (double) GETJSAMPLE(inptr1[col]);
-      yellow  = (double) GETJSAMPLE(inptr2[col]);
-      black   = (double) GETJSAMPLE(inptr3[col]);
+      cyan    = GETJSAMPLE(inptr0[col]);
+      magenta = GETJSAMPLE(inptr1[col]);
+      yellow  = GETJSAMPLE(inptr2[col]);
+      black   = GETJSAMPLE(inptr3[col]);
 
-      outptr[rindex] = (JSAMPLE)(cyan * black / (double)MAXJSAMPLE);
-      outptr[gindex] = (JSAMPLE)(magenta * black / (double)MAXJSAMPLE);
-      outptr[bindex] = (JSAMPLE)(yellow * black / (double)MAXJSAMPLE);
+      outptr[rindex] = (JSAMPLE)((int)cyan * (int)black / MAXJSAMPLE);
+      outptr[gindex] = (JSAMPLE)((int)magenta * (int)black / MAXJSAMPLE);
+      outptr[bindex] = (JSAMPLE)((int)yellow * (int)black / MAXJSAMPLE);
       outptr += rgbstride;
     }
   }
@@ -155,7 +155,7 @@ ycck_rgb_convert (j_decompress_ptr cinfo,
                   JSAMPARRAY output_buf, int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  double cyan, magenta, yellow, black;
+  JSAMPLE cyan, magenta, yellow, black;
   register int y, cb, cr;
   register JSAMPROW outptr;
   register JSAMPROW inptr0, inptr1, inptr2, inptr3;
@@ -187,19 +187,20 @@ ycck_rgb_convert (j_decompress_ptr cinfo,
       y     = GETJSAMPLE(inptr0[col]);
       cb    = GETJSAMPLE(inptr1[col]);
       cr    = GETJSAMPLE(inptr2[col]);
-      black = (double)GETJSAMPLE(inptr3[col]);
+      black = GETJSAMPLE(inptr3[col]);
 
       /********* Convert  YCCK to CMYK  **********/ 
       /* Range-limiting is essential due to noise introduced by DCT losses. */
-      cyan    = (double)range_limit[MAXJSAMPLE - (y + Crrtab[cr])];
-      magenta = (double)range_limit[MAXJSAMPLE -
-        (y + ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr], SCALEBITS)))];
-      yellow  = (double)range_limit[MAXJSAMPLE - (y + Cbbtab[cb])];
+      cyan    = range_limit[MAXJSAMPLE - (y + Crrtab[cr])];
+      magenta = range_limit[MAXJSAMPLE - (y +
+                            ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],
+                                               SCALEBITS)))];
+      yellow  = range_limit[MAXJSAMPLE - (y + Cbbtab[cb])];
 
       /********* Convert  CMYK to RGB  **********/ 
-      outptr[rindex] = (JSAMPLE)(cyan * black / (double)MAXJSAMPLE);
-      outptr[gindex] = (JSAMPLE)(magenta * black / (double)MAXJSAMPLE);
-      outptr[bindex] = (JSAMPLE)(yellow * black / (double)MAXJSAMPLE);
+      outptr[rindex] = (JSAMPLE)((int)cyan * (int)black / MAXJSAMPLE);
+      outptr[gindex] = (JSAMPLE)((int)magenta * (int)black / MAXJSAMPLE);
+      outptr[bindex] = (JSAMPLE)((int)yellow * (int)black / MAXJSAMPLE);
       outptr += rgbstride;
     }
   }

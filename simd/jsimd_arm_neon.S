@@ -1406,3 +1406,102 @@ asm_function jsimd_fdct_ifast_neon
 .endfunc
 
 /*****************************************************************************/
+
+/*
+ * GLOBAL(void)
+ * jsimd_quantize_neon (JCOEFPTR coef_block, DCTELEM * divisors,
+ *                      DCTELEM * workspace);
+ *
+ * Note: the code uses 2 stage pipelining in order to improve instructions
+ *       scheduling and eliminate stalls (this provides ~15% better
+ *       performance for this function on both ARM Cortex-A8 and
+ *       ARM Cortex-A9 when compared to the non-pipelined variant).
+ *       The instructions which belong to the second stage use different
+ *       indentation for better readiability.
+ */
+asm_function jsimd_quantize_neon
+
+    COEF_BLOCK      .req r0
+    DIVISORS        .req r1
+    WORKSPACE       .req r2
+
+    RECIPROCAL      .req DIVISORS
+    CORRECTION      .req r3
+    SHIFT           .req ip
+    LOOP_COUNT      .req r4
+
+    vld1.16         {d0, d1, d2, d3}, [WORKSPACE, :128]!
+    vabs.s16        q12, q0
+    add             CORRECTION, DIVISORS, #(64 * 2)
+    add             SHIFT, DIVISORS, #(64 * 6)
+    vld1.16         {d20, d21, d22, d23}, [CORRECTION, :128]!
+    vabs.s16        q13, q1
+    vld1.16         {d16, d17, d18, d19}, [RECIPROCAL, :128]!
+    vadd.u16        q12, q12, q10 /* add correction */
+    vadd.u16        q13, q13, q11
+    vmull.u16       q10, d24, d16 /* multiply by reciprocal */
+    vmull.u16       q11, d25, d17
+    vmull.u16       q8,  d26, d18
+    vmull.u16       q9,  d27, d19
+    vld1.16         {d24, d25, d26, d27}, [SHIFT, :128]!
+    vshrn.u32       d20, q10, #16
+    vshrn.u32       d21, q11, #16
+    vshrn.u32       d22, q8,  #16
+    vshrn.u32       d23, q9,  #16
+    vneg.s16        q12, q12
+    vneg.s16        q13, q13
+    vshr.s16        q2,  q0,  #15 /* extract sign */
+    vshr.s16        q3,  q1,  #15
+    vshl.u16        q14, q10, q12 /* shift */
+    vshl.u16        q15, q11, q13
+
+    push            {r4, r5}
+    mov             LOOP_COUNT, #3
+1:
+    vld1.16         {d0, d1, d2, d3}, [WORKSPACE, :128]!
+      veor.u16        q14, q14, q2  /* restore sign */
+    vabs.s16        q12, q0
+    vld1.16         {d20, d21, d22, d23}, [CORRECTION, :128]!
+    vabs.s16        q13, q1
+      veor.u16        q15, q15, q3
+    vld1.16         {d16, d17, d18, d19}, [RECIPROCAL, :128]!
+    vadd.u16        q12, q12, q10 /* add correction */
+    vadd.u16        q13, q13, q11
+    vmull.u16       q10, d24, d16 /* multiply by reciprocal */
+    vmull.u16       q11, d25, d17
+    vmull.u16       q8,  d26, d18
+    vmull.u16       q9,  d27, d19
+      vsub.u16        q14, q14, q2
+    vld1.16         {d24, d25, d26, d27}, [SHIFT, :128]!
+      vsub.u16        q15, q15, q3
+    vshrn.u32       d20, q10, #16
+    vshrn.u32       d21, q11, #16
+      vst1.16         {d28, d29, d30, d31}, [COEF_BLOCK, :128]!
+    vshrn.u32       d22, q8,  #16
+    vshrn.u32       d23, q9,  #16
+    vneg.s16        q12, q12
+    vneg.s16        q13, q13
+    vshr.s16        q2,  q0,  #15 /* extract sign */
+    vshr.s16        q3,  q1,  #15
+    vshl.u16        q14, q10, q12 /* shift */
+    vshl.u16        q15, q11, q13
+    subs            LOOP_COUNT, LOOP_COUNT, #1
+    bne             1b
+    pop             {r4, r5}
+
+      veor.u16        q14, q14, q2  /* restore sign */
+      veor.u16        q15, q15, q3
+      vsub.u16        q14, q14, q2
+      vsub.u16        q15, q15, q3
+      vst1.16         {d28, d29, d30, d31}, [COEF_BLOCK, :128]!
+
+    bx              lr /* return */
+
+    .unreq          COEF_BLOCK
+    .unreq          DIVISORS
+    .unreq          WORKSPACE
+    .unreq          RECIPROCAL
+    .unreq          CORRECTION
+    .unreq          SHIFT
+    .unreq          LOOP_COUNT
+.endfunc

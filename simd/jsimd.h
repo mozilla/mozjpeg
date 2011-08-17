@@ -572,6 +572,10 @@ EXTERN(void) jsimd_quantize_sse2 JPP((JCOEFPTR coef_block,
                                       DCTELEM * divisors,
                                       DCTELEM * workspace));
 
+EXTERN(void) jsimd_quantize_neon JPP((JCOEFPTR coef_block,
+                                      DCTELEM * divisors,
+                                      DCTELEM * workspace));
+
 EXTERN(void) jsimd_quantize_float_3dnow JPP((JCOEFPTR coef_block,
                                              FAST_FLOAT * divisors,
                                              FAST_FLOAT * workspace));

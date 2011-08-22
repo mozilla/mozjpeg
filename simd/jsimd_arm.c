@@ -584,6 +584,21 @@ jsimd_can_idct_islow (void)
 {
   init_simd();
 
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(ISLOW_MULT_TYPE) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ARM_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -625,6 +640,8 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
                 JDIMENSION output_col)
 {
+  if ((simd_support & JSIMD_ARM_NEON))
+    jsimd_idct_islow_neon(compptr->dct_table, coef_block, output_buf, output_col);
 }
 
 GLOBAL(void)

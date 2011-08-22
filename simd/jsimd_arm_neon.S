@@ -62,6 +62,480 @@ _\fname:
     vtrn.32 \x1, \x3
 .endm
 
+#define CENTERJSAMPLE 128
+
+/*****************************************************************************/
+
+/*
+ * Perform dequantization and inverse DCT on one block of coefficients.
+ *
+ * GLOBAL(void)
+ * jsimd_idct_islow_neon (void * dct_table, JCOEFPTR coef_block,
+ *                        JSAMPARRAY output_buf, JDIMENSION output_col)
+ */
+
+#define FIX_0_298631336  (2446)
+#define FIX_0_390180644  (3196)
+#define FIX_0_541196100  (4433)
+#define FIX_0_765366865  (6270)
+#define FIX_0_899976223  (7373)
+#define FIX_1_175875602  (9633)
+#define FIX_1_501321110  (12299)
+#define FIX_1_847759065  (15137)
+#define FIX_1_961570560  (16069)
+#define FIX_2_053119869  (16819)
+#define FIX_2_562915447  (20995)
+#define FIX_3_072711026  (25172)
+
+#define FIX_1_175875602_MINUS_1_961570560 (FIX_1_175875602 - FIX_1_961570560)
+#define FIX_1_175875602_MINUS_0_390180644 (FIX_1_175875602 - FIX_0_390180644)
+#define FIX_0_541196100_MINUS_1_847759065 (FIX_0_541196100 - FIX_1_847759065)
+#define FIX_3_072711026_MINUS_2_562915447 (FIX_3_072711026 - FIX_2_562915447)
+#define FIX_0_298631336_MINUS_0_899976223 (FIX_0_298631336 - FIX_0_899976223)
+#define FIX_1_501321110_MINUS_0_899976223 (FIX_1_501321110 - FIX_0_899976223)
+#define FIX_2_053119869_MINUS_2_562915447 (FIX_2_053119869 - FIX_2_562915447)
+#define FIX_0_541196100_PLUS_0_765366865  (FIX_0_541196100 + FIX_0_765366865)
+
+/*
+ * Reference SIMD-friendly 1-D ISLOW iDCT C implementation.
+ * Uses some ideas from the comments in 'simd/jiss2int-64.asm'
+ */
+#define REF_1D_IDCT(xrow0, xrow1, xrow2, xrow3, xrow4, xrow5, xrow6, xrow7)   \
+{                                                                             \
+    DCTELEM row0, row1, row2, row3, row4, row5, row6, row7;                   \
+    INT32   q1, q2, q3, q4, q5, q6, q7;                                       \
+    INT32   tmp11_plus_tmp2, tmp11_minus_tmp2;                                \
+                                                                              \
+    /* 1-D iDCT input data */                                                 \
+    row0 = xrow0;                                                             \
+    row1 = xrow1;                                                             \
+    row2 = xrow2;                                                             \
+    row3 = xrow3;                                                             \
+    row4 = xrow4;                                                             \
+    row5 = xrow5;                                                             \
+    row6 = xrow6;                                                             \
+    row7 = xrow7;                                                             \
+                                                                              \
+    q5 = row7 + row3;                                                         \
+    q4 = row5 + row1;                                                         \
+    q6 = MULTIPLY(q5, FIX_1_175875602_MINUS_1_961570560) +                    \
+         MULTIPLY(q4, FIX_1_175875602);                                       \
+    q7 = MULTIPLY(q5, FIX_1_175875602) +                                      \
+         MULTIPLY(q4, FIX_1_175875602_MINUS_0_390180644);                     \
+    q2 = MULTIPLY(row2, FIX_0_541196100) +                                    \
+         MULTIPLY(row6, FIX_0_541196100_MINUS_1_847759065);                   \
+    q4 = q6;                                                                  \
+    q3 = ((INT32) row0 - (INT32) row4) << 13;                                 \
+    q6 += MULTIPLY(row5, -FIX_2_562915447) +                                  \
+          MULTIPLY(row3, FIX_3_072711026_MINUS_2_562915447);                  \
+    /* now we can use q1 (reloadable constants have been used up) */          \
+    q1 = q3 + q2;                                                             \
+    q4 += MULTIPLY(row7, FIX_0_298631336_MINUS_0_899976223) +                 \
+          MULTIPLY(row1, -FIX_0_899976223);                                   \
+    q5 = q7;                                                                  \
+    q1 = q1 + q6;                                                             \
+    q7 += MULTIPLY(row7, -FIX_0_899976223) +                                  \
+          MULTIPLY(row1, FIX_1_501321110_MINUS_0_899976223);                  \
+                                                                              \
+    /* (tmp11 + tmp2) has been calculated (out_row1 before descale) */        \
+    tmp11_plus_tmp2 = q1;                                                     \
+    row1 = 0;                                                                 \
+                                                                              \
+    q1 = q1 - q6;                                                             \
+    q5 += MULTIPLY(row5, FIX_2_053119869_MINUS_2_562915447) +                 \
+          MULTIPLY(row3, -FIX_2_562915447);                                   \
+    q1 = q1 - q6;                                                             \
+    q6 = MULTIPLY(row2, FIX_0_541196100_PLUS_0_765366865) +                   \
+         MULTIPLY(row6, FIX_0_541196100);                                     \
+    q3 = q3 - q2;                                                             \
+                                                                              \
+    /* (tmp11 - tmp2) has been calculated (out_row6 before descale) */        \
+    tmp11_minus_tmp2 = q1;                                                    \
+                                                                              \
+    q1 = ((INT32) row0 + (INT32) row4) << 13;                                 \
+    q2 = q1 + q6;                                                             \
+    q1 = q1 - q6;                                                             \
+                                                                              \
+    /* pick up the results */                                                 \
+    tmp0  = q4;                                                               \
+    tmp1  = q5;                                                               \
+    tmp2  = (tmp11_plus_tmp2 - tmp11_minus_tmp2) / 2;                         \
+    tmp3  = q7;                                                               \
+    tmp10 = q2;                                                               \
+    tmp11 = (tmp11_plus_tmp2 + tmp11_minus_tmp2) / 2;                         \
+    tmp12 = q3;                                                               \
+    tmp13 = q1;                                                               \
+}
+
+#define XFIX_0_899976223                    d0[0]
+#define XFIX_0_541196100                    d0[1]
+#define XFIX_2_562915447                    d0[2]
+#define XFIX_0_298631336_MINUS_0_899976223  d0[3]
+#define XFIX_1_501321110_MINUS_0_899976223  d1[0]
+#define XFIX_2_053119869_MINUS_2_562915447  d1[1]
+#define XFIX_0_541196100_PLUS_0_765366865   d1[2]
+#define XFIX_1_175875602                    d1[3]
+#define XFIX_1_175875602_MINUS_0_390180644  d2[0]
+#define XFIX_0_541196100_MINUS_1_847759065  d2[1]
+#define XFIX_3_072711026_MINUS_2_562915447  d2[2]
+#define XFIX_1_175875602_MINUS_1_961570560  d2[3]
+
+.balign 16
+jsimd_idct_islow_neon_consts:
+    .short FIX_0_899976223                    /* d0[0] */
+    .short FIX_0_541196100                    /* d0[1] */
+    .short FIX_2_562915447                    /* d0[2] */
+    .short FIX_0_298631336_MINUS_0_899976223  /* d0[3] */
+    .short FIX_1_501321110_MINUS_0_899976223  /* d1[0] */
+    .short FIX_2_053119869_MINUS_2_562915447  /* d1[1] */
+    .short FIX_0_541196100_PLUS_0_765366865   /* d1[2] */
+    .short FIX_1_175875602                    /* d1[3] */
+    /* reloadable constants */
+    .short FIX_1_175875602_MINUS_0_390180644  /* d2[0] */
+    .short FIX_0_541196100_MINUS_1_847759065  /* d2[1] */
+    .short FIX_3_072711026_MINUS_2_562915447  /* d2[2] */
+    .short FIX_1_175875602_MINUS_1_961570560  /* d2[3] */
+
+asm_function jsimd_idct_islow_neon
+
+    DCT_TABLE       .req r0
+    COEF_BLOCK      .req r1
+    OUTPUT_BUF      .req r2
+    OUTPUT_COL      .req r3
+    TMP1            .req r0
+    TMP2            .req r1
+    TMP3            .req r2
+    TMP4            .req ip
+
+    ROW0L           .req d16
+    ROW0R           .req d17
+    ROW1L           .req d18
+    ROW1R           .req d19
+    ROW2L           .req d20
+    ROW2R           .req d21
+    ROW3L           .req d22
+    ROW3R           .req d23
+    ROW4L           .req d24
+    ROW4R           .req d25
+    ROW5L           .req d26
+    ROW5R           .req d27
+    ROW6L           .req d28
+    ROW6R           .req d29
+    ROW7L           .req d30
+    ROW7R           .req d31
+
+    /* Load and dequantize coefficients into NEON registers
+     * with the following allocation:
+     *       0 1 2 3 | 4 5 6 7
+     *      ---------+--------
+     *   0 | d16     | d17     ( q8  )
+     *   1 | d18     | d19     ( q9  )
+     *   2 | d20     | d21     ( q10 )
+     *   3 | d22     | d23     ( q11 )
+     *   4 | d24     | d25     ( q12 )
+     *   5 | d26     | d27     ( q13 )
+     *   6 | d28     | d29     ( q14 )
+     *   7 | d30     | d31     ( q15 )
+     */
+    adr             ip, jsimd_idct_islow_neon_consts
+    vld1.16         {d16, d17, d18, d19}, [COEF_BLOCK, :128]!
+    vld1.16         {d0, d1, d2, d3}, [DCT_TABLE, :128]!
+    vld1.16         {d20, d21, d22, d23}, [COEF_BLOCK, :128]!
+    vmul.s16        q8, q8, q0
+    vld1.16         {d4, d5, d6, d7}, [DCT_TABLE, :128]!
+    vmul.s16        q9, q9, q1
+    vld1.16         {d24, d25, d26, d27}, [COEF_BLOCK, :128]!
+    vmul.s16        q10, q10, q2
+    vld1.16         {d0, d1, d2, d3}, [DCT_TABLE, :128]!
+    vmul.s16        q11, q11, q3
+    vld1.16         {d28, d29, d30, d31}, [COEF_BLOCK, :128]
+    vmul.s16        q12, q12, q0
+    vld1.16         {d4, d5, d6, d7}, [DCT_TABLE, :128]!
+    vmul.s16        q14, q14, q2
+    vmul.s16        q13, q13, q1
+    vld1.16         {d0, d1, d2, d3}, [ip, :128] /* load constants */
+    add             ip, ip, #16
+    vmul.s16        q15, q15, q3
+    vpush           {d8-d15} /* save NEON registers */
+    /* 1-D IDCT, pass 1, left 4x8 half */
+    vadd.s16        d4,    ROW7L, ROW3L
+    vadd.s16        d5,    ROW5L, ROW1L
+    vmull.s16       q6,    d4,    XFIX_1_175875602_MINUS_1_961570560
+    vmlal.s16       q6,    d5,    XFIX_1_175875602
+    vmull.s16       q7,    d4,    XFIX_1_175875602
+    vmlal.s16       q7,    d5,    XFIX_1_175875602_MINUS_0_390180644
+    vsubl.s16       q3,    ROW0L, ROW4L
+    vmull.s16       q2,    ROW2L, XFIX_0_541196100
+    vmlal.s16       q2,    ROW6L, XFIX_0_541196100_MINUS_1_847759065
+    vmov            q4,    q6
+    vmlsl.s16       q6,    ROW5L, XFIX_2_562915447
+    vmlal.s16       q6,    ROW3L, XFIX_3_072711026_MINUS_2_562915447
+    vshl.s32        q3,    q3,    #13
+    vmlsl.s16       q4,    ROW1L, XFIX_0_899976223
+    vadd.s32        q1,    q3,    q2
+    vmov            q5,    q7
+    vadd.s32        q1,    q1,    q6
+    vmlsl.s16       q7,    ROW7L, XFIX_0_899976223
+    vmlal.s16       q7,    ROW1L, XFIX_1_501321110_MINUS_0_899976223
+    vrshrn.s32      ROW1L, q1,    #11
+    vsub.s32        q1,    q1,    q6
+    vmlal.s16       q5,    ROW5L, XFIX_2_053119869_MINUS_2_562915447
+    vmlsl.s16       q5,    ROW3L, XFIX_2_562915447
+    vsub.s32        q1,    q1,    q6
+    vmull.s16       q6,    ROW2L, XFIX_0_541196100_PLUS_0_765366865
+    vmlal.s16       q6,    ROW6L, XFIX_0_541196100
+    vsub.s32        q3,    q3,    q2
+    vrshrn.s32      ROW6L, q1,    #11
+    vadd.s32        q1,    q3,    q5
+    vsub.s32        q3,    q3,    q5
+    vaddl.s16       q5,    ROW0L, ROW4L
+    vrshrn.s32      ROW2L, q1,    #11
+    vrshrn.s32      ROW5L, q3,    #11
+    vshl.s32        q5,    q5,    #13
+    vmlal.s16       q4,    ROW7L, XFIX_0_298631336_MINUS_0_899976223
+    vadd.s32        q2,    q5,    q6
+    vsub.s32        q1,    q5,    q6
+    vadd.s32        q6,    q2,    q7
+    vsub.s32        q2,    q2,    q7
+    vadd.s32        q5,    q1,    q4
+    vsub.s32        q3,    q1,    q4
+    vrshrn.s32      ROW7L, q2,    #11
+    vrshrn.s32      ROW3L, q5,    #11
+    vrshrn.s32      ROW0L, q6,    #11
+    vrshrn.s32      ROW4L, q3,    #11
+    /* 1-D IDCT, pass 1, right 4x8 half */
+    vld1.s16        {d2},  [ip, :64]    /* reload constants */
+    vadd.s16        d10,   ROW7R, ROW3R
+    vadd.s16        d8,    ROW5R, ROW1R
+      /* Transpose left 4x8 half */
+      vtrn.16         ROW6L, ROW7L
+    vmull.s16       q6,    d10,   XFIX_1_175875602_MINUS_1_961570560
+    vmlal.s16       q6,    d8,    XFIX_1_175875602
+      vtrn.16         ROW2L, ROW3L
+    vmull.s16       q7,    d10,   XFIX_1_175875602
+    vmlal.s16       q7,    d8,    XFIX_1_175875602_MINUS_0_390180644
+      vtrn.16         ROW0L, ROW1L
+    vsubl.s16       q3,    ROW0R, ROW4R
+    vmull.s16       q2,    ROW2R, XFIX_0_541196100
+    vmlal.s16       q2,    ROW6R, XFIX_0_541196100_MINUS_1_847759065
+      vtrn.16         ROW4L, ROW5L
+    vmov            q4,    q6
+    vmlsl.s16       q6,    ROW5R, XFIX_2_562915447
+    vmlal.s16       q6,    ROW3R, XFIX_3_072711026_MINUS_2_562915447
+      vtrn.32         ROW1L, ROW3L
+    vshl.s32        q3,    q3,    #13
+    vmlsl.s16       q4,    ROW1R, XFIX_0_899976223
+      vtrn.32         ROW4L, ROW6L
+    vadd.s32        q1,    q3,    q2
+    vmov            q5,    q7
+    vadd.s32        q1,    q1,    q6
+      vtrn.32         ROW0L, ROW2L
+    vmlsl.s16       q7,    ROW7R, XFIX_0_899976223
+    vmlal.s16       q7,    ROW1R, XFIX_1_501321110_MINUS_0_899976223
+    vrshrn.s32      ROW1R, q1,    #11
+      vtrn.32         ROW5L, ROW7L
+    vsub.s32        q1,    q1,    q6
+    vmlal.s16       q5,    ROW5R, XFIX_2_053119869_MINUS_2_562915447
+    vmlsl.s16       q5,    ROW3R, XFIX_2_562915447
+    vsub.s32        q1,    q1,    q6
+    vmull.s16       q6,    ROW2R, XFIX_0_541196100_PLUS_0_765366865
+    vmlal.s16       q6,    ROW6R, XFIX_0_541196100
+    vsub.s32        q3,    q3,    q2
+    vrshrn.s32      ROW6R, q1,    #11
+    vadd.s32        q1,    q3,    q5
+    vsub.s32        q3,    q3,    q5
+    vaddl.s16       q5,    ROW0R, ROW4R
+    vrshrn.s32      ROW2R, q1,    #11
+    vrshrn.s32      ROW5R, q3,    #11
+    vshl.s32        q5,    q5,    #13
+    vmlal.s16       q4,    ROW7R, XFIX_0_298631336_MINUS_0_899976223
+    vadd.s32        q2,    q5,    q6
+    vsub.s32        q1,    q5,    q6
+    vadd.s32        q6,    q2,    q7
+    vsub.s32        q2,    q2,    q7
+    vadd.s32        q5,    q1,    q4
+    vsub.s32        q3,    q1,    q4
+    vrshrn.s32      ROW7R, q2,    #11
+    vrshrn.s32      ROW3R, q5,    #11
+    vrshrn.s32      ROW0R, q6,    #11
+    vrshrn.s32      ROW4R, q3,    #11
+    vld1.s16        {d2},  [ip, :64]    /* reload constants */
+      /* Transpose right 4x8 half */
+      vtrn.16         ROW6R, ROW7R
+      vtrn.16         ROW2R, ROW3R
+      vtrn.16         ROW0R, ROW1R
+      vtrn.16         ROW4R, ROW5R
+    vmov.s16        q7,  #(CENTERJSAMPLE << 5)
+      vtrn.32         ROW1R, ROW3R
+      vtrn.32         ROW4R, ROW6R
+      vtrn.32         ROW0R, ROW2R
+      vtrn.32         ROW5R, ROW7R
+    /* 1-D IDCT, pass 2, left 4x8 half */
+      vswp            ROW7L, ROW3R
+    vadd.s16        d10,   ROW7L, ROW3L
+      vswp            ROW5L, ROW1R
+    vadd.s16        d8,    ROW5L, ROW1L
+    vmull.s16       q6,    d10,   XFIX_1_175875602_MINUS_1_961570560
+    vmlal.s16       q6,    d8,    XFIX_1_175875602
+      vswp            ROW4L, ROW0R
+    vadd.s16        q8,    q8,    q7
+    vmull.s16       q7,    d10,   XFIX_1_175875602
+    vmlal.s16       q7,    d8,    XFIX_1_175875602_MINUS_0_390180644
+    vsubl.s16       q3,    ROW0L, ROW4L
+      vswp            ROW6L, ROW2R
+    vmull.s16       q2,    ROW2L, XFIX_0_541196100
+    vmlal.s16       q2,    ROW6L, XFIX_0_541196100_MINUS_1_847759065
+    vmov            q4,    q6
+    vmlsl.s16       q6,    ROW5L, XFIX_2_562915447
+    vmlal.s16       q6,    ROW3L, XFIX_3_072711026_MINUS_2_562915447
+    vshl.s32        q3,    q3,    #13
+    vmlsl.s16       q4,    ROW1L, XFIX_0_899976223
+    vadd.s32        q1,    q3,    q2
+    vmov            q5,    q7
+    vadd.s32        q1,    q1,    q6
+    vmlsl.s16       q7,    ROW7L, XFIX_0_899976223
+    vmlal.s16       q7,    ROW1L, XFIX_1_501321110_MINUS_0_899976223
+    vshrn.s32       ROW1L, q1,    #16
+    vsub.s32        q1,    q1,    q6
+    vmlal.s16       q5,    ROW5L, XFIX_2_053119869_MINUS_2_562915447
+    vmlsl.s16       q5,    ROW3L, XFIX_2_562915447
+    vsub.s32        q1,    q1,    q6
+    vmull.s16       q6,    ROW2L, XFIX_0_541196100_PLUS_0_765366865
+    vmlal.s16       q6,    ROW6L, XFIX_0_541196100
+    vsub.s32        q3,    q3,    q2
+    vshrn.s32       ROW6L, q1,    #16
+    vadd.s32        q1,    q3,    q5
+    vsub.s32        q3,    q3,    q5
+    vaddl.s16       q5,    ROW0L, ROW4L
+    vshrn.s32       ROW2L, q1,    #16
+    vshrn.s32       ROW5L, q3,    #16
+    vshl.s32        q5,    q5,    #13
+    vmlal.s16       q4,    ROW7L, XFIX_0_298631336_MINUS_0_899976223
+    vadd.s32        q2,    q5,    q6
+    vsub.s32        q1,    q5,    q6
+    vadd.s32        q6,    q2,    q7
+    vsub.s32        q2,    q2,    q7
+    vadd.s32        q5,    q1,    q4
+    vsub.s32        q3,    q1,    q4
+    vshrn.s32       ROW7L, q2,    #16
+    vshrn.s32       ROW3L, q5,    #16
+    vshrn.s32       ROW0L, q6,    #16
+    vshrn.s32       ROW4L, q3,    #16
+    /* 1-D IDCT, pass 2, right 4x8 half */
+    vld1.s16        {d2},  [ip, :64]    /* reload constants */
+    vadd.s16        d10,   ROW7R, ROW3R
+    vadd.s16        d8,    ROW5R, ROW1R
+    vmull.s16       q6,    d10,   XFIX_1_175875602_MINUS_1_961570560
+    vmlal.s16       q6,    d8,    XFIX_1_175875602
+    vmull.s16       q7,    d10,   XFIX_1_175875602
+    vmlal.s16       q7,    d8,    XFIX_1_175875602_MINUS_0_390180644
+    vsubl.s16       q3,    ROW0R, ROW4R
+    vmull.s16       q2,    ROW2R, XFIX_0_541196100
+    vmlal.s16       q2,    ROW6R, XFIX_0_541196100_MINUS_1_847759065
+    vmov            q4,    q6
+    vmlsl.s16       q6,    ROW5R, XFIX_2_562915447
+    vmlal.s16       q6,    ROW3R, XFIX_3_072711026_MINUS_2_562915447
+    vshl.s32        q3,    q3,    #13
+    vmlsl.s16       q4,    ROW1R, XFIX_0_899976223
+    vadd.s32        q1,    q3,    q2
+    vmov            q5,    q7
+    vadd.s32        q1,    q1,    q6
+    vmlsl.s16       q7,    ROW7R, XFIX_0_899976223
+    vmlal.s16       q7,    ROW1R, XFIX_1_501321110_MINUS_0_899976223
+    vshrn.s32       ROW1R, q1,    #16
+    vsub.s32        q1,    q1,    q6
+    vmlal.s16       q5,    ROW5R, XFIX_2_053119869_MINUS_2_562915447
+    vmlsl.s16       q5,    ROW3R, XFIX_2_562915447
+    vsub.s32        q1,    q1,    q6
+    vmull.s16       q6,    ROW2R, XFIX_0_541196100_PLUS_0_765366865
+    vmlal.s16       q6,    ROW6R, XFIX_0_541196100
+    vsub.s32        q3,    q3,    q2
+    vshrn.s32       ROW6R, q1,    #16
+    vadd.s32        q1,    q3,    q5
+    vsub.s32        q3,    q3,    q5
+    vaddl.s16       q5,    ROW0R, ROW4R
+    vshrn.s32       ROW2R, q1,    #16
+    vshrn.s32       ROW5R, q3,    #16
+    vshl.s32        q5,    q5,    #13
+    vmlal.s16       q4,    ROW7R, XFIX_0_298631336_MINUS_0_899976223
+    vadd.s32        q2,    q5,    q6
+    vsub.s32        q1,    q5,    q6
+    vadd.s32        q6,    q2,    q7
+    vsub.s32        q2,    q2,    q7
+    vadd.s32        q5,    q1,    q4
+    vsub.s32        q3,    q1,    q4
+    vshrn.s32       ROW7R, q2,    #16
+    vshrn.s32       ROW3R, q5,    #16
+    vshrn.s32       ROW0R, q6,    #16
+    vshrn.s32       ROW4R, q3,    #16
+    /* Descale to 8-bit and range limit */
+    vqrshrun.s16    d16,   q8,    #2
+    vqrshrun.s16    d17,   q9,    #2
+    vqrshrun.s16    d18,   q10,   #2
+    vqrshrun.s16    d19,   q11,   #2
+    vpop            {d8-d15} /* restore NEON registers */
+    vqrshrun.s16    d20,   q12,   #2
+    vqrshrun.s16    d21,   q13,   #2
+    vqrshrun.s16    d22,   q14,   #2
+    vqrshrun.s16    d23,   q15,   #2
+    /* Transpose the final 8-bit samples */
+    vtrn.16         q8,    q9
+    vtrn.16         q10,   q11
+    vtrn.32         q8,    q10
+    vtrn.32         q9,    q11
+    vtrn.8          d16,   d17
+    vtrn.8          d18,   d19
+      /* Store results to the output buffer */
+      ldmia           OUTPUT_BUF!, {TMP1, TMP2}
+      add             TMP1, TMP1, OUTPUT_COL
+      add             TMP2, TMP2, OUTPUT_COL
+      vst1.8          {d16}, [TMP1]
+      vst1.8          {d17}, [TMP2]
+      ldmia           OUTPUT_BUF!, {TMP1, TMP2}
+      add             TMP1, TMP1, OUTPUT_COL
+      add             TMP2, TMP2, OUTPUT_COL
+      vst1.8          {d18}, [TMP1]
+    vtrn.8          d20, d21
+      vst1.8          {d19}, [TMP2]
+      ldmia           OUTPUT_BUF, {TMP1, TMP2, TMP3, TMP4}
+      add             TMP1, TMP1, OUTPUT_COL
+      add             TMP2, TMP2, OUTPUT_COL
+      add             TMP3, TMP3, OUTPUT_COL
+      add             TMP4, TMP4, OUTPUT_COL
+      vst1.8          {d20}, [TMP1]
+    vtrn.8          d22, d23
+      vst1.8          {d21}, [TMP2]
+      vst1.8          {d22}, [TMP3]
+      vst1.8          {d23}, [TMP4]
+    bx              lr
+
+    .unreq          DCT_TABLE
+    .unreq          COEF_BLOCK
+    .unreq          OUTPUT_BUF
+    .unreq          OUTPUT_COL
+    .unreq          TMP1
+    .unreq          TMP2
+    .unreq          TMP3
+    .unreq          TMP4
+
+    .unreq          ROW0L
+    .unreq          ROW0R
+    .unreq          ROW1L
+    .unreq          ROW1R
+    .unreq          ROW2L
+    .unreq          ROW2R
+    .unreq          ROW3L
+    .unreq          ROW3R
+    .unreq          ROW4L
+    .unreq          ROW4R
+    .unreq          ROW5L
+    .unreq          ROW5R
+    .unreq          ROW6L
+    .unreq          ROW6R
+    .unreq          ROW7L
+    .unreq          ROW7R
+.endfunc
+
 /*****************************************************************************/
 
 /*

@@ -638,6 +638,10 @@ EXTERN(void) jsimd_idct_ifast_sse2 JPP((void * dct_table,
                                         JSAMPARRAY output_buf,
                                         JDIMENSION output_col));
 
+EXTERN(void) jsimd_idct_islow_neon JPP((void * dct_table,
+                                        JCOEFPTR coef_block,
+                                        JSAMPARRAY output_buf,
+                                        JDIMENSION output_col));
 EXTERN(void) jsimd_idct_ifast_neon JPP((void * dct_table,
                                         JCOEFPTR coef_block,
                                         JSAMPARRAY output_buf,

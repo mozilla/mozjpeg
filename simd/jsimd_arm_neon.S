@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
- * Contact: Alexander Bokovoy <alexander.bokovoy@nokia.com>
+ * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages

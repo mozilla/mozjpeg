@@ -837,56 +837,48 @@ asm_function jsimd_idct_ifast_neon
     vsub.s16        q13, q10, q2
     vpop            {d8-d13}        /* restore NEON registers */
     vadd.s16        q10, q10, q2
-      /* Transpose */
-      vtrn.16         q8,  q9
     vsub.s16        q11, q12, q1
-      vtrn.16         q14, q15
     vadd.s16        q12, q12, q1
-      vtrn.16         q10, q11
-      vtrn.16         q12, q13
-    /* Descale and range limit */
-    vmov.s16        q0,  #(0x80 << 5)
-      vtrn.32         q9,  q11
-      vtrn.32         q12, q14
-      vtrn.32         q8,  q10
-      vtrn.32         q13, q15
-      vswp            d24, d17
-      vswp            d26, d19
-    vqadd.s16       q8,  q8,  q0
-      vswp            d28, d21
-    vqadd.s16       q9,  q9,  q0
-      vswp            d30, d23
-    vqadd.s16       q10, q10, q0
-    vqadd.s16       q11, q11, q0
+    /* Descale to 8-bit and range limit */
+    vmov.u8         q0,  #0x80
+    vqshrn.s16      d16, q8,  #5
+    vqshrn.s16      d17, q9,  #5
+    vqshrn.s16      d18, q10, #5
+    vqshrn.s16      d19, q11, #5
+    vqshrn.s16      d20, q12, #5
+    vqshrn.s16      d21, q13, #5
+    vqshrn.s16      d22, q14, #5
+    vqshrn.s16      d23, q15, #5
+    vadd.u8         q8,  q8,  q0
+    vadd.u8         q9,  q9,  q0
+    vadd.u8         q10, q10, q0
+    vadd.u8         q11, q11, q0
+    /* Transpose the final 8-bit samples */
+    vtrn.16         q8,  q9
+    vtrn.16         q10, q11
+    vtrn.32         q8,  q10
+    vtrn.32         q9,  q11
+    vtrn.8          d16, d17
+    vtrn.8          d18, d19
       /* Store results to the output buffer */
       ldmia           OUTPUT_BUF!, {TMP1, TMP2}
       add             TMP1, TMP1, OUTPUT_COL
       add             TMP2, TMP2, OUTPUT_COL
-    vqshrun.s16     d16, q8,  #5
-    vqshrun.s16     d17, q9,  #5
-    vqshrun.s16     d18, q10, #5
-    vqshrun.s16     d19, q11, #5
       vst1.8          {d16}, [TMP1]
-    vqadd.s16       q12, q12, q0
-    vqadd.s16       q13, q13, q0
       vst1.8          {d17}, [TMP2]
-    vqadd.s16       q14, q14, q0
-    vqadd.s16       q15, q15, q0
       ldmia           OUTPUT_BUF!, {TMP1, TMP2}
       add             TMP1, TMP1, OUTPUT_COL
       add             TMP2, TMP2, OUTPUT_COL
       vst1.8          {d18}, [TMP1]
-    vqshrun.s16     d20, q12, #5
-    vqshrun.s16     d21, q13, #5
+    vtrn.8          d20, d21
       vst1.8          {d19}, [TMP2]
-    vqshrun.s16     d22, q14, #5
       ldmia           OUTPUT_BUF, {TMP1, TMP2, TMP3, TMP4}
       add             TMP1, TMP1, OUTPUT_COL
       add             TMP2, TMP2, OUTPUT_COL
       add             TMP3, TMP3, OUTPUT_COL
       add             TMP4, TMP4, OUTPUT_COL
       vst1.8          {d20}, [TMP1]
-    vqshrun.s16     d23, q15, #5
+    vtrn.8          d22, d23
       vst1.8          {d21}, [TMP2]
       vst1.8          {d22}, [TMP3]
       vst1.8          {d23}, [TMP4]

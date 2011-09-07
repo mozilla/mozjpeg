@@ -173,6 +173,20 @@ AC_MSG_RESULT($VERSION_SCRIPT)
 AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")
 AC_SUBST(VERSION_SCRIPT_FLAG)
 
+# Check for non-broken inline under various spellings
+AC_MSG_CHECKING(for inline)
+ljt_cv_inline=""
+AC_TRY_COMPILE(, [} __attribute__((always_inline)) int foo() { return 0; }
+int bar() { return foo();], ljt_cv_inline="__attribute__((always_inline))",
+AC_TRY_COMPILE(, [} __inline__ int foo() { return 0; }
+int bar() { return foo();], ljt_cv_inline="__inline__",
+AC_TRY_COMPILE(, [} __inline int foo() { return 0; }
+int bar() { return foo();], ljt_cv_inline="__inline",
+AC_TRY_COMPILE(, [} inline int foo() { return 0; }
+int bar() { return foo();], ljt_cv_inline="inline"))))
+AC_MSG_RESULT($ljt_cv_inline)
+AC_DEFINE_UNQUOTED([INLINE],[$ljt_cv_inline],[How to obtain function inlining.])
+
 AC_MSG_CHECKING([whether to include arithmetic encoding support])
 AC_ARG_WITH([arith-enc],
     AC_HELP_STRING([--without-arith-enc], [Omit arithmetic encoding support]))

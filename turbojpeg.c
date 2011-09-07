@@ -132,9 +132,11 @@ static int getPixelFormat(int pixelSize, int flags)
 	return -1;
 }
 
-static void setCompDefaults(struct jpeg_compress_struct *cinfo,
+static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	int pixelFormat, int subsamp, int jpegQual)
 {
+	int retval=0;
+
 	switch(pixelFormat)
 	{
 		case TJPF_GRAY:
@@ -182,11 +184,18 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
 	cinfo->comp_info[0].v_samp_factor=tjMCUHeight[subsamp]/8;
 	cinfo->comp_info[1].v_samp_factor=1;
 	cinfo->comp_info[2].v_samp_factor=1;
+
+	#if JCS_EXTENSIONS!=1
+	bailout:
+	#endif
+	return retval;
 }
 
-static void setDecompDefaults(struct jpeg_decompress_struct *dinfo,
+static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 	int pixelFormat)
 {
+	int retval=0;
+
 	switch(pixelFormat)
 	{
 		case TJPF_GRAY:
@@ -214,6 +223,11 @@ static void setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 			_throw("Unsupported pixel format");
 		#endif
 	}
+
+	#if JCS_EXTENSIONS!=1
+	bailout:
+	#endif
+	return retval;
 }
 
 
@@ -416,7 +430,8 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 		alloc=0;  *jpegSize=tjBufSize(width, height, jpegSubsamp);
 	}
 	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
-	setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual);
+	if(setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual)==-1)
+		return -1;
 
 	jpeg_start_compress(cinfo, TRUE);
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
@@ -507,7 +522,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 
 	yuvsize=tjBufSizeYUV(width, height, subsamp);
 	jpeg_mem_dest_tj(cinfo, &dstBuf, &yuvsize, 0);
-	setCompDefaults(cinfo, pixelFormat, subsamp, -1);
+	if(setCompDefaults(cinfo, pixelFormat, subsamp, -1)==-1) return -1;
 
 	jpeg_start_compress(cinfo, TRUE);
 	pw=PAD(width, cinfo->max_h_samp_factor);
@@ -729,7 +744,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
-	setDecompDefaults(dinfo, pixelFormat);
+	if(setDecompDefaults(dinfo, pixelFormat)==-1) return -1;
 
 	if(flags&TJFLAG_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
 

@@ -27,6 +27,9 @@
 /* Compiler does not support pointers to unspecified structures. */
 #undef INCOMPLETE_TYPES_BROKEN
 
+/* How to obtain function inlining. */
+#undef INLINE
+
 /* Compiler has <strings.h> rather than standard <string.h>. */
 #undef NEED_BSD_STRINGS
 
@@ -49,12 +52,6 @@
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
-
-/* Define to `__inline__' or `__inline' if that's what the C compiler
-   calls it, or to nothing if 'inline' is not supported under any name.  */
-#ifndef __cplusplus
-#undef inline
-#endif
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t

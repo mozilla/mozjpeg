@@ -60,6 +60,11 @@ worst-case JPEG size based on the level of chrominance subsampling.
 [16] Fixed 32-bit supplementary package for amd64 Debian systems which was
 broken by enhancements to the packaging system in 1.1.
 
+[17] When decompressing a JPEG image using an output colorspace of
+JCS_EXT_RGBX, JCS_EXT_BGRX, JCS_EXT_XBGR, or JCS_EXT_XRGB, libjpeg-turbo will
+now set the unused byte to 0xFF, which allows applications to interpret that
+byte as an alpha channel (0xFF = opaque).
+
 
 1.1.1
 =====

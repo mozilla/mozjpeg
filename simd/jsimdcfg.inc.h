@@ -64,6 +64,8 @@ definev(EXT_XRGB_GREEN)
 definev(EXT_XRGB_BLUE)
 definev(EXT_XRGB_PIXELSIZE)
 
+%define RGBX_FILLER_0XFF        1
+
 ; Representation of a single sample (pixel element value).
 ; On this SIMD implementation, this must be 'unsigned char'.
 ;

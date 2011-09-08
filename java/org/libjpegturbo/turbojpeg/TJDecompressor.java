@@ -387,6 +387,9 @@ public class TJDecompressor {
     switch(dstImage.getType()) {
       case BufferedImage.TYPE_3BYTE_BGR:
         pixelFormat = TJ.PF_BGR;  break;
+      case BufferedImage.TYPE_4BYTE_ABGR:
+      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+        pixelFormat = TJ.PF_XBGR;  break;
       case BufferedImage.TYPE_BYTE_GRAY:
         pixelFormat = TJ.PF_GRAY;  break;
       case BufferedImage.TYPE_INT_BGR:
@@ -396,6 +399,8 @@ public class TJDecompressor {
           pixelFormat = TJ.PF_RGBX;
         intPixels = true;  break;
       case BufferedImage.TYPE_INT_RGB:
+      case BufferedImage.TYPE_INT_ARGB:
+      case BufferedImage.TYPE_INT_ARGB_PRE:
         if(byteOrder == ByteOrder.BIG_ENDIAN)
           pixelFormat = TJ.PF_XRGB;
         else

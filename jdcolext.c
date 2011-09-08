@@ -54,6 +54,10 @@ ycc_rgb_convert_internal (j_decompress_ptr cinfo,
       y  = GETJSAMPLE(inptr0[col]);
       cb = GETJSAMPLE(inptr1[col]);
       cr = GETJSAMPLE(inptr2[col]);
+      /* Initialize 4-byte pixels so the alpha channel will be opaque */
+#if RGB_PIXELSIZE == 4
+      *(unsigned int *)outptr = 0xFFFFFFFF;
+#endif
       /* Range-limiting is essential due to noise introduced by DCT losses. */
       outptr[RGB_RED] =   range_limit[y + Crrtab[cr]];
       outptr[RGB_GREEN] = range_limit[y +
@@ -86,6 +90,10 @@ gray_rgb_convert_internal (j_decompress_ptr cinfo,
     inptr = input_buf[0][input_row++];
     outptr = *output_buf++;
     for (col = 0; col < num_cols; col++) {
+      /* Initialize 4-byte pixels so the alpha channel will be opaque */
+#if RGB_PIXELSIZE == 4
+      *(unsigned int *)outptr = 0xFFFFFFFF;
+#endif
       /* We can dispense with GETJSAMPLE() here */
       outptr[RGB_RED] = outptr[RGB_GREEN] = outptr[RGB_BLUE] = inptr[col];
       outptr += RGB_PIXELSIZE;

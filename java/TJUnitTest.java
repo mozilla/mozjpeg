@@ -34,6 +34,7 @@ import java.io.*;
 import java.util.*;
 import java.awt.image.*;
 import javax.imageio.*;
+import java.nio.*;
 import org.libjpegturbo.turbojpeg.*;
 
 public class TJUnitTest {
@@ -59,25 +60,30 @@ public class TJUnitTest {
   private final static String pixFormatStr[] = {
     "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale"
   };
-  private final static int biType[] = {
-    0, BufferedImage.TYPE_3BYTE_BGR, BufferedImage.TYPE_INT_BGR,
-    BufferedImage.TYPE_INT_RGB, 0, 0, BufferedImage.TYPE_BYTE_GRAY
+
+  private final static int alphaOffset[] = {
+    -1, -1, 3, 3, 0, 0, -1
   };
 
   private final static int _3byteFormats[] = {
     TJ.PF_RGB, TJ.PF_BGR
   };
   private final static int _3byteFormatsBI[] = {
-    TJ.PF_BGR
+    BufferedImage.TYPE_3BYTE_BGR
   };
   private final static int _4byteFormats[] = {
     TJ.PF_RGBX, TJ.PF_BGRX, TJ.PF_XBGR, TJ.PF_XRGB
   };
   private final static int _4byteFormatsBI[] = {
-    TJ.PF_RGBX, TJ.PF_BGRX
+    BufferedImage.TYPE_INT_BGR, BufferedImage.TYPE_INT_RGB,
+    BufferedImage.TYPE_4BYTE_ABGR, BufferedImage.TYPE_4BYTE_ABGR_PRE,
+    BufferedImage.TYPE_INT_ARGB, BufferedImage.TYPE_INT_ARGB_PRE
   };
   private final static int onlyGray[] = {
     TJ.PF_GRAY
+  };
+  private final static int onlyGrayBI[] = {
+    BufferedImage.TYPE_BYTE_GRAY
   };
   private final static int onlyRGB[] = {
     TJ.PF_RGB
@@ -90,6 +96,55 @@ public class TJUnitTest {
 
   private static int exitStatus = 0;
 
+  private static int biTypePF(int biType) {
+    ByteOrder byteOrder = ByteOrder.nativeOrder();
+    switch(biType) {
+      case BufferedImage.TYPE_3BYTE_BGR:
+        return TJ.PF_BGR;
+      case BufferedImage.TYPE_4BYTE_ABGR:
+      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+        return TJ.PF_XBGR;
+      case BufferedImage.TYPE_BYTE_GRAY:
+        return TJ.PF_GRAY;
+      case BufferedImage.TYPE_INT_BGR:
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          return TJ.PF_XBGR;
+        else
+          return TJ.PF_RGBX;
+      case BufferedImage.TYPE_INT_RGB:
+      case BufferedImage.TYPE_INT_ARGB:
+      case BufferedImage.TYPE_INT_ARGB_PRE:
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          return TJ.PF_XRGB;
+        else
+          return TJ.PF_BGRX;
+    }
+    return 0;
+  }
+
+  private static String biTypeStr(int biType) {
+    switch(biType) {
+      case BufferedImage.TYPE_3BYTE_BGR:
+        return "3BYTE_BGR";
+      case BufferedImage.TYPE_4BYTE_ABGR:
+        return "4BYTE_ABGR";
+      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+        return "4BYTE_ABGR_PRE";
+      case BufferedImage.TYPE_BYTE_GRAY:
+        return "BYTE_GRAY";
+      case BufferedImage.TYPE_INT_BGR:
+        return "INT_BGR";
+      case BufferedImage.TYPE_INT_RGB:
+        return "INT_RGB";
+      case BufferedImage.TYPE_INT_ARGB:
+        return "INT_ARGB";
+      case BufferedImage.TYPE_INT_ARGB_PRE:
+        return "INT_ARGB_PRE";
+    }
+    return "Unknown";
+  }
+  
+
   private static double getTime() {
     return (double)System.nanoTime() / 1.0e9;
   }
@@ -99,6 +154,7 @@ public class TJUnitTest {
     int roffset = TJ.getRedOffset(pf);
     int goffset = TJ.getGreenOffset(pf);
     int boffset = TJ.getBlueOffset(pf);
+    int aoffset = alphaOffset[pf];
     int ps = TJ.getPixelSize(pf);
     int index, row, col, halfway = 16;
 
@@ -132,6 +188,7 @@ public class TJUnitTest {
           buf[index + roffset] = (byte)255;
           if(row >= halfway) buf[index + goffset] = (byte)255;
         }
+        if (aoffset >= 0) buf[index + aoffset] = (byte)255;
       }
     }
   }
@@ -141,6 +198,7 @@ public class TJUnitTest {
     int rshift = TJ.getRedOffset(pf) * 8;
     int gshift = TJ.getGreenOffset(pf) * 8;
     int bshift = TJ.getBlueOffset(pf) * 8;
+    int ashift = alphaOffset[pf] * 8;
     int index, row, col, halfway = 16;
 
     Arrays.fill(buf, 0);
@@ -160,6 +218,7 @@ public class TJUnitTest {
           buf[index] |= (255 << rshift);
           if(row >= halfway) buf[index] |= (255 << gshift);
         }
+        if (ashift >= 0) buf[index] |= (255 << ashift);
       }
     }
   }
@@ -167,9 +226,11 @@ public class TJUnitTest {
   private static void initImg(BufferedImage img, int pf, int flags)
     throws Exception {
     WritableRaster wr = img.getRaster();
-    int imgtype = img.getType();
-    if(imgtype == BufferedImage.TYPE_INT_RGB
-      || imgtype == BufferedImage.TYPE_INT_BGR) {
+    int imgType = img.getType();
+    if(imgType == BufferedImage.TYPE_INT_RGB
+      || imgType == BufferedImage.TYPE_INT_BGR
+      || imgType == BufferedImage.TYPE_INT_ARGB
+      || imgType == BufferedImage.TYPE_INT_ARGB_PRE) {
       SinglePixelPackedSampleModel sm =
         (SinglePixelPackedSampleModel)img.getSampleModel();
       int pitch = sm.getScanlineStride();
@@ -218,6 +279,7 @@ public class TJUnitTest {
     int roffset = TJ.getRedOffset(pf);
     int goffset = TJ.getGreenOffset(pf);
     int boffset = TJ.getBlueOffset(pf);
+    int aoffset = alphaOffset[pf];
     int ps = TJ.getPixelSize(pf);
     int index, row, col, retval = 1;
     int halfway = 16 * sf.getNum() / sf.getDenom();
@@ -232,6 +294,7 @@ public class TJUnitTest {
           byte r = buf[index + roffset];
           byte g = buf[index + goffset];
           byte b = buf[index + boffset];
+          byte a = aoffset >= 0 ? buf[index + aoffset] : (byte)255;
           if(((row / blockSize) + (col / blockSize)) % 2 == 0) {
             if(row < halfway) {
               checkVal255(row, col, r, "R");
@@ -268,6 +331,7 @@ public class TJUnitTest {
               checkVal0(row, col, b, "B");							
             }
           }
+          checkVal255(row, col, a, "A");
         }
       }
     }
@@ -297,6 +361,7 @@ public class TJUnitTest {
     int rshift = TJ.getRedOffset(pf) * 8;
     int gshift = TJ.getGreenOffset(pf) * 8;
     int bshift = TJ.getBlueOffset(pf) * 8;
+    int ashift = alphaOffset[pf] * 8;
     int index, row, col, retval = 1;
     int halfway = 16 * sf.getNum() / sf.getDenom();
     int blockSize = 8 * sf.getNum() / sf.getDenom();
@@ -310,6 +375,7 @@ public class TJUnitTest {
           int r = (buf[index] >> rshift) & 0xFF;
           int g = (buf[index] >> gshift) & 0xFF;
           int b = (buf[index] >> bshift) & 0xFF;
+          int a = ashift >= 0 ? (buf[index] >> ashift) & 0xFF : 255;
           if(((row / blockSize) + (col / blockSize)) % 2 == 0) {
             if(row < halfway) {
               checkVal255(row, col, r, "R");
@@ -346,6 +412,7 @@ public class TJUnitTest {
               checkVal0(row, col, b, "B");
             }
           }
+          checkVal255(row, col, a, "A");
         }
       }
     }
@@ -373,10 +440,12 @@ public class TJUnitTest {
   private static int checkImg(BufferedImage img, int pf,
     int subsamp, TJScalingFactor sf, int flags) throws Exception {
     WritableRaster wr = img.getRaster();
-    int imgtype = img.getType();
-    if(imgtype == BufferedImage.TYPE_INT_RGB
-      || imgtype == BufferedImage.TYPE_INT_BGR) {
-      SinglePixelPackedSampleModel sm =
+    int imgType = img.getType();
+    if(imgType == BufferedImage.TYPE_INT_RGB
+      || imgType == BufferedImage.TYPE_INT_BGR
+      || imgType == BufferedImage.TYPE_INT_ARGB
+      || imgType == BufferedImage.TYPE_INT_ARGB_PRE) {
+       SinglePixelPackedSampleModel sm =
         (SinglePixelPackedSampleModel)img.getSampleModel();
       int pitch = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
@@ -506,11 +575,17 @@ public class TJUnitTest {
     BufferedImage img = null;
     String pfStr;
     double t;
-    int size = 0, ps = TJ.getPixelSize(pf);
+    int size = 0, ps, imgType = pf;
 
-    pfStr = pixFormatStr[pf];
+    if (bi) {
+      pf = biTypePF(imgType);
+      pfStr = biTypeStr(imgType);
+    }
+    else pfStr = pixFormatStr[pf];
+    ps =  TJ.getPixelSize(pf);
 
     System.out.print(pfStr + " ");
+    if(bi) System.out.print("(" + pixFormatStr[pf] + ") ");
     if((flags & TJ.FLAG_BOTTOMUP) != 0) System.out.print("Bottom-Up");
     else System.out.print("Top-Down ");
     System.out.print(" -> " + subNameLong[subsamp] + " ");
@@ -518,7 +593,7 @@ public class TJUnitTest {
     else System.out.print("Q" + jpegQual + " ... ");
 
     if(bi) {
-      img = new BufferedImage(w, h, biType[pf]);
+      img = new BufferedImage(w, h, imgType);
       initImg(img, pf, flags);
       tempstr = baseName + "_enc_" + pfStr + "_"
         + (((flags & TJ.FLAG_BOTTOMUP) != 0) ? "BU" : "TD") + "_"
@@ -578,18 +653,24 @@ public class TJUnitTest {
     double t;
     int scaledWidth = sf.getScaled(w);
     int scaledHeight = sf.getScaled(h);
-    int temp1, temp2;
+    int temp1, temp2, imgType = pf;
     BufferedImage img = null;
     byte[] dstBuf = null;
 
     if(yuv == YUVENCODE) return;
 
-    pfStr = pixFormatStr[pf];
+    if (bi) {
+      pf = biTypePF(imgType);
+      pfStr = biTypeStr(imgType);
+    }
+    else pfStr = pixFormatStr[pf];
+
     System.out.print("JPEG -> ");
     if(yuv == YUVDECODE)
       System.out.print("YUV " + subName[subsamp] + " ... ");
     else {
       System.out.print(pfStr + " ");
+      if(bi) System.out.print("(" + pixFormatStr[pf] + ") ");
       if((flags & TJ.FLAG_BOTTOMUP) != 0) System.out.print("Bottom-Up ");
       else System.out.print("Top-Down  ");
       if(!sf.isOne())
@@ -613,7 +694,7 @@ public class TJUnitTest {
     if(yuv == YUVDECODE) dstBuf = tjd.decompressToYUV(flags);
     else {
       if(bi)
-        img = tjd.decompress(scaledWidth, scaledHeight, biType[pf], flags);
+        img = tjd.decompress(scaledWidth, scaledHeight, imgType, flags);
       else dstBuf = tjd.decompress(scaledWidth, 0, scaledHeight, pf, flags);
     }
     t = getTime() - t;
@@ -775,7 +856,7 @@ public class TJUnitTest {
         doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_440,
           testName);
       }
-      doTest(35, 39, onlyGray, TJ.SAMP_GRAY, testName);
+      doTest(35, 39, bi ? onlyGrayBI : onlyGray, TJ.SAMP_GRAY, testName);
       doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
         testName);
       doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,

@@ -37,6 +37,7 @@
 %define EXT_XRGB_GREEN 2
 %define EXT_XRGB_BLUE 3
 %define EXT_XRGB_PIXELSIZE 4
+%define RGBX_FILLER_0XFF 1
 ; Representation of a single sample (pixel element value).
 ; On this SIMD implementation, this must be 'unsigned char'.
 ;

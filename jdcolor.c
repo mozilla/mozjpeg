@@ -90,6 +90,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #define RGB_RED EXT_RGBX_RED
 #define RGB_GREEN EXT_RGBX_GREEN
 #define RGB_BLUE EXT_RGBX_BLUE
+#define RGB_ALPHA 3
 #define RGB_PIXELSIZE EXT_RGBX_PIXELSIZE
 #define ycc_rgb_convert_internal ycc_extrgbx_convert_internal
 #define gray_rgb_convert_internal gray_extrgbx_convert_internal
@@ -97,6 +98,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #undef RGB_RED
 #undef RGB_GREEN
 #undef RGB_BLUE
+#undef RGB_ALPHA
 #undef RGB_PIXELSIZE
 #undef ycc_rgb_convert_internal
 #undef gray_rgb_convert_internal
@@ -118,6 +120,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #define RGB_RED EXT_BGRX_RED
 #define RGB_GREEN EXT_BGRX_GREEN
 #define RGB_BLUE EXT_BGRX_BLUE
+#define RGB_ALPHA 3
 #define RGB_PIXELSIZE EXT_BGRX_PIXELSIZE
 #define ycc_rgb_convert_internal ycc_extbgrx_convert_internal
 #define gray_rgb_convert_internal gray_extbgrx_convert_internal
@@ -125,6 +128,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #undef RGB_RED
 #undef RGB_GREEN
 #undef RGB_BLUE
+#undef RGB_ALPHA
 #undef RGB_PIXELSIZE
 #undef ycc_rgb_convert_internal
 #undef gray_rgb_convert_internal
@@ -132,6 +136,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #define RGB_RED EXT_XBGR_RED
 #define RGB_GREEN EXT_XBGR_GREEN
 #define RGB_BLUE EXT_XBGR_BLUE
+#define RGB_ALPHA 0
 #define RGB_PIXELSIZE EXT_XBGR_PIXELSIZE
 #define ycc_rgb_convert_internal ycc_extxbgr_convert_internal
 #define gray_rgb_convert_internal gray_extxbgr_convert_internal
@@ -139,6 +144,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #undef RGB_RED
 #undef RGB_GREEN
 #undef RGB_BLUE
+#undef RGB_ALPHA
 #undef RGB_PIXELSIZE
 #undef ycc_rgb_convert_internal
 #undef gray_rgb_convert_internal
@@ -146,6 +152,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #define RGB_RED EXT_XRGB_RED
 #define RGB_GREEN EXT_XRGB_GREEN
 #define RGB_BLUE EXT_XRGB_BLUE
+#define RGB_ALPHA 0
 #define RGB_PIXELSIZE EXT_XRGB_PIXELSIZE
 #define ycc_rgb_convert_internal ycc_extxrgb_convert_internal
 #define gray_rgb_convert_internal gray_extxrgb_convert_internal
@@ -153,6 +160,7 @@ typedef my_color_deconverter * my_cconvert_ptr;
 #undef RGB_RED
 #undef RGB_GREEN
 #undef RGB_BLUE
+#undef RGB_ALPHA
 #undef RGB_PIXELSIZE
 #undef ycc_rgb_convert_internal
 #undef gray_rgb_convert_internal

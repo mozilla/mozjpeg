@@ -74,6 +74,7 @@ char *sigfig(double val, int figs, char *buf, int len)
 }
 
 
+/* Custom DCT filter which produces a negative of the image */
 int dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
 	int componentIndex, int transformIndex)
 {
@@ -81,6 +82,7 @@ int dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
 	for(i=0; i<arrayRegion.w*arrayRegion.h; i++) coeffs[i]=-coeffs[i];
 	return 0;
 }
+
 
 /* Decompression test */
 int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,

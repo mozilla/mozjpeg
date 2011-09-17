@@ -59,6 +59,7 @@ const char *subNameLong[TJ_NUMSAMP]=
 const char *subName[NUMSUBOPT]={"444", "422", "420", "GRAY", "440"};
 tjscalingfactor *scalingfactors=NULL, sf={1, 1};  int nsf=0;
 int xformop=TJXOP_NONE, xformopt=0;
+int (*customFilter)(short *, tjregion, tjregion, int, int);
 double benchtime=5.0;
 
 
@@ -72,6 +73,14 @@ char *sigfig(double val, int figs, char *buf, int len)
 	return buf;
 }
 
+
+int dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
+	int componentIndex, int transformIndex)
+{
+	int i;
+	for(i=0; i<arrayRegion.w*arrayRegion.h; i++) coeffs[i]=-coeffs[i];
+	return 0;
+}
 
 /* Decompression test */
 int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
@@ -534,7 +543,7 @@ void dodecomptest(char *filename)
 		}
 
 		_subsamp=subsamp;
-		if(dotile || xformop!=TJXOP_NONE || xformopt!=0)
+		if(dotile || xformop!=TJXOP_NONE || xformopt!=0 || customFilter)
 		{
 			if((t=(tjtransform *)malloc(sizeof(tjtransform)*ntilesw*ntilesh))
 				==NULL)
@@ -568,6 +577,11 @@ void dodecomptest(char *filename)
 					t[tile].r.y=row*_tileh;
 					t[tile].op=xformop;
 					t[tile].options=xformopt|TJXOPT_TRIM;
+					t[tile].customFilter=customFilter;
+					if(t[tile].options&TJXOPT_NOOUTPUT && jpegbuf[tile])
+					{
+						free(jpegbuf[tile]);  jpegbuf[tile]=NULL;
+					}
 				}
 			}
 
@@ -611,9 +625,13 @@ void dodecomptest(char *filename)
 
 		if(w==tilew) _tilew=_w;
 		if(h==tileh) _tileh=_h;
-		if(decomptest(NULL, jpegbuf, jpegsize, NULL, _w, _h, _subsamp, 0,
-			filename, _tilew, _tileh)==-1)
-			goto bailout;
+		if(!(xformopt&TJXOPT_NOOUTPUT))
+		{
+			if(decomptest(NULL, jpegbuf, jpegsize, NULL, _w, _h, _subsamp, 0,
+				filename, _tilew, _tileh)==-1)
+				goto bailout;
+		}
+		else if(quiet==1) printf("N/A\n");
 
 		for(i=0; i<ntilesw*ntilesh; i++)
 		{
@@ -809,6 +827,8 @@ int main(int argc, char *argv[])
 			if(!strcasecmp(argv[i], "-rot180")) xformop=TJXOP_ROT180;
 			if(!strcasecmp(argv[i], "-rot270")) xformop=TJXOP_ROT270;
 			if(!strcasecmp(argv[i], "-grayscale")) xformopt|=TJXOPT_GRAY;
+			if(!strcasecmp(argv[i], "-custom")) customFilter=dummyDCTFilter;
+			if(!strcasecmp(argv[i], "-nooutput")) xformopt|=TJXOPT_NOOUTPUT;
 			if(!strcasecmp(argv[i], "-benchtime") && i<argc-1)
 			{
 				double temp=atof(argv[++i]);

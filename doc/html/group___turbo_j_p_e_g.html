@@ -103,6 +103,8 @@ Defines</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">This option will enable lossless cropping.  <a href="#ga9c771a757fc1294add611906b89ab2d2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga3acee7b48ade1b99e5588736007c2589">TJXOPT_GRAY</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">This option will discard the color data in the input image and produce a grayscale output image.  <a href="#ga3acee7b48ade1b99e5588736007c2589"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gafbf992bbf6e006705886333703ffab31">TJXOPT_NOOUTPUT</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">This option will prevent <a class="el" href="group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a> from outputting a JPEG image for this particular transform (this can be used in conjunction with a custom filter to capture the transformed DCT coefficients without transcoding them.)  <a href="#gafbf992bbf6e006705886333703ffab31"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511">TJPAD</a>(width)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Pad the given width to the nearest 32-bit boundary.  <a href="#ga0aba955473315e405295d978f0c16511"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga84878bb65404204743aa18cac02781df">TJSCALED</a>(dimension, scalingFactor)</td></tr>
@@ -429,6 +431,21 @@ Variables</h2></td></tr>
 <div class="memdoc">
 
 <p>This option will discard the color data in the input image and produce a grayscale output image. </p>
+
+</div>
+</div>
+<a class="anchor" id="gafbf992bbf6e006705886333703ffab31"></a><!-- doxytag: member="turbojpeg.h::TJXOPT_NOOUTPUT" ref="gafbf992bbf6e006705886333703ffab31" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TJXOPT_NOOUTPUT</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>This option will prevent <a class="el" href="group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a> from outputting a JPEG image for this particular transform (this can be used in conjunction with a custom filter to capture the transformed DCT coefficients without transcoding them.) </p>
 
 </div>
 </div>
@@ -1502,7 +1519,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Mon Jul 11 2011 22:02:02 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Fri Sep 16 2011 19:05:46 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

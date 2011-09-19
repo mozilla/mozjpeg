@@ -52,8 +52,8 @@ headers: all
 	javah -d ${srcdir} org.libjpegturbo.turbojpeg.TJTransformer
 
 docs: all
-	cd ${srcdir}; \
-	mkdir -p doc; cd doc; javadoc -classpath .. org.libjpegturbo.turbojpeg
+	mkdir -p ${srcdir}/doc; \
+	javadoc -d ${srcdir}/doc -sourcepath ${srcdir} org.libjpegturbo.turbojpeg
 
 endif
 

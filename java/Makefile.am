@@ -46,11 +46,10 @@ uninstall-local:
 	if [ -d $(DESTDIR)/$(prefix)/classes ]; then rmdir $(DESTDIR)/$(prefix)/classes; fi
 
 headers: all
-	cd ${srcdir}; \
-	javah org.libjpegturbo.turbojpeg.TJ; \
-	javah org.libjpegturbo.turbojpeg.TJCompressor; \
-	javah org.libjpegturbo.turbojpeg.TJDecompressor; \
-	javah org.libjpegturbo.turbojpeg.TJTransformer
+	javah -d ${srcdir} org.libjpegturbo.turbojpeg.TJ; \
+	javah -d ${srcdir} org.libjpegturbo.turbojpeg.TJCompressor; \
+	javah -d ${srcdir} org.libjpegturbo.turbojpeg.TJDecompressor; \
+	javah -d ${srcdir} org.libjpegturbo.turbojpeg.TJTransformer
 
 docs: all
 	cd ${srcdir}; \

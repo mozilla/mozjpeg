@@ -37,7 +37,6 @@ public class TJTransform extends Rectangle {
 
   private static final long serialVersionUID = -127367705761430371L;
 
-
   /**
    * The number of lossless transform operations
    */
@@ -104,21 +103,29 @@ public class TJTransform extends Rectangle {
    * partial MCU blocks that cannot be transformed will be left in place, which
    * will create odd-looking strips on the right or bottom edge of the image.
    */
-  final public static int OPT_PERFECT = 1;
+  final public static int OPT_PERFECT  = 1;
   /**
    * This option will discard any partial MCU blocks that cannot be
    * transformed.
    */
-  final public static int OPT_TRIM    = 2;
+  final public static int OPT_TRIM     = 2;
   /**
    * This option will enable lossless cropping.
    */
-  final public static int OPT_CROP    = 4;
+  final public static int OPT_CROP     = 4;
   /**
    * This option will discard the color data in the input image and produce
    * a grayscale output image.
    */
-  final public static int OPT_GRAY    = 8;
+  final public static int OPT_GRAY     = 8;
+  /**
+   * This option will prevent {@link TJTransformer#transform
+   * TJTransformer.transform()} from outputting a JPEG image for this
+   * particular transform.  This can be used in conjunction with a custom
+   * filter to capture the transformed DCT coefficients without transcoding
+   * them.
+   */
+  final public static int OPT_NOOUTPUT = 16;
 
   
   /**
@@ -146,28 +153,36 @@ public class TJTransform extends Rectangle {
    *
    * @param options the bitwise OR of one or more of the transform options
    * (<code>OPT_*</code>)
+   *
+   * @param cf an instance of an object that implements the {@link
+   * TJCustomFilter} interface, or null if no custom filter is needed
    */
-  public TJTransform(int x, int y, int w, int h, int op, int options)
-    throws Exception {
+  public TJTransform(int x, int y, int w, int h, int op, int options,
+    TJCustomFilter cf) throws Exception {
     super(x, y, w, h);
-    this.op = op;  this.options = options;
+    this.op = op;  this.options = options;  this.cf = cf;
   }
 
   /**
    * Create a new lossless transform instance with the given parameters.
    *
    * @param r a <code>Rectangle</code> instance which specifies the cropping
-   * region.  See {@link #TJTransform(int, int, int, int, int, int)} for more
+   * region.  See {@link
+   * #TJTransform(int, int, int, int, int, int, TJCustomFilter)} for more
    * detail.
    *
    * @param op one of the transform operations (<code>OP_*</code>)
    *
    * @param options the bitwise OR of one or more of the transform options
    * (<code>OPT_*</code>)
+   *
+   * @param cf an instance of an object that implements the {@link
+   * TJCustomFilter} interface, or null if no custom filter is needed
    */
-  public TJTransform(Rectangle r, int op, int options) throws Exception {
+  public TJTransform(Rectangle r, int op, int options,
+    TJCustomFilter cf) throws Exception {
     super(r);
-    this.op = op;  this.options = options;
+    this.op = op;  this.options = options;  this.cf = cf;
   }
 
   /**
@@ -179,4 +194,9 @@ public class TJTransform extends Rectangle {
    * Transform options (bitwise OR of one or more of <code>OPT_*</code>)
    */
   public int options = 0;
+
+  /**
+   * Custom filter instance
+   */
+  public TJCustomFilter cf = null;
 }

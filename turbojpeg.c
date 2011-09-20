@@ -1069,7 +1069,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 					for(y=0; y<compptr->v_samp_factor; y++)
 					{
 						if(t[i].customFilter(barray[y][0], arrayRegion, planeRegion,
-							ci, i)==-1)
+							ci, i, &t[i])==-1)
 							_throw("tjTransform(): Error in custom filter");
 						arrayRegion.y+=DCTSIZE;
 					}

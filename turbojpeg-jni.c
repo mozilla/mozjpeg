@@ -487,6 +487,70 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_init
 	return;
 }
 
+typedef struct _JNICustomFilterParams
+{
+	JNIEnv *env;
+	jobject tobj;
+	jobject cfobj;
+} JNICustomFilterParams;
+
+static int JNICustomFilter(short *coeffs, tjregion arrayRegion,
+	tjregion planeRegion, int componentIndex, int transformIndex,
+	tjtransform *transform)
+{
+	JNICustomFilterParams *params=(JNICustomFilterParams *)transform->data;
+	JNIEnv *env=params->env;
+	jobject tobj=params->tobj, cfobj=params->cfobj;
+  jobject arrayRegionObj, planeRegionObj, bufobj, borobj;
+	jclass cls;  jmethodID mid;  jfieldID fid;
+
+	bailif0(bufobj=(*env)->NewDirectByteBuffer(env, coeffs,
+		sizeof(short)*arrayRegion.w*arrayRegion.h));
+	bailif0(cls=(*env)->FindClass(env, "java/nio/ByteOrder"));
+  bailif0(mid=(*env)->GetStaticMethodID(env, cls, "nativeOrder",
+		"()Ljava/nio/ByteOrder;"));
+	bailif0(borobj=(*env)->CallStaticObjectMethod(env, cls, mid));
+	bailif0(cls=(*env)->GetObjectClass(env, bufobj));
+	bailif0(mid=(*env)->GetMethodID(env, cls, "order",
+		"(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;"));
+	(*env)->CallObjectMethod(env, bufobj, mid, borobj);
+  bailif0(mid=(*env)->GetMethodID(env, cls, "asShortBuffer",
+		"()Ljava/nio/ShortBuffer;"));
+	bailif0(bufobj=(*env)->CallObjectMethod(env, bufobj, mid));
+
+	bailif0(cls=(*env)->FindClass(env, "java/awt/Rectangle"));
+	bailif0(arrayRegionObj=(*env)->AllocObject(env, cls));
+	bailif0(fid=(*env)->GetFieldID(env, cls, "x", "I"));
+	(*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.x);
+	bailif0(fid=(*env)->GetFieldID(env, cls, "y", "I"));
+	(*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.y);
+	bailif0(fid=(*env)->GetFieldID(env, cls, "width", "I"));
+	(*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.w);
+	bailif0(fid=(*env)->GetFieldID(env, cls, "height", "I"));
+	(*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.h);
+
+	bailif0(planeRegionObj=(*env)->AllocObject(env, cls));
+	bailif0(fid=(*env)->GetFieldID(env, cls, "x", "I"));
+	(*env)->SetIntField(env, planeRegionObj, fid, planeRegion.x);
+	bailif0(fid=(*env)->GetFieldID(env, cls, "y", "I"));
+	(*env)->SetIntField(env, planeRegionObj, fid, planeRegion.y);
+	bailif0(fid=(*env)->GetFieldID(env, cls, "width", "I"));
+	(*env)->SetIntField(env, planeRegionObj, fid, planeRegion.w);
+	bailif0(fid=(*env)->GetFieldID(env, cls, "height", "I"));
+	(*env)->SetIntField(env, planeRegionObj, fid, planeRegion.h);
+
+	bailif0(cls=(*env)->GetObjectClass(env, cfobj));
+	bailif0(mid=(*env)->GetMethodID(env, cls, "customFilter",
+		"(Ljava/nio/ShortBuffer;Ljava/awt/Rectangle;Ljava/awt/Rectangle;IILorg/libjpegturbo/turbojpeg/TJTransform;)V"));
+	(*env)->CallVoidMethod(env, cfobj, mid, bufobj, arrayRegionObj,
+		planeRegionObj, componentIndex, transformIndex, tobj);
+
+	return 0;
+
+	bailout:
+	return -1;
+}
+
 JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transform
 	(JNIEnv *env, jobject obj, jbyteArray jsrcBuf, jint jpegSize,
 		jobjectArray dstobjs, jobjectArray tobjs, jint flags)
@@ -497,6 +561,7 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 	jbyteArray *jdstBufs=NULL;
 	int jpegWidth=0, jpegHeight=0, jpegSubsamp;
 	jintArray jdstSizes=0;  jint *dstSizesi=NULL;
+	JNICustomFilterParams *params=NULL;
 
 	gethandle();
 
@@ -521,15 +586,19 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 		_throw("Memory allocation failure");
 	if((t=(tjtransform *)malloc(sizeof(tjtransform)*n))==NULL)
 		_throw("Memory allocation failure");
+	if((params=(JNICustomFilterParams *)malloc(sizeof(JNICustomFilterParams)*n))
+		==NULL)
+		_throw("Memory allocation failure");
 	for(i=0; i<n; i++)
 	{
 		dstBufs[i]=NULL;  jdstBufs[i]=NULL;  dstSizes[i]=0;
 		memset(&t[i], 0, sizeof(tjtransform));
+		memset(&params[i], 0, sizeof(JNICustomFilterParams));
 	}
 
 	for(i=0; i<n; i++)
 	{
-		jobject tobj;
+		jobject tobj, cfobj;
 
 		bailif0(tobj=(*env)->GetObjectArrayElement(env, tobjs, i));
 		bailif0(_cls=(*env)->GetObjectClass(env, tobj));
@@ -545,6 +614,15 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 		t[i].r.w=(*env)->GetIntField(env, tobj, _fid);
 		bailif0(_fid=(*env)->GetFieldID(env, _cls, "height", "I"));
 		t[i].r.h=(*env)->GetIntField(env, tobj, _fid);
+
+		t[i].customFilter=JNICustomFilter;
+		bailif0(_fid=(*env)->GetFieldID(env, _cls, "cf",
+			"Lorg/libjpegturbo/turbojpeg/TJCustomFilter;"));
+		bailif0(cfobj=(*env)->GetObjectField(env, tobj, _fid));
+		params[i].env=env;
+		params[i].tobj=tobj;
+		params[i].cfobj=cfobj;
+		t[i].data=(void *)&params[i];
 	}
 
 	bailif0(jpegBuf=(*env)->GetPrimitiveArrayCritical(env, jsrcBuf, 0));

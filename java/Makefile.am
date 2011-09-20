@@ -2,6 +2,7 @@ JAVAROOT = .
 
 JAVASOURCES = org/libjpegturbo/turbojpeg/TJ.java \
 	org/libjpegturbo/turbojpeg/TJCompressor.java \
+	org/libjpegturbo/turbojpeg/TJCustomFilter.java \
 	org/libjpegturbo/turbojpeg/TJDecompressor.java \
 	org/libjpegturbo/turbojpeg/TJLoader.java \
 	org/libjpegturbo/turbojpeg/TJScalingFactor.java \
@@ -21,6 +22,7 @@ dist_noinst_JAVA = ${JAVASOURCES}
 
 JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 	org/libjpegturbo/turbojpeg/TJCompressor.class \
+	org/libjpegturbo/turbojpeg/TJCustomFilter.class \
 	org/libjpegturbo/turbojpeg/TJDecompressor.class \
 	org/libjpegturbo/turbojpeg/TJLoader.class \
 	org/libjpegturbo/turbojpeg/TJScalingFactor.class \

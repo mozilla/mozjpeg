@@ -77,18 +77,20 @@ Data Fields</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">One of the <a class="el" href="group___turbo_j_p_e_g.html#ga2de531af4e7e6c4f124908376b354866">transform operations</a>.  <a href="#a2525aab4ba6978a1c273f74fef50e498"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtjtransform.html#ac0e74655baa4402209a21e1ae481c8f6">options</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The bitwise OR of one of more of the <a class="el" href="group___turbo_j_p_e_g.html#ga9c771a757fc1294add611906b89ab2d2">transform options</a>.  <a href="#ac0e74655baa4402209a21e1ae481c8f6"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtjtransform.html#a3b9280f092324befdf4da07ac085d9dd">customFilter</a> )(short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentIndex, int transformIndex)</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">A callback function that can be used to modify the DCT coefficients after they are losslessly transformed but before they are transcoded to a new JPEG file.  <a href="#a3b9280f092324befdf4da07ac085d9dd"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtjtransform.html#a688fe8f1a8ecc12a538d9e561cf338e3">data</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Arbitrary data that can be accessed within the body of the callback function.  <a href="#a688fe8f1a8ecc12a538d9e561cf338e3"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtjtransform.html#a43ee1bcdd2a8d7249a756774f78793c1">customFilter</a> )(short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentIndex, int transformIndex, struct <a class="el" href="structtjtransform.html">tjtransform</a> *transform)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">A callback function that can be used to modify the DCT coefficients after they are losslessly transformed but before they are transcoded to a new JPEG file.  <a href="#a43ee1bcdd2a8d7249a756774f78793c1"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Lossless transform. </p>
 </div><hr/><h2>Field Documentation</h2>
-<a class="anchor" id="a3b9280f092324befdf4da07ac085d9dd"></a><!-- doxytag: member="tjtransform::customFilter" ref="a3b9280f092324befdf4da07ac085d9dd" args=")(short *coeffs, tjregion arrayRegion, tjregion planeRegion, int componentIndex, int transformIndex)" -->
+<a class="anchor" id="a43ee1bcdd2a8d7249a756774f78793c1"></a><!-- doxytag: member="tjtransform::customFilter" ref="a43ee1bcdd2a8d7249a756774f78793c1" args=")(short *coeffs, tjregion arrayRegion, tjregion planeRegion, int componentIndex, int transformIndex, struct tjtransform *transform)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int(* <a class="el" href="structtjtransform.html#a3b9280f092324befdf4da07ac085d9dd">tjtransform::customFilter</a>)(short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentIndex, int transformIndex)</td>
+          <td class="memname">int(* <a class="el" href="structtjtransform.html#a43ee1bcdd2a8d7249a756774f78793c1">tjtransform::customFilter</a>)(short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentIndex, int transformIndex, struct <a class="el" href="structtjtransform.html">tjtransform</a> *transform)</td>
         </tr>
       </table>
 </div>
@@ -98,15 +100,31 @@ Data Fields</h2></td></tr>
 <p>This allows for custom filters or other transformations to be applied in the frequency domain.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">coeffs</td><td>pointer to an array of DCT coefficients. (NOTE: this pointer is not guaranteed to be valid once the callback returns, so applications wishing to hand off the DCT coefficients to another function or library should make a copy of them within the body of the callback.) </td></tr>
-    <tr><td class="paramname">arrayRegion</td><td>region structure containing the width and height of the DCT coefficient array as well as its offset relative to the component plane. TurboJPEG implementations may choose to split each component plane into multiple DCT coefficient arrays and call the callback function once for each array. </td></tr>
-    <tr><td class="paramname">planeRegion</td><td>region structure containing the width and height of the component plane to which this DCT coefficient array belongs </td></tr>
-    <tr><td class="paramname">componentIndex</td><td>the component plane to which this DCT coefficient array belongs (Y, Cb, and Cr are, respectively, 0, 1, and 2 in typical JPEG images.) </td></tr>
-    <tr><td class="paramname">transformIndex</td><td>the transformed image to which this DCT coefficient array belongs</td></tr>
+    <tr><td class="paramname">coeffs</td><td>pointer to an array of transformed DCT coefficients. (NOTE: this pointer is not guaranteed to be valid once the callback returns, so applications wishing to hand off the DCT coefficients to another function or library should make a copy of them within the body of the callback.) </td></tr>
+    <tr><td class="paramname">arrayRegion</td><td><a class="el" href="structtjregion.html" title="Cropping region.">tjregion</a> structure containing the width and height of <code>coeffs</code> as well as its offset relative to the component plane. TurboJPEG implementations may choose to split each component plane into multiple DCT coefficient arrays and call the callback function once for each array. </td></tr>
+    <tr><td class="paramname">planeRegion</td><td><a class="el" href="structtjregion.html" title="Cropping region.">tjregion</a> structure containing the width and height of the component plane to which <code>coeffs</code> belongs </td></tr>
+    <tr><td class="paramname">componentID</td><td>ID number of the component plane to which <code>coeffs</code> belongs (Y, Cb, and Cr have, respectively, ID's of 0, 1, and 2 in typical JPEG images.) </td></tr>
+    <tr><td class="paramname">transformID</td><td>ID number of the transformed image to which <code>coeffs</code> belongs. This is the same as the index of the transform in the transforms array that was passed to <a class="el" href="group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a>. </td></tr>
+    <tr><td class="paramname">transform</td><td>a pointer to a <a class="el" href="structtjtransform.html" title="Lossless transform.">tjtransform</a> structure that specifies the parameters and/or cropping region for this transform</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>0 if the callback was successful, or -1 if an error occurred. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a688fe8f1a8ecc12a538d9e561cf338e3"></a><!-- doxytag: member="tjtransform::data" ref="a688fe8f1a8ecc12a538d9e561cf338e3" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void* <a class="el" href="structtjtransform.html#a688fe8f1a8ecc12a538d9e561cf338e3">tjtransform::data</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Arbitrary data that can be accessed within the body of the callback function. </p>
 
 </div>
 </div>
@@ -173,7 +191,7 @@ Data Fields</h2></td></tr>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Fri Sep 16 2011 19:05:46 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue Sep 20 2011 00:00:45 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

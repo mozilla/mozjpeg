@@ -369,7 +369,7 @@ typedef struct
 /**
  * Lossless transform
  */
-typedef struct
+typedef struct tjtransform
 {
   /**
    * Cropping region
@@ -384,33 +384,43 @@ typedef struct
    */
   int options;
   /**
+   * Arbitrary data that can be accessed within the body of the callback
+   * function
+   */
+  void *data;
+  /**
    * A callback function that can be used to modify the DCT coefficients
    * after they are losslessly transformed but before they are transcoded to a
    * new JPEG file.  This allows for custom filters or other transformations to
    * be applied in the frequency domain.
    *
-   * @param coeffs pointer to an array of DCT coefficients.  (NOTE: this
-   *        pointer is not guaranteed to be valid once the callback returns, so
-   *        applications wishing to hand off the DCT coefficients to another
-   *        function or library should make a copy of them within the body of
-   *        the callback.)
-   * @param arrayRegion region structure containing the width and height of the
-   *        DCT coefficient array as well as its offset relative to the
-   *        component plane.  TurboJPEG implementations may choose to split
-   *        each component plane into multiple DCT coefficient arrays and call
-   *        the callback function once for each array.
-   * @param planeRegion region structure containing the width and height of the
-   *        component plane to which this DCT coefficient array belongs
-   * @param componentIndex the component plane to which this DCT coefficient
-   *        array belongs (Y, Cb, and Cr are, respectively, 0, 1, and 2 in
-   *        typical JPEG images.)
-   * @param transformIndex the transformed image to which this DCT coefficient
-   *        array belongs
+   * @param coeffs pointer to an array of transformed DCT coefficients.  (NOTE:
+   *        this pointer is not guaranteed to be valid once the callback
+   *        returns, so applications wishing to hand off the DCT coefficients
+   *        to another function or library should make a copy of them within
+   *        the body of the callback.)
+   * @param arrayRegion #tjregion structure containing the width and height of
+   *        <tt>coeffs</tt> as well as its offset relative to the component
+   *        plane.  TurboJPEG implementations may choose to split each
+   *        component plane into multiple DCT coefficient arrays and call the
+   *        callback function once for each array.
+   * @param planeRegion #tjregion structure containing the width and height of
+   *        the component plane to which <tt>coeffs</tt> belongs
+   * @param componentID ID number of the component plane to which
+   *        <tt>coeffs</tt> belongs (Y, Cb, and Cr have, respectively, ID's of
+   *        0, 1, and 2 in typical JPEG images.)
+   * @param transformID ID number of the transformed image to which
+   *        <tt>coeffs</tt> belongs.  This is the same as the index of the
+   *        transform in the transforms array that was passed to
+   *        #tjTransform().
+   * @param transform a pointer to a #tjtransform structure that specifies the
+   *        parameters and/or cropping region for this transform
    *
    * @return 0 if the callback was successful, or -1 if an error occurred.
    */
   int (*customFilter)(short *coeffs, tjregion arrayRegion,
-    tjregion planeRegion, int componentIndex, int transformIndex);
+    tjregion planeRegion, int componentIndex, int transformIndex,
+    struct tjtransform *transform);
 } tjtransform;
 
 /**

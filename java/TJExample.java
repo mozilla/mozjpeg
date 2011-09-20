@@ -32,12 +32,14 @@
  */
 
 import java.io.*;
+import java.awt.*;
 import java.awt.image.*;
+import java.nio.*;
 import javax.imageio.*;
 import javax.swing.*;
 import org.libjpegturbo.turbojpeg.*;
 
-public class TJExample {
+public class TJExample implements TJCustomFilter {
 
   public static final String classname = new TJExample().getClass().getName();
 
@@ -165,7 +167,9 @@ public class TJExample {
             xform.op = TJTransform.OP_ROT180;
           if(argv[i].equalsIgnoreCase("-rot270"))
             xform.op = TJTransform.OP_ROT270;
-          if(argv[i].length() > 2
+          if(argv[i].equalsIgnoreCase("-custom"))
+            xform.cf = new TJExample();
+          else if(argv[i].length() > 2
             && argv[i].substring(0, 2).equalsIgnoreCase("-c")) {
             if(i >= argv.length - 1) usage();
             String[] cropArg = argv[++i].split(",");
@@ -211,7 +215,8 @@ public class TJExample {
         fis.close();
 
         TJDecompressor tjd;
-        if(xform.op != TJTransform.OP_NONE || xform.options != 0) {
+        if(xform.op != TJTransform.OP_NONE || xform.options != 0
+          || xform.cf != null) {
           TJTransformer tjt = new TJTransformer(inputBuf);
           TJTransform t[] = new TJTransform[1];
           t[0] = xform;
@@ -300,6 +305,14 @@ public class TJExample {
     catch(Exception e) {
       e.printStackTrace();
       System.exit(-1);
+    }
+  }
+
+  public void customFilter(ShortBuffer coeffBuffer, Rectangle bufferRegion,
+    Rectangle planeRegion, int componentIndex, int transformIndex,
+    TJTransform transform) throws Exception {
+    for(int i=0; i<bufferRegion.width*bufferRegion.height; i++) {
+	    coeffBuffer.put(i, (short)(-coeffBuffer.get(i)));
     }
   }
 

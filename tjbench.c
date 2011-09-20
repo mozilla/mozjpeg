@@ -59,7 +59,7 @@ const char *subNameLong[TJ_NUMSAMP]=
 const char *subName[NUMSUBOPT]={"444", "422", "420", "GRAY", "440"};
 tjscalingfactor *scalingfactors=NULL, sf={1, 1};  int nsf=0;
 int xformop=TJXOP_NONE, xformopt=0;
-int (*customFilter)(short *, tjregion, tjregion, int, int);
+int (*customFilter)(short *, tjregion, tjregion, int, int, tjtransform *);
 double benchtime=5.0;
 
 
@@ -76,7 +76,7 @@ char *sigfig(double val, int figs, char *buf, int len)
 
 /* Custom DCT filter which produces a negative of the image */
 int dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
-	int componentIndex, int transformIndex)
+	int componentIndex, int transformIndex, tjtransform *transform)
 {
 	int i;
 	for(i=0; i<arrayRegion.w*arrayRegion.h; i++) coeffs[i]=-coeffs[i];

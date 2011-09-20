@@ -3,6 +3,7 @@ set(MANIFEST_FILE ${CMAKE_CURRENT_SOURCE_DIR}/MANIFEST.MF)
 
 set(JAVA_CLASSNAMES org/libjpegturbo/turbojpeg/TJ
   org/libjpegturbo/turbojpeg/TJCompressor
+  org/libjpegturbo/turbojpeg/TJCustomFilter
   org/libjpegturbo/turbojpeg/TJDecompressor
   org/libjpegturbo/turbojpeg/TJScalingFactor
   org/libjpegturbo/turbojpeg/TJTransform

@@ -400,10 +400,10 @@ typedef struct tjtransform
    *        to another function or library should make a copy of them within
    *        the body of the callback.)
    * @param arrayRegion #tjregion structure containing the width and height of
-   *        <tt>coeffs</tt> as well as its offset relative to the component
-   *        plane.  TurboJPEG implementations may choose to split each
-   *        component plane into multiple DCT coefficient arrays and call the
-   *        callback function once for each array.
+   *        the array pointed to by <tt>coeffs</tt> as well as its offset
+   *        relative to the component plane.  TurboJPEG implementations may
+   *        choose to split each component plane into multiple DCT coefficient
+   *        arrays and call the callback function once for each array.
    * @param planeRegion #tjregion structure containing the width and height of
    *        the component plane to which <tt>coeffs</tt> belongs
    * @param componentID ID number of the component plane to which

@@ -615,14 +615,17 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 		bailif0(_fid=(*env)->GetFieldID(env, _cls, "height", "I"));
 		t[i].r.h=(*env)->GetIntField(env, tobj, _fid);
 
-		t[i].customFilter=JNICustomFilter;
 		bailif0(_fid=(*env)->GetFieldID(env, _cls, "cf",
 			"Lorg/libjpegturbo/turbojpeg/TJCustomFilter;"));
-		bailif0(cfobj=(*env)->GetObjectField(env, tobj, _fid));
-		params[i].env=env;
-		params[i].tobj=tobj;
-		params[i].cfobj=cfobj;
-		t[i].data=(void *)&params[i];
+		cfobj=(*env)->GetObjectField(env, tobj, _fid);
+		if(cfobj)
+		{
+			params[i].env=env;
+			params[i].tobj=tobj;
+			params[i].cfobj=cfobj;
+			t[i].customFilter=JNICustomFilter;
+			t[i].data=(void *)&params[i];
+		}
 	}
 
 	bailif0(jpegBuf=(*env)->GetPrimitiveArrayCritical(env, jsrcBuf, 0));

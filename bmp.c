@@ -107,6 +107,8 @@ int loadbmp(char *filename, unsigned char **buf, int *w, int *h,
 	cjpeg_source_ptr src;
 	FILE *file=NULL;
 
+	memset(&cinfo, 0, sizeof(struct jpeg_compress_struct));
+
 	if(!filename || !buf || !w || !h || dstpf<0 || dstpf>=TJ_NUMPF)
 		_throw("loadbmp(): Invalid argument");
 
@@ -188,6 +190,8 @@ int savebmp(char *filename, unsigned char *buf, int w, int h, int srcpf,
 	djpeg_dest_ptr dst;
 	FILE *file=NULL;
 	char *ptr=NULL;
+
+	memset(&dinfo, 0, sizeof(struct jpeg_decompress_struct));
 
 	if(!filename || !buf || w<1 || h<1 || srcpf<0 || srcpf>=TJ_NUMPF)
 		_throw("savebmp(): Invalid argument");

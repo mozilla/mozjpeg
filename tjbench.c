@@ -469,7 +469,7 @@ void dodecomptest(char *filename)
 	int w=0, h=0, subsamp=-1, _w, _h, _tilew, _tileh,
 		_ntilesw, _ntilesh, _subsamp;
 	char *temp=NULL, tempstr[80], tempstr2[80];
-	int row, col, i, tilew, tileh, ntilesw, ntilesh, retval=0;
+	int row, col, i, tilew, tileh, ntilesw=1, ntilesh=1, retval=0;
 	double start, elapsed;
 	int ps=tjPixelSize[pf], tile;
 

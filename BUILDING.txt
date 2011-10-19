@@ -11,7 +11,7 @@ Build Requirements
 -- automake 1.7 or later
 -- libtool 1.4 or later
 
--- NASM
+-- NASM (if building x86 or x86-64 SIMD extensions)
    * 0.98, or 2.01 or later is required for a 32-bit build
    * NASM 2.00 or later is required for a 64-bit build
    * NASM 2.07 or later is required for a 64-bit build on OS X.  This can be
@@ -280,6 +280,55 @@ MinGW Build on Cygwin
 
 Use CMake (see recipes below)
 
+
+===========
+ARM Support
+===========
+
+This release of libjpeg-turbo can use ARM NEON SIMD instructions to accelerate
+JPEG compression/decompression by approximately 2-4x on ARMv7 and later
+platforms.  If libjpeg-turbo is configured on an ARM Linux platform, then the
+build system will automatically include the NEON SIMD routines, if they are
+supported.
+
+
+Building libjpeg-turbo for iOS
+------------------------------
+
+iOS platforms, such as the iPhone and iPad, also use ARM processors, some of
+which support NEON instructions.  Additional steps are required to build
+libjpeg-turbo for these platforms.  The steps below assume iOS SDK v4.3.  If
+you are using a different SDK version, then you will need to modify the
+examples accordingly.
+
+Additional build requirements:
+
+  gas-preprocessor.pl (https://github.com/yuvi/gas-preprocessor) should be
+  installed in your PATH.
+
+Set the following shell variables for simplicity:
+
+  IOS_PLATFORMDIR="/Developer/Platforms/iPhoneOS.platform"
+  IOS_SYSROOT="$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS4.3.sdk"
+  IOS_GCC="$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2"
+
+  ARM v6 only (up to and including iPhone 3G):
+  IOS_CFLAGS="-march=armv6 -mcpu=arm1176jzf-s -mfpu=vfp"
+
+  ARM v7 only (iPhone 3GS and newer, iPad):
+  IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
+
+Follow the procedure under "Building libjpeg-turbo" above, adding
+
+  --host arm-apple-darwin10 \
+    CC="$IOS_GCC" LD="$IOS_GCC" \
+    CFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT -O3 $IOS_CFLAGS" \
+    LDFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT $IOS_CFLAGS"
+
+to the configure command line.
+
+Once built, lipo can be used to combine the ARM v6 and v7 variants into a
+universal library.
 
 
 *******************************************************************************

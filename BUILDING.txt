@@ -320,7 +320,7 @@ Set the following shell variables for simplicity:
 
 Follow the procedure under "Building libjpeg-turbo" above, adding
 
-  --host arm-apple-darwin10 \
+  --host arm-apple-darwin10 --enable-static --disable-shared \
     CC="$IOS_GCC" LD="$IOS_GCC" \
     CFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT -O3 $IOS_CFLAGS" \
     LDFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT $IOS_CFLAGS"

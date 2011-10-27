@@ -130,7 +130,8 @@ TESTFILES= testorig.jpg testorig.ppm testimg.bmp testimgflt.jpg \
 
 
 EXTRA_DIST = win release $(DOCS) $(TESTFILES) CMakeLists.txt \
-	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config
+	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
+	jccolext.c jdcolext.c jdmrgext.c
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`

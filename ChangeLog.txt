@@ -1,9 +1,9 @@
 1.1.90 (1.2 beta1)
 ==================
 
-[1] Added a Java wrapper for TurboJPEG/OSS.  See java/README for more details.
+[1] Added a Java wrapper for the TurboJPEG API.  See java/README for more details.
 
-[2] TurboJPEG/OSS can now scale down images during decompression.
+[2] The TurboJPEG API can now be used to scale down images during decompression.
 
 [3] Added SIMD routines for RGB-to-grayscale color conversion, which
 significantly improves the performance of grayscale JPEG compression from an

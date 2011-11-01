@@ -22,7 +22,8 @@ be read once.  This is useful when generating image tiles from a single source
 JPEG.
 
 [6] Added tests for the new TurboJPEG scaled decompression and lossless
-transform features to tjbench (the TurboJPEG benchmark.)
+transform features to tjbench (the TurboJPEG benchmark, formerly called
+"jpgtest".)
 
 [7] Added support for 4:4:0 (transposed 4:2:2) subsampling in TurboJPEG, which
 was necessary in order for it to read 4:2:2 JPEG files that had been losslessly

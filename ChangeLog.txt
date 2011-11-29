@@ -1,3 +1,11 @@
+1.2.0
+=====
+
+[1] Fixed build issue with YASM on Unix systems (the libjpeg-turbo build system
+was not adding the current directory to the assembler include path, so YASM
+was not able to find jsimdcfg.inc.)
+
+
 1.1.90 (1.2 beta1)
 ==================
 

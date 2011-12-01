@@ -5,6 +5,12 @@
 was not adding the current directory to the assembler include path, so YASM
 was not able to find jsimdcfg.inc.)
 
+[2] Fixed out-of-bounds read in SSE2 SIMD code that occurred when decompressing
+a JPEG image to a bitmap buffer whose size was not a multiple of 16 bytes.
+This was more of an annoyance than an actual bug, since it did not cause any
+actual run-time problems, but the issue showed up when running libjpeg-turbo in
+valgrind.  See http://crbug.com/72399 for more information.
+
 
 1.1.90 (1.2 beta1)
 ==================

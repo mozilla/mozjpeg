@@ -21,6 +21,12 @@ This issue was caused by a conflict in the definition of the INT32 type.
 [4] Fixed 32-bit supplementary package for amd64 Debian systems which was
 broken by enhancements to the packaging system in 1.1.
 
+[5] Fixed out-of-bounds read in SSE2 SIMD code that occurred when decompressing
+a JPEG image to a bitmap buffer whose size was not a multiple of 16 bytes.
+This was more of an annoyance than an actual bug, since it did not cause any
+actual run-time problems, but the issue showed up when running libjpeg-turbo in
+valgrind.  See http://crbug.com/72399 for more information.
+
 
 1.1.1
 =====

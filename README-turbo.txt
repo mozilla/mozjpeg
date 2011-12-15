@@ -2,7 +2,7 @@
 **     Background
 *******************************************************************************
 
-libjpeg-turbo is a derivative of libjpeg which uses SIMD instructions (MMX,
+libjpeg-turbo is a derivative of libjpeg that uses SIMD instructions (MMX,
 SSE2, etc.) to accelerate baseline JPEG compression and decompression on x86
 and x86-64 systems.  On such systems, libjpeg-turbo is generally 2-4x as fast
 as the unmodified version of libjpeg, all else being equal.
@@ -59,7 +59,7 @@ POSSIBILITY OF SUCH DAMAGE.
 **     Using libjpeg-turbo
 *******************************************************************************
 
-libjpeg-turbo includes two APIs which can be used to compress and decompress
+libjpeg-turbo includes two APIs that can be used to compress and decompress
 JPEG images:
 
   TurboJPEG/OSS:  This API wraps libjpeg-turbo and provides an easy-to-use
@@ -122,7 +122,7 @@ msvcr90.dll ships with more recent versions of Windows, but users of older
 Windows releases can obtain it from the Visual C++ 2008 Redistributable
 Package, which is available as a free download from Microsoft's web site.
 
-NOTE:  Features of libjpeg which require passing a C run time structure, such
+NOTE:  Features of libjpeg that require passing a C run time structure, such
 as a file handle, from an application to libjpeg will probably not work with
 the version of the libjpeg-turbo DLL distributed in the libjpeg-turbo SDK for
 Visual C++, unless the application is also built to use the Visual C++ 2008 C
@@ -208,8 +208,8 @@ libjpeg-turbo) or jpeg-static.lib (to use the static version of libjpeg-turbo.)
 Colorspace Extensions
 =====================
 
-libjpeg-turbo includes extensions which allow JPEG images to be compressed
-directly from (and decompressed directly to) buffers which use BGR, BGRX,
+libjpeg-turbo includes extensions that allow JPEG images to be compressed
+directly from (and decompressed directly to) buffers that use BGR, BGRX,
 RGBX, XBGR, and XRGB pixel ordering.  This is implemented with six new
 colorspace constants:
 
@@ -239,7 +239,7 @@ libjpeg v7 and v8 API/ABI support
 
 libjpeg v7 and v8 added new features to the API/ABI, and, unfortunately, the
 compression and decompression structures were extended in a backward-
-incompatible manner to accommodate these features.  Thus, programs which are
+incompatible manner to accommodate these features.  Thus, programs that are
 built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
 based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
 as widely used as v6b, enough programs (including a few Linux distros) have
@@ -247,7 +247,7 @@ made the switch that it was desirable to provide support for the libjpeg v7/v8
 API/ABI in libjpeg-turbo.
 
 Some of the libjpeg v7 and v8 features -- DCT scaling, to name one -- involve
-deep modifications to the code which cannot be accommodated by libjpeg-turbo
+deep modifications to the code that cannot be accommodated by libjpeg-turbo
 without either breaking compatibility with libjpeg v6b or producing an
 unsupportable mess.  In order to fully support libjpeg v8 with all of its
 features, we would have to essentially port the SIMD extensions to the libjpeg
@@ -258,8 +258,8 @@ releases will also be backward-incompatible.
 
 By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, or an
 argument of -DWITH_JPEG7=1 or -DWITH_JPEG8=1 to cmake, you can build a version
-of libjpeg-turbo which emulates the libjpeg v7 or v8 API/ABI, so that programs
-which are built against libjpeg v7 or v8 can be run with libjpeg-turbo.  The
+of libjpeg-turbo that emulates the libjpeg v7 or v8 API/ABI, so that programs
+that are built against libjpeg v7 or v8 can be run with libjpeg-turbo.  The
 following section describes which libjpeg v7+ features are supported and which
 aren't.
 

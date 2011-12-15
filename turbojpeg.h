@@ -489,7 +489,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  *        size of your pre-allocated buffer.  In any case, unless you have
  *        set #TJFLAG_NOREALLOC, you should always check <tt>*jpegBuf</tt> upon
  *        return from this function, as it may have changed.
- * @param jpegSize pointer to an unsigned long variable which holds the size of
+ * @param jpegSize pointer to an unsigned long variable that holds the size of
  *        the JPEG image buffer.  If <tt>*jpegBuf</tt> points to a
  *        pre-allocated buffer, then <tt>*jpegSize</tt> should be set to the
  *        size of the buffer.  Upon return, <tt>*jpegSize</tt> will contain the
@@ -576,7 +576,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
  * @param height height (in pixels) of the source image
  * @param pixelFormat pixel format of the source image (see @ref TJPF
  *        "Pixel formats".)
- * @param dstBuf pointer to an image buffer which will receive the YUV image.
+ * @param dstBuf pointer to an image buffer that will receive the YUV image.
  *        Use #tjBufSizeYUV() to determine the appropriate size for this buffer
  *        based on the image width, height, and level of chrominance
  *        subsampling.
@@ -608,11 +608,11 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param jpegBuf pointer to a buffer containing a JPEG image
  * @param jpegSize size of the JPEG image (in bytes)
- * @param width pointer to an integer variable which will receive the width (in
+ * @param width pointer to an integer variable that will receive the width (in
  *        pixels) of the JPEG image
- * @param height pointer to an integer variable which will receive the height
+ * @param height pointer to an integer variable that will receive the height
  *        (in pixels) of the JPEG image
- * @param jpegSubsamp pointer to an integer variable which will receive the
+ * @param jpegSubsamp pointer to an integer variable that will receive the
  *        level of chrominance subsampling used when compressing the JPEG image
  *        (see @ref TJSAMP "Chrominance subsampling options".)
  *
@@ -642,7 +642,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
  * @param jpegSize size of the JPEG image (in bytes)
- * @param dstBuf pointer to an image buffer which will receive the decompressed
+ * @param dstBuf pointer to an image buffer that will receive the decompressed
  *        image.  This buffer should normally be <tt>pitch * scaledHeight</tt>
  *        bytes in size, where <tt>scaledHeight</tt> can be determined by
  *        calling #TJSCALED() with the JPEG image height and one of the scaling
@@ -695,7 +695,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
  * @param jpegSize size of the JPEG image (in bytes)
- * @param dstBuf pointer to an image buffer which will receive the YUV image.
+ * @param dstBuf pointer to an image buffer that will receive the YUV image.
  *        Use #tjBufSizeYUV to determine the appropriate size for this buffer
  *        based on the image width, height, and level of subsampling.
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
@@ -752,7 +752,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *        the size of your pre-allocated buffer.  In any case, unless you have
  *        set #TJFLAG_NOREALLOC, you should always check <tt>dstBufs[i]</tt>
  *        upon return from this function, as it may have changed.
- * @param dstSizes pointer to an array of n unsigned long variables which will
+ * @param dstSizes pointer to an array of n unsigned long variables that will
  *        receive the actual sizes (in bytes) of each transformed JPEG image.
  *        If <tt>dstBufs[i]</tt> points to a pre-allocated buffer, then
  *        <tt>dstSizes[i]</tt> should be set to the size of the buffer.  Upon

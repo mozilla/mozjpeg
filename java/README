@@ -18,7 +18,7 @@ compress and decompress JPEG images in memory.
 Performance Pitfalls
 --------------------
 
-The TurboJPEG Java front end defines several convenience methods which can
+The TurboJPEG Java front end defines several convenience methods that can
 allocate image buffers or instantiate classes to hold the result of compress,
 decompress, or transform operations.  However, if you use these methods, then
 be mindful of the amount of new data you are creating on the heap.  It may be

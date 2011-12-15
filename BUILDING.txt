@@ -645,7 +645,7 @@ make dmg
 make udmg [BUILDDIR32={32-bit build directory}]
 
   On 64-bit OS X systems, this creates a version of the Macintosh package and
-  disk image which contains universal i386/x86-64 binaries.  You should first
+  disk image that contains universal i386/x86-64 binaries.  You should first
   configure a 32-bit out-of-tree build of libjpeg-turbo, then configure a
   64-bit out-of-tree build, then run 'make udmg' from the 64-bit build
   directory.  The build system will look for the 32-bit build under
@@ -658,7 +658,7 @@ make sunpkg
 
 make csunpkg [BUILDDIR32={32-bit build directory}]
 
-  On 64-bit Solaris systems, this creates a combined package which contains
+  On 64-bit Solaris systems, this creates a combined package that contains
   both 32-bit and 64-bit libraries.  You should first configure a 32-bit
   out-of-tree build of libjpeg-turbo, then configure a 64-bit out-of-tree
   build, then run 'make csunpkg' from the 64-bit build directory.  The build

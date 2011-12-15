@@ -131,7 +131,7 @@ public class TJCompressor {
    * Compress the uncompressed source image associated with this compressor
    * instance and output a JPEG image to the given destination buffer.
    *
-   * @param dstBuf buffer which will receive the JPEG image.  Use
+   * @param dstBuf buffer that will receive the JPEG image.  Use
    * {@link TJ#bufSize} to determine the maximum size for this buffer based on
    * the image width and height.
    *
@@ -172,7 +172,7 @@ public class TJCompressor {
    * @param srcImage a <code>BufferedImage</code> instance containing RGB or
    * grayscale pixels to be compressed
    *
-   * @param dstBuf buffer which will receive the JPEG image.  Use
+   * @param dstBuf buffer that will receive the JPEG image.  Use
    * {@link TJ#bufSize} to determine the maximum size for this buffer based on
    * the image width and height.
    *
@@ -274,7 +274,7 @@ public class TJCompressor {
    * {@link TJ#SAMP_420}, which produces an image compatible with the I420 (AKA
    * "YUV420P") format.
    *
-   * @param dstBuf buffer which will receive the YUV planar image.  Use
+   * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
    * based on the image width, height, and level of chrominance subsampling.
    *
@@ -316,7 +316,7 @@ public class TJCompressor {
    * @param srcImage a <code>BufferedImage</code> instance containing RGB or
    * grayscale pixels to be encoded
    *
-   * @param dstBuf buffer which will receive the YUV planar image.  Use
+   * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
    * based on the image width, height, and level of chrominance subsampling.
    *

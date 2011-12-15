@@ -166,7 +166,7 @@ public class TJTransform extends Rectangle {
   /**
    * Create a new lossless transform instance with the given parameters.
    *
-   * @param r a <code>Rectangle</code> instance which specifies the cropping
+   * @param r a <code>Rectangle</code> instance that specifies the cropping
    * region.  See {@link
    * #TJTransform(int, int, int, int, int, int, TJCustomFilter)} for more
    * detail.

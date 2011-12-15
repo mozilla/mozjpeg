@@ -234,7 +234,7 @@ public class TJDecompressor {
    * Decompress the JPEG source image associated with this decompressor
    * instance and output a decompressed image to the given destination buffer.
    *
-   * @param dstBuf buffer which will receive the decompressed image.  This
+   * @param dstBuf buffer that will receive the decompressed image.  This
    * buffer should normally be <code>pitch * scaledHeight</code> bytes in size,
    * where <code>scaledHeight</code> can be determined by calling <code>
    * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegHeight)
@@ -327,7 +327,7 @@ public class TJDecompressor {
    * size (see {@link TJ#getMCUWidth} and {@link TJ#getMCUHeight}), then an
    * intermediate buffer copy will be performed within TurboJPEG.
    *
-   * @param dstBuf buffer which will receive the YUV planar image.  Use
+   * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
    * based on the image width, height, and level of chrominance subsampling.
    *
@@ -367,7 +367,7 @@ public class TJDecompressor {
    * instance and output a decompressed image to the given
    * <code>BufferedImage</code> instance.
    *
-   * @param dstImage a <code>BufferedImage</code> instance which will receive
+   * @param dstImage a <code>BufferedImage</code> instance that will receive
    * the decompressed image
    *
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}

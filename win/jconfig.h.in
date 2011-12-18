@@ -2,6 +2,7 @@
 /* see jconfig.txt for explanations */
 
 #define JPEG_LIB_VERSION @JPEG_LIB_VERSION@
+#define LIBJPEG_TURBO_VERSION @VERSION@
 #cmakedefine C_ARITH_CODING_SUPPORTED
 #cmakedefine D_ARITH_CODING_SUPPORTED
 

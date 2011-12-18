@@ -11,6 +11,9 @@ This was more of an annoyance than an actual bug, since it did not cause any
 actual run-time problems, but the issue showed up when running libjpeg-turbo in
 valgrind.  See http://crbug.com/72399 for more information.
 
+[3] Added a compile-time macro (LIBJPEG_TURBO_VERSION) that can be used to
+check the version of libjpeg-turbo against which an application was compiled.
+
 
 1.1.90 (1.2 beta1)
 ==================

@@ -329,6 +329,7 @@ h2v1_merged_upsample (j_decompress_ptr cinfo,
                                            output_buf);
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       extrgbx_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;
@@ -337,14 +338,17 @@ h2v1_merged_upsample (j_decompress_ptr cinfo,
                                            output_buf);
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       extbgrx_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       extxbgr_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       extxrgb_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;
@@ -371,6 +375,7 @@ h2v2_merged_upsample (j_decompress_ptr cinfo,
                                            output_buf);
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       extrgbx_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;
@@ -379,14 +384,17 @@ h2v2_merged_upsample (j_decompress_ptr cinfo,
                                            output_buf);
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       extbgrx_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       extxbgr_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       extxrgb_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
                                             output_buf);
       break;

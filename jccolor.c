@@ -225,6 +225,7 @@ rgb_ycc_convert (j_compress_ptr cinfo,
                                   num_rows);
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       extrgbx_ycc_convert_internal(cinfo, input_buf, output_buf, output_row,
                                    num_rows);
       break;
@@ -233,14 +234,17 @@ rgb_ycc_convert (j_compress_ptr cinfo,
                                   num_rows);
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       extbgrx_ycc_convert_internal(cinfo, input_buf, output_buf, output_row,
                                    num_rows);
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       extxbgr_ycc_convert_internal(cinfo, input_buf, output_buf, output_row,
                                    num_rows);
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       extxrgb_ycc_convert_internal(cinfo, input_buf, output_buf, output_row,
                                    num_rows);
       break;
@@ -270,6 +274,7 @@ rgb_gray_convert (j_compress_ptr cinfo,
                                    num_rows);
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       extrgbx_gray_convert_internal(cinfo, input_buf, output_buf, output_row,
                                     num_rows);
       break;
@@ -278,14 +283,17 @@ rgb_gray_convert (j_compress_ptr cinfo,
                                    num_rows);
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       extbgrx_gray_convert_internal(cinfo, input_buf, output_buf, output_row,
                                     num_rows);
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       extxbgr_gray_convert_internal(cinfo, input_buf, output_buf, output_row,
                                     num_rows);
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       extxrgb_gray_convert_internal(cinfo, input_buf, output_buf, output_row,
                                     num_rows);
       break;
@@ -458,6 +466,10 @@ jinit_color_converter (j_compress_ptr cinfo)
   case JCS_EXT_BGRX:
   case JCS_EXT_XBGR:
   case JCS_EXT_XRGB:
+  case JCS_EXT_RGBA:
+  case JCS_EXT_BGRA:
+  case JCS_EXT_ABGR:
+  case JCS_EXT_ARGB:
     if (cinfo->input_components != rgb_pixelsize[cinfo->in_color_space])
       ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     break;
@@ -492,7 +504,11 @@ jinit_color_converter (j_compress_ptr cinfo)
              cinfo->in_color_space == JCS_EXT_BGR ||
              cinfo->in_color_space == JCS_EXT_BGRX ||
              cinfo->in_color_space == JCS_EXT_XBGR ||
-             cinfo->in_color_space == JCS_EXT_XRGB) {
+             cinfo->in_color_space == JCS_EXT_XRGB ||
+             cinfo->in_color_space == JCS_EXT_RGBA ||
+             cinfo->in_color_space == JCS_EXT_BGRA ||
+             cinfo->in_color_space == JCS_EXT_ABGR ||
+             cinfo->in_color_space == JCS_EXT_ARGB) {
       if (jsimd_can_rgb_gray())
         cconvert->pub.color_convert = jsimd_rgb_gray_convert;
       else {
@@ -512,6 +528,10 @@ jinit_color_converter (j_compress_ptr cinfo)
   case JCS_EXT_BGRX:
   case JCS_EXT_XBGR:
   case JCS_EXT_XRGB:
+  case JCS_EXT_RGBA:
+  case JCS_EXT_BGRA:
+  case JCS_EXT_ABGR:
+  case JCS_EXT_ARGB:
     if (cinfo->num_components != 3)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
     if (cinfo->in_color_space == cinfo->jpeg_color_space &&
@@ -530,7 +550,11 @@ jinit_color_converter (j_compress_ptr cinfo)
         cinfo->in_color_space == JCS_EXT_BGR ||
         cinfo->in_color_space == JCS_EXT_BGRX ||
         cinfo->in_color_space == JCS_EXT_XBGR ||
-        cinfo->in_color_space == JCS_EXT_XRGB) {
+        cinfo->in_color_space == JCS_EXT_XRGB ||
+        cinfo->in_color_space == JCS_EXT_RGBA ||
+        cinfo->in_color_space == JCS_EXT_BGRA ||
+        cinfo->in_color_space == JCS_EXT_ABGR ||
+        cinfo->in_color_space == JCS_EXT_ARGB) {
       if (jsimd_can_rgb_ycc())
         cconvert->pub.color_convert = jsimd_rgb_ycc_convert;
       else {

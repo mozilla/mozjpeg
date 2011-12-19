@@ -113,7 +113,7 @@ static const int tjMCUHeight[TJ_NUMSAMP] = {8, 8, 16, 8, 16};
 /**
  * The number of pixel formats
  */
-#define TJ_NUMPF 7
+#define TJ_NUMPF 11
 
 /**
  * Pixel formats
@@ -135,32 +135,60 @@ enum TJPF
   /**
    * RGBX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from lowest to highest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   TJPF_RGBX,
   /**
    * BGRX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from lowest to highest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   TJPF_BGRX,
   /**
    * XBGR pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from highest to lowest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   TJPF_XBGR,
   /**
    * XRGB pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from highest to lowest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   TJPF_XRGB,
   /**
    * Grayscale pixel format.  Each 1-byte pixel represents a luminance
    * (brightness) level from 0 to 255.
    */
-  TJPF_GRAY
+  TJPF_GRAY,
+  /**
+   * RGBA pixel format.  This is the same as @ref TJPF_RGBX, except that when
+   * decompressing, the X component is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  TJPF_RGBA,
+  /**
+   * BGRA pixel format.  This is the same as @ref TJPF_BGRX, except that when
+   * decompressing, the X component is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  TJPF_BGRA,
+  /**
+   * ABGR pixel format.  This is the same as @ref TJPF_XBGR, except that when
+   * decompressing, the X component is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  TJPF_ABGR,
+  /**
+   * ARGB pixel format.  This is the same as @ref TJPF_XRGB, except that when
+   * decompressing, the X component is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  TJPF_ARGB
 };
 
 /**
@@ -169,7 +197,7 @@ enum TJPF
  * instance, if a pixel of format TJ_BGRX is stored in <tt>char pixel[]</tt>,
  * then the red component will be <tt>pixel[tjRedOffset[TJ_BGRX]]</tt>.
  */
-static const int tjRedOffset[TJ_NUMPF] = {0, 2, 0, 2, 3, 1, 0};
+static const int tjRedOffset[TJ_NUMPF] = {0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1};
 /**
  * Green offset (in bytes) for a given pixel format.  This specifies the number
  * of bytes that the green component is offset from the start of the pixel.
@@ -177,19 +205,19 @@ static const int tjRedOffset[TJ_NUMPF] = {0, 2, 0, 2, 3, 1, 0};
  * <tt>char pixel[]</tt>, then the green component will be
  * <tt>pixel[tjGreenOffset[TJ_BGRX]]</tt>.
  */
-static const int tjGreenOffset[TJ_NUMPF] = {1, 1, 1, 1, 2, 2, 0};
+static const int tjGreenOffset[TJ_NUMPF] = {1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2};
 /**
  * Blue offset (in bytes) for a given pixel format.  This specifies the number
  * of bytes that the Blue component is offset from the start of the pixel.  For
  * instance, if a pixel of format TJ_BGRX is stored in <tt>char pixel[]</tt>,
  * then the blue component will be <tt>pixel[tjBlueOffset[TJ_BGRX]]</tt>.
  */
-static const int tjBlueOffset[TJ_NUMPF] = {2, 0, 2, 0, 1, 3, 0};
+static const int tjBlueOffset[TJ_NUMPF] = {2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3};
 
 /**
  * Pixel size (in bytes) for a given pixel format.
  */
-static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1};
+static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4};
 
 
 /**

@@ -135,7 +135,12 @@ Enumerations</h2></td></tr>
 <br/>
 &#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aaf6603b27147de47e212e75dac027b2af">TJPF_XBGR</a>, 
 <a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aadae996905efcfa3b42a0bb3bea7f9d84">TJPF_XRGB</a>, 
-<a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa5431b54b015337705f13118073711a1a">TJPF_GRAY</a>
+<a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa5431b54b015337705f13118073711a1a">TJPF_GRAY</a>, 
+<a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa88d2e88fab67f6503cf972e14851cc12">TJPF_RGBA</a>, 
+<br/>
+&#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aac037ff1845cf9b74bb81a3659c2b9fb4">TJPF_BGRA</a>, 
+<a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa1ba1a7f1631dbeaa49a0a85fc4a40081">TJPF_ABGR</a>, 
+<a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aae8f846ed9d9de99b6e1dfe448848765c">TJPF_ARGB</a>
 <br/>
  }</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Pixel formats.  <a href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">More...</a><br/></td></tr>
@@ -537,23 +542,39 @@ Variables</h2></td></tr>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aa83973bebb7e2dc6fa8bae89ff3f42e01"></a><!-- doxytag: member="TJPF_RGBX" ref="ggac916144e26c3817ac514e64ae5d12e2aa83973bebb7e2dc6fa8bae89ff3f42e01" args="" -->TJPF_RGBX</em>&nbsp;</td><td>
 <p>RGBX pixel format. </p>
-<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order R, G, B from lowest to highest byte address within each pixel. </p>
+<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order R, G, B from lowest to highest byte address within each pixel. The X component is ignored when compressing and undefined when decompressing. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aa2a1fbf569ca79897eae886e3376ca4c8"></a><!-- doxytag: member="TJPF_BGRX" ref="ggac916144e26c3817ac514e64ae5d12e2aa2a1fbf569ca79897eae886e3376ca4c8" args="" -->TJPF_BGRX</em>&nbsp;</td><td>
 <p>BGRX pixel format. </p>
-<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order B, G, R from lowest to highest byte address within each pixel. </p>
+<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order B, G, R from lowest to highest byte address within each pixel. The X component is ignored when compressing and undefined when decompressing. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aaf6603b27147de47e212e75dac027b2af"></a><!-- doxytag: member="TJPF_XBGR" ref="ggac916144e26c3817ac514e64ae5d12e2aaf6603b27147de47e212e75dac027b2af" args="" -->TJPF_XBGR</em>&nbsp;</td><td>
 <p>XBGR pixel format. </p>
-<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order R, G, B from highest to lowest byte address within each pixel. </p>
+<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order R, G, B from highest to lowest byte address within each pixel. The X component is ignored when compressing and undefined when decompressing. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aadae996905efcfa3b42a0bb3bea7f9d84"></a><!-- doxytag: member="TJPF_XRGB" ref="ggac916144e26c3817ac514e64ae5d12e2aadae996905efcfa3b42a0bb3bea7f9d84" args="" -->TJPF_XRGB</em>&nbsp;</td><td>
 <p>XRGB pixel format. </p>
-<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order B, G, R from highest to lowest byte address within each pixel. </p>
+<p>The red, green, and blue components in the image are stored in 4-byte pixels in the order B, G, R from highest to lowest byte address within each pixel. The X component is ignored when compressing and undefined when decompressing. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aa5431b54b015337705f13118073711a1a"></a><!-- doxytag: member="TJPF_GRAY" ref="ggac916144e26c3817ac514e64ae5d12e2aa5431b54b015337705f13118073711a1a" args="" -->TJPF_GRAY</em>&nbsp;</td><td>
 <p>Grayscale pixel format. </p>
 <p>Each 1-byte pixel represents a luminance (brightness) level from 0 to 255. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aa88d2e88fab67f6503cf972e14851cc12"></a><!-- doxytag: member="TJPF_RGBA" ref="ggac916144e26c3817ac514e64ae5d12e2aa88d2e88fab67f6503cf972e14851cc12" args="" -->TJPF_RGBA</em>&nbsp;</td><td>
+<p>RGBA pixel format. </p>
+<p>This is the same as <a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa83973bebb7e2dc6fa8bae89ff3f42e01">TJPF_RGBX</a>, except that when decompressing, the X component is guaranteed to be 0xFF, which can be interpreted as an opaque alpha channel. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aac037ff1845cf9b74bb81a3659c2b9fb4"></a><!-- doxytag: member="TJPF_BGRA" ref="ggac916144e26c3817ac514e64ae5d12e2aac037ff1845cf9b74bb81a3659c2b9fb4" args="" -->TJPF_BGRA</em>&nbsp;</td><td>
+<p>BGRA pixel format. </p>
+<p>This is the same as <a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa2a1fbf569ca79897eae886e3376ca4c8">TJPF_BGRX</a>, except that when decompressing, the X component is guaranteed to be 0xFF, which can be interpreted as an opaque alpha channel. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aa1ba1a7f1631dbeaa49a0a85fc4a40081"></a><!-- doxytag: member="TJPF_ABGR" ref="ggac916144e26c3817ac514e64ae5d12e2aa1ba1a7f1631dbeaa49a0a85fc4a40081" args="" -->TJPF_ABGR</em>&nbsp;</td><td>
+<p>ABGR pixel format. </p>
+<p>This is the same as <a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aaf6603b27147de47e212e75dac027b2af">TJPF_XBGR</a>, except that when decompressing, the X component is guaranteed to be 0xFF, which can be interpreted as an opaque alpha channel. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggac916144e26c3817ac514e64ae5d12e2aae8f846ed9d9de99b6e1dfe448848765c"></a><!-- doxytag: member="TJPF_ARGB" ref="ggac916144e26c3817ac514e64ae5d12e2aae8f846ed9d9de99b6e1dfe448848765c" args="" -->TJPF_ARGB</em>&nbsp;</td><td>
+<p>ARGB pixel format. </p>
+<p>This is the same as <a class="el" href="group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aadae996905efcfa3b42a0bb3bea7f9d84">TJPF_XRGB</a>, except that when decompressing, the X component is guaranteed to be 0xFF, which can be interpreted as an opaque alpha channel. </p>
 </td></tr>
 </table>
 </dd>
@@ -1536,7 +1557,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Thu Dec 15 2011 06:54:38 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Sun Dec 18 2011 20:09:47 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

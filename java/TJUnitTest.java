@@ -58,11 +58,12 @@ public class TJUnitTest {
   };
 
   private final static String pixFormatStr[] = {
-    "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale"
+    "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale",
+    "RGBA", "BGRA", "ABGR", "ARGB"
   };
 
   private final static int alphaOffset[] = {
-    -1, -1, 3, 3, 0, 0, -1
+    -1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0
   };
 
   private final static int _3byteFormats[] = {
@@ -112,12 +113,16 @@ public class TJUnitTest {
         else
           return TJ.PF_RGBX;
       case BufferedImage.TYPE_INT_RGB:
-      case BufferedImage.TYPE_INT_ARGB:
-      case BufferedImage.TYPE_INT_ARGB_PRE:
         if(byteOrder == ByteOrder.BIG_ENDIAN)
           return TJ.PF_XRGB;
         else
           return TJ.PF_BGRX;
+      case BufferedImage.TYPE_INT_ARGB:
+      case BufferedImage.TYPE_INT_ARGB_PRE:
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          return TJ.PF_ARGB;
+        else
+          return TJ.PF_BGRA;
     }
     return 0;
   }
@@ -769,6 +774,9 @@ public class TJUnitTest {
           size = compTest(tjc, dstBuf, w, h, pf, baseName, subsamp, 100,
             flags);
           decompTest(tjd, dstBuf, size, w, h, pf, baseName, subsamp, flags);
+          if(pf >= TJ.PF_RGBX && pf <= TJ.PF_XRGB && !bi)
+            decompTest(tjd, dstBuf, size, w, h, pf + (TJ.PF_RGBA - TJ.PF_RGBX),
+              baseName, subsamp, flags);
         }
       }
     }

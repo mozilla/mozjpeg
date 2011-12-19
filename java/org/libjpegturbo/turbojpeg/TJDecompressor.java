@@ -399,12 +399,17 @@ public class TJDecompressor {
           pixelFormat = TJ.PF_RGBX;
         intPixels = true;  break;
       case BufferedImage.TYPE_INT_RGB:
-      case BufferedImage.TYPE_INT_ARGB:
-      case BufferedImage.TYPE_INT_ARGB_PRE:
         if(byteOrder == ByteOrder.BIG_ENDIAN)
           pixelFormat = TJ.PF_XRGB;
         else
           pixelFormat = TJ.PF_BGRX;
+        intPixels = true;  break;
+      case BufferedImage.TYPE_INT_ARGB:
+      case BufferedImage.TYPE_INT_ARGB_PRE:
+        if(byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_ARGB;
+        else
+          pixelFormat = TJ.PF_BGRA;
         intPixels = true;  break;
       default:
         throw new Exception("Unsupported BufferedImage format");

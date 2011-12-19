@@ -210,7 +210,7 @@ Colorspace Extensions
 
 libjpeg-turbo includes extensions that allow JPEG images to be compressed
 directly from (and decompressed directly to) buffers that use BGR, BGRX,
-RGBX, XBGR, and XRGB pixel ordering.  This is implemented with six new
+RGBX, XBGR, and XRGB pixel ordering.  This is implemented with ten new
 colorspace constants:
 
   JCS_EXT_RGB   /* red/green/blue */
@@ -219,6 +219,10 @@ colorspace constants:
   JCS_EXT_BGRX  /* blue/green/red/x */
   JCS_EXT_XBGR  /* x/blue/green/red */
   JCS_EXT_XRGB  /* x/red/green/blue */
+  JCS_EXT_RGBA  /* red/green/blue/alpha */
+  JCS_EXT_BGRA  /* blue/green/red/alpha */
+  JCS_EXT_ABGR  /* alpha/blue/green/red */
+  JCS_EXT_ARGB  /* alpha/red/green/blue */
 
 Setting cinfo.in_color_space (compression) or cinfo.out_color_space
 (decompression) to one of these values will cause libjpeg-turbo to read the
@@ -232,6 +236,18 @@ time with:
 
 At run time, attempting to use these extensions with a version of libjpeg
 that doesn't support them will result in a "Bogus input colorspace" error.
+
+When using the RGBX, BGRX, XBGR, and XRGB colorspaces during decompression, the
+X byte is undefined, and in order to ensure the best performance, libjpeg-turbo
+can set that byte to whatever value it wishes.  If an application expects the X
+byte to be used as an alpha channel, then it should use JCS_EXT_RGBA,
+JCS_EXT_BGRA, JCS_EXT_ABGR, or JCS_EXT_ARGB.  When these colorspace constants
+are used, the X byte is guaranteed to be 0xFF, which is interpreted as opaque.
+
+Your application can check for the existence of the alpha channel colorspace
+extensions at compile time with:
+
+  #ifdef JCS_ALPHA_EXTENSIONS
 
 =================================
 libjpeg v7 and v8 API/ABI support

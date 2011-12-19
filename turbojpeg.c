@@ -147,12 +147,16 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 		case TJPF_BGR:
 			cinfo->in_color_space=JCS_EXT_BGR;  break;
 		case TJPF_RGBX:
+		case TJPF_RGBA:
 			cinfo->in_color_space=JCS_EXT_RGBX;  break;
 		case TJPF_BGRX:
+		case TJPF_BGRA:
 			cinfo->in_color_space=JCS_EXT_BGRX;  break;
 		case TJPF_XRGB:
+		case TJPF_ARGB:
 			cinfo->in_color_space=JCS_EXT_XRGB;  break;
 		case TJPF_XBGR:
+		case TJPF_ABGR:
 			cinfo->in_color_space=JCS_EXT_XBGR;  break;
 		#else
 		case TJPF_RGB:
@@ -213,20 +217,28 @@ static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 			dinfo->out_color_space=JCS_EXT_XRGB;  break;
 		case TJPF_XBGR:
 			dinfo->out_color_space=JCS_EXT_XBGR;  break;
+		#if JCS_ALPHA_EXTENSIONS==1
+		case TJPF_RGBA:
+			dinfo->out_color_space=JCS_EXT_RGBA;  break;
+		case TJPF_BGRA:
+			dinfo->out_color_space=JCS_EXT_BGRA;  break;
+		case TJPF_ARGB:
+			dinfo->out_color_space=JCS_EXT_ARGB;  break;
+		case TJPF_ABGR:
+			dinfo->out_color_space=JCS_EXT_ABGR;  break;
+		#endif
 		#else
 		case TJPF_RGB:
 			if(RGB_RED==0 && RGB_GREEN==1 && RGB_BLUE==2 && RGB_PIXELSIZE==3)
 			{
 				dinfo->out_color_space=JCS_RGB;  break;
 			}
+		#endif
 		default:
 			_throw("Unsupported pixel format");
-		#endif
 	}
 
-	#if JCS_EXTENSIONS!=1
 	bailout:
-	#endif
 	return retval;
 }
 

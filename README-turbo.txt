@@ -227,7 +227,7 @@ colorspace constants:
 Setting cinfo.in_color_space (compression) or cinfo.out_color_space
 (decompression) to one of these values will cause libjpeg-turbo to read the
 red, green, and blue values from (or write them to) the appropriate position in
-the pixel when YUV conversion is performed.
+the pixel when compressing from/decompressing to an RGB buffer.
 
 Your application can check for the existence of these extensions at compile
 time with:
@@ -240,7 +240,7 @@ that doesn't support them will result in a "Bogus input colorspace" error.
 When using the RGBX, BGRX, XBGR, and XRGB colorspaces during decompression, the
 X byte is undefined, and in order to ensure the best performance, libjpeg-turbo
 can set that byte to whatever value it wishes.  If an application expects the X
-byte to be used as an alpha channel, then it should use JCS_EXT_RGBA,
+byte to be used as an alpha channel, then it should specify JCS_EXT_RGBA,
 JCS_EXT_BGRA, JCS_EXT_ABGR, or JCS_EXT_ARGB.  When these colorspace constants
 are used, the X byte is guaranteed to be 0xFF, which is interpreted as opaque.
 
@@ -248,6 +248,9 @@ Your application can check for the existence of the alpha channel colorspace
 extensions at compile time with:
 
   #ifdef JCS_ALPHA_EXTENSIONS
+
+jcstest.c, located in the libjpeg-turbo source tree, demonstrates how to check
+for the existence of the colorspace extensions at compile time and run time.
 
 =================================
 libjpeg v7 and v8 API/ABI support

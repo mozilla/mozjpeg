@@ -73,7 +73,7 @@ libjpeg_la_SOURCES += jsimd_none.c
 endif
 
 bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom tjbench
-noinst_PROGRAMS = tjunittest
+noinst_PROGRAMS = tjunittest jcstest
 
 tjbench_SOURCES = tjbench.c bmp.h bmp.c tjutil.h tjutil.c rdbmp.c rdppm.c \
 	wrbmp.c wrppm.c
@@ -114,6 +114,9 @@ wrjpgcom_SOURCES = wrjpgcom.c
 
 wrjpgcom_LDADD = libjpeg.la
 
+jcstest_SOURCES = jcstest.c
+
+jcstest_LDADD = libjpeg.la
 
 dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 

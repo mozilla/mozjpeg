@@ -224,6 +224,7 @@ ycc_rgb_convert (j_decompress_ptr cinfo,
                                   num_rows);
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       ycc_extrgbx_convert_internal(cinfo, input_buf, input_row, output_buf,
                                    num_rows);
       break;
@@ -232,14 +233,17 @@ ycc_rgb_convert (j_decompress_ptr cinfo,
                                   num_rows);
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       ycc_extbgrx_convert_internal(cinfo, input_buf, input_row, output_buf,
                                    num_rows);
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       ycc_extxbgr_convert_internal(cinfo, input_buf, input_row, output_buf,
                                    num_rows);
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       ycc_extxrgb_convert_internal(cinfo, input_buf, input_row, output_buf,
                                    num_rows);
       break;
@@ -316,6 +320,7 @@ gray_rgb_convert (j_decompress_ptr cinfo,
                                    num_rows);
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       gray_extrgbx_convert_internal(cinfo, input_buf, input_row, output_buf,
                                     num_rows);
       break;
@@ -324,14 +329,17 @@ gray_rgb_convert (j_decompress_ptr cinfo,
                                    num_rows);
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       gray_extbgrx_convert_internal(cinfo, input_buf, input_row, output_buf,
                                     num_rows);
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       gray_extxbgr_convert_internal(cinfo, input_buf, input_row, output_buf,
                                     num_rows);
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       gray_extxrgb_convert_internal(cinfo, input_buf, input_row, output_buf,
                                     num_rows);
       break;
@@ -471,6 +479,10 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
   case JCS_EXT_BGRX:
   case JCS_EXT_XBGR:
   case JCS_EXT_XRGB:
+  case JCS_EXT_RGBA:
+  case JCS_EXT_BGRA:
+  case JCS_EXT_ABGR:
+  case JCS_EXT_ARGB:
     cinfo->out_color_components = rgb_pixelsize[cinfo->out_color_space];
     if (cinfo->jpeg_color_space == JCS_YCbCr) {
       if (jsimd_can_ycc_rgb())

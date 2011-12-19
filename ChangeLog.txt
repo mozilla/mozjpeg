@@ -14,6 +14,11 @@ valgrind.  See http://crbug.com/72399 for more information.
 [3] Added a compile-time macro (LIBJPEG_TURBO_VERSION) that can be used to
 check the version of libjpeg-turbo against which an application was compiled.
 
+[4] Added new RGBA/BGRA/ABGR/ARGB colorspace extension constants (libjpeg API)
+and pixel formats (TurboJPEG API), which allow applications to specify that,
+when decompressing to a 4-component RGB buffer, the unused byte should be set
+to 0xFF so that it can be interpreted as an opaque alpha channel.
+
 
 1.1.90 (1.2 beta1)
 ==================

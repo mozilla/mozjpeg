@@ -65,10 +65,11 @@ const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440"};
 
 const char *pixFormatStr[TJ_NUMPF]=
 {
-	"RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale"
+	"RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale",
+	"RGBA", "BGRA", "ABGR", "ARGB"
 };
 
-const int alphaOffset[TJ_NUMPF] = {-1, -1, 3, 3, 0, 0, -1};
+const int alphaOffset[TJ_NUMPF] = {-1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0};
 
 const int _3byteFormats[]={TJPF_RGB, TJPF_BGR};
 const int _4byteFormats[]={TJPF_RGBX, TJPF_BGRX, TJPF_XBGR, TJPF_XRGB};
@@ -76,7 +77,7 @@ const int _onlyGray[]={TJPF_GRAY};
 const int _onlyRGB[]={TJPF_RGB};
 
 enum {YUVENCODE=1, YUVDECODE};
-int yuv=0, alloc=0;
+int yuv=0, alloc=0, alpha=0;
 
 int exitStatus=0;
 #define bailout() {exitStatus=-1;  goto bailout;}
@@ -511,6 +512,9 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 				flags);
 			decompTest(dhandle, dstBuf, size, w, h, pf, basename, subsamp,
 				flags);
+			if(pf>=TJPF_RGBX && pf<=TJPF_XRGB)
+				decompTest(dhandle, dstBuf, size, w, h, pf+(TJPF_RGBA-TJPF_RGBX),
+					basename, subsamp, flags);
 		}
 	}
 

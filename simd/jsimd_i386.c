@@ -142,6 +142,7 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
       mmxfct=jsimd_extrgb_ycc_convert_mmx;
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       sse2fct=jsimd_extrgbx_ycc_convert_sse2;
       mmxfct=jsimd_extrgbx_ycc_convert_mmx;
       break;
@@ -150,14 +151,17 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
       mmxfct=jsimd_extbgr_ycc_convert_mmx;
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       sse2fct=jsimd_extbgrx_ycc_convert_sse2;
       mmxfct=jsimd_extbgrx_ycc_convert_mmx;
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       sse2fct=jsimd_extxbgr_ycc_convert_sse2;
       mmxfct=jsimd_extxbgr_ycc_convert_mmx;
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       sse2fct=jsimd_extxrgb_ycc_convert_sse2;
       mmxfct=jsimd_extxrgb_ycc_convert_mmx;
       break;
@@ -191,6 +195,7 @@ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
       mmxfct=jsimd_extrgb_gray_convert_mmx;
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       sse2fct=jsimd_extrgbx_gray_convert_sse2;
       mmxfct=jsimd_extrgbx_gray_convert_mmx;
       break;
@@ -199,14 +204,17 @@ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
       mmxfct=jsimd_extbgr_gray_convert_mmx;
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       sse2fct=jsimd_extbgrx_gray_convert_sse2;
       mmxfct=jsimd_extbgrx_gray_convert_mmx;
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       sse2fct=jsimd_extxbgr_gray_convert_sse2;
       mmxfct=jsimd_extxbgr_gray_convert_mmx;
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       sse2fct=jsimd_extxrgb_gray_convert_sse2;
       mmxfct=jsimd_extxrgb_gray_convert_mmx;
       break;
@@ -240,6 +248,7 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
       mmxfct=jsimd_ycc_extrgb_convert_mmx;
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       sse2fct=jsimd_ycc_extrgbx_convert_sse2;
       mmxfct=jsimd_ycc_extrgbx_convert_mmx;
       break;
@@ -248,14 +257,17 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
       mmxfct=jsimd_ycc_extbgr_convert_mmx;
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       sse2fct=jsimd_ycc_extbgrx_convert_sse2;
       mmxfct=jsimd_ycc_extbgrx_convert_mmx;
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       sse2fct=jsimd_ycc_extxbgr_convert_sse2;
       mmxfct=jsimd_ycc_extxbgr_convert_mmx;
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       sse2fct=jsimd_ycc_extxrgb_convert_sse2;
       mmxfct=jsimd_ycc_extxrgb_convert_mmx;
       break;
@@ -532,6 +544,7 @@ jsimd_h2v2_merged_upsample (j_decompress_ptr cinfo,
       mmxfct=jsimd_h2v2_extrgb_merged_upsample_mmx;
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       sse2fct=jsimd_h2v2_extrgbx_merged_upsample_sse2;
       mmxfct=jsimd_h2v2_extrgbx_merged_upsample_mmx;
       break;
@@ -540,14 +553,17 @@ jsimd_h2v2_merged_upsample (j_decompress_ptr cinfo,
       mmxfct=jsimd_h2v2_extbgr_merged_upsample_mmx;
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       sse2fct=jsimd_h2v2_extbgrx_merged_upsample_sse2;
       mmxfct=jsimd_h2v2_extbgrx_merged_upsample_mmx;
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       sse2fct=jsimd_h2v2_extxbgr_merged_upsample_sse2;
       mmxfct=jsimd_h2v2_extxbgr_merged_upsample_mmx;
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       sse2fct=jsimd_h2v2_extxrgb_merged_upsample_sse2;
       mmxfct=jsimd_h2v2_extxrgb_merged_upsample_mmx;
       break;
@@ -582,6 +598,7 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
       mmxfct=jsimd_h2v1_extrgb_merged_upsample_mmx;
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       sse2fct=jsimd_h2v1_extrgbx_merged_upsample_sse2;
       mmxfct=jsimd_h2v1_extrgbx_merged_upsample_mmx;
       break;
@@ -590,14 +607,17 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
       mmxfct=jsimd_h2v1_extbgr_merged_upsample_mmx;
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       sse2fct=jsimd_h2v1_extbgrx_merged_upsample_sse2;
       mmxfct=jsimd_h2v1_extbgrx_merged_upsample_mmx;
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       sse2fct=jsimd_h2v1_extxbgr_merged_upsample_sse2;
       mmxfct=jsimd_h2v1_extxbgr_merged_upsample_mmx;
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       sse2fct=jsimd_h2v1_extxrgb_merged_upsample_sse2;
       mmxfct=jsimd_h2v1_extxrgb_merged_upsample_mmx;
       break;

@@ -189,18 +189,22 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
       neonfct=jsimd_extrgb_ycc_convert_neon;
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       neonfct=jsimd_extrgbx_ycc_convert_neon;
       break;
     case JCS_EXT_BGR:
       neonfct=jsimd_extbgr_ycc_convert_neon;
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       neonfct=jsimd_extbgrx_ycc_convert_neon;
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       neonfct=jsimd_extxbgr_ycc_convert_neon;
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       neonfct=jsimd_extxrgb_ycc_convert_neon;
       break;
     default:
@@ -233,18 +237,22 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
       neonfct=jsimd_ycc_extrgb_convert_neon;
       break;
     case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
       neonfct=jsimd_ycc_extrgbx_convert_neon;
       break;
     case JCS_EXT_BGR:
       neonfct=jsimd_ycc_extbgr_convert_neon;
       break;
     case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
       neonfct=jsimd_ycc_extbgrx_convert_neon;
       break;
     case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
       neonfct=jsimd_ycc_extxbgr_convert_neon;
       break;
     case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
       neonfct=jsimd_ycc_extxrgb_convert_neon;
       break;
   default:

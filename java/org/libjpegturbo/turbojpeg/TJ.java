@@ -109,7 +109,7 @@ final public class TJ {
   /**
    * The number of pixel formats
    */
-  final public static int NUMPF    = 7;
+  final public static int NUMPF   = 11;
   /**
    * RGB pixel format.  The red, green, and blue components in the image are
    * stored in 3-byte pixels in the order R, G, B from lowest to highest byte
@@ -125,25 +125,29 @@ final public class TJ {
   /**
    * RGBX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from lowest to highest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   final public static int PF_RGBX = 2;
   /**
    * BGRX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from lowest to highest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   final public static int PF_BGRX = 3;
   /**
    * XBGR pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from highest to lowest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   final public static int PF_XBGR = 4;
   /**
    * XRGB pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from highest to lowest byte
-   * address within each pixel.
+   * address within each pixel.  The X component is ignored when compressing
+   * and undefined when decompressing.
    */
   final public static int PF_XRGB = 5;
   /**
@@ -151,6 +155,30 @@ final public class TJ {
    * (brightness) level from 0 to 255.
    */
   final public static int PF_GRAY = 6;
+  /**
+   * RGBA pixel format.  This is the same as {@link #PF_RGBX}, except that when
+   * decompressing, the X byte is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  final public static int PF_RGBA = 7;
+  /**
+   * BGRA pixel format.  This is the same as {@link #PF_BGRX}, except that when
+   * decompressing, the X byte is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  final public static int PF_BGRA = 8;
+  /**
+   * ABGR pixel format.  This is the same as {@link #PF_XBGR}, except that when
+   * decompressing, the X byte is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  final public static int PF_ABGR = 9;
+  /**
+   * ARGB pixel format.  This is the same as {@link #PF_XRGB}, except that when
+   * decompressing, the X byte is guaranteed to be 0xFF, which can be
+   * interpreted as an opaque alpha channel.
+   */
+  final public static int PF_ARGB = 10;
 
 
   /**
@@ -167,7 +195,7 @@ final public class TJ {
   }
 
   final private static int pixelSize[] = {
-    3, 3, 4, 4, 4, 4, 1
+    3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4
   };
 
 
@@ -189,7 +217,7 @@ final public class TJ {
   }
 
   final private static int redOffset[] = {
-    0, 2, 0, 2, 3, 1, 0
+    0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1
   };
 
 
@@ -211,7 +239,7 @@ final public class TJ {
   }
 
   final private static int greenOffset[] = {
-    1, 1, 1, 1, 2, 2, 0
+    1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2
   };
 
 
@@ -233,7 +261,7 @@ final public class TJ {
   }
 
   final private static int blueOffset[] = {
-    2, 0, 2, 0, 1, 3, 0
+    2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3
   };
 
 

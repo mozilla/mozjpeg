@@ -2,7 +2,7 @@
  * jctrans.c
  *
  * Copyright (C) 1995-1998, Thomas G. Lane.
- * Modified 2000-2009 by Guido Vollbeding.
+ * Modified 2000-2011 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -375,7 +375,7 @@ transencode_coef_controller (j_compress_ptr cinfo,
   buffer = (JBLOCKROW)
     (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
-  jzero_far((void FAR *) buffer, C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
+  FMEMZERO((void FAR *) buffer, C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
   for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
     coef->dummy_buffer[i] = buffer + i;
   }

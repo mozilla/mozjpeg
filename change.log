@@ -1,6 +1,26 @@
 CHANGE LOG for Independent JPEG Group's JPEG software
 
 
+Version 8d  15-Jan-2012
+-----------------------
+
+Add cjpeg -rgb option to create RGB JPEG files.
+Using this switch suppresses the conversion from RGB
+colorspace input to the default YCbCr JPEG colorspace.
+This feature allows true lossless JPEG coding of RGB color images.
+The recommended command for this purpose is currently
+cjpeg -rgb -block 1 -arithmetic.
+SmartScale capable decoder (introduced with IJG JPEG 8) required.
+Thank to Michael Koch for the initial suggestion.
+
+Add option to disable the region adjustment in the transupp crop code.
+Thank to Jeffrey Friedl for the suggestion.
+
+Thank to Richard Jones and Edd Dawson for various minor corrections.
+
+Thank to Akim Demaille for configure.ac cleanup.
+
+
 Version 8c  16-Jan-2011
 -----------------------
 

@@ -1,4 +1,4 @@
-.TH CJPEG 1 "14 November 2010"
+.TH CJPEG 1 "28 August 2011"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -48,6 +48,14 @@ isn't bright enough to notice whether a BMP file uses only shades of gray.
 By saying
 .BR \-grayscale ,
 you'll get a smaller JPEG file that takes less time to process.
+.TP
+.B \-rgb
+Create RGB JPEG file.
+Using this switch suppresses the conversion from RGB
+colorspace input to the default YCbCr JPEG colorspace.
+Use this switch in combination with the
+.BI \-block " N"
+switch (see below) for lossless JPEG coding.
 .TP
 .B \-optimize
 Perform optimization of entropy encoding parameters.  Without this, default
@@ -155,6 +163,12 @@ about the same --- often a little smaller.
 .PP
 Switches for advanced users:
 .TP
+.B \-arithmetic
+Use arithmetic coding.
+.B Caution:
+arithmetic coded JPEG is not yet widely implemented, so many decoders will be
+unable to view an arithmetic coded JPEG file at all.
+.TP
 .BI \-block " N"
 Set DCT block size.  All N from 1 to 16 are possible.
 Default is 8 (baseline format).
@@ -162,9 +176,10 @@ Larger values produce higher compression,
 smaller values produce higher quality
 (exact DCT stage possible with 1 or 2; with the default quality of 75 and
 default Luminance qtable the DCT+Quantization stage is lossless for N=1).
-CAUTION: An implementation of the JPEG SmartScale extension is required for
-this feature.  SmartScale enabled JPEG is not yet widely implemented, so
-many decoders will be unable to view a SmartScale extended JPEG file at all.
+.B Caution:
+An implementation of the JPEG SmartScale extension is required for this
+feature.  SmartScale enabled JPEG is not yet widely implemented, so many
+decoders will be unable to view a SmartScale extended JPEG file at all.
 .TP
 .B \-dct int
 Use integer DCT method (default).
@@ -232,12 +247,6 @@ JPEG file and a better-looking image.  Too large a smoothing factor will
 visibly blur the image, however.
 .PP
 Switches for wizards:
-.TP
-.B \-arithmetic
-Use arithmetic coding.
-.B Caution:
-arithmetic coded JPEG is not yet widely implemented, so many decoders will be
-unable to view an arithmetic coded JPEG file at all.
 .TP
 .B \-baseline
 Force baseline-compatible quantization tables to be generated.  This clamps

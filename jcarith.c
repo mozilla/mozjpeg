@@ -1,7 +1,7 @@
 /*
  * jcarith.c
  *
- * Developed 1997-2009 by Guido Vollbeding.
+ * Developed 1997-2011 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -223,7 +223,7 @@ arith_encode (j_compress_ptr cinfo, unsigned char *st, int val)
   register INT32 qe, temp;
   register int sv;
 
-  /* Fetch values from our compact representation of Table D.2:
+  /* Fetch values from our compact representation of Table D.3(D.2):
    * Qe values and probability estimation state machine
    */
   sv = *st;
@@ -765,18 +765,21 @@ encode_mcu (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 
     /* Sections F.1.4.2 & F.1.4.4.2: Encoding of AC coefficients */
 
+    if ((ke = cinfo->lim_Se) == 0) continue;
     tbl = compptr->ac_tbl_no;
 
     /* Establish EOB (end-of-block) index */
-    for (ke = cinfo->lim_Se; ke > 0; ke--)
+    do {
       if ((*block)[natural_order[ke]]) break;
+    } while (--ke);
 
     /* Figure F.5: Encode_AC_Coefficients */
-    for (k = 1; k <= ke; k++) {
-      st = entropy->ac_stats[tbl] + 3 * (k - 1);
+    for (k = 0; k < ke;) {
+      st = entropy->ac_stats[tbl] + 3 * k;
       arith_encode(cinfo, st, 0);	/* EOB decision */
-      while ((v = (*block)[natural_order[k]]) == 0) {
-	arith_encode(cinfo, st + 1, 0); st += 3; k++;
+      while ((v = (*block)[natural_order[++k]]) == 0) {
+	arith_encode(cinfo, st + 1, 0);
+	st += 3;
       }
       arith_encode(cinfo, st + 1, 1);
       /* Figure F.6: Encoding nonzero value v */
@@ -812,9 +815,9 @@ encode_mcu (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       while (m >>= 1)
 	arith_encode(cinfo, st, (m & v) ? 1 : 0);
     }
-    /* Encode EOB decision only if k <= cinfo->lim_Se */
-    if (k <= cinfo->lim_Se) {
-      st = entropy->ac_stats[tbl] + 3 * (k - 1);
+    /* Encode EOB decision only if k < cinfo->lim_Se */
+    if (k < cinfo->lim_Se) {
+      st = entropy->ac_stats[tbl] + 3 * k;
       arith_encode(cinfo, st, 1);
     }
   }

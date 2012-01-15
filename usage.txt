@@ -77,6 +77,12 @@ The basic command line switches for cjpeg are:
 			saying -grayscale, you'll get a smaller JPEG file that
 			takes less time to process.
 
+	-rgb		Create RGB JPEG file.
+			Using this switch suppresses the conversion from RGB
+			colorspace input to the default YCbCr JPEG colorspace.
+			Use this switch in combination with the -block N
+			switch (see below) for lossless JPEG coding.
+
 	-optimize	Perform optimization of entropy encoding parameters.
 			Without this, default encoding parameters are used.
 			-optimize usually makes the JPEG file a little smaller,
@@ -151,6 +157,11 @@ file size is about the same --- often a little smaller.
 
 Switches for advanced users:
 
+	-arithmetic	Use arithmetic coding.  CAUTION: arithmetic coded JPEG
+			is not yet widely implemented, so many decoders will
+			be unable to view an arithmetic coded JPEG file at
+			all.
+
 	-block N	Set DCT block size.  All N from 1 to 16 are possible.
 			Default is 8 (baseline format).
 			Larger values produce higher compression,
@@ -209,11 +220,6 @@ in a smaller JPEG file and a better-looking image.  Too large a smoothing
 factor will visibly blur the image, however.
 
 Switches for wizards:
-
-	-arithmetic	Use arithmetic coding.  CAUTION: arithmetic coded JPEG
-			is not yet widely implemented, so many decoders will
-			be unable to view an arithmetic coded JPEG file at
-			all.
 
 	-baseline	Force baseline-compatible quantization tables to be
 			generated.  This clamps quantization values to 8 bits
@@ -459,9 +465,9 @@ To specify the coded JPEG representation used in the output file,
 jpegtran accepts a subset of the switches recognized by cjpeg:
 	-optimize	Perform optimization of entropy encoding parameters.
 	-progressive	Create progressive JPEG file.
+	-arithmetic	Use arithmetic coding.
 	-restart N	Emit a JPEG restart marker every N MCU rows, or every
 			N MCU blocks if "B" is attached to the number.
-	-arithmetic	Use arithmetic coding.
 	-scans file	Use the scan script given in the specified text file.
 See the previous discussion of cjpeg for more details about these switches.
 If you specify none of these switches, you get a plain baseline-JPEG output

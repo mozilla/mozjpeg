@@ -1,7 +1,7 @@
 /*
  * jdarith.c
  *
- * Developed 1997-2009 by Guido Vollbeding.
+ * Developed 1997-2011 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -145,7 +145,7 @@ arith_decode (j_decompress_ptr cinfo, unsigned char *st)
     e->a <<= 1;
   }
 
-  /* Fetch values from our compact representation of Table D.2:
+  /* Fetch values from our compact representation of Table D.3(D.2):
    * Qe values and probability estimation state machine
    */
   sv = *st;
@@ -575,15 +575,19 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
     /* Sections F.2.4.2 & F.1.4.4.2: Decoding of AC coefficients */
 
+    if (cinfo->lim_Se == 0) continue;
     tbl = compptr->ac_tbl_no;
+    k = 0;
 
     /* Figure F.20: Decode_AC_coefficients */
-    for (k = 1; k <= cinfo->lim_Se; k++) {
-      st = entropy->ac_stats[tbl] + 3 * (k - 1);
+    do {
+      st = entropy->ac_stats[tbl] + 3 * k;
       if (arith_decode(cinfo, st)) break;	/* EOB flag */
-      while (arith_decode(cinfo, st + 1) == 0) {
-	st += 3; k++;
-	if (k > cinfo->lim_Se) {
+      for (;;) {
+	k++;
+	if (arith_decode(cinfo, st + 1)) break;
+	st += 3;
+	if (k >= cinfo->lim_Se) {
 	  WARNMS(cinfo, JWRN_ARITH_BAD_CODE);
 	  entropy->ct = -1;			/* spectral overflow */
 	  return TRUE;
@@ -616,7 +620,7 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 	if (arith_decode(cinfo, st)) v |= m;
       v += 1; if (sign) v = -v;
       (*block)[natural_order[k]] = (JCOEF) v;
-    }
+    } while (k < cinfo->lim_Se);
   }
 
   return TRUE;

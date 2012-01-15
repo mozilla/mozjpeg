@@ -1,6 +1,6 @@
 USING THE IJG JPEG LIBRARY
 
-Copyright (C) 1994-2010, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2011, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -1310,8 +1310,9 @@ jpeg_read_header's guess by setting jpeg_color_space.  jpeg_read_header also
 selects a default output color space based on (its guess of) jpeg_color_space;
 set out_color_space to override this.  Again, you must select a supported
 transformation.  jdcolor.c currently supports
-	YCbCr => GRAYSCALE
 	YCbCr => RGB
+	YCbCr => GRAYSCALE
+	RGB => GRAYSCALE
 	GRAYSCALE => RGB
 	YCCK => CMYK
 as well as the null transforms.  (Since GRAYSCALE=>RGB is provided, an
@@ -2940,7 +2941,7 @@ Library compile-time options
 A number of compile-time options are available by modifying jmorecfg.h.
 
 The JPEG standard provides for both the baseline 8-bit DCT process and
-a 12-bit DCT process.  The IJG code supports 12-bit lossy JPEG if you define
+a 12-bit DCT process.  The IJG code supports 12-bit JPEG if you define
 BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
 larger than a char, so it affects the surrounding application's image data.
 The sample applications cjpeg and djpeg can support 12-bit mode only for PPM

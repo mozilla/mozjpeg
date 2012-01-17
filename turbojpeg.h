@@ -13,7 +13,8 @@
  * wxWindows Library License for more details.
  */
 
-#if (defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__)) && defined(_WIN32) && defined(DLLDEFINE)
+#if (defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__)) \
+	&& defined(_WIN32) && defined(DLLDEFINE)
 #define DLLEXPORT __declspec(dllexport)
 #else
 #define DLLEXPORT
@@ -21,12 +22,14 @@
 
 #define DLLCALL
 
+
 /* Subsampling */
 #define NUMSUBOPT 4
 
 enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
 #define TJ_411 TJ_420  /* for backward compatibility with VirtualGL <= 2.1.x,
                           TurboVNC <= 0.6, and TurboJPEG/IPP */
+
 
 /* Flags */
 #define TJ_BGR             1
@@ -56,12 +59,14 @@ enum {TJ_444=0, TJ_422, TJ_420, TJ_GRAYSCALE};
 #define TJ_YUV           512
   /* Nothing to see here.  Pay no attention to the man behind the curtain. */
 
+
 typedef void* tjhandle;
 
 #define TJPAD(p) (((p)+3)&(~3))
 #ifndef max
  #define max(a,b) ((a)>(b)?(a):(b))
 #endif
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -335,6 +340,7 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle h);
   Returns a descriptive error message explaining why the last command failed
 */
 DLLEXPORT char* DLLCALL tjGetErrorStr(void);
+
 
 #ifdef __cplusplus
 }

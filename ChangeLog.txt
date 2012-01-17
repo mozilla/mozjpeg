@@ -18,7 +18,7 @@ based on whether libjpeg v7 or v8 emulation was enabled.
 fail to compile if the Windows system headers were included before jpeglib.h.
 This issue was caused by a conflict in the definition of the INT32 type.
 
-[4] Fixed 32-bit supplementary package for amd64 Debian systems which was
+[4] Fixed 32-bit supplementary package for amd64 Debian systems, which was
 broken by enhancements to the packaging system in 1.1.
 
 [5] Fixed out-of-bounds read in SSE2 SIMD code that occurred when decompressing
@@ -105,7 +105,8 @@ README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
 
 [2] Created a new CMake-based build system for the Visual C++ and MinGW builds.
 
-[3] TurboJPEG/OSS can now compress from/decompress to grayscale bitmaps.
+[3] Grayscale bitmaps can now be compressed from/decompressed to using the
+TurboJPEG API.
 
 [4] jpgtest can now be used to test decompression performance with existing
 JPEG images.
@@ -121,11 +122,12 @@ when the library is built with libjpeg v6b emulation.
 [7] Added arithmetic encoding and decoding support (can be disabled with
 configure or CMake options)
 
-[8] Added a TJ_YUV flag to TurboJPEG/OSS which causes both the compressor and
-decompressor to output planar YUV images.
+[8] Added a TJ_YUV flag to the TurboJPEG API, which causes both the compressor
+and decompressor to output planar YUV images.
 
-[9] Added an extended version of tjDecompressHeader() to TurboJPEG/OSS which
-allows the caller to determine the type of subsampling used in a JPEG image.
+[9] Added an extended version of tjDecompressHeader() to the TurboJPEG API,
+which allows the caller to determine the type of subsampling used in a JPEG
+image.
 
 [10] Added further protections against invalid Huffman codes.
 
@@ -137,7 +139,7 @@ allows the caller to determine the type of subsampling used in a JPEG image.
 from a corrupt JPEG image.)  Previously, these would cause libjpeg-turbo to
 crash under certain circumstances.
 
-[2] Fixed typo in SIMD dispatch routines which was causing 4:2:2 upsampling to
+[2] Fixed typo in SIMD dispatch routines that was causing 4:2:2 upsampling to
 be used instead of 4:2:0 when decompressing JPEG images using SSE2 code.
 
 [3] configure script will now automatically determine whether the
@@ -158,7 +160,7 @@ static libraries can always be found in /opt/libjpeg-turbo/lib32, and the
 [3] The Unix/Linux distribution packages now include the libjpeg run-time
 programs (cjpeg, etc.) and man pages.
 
-[4] Created a 32-bit supplementary package for amd64 Debian systems which
+[4] Created a 32-bit supplementary package for amd64 Debian systems, which
 contains just the 32-bit libjpeg-turbo libraries.
 
 [5] Moved the libraries from */lib32 to */lib in the i386 Debian package.

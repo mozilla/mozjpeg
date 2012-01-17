@@ -105,10 +105,10 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
   [INPUT] height = height (in pixels) of the source image
   [INPUT] pixelsize = size (in bytes) of each pixel in the source image
      RGBX/BGRX/XRGB/XBGR: 4, RGB/BGR: 3, Grayscale: 1
-  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
+  [INPUT] dstbuf = pointer to user-allocated image buffer that will receive
      the JPEG image.  Use the TJBUFSIZE(width, height) function to determine
      the appropriate size for this buffer based on the image width and height.
-  [OUTPUT] size = pointer to unsigned long which receives the size (in bytes)
+  [OUTPUT] size = pointer to unsigned long that receives the size (in bytes)
      of the compressed image
   [INPUT] jpegsubsamp = Specifies either 4:2:0, 4:2:2, 4:4:4, or grayscale
      subsampling.  When the image is converted from the RGB to YCbCr colorspace
@@ -139,7 +139,7 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle j,
 /*
   unsigned long TJBUFSIZE(int width, int height)
 
-  Convenience function which returns the maximum size of the buffer required to
+  Convenience function that returns the maximum size of the buffer required to
   hold a JPEG image with the given width and height
 
   RETURNS: -1 if arguments are out of bounds
@@ -150,7 +150,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height);
 /*
   unsigned long TJBUFSIZEYUV(int width, int height, int subsamp)
 
-  Convenience function which returns the size of the buffer required to
+  Convenience function that returns the size of the buffer required to
   hold a YUV planar image with the given width, height, and level of
   chrominance subsampling
 
@@ -190,7 +190,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
   [INPUT] height = height (in pixels) of the source image
   [INPUT] pixelsize = size (in bytes) of each pixel in the source image
      RGBX/BGRX/XRGB/XBGR: 4, RGB/BGR: 3, Grayscale: 1
-  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
+  [INPUT] dstbuf = pointer to user-allocated image buffer that will receive
      the YUV image.  Use the TJBUFSIZEYUV(width, height, subsamp) function to
      determine the appropriate size for this buffer based on the image width,
      height, and level of subsampling.
@@ -260,7 +260,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle j,
   [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
      to decompress
   [INPUT] size = size of the JPEG image buffer (in bytes)
-  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
+  [INPUT] dstbuf = pointer to user-allocated image buffer that will receive
      the bitmap image.  This buffer should normally be pitch*height
      bytes in size, although this pointer may also be used to decompress into
      a specific region of a larger buffer.
@@ -302,7 +302,7 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle j,
   [INPUT] srcbuf = pointer to a user-allocated buffer containing the JPEG image
      to decompress
   [INPUT] size = size of the JPEG image buffer (in bytes)
-  [INPUT] dstbuf = pointer to user-allocated image buffer which will receive
+  [INPUT] dstbuf = pointer to user-allocated image buffer that will receive
      the YUV image.  Use the TJBUFSIZEYUV(width, height, subsamp) function to
      determine the appropriate size for this buffer based on the image width,
      height, and level of subsampling.

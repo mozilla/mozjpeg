@@ -204,7 +204,7 @@ image.
 from a corrupt JPEG image.)  Previously, these would cause libjpeg-turbo to
 crash under certain circumstances.
 
-[2] Fixed typo in SIMD dispatch routines which was causing 4:2:2 upsampling to
+[2] Fixed typo in SIMD dispatch routines that was causing 4:2:2 upsampling to
 be used instead of 4:2:0 when decompressing JPEG images using SSE2 code.
 
 [3] configure script will now automatically determine whether the
@@ -225,7 +225,7 @@ static libraries can always be found in /opt/libjpeg-turbo/lib32, and the
 [3] The Unix/Linux distribution packages now include the libjpeg run-time
 programs (cjpeg, etc.) and man pages.
 
-[4] Created a 32-bit supplementary package for amd64 Debian systems which
+[4] Created a 32-bit supplementary package for amd64 Debian systems, which
 contains just the 32-bit libjpeg-turbo libraries.
 
 [5] Moved the libraries from */lib32 to */lib in the i386 Debian package.

@@ -635,7 +635,8 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 		if(t[i].r.w!=0) w=t[i].r.w;
 		if(t[i].r.h!=0) h=t[i].r.h;
 		bailif0(jdstBufs[i]=(*env)->GetObjectArrayElement(env, dstobjs, i));
-		if((*env)->GetArrayLength(env, jdstBufs[i])<tjBufSize(w, h, jpegSubsamp))
+		if((unsigned long)(*env)->GetArrayLength(env, jdstBufs[i])
+			<tjBufSize(w, h, jpegSubsamp))
 			_throw("Destination buffer is not large enough");
 		bailif0(dstBufs[i]=(*env)->GetPrimitiveArrayCritical(env, jdstBufs[i], 0));
 	}

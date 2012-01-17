@@ -1065,7 +1065,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 			&xinfo[i]);
 		if(t[i].customFilter)
 		{
-			int ci, by, y;
+			int ci, y;  JDIMENSION by;
 			for(ci=0; ci<cinfo->num_components; ci++)
 			{
 				jpeg_component_info *compptr=&cinfo->comp_info[ci];

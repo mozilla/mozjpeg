@@ -62,16 +62,16 @@ POSSIBILITY OF SUCH DAMAGE.
 libjpeg-turbo includes two APIs that can be used to compress and decompress
 JPEG images:
 
-  TurboJPEG/OSS:  This API wraps libjpeg-turbo and provides an easy-to-use
+  TurboJPEG API:  This API wraps libjpeg-turbo and provides an easy-to-use
   interface for compressing and decompressing JPEG images in memory.  It also
   provides some features that would not be straightforward to implement using
   the underlying libjpeg API, such as generating planar YUV images and
   performing multiple simultaneous lossless transforms on an image.  The Java
-  interface for libjpeg-turbo is written on top of TurboJPEG/OSS.
+  interface for libjpeg-turbo is written on top of the TurboJPEG API.
 
   libjpeg API:  This is the industry standard API for compressing and
-  decompressing JPEG images.  It is more difficult to use than TurboJPEG/OSS
-  but also more powerful.  libjpeg-turbo is both API/ABI-compatible and
+  decompressing JPEG images.  It is more difficult to use than the TurboJPEG
+  API but also more powerful.  libjpeg-turbo is both API/ABI-compatible and
   mathematically compatible with libjpeg v6b.  It can also optionally be
   configured to be API/ABI-compatible with libjpeg v7 and v8 (see below.)
 

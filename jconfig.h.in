@@ -30,9 +30,6 @@
 /* Compiler does not support pointers to unspecified structures. */
 #undef INCOMPLETE_TYPES_BROKEN
 
-/* How to obtain function inlining. */
-#undef INLINE
-
 /* Compiler has <strings.h> rather than standard <string.h>. */
 #undef NEED_BSD_STRINGS
 

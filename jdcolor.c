@@ -14,6 +14,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jsimd.h"
+#include "config.h"
 
 
 /* Private subobject */

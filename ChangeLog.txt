@@ -19,6 +19,11 @@ and pixel formats (TurboJPEG API), which allow applications to specify that,
 when decompressing to a 4-component RGB buffer, the unused byte should be set
 to 0xFF so that it can be interpreted as an opaque alpha channel.
 
+[5] Fixed regression issue whereby DevIL failed to build against libjpeg-turbo
+because libjpeg-turbo's distributed version of jconfig.h contained an INLINE
+macro, which conflicted with a similar macro in DevIL.  This macro is used only
+internally when building libjpeg-turbo, so it was moved into config.h.
+
 
 1.1.90 (1.2 beta1)
 ==================

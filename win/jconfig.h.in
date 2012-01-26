@@ -33,16 +33,6 @@ typedef signed int INT32;
 #endif
 #define XMD_H                   /* prevent jmorecfg.h from redefining it */
 
-#ifndef INLINE
-#if defined(__GNUC__)
-#define INLINE __attribute__((always_inline))
-#elif defined(_MSC_VER)
-#define INLINE __forceinline
-#else
-#define INLINE
-#endif
-#endif
-
 #ifdef JPEG_INTERNALS
 
 #undef RIGHT_SHIFT_IS_UNSIGNED

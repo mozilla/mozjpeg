@@ -24,6 +24,11 @@ because libjpeg-turbo's distributed version of jconfig.h contained an INLINE
 macro, which conflicted with a similar macro in DevIL.  This macro is used only
 internally when building libjpeg-turbo, so it was moved into config.h.
 
+[6] libjpeg-turbo will now correctly decompress erroneous CMYK/YCCK JPEGs whose
+K component is assigned a component ID of 1 instead of 4.  Although these files
+are in violation of the spec, other JPEG implementations handle them
+correctly.
+
 
 1.1.90 (1.2 beta1)
 ==================

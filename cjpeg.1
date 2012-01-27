@@ -1,4 +1,4 @@
-.TH CJPEG 1 "11 October 2010"
+.TH CJPEG 1 "27 January 2012"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -150,6 +150,12 @@ about the same --- often a little smaller.
 .PP
 Switches for advanced users:
 .TP
+.B \-arithmetic
+Use arithmetic coding.
+.B Caution:
+arithmetic coded JPEG is not yet widely implemented, so many decoders will be
+unable to view an arithmetic coded JPEG file at all.
+.TP
 .B \-dct int
 Use integer DCT method (default).
 .TP
@@ -213,12 +219,6 @@ JPEG file and a better-looking image.  Too large a smoothing factor will
 visibly blur the image, however.
 .PP
 Switches for wizards:
-.TP
-.B \-arithmetic
-Use arithmetic coding.
-.B Caution:
-arithmetic coded JPEG is not yet widely implemented, so many decoders will be
-unable to view an arithmetic coded JPEG file at all.
 .TP
 .B \-baseline
 Force baseline-compatible quantization tables to be generated.  This clamps

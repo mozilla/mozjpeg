@@ -107,14 +107,14 @@ This will generate the following files under .libs/
 62, 7, or 8.
 
 
-libjpeg v7 or v8 Emulation
---------------------------
+libjpeg v7 or v8 API/ABI Emulation
+----------------------------------
 
 Add --with-jpeg7 to the configure command line to build a version of
-libjpeg-turbo that is compatible with libjpeg v7.  Add --with-jpeg8 to the
-configure command to build a version of libjpeg-turbo that is compatible with
-libjpeg v8.  See README-turbo.txt for more information on libjpeg v7 and v8
-emulation.
+libjpeg-turbo that is API/ABI-compatible with libjpeg v7.  Add --with-jpeg8 to
+the configure command to build a version of libjpeg-turbo that is
+API/ABI-compatible with libjpeg v8.  See README-turbo.txt for more information
+on libjpeg v7 and v8 emulation.
 
 
 Arithmetic Coding Support
@@ -492,14 +492,14 @@ NMake, remove "-DCMAKE_BUILD_TYPE=Release" (Debug builds are the default with
 NMake.)
 
 
-libjpeg v7 or v8 Emulation
---------------------------
+libjpeg v7 or v8 API/ABI Emulation
+-----------------------------------
 
 Add "-DWITH_JPEG7=1" to the cmake command line to build a version of
-libjpeg-turbo that is compatible with libjpeg v7.  Add "-DWITH_JPEG8=1" to the
-cmake command to build a version of libjpeg-turbo that is compatible with
-libjpeg v8.  See README-turbo.txt for more information on libjpeg v7 and v8
-emulation.
+libjpeg-turbo that is API/ABI-compatible with libjpeg v7.  Add "-DWITH_JPEG8=1"
+to the cmake command to build a version of libjpeg-turbo that is
+API/ABI-compatible with libjpeg v8.  See README-turbo.txt for more information
+on libjpeg v7 and v8 emulation.
 
 
 Arithmetic Coding Support

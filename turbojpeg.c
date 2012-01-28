@@ -92,10 +92,22 @@ static const JXFORM_CODE xformtypes[TJ_NUMXOP]=
 	JXFORM_TRANSVERSE, JXFORM_ROT_90, JXFORM_ROT_180, JXFORM_ROT_270
 };
 
-#define NUMSF 4
+#define NUMSF 16
 static const tjscalingfactor sf[NUMSF]={
+	{2, 1},
+	{15, 8},
+	{7, 4},
+	{13, 8},
+	{3, 2},
+	{11, 8},
+	{5, 4},
+	{9, 8},
 	{1, 1},
+	{7, 8},
+	{3, 4},
+	{5, 8},
 	{1, 2},
+	{3, 8},
 	{1, 4},
 	{1, 8}
 };

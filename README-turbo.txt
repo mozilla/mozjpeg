@@ -303,6 +303,14 @@ Fully supported:
 -- rdjpgcom: locale awareness
 
 
+Partially supported:
+
+-- libjpeg: IDCT scaling extensions in decompressor
+   libjpeg-turbo supports IDCT scaling with scaling factors of 1/8, 1/4, 3/8,
+   1/2, 5/8, 3/4, 7/8, 9/8, 5/4, 11/8, 3/2, 13/8, 7/4, 15/8, and 2/1, but only
+   1/4 and 1/2 are SIMD-accelerated.
+
+
 Fully supported when using libjpeg v7/v8 emulation:
 
 -- libjpeg: In-memory source and destination managers
@@ -312,10 +320,6 @@ Not supported:
 
 -- libjpeg: DCT scaling in compressor
    cinfo.scale_num and cinfo.scale_denom are silently ignored.
-
--- libjpeg: IDCT scaling extensions in decompressor
-   libjpeg-turbo still supports IDCT scaling with scaling factors of 1/2, 1/4,
-   and 1/8 (same as libjpeg v6b.)
 
 -- libjpeg: Fancy downsampling in compressor
    cinfo.do_fancy_downsampling is silently ignored.

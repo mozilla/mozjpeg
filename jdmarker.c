@@ -323,7 +323,7 @@ get_sos (j_decompress_ptr cinfo)
 
   /* Collect the component-spec parameters */
 
-  for (i = 0; i < n; i++)
+  for (i = 0; i < cinfo->num_components; i++)
     cinfo->cur_comp_info[i] = NULL;
 
   for (i = 0; i < n; i++) {

@@ -1113,7 +1113,8 @@ J_COLOR_SPACE out_color_space
 unsigned int scale_num, scale_denom
 	Scale the image by the fraction scale_num/scale_denom.  Default is
 	1/1, or no scaling.  Currently, the only supported scaling ratios
-	are 1/1, 1/2, 1/4, and 1/8.  (The library design allows for arbitrary
+	are M/8 with all M from 1 to 16, or any reduced fraction thereof (such
+	as 1/2, 3/4, etc.)  (The library design allows for arbitrary
 	scaling ratios but this is not likely to be implemented any time soon.)
 	Smaller scaling ratios permit significantly faster decoding since
 	fewer pixels need be processed and a simpler IDCT method can be used.

@@ -224,6 +224,14 @@ testclean:
 	rm -f *_440_*.jpg
 	rm -f *_440.yuv
 
+
+tjtest:
+	sh ./tjbenchtest
+if WITH_JAVA
+	sh ./tjexampletest
+endif
+
+
 if X86_64
 
 install-exec-hook:

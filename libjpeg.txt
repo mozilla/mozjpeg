@@ -983,7 +983,7 @@ int q_scale_factor[NUM_QUANT_TBLS]
 	See rdswitch.c and cjpeg.c for an example of usage.
 	Note that the q_scale_factor[] values use "linear" scales, so JPEG
 	quality levels chosen by the user must be converted to these scales
-	using jpeg_quality_scaling().  Here is an example which corresponds to
+	using jpeg_quality_scaling().  Here is an example that corresponds to
 	cjpeg -quality 90,70:
 
 		jpeg_set_defaults(cinfo);
@@ -1019,7 +1019,8 @@ The actual dimensions of the JPEG image that will be written to the file are
 given by the following fields.  These are computed from the input image
 dimensions and the compression parameters by jpeg_start_compress().  You can
 also call jpeg_calc_jpeg_dimensions() to obtain the values that will result
-from the current parameter settings.
+from the current parameter settings.  This can be useful if you are trying
+to pick a scaling ratio that will get close to a desired target size.
 
 JDIMENSION jpeg_width		Actual dimensions of output image.
 JDIMENSION jpeg_height

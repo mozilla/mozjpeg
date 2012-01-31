@@ -174,38 +174,13 @@ if WITH_SSE_FLOAT_DCT
 else
 	cmp $(srcdir)/testimages/testorig.ppm testoutflt.ppm
 endif
-	./djpeg -dct int -nosmooth -scale 2/1 -ppm -outfile testoutint2_1.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint2_1.ppm testoutint2_1.ppm
-	./djpeg -dct int -nosmooth -scale 15/8 -ppm -outfile testoutint15_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint15_8.ppm testoutint15_8.ppm
-	./djpeg -dct int -nosmooth -scale 7/4 -ppm -outfile testoutint7_4.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint7_4.ppm testoutint7_4.ppm
-	./djpeg -dct int -nosmooth -scale 13/8 -ppm -outfile testoutint13_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint13_8.ppm testoutint13_8.ppm
-	./djpeg -dct int -nosmooth -scale 3/2 -ppm -outfile testoutint3_2.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint3_2.ppm testoutint3_2.ppm
-	./djpeg -dct int -nosmooth -scale 11/8 -ppm -outfile testoutint11_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint11_8.ppm testoutint11_8.ppm
-	./djpeg -dct int -nosmooth -scale 5/4 -ppm -outfile testoutint5_4.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint5_4.ppm testoutint5_4.ppm
-	./djpeg -dct int -nosmooth -scale 9/8 -ppm -outfile testoutint9_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint9_8.ppm testoutint9_8.ppm
-	./djpeg -dct int -nosmooth -scale 7/8 -ppm -outfile testoutint7_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint7_8.ppm testoutint7_8.ppm
-	./djpeg -dct int -nosmooth -scale 3/4 -ppm -outfile testoutint3_4.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint3_4.ppm testoutint3_4.ppm
-	./djpeg -dct int -nosmooth -scale 5/8 -ppm -outfile testoutint5_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint5_8.ppm testoutint5_8.ppm
-	./djpeg -dct int -scale 1/2 -ppm -outfile testoutint1_2.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint1_2.ppm testoutint1_2.ppm
+	for scale in 2_1 15_8 7_4 13_8 3_2 11_8 5_4 9_8 7_8 3_4 5_8 1_2 3_8 1_4 1_8; do \
+		scalearg=`echo $$scale | sed s@_@/@g`; \
+		./djpeg -dct int -nosmooth -scale $$scalearg -ppm -outfile testoutint$$scale.ppm $(srcdir)/testimages/testorig.jpg; \
+		cmp $(srcdir)/testimages/testimgint$$scale.ppm testoutint$$scale.ppm; \
+	done
 	./djpeg -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm $(srcdir)/testimages/testorig.jpg
 	cmp $(srcdir)/testimages/testimgfst1_2.ppm testoutfst1_2.ppm
-	./djpeg -dct int -nosmooth -scale 3/8 -ppm -outfile testoutint3_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint3_8.ppm testoutint3_8.ppm
-	./djpeg -dct int -scale 1/4 -ppm -outfile testoutint1_4.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint1_4.ppm testoutint1_4.ppm
-	./djpeg -dct int -scale 1/8 -ppm -outfile testoutint1_8.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint1_8.ppm testoutint1_8.ppm
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testimages/testorig.jpg
 	cmp $(srcdir)/testimages/testimg.bmp testout.bmp
 if WITH_ARITH_ENC

@@ -1,7 +1,8 @@
-libjpeg-turbo note:  This file is mostly taken from the libjpeg README
-file, and it is included only for reference.  Some parts of it may not apply to
-libjpeg-turbo.  Please see README-turbo.txt for information specific to the
-turbo version.
+libjpeg-turbo note:  This file contains portions of the libjpeg v6b and v8
+README files, with additional wordsmithing by The libjpeg-turbo Project.
+It is included only for reference, as some parts of it may not apply to
+libjpeg-turbo.  Please see README-turbo.txt for information specific to
+libjpeg-turbo.
 
 
 The Independent JPEG Group's JPEG software
@@ -256,8 +257,8 @@ ARCHIVE LOCATIONS
 The "official" archive site for this software is www.ijg.org.
 The most recent released version can always be found there in
 directory "files".  This particular version will be archived as
-http://www.ijg.org/files/jpegsrc.v8b.tar.gz, and in Windows-compatible
-"zip" archive format as http://www.ijg.org/files/jpegsr8b.zip.
+http://www.ijg.org/files/jpegsrc.v8d.tar.gz, and in Windows-compatible
+"zip" archive format as http://www.ijg.org/files/jpegsr8d.zip.
 
 The JPEG FAQ (Frequently Asked Questions) article is a source of some
 general information about JPEG.

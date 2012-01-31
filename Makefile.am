@@ -150,62 +150,62 @@ endif
 	./tjunittest
 	./tjunittest -alloc
 	./tjunittest -yuv
-	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgint.jpg testoutint.jpg
-	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgfst.jpg testoutfst.jpg
-	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgfst100.jpg testoutfst100.jpg
-	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testorig.ppm
+	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testimages/testorig.ppm
+	cmp $(srcdir)/testimages/testimgint.jpg testoutint.jpg
+	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testimages/testorig.ppm
+	cmp $(srcdir)/testimages/testimgfst.jpg testoutfst.jpg
+	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testimages/testorig.ppm
+	cmp $(srcdir)/testimages/testimgfst100.jpg testoutfst100.jpg
+	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testimages/testorig.ppm
 if WITH_SSE_FLOAT_DCT
-	cmp $(srcdir)/testimgflt.jpg testoutflt.jpg
+	cmp $(srcdir)/testimages/testimgflt.jpg testoutflt.jpg
 else
-	cmp $(srcdir)/testimgflt-nosimd.jpg testoutflt.jpg
+	cmp $(srcdir)/testimages/testimgflt-nosimd.jpg testoutflt.jpg
 endif
-	./cjpeg -dct int -grayscale -outfile testoutgray.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimggray.jpg testoutgray.jpg
-	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgint.ppm testoutint.ppm
-	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgfst.ppm testoutfst.ppm
-	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testorig.jpg
+	./cjpeg -dct int -grayscale -outfile testoutgray.jpg $(srcdir)/testimages/testorig.ppm
+	cmp $(srcdir)/testimages/testimggray.jpg testoutgray.jpg
+	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgint.ppm testoutint.ppm
+	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgfst.ppm testoutfst.ppm
+	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testimages/testorig.jpg
 if WITH_SSE_FLOAT_DCT
-	cmp $(srcdir)/testimgflt.ppm testoutflt.ppm
+	cmp $(srcdir)/testimages/testimgflt.ppm testoutflt.ppm
 else
-	cmp $(srcdir)/testorig.ppm testoutflt.ppm
+	cmp $(srcdir)/testimages/testorig.ppm testoutflt.ppm
 endif
-	./djpeg -dct int -scale 1/2 -ppm -outfile testoutint1_2.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgint1_2.ppm testoutint1_2.ppm
-	./djpeg -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgfst1_2.ppm testoutfst1_2.ppm
-	./djpeg -dct int -scale 1/4 -ppm -outfile testoutint1_4.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgint1_4.ppm testoutint1_4.ppm
-	./djpeg -dct fast -scale 1/4 -ppm -outfile testoutfst1_4.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgfst1_4.ppm testoutfst1_4.ppm
-	./djpeg -dct int -scale 1/8 -ppm -outfile testoutint1_8.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgint1_8.ppm testoutint1_8.ppm
-	./djpeg -dct fast -scale 1/8 -ppm -outfile testoutfst1_8.ppm $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgfst1_8.ppm testoutfst1_8.ppm
-	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimg.bmp testout.bmp
+	./djpeg -dct int -scale 1/2 -ppm -outfile testoutint1_2.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgint1_2.ppm testoutint1_2.ppm
+	./djpeg -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgfst1_2.ppm testoutfst1_2.ppm
+	./djpeg -dct int -scale 1/4 -ppm -outfile testoutint1_4.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgint1_4.ppm testoutint1_4.ppm
+	./djpeg -dct fast -scale 1/4 -ppm -outfile testoutfst1_4.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgfst1_4.ppm testoutfst1_4.ppm
+	./djpeg -dct int -scale 1/8 -ppm -outfile testoutint1_8.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgint1_8.ppm testoutint1_8.ppm
+	./djpeg -dct fast -scale 1/8 -ppm -outfile testoutfst1_8.ppm $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgfst1_8.ppm testoutfst1_8.ppm
+	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimg.bmp testout.bmp
 if WITH_ARITH_ENC
-	./cjpeg -dct int -arithmetic -outfile testoutari.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgari.jpg testoutari.jpg
-	./jpegtran -arithmetic -outfile testouta.jpg $(srcdir)/testimgint.jpg
-	cmp $(srcdir)/testimgari.jpg testouta.jpg
+	./cjpeg -dct int -arithmetic -outfile testoutari.jpg $(srcdir)/testimages/testorig.ppm
+	cmp $(srcdir)/testimages/testimgari.jpg testoutari.jpg
+	./jpegtran -arithmetic -outfile testouta.jpg $(srcdir)/testimages/testimgint.jpg
+	cmp $(srcdir)/testimages/testimgari.jpg testouta.jpg
 endif
 if WITH_ARITH_DEC
-	./djpeg -dct int -fast -ppm -outfile testoutari.ppm $(srcdir)/testimgari.jpg
-	cmp $(srcdir)/testimgari.ppm testoutari.ppm
-	./jpegtran -outfile testouta.jpg $(srcdir)/testimgari.jpg
-	cmp $(srcdir)/testimgint.jpg testouta.jpg
+	./djpeg -dct int -fast -ppm -outfile testoutari.ppm $(srcdir)/testimages/testimgari.jpg
+	cmp $(srcdir)/testimages/testimgari.ppm testoutari.ppm
+	./jpegtran -outfile testouta.jpg $(srcdir)/testimages/testimgari.jpg
+	cmp $(srcdir)/testimages/testimgint.jpg testouta.jpg
 endif
-	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testorig.ppm
-	cmp $(srcdir)/testimgp.jpg testoutp.jpg
+	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testimages/testorig.ppm
+	cmp $(srcdir)/testimages/testimgp.jpg testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg
-	cmp $(srcdir)/testimgint.jpg testoutt.jpg
-	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testorig.jpg
-	cmp $(srcdir)/testimgcrop.jpg testoutcrop.jpg
+	cmp $(srcdir)/testimages/testimgint.jpg testoutt.jpg
+	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testimages/testorig.jpg
+	cmp $(srcdir)/testimages/testimgcrop.jpg testoutcrop.jpg
 
 
 testclean:

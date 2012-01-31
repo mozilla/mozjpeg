@@ -104,7 +104,7 @@ init_simd (void)
   int bufsize = 1024; /* an initial guess for the line buffer size limit */
 #endif
 
-  if (simd_support != ~0)
+  if (simd_support != ~0U)
     return;
 
   simd_support = 0;

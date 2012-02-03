@@ -285,16 +285,16 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
   /* In selecting the actual DCT scaling for each component, we try to
    * scale up the chroma components via IDCT scaling rather than upsampling.
    * This saves time if the upsampler gets to use 1:1 scaling.
-   * Note this code assumes that the supported DCT scalings are powers of 2.
+   * Note this code adapts subsampling ratios which are powers of 2.
    */
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
     int ssize = cinfo->_min_DCT_scaled_size;
     while (ssize < DCTSIZE &&
-	   (compptr->h_samp_factor * ssize * 2 <=
-	    cinfo->max_h_samp_factor * cinfo->_min_DCT_scaled_size) &&
-	   (compptr->v_samp_factor * ssize * 2 <=
-	    cinfo->max_v_samp_factor * cinfo->_min_DCT_scaled_size)) {
+	   ((cinfo->max_h_samp_factor * cinfo->_min_DCT_scaled_size) %
+	    (compptr->h_samp_factor * ssize * 2) == 0) &&
+	   ((cinfo->max_v_samp_factor * cinfo->_min_DCT_scaled_size) %
+	    (compptr->v_samp_factor * ssize * 2) == 0)) {
       ssize = ssize * 2;
     }
 #if JPEG_LIB_VERSION >= 70

@@ -256,24 +256,17 @@ for the existence of the colorspace extensions at compile time and run time.
 libjpeg v7 and v8 API/ABI support
 =================================
 
-libjpeg v7 and v8 added new features to the API/ABI, and, unfortunately, the
-compression and decompression structures were extended in a backward-
-incompatible manner to accommodate these features.  Thus, programs that are
+With libjpeg v7 and v8, new features were added that necessitated extending the
+compression and decompression structures.  Unfortunately, due to the exposed
+nature of those structures, extending them also necessitated breaking backward
+ABI compatibility with previous libjpeg releases.  Thus, programs that are
 built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
 based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
 as widely used as v6b, enough programs (including a few Linux distros) have
 made the switch that it was desirable to provide support for the libjpeg v7/v8
-API/ABI in libjpeg-turbo.
-
-Some of the libjpeg v7 and v8 features -- DCT scaling, to name one -- involve
-deep modifications to the code that cannot be accommodated by libjpeg-turbo
-without either breaking compatibility with libjpeg v6b or producing an
-unsupportable mess.  In order to fully support libjpeg v8 with all of its
-features, we would have to essentially port the SIMD extensions to the libjpeg
-v8 code base and maintain two separate code trees.  We are hesitant to do this
-until/unless the newer libjpeg code bases garner more community support and
-involvement and until/unless we have some notion of whether future libjpeg
-releases will also be backward-incompatible.
+API/ABI in libjpeg-turbo.  Although libjpeg-turbo can now be configured as a
+drop-in replacement for libjpeg v7 or v8, it should be noted that not all of
+the features in libjpeg v7 and v8 are supported (see below.)
 
 By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, or an
 argument of -DWITH_JPEG7=1 or -DWITH_JPEG8=1 to cmake, you can build a version
@@ -312,6 +305,16 @@ Not supported:
 
 -- libjpeg: DCT scaling in compressor
    cinfo.scale_num and cinfo.scale_denom are silently ignored.
+   There is no technical reason why DCT scaling cannot be supported, but
+   without the SmartScale extension (see below), it would only be able to
+   down-scale using ratios of 1/2, 8/15, 4/7, 8/13, 2/3, 8/11, 4/5, and 8/9,
+   which is of limited usefulness.
+
+-- libjpeg: SmartScale
+   cinfo.block_size is silently ignored.
+   SmartScale is an extension to the JPEG format that allows for DCT block
+   sizes other than 8x8.  It would be difficult to support this feature while
+   retaining backward compatibility with libjpeg v6b.
 
 -- libjpeg: IDCT scaling extensions in decompressor
    libjpeg-turbo still supports IDCT scaling with scaling factors of 1/2, 1/4,
@@ -319,9 +322,14 @@ Not supported:
 
 -- libjpeg: Fancy downsampling in compressor
    cinfo.do_fancy_downsampling is silently ignored.
+   This requires the DCT scaling feature, which is not supported.
 
 -- jpegtran: Scaling
-   Seems to depend on the DCT scaling feature, which isn't supported.
+   This requires both the DCT scaling and SmartScale features, which are not
+   supported.
+
+-- Lossless RGB JPEG files
+   This requires the SmartScale feature, which is not supported.
 
 
 *******************************************************************************

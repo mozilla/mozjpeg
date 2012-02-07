@@ -18,6 +18,8 @@ else()
   message(FATAL_ERROR "Platform not supported by this build system.  Use autotools instead.")
 endif()
 
+# This does nothing except when using MinGW.  CMAKE_BUILD_TYPE has no meaning
+# in Visual Studio, and it always defaults to Debug when using NMake.
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -25,7 +27,7 @@ endif()
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
 # This only works if building from the command line.  There is currently no way
-# to set a variable's value based on the build type when using the MSVC IDE.
+# to set a variable's value based on the build type when using Visual Studio.
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(BUILD "${BUILD}d")
 endif()

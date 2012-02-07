@@ -3,31 +3,31 @@
 *******************************************************************************
 
 libjpeg-turbo is a derivative of libjpeg that uses SIMD instructions (MMX,
-SSE2, etc.) to accelerate baseline JPEG compression and decompression on x86
-and x86-64 systems.  On such systems, libjpeg-turbo is generally 2-4x as fast
-as the unmodified version of libjpeg, all else being equal.
+SSE2, NEON) to accelerate baseline JPEG compression and decompression on x86,
+x86-64, and ARM systems.  On such systems, libjpeg-turbo is generally 2-4x as
+fast as the unmodified version of libjpeg, all else being equal.
 
 libjpeg-turbo was originally based on libjpeg/SIMD by Miyasaka Masaru, but
 the TigerVNC and VirtualGL projects made numerous enhancements to the codec in
 2009, including improved support for Mac OS X, 64-bit support, support for
-32-bit and big endian pixel formats (RGBX, XBGR, etc.), accelerated Huffman
-encoding/decoding, and various bug fixes.  The goal was to produce a fully open
-source codec that could replace the partially closed source TurboJPEG/IPP codec
-used by VirtualGL and TurboVNC.  libjpeg-turbo generally performs in the range
-of 80-120% of TurboJPEG/IPP.  It is faster in some areas but slower in others.
+32-bit and big-endian pixel formats (RGBX, XBGR, etc.), accelerated Huffman
+encoding/decoding, and various bug fixes.  The goal was to produce a fully
+open-source codec that could replace the partially closed-source TurboJPEG/IPP
+codec used by VirtualGL and TurboVNC.  libjpeg-turbo generally achieves 80-120%
+of the performance of TurboJPEG/IPP.  It is faster in some areas but slower in
+others.
 
 In early 2010, libjpeg-turbo spun off into its own independent project, with
 the goal of making high-speed JPEG compression/decompression technology
-available to a broader range of users and developers.  The libjpeg-turbo shared
-libraries can be used as drop-in replacements for libjpeg on most systems.
+available to a broader range of users and developers.
 
 
 *******************************************************************************
 **     License
 *******************************************************************************
 
-libjpeg-turbo is licensed under a non-restrictive, BSD-style license
-(see README.)  The TurboJPEG/OSS wrapper (both C and Java versions) and
+Most of libjpeg-turbo inherits the non-restrictive, BSD-style license used by
+libjpeg (see README.)  The TurboJPEG/OSS wrapper (both C and Java versions) and
 associated test programs bear a similar license, which is reproduced below:
 
 Redistribution and use in source and binary forms, with or without
@@ -62,14 +62,14 @@ POSSIBILITY OF SUCH DAMAGE.
 libjpeg-turbo includes two APIs that can be used to compress and decompress
 JPEG images:
 
-  TurboJPEG API:  This API wraps libjpeg-turbo and provides an easy-to-use
-  interface for compressing and decompressing JPEG images in memory.  It also
-  provides some features that would not be straightforward to implement using
-  the underlying libjpeg API, such as generating planar YUV images and
-  performing multiple simultaneous lossless transforms on an image.  The Java
-  interface for libjpeg-turbo is written on top of the TurboJPEG API.
+  TurboJPEG API:  This API provides an easy-to-use interface for compressing
+  and decompressing JPEG images in memory.  It also provides some functionality
+  that would not be straightforward to achieve using the underlying libjpeg
+  API, such as generating planar YUV images and performing multiple
+  simultaneous lossless transforms on an image.  The Java interface for
+  libjpeg-turbo is written on top of the TurboJPEG API.
 
-  libjpeg API:  This is the industry standard API for compressing and
+  libjpeg API:  This is the de facto industry-standard API for compressing and
   decompressing JPEG images.  It is more difficult to use than the TurboJPEG
   API but also more powerful.  libjpeg-turbo is both API/ABI-compatible and
   mathematically compatible with libjpeg v6b.  It can also optionally be
@@ -101,13 +101,13 @@ NOTE: {lib} can be lib, lib32, lib64, or lib/64, depending on the O/S and
 architecture.
 
 System administrators can also replace the libjpeg sym links in /usr/{lib} with
-links to the libjpeg dynamic library located in /opt/libjpeg-turbo/{lib}.  This
-will effectively accelerate every dynamically linked libjpeg application on the
-system.
+links to the libjpeg-turbo dynamic library located in /opt/libjpeg-turbo/{lib}.
+This will effectively accelerate every application that uses the libjpeg
+dynamic library on the system.
 
 The libjpeg-turbo SDK for Visual C++ installs the libjpeg-turbo DLL
-(jpeg62.dll, jpeg7.dll, or jpeg8.dll, depending on whether libjpeg v6b, v7, or
-v8 emulation is enabled) into c:\libjpeg-turbo[64]\bin, and the PATH
+(jpeg62.dll, jpeg7.dll, or jpeg8.dll, depending on whether it was built with
+libjpeg v6b, v7, or v8 emulation) into c:\libjpeg-turbo[64]\bin, and the PATH
 environment variable can be modified such that this directory is searched
 before any others that might contain a libjpeg DLL.  However, if a libjpeg
 DLL exists in an application's install directory, then Windows will load this
@@ -117,16 +117,16 @@ version of this DLL and copy c:\libjpeg-turbo[64]\bin\jpeg*.dll into the
 application's install directory to accelerate it.
 
 The version of the libjpeg-turbo DLL distributed in the libjpeg-turbo SDK for
-Visual C++ requires the Visual C++ 2008 C run time DLL (msvcr90.dll).
+Visual C++ requires the Visual C++ 2008 C run-time DLL (msvcr90.dll).
 msvcr90.dll ships with more recent versions of Windows, but users of older
 Windows releases can obtain it from the Visual C++ 2008 Redistributable
 Package, which is available as a free download from Microsoft's web site.
 
-NOTE:  Features of libjpeg that require passing a C run time structure, such
+NOTE:  Features of libjpeg that require passing a C run-time structure, such
 as a file handle, from an application to libjpeg will probably not work with
 the version of the libjpeg-turbo DLL distributed in the libjpeg-turbo SDK for
 Visual C++, unless the application is also built to use the Visual C++ 2008 C
-run time DLL.  In particular, this affects jpeg_stdio_dest() and
+run-time DLL.  In particular, this affects jpeg_stdio_dest() and
 jpeg_stdio_src().
 
 Mac applications typically embed their own copies of the libjpeg dylib inside
@@ -146,7 +146,7 @@ Replacing TurboJPEG/IPP
 libjpeg-turbo is a drop-in replacement for the TurboJPEG/IPP SDK used by
 VirtualGL 2.1.x and TurboVNC 0.6 (and prior.)  libjpeg-turbo contains a wrapper
 library (TurboJPEG/OSS) that emulates the TurboJPEG API using libjpeg-turbo
-instead of the closed source Intel Performance Primitives.  You can replace the
+instead of the closed-source Intel Performance Primitives.  You can replace the
 TurboJPEG/IPP package on Linux systems with the libjpeg-turbo package in order
 to make existing releases of VirtualGL 2.1.x and TurboVNC 0.x use the new codec
 at run time.  Note that the 64-bit libjpeg-turbo packages contain only 64-bit
@@ -157,7 +157,7 @@ both the 64-bit and 32-bit versions of libjpeg-turbo.
 You can also build the VirtualGL 2.1.x and TurboVNC 0.6 source code with
 the libjpeg-turbo SDK instead of TurboJPEG/IPP.  It should work identically.
 libjpeg-turbo also includes static library versions of TurboJPEG/OSS, which
-are used to build TurboVNC 1.0 and later.
+are used to build VirtualGL 2.2 and TurboVNC 1.0 and later.
 
 ========================================
 Using libjpeg-turbo in Your Own Programs
@@ -342,12 +342,13 @@ Restart Markers
 ===============
 
 The optimized Huffman decoder in libjpeg-turbo does not handle restart markers
-in a way that makes libjpeg happy, so it is necessary to use the slow Huffman
-decoder when decompressing a JPEG image that has restart markers.  This can
-cause the decompression performance to drop by as much as 20%, but the
-performance will still be much much greater than that of libjpeg v6b.  Many
-consumer packages, such as PhotoShop, use restart markers when generating JPEG
-images, so images generated by those programs will experience this issue.
+in a way that makes the rest of the libjpeg infrastructure happy, so it is
+necessary to use the slow Huffman decoder when decompressing a JPEG image that
+has restart markers.  This can cause the decompression performance to drop by
+as much as 20%, but the performance will still be much greater than that of
+libjpeg.  Many consumer packages, such as PhotoShop, use restart markers when
+generating JPEG images, so images generated by those programs will experience
+this issue.
 
 ===============================================
 Fast Integer Forward DCT at High Quality Levels

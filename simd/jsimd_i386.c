@@ -41,7 +41,7 @@ init_simd (void)
 {
   char *env = NULL;
 
-  if (simd_support != ~0)
+  if (simd_support != ~0U)
     return;
 
   simd_support = jpeg_simd_cpu_support();

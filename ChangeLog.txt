@@ -5,6 +5,10 @@
 11/8, 3/2, 13/8, 7/4, 15/8, and 2) when decompressing.  Currently, the IDCT
 will not be SIMD-accelerated when using any of these scaling factors.
 
+[2] Added SIMD acceleration for performing 4:2:2 upsampling on NEON-capable ARM
+platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
+platforms.
+
 
 1.2.0
 =====

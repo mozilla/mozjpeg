@@ -652,6 +652,21 @@ make udmg [BUILDDIR32={32-bit build directory}]
   {source_directory}/osxx86 by default, but you can override this by setting
   the BUILDDIR32 variable on the make command line as shown above.
 
+make iosdmg [BUILDDIR32={32-bit build directory}] \
+  [BUILDDIRARMV6={ARM v6 build directory}] \
+  [BUILDDIRARMV7={ARM v7 build directory}] \
+
+  On 64-bit OS X systems, this creates a version of the Macintosh package and
+  disk image that contains universal i386/x86-64/ARM binaries.  You should
+  first configure 32-bit, ARM v6, and ARM v7 out-of-tree builds of
+  libjpeg-turbo, then configure a 64-bit out-of-tree build, then run
+  'make iosdmg' from the 64-bit build directory.  The build system will look
+  for the 32-bit build under {source_directory}/osxx86 by default, the ARM v6
+  build under {source_directory}/iosarmv6 by default, and the ARM v7 build
+  under {source_directory}/iosarmv7 by default, but you can override this by
+  setting the BUILDDIR32, BUILDDIRARMV6, and/or BUILDDIRARMV7 variables on the
+  make command line as shown above.
+
 make sunpkg
 
   Build a Solaris package.  This requires pkgmk, pkgtrans, and bzip2.

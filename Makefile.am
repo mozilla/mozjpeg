@@ -293,6 +293,9 @@ if X86_64
 udmg: all
 	sh pkgscripts/makemacpkg universal ${BUILDDIR32}
 
+iosdmg: all
+	sh pkgscripts/makemacpkg ios ${BUILDDIR32} ${BUILDDIRARMV6} ${BUILDDIRARMV7}
+
 endif
 
 dmg: all

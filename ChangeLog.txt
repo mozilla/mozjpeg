@@ -9,10 +9,6 @@ will not be SIMD-accelerated when using any of these scaling factors.
 platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
 platforms.
 
-[3] Added ARM v6 and ARM v7 architectures to libjpeg.a and libturbojpeg.a in
-the official OS X distribution package, so that those libraries can be used to
-build both OS X and iOS applications.
-
 
 1.2.0
 =====
@@ -44,6 +40,10 @@ internally when building libjpeg-turbo, so it was moved into config.h.
 K component is assigned a component ID of 1 instead of 4.  Although these files
 are in violation of the spec, other JPEG implementations handle them
 correctly.
+
+[7] Added ARM v6 and ARM v7 architectures to libjpeg.a and libturbojpeg.a in
+the official OS X distribution package, so that those libraries can be used to
+build both OS X and iOS applications.
 
 
 1.1.90 (1.2 beta1)

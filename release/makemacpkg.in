@@ -25,16 +25,34 @@ PACKAGE_NAME=@PACKAGE_NAME@
 VERSION=@VERSION@
 BUILD=@BUILD@
 SRCDIR=@abs_top_srcdir@
-BUILDDIR32=
-BUILDDIRARMV6=
-BUILDDIRARMV7=
+BUILDDIR32=@abs_top_srcdir@/osxx86
+BUILDDIRARMV6=@abs_top_srcdir@/iosarmv6
+BUILDDIRARMV7=@abs_top_srcdir@/iosarmv7
 WITH_JAVA=@WITH_JAVA@
 while [ $# -gt 0 ]; do
 	case $1 in
 	-h*)             usage 0                   ;;
-	-builddir32)     BUILDDIR32=$2;     shift  ;;
-	-builddirarmv6)  BUILDDIRARMV6=$2;  shift  ;;
-	-builddirarmv7)  BUILDDIRARMV7=$2;  shift  ;;
+	-builddir32)
+		if [ $# -gt 1 ]; then
+			if [[ ! "$2" =~ -.* ]]; then
+				BUILDDIR32=$2;  shift
+			fi
+		fi
+		;;
+	-builddirarmv6)
+		if [ $# -gt 1 ]; then
+			if [[ ! "$2" =~ -.* ]]; then
+				BUILDDIRARMV6=$2;  shift
+			fi
+		fi
+		;;
+	-builddirarmv7)
+		if [ $# -gt 1 ]; then
+			if [[ ! "$2" =~ -.* ]]; then
+				BUILDDIRARMV7=$2;  shift
+			fi
+		fi
+		;;
 	esac
 	shift
 done

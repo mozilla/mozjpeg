@@ -268,7 +268,7 @@ rpm: all
 	ln -fs `pwd` $$TMPDIR/BUILD; \
 	rm -f ${PACKAGE_NAME}-${VERSION}.${RPMARCH}.rpm; \
 	rpmbuild -bb --define "_blddir $$TMPDIR/buildroot"  \
-		--define "_topdir $$TMPDIR" --define "_srcdir ${srcdir}" \
+		--define "_topdir $$TMPDIR" \
 		--target ${RPMARCH} pkgscripts/libjpeg-turbo.spec; \
 	cp $$TMPDIR/RPMS/${RPMARCH}/${PACKAGE_NAME}-${VERSION}-${BUILD}.${RPMARCH}.rpm \
 		${PACKAGE_NAME}-${VERSION}.${RPMARCH}.rpm; \
@@ -284,7 +284,7 @@ srpm: dist-gzip
 	rm -f ${PACKAGE_NAME}-${VERSION}.src.rpm; \
 	cp ${PACKAGE_NAME}-${VERSION}.tar.gz $$TMPDIR/SOURCES; \
 	cat pkgscripts/libjpeg-turbo.spec | sed s/%{_blddir}/%{_tmppath}/g \
-		| sed s@%{_srcdir}/@@g | sed s/#--\>//g \
+		| sed s/#--\>//g \
 		> $$TMPDIR/SPECS/libjpeg-turbo.spec; \
 	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/libjpeg-turbo.spec; \
 	cp $$TMPDIR/SRPMS/${PACKAGE_NAME}-${VERSION}-${BUILD}.src.rpm \

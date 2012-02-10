@@ -288,13 +288,22 @@ srpm: dist-gzip
 deb: all
 	sh pkgscripts/makedpkg
 
+BUILDDIR32=@abs_top_srcdir@/osxx86
+BUILDDIRARMV6=@abs_top_srcdir@/iosarmv6
+BUILDDIRARMV7=@abs_top_srcdir@/iosarmv7
+
 if X86_64
 
 udmg: all
-	sh pkgscripts/makemacpkg universal ${BUILDDIR32}
+	sh pkgscripts/makemacpkg -builddir32 ${BUILDDIR32}
 
 iosdmg: all
-	sh pkgscripts/makemacpkg ios ${BUILDDIR32} ${BUILDDIRARMV6} ${BUILDDIRARMV7}
+	sh pkgscripts/makemacpkg -builddir32 ${BUILDDIR32} -builddirarmv6 ${BUILDDIRARMV6} -builddirarmv7 ${BUILDDIRARMV7}
+
+else
+
+iosdmg: all
+	sh pkgscripts/makemacpkg -builddirarmv6 ${BUILDDIRARMV6} -builddirarmv7 ${BUILDDIRARMV7}
 
 endif
 

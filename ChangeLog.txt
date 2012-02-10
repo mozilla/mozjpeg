@@ -34,7 +34,6 @@ the official OS X distribution package, so that those libraries can be used to
 build both OS X and iOS applications.
 
 
-
 1.1.90 (1.2 beta1)
 ==================
 

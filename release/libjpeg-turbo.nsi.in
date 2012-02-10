@@ -76,8 +76,11 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	SetOutPath $INSTDIR\doc
 	File "@CMAKE_SOURCE_DIR@\README"
 	File "@CMAKE_SOURCE_DIR@\README-turbo.txt"
+	File "@CMAKE_SOURCE_DIR@\example.c"
 	File "@CMAKE_SOURCE_DIR@\libjpeg.txt"
+	File "@CMAKE_SOURCE_DIR@\structure.txt"
 	File "@CMAKE_SOURCE_DIR@\usage.txt"
+	File "@CMAKE_SOURCE_DIR@\wizard.txt"
 
 	WriteRegStr HKLM "SOFTWARE\@INST_DIR@ @VERSION@" "Install_Dir" "$INSTDIR"
 
@@ -132,8 +135,11 @@ Section "Uninstall"
 	Delete $INSTDIR\uninstall_@VERSION@.exe
 	Delete $INSTDIR\doc\README
 	Delete $INSTDIR\doc\README-turbo.txt
+	Delete $INSTDIR\doc\example.c
 	Delete $INSTDIR\doc\libjpeg.txt
+	Delete $INSTDIR\doc\structure.txt
 	Delete $INSTDIR\doc\usage.txt
+	Delete $INSTDIR\doc\wizard.txt
 
 	RMDir "$INSTDIR\include"
 	RMDir "$INSTDIR\lib"

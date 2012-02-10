@@ -124,11 +124,11 @@ DOCS= install.txt coderules.txt filelist.txt jconfig.txt change.log \
 	rdrle.c wrrle.c BUILDING.txt ChangeLog.txt
 
 docdir = $(datadir)/doc
-doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
+dist_doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
 	wizard.txt 
 
 exampledir = $(datadir)/doc
-example_DATA = example.c
+dist_example_DATA = example.c
 
 
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \

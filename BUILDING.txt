@@ -644,13 +644,32 @@ make dmg
 
 make udmg [BUILDDIR32={32-bit build directory}]
 
-  On 64-bit OS X systems, this creates a version of the Macintosh package and
-  disk image that contains universal i386/x86-64 binaries.  You should first
-  configure a 32-bit out-of-tree build of libjpeg-turbo, then configure a
-  64-bit out-of-tree build, then run 'make udmg' from the 64-bit build
-  directory.  The build system will look for the 32-bit build under
-  {source_directory}/osxx86 by default, but you can override this by setting
-  the BUILDDIR32 variable on the make command line as shown above.
+  On 64-bit OS X systems, this creates a Macintosh package and disk image that
+  contains universal i386/x86-64 binaries.  You should first configure a 32-bit
+  out-of-tree build of libjpeg-turbo, then configure a 64-bit out-of-tree
+  build, then run 'make udmg' from the 64-bit build directory.  The build
+  system will look for the 32-bit build under {source_directory}/osxx86 by
+  default, but you can override this by setting the BUILDDIR32 variable on the
+  make command line as shown above.
+
+make iosdmg [BUILDDIR32={32-bit build directory}] \
+  [BUILDDIRARMV6={ARM v6 build directory}] \
+  [BUILDDIRARMV7={ARM v7 build directory}] \
+
+  On OS X systems, this creates a Macintosh package and disk image in which the
+  libjpeg-turbo static libraries contain ARM architectures necessary to build
+  iOS applications.  If building on an x86-64 system, the binaries will also
+  contain the i386 architecture, as with 'make udmg' above.  You should first
+  configure ARM v6 and ARM v7 out-of-tree builds of libjpeg-turbo (see
+  "Building libjpeg-turbo for iOS" above.)  If you are building an x86-64
+  version of libjpeg-turbo, you should configure a 32-bit out-of-tree build as
+  well.  Next, build libjpeg-turbo as you would normally, using an out-of-tree
+  build.  When it is built, run 'make iosdmg' from the build directory.  The
+  build system will look for the ARM v6 build under {source_directory}/iosarmv6
+  by default, the ARM v7 build under {source_directory}/iosarmv7 by default,
+  and (if applicable) the 32-bit build under {source_directory}/osxx86 by
+  default, but you can override this by setting the BUILDDIR32, BUILDDIRARMV6,
+  and/or BUILDDIRARMV7 variables on the make command line as shown above.
 
 make sunpkg
 

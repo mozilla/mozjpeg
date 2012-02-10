@@ -25,7 +25,7 @@ TMPDIR=`mktemp -d /tmp/ljtbuild.XXXXXX`
 __PWD=`pwd`
 make install DESTDIR=$TMPDIR/pkg mandir=/opt/$PACKAGE_NAME/man \
 	docdir=/usr/share/doc/$PACKAGE_NAME-$VERSION \
-	exampledir=/usr/share/doc/$PACKAGE_NAME-$VERSION \
+	exampledir=/usr/share/doc/$PACKAGE_NAME-$VERSION
 rm $TMPDIR/pkg/opt/$PACKAGE_NAME/lib/*.la
 ln -fs lib $TMPDIR/pkg/opt/$PACKAGE_NAME/lib32
 cd $TMPDIR/pkg

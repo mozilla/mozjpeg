@@ -120,9 +120,15 @@ jcstest_LDADD = libjpeg.la
 
 dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
-DOCS= README install.txt usage.txt wizard.txt example.c libjpeg.txt \
-	structure.txt coderules.txt filelist.txt jconfig.txt change.log \
-	README-turbo.txt rdrle.c wrrle.c BUILDING.txt ChangeLog.txt
+DOCS= install.txt coderules.txt filelist.txt jconfig.txt change.log \
+	rdrle.c wrrle.c BUILDING.txt ChangeLog.txt
+
+docdir = $(datadir)/doc
+doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
+	wizard.txt 
+
+exampledir = $(datadir)/doc
+example_DATA = example.c
 
 
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \

@@ -46,7 +46,9 @@ TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 PKGROOT=$TMPDIR/pkg/Package_Root
 mkdir -p $PKGROOT
 mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin
-make install DESTDIR=$PKGROOT mandir=/opt/$PACKAGE_NAME/man
+make install DESTDIR=$PKGROOT mandir=/opt/$PACKAGE_NAME/man \
+	docdir=/Library/Documentation/$PACKAGE_NAME \
+	exampledir=/Library/Documentation/$PACKAGE_NAME
 rm -f $PKGROOT/opt/$PACKAGE_NAME/lib/*.la
 mkdir -p $PKGROOT/usr/lib
 mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib
@@ -133,7 +135,6 @@ if [ ! -h $PKGROOT/opt/$PACKAGE_NAME/lib64 ]; then
 	ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib64
 fi
 
-mkdir -p $PKGROOT/Library/Documentation/$PACKAGE_NAME
 chmod 1775 $PKGROOT/Library
 chmod 775 $PKGROOT/Library/Documentation 
 mkdir -p $TMPDIR/pkg/Resources 
@@ -141,11 +142,6 @@ mkdir -p $TMPDIR/pkg/Resources
 cp pkgscripts/Description.plist $TMPDIR/pkg/
 cp pkgscripts/Info.plist $TMPDIR/pkg/
 install -m 755 pkgscripts/uninstall $PKGROOT/opt/$PACKAGE_NAME/bin/
-
-install -m 644 $SRCDIR/README-turbo.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/README-turbo.txt 
-install -m 644 $SRCDIR/README $PKGROOT/Library/Documentation/$PACKAGE_NAME/README 
-install -m 644 $SRCDIR/libjpeg.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/libjpeg.txt 
-install -m 644 $SRCDIR/usage.txt $PKGROOT/Library/Documentation/$PACKAGE_NAME/usage.txt 
 
 sudo chown -R root:admin $PKGROOT 
 sudo chown -R root:0 $PKGROOT/usr 

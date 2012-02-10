@@ -409,9 +409,10 @@ install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom tjbench
   RUNTIME DESTINATION bin
 )
 
-install(FILES ${CMAKE_SOURCE_DIR}/LGPL.txt ${CMAKE_SOURCE_DIR}/LICENSE.txt
-  ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-turbo.txt
-  ${CMAKE_SOURCE_DIR}/libjpeg.txt ${CMAKE_SOURCE_DIR}/usage.txt
+install(FILES ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-turbo.txt
+  ${CMAKE_SOURCE_DIR}/example.c ${CMAKE_SOURCE_DIR}/libjpeg.txt 
+  ${CMAKE_SOURCE_DIR}/structure.txt ${CMAKE_SOURCE_DIR}/usage.txt
+  ${CMAKE_SOURCE_DIR}/wizard.txt
   DESTINATION doc)
 
 install(FILES ${CMAKE_BINARY_DIR}/jconfig.h ${CMAKE_SOURCE_DIR}/jerror.h

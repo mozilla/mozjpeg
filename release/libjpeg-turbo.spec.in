@@ -48,7 +48,7 @@ available to a broader range of users and developers.
 %install
 
 rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man
+make install DESTDIR=$RPM_BUILD_ROOT libdir=/opt/%{name}/%{__lib} mandir=/opt/%{name}/man docdir=/opt/%{name}/doc exampledir=/opt/%{name}/doc
 rm -f $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/*.la
 mkdir -p $RPM_BUILD_ROOT/usr/%{__lib}
 mv $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/libturbojpeg.* $RPM_BUILD_ROOT/usr/%{__lib}
@@ -58,6 +58,8 @@ mkdir -p $RPM_BUILD_ROOT/usr/include
 mv $RPM_BUILD_ROOT/opt/%{name}/include/turbojpeg.h $RPM_BUILD_ROOT/usr/include
 ln -fs /usr/include/turbojpeg.h $RPM_BUILD_ROOT/opt/%{name}/include/
 ln -fs /usr/%{__lib}/libturbojpeg.a $RPM_BUILD_ROOT/opt/%{name}/%{__lib}/
+mkdir -p $RPM_BUILD_ROOT%{_defaultdocdir}
+mv $RPM_BUILD_ROOT/opt/%{name}/doc $RPM_BUILD_ROOT%{_defaultdocdir}/%{name}-%{version}
 
 %post -p /sbin/ldconfig
 
@@ -68,7 +70,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc %{_srcdir}/README-turbo.txt %{_srcdir}/README %{_srcdir}/libjpeg.txt %{_srcdir}/usage.txt
+%dir %{_defaultdocdir}/%{name}-%{version}
+%doc %{_defaultdocdir}/%{name}-%{version}/*
 %dir /opt/%{name}
 %dir /opt/%{name}/bin
 /opt/%{name}/bin/cjpeg

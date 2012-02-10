@@ -36,7 +36,10 @@ makedeb()
 		| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
 		| sed s/{__ARCH}/$DEBARCH/g > $TMPDIR/DEBIAN/control)
 
-	make install prefix=$TMPDIR/opt/$DIRNAME libdir=$TMPDIR/opt/$DIRNAME/$__LIB mandir=$TMPDIR/opt/$DIRNAME/man
+	make install prefix=$TMPDIR/opt/$DIRNAME libdir=$TMPDIR/opt/$DIRNAME/$__LIB \
+		mandir=$TMPDIR/opt/$DIRNAME/man \
+		docdir=$TMPDIR/usr/share/doc/$DIRNAME-$VERSION \
+		exampledir=$TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 	rm -f $TMPDIR/opt/$DIRNAME/$__LIB/*.la
 
 	if [ $SUPPLEMENT = 1 ]; then
@@ -63,11 +66,6 @@ makedeb()
 		mkdir -p $TMPDIR/usr/include
 		mv $TMPDIR/opt/$DIRNAME/include/turbojpeg.h $TMPDIR/usr/include
 		ln -fs /usr/include/turbojpeg.h $TMPDIR/opt/$DIRNAME/include/
-		mkdir -p $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/README-turbo.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/README $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/libjpeg.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-		install -m 644 $SRCDIR/usage.txt $TMPDIR/usr/share/doc/$DIRNAME-$VERSION
 	fi
 
 	sudo chown -Rh root:root $TMPDIR/*

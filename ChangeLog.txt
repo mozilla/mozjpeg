@@ -9,6 +9,10 @@ will not be SIMD-accelerated when using any of these scaling factors.
 platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
 platforms.
 
+[3] Creating or decoding a JPEG file that uses the RGB colorspace should now
+properly work when the input or output colorspace is one of the libjpeg-turbo
+colorspace extensions.
+
 
 1.2.0
 =====

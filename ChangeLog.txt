@@ -1,3 +1,11 @@
+1.2.1
+=====
+
+[1] Creating or decoding a JPEG file that uses the RGB colorspace should now
+properly work when the input or output colorspace is one of the libjpeg-turbo
+colorspace extensions.
+
+
 1.2.0
 =====
 

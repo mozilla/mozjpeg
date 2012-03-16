@@ -5,6 +5,12 @@
 properly work when the input or output colorspace is one of the libjpeg-turbo
 colorspace extensions.
 
+[2] When libjpeg-turbo was built without SIMD support and merged (non-fancy)
+upsampling was used along with an alpha-enabled colorspace during
+decompression, the unused byte of the decompressed pixels was not being set to
+0xFF.  This has been fixed.  TJUnitTest has also been extended to test for the
+correct behavior of the colorspace extensions when merged upsampling is used.
+
 
 1.2.0
 =====

@@ -681,7 +681,7 @@ void usage(char *progname)
 	printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
 	printf("     Test the specified color conversion path in the codec (default: BGR)\n");
 	printf("-fastupsample = Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
-	printf("     YUV decoding in libjpeg decompressor\n");
+	printf("     YUV decoding\n");
 	printf("-quiet = Output results in tabular rather than verbose format\n");
 	printf("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG\n");
 	printf("-yuvdecode = Decode JPEG image to planar YUV rather than RGB\n");

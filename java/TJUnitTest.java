@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -765,6 +765,9 @@ public class TJUnitTest {
       for(int pf : formats) {
         for(int i = 0; i < 2; i++) {
           int flags = 0;
+          if (subsamp == TJ.SAMP_422 || subsamp == TJ.SAMP_420
+            || subsamp == TJ.SAMP_440)
+            flags |= TJ.FLAG_FASTUPSAMPLE;
           if(i == 1) {
             if(yuv == YUVDECODE) {
               tjc.close();  tjd.close();  return;
@@ -850,20 +853,18 @@ public class TJUnitTest {
       if(doyuv) yuv = YUVENCODE;
       doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_444, testName);
       doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_444, testName);
-      if(doyuv) {
-        doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_422,
-          testName);
-        doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_422,
-          testName);
-        doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_420,
-          testName);
-        doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_420,
-          testName);
-        doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_440,
-          testName);
-        doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_440,
-          testName);
-      }
+      doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_422,
+        testName);
+      doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_422,
+        testName);
+      doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_420,
+        testName);
+      doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_420,
+        testName);
+      doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_440,
+        testName);
+      doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_440,
+        testName);
       doTest(35, 39, bi ? onlyGrayBI : onlyGray, TJ.SAMP_GRAY, testName);
       doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
         testName);

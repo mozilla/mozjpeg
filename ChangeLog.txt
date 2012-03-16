@@ -2,8 +2,8 @@
 ============
 
 [1] Added support for additional scaling factors (3/8, 5/8, 3/4, 7/8, 9/8, 5/4,
-11/8, 3/2, 13/8, 7/4, 15/8, and 2) when decompressing.  Currently, the IDCT
-will not be SIMD-accelerated when using any of these scaling factors.
+11/8, 3/2, 13/8, 7/4, 15/8, and 2) when decompressing.  Note that the IDCT will
+not be SIMD-accelerated when using any of these new scaling factors.
 
 [2] Added SIMD acceleration for performing 4:2:2 upsampling on NEON-capable ARM
 platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
@@ -12,6 +12,12 @@ platforms.
 [3] Creating or decoding a JPEG file that uses the RGB colorspace should now
 properly work when the input or output colorspace is one of the libjpeg-turbo
 colorspace extensions.
+
+[4] When libjpeg-turbo was built without SIMD support and merged (non-fancy)
+upsampling was used along with an alpha-enabled colorspace during
+decompression, the unused byte of the decompressed pixels was not being set to
+0xFF.  This has been fixed.  TJUnitTest has also been extended to test for the
+correct behavior of the colorspace extensions when merged upsampling is used.
 
 
 1.2.0

@@ -312,15 +312,5 @@ endif
 dmg: all
 	sh pkgscripts/makemacpkg
 
-if X86_64
-
-csunpkg: all
-	sh pkgscripts/makesunpkg combined ${BUILDDIR32}
-
-endif
-
-sunpkg: all
-	sh pkgscripts/makesunpkg
-
 cygwinpkg: all
 	sh pkgscripts/makecygwinpkg

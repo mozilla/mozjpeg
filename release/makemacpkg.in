@@ -17,7 +17,7 @@ onexit()
 
 usage()
 {
-	echo "$0 [-builddir32 [32-bit build dir]] [-builddirarmv6 [ARM v6 build dir]] [-builddirarmv7 [ARM v7 build dir]]"
+	echo "$0 [-build32 [32-bit build dir]] [-buildarmv6 [ARM v6 build dir]] [-buildarmv7 [ARM v7 build dir]]"
 	exit 1
 }
 
@@ -26,27 +26,33 @@ VERSION=@VERSION@
 BUILD=@BUILD@
 SRCDIR=@abs_top_srcdir@
 BUILDDIR32=@abs_top_srcdir@/osxx86
+BUILD32=0
 BUILDDIRARMV6=@abs_top_srcdir@/iosarmv6
+BUILDARMV6=0
 BUILDDIRARMV7=@abs_top_srcdir@/iosarmv7
+BUILDARMV7=0
 WITH_JAVA=@WITH_JAVA@
 while [ $# -gt 0 ]; do
 	case $1 in
 	-h*)             usage 0                   ;;
-	-builddir32)
+	-build32)
+		BUILD32=1
 		if [ $# -gt 1 ]; then
 			if [[ ! "$2" =~ -.* ]]; then
 				BUILDDIR32=$2;  shift
 			fi
 		fi
 		;;
-	-builddirarmv6)
+	-buildarmv6)
+		BUILDARMV6=1
 		if [ $# -gt 1 ]; then
 			if [[ ! "$2" =~ -.* ]]; then
 				BUILDDIRARMV6=$2;  shift
 			fi
 		fi
 		;;
-	-builddirarmv7)
+	-buildarmv7)
+		BUILDARMV7=1
 		if [ $# -gt 1 ]; then
 			if [[ ! "$2" =~ -.* ]]; then
 				BUILDDIRARMV7=$2;  shift
@@ -76,7 +82,7 @@ mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib
 mkdir -p $PKGROOT/usr/include
 mv $PKGROOT/opt/$PACKAGE_NAME/include/turbojpeg.h $PKGROOT/usr/include
 
-if [ ! "$BUILDDIR32" = "" ]; then
+if [ $BUILD32 = 1 ]; then
 	if [ ! -d $BUILDDIR32 ]; then
 		echo ERROR: 32-bit build directory $BUILDDIR32 does not exist
 		exit 1
@@ -141,7 +147,7 @@ if [ ! "$BUILDDIR32" = "" ]; then
 
 fi
 
-if [ ! "$BUILDDIRARMV6" = "" ]; then
+if [ $BUILDARMV6 = 1 ]; then
 	if [ ! -d $BUILDDIRARMV6 ]; then
 		echo ERROR: ARM v6 build directory $BUILDDIRARMV6 does not exist
 		exit 1
@@ -164,7 +170,7 @@ if [ ! "$BUILDDIRARMV6" = "" ]; then
 		-output $PKGROOT/usr/lib/libturbojpeg.a
 fi
 
-if [ ! "$BUILDDIRARMV7" = "" ]; then
+if [ $BUILDARMV7 = 1 ]; then
 	if [ ! -d $BUILDDIRARMV7 ]; then
 		echo ERROR: ARM v7 build directory $BUILDDIRARMV7 does not exist
 		exit 1

@@ -113,9 +113,9 @@ if [ $BUILD32 = 1 ]; then
 		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
 		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libturbojpeg.dylib \
-		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.dylib \
-		-output $PKGROOT/usr/lib/libturbojpeg.dylib
+		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libturbojpeg.0.dylib \
+		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.0.dylib \
+		-output $PKGROOT/usr/lib/libturbojpeg.0.dylib
 	lipo -create \
 		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
 		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.a \
@@ -194,12 +194,12 @@ if [ $BUILDARMV7 = 1 ]; then
 fi
 
 install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib
-install_name_tool -id libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.dylib
+install_name_tool -id libturbojpeg.0.dylib $PKGROOT/usr/lib/libturbojpeg.0.dylib
 
 ln -fs /usr/include/turbojpeg.h $PKGROOT/opt/$PACKAGE_NAME/include/
 ln -fs /usr/lib/libturbojpeg.a $PKGROOT/opt/$PACKAGE_NAME/lib/
 if [ $WITH_JAVA = 1 ]; then
-	ln -fs libturbojpeg.dylib $PKGROOT/usr/lib/libturbojpeg.jnilib
+	ln -fs libturbojpeg.0.dylib $PKGROOT/usr/lib/libturbojpeg.jnilib
 fi
 if [ ! -h $PKGROOT/opt/$PACKAGE_NAME/lib32 ]; then
 	ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib32

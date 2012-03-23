@@ -498,7 +498,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	JSAMPROW *outbuf[MAX_COMPONENTS];
 	int row, pw, ph, cw[MAX_COMPONENTS], ch[MAX_COMPONENTS];
 	JSAMPLE *ptr=dstBuf;
-  unsigned long yuvsize=0;
+	unsigned long yuvsize=0;
 	jpeg_component_info *compptr;
 
 	getinstance(handle);

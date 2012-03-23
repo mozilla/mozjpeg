@@ -90,6 +90,8 @@ rm -rf $RPM_BUILD_ROOT
 /opt/%{name}/%{__lib}/libjpeg.so
 /opt/%{name}/%{__lib}/libjpeg.a
 /opt/%{name}/%{__lib}/libturbojpeg.a
+/usr/%{__lib}/libturbojpeg.so.0.0.0
+/usr/%{__lib}/libturbojpeg.so.0
 /usr/%{__lib}/libturbojpeg.so
 /usr/%{__lib}/libturbojpeg.a
 /usr/include/turbojpeg.h

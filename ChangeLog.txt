@@ -19,6 +19,13 @@ decompression, the unused byte of the decompressed pixels was not being set to
 0xFF.  This has been fixed.  TJUnitTest has also been extended to test for the
 correct behavior of the colorspace extensions when merged upsampling is used.
 
+[5] The TurboJPEG dynamic library is now versioned.  It was not strictly
+necessary to do so, because TurboJPEG uses versioned symbols, and if a function
+changes in an ABI-incompatible way, that function is renamed and a legacy
+function is provided to maintain backward compatibility.  However, certain
+Linux distro maintainers will blindly reject any library that is not versioned,
+so this was an attempt to make them happy.
+
 
 1.2.0
 =====

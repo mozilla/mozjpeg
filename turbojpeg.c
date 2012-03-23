@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -768,7 +768,10 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
-	if(setDecompDefaults(dinfo, pixelFormat)==-1) return -1;
+	if(setDecompDefaults(dinfo, pixelFormat)==-1)
+	{
+		retval=-1;  goto bailout;
+	}
 
 	if(flags&TJFLAG_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
 

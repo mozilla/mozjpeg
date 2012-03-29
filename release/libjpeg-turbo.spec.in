@@ -15,7 +15,11 @@ Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
 Prereq: /sbin/ldconfig
-Provides: %{name} = %{version}-%{release}, turbojpeg = 2.00
+%ifarch x86_64
+Provides: %{name} = %{version}-%{release}, turbojpeg = 2.00, libturbojpeg.so()(64bit)
+%else
+Provides: %{name} = %{version}-%{release}, turbojpeg = 2.00, libturbojpeg.so
+%endif
 Obsoletes: turbojpeg
 
 %description

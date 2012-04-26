@@ -639,7 +639,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	bailout:
 	if(cinfo->global_state>CSTATE_START) jpeg_abort_compress(cinfo);
 	#ifndef JCS_EXTENSIONS
-	if(rgbBuf && rgbBuf!=srcBuf) free(rgbBuf);
+	if(rgbBuf) free(rgbBuf);
 	#endif
 	if(row_pointer) free(row_pointer);
 	return retval;
@@ -800,7 +800,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	bailout:
 	if(cinfo->global_state>CSTATE_START) jpeg_abort_compress(cinfo);
 	#ifndef JCS_EXTENSIONS
-	if(rgbBuf && rgbBuf!=srcBuf) free(rgbBuf);
+	if(rgbBuf) free(rgbBuf);
 	#endif
 	if(row_pointer) free(row_pointer);
 	for(i=0; i<MAX_COMPONENTS; i++)
@@ -1018,7 +1018,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 	bailout:
 	if(dinfo->global_state>DSTATE_START) jpeg_abort_decompress(dinfo);
 	#ifndef JCS_EXTENSIONS
-	if(rgbBuf && rgbBuf!=dstBuf) free(rgbBuf);
+	if(rgbBuf) free(rgbBuf);
 	#endif
 	if(row_pointer) free(row_pointer);
 	return retval;

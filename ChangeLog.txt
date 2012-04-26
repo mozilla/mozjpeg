@@ -11,6 +11,10 @@ decompression, the unused byte of the decompressed pixels was not being set to
 0xFF.  This has been fixed.  TJUnitTest has also been extended to test for the
 correct behavior of the colorspace extensions when merged upsampling is used.
 
+[3] Fixed a bug whereby the libjpeg-turbo SSE2 SIMD code would not preserve the
+upper 64 bits of xmm6 and xmm7 on Win64 platforms, which violated the Win64
+calling conventions.
+
 
 1.2.0
 =====

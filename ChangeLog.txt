@@ -26,6 +26,10 @@ function is provided to maintain backward compatibility.  However, certain
 Linux distro maintainers will blindly reject any library that is not versioned,
 so this was an attempt to make them happy.
 
+[6] Fixed a bug whereby the libjpeg-turbo SSE2 SIMD code would not preserve the
+upper 64 bits of xmm6 and xmm7 on Win64 platforms, which violated the Win64
+calling conventions.
+
 
 1.2.0
 =====

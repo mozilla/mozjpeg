@@ -30,6 +30,10 @@ so this was an attempt to make them happy.
 upper 64 bits of xmm6 and xmm7 on Win64 platforms, which violated the Win64
 calling conventions.
 
+[7] Fixed a regression caused by 1.2.0[6] in which decompressing corrupt JPEG
+images (specifically, images in which the component count was erroneously set
+to a large value) would cause libjpeg-turbo to segfault.
+
 
 1.2.0
 =====

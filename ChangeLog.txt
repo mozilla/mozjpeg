@@ -15,6 +15,10 @@ correct behavior of the colorspace extensions when merged upsampling is used.
 upper 64 bits of xmm6 and xmm7 on Win64 platforms, which violated the Win64
 calling conventions.
 
+[4] Fixed a regression caused by 1.2.0[6] whereby decompressing corrupt JPEG
+images (specifically, images in which the component count was erroneously set
+to a large value) would cause libjpeg-turbo to segfault.
+
 
 1.2.0
 =====

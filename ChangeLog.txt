@@ -34,6 +34,9 @@ calling conventions.
 images (specifically, images in which the component count was erroneously set
 to a large value) would cause libjpeg-turbo to segfault.
 
+[8] Extended the TurboJPEG Java API so that it can be used to decompress a
+JPEG image into an arbitrary position in a large output buffer.
+
 
 1.2.0
 =====

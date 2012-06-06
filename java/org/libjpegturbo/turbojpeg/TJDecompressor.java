@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -239,7 +239,17 @@ public class TJDecompressor {
    * where <code>scaledHeight</code> can be determined by calling <code>
    * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegHeight)
    * </code> with one of the scaling factors returned from {@link
-   * TJ#getScalingFactors} or by calling {@link #getScaledHeight}.
+   * TJ#getScalingFactors} or by calling {@link #getScaledHeight}.  However,
+   * the buffer may also be larger than the dimensions of the JPEG image, in
+   * which case the <code>x</code>, <code>y</code>, and <code>pitch</code>
+   * parameters can be used to specify the region into which the JPEG image
+   * should be decompressed.
+   *
+   * @param x x offset (in pixels) of the region into which the JPEG image
+   * should be decompressed, relative to the start of <code>dstBuf</code>.
+   *
+   * @param y y offset (in pixels) of the region into which the JPEG image
+   * should be decompressed, relative to the start of <code>dstBuf</code>.
    *
    * @param desiredWidth desired width (in pixels) of the decompressed image.
    * If the desired image dimensions are smaller than the dimensions of the
@@ -252,7 +262,8 @@ public class TJDecompressor {
    * @param pitch bytes per line of the destination image.  Normally, this
    * should be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code> if
    * the decompressed image is unpadded, but you can use this to, for instance,
-   * pad each line of the decompressed image to a 4-byte boundary.  NOTE:
+   * pad each line of the decompressed image to a 4-byte boundary or to
+   * decompress the JPEG image into a region of a larger image.  NOTE:
    * <code>scaledWidth</code> can be determined by calling <code>
    * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegWidth)
    * </code> or by calling {@link #getScaledWidth}.  Setting this parameter to
@@ -272,14 +283,48 @@ public class TJDecompressor {
    *
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
-  public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
-    int desiredHeight, int pixelFormat, int flags) throws Exception {
+  public void decompress(byte[] dstBuf, int x, int y, int desiredWidth,
+    int pitch, int desiredHeight, int pixelFormat, int flags)
+    throws Exception {
     if(jpegBuf == null) throw new Exception(NO_ASSOC_ERROR);
-    if(dstBuf == null || desiredWidth < 0 || pitch < 0 || desiredHeight < 0
-      || pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
+    if(dstBuf == null || x < 0 || y < 0 || desiredWidth < 0 || pitch < 0
+      || desiredHeight < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF
+      || flags < 0)
       throw new Exception("Invalid argument in decompress()");
-    decompress(jpegBuf, jpegBufSize, dstBuf, desiredWidth, pitch,
+    decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, pitch,
       desiredHeight, pixelFormat, flags);
+  }
+
+  /**
+   * Decompress the JPEG source image associated with this decompressor
+   * instance and output a decompressed image to the given destination buffer.
+   *
+   * @param dstBuf see
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
+   * for description
+   *
+   * @param desiredWidth see
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
+   * for description
+   *
+   * @param pitch see
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
+   * for description
+   *
+   * @param desiredHeight see
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
+   * for description
+   *
+   * @param pixelFormat pixel format of the decompressed image (one of
+   * {@link TJ TJ.PF_*})
+   *
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
+   */
+  public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
+    int desiredHeight, int pixelFormat, int flags)
+    throws Exception {
+    decompress(dstBuf, 0, 0, desiredWidth, pitch, desiredHeight, pixelFormat,
+      flags);
   }
 
   /**
@@ -287,13 +332,16 @@ public class TJDecompressor {
    * instance and return a buffer containing the decompressed image.
    *
    * @param desiredWidth see
-   * {@link #decompress(byte[], int, int, int, int, int)} for description
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
+   * for description
    *
    * @param pitch see
-   * {@link #decompress(byte[], int, int, int, int, int)} for description
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
+   * for description
    *
    * @param desiredHeight see
-   * {@link #decompress(byte[], int, int, int, int, int)} for description
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
+   * for description
    *
    * @param pixelFormat pixel format of the decompressed image (one of
    * {@link TJ TJ.PF_*})
@@ -360,6 +408,68 @@ public class TJDecompressor {
     byte[] buf = new byte[TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp)];
     decompressToYUV(buf, flags);
     return buf;
+  }
+
+  /**
+   * Decompress the JPEG source image associated with this decompressor
+   * instance and output a decompressed image to the given destination buffer.
+   *
+   * @param dstBuf buffer that will receive the decompressed image.  This
+   * buffer should normally be <code>stride * scaledHeight</code> pixels in
+   * size, where <code>scaledHeight</code> can be determined by calling <code>
+   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegHeight)
+   * </code> with one of the scaling factors returned from {@link
+   * TJ#getScalingFactors} or by calling {@link #getScaledHeight}.  However,
+   * the buffer may also be larger than the dimensions of the JPEG image, in
+   * which case the <code>x</code>, <code>y</code>, and <code>stride</code>
+   * parameters can be used to specify the region into which the JPEG image
+   * should be decompressed.
+   *
+   * @param x x offset (in pixels) of the region into which the JPEG image
+   * should be decompressed, relative to the start of <code>dstBuf</code>.
+   *
+   * @param y y offset (in pixels) of the region into which the JPEG image
+   * should be decompressed, relative to the start of <code>dstBuf</code>.
+   *
+   * @param desiredWidth desired width (in pixels) of the decompressed image.
+   * If the desired image dimensions are smaller than the dimensions of the
+   * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
+   * decompressor to generate the largest possible image that will fit within
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the width of the JPEG image (in other words, the width will not be
+   * considered when determining the scaled image size.)
+   *
+   * @param stride pixels per line of the destination image.  Normally, this
+   * should be set to <code>scaledWidth</code>, but you can use this to, for
+   * instance, decompress the JPEG image into a region of a larger image.
+   * NOTE: <code>scaledWidth</code> can be determined by calling <code>
+   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegWidth)
+   * </code> or by calling {@link #getScaledWidth}.  Setting this parameter to
+   * 0 is the equivalent of setting it to <code>scaledWidth</code>.
+   *
+   * @param desiredHeight desired height (in pixels) of the decompressed image.
+   * If the desired image dimensions are smaller than the dimensions of the
+   * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
+   * decompressor to generate the largest possible image that will fit within
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the height of the JPEG image (in other words, the height will not be
+   * considered when determining the scaled image size.)
+   *
+   * @param pixelFormat pixel format of the decompressed image (one of
+   * {@link TJ TJ.PF_*})
+   *
+   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
+   */
+  public void decompress(int[] dstBuf, int x, int y, int desiredWidth,
+    int stride, int desiredHeight, int pixelFormat, int flags)
+    throws Exception {
+    if(jpegBuf == null) throw new Exception(NO_ASSOC_ERROR);
+    if(dstBuf == null || x < 0 || y < 0 || desiredWidth < 0 || stride < 0
+      || desiredHeight < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF
+      || flags < 0)
+      throw new Exception("Invalid argument in decompress()");
+    decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, stride,
+      desiredHeight, pixelFormat, flags);
   }
 
   /**
@@ -444,10 +554,12 @@ public class TJDecompressor {
    * decompressed image.
    *
    * @param desiredWidth see
-   * {@link #decompress(byte[], int, int, int, int, int)} for description
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)} for
+   * description
    *
    * @param desiredHeight see
-   * {@link #decompress(byte[], int, int, int, int, int)} for description
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)} for
+   * description
    *
    * @param bufferedImageType the image type of the newly-created
    * <code>BufferedImage</code> instance (for instance,
@@ -498,8 +610,18 @@ public class TJDecompressor {
     int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
     throws Exception;
 
+  private native void decompress(byte[] srcBuf, int size, byte[] dstBuf, int x,
+    int y, int desiredWidth, int pitch, int desiredHeight, int pixelFormat,
+    int flags)
+    throws Exception;
+
   private native void decompress(byte[] srcBuf, int size, int[] dstBuf,
-    int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
+    int desiredWidth, int stride, int desiredHeight, int pixelFormat, int flags)
+    throws Exception;
+
+  private native void decompress(byte[] srcBuf, int size, int[] dstBuf, int x,
+    int y, int desiredWidth, int stride, int desiredHeight, int pixelFormat,
+    int flags)
     throws Exception;
 
   private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,

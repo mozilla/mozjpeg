@@ -368,7 +368,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	if((*env)->GetArrayLength(env, src)<jpegSize)
 		_throw("Source buffer is not large enough");
 	actualPitch=(pitch==0)? width*tjPixelSize[pf]:pitch;
-	arraySize=(y+height)*actualPitch + x*tjPixelSize[pf];
+	arraySize=(y+height-1)*actualPitch + (x+width)*tjPixelSize[pf];
 	if((*env)->GetArrayLength(env, dst)<arraySize)
 		_throw("Destination buffer is not large enough");
 
@@ -419,7 +419,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	if((*env)->GetArrayLength(env, src)<jpegSize)
 		_throw("Source buffer is not large enough");
 	actualStride=(stride==0)? width:stride;
-	arraySize=(y+height)*actualStride + x;
+	arraySize=(y+height-1)*actualStride + x+width;
 	if((*env)->GetArrayLength(env, dst)<arraySize)
 		_throw("Destination buffer is not large enough");
 

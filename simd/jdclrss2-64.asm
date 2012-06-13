@@ -251,17 +251,13 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
 	movntdq	XMMWORD [rdi+0*SIZEOF_XMMWORD], xmmA
 	movntdq	XMMWORD [rdi+1*SIZEOF_XMMWORD], xmmD
 	movntdq	XMMWORD [rdi+2*SIZEOF_XMMWORD], xmmF
-	add	rdi, byte RGB_PIXELSIZE*SIZEOF_XMMWORD	; outptr
 	jmp	short .out0
 .out1:	; --(unaligned)-----------------
-	pcmpeqb    xmmH,xmmH			; xmmH=(all 1's)
-	maskmovdqu xmmA,xmmH			; movntdqu XMMWORD [rdi], xmmA
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
-	maskmovdqu xmmD,xmmH			; movntdqu XMMWORD [rdi], xmmD
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
-	maskmovdqu xmmF,xmmH			; movntdqu XMMWORD [rdi], xmmF
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
+	movdqu	XMMWORD [rdi+0*SIZEOF_XMMWORD], xmmA
+	movdqu	XMMWORD [rdi+1*SIZEOF_XMMWORD], xmmD
+	movdqu	XMMWORD [rdi+2*SIZEOF_XMMWORD], xmmF
 .out0:
+	add	rdi, byte RGB_PIXELSIZE*SIZEOF_XMMWORD	; outptr
 	sub	rcx, byte SIZEOF_XMMWORD
 	jz	near .nextrow
 
@@ -275,17 +271,16 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
 	lea	rcx, [rcx+rcx*2]		; imul ecx, RGB_PIXELSIZE
 	cmp	rcx, byte 2*SIZEOF_XMMWORD
 	jb	short .column_st16
-	maskmovdqu xmmA,xmmH			; movntdqu XMMWORD [rdi], xmmA
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
-	maskmovdqu xmmD,xmmH			; movntdqu XMMWORD [rdi], xmmD
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
+	movdqu	XMMWORD [rdi+0*SIZEOF_XMMWORD], xmmA
+	movdqu	XMMWORD [rdi+1*SIZEOF_XMMWORD], xmmD
+	add	rdi, byte 2*SIZEOF_XMMWORD	; outptr
 	movdqa	xmmA,xmmF
 	sub	rcx, byte 2*SIZEOF_XMMWORD
 	jmp	short .column_st15
 .column_st16:
 	cmp	rcx, byte SIZEOF_XMMWORD
 	jb	short .column_st15
-	maskmovdqu xmmA,xmmH			; movntdqu XMMWORD [rdi], xmmA
+	movdqu	XMMWORD [rdi+0*SIZEOF_XMMWORD], xmmA
 	add	rdi, byte SIZEOF_XMMWORD	; outptr
 	movdqa	xmmA,xmmD
 	sub	rcx, byte SIZEOF_XMMWORD
@@ -363,7 +358,7 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
 	por	xmmA,xmmG
 	por	xmmE,xmmC
 .adj0:	; ----------------
-	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
+	movdqu	XMMWORD [rdi], xmmA
 %endif ; STRICT_MEMORY_ACCESS ; ---------------
 
 %else ; RGB_PIXELSIZE == 4 ; -----------
@@ -409,19 +404,14 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
 	movntdq	XMMWORD [rdi+1*SIZEOF_XMMWORD], xmmD
 	movntdq	XMMWORD [rdi+2*SIZEOF_XMMWORD], xmmC
 	movntdq	XMMWORD [rdi+3*SIZEOF_XMMWORD], xmmH
-	add	rdi, byte RGB_PIXELSIZE*SIZEOF_XMMWORD	; outptr
 	jmp	short .out0
 .out1:	; --(unaligned)-----------------
-	pcmpeqb    xmmE,xmmE			; xmmE=(all 1's)
-	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
-	maskmovdqu xmmD,xmmE			; movntdqu XMMWORD [rdi], xmmD
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
-	maskmovdqu xmmC,xmmE			; movntdqu XMMWORD [rdi], xmmC
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
-	maskmovdqu xmmH,xmmE			; movntdqu XMMWORD [rdi], xmmH
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
+	movdqu	XMMWORD [rdi+0*SIZEOF_XMMWORD], xmmA
+	movdqu	XMMWORD [rdi+1*SIZEOF_XMMWORD], xmmD
+	movdqu	XMMWORD [rdi+2*SIZEOF_XMMWORD], xmmC
+	movdqu	XMMWORD [rdi+3*SIZEOF_XMMWORD], xmmH
 .out0:
+	add	rdi, byte RGB_PIXELSIZE*SIZEOF_XMMWORD	; outptr
 	sub	rcx, byte SIZEOF_XMMWORD
 	jz	near .nextrow
 
@@ -434,17 +424,16 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
 	pcmpeqb	xmmE,xmmE			; xmmE=(all 1's)
 	cmp	rcx, byte SIZEOF_XMMWORD/2
 	jb	short .column_st16
-	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
-	maskmovdqu xmmD,xmmE			; movntdqu XMMWORD [rdi], xmmD
-	add	rdi, byte SIZEOF_XMMWORD	; outptr
+	movdqu	XMMWORD [rdi+0*SIZEOF_XMMWORD], xmmA
+	movdqu	XMMWORD [rdi+1*SIZEOF_XMMWORD], xmmD
+	add	rdi, byte 2*SIZEOF_XMMWORD	; outptr
 	movdqa	xmmA,xmmC
 	movdqa	xmmD,xmmH
 	sub	rcx, byte SIZEOF_XMMWORD/2
 .column_st16:
 	cmp	rcx, byte SIZEOF_XMMWORD/4
 	jb	short .column_st15
-	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
+	movdqu	XMMWORD [rdi+0*SIZEOF_XMMWORD], xmmA
 	add	rdi, byte SIZEOF_XMMWORD	; outptr
 	movdqa	xmmA,xmmD
 	sub	rcx, byte SIZEOF_XMMWORD/4
@@ -503,7 +492,7 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
 	por	xmmA,xmmB
 	por	xmmE,xmmG
 .adj0:	; ----------------
-	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
+	movdqu	XMMWORD [rdi], xmmA
 %endif ; STRICT_MEMORY_ACCESS ; ---------------
 
 %endif ; RGB_PIXELSIZE ; ---------------

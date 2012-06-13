@@ -19,6 +19,13 @@ calling conventions.
 images (specifically, images in which the component count was erroneously set
 to a large value) would cause libjpeg-turbo to segfault.
 
+[5] Worked around a severe performance issue with "Bobcat" (AMD Embedded APU)
+processors.  The MASKMOVDQU instruction, which was used by the libjpeg-turbo
+SSE2 SIMD code, is apparently implemented in microcode on AMD processors, and
+it is painfully slow on Bobcat processors in particular.  Eliminating the use
+of this instruction improved performance by an order of magnitude on Bobcat
+processors and by a small amount (typically 5%) on AMD desktop processors.
+
 
 1.2.0
 =====

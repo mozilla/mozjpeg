@@ -26,6 +26,10 @@ it is painfully slow on Bobcat processors in particular.  Eliminating the use
 of this instruction improved performance by an order of magnitude on Bobcat
 processors and by a small amount (typically 5%) on AMD desktop processors.
 
+[6] Added SIMD acceleration for performing 4:2:2 upsampling on NEON-capable ARM
+platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
+platforms.
+
 
 1.2.0
 =====

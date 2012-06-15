@@ -1,7 +1,7 @@
 ;
 ; jdmrgss2.asm - merged upsampling/color conversion (SSE2)
 ;
-; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright 2009, 2012 Pierre Ossman <ossman@cendio.se> for Cendio AB
 ;
 ; Based on
 ; x86 SIMD extension for IJG JPEG library
@@ -284,7 +284,6 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 	alignx	16,7
 
 .column_st32:
-	pcmpeqb	xmmH,xmmH			; xmmH=(all 1's)
 	lea	ecx, [ecx+ecx*2]		; imul ecx, RGB_PIXELSIZE
 	cmp	ecx, byte 2*SIZEOF_XMMWORD
 	jb	short .column_st16
@@ -302,7 +301,6 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 	movdqa	xmmA,xmmD
 	sub	ecx, byte SIZEOF_XMMWORD
 .column_st15:
-%ifdef STRICT_MEMORY_ACCESS
 	; Store the lower 8 bytes of xmmA to the output when it has enough
 	; space.
 	cmp	ecx, byte SIZEOF_MMWORD
@@ -336,47 +334,6 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 	test	ecx, ecx
 	jz	short .endcolumn
 	mov	BYTE [edi], al
-%else
-	mov	eax,ecx
-	xor	ecx, byte 0x0F
-	shl	ecx, 2
-	movd	xmmB,ecx
-	psrlq	xmmH,4
-	pcmpeqb	xmmE,xmmE
-	psrlq	xmmH,xmmB
-	psrlq	xmmE,xmmB
-	punpcklbw xmmE,xmmH
-	; ----------------
-	mov	ecx,edi
-	and	ecx, byte SIZEOF_XMMWORD-1
-	jz	short .adj0
-	add	eax,ecx
-	cmp	eax, byte SIZEOF_XMMWORD
-	ja	short .adj0
-	and	edi, byte (-SIZEOF_XMMWORD)	; align to 16-byte boundary
-	shl	ecx, 3			; pslldq xmmA,ecx & pslldq xmmE,ecx
-	movdqa	xmmG,xmmA
-	movdqa	xmmC,xmmE
-	pslldq	xmmA, SIZEOF_XMMWORD/2
-	pslldq	xmmE, SIZEOF_XMMWORD/2
-	movd	xmmD,ecx
-	sub	ecx, byte (SIZEOF_XMMWORD/2)*BYTE_BIT
-	jb	short .adj1
-	movd	xmmF,ecx
-	psllq	xmmA,xmmF
-	psllq	xmmE,xmmF
-	jmp	short .adj0
-.adj1:	neg	ecx
-	movd	xmmF,ecx
-	psrlq	xmmA,xmmF
-	psrlq	xmmE,xmmF
-	psllq	xmmG,xmmD
-	psllq	xmmC,xmmD
-	por	xmmA,xmmG
-	por	xmmE,xmmC
-.adj0:	; ----------------
-	movdqu	XMMWORD [edi], xmmA
-%endif ; STRICT_MEMORY_ACCESS ; ---------------
 
 %else ; RGB_PIXELSIZE == 4 ; -----------
 
@@ -442,7 +399,6 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 	alignx	16,7
 
 .column_st32:
-	pcmpeqb	xmmE,xmmE			; xmmE=(all 1's)
 	cmp	ecx, byte SIZEOF_XMMWORD/2
 	jb	short .column_st16
 	movdqu	XMMWORD [edi+0*SIZEOF_XMMWORD], xmmA
@@ -459,62 +415,20 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 	movdqa	xmmA,xmmD
 	sub	ecx, byte SIZEOF_XMMWORD/4
 .column_st15:
-%ifdef STRICT_MEMORY_ACCESS
 	; Store two pixels (8 bytes) of xmmA to the output when it has enough
 	; space.
 	cmp	ecx, byte SIZEOF_XMMWORD/8
 	jb	short .column_st7
 	movq	MMWORD [edi], xmmA
-	add	edi, byte SIZEOF_XMMWORD/2
+	add	edi, byte SIZEOF_XMMWORD/8*4
 	sub	ecx, byte SIZEOF_XMMWORD/8
-	psrldq	xmmA, 64
+	psrldq	xmmA, SIZEOF_XMMWORD/8*4
 .column_st7:
 	; Store one pixel (4 bytes) of xmmA to the output when it has enough
 	; space.
 	test	ecx, ecx
 	jz	short .endcolumn
 	movd	DWORD [edi], xmmA
-%else
-	cmp	ecx, byte SIZEOF_XMMWORD/16
-	jb	short .endcolumn
-	mov	eax,ecx
-	xor	ecx, byte 0x03
-	inc	ecx
-	shl	ecx, 4
-	movd	xmmF,ecx
-	psrlq	xmmE,xmmF
-	punpcklbw xmmE,xmmE
-	; ----------------
-	mov	ecx,edi
-	and	ecx, byte SIZEOF_XMMWORD-1
-	jz	short .adj0
-	lea	eax, [ecx+eax*4]	; RGB_PIXELSIZE
-	cmp	eax, byte SIZEOF_XMMWORD
-	ja	short .adj0
-	and	edi, byte (-SIZEOF_XMMWORD)	; align to 16-byte boundary
-	shl	ecx, 3			; pslldq xmmA,ecx & pslldq xmmE,ecx
-	movdqa	xmmB,xmmA
-	movdqa	xmmG,xmmE
-	pslldq	xmmA, SIZEOF_XMMWORD/2
-	pslldq	xmmE, SIZEOF_XMMWORD/2
-	movd	xmmC,ecx
-	sub	ecx, byte (SIZEOF_XMMWORD/2)*BYTE_BIT
-	jb	short .adj1
-	movd	xmmH,ecx
-	psllq	xmmA,xmmH
-	psllq	xmmE,xmmH
-	jmp	short .adj0
-.adj1:	neg	ecx
-	movd	xmmH,ecx
-	psrlq	xmmA,xmmH
-	psrlq	xmmE,xmmH
-	psllq	xmmB,xmmC
-	psllq	xmmG,xmmC
-	por	xmmA,xmmB
-	por	xmmE,xmmG
-.adj0:	; ----------------
-	movdqu	XMMWORD [edi], xmmA
-%endif ; STRICT_MEMORY_ACCESS ; ---------------
 
 %endif ; RGB_PIXELSIZE ; ---------------
 

@@ -30,6 +30,12 @@ processors and by a small amount (typically 5%) on AMD desktop processors.
 platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
 platforms.
 
+[7] Fixed a regression caused by 1.2.0[2] whereby, on Linux/x86 platforms,
+decompressing a 4:2:0 or 4:2:2 JPEG image without using fancy upsampling would
+produce several incorrect columns of pixels at the right-hand side of the
+output image if each row in the output image was not evenly divisible by 16
+bytes.
+
 
 1.2.0
 =====

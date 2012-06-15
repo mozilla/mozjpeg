@@ -5,46 +5,50 @@
 11/8, 3/2, 13/8, 7/4, 15/8, and 2) when decompressing.  Note that the IDCT will
 not be SIMD-accelerated when using any of these new scaling factors.
 
-[2] Added SIMD acceleration for performing 4:2:2 upsampling on NEON-capable ARM
-platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
-platforms.
-
-[3] Creating or decoding a JPEG file that uses the RGB colorspace should now
-properly work when the input or output colorspace is one of the libjpeg-turbo
-colorspace extensions.
-
-[4] When libjpeg-turbo was built without SIMD support and merged (non-fancy)
-upsampling was used along with an alpha-enabled colorspace during
-decompression, the unused byte of the decompressed pixels was not being set to
-0xFF.  This has been fixed.  TJUnitTest has also been extended to test for the
-correct behavior of the colorspace extensions when merged upsampling is used.
-
-[5] The TurboJPEG dynamic library is now versioned.  It was not strictly
+[2] The TurboJPEG dynamic library is now versioned.  It was not strictly
 necessary to do so, because TurboJPEG uses versioned symbols, and if a function
 changes in an ABI-incompatible way, that function is renamed and a legacy
 function is provided to maintain backward compatibility.  However, certain
 Linux distro maintainers will blindly reject any library that is not versioned,
 so this was an attempt to make them happy.
 
-[6] Fixed a bug whereby the libjpeg-turbo SSE2 SIMD code would not preserve the
+[3] Extended the TurboJPEG Java API so that it can be used to decompress a
+JPEG image into an arbitrary position in a large output buffer.
+
+
+1.2.1
+=====
+
+[1] Creating or decoding a JPEG file that uses the RGB colorspace should now
+properly work when the input or output colorspace is one of the libjpeg-turbo
+colorspace extensions.
+
+[2] When libjpeg-turbo was built without SIMD support and merged (non-fancy)
+upsampling was used along with an alpha-enabled colorspace during
+decompression, the unused byte of the decompressed pixels was not being set to
+0xFF.  This has been fixed.  TJUnitTest has also been extended to test for the
+correct behavior of the colorspace extensions when merged upsampling is used.
+
+[3] Fixed a bug whereby the libjpeg-turbo SSE2 SIMD code would not preserve the
 upper 64 bits of xmm6 and xmm7 on Win64 platforms, which violated the Win64
 calling conventions.
 
-[7] Fixed a regression caused by 1.2.0[6] in which decompressing corrupt JPEG
+[4] Fixed a regression caused by 1.2.0[6] whereby decompressing corrupt JPEG
 images (specifically, images in which the component count was erroneously set
 to a large value) would cause libjpeg-turbo to segfault.
 
-[8] Extended the TurboJPEG Java API so that it can be used to decompress a
-JPEG image into an arbitrary position in a large output buffer.
-
-[9] Worked around a severe performance issue with "Bobcat" (AMD Embedded APU)
+[5] Worked around a severe performance issue with "Bobcat" (AMD Embedded APU)
 processors.  The MASKMOVDQU instruction, which was used by the libjpeg-turbo
 SSE2 SIMD code, is apparently implemented in microcode on AMD processors, and
 it is painfully slow on Bobcat processors in particular.  Eliminating the use
 of this instruction improved performance by an order of magnitude on Bobcat
 processors and by a small amount (typically 5%) on AMD desktop processors.
 
-[10] Fixed a regression caused by 1.2.0[2] whereby, on Linux/x86 platforms,
+[6] Added SIMD acceleration for performing 4:2:2 upsampling on NEON-capable ARM
+platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
+platforms.
+
+[7] Fixed a regression caused by 1.2.0[2] whereby, on Linux/x86 platforms,
 decompressing a 4:2:0 or 4:2:2 JPEG image without using fancy upsampling would
 produce several incorrect columns of pixels at the right-hand side of the
 output image if each row in the output image was not evenly divisible by 16

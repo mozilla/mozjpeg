@@ -37,6 +37,10 @@ upsampling would produce several incorrect columns of pixels at the right-hand
 side of the output image if each row in the output image was not evenly
 divisible by 16 bytes.
 
+[8] Fixed an issue whereby attempting to build the SIMD extensions with Xcode
+4.3 on OS X platforms would cause NASM to return numerous errors of the form
+"'%define' expects a macro identifier".
+
 
 1.2.0
 =====

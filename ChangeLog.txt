@@ -41,6 +41,9 @@ divisible by 16 bytes.
 4.3 on OS X platforms would cause NASM to return numerous errors of the form
 "'%define' expects a macro identifier".
 
+[9] Added flags to the TurboJPEG API that allow the caller to force the use of
+either the fast or the accurate DCT/IDCT algorithms in the underlying codec.
+
 
 1.2.0
 =====

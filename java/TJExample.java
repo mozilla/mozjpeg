@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -80,7 +80,13 @@ public class TJExample implements TJCustomFilter {
     System.out.println("     compressed using no subsampling or grayscale, or 16x8 for 4:2:2 or 16x16");
     System.out.println("     for 4:2:0.)\n");
     System.out.println("-display = Display output image (Output file need not be specified in this");
-    System.out.println("     case.)\n");
+    System.out.println("     case.)");
+    System.out.println("-fastupsample = Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0");
+    System.out.println("     YUV decoding");
+    System.out.println("-fastdct = Use the fastest DCT/IDCT algorithms available in the underlying");
+    System.out.println("     codec");
+    System.out.println("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the");
+    System.out.println("     underlying codec");
     System.exit(1);
   }
 
@@ -92,6 +98,7 @@ public class TJExample implements TJCustomFilter {
 
     BufferedImage img = null;  byte[] bmpBuf = null;
     TJTransform xform = new TJTransform();
+    int flags = 0;
 
     try {
 
@@ -187,6 +194,18 @@ public class TJExample implements TJCustomFilter {
           }
           if(argv[i].substring(0, 2).equalsIgnoreCase("-d"))
             display = true;
+          if(argv[i].equalsIgnoreCase("-fastupsample")) {
+            System.out.println("Using fast upsampling code");
+            flags |= TJ.FLAG_FASTUPSAMPLE;
+          }
+          if(argv[i].equalsIgnoreCase("-fastdct")) {
+            System.out.println("Using fastest DCT/IDCT algorithm");
+            flags |= TJ.FLAG_FASTDCT;
+          }
+          if(argv[i].equalsIgnoreCase("-accuratedct")) {
+            System.out.println("Using most accurate DCT/IDCT algorithm");
+            flags |= TJ.FLAG_ACCURATEDCT;
+          }
         }
       }
       String[] inFileTokens = argv[0].split("\\.");
@@ -247,8 +266,9 @@ public class TJExample implements TJCustomFilter {
         height = scaleFactor.getScaled(height);
 
         if(!outFormat.equalsIgnoreCase("jpg"))
-          img = tjd.decompress(width, height, BufferedImage.TYPE_INT_RGB, 0);
-        else bmpBuf = tjd.decompress(width, 0, height, TJ.PF_BGRX, 0);
+          img = tjd.decompress(width, height, BufferedImage.TYPE_INT_RGB,
+                               flags);
+        else bmpBuf = tjd.decompress(width, 0, height, TJ.PF_BGRX, flags);
         tjd.close();
       }
       else {
@@ -282,10 +302,10 @@ public class TJExample implements TJCustomFilter {
         tjc.setSubsamp(outSubsamp);
         tjc.setJPEGQuality(outQual);
         if(img != null)
-          jpegBuf = tjc.compress(img, 0);
+          jpegBuf = tjc.compress(img, flags);
         else {
           tjc.setSourceImage(bmpBuf, width, 0, height, TJ.PF_BGRX);
-          jpegBuf = tjc.compress(0);
+          jpegBuf = tjc.compress(flags);
         }
         jpegSize = tjc.getCompressedSize();
         tjc.close();

@@ -82,17 +82,21 @@ Defines</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">TJFLAG_BOTTOMUP</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The uncompressed source/destination image is stored in bottom-up (Windows, OpenGL) order, not top-down (X11) order.  <a href="#ga72ecf4ebe6eb702d3c6f5ca27455e1ec"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga4e872f11c82f241736fa8297920f24e5">TJFLAG_FORCEMMX</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use MMX code (IPP and 32-bit libjpeg-turbo versions only.)  <a href="#ga4e872f11c82f241736fa8297920f24e5"></a><br/></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use MMX code (if the underlying codec supports it.)  <a href="#ga4e872f11c82f241736fa8297920f24e5"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gae17e63189e8cd730feed3efbd2454f38">TJFLAG_FORCESSE</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE code (32-bit IPP and 32-bit libjpeg-turbo versions only)  <a href="#gae17e63189e8cd730feed3efbd2454f38"></a><br/></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE code (if the underlying codec supports it.)  <a href="#gae17e63189e8cd730feed3efbd2454f38"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga8cf0bca96ea4d472563f4b0ebf8c48e7">TJFLAG_FORCESSE2</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (32-bit IPP and 32-bit libjpeg-turbo versions only)  <a href="#ga8cf0bca96ea4d472563f4b0ebf8c48e7"></a><br/></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (if the underlying codec supports it.)  <a href="#ga8cf0bca96ea4d472563f4b0ebf8c48e7"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaf9d49066633404da4386d70820295dd2">TJFLAG_FORCESSE3</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (64-bit IPP version only)  <a href="#gaf9d49066633404da4386d70820295dd2"></a><br/></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (if the underlying codec supports it.)  <a href="#gaf9d49066633404da4386d70820295dd2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga4ee4506c81177a06f77e2504a22efd2d">TJFLAG_FASTUPSAMPLE</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Use fast, inaccurate chrominance upsampling routines in the JPEG decompressor (libjpeg and libjpeg-turbo versions only)  <a href="#ga4ee4506c81177a06f77e2504a22efd2d"></a><br/></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">When decompressing, use the fastest chrominance upsampling algorithm available in the underlying codec.  <a href="#ga4ee4506c81177a06f77e2504a22efd2d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963">TJFLAG_NOREALLOC</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable buffer (re)allocation.  <a href="#ga8808d403c68b62aaa58a4c1e58e98963"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaabce235db80d3f698b27f36cbd453da2">TJFLAG_FASTDCT</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Use the fastest DCT/IDCT algorithm available in the underlying codec.  <a href="#gaabce235db80d3f698b27f36cbd453da2"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gacb233cfd722d66d1ccbf48a7de81f0e0">TJFLAG_ACCURATEDCT</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Use the most accurate DCT/IDCT algorithm available in the underlying codec.  <a href="#gacb233cfd722d66d1ccbf48a7de81f0e0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0f6dbd18adf38b7d46ac547f0f4d562c">TJ_NUMXOP</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of transform operations.  <a href="#ga0f6dbd18adf38b7d46ac547f0f4d562c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga50e03cb5ed115330e212417429600b00">TJXOPT_PERFECT</a></td></tr>
@@ -255,6 +259,22 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gacb233cfd722d66d1ccbf48a7de81f0e0"></a><!-- doxytag: member="turbojpeg.h::TJFLAG_ACCURATEDCT" ref="gacb233cfd722d66d1ccbf48a7de81f0e0" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TJFLAG_ACCURATEDCT</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Use the most accurate DCT/IDCT algorithm available in the underlying codec. </p>
+<p>The default if this flag is not specified is implementation-specific. The libjpeg implementation, for example, uses the fast algorithm by default when compressing, because this has been shown to have only a very slight effect on accuracy, but it uses the accurate algorithm when decompressing, because this has been shown to have a larger effect. </p>
+
+</div>
+</div>
 <a class="anchor" id="ga72ecf4ebe6eb702d3c6f5ca27455e1ec"></a><!-- doxytag: member="turbojpeg.h::TJFLAG_BOTTOMUP" ref="ga72ecf4ebe6eb702d3c6f5ca27455e1ec" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -270,6 +290,22 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gaabce235db80d3f698b27f36cbd453da2"></a><!-- doxytag: member="turbojpeg.h::TJFLAG_FASTDCT" ref="gaabce235db80d3f698b27f36cbd453da2" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TJFLAG_FASTDCT</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Use the fastest DCT/IDCT algorithm available in the underlying codec. </p>
+<p>The default if this flag is not specified is implementation-specific. The libjpeg implementation, for example, uses the fast algorithm by default when compressing, because this has been shown to have only a very slight effect on accuracy, but it uses the accurate algorithm when decompressing, because this has been shown to have a larger effect. </p>
+
+</div>
+</div>
 <a class="anchor" id="ga4ee4506c81177a06f77e2504a22efd2d"></a><!-- doxytag: member="turbojpeg.h::TJFLAG_FASTUPSAMPLE" ref="ga4ee4506c81177a06f77e2504a22efd2d" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -281,7 +317,8 @@ Variables</h2></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Use fast, inaccurate chrominance upsampling routines in the JPEG decompressor (libjpeg and libjpeg-turbo versions only) </p>
+<p>When decompressing, use the fastest chrominance upsampling algorithm available in the underlying codec. </p>
+<p>The default is to use smooth upsampling, which creates a smooth transition between neighboring chrominance components in order to reduce upsampling artifacts in the decompressed image. </p>
 
 </div>
 </div>
@@ -296,7 +333,7 @@ Variables</h2></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Turn off CPU auto-detection and force TurboJPEG to use MMX code (IPP and 32-bit libjpeg-turbo versions only.) </p>
+<p>Turn off CPU auto-detection and force TurboJPEG to use MMX code (if the underlying codec supports it.) </p>
 
 </div>
 </div>
@@ -311,7 +348,7 @@ Variables</h2></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Turn off CPU auto-detection and force TurboJPEG to use SSE code (32-bit IPP and 32-bit libjpeg-turbo versions only) </p>
+<p>Turn off CPU auto-detection and force TurboJPEG to use SSE code (if the underlying codec supports it.) </p>
 
 </div>
 </div>
@@ -326,7 +363,7 @@ Variables</h2></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (32-bit IPP and 32-bit libjpeg-turbo versions only) </p>
+<p>Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (if the underlying codec supports it.) </p>
 
 </div>
 </div>
@@ -341,7 +378,7 @@ Variables</h2></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (64-bit IPP version only) </p>
+<p>Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (if the underlying codec supports it.) </p>
 
 </div>
 </div>
@@ -1557,7 +1594,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sun Dec 18 2011 20:09:47 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Fri Jun 29 2012 14:21:06 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

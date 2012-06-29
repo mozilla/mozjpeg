@@ -145,7 +145,7 @@ static int getPixelFormat(int pixelSize, int flags)
 }
 
 static int setCompDefaults(struct jpeg_compress_struct *cinfo,
-	int pixelFormat, int subsamp, int jpegQual)
+	int pixelFormat, int subsamp, int jpegQual, int flags)
 {
 	int retval=0;
 
@@ -191,7 +191,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	if(jpegQual>=0)
 	{
 		jpeg_set_quality(cinfo, jpegQual, TRUE);
-		if(jpegQual>=96) cinfo->dct_method=JDCT_ISLOW;
+		if(jpegQual>=96 || flags&TJFLAG_ACCURATEDCT) cinfo->dct_method=JDCT_ISLOW;
 		else cinfo->dct_method=JDCT_FASTEST;
 	}
 	if(subsamp==TJSAMP_GRAY)
@@ -210,7 +210,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 }
 
 static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
-	int pixelFormat)
+	int pixelFormat, int flags)
 {
 	int retval=0;
 
@@ -257,6 +257,8 @@ static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 		default:
 			_throw("Unsupported pixel format");
 	}
+
+	if(flags&TJFLAG_FASTDCT) dinfo->dct_method=JDCT_FASTEST;
 
 	bailout:
 	return retval;
@@ -618,7 +620,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 		alloc=0;  *jpegSize=tjBufSize(width, height, jpegSubsamp);
 	}
 	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
-	if(setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual)==-1)
+	if(setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual, flags)==-1)
 		return -1;
 
 	jpeg_start_compress(cinfo, TRUE);
@@ -726,7 +728,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 
 	yuvsize=tjBufSizeYUV(width, height, subsamp);
 	jpeg_mem_dest_tj(cinfo, &dstBuf, &yuvsize, 0);
-	if(setCompDefaults(cinfo, pixelFormat, subsamp, -1)==-1) return -1;
+	if(setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags)==-1) return -1;
 
 	jpeg_start_compress(cinfo, TRUE);
 	pw=PAD(width, cinfo->max_h_samp_factor);
@@ -955,7 +957,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
-	if(setDecompDefaults(dinfo, pixelFormat)==-1)
+	if(setDecompDefaults(dinfo, pixelFormat, flags)==-1)
 	{
 		retval=-1;  goto bailout;
 	}

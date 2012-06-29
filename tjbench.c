@@ -680,8 +680,8 @@ void usage(char *progname)
 	printf("     Force MMX, SSE, SSE2, or SSE3 code paths in the underlying codec\n");
 	printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
 	printf("     Test the specified color conversion path in the codec (default: BGR)\n");
-	printf("-fastupsample = Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
-	printf("     YUV decoding\n");
+	printf("-fastupsample = Use the fastest chrominance upsampling algorithm available in\n");
+	printf("     the underlying codec\n");
 	printf("-fastdct = Use the fastest DCT/IDCT algorithms available in the underlying\n");
 	printf("     codec\n");
 	printf("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the\n");

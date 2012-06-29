@@ -80,13 +80,13 @@ public class TJExample implements TJCustomFilter {
     System.out.println("     compressed using no subsampling or grayscale, or 16x8 for 4:2:2 or 16x16");
     System.out.println("     for 4:2:0.)\n");
     System.out.println("-display = Display output image (Output file need not be specified in this");
-    System.out.println("     case.)");
-    System.out.println("-fastupsample = Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0");
-    System.out.println("     YUV decoding");
+    System.out.println("     case.)\n");
+    System.out.println("-fastupsample = Use the fastest chrominance upsampling algorithm available in");
+    System.out.println("     the underlying codec\n");
     System.out.println("-fastdct = Use the fastest DCT/IDCT algorithms available in the underlying");
-    System.out.println("     codec");
+    System.out.println("     codec\n");
     System.out.println("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the");
-    System.out.println("     underlying codec");
+    System.out.println("     underlying codec\n");
     System.exit(1);
   }
 

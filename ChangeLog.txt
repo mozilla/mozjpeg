@@ -1,3 +1,9 @@
+1.2.2
+=====
+
+[1] The tjDecompressToYUV() function now supports the TJFLAG_FASTDCT flag.
+
+
 1.2.1
 =====
 

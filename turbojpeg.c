@@ -1112,6 +1112,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 	}
 
 	if(flags&TJFLAG_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
+	if(flags&TJFLAG_FASTDCT) dinfo->dct_method=JDCT_FASTEST;
 	dinfo->raw_data_out=TRUE;
 
 	jpeg_start_decompress(dinfo);

@@ -67,6 +67,10 @@ makedeb()
 		mkdir -p $TMPDIR/usr/include
 		mv $TMPDIR/opt/$DIRNAME/include/turbojpeg.h $TMPDIR/usr/include
 		ln -fs /usr/include/turbojpeg.h $TMPDIR/opt/$DIRNAME/include/
+	else
+		mkdir -p $TMPDIR/usr/lib/i386-linux-gnu
+		ln -fs /usr/lib32/libturbojpeg.so $TMPDIR/usr/lib/i386-linux-gnu/libturbojpeg.so
+		ln -fs /usr/lib32/libturbojpeg.a $TMPDIR/usr/lib/i386-linux-gnu/libturbojpeg.a
 	fi
 
 	sudo chown -Rh root:root $TMPDIR/*

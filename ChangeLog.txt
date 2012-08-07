@@ -17,6 +17,11 @@ JPEG image into an arbitrary position in a large output buffer.
 
 [4] The tjDecompressToYUV() function now supports the TJFLAG_FASTDCT flag.
 
+[5] The 32-bit supplementary package for amd64 Debian systems now provides
+symlinks in /usr/lib/i386-linux-gnu for the TurboJPEG libraries in /usr/lib32.
+This allows those libraries to be used on MultiArch-compatible systems (such as
+Ubuntu 11 and later) without setting the linker path.
+
 
 1.2.1
 =====

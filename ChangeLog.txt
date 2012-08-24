@@ -22,6 +22,9 @@ symlinks in /usr/lib/i386-linux-gnu for the TurboJPEG libraries in /usr/lib32.
 This allows those libraries to be used on MultiArch-compatible systems (such as
 Ubuntu 11 and later) without setting the linker path.
 
+[6] The TurboJPEG Java wrapper should now find the JNI library on Mac systems
+without having to pass -Djava.library.path=/usr/lib to java.
+
 
 1.2.1
 =====

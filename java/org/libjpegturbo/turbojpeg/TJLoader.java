@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,14 @@ package org.libjpegturbo.turbojpeg;
 
 final class TJLoader {
   static void load() {
-    System.loadLibrary("turbojpeg");
+    try {
+      System.loadLibrary("turbojpeg");
+    } catch (java.lang.UnsatisfiedLinkError e) {
+      String os = System.getProperty("os.name").toLowerCase();
+      if (os.indexOf("mac") >= 0) {
+        System.load("/usr/lib/libturbojpeg.jnilib");
+      }
+      else throw e;
+    }
   }
 };

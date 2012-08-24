@@ -34,22 +34,10 @@ compressing or decompressing consists of images of the same size, then
 pre-allocating the buffers is recommended.
 
 
-Note for OS X users
--------------------
-
-/usr/lib, the directory under which libturbojpeg.dylib is installed on Mac
-systems, is not part of the normal Java library path.  Thus, when running a
-Java application that uses TurboJPEG/OSS on Mac systems, you will need to pass
-an argument of -Djava.library.path=/usr/lib to java.
-
-
-Note for Solaris users
+Installation Directory
 ----------------------
 
-/opt/libjpeg-turbo/lib, the directory under which libturbojpeg.so is installed
-on Solaris systems, is not part of the normal Java library path.  Thus, when
-running a Java application that uses TurboJPEG/OSS on Solaris systems, you will
-need to pass an argument of -Djava.library.path=/opt/libjpeg-turbo/lib to java.
-If using a 64-bit data model, then instead pass an argument of
--Djava.library.path=/opt/libjpeg-turbo/lib/amd64 to use the 64-bit version of
-libturbojpeg.so.
+If the TurboJPEG JNI library (libturbojpeg.so, libturbojpeg.jnilib, or
+turbojpeg.dll) is not installed under a system library directory or under a
+directory specified in LD_LIBRARY_PATH (Unix) or PATH (Windows), then you will
+need to pass an argument of -Djava.library.path={path_to_JNI_library} to java.

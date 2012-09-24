@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -67,32 +67,64 @@ public class TJCompressor {
   }
 
   /**
+   * Create a TurboJPEG compressor instance and associate the uncompressed
+   * source image stored in <code>srcImage</code> with the newly-created
+   * instance.
+   *
+   * @param srcImage see {@link #setSourceImage} for description
+   *
+   * @param x see {@link #setSourceImage} for description
+   *
+   * @param y see {@link #setSourceImage} for description
+   *
+   * @param width see {@link #setSourceImage} for description
+   *
+   * @param pitch see {@link #setSourceImage} for description
+   *
+   * @param height see {@link #setSourceImage} for description
+   *
+   * @param pixelFormat see {@link #setSourceImage} for description
+   */
+  public TJCompressor(byte[] srcImage, int x, int y, int width, int pitch,
+    int height, int pixelFormat) throws Exception {
+    setSourceImage(srcImage, x, y, width, pitch, height, pixelFormat);
+  }
+
+  /**
    * Associate an uncompressed source image with this compressor instance.
    *
    * @param srcImage image buffer containing RGB or grayscale pixels to be
    * compressed
    *
-   * @param width width (in pixels) of the source image
+   * @param x x offset (in pixels) of the region from which the JPEG image
+   * should be compressed, relative to the start of <code>srcImage</code>.
+   *
+   * @param y y offset (in pixels) of the region from which the JPEG image
+   * should be compressed, relative to the start of <code>srcImage</code>.
+   *
+   * @param width width (in pixels) of the region in the source image from
+   * which the JPEG image should be compressed.
    *
    * @param pitch bytes per line of the source image.  Normally, this should be
    * <code>width * TJ.pixelSize(pixelFormat)</code> if the source image is
    * unpadded, but you can use this parameter to, for instance, specify that
-   * the scanlines in the source image are padded to 4-byte boundaries, as is
-   * the case for Windows bitmaps.  You can also be clever and use this
-   * parameter to skip lines, etc.  Setting this parameter to 0 is the
-   * equivalent of setting it to <code>width *
+   * the scanlines in the source image are padded to a 4-byte boundary or to
+   * compress a JPEG image from a region of a larger source image.  You can
+   * also be clever and use this parameter to skip lines, etc.  Setting this
+   * parameter to 0 is the equivalent of setting it to <code>width *
    * TJ.pixelSize(pixelFormat)</code>.
    *
-   * @param height height (in pixels) of the source image
+   * @param height height (in pixels) of the region in the source image from
+   * which the JPEG image should be compressed.
    *
    * @param pixelFormat pixel format of the source image (one of
    * {@link TJ TJ.PF_*})
    */
-  public void setSourceImage(byte[] srcImage, int width, int pitch,
-    int height, int pixelFormat) throws Exception {
+  public void setSourceImage(byte[] srcImage, int x, int y, int width,
+    int pitch, int height, int pixelFormat) throws Exception {
     if(handle == 0) init();
-    if(srcImage == null || width < 1 || height < 1 || pitch < 0
-      || pixelFormat < 0 || pixelFormat >= TJ.NUMPF)
+    if(srcImage == null || x < 0 || y < 0 || width < 1 || height < 1
+      || pitch < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF)
       throw new Exception("Invalid argument in setSourceImage()");
     srcBuf = srcImage;
     srcWidth = width;
@@ -100,7 +132,39 @@ public class TJCompressor {
     else srcPitch = pitch;
     srcHeight = height;
     srcPixelFormat = pixelFormat;
+    srcX = x;
+    srcY = y;
   }
+
+  /**
+   * Associate an uncompressed source image with this compressor instance.
+   *
+   * @param srcImage see
+   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
+   * description
+   *
+   * @param width see
+   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
+   * description
+   *
+   * @param pitch see
+   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
+   * description
+   *
+   * @param height see
+   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
+   * description
+   *
+   * @param pixelFormat pixel format of the source image (one of
+   * {@link TJ TJ.PF_*})
+   */
+
+  public void setSourceImage(byte[] srcImage, int width, int pitch,
+    int height, int pixelFormat) throws Exception {
+    setSourceImage(srcImage, 0, 0, width, pitch, height, pixelFormat);
+    srcX = srcY = -1;
+  }
+
 
   /**
    * Set the level of chrominance subsampling for subsequent compress/encode
@@ -143,8 +207,12 @@ public class TJCompressor {
     if(srcBuf == null) throw new Exception(NO_ASSOC_ERROR);
     if(jpegQuality < 0) throw new Exception("JPEG Quality not set");
     if(subsamp < 0) throw new Exception("Subsampling level not set");
-    compressedSize = compress(srcBuf, srcWidth, srcPitch,
-      srcHeight, srcPixelFormat, dstBuf, subsamp, jpegQuality, flags);
+    if (srcX >= 0 && srcY >= 0)
+      compressedSize = compress(srcBuf, srcX, srcY, srcWidth, srcPitch,
+        srcHeight, srcPixelFormat, dstBuf, subsamp, jpegQuality, flags);
+    else
+      compressedSize = compress(srcBuf, srcWidth, srcPitch,
+        srcHeight, srcPixelFormat, dstBuf, subsamp, jpegQuality, flags);
   }
 
   /**
@@ -221,8 +289,12 @@ public class TJCompressor {
       int pitch = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
-      compressedSize = compress(buf, width, pitch, height, pixelFormat, dstBuf,
-        subsamp, jpegQuality, flags);
+      if (srcX >= 0 && srcY >= 0)
+        compressedSize = compress(buf, srcX, srcY, width, pitch, height,
+          pixelFormat, dstBuf, subsamp, jpegQuality, flags);
+      else
+        compressedSize = compress(buf, width, pitch, height, pixelFormat,
+          dstBuf, subsamp, jpegQuality, flags);
     }
     else {
       ComponentSampleModel sm =
@@ -233,8 +305,12 @@ public class TJCompressor {
       int pitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
       byte[] buf = db.getData();
-      compressedSize = compress(buf, width, pitch, height, pixelFormat, dstBuf,
-        subsamp, jpegQuality, flags);
+      if (srcX >= 0 && srcY >= 0)
+        compressedSize = compress(buf, srcX, srcY, width, pitch, height,
+          pixelFormat, dstBuf, subsamp, jpegQuality, flags);
+      else
+        compressedSize = compress(buf, width, pitch, height, pixelFormat,
+          dstBuf, subsamp, jpegQuality, flags);
     }
   }
 
@@ -438,19 +514,27 @@ public class TJCompressor {
 
   // JPEG size in bytes is returned
   private native int compress(byte[] srcBuf, int width, int pitch,
-    int height, int pixelFormat, byte[] dstbuf, int jpegSubsamp, int jpegQual,
+    int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp, int jpegQual,
     int flags) throws Exception;
 
-  private native int compress(int[] srcBuf, int width, int pitch,
-    int height, int pixelFormat, byte[] dstbuf, int jpegSubsamp, int jpegQual,
+  private native int compress(byte[] srcBuf, int x, int y, int width,
+    int pitch, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
+    int jpegQual, int flags) throws Exception;
+
+  private native int compress(int[] srcBuf, int width, int stride,
+    int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp, int jpegQual,
     int flags) throws Exception;
+
+  private native int compress(int[] srcBuf, int x, int y, int width,
+    int stride, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
+    int jpegQual, int flags) throws Exception;
 
   private native void encodeYUV(byte[] srcBuf, int width, int pitch,
-    int height, int pixelFormat, byte[] dstbuf, int subsamp, int flags)
+    int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
     throws Exception;
 
   private native void encodeYUV(int[] srcBuf, int width, int pitch,
-    int height, int pixelFormat, byte[] dstbuf, int subsamp, int flags)
+    int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
     throws Exception;
 
   static {
@@ -461,6 +545,8 @@ public class TJCompressor {
   private byte[] srcBuf = null;
   private int srcWidth = 0;
   private int srcHeight = 0;
+  private int srcX = -1;
+  private int srcY = -1;
   private int srcPitch = 0;
   private int srcPixelFormat = -1;
   private int subsamp = -1;

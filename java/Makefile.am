@@ -9,7 +9,8 @@ JAVASOURCES = org/libjpegturbo/turbojpeg/TJ.java \
 	org/libjpegturbo/turbojpeg/TJTransform.java \
 	org/libjpegturbo/turbojpeg/TJTransformer.java \
 	TJExample.java \
-	TJUnitTest.java
+	TJUnitTest.java \
+	TJBench.java
 
 JNIHEADERS = org_libjpegturbo_turbojpeg_TJ.h \
 	org_libjpegturbo_turbojpeg_TJCompressor.h \
@@ -29,7 +30,8 @@ JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 	org/libjpegturbo/turbojpeg/TJTransform.class \
 	org/libjpegturbo/turbojpeg/TJTransformer.class \
 	TJExample.class \
-	TJUnitTest.class
+	TJUnitTest.class \
+	TJBench.class
 
 all: all-am turbojpeg.jar
 

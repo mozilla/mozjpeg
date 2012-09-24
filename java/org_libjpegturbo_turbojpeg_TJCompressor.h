@@ -34,10 +34,26 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    compress
+ * Signature: ([BIIIIII[BIII)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3BIIIIII_3BIII
+  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJCompressor
+ * Method:    compress
  * Signature: ([IIIII[BIII)I
  */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3IIIII_3BIII
   (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJCompressor
+ * Method:    compress
+ * Signature: ([IIIIIII[BIII)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3IIIIIII_3BIII
+  (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor

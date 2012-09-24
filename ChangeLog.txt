@@ -12,8 +12,9 @@ function is provided to maintain backward compatibility.  However, certain
 Linux distro maintainers will blindly reject any library that is not versioned,
 so this was an attempt to make them happy.
 
-[3] Extended the TurboJPEG Java API so that it can be used to decompress a
-JPEG image into an arbitrary position in a large output buffer.
+[3] Extended the TurboJPEG Java API so that it can be used to compress a JPEG
+image from and decompress a JPEG image to an arbitrary position in a large
+image buffer.
 
 [4] The tjDecompressToYUV() function now supports the TJFLAG_FASTDCT flag.
 

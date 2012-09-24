@@ -234,7 +234,7 @@ testclean:
 tjtest:
 	sh ./tjbenchtest
 if WITH_JAVA
-	sh ./tjexampletest
+	sh ./tjbenchtest.java
 endif
 
 

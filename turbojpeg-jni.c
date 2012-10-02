@@ -29,6 +29,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "turbojpeg.h"
+#ifdef WIN32
+#include "tjutil.h"
+#endif
 #include <jni.h>
 #include "java/org_libjpegturbo_turbojpeg_TJCompressor.h"
 #include "java/org_libjpegturbo_turbojpeg_TJDecompressor.h"
@@ -40,11 +43,6 @@
 	(*env)->ThrowNew(env, _exccls, msg);  \
 	goto bailout;  \
 }
-
-#ifdef WIN32
-#define snprintf(str, n, format, ...)  \
-	_snprintf_s(str, n, _TRUNCATE, format, __VA_ARGS__)
-#endif
 
 #define bailif0(f) {if(!(f)) {  \
 	char temps[80];  \

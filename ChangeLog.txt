@@ -26,6 +26,10 @@ Ubuntu 11 and later) without setting the linker path.
 [6] The TurboJPEG Java wrapper should now find the JNI library on Mac systems
 without having to pass -Djava.library.path=/usr/lib to java.
 
+[7] TJBench has been ported to Java to provide a convenient way of validating
+the performance of the TurboJPEG Java API.  It can be run with
+'java -cp turbojpeg.jar TJBench'.
+
 
 1.2.1
 =====

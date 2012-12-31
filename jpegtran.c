@@ -1,9 +1,10 @@
 /*
  * jpegtran.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
+ * Modifications:
  * Copyright (C) 2010, D. R. Commander.
- * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for JPEG transcoding.

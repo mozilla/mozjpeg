@@ -1,9 +1,10 @@
 /*
  * jversion.h
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
+ * Modifications:
  * Copyright (C) 2010, 2012, D. R. Commander.
- * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains software version identification.
@@ -16,7 +17,7 @@
 
 #elif JPEG_LIB_VERSION >= 70
 
-#define JVERSION        "7  27-Jun-2009"
+#define JVERSION	"7  27-Jun-2009"
 
 #else
 

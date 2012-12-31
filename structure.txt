@@ -1,7 +1,9 @@
 IJG JPEG LIBRARY:  SYSTEM ARCHITECTURE
 
 Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
-This file is part of the Independent JPEG Group's software.
+This file was part of the Independent JPEG Group's software.
+It was modified by The libjpeg-turbo Project to include only information
+relevant to libjpeg-turbo.
 For conditions of distribution and use, see the accompanying README file.
 
 

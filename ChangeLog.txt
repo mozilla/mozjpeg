@@ -1,5 +1,5 @@
-1.3 pre-beta
-============
+1.2.90 (1.3 beta1)
+==================
 
 [1] Added support for additional scaling factors (3/8, 5/8, 3/4, 7/8, 9/8, 5/4,
 11/8, 3/2, 13/8, 7/4, 15/8, and 2) when decompressing.  Note that the IDCT will

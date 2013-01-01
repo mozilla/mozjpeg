@@ -1,7 +1,7 @@
 /*
  * transupp.c
  *
- * This file was part of the Independent JPEG Group's software.
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2009, Thomas G. Lane, Guido Vollbeding.
  * Modifications:
  * Copyright (C) 2010, D. R. Commander.

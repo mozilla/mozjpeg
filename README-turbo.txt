@@ -280,21 +280,27 @@ libjpeg v7 and v8 Features:
 
 Fully supported:
 
--- cjpeg: Separate quality settings for luminance and chrominance
-   Note that the libpjeg v7+ API was extended to accommodate this feature only
-   for convenience purposes.  It has always been possible to implement this
-   feature with libjpeg v6b (see rdswitch.c for an example.)
-
 -- libjpeg: IDCT scaling extensions in decompressor
    libjpeg-turbo supports IDCT scaling with scaling factors of 1/8, 1/4, 3/8,
    1/2, 5/8, 3/4, 7/8, 9/8, 5/4, 11/8, 3/2, 13/8, 7/4, 15/8, and 2/1 (only 1/4
    and 1/2 are SIMD-accelerated.)
 
+-- libjpeg: arithmetic coding
+
+-- cjpeg: Separate quality settings for luminance and chrominance
+   Note that the libpjeg v7+ API was extended to accommodate this feature only
+   for convenience purposes.  It has always been possible to implement this
+   feature with libjpeg v6b (see rdswitch.c for an example.)
+
 -- cjpeg: 32-bit BMP support
+
+-- cjpeg: -rgb option
 
 -- jpegtran: lossless cropping
 
 -- jpegtran: -perfect option
+
+-- jpegtran: forcing width/height when performing lossless crop
 
 -- rdjpgcom: -raw option
 
@@ -304,7 +310,6 @@ Fully supported:
 Fully supported when using libjpeg v7/v8 emulation:
 
 -- libjpeg: In-memory source and destination managers
-
 
 Not supported:
 

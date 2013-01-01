@@ -80,6 +80,10 @@ The basic command line switches for cjpeg are:
 			saying -grayscale, you'll get a smaller JPEG file that
 			takes less time to process.
 
+	-rgb		Create RGB JPEG file.
+			Using this switch suppresses the conversion from RGB
+			colorspace input to the default YCbCr JPEG colorspace.
+
 	-optimize	Perform optimization of entropy encoding parameters.
 			Without this, default encoding parameters are used.
 			-optimize usually makes the JPEG file a little smaller,

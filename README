@@ -17,7 +17,8 @@ Bill Allombert, Jim Boucher, Lee Crocker, Bob Friesenhahn, Ben Jackson,
 Julian Minguillon, Luis Ortiz, George Phillips, Davide Rossi, Ge' Weijers,
 and other members of the Independent JPEG Group.
 
-IJG is not affiliated with the official ISO JPEG standards committee.
+IJG is not affiliated with the ISO/IEC JTC1/SC29/WG1 standards committee
+(also known as JPEG, together with ITU-T SG16).
 
 
 DOCUMENTATION ROADMAP
@@ -129,7 +130,7 @@ with respect to this software, its quality, accuracy, merchantability, or
 fitness for a particular purpose.  This software is provided "AS IS", and you,
 its user, assume the entire risk as to its quality and accuracy.
 
-This software is copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
+This software is copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
 All Rights Reserved except as specified below.
 
 Permission is hereby granted to use, copy, modify, and distribute this
@@ -274,11 +275,12 @@ with body
 FILE FORMAT WARS
 ================
 
-The ISO JPEG standards committee actually promotes different formats like
-"JPEG 2000" or "JPEG XR", which are incompatible with original DCT-based
-JPEG.  IJG therefore does not support these formats (see REFERENCES).  Indeed,
-one of the original reasons for developing this free software was to help
-force convergence on common, interoperable format standards for JPEG files.
+The ISO/IEC JTC1/SC29/WG1 standards committee (also known as JPEG, together
+with ITU-T SG16) currently promotes different formats containing the name
+"JPEG" which are incompatible with original DCT-based JPEG.  IJG therefore does
+not support these formats (see REFERENCES).  Indeed, one of the original
+reasons for developing this free software was to help force convergence on
+common, interoperable format standards for JPEG files.
 Don't use an incompatible file format!
 (In any case, our decoder will remain capable of reading existing JPEG
 image files indefinitely.)

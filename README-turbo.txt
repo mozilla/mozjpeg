@@ -311,6 +311,7 @@ Fully supported when using libjpeg v7/v8 emulation:
 
 -- libjpeg: In-memory source and destination managers
 
+
 Not supported:
 
 -- libjpeg: DCT scaling in compressor

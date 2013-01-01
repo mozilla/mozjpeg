@@ -161,15 +161,6 @@ commercial products, provided that all warranty or liability claims are
 assumed by the product vendor.
 
 
-ansi2knr.c is included in this distribution by permission of L. Peter Deutsch,
-sole proprietor of its copyright holder, Aladdin Enterprises of Menlo Park, CA.
-ansi2knr.c is NOT covered by the above copyright and conditions, but instead
-by the usual distribution terms of the Free Software Foundation; principally,
-that you must include source code if you redistribute it.  (See the file
-ansi2knr.c for full details.)  However, since ansi2knr.c is not needed as part
-of any program generated from the IJG code, this does not limit you more than
-the foregoing paragraphs do.
-
 The Unix configuration script "configure" was produced with GNU Autoconf.
 It is copyright by the Free Software Foundation but is freely distributable.
 The same holds for its supporting scripts (config.guess, config.sub,

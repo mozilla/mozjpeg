@@ -30,6 +30,9 @@ without having to pass -Djava.library.path=/usr/lib to java.
 the performance of the TurboJPEG Java API.  It can be run with
 'java -cp turbojpeg.jar TJBench'.
 
+[8] cjpeg can now be used to generate JPEG files with the RGB colorspace
+(feature ported from jpeg-8d.)
+
 
 1.2.1
 =====

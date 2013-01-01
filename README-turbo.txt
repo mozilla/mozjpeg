@@ -280,6 +280,8 @@ libjpeg v7 and v8 Features:
 
 Fully supported:
 
+-- libjpeg: arithmetic coding
+
 -- cjpeg: Separate quality settings for luminance and chrominance
    Note that the libpjeg v7+ API was extended to accommodate this feature only
    for convenience purposes.  It has always been possible to implement this

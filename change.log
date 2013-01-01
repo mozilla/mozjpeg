@@ -12,6 +12,9 @@ Using this switch suppresses the conversion from RGB
 colorspace input to the default YCbCr JPEG colorspace.
 Thank to Michael Koch for the initial suggestion.
 
+Add option to disable the region adjustment in the transupp crop code.
+Thank to Jeffrey Friedl for the suggestion.
+
 
 Version 8b  16-May-2010
 -----------------------

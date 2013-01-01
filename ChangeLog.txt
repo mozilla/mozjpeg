@@ -33,6 +33,13 @@ the performance of the TurboJPEG Java API.  It can be run with
 [8] cjpeg can now be used to generate JPEG files with the RGB colorspace
 (feature ported from jpeg-8d.)
 
+[9] The width and height in the -crop argument passed to jpegtran can now be
+suffixed with "f" to indicate that, when the upper left corner of the cropping
+region is automatically moved to the nearest iMCU boundary, the bottom right
+corner should be moved by the same amount.  In other words, this feature causes
+jpegtran to strictly honor the specified width/height rather than the specified
+bottom right corner (feature ported from jpeg-8d.)
+
 
 1.2.1
 =====

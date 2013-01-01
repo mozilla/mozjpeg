@@ -1,5 +1,5 @@
 NOTE:  This file was modified by The libjpeg-turbo Project to include only
-information relevant to libjpeg-turbo and to clarify certain passages.
+information relevant to libjpeg-turbo and to wordsmith certain sections.
 
 USAGE instructions for the Independent JPEG Group's JPEG software
 =================================================================

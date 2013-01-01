@@ -46,6 +46,9 @@ Thank to Roberto Boni from Italy for the suggestion.
 Version 7  27-Jun-2009
 ----------------------
 
+New scaled DCTs implemented.
+djpeg now supports scalings N/8 with all N from 1 to 16.
+
 cjpeg -quality option has been extended for support of separate quality
 settings for luminance and chrominance (or in general, for every provided
 quantization table slot).

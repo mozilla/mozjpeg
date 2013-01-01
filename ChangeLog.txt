@@ -40,6 +40,9 @@ corner should be moved by the same amount.  In other words, this feature causes
 jpegtran to strictly honor the specified width/height rather than the specified
 bottom right corner (feature ported from jpeg-8d.)
 
+[10] JPEG files using the RGB colorspace can now be decompressed into grayscale
+images (feature ported from jpeg-8d.)
+
 
 1.2.1
 =====

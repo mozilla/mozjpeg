@@ -212,8 +212,11 @@ typedef unsigned int JDIMENSION;
  */
 
 #ifdef NEED_FAR_POINTERS
+#ifndef FAR
 #define FAR  far
+#endif
 #else
+#undef FAR
 #define FAR
 #endif
 

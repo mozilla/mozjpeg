@@ -12,10 +12,8 @@ the TigerVNC and VirtualGL projects made numerous enhancements to the codec in
 2009, including improved support for Mac OS X, 64-bit support, support for
 32-bit and big-endian pixel formats (RGBX, XBGR, etc.), accelerated Huffman
 encoding/decoding, and various bug fixes.  The goal was to produce a fully
-open-source codec that could replace the partially closed-source TurboJPEG/IPP
-codec used by VirtualGL and TurboVNC.  libjpeg-turbo generally achieves 80-120%
-of the performance of TurboJPEG/IPP.  It is faster in some areas but slower in
-others.
+open-source codec whose performance rivaled that of popular closed-source
+codecs available at the time.
 
 In early 2010, libjpeg-turbo spun off into its own independent project, with
 the goal of making high-speed JPEG compression/decompression technology
@@ -75,12 +73,24 @@ JPEG images:
   mathematically compatible with libjpeg v6b.  It can also optionally be
   configured to be API/ABI-compatible with libjpeg v7 and v8 (see below.)
 
+======================
+Installation Directory
+======================
+
+This document assumes that libjpeg-turbo will be installed in the default
+directory (/opt/libjpeg-turbo on Un*x and Mac systems and
+c:\libjpeg-turbo[-gcc][64] on Windows systems.  If your installation of
+libjpeg-turbo resides in a different directory, then adjust the instructions
+accordingly.
 
 =============================
 Replacing libjpeg at Run Time
 =============================
 
-If a Unix application is dynamically linked with libjpeg, then you can replace
+Un*x
+----
+
+If a Un*x application is dynamically linked with libjpeg, then you can replace
 libjpeg with libjpeg-turbo at run time by manipulating LD_LIBRARY_PATH.
 For instance:
 
@@ -97,67 +107,51 @@ For instance:
   user  0m0.029s
   sys   0m0.010s
 
-NOTE: {lib} can be lib, lib32, lib64, or lib/64, depending on the O/S and
-architecture.
+({lib} = lib32 or lib64, depending on whether you wish to use the 32-bit or the
+64-bit version of libjpeg-turbo.)
 
-System administrators can also replace the libjpeg sym links in /usr/{lib} with
+System administrators can also replace the libjpeg symlinks in /usr/lib* with
 links to the libjpeg-turbo dynamic library located in /opt/libjpeg-turbo/{lib}.
 This will effectively accelerate every application that uses the libjpeg
 dynamic library on the system.
 
-The libjpeg-turbo SDK for Visual C++ installs the libjpeg-turbo DLL
-(jpeg62.dll, jpeg7.dll, or jpeg8.dll, depending on whether it was built with
-libjpeg v6b, v7, or v8 emulation) into c:\libjpeg-turbo[64]\bin, and the PATH
-environment variable can be modified such that this directory is searched
-before any others that might contain a libjpeg DLL.  However, if a libjpeg
-DLL exists in an application's install directory, then Windows will load this
-DLL first whenever the application is launched.  Thus, if an application ships
-with jpeg62.dll, jpeg7.dll, or jpeg8.dll, then back up the application's
-version of this DLL and copy c:\libjpeg-turbo[64]\bin\jpeg*.dll into the
-application's install directory to accelerate it.
+Windows
+-------
 
-The version of the libjpeg-turbo DLL distributed in the libjpeg-turbo SDK for
-Visual C++ requires the Visual C++ 2008 C run-time DLL (msvcr90.dll).
+If a Windows application is dynamically linked with libjpeg, then you can
+replace libjpeg with libjpeg-turbo at run time by backing up the application's
+copy of jpeg62.dll, jpeg7.dll, or jpeg8.dll (assuming the application has its
+own local copy of this library) and copying the corresponding DLL from
+libjpeg-turbo into the application's install directory.  The official
+libjpeg-turbo binaries only provide jpeg62.dll.  If the application uses
+jpeg7.dll or jpeg8.dll instead, then it will be necessary to build
+libjpeg-turbo from source (see "libjpeg v7 andv8 API/ABI Emulation" below.)
+
+The following information is specific to the official libjpeg-turbo binaries
+for Visual C++:
+
+-- jpeg62.dll requires the Visual C++ 2008 C run-time DLL (msvcr90.dll).
 msvcr90.dll ships with more recent versions of Windows, but users of older
 Windows releases can obtain it from the Visual C++ 2008 Redistributable
 Package, which is available as a free download from Microsoft's web site.
 
-NOTE:  Features of libjpeg that require passing a C run-time structure, such
-as a file handle, from an application to libjpeg will probably not work with
-the version of the libjpeg-turbo DLL distributed in the libjpeg-turbo SDK for
-Visual C++, unless the application is also built to use the Visual C++ 2008 C
-run-time DLL.  In particular, this affects jpeg_stdio_dest() and
+-- Features of the libjpeg API that require passing a C run-time structure,
+such as a file handle, from an application to the library will probably not
+work with jpeg62.dll, unless the application is also built to use the Visual
+C++ 2008 C run-time DLL.  In particular, this affects jpeg_stdio_dest() and
 jpeg_stdio_src().
+
+Mac
+---
 
 Mac applications typically embed their own copies of the libjpeg dylib inside
 the (hidden) application bundle, so it is not possible to globally replace
-libjpeg on OS X systems.  If an application uses a shared library version of
-libjpeg, then it may be possible to replace the application's version of it.
-This would generally involve copying libjpeg.*.dylib from libjpeg-turbo into
+libjpeg on OS X systems.  Replacing the application's version of the libjpeg
+dylib would generally involve copying libjpeg.*.dylib from libjpeg-turbo into
 the appropriate place in the application bundle and using install_name_tool to
-repoint the dylib to the new directory.  This requires an advanced knowledge of
-OS X and would not survive an upgrade or a re-install of the application.
-Thus, it is not recommended for most users.
-
-=======================
-Replacing TurboJPEG/IPP
-=======================
-
-libjpeg-turbo is a drop-in replacement for the TurboJPEG/IPP SDK used by
-VirtualGL 2.1.x and TurboVNC 0.6 (and prior.)  libjpeg-turbo contains a wrapper
-library (TurboJPEG/OSS) that emulates the TurboJPEG API using libjpeg-turbo
-instead of the closed-source Intel Performance Primitives.  You can replace the
-TurboJPEG/IPP package on Linux systems with the libjpeg-turbo package in order
-to make existing releases of VirtualGL 2.1.x and TurboVNC 0.x use the new codec
-at run time.  Note that the 64-bit libjpeg-turbo packages contain only 64-bit
-binaries, whereas the TurboJPEG/IPP 64-bit packages contained both 64-bit and
-32-bit binaries.  Thus, to replace a TurboJPEG/IPP 64-bit package, install
-both the 64-bit and 32-bit versions of libjpeg-turbo.
-
-You can also build the VirtualGL 2.1.x and TurboVNC 0.6 source code with
-the libjpeg-turbo SDK instead of TurboJPEG/IPP.  It should work identically.
-libjpeg-turbo also includes static library versions of TurboJPEG/OSS, which
-are used to build VirtualGL 2.2 and TurboVNC 1.0 and later.
+repoint the libjpeg-turbo dylib to its new directory.  This requires an
+advanced knowledge of OS X and would not survive an upgrade or a re-install of
+the application.  Thus, it is not recommended for most users.
 
 ========================================
 Using libjpeg-turbo in Your Own Programs
@@ -165,7 +159,7 @@ Using libjpeg-turbo in Your Own Programs
 
 For the most part, libjpeg-turbo should work identically to libjpeg, so in
 most cases, an application can be built against libjpeg and then run against
-libjpeg-turbo.  On Unix systems (including Cygwin), you can build against
+libjpeg-turbo.  On Un*x systems (including Cygwin), you can build against
 libjpeg-turbo instead of libjpeg by setting
 
   CPATH=/opt/libjpeg-turbo/include
@@ -184,7 +178,7 @@ If using MinGW, then set
 Building against libjpeg-turbo is useful, for instance, if you want to build an
 application that leverages the libjpeg-turbo colorspace extensions (see below.)
 On Linux and Solaris systems, you would still need to manipulate
-LD_LIBRARY_PATH or create appropriate sym links to use libjpeg-turbo at run
+LD_LIBRARY_PATH or create appropriate symlinks to use libjpeg-turbo at run
 time.  On such systems, you can pass -R /opt/libjpeg-turbo/{lib} to the linker
 to force the use of libjpeg-turbo at run time rather than libjpeg (also useful
 if you want to leverage the colorspace extensions), or you can link against the
@@ -196,7 +190,7 @@ version of libjpeg-turbo, you can use the following linker options:
   -Wl,-Bstatic -ljpeg -Wl,-Bdynamic
 
 On OS X, simply add /opt/libjpeg-turbo/lib/libjpeg.a to the linker command
-line (this also works on Linux and Solaris.)
+line.
 
 To build Visual C++ applications using libjpeg-turbo, add
 c:\libjpeg-turbo[64]\include to the system or user INCLUDE environment
@@ -234,8 +228,10 @@ time with:
 
   #ifdef JCS_EXTENSIONS
 
-At run time, attempting to use these extensions with a version of libjpeg
-that doesn't support them will result in a "Bogus input colorspace" error.
+At run time, attempting to use these extensions with a libjpeg implementation
+that does not support them will result in a "Bogus input colorspace" error.
+Applications can trap this error in order to test whether run-time support is
+available for the colorspace extensions.
 
 When using the RGBX, BGRX, XBGR, and XRGB colorspaces during decompression, the
 X byte is undefined, and in order to ensure the best performance, libjpeg-turbo
@@ -252,21 +248,24 @@ extensions at compile time with:
 jcstest.c, located in the libjpeg-turbo source tree, demonstrates how to check
 for the existence of the colorspace extensions at compile time and run time.
 
-=================================
-libjpeg v7 and v8 API/ABI support
-=================================
+===================================
+libjpeg v7 and v8 API/ABI Emulation
+===================================
 
 With libjpeg v7 and v8, new features were added that necessitated extending the
 compression and decompression structures.  Unfortunately, due to the exposed
 nature of those structures, extending them also necessitated breaking backward
-ABI compatibility with previous libjpeg releases.  Thus, programs that are
+ABI compatibility with previous libjpeg releases.  Thus, programs that were
 built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
 based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
-as widely used as v6b, enough programs (including a few Linux distros) have
-made the switch that it was desirable to provide support for the libjpeg v7/v8
-API/ABI in libjpeg-turbo.  Although libjpeg-turbo can now be configured as a
-drop-in replacement for libjpeg v7 or v8, it should be noted that not all of
-the features in libjpeg v7 and v8 are supported (see below.)
+as widely used as v6b, enough programs (including a few Linux distros) made the
+switch that there was a demand to emulate the libjpeg v7 and v8 APIs/ABIs in
+libjpeg-turbo.  It should be noted, however, that this feature was added
+primarily so that applications that had already been compiled to use libjpeg
+v7+ could take advantage of accelerated baseline JPEG encoding/decoding
+without recompiling.  libjpeg-turbo does not claim to support all of the
+libjpeg v7+ features, nor to produce identical output to libjpeg v7+ in all
+cases (see below.)
 
 By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, or an
 argument of -DWITH_JPEG7=1 or -DWITH_JPEG8=1 to cmake, you can build a version
@@ -275,8 +274,8 @@ that are built against libjpeg v7 or v8 can be run with libjpeg-turbo.  The
 following section describes which libjpeg v7+ features are supported and which
 aren't.
 
-libjpeg v7 and v8 Features:
----------------------------
+Support for libjpeg v7 and v8 Features:
+---------------------------------------
 
 Fully supported:
 
@@ -340,7 +339,40 @@ Not supported:
 
 
 *******************************************************************************
-**     Performance pitfalls
+**     Mathematical Compatibility
+*******************************************************************************
+
+For the most part, libjpeg-turbo should produce identical output to libjpeg
+v6b.  The one exception to this is when using the floating point DCT/IDCT, in
+which case the outputs of libjpeg v6b and libjpeg-turbo are not guaranteed to
+be identical (the accuracy of the floating point DCT/IDCT is constant when
+using libjpeg-turbo's SIMD extensions, but otherwise, it can depend heavily on
+the compiler and compiler settings.)
+
+While libjpeg-turbo does emulate the libjpeg v8 API/ABI, under the hood, it is
+still using the same algorithms as libjpeg v6b, so there are several specific
+cases in which libjpeg-turbo cannot be expected to produce the same output as
+libjpeg v8:
+
+-- When decompressing using scaling factors of 1/2 and 1/4, because libjpeg v8
+   implements those scaling algorithms a bit differently than libjpeg v6b does,
+   and libjpeg-turbo's SIMD extensions are based on the libjpeg v6b behavior.
+
+-- When using chrominance subsampling, because libjpeg v8 implements this
+   with its DCT/IDCT scaling algorithms rather than with a separate
+   downsampling/upsampling algorithm.
+
+-- When using the floating point IDCT, for the reasons stated above and also
+   because the floating point IDCT algorithm was modified in libjpeg v8a to
+   improve accuracy.
+
+-- When decompressing using a scaling factor > 1 and merged (AKA "non-fancy" or
+   "non-smooth") chrominance upsampling, because libjpeg v8 does not support
+   merged upsampling with scaling factors > 1.
+
+
+*******************************************************************************
+**     Performance Pitfalls
 *******************************************************************************
 
 ===============

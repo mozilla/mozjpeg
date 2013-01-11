@@ -123,12 +123,12 @@ replace libjpeg with libjpeg-turbo at run time by backing up the application's
 copy of jpeg62.dll, jpeg7.dll, or jpeg8.dll (assuming the application has its
 own local copy of this library) and copying the corresponding DLL from
 libjpeg-turbo into the application's install directory.  The official
-libjpeg-turbo binaries only provide jpeg62.dll.  If the application uses
+libjpeg-turbo binary packages only provide jpeg62.dll.  If the application uses
 jpeg7.dll or jpeg8.dll instead, then it will be necessary to build
-libjpeg-turbo from source (see "libjpeg v7 andv8 API/ABI Emulation" below.)
+libjpeg-turbo from source (see "libjpeg v7 and v8 API/ABI Emulation" below.)
 
-The following information is specific to the official libjpeg-turbo binaries
-for Visual C++:
+The following information is specific to the official libjpeg-turbo binary
+packages for Visual C++:
 
 -- jpeg62.dll requires the Visual C++ 2008 C run-time DLL (msvcr90.dll).
 msvcr90.dll ships with more recent versions of Windows, but users of older
@@ -159,8 +159,8 @@ Using libjpeg-turbo in Your Own Programs
 
 For the most part, libjpeg-turbo should work identically to libjpeg, so in
 most cases, an application can be built against libjpeg and then run against
-libjpeg-turbo.  On Un*x systems (including Cygwin), you can build against
-libjpeg-turbo instead of libjpeg by setting
+libjpeg-turbo.  On Un*x systems and Cygwin, you can build against libjpeg-turbo
+instead of libjpeg by setting
 
   CPATH=/opt/libjpeg-turbo/include
   and
@@ -177,15 +177,15 @@ If using MinGW, then set
 
 Building against libjpeg-turbo is useful, for instance, if you want to build an
 application that leverages the libjpeg-turbo colorspace extensions (see below.)
-On Linux and Solaris systems, you would still need to manipulate
-LD_LIBRARY_PATH or create appropriate symlinks to use libjpeg-turbo at run
-time.  On such systems, you can pass -R /opt/libjpeg-turbo/{lib} to the linker
-to force the use of libjpeg-turbo at run time rather than libjpeg (also useful
-if you want to leverage the colorspace extensions), or you can link against the
-libjpeg-turbo static library.
+On Un*x systems, you would still need to manipulate LD_LIBRARY_PATH or create
+appropriate symlinks to use libjpeg-turbo at run time.  On such systems, you
+can pass -R /opt/libjpeg-turbo/{lib} to the linker to force the use of
+libjpeg-turbo at run time rather than libjpeg (also useful if you want to
+leverage the colorspace extensions), or you can link against the libjpeg-turbo
+static library.
 
-To force a Linux, Solaris, or MinGW application to link against the static
-version of libjpeg-turbo, you can use the following linker options:
+To force a Un*x or MinGW application to link against the static version of
+libjpeg-turbo, you can use the following linker options:
 
   -Wl,-Bstatic -ljpeg -Wl,-Bdynamic
 
@@ -254,12 +254,12 @@ libjpeg v7 and v8 API/ABI Emulation
 
 With libjpeg v7 and v8, new features were added that necessitated extending the
 compression and decompression structures.  Unfortunately, due to the exposed
-nature of those structures, extending them also necessitated breaking backward
-ABI compatibility with previous libjpeg releases.  Thus, programs that were
-built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
-based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
-as widely used as v6b, enough programs (including a few Linux distros) made the
-switch that there was a demand to emulate the libjpeg v7 and v8 APIs/ABIs in
+nature of those structures, extending them also broke backward ABI
+compatibility with previous libjpeg releases.  Thus, programs that were built
+to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is based on
+the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not as widely
+used as v6b, enough programs (including a few Linux distros) made the switch
+that there was a demand to emulate the libjpeg v7 and v8 APIs/ABIs in
 libjpeg-turbo.  It should be noted, however, that this feature was added
 primarily so that applications that had already been compiled to use libjpeg
 v7+ could take advantage of accelerated baseline JPEG encoding/decoding
@@ -323,8 +323,10 @@ Not supported:
 -- libjpeg: SmartScale
    cinfo.block_size is silently ignored.
    SmartScale is an extension to the JPEG format that allows for DCT block
-   sizes other than 8x8.  It would be difficult to support this feature while
-   retaining backward compatibility with libjpeg v6b.
+   sizes other than 8x8.  Providing support for this new format is feasible
+   (particularly without full acceleration), but until/unless the format
+   becomes either an official industry standard or, at minimum, an accepted
+   solution in the community, we are hesitant to implement it.
 
 -- libjpeg: Fancy downsampling in compressor
    cinfo.do_fancy_downsampling is silently ignored.

@@ -254,13 +254,13 @@ libjpeg v7 and v8 API/ABI Emulation
 
 With libjpeg v7 and v8, new features were added that necessitated extending the
 compression and decompression structures.  Unfortunately, due to the exposed
-nature of those structures, extending them also broke backward ABI
-compatibility with previous libjpeg releases.  Thus, programs that were built
-to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is based on
-the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not as widely
-used as v6b, enough programs (including a few Linux distros) made the switch
-that there was a demand to emulate the libjpeg v7 and v8 APIs/ABIs in
-libjpeg-turbo.  It should be noted, however, that this feature was added
+nature of those structures, extending them also necessitated breaking backward
+ABI compatibility with previous libjpeg releases.  Thus, programs that were
+built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
+based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
+as widely used as v6b, enough programs (including a few Linux distros) made
+the switch that there was a demand to emulate the libjpeg v7 and v8 APIs/ABIs
+in libjpeg-turbo.  It should be noted, however, that this feature was added
 primarily so that applications that had already been compiled to use libjpeg
 v7+ could take advantage of accelerated baseline JPEG encoding/decoding
 without recompiling.  libjpeg-turbo does not claim to support all of the

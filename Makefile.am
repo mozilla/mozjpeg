@@ -150,56 +150,72 @@ endif
 	./tjunittest -alloc
 	./tjunittest -yuv
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testimages/testorig.ppm
-	cmp $(srcdir)/testimages/testimgint.jpg testoutint.jpg
+	sh $(srcdir)/md5cmp 9a68f56bc76e466aa7e52f415d0f4a5f testoutint.jpg
 	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testimages/testorig.ppm
-	cmp $(srcdir)/testimages/testimgfst.jpg testoutfst.jpg
+	sh $(srcdir)/md5cmp 0e1502e7fa421835e376a314fac2a39f testoutfst.jpg
 	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testimages/testorig.ppm
-	cmp $(srcdir)/testimages/testimgfst100.jpg testoutfst100.jpg
+	sh $(srcdir)/md5cmp 7bf72a8e741d64eecb960c97323af77c testoutfst100.jpg
 	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testimages/testorig.ppm
 if WITH_SSE_FLOAT_DCT
-	cmp $(srcdir)/testimages/testimgflt.jpg testoutflt.jpg
+	sh $(srcdir)/md5cmp d1623885ffafcd40c684af09e3d65cd5 testoutflt.jpg
 else
-	cmp $(srcdir)/testimages/testimgflt-nosimd.jpg testoutflt.jpg
+	sh $(srcdir)/md5cmp fb4884c35f8273f498cb32879de5c455 testoutflt.jpg
 endif
 	./cjpeg -dct int -grayscale -outfile testoutgray.jpg $(srcdir)/testimages/testorig.ppm
-	cmp $(srcdir)/testimages/testimggray.jpg testoutgray.jpg
+	sh $(srcdir)/md5cmp 72b51f894b8f4a10b3ee3066770aa38d testoutgray.jpg
 	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgint.ppm testoutint.ppm
+	sh $(srcdir)/md5cmp d1ed0d11f076b842525271647716aeb8 testoutint.ppm
 	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgfst.ppm testoutfst.ppm
+	sh $(srcdir)/md5cmp 048298a2d2410261c0533cb97bcfef23 testoutfst.ppm
 	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testimages/testorig.jpg
 if WITH_SSE_FLOAT_DCT
-	cmp $(srcdir)/testimages/testimgflt.ppm testoutflt.ppm
+	sh $(srcdir)/md5cmp 7f5b446ee36b2630e06785b8d42af15f testoutflt.ppm
 else
-	cmp $(srcdir)/testimages/testorig.ppm testoutflt.ppm
+	sh $(srcdir)/md5cmp 64072f1dbdc5b3a187777788604971a5 testoutflt.ppm
 endif
+	MD5[21]=9f9de8c0612f8d06869b960b05abf9c9; \
+	MD5[158]=b6875bc070720b899566cc06459b63b7; \
+	MD5[74]=06a177eae05f164fac57f7a2c346ee87; \
+	MD5[138]=bc3452573c8152f6ae552939ee19f82f; \
+	MD5[32]=f5a8b88a8a7f96016f04d259cf82ed67; \
+	MD5[118]=d8cc73c0aaacd4556569b59437ba00a5; \
+	MD5[54]=32775dd9ad2ab90f4c5b219b53e0c86c; \
+	MD5[98]=d25e61bc7eac0002f5b393aa223747b6; \
+	MD5[78]=ddb564b7c74a09494016d6cd7502a946; \
+	MD5[34]=8ed8e68808c3fbc4ea764fc9d2968646; \
+	MD5[58]=a3363274999da2366a024efae6d16c9b; \
+	MD5[12]=e692a315cea26b988c8e8b29a5dbcd81; \
+	MD5[38]=79eca9175652ced755155c90e785a996; \
+	MD5[14]=79cd778f8bf1a117690052cacdd54eca; \
+	MD5[18]=391b3d4aca640c8567d6f8745eb2142f; \
 	for scale in 2_1 15_8 7_4 13_8 3_2 11_8 5_4 9_8 7_8 3_4 5_8 1_2 3_8 1_4 1_8; do \
 		scalearg=`echo $$scale | sed s@_@/@g`; \
+		arrayindex=`echo $$scale | sed s@_@@g`; \
 		./djpeg -dct int -nosmooth -scale $$scalearg -ppm -outfile testoutint$$scale.ppm $(srcdir)/testimages/testorig.jpg; \
-		cmp $(srcdir)/testimages/testimgint$$scale.ppm testoutint$$scale.ppm; \
+		sh $(srcdir)/md5cmp $${MD5[$$arrayindex]} testoutint$$scale.ppm; \
 	done
 	./djpeg -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgfst1_2.ppm testoutfst1_2.ppm
+	sh $(srcdir)/md5cmp f30bcf6d32ccd44cbdd9aeaacbd9454f testoutfst1_2.ppm
 	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimg.bmp testout.bmp
+	sh $(srcdir)/md5cmp 4980185e3776e89bd931736e1cddeee6 testout.bmp
 if WITH_ARITH_ENC
 	./cjpeg -dct int -arithmetic -outfile testoutari.jpg $(srcdir)/testimages/testorig.ppm
-	cmp $(srcdir)/testimages/testimgari.jpg testoutari.jpg
+	sh $(srcdir)/md5cmp e986fb0a637a8d833d96e8a6d6d84ea1 testoutari.jpg
 	./jpegtran -arithmetic -outfile testouta.jpg $(srcdir)/testimages/testimgint.jpg
-	cmp $(srcdir)/testimages/testimgari.jpg testouta.jpg
+	sh $(srcdir)/md5cmp e986fb0a637a8d833d96e8a6d6d84ea1 testouta.jpg
 endif
 if WITH_ARITH_DEC
 	./djpeg -dct int -fast -ppm -outfile testoutari.ppm $(srcdir)/testimages/testimgari.jpg
-	cmp $(srcdir)/testimages/testimgari.ppm testoutari.ppm
+	sh $(srcdir)/md5cmp 72b59a99bcf1de24c5b27d151bde2437 testoutari.ppm
 	./jpegtran -outfile testouta.jpg $(srcdir)/testimages/testimgari.jpg
-	cmp $(srcdir)/testimages/testimgint.jpg testouta.jpg
+	sh $(srcdir)/md5cmp 9a68f56bc76e466aa7e52f415d0f4a5f testouta.jpg
 endif
 	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testimages/testorig.ppm
-	cmp $(srcdir)/testimages/testimgp.jpg testoutp.jpg
+	sh $(srcdir)/md5cmp 1c4afddc05c0a43489ee54438a482d92 testoutp.jpg
 	./jpegtran -outfile testoutt.jpg testoutp.jpg
-	cmp $(srcdir)/testimages/testimgint.jpg testoutt.jpg
+	sh $(srcdir)/md5cmp 9a68f56bc76e466aa7e52f415d0f4a5f testoutt.jpg
 	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testimages/testorig.jpg
-	cmp $(srcdir)/testimages/testimgcrop.jpg testoutcrop.jpg
+	sh $(srcdir)/md5cmp b4197f377e621c4e9b1d20471432610d testoutcrop.jpg
 
 
 testclean:

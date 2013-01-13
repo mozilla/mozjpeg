@@ -152,7 +152,7 @@ exampledir = $(datadir)/doc
 dist_example_DATA = example.c
 
 
-EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \
+EXTRA_DIST = win release $(DOCS) testimages md5cmp CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
 	jccolext.c jdcolext.c jdmrgext.c
 

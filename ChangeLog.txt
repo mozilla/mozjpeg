@@ -8,6 +8,10 @@ symlinks in /usr/lib/i386-linux-gnu for the TurboJPEG libraries in /usr/lib32.
 This allows those libraries to be used on MultiArch-compatible systems (such as
 Ubuntu 11 and later) without setting the linker path.
 
+[3] Fixed a regression caused by 1.2.1[7] whereby the build would fail with
+multiple "Mismatch in operand sizes" errors when attempting to build the x86
+SIMD code with NASM 0.98.
+
 
 1.2.1
 =====

@@ -1,0 +1,2 @@
+This image was extracted from the 8-bit nightshot_iso_100 image available at
+http://www.imagecompression.info/test_images/

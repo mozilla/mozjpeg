@@ -46,7 +46,6 @@ Programmer and internal documentation:
   libjpeg.txt       How to use the JPEG library in your own programs.
   example.c         Sample code for calling the JPEG library.
   structure.txt     Overview of the JPEG library's internal structure.
-  filelist.txt      Road map of IJG files.
   coderules.txt     Coding style rules --- please read if you contribute code.
 
 Please read at least the files install.txt and usage.txt.  Some information

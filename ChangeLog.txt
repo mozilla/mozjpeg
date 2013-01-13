@@ -43,6 +43,10 @@ bottom right corner (feature ported from jpeg-8d.)
 [10] JPEG files using the RGB colorspace can now be decompressed into grayscale
 images (feature ported from jpeg-8d.)
 
+[11] Fixed a regression caused by 1.2.1[7] whereby the build would fail with
+multiple "Mismatch in operand sizes" errors when attempting to build the x86
+SIMD code with NASM 0.98.
+
 
 1.2.1
 =====

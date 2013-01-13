@@ -3,7 +3,7 @@ if [ "$1" = "" -o "$2" = "" ]; then
 	exit 1
 fi
 
-echo $1 $2 >md5sum.txt
+echo "$1  $2" >md5sum.txt
 if [ ! -f $2 ]; then
 	echo $2 does not exist!
 	exit 1

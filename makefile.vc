@@ -71,9 +71,9 @@ MKFILES= configure Makefile.in makefile.ansi makefile.unix makefile.bcc \
 CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat \
         jconfig.vc jconfig.mac jconfig.st jconfig.manx jconfig.sas \
         jconfig.vms
-CONFIGUREFILES= config.guess config.sub install-sh ltmain.sh depcomp missing
-OTHERFILES= jconfig.txt ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm \
-        libjpeg.map
+CONFIGUREFILES= config.guess config.sub install-sh ltmain.sh depcomp \
+        missing ar-lib
+OTHERFILES= jconfig.txt ckconfig.c jmemdosa.asm libjpeg.map
 TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \
         testimgp.jpg
 DISTFILES= $(DOCS) $(MKFILES) $(CONFIGFILES) $(SOURCES) $(INCLUDES) \

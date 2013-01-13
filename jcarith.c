@@ -1,7 +1,7 @@
 /*
  * jcarith.c
  *
- * Developed 1997-2011 by Guido Vollbeding.
+ * Developed 1997-2012 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -479,7 +479,8 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   /* Sections F.1.4.2 & F.1.4.4.2: Encoding of AC coefficients */
 
   /* Establish EOB (end-of-block) index */
-  for (ke = cinfo->Se; ke > 0; ke--)
+  ke = cinfo->Se;
+  do {
     /* We must apply the point transform by Al.  For AC coefficients this
      * is an integer division with rounding towards 0.  To do this portably
      * in C, we shift after obtaining the absolute value.
@@ -490,13 +491,14 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       v = -v;
       if (v >>= cinfo->Al) break;
     }
+  } while (--ke);
 
   /* Figure F.5: Encode_AC_Coefficients */
-  for (k = cinfo->Ss; k <= ke; k++) {
-    st = entropy->ac_stats[tbl] + 3 * (k - 1);
+  for (k = cinfo->Ss - 1; k < ke;) {
+    st = entropy->ac_stats[tbl] + 3 * k;
     arith_encode(cinfo, st, 0);		/* EOB decision */
     for (;;) {
-      if ((v = (*block)[natural_order[k]]) >= 0) {
+      if ((v = (*block)[natural_order[++k]]) >= 0) {
 	if (v >>= cinfo->Al) {
 	  arith_encode(cinfo, st + 1, 1);
 	  arith_encode(cinfo, entropy->fixed_bin, 0);
@@ -510,7 +512,8 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 	  break;
 	}
       }
-      arith_encode(cinfo, st + 1, 0); st += 3; k++;
+      arith_encode(cinfo, st + 1, 0);
+      st += 3;
     }
     st += 2;
     /* Figure F.8: Encoding the magnitude category of v */
@@ -537,9 +540,9 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     while (m >>= 1)
       arith_encode(cinfo, st, (m & v) ? 1 : 0);
   }
-  /* Encode EOB decision only if k <= cinfo->Se */
-  if (k <= cinfo->Se) {
-    st = entropy->ac_stats[tbl] + 3 * (k - 1);
+  /* Encode EOB decision only if k < cinfo->Se */
+  if (k < cinfo->Se) {
+    st = entropy->ac_stats[tbl] + 3 * k;
     arith_encode(cinfo, st, 1);
   }
 
@@ -616,7 +619,8 @@ encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   /* Section G.1.3.3: Encoding of AC coefficients */
 
   /* Establish EOB (end-of-block) index */
-  for (ke = cinfo->Se; ke > 0; ke--)
+  ke = cinfo->Se;
+  do {
     /* We must apply the point transform by Al.  For AC coefficients this
      * is an integer division with rounding towards 0.  To do this portably
      * in C, we shift after obtaining the absolute value.
@@ -627,6 +631,7 @@ encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       v = -v;
       if (v >>= cinfo->Al) break;
     }
+  } while (--ke);
 
   /* Establish EOBx (previous stage end-of-block) index */
   for (kex = ke; kex > 0; kex--)
@@ -638,12 +643,12 @@ encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     }
 
   /* Figure G.10: Encode_AC_Coefficients_SA */
-  for (k = cinfo->Ss; k <= ke; k++) {
-    st = entropy->ac_stats[tbl] + 3 * (k - 1);
-    if (k > kex)
+  for (k = cinfo->Ss - 1; k < ke;) {
+    st = entropy->ac_stats[tbl] + 3 * k;
+    if (k >= kex)
       arith_encode(cinfo, st, 0);	/* EOB decision */
     for (;;) {
-      if ((v = (*block)[natural_order[k]]) >= 0) {
+      if ((v = (*block)[natural_order[++k]]) >= 0) {
 	if (v >>= cinfo->Al) {
 	  if (v >> 1)			/* previously nonzero coef */
 	    arith_encode(cinfo, st + 2, (v & 1));
@@ -665,12 +670,13 @@ encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 	  break;
 	}
       }
-      arith_encode(cinfo, st + 1, 0); st += 3; k++;
+      arith_encode(cinfo, st + 1, 0);
+      st += 3;
     }
   }
-  /* Encode EOB decision only if k <= cinfo->Se */
-  if (k <= cinfo->Se) {
-    st = entropy->ac_stats[tbl] + 3 * (k - 1);
+  /* Encode EOB decision only if k < cinfo->Se */
+  if (k < cinfo->Se) {
+    st = entropy->ac_stats[tbl] + 3 * k;
     arith_encode(cinfo, st, 1);
   }
 
@@ -922,7 +928,7 @@ jinit_arith_encoder (j_compress_ptr cinfo)
   entropy = (arith_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(arith_entropy_encoder));
-  cinfo->entropy = (struct jpeg_entropy_encoder *) entropy;
+  cinfo->entropy = &entropy->pub;
   entropy->pub.start_pass = start_pass;
   entropy->pub.finish_pass = finish_pass;
 

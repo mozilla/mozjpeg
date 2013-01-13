@@ -5,7 +5,7 @@
 # Configure script for IJG libjpeg
 #
 
-AC_INIT([libjpeg], [8.4.0])
+AC_INIT([libjpeg], [9.0.0])
 
 # Directory where autotools helper scripts lives.
 AC_CONFIG_AUX_DIR([.])
@@ -21,15 +21,12 @@ AC_CANONICAL_TARGET
 
 # Initialize Automake
 # Don't require all the GNU mandated files
-AM_INIT_AUTOMAKE([-Wall -Werror -Wno-obsolete ansi2knr no-dist foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror no-dist foreign])
 
 # Make --enable-silent-rules the default.
 # To get verbose build output you may configure
 # with --disable-silent-rules or use "make V=1".
 AM_SILENT_RULES([yes])
-
-# This is required when using the de-ANSI-fication feature.
-AM_C_PROTOTYPES
 
 # Add configure option --enable-maintainer-mode which enables
 # dependency checking and generation useful to package maintainers.
@@ -43,6 +40,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
+AM_PROG_AR
 
 # Check if LD supports linker scripts,
 # and define automake conditional HAVE_LD_VERSION_SCRIPT if so.
@@ -225,6 +223,10 @@ int possibly_dupli_function () { return 1; }
 # Run-time checks
 AC_MSG_CHECKING([to see if char is signed])
 AC_TRY_RUN([
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <stdio.h>
 #ifdef HAVE_PROTOTYPES
 int is_char_signed (int arg)
 #else
@@ -254,6 +256,10 @@ int main() {
 
 AC_MSG_CHECKING([to see if right shift is signed])
 AC_TRY_RUN([
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <stdio.h>
 #ifdef HAVE_PROTOTYPES
 int is_shifting_signed (long arg)
 #else
@@ -288,6 +294,9 @@ int main() {
 
 AC_MSG_CHECKING([to see if fopen accepts b spec])
 AC_TRY_RUN([
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 int main() {
   if (fopen("conftestdata", "wb") != NULL)

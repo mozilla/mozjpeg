@@ -1,6 +1,6 @@
 USING THE IJG JPEG LIBRARY
 
-Copyright (C) 1994-2011, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -876,6 +876,10 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
 Compression parameters (cinfo fields) include:
 
+boolean arith_code
+	If TRUE, use arithmetic coding.
+	If FALSE, use Huffman coding.
+
 int block_size
 	Set DCT block size.  All N from 1 to 16 are possible.
 	Default is 8 (baseline format).
@@ -916,7 +920,16 @@ J_COLOR_SPACE jpeg_color_space
 int num_components
 	The JPEG color space and corresponding number of components; see
 	"Special color spaces", below, for more info.  We recommend using
-	jpeg_set_color_space() if you want to change these.
+	jpeg_set_colorspace() if you want to change these.
+
+J_COLOR_TRANSFORM color_transform
+	Internal color transform identifier, writes LSE marker if nonzero
+	(requires decoder with inverse color transform support, introduced
+	with IJG JPEG 9).
+	Two values are currently possible: JCT_NONE and JCT_SUBTRACT_GREEN.
+	Set this value for lossless RGB application *before* calling
+	jpeg_set_colorspace(), because entropy table assignment in
+	jpeg_set_colorspace() depends on color_transform.
 
 boolean optimize_coding
 	TRUE causes the compressor to compute optimal Huffman coding tables

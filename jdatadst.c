@@ -226,6 +226,9 @@ jpeg_stdio_dest (j_compress_ptr cinfo, FILE * outfile)
  * larger memory, so the buffer is available to the application after
  * finishing compression, and then the application is responsible for
  * freeing the requested memory.
+ * Note:  An initial buffer supplied by the caller is expected to be
+ * managed by the application.  The library does not free such buffer
+ * when allocating a larger buffer.
  */
 
 GLOBAL(void)

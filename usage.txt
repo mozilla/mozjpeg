@@ -80,8 +80,9 @@ The basic command line switches for cjpeg are:
 	-rgb		Create RGB JPEG file.
 			Using this switch suppresses the conversion from RGB
 			colorspace input to the default YCbCr JPEG colorspace.
-			Use this switch in combination with the -block N
-			switch (see below) for lossless JPEG coding.
+			You can use this switch in combination with the
+			-block N switch (see below) for lossless JPEG coding.
+			See also the -rgb1 switch below.
 
 	-optimize	Perform optimization of entropy encoding parameters.
 			Without this, default encoding parameters are used.
@@ -174,6 +175,18 @@ Switches for advanced users:
 			enabled JPEG is not yet widely implemented, so many
 			decoders will be unable to view a SmartScale extended
 			JPEG file at all.
+
+	-rgb1		Create RGB JPEG file with reversible color transform.
+			Works like the -rgb switch (see above) and inserts a
+			simple reversible color transform into the processing
+			which significantly improves the compression.
+			Use this switch in combination with the -block N
+			switch (see above) for lossless JPEG coding.
+			CAUTION: A decoder with inverse color transform
+			support is required for this feature.  Reversible
+			color transform support is not yet widely implemented,
+			so many decoders will be unable to view a reversible
+			color transformed JPEG file at all.
 
 	-dct int	Use integer DCT method (default).
 	-dct fast	Use fast integer DCT (less accurate).

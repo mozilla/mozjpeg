@@ -51,11 +51,11 @@ CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat \
         jconfig.vms
 
 # Support scripts for configure
-CONFIGUREFILES= config.guess config.sub install-sh ltmain.sh depcomp missing
+CONFIGUREFILES= config.guess config.sub install-sh ltmain.sh depcomp \
+        missing ar-lib
 
 # Miscellaneous support files
-OTHERFILES= jconfig.txt ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm \
-        libjpeg.map
+OTHERFILES= jconfig.txt ckconfig.c jmemdosa.asm libjpeg.map
 
 # Test support files
 TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \

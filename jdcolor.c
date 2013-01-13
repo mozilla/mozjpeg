@@ -2,7 +2,7 @@
  * jdcolor.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * Modified 2011 by Guido Vollbeding.
+ * Modified 2011-2012 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -215,8 +215,8 @@ rgb_gray_convert (j_decompress_ptr cinfo,
 		  JSAMPARRAY output_buf, int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  register int r, g, b;
   register INT32 * ctab = cconvert->rgb_y_tab;
+  register int r, g, b;
   register JSAMPROW outptr;
   register JSAMPROW inptr0, inptr1, inptr2;
   register JDIMENSION col;
@@ -232,6 +232,86 @@ rgb_gray_convert (j_decompress_ptr cinfo,
       r = GETJSAMPLE(inptr0[col]);
       g = GETJSAMPLE(inptr1[col]);
       b = GETJSAMPLE(inptr2[col]);
+      /* Y */
+      outptr[col] = (JSAMPLE)
+		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])
+		 >> SCALEBITS);
+    }
+  }
+}
+
+
+/*
+ * [R-G,G,B-G] to [R,G,B] conversion with modulo calculation
+ * (inverse color transform).
+ */
+
+METHODDEF(void)
+rgb1_rgb_convert (j_decompress_ptr cinfo,
+		  JSAMPIMAGE input_buf, JDIMENSION input_row,
+		  JSAMPARRAY output_buf, int num_rows)
+{
+  register int r, g, b;
+  register JSAMPROW outptr;
+  register JSAMPROW inptr0, inptr1, inptr2;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->output_width;
+
+  while (--num_rows >= 0) {
+    inptr0 = input_buf[0][input_row];
+    inptr1 = input_buf[1][input_row];
+    inptr2 = input_buf[2][input_row];
+    input_row++;
+    outptr = *output_buf++;
+    for (col = 0; col < num_cols; col++) {
+      r = GETJSAMPLE(inptr0[col]);
+      g = GETJSAMPLE(inptr1[col]);
+      b = GETJSAMPLE(inptr2[col]);
+      /* Assume that MAXJSAMPLE+1 is a power of 2, so that the MOD
+       * (modulo) operator is equivalent to the bitmask operator AND.
+       */
+      outptr[RGB_RED]   = (JSAMPLE) ((r + g - CENTERJSAMPLE) & MAXJSAMPLE);
+      outptr[RGB_GREEN] = (JSAMPLE) g;
+      outptr[RGB_BLUE]  = (JSAMPLE) ((b + g - CENTERJSAMPLE) & MAXJSAMPLE);
+      outptr += RGB_PIXELSIZE;
+    }
+  }
+}
+
+
+/*
+ * [R-G,G,B-G] to grayscale conversion with modulo calculation
+ * (inverse color transform).
+ */
+
+METHODDEF(void)
+rgb1_gray_convert (j_decompress_ptr cinfo,
+		   JSAMPIMAGE input_buf, JDIMENSION input_row,
+		   JSAMPARRAY output_buf, int num_rows)
+{
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
+  register INT32 * ctab = cconvert->rgb_y_tab;
+  register int r, g, b;
+  register JSAMPROW outptr;
+  register JSAMPROW inptr0, inptr1, inptr2;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->output_width;
+
+  while (--num_rows >= 0) {
+    inptr0 = input_buf[0][input_row];
+    inptr1 = input_buf[1][input_row];
+    inptr2 = input_buf[2][input_row];
+    input_row++;
+    outptr = *output_buf++;
+    for (col = 0; col < num_cols; col++) {
+      r = GETJSAMPLE(inptr0[col]);
+      g = GETJSAMPLE(inptr1[col]);
+      b = GETJSAMPLE(inptr2[col]);
+      /* Assume that MAXJSAMPLE+1 is a power of 2, so that the MOD
+       * (modulo) operator is equivalent to the bitmask operator AND.
+       */
+      r = (r + g - CENTERJSAMPLE) & MAXJSAMPLE;
+      b = (b + g - CENTERJSAMPLE) & MAXJSAMPLE;
       /* Y */
       outptr[col] = (JSAMPLE)
 		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])
@@ -283,19 +363,20 @@ null_convert (j_decompress_ptr cinfo,
 	      JSAMPIMAGE input_buf, JDIMENSION input_row,
 	      JSAMPARRAY output_buf, int num_rows)
 {
-  register JSAMPROW inptr, outptr;
-  register JDIMENSION count;
-  register int num_components = cinfo->num_components;
-  JDIMENSION num_cols = cinfo->output_width;
   int ci;
+  register int nc = cinfo->num_components;
+  register JSAMPROW outptr;
+  register JSAMPROW inptr;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->output_width;
 
   while (--num_rows >= 0) {
-    for (ci = 0; ci < num_components; ci++) {
+    for (ci = 0; ci < nc; ci++) {
       inptr = input_buf[ci][input_row];
       outptr = output_buf[0] + ci;
-      for (count = num_cols; count > 0; count--) {
+      for (col = 0; col < num_cols; col++) {
 	*outptr = *inptr++;	/* needn't bother with GETJSAMPLE() here */
-	outptr += num_components;
+	outptr += nc;
       }
     }
     input_row++;
@@ -331,7 +412,8 @@ gray_rgb_convert (j_decompress_ptr cinfo,
 		  JSAMPIMAGE input_buf, JDIMENSION input_row,
 		  JSAMPARRAY output_buf, int num_rows)
 {
-  register JSAMPROW inptr, outptr;
+  register JSAMPROW outptr;
+  register JSAMPROW inptr;
   register JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
 
@@ -422,7 +504,7 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
   cconvert = (my_cconvert_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(my_color_deconverter));
-  cinfo->cconvert = (struct jpeg_color_deconverter *) cconvert;
+  cinfo->cconvert = &cconvert->pub;
   cconvert->pub.start_pass = start_pass_dcolor;
 
   /* Make sure num_components agrees with jpeg_color_space */
@@ -450,6 +532,10 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     break;
   }
 
+  /* Support color transform only for RGB colorspace */
+  if (cinfo->color_transform && cinfo->jpeg_color_space != JCS_RGB)
+    ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+
   /* Set out_color_components and conversion method based on requested space.
    * Also clear the component_needed flags for any unused components,
    * so that earlier pipeline stages can avoid useless computation.
@@ -465,7 +551,17 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
       for (ci = 1; ci < cinfo->num_components; ci++)
 	cinfo->comp_info[ci].component_needed = FALSE;
     } else if (cinfo->jpeg_color_space == JCS_RGB) {
-      cconvert->pub.color_convert = rgb_gray_convert;
+      switch (cinfo->color_transform) {
+      case JCT_NONE:
+	cconvert->pub.color_convert = rgb_gray_convert;
+	break;
+      case JCT_SUBTRACT_GREEN:
+	cconvert->pub.color_convert = rgb1_gray_convert;
+	break;
+      default:
+	ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+	break;
+      }
       build_rgb_y_table(cinfo);
     } else
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
@@ -479,7 +575,17 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     } else if (cinfo->jpeg_color_space == JCS_GRAYSCALE) {
       cconvert->pub.color_convert = gray_rgb_convert;
     } else if (cinfo->jpeg_color_space == JCS_RGB) {
-      cconvert->pub.color_convert = rgb_convert;
+      switch (cinfo->color_transform) {
+      case JCT_NONE:
+	cconvert->pub.color_convert = rgb_convert;
+	break;
+      case JCT_SUBTRACT_GREEN:
+	cconvert->pub.color_convert = rgb1_rgb_convert;
+	break;
+      default:
+	ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+	break;
+      }
     } else
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;

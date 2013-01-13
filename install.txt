@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-2011, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -848,14 +848,14 @@ with /Oo-.
 Microsoft Windows (all versions), generic comments:
 
 Some Windows system include files define typedef boolean as "unsigned char".
-The IJG code also defines typedef boolean, but we make it "int" by default.
+The IJG code also defines typedef boolean, but we make it an "enum" by default.
 This doesn't affect the IJG programs because we don't import those Windows
 include files.  But if you use the JPEG library in your own program, and some
 of your program's files import one definition of boolean while some import the
 other, you can get all sorts of mysterious problems.  A good preventive step
 is to make the IJG library use "unsigned char" for boolean.  To do that,
 add something like this to your jconfig.h file:
-	/* Define "boolean" as unsigned char, not int, per Windows custom */
+	/* Define "boolean" as unsigned char, not enum, per Windows custom */
 	#ifndef __RPCNDR_H__	/* don't conflict if rpcndr.h already read */
 	typedef unsigned char boolean;
 	#endif

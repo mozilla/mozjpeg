@@ -1,7 +1,7 @@
 /*
  * jpegtran.c
  *
- * Copyright (C) 1995-2011, Thomas G. Lane, Guido Vollbeding.
+ * Copyright (C) 1995-2012, Thomas G. Lane, Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -467,7 +467,7 @@ main (int argc, char **argv)
 
   /* Adjust default decompression parameters */
   if (scaleoption != NULL)
-    if (sscanf(scaleoption, "%d/%d",
+    if (sscanf(scaleoption, "%u/%u",
 	&srcinfo.scale_num, &srcinfo.scale_denom) < 1)
       usage();
 

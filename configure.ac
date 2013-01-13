@@ -189,6 +189,7 @@ int bar() { return foo();], ljt_cv_inline="inline"))))
 AC_MSG_RESULT($ljt_cv_inline)
 AC_DEFINE_UNQUOTED([INLINE],[$ljt_cv_inline],[How to obtain function inlining.])
 
+# Arithmetic coding support
 AC_MSG_CHECKING([whether to include arithmetic encoding support])
 AC_ARG_WITH([arith-enc],
     AC_HELP_STRING([--without-arith-enc], [Omit arithmetic encoding support]))
@@ -213,6 +214,17 @@ AM_CONDITIONAL([WITH_ARITH_DEC], [test "x$with_arith_dec" != "xno"])
 
 AM_CONDITIONAL([WITH_ARITH], [test "x$with_arith_dec" != "xno" -o "x$with_arith_enc" != "xno"])
 
+# TurboJPEG support
+AC_MSG_CHECKING([whether to build TurboJPEG/OSS C wrapper])
+AC_ARG_WITH([turbojpeg],
+    AC_HELP_STRING([--without-turbojpeg],[Do not build the TurboJPEG/OSS wrapper library and associated test programs]))
+if test "x$with_turbojpeg" = "xno"; then
+    AC_MSG_RESULT(no)
+else
+    AC_MSG_RESULT(yes)
+fi
+
+# Java support
 AC_ARG_VAR(JAVAC, [Java compiler command (default: javac)])
 if test "x$JAVAC" = "x"; then
   JAVAC=javac
@@ -235,6 +247,9 @@ AC_ARG_VAR(JNI_CFLAGS, [C compiler flags needed to include jni.h (default: -I/Sy
 AC_MSG_CHECKING([whether to build TurboJPEG/OSS Java wrapper])
 AC_ARG_WITH([java],
     AC_HELP_STRING([--with-java],[Build Java wrapper for the TurboJPEG/OSS library]))
+if test "x$with_turbojpeg" = "xno"; then
+    with_java=no
+fi
 
 RPM_CONFIG_ARGS=
 WITH_JAVA=0
@@ -336,6 +351,7 @@ AM_CONDITIONAL([SIMD_I386], [test "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
 AM_CONDITIONAL([SIMD_ARM], [test "x$simd_arch" = "xarm"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
+AM_CONDITIONAL([WITH_TURBOJPEG], [test "x$with_turbojpeg" != "xno"])
 
 case "$host_cpu" in
   x86_64)
@@ -366,9 +382,13 @@ AC_CONFIG_FILES([pkgscripts/makemacpkg:release/makemacpkg.in])
 AC_CONFIG_FILES([pkgscripts/Description.plist:release/Description.plist.in])
 AC_CONFIG_FILES([pkgscripts/Info.plist:release/Info.plist.in])
 AC_CONFIG_FILES([pkgscripts/uninstall:release/uninstall.in])
+if test "x$with_turbojpeg" != "xno"; then
 AC_CONFIG_FILES([tjbenchtest])
+fi
+if test "x$with_java" = "xyes"; then
 AC_CONFIG_FILES([tjbenchtest.java])
 AC_CONFIG_FILES([tjexampletest])
+fi
 AC_CONFIG_FILES([libjpeg.map])
 AC_CONFIG_FILES([Makefile simd/Makefile])
 AC_CONFIG_FILES([java/Makefile])

@@ -192,7 +192,7 @@ AC_DEFINE_UNQUOTED([INLINE],[$ljt_cv_inline],[How to obtain function inlining.])
 # Arithmetic coding support
 AC_MSG_CHECKING([whether to include arithmetic encoding support])
 AC_ARG_WITH([arith-enc],
-    AC_HELP_STRING([--without-arith-enc], [Omit arithmetic encoding support]))
+    AC_HELP_STRING([--without-arith-enc], [Do not include arithmetic encoding support]))
 if test "x$with_arith_enc" = "xno"; then
     AC_MSG_RESULT(no)
 else
@@ -203,7 +203,7 @@ AM_CONDITIONAL([WITH_ARITH_ENC], [test "x$with_arith_enc" != "xno"])
 
 AC_MSG_CHECKING([whether to include arithmetic decoding support])
 AC_ARG_WITH([arith-dec],
-    AC_HELP_STRING([--without-arith-dec], [Omit arithmetic decoding support]))
+    AC_HELP_STRING([--without-arith-dec], [Do not include arithmetic decoding support]))
 if test "x$with_arith_dec" = "xno"; then
     AC_MSG_RESULT(no)
 else
@@ -217,7 +217,7 @@ AM_CONDITIONAL([WITH_ARITH], [test "x$with_arith_dec" != "xno" -o "x$with_arith_
 # TurboJPEG support
 AC_MSG_CHECKING([whether to build TurboJPEG/OSS C wrapper])
 AC_ARG_WITH([turbojpeg],
-    AC_HELP_STRING([--without-turbojpeg],[Do not build the TurboJPEG/OSS wrapper library and associated test programs]))
+    AC_HELP_STRING([--without-turbojpeg],[Do not include the TurboJPEG/OSS wrapper library and associated test programs]))
 if test "x$with_turbojpeg" = "xno"; then
     AC_MSG_RESULT(no)
 else
@@ -308,7 +308,7 @@ fi
 
 # SIMD is optional
 AC_ARG_WITH([simd],
-    AC_HELP_STRING([--without-simd],[Omit SIMD extensions.]))
+    AC_HELP_STRING([--without-simd],[Do not include SIMD extensions]))
 if test "x${with_simd}" != "xno"; then
   # Check if we're on a supported CPU
   AC_MSG_CHECKING([if we have SIMD optimisations for cpu type])

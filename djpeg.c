@@ -573,7 +573,7 @@ main (int argc, char **argv)
         else
           fprintf(stderr, "%s: can't read from stdin\n", progname);
       }
-      insize += nbytes;
+      insize += (unsigned long)nbytes;
     } while (nbytes == INPUT_BUF_SIZE);
     fprintf(stderr, "Compressed size:  %lu bytes\n", insize);
     jpeg_mem_src(&cinfo, inbuffer, insize);

@@ -191,7 +191,7 @@ term_mem_destination (j_compress_ptr cinfo)
   my_mem_dest_ptr dest = (my_mem_dest_ptr) cinfo->dest;
 
   *dest->outbuffer = dest->buffer;
-  *dest->outsize = dest->bufsize - dest->pub.free_in_buffer;
+  *dest->outsize = (unsigned long)(dest->bufsize - dest->pub.free_in_buffer);
 }
 #endif
 

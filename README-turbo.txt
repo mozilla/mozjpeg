@@ -313,20 +313,32 @@ Fully supported when using libjpeg v7/v8 emulation:
 
 Not supported:
 
+NOTE:  As of this writing, extensive research has been conducted into the
+usefulness of DCT scaling as a means of data reduction and SmartScale as a
+means of quality improvement.  The reader is invited to peruse the research at
+http://www.libjpeg-turbo.org/About/SmartScale and draw his/her own conclusions,
+but it is the general belief of our project that these features have not
+demonstrated sufficient usefulness to justify inclusion in libjpeg-turbo.
+
 -- libjpeg: DCT scaling in compressor
    cinfo.scale_num and cinfo.scale_denom are silently ignored.
-   There is no technical reason why DCT scaling cannot be supported, but
-   without the SmartScale extension (see below), it would only be able to
-   down-scale using ratios of 1/2, 8/15, 4/7, 8/13, 2/3, 8/11, 4/5, and 8/9,
-   which is of limited usefulness.
+   There is no technical reason why DCT scaling could not be supported when
+   emulating the libjpeg v7+ API/ABI, but without the SmartScale extension (see
+   below), only scaling factors of 1/2, 8/15, 4/7, 8/13, 2/3, 8/11, 4/5, and
+   8/9 would be available, which is of limited usefulness.
 
 -- libjpeg: SmartScale
    cinfo.block_size is silently ignored.
    SmartScale is an extension to the JPEG format that allows for DCT block
-   sizes other than 8x8.  Providing support for this new format is feasible
-   (particularly without full acceleration), but until/unless the format
-   becomes either an official industry standard or, at minimum, an accepted
-   solution in the community, we are hesitant to implement it.
+   sizes other than 8x8.  Providing support for this new format would be
+   feasible (particularly without full acceleration.)  However, until/unless
+   the format becomes either an official industry standard or, at minimum, an
+   accepted solution in the community, we are hesitant to implement it, as
+   there is no sense of whether or how it might change in the future.  It is
+   our belief that SmartScale has not demonstrated sufficient usefulness as a
+   lossless format nor as a means of quality enhancement, and thus, our primary
+   interest in providing this feature would be as a means of supporting
+   additional DCT scaling factors.
 
 -- libjpeg: Fancy downsampling in compressor
    cinfo.do_fancy_downsampling is silently ignored.
@@ -338,6 +350,24 @@ Not supported:
 
 -- Lossless RGB JPEG files
    This requires the SmartScale feature, which is not supported.
+
+What About libjpeg v9?
+----------------------
+
+libjpeg v9 introduced yet another field to the JPEG compression structure
+(color_transform), thus making the ABI backward incompatible with that of
+libjpeg v8.  This new field was introduced solely for the purpose of supporting
+lossless SmartScale encoding.  Further, there was actually no reason to extend
+the API in this manner, as the color transform could have just as easily been
+activated by way of a new JPEG colorspace constant, thus preserving backward
+ABI compatibility.
+
+Our research (see link above) has shown that lossless SmartScale does not
+generally accomplish anything that can't already be accomplished better with
+existing, standard lossless formats.  Thus, at this time, it is our belief that
+there is not sufficient technical justification for software to upgrade from
+libjpeg v8 to libjpeg v9, and therefore, not sufficient technical justification
+for us to emulate the libjpeg v9 ABI.
 
 
 *******************************************************************************

@@ -259,7 +259,7 @@ ABI compatibility with previous libjpeg releases.  Thus, programs that were
 built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
 based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
 as widely used as v6b, enough programs (including a few Linux distros) made
-the switch that there was a demand to emulate the libjpeg v7 and v8 APIs/ABIs
+the switch that there was a demand to emulate the libjpeg v7 and v8 ABIs
 in libjpeg-turbo.  It should be noted, however, that this feature was added
 primarily so that applications that had already been compiled to use libjpeg
 v7+ could take advantage of accelerated baseline JPEG encoding/decoding
@@ -269,7 +269,7 @@ cases (see below.)
 
 By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, or an
 argument of -DWITH_JPEG7=1 or -DWITH_JPEG8=1 to cmake, you can build a version
-of libjpeg-turbo that emulates the libjpeg v7 or v8 API/ABI, so that programs
+of libjpeg-turbo that emulates the libjpeg v7 or v8 ABI, so that programs
 that are built against libjpeg v7 or v8 can be run with libjpeg-turbo.  The
 following section describes which libjpeg v7+ features are supported and which
 aren't.

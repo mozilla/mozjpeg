@@ -121,7 +121,6 @@ AC_SUBST(JPEG_LIB_VERSION_DECIMAL)
 AC_MSG_RESULT([$JPEG_LIB_VERSION_DECIMAL])
 AC_DEFINE_UNQUOTED(JPEG_LIB_VERSION, [$JPEG_LIB_VERSION], [libjpeg API version])
 
-AC_MSG_CHECKING([libjpeg shared library version])
 AC_ARG_VAR(SO_MAJOR_VERSION, [Major version of the libjpeg-turbo shared library (default is determined by the API version)])
 AC_ARG_VAR(SO_MINOR_VERSION, [Minor version of the libjpeg-turbo shared library (default is determined by the API version)])
 if test "x$SO_MAJOR_VERSION" = "x"; then
@@ -136,9 +135,31 @@ if test "x$SO_MINOR_VERSION" = "x"; then
         *)   SO_MINOR_VERSION=0 ;;
     esac
 fi
-AC_MSG_RESULT([$SO_MAJOR_VERSION:$SO_MINOR_VERSION])
+
+# Memory source/destination managers
+SO_AGE=0
+MEM_SRCDST_FUNCTIONS=
+if test "x${with_jpeg8}" != "xyes"; then
+  AC_MSG_CHECKING([whether to include in-memory source/destination managers])
+  AC_ARG_WITH([mem-srcdst],
+      AC_HELP_STRING([--without-mem-srcdst], [Do not include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI]))
+  if test "x$with_mem_srcdst" != "xno"; then
+      AC_MSG_RESULT(yes)
+      AC_DEFINE([MEM_SRCDST_SUPPORTED], [1], [Support in-memory source/destination managers])
+      SO_AGE=1
+      MEM_SRCDST_FUNCTIONS="global:  jpeg_mem_dest;  jpeg_mem_src;";
+  else
+      AC_MSG_RESULT(no)
+  fi
+fi
+
+AC_MSG_CHECKING([libjpeg shared library version])
+AC_MSG_RESULT([$SO_MAJOR_VERSION.$SO_AGE.$SO_MINOR_VERSION])
+SO_MAJOR_VERSION=`expr $SO_MAJOR_VERSION + $SO_AGE`
 AC_SUBST(SO_MAJOR_VERSION)
 AC_SUBST(SO_MINOR_VERSION)
+AC_SUBST(SO_AGE)
+AC_SUBST(MEM_SRCDST_FUNCTIONS)
 
 AC_DEFINE_UNQUOTED(LIBJPEG_TURBO_VERSION, [$VERSION], [libjpeg-turbo version])
 

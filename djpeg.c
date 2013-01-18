@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modifications:
- * Copyright (C) 2010-2011, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for the JPEG decompressor.
@@ -87,6 +87,8 @@ static IMAGE_FORMATS requested_fmt;
 
 static const char * progname;	/* program name for error messages */
 static char * outfilename;	/* for -outfile switch */
+boolean memsrc;  /* for -memsrc switch */
+#define INPUT_BUF_SIZE  4096
 
 
 LOCAL(void)
@@ -157,6 +159,10 @@ usage (void)
 #endif
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+  fprintf(stderr, "  -memsrc        Load input file into memory before decompressing\n");
+#endif
+
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   exit(EXIT_FAILURE);
 }
@@ -180,6 +186,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
   requested_fmt = DEFAULT_FMT;	/* set default output file format */
   outfilename = NULL;
+  memsrc = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -325,6 +332,16 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
 	usage();
       outfilename = argv[argn];	/* save it away for later use */
 
+    } else if (keymatch(arg, "memsrc", 2)) {
+      /* Use in-memory source manager */
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+      memsrc = TRUE;
+#else
+      fprintf(stderr, "%s: sorry, in-memory source manager was not compiled in\n",
+              progname);
+      exit(EXIT_FAILURE);
+#endif
+
     } else if (keymatch(arg, "pnm", 1) || keymatch(arg, "ppm", 1)) {
       /* PPM/PGM output format. */
       requested_fmt = FMT_PPM;
@@ -443,6 +460,8 @@ main (int argc, char **argv)
   djpeg_dest_ptr dest_mgr = NULL;
   FILE * input_file;
   FILE * output_file;
+  unsigned char *inbuffer = NULL;
+  unsigned long insize = 0;
   JDIMENSION num_scanlines;
 
   /* On Mac, fetch a command line. */
@@ -537,7 +556,30 @@ main (int argc, char **argv)
 #endif
 
   /* Specify data source for decompression */
-  jpeg_stdio_src(&cinfo, input_file);
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+  if (memsrc) {
+    size_t nbytes;
+    do {
+      inbuffer = (unsigned char *)realloc(inbuffer, insize + INPUT_BUF_SIZE);
+      if (inbuffer == NULL) {
+        fprintf(stderr, "%s: memory allocation failure\n", progname);
+        exit(EXIT_FAILURE);
+      }
+      nbytes = JFREAD(input_file, &inbuffer[insize], INPUT_BUF_SIZE);
+      if (nbytes < 0) {
+        if (file_index < argc)
+          fprintf(stderr, "%s: can't read from %s\n", progname,
+                  argv[file_index]);
+        else
+          fprintf(stderr, "%s: can't read from stdin\n", progname);
+      }
+      insize += nbytes;
+    } while (nbytes == INPUT_BUF_SIZE);
+    fprintf(stderr, "Compressed size:  %lu bytes\n", insize);
+    jpeg_mem_src(&cinfo, inbuffer, insize);
+  } else
+#endif
+    jpeg_stdio_src(&cinfo, input_file);
 
   /* Read file header, set default decompression parameters */
   (void) jpeg_read_header(&cinfo, TRUE);
@@ -620,6 +662,9 @@ main (int argc, char **argv)
 #ifdef PROGRESS_REPORT
   end_progress_monitor((j_common_ptr) &cinfo);
 #endif
+
+  if (memsrc && inbuffer != NULL)
+    free(inbuffer);
 
   /* All done. */
   exit(jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);

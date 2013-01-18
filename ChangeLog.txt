@@ -47,6 +47,16 @@ images (feature ported from jpeg-8d.)
 multiple "Mismatch in operand sizes" errors when attempting to build the x86
 SIMD code with NASM 0.98.
 
+[12] The in-memory source/destination managers (jpeg_mem_src() and
+jpeg_mem_dest()) are now included by default when building libjpeg-turbo with
+libjpeg v6b or v7 emulation, so that programs can take advantage of these
+functions without requiring the use of the backward-incompatible libjpeg v8
+ABI.  The "age number" of the libjpeg-turbo library on Un*x systems has been
+incremented by 1 to reflect this.  You can disable this feature with a
+configure/CMake switch in order to retain strict API/ABI compatibility with the
+libjpeg v6b or v7 API/ABI (or with previous versions of libjpeg-turbo.)  See
+README-turbo.txt for more details.
+
 
 1.2.1
 =====

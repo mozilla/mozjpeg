@@ -24,8 +24,13 @@ if(WITH_SIMD)
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
 endif()
 
-add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
-  ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def)
+if(WITH_MEM_SRCDST)
+  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
+    ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}-memsrcdst.def)
+else()
+  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
+    ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def)
+endif()
 set_target_properties(jpeg PROPERTIES SOVERSION ${DLL_VERSION}
   VERSION ${FULLVERSION})
 if(MSVC)

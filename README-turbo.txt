@@ -252,9 +252,9 @@ extensions at compile time with:
 jcstest.c, located in the libjpeg-turbo source tree, demonstrates how to check
 for the existence of the colorspace extensions at compile time and run time.
 
-=================================
-libjpeg v7 and v8 API/ABI support
-=================================
+===================================
+libjpeg v7 and v8 API/ABI Emulation
+===================================
 
 With libjpeg v7 and v8, new features were added that necessitated extending the
 compression and decompression structures.  Unfortunately, due to the exposed
@@ -264,13 +264,13 @@ built to use libjpeg v7 or v8 did not work with libjpeg-turbo, since it is
 based on the libjpeg v6b code base.  Although libjpeg v7 and v8 are still not
 as widely used as v6b, enough programs (including a few Linux distros) have
 made the switch that it was desirable to provide support for the libjpeg v7/v8
-API/ABI in libjpeg-turbo.  Although libjpeg-turbo can now be configured as a
+ABI in libjpeg-turbo.  Although libjpeg-turbo can now be configured as a
 drop-in replacement for libjpeg v7 or v8, it should be noted that not all of
 the features in libjpeg v7 and v8 are supported (see below.)
 
 By passing an argument of --with-jpeg7 or --with-jpeg8 to configure, or an
 argument of -DWITH_JPEG7=1 or -DWITH_JPEG8=1 to cmake, you can build a version
-of libjpeg-turbo that emulates the libjpeg v7 or v8 API/ABI, so that programs
+of libjpeg-turbo that emulates the libjpeg v7 or v8 ABI, so that programs
 that are built against libjpeg v7 or v8 can be run with libjpeg-turbo.  The
 following section describes which libjpeg v7+ features are supported and which
 aren't.

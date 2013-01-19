@@ -87,7 +87,7 @@ rm -rf $RPM_BUILD_ROOT
 %else
 /opt/%{name}/lib32
 %endif
-/opt/%{name}/%{__lib}/libjpeg.so.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@
+/opt/%{name}/%{__lib}/libjpeg.so.@SO_MAJOR_VERSION@.@SO_AGE@.@SO_MINOR_VERSION@
 /opt/%{name}/%{__lib}/libjpeg.so.@SO_MAJOR_VERSION@
 /opt/%{name}/%{__lib}/libjpeg.so
 /opt/%{name}/%{__lib}/libjpeg.a

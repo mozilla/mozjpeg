@@ -273,6 +273,8 @@ public class TJExample implements TJCustomFilter {
       }
       else {
         img = ImageIO.read(file);
+        if (img == null)
+          throw new Exception("Input image type not supported.");
         width = img.getWidth();
         height = img.getHeight();
         if(outSubsamp < 0) {

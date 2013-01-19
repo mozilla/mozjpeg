@@ -136,6 +136,8 @@ if test "x$SO_MINOR_VERSION" = "x"; then
     esac
 fi
 
+RPM_CONFIG_ARGS=
+
 # Memory source/destination managers
 SO_AGE=0
 MEM_SRCDST_FUNCTIONS=
@@ -150,12 +152,14 @@ if test "x${with_jpeg8}" != "xyes"; then
       MEM_SRCDST_FUNCTIONS="global:  jpeg_mem_dest;  jpeg_mem_src;";
   else
       AC_MSG_RESULT(no)
+      RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-mem-srcdst"
   fi
 fi
 
 AC_MSG_CHECKING([libjpeg shared library version])
 AC_MSG_RESULT([$SO_MAJOR_VERSION.$SO_AGE.$SO_MINOR_VERSION])
-SO_MAJOR_VERSION=`expr $SO_MAJOR_VERSION + $SO_AGE`
+LIBTOOL_CURRENT=`expr $SO_MAJOR_VERSION + $SO_AGE`
+AC_SUBST(LIBTOOL_CURRENT)
 AC_SUBST(SO_MAJOR_VERSION)
 AC_SUBST(SO_MINOR_VERSION)
 AC_SUBST(SO_AGE)
@@ -216,6 +220,7 @@ AC_ARG_WITH([arith-enc],
     AC_HELP_STRING([--without-arith-enc], [Do not include arithmetic encoding support]))
 if test "x$with_arith_enc" = "xno"; then
     AC_MSG_RESULT(no)
+    RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-arith-enc"
 else
     AC_DEFINE([C_ARITH_CODING_SUPPORTED], [1], [Support arithmetic encoding])
     AC_MSG_RESULT(yes)
@@ -227,6 +232,7 @@ AC_ARG_WITH([arith-dec],
     AC_HELP_STRING([--without-arith-dec], [Do not include arithmetic decoding support]))
 if test "x$with_arith_dec" = "xno"; then
     AC_MSG_RESULT(no)
+    RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-arith-dec"
 else
     AC_DEFINE([D_ARITH_CODING_SUPPORTED], [1], [Support arithmetic decoding])
     AC_MSG_RESULT(yes)
@@ -241,6 +247,7 @@ AC_ARG_WITH([turbojpeg],
     AC_HELP_STRING([--without-turbojpeg],[Do not include the TurboJPEG/OSS wrapper library and associated test programs]))
 if test "x$with_turbojpeg" = "xno"; then
     AC_MSG_RESULT(no)
+    RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-turbojpeg"
 else
     AC_MSG_RESULT(yes)
 fi
@@ -272,7 +279,6 @@ if test "x$with_turbojpeg" = "xno"; then
     with_java=no
 fi
 
-RPM_CONFIG_ARGS=
 WITH_JAVA=0
 if test "x$with_java" = "xyes"; then
     AC_MSG_RESULT(yes)
@@ -299,7 +305,7 @@ if test "x$with_java" = "xyes"; then
     CPPFLAGS=${SAVE_CPPFLAGS}
     AC_SUBST(JNI_CFLAGS)
 
-    RPM_CONFIG_ARGS=--with-java
+    RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --with-java"
     JAVA_RPM_CONTENTS_1='%dir /opt/%{name}/classes'
     JAVA_RPM_CONTENTS_2=/opt/%{name}/classes/turbojpeg.jar
     WITH_JAVA=1
@@ -310,7 +316,6 @@ AM_CONDITIONAL([WITH_JAVA], [test "x$with_java" = "xyes"])
 AC_SUBST(WITH_JAVA)
 AC_SUBST(JAVA_RPM_CONTENTS_1)
 AC_SUBST(JAVA_RPM_CONTENTS_2)
-AC_SUBST(RPM_CONFIG_ARGS)
 
 # optionally force using gas-preprocessor.pl for compatibility testing
 AC_ARG_WITH([gas-preprocessor],
@@ -364,6 +369,8 @@ if test "x${with_simd}" != "xno"; then
   if test "x${with_simd}" != "xno"; then
     AC_DEFINE([WITH_SIMD], [1], [Use accelerated SIMD routines.])
   fi
+else
+  RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-simd"
 fi
 
 AM_CONDITIONAL([WITH_SIMD], [test "x$with_simd" != "xno"])
@@ -386,6 +393,7 @@ case "$host_cpu" in
 esac
 
 AC_SUBST(RPMARCH)
+AC_SUBST(RPM_CONFIG_ARGS)
 AC_SUBST(DEBARCH)
 AC_SUBST(BUILD)
 AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])

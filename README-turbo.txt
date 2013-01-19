@@ -376,9 +376,10 @@ jpeg_mem_dest() functions, even when not emulating the libjpeg v8 API/ABI.
 Previously, it was necessary to build libjpeg-turbo from source with libjpeg v8
 API/ABI emulation in order to use the in-memory source/destination managers,
 but several projects requested that those functions be included when emulating
-the libjpeg v6b API/ABI as well.  This allows the use of those functions
-without breaking backward ABI compatibility with libjpeg v6b, and it allows
-those functions to be provided in the "official" libjpeg-turbo binaries.
+the libjpeg v6b API/ABI as well.  This allows the use of those functions by
+programs that need them without breaking ABI compatibility for programs that
+don't, and it allows those functions to be provided in the "official"
+libjpeg-turbo binaries.
 
 Those who are concerned about maintaining strict conformance with the libjpeg
 v6b or v7 API can pass an argument of --without-mem-srcdst to configure or
@@ -390,12 +391,14 @@ On Un*x systems, including the in-memory source/destination managers changes
 the dynamic library version from 62.0.0 to 62.1.0 if using libjpeg v6b API/ABI
 emulation and from 7.0.0 to 7.1.0 if using libjpeg v7 API/ABI emulation.
 
-Note that, on most operating systems, the dynamic linker will not look for
-a function in a library until that function is actually used.  Thus, if a
-program is built against libjpeg-turbo 1.3+ and uses jpeg_mem_src() or
-jpeg_mem_dest(), that program will not fail if run against an older version of
-libjpeg-turbo or against libjpeg v6b until the program actually tries to call
-jpeg_mem_src() or jpeg_mem_dest().
+Note that, on most Un*x systems, the dynamic linker will not look for a
+function in a library until that function is actually used.  Thus, if a program
+is built against libjpeg-turbo 1.3+ and uses jpeg_mem_src() or jpeg_mem_dest(),
+that program will not fail if run against an older version of libjpeg-turbo or
+against libjpeg v7- until the program actually tries to call jpeg_mem_src() or
+jpeg_mem_dest().  Such is not the case on Windows.  If a program is built
+against the libjpeg-turbo 1.3+ DLL and uses jpeg_mem_src() or jpeg_mem_dest(),
+then it must use the libjpeg-turbo 1.3+ DLL at run time.
 
 Both cjpeg and djpeg have been extended to allow testing the in-memory
 source/destination manager functions.  See their respective man pages for more

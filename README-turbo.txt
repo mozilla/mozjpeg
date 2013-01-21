@@ -25,7 +25,7 @@ available to a broader range of users and developers.
 *******************************************************************************
 
 Most of libjpeg-turbo inherits the non-restrictive, BSD-style license used by
-libjpeg (see README.)  The TurboJPEG/OSS wrapper (both C and Java versions) and
+libjpeg (see README.)  The TurboJPEG wrapper (both C and Java versions) and
 associated test programs bear a similar license, which is reproduced below:
 
 Redistribution and use in source and binary forms, with or without
@@ -69,9 +69,13 @@ JPEG images:
 
   libjpeg API:  This is the de facto industry-standard API for compressing and
   decompressing JPEG images.  It is more difficult to use than the TurboJPEG
-  API but also more powerful.  libjpeg-turbo is both API/ABI-compatible and
-  mathematically compatible with libjpeg v6b.  It can also optionally be
-  configured to be API/ABI-compatible with libjpeg v7 and v8 (see below.)
+  API but also more powerful.  The libjpeg API implementation in libjpeg-turbo
+  is both API/ABI-compatible and mathematically compatible with libjpeg v6b.
+  It can also optionally be configured to be API/ABI-compatible with libjpeg v7
+  and v8 (see below.)
+
+There is no significant performance advantage to either API when both are used
+to perform similar operations.
 
 ======================
 Installation Directory

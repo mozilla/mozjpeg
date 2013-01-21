@@ -184,7 +184,7 @@ NEON instructions.
 TurboJPEG 1.2 API uses pixel formats to define the size and component order of
 the uncompressed source/destination images, and it includes a more efficient
 version of TJBUFSIZE() that computes a worst-case JPEG size based on the level
-of chrominance subsampling.  The refactored implementation of TurboJPEG/OSS
+of chrominance subsampling.  The refactored implementation of the TurboJPEG API
 now uses the libjpeg memory source and destination managers, which allows the
 TurboJPEG compressor to grow the JPEG buffer as necessary.
 
@@ -260,12 +260,12 @@ and libjpeg-turbo should now produce identical output to libjpeg v6b in all
 cases.
 
 [2] Despite the above, the fast integer forward DCT still degrades somewhat for
-JPEG qualities greater than 95, so TurboJPEG/OSS will now automatically use the
-slow integer forward DCT when generating JPEG images of quality 96 or greater.
-This reduces compression performance by as much as 15% for these high-quality
-images but is necessary to ensure that the images are perceptually lossless.
-It also ensures that the library can avoid the performance pitfall created by
-[1].
+JPEG qualities greater than 95, so the TurboJPEG wrapper will now automatically
+use the slow integer forward DCT when generating JPEG images of quality 96 or
+greater.  This reduces compression performance by as much as 15% for these
+high-quality images but is necessary to ensure that the images are perceptually
+lossless.  It also ensures that the library can avoid the performance pitfall
+created by [1].
 
 [3] Ported jpgtest.cxx to pure C to avoid the need for a C++ compiler.
 

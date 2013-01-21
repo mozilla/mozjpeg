@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* TurboJPEG/OSS:  this implements the TurboJPEG API using libjpeg-turbo */
+/* TurboJPEG/LJT:  this implements the TurboJPEG API using libjpeg-turbo */
 
 #include <stdio.h>
 #include <stdlib.h>

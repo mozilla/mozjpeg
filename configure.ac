@@ -242,9 +242,9 @@ AM_CONDITIONAL([WITH_ARITH_DEC], [test "x$with_arith_dec" != "xno"])
 AM_CONDITIONAL([WITH_ARITH], [test "x$with_arith_dec" != "xno" -o "x$with_arith_enc" != "xno"])
 
 # TurboJPEG support
-AC_MSG_CHECKING([whether to build TurboJPEG/OSS C wrapper])
+AC_MSG_CHECKING([whether to build TurboJPEG C wrapper])
 AC_ARG_WITH([turbojpeg],
-    AC_HELP_STRING([--without-turbojpeg],[Do not include the TurboJPEG/OSS wrapper library and associated test programs]))
+    AC_HELP_STRING([--without-turbojpeg],[Do not include the TurboJPEG wrapper library and associated test programs]))
 if test "x$with_turbojpeg" = "xno"; then
     AC_MSG_RESULT(no)
     RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-turbojpeg"
@@ -272,9 +272,9 @@ fi
 AC_SUBST(JAVA)
 AC_ARG_VAR(JNI_CFLAGS, [C compiler flags needed to include jni.h (default: -I/System/Library/Frameworks/JavaVM.framework/Headers on OS X, '-I/usr/java/include -I/usr/java/include/solaris' on Solaris, and '-I/usr/java/default/include -I/usr/java/default/include/linux' on Linux)])
 
-AC_MSG_CHECKING([whether to build TurboJPEG/OSS Java wrapper])
+AC_MSG_CHECKING([whether to build TurboJPEG Java wrapper])
 AC_ARG_WITH([java],
-    AC_HELP_STRING([--with-java],[Build Java wrapper for the TurboJPEG/OSS library]))
+    AC_HELP_STRING([--with-java],[Build Java wrapper for the TurboJPEG library]))
 if test "x$with_turbojpeg" = "xno"; then
     with_java=no
 fi

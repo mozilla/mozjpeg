@@ -24,7 +24,7 @@ if(WITH_SIMD)
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
 endif()
 
-if(WITH_MEM_SRCDST)
+if(WITH_MEM_SRCDST AND NOT WITH_JPEG8)
   add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
     ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}-memsrcdst.def)
 else()

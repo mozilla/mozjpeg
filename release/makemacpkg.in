@@ -17,7 +17,7 @@ onexit()
 
 usage()
 {
-	echo "$0 [-build32 [32-bit build dir]] [-buildarmv6 [ARM v6 build dir]] [-buildarmv7 [ARM v7 build dir]]"
+	echo "$0 [-build32 [32-bit build dir]] [-buildarmv6 [ARM v6 build dir]] [-buildarmv7 [ARM v7 build dir]] [-buildarmv7s [ARM v7s build dir]]"
 	exit 1
 }
 
@@ -31,6 +31,8 @@ BUILDDIRARMV6=@abs_top_srcdir@/iosarmv6
 BUILDARMV6=0
 BUILDDIRARMV7=@abs_top_srcdir@/iosarmv7
 BUILDARMV7=0
+BUILDDIRARMV7S=@abs_top_srcdir@/iosarmv7s
+BUILDARMV7S=0
 WITH_JAVA=@WITH_JAVA@
 while [ $# -gt 0 ]; do
 	case $1 in
@@ -56,6 +58,14 @@ while [ $# -gt 0 ]; do
 		if [ $# -gt 1 ]; then
 			if [[ ! "$2" =~ -.* ]]; then
 				BUILDDIRARMV7=$2;  shift
+			fi
+		fi
+		;;
+	-buildarmv7s)
+		BUILDARMV7S=1
+		if [ $# -gt 1 ]; then
+			if [[ ! "$2" =~ -.* ]]; then
+				BUILDDIRARMV7S=$2;  shift
 			fi
 		fi
 		;;
@@ -190,6 +200,29 @@ if [ $BUILDARMV7 = 1 ]; then
 	lipo -create \
 		$PKGROOT/usr/lib/libturbojpeg.a \
 		-arch arm $TMPDIR/dist.armv7/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
+		-output $PKGROOT/usr/lib/libturbojpeg.a
+fi
+
+if [ $BUILDARMV7S = 1 ]; then
+	if [ ! -d $BUILDDIRARMV7S ]; then
+		echo ERROR: ARM v7s build directory $BUILDDIRARMV7S does not exist
+		exit 1
+	fi
+	if [ ! -f $BUILDDIRARMV7S/Makefile ]; then
+		echo ERROR: ARM v7s build directory $BUILDDIRARMV7S is not configured
+		exit 1
+	fi
+	mkdir -p $TMPDIR/dist.armv7s
+	pushd $BUILDDIRARMV7S
+	make install DESTDIR=$TMPDIR/dist.armv7s
+	popd
+	lipo -create \
+		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
+		-arch arm $TMPDIR/dist.armv7s/opt/$PACKAGE_NAME/lib/libjpeg.a \
+		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
+	lipo -create \
+		$PKGROOT/usr/lib/libturbojpeg.a \
+		-arch arm $TMPDIR/dist.armv7s/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
 		-output $PKGROOT/usr/lib/libturbojpeg.a
 fi
 

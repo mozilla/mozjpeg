@@ -421,4 +421,5 @@ fi
 AC_CONFIG_FILES([libjpeg.map])
 AC_CONFIG_FILES([Makefile simd/Makefile])
 AC_CONFIG_FILES([java/Makefile])
+AC_CONFIG_FILES([md5/Makefile])
 AC_OUTPUT

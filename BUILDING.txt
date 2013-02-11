@@ -71,8 +71,8 @@ for 64-bit build instructions.)
   sh {source_directory}/configure [additional configure flags]
   make
 
-NOTE: Running autoreconf in the source directory is only necessary if building
-libjpeg-turbo from the SVN repository.
+NOTE: Running autoreconf in the source directory is usually only necessary if
+building libjpeg-turbo from the SVN repository.
 
 This will generate the following files under .libs/
 
@@ -354,6 +354,12 @@ to the configure command line.
 
 Once built, lipo can be used to combine the ARM v6, v7, and/or v7s variants
 into a universal library.
+
+NOTE: If you are building libjpeg-turbo from the "official" project tarball,
+then it is highly likely that you will need to run 'autoreconf -fiv' in the
+source tree prior to building ARM v7 or v7s iOS binaries using the techniques
+described above.  Otherwise, you may get a libtool error such as "unable to
+infer tagged configuration."
 
 
 *******************************************************************************

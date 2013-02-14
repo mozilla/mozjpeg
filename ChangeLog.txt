@@ -16,8 +16,8 @@ not be SIMD-accelerated when using any of these new scaling factors.
 necessary to do so, because TurboJPEG uses versioned symbols, and if a function
 changes in an ABI-incompatible way, that function is renamed and a legacy
 function is provided to maintain backward compatibility.  However, certain
-Linux distro maintainers will blindly reject any library that is not versioned,
-so this was an attempt to make them happy.
+Linux distro maintainers have a policy against accepting any library that isn't
+versioned.
 
 [3] Extended the TurboJPEG Java API so that it can be used to compress a JPEG
 image from and decompress a JPEG image to an arbitrary position in a large

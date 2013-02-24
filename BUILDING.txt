@@ -681,6 +681,9 @@ make dmg
 
   Create Macintosh package/disk image.  This requires the PackageMaker
   application, which must be installed in /Developer/Applications/Utilities.
+  Note that PackageMaker is not included in recent releases of Xcode, but it
+  can be obtained by downloading the "Auxiliary Tools for Xcode" package from
+  http://developer.apple.com/downloads.
 
 make udmg [BUILDDIR32={32-bit build directory}]
 

@@ -1,5 +1,5 @@
 *******************************************************************************
-**     Building on Unix Platforms (including Cygwin)
+**     Building on Un*x Platforms (including Cygwin and OS X)
 *******************************************************************************
 
 
@@ -10,6 +10,9 @@ Build Requirements
 -- autoconf 2.56 or later
 -- automake 1.7 or later
 -- libtool 1.4 or later
+   * If using Xcode 4.3 or later on OS X, autoconf and automake are no longer
+     provided.  The easiest way to obtain them is from MacPorts
+     (http://www.macports.org/).
 
 -- NASM (if building x86 or x86-64 SIMD extensions)
    * 0.98, or 2.01 or later is required for a 32-bit build
@@ -33,6 +36,18 @@ Build Requirements
    NOTE: the NASM build will fail if texinfo is not installed.
 
 -- GCC v4.1 or later recommended for best performance
+   * Beginning with Xcode 4, Apple stopped distributing GCC and switched to
+     the LLVM compiler.  Xcode v4.0 through 4.6 provides a GCC front end called
+     LLVM-GCC.  Unfortunately, as of this writing, neither LLVM-GCC nor the
+     LLVM (clang) compiler produce optimal performance with libjpeg-turbo.
+     Building libjpeg-turbo with LLVM-GCC v4.2 results in a 10% performance
+     degradation when compressing using 64-bit code, relative to building
+     libjpeg-turbo with GCC v4.2.  Building libjpeg-turbo with LLVM (clang)
+     results in a 20% performance degradation when compressing using 64-bit
+     code, relative to building libjpeg-turbo with GCC v4.2.  If you are
+     running Snow Leopard or earlier, it is suggested that you continue to use
+     Xcode v3.2.6, which provides GCC v4.2.  If you are using Lion or later, it
+     is suggested that you install Apple GCC v4.2 through MacPorts.
 
 -- If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
    required.  Some systems, such as OS X 10.4, Solaris 10 and later, and Red

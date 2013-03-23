@@ -37,9 +37,9 @@ Build Requirements
 
 -- GCC v4.1 or later recommended for best performance
    * Beginning with Xcode 4, Apple stopped distributing GCC and switched to
-     the LLVM compiler.  Xcode v4.0 through 4.6 provides a GCC front end called
-     LLVM-GCC.  Unfortunately, as of this writing, neither LLVM-GCC nor the
-     LLVM (clang) compiler produce optimal performance with libjpeg-turbo.
+     the LLVM compiler.  Xcode v4.0 through v4.6 provides a GCC front end
+     called LLVM-GCC.  Unfortunately, as of this writing, neither LLVM-GCC nor
+     the LLVM (clang) compiler produces optimal performance with libjpeg-turbo.
      Building libjpeg-turbo with LLVM-GCC v4.2 results in a 10% performance
      degradation when compressing using 64-bit code, relative to building
      libjpeg-turbo with GCC v4.2.  Building libjpeg-turbo with LLVM (clang)

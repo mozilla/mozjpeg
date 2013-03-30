@@ -26,24 +26,12 @@
  * edited for clarity and style only.
  */
 
-#include <sys/cdefs.h>
-
 #include <sys/types.h>
-
-#ifdef _KERNEL
-#include <sys/systm.h>
-#else
 #include <string.h>
-#endif
 
 #include "./md5.h"
 
-static void MD5Transform(u_int32_t [4], const unsigned char [64]);
-
-#ifdef _KERNEL
-#define memset(x,y,z)	bzero(x,z);
-#define memcpy(x,y,z)	bcopy(y, x, z)
-#endif
+static void MD5Transform(unsigned int [4], const unsigned char [64]);
 
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #define Encode memcpy
@@ -51,30 +39,30 @@ static void MD5Transform(u_int32_t [4], const unsigned char [64]);
 #else 
 
 /*
- * Encodes input (u_int32_t) into output (unsigned char). Assumes len is
+ * Encodes input (unsigned int) into output (unsigned char). Assumes len is
  * a multiple of 4.
  */
 
 static void
-Encode (unsigned char *output, u_int32_t *input, unsigned int len)
+Encode (unsigned char *output, unsigned int *input, unsigned int len)
 {
 	unsigned int i;
-	u_int32_t *op = (u_int32_t *)output;
+	unsigned int *op = (unsigned int *)output;
 
 	for (i = 0; i < len / 4; i++)
 		op[i] = htole32(input[i]);
 }
 
 /*
- * Decodes input (unsigned char) into output (u_int32_t). Assumes len is
+ * Decodes input (unsigned char) into output (unsigned int). Assumes len is
  * a multiple of 4.
  */
 
 static void
-Decode (u_int32_t *output, const unsigned char *input, unsigned int len)
+Decode (unsigned int *output, const unsigned char *input, unsigned int len)
 {
 	unsigned int i;
-	const u_int32_t *ip = (const u_int32_t *)input;
+	const unsigned int *ip = (const unsigned int *)input;
 
 	for (i = 0; i < len / 4; i++)
 		output[i] = le32toh(ip[i]);
@@ -101,22 +89,22 @@ static unsigned char PADDING[64] = {
  * Rotation is separate from addition to prevent recomputation.
  */
 #define FF(a, b, c, d, x, s, ac) { \
-	(a) += F ((b), (c), (d)) + (x) + (u_int32_t)(ac); \
+	(a) += F ((b), (c), (d)) + (x) + (unsigned int)(ac); \
 	(a) = ROTATE_LEFT ((a), (s)); \
 	(a) += (b); \
 	}
 #define GG(a, b, c, d, x, s, ac) { \
-	(a) += G ((b), (c), (d)) + (x) + (u_int32_t)(ac); \
+	(a) += G ((b), (c), (d)) + (x) + (unsigned int)(ac); \
 	(a) = ROTATE_LEFT ((a), (s)); \
 	(a) += (b); \
 	}
 #define HH(a, b, c, d, x, s, ac) { \
-	(a) += H ((b), (c), (d)) + (x) + (u_int32_t)(ac); \
+	(a) += H ((b), (c), (d)) + (x) + (unsigned int)(ac); \
 	(a) = ROTATE_LEFT ((a), (s)); \
 	(a) += (b); \
 	}
 #define II(a, b, c, d, x, s, ac) { \
-	(a) += I ((b), (c), (d)) + (x) + (u_int32_t)(ac); \
+	(a) += I ((b), (c), (d)) + (x) + (unsigned int)(ac); \
 	(a) = ROTATE_LEFT ((a), (s)); \
 	(a) += (b); \
 	}
@@ -156,10 +144,10 @@ MD5Update (context, in, inputLen)
 	idx = (unsigned int)((context->count[0] >> 3) & 0x3F);
 
 	/* Update number of bits */
-	if ((context->count[0] += ((u_int32_t)inputLen << 3))
-	    < ((u_int32_t)inputLen << 3))
+	if ((context->count[0] += ((unsigned int)inputLen << 3))
+	    < ((unsigned int)inputLen << 3))
 		context->count[1]++;
-	context->count[1] += ((u_int32_t)inputLen >> 29);
+	context->count[1] += ((unsigned int)inputLen >> 29);
 
 	partLen = 64 - idx;
 
@@ -229,10 +217,10 @@ MD5Final (digest, context)
 
 static void
 MD5Transform (state, block)
-	u_int32_t state[4];
+	unsigned int state[4];
 	const unsigned char block[64];
 {
-	u_int32_t a = state[0], b = state[1], c = state[2], d = state[3], x[16];
+	unsigned int a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
 	Decode (x, block, 64);
 

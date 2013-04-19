@@ -23,9 +23,6 @@ makedeb()
 	if [ $SUPPLEMENT = 1 ]; then
 		PACKAGE_NAME=$PACKAGE_NAME\32
 		DEBARCH=amd64
-		__LIB=lib32
-	else
-		__LIB=lib
 	fi
 
 	umask 022
@@ -36,52 +33,40 @@ makedeb()
 		| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
 		| sed s/{__ARCH}/$DEBARCH/g > $TMPDIR/DEBIAN/control)
 
-	make install prefix=$TMPDIR/opt/$DIRNAME libdir=$TMPDIR/opt/$DIRNAME/$__LIB \
-		mandir=$TMPDIR/opt/$DIRNAME/man \
-		docdir=$TMPDIR/usr/share/doc/$DIRNAME-$VERSION \
-		exampledir=$TMPDIR/usr/share/doc/$DIRNAME-$VERSION
-	rm -f $TMPDIR/opt/$DIRNAME/$__LIB/*.la
-
 	if [ $SUPPLEMENT = 1 ]; then
-		rm -rf $TMPDIR/opt/$DIRNAME/include
-		rm -rf $TMPDIR/opt/$DIRNAME/man
-		rm -rf $TMPDIR/opt/$DIRNAME/bin
-		rm -rf $TMPDIR/opt/$DIRNAME/classes
-		rm -rf $TMPDIR/usr
-	fi
-
-	mkdir -p $TMPDIR/usr/$__LIB
-	mv $TMPDIR/opt/$DIRNAME/$__LIB/libturbojpeg.* $TMPDIR/usr/$__LIB
-	ln -fs /usr/$__LIB/libturbojpeg.a $TMPDIR/opt/$DIRNAME/$__LIB/
-	/sbin/ldconfig -n $TMPDIR/opt/$DIRNAME/$__LIB
-	/sbin/ldconfig -n $TMPDIR/usr/$__LIB
-
-	if [ ! $SUPPLEMENT = 1 ]; then
-		if [ "$DEBARCH" = "amd64" ]; then
-			ln -fs lib $TMPDIR/opt/$DIRNAME/lib64
-		else
-			if [ ! "$__LIB" = "lib32" ]; then
-				ln -fs lib $TMPDIR/opt/$DIRNAME/lib32
-			fi
-		fi
-		mkdir -p $TMPDIR/usr/include
-		mv $TMPDIR/opt/$DIRNAME/include/turbojpeg.h $TMPDIR/usr/include
-		ln -fs /usr/include/turbojpeg.h $TMPDIR/opt/$DIRNAME/include/
+		make install DESTDIR=$TMPDIR bindir=/dummy/bin datadir=/dummy/data \
+			docdir=/dummy/doc includedir=/dummy/include mandir=/dummy/man
+		rm -f $TMPDIR$LIBDIR/*.la
+		rm -rf $TMPDIR/dummy
 	else
-		mkdir -p $TMPDIR/usr/lib/i386-linux-gnu
-		ln -fs /usr/lib32/libturbojpeg.so $TMPDIR/usr/lib/i386-linux-gnu/libturbojpeg.so
-		ln -fs /usr/lib32/libturbojpeg.a $TMPDIR/usr/lib/i386-linux-gnu/libturbojpeg.a
+		make install DESTDIR=$TMPDIR docdir=/usr/share/doc/$DIRNAME-$VERSION \
+			exampledir=/usr/share/doc/$DIRNAME-$VERSION
+		rm -f $TMPDIR$LIBDIR/*.la
+		echo $PREFIX $DOCDIR
+		if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" != "/usr/share/doc/$DIRNAME-$VERSION" ]; then
+			ln -fs /usr/share/doc/$DIRNAME-$VERSION $TMPDIR$PREFIX/doc
+		fi
 	fi
+
+	/sbin/ldconfig -n $TMPDIR$LIBDIR
 
 	sudo chown -Rh root:root $TMPDIR/*
 	dpkg -b $TMPDIR $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
 }
 
-PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_NAME=@PKGNAME@
 VERSION=@VERSION@
 BUILD=@BUILD@
 DEBARCH=@DEBARCH@
 SRCDIR=@abs_top_srcdir@
+PREFIX=%{__prefix}
+BINDIR=%{__bindir}
+DATADIR=%{__datadir}
+DOCDIR=%{__docdir}
+INCDIR=%{__includedir}
+LIBDIR=%{__libdir}
+MANDIR=%{__mandir}
+
 
 makedeb 0
 if [ "$DEBARCH" = "i386" ]; then makedeb 1; fi

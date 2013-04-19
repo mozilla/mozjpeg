@@ -4,6 +4,19 @@
 [1] 'make test' now works properly on FreeBSD, and it no longer requires the
 md5sum executable to be present on other Un*x platforms.
 
+[2] Overhauled the Linux/Unix packaging system:
+-- To avoid conflict with vendor-supplied libjpeg-turbo packages, the
+official RPMs and DEBs for libjpeg-turbo have been renamed to
+"libjpeg-turbo-official", and the TurboJPEG libraries are now packaged under
+/opt/libjpeg-turbo in the official packages.
+-- DEB and RPM packages are now created properly whenever the prefix is set
+to a non-default value (such as /usr/local.)
+-- To avoid confusion, official libjpeg-turbo packages on Linux/Unix platforms
+(except for Mac) will always install the 32-bit libraries in
+/opt/libjpeg-turbo/lib32 and the 64-bit libraries in /opt/libjpeg-turbo/lib64.
+-- Fixed an issue whereby, in some cases, the libjpeg-turbo executables were
+not properly linking with the shared libraries installed by the same package.
+
 
 1.2.90 (1.3 beta1)
 ==================

@@ -21,6 +21,47 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
 
+# When the prefix is /opt/libjpeg-turbo, we assume that an "official" binary is
+# being created, and thus we install things into specific locations.
+
+old_prefix=${prefix}
+if test "x$prefix" = "xNONE" -a "x$ac_default_prefix" != "x"; then
+  prefix=$ac_default_prefix
+fi
+DATADIR=`eval echo ${datadir}`
+DATADIR=`eval echo $DATADIR`
+if test "$DATADIR" = "/opt/libjpeg-turbo/share"; then
+  datadir='${prefix}'
+fi
+
+old_exec_prefix=${exec_prefix}
+if test "x$exec_prefix" = "xNONE"; then
+  exec_prefix=${prefix}
+fi
+
+if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib'; then
+  LIBDIR=`eval echo ${libdir}`
+  LIBDIR=`eval echo $LIBDIR`
+  if test "$LIBDIR" = "/opt/libjpeg-turbo/lib"; then
+    case $host_os in
+      darwin*)
+        ;;
+      *)
+        case "$host_cpu" in
+          x86_64 | amd64)
+            libdir='${exec_prefix}/lib64'
+            ;;
+          i*86 | x86 | ia32)
+            libdir='${exec_prefix}/lib32'
+            ;;
+        esac
+        ;;
+    esac
+  fi
+fi
+exec_prefix=${old_exec_prefix}
+prefix=${old_prefix}
+
 # Check whether compiler supports pointers to undefined structures
 AC_MSG_CHECKING(whether compiler supports pointers to undefined structures)
 AC_TRY_COMPILE([ typedef struct undefined_structure * undef_struct_ptr; ], ,
@@ -325,8 +366,8 @@ if test "x$with_java" = "xyes"; then
   AC_SUBST(JNI_CFLAGS)
 
   RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --with-java"
-  JAVA_RPM_CONTENTS_1='%dir /opt/%{name}/classes'
-  JAVA_RPM_CONTENTS_2=/opt/%{name}/classes/turbojpeg.jar
+  JAVA_RPM_CONTENTS_1='%dir %{_datadir}/classes'
+  JAVA_RPM_CONTENTS_2=%{_datadir}/classes/turbojpeg.jar
   WITH_JAVA=1
 else
   AC_MSG_RESULT(no)
@@ -401,6 +442,12 @@ AM_CONDITIONAL([SIMD_ARM], [test "x$simd_arch" = "xarm"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 AM_CONDITIONAL([WITH_TURBOJPEG], [test "x$with_turbojpeg" != "xno"])
 
+AC_ARG_VAR(PKGNAME, [distribution package name (default: libjpeg-turbo)])
+if test "x$PKGNAME" = "x"; then
+  PKGNAME=$PACKAGE_NAME
+fi
+AC_SUBST(PKGNAME)
+
 case "$host_cpu" in
   x86_64)
     RPMARCH=x86_64
@@ -424,9 +471,9 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 # jconfig.h is a minimal version that allows this package to be built
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
-AC_CONFIG_FILES([pkgscripts/libjpeg-turbo.spec:release/libjpeg-turbo.spec.in])
+AC_CONFIG_FILES([pkgscripts/libjpeg-turbo.spec.tmpl:release/libjpeg-turbo.spec.in])
 AC_CONFIG_FILES([pkgscripts/makecygwinpkg:release/makecygwinpkg.in])
-AC_CONFIG_FILES([pkgscripts/makedpkg:release/makedpkg.in])
+AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])
 AC_CONFIG_FILES([pkgscripts/makemacpkg:release/makemacpkg.in])
 AC_CONFIG_FILES([pkgscripts/Description.plist:release/Description.plist.in])
 AC_CONFIG_FILES([pkgscripts/Info.plist:release/Info.plist.in])

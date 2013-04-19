@@ -320,79 +320,69 @@ if WITH_JAVA
 endif
 
 
-if X86_64
+pkgscripts/libjpeg-turbo.spec: pkgscripts/libjpeg-turbo.spec.tmpl
+	cat pkgscripts/libjpeg-turbo.spec.tmpl | sed s@%{__prefix}@$(prefix)@g | \
+		sed s@%{__bindir}@$(bindir)@g | sed s@%{__datadir}@$(datadir)@g | \
+		sed s@%{__docdir}@$(docdir)@g | sed s@%{__includedir}@$(includedir)@g | \
+		sed s@%{__libdir}@$(libdir)@g | sed s@%{__mandir}@$(mandir)@g \
+		> pkgscripts/libjpeg-turbo.spec
 
-install-exec-hook:
-	__PREFIX=`echo ${prefix} | sed -e 's@\/*$$@@'`;  \
-	if [ "$$__PREFIX" = "/opt/libjpeg-turbo" ]; then  \
-		cd $(DESTDIR)/${prefix};  \
-		if [ -d lib -a ! -d lib64 -a ! -h lib64 ]; then  \
-			$(LN_S) lib lib64;  \
-		fi  \
-	fi
-
-else
-
-install-exec-hook:
-	__PREFIX=`echo ${prefix} | sed -e 's@\/*$$@@'`;  \
-	if [ "$$__PREFIX" = "/opt/libjpeg-turbo" ]; then  \
-		cd $(DESTDIR)/${prefix};  \
-		if [ -d lib -a ! -d lib32 -a ! -h lib32 ]; then  \
-			$(LN_S) lib lib32;  \
-		fi  \
-	fi
-
-endif
-
-rpm: all
+rpm: all pkgscripts/libjpeg-turbo.spec
 	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
 	mkdir -p $$TMPDIR/RPMS; \
 	ln -fs `pwd` $$TMPDIR/BUILD; \
-	rm -f ${PACKAGE_NAME}-${VERSION}.${RPMARCH}.rpm; \
+	rm -f ${PKGNAME}-${VERSION}.${RPMARCH}.rpm; \
 	rpmbuild -bb --define "_blddir $$TMPDIR/buildroot"  \
 		--define "_topdir $$TMPDIR" \
 		--target ${RPMARCH} pkgscripts/libjpeg-turbo.spec; \
-	cp $$TMPDIR/RPMS/${RPMARCH}/${PACKAGE_NAME}-${VERSION}-${BUILD}.${RPMARCH}.rpm \
-		${PACKAGE_NAME}-${VERSION}.${RPMARCH}.rpm; \
+	cp $$TMPDIR/RPMS/${RPMARCH}/${PKGNAME}-${VERSION}-${BUILD}.${RPMARCH}.rpm \
+		${PKGNAME}-${VERSION}.${RPMARCH}.rpm; \
 	rm -rf $$TMPDIR
 
-srpm: dist-gzip
+srpm: dist-gzip pkgscripts/libjpeg-turbo.spec
 	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
 	mkdir -p $$TMPDIR/RPMS; \
 	mkdir -p $$TMPDIR/SRPMS; \
 	mkdir -p $$TMPDIR/BUILD; \
 	mkdir -p $$TMPDIR/SOURCES; \
 	mkdir -p $$TMPDIR/SPECS; \
-	rm -f ${PACKAGE_NAME}-${VERSION}.src.rpm; \
+	rm -f ${PKGNAME}-${VERSION}.src.rpm; \
 	cp ${PACKAGE_NAME}-${VERSION}.tar.gz $$TMPDIR/SOURCES; \
 	cat pkgscripts/libjpeg-turbo.spec | sed s/%{_blddir}/%{_tmppath}/g \
 		| sed s/#--\>//g \
 		> $$TMPDIR/SPECS/libjpeg-turbo.spec; \
 	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/libjpeg-turbo.spec; \
-	cp $$TMPDIR/SRPMS/${PACKAGE_NAME}-${VERSION}-${BUILD}.src.rpm \
-		${PACKAGE_NAME}-${VERSION}.src.rpm; \
+	cp $$TMPDIR/SRPMS/${PKGNAME}-${VERSION}-${BUILD}.src.rpm \
+		${PKGNAME}-${VERSION}.src.rpm; \
 	rm -rf $$TMPDIR
 
-deb: all
+pkgscripts/makedpkg: pkgscripts/makedpkg.tmpl
+	cat pkgscripts/makedpkg.tmpl | sed s@%{__prefix}@$(prefix)@g | \
+		sed s@%{__bindir}@$(bindir)@g | sed s@%{__datadir}@$(datadir)@g | \
+		sed s@%{__docdir}@$(docdir)@g | sed s@%{__includedir}@$(includedir)@g | \
+		sed s@%{__libdir}@$(libdir)@g | sed s@%{__mandir}@$(mandir)@g \
+		> pkgscripts/makedpkg
+
+deb: all pkgscripts/makedpkg
 	sh pkgscripts/makedpkg
 
 if X86_64
 
-udmg: all
+udmg: all pkgscripts/makemacpkg
 	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32}
 
-iosdmg: all
+iosdmg: all pkgscripts/makemacpkg
 	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
 
 else
 
-iosdmg: all
+iosdmg: all pkgscripts/makemacpkg
 	sh pkgscripts/makemacpkg -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
 
 endif
 
-dmg: all
+dmg: all pkgscripts/makemacpkg
 	sh pkgscripts/makemacpkg
 
-cygwinpkg: all
+cygwinpkg: all pkgscripts/makecygwinpkg
 	sh pkgscripts/makecygwinpkg

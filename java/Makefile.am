@@ -42,12 +42,12 @@ clean-local:
 	rm -f turbojpeg.jar
 
 install-exec-local: turbojpeg.jar
-	mkdir -p $(DESTDIR)/$(prefix)/classes
-	$(INSTALL) -m 644 turbojpeg.jar $(DESTDIR)/$(prefix)/classes/
+	mkdir -p $(DESTDIR)/$(datadir)/classes
+	$(INSTALL) -m 644 turbojpeg.jar $(DESTDIR)/$(datadir)/classes/
 
 uninstall-local:
-	rm -f $(DESTDIR)/$(prefix)/classes/turbojpeg.jar
-	if [ -d $(DESTDIR)/$(prefix)/classes ]; then rmdir $(DESTDIR)/$(prefix)/classes; fi
+	rm -f $(DESTDIR)/$(datadir)/classes/turbojpeg.jar
+	if [ -d $(DESTDIR)/$(datadir)/classes ]; then rmdir $(DESTDIR)/$(datadir)/classes; fi
 
 headers: all
 	javah -d ${srcdir} org.libjpegturbo.turbojpeg.TJ; \

@@ -122,6 +122,22 @@ else()
   message(STATUS "32-bit build")
 endif()
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  if(MSVC)
+    set(CMAKE_INSTALL_PREFIX_DEFAULT ${CMAKE_PROJECT_NAME})
+  else()
+    set(CMAKE_INSTALL_PREFIX_DEFAULT ${CMAKE_PROJECT_NAME}-gcc)
+  endif()
+  if(64BIT)
+    set(CMAKE_INSTALL_PREFIX_DEFAULT ${CMAKE_INSTALL_PREFIX_DEFAULT}64)
+  endif()
+  set(CMAKE_INSTALL_PREFIX "c:/${CMAKE_INSTALL_PREFIX_DEFAULT}" CACHE PATH
+    "Directory into which to install libjpeg-turbo (default: c:/${CMAKE_INSTALL_PREFIX_DEFAULT})"
+    FORCE)
+endif()
+
+message(STATUS "Install directory = ${CMAKE_INSTALL_PREFIX}")
+
 configure_file(win/jconfig.h.in jconfig.h)
 configure_file(win/config.h.in config.h)
 
@@ -422,18 +438,18 @@ add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
 if(MSVC)
   set(INST_PLATFORM "Visual C++")
   set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION}-vc)
-  set(INST_DIR ${CMAKE_PROJECT_NAME})
+  set(INST_REG_NAME ${CMAKE_PROJECT_NAME})
 elseif(MINGW)
   set(INST_PLATFORM GCC)
   set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION}-gcc)
-  set(INST_DIR ${CMAKE_PROJECT_NAME}-gcc)
+  set(INST_REG_NAME ${CMAKE_PROJECT_NAME}-gcc)
   set(INST_DEFS -DGCC)
 endif()
 
 if(64BIT)
   set(INST_PLATFORM "${INST_PLATFORM} 64-bit")
   set(INST_NAME ${INST_NAME}64)
-  set(INST_DIR ${INST_DIR}64)
+  set(INST_REG_NAME ${INST_DIR}64)
   set(INST_DEFS ${INST_DEFS} -DWIN64)
 endif()
 
@@ -447,12 +463,17 @@ else()
   set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=")
 endif()
 
+STRING(REGEX REPLACE "/" "\\\\" INST_DIR ${CMAKE_INSTALL_PREFIX}) 
+
 configure_file(release/libjpeg-turbo.nsi.in libjpeg-turbo.nsi @ONLY)
 
+if(WITH_JAVA)
+  set(JAVA_DEPEND java)
+endif()
 add_custom_target(installer
   makensis -nocd ${INST_DEFS} libjpeg-turbo.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
-    cjpeg djpeg jpegtran tjbench
+    cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
   SOURCES libjpeg-turbo.nsi)
 
 install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom tjbench

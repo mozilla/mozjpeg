@@ -42,9 +42,8 @@ makedeb()
 		make install DESTDIR=$TMPDIR docdir=/usr/share/doc/$DIRNAME-$VERSION \
 			exampledir=/usr/share/doc/$DIRNAME-$VERSION
 		rm -f $TMPDIR$LIBDIR/*.la
-		echo $PREFIX $DOCDIR
-		if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" != "/usr/share/doc/$DIRNAME-$VERSION" ]; then
-			ln -fs /usr/share/doc/$DIRNAME-$VERSION $TMPDIR$PREFIX/doc
+		if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" = "/opt/libjpeg-turbo/doc" ]; then
+			ln -fs /usr/share/doc/$DIRNAME-$VERSION $TMPDIR$DOCDIR
 		fi
 	fi
 
@@ -60,13 +59,8 @@ BUILD=@BUILD@
 DEBARCH=@DEBARCH@
 SRCDIR=@abs_top_srcdir@
 PREFIX=%{__prefix}
-BINDIR=%{__bindir}
-DATADIR=%{__datadir}
 DOCDIR=%{__docdir}
-INCDIR=%{__includedir}
 LIBDIR=%{__libdir}
-MANDIR=%{__mandir}
-
 
 makedeb 0
 if [ "$DEBARCH" = "i386" ]; then makedeb 1; fi

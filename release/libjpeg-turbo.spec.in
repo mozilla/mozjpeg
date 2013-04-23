@@ -92,9 +92,10 @@ fi
 
 #-->%endif
 
-%if "%{_prefix}" == "/opt/libjpeg-turbo" && "%{_docdir}" != "%{_prefix}/doc"
-	ln -fs %{_docdir} $RPM_BUILD_ROOT/%{_prefix}/doc
-%endif
+LJT_DOCDIR=%{__docdir}
+if [ "%{_prefix}" = "/opt/libjpeg-turbo" -a "$LJT_DOCDIR" = "/opt/libjpeg-turbo/doc" ]; then
+	ln -fs %{_docdir} $RPM_BUILD_ROOT/$LJT_DOCDIR
+fi
 
 %post -p /sbin/ldconfig
 
@@ -140,7 +141,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/jpegtran.1*
 %{_mandir}/man1/rdjpgcom.1*
 %{_mandir}/man1/wrjpgcom.1*
-%dir %{_datadir}
+%if "%{_prefix}" != "%{_datadir}"
+ %dir %{_datadir}
+%endif
 @JAVA_RPM_CONTENTS_1@
 @JAVA_RPM_CONTENTS_2@
 

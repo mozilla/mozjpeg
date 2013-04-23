@@ -1,5 +1,11 @@
 JAVAROOT = .
 
+org/libjpegturbo/turbojpeg/TJLoader.java: $(srcdir)/org/libjpegturbo/turbojpeg/TJLoader.java.tmpl
+	mkdir -p org/libjpegturbo/turbojpeg; \
+	cat $(srcdir)/org/libjpegturbo/turbojpeg/TJLoader.java.tmpl | \
+		sed s@%{__libdir}@$(libdir)@g > org/libjpegturbo/turbojpeg/TJLoader.java
+
+
 JAVASOURCES = org/libjpegturbo/turbojpeg/TJ.java \
 	org/libjpegturbo/turbojpeg/TJCompressor.java \
 	org/libjpegturbo/turbojpeg/TJCustomFilter.java \

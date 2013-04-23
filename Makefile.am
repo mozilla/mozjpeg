@@ -358,31 +358,45 @@ srpm: dist-gzip pkgscripts/libjpeg-turbo.spec
 
 pkgscripts/makedpkg: pkgscripts/makedpkg.tmpl
 	cat pkgscripts/makedpkg.tmpl | sed s@%{__prefix}@$(prefix)@g | \
-		sed s@%{__bindir}@$(bindir)@g | sed s@%{__datadir}@$(datadir)@g | \
-		sed s@%{__docdir}@$(docdir)@g | sed s@%{__includedir}@$(includedir)@g | \
-		sed s@%{__libdir}@$(libdir)@g | sed s@%{__mandir}@$(mandir)@g \
+		sed s@%{__docdir}@$(docdir)@g | sed s@%{__libdir}@$(libdir)@g \
 		> pkgscripts/makedpkg
 
 deb: all pkgscripts/makedpkg
 	sh pkgscripts/makedpkg
 
+pkgscripts/uninstall: pkgscripts/uninstall.tmpl
+	cat pkgscripts/uninstall.tmpl | sed s@%{__prefix}@$(prefix)@g | \
+		sed s@%{__bindir}@$(bindir)@g | sed s@%{__datadir}@$(datadir)@g | \
+		sed s@%{__includedir}@$(includedir)@g | sed s@%{__libdir}@$(libdir)@g | \
+		sed s@%{__mandir}@$(mandir)@g > pkgscripts/uninstall
+
+pkgscripts/makemacpkg: pkgscripts/makemacpkg.tmpl
+	cat pkgscripts/makemacpkg.tmpl | sed s@%{__prefix}@$(prefix)@g | \
+		sed s@%{__bindir}@$(bindir)@g | sed s@%{__docdir}@$(docdir)@g | \
+		sed s@%{__libdir}@$(libdir)@g > pkgscripts/makemacpkg
+
 if X86_64
 
-udmg: all pkgscripts/makemacpkg
+udmg: all pkgscripts/makemacpkg pkgscripts/uninstall
 	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32}
 
-iosdmg: all pkgscripts/makemacpkg
+iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
 	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
 
 else
 
-iosdmg: all pkgscripts/makemacpkg
+iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
 	sh pkgscripts/makemacpkg -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
 
 endif
 
-dmg: all pkgscripts/makemacpkg
+dmg: all pkgscripts/makemacpkg pkgscripts/uninstall
 	sh pkgscripts/makemacpkg
+
+pkgscripts/makecygwinpkg: pkgscripts/makecygwinpkg.tmpl
+	cat pkgscripts/makecygwinpkg.tmpl | sed s@%{__prefix}@$(prefix)@g | \
+		sed s@%{__docdir}@$(docdir)@g | sed s@%{__libdir}@$(libdir)@g \
+		> pkgscripts/makecygwinpkg
 
 cygwinpkg: all pkgscripts/makecygwinpkg
 	sh pkgscripts/makecygwinpkg

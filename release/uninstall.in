@@ -56,27 +56,46 @@ done
 popd
 
 echo Removing package directories ...
-if [ -d /opt/$PACKAGE/bin ]; then
-	rmdir /opt/$PACKAGE/bin 2>&1 || EXITSTATUS=-1
+PREFIX=%{__prefix}
+BINDIR=%{__bindir}
+DATADIR=%{__datadir}
+INCLUDEDIR=%{__includedir}
+LIBDIR=%{__libdir}
+MANDIR=%{__mandir}
+
+if [ -d $BINDIR ]; then
+	rmdir $BINDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ -d /opt/$PACKAGE/lib ]; then
-	rmdir /opt/$PACKAGE/lib 2>&1 || EXITSTATUS=-1
+if [ -d $LIBDIR ]; then
+	rmdir $LIBDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ -d /opt/$PACKAGE/include ]; then
-	rmdir /opt/$PACKAGE/include 2>&1 || EXITSTATUS=-1
+if [ -d $INCLUDEDIR ]; then
+	rmdir $INCLUDEDIR 2>&1 || EXITSTATUS=-1
 fi
-rm /opt/$PACKAGE/lib32 2>&1 || EXITSTATUS=-1
-rm /opt/$PACKAGE/lib64 2>&1 || EXITSTATUS=-1
-if [ -d /opt/$PACKAGE/man/man1 ]; then
-	rmdir /opt/$PACKAGE/man/man1 2>&1 || EXITSTATUS=-1
+if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$LIBDIR" = "/opt/libjpeg-turbo/lib" ]; then
+	if [ -h $LIBDIR\32 ]; then
+		rm $LIBDIR\32 2>&1 || EXITSTATUS=-1
+	fi
+	if [ -h $LIBDIR\64 ]; then
+		rm $LIBDIR\64 2>&1 || EXITSTATUS=-1
+	fi
 fi
-if [ -d /opt/$PACKAGE/man ]; then
-	rmdir /opt/$PACKAGE/man 2>&1 || EXITSTATUS=-1
+if [ -d $MANDIR/man1 ]; then
+	rmdir $MANDIR/man1 2>&1 || EXITSTATUS=-1
 fi
-if [ -d /opt/$PACKAGE/classes ]; then
-	rmdir /opt/$PACKAGE/classes 2>&1 || EXITSTATUS=-1
+if [ -d $MANDIR ]; then
+	rmdir $MANDIR 2>&1 || EXITSTATUS=-1
 fi
-rmdir /opt/$PACKAGE 2>&1 || EXITSTATUS=-1
+if [ -d $DATADIR/classes ]; then
+	rmdir $DATADIR/classes 2>&1 || EXITSTATUS=-1
+fi
+if [ -d $DATADIR -a "$DATADIR" != "$PREFIX" ]; then
+	rmdir $DATADIR 2>&1 || EXITSTATUS=-1
+fi
+if [ "$PREFIX" = "/opt/libjpeg-turbo" -a -h "$PREFIX/doc" ]; then
+	rm $PREFIX/doc 2>&1 || EXITSTATUS=-1
+fi
+rmdir $PREFIX 2>&1 || EXITSTATUS=-1
 rmdir /Library/Documentation/$PACKAGE 2>&1 || EXITSTATUS=-1
 
 if [ -d $RECEIPT ]; then

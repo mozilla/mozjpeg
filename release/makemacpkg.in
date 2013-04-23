@@ -34,6 +34,12 @@ BUILDARMV7=0
 BUILDDIRARMV7S=@abs_top_srcdir@/iosarmv7s
 BUILDARMV7S=0
 WITH_JAVA=@WITH_JAVA@
+
+PREFIX=%{__prefix}
+BINDIR=%{__bindir}
+DOCDIR=%{__docdir}
+LIBDIR=%{__libdir}
+
 while [ $# -gt 0 ]; do
 	case $1 in
 	-h*)             usage 0                   ;;
@@ -82,15 +88,13 @@ umask 022
 TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 PKGROOT=$TMPDIR/pkg/Package_Root
 mkdir -p $PKGROOT
-mkdir -p $PKGROOT/opt/$PACKAGE_NAME/bin
-make install DESTDIR=$PKGROOT mandir=/opt/$PACKAGE_NAME/man \
-	docdir=/Library/Documentation/$PACKAGE_NAME \
+make install DESTDIR=$PKGROOT docdir=/Library/Documentation/$PACKAGE_NAME \
 	exampledir=/Library/Documentation/$PACKAGE_NAME
-rm -f $PKGROOT/opt/$PACKAGE_NAME/lib/*.la
-mkdir -p $PKGROOT/usr/lib
-mv $PKGROOT/opt/$PACKAGE_NAME/lib/libturbojpeg.* $PKGROOT/usr/lib
-mkdir -p $PKGROOT/usr/include
-mv $PKGROOT/opt/$PACKAGE_NAME/include/turbojpeg.h $PKGROOT/usr/include
+rm -f $PKGROOT$LIBDIR/*.la
+
+if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" = "/opt/libjpeg-turbo/doc" ]; then
+	ln -fs /Library/Documentation/$PACKAGE_NAME $PKGROOT$DOCDIR
+fi
 
 if [ $BUILD32 = 1 ]; then
 	if [ ! -d $BUILDDIR32 ]; then
@@ -105,55 +109,55 @@ if [ $BUILD32 = 1 ]; then
 	pushd $BUILDDIR32
 	make install DESTDIR=$TMPDIR/dist.x86
 	popd
-	if [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib -a \
-		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib ]; then
+	if [ ! -h $TMPDIR/dist.x86/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.dylib -a \
+		! -h $PKGROOT/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.dylib ]; then
 		lipo -create \
-			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib \
-			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib \
-			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib
-	elif [ ! -h $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib -a \
-		! -h $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib ]; then
+			-arch i386 $TMPDIR/dist.x86/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.dylib \
+			-arch x86_64 $PKGROOT/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.dylib \
+			-output $PKGROOT/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.dylib
+	elif [ ! -h $TMPDIR/dist.x86/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib -a \
+		! -h $PKGROOT/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib ]; then
 		lipo -create \
-			-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib \
-			-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib \
-			-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib
+			-arch i386 $TMPDIR/dist.x86/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib \
+			-arch x86_64 $PKGROOT/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib \
+			-output $PKGROOT/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.0.@SO_MINOR_VERSION@.dylib
 	fi
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
+		-arch i386 $TMPDIR/dist.x86/$LIBDIR/libjpeg.a \
+		-arch x86_64 $PKGROOT/$LIBDIR/libjpeg.a \
+		-output $PKGROOT/$LIBDIR/libjpeg.a
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libturbojpeg.0.dylib \
-		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.0.dylib \
-		-output $PKGROOT/usr/lib/libturbojpeg.0.dylib
+		-arch i386 $TMPDIR/dist.x86/$LIBDIR/libturbojpeg.0.dylib \
+		-arch x86_64 $PKGROOT/$LIBDIR/libturbojpeg.0.dylib \
+		-output $PKGROOT/$LIBDIR/libturbojpeg.0.dylib
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
-		-arch x86_64 $PKGROOT/usr/lib/libturbojpeg.a \
-		-output $PKGROOT/usr/lib/libturbojpeg.a
+		-arch i386 $TMPDIR/dist.x86/$LIBDIR/libturbojpeg.a \
+		-arch x86_64 $PKGROOT/$LIBDIR/libturbojpeg.a \
+		-output $PKGROOT/$LIBDIR/libturbojpeg.a
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/cjpeg \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/cjpeg \
-		-output $PKGROOT/opt/$PACKAGE_NAME/bin/cjpeg
+		-arch i386 $TMPDIR/dist.x86/$BINDIR/cjpeg \
+		-arch x86_64 $PKGROOT/$BINDIR/cjpeg \
+		-output $PKGROOT/$BINDIR/cjpeg
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/djpeg \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/djpeg \
-		-output $PKGROOT/opt/$PACKAGE_NAME/bin/djpeg
+		-arch i386 $TMPDIR/dist.x86/$BINDIR/djpeg \
+		-arch x86_64 $PKGROOT/$BINDIR/djpeg \
+		-output $PKGROOT/$BINDIR/djpeg
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/jpegtran \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/jpegtran \
-		-output $PKGROOT/opt/$PACKAGE_NAME/bin/jpegtran
+		-arch i386 $TMPDIR/dist.x86/$BINDIR/jpegtran \
+		-arch x86_64 $PKGROOT/$BINDIR/jpegtran \
+		-output $PKGROOT/$BINDIR/jpegtran
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/tjbench \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/tjbench \
-		-output $PKGROOT/opt/$PACKAGE_NAME/bin/tjbench
+		-arch i386 $TMPDIR/dist.x86/$BINDIR/tjbench \
+		-arch x86_64 $PKGROOT/$BINDIR/tjbench \
+		-output $PKGROOT/$BINDIR/tjbench
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/rdjpgcom \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/rdjpgcom \
-		-output $PKGROOT/opt/$PACKAGE_NAME/bin/rdjpgcom
+		-arch i386 $TMPDIR/dist.x86/$BINDIR/rdjpgcom \
+		-arch x86_64 $PKGROOT/$BINDIR/rdjpgcom \
+		-output $PKGROOT/$BINDIR/rdjpgcom
 	lipo -create \
-		-arch i386 $TMPDIR/dist.x86/opt/$PACKAGE_NAME/bin/wrjpgcom \
-		-arch x86_64 $PKGROOT/opt/$PACKAGE_NAME/bin/wrjpgcom \
-		-output $PKGROOT/opt/$PACKAGE_NAME/bin/wrjpgcom
+		-arch i386 $TMPDIR/dist.x86/$BINDIR/wrjpgcom \
+		-arch x86_64 $PKGROOT/$BINDIR/wrjpgcom \
+		-output $PKGROOT/$BINDIR/wrjpgcom
 
 fi
 
@@ -171,13 +175,13 @@ if [ $BUILDARMV6 = 1 ]; then
 	make install DESTDIR=$TMPDIR/dist.armv6
 	popd
 	lipo -create \
-		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-arch arm $TMPDIR/dist.armv6/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
+		$PKGROOT/$LIBDIR/libjpeg.a \
+		-arch arm $TMPDIR/dist.armv6/$LIBDIR/libjpeg.a \
+		-output $PKGROOT/$LIBDIR/libjpeg.a
 	lipo -create \
-		$PKGROOT/usr/lib/libturbojpeg.a \
-		-arch arm $TMPDIR/dist.armv6/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
-		-output $PKGROOT/usr/lib/libturbojpeg.a
+		$PKGROOT/$LIBDIR/libturbojpeg.a \
+		-arch arm $TMPDIR/dist.armv6/$LIBDIR/libturbojpeg.a \
+		-output $PKGROOT/$LIBDIR/libturbojpeg.a
 fi
 
 if [ $BUILDARMV7 = 1 ]; then
@@ -194,13 +198,13 @@ if [ $BUILDARMV7 = 1 ]; then
 	make install DESTDIR=$TMPDIR/dist.armv7
 	popd
 	lipo -create \
-		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-arch arm $TMPDIR/dist.armv7/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
+		$PKGROOT/$LIBDIR/libjpeg.a \
+		-arch arm $TMPDIR/dist.armv7/$LIBDIR/libjpeg.a \
+		-output $PKGROOT/$LIBDIR/libjpeg.a
 	lipo -create \
-		$PKGROOT/usr/lib/libturbojpeg.a \
-		-arch arm $TMPDIR/dist.armv7/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
-		-output $PKGROOT/usr/lib/libturbojpeg.a
+		$PKGROOT/$LIBDIR/libturbojpeg.a \
+		-arch arm $TMPDIR/dist.armv7/$LIBDIR/libturbojpeg.a \
+		-output $PKGROOT/$LIBDIR/libturbojpeg.a
 fi
 
 if [ $BUILDARMV7S = 1 ]; then
@@ -217,28 +221,28 @@ if [ $BUILDARMV7S = 1 ]; then
 	make install DESTDIR=$TMPDIR/dist.armv7s
 	popd
 	lipo -create \
-		$PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-arch arm $TMPDIR/dist.armv7s/opt/$PACKAGE_NAME/lib/libjpeg.a \
-		-output $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.a
+		$PKGROOT/$LIBDIR/libjpeg.a \
+		-arch arm $TMPDIR/dist.armv7s/$LIBDIR/libjpeg.a \
+		-output $PKGROOT/$LIBDIR/libjpeg.a
 	lipo -create \
-		$PKGROOT/usr/lib/libturbojpeg.a \
-		-arch arm $TMPDIR/dist.armv7s/opt/$PACKAGE_NAME/lib/libturbojpeg.a \
-		-output $PKGROOT/usr/lib/libturbojpeg.a
+		$PKGROOT/$LIBDIR/libturbojpeg.a \
+		-arch arm $TMPDIR/dist.armv7s/$LIBDIR/libturbojpeg.a \
+		-output $PKGROOT/$LIBDIR/libturbojpeg.a
 fi
 
-install_name_tool -id /opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib $PKGROOT/opt/$PACKAGE_NAME/lib/libjpeg.@SO_MAJOR_VERSION@.dylib
-install_name_tool -id libturbojpeg.0.dylib $PKGROOT/usr/lib/libturbojpeg.0.dylib
+install_name_tool -id $LIBDIR/libjpeg.@SO_MAJOR_VERSION@.dylib $PKGROOT/$LIBDIR/libjpeg.@SO_MAJOR_VERSION@.dylib
+install_name_tool -id $LIBDIR/libturbojpeg.0.dylib $PKGROOT/$LIBDIR/libturbojpeg.0.dylib
 
-ln -fs /usr/include/turbojpeg.h $PKGROOT/opt/$PACKAGE_NAME/include/
-ln -fs /usr/lib/libturbojpeg.a $PKGROOT/opt/$PACKAGE_NAME/lib/
 if [ $WITH_JAVA = 1 ]; then
-	ln -fs libturbojpeg.0.dylib $PKGROOT/usr/lib/libturbojpeg.jnilib
+	ln -fs libturbojpeg.0.dylib $PKGROOT/$LIBDIR/libturbojpeg.jnilib
 fi
-if [ ! -h $PKGROOT/opt/$PACKAGE_NAME/lib32 ]; then
-	ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib32
-fi
-if [ ! -h $PKGROOT/opt/$PACKAGE_NAME/lib64 ]; then
-	ln -fs lib $PKGROOT/opt/$PACKAGE_NAME/lib64
+if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$LIBDIR" = "/opt/libjpeg-turbo/lib" ]; then
+	if [ ! -h $PKGROOT/$PREFIX/lib32 ]; then
+		ln -fs lib $PKGROOT/$PREFIX/lib32
+	fi
+	if [ ! -h $PKGROOT/$PREFIX/lib64 ]; then
+		ln -fs lib $PKGROOT/$PREFIX/lib64
+	fi
 fi
 
 chmod 1775 $PKGROOT/Library
@@ -247,10 +251,9 @@ mkdir -p $TMPDIR/pkg/Resources
 
 cp pkgscripts/Description.plist $TMPDIR/pkg/
 cp pkgscripts/Info.plist $TMPDIR/pkg/
-install -m 755 pkgscripts/uninstall $PKGROOT/opt/$PACKAGE_NAME/bin/
+install -m 755 pkgscripts/uninstall $PKGROOT/$BINDIR/
 
-sudo chown -R root:admin $PKGROOT 
-sudo chown -R root:0 $PKGROOT/usr 
+sudo chown -R root:admin $PKGROOT
 cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadMe.rtf $TMPDIR/pkg/Resources/ 
 
 mkdir $TMPDIR/dmg

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,10 @@ package org.libjpegturbo.turbojpeg;
 
 final class TJLoader {
   static void load() {
-    System.loadLibrary("@TURBOJPEG_DLL_NAME@");
+    try {
+      System.loadLibrary("@TURBOJPEG_DLL_NAME@");
+    } catch (java.lang.UnsatisfiedLinkError e) {
+      System.load("@CMAKE_INSTALL_PREFIX@/bin/@TURBOJPEG_DLL_NAME@.dll");
+    }
   }
 };

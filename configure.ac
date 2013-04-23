@@ -33,6 +33,11 @@ DATADIR=`eval echo $DATADIR`
 if test "$DATADIR" = "/opt/libjpeg-turbo/share"; then
   datadir='${prefix}'
 fi
+DATADIR=`eval echo ${datarootdir}`
+DATADIR=`eval echo $DATADIR`
+if test "$DATADIR" = "/opt/libjpeg-turbo/share"; then
+  datarootdir='${prefix}'
+fi
 
 old_exec_prefix=${exec_prefix}
 if test "x$exec_prefix" = "xNONE"; then
@@ -472,12 +477,12 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
 AC_CONFIG_FILES([pkgscripts/libjpeg-turbo.spec.tmpl:release/libjpeg-turbo.spec.in])
-AC_CONFIG_FILES([pkgscripts/makecygwinpkg:release/makecygwinpkg.in])
+AC_CONFIG_FILES([pkgscripts/makecygwinpkg.tmpl:release/makecygwinpkg.in])
 AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])
-AC_CONFIG_FILES([pkgscripts/makemacpkg:release/makemacpkg.in])
+AC_CONFIG_FILES([pkgscripts/makemacpkg.tmpl:release/makemacpkg.in])
 AC_CONFIG_FILES([pkgscripts/Description.plist:release/Description.plist.in])
 AC_CONFIG_FILES([pkgscripts/Info.plist:release/Info.plist.in])
-AC_CONFIG_FILES([pkgscripts/uninstall:release/uninstall.in])
+AC_CONFIG_FILES([pkgscripts/uninstall.tmpl:release/uninstall.in])
 if test "x$with_turbojpeg" != "xno"; then
   AC_CONFIG_FILES([tjbenchtest])
 fi

@@ -15,7 +15,7 @@ onexit()
 	fi
 }
 
-PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_NAME=@PKGNAME@
 VERSION=@VERSION@
 SRCDIR=@abs_top_srcdir@
 

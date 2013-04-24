@@ -189,7 +189,8 @@ For example,
 will install the header files in /usr/local/include and the library files in
 /usr/local/lib64.  If 'prefix' and 'libdir' are not specified, then the default
 is to install the header files in /opt/libjpeg-turbo/include and the library
-files in /opt/libjpeg-turbo/lib.
+files in /opt/libjpeg-turbo/lib32 (32-bit) or /opt/libjpeg-turbo/lib64
+(64-bit.)
 
 NOTE: You can specify a prefix of /usr and a libdir of, for instance,
 /usr/lib64 to overwrite the system's version of libjpeg.  If you do this,
@@ -676,8 +677,8 @@ MinGW Build on Linux
 The following commands can be used to create various types of release packages:
 
 
-Unix
-----
+Unix/Linux
+----------
 
 make rpm
 

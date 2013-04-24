@@ -41,7 +41,18 @@ final class TJLoader {
           System.load("/usr/lib/libturbojpeg.jnilib");
         }
       } else {
-        System.load("%{__libdir}/libturbojpeg.so");
+        try {
+          System.load("%{__libdir}/libturbojpeg.so");
+        } catch (java.lang.UnsatisfiedLinkError e3) {
+          String libdir = "%{__libdir}";
+          if (libdir.equals("/opt/libjpeg-turbo/lib64")) {
+            System.load("/opt/libjpeg-turbo/lib32/libturbojpeg.so");
+          } else if (libdir.equals("/opt/libjpeg-turbo/lib32")) {
+            System.load("/opt/libjpeg-turbo/lib64/libturbojpeg.so");
+          } else {
+            throw e3;
+          }
+        }
       }
     }
   }

@@ -37,7 +37,16 @@ pre-allocating the buffers is recommended.
 Installation Directory
 ----------------------
 
-If the TurboJPEG JNI library (libturbojpeg.so, libturbojpeg.jnilib, or
-turbojpeg.dll) is not installed under a system library directory or under a
-directory specified in LD_LIBRARY_PATH (Unix) or PATH (Windows), then you will
-need to pass an argument of -Djava.library.path={path_to_JNI_library} to java.
+The TurboJPEG Java Wrapper will look for the TurboJPEG JNI library
+(libturbojpeg.so, libturbojpeg.jnilib, or turbojpeg.dll) in the system library
+paths or in any paths specified in LD_LIBRARY_PATH (Unix), DYLD_LIBRARY_PATH
+(Mac), or PATH (Windows.)  Failing this, on Unix and Mac systems, the wrapper
+will look for the JNI library under the library directory configured when
+libjpeg-turbo was built.  If that library directory is
+/opt/libjpeg-turbo/lib32, then /opt/libjpeg-turbo/lib64 is also searched, and
+vice versa.
+
+If you installed the JNI library into another directory, then you will need
+to pass an argument of -Djava.library.path={path_to_JNI_library} to java, or
+manipulate LD_LIBRARY_PATH, DYLD_LIBRARY_PATH, or PATH to include the directory
+containing the JNI library.

@@ -10,7 +10,6 @@ JAVASOURCES = org/libjpegturbo/turbojpeg/TJ.java \
 	org/libjpegturbo/turbojpeg/TJCompressor.java \
 	org/libjpegturbo/turbojpeg/TJCustomFilter.java \
 	org/libjpegturbo/turbojpeg/TJDecompressor.java \
-	org/libjpegturbo/turbojpeg/TJLoader.java \
 	org/libjpegturbo/turbojpeg/TJScalingFactor.java \
 	org/libjpegturbo/turbojpeg/TJTransform.java \
 	org/libjpegturbo/turbojpeg/TJTransformer.java \
@@ -26,6 +25,7 @@ JNIHEADERS = org_libjpegturbo_turbojpeg_TJ.h \
 if WITH_JAVA
 
 dist_noinst_JAVA = ${JAVASOURCES}
+nodist_noinst_JAVA = org/libjpegturbo/turbojpeg/TJLoader.java
 
 JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 	org/libjpegturbo/turbojpeg/TJCompressor.class \
@@ -68,4 +68,5 @@ docs: all
 endif
 
 EXTRA_DIST = MANIFEST.MF ${JAVASOURCES} ${JNIHEADERS} doc CMakeLists.txt \
+	org/libjpegturbo/turbojpeg/TJLoader.java.tmpl \
 	org/libjpegturbo/turbojpeg/TJLoader.java.in

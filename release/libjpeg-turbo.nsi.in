@@ -19,23 +19,31 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 !endif
 	SectionIn RO
 !ifdef GCC
-	IfFileExists $INSTDIR/bin/libturbojpeg.dll exists 0
+	IfFileExists $SYSDIR/libturbojpeg.dll exists 0
 !else
-	IfFileExists $INSTDIR/bin/turbojpeg.dll exists 0
+	IfFileExists $SYSDIR/turbojpeg.dll exists 0
 !endif
 	goto notexists
 	exists:
+!ifdef GCC
 	MessageBox MB_OK "An existing version of the @CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ is already installed.  Please uninstall it first."
+!else
+	MessageBox MB_OK "An existing version of the @CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ or the TurboJPEG SDK is already installed.  Please uninstall it first."
+!endif
 	quit
 
 	notexists:
+	SetOutPath $SYSDIR
+!ifdef GCC
+	File "@CMAKE_BINARY_DIR@\libturbojpeg.dll"
+!else
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}turbojpeg.dll"
+!endif
 	SetOutPath $INSTDIR\bin
 !ifdef GCC
 	File "/oname=libjpeg-@DLL_VERSION@.dll" "@CMAKE_BINARY_DIR@\sharedlib\libjpeg-*.dll" 
-	File "@CMAKE_BINARY_DIR@\libturbojpeg.dll"
 !else
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpeg@DLL_VERSION@.dll"
-	File "@CMAKE_BINARY_DIR@\${BUILDDIR}turbojpeg.dll"
 !endif
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}cjpeg.exe"
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}djpeg.exe"
@@ -97,14 +105,14 @@ Section "Uninstall"
 
 !ifdef GCC
 	Delete $INSTDIR\bin\libjpeg-@DLL_VERSION@.dll
-	Delete $INSTDIR\bin\libturbojpeg.dll
+	Delete $SYSDIR\libturbojpeg.dll
 	Delete $INSTDIR\lib\libturbojpeg.dll.a"
 	Delete $INSTDIR\lib\libturbojpeg.a"
 	Delete $INSTDIR\lib\libjpeg.dll.a"
 	Delete $INSTDIR\lib\libjpeg.a"
 !else
 	Delete $INSTDIR\bin\jpeg@DLL_VERSION@.dll
-	Delete $INSTDIR\bin\turbojpeg.dll
+	Delete $SYSDIR\turbojpeg.dll
 	Delete $INSTDIR\lib\jpeg.lib
 	Delete $INSTDIR\lib\jpeg-static.lib
 	Delete $INSTDIR\lib\turbojpeg.lib

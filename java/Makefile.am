@@ -24,8 +24,7 @@ JNIHEADERS = org_libjpegturbo_turbojpeg_TJ.h \
 
 if WITH_JAVA
 
-dist_noinst_JAVA = ${JAVASOURCES}
-nodist_noinst_JAVA = org/libjpegturbo/turbojpeg/TJLoader.java
+nodist_noinst_JAVA = ${JAVASOURCES} org/libjpegturbo/turbojpeg/TJLoader.java
 
 JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 	org/libjpegturbo/turbojpeg/TJCompressor.class \

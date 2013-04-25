@@ -28,6 +28,9 @@ WITH_JAVA=1 would fail if the TurboJPEG JAR had not been previously built.
 -- Building the "install" target on Windows now installs files into the same
 places that the installer does.
 
+[3] Fixed a Huffman encoder bug that prevented I/O suspension from working
+properly.
+
 
 1.2.90 (1.3 beta1)
 ==================

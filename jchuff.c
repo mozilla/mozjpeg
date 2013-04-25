@@ -299,8 +299,6 @@ dump_buffer (working_state * state)
 {
   struct jpeg_destination_mgr * dest = state->cinfo->dest;
 
-  dest->free_in_buffer = state->free_in_buffer;
-
   if (! (*dest->empty_output_buffer) (state->cinfo))
     return FALSE;
   /* After a successful buffer dump, must reset buffer pointers */

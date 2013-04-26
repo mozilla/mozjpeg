@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -697,7 +697,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  *        factors returned by #tjGetScalingFactors().  The dstBuf pointer may
  *        also be used to decompress into a specific region of a larger buffer.
  * @param width desired width (in pixels) of the destination image.  If this is
- *        smaller than the width of the JPEG image being decompressed, then
+ *        different than the width of the JPEG image being decompressed, then
  *        TurboJPEG will use scaling in the JPEG decompressor to generate the
  *        largest possible image that will fit within the desired width.  If
  *        width is set to 0, then only the height will be considered when
@@ -714,10 +714,10 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  *        parameter to 0 is the equivalent of setting it to <tt>scaledWidth
  *        * #tjPixelSize[pixelFormat]</tt>.
  * @param height desired height (in pixels) of the destination image.  If this
- *        is smaller than the height of the JPEG image being decompressed, then
- *        TurboJPEG will use scaling in the JPEG decompressor to generate the
- *        largest possible image that will fit within the desired height.  If
- *        height is set to 0, then only the width will be considered when
+ *        is different than the height of the JPEG image being decompressed,
+ *        then TurboJPEG will use scaling in the JPEG decompressor to generate
+ *        the largest possible image that will fit within the desired height.
+ *        If height is set to 0, then only the width will be considered when
  *        determining the scaled image size.
  * @param pixelFormat pixel format of the destination image (see @ref
  *        TJPF "Pixel formats".)

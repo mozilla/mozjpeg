@@ -603,13 +603,13 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
  * uses the accelerated color conversion routines in TurboJPEG's underlying
  * codec to produce a planar YUV image that is suitable for X Video.
  * Specifically, if the chrominance components are subsampled along the
- * horizontal dimension, then the width of the luminance plane is padded to 2
- * in the output image (same goes for the height of the luminance plane, if the
- * chrominance components are subsampled along the vertical dimension.)  Also,
- * each line of each plane in the output image is padded to 4 bytes.  Although
- * this will work with any subsampling option, it is really only useful in
- * combination with TJ_420, which produces an image compatible with the I420
- * (AKA "YUV420P") format.
+ * horizontal dimension, then the width of the luminance plane is padded to the
+ * nearest multiple of 2 in the output image (same goes for the height of the
+ * luminance plane, if the chrominance components are subsampled along the
+ * vertical dimension.)  Also, each line of each plane in the output image is
+ * padded to 4 bytes.  Although this will work with any subsampling option, it
+ * is really only useful in combination with TJ_420, which produces an image
+ * compatible with the I420 (AKA "YUV420P") format.
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels

@@ -1234,7 +1234,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 <div class="memdoc">
 
 <p>Encode an RGB or grayscale image into a YUV planar image. </p>
-<p>This function uses the accelerated color conversion routines in TurboJPEG's underlying codec to produce a planar YUV image that is suitable for X Video. Specifically, if the chrominance components are subsampled along the horizontal dimension, then the width of the luminance plane is padded to 2 in the output image (same goes for the height of the luminance plane, if the chrominance components are subsampled along the vertical dimension.) Also, each line of each plane in the output image is padded to 4 bytes. Although this will work with any subsampling option, it is really only useful in combination with TJ_420, which produces an image compatible with the I420 (AKA "YUV420P") format.</p>
+<p>This function uses the accelerated color conversion routines in TurboJPEG's underlying codec to produce a planar YUV image that is suitable for X Video. Specifically, if the chrominance components are subsampled along the horizontal dimension, then the width of the luminance plane is padded to the nearest multiple of 2 in the output image (same goes for the height of the luminance plane, if the chrominance components are subsampled along the vertical dimension.) Also, each line of each plane in the output image is padded to 4 bytes. Although this will work with any subsampling option, it is really only useful in combination with TJ_420, which produces an image compatible with the I420 (AKA "YUV420P") format.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG compressor or transformer instance </td></tr>
@@ -1594,7 +1594,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Fri Apr 26 2013 03:39:31 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Fri Apr 26 2013 03:53:12 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

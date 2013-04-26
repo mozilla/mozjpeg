@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -45,6 +45,7 @@ extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **,
 extern void jpeg_mem_src_tj(j_decompress_ptr, unsigned char *, unsigned long);
 
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
+#define isPow2(x) (((x)&(x-1))==0)
 
 
 /* Error handling (based on example in example.c) */
@@ -531,7 +532,6 @@ DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
 	return retval;
 }
 
-
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
 	unsigned long retval=0;
@@ -548,22 +548,28 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 }
 
 
-DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
+DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
 	int subsamp)
 {
 	unsigned long retval=0;
 	int pw, ph, cw, ch;
-	if(width<1 || height<1 || subsamp<0 || subsamp>=NUMSUBOPT)
-		_throw("tjBufSizeYUV(): Invalid argument");
+	if(width<1 || height<1 || pad<1 || !isPow2(pad) || subsamp<0
+		|| subsamp>=NUMSUBOPT)
+		_throw("tjBufSizeYUV2(): Invalid argument");
 	pw=PAD(width, tjMCUWidth[subsamp]/8);
 	ph=PAD(height, tjMCUHeight[subsamp]/8);
 	cw=pw*8/tjMCUWidth[subsamp];  ch=ph*8/tjMCUHeight[subsamp];
-	retval=PAD(pw, 4)*ph + (subsamp==TJSAMP_GRAY? 0:PAD(cw, 4)*ch*2);
+	retval=PAD(pw, pad)*ph + (subsamp==TJSAMP_GRAY? 0:PAD(cw, pad)*ch*2);
 
 	bailout:
 	return retval;
 }
 
+DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
+	int subsamp)
+{
+	return tjBufSizeYUV2(width, 4, height, subsamp);
+}
 
 DLLEXPORT unsigned long DLLCALL TJBUFSIZEYUV(int width, int height,
 	int subsamp)
@@ -670,9 +676,9 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle handle, unsigned char *srcBuf,
 }
 
 
-DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
+DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
 	int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf,
-	int subsamp, int flags)
+	int pad, int subsamp, int flags)
 {
 	int i, retval=0;  JSAMPROW *row_pointer=NULL;
 	JSAMPLE *_tmpbuf[MAX_COMPONENTS], *_tmpbuf2[MAX_COMPONENTS];
@@ -688,7 +694,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 
 	getinstance(handle);
 	if((this->init&COMPRESS)==0)
-		_throw("tjEncodeYUV2(): Instance has not been initialized for compression");
+		_throw("tjEncodeYUV3(): Instance has not been initialized for compression");
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -697,9 +703,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	}
 
 	if(srcBuf==NULL || width<=0 || pitch<0 || height<=0 || pixelFormat<0
-		|| pixelFormat>=TJ_NUMPF || dstBuf==NULL || subsamp<0
-		|| subsamp>=NUMSUBOPT)
-		_throw("tjEncodeYUV2(): Invalid argument");
+		|| pixelFormat>=TJ_NUMPF || dstBuf==NULL || pad<0 || !isPow2(pad)
+		|| subsamp<0 || subsamp>=NUMSUBOPT)
+		_throw("tjEncodeYUV3(): Invalid argument");
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -714,7 +720,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	if(pixelFormat!=TJPF_GRAY)
 	{
 		rgbBuf=(unsigned char *)malloc(width*height*RGB_PIXELSIZE);
-		if(!rgbBuf) _throw("tjEncodeYUV2(): Memory allocation failure");
+		if(!rgbBuf) _throw("tjEncodeYUV3(): Memory allocation failure");
 		srcBuf=toRGB(srcBuf, width, pitch, height, pixelFormat, rgbBuf);
 		pitch=width*RGB_PIXELSIZE;
 	}
@@ -727,7 +733,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 
-	yuvsize=tjBufSizeYUV(width, height, subsamp);
+	yuvsize=tjBufSizeYUV2(width, pad, height, subsamp);
 	jpeg_mem_dest_tj(cinfo, &dstBuf, &yuvsize, 0);
 	if(setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags)==-1) return -1;
 
@@ -736,7 +742,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 	ph=PAD(height, cinfo->max_v_samp_factor);
 
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ph))==NULL)
-		_throw("tjEncodeYUV2(): Memory allocation failure");
+		_throw("tjEncodeYUV3(): Memory allocation failure");
 	for(i=0; i<height; i++)
 	{
 		if(flags&TJFLAG_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
@@ -751,9 +757,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		_tmpbuf[i]=(JSAMPLE *)malloc(
 			PAD((compptr->width_in_blocks*cinfo->max_h_samp_factor*DCTSIZE)
 				/compptr->h_samp_factor, 16) * cinfo->max_v_samp_factor + 16);
-		if(!_tmpbuf[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
+		if(!_tmpbuf[i]) _throw("tjEncodeYUV3(): Memory allocation failure");
 		tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*cinfo->max_v_samp_factor);
-		if(!tmpbuf[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
+		if(!tmpbuf[i]) _throw("tjEncodeYUV3(): Memory allocation failure");
 		for(row=0; row<cinfo->max_v_samp_factor; row++)
 		{
 			unsigned char *_tmpbuf_aligned=
@@ -764,9 +770,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		}
 		_tmpbuf2[i]=(JSAMPLE *)malloc(PAD(compptr->width_in_blocks*DCTSIZE, 16)
 			* compptr->v_samp_factor + 16);
-		if(!_tmpbuf2[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
+		if(!_tmpbuf2[i]) _throw("tjEncodeYUV3(): Memory allocation failure");
 		tmpbuf2[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*compptr->v_samp_factor);
-		if(!tmpbuf2[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
+		if(!tmpbuf2[i]) _throw("tjEncodeYUV3(): Memory allocation failure");
 		for(row=0; row<compptr->v_samp_factor; row++)
 		{
 			unsigned char *_tmpbuf2_aligned=
@@ -777,15 +783,15 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		cw[i]=pw*compptr->h_samp_factor/cinfo->max_h_samp_factor;
 		ch[i]=ph*compptr->v_samp_factor/cinfo->max_v_samp_factor;
 		outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]);
-		if(!outbuf[i]) _throw("tjEncodeYUV2(): Memory allocation failure");
+		if(!outbuf[i]) _throw("tjEncodeYUV3(): Memory allocation failure");
 		for(row=0; row<ch[i]; row++)
 		{
 			outbuf[i][row]=ptr;
-			ptr+=PAD(cw[i], 4);
+			ptr+=PAD(cw[i], pad);
 		}
 	}
 	if(yuvsize!=(unsigned long)(ptr-dstBuf))
-		_throw("tjEncodeYUV2(): Generated image is not the correct size");
+		_throw("tjEncodeYUV3(): Generated image is not the correct size");
 
 	for(row=0; row<ph; row+=cinfo->max_v_samp_factor)
 	{
@@ -815,6 +821,14 @@ DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
 		if(outbuf[i]!=NULL) free(outbuf[i]);
 	}
 	return retval;
+}
+
+DLLEXPORT int DLLCALL tjEncodeYUV2(tjhandle handle, unsigned char *srcBuf,
+	int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf,
+	int subsamp, int flags)
+{
+	return tjEncodeYUV3(handle, srcBuf, width, pitch, height, pixelFormat,
+		dstBuf, 4, subsamp, flags);
 }
 
 DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle handle, unsigned char *srcBuf,
@@ -973,7 +987,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 		scaledw=TJSCALED(jpegwidth, sf[i]);
 		scaledh=TJSCALED(jpegheight, sf[i]);
 		if(scaledw<=width && scaledh<=height)
-				break;
+			break;
 	}
 	if(scaledw>width || scaledh>height)
 		_throw("tjDecompress2(): Could not scale down to desired image dimensions");
@@ -1039,26 +1053,28 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle handle, unsigned char *jpegBuf,
 }
 
 
-DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
+DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
-	int flags)
+	int width, int pad, int height, int flags)
 {
-	int i, row, retval=0;  JSAMPROW *outbuf[MAX_COMPONENTS];
+	int i, sfi, row, retval=0;  JSAMPROW *outbuf[MAX_COMPONENTS];
+	int jpegwidth, jpegheight, scaledw, scaledh;
 	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], iw[MAX_COMPONENTS],
 		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
 	JSAMPLE *_tmpbuf=NULL, *ptr=dstBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 
 	getinstance(handle);
 	if((this->init&DECOMPRESS)==0)
-		_throw("tjDecompressToYUV(): Instance has not been initialized for decompression");
+		_throw("tjDecompressToYUV2(): Instance has not been initialized for decompression");
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
 		tmpbuf[i]=NULL;  outbuf[i]=NULL;
 	}
 
-	if(jpegBuf==NULL || jpegSize<=0 || dstBuf==NULL)
-		_throw("tjDecompressToYUV(): Invalid argument");
+	if(jpegBuf==NULL || jpegSize<=0 || dstBuf==NULL || width<0 || pad<1
+		|| !isPow2(pad) || height<0)
+		_throw("tjDecompressToYUV2(): Invalid argument");
 
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
@@ -1074,36 +1090,54 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
 
+	jpegwidth=dinfo->image_width;  jpegheight=dinfo->image_height;
+	if(width==0) width=jpegwidth;
+	if(height==0) height=jpegheight;
+	for(i=0; i<NUMSF; i++)
+	{
+		scaledw=TJSCALED(jpegwidth, sf[i]);
+		scaledh=TJSCALED(jpegheight, sf[i]);
+		if(scaledw<=width && scaledh<=height)
+			break;
+	}
+	if(scaledw>width || scaledh>height)
+		_throw("tjDecompressToYUV2(): Could not scale down to desired image dimensions");
+	width=scaledw;  height=scaledh;
+	dinfo->scale_num=sf[i].num;
+	dinfo->scale_denom=sf[i].denom;
+	sfi=i;
+	jpeg_calc_output_dimensions(dinfo);
+
 	for(i=0; i<dinfo->num_components; i++)
 	{
 		jpeg_component_info *compptr=&dinfo->comp_info[i];
 		int ih;
-		iw[i]=compptr->width_in_blocks*DCTSIZE;
-		ih=compptr->height_in_blocks*DCTSIZE;
-		cw[i]=PAD(dinfo->image_width, dinfo->max_h_samp_factor)
+		iw[i]=compptr->width_in_blocks*DCTSIZE*sf[sfi].num/sf[sfi].denom;
+		ih=compptr->height_in_blocks*DCTSIZE*sf[sfi].num/sf[sfi].denom;
+		cw[i]=PAD(dinfo->output_width, dinfo->max_h_samp_factor)
 			*compptr->h_samp_factor/dinfo->max_h_samp_factor;
-		ch[i]=PAD(dinfo->image_height, dinfo->max_v_samp_factor)
+		ch[i]=PAD(dinfo->output_height, dinfo->max_v_samp_factor)
 			*compptr->v_samp_factor/dinfo->max_v_samp_factor;
 		if(iw[i]!=cw[i] || ih!=ch[i]) usetmpbuf=1;
-		th[i]=compptr->v_samp_factor*DCTSIZE;
+		th[i]=compptr->v_samp_factor*DCTSIZE*sf[sfi].num/sf[sfi].denom;
 		tmpbufsize+=iw[i]*th[i];
 		if((outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]))==NULL)
-			_throw("tjDecompressToYUV(): Memory allocation failure");
+			_throw("tjDecompressToYUV2(): Memory allocation failure");
 		for(row=0; row<ch[i]; row++)
 		{
 			outbuf[i][row]=ptr;
-			ptr+=PAD(cw[i], 4);
+			ptr+=PAD(cw[i], pad);
 		}
 	}
 	if(usetmpbuf)
 	{
 		if((_tmpbuf=(JSAMPLE *)malloc(sizeof(JSAMPLE)*tmpbufsize))==NULL)
-			_throw("tjDecompressToYUV(): Memory allocation failure");
+			_throw("tjDecompressToYUV2(): Memory allocation failure");
 		ptr=_tmpbuf;
 		for(i=0; i<dinfo->num_components; i++)
 		{
 			if((tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*th[i]))==NULL)
-				_throw("tjDecompressToYUV(): Memory allocation failure");
+				_throw("tjDecompressToYUV2(): Memory allocation failure");
 			for(row=0; row<th[i]; row++)
 			{
 				tmpbuf[i][row]=ptr;
@@ -1118,7 +1152,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 
 	jpeg_start_decompress(dinfo);
 	for(row=0; row<(int)dinfo->output_height;
-		row+=dinfo->max_v_samp_factor*DCTSIZE)
+		row+=dinfo->max_v_samp_factor*DCTSIZE*sf[sfi].num/sf[sfi].denom)
 	{
 		JSAMPARRAY yuvptr[MAX_COMPONENTS];
 		int crow[MAX_COMPONENTS];
@@ -1129,7 +1163,8 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 			if(usetmpbuf) yuvptr[i]=tmpbuf[i];
 			else yuvptr[i]=&outbuf[i][crow[i]];
 		}
-		jpeg_read_raw_data(dinfo, yuvptr, dinfo->max_v_samp_factor*DCTSIZE);
+		jpeg_read_raw_data(dinfo, yuvptr,
+			dinfo->max_v_samp_factor*DCTSIZE*sf[sfi].num/sf[sfi].denom);
 		if(usetmpbuf)
 		{
 			int j;
@@ -1153,6 +1188,13 @@ DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
 	}
 	if(_tmpbuf) free(_tmpbuf);
 	return retval;
+}
+
+DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
+	unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
+	int flags)
+{
+	return tjDecompressToYUV2(handle, jpegBuf, jpegSize, dstBuf, 0, 4, 0, flags);
 }
 
 

@@ -205,6 +205,7 @@ endif
 	./tjunittest
 	./tjunittest -alloc
 	./tjunittest -yuv
+	./tjunittest -yuv -noyuvpad
 endif
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_INT) testoutint.jpg

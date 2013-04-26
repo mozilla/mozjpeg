@@ -57,3 +57,11 @@ TURBOJPEG_1.2
 		Java_org_libjpegturbo_turbojpeg_TJTransformer_init;
 		Java_org_libjpegturbo_turbojpeg_TJTransformer_transform;
 } TURBOJPEG_1.1;
+
+TURBOJPEG_1.4
+{
+	global:
+		tjBufSizeYUV2;
+		tjDecompressToYUV2;
+		tjEncodeYUV3;
+} TURBOJPEG_1.2;

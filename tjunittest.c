@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,6 +47,8 @@ void usage(char *progName)
 	printf("\nUSAGE: %s [options]\n", progName);
 	printf("Options:\n");
 	printf("-yuv = test YUV encoding/decoding support\n");
+	printf("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest\n");
+	printf("            4-byte boundary.\n");
 	printf("-alloc = test automatic buffer allocation\n");
 	exit(1);
 }
@@ -77,7 +79,7 @@ const int _onlyGray[]={TJPF_GRAY};
 const int _onlyRGB[]={TJPF_RGB};
 
 enum {YUVENCODE=1, YUVDECODE};
-int yuv=0, alloc=0;
+int yuv=0, alloc=0, pad=4;
 
 int exitStatus=0;
 #define bailout() {exitStatus=-1;  goto bailout;}
@@ -236,22 +238,24 @@ int checkBuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 
-int checkBufYUV(unsigned char *buf, int w, int h, int subsamp)
+int checkBufYUV(unsigned char *buf, int w, int h, int subsamp,
+	tjscalingfactor sf)
 {
 	int row, col;
 	int hsf=tjMCUWidth[subsamp]/8, vsf=tjMCUHeight[subsamp]/8;
 	int pw=PAD(w, hsf), ph=PAD(h, vsf);
 	int cw=pw/hsf, ch=ph/vsf;
-	int ypitch=PAD(pw, 4), uvpitch=PAD(cw, 4);
+	int ypitch=PAD(pw, pad), uvpitch=PAD(cw, pad);
 	int retval=1;
-	int halfway=16;
+	int halfway=16*sf.num/sf.denom;
+	int blocksize=8*sf.num/sf.denom;
 
 	for(row=0; row<ph; row++)
 	{
 		for(col=0; col<pw; col++)
 		{
 			unsigned char y=buf[ypitch*row+col];
-			if(((row/8)+(col/8))%2==0)
+			if(((row/blocksize)+(col/blocksize))%2==0)
 			{
 				if(row<halfway) checkval255(y)  else checkval0(y);
 			}
@@ -263,14 +267,14 @@ int checkBufYUV(unsigned char *buf, int w, int h, int subsamp)
 	}
 	if(subsamp!=TJSAMP_GRAY)
 	{
-		halfway=16/vsf;
+		int halfway=16/vsf*sf.num/sf.denom;
 		for(row=0; row<ch; row++)
 		{
 			for(col=0; col<cw; col++)
 			{
 				unsigned char u=buf[ypitch*ph + (uvpitch*row+col)],
 					v=buf[ypitch*ph + uvpitch*ch + (uvpitch*row+col)];
-				if(((row*vsf/8)+(col*hsf/8))%2==0)
+				if(((row*vsf/blocksize)+(col*hsf/blocksize))%2==0)
 				{
 					checkval(u, 128);  checkval(v, 128);
 				}
@@ -356,7 +360,8 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	t=gettime();
 	if(yuv==YUVENCODE)
 	{
-		_tj(tjEncodeYUV2(handle, srcBuf, w, 0, h, pf, *dstBuf, subsamp, flags));
+		_tj(tjEncodeYUV3(handle, srcBuf, w, 0, h, pf, *dstBuf, pad, subsamp,
+			flags));
 	}
 	else
 	{
@@ -381,7 +386,8 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	writeJPEG(*dstBuf, *dstSize, tempStr);
 	if(yuv==YUVENCODE)
 	{
-		if(checkBufYUV(*dstBuf, w, h, subsamp)) printf("Passed.");
+		tjscalingfactor sf={1, 1};
+		if(checkBufYUV(*dstBuf, w, h, subsamp, sf)) printf("Passed.");
 		else printf("FAILED!");
 	}
 	else printf("Done.");
@@ -407,20 +413,19 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 	if(yuv==YUVDECODE)
 		printf("JPEG -> YUV %s ... ", subName[subsamp]);
 	else
-	{
 		printf("JPEG -> %s %s ", pixFormatStr[pf],
 			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ");
-		if(sf.num!=1 || sf.denom!=1)
-			printf("%d/%d ... ", sf.num, sf.denom);
-		else printf("... ");
-	}
+	if(sf.num!=1 || sf.denom!=1)
+		printf("%d/%d ... ", sf.num, sf.denom);
+	else printf("... ");
 
 	_tj(tjDecompressHeader2(handle, jpegBuf, jpegSize, &_hdrw, &_hdrh,
 		&_hdrsubsamp));
 	if(_hdrw!=w || _hdrh!=h || _hdrsubsamp!=subsamp)
 		_throw("Incorrect JPEG header");
 
-	if(yuv==YUVDECODE) dstSize=tjBufSizeYUV(w, h, subsamp);
+	if(yuv==YUVDECODE)
+		dstSize=tjBufSizeYUV2(scaledWidth, pad, scaledHeight, subsamp);
 	else dstSize=scaledWidth*scaledHeight*tjPixelSize[pf];
 	if((dstBuf=(unsigned char *)malloc(dstSize))==NULL)
 		_throw("Memory allocation failure");
@@ -429,7 +434,8 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 	t=gettime();
 	if(yuv==YUVDECODE)
 	{
-		_tj(tjDecompressToYUV(handle, jpegBuf, jpegSize, dstBuf, flags));
+		_tj(tjDecompressToYUV2(handle, jpegBuf, jpegSize, dstBuf, scaledWidth,
+			pad, scaledHeight, flags));
 	}
 	else
 	{
@@ -440,7 +446,8 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 
 	if(yuv==YUVDECODE)
 	{
-		if(checkBufYUV(dstBuf, w, h, subsamp)) printf("Passed.");
+		if(checkBufYUV(dstBuf, scaledWidth, scaledHeight, subsamp, sf))
+			printf("Passed.");
 		else printf("FAILED!");
 	}
 	else
@@ -464,7 +471,7 @@ void decompTest(tjhandle handle, unsigned char *jpegBuf,
 	tjscalingfactor *sf=tjGetScalingFactors(&n), sf1={1, 1};
 	if(!sf || !n) _throwtj();
 
-	if((subsamp==TJSAMP_444 || subsamp==TJSAMP_GRAY) && !yuv)
+	if(subsamp==TJSAMP_444 || subsamp==TJSAMP_GRAY)
 	{
 		for(i=0; i<n; i++)
 			_decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp,
@@ -488,7 +495,7 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 
 	if(!alloc)
 	{
-		size=(yuv==YUVENCODE? tjBufSizeYUV(w, h, subsamp)
+		size=(yuv==YUVENCODE? tjBufSizeYUV2(w, pad, h, subsamp)
 			: tjBufSize(w, h, subsamp));
 		if((dstBuf=(unsigned char *)tjAlloc(size))==NULL)
 			_throw("Memory allocation failure.");
@@ -610,6 +617,7 @@ int main(int argc, char *argv[])
 		for(i=1; i<argc; i++)
 		{
 			if(!strcasecmp(argv[i], "-yuv")) doyuv=1;
+			if(!strcasecmp(argv[i], "-noyuvpad")) pad=1;
 			if(!strcasecmp(argv[i], "-alloc")) alloc=1;
 			if(!strncasecmp(argv[i], "-h", 2) || !strcasecmp(argv[i], "-?"))
 				usage(argv[0]);

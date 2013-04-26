@@ -19,7 +19,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">TurboJPEG&#160;<span id="projectnumber">1.2.1</span></div>
+   <div id="projectname">TurboJPEG&#160;<span id="projectnumber">1.4</span></div>
   </td>
  </tr>
  </tbody>
@@ -169,10 +169,10 @@ Functions</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Compress an RGB or grayscale image into a JPEG image.  <a href="#gaba62b7a98f960839b588579898495cf2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT unsigned long DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaccc5bca7f12fcdcc302e6e1c6d4b311b">tjBufSize</a> (int width, int height, int jpegSubsamp)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters.  <a href="#gaccc5bca7f12fcdcc302e6e1c6d4b311b"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT unsigned long DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga9d0cb06fd5052d21b6f2b382db8b219c">tjBufSizeYUV</a> (int width, int height, int subsamp)</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters.  <a href="#ga9d0cb06fd5052d21b6f2b382db8b219c"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0fa4e7b1943687c6a0c0304529c55d35">tjEncodeYUV2</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf, int subsamp, int flags)</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode an RGB or grayscale image into a YUV planar image.  <a href="#ga0fa4e7b1943687c6a0c0304529c55d35"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT unsigned long DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9">tjBufSizeYUV2</a> (int width, int pad, int height, int subsamp)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters.  <a href="#gaf451664a62c1f6c7cc5a6401f32908c9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0a5ffbf7cb58a5b6a8201114fe889360">tjEncodeYUV3</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf, int pad, int subsamp, int flags)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode an RGB or grayscale image into a YUV planar image.  <a href="#ga0a5ffbf7cb58a5b6a8201114fe889360"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT <a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gae5408179d041e2a2f7199c8283cf649e">tjInitDecompress</a> (void)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a TurboJPEG decompressor instance.  <a href="#gae5408179d041e2a2f7199c8283cf649e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gac5675fceb7997b385516cdffdb34e6aa">tjDecompressHeader2</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height, int *jpegSubsamp)</td></tr>
@@ -181,8 +181,8 @@ Functions</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of TurboJPEG supports.  <a href="#ga6449044b9af402999ccf52f401333be8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gada69cc6443d1bb493b40f1626259e5e9">tjDecompress2</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf, int width, int pitch, int height, int pixelFormat, int flags)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Decompress a JPEG image to an RGB or grayscale image.  <a href="#gada69cc6443d1bb493b40f1626259e5e9"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gad7810af095624a4016e72957a50f77d8">tjDecompressToYUV</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf, int flags)</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Decompress a JPEG image to a YUV planar image.  <a href="#gad7810af095624a4016e72957a50f77d8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga7c08b340ad7f8e85d407bd9e81d44d07">tjDecompressToYUV2</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf, int width, int pad, int height, int flags)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Decompress a JPEG image to a YUV planar image.  <a href="#ga7c08b340ad7f8e85d407bd9e81d44d07"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT <a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga3155b775bfbac9dbba869b95a0367902">tjInitTransform</a> (void)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new TurboJPEG transformer instance.  <a href="#ga3155b775bfbac9dbba869b95a0367902"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616">tjTransform</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *jpegBuf, unsigned long jpegSize, int n, unsigned char **dstBufs, unsigned long *dstSizes, <a class="el" href="structtjtransform.html">tjtransform</a> *transforms, int flags)</td></tr>
@@ -781,15 +781,21 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga9d0cb06fd5052d21b6f2b382db8b219c"></a><!-- doxytag: member="turbojpeg.h::tjBufSizeYUV" ref="ga9d0cb06fd5052d21b6f2b382db8b219c" args="(int width, int height, int subsamp)" -->
+<a class="anchor" id="gaf451664a62c1f6c7cc5a6401f32908c9"></a><!-- doxytag: member="turbojpeg.h::tjBufSizeYUV2" ref="gaf451664a62c1f6c7cc5a6401f32908c9" args="(int width, int pad, int height, int subsamp)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">DLLEXPORT unsigned long DLLCALL tjBufSizeYUV </td>
+          <td class="memname">DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2 </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>pad</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -816,6 +822,7 @@ Variables</h2></td></tr>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">width</td><td>width of the image (in pixels) </td></tr>
+    <tr><td class="paramname">pad</td><td>the width of each line in each plane of the image is padded to the nearest multiple of this number of bytes (must be a power of 2.) </td></tr>
     <tr><td class="paramname">height</td><td>height of the image (in pixels) </td></tr>
     <tr><td class="paramname">subsamp</td><td>level of chrominance subsampling in the image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
   </table>
@@ -1081,12 +1088,12 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 
 </div>
 </div>
-<a class="anchor" id="gad7810af095624a4016e72957a50f77d8"></a><!-- doxytag: member="turbojpeg.h::tjDecompressToYUV" ref="gad7810af095624a4016e72957a50f77d8" args="(tjhandle handle, unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf, int flags)" -->
+<a class="anchor" id="ga7c08b340ad7f8e85d407bd9e81d44d07"></a><!-- doxytag: member="turbojpeg.h::tjDecompressToYUV2" ref="ga7c08b340ad7f8e85d407bd9e81d44d07" args="(tjhandle handle, unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf, int width, int pad, int height, int flags)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">DLLEXPORT int DLLCALL tjDecompressToYUV </td>
+          <td class="memname">DLLEXPORT int DLLCALL tjDecompressToYUV2 </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a>&#160;</td>
           <td class="paramname"><em>handle</em>, </td>
@@ -1113,6 +1120,24 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>pad</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>flags</em>&#160;</td>
         </tr>
         <tr>
@@ -1125,13 +1150,16 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 <div class="memdoc">
 
 <p>Decompress a JPEG image to a YUV planar image. </p>
-<p>This function performs JPEG decompression but leaves out the color conversion step, so a planar YUV image is generated instead of an RGB image. The padding of the planes in this image is the same as in the images generated by <a class="el" href="group___turbo_j_p_e_g.html#ga0fa4e7b1943687c6a0c0304529c55d35" title="Encode an RGB or grayscale image into a YUV planar image.">tjEncodeYUV2()</a>. Note that, if the width or height of the image is not an even multiple of the MCU block size (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a> and <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</p>
+<p>This function performs JPEG decompression but leaves out the color conversion step, so a planar YUV image is generated instead of an RGB image. The structure of the planes in this image is the same as in the images generated by <a class="el" href="group___turbo_j_p_e_g.html#ga0a5ffbf7cb58a5b6a8201114fe889360" title="Encode an RGB or grayscale image into a YUV planar image.">tjEncodeYUV3()</a>. Note that, if the width or height of the JPEG image is not an even multiple of the MCU block size (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a> and <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG decompressor or transformer instance </td></tr>
     <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing the JPEG image to decompress </td></tr>
     <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes) </td></tr>
-    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the YUV image. Use <a class="el" href="group___turbo_j_p_e_g.html#ga9d0cb06fd5052d21b6f2b382db8b219c" title="The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters...">tjBufSizeYUV()</a> to determine the appropriate size for this buffer based on the image width, height, and level of subsampling. </td></tr>
+    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the YUV image. Use <a class="el" href="group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9" title="The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters...">tjBufSizeYUV2()</a> to determine the appropriate size for this buffer based on the image width, height, padding, and level of subsampling. </td></tr>
+    <tr><td class="paramname">width</td><td>desired width (in pixels) of the YUV image. If this is different than the width of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired width. If <code>width</code> is set to 0, then only the height will be considered when determining the scaled image size. </td></tr>
+    <tr><td class="paramname">pad</td><td>the width of each line in each plane of the YUV image will be padded to the nearest multiple of this number of bytes (must be a power of 2.) To generate images suitable for X Video, <code>pad</code> should be set to 4. </td></tr>
+    <tr><td class="paramname">height</td><td>desired height (in pixels) of the YUV image. If this is different than the height of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired height. If <code>height</code> is set to 0, then only the width will be considered when determining the scaled image size. </td></tr>
     <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
   </table>
   </dd>
@@ -1166,12 +1194,12 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 
 </div>
 </div>
-<a class="anchor" id="ga0fa4e7b1943687c6a0c0304529c55d35"></a><!-- doxytag: member="turbojpeg.h::tjEncodeYUV2" ref="ga0fa4e7b1943687c6a0c0304529c55d35" args="(tjhandle handle, unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf, int subsamp, int flags)" -->
+<a class="anchor" id="ga0a5ffbf7cb58a5b6a8201114fe889360"></a><!-- doxytag: member="turbojpeg.h::tjEncodeYUV3" ref="ga0a5ffbf7cb58a5b6a8201114fe889360" args="(tjhandle handle, unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf, int pad, int subsamp, int flags)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">DLLEXPORT int DLLCALL tjEncodeYUV2 </td>
+          <td class="memname">DLLEXPORT int DLLCALL tjEncodeYUV3 </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a>&#160;</td>
           <td class="paramname"><em>handle</em>, </td>
@@ -1216,6 +1244,12 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>pad</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>subsamp</em>, </td>
         </tr>
         <tr>
@@ -1234,7 +1268,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 <div class="memdoc">
 
 <p>Encode an RGB or grayscale image into a YUV planar image. </p>
-<p>This function uses the accelerated color conversion routines in TurboJPEG's underlying codec to produce a planar YUV image that is suitable for X Video. Specifically, if the chrominance components are subsampled along the horizontal dimension, then the width of the luminance plane is padded to 2 in the output image (same goes for the height of the luminance plane, if the chrominance components are subsampled along the vertical dimension.) Also, each line of each plane in the output image is padded to 4 bytes. Although this will work with any subsampling option, it is really only useful in combination with TJ_420, which produces an image compatible with the I420 (AKA "YUV420P") format.</p>
+<p>This function uses the accelerated color conversion routines in TurboJPEG's underlying codec but does not execute any of the other steps in the JPEG compression process. The Y, U, and V image planes are stored sequentially into the destination buffer, and the size of each plane is determined by the width and height of the source image, as well as the specified padding and level of chrominance subsampling. If the chrominance components are subsampled along the horizontal dimension, then the width of the luminance plane is padded to the nearest multiple of 2 in the output image (same goes for the height of the luminance plane, if the chrominance components are subsampled along the vertical dimension.)</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG compressor or transformer instance </td></tr>
@@ -1243,8 +1277,9 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">pitch</td><td>bytes per line of the source image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use this parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>. </td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source image </td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the source image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.) </td></tr>
-    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the YUV image. Use <a class="el" href="group___turbo_j_p_e_g.html#ga9d0cb06fd5052d21b6f2b382db8b219c" title="The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters...">tjBufSizeYUV()</a> to determine the appropriate size for this buffer based on the image width, height, and level of chrominance subsampling. </td></tr>
-    <tr><td class="paramname">subsamp</td><td>the level of chrominance subsampling to be used when generating the YUV image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.) </td></tr>
+    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the YUV image. Use <a class="el" href="group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9" title="The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters...">tjBufSizeYUV2()</a> to determine the appropriate size for this buffer based on the image width, height, padding, and level of chrominance subsampling. </td></tr>
+    <tr><td class="paramname">pad</td><td>the width of each line in each plane of the YUV image will be padded to the nearest multiple of this number of bytes (must be a power of 2.) To generate images suitable for X Video, <code>pad</code> should be set to 4. </td></tr>
+    <tr><td class="paramname">subsamp</td><td>the level of chrominance subsampling to be used when generating the YUV image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.) To generate images suitable for X Video, <code>subsamp</code> should be set to <a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a63085dbf683cfe39e513cdb6343e3737">TJSAMP_420</a>. This produces an image compatible with the I420 (AKA "YUV420P") format. </td></tr>
     <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
   </table>
   </dd>
@@ -1594,7 +1629,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Fri Apr 26 2013 03:39:31 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Fri Apr 26 2013 04:43:37 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

@@ -1,3 +1,12 @@
+1.4 pre-beta
+============
+
+[1] The TurboJPEG API can now be used to generate YUV images with an arbitrary
+line padding (previously, it only supported 4-byte padding, which was
+compatible with X Video.)  Also, the decompress-to-YUV function has been
+extended to support image scaling.
+
+
 1.3.0
 =====
 

@@ -90,7 +90,7 @@ Defines</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaf9d49066633404da4386d70820295dd2">TJFLAG_FORCESSE3</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (if the underlying codec supports it.)  <a href="#gaf9d49066633404da4386d70820295dd2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga4ee4506c81177a06f77e2504a22efd2d">TJFLAG_FASTUPSAMPLE</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">When decompressing, use the fastest chrominance upsampling algorithm available in the underlying codec.  <a href="#ga4ee4506c81177a06f77e2504a22efd2d"></a><br/></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">When decompressing an image that was compressed using chrominance subsampling, use the fastest chrominance upsampling algorithm available in the underlying codec.  <a href="#ga4ee4506c81177a06f77e2504a22efd2d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963">TJFLAG_NOREALLOC</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable buffer (re)allocation.  <a href="#ga8808d403c68b62aaa58a4c1e58e98963"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaabce235db80d3f698b27f36cbd453da2">TJFLAG_FASTDCT</a></td></tr>
@@ -98,7 +98,7 @@ Defines</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gacb233cfd722d66d1ccbf48a7de81f0e0">TJFLAG_ACCURATEDCT</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Use the most accurate DCT/IDCT algorithm available in the underlying codec.  <a href="#gacb233cfd722d66d1ccbf48a7de81f0e0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0f6dbd18adf38b7d46ac547f0f4d562c">TJ_NUMXOP</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of transform operations.  <a href="#ga0f6dbd18adf38b7d46ac547f0f4d562c"></a><br/></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of transform operations.  <a href="#ga0f6dbd18adf38b7d46ac547f0f4d562c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga50e03cb5ed115330e212417429600b00">TJXOPT_PERFECT</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">This option will cause <a class="el" href="group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a> to return an error if the transform is not perfect.  <a href="#ga50e03cb5ed115330e212417429600b00"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga319826b7eb1583c0595bbe7b95428709">TJXOPT_TRIM</a></td></tr>
@@ -255,7 +255,7 @@ Variables</h2></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Number of transform operations. </p>
+<p>The number of transform operations. </p>
 
 </div>
 </div>
@@ -317,7 +317,7 @@ Variables</h2></td></tr>
 </div>
 <div class="memdoc">
 
-<p>When decompressing, use the fastest chrominance upsampling algorithm available in the underlying codec. </p>
+<p>When decompressing an image that was compressed using chrominance subsampling, use the fastest chrominance upsampling algorithm available in the underlying codec. </p>
 <p>The default is to use smooth upsampling, which creates a smooth transition between neighboring chrominance components in order to reduce upsampling artifacts in the decompressed image. </p>
 
 </div>
@@ -631,7 +631,7 @@ Variables</h2></td></tr>
 <div class="memdoc">
 
 <p>Chrominance subsampling options. </p>
-<p>When an image is converted from the RGB to the YCbCr colorspace as part of the JPEG compression process, some of the Cb and Cr (chrominance) components can be discarded or averaged together to produce a smaller image with little perceptible loss of image clarity (the human eye is more sensitive to small changes in brightness than small changes in color.) This is called "chrominance subsampling". </p>
+<p>When an image is converted from the RGB to the YUV colorspace as part of the JPEG compression process, some of the U and V (chrominance) components can be discarded or averaged together to produce a smaller image with little perceptible loss of image clarity (the human eye is more sensitive to small changes in brightness than small changes in color.) This is called "chrominance subsampling". </p>
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga1d047060ea80bb9820d540bb928e9074afb8da4f44197837bdec0a4f593dacae3"></a><!-- doxytag: member="TJSAMP_444" ref="gga1d047060ea80bb9820d540bb928e9074afb8da4f44197837bdec0a4f593dacae3" args="" -->TJSAMP_444</em>&nbsp;</td><td>
 <p>4:4:4 chrominance subsampling (no chrominance subsampling). </p>
@@ -768,7 +768,7 @@ Variables</h2></td></tr>
 <div class="memdoc">
 
 <p>The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters. </p>
-<p>The number of bytes returned by this function is larger than the size of the uncompressed source image. The reason for this is that the JPEG format uses 16-bit coefficients, and it is thus possible for a very high-quality JPEG image with very high frequency content to expand rather than compress when converted to the JPEG format. Such images represent a very rare corner case, but since there is no way to predict the size of a JPEG image prior to compression, the corner case has to be handled.</p>
+<p>The number of bytes returned by this function is larger than the size of the uncompressed source image. The reason for this is that the JPEG format uses 16-bit coefficients, and it is thus possible for a very high-quality JPEG image with very high-frequency content to expand rather than compress when converted to the JPEG format. Such images represent a very rare corner case, but since there is no way to predict the size of a JPEG image prior to compression, the corner case has to be handled.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">width</td><td>width of the image (in pixels) </td></tr>
@@ -1003,10 +1003,10 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG decompressor or transformer instance </td></tr>
     <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing the JPEG image to decompress </td></tr>
     <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes) </td></tr>
-    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the decompressed image. This buffer should normally be <code>pitch * scaledHeight</code> bytes in size, where <code>scaledHeight</code> can be determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga84878bb65404204743aa18cac02781df" title="Compute the scaled value of dimension using the given scaling factor.">TJSCALED()</a> with the JPEG image height and one of the scaling factors returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6449044b9af402999ccf52f401333be8" title="Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of Tur...">tjGetScalingFactors()</a>. The dstBuf pointer may also be used to decompress into a specific region of a larger buffer. </td></tr>
-    <tr><td class="paramname">width</td><td>desired width (in pixels) of the destination image. If this is different than the width of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired width. If width is set to 0, then only the height will be considered when determining the scaled image size. </td></tr>
+    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the decompressed image. This buffer should normally be <code>pitch * scaledHeight</code> bytes in size, where <code>scaledHeight</code> can be determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga84878bb65404204743aa18cac02781df" title="Compute the scaled value of dimension using the given scaling factor.">TJSCALED()</a> with the JPEG image height and one of the scaling factors returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6449044b9af402999ccf52f401333be8" title="Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of Tur...">tjGetScalingFactors()</a>. The <code>dstBuf</code> pointer may also be used to decompress into a specific region of a larger buffer. </td></tr>
+    <tr><td class="paramname">width</td><td>desired width (in pixels) of the destination image. If this is different than the width of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired width. If <code>width</code> is set to 0, then only the height will be considered when determining the scaled image size. </td></tr>
     <tr><td class="paramname">pitch</td><td>bytes per line of the destination image. Normally, this is <code>scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the decompressed image is unpadded, else <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the decompressed image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. (NOTE: <code>scaledWidth</code> can be determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga84878bb65404204743aa18cac02781df" title="Compute the scaled value of dimension using the given scaling factor.">TJSCALED()</a> with the JPEG image width and one of the scaling factors returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6449044b9af402999ccf52f401333be8" title="Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of Tur...">tjGetScalingFactors()</a>.) You can also be clever and use the pitch parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>. </td></tr>
-    <tr><td class="paramname">height</td><td>desired height (in pixels) of the destination image. If this is different than the height of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired height. If height is set to 0, then only the width will be considered when determining the scaled image size. </td></tr>
+    <tr><td class="paramname">height</td><td>desired height (in pixels) of the destination image. If this is different than the height of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired height. If <code>height</code> is set to 0, then only the width will be considered when determining the scaled image size. </td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the destination image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.) </td></tr>
     <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
   </table>
@@ -1125,13 +1125,13 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 <div class="memdoc">
 
 <p>Decompress a JPEG image to a YUV planar image. </p>
-<p>This function performs JPEG decompression but leaves out the color conversion step, so a planar YUV image is generated instead of an RGB image. The padding of the planes in this image is the same as the images generated by <a class="el" href="group___turbo_j_p_e_g.html#ga0fa4e7b1943687c6a0c0304529c55d35" title="Encode an RGB or grayscale image into a YUV planar image.">tjEncodeYUV2()</a>. Note that, if the width or height of the image is not an even multiple of the MCU block size (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a> and <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</p>
+<p>This function performs JPEG decompression but leaves out the color conversion step, so a planar YUV image is generated instead of an RGB image. The padding of the planes in this image is the same as in the images generated by <a class="el" href="group___turbo_j_p_e_g.html#ga0fa4e7b1943687c6a0c0304529c55d35" title="Encode an RGB or grayscale image into a YUV planar image.">tjEncodeYUV2()</a>. Note that, if the width or height of the image is not an even multiple of the MCU block size (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a> and <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG decompressor or transformer instance </td></tr>
     <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing the JPEG image to decompress </td></tr>
     <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes) </td></tr>
-    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the YUV image. Use <a class="el" href="group___turbo_j_p_e_g.html#ga9d0cb06fd5052d21b6f2b382db8b219c" title="The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters...">tjBufSizeYUV</a> to determine the appropriate size for this buffer based on the image width, height, and level of subsampling. </td></tr>
+    <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the YUV image. Use <a class="el" href="group___turbo_j_p_e_g.html#ga9d0cb06fd5052d21b6f2b382db8b219c" title="The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters...">tjBufSizeYUV()</a> to determine the appropriate size for this buffer based on the image width, height, and level of subsampling. </td></tr>
     <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
   </table>
   </dd>
@@ -1448,7 +1448,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 <div class="memdoc">
 
 <p>Losslessly transform a JPEG image into another JPEG image. </p>
-<p>Lossless transforms work by moving the raw coefficients from one JPEG image structure to another without altering the values of the coefficients. While this is typically faster than decompressing the image, transforming it, and re-compressing it, lossless transforms are not free. Each lossless transform requires reading and Huffman decoding all of the coefficients in the source image, regardless of the size of the destination image. Thus, this function provides a means of generating multiple transformed images from the same source or of applying multiple transformations simultaneously, in order to eliminate the need to read the source coefficients multiple times.</p>
+<p>Lossless transforms work by moving the raw coefficients from one JPEG image structure to another without altering the values of the coefficients. While this is typically faster than decompressing the image, transforming it, and re-compressing it, lossless transforms are not free. Each lossless transform requires reading and performing Huffman decoding on all of the coefficients in the source image, regardless of the size of the destination image. Thus, this function provides a means of generating multiple transformed images from the same source or applying multiple transformations simultaneously, in order to eliminate the need to read the source coefficients multiple times.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG transformer instance </td></tr>
@@ -1458,11 +1458,11 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">dstBufs</td><td>pointer to an array of n image buffers. <code>dstBufs[i]</code> will receive a JPEG image that has been transformed using the parameters in <code>transforms[i]</code>. TurboJPEG has the ability to reallocate the JPEG buffer to accommodate the size of the JPEG image. Thus, you can choose to:<ol type="1">
 <li>pre-allocate the JPEG buffer with an arbitrary size using <a class="el" href="group___turbo_j_p_e_g.html#ga5c9234bda6d993cdaffdd89bf81a00ff" title="Allocate an image buffer for use with TurboJPEG.">tjAlloc()</a> and let TurboJPEG grow the buffer as needed,</li>
 <li>set <code>dstBufs[i]</code> to NULL to tell TurboJPEG to allocate the buffer for you, or</li>
-<li>pre-allocate the buffer to a "worst case" size determined by calling <a class="el" href="group___turbo_j_p_e_g.html#gaccc5bca7f12fcdcc302e6e1c6d4b311b" title="The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters...">tjBufSize()</a> with the cropped width and height. This should ensure that the buffer never has to be re-allocated (setting <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a> guarantees this.)</li>
+<li>pre-allocate the buffer to a "worst case" size determined by calling <a class="el" href="group___turbo_j_p_e_g.html#gaccc5bca7f12fcdcc302e6e1c6d4b311b" title="The maximum size of the buffer (in bytes) required to hold a JPEG image with the given parameters...">tjBufSize()</a> with the transformed or cropped width and height. This should ensure that the buffer never has to be re-allocated (setting <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a> guarantees this.)</li>
 </ol>
 If you choose option 1, <code>dstSizes[i]</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>dstBufs[i]</code> upon return from this function, as it may have changed. </td></tr>
     <tr><td class="paramname">dstSizes</td><td>pointer to an array of n unsigned long variables that will receive the actual sizes (in bytes) of each transformed JPEG image. If <code>dstBufs[i]</code> points to a pre-allocated buffer, then <code>dstSizes[i]</code> should be set to the size of the buffer. Upon return, <code>dstSizes[i]</code> will contain the size of the JPEG image (in bytes.) </td></tr>
-    <tr><td class="paramname">transforms</td><td>pointer to an array of n tjtransform structures, each of which specifies the transform parameters and/or cropping region for the corresponding transformed output image. </td></tr>
+    <tr><td class="paramname">transforms</td><td>pointer to an array of n <a class="el" href="structtjtransform.html" title="Lossless transform.">tjtransform</a> structures, each of which specifies the transform parameters and/or cropping region for the corresponding transformed output image. </td></tr>
     <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
   </table>
   </dd>
@@ -1594,7 +1594,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Fri Apr 26 2013 00:23:46 for TurboJPEG by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Fri Apr 26 2013 03:39:31 for TurboJPEG by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

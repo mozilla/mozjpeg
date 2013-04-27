@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -73,17 +73,18 @@ public class TJTransformer extends TJDecompressor {
    * JPEG image structure to another without altering the values of the
    * coefficients.  While this is typically faster than decompressing the
    * image, transforming it, and re-compressing it, lossless transforms are not
-   * free.  Each lossless transform requires reading and Huffman decoding all
-   * of the coefficients in the source image, regardless of the size of the
-   * destination image.  Thus, this method provides a means of generating
-   * multiple transformed images from the same source or of applying multiple
-   * transformations simultaneously, in order to eliminate the need to read the
-   * source coefficients multiple times.
+   * free.  Each lossless transform requires reading and performing Huffman
+   * decoding on all of the coefficients in the source image, regardless of the
+   * size of the destination image.  Thus, this method provides a means of
+   * generating multiple transformed images from the same source or of applying
+   * multiple transformations simultaneously, in order to eliminate the need to
+   * read the source coefficients multiple times.
    *
    * @param dstBufs an array of image buffers.  <code>dstbufs[i]</code> will
    * receive a JPEG image that has been transformed using the parameters in
    * <code>transforms[i]</code>.  Use {@link TJ#bufSize} to determine the
-   * maximum size for each buffer based on the cropped width and height.
+   * maximum size for each buffer based on the transformed or cropped width and
+   * height.
    *
    * @param transforms an array of {@link TJTransform} instances, each of
    * which specifies the transform parameters and/or cropping region for the

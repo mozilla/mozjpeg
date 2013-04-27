@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -58,12 +58,12 @@ public interface TJCustomFilter {
    * component plane to which <code>coeffBuffer</code> belongs
    *
    * @param componentID ID number of the component plane to which
-   * <code>coeffBuffer</code>belongs (Y, Cb, and Cr have, respectively, ID's of
+   * <code>coeffBuffer</code> belongs (Y, U, and V have, respectively, ID's of
    * 0, 1, and 2 in typical JPEG images.)
    *
    * @param transformID ID number of the transformed image to which
    * <code>coeffBuffer</code> belongs.  This is the same as the index of the
-   * transform in the transforms array that was passed to {@link
+   * transform in the <code>transforms</code> array that was passed to {@link
    * TJTransformer#transform TJTransformer.transform()}.
    *
    * @param transform a {@link TJTransform} instance that specifies the

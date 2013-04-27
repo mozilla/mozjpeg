@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -144,10 +144,12 @@ public class TJTransform extends Rectangle {
    * divisible by the MCU block height (see {@link TJ#getMCUHeight})
    *
    * @param w the width of the cropping region.  Setting this to 0 is the
-   * equivalent of setting it to the width of the source JPEG image - x.
+   * equivalent of setting it to (width of the source JPEG image -
+   * <code>x</code>).
    *
    * @param h the height of the cropping region.  Setting this to 0 is the
-   * equivalent of setting it to the height of the source JPEG image - y.
+   * equivalent of setting it to (height of the source JPEG image -
+   * <code>y</code>).
    *
    * @param op one of the transform operations (<code>OP_*</code>)
    *

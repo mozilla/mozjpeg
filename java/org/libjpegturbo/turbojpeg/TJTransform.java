@@ -40,54 +40,54 @@ public class TJTransform extends Rectangle {
   /**
    * The number of lossless transform operations
    */
-  final public static int NUMOP         = 8;
+  public static final int NUMOP         = 8;
   /**
    * Do not transform the position of the image pixels.
    */
-  final public static int OP_NONE       = 0;
+  public static final int OP_NONE       = 0;
   /**
    * Flip (mirror) image horizontally.  This transform is imperfect if there
    * are any partial MCU blocks on the right edge.
    * @see #OPT_PERFECT
    */
-  final public static int OP_HFLIP      = 1;
+  public static final int OP_HFLIP      = 1;
   /**
    * Flip (mirror) image vertically.  This transform is imperfect if there are
    * any partial MCU blocks on the bottom edge.
    * @see #OPT_PERFECT
    */
-  final public static int OP_VFLIP      = 2;
+  public static final int OP_VFLIP      = 2;
   /**
    * Transpose image (flip/mirror along upper left to lower right axis).  This
    * transform is always perfect.
    * @see #OPT_PERFECT
    */
-  final public static int OP_TRANSPOSE  = 3;
+  public static final int OP_TRANSPOSE  = 3;
   /**
    * Transverse transpose image (flip/mirror along upper right to lower left
    * axis).  This transform is imperfect if there are any partial MCU blocks in
    * the image.
    * @see #OPT_PERFECT
    */
-  final public static int OP_TRANSVERSE = 4;
+  public static final int OP_TRANSVERSE = 4;
   /**
    * Rotate image clockwise by 90 degrees.  This transform is imperfect if
    * there are any partial MCU blocks on the bottom edge.
    * @see #OPT_PERFECT
    */
-  final public static int OP_ROT90      = 5;
+  public static final int OP_ROT90      = 5;
   /**
    * Rotate image 180 degrees.  This transform is imperfect if there are any
    * partial MCU blocks in the image.
    * @see #OPT_PERFECT
    */
-  final public static int OP_ROT180     = 6;
+  public static final int OP_ROT180     = 6;
   /**
    * Rotate image counter-clockwise by 90 degrees.  This transform is imperfect
    * if there are any partial MCU blocks on the right edge.
    * @see #OPT_PERFECT
    */
-  final public static int OP_ROT270     = 7;
+  public static final int OP_ROT270     = 7;
 
 
   /**
@@ -103,21 +103,21 @@ public class TJTransform extends Rectangle {
    * partial MCU blocks that cannot be transformed will be left in place, which
    * will create odd-looking strips on the right or bottom edge of the image.
    */
-  final public static int OPT_PERFECT  = 1;
+  public static final int OPT_PERFECT  = 1;
   /**
    * This option will discard any partial MCU blocks that cannot be
    * transformed.
    */
-  final public static int OPT_TRIM     = 2;
+  public static final int OPT_TRIM     = 2;
   /**
    * This option will enable lossless cropping.
    */
-  final public static int OPT_CROP     = 4;
+  public static final int OPT_CROP     = 4;
   /**
    * This option will discard the color data in the input image and produce
    * a grayscale output image.
    */
-  final public static int OPT_GRAY     = 8;
+  public static final int OPT_GRAY     = 8;
   /**
    * This option will prevent {@link TJTransformer#transform
    * TJTransformer.transform()} from outputting a JPEG image for this
@@ -125,9 +125,9 @@ public class TJTransform extends Rectangle {
    * filter to capture the transformed DCT coefficients without transcoding
    * them.
    */
-  final public static int OPT_NOOUTPUT = 16;
+  public static final int OPT_NOOUTPUT = 16;
 
-  
+
   /**
    * Create a new lossless transform instance.
    */
@@ -160,9 +160,11 @@ public class TJTransform extends Rectangle {
    * TJCustomFilter} interface, or null if no custom filter is needed
    */
   public TJTransform(int x, int y, int w, int h, int op, int options,
-    TJCustomFilter cf) throws Exception {
+                     TJCustomFilter cf) throws Exception {
     super(x, y, w, h);
-    this.op = op;  this.options = options;  this.cf = cf;
+    this.op = op;
+    this.options = options;
+    this.cf = cf;
   }
 
   /**
@@ -182,9 +184,11 @@ public class TJTransform extends Rectangle {
    * TJCustomFilter} interface, or null if no custom filter is needed
    */
   public TJTransform(Rectangle r, int op, int options,
-    TJCustomFilter cf) throws Exception {
+                     TJCustomFilter cf) throws Exception {
     super(r);
-    this.op = op;  this.options = options;  this.cf = cf;
+    this.op = op;
+    this.options = options;
+    this.cf = cf;
   }
 
   /**

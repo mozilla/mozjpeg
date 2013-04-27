@@ -280,15 +280,15 @@ public class TJCompressor {
     if (intPixels) {
       SinglePixelPackedSampleModel sm =
         (SinglePixelPackedSampleModel)srcImage.getSampleModel();
-      int pitch = sm.getScanlineStride();
+      int stride = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
       if (srcX >= 0 && srcY >= 0)
-        compressedSize = compress(buf, srcX, srcY, width, pitch, height,
+        compressedSize = compress(buf, srcX, srcY, width, stride, height,
                                   pixelFormat, dstBuf, subsamp, jpegQuality,
                                   flags);
       else
-        compressedSize = compress(buf, width, pitch, height, pixelFormat,
+        compressedSize = compress(buf, width, stride, height, pixelFormat,
                                   dstBuf, subsamp, jpegQuality, flags);
     } else {
       ComponentSampleModel sm =
@@ -435,10 +435,10 @@ public class TJCompressor {
     if (intPixels) {
       SinglePixelPackedSampleModel sm =
         (SinglePixelPackedSampleModel)srcImage.getSampleModel();
-      int pitch = sm.getScanlineStride();
+      int stride = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
-      encodeYUV(buf, width, pitch, height, pixelFormat, dstBuf, subsamp,
+      encodeYUV(buf, width, stride, height, pixelFormat, dstBuf, subsamp,
                 flags);
     } else {
       ComponentSampleModel sm =
@@ -511,7 +511,7 @@ public class TJCompressor {
   // JPEG size in bytes is returned
   private native int compress(byte[] srcBuf, int width, int pitch,
     int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp, int jpegQual,
-    int flags) throws Exception;
+    int flags) throws Exception; // deprecated
 
   private native int compress(byte[] srcBuf, int x, int y, int width,
     int pitch, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
@@ -519,7 +519,7 @@ public class TJCompressor {
 
   private native int compress(int[] srcBuf, int width, int stride,
     int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp, int jpegQual,
-    int flags) throws Exception;
+    int flags) throws Exception; // deprecated
 
   private native int compress(int[] srcBuf, int x, int y, int width,
     int stride, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
@@ -529,7 +529,7 @@ public class TJCompressor {
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
     throws Exception;
 
-  private native void encodeYUV(int[] srcBuf, int width, int pitch,
+  private native void encodeYUV(int[] srcBuf, int width, int stride,
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
     throws Exception;
 

@@ -350,8 +350,7 @@ public final class TJ {
    * @return the size of the buffer (in bytes) required to hold a YUV planar
    * image with the given width, height, and level of chrominance subsampling
    */
-  public static native int bufSizeYUV(int width, int height,
-    int subsamp)
+  public static native int bufSizeYUV(int width, int height, int subsamp)
     throws Exception;
 
   /**

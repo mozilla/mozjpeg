@@ -520,12 +520,12 @@ public class TJDecompressor {
     if (intPixels) {
       SinglePixelPackedSampleModel sm =
         (SinglePixelPackedSampleModel)dstImage.getSampleModel();
-      int pitch = sm.getScanlineStride();
+      int stride = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
       if (jpegBuf == null)
         throw new Exception(NO_ASSOC_ERROR);
-      decompress(jpegBuf, jpegBufSize, buf, scaledWidth, pitch, scaledHeight,
+      decompress(jpegBuf, jpegBufSize, buf, scaledWidth, stride, scaledHeight,
                  pixelFormat, flags);
     } else {
       ComponentSampleModel sm =
@@ -600,25 +600,22 @@ public class TJDecompressor {
 
   private native void decompress(byte[] srcBuf, int size, byte[] dstBuf,
     int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
-    throws Exception;
+    throws Exception; // deprecated
 
   private native void decompress(byte[] srcBuf, int size, byte[] dstBuf, int x,
     int y, int desiredWidth, int pitch, int desiredHeight, int pixelFormat,
-    int flags)
-    throws Exception;
+    int flags) throws Exception;
 
   private native void decompress(byte[] srcBuf, int size, int[] dstBuf,
-    int desiredWidth, int stride, int desiredHeight, int pixelFormat, int flags)
-    throws Exception;
+    int desiredWidth, int stride, int desiredHeight, int pixelFormat,
+    int flags) throws Exception; // deprecated
 
   private native void decompress(byte[] srcBuf, int size, int[] dstBuf, int x,
     int y, int desiredWidth, int stride, int desiredHeight, int pixelFormat,
-    int flags)
-    throws Exception;
+    int flags) throws Exception;
 
   private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
-    int flags)
-    throws Exception;
+    int flags) throws Exception;
 
   static {
     TJLoader.load();

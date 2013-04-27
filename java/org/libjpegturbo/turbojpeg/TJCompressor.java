@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -59,7 +59,8 @@ public class TJCompressor {
    *
    * @param height see {@link #setSourceImage} for description
    *
-   * @param pixelFormat see {@link #setSourceImage} for description
+   * @param pixelFormat pixel format of the source image (one of
+   * {@link TJ TJ.PF_*})
    */
   public TJCompressor(byte[] srcImage, int width, int pitch, int height,
     int pixelFormat) throws Exception {
@@ -83,7 +84,8 @@ public class TJCompressor {
    *
    * @param height see {@link #setSourceImage} for description
    *
-   * @param pixelFormat see {@link #setSourceImage} for description
+   * @param pixelFormat pixel format of the source image (one of
+   * {@link TJ TJ.PF_*})
    */
   public TJCompressor(byte[] srcImage, int x, int y, int width, int pitch,
     int height, int pixelFormat) throws Exception {
@@ -137,28 +139,9 @@ public class TJCompressor {
   }
 
   /**
-   * Associate an uncompressed source image with this compressor instance.
-   *
-   * @param srcImage see
-   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
-   * description
-   *
-   * @param width see
-   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
-   * description
-   *
-   * @param pitch see
-   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
-   * description
-   *
-   * @param height see
-   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} for
-   * description
-   *
-   * @param pixelFormat pixel format of the source image (one of
-   * {@link TJ TJ.PF_*})
+   * @deprecated Use
+   * {@link #setSourceImage(byte[], int, int, int, int, int, int)} instead.
    */
-
   public void setSourceImage(byte[] srcImage, int width, int pitch,
     int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, 0, 0, width, pitch, height, pixelFormat);
@@ -197,7 +180,7 @@ public class TJCompressor {
    *
    * @param dstBuf buffer that will receive the JPEG image.  Use
    * {@link TJ#bufSize} to determine the maximum size for this buffer based on
-   * the image width and height.
+   * the image width, height, and level of chrominance subsampling.
    *
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
@@ -242,7 +225,7 @@ public class TJCompressor {
    *
    * @param dstBuf buffer that will receive the JPEG image.  Use
    * {@link TJ#bufSize} to determine the maximum size for this buffer based on
-   * the image width and height.
+   * the image width, height, and level of chrominance subsampling.
    *
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
@@ -342,13 +325,13 @@ public class TJCompressor {
    * TurboJPEG's underlying codec to produce a planar YUV image that is
    * suitable for direct video display.  Specifically, if the chrominance
    * components are subsampled along the horizontal dimension, then the width
-   * of the luminance plane is padded to 2 in the output image (same goes for
-   * the height of the luminance plane, if the chrominance components are
-   * subsampled along the vertical dimension.)  Also, each line of each plane
-   * in the output image is padded to 4 bytes.  Although this will work with
-   * any subsampling option, it is really only useful in combination with
-   * {@link TJ#SAMP_420}, which produces an image compatible with the I420 (AKA
-   * "YUV420P") format.
+   * of the luminance plane is padded to the nearest multiple of 2 in the
+   * output image (same goes for the height of the luminance plane, if the
+   * chrominance components are subsampled along the vertical dimension.)
+   * Also, each line of each plane in the output image is padded to 4 bytes.
+   * Although this will work with any subsampling option, it is really only
+   * useful in combination with {@link TJ#SAMP_420}, which produces an image
+   * compatible with the I420 (AKA "YUV420P") format.
    *
    * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer

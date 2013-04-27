@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -151,7 +151,7 @@ public class TJDecompressor {
 
 
   /**
-   * Returns the width of the largest scaled down image that the TurboJPEG
+   * Returns the width of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
    * height.
    *
@@ -165,7 +165,7 @@ public class TJDecompressor {
    * image (in other words, the height will not be considered when determining
    * the scaled image size.)
    *
-   * @return the width of the largest scaled down image that the TurboJPEG
+   * @return the width of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
    * height
    */
@@ -191,7 +191,7 @@ public class TJDecompressor {
   }
 
   /**
-   * Returns the height of the largest scaled down image that the TurboJPEG
+   * Returns the height of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
    * height.
    *
@@ -205,7 +205,7 @@ public class TJDecompressor {
    * image (in other words, the height will not be considered when determining
    * the scaled image size.)
    *
-   * @return the height of the largest scaled down image that the TurboJPEG
+   * @return the height of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
    * height
    */
@@ -251,13 +251,13 @@ public class TJDecompressor {
    * @param y y offset (in pixels) of the region into which the JPEG image
    * should be decompressed, relative to the start of <code>dstBuf</code>.
    *
-   * @param desiredWidth desired width (in pixels) of the decompressed image.
-   * If the desired image dimensions are smaller than the dimensions of the
-   * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
-   * decompressor to generate the largest possible image that will fit within
-   * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the width of the JPEG image (in other words, the width will not be
-   * considered when determining the scaled image size.)
+   * @param desiredWidth desired width (in pixels) of the decompressed image
+   * (or image region.)  If the desired image dimensions are different than the
+   * dimensions of the JPEG image being decompressed, then TurboJPEG will use
+   * scaling in the JPEG decompressor to generate the largest possible image
+   * that will fit within the desired dimensions.  Setting this to 0 is the
+   * same as setting it to the width of the JPEG image (in other words, the
+   * width will not be considered when determining the scaled image size.)
    *
    * @param pitch bytes per line of the destination image.  Normally, this
    * should be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code> if
@@ -270,13 +270,13 @@ public class TJDecompressor {
    * 0 is the equivalent of setting it to <code>scaledWidth *
    * TJ.pixelSize(pixelFormat)</code>.
    *
-   * @param desiredHeight desired height (in pixels) of the decompressed image.
-   * If the desired image dimensions are smaller than the dimensions of the
-   * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
-   * decompressor to generate the largest possible image that will fit within
-   * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the height of the JPEG image (in other words, the height will not be
-   * considered when determining the scaled image size.)
+   * @param desiredHeight desired height (in pixels) of the decompressed image
+   * (or image region.)  If the desired image dimensions are different than the
+   * dimensions of the JPEG image being decompressed, then TurboJPEG will use
+   * scaling in the JPEG decompressor to generate the largest possible image
+   * that will fit within the desired dimensions.  Setting this to 0 is the
+   * same as setting it to the height of the JPEG image (in other words, the
+   * height will not be considered when determining the scaled image size.)
    *
    * @param pixelFormat pixel format of the decompressed image (one of
    * {@link TJ TJ.PF_*})
@@ -296,29 +296,8 @@ public class TJDecompressor {
   }
 
   /**
-   * Decompress the JPEG source image associated with this decompressor
-   * instance and output a decompressed image to the given destination buffer.
-   *
-   * @param dstBuf see
-   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
-   * for description
-   *
-   * @param desiredWidth see
-   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
-   * for description
-   *
-   * @param pitch see
-   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
-   * for description
-   *
-   * @param desiredHeight see
-   * {@link #decompress(byte[], int, int, int, int, int, int, int)}
-   * for description
-   *
-   * @param pixelFormat pixel format of the decompressed image (one of
-   * {@link TJ TJ.PF_*})
-   *
-   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
+   * @deprecated Use
+   * {@link #decompress(byte[], int, int, int, int, int, int, int)} instead.
    */
   public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
     int desiredHeight, int pixelFormat, int flags)
@@ -369,11 +348,11 @@ public class TJDecompressor {
    * instance and output a YUV planar image to the given destination buffer.
    * This method performs JPEG decompression but leaves out the color
    * conversion step, so a planar YUV image is generated instead of an RGB
-   * image.  The padding of the planes in this image is the same as the images
-   * generated by {@link TJCompressor#encodeYUV(byte[], int)}.  Note that, if
-   * the width or height of the image is not an even multiple of the MCU block
-   * size (see {@link TJ#getMCUWidth} and {@link TJ#getMCUHeight}), then an
-   * intermediate buffer copy will be performed within TurboJPEG.
+   * image.  The padding of the planes in this image is the same as in the
+   * images generated by {@link TJCompressor#encodeYUV(byte[], int)}.  Note
+   * that, if the width or height of the image is not an even multiple of the
+   * MCU block size (see {@link TJ#getMCUWidth} and {@link TJ#getMCUHeight}),
+   * then an intermediate buffer copy will be performed within TurboJPEG.
    *
    * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
@@ -431,13 +410,13 @@ public class TJDecompressor {
    * @param y y offset (in pixels) of the region into which the JPEG image
    * should be decompressed, relative to the start of <code>dstBuf</code>.
    *
-   * @param desiredWidth desired width (in pixels) of the decompressed image.
-   * If the desired image dimensions are smaller than the dimensions of the
-   * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
-   * decompressor to generate the largest possible image that will fit within
-   * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the width of the JPEG image (in other words, the width will not be
-   * considered when determining the scaled image size.)
+   * @param desiredWidth desired width (in pixels) of the decompressed image
+   * (or image region.)  If the desired image dimensions are different than the
+   * dimensions of the JPEG image being decompressed, then TurboJPEG will use
+   * scaling in the JPEG decompressor to generate the largest possible image
+   * that will fit within the desired dimensions.  Setting this to 0 is the
+   * same as setting it to the width of the JPEG image (in other words, the
+   * width will not be considered when determining the scaled image size.)
    *
    * @param stride pixels per line of the destination image.  Normally, this
    * should be set to <code>scaledWidth</code>, but you can use this to, for
@@ -447,13 +426,13 @@ public class TJDecompressor {
    * </code> or by calling {@link #getScaledWidth}.  Setting this parameter to
    * 0 is the equivalent of setting it to <code>scaledWidth</code>.
    *
-   * @param desiredHeight desired height (in pixels) of the decompressed image.
-   * If the desired image dimensions are smaller than the dimensions of the
-   * JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG
-   * decompressor to generate the largest possible image that will fit within
-   * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the height of the JPEG image (in other words, the height will not be
-   * considered when determining the scaled image size.)
+   * @param desiredHeight desired height (in pixels) of the decompressed image
+   * (or image region.)  If the desired image dimensions are different than the
+   * dimensions of the JPEG image being decompressed, then TurboJPEG will use
+   * scaling in the JPEG decompressor to generate the largest possible image
+   * that will fit within the desired dimensions.  Setting this to 0 is the
+   * same as setting it to the height of the JPEG image (in other words, the
+   * height will not be considered when determining the scaled image size.)
    *
    * @param pixelFormat pixel format of the decompressed image (one of
    * {@link TJ TJ.PF_*})

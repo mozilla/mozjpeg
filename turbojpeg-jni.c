@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -249,7 +249,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIII_3BII
-	(JNIEnv *env, jobject obj, jintArray src, jint width, jint pitch,
+	(JNIEnv *env, jobject obj, jintArray src, jint width, jint stride,
 		jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
 {
 	tjhandle handle=0;
@@ -259,14 +259,14 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 	gethandle();
 
 	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF || width<1 || height<1
-		|| pitch<0)
-		_throw("Invalid argument in compress()");
+		|| stride<0)
+		_throw("Invalid argument in encodeYUV()");
 	if(org_libjpegturbo_turbojpeg_TJ_NUMPF!=TJ_NUMPF)
 		_throw("Mismatch between Java and C API");
 	if(tjPixelSize[pf]!=sizeof(jint))
 		_throw("Pixel format must be 32-bit when encoding from an integer buffer.");
 
-	arraySize=(pitch==0)? width*height:pitch*height;
+	arraySize=(stride==0)? width*height:stride*height;
 	if((*env)->GetArrayLength(env, src)<arraySize)
 		_throw("Source buffer is not large enough");
 	if((*env)->GetArrayLength(env, dst)
@@ -276,7 +276,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 	bailif0(srcBuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(dstBuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
-	if(tjEncodeYUV2(handle, srcBuf, width, pitch*sizeof(jint), height, pf,
+	if(tjEncodeYUV2(handle, srcBuf, width, stride*sizeof(jint), height, pf,
 		dstBuf, subsamp, flags)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, dst, dstBuf, 0);

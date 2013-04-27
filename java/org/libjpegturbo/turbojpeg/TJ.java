@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -182,11 +182,11 @@ final public class TJ {
 
 
   /**
-   * Returns the pixel size (in bytes) of the given pixel format.
+   * Returns the pixel size (in bytes) for the given pixel format.
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the pixel size (in bytes) of the given pixel format
+   * @return the pixel size (in bytes) for the given pixel format
    */
   public static int getPixelSize(int pixelFormat) throws Exception {
     if(pixelFormat < 0 || pixelFormat >= NUMPF)
@@ -291,11 +291,11 @@ final public class TJ {
    */
   final public static int FLAG_FORCESSE3    = 128;
   /**
-   * When decompressing, use the fastest chrominance upsampling algorithm
-   * available in the underlying codec.  The default is to use smooth
-   * upsampling, which creates a smooth transition between neighboring
-   * chrominance components in order to reduce upsampling artifacts in the
-   * decompressed image.
+   * When decompressing an image that was compressed using chrominance
+   * subsampling, use the fastest chrominance upsampling algorithm available in
+   * the underlying codec.  The default is to use smooth upsampling, which
+   * creates a smooth transition between neighboring chrominance components in
+   * order to reduce upsampling artifacts in the decompressed image.
    */
   final public static int FLAG_FASTUPSAMPLE = 256;
   /**
@@ -321,8 +321,7 @@ final public class TJ {
 
   /**
    * Returns the maximum size of the buffer (in bytes) required to hold a JPEG
-   * image with the given width and height, and level of chrominance
-   * subsampling.
+   * image with the given width, height, and level of chrominance subsampling.
    *
    * @param width the width (in pixels) of the JPEG image
    *
@@ -332,8 +331,7 @@ final public class TJ {
    * generating the JPEG image (one of {@link TJ TJ.SAMP_*})
    *
    * @return the maximum size of the buffer (in bytes) required to hold a JPEG
-   * image with the given width and height, and level of chrominance
-   * subsampling
+   * image with the given width, height, and level of chrominance subsampling
    */
   public native static int bufSize(int width, int height, int jpegSubsamp)
     throws Exception;

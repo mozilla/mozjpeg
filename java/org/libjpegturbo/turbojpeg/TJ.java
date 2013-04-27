@@ -31,38 +31,38 @@ package org.libjpegturbo.turbojpeg;
 /**
  * TurboJPEG utility class (cannot be instantiated)
  */
-final public class TJ {
+public final class TJ {
 
 
   /**
    * The number of chrominance subsampling options
    */
-  final public static int NUMSAMP   = 5;
+  public static final int NUMSAMP   = 5;
   /**
    * 4:4:4 chrominance subsampling (no chrominance subsampling).  The JPEG
    * or YUV image will contain one chrominance component for every pixel in the
    * source image.
    */
-  final public static int SAMP_444  = 0;
+  public static final int SAMP_444  = 0;
   /**
    * 4:2:2 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 2x1 block of pixels in the source image.
    */
-  final public static int SAMP_422  = 1;
+  public static final int SAMP_422  = 1;
   /**
    * 4:2:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 2x2 block of pixels in the source image.
    */
-  final public static int SAMP_420  = 2;
+  public static final int SAMP_420  = 2;
   /**
    * Grayscale.  The JPEG or YUV image will contain no chrominance components.
    */
-  final public static int SAMP_GRAY = 3;
+  public static final int SAMP_GRAY = 3;
   /**
    * 4:4:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 1x2 block of pixels in the source image.
    */
-  final public static int SAMP_440  = 4;
+  public static final int SAMP_440  = 4;
 
 
   /**
@@ -75,12 +75,12 @@ final public class TJ {
    * @return the MCU block width for the given level of chrominance subsampling
    */
   public static int getMCUWidth(int subsamp) throws Exception {
-    if(subsamp < 0 || subsamp >= NUMSAMP)
+    if (subsamp < 0 || subsamp >= NUMSAMP)
       throw new Exception("Invalid subsampling type");
     return mcuWidth[subsamp];
   }
 
-  final private static int mcuWidth[] = {
+  private static final int[] mcuWidth = {
     8, 16, 16, 8, 8
   };
 
@@ -96,12 +96,12 @@ final public class TJ {
    * subsampling
    */
   public static int getMCUHeight(int subsamp) throws Exception {
-    if(subsamp < 0 || subsamp >= NUMSAMP)
+    if (subsamp < 0 || subsamp >= NUMSAMP)
       throw new Exception("Invalid subsampling type");
     return mcuHeight[subsamp];
   }
 
-  final private static int mcuHeight[] = {
+  private static final int[] mcuHeight = {
     8, 8, 16, 8, 16
   };
 
@@ -109,76 +109,76 @@ final public class TJ {
   /**
    * The number of pixel formats
    */
-  final public static int NUMPF   = 11;
+  public static final int NUMPF   = 11;
   /**
    * RGB pixel format.  The red, green, and blue components in the image are
    * stored in 3-byte pixels in the order R, G, B from lowest to highest byte
    * address within each pixel.
    */
-  final public static int PF_RGB  = 0;
+  public static final int PF_RGB  = 0;
   /**
    * BGR pixel format.  The red, green, and blue components in the image are
    * stored in 3-byte pixels in the order B, G, R from lowest to highest byte
    * address within each pixel.
    */
-  final public static int PF_BGR  = 1;
+  public static final int PF_BGR  = 1;
   /**
    * RGBX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from lowest to highest byte
    * address within each pixel.  The X component is ignored when compressing
    * and undefined when decompressing.
    */
-  final public static int PF_RGBX = 2;
+  public static final int PF_RGBX = 2;
   /**
    * BGRX pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from lowest to highest byte
    * address within each pixel.  The X component is ignored when compressing
    * and undefined when decompressing.
    */
-  final public static int PF_BGRX = 3;
+  public static final int PF_BGRX = 3;
   /**
    * XBGR pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order R, G, B from highest to lowest byte
    * address within each pixel.  The X component is ignored when compressing
    * and undefined when decompressing.
    */
-  final public static int PF_XBGR = 4;
+  public static final int PF_XBGR = 4;
   /**
    * XRGB pixel format.  The red, green, and blue components in the image are
    * stored in 4-byte pixels in the order B, G, R from highest to lowest byte
    * address within each pixel.  The X component is ignored when compressing
    * and undefined when decompressing.
    */
-  final public static int PF_XRGB = 5;
+  public static final int PF_XRGB = 5;
   /**
    * Grayscale pixel format.  Each 1-byte pixel represents a luminance
    * (brightness) level from 0 to 255.
    */
-  final public static int PF_GRAY = 6;
+  public static final int PF_GRAY = 6;
   /**
    * RGBA pixel format.  This is the same as {@link #PF_RGBX}, except that when
    * decompressing, the X byte is guaranteed to be 0xFF, which can be
    * interpreted as an opaque alpha channel.
    */
-  final public static int PF_RGBA = 7;
+  public static final int PF_RGBA = 7;
   /**
    * BGRA pixel format.  This is the same as {@link #PF_BGRX}, except that when
    * decompressing, the X byte is guaranteed to be 0xFF, which can be
    * interpreted as an opaque alpha channel.
    */
-  final public static int PF_BGRA = 8;
+  public static final int PF_BGRA = 8;
   /**
    * ABGR pixel format.  This is the same as {@link #PF_XBGR}, except that when
    * decompressing, the X byte is guaranteed to be 0xFF, which can be
    * interpreted as an opaque alpha channel.
    */
-  final public static int PF_ABGR = 9;
+  public static final int PF_ABGR = 9;
   /**
    * ARGB pixel format.  This is the same as {@link #PF_XRGB}, except that when
    * decompressing, the X byte is guaranteed to be 0xFF, which can be
    * interpreted as an opaque alpha channel.
    */
-  final public static int PF_ARGB = 10;
+  public static final int PF_ARGB = 10;
 
 
   /**
@@ -189,12 +189,12 @@ final public class TJ {
    * @return the pixel size (in bytes) for the given pixel format
    */
   public static int getPixelSize(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPF)
+    if (pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
     return pixelSize[pixelFormat];
   }
 
-  final private static int pixelSize[] = {
+  private static final int[] pixelSize = {
     3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4
   };
 
@@ -211,12 +211,12 @@ final public class TJ {
    * @return the red offset for the given pixel format
    */
   public static int getRedOffset(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPF)
+    if (pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
     return redOffset[pixelFormat];
   }
 
-  final private static int redOffset[] = {
+  private static final int[] redOffset = {
     0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1
   };
 
@@ -233,12 +233,12 @@ final public class TJ {
    * @return the green offset for the given pixel format
    */
   public static int getGreenOffset(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPF)
+    if (pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
     return greenOffset[pixelFormat];
   }
 
-  final private static int greenOffset[] = {
+  private static final int[] greenOffset = {
     1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2
   };
 
@@ -255,12 +255,12 @@ final public class TJ {
    * @return the blue offset for the given pixel format
    */
   public static int getBlueOffset(int pixelFormat) throws Exception {
-    if(pixelFormat < 0 || pixelFormat >= NUMPF)
+    if (pixelFormat < 0 || pixelFormat >= NUMPF)
       throw new Exception("Invalid pixel format");
     return blueOffset[pixelFormat];
   }
 
-  final private static int blueOffset[] = {
+  private static final int[] blueOffset = {
     2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3
   };
 
@@ -269,27 +269,27 @@ final public class TJ {
    * The uncompressed source/destination image is stored in bottom-up (Windows,
    * OpenGL) order, not top-down (X11) order.
    */
-  final public static int FLAG_BOTTOMUP     = 2;
+  public static final int FLAG_BOTTOMUP     = 2;
   /**
    * Turn off CPU auto-detection and force TurboJPEG to use MMX code
    * (if the underlying codec supports it.)
    */
-  final public static int FLAG_FORCEMMX     = 8;
+  public static final int FLAG_FORCEMMX     = 8;
   /**
    * Turn off CPU auto-detection and force TurboJPEG to use SSE code
    * (if the underlying codec supports it.)
    */
-  final public static int FLAG_FORCESSE     = 16;
+  public static final int FLAG_FORCESSE     = 16;
   /**
    * Turn off CPU auto-detection and force TurboJPEG to use SSE2 code
    * (if the underlying codec supports it.)
    */
-  final public static int FLAG_FORCESSE2    = 32;
+  public static final int FLAG_FORCESSE2    = 32;
   /**
    * Turn off CPU auto-detection and force TurboJPEG to use SSE3 code
    * (if the underlying codec supports it.)
    */
-  final public static int FLAG_FORCESSE3    = 128;
+  public static final int FLAG_FORCESSE3    = 128;
   /**
    * When decompressing an image that was compressed using chrominance
    * subsampling, use the fastest chrominance upsampling algorithm available in
@@ -297,7 +297,7 @@ final public class TJ {
    * creates a smooth transition between neighboring chrominance components in
    * order to reduce upsampling artifacts in the decompressed image.
    */
-  final public static int FLAG_FASTUPSAMPLE = 256;
+  public static final int FLAG_FASTUPSAMPLE = 256;
   /**
    * Use the fastest DCT/IDCT algorithm available in the underlying codec.  The
    * default if this flag is not specified is implementation-specific.  The
@@ -306,7 +306,7 @@ final public class TJ {
    * effect on accuracy, but it uses the accurate algorithm when decompressing,
    * because this has been shown to have a larger effect.
    */
-  final public static int FLAG_FASTDCT      =  2048;
+  public static final int FLAG_FASTDCT      =  2048;
   /**
    * Use the most accurate DCT/IDCT algorithm available in the underlying
    * codec.  The default if this flag is not specified is
@@ -316,7 +316,7 @@ final public class TJ {
    * accurate algorithm when decompressing, because this has been shown to have
    * a larger effect.
    */
-  final public static int FLAG_ACCURATEDCT  =  4096;
+  public static final int FLAG_ACCURATEDCT  =  4096;
 
 
   /**
@@ -333,7 +333,7 @@ final public class TJ {
    * @return the maximum size of the buffer (in bytes) required to hold a JPEG
    * image with the given width, height, and level of chrominance subsampling
    */
-  public native static int bufSize(int width, int height, int jpegSubsamp)
+  public static native int bufSize(int width, int height, int jpegSubsamp)
     throws Exception;
 
   /**
@@ -350,7 +350,7 @@ final public class TJ {
    * @return the size of the buffer (in bytes) required to hold a YUV planar
    * image with the given width, height, and level of chrominance subsampling
    */
-  public native static int bufSizeYUV(int width, int height,
+  public static native int bufSizeYUV(int width, int height,
     int subsamp)
     throws Exception;
 
@@ -361,7 +361,7 @@ final public class TJ {
    * @return a list of fractional scaling factors that the JPEG decompressor in
    * this implementation of TurboJPEG supports
    */
-  public native static TJScalingFactor[] getScalingFactors()
+  public static native TJScalingFactor[] getScalingFactors()
     throws Exception;
 
   static {

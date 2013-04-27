@@ -4,7 +4,7 @@ include_HEADERS = jerror.h jmorecfg.h jpeglib.h
 
 if WITH_TURBOJPEG
 lib_LTLIBRARIES += libturbojpeg.la
-libturbojpeg_la_LDFLAGS = -version-info 0:0 -no-undefined
+libturbojpeg_la_LDFLAGS = -version-info 1:0:1 -no-undefined
 include_HEADERS += turbojpeg.h
 endif
 

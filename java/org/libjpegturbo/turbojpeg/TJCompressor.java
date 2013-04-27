@@ -36,7 +36,7 @@ import java.nio.*;
  */
 public class TJCompressor {
 
-  private final static String NO_ASSOC_ERROR =
+  private static final String NO_ASSOC_ERROR =
     "No source image is associated with this instance";
 
   /**
@@ -63,7 +63,7 @@ public class TJCompressor {
    * {@link TJ TJ.PF_*})
    */
   public TJCompressor(byte[] srcImage, int width, int pitch, int height,
-    int pixelFormat) throws Exception {
+                      int pixelFormat) throws Exception {
     setSourceImage(srcImage, width, pitch, height, pixelFormat);
   }
 
@@ -88,7 +88,7 @@ public class TJCompressor {
    * {@link TJ TJ.PF_*})
    */
   public TJCompressor(byte[] srcImage, int x, int y, int width, int pitch,
-    int height, int pixelFormat) throws Exception {
+                      int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, x, y, width, pitch, height, pixelFormat);
   }
 
@@ -123,15 +123,18 @@ public class TJCompressor {
    * {@link TJ TJ.PF_*})
    */
   public void setSourceImage(byte[] srcImage, int x, int y, int width,
-    int pitch, int height, int pixelFormat) throws Exception {
-    if(handle == 0) init();
-    if(srcImage == null || x < 0 || y < 0 || width < 1 || height < 1
-      || pitch < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF)
+                             int pitch, int height, int pixelFormat)
+                             throws Exception {
+    if (handle == 0) init();
+    if (srcImage == null || x < 0 || y < 0 || width < 1 || height < 1 ||
+        pitch < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF)
       throw new Exception("Invalid argument in setSourceImage()");
     srcBuf = srcImage;
     srcWidth = width;
-    if(pitch == 0) srcPitch = width * TJ.getPixelSize(pixelFormat);
-    else srcPitch = pitch;
+    if (pitch == 0)
+      srcPitch = width * TJ.getPixelSize(pixelFormat);
+    else
+      srcPitch = pitch;
     srcHeight = height;
     srcPixelFormat = pixelFormat;
     srcX = x;
@@ -143,7 +146,7 @@ public class TJCompressor {
    * {@link #setSourceImage(byte[], int, int, int, int, int, int)} instead.
    */
   public void setSourceImage(byte[] srcImage, int width, int pitch,
-    int height, int pixelFormat) throws Exception {
+                             int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, 0, 0, width, pitch, height, pixelFormat);
     srcX = srcY = -1;
   }
@@ -157,7 +160,7 @@ public class TJCompressor {
    * {@link TJ TJ.SAMP_*})
    */
   public void setSubsamp(int newSubsamp) throws Exception {
-    if(newSubsamp < 0 || newSubsamp >= TJ.NUMSAMP)
+    if (newSubsamp < 0 || newSubsamp >= TJ.NUMSAMP)
       throw new Exception("Invalid argument in setSubsamp()");
     subsamp = newSubsamp;
   }
@@ -169,7 +172,7 @@ public class TJCompressor {
    * 100 = best)
    */
   public void setJPEGQuality(int quality) throws Exception {
-    if(quality < 1 || quality > 100)
+    if (quality < 1 || quality > 100)
       throw new Exception("Invalid argument in setJPEGQuality()");
     jpegQuality = quality;
   }
@@ -185,17 +188,22 @@ public class TJCompressor {
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void compress(byte[] dstBuf, int flags) throws Exception {
-    if(dstBuf == null || flags < 0)
+    if (dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in compress()");
-    if(srcBuf == null) throw new Exception(NO_ASSOC_ERROR);
-    if(jpegQuality < 0) throw new Exception("JPEG Quality not set");
-    if(subsamp < 0) throw new Exception("Subsampling level not set");
+    if (srcBuf == null)
+      throw new Exception(NO_ASSOC_ERROR);
+    if (jpegQuality < 0)
+      throw new Exception("JPEG Quality not set");
+    if (subsamp < 0)
+      throw new Exception("Subsampling level not set");
     if (srcX >= 0 && srcY >= 0)
       compressedSize = compress(srcBuf, srcX, srcY, srcWidth, srcPitch,
-        srcHeight, srcPixelFormat, dstBuf, subsamp, jpegQuality, flags);
+                                srcHeight, srcPixelFormat, dstBuf, subsamp,
+                                jpegQuality, flags);
     else
-      compressedSize = compress(srcBuf, srcWidth, srcPitch,
-        srcHeight, srcPixelFormat, dstBuf, subsamp, jpegQuality, flags);
+      compressedSize = compress(srcBuf, srcWidth, srcPitch, srcHeight,
+                                srcPixelFormat, dstBuf, subsamp, jpegQuality,
+                                flags);
   }
 
   /**
@@ -209,7 +217,7 @@ public class TJCompressor {
    * #getCompressedSize} to obtain the size of the JPEG image.
    */
   public byte[] compress(int flags) throws Exception {
-    if(srcWidth < 1 || srcHeight < 1)
+    if (srcWidth < 1 || srcHeight < 1)
       throw new Exception(NO_ASSOC_ERROR);
     byte[] buf = new byte[TJ.bufSize(srcWidth, srcHeight, subsamp)];
     compress(buf, flags);
@@ -230,13 +238,14 @@ public class TJCompressor {
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void compress(BufferedImage srcImage, byte[] dstBuf, int flags)
-    throws Exception {
-    if(srcImage == null || dstBuf == null || flags < 0)
+                       throws Exception {
+    if (srcImage == null || dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in compress()");
     int width = srcImage.getWidth();
     int height = srcImage.getHeight();
-    int pixelFormat;  boolean intPixels = false;
-    if(byteOrder == null)
+    int pixelFormat;
+    boolean intPixels = false;
+    if (byteOrder == null)
       byteOrder = ByteOrder.nativeOrder();
     switch(srcImage.getType()) {
       case BufferedImage.TYPE_3BYTE_BGR:
@@ -247,7 +256,7 @@ public class TJCompressor {
       case BufferedImage.TYPE_BYTE_GRAY:
         pixelFormat = TJ.PF_GRAY;  break;
       case BufferedImage.TYPE_INT_BGR:
-        if(byteOrder == ByteOrder.BIG_ENDIAN)
+        if (byteOrder == ByteOrder.BIG_ENDIAN)
           pixelFormat = TJ.PF_XBGR;
         else
           pixelFormat = TJ.PF_RGBX;
@@ -255,7 +264,7 @@ public class TJCompressor {
       case BufferedImage.TYPE_INT_RGB:
       case BufferedImage.TYPE_INT_ARGB:
       case BufferedImage.TYPE_INT_ARGB_PRE:
-        if(byteOrder == ByteOrder.BIG_ENDIAN)
+        if (byteOrder == ByteOrder.BIG_ENDIAN)
           pixelFormat = TJ.PF_XRGB;
         else
           pixelFormat = TJ.PF_BGRX;
@@ -264,9 +273,11 @@ public class TJCompressor {
         throw new Exception("Unsupported BufferedImage format");
     }
     WritableRaster wr = srcImage.getRaster();
-    if(jpegQuality < 0) throw new Exception("JPEG Quality not set");
-    if(subsamp < 0) throw new Exception("Subsampling level not set");
-    if(intPixels) {
+    if (jpegQuality < 0)
+      throw new Exception("JPEG Quality not set");
+    if (subsamp < 0)
+      throw new Exception("Subsampling level not set");
+    if (intPixels) {
       SinglePixelPackedSampleModel sm =
         (SinglePixelPackedSampleModel)srcImage.getSampleModel();
       int pitch = sm.getScanlineStride();
@@ -274,26 +285,27 @@ public class TJCompressor {
       int[] buf = db.getData();
       if (srcX >= 0 && srcY >= 0)
         compressedSize = compress(buf, srcX, srcY, width, pitch, height,
-          pixelFormat, dstBuf, subsamp, jpegQuality, flags);
+                                  pixelFormat, dstBuf, subsamp, jpegQuality,
+                                  flags);
       else
         compressedSize = compress(buf, width, pitch, height, pixelFormat,
-          dstBuf, subsamp, jpegQuality, flags);
-    }
-    else {
+                                  dstBuf, subsamp, jpegQuality, flags);
+    } else {
       ComponentSampleModel sm =
         (ComponentSampleModel)srcImage.getSampleModel();
       int pixelSize = sm.getPixelStride();
-      if(pixelSize != TJ.getPixelSize(pixelFormat))
+      if (pixelSize != TJ.getPixelSize(pixelFormat))
         throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
       int pitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
       byte[] buf = db.getData();
       if (srcX >= 0 && srcY >= 0)
         compressedSize = compress(buf, srcX, srcY, width, pitch, height,
-          pixelFormat, dstBuf, subsamp, jpegQuality, flags);
+                                  pixelFormat, dstBuf, subsamp, jpegQuality,
+                                  flags);
       else
         compressedSize = compress(buf, width, pitch, height, pixelFormat,
-          dstBuf, subsamp, jpegQuality, flags);
+                                  dstBuf, subsamp, jpegQuality, flags);
     }
   }
 
@@ -340,12 +352,14 @@ public class TJCompressor {
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
   public void encodeYUV(byte[] dstBuf, int flags) throws Exception {
-    if(dstBuf == null || flags < 0)
+    if (dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in compress()");
-    if(srcBuf == null) throw new Exception(NO_ASSOC_ERROR);
-    if(subsamp < 0) throw new Exception("Subsampling level not set");
+    if (srcBuf == null)
+      throw new Exception(NO_ASSOC_ERROR);
+    if (subsamp < 0)
+      throw new Exception("Subsampling level not set");
     encodeYUV(srcBuf, srcWidth, srcPitch, srcHeight,
-      srcPixelFormat, dstBuf, subsamp, flags);
+              srcPixelFormat, dstBuf, subsamp, flags);
     compressedSize = TJ.bufSizeYUV(srcWidth, srcHeight, subsamp);
   }
 
@@ -359,9 +373,10 @@ public class TJCompressor {
    * @return a buffer containing a YUV planar image
    */
   public byte[] encodeYUV(int flags) throws Exception {
-    if(srcWidth < 1 || srcHeight < 1)
+    if (srcWidth < 1 || srcHeight < 1)
       throw new Exception(NO_ASSOC_ERROR);
-    if(subsamp < 0) throw new Exception("Subsampling level not set");
+    if (subsamp < 0)
+      throw new Exception("Subsampling level not set");
     byte[] buf = new byte[TJ.bufSizeYUV(srcWidth, srcHeight, subsamp)];
     encodeYUV(buf, flags);
     return buf;
@@ -383,12 +398,12 @@ public class TJCompressor {
    */
   public void encodeYUV(BufferedImage srcImage, byte[] dstBuf, int flags)
     throws Exception {
-    if(srcImage == null || dstBuf == null || flags < 0)
+    if (srcImage == null || dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in encodeYUV()");
     int width = srcImage.getWidth();
     int height = srcImage.getHeight();
     int pixelFormat;  boolean intPixels = false;
-    if(byteOrder == null)
+    if (byteOrder == null)
       byteOrder = ByteOrder.nativeOrder();
     switch(srcImage.getType()) {
       case BufferedImage.TYPE_3BYTE_BGR:
@@ -399,7 +414,7 @@ public class TJCompressor {
       case BufferedImage.TYPE_BYTE_GRAY:
         pixelFormat = TJ.PF_GRAY;  break;
       case BufferedImage.TYPE_INT_BGR:
-        if(byteOrder == ByteOrder.BIG_ENDIAN)
+        if (byteOrder == ByteOrder.BIG_ENDIAN)
           pixelFormat = TJ.PF_XBGR;
         else
           pixelFormat = TJ.PF_RGBX;
@@ -407,7 +422,7 @@ public class TJCompressor {
       case BufferedImage.TYPE_INT_RGB:
       case BufferedImage.TYPE_INT_ARGB:
       case BufferedImage.TYPE_INT_ARGB_PRE:
-        if(byteOrder == ByteOrder.BIG_ENDIAN)
+        if (byteOrder == ByteOrder.BIG_ENDIAN)
           pixelFormat = TJ.PF_XRGB;
         else
           pixelFormat = TJ.PF_BGRX;
@@ -416,27 +431,26 @@ public class TJCompressor {
         throw new Exception("Unsupported BufferedImage format");
     }
     WritableRaster wr = srcImage.getRaster();
-    if(subsamp < 0) throw new Exception("Subsampling level not set");
-    if(intPixels) {
+    if (subsamp < 0) throw new Exception("Subsampling level not set");
+    if (intPixels) {
       SinglePixelPackedSampleModel sm =
         (SinglePixelPackedSampleModel)srcImage.getSampleModel();
       int pitch = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
       encodeYUV(buf, width, pitch, height, pixelFormat, dstBuf, subsamp,
-        flags);
-    }
-    else {
+                flags);
+    } else {
       ComponentSampleModel sm =
         (ComponentSampleModel)srcImage.getSampleModel();
       int pixelSize = sm.getPixelStride();
-      if(pixelSize != TJ.getPixelSize(pixelFormat))
+      if (pixelSize != TJ.getPixelSize(pixelFormat))
         throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
       int pitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
       byte[] buf = db.getData();
       encodeYUV(buf, width, pitch, height, pixelFormat, dstBuf, subsamp,
-        flags);
+                flags);
     }
     compressedSize = TJ.bufSizeYUV(width, height, subsamp);
   }
@@ -453,9 +467,9 @@ public class TJCompressor {
    *
    * @return a buffer containing a YUV planar image
    */
-  public byte[] encodeYUV(BufferedImage srcImage, int flags)
-    throws Exception {
-    if(subsamp < 0) throw new Exception("Subsampling level not set");
+  public byte[] encodeYUV(BufferedImage srcImage, int flags) throws Exception {
+    if (subsamp < 0)
+      throw new Exception("Subsampling level not set");
     int width = srcImage.getWidth();
     int height = srcImage.getHeight();
     byte[] buf = new byte[TJ.bufSizeYUV(width, height, subsamp)];
@@ -484,9 +498,8 @@ public class TJCompressor {
   protected void finalize() throws Throwable {
     try {
       close();
-    }
-    catch(Exception e) {}
-    finally {
+    } catch(Exception e) {
+    } finally {
       super.finalize();
     }
   };

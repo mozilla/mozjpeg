@@ -301,8 +301,12 @@ public class TJDecompressor {
         desiredHeight < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF ||
         flags < 0)
       throw new Exception("Invalid argument in decompress()");
-    decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, pitch,
-               desiredHeight, pixelFormat, flags);
+    if (x > 0 || y > 0)
+      decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, pitch,
+                 desiredHeight, pixelFormat, flags);
+    else
+      decompress(jpegBuf, jpegBufSize, dstBuf, desiredWidth, pitch,
+                 desiredHeight, pixelFormat, flags);
   }
 
   /**

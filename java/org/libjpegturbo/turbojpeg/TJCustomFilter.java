@@ -69,8 +69,8 @@ public interface TJCustomFilter {
    * @param transform a {@link TJTransform} instance that specifies the
    * parameters and/or cropping region for this transform
    */
-  public void customFilter(ShortBuffer coeffBuffer, Rectangle bufferRegion,
-    Rectangle planeRegion, int componentID, int transformID,
-    TJTransform transform)
+  void customFilter(ShortBuffer coeffBuffer, Rectangle bufferRegion,
+                    Rectangle planeRegion, int componentID, int transformID,
+                    TJTransform transform)
     throws Exception;
 }

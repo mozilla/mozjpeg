@@ -68,8 +68,16 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
  * Method:    decompressToYUV
  * Signature: ([BI[BI)V
  */
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3BI
   (JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJDecompressor
+ * Method:    decompressToYUV
+ * Signature: ([BI[BIIII)V
+ */
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3BIIII
+  (JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jint, jint, jint, jint);
 
 #ifdef __cplusplus
 }

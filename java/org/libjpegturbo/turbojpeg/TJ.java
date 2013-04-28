@@ -342,6 +342,10 @@ public final class TJ {
    *
    * @param width the width (in pixels) of the YUV image
    *
+   * @param pad the width of each line in each plane of the image is padded to
+   *        the nearest multiple of this number of bytes (must be a power of
+   *        2.)
+   *
    * @param height the height (in pixels) of the YUV image
    *
    * @param subsamp the level of chrominance subsampling used in the YUV
@@ -350,6 +354,14 @@ public final class TJ {
    * @return the size of the buffer (in bytes) required to hold a YUV planar
    * image with the given width, height, and level of chrominance subsampling
    */
+  public static native int bufSizeYUV(int width, int pad, int height,
+                                      int subsamp)
+    throws Exception;
+
+  /**
+   * @deprecated Use {@link #bufSizeYUV(int, int, int, int)} instead.
+   */
+  @Deprecated
   public static native int bufSizeYUV(int width, int height, int subsamp)
     throws Exception;
 

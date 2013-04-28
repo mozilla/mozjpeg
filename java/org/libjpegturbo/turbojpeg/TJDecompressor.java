@@ -313,6 +313,7 @@ public class TJDecompressor {
    * @deprecated Use
    * {@link #decompress(byte[], int, int, int, int, int, int, int)} instead.
    */
+  @Deprecated
   public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
                          int desiredHeight, int pixelFormat, int flags)
                          throws Exception {
@@ -373,36 +374,88 @@ public class TJDecompressor {
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
    * based on the image width, height, and level of chrominance subsampling.
    *
+   * @param desiredWidth desired width (in pixels) of the YUV image.  If the
+   * desired image dimensions are different than the dimensions of the JPEG
+   * image being decompressed, then TurboJPEG will use scaling in the JPEG
+   * decompressor to generate the largest possible image that will fit within
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the width of the JPEG image (in other words, the width will not be
+   * considered when determining the scaled image size.)
+   *
+   * @param pad the width of each line in each plane of the YUV image will be
+   * padded to the nearest multiple of this number of bytes (must be a power of
+   * 2.)
+   *
+   * @param desiredHeight desired height (in pixels) of the YUV image.  If the
+   * desired image dimensions are different than the dimensions of the JPEG
+   * image being decompressed, then TurboJPEG will use scaling in the JPEG
+   * decompressor to generate the largest possible image that will fit within
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the height of the JPEG image (in other words, the height will not be
+   * considered when determining the scaled image size.)
+   *
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    */
-  public void decompressToYUV(byte[] dstBuf, int flags) throws Exception {
+  public void decompressToYUV(byte[] dstBuf, int desiredWidth, int pad,
+                              int desiredHeight, int flags) throws Exception {
     if (jpegBuf == null)
       throw new Exception(NO_ASSOC_ERROR);
-    if (dstBuf == null || flags < 0)
+    if (dstBuf == null || desiredWidth < 0 || pad < 1 ||
+        ((pad & (pad - 1)) != 0) || desiredHeight < 0 || flags < 0)
       throw new Exception("Invalid argument in decompressToYUV()");
-    decompressToYUV(jpegBuf, jpegBufSize, dstBuf, flags);
+    decompressToYUV(jpegBuf, jpegBufSize, dstBuf, desiredWidth, pad,
+                    desiredHeight, flags);
   }
 
+  /**
+   * @deprecated Use {@link #decompressToYUV(byte[], int, int, int, int)}
+   * instead.
+   */
+  @Deprecated
+  public void decompressToYUV(byte[] dstBuf, int flags) throws Exception {
+    decompressToYUV(dstBuf, 0, 4, 0, flags);
+  }
 
   /**
    * Decompress the JPEG source image associated with this decompressor
    * instance and return a buffer containing a YUV planar image.  See {@link
-   * #decompressToYUV(byte[], int)} for more detail.
+   * #decompressToYUV(byte[], int, int, int, int)} for more detail.
+   *
+   * @param desiredWidth see
+   * {@link #decompressToYUV(byte[], int, int, int, int)} for description
+   *
+   * @param pad see {@link #decompressToYUV(byte[], int, int, int, int)} for
+   * description
+   *
+   * @param desiredHeight see {@link
+   * #decompressToYUV(byte[], int, int, int, int)} for description
    *
    * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
    *
    * @return a buffer containing a YUV planar image
    */
-  public byte[] decompressToYUV(int flags) throws Exception {
+  public byte[] decompressToYUV(int desiredWidth, int pad, int desiredHeight,
+                                int flags) throws Exception {
     if (flags < 0)
       throw new Exception("Invalid argument in decompressToYUV()");
     if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
       throw new Exception(NO_ASSOC_ERROR);
     if (jpegSubsamp >= TJ.NUMSAMP)
       throw new Exception("JPEG header information is invalid");
-    byte[] buf = new byte[TJ.bufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp)];
-    decompressToYUV(buf, flags);
+    int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
+    int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
+    byte[] buf = new byte[TJ.bufSizeYUV(scaledWidth, pad, scaledHeight,
+                                        jpegSubsamp)];
+    decompressToYUV(buf, desiredWidth, pad, desiredHeight, flags);
     return buf;
+  }
+
+  /**
+   * @deprecated Use {@link #decompressToYUV(int, int, int, int)} instead.
+   */
+  @Deprecated
+  public byte[] decompressToYUV(int flags) throws Exception {
+    return decompressToYUV(0, 4, 0, flags);
   }
 
   /**
@@ -619,7 +672,10 @@ public class TJDecompressor {
     int flags) throws Exception;
 
   private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
-    int flags) throws Exception;
+    int flags) throws Exception; // deprecated
+
+  private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
+    int desiredWidth, int pad, int desiredheight, int flags) throws Exception;
 
   static {
     TJLoader.load();

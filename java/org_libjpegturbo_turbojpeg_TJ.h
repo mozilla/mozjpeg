@@ -70,9 +70,17 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJ
  * Method:    bufSizeYUV
+ * Signature: (IIII)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII
+  (JNIEnv *, jclass, jint, jint, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJ
+ * Method:    bufSizeYUV
  * Signature: (III)I
  */
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__III
   (JNIEnv *, jclass, jint, jint, jint);
 
 /*

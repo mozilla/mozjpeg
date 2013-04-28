@@ -200,7 +200,9 @@ if WITH_JAVA
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -bi
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv
+	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -noyuvpad
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi
+	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi -noyuvpad
 endif
 	./tjunittest
 	./tjunittest -alloc

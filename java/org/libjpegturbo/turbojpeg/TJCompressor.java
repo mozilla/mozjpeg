@@ -145,6 +145,7 @@ public class TJCompressor {
    * @deprecated Use
    * {@link #setSourceImage(byte[], int, int, int, int, int, int)} instead.
    */
+  @Deprecated
   public void setSourceImage(byte[] srcImage, int width, int pitch,
                              int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, 0, 0, width, pitch, height, pixelFormat);
@@ -330,20 +331,34 @@ public class TJCompressor {
     return buf;
   }
 
+
+  /**
+   * Set the plane padding for subsequent YUV encode operations.
+   *
+   * @param pad the width of each line in each plane of the YUV image will be
+   *        padded to the nearest multiple of this number of bytes (must be a
+   *        power of 2.)  The default padding is 4 bytes, which generates
+   *        images suitable for direct video display.
+   */
+  public void setYUVPad(int pad) throws Exception {
+    if(pad < 1 || ((pad & (pad - 1)) != 0))
+      throw new Exception("Invalid argument in setYUVPad()");
+    yuvPad = pad;
+  }
+
   /**
    * Encode the uncompressed source image associated with this compressor
    * instance and output a YUV planar image to the given destination buffer.
-   * This method uses the accelerated color conversion routines in
-   * TurboJPEG's underlying codec to produce a planar YUV image that is
-   * suitable for direct video display.  Specifically, if the chrominance
-   * components are subsampled along the horizontal dimension, then the width
-   * of the luminance plane is padded to the nearest multiple of 2 in the
-   * output image (same goes for the height of the luminance plane, if the
-   * chrominance components are subsampled along the vertical dimension.)
-   * Also, each line of each plane in the output image is padded to 4 bytes.
-   * Although this will work with any subsampling option, it is really only
-   * useful in combination with {@link TJ#SAMP_420}, which produces an image
-   * compatible with the I420 (AKA "YUV420P") format.
+   * This method uses the accelerated color conversion routines in TurboJPEG's
+   * underlying codec but does not execute any of the other steps in the JPEG
+   * compression process.  The Y, U, and V image planes are stored sequentially
+   * into the destination buffer, and the size of each plane is determined by
+   * the width and height of the source image, as well as the specified padding
+   * and level of chrominance subsampling.  If the chrominance components are
+   * subsampled along the horizontal dimension, then the width of the luminance
+   * plane is padded to the nearest multiple of 2 in the output image (same
+   * goes for the height of the luminance plane, if the chrominance components
+   * are subsampled along the vertical dimension.)
    *
    * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
@@ -358,9 +373,9 @@ public class TJCompressor {
       throw new Exception(NO_ASSOC_ERROR);
     if (subsamp < 0)
       throw new Exception("Subsampling level not set");
-    encodeYUV(srcBuf, srcWidth, srcPitch, srcHeight,
-              srcPixelFormat, dstBuf, subsamp, flags);
-    compressedSize = TJ.bufSizeYUV(srcWidth, srcHeight, subsamp);
+    encodeYUV(srcBuf, srcWidth, srcPitch, srcHeight, srcPixelFormat, dstBuf,
+              yuvPad, subsamp, flags);
+    compressedSize = TJ.bufSizeYUV(srcWidth, yuvPad, srcHeight, subsamp);
   }
 
   /**
@@ -377,7 +392,7 @@ public class TJCompressor {
       throw new Exception(NO_ASSOC_ERROR);
     if (subsamp < 0)
       throw new Exception("Subsampling level not set");
-    byte[] buf = new byte[TJ.bufSizeYUV(srcWidth, srcHeight, subsamp)];
+    byte[] buf = new byte[TJ.bufSizeYUV(srcWidth, yuvPad, srcHeight, subsamp)];
     encodeYUV(buf, flags);
     return buf;
   }
@@ -438,8 +453,8 @@ public class TJCompressor {
       int stride = sm.getScanlineStride();
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
-      encodeYUV(buf, width, stride, height, pixelFormat, dstBuf, subsamp,
-                flags);
+      encodeYUV(buf, width, stride, height, pixelFormat, dstBuf, yuvPad,
+                subsamp, flags);
     } else {
       ComponentSampleModel sm =
         (ComponentSampleModel)srcImage.getSampleModel();
@@ -449,10 +464,10 @@ public class TJCompressor {
       int pitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
       byte[] buf = db.getData();
-      encodeYUV(buf, width, pitch, height, pixelFormat, dstBuf, subsamp,
-                flags);
+      encodeYUV(buf, width, pitch, height, pixelFormat, dstBuf, yuvPad,
+                subsamp, flags);
     }
-    compressedSize = TJ.bufSizeYUV(width, height, subsamp);
+    compressedSize = TJ.bufSizeYUV(width, yuvPad, height, subsamp);
   }
 
   /**
@@ -472,7 +487,7 @@ public class TJCompressor {
       throw new Exception("Subsampling level not set");
     int width = srcImage.getWidth();
     int height = srcImage.getHeight();
-    byte[] buf = new byte[TJ.bufSizeYUV(width, height, subsamp)];
+    byte[] buf = new byte[TJ.bufSizeYUV(width, yuvPad, height, subsamp)];
     encodeYUV(srcImage, buf, flags);
     return buf;
   }
@@ -527,11 +542,19 @@ public class TJCompressor {
 
   private native void encodeYUV(byte[] srcBuf, int width, int pitch,
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
-    throws Exception;
+    throws Exception; // deprecated
+
+  private native void encodeYUV(byte[] srcBuf, int width, int pitch,
+    int height, int pixelFormat, byte[] dstBuf, int pad, int subsamp,
+    int flags) throws Exception;
 
   private native void encodeYUV(int[] srcBuf, int width, int stride,
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
-    throws Exception;
+    throws Exception; // deprecated
+
+  private native void encodeYUV(int[] srcBuf, int width, int pitch,
+    int height, int pixelFormat, byte[] dstBuf, int pad, int subsamp,
+    int flags) throws Exception;
 
   static {
     TJLoader.load();
@@ -548,5 +571,6 @@ public class TJCompressor {
   private int subsamp = -1;
   private int jpegQuality = -1;
   private int compressedSize = 0;
+  private int yuvPad = 4;
   private ByteOrder byteOrder = null;
 };

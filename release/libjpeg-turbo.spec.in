@@ -124,7 +124,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libjpeg.so.@SO_MAJOR_VERSION@
 %{_libdir}/libjpeg.so
 %{_libdir}/libjpeg.a
-%{_libdir}/libturbojpeg.so.0.0.0
+%{_libdir}/libturbojpeg.so.0.1.0
 %{_libdir}/libturbojpeg.so.0
 %{_libdir}/libturbojpeg.so
 %{_libdir}/libturbojpeg.a

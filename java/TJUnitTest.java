@@ -263,8 +263,8 @@ public class TJUnitTest {
                                throws Exception {
     v = (v < 0) ? v + 256 : v;
     if (v < cv - 1 || v > cv + 1) {
-      throw new Exception("\nComp. " + vname + " at " + row + "," + col +
-                          " should be " + cv + ", not " + v + "\n");
+      throw new Exception("Comp. " + vname + " at " + row + "," + col +
+                          " should be " + cv + ", not " + v);
     }
   }
 
@@ -272,8 +272,8 @@ public class TJUnitTest {
                                 throws Exception {
     v = (v < 0) ? v + 256 : v;
     if (v > 1) {
-      throw new Exception("\nComp. " + vname + " at " + row + "," + col +
-                          " should be 0, not " + v + "\n");
+      throw new Exception("Comp. " + vname + " at " + row + "," + col +
+                          " should be 0, not " + v);
     }
   }
 
@@ -281,8 +281,8 @@ public class TJUnitTest {
                                   throws Exception {
     v = (v < 0) ? v + 256 : v;
     if (v < 254) {
-      throw new Exception("\nComp. " + vname + " at " + row + "," + col +
-                          " should be 255, not " + v + "\n");
+      throw new Exception("Comp. " + vname + " at " + row + "," + col +
+                          " should be 255, not " + v);
     }
   }
 
@@ -344,12 +344,11 @@ public class TJUnitTest {
         }
       }
     } catch(Exception e) {
-      System.out.println(e);
+      System.out.println("\n" + e.getMessage());
       retval = 0;
     }
 
     if (retval == 0) {
-      System.out.print("\n");
       for (row = 0; row < h; row++) {
         for (col = 0; col < w; col++) {
           int r = buf[pitch * row + col * ps + roffset];
@@ -423,12 +422,11 @@ public class TJUnitTest {
         }
       }
     } catch(Exception e) {
-      System.out.println(e);
+      System.out.println("\n" + e.getMessage());
       retval = 0;
     }
 
     if (retval == 0) {
-      System.out.print("\n");
       for (row = 0; row < h; row++) {
         for (col = 0; col < w; col++) {
           int r = (buf[pitch * row + col] >> rshift) & 0xFF;
@@ -490,7 +488,7 @@ public class TJUnitTest {
 
     try {
       if (size != correctsize)
-        throw new Exception("\nIncorrect size " + size + ".  Should be " +
+        throw new Exception("Incorrect size " + size + ".  Should be " +
                             correctsize);
 
       for (row = 0; row < ph; row++) {
@@ -531,7 +529,7 @@ public class TJUnitTest {
         }
       }
     } catch(Exception e) {
-      System.out.println(e);
+      System.out.println("\n" + e.getMessage());
       retval = 0;
     }
 
@@ -562,7 +560,6 @@ public class TJUnitTest {
         }
         System.out.print("\n");
       }
-      System.out.print("\n");
     }
 
     return retval;
@@ -768,7 +765,6 @@ public class TJUnitTest {
     } else
       decompTest(tjd, jpegBuf, jpegSize, w, h, pf, baseName, subsamp,
                  flags, new TJScalingFactor(1, 1));
-    System.out.print("\n");
   }
 
   private static void doTest(int w, int h, int[] formats, int subsamp,
@@ -807,8 +803,10 @@ public class TJUnitTest {
           if (pf >= TJ.PF_RGBX && pf <= TJ.PF_XRGB && !bi)
             decompTest(tjd, dstBuf, size, w, h, pf + (TJ.PF_RGBA - TJ.PF_RGBX),
                        baseName, subsamp, flags);
+          System.out.print("\n");
         }
       }
+      System.out.print("--------------------\n\n");
     } catch(Exception e) {
       if (tjc != null) tjc.close();
       if (tjd != null) tjd.close();

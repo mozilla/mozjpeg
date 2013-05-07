@@ -39,6 +39,7 @@
 #include "./turbojpeg.h"
 #include "./tjutil.h"
 #include "transupp.h"
+#include "./jpegcomp.h"
 
 extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **,
 	unsigned long *, boolean);
@@ -1058,10 +1059,11 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	int width, int pad, int height, int flags)
 {
 	int i, sfi, row, retval=0;  JSAMPROW *outbuf[MAX_COMPONENTS];
-	int jpegwidth, jpegheight, scaledw, scaledh;
+	int jpegwidth, jpegheight, jpegSubsamp, scaledw, scaledh;
 	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], iw[MAX_COMPONENTS],
 		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
 	JSAMPLE *_tmpbuf=NULL, *ptr=dstBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
+	int dctsize;
 
 	getinstance(handle);
 	if((this->init&DECOMPRESS)==0)
@@ -1089,6 +1091,9 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
+	jpegSubsamp=getSubsamp(dinfo);
+	if(jpegSubsamp<0)
+		_throw("tjTransform(): Could not determine subsampling type for JPEG image");
 
 	jpegwidth=dinfo->image_width;  jpegheight=dinfo->image_height;
 	if(width==0) width=jpegwidth;
@@ -1108,18 +1113,20 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	sfi=i;
 	jpeg_calc_output_dimensions(dinfo);
 
+	dctsize=DCTSIZE*sf[sfi].num/sf[sfi].denom;
+
 	for(i=0; i<dinfo->num_components; i++)
 	{
 		jpeg_component_info *compptr=&dinfo->comp_info[i];
 		int ih;
-		iw[i]=compptr->width_in_blocks*DCTSIZE*sf[sfi].num/sf[sfi].denom;
-		ih=compptr->height_in_blocks*DCTSIZE*sf[sfi].num/sf[sfi].denom;
+		iw[i]=compptr->width_in_blocks*dctsize;
+		ih=compptr->height_in_blocks*dctsize;
 		cw[i]=PAD(dinfo->output_width, dinfo->max_h_samp_factor)
 			*compptr->h_samp_factor/dinfo->max_h_samp_factor;
 		ch[i]=PAD(dinfo->output_height, dinfo->max_v_samp_factor)
 			*compptr->v_samp_factor/dinfo->max_v_samp_factor;
 		if(iw[i]!=cw[i] || ih!=ch[i]) usetmpbuf=1;
-		th[i]=compptr->v_samp_factor*DCTSIZE*sf[sfi].num/sf[sfi].denom;
+		th[i]=compptr->v_samp_factor*dctsize;
 		tmpbufsize+=iw[i]*th[i];
 		if((outbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]))==NULL)
 			_throw("tjDecompressToYUV2(): Memory allocation failure");
@@ -1152,19 +1159,37 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 
 	jpeg_start_decompress(dinfo);
 	for(row=0; row<(int)dinfo->output_height;
-		row+=dinfo->max_v_samp_factor*DCTSIZE*sf[sfi].num/sf[sfi].denom)
+		row+=dinfo->max_v_samp_factor*dinfo->_min_DCT_scaled_size)
 	{
 		JSAMPARRAY yuvptr[MAX_COMPONENTS];
 		int crow[MAX_COMPONENTS];
 		for(i=0; i<dinfo->num_components; i++)
 		{
 			jpeg_component_info *compptr=&dinfo->comp_info[i];
+			if(jpegSubsamp==TJ_420)
+			{
+				/* When 4:2:0 subsampling is used with IDCT scaling, libjpeg will try
+				   to be clever and use the IDCT to perform upsampling on the U and V
+				   planes.  For instance, if the output image is to be scaled by 1/2
+				   relative to the JPEG image, then the scaling factor and upsampling
+				   effectively cancel each other, so a normal 8x8 IDCT can be used.
+				   However, this is not desirable when using the decompress-to-YUV
+				   functionality in TurboJPEG, since we want to output the U and V
+				   planes in their subsampled form.  Thus, we have to override some
+				   internal libjpeg parameters to force it to use the "scaled" IDCT
+				   functions on the U and V planes. */
+				compptr->_DCT_scaled_size=dctsize;
+				compptr->MCU_sample_width=tjMCUWidth[jpegSubsamp]*
+					sf[sfi].num/sf[sfi].denom*
+					compptr->v_samp_factor/dinfo->max_v_samp_factor;
+				dinfo->idct->inverse_DCT[i] = dinfo->idct->inverse_DCT[0];
+			}
 			crow[i]=row*compptr->v_samp_factor/dinfo->max_v_samp_factor;
 			if(usetmpbuf) yuvptr[i]=tmpbuf[i];
 			else yuvptr[i]=&outbuf[i][crow[i]];
 		}
 		jpeg_read_raw_data(dinfo, yuvptr,
-			dinfo->max_v_samp_factor*DCTSIZE*sf[sfi].num/sf[sfi].denom);
+			dinfo->max_v_samp_factor*dinfo->_min_DCT_scaled_size);
 		if(usetmpbuf)
 		{
 			int j;

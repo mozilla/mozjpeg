@@ -366,7 +366,7 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 		if(!alloc)
 		{
 			flags|=TJFLAG_NOREALLOC;
-			*dstSize=(yuv==YUVENCODE? tjBufSizeYUV(w, h, subsamp)
+			*dstSize=(yuv==YUVENCODE? tjBufSizeYUV2(w, pad, h, subsamp)
 				: tjBufSize(w, h, subsamp));
 		}
 		_tj(tjCompress2(handle, srcBuf, w, 0, h, pf, dstBuf, dstSize, subsamp,
@@ -466,18 +466,16 @@ void decompTest(tjhandle handle, unsigned char *jpegBuf,
 	int flags)
 {
 	int i, n=0;
-	tjscalingfactor *sf=tjGetScalingFactors(&n), sf1={1, 1};
+	tjscalingfactor *sf=tjGetScalingFactors(&n);
 	if(!sf || !n) _throwtj();
 
-	if(subsamp==TJSAMP_444 || subsamp==TJSAMP_GRAY)
+	for(i=0; i<n; i++)
 	{
-		for(i=0; i<n; i++)
+		if(subsamp==TJSAMP_444 || subsamp==TJSAMP_GRAY ||
+			(sf[i].num==1 && (sf[i].denom==4 || sf[i].denom==2 || sf[i].denom==1)))
 			_decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp,
 				flags, sf[i]);
 	}
-	else
-		_decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp, flags,
-			sf1);
 
 	bailout:
 	return;

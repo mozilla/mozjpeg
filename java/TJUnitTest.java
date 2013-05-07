@@ -757,14 +757,15 @@ public class TJUnitTest {
                                  String baseName, int subsamp,
                                  int flags) throws Exception {
     int i;
-    if (subsamp == TJ.SAMP_444 || subsamp == TJ.SAMP_GRAY) {
-      TJScalingFactor[] sf = TJ.getScalingFactors();
-      for (i = 0; i < sf.length; i++)
+    TJScalingFactor[] sf = TJ.getScalingFactors();
+    for (i = 0; i < sf.length; i++) {
+      int num = sf[i].getNum();
+      int denom = sf[i].getDenom();
+      if (subsamp == TJ.SAMP_444 || subsamp == TJ.SAMP_GRAY ||
+          (num == 1 && (denom == 4 || denom == 2 || denom == 1)))
         decompTest(tjd, jpegBuf, jpegSize, w, h, pf, baseName, subsamp,
                    flags, sf[i]);
-    } else
-      decompTest(tjd, jpegBuf, jpegSize, w, h, pf, baseName, subsamp,
-                 flags, new TJScalingFactor(1, 1));
+    }
   }
 
   private static void doTest(int w, int h, int[] formats, int subsamp,

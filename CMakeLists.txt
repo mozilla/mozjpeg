@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 project(libjpeg-turbo C)
-set(VERSION 1.2.91)
+set(VERSION 1.3.0)
 
 if(MINGW OR CYGWIN)
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)

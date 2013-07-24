@@ -3,6 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2011 D. R. Commander
+ * Copyright (C) 2013, MIPS Technologies, Inc., California
  * 
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -18,6 +19,7 @@
 #define JSIMD_SSE        0x04
 #define JSIMD_SSE2       0x08
 #define JSIMD_ARM_NEON   0x10
+#define JSIMD_MIPS_DSPR2 0x20
 
 /* Short forms of external names for systems with brain-damaged linkers. */
 
@@ -383,6 +385,64 @@ EXTERN(void) jsimd_ycc_extxbgr_convert_neon
              JSAMPARRAY output_buf, int num_rows));
 EXTERN(void) jsimd_ycc_extxrgb_convert_neon
         JPP((JDIMENSION out_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+
+EXTERN(void) jsimd_rgb_ycc_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+EXTERN(void) jsimd_extrgb_ycc_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+EXTERN(void) jsimd_extrgbx_ycc_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+EXTERN(void) jsimd_extbgr_ycc_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+EXTERN(void) jsimd_extbgrx_ycc_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+EXTERN(void) jsimd_extxbgr_ycc_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+EXTERN(void) jsimd_extxrgb_ycc_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
+
+EXTERN (void) jsimd_ycc_rgb_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extrgb_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extrgbx_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extbgr_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extbgrx_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extxbgr_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
+             JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_extxrgb_convert_mips_dspr2
+        JPP((JDIMENSION img_width,
              JSAMPIMAGE input_buf, JDIMENSION input_row,
              JSAMPARRAY output_buf, int num_rows));
 

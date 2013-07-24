@@ -180,3 +180,33 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_ARM_ASSEMBLER_IFELSE],[
     $2
   fi
 ])
+
+# AC_CHECK_COMPATIBLE_MIPSEL_ASSEMBLER_IFELSE
+# --------------------------
+# Test whether the assembler is suitable and supports MIPS instructions
+AC_DEFUN([AC_CHECK_COMPATIBLE_MIPSEL_ASSEMBLER_IFELSE],[
+  have_mips_dspr2=no
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CCASFLAGS -mdspr2"
+
+  AC_COMPILE_IFELSE([[
+
+  int main ()
+  {
+    int c = 0, a = 0, b = 0;
+    __asm__ __volatile__ (
+        "precr.qb.ph %[c], %[a], %[b]          \n\t"
+        : [c] "=r" (c)
+        : [a] "r" (a), [b] "r" (b)
+    );
+    return c;
+  }
+  ]], have_mips_dspr2=yes)
+  CFLAGS=$ac_save_CFLAGS
+
+  if test "x$have_mips_dspr2" = "xyes" ; then
+    $1
+  else
+    $2
+  fi
+])

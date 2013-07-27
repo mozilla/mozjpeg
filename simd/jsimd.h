@@ -602,6 +602,13 @@ EXTERN(void) jsimd_h2v2_fancy_upsample_mips_dspr2
         JPP((int max_v_samp_factor, JDIMENSION downsampled_width,
              JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr));
 
+EXTERN(void) jsimd_h2v2_upsample_mips_dspr2
+        JPP((int max_v_samp_factor, JDIMENSION output_width,
+             JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr));
+EXTERN(void) jsimd_h2v1_upsample_mips_dspr2
+        JPP((int max_v_samp_factor, JDIMENSION output_width,
+             JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr));
+
 /* SIMD Sample Conversion */
 EXTERN(void) jsimd_convsamp_mmx JPP((JSAMPARRAY sample_data,
                                      JDIMENSION start_col,

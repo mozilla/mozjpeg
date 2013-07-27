@@ -694,3 +694,147 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_downsample_mips_dspr2)
      nop
 END(jsimd_h2v2_downsample_mips_dspr2)
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->max_v_samp_factor
+ * a1     - cinfo->output_width
+ * a2     - input_data
+ * a3     - output_data_ptr
+ */
+    lw      t7, 0(a3)       // t7 = output_data
+    andi    t8, a1, 0xf     // t8 = residual
+    sll     t0, a0, 2
+    beqz    a0, 4f
+     addu   t9, t7, t0      // t9 = output_data end address
+0:
+    lw      t5, 0(t7)       // t5 = outptr
+    lw      t6, 0(a2)       // t6 = inptr
+    addu    t3, t5, a1      // t3 = outptr + output_width (end address)
+    subu    t3, t8          // t3 = end address - residual
+    beqz    t3, 2f
+     nop
+1:
+    ulw     t0, 0(t6)       // t0 = |P3|P2|P1|P0|
+    ulw     t2, 4(t6)       // t2 = |P7|P6|P5|P4|
+    srl     t1, t0, 16      // t1 = |X|X|P3|P2|
+    ins     t0, t0, 16, 16  // t0 = |P1|P0|P1|P0|
+    ins     t1, t1, 16, 16  // t1 = |P3|P2|P3|P2|
+    ins     t0, t0, 8, 16   // t0 = |P1|P1|P0|P0|
+    ins     t1, t1, 8, 16   // t1 = |P3|P3|P2|P2|
+    usw     t0, 0(t5)
+    usw     t1, 4(t5)
+    srl     t0, t2, 16      // t0 = |X|X|P7|P6|
+    ins     t2, t2, 16, 16  // t2 = |P5|P4|P5|P4|
+    ins     t0, t0, 16, 16  // t0 = |P7|P6|P7|P6|
+    ins     t2, t2, 8, 16   // t2 = |P5|P5|P4|P4|
+    ins     t0, t0, 8, 16   // t0 = |P7|P7|P6|P6|
+    usw     t2, 8(t5)
+    usw     t0, 12(t5)
+    addiu   t5, 16
+    bne     t5, t3, 1b
+     addiu  t6, 8
+    beqz    t8, 3f
+     move   t4, t8
+2:
+    lbu     t1, 0(t6)
+    sb      t1, 0(t5)
+    sb      t1, 1(t5)
+    addiu   t4, -2
+    addiu   t6, 1
+    bgtz    t4, 2b
+     addiu  t5, 2
+3:
+    addiu   t7, 4
+    bne     t9, t7, 0b
+     addiu  a2, 4
+4:
+    j       ra
+     nop
+END(jsimd_h2v1_upsample_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->max_v_samp_factor
+ * a1     - cinfo->output_width
+ * a2     - input_data
+ * a3     - output_data_ptr
+ */
+    lw      t7, 0(a3)
+    beqz    a0, 7f
+     andi   t9, a1, 0xf     // t9 = residual
+0:
+    lw      t6, 0(a2)       // t6 = inptr
+    lw      t5, 0(t7)       // t5 = outptr
+    addu    t8, t5, a1      // t8 = outptr end address
+    subu    t8, t9          // t8 = end address - residual
+    beqz    t8, 2f
+     nop
+1:
+    ulw     t0, 0(t6)
+    srl     t1, t0, 16
+    ins     t0, t0, 16, 16
+    ins     t0, t0, 8, 16
+    ins     t1, t1, 16, 16
+    ins     t1, t1, 8, 16
+    ulw     t2, 4(t6)
+    usw     t0, 0(t5)
+    usw     t1, 4(t5)
+    srl     t3, t2, 16
+    ins     t2, t2, 16, 16
+    ins     t2, t2, 8, 16
+    ins     t3, t3, 16, 16
+    ins     t3, t3, 8, 16
+    usw     t2, 8(t5)
+    usw     t3, 12(t5)
+    addiu   t5, 16
+    bne     t5, t8, 1b
+     addiu  t6, 8
+    beqz    t9, 3f
+     move   t4, t9
+2:
+    lbu     t0, 0(t6)
+    sb      t0, 0(t5)
+    sb      t0, 1(t5)
+    addiu   t4, -2
+    addiu   t6, 1
+    bgtz    t4, 2b
+     addiu  t5, 2
+3:
+    ulw     t6, 0(t7)       // t6 = outptr
+    ulw     t5, 4(t7)       // t5 = outptr[1]
+    addu    t4, t6, a1      // t4 = new end address
+    subu    t8, t4, t9
+    beqz    t8, 5f
+     nop
+4:
+    ulw     t0, 0(t6)
+    ulw     t1, 4(t6)
+    ulw     t2, 8(t6)
+    usw     t0, 0(t5)
+    ulw     t0, 12(t6)
+    usw     t1, 4(t5)
+    usw     t2, 8(t5)
+    usw     t0, 12(t5)
+    addiu   t6, 16
+    bne     t6, t8, 4b
+     addiu  t5, 16
+    beqz    t9, 6f
+     nop
+5:
+    lbu     t0, 0(t6)
+    sb      t0, 0(t5)
+    addiu   t6, 1
+    bne     t6, t4, 5b
+     addiu  t5, 1
+6:
+    addiu   t7, 8
+    addiu   a0, -2
+    bgtz    a0, 0b
+     addiu  a2, 4
+7:
+    j       ra
+     nop
+END(jsimd_h2v2_upsample_mips_dspr2)
+
+/*****************************************************************************/

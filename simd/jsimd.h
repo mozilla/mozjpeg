@@ -465,6 +465,15 @@ EXTERN(void) jsimd_h2v1_downsample_sse2
              JDIMENSION v_samp_factor, JDIMENSION width_blocks,
              JSAMPARRAY input_data, JSAMPARRAY output_data));
 
+EXTERN(void) jsimd_h2v2_downsample_mips_dspr2
+        JPP((JDIMENSION image_width, int max_v_samp_factor,
+             JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+             JSAMPARRAY input_data, JSAMPARRAY output_data));
+EXTERN(void) jsimd_h2v1_downsample_mips_dspr2
+        JPP((JDIMENSION image_width, int max_v_samp_factor,
+             JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+             JSAMPARRAY input_data, JSAMPARRAY output_data));
+
 /* SIMD Upsample */
 EXTERN(void) jsimd_h2v2_upsample_mmx
         JPP((int max_v_samp_factor, JDIMENSION output_width,

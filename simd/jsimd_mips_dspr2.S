@@ -487,3 +487,210 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
 END(jsimd_h2v1_fancy_upsample_mips_dspr2)
 
 /*****************************************************************************/
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_h2v1_downsample_mips_dspr2)
+/*
+ * a0     - cinfo->image_width
+ * a1     - cinfo->max_v_samp_factor
+ * a2     - compptr->v_samp_factor
+ * a3     - compptr->width_in_blocks
+ * 16(sp) - input_data
+ * 20(sp) - output_data
+ */
+    .set at
+
+    SAVE_REGS_ON_STACK 24, s0, s1, s2, s3, s4
+
+    beqz        a2, 7f
+     lw         s1, 44(sp)  // s1 = output_data
+    lw          s0, 40(sp)  // s0 = input_data
+    srl         s2, a0, 2
+    andi        t9, a0, 2
+    srl         t7, t9, 1
+    addu        s2, t7, s2
+    sll         t0, a3, 3   // t0 = width_in_blocks*DCT
+    srl         t7, t0, 1
+    subu        s2, t7, s2
+0:
+    andi        t6, a0, 1   // t6 = temp_index
+    addiu       t6, -1
+    lw          t4, 0(s1)   // t4 = outptr
+    lw          t5, 0(s0)   // t5 = inptr0
+    li          s3, 0       // s3 = bias
+    srl         t7, a0, 1   // t7 = image_width1
+    srl         s4, t7, 2
+    andi        t8, t7, 3
+1:
+    ulhu        t0, 0(t5)
+    ulhu        t1, 2(t5)
+    ulhu        t2, 4(t5)
+    ulhu        t3, 6(t5)
+    raddu.w.qb  t0, t0
+    raddu.w.qb  t1, t1
+    raddu.w.qb  t2, t2
+    raddu.w.qb  t3, t3
+    shra.ph     t0, t0, 1
+    shra_r.ph   t1, t1, 1
+    shra.ph     t2, t2, 1
+    shra_r.ph   t3, t3, 1
+    sb          t0, 0(t4)
+    sb          t1, 1(t4)
+    sb          t2, 2(t4)
+    sb          t3, 3(t4)
+    addiu       s4, -1
+    addiu       t4, 4
+    bgtz        s4, 1b
+     addiu      t5, 8
+    beqz        t8, 3f
+     addu       s4, t4, t8
+2:
+    ulhu        t0, 0(t5)
+    raddu.w.qb  t0, t0
+    addqh.w     t0, t0, s3
+    xori        s3, s3, 1
+    sb          t0, 0(t4)
+    addiu       t4, 1
+    bne         t4, s4, 2b
+     addiu      t5, 2
+3:
+    lbux        t1, t6(t5)
+    sll         t1, 1
+    addqh.w     t2, t1, s3  // t2 = pixval1
+    xori        s3, s3, 1
+    addqh.w     t3, t1, s3  // t3 = pixval2
+    blez        s2, 5f
+     append     t3, t2,  8
+    addu        t5, t4, s2  // t5 = loop_end2
+4:
+    ush         t3, 0(t4)
+    addiu       s2, -1
+    bgtz        s2, 4b
+     addiu      t4,  2
+5:
+    beqz        t9, 6f
+     nop
+    sb          t2, 0(t4)
+6:
+    addiu       s1, 4
+    addiu       a2, -1
+    bnez        a2, 0b
+     addiu      s0, 4
+7:
+    RESTORE_REGS_FROM_STACK 24, s0, s1, s2, s3, s4
+
+    j           ra
+    nop
+END(jsimd_h2v1_downsample_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_h2v2_downsample_mips_dspr2)
+
+/*
+ * a0     - cinfo->image_width
+ * a1     - cinfo->max_v_samp_factor
+ * a2     - compptr->v_samp_factor
+ * a3     - compptr->width_in_blocks
+ * 16(sp) - input_data
+ * 20(sp) - output_data
+ */
+    .set at
+    SAVE_REGS_ON_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    beqz         a2, 8f
+     lw          s1, 52(sp)      // s1 = output_data
+    lw           s0, 48(sp)      // s0 = input_data
+
+    andi         t6, a0, 1       // t6 = temp_index
+    addiu        t6, -1
+    srl          t7, a0, 1       // t7 = image_width1
+    srl          s4, t7, 2
+    andi         t8, t7, 3
+    andi         t9, a0, 2
+    srl          s2, a0, 2
+    srl          t7, t9, 1
+    addu         s2, t7, s2
+    sll          t0, a3, 3       // s2 = width_in_blocks*DCT
+    srl          t7, t0, 1
+    subu         s2, t7, s2
+0:
+    lw           t4, 0(s1)       // t4 = outptr
+    lw           t5, 0(s0)       // t5 = inptr0
+    lw           s7, 4(s0)       // s7 = inptr1
+    li           s6, 1           // s6 = bias
+2:
+    ulw          t0, 0(t5)       // t0 = |P3|P2|P1|P0|
+    ulw          t1, 0(s7)       // t1 = |Q3|Q2|Q1|Q0|
+    ulw          t2, 4(t5)
+    ulw          t3, 4(s7)
+    precrq.ph.w  t7, t0, t1      // t2 = |P3|P2|Q3|Q2|
+    ins          t0, t1, 16, 16  // t0 = |Q1|Q0|P1|P0|
+    raddu.w.qb   t1, t7
+    raddu.w.qb   t0, t0
+    shra_r.w     t1, t1, 2
+    addiu        t0, 1
+    srl          t0, 2
+    precrq.ph.w  t7, t2, t3
+    ins          t2, t3, 16, 16
+    raddu.w.qb   t7, t7
+    raddu.w.qb   t2, t2
+    shra_r.w     t7, t7, 2
+    addiu        t2, 1
+    srl          t2, 2
+    sb           t0, 0(t4)
+    sb           t1, 1(t4)
+    sb           t2, 2(t4)
+    sb           t7, 3(t4)
+    addiu        t4, 4
+    addiu        t5, 8
+    addiu        s4, s4, -1
+    bgtz         s4, 2b
+     addiu       s7, 8
+    beqz         t8, 4f
+     addu        t8, t4, t8
+3:
+    ulhu         t0, 0(t5)
+    ulhu         t1, 0(s7)
+    ins          t0, t1, 16, 16
+    raddu.w.qb   t0, t0
+    addu         t0, t0, s6
+    srl          t0, 2
+    xori         s6, s6, 3
+    sb           t0, 0(t4)
+    addiu        t5, 2
+    addiu        t4, 1
+    bne          t8, t4, 3b
+     addiu       s7, 2
+4:
+    lbux         t1, t6(t5)
+    sll          t1, 1
+    lbux         t0, t6(s7)
+    sll          t0, 1
+    addu         t1, t1, t0
+    addu         t3, t1, s6
+    srl          t0, t3, 2       // t2 = pixval1
+    xori         s6, s6, 3
+    addu         t2, t1, s6
+    srl          t1, t2, 2       // t3 = pixval2
+    blez         s2, 6f
+     append      t1, t0, 8
+5:
+    ush          t1, 0(t4)
+    addiu        s2, -1
+    bgtz         s2, 5b
+     addiu       t4, 2
+6:
+    beqz         t9, 7f
+     nop
+    sb           t0, 0(t4)
+7:
+    addiu        s1, 4
+    addiu        a2, -1
+    bnez         a2, 0b
+     addiu       s0, 8
+8:
+    RESTORE_REGS_FROM_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    j            ra
+     nop
+END(jsimd_h2v2_downsample_mips_dspr2)
+/*****************************************************************************/

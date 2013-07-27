@@ -248,3 +248,242 @@ GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extxbgr, 4, 3, 2, 1, 0
 GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3, 0
 
 /*****************************************************************************/
+/*
+ * jsimd_h2v2_fancy_upsample_mips_dspr2
+ *
+ * Fancy processing for the common case of 2:1 horizontal and 2:1 vertical.
+ */
+LEAF_MIPS_DSPR2(jsimd_h2v2_fancy_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->max_v_samp_factor
+ * a1     - downsampled_width
+ * a2     - input_data
+ * a3     - output_data_ptr
+ */
+
+    SAVE_REGS_ON_STACK 24, s0, s1, s2, s3, s4, s5
+
+    li             s4, 0
+    lw             s2, 0(a3)       // s2 = *output_data_ptr
+0:
+    li             t9, 2
+    lw             s1, -4(a2)      // s1 = inptr1
+
+1:
+    lw             s0, 0(a2)       // s0 = inptr0
+    lwx            s3, s4(s2)
+    addiu          s5, a1, -2      // s5 = downsampled_width - 2
+    srl            t4, s5, 1
+    sll            t4, t4, 1
+    lbu            t0, 0(s0)
+    lbu            t1, 1(s0)
+    lbu            t2, 0(s1)
+    lbu            t3, 1(s1)
+    addiu          s0, 2
+    addiu          s1, 2
+    addu           t8, s0, t4      // t8 = end address
+    andi           s5, s5, 1       // s5 = residual
+    sll            t4, t0, 1
+    sll            t6, t1, 1
+    addu           t0, t0, t4      // t0 = (*inptr0++) * 3
+    addu           t1, t1, t6      // t1 = (*inptr0++) * 3
+    addu           t7, t0, t2      // t7 = thiscolsum
+    addu           t6, t1, t3      // t5 = nextcolsum
+    sll            t0, t7, 2       // t0 = thiscolsum * 4
+    subu           t1, t0, t7      // t1 = thiscolsum * 3
+    shra_r.w       t0, t0, 4
+    addiu          t1, 7
+    addu           t1, t1, t6
+    srl            t1, t1, 4
+    sb             t0, 0(s3)
+    sb             t1, 1(s3)
+    addiu          s3, 2
+2:
+    lh             t0, 0(s0)       // t0 = A3|A2
+    lh             t2, 0(s1)       // t2 = B3|B2
+    addiu          s0, 2
+    addiu          s1, 2
+    preceu.ph.qbr  t0, t0          // t0 = 0|A3|0|A2
+    preceu.ph.qbr  t2, t2          // t2 = 0|B3|0|B2
+    shll.ph        t1, t0, 1
+    sll            t3, t6, 1
+    addu.ph        t0, t1, t0      // t0 = A3*3|A2*3
+    addu           t3, t3, t6      // t3 = this * 3
+    addu.ph        t0, t0, t2      // t0 = next2|next1
+    addu           t1, t3, t7
+    andi           t7, t0, 0xFFFF  // t7 = next1
+    sll            t2, t7, 1
+    addu           t2, t7, t2      // t2 = next1*3
+    addu           t4, t2, t6
+    srl            t6, t0, 16      // t6 = next2
+    shra_r.w       t1, t1, 4       // t1 = (this*3 + last + 8) >> 4
+    addu           t0, t3, t7
+    addiu          t0, 7
+    srl            t0, t0, 4       // t0 = (this*3 + next1 + 7) >> 4
+    shra_r.w       t4, t4, 4       // t3 = (next1*3 + this + 8) >> 4
+    addu           t2, t2, t6
+    addiu          t2, 7
+    srl            t2, t2, 4       // t2 = (next1*3 + next2 + 7) >> 4
+    sb             t1, 0(s3)
+    sb             t0, 1(s3)
+    sb             t4, 2(s3)
+    sb             t2, 3(s3)
+    bne            t8, s0, 2b
+     addiu         s3, 4
+    beqz           s5, 4f
+     addu          t8, s0, s5
+3:
+    lbu            t0, 0(s0)
+    lbu            t2, 0(s1)
+    addiu          s0, 1
+    addiu          s1, 1
+    sll            t3, t6, 1
+    sll            t1, t0, 1
+    addu           t1, t0, t1      // t1 = inptr0 * 3
+    addu           t3, t3, t6      // t3 = thiscolsum * 3
+    addu           t5, t1, t2
+    addu           t1, t3, t7
+    shra_r.w       t1, t1, 4
+    addu           t0, t3, t5
+    addiu          t0, 7
+    srl            t0, t0, 4
+    sb             t1, 0(s3)
+    sb             t0, 1(s3)
+    addiu          s3, 2
+    move           t7, t6
+    bne            t8, s0, 3b
+     move          t6, t5
+4:
+    sll            t0, t6, 2       // t0 = thiscolsum * 4
+    subu           t1, t0, t6      // t1 = thiscolsum * 3
+    addu           t1, t1, t7
+    addiu          s4, 4
+    shra_r.w       t1, t1, 4
+    addiu          t0, 7
+    srl            t0, t0, 4
+    sb             t1, 0(s3)
+    sb             t0, 1(s3)
+    addiu          t9, -1
+    addiu          s3, 2
+    bnez           t9, 1b
+     lw            s1, 4(a2)
+    srl            t0, s4, 2
+    subu           t0, a0, t0
+    bgtz           t0, 0b
+     addiu         a2, 4
+
+    RESTORE_REGS_FROM_STACK 24, s0, s1, s2, s3, s4, s5
+
+    j ra
+     nop
+END(jsimd_h2v2_fancy_upsample_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->max_v_samp_factor
+ * a1     - downsampled_width
+ * a2     - input_data
+ * a3     - output_data_ptr
+ */
+
+    SAVE_REGS_ON_STACK 16, s0, s1, s2, s3
+
+    .set at
+
+    beqz           a0, 3f
+     sll           t0, a0, 2
+    lw             s1, 0(a3)
+    addu           s0, s1, t0
+    li             s3, 0x10001
+0:
+    addiu          t8, a1, -2
+    srl            t9, t8, 2
+    lw             t7, 0(a2)
+    lw             s2, 0(s1)
+    lbu            t0, 0(t7)
+    lbu            t1, 1(t7)   // t1 = inptr[1]
+    sll            t2, t0, 1
+    addu           t2, t2, t0  // t2 = invalue*3
+    addu           t2, t2, t1
+    shra_r.w       t2, t2, 2
+    sb             t0, 0(s2)
+    sb             t2, 1(s2)
+    beqz           t9, 11f
+     addiu         s2, 2
+1:
+    ulw            t0, 0(t7)   // t0 = |P3|P2|P1|P0|
+    ulw            t1, 1(t7)
+    ulh            t2, 4(t7)   // t2 = |0|0|P5|P4|
+    preceu.ph.qbl  t3, t0      // t3 = |0|P3|0|P2|
+    preceu.ph.qbr  t0, t0      // t0 = |0|P1|0|P0|
+    preceu.ph.qbr  t2, t2      // t2 = |0|P5|0|P4|
+    preceu.ph.qbl  t4, t1      // t4 = |0|P4|0|P3|
+    preceu.ph.qbr  t1, t1      // t1 = |0|P2|0|P1|
+    shll.ph        t5, t4, 1
+    shll.ph        t6, t1, 1
+    addu.ph        t5, t5, t4  // t5 = |P4*3|P3*3|
+    addu.ph        t6, t6, t1  // t6 = |P2*3|P1*3|
+    addu.ph        t4, t3, s3
+    addu.ph        t0, t0, s3
+    addu.ph        t4, t4, t5
+    addu.ph        t0, t0, t6
+    shrl.ph        t4, t4, 2   // t4 = |0|P3|0|P2|
+    shrl.ph        t0, t0, 2   // t0 = |0|P1|0|P0|
+    addu.ph        t2, t2, t5
+    addu.ph        t3, t3, t6
+    shra_r.ph      t2, t2, 2   // t2 = |0|P5|0|P4|
+    shra_r.ph      t3, t3, 2   // t3 = |0|P3|0|P2|
+    shll.ph        t2, t2, 8
+    shll.ph        t3, t3, 8
+    or             t2, t4, t2
+    or             t3, t3, t0
+    addiu          t9, -1
+    usw            t3, 0(s2)
+    usw            t2, 4(s2)
+    addiu          s2, 8
+    bgtz           t9, 1b
+     addiu         t7, 4
+11:
+    andi           t8, 3
+    beqz           t8, 3f
+     addiu         t7, 1
+2:
+    lbu            t0, 0(t7)
+    addiu          t7, 1
+    sll            t1, t0, 1
+    addu           t2, t0, t1  // t2 = invalue
+    lbu            t3, -2(t7)
+    lbu            t4, 0(t7)
+    addiu          t3, 1
+    addiu          t4, 2
+    addu           t3, t3, t2
+    addu           t4, t4, t2
+    srl            t3, 2
+    srl            t4, 2
+    sb             t3, 0(s2)
+    sb             t4, 1(s2)
+    addiu          t8, -1
+    bgtz           t8, 2b
+     addiu         s2, 2
+
+    lbu            t0, 0(t7)
+    lbu            t2, -1(t7)
+    sll            t1, t0, 1
+    addu           t1, t1, t0 // t1 = invalue * 3
+    addu           t1, t1, t2
+    addiu          t1, 1
+    srl            t1, t1, 2
+    sb             t1, 0(s2)
+    sb             t0, 1(s2)
+    addiu          s1, 4
+    bne            s1, s0, 0b
+     addiu         a2, 4
+3:
+    RESTORE_REGS_FROM_STACK 16, s0, s1, s2, s3
+
+    j              ra
+     nop
+END(jsimd_h2v1_fancy_upsample_mips_dspr2)
+
+/*****************************************************************************/

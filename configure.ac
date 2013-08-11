@@ -52,14 +52,12 @@ if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib';
       darwin*)
         ;;
       *)
-        case "$host_cpu" in
-          x86_64 | amd64)
-            libdir='${exec_prefix}/lib64'
-            ;;
-          i*86 | x86 | ia32)
-            libdir='${exec_prefix}/lib32'
-            ;;
-        esac
+        AC_CHECK_SIZEOF(long)
+        if test "${ac_cv_sizeof_long}" = "8"; then
+          libdir='${exec_prefix}/lib64'
+        elif test "${ac_cv_sizeof_long}" = "4"; then
+          libdir='${exec_prefix}/lib32'
+        fi
         ;;
     esac
   fi

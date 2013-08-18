@@ -10,6 +10,10 @@ extended to support image scaling.
 MIPS platforms.  This speeds up the compression of full-color JPEGs by 6-17%
 on such platforms and decompression by 3-5%.
 
+[3] Added support for 4:1:1 subsampling in the TurboJPEG API.  This is mainly
+included for compatibility, since 4:1:1 is not fully accelerated in
+libjpeg-turbo and has no significant advantages relative to 4:2:0.
+
 
 1.3.1
 =====

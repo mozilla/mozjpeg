@@ -49,7 +49,7 @@
 /**
  * The number of chrominance subsampling options
  */
-#define TJ_NUMSAMP 5
+#define TJ_NUMSAMP 6
 
 /**
  * Chrominance subsampling options.
@@ -87,7 +87,18 @@ enum TJSAMP
    * chrominance component for every 1x2 block of pixels in the source image.
    * Note that 4:4:0 subsampling is not fully accelerated in libjpeg-turbo.
    */
-  TJSAMP_440
+  TJSAMP_440,
+  /**
+   * 4:1:1 chrominance subsampling.  The JPEG or YUV image will contain one
+   * chrominance component for every 4x1 block of pixels in the source image.
+   * JPEG images compressed with 4:1:1 subsampling will be almost exactly the
+   * same size as those compressed with 4:2:0 subsampling, and in the
+   * aggregate, both subsampling methods produce approximately the same
+   * perceptual quality.  However, 4:1:1 is better able to reproduce sharp
+   * horizontal features.  Note that 4:1:1 subsampling is not fully accelerated
+   * in libjpeg-turbo.
+   */
+  TJSAMP_411
 };
 
 /**
@@ -96,9 +107,10 @@ enum TJSAMP
  * - 8x8 for no subsampling or grayscale
  * - 16x8 for 4:2:2
  * - 8x16 for 4:4:0
- * - 16x16 for 4:2:0 
+ * - 16x16 for 4:2:0
+ * - 32x8 for 4:1:1
  */
-static const int tjMCUWidth[TJ_NUMSAMP]  = {8, 16, 16, 8, 8};
+static const int tjMCUWidth[TJ_NUMSAMP]  = {8, 16, 16, 8, 8, 32};
 
 /**
  * MCU block height (in pixels) for a given level of chrominance subsampling.
@@ -106,9 +118,10 @@ static const int tjMCUWidth[TJ_NUMSAMP]  = {8, 16, 16, 8, 8};
  * - 8x8 for no subsampling or grayscale
  * - 16x8 for 4:2:2
  * - 8x16 for 4:4:0
- * - 16x16 for 4:2:0 
+ * - 16x16 for 4:2:0
+ * - 32x8 for 4:1:1
  */
-static const int tjMCUHeight[TJ_NUMSAMP] = {8, 8, 16, 8, 16};
+static const int tjMCUHeight[TJ_NUMSAMP] = {8, 8, 16, 8, 16, 8};
 
 
 /**

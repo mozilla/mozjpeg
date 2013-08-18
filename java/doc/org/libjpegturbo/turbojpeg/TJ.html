@@ -291,6 +291,14 @@ TurboJPEG utility class (cannot be instantiated)
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>static&nbsp;int</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html#SAMP_411">SAMP_411</A></B></CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:1:1 chrominance subsampling.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;int</CODE></FONT></TD>
 <TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html#SAMP_420">SAMP_420</A></B></CODE>
 
 <BR>
@@ -547,6 +555,25 @@ public static final int <B>SAMP_440</B></PRE>
 <P>
 <DL>
 <DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.SAMP_440">Constant Field Values</A></DL>
+</DL>
+<HR>
+
+<A NAME="SAMP_411"><!-- --></A><H3>
+SAMP_411</H3>
+<PRE>
+public static final int <B>SAMP_411</B></PRE>
+<DL>
+<DD>4:1:1 chrominance subsampling.  The JPEG or YUV image will contain one
+ chrominance component for every 4x1 block of pixels in the source image.
+ JPEG images compressed with 4:1:1 subsampling will be almost exactly the
+ same size as those compressed with 4:2:0 subsampling, and in the
+ aggregate, both subsampling methods produce approximately the same
+ perceptual quality.  However, 4:1:1 is better able to reproduce sharp
+ horizontal features.  Note that 4:1:1 subsampling is not fully accelerated
+ in libjpeg-turbo.
+<P>
+<DL>
+<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.SAMP_411">Constant Field Values</A></DL>
 </DL>
 <HR>
 

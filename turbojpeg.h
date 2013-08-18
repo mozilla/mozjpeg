@@ -85,8 +85,7 @@ enum TJSAMP
   /**
    * 4:4:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 1x2 block of pixels in the source image.
-   * Note that 4:4:0 subsampling is not fully accelerated in the libjpeg-turbo
-   * implementation of TurboJPEG.
+   * Note that 4:4:0 subsampling is not fully accelerated in libjpeg-turbo.
    */
   TJSAMP_440
 };
@@ -265,20 +264,20 @@ static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4};
 #define TJFLAG_NOREALLOC     1024
 /**
  * Use the fastest DCT/IDCT algorithm available in the underlying codec.  The
- * default if this flag is not specified is implementation-specific.  The
- * libjpeg implementation, for example, uses the fast algorithm by default when
- * compressing, because this has been shown to have only a very slight effect
- * on accuracy, but it uses the accurate algorithm when decompressing, because
- * this has been shown to have a larger effect.
+ * default if this flag is not specified is implementation-specific.  For
+ * example, the implementation of TurboJPEG for libjpeg[-turbo] uses the fast
+ * algorithm by default when compressing, because this has been shown to have
+ * only a very slight effect on accuracy, but it uses the accurate algorithm
+ * when decompressing, because this has been shown to have a larger effect.
  */
 #define TJFLAG_FASTDCT       2048
 /**
  * Use the most accurate DCT/IDCT algorithm available in the underlying codec.
- * The default if this flag is not specified is implementation-specific.  The
- * libjpeg implementation, for example, uses the fast algorithm by default when
- * compressing, because this has been shown to have only a very slight effect
- * on accuracy, but it uses the accurate algorithm when decompressing, because
- * this has been shown to have a larger effect.
+ * The default if this flag is not specified is implementation-specific.  For
+ * example, the implementation of TurboJPEG for libjpeg[-turbo] uses the fast
+ * algorithm by default when compressing, because this has been shown to have
+ * only a very slight effect on accuracy, but it uses the accurate algorithm
+ * when decompressing, because this has been shown to have a larger effect.
  */
 #define TJFLAG_ACCURATEDCT   4096
 

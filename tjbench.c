@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -686,6 +686,7 @@ void usage(char *progname)
 	printf("     codec\n");
 	printf("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the\n");
 	printf("     underlying codec\n");
+	printf("-440 = Test 4:4:0 chrominance subsampling instead of 4:2:2\n");
 	printf("-quiet = Output results in tabular rather than verbose format\n");
 	printf("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG\n");
 	printf("-yuvdecode = Decode JPEG image to planar YUV rather than RGB\n");
@@ -719,7 +720,7 @@ int main(int argc, char *argv[])
 {
 	unsigned char *srcbuf=NULL;  int w, h, i, j;
 	int minqual=-1, maxqual=-1;  char *temp;
-	int minarg=2;  int retval=0;
+	int minarg=2, retval=0, do440=0;
 
 	if((scalingfactors=tjGetScalingFactors(&nsf))==NULL || nsf==0)
 		_throwtj("executing tjGetScalingFactors()");
@@ -810,6 +811,7 @@ int main(int argc, char *argv[])
 				printf("Using most accurate DCT/IDCT algorithm\n\n");
 				flags|=TJFLAG_ACCURATEDCT;
 			}
+			if(!strcmp(argv[i], "-440")) do440=1;
 			if(!strcasecmp(argv[i], "-rgb")) pf=TJPF_RGB;
 			if(!strcasecmp(argv[i], "-rgbx")) pf=TJPF_RGBX;
 			if(!strcasecmp(argv[i], "-bgr")) pf=TJPF_BGR;
@@ -902,7 +904,7 @@ int main(int argc, char *argv[])
 		dotest(srcbuf, w, h, TJ_420, i, argv[1]);
 	printf("\n");
 	for(i=maxqual; i>=minqual; i--)
-		dotest(srcbuf, w, h, TJ_422, i, argv[1]);
+		dotest(srcbuf, w, h, do440? TJSAMP_440:TJ_422, i, argv[1]);
 	printf("\n");
 	for(i=maxqual; i>=minqual; i--)
 		dotest(srcbuf, w, h, TJ_444, i, argv[1]);

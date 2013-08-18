@@ -61,6 +61,7 @@ public final class TJ {
   /**
    * 4:4:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 1x2 block of pixels in the source image.
+   * Note that 4:4:0 subsampling is not fully accelerated in libjpeg-turbo.
    */
   public static final int SAMP_440  = 4;
 
@@ -300,21 +301,21 @@ public final class TJ {
   public static final int FLAG_FASTUPSAMPLE = 256;
   /**
    * Use the fastest DCT/IDCT algorithm available in the underlying codec.  The
-   * default if this flag is not specified is implementation-specific.  The
-   * libjpeg implementation, for example, uses the fast algorithm by default
-   * when compressing, because this has been shown to have only a very slight
-   * effect on accuracy, but it uses the accurate algorithm when decompressing,
-   * because this has been shown to have a larger effect.
+   * default if this flag is not specified is implementation-specific.  For
+   * example, the implementation of TurboJPEG for libjpeg[-turbo] uses the fast
+   * algorithm by default when compressing, because this has been shown to have
+   * only a very slight effect on accuracy, but it uses the accurate algorithm
+   * when decompressing, because this has been shown to have a larger effect.
    */
   public static final int FLAG_FASTDCT      =  2048;
   /**
    * Use the most accurate DCT/IDCT algorithm available in the underlying
    * codec.  The default if this flag is not specified is
-   * implementation-specific.  The libjpeg implementation, for example, uses
-   * the fast algorithm by default when compressing, because this has been
-   * shown to have only a very slight effect on accuracy, but it uses the
-   * accurate algorithm when decompressing, because this has been shown to have
-   * a larger effect.
+   * implementation-specific.  For example, the implementation of TurboJPEG for
+   * libjpeg[-turbo] uses the fast algorithm by default when compressing,
+   * because this has been shown to have only a very slight effect on accuracy,
+   * but it uses the accurate algorithm when decompressing, because this has
+   * been shown to have a larger effect.
    */
   public static final int FLAG_ACCURATEDCT  =  4096;
 

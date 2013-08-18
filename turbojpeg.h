@@ -85,6 +85,8 @@ enum TJSAMP
   /**
    * 4:4:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 1x2 block of pixels in the source image.
+   * Note that 4:4:0 subsampling is not fully accelerated in the libjpeg-turbo
+   * implementation of TurboJPEG.
    */
   TJSAMP_440
 };

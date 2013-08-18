@@ -53,10 +53,10 @@ public class TJUnitTest {
   }
 
   private static final String[] subNameLong = {
-    "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"
+    "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
   };
   private static final String[] subName = {
-    "444", "422", "420", "GRAY", "440"
+    "444", "422", "420", "GRAY", "440", "411"
   };
 
   private static final String[] pixFormatStr = {
@@ -762,7 +762,10 @@ public class TJUnitTest {
       int num = sf[i].getNum();
       int denom = sf[i].getDenom();
       if (subsamp == TJ.SAMP_444 || subsamp == TJ.SAMP_GRAY ||
-          (num == 1 && (denom == 4 || denom == 2 || denom == 1)))
+          (subsamp == TJ.SAMP_411 && num == 1 &&
+           (denom == 2 || denom == 1)) ||
+          (subsamp != TJ.SAMP_411 && num == 1 &&
+           (denom == 4 || denom == 2 || denom == 1)))
         decompTest(tjd, jpegBuf, jpegSize, w, h, pf, baseName, subsamp,
                    flags, sf[i]);
     }
@@ -788,7 +791,7 @@ public class TJUnitTest {
         for (int i = 0; i < 2; i++) {
           int flags = 0;
           if (subsamp == TJ.SAMP_422 || subsamp == TJ.SAMP_420 ||
-              subsamp == TJ.SAMP_440)
+              subsamp == TJ.SAMP_440 || subsamp == TJ.SAMP_411)
             flags |= TJ.FLAG_FASTUPSAMPLE;
           if (i == 1) {
             if (yuv == YUVDECODE) {
@@ -894,10 +897,14 @@ public class TJUnitTest {
              testName);
       doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_440,
              testName);
-      doTest(35, 39, bi ? onlyGrayBI : onlyGray, TJ.SAMP_GRAY, testName);
-      doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
+      doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_411,
              testName);
-      doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,
+      doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_411,
+             testName);
+      doTest(39, 41, bi ? onlyGrayBI : onlyGray, TJ.SAMP_GRAY, testName);
+      doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
+             testName);
+      doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,
              testName);
       if (!doyuv && !bi)
         bufSizeTest();
@@ -911,10 +918,12 @@ public class TJUnitTest {
         doTest(41, 35, onlyRGB, TJ.SAMP_420, "javatest_yuv1");
         doTest(48, 48, onlyRGB, TJ.SAMP_440, "javatest_yuv0");
         doTest(35, 39, onlyRGB, TJ.SAMP_440, "javatest_yuv1");
+        doTest(48, 48, onlyRGB, TJ.SAMP_411, "javatest_yuv0");
+        doTest(39, 41, onlyRGB, TJ.SAMP_411, "javatest_yuv1");
         doTest(48, 48, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv0");
-        doTest(35, 39, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv1");
+        doTest(41, 35, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv1");
         doTest(48, 48, onlyGray, TJ.SAMP_GRAY, "javatest_yuv0");
-        doTest(39, 41, onlyGray, TJ.SAMP_GRAY, "javatest_yuv1");
+        doTest(35, 39, onlyGray, TJ.SAMP_GRAY, "javatest_yuv1");
       }
     } catch(Exception e) {
       e.printStackTrace();

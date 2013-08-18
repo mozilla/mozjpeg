@@ -37,7 +37,7 @@ public final class TJ {
   /**
    * The number of chrominance subsampling options
    */
-  public static final int NUMSAMP   = 5;
+  public static final int NUMSAMP   = 6;
   /**
    * 4:4:4 chrominance subsampling (no chrominance subsampling).  The JPEG
    * or YUV image will contain one chrominance component for every pixel in the
@@ -64,6 +64,17 @@ public final class TJ {
    * Note that 4:4:0 subsampling is not fully accelerated in libjpeg-turbo.
    */
   public static final int SAMP_440  = 4;
+  /**
+   * 4:1:1 chrominance subsampling.  The JPEG or YUV image will contain one
+   * chrominance component for every 4x1 block of pixels in the source image.
+   * JPEG images compressed with 4:1:1 subsampling will be almost exactly the
+   * same size as those compressed with 4:2:0 subsampling, and in the
+   * aggregate, both subsampling methods produce approximately the same
+   * perceptual quality.  However, 4:1:1 is better able to reproduce sharp
+   * horizontal features.  Note that 4:1:1 subsampling is not fully accelerated
+   * in libjpeg-turbo.
+   */
+  public static final int SAMP_411  = 5;
 
 
   /**
@@ -82,7 +93,7 @@ public final class TJ {
   }
 
   private static final int[] mcuWidth = {
-    8, 16, 16, 8, 8
+    8, 16, 16, 8, 8, 32
   };
 
 
@@ -103,7 +114,7 @@ public final class TJ {
   }
 
   private static final int[] mcuHeight = {
-    8, 8, 16, 8, 16
+    8, 8, 16, 8, 16, 8
   };
 
 

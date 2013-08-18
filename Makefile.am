@@ -314,6 +314,11 @@ testclean:
 	rm -f *_440_*.ppm
 	rm -f *_440_*.jpg
 	rm -f *_440.yuv
+	rm -f *_411_*.bmp
+	rm -f *_411_*.png
+	rm -f *_411_*.ppm
+	rm -f *_411_*.jpg
+	rm -f *_411.yuv
 
 
 tjtest:

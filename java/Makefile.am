@@ -62,7 +62,7 @@ headers: all
 
 docs: all
 	mkdir -p ${srcdir}/doc; \
-	javadoc -d ${srcdir}/doc -sourcepath ${srcdir} org.libjpegturbo.turbojpeg
+	javadoc -notimestamp -d ${srcdir}/doc -sourcepath ${srcdir} org.libjpegturbo.turbojpeg
 
 endif
 

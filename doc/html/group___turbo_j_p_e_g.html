@@ -178,7 +178,8 @@ Enumerations</h2></td></tr>
 <a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a63085dbf683cfe39e513cdb6343e3737">TJSAMP_420</a>, 
 <a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a3f1c9504842ddc7a48d0f690754b6248">TJSAMP_GRAY</a>, 
 <br/>
-&#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074accf740e6f3aa6ba20ba922cad13cb974">TJSAMP_440</a>
+&#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074accf740e6f3aa6ba20ba922cad13cb974">TJSAMP_440</a>, 
+<a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a28ec62575e5ea295c3fde3001dc628e2">TJSAMP_411</a>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga1d047060ea80bb9820d540bb928e9074"><td class="mdescLeft">&#160;</td><td class="mdescRight">Chrominance subsampling options.  <a href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">More...</a><br/></td></tr>
@@ -705,6 +706,10 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="gga1d047060ea80bb9820d540bb928e9074accf740e6f3aa6ba20ba922cad13cb974"></a>TJSAMP_440</em>&nbsp;</td><td class="fielddoc">
 <p>4:4:0 chrominance subsampling. </p>
 <p>The JPEG or YUV image will contain one chrominance component for every 1x2 block of pixels in the source image. Note that 4:4:0 subsampling is not fully accelerated in libjpeg-turbo. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga1d047060ea80bb9820d540bb928e9074a28ec62575e5ea295c3fde3001dc628e2"></a>TJSAMP_411</em>&nbsp;</td><td class="fielddoc">
+<p>4:1:1 chrominance subsampling. </p>
+<p>The JPEG or YUV image will contain one chrominance component for every 4x1 block of pixels in the source image. JPEG images compressed with 4:1:1 subsampling will be almost exactly the same size as those compressed with 4:2:0 subsampling, and in the aggregate, both subsampling methods produce approximately the same perceptual quality. However, 4:1:1 is better able to reproduce sharp horizontal features. Note that 4:1:1 subsampling is not fully accelerated in libjpeg-turbo. </p>
 </td></tr>
 </table>
 
@@ -1612,7 +1617,8 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 <li>8x8 for no subsampling or grayscale</li>
 <li>16x8 for 4:2:2</li>
 <li>8x16 for 4:4:0</li>
-<li>16x16 for 4:2:0 </li>
+<li>16x16 for 4:2:0</li>
+<li>32x8 for 4:1:1 </li>
 </ul>
 
 </div>
@@ -1641,7 +1647,8 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 <li>8x8 for no subsampling or grayscale</li>
 <li>16x8 for 4:2:2</li>
 <li>8x16 for 4:4:0</li>
-<li>16x16 for 4:2:0 </li>
+<li>16x16 for 4:2:0</li>
+<li>32x8 for 4:1:1 </li>
 </ul>
 
 </div>

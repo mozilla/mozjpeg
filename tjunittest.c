@@ -61,9 +61,9 @@ void usage(char *progName)
 
 const char *subNameLong[TJ_NUMSAMP]=
 {
-	"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"
+	"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
 };
-const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440"};
+const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440", "411"};
 
 const char *pixFormatStr[TJ_NUMPF]=
 {
@@ -472,7 +472,10 @@ void decompTest(tjhandle handle, unsigned char *jpegBuf,
 	for(i=0; i<n; i++)
 	{
 		if(subsamp==TJSAMP_444 || subsamp==TJSAMP_GRAY ||
-			(sf[i].num==1 && (sf[i].denom==4 || sf[i].denom==2 || sf[i].denom==1)))
+			(subsamp==TJSAMP_411 && sf[i].num==1 &&
+				(sf[i].denom==2 || sf[i].denom==1)) ||
+			(subsamp!=TJSAMP_411 && sf[i].num==1 &&
+				(sf[i].denom==4 || sf[i].denom==2 || sf[i].denom==1)))
 			_decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp,
 				flags, sf[i]);
 	}
@@ -505,7 +508,8 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 		for(i=0; i<2; i++)
 		{
 			int flags=0;
-			if(subsamp==TJSAMP_422 || subsamp==TJSAMP_420 || subsamp==TJSAMP_440)
+			if(subsamp==TJSAMP_422 || subsamp==TJSAMP_420 || subsamp==TJSAMP_440 ||
+				subsamp==TJSAMP_411)
 				flags|=TJFLAG_FASTUPSAMPLE;
 			if(i==1)
 			{
@@ -631,9 +635,11 @@ int main(int argc, char *argv[])
 	doTest(41, 35, _4byteFormats, 4, TJSAMP_420, "test");
 	doTest(35, 39, _3byteFormats, 2, TJSAMP_440, "test");
 	doTest(39, 41, _4byteFormats, 4, TJSAMP_440, "test");
-	doTest(35, 39, _onlyGray, 1, TJSAMP_GRAY, "test");
-	doTest(39, 41, _3byteFormats, 2, TJSAMP_GRAY, "test");
-	doTest(41, 35, _4byteFormats, 4, TJSAMP_GRAY, "test");
+	doTest(41, 35, _3byteFormats, 2, TJSAMP_411, "test");
+	doTest(35, 39, _4byteFormats, 4, TJSAMP_411, "test");
+	doTest(39, 41, _onlyGray, 1, TJSAMP_GRAY, "test");
+	doTest(41, 35, _3byteFormats, 2, TJSAMP_GRAY, "test");
+	doTest(35, 39, _4byteFormats, 4, TJSAMP_GRAY, "test");
 	if(!doyuv) bufSizeTest();
 	if(doyuv)
 	{
@@ -646,10 +652,12 @@ int main(int argc, char *argv[])
 		doTest(41, 35, _onlyRGB, 1, TJSAMP_420, "test_yuv1");
 		doTest(48, 48, _onlyRGB, 1, TJSAMP_440, "test_yuv0");
 		doTest(35, 39, _onlyRGB, 1, TJSAMP_440, "test_yuv1");
+		doTest(48, 48, _onlyRGB, 1, TJSAMP_411, "test_yuv0");
+		doTest(39, 41, _onlyRGB, 1, TJSAMP_411, "test_yuv1");
 		doTest(48, 48, _onlyRGB, 1, TJSAMP_GRAY, "test_yuv0");
-		doTest(35, 39, _onlyRGB, 1, TJSAMP_GRAY, "test_yuv1");
+		doTest(41, 35, _onlyRGB, 1, TJSAMP_GRAY, "test_yuv1");
 		doTest(48, 48, _onlyGray, 1, TJSAMP_GRAY, "test_yuv0");
-		doTest(39, 41, _onlyGray, 1, TJSAMP_GRAY, "test_yuv1");
+		doTest(35, 39, _onlyGray, 1, TJSAMP_GRAY, "test_yuv1");
 	}
 
 	return exitStatus;

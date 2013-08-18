@@ -87,7 +87,7 @@ typedef struct _tjinstance
 	int init;
 } tjinstance;
 
-static const int pixelsize[TJ_NUMSAMP]={3, 3, 3, 1, 3};
+static const int pixelsize[TJ_NUMSAMP]={3, 3, 3, 1, 3, 3};
 
 static const JXFORM_CODE xformtypes[TJ_NUMXOP]=
 {

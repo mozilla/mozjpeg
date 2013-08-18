@@ -54,9 +54,9 @@ const char *pixFormatStr[TJ_NUMPF]=
 };
 const char *subNameLong[TJ_NUMSAMP]=
 {
-	"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0"
+	"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
 };
-const char *subName[NUMSUBOPT]={"444", "422", "420", "GRAY", "440"};
+const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440", "411"};
 tjscalingfactor *scalingfactors=NULL, sf={1, 1};  int nsf=0;
 int xformop=TJXOP_NONE, xformopt=0;
 int (*customFilter)(short *, tjregion, tjregion, int, int, tjtransform *);
@@ -686,6 +686,7 @@ void usage(char *progname)
 	printf("     codec\n");
 	printf("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the\n");
 	printf("     underlying codec\n");
+	printf("-411 = Test 4:1:1 chrominance subsampling instead of 4:2:0\n");
 	printf("-440 = Test 4:4:0 chrominance subsampling instead of 4:2:2\n");
 	printf("-quiet = Output results in tabular rather than verbose format\n");
 	printf("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG\n");
@@ -720,7 +721,7 @@ int main(int argc, char *argv[])
 {
 	unsigned char *srcbuf=NULL;  int w, h, i, j;
 	int minqual=-1, maxqual=-1;  char *temp;
-	int minarg=2, retval=0, do440=0;
+	int minarg=2, retval=0, do440=0, do411=0;
 
 	if((scalingfactors=tjGetScalingFactors(&nsf))==NULL || nsf==0)
 		_throwtj("executing tjGetScalingFactors()");
@@ -858,6 +859,7 @@ int main(int argc, char *argv[])
 			if(!strcmp(argv[i], "-?")) usage(argv[0]);
 			if(!strcasecmp(argv[i], "-alloc")) flags&=(~TJFLAG_NOREALLOC);
 			if(!strcasecmp(argv[i], "-bmp")) ext="bmp";
+			if(!strcasecmp(argv[i], "-411")) do411=1;
 		}
 	}
 
@@ -901,7 +903,7 @@ int main(int argc, char *argv[])
 		dotest(srcbuf, w, h, TJ_GRAYSCALE, i, argv[1]);
 	printf("\n");
 	for(i=maxqual; i>=minqual; i--)
-		dotest(srcbuf, w, h, TJ_420, i, argv[1]);
+		dotest(srcbuf, w, h, do411? TJSAMP_411:TJ_420, i, argv[1]);
 	printf("\n");
 	for(i=maxqual; i>=minqual; i--)
 		dotest(srcbuf, w, h, do440? TJSAMP_440:TJ_422, i, argv[1]);

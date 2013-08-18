@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -600,6 +600,7 @@ class TJBench {
     System.out.println("     codec");
     System.out.println("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the");
     System.out.println("     underlying codec");
+    System.out.println("-440 = Test 4:4:0 chrominance subsampling instead of 4:2:2");
     System.out.println("-quiet = Output results in tabular rather than verbose format");
     System.out.println("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG");
     System.out.println("-yuvdecode = Decode JPEG image to planar YUV rather than RGB");
@@ -636,6 +637,7 @@ class TJBench {
     byte[] srcBuf = null;  int w = 0, h = 0;
     int minQual = -1, maxQual = -1;
     int minArg = 1;  int retval = 0;
+    boolean do440 = false;
 
     try {
 
@@ -713,6 +715,8 @@ class TJBench {
             System.out.println("Using most accurate DCT/IDCT algorithm\n");
             flags |= TJ.FLAG_ACCURATEDCT;
           }
+          if (argv[i].equals("-440"))
+            do440 = true;
           if (argv[i].equalsIgnoreCase("-rgb"))
             pf = TJ.PF_RGB;
           if (argv[i].equalsIgnoreCase("-rgbx"))
@@ -834,7 +838,7 @@ class TJBench {
       System.out.println("");
       System.gc();
       for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, TJ.SAMP_422, i, argv[0]);
+        doTest(srcBuf, w, h, do440 ? TJ.SAMP_440 : TJ.SAMP_422, i, argv[0]);
       System.out.println("");
       System.gc();
       for (int i = maxQual; i >= minQual; i--)

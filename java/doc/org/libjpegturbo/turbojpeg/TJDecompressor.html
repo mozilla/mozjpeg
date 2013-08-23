@@ -358,6 +358,15 @@ TurboJPEG decompressor
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;int</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getColorspace()">getColorspace</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the colorspace used in the JPEG image associated with this
+ decompressor instance.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;int</CODE></FONT></TD>
 <TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getHeight()">getHeight</A></B>()</CODE>
 
 <BR>
@@ -656,12 +665,31 @@ public int <B>getSubsamp</B>()
                throws java.lang.Exception</PRE>
 <DL>
 <DD>Returns the level of chrominance subsampling used in the JPEG image
- associated with this decompressor instance.
+ associated with this decompressor instance.  See <A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><CODE>TJ.SAMP_*</CODE></A>.
 <P>
 <DD><DL>
 
 <DT><B>Returns:</B><DD>the level of chrominance subsampling used in the JPEG image
  associated with this decompressor instance
+<DT><B>Throws:</B>
+<DD><CODE>java.lang.Exception</CODE></DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getColorspace()"><!-- --></A><H3>
+getColorspace</H3>
+<PRE>
+public int <B>getColorspace</B>()
+                  throws java.lang.Exception</PRE>
+<DL>
+<DD>Returns the colorspace used in the JPEG image associated with this
+ decompressor instance.  See <A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><CODE>TJ.CS_*</CODE></A>.
+<P>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>the colorspace used in the JPEG image associated with this
+ decompressor instance
 <DT><B>Throws:</B>
 <DD><CODE>java.lang.Exception</CODE></DL>
 </DD>

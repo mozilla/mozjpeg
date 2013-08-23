@@ -52,6 +52,10 @@ class TJBench {
     "444", "422", "420", "GRAY", "440", "411"
   };
 
+  static final String[] csName = {
+    "RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
+  };
+
   static TJScalingFactor sf;
   static int xformOp = TJTransform.OP_NONE, xformOpt = 0;
   static double benchTime = 5.0;
@@ -59,6 +63,16 @@ class TJBench {
 
   static final double getTime() {
     return (double)System.nanoTime() / 1.0e9;
+  }
+
+
+  static String formatName(int subsamp, int cs) {
+    if (cs == TJ.CS_YCbCr)
+      return subNameLong[subsamp];
+    else if (cs == TJ.CS_YCCK)
+      return csName[cs] + " " + subNameLong[subsamp];
+    else
+      return csName[cs];
   }
 
 
@@ -417,7 +431,7 @@ class TJBench {
     byte[] srcBuf;
     int[] jpegSize;
     int totalJpegSize;
-    int w = 0, h = 0, subsamp = -1, _w, _h, _tilew, _tileh,
+    int w = 0, h = 0, subsamp = -1, cs = -1, _w, _h, _tilew, _tileh,
       _ntilesw, _ntilesh, _subsamp, x, y;
     int ntilesw = 1, ntilesh = 1;
     double start, elapsed;
@@ -439,17 +453,22 @@ class TJBench {
     w = tjt.getWidth();
     h = tjt.getHeight();
     subsamp = tjt.getSubsamp();
+    cs = tjt.getColorspace();
 
     if (quiet == 1) {
       System.out.println("All performance values in Mpixels/sec\n");
-      System.out.format("Bitmap\tBitmap\tJPEG\t%s %s \tXform\tComp\tDecomp\n",
+      System.out.format("Bitmap\tBitmap\tJPEG\tJPEG\t%s %s \tXform\tComp\tDecomp\n",
                         (doTile ? "Tile " : "Image"),
                         (doTile ? "Tile " : "Image"));
-      System.out.println("Format\tOrder\tSubsamp\tWidth Height\tPerf \tRatio\tPerf\n");
+      System.out.println("Format\tOrder\tCS\tSubsamp\tWidth Height\tPerf \tRatio\tPerf\n");
     } else if (quiet == 0) {
-      System.out.format(">>>>>  JPEG %s --> %s (%s)  <<<<<",
-        subNameLong[subsamp], pixFormatStr[pf],
-        (flags & TJ.FLAG_BOTTOMUP) != 0 ? "Bottom-up" : "Top-down");
+      if (yuv == YUVDECODE)
+        System.out.format(">>>>>  JPEG %s --> YUV  <<<<<",
+          formatName(subsamp, cs));
+      else
+        System.out.format(">>>>>  JPEG %s --> %s (%s)  <<<<<",
+          formatName(subsamp, cs), pixFormatStr[pf],
+          (flags & TJ.FLAG_BOTTOMUP) != 0 ? "Bottom-up" : "Top-down");
     }
 
     for (int tilew = doTile ? 16 : w, tileh = doTile ? 16 : h; ;
@@ -470,9 +489,9 @@ class TJBench {
                             sf.getScaled(_h));
         System.out.println("");
       } else if (quiet == 1) {
-        System.out.format("%s\t%s\t%s\t", pixFormatStr[pf],
+        System.out.format("%s\t%s\t%s\t%s\t", pixFormatStr[pf],
                           (flags & TJ.FLAG_BOTTOMUP) != 0 ? "BU" : "TD",
-                          subNameLong[subsamp]);
+                          csName[cs], subNameLong[subsamp]);
         System.out.format("%-4d  %-4d\t", tilew, tileh);
       }
 

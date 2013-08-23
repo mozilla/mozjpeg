@@ -369,6 +369,10 @@ public class TJDecompressor {
    * that, if the width or height of the image is not an even multiple of the
    * MCU block size (see {@link TJ#getMCUWidth} and {@link TJ#getMCUHeight}),
    * then an intermediate buffer copy will be performed within TurboJPEG.
+   * <p>
+   * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+   * convention of the digital video community, the TurboJPEG API uses "YUV" to
+   * refer to an image format consisting of Y, Cb, and Cr image planes.
    *
    * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer

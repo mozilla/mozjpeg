@@ -155,7 +155,13 @@ public class TJCompressor {
 
   /**
    * Set the level of chrominance subsampling for subsequent compress/encode
-   * operations.
+   * operations.  When pixels are converted from RGB to YCbCr (see
+   * {@link TJ#CS_YCbCr}) or from CMYK to YCCK (see {@link TJ#CS_YCCK}) as part
+   * of the JPEG compression process, some of the Cb and Cr (chrominance)
+   * components can be discarded or averaged together to produce a smaller
+   * image with little perceptible loss of image clarity (the human eye is more
+   * sensitive to small changes in brightness than to small changes in color.)
+   * This is called "chrominance subsampling".
    *
    * @param newSubsamp the new level of chrominance subsampling (one of
    * {@link TJ TJ.SAMP_*})
@@ -351,14 +357,18 @@ public class TJCompressor {
    * instance and output a YUV planar image to the given destination buffer.
    * This method uses the accelerated color conversion routines in TurboJPEG's
    * underlying codec but does not execute any of the other steps in the JPEG
-   * compression process.  The Y, U, and V image planes are stored sequentially
-   * into the destination buffer, and the size of each plane is determined by
-   * the width and height of the source image, as well as the specified padding
-   * and level of chrominance subsampling.  If the chrominance components are
-   * subsampled along the horizontal dimension, then the width of the luminance
-   * plane is padded to the nearest multiple of 2 in the output image (same
-   * goes for the height of the luminance plane, if the chrominance components
-   * are subsampled along the vertical dimension.)
+   * compression process.  The Y, U (Cb), and V (Cr) image planes are stored
+   * sequentially into the destination buffer, and the size of each plane is
+   * determined by the width and height of the source image, as well as the
+   * specified padding and level of chrominance subsampling.  If the
+   * chrominance components are subsampled along the horizontal dimension, then
+   * the width of the luminance plane is padded to the nearest multiple of 2 in
+   * the output image (same goes for the height of the luminance plane, if the
+   * chrominance components are subsampled along the vertical dimension.)
+   * <p>
+   * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+   * convention of the digital video community, the TurboJPEG API uses "YUV" to
+   * refer to an image format consisting of Y, Cb, and Cr image planes.
    *
    * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer

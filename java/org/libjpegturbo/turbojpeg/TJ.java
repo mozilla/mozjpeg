@@ -192,18 +192,19 @@ public final class TJ {
    */
   public static final int PF_ARGB = 10;
   /**
-   * CMYK pixel format.  Unlike RGB, which is a display colorspace,
-   * CMYK (Cyan/Magenta/Yellow/Key) is a print colorspace in which the
-   * value of each color component corresponds to the amount of cyan, magenta,
-   * yellow, or black ink that is applied to a white background.  In order to
-   * convert between CMYK and RGB, it is necessary to use a color management
-   * system (CMS.)  A CMS will attempt to map colors within the printer's gamut
-   * to perceptually similar colors in the display's gamut and vice versa, but
-   * the mapping is typically not 1:1 or reversible, nor can it be defined with
-   * a simple formula.  Thus, such a conversion is out of scope for a codec
-   * library.  However, the TurboJPEG API allows for compressing CMYK pixels
-   * into a YCCK JPEG image (see {@link #CS_YCCK}) and decompressing YCCK JPEG
-   * images into CMYK pixels.
+   * CMYK pixel format.  Unlike RGB, which is an additive color model used
+   * primarily for display, CMYK (Cyan/Magenta/Yellow/Key) is a subtractive
+   * color model used primarily for printing.  In the CMYK color model, the
+   * value of each color component typically corresponds to an amount of cyan,
+   * magenta, yellow, or black ink that is applied to a white background.  In
+   * order to convert between CMYK and RGB, it is necessary to use a color
+   * management system (CMS.)  A CMS will attempt to map colors within the
+   * printer's gamut to perceptually similar colors in the display's gamut and
+   * vice versa, but the mapping is typically not 1:1 or reversible, nor can it
+   * be defined with a simple formula.  Thus, such a conversion is out of scope
+   * for a codec library.  However, the TurboJPEG API allows for compressing
+   * CMYK pixels into a YCCK JPEG image (see {@link #CS_YCCK}) and
+   * decompressing YCCK JPEG images into CMYK pixels.
    */
   public static final int PF_CMYK = 11;
 

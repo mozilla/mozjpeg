@@ -53,16 +53,16 @@
 
 /**
  * Chrominance subsampling options.
- * When pixels are converted from the RGB colorspace to YCbCr (see #TJCS_YCbCr)
- * or from the CMYK colorspace to YCCK (see #TJCS_YCCK) as part of the JPEG
- * compression process, some of the Cb and Cr (chrominance) components can be
- * discarded or averaged together to produce a smaller image with little
- * perceptible loss of image clarity (the human eye is more sensitive to small
- * changes in brightness than small changes in color.)  This is called
- * "chrominance subsampling".  (NOTE:  In common usage, "YCbCr" and "YUV" have
- * come to mean the same thing.  The convention within the TurboJPEG API is to
- * use "YUV" to refer to an image format consisting of Y, Cb, and Cr image
- * planes, per the convention of the digital video community.)
+ * When pixels are converted from RGB to YCbCr (see #TJCS_YCbCr) or from CMYK
+ * to YCCK (see #TJCS_YCCK) as part of the JPEG compression process, some of
+ * the Cb and Cr (chrominance) components can be discarded or averaged together
+ * to produce a smaller image with little perceptible loss of image clarity
+ * (the human eye is more sensitive to small changes in brightness than to
+ * small changes in color.)  This is called "chrominance subsampling".
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  */
 enum TJSAMP
 {
@@ -208,18 +208,19 @@ enum TJPF
    */
   TJPF_ARGB,
   /**
-   * CMYK pixel format.  Unlike RGB, which is a display colorspace,
-   * CMYK (Cyan/Magenta/Yellow/Key) is a print colorspace in which the
-   * value of each color component corresponds to the amount of cyan, magenta,
-   * yellow, or black ink that is applied to a white background.  In order to
-   * convert between CMYK and RGB, it is necessary to use a color management
-   * system (CMS.)  A CMS will attempt to map colors within the printer's gamut
-   * to perceptually similar colors in the display's gamut and vice versa, but
-   * the mapping is typically not 1:1 or reversible, nor can it be defined with
-   * a simple formula.  Thus, such a conversion is out of scope for a codec
-   * library.  However, the TurboJPEG API allows for compressing CMYK pixels
-   * into a YCCK JPEG image (see #TJCS_YCCK) and decompressing YCCK JPEG images
-   * into CMYK pixels.
+   * CMYK pixel format.  Unlike RGB, which is an additive color model used
+   * primarily for display, CMYK (Cyan/Magenta/Yellow/Key) is a subtractive
+   * color model used primarily for printing.  In the CMYK color model, the
+   * value of each color component typically corresponds to an amount of cyan,
+   * magenta, yellow, or black ink that is applied to a white background.  In
+   * order to convert between CMYK and RGB, it is necessary to use a color
+   * management system (CMS.)  A CMS will attempt to map colors within the
+   * printer's gamut to perceptually similar colors in the display's gamut and
+   * vice versa, but the mapping is typically not 1:1 or reversible, nor can it
+   * be defined with a simple formula.  Thus, such a conversion is out of scope
+   * for a codec library.  However, the TurboJPEG API allows for compressing
+   * CMYK pixels into a YCCK JPEG image (see #TJCS_YCCK) and decompressing YCCK
+   * JPEG images into CMYK pixels.
    */
   TJPF_CMYK
 };
@@ -700,14 +701,18 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
  * Encode an RGB or grayscale image into a YUV planar image.  This function
  * uses the accelerated color conversion routines in TurboJPEG's underlying
  * codec but does not execute any of the other steps in the JPEG compression
- * process.  The Y, U, and V image planes are stored sequentially into the
- * destination buffer, and the size of each plane is determined by the width
- * and height of the source image, as well as the specified padding and level
- * of chrominance subsampling.  If the chrominance components are subsampled
- * along the horizontal dimension, then the width of the luminance plane is
- * padded to the nearest multiple of 2 in the output image (same goes for the
- * height of the luminance plane, if the chrominance components are subsampled
- * along the vertical dimension.)
+ * process.  The Y, U (Cb), and V (Cr) image planes are stored sequentially
+ * into the destination buffer, and the size of each plane is determined by the
+ * width and height of the source image, as well as the specified padding and
+ * level of chrominance subsampling.  If the chrominance components are
+ * subsampled along the horizontal dimension, then the width of the luminance
+ * plane is padded to the nearest multiple of 2 in the output image (same goes
+ * for the height of the luminance plane, if the chrominance components are
+ * subsampled along the vertical dimension.)
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels
@@ -848,6 +853,10 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * that, if the width or height of the JPEG image is not an even multiple of
  * the MCU block size (see #tjMCUWidth and #tjMCUHeight), then an intermediate
  * buffer copy will be performed within TurboJPEG.
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param jpegBuf pointer to a buffer containing the JPEG image to decompress

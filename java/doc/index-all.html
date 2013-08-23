@@ -119,11 +119,26 @@ Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Compress the uncompressed source image stored in <code>srcImage</code>
  and return a buffer containing a JPEG image.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#CS_CMYK"><B>CS_CMYK</B></A> - 
+Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
+<DD>CMYK colorspace.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#CS_GRAY"><B>CS_GRAY</B></A> - 
+Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
+<DD>Grayscale colorspace.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#CS_RGB"><B>CS_RGB</B></A> - 
+Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
+<DD>RGB colorspace.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#CS_YCbCr"><B>CS_YCbCr</B></A> - 
+Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
+<DD>YCbCr colorspace.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#CS_YCCK"><B>CS_YCCK</B></A> - 
+Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
+<DD>YCCK colorspace.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCustomFilter.html#customFilter(java.nio.ShortBuffer, java.awt.Rectangle, java.awt.Rectangle, int, int, org.libjpegturbo.turbojpeg.TJTransform)"><B>customFilter(ShortBuffer, Rectangle, Rectangle, int, int, TJTransform)</B></A> - 
 Method in interface org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</A>
 <DD>A callback function that can be used to modify the DCT coefficients after
  they are losslessly transformed but before they are transcoded to a new
- JPEG file.
+ JPEG image.
 </DL>
 <HR>
 <A NAME="_D_"><!-- --></A><H2>
@@ -344,6 +359,9 @@ Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojp
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegBufSize"><B>jpegBufSize</B></A> - 
 Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegColorspace"><B>jpegColorspace</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>&nbsp;
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegHeight"><B>jpegHeight</B></A> - 
 Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD>&nbsp;
@@ -358,6 +376,9 @@ Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojp
 <A NAME="_N_"><!-- --></A><H2>
 <B>N</B></H2>
 <DL>
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#NUMCS"><B>NUMCS</B></A> - 
+Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
+<DD>The number of JPEG colorspaces
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJTransform.html#NUMOP"><B>NUMOP</B></A> - 
 Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</A>
 <DD>The number of lossless transform operations
@@ -442,6 +463,9 @@ Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#PF_BGRX"><B>PF_BGRX</B></A> - 
 Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
 <DD>BGRX pixel format.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#PF_CMYK"><B>PF_CMYK</B></A> - 
+Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
+<DD>CMYK pixel format.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#PF_GRAY"><B>PF_GRAY</B></A> - 
 Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
 <DD>Grayscale pixel format.

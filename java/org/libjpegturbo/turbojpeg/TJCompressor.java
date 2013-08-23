@@ -95,8 +95,8 @@ public class TJCompressor {
   /**
    * Associate an uncompressed source image with this compressor instance.
    *
-   * @param srcImage image buffer containing RGB or grayscale pixels to be
-   * compressed
+   * @param srcImage image buffer containing RGB, grayscale, or CMYK pixels to
+   * be compressed
    *
    * @param x x offset (in pixels) of the region from which the JPEG image
    * should be compressed, relative to the start of <code>srcImage</code>.

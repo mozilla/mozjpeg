@@ -687,5 +687,6 @@ public class TJDecompressor {
   protected int jpegWidth = 0;
   protected int jpegHeight = 0;
   protected int jpegSubsamp = -1;
+  protected int jpegColorspace = -1;
   private ByteOrder byteOrder = null;
 };

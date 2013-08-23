@@ -121,7 +121,7 @@ public final class TJ {
   /**
    * The number of pixel formats
    */
-  public static final int NUMPF   = 11;
+  public static final int NUMPF   = 12;
   /**
    * RGB pixel format.  The red, green, and blue components in the image are
    * stored in 3-byte pixels in the order R, G, B from lowest to highest byte
@@ -191,6 +191,21 @@ public final class TJ {
    * interpreted as an opaque alpha channel.
    */
   public static final int PF_ARGB = 10;
+  /**
+   * CMYK pixel format.  Unlike RGB, which is a display colorspace,
+   * CMYK (Cyan/Magenta/Yellow/Key) is a print colorspace in which the
+   * value of each color component corresponds to the amount of cyan, magenta,
+   * yellow, or black ink that is applied to a white background.  In order to
+   * convert between CMYK and RGB, it is necessary to use a color management
+   * system (CMS.)  A CMS will attempt to map colors within the printer's gamut
+   * to perceptually similar colors in the display's gamut and vice versa, but
+   * the mapping is typically not 1:1 or reversible, nor can it be defined with
+   * a simple formula.  Thus, such a conversion is out of scope for a codec
+   * library.  However, the TurboJPEG API allows for compressing CMYK pixels
+   * into a YCCK JPEG image (see {@link #CS_YCCK}) and decompressing YCCK JPEG
+   * images into CMYK pixels.
+   */
+  public static final int PF_CMYK = 11;
 
 
   /**
@@ -207,7 +222,7 @@ public final class TJ {
   }
 
   private static final int[] pixelSize = {
-    3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4
+    3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4, 4
   };
 
 
@@ -229,7 +244,7 @@ public final class TJ {
   }
 
   private static final int[] redOffset = {
-    0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1
+    0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1, -1
   };
 
 
@@ -251,7 +266,7 @@ public final class TJ {
   }
 
   private static final int[] greenOffset = {
-    1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2
+    1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2, -1
   };
 
 
@@ -273,8 +288,63 @@ public final class TJ {
   }
 
   private static final int[] blueOffset = {
-    2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3
+    2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3, -1
   };
+
+
+  /**
+   * The number of JPEG colorspaces
+   */
+  public static final int NUMCS = 5;
+  /**
+   * RGB colorspace.  When compressing the JPEG image, the R, G, and B
+   * components in the source image are reordered into image planes, but no
+   * colorspace conversion or subsampling is performed.  RGB JPEG images can be
+   * decompressed to any of the extended RGB pixel formats or grayscale, but
+   * they cannot be decompressed to YUV images.
+   */
+  public static final int CS_RGB = 0;
+  /**
+   * YCbCr colorspace.  YCbCr is not an absolute colorspace but rather a
+   * mathematical transformation of RGB designed solely for storage and
+   * transmission.  YCbCr images must be converted to RGB before they can
+   * actually be displayed.  In the YCbCr colorspace, the Y (luminance)
+   * component represents the black & white portion of the original image, and
+   * the Cb and Cr (chrominance) components represent the color portion of the
+   * original image.  Originally, the analog equivalent of this transformation
+   * allowed the same signal to drive both black & white and color televisions,
+   * but JPEG images use YCbCr primarily because it allows the color data to be
+   * optionally subsampled for the purposes of reducing bandwidth or disk
+   * space.  YCbCr is the most common JPEG colorspace, and YCbCr JPEG images
+   * can be compressed from and decompressed to any of the extended RGB pixel
+   * formats or grayscale, or they can be decompressed to YUV planar images.
+   */
+  public static final int CS_YCbCr = 1;
+  /**
+   * Grayscale colorspace.  The JPEG image retains only the luminance data (Y
+   * component), and any color data from the source image is discarded.
+   * Grayscale JPEG images can be compressed from and decompressed to any of
+   * the extended RGB pixel formats or grayscale, or they can be decompressed
+   * to YUV planar images.
+   */
+  public static final int CS_GRAY = 2;
+  /**
+   * CMYK colorspace.  When compressing the JPEG image, the C, M, Y, and K
+   * components in the source image are reordered into image planes, but no
+   * colorspace conversion or subsampling is performed.  CMYK JPEG images can
+   * only be decompressed to CMYK pixels.
+   */
+  public static final int CS_CMYK = 3;
+  /**
+   * YCCK colorspace.  YCCK (AKA "YCbCrK") is not an absolute colorspace but
+   * rather a mathematical transformation of CMYK designed solely for storage
+   * and transmission.  It is to CMYK as YCbCr is to RGB.  CMYK pixels can be
+   * reversibly transformed into YCCK, and as with YCbCr, the chrominance
+   * components in the YCCK pixels can be subsampled without incurring major
+   * perceptual loss.  YCCK JPEG images can only be compressed from and
+   * decompressed to CMYK pixels.
+   */
+  public static final int CS_YCCK = 4;
 
 
   /**

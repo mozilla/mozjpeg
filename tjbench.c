@@ -56,11 +56,27 @@ const char *subNameLong[TJ_NUMSAMP]=
 {
 	"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
 };
+const char *csName[TJ_NUMCS]=
+{
+	"RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
+};
 const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440", "411"};
 tjscalingfactor *scalingfactors=NULL, sf={1, 1};  int nsf=0;
 int xformop=TJXOP_NONE, xformopt=0;
 int (*customFilter)(short *, tjregion, tjregion, int, int, tjtransform *);
 double benchtime=5.0;
+
+
+char *formatName(int subsamp, int cs, char *buf)
+{
+	if(cs==TJCS_YCbCr) return subNameLong[subsamp];
+	else if(cs==TJCS_YCCK)
+	{
+		snprintf(buf, 80, "%s %s", csName[cs], subNameLong[subsamp]);
+		return buf;
+	}
+	else return csName[cs];
+}
 
 
 char *sigfig(double val, int figs, char *buf, int len)
@@ -466,7 +482,7 @@ void dodecomptest(char *filename)
 	unsigned char **jpegbuf=NULL, *srcbuf=NULL;
 	unsigned long *jpegsize=NULL, srcsize, totaljpegsize;
 	tjtransform *t=NULL;
-	int w=0, h=0, subsamp=-1, _w, _h, _tilew, _tileh,
+	int w=0, h=0, subsamp=-1, cs=-1, _w, _h, _tilew, _tileh,
 		_ntilesw, _ntilesh, _subsamp;
 	char *temp=NULL, tempstr[80], tempstr2[80];
 	int row, col, i, tilew, tileh, ntilesw=1, ntilesh=1, retval=0;
@@ -490,20 +506,25 @@ void dodecomptest(char *filename)
 
 	if((handle=tjInitTransform())==NULL)
 		_throwtj("executing tjInitTransform()");
-	if(tjDecompressHeader2(handle, srcbuf, srcsize, &w, &h, &subsamp)==-1)
-		_throwtj("executing tjDecompressHeader2()");
+	if(tjDecompressHeader3(handle, srcbuf, srcsize, &w, &h, &subsamp, &cs)==-1)
+		_throwtj("executing tjDecompressHeader3()");
 
 	if(quiet==1)
 	{
 		printf("All performance values in Mpixels/sec\n\n");
-		printf("Bitmap\tBitmap\tJPEG\t%s %s \tXform\tComp\tDecomp\n",
+		printf("Bitmap\tBitmap\tJPEG\tJPEG\t%s %s \tXform\tComp\tDecomp\n",
 			dotile? "Tile ":"Image", dotile? "Tile ":"Image");
-		printf("Format\tOrder\tSubsamp\tWidth Height\tPerf \tRatio\tPerf\n\n");
+		printf("Format\tOrder\tCS\tSubsamp\tWidth Height\tPerf \tRatio\tPerf\n\n");
 	}
 	else if(!quiet)
 	{
-		printf(">>>>>  JPEG %s --> %s (%s)  <<<<<\n", subNameLong[subsamp],
-			pixFormatStr[pf], (flags&TJFLAG_BOTTOMUP)? "Bottom-up":"Top-down");
+		if(yuv==YUVDECODE)
+			printf(">>>>>  JPEG %s --> YUV  <<<<<\n",
+				formatName(subsamp, cs, tempstr));
+		else
+			printf(">>>>>  JPEG %s --> %s (%s)  <<<<<\n",
+				formatName(subsamp, cs, tempstr), pixFormatStr[pf],
+				(flags&TJFLAG_BOTTOMUP)? "Bottom-up":"Top-down");
 	}
 
 	for(tilew=dotile? 16:w, tileh=dotile? 16:h; ; tilew*=2, tileh*=2)
@@ -539,8 +560,8 @@ void dodecomptest(char *filename)
 		}
 		else if(quiet==1)
 		{
-			printf("%s\t%s\t%s\t", pixFormatStr[pf],
-				(flags&TJFLAG_BOTTOMUP)? "BU":"TD", subNameLong[subsamp]);
+			printf("%s\t%s\t%s\t%s\t", pixFormatStr[pf],
+				(flags&TJFLAG_BOTTOMUP)? "BU":"TD", csName[cs], subNameLong[subsamp]);
 			printf("%-4d  %-4d\t", tilew, tileh);
 		}
 

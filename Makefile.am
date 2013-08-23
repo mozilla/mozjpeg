@@ -196,14 +196,14 @@ MD5_JPEG_CROP = b4197f377e621c4e9b1d20471432610d
 
 test: testclean all
 if WITH_TURBOJPEG
-if WITH_JAVA
-	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest
-	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -bi
-	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv
-	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -noyuvpad
-	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi
-	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi -noyuvpad
-endif
+#if WITH_JAVA
+#	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest
+#	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -bi
+#	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv
+#	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -noyuvpad
+#	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi
+#	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest -yuv -bi -noyuvpad
+#endif
 	./tjunittest
 	./tjunittest -alloc
 	./tjunittest -yuv

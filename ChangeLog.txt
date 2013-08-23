@@ -10,9 +10,15 @@ extended to support image scaling.
 and upsampling on DSPr2-capable MIPS platforms.  This speeds up the compression
 of full-color JPEGs by 6-18% on such platforms and decompression by 3-12%.
 
-[3] Added support for 4:1:1 subsampling in the TurboJPEG API.  This is mainly
+[3] Added support for 4:1:1 subsampling to the TurboJPEG API.  This is mainly
 included for compatibility, since 4:1:1 is not fully accelerated in
 libjpeg-turbo and has no significant advantages relative to 4:2:0.
+
+[4] Added support for CMYK images to the TurboJPEG API.  This feature allows
+CMYK source images to be compressed to YCCK JPEGs and YCCK or CMYK JPEGs to be
+decompressed to CMYK destination images.  Conversion between CMYK and RGB
+images is not supported.  Such conversion requires a color management system
+and is out of scope for a codec library.
 
 
 1.3.1

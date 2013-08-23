@@ -39,7 +39,7 @@ public interface TJCustomFilter {
   /**
    * A callback function that can be used to modify the DCT coefficients after
    * they are losslessly transformed but before they are transcoded to a new
-   * JPEG file.  This allows for custom filters or other transformations to be
+   * JPEG image.  This allows for custom filters or other transformations to be
    * applied in the frequency domain.
    *
    * @param coeffBuffer a buffer containing transformed DCT coefficients.

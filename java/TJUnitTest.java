@@ -61,11 +61,11 @@ public class TJUnitTest {
 
   private static final String[] pixFormatStr = {
     "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale",
-    "RGBA", "BGRA", "ABGR", "ARGB"
+    "RGBA", "BGRA", "ABGR", "ARGB", "CMYK"
   };
 
   private static final int[] alphaOffset = {
-    -1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0
+    -1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0, -1
   };
 
   private static final int[] _3byteFormats = {
@@ -75,7 +75,7 @@ public class TJUnitTest {
     BufferedImage.TYPE_3BYTE_BGR
   };
   private static final int[] _4byteFormats = {
-    TJ.PF_RGBX, TJ.PF_BGRX, TJ.PF_XBGR, TJ.PF_XRGB
+    TJ.PF_RGBX, TJ.PF_BGRX, TJ.PF_XBGR, TJ.PF_XRGB, TJ.PF_CMYK
   };
   private static final int[] _4byteFormatsBI = {
     BufferedImage.TYPE_INT_BGR, BufferedImage.TYPE_INT_RGB,
@@ -165,8 +165,8 @@ public class TJUnitTest {
     int ps = TJ.getPixelSize(pf);
     int index, row, col, halfway = 16;
 
-    Arrays.fill(buf, (byte)0);
     if (pf == TJ.PF_GRAY) {
+      Arrays.fill(buf, (byte)0);
       for (row = 0; row < h; row++) {
         for (col = 0; col < w; col++) {
           if ((flags & TJ.FLAG_BOTTOMUP) != 0)
@@ -181,6 +181,27 @@ public class TJUnitTest {
       }
       return;
     }
+    if (pf == TJ.PF_CMYK) {
+      Arrays.fill(buf, (byte)255);
+      for (row = 0; row < h; row++) {
+        for (col = 0; col < w; col++) {
+          if ((flags & TJ.FLAG_BOTTOMUP) != 0)
+            index = (h - row - 1) * w + col;
+          else
+            index = row * w + col;
+          if (((row / 8) + (col / 8)) % 2 == 0) {
+            if (row >= halfway) buf[index * ps + 3] = 0;
+          } else {
+            buf[index * ps + 2] = 0;
+            if (row < halfway)
+              buf[index * ps + 1] = 0;
+          }
+        }
+      }
+      return;
+    }
+
+    Arrays.fill(buf, (byte)0);
     for (row = 0; row < h; row++) {
       for (col = 0; col < w; col++) {
         if ((flags & TJ.FLAG_BOTTOMUP) != 0)
@@ -299,6 +320,39 @@ public class TJUnitTest {
     int blockSize = 8 * sf.getNum() / sf.getDenom();
 
     try {
+
+      if (pf == TJ.PF_CMYK) {
+        for (row = 0; row < h; row++) {
+          for (col = 0; col < w; col++) {
+            if ((flags & TJ.FLAG_BOTTOMUP) != 0)
+              index = (h - row - 1) * w + col;
+            else
+              index = row * w + col;
+            byte c = buf[index * ps];
+            byte m = buf[index * ps + 1];
+            byte y = buf[index * ps + 2]; 
+            byte k = buf[index * ps + 3];
+            checkVal255(row, col, c, "C");
+            if (((row / blockSize) + (col / blockSize)) % 2 == 0) {
+              checkVal255(row, col, m, "M");
+              checkVal255(row, col, y, "Y");
+              if (row < halfway)
+                checkVal255(row, col, k, "K");
+              else
+                checkVal0(row, col, k, "K");
+            } else {
+              checkVal0(row, col, y, "Y");
+              checkVal255(row, col, k, "K");
+              if (row < halfway)
+                checkVal0(row, col, m, "M");
+              else
+                checkVal255(row, col, m, "M");
+            }
+          }
+        }
+        return 1;
+      }
+
       for (row = 0; row < halfway; row++) {
         for (col = 0; col < w; col++) {
           if ((flags & TJ.FLAG_BOTTOMUP) != 0)
@@ -351,13 +405,25 @@ public class TJUnitTest {
     if (retval == 0) {
       for (row = 0; row < h; row++) {
         for (col = 0; col < w; col++) {
-          int r = buf[pitch * row + col * ps + roffset];
-          int g = buf[pitch * row + col * ps + goffset];
-          int b = buf[pitch * row + col * ps + boffset];
-          if (r < 0) r += 256;
-          if (g < 0) g += 256;
-          if (b < 0) b += 256;
-          System.out.format("%3d/%3d/%3d ", r, g, b);
+          if (pf == TJ.PF_CMYK) {
+            int c = buf[pitch * row + col * ps];
+            int m = buf[pitch * row + col * ps + 1];
+            int y = buf[pitch * row + col * ps + 2];
+            int k = buf[pitch * row + col * ps + 3];
+            if (c < 0) c += 256;
+            if (m < 0) m += 256;
+            if (y < 0) y += 256;
+            if (k < 0) k += 256;
+            System.out.format("%3d/%3d/%3d/%3d ", c, m, y, k);
+          } else {
+            int r = buf[pitch * row + col * ps + roffset];
+            int g = buf[pitch * row + col * ps + goffset];
+            int b = buf[pitch * row + col * ps + boffset];
+            if (r < 0) r += 256;
+            if (g < 0) g += 256;
+            if (b < 0) b += 256;
+            System.out.format("%3d/%3d/%3d ", r, g, b);
+          }
         }
         System.out.print("\n");
       }
@@ -788,6 +854,7 @@ public class TJUnitTest {
       tjd = new TJDecompressor();
 
       for (int pf : formats) {
+        if (pf < 0) continue;
         for (int i = 0; i < 2; i++) {
           int flags = 0;
           if (subsamp == TJ.SAMP_422 || subsamp == TJ.SAMP_420 ||
@@ -880,7 +947,10 @@ public class TJUnitTest {
           testName = "javabitest";
         }
       }
-      if (doyuv) yuv = YUVENCODE;
+      if (doyuv) {
+        yuv = YUVENCODE;
+        _4byteFormats[4] = -1;
+      }
       doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_444,
              testName);
       doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_444,
@@ -904,6 +974,7 @@ public class TJUnitTest {
       doTest(39, 41, bi ? onlyGrayBI : onlyGray, TJ.SAMP_GRAY, testName);
       doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
              testName);
+      _4byteFormats[4] = -1;
       doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,
              testName);
       if (!doyuv && !bi)

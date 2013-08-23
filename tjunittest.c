@@ -467,7 +467,7 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 	if(yuv==YUVENCODE) return;
 
 	if(yuv==YUVDECODE)
-		printf("JPEG -> YUV %s ... ", subNameLong[subsamp]);
+		printf("JPEG -> YUV %s ", subNameLong[subsamp]);
 	else
 		printf("JPEG -> %s %s ", pixFormatStr[pf],
 			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ");

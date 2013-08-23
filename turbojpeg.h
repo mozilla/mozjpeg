@@ -226,9 +226,38 @@ enum TJPF
 
 
 /**
+ * Red offset (in bytes) for a given pixel format.  This specifies the number
+ * of bytes that the red component is offset from the start of the pixel.  For
+ * instance, if a pixel of format TJ_BGRX is stored in <tt>char pixel[]</tt>,
+ * then the red component will be <tt>pixel[tjRedOffset[TJ_BGRX]]</tt>.
+ */
+static const int tjRedOffset[TJ_NUMPF] = {0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1, -1};
+/**
+ * Green offset (in bytes) for a given pixel format.  This specifies the number
+ * of bytes that the green component is offset from the start of the pixel.
+ * For instance, if a pixel of format TJ_BGRX is stored in
+ * <tt>char pixel[]</tt>, then the green component will be
+ * <tt>pixel[tjGreenOffset[TJ_BGRX]]</tt>.
+ */
+static const int tjGreenOffset[TJ_NUMPF] = {1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2, -1};
+/**
+ * Blue offset (in bytes) for a given pixel format.  This specifies the number
+ * of bytes that the Blue component is offset from the start of the pixel.  For
+ * instance, if a pixel of format TJ_BGRX is stored in <tt>char pixel[]</tt>,
+ * then the blue component will be <tt>pixel[tjBlueOffset[TJ_BGRX]]</tt>.
+ */
+static const int tjBlueOffset[TJ_NUMPF] = {2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3, -1};
+
+/**
+ * Pixel size (in bytes) for a given pixel format.
+ */
+static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4, 4};
+
+
+/**
  * The number of JPEG colorspaces
  */
-#define TJ_NUMCS 12
+#define TJ_NUMCS 5
 
 /**
  * JPEG colorspaces
@@ -285,35 +314,6 @@ enum TJCS
    */
   TJCS_YCCK
 };
-
-
-/**
- * Red offset (in bytes) for a given pixel format.  This specifies the number
- * of bytes that the red component is offset from the start of the pixel.  For
- * instance, if a pixel of format TJ_BGRX is stored in <tt>char pixel[]</tt>,
- * then the red component will be <tt>pixel[tjRedOffset[TJ_BGRX]]</tt>.
- */
-static const int tjRedOffset[TJ_NUMPF] = {0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1, -1};
-/**
- * Green offset (in bytes) for a given pixel format.  This specifies the number
- * of bytes that the green component is offset from the start of the pixel.
- * For instance, if a pixel of format TJ_BGRX is stored in
- * <tt>char pixel[]</tt>, then the green component will be
- * <tt>pixel[tjGreenOffset[TJ_BGRX]]</tt>.
- */
-static const int tjGreenOffset[TJ_NUMPF] = {1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2, -1};
-/**
- * Blue offset (in bytes) for a given pixel format.  This specifies the number
- * of bytes that the Blue component is offset from the start of the pixel.  For
- * instance, if a pixel of format TJ_BGRX is stored in <tt>char pixel[]</tt>,
- * then the blue component will be <tt>pixel[tjBlueOffset[TJ_BGRX]]</tt>.
- */
-static const int tjBlueOffset[TJ_NUMPF] = {2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3, -1};
-
-/**
- * Pixel size (in bytes) for a given pixel format.
- */
-static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4, 4};
 
 
 /**

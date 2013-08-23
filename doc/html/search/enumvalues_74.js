@@ -1,10 +1,16 @@
 var searchData=
 [
+  ['tjcs_5fcmyk',['TJCS_CMYK',['../group___turbo_j_p_e_g.html#gga4f83ad3368e0e29d1957be0efa7c3720a6c8b636152ac8195b869587db315ee53',1,'turbojpeg.h']]],
+  ['tjcs_5fgray',['TJCS_GRAY',['../group___turbo_j_p_e_g.html#gga4f83ad3368e0e29d1957be0efa7c3720ab3e7d6a87f695e45b81c1b5262b5a50a',1,'turbojpeg.h']]],
+  ['tjcs_5frgb',['TJCS_RGB',['../group___turbo_j_p_e_g.html#gga4f83ad3368e0e29d1957be0efa7c3720a677cb7ccb85c4038ac41964a2e09e555',1,'turbojpeg.h']]],
+  ['tjcs_5fycbcr',['TJCS_YCbCr',['../group___turbo_j_p_e_g.html#gga4f83ad3368e0e29d1957be0efa7c3720a7389b8f65bb387ffedce3efd0d78ec75',1,'turbojpeg.h']]],
+  ['tjcs_5fycck',['TJCS_YCCK',['../group___turbo_j_p_e_g.html#gga4f83ad3368e0e29d1957be0efa7c3720a53839e0fe867b76b58d16b0a1a7c598e',1,'turbojpeg.h']]],
   ['tjpf_5fabgr',['TJPF_ABGR',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa1ba1a7f1631dbeaa49a0a85fc4a40081',1,'turbojpeg.h']]],
   ['tjpf_5fargb',['TJPF_ARGB',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aae8f846ed9d9de99b6e1dfe448848765c',1,'turbojpeg.h']]],
   ['tjpf_5fbgr',['TJPF_BGR',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aab10624437fb8ef495a0b153e65749839',1,'turbojpeg.h']]],
   ['tjpf_5fbgra',['TJPF_BGRA',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aac037ff1845cf9b74bb81a3659c2b9fb4',1,'turbojpeg.h']]],
   ['tjpf_5fbgrx',['TJPF_BGRX',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa2a1fbf569ca79897eae886e3376ca4c8',1,'turbojpeg.h']]],
+  ['tjpf_5fcmyk',['TJPF_CMYK',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa7f5100ec44c91994e243f1cf55553f8b',1,'turbojpeg.h']]],
   ['tjpf_5fgray',['TJPF_GRAY',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa5431b54b015337705f13118073711a1a',1,'turbojpeg.h']]],
   ['tjpf_5frgb',['TJPF_RGB',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa7ce93230bff449518ce387c17e6ed37c',1,'turbojpeg.h']]],
   ['tjpf_5frgba',['TJPF_RGBA',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa88d2e88fab67f6503cf972e14851cc12',1,'turbojpeg.h']]],

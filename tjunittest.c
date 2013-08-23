@@ -68,13 +68,14 @@ const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440", "411"};
 const char *pixFormatStr[TJ_NUMPF]=
 {
 	"RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale",
-	"RGBA", "BGRA", "ABGR", "ARGB"
+	"RGBA", "BGRA", "ABGR", "ARGB", "CMYK"
 };
 
-const int alphaOffset[TJ_NUMPF] = {-1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0};
+const int alphaOffset[TJ_NUMPF] = {-1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0, -1};
 
 const int _3byteFormats[]={TJPF_RGB, TJPF_BGR};
-const int _4byteFormats[]={TJPF_RGBX, TJPF_BGRX, TJPF_XBGR, TJPF_XRGB};
+const int _4byteFormats[]={TJPF_RGBX, TJPF_BGRX, TJPF_XBGR, TJPF_XRGB,
+	TJPF_CMYK};
 const int _onlyGray[]={TJPF_GRAY};
 const int _onlyRGB[]={TJPF_RGB};
 
@@ -93,9 +94,9 @@ void initBuf(unsigned char *buf, int w, int h, int pf, int flags)
 	int ps=tjPixelSize[pf];
 	int index, row, col, halfway=16;
 
-	memset(buf, 0, w*h*ps);
 	if(pf==TJPF_GRAY)
 	{
+		memset(buf, 0, w*h*ps);
 		for(row=0; row<h; row++)
 		{
 			for(col=0; col<w; col++)
@@ -107,8 +108,30 @@ void initBuf(unsigned char *buf, int w, int h, int pf, int flags)
 			}
 		}
 	}
+	else if(pf==TJPF_CMYK)
+	{
+		memset(buf, 255, w*h*ps);
+		for(row=0; row<h; row++)
+		{
+			for(col=0; col<w; col++)
+			{
+				if(flags&TJFLAG_BOTTOMUP) index=(h-row-1)*w+col;
+				else index=row*w+col;
+				if(((row/8)+(col/8))%2==0)
+				{
+					if(row>=halfway) buf[index*ps+3]=0;
+				}
+				else
+				{
+					buf[index*ps+2]=0;
+					if(row<halfway) buf[index*ps+1]=0;
+				}
+			}
+		}
+	}
 	else
 	{
+		memset(buf, 0, w*h*ps);
 		for(row=0; row<h; row++)
 		{
 			for(col=0; col<w; col++)
@@ -166,6 +189,36 @@ int checkBuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 	int index, row, col, retval=1;
 	int halfway=16*sf.num/sf.denom;
 	int blocksize=8*sf.num/sf.denom;
+
+	if(pf==TJPF_CMYK)
+	{
+		for(row=0; row<h; row++)
+		{
+			for(col=0; col<w; col++)
+			{
+				unsigned char c, m, y, k;
+				if(flags&TJFLAG_BOTTOMUP) index=(h-row-1)*w+col;
+				else index=row*w+col;
+				c=buf[index*ps];
+				m=buf[index*ps+1];
+				y=buf[index*ps+2];
+				k=buf[index*ps+3];
+				if(((row/blocksize)+(col/blocksize))%2==0)
+				{
+					checkval255(c);  checkval255(m);  checkval255(y);
+					if(row<halfway) checkval255(k)
+					else checkval0(k)
+				}
+				else
+				{
+					checkval255(c);  checkval0(y);  checkval255(k);
+					if(row<halfway) checkval0(m)
+					else checkval255(m)
+				}
+			}
+		}
+		return 1;
+	}
 
 	for(row=0; row<h; row++)
 	{
@@ -225,8 +278,13 @@ int checkBuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 		{
 			for(col=0; col<w; col++)
 			{
-				printf("%.3d/%.3d/%.3d ", buf[(row*w+col)*ps+roffset],
-					buf[(row*w+col)*ps+goffset], buf[(row*w+col)*ps+boffset]);
+				if(pf==TJPF_CMYK)
+					printf("%.3d/%.3d/%.3d/%.3d ", buf[(row*w+col)*ps],
+						buf[(row*w+col)*ps+1], buf[(row*w+col)*ps+2],
+						buf[(row*w+col)*ps+3]);
+				else
+					printf("%.3d/%.3d/%.3d ", buf[(row*w+col)*ps+roffset],
+						buf[(row*w+col)*ps+goffset], buf[(row*w+col)*ps+boffset]);
 			}
 			printf("\n");
 		}
@@ -610,7 +668,7 @@ void bufSizeTest(void)
 
 int main(int argc, char *argv[])
 {
-	int doyuv=0, i;
+	int doyuv=0, i, num4bf=5;
 	#ifdef _WIN32
 	srand((unsigned int)time(NULL));
 	#endif
@@ -626,17 +684,17 @@ int main(int argc, char *argv[])
 		}
 	}
 	if(alloc) printf("Testing automatic buffer allocation\n");
-	if(doyuv) {yuv=YUVENCODE;  alloc=0;}
+	if(doyuv) {yuv=YUVENCODE;  alloc=0;  num4bf=4;}
 	doTest(35, 39, _3byteFormats, 2, TJSAMP_444, "test");
-	doTest(39, 41, _4byteFormats, 4, TJSAMP_444, "test");
+	doTest(39, 41, _4byteFormats, num4bf, TJSAMP_444, "test");
 	doTest(41, 35, _3byteFormats, 2, TJSAMP_422, "test");
-	doTest(35, 39, _4byteFormats, 4, TJSAMP_422, "test");
+	doTest(35, 39, _4byteFormats, num4bf, TJSAMP_422, "test");
 	doTest(39, 41, _3byteFormats, 2, TJSAMP_420, "test");
-	doTest(41, 35, _4byteFormats, 4, TJSAMP_420, "test");
+	doTest(41, 35, _4byteFormats, num4bf, TJSAMP_420, "test");
 	doTest(35, 39, _3byteFormats, 2, TJSAMP_440, "test");
-	doTest(39, 41, _4byteFormats, 4, TJSAMP_440, "test");
+	doTest(39, 41, _4byteFormats, num4bf, TJSAMP_440, "test");
 	doTest(41, 35, _3byteFormats, 2, TJSAMP_411, "test");
-	doTest(35, 39, _4byteFormats, 4, TJSAMP_411, "test");
+	doTest(35, 39, _4byteFormats, num4bf, TJSAMP_411, "test");
 	doTest(39, 41, _onlyGray, 1, TJSAMP_GRAY, "test");
 	doTest(41, 35, _3byteFormats, 2, TJSAMP_GRAY, "test");
 	doTest(35, 39, _4byteFormats, 4, TJSAMP_GRAY, "test");

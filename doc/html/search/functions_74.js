@@ -5,7 +5,7 @@ var searchData=
   ['tjbufsizeyuv2',['tjBufSizeYUV2',['../group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9',1,'turbojpeg.h']]],
   ['tjcompress2',['tjCompress2',['../group___turbo_j_p_e_g.html#gaba62b7a98f960839b588579898495cf2',1,'turbojpeg.h']]],
   ['tjdecompress2',['tjDecompress2',['../group___turbo_j_p_e_g.html#gada69cc6443d1bb493b40f1626259e5e9',1,'turbojpeg.h']]],
-  ['tjdecompressheader2',['tjDecompressHeader2',['../group___turbo_j_p_e_g.html#gac5675fceb7997b385516cdffdb34e6aa',1,'turbojpeg.h']]],
+  ['tjdecompressheader3',['tjDecompressHeader3',['../group___turbo_j_p_e_g.html#gacd0fac3af74b3511d39b4781b7103086',1,'turbojpeg.h']]],
   ['tjdecompresstoyuv2',['tjDecompressToYUV2',['../group___turbo_j_p_e_g.html#ga7c08b340ad7f8e85d407bd9e81d44d07',1,'turbojpeg.h']]],
   ['tjdestroy',['tjDestroy',['../group___turbo_j_p_e_g.html#ga674adee917b95ad4a896f1ba39e12540',1,'turbojpeg.h']]],
   ['tjencodeyuv3',['tjEncodeYUV3',['../group___turbo_j_p_e_g.html#ga0a5ffbf7cb58a5b6a8201114fe889360',1,'turbojpeg.h']]],

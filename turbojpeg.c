@@ -187,6 +187,8 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 			cinfo->in_color_space=JCS_RGB;  pixelFormat=TJPF_RGB;
 			break;
 		#endif
+		case TJPF_CMYK:
+			cinfo->in_color_space=JCS_CMYK;  break;
 	}
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
@@ -199,15 +201,20 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	}
 	if(subsamp==TJSAMP_GRAY)
 		jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
-	else
-		jpeg_set_colorspace(cinfo, JCS_YCbCr);
+	else if(pixelFormat==TJPF_CMYK)
+		jpeg_set_colorspace(cinfo, JCS_YCCK);
+	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
 	cinfo->comp_info[1].h_samp_factor=1;
 	cinfo->comp_info[2].h_samp_factor=1;
+	if(cinfo->num_components>3)
+		cinfo->comp_info[3].h_samp_factor=tjMCUWidth[subsamp]/8;
 	cinfo->comp_info[0].v_samp_factor=tjMCUHeight[subsamp]/8;
 	cinfo->comp_info[1].v_samp_factor=1;
 	cinfo->comp_info[2].v_samp_factor=1;
+	if(cinfo->num_components>3)
+		cinfo->comp_info[3].v_samp_factor=tjMCUHeight[subsamp]/8;
 
 	return retval;
 }
@@ -257,6 +264,8 @@ static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 		case TJPF_ABGR:
 			dinfo->out_color_space=JCS_RGB;  break;
 		#endif
+		case TJPF_CMYK:
+			dinfo->out_color_space=JCS_CMYK;  break;
 		default:
 			_throw("Unsupported pixel format");
 	}
@@ -273,7 +282,10 @@ static int getSubsamp(j_decompress_ptr dinfo)
 	int retval=-1, i, k;
 	for(i=0; i<NUMSUBOPT; i++)
 	{
-		if(dinfo->num_components==pixelsize[i])
+		if(dinfo->num_components==pixelsize[i]
+			|| ((dinfo->jpeg_color_space==JCS_YCCK
+				|| dinfo->jpeg_color_space==JCS_CMYK)
+					&& pixelsize[i]==3 && dinfo->num_components==4))
 		{
 			if(dinfo->comp_info[0].h_samp_factor==tjMCUWidth[i]/8
 				&& dinfo->comp_info[0].v_samp_factor==tjMCUHeight[i]/8)
@@ -281,8 +293,13 @@ static int getSubsamp(j_decompress_ptr dinfo)
 				int match=0;
 				for(k=1; k<dinfo->num_components; k++)
 				{
-					if(dinfo->comp_info[k].h_samp_factor==1
-						&& dinfo->comp_info[k].v_samp_factor==1)
+					int href=1, vref=1;
+					if(dinfo->jpeg_color_space==JCS_YCCK && k==3)
+					{
+						href=tjMCUWidth[i]/8;  vref=tjMCUHeight[i]/8;
+					}
+					if(dinfo->comp_info[k].h_samp_factor==href
+						&& dinfo->comp_info[k].v_samp_factor==vref)
 						match++;
 				}
 				if(match==dinfo->num_components-1)
@@ -715,6 +732,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
 		goto bailout;
 	}
 
+	if(pixelFormat==TJPF_CMYK)
+		_throw("tjEncodeYUV3(): Cannot generate YUV images from CMYK pixels");
+
 	if(pitch==0) pitch=width*tjPixelSize[pixelFormat];
 
 	#ifndef JCS_EXTENSIONS
@@ -880,19 +900,19 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void)
 }
 
 
-DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle handle,
+DLLEXPORT int DLLCALL tjDecompressHeader3(tjhandle handle,
 	unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height,
-	int *jpegSubsamp)
+	int *jpegSubsamp, int *jpegColorspace)
 {
 	int retval=0;
 
 	getinstance(handle);
 	if((this->init&DECOMPRESS)==0)
-		_throw("tjDecompressHeader2(): Instance has not been initialized for decompression");
+		_throw("tjDecompressHeader3(): Instance has not been initialized for decompression");
 
 	if(jpegBuf==NULL || jpegSize<=0 || width==NULL || height==NULL
-		|| jpegSubsamp==NULL)
-		_throw("tjDecompressHeader2(): Invalid argument");
+		|| jpegSubsamp==NULL || jpegColorspace==NULL)
+		_throw("tjDecompressHeader3(): Invalid argument");
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -906,16 +926,36 @@ DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle handle,
 	*width=dinfo->image_width;
 	*height=dinfo->image_height;
 	*jpegSubsamp=getSubsamp(dinfo);
+	switch(dinfo->jpeg_color_space)
+	{
+		case JCS_GRAYSCALE:  *jpegColorspace=TJCS_GRAY;  break;
+		case JCS_RGB:        *jpegColorspace=TJCS_RGB;  break;
+		case JCS_YCbCr:      *jpegColorspace=TJCS_YCbCr;  break;
+		case JCS_CMYK:       *jpegColorspace=TJCS_CMYK;  break;
+		case JCS_YCCK:       *jpegColorspace=TJCS_YCCK;  break;
+		default:             *jpegColorspace=-1;  break;
+	}
 
 	jpeg_abort_decompress(dinfo);
 
 	if(*jpegSubsamp<0)
-		_throw("tjDecompressHeader2(): Could not determine subsampling type for JPEG image");
+		_throw("tjDecompressHeader3(): Could not determine subsampling type for JPEG image");
+	if(*jpegColorspace<0)
+		_throw("tjDecompressHeader3(): Could not determine colorspace of JPEG image");
 	if(*width<1 || *height<1)
-		_throw("tjDecompressHeader2(): Invalid data returned in header");
+		_throw("tjDecompressHeader3(): Invalid data returned in header");
 
 	bailout:
 	return retval;
+}
+
+DLLEXPORT int DLLCALL tjDecompressHeader2(tjhandle handle,
+	unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height,
+	int *jpegSubsamp)
+{
+	int jpegColorspace;
+	return tjDecompressHeader3(handle, jpegBuf, jpegSize, width, height,
+		jpegSubsamp, &jpegColorspace);
 }
 
 DLLEXPORT int DLLCALL tjDecompressHeader(tjhandle handle,
@@ -1107,6 +1147,9 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	}
 	if(scaledw>width || scaledh>height)
 		_throw("tjDecompressToYUV2(): Could not scale down to desired image dimensions");
+	if(dinfo->num_components>3)
+		_throw("tjDecompressToYUV2(): JPEG image must have 3 or fewer components");
+
 	width=scaledw;  height=scaledh;
 	dinfo->scale_num=sf[i].num;
 	dinfo->scale_denom=sf[i].denom;

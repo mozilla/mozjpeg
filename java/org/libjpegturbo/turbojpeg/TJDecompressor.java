@@ -117,7 +117,7 @@ public class TJDecompressor {
 
   /**
    * Returns the level of chrominance subsampling used in the JPEG image
-   * associated with this decompressor instance.
+   * associated with this decompressor instance.  See {@link TJ TJ.SAMP_*}.
    *
    * @return the level of chrominance subsampling used in the JPEG image
    * associated with this decompressor instance
@@ -128,6 +128,21 @@ public class TJDecompressor {
     if (jpegSubsamp >= TJ.NUMSAMP)
       throw new Exception("JPEG header information is invalid");
     return jpegSubsamp;
+  }
+
+  /**
+   * Returns the colorspace used in the JPEG image associated with this
+   * decompressor instance.  See {@link TJ TJ.CS_*}.
+   *
+   * @return the colorspace used in the JPEG image associated with this
+   * decompressor instance
+   */
+  public int getColorspace() throws Exception {
+    if (jpegColorspace < 0)
+      throw new Exception(NO_ASSOC_ERROR);
+    if (jpegColorspace >= TJ.NUMCS)
+      throw new Exception("JPEG header information is invalid");
+    return jpegColorspace;
   }
 
   /**

@@ -41,6 +41,11 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 !endif
 	SetOutPath $INSTDIR\bin
 !ifdef GCC
+	File "@CMAKE_BINARY_DIR@\libturbojpeg.dll"
+!else
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}turbojpeg.dll"
+!endif
+!ifdef GCC
 	File "/oname=libjpeg-@DLL_VERSION@.dll" "@CMAKE_BINARY_DIR@\sharedlib\libjpeg-*.dll" 
 !else
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpeg@DLL_VERSION@.dll"

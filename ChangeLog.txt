@@ -30,6 +30,13 @@ and into /opt/libjpeg-turbo/lib64 by default on any 64-bit system, not just
 x86-64.  You can override this by overriding either the 'prefix' or 'libdir'
 configure variables.
 
+[2] The Windows installer now places a copy of the TurboJPEG DLLs in the same
+directory as the rest of the libjpeg-turbo binaries.  This was mainly done
+to support TurboVNC 1.3, which bundles the DLLs in its Windows installation.
+When using a 32-bit version of CMake on 64-bit Windows, it is impossible to
+access the c:\WINDOWS\system32 directory, which made it impossible for the
+TurboVNC build scripts to bundle the 64-bit TurboJPEG DLL.
+
 
 1.3.0
 =====

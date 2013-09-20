@@ -1,7 +1,7 @@
 !include x64.nsh
 Name "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@"
 OutFile "@CMAKE_BINARY_DIR@\${BUILDDIR}@INST_NAME@.exe"
-InstallDir @INST_DIR@
+InstallDir "@INST_DIR@"
 
 SetCompressor bzip2
 
@@ -111,13 +111,15 @@ Section "Uninstall"
 !ifdef GCC
 	Delete $INSTDIR\bin\libjpeg-@DLL_VERSION@.dll
 	Delete $SYSDIR\libturbojpeg.dll
-	Delete $INSTDIR\lib\libturbojpeg.dll.a"
-	Delete $INSTDIR\lib\libturbojpeg.a"
-	Delete $INSTDIR\lib\libjpeg.dll.a"
-	Delete $INSTDIR\lib\libjpeg.a"
+	Delete $INSTDIR\bin\libturbojpeg.dll
+	Delete $INSTDIR\lib\libturbojpeg.dll.a
+	Delete $INSTDIR\lib\libturbojpeg.a
+	Delete $INSTDIR\lib\libjpeg.dll.a
+	Delete $INSTDIR\lib\libjpeg.a
 !else
 	Delete $INSTDIR\bin\jpeg@DLL_VERSION@.dll
 	Delete $SYSDIR\turbojpeg.dll
+	Delete $INSTDIR\bin\turbojpeg.dll
 	Delete $INSTDIR\lib\jpeg.lib
 	Delete $INSTDIR\lib\jpeg-static.lib
 	Delete $INSTDIR\lib\turbojpeg.lib
@@ -132,11 +134,11 @@ Section "Uninstall"
 	Delete $INSTDIR\bin\tjbench.exe
 	Delete $INSTDIR\bin\rdjpgcom.exe
 	Delete $INSTDIR\bin\wrjpgcom.exe
-	Delete $INSTDIR\include\jconfig.h"
-	Delete $INSTDIR\include\jerror.h"
-	Delete $INSTDIR\include\jmorecfg.h"
-	Delete $INSTDIR\include\jpeglib.h"
-	Delete $INSTDIR\include\turbojpeg.h"
+	Delete $INSTDIR\include\jconfig.h
+	Delete $INSTDIR\include\jerror.h
+	Delete $INSTDIR\include\jmorecfg.h
+	Delete $INSTDIR\include\jpeglib.h
+	Delete $INSTDIR\include\turbojpeg.h
 	Delete $INSTDIR\uninstall_@VERSION@.exe
 	Delete $INSTDIR\doc\README
 	Delete $INSTDIR\doc\README-turbo.txt

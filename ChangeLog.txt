@@ -15,6 +15,11 @@ SIMD code with NASM 0.98.
 [4] Fixed a Huffman encoder bug that prevented I/O suspension from working
 properly.
 
+[5] Fixed a bug whereby attempting to encode a progressive JPEG with arithmetic
+entropy coding (by passing arguments of -progressive -arithmetic to cjpeg or
+jpegtran, for instance) would result in an error, "Requested feature was
+omitted at compile time".
+
 
 1.2.1
 =====

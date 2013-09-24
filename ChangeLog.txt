@@ -12,6 +12,9 @@ Ubuntu 11 and later) without setting the linker path.
 multiple "Mismatch in operand sizes" errors when attempting to build the x86
 SIMD code with NASM 0.98.
 
+[4] Fixed a Huffman encoder bug that prevented I/O suspension from working
+properly.
+
 
 1.2.1
 =====

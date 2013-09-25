@@ -487,7 +487,6 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
 END(jsimd_h2v1_fancy_upsample_mips_dspr2)
 
 /*****************************************************************************/
-/*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_h2v1_downsample_mips_dspr2)
 /*
  * a0     - cinfo->image_width
@@ -704,15 +703,15 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
     lw      t7, 0(a3)       // t7 = output_data
     andi    t8, a1, 0xf     // t8 = residual
     sll     t0, a0, 2
-    beqz    a0, 4f
+    blez    a0, 4f
      addu   t9, t7, t0      // t9 = output_data end address
 0:
     lw      t5, 0(t7)       // t5 = outptr
     lw      t6, 0(a2)       // t6 = inptr
     addu    t3, t5, a1      // t3 = outptr + output_width (end address)
     subu    t3, t8          // t3 = end address - residual
-    beqz    t3, 2f
-     nop
+    beq     t5, t3, 2f
+     move   t4, t8
 1:
     ulw     t0, 0(t6)       // t0 = |P3|P2|P1|P0|
     ulw     t2, 4(t6)       // t2 = |P7|P6|P5|P4|
@@ -761,15 +760,15 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
  * a3     - output_data_ptr
  */
     lw      t7, 0(a3)
-    beqz    a0, 7f
+    blez    a0, 7f
      andi   t9, a1, 0xf     // t9 = residual
 0:
     lw      t6, 0(a2)       // t6 = inptr
     lw      t5, 0(t7)       // t5 = outptr
     addu    t8, t5, a1      // t8 = outptr end address
     subu    t8, t9          // t8 = end address - residual
-    beqz    t8, 2f
-     nop
+    beq     t5, t8, 2f
+     move   t4, t9
 1:
     ulw     t0, 0(t6)
     srl     t1, t0, 16

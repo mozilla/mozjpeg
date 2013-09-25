@@ -400,6 +400,10 @@ fi
 AC_ARG_WITH([simd],
   AC_HELP_STRING([--without-simd], [Do not include SIMD extensions]))
 if test "x${with_simd}" != "xno"; then
+  require_simd=no
+  if test "x${with_simd}" = "xyes"; then
+    require_simd=yes
+  fi
   # Check if we're on a supported CPU
   AC_MSG_CHECKING([if we have SIMD optimisations for cpu type])
   case "$host_cpu" in
@@ -420,8 +424,12 @@ if test "x${with_simd}" != "xno"; then
         [AC_MSG_RESULT([yes])
          simd_arch=arm],
         [AC_MSG_RESULT([no])
-         with_simd=no
-         AC_MSG_WARN([SIMD support can't be enabled.  Performance will suffer.])])
+         with_simd=no])
+      if test "x${require_simd}" = "xyes" -a "x${with_simd}" = "xno"; then
+        AC_MSG_ERROR([SIMD support can't be enabled.])
+      else
+        AC_MSG_WARN([SIMD support can't be enabled.  Performance will suffer.])
+      fi
       ;;
     mipsel*)
       AC_MSG_RESULT([yes (mipsel)])
@@ -430,13 +438,21 @@ if test "x${with_simd}" != "xno"; then
         [AC_MSG_RESULT([yes])
          simd_arch=mipsel],
         [AC_MSG_RESULT([no])
-         with_simd=no
-         AC_MSG_WARN([SIMD support can't be enabled.  Performance will suffer.])])
+         with_simd=no])
+      if test "x${require_simd}" = "xyes" -a "x${with_simd}" = "xno"; then
+        AC_MSG_ERROR([SIMD support can't be enabled.])
+      else
+        AC_MSG_WARN([SIMD support can't be enabled.  Performance will suffer.])
+      fi
       ;;
     *)
       AC_MSG_RESULT([no ("$host_cpu")])
-      AC_MSG_WARN([SIMD support not available for this CPU.  Performance will suffer.])
       with_simd=no;
+      if test "x${require_simd}" = "xyes" -a "x${with_simd}" = "xno"; then
+        AC_MSG_ERROR([SIMD support not available for this CPU.])
+      else
+        AC_MSG_WARN([SIMD support not available for this CPU.  Performance will suffer.])
+      fi
       ;;
   esac
 

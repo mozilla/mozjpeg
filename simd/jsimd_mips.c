@@ -4,7 +4,7 @@
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2009-2011 D. R. Commander
  * Copyright (C) 2013, MIPS Technologies, Inc., California
- * 
+ *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * For conditions of distribution and use, see copyright notice in jsimdext.inc
@@ -100,6 +100,18 @@ jsimd_can_rgb_ycc (void)
 GLOBAL(int)
 jsimd_can_rgb_gray (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    return 1;
+
   return 0;
 }
 
@@ -167,6 +179,40 @@ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
                         JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                         JDIMENSION output_row, int num_rows)
 {
+  void (*mipsdspr2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+  switch(cinfo->in_color_space)
+  {
+    case JCS_EXT_RGB:
+      mipsdspr2fct=jsimd_extrgb_gray_convert_mips_dspr2;
+      break;
+    case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
+      mipsdspr2fct=jsimd_extrgbx_gray_convert_mips_dspr2;
+      break;
+    case JCS_EXT_BGR:
+      mipsdspr2fct=jsimd_extbgr_gray_convert_mips_dspr2;
+      break;
+    case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
+      mipsdspr2fct=jsimd_extbgrx_gray_convert_mips_dspr2;
+      break;
+    case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
+      mipsdspr2fct=jsimd_extxbgr_gray_convert_mips_dspr2;
+      break;
+    case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
+      mipsdspr2fct=jsimd_extxrgb_gray_convert_mips_dspr2;
+      break;
+    default:
+      mipsdspr2fct=jsimd_extrgb_gray_convert_mips_dspr2;
+      break;
+  }
+
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    mipsdspr2fct(cinfo->image_width, input_buf,
+        output_buf, output_row, num_rows);
+
 }
 
 GLOBAL(void)

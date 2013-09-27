@@ -249,6 +249,134 @@ GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3, 0
 
 /*****************************************************************************/
 /*
+ * jsimd_extrgb_gray_convert_mips_dspr2
+ * jsimd_extbgr_gray_convert_mips_dspr2
+ * jsimd_extrgbx_gray_convert_mips_dspr2
+ * jsimd_extbgrx_gray_convert_mips_dspr2
+ * jsimd_extxbgr_gray_convert_mips_dspr2
+ * jsimd_extxrgb_gray_convert_mips_dspr2
+ *
+ * Colorspace conversion RGB -> GRAY
+ */
+
+.macro GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 colorid, pixel_size, r_offs, g_offs, b_offs
+
+.macro DO_RGB_TO_GRAY r,    \
+                      g,    \
+                      b,    \
+                      inptr
+    lbu     \r, \r_offs(\inptr)
+    lbu     \g, \g_offs(\inptr)
+    lbu     \b, \b_offs(\inptr)
+    addiu   \inptr, \pixel_size
+.endm
+
+LEAF_MIPS_DSPR2(jsimd_\colorid\()_gray_convert_mips_dspr2)
+/*
+ * a0     - cinfo->image_width
+ * a1     - input_buf
+ * a2     - output_buf
+ * a3     - output_row
+ * 16(sp) - num_rows
+ */
+
+    SAVE_REGS_ON_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    li      s0, 0x4c8b             // s0 = FIX(0.29900)
+    li      s1, 0x9646             // s1 = FIX(0.58700)
+    li      s2, 0x1d2f             // s2 = FIX(0.11400)
+    li      s7, 0x8000             // s7 = FIX(0.50000)
+    lw      s6, 48(sp)
+    andi    t7, a0, 3
+
+0:
+    addiu   s6, -1                 // s6 = num_rows
+    lw      t0, 0(a1)
+    lw      t1, 0(a2)
+    sll     t3, a3, 2
+    lwx     t1, t3(t1)
+    addiu   a3, 1
+    addu    t9, t1, a0
+    subu    t8, t9, t7
+    beq     t1, t8, 2f
+     nop
+
+1:
+    DO_RGB_TO_GRAY t3, t4, t5, t0
+    DO_RGB_TO_GRAY s3, s4, s5, t0
+
+    mtlo    s7, $ac0
+    maddu   $ac0, s2, t5
+    maddu   $ac0, s1, t4
+    maddu   $ac0, s0, t3
+    mtlo    s7, $ac1
+    maddu   $ac1, s2, s5
+    maddu   $ac1, s1, s4
+    maddu   $ac1, s0, s3
+    extr.w  t6, $ac0, 16
+
+    DO_RGB_TO_GRAY t3, t4, t5, t0
+    DO_RGB_TO_GRAY s3, s4, s5, t0
+
+    mtlo    s7, $ac0
+    maddu   $ac0, s2, t5
+    maddu   $ac0, s1, t4
+    extr.w  t2, $ac1, 16
+    maddu   $ac0, s0, t3
+    mtlo    s7, $ac1
+    maddu   $ac1, s2, s5
+    maddu   $ac1, s1, s4
+    maddu   $ac1, s0, s3
+    extr.w  t5, $ac0, 16
+    sb      t6, 0(t1)
+    sb      t2, 1(t1)
+    extr.w  t3, $ac1, 16
+    addiu   t1, 4
+    sb      t5, -2(t1)
+    sb      t3, -1(t1)
+    bne     t1, t8, 1b
+     nop
+
+2:
+    beqz    t7, 4f
+     nop
+
+3:
+    DO_RGB_TO_GRAY t3, t4, t5, t0
+
+    mtlo    s7, $ac0
+    maddu   $ac0, s2, t5
+    maddu   $ac0, s1, t4
+    maddu   $ac0, s0, t3
+    extr.w  t6, $ac0, 16
+    sb      t6, 0(t1)
+    addiu   t1, 1
+    bne     t1, t9, 3b
+     nop
+
+4:
+    bgtz    s6, 0b
+     addiu  a1, 4
+
+    RESTORE_REGS_FROM_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    j ra
+     nop
+END(jsimd_\colorid\()_gray_convert_mips_dspr2)
+
+.purgem DO_RGB_TO_GRAY
+
+.endm
+
+/*------------------------------------------id --  pix R  G  B */
+GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extrgb,  3, 0, 1, 2
+GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extbgr,  3, 2, 1, 0
+GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extrgbx, 4, 0, 1, 2
+GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extbgrx, 4, 2, 1, 0
+GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxbgr, 4, 3, 2, 1
+GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3
+/*****************************************************************************/
+/*
  * jsimd_h2v2_fancy_upsample_mips_dspr2
  *
  * Fancy processing for the common case of 2:1 horizontal and 2:1 vertical.

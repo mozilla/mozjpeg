@@ -571,6 +571,51 @@ jsimd_can_idct_4x4 (void)
   return 0;
 }
 
+GLOBAL(int)
+jsimd_can_idct_6x6 (void)
+{
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(ISLOW_MULT_TYPE) != 2)
+    return 0;
+
+  if ((simd_support & JSIMD_MIPS_DSPR2))
+    return 1;
+
+  return 0;
+}
+
+GLOBAL(int)
+jsimd_can_idct_12x12 (void)
+{
+  init_simd();
+
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(ISLOW_MULT_TYPE) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    return 1;
+
+  return 0;
+}
+
 GLOBAL(void)
 jsimd_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
@@ -591,6 +636,42 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
     int workspace[DCTSIZE*4];  /* buffers data between passes */
     jsimd_idct_4x4_mips_dspr2(compptr->dct_table, coef_block,
                               output_buf, output_col, workspace);
+  }
+}
+GLOBAL(void)
+jsimd_idct_6x6 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+           JCOEFPTR coef_block, JSAMPARRAY output_buf,
+           JDIMENSION output_col)
+{
+    if ((simd_support & JSIMD_MIPS_DSPR2))
+      jsimd_idct_6x6_mips_dspr2(compptr->dct_table, coef_block,
+                                output_buf, output_col);
+}
+
+GLOBAL(void)
+jsimd_idct_12x12 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+                  JCOEFPTR coef_block,
+                  JSAMPARRAY output_buf, JDIMENSION output_col)
+{
+  if (simd_support & JSIMD_MIPS_DSPR2) {
+    int workspace[96];
+    int output[12] = {
+      (int)(output_buf[0] + output_col),
+      (int)(output_buf[1] + output_col),
+      (int)(output_buf[2] + output_col),
+      (int)(output_buf[3] + output_col),
+      (int)(output_buf[4] + output_col),
+      (int)(output_buf[5] + output_col),
+      (int)(output_buf[6] + output_col),
+      (int)(output_buf[7] + output_col),
+      (int)(output_buf[8] + output_col),
+      (int)(output_buf[9] + output_col),
+      (int)(output_buf[10] + output_col),
+      (int)(output_buf[11] + output_col),
+    };
+    jsimd_idct_12x12_pass1_mips_dspr2(coef_block,
+                                      compptr->dct_table, workspace);
+    jsimd_idct_12x12_pass2_mips_dspr2(workspace, output);
   }
 }
 

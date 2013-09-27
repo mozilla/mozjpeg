@@ -743,6 +743,16 @@ EXTERN(void) jsimd_idct_4x4_mips_dspr2 JPP((void * dct_table,
                                             JDIMENSION output_col,
                                             int * workspace));
 
+EXTERN(void) jsimd_idct_6x6_mips_dspr2 JPP((void * dct_table,
+                                            JCOEFPTR coef_block,
+                                            JSAMPARRAY output_buf,
+                                            JDIMENSION output_col));
+EXTERN(void) jsimd_idct_12x12_pass1_mips_dspr2 JPP((JCOEFPTR coef_block,
+                                                    void * dct_table,
+                                                    int * workspace));
+EXTERN(void) jsimd_idct_12x12_pass2_mips_dspr2 JPP((int * workspace,
+                                                    int * output));
+
 /* SIMD Inverse DCT */
 EXTERN(void) jsimd_idct_islow_mmx JPP((void * dct_table,
                                        JCOEFPTR coef_block,

@@ -68,6 +68,8 @@ EXTERN(void) jsimd_quantize_float JPP((JCOEFPTR coef_block,
 
 EXTERN(int) jsimd_can_idct_2x2 JPP((void));
 EXTERN(int) jsimd_can_idct_4x4 JPP((void));
+EXTERN(int) jsimd_can_idct_6x6 JPP((void));
+EXTERN(int) jsimd_can_idct_12x12 JPP((void));
 
 EXTERN(void) jsimd_idct_2x2 JPP((j_decompress_ptr cinfo,
                                  jpeg_component_info * compptr,
@@ -79,6 +81,16 @@ EXTERN(void) jsimd_idct_4x4 JPP((j_decompress_ptr cinfo,
                                  JCOEFPTR coef_block,
                                  JSAMPARRAY output_buf,
                                  JDIMENSION output_col));
+EXTERN(void) jsimd_idct_6x6 JPP((j_decompress_ptr cinfo,
+                                 jpeg_component_info * compptr,
+                                 JCOEFPTR coef_block,
+                                 JSAMPARRAY output_buf,
+                                 JDIMENSION output_col));
+EXTERN(void) jsimd_idct_12x12 JPP((j_decompress_ptr cinfo,
+                                   jpeg_component_info * compptr,
+                                   JCOEFPTR coef_block,
+                                   JSAMPARRAY output_buf,
+                                   JDIMENSION output_col));
 
 EXTERN(int) jsimd_can_idct_islow JPP((void));
 EXTERN(int) jsimd_can_idct_ifast JPP((void));

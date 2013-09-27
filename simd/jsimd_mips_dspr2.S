@@ -965,3 +965,582 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
 END(jsimd_h2v2_upsample_mips_dspr2)
 
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_idct_2x2_mips_dspr2)
+/*
+ * a0     - compptr->dct_table
+ * a1     - coef_block
+ * a2     - output_buf
+ * a3     - output_col
+ */
+    .set at
+
+    SAVE_REGS_ON_STACK 24, s0, s1, s2, s3, s4, s5
+
+    addiu     sp, sp, -40
+    move      v0, sp
+    addiu     s2, zero, 29692
+    addiu     s3, zero, -10426
+    addiu     s4, zero, 6967
+    addiu     s5, zero, -5906
+    lh        t0, 0(a1)         // t0 = inptr[DCTSIZE*0]
+    lh        t5, 0(a0)         // t5 = quantptr[DCTSIZE*0]
+    lh        t1, 48(a1)        // t1 = inptr[DCTSIZE*3]
+    lh        t6, 48(a0)        // t6 = quantptr[DCTSIZE*3]
+    mul       t4, t5, t0
+    lh        t0, 16(a1)        // t0 = inptr[DCTSIZE*1]
+    lh        t5, 16(a0)        // t5 = quantptr[DCTSIZE*1]
+    mul       t6, t6, t1
+    mul       t5, t5, t0
+    lh        t2, 80(a1)        // t2 = inptr[DCTSIZE*5]
+    lh        t7, 80(a0)        // t7 = quantptr[DCTSIZE*5]
+    lh        t3, 112(a1)       // t3 = inptr[DCTSIZE*7]
+    lh        t8, 112(a0)       // t8 = quantptr[DCTSIZE*7]
+    mul       t7, t7, t2
+    mult      zero, zero
+    mul       t8, t8, t3
+    li        s0, 0x73FCD746    // s0 = (29692 << 16) | (-10426 & 0xffff)
+    li        s1, 0x1B37E8EE    // s1 = (6967 << 16) | (-5906 & 0xffff)
+    ins       t6, t5, 16, 16    // t6 = t5|t6
+    sll       t4, t4, 15
+    dpa.w.ph  $ac0, t6, s0
+    lh        t1, 2(a1)
+    lh        t6, 2(a0)
+    ins       t8, t7, 16, 16    // t8 = t7|t8
+    dpa.w.ph  $ac0, t8, s1
+    mflo      t0, $ac0
+    mul       t5, t6, t1
+    lh        t1, 18(a1)
+    lh        t6, 18(a0)
+    lh        t2, 50(a1)
+    lh        t7, 50(a0)
+    mul       t6, t6, t1
+    subu      t8, t4, t0
+    mul       t7, t7, t2
+    addu      t0, t4, t0
+    shra_r.w  t0, t0, 13
+    lh        t1, 82(a1)
+    lh        t2, 82(a0)
+    lh        t3, 114(a1)
+    lh        t4, 114(a0)
+    shra_r.w  t8, t8, 13
+    mul       t1, t1, t2
+    mul       t3, t3, t4
+    sw        t0, 0(v0)
+    sw        t8, 20(v0)
+    sll       t4, t5, 15
+    ins       t7, t6, 16, 16
+    mult      zero, zero
+    dpa.w.ph  $ac0, t7, s0
+    ins       t3, t1, 16, 16
+    lh        t1, 6(a1)
+    lh        t6, 6(a0)
+    dpa.w.ph  $ac0, t3, s1
+    mflo      t0, $ac0
+    mul       t5, t6, t1
+    lh        t1, 22(a1)
+    lh        t6, 22(a0)
+    lh        t2, 54(a1)
+    lh        t7, 54(a0)
+    mul       t6, t6, t1
+    subu      t8, t4, t0
+    mul       t7, t7, t2
+    addu      t0, t4, t0
+    shra_r.w  t0, t0, 13
+    lh        t1, 86(a1)
+    lh        t2, 86(a0)
+    lh        t3, 118(a1)
+    lh        t4, 118(a0)
+    shra_r.w  t8, t8, 13
+    mul       t1, t1, t2
+    mul       t3, t3, t4
+    sw        t0, 4(v0)
+    sw        t8, 24(v0)
+    sll       t4, t5, 15
+    ins       t7, t6, 16, 16
+    mult      zero, zero
+    dpa.w.ph  $ac0, t7, s0
+    ins       t3, t1, 16, 16
+    lh        t1, 10(a1)
+    lh        t6, 10(a0)
+    dpa.w.ph  $ac0, t3, s1
+    mflo      t0, $ac0
+    mul       t5, t6, t1
+    lh        t1, 26(a1)
+    lh        t6, 26(a0)
+    lh        t2, 58(a1)
+    lh        t7, 58(a0)
+    mul       t6, t6, t1
+    subu      t8, t4, t0
+    mul       t7, t7, t2
+    addu      t0, t4, t0
+    shra_r.w  t0, t0, 13
+    lh        t1, 90(a1)
+    lh        t2, 90(a0)
+    lh        t3, 122(a1)
+    lh        t4, 122(a0)
+    shra_r.w  t8, t8, 13
+    mul       t1, t1, t2
+    mul       t3, t3, t4
+    sw        t0, 8(v0)
+    sw        t8, 28(v0)
+    sll       t4, t5, 15
+    ins       t7, t6, 16, 16
+    mult      zero, zero
+    dpa.w.ph  $ac0, t7, s0
+    ins       t3, t1, 16, 16
+    lh        t1, 14(a1)
+    lh        t6, 14(a0)
+    dpa.w.ph  $ac0, t3, s1
+    mflo      t0, $ac0
+    mul       t5, t6, t1
+    lh        t1, 30(a1)
+    lh        t6, 30(a0)
+    lh        t2, 62(a1)
+    lh        t7, 62(a0)
+    mul       t6, t6, t1
+    subu      t8, t4, t0
+    mul       t7, t7, t2
+    addu      t0, t4, t0
+    shra_r.w  t0, t0, 13
+    lh        t1, 94(a1)
+    lh        t2, 94(a0)
+    lh        t3, 126(a1)
+    lh        t4, 126(a0)
+    shra_r.w  t8, t8, 13
+    mul       t1, t1, t2
+    mul       t3, t3, t4
+    sw        t0, 12(v0)
+    sw        t8, 32(v0)
+    sll       t4, t5, 15
+    ins       t7, t6, 16, 16
+    mult      zero, zero
+    dpa.w.ph  $ac0, t7, s0
+    ins       t3, t1, 16, 16
+    dpa.w.ph  $ac0, t3, s1
+    mflo      t0, $ac0
+    lw        t9, 0(a2)
+    lw        t3, 0(v0)
+    lw        t7, 4(v0)
+    lw        t1, 8(v0)
+    addu      t9, t9, a3
+    sll       t3, t3, 15
+    subu      t8, t4, t0
+    addu      t0, t4, t0
+    shra_r.w  t0, t0, 13
+    shra_r.w  t8, t8, 13
+    sw        t0, 16(v0)
+    sw        t8, 36(v0)
+    lw        t5, 12(v0)
+    lw        t6, 16(v0)
+    mult      t7, s2
+    madd      t1, s3
+    madd      t5, s4
+    madd      t6, s5
+    lw        t5, 24(v0)
+    lw        t7, 28(v0)
+    mflo      t0, $ac0
+    lw        t8, 32(v0)
+    lw        t2, 36(v0)
+    mult      $ac1, t5, s2
+    madd      $ac1, t7, s3
+    madd      $ac1, t8, s4
+    madd      $ac1, t2, s5
+    addu      t1, t3, t0
+    subu      t6, t3, t0
+    shra_r.w  t1, t1, 20
+    shra_r.w  t6, t6, 20
+    mflo      t4, $ac1
+    shll_s.w  t1, t1, 24
+    shll_s.w  t6, t6, 24
+    sra       t1, t1, 24
+    sra       t6, t6, 24
+    addiu     t1, t1, 128
+    addiu     t6, t6, 128
+    lw        t0, 20(v0)
+    sb        t1, 0(t9)
+    sb        t6, 1(t9)
+    sll       t0, t0, 15
+    lw        t9, 4(a2)
+    addu      t1, t0, t4
+    subu      t6, t0, t4
+    addu      t9, t9, a3
+    shra_r.w  t1, t1, 20
+    shra_r.w  t6, t6, 20
+    shll_s.w  t1, t1, 24
+    shll_s.w  t6, t6, 24
+    sra       t1, t1, 24
+    sra       t6, t6, 24
+    addiu     t1, t1, 128
+    addiu     t6, t6, 128
+    sb        t1, 0(t9)
+    sb        t6, 1(t9)
+    addiu     sp, sp, 40
+
+    RESTORE_REGS_FROM_STACK 24, s0, s1, s2, s3, s4, s5
+
+    j         ra
+     nop
+
+END(jsimd_idct_2x2_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
+/*
+ * a0     - compptr->dct_table
+ * a1     - coef_block
+ * a2     - output_buf
+ * a3     - output_col
+ * 16(sp) - workspace[DCTSIZE*4];  // buffers data between passes
+ */
+
+    .set at
+    SAVE_REGS_ON_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    lw        v1, 48(sp)
+    move      t0, a1
+    move      t1, v1
+    li        t9, 4
+    li        s0, 0x2e75f93e
+    li        s1, 0x21f9ba79
+    li        s2, 0xecc2efb0
+    li        s3, 0x52031ccd
+
+0:
+    lh        s6, 32(t0)        // inptr[DCTSIZE*2]
+    lh        t6, 32(a0)        // quantptr[DCTSIZE*2]
+    lh        s7, 96(t0)        // inptr[DCTSIZE*6]
+    lh        t7, 96(a0)        // quantptr[DCTSIZE*6]
+    mul       t6, s6, t6        // z2 = (inptr[DCTSIZE*2] * quantptr[DCTSIZE*2])
+    lh        s4, 0(t0)         // inptr[DCTSIZE*0]
+    mul       t7, s7, t7        // z3 = (inptr[DCTSIZE*6] * quantptr[DCTSIZE*6])
+    lh        s5, 0(a0)         // quantptr[0]
+    li        s6, 15137
+    li        s7, 6270
+    mul       t2, s4, s5        // tmp0 = (inptr[0] * quantptr[0])
+    mul       t6, s6, t6        // z2 = (inptr[DCTSIZE*2] * quantptr[DCTSIZE*2])
+    lh        t5, 112(t0)       // inptr[DCTSIZE*7]
+    mul       t7, s7, t7        // z3 = (inptr[DCTSIZE*6] * quantptr[DCTSIZE*6])
+    lh        s4, 112(a0)       // quantptr[DCTSIZE*7]
+    lh        v0, 80(t0)        // inptr[DCTSIZE*5]
+    lh        s5, 80(a0)        // quantptr[DCTSIZE*5]
+    lh        s6, 48(a0)        // quantptr[DCTSIZE*3]
+    sll       t2, t2, 14        // tmp0 <<= (CONST_BITS+1)
+    lh        s7, 16(a0)        // quantptr[DCTSIZE*1]
+    lh        t8, 16(t0)        // inptr[DCTSIZE*1]
+    subu      t6, t6, t7        // tmp2 = MULTIPLY(z2, t5) - MULTIPLY(z3, t6)
+    lh        t7, 48(t0)        // inptr[DCTSIZE*3]
+    mul       t5, s4, t5        // z1 = (inptr[DCTSIZE*7] * quantptr[DCTSIZE*7])
+    mul       v0, s5, v0        // z2 = (inptr[DCTSIZE*5] * quantptr[DCTSIZE*5])
+    mul       t7, s6, t7        // z3 = (inptr[DCTSIZE*3] * quantptr[DCTSIZE*3])
+    mul       t8, s7, t8        // z4 = (inptr[DCTSIZE*1] * quantptr[DCTSIZE*1])
+    addu      t3, t2, t6        // tmp10 = tmp0 + z2
+    subu      t4, t2, t6        // tmp10 = tmp0 - z2
+    mult      $ac0, zero, zero
+    mult      $ac1, zero, zero
+    ins       t5, v0, 16, 16
+    ins       t7, t8, 16, 16
+    addiu     t9, t9, -1
+    dpa.w.ph  $ac0, t5, s0
+    dpa.w.ph  $ac0, t7, s1
+    dpa.w.ph  $ac1, t5, s2
+    dpa.w.ph  $ac1, t7, s3
+    mflo      s4, $ac0
+    mflo      s5, $ac1
+    addiu     a0, a0, 2
+    addiu     t1, t1, 4
+    addiu     t0, t0, 2
+    addu      t6, t4, s4
+    subu      t5, t4, s4
+    addu      s6, t3, s5
+    subu      s7, t3, s5
+    shra_r.w  t6, t6, 12        // DESCALE(tmp12 + temp1, 12)
+    shra_r.w  t5, t5, 12        // DESCALE(tmp12 - temp1, 12)
+    shra_r.w  s6, s6, 12        // DESCALE(tmp10 + temp2, 12)
+    shra_r.w  s7, s7, 12        // DESCALE(tmp10 - temp2, 12)
+    sw        t6, 28(t1)
+    sw        t5, 60(t1)
+    sw        s6, -4(t1)
+    bgtz      t9, 0b
+     sw       s7, 92(t1)
+    // second loop three pass
+    li        t9, 3
+1:
+    lh        s6, 34(t0)        // inptr[DCTSIZE*2]
+    lh        t6, 34(a0)        // quantptr[DCTSIZE*2]
+    lh        s7, 98(t0)        // inptr[DCTSIZE*6]
+    lh        t7, 98(a0)        // quantptr[DCTSIZE*6]
+    mul       t6, s6, t6        // z2 = (inptr[DCTSIZE*2] * quantptr[DCTSIZE*2])
+    lh        s4, 2(t0)         // inptr[DCTSIZE*0]
+    mul       t7, s7, t7        // z3 = (inptr[DCTSIZE*6] * quantptr[DCTSIZE*6])
+    lh        s5, 2(a0)         // quantptr[DCTSIZE*0]
+    li        s6, 15137
+    li        s7, 6270
+    mul       t2, s4, s5        // tmp0 = (inptr[0] * quantptr[0])
+    mul       v0, s6, t6        // z2 = (inptr[DCTSIZE*2] * quantptr[DCTSIZE*2])
+    lh        t5, 114(t0)       // inptr[DCTSIZE*7]
+    mul       t7, s7, t7        // z3 = (inptr[DCTSIZE*6] * quantptr[DCTSIZE*6])
+    lh        s4, 114(a0)       // quantptr[DCTSIZE*7]
+    lh        s5, 82(a0)        // quantptr[DCTSIZE*5]
+    lh        t6, 82(t0)        // inptr[DCTSIZE*5]
+    sll       t2, t2, 14        // tmp0 <<= (CONST_BITS+1)
+    lh        s6, 50(a0)        // quantptr[DCTSIZE*3]
+    lh        t8, 18(t0)        // inptr[DCTSIZE*1]
+    subu      v0, v0, t7        // tmp2 = MULTIPLY(z2, t5) - MULTIPLY(z3, t6)
+    lh        t7, 50(t0)        // inptr[DCTSIZE*3]
+    lh        s7, 18(a0)        // quantptr[DCTSIZE*1]
+    mul       t5, s4, t5        // z1 = (inptr[DCTSIZE*7] * quantptr[DCTSIZE*7])
+    mul       t6, s5, t6        // z2 = (inptr[DCTSIZE*5] * quantptr[DCTSIZE*5])
+    mul       t7, s6, t7        // z3 = (inptr[DCTSIZE*3] * quantptr[DCTSIZE*3])
+    mul       t8, s7, t8        // z4 = (inptr[DCTSIZE*1] * quantptr[DCTSIZE*1])
+    addu      t3, t2, v0        // tmp10 = tmp0 + z2
+    subu      t4, t2, v0        // tmp10 = tmp0 - z2
+    mult      $ac0, zero, zero
+    mult      $ac1, zero, zero
+    ins       t5, t6, 16, 16
+    ins       t7, t8, 16, 16
+    dpa.w.ph  $ac0, t5, s0
+    dpa.w.ph  $ac0, t7, s1
+    dpa.w.ph  $ac1, t5, s2
+    dpa.w.ph  $ac1, t7, s3
+    mflo      t5, $ac0
+    mflo      t6, $ac1
+    addiu     t9, t9, -1
+    addiu     t0, t0, 2
+    addiu     a0, a0, 2
+    addiu     t1, t1, 4
+    addu      s5, t4, t5
+    subu      s4, t4, t5
+    addu      s6, t3, t6
+    subu      s7, t3, t6
+    shra_r.w  s5, s5, 12        // DESCALE(tmp12 + temp1, 12)
+    shra_r.w  s4, s4, 12        // DESCALE(tmp12 - temp1, 12)
+    shra_r.w  s6, s6, 12        // DESCALE(tmp10 + temp2, 12)
+    shra_r.w  s7, s7, 12        // DESCALE(tmp10 - temp2, 12)
+    sw        s5, 32(t1)
+    sw        s4, 64(t1)
+    sw        s6, 0(t1)
+    bgtz      t9, 1b
+     sw       s7, 96(t1)
+    move      t1, v1
+    li        s4, 15137
+    lw        s6, 8(t1)         // wsptr[2]
+    li        s5, 6270
+    lw        s7, 24(t1)        // wsptr[6]
+    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    lw        t2, 0(t1)         // wsptr[0]
+    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], - FIX_0_765366865)
+    lh        t5, 28(t1)        // wsptr[7]
+    lh        t6, 20(t1)        // wsptr[5]
+    lh        t7, 12(t1)        // wsptr[3]
+    lh        t8, 4(t1)         // wsptr[1]
+    ins       t5, t6, 16, 16
+    ins       t7, t8, 16, 16
+    mult      $ac0, zero, zero
+    dpa.w.ph  $ac0, t5, s0
+    dpa.w.ph  $ac0, t7, s1
+    mult      $ac1, zero, zero
+    dpa.w.ph  $ac1, t5, s2
+    dpa.w.ph  $ac1, t7, s3
+    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    mflo      s6, $ac0
+    // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
+    subu      s4, s4, s5
+    addu      t3, t2, s4        // tmp10 = tmp0 + z2
+    mflo      s7, $ac1
+    subu      t4, t2, s4        // tmp10 = tmp0 - z2
+    addu      t7, t4, s6
+    subu      t8, t4, s6
+    addu      t5, t3, s7
+    subu      t6, t3, s7
+    shra_r.w  t5, t5, 19        // DESCALE(tmp10 + temp2, 19)
+    shra_r.w  t6, t6, 19        // DESCALE(tmp10 - temp2, 19)
+    shra_r.w  t7, t7, 19        // DESCALE(tmp12 + temp1, 19)
+    shra_r.w  t8, t8, 19        // DESCALE(tmp12 - temp1, 19)
+    sll       s4, t9, 2
+    lw        v0, 0(a2)         // output_buf[ctr]
+    shll_s.w  t5, t5, 24
+    shll_s.w  t6, t6, 24
+    shll_s.w  t7, t7, 24
+    shll_s.w  t8, t8, 24
+    sra       t5, t5, 24
+    sra       t6, t6, 24
+    sra       t7, t7, 24
+    sra       t8, t8, 24
+    addu      v0, v0, a3        // outptr = output_buf[ctr] + output_col
+    addiu     t5, t5, 128
+    addiu     t6, t6, 128
+    addiu     t7, t7, 128
+    addiu     t8, t8, 128
+    sb        t5, 0(v0)
+    sb        t7, 1(v0)
+    sb        t8, 2(v0)
+    sb        t6, 3(v0)
+    // 2
+    li        s4, 15137
+    lw        s6, 40(t1)        // wsptr[2]
+    li        s5, 6270
+    lw        s7, 56(t1)        // wsptr[6]
+    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    lw        t2, 32(t1)        // wsptr[0]
+    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], - FIX_0_765366865)
+    lh        t5, 60(t1)        // wsptr[7]
+    lh        t6, 52(t1)        // wsptr[5]
+    lh        t7, 44(t1)        // wsptr[3]
+    lh        t8, 36(t1)        // wsptr[1]
+    ins       t5, t6, 16, 16
+    ins       t7, t8, 16, 16
+    mult      $ac0, zero, zero
+    dpa.w.ph  $ac0, t5, s0
+    dpa.w.ph  $ac0, t7, s1
+    mult      $ac1, zero, zero
+    dpa.w.ph  $ac1, t5, s2
+    dpa.w.ph  $ac1, t7, s3
+    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    mflo      s6, $ac0
+    // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
+    subu      s4, s4, s5
+    addu      t3, t2, s4        // tmp10 = tmp0 + z2
+    mflo      s7, $ac1
+    subu      t4, t2, s4        // tmp10 = tmp0 - z2
+    addu      t7, t4, s6
+    subu      t8, t4, s6
+    addu      t5, t3, s7
+    subu      t6, t3, s7
+    shra_r.w  t5, t5, 19        // DESCALE(tmp10 + temp2, CONST_BITS-PASS1_BITS+1)
+    shra_r.w  t6, t6, 19        // DESCALE(tmp10 - temp2, CONST_BITS-PASS1_BITS+1)
+    shra_r.w  t7, t7, 19        // DESCALE(tmp12 + temp1, CONST_BITS-PASS1_BITS+1)
+    shra_r.w  t8, t8, 19        // DESCALE(tmp12 - temp1, CONST_BITS-PASS1_BITS+1)
+    sll       s4, t9, 2
+    lw        v0, 4(a2)         // output_buf[ctr]
+    shll_s.w  t5, t5, 24
+    shll_s.w  t6, t6, 24
+    shll_s.w  t7, t7, 24
+    shll_s.w  t8, t8, 24
+    sra       t5, t5, 24
+    sra       t6, t6, 24
+    sra       t7, t7, 24
+    sra       t8, t8, 24
+    addu      v0, v0, a3        // outptr = output_buf[ctr] + output_col
+    addiu     t5, t5, 128
+    addiu     t6, t6, 128
+    addiu     t7, t7, 128
+    addiu     t8, t8, 128
+    sb        t5, 0(v0)
+    sb        t7, 1(v0)
+    sb        t8, 2(v0)
+    sb        t6, 3(v0)
+    // 3
+    li        s4, 15137
+    lw        s6, 72(t1)        // wsptr[2]
+    li        s5, 6270
+    lw        s7, 88(t1)        // wsptr[6]
+    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    lw        t2, 64(t1)        // wsptr[0]
+    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], - FIX_0_765366865)
+    lh        t5, 92(t1)        // wsptr[7]
+    lh        t6, 84(t1)        // wsptr[5]
+    lh        t7, 76(t1)        // wsptr[3]
+    lh        t8, 68(t1)        // wsptr[1]
+    ins       t5, t6, 16, 16
+    ins       t7, t8, 16, 16
+    mult      $ac0, zero, zero
+    dpa.w.ph  $ac0, t5, s0
+    dpa.w.ph  $ac0, t7, s1
+    mult      $ac1, zero, zero
+    dpa.w.ph  $ac1, t5, s2
+    dpa.w.ph  $ac1, t7, s3
+    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    mflo      s6, $ac0
+    // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
+    subu      s4, s4, s5
+    addu      t3, t2, s4        // tmp10 = tmp0 + z2
+    mflo      s7, $ac1
+    subu      t4, t2, s4        // tmp10 = tmp0 - z2
+    addu      t7, t4, s6
+    subu      t8, t4, s6
+    addu      t5, t3, s7
+    subu      t6, t3, s7
+    shra_r.w  t5, t5, 19        // DESCALE(tmp10 + temp2, 19)
+    shra_r.w  t6, t6, 19        // DESCALE(tmp10 - temp2, 19)
+    shra_r.w  t7, t7, 19        // DESCALE(tmp12 + temp1, 19)
+    shra_r.w  t8, t8, 19        // DESCALE(tmp12 - temp1, 19)
+    sll       s4, t9, 2
+    lw        v0, 8(a2)         // output_buf[ctr]
+    shll_s.w  t5, t5, 24
+    shll_s.w  t6, t6, 24
+    shll_s.w  t7, t7, 24
+    shll_s.w  t8, t8, 24
+    sra       t5, t5, 24
+    sra       t6, t6, 24
+    sra       t7, t7, 24
+    sra       t8, t8, 24
+    addu      v0, v0, a3        // outptr = output_buf[ctr] + output_col
+    addiu     t5, t5, 128
+    addiu     t6, t6, 128
+    addiu     t7, t7, 128
+    addiu     t8, t8, 128
+    sb        t5, 0(v0)
+    sb        t7, 1(v0)
+    sb        t8, 2(v0)
+    sb        t6, 3(v0)
+    li        s4, 15137
+    lw        s6, 104(t1)       // wsptr[2]
+    li        s5, 6270
+    lw        s7, 120(t1)       // wsptr[6]
+    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    lw        t2, 96(t1)        // wsptr[0]
+    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], -FIX_0_765366865)
+    lh        t5, 124(t1)       // wsptr[7]
+    lh        t6, 116(t1)       // wsptr[5]
+    lh        t7, 108(t1)       // wsptr[3]
+    lh        t8, 100(t1)       // wsptr[1]
+    ins       t5, t6, 16, 16
+    ins       t7, t8, 16, 16
+    mult      $ac0, zero, zero
+    dpa.w.ph  $ac0, t5, s0
+    dpa.w.ph  $ac0, t7, s1
+    mult      $ac1, zero, zero
+    dpa.w.ph  $ac1, t5, s2
+    dpa.w.ph  $ac1, t7, s3
+    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    mflo      s6, $ac0
+    // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
+    subu      s4, s4, s5
+    addu      t3, t2, s4        // tmp10 = tmp0 + z2;
+    mflo      s7, $ac1
+    subu      t4, t2, s4        // tmp10 = tmp0 - z2;
+    addu      t7, t4, s6
+    subu      t8, t4, s6
+    addu      t5, t3, s7
+    subu      t6, t3, s7
+    shra_r.w  t5, t5, 19        // DESCALE(tmp10 + temp2, 19)
+    shra_r.w  t6, t6, 19        // DESCALE(tmp10 - temp2, 19)
+    shra_r.w  t7, t7, 19        // DESCALE(tmp12 + temp1, 19)
+    shra_r.w  t8, t8, 19        // DESCALE(tmp12 - temp1, 19)
+    sll       s4, t9, 2
+    lw        v0, 12(a2)        // output_buf[ctr]
+    shll_s.w  t5, t5, 24
+    shll_s.w  t6, t6, 24
+    shll_s.w  t7, t7, 24
+    shll_s.w  t8, t8, 24
+    sra       t5, t5, 24
+    sra       t6, t6, 24
+    sra       t7, t7, 24
+    sra       t8, t8, 24
+    addu      v0, v0, a3        // outptr = output_buf[ctr] + output_col
+    addiu     t5, t5, 128
+    addiu     t6, t6, 128
+    addiu     t7, t7, 128
+    addiu     t8, t8, 128
+    sb        t5, 0(v0)
+    sb        t7, 1(v0)
+    sb        t8, 2(v0)
+    sb        t6, 3(v0)
+
+    RESTORE_REGS_FROM_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    j         ra
+     nop
+END(jsimd_idct_4x4_mips_dspr2)
+
+/*****************************************************************************/

@@ -133,6 +133,11 @@ start_pass (j_decompress_ptr cinfo)
       method = JDCT_ISLOW;	/* jidctint uses islow-style table */
       break;
     case 6:
+#if defined(__mips__)
+      if (jsimd_can_idct_6x6())
+        method_ptr = jsimd_idct_6x6;
+      else
+#endif
       method_ptr = jpeg_idct_6x6;
       method = JDCT_ISLOW;	/* jidctint uses islow-style table */
       break;
@@ -188,6 +193,11 @@ start_pass (j_decompress_ptr cinfo)
       method = JDCT_ISLOW;	/* jidctint uses islow-style table */
       break;
     case 12:
+#if defined(__mips__)
+      if (jsimd_can_idct_12x12())
+        method_ptr = jsimd_idct_12x12;
+      else
+#endif
       method_ptr = jpeg_idct_12x12;
       method = JDCT_ISLOW;	/* jidctint uses islow-style table */
       break;

@@ -1544,3 +1544,491 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
 END(jsimd_idct_4x4_mips_dspr2)
 
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_idct_6x6_mips_dspr2)
+/*
+ * a0     - compptr->dct_table
+ * a1     - coef_block
+ * a2     - output_buf
+ * a3     - output_col
+ */
+    .set at
+
+    SAVE_REGS_ON_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    addiu     sp, sp, -144
+    move      v0, sp
+    addiu     v1, v0, 24
+    addiu     t9, zero, 5793
+    addiu     s0, zero, 10033
+    addiu     s1, zero, 2998
+
+1:
+    lh        s2, 0(a0)   // q0 = quantptr[ 0]
+    lh        s3, 32(a0)  // q1 = quantptr[16]
+    lh        s4, 64(a0)  // q2 = quantptr[32]
+    lh        t2, 64(a1)  // tmp2 = inptr[32]
+    lh        t1, 32(a1)  // tmp1 = inptr[16]
+    lh        t0, 0(a1)   // tmp0 = inptr[ 0]
+    mul       t2, t2, s4  // tmp2 = tmp2 * q2
+    mul       t1, t1, s3  // tmp1 = tmp1 * q1
+    mul       t0, t0, s2  // tmp0 = tmp0 * q0
+    lh        t6, 16(a1)  // z1 = inptr[ 8]
+    lh        t8, 80(a1)  // z3 = inptr[40]
+    lh        t7, 48(a1)  // z2 = inptr[24]
+    lh        s2, 16(a0)  // q0 = quantptr[ 8]
+    lh        s4, 80(a0)  // q2 = quantptr[40]
+    lh        s3, 48(a0)  // q1 = quantptr[24]
+    mul       t2, t2, t9  // tmp2 = tmp2 * 5793
+    mul       t1, t1, s0  // tmp1 = tmp1 * 10033
+    sll       t0, t0, 13  // tmp0 = tmp0 << 13
+    mul       t6, t6, s2  // z1 = z1 * q0
+    mul       t8, t8, s4  // z3 = z3 * q2
+    mul       t7, t7, s3  // z2 = z2 * q1
+    addu      t3, t0, t2  // tmp10 = tmp0 + tmp2
+    sll       t2, t2, 1   // tmp2 = tmp2 << 2
+    subu      t4, t0, t2  // tmp11 = tmp0 - tmp2;
+    subu      t5, t3, t1  // tmp12 = tmp10 - tmp1
+    addu      t3, t3, t1  // tmp10 = tmp10 + tmp1
+    addu      t1, t6, t8  // tmp1 = z1 + z3
+    mul       t1, t1, s1  // tmp1 = tmp1 * 2998
+    shra_r.w  t4, t4, 11  // tmp11 = (tmp11 + 1024) >> 11
+    subu      t2, t6, t8  // tmp2 = z1 - z3
+    subu      t2, t2, t7  // tmp2 = tmp2 - z2
+    sll       t2, t2, 2   // tmp2 = tmp2 << 2
+    addu      t0, t6, t7  // tmp0 = z1 + z2
+    sll       t0, t0, 13  // tmp0 = tmp0 << 13
+    subu      s2, t8, t7  // q0 = z3 - z2
+    sll       s2, s2, 13  // q0 = q0 << 13
+    addu      t0, t0, t1  // tmp0 = tmp0 + tmp1
+    addu      t1, s2, t1  // tmp1 = q0 + tmp1
+    addu      s2, t4, t2  // q0 = tmp11 + tmp2
+    subu      s3, t4, t2  // q1 = tmp11 - tmp2
+    addu      t6, t3, t0  // z1 = tmp10 + tmp0
+    subu      t7, t3, t0  // z2 = tmp10 - tmp0
+    addu      t4, t5, t1  // tmp11 = tmp12 + tmp1
+    subu      t5, t5, t1  // tmp12 = tmp12 - tmp1
+    shra_r.w  t6, t6, 11  // z1 = (z1 + 1024) >> 11
+    shra_r.w  t7, t7, 11  // z2 = (z2 + 1024) >> 11
+    shra_r.w  t4, t4, 11  // tmp11 = (tmp11 + 1024) >> 11
+    shra_r.w  t5, t5, 11  // tmp12 = (tmp12 + 1024) >> 11
+    sw        s2, 24(v0)
+    sw        s3, 96(v0)
+    sw        t6, 0(v0)
+    sw        t7, 120(v0)
+    sw        t4, 48(v0)
+    sw        t5, 72(v0)
+    addiu     v0, v0, 4
+    addiu     a1, a1, 2
+    bne       v0, v1, 1b
+     addiu    a0, a0, 2
+
+    /* Pass 2: process 6 rows from work array, store into output array. */
+    move      v0, sp
+    addiu     v1, v0, 144
+
+2:
+    lw        t0, 0(v0)
+    lw        t2, 16(v0)
+    lw        s5, 0(a2)
+    addiu     t0, t0, 16
+    sll       t0, t0, 13
+    mul       t3, t2, t9
+    lw        t6, 4(v0)
+    lw        t8, 20(v0)
+    lw        t7, 12(v0)
+    addu      s5, s5, a3
+    addu      s6, t6, t8
+    mul       s6, s6, s1
+    addu      t1, t0, t3
+    subu      t4, t0, t3
+    subu      t4, t4, t3
+    lw        t3, 8(v0)
+    mul       t0, t3, s0
+    addu      s7, t6, t7
+    sll       s7, s7, 13
+    addu      s7, s6, s7
+    subu      t2, t8, t7
+    sll       t2, t2, 13
+    addu      t2, s6, t2
+    subu      s6, t6, t7
+    subu      s6, s6, t8
+    sll       s6, s6, 13
+    addu      t3, t1, t0
+    subu      t5, t1, t0
+    addu      t6, t3, s7
+    subu      t3, t3, s7
+    addu      t7, t4, s6
+    subu      t4, t4, s6
+    addu      t8, t5, t2
+    subu      t5, t5, t2
+    shll_s.w  t6, t6, 6
+    shll_s.w  t3, t3, 6
+    shll_s.w  t7, t7, 6
+    shll_s.w  t4, t4, 6
+    shll_s.w  t8, t8, 6
+    shll_s.w  t5, t5, 6
+    sra       t6, t6, 24
+    addiu     t6, t6, 128
+    sra       t3, t3, 24
+    addiu     t3, t3, 128
+    sb        t6, 0(s5)
+    sra       t7, t7, 24
+    addiu     t7, t7, 128
+    sb        t3, 5(s5)
+    sra       t4, t4, 24
+    addiu     t4, t4, 128
+    sb        t7, 1(s5)
+    sra       t8, t8, 24
+    addiu     t8, t8, 128
+    sb        t4, 4(s5)
+    addiu     v0, v0, 24
+    sra       t5, t5, 24
+    addiu     t5, t5, 128
+    sb        t8, 2(s5)
+    addiu     a2, a2,  4
+    bne       v0, v1, 2b
+     sb       t5, 3(s5)
+
+    addiu     sp, sp, 144
+
+    RESTORE_REGS_FROM_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    j         ra
+     nop
+
+END(jsimd_idct_6x6_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass1_mips_dspr2)
+/*
+ * a0     - compptr->dct_table
+ * a1     - coef_block
+ * a2     - workspace
+ */
+
+    SAVE_REGS_ON_STACK 16, s0, s1, s2, s3
+
+    li         a3, 8
+
+1:
+    // odd part
+    lh         t0, 48(a1)
+    lh         t1, 48(a0)
+    lh         t2, 16(a1)
+    lh         t3, 16(a0)
+    lh         t4, 80(a1)
+    lh         t5, 80(a0)
+    lh         t6, 112(a1)
+    lh         t7, 112(a0)
+    mul        t0, t0, t1    // z2
+    mul        t1, t2, t3    // z1
+    mul        t2, t4, t5    // z3
+    mul        t3, t6, t7    // z4
+    li         t4, 10703     // FIX(1.306562965)
+    li         t5, 4433      // FIX_0_541196100
+    li         t6, 7053      // FIX(0.860918669)
+    mul        t4, t0,t4     // tmp11
+    mul        t5, t0,t5     // -tmp14
+    addu       t7, t1,t2     // tmp10
+    addu       t8, t7,t3     // tmp10 + z4
+    mul        t6, t6, t8    // tmp15
+    li         t8, 2139      // FIX(0.261052384)
+    mul        t8, t7, t8    // MULTIPLY(tmp10, FIX(0.261052384))
+    li         t7, 2295      // FIX(0.280143716)
+    mul        t7, t1, t7    // MULTIPLY(z1, FIX(0.280143716))
+    addu       t9, t2, t3    // z3 + z4
+    li         s0, 8565      // FIX(1.045510580)
+    mul        t9, t9, s0    // -tmp13
+    li         s0, 12112     // FIX(1.478575242)
+    mul        s0, t2, s0    // MULTIPLY(z3, FIX(1.478575242)
+    li         s1, 12998     // FIX(1.586706681)
+    mul        s1, t3, s1    // MULTIPLY(z4, FIX(1.586706681))
+    li         s2, 5540      // FIX(0.676326758)
+    mul        s2, t1, s2    // MULTIPLY(z1, FIX(0.676326758))
+    li         s3, 16244     // FIX(1.982889723)
+    mul        s3, t3, s3    // MULTIPLY(z4, FIX(1.982889723))
+    subu       t1, t1, t3    // z1-=z4
+    subu       t0, t0, t2    // z2-=z3
+    addu       t2, t0, t1    // z1+z2
+    li         t3, 4433      // FIX_0_541196100
+    mul        t2, t2, t3    // z3
+    li         t3, 6270      // FIX_0_765366865
+    mul        t1, t1, t3    // MULTIPLY(z1, FIX_0_765366865)
+    li         t3, 15137     // FIX_0_765366865
+    mul        t0, t0, t3    // MULTIPLY(z2, FIX_1_847759065)
+    addu       t8, t6, t8    // tmp12
+    addu       t3, t8, t4    // tmp12 + tmp11
+    addu       t3, t3, t7    // tmp10
+    subu       t8, t8, t9    // tmp12 + tmp13
+    addu       s0, t5, s0
+    subu       t8, t8, s0    // tmp12
+    subu       t9, t6, t9
+    subu       s1, s1, t4
+    addu       t9, t9, s1    // tmp13
+    subu       t6, t6, t5
+    subu       t6, t6, s2
+    subu       t6, t6, s3    // tmp15
+    // even part start
+    lh         t4, 64(a1)
+    lh         t5, 64(a0)
+    lh         t7, 32(a1)
+    lh         s0, 32(a0)
+    lh         s1, 0(a1)
+    lh         s2, 0(a0)
+    lh         s3, 96(a1)
+    lh         v0, 96(a0)
+    mul        t4, t4, t5    // DEQUANTIZE(inptr[DCTSIZE*4],quantptr[DCTSIZE*4])
+    mul        t5, t7, s0    // DEQUANTIZE(inptr[DCTSIZE*2],quantptr[DCTSIZE*2])
+    mul        t7, s1, s2    // DEQUANTIZE(inptr[DCTSIZE*0],quantptr[DCTSIZE*0])
+    mul        s0, s3, v0    // DEQUANTIZE(inptr[DCTSIZE*6],quantptr[DCTSIZE*6])
+    // odd part end
+    addu       t1, t2, t1    // tmp11
+    subu       t0, t2, t0    // tmp14
+    // update counter and pointers
+    addiu      a3, a3, -1
+    addiu      a0, a0, 2
+    addiu      a1, a1, 2
+    // even part rest
+    li         s1, 10033
+    li         s2, 11190
+    mul        t4, t4, s1    // z4
+    mul        s1, t5, s2    // z4
+    sll        t5, t5, 13    // z1
+    sll        t7, t7, 13
+    addiu      t7, t7, 1024  // z3
+    sll        s0, s0, 13    // z2
+    addu       s2, t7, t4    // tmp10
+    subu       t4, t7, t4    // tmp11
+    subu       s3, t5, s0    // tmp12
+    addu       t2, t7, s3    // tmp21
+    subu       s3, t7, s3    // tmp24
+    addu       t7, s1, s0    // tmp12
+    addu       v0, s2, t7    // tmp20
+    subu       s2, s2, t7    // tmp25
+    subu       s1, s1, t5    // z4 - z1
+    subu       s1, s1, s0    // tmp12
+    addu       s0, t4, s1    // tmp22
+    subu       t4, t4, s1    // tmp23
+    // final output stage
+    addu       t5, v0, t3
+    subu       v0, v0, t3
+    addu       t3, t2, t1
+    subu       t2, t2, t1
+    addu       t1, s0, t8
+    subu       s0, s0, t8
+    addu       t8, t4, t9
+    subu       t4, t4, t9
+    addu       t9, s3, t0
+    subu       s3, s3, t0
+    addu       t0, s2, t6
+    subu       s2, s2, t6
+    sra        t5, t5, 11
+    sra        t3, t3, 11
+    sra        t1, t1, 11
+    sra        t8, t8, 11
+    sra        t9, t9, 11
+    sra        t0, t0, 11
+    sra        s2, s2, 11
+    sra        s3, s3, 11
+    sra        t4, t4, 11
+    sra        s0, s0, 11
+    sra        t2, t2, 11
+    sra        v0, v0, 11
+    sw         t5, 0(a2)
+    sw         t3, 32(a2)
+    sw         t1, 64(a2)
+    sw         t8, 96(a2)
+    sw         t9, 128(a2)
+    sw         t0, 160(a2)
+    sw         s2, 192(a2)
+    sw         s3, 224(a2)
+    sw         t4, 256(a2)
+    sw         s0, 288(a2)
+    sw         t2, 320(a2)
+    sw         v0, 352(a2)
+    bgtz       a3, 1b
+     addiu     a2, a2, 4
+
+    RESTORE_REGS_FROM_STACK 16, s0, s1, s2, s3
+
+    j          ra
+     nop
+
+END(jsimd_idct_12x12_pass1_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass2_mips_dspr2)
+/*
+ * a0     - workspace
+ * a1     - output
+ */
+
+    SAVE_REGS_ON_STACK 16, s0, s1, s2, s3
+
+    li        a3, 12
+
+1:
+    // Odd part
+    lw        t0, 12(a0)
+    lw        t1, 4(a0)
+    lw        t2, 20(a0)
+    lw        t3, 28(a0)
+    li        t4, 10703     // FIX(1.306562965)
+    li        t5, 4433      // FIX_0_541196100
+    mul       t4, t0, t4    // tmp11
+    mul       t5, t0, t5    // -tmp14
+    addu      t6, t1, t2    // tmp10
+    li        t7, 2139      // FIX(0.261052384)
+    mul       t7, t6, t7    // MULTIPLY(tmp10, FIX(0.261052384))
+    addu      t6, t6, t3    // tmp10 + z4
+    li        t8, 7053      // FIX(0.860918669)
+    mul       t6, t6, t8    // tmp15
+    li        t8, 2295      // FIX(0.280143716)
+    mul       t8, t1, t8    // MULTIPLY(z1, FIX(0.280143716))
+    addu      t9, t2, t3    // z3 + z4
+    li        s0, 8565      // FIX(1.045510580)
+    mul       t9, t9, s0    // -tmp13
+    li        s0, 12112     // FIX(1.478575242)
+    mul       s0, t2, s0    // MULTIPLY(z3, FIX(1.478575242))
+    li        s1, 12998     // FIX(1.586706681)
+    mul       s1, t3, s1    // MULTIPLY(z4, FIX(1.586706681))
+    li        s2, 5540      // FIX(0.676326758)
+    mul       s2, t1, s2    // MULTIPLY(z1, FIX(0.676326758))
+    li        s3, 16244     // FIX(1.982889723)
+    mul       s3, t3, s3    // MULTIPLY(z4, FIX(1.982889723))
+    subu      t1, t1, t3    // z1 -= z4
+    subu      t0, t0, t2    // z2 -= z3
+    addu      t2, t1, t0    // z1 + z2
+    li        t3, 4433      // FIX_0_541196100
+    mul       t2, t2, t3    // z3
+    li        t3, 6270      // FIX_0_765366865
+    mul       t1, t1, t3    // MULTIPLY(z1, FIX_0_765366865)
+    li        t3, 15137     // FIX_1_847759065
+    mul       t0, t0, t3    // MULTIPLY(z2, FIX_1_847759065)
+    addu      t3, t6, t7    // tmp12
+    addu      t7, t3, t4
+    addu      t7, t7, t8    // tmp10
+    subu      t3, t3, t9
+    subu      t3, t3, t5
+    subu      t3, t3, s0    // tmp12
+    subu      t9, t6, t9
+    subu      t9, t9, t4
+    addu      t9, t9, s1    // tmp13
+    subu      t6, t6, t5
+    subu      t6, t6, s2
+    subu      t6, t6, s3    // tmp15
+    addu      t1, t2, t1    // tmp11
+    subu      t0, t2, t0    // tmp14
+    // even part
+    lw        t2, 16(a0)    // z4
+    lw        t4, 8(a0)     // z1
+    lw        t5, 0(a0)     // z3
+    lw        t8, 24(a0)    // z2
+    li        s0, 10033     // FIX(1.224744871)
+    li        s1, 11190     // FIX(1.366025404)
+    mul       t2, t2, s0    // z4
+    mul       s0, t4, s1    // z4
+    addiu     t5, t5, 0x10
+    sll       t5, t5, 13    // z3
+    sll       t4, t4, 13    // z1
+    sll       t8, t8, 13    // z2
+    subu      s1, t4, t8    // tmp12
+    addu      s2, t5, t2    // tmp10
+    subu      t2, t5, t2    // tmp11
+    addu      s3, t5, s1    // tmp21
+    subu      s1, t5, s1    // tmp24
+    addu      t5, s0, t8    // tmp12
+    addu      v0, s2, t5    // tmp20
+    subu      t5, s2, t5    // tmp25
+    subu      t4, s0, t4
+    subu      t4, t4, t8    // tmp12
+    addu      t8, t2, t4    // tmp22
+    subu      t2, t2, t4    // tmp23
+    // increment counter and pointers
+    addiu     a3, a3, -1
+    addiu     a0, a0, 32
+    // Final stage
+    addu      t4, v0, t7
+    subu      v0, v0, t7
+    addu      t7, s3, t1
+    subu      s3, s3, t1
+    addu      t1, t8, t3
+    subu      t8, t8, t3
+    addu      t3, t2, t9
+    subu      t2, t2, t9
+    addu      t9, s1, t0
+    subu      s1, s1, t0
+    addu      t0, t5, t6
+    subu      t5, t5, t6
+    sll       t4, t4, 4
+    sll       t7, t7, 4
+    sll       t1, t1, 4
+    sll       t3, t3, 4
+    sll       t9, t9, 4
+    sll       t0, t0, 4
+    sll       t5, t5, 4
+    sll       s1, s1, 4
+    sll       t2, t2, 4
+    sll       t8, t8, 4
+    sll       s3, s3, 4
+    sll       v0, v0, 4
+    shll_s.w  t4, t4, 2
+    shll_s.w  t7, t7, 2
+    shll_s.w  t1, t1, 2
+    shll_s.w  t3, t3, 2
+    shll_s.w  t9, t9, 2
+    shll_s.w  t0, t0, 2
+    shll_s.w  t5, t5, 2
+    shll_s.w  s1, s1, 2
+    shll_s.w  t2, t2, 2
+    shll_s.w  t8, t8, 2
+    shll_s.w  s3, s3, 2
+    shll_s.w  v0, v0, 2
+    srl       t4, t4, 24
+    srl       t7, t7, 24
+    srl       t1, t1, 24
+    srl       t3, t3, 24
+    srl       t9, t9, 24
+    srl       t0, t0, 24
+    srl       t5, t5, 24
+    srl       s1, s1, 24
+    srl       t2, t2, 24
+    srl       t8, t8, 24
+    srl       s3, s3, 24
+    srl       v0, v0, 24
+    lw        t6, 0(a1)
+    addiu     t4, t4, 0x80
+    addiu     t7, t7, 0x80
+    addiu     t1, t1, 0x80
+    addiu     t3, t3, 0x80
+    addiu     t9, t9, 0x80
+    addiu     t0, t0, 0x80
+    addiu     t5, t5, 0x80
+    addiu     s1, s1, 0x80
+    addiu     t2, t2, 0x80
+    addiu     t8, t8, 0x80
+    addiu     s3, s3, 0x80
+    addiu     v0, v0, 0x80
+    sb        t4, 0(t6)
+    sb        t7, 1(t6)
+    sb        t1, 2(t6)
+    sb        t3, 3(t6)
+    sb        t9, 4(t6)
+    sb        t0, 5(t6)
+    sb        t5, 6(t6)
+    sb        s1, 7(t6)
+    sb        t2, 8(t6)
+    sb        t8, 9(t6)
+    sb        s3, 10(t6)
+    sb        v0, 11(t6)
+    bgtz      a3, 1b
+     addiu    a1, a1, 4
+
+    RESTORE_REGS_FROM_STACK 16, s0, s1, s2, s3
+
+    jr        ra
+     nop
+
+END(jsimd_idct_12x12_pass2_mips_dspr2)
+
+/*****************************************************************************/

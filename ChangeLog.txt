@@ -8,7 +8,7 @@ extended to support image scaling.
 
 [2] Added SIMD acceleration for performing color conversion, downsampling,
 and upsampling on DSPr2-capable MIPS platforms.  This speeds up the compression
-of full-color JPEGs by 6-18% on such platforms and decompression by 3-12%.
+of full-color JPEGs by 6-21% on such platforms and decompression by 6-17%.
 
 [3] Added support for 4:1:1 subsampling to the TurboJPEG API.  This is mainly
 included for compatibility, since 4:1:1 is not fully accelerated in

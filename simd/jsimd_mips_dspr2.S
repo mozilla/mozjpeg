@@ -963,6 +963,269 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
     j       ra
      nop
 END(jsimd_h2v2_upsample_mips_dspr2)
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_fdct_islow_mips_dspr2)
+/*
+ * a0     - data
+ */
+
+    SAVE_REGS_ON_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, s8
+
+    lui       t0, 6437
+    ori       t0, 2260
+    lui       t1, 9633
+    ori       t1, 11363
+    lui       t2, 0xd39e
+    ori       t2, 0xe6dc
+    lui       t3, 0xf72d
+    ori       t3, 9633
+    lui       t4, 2261
+    ori       t4, 9633
+    lui       t5, 0xd39e
+    ori       t5, 6437
+    lui       t6, 9633
+    ori       t6, 0xd39d
+    lui       t7, 0xe6dc
+    ori       t7, 2260
+    lui       t8, 4433
+    ori       t8, 10703
+    lui       t9, 0xd630
+    ori       t9, 4433
+    li        s8, 8
+    move      a1, a0
+1:
+    lw        s0, 0(a1)     // tmp0 = 1|0
+    lw        s1, 4(a1)     // tmp1 = 3|2
+    lw        s2, 8(a1)     // tmp2 = 5|4
+    lw        s3, 12(a1)    // tmp3 = 7|6
+    packrl.ph s1, s1, s1    // tmp1 = 2|3
+    packrl.ph s3, s3, s3    // tmp3 = 6|7
+    subq.ph   s7, s1, s2    // tmp7 = 2-5|3-4 = t5|t4
+    subq.ph   s5, s0, s3    // tmp5 = 1-6|0-7 = t6|t7
+    mult      $0, $0        // ac0  = 0
+    dpa.w.ph  $ac0, s7, t0  // ac0 += t5*  6437 + t4*  2260
+    dpa.w.ph  $ac0, s5, t1  // ac0 += t6*  9633 + t7* 11363
+    mult      $ac1, $0, $0  // ac1  = 0
+    dpa.w.ph  $ac1, s7, t2  // ac1 += t5*-11362 + t4* -6436
+    dpa.w.ph  $ac1, s5, t3  // ac1 += t6* -2259 + t7*  9633
+    mult      $ac2, $0, $0  // ac2  = 0
+    dpa.w.ph  $ac2, s7, t4  // ac2 += t5*  2261 + t4*  9633
+    dpa.w.ph  $ac2, s5, t5  // ac2 += t6*-11362 + t7*  6437
+    mult      $ac3, $0, $0  // ac3  = 0
+    dpa.w.ph  $ac3, s7, t6  // ac3 += t5*  9633 + t4*-11363
+    dpa.w.ph  $ac3, s5, t7  // ac3 += t6* -6436 + t7*  2260
+    addq.ph   s6, s1, s2    // tmp6 = 2+5|3+4 = t2|t3
+    addq.ph   s4, s0, s3    // tmp4 = 1+6|0+7 = t1|t0
+    extr_r.w  s0, $ac0, 11  // tmp0 = (ac0 + 1024) >> 11
+    extr_r.w  s1, $ac1, 11  // tmp1 = (ac1 + 1024) >> 11
+    extr_r.w  s2, $ac2, 11  // tmp2 = (ac2 + 1024) >> 11
+    extr_r.w  s3, $ac3, 11  // tmp3 = (ac3 + 1024) >> 11
+    addq.ph   s5, s4, s6    // tmp5 = t1+t2|t0+t3 = t11|t10
+    subq.ph   s7, s4, s6    // tmp7 = t1-t2|t0-t3 = t12|t13
+    sh        s0, 2(a1)
+    sh        s1, 6(a1)
+    sh        s2, 10(a1)
+    sh        s3, 14(a1)
+    mult      $0, $0        // ac0  = 0
+    dpa.w.ph  $ac0, s7, t8  // ac0 += t12*  4433 + t13* 10703
+    mult      $ac1, $0, $0  // ac1  = 0
+    dpa.w.ph  $ac1, s7, t9  // ac1 += t12*-10704 + t13*  4433
+    sra       s4, s5, 16    // tmp4 = t11
+    addiu     a1, a1, 16
+    addiu     s8, s8, -1
+    extr_r.w  s0, $ac0, 11  // tmp0 = (ac0 + 1024) >> 11
+    extr_r.w  s1, $ac1, 11  // tmp1 = (ac1 + 1024) >> 11
+    addu      s2, s5, s4    // tmp2 = t10 + t11
+    subu      s3, s5, s4    // tmp3 = t10 - t11
+    sll       s2, s2, 2     // tmp2 = (t10 + t11) << 2
+    sll       s3, s3, 2     // tmp3 = (t10 - t11) << 2
+    sh        s2, -16(a1)
+    sh        s3, -8(a1)
+    sh        s0, -12(a1)
+    bgtz      s8, 1b
+     sh       s1, -4(a1)
+    li        t0, 2260
+    li        t1, 11363
+    li        t2, 9633
+    li        t3, 6436
+    li        t4, 6437
+    li        t5, 2261
+    li        t6, 11362
+    li        t7, 2259
+    li        t8, 4433
+    li        t9, 10703
+    li        a1, 10704
+    li        s8, 8
+
+2:
+    lh        a2, 0(a0)     // 0
+    lh        a3, 16(a0)    // 8
+    lh        v0, 32(a0)    // 16
+    lh        v1, 48(a0)    // 24
+    lh        s4, 64(a0)    // 32
+    lh        s5, 80(a0)    // 40
+    lh        s6, 96(a0)    // 48
+    lh        s7, 112(a0)   // 56
+    addu      s2, v0, s5    // tmp2 = 16 + 40
+    subu      s5, v0, s5    // tmp5 = 16 - 40
+    addu      s3, v1, s4    // tmp3 = 24 + 32
+    subu      s4, v1, s4    // tmp4 = 24 - 32
+    addu      s0, a2, s7    // tmp0 =  0 + 56
+    subu      s7, a2, s7    // tmp7 =  0 - 56
+    addu      s1, a3, s6    // tmp1 =  8 + 48
+    subu      s6, a3, s6    // tmp6 =  8 - 48
+    addu      a2, s0, s3    // tmp10 = tmp0 + tmp3
+    subu      v1, s0, s3    // tmp13 = tmp0 - tmp3
+    addu      a3, s1, s2    // tmp11 = tmp1 + tmp2
+    subu      v0, s1, s2    // tmp12 = tmp1 - tmp2
+    mult      s7, t1        // ac0  = tmp7 * c1
+    madd      s4, t0        // ac0 += tmp4 * c0
+    madd      s5, t4        // ac0 += tmp5 * c4
+    madd      s6, t2        // ac0 += tmp6 * c2
+    mult      $ac1, s7, t2  // ac1  = tmp7 * c2
+    msub      $ac1, s4, t3  // ac1 -= tmp4 * c3
+    msub      $ac1, s5, t6  // ac1 -= tmp5 * c6
+    msub      $ac1, s6, t7  // ac1 -= tmp6 * c7
+    mult      $ac2, s7, t4  // ac2  = tmp7 * c4
+    madd      $ac2, s4, t2  // ac2 += tmp4 * c2
+    madd      $ac2, s5, t5  // ac2 += tmp5 * c5
+    msub      $ac2, s6, t6  // ac2 -= tmp6 * c6
+    mult      $ac3, s7, t0  // ac3  = tmp7 * c0
+    msub      $ac3, s4, t1  // ac3 -= tmp4 * c1
+    madd      $ac3, s5, t2  // ac3 += tmp5 * c2
+    msub      $ac3, s6, t3  // ac3 -= tmp6 * c3
+    extr_r.w  s0, $ac0, 15  // tmp0 = (ac0 + 16384) >> 15
+    extr_r.w  s1, $ac1, 15  // tmp1 = (ac1 + 16384) >> 15
+    extr_r.w  s2, $ac2, 15  // tmp2 = (ac2 + 16384) >> 15
+    extr_r.w  s3, $ac3, 15  // tmp3 = (ac3 + 16384) >> 15
+    addiu     s8, s8, -1
+    addu      s4, a2, a3    // tmp4 = tmp10 + tmp11
+    subu      s5, a2, a3    // tmp5 = tmp10 - tmp11
+    sh        s0, 16(a0)
+    sh        s1, 48(a0)
+    sh        s2, 80(a0)
+    sh        s3, 112(a0)
+    mult      v0, t8        // ac0  = tmp12 * c8
+    madd      v1, t9        // ac0 += tmp13 * c9
+    mult      $ac1, v1, t8  // ac1  = tmp13 * c8
+    msub      $ac1, v0, a1  // ac1 -= tmp12 * c10
+    addiu     a0, a0, 2
+    extr_r.w  s6, $ac0, 15  // tmp6 = (ac0 + 16384) >> 15
+    extr_r.w  s7, $ac1, 15  // tmp7 = (ac1 + 16384) >> 15
+    shra_r.w  s4, s4, 2     // tmp4 = (tmp4 + 2) >> 2
+    shra_r.w  s5, s5, 2     // tmp5 = (tmp5 + 2) >> 2
+    sh        s4, -2(a0)
+    sh        s5, 62(a0)
+    sh        s6, 30(a0)
+    bgtz      s8, 2b
+     sh       s7, 94(a0)
+
+    RESTORE_REGS_FROM_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, s8
+
+    jr       ra
+     nop
+
+END(jsimd_fdct_islow_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_quantize_mips_dspr2)
+/*
+ * a0     - coef_block
+ * a1     - divisors
+ * a2     - workspace
+ */
+
+    .set at
+
+    SAVE_REGS_ON_STACK 16, s0, s1, s2
+
+    addiu   v0, a2, 124  // v0 = workspace_end
+    lh      t0, 0(a2)
+    lh      t1, 0(a1)
+    lh      t2, 128(a1)
+    sra     t3, t0, 15
+    sll     t3, t3, 1
+    addiu   t3, t3, 1
+    mul     t0, t0, t3
+    lh      t4, 384(a1)
+    lh      t5, 130(a1)
+    lh      t6, 2(a2)
+    lh      t7, 2(a1)
+    lh      t8, 386(a1)
+
+1:
+    andi    t1, 0xffff
+    add     t9, t0, t2
+    andi    t9, 0xffff
+    mul     v1, t9, t1
+    sra     s0, t6, 15
+    sll     s0, s0, 1
+    addiu   s0, s0, 1
+    addiu   t9, t4, 16
+    srav    v1, v1, t9
+    mul     v1, v1, t3
+    mul     t6, t6, s0
+    andi    t7, 0xffff
+    addiu   a2, a2, 4
+    addiu   a1, a1, 4
+    add     s1, t6, t5
+    andi    s1, 0xffff
+    sh      v1, 0(a0)
+
+    mul     s2, s1, t7
+    addiu   s1, t8, 16
+    srav    s2, s2, s1
+    mul     s2,s2, s0
+    lh      t0, 0(a2)
+    lh      t1, 0(a1)
+    sra     t3, t0, 15
+    sll     t3, t3, 1
+    addiu   t3, t3, 1
+    mul     t0, t0, t3
+    lh      t2, 128(a1)
+    lh      t4, 384(a1)
+    lh      t5, 130(a1)
+    lh      t8, 386(a1)
+    lh      t6, 2(a2)
+    lh      t7, 2(a1)
+    sh      s2, 2(a0)
+    lh      t0, 0(a2)
+    sra     t3, t0, 15
+    sll     t3, t3, 1
+    addiu   t3, t3, 1
+    mul     t0, t0,t3
+    bne     a2, v0, 1b
+     addiu  a0, a0, 4
+
+    andi    t1, 0xffff
+    add     t9, t0, t2
+    andi    t9, 0xffff
+    mul     v1, t9, t1
+    sra     s0, t6, 15
+    sll     s0, s0, 1
+    addiu   s0, s0, 1
+    addiu   t9, t4, 16
+    srav    v1, v1, t9
+    mul     v1, v1, t3
+    mul     t6, t6, s0
+    andi    t7, 0xffff
+    sh      v1, 0(a0)
+    add     s1, t6, t5
+    andi    s1, 0xffff
+    mul     s2, s1, t7
+    addiu   s1, t8, 16
+    addiu   a2, a2, 4
+    addiu   a1, a1, 4
+    srav    s2, s2, s1
+    mul     s2, s2, s0
+    sh      s2, 2(a0)
+
+    RESTORE_REGS_FROM_STACK 16, s0, s1, s2
+
+    j       ra
+     nop
+
+END(jsimd_quantize_mips_dspr2)
 
 /*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_idct_2x2_mips_dspr2)

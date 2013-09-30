@@ -674,6 +674,8 @@ EXTERN(void) jsimd_fdct_ifast_sse2 JPP((DCTELEM * data));
 
 EXTERN(void) jsimd_fdct_ifast_neon JPP((DCTELEM * data));
 
+EXTERN(void) jsimd_fdct_islow_mips_dspr2 JPP((DCTELEM * data));
+
 EXTERN(void) jsimd_fdct_float_3dnow JPP((FAST_FLOAT * data));
 
 extern const int jconst_fdct_float_sse[];
@@ -691,6 +693,10 @@ EXTERN(void) jsimd_quantize_sse2 JPP((JCOEFPTR coef_block,
 EXTERN(void) jsimd_quantize_neon JPP((JCOEFPTR coef_block,
                                       DCTELEM * divisors,
                                       DCTELEM * workspace));
+
+EXTERN(void) jsimd_quantize_mips_dspr2 JPP((JCOEFPTR coef_block,
+                                            DCTELEM * divisors,
+                                            DCTELEM * workspace));
 
 EXTERN(void) jsimd_quantize_float_3dnow JPP((JCOEFPTR coef_block,
                                              FAST_FLOAT * divisors,
@@ -742,7 +748,6 @@ EXTERN(void) jsimd_idct_4x4_mips_dspr2 JPP((void * dct_table,
                                             JSAMPARRAY output_buf,
                                             JDIMENSION output_col,
                                             int * workspace));
-
 EXTERN(void) jsimd_idct_6x6_mips_dspr2 JPP((void * dct_table,
                                             JCOEFPTR coef_block,
                                             JSAMPARRAY output_buf,

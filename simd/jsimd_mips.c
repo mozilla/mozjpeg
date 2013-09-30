@@ -471,6 +471,17 @@ jsimd_convsamp_float (JSAMPARRAY sample_data, JDIMENSION start_col,
 GLOBAL(int)
 jsimd_can_fdct_islow (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    return 1;
+
   return 0;
 }
 
@@ -489,6 +500,8 @@ jsimd_can_fdct_float (void)
 GLOBAL(void)
 jsimd_fdct_islow (DCTELEM * data)
 {
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    jsimd_fdct_islow_mips_dspr2(data);
 }
 
 GLOBAL(void)
@@ -504,6 +517,19 @@ jsimd_fdct_float (FAST_FLOAT * data)
 GLOBAL(int)
 jsimd_can_quantize (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    return 1;
+
   return 0;
 }
 
@@ -517,6 +543,8 @@ GLOBAL(void)
 jsimd_quantize (JCOEFPTR coef_block, DCTELEM * divisors,
                 DCTELEM * workspace)
 {
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    jsimd_quantize_mips_dspr2(coef_block, divisors, workspace);
 }
 
 GLOBAL(void)
@@ -638,6 +666,7 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                               output_buf, output_col, workspace);
   }
 }
+
 GLOBAL(void)
 jsimd_idct_6x6 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
            JCOEFPTR coef_block, JSAMPARRAY output_buf,

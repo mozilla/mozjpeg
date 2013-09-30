@@ -6,8 +6,7 @@ line padding (previously, it only supported 4-byte padding, which was
 compatible with X Video.)  Also, the decompress-to-YUV function has been
 extended to support image scaling.
 
-[2] Added SIMD acceleration for performing color conversion, downsampling,
-upsampling, and IDCT scaling on DSPr2-capable MIPS platforms.  This speeds up
+[2] Added SIMD acceleration for DSPr2-capable MIPS platforms.  This speeds up
 the compression of full-color JPEGs by 6-21% on such platforms and
 decompression by 6-17%.
 

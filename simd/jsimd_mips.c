@@ -78,6 +78,12 @@ init_simd (void)
     return;
 #endif
 }
+static const int mips_idct_ifast_coefs[4] = {
+  0x45404540,           // FIX( 1.082392200 / 2) =  17734 = 0x4546
+  0x5A805A80,           // FIX( 1.414213562 / 2) =  23170 = 0x5A82
+  0x76407640,           // FIX( 1.847759065 / 2) =  30274 = 0x7642
+  0xAC60AC60            // FIX(-2.613125930 / 4) = -21407 = 0xAC61
+};
 
 GLOBAL(int)
 jsimd_can_rgb_ycc (void)
@@ -726,6 +732,25 @@ jsimd_can_idct_islow (void)
 GLOBAL(int)
 jsimd_can_idct_ifast (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(IFAST_MULT_TYPE) != 2)
+    return 0;
+  if (IFAST_SCALE_BITS != 2)
+    return 0;
+
+  if ((simd_support & JSIMD_MIPS_DSPR2))
+    return 1;
+
   return 0;
 }
 
@@ -744,9 +769,29 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 
 GLOBAL(void)
 jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-                JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                JDIMENSION output_col)
+                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
+                  JDIMENSION output_col)
 {
+  if (simd_support & JSIMD_MIPS_DSPR2) {
+    JCOEFPTR inptr;
+    IFAST_MULT_TYPE * quantptr;
+    DCTELEM workspace[DCTSIZE2];  /* buffers data between passes */
+
+    /* Pass 1: process columns from input, store into work array. */
+
+    inptr = coef_block;
+    quantptr = (IFAST_MULT_TYPE *) compptr->dct_table;
+
+    jsimd_idct_ifast_cols_mips_dspr2(inptr, quantptr,
+                                     workspace, mips_idct_ifast_coefs);
+
+    /* Pass 2: process rows from work array, store into output array. */
+    /* Note that we must descale the results by a factor of 8 == 2**3, */
+    /* and also undo the PASS1_BITS scaling. */
+
+    jsimd_idct_ifast_rows_mips_dspr2(workspace, output_buf,
+                                     output_col, mips_idct_ifast_coefs);
+  }
 }
 
 GLOBAL(void)

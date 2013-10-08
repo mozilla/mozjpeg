@@ -1128,6 +1128,151 @@ LEAF_MIPS_DSPR2(jsimd_fdct_islow_mips_dspr2)
 END(jsimd_fdct_islow_mips_dspr2)
 
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_fdct_ifast_mips_dspr2)
+/*
+ * a0     - data
+ */
+    .set at
+    SAVE_REGS_ON_STACK 8, s0, s1
+    li           a1, 0x014e014e  // FIX_1_306562965 (334 << 16)|(334 & 0xffff)
+    li           a2, 0x008b008b  // FIX_0_541196100 (139 << 16)|(139 & 0xffff)
+    li           a3, 0x00620062  // FIX_0_382683433 (98 << 16) |(98 & 0xffff)
+    li           s1, 0x00b500b5  // FIX_0_707106781 (181 << 16)|(181 & 0xffff)
+
+    move         v0, a0
+    addiu        v1, v0, 128     // end address
+
+0:
+    lw           t0, 0(v0)       // tmp0 = 1|0
+    lw           t1, 4(v0)       // tmp1 = 3|2
+    lw           t2, 8(v0)       // tmp2 = 5|4
+    lw           t3, 12(v0)      // tmp3 = 7|6
+    packrl.ph    t1, t1, t1      // tmp1 = 2|3
+    packrl.ph    t3, t3, t3      // tmp3 = 6|7
+    subq.ph      t7, t1, t2      // tmp7 = 2-5|3-4 = t5|t4
+    subq.ph      t5, t0, t3      // tmp5 = 1-6|0-7 = t6|t7
+    addq.ph      t6, t1, t2      // tmp6 = 2+5|3+4 = t2|t3
+    addq.ph      t4, t0, t3      // tmp4 = 1+6|0+7 = t1|t0
+    addq.ph      t8, t4, t6      // tmp5 = t1+t2|t0+t3 = t11|t10
+    subq.ph      t9, t4, t6      // tmp7 = t1-t2|t0-t3 = t12|t13
+    sra          t4, t8, 16      // tmp4 = t11
+    mult         $0, $0          // ac0  = 0
+    dpa.w.ph     $ac0, t9, s1
+    mult         $ac1, $0, $0    // ac1  = 0
+    dpa.w.ph     $ac1, t7, a3    // ac1 += t4*98 + t5*98
+    dpsx.w.ph    $ac1, t5, a3    // ac1 += t6*98 + t7*98
+    mult         $ac2, $0, $0    // ac2  = 0
+    dpa.w.ph     $ac2, t7, a2    // ac2 += t4*139 + t5*139
+    mult         $ac3, $0, $0    // ac3  = 0
+    dpa.w.ph     $ac3, t5, a1    // ac3 += t6*334 + t7*334
+    precrq.ph.w  t0, t5, t7      // t0 = t5|t6
+    addq.ph      t2, t8, t4      // tmp2 = t10 + t11
+    subq.ph      t3, t8, t4      // tmp3 = t10 - t11
+    extr.w       t4, $ac0, 8
+    mult         $0, $0          // ac0  = 0
+    dpa.w.ph     $ac0, t0, s1    // ac0 += t5*181 + t6*181
+    extr.w       t0, $ac1, 8     // t0 = z5
+    extr.w       t1, $ac2, 8     // t1 = MULTIPLY(tmp10, 139)
+    extr.w       t7, $ac3, 8     // t2 = MULTIPLY(tmp12, 334)
+    extr.w       t8, $ac0, 8     // t8 = z3 = MULTIPLY(tmp11, 181)
+    add          t6, t1, t0      // t6 = z2
+    add          t7, t7, t0      // t7 = z4
+    subq.ph      t0, t5, t8      // t0 = z13 = tmp7 - z3
+    addq.ph      t8, t5, t8      // t9 = z11 = tmp7 + z3
+    addq.ph      t1, t0, t6      // t1 = z13 + z2
+    subq.ph      t6, t0, t6      // t6 = z13 - z2
+    addq.ph      t0, t8, t7      // t0 = z11 + z4
+    subq.ph      t7, t8, t7      // t7 = z11 - z4
+    addq.ph      t5, t4, t9
+    subq.ph      t4, t9, t4
+    sh           t2, 0(v0)
+    sh           t5, 4(v0)
+    sh           t3, 8(v0)
+    sh           t4, 12(v0)
+    sh           t1, 10(v0)
+    sh           t6, 6(v0)
+    sh           t0, 2(v0)
+    sh           t7, 14(v0)
+    addiu        v0, 16
+    bne          v1, v0, 0b
+     nop
+    move         v0, a0
+    addiu        v1, v0, 16
+
+1:
+    lh           t0, 0(v0)       // 0
+    lh           t1, 16(v0)      // 8
+    lh           t2, 32(v0)      // 16
+    lh           t3, 48(v0)      // 24
+    lh           t4, 64(v0)      // 32
+    lh           t5, 80(v0)      // 40
+    lh           t6, 96(v0)      // 48
+    lh           t7, 112(v0)     // 56
+    add          t8, t0, t7      // t8 = tmp0
+    sub          t7, t0, t7      // t7 = tmp7
+    add          t0, t1, t6      // t0 = tmp1
+    sub          t1, t1, t6      // t1 = tmp6
+    add          t6, t2, t5      // t6 = tmp2
+    sub          t5, t2, t5      // t5 = tmp5
+    add          t2, t3, t4      // t2 = tmp3
+    sub          t3, t3, t4      // t3 = tmp4
+    add          t4, t8, t2      // t4 = tmp10 = tmp0 + tmp3
+    sub          t8, t8, t2      // t8 = tmp13 = tmp0 - tmp3
+    sub          s0, t0, t6      // s0 = tmp12 = tmp1 - tmp2
+    ins          t8, s0, 16, 16  // t8 = tmp12|tmp13
+    add          t2, t0, t6      // t2 = tmp11 = tmp1 + tmp2
+    mult         $0, $0          // ac0  = 0
+    dpa.w.ph     $ac0, t8, s1    // ac0 += t12*181 + t13*181
+    add          s0, t4, t2      // t8 = tmp10+tmp11
+    sub          t4, t4, t2      // t4 = tmp10-tmp11
+    sh           s0, 0(v0)
+    sh           t4, 64(v0)
+    extr.w       t2, $ac0, 8     // z1 = MULTIPLY(tmp12+tmp13,FIX_0_707106781)
+    addq.ph      t4, t8, t2      // t9 = tmp13 + z1
+    subq.ph      t8, t8, t2      // t2 = tmp13 - z1
+    sh           t4, 32(v0)
+    sh           t8, 96(v0)
+    add          t3, t3, t5      // t3 = tmp10 = tmp4 + tmp5
+    add          t0, t5, t1      // t0 = tmp11 = tmp5 + tmp6
+    add          t1, t1, t7      // t1 = tmp12 = tmp6 + tmp7
+    andi         t4, a1, 0xffff
+    mul          s0, t1, t4
+    sra          s0, s0, 8       // s0 = z4 = MULTIPLY(tmp12, FIX_1_306562965)
+    ins          t1, t3, 16, 16  // t1 = tmp10|tmp12
+    mult         $0, $0          // ac0  = 0
+    mulsa.w.ph   $ac0, t1, a3    // ac0 += t10*98 - t12*98
+    extr.w       t8, $ac0, 8     // z5 = MULTIPLY(tmp10-tmp12,FIX_0_382683433)
+    add          t2, t7, t8      // t2 = tmp7 + z5
+    sub          t7, t7, t8      // t7 = tmp7 - z5
+    andi         t4, a2, 0xffff
+    mul          t8, t3, t4
+    sra          t8, t8, 8       // t8 = z2 = MULTIPLY(tmp10, FIX_0_541196100)
+    andi         t4, s1, 0xffff
+    mul          t6, t0, t4
+    sra          t6, t6, 8       // t6 = z3 = MULTIPLY(tmp11, FIX_0_707106781)
+    add          t0, t6, t8      // t0 = z3 + z2
+    sub          t1, t6, t8      // t1 = z3 - z2
+    add          t3, t6, s0      // t3 = z3 + z4
+    sub          t4, t6, s0      // t4 = z3 - z4
+    sub          t5, t2, t1      // t5 = dataptr[5]
+    sub          t6, t7, t0      // t6 = dataptr[3]
+    add          t3, t2, t3      // t3 = dataptr[1]
+    add          t4, t7, t4      // t4 = dataptr[7]
+    sh           t5, 80(v0)
+    sh           t6, 48(v0)
+    sh           t3, 16(v0)
+    sh           t4, 112(v0)
+    addiu        v0, 2
+    bne          v0, v1, 1b
+     nop
+
+    RESTORE_REGS_FROM_STACK 8, s0, s1
+
+    j            ra
+     nop
+END(jsimd_fdct_ifast_mips_dspr2)
+
+/*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_quantize_mips_dspr2)
 /*
  * a0     - coef_block

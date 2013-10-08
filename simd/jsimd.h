@@ -675,6 +675,7 @@ EXTERN(void) jsimd_fdct_ifast_sse2 JPP((DCTELEM * data));
 EXTERN(void) jsimd_fdct_ifast_neon JPP((DCTELEM * data));
 
 EXTERN(void) jsimd_fdct_islow_mips_dspr2 JPP((DCTELEM * data));
+EXTERN(void) jsimd_fdct_ifast_mips_dspr2 JPP((DCTELEM * data));
 
 EXTERN(void) jsimd_fdct_float_3dnow JPP((FAST_FLOAT * data));
 

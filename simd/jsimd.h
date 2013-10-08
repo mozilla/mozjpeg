@@ -789,6 +789,15 @@ EXTERN(void) jsimd_idct_ifast_neon JPP((void * dct_table,
                                         JSAMPARRAY output_buf,
                                         JDIMENSION output_col));
 
+EXTERN(void) jsimd_idct_ifast_cols_mips_dspr2 JPP((JCOEF * inptr,
+                                                   IFAST_MULT_TYPE * quantptr,
+                                                   DCTELEM * wsptr,
+                                                   const int * idct_coefs));
+EXTERN(void) jsimd_idct_ifast_rows_mips_dspr2 JPP((DCTELEM * wsptr,
+                                                   JSAMPARRAY output_buf,
+                                                   JDIMENSION output_col,
+                                                   const int * idct_coefs));
+
 EXTERN(void) jsimd_idct_float_3dnow JPP((void * dct_table,
                                          JCOEFPTR coef_block,
                                          JSAMPARRAY output_buf,

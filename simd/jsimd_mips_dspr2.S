@@ -1666,6 +1666,86 @@ LEAF_MIPS_DSPR2(jsimd_quantize_mips_dspr2)
 END(jsimd_quantize_mips_dspr2)
 
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_quantize_float_mips_dspr2)
+/*
+ * a0     - coef_block
+ * a1     - divisors
+ * a2     - workspace
+ */
+
+    .set at
+
+    li         t1, 0x46800100     //integer representation 16384.5
+    mtc1       t1, f0
+    li         t0, 63
+0:
+    lwc1       f1, 0(a2)
+    lwc1       f5, 0(a1)
+    lwc1       f2, 4(a2)
+    lwc1       f6, 4(a1)
+    lwc1       f3, 8(a2)
+    lwc1       f7, 8(a1)
+    lwc1       f4, 12(a2)
+    lwc1       f8, 12(a1)
+    madd.s     f1, f0, f1, f5
+    madd.s     f2, f0, f2, f6
+    madd.s     f3, f0, f3, f7
+    madd.s     f4, f0, f4, f8
+    lwc1       f5, 16(a1)
+    lwc1       f6, 20(a1)
+    trunc.w.s  f1, f1
+    trunc.w.s  f2, f2
+    trunc.w.s  f3, f3
+    trunc.w.s  f4, f4
+    lwc1       f7, 24(a1)
+    lwc1       f8, 28(a1)
+    mfc1       t1, f1
+    mfc1       t2, f2
+    mfc1       t3, f3
+    mfc1       t4, f4
+    lwc1       f1, 16(a2)
+    lwc1       f2, 20(a2)
+    lwc1       f3, 24(a2)
+    lwc1       f4, 28(a2)
+    madd.s     f1, f0, f1, f5
+    madd.s     f2, f0, f2, f6
+    madd.s     f3, f0, f3, f7
+    madd.s     f4, f0, f4, f8
+    addiu      t1, t1, -16384
+    addiu      t2, t2, -16384
+    addiu      t3, t3, -16384
+    addiu      t4, t4, -16384
+    trunc.w.s  f1, f1
+    trunc.w.s  f2, f2
+    trunc.w.s  f3, f3
+    trunc.w.s  f4, f4
+    sh         t1, 0(a0)
+    sh         t2, 2(a0)
+    sh         t3, 4(a0)
+    sh         t4, 6(a0)
+    mfc1       t1, f1
+    mfc1       t2, f2
+    mfc1       t3, f3
+    mfc1       t4, f4
+    addiu      t0, t0, -8
+    addiu      a2, a2, 32
+    addiu      a1, a1, 32
+    addiu      t1, t1, -16384
+    addiu      t2, t2, -16384
+    addiu      t3, t3, -16384
+    addiu      t4, t4, -16384
+    sh         t1, 8(a0)
+    sh         t2, 10(a0)
+    sh         t3, 12(a0)
+    sh         t4, 14(a0)
+    bgez       t0, 0b
+     addiu     a0, a0, 16
+
+    j          ra
+     nop
+
+END(jsimd_quantize_float_mips_dspr2)
+/*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_idct_2x2_mips_dspr2)
 /*
  * a0     - compptr->dct_table
@@ -2733,3 +2813,363 @@ LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass2_mips_dspr2)
 END(jsimd_idct_12x12_pass2_mips_dspr2)
 
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_convsamp_float_mips_dspr2)
+/*
+ * a0     - sample_data
+ * a1     - start_col
+ * a2     - workspace
+ */
+
+    .set at
+
+    lw       t0, 0(a0)
+    addu     t0, t0, a1
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    lw       t0, 4(a0)
+    swc1     f1, 0(a2)
+    swc1     f2, 4(a2)
+    swc1     f3, 8(a2)
+    addu     t0, t0, a1
+    swc1     f4, 12(a2)
+    swc1     f5, 16(a2)
+    swc1     f6, 20(a2)
+    swc1     f7, 24(a2)
+    swc1     f8, 28(a2)
+    //elemr 1
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    lw       t0, 8(a0)
+    swc1     f1, 32(a2)
+    swc1     f2, 36(a2)
+    swc1     f3, 40(a2)
+    addu     t0, t0, a1
+    swc1     f4, 44(a2)
+    swc1     f5, 48(a2)
+    swc1     f6, 52(a2)
+    swc1     f7, 56(a2)
+    swc1     f8, 60(a2)
+    //elemr 2
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    lw       t0, 12(a0)
+    swc1     f1, 64(a2)
+    swc1     f2, 68(a2)
+    swc1     f3, 72(a2)
+    addu     t0, t0, a1
+    swc1     f4, 76(a2)
+    swc1     f5, 80(a2)
+    swc1     f6, 84(a2)
+    swc1     f7, 88(a2)
+    swc1     f8, 92(a2)
+    //elemr 3
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    lw       t0, 16(a0)
+    swc1     f1, 96(a2)
+    swc1     f2, 100(a2)
+    swc1     f3, 104(a2)
+    addu     t0, t0, a1
+    swc1     f4, 108(a2)
+    swc1     f5, 112(a2)
+    swc1     f6, 116(a2)
+    swc1     f7, 120(a2)
+    swc1     f8, 124(a2)
+    //elemr 4
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    lw       t0, 20(a0)
+    swc1     f1, 128(a2)
+    swc1     f2, 132(a2)
+    swc1     f3, 136(a2)
+    addu     t0, t0, a1
+    swc1     f4, 140(a2)
+    swc1     f5, 144(a2)
+    swc1     f6, 148(a2)
+    swc1     f7, 152(a2)
+    swc1     f8, 156(a2)
+    //elemr 5
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    lw       t0, 24(a0)
+    swc1     f1, 160(a2)
+    swc1     f2, 164(a2)
+    swc1     f3, 168(a2)
+    addu     t0, t0, a1
+    swc1     f4, 172(a2)
+    swc1     f5, 176(a2)
+    swc1     f6, 180(a2)
+    swc1     f7, 184(a2)
+    swc1     f8, 188(a2)
+    //elemr 6
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    lw       t0, 28(a0)
+    swc1     f1, 192(a2)
+    swc1     f2, 196(a2)
+    swc1     f3, 200(a2)
+    addu     t0, t0, a1
+    swc1     f4, 204(a2)
+    swc1     f5, 208(a2)
+    swc1     f6, 212(a2)
+    swc1     f7, 216(a2)
+    swc1     f8, 220(a2)
+    //elemr 7
+    lbu      t1, 0(t0)
+    lbu      t2, 1(t0)
+    lbu      t3, 2(t0)
+    lbu      t4, 3(t0)
+    lbu      t5, 4(t0)
+    lbu      t6, 5(t0)
+    lbu      t7, 6(t0)
+    lbu      t8, 7(t0)
+    addiu    t1, t1, -128
+    addiu    t2, t2, -128
+    addiu    t3, t3, -128
+    addiu    t4, t4, -128
+    addiu    t5, t5, -128
+    addiu    t6, t6, -128
+    addiu    t7, t7, -128
+    addiu    t8, t8, -128
+    mtc1     t1, f1
+    mtc1     t2, f2
+    mtc1     t3, f3
+    mtc1     t4, f4
+    mtc1     t5, f5
+    mtc1     t6, f6
+    mtc1     t7, f7
+    mtc1     t8, f8
+    cvt.s.w  f1, f1
+    cvt.s.w  f2, f2
+    cvt.s.w  f3, f3
+    cvt.s.w  f4, f4
+    cvt.s.w  f5, f5
+    cvt.s.w  f6, f6
+    cvt.s.w  f7, f7
+    cvt.s.w  f8, f8
+    swc1     f1, 224(a2)
+    swc1     f2, 228(a2)
+    swc1     f3, 232(a2)
+    swc1     f4, 236(a2)
+    swc1     f5, 240(a2)
+    swc1     f6, 244(a2)
+    swc1     f7, 248(a2)
+    swc1     f8, 252(a2)
+
+    j        ra
+     nop
+
+END(jsimd_convsamp_float_mips_dspr2)
+
+/*****************************************************************************/
+

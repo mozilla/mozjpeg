@@ -663,6 +663,10 @@ EXTERN(void) jsimd_convsamp_float_sse2 JPP((JSAMPARRAY sample_data,
                                             JDIMENSION start_col,
                                             FAST_FLOAT * workspace));
 
+EXTERN(void) jsimd_convsamp_float_mips_dspr2 JPP((JSAMPARRAY sample_data,
+                                                  JDIMENSION start_col,
+                                                  FAST_FLOAT * workspace));
+
 /* SIMD Forward DCT */
 EXTERN(void) jsimd_fdct_islow_mmx JPP((DCTELEM * data));
 EXTERN(void) jsimd_fdct_ifast_mmx JPP((DCTELEM * data));
@@ -710,6 +714,10 @@ EXTERN(void) jsimd_quantize_float_sse JPP((JCOEFPTR coef_block,
 EXTERN(void) jsimd_quantize_float_sse2 JPP((JCOEFPTR coef_block,
                                             FAST_FLOAT * divisors,
                                             FAST_FLOAT * workspace));
+
+EXTERN(void) jsimd_quantize_float_mips_dspr2 JPP((JCOEFPTR coef_block,
+                                                  FAST_FLOAT * divisors,
+                                                  FAST_FLOAT * workspace));
 
 /* SIMD Reduced Inverse DCT */
 EXTERN(void) jsimd_idct_2x2_mmx JPP((void * dct_table,

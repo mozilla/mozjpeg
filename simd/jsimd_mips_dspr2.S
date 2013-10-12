@@ -2813,6 +2813,155 @@ LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass2_mips_dspr2)
 END(jsimd_idct_12x12_pass2_mips_dspr2)
 
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_convsamp_mips_dspr2)
+/*
+ * a0     - sample_data
+ * a1     - start_col
+ * a2     - workspace
+ */
+
+    lw             t0, 0(a0)
+    li             t7, 0xff80ff80
+    addu           t0, t0, a1
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    lw             t0, 4(a0)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu           t0, t0, a1
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 0(a2)
+    usw            t4, 4(a2)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    usw            t5, 8(a2)
+    usw            t6, 12(a2)
+
+    lw             t0, 8(a0)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu           t0, t0, a1
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 16(a2)
+    usw            t4, 20(a2)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    usw            t5, 24(a2)
+    usw            t6, 28(a2)
+
+    lw             t0, 12(a0)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu           t0, t0, a1
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 32(a2)
+    usw            t4, 36(a2)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    usw            t5, 40(a2)
+    usw            t6, 44(a2)
+
+    lw             t0, 16(a0)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu           t0, t0, a1
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 48(a2)
+    usw            t4, 52(a2)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    usw            t5, 56(a2)
+    usw            t6, 60(a2)
+
+    lw             t0, 20(a0)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu           t0, t0, a1
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 64(a2)
+    usw            t4, 68(a2)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    usw            t5, 72(a2)
+    usw            t6, 76(a2)
+
+    lw             t0, 24(a0)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu           t0, t0, a1
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 80(a2)
+    usw            t4, 84(a2)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    usw            t5, 88(a2)
+    usw            t6, 92(a2)
+
+    lw             t0, 28(a0)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu           t0, t0, a1
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    ulw            t1, 0(t0)
+    ulw            t2, 4(t0)
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 96(a2)
+    usw            t4, 100(a2)
+    preceu.ph.qbr  t3, t1
+    preceu.ph.qbl  t4, t1
+    usw            t5, 104(a2)
+    usw            t6, 108(a2)
+    preceu.ph.qbr  t5, t2
+    preceu.ph.qbl  t6, t2
+    addu.ph        t3, t3, t7
+    addu.ph        t4, t4, t7
+    addu.ph        t5, t5, t7
+    addu.ph        t6, t6, t7
+    usw            t3, 112(a2)
+    usw            t4, 116(a2)
+    usw            t5, 120(a2)
+    usw            t6, 124(a2)
+
+    j              ra
+     nop
+
+END(jsimd_convsamp_mips_dspr2)
+
+/*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_convsamp_float_mips_dspr2)
 /*
  * a0     - sample_data

@@ -566,7 +566,7 @@ main (int argc, char **argv)
         exit(EXIT_FAILURE);
       }
       nbytes = JFREAD(input_file, &inbuffer[insize], INPUT_BUF_SIZE);
-      if (nbytes < 0) {
+      if (nbytes < INPUT_BUF_SIZE && ferror(input_file)) {
         if (file_index < argc)
           fprintf(stderr, "%s: can't read from %s\n", progname,
                   argv[file_index]);

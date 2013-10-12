@@ -491,7 +491,7 @@ void dodecomptest(char *filename)
 
 	if((file=fopen(filename, "rb"))==NULL)
 		_throwunix("opening file");
-	if(fseek(file, 0, SEEK_END)<0 || (srcsize=ftell(file))<0)
+	if(fseek(file, 0, SEEK_END)<0 || (srcsize=ftell(file))==(unsigned long)-1)
 		_throwunix("determining file size");
 	if((srcbuf=(unsigned char *)malloc(srcsize))==NULL)
 		_throwunix("allocating memory");

@@ -651,6 +651,10 @@ EXTERN(void) jsimd_convsamp_neon JPP((JSAMPARRAY sample_data,
                                       JDIMENSION start_col,
                                       DCTELEM * workspace));
 
+EXTERN(void) jsimd_convsamp_mips_dspr2 JPP((JSAMPARRAY sample_data,
+                                            JDIMENSION start_col,
+                                            DCTELEM * workspace));
+
 EXTERN(void) jsimd_convsamp_float_3dnow JPP((JSAMPARRAY sample_data,
                                              JDIMENSION start_col,
                                              FAST_FLOAT * workspace));

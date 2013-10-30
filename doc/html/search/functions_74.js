@@ -4,6 +4,7 @@ var searchData=
   ['tjbufsize',['tjBufSize',['../group___turbo_j_p_e_g.html#gaccc5bca7f12fcdcc302e6e1c6d4b311b',1,'turbojpeg.h']]],
   ['tjbufsizeyuv2',['tjBufSizeYUV2',['../group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9',1,'turbojpeg.h']]],
   ['tjcompress2',['tjCompress2',['../group___turbo_j_p_e_g.html#gaba62b7a98f960839b588579898495cf2',1,'turbojpeg.h']]],
+  ['tjcompressfromyuv',['tjCompressFromYUV',['../group___turbo_j_p_e_g.html#ga0b931126c7a615ddc3bbd0cca6698d67',1,'turbojpeg.h']]],
   ['tjdecompress2',['tjDecompress2',['../group___turbo_j_p_e_g.html#gada69cc6443d1bb493b40f1626259e5e9',1,'turbojpeg.h']]],
   ['tjdecompressheader3',['tjDecompressHeader3',['../group___turbo_j_p_e_g.html#gacd0fac3af74b3511d39b4781b7103086',1,'turbojpeg.h']]],
   ['tjdecompresstoyuv2',['tjDecompressToYUV2',['../group___turbo_j_p_e_g.html#ga7c08b340ad7f8e85d407bd9e81d44d07',1,'turbojpeg.h']]],

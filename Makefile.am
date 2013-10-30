@@ -207,6 +207,7 @@ endif
 	./tjunittest
 	./tjunittest -alloc
 	./tjunittest -yuv
+	./tjunittest -yuv -alloc
 	./tjunittest -yuv -noyuvpad
 endif
 	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testimages/testorig.ppm

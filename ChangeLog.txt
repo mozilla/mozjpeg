@@ -20,6 +20,9 @@ decompressed to CMYK destination images.  Conversion between CMYK and RGB
 images is not supported.  Such conversion requires a color management system
 and is out of scope for a codec library.
 
+[5] The TurboJPEG API can now be used to compress JPEG images from YUV planar
+source images.
+
 
 1.3.1
 =====

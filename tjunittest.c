@@ -295,6 +295,60 @@ int checkBuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 
+void initBufYUV(unsigned char *buf, int w, int pad, int h, int subsamp)
+{
+	int row, col;
+	int hsf=tjMCUWidth[subsamp]/8, vsf=tjMCUHeight[subsamp]/8;
+	int pw=PAD(w, hsf), ph=PAD(h, vsf);
+	int cw=pw/hsf, ch=ph/vsf;
+	int ypitch=PAD(pw, pad), uvpitch=PAD(cw, pad);
+	int halfway=16, blocksize=8;
+
+	memset(buf, 0, tjBufSizeYUV2(w, pad, h, subsamp));
+
+	for(row=0; row<ph; row++)
+	{
+		for(col=0; col<pw; col++)
+		{
+			unsigned char *y=&buf[ypitch*row+col];
+			if(((row/blocksize)+(col/blocksize))%2==0)
+			{
+				if(row<halfway) *y=255;  else *y=0;
+			}
+			else
+			{
+				if(row<halfway) *y=76;  else *y=226;
+			}
+		}
+	}
+	if(subsamp!=TJSAMP_GRAY)
+	{
+		halfway=16/vsf;
+		for(row=0; row<ch; row++)
+		{
+			for(col=0; col<cw; col++)
+			{
+				unsigned char *u=&buf[ypitch*ph + (uvpitch*row+col)],
+					*v=&buf[ypitch*ph + uvpitch*ch + (uvpitch*row+col)];
+				if(((row*vsf/blocksize)+(col*hsf/blocksize))%2==0)
+					*u=*v=128;
+				else
+				{
+					if(row<halfway)
+					{
+						*u=85;  *v=255;
+					}
+					else
+					{
+						*u=0;  *v=149;
+					}
+				}
+			}
+		}
+	}
+}
+
+
 int checkBufYUV(unsigned char *buf, int w, int h, int subsamp,
 	tjscalingfactor sf)
 {
@@ -400,17 +454,29 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	char tempStr[1024];  unsigned char *srcBuf=NULL;
 	double t;
 
-	if(yuv==YUVENCODE)
-		printf("%s %s -> %s YUV ... ", pixFormatStr[pf],
-			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp]);
+	if(yuv==YUVDECODE)
+	{
+		printf("YUV %s %s -> JPEG Q%d ... ", subNameLong[subsamp],
+			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", jpegQual);
+		if((srcBuf=(unsigned char *)malloc(tjBufSizeYUV2(w, pad, h, subsamp)))
+			==NULL)
+			_throw("Memory allocation failure");
+		initBufYUV(srcBuf, w, pad, h, subsamp);
+	}
 	else
-		printf("%s %s -> %s Q%d ... ", pixFormatStr[pf],
-			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp],
-			jpegQual);
+	{
+		if(yuv==YUVENCODE)
+			printf("%s %s -> %s YUV ... ", pixFormatStr[pf],
+				(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp]);
+		else
+			printf("%s %s -> %s Q%d ... ", pixFormatStr[pf],
+				(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp],
+				jpegQual);
+		if((srcBuf=(unsigned char *)malloc(w*h*tjPixelSize[pf]))==NULL)
+			_throw("Memory allocation failure");
+		initBuf(srcBuf, w, h, pf, flags);
+	}
 
-	if((srcBuf=(unsigned char *)malloc(w*h*tjPixelSize[pf]))==NULL)
-		_throw("Memory allocation failure");
-	initBuf(srcBuf, w, h, pf, flags);
 	if(*dstBuf && *dstSize>0) memset(*dstBuf, 0, *dstSize);
 
 	t=gettime();
@@ -421,14 +487,17 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	}
 	else
 	{
-		if(!alloc)
+		if(!alloc) flags|=TJFLAG_NOREALLOC;
+		if(yuv==YUVDECODE)
 		{
-			flags|=TJFLAG_NOREALLOC;
-			*dstSize=(yuv==YUVENCODE? tjBufSizeYUV2(w, pad, h, subsamp)
-				: tjBufSize(w, h, subsamp));
+			_tj(tjCompressFromYUV(handle, srcBuf, w, pad, h, subsamp, dstBuf,
+				dstSize, jpegQual, flags));
 		}
-		_tj(tjCompress2(handle, srcBuf, w, 0, h, pf, dstBuf, dstSize, subsamp,
-			jpegQual, flags));
+		else
+		{
+			_tj(tjCompress2(handle, srcBuf, w, 0, h, pf, dstBuf, dstSize, subsamp,
+				jpegQual, flags));
+		}
 	}
 	t=gettime()-t;
 
@@ -550,13 +619,13 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 	unsigned char *dstBuf=NULL;
 	unsigned long size=0;  int pfi, pf, i;
 
-	if(!alloc)
-	{
-		size=(yuv==YUVENCODE? tjBufSizeYUV2(w, pad, h, subsamp)
-			: tjBufSize(w, h, subsamp));
+	if(yuv==YUVENCODE)
+		size=tjBufSizeYUV2(w, pad, h, subsamp);
+	else if(!alloc)
+		size=tjBufSize(w, h, subsamp);
+	if(size!=0)
 		if((dstBuf=(unsigned char *)tjAlloc(size))==NULL)
 			_throw("Memory allocation failure.");
-	}
 
 	if((chandle=tjInitCompress())==NULL || (dhandle=tjInitDecompress())==NULL)
 		_throwtj();
@@ -684,7 +753,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if(alloc) printf("Testing automatic buffer allocation\n");
-	if(doyuv) {yuv=YUVENCODE;  alloc=0;  num4bf=4;}
+	if(doyuv) {yuv=YUVENCODE;  num4bf=4;}
 	doTest(35, 39, _3byteFormats, 2, TJSAMP_444, "test");
 	doTest(39, 41, _4byteFormats, num4bf, TJSAMP_444, "test");
 	doTest(41, 35, _3byteFormats, 2, TJSAMP_422, "test");

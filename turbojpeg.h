@@ -656,6 +656,60 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 
 
 /**
+ * Compress a YUV planar image into a JPEG image.
+ *
+ * @param handle a handle to a TurboJPEG compressor or transformer instance
+ * @param srcBuf pointer to an image buffer containing a YUV planar image
+ *        to be compressed.  The Y, U (Cb), and V (Cr) image planes should be
+ *        stored sequentially in the buffer, and the size of each plane
+ *        is determined by the specified width, height, padding, and level of
+ *        chrominance subsampling.  If the chrominance components are
+ *        subsampled along the horizontal dimension, then the width of the
+ *        luminance plane should be padded to the nearest multiple of 2 (same
+ *        goes for the height of the luminance plane, if the chrominance
+ *        components are subsampled along the vertical dimension.)  This is
+ *        irrespective of any additional padding specified in the <tt>pad</tt>
+ *        parameter.
+ * @param width width (in pixels) of the source image
+ * @param pad the line padding used in the source image.  For instance, if each
+ *        line in each plane of the YUV image is padded to the nearest multiple
+ *        of 4 bytes, then <tt>pad</tt> should be set to 4.
+ * @param height height (in pixels) of the source image
+ * @param subsamp the level of chrominance subsampling used in the source
+ *        image (see @ref TJSAMP "Chrominance subsampling options".)
+ * @param jpegBuf address of a pointer to an image buffer that will receive the
+ *        JPEG image.  TurboJPEG has the ability to reallocate the JPEG buffer
+ *        to accommodate the size of the JPEG image.  Thus, you can choose to:
+ *        -# pre-allocate the JPEG buffer with an arbitrary size using
+ *        #tjAlloc() and let TurboJPEG grow the buffer as needed,
+ *        -# set <tt>*jpegBuf</tt> to NULL to tell TurboJPEG to allocate the
+ *        buffer for you, or
+ *        -# pre-allocate the buffer to a "worst case" size determined by
+ *        calling #tjBufSize().  This should ensure that the buffer never has
+ *        to be re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
+ *        .
+ *        If you choose option 1, <tt>*jpegSize</tt> should be set to the
+ *        size of your pre-allocated buffer.  In any case, unless you have
+ *        set #TJFLAG_NOREALLOC, you should always check <tt>*jpegBuf</tt> upon
+ *        return from this function, as it may have changed.
+ * @param jpegSize pointer to an unsigned long variable that holds the size of
+ *        the JPEG image buffer.  If <tt>*jpegBuf</tt> points to a
+ *        pre-allocated buffer, then <tt>*jpegSize</tt> should be set to the
+ *        size of the buffer.  Upon return, <tt>*jpegSize</tt> will contain the
+ *        size of the JPEG image (in bytes.)
+ * @param jpegQual the image quality of the generated JPEG image (1 = worst,
+          100 = best)
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
+ *
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+*/
+DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
+  int width, int pad, int height, int subsamp, unsigned char **jpegBuf,
+  unsigned long *jpegSize, int jpegQual, int flags);
+
+
+/**
  * The maximum size of the buffer (in bytes) required to hold a JPEG image with
  * the given parameters.  The number of bytes returned by this function is
  * larger than the size of the uncompressed source image.  The reason for this

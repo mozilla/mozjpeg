@@ -1133,7 +1133,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	jpeg_read_header(dinfo, TRUE);
 	jpegSubsamp=getSubsamp(dinfo);
 	if(jpegSubsamp<0)
-		_throw("tjTransform(): Could not determine subsampling type for JPEG image");
+		_throw("tjDecompressToYUV2: Could not determine subsampling type for JPEG image");
 
 	jpegwidth=dinfo->image_width;  jpegheight=dinfo->image_height;
 	if(width==0) width=jpegwidth;

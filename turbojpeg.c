@@ -710,15 +710,15 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
 	unsigned char *rgbBuf=NULL;
 	#endif
 
-	getinstance(handle);
-	if((this->init&COMPRESS)==0)
-		_throw("tjEncodeYUV3(): Instance has not been initialized for compression");
-
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
 		tmpbuf[i]=NULL;  _tmpbuf[i]=NULL;
 		tmpbuf2[i]=NULL;  _tmpbuf2[i]=NULL;  outbuf[i]=NULL;
 	}
+
+	getinstance(handle);
+	if((this->init&COMPRESS)==0)
+		_throw("tjEncodeYUV3(): Instance has not been initialized for compression");
 
 	if(srcBuf==NULL || width<=0 || pitch<0 || height<=0 || pixelFormat<0
 		|| pixelFormat>=TJ_NUMPF || dstBuf==NULL || pad<0 || !isPow2(pad)
@@ -1105,14 +1105,14 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	JSAMPLE *_tmpbuf=NULL, *ptr=dstBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 	int dctsize;
 
-	getinstance(handle);
-	if((this->init&DECOMPRESS)==0)
-		_throw("tjDecompressToYUV2(): Instance has not been initialized for decompression");
-
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
 		tmpbuf[i]=NULL;  outbuf[i]=NULL;
 	}
+
+	getinstance(handle);
+	if((this->init&DECOMPRESS)==0)
+		_throw("tjDecompressToYUV2(): Instance has not been initialized for decompression");
 
 	if(jpegBuf==NULL || jpegSize<=0 || dstBuf==NULL || width<0 || pad<1
 		|| !isPow2(pad) || height<0)

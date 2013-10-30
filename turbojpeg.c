@@ -861,6 +861,133 @@ DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle handle, unsigned char *srcBuf,
 }
 
 
+DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
+	int width, int pad, int height, int subsamp, unsigned char **jpegBuf,
+	unsigned long *jpegSize, int jpegQual, int flags)
+{
+	int i, row, retval=0, alloc=1;  JSAMPROW *inbuf[MAX_COMPONENTS];
+	int cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], iw[MAX_COMPONENTS],
+		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
+	JSAMPLE *_tmpbuf=NULL, *ptr=srcBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
+
+	for(i=0; i<MAX_COMPONENTS; i++)
+	{
+		tmpbuf[i]=NULL;  inbuf[i]=NULL;
+	}
+
+	getinstance(handle)
+	if((this->init&COMPRESS)==0)
+		_throw("tjCompressFromYUV(): Instance has not been initialized for compression");
+
+	if(srcBuf==NULL || width<=0 || pad<1 || height<=0 || subsamp<0
+		|| subsamp>=NUMSUBOPT || jpegBuf==NULL || jpegSize==NULL || jpegQual<0
+		|| jpegQual>100)
+		_throw("tjCompressFromYUV(): Invalid argument");
+
+	if(setjmp(this->jerr.setjmp_buffer))
+	{
+		/* If we get here, the JPEG code has signaled an error. */
+		retval=-1;
+		goto bailout;
+	}
+
+	cinfo->image_width=width;
+	cinfo->image_height=height;
+
+	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
+	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
+	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+
+	if(flags&TJFLAG_NOREALLOC)
+	{
+		alloc=0;  *jpegSize=tjBufSize(width, height, subsamp);
+	}
+	jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
+	if(setCompDefaults(cinfo, TJPF_RGB, subsamp, jpegQual, flags)==-1)
+		return -1;
+	cinfo->raw_data_in=TRUE;
+
+	jpeg_start_compress(cinfo, TRUE);
+	for(i=0; i<cinfo->num_components; i++)
+	{
+		jpeg_component_info *compptr=&cinfo->comp_info[i];
+		int ih;
+		iw[i]=compptr->width_in_blocks*DCTSIZE;
+		ih=compptr->height_in_blocks*DCTSIZE;
+		cw[i]=PAD(cinfo->image_width, cinfo->max_h_samp_factor)
+			*compptr->h_samp_factor/cinfo->max_h_samp_factor;
+		ch[i]=PAD(cinfo->image_height, cinfo->max_v_samp_factor)
+			*compptr->v_samp_factor/cinfo->max_v_samp_factor;
+		if(iw[i]!=cw[i] || ih!=ch[i]) usetmpbuf=1;
+		th[i]=compptr->v_samp_factor*DCTSIZE;
+		tmpbufsize+=iw[i]*th[i];
+		if((inbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ch[i]))==NULL)
+			_throw("tjCompressFromYUV(): Memory allocation failure");
+		for(row=0; row<ch[i]; row++)
+		{
+			inbuf[i][row]=ptr;
+			ptr+=PAD(cw[i], pad);
+		}
+	}
+	if(usetmpbuf)
+	{
+		if((_tmpbuf=(JSAMPLE *)malloc(sizeof(JSAMPLE)*tmpbufsize))==NULL)
+			_throw("tjCompressFromYUV(): Memory allocation failure");
+		ptr=_tmpbuf;
+		for(i=0; i<cinfo->num_components; i++)
+		{
+			if((tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*th[i]))==NULL)
+				_throw("tjCompressFromYUV(): Memory allocation failure");
+			for(row=0; row<th[i]; row++)
+			{
+				tmpbuf[i][row]=ptr;
+				ptr+=iw[i];
+			}
+		}
+	}
+
+	for(row=0; row<(int)cinfo->image_height;
+		row+=cinfo->max_v_samp_factor*DCTSIZE)
+	{
+		JSAMPARRAY yuvptr[MAX_COMPONENTS];
+		int crow[MAX_COMPONENTS];
+		for(i=0; i<cinfo->num_components; i++)
+		{
+			jpeg_component_info *compptr=&cinfo->comp_info[i];
+			crow[i]=row*compptr->v_samp_factor/cinfo->max_v_samp_factor;
+			if(usetmpbuf)
+			{
+				int j, k;
+				for(j=0; j<min(th[i], ch[i]-crow[i]); j++)
+				{
+					memcpy(tmpbuf[i][j], inbuf[i][crow[i]+j], cw[i]);
+					// Duplicate last sample in row to fill out MCU
+					for(k=cw[i]; k<iw[i]; k++) tmpbuf[i][j][k]=tmpbuf[i][j][cw[i]-1];
+				}
+				// Duplicate last row to fill out MCU
+				for(j=ch[i]-crow[i]; j<th[i]; j++)
+					memcpy(tmpbuf[i][j], tmpbuf[i][ch[i]-crow[i]-1], iw[i]);
+				yuvptr[i]=tmpbuf[i];
+			}
+			else
+				yuvptr[i]=&inbuf[i][crow[i]];
+		}
+		jpeg_write_raw_data(cinfo, yuvptr, cinfo->max_v_samp_factor*DCTSIZE);
+	}
+	jpeg_finish_compress(cinfo);
+
+	bailout:
+	if(cinfo->global_state>CSTATE_START) jpeg_abort_compress(cinfo);
+	for(i=0; i<MAX_COMPONENTS; i++)
+	{
+		if(tmpbuf[i]) free(tmpbuf[i]);
+		if(inbuf[i]) free(inbuf[i]);
+	}
+	if(_tmpbuf) free(_tmpbuf);
+	return retval;
+}
+
+
 /* Decompressor */
 
 static tjhandle _tjInitDecompress(tjinstance *this)
@@ -1133,7 +1260,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	jpeg_read_header(dinfo, TRUE);
 	jpegSubsamp=getSubsamp(dinfo);
 	if(jpegSubsamp<0)
-		_throw("tjDecompressToYUV2: Could not determine subsampling type for JPEG image");
+		_throw("tjDecompressToYUV2(): Could not determine subsampling type for JPEG image");
 
 	jpegwidth=dinfo->image_width;  jpegheight=dinfo->image_height;
 	if(width==0) width=jpegwidth;

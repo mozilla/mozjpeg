@@ -298,6 +298,18 @@ TurboJPEG compressor
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;void</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImageYUV(byte[], int, int, int)">setSourceImageYUV</A></B>(byte[]&nbsp;srcImage,
+                  int&nbsp;width,
+                  int&nbsp;pad,
+                  int&nbsp;height)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Associate an uncompressed YUV planar source image with this compressor
+ instance.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;void</CODE></FONT></TD>
 <TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSubsamp(int)">setSubsamp</A></B>(int&nbsp;newSubsamp)</CODE>
 
 <BR>
@@ -462,6 +474,38 @@ setSourceImage</H3>
 </DL>
 <HR>
 
+<A NAME="setSourceImageYUV(byte[], int, int, int)"><!-- --></A><H3>
+setSourceImageYUV</H3>
+<PRE>
+public void <B>setSourceImageYUV</B>(byte[]&nbsp;srcImage,
+                              int&nbsp;width,
+                              int&nbsp;pad,
+                              int&nbsp;height)
+                       throws java.lang.Exception</PRE>
+<DL>
+<DD>Associate an uncompressed YUV planar source image with this compressor
+ instance.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>srcImage</CODE> - image buffer containing a YUV planar image to be
+ compressed.  The Y, U (Cb), and V (Cr) image planes should be stored
+ sequentially in the buffer, and the size of each plane is determined by
+ the specified width, height, and padding, as well as the level of
+ chrominance subsampling (specified using <A HREF="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSubsamp(int)"><CODE>setSubsamp(int)</CODE></A>.)  If the
+ chrominance components are subsampled along the horizontal dimension, then
+ the width of the luminance plane should be padded to the nearest multiple
+ of 2 (same goes for the height of the luminance plane, if the chrominance
+ components are subsampled along the vertical dimension.)  This is
+ irrespective of any additional padding specified in the <code>pad</code>
+ parameter.<DD><CODE>width</CODE> - width (in pixels) of the source image<DD><CODE>pad</CODE> - the line padding used in the source image.  For instance, if
+ each line in each plane of the YUV image is padded to the nearest multiple
+ of 4 bytes, then <code>pad</code> should be set to 4.<DD><CODE>height</CODE> - height (in pixels) of the source image
+<DT><B>Throws:</B>
+<DD><CODE>java.lang.Exception</CODE></DL>
+</DD>
+</DL>
+<HR>
+
 <A NAME="setSubsamp(int)"><!-- --></A><H3>
 setSubsamp</H3>
 <PRE>
@@ -476,6 +520,10 @@ public void <B>setSubsamp</B>(int&nbsp;newSubsamp)
  image with little perceptible loss of image clarity (the human eye is more
  sensitive to small changes in brightness than to small changes in color.)
  This is called "chrominance subsampling".
+ <p>
+ NOTE: When compressing a YUV planar image into a JPEG image, this method
+ also specifies the level of chrominance subsampling used in the source
+ image.
 <P>
 <DD><DL>
 <DT><B>Parameters:</B><DD><CODE>newSubsamp</CODE> - the new level of chrominance subsampling (one of

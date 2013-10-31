@@ -2,7 +2,7 @@
  * jsimd_i386.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009-2011 D. R. Commander
+ * Copyright 2009-2011, 2013 D. R. Commander
  * 
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -59,6 +59,9 @@ init_simd (void)
   env = getenv("JSIMD_FORCESSE2");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support &= JSIMD_SSE2;
+  env = getenv("JSIMD_FORCENONE");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_support = 0;
 }
 
 GLOBAL(int)

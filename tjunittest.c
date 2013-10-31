@@ -452,12 +452,15 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	int subsamp, int jpegQual, int flags)
 {
 	char tempStr[1024];  unsigned char *srcBuf=NULL;
+	const char *pfStr=(yuv==YUVDECODE)? "YUV":pixFormatStr[pf];
+	const char *buStrLong=(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ";
+	const char *buStr=(flags&TJFLAG_BOTTOMUP)? "BU":"TD";
 	double t;
 
 	if(yuv==YUVDECODE)
 	{
-		printf("YUV %s %s -> JPEG Q%d ... ", subNameLong[subsamp],
-			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", jpegQual);
+		printf("YUV %s %s -> JPEG Q%d ... ", subNameLong[subsamp], buStrLong,
+			jpegQual);
 		if((srcBuf=(unsigned char *)malloc(tjBufSizeYUV2(w, pad, h, subsamp)))
 			==NULL)
 			_throw("Memory allocation failure");
@@ -466,11 +469,9 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	else
 	{
 		if(yuv==YUVENCODE)
-			printf("%s %s -> %s YUV ... ", pixFormatStr[pf],
-				(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp]);
+			printf("%s %s -> %s YUV ... ", pfStr, buStrLong, subNameLong[subsamp]);
 		else
-			printf("%s %s -> %s Q%d ... ", pixFormatStr[pf],
-				(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ", subNameLong[subsamp],
+			printf("%s %s -> %s Q%d ... ", pfStr, buStrLong, subNameLong[subsamp],
 				jpegQual);
 		if((srcBuf=(unsigned char *)malloc(w*h*tjPixelSize[pf]))==NULL)
 			_throw("Memory allocation failure");
@@ -502,12 +503,11 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	t=gettime()-t;
 
 	if(yuv==YUVENCODE)
-		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s.yuv", basename, pixFormatStr[pf],
-			(flags&TJFLAG_BOTTOMUP)? "BU":"TD", subName[subsamp]);
+		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s.yuv", basename, pfStr, buStr,
+			subName[subsamp]);
 	else
-		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s_Q%d.jpg", basename,
-			pixFormatStr[pf], (flags&TJFLAG_BOTTOMUP)? "BU":"TD", subName[subsamp],
-			jpegQual);
+		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s_Q%d.jpg", basename, pfStr, buStr,
+			subName[subsamp], jpegQual);
 	writeJPEG(*dstBuf, *dstSize, tempStr);
 	if(yuv==YUVENCODE)
 	{

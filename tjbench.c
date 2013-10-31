@@ -697,8 +697,6 @@ void usage(char *progname)
 	printf("-bottomup = Test bottom-up compression/decompression\n");
 	printf("-tile = Test performance of the codec when the image is encoded as separate\n");
 	printf("     tiles of varying sizes.\n");
-	printf("-forcemmx, -forcesse, -forcesse2, -forcesse3 =\n");
-	printf("     Force MMX, SSE, SSE2, or SSE3 code paths in the underlying codec\n");
 	printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
 	printf("     Test the specified color conversion path in the codec (default: BGR)\n");
 	printf("-fastupsample = Use the fastest chrominance upsampling algorithm available in\n");
@@ -797,26 +795,6 @@ int main(int argc, char *argv[])
 			if(!strcasecmp(argv[i], "-tile"))
 			{
 				dotile=1;  xformopt|=TJXOPT_CROP;
-			}
-			if(!strcasecmp(argv[i], "-forcesse3"))
-			{
-				printf("Forcing SSE3 code\n\n");
-				flags|=TJFLAG_FORCESSE3;
-			}
-			if(!strcasecmp(argv[i], "-forcesse2"))
-			{
-				printf("Forcing SSE2 code\n\n");
-				flags|=TJFLAG_FORCESSE2;
-			}
-			if(!strcasecmp(argv[i], "-forcesse"))
-			{
-				printf("Forcing SSE code\n\n");
-				flags|=TJFLAG_FORCESSE;
-			}
-			if(!strcasecmp(argv[i], "-forcemmx"))
-			{
-				printf("Forcing MMX code\n\n");
-				flags|=TJFLAG_FORCEMMX;
 			}
 			if(!strcasecmp(argv[i], "-fastupsample"))
 			{

@@ -323,26 +323,6 @@ enum TJCS
  */
 #define TJFLAG_BOTTOMUP        2
 /**
- * Turn off CPU auto-detection and force TurboJPEG to use MMX code (if the
- * underlying codec supports it.)
- */
-#define TJFLAG_FORCEMMX        8
-/**
- * Turn off CPU auto-detection and force TurboJPEG to use SSE code (if the
- * underlying codec supports it.)
- */
-#define TJFLAG_FORCESSE       16
-/**
- * Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (if the
- * underlying codec supports it.)
- */
-#define TJFLAG_FORCESSE2      32
-/**
- * Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (if the
- * underlying codec supports it.)
- */
-#define TJFLAG_FORCESSE3     128
-/**
  * When decompressing an image that was compressed using chrominance
  * subsampling, use the fastest chrominance upsampling algorithm available in
  * the underlying codec.  The default is to use smooth upsampling, which
@@ -1054,6 +1034,13 @@ DLLEXPORT void DLLCALL tjFree(unsigned char *buffer);
  * @return a descriptive error message explaining why the last command failed.
  */
 DLLEXPORT char* DLLCALL tjGetErrorStr(void);
+
+
+/* Deprecated functions and macros */
+#define TJFLAG_FORCEMMX        8
+#define TJFLAG_FORCESSE       16
+#define TJFLAG_FORCESSE2      32
+#define TJFLAG_FORCESSE3     128
 
 
 /* Backward compatibility functions and macros (nothing to see here) */

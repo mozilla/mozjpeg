@@ -115,18 +115,6 @@ Macros</h2></td></tr>
 <tr class="memitem:ga72ecf4ebe6eb702d3c6f5ca27455e1ec"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">TJFLAG_BOTTOMUP</a></td></tr>
 <tr class="memdesc:ga72ecf4ebe6eb702d3c6f5ca27455e1ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">The uncompressed source/destination image is stored in bottom-up (Windows, OpenGL) order, not top-down (X11) order.  <a href="#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">More...</a><br/></td></tr>
 <tr class="separator:ga72ecf4ebe6eb702d3c6f5ca27455e1ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4e872f11c82f241736fa8297920f24e5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga4e872f11c82f241736fa8297920f24e5">TJFLAG_FORCEMMX</a></td></tr>
-<tr class="memdesc:ga4e872f11c82f241736fa8297920f24e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use MMX code (if the underlying codec supports it.)  <a href="#ga4e872f11c82f241736fa8297920f24e5">More...</a><br/></td></tr>
-<tr class="separator:ga4e872f11c82f241736fa8297920f24e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae17e63189e8cd730feed3efbd2454f38"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gae17e63189e8cd730feed3efbd2454f38">TJFLAG_FORCESSE</a></td></tr>
-<tr class="memdesc:gae17e63189e8cd730feed3efbd2454f38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE code (if the underlying codec supports it.)  <a href="#gae17e63189e8cd730feed3efbd2454f38">More...</a><br/></td></tr>
-<tr class="separator:gae17e63189e8cd730feed3efbd2454f38"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8cf0bca96ea4d472563f4b0ebf8c48e7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga8cf0bca96ea4d472563f4b0ebf8c48e7">TJFLAG_FORCESSE2</a></td></tr>
-<tr class="memdesc:ga8cf0bca96ea4d472563f4b0ebf8c48e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (if the underlying codec supports it.)  <a href="#ga8cf0bca96ea4d472563f4b0ebf8c48e7">More...</a><br/></td></tr>
-<tr class="separator:ga8cf0bca96ea4d472563f4b0ebf8c48e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf9d49066633404da4386d70820295dd2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaf9d49066633404da4386d70820295dd2">TJFLAG_FORCESSE3</a></td></tr>
-<tr class="memdesc:gaf9d49066633404da4386d70820295dd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (if the underlying codec supports it.)  <a href="#gaf9d49066633404da4386d70820295dd2">More...</a><br/></td></tr>
-<tr class="separator:gaf9d49066633404da4386d70820295dd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4ee4506c81177a06f77e2504a22efd2d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga4ee4506c81177a06f77e2504a22efd2d">TJFLAG_FASTUPSAMPLE</a></td></tr>
 <tr class="memdesc:ga4ee4506c81177a06f77e2504a22efd2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">When decompressing an image that was compressed using chrominance subsampling, use the fastest chrominance upsampling algorithm available in the underlying codec.  <a href="#ga4ee4506c81177a06f77e2504a22efd2d">More...</a><br/></td></tr>
 <tr class="separator:ga4ee4506c81177a06f77e2504a22efd2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -423,62 +411,6 @@ Variables</h2></td></tr>
 
 <p>When decompressing an image that was compressed using chrominance subsampling, use the fastest chrominance upsampling algorithm available in the underlying codec. </p>
 <p>The default is to use smooth upsampling, which creates a smooth transition between neighboring chrominance components in order to reduce upsampling artifacts in the decompressed image. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga4e872f11c82f241736fa8297920f24e5"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TJFLAG_FORCEMMX</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Turn off CPU auto-detection and force TurboJPEG to use MMX code (if the underlying codec supports it.) </p>
-
-</div>
-</div>
-<a class="anchor" id="gae17e63189e8cd730feed3efbd2454f38"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TJFLAG_FORCESSE</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Turn off CPU auto-detection and force TurboJPEG to use SSE code (if the underlying codec supports it.) </p>
-
-</div>
-</div>
-<a class="anchor" id="ga8cf0bca96ea4d472563f4b0ebf8c48e7"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TJFLAG_FORCESSE2</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Turn off CPU auto-detection and force TurboJPEG to use SSE2 code (if the underlying codec supports it.) </p>
-
-</div>
-</div>
-<a class="anchor" id="gaf9d49066633404da4386d70820295dd2"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TJFLAG_FORCESSE3</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Turn off CPU auto-detection and force TurboJPEG to use SSE3 code (if the underlying codec supports it.) </p>
 
 </div>
 </div>

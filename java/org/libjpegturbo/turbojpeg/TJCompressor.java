@@ -139,6 +139,7 @@ public class TJCompressor {
     srcPixelFormat = pixelFormat;
     srcX = x;
     srcY = y;
+    srcIsYUV = false;
   }
 
   /**
@@ -152,6 +153,41 @@ public class TJCompressor {
     srcX = srcY = -1;
   }
 
+  /**
+   * Associate an uncompressed YUV planar source image with this compressor
+   * instance.
+   *
+   * @param srcImage image buffer containing a YUV planar image to be
+   * compressed.  The Y, U (Cb), and V (Cr) image planes should be stored
+   * sequentially in the buffer, and the size of each plane is determined by
+   * the specified width, height, and padding, as well as the level of
+   * chrominance subsampling (specified using {@link #setSubsamp}.)  If the
+   * chrominance components are subsampled along the horizontal dimension, then
+   * the width of the luminance plane should be padded to the nearest multiple
+   * of 2 (same goes for the height of the luminance plane, if the chrominance
+   * components are subsampled along the vertical dimension.)  This is
+   * irrespective of any additional padding specified in the <code>pad</code>
+   * parameter.
+   *
+   * @param width width (in pixels) of the source image
+   *
+   * @param pad the line padding used in the source image.  For instance, if
+   * each line in each plane of the YUV image is padded to the nearest multiple
+   * of 4 bytes, then <code>pad</code> should be set to 4.
+   *
+   * @param height height (in pixels) of the source image
+   */
+  public void setSourceImageYUV(byte[] srcImage, int width, int pad,
+                                int height) throws Exception {
+    if (handle == 0) init();
+    if (srcImage == null || width < 1 || pad < 1 || height < 1)
+      throw new Exception("Invalid argument in setSourceImageYUV()");
+    srcBuf = srcImage;
+    srcWidth = width;
+    srcYUVPad = pad;
+    srcHeight = height;
+    srcIsYUV = true;
+  }
 
   /**
    * Set the level of chrominance subsampling for subsequent compress/encode
@@ -162,6 +198,10 @@ public class TJCompressor {
    * image with little perceptible loss of image clarity (the human eye is more
    * sensitive to small changes in brightness than to small changes in color.)
    * This is called "chrominance subsampling".
+   * <p>
+   * NOTE: When compressing a YUV planar image into a JPEG image, this method
+   * also specifies the level of chrominance subsampling used in the source
+   * image.
    *
    * @param newSubsamp the new level of chrominance subsampling (one of
    * {@link TJ TJ.SAMP_*})
@@ -203,14 +243,19 @@ public class TJCompressor {
       throw new Exception("JPEG Quality not set");
     if (subsamp < 0)
       throw new Exception("Subsampling level not set");
-    if (srcX >= 0 && srcY >= 0)
-      compressedSize = compress(srcBuf, srcX, srcY, srcWidth, srcPitch,
-                                srcHeight, srcPixelFormat, dstBuf, subsamp,
-                                jpegQuality, flags);
-    else
-      compressedSize = compress(srcBuf, srcWidth, srcPitch, srcHeight,
-                                srcPixelFormat, dstBuf, subsamp, jpegQuality,
-                                flags);
+    if (srcIsYUV)
+      compressedSize = compressFromYUV(srcBuf, srcWidth, srcYUVPad, srcHeight,
+                                       subsamp, dstBuf, jpegQuality, flags);
+    else {
+      if (srcX >= 0 && srcY >= 0)
+        compressedSize = compress(srcBuf, srcX, srcY, srcWidth, srcPitch,
+                                  srcHeight, srcPixelFormat, dstBuf, subsamp,
+                                  jpegQuality, flags);
+      else
+        compressedSize = compress(srcBuf, srcWidth, srcPitch, srcHeight,
+                                  srcPixelFormat, dstBuf, subsamp, jpegQuality,
+                                  flags);
+    }
   }
 
   /**
@@ -550,6 +595,10 @@ public class TJCompressor {
     int stride, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
     int jpegQual, int flags) throws Exception;
 
+  private native int compressFromYUV(byte[] srcBuf, int width, int pad,
+    int height, int subsamp, byte[] dstBuf, int jpegQual, int flags)
+    throws Exception;
+
   private native void encodeYUV(byte[] srcBuf, int width, int pitch,
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
     throws Exception; // deprecated
@@ -578,6 +627,8 @@ public class TJCompressor {
   private int srcY = -1;
   private int srcPitch = 0;
   private int srcPixelFormat = -1;
+  private int srcYUVPad = -1;
+  private boolean srcIsYUV;
   private int subsamp = -1;
   private int jpegQuality = -1;
   private int compressedSize = 0;

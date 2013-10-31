@@ -353,26 +353,16 @@ public final class TJ {
    * OpenGL) order, not top-down (X11) order.
    */
   public static final int FLAG_BOTTOMUP     = 2;
-  /**
-   * Turn off CPU auto-detection and force TurboJPEG to use MMX code
-   * (if the underlying codec supports it.)
-   */
+
+  @Deprecated
   public static final int FLAG_FORCEMMX     = 8;
-  /**
-   * Turn off CPU auto-detection and force TurboJPEG to use SSE code
-   * (if the underlying codec supports it.)
-   */
+  @Deprecated
   public static final int FLAG_FORCESSE     = 16;
-  /**
-   * Turn off CPU auto-detection and force TurboJPEG to use SSE2 code
-   * (if the underlying codec supports it.)
-   */
+  @Deprecated
   public static final int FLAG_FORCESSE2    = 32;
-  /**
-   * Turn off CPU auto-detection and force TurboJPEG to use SSE3 code
-   * (if the underlying codec supports it.)
-   */
+  @Deprecated
   public static final int FLAG_FORCESSE3    = 128;
+
   /**
    * When decompressing an image that was compressed using chrominance
    * subsampling, use the fastest chrominance upsampling algorithm available in

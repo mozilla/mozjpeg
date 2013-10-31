@@ -72,6 +72,7 @@ TURBOJPEG_1.4
 		tjDecompressToYUV2;
 		tjEncodeYUV3;
 		Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII;
+		Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3BIIII_3BII;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIII_3BIII;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIII_3BIII;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3BIIII;

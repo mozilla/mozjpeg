@@ -57,6 +57,14 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
+ * Method:    compressFromYUV
+ * Signature: ([BIIII[BII)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3BIIII_3BII
+  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jbyteArray, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    encodeYUV
  * Signature: ([BIIII[BII)V
  */

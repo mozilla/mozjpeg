@@ -36,9 +36,10 @@ class TJBench {
 
   static final int YUVENCODE = 1;
   static final int YUVDECODE = 2;
+  static final int YUVCOMPRESS = 3;
 
-  static int flags = 0, yuv = 0, quiet = 0, pf = TJ.PF_BGR;
-  static boolean decompOnly, doTile;
+  static int flags = 0, yuv = 0, quiet = 0, pf = TJ.PF_BGR, yuvpad = 1;
+  static boolean compOnly, decompOnly, doTile;
 
   static final String[] pixFormatStr = {
     "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY"
@@ -141,9 +142,9 @@ class TJBench {
     TJDecompressor tjd;
     double start, elapsed;
     int ps = TJ.getPixelSize(pf), i;
-    int yuvSize = TJ.bufSizeYUV(w, h, subsamp), bufsize;
-    int scaledw = (yuv == YUVDECODE) ? w : sf.getScaled(w);
-    int scaledh = (yuv == YUVDECODE) ? h : sf.getScaled(h);
+    int scaledw = sf.getScaled(w);
+    int scaledh = sf.getScaled(h);
+    int yuvSize = TJ.bufSizeYUV(scaledw, yuvpad, scaledh, subsamp), bufsize;
     int pitch = scaledw * ps;
 
     if (jpegQual > 0)
@@ -162,7 +163,7 @@ class TJBench {
     /* Execute once to preload cache */
     tjd.setJPEGImage(jpegBuf[0], jpegSize[0]);
     if (yuv == YUVDECODE)
-      tjd.decompressToYUV(dstBuf, flags);
+      tjd.decompressToYUV(dstBuf, scaledw, yuvpad, scaledh, flags);
     else
       tjd.decompress(dstBuf, scaledw, pitch, scaledh, pf, flags);
 
@@ -171,7 +172,7 @@ class TJBench {
          i++) {
       int tile = 0;
       if (yuv == YUVDECODE)
-        tjd.decompressToYUV(dstBuf, flags);
+        tjd.decompressToYUV(dstBuf, scaledw, yuvpad, scaledh, flags);
       else {
         for (int y = 0; y < h; y += tileh) {
           for (int x = 0; x < w; x += tilew, tile++) {
@@ -197,23 +198,24 @@ class TJBench {
                         (double)(w * h) / 1000000. * (double)i / elapsed);
     }
 
+    if (sf.getNum() != 1 || sf.getDenom() != 1)
+      sizeStr = new String(sf.getNum() + "_" + sf.getDenom());
+    else if (tilew != w || tileh != h)
+      sizeStr = new String(tilew + "x" + tileh);
+    else
+      sizeStr = new String("full");
+    if (decompOnly)
+      tempStr = new String(fileName + "_" + sizeStr +
+                           (yuv != 0 ? ".yuv" : ".bmp"));
+    else
+      tempStr = new String(fileName + "_" + subName[subsamp] + qualStr +
+                           "_" + sizeStr + (yuv != 0 ? ".yuv" : ".bmp"));
+
     if (yuv == YUVDECODE) {
-      tempStr = fileName + "_" + subName[subsamp] + qualStr + ".yuv";
       FileOutputStream fos = new FileOutputStream(tempStr);
       fos.write(dstBuf, 0, yuvSize);
       fos.close();
     } else {
-      if (sf.getNum() != 1 || sf.getDenom() != 1)
-        sizeStr = new String(sf.getNum() + "_" + sf.getDenom());
-      else if (tilew != w || tileh != h)
-        sizeStr = new String(tilew + "x" + tileh);
-      else
-        sizeStr = new String("full");
-      if (decompOnly)
-        tempStr = new String(fileName + "_" + sizeStr + ".bmp");
-      else
-        tempStr = new String(fileName + "_" + subName[subsamp] + qualStr +
-                             "_" + sizeStr + ".bmp");
       saveImage(tempStr, dstBuf, scaledw, scaledh, pf);
       int ndx = tempStr.indexOf('.');
       tempStr = new String(tempStr.substring(0, ndx) + "-err.bmp");
@@ -319,7 +321,9 @@ class TJBench {
     int[] jpegSize;
     double start, elapsed;
     int totalJpegSize = 0, tilew, tileh, i;
-    int ps = TJ.getPixelSize(pf), ntilesw = 1, ntilesh = 1, pitch = w * ps;
+    int ps = (yuv == YUVCOMPRESS ? 3 : TJ.getPixelSize(pf));
+    int ntilesw = 1, ntilesh = 1, pitch = w * ps;
+    String pfStr = (yuv == YUVCOMPRESS ? "YUV" : pixFormatStr[pf]);
 
     if (yuv == YUVENCODE) {
       doTestYUV(srcBuf, w, h, subsamp, fileName);
@@ -329,8 +333,7 @@ class TJBench {
     tmpBuf = new byte[pitch * h];
 
     if (quiet == 0)
-      System.out.format(">>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n",
-        pixFormatStr[pf],
+      System.out.format(">>>>>  %s (%s) <--> JPEG %s Q%d  <<<<<\n", pfStr,
         (flags & TJ.FLAG_BOTTOMUP) != 0 ? "Bottom-up" : "Top-down",
         subNameLong[subsamp], jpegQual);
 
@@ -350,12 +353,16 @@ class TJBench {
 
       /* Compression test */
       if (quiet == 1)
-        System.out.format("%s\t%s\t%s\t%d\t", pixFormatStr[pf],
+        System.out.format("%s\t%s\t%s\t%d\t", pfStr,
                           (flags & TJ.FLAG_BOTTOMUP) != 0 ? "BU" : "TD",
                           subNameLong[subsamp], jpegQual);
-      for (i = 0; i < h; i++)
-        System.arraycopy(srcBuf, w * ps * i, tmpBuf, pitch * i, w * ps);
-      tjc.setSourceImage(srcBuf, tilew, pitch, tileh, pf);
+      if (yuv != YUVCOMPRESS)
+        for (i = 0; i < h; i++)
+          System.arraycopy(srcBuf, w * ps * i, tmpBuf, pitch * i, w * ps);
+      if (yuv == YUVCOMPRESS)
+        tjc.setSourceImageYUV(srcBuf, tilew, yuvpad, tileh);
+      else
+        tjc.setSourceImage(srcBuf, tilew, pitch, tileh, pf);
       tjc.setJPEGQuality(jpegQual);
       tjc.setSubsamp(subsamp);
 
@@ -371,7 +378,8 @@ class TJBench {
           for (int x = 0; x < w; x += tilew, tile++) {
             int width = Math.min(tilew, w - x);
             int height = Math.min(tileh, h - y);
-            tjc.setSourceImage(srcBuf, x, y, width, pitch, height, pf);
+            if (yuv != YUVCOMPRESS)
+              tjc.setSourceImage(srcBuf, x, y, width, pitch, height, pf);
             tjc.compress(jpegBuf[tile], flags);
             jpegSize[tile] = tjc.getCompressedSize();
             totalJpegSize += jpegSize[tile];
@@ -412,8 +420,9 @@ class TJBench {
       }
 
       /* Decompression test */
-      decompTest(srcBuf, jpegBuf, jpegSize, tmpBuf, w, h, subsamp, jpegQual,
-                 fileName, tilew, tileh);
+      if (!compOnly)
+        decompTest(srcBuf, jpegBuf, jpegSize, tmpBuf, w, h, subsamp, jpegQual,
+                   fileName, tilew, tileh);
 
       for (i = 0; i < ntilesw * ntilesh; i++)
         jpegBuf[i] = null;
@@ -601,7 +610,7 @@ class TJBench {
     String className = new TJBench().getClass().getName();
 
     System.out.println("\nUSAGE: java " + className);
-    System.out.println("       <Inputfile (BMP)> <Quality> [options]\n");
+    System.out.println("       <Inputfile (BMP|YUV)> <Quality> [options]\n");
     System.out.println("       java " + className);
     System.out.println("       <Inputfile (JPG)> [options]\n");
     System.out.println("Options:\n");
@@ -619,11 +628,21 @@ class TJBench {
     System.out.println("     codec");
     System.out.println("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the");
     System.out.println("     underlying codec");
-    System.out.println("-440 = Test 4:4:0 chrominance subsampling instead of 4:2:2");
-    System.out.println("-411 = Test 4:1:1 chrominance subsampling instead of 4:2:0");
+    System.out.println("-subsamp <s> = if compressing a JPEG image from a YUV planar source image,");
+    System.out.println("     this specifies the level of chrominance subsampling used in the source");
+    System.out.println("     image.  Otherwise, this specifies the level of chrominance subsampling");
+    System.out.println("     to use in the JPEG destination image.  <s> = 444, 422, 440, 420, 411,");
+    System.out.println("     or GRAY");
     System.out.println("-quiet = Output results in tabular rather than verbose format");
     System.out.println("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG");
     System.out.println("-yuvdecode = Decode JPEG image to planar YUV rather than RGB");
+    System.out.println("-yuvsize WxH = if compressing a JPEG image from a YUV planar source image, this");
+    System.out.println("     specifies the width and height of the source image.");
+    System.out.println("-yuvpad <p> = if compressing a JPEG image from a YUV planar source image, this");
+    System.out.println("     specifies the number of bytes to which each row of each plane in the");
+    System.out.println("     source image is padded.  If decompressing a JPEG image to a YUV planar");
+    System.out.println("     destination image, this specifies the row padding for each plane of the");
+    System.out.println("     destination image. (default=1)");
     System.out.println("-scale M/N = scale down the width/height of the decompressed JPEG image by a");
     System.out.print  ("     factor of M/N (M/N = ");
     for (i = 0; i < nsf; i++) {
@@ -646,7 +665,8 @@ class TJBench {
     System.out.println("     decompression (these options are mutually exclusive)");
     System.out.println("-grayscale = Perform lossless grayscale conversion prior to decompression");
     System.out.println("     test (can be combined with the other transforms above)");
-    System.out.println("-benchTime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
+    System.out.println("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)");
+	System.out.println("-componly = Stop after running compression tests.  Do not test decompression.\n");
     System.out.println("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate");
     System.out.println("test will be performed for all quality values in the range.\n");
     System.exit(1);
@@ -657,7 +677,7 @@ class TJBench {
     byte[] srcBuf = null;  int w = 0, h = 0;
     int minQual = -1, maxQual = -1;
     int minArg = 1;  int retval = 0;
-    boolean do440 = false, do411 = false;
+    int subsamp = -1;
 
     try {
 
@@ -667,6 +687,8 @@ class TJBench {
       String tempStr = argv[0].toLowerCase();
       if (tempStr.endsWith(".jpg") || tempStr.endsWith(".jpeg"))
         decompOnly = true;
+      if (tempStr.endsWith(".yuv"))
+        yuv = YUVCOMPRESS;
 
       System.out.println("");
 
@@ -735,10 +757,6 @@ class TJBench {
             System.out.println("Using most accurate DCT/IDCT algorithm\n");
             flags |= TJ.FLAG_ACCURATEDCT;
           }
-          if (argv[i].equals("-440"))
-            do440 = true;
-          if (argv[i].equals("-411"))
-            do411 = true;
           if (argv[i].equalsIgnoreCase("-rgb"))
             pf = TJ.PF_RGB;
           if (argv[i].equalsIgnoreCase("-rgbx"))
@@ -808,6 +826,44 @@ class TJBench {
             else
               usage();
           }
+          if (argv[i].equalsIgnoreCase("-yuvsize") && i < argv.length - 1) {
+            int temp1 = 0, temp2 = 0;
+            Scanner scanner = new Scanner(argv[++i]).useDelimiter("x");
+            try {
+              temp1 = scanner.nextInt();
+              temp2 = scanner.nextInt();
+            } catch(Exception e) {}
+            if (temp1 >= 1 && temp2 >= 1) {
+              w = temp1;
+              h = temp2;
+            } else
+              usage();
+          }
+          if (argv[i].equalsIgnoreCase("-yuvpad") && i < argv.length - 1) {
+            int temp = 0;
+            try {
+             temp = Integer.parseInt(argv[++i]);
+            } catch (NumberFormatException e) {}
+            if (temp >= 1)
+              yuvpad = temp;
+          }
+          if (argv[i].equalsIgnoreCase("-subsamp") && i < argv.length - 1) {
+            i++;
+            if (argv[i].toUpperCase().startsWith("G"))
+              subsamp = TJ.SAMP_GRAY;
+            else if (argv[i].equals("444"))
+              subsamp = TJ.SAMP_444;
+            else if (argv[i].equals("422"))
+              subsamp = TJ.SAMP_422;
+            else if (argv[i].equals("440"))
+              subsamp = TJ.SAMP_440;
+            else if (argv[i].equals("420"))
+              subsamp = TJ.SAMP_420;
+            else if (argv[i].equals("411"))
+              subsamp = TJ.SAMP_411;
+          }
+          if (argv[i].equalsIgnoreCase("-componly"))
+            compOnly = true;
           if (argv[i].equalsIgnoreCase("-?"))
             usage();
         }
@@ -824,17 +880,30 @@ class TJBench {
 
       if (yuv != 0 && doTile) {
         System.out.println("Disabling tiled compression/decompression tests, because those tests do not");
-        System.out.println("work when YUV encoding or decoding is enabled.\n");
+        System.out.println("work when YUV encoding, compression, or decoding is enabled.\n");
         doTile = false;
       }
 
       if (!decompOnly) {
-        int[] width = new int[1], height = new int[1];
-        srcBuf = loadImage(argv[0], width, height, pf);
-        w = width[0];  h = height[0];
-        int index = -1;
-        if ((index = argv[0].indexOf('.')) >= 0)
-          argv[0] = argv[0].substring(0, index);
+        if(yuv == YUVCOMPRESS) {
+          if (w < 1 || h < 1 || subsamp < 0 || subsamp >= TJ.NUMSAMP)
+            throw new Exception("YUV image size and/or subsampling not specified");
+          FileInputStream fis = new FileInputStream(argv[0]);
+          int srcSize = (int)fis.getChannel().size();
+          if (srcSize != TJ.bufSizeYUV(w, yuvpad, h, subsamp))
+            throw new Exception("YUV image file is the wrong size");
+          srcBuf = new byte[srcSize];
+          fis.read(srcBuf, 0, srcSize);
+          fis.close();
+		}
+        else {
+          int[] width = new int[1], height = new int[1];
+          srcBuf = loadImage(argv[0], width, height, pf);
+          w = width[0];  h = height[0];
+          int index = -1;
+          if ((index = argv[0].indexOf('.')) >= 0)
+            argv[0] = argv[0].substring(0, index);
+        }
       }
 
       if (quiet == 1 && !decompOnly) {
@@ -851,21 +920,27 @@ class TJBench {
       }
 
       System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, TJ.SAMP_GRAY, i, argv[0]);
-      System.out.println("");
-      System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, do411 ? TJ.SAMP_411 : TJ.SAMP_420, i, argv[0]);
-      System.out.println("");
-      System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, do440 ? TJ.SAMP_440 : TJ.SAMP_422, i, argv[0]);
-      System.out.println("");
-      System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, TJ.SAMP_444, i, argv[0]);
-      System.out.println("");
+      if (yuv == YUVCOMPRESS || (subsamp >= 0 && subsamp < TJ.NUMSAMP)) {
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, subsamp, i, argv[0]);
+        System.out.println("");
+      } else {
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_GRAY, i, argv[0]);
+        System.out.println("");
+        System.gc();
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_420, i, argv[0]);
+        System.out.println("");
+        System.gc();
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_422, i, argv[0]);
+        System.out.println("");
+        System.gc();
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_444, i, argv[0]);
+        System.out.println("");
+      }
 
     } catch (Exception e) {
       System.out.println("ERROR: " + e.getMessage());

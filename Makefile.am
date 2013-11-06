@@ -192,6 +192,8 @@ if WITH_ARITH_ENC
 	cmp $(srcdir)/testimages/testimgari.jpg testoutari.jpg
 	./jpegtran -arithmetic -outfile testouta.jpg $(srcdir)/testimages/testimgint.jpg
 	cmp $(srcdir)/testimages/testimgari.jpg testouta.jpg
+	./cjpeg -dct int -progressive -arithmetic -sample 1x1 -outfile testoutpa.jpg $(srcdir)/testimages/testorig.ppm
+	cmp $(srcdir)/testimages/testimgpa.jpg testoutpa.jpg
 endif
 if WITH_ARITH_DEC
 	./djpeg -dct int -fast -ppm -outfile testoutari.ppm $(srcdir)/testimages/testimgari.jpg

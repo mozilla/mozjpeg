@@ -22,24 +22,24 @@ typedef enum {			/* JPEG marker codes */
   M_SOF1  = 0xc1,
   M_SOF2  = 0xc2,
   M_SOF3  = 0xc3,
-  
+
   M_SOF5  = 0xc5,
   M_SOF6  = 0xc6,
   M_SOF7  = 0xc7,
-  
+
   M_JPG   = 0xc8,
   M_SOF9  = 0xc9,
   M_SOF10 = 0xca,
   M_SOF11 = 0xcb,
-  
+
   M_SOF13 = 0xcd,
   M_SOF14 = 0xce,
   M_SOF15 = 0xcf,
-  
+
   M_DHT   = 0xc4,
-  
+
   M_DAC   = 0xcc,
-  
+
   M_RST0  = 0xd0,
   M_RST1  = 0xd1,
   M_RST2  = 0xd2,
@@ -48,7 +48,7 @@ typedef enum {			/* JPEG marker codes */
   M_RST5  = 0xd5,
   M_RST6  = 0xd6,
   M_RST7  = 0xd7,
-  
+
   M_SOI   = 0xd8,
   M_EOI   = 0xd9,
   M_SOS   = 0xda,
@@ -57,7 +57,7 @@ typedef enum {			/* JPEG marker codes */
   M_DRI   = 0xdd,
   M_DHP   = 0xde,
   M_EXP   = 0xdf,
-  
+
   M_APP0  = 0xe0,
   M_APP1  = 0xe1,
   M_APP2  = 0xe2,
@@ -74,13 +74,13 @@ typedef enum {			/* JPEG marker codes */
   M_APP13 = 0xed,
   M_APP14 = 0xee,
   M_APP15 = 0xef,
-  
+
   M_JPG0  = 0xf0,
   M_JPG13 = 0xfd,
   M_COM   = 0xfe,
-  
+
   M_TEM   = 0x01,
-  
+
   M_ERROR = 0x100
 } JPEG_MARKER;
 
@@ -233,16 +233,16 @@ emit_dac (j_compress_ptr cinfo)
   char ac_in_use[NUM_ARITH_TBLS];
   int length, i;
   jpeg_component_info *compptr;
-  
+
   for (i = 0; i < NUM_ARITH_TBLS; i++)
     dc_in_use[i] = ac_in_use[i] = 0;
-  
+
   for (i = 0; i < cinfo->comps_in_scan; i++) {
     compptr = cinfo->cur_comp_info[i];
     dc_in_use[compptr->dc_tbl_no] = 1;
     ac_in_use[compptr->ac_tbl_no] = 1;
   }
-  
+
   length = 0;
   for (i = 0; i < NUM_ARITH_TBLS; i++)
     length += dc_in_use[i] + ac_in_use[i];

@@ -45,6 +45,9 @@ entropy coding (by passing arguments of -progressive -arithmetic to cjpeg or
 jpegtran, for instance) would result in an error, "Requested feature was
 omitted at compile time".
 
+[4] Fixed a couple of issues whereby malformed JPEG images would cause
+libjpeg-turbo to use uninitialized memory during decompression.
+
 
 1.3.0
 =====

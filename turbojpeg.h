@@ -533,7 +533,7 @@ typedef struct tjtransform
    * @param planeRegion #tjregion structure containing the width and height of
    *        the component plane to which <tt>coeffs</tt> belongs
    * @param componentID ID number of the component plane to which
-   *        <tt>coeffs</tt> belongs (Y, U, and V have, respectively, ID's of
+   *        <tt>coeffs</tt> belongs (Y, Cb, and Cr have, respectively, ID's of
    *        0, 1, and 2 in typical JPEG images.)
    * @param transformID ID number of the transformed image to which
    *        <tt>coeffs</tt> belongs.  This is the same as the index of the

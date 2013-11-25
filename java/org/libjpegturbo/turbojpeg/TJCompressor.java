@@ -344,6 +344,10 @@ public class TJCompressor {
    * Although this will work with any subsampling option, it is really only
    * useful in combination with {@link TJ#SAMP_420}, which produces an image
    * compatible with the I420 (AKA "YUV420P") format.
+   * <p>
+   * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+   * convention of the digital video community, the TurboJPEG API uses "YUV" to
+   * refer to an image format consisting of Y, Cb, and Cr image planes.
    *
    * @param dstBuf buffer that will receive the YUV planar image.  Use
    * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer

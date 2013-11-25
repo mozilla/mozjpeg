@@ -58,8 +58,8 @@ public interface TJCustomFilter {
    * component plane to which <code>coeffBuffer</code> belongs
    *
    * @param componentID ID number of the component plane to which
-   * <code>coeffBuffer</code> belongs (Y, U, and V have, respectively, ID's of
-   * 0, 1, and 2 in typical JPEG images.)
+   * <code>coeffBuffer</code> belongs (Y, Cb, and Cr have, respectively, ID's
+   * of 0, 1, and 2 in typical JPEG images.)
    *
    * @param transformID ID number of the transformed image to which
    * <code>coeffBuffer</code> belongs.  This is the same as the index of the

@@ -165,8 +165,8 @@ void <B>customFilter</B>(java.nio.ShortBuffer&nbsp;coeffBuffer,
  into multiple DCT coefficient buffers and call the callback function once
  for each buffer.<DD><CODE>planeRegion</CODE> - rectangle containing the width and height of the
  component plane to which <code>coeffBuffer</code> belongs<DD><CODE>componentID</CODE> - ID number of the component plane to which
- <code>coeffBuffer</code> belongs (Y, U, and V have, respectively, ID's of
- 0, 1, and 2 in typical JPEG images.)<DD><CODE>transformID</CODE> - ID number of the transformed image to which
+ <code>coeffBuffer</code> belongs (Y, Cb, and Cr have, respectively, ID's
+ of 0, 1, and 2 in typical JPEG images.)<DD><CODE>transformID</CODE> - ID number of the transformed image to which
  <code>coeffBuffer</code> belongs.  This is the same as the index of the
  transform in the <code>transforms</code> array that was passed to <A HREF="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><CODE>TJTransformer.transform()</CODE></A>.<DD><CODE>transform</CODE> - a <A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg"><CODE>TJTransform</CODE></A> instance that specifies the
  parameters and/or cropping region for this transform

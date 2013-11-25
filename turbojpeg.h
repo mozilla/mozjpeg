@@ -53,12 +53,16 @@
 
 /**
  * Chrominance subsampling options.
- * When an image is converted from the RGB to the YUV colorspace as part of
- * the JPEG compression process, some of the U and V (chrominance) components
+ * When an image is converted from the RGB to the YCbCr colorspace as part of
+ * the JPEG compression process, some of the Cb and Cr (chrominance) components
  * can be discarded or averaged together to produce a smaller image with little
  * perceptible loss of image clarity (the human eye is more sensitive to small
  * changes in brightness than small changes in color.)  This is called
  * "chrominance subsampling".
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  */
 enum TJSAMP
 {
@@ -611,6 +615,10 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
  * padded to 4 bytes.  Although this will work with any subsampling option, it
  * is really only useful in combination with TJ_420, which produces an image
  * compatible with the I420 (AKA "YUV420P") format.
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels
@@ -742,6 +750,10 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * that, if the width or height of the image is not an even multiple of the MCU
  * block size (see #tjMCUWidth and #tjMCUHeight), then an intermediate buffer
  * copy will be performed within TurboJPEG.
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param jpegBuf pointer to a buffer containing the JPEG image to decompress

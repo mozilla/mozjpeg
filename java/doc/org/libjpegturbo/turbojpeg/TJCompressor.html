@@ -590,6 +590,10 @@ public void <B>encodeYUV</B>(byte[]&nbsp;dstBuf,
  Although this will work with any subsampling option, it is really only
  useful in combination with <A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html#SAMP_420"><CODE>TJ.SAMP_420</CODE></A>, which produces an image
  compatible with the I420 (AKA "YUV420P") format.
+ <p>
+ NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ convention of the digital video community, the TurboJPEG API uses "YUV" to
+ refer to an image format consisting of Y, Cb, and Cr image planes.
 <P>
 <DD><DL>
 <DT><B>Parameters:</B><DD><CODE>dstBuf</CODE> - buffer that will receive the YUV planar image.  Use

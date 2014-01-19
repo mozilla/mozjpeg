@@ -5,7 +5,7 @@
 # Configure script for IJG libjpeg
 #
 
-AC_INIT([libjpeg], [9.0.0])
+AC_INIT([libjpeg], [9.1.0])
 
 # Directory where autotools helper scripts lives.
 AC_CONFIG_AUX_DIR([.])

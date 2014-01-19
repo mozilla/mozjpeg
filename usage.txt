@@ -158,10 +158,10 @@ file size is about the same --- often a little smaller.
 
 Switches for advanced users:
 
-	-arithmetic	Use arithmetic coding.  CAUTION: arithmetic coded JPEG
-			is not yet widely implemented, so many decoders will
-			be unable to view an arithmetic coded JPEG file at
-			all.
+	-arithmetic	Use arithmetic coding.
+			CAUTION: arithmetic coded JPEG is not yet widely
+			implemented, so many decoders will be unable to
+			view an arithmetic coded JPEG file at all.
 
 	-block N	Set DCT block size.  All N from 1 to 16 are possible.
 			Default is 8 (baseline format).
@@ -187,6 +187,25 @@ Switches for advanced users:
 			color transform support is not yet widely implemented,
 			so many decoders will be unable to view a reversible
 			color transformed JPEG file at all.
+
+	-bgycc		Create big gamut YCC JPEG file.
+			In this type of encoding the color difference
+			components are quantized further by a factor of 2
+			compared to the normal Cb/Cr values, thus creating
+			space to allow larger color values with higher
+			saturation than the normal gamut limits to be encoded.
+			In order to compensate for the loss of color fidelity
+			compared to a normal YCC encoded file, the color
+			quantization tables can be adjusted accordingly.
+			For example, cjpeg -bgycc -quality 80,90 will give
+			similar results as cjpeg -quality 80.
+			CAUTION: For correct decompression a decoder with big
+			gamut YCC support (JFIF version 2) is required.
+			An old decoder may or may not display a big gamut YCC
+			encoded JPEG file, depending on JFIF version check
+			and corresponding warning/error configuration.
+			In case of a granted decompression the old decoder
+			will display the image with half saturated colors.
 
 	-dct int	Use integer DCT method (default).
 	-dct fast	Use fast integer DCT (less accurate).
@@ -387,7 +406,8 @@ quality settings to make very small JPEG files; the percentage improvement
 is often a lot more than it is on larger files.  (At present, -optimize
 mode is always selected when generating progressive JPEG files.)
 
-GIF input files are no longer supported, to avoid the Unisys LZW patent.
+GIF input files are no longer supported, to avoid the Unisys LZW patent
+(now expired).
 (Conversion of GIF files to JPEG is usually a bad idea anyway.)
 
 
@@ -415,8 +435,9 @@ it may run out of memory even with -maxmemory 0.  In that case you can still
 decompress, with some loss of image quality, by specifying -onepass for
 one-pass quantization.
 
-To avoid the Unisys LZW patent, djpeg produces uncompressed GIF files.  These
-are larger than they should be, but are readable by standard GIF decoders.
+To avoid the Unisys LZW patent (now expired), djpeg produces uncompressed GIF
+files.  These are larger than they should be, but are readable by standard GIF
+decoders.
 
 
 HINTS FOR BOTH PROGRAMS
@@ -533,13 +554,19 @@ image region but losslessly preserves what is inside.  Like the rotate and
 flip transforms, lossless crop is restricted by the current JPEG format: the
 upper left corner of the selected region must fall on an iMCU boundary.  If
 this does not hold for the given crop parameters, we silently move the upper
-left corner up and/or left to make it so, simultaneously increasing the region
-dimensions to keep the lower right crop corner unchanged.  (Thus, the output
-image covers at least the requested region, but may cover more.)
+left corner up and/or left to make it so, simultaneously increasing the
+region dimensions to keep the lower right crop corner unchanged.  (Thus, the
+output image covers at least the requested region, but may cover more.)
+The adjustment of the region dimensions may be optionally disabled.
 
 The image can be losslessly cropped by giving the switch:
 	-crop WxH+X+Y	Crop to a rectangular subarea of width W, height H
 			starting at point X,Y.
+
+A complementary lossless-wipe option is provided to discard (gray out) data
+inside a given image region while losslessly preserving what is outside:
+	-wipe WxH+X+Y	Wipe (gray out) a rectangular subarea of
+			width W, height H starting at point X,Y.
 
 Other not-strictly-lossless transformation switches are:
 

@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  FILE LIST
 
-Copyright (C) 1994-2012, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -198,6 +198,7 @@ config.sub
 depcomp
 missing
 ar-lib
+compile
 install-sh	Install shell script for those Unix systems lacking one.
 Makefile.in	Makefile input for configure.
 Makefile.am	Source file for use with Automake to generate Makefile.in.

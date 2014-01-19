@@ -1,4 +1,4 @@
-.TH JPEGTRAN 1 "28 December 2009"
+.TH JPEGTRAN 1 "13 September 2013"
 .SH NAME
 jpegtran \- lossless transformation of JPEG files
 .SH SYNOPSIS
@@ -156,14 +156,22 @@ image region but losslessly preserves what is inside.  Like the rotate and
 flip transforms, lossless crop is restricted by the current JPEG format: the
 upper left corner of the selected region must fall on an iMCU boundary.  If
 this does not hold for the given crop parameters, we silently move the upper
-left corner up and/or left to make it so, simultaneously increasing the region
-dimensions to keep the lower right crop corner unchanged.  (Thus, the output
-image covers at least the requested region, but may cover more.)
+left corner up and/or left to make it so, simultaneously increasing the
+region dimensions to keep the lower right crop corner unchanged.  (Thus, the
+output image covers at least the requested region, but may cover more.)
+The adjustment of the region dimensions may be optionally disabled.
 
 The image can be losslessly cropped by giving the switch:
 .TP
 .B \-crop WxH+X+Y
 Crop to a rectangular subarea of width W, height H starting at point X,Y.
+.PP
+A complementary lossless-wipe option is provided to discard (gray out) data
+inside a given image region while losslessly preserving what is outside:
+.TP
+.B \-wipe WxH+X+Y
+Wipe (gray out) a rectangular subarea of width W, height H starting at point
+X,Y.
 .PP
 Other not-strictly-lossless transformation switches are:
 .TP

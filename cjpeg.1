@@ -1,4 +1,4 @@
-.TH CJPEG 1 "4 May 2012"
+.TH CJPEG 1 "23 November 2013"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -199,6 +199,26 @@ this feature.  Reversible color transform support is not yet
 widely implemented, so many decoders will be unable to view
 a reversible color transformed JPEG file at all.
 .TP
+.B \-bgycc
+Create big gamut YCC JPEG file.
+In this type of encoding the color difference components are quantized
+further by a factor of 2 compared to the normal Cb/Cr values, thus creating
+space to allow larger color values with higher saturation than the normal
+gamut limits to be encoded.  In order to compensate for the loss of color
+fidelity compared to a normal YCC encoded file, the color quantization
+tables can be adjusted accordingly.  For example,
+.B cjpeg \-bgycc \-quality
+80,90 will give similar results as
+.B cjpeg \-quality
+80.
+.B Caution:
+For correct decompression a decoder with big gamut YCC support (JFIF
+version 2) is required.  An old decoder may or may not display a big
+gamut YCC encoded JPEG file, depending on JFIF version check and
+corresponding warning/error configuration.  In case of a granted
+decompression the old decoder will display the image with half
+saturated colors.
+.TP
 .B \-dct int
 Use integer DCT method (default).
 .TP
@@ -355,7 +375,8 @@ Communications of the ACM, April 1991 (vol. 34, no. 4), pp. 30-44.
 .SH AUTHOR
 Independent JPEG Group
 .SH BUGS
-GIF input files are no longer supported, to avoid the Unisys LZW patent.
+GIF input files are no longer supported, to avoid the Unisys LZW patent
+(now expired).
 (Conversion of GIF files to JPEG is usually a bad idea anyway.)
 .PP
 Not all variants of BMP and Targa file formats are supported.

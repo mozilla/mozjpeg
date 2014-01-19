@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  SYSTEM ARCHITECTURE
 
-Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1991-2013, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -170,16 +170,16 @@ can be simplified a little if they work on padded data: it's not necessary to
 have special cases at the right and bottom edges.  Therefore the interface
 buffer is always an integral number of blocks wide and high, and we expect
 compression preprocessing to pad the source data properly.  Padding will occur
-only to the next block (N-sample) boundary.  In an interleaved-scan situation,
-additional dummy blocks may be used to fill out MCUs, but the MCU assembly and
-disassembly logic will create or discard these blocks internally.  (This is
-advantageous for speed reasons, since we avoid DCTing the dummy blocks.
-It also permits a small reduction in file size, because the compressor can
-choose dummy block contents so as to minimize their size in compressed form.
-Finally, it makes the interface buffer specification independent of whether
-the file is actually interleaved or not.)  Applications that wish to deal
-directly with the downsampled data must provide similar buffering and padding
-for odd-sized images.
+only to the next block (block_size-sample) boundary.  In an interleaved-scan
+situation, additional dummy blocks may be used to fill out MCUs, but the MCU
+assembly and disassembly logic will create or discard these blocks internally.
+(This is advantageous for speed reasons, since we avoid DCTing the dummy
+blocks.  It also permits a small reduction in file size, because the
+compressor can choose dummy block contents so as to minimize their size
+in compressed form.  Finally, it makes the interface buffer specification
+independent of whether the file is actually interleaved or not.)
+Applications that wish to deal directly with the downsampled data must
+provide similar buffering and padding for odd-sized images.
 
 
 *** Poor man's object-oriented programming ***
@@ -345,9 +345,10 @@ The objects shown above are:
   require context rows above and below the current row group; the
   preprocessing controller is responsible for supplying these rows via proper
   buffering.  The downsampler is responsible for edge expansion at the right
-  edge (i.e., extending each sample row to a multiple of N samples); but the
-  preprocessing controller is responsible for vertical edge expansion (i.e.,
-  duplicating the bottom sample row as needed to make a multiple of N rows).
+  edge (i.e., extending each sample row to a multiple of block_size samples);
+  but the preprocessing controller is responsible for vertical edge expansion
+  (i.e., duplicating the bottom sample row as needed to make a multiple of
+  block_size rows).
 
 * Coefficient controller: buffer controller for the DCT-coefficient data.
   This controller handles MCU assembly, including insertion of dummy DCT
@@ -651,8 +652,8 @@ contain quantized coefficients everywhere outside the DCT/IDCT subsystems.
 quantization a la JPEG Part 3.)
 
 Notice that the allocation unit is now a row of 8x8 coefficient blocks,
-corresponding to N rows of samples.  Otherwise the structure is much the same
-as for samples, and for the same reasons.
+corresponding to block_size rows of samples.  Otherwise the structure
+is much the same as for samples, and for the same reasons.
 
 On machines where malloc() can't handle a request bigger than 64Kb, this data
 structure limits us to rows of less than 512 JBLOCKs, or a picture width of

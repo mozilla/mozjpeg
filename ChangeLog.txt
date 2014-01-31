@@ -23,6 +23,14 @@ and is out of scope for a codec library.
 [5] The TurboJPEG API can now be used to compress JPEG images from YUV planar
 source images.
 
+[6] If an application attempts to decompress a Huffman-coded JPEG image whose
+header does not contain Huffman tables, libjpeg-turbo will now insert the
+default Huffman tables.  In order to save space, many motion JPEG video frames
+are encoded without the default Huffman tables, so these frames can now be
+successfully decompressed by libjpeg-turbo without additional work on the part
+of the application.  An application can still override the Huffman tables, for
+instance to re-use tables from a previous frame of the same video.
+
 
 1.3.1
 =====

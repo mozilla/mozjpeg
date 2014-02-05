@@ -210,3 +210,36 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_MIPSEL_ASSEMBLER_IFELSE],[
     $2
   fi
 ])
+
+AC_DEFUN([AC_CHECK_COMPATIBLE_ARM64_ASSEMBLER_IFELSE],[
+  ac_good_gnu_arm_assembler=no
+  ac_save_CC="$CC"
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CCASFLAGS -x assembler-with-cpp"
+  CC="$CCAS"
+  AC_COMPILE_IFELSE([[
+    .text
+    movi v0.16b, #100]], ac_good_gnu_arm_assembler=yes)
+
+  ac_use_gas_preprocessor=no
+  if test "x$ac_good_gnu_arm_assembler" = "xno" ; then
+    CC="gas-preprocessor.pl $CCAS"
+    AC_COMPILE_IFELSE([[
+      .text
+      movi v0.16b, #100]], ac_use_gas_preprocessor=yes)
+  fi
+  CFLAGS="$ac_save_CFLAGS"
+  CC="$ac_save_CC"
+
+  if test "x$ac_use_gas_preprocessor" = "xyes" ; then
+    CCAS="gas-preprocessor.pl $CCAS"
+    AC_SUBST([CCAS])
+    ac_good_gnu_arm_assembler=yes
+  fi
+
+  if test "x$ac_good_gnu_arm_assembler" = "xyes" ; then
+    $1
+  else
+    $2
+  fi
+])

@@ -60,7 +60,7 @@ endif
 
 if SIMD_ARM_64
 
-libsimd_la_SOURCES = jsimd_arm.c jsimd_arm_neon_64.S
+libsimd_la_SOURCES = jsimd_arm64.c jsimd_arm_neon_64.S
 
 endif
 

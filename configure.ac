@@ -430,7 +430,7 @@ if test "x${with_simd}" != "xno"; then
           AC_MSG_ERROR([SIMD support can't be enabled.])
         else
           AC_MSG_WARN([SIMD support can't be enabled.  Performance will suffer.])
-      fi
+        fi
       fi
       ;;
     *)

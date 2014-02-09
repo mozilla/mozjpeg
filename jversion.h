@@ -28,5 +28,7 @@
 #define JCOPYRIGHT	"Copyright (C) 1991-2012 Thomas G. Lane, Guido Vollbeding\n" \
 			"Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
 			"Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
-			"Copyright (C) 2009-2013 D. R. Commander\n" \
-			"Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)"
+			"Copyright (C) 2009-2014 D. R. Commander\n" \
+			"Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
+			"Copyright (C) 2013 MIPS Technologies, Inc.\n" \
+			"Copyright (C) 2013 Linaro Limited"

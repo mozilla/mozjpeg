@@ -6,6 +6,8 @@
  * Modified 2003-2008 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, D. R. Commander.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains optional default-setting code for the JPEG compressor.
@@ -322,18 +324,38 @@ jpeg_set_defaults (j_compress_ptr cinfo)
     cinfo->arith_ac_K[i] = 5;
   }
 
+#ifdef C_PROGRESSIVE_SUPPORTED
+  if (cinfo->use_moz_defaults)
+    jpeg_simple_progression(cinfo);
+  else {
+    /* Default is no multiple-scan output */
+    cinfo->scan_info = NULL;
+    cinfo->num_scans = 0;
+  }
+#else
   /* Default is no multiple-scan output */
   cinfo->scan_info = NULL;
   cinfo->num_scans = 0;
-
+#endif
+  
   /* Expect normal source image, not raw downsampled data */
   cinfo->raw_data_in = FALSE;
 
   /* Use Huffman coding, not arithmetic coding, by default */
   cinfo->arith_code = FALSE;
 
+#ifdef ENTROPY_OPT_SUPPORTED
+  if (cinfo->use_moz_defaults)
+    /* By default, do extra passes to optimize entropy coding */
+    cinfo->optimize_coding = TRUE;
+  else
+    /* By default, don't do extra passes to optimize entropy coding */
+    cinfo->optimize_coding = FALSE;
+#else
   /* By default, don't do extra passes to optimize entropy coding */
   cinfo->optimize_coding = FALSE;
+#endif
+  
   /* The standard Huffman tables are only valid for 8-bit data precision.
    * If the precision is higher, force optimization on so that usable
    * tables will be computed.  This test can be removed if default tables
@@ -527,6 +549,22 @@ fill_a_scan (jpeg_scan_info * scanptr, int ci,
 }
 
 LOCAL(jpeg_scan_info *)
+fill_a_scan_pair (jpeg_scan_info * scanptr, int ci,
+             int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for pair of components */
+{
+  scanptr->comps_in_scan = 2;
+  scanptr->component_index[0] = ci;
+  scanptr->component_index[1] = ci + 1;
+  scanptr->Ss = Ss;
+  scanptr->Se = Se;
+  scanptr->Ah = Ah;
+  scanptr->Al = Al;
+  scanptr++;
+  return scanptr;
+}
+
+LOCAL(jpeg_scan_info *)
 fill_scans (jpeg_scan_info * scanptr, int ncomps,
 	    int Ss, int Se, int Ah, int Al)
 /* Support routine: generate one scan for each component */
@@ -590,10 +628,17 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     nscans = 10;
   } else {
     /* All-purpose script for other color spaces. */
-    if (ncomps > MAX_COMPS_IN_SCAN)
-      nscans = 6 * ncomps;	/* 2 DC + 4 AC scans per component */
-    else
-      nscans = 2 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+    if (cinfo->use_moz_defaults) {
+      if (ncomps > MAX_COMPS_IN_SCAN)
+        nscans = 5 * ncomps;	/* 2 DC + 4 AC scans per component */
+      else
+        nscans = 1 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+    } else {
+      if (ncomps > MAX_COMPS_IN_SCAN)
+        nscans = 6 * ncomps;	/* 2 DC + 4 AC scans per component */
+      else
+        nscans = 2 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+    }
   }
 
   /* Allocate space for script.
@@ -615,35 +660,67 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
-    /* Initial DC scan */
-    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
-    /* Initial AC scan: get some luma data out in a hurry */
-    scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 2);
-    /* Chroma data is too small to be worth expending many scans on */
-    scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 1);
-    scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 1);
-    /* Complete spectral selection for luma AC */
-    scanptr = fill_a_scan(scanptr, 0, 6, 63, 0, 2);
-    /* Refine next bit of luma AC */
-    scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
-    /* Finish DC successive approximation */
-    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
-    /* Finish AC successive approximation */
-    scanptr = fill_a_scan(scanptr, 2, 1, 63, 1, 0);
-    scanptr = fill_a_scan(scanptr, 1, 1, 63, 1, 0);
-    /* Luma bottom bit comes last since it's usually largest scan */
-    scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
+    if (cinfo->use_moz_defaults) {
+      /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
+      /* Initial DC scan */
+      scanptr = fill_dc_scans(scanptr, 1, 0, 0);
+      scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
+      /* Low frequency AC scans */
+      scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 2);
+      scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
+      scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
+      /* Complete spectral selection for luma AC */
+      scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 2);
+      /* Finish luma AC successive approximation */
+      scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
+      scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
+      /* Complete spectral selection for chroma AC */
+      scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
+      scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
+    } else {
+      /* Initial DC scan */
+      scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+      /* Initial AC scan: get some luma data out in a hurry */
+      scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 2);
+      /* Chroma data is too small to be worth expending many scans on */
+      scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 1);
+      scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 1);
+      /* Complete spectral selection for luma AC */
+      scanptr = fill_a_scan(scanptr, 0, 6, 63, 0, 2);
+      /* Refine next bit of luma AC */
+      scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
+      /* Finish DC successive approximation */
+      scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+      /* Finish AC successive approximation */
+      scanptr = fill_a_scan(scanptr, 2, 1, 63, 1, 0);
+      scanptr = fill_a_scan(scanptr, 1, 1, 63, 1, 0);
+      /* Luma bottom bit comes last since it's usually largest scan */
+      scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
+    }
   } else {
     /* All-purpose script for other color spaces. */
-    /* Successive approximation first pass */
-    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
-    scanptr = fill_scans(scanptr, ncomps, 1, 5, 0, 2);
-    scanptr = fill_scans(scanptr, ncomps, 6, 63, 0, 2);
-    /* Successive approximation second pass */
-    scanptr = fill_scans(scanptr, ncomps, 1, 63, 2, 1);
-    /* Successive approximation final pass */
-    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
-    scanptr = fill_scans(scanptr, ncomps, 1, 63, 1, 0);
+    if (cinfo->use_moz_defaults) {
+      /* scan defined in jpeg_scan_bw.txt in jpgcrush */
+      /* DC component, no successive approximation */
+      scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
+      /* Successive approximation first pass */
+      scanptr = fill_scans(scanptr, ncomps, 1, 8, 0, 2);
+      scanptr = fill_scans(scanptr, ncomps, 9, 63, 0, 2);
+      /* Successive approximation second pass */
+      scanptr = fill_scans(scanptr, ncomps, 1, 63, 2, 1);
+      /* Successive approximation final pass */
+      scanptr = fill_scans(scanptr, ncomps, 1, 63, 1, 0);
+    } else {
+      /* Successive approximation first pass */
+      scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+      scanptr = fill_scans(scanptr, ncomps, 1, 5, 0, 2);
+      scanptr = fill_scans(scanptr, ncomps, 6, 63, 0, 2);
+      /* Successive approximation second pass */
+      scanptr = fill_scans(scanptr, ncomps, 1, 63, 2, 1);
+      /* Successive approximation final pass */
+      scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+      scanptr = fill_scans(scanptr, ncomps, 1, 63, 1, 0);
+    }
   }
 }
 

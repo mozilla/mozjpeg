@@ -6,6 +6,8 @@
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, 2013, D. R. Commander.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for the JPEG compressor.
@@ -229,7 +231,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
 
   force_baseline = FALSE;	/* by default, allow 16-bit quantizers */
+#ifdef C_PROGRESSIVE_SUPPORTED
+  simple_progressive = cinfo->num_scans == 0 ? FALSE : TRUE;
+#else
   simple_progressive = FALSE;
+#endif
   is_targa = FALSE;
   outfilename = NULL;
   memdst = FALSE;
@@ -391,6 +397,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	/* restart_interval will be computed during startup */
       }
 
+    } else if (keymatch(arg, "revert", 3)) {
+      /* revert to old JPEG default */
+      cinfo->use_moz_defaults = FALSE;
+      jpeg_set_defaults(cinfo);
+
     } else if (keymatch(arg, "sample", 2)) {
       /* Set sampling factors. */
       if (++argn >= argc)	/* advance to next argument */
@@ -522,6 +533,7 @@ main (int argc, char **argv)
    */
 
   cinfo.in_color_space = JCS_RGB; /* arbitrary guess */
+  cinfo.use_moz_defaults = TRUE;
   jpeg_set_defaults(&cinfo);
 
   /* Scan command line to find file names.

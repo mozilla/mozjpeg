@@ -6,6 +6,8 @@
  * Modified 2002-2009 by Guido Vollbeding.
  * Modifications:
  * Copyright (C) 2009-2011, 2013, D. R. Commander.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file defines the application interface for the JPEG library.
@@ -374,6 +376,8 @@ struct jpeg_compress_struct {
   int smoothing_factor;		/* 1..100, or 0 for no input smoothing */
   J_DCT_METHOD dct_method;	/* DCT algorithm selector */
 
+  boolean use_moz_defaults; /* TRUE if using Mozilla defaults */
+  
   /* The restart interval can be specified in absolute MCUs by setting
    * restart_interval, or in MCU rows by setting restart_in_rows
    * (in which case the correct restart_interval will be figured

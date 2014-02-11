@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
  * Modifications:
- * Copyright (C) 2010, 2012-2013, D. R. Commander.
+ * Copyright (C) 2010, 2012-2014, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains software version identification.

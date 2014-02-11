@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -945,7 +945,7 @@ public class TJUnitTest {
 
   private static void bufSizeTest() throws Exception {
     int w, h, i, subsamp;
-    byte[] srcBuf, jpegBuf;
+    byte[] srcBuf, dstBuf;
     TJCompressor tjc = null;
     Random r = new Random();
 
@@ -959,22 +959,35 @@ public class TJUnitTest {
             if (h % 100 == 0)
               System.out.format("%04d x %04d\b\b\b\b\b\b\b\b\b\b\b", w, h);
             srcBuf = new byte[w * h * 4];
-            jpegBuf = new byte[TJ.bufSize(w, h, subsamp)];
+            if (yuv == YUVENCODE)
+              dstBuf = new byte[TJ.bufSizeYUV(w, pad, h, subsamp)];
+            else
+              dstBuf = new byte[TJ.bufSize(w, h, subsamp)];
             for (i = 0; i < w * h * 4; i++) {
               srcBuf[i] = (byte)(r.nextInt(2) * 255);
             }
             tjc.setSourceImage(srcBuf, w, 0, h, TJ.PF_BGRX);
             tjc.setSubsamp(subsamp);
             tjc.setJPEGQuality(100);
-            tjc.compress(jpegBuf, 0);
+            tjc.setYUVPad(pad);
+            if (yuv == YUVENCODE)
+              tjc.encodeYUV(dstBuf, 0);
+            else
+              tjc.compress(dstBuf, 0);
 
             srcBuf = new byte[h * w * 4];
-            jpegBuf = new byte[TJ.bufSize(h, w, subsamp)];
+            if (yuv == YUVENCODE)
+              dstBuf = new byte[TJ.bufSizeYUV(h, pad, w, subsamp)];
+            else
+              dstBuf = new byte[TJ.bufSize(h, w, subsamp)];
             for (i = 0; i < h * w * 4; i++) {
               srcBuf[i] = (byte)(r.nextInt(2) * 255);
             }
             tjc.setSourceImage(srcBuf, h, 0, w, TJ.PF_BGRX);
-            tjc.compress(jpegBuf, 0);
+            if (yuv == YUVENCODE)
+              tjc.encodeYUV(dstBuf, 0);
+            else
+              tjc.compress(dstBuf, 0);
           }
         }
       }
@@ -1033,9 +1046,10 @@ public class TJUnitTest {
       _4byteFormats[4] = -1;
       doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,
              testName);
-      if (!doyuv && !bi)
+      if (!bi)
         bufSizeTest();
       if (doyuv && !bi) {
+     	  System.out.print("\n--------------------\n\n");
         yuv = YUVDECODE;
         doTest(48, 48, onlyRGB, TJ.SAMP_444, "javatest_yuv0");
         doTest(35, 39, onlyRGB, TJ.SAMP_444, "javatest_yuv1");

@@ -56,6 +56,10 @@ omitted at compile time".
 [4] Fixed a couple of issues whereby malformed JPEG images would cause
 libjpeg-turbo to use uninitialized memory during decompression.
 
+[5] Fixed an error ("Buffer passed to JPEG library is too small") that occurred
+when calling the TurboJPEG YUV encoding function with a very small (< 5x5)
+source image, and added a unit test to check for this error.
+
 
 1.3.0
 =====

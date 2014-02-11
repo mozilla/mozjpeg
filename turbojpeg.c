@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -759,7 +759,20 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
 	jpeg_mem_dest_tj(cinfo, &dstBuf, &yuvsize, 0);
 	if(setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags)==-1) return -1;
 
-	jpeg_start_compress(cinfo, TRUE);
+	/* Execute only the parts of jpeg_start_compress() that we need.  If we
+	   were to call the whole jpeg_start_compress() function, then it would try
+	   to write the file headers, which could overflow the output buffer if the
+	   YUV image were very small. */
+	if(cinfo->global_state!=CSTATE_START)
+		_throw("tjEncodeYUV3(): libjpeg API is in the wrong state");
+	(*cinfo->err->reset_error_mgr)((j_common_ptr)cinfo);
+	(*cinfo->dest->init_destination)(cinfo);
+	jinit_c_master_control(cinfo, FALSE);
+	jinit_color_converter(cinfo);
+	jinit_downsampler(cinfo);
+	jinit_c_prep_controller(cinfo, FALSE);
+	(*cinfo->mem->realize_virt_arrays)((j_common_ptr)cinfo);
+
 	pw=PAD(width, cinfo->max_h_samp_factor);
 	ph=PAD(height, cinfo->max_v_samp_factor);
 

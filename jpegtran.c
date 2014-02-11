@@ -5,6 +5,8 @@
  * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, D. R. Commander.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for JPEG transcoding.
@@ -65,6 +67,7 @@ usage (void)
 #ifdef C_PROGRESSIVE_SUPPORTED
   fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
 #endif
+  fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "Switches for modifying the image:\n");
 #if TRANSFORMS_SUPPORTED
   fprintf(stderr, "  -crop WxH+X+Y  Crop to a rectangular subarea\n");
@@ -135,7 +138,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   char * scansarg = NULL;	/* saves -scans parm if any */
 
   /* Set up default JPEG parameters. */
+#ifdef C_PROGRESSIVE_SUPPORTED
+  simple_progressive = cinfo->num_scans == 0 ? FALSE : TRUE;
+#else
   simple_progressive = FALSE;
+#endif
   outfilename = NULL;
   copyoption = JCOPYOPT_DEFAULT;
   transformoption.transform = JXFORM_NONE;
@@ -295,6 +302,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	/* restart_interval will be computed during startup */
       }
 
+    } else if (keymatch(arg, "revert", 3)) {
+      /* revert to old JPEG default */
+      cinfo->use_moz_defaults = FALSE;
+      
     } else if (keymatch(arg, "rotate", 2)) {
       /* Rotate 90, 180, or 270 degrees (measured clockwise). */
       if (++argn >= argc)	/* advance to next argument */
@@ -394,6 +405,7 @@ main (int argc, char **argv)
   /* Initialize the JPEG compression object with default error handling. */
   dstinfo.err = jpeg_std_error(&jdsterr);
   jpeg_create_compress(&dstinfo);
+  dstinfo.use_moz_defaults = TRUE;
 
   /* Now safe to enable signal catcher.
    * Note: we assume only the decompression object will have virtual arrays.

@@ -168,6 +168,7 @@ usage (void)
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
+  fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "Switches for advanced users:\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");

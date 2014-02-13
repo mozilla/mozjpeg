@@ -377,7 +377,12 @@ struct jpeg_compress_struct {
   J_DCT_METHOD dct_method;	/* DCT algorithm selector */
 
   boolean use_moz_defaults; /* TRUE if using Mozilla defaults */
-  
+  boolean optimize_scans; /* TRUE=optimize progressive coding scans */
+  struct jpeg_destination_mgr * saved_dest; /* saved value of dest */
+  unsigned char * scan_buffer[64]; /* buffer for a given scan */
+  unsigned long scan_size[64]; /* size for a given scan */
+  int best_Al; /* best value for Al found in scan search */
+
   /* The restart interval can be specified in absolute MCUs by setting
    * restart_interval, or in MCU rows by setting restart_in_rows
    * (in which case the correct restart_interval will be figured

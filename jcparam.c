@@ -325,6 +325,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   }
 
 #ifdef C_PROGRESSIVE_SUPPORTED
+  cinfo->optimize_scans = TRUE;
   if (cinfo->use_moz_defaults)
     jpeg_simple_progression(cinfo);
   else {
@@ -607,6 +608,162 @@ fill_dc_scans (jpeg_scan_info * scanptr, int ncomps, int Ah, int Al)
 
 
 /*
+ * List of scans to be tested
+ * cinfo->num_components and cinfo->jpeg_color_space must be correct.
+ */
+
+LOCAL(void)
+jpeg_search_progression (j_compress_ptr cinfo)
+{
+  int ncomps = cinfo->num_components;
+  int nscans;
+  jpeg_scan_info * scanptr;
+  
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  
+  /* Figure space needed for script.  Calculation must match code below! */
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    /* Custom script for YCbCr color images. */
+    nscans = 64;
+  } else {
+    /* All-purpose script for other color spaces. */
+    if (cinfo->use_moz_defaults) {
+      if (ncomps > MAX_COMPS_IN_SCAN)
+        nscans = 5 * ncomps;	/* 2 DC + 4 AC scans per component */
+      else
+        nscans = 1 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+    } else {
+      if (ncomps > MAX_COMPS_IN_SCAN)
+        nscans = 6 * ncomps;	/* 2 DC + 4 AC scans per component */
+      else
+        nscans = 2 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+    }
+  }
+  
+  /* Allocate space for script.
+   * We need to put it in the permanent pool in case the application performs
+   * multiple compressions without changing the settings.  To avoid a memory
+   * leak if jpeg_simple_progression is called repeatedly for the same JPEG
+   * object, we try to re-use previously allocated space, and we allocate
+   * enough space to handle YCbCr even if initially asked for grayscale.
+   */
+  if (cinfo->script_space == NULL || cinfo->script_space_size < nscans) {
+    cinfo->script_space_size = MAX(nscans, 10);
+    cinfo->script_space = (jpeg_scan_info *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+                                cinfo->script_space_size * SIZEOF(jpeg_scan_info));
+  }
+  scanptr = cinfo->script_space;
+  cinfo->scan_info = scanptr;
+  cinfo->num_scans = nscans;
+  
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    
+    /* 23 scans for luma */
+    /* 1 scan for DC */
+    /* 11 scans to determine successive approximation */
+    /* 11 scans to determine frequency approximation */
+    /* after 12 scans need to update following 11 */
+    /* after 23 scans need to determine which to keep */
+    /* last 4 done conditionally */
+    
+    /* luma DC by itself */
+    scanptr = fill_dc_scans(scanptr, 1, 0, 0);
+    /* luma approximation 1 */
+    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
+    /* luma approximation 2 */
+    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 1);
+    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 1);
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
+    /* luma approximation 3 */
+    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 2);
+    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 2);
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
+    /* luma approximation 4 */
+    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 3);
+    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 3);
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 3, 2);
+    /* luma frequency split 1 */
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 0, 0);
+    /* luma frequency split 2 */
+    scanptr = fill_a_scan(scanptr, 0, 1, 2, 0, 0);
+    scanptr = fill_a_scan(scanptr, 0, 3, 63, 0, 0);
+    /* luma frequency split 3 */
+    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
+    /* luma frequency split 4, don't do if 2 and 3 didn't help */
+    scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 0);
+    scanptr = fill_a_scan(scanptr, 0, 6, 63, 0, 0);
+    /* luma frequency split 5, do only if 3 is best */
+    scanptr = fill_a_scan(scanptr, 0, 1, 12, 0, 0);
+    scanptr = fill_a_scan(scanptr, 0, 13, 63, 0, 0);
+    /* luma frequency split 6, don't do if 5 didn't help */
+    scanptr = fill_a_scan(scanptr, 0, 1, 18, 0, 0);
+    scanptr = fill_a_scan(scanptr, 0, 19, 63, 0, 0);
+    
+    /* 41 scans for chroma */
+    
+    /* chroma DC combined */
+    scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
+    /* chroma DC separate */
+    scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);
+    /* chroma approximation 1 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
+    /* chroma approximation 2 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 1);
+    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 1);
+    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 1);
+    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 1);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 1, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 1, 0);
+    /* chroma approximation 3 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 2);
+    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 2);
+    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 2);
+    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 2);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 2, 1);
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 2, 1);
+    /* chroma frequency split 1 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 0);
+    /* chroma frequency split 2 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 2, 0, 0);
+    scanptr = fill_a_scan(scanptr, 1, 3, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 2, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 3, 63, 0, 0);
+    /* chroma frequency split 3 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
+    /* chroma frequency split 4 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 5, 0, 0);
+    scanptr = fill_a_scan(scanptr, 1, 6, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 5, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 6, 63, 0, 0);
+    /* chroma frequency split 5 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 12, 0, 0);
+    scanptr = fill_a_scan(scanptr, 1, 13, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 12, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 13, 63, 0, 0);
+    /* chroma frequency split 6 */
+    scanptr = fill_a_scan(scanptr, 1, 1, 18, 0, 0);
+    scanptr = fill_a_scan(scanptr, 1, 19, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 18, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 19, 63, 0, 0);
+  } else {
+    /* TODO */
+  }
+}
+
+/*
  * Create a recommended progressive-JPEG script.
  * cinfo->num_components and cinfo->jpeg_color_space must be correct.
  */
@@ -614,6 +771,10 @@ fill_dc_scans (jpeg_scan_info * scanptr, int ncomps, int Ah, int Al)
 GLOBAL(void)
 jpeg_simple_progression (j_compress_ptr cinfo)
 {
+  if (cinfo->optimize_scans) {
+    jpeg_search_progression(cinfo);
+    return;
+  }
   int ncomps = cinfo->num_components;
   int nscans;
   jpeg_scan_info * scanptr;
@@ -723,5 +884,6 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     }
   }
 }
+
 
 #endif /* C_PROGRESSIVE_SUPPORTED */

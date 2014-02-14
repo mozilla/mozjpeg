@@ -690,8 +690,8 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
       size[0]  = cinfo->scan_size[base_scan_idx];
       size[0] += cinfo->scan_size[base_scan_idx+1];
       for (i = 0; i < cinfo->num_frequency_splits; i++) {
-        size[i+1]  = cinfo->scan_size[base_scan_idx+0+4*i] + cinfo->scan_size[base_scan_idx+1+4*i];
-        size[i+1] += cinfo->scan_size[base_scan_idx+2+4*i] + cinfo->scan_size[base_scan_idx+3+4*i];
+        size[i+1]  = cinfo->scan_size[base_scan_idx+2+4*i] + cinfo->scan_size[base_scan_idx+3+4*i];
+        size[i+1] += cinfo->scan_size[base_scan_idx+4+4*i] + cinfo->scan_size[base_scan_idx+5+4*i];
       }
       
       int best = 0;
@@ -719,7 +719,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
         copy_buffer(cinfo, base_scan_idx-2+4*best);
         copy_buffer(cinfo, base_scan_idx-1+4*best);
         copy_buffer(cinfo, base_scan_idx+0+4*best);
-        copy_buffer(cinfo, base_scan_idx-1+4*best);
+        copy_buffer(cinfo, base_scan_idx+1+4*best);
       }
       
       base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;

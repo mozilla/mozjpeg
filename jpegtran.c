@@ -68,6 +68,7 @@ usage (void)
   fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
+  fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
   fprintf(stderr, "Switches for modifying the image:\n");
 #if TRANSFORMS_SUPPORTED
   fprintf(stderr, "  -crop WxH+X+Y  Crop to a rectangular subarea\n");
@@ -230,6 +231,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       else
 	usage();
 
+    } else if (keymatch(arg, "fastcrush", 4)) {
+      cinfo->optimize_scans = FALSE;
+      
     } else if (keymatch(arg, "grayscale", 1) || keymatch(arg, "greyscale",1)) {
       /* Force to grayscale. */
 #if TRANSFORMS_SUPPORTED

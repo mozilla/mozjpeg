@@ -169,6 +169,7 @@ usage (void)
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
+  fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
   fprintf(stderr, "Switches for advanced users:\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
@@ -297,6 +298,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	printed_version = TRUE;
       }
       cinfo->err->trace_level++;
+
+    } else if (keymatch(arg, "fastcrush", 4)) {
+      cinfo->optimize_scans = FALSE;
 
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */

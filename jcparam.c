@@ -661,10 +661,15 @@ jpeg_search_progression (j_compress_ptr cinfo)
   
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     int Al;
+    int frequency_split[] = { 2, 8, 5, 12, 18 };
+    int i;
     
     cinfo->Al_max_luma = 3;
     cinfo->Al_max_chroma = 2;
-    cinfo->num_scans_luma = 3 * cinfo->Al_max_luma + 14;
+    cinfo->num_scans_luma_dc = 1;
+    cinfo->num_scans_chroma_dc = 3;
+    cinfo->num_frequency_splits = 5;
+    cinfo->num_scans_luma = cinfo->num_scans_luma_dc + (3 * cinfo->Al_max_luma + 2) + (2 * cinfo->num_frequency_splits + 1);
     
     /* 23 scans for luma */
     /* 1 scan for DC */
@@ -677,33 +682,20 @@ jpeg_search_progression (j_compress_ptr cinfo)
     /* luma DC by itself */
     scanptr = fill_dc_scans(scanptr, 1, 0, 0);
     
-    for (Al = 0; Al <= cinfo->Al_max_luma; Al++)
-    {
+    for (Al = 0; Al <= cinfo->Al_max_luma; Al++) {
       scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, Al);
       scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, Al);
     }
-    for (Al = 0; Al < cinfo->Al_max_luma; Al++)
-    {
-      scanptr = fill_a_scan(scanptr, 0, 1, 63, Al+1, Al);
-    }
     
-    /* luma frequency split 1 */
+    for (Al = 0; Al < cinfo->Al_max_luma; Al++)
+      scanptr = fill_a_scan(scanptr, 0, 1, 63, Al+1, Al);
+    
     scanptr = fill_a_scan(scanptr, 0, 1, 63, 0, 0);
-    /* luma frequency split 2 */
-    scanptr = fill_a_scan(scanptr, 0, 1, 2, 0, 0);
-    scanptr = fill_a_scan(scanptr, 0, 3, 63, 0, 0);
-    /* luma frequency split 3 */
-    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
-    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
-    /* luma frequency split 4, don't do if 2 and 3 didn't help */
-    scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 0);
-    scanptr = fill_a_scan(scanptr, 0, 6, 63, 0, 0);
-    /* luma frequency split 5, do only if 3 is best */
-    scanptr = fill_a_scan(scanptr, 0, 1, 12, 0, 0);
-    scanptr = fill_a_scan(scanptr, 0, 13, 63, 0, 0);
-    /* luma frequency split 6, don't do if 5 didn't help */
-    scanptr = fill_a_scan(scanptr, 0, 1, 18, 0, 0);
-    scanptr = fill_a_scan(scanptr, 0, 19, 63, 0, 0);
+    
+    for (i = 0; i < cinfo->num_frequency_splits; i++) {
+      scanptr = fill_a_scan(scanptr, 0, 1, frequency_split[i], 0, 0);
+      scanptr = fill_a_scan(scanptr, 0, frequency_split[i]+1, 63, 0, 0);
+    }
     
     /* 41 scans for chroma */
     
@@ -712,53 +704,28 @@ jpeg_search_progression (j_compress_ptr cinfo)
     /* chroma DC separate */
     scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);
-    /* chroma approximation 1 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
-    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
-    /* chroma approximation 2 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 1);
-    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 1);
-    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 1);
-    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 1);
-    scanptr = fill_a_scan(scanptr, 1, 1, 63, 1, 0);
-    scanptr = fill_a_scan(scanptr, 2, 1, 63, 1, 0);
-    /* chroma approximation 3 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 2);
-    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 2);
-    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 2);
-    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 2);
-    scanptr = fill_a_scan(scanptr, 1, 1, 63, 2, 1);
-    scanptr = fill_a_scan(scanptr, 2, 1, 63, 2, 1);
-    /* chroma frequency split 1 */
+    
+    for (Al = 0; Al <= cinfo->Al_max_chroma; Al++) {
+      scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, Al);
+      scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, Al);
+      scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, Al);
+      scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, Al);
+    }
+
+    for (Al = 0; Al < cinfo->Al_max_chroma; Al++) {
+      scanptr = fill_a_scan(scanptr, 1, 1, 63, Al+1, Al);
+      scanptr = fill_a_scan(scanptr, 2, 1, 63, Al+1, Al);
+    }
+    
     scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 0);
-    /* chroma frequency split 2 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 2, 0, 0);
-    scanptr = fill_a_scan(scanptr, 1, 3, 63, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 1, 2, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 3, 63, 0, 0);
-    /* chroma frequency split 3 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
-    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
-    /* chroma frequency split 4 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 5, 0, 0);
-    scanptr = fill_a_scan(scanptr, 1, 6, 63, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 1, 5, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 6, 63, 0, 0);
-    /* chroma frequency split 5 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 12, 0, 0);
-    scanptr = fill_a_scan(scanptr, 1, 13, 63, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 1, 12, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 13, 63, 0, 0);
-    /* chroma frequency split 6 */
-    scanptr = fill_a_scan(scanptr, 1, 1, 18, 0, 0);
-    scanptr = fill_a_scan(scanptr, 1, 19, 63, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 1, 18, 0, 0);
-    scanptr = fill_a_scan(scanptr, 2, 19, 63, 0, 0);
+
+    for (i = 0; i < cinfo->num_frequency_splits; i++) {
+      scanptr = fill_a_scan(scanptr, 1, 1, frequency_split[i], 0, 0);
+      scanptr = fill_a_scan(scanptr, 1, frequency_split[i]+1, 63, 0, 0);
+      scanptr = fill_a_scan(scanptr, 2, 1, frequency_split[i], 0, 0);
+      scanptr = fill_a_scan(scanptr, 2, frequency_split[i]+1, 63, 0, 0);
+    }
   } else {
     /* TODO */
   }

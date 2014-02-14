@@ -380,6 +380,10 @@ struct jpeg_compress_struct {
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
   
   int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
+  int num_scans_luma_dc;
+  int num_scans_chroma_dc;
+  int num_frequency_splits;
+  
   struct jpeg_destination_mgr * saved_dest; /* saved value of dest */
   unsigned char * scan_buffer[64]; /* buffer for a given scan */
   unsigned long scan_size[64]; /* size for a given scan */

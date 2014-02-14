@@ -660,6 +660,11 @@ jpeg_search_progression (j_compress_ptr cinfo)
   cinfo->num_scans = nscans;
   
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    int Al;
+    
+    cinfo->Al_max_luma = 3;
+    cinfo->Al_max_chroma = 2;
+    cinfo->num_scans_luma = 3 * cinfo->Al_max_luma + 14;
     
     /* 23 scans for luma */
     /* 1 scan for DC */
@@ -671,21 +676,17 @@ jpeg_search_progression (j_compress_ptr cinfo)
     
     /* luma DC by itself */
     scanptr = fill_dc_scans(scanptr, 1, 0, 0);
-    /* luma approximation 1 */
-    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
-    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
-    /* luma approximation 2 */
-    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 1);
-    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 1);
-    scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
-    /* luma approximation 3 */
-    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 2);
-    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 2);
-    scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
-    /* luma approximation 4 */
-    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 3);
-    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 3);
-    scanptr = fill_a_scan(scanptr, 0, 1, 63, 3, 2);
+    
+    for (Al = 0; Al <= cinfo->Al_max_luma; Al++)
+    {
+      scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, Al);
+      scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, Al);
+    }
+    for (Al = 0; Al < cinfo->Al_max_luma; Al++)
+    {
+      scanptr = fill_a_scan(scanptr, 0, 1, 63, Al+1, Al);
+    }
+    
     /* luma frequency split 1 */
     scanptr = fill_a_scan(scanptr, 0, 1, 63, 0, 0);
     /* luma frequency split 2 */

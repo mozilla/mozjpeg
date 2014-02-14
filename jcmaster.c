@@ -604,178 +604,159 @@ finish_pass_master (j_compress_ptr cinfo)
       if (cinfo->optimize_scans) {
         (*cinfo->dest->term_destination)(cinfo);
         cinfo->dest = cinfo->saved_dest;
-        switch (master->scan_number) {
-          case 0:
-          {
-            copy_buffer(cinfo, 0);
-            break;
+        if (master->scan_number == 0) {
+          copy_buffer(cinfo, 0);
+          
+        } else if (master->scan_number == 3*cinfo->Al_max_luma+2) {
+          int Al;
+          int size[4];
+          int i;
+          
+          cinfo->best_Al = 0;
+          
+          for (Al = 0; Al <= cinfo->Al_max_luma; Al++) {
+            size[Al]  = cinfo->scan_size[1 + 2 * Al];
+            size[Al] += cinfo->scan_size[2 + 2 * Al];
+            
+            for (i = 0; i < Al; i++)
+              size[Al] += cinfo->scan_size[3 + 2*cinfo->Al_max_luma + i];
+            
+            if (size[Al] < size[cinfo->best_Al])
+              cinfo->best_Al = Al;
           }
-          case 11:
-          {
-            int size[4];
-            size[0] = cinfo->scan_size[1] + cinfo->scan_size[2];
-            size[1] = cinfo->scan_size[3] + cinfo->scan_size[4] + cinfo->scan_size[5];
-            size[2] = cinfo->scan_size[6] + cinfo->scan_size[7] + cinfo->scan_size[8] + cinfo->scan_size[5];
-            size[3] = cinfo->scan_size[9] + cinfo->scan_size[10] + cinfo->scan_size[11] + cinfo->scan_size[8] + cinfo->scan_size[5];
-            
-            int Al = 0;
-            int i;
-            for (i = 1; i <= 3; i++)
-              if (size[i] < size[Al])
-                Al = i;
-            cinfo->best_Al = Al;
-            
-            /* HACK! casting a const to a non-const :-( */
-            jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[12];
-            
-            for (i = 0; i < 11; i++)
-              scanptr[i].Al = Al;
-            break;
+          
+          /* HACK! casting a const to a non-const :-( */
+          jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[3*cinfo->Al_max_luma+3];
+          
+          for (i = 0; i < 11; i++)
+            scanptr[i].Al = cinfo->best_Al;
+          
+        } else if (master->scan_number == cinfo->num_scans_luma-1) {
+          int size[6];
+          int i;
+          int best = 0;
+          int scan_number_base = 3*cinfo->Al_max_luma+3;
+          int Al;
+          
+          size[0] = cinfo->scan_size[scan_number_base];
+          for (i = 1; i < 6; i++) {
+            size[i]  = cinfo->scan_size[scan_number_base+2*i-1];
+            size[i] += cinfo->scan_size[scan_number_base+2*i];
           }
-            
-          case 22:
-          {
-            int size[6];
-            size[0] = cinfo->scan_size[12];
-            size[1] = cinfo->scan_size[13] + cinfo->scan_size[14];
-            size[2] = cinfo->scan_size[15] + cinfo->scan_size[16];
-            size[3] = cinfo->scan_size[17] + cinfo->scan_size[18];
-            size[4] = cinfo->scan_size[19] + cinfo->scan_size[20];
-            size[5] = cinfo->scan_size[21] + cinfo->scan_size[22];
-            int best = 0;
-            if (size[1] < size[best])
-              best = 1;
-            if (size[2] < size[best])
-              best = 2;
-            if (best != 0) {
-              if (size[3] < size[best])
-                best = 3;
-              if (best == 2) {
-                if (size[4] < size[best]) {
-                  best = 4;
-                  if (size[5] < size[best])
-                    best = 5;
-                }
+          
+          if (size[1] < size[best])
+            best = 1;
+          if (size[2] < size[best])
+            best = 2;
+          if (best != 0) {
+            if (size[3] < size[best])
+              best = 3;
+            if (best == 2) {
+              if (size[4] < size[best]) {
+                best = 4;
+                if (size[5] < size[best])
+                  best = 5;
               }
             }
-            
-            if (best == 0)
-              copy_buffer(cinfo, 12);
-            else {
-              copy_buffer(cinfo, 11+2*best);
-              copy_buffer(cinfo, 12+2*best);
-            }
-            
-            if (cinfo->best_Al >= 3)
-              copy_buffer(cinfo, 11);
-            if (cinfo->best_Al >= 2)
-              copy_buffer(cinfo, 8);
-            if (cinfo->best_Al >= 1)
-              copy_buffer(cinfo, 5);
-            
-            int i;
-            for (i = 0; i < 23; i++)
-              free(cinfo->scan_buffer[i]);
           }
-            break;
-            
-          case 25:
-          {
-            int size[2];
-            size[0] = cinfo->scan_size[23];
-            size[1] = cinfo->scan_size[24] + cinfo->scan_size[25];
-            if (size[0] <= size[1])
-              copy_buffer(cinfo, 23);
-            else {
-              copy_buffer(cinfo, 24);
-              copy_buffer(cinfo, 25);
-            }
-            break;
+          
+          if (best == 0)
+            copy_buffer(cinfo, scan_number_base);
+          else {
+            copy_buffer(cinfo, scan_number_base+2*best-1);
+            copy_buffer(cinfo, scan_number_base+2*best);
           }
-            
-          case 41:
-          {
-            int size[3];
-            size[0]  = cinfo->scan_size[26] + cinfo->scan_size[27];
-            size[0] += cinfo->scan_size[28] + cinfo->scan_size[29];
-            size[1]  = cinfo->scan_size[30] + cinfo->scan_size[31] + cinfo->scan_size[32];
-            size[1] += cinfo->scan_size[33] + cinfo->scan_size[34] + cinfo->scan_size[35];
-            size[2]  = cinfo->scan_size[36] + cinfo->scan_size[37] + cinfo->scan_size[38] + cinfo->scan_size[39];
-            size[2] += cinfo->scan_size[40] + cinfo->scan_size[41] + cinfo->scan_size[34] + cinfo->scan_size[35];
+          
+          /* copy the LSB refinements as well */
+          for (Al = cinfo->best_Al-1; Al >= 0; Al--)
+            copy_buffer(cinfo, 2*cinfo->Al_max_luma + 3 + Al);
+          
+          /* free the memory allocated for the luma buffers */
+          for (i = 0; i < cinfo->num_scans_luma; i++)
+            free(cinfo->scan_buffer[i]);
+          
+        } else if (master->scan_number == cinfo->num_scans_luma+2) {
+          if (cinfo->scan_size[cinfo->num_scans_luma] <= cinfo->scan_size[cinfo->num_scans_luma+1] + cinfo->scan_size[cinfo->num_scans_luma+2])
+            copy_buffer(cinfo, cinfo->num_scans_luma);
+          else {
+            copy_buffer(cinfo, cinfo->num_scans_luma+1);
+            copy_buffer(cinfo, cinfo->num_scans_luma+2);
+          }
+          
+        } else if (master->scan_number == 41) {
+          int size[3];
+          size[0]  = cinfo->scan_size[26] + cinfo->scan_size[27];
+          size[0] += cinfo->scan_size[28] + cinfo->scan_size[29];
+          size[1]  = cinfo->scan_size[30] + cinfo->scan_size[31] + cinfo->scan_size[32];
+          size[1] += cinfo->scan_size[33] + cinfo->scan_size[34] + cinfo->scan_size[35];
+          size[2]  = cinfo->scan_size[36] + cinfo->scan_size[37] + cinfo->scan_size[38] + cinfo->scan_size[39];
+          size[2] += cinfo->scan_size[40] + cinfo->scan_size[41] + cinfo->scan_size[34] + cinfo->scan_size[35];
+          
+          int Al = 0;
+          int i;
+          for (i = 1; i <= 3; i++)
+            if (size[i] < size[Al])
+              Al = i;
+          cinfo->best_Al = Al;
+          jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[42];
+          
+          for (i = 0; i < 22; i++)
+            scanptr[i].Al = Al;
 
-            int Al = 0;
-            int i;
-            for (i = 1; i <= 3; i++)
-              if (size[i] < size[Al])
-                Al = i;
-            cinfo->best_Al = Al;
-            jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[42];
-            
-            for (i = 0; i < 22; i++)
-              scanptr[i].Al = Al;
-            break;
-          }
-
-          case 63:
-          {
-            int size[6];
-            size[0]  = cinfo->scan_size[42];
-            size[0] += cinfo->scan_size[43];
-            size[1]  = cinfo->scan_size[44] + cinfo->scan_size[45];
-            size[1] += cinfo->scan_size[46] + cinfo->scan_size[47];
-            size[2]  = cinfo->scan_size[48] + cinfo->scan_size[49];
-            size[2] += cinfo->scan_size[50] + cinfo->scan_size[51];
-            size[3]  = cinfo->scan_size[52] + cinfo->scan_size[53];
-            size[3] += cinfo->scan_size[54] + cinfo->scan_size[55];
-            size[4]  = cinfo->scan_size[56] + cinfo->scan_size[57];
-            size[4] += cinfo->scan_size[58] + cinfo->scan_size[59];
-            size[5]  = cinfo->scan_size[60] + cinfo->scan_size[61];
-            size[5] += cinfo->scan_size[62] + cinfo->scan_size[63];
-            
-            int best = 0;
-            if (size[1] < size[best])
-              best = 1;
-            if (size[2] < size[best])
-              best = 2;
-            if (best != 0) {
-              if (size[3] < size[best])
-                best = 3;
-              if (best == 2) {
-                if (size[4] < size[best]) {
-                  best = 4;
-                  if (size[5] < size[best])
-                    best = 5;
-                }
+        } else if (master->scan_number == 63) {
+          int size[6];
+          size[0]  = cinfo->scan_size[42];
+          size[0] += cinfo->scan_size[43];
+          size[1]  = cinfo->scan_size[44] + cinfo->scan_size[45];
+          size[1] += cinfo->scan_size[46] + cinfo->scan_size[47];
+          size[2]  = cinfo->scan_size[48] + cinfo->scan_size[49];
+          size[2] += cinfo->scan_size[50] + cinfo->scan_size[51];
+          size[3]  = cinfo->scan_size[52] + cinfo->scan_size[53];
+          size[3] += cinfo->scan_size[54] + cinfo->scan_size[55];
+          size[4]  = cinfo->scan_size[56] + cinfo->scan_size[57];
+          size[4] += cinfo->scan_size[58] + cinfo->scan_size[59];
+          size[5]  = cinfo->scan_size[60] + cinfo->scan_size[61];
+          size[5] += cinfo->scan_size[62] + cinfo->scan_size[63];
+          
+          int best = 0;
+          if (size[1] < size[best])
+            best = 1;
+          if (size[2] < size[best])
+            best = 2;
+          if (best != 0) {
+            if (size[3] < size[best])
+              best = 3;
+            if (best == 2) {
+              if (size[4] < size[best]) {
+                best = 4;
+                if (size[5] < size[best])
+                  best = 5;
               }
             }
-            
-            if (best == 0) {
-              copy_buffer(cinfo, 42);
-              copy_buffer(cinfo, 43);
-            }
-            else {
-              copy_buffer(cinfo, 40+4*best);
-              copy_buffer(cinfo, 41+4*best);
-              copy_buffer(cinfo, 42+4*best);
-              copy_buffer(cinfo, 43+4*best);
-            }
-            
-            if (cinfo->best_Al >= 2) {
-              copy_buffer(cinfo, 40);
-              copy_buffer(cinfo, 41);
-            }
-            if (cinfo->best_Al >= 1) {
-              copy_buffer(cinfo, 34);
-              copy_buffer(cinfo, 35);
-            }
-            int i;
-            for (i = 23; i < 64; i++)
-              free(cinfo->scan_buffer[i]);
           }
-            break;
-
-          default:
-            break;
+          
+          if (best == 0) {
+            copy_buffer(cinfo, 42);
+            copy_buffer(cinfo, 43);
+          }
+          else {
+            copy_buffer(cinfo, 40+4*best);
+            copy_buffer(cinfo, 41+4*best);
+            copy_buffer(cinfo, 42+4*best);
+            copy_buffer(cinfo, 43+4*best);
+          }
+          
+          if (cinfo->best_Al >= 2) {
+            copy_buffer(cinfo, 40);
+            copy_buffer(cinfo, 41);
+          }
+          if (cinfo->best_Al >= 1) {
+            copy_buffer(cinfo, 34);
+            copy_buffer(cinfo, 35);
+          }
+          int i;
+          for (i = 23; i < 64; i++)
+            free(cinfo->scan_buffer[i]);
         }
       }
 

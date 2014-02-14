@@ -378,9 +378,13 @@ struct jpeg_compress_struct {
 
   boolean use_moz_defaults; /* TRUE if using Mozilla defaults */
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
+  
+  int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
   struct jpeg_destination_mgr * saved_dest; /* saved value of dest */
   unsigned char * scan_buffer[64]; /* buffer for a given scan */
   unsigned long scan_size[64]; /* size for a given scan */
+  int Al_max_luma; /* maximum value of Al tested when optimizing scans (luma) */
+  int Al_max_chroma; /* maximum value of Al tested when optimizing scans (chroma) */
   int best_Al; /* best value for Al found in scan search */
 
   /* The restart interval can be specified in absolute MCUs by setting

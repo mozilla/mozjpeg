@@ -644,92 +644,95 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
     for (i = 0; i < cinfo->num_scans_luma; i++)
       free(cinfo->scan_buffer[i]);
     
-  } else if (next_scan_number == cinfo->num_scans_luma+cinfo->num_scans_chroma_dc) {
-    base_scan_idx = cinfo->num_scans_luma;
+  } else if (cinfo->num_scans > cinfo->num_scans_luma) {
     
-    if (cinfo->scan_size[base_scan_idx] <= cinfo->scan_size[base_scan_idx+1] + cinfo->scan_size[base_scan_idx+2])
-      copy_buffer(cinfo, base_scan_idx);
-    else {
-      copy_buffer(cinfo, base_scan_idx+1);
-      copy_buffer(cinfo, base_scan_idx+2);
-    }
-    
-  } else if (next_scan_number == cinfo->num_scans_luma+cinfo->num_scans_chroma_dc+(6*cinfo->Al_max_chroma+4)) {
-    int Al;
-    int i;
-    base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;
-    cinfo->best_Al = 0;
-    
-    for (Al = 0; Al <= cinfo->Al_max_chroma; Al++) {
-      size[Al]  = cinfo->scan_size[base_scan_idx + 0 + 4 * Al];
-      size[Al] += cinfo->scan_size[base_scan_idx + 1 + 4 * Al];
-      size[Al] += cinfo->scan_size[base_scan_idx + 2 + 4 * Al];
-      size[Al] += cinfo->scan_size[base_scan_idx + 3 + 4 * Al];
+    if (next_scan_number == cinfo->num_scans_luma+cinfo->num_scans_chroma_dc) {
+      base_scan_idx = cinfo->num_scans_luma;
       
-      for (i = 0; i < Al; i++) {
-        size[Al] += cinfo->scan_size[base_scan_idx + 4 + 4*cinfo->Al_max_chroma + 2*i];
-        size[Al] += cinfo->scan_size[base_scan_idx + 5 + 4*cinfo->Al_max_chroma + 2*i];
+      if (cinfo->scan_size[base_scan_idx] <= cinfo->scan_size[base_scan_idx+1] + cinfo->scan_size[base_scan_idx+2])
+        copy_buffer(cinfo, base_scan_idx);
+      else {
+        copy_buffer(cinfo, base_scan_idx+1);
+        copy_buffer(cinfo, base_scan_idx+2);
       }
       
-      if (size[Al] < size[cinfo->best_Al])
-        cinfo->best_Al = Al;
-    }
-    
-    jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[next_scan_number];
-    
-    for (i = 0; i < 4*cinfo->num_frequency_splits+2; i++)
-      scanptr[i].Al = cinfo->best_Al;
-    
-  } else if (next_scan_number == cinfo->num_scans) {
-    int Al;
-    int i;
-    base_scan_idx = next_scan_number - (4*cinfo->num_frequency_splits+2);
-    
-    size[0]  = cinfo->scan_size[base_scan_idx];
-    size[0] += cinfo->scan_size[base_scan_idx+1];
-    for (i = 0; i < cinfo->num_frequency_splits; i++) {
-      size[i+1]  = cinfo->scan_size[base_scan_idx+0+4*i] + cinfo->scan_size[base_scan_idx+1+4*i];
-      size[i+1] += cinfo->scan_size[base_scan_idx+2+4*i] + cinfo->scan_size[base_scan_idx+3+4*i];
-    }
-    
-    int best = 0;
-    if (size[1] < size[best])
-      best = 1;
-    if (size[2] < size[best])
-      best = 2;
-    if (best != 0) {
-      if (size[3] < size[best])
-        best = 3;
-      if (best == 2) {
-        if (size[4] < size[best]) {
-          best = 4;
-          if (size[5] < size[best])
-            best = 5;
+    } else if (next_scan_number == cinfo->num_scans_luma+cinfo->num_scans_chroma_dc+(6*cinfo->Al_max_chroma+4)) {
+      int Al;
+      int i;
+      base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;
+      cinfo->best_Al = 0;
+      
+      for (Al = 0; Al <= cinfo->Al_max_chroma; Al++) {
+        size[Al]  = cinfo->scan_size[base_scan_idx + 0 + 4 * Al];
+        size[Al] += cinfo->scan_size[base_scan_idx + 1 + 4 * Al];
+        size[Al] += cinfo->scan_size[base_scan_idx + 2 + 4 * Al];
+        size[Al] += cinfo->scan_size[base_scan_idx + 3 + 4 * Al];
+        
+        for (i = 0; i < Al; i++) {
+          size[Al] += cinfo->scan_size[base_scan_idx + 4 + 4*cinfo->Al_max_chroma + 2*i];
+          size[Al] += cinfo->scan_size[base_scan_idx + 5 + 4*cinfo->Al_max_chroma + 2*i];
+        }
+        
+        if (size[Al] < size[cinfo->best_Al])
+          cinfo->best_Al = Al;
+      }
+      
+      jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[next_scan_number];
+      
+      for (i = 0; i < 4*cinfo->num_frequency_splits+2; i++)
+        scanptr[i].Al = cinfo->best_Al;
+      
+    } else if (next_scan_number == cinfo->num_scans) {
+      int Al;
+      int i;
+      base_scan_idx = next_scan_number - (4*cinfo->num_frequency_splits+2);
+      
+      size[0]  = cinfo->scan_size[base_scan_idx];
+      size[0] += cinfo->scan_size[base_scan_idx+1];
+      for (i = 0; i < cinfo->num_frequency_splits; i++) {
+        size[i+1]  = cinfo->scan_size[base_scan_idx+0+4*i] + cinfo->scan_size[base_scan_idx+1+4*i];
+        size[i+1] += cinfo->scan_size[base_scan_idx+2+4*i] + cinfo->scan_size[base_scan_idx+3+4*i];
+      }
+      
+      int best = 0;
+      if (size[1] < size[best])
+        best = 1;
+      if (size[2] < size[best])
+        best = 2;
+      if (best != 0) {
+        if (size[3] < size[best])
+          best = 3;
+        if (best == 2) {
+          if (size[4] < size[best]) {
+            best = 4;
+            if (size[5] < size[best])
+              best = 5;
+          }
         }
       }
+      
+      if (best == 0) {
+        copy_buffer(cinfo, base_scan_idx);
+        copy_buffer(cinfo, base_scan_idx+1);
+      }
+      else {
+        copy_buffer(cinfo, base_scan_idx-2+4*best);
+        copy_buffer(cinfo, base_scan_idx-1+4*best);
+        copy_buffer(cinfo, base_scan_idx+0+4*best);
+        copy_buffer(cinfo, base_scan_idx-1+4*best);
+      }
+      
+      base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;
+      
+      for (Al = cinfo->best_Al-1; Al >= 0; Al--) {
+        copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 0);
+        copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 1);
+      }
+      
+      /* free the memory allocated for the chroma buffers */
+      for (i = cinfo->num_scans_luma; i < cinfo->num_scans; i++)
+        free(cinfo->scan_buffer[i]);
     }
-    
-    if (best == 0) {
-      copy_buffer(cinfo, base_scan_idx);
-      copy_buffer(cinfo, base_scan_idx+1);
-    }
-    else {
-      copy_buffer(cinfo, base_scan_idx-2+4*best);
-      copy_buffer(cinfo, base_scan_idx-1+4*best);
-      copy_buffer(cinfo, base_scan_idx+0+4*best);
-      copy_buffer(cinfo, base_scan_idx-1+4*best);
-    }
-    
-    base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;
-    
-    for (Al = cinfo->best_Al-1; Al >= 0; Al--) {
-      copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 0);
-      copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 1);
-    }
-    
-    /* free the memory allocated for the chroma buffers */
-    for (i = cinfo->num_scans_luma; i < cinfo->num_scans; i++)
-      free(cinfo->scan_buffer[i]);
   }
 }
 

@@ -591,10 +591,12 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
       for (i = 0; i < Al; i++)
         size[Al] += cinfo->scan_size[3 + 2*cinfo->Al_max_luma + i];
       
-      if (size[Al] < size[cinfo->best_Al])
+      if (Al == 0 || size[Al] < size[cinfo->best_Al])
         cinfo->best_Al = Al;
+      else
+        break;
     }
-    
+
     /* HACK! casting a const to a non-const :-( */
     jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[next_scan_number];
     
@@ -673,8 +675,10 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
           size[Al] += cinfo->scan_size[base_scan_idx + 5 + 4*cinfo->Al_max_chroma + 2*i];
         }
         
-        if (size[Al] < size[cinfo->best_Al])
+        if (Al == 0 || size[Al] < size[cinfo->best_Al])
           cinfo->best_Al = Al;
+        else
+          break;
       }
       
       jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[next_scan_number];

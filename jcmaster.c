@@ -329,6 +329,16 @@ select_scan_parameters (j_compress_ptr cinfo)
     cinfo->Se = scanptr->Se;
     cinfo->Ah = scanptr->Ah;
     cinfo->Al = scanptr->Al;
+    if (cinfo->optimize_scans) {
+      /* luma frequency split passes */
+      if (master->scan_number >= cinfo->num_scans_luma_dc+3*cinfo->Al_max_luma+2 &&
+          master->scan_number < cinfo->num_scans_luma)
+        cinfo->Al = cinfo->best_Al;
+      /* chroma frequency split passes */
+      if (master->scan_number >= cinfo->num_scans_luma+cinfo->num_scans_chroma_dc+(6*cinfo->Al_max_chroma+4) &&
+          master->scan_number < cinfo->num_scans)
+        cinfo->Al = cinfo->best_Al;
+    }
   }
   else
 #endif
@@ -596,12 +606,6 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
       else
         break;
     }
-
-    /* HACK! casting a const to a non-const :-( */
-    jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[next_scan_number];
-    
-    for (i = 0; i < 2*cinfo->num_frequency_splits+1; i++)
-      scanptr[i].Al = cinfo->best_Al;
     
   } else if (next_scan_number == cinfo->num_scans_luma) {
     int i;
@@ -680,11 +684,6 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
         else
           break;
       }
-      
-      jpeg_scan_info *scanptr = (jpeg_scan_info *)&cinfo->scan_info[next_scan_number];
-      
-      for (i = 0; i < 4*cinfo->num_frequency_splits+2; i++)
-        scanptr[i].Al = cinfo->best_Al;
       
     } else if (next_scan_number == cinfo->num_scans) {
       int Al;

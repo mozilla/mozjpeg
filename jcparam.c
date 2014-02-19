@@ -670,13 +670,14 @@ jpeg_search_progression (j_compress_ptr cinfo)
   /* luma DC by itself */
   scanptr = fill_dc_scans(scanptr, 1, 0, 0);
   
-  for (Al = 0; Al <= cinfo->Al_max_luma; Al++) {
-    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, Al);
-    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, Al);
-  }
+  scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
+  scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
   
-  for (Al = 0; Al < cinfo->Al_max_luma; Al++)
+  for (Al = 0; Al < cinfo->Al_max_luma; Al++) {
     scanptr = fill_a_scan(scanptr, 0, 1, 63, Al+1, Al);
+    scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, Al+1);
+    scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, Al+1);
+  }
   
   scanptr = fill_a_scan(scanptr, 0, 1, 63, 0, 0);
   
@@ -699,16 +700,18 @@ jpeg_search_progression (j_compress_ptr cinfo)
     scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);
     
-    for (Al = 0; Al <= cinfo->Al_max_chroma; Al++) {
-      scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, Al);
-      scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, Al);
-      scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, Al);
-      scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, Al);
-    }
+    scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
+    scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
 
     for (Al = 0; Al < cinfo->Al_max_chroma; Al++) {
       scanptr = fill_a_scan(scanptr, 1, 1, 63, Al+1, Al);
       scanptr = fill_a_scan(scanptr, 2, 1, 63, Al+1, Al);
+      scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, Al+1);
+      scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, Al+1);
+      scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, Al+1);
+      scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, Al+1);
     }
     
     scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 0);

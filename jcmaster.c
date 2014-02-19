@@ -873,6 +873,8 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   
   if (cinfo->optimize_scans) {
     int i;
+    master->best_Al_chroma = 0;
+    
     for (i = 0; i < cinfo->num_scans; i++)
       master->scan_buffer[i] = NULL;
   }

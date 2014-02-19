@@ -384,7 +384,6 @@ struct jpeg_compress_struct {
   int num_scans_chroma_dc;
   int num_frequency_splits;
   
-  struct jpeg_destination_mgr * saved_dest; /* saved value of dest */
   int Al_max_luma; /* maximum value of Al tested when optimizing scans (luma) */
   int Al_max_chroma; /* maximum value of Al tested when optimizing scans (chroma) */
 

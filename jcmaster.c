@@ -49,6 +49,7 @@ typedef struct {
   int best_Al_luma; /* best value for Al found in scan search (luma) */
   int best_Al_chroma; /* best value for Al found in scan search (luma) */
   boolean interleave_chroma_dc; /* indicate whether to interleave chroma DC scans */
+  struct jpeg_destination_mgr * saved_dest; /* saved value of cinfo->dest */
 } my_comp_master;
 
 typedef my_comp_master * my_master_ptr;
@@ -519,7 +520,7 @@ prepare_for_pass (j_compress_ptr cinfo)
       per_scan_setup(cinfo);
     }
       if (cinfo->optimize_scans) {
-        cinfo->saved_dest = cinfo->dest;
+        master->saved_dest = cinfo->dest;
         cinfo->dest = NULL;
         master->scan_size[master->scan_number] = 0;
         jpeg_mem_dest(cinfo, &master->scan_buffer[master->scan_number], &master->scan_size[master->scan_number]);
@@ -805,7 +806,7 @@ finish_pass_master (j_compress_ptr cinfo)
       master->pass_type = huff_opt_pass;
       if (cinfo->optimize_scans) {
         (*cinfo->dest->term_destination)(cinfo);
-        cinfo->dest = cinfo->saved_dest;
+        cinfo->dest = master->saved_dest;
         select_scans(cinfo, master->scan_number + 1);
       }
 

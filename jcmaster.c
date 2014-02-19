@@ -708,9 +708,21 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
   
   if (master->scan_number == cinfo->num_scans - 1) {
     int i, Al;
-
+    int min_Al = MIN(master->best_Al_luma, master->best_Al_chroma);
+    
     copy_buffer(cinfo, 0);
 
+    if (cinfo->num_scans > cinfo->num_scans_luma) {
+      base_scan_idx = cinfo->num_scans_luma;
+      
+      if (master->interleave_chroma_dc)
+        copy_buffer(cinfo, base_scan_idx);
+      else {
+        copy_buffer(cinfo, base_scan_idx+1);
+        copy_buffer(cinfo, base_scan_idx+2);
+      }
+    }
+    
     if (master->best_freq_split_idx_luma == 0)
       copy_buffer(cinfo, luma_freq_split_scan_start);
     else {
@@ -719,19 +731,10 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
     }
     
     /* copy the LSB refinements as well */
-    for (Al = master->best_Al_luma-1; Al >= 0; Al--)
+    for (Al = master->best_Al_luma-1; Al >= min_Al; Al--)
       copy_buffer(cinfo, 2*cinfo->Al_max_luma + 3 + Al);
 
     if (cinfo->num_scans > cinfo->num_scans_luma) {
-      base_scan_idx = cinfo->num_scans_luma;
-
-      if (master->interleave_chroma_dc)
-        copy_buffer(cinfo, base_scan_idx);
-      else {
-        copy_buffer(cinfo, base_scan_idx+1);
-        copy_buffer(cinfo, base_scan_idx+2);
-      }
-
       if (master->best_freq_split_idx_chroma == 0) {
         copy_buffer(cinfo, chroma_freq_split_scan_start);
         copy_buffer(cinfo, chroma_freq_split_scan_start+1);
@@ -745,7 +748,16 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
       
       base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;
       
-      for (Al = master->best_Al_chroma-1; Al >= 0; Al--) {
+      for (Al = master->best_Al_chroma-1; Al >= min_Al; Al--) {
+        copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 0);
+        copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 1);
+      }
+    }
+    
+    for (Al = min_Al-1; Al >= 0; Al--) {
+      copy_buffer(cinfo, 2*cinfo->Al_max_luma + 3 + Al);
+      
+      if (cinfo->num_scans > cinfo->num_scans_luma) {
         copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 0);
         copy_buffer(cinfo, base_scan_idx + 4*(cinfo->Al_max_chroma+1) + 2*Al + 1);
       }

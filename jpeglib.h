@@ -387,7 +387,6 @@ struct jpeg_compress_struct {
   struct jpeg_destination_mgr * saved_dest; /* saved value of dest */
   int Al_max_luma; /* maximum value of Al tested when optimizing scans (luma) */
   int Al_max_chroma; /* maximum value of Al tested when optimizing scans (chroma) */
-  int best_Al; /* best value for Al found in scan search */
 
   /* The restart interval can be specified in absolute MCUs by setting
    * restart_interval, or in MCU rows by setting restart_in_rows

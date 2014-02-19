@@ -562,7 +562,7 @@ main (int argc, char **argv)
 
   /* Specify data destination for compression */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
-  if (dstinfo.optimize_scans)
+  if (dstinfo.use_moz_defaults)
     jpeg_mem_dest(&dstinfo, &outbuffer, &outsize);
   else
 #endif
@@ -584,7 +584,7 @@ main (int argc, char **argv)
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
   
-  if (dstinfo.optimize_scans) {
+  if (dstinfo.use_moz_defaults) {
     size_t nbytes;
     
     unsigned char *buffer = outbuffer;

@@ -44,6 +44,8 @@ static const char * progname;	/* program name for error messages */
 static char * outfilename;	/* for -outfile switch */
 static JCOPY_OPTION copyoption;	/* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
+boolean memsrc;  /* for -memsrc switch */
+#define INPUT_BUF_SIZE  4096
 
 
 LOCAL(void)
@@ -393,6 +395,10 @@ main (int argc, char **argv)
    * single file pointer for sequential input and output operation. 
    */
   FILE * fp;
+  unsigned char *inbuffer = NULL;
+  unsigned long insize = 0;
+  unsigned char *outbuffer = NULL;
+  unsigned long outsize = 0;
 
   /* On Mac, fetch a command line. */
 #ifdef USE_CCOMMAND
@@ -470,7 +476,30 @@ main (int argc, char **argv)
 #endif
 
   /* Specify data source for decompression */
-  jpeg_stdio_src(&srcinfo, fp);
+  memsrc = TRUE; /* needed to revert to original */
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+  if (memsrc) {
+    size_t nbytes;
+    do {
+      inbuffer = (unsigned char *)realloc(inbuffer, insize + INPUT_BUF_SIZE);
+      if (inbuffer == NULL) {
+        fprintf(stderr, "%s: memory allocation failure\n", progname);
+        exit(EXIT_FAILURE);
+      }
+      nbytes = JFREAD(fp, &inbuffer[insize], INPUT_BUF_SIZE);
+      if (nbytes < INPUT_BUF_SIZE && ferror(fp)) {
+        if (file_index < argc)
+          fprintf(stderr, "%s: can't read from %s\n", progname,
+                  argv[file_index]);
+        else
+          fprintf(stderr, "%s: can't read from stdin\n", progname);
+      }
+      insize += (unsigned long)nbytes;
+    } while (nbytes == INPUT_BUF_SIZE);
+    jpeg_mem_src(&srcinfo, inbuffer, insize);
+  } else
+#endif
+    jpeg_stdio_src(&srcinfo, fp);
 
   /* Enable saving of extra markers that we want to copy */
   jcopy_markers_setup(&srcinfo, copyoption);
@@ -532,7 +561,12 @@ main (int argc, char **argv)
   file_index = parse_switches(&dstinfo, argc, argv, 0, TRUE);
 
   /* Specify data destination for compression */
-  jpeg_stdio_dest(&dstinfo, fp);
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+  if (dstinfo.optimize_scans)
+    jpeg_mem_dest(&dstinfo, &outbuffer, &outsize);
+  else
+#endif
+    jpeg_stdio_dest(&dstinfo, fp);
 
   /* Start compressor (note no image data is actually written here) */
   jpeg_write_coefficients(&dstinfo, dst_coef_arrays);
@@ -549,6 +583,27 @@ main (int argc, char **argv)
 
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
+  
+  if (dstinfo.optimize_scans) {
+    size_t nbytes;
+    
+    unsigned char *buffer = outbuffer;
+    unsigned long size = outsize;
+    if (insize < size) {
+      size = insize;
+      buffer = inbuffer;
+    }
+
+    nbytes = JFWRITE(fp, buffer, size);
+    if (nbytes < size && ferror(fp)) {
+      if (file_index < argc)
+        fprintf(stderr, "%s: can't write to %s\n", progname,
+                argv[file_index]);
+      else
+        fprintf(stderr, "%s: can't write to stdout\n", progname);
+    }
+  }
+    
   jpeg_destroy_compress(&dstinfo);
   (void) jpeg_finish_decompress(&srcinfo);
   jpeg_destroy_decompress(&srcinfo);

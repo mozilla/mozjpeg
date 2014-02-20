@@ -160,10 +160,10 @@ usage (void)
   fprintf(stderr, "  -grayscale     Create monochrome JPEG file\n");
   fprintf(stderr, "  -rgb           Create RGB JPEG file\n");
 #ifdef ENTROPY_OPT_SUPPORTED
-  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
+  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression, enabled by default)\n");
 #endif
 #ifdef C_PROGRESSIVE_SUPPORTED
-  fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
+  fprintf(stderr, "  -progressive   Create progressive JPEG file (enabled by default)\n");
 #endif
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");

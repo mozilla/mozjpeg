@@ -64,10 +64,10 @@ usage (void)
   fprintf(stderr, "  -copy comments Copy only comment markers (default)\n");
   fprintf(stderr, "  -copy all      Copy all extra markers\n");
 #ifdef ENTROPY_OPT_SUPPORTED
-  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
+  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression, enabled by default)\n");
 #endif
 #ifdef C_PROGRESSIVE_SUPPORTED
-  fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
+  fprintf(stderr, "  -progressive   Create progressive JPEG file (enabled by default)\n");
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");

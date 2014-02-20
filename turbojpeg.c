@@ -1,5 +1,7 @@
 /*
  * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -192,6 +194,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	}
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
+	cinfo->use_moz_defaults = TRUE;
 	jpeg_set_defaults(cinfo);
 	if(jpegQual>=0)
 	{

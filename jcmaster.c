@@ -519,13 +519,13 @@ prepare_for_pass (j_compress_ptr cinfo)
       select_scan_parameters(cinfo);
       per_scan_setup(cinfo);
     }
-      if (cinfo->optimize_scans) {
-        master->saved_dest = cinfo->dest;
-        cinfo->dest = NULL;
-        master->scan_size[master->scan_number] = 0;
-        jpeg_mem_dest(cinfo, &master->scan_buffer[master->scan_number], &master->scan_size[master->scan_number]);
-        (*cinfo->dest->init_destination)(cinfo);
-      }
+    if (cinfo->optimize_scans) {
+      master->saved_dest = cinfo->dest;
+      cinfo->dest = NULL;
+      master->scan_size[master->scan_number] = 0;
+      jpeg_mem_dest(cinfo, &master->scan_buffer[master->scan_number], &master->scan_size[master->scan_number]);
+      (*cinfo->dest->init_destination)(cinfo);
+    }
     (*cinfo->entropy->start_pass) (cinfo, FALSE);
     (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
     /* We emit frame/scan headers now */
@@ -804,11 +804,11 @@ finish_pass_master (j_compress_ptr cinfo)
     /* next pass is either optimization or output of next scan */
     if (cinfo->optimize_coding)
       master->pass_type = huff_opt_pass;
-      if (cinfo->optimize_scans) {
-        (*cinfo->dest->term_destination)(cinfo);
-        cinfo->dest = master->saved_dest;
-        select_scans(cinfo, master->scan_number + 1);
-      }
+    if (cinfo->optimize_scans) {
+      (*cinfo->dest->term_destination)(cinfo);
+      cinfo->dest = master->saved_dest;
+      select_scans(cinfo, master->scan_number + 1);
+    }
 
     master->scan_number++;
     break;

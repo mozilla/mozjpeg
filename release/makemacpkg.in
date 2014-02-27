@@ -92,7 +92,7 @@ make install DESTDIR=$PKGROOT docdir=/Library/Documentation/$PACKAGE_NAME \
 	exampledir=/Library/Documentation/$PACKAGE_NAME
 rm -f $PKGROOT$LIBDIR/*.la
 
-if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" = "/opt/libjpeg-turbo/doc" ]; then
+if [ "$PREFIX" = "/opt/libmozjpeg" -a "$DOCDIR" = "/opt/libmozjpeg/doc" ]; then
 	ln -fs /Library/Documentation/$PACKAGE_NAME $PKGROOT$DOCDIR
 fi
 
@@ -236,7 +236,7 @@ install_name_tool -id $LIBDIR/libturbojpeg.0.dylib $PKGROOT/$LIBDIR/libturbojpeg
 if [ $WITH_JAVA = 1 ]; then
 	ln -fs libturbojpeg.0.dylib $PKGROOT/$LIBDIR/libturbojpeg.jnilib
 fi
-if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$LIBDIR" = "/opt/libjpeg-turbo/lib" ]; then
+if [ "$PREFIX" = "/opt/libmozjpeg" -a "$LIBDIR" = "/opt/libmozjpeg/lib" ]; then
 	if [ ! -h $PKGROOT/$PREFIX/lib32 ]; then
 		ln -fs lib $PKGROOT/$PREFIX/lib32
 	fi

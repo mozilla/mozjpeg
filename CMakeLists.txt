@@ -4,8 +4,8 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(libjpeg-turbo C)
-set(VERSION 1.3.80)
+project(libmozjpeg C)
+set(VERSION 1.0.0)
 
 if(MINGW OR CYGWIN)
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)
@@ -43,8 +43,8 @@ message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 option(WITH_SIMD "Include SIMD extensions" TRUE)
 option(WITH_ARITH_ENC "Include arithmetic encoding support" TRUE)
 option(WITH_ARITH_DEC "Include arithmetic decoding support" TRUE)
-option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b)" FALSE)
-option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b)" FALSE)
 option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" TRUE)
 option(WITH_JAVA "Build Java wrapper for the TurboJPEG library" FALSE)
 
@@ -132,7 +132,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX_DEFAULT ${CMAKE_INSTALL_PREFIX_DEFAULT}64)
   endif()
   set(CMAKE_INSTALL_PREFIX "c:/${CMAKE_INSTALL_PREFIX_DEFAULT}" CACHE PATH
-    "Directory into which to install libjpeg-turbo (default: c:/${CMAKE_INSTALL_PREFIX_DEFAULT})"
+    "Directory into which to install libmozjpeg (default: c:/${CMAKE_INSTALL_PREFIX_DEFAULT})"
     FORCE)
 endif()
 
@@ -476,13 +476,13 @@ endif()
 
 STRING(REGEX REPLACE "/" "\\\\" INST_DIR ${CMAKE_INSTALL_PREFIX}) 
 
-configure_file(release/libjpeg-turbo.nsi.in libjpeg-turbo.nsi @ONLY)
+configure_file(release/libmozjpeg.nsi.in libmozjpeg.nsi @ONLY)
 
 if(WITH_JAVA)
   set(JAVA_DEPEND java)
 endif()
 add_custom_target(installer
-  makensis -nocd ${INST_DEFS} libjpeg-turbo.nsi
+  makensis -nocd ${INST_DEFS} libmozjpeg.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
     cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
   SOURCES libjpeg-turbo.nsi)
@@ -493,7 +493,7 @@ install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom tjbench
   RUNTIME DESTINATION bin
 )
 
-install(FILES ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-turbo.txt
+install(FILES ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-mozilla.txt
   ${CMAKE_SOURCE_DIR}/example.c ${CMAKE_SOURCE_DIR}/libjpeg.txt 
   ${CMAKE_SOURCE_DIR}/structure.txt ${CMAKE_SOURCE_DIR}/usage.txt
   ${CMAKE_SOURCE_DIR}/wizard.txt

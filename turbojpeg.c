@@ -538,9 +538,9 @@ DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
 	if(width<1 || height<1 || jpegSubsamp<0 || jpegSubsamp>=NUMSUBOPT)
 		_throw("tjBufSize(): Invalid argument");
 
-	// This allows for rare corner cases in which a JPEG image can actually be
-	// larger than the uncompressed input (we wouldn't mention it if it hadn't
-	// happened before.)
+	/* This allows for rare corner cases in which a JPEG image can actually be
+	   larger than the uncompressed input (we wouldn't mention it if it hadn't
+	   happened before.) */
 	mcuw=tjMCUWidth[jpegSubsamp];
 	mcuh=tjMCUHeight[jpegSubsamp];
 	chromasf=jpegSubsamp==TJSAMP_GRAY? 0: 4*64/(mcuw*mcuh);
@@ -556,9 +556,9 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 	if(width<1 || height<1)
 		_throw("TJBUFSIZE(): Invalid argument");
 
-	// This allows for rare corner cases in which a JPEG image can actually be
-	// larger than the uncompressed input (we wouldn't mention it if it hadn't
-	// happened before.)
+	/* This allows for rare corner cases in which a JPEG image can actually be
+	   larger than the uncompressed input (we wouldn't mention it if it hadn't
+	   happened before.) */
 	retval=PAD(width, 16) * PAD(height, 16) * 6 + 2048;
 
 	bailout:
@@ -976,10 +976,10 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
 				for(j=0; j<min(th[i], ch[i]-crow[i]); j++)
 				{
 					memcpy(tmpbuf[i][j], inbuf[i][crow[i]+j], cw[i]);
-					// Duplicate last sample in row to fill out MCU
+					/* Duplicate last sample in row to fill out MCU */
 					for(k=cw[i]; k<iw[i]; k++) tmpbuf[i][j][k]=tmpbuf[i][j][cw[i]-1];
 				}
-				// Duplicate last row to fill out MCU
+				/* Duplicate last row to fill out MCU */
 				for(j=ch[i]-crow[i]; j<th[i]; j++)
 					memcpy(tmpbuf[i][j], tmpbuf[i][ch[i]-crow[i]-1], iw[i]);
 				yuvptr[i]=tmpbuf[i];

@@ -519,9 +519,9 @@ DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
 	if(width<1 || height<1 || jpegSubsamp<0 || jpegSubsamp>=NUMSUBOPT)
 		_throw("tjBufSize(): Invalid argument");
 
-	// This allows for rare corner cases in which a JPEG image can actually be
-	// larger than the uncompressed input (we wouldn't mention it if it hadn't
-	// happened before.)
+	/* This allows for rare corner cases in which a JPEG image can actually be
+	   larger than the uncompressed input (we wouldn't mention it if it hadn't
+	   happened before.) */
 	mcuw=tjMCUWidth[jpegSubsamp];
 	mcuh=tjMCUHeight[jpegSubsamp];
 	chromasf=jpegSubsamp==TJSAMP_GRAY? 0: 4*64/(mcuw*mcuh);
@@ -538,9 +538,9 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 	if(width<1 || height<1)
 		_throw("TJBUFSIZE(): Invalid argument");
 
-	// This allows for rare corner cases in which a JPEG image can actually be
-	// larger than the uncompressed input (we wouldn't mention it if it hadn't
-	// happened before.)
+	/* This allows for rare corner cases in which a JPEG image can actually be
+	   larger than the uncompressed input (we wouldn't mention it if it hadn't
+	   happened before.) */
 	retval=PAD(width, 16) * PAD(height, 16) * 6 + 2048;
 
 	bailout:

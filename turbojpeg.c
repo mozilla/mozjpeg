@@ -1235,6 +1235,8 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle handle, unsigned char *jpegBuf,
 static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 	int pixelFormat, int subsamp, int flags)
 {
+	int i;
+
 	dinfo->scale_num=dinfo->scale_denom=1;
 
 	if(subsamp==TJSAMP_GRAY)
@@ -1254,15 +1256,14 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 
 	dinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
 	dinfo->comp_info[0].v_samp_factor=tjMCUHeight[subsamp]/8;
+	dinfo->comp_info[0].component_index=0;
 	dinfo->cur_comp_info[0]=&dinfo->comp_info[0];
-	if(dinfo->num_components==3)
+	for(i=1; i<dinfo->num_components; i++)
 	{
-		dinfo->comp_info[1].h_samp_factor=1;
-		dinfo->comp_info[1].v_samp_factor=1;
-		dinfo->cur_comp_info[1]=&dinfo->comp_info[1];
-		dinfo->comp_info[2].h_samp_factor=1;
-		dinfo->comp_info[2].v_samp_factor=1;
-		dinfo->cur_comp_info[2]=&dinfo->comp_info[2];
+		dinfo->comp_info[i].h_samp_factor=1;
+		dinfo->comp_info[i].v_samp_factor=1;
+		dinfo->comp_info[i].component_index=i;
+		dinfo->cur_comp_info[i]=&dinfo->comp_info[i];
 	}
 
 	return 0;

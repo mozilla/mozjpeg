@@ -455,7 +455,6 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	const char *pfStr=(yuv==YUVDECODE)? "YUV":pixFormatStr[pf];
 	const char *buStrLong=(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ";
 	const char *buStr=(flags&TJFLAG_BOTTOMUP)? "BU":"TD";
-	double t;
 
 	if(yuv==YUVDECODE)
 	{
@@ -480,7 +479,6 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 
 	if(*dstBuf && *dstSize>0) memset(*dstBuf, 0, *dstSize);
 
-	t=gettime();
 	if(yuv==YUVENCODE)
 	{
 		_tj(tjEncodeYUV3(handle, srcBuf, w, 0, h, pf, *dstBuf, pad, subsamp,
@@ -500,7 +498,6 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 				jpegQual, flags));
 		}
 	}
-	t=gettime()-t;
 
 	if(yuv==YUVENCODE)
 		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s.yuv", basename, pfStr, buStr,
@@ -516,7 +513,7 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 		else printf("FAILED!");
 	}
 	else printf("Done.");
-	printf("  %f ms\n  Result in %s\n", t*1000., tempStr);
+	printf("\n  Result in %s\n", tempStr);
 
 	bailout:
 	if(srcBuf) free(srcBuf);
@@ -528,7 +525,7 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 	int flags, tjscalingfactor sf)
 {
 	unsigned char *dstBuf=NULL;
-	int _hdrw=0, _hdrh=0, _hdrsubsamp=-1;  double t;
+	int _hdrw=0, _hdrh=0, _hdrsubsamp=-1;
 	int scaledWidth=TJSCALED(w, sf);
 	int scaledHeight=TJSCALED(h, sf);
 	unsigned long dstSize=0;
@@ -556,7 +553,6 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 		_throw("Memory allocation failure");
 	memset(dstBuf, 0, dstSize);
 
-	t=gettime();
 	if(yuv==YUVDECODE)
 	{
 		_tj(tjDecompressToYUV2(handle, jpegBuf, jpegSize, dstBuf, scaledWidth,
@@ -567,7 +563,6 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 		_tj(tjDecompress2(handle, jpegBuf, jpegSize, dstBuf, scaledWidth, 0,
 			scaledHeight, pf, flags));
 	}
-	t=gettime()-t;
 
 	if(yuv==YUVDECODE)
 	{
@@ -581,7 +576,7 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 			printf("Passed.");
 		else printf("FAILED!");
 	}
-	printf("  %f ms\n", t*1000.);
+	printf("\n");
 
 	bailout:
 	if(dstBuf) free(dstBuf);

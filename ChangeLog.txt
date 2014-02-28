@@ -21,7 +21,8 @@ images is not supported.  Such conversion requires a color management system
 and is out of scope for a codec library.
 
 [5] The TurboJPEG API can now be used to compress JPEG images from YUV planar
-source images.
+source images and to decode YUV planar images into RGB, grayscale, or extended
+RGB images.
 
 [6] If an application attempts to decompress a Huffman-coded JPEG image whose
 header does not contain Huffman tables, libjpeg-turbo will now insert the

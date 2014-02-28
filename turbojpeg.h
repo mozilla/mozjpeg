@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -733,7 +733,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
 
 /**
  * Encode an RGB or grayscale image into a YUV planar image.  This function
- * uses the accelerated color conversion routines in TurboJPEG's underlying
+ * uses the accelerated color conversion routines in the underlying
  * codec but does not execute any of the other steps in the JPEG compression
  * process.  The Y, U (Cb), and V (Cr) image planes are stored sequentially
  * into the destination buffer, and the size of each plane is determined by the
@@ -923,6 +923,60 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
   unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
   int width, int pad, int height, int flags);
+
+
+/**
+ * Decode a YUV planar image into an RGB or grayscale image.  This function
+ * uses the accelerated color conversion routines in the underlying
+ * codec but does not execute any of the other steps in the JPEG decompression
+ * process.  The Y, U (Cb), and V (Cr) image planes should be stored
+ * sequentially in the source buffer, and the size of each plane is determined
+ * by the width and height of the source image, as well as the specified
+ * padding and level of chrominance subsampling.  If the chrominance components
+ * are subsampled along the horizontal dimension, then the width of the
+ * luminance plane should be padded to the nearest multiple of 2 in the input
+ * image (same goes for the height of the luminance plane, if the chrominance
+ * components are subsampled along the vertical dimension.)
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
+ *
+ * @param handle a handle to a TurboJPEG decompressor or transformer instance
+ * @param srcBuf pointer to an image buffer containing a YUV planar image to be
+ *        decoded.  The size of this buffer should match the value returned
+ *        by #tjBufSizeYUV2() for the given image width, height, padding, and
+ *        level of chrominance subsampling.
+ * @param pad Use this parameter to specify that the width of each line in each
+ *        plane of the YUV source image is padded to the nearest multiple of
+ *        this number of bytes (must be a power of 2.)
+ * @param subsamp the level of chrominance subsampling used in the YUV source
+ *        image (see @ref TJSAMP "Chrominance subsampling options".)
+ * @param dstBuf pointer to an image buffer that will receive the decoded
+ *        image.  This buffer should normally be <tt>pitch * height</tt>
+ *        bytes in size, but the <tt>dstBuf</tt> pointer can also be used to
+ *        decode into a specific region of a larger buffer.
+ * @param width width (in pixels) of the source and destination images
+ * @param pitch bytes per line of the destination image.  Normally, this should
+ *        be <tt>width * #tjPixelSize[pixelFormat]</tt> if the destination
+ *        image is unpadded, or <tt>#TJPAD(width *
+ *        #tjPixelSize[pixelFormat])</tt> if each line of the destination
+ *        image should be padded to the nearest 32-bit boundary, as is the case
+ *        for Windows bitmaps.  You can also be clever and use the pitch
+ *        parameter to skip lines, etc.  Setting this parameter to 0 is the
+ *        equivalent of setting it to <tt>width *
+ *        #tjPixelSize[pixelFormat]</tt>.
+ * @param height height (in pixels) of the source and destination images
+ * @param pixelFormat pixel format of the destination image (see @ref TJPF
+ *        "Pixel formats".)
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
+ *
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ */
+DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
+	int pad, int subsamp, unsigned char *dstBuf, int width, int pitch,
+	int height, int pixelFormat, int flags);
 
 
 /**

@@ -6,6 +6,8 @@
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, 2013, D. R. Commander.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for the JPEG compressor.
@@ -158,14 +160,16 @@ usage (void)
   fprintf(stderr, "  -grayscale     Create monochrome JPEG file\n");
   fprintf(stderr, "  -rgb           Create RGB JPEG file\n");
 #ifdef ENTROPY_OPT_SUPPORTED
-  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
+  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression, enabled by default)\n");
 #endif
 #ifdef C_PROGRESSIVE_SUPPORTED
-  fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
+  fprintf(stderr, "  -progressive   Create progressive JPEG file (enabled by default)\n");
 #endif
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
+  fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
+  fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
   fprintf(stderr, "Switches for advanced users:\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
@@ -229,7 +233,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
 
   force_baseline = FALSE;	/* by default, allow 16-bit quantizers */
+#ifdef C_PROGRESSIVE_SUPPORTED
+  simple_progressive = cinfo->num_scans == 0 ? FALSE : TRUE;
+#else
   simple_progressive = FALSE;
+#endif
   is_targa = FALSE;
   outfilename = NULL;
   memdst = FALSE;
@@ -290,6 +298,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	printed_version = TRUE;
       }
       cinfo->err->trace_level++;
+
+    } else if (keymatch(arg, "fastcrush", 4)) {
+      cinfo->optimize_scans = FALSE;
 
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
@@ -390,6 +401,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	cinfo->restart_in_rows = (int) lval;
 	/* restart_interval will be computed during startup */
       }
+
+    } else if (keymatch(arg, "revert", 3)) {
+      /* revert to old JPEG default */
+      cinfo->use_moz_defaults = FALSE;
+      jpeg_set_defaults(cinfo);
 
     } else if (keymatch(arg, "sample", 2)) {
       /* Set sampling factors. */
@@ -522,6 +538,7 @@ main (int argc, char **argv)
    */
 
   cinfo.in_color_space = JCS_RGB; /* arbitrary guess */
+  cinfo.use_moz_defaults = TRUE;
   jpeg_set_defaults(&cinfo);
 
   /* Scan command line to find file names.

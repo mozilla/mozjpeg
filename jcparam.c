@@ -326,9 +326,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 
 #ifdef C_PROGRESSIVE_SUPPORTED
   cinfo->optimize_scans = TRUE;
-  if (cinfo->use_moz_defaults)
-    jpeg_simple_progression(cinfo);
-  else {
+  if (!cinfo->use_moz_defaults) {
     /* Default is no multiple-scan output */
     cinfo->scan_info = NULL;
     cinfo->num_scans = 0;
@@ -401,6 +399,11 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   /* Choose JPEG colorspace based on input space, set defaults accordingly */
 
   jpeg_default_colorspace(cinfo);
+  
+#ifdef C_PROGRESSIVE_SUPPORTED
+  if (cinfo->use_moz_defaults)
+    jpeg_simple_progression(cinfo);
+#endif
 }
 
 

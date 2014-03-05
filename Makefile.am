@@ -84,7 +84,7 @@ endif
 
 
 bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom
-noinst_PROGRAMS = jcstest
+noinst_PROGRAMS = jcstest jpegyuv yuvjpeg
 
 
 if WITH_TURBOJPEG
@@ -138,6 +138,14 @@ wrjpgcom_LDADD = libjpeg.la
 jcstest_SOURCES = jcstest.c
 
 jcstest_LDADD = libjpeg.la
+
+jpegyuv_SOURCES = jpegyuv.c
+
+jpegyuv_LDADD = libjpeg.la
+
+yuvjpeg_SOURCES = yuvjpeg.c
+
+yuvjpeg_LDADD = libjpeg.la
 
 dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 

@@ -476,7 +476,7 @@ main (int argc, char **argv)
 #endif
 
   /* Specify data source for decompression */
-  memsrc = TRUE; /* needed to revert to original */
+  memsrc = dstinfo.use_moz_defaults; /* needed to revert to original */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   if (memsrc) {
     size_t nbytes;

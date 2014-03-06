@@ -144,26 +144,26 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_ARM_ASSEMBLER_IFELSE],[
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CCASFLAGS -x assembler-with-cpp"
   CC="$CCAS"
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     .text
     .fpu neon
     .arch armv7a
     .object_arch armv4
     .arm
     pld [r0]
-    vmovn.u16 d0, q0])], ac_good_gnu_arm_assembler=yes)
+    vmovn.u16 d0, q0]])], ac_good_gnu_arm_assembler=yes)
 
   ac_use_gas_preprocessor=no
   if test "x$ac_good_gnu_arm_assembler" = "xno" ; then
     CC="gas-preprocessor.pl $CCAS"
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
       .text
       .fpu neon
       .arch armv7a
       .object_arch armv4
       .arm
       pld [r0]
-      vmovn.u16 d0, q0])], ac_use_gas_preprocessor=yes)
+      vmovn.u16 d0, q0]])], ac_use_gas_preprocessor=yes)
   fi
   CFLAGS="$ac_save_CFLAGS"
   CC="$ac_save_CC"
@@ -189,7 +189,7 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_MIPSEL_ASSEMBLER_IFELSE],[
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CCASFLAGS -mdspr2"
 
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 
   int main ()
   {
@@ -201,7 +201,7 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_MIPSEL_ASSEMBLER_IFELSE],[
     );
     return c;
   }
-  ])], have_mips_dspr2=yes)
+  ]])], have_mips_dspr2=yes)
   CFLAGS=$ac_save_CFLAGS
 
   if test "x$have_mips_dspr2" = "xyes" ; then
@@ -217,16 +217,16 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_ARM64_ASSEMBLER_IFELSE],[
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CCASFLAGS -x assembler-with-cpp"
   CC="$CCAS"
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     .text
-    movi v0.16b, [#100]])], ac_good_gnu_arm_assembler=yes)
+    movi v0.16b, #100]])], ac_good_gnu_arm_assembler=yes)
 
   ac_use_gas_preprocessor=no
   if test "x$ac_good_gnu_arm_assembler" = "xno" ; then
     CC="gas-preprocessor.pl $CCAS"
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
       .text
-      movi v0.16b, [#100]])], ac_use_gas_preprocessor=yes)
+      movi v0.16b, #100]])], ac_use_gas_preprocessor=yes)
   fi
   CFLAGS="$ac_save_CFLAGS"
   CC="$ac_save_CC"

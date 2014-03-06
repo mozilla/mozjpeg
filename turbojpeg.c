@@ -768,6 +768,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
 	jinit_c_master_control(cinfo, FALSE);
 	jinit_color_converter(cinfo);
 	jinit_downsampler(cinfo);
+	(*cinfo->cconvert->start_pass)(cinfo);
 
 	pw=PAD(width, cinfo->max_h_samp_factor);
 	ph=PAD(height, cinfo->max_v_samp_factor);

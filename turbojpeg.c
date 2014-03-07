@@ -1255,16 +1255,15 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 		(*dinfo->mem->alloc_small)((j_common_ptr)dinfo, JPOOL_IMAGE,
 			dinfo->num_components*SIZEOF(jpeg_component_info));
 
-	dinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
-	dinfo->comp_info[0].v_samp_factor=tjMCUHeight[subsamp]/8;
-	dinfo->comp_info[0].component_index=0;
-	dinfo->cur_comp_info[0]=&dinfo->comp_info[0];
-	for(i=1; i<dinfo->num_components; i++)
+	for(i=0; i<dinfo->num_components; i++)
 	{
-		dinfo->comp_info[i].h_samp_factor=1;
-		dinfo->comp_info[i].v_samp_factor=1;
-		dinfo->comp_info[i].component_index=i;
-		dinfo->cur_comp_info[i]=&dinfo->comp_info[i];
+		jpeg_component_info *compptr=&dinfo->comp_info[i];
+		compptr->h_samp_factor=(i==0)? tjMCUWidth[subsamp]/8:1;
+		compptr->v_samp_factor=(i==0)? tjMCUHeight[subsamp]/8:1;
+		compptr->component_index=i;
+		compptr->quant_tbl_no=compptr->dc_tbl_no=compptr->ac_tbl_no=
+			(i==0)? 0:1;
+		dinfo->cur_comp_info[i]=compptr;
 	}
 
 	return 0;
@@ -1358,21 +1357,14 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	{
 		retval=-1;  goto bailout;
 	}
-	jpeg_calc_output_dimensions(dinfo);
 	if(flags&TJFLAG_FASTUPSAMPLE)
 	{
 		dinfo->do_fancy_upsampling=FALSE;
 		if((subsamp==TJSAMP_422 || subsamp==TJSAMP_420) && pixelFormat!=TJPF_GRAY)
 			useMerged=1;
 	}
-	if(useMerged)
-		jinit_merged_upsampler(dinfo);
-	else
-	{
-		jinit_color_deconverter(dinfo);
-		jinit_upsampler(dinfo);
-		(*dinfo->cconvert->start_pass)(dinfo);
-	}
+	jinit_master_decompress(dinfo);
+	if(!useMerged) (*dinfo->cconvert->start_pass)(dinfo);
 	(*dinfo->upsample->start_pass)(dinfo);
 
 	pw=PAD(width, dinfo->max_h_samp_factor);

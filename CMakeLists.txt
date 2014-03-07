@@ -485,7 +485,7 @@ add_custom_target(installer
   makensis -nocd ${INST_DEFS} libmozjpeg.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
     cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
-  SOURCES libjpeg-turbo.nsi)
+  SOURCES libmozjpeg.nsi)
 
 install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom tjbench
   ARCHIVE DESTINATION lib

@@ -417,6 +417,7 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 
 		if((yuvBuf=(unsigned char *)malloc(yuvSize))==NULL)
 			_throw("Memory allocation failure");
+		memset(yuvBuf, 0, yuvSize);
 
 		printf("%s %s -> YUV %s ... ", pfStr, buStrLong, subNameLong[subsamp]);
 		_tj(tjEncodeYUV3(handle, srcBuf, w, 0, h, pf, yuvBuf, pad, subsamp,
@@ -478,6 +479,7 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 
 		if((yuvBuf=(unsigned char *)malloc(yuvSize))==NULL)
 			_throw("Memory allocation failure");
+		memset(yuvBuf, 0, yuvSize);
 
 		printf("JPEG -> YUV %s ", subNameLong[subsamp]);
 		if(sf.num!=1 || sf.denom!=1)

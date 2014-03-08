@@ -571,8 +571,11 @@ void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 			decompTest(dhandle, dstBuf, size, w, h, pf, basename, subsamp,
 				flags);
 			if(pf>=TJPF_RGBX && pf<=TJPF_XRGB)
+			{
+				printf("\n");
 				decompTest(dhandle, dstBuf, size, w, h, pf+(TJPF_RGBA-TJPF_RGBX),
 					basename, subsamp, flags);
+			}
 			printf("\n");
 		}
 	}

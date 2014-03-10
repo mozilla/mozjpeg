@@ -1261,6 +1261,7 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 		compptr->h_samp_factor=(i==0)? tjMCUWidth[subsamp]/8:1;
 		compptr->v_samp_factor=(i==0)? tjMCUHeight[subsamp]/8:1;
 		compptr->component_index=i;
+		compptr->component_id=i+1;
 		compptr->quant_tbl_no=compptr->dc_tbl_no=compptr->ac_tbl_no=
 			(i==0)? 0:1;
 		dinfo->cur_comp_info[i]=compptr;

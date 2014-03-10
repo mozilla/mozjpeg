@@ -1293,7 +1293,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	int i, retval=0;  JSAMPROW *row_pointer=NULL;
 	JSAMPLE *_tmpbuf[MAX_COMPONENTS];
 	JSAMPROW *tmpbuf[MAX_COMPONENTS], *inbuf[MAX_COMPONENTS];
-	int row, pw, ph, cw[MAX_COMPONENTS], ch[MAX_COMPONENTS], useMerged=0;
+	int row, pw, ph, cw[MAX_COMPONENTS], ch[MAX_COMPONENTS];
 	JSAMPLE *ptr=srcBuf;
 	unsigned long yuvsize=0;
 	jpeg_component_info *compptr;
@@ -1364,14 +1364,8 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	{
 		retval=-1;  goto bailout;
 	}
-	if(flags&TJFLAG_FASTUPSAMPLE)
-	{
-		dinfo->do_fancy_upsampling=FALSE;
-		if((subsamp==TJSAMP_422 || subsamp==TJSAMP_420) && pixelFormat!=TJPF_GRAY)
-			useMerged=1;
-	}
+	dinfo->do_fancy_upsampling=FALSE;
 	jinit_master_decompress(dinfo);
-	if(!useMerged) (*dinfo->cconvert->start_pass)(dinfo);
 	(*dinfo->upsample->start_pass)(dinfo);
 
 	pw=PAD(width, dinfo->max_h_samp_factor);

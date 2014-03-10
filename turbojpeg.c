@@ -1242,12 +1242,12 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 
 	if(subsamp==TJSAMP_GRAY)
 	{
-		dinfo->num_components=1;
+		dinfo->num_components=dinfo->comps_in_scan=1;
 		dinfo->jpeg_color_space=JCS_GRAYSCALE;
 	}
 	else
 	{
-		dinfo->num_components=3;
+		dinfo->num_components=dinfo->comps_in_scan=3;
 		dinfo->jpeg_color_space=JCS_YCbCr;
 	}
 
@@ -1264,6 +1264,12 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 		compptr->quant_tbl_no=compptr->dc_tbl_no=compptr->ac_tbl_no=
 			(i==0)? 0:1;
 		dinfo->cur_comp_info[i]=compptr;
+	}
+	dinfo->data_precision=8;
+	for(i=0; i<2; i++)
+	{
+		if(dinfo->quant_tbl_ptrs[i]==NULL)
+			dinfo->quant_tbl_ptrs[i]=jpeg_alloc_quant_table((j_common_ptr)dinfo);
 	}
 
 	return 0;

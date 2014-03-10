@@ -414,14 +414,17 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 	{
 		unsigned long yuvSize=tjBufSizeYUV2(w, pad, h, subsamp);
 		tjscalingfactor sf={1, 1};
+		tjhandle handle2=tjInitCompress();
+		if(!handle2) _throwtj();
 
 		if((yuvBuf=(unsigned char *)malloc(yuvSize))==NULL)
 			_throw("Memory allocation failure");
 		memset(yuvBuf, 0, yuvSize);
 
 		printf("%s %s -> YUV %s ... ", pfStr, buStrLong, subNameLong[subsamp]);
-		_tj(tjEncodeYUV3(handle, srcBuf, w, 0, h, pf, yuvBuf, pad, subsamp,
+		_tj(tjEncodeYUV3(handle2, srcBuf, w, 0, h, pf, yuvBuf, pad, subsamp,
 			flags));
+		tjDestroy(handle2);
 		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s.yuv", basename, pfStr, buStr,
 			subName[subsamp]);
 		writeJPEG(yuvBuf, yuvSize, tempStr);
@@ -476,6 +479,8 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 	{
 		unsigned long yuvSize=tjBufSizeYUV2(scaledWidth, pad, scaledHeight,
 			subsamp);
+		tjhandle handle2=tjInitDecompress();
+		if(!handle2) _throwtj();
 
 		if((yuvBuf=(unsigned char *)malloc(yuvSize))==NULL)
 			_throw("Memory allocation failure");
@@ -493,8 +498,9 @@ void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 
 		printf("YUV %s -> %s %s ... ", subNameLong[subsamp], pixFormatStr[pf],
 			(flags&TJFLAG_BOTTOMUP)? "Bottom-Up":"Top-Down ");
-		_tj(tjDecodeYUV(handle, yuvBuf, pad, subsamp, dstBuf, scaledWidth, 0,
+		_tj(tjDecodeYUV(handle2, yuvBuf, pad, subsamp, dstBuf, scaledWidth, 0,
 			scaledHeight, pf, flags));
+		tjDestroy(handle2);
 	}
 	else
 	{

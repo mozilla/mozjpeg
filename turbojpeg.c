@@ -531,7 +531,6 @@ DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
 	return retval;
 }
 
-
 DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
 	unsigned long retval=0;
@@ -983,7 +982,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 		scaledw=TJSCALED(jpegwidth, sf[i]);
 		scaledh=TJSCALED(jpegheight, sf[i]);
 		if(scaledw<=width && scaledh<=height)
-				break;
+			break;
 	}
 	if(scaledw>width || scaledh>height)
 		_throw("tjDecompress2(): Could not scale down to desired image dimensions");

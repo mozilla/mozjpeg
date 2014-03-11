@@ -626,7 +626,7 @@ class TJBench {
     System.out.println("     decompression (these options are mutually exclusive)");
     System.out.println("-grayscale = Perform lossless grayscale conversion prior to decompression");
     System.out.println("     test (can be combined with the other transforms above)");
-    System.out.println("-benchTime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
+    System.out.println("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
     System.out.println("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate");
     System.out.println("test will be performed for all quality values in the range.\n");
     System.exit(1);

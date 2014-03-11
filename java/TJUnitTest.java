@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012, 2014 D. R. Commander.  
+ * Copyright (C)2011-2012, 2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -903,7 +903,7 @@ public class TJUnitTest {
       if (!bi)
         bufSizeTest();
       if (doyuv && !bi) {
-     	  System.out.print("\n--------------------\n\n");
+        System.out.print("\n--------------------\n\n");
         yuv = YUVDECODE;
         doTest(48, 48, onlyRGB, TJ.SAMP_444, "javatest_yuv0");
         doTest(35, 39, onlyRGB, TJ.SAMP_444, "javatest_yuv1");

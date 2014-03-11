@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -600,7 +600,9 @@ class TJBench {
     System.out.println("     codec");
     System.out.println("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the");
     System.out.println("     underlying codec");
-    System.out.println("-440 = Test 4:4:0 chrominance subsampling instead of 4:2:2");
+    System.out.println("-subsamp <s> = When testing JPEG compression, this option specifies the level");
+    System.out.println("     of chrominance subsampling to use (<s> = 444, 422, 440, 420, or GRAY).");
+    System.out.println("     The default is to test Grayscale, 4:2:0, 4:2:2, and 4:4:4 in sequence.");
     System.out.println("-quiet = Output results in tabular rather than verbose format");
     System.out.println("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG");
     System.out.println("-yuvdecode = Decode JPEG image to planar YUV rather than RGB");
@@ -637,7 +639,7 @@ class TJBench {
     byte[] srcBuf = null;  int w = 0, h = 0;
     int minQual = -1, maxQual = -1;
     int minArg = 1;  int retval = 0;
-    boolean do440 = false;
+    int subsamp = -1;
 
     try {
 
@@ -715,8 +717,6 @@ class TJBench {
             System.out.println("Using most accurate DCT/IDCT algorithm\n");
             flags |= TJ.FLAG_ACCURATEDCT;
           }
-          if (argv[i].equals("-440"))
-            do440 = true;
           if (argv[i].equalsIgnoreCase("-rgb"))
             pf = TJ.PF_RGB;
           if (argv[i].equalsIgnoreCase("-rgbx"))
@@ -786,6 +786,19 @@ class TJBench {
             else
               usage();
           }
+          if (argv[i].equalsIgnoreCase("-subsamp") && i < argv.length - 1) {
+            i++;
+            if (argv[i].toUpperCase().startsWith("G"))
+              subsamp = TJ.SAMP_GRAY;
+            else if (argv[i].equals("444"))
+              subsamp = TJ.SAMP_444;
+            else if (argv[i].equals("422"))
+              subsamp = TJ.SAMP_422;
+            else if (argv[i].equals("440"))
+              subsamp = TJ.SAMP_440;
+            else if (argv[i].equals("420"))
+              subsamp = TJ.SAMP_420;
+          }
           if (argv[i].equalsIgnoreCase("-?"))
             usage();
         }
@@ -829,21 +842,27 @@ class TJBench {
       }
 
       System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, TJ.SAMP_GRAY, i, argv[0]);
-      System.out.println("");
-      System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, TJ.SAMP_420, i, argv[0]);
-      System.out.println("");
-      System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, do440 ? TJ.SAMP_440 : TJ.SAMP_422, i, argv[0]);
-      System.out.println("");
-      System.gc();
-      for (int i = maxQual; i >= minQual; i--)
-        doTest(srcBuf, w, h, TJ.SAMP_444, i, argv[0]);
-      System.out.println("");
+      if (subsamp >= 0 && subsamp < TJ.NUMSAMP) {
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, subsamp, i, argv[0]);
+        System.out.println("");
+      } else {
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_GRAY, i, argv[0]);
+        System.out.println("");
+        System.gc();
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_420, i, argv[0]);
+        System.out.println("");
+        System.gc();
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_422, i, argv[0]);
+        System.out.println("");
+        System.gc();
+        for (int i = maxQual; i >= minQual; i--)
+          doTest(srcBuf, w, h, TJ.SAMP_444, i, argv[0]);
+        System.out.println("");
+      }
 
     } catch (Exception e) {
       System.out.println("ERROR: " + e.getMessage());

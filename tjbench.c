@@ -139,7 +139,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 		if(yuv==YUVDECODE)
 		{
 			if(tjDecompressToYUV(handle, jpegbuf[0], jpegsize[0], dstbuf, flags)==-1)
-			_throwtj("executing tjDecompressToYUV()");
+				_throwtj("executing tjDecompressToYUV()");
 		}
 		else for(row=0, dstptr=dstbuf; row<ntilesh; row++, dstptr+=pitch*tileh)
 		{

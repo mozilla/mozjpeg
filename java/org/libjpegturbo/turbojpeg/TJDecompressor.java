@@ -117,7 +117,7 @@ public class TJDecompressor {
 
   /**
    * Returns the level of chrominance subsampling used in the JPEG image
-   * associated with this decompressor instance.
+   * associated with this decompressor instance.  See {@link TJ TJ.SAMP_*}.
    *
    * @return the level of chrominance subsampling used in the JPEG image
    * associated with this decompressor instance

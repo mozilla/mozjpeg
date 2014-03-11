@@ -445,8 +445,8 @@ typedef struct tjtransform
   /**
    * A callback function that can be used to modify the DCT coefficients
    * after they are losslessly transformed but before they are transcoded to a
-   * new JPEG file.  This allows for custom filters or other transformations to
-   * be applied in the frequency domain.
+   * new JPEG image.  This allows for custom filters or other transformations
+   * to be applied in the frequency domain.
    *
    * @param coeffs pointer to an array of transformed DCT coefficients.  (NOTE:
    *        this pointer is not guaranteed to be valid once the callback

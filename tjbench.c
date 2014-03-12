@@ -481,7 +481,7 @@ void decompTest(char *filename)
 	int w=0, h=0, subsamp=-1, cs=-1, _w, _h, _tilew, _tileh,
 		_ntilesw, _ntilesh, _subsamp;
 	char *temp=NULL, tempstr[80], tempstr2[80];
-	int row, col, i, tilew, tileh, ntilesw=1, ntilesh=1, retval=0;
+	int row, col, i, iter, tilew, tileh, ntilesw=1, ntilesh=1, retval=0;
 	double start, elapsed;
 	int ps=tjPixelSize[pf], tile;
 
@@ -602,11 +602,21 @@ void decompTest(char *filename)
 				}
 			}
 
-			start=gettime();
-			if(tjTransform(handle, srcbuf, srcsize, _ntilesw*_ntilesh, jpegbuf,
-				jpegsize, t, flags)==-1)
-				_throwtj("executing tjTransform()");
-			elapsed=gettime()-start;
+			iter=-warmup;
+			elapsed=0.;
+			while(1)
+			{
+				start=gettime();
+				if(tjTransform(handle, srcbuf, srcsize, _ntilesw*_ntilesh, jpegbuf,
+					jpegsize, t, flags)==-1)
+					_throwtj("executing tjTransform()");
+				iter++;
+				if(iter>=1)
+				{
+					elapsed+=gettime()-start;
+					if(elapsed>=benchtime) break;
+				}
+			}
 
 			free(t);  t=NULL;
 

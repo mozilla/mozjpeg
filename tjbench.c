@@ -567,7 +567,7 @@ void dodecomptest(char *filename)
 			_throwunix("allocating JPEG size array");
 		memset(jpegsize, 0, sizeof(unsigned long)*ntilesw*ntilesh);
 
-		if((flags&TJFLAG_NOREALLOC)!=0)
+		if((flags&TJFLAG_NOREALLOC)!=0 || !dotile)
 			for(i=0; i<ntilesw*ntilesh; i++)
 			{
 				if((jpegbuf[i]=(unsigned char *)malloc(tjBufSize(tilew, tileh,

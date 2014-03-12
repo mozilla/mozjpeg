@@ -190,13 +190,14 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 
 	if(quiet)
 	{
-		printf("%-6s  ",
-			sigfig((double)(w*h)/1000000.*(double)iter/elapsed, 4, tempstr, 1024));
+		printf("%-6s%s",
+			sigfig((double)(w*h)/1000000.*(double)iter/elapsed, 4, tempstr, 1024),
+			quiet==2? "\n":"  ");
 		if(doyuv)
-			printf("%s",
+			printf("%s\n",
 				sigfig((double)(w*h)/1000000.*(double)iter/elapsedDecode, 4, tempstr,
 					1024));
-		printf("\n");
+		else if(quiet!=2) printf("\n");
 	}
 	else
 	{

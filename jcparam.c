@@ -741,20 +741,21 @@ jpeg_search_progression (j_compress_ptr cinfo)
 GLOBAL(void)
 jpeg_simple_progression (j_compress_ptr cinfo)
 {
+  int ncomps;
+  int nscans;
+  jpeg_scan_info * scanptr;
+
   if (cinfo->optimize_scans) {
     if (jpeg_search_progression(cinfo) == TRUE)
       return;
   }
-  
-  int ncomps = cinfo->num_components;
-  int nscans;
-  jpeg_scan_info * scanptr;
 
   /* Safety check to ensure start_compress not called yet. */
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
 
   /* Figure space needed for script.  Calculation must match code below! */
+  ncomps = cinfo->num_components;
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
     nscans = 10;

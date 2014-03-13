@@ -327,6 +327,7 @@ testclean:
 
 tjtest:
 	sh ./tjbenchtest
+	sh ./tjbenchtest -yuv
 if WITH_JAVA
 	sh ./tjbenchtest.java
 endif

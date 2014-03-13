@@ -584,6 +584,13 @@ void decompTest(char *filename)
 			_ntilesw=(_w+_tilew-1)/_tilew;
 			_ntilesh=(_h+_tileh-1)/_tileh;
 
+			if(xformop==TJXOP_TRANSPOSE || xformop==TJXOP_TRANSVERSE
+				|| xformop==TJXOP_ROT90 || xformop==TJXOP_ROT270)
+			{
+				if(_subsamp==TJSAMP_422) _subsamp=TJSAMP_440;
+				else if(_subsamp==TJSAMP_440) _subsamp=TJSAMP_422;
+			}
+
 			for(row=0, tile=0; row<_ntilesh; row++)
 			{
 				for(col=0; col<_ntilesw; col++, tile++)

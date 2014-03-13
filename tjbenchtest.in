@@ -51,12 +51,12 @@ if [ $# -gt 0 ]; then
 # each downsampled dimension is an odd number or is evenly divisible by the MCU
 # width/height.  This disagreement basically amounts to a round-off error, but
 # there is no easy way around it, so for now, we just test the only image that
-# works.  (NOTE: nightshot_iso_100 seems to exhibit a similar phenomenon when
-# decompressing.  If it is scaled by a factor, such as 7/8, that causes the
-# scaled width to no longer be an even multiple of the MCU width, then the
-# combination of tjDecompressToYUV*() and tjDecodeYUV*() do not produce
-# bitwise-identical results to tjDecompress*().  This latter phenomenon is not
-# yet fully understood.)
+# works.  (NOTE: nightshot_iso_100 does not suffer from the above issue, but
+# it suffers from an unrelated problem whereby the combination of
+# tjDecompressToYUV*() and tjDecodeYUV*() do not produce bitwise-identical
+# results to tjDecompress*() if decompression scaling is enabled.  This latter
+# phenomenon is not yet fully understood but is also believed to be some sort
+# of round-off error.)
 		IMAGES="vgl_6548_0026a.${EXT}"
 	fi
 fi

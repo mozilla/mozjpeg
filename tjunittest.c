@@ -79,7 +79,6 @@ const int _4byteFormats[]={TJPF_RGBX, TJPF_BGRX, TJPF_XBGR, TJPF_XRGB,
 const int _onlyGray[]={TJPF_GRAY};
 const int _onlyRGB[]={TJPF_RGB};
 
-enum {YUVENCODE=1, YUVDECODE};
 int doyuv=0, alloc=0, pad=4;
 
 int exitStatus=0;
@@ -425,9 +424,6 @@ void compTest(tjhandle handle, unsigned char **dstBuf,
 		_tj(tjEncodeYUV3(handle2, srcBuf, w, 0, h, pf, yuvBuf, pad, subsamp,
 			flags));
 		tjDestroy(handle2);
-		snprintf(tempStr, 1024, "%s_enc_%s_%s_%s.yuv", basename, pfStr, buStr,
-			subName[subsamp]);
-		writeJPEG(yuvBuf, yuvSize, tempStr);
 		if(checkBufYUV(yuvBuf, w, h, subsamp, sf)) printf("Passed.\n");
 		else printf("FAILED!\n");
 

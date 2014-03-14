@@ -152,10 +152,6 @@ public class TJUnitTest {
     return "Unknown";
   }
 
-  private static double getTime() {
-    return (double)System.nanoTime() / 1.0e9;
-  }
-
   private static void initBuf(byte[] buf, int w, int pitch, int h, int pf,
                               int flags) throws Exception {
     int roffset = TJ.getRedOffset(pf);
@@ -697,7 +693,6 @@ public class TJUnitTest {
     String buStrLong = (flags & TJ.FLAG_BOTTOMUP) != 0 ?
                        "Bottom-Up" : "Top-Down ";
     String buStr = (flags & TJ.FLAG_BOTTOMUP) != 0 ? "BU" : "TD";
-    double t;
     int size = 0, ps, imgType = pf;
 
     if (yuv == YUVDECODE) {
@@ -738,7 +733,6 @@ public class TJUnitTest {
     }
     Arrays.fill(dstBuf, (byte)0);
 
-    t = getTime();
     tjc.setSubsamp(subsamp);
     tjc.setJPEGQuality(jpegQual);
     tjc.setYUVPad(pad);
@@ -758,7 +752,6 @@ public class TJUnitTest {
         tjc.compress(dstBuf, flags);
     }
     size = tjc.getCompressedSize();
-    t = getTime() - t;
 
     if (yuv == YUVENCODE)
       tempstr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
@@ -778,8 +771,7 @@ public class TJUnitTest {
       }
     } else
       System.out.print("Done.");
-    System.out.format("  %.6f ms\n", t * 1000.);
-    System.out.println("  Result in " + tempstr);
+    System.out.println("\n  Result in " + tempstr);
 
     return size;
   }
@@ -789,7 +781,6 @@ public class TJUnitTest {
                                  String baseName, int subsamp, int flags,
                                  TJScalingFactor sf) throws Exception {
     String pfStr, tempstr;
-    double t;
     int scaledWidth = sf.getScaled(w);
     int scaledHeight = sf.getScaled(h);
     int temp1, temp2, imgType = pf;
@@ -821,7 +812,6 @@ public class TJUnitTest {
     else
       System.out.print("... ");
 
-    t = getTime();
     tjd.setJPEGImage(jpegBuf, jpegSize);
     if (tjd.getWidth() != w || tjd.getHeight() != h ||
         tjd.getSubsamp() != subsamp)
@@ -842,7 +832,6 @@ public class TJUnitTest {
       else
         dstBuf = tjd.decompress(scaledWidth, 0, scaledHeight, pf, flags);
     }
-    t = getTime() - t;
 
     if (bi) {
       tempstr = baseName + "_dec_" + pfStr + "_" +
@@ -871,7 +860,7 @@ public class TJUnitTest {
         exitStatus = -1;
       }
     }
-    System.out.format("  %.6f ms\n", t * 1000.);
+    System.out.print("\n");
   }
 
   private static void decompTest(TJDecompressor tjd, byte[] jpegBuf,

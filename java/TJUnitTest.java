@@ -1049,7 +1049,7 @@ public class TJUnitTest {
       if (!bi)
         bufSizeTest();
       if (doyuv && !bi) {
-     	  System.out.print("\n--------------------\n\n");
+        System.out.print("\n--------------------\n\n");
         yuv = YUVDECODE;
         doTest(48, 48, onlyRGB, TJ.SAMP_444, "javatest_yuv0");
         doTest(35, 39, onlyRGB, TJ.SAMP_444, "javatest_yuv1");

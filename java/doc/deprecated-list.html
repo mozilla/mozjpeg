@@ -83,6 +83,7 @@ function windowTitle()
 <B>Contents</B><UL>
 <LI><A HREF="#field">Deprecated Fields</A>
 <LI><A HREF="#method">Deprecated Methods</A>
+<LI><A HREF="#constructor">Deprecated Constructors</A>
 </UL>
 
 <A NAME="field"><!-- --></A>
@@ -126,6 +127,20 @@ function windowTitle()
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use <A HREF="org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int, int)"><CODE>TJ.bufSizeYUV(int, int, int, int)</CODE></A> instead.</I>&nbsp;</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#compress(java.awt.image.BufferedImage, byte[], int)">org.libjpegturbo.turbojpeg.TJCompressor.compress(BufferedImage, byte[], int)</A>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><CODE>TJCompressor.setSourceImage(BufferedImage, int, int, int, int)</CODE></A> and
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#compress(byte[], int)"><CODE>TJCompressor.compress(byte[], int)</CODE></A> instead.</I>&nbsp;</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#compress(java.awt.image.BufferedImage, int)">org.libjpegturbo.turbojpeg.TJCompressor.compress(BufferedImage, int)</A>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><CODE>TJCompressor.setSourceImage(BufferedImage, int, int, int, int)</CODE></A> and
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#compress(int)"><CODE>TJCompressor.compress(int)</CODE></A> instead.</I>&nbsp;</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><A HREF="org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[], int, int, int, int, int)">org.libjpegturbo.turbojpeg.TJDecompressor.decompress(byte[], int, int, int, int, int)</A>
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use
@@ -143,10 +158,39 @@ function windowTitle()
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use <A HREF="org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int, int, int, int)"><CODE>TJDecompressor.decompressToYUV(int, int, int, int)</CODE></A> instead.</I>&nbsp;</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(java.awt.image.BufferedImage, byte[], int)">org.libjpegturbo.turbojpeg.TJCompressor.encodeYUV(BufferedImage, byte[], int)</A>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><CODE>TJCompressor.setSourceImage(BufferedImage, int, int, int, int)</CODE></A> and
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[], int)"><CODE>TJCompressor.encodeYUV(byte[], int)</CODE></A> instead.</I>&nbsp;</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(java.awt.image.BufferedImage, int)">org.libjpegturbo.turbojpeg.TJCompressor.encodeYUV(BufferedImage, int)</A>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><CODE>TJCompressor.setSourceImage(BufferedImage, int, int, int, int)</CODE></A> and
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int)"><CODE>TJCompressor.encodeYUV(int)</CODE></A> instead.</I>&nbsp;</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int)">org.libjpegturbo.turbojpeg.TJCompressor.setSourceImage(byte[], int, int, int, int)</A>
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use
  <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><CODE>TJCompressor.setSourceImage(byte[], int, int, int, int, int, int)</CODE></A> instead.</I>&nbsp;</TD>
+</TR>
+</TABLE>
+&nbsp;
+<P>
+<A NAME="constructor"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Deprecated Constructors</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int)">org.libjpegturbo.turbojpeg.TJCompressor(byte[], int, int, int, int)</A>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<I>Use
+ <A HREF="org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int, int, int)"><CODE>TJCompressor.TJCompressor(byte[], int, int, int, int, int, int)</CODE></A> instead.</I>&nbsp;</TD>
 </TR>
 </TABLE>
 &nbsp;

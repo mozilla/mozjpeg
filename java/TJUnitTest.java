@@ -736,21 +736,16 @@ public class TJUnitTest {
     tjc.setSubsamp(subsamp);
     tjc.setJPEGQuality(jpegQual);
     tjc.setYUVPad(pad);
-    if (bi) {
-      if (yuv == YUVENCODE)
-        tjc.encodeYUV(img, dstBuf, flags);
-      else
-        tjc.compress(img, dstBuf, flags);
-    } else {
-      if (yuv == YUVDECODE)
-        tjc.setSourceImageYUV(srcBuf, w, pad, h);
-      else
-        tjc.setSourceImage(srcBuf, w, 0, h, pf);
-      if (yuv == YUVENCODE)
-        tjc.encodeYUV(dstBuf, flags);
-      else
-        tjc.compress(dstBuf, flags);
-    }
+    if (yuv == YUVDECODE)
+      tjc.setSourceImageYUV(srcBuf, w, pad, h);
+    else if (bi)
+      tjc.setSourceImage(img, 0, 0, 0, 0);
+    else
+      tjc.setSourceImage(srcBuf, 0, 0, w, 0, h, pf);
+    if (yuv == YUVENCODE)
+      tjc.encodeYUV(dstBuf, flags);
+    else
+      tjc.compress(dstBuf, flags);
     size = tjc.getCompressedSize();
 
     if (yuv == YUVENCODE)
@@ -955,7 +950,7 @@ public class TJUnitTest {
             for (i = 0; i < w * h * 4; i++) {
               srcBuf[i] = (byte)(r.nextInt(2) * 255);
             }
-            tjc.setSourceImage(srcBuf, w, 0, h, TJ.PF_BGRX);
+            tjc.setSourceImage(srcBuf, 0, 0, w, 0, h, TJ.PF_BGRX);
             tjc.setSubsamp(subsamp);
             tjc.setJPEGQuality(100);
             tjc.setYUVPad(pad);
@@ -972,7 +967,7 @@ public class TJUnitTest {
             for (i = 0; i < h * w * 4; i++) {
               srcBuf[i] = (byte)(r.nextInt(2) * 255);
             }
-            tjc.setSourceImage(srcBuf, h, 0, w, TJ.PF_BGRX);
+            tjc.setSourceImage(srcBuf, 0, 0, h, 0, w, TJ.PF_BGRX);
             if (yuv == YUVENCODE)
               tjc.encodeYUV(dstBuf, 0);
             else

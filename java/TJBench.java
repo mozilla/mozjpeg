@@ -165,7 +165,7 @@ class TJBench {
     if (yuv == YUVDECODE)
       tjd.decompressToYUV(dstBuf, scaledw, yuvpad, scaledh, flags);
     else
-      tjd.decompress(dstBuf, scaledw, pitch, scaledh, pf, flags);
+      tjd.decompress(dstBuf, 0, 0, scaledw, pitch, scaledh, pf, flags);
 
     /* Benchmark */
     for (i = 0, start = getTime(); (elapsed = getTime() - start) < benchTime;
@@ -259,7 +259,7 @@ class TJBench {
     int ps = TJ.getPixelSize(pf), i;
     int yuvSize = 0;
 
-    yuvSize = TJ.bufSizeYUV(w, h, subsamp);
+    yuvSize = TJ.bufSizeYUV(w, yuvpad, h, subsamp);
     dstBuf = new byte[yuvSize];
 
     if (quiet == 0)
@@ -273,7 +273,7 @@ class TJBench {
                         (flags & TJ.FLAG_BOTTOMUP) != 0 ? "BU" : "TD",
                         subNameLong[subsamp]);
 
-    tjc = new TJCompressor(srcBuf, w, 0, h, pf);
+    tjc = new TJCompressor(srcBuf, 0, 0, w, 0, h, pf);
     tjc.setSubsamp(subsamp);
 
     /* Execute once to preload cache */
@@ -362,7 +362,7 @@ class TJBench {
       if (yuv == YUVCOMPRESS)
         tjc.setSourceImageYUV(srcBuf, tilew, yuvpad, tileh);
       else
-        tjc.setSourceImage(srcBuf, tilew, pitch, tileh, pf);
+        tjc.setSourceImage(srcBuf, 0, 0, tilew, pitch, tileh, pf);
       tjc.setJPEGQuality(jpegQual);
       tjc.setSubsamp(subsamp);
 
@@ -618,8 +618,6 @@ class TJBench {
     System.out.println("-bottomup = Test bottom-up compression/decompression");
     System.out.println("-tile = Test performance of the codec when the image is encoded as separate");
     System.out.println("     tiles of varying sizes.");
-    System.out.println("-forcemmx, -forcesse, -forcesse2, -forcesse3 =");
-    System.out.println("     Force MMX, SSE, SSE2, or SSE3 code paths in the underlying codec");
     System.out.println("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =");
     System.out.println("     Test the specified color conversion path in the codec (default: BGR)");
     System.out.println("-fastupsample = Use the fastest chrominance upsampling algorithm available in");
@@ -728,22 +726,6 @@ class TJBench {
         for (int i = minArg; i < argv.length; i++) {
           if (argv[i].equalsIgnoreCase("-tile")) {
             doTile = true;  xformOpt |= TJTransform.OPT_CROP;
-          }
-          if (argv[i].equalsIgnoreCase("-forcesse3")) {
-            System.out.println("Forcing SSE3 code\n");
-            flags |= TJ.FLAG_FORCESSE3;
-          }
-          if (argv[i].equalsIgnoreCase("-forcesse2")) {
-            System.out.println("Forcing SSE2 code\n");
-            flags |= TJ.FLAG_FORCESSE2;
-          }
-          if (argv[i].equalsIgnoreCase("-forcesse")) {
-            System.out.println("Forcing SSE code\n");
-            flags |= TJ.FLAG_FORCESSE;
-          }
-          if (argv[i].equalsIgnoreCase("-forcemmx")) {
-            System.out.println("Forcing MMX code\n");
-            flags |= TJ.FLAG_FORCEMMX;
           }
           if (argv[i].equalsIgnoreCase("-fastupsample")) {
             System.out.println("Using fast upsampling code\n");

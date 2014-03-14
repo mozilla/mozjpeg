@@ -321,6 +321,8 @@ void fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 		if(quiet==1)
 			printf("%-4s (%s)  %-5s    %-3d   ", pfStr,
 				(flags&TJFLAG_BOTTOMUP)? "BU":"TD", subNameLong[subsamp], jpegqual);
+		for(i=0; i<h; i++)
+			memcpy(&tmpbuf[pitch*i], &srcbuf[w*ps*i], w*ps);
 		if((handle=tjInitCompress())==NULL)
 			_throwtj("executing tjInitCompress()");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,21 +47,10 @@ public class TJCompressor {
   }
 
   /**
-   * Create a TurboJPEG compressor instance and associate the uncompressed
-   * source image stored in <code>srcImage</code> with the newly-created
-   * instance.
-   *
-   * @param srcImage see {@link #setSourceImage} for description
-   *
-   * @param width see {@link #setSourceImage} for description
-   *
-   * @param pitch see {@link #setSourceImage} for description
-   *
-   * @param height see {@link #setSourceImage} for description
-   *
-   * @param pixelFormat pixel format of the source image (one of
-   * {@link TJ TJ.PF_*})
+   * @deprecated Use
+   * {@link #TJCompressor(byte[], int, int, int, int, int, int)} instead.
    */
+  @Deprecated
   public TJCompressor(byte[] srcImage, int width, int pitch, int height,
                       int pixelFormat) throws Exception {
     setSourceImage(srcImage, width, pitch, height, pixelFormat);
@@ -90,6 +79,31 @@ public class TJCompressor {
   public TJCompressor(byte[] srcImage, int x, int y, int width, int pitch,
                       int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, x, y, width, pitch, height, pixelFormat);
+  }
+
+  /**
+   * Create a TurboJPEG compressor instance and associate the uncompressed
+   * source image stored in <code>srcImage</code> with the newly-created
+   * instance.
+   *
+   * @param srcImage see
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} for description
+   *
+   * @param x see
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} for description
+   *
+   * @param y see
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} for description
+   *
+   * @param width see
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} for description
+   *
+   * @param height see
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} for description
+   */
+  public TJCompressor(BufferedImage srcImage, int x, int y, int width,
+                      int height) throws Exception {
+    setSourceImage(srcImage, x, y, width, height);
   }
 
   /**
@@ -139,6 +153,7 @@ public class TJCompressor {
     srcPixelFormat = pixelFormat;
     srcX = x;
     srcY = y;
+    srcBufInt = null;
     srcIsYUV = false;
   }
 
@@ -151,6 +166,88 @@ public class TJCompressor {
                              int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, 0, 0, width, pitch, height, pixelFormat);
     srcX = srcY = -1;
+  }
+
+  /**
+   * Associate an uncompressed source image with this compressor instance.
+   *
+   * @param srcImage a <code>BufferedImage</code> instance containing RGB or
+   * grayscale pixels to be compressed
+   *
+   * @param x x offset (in pixels) of the region in the source image from which
+   * the JPEG image should be compressed
+   *
+   * @param y y offset (in pixels) of the region in the source image from which
+   * the JPEG image should be compressed
+   *
+   * @param width width (in pixels) of the region in the source image from
+   * which the JPEG image should be compressed (0 = compress the whole image)
+   *
+   * @param height height (in pixels) of the region in the source image from
+   * which the JPEG image should be compressed (0 = compress the whole image)
+   */
+  public void setSourceImage(BufferedImage srcImage, int x, int y, int width,
+                             int height) throws Exception {
+    if (handle == 0) init();
+    if (srcImage == null || x < 0 || y < 0 || width < 0 || height < 0)
+      throw new Exception("Invalid argument in setSourceImage()");
+    srcX = x;
+    srcY = y;
+    srcWidth = (width == 0) ? srcImage.getWidth(): width;
+    srcHeight = (height == 0) ? srcImage.getHeight() : height;
+    if (x + width > srcImage.getWidth() || y + height > srcImage.getHeight())
+      throw new Exception("Compression region exceeds the bounds of the source image");
+
+    int pixelFormat;
+    boolean intPixels = false;
+    if (byteOrder == null)
+      byteOrder = ByteOrder.nativeOrder();
+    switch(srcImage.getType()) {
+      case BufferedImage.TYPE_3BYTE_BGR:
+        pixelFormat = TJ.PF_BGR;  break;
+      case BufferedImage.TYPE_4BYTE_ABGR:
+      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+        pixelFormat = TJ.PF_XBGR;  break;
+      case BufferedImage.TYPE_BYTE_GRAY:
+        pixelFormat = TJ.PF_GRAY;  break;
+      case BufferedImage.TYPE_INT_BGR:
+        if (byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XBGR;
+        else
+          pixelFormat = TJ.PF_RGBX;
+        intPixels = true;  break;
+      case BufferedImage.TYPE_INT_RGB:
+      case BufferedImage.TYPE_INT_ARGB:
+      case BufferedImage.TYPE_INT_ARGB_PRE:
+        if (byteOrder == ByteOrder.BIG_ENDIAN)
+          pixelFormat = TJ.PF_XRGB;
+        else
+          pixelFormat = TJ.PF_BGRX;
+        intPixels = true;  break;
+      default:
+        throw new Exception("Unsupported BufferedImage format");
+    }
+    srcPixelFormat = pixelFormat;
+
+    WritableRaster wr = srcImage.getRaster();
+    if (intPixels) {
+      SinglePixelPackedSampleModel sm =
+        (SinglePixelPackedSampleModel)srcImage.getSampleModel();
+      srcStride = sm.getScanlineStride();
+      DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
+      srcBufInt = db.getData();
+      srcBuf = null;
+    } else {
+      ComponentSampleModel sm =
+        (ComponentSampleModel)srcImage.getSampleModel();
+      int pixelSize = sm.getPixelStride();
+      if (pixelSize != TJ.getPixelSize(pixelFormat))
+        throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
+      srcPitch = sm.getScanlineStride();
+      DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
+      srcBuf = db.getData();
+      srcBufInt = null;
+    }
   }
 
   /**
@@ -237,22 +334,32 @@ public class TJCompressor {
   public void compress(byte[] dstBuf, int flags) throws Exception {
     if (dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in compress()");
-    if (srcBuf == null)
+    if (srcBuf == null && (srcBufInt == null || srcIsYUV))
       throw new Exception(NO_ASSOC_ERROR);
     if (jpegQuality < 0)
       throw new Exception("JPEG Quality not set");
     if (subsamp < 0)
       throw new Exception("Subsampling level not set");
+
     if (srcIsYUV)
       compressedSize = compressFromYUV(srcBuf, srcWidth, srcYUVPad, srcHeight,
                                        subsamp, dstBuf, jpegQuality, flags);
-    else {
+    else if (srcBuf != null) {
       if (srcX >= 0 && srcY >= 0)
         compressedSize = compress(srcBuf, srcX, srcY, srcWidth, srcPitch,
                                   srcHeight, srcPixelFormat, dstBuf, subsamp,
                                   jpegQuality, flags);
       else
         compressedSize = compress(srcBuf, srcWidth, srcPitch, srcHeight,
+                                  srcPixelFormat, dstBuf, subsamp, jpegQuality,
+                                  flags);
+    } else if (srcBufInt != null) {
+      if (srcX >= 0 && srcY >= 0)
+        compressedSize = compress(srcBufInt, srcX, srcY, srcWidth, srcStride,
+                                  srcHeight, srcPixelFormat, dstBuf, subsamp,
+                                  jpegQuality, flags);
+      else
+        compressedSize = compress(srcBufInt, srcWidth, srcStride, srcHeight,
                                   srcPixelFormat, dstBuf, subsamp, jpegQuality,
                                   flags);
     }
@@ -277,109 +384,26 @@ public class TJCompressor {
   }
 
   /**
-   * Compress the uncompressed source image stored in <code>srcImage</code>
-   * and output a JPEG image to the given destination buffer.
-   *
-   * @param srcImage a <code>BufferedImage</code> instance containing RGB or
-   * grayscale pixels to be compressed
-   *
-   * @param dstBuf buffer that will receive the JPEG image.  Use
-   * {@link TJ#bufSize} to determine the maximum size for this buffer based on
-   * the image width, height, and level of chrominance subsampling.
-   *
-   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
+   * @deprecated Use
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} and
+   * {@link #compress(byte[], int)} instead.
    */
+  @Deprecated
   public void compress(BufferedImage srcImage, byte[] dstBuf, int flags)
                        throws Exception {
-    if (srcImage == null || dstBuf == null || flags < 0)
-      throw new Exception("Invalid argument in compress()");
-    int width = srcImage.getWidth();
-    int height = srcImage.getHeight();
-    int pixelFormat;
-    boolean intPixels = false;
-    if (byteOrder == null)
-      byteOrder = ByteOrder.nativeOrder();
-    switch(srcImage.getType()) {
-      case BufferedImage.TYPE_3BYTE_BGR:
-        pixelFormat = TJ.PF_BGR;  break;
-      case BufferedImage.TYPE_4BYTE_ABGR:
-      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-        pixelFormat = TJ.PF_XBGR;  break;
-      case BufferedImage.TYPE_BYTE_GRAY:
-        pixelFormat = TJ.PF_GRAY;  break;
-      case BufferedImage.TYPE_INT_BGR:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XBGR;
-        else
-          pixelFormat = TJ.PF_RGBX;
-        intPixels = true;  break;
-      case BufferedImage.TYPE_INT_RGB:
-      case BufferedImage.TYPE_INT_ARGB:
-      case BufferedImage.TYPE_INT_ARGB_PRE:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XRGB;
-        else
-          pixelFormat = TJ.PF_BGRX;
-        intPixels = true;  break;
-      default:
-        throw new Exception("Unsupported BufferedImage format");
-    }
-    WritableRaster wr = srcImage.getRaster();
-    if (jpegQuality < 0)
-      throw new Exception("JPEG Quality not set");
-    if (subsamp < 0)
-      throw new Exception("Subsampling level not set");
-    if (intPixels) {
-      SinglePixelPackedSampleModel sm =
-        (SinglePixelPackedSampleModel)srcImage.getSampleModel();
-      int stride = sm.getScanlineStride();
-      DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
-      int[] buf = db.getData();
-      if (srcX >= 0 && srcY >= 0)
-        compressedSize = compress(buf, srcX, srcY, width, stride, height,
-                                  pixelFormat, dstBuf, subsamp, jpegQuality,
-                                  flags);
-      else
-        compressedSize = compress(buf, width, stride, height, pixelFormat,
-                                  dstBuf, subsamp, jpegQuality, flags);
-    } else {
-      ComponentSampleModel sm =
-        (ComponentSampleModel)srcImage.getSampleModel();
-      int pixelSize = sm.getPixelStride();
-      if (pixelSize != TJ.getPixelSize(pixelFormat))
-        throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
-      int pitch = sm.getScanlineStride();
-      DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
-      byte[] buf = db.getData();
-      if (srcX >= 0 && srcY >= 0)
-        compressedSize = compress(buf, srcX, srcY, width, pitch, height,
-                                  pixelFormat, dstBuf, subsamp, jpegQuality,
-                                  flags);
-      else
-        compressedSize = compress(buf, width, pitch, height, pixelFormat,
-                                  dstBuf, subsamp, jpegQuality, flags);
-    }
+    setSourceImage(srcImage, 0, 0, 0, 0);
+    compress(dstBuf, flags);
   }
 
   /**
-   * Compress the uncompressed source image stored in <code>srcImage</code>
-   * and return a buffer containing a JPEG image.
-   *
-   * @param srcImage a <code>BufferedImage</code> instance containing RGB or
-   * grayscale pixels to be compressed
-   *
-   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
-   *
-   * @return a buffer containing a JPEG image.  The length of this buffer will
-   * not be equal to the size of the JPEG image.  Use {@link
-   * #getCompressedSize} to obtain the size of the JPEG image.
+   * @deprecated Use
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} and
+   * {@link #compress(int)} instead.
    */
+  @Deprecated
   public byte[] compress(BufferedImage srcImage, int flags) throws Exception {
-    int width = srcImage.getWidth();
-    int height = srcImage.getHeight();
-    byte[] buf = new byte[TJ.bufSize(width, height, subsamp)];
-    compress(srcImage, buf, flags);
-    return buf;
+    setSourceImage(srcImage, 0, 0, 0, 0);
+    return compress(flags);
   }
 
 
@@ -424,12 +448,20 @@ public class TJCompressor {
   public void encodeYUV(byte[] dstBuf, int flags) throws Exception {
     if (dstBuf == null || flags < 0)
       throw new Exception("Invalid argument in compress()");
-    if (srcBuf == null)
+    if (srcBuf == null && srcBufInt == null)
       throw new Exception(NO_ASSOC_ERROR);
+    if (srcIsYUV)
+      throw new Exception("Source image is not correct type");
     if (subsamp < 0)
       throw new Exception("Subsampling level not set");
-    encodeYUV(srcBuf, srcWidth, srcPitch, srcHeight, srcPixelFormat, dstBuf,
-              yuvPad, subsamp, flags);
+
+    if (srcBufInt != null) {
+      encodeYUV(srcBufInt, srcWidth, srcStride, srcHeight, srcPixelFormat,
+                dstBuf, yuvPad, subsamp, flags);
+    } else {
+      encodeYUV(srcBuf, srcWidth, srcPitch, srcHeight, srcPixelFormat, dstBuf,
+                yuvPad, subsamp, flags);
+    }
     compressedSize = TJ.bufSizeYUV(srcWidth, yuvPad, srcHeight, subsamp);
   }
 
@@ -453,98 +485,26 @@ public class TJCompressor {
   }
 
   /**
-   * Encode the uncompressed source image stored in <code>srcImage</code>
-   * and output a YUV planar image to the given destination buffer.  See
-   * {@link #encodeYUV(byte[], int)} for more detail.
-   *
-   * @param srcImage a <code>BufferedImage</code> instance containing RGB or
-   * grayscale pixels to be encoded
-   *
-   * @param dstBuf buffer that will receive the YUV planar image.  Use
-   * {@link TJ#bufSizeYUV} to determine the appropriate size for this buffer
-   * based on the image width, height, and level of chrominance subsampling.
-   *
-   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
+   * @deprecated Use
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} and
+   * {@link #encodeYUV(byte[], int)} instead.
    */
+  @Deprecated
   public void encodeYUV(BufferedImage srcImage, byte[] dstBuf, int flags)
     throws Exception {
-    if (srcImage == null || dstBuf == null || flags < 0)
-      throw new Exception("Invalid argument in encodeYUV()");
-    int width = srcImage.getWidth();
-    int height = srcImage.getHeight();
-    int pixelFormat;  boolean intPixels = false;
-    if (byteOrder == null)
-      byteOrder = ByteOrder.nativeOrder();
-    switch(srcImage.getType()) {
-      case BufferedImage.TYPE_3BYTE_BGR:
-        pixelFormat = TJ.PF_BGR;  break;
-      case BufferedImage.TYPE_4BYTE_ABGR:
-      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-        pixelFormat = TJ.PF_XBGR;  break;
-      case BufferedImage.TYPE_BYTE_GRAY:
-        pixelFormat = TJ.PF_GRAY;  break;
-      case BufferedImage.TYPE_INT_BGR:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XBGR;
-        else
-          pixelFormat = TJ.PF_RGBX;
-        intPixels = true;  break;
-      case BufferedImage.TYPE_INT_RGB:
-      case BufferedImage.TYPE_INT_ARGB:
-      case BufferedImage.TYPE_INT_ARGB_PRE:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XRGB;
-        else
-          pixelFormat = TJ.PF_BGRX;
-        intPixels = true;  break;
-      default:
-        throw new Exception("Unsupported BufferedImage format");
-    }
-    WritableRaster wr = srcImage.getRaster();
-    if (subsamp < 0) throw new Exception("Subsampling level not set");
-    if (intPixels) {
-      SinglePixelPackedSampleModel sm =
-        (SinglePixelPackedSampleModel)srcImage.getSampleModel();
-      int stride = sm.getScanlineStride();
-      DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
-      int[] buf = db.getData();
-      encodeYUV(buf, width, stride, height, pixelFormat, dstBuf, yuvPad,
-                subsamp, flags);
-    } else {
-      ComponentSampleModel sm =
-        (ComponentSampleModel)srcImage.getSampleModel();
-      int pixelSize = sm.getPixelStride();
-      if (pixelSize != TJ.getPixelSize(pixelFormat))
-        throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
-      int pitch = sm.getScanlineStride();
-      DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
-      byte[] buf = db.getData();
-      encodeYUV(buf, width, pitch, height, pixelFormat, dstBuf, yuvPad,
-                subsamp, flags);
-    }
-    compressedSize = TJ.bufSizeYUV(width, yuvPad, height, subsamp);
+    setSourceImage(srcImage, 0, 0, 0, 0);
+    encodeYUV(dstBuf, flags);
   }
 
   /**
-   * Encode the uncompressed source image stored in <code>srcImage</code>
-   * and return a buffer containing a YUV planar image.  See
-   * {@link #encodeYUV(byte[], int)} for more detail.
-   *
-   * @param srcImage a <code>BufferedImage</code> instance containing RGB or
-   * grayscale pixels to be encoded
-   *
-   * @param flags the bitwise OR of one or more of {@link TJ TJ.FLAG_*}
-   *
-   * @return a buffer containing a YUV planar image
+   * @deprecated Use
+   * {@link #setSourceImage(BufferedImage, int, int, int, int)} and
+   * {@link #encodeYUV(int)} instead.
    */
+  @Deprecated
   public byte[] encodeYUV(BufferedImage srcImage, int flags) throws Exception {
-    if (subsamp < 0)
-      throw new Exception("Subsampling level not set");
-    int width = srcImage.getWidth();
-    int height = srcImage.getHeight();
-    byte[] buf = new byte[TJ.bufSizeYUV(width, yuvPad, height, subsamp)];
-    encodeYUV(srcImage, buf, flags);
-    return buf;
+    setSourceImage(srcImage, 0, 0, 0, 0);
+    return encodeYUV(flags);
   }
 
   /**
@@ -621,11 +581,13 @@ public class TJCompressor {
 
   private long handle = 0;
   private byte[] srcBuf = null;
+  private int[] srcBufInt = null;
   private int srcWidth = 0;
   private int srcHeight = 0;
   private int srcX = -1;
   private int srcY = -1;
   private int srcPitch = 0;
+  private int srcStride = 0;
   private int srcPixelFormat = -1;
   private int srcYUVPad = -1;
   private boolean srcIsYUV;

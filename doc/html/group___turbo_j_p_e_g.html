@@ -1067,6 +1067,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 </div><div class="memdoc">
 
 <p>Compress a YUV planar image into a JPEG image. </p>
+<p>Note that, if the width or height of the YUV image is not an even multiple of the MCU block size (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a> and <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG compressor or transformer instance </td></tr>

@@ -636,7 +636,10 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 
 
 /**
- * Compress a YUV planar image into a JPEG image.
+ * Compress a YUV planar image into a JPEG image.  Note that, if the width or
+ * height of the YUV image is not an even multiple of the MCU block size
+ * (see #tjMCUWidth and #tjMCUHeight), then an intermediate buffer copy will be
+ * performed within TurboJPEG.
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  * @param srcBuf pointer to an image buffer containing a YUV planar image

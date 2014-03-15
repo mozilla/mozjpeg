@@ -150,7 +150,7 @@ class TJBench {
     if (yuv == YUVDECODE)
       tjd.decompressToYUV(dstBuf, flags);
     else
-      tjd.decompress(dstBuf, scaledw, pitch, scaledh, pf, flags);
+      tjd.decompress(dstBuf, 0, 0, scaledw, pitch, scaledh, pf, flags);
 
     /* Benchmark */
     for (i = 0, start = getTime(); (elapsed = getTime() - start) < benchTime;
@@ -341,7 +341,7 @@ class TJBench {
                           subNameLong[subsamp], jpegQual);
       for (i = 0; i < h; i++)
         System.arraycopy(srcBuf, w * ps * i, tmpBuf, pitch * i, w * ps);
-      tjc.setSourceImage(srcBuf, tilew, pitch, tileh, pf);
+      tjc.setSourceImage(srcBuf, 0, 0, tilew, pitch, tileh, pf);
       tjc.setJPEGQuality(jpegQual);
       tjc.setSubsamp(subsamp);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -313,6 +313,7 @@ public class TJDecompressor {
    * @deprecated Use
    * {@link #decompress(byte[], int, int, int, int, int, int, int)} instead.
    */
+  @Deprecated
   public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
                          int desiredHeight, int pixelFormat, int flags)
                          throws Exception {

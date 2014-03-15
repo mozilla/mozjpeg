@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -145,6 +145,7 @@ public class TJCompressor {
    * @deprecated Use
    * {@link #setSourceImage(byte[], int, int, int, int, int, int)} instead.
    */
+  @Deprecated
   public void setSourceImage(byte[] srcImage, int width, int pitch,
                              int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, 0, 0, width, pitch, height, pixelFormat);

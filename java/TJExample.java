@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012, 2014 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -326,7 +326,7 @@ public class TJExample implements TJCustomFilter {
         if (img != null)
           jpegBuf = tjc.compress(img, flags);
         else {
-          tjc.setSourceImage(bmpBuf, width, 0, height, TJ.PF_BGRX);
+          tjc.setSourceImage(bmpBuf, 0, 0, width, 0, height, TJ.PF_BGRX);
           jpegBuf = tjc.compress(flags);
         }
         jpegSize = tjc.getCompressedSize();

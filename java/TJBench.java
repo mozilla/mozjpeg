@@ -146,6 +146,7 @@ class TJBench {
     int scaledh = sf.getScaled(h);
     int yuvSize = TJ.bufSizeYUV(scaledw, yuvpad, scaledh, subsamp), bufsize;
     int pitch = scaledw * ps;
+    YUVImage yuvImage = null;
 
     if (jpegQual > 0)
       qualStr = new String("_Q" + jpegQual);
@@ -161,9 +162,11 @@ class TJBench {
     Arrays.fill(dstBuf, (byte)127);
 
     /* Execute once to preload cache */
-    tjd.setJPEGImage(jpegBuf[0], jpegSize[0]);
-    if (yuv == YUVDECODE)
-      tjd.decompressToYUV(dstBuf, scaledw, yuvpad, scaledh, flags);
+    tjd.setSourceImage(jpegBuf[0], jpegSize[0]);
+    if (yuv == YUVDECODE) {
+      yuvImage = new YUVImage(dstBuf, scaledw, yuvpad, scaledh, subsamp);
+      tjd.decompressToYUV(yuvImage, flags);
+    }
     else
       tjd.decompress(dstBuf, 0, 0, scaledw, pitch, scaledh, pf, flags);
 
@@ -172,13 +175,13 @@ class TJBench {
          i++) {
       int tile = 0;
       if (yuv == YUVDECODE)
-        tjd.decompressToYUV(dstBuf, scaledw, yuvpad, scaledh, flags);
+        tjd.decompressToYUV(yuvImage, flags);
       else {
         for (int y = 0; y < h; y += tileh) {
           for (int x = 0; x < w; x += tilew, tile++) {
             int width = doTile ? Math.min(tilew, w - x) : scaledw;
             int height = doTile ? Math.min(tileh, h - y) : scaledh;
-            tjd.setJPEGImage(jpegBuf[tile], jpegSize[tile]);
+            tjd.setSourceImage(jpegBuf[tile], jpegSize[tile]);
             tjd.decompress(dstBuf, x, y, width, pitch, height, pf, flags);
           }
         }
@@ -258,6 +261,7 @@ class TJBench {
     double start, elapsed;
     int ps = TJ.getPixelSize(pf), i;
     int yuvSize = 0;
+    YUVImage yuvImage;
 
     yuvSize = TJ.bufSizeYUV(w, yuvpad, h, subsamp);
     dstBuf = new byte[yuvSize];
@@ -277,12 +281,13 @@ class TJBench {
     tjc.setSubsamp(subsamp);
 
     /* Execute once to preload cache */
-    tjc.encodeYUV(dstBuf, flags);
+    yuvImage = new YUVImage(dstBuf, w, yuvpad, h, subsamp);
+    tjc.encodeYUV(yuvImage, flags);
 
     /* Benchmark */
     for (i = 0, start = getTime();
          (elapsed = getTime() - start) < benchTime; i++)
-      tjc.encodeYUV(dstBuf, flags);
+      tjc.encodeYUV(yuvImage, flags);
 
     if (quiet == 1)
       System.out.format("%-4d  %-4d\t", w, h);
@@ -360,7 +365,8 @@ class TJBench {
         for (i = 0; i < h; i++)
           System.arraycopy(srcBuf, w * ps * i, tmpBuf, pitch * i, w * ps);
       if (yuv == YUVCOMPRESS)
-        tjc.setSourceImageYUV(srcBuf, tilew, yuvpad, tileh);
+        tjc.setSourceImage(new YUVImage(srcBuf, tilew, yuvpad, tileh,
+                                        subsamp));
       else
         tjc.setSourceImage(srcBuf, 0, 0, tilew, pitch, tileh, pf);
       tjc.setJPEGQuality(jpegQual);
@@ -458,7 +464,7 @@ class TJBench {
 
     tjt = new TJTransformer();
 
-    tjt.setJPEGImage(srcBuf, srcSize);
+    tjt.setSourceImage(srcBuf, srcSize);
     w = tjt.getWidth();
     h = tjt.getHeight();
     subsamp = tjt.getSubsamp();

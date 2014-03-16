@@ -92,9 +92,7 @@ public class TJUnitTest {
     TJ.PF_RGB
   };
 
-  private static final int YUVENCODE = 1;
-  private static final int YUVDECODE = 2;
-  private static int yuv = 0;
+  private static boolean doYUV = false;
   private static int pad = 4;
   private static boolean bi = false;
 
@@ -534,54 +532,6 @@ public class TJUnitTest {
     return ((v + (p) - 1) & (~((p) - 1)));
   }
 
-  private static void initBufYUV(byte[] buf, int w, int pad, int h,
-                                 int subsamp) throws Exception {
-    int row, col;
-    int hsf = TJ.getMCUWidth(subsamp) / 8, vsf = TJ.getMCUHeight(subsamp) / 8;
-    int pw = PAD(w, hsf), ph = PAD(h, vsf);
-    int cw = pw / hsf, ch = ph / vsf;
-    int ypitch = PAD(pw, pad), uvpitch = PAD(cw, pad);
-    int halfway = 16, blockSize = 8;
-
-    Arrays.fill(buf, (byte)0);
-    for (row = 0; row < ph; row++) {
-      for (col = 0; col < pw; col++) {
-        int index = ypitch * row + col;
-        if (((row / blockSize) + (col / blockSize)) % 2 == 0) {
-          if (row < halfway)
-            buf[index] = (byte)255;
-          else
-            buf[index] = 0;
-        } else {
-          if (row < halfway)
-            buf[index] = 76;
-          else
-            buf[index] = (byte)226;
-        }
-      }
-    }
-    if (subsamp != TJ.SAMP_GRAY) {
-      halfway = 16 / vsf;
-      for (row = 0; row < ch; row++) {
-        for (col = 0; col < cw; col++) {
-          int uindex = ypitch * ph + (uvpitch * row + col),
-            vindex = ypitch * ph + uvpitch * ch + (uvpitch * row + col);
-          if (((row * vsf / blockSize) + (col * hsf / blockSize)) % 2 == 0) {
-            buf[uindex] = buf[vindex] = (byte)128;
-          } else {
-            if (row < halfway) {
-              buf[uindex] = 85;
-              buf[vindex] = (byte)255;
-            } else {
-              buf[uindex] = 0;
-              buf[vindex] = (byte)149;
-            }
-          }
-        }
-      }
-    }
-  }
-
   private static int checkBufYUV(byte[] buf, int size, int w, int h,
                                  int subsamp, TJScalingFactor sf)
                                  throws Exception {
@@ -686,87 +636,68 @@ public class TJUnitTest {
   private static int compTest(TJCompressor tjc, byte[] dstBuf, int w,
                               int h, int pf, String baseName, int subsamp,
                               int jpegQual, int flags) throws Exception {
-    String tempstr;
+    String tempStr;
     byte[] srcBuf = null;
     BufferedImage img = null;
-    String pfStr;
+    String pfStr, pfStrLong;
+    String buStr = (flags & TJ.FLAG_BOTTOMUP) != 0 ? "BU" : "TD";
     String buStrLong = (flags & TJ.FLAG_BOTTOMUP) != 0 ?
                        "Bottom-Up" : "Top-Down ";
-    String buStr = (flags & TJ.FLAG_BOTTOMUP) != 0 ? "BU" : "TD";
     int size = 0, ps, imgType = pf;
 
-    if (yuv == YUVDECODE) {
-      System.out.format("YUV %s %s --> JPEG Q%d ... ", subNameLong[subsamp],
-                        buStrLong, jpegQual);
-      srcBuf = new byte[TJ.bufSizeYUV(w, pad, h, subsamp)];
-      initBufYUV(srcBuf, w, pad, h, subsamp);
-      pfStr = "YUV";
+    if (bi) {
+      pf = biTypePF(imgType);
+      pfStr = biTypeStr(imgType);
+      pfStrLong = pfStr + " (" + pixFormatStr[pf] + ")";
     } else {
-      if (bi) {
-        pf = biTypePF(imgType);
-        pfStr = biTypeStr(imgType);
-      } else
-        pfStr = pixFormatStr[pf];
-      ps =  TJ.getPixelSize(pf);
+      pfStr = pixFormatStr[pf];
+      pfStrLong = pfStr;
+    }
+    ps =  TJ.getPixelSize(pf);
 
-      System.out.print(pfStr + " ");
-      if (bi)
-        System.out.print("(" + pixFormatStr[pf] + ") ");
-      if (yuv == YUVENCODE)
-        System.out.format("%s -> %s YUV ... ", buStrLong,
-                          subNameLong[subsamp]);
-      else
-        System.out.format("%s -> %s Q%d ... ", buStrLong, subNameLong[subsamp],
-                          jpegQual);
-
-      if (bi) {
-        img = new BufferedImage(w, h, imgType);
-        initImg(img, pf, flags);
-        tempstr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
-                  subName[subsamp] + "_Q" + jpegQual + ".png";
-        File file = new File(tempstr);
-        ImageIO.write(img, "png", file);
-      } else {
-        srcBuf = new byte[w * h * ps + 1];
-        initBuf(srcBuf, w, w * ps, h, pf, flags);
-      }
+    if (bi) {
+      img = new BufferedImage(w, h, imgType);
+      initImg(img, pf, flags);
+      tempStr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
+                subName[subsamp] + "_Q" + jpegQual + ".png";
+      File file = new File(tempStr);
+      ImageIO.write(img, "png", file);
+      tjc.setSourceImage(img, 0, 0, 0, 0);
+    } else {
+      srcBuf = new byte[w * h * ps + 1];
+      initBuf(srcBuf, w, w * ps, h, pf, flags);
+      tjc.setSourceImage(srcBuf, 0, 0, w, 0, h, pf);
     }
     Arrays.fill(dstBuf, (byte)0);
 
     tjc.setSubsamp(subsamp);
     tjc.setJPEGQuality(jpegQual);
-    tjc.setYUVPad(pad);
-    if (yuv == YUVDECODE)
-      tjc.setSourceImageYUV(srcBuf, w, pad, h);
-    else if (bi)
-      tjc.setSourceImage(img, 0, 0, 0, 0);
-    else
-      tjc.setSourceImage(srcBuf, 0, 0, w, 0, h, pf);
-    if (yuv == YUVENCODE)
-      tjc.encodeYUV(dstBuf, flags);
-    else
-      tjc.compress(dstBuf, flags);
-    size = tjc.getCompressedSize();
-
-    if (yuv == YUVENCODE)
-      tempstr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
-                subName[subsamp] + ".yuv";
-    else
-      tempstr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
-                subName[subsamp] + "_Q" + jpegQual + ".jpg";
-    writeJPEG(dstBuf, size, tempstr);
-
-    if (yuv == YUVENCODE) {
-      if (checkBufYUV(dstBuf, size, w, h, subsamp,
-                      new TJScalingFactor(1, 1)) == 1)
-        System.out.print("Passed.");
+    if (doYUV) {
+   	  System.out.format("%s %s -> YUV %s ... ", pfStrLong, buStrLong,
+                        subNameLong[subsamp]);
+      YUVImage yuvImage = tjc.encodeYUV(pad, flags);
+      if (checkBufYUV(yuvImage.getBuf(), yuvImage.getSize(), w, h, subsamp,
+          new TJScalingFactor(1, 1)) == 1)
+        System.out.print("Passed.\n");
       else {
-        System.out.print("FAILED!");
+        System.out.print("FAILED!\n");
         exitStatus = -1;
       }
-    } else
-      System.out.print("Done.");
-    System.out.println("\n  Result in " + tempstr);
+
+      System.out.format("YUV %s %s -> JPEG Q%d ... ", subNameLong[subsamp],
+                        buStrLong, jpegQual);
+      tjc.setSourceImage(yuvImage);
+    } else {
+      System.out.format("%s %s -> %s Q%d ... ", pfStrLong, buStrLong,
+                        subNameLong[subsamp], jpegQual);
+    }
+    tjc.compress(dstBuf, flags);
+    size = tjc.getCompressedSize();
+
+    tempStr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
+              subName[subsamp] + "_Q" + jpegQual + ".jpg";
+    writeJPEG(dstBuf, size, tempStr);
+    System.out.println("Done.\n  Result in " + tempStr);
 
     return size;
   }
@@ -775,39 +706,25 @@ public class TJUnitTest {
                                  int jpegSize, int w, int h, int pf,
                                  String baseName, int subsamp, int flags,
                                  TJScalingFactor sf) throws Exception {
-    String pfStr, tempstr;
+    String pfStr, pfStrLong, tempStr;
+    String buStrLong = (flags & TJ.FLAG_BOTTOMUP) != 0 ?
+                       "Bottom-Up" : "Top-Down ";
     int scaledWidth = sf.getScaled(w);
     int scaledHeight = sf.getScaled(h);
     int temp1, temp2, imgType = pf;
     BufferedImage img = null;
     byte[] dstBuf = null;
 
-    if (yuv == YUVENCODE) return;
-
     if (bi) {
       pf = biTypePF(imgType);
       pfStr = biTypeStr(imgType);
-    } else
+      pfStrLong = pfStr + " (" + pixFormatStr[pf] + ")";
+    } else {
       pfStr = pixFormatStr[pf];
-
-    System.out.print("JPEG -> ");
-    if (yuv == YUVDECODE)
-      System.out.print("YUV " + subNameLong[subsamp] + " ");
-    else {
-      System.out.print(pfStr + " ");
-      if (bi)
-        System.out.print("(" + pixFormatStr[pf] + ") ");
-      if ((flags & TJ.FLAG_BOTTOMUP) != 0)
-        System.out.print("Bottom-Up ");
-      else
-        System.out.print("Top-Down  ");
+      pfStrLong = pfStr;
     }
-    if (!sf.isOne())
-      System.out.print(sf.getNum() + "/" + sf.getDenom() + " ... ");
-    else
-      System.out.print("... ");
 
-    tjd.setJPEGImage(jpegBuf, jpegSize);
+    tjd.setSourceImage(jpegBuf, jpegSize);
     if (tjd.getWidth() != w || tjd.getHeight() != h ||
         tjd.getSubsamp() != subsamp)
       throw new Exception("Incorrect JPEG header");
@@ -819,43 +736,52 @@ public class TJUnitTest {
     if (temp1 != scaledWidth || temp2 != scaledHeight)
       throw new Exception("Scaled size mismatch");
 
-    if (yuv == YUVDECODE)
-      dstBuf = tjd.decompressToYUV(scaledWidth, pad, scaledHeight, flags);
-    else {
-      if (bi)
-        img = tjd.decompress(scaledWidth, scaledHeight, imgType, flags);
-      else
-        dstBuf = tjd.decompress(scaledWidth, 0, scaledHeight, pf, flags);
+    if (doYUV) {
+      System.out.format("JPEG -> YUV %s ", subNameLong[subsamp]);
+      if(!sf.isOne())
+        System.out.format("%d/%d ... ", sf.getNum(), sf.getDenom());
+      else System.out.print("... ");
+      YUVImage yuvImage = tjd.decompressToYUV(scaledWidth, pad, scaledHeight,
+                                              flags);
+      if (checkBufYUV(yuvImage.getBuf(), yuvImage.getSize(), scaledWidth,
+                      scaledHeight, subsamp, sf) == 1)
+        System.out.print("Passed.\n");
+      else {
+        System.out.print("FAILED!\n");  exitStatus = -1;
+      }
+
+      System.out.format("YUV %s -> %s %s ... ", subNameLong[subsamp],
+                        pfStrLong, buStrLong);
+      tjd.setSourceImage(yuvImage);
+    } else {
+      System.out.format("JPEG -> %s %s ", pfStrLong, buStrLong);
+      if(!sf.isOne())
+        System.out.format("%d/%d ... ", sf.getNum(), sf.getDenom());
+      else System.out.print("... ");
     }
+    if (bi)
+      img = tjd.decompress(scaledWidth, scaledHeight, imgType, flags);
+    else
+      dstBuf = tjd.decompress(scaledWidth, 0, scaledHeight, pf, flags);
 
     if (bi) {
-      tempstr = baseName + "_dec_" + pfStr + "_" +
+      tempStr = baseName + "_dec_" + pfStr + "_" +
                 (((flags & TJ.FLAG_BOTTOMUP) != 0) ? "BU" : "TD") + "_" +
                 subName[subsamp] + "_" +
                 (double)sf.getNum() / (double)sf.getDenom() + "x" + ".png";
-      File file = new File(tempstr);
+      File file = new File(tempStr);
       ImageIO.write(img, "png", file);
     }
 
-    if (yuv == YUVDECODE) {
-      if (checkBufYUV(dstBuf, dstBuf.length, scaledWidth, scaledHeight,
-                      subsamp, sf) == 1)
-        System.out.print("Passed.");
-      else {
-        System.out.print("FAILED!");  exitStatus = -1;
-      }
-    } else {
-      if ((bi && checkImg(img, pf, subsamp, sf, flags) == 1) ||
-          (!bi && checkBuf(dstBuf, scaledWidth,
-                           scaledWidth * TJ.getPixelSize(pf), scaledHeight, pf,
-                           subsamp, sf, flags) == 1))
-        System.out.print("Passed.");
-      else {
-        System.out.print("FAILED!");
-        exitStatus = -1;
-      }
+    if ((bi && checkImg(img, pf, subsamp, sf, flags) == 1) ||
+        (!bi && checkBuf(dstBuf, scaledWidth,
+                         scaledWidth * TJ.getPixelSize(pf), scaledHeight, pf,
+                         subsamp, sf, flags) == 1))
+      System.out.print("Passed.\n");
+    else {
+      System.out.print("FAILED!\n");
+      exitStatus = -1;
     }
-    System.out.print("\n");
   }
 
   private static void decompTest(TJDecompressor tjd, byte[] jpegBuf,
@@ -884,10 +810,7 @@ public class TJUnitTest {
     int size;
     byte[] dstBuf;
 
-    if (yuv == YUVENCODE)
-      dstBuf = new byte[TJ.bufSizeYUV(w, pad, h, subsamp)];
-    else
-      dstBuf = new byte[TJ.bufSize(w, h, subsamp)];
+    dstBuf = new byte[TJ.bufSize(w, h, subsamp)];
 
     try {
       tjc = new TJCompressor();
@@ -900,20 +823,16 @@ public class TJUnitTest {
           if (subsamp == TJ.SAMP_422 || subsamp == TJ.SAMP_420 ||
               subsamp == TJ.SAMP_440 || subsamp == TJ.SAMP_411)
             flags |= TJ.FLAG_FASTUPSAMPLE;
-          if (i == 1) {
-            if (yuv == YUVDECODE) {
-              tjc.close();
-              tjd.close();
-              return;
-            } else
-              flags |= TJ.FLAG_BOTTOMUP;
-          }
+          if (i == 1)
+            flags |= TJ.FLAG_BOTTOMUP;
           size = compTest(tjc, dstBuf, w, h, pf, baseName, subsamp, 100,
                           flags);
           decompTest(tjd, dstBuf, size, w, h, pf, baseName, subsamp, flags);
-          if (pf >= TJ.PF_RGBX && pf <= TJ.PF_XRGB && !bi)
+          if (pf >= TJ.PF_RGBX && pf <= TJ.PF_XRGB && !bi) {
+            System.out.print("\n");
             decompTest(tjd, dstBuf, size, w, h, pf + (TJ.PF_RGBA - TJ.PF_RGBX),
                        baseName, subsamp, flags);
+          }
           System.out.print("\n");
         }
       }
@@ -929,7 +848,8 @@ public class TJUnitTest {
 
   private static void bufSizeTest() throws Exception {
     int w, h, i, subsamp;
-    byte[] srcBuf, dstBuf;
+    byte[] srcBuf, dstBuf = null;
+    YUVImage dstImage = null;
     TJCompressor tjc = null;
     Random r = new Random();
 
@@ -943,8 +863,8 @@ public class TJUnitTest {
             if (h % 100 == 0)
               System.out.format("%04d x %04d\b\b\b\b\b\b\b\b\b\b\b", w, h);
             srcBuf = new byte[w * h * 4];
-            if (yuv == YUVENCODE)
-              dstBuf = new byte[TJ.bufSizeYUV(w, pad, h, subsamp)];
+            if (doYUV)
+              dstImage = new YUVImage(w, pad, h, subsamp);
             else
               dstBuf = new byte[TJ.bufSize(w, h, subsamp)];
             for (i = 0; i < w * h * 4; i++) {
@@ -953,23 +873,22 @@ public class TJUnitTest {
             tjc.setSourceImage(srcBuf, 0, 0, w, 0, h, TJ.PF_BGRX);
             tjc.setSubsamp(subsamp);
             tjc.setJPEGQuality(100);
-            tjc.setYUVPad(pad);
-            if (yuv == YUVENCODE)
-              tjc.encodeYUV(dstBuf, 0);
+            if (doYUV)
+              tjc.encodeYUV(dstImage, 0);
             else
               tjc.compress(dstBuf, 0);
 
             srcBuf = new byte[h * w * 4];
-            if (yuv == YUVENCODE)
-              dstBuf = new byte[TJ.bufSizeYUV(h, pad, w, subsamp)];
+            if (doYUV)
+              dstImage = new YUVImage(h, pad, w, subsamp);
             else
               dstBuf = new byte[TJ.bufSize(h, w, subsamp)];
             for (i = 0; i < h * w * 4; i++) {
               srcBuf[i] = (byte)(r.nextInt(2) * 255);
             }
             tjc.setSourceImage(srcBuf, 0, 0, h, 0, w, TJ.PF_BGRX);
-            if (yuv == YUVENCODE)
-              tjc.encodeYUV(dstBuf, 0);
+            if (doYUV)
+              tjc.encodeYUV(dstImage, 0);
             else
               tjc.compress(dstBuf, 0);
           }
@@ -986,10 +905,9 @@ public class TJUnitTest {
   public static void main(String[] argv) {
     try {
       String testName = "javatest";
-      boolean doyuv = false;
       for (int i = 0; i < argv.length; i++) {
         if (argv[i].equalsIgnoreCase("-yuv"))
-          doyuv = true;
+          doYUV = true;
         if (argv[i].equalsIgnoreCase("-noyuvpad"))
           pad = 1;
         if (argv[i].substring(0, 1).equalsIgnoreCase("-h") ||
@@ -1000,10 +918,8 @@ public class TJUnitTest {
           testName = "javabitest";
         }
       }
-      if (doyuv) {
-        yuv = YUVENCODE;
+      if (doYUV)
         _4byteFormats[4] = -1;
-      }
       doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_444,
              testName);
       doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_444,
@@ -1032,23 +948,15 @@ public class TJUnitTest {
              testName);
       if (!bi)
         bufSizeTest();
-      if (doyuv && !bi) {
+      if (doYUV && !bi) {
         System.out.print("\n--------------------\n\n");
-        yuv = YUVDECODE;
         doTest(48, 48, onlyRGB, TJ.SAMP_444, "javatest_yuv0");
-        doTest(35, 39, onlyRGB, TJ.SAMP_444, "javatest_yuv1");
         doTest(48, 48, onlyRGB, TJ.SAMP_422, "javatest_yuv0");
-        doTest(39, 41, onlyRGB, TJ.SAMP_422, "javatest_yuv1");
         doTest(48, 48, onlyRGB, TJ.SAMP_420, "javatest_yuv0");
-        doTest(41, 35, onlyRGB, TJ.SAMP_420, "javatest_yuv1");
         doTest(48, 48, onlyRGB, TJ.SAMP_440, "javatest_yuv0");
-        doTest(35, 39, onlyRGB, TJ.SAMP_440, "javatest_yuv1");
         doTest(48, 48, onlyRGB, TJ.SAMP_411, "javatest_yuv0");
-        doTest(39, 41, onlyRGB, TJ.SAMP_411, "javatest_yuv1");
         doTest(48, 48, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv0");
-        doTest(41, 35, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv1");
         doTest(48, 48, onlyGray, TJ.SAMP_GRAY, "javatest_yuv0");
-        doTest(35, 39, onlyGray, TJ.SAMP_GRAY, "javatest_yuv1");
       }
     } catch(Exception e) {
       e.printStackTrace();

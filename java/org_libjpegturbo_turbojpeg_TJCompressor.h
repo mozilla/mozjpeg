@@ -74,10 +74,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    encodeYUV
- * Signature: ([BIIII[BIII)V
+ * Signature: ([BIIIIII[BIII)V
  */
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIII_3BIII
-  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIIIII_3BIII
+  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
@@ -90,10 +90,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    encodeYUV
- * Signature: ([IIIII[BIII)V
+ * Signature: ([IIIIIII[BIII)V
  */
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIII_3BIII
-  (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIIIII_3BIII
+  (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
 
 #ifdef __cplusplus
 }

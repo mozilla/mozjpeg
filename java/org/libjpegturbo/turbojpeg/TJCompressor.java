@@ -53,27 +53,6 @@ public class TJCompressor {
    *
    * @param srcImage see {@link #setSourceImage} for description
    *
-   * @param width see {@link #setSourceImage} for description
-   *
-   * @param pitch see {@link #setSourceImage} for description
-   *
-   * @param height see {@link #setSourceImage} for description
-   *
-   * @param pixelFormat pixel format of the source image (one of
-   * {@link TJ TJ.PF_*})
-   */
-  public TJCompressor(byte[] srcImage, int width, int pitch, int height,
-                      int pixelFormat) throws Exception {
-    setSourceImage(srcImage, width, pitch, height, pixelFormat);
-  }
-
-  /**
-   * Create a TurboJPEG compressor instance and associate the uncompressed
-   * source image stored in <code>srcImage</code> with the newly-created
-   * instance.
-   *
-   * @param srcImage see {@link #setSourceImage} for description
-   *
    * @param x see {@link #setSourceImage} for description
    *
    * @param y see {@link #setSourceImage} for description
@@ -90,6 +69,16 @@ public class TJCompressor {
   public TJCompressor(byte[] srcImage, int x, int y, int width, int pitch,
                       int height, int pixelFormat) throws Exception {
     setSourceImage(srcImage, x, y, width, pitch, height, pixelFormat);
+  }
+
+  /**
+   * @deprecated Use
+   * {@link #TJCompressor(byte[], int, int, int, int, int, int)} instead.
+   */
+  @Deprecated
+  public TJCompressor(byte[] srcImage, int width, int pitch, int height,
+                      int pixelFormat) throws Exception {
+    setSourceImage(srcImage, width, pitch, height, pixelFormat);
   }
 
   /**

@@ -257,7 +257,7 @@ class TJBench {
                         (flags & TJ.FLAG_BOTTOMUP) != 0 ? "BU" : "TD",
                         subNameLong[subsamp]);
 
-    tjc = new TJCompressor(srcBuf, w, 0, h, pf);
+    tjc = new TJCompressor(srcBuf, 0, 0, w, 0, h, pf);
     tjc.setSubsamp(subsamp);
 
     /* Execute once to preload cache */

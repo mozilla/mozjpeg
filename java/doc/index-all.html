@@ -74,7 +74,7 @@ function windowTitle()
 <A NAME="skip-navbar_top"></A>
 <!-- ========= END OF TOP NAVBAR ========= -->
 
-<A HREF="#_B_">B</A> <A HREF="#_C_">C</A> <A HREF="#_D_">D</A> <A HREF="#_E_">E</A> <A HREF="#_F_">F</A> <A HREF="#_G_">G</A> <A HREF="#_H_">H</A> <A HREF="#_I_">I</A> <A HREF="#_J_">J</A> <A HREF="#_N_">N</A> <A HREF="#_O_">O</A> <A HREF="#_P_">P</A> <A HREF="#_S_">S</A> <A HREF="#_T_">T</A> <HR>
+<A HREF="#_B_">B</A> <A HREF="#_C_">C</A> <A HREF="#_D_">D</A> <A HREF="#_E_">E</A> <A HREF="#_F_">F</A> <A HREF="#_G_">G</A> <A HREF="#_H_">H</A> <A HREF="#_I_">I</A> <A HREF="#_J_">J</A> <A HREF="#_N_">N</A> <A HREF="#_O_">O</A> <A HREF="#_P_">P</A> <A HREF="#_S_">S</A> <A HREF="#_T_">T</A> <A HREF="#_Y_">Y</A> <HR>
 <A NAME="_B_"><!-- --></A><H2>
 <B>B</B></H2>
 <DL>
@@ -148,8 +148,9 @@ Method in interface org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbo
 <DL>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[], int, int, int, int, int, int, int)"><B>decompress(byte[], int, int, int, int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Decompress the JPEG source image associated with this decompressor
- instance and output a decompressed image to the given destination buffer.
+<DD>Decompress the JPEG source image or decode the YUV source image associated
+ with this decompressor instance and output a grayscale, RGB, or CMYK image
+ to the given destination buffer.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[], int, int, int, int, int)"><B>decompress(byte[], int, int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD><B>Deprecated.</B>&nbsp;<I>Use
@@ -160,30 +161,32 @@ Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg
  instance and return a buffer containing the decompressed image.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int[], int, int, int, int, int, int, int)"><B>decompress(int[], int, int, int, int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Decompress the JPEG source image associated with this decompressor
- instance and output a decompressed image to the given destination buffer.
+<DD>Decompress the JPEG source image or decode the YUV source image associated
+ with this decompressor instance and output a grayscale, RGB, or CMYK image
+ to the given destination buffer.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(java.awt.image.BufferedImage, int)"><B>decompress(BufferedImage, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Decompress the JPEG source image associated with this decompressor
- instance and output a decompressed image to the given
- <code>BufferedImage</code> instance.
+<DD>Decompress the JPEG source image or decode the YUV source image associated
+ with this decompressor instance and output a decompressed/decoded image to
+ the given <code>BufferedImage</code> instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int, int, int, int)"><B>decompress(int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Decompress the JPEG source image associated with this decompressor
- instance and return a <code>BufferedImage</code> instance containing the
- decompressed image.
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(byte[], int, int, int, int)"><B>decompressToYUV(byte[], int, int, int, int)</B></A> - 
+<DD>Decompress the JPEG source image or decode the YUV source image associated
+ with this decompressor instance and return a <code>BufferedImage</code>
+ instance containing the decompressed/decoded image.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(org.libjpegturbo.turbojpeg.YUVImage, int)"><B>decompressToYUV(YUVImage, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD>Decompress the JPEG source image associated with this decompressor
- instance and output a YUV planar image to the given destination buffer.
+ instance into a YUV planar image and store it in the given
+ <code>YUVImage</code> instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(byte[], int)"><B>decompressToYUV(byte[], int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(byte[], int, int, int, int)"><CODE>TJDecompressor.decompressToYUV(byte[], int, int, int, int)</CODE></A>
- instead.</I>
+<DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(org.libjpegturbo.turbojpeg.YUVImage, int)"><CODE>TJDecompressor.decompressToYUV(YUVImage, int)</CODE></A> instead.</I>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int, int, int, int)"><B>decompressToYUV(int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD>Decompress the JPEG source image associated with this decompressor
- instance and return a buffer containing a YUV planar image.
+ instance into a YUV planar image and return a <code>YUVImage</code>
+ instance containing the decompressed image.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int)"><B>decompressToYUV(int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int, int, int, int)"><CODE>TJDecompressor.decompressToYUV(int, int, int, int)</CODE></A> instead.</I>
@@ -192,14 +195,22 @@ Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg
 <A NAME="_E_"><!-- --></A><H2>
 <B>E</B></H2>
 <DL>
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage, int)"><B>encodeYUV(YUVImage, int)</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
+<DD>Encode the uncompressed source image associated with this compressor
+ instance into a YUV planar image and store it in the given
+ <code>YUVImage</code> instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[], int)"><B>encodeYUV(byte[], int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
-<DD>Encode the uncompressed source image associated with this compressor
- instance and output a YUV planar image to the given destination buffer.
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int)"><B>encodeYUV(int)</B></A> - 
+<DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage, int)"><CODE>TJCompressor.encodeYUV(YUVImage, int)</CODE></A> instead.</I>
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int, int)"><B>encodeYUV(int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Encode the uncompressed source image associated with this compressor
- instance and return a buffer containing a YUV planar image.
+ instance into a YUV planar image and return a <code>YUVImage</code>
+ instance containing the encoded image.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int)"><B>encodeYUV(int)</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
+<DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int, int)"><CODE>TJCompressor.encodeYUV(int, int)</CODE></A> instead.</I>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(java.awt.image.BufferedImage, byte[], int)"><B>encodeYUV(BufferedImage, byte[], int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD><B>Deprecated.</B>&nbsp;<I>Use
@@ -262,10 +273,13 @@ Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/
 Static method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
 <DD>For the given pixel format, returns the number of bytes that the blue
  component is offset from the start of the pixel.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#getBuf()"><B>getBuf()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Returns the YUV image buffer
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getColorspace()"><B>getColorspace()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Returns the colorspace used in the JPEG image associated with this
- decompressor instance.
+<DD>Returns the colorspace used in the source image (JPEG or YUV) associated
+ with this decompressor instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#getCompressedSize()"><B>getCompressedSize()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Returns the size of the image (in bytes) generated by the most recent
@@ -279,15 +293,17 @@ Static method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/tu
  component is offset from the start of the pixel.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getHeight()"><B>getHeight()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Returns the height of the JPEG image associated with this decompressor
- instance.
+<DD>Returns the height of the source image (JPEG or YUV) associated with this
+ decompressor instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#getHeight()"><B>getHeight()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Returns the height of the YUV image.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGBuf()"><B>getJPEGBuf()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Returns the JPEG image buffer associated with this decompressor instance.
+<DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getSourceBuf()"><CODE>TJDecompressor.getSourceBuf()</CODE></A> instead.</I>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGSize()"><B>getJPEGSize()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Returns the size of the JPEG image (in bytes) associated with this
- decompressor instance.
+<DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getSourceSize()"><CODE>TJDecompressor.getSourceSize()</CODE></A> instead.</I>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#getMCUHeight(int)"><B>getMCUHeight(int)</B></A> - 
 Static method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
 <DD>Returns the MCU block height for the given level of chrominance
@@ -299,6 +315,9 @@ Static method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/tu
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJScalingFactor.html#getNum()"><B>getNum()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg">TJScalingFactor</A>
 <DD>Returns numerator
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#getPad()"><B>getPad()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Returns the line padding used in the YUV image buffer.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJ.html#getPixelSize(int)"><B>getPixelSize(int)</B></A> - 
 Static method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
 <DD>Returns the pixel size (in bytes) for the given pixel format.
@@ -323,18 +342,35 @@ Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg
 Static method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</A>
 <DD>Returns a list of fractional scaling factors that the JPEG decompressor in
  this implementation of TurboJPEG supports.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#getSize()"><B>getSize()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Returns the size (in bytes) of the YUV image buffer
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getSourceBuf()"><B>getSourceBuf()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>Returns the source image buffer associated with this decompressor
+ instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getSourceSize()"><B>getSourceSize()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>Returns the size of the source image (in bytes) associated with this
+ decompressor instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getSubsamp()"><B>getSubsamp()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Returns the level of chrominance subsampling used in the JPEG image
- associated with this decompressor instance.
+<DD>Returns the level of chrominance subsampling used in the source image
+ (JPEG or YUV) associated with this decompressor instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#getSubsamp()"><B>getSubsamp()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Returns the level of chrominance subsampling used in the YUV image.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html#getTransformedSizes()"><B>getTransformedSizes()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg">TJTransformer</A>
-<DD>Returns an array containing the sizes of the transformed JPEG images from
- the most recent call to <A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><CODE>transform()</CODE></A>.
+<DD>Returns an array containing the sizes of the transformed JPEG images
+ generated by the most recent transform operation.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#getWidth()"><B>getWidth()</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Returns the width of the JPEG image associated with this decompressor
- instance.
+<DD>Returns the width of the source image (JPEG or YUV) associated with this
+ decompressor instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#getWidth()"><B>getWidth()</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Returns the width of the YUV image.
 </DL>
 <HR>
 <A NAME="_H_"><!-- --></A><H2>
@@ -342,6 +378,9 @@ Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg
 <DL>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#handle"><B>handle</B></A> - 
 Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#handle"><B>handle</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
 <DD>&nbsp;
 </DL>
 <HR>
@@ -361,18 +400,6 @@ Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg
 Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD>&nbsp;
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegBufSize"><B>jpegBufSize</B></A> - 
-Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>&nbsp;
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegColorspace"><B>jpegColorspace</B></A> - 
-Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>&nbsp;
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegHeight"><B>jpegHeight</B></A> - 
-Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>&nbsp;
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegSubsamp"><B>jpegSubsamp</B></A> - 
-Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>&nbsp;
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegWidth"><B>jpegWidth</B></A> - 
 Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD>&nbsp;
 </DL>
@@ -513,32 +540,50 @@ Static variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/
 <DD>Grayscale.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#setJPEGImage(byte[], int)"><B>setJPEGImage(byte[], int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Associate the JPEG image of length <code>imageSize</code> bytes stored in
- <code>jpegImage</code> with this decompressor instance.
+<DD><B>Deprecated.</B>&nbsp;<I>Use <A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(byte[], int)"><CODE>TJDecompressor.setSourceImage(byte[], int)</CODE></A> instead.</I>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setJPEGQuality(int)"><B>setJPEGQuality(int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Set the JPEG image quality level for subsequent compress operations.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><B>setSourceImage(byte[], int, int, int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
-<DD>Associate an uncompressed source image with this compressor instance.
+<DD>Associate an uncompressed RGB, grayscale, or CMYK source image with this
+ compressor instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int)"><B>setSourceImage(byte[], int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD><B>Deprecated.</B>&nbsp;<I>Use
  <A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><CODE>TJCompressor.setSourceImage(byte[], int, int, int, int, int, int)</CODE></A> instead.</I>
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><B>setSourceImage(BufferedImage, int, int, int, int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
-<DD>Associate an uncompressed source image with this compressor instance.
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImageYUV(byte[], int, int, int)"><B>setSourceImageYUV(byte[], int, int, int)</B></A> - 
+<DD>Associate an uncompressed RGB or grayscale source image with this
+ compressor instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(org.libjpegturbo.turbojpeg.YUVImage)"><B>setSourceImage(YUVImage)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Associate an uncompressed YUV planar source image with this compressor
+ instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(byte[], int)"><B>setSourceImage(byte[], int)</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>Associate the JPEG image of length <code>imageSize</code> bytes stored in
+ <code>srcImage</code> with this decompressor instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(org.libjpegturbo.turbojpeg.YUVImage)"><B>setSourceImage(YUVImage)</B></A> - 
+Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>Associate the specified YUV planar source image with this decompressor
  instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setSubsamp(int)"><B>setSubsamp(int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Set the level of chrominance subsampling for subsequent compress/encode
  operations.
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#setYUVPad(int)"><B>setYUVPad(int)</B></A> - 
-Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
-<DD>Set the plane padding for subsequent YUV encode operations.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#srcColorspace"><B>srcColorspace</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#srcHeight"><B>srcHeight</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#srcSubsamp"><B>srcSubsamp</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#srcWidth"><B>srcWidth</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>&nbsp;
 </DL>
 <HR>
 <A NAME="_T_"><!-- --></A><H2>
@@ -550,32 +595,37 @@ Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/tur
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg"><B>TJCompressor</B></A> - Class in <A HREF="./org/libjpegturbo/turbojpeg/package-summary.html">org.libjpegturbo.turbojpeg</A><DD>TurboJPEG compressor<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor()"><B>TJCompressor()</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Create a TurboJPEG compressor instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int, int, int)"><B>TJCompressor(byte[], int, int, int, int, int, int)</B></A> - 
+Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
+<DD>Create a TurboJPEG compressor instance and associate the uncompressed
+ source image stored in <code>srcImage</code> with the newly created
+ instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int)"><B>TJCompressor(byte[], int, int, int, int)</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD><B>Deprecated.</B>&nbsp;<I>Use
  <A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int, int, int)"><CODE>TJCompressor.TJCompressor(byte[], int, int, int, int, int, int)</CODE></A> instead.</I>
-<DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int, int, int)"><B>TJCompressor(byte[], int, int, int, int, int, int)</B></A> - 
-Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
-<DD>Create a TurboJPEG compressor instance and associate the uncompressed
- source image stored in <code>srcImage</code> with the newly-created
- instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(java.awt.image.BufferedImage, int, int, int, int)"><B>TJCompressor(BufferedImage, int, int, int, int)</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJCompressor.html" title="class in org.libjpegturbo.turbojpeg">TJCompressor</A>
 <DD>Create a TurboJPEG compressor instance and associate the uncompressed
- source image stored in <code>srcImage</code> with the newly-created
+ source image stored in <code>srcImage</code> with the newly created
  instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><B>TJCustomFilter</B></A> - Interface in <A HREF="./org/libjpegturbo/turbojpeg/package-summary.html">org.libjpegturbo.turbojpeg</A><DD>Custom filter callback interface<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg"><B>TJDecompressor</B></A> - Class in <A HREF="./org/libjpegturbo/turbojpeg/package-summary.html">org.libjpegturbo.turbojpeg</A><DD>TurboJPEG decompressor<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#TJDecompressor()"><B>TJDecompressor()</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
 <DD>Create a TurboJPEG decompresssor instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#TJDecompressor(byte[])"><B>TJDecompressor(byte[])</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Create a TurboJPEG decompressor instance and associate the JPEG image
- stored in <code>jpegImage</code> with the newly-created instance.
+<DD>Create a TurboJPEG decompressor instance and associate the JPEG source
+ image stored in <code>jpegImage</code> with the newly created instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#TJDecompressor(byte[], int)"><B>TJDecompressor(byte[], int)</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
-<DD>Create a TurboJPEG decompressor instance and associate the JPEG image
- of length <code>imageSize</code> bytes stored in <code>jpegImage</code>
- with the newly-created instance.
+<DD>Create a TurboJPEG decompressor instance and associate the JPEG source
+ image of length <code>imageSize</code> bytes stored in
+ <code>jpegImage</code> with the newly created instance.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#TJDecompressor(org.libjpegturbo.turbojpeg.YUVImage)"><B>TJDecompressor(YUVImage)</B></A> - 
+Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>Create a TurboJPEG decompressor instance and associate the YUV planar
+ source image stored in <code>yuvImage</code> with the newly created
+ instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg"><B>TJScalingFactor</B></A> - Class in <A HREF="./org/libjpegturbo/turbojpeg/package-summary.html">org.libjpegturbo.turbojpeg</A><DD>Fractional scaling factor<DT><A HREF="./org/libjpegturbo/turbojpeg/TJScalingFactor.html#TJScalingFactor(int, int)"><B>TJScalingFactor(int, int)</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg">TJScalingFactor</A>
 <DD>&nbsp;
@@ -594,12 +644,12 @@ Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/tur
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html#TJTransformer(byte[])"><B>TJTransformer(byte[])</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg">TJTransformer</A>
 <DD>Create a TurboJPEG lossless transformer instance and associate the JPEG
- image stored in <code>jpegImage</code> with the newly-created instance.
+ image stored in <code>jpegImage</code> with the newly created instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html#TJTransformer(byte[], int)"><B>TJTransformer(byte[], int)</B></A> - 
 Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg">TJTransformer</A>
 <DD>Create a TurboJPEG lossless transformer instance and associate the JPEG
  image of length <code>imageSize</code> bytes stored in
- <code>jpegImage</code> with the newly-created instance.
+ <code>jpegImage</code> with the newly created instance.
 <DT><A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><B>transform(byte[][], TJTransform[], int)</B></A> - 
 Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg">TJTransformer</A>
 <DD>Losslessly transform the JPEG image associated with this transformer
@@ -612,7 +662,38 @@ Method in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg
  which has a transformed JPEG image associated with it.
 </DL>
 <HR>
-<A HREF="#_B_">B</A> <A HREF="#_C_">C</A> <A HREF="#_D_">D</A> <A HREF="#_E_">E</A> <A HREF="#_F_">F</A> <A HREF="#_G_">G</A> <A HREF="#_H_">H</A> <A HREF="#_I_">I</A> <A HREF="#_J_">J</A> <A HREF="#_N_">N</A> <A HREF="#_O_">O</A> <A HREF="#_P_">P</A> <A HREF="#_S_">S</A> <A HREF="#_T_">T</A> 
+<A NAME="_Y_"><!-- --></A><H2>
+<B>Y</B></H2>
+<DL>
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#yuvBuf"><B>yuvBuf</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#yuvHeight"><B>yuvHeight</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html#yuvImage"><B>yuvImage</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><B>YUVImage</B></A> - Class in <A HREF="./org/libjpegturbo/turbojpeg/package-summary.html">org.libjpegturbo.turbojpeg</A><DD>This class encapsulates a YUV planar image buffer and the metadata
+ associated with it.<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#YUVImage(int, int, int, int)"><B>YUVImage(int, int, int, int)</B></A> - 
+Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Create a <code>YUVImage</code> instance with a new image buffer.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#YUVImage(byte[], int, int, int, int)"><B>YUVImage(byte[], int, int, int, int)</B></A> - 
+Constructor for class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>Create a <code>YUVImage</code> instance from an existing YUV planar image
+ buffer.
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#yuvPad"><B>yuvPad</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#yuvSubsamp"><B>yuvSubsamp</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>&nbsp;
+<DT><A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html#yuvWidth"><B>yuvWidth</B></A> - 
+Variable in class org.libjpegturbo.turbojpeg.<A HREF="./org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</A>
+<DD>&nbsp;
+</DL>
+<HR>
+<A HREF="#_B_">B</A> <A HREF="#_C_">C</A> <A HREF="#_D_">D</A> <A HREF="#_E_">E</A> <A HREF="#_F_">F</A> <A HREF="#_G_">G</A> <A HREF="#_H_">H</A> <A HREF="#_I_">I</A> <A HREF="#_J_">J</A> <A HREF="#_N_">N</A> <A HREF="#_O_">O</A> <A HREF="#_P_">P</A> <A HREF="#_S_">S</A> <A HREF="#_T_">T</A> <A HREF="#_Y_">Y</A> 
 
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <A NAME="navbar_bottom"><!-- --></A>

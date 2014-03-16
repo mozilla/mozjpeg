@@ -1,30 +1,31 @@
 1.4 pre-beta
 ============
 
-[1] The TurboJPEG API can now be used to generate YUV images with an arbitrary
-line padding (previously, it only supported 4-byte padding, which was
-compatible with X Video.)  Also, the decompress-to-YUV function has been
-extended to support image scaling.
+[1] New features in the TurboJPEG API:
+-- YUV planar images can now be generated with an arbitrary line padding
+(previously only 4-byte padding, which was compatible with X Video, was
+supported.)
+-- The decompress-to-YUV function has been extended to support image scaling.
+-- JPEG images can now be compressed from YUV planar source images.
+-- YUV planar images can now be decoded into RGB or grayscale images.
+-- 4:1:1 subsampling is now supported.  This is mainly included for
+compatibility, since 4:1:1 is not fully accelerated in libjpeg-turbo and has no
+significant advantages relative to 4:2:0.
+-- CMYK images are now supported.  This feature allows CMYK source images to be
+compressed to YCCK JPEGs and YCCK or CMYK JPEGs to be decompressed to CMYK
+destination images.  Conversion between CMYK and RGB or YUV images is not
+supported.  Such conversion requires a color management system and is out of
+scope for a codec library.
+-- The handling of YUV images in the Java API has been significantly refactored
+and should now be much more intuitive.
+-- The Java API now supports encoding a YUV image from an arbitrary position in
+a large image buffer.
 
 [2] Added SIMD acceleration for DSPr2-capable MIPS platforms.  This speeds up
 the compression of full-color JPEGs by 70-80% on such platforms and
 decompression by 25-35%.
 
-[3] Added support for 4:1:1 subsampling to the TurboJPEG API.  This is mainly
-included for compatibility, since 4:1:1 is not fully accelerated in
-libjpeg-turbo and has no significant advantages relative to 4:2:0.
-
-[4] Added support for CMYK images to the TurboJPEG API.  This feature allows
-CMYK source images to be compressed to YCCK JPEGs and YCCK or CMYK JPEGs to be
-decompressed to CMYK destination images.  Conversion between CMYK and RGB
-images is not supported.  Such conversion requires a color management system
-and is out of scope for a codec library.
-
-[5] The TurboJPEG API can now be used to compress JPEG images from YUV planar
-source images and to decode YUV planar images into RGB, grayscale, or extended
-RGB images.
-
-[6] If an application attempts to decompress a Huffman-coded JPEG image whose
+[3] If an application attempts to decompress a Huffman-coded JPEG image whose
 header does not contain Huffman tables, libjpeg-turbo will now insert the
 default Huffman tables.  In order to save space, many motion JPEG video frames
 are encoded without the default Huffman tables, so these frames can now be

@@ -706,12 +706,12 @@ void usage(char *progname)
 	printf("       <Inputfile (JPG)> [options]\n\n");
 	printf("Options:\n\n");
 	printf("-alloc = Dynamically allocate JPEG image buffers\n");
-	printf("-bmp = Generate output images in Windows Bitmap format (default=PPM)\n");
+	printf("-bmp = Generate output images in Windows Bitmap format (default = PPM)\n");
 	printf("-bottomup = Test bottom-up compression/decompression\n");
 	printf("-tile = Test performance of the codec when the image is encoded as separate\n");
 	printf("     tiles of varying sizes.\n");
 	printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
-	printf("     Test the specified color conversion path in the codec (default: BGR)\n");
+	printf("     Test the specified color conversion path in the codec (default = BGR)\n");
 	printf("-fastupsample = Use the fastest chrominance upsampling algorithm available in\n");
 	printf("     the underlying codec\n");
 	printf("-fastdct = Use the fastest DCT/IDCT algorithms available in the underlying\n");
@@ -726,7 +726,7 @@ void usage(char *progname)
 	printf("-yuv = Test YUV encoding/decoding functions\n");
 	printf("-yuvpad <p> = If testing YUV encoding/decoding, this specifies the number of\n");
 	printf("     bytes to which each row of each plane in the intermediate YUV image is\n");
-	printf("     padded (default=1)\n");
+	printf("     padded (default = 1)\n");
 	printf("-scale M/N = Scale down the width/height of the decompressed JPEG image by a\n");
 	printf("     factor of M/N (M/N = ");
 	for(i=0; i<nsf; i++)
@@ -748,7 +748,7 @@ void usage(char *progname)
 	printf("     test (can be combined with the other transforms above)\n");
 	printf("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
 	printf("-warmup <w> = Execute each benchmark <w> times to prime the cache before\n");
-	printf("     taking performance measurements (default = 1.)\n");
+	printf("     taking performance measurements (default = 1)\n");
 	printf("-componly = Stop after running compression tests.  Do not test decompression.\n\n");
 	printf("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate\n");
 	printf("test will be performed for all quality values in the range.\n\n");

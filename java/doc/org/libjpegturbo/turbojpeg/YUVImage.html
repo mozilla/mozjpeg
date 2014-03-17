@@ -243,6 +243,17 @@ extends java.lang.Object</pre>
 <div class="block">Returns the width of the YUV image.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html#setBuf(byte[], int, int, int, int)">setBuf</a></strong>(byte[]&nbsp;yuvImage,
+      int&nbsp;width,
+      int&nbsp;pad,
+      int&nbsp;height,
+      int&nbsp;subsamp)</code>
+<div class="block">Assign an existing YUV planar image buffer to this <code>YUVImage</code>
+ instance.</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
@@ -362,8 +373,8 @@ extends java.lang.Object</pre>
  buffer.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>yuvImage</code> - image buffer that contains or will contain YUV planar
  image data.  See <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>above</code></a> for a description of the image
- format.  You can use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int, int)"><code>TJ.bufSizeYUV(int, int, int, int)</code></a> to determine the appropriate
- size for this buffer.</dd><dd><code>width</code> - width (in pixels) of the YUV image</dd><dd><code>pad</code> - the line padding used in the YUV image buffer.  For
+ format.  Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int, int)"><code>TJ.bufSizeYUV(int, int, int, int)</code></a> to determine the minimum size for this
+ buffer.</dd><dd><code>width</code> - width (in pixels) of the YUV image</dd><dd><code>pad</code> - the line padding used in the YUV image buffer.  For
  instance, if each line in each plane of the buffer is padded to the
  nearest multiple of 4 bytes, then <code>pad</code> should be set to 4.</dd><dd><code>height</code> - height (in pixels) of the YUV image</dd><dd><code>subsamp</code> - the level of chrominance subsampling used in the YUV
  image (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#SAMP_444"><code>TJ.SAMP_*</code></a>)</dd>
@@ -379,6 +390,31 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="setBuf(byte[], int, int, int, int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setBuf</h4>
+<pre>public&nbsp;void&nbsp;setBuf(byte[]&nbsp;yuvImage,
+          int&nbsp;width,
+          int&nbsp;pad,
+          int&nbsp;height,
+          int&nbsp;subsamp)
+            throws java.lang.Exception</pre>
+<div class="block">Assign an existing YUV planar image buffer to this <code>YUVImage</code>
+ instance.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>yuvImage</code> - image buffer that contains or will contain YUV planar
+ image data.  See <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>above</code></a> for a description of the image
+ format.  Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int, int)"><code>TJ.bufSizeYUV(int, int, int, int)</code></a> to determine the minimum size for this
+ buffer.</dd><dd><code>width</code> - width (in pixels) of the YUV image</dd><dd><code>pad</code> - the line padding used in the YUV image buffer.  For
+ instance, if each line in each plane of the buffer is padded to the
+ nearest multiple of 4 bytes, then <code>pad</code> should be set to 4.</dd><dd><code>height</code> - height (in pixels) of the YUV image</dd><dd><code>subsamp</code> - the level of chrominance subsampling used in the YUV
+ image (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#SAMP_444"><code>TJ.SAMP_*</code></a>)</dd>
+<dt><span class="strong">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd></dl>
+</li>
+</ul>
 <a name="getWidth()">
 <!--   -->
 </a>

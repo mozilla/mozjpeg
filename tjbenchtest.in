@@ -159,7 +159,7 @@ for image in $IMAGES; do
 	done
 	for xform in hflip vflip transpose transverse rot90 rot180 rot270; do
 		for samp in GRAY 444; do
-			runme $EXEDIR/djpeg -rgb $BMPARG -outfile $OUTDIR/${basename}_${samp}_${xform}_jpegtran.${EXT} $OUTDIR/${basename}_${samp}_${xform}_jpegtran.jpg 
+			runme $EXEDIR/djpeg -rgb $BMPARG -outfile $OUTDIR/${basename}_${samp}_${xform}_jpegtran.${EXT} $OUTDIR/${basename}_${samp}_${xform}_jpegtran.jpg
 			runme $EXEDIR/tjbench $OUTDIR/${basename}_${samp}_Q95.jpg $BMPARG -$xform -tile -quiet -benchtime 0.01 -warmup 0 $YUVARG
 			for i in $OUTDIR/${basename}_${samp}_Q95_[0-9]*[0-9]x[0-9]*[0-9].${EXT} \
 				$OUTDIR/${basename}_${samp}_Q95_full.${EXT}; do

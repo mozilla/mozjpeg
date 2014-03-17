@@ -74,8 +74,8 @@ public class YUVImage {
    */
   public YUVImage(int width, int pad, int height, int subsamp)
                     throws Exception {
-    setBuffer(new byte[TJ.bufSizeYUV(width, pad, height, subsamp)], width, pad,
-              height, subsamp);
+    setBuf(new byte[TJ.bufSizeYUV(width, pad, height, subsamp)], width, pad,
+           height, subsamp);
   }
 
   /**
@@ -84,8 +84,8 @@ public class YUVImage {
    *
    * @param yuvImage image buffer that contains or will contain YUV planar
    * image data.  See {@link YUVImage above} for a description of the image
-   * format.  You can use {@link TJ#bufSizeYUV} to determine the appropriate
-   * size for this buffer.
+   * format.  Use {@link TJ#bufSizeYUV} to determine the minimum size for this
+   * buffer.
    *
    * @param width width (in pixels) of the YUV image
    *
@@ -100,16 +100,36 @@ public class YUVImage {
    */
   public YUVImage(byte[] yuvImage, int width, int pad, int height,
                   int subsamp) throws Exception {
-    setBuffer(yuvImage, width, pad, height, subsamp);
+    setBuf(yuvImage, width, pad, height, subsamp);
   }
 
-  private void setBuffer(byte[] yuvImage, int width, int pad, int height,
-                         int subsamp) throws Exception {
+  /**
+   * Assign an existing YUV planar image buffer to this <code>YUVImage</code>
+   * instance.
+   *
+   * @param yuvImage image buffer that contains or will contain YUV planar
+   * image data.  See {@link YUVImage above} for a description of the image
+   * format.  Use {@link TJ#bufSizeYUV} to determine the minimum size for this
+   * buffer.
+   *
+   * @param width width (in pixels) of the YUV image
+   *
+   * @param pad the line padding used in the YUV image buffer.  For
+   * instance, if each line in each plane of the buffer is padded to the
+   * nearest multiple of 4 bytes, then <code>pad</code> should be set to 4.
+   *
+   * @param height height (in pixels) of the YUV image
+   *
+   * @param subsamp the level of chrominance subsampling used in the YUV
+   * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
+   */
+  public void setBuf(byte[] yuvImage, int width, int pad, int height,
+                     int subsamp) throws Exception {
     if (yuvImage == null || width < 1 || pad < 1 || ((pad & (pad - 1)) != 0) ||
         height < 1 || subsamp < 0 || subsamp >= TJ.NUMSAMP)
       throw new Exception("Invalid argument in YUVImage()");
-    if (yuvImage.length != TJ.bufSizeYUV(width, pad, height, subsamp))
-      throw new Exception("YUV image buffer is the wrong size");
+    if (yuvImage.length < TJ.bufSizeYUV(width, pad, height, subsamp))
+      throw new Exception("YUV image buffer is not large enough");
     yuvBuf = yuvImage;
     yuvWidth = width;
     yuvPad = pad;
@@ -181,7 +201,7 @@ public class YUVImage {
    public int getSize() throws Exception {
      if (yuvBuf == null)
        throw new Exception(NO_ASSOC_ERROR);
-     return yuvBuf.length;
+     return TJ.bufSizeYUV(yuvWidth, yuvPad, yuvHeight, yuvSubsamp);
    }
 
   protected long handle = 0;

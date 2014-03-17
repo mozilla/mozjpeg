@@ -330,6 +330,7 @@ tjtest:
 	sh ./tjbenchtest -yuv
 if WITH_JAVA
 	sh ./tjbenchtest.java
+	sh ./tjbenchtest.java -yuv
 endif
 
 

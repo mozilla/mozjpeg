@@ -476,10 +476,10 @@ class TJBench {
       System.out.println("Format\tOrder\tCS\tSubsamp\tWidth Height\tPerf \tRatio\tPerf\n");
     } else if (quiet == 0) {
       if (yuv == YUVDECODE)
-        System.out.format(">>>>>  JPEG %s --> YUV  <<<<<",
+        System.out.format(">>>>>  JPEG %s --> YUV  <<<<<\n",
           formatName(subsamp, cs));
       else
-        System.out.format(">>>>>  JPEG %s --> %s (%s)  <<<<<",
+        System.out.format(">>>>>  JPEG %s --> %s (%s)  <<<<<\n",
           formatName(subsamp, cs), pixFormatStr[pf],
           (flags & TJ.FLAG_BOTTOMUP) != 0 ? "Bottom-up" : "Top-down");
     }
@@ -571,7 +571,7 @@ class TJBench {
         } else if (quiet == 0) {
           System.out.format("X--> Frame rate:           %f fps\n",
                             1.0 / elapsed);
-          System.out.format("     Output image size:    %lu bytes\n",
+          System.out.format("     Output image size:    %d bytes\n",
                             totalJpegSize);
           System.out.format("     Compression ratio:    %f:1\n",
                             (double)(w * h * ps) / (double)totalJpegSize);

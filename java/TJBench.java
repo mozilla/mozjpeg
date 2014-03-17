@@ -445,7 +445,7 @@ class TJBench {
                         (doTile ? "Tile " : "Image"));
       System.out.println("Format\tOrder\tSubsamp\tWidth Height\tPerf \tRatio\tPerf\n");
     } else if (quiet == 0) {
-      System.out.format(">>>>>  JPEG %s --> %s (%s)  <<<<<",
+      System.out.format(">>>>>  JPEG %s --> %s (%s)  <<<<<\n",
         subNameLong[subsamp], pixFormatStr[pf],
         (flags & TJ.FLAG_BOTTOMUP) != 0 ? "Bottom-up" : "Top-down");
     }
@@ -537,7 +537,7 @@ class TJBench {
         } else if (quiet == 0) {
           System.out.format("X--> Frame rate:           %f fps\n",
                             1.0 / elapsed);
-          System.out.format("     Output image size:    %lu bytes\n",
+          System.out.format("     Output image size:    %d bytes\n",
                             totalJpegSize);
           System.out.format("     Compression ratio:    %f:1\n",
                             (double)(w * h * ps) / (double)totalJpegSize);

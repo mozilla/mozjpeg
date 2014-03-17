@@ -189,6 +189,9 @@ class TJBench {
     }
 
     tjd = null;
+    for (i = 0; i < jpegBuf.length; i++)
+      jpegBuf[i] = null;
+    jpegBuf = null;  jpegSize = null;
     System.gc();
 
     if (quiet != 0)
@@ -429,11 +432,6 @@ class TJBench {
       if (!compOnly)
         decompTest(srcBuf, jpegBuf, jpegSize, tmpBuf, w, h, subsamp, jpegQual,
                    fileName, tilew, tileh);
-
-      for (i = 0; i < ntilesw * ntilesh; i++)
-        jpegBuf[i] = null;
-      jpegBuf = null;  jpegSize = null;
-      System.gc();
 
       if (tilew == w && tileh == h) break;
     }

@@ -1176,6 +1176,7 @@ transpose_critical_parameters (j_compress_ptr dstinfo)
  * We try to adjust the Tags ExifImageWidth and ExifImageHeight if possible.
  */
 
+#if JPEG_LIB_VERSION >= 70
 LOCAL(void)
 adjust_exif_parameters (JOCTET FAR * data, unsigned int length,
 			JDIMENSION new_width, JDIMENSION new_height)
@@ -1325,6 +1326,7 @@ adjust_exif_parameters (JOCTET FAR * data, unsigned int length,
     offset += 12;
   } while (--number_of_tags);
 }
+#endif
 
 
 /* Adjust output image parameters as needed.

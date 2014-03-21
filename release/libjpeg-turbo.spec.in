@@ -8,7 +8,7 @@
 %define _datadir %{__datadir}
 
 # Path under which docs should be installed
-%define _docdir %{_defaultdocdir}/%{name}-%{version}
+%define _docdir /usr/share/doc/%{name}-%{version}
 
 # Path under which headers should be installed
 %define _includedir %{__includedir}

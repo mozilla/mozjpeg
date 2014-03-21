@@ -266,7 +266,7 @@ AC_SUBST(VERSION_SCRIPT_FLAG)
 AC_MSG_CHECKING(for inline)
 ljt_cv_inline=""
 AC_TRY_COMPILE(, [} __attribute__((always_inline)) int foo() { return 0; }
-int bar() { return foo();], ljt_cv_inline="__attribute__((always_inline))",
+int bar() { return foo();], ljt_cv_inline="inline __attribute__((always_inline))",
 AC_TRY_COMPILE(, [} __inline__ int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="__inline__",
 AC_TRY_COMPILE(, [} __inline int foo() { return 0; }

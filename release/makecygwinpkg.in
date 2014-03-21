@@ -17,19 +17,15 @@ onexit()
 
 PACKAGE_NAME=@PKGNAME@
 VERSION=@VERSION@
+BUILD=@BUILD@
 SRCDIR=@abs_top_srcdir@
-RPMARCH=@RPMARCH@
-PLATFORM=cygwin
 
 PREFIX=%{__prefix}
 DOCDIR=%{__docdir}
 LIBDIR=%{__libdir}
 
 umask 022
-if [ "$RPMARCH" = "x86_64" ]; then
-	PLATFORM=cygwin64
-fi
-rm -f $PACKAGE_NAME-$VERSION-$PLATFORM.tar.bz2
+rm -f $PACKAGE_NAME-$VERSION-$BUILD.tar.bz2
 TMPDIR=`mktemp -d /tmp/ljtbuild.XXXXXX`
 __PWD=`pwd`
 make install DESTDIR=$TMPDIR/pkg docdir=/usr/share/doc/$PACKAGE_NAME-$VERSION \
@@ -39,7 +35,7 @@ if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" = "/opt/libjpeg-turbo/doc" ];
 	ln -fs /usr/share/doc/$PACKAGE_NAME-$VERSION $TMPDIR/pkg$DOCDIR
 fi
 cd $TMPDIR/pkg
-tar cfj ../$PACKAGE_NAME-$VERSION-$PLATFORM.tar.bz2 *
+tar cfj ../$PACKAGE_NAME-$VERSION-$BUILD.tar.bz2 *
 cd $__PWD
 mv $TMPDIR/*.tar.bz2 .
 

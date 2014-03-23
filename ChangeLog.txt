@@ -33,6 +33,12 @@ successfully decompressed by libjpeg-turbo without additional work on the part
 of the application.  An application can still override the Huffman tables, for
 instance to re-use tables from a previous frame of the same video.
 
+[4] The Mac packaging system now uses pkgbuild and productbuild rather than
+PackageMaker (which is obsolete and no longer supported.)  This means that
+OS X 10.6 "Snow Leopard" or later must be used when packaging libjpeg-turbo,
+although the packages produced can be installed on OS X 10.5 "Leopard" or
+later.  OS X 10.4 "Tiger" is no longer supported.
+
 
 1.3.1
 =====

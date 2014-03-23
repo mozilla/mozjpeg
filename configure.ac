@@ -530,8 +530,6 @@ AC_CONFIG_FILES([pkgscripts/libjpeg-turbo.spec.tmpl:release/libjpeg-turbo.spec.i
 AC_CONFIG_FILES([pkgscripts/makecygwinpkg.tmpl:release/makecygwinpkg.in])
 AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])
 AC_CONFIG_FILES([pkgscripts/makemacpkg.tmpl:release/makemacpkg.in])
-AC_CONFIG_FILES([pkgscripts/Description.plist:release/Description.plist.in])
-AC_CONFIG_FILES([pkgscripts/Info.plist:release/Info.plist.in])
 AC_CONFIG_FILES([pkgscripts/uninstall.tmpl:release/uninstall.in])
 if test "x$with_turbojpeg" != "xno"; then
   AC_CONFIG_FILES([tjbenchtest])

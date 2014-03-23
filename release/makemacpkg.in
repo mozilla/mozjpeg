@@ -11,7 +11,7 @@ TMPDIR=
 onexit()
 {
 	if [ ! "$TMPDIR" = "" ]; then
-		sudo rm -rf $TMPDIR
+		rm -rf $TMPDIR
 	fi
 }
 
@@ -78,7 +78,6 @@ while [ $# -gt 0 ]; do
 	esac
 	shift
 done
-PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker
 
 if [ -f $PACKAGE_NAME-$VERSION.dmg ]; then
 	rm -f $PACKAGE_NAME-$VERSION.dmg
@@ -245,21 +244,20 @@ if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$LIBDIR" = "/opt/libjpeg-turbo/lib" ];
 	fi
 fi
 
-chmod 1775 $PKGROOT/Library
-chmod 775 $PKGROOT/Library/Documentation 
-mkdir -p $TMPDIR/pkg/Resources 
+mkdir -p $TMPDIR/pkg
 
-cp pkgscripts/Description.plist $TMPDIR/pkg/
-cp pkgscripts/Info.plist $TMPDIR/pkg/
 install -m 755 pkgscripts/uninstall $PKGROOT/$BINDIR/
 
-sudo chown -R root:admin $PKGROOT
-cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadMe.rtf $TMPDIR/pkg/Resources/ 
+find $PKGROOT -type f | while read file; do xattr -c $file; done
+
+cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadMe.txt $TMPDIR/pkg/
 
 mkdir $TMPDIR/dmg
-$PACKAGEMAKER -build -v -p $TMPDIR/dmg/$PACKAGE_NAME.pkg \
-	-f $PKGROOT -r $TMPDIR/pkg/Resources \
-	-i $TMPDIR/pkg/Info.plist -d $TMPDIR/pkg/Description.plist 
+pkgbuild --root $PKGROOT --version $VERSION.$BUILD \
+	--identifier com.libjpeg-turbo.libjpeg-turbo $TMPDIR/pkg/$PACKAGE_NAME.pkg
+productbuild --distribution $SRCDIR/release/Distribution.xml \
+	--package-path $TMPDIR/pkg/ --resources $TMPDIR/pkg/ \
+	$TMPDIR/dmg/$PACKAGE_NAME.pkg
 hdiutil create -fs HFS+ -volname $PACKAGE_NAME-$VERSION \
 	-srcfolder "$TMPDIR/dmg" $TMPDIR/$PACKAGE_NAME-$VERSION.dmg 
 cp $TMPDIR/$PACKAGE_NAME-$VERSION.dmg . 

@@ -376,8 +376,9 @@ struct jpeg_compress_struct {
   int smoothing_factor;		/* 1..100, or 0 for no input smoothing */
   J_DCT_METHOD dct_method;	/* DCT algorithm selector */
 
-  boolean use_moz_defaults; /* TRUE if using Mozilla defaults */
+  int use_moz_defaults; /* nonzero if using Mozilla defaults, 1=crush, 2=trellis */
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
+  boolean trellis_quant; /* TRUE=use trellis quantization */
   
   int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
   int num_scans_luma_dc;
@@ -387,6 +388,9 @@ struct jpeg_compress_struct {
   int Al_max_luma; /* maximum value of Al tested when optimizing scans (luma) */
   int Al_max_chroma; /* maximum value of Al tested when optimizing scans (chroma) */
 
+  float lambda_log_scale1;
+  float lambda_log_scale2;
+  
   /* The restart interval can be specified in absolute MCUs by setting
    * restart_interval, or in MCU rows by setting restart_in_rows
    * (in which case the correct restart_interval will be figured

@@ -27,7 +27,8 @@
 typedef enum {
 	main_pass,		/* input data, also do first output step */
 	huff_opt_pass,		/* Huffman code optimization pass */
-	output_pass		/* data output pass */
+	output_pass,		/* data output pass */
+        trellis_pass            /* trellis quantization pass */
 } c_pass_type;
 
 typedef struct {
@@ -534,6 +535,12 @@ prepare_for_pass (j_compress_ptr cinfo)
     (*cinfo->marker->write_scan_header) (cinfo);
     master->pub.call_pass_startup = FALSE;
     break;
+  case trellis_pass:
+    (*cinfo->entropy->start_pass) (cinfo, TRUE);
+    (*cinfo->coef->start_pass) (cinfo, JBUF_REQUANT);
+    master->pub.call_pass_startup = FALSE;
+    break;
+      
   default:
     ERREXIT(cinfo, JERR_NOT_COMPILED);
   }
@@ -596,7 +603,6 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
 {
   my_master_ptr master = (my_master_ptr) cinfo->master;
   
-  unsigned long size[8];
   int base_scan_idx;
   int luma_freq_split_scan_start = cinfo->num_scans_luma_dc + 3 * cinfo->Al_max_luma + 2;
   int chroma_freq_split_scan_start = cinfo->num_scans_luma+cinfo->num_scans_chroma_dc+(6*cinfo->Al_max_chroma+4);
@@ -792,7 +798,10 @@ finish_pass_master (j_compress_ptr cinfo)
     /* next pass is either output of scan 0 (after optimization)
      * or output of scan 1 (if no optimization).
      */
-    master->pass_type = output_pass;
+    if (cinfo->trellis_quant)
+      master->pass_type = trellis_pass;
+    else
+      master->pass_type = output_pass;
     if (! cinfo->optimize_coding)
       master->scan_number++;
     break;
@@ -811,6 +820,9 @@ finish_pass_master (j_compress_ptr cinfo)
     }
 
     master->scan_number++;
+    break;
+  case trellis_pass:
+    master->pass_type = output_pass;
     break;
   }
 
@@ -866,7 +878,9 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   }
   master->scan_number = 0;
   master->pass_number = 0;
-  if (cinfo->optimize_coding)
+  if (cinfo->trellis_quant)
+    master->total_passes = 3; // Don't support multiple scans for now
+  else if (cinfo->optimize_coding)
     master->total_passes = cinfo->num_scans * 2;
   else
     master->total_passes = cinfo->num_scans;

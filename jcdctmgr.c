@@ -7,6 +7,8 @@
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2011 D. R. Commander
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the forward-DCT management logic.
@@ -20,7 +22,8 @@
 #include "jpeglib.h"
 #include "jdct.h"		/* Private declarations for DCT subsystem */
 #include "jsimddct.h"
-
+#include <assert.h>
+#include <math.h>
 
 /* Private subobject for this module */
 
@@ -412,7 +415,7 @@ METHODDEF(void)
 forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
 	     JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
 	     JDIMENSION start_row, JDIMENSION start_col,
-	     JDIMENSION num_blocks)
+	     JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for integer DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
@@ -436,6 +439,16 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Perform the DCT */
     (*do_dct) (workspace);
 
+    /* Save unquantized transform coefficients for later trellis quantization */
+    if (dst) {
+      int i;
+      for (i = 0; i < DCTSIZE2; i++) {
+        dst[bi][i] = workspace[i];
+        //printf("d%d ", workspace[i]);
+      }
+      //printf("\n");
+    }
+    
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
     (*do_quantize) (coef_blocks[bi], divisors, workspace);
   }
@@ -502,7 +515,7 @@ METHODDEF(void)
 forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 		   JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
 		   JDIMENSION start_row, JDIMENSION start_col,
-		   JDIMENSION num_blocks)
+		   JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for floating-point DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
@@ -534,6 +547,144 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
 #endif /* DCT_FLOAT_SUPPORTED */
 
+#include "jchuff.h"
+
+static unsigned char jpeg_nbits_table[65536];
+static int jpeg_nbits_table_init = 0;
+
+GLOBAL(void)
+quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl)
+{
+  int i, j, k;
+  float accumulated_zero_dist[DCTSIZE2];
+  float accumulated_cost[DCTSIZE2];
+  int run_start[DCTSIZE2];
+  int bi;
+  float best_cost;
+  int last_coeff_idx; // position of last nonzero coefficient
+  float norm = 0.0;
+  float lambda_base;
+  float lambda;
+  
+  if(!jpeg_nbits_table_init) {
+    for(i = 0; i < 65536; i++) {
+      int nbits = 0, temp = i;
+      while (temp) {temp >>= 1;  nbits++;}
+      jpeg_nbits_table[i] = nbits;
+    }
+    jpeg_nbits_table_init = 1;
+  }
+
+  norm = 0.0;
+  for (i = 1; i < DCTSIZE2; i++) {
+    norm += qtbl->quantval[i] * qtbl->quantval[i];
+  }
+  norm /= 63.0;
+  
+  lambda_base = 1.0 / norm;
+  
+  for (bi = 0; bi < num_blocks; bi++) {
+    
+    norm = 0.0;
+    for (i = 1; i < DCTSIZE2; i++) {
+      norm += src[bi][i] * src[bi][i];
+    }
+    norm /= 63.0;
+    
+    lambda = pow(2.0, cinfo->lambda_log_scale1) * lambda_base / (pow(2.0, cinfo->lambda_log_scale2) + norm);
+    //lambda = pow(2.0, cinfo->lambda_log_scale1-12) * lambda_base;
+    
+    accumulated_zero_dist[0] = 0.0;
+    accumulated_cost[0] = 0.0;
+    
+    for (i = 1; i < DCTSIZE2; i++) {
+      int z = jpeg_natural_order[i];
+      
+      int sign = src[bi][z] >> 31;
+      int x = abs(src[bi][z]);
+      int q = 8 * qtbl->quantval[z];
+      int candidate[16];
+      int candidate_bits[16];
+      float candidate_dist[16];
+      int num_candidates;
+      int qval;
+      
+      accumulated_zero_dist[i] = x * x * lambda + accumulated_zero_dist[i-1];
+      
+      qval = (x + q/2) / q; // quantized value (round nearest)
+
+      if (qval == 0) {
+        coef_blocks[bi][z] = 0;
+        accumulated_cost[i] = 1e38; // Shouldn't be needed
+        continue;
+      }
+
+      num_candidates = jpeg_nbits_table[qval];
+      for (k = 0; k < num_candidates; k++) {
+        int delta;
+        candidate[k] = (k < num_candidates - 1) ? (2 << k) - 1 : qval;
+        delta = candidate[k] * q - x;
+        candidate_bits[k] = k+1;
+        candidate_dist[k] = delta * delta * lambda;
+      }
+      
+      accumulated_cost[i] = 1e38;
+      
+      for (j = 0; j < i; j++) {
+        int zz = jpeg_natural_order[j];
+        if (j != 0 && coef_blocks[bi][zz] == 0)
+          continue;
+        
+        int zero_run = i - 1 - j;
+        int run_bits = (zero_run >> 4) * actbl->ehufsi[0xf0];
+        zero_run &= 15;
+
+        for (k = 0; k < num_candidates; k++) {
+          int rate = actbl->ehufsi[16 * zero_run + candidate_bits[k]] + candidate_bits[k] + run_bits;
+          float cost = rate + candidate_dist[k];
+          cost += accumulated_zero_dist[i-1] - accumulated_zero_dist[j] + accumulated_cost[j];
+          
+          if (cost < accumulated_cost[i]) {
+            coef_blocks[bi][z] = (candidate[k] ^ sign) - sign;
+            accumulated_cost[i] = cost;
+            run_start[i] = j;
+          }
+        }
+      }
+    }
+    
+    last_coeff_idx = 0;
+    best_cost = accumulated_zero_dist[DCTSIZE2-1] + actbl->ehufsi[0];
+    
+    for (i = 1; i < DCTSIZE2; i++) {
+      int z = jpeg_natural_order[i];
+      if (coef_blocks[bi][z] != 0) {
+        float cost = accumulated_cost[i] + accumulated_zero_dist[DCTSIZE2-1] - accumulated_zero_dist[i];
+        if (i < DCTSIZE2-1)
+          cost += actbl->ehufsi[0];
+        
+        if (cost < best_cost) {
+          best_cost = cost;
+          last_coeff_idx = i;
+        }
+      }
+    }
+    
+    // Zero out coefficients that are part of runs
+    i = DCTSIZE2 - 1;
+    while (i > 0)
+    {
+      while (i > last_coeff_idx) {
+        int z = jpeg_natural_order[i];
+        coef_blocks[bi][z] = 0;
+        i--;
+      }
+      last_coeff_idx = run_start[i];
+      i--;
+    }
+  }
+}
 
 /*
  * Initialize FDCT manager.

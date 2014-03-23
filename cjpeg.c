@@ -446,6 +446,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Input file is Targa format. */
       is_targa = TRUE;
 
+    } else if (keymatch(arg, "trellis", 1)) {
+      /* enable trellis quantization */
+      cinfo->use_moz_defaults = 2;
+      jpeg_set_defaults(cinfo);
+      
     } else {
       usage();			/* bogus switch */
     }

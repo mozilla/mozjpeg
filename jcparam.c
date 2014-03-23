@@ -325,6 +325,8 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   }
 
 #ifdef C_PROGRESSIVE_SUPPORTED
+  cinfo->scan_info = NULL;
+  cinfo->num_scans = 0;
   if (!cinfo->use_moz_defaults) {
     /* Default is no multiple-scan output */
     cinfo->scan_info = NULL;
@@ -400,12 +402,16 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   jpeg_default_colorspace(cinfo);
   
 #ifdef C_PROGRESSIVE_SUPPORTED
-  if (cinfo->use_moz_defaults) {
+  if (cinfo->use_moz_defaults == 1) { // Disable this while working on trellis
     cinfo->optimize_scans = TRUE;
     jpeg_simple_progression(cinfo);
   } else
     cinfo->optimize_scans = FALSE;
 #endif
+  
+  cinfo->trellis_quant = (cinfo->use_moz_defaults == 2) ? TRUE : FALSE;
+  cinfo->lambda_log_scale1 = 17.0;
+  cinfo->lambda_log_scale2 = 15.0;
 }
 
 
@@ -760,7 +766,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     nscans = 10;
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->use_moz_defaults) {
+    if (cinfo->use_moz_defaults == TRUE) {
       if (ncomps > MAX_COMPS_IN_SCAN)
         nscans = 5 * ncomps;	/* 2 DC + 4 AC scans per component */
       else
@@ -792,7 +798,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
-    if (cinfo->use_moz_defaults) {
+    if (cinfo->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
       /* Initial DC scan */
       scanptr = fill_dc_scans(scanptr, 1, 0, 0);
@@ -831,7 +837,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     }
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->use_moz_defaults) {
+    if (cinfo->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_bw.txt in jpgcrush */
       /* DC component, no successive approximation */
       scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);

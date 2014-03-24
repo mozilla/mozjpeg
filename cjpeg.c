@@ -302,6 +302,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "fastcrush", 4)) {
       cinfo->optimize_scans = FALSE;
 
+    } else if (keymatch(arg, "flat", 4)) {
+      cinfo->use_flat_quant_tbl = TRUE;
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);

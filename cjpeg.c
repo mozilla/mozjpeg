@@ -314,6 +314,16 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Force an RGB JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_RGB);
 
+    } else if (keymatch(arg, "lambda1", 7)) {
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      cinfo->lambda_log_scale1 = atof(argv[argn]);
+      
+    } else if (keymatch(arg, "lambda2", 7)) {
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      cinfo->lambda_log_scale2 = atof(argv[argn]);
+      
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */
       long lval;

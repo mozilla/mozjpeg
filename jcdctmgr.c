@@ -592,8 +592,10 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     }
     norm /= 63.0;
     
-    lambda = pow(2.0, cinfo->lambda_log_scale1) * lambda_base / (pow(2.0, cinfo->lambda_log_scale2) + norm);
-    //lambda = pow(2.0, cinfo->lambda_log_scale1-12) * lambda_base;
+    if (cinfo->lambda_log_scale2 > 0.0)
+      lambda = pow(2.0, cinfo->lambda_log_scale1) * lambda_base / (pow(2.0, cinfo->lambda_log_scale2) + norm);
+    else
+      lambda = pow(2.0, cinfo->lambda_log_scale1-12.0) * lambda_base;
     
     accumulated_zero_dist[0] = 0.0;
     accumulated_cost[0] = 0.0;

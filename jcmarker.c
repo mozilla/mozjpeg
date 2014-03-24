@@ -479,8 +479,6 @@ write_file_header (j_compress_ptr cinfo)
   /* SOI is defined to reset restart interval to 0 */
   marker->last_restart_interval = 0;
 
-  if (cinfo->write_JFIF_header)	/* next an optional JFIF APP0 */
-    emit_jfif_app0(cinfo);
   if (cinfo->write_Adobe_marker) /* next an optional Adobe APP14 */
     emit_adobe_app14(cinfo);
 }

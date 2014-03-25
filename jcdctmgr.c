@@ -552,6 +552,28 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 static unsigned char jpeg_nbits_table[65536];
 static int jpeg_nbits_table_init = 0;
 
+static const float jpeg_lambda_weights_flat[64] = {
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+};
+
+static const float jpeg_lambda_weights_csf_luma[64] = {
+  3.35630f, 3.59892f, 3.20921f, 2.28102f, 1.42378f, 0.88079f, 0.58190f, 0.43454f,
+  3.59893f, 3.21284f, 2.71282f, 1.98092f, 1.30506f, 0.83852f, 0.56346f, 0.42146f,
+  3.20921f, 2.71282f, 2.12574f, 1.48616f, 0.99660f, 0.66132f, 0.45610f, 0.34609f,
+  2.28102f, 1.98092f, 1.48616f, 0.97492f, 0.64622f, 0.43812f, 0.31074f, 0.24072f,
+  1.42378f, 1.30506f, 0.99660f, 0.64623f, 0.42051f, 0.28446f, 0.20380f, 0.15975f,
+  0.88079f, 0.83852f, 0.66132f, 0.43812f, 0.28446f, 0.19092f, 0.13635f, 0.10701f,
+  0.58190f, 0.56346f, 0.45610f, 0.31074f, 0.20380f, 0.13635f, 0.09674f, 0.07558f,
+  0.43454f, 0.42146f, 0.34609f, 0.24072f, 0.15975f, 0.10701f, 0.07558f, 0.05875f,
+};
+
 GLOBAL(void)
 quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
                  JQUANT_TBL * qtbl)
@@ -566,7 +588,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   float norm = 0.0;
   float lambda_base;
   float lambda;
-  
+  const float *lambda_tbl = (cinfo->use_lambda_weight_tbl) ? jpeg_lambda_weights_csf_luma : jpeg_lambda_weights_flat;
+
   if(!jpeg_nbits_table_init) {
     for(i = 0; i < 65536; i++) {
       int nbits = 0, temp = i;
@@ -612,7 +635,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
       int num_candidates;
       int qval;
       
-      accumulated_zero_dist[i] = x * x * lambda + accumulated_zero_dist[i-1];
+      accumulated_zero_dist[i] = x * x * lambda * lambda_tbl[z] + accumulated_zero_dist[i-1];
       
       qval = (x + q/2) / q; // quantized value (round nearest)
 
@@ -628,7 +651,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
         candidate[k] = (k < num_candidates - 1) ? (2 << k) - 1 : qval;
         delta = candidate[k] * q - x;
         candidate_bits[k] = k+1;
-        candidate_dist[k] = delta * delta * lambda;
+        candidate_dist[k] = delta * delta * lambda * lambda_tbl[z];
       }
       
       accumulated_cost[i] = 1e38;

@@ -380,6 +380,7 @@ struct jpeg_compress_struct {
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
   boolean trellis_quant; /* TRUE=use trellis quantization */
   boolean use_flat_quant_tbl; /* TRUE=use flat quantization table */
+  boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
   
   int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
   int num_scans_luma_dc;

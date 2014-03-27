@@ -38,6 +38,10 @@ LOCAL(void) transencode_coef_controller
 GLOBAL(void)
 jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays)
 {
+  /* setting up scan optimisation pattern failed, disable scan optimisation */
+  if (cinfo->num_scans_luma == 0)
+    cinfo->optimize_scans = FALSE;
+  
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
   /* Mark all tables to be written */

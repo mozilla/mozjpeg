@@ -339,24 +339,16 @@ Additional build requirements:
 
 Set the following shell variables for simplicity:
 
-  Xcode 3.2.x / iOS 4.3 SDK:
+  Xcode 4.2 and earlier:
   IOS_PLATFORMDIR=/Developer/Platforms/iPhoneOS.platform
-  IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS4.3.sdk
-  IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
-
-  Xcode 4.5.x / iOS 6.0 SDK:
+  Xcode 4.3 and later:
   IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-  IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS6.0.sdk
-  IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
 
-  Xcode 4.6.x / iOS 6.1 SDK:
-  IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-  IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS6.1.sdk
-  IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
+  IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
 
-  Xcode 5.0.x / iOS 7.0 SDK:
-  IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-  IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS7.0.sdk
+  Xcode 4.6.x and earlier:
+  IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
+  Xcode 5.0.x and later:
   IOS_GCC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 
   ARM v6 only (up to and including iPhone 3G):
@@ -364,17 +356,17 @@ Set the following shell variables for simplicity:
   IOS_CFLAGS="-march=armv6 -mcpu=arm1176jzf-s -mfpu=vfp"
 
   ARM v7 only (iPhone 3GS-4S, iPad 1st-3rd Generation):
-  GCC:
+  Xcode 4.6.x and earlier:
   IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
-  Clang:
-  IOS_CFLAGS="-arch armv7 -no-integrated-as"
+  Xcode 5.0.x and later:
+  IOS_CFLAGS="-arch armv7"
 
   ARM v7s only (iPhone 5, iPad 4th Generation):
   [NOTE: Requires Xcode 4.5 or later]
-  GCC
+  Xcode 4.6.x and earlier:
   IOS_CFLAGS="-march=armv7s -mcpu=swift -mtune=swift -mfpu=neon"
-  Clang:
-  IOS_CFLAGS="-arch armv7s -no-integrated-as"
+  Xcode 5.0.x and later:
+  IOS_CFLAGS="-arch armv7s"
 
 Follow the procedure under "Building libjpeg-turbo" above, adding
 
@@ -383,7 +375,15 @@ Follow the procedure under "Building libjpeg-turbo" above, adding
     CFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT -O3 $IOS_CFLAGS" \
     LDFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT $IOS_CFLAGS"
 
+to the configure command line.  If using Xcode 5.0.x or later, also add
+
+    CCASFLAGS="-no-integrated-as $IOS_CFLAGS"
+
 to the configure command line.
+
+NOTE:  You can also add -miphoneos-version-min={version} to $IOS_CFLAGS above
+in order to support older versions of iOS than the default version supported by
+the SDK.
 
 Once built, lipo can be used to combine the ARM v6, v7, and/or v7s variants
 into a universal library.

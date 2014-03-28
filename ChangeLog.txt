@@ -39,6 +39,15 @@ OS X 10.6 "Snow Leopard" or later must be used when packaging libjpeg-turbo,
 although the packages produced can be installed on OS X 10.5 "Leopard" or
 later.  OS X 10.4 "Tiger" is no longer supported.
 
+[5] The Huffman encoder now uses clz and bsr instructions for bit counting on
+ARM platforms rather than a lookup table.  This reduces the memory footprint
+by 64k, which may be important for some mobile applications.  Out of four
+Android devices that were tested, two demonstrated a small loss (~3-4% on
+average) with ARMv6 code and a small gain (also ~3-4%) with ARMv7 code when
+enabling this new feature, but the other two devices demonstrated a
+significant performance gain across the board (~10-20%.)  Actual mileage may
+vary.
+
 
 1.3.1
 =====

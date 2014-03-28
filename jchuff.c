@@ -22,8 +22,36 @@
 #include "jchuff.h"		/* Declarations shared with jcphuff.c */
 #include <limits.h>
 
+/*
+ * NOTE: If USE_CLZ_INTRINSIC is defined, then clz/bsr instructions will be
+ * used for bit counting rather than the lookup table.  This will reduce the
+ * memory footprint by 64k, which is important for some mobile applications
+ * that create many isolated instances of libjpeg-turbo (web browsers, for
+ * instance.)  This may improve performance on some mobile platforms as well.
+ * This feature is enabled by default only on ARM processors, because some x86
+ * chips have a slow implementation of bsr, and the use of clz/bsr cannot be
+ * shown to have a significant performance impact even on the x86 chips that
+ * have a fast implementation of it.  When building for ARMv6, you can
+ * explicitly disable the use of clz/bsr by adding -mthumb to the compiler
+ * flags (this defines __thumb__).
+ */
+
+/* NOTE: Both GCC and Clang define __GNUC__ */
+#if defined __GNUC__ && defined __arm__
+#if !defined __thumb__ || defined __thumb2__
+#define USE_CLZ_INTRINSIC
+#endif
+#endif
+
+#ifdef USE_CLZ_INTRINSIC
+#define JPEG_NBITS_NONZERO(x) (32 - __builtin_clz(x))
+#define JPEG_NBITS(x) (x ? JPEG_NBITS_NONZERO(x) : 0)
+#else
 static unsigned char jpeg_nbits_table[65536];
 static int jpeg_nbits_table_init = 0;
+#define JPEG_NBITS(x) (jpeg_nbits_table[x])
+#define JPEG_NBITS_NONZERO(x) JPEG_NBITS(x)
+#endif
 
 #ifndef min
  #define min(a,b) ((a)<(b)?(a):(b))
@@ -272,6 +300,7 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
     dtbl->ehufsi[i] = huffsize[p];
   }
 
+#ifndef USE_CLZ_INTRINSIC
   if(!jpeg_nbits_table_init) {
     for(i = 0; i < 65536; i++) {
       int nbits = 0, temp = i;
@@ -280,6 +309,7 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
     }
     jpeg_nbits_table_init = 1;
   }
+#endif
 }
 
 
@@ -482,7 +512,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
   temp2 += temp3;
 
   /* Find the number of bits needed for the magnitude of the coefficient */
-  nbits = jpeg_nbits_table[temp];
+  nbits = JPEG_NBITS(temp);
 
   /* Emit the Huffman-coded symbol for the number of bits */
   code = dctbl->ehufco[nbits];
@@ -516,7 +546,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
     temp ^= temp3; \
     temp -= temp3; \
     temp2 += temp3; \
-    nbits = jpeg_nbits_table[temp]; \
+    nbits = JPEG_NBITS_NONZERO(temp); \
     /* if run length > 15, must emit special run-length-16 codes (0xF0) */ \
     while (r > 15) { \
       EMIT_BITS(code_0xf0, size_0xf0) \

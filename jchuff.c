@@ -47,8 +47,7 @@
 #define JPEG_NBITS_NONZERO(x) (32 - __builtin_clz(x))
 #define JPEG_NBITS(x) (x ? JPEG_NBITS_NONZERO(x) : 0)
 #else
-static unsigned char jpeg_nbits_table[65536];
-static int jpeg_nbits_table_init = 0;
+#include "jpeg_nbits_table.h"
 #define JPEG_NBITS(x) (jpeg_nbits_table[x])
 #define JPEG_NBITS_NONZERO(x) JPEG_NBITS(x)
 #endif
@@ -299,17 +298,6 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
     dtbl->ehufco[i] = huffcode[p];
     dtbl->ehufsi[i] = huffsize[p];
   }
-
-#ifndef USE_CLZ_INTRINSIC
-  if(!jpeg_nbits_table_init) {
-    for(i = 0; i < 65536; i++) {
-      int nbits = 0, temp = i;
-      while (temp) {temp >>= 1;  nbits++;}
-      jpeg_nbits_table[i] = nbits;
-    }
-    jpeg_nbits_table_init = 1;
-  }
-#endif
 }
 
 

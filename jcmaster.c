@@ -42,6 +42,7 @@ typedef struct {
   int scan_number;		/* current index in scan_info[] */
   
   /* fields for scan optimisation */
+  int pass_number_scan_opt_base; /* pass number where scan optimization begins */
   unsigned char * scan_buffer[64]; /* buffer for a given scan */
   unsigned long scan_size[64]; /* size for a given scan */
   unsigned long best_cost; /* bit count for best frequency split */
@@ -327,9 +328,9 @@ select_scan_parameters (j_compress_ptr cinfo)
   int ci;
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED
-  if (cinfo->scan_info != NULL) {
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+  if (cinfo->scan_info != NULL && !(cinfo->optimize_scans && master->pass_number < master->pass_number_scan_opt_base)) {
     /* Prepare for current scan --- the script is already validated */
-    my_master_ptr master = (my_master_ptr) cinfo->master;
     const jpeg_scan_info * scanptr = cinfo->scan_info + master->scan_number;
 
     cinfo->comps_in_scan = scanptr->comps_in_scan;
@@ -622,7 +623,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
         master->best_Al_luma = Al;
       } else {
         master->scan_number = luma_freq_split_scan_start - 1;
-        master->pass_number = 2 * master->scan_number + 1;
+        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
       }
     }
   
@@ -647,7 +648,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
           (idx == 3 && master->best_freq_split_idx_luma != 2) ||
           (idx == 4 && master->best_freq_split_idx_luma != 4)) {
         master->scan_number = cinfo->num_scans_luma - 1;
-        master->pass_number = 2 * master->scan_number + 1;
+        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
         master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
       }
     }
@@ -679,7 +680,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
           master->best_Al_chroma = Al;
         } else {
           master->scan_number = chroma_freq_split_scan_start - 1;
-          master->pass_number = 2 * master->scan_number + 1;
+          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
         }
       }
 
@@ -707,7 +708,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
             (idx == 3 && master->best_freq_split_idx_chroma != 2) ||
             (idx == 4 && master->best_freq_split_idx_chroma != 4)) {
           master->scan_number = cinfo->num_scans - 1;
-          master->pass_number = 2 * master->scan_number + 1;
+          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
           master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
         }
       }
@@ -800,10 +801,11 @@ finish_pass_master (j_compress_ptr cinfo)
      */
     if (cinfo->trellis_quant)
       master->pass_type = trellis_pass;
-    else
+    else {
       master->pass_type = output_pass;
-    if (! cinfo->optimize_coding)
-      master->scan_number++;
+      if (! cinfo->optimize_coding)
+        master->scan_number++;
+    }
     break;
   case huff_opt_pass:
     /* next pass is always output of current scan */
@@ -822,7 +824,7 @@ finish_pass_master (j_compress_ptr cinfo)
     master->scan_number++;
     break;
   case trellis_pass:
-    master->pass_type = output_pass;
+    master->pass_type = (cinfo->optimize_scans) ? huff_opt_pass : output_pass;
     break;
   }
 
@@ -878,12 +880,13 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   }
   master->scan_number = 0;
   master->pass_number = 0;
-  if (cinfo->trellis_quant)
-    master->total_passes = 3; // Don't support multiple scans for now
-  else if (cinfo->optimize_coding)
+  if (cinfo->optimize_coding)
     master->total_passes = cinfo->num_scans * 2;
   else
     master->total_passes = cinfo->num_scans;
+  
+  if (cinfo->trellis_quant)
+    master->total_passes += (cinfo->optimize_scans) ? 2 : 1;
   
   if (cinfo->optimize_scans) {
     int i;
@@ -891,5 +894,7 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     
     for (i = 0; i < cinfo->num_scans; i++)
       master->scan_buffer[i] = NULL;
+    
+    master->pass_number_scan_opt_base = (cinfo->trellis_quant) ? 2 : 0;
   }
 }

@@ -460,10 +460,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Input file is Targa format. */
       is_targa = TRUE;
 
-    } else if (keymatch(arg, "trellis", 1)) {
-      /* enable trellis quantization */
-      cinfo->use_moz_defaults = 2;
-      jpeg_set_defaults(cinfo);
+    } else if (keymatch(arg, "notrellis", 1)) {
+      /* disable trellis quantization */
+      cinfo->trellis_quant = FALSE;
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
       cinfo->use_flat_quant_tbl = TRUE;

@@ -379,8 +379,13 @@ struct jpeg_compress_struct {
   int use_moz_defaults; /* nonzero if using Mozilla defaults, 1=crush, 2=trellis */
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
   boolean trellis_quant; /* TRUE=use trellis quantization */
+  boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
   boolean use_flat_quant_tbl; /* TRUE=use flat quantization table */
   boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
+  boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
+  boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
+  
+  int trellis_freq_split; /* splitting point for frequency in trellis quantization */
   
   int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
   int num_scans_luma_dc;

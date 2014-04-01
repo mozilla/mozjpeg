@@ -329,7 +329,19 @@ select_scan_parameters (j_compress_ptr cinfo)
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED
   my_master_ptr master = (my_master_ptr) cinfo->master;
-  if (cinfo->scan_info != NULL && !(cinfo->optimize_scans && master->pass_number < master->pass_number_scan_opt_base)) {
+  if (master->pass_number < master->pass_number_scan_opt_base) {
+    cinfo->comps_in_scan = 1;
+    if (cinfo->use_scans_in_trellis) {
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/4];
+      cinfo->Ss = (master->pass_number%4 < 2) ? 1 : cinfo->trellis_freq_split+1;
+      cinfo->Se = (master->pass_number%4 < 2) ? cinfo->trellis_freq_split : DCTSIZE2-1;
+    } else {
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/2];
+      cinfo->Ss = 1;
+      cinfo->Se = DCTSIZE2-1;
+    }
+  }
+  else if (cinfo->scan_info != NULL) {
     /* Prepare for current scan --- the script is already validated */
     const jpeg_scan_info * scanptr = cinfo->scan_info + master->scan_number;
 
@@ -469,6 +481,7 @@ METHODDEF(void)
 prepare_for_pass (j_compress_ptr cinfo)
 {
   my_master_ptr master = (my_master_ptr) cinfo->master;
+  cinfo->trellis_passes = master->pass_number < master->pass_number_scan_opt_base;
 
   switch (master->pass_type) {
   case main_pass:
@@ -809,7 +822,7 @@ finish_pass_master (j_compress_ptr cinfo)
     break;
   case huff_opt_pass:
     /* next pass is always output of current scan */
-    master->pass_type = output_pass;
+    master->pass_type = (master->pass_number < master->pass_number_scan_opt_base-1) ? trellis_pass : output_pass;
     break;
   case output_pass:
     /* next pass is either optimization or output of next scan */
@@ -824,7 +837,7 @@ finish_pass_master (j_compress_ptr cinfo)
     master->scan_number++;
     break;
   case trellis_pass:
-    master->pass_type = (cinfo->optimize_scans) ? huff_opt_pass : output_pass;
+    master->pass_type = (cinfo->optimize_scans || master->pass_number < master->pass_number_scan_opt_base-1) ? huff_opt_pass : output_pass;
     break;
   }
 
@@ -885,8 +898,12 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   else
     master->total_passes = cinfo->num_scans;
   
-  if (cinfo->trellis_quant)
-    master->total_passes += (cinfo->optimize_scans) ? 2 : 1;
+  if (cinfo->trellis_quant) {
+    if (cinfo->progressive_mode)
+      master->total_passes += ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components;
+    else
+      master->total_passes += 1;
+  }
   
   if (cinfo->optimize_scans) {
     int i;
@@ -895,6 +912,6 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     for (i = 0; i < cinfo->num_scans; i++)
       master->scan_buffer[i] = NULL;
     
-    master->pass_number_scan_opt_base = (cinfo->trellis_quant) ? 2 : 0;
+    master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components;
   }
 }

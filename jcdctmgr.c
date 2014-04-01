@@ -584,12 +584,36 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   int run_start[DCTSIZE2];
   int bi;
   float best_cost;
-  int last_coeff_idx; // position of last nonzero coefficient
+  int last_coeff_idx; /* position of last nonzero coefficient */
   float norm = 0.0;
   float lambda_base;
   float lambda;
   const float *lambda_tbl = (cinfo->use_lambda_weight_tbl) ? jpeg_lambda_weights_csf_luma : jpeg_lambda_weights_flat;
+  int Ss, Se;
+  float *accumulated_zero_block_cost;
+  float *accumulated_block_cost;
+  int *block_run_start;
+  int *requires_eob;
+  int has_eob;
+  float cost_all_zeros;
+  float best_cost_skip;
 
+  Ss = cinfo->Ss;
+  Se = cinfo->Se;
+  if (Ss == 0)
+    Ss = 1;
+  if (Se < Ss)
+    return;
+  if (cinfo->trellis_eob_opt) {
+    accumulated_zero_block_cost = (float *)malloc((num_blocks + 1) * SIZEOF(float));
+    accumulated_block_cost = (float *)malloc((num_blocks + 1) * SIZEOF(float));
+    block_run_start = (int *)malloc(num_blocks * SIZEOF(int));
+    requires_eob = (int *)malloc((num_blocks + 1) * SIZEOF(int));
+    accumulated_zero_block_cost[0] = 0;
+    accumulated_block_cost[0] = 0;
+    requires_eob[0] = 0;
+  }
+  
   if(!jpeg_nbits_table_init) {
     for(i = 0; i < 65536; i++) {
       int nbits = 0, temp = i;
@@ -620,10 +644,10 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     else
       lambda = pow(2.0, cinfo->lambda_log_scale1-12.0) * lambda_base;
     
-    accumulated_zero_dist[0] = 0.0;
-    accumulated_cost[0] = 0.0;
+    accumulated_zero_dist[Ss-1] = 0.0;
+    accumulated_cost[Ss-1] = 0.0;
     
-    for (i = 1; i < DCTSIZE2; i++) {
+    for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
       
       int sign = src[bi][z] >> 31;
@@ -637,11 +661,11 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
       
       accumulated_zero_dist[i] = x * x * lambda * lambda_tbl[z] + accumulated_zero_dist[i-1];
       
-      qval = (x + q/2) / q; // quantized value (round nearest)
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
 
       if (qval == 0) {
         coef_blocks[bi][z] = 0;
-        accumulated_cost[i] = 1e38; // Shouldn't be needed
+        accumulated_cost[i] = 1e38; /* Shouldn't be needed */
         continue;
       }
 
@@ -656,17 +680,24 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
       
       accumulated_cost[i] = 1e38;
       
-      for (j = 0; j < i; j++) {
+      for (j = Ss-1; j < i; j++) {
         int zz = jpeg_natural_order[j];
-        if (j != 0 && coef_blocks[bi][zz] == 0)
+        if (j != Ss-1 && coef_blocks[bi][zz] == 0)
           continue;
         
         int zero_run = i - 1 - j;
+        if ((zero_run >> 4) && actbl->ehufsi[0xf0] == 0)
+          continue;
+        
         int run_bits = (zero_run >> 4) * actbl->ehufsi[0xf0];
         zero_run &= 15;
 
         for (k = 0; k < num_candidates; k++) {
-          int rate = actbl->ehufsi[16 * zero_run + candidate_bits[k]] + candidate_bits[k] + run_bits;
+          int coef_bits = actbl->ehufsi[16 * zero_run + candidate_bits[k]];
+          if (coef_bits == 0)
+            continue;
+          
+          int rate = coef_bits + candidate_bits[k] + run_bits;
           float cost = rate + candidate_dist[k];
           cost += accumulated_zero_dist[i-1] - accumulated_zero_dist[j] + accumulated_cost[j];
           
@@ -679,26 +710,33 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
       }
     }
     
-    last_coeff_idx = 0;
-    best_cost = accumulated_zero_dist[DCTSIZE2-1] + actbl->ehufsi[0];
+    last_coeff_idx = Ss-1;
+    best_cost = accumulated_zero_dist[Se] + actbl->ehufsi[0];
+    cost_all_zeros = accumulated_zero_dist[Se];
+    best_cost_skip = cost_all_zeros;
     
-    for (i = 1; i < DCTSIZE2; i++) {
+    for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
       if (coef_blocks[bi][z] != 0) {
-        float cost = accumulated_cost[i] + accumulated_zero_dist[DCTSIZE2-1] - accumulated_zero_dist[i];
-        if (i < DCTSIZE2-1)
+        float cost = accumulated_cost[i] + accumulated_zero_dist[Se] - accumulated_zero_dist[i];
+        float cost_wo_eob = cost;
+        
+        if (i < Se)
           cost += actbl->ehufsi[0];
         
         if (cost < best_cost) {
           best_cost = cost;
           last_coeff_idx = i;
+          best_cost_skip = cost_wo_eob;
         }
       }
     }
     
-    // Zero out coefficients that are part of runs
-    i = DCTSIZE2 - 1;
-    while (i > 0)
+    has_eob = (last_coeff_idx < Se) + (last_coeff_idx == Ss-1);
+    
+    /* Zero out coefficients that are part of runs */
+    i = Se;
+    while (i >= Ss)
     {
       while (i > last_coeff_idx) {
         int z = jpeg_natural_order[i];
@@ -708,6 +746,80 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
       last_coeff_idx = run_start[i];
       i--;
     }
+    
+    if (cinfo->trellis_eob_opt) {
+      accumulated_zero_block_cost[bi+1] = accumulated_zero_block_cost[bi];
+      accumulated_zero_block_cost[bi+1] += cost_all_zeros;
+      requires_eob[bi+1] = has_eob;
+      
+      best_cost = 1e38;
+      
+      if (has_eob != 2) {
+        for (i = 0; i <= bi; i++) {
+          int zero_block_run;
+          int nbits;
+          float cost;
+          
+          if (requires_eob[i] == 2)
+            continue;
+          
+          cost = best_cost_skip; /* cost of coding a nonzero block */
+          cost += accumulated_zero_block_cost[bi];
+          cost -= accumulated_zero_block_cost[i];
+          cost += accumulated_block_cost[i];
+          zero_block_run = bi - i + requires_eob[i];
+          nbits = jpeg_nbits_table[zero_block_run];
+          cost += actbl->ehufsi[16*nbits] + nbits;
+          
+          if (cost < best_cost) {
+            block_run_start[bi] = i;
+            best_cost = cost;
+            accumulated_block_cost[bi+1] = cost;
+          }
+        }
+      }
+    }
+  }
+  
+  if (cinfo->trellis_eob_opt) {
+    int last_block = num_blocks;
+    best_cost = 1e38;
+    
+    for (i = 0; i <= num_blocks; i++) {
+      int zero_block_run;
+      int nbits;
+      float cost = 0.0;
+      
+      if (requires_eob[i] == 2)
+        continue;
+
+      cost += accumulated_zero_block_cost[num_blocks];
+      cost -= accumulated_zero_block_cost[i];
+      zero_block_run = num_blocks - i + requires_eob[i];
+      nbits = jpeg_nbits_table[zero_block_run];
+      cost += actbl->ehufsi[16*nbits] + nbits;
+      if (cost < best_cost) {
+        best_cost = cost;
+        last_block = i;
+      }
+    }
+    last_block--;
+    bi = num_blocks - 1;
+    while (bi >= 0) {
+      while (bi > last_block) {
+        for (j = Ss; j <= Se; j++) {
+          int z = jpeg_natural_order[j];
+          coef_blocks[bi][z] = 0;
+        }
+        bi--;
+      }
+      last_block = block_run_start[bi]-1;
+      bi--;
+    }
+    free(accumulated_zero_block_cost);
+    free(accumulated_block_cost);
+    free(block_run_start);
+    free(requires_eob);
   }
 }
 

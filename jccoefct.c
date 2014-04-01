@@ -360,21 +360,22 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
   JBLOCKROW thisblockrow, lastblockrow;
   JBLOCKARRAY buffer_dst;
   
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    
+  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {    
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
-    jpeg_make_c_derived_tbl(cinfo, FALSE, cinfo->comp_info[ci].ac_tbl_no, &actbl);
+    
+    compptr = cinfo->cur_comp_info[ci];
+
+    jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
     
     /* Align the virtual buffer for this component. */
     buffer = (*cinfo->mem->access_virt_barray)
-    ((j_common_ptr) cinfo, coef->whole_image[ci],
+    ((j_common_ptr) cinfo, coef->whole_image[compptr->component_index],
      coef->iMCU_row_num * compptr->v_samp_factor,
      (JDIMENSION) compptr->v_samp_factor, TRUE);
     
     buffer_dst = (*cinfo->mem->access_virt_barray)
-    ((j_common_ptr) cinfo, coef->whole_image_uq[ci],
+    ((j_common_ptr) cinfo, coef->whole_image_uq[compptr->component_index],
      coef->iMCU_row_num * compptr->v_samp_factor,
      (JDIMENSION) compptr->v_samp_factor, TRUE);
     
@@ -397,7 +398,7 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
      */
     for (block_row = 0; block_row < block_rows; block_row++) {
       thisblockrow = buffer[block_row];
-      quantize_trellis(cinfo, actbl, thisblockrow, buffer_dst[block_row], blocks_across, cinfo->quant_tbl_ptrs[cinfo->comp_info[ci].quant_tbl_no]);
+      quantize_trellis(cinfo, actbl, thisblockrow, buffer_dst[block_row], blocks_across, cinfo->quant_tbl_ptrs[compptr->quant_tbl_no]);
       
       if (ndummy > 0) {
 	/* Create dummy blocks at the right edge of the image. */

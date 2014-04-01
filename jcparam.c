@@ -432,6 +432,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   
   cinfo->use_scans_in_trellis = FALSE;
   cinfo->trellis_freq_split = 8;
+  cinfo->trellis_num_loops = 1;
 }
 
 

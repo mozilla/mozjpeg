@@ -386,6 +386,7 @@ struct jpeg_compress_struct {
   boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
   
   int trellis_freq_split; /* splitting point for frequency in trellis quantization */
+  int trellis_num_loops; /* number of trellis loops */
   
   int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
   int num_scans_luma_dc;

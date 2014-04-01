@@ -332,11 +332,11 @@ select_scan_parameters (j_compress_ptr cinfo)
   if (master->pass_number < master->pass_number_scan_opt_base) {
     cinfo->comps_in_scan = 1;
     if (cinfo->use_scans_in_trellis) {
-      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/4];
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/(4*cinfo->trellis_num_loops)];
       cinfo->Ss = (master->pass_number%4 < 2) ? 1 : cinfo->trellis_freq_split+1;
       cinfo->Se = (master->pass_number%4 < 2) ? cinfo->trellis_freq_split : DCTSIZE2-1;
     } else {
-      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/2];
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/(2*cinfo->trellis_num_loops)];
       cinfo->Ss = 1;
       cinfo->Se = DCTSIZE2-1;
     }
@@ -900,7 +900,7 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   
   if (cinfo->trellis_quant) {
     if (cinfo->progressive_mode)
-      master->total_passes += ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components;
+      master->total_passes += ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
     else
       master->total_passes += 1;
   }
@@ -912,6 +912,6 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     for (i = 0; i < cinfo->num_scans; i++)
       master->scan_buffer[i] = NULL;
     
-    master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components;
+    master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
   }
 }

@@ -3,11 +3,11 @@ if(NOT DEFINED NASM)
 endif()
 
 if(SIMD_X86_64)
-  set(NAFLAGS -fwin64 -DWIN64 -D__x86_64__ -I${CMAKE_SOURCE_DIR}/win/
-    -I${CMAKE_CURRENT_SOURCE_DIR}/)
+  set(NAFLAGS -fwin64 -DWIN64 -D__x86_64__ "-I${CMAKE_SOURCE_DIR}/win/"
+    "-I${CMAKE_CURRENT_SOURCE_DIR}/")
 else()
-  set(NAFLAGS -fwin32 -DWIN32 -I${CMAKE_SOURCE_DIR}/win/
-    -I${CMAKE_CURRENT_SOURCE_DIR}/)
+  set(NAFLAGS -fwin32 -DWIN32 "-I${CMAKE_SOURCE_DIR}/win/"
+    "-I${CMAKE_CURRENT_SOURCE_DIR}/")
 endif()
 
 # This only works if building from the command line.  There is currently no way
@@ -34,34 +34,35 @@ endif()
 if(MSVC_IDE)
   set(OBJDIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 else()
-  set(OBJDIR ${CMAKE_CURRENT_BINARY_DIR})
+  set(OBJDIR "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
 file(GLOB INC_FILES *.inc)
 
 foreach(file ${SIMD_BASENAMES})
   set(DEPFILE "")
-  set(SIMD_SRC ${CMAKE_CURRENT_SOURCE_DIR}/${file}.asm)
-  if(${file} MATCHES col)
-    set(DEPFILE ${file})
-    string(REGEX REPLACE "col" "clr" DEPFILE ${DEPFILE})
-    set(DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm)
+  set(SIMD_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${file}.asm")
+  if("${file}" MATCHES col)
+    set(DEPFILE "${file}")
+    string(REGEX REPLACE "col" "clr" DEPFILE "${DEPFILE}")
+    set(DEPFILE "${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm")
   endif()
-  if(${file} MATCHES mer)
-    set(DEPFILE ${file})
-    string(REGEX REPLACE "mer" "mrg" DEPFILE ${DEPFILE})
-    set(DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm)
+  if("${file}" MATCHES mer)
+    set(DEPFILE "${file}")
+    string(REGEX REPLACE "mer" "mrg" DEPFILE "${DEPFILE}")
+    set(DEPFILE "${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm")
   endif()
-  if(${file} MATCHES gra)
-    set(DEPFILE ${file})
-    string(REGEX REPLACE "gra" "gry" DEPFILE ${DEPFILE})
-    set(DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm)
+  if("${file}" MATCHES gra)
+    set(DEPFILE "${file}")
+    string(REGEX REPLACE "gra" "gry" DEPFILE "${DEPFILE}")
+    set(DEPFILE "${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm")
   endif()
-  set(SIMD_OBJ ${OBJDIR}/${file}.obj)
-  add_custom_command(OUTPUT ${SIMD_OBJ}
-    DEPENDS ${SIMD_SRC} ${DEPFILE} ${INC_FILES}
-    COMMAND ${NASM} ${NAFLAGS} ${SIMD_SRC} -o${SIMD_OBJ})
-  set(SIMD_OBJS ${SIMD_OBJS} ${SIMD_OBJ})
+  set(SIMD_OBJ "${OBJDIR}/${file}.obj")
+  add_custom_command(OUTPUT "${SIMD_OBJ}"
+    DEPENDS "${SIMD_SRC}" "${DEPFILE}" ${INC_FILES}
+    COMMAND "${NASM}" ${NAFLAGS} "${SIMD_SRC}" "-o${SIMD_OBJ}"
+    VERBATIM)
+  list(APPEND SIMD_OBJS "${SIMD_OBJ}")
 endforeach()
 
 set(SIMD_OBJS ${SIMD_OBJS} PARENT_SCOPE)

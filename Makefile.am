@@ -108,7 +108,7 @@ endif
 
 
 cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
-	rdppm.c rdswitch.c rdtarga.c 
+	rdppm.c rdswitch.c rdtarga.c
 
 cjpeg_LDADD = libjpeg.la
 
@@ -146,7 +146,7 @@ DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.txt \
 
 docdir = $(datadir)/doc
 dist_doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
-	wizard.txt 
+	wizard.txt
 
 exampledir = $(datadir)/doc
 dist_example_DATA = example.c

@@ -494,8 +494,7 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     }
 
     /* We must apply the point transform by Al.  For AC coefficients this
-     * is an integer division with rounding towards 0.  To do this portably
-     * in C, we shift after obtaining the absolute value; so the code is
+     * is an integer division with rounding towards 0.  The code is
      * interwoven with finding the abs value (temp) and output bits (temp2).
      */
     sign = temp >> 31;

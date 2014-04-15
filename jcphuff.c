@@ -469,6 +469,7 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   int Al = cinfo->Al;
   JBLOCKROW block;
   int deadzone = (1 << Al) - 1;
+  int sign;
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;
@@ -497,7 +498,7 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
      * in C, we shift after obtaining the absolute value; so the code is
      * interwoven with finding the abs value (temp) and output bits (temp2).
      */
-    int sign = temp >> 31;
+    sign = temp >> 31;
     temp += sign;
     temp2 = temp >> Al;
     temp = (temp ^ sign) >> Al;

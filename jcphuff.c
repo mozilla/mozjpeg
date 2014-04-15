@@ -2,6 +2,8 @@
  * jcphuff.c
  *
  * Copyright (C) 1995-1997, Thomas G. Lane.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -497,10 +499,14 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
      * is an integer division with rounding towards 0.  The code is
      * interwoven with finding the abs value (temp) and output bits (temp2).
      */
-    sign = temp >> 31;
+#ifdef RIGHT_SHIFT_IS_UNSIGNED
+    sign = (temp < 0) ? ~0 : 0;
+#else
+    sign = temp >> (8*sizeof(temp)-1);
+#endif
     temp += sign;
-    temp2 = temp >> Al;
     temp = (temp ^ sign) >> Al;
+    temp2 = temp ^ sign;
 
     /* Emit any pending EOBRUN */
     if (entropy->EOBRUN > 0)

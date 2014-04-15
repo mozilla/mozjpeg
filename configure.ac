@@ -520,10 +520,11 @@ AC_SUBST(DEBARCH)
 AC_SUBST(BUILD)
 AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 
-# jconfig.h is the file we use, but we have another before that to
-# fool autoheader. the reason is that we include this header in our
-# API headers, which can screw things up for users of the lib.
-# jconfig.h is a minimal version that allows this package to be built
+# NOTE: autoheader automatically modifies the input file of the first
+# invocation of AC_CONFIG_HEADERS, so we put config.h first to prevent
+# jconfig.h.in from being clobbered.  config.h is used only internally, whereas
+# jconfig.h contains macros that are relevant to external programs (macros that
+# specify which features were built into the library.)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
 AC_CONFIG_FILES([pkgscripts/libjpeg-turbo.spec.tmpl:release/libjpeg-turbo.spec.in])

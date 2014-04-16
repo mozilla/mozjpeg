@@ -3,12 +3,15 @@
 #
 
 cmake_minimum_required(VERSION 2.8.8)
-cmake_policy(SET CMP0022 OLD)
+# Use LINK_INTERFACE_LIBRARIES instead of INTERFACE_LINK_LIBRARIES
+if(POLICY CMP0022)
+  cmake_policy(SET CMP0022 OLD)
+endif()
 
 project(libjpeg-turbo C)
 set(VERSION 1.3.80)
 
-if(MINGW OR CYGWIN)
+if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)
   string(REGEX REPLACE "\n" "" BUILD ${BUILD})
 elseif(WIN32)
@@ -475,7 +478,7 @@ else()
   set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=")
 endif()
 
-STRING(REGEX REPLACE "/" "\\\\" INST_DIR ${CMAKE_INSTALL_PREFIX}) 
+STRING(REGEX REPLACE "/" "\\\\" INST_DIR ${CMAKE_INSTALL_PREFIX})
 
 configure_file(release/libjpeg-turbo.nsi.in libjpeg-turbo.nsi @ONLY)
 
@@ -495,7 +498,7 @@ install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom tjbench
 )
 
 install(FILES ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-turbo.txt
-  ${CMAKE_SOURCE_DIR}/example.c ${CMAKE_SOURCE_DIR}/libjpeg.txt 
+  ${CMAKE_SOURCE_DIR}/example.c ${CMAKE_SOURCE_DIR}/libjpeg.txt
   ${CMAKE_SOURCE_DIR}/structure.txt ${CMAKE_SOURCE_DIR}/usage.txt
   ${CMAKE_SOURCE_DIR}/wizard.txt
   DESTINATION doc)

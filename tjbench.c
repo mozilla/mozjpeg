@@ -273,7 +273,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 }
 
 
-void fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
+int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	char *filename)
 {
 	char tempstr[1024], tempstr2[80];
@@ -470,11 +470,11 @@ void fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	if(jpegsize) {free(jpegsize);  jpegsize=NULL;}
 	if(tmpbuf) {free(tmpbuf);  tmpbuf=NULL;}
 	if(handle) {tjDestroy(handle);  handle=NULL;}
-	return;
+	return retval;
 }
 
 
-void decompTest(char *filename)
+int decompTest(char *filename)
 {
 	FILE *file=NULL;  tjhandle handle=NULL;
 	unsigned char **jpegbuf=NULL, *srcbuf=NULL;
@@ -693,7 +693,7 @@ void decompTest(char *filename)
 	if(srcbuf) {free(srcbuf);  srcbuf=NULL;}
 	if(t) {free(t);  t=NULL;}
 	if(handle) {tjDestroy(handle);  handle=NULL;}
-	return;
+	return retval;
 }
 
 

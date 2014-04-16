@@ -122,6 +122,16 @@ static const tjscalingfactor sf[NUMSF]={
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
 	cinfo=&this->cinfo;  dinfo=&this->dinfo;
+#define getcinstance(handle) tjinstance *this=(tjinstance *)handle;  \
+	j_compress_ptr cinfo=NULL;  \
+	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
+		return -1;}  \
+	cinfo=&this->cinfo;
+#define getdinstance(handle) tjinstance *this=(tjinstance *)handle;  \
+	j_decompress_ptr dinfo=NULL;  \
+	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
+		return -1;}  \
+	dinfo=&this->dinfo;
 
 static int getPixelFormat(int pixelSize, int flags)
 {
@@ -605,7 +615,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	unsigned char *rgbBuf=NULL;
 	#endif
 
-	getinstance(handle)
+	getcinstance(handle)
 	if((this->init&COMPRESS)==0)
 		_throw("tjCompress2(): Instance has not been initialized for compression");
 
@@ -710,7 +720,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
 	unsigned char *rgbBuf=NULL;
 	#endif
 
-	getinstance(handle);
+	getcinstance(handle);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -881,7 +891,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
 		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
 	JSAMPLE *_tmpbuf=NULL, *ptr=srcBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 
-	getinstance(handle)
+	getcinstance(handle)
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -1045,7 +1055,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader3(tjhandle handle,
 {
 	int retval=0;
 
-	getinstance(handle);
+	getdinstance(handle);
 	if((this->init&DECOMPRESS)==0)
 		_throw("tjDecompressHeader3(): Instance has not been initialized for decompression");
 
@@ -1131,7 +1141,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 	unsigned char *_dstBuf=NULL;  int _pitch=0;
 	#endif
 
-	getinstance(handle);
+	getdinstance(handle);
 	if((this->init&DECOMPRESS)==0)
 		_throw("tjDecompress2(): Instance has not been initialized for decompression");
 
@@ -1303,7 +1313,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	JMETHOD(int, old_read_markers, (j_decompress_ptr));
 	JMETHOD(void, old_reset_marker_reader, (j_decompress_ptr));
 
-	getinstance(handle);
+	getdinstance(handle);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -1452,7 +1462,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	JSAMPLE *_tmpbuf=NULL, *ptr=dstBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 	int dctsize;
 
-	getinstance(handle);
+	getdinstance(handle);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{

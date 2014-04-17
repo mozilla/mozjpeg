@@ -596,8 +596,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
 {
   my_master_ptr master = (my_master_ptr) cinfo->master;
   
-  unsigned long size[8];
-  int base_scan_idx;
+  int base_scan_idx = 0;
   int luma_freq_split_scan_start = cinfo->num_scans_luma_dc + 3 * cinfo->Al_max_luma + 2;
   int chroma_freq_split_scan_start = cinfo->num_scans_luma+cinfo->num_scans_chroma_dc+(6*cinfo->Al_max_chroma+4);
 

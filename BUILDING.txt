@@ -404,7 +404,7 @@ infer tagged configuration."
 Build Requirements
 ==================
 
--- CMake (http://www.cmake.org) v2.6 or later
+-- CMake (http://www.cmake.org) v2.8.8 or later
 
 -- Microsoft Visual C++ 2005 or later
 
@@ -416,8 +416,9 @@ Build Requirements
    The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
    everything necessary to build libjpeg-turbo.
 
-   * For 32-bit builds, you can also use Microsoft Visual C++ Express
-     Edition.  Visual C++ Express Edition is a free download.
+   * You can also use Microsoft Visual Studio Express Edition, which is a free
+     download.  (NOTE: versions prior to 2012 can only be used to build 32-bit
+     code.)
    * If you intend to build libjpeg-turbo from the command line, then add the
      appropriate compiler and SDK directories to the INCLUDE, LIB, and PATH
      environment variables.  This is generally accomplished by executing
@@ -431,7 +432,11 @@ Build Requirements
 
 -- MinGW
 
-   GCC v4.1 or later recommended for best performance
+   MinGW-builds (http://sourceforge.net/projects/mingwbuilds/) or
+   tdm-gcc (http://tdm-gcc.tdragon.net/) recommended if building on a Windows
+   machine.  Both distributions install a Start Menu link that can be used to
+   launch a command prompt with the appropriate compiler paths automatically
+   set.
 
 -- NASM (http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
    a 64-bit build)
@@ -496,7 +501,7 @@ Choose the appropriate CMake generator option for your version of Visual Studio
 instance:
 
   cd {build_directory}
-  cmake -G "Visual Studio 9 2008" {source_directory}
+  cmake -G "Visual Studio 10" {source_directory}
 
 You can then open ALL_BUILD.vcproj in Visual Studio and build one of the
 configurations in that project ("Debug", "Release", etc.) to generate a full
@@ -525,9 +530,12 @@ depending on whether libjpeg v6b (default), v7, or v8 emulation is enabled.
 MinGW
 -----
 
+NOTE: This assumes that you are building on a Windows machine.  If you are
+cross-compiling on a Linux/Unix machine, then see "Build Recipes" below.
+
   cd {build_directory}
-  cmake -G "MSYS Makefiles" {source_directory}
-  make
+  cmake -G "MinGW Makefiles" {source_directory}
+  mingw32-make
 
 This will generate the following files under {build_directory}
 
@@ -636,8 +644,8 @@ Build Recipes
   cd {build_directory}
   CC=/usr/bin/x86_64-w64-mingw32-gcc \
     cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
-    -DCMAKE_AR=/usr/bin/x86_64-w64-mingw32-ar \
-    -DCMAKE_RANLIB=/usr/bin/x86_64-w64-mingw32-ranlib {source_directory}
+    -DCMAKE_RC_COMPILER=/usr/bin/x86_64-w64-mingw32-windres.exe \
+    {source_directory}
   make
 
 This produces a 64-bit build of libjpeg-turbo that does not depend on
@@ -651,28 +659,13 @@ mingw64-x86_64-gcc-g++ packages (and their dependencies) must be installed.
   cd {build_directory}
   CC=/usr/bin/i686-w64-mingw32-gcc \
     cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
-    -DDCMAKE_AR=/usr/bin/i686-w64-mingw32-ar \
-    -DCMAKE_RANLIB=/usr/bin/i686-w64-mingw32-ranlib {source_directory}
+    -DCMAKE_RC_COMPILER=/usr/bin/i686-w64-mingw32-windres.exe \
+    {source_directory}
   make
 
 This produces a 32-bit build of libjpeg-turbo that does not depend on
 cygwin1.dll or other Cygwin DLL's.  The mingw64-i686-gcc-core and
 mingw64-i686-gcc-g++ packages (and their dependencies) must be installed.
-
-
-MinGW-w64 Build on Windows
---------------------------
-
-This produces a 64-bit build of libjpeg-turbo using the "native" MinGW-w64
-toolchain (which is faster than the Cygwin version):
-
-  cd {build_directory}
-  CC={mingw-w64_binary_path}/x86_64-w64-mingw32-gcc \
-    cmake -G "MSYS Makefiles" \
-    -DCMAKE_AR={mingw-w64_binary_path}/x86_64-w64-mingw32-ar \
-    -DCMAKE_RANLIB={mingw-w64_binary_path}/x86_64-w64-mingw32-ranlib \
-    {source_directory}
-  make
 
 
 MinGW Build on Linux

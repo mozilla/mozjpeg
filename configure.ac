@@ -6,6 +6,7 @@ AC_INIT([libmozjpeg], [1.0.1])
 BUILD=`date +%Y%m%d`
 
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)])
 AC_PREFIX_DEFAULT(/opt/libmozjpeg)
 
 # Always build with prototypes

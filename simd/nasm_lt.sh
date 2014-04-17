@@ -5,6 +5,9 @@ o_opt=no
 pic=no
 while [ $# -gt 0 ]; do
     case "$1" in
+        --silent)
+            exec > /dev/null
+            ;;
         -DPIC|-fPIC|-fpic|-Kpic|-KPIC)
             if [ "$pic" != "yes" ] ; then
                 command="$command -DPIC"

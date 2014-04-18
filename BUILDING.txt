@@ -503,6 +503,11 @@ instance:
   cd {build_directory}
   cmake -G "Visual Studio 10" {source_directory}
 
+NOTE:  Add "Win64" to the generator name (e.g. "Visual Studio 10 Win64") to
+build a 64-bit version of libjpeg-turbo.  Recent versions of CMake no longer
+document that.  A separate build directory must be used for 32-bit and 64-bit
+builds.
+
 You can then open ALL_BUILD.vcproj in Visual Studio and build one of the
 configurations in that project ("Debug", "Release", etc.) to generate a full
 build of libjpeg-turbo.

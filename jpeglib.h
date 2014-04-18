@@ -144,8 +144,8 @@ typedef struct {
   /* Size of a DCT block in samples.  Always DCTSIZE for compression.
    * For decompression this is the size of the output from one DCT block,
    * reflecting any scaling we choose to apply during the IDCT step.
-   * Values of 1,2,4,8 are likely to be supported.  Note that different
-   * components may receive different IDCT scalings.
+   * Values from 1 to 16 are supported.
+   * Note that different components may receive different IDCT scalings.
    */
 #if JPEG_LIB_VERSION >= 70
   int DCT_h_scaled_size;

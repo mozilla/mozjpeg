@@ -40,7 +40,7 @@
 
 #define _throw(op, err) {  \
 	printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err);  \
-  retval=-1;  goto bailout;}
+  goto bailout;}
 #define _throwunix(m) _throw(m, strerror(errno))
 #define _throwtj(m) _throw(m, tjGetErrorStr())
 #define _throwbmp(m) _throw(m, bmpgeterr())
@@ -263,7 +263,7 @@ void dotestyuv(unsigned char *srcbuf, int w, int h, int subsamp,
 	FILE *file=NULL;  tjhandle handle=NULL;
 	unsigned char *dstbuf=NULL;
 	double start, elapsed;
-	int i, retval=0, ps=tjPixelSize[pf];
+	int i, ps=tjPixelSize[pf];
 	int yuvsize=0;
 
 	yuvsize=tjBufSizeYUV(w, h, subsamp);
@@ -339,7 +339,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	FILE *file=NULL;  tjhandle handle=NULL;
 	unsigned char **jpegbuf=NULL, *tmpbuf=NULL, *srcptr, *srcptr2;
 	double start, elapsed;
-	int totaljpegsize=0, row, col, i, tilew=w, tileh=h, retval=0;
+	int totaljpegsize=0, row, col, i, tilew=w, tileh=h;
 	unsigned long *jpegsize=NULL;
 	int ps=(yuv==YUVCOMPRESS)? 3:tjPixelSize[pf];
 	int ntilesw=1, ntilesh=1, pitch=w*ps;
@@ -511,7 +511,7 @@ void dodecomptest(char *filename)
 	int w=0, h=0, subsamp=-1, cs=-1, _w, _h, _tilew, _tileh,
 		_ntilesw, _ntilesh, _subsamp;
 	char *temp=NULL, tempstr[80], tempstr2[80];
-	int row, col, i, tilew, tileh, ntilesw=1, ntilesh=1, retval=0;
+	int row, col, i, tilew, tileh, ntilesw=1, ntilesh=1;
 	double start, elapsed;
 	int ps=tjPixelSize[pf], tile;
 

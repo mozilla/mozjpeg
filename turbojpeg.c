@@ -123,7 +123,10 @@ static const tjscalingfactor sf[NUMSF]={
 	j_compress_ptr cinfo=NULL;  j_decompress_ptr dinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
-	cinfo=&this->cinfo;  dinfo=&this->dinfo;
+	cinfo=&this->cinfo; \
+	(void)cinfo; \
+	dinfo=&this->dinfo; \
+	(void)dinfo
 
 static int getPixelFormat(int pixelSize, int flags)
 {
@@ -612,7 +615,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	unsigned char *rgbBuf=NULL;
 	#endif
 
-	getinstance(handle)
+	getinstance(handle);
 	if((this->init&COMPRESS)==0)
 		_throw("tjCompress2(): Instance has not been initialized for compression");
 
@@ -878,7 +881,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
 		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
 	JSAMPLE *_tmpbuf=NULL, *ptr=srcBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 
-	getinstance(handle)
+	getinstance(handle);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{

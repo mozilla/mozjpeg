@@ -235,13 +235,13 @@ VERS_1 {
   global: *;
 };
 EOF
-AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
+AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_PROGRAM([], [])])],
   [VERSION_SCRIPT_FLAG=-Wl,--version-script,;
    AC_MSG_RESULT([yes (GNU style)])],
   [])
 if test "x$VERSION_SCRIPT_FLAG" = "x"; then
   LDFLAGS="$SAVED_LDFLAGS -Wl,-M,conftest.map"
-  AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
+  AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_PROGRAM([], [])])],
     [VERSION_SCRIPT_FLAG=-Wl,-M,;
      AC_MSG_RESULT([yes (Sun style)])],
     [])

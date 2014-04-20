@@ -27,7 +27,7 @@
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"		/* for version message */
-#include "config.h"
+#include "jconfigint.h"
 
 #include <ctype.h>		/* to declare isprint() */
 

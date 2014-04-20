@@ -97,9 +97,9 @@ fi
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
+AC_CHECK_HEADERS([stddef.h stdlib.h locale.h string.h])
 AC_CHECK_HEADER([sys/types.h],
-  AC_DEFINE([NEED_SYS_TYPES_H], 1, [Define if you have sys/types.h]))
+  AC_DEFINE([NEED_SYS_TYPES_H], 1, [Define if you need to include <sys/types.h> to get size_t.]))
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -131,7 +131,8 @@ AC_TRY_RUN(
      exit(is_shifting_signed(-0x7F7E80B1L));
    }],
   [AC_MSG_RESULT(no)
-   AC_DEFINE([RIGHT_SHIFT_IS_UNSIGNED], 1, [Define if shift is unsigned])],
+   AC_DEFINE([RIGHT_SHIFT_IS_UNSIGNED], 1,
+     [Define if your (broken) compiler shifts signed values as if they were unsigned.])],
   [AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(Assuming that right shift is signed on target machine.)])
 
@@ -143,12 +144,12 @@ AC_TRY_LINK(
   [AC_MSG_RESULT(ok)],
   [AC_MSG_RESULT(short)
    AC_DEFINE([NEED_SHORT_EXTERNAL_NAMES], 1,
-     [Define if you need short function names])])
+     [Define if linker requires that the first 15 characters of global names be unique.])])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memset memcpy], [],
   [AC_DEFINE([NEED_BSD_STRINGS], 1,
-     [Define if you have BSD-like bzero and bcopy])])
+     [Define if you have BSD-like bzero and bcopy in <strings.h> rather than memset/memcpy in <string.h>.])])
 
 AC_MSG_CHECKING([libjpeg API version])
 AC_ARG_VAR(JPEG_LIB_VERSION, [libjpeg API version (62, 70, or 80)])
@@ -265,7 +266,7 @@ AC_SUBST(VERSION_SCRIPT_FLAG)
 # Check for non-broken inline under various spellings
 AC_MSG_CHECKING(for inline)
 ljt_cv_inline=""
-AC_TRY_COMPILE(, [} __attribute__((always_inline)) int foo() { return 0; }
+AC_TRY_COMPILE(, [} inline __attribute__((always_inline)) int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="inline __attribute__((always_inline))",
 AC_TRY_COMPILE(, [} __inline__ int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="__inline__",
@@ -518,7 +519,7 @@ AC_SUBST(RPMARCH)
 AC_SUBST(RPM_CONFIG_ARGS)
 AC_SUBST(DEBARCH)
 AC_SUBST(BUILD)
-AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
+AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [libjpeg-turbo build number])
 
 # NOTE: autoheader automatically modifies the input file of the first
 # invocation of AC_CONFIG_HEADERS, so we put config.h first to prevent
@@ -527,6 +528,7 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
 # specify which features were built into the library.)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
+AC_CONFIG_HEADERS([jconfigint.h])
 AC_CONFIG_FILES([pkgscripts/libjpeg-turbo.spec.tmpl:release/libjpeg-turbo.spec.in])
 AC_CONFIG_FILES([pkgscripts/makecygwinpkg.tmpl:release/makecygwinpkg.in])
 AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])

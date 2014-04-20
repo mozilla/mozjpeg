@@ -16,7 +16,7 @@
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 #include "transupp.h"		/* Support routines for jpegtran */
 #include "jversion.h"		/* for version message */
-#include "config.h"
+#include "jconfigint.h"
 
 #ifdef USE_CCOMMAND		/* command-line reader for Macintosh */
 #ifdef __MWERKS__
@@ -375,7 +375,7 @@ main (int argc, char **argv)
   jvirt_barray_ptr * dst_coef_arrays;
   int file_index;
   /* We assume all-in-memory processing and can therefore use only a
-   * single file pointer for sequential input and output operation. 
+   * single file pointer for sequential input and output operation.
    */
   FILE * fp;
 

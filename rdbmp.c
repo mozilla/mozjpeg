@@ -35,7 +35,7 @@
 typedef unsigned char U_CHAR;
 #define UCH(x)	((int) (x))
 #else /* !HAVE_UNSIGNED_CHAR */
-#ifdef CHAR_IS_UNSIGNED
+#ifdef __CHAR_UNSIGNED__
 typedef char U_CHAR;
 #define UCH(x)	((int) (x))
 #else

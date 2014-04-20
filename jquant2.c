@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009, D. R. Commander.
+ * Copyright (C) 2009, 2014, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains 2-pass color quantization (color mapping) routines.
@@ -43,7 +43,7 @@
  * color space, and repeatedly splits the "largest" remaining box until we
  * have as many boxes as desired colors.  Then the mean color in each
  * remaining box becomes one of the possible output colors.
- * 
+ *
  * The second pass over the image maps each input pixel to the closest output
  * color (optionally after applying a Floyd-Steinberg dithering correction).
  * This mapping is logically trivial, but making it go fast enough requires
@@ -261,7 +261,7 @@ find_biggest_color_pop (boxptr boxlist, int numboxes)
   register int i;
   register long maxc = 0;
   boxptr which = NULL;
-  
+
   for (i = 0, boxp = boxlist; i < numboxes; i++, boxp++) {
     if (boxp->colorcount > maxc && boxp->volume > 0) {
       which = boxp;
@@ -281,7 +281,7 @@ find_biggest_volume (boxptr boxlist, int numboxes)
   register int i;
   register INT32 maxv = 0;
   boxptr which = NULL;
-  
+
   for (i = 0, boxp = boxlist; i < numboxes; i++, boxp++) {
     if (boxp->volume > maxv) {
       which = boxp;
@@ -304,11 +304,11 @@ update_box (j_decompress_ptr cinfo, boxptr boxp)
   int c0min,c0max,c1min,c1max,c2min,c2max;
   INT32 dist0,dist1,dist2;
   long ccount;
-  
+
   c0min = boxp->c0min;  c0max = boxp->c0max;
   c1min = boxp->c1min;  c1max = boxp->c1max;
   c2min = boxp->c2min;  c2max = boxp->c2max;
-  
+
   if (c0max > c0min)
     for (c0 = c0min; c0 <= c0max; c0++)
       for (c1 = c1min; c1 <= c1max; c1++) {
@@ -388,7 +388,7 @@ update_box (j_decompress_ptr cinfo, boxptr boxp)
   dist1 = ((c1max - c1min) << C1_SHIFT) * C1_SCALE;
   dist2 = ((c2max - c2min) << C2_SHIFT) * C2_SCALE;
   boxp->volume = dist0*dist0 + dist1*dist1 + dist2*dist2;
-  
+
   /* Now scan remaining volume of box and compute population */
   ccount = 0;
   for (c0 = c0min; c0 <= c0max; c0++)
@@ -495,11 +495,11 @@ compute_color (j_decompress_ptr cinfo, boxptr boxp, int icolor)
   long c0total = 0;
   long c1total = 0;
   long c2total = 0;
-  
+
   c0min = boxp->c0min;  c0max = boxp->c0max;
   c1min = boxp->c1min;  c1max = boxp->c1max;
   c2min = boxp->c2min;  c2max = boxp->c2max;
-  
+
   for (c0 = c0min; c0 <= c0max; c0++)
     for (c1 = c1min; c1 <= c1max; c1++) {
       histp = & histogram[c0][c1][c2min];
@@ -512,7 +512,7 @@ compute_color (j_decompress_ptr cinfo, boxptr boxp, int icolor)
 	}
       }
     }
-  
+
   cinfo->colormap[0][icolor] = (JSAMPLE) ((c0total + (total>>1)) / total);
   cinfo->colormap[1][icolor] = (JSAMPLE) ((c1total + (total>>1)) / total);
   cinfo->colormap[2][icolor] = (JSAMPLE) ((c2total + (total>>1)) / total);
@@ -781,17 +781,17 @@ find_best_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
   bptr = bestdist;
   for (i = BOX_C0_ELEMS*BOX_C1_ELEMS*BOX_C2_ELEMS-1; i >= 0; i--)
     *bptr++ = 0x7FFFFFFFL;
-  
+
   /* For each color selected by find_nearby_colors,
    * compute its distance to the center of each cell in the box.
    * If that's less than best-so-far, update best distance and color number.
    */
-  
+
   /* Nominal steps between cell centers ("x" in Thomas article) */
 #define STEP_C0  ((1 << C0_SHIFT) * C0_SCALE)
 #define STEP_C1  ((1 << C1_SHIFT) * C1_SCALE)
 #define STEP_C2  ((1 << C2_SHIFT) * C2_SCALE)
-  
+
   for (i = 0; i < numcolors; i++) {
     icolor = GETJSAMPLE(colorlist[i]);
     /* Compute (square of) distance from minc0/c1/c2 to this color */
@@ -865,7 +865,7 @@ fill_inverse_cmap (j_decompress_ptr cinfo, int c0, int c1, int c2)
   minc0 = (c0 << BOX_C0_SHIFT) + ((1 << C0_SHIFT) >> 1);
   minc1 = (c1 << BOX_C1_SHIFT) + ((1 << C1_SHIFT) >> 1);
   minc2 = (c2 << BOX_C2_SHIFT) + ((1 << C2_SHIFT) >> 1);
-  
+
   /* Determine which colormap entries are close enough to be candidates
    * for the nearest entry to some cell in the update box.
    */
@@ -1025,32 +1025,23 @@ pass2_fs_dither (j_decompress_ptr cinfo,
        * Add these into the running sums, and simultaneously shift the
        * next-line error sums left by 1 column.
        */
-      { register LOCFSERROR bnexterr, delta;
+      { register LOCFSERROR bnexterr;
 
 	bnexterr = cur0;	/* Process component 0 */
-	delta = cur0 * 2;
-	cur0 += delta;		/* form error * 3 */
-	errorptr[0] = (FSERROR) (bpreverr0 + cur0);
-	cur0 += delta;		/* form error * 5 */
-	bpreverr0 = belowerr0 + cur0;
+	errorptr[0] = (FSERROR) (bpreverr0 + cur0 * 3);
+	bpreverr0 = belowerr0 + cur0 * 5;
 	belowerr0 = bnexterr;
-	cur0 += delta;		/* form error * 7 */
+	cur0 *= 7;
 	bnexterr = cur1;	/* Process component 1 */
-	delta = cur1 * 2;
-	cur1 += delta;		/* form error * 3 */
-	errorptr[1] = (FSERROR) (bpreverr1 + cur1);
-	cur1 += delta;		/* form error * 5 */
-	bpreverr1 = belowerr1 + cur1;
+	errorptr[1] = (FSERROR) (bpreverr1 + cur1 * 3);
+	bpreverr1 = belowerr1 + cur1 * 5;
 	belowerr1 = bnexterr;
-	cur1 += delta;		/* form error * 7 */
+	cur1 *= 7;
 	bnexterr = cur2;	/* Process component 2 */
-	delta = cur2 * 2;
-	cur2 += delta;		/* form error * 3 */
-	errorptr[2] = (FSERROR) (bpreverr2 + cur2);
-	cur2 += delta;		/* form error * 5 */
-	bpreverr2 = belowerr2 + cur2;
+	errorptr[2] = (FSERROR) (bpreverr2 + cur2 * 3);
+	bpreverr2 = belowerr2 + cur2 * 5;
 	belowerr2 = bnexterr;
-	cur2 += delta;		/* form error * 7 */
+	cur2 *= 7;
       }
       /* At this point curN contains the 7/16 error value to be propagated
        * to the next pixel on the current line, and all the errors for the

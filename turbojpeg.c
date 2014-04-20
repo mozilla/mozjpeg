@@ -634,7 +634,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	if(pitch==0) pitch=width*tjPixelSize[pixelFormat];
 
 	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY)
+	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK)
 	{
 		rgbBuf=(unsigned char *)malloc(width*height*RGB_PIXELSIZE);
 		if(!rgbBuf) _throw("tjCompress2(): Memory allocation failure");
@@ -749,7 +749,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
 	if(pitch==0) pitch=width*tjPixelSize[pixelFormat];
 
 	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY)
+	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK)
 	{
 		rgbBuf=(unsigned char *)malloc(width*height*RGB_PIXELSIZE);
 		if(!rgbBuf) _throw("tjEncodeYUV3(): Memory allocation failure");
@@ -1189,7 +1189,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 	if(pitch==0) pitch=dinfo->output_width*tjPixelSize[pixelFormat];
 
 	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY &&
+	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK &&
 		(RGB_RED!=tjRedOffset[pixelFormat] ||
 			RGB_GREEN!=tjGreenOffset[pixelFormat] ||
 			RGB_BLUE!=tjBlueOffset[pixelFormat] ||
@@ -1309,6 +1309,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	jpeg_component_info *compptr;
 	#ifndef JCS_EXTENSIONS
 	unsigned char *rgbBuf=NULL;
+	unsigned char *_dstBuf=NULL;  int _pitch=0;
 	#endif
 	JMETHOD(int, old_read_markers, (j_decompress_ptr));
 	JMETHOD(void, old_reset_marker_reader, (j_decompress_ptr));
@@ -1339,17 +1340,6 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 		_throw("tjDecodeYUV(): Cannot decode YUV images into CMYK pixels.");
 
 	if(pitch==0) pitch=width*tjPixelSize[pixelFormat];
-
-	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY)
-	{
-		rgbBuf=(unsigned char *)malloc(width*height*RGB_PIXELSIZE);
-		if(!rgbBuf) _throw("tjDecodeYUV(): Memory allocation failure");
-		srcBuf=toRGB(srcBuf, width, pitch, height, pixelFormat, rgbBuf);
-		pitch=width*RGB_PIXELSIZE;
-	}
-	#endif
-
 	dinfo->image_width=width;
 	dinfo->image_height=height;
 
@@ -1382,6 +1372,20 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	ph=PAD(height, dinfo->max_v_samp_factor);
 
 	if(pitch==0) pitch=dinfo->output_width*tjPixelSize[pixelFormat];
+
+	#ifndef JCS_EXTENSIONS
+	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK &&
+		(RGB_RED!=tjRedOffset[pixelFormat] ||
+			RGB_GREEN!=tjGreenOffset[pixelFormat] ||
+			RGB_BLUE!=tjBlueOffset[pixelFormat] ||
+			RGB_PIXELSIZE!=tjPixelSize[pixelFormat]))
+	{
+		rgbBuf=(unsigned char *)malloc(width*height*3);
+		if(!rgbBuf) _throw("tjDecodeYUV(): Memory allocation failure");
+		_pitch=pitch;  pitch=width*3;
+		_dstBuf=dstBuf;  dstBuf=rgbBuf;
+	}
+	#endif
 
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ph))==NULL)
 		_throw("tjDecodeYUV(): Memory allocation failure");
@@ -1434,6 +1438,10 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 			dinfo->max_v_samp_factor);
 	}
 	jpeg_abort_decompress(dinfo);
+
+	#ifndef JCS_EXTENSIONS
+	fromRGB(rgbBuf, _dstBuf, width, _pitch, height, pixelFormat);
+	#endif
 
 	bailout:
 	if(dinfo->global_state>DSTATE_START) jpeg_abort_decompress(dinfo);

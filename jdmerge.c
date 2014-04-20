@@ -39,7 +39,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jsimd.h"
-#include "config.h"
+#include "jconfigint.h"
 
 #ifdef UPSAMPLE_MERGING_SUPPORTED
 

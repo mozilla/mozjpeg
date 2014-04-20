@@ -12,7 +12,8 @@ nodist_include_HEADERS = jconfig.h
 
 
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
-	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h
+	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h \
+	jpeg_nbits_table.h
 
 libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c \

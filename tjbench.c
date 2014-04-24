@@ -256,7 +256,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 }
 
 
-void dotestyuv(unsigned char *srcbuf, int w, int h, int subsamp,
+int dotestyuv(unsigned char *srcbuf, int w, int h, int subsamp,
 	char *filename)
 {
 	char tempstr[1024], tempstr2[80];
@@ -328,11 +328,11 @@ void dotestyuv(unsigned char *srcbuf, int w, int h, int subsamp,
 	if(file) {fclose(file);  file=NULL;}
 	if(dstbuf) {free(dstbuf);  dstbuf=NULL;}
 	if(handle) {tjDestroy(handle);  handle=NULL;}
-	return;
+	return retval;
 }
 
 
-void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
+int dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	char *filename)
 {
 	char tempstr[1024], tempstr2[80];
@@ -345,7 +345,7 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	int ntilesw=1, ntilesh=1, pitch=w*ps;
 	const char *pfStr=(yuv==YUVCOMPRESS)? "YUV":pixFormatStr[pf];
 
-	if(yuv==YUVENCODE) {dotestyuv(srcbuf, w, h, subsamp, filename);  return;}
+	if(yuv==YUVENCODE) {dotestyuv(srcbuf, w, h, subsamp, filename);  return retval;}
 
 	if((tmpbuf=(unsigned char *)malloc(pitch*h)) == NULL)
 		_throwunix("allocating temporary image buffer");
@@ -498,11 +498,11 @@ void dotest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	if(jpegsize) {free(jpegsize);  jpegsize=NULL;}
 	if(tmpbuf) {free(tmpbuf);  tmpbuf=NULL;}
 	if(handle) {tjDestroy(handle);  handle=NULL;}
-	return;
+	return retval;
 }
 
 
-void dodecomptest(char *filename)
+int dodecomptest(char *filename)
 {
 	FILE *file=NULL;  tjhandle handle=NULL;
 	unsigned char **jpegbuf=NULL, *srcbuf=NULL;
@@ -706,7 +706,7 @@ void dodecomptest(char *filename)
 	if(srcbuf) {free(srcbuf);  srcbuf=NULL;}
 	if(t) {free(t);  t=NULL;}
 	if(handle) {tjDestroy(handle);  handle=NULL;}
-	return;
+	return retval;
 }
 
 

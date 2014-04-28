@@ -50,4 +50,4 @@ EXTERN(void) jpeg_gen_optimal_table
 
 EXTERN(void) quantize_trellis
         JPP((j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl));
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef));

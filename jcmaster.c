@@ -550,6 +550,16 @@ prepare_for_pass (j_compress_ptr cinfo)
     master->pub.call_pass_startup = FALSE;
     break;
   case trellis_pass:
+    if (master->pass_number%(cinfo->num_components*(cinfo->use_scans_in_trellis?4:2)) == 1 && cinfo->trellis_q_opt) {
+      int i, j;
+
+      for (i = 0; i < NUM_QUANT_TBLS; i++) {
+        for (j = 1; j < DCTSIZE2; j++) {
+          cinfo->norm_src[i][j] = 0.0;
+          cinfo->norm_coef[i][j] = 0.0;
+        }
+      }
+    }
     (*cinfo->entropy->start_pass) (cinfo, TRUE);
     (*cinfo->coef->start_pass) (cinfo, JBUF_REQUANT);
     master->pub.call_pass_startup = FALSE;
@@ -838,6 +848,20 @@ finish_pass_master (j_compress_ptr cinfo)
     break;
   case trellis_pass:
     master->pass_type = (cinfo->optimize_scans || master->pass_number < master->pass_number_scan_opt_base-1) ? huff_opt_pass : output_pass;
+      
+    if ((master->pass_number+1)%(cinfo->num_components*(cinfo->use_scans_in_trellis?4:2)) == 0 && cinfo->trellis_q_opt) {
+      int i, j;
+
+      for (i = 0; i < NUM_QUANT_TBLS; i++) {
+        for (j = 1; j < DCTSIZE2; j++) {
+          if (cinfo->norm_coef[i][j] != 0.0) {
+            int q = (int)(cinfo->norm_src[i][j] / cinfo->norm_coef[i][j] + 0.5);
+            if (q > 254) q = 254;
+            if (q < 1) q = 1;
+          }
+        }
+      }
+    }
     break;
   }
 

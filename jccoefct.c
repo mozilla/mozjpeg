@@ -360,10 +360,9 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
   JBLOCKROW thisblockrow, lastblockrow;
   JBLOCKARRAY buffer_dst;
   
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {    
+  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
-    
     compptr = cinfo->cur_comp_info[ci];
 
     jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
@@ -398,7 +397,7 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
      */
     for (block_row = 0; block_row < block_rows; block_row++) {
       thisblockrow = buffer[block_row];
-      quantize_trellis(cinfo, actbl, thisblockrow, buffer_dst[block_row], blocks_across, cinfo->quant_tbl_ptrs[compptr->quant_tbl_no]);
+      quantize_trellis(cinfo, actbl, thisblockrow, buffer_dst[block_row], blocks_across, cinfo->quant_tbl_ptrs[compptr->quant_tbl_no], cinfo->norm_src[compptr->quant_tbl_no], cinfo->norm_coef[compptr->quant_tbl_no]);
       
       if (ndummy > 0) {
 	/* Create dummy blocks at the right edge of the image. */
@@ -435,6 +434,7 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
       }
     }
   }
+
   /* NB: compress_output will increment iMCU_row_num if successful.
    * A suspension return will result in redoing all the work above next time.
    */

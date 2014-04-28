@@ -576,7 +576,7 @@ static const float jpeg_lambda_weights_csf_luma[64] = {
 
 GLOBAL(void)
 quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl)
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef)
 {
   int i, j, k;
   float accumulated_zero_dist[DCTSIZE2];
@@ -820,6 +820,15 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     free(accumulated_block_cost);
     free(block_run_start);
     free(requires_eob);
+  }
+  
+  if (cinfo->trellis_q_opt) {
+    for (bi = 0; bi < num_blocks; bi++) {
+      for (i = 1; i < DCTSIZE2; i++) {
+        norm_src[i] += src[bi][i] * coef_blocks[bi][i];
+        norm_coef[i] += 8 * coef_blocks[bi][i] * coef_blocks[bi][i];
+      }
+    }
   }
 }
 

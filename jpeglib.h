@@ -384,7 +384,11 @@ struct jpeg_compress_struct {
   boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
   boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
   boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
+  boolean trellis_q_opt; /* TRUE=optimize quant table in trellis loop */
   
+  double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
+  double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
+
   int trellis_freq_split; /* splitting point for frequency in trellis quantization */
   int trellis_num_loops; /* number of trellis loops */
   

@@ -936,6 +936,9 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     for (i = 0; i < cinfo->num_scans; i++)
       master->scan_buffer[i] = NULL;
     
-    master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
+    if (cinfo->trellis_quant)
+      master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
+    else
+      master->pass_number_scan_opt_base = 0;
   }
 }

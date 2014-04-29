@@ -858,6 +858,7 @@ finish_pass_master (j_compress_ptr cinfo)
             int q = (int)(cinfo->norm_src[i][j] / cinfo->norm_coef[i][j] + 0.5);
             if (q > 254) q = 254;
             if (q < 1) q = 1;
+            cinfo->quant_tbl_ptrs[i]->quantval[j] = q;
           }
         }
       }

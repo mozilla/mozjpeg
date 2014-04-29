@@ -473,8 +473,8 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       
     } else if (keymatch(arg, "tune-ssim", 6)) {
       cinfo->use_flat_quant_tbl = TRUE;
-      cinfo->lambda_log_scale1 = 11.5;
-      cinfo->lambda_log_scale2 = 13.0;
+      cinfo->lambda_log_scale1 = 12.0;
+      cinfo->lambda_log_scale2 = 13.5;
       cinfo->use_lambda_weight_tbl = FALSE;
       jpeg_set_quality(cinfo, 75, TRUE);
       

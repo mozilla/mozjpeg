@@ -427,9 +427,10 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 #endif
   
   cinfo->trellis_quant = (cinfo->use_moz_defaults != 0) ? TRUE : FALSE;
-  cinfo->lambda_log_scale1 = 17.0;
-  cinfo->lambda_log_scale2 = 15.0;
+  cinfo->lambda_log_scale1 = 16.0;
+  cinfo->lambda_log_scale2 = 15.5;
   
+  cinfo->use_lambda_weight_tbl = TRUE;
   cinfo->use_scans_in_trellis = FALSE;
   cinfo->trellis_freq_split = 8;
   cinfo->trellis_num_loops = 1;

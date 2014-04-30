@@ -419,14 +419,14 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   jpeg_default_colorspace(cinfo);
   
 #ifdef C_PROGRESSIVE_SUPPORTED
-  if (cinfo->use_moz_defaults != 0) { // Disable this while working on trellis
+  if (cinfo->use_moz_defaults) { // Disable this while working on trellis
     cinfo->optimize_scans = TRUE;
     jpeg_simple_progression(cinfo);
   } else
     cinfo->optimize_scans = FALSE;
 #endif
   
-  cinfo->trellis_quant = (cinfo->use_moz_defaults != 0) ? TRUE : FALSE;
+  cinfo->trellis_quant = cinfo->use_moz_defaults;
   cinfo->lambda_log_scale1 = 16.0;
   cinfo->lambda_log_scale2 = 15.5;
   

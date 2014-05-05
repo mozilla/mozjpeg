@@ -419,7 +419,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   jpeg_default_colorspace(cinfo);
   
 #ifdef C_PROGRESSIVE_SUPPORTED
-  if (cinfo->use_moz_defaults) { // Disable this while working on trellis
+  if (cinfo->use_moz_defaults) {
     cinfo->optimize_scans = TRUE;
     jpeg_simple_progression(cinfo);
   } else

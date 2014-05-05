@@ -170,6 +170,11 @@ usage (void)
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
+  fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
+  fprintf(stderr, "  -tune-psnr     Tune trellis optimization for PSNR\n");
+  fprintf(stderr, "  -tune-hvs-psnr Tune trellis optimization for PSNR-HVS (default)\n");
+  fprintf(stderr, "  -tune-ssim     Tune trellis optimization for SSIM\n");
+  fprintf(stderr, "  -tune-ms-ssim  Tune trellis optimization for MS-SSIM\n");
   fprintf(stderr, "Switches for advanced users:\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");

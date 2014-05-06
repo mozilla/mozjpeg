@@ -319,7 +319,7 @@ This release of libjpeg-turbo can use ARM NEON SIMD instructions to accelerate
 JPEG compression/decompression by approximately 2-4x on ARMv7 and later
 platforms.  If libjpeg-turbo is configured on an ARM Linux platform, then the
 build system will automatically include the NEON SIMD routines, if they are
-supported.
+supported.  Build instructions for other ARM-based platforms follow.
 
 
 Building libjpeg-turbo for iOS
@@ -391,6 +391,45 @@ then it is highly likely that you will need to run 'autoreconf -fiv' in the
 source tree prior to building ARM v7 or v7s iOS binaries using the techniques
 described above.  Otherwise, you may get a libtool error such as "unable to
 infer tagged configuration."
+
+
+Building libjpeg-turbo for Android
+----------------------------------
+
+Building libjpeg-turbo for Android platforms requires the Android NDK
+(https://developer.android.com/tools/sdk/ndk) and autotools.  The following is
+a general recipe script that can be modified for your specific needs.
+
+  # Set these variables to suit your needs
+  NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/ndk}
+  BUILD_PLATFORM={the platform name for the NDK package you installed--
+    for example, "windows-x86" or "linux-x86_64"}
+  TOOLCHAIN_VERSION={"4.6", "4.8", etc.  This corresponds to a toolchain
+    directory under ${NDK_PATH}/toolchains/.}
+  ANDROID_VERSION={The minimum version of Android to support-- for example,
+    "9", "19", etc.}
+
+  HOST=arm-linux-androideabi
+  TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+  SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
+  ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
+  ANDROID_CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
+    -fstrict-aliasing --sysroot=${SYSROOT}"
+  export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
+  export AR=${TOOLCHAIN}/bin/${HOST}-ar
+  export AS=${TOOLCHAIN}/bin/${HOST}-as
+  export NM=${TOOLCHAIN}/bin/${HOST}-nm
+  export CC=${TOOLCHAIN}/bin/${HOST}-gcc
+  export LD=${TOOLCHAIN}/bin/${HOST}-ld
+  export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
+  export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
+  export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
+  cd {build_directory}
+  sh {source_directory}/configure --host=${HOST} \
+    CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3" \
+    CPPFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS}" \
+    LDFLAGS="${ANDROID_CFLAGS}" --with-simd ${1+"$@"}
+  make
 
 
 *******************************************************************************

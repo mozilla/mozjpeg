@@ -3,7 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2011 D. R. Commander
- * Copyright (C) 2013, MIPS Technologies, Inc., California
+ * Copyright (C) 2013-2014, MIPS Technologies, Inc., California
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -801,6 +801,10 @@ EXTERN(void) jsimd_idct_ifast_neon JPP((void * dct_table,
                                         JSAMPARRAY output_buf,
                                         JDIMENSION output_col));
 
+EXTERN(void) jsimd_idct_islow_mips_dspr2 JPP((void * dct_table,
+                                              JCOEFPTR coef_block,
+                                              int * output_buf,
+                                              JSAMPLE * output_col));
 EXTERN(void) jsimd_idct_ifast_cols_mips_dspr2 JPP((JCOEF * inptr,
                                                    IFAST_MULT_TYPE * quantptr,
                                                    DCTELEM * wsptr,

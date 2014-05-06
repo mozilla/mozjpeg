@@ -325,11 +325,9 @@ supported.
 Building libjpeg-turbo for iOS
 ------------------------------
 
-iOS platforms, such as the iPhone and iPad, also use ARM processors, some of
-which support NEON instructions.  Additional steps are required to build
-libjpeg-turbo for these platforms.  The steps below assume iOS SDK v4.3.  If
-you are using a different SDK version, then you will need to modify the
-examples accordingly.
+iOS platforms, such as the iPhone and iPad, use ARM processors, some of which
+support NEON instructions.  Additional steps are required in order to build
+libjpeg-turbo for these platforms.
 
 Additional build requirements:
 
@@ -503,10 +501,10 @@ instance:
   cd {build_directory}
   cmake -G "Visual Studio 10" {source_directory}
 
-NOTE:  Add "Win64" to the generator name (e.g. "Visual Studio 10 Win64") to
-build a 64-bit version of libjpeg-turbo.  Recent versions of CMake no longer
-document that.  A separate build directory must be used for 32-bit and 64-bit
-builds.
+NOTE:  Add "Win64" to the generator name (for example, "Visual Studio 10
+Win64") to build a 64-bit version of libjpeg-turbo.  Recent versions of CMake
+no longer document that.  A separate build directory must be used for 32-bit
+and 64-bit builds.
 
 You can then open ALL_BUILD.vcproj in Visual Studio and build one of the
 configurations in that project ("Debug", "Release", etc.) to generate a full

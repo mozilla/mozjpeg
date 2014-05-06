@@ -1322,7 +1322,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	}
 
 	if((this->init&DECOMPRESS)==0)
-		_throw("tjDecodeYUV(): Instance has not been initialized for compression");
+		_throw("tjDecodeYUV(): Instance has not been initialized for decompression");
 
 	if(srcBuf==NULL || pad<0 || !isPow2(pad) || subsamp<0 || subsamp>=NUMSUBOPT
 		|| dstBuf==NULL || width<=0 || pitch<0 || height<=0 || pixelFormat<0

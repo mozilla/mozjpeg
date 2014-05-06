@@ -3,7 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2009-2011 D. R. Commander
- * Copyright (C) 2013, MIPS Technologies, Inc., California
+ * Copyright (C) 2013-2014, MIPS Technologies, Inc., California
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -781,6 +781,23 @@ jsimd_idct_12x12 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(int)
 jsimd_can_idct_islow (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(ISLOW_MULT_TYPE) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    return 1;
+
   return 0;
 }
 
@@ -820,6 +837,21 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
                 JDIMENSION output_col)
 {
+  if (simd_support & JSIMD_MIPS_DSPR2) {
+    int output[8] = {
+      (int)(output_buf[0] + output_col),
+      (int)(output_buf[1] + output_col),
+      (int)(output_buf[2] + output_col),
+      (int)(output_buf[3] + output_col),
+      (int)(output_buf[4] + output_col),
+      (int)(output_buf[5] + output_col),
+      (int)(output_buf[6] + output_col),
+      (int)(output_buf[7] + output_col),
+    };
+
+    jsimd_idct_islow_mips_dspr2(coef_block, compptr->dct_table,
+                                output, IDCT_range_limit(cinfo));
+  }
 }
 
 GLOBAL(void)

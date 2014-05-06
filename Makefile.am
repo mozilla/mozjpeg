@@ -229,8 +229,7 @@ endif
 # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
 	./djpeg -dct int -ppm -outfile testout_rgb_islow.ppm testout_rgb_islow.jpg
 	md5/md5cmp $(MD5_PPM_RGB_ISLOW) testout_rgb_islow.ppm
-	rm testout_rgb_islow.ppm
-	rm testout_rgb_islow.jpg
+	rm testout_rgb_islow.ppm testout_rgb_islow.jpg
 
 # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
 	./cjpeg -sample 2x1 -dct fast -opt -outfile testout_422_ifast_opt.jpg $(srcdir)/testimages/testorig.ppm
@@ -242,8 +241,7 @@ endif
 # CC: YCC->RGB  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
 	./djpeg -nosmooth -dct fast -outfile testout_422m_ifast.ppm testout_422_ifast_opt.jpg
 	md5/md5cmp $(MD5_PPM_422M_IFAST) testout_422m_ifast.ppm
-	rm testout_422m_ifast.ppm
-	rm testout_422_ifast_opt.jpg
+	rm testout_422m_ifast.ppm testout_422_ifast_opt.jpg
 
 # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
 	./cjpeg -sample 2x2 -dct fast -quality 100 -prog -outfile testout_420_q100_ifast_prog.jpg $(srcdir)/testimages/testorig.ppm
@@ -255,8 +253,7 @@ endif
 # CC: YCC->RGB  SAMP: h2v2 merged  IDCT: ifast  ENT: prog huff
 	./djpeg -nosmooth -dct fast -outfile testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
 	md5/md5cmp $(MD5_PPM_420M_Q100_IFAST) testout_420m_q100_ifast.ppm
-	rm testout_420m_q100_ifast.ppm
-	rm testout_420_q100_ifast_prog.jpg
+	rm testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
 
 # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
 	./cjpeg -gray -dct int -outfile testout_gray_islow.jpg $(srcdir)/testimages/testorig.ppm
@@ -268,8 +265,7 @@ endif
 # CC: Gray->RGB  SAMP: fullsize  FDCT: islow  ENT: huff
 	./djpeg -rgb -dct int -outfile testout_gray_rgb_islow.ppm testout_gray_islow.jpg
 	md5/md5cmp $(MD5_PPM_GRAY_RGB_ISLOW) testout_gray_rgb_islow.ppm
-	rm testout_gray_rgb_islow.ppm
-	rm testout_gray_islow.jpg
+	rm testout_gray_rgb_islow.ppm testout_gray_islow.jpg
 
 # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
 # ENT: 2-pass huff
@@ -283,8 +279,7 @@ endif
 # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
 	./djpeg -dct float -outfile testout_3x2_float.ppm testout_3x2_float_prog.jpg
 	md5/md5cmp $(MD5_PPM_3x2_FLOAT) testout_3x2_float.ppm
-	rm testout_3x2_float.ppm
-	rm testout_3x2_float_prog.jpg
+	rm testout_3x2_float.ppm testout_3x2_float_prog.jpg
 
 if WITH_ARITH_ENC
 # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith

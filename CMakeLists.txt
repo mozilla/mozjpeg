@@ -283,164 +283,300 @@ endif()
 
 enable_testing()
 
-set(MD5_JPEG_INT 9a68f56bc76e466aa7e52f415d0f4a5f)
-set(MD5_JPEG_FAST 0e1502e7fa421835e376a314fac2a39f)
-set(MD5_JPEG_FAST_100 7bf72a8e741d64eecb960c97323af77c)
-set(MD5_JPEG_FLOAT d1623885ffafcd40c684af09e3d65cd5)
-set(MD5_JPEG_FLOAT_NOSIMD fb4884c35f8273f498cb32879de5c455)
-set(MD5_JPEG_INT_GRAY 72b51f894b8f4a10b3ee3066770aa38d)
-set(MD5_PPM_INT d1ed0d11f076b842525271647716aeb8)
-set(MD5_PPM_FAST 048298a2d2410261c0533cb97bcfef23)
-set(MD5_PPM_FLOAT 7f5b446ee36b2630e06785b8d42af15f)
-set(MD5_PPM_FLOAT_NOSIMD 64072f1dbdc5b3a187777788604971a5)
-set(MD5_PPM_INT_2_1 9f9de8c0612f8d06869b960b05abf9c9)
-set(MD5_PPM_INT_15_8 b6875bc070720b899566cc06459b63b7)
-set(MD5_PPM_INT_7_4 06a177eae05f164fac57f7a2c346ee87)
-set(MD5_PPM_INT_13_8 bc3452573c8152f6ae552939ee19f82f)
-set(MD5_PPM_INT_3_2 f5a8b88a8a7f96016f04d259cf82ed67)
-set(MD5_PPM_INT_11_8 d8cc73c0aaacd4556569b59437ba00a5)
-set(MD5_PPM_INT_5_4 32775dd9ad2ab90f4c5b219b53e0c86c)
-set(MD5_PPM_INT_9_8 d25e61bc7eac0002f5b393aa223747b6)
-set(MD5_PPM_INT_7_8 ddb564b7c74a09494016d6cd7502a946)
-set(MD5_PPM_INT_3_4 8ed8e68808c3fbc4ea764fc9d2968646)
-set(MD5_PPM_INT_5_8 a3363274999da2366a024efae6d16c9b)
-set(MD5_PPM_INT_1_2 e692a315cea26b988c8e8b29a5dbcd81)
-set(MD5_PPM_INT_3_8 79eca9175652ced755155c90e785a996)
-set(MD5_PPM_INT_1_4 79cd778f8bf1a117690052cacdd54eca)
-set(MD5_PPM_INT_1_8 391b3d4aca640c8567d6f8745eb2142f)
-set(MD5_PPM_FAST_1_2 f30bcf6d32ccd44cbdd9aeaacbd9454f)
-set(MD5_BMP_256 4980185e3776e89bd931736e1cddeee6)
-set(MD5_JPEG_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
-set(MD5_PPM_ARI 72b59a99bcf1de24c5b27d151bde2437)
-set(MD5_JPEG_PROG 1c4afddc05c0a43489ee54438a482d92)
-set(MD5_JPEG_PROG_ARI 0a8f1c8f66e113c3cf635df0a475a617)
+set(MD5_JPEG_RGB_ISLOW 768e970dd57b340ff1b83c9d3d47c77b)
+set(MD5_PPM_RGB_ISLOW 00a257f5393fef8821f2b88ac7421291)
+set(MD5_JPEG_422_IFAST_OPT 2540287b79d913f91665e660303ab2c8)
+set(MD5_PPM_422_IFAST 35bd6b3f833bad23de82acea847129fa)
+set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
+set(MD5_JPEG_420_IFAST_Q100_PROG 990cbe0329c882420a2094da7e5adade)
+set(MD5_PPM_420_Q100_IFAST 5a732542015c278ff43635e473a8a294)
+set(MD5_PPM_420M_Q100_IFAST ff692ee9323a3b424894862557c092f1)
+set(MD5_JPEG_GRAY_ISLOW 72b51f894b8f4a10b3ee3066770aa38d)
+set(MD5_PPM_GRAY_ISLOW 8d3596c56eace32f205deccc229aa5ed)
+set(MD5_PPM_GRAY_RGB_ISLOW 116424ac07b79e5e801f00508eab48ec)
+set(MD5_JPEG_420S_IFAST_OPT 388708217ac46273ca33086b22827ed8)
+if(WITH_SIMD)
+set(MD5_JPEG_3x2_FLOAT_PROG 343e3f8caf8af5986ebaf0bdc13b5c71)
+set(MD5_PPM_3x2_FLOAT 1a75f36e5904d6fc3a85a43da9ad89bb)
+else()
+set(MD5_JPEG_3x2_FLOAT_PROG 9bca803d2042bd1eb03819e2bf92b3e5)
+set(MD5_PPM_3x2_FLOAT ef6a420e369440edd6b918a0cf54ba3f)
+endif()
+set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
+set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
+set(MD5_PPM_420M_IFAST_ARI 72b59a99bcf1de24c5b27d151bde2437)
+set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
+set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
+set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
+set(MD5_PPM_420M_ISLOW_13_8 bc3452573c8152f6ae552939ee19f82f)
+set(MD5_PPM_420M_ISLOW_11_8 d8cc73c0aaacd4556569b59437ba00a5)
+set(MD5_PPM_420M_ISLOW_9_8 d25e61bc7eac0002f5b393aa223747b6)
+set(MD5_PPM_420M_ISLOW_7_8 ddb564b7c74a09494016d6cd7502a946)
+set(MD5_PPM_420M_ISLOW_3_4 8ed8e68808c3fbc4ea764fc9d2968646)
+set(MD5_PPM_420M_ISLOW_5_8 a3363274999da2366a024efae6d16c9b)
+set(MD5_PPM_420M_ISLOW_1_2 e692a315cea26b988c8e8b29a5dbcd81)
+set(MD5_PPM_420M_ISLOW_3_8 79eca9175652ced755155c90e785a996)
+set(MD5_PPM_420M_ISLOW_1_4 79cd778f8bf1a117690052cacdd54eca)
+set(MD5_PPM_420M_ISLOW_1_8 391b3d4aca640c8567d6f8745eb2142f)
+set(MD5_BMP_420_ISLOW_256 4980185e3776e89bd931736e1cddeee6)
 set(MD5_JPEG_CROP b4197f377e621c4e9b1d20471432610d)
 
 if(WITH_JAVA)
-add_test(TJUnitTest ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest)
-add_test(TJUnitTest-yuv ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -yuv)
-add_test(TJUnitTest-yuv-nopad ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -yuv -noyuvpad)
-add_test(TJUnitTest-bi ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -bi)
-add_test(TJUnitTest-bi-yuv ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -bi -yuv)
-add_test(TJUnitTest-bi-yuv-nopad ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR} TJUnitTest -bi -yuv -noyuvpad)
+  add_test(TJUnitTest
+    ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest)
+  add_test(TJUnitTest-yuv
+    ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -yuv)
+  add_test(TJUnitTest-yuv-nopad
+    ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -yuv -noyuvpad)
+  add_test(TJUnitTest-bi
+    ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -bi)
+  add_test(TJUnitTest-bi-yuv
+    ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -bi -yuv)
+  add_test(TJUnitTest-bi-yuv-nopad
+    ${JAVA_RUNTIME} -cp java/${OBJDIR}turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -bi -yuv -noyuvpad)
 endif()
-add_test(tjunittest tjunittest)
-add_test(tjunittest-alloc tjunittest -alloc)
-add_test(tjunittest-yuv tjunittest -yuv)
-add_test(tjunittest-yuv-alloc tjunittest -yuv -alloc)
-add_test(tjunittest-yuv-nopad tjunittest -yuv -noyuvpad)
-add_test(cjpeg-int sharedlib/cjpeg -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-int-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT} -DFILE=testoutint.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-fast sharedlib/cjpeg -dct fast -opt -outfile testoutfst.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-fast-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FAST} -DFILE=testoutfst.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-fast-100 sharedlib/cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-fast-100-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FAST_100} -DFILE=testoutfst100.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-float sharedlib/cjpeg -dct float -outfile testoutflt.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-if(WITH_SIMD)
-add_test(cjpeg-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FLOAT} -DFILE=testoutflt.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-else()
-add_test(cjpeg-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FLOAT_NOSIMD} -DFILE=testoutflt.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-endif()
-add_test(cjpeg-int-gray sharedlib/cjpeg -dct int -grayscale -outfile testoutgray.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-int-gray-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT_GRAY} -DFILE=testoutgray.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-int sharedlib/djpeg -dct int -fast -ppm -outfile testoutint.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-int-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_INT} -DFILE=testoutint.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-fast sharedlib/djpeg -dct fast -ppm -outfile testoutfst.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-fast-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FAST} -DFILE=testoutfst.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-float sharedlib/djpeg -dct float -ppm -outfile testoutflt.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-if(WITH_SIMD)
-add_test(djpeg-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FLOAT} -DFILE=testoutflt.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-else()
-add_test(djpeg-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FLOAT_NOSIMD} -DFILE=testoutflt.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-endif()
-foreach(scale 2_1 15_8 7_4 13_8 3_2 11_8 5_4 9_8 7_8 3_4 5_8 1_2 3_8 1_4 1_8)
-string(REGEX REPLACE "_" "/" scalearg ${scale})
-add_test(djpeg-int-${scale} sharedlib/djpeg -dct int -nosmooth -scale ${scalearg} -ppm -outfile testoutint${scale}.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-int-${scale}-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_INT_${scale}} -DFILE=testoutint${scale}.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-endforeach()
-add_test(djpeg-fast-1_2 sharedlib/djpeg -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-fast-1_2-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FAST_1_2} -DFILE=testoutfst1_2.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-256 sharedlib/djpeg -dct int -bmp -colors 256 -outfile testout.bmp  ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-256-cmp ${CMAKE_COMMAND} -DMD5=${MD5_BMP_256} -DFILE=testout.bmp -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-prog sharedlib/cjpeg -dct int -progressive -outfile testoutp.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-prog-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_PROG} -DFILE=testoutp.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(jpegtran-prog sharedlib/jpegtran -outfile testoutt.jpg testoutp.jpg)
-add_test(jpegtran-prog-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT} -DFILE=testoutt.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-if(WITH_ARITH_ENC)
-add_test(cjpeg-ari sharedlib/cjpeg -dct int -arithmetic -outfile testoutari.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-ari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_ARI} -DFILE=testoutari.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake )
-add_test(jpegtran-toari sharedlib/jpegtran -arithmetic -outfile testouta.jpg ${CMAKE_SOURCE_DIR}/testimages/testimgint.jpg)
-add_test(jpegtran-toari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_ARI} -DFILE=testouta.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-prog-ari sharedlib/cjpeg -dct int -progressive -arithmetic -sample 1x1 -outfile testoutpa.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-prog-ari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_PROG_ARI} -DFILE=testoutpa.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake )
-endif()
-if(WITH_ARITH_DEC)
-add_test(djpeg-ari sharedlib/djpeg -dct int -fast -ppm -outfile testoutari.ppm ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
-add_test(djpeg-ari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_ARI} -DFILE=testoutari.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(jpegtran-fromari	sharedlib/jpegtran -outfile testouta.jpg ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
-add_test(jpegtran-fromari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT} -DFILE=testouta.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-endif()
-add_test(jpegtran-crop sharedlib/jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(jpegtran-crop-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_CROP} -DFILE=testoutcrop.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
 
-add_test(tjunittest-static tjunittest-static)
-add_test(tjunittest-static-alloc tjunittest-static -alloc)
-add_test(tjunittest-static-yuv tjunittest-static -yuv)
-add_test(tjunittest-static-yuv-alloc tjunittest-static -yuv -alloc)
-add_test(tjunittest-static-yuv-nopad tjunittest-static -yuv -noyuvpad)
-add_test(cjpeg-static-int cjpeg-static -dct int -outfile testoutint.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-static-int-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT} -DFILE=testoutint.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-static-fast cjpeg-static -dct fast -opt -outfile testoutfst.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-static-fast-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FAST} -DFILE=testoutfst.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-static-fast-100 cjpeg-static -dct fast -quality 100 -opt -outfile testoutfst100.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-static-fast-100-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FAST_100} -DFILE=testoutfst100.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-static-float cjpeg-static -dct float -outfile testoutflt.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-if(WITH_SIMD)
-add_test(cjpeg-static-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FLOAT} -DFILE=testoutflt.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-else()
-add_test(cjpeg-static-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_FLOAT_NOSIMD} -DFILE=testoutflt.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-endif()
-add_test(cjpeg-static-int-gray cjpeg-static -dct int -grayscale -outfile testoutgray.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-static-int-gray-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT_GRAY} -DFILE=testoutgray.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-static-int djpeg-static -dct int -fast -ppm -outfile testoutint.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-static-int-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_INT} -DFILE=testoutint.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-static-fast djpeg-static -dct fast -ppm -outfile testoutfst.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-static-fast-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FAST} -DFILE=testoutfst.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-static-float djpeg-static -dct float -ppm -outfile testoutflt.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-if(WITH_SIMD)
-add_test(djpeg-static-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FLOAT} -DFILE=testoutflt.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-else()
-add_test(djpeg-static-float-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FLOAT_NOSIMD} -DFILE=testoutflt.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-endif()
-foreach(scale 2_1 15_8 7_4 13_8 3_2 11_8 5_4 9_8 7_8 3_4 5_8 1_2 3_8 1_4 1_8)
-string(REGEX REPLACE "_" "/" scalearg ${scale})
-add_test(djpeg-static-int-${scale} djpeg-static -dct int -nosmooth -scale ${scalearg} -ppm -outfile testoutint${scale}.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-static-int-${scale}-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_INT_${scale}} -DFILE=testoutint${scale}.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+foreach(libtype shared static)
+  if(libtype STREQUAL "shared")
+    set(dir sharedlib/)
+  else()
+    set(dir "")
+    set(suffix -static)
+  endif()
+  add_test(tjunittest${suffix} tjunittest${suffix})
+  add_test(tjunittest${suffix}-alloc tjunittest${suffix} -alloc)
+  add_test(tjunittest${suffix}-yuv tjunittest${suffix} -yuv)
+  add_test(tjunittest${suffix}-yuv-alloc tjunittest${suffix} -yuv -alloc)
+  add_test(tjunittest${suffix}-yuv-nopad tjunittest${suffix} -yuv -noyuvpad)
+
+  # These tests are carefully chosen to provide full coverage of as many of the
+  # underlying algorithms as possible (including all of the SIMD-accelerated
+  # ones.)
+
+  # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
+  add_test(cjpeg${suffix}-rgb-islow
+    ${dir}cjpeg${suffix} -rgb -dct int -outfile testout_rgb_islow.jpg
+      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+  add_test(cjpeg${suffix}-rgb-islow-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_RGB_ISLOW} -DFILE=testout_rgb_islow.jpg
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
+  add_test(djpeg${suffix}-rgb-islow
+    ${dir}djpeg${suffix} -dct int -ppm -outfile testout_rgb_islow.ppm
+      testout_rgb_islow.jpg)
+  add_test(djpeg${suffix}-rgb-islow-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_RGB_ISLOW} -DFILE=testout_rgb_islow.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
+  # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
+  add_test(cjpeg${suffix}-422-ifast-opt
+    ${dir}cjpeg${suffix} -sample 2x1 -dct fast -opt
+      -outfile testout_422_ifast_opt.jpg
+      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+  add_test(cjpeg${suffix}-422-ifast-opt-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_422_IFAST_OPT}
+      -DFILE=testout_422_ifast_opt.jpg
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: YCC->RGB  SAMP: fullsize/h2v1 fancy  IDCT: ifast  ENT: huff
+  add_test(djpeg${suffix}-422-ifast
+    ${dir}djpeg${suffix} -dct fast -outfile testout_422_ifast.ppm
+      testout_422_ifast_opt.jpg)
+  add_test(djpeg${suffix}-422-ifast-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_422_IFAST} -DFILE=testout_422_ifast.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: YCC->RGB  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+  add_test(djpeg${suffix}-422m-ifast
+    ${dir}djpeg${suffix} -nosmooth -dct fast -outfile testout_422m_ifast.ppm
+      testout_422_ifast_opt.jpg)
+  add_test(djpeg${suffix}-422m-ifast-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_422M_IFAST} -DFILE=testout_422m_ifast.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
+  # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
+  add_test(cjpeg${suffix}-420-q100-ifast-prog
+    ${dir}cjpeg${suffix} -sample 2x2 -dct fast -quality 100 -prog
+      -outfile testout_420_q100_ifast_prog.jpg
+      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+  add_test(cjpeg${suffix}-420-q100-ifast-prog-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_IFAST_Q100_PROG}
+      -DFILE=testout_420_q100_ifast_prog.jpg
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: YCC->RGB  SAMP: fullsize/h2v2 fancy  IDCT: ifast  ENT: prog huff
+  add_test(djpeg${suffix}-420-q100-ifast-prog
+    ${dir}djpeg${suffix} -dct fast -outfile testout_420_q100_ifast.ppm
+      testout_420_q100_ifast_prog.jpg)
+  add_test(djpeg${suffix}-420-q100-ifast-prog-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420_Q100_IFAST}
+      -DFILE=testout_420_q100_ifast.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: YCC->RGB  SAMP: h2v2 merged  IDCT: ifast  ENT: prog huff
+  add_test(djpeg${suffix}-420m-q100-ifast-prog
+    ${dir}djpeg${suffix} -nosmooth -dct fast
+      -outfile testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg)
+  add_test(djpeg${suffix}-420m-q100-ifast-prog-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_Q100_IFAST}
+      -DFILE=testout_420m_q100_ifast.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
+  # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
+  add_test(cjpeg${suffix}-gray-islow
+    ${dir}cjpeg${suffix} -gray -dct int -outfile testout_gray_islow.jpg
+      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+  add_test(cjpeg${suffix}-gray-islow-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_GRAY_ISLOW}
+      -DFILE=testout_gray_islow.jpg
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: Gray->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
+  add_test(djpeg${suffix}-gray-islow
+    ${dir}djpeg${suffix} -dct int -outfile testout_gray_islow.ppm
+      testout_gray_islow.jpg)
+  add_test(djpeg${suffix}-gray-islow-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_GRAY_ISLOW}
+      -DFILE=testout_gray_islow.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: Gray->RGB  SAMP: fullsize  FDCT: islow  ENT: huff
+  add_test(djpeg${suffix}-gray-rgb-islow
+    ${dir}djpeg${suffix} -rgb -dct int -outfile testout_gray_rgb_islow.ppm
+      testout_gray_islow.jpg)
+  add_test(cjpeg${suffix}-gray-rgb-islow-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_GRAY_RGB_ISLOW}
+      -DFILE=testout_gray_rgb_islow.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
+  # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
+  # ENT: 2-pass huff
+  add_test(cjpeg${suffix}-420s-ifast-opt
+    ${dir}cjpeg${suffix} -sample 2x2 -smooth 1 -dct int -opt -outfile
+      testout_420s_ifast_opt.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+  add_test(cjpeg${suffix}-420s-ifast-opt-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420S_IFAST_OPT}
+      -DFILE=testout_420s_ifast_opt.jpg
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
+  # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
+  add_test(cjpeg${suffix}-3x2-float-prog
+    ${dir}cjpeg${suffix} -sample 3x2 -dct float -prog
+      -outfile testout_3x2_float_prog.jpg
+      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+  add_test(cjpeg${suffix}-3x2-float-prog-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_3x2_FLOAT_PROG}
+      -DFILE=testout_3x2_float_prog.jpg
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
+  add_test(djpeg${suffix}-3x2-float-prog
+    ${dir}djpeg${suffix} -dct float -outfile testout_3x2_float.ppm
+      testout_3x2_float_prog.jpg)
+  add_test(djpeg${suffix}-3x2-float-prog-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_3x2_FLOAT} -DFILE=testout_3x2_float.ppm
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
+  if(WITH_ARITH_ENC)
+    # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
+    add_test(cjpeg${suffix}-420-islow-ari
+      ${dir}cjpeg${suffix} -dct int -arithmetic
+        -outfile testout_420_islow_ari.jpg
+        ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+    add_test(cjpeg${suffix}-420-islow-ari-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW_ARI}
+        -DFILE=testout_420_islow_ari.jpg
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    add_test(jpegtran${suffix}-420-islow-ari
+      ${dir}jpegtran${suffix} -arithmetic
+        -outfile testout_420_islow_ari.jpg
+        ${CMAKE_SOURCE_DIR}/testimages/testimgint.jpg)
+    add_test(jpegtran${suffix}-420-islow-ari-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW_ARI}
+        -DFILE=testout_420_islow_ari.jpg
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
+    add_test(cjpeg${suffix}-444-islow-progari
+      ${dir}cjpeg${suffix} -dct int -progressive -arithmetic -sample 1x1
+        -outfile testout_444_islow_progari.jpg
+        ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+    add_test(cjpeg${suffix}-444-islow-progari-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_444_ISLOW_PROGARI}
+        -DFILE=testout_444_islow_progari.jpg
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  endif()
+  if(WITH_ARITH_DEC)
+    # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
+    add_test(cjpeg${suffix}-420m-ifast-ari
+      ${dir}djpeg${suffix} -fast -ppm -outfile testout_420m_ifast_ari.ppm
+        ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
+    add_test(cjpeg${suffix}-420m-ifast-ari-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_IFAST_ARI}
+        -DFILE=testout_420m_ifast_ari.ppm
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    add_test(jpegtran${suffix}-420-islow
+      ${dir}jpegtran${suffix} -outfile testout_420_islow.jpg
+        ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
+    add_test(jpegtran${suffix}-420-islow-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW}
+        -DFILE=testout_420_islow.jpg
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  endif()
+
+  # 2/1--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 16x16 islow  ENT: huff
+  # 15/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 15x15 islow  ENT: huff
+  # 13/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 13x13 islow  ENT: huff
+  # 11/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 11x11 islow  ENT: huff
+  # 9/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 9x9 islow  ENT: huff
+  # 7/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 7x7 islow/14x14 islow
+  #         ENT: huff
+  # 3/4--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 6x6 islow/12x12 islow
+  #         ENT: huff
+  # 5/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 5x5 islow/10x10 islow
+  #         ENT: huff
+  # 1/2--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 4x4 islow/8x8 islow
+  #         ENT: huff
+  # 3/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 3x3 islow/6x6 islow
+  #         ENT: huff
+  # 1/4--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 2x2 islow/4x4 islow
+  #         ENT: huff
+  # 1/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 1x1 islow/2x2 islow
+  #         ENT: huff
+  foreach(scale 2_1 15_8 13_8 11_8 9_8 7_8 3_4 5_8 1_2 3_8 1_4 1_8)
+    string(REGEX REPLACE "_" "/" scalearg ${scale})
+    add_test(djpeg${suffix}-420m-islow-${scale}
+      ${dir}djpeg${suffix} -dct int -nosmooth -scale ${scalearg} -ppm
+        -outfile testout_420m_islow_${scale}.ppm
+        ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
+    add_test(djpeg${suffix}-420m-islow-${scale}-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_ISLOW_${scale}}
+        -DFILE=testout_420m_islow_${scale}.ppm
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  endforeach()
+
+  # CC: YCC->RGB (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+  add_test(djpeg${suffix}-420-islow-256
+    ${dir}djpeg${suffix} -dct int -bmp -colors 256
+      -outfile testout_420_islow_256.bmp
+      ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
+  add_test(djpeg${suffix}-420-islow-256-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_256}
+      -DFILE=testout_420_islow_256.bmp
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
+  add_test(jpegtran${suffix}-crop
+    ${dir}jpegtran${suffix} -crop 120x90+20+50 -transpose -perfect
+      -outfile testout_crop.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
+  add_test(jpegtran${suffix}-crop-cmp
+    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_CROP} -DFILE=testout_crop.jpg
+      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+
 endforeach()
-add_test(djpeg-static-fast-1_2 djpeg-static -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-static-fast-1_2-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_FAST_1_2} -DFILE=testoutfst1_2.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(djpeg-static-256 djpeg-static -dct int -bmp -colors 256 -outfile testout.bmp  ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(djpeg-static-256-cmp ${CMAKE_COMMAND} -DMD5=${MD5_BMP_256} -DFILE=testout.bmp -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-static-prog cjpeg-static -dct int -progressive -outfile testoutp.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-static-prog-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_PROG} -DFILE=testoutp.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(jpegtran-static-prog jpegtran-static -outfile testoutt.jpg testoutp.jpg)
-add_test(jpegtran-static-prog-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT} -DFILE=testoutt.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-if(WITH_ARITH_ENC)
-add_test(cjpeg-static-ari cjpeg-static -dct int -arithmetic -outfile testoutari.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-static-ari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_ARI} -DFILE=testoutari.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake )
-add_test(jpegtran-static-toari jpegtran-static -arithmetic -outfile testouta.jpg ${CMAKE_SOURCE_DIR}/testimages/testimgint.jpg)
-add_test(jpegtran-static-toari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_ARI} -DFILE=testouta.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(cjpeg-static-prog-ari cjpeg-static -dct int -progressive -arithmetic -sample 1x1 -outfile testoutpa.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
-add_test(cjpeg-static-prog-ari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_PROG_ARI} -DFILE=testoutpa.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake )
-endif()
-if(WITH_ARITH_DEC)
-add_test(djpeg-static-ari djpeg-static -dct int -fast -ppm -outfile testoutari.ppm ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
-add_test(djpeg-static-ari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_PPM_ARI} -DFILE=testoutari.ppm -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-add_test(jpegtran-static-fromari	jpegtran-static -outfile testouta.jpg ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
-add_test(jpegtran-static-fromari-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_INT} -DFILE=testouta.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-endif()
-add_test(jpegtran-static-crop jpegtran-static -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-add_test(jpegtran-static-crop-cmp ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_CROP} -DFILE=testoutcrop.jpg -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
 
 add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
   ${CMAKE_SOURCE_DIR}/cmakescripts/testclean.cmake)

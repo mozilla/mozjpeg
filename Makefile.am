@@ -175,7 +175,10 @@ MD5_JPEG_GRAY_ISLOW = 72b51f894b8f4a10b3ee3066770aa38d
 MD5_PPM_GRAY_ISLOW = 8d3596c56eace32f205deccc229aa5ed
 MD5_PPM_GRAY_RGB_ISLOW = 116424ac07b79e5e801f00508eab48ec
 MD5_JPEG_420S_IFAST_OPT = 388708217ac46273ca33086b22827ed8
-if WITH_SIMD
+# The SSE/SSE2 DCT/IDCT implementation has always produced a slight round-off
+# error relative to the C code, so in this case, we just test for regression
+# rather than verifying that the output matches libjpeg.
+if WITH_SSE_FLOAT_DCT
 MD5_JPEG_3x2_FLOAT_PROG = 343e3f8caf8af5986ebaf0bdc13b5c71
 MD5_PPM_3x2_FLOAT = 1a75f36e5904d6fc3a85a43da9ad89bb
 else

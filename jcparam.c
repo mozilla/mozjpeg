@@ -702,7 +702,10 @@ jpeg_search_progression (j_compress_ptr cinfo)
   /* last 4 done conditionally */
   
   /* luma DC by itself */
-  scanptr = fill_dc_scans(scanptr, 1, 0, 0);
+  if (cinfo->one_dc_scan)
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
+  else
+    scanptr = fill_dc_scans(scanptr, 1, 0, 0);
   
   scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
   scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
@@ -824,8 +827,12 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     if (cinfo->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
       /* Initial DC scan */
-      scanptr = fill_dc_scans(scanptr, 1, 0, 0);
-      scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
+      if (cinfo->one_dc_scan)
+        scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
+      else {
+        scanptr = fill_dc_scans(scanptr, 1, 0, 0);
+        scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
+      }
       /* Low frequency AC scans */
       scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 2);
       scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);

@@ -376,7 +376,7 @@ struct jpeg_compress_struct {
   int smoothing_factor;		/* 1..100, or 0 for no input smoothing */
   J_DCT_METHOD dct_method;	/* DCT algorithm selector */
 
-  boolean use_moz_defaults; /* nonzero if using Mozilla defaults, 1=crush, 2=trellis */
+  boolean use_moz_defaults; /* TRUE=use Mozilla defaults */
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
   boolean trellis_quant; /* TRUE=use trellis quantization */
   boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */

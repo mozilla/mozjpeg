@@ -606,6 +606,16 @@ copy_buffer (j_compress_ptr cinfo, int scan_idx)
   
   unsigned long size = master->scan_size[scan_idx];
   unsigned char * src = master->scan_buffer[scan_idx];
+  int i;
+  
+  if (cinfo->err->trace_level > 0) {
+    fprintf(stderr, "SCAN ");
+    for (i = 0; i < cinfo->scan_info[scan_idx].comps_in_scan; i++)
+      fprintf(stderr, "%s%d", (i==0)?"":",", cinfo->scan_info[scan_idx].component_index[i]);
+    fprintf(stderr, ": %d %d", cinfo->scan_info[scan_idx].Ss, cinfo->scan_info[scan_idx].Se);
+    fprintf(stderr, " %d %d", cinfo->scan_info[scan_idx].Ah, cinfo->scan_info[scan_idx].Al);
+    fprintf(stderr, "\n");
+  }
   
   while (size >= cinfo->dest->free_in_buffer)
   {

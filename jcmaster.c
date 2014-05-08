@@ -847,7 +847,7 @@ finish_pass_master (j_compress_ptr cinfo)
     master->scan_number++;
     break;
   case trellis_pass:
-    master->pass_type = (cinfo->optimize_scans || master->pass_number < master->pass_number_scan_opt_base-1) ? huff_opt_pass : output_pass;
+    master->pass_type = (cinfo->optimize_coding || master->pass_number < master->pass_number_scan_opt_base-1) ? huff_opt_pass : output_pass;
       
     if ((master->pass_number+1)%(cinfo->num_components*(cinfo->use_scans_in_trellis?4:2)) == 0 && cinfo->trellis_q_opt) {
       int i, j;
@@ -936,10 +936,10 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     
     for (i = 0; i < cinfo->num_scans; i++)
       master->scan_buffer[i] = NULL;
-    
-    if (cinfo->trellis_quant)
-      master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
-    else
-      master->pass_number_scan_opt_base = 0;
   }
+  
+  if (cinfo->trellis_quant)
+    master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
+  else
+    master->pass_number_scan_opt_base = 0;
 }

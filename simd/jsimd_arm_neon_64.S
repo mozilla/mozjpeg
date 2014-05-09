@@ -293,7 +293,7 @@ asm_function jsimd_idct_islow_neon
     mul             v30.4h, v30.4h, v6.4h
     mul             v31.4h, v31.4h, v7.4h
     ins             v30.2d[1], v31.2d[0]  /* 128 bit q15 */
-    sub             sp,	sp, #32
+    sub             sp, sp, #32
     st1             {v8.4h-v11.4h}, [sp]  /* save NEON registers */
     sub             sp, sp, #32
     st1             {v12.4h-v15.4h}, [sp]
@@ -365,7 +365,7 @@ asm_function jsimd_idct_islow_neon
     add             v10.4s,   v2.4s,    v8.4s
       orr             x0,       x4,       x5
     sub             v6.4s,    v2.4s,    v8.4s
-      /* pop             {x4, x5} */ 
+      /* pop             {x4, x5} */
       ldp             x4, x5, [sp], 16
     rshrn           ROW7L.4h, v4.4s,    #11
     rshrn           ROW3L.4h, v10.4s,   #11
@@ -1125,21 +1125,21 @@ jsimd_idct_4x4_neon_consts:
     smull           v28.4s, \x4,    v2.4h[2]
     smlal           v28.4s, \x8,    v0.4h[0]
     smlal           v28.4s, \x14,   v0.4h[1]
-                                    
+
     smull           v26.4s, \x16,   v1.4h[2]
     smlal           v26.4s, \x12,   v1.4h[3]
     smlal           v26.4s, \x10,   v2.4h[0]
     smlal           v26.4s, \x6,    v2.4h[1]
-                                    
+
     smull           v30.4s, \x4,    v2.4h[2]
     smlsl           v30.4s, \x8,    v0.4h[0]
     smlsl           v30.4s, \x14,   v0.4h[1]
-                                    
+
     smull           v24.4s, \x16,   v0.4h[2]
     smlal           v24.4s, \x12,   v0.4h[3]
     smlal           v24.4s, \x10,   v1.4h[0]
     smlal           v24.4s, \x6,    v1.4h[1]
-                                    
+
     add             v20.4s, v28.4s, v26.4s
     sub             v28.4s, v28.4s, v26.4s
 
@@ -1148,11 +1148,11 @@ jsimd_idct_4x4_neon_consts:
     srshr           v28.4s, v28.4s, #\shift
     xtn             \y26,   v20.4s
     xtn             \y29,   v28.4s
-.else               
+.else
     rshrn           \y26,   v20.4s, #\shift
     rshrn           \y29,   v28.4s, #\shift
-.endif              
-                    
+.endif
+
     add             v20.4s, v30.4s, v24.4s
     sub             v30.4s, v30.4s, v24.4s
 
@@ -1279,7 +1279,7 @@ asm_function jsimd_idct_4x4_neon
     st1             {v27.b}[2], [TMP3], 1
     st1             {v26.b}[3], [TMP1], 1
     st1             {v27.b}[3], [TMP3], 1
-                    
+
     st1             {v26.b}[4], [TMP2], 1
     st1             {v27.b}[4], [TMP4], 1
     st1             {v26.b}[5], [TMP2], 1

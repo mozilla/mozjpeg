@@ -18,38 +18,38 @@
 
 ; --------------------------------------------------------------------------
 
-%define SCALEBITS	16
+%define SCALEBITS       16
 
-F_0_081	equ	 5329			; FIX(0.08131)
-F_0_114	equ	 7471			; FIX(0.11400)
-F_0_168	equ	11059			; FIX(0.16874)
-F_0_250	equ	16384			; FIX(0.25000)
-F_0_299	equ	19595			; FIX(0.29900)
-F_0_331	equ	21709			; FIX(0.33126)
-F_0_418	equ	27439			; FIX(0.41869)
-F_0_587	equ	38470			; FIX(0.58700)
-F_0_337	equ	(F_0_587 - F_0_250)	; FIX(0.58700) - FIX(0.25000)
+F_0_081 equ      5329                   ; FIX(0.08131)
+F_0_114 equ      7471                   ; FIX(0.11400)
+F_0_168 equ     11059                   ; FIX(0.16874)
+F_0_250 equ     16384                   ; FIX(0.25000)
+F_0_299 equ     19595                   ; FIX(0.29900)
+F_0_331 equ     21709                   ; FIX(0.33126)
+F_0_418 equ     27439                   ; FIX(0.41869)
+F_0_587 equ     38470                   ; FIX(0.58700)
+F_0_337 equ     (F_0_587 - F_0_250)     ; FIX(0.58700) - FIX(0.25000)
 
 ; --------------------------------------------------------------------------
-	SECTION	SEG_CONST
+        SECTION SEG_CONST
 
-	alignz	16
-	global	EXTN(jconst_rgb_ycc_convert_sse2)
+        alignz  16
+        global  EXTN(jconst_rgb_ycc_convert_sse2)
 
 EXTN(jconst_rgb_ycc_convert_sse2):
 
-PW_F0299_F0337	times 4 dw  F_0_299, F_0_337
-PW_F0114_F0250	times 4 dw  F_0_114, F_0_250
-PW_MF016_MF033	times 4 dw -F_0_168,-F_0_331
-PW_MF008_MF041	times 4 dw -F_0_081,-F_0_418
-PD_ONEHALFM1_CJ	times 4 dd  (1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)
-PD_ONEHALF	times 4 dd  (1 << (SCALEBITS-1))
+PW_F0299_F0337  times 4 dw  F_0_299, F_0_337
+PW_F0114_F0250  times 4 dw  F_0_114, F_0_250
+PW_MF016_MF033  times 4 dw -F_0_168,-F_0_331
+PW_MF008_MF041  times 4 dw -F_0_081,-F_0_418
+PD_ONEHALFM1_CJ times 4 dd  (1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)
+PD_ONEHALF      times 4 dd  (1 << (SCALEBITS-1))
 
-	alignz	16
+        alignz  16
 
 ; --------------------------------------------------------------------------
-	SECTION	SEG_TEXT
-	BITS	64
+        SECTION SEG_TEXT
+        BITS    64
 
 %include "jcclrss2-64.asm"
 

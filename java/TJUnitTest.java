@@ -324,7 +324,7 @@ public class TJUnitTest {
               index = row * w + col;
             byte c = buf[index * ps];
             byte m = buf[index * ps + 1];
-            byte y = buf[index * ps + 2]; 
+            byte y = buf[index * ps + 2];
             byte k = buf[index * ps + 3];
             checkVal255(row, col, c, "C");
             if (((row / blockSize) + (col / blockSize)) % 2 == 0) {
@@ -673,7 +673,7 @@ public class TJUnitTest {
     tjc.setSubsamp(subsamp);
     tjc.setJPEGQuality(jpegQual);
     if (doYUV) {
-   	  System.out.format("%s %s -> YUV %s ... ", pfStrLong, buStrLong,
+      System.out.format("%s %s -> YUV %s ... ", pfStrLong, buStrLong,
                         subNameLong[subsamp]);
       YUVImage yuvImage = tjc.encodeYUV(pad, flags);
       if (checkBufYUV(yuvImage.getBuf(), yuvImage.getSize(), w, h, subsamp,

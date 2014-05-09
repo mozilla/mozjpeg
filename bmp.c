@@ -98,7 +98,7 @@ static void pixelconvert(unsigned char *srcbuf, int srcpf, int srcbottomup,
 }
 
 
-int loadbmp(char *filename, unsigned char **buf, int *w, int *h, 
+int loadbmp(char *filename, unsigned char **buf, int *w, int *h,
 	int dstpf, int bottomup)
 {
 	int retval=0, dstps, srcpf, tempc;

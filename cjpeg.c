@@ -170,6 +170,12 @@ usage (void)
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
+  fprintf(stderr, "  -multidcscan   Use multiple DC scans (may be incompatible with some JPEG decoders)\n");
+  fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
+  fprintf(stderr, "  -tune-psnr     Tune trellis optimization for PSNR\n");
+  fprintf(stderr, "  -tune-hvs-psnr Tune trellis optimization for PSNR-HVS (default)\n");
+  fprintf(stderr, "  -tune-ssim     Tune trellis optimization for SSIM\n");
+  fprintf(stderr, "  -tune-ms-ssim  Tune trellis optimization for MS-SSIM\n");
   fprintf(stderr, "Switches for advanced users:\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
@@ -302,6 +308,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "fastcrush", 4)) {
       cinfo->optimize_scans = FALSE;
 
+    } else if (keymatch(arg, "flat", 4)) {
+      cinfo->use_flat_quant_tbl = TRUE;
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
@@ -310,6 +320,16 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Force an RGB JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_RGB);
 
+    } else if (keymatch(arg, "lambda1", 7)) {
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      cinfo->lambda_log_scale1 = atof(argv[argn]);
+      
+    } else if (keymatch(arg, "lambda2", 7)) {
+      if (++argn >= argc)	/* advance to next argument */
+	usage();
+      cinfo->lambda_log_scale2 = atof(argv[argn]);
+      
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */
       long lval;
@@ -323,6 +343,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
+    } else if (keymatch(arg, "multidcscan", 3)) {
+      cinfo->one_dc_scan = FALSE;
+      
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */
 #ifdef ENTROPY_OPT_SUPPORTED
@@ -446,6 +469,38 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Input file is Targa format. */
       is_targa = TRUE;
 
+    } else if (keymatch(arg, "notrellis", 1)) {
+      /* disable trellis quantization */
+      cinfo->trellis_quant = FALSE;
+      
+    } else if (keymatch(arg, "tune-psnr", 6)) {
+      cinfo->use_flat_quant_tbl = TRUE;
+      cinfo->lambda_log_scale1 = 9.0;
+      cinfo->lambda_log_scale2 = 0.0;
+      cinfo->use_lambda_weight_tbl = FALSE;
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
+    } else if (keymatch(arg, "tune-ssim", 6)) {
+      cinfo->use_flat_quant_tbl = TRUE;
+      cinfo->lambda_log_scale1 = 12.0;
+      cinfo->lambda_log_scale2 = 13.5;
+      cinfo->use_lambda_weight_tbl = FALSE;
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
+    } else if (keymatch(arg, "tune-ms-ssim", 6)) {
+      cinfo->use_flat_quant_tbl = TRUE;
+      cinfo->lambda_log_scale1 = 10.5;
+      cinfo->lambda_log_scale2 = 13.0;
+      cinfo->use_lambda_weight_tbl = TRUE;
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
+    } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
+      cinfo->use_flat_quant_tbl = FALSE;
+      cinfo->lambda_log_scale1 = 16.0;
+      cinfo->lambda_log_scale2 = 15.5;
+      cinfo->use_lambda_weight_tbl = TRUE;
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
     } else {
       usage();			/* bogus switch */
     }

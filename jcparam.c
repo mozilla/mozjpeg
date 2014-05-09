@@ -90,6 +90,16 @@ static const unsigned int std_chrominance_quant_tbl[DCTSIZE2] = {
   99,  99,  99,  99,  99,  99,  99,  99
 };
 
+static const unsigned int flat_quant_tbl[DCTSIZE2] = {
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16
+};
 
 #if JPEG_LIB_VERSION >= 70
 GLOBAL(void)
@@ -101,9 +111,9 @@ jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
 {
   /* Set up two quantization tables using the specified scaling */
   jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
-		       cinfo->q_scale_factor[0], force_baseline);
+                       cinfo->q_scale_factor[0], force_baseline);
   jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
-		       cinfo->q_scale_factor[1], force_baseline);
+                       cinfo->q_scale_factor[1], force_baseline);
 }
 #endif
 
@@ -118,10 +128,17 @@ jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
  */
 {
   /* Set up two quantization tables using the specified scaling */
-  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
-		       scale_factor, force_baseline);
-  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
-		       scale_factor, force_baseline);
+  if (cinfo->use_flat_quant_tbl) {
+    jpeg_add_quant_table(cinfo, 0, flat_quant_tbl,
+                         scale_factor, force_baseline);
+    jpeg_add_quant_table(cinfo, 1, flat_quant_tbl,
+                         scale_factor, force_baseline);
+  } else {
+    jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
+                         scale_factor, force_baseline);
+    jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
+                         scale_factor, force_baseline);
+  }
 }
 
 
@@ -325,6 +342,8 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   }
 
 #ifdef C_PROGRESSIVE_SUPPORTED
+  cinfo->scan_info = NULL;
+  cinfo->num_scans = 0;
   if (!cinfo->use_moz_defaults) {
     /* Default is no multiple-scan output */
     cinfo->scan_info = NULL;
@@ -399,6 +418,8 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 
   jpeg_default_colorspace(cinfo);
   
+  cinfo->one_dc_scan = TRUE;
+  
 #ifdef C_PROGRESSIVE_SUPPORTED
   if (cinfo->use_moz_defaults) {
     cinfo->optimize_scans = TRUE;
@@ -406,6 +427,16 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   } else
     cinfo->optimize_scans = FALSE;
 #endif
+  
+  cinfo->trellis_quant = cinfo->use_moz_defaults;
+  cinfo->lambda_log_scale1 = 16.0;
+  cinfo->lambda_log_scale2 = 15.5;
+  
+  cinfo->use_lambda_weight_tbl = TRUE;
+  cinfo->use_scans_in_trellis = FALSE;
+  cinfo->trellis_freq_split = 8;
+  cinfo->trellis_num_loops = 1;
+  cinfo->trellis_q_opt = FALSE;
 }
 
 
@@ -673,7 +704,10 @@ jpeg_search_progression (j_compress_ptr cinfo)
   /* last 4 done conditionally */
   
   /* luma DC by itself */
-  scanptr = fill_dc_scans(scanptr, 1, 0, 0);
+  if (cinfo->one_dc_scan)
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
+  else
+    scanptr = fill_dc_scans(scanptr, 1, 0, 0);
   
   scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
   scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
@@ -761,7 +795,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     nscans = 10;
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->use_moz_defaults) {
+    if (cinfo->use_moz_defaults == TRUE) {
       if (ncomps > MAX_COMPS_IN_SCAN)
         nscans = 5 * ncomps;	/* 2 DC + 4 AC scans per component */
       else
@@ -793,11 +827,15 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
-    if (cinfo->use_moz_defaults) {
+    if (cinfo->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
       /* Initial DC scan */
-      scanptr = fill_dc_scans(scanptr, 1, 0, 0);
-      scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
+      if (cinfo->one_dc_scan)
+        scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
+      else {
+        scanptr = fill_dc_scans(scanptr, 1, 0, 0);
+        scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
+      }
       /* Low frequency AC scans */
       scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 2);
       scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
@@ -832,7 +870,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     }
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->use_moz_defaults) {
+    if (cinfo->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_bw.txt in jpgcrush */
       /* DC component, no successive approximation */
       scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);

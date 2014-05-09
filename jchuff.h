@@ -2,6 +2,8 @@
  * jchuff.h
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -45,3 +47,7 @@ EXTERN(void) jpeg_make_c_derived_tbl
 /* Generate an optimal table definition given the specified counts */
 EXTERN(void) jpeg_gen_optimal_table
 	JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]));
+
+EXTERN(void) quantize_trellis
+        JPP((j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef));

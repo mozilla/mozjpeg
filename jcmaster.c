@@ -27,7 +27,8 @@
 typedef enum {
 	main_pass,		/* input data, also do first output step */
 	huff_opt_pass,		/* Huffman code optimization pass */
-	output_pass		/* data output pass */
+	output_pass,		/* data output pass */
+        trellis_pass            /* trellis quantization pass */
 } c_pass_type;
 
 typedef struct {
@@ -41,6 +42,7 @@ typedef struct {
   int scan_number;		/* current index in scan_info[] */
   
   /* fields for scan optimisation */
+  int pass_number_scan_opt_base; /* pass number where scan optimization begins */
   unsigned char * scan_buffer[64]; /* buffer for a given scan */
   unsigned long scan_size[64]; /* size for a given scan */
   unsigned long best_cost; /* bit count for best frequency split */
@@ -326,9 +328,21 @@ select_scan_parameters (j_compress_ptr cinfo)
   int ci;
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED
-  if (cinfo->scan_info != NULL) {
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+  if (master->pass_number < master->pass_number_scan_opt_base) {
+    cinfo->comps_in_scan = 1;
+    if (cinfo->use_scans_in_trellis) {
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/(4*cinfo->trellis_num_loops)];
+      cinfo->Ss = (master->pass_number%4 < 2) ? 1 : cinfo->trellis_freq_split+1;
+      cinfo->Se = (master->pass_number%4 < 2) ? cinfo->trellis_freq_split : DCTSIZE2-1;
+    } else {
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/(2*cinfo->trellis_num_loops)];
+      cinfo->Ss = 1;
+      cinfo->Se = DCTSIZE2-1;
+    }
+  }
+  else if (cinfo->scan_info != NULL) {
     /* Prepare for current scan --- the script is already validated */
-    my_master_ptr master = (my_master_ptr) cinfo->master;
     const jpeg_scan_info * scanptr = cinfo->scan_info + master->scan_number;
 
     cinfo->comps_in_scan = scanptr->comps_in_scan;
@@ -467,6 +481,7 @@ METHODDEF(void)
 prepare_for_pass (j_compress_ptr cinfo)
 {
   my_master_ptr master = (my_master_ptr) cinfo->master;
+  cinfo->trellis_passes = master->pass_number < master->pass_number_scan_opt_base;
 
   switch (master->pass_type) {
   case main_pass:
@@ -534,6 +549,22 @@ prepare_for_pass (j_compress_ptr cinfo)
     (*cinfo->marker->write_scan_header) (cinfo);
     master->pub.call_pass_startup = FALSE;
     break;
+  case trellis_pass:
+    if (master->pass_number%(cinfo->num_components*(cinfo->use_scans_in_trellis?4:2)) == 1 && cinfo->trellis_q_opt) {
+      int i, j;
+
+      for (i = 0; i < NUM_QUANT_TBLS; i++) {
+        for (j = 1; j < DCTSIZE2; j++) {
+          cinfo->norm_src[i][j] = 0.0;
+          cinfo->norm_coef[i][j] = 0.0;
+        }
+      }
+    }
+    (*cinfo->entropy->start_pass) (cinfo, TRUE);
+    (*cinfo->coef->start_pass) (cinfo, JBUF_REQUANT);
+    master->pub.call_pass_startup = FALSE;
+    break;
+      
   default:
     ERREXIT(cinfo, JERR_NOT_COMPILED);
   }
@@ -575,6 +606,16 @@ copy_buffer (j_compress_ptr cinfo, int scan_idx)
   
   unsigned long size = master->scan_size[scan_idx];
   unsigned char * src = master->scan_buffer[scan_idx];
+  int i;
+  
+  if (cinfo->err->trace_level > 0) {
+    fprintf(stderr, "SCAN ");
+    for (i = 0; i < cinfo->scan_info[scan_idx].comps_in_scan; i++)
+      fprintf(stderr, "%s%d", (i==0)?"":",", cinfo->scan_info[scan_idx].component_index[i]);
+    fprintf(stderr, ": %d %d", cinfo->scan_info[scan_idx].Ss, cinfo->scan_info[scan_idx].Se);
+    fprintf(stderr, " %d %d", cinfo->scan_info[scan_idx].Ah, cinfo->scan_info[scan_idx].Al);
+    fprintf(stderr, "\n");
+  }
   
   while (size >= cinfo->dest->free_in_buffer)
   {
@@ -615,7 +656,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
         master->best_Al_luma = Al;
       } else {
         master->scan_number = luma_freq_split_scan_start - 1;
-        master->pass_number = 2 * master->scan_number + 1;
+        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
       }
     }
   
@@ -640,7 +681,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
           (idx == 3 && master->best_freq_split_idx_luma != 2) ||
           (idx == 4 && master->best_freq_split_idx_luma != 4)) {
         master->scan_number = cinfo->num_scans_luma - 1;
-        master->pass_number = 2 * master->scan_number + 1;
+        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
         master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
       }
     }
@@ -672,7 +713,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
           master->best_Al_chroma = Al;
         } else {
           master->scan_number = chroma_freq_split_scan_start - 1;
-          master->pass_number = 2 * master->scan_number + 1;
+          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
         }
       }
 
@@ -700,7 +741,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
             (idx == 3 && master->best_freq_split_idx_chroma != 2) ||
             (idx == 4 && master->best_freq_split_idx_chroma != 4)) {
           master->scan_number = cinfo->num_scans - 1;
-          master->pass_number = 2 * master->scan_number + 1;
+          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
           master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
         }
       }
@@ -713,7 +754,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
     
     copy_buffer(cinfo, 0);
 
-    if (cinfo->num_scans > cinfo->num_scans_luma) {
+    if (cinfo->num_scans > cinfo->num_scans_luma && !cinfo->one_dc_scan) {
       base_scan_idx = cinfo->num_scans_luma;
       
       if (master->interleave_chroma_dc)
@@ -791,13 +832,17 @@ finish_pass_master (j_compress_ptr cinfo)
     /* next pass is either output of scan 0 (after optimization)
      * or output of scan 1 (if no optimization).
      */
-    master->pass_type = output_pass;
-    if (! cinfo->optimize_coding)
-      master->scan_number++;
+    if (cinfo->trellis_quant)
+      master->pass_type = trellis_pass;
+    else {
+      master->pass_type = output_pass;
+      if (! cinfo->optimize_coding)
+        master->scan_number++;
+    }
     break;
   case huff_opt_pass:
     /* next pass is always output of current scan */
-    master->pass_type = output_pass;
+    master->pass_type = (master->pass_number < master->pass_number_scan_opt_base-1) ? trellis_pass : output_pass;
     break;
   case output_pass:
     /* next pass is either optimization or output of next scan */
@@ -810,6 +855,24 @@ finish_pass_master (j_compress_ptr cinfo)
     }
 
     master->scan_number++;
+    break;
+  case trellis_pass:
+    master->pass_type = (cinfo->optimize_coding || master->pass_number < master->pass_number_scan_opt_base-1) ? huff_opt_pass : output_pass;
+      
+    if ((master->pass_number+1)%(cinfo->num_components*(cinfo->use_scans_in_trellis?4:2)) == 0 && cinfo->trellis_q_opt) {
+      int i, j;
+
+      for (i = 0; i < NUM_QUANT_TBLS; i++) {
+        for (j = 1; j < DCTSIZE2; j++) {
+          if (cinfo->norm_coef[i][j] != 0.0) {
+            int q = (int)(cinfo->norm_src[i][j] / cinfo->norm_coef[i][j] + 0.5);
+            if (q > 254) q = 254;
+            if (q < 1) q = 1;
+            cinfo->quant_tbl_ptrs[i]->quantval[j] = q;
+          }
+        }
+      }
+    }
     break;
   }
 
@@ -870,6 +933,13 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   else
     master->total_passes = cinfo->num_scans;
   
+  if (cinfo->trellis_quant) {
+    if (cinfo->progressive_mode)
+      master->total_passes += ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
+    else
+      master->total_passes += 1;
+  }
+  
   if (cinfo->optimize_scans) {
     int i;
     master->best_Al_chroma = 0;
@@ -877,4 +947,9 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     for (i = 0; i < cinfo->num_scans; i++)
       master->scan_buffer[i] = NULL;
   }
+  
+  if (cinfo->trellis_quant)
+    master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
+  else
+    master->pass_number_scan_opt_base = 0;
 }

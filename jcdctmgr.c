@@ -7,6 +7,8 @@
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2011 D. R. Commander
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the forward-DCT management logic.
@@ -20,7 +22,8 @@
 #include "jpeglib.h"
 #include "jdct.h"		/* Private declarations for DCT subsystem */
 #include "jsimddct.h"
-
+#include <assert.h>
+#include <math.h>
 
 /* Private subobject for this module */
 
@@ -412,7 +415,7 @@ METHODDEF(void)
 forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
 	     JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
 	     JDIMENSION start_row, JDIMENSION start_col,
-	     JDIMENSION num_blocks)
+	     JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for integer DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
@@ -436,6 +439,16 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Perform the DCT */
     (*do_dct) (workspace);
 
+    /* Save unquantized transform coefficients for later trellis quantization */
+    if (dst) {
+      int i;
+      for (i = 0; i < DCTSIZE2; i++) {
+        dst[bi][i] = workspace[i];
+        //printf("d%d ", workspace[i]);
+      }
+      //printf("\n");
+    }
+    
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
     (*do_quantize) (coef_blocks[bi], divisors, workspace);
   }
@@ -502,7 +515,7 @@ METHODDEF(void)
 forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 		   JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
 		   JDIMENSION start_row, JDIMENSION start_col,
-		   JDIMENSION num_blocks)
+		   JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for floating-point DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
@@ -534,6 +547,290 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
 #endif /* DCT_FLOAT_SUPPORTED */
 
+#include "jchuff.h"
+
+static unsigned char jpeg_nbits_table[65536];
+static int jpeg_nbits_table_init = 0;
+
+static const float jpeg_lambda_weights_flat[64] = {
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+};
+
+static const float jpeg_lambda_weights_csf_luma[64] = {
+  3.35630f, 3.59892f, 3.20921f, 2.28102f, 1.42378f, 0.88079f, 0.58190f, 0.43454f,
+  3.59893f, 3.21284f, 2.71282f, 1.98092f, 1.30506f, 0.83852f, 0.56346f, 0.42146f,
+  3.20921f, 2.71282f, 2.12574f, 1.48616f, 0.99660f, 0.66132f, 0.45610f, 0.34609f,
+  2.28102f, 1.98092f, 1.48616f, 0.97492f, 0.64622f, 0.43812f, 0.31074f, 0.24072f,
+  1.42378f, 1.30506f, 0.99660f, 0.64623f, 0.42051f, 0.28446f, 0.20380f, 0.15975f,
+  0.88079f, 0.83852f, 0.66132f, 0.43812f, 0.28446f, 0.19092f, 0.13635f, 0.10701f,
+  0.58190f, 0.56346f, 0.45610f, 0.31074f, 0.20380f, 0.13635f, 0.09674f, 0.07558f,
+  0.43454f, 0.42146f, 0.34609f, 0.24072f, 0.15975f, 0.10701f, 0.07558f, 0.05875f,
+};
+
+GLOBAL(void)
+quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef)
+{
+  int i, j, k;
+  float accumulated_zero_dist[DCTSIZE2];
+  float accumulated_cost[DCTSIZE2];
+  int run_start[DCTSIZE2];
+  int bi;
+  float best_cost;
+  int last_coeff_idx; /* position of last nonzero coefficient */
+  float norm = 0.0;
+  float lambda_base;
+  float lambda;
+  const float *lambda_tbl = (cinfo->use_lambda_weight_tbl) ? jpeg_lambda_weights_csf_luma : jpeg_lambda_weights_flat;
+  int Ss, Se;
+  float *accumulated_zero_block_cost;
+  float *accumulated_block_cost;
+  int *block_run_start;
+  int *requires_eob;
+  int has_eob;
+  float cost_all_zeros;
+  float best_cost_skip;
+
+  Ss = cinfo->Ss;
+  Se = cinfo->Se;
+  if (Ss == 0)
+    Ss = 1;
+  if (Se < Ss)
+    return;
+  if (cinfo->trellis_eob_opt) {
+    accumulated_zero_block_cost = (float *)malloc((num_blocks + 1) * SIZEOF(float));
+    accumulated_block_cost = (float *)malloc((num_blocks + 1) * SIZEOF(float));
+    block_run_start = (int *)malloc(num_blocks * SIZEOF(int));
+    requires_eob = (int *)malloc((num_blocks + 1) * SIZEOF(int));
+    accumulated_zero_block_cost[0] = 0;
+    accumulated_block_cost[0] = 0;
+    requires_eob[0] = 0;
+  }
+  
+  if(!jpeg_nbits_table_init) {
+    for(i = 0; i < 65536; i++) {
+      int nbits = 0, temp = i;
+      while (temp) {temp >>= 1;  nbits++;}
+      jpeg_nbits_table[i] = nbits;
+    }
+    jpeg_nbits_table_init = 1;
+  }
+
+  norm = 0.0;
+  for (i = 1; i < DCTSIZE2; i++) {
+    norm += qtbl->quantval[i] * qtbl->quantval[i];
+  }
+  norm /= 63.0;
+  
+  lambda_base = 1.0 / norm;
+  
+  for (bi = 0; bi < num_blocks; bi++) {
+    
+    norm = 0.0;
+    for (i = 1; i < DCTSIZE2; i++) {
+      norm += src[bi][i] * src[bi][i];
+    }
+    norm /= 63.0;
+    
+    if (cinfo->lambda_log_scale2 > 0.0)
+      lambda = pow(2.0, cinfo->lambda_log_scale1) * lambda_base / (pow(2.0, cinfo->lambda_log_scale2) + norm);
+    else
+      lambda = pow(2.0, cinfo->lambda_log_scale1-12.0) * lambda_base;
+    
+    accumulated_zero_dist[Ss-1] = 0.0;
+    accumulated_cost[Ss-1] = 0.0;
+    
+    for (i = Ss; i <= Se; i++) {
+      int z = jpeg_natural_order[i];
+      
+      int sign = src[bi][z] >> 31;
+      int x = abs(src[bi][z]);
+      int q = 8 * qtbl->quantval[z];
+      int candidate[16];
+      int candidate_bits[16];
+      float candidate_dist[16];
+      int num_candidates;
+      int qval;
+      
+      accumulated_zero_dist[i] = x * x * lambda * lambda_tbl[z] + accumulated_zero_dist[i-1];
+      
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
+
+      if (qval == 0) {
+        coef_blocks[bi][z] = 0;
+        accumulated_cost[i] = 1e38; /* Shouldn't be needed */
+        continue;
+      }
+
+      num_candidates = jpeg_nbits_table[qval];
+      for (k = 0; k < num_candidates; k++) {
+        int delta;
+        candidate[k] = (k < num_candidates - 1) ? (2 << k) - 1 : qval;
+        delta = candidate[k] * q - x;
+        candidate_bits[k] = k+1;
+        candidate_dist[k] = delta * delta * lambda * lambda_tbl[z];
+      }
+      
+      accumulated_cost[i] = 1e38;
+      
+      for (j = Ss-1; j < i; j++) {
+        int zz = jpeg_natural_order[j];
+        if (j != Ss-1 && coef_blocks[bi][zz] == 0)
+          continue;
+        
+        int zero_run = i - 1 - j;
+        if ((zero_run >> 4) && actbl->ehufsi[0xf0] == 0)
+          continue;
+        
+        int run_bits = (zero_run >> 4) * actbl->ehufsi[0xf0];
+        zero_run &= 15;
+
+        for (k = 0; k < num_candidates; k++) {
+          int coef_bits = actbl->ehufsi[16 * zero_run + candidate_bits[k]];
+          if (coef_bits == 0)
+            continue;
+          
+          int rate = coef_bits + candidate_bits[k] + run_bits;
+          float cost = rate + candidate_dist[k];
+          cost += accumulated_zero_dist[i-1] - accumulated_zero_dist[j] + accumulated_cost[j];
+          
+          if (cost < accumulated_cost[i]) {
+            coef_blocks[bi][z] = (candidate[k] ^ sign) - sign;
+            accumulated_cost[i] = cost;
+            run_start[i] = j;
+          }
+        }
+      }
+    }
+    
+    last_coeff_idx = Ss-1;
+    best_cost = accumulated_zero_dist[Se] + actbl->ehufsi[0];
+    cost_all_zeros = accumulated_zero_dist[Se];
+    best_cost_skip = cost_all_zeros;
+    
+    for (i = Ss; i <= Se; i++) {
+      int z = jpeg_natural_order[i];
+      if (coef_blocks[bi][z] != 0) {
+        float cost = accumulated_cost[i] + accumulated_zero_dist[Se] - accumulated_zero_dist[i];
+        float cost_wo_eob = cost;
+        
+        if (i < Se)
+          cost += actbl->ehufsi[0];
+        
+        if (cost < best_cost) {
+          best_cost = cost;
+          last_coeff_idx = i;
+          best_cost_skip = cost_wo_eob;
+        }
+      }
+    }
+    
+    has_eob = (last_coeff_idx < Se) + (last_coeff_idx == Ss-1);
+    
+    /* Zero out coefficients that are part of runs */
+    i = Se;
+    while (i >= Ss)
+    {
+      while (i > last_coeff_idx) {
+        int z = jpeg_natural_order[i];
+        coef_blocks[bi][z] = 0;
+        i--;
+      }
+      last_coeff_idx = run_start[i];
+      i--;
+    }
+    
+    if (cinfo->trellis_eob_opt) {
+      accumulated_zero_block_cost[bi+1] = accumulated_zero_block_cost[bi];
+      accumulated_zero_block_cost[bi+1] += cost_all_zeros;
+      requires_eob[bi+1] = has_eob;
+      
+      best_cost = 1e38;
+      
+      if (has_eob != 2) {
+        for (i = 0; i <= bi; i++) {
+          int zero_block_run;
+          int nbits;
+          float cost;
+          
+          if (requires_eob[i] == 2)
+            continue;
+          
+          cost = best_cost_skip; /* cost of coding a nonzero block */
+          cost += accumulated_zero_block_cost[bi];
+          cost -= accumulated_zero_block_cost[i];
+          cost += accumulated_block_cost[i];
+          zero_block_run = bi - i + requires_eob[i];
+          nbits = jpeg_nbits_table[zero_block_run];
+          cost += actbl->ehufsi[16*nbits] + nbits;
+          
+          if (cost < best_cost) {
+            block_run_start[bi] = i;
+            best_cost = cost;
+            accumulated_block_cost[bi+1] = cost;
+          }
+        }
+      }
+    }
+  }
+  
+  if (cinfo->trellis_eob_opt) {
+    int last_block = num_blocks;
+    best_cost = 1e38;
+    
+    for (i = 0; i <= num_blocks; i++) {
+      int zero_block_run;
+      int nbits;
+      float cost = 0.0;
+      
+      if (requires_eob[i] == 2)
+        continue;
+
+      cost += accumulated_zero_block_cost[num_blocks];
+      cost -= accumulated_zero_block_cost[i];
+      zero_block_run = num_blocks - i + requires_eob[i];
+      nbits = jpeg_nbits_table[zero_block_run];
+      cost += actbl->ehufsi[16*nbits] + nbits;
+      if (cost < best_cost) {
+        best_cost = cost;
+        last_block = i;
+      }
+    }
+    last_block--;
+    bi = num_blocks - 1;
+    while (bi >= 0) {
+      while (bi > last_block) {
+        for (j = Ss; j <= Se; j++) {
+          int z = jpeg_natural_order[j];
+          coef_blocks[bi][z] = 0;
+        }
+        bi--;
+      }
+      last_block = block_run_start[bi]-1;
+      bi--;
+    }
+    free(accumulated_zero_block_cost);
+    free(accumulated_block_cost);
+    free(block_run_start);
+    free(requires_eob);
+  }
+  
+  if (cinfo->trellis_q_opt) {
+    for (bi = 0; bi < num_blocks; bi++) {
+      for (i = 1; i < DCTSIZE2; i++) {
+        norm_src[i] += src[bi][i] * coef_blocks[bi][i];
+        norm_coef[i] += 8 * coef_blocks[bi][i] * coef_blocks[bi][i];
+      }
+    }
+  }
+}
 
 /*
  * Initialize FDCT manager.

@@ -18,31 +18,31 @@
 
 ; --------------------------------------------------------------------------
 
-%define SCALEBITS	16
+%define SCALEBITS       16
 
-F_0_114	equ	 7471			; FIX(0.11400)
-F_0_250	equ	16384			; FIX(0.25000)
-F_0_299	equ	19595			; FIX(0.29900)
-F_0_587	equ	38470			; FIX(0.58700)
-F_0_337	equ	(F_0_587 - F_0_250)	; FIX(0.58700) - FIX(0.25000)
+F_0_114 equ      7471                   ; FIX(0.11400)
+F_0_250 equ     16384                   ; FIX(0.25000)
+F_0_299 equ     19595                   ; FIX(0.29900)
+F_0_587 equ     38470                   ; FIX(0.58700)
+F_0_337 equ     (F_0_587 - F_0_250)     ; FIX(0.58700) - FIX(0.25000)
 
 ; --------------------------------------------------------------------------
-	SECTION	SEG_CONST
+        SECTION SEG_CONST
 
-	alignz	16
-	global	EXTN(jconst_rgb_gray_convert_sse2)
+        alignz  16
+        global  EXTN(jconst_rgb_gray_convert_sse2)
 
 EXTN(jconst_rgb_gray_convert_sse2):
 
-PW_F0299_F0337	times 4 dw  F_0_299, F_0_337
-PW_F0114_F0250	times 4 dw  F_0_114, F_0_250
-PD_ONEHALF	times 4 dd  (1 << (SCALEBITS-1))
+PW_F0299_F0337  times 4 dw  F_0_299, F_0_337
+PW_F0114_F0250  times 4 dw  F_0_114, F_0_250
+PD_ONEHALF      times 4 dd  (1 << (SCALEBITS-1))
 
-	alignz	16
+        alignz  16
 
 ; --------------------------------------------------------------------------
-	SECTION	SEG_TEXT
-	BITS	64
+        SECTION SEG_TEXT
+        BITS    64
 
 %include "jcgryss2-64.asm"
 

@@ -94,10 +94,10 @@
 /* Define "boolean" as unsigned char, not int, on Windows systems.
  */
 #ifdef _WIN32
-#ifndef __RPCNDR_H__		/* don't conflict if rpcndr.h already read */
+#ifndef __RPCNDR_H__            /* don't conflict if rpcndr.h already read */
 typedef unsigned char boolean;
 #endif
-#define HAVE_BOOLEAN		/* prevent jmorecfg.h from redefining it */
+#define HAVE_BOOLEAN            /* prevent jmorecfg.h from redefining it */
 #endif
 
 
@@ -130,11 +130,11 @@ typedef unsigned char boolean;
 
 /* These defines indicate which image (non-JPEG) file formats are allowed. */
 
-#define BMP_SUPPORTED		/* BMP image file format */
-#define GIF_SUPPORTED		/* GIF image file format */
-#define PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */
-#undef RLE_SUPPORTED		/* Utah RLE image file format */
-#define TARGA_SUPPORTED		/* Targa image file format */
+#define BMP_SUPPORTED           /* BMP image file format */
+#define GIF_SUPPORTED           /* GIF image file format */
+#define PPM_SUPPORTED           /* PBMPLUS PPM/PGM image file format */
+#undef RLE_SUPPORTED            /* Utah RLE image file format */
+#define TARGA_SUPPORTED         /* Targa image file format */
 
 /* Define this if you want to name both input and output files on the command
  * line, rather than using stdout and optionally stdin.  You MUST do this if

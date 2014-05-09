@@ -22,13 +22,13 @@
 #include "jpeglib.h"
 #include "jerror.h"
 
-#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
+#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc(),free() */
 extern void * malloc JPP((size_t size));
 extern void free JPP((void *ptr));
 #endif
 
 
-#define OUTPUT_BUF_SIZE  4096	/* choose an efficiently fwrite'able size */
+#define OUTPUT_BUF_SIZE  4096   /* choose an efficiently fwrite'able size */
 
 
 /* Expanded data destination object for memory output */
@@ -36,10 +36,10 @@ extern void free JPP((void *ptr));
 typedef struct {
   struct jpeg_destination_mgr pub; /* public fields */
 
-  unsigned char ** outbuffer;	/* target buffer */
+  unsigned char ** outbuffer;   /* target buffer */
   unsigned long * outsize;
-  unsigned char * newbuffer;	/* newly allocated buffer */
-  JOCTET * buffer;		/* start of buffer */
+  unsigned char * newbuffer;    /* newly allocated buffer */
+  JOCTET * buffer;              /* start of buffer */
   size_t bufsize;
   boolean alloc;
 } my_mem_destination_mgr;
@@ -147,21 +147,21 @@ term_mem_destination (j_compress_ptr cinfo)
 
 GLOBAL(void)
 jpeg_mem_dest_tj (j_compress_ptr cinfo,
-	       unsigned char ** outbuffer, unsigned long * outsize,
-	       boolean alloc)
+               unsigned char ** outbuffer, unsigned long * outsize,
+               boolean alloc)
 {
   my_mem_dest_ptr dest;
 
-  if (outbuffer == NULL || outsize == NULL)	/* sanity check */
+  if (outbuffer == NULL || outsize == NULL)     /* sanity check */
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* The destination object is made permanent so that multiple JPEG images
    * can be written to the same buffer without re-executing jpeg_mem_dest.
    */
-  if (cinfo->dest == NULL) {	/* first time for this JPEG object? */
+  if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  SIZEOF(my_mem_destination_mgr));
+                                  SIZEOF(my_mem_destination_mgr));
     dest = (my_mem_dest_ptr) cinfo->dest;
     dest->newbuffer = NULL;
   }

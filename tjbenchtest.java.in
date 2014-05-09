@@ -65,7 +65,7 @@ for image in $IMAGES; do
 
 	cp $IMGDIR/$image $OUTDIR
 	basename=`basename $image .bmp`
-	runme $EXEDIR/cjpeg -quality 95 -dct fast -grayscale -outfile $OUTDIR/${basename}_GRAY_fast_cjpeg.jpg $IMGDIR/${basename}.bmp 
+	runme $EXEDIR/cjpeg -quality 95 -dct fast -grayscale -outfile $OUTDIR/${basename}_GRAY_fast_cjpeg.jpg $IMGDIR/${basename}.bmp
 	runme $EXEDIR/cjpeg -quality 95 -dct fast -sample 2x2 -outfile $OUTDIR/${basename}_420_fast_cjpeg.jpg $IMGDIR/${basename}.bmp
 	runme $EXEDIR/cjpeg -quality 95 -dct fast -sample 2x1 -outfile $OUTDIR/${basename}_422_fast_cjpeg.jpg $IMGDIR/${basename}.bmp
 	runme $EXEDIR/cjpeg -quality 95 -dct fast -sample 1x1 -outfile $OUTDIR/${basename}_444_fast_cjpeg.jpg $IMGDIR/${basename}.bmp

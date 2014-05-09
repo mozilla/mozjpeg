@@ -70,7 +70,7 @@ libsimd_la_SOURCES = jsimd_mips.c jsimd_mips_dspr2_asm.h jsimd_mips_dspr2.S
 
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir) 
+AM_CPPFLAGS = -I$(top_srcdir)
 
 .asm.lo:
 	$(LIBTOOL) --mode=compile --tag NASM $(srcdir)/nasm_lt.sh $(NASM) $(NAFLAGS) -I$(srcdir) -I. $< -o $@

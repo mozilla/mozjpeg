@@ -49,7 +49,7 @@ TURBOJPEG_1.2
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3BIIIII;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3IIIIII;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3BI;
-		Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy;		
+		Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy;
 		Java_org_libjpegturbo_turbojpeg_TJTransformer_init;
 		Java_org_libjpegturbo_turbojpeg_TJTransformer_transform;
 } TURBOJPEG_1.1;

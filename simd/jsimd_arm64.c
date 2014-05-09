@@ -266,7 +266,7 @@ jsimd_can_h2v1_upsample (void)
 
 GLOBAL(void)
 jsimd_h2v2_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info * compptr, 
+                     jpeg_component_info * compptr,
                      JSAMPARRAY input_data,
                      JSAMPARRAY * output_data_ptr)
 {
@@ -274,7 +274,7 @@ jsimd_h2v2_upsample (j_decompress_ptr cinfo,
 
 GLOBAL(void)
 jsimd_h2v1_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info * compptr, 
+                     jpeg_component_info * compptr,
                      JSAMPARRAY input_data,
                      JSAMPARRAY * output_data_ptr)
 {
@@ -298,7 +298,7 @@ jsimd_can_h2v1_fancy_upsample (void)
 
 GLOBAL(void)
 jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info * compptr, 
+                           jpeg_component_info * compptr,
                            JSAMPARRAY input_data,
                            JSAMPARRAY * output_data_ptr)
 {
@@ -306,7 +306,7 @@ jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
 
 GLOBAL(void)
 jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info * compptr, 
+                           jpeg_component_info * compptr,
                            JSAMPARRAY input_data,
                            JSAMPARRAY * output_data_ptr)
 {

@@ -251,7 +251,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 					dstbuf[bindex]=abs(dstbuf[bindex]-y);
 				}
 			}
-		}		
+		}
 		else
 		{
 			for(row=0; row<h; row++)

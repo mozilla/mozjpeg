@@ -431,7 +431,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
 	bailif0(jpegBuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 
-	if(tjDecompressHeader3(handle, jpegBuf, (unsigned long)jpegSize, 
+	if(tjDecompressHeader3(handle, jpegBuf, (unsigned long)jpegSize,
 		&width, &height, &jpegSubsamp, &jpegColorspace)==-1)
 	{
 		(*env)->ReleasePrimitiveArrayCritical(env, src, jpegBuf, 0);
@@ -550,7 +550,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 {
 	Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3IIIIIIII
 		(env, obj, src, jpegSize, dst, 0, 0, width, stride, height, pf, flags);
-	
+
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3BIIII

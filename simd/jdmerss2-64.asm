@@ -21,35 +21,35 @@
 
 ; --------------------------------------------------------------------------
 
-%define SCALEBITS	16
+%define SCALEBITS       16
 
-F_0_344	equ	 22554			; FIX(0.34414)
-F_0_714	equ	 46802			; FIX(0.71414)
-F_1_402	equ	 91881			; FIX(1.40200)
-F_1_772	equ	116130			; FIX(1.77200)
-F_0_402	equ	(F_1_402 - 65536)	; FIX(1.40200) - FIX(1)
-F_0_285	equ	( 65536 - F_0_714)	; FIX(1) - FIX(0.71414)
-F_0_228	equ	(131072 - F_1_772)	; FIX(2) - FIX(1.77200)
+F_0_344 equ      22554                  ; FIX(0.34414)
+F_0_714 equ      46802                  ; FIX(0.71414)
+F_1_402 equ      91881                  ; FIX(1.40200)
+F_1_772 equ     116130                  ; FIX(1.77200)
+F_0_402 equ     (F_1_402 - 65536)       ; FIX(1.40200) - FIX(1)
+F_0_285 equ     ( 65536 - F_0_714)      ; FIX(1) - FIX(0.71414)
+F_0_228 equ     (131072 - F_1_772)      ; FIX(2) - FIX(1.77200)
 
 ; --------------------------------------------------------------------------
-	SECTION	SEG_CONST
+        SECTION SEG_CONST
 
-	alignz	16
-	global	EXTN(jconst_merged_upsample_sse2)
+        alignz  16
+        global  EXTN(jconst_merged_upsample_sse2)
 
 EXTN(jconst_merged_upsample_sse2):
 
-PW_F0402	times 8 dw  F_0_402
-PW_MF0228	times 8 dw -F_0_228
-PW_MF0344_F0285	times 4 dw -F_0_344, F_0_285
-PW_ONE		times 8 dw  1
-PD_ONEHALF	times 4 dd  1 << (SCALEBITS-1)
+PW_F0402        times 8 dw  F_0_402
+PW_MF0228       times 8 dw -F_0_228
+PW_MF0344_F0285 times 4 dw -F_0_344, F_0_285
+PW_ONE          times 8 dw  1
+PD_ONEHALF      times 4 dd  1 << (SCALEBITS-1)
 
-	alignz	16
+        alignz  16
 
 ; --------------------------------------------------------------------------
-	SECTION	SEG_TEXT
-	BITS	64
+        SECTION SEG_TEXT
+        BITS    64
 
 %include "jdmrgss2-64.asm"
 

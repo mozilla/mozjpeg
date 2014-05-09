@@ -17,7 +17,7 @@
 
 LOCAL(void)
 add_huff_table (j_common_ptr cinfo,
-		JHUFF_TBL **htblptr, const UINT8 *bits, const UINT8 *val)
+                JHUFF_TBL **htblptr, const UINT8 *bits, const UINT8 *val)
 /* Define a Huffman table */
 {
   int nsymbols, len;

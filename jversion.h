@@ -13,22 +13,22 @@
 
 #if JPEG_LIB_VERSION >= 80
 
-#define JVERSION	"8d  15-Jan-2012"
+#define JVERSION        "8d  15-Jan-2012"
 
 #elif JPEG_LIB_VERSION >= 70
 
-#define JVERSION	"7  27-Jun-2009"
+#define JVERSION        "7  27-Jun-2009"
 
 #else
 
-#define JVERSION	"6b  27-Mar-1998"
+#define JVERSION        "6b  27-Mar-1998"
 
 #endif
 
-#define JCOPYRIGHT	"Copyright (C) 1991-2012 Thomas G. Lane, Guido Vollbeding\n" \
-			"Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
-			"Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
-			"Copyright (C) 2009-2014 D. R. Commander\n" \
-			"Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
-			"Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
-			"Copyright (C) 2013 Linaro Limited"
+#define JCOPYRIGHT      "Copyright (C) 1991-2012 Thomas G. Lane, Guido Vollbeding\n" \
+                        "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
+                        "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
+                        "Copyright (C) 2009-2014 D. R. Commander\n" \
+                        "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
+                        "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
+                        "Copyright (C) 2013 Linaro Limited"

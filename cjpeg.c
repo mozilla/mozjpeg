@@ -170,7 +170,7 @@ usage (void)
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
-  fprintf(stderr, "  -onedcscan     Use a single DC scan containing all components\n");
+  fprintf(stderr, "  -multidcscan   Use multiple DC scans (may be incompatible with some JPEG decoders)\n");
   fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
   fprintf(stderr, "  -tune-psnr     Tune trellis optimization for PSNR\n");
   fprintf(stderr, "  -tune-hvs-psnr Tune trellis optimization for PSNR-HVS (default)\n");
@@ -343,8 +343,8 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
-    } else if (keymatch(arg, "onedcscan", 3)) {
-      cinfo->one_dc_scan = TRUE;
+    } else if (keymatch(arg, "multidcscan", 3)) {
+      cinfo->one_dc_scan = FALSE;
       
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */

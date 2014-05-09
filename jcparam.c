@@ -418,6 +418,8 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 
   jpeg_default_colorspace(cinfo);
   
+  cinfo->one_dc_scan = TRUE;
+  
 #ifdef C_PROGRESSIVE_SUPPORTED
   if (cinfo->use_moz_defaults) {
     cinfo->optimize_scans = TRUE;

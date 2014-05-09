@@ -522,8 +522,8 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
     beqz           a0, 3f
      sll           t0, a0, 2
     lw             s1, 0(a3)
-    addu           s0, s1, t0
     li             s3, 0x10001
+    addu           s0, s1, t0
 0:
     addiu          t8, a1, -2
     srl            t9, t8, 2
@@ -574,8 +574,9 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
      addiu         t7, 4
 11:
     andi           t8, 3
-    beqz           t8, 3f
+    beqz           t8, 22f
      addiu         t7, 1
+
 2:
     lbu            t0, 0(t7)
     addiu          t7, 1
@@ -595,6 +596,7 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
     bgtz           t8, 2b
      addiu         s2, 2
 
+22:
     lbu            t0, 0(t7)
     lbu            t2, -1(t7)
     sll            t1, t0, 1

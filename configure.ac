@@ -90,6 +90,7 @@ if test "x${SUNCC}" = "xyes"; then
 fi
 
 # Checks for libraries.
+AC_CHECK_LIB([m],[pow])
 
 # Checks for header files.
 AC_HEADER_STDC

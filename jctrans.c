@@ -89,6 +89,8 @@ jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
 #endif
   /* Initialize all parameters to default values */
   jpeg_set_defaults(dstinfo);
+  dstinfo->trellis_quant = FALSE;
+  
   /* jpeg_set_defaults may choose wrong colorspace, eg YCbCr if input is RGB.
    * Fix it to get the right header markers for the image colorspace.
    */

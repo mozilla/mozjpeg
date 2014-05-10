@@ -3,58 +3,52 @@ noinst_LTLIBRARIES = libsimd.la
 BUILT_SOURCES = jsimdcfg.inc
 
 EXTRA_DIST = nasm_lt.sh CMakeLists.txt \
-	i386-mmx/jccolext.asm i386-mmx/jcgryext.asm i386-mmx/jdcolext.asm \
-	i386-mmx/jdmrgext.asm \
-	i386-sse2/jccolext.asm i386-sse2/jcgryext.asm i386-sse2/jdcolext.asm \
-	i386-sse2/jdmrgext.asm \
-	x86_64-sse2/jccolext.asm x86_64-sse2/jcgryext.asm x86_64-sse2/jdcolext.asm \
-	x86_64-sse2/jdmrgext.asm
+	jccolext-mmx.asm   jcgryext-mmx.asm   jdcolext-mmx.asm   jdmrgext-mmx.asm \
+	jccolext-sse2.asm  jcgryext-sse2.asm  jdcolext-sse2.asm  jdmrgext-sse2.asm \
+	jccolext-sse2-64.asm  jcgryext-sse2-64.asm  jdcolext-sse2-64.asm \
+	jdmrgext-sse2-64.asm
 
 if SIMD_X86_64
 
-libsimd_la_SOURCES = jsimd_x86_64.c \
-	jsimd.h jsimdcfg.inc.h \
-	jsimdext.inc jcolsamp.inc jdct.inc \
-	x86_64-sse/jfdctflt.asm  x86_64-sse2/jcgray.asm \
-	x86_64-sse2/jccolor.asm  x86_64-sse2/jdcolor.asm \
-	x86_64-sse2/jcsample.asm x86_64-sse2/jdsample.asm x86_64-sse2/jdmerge.asm \
-	x86_64-sse2/jquanti.asm  x86_64-sse2/jfdctfst.asm x86_64-sse2/jfdctint.asm \
-	x86_64-sse2/jidctred.asm x86_64-sse2/jidctint.asm x86_64-sse2/jidctfst.asm \
-	x86_64-sse2/jquantf.asm  x86_64-sse2/jidctflt.asm
+libsimd_la_SOURCES = jsimd_x86_64.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
+	jcolsamp.inc jdct.inc jfdctflt-sse-64.asm \
+	jccolor-sse2-64.asm   jcgray-sse2-64.asm    jcsample-sse2-64.asm \
+	jdcolor-sse2-64.asm   jdmerge-sse2-64.asm   jdsample-sse2-64.asm \
+	jfdctfst-sse2-64.asm  jfdctint-sse2-64.asm  jidctflt-sse2-64.asm \
+	jidctfst-sse2-64.asm  jidctint-sse2-64.asm  jidctred-sse2-64.asm  \
+	jquantf-sse2-64.asm   jquanti-sse2-64.asm
 
-x86_64-sse2/jccolor.lo: x86_64-sse2/jccolext.asm
-x86_64-sse2/jcgray.lo:  x86_64-sse2/jcgryext.asm
-x86_64-sse2/jdcolor.lo: x86_64-sse2/jdcolext.asm
-x86_64-sse2/jdmerge.lo: x86_64-sse2/jdmrgext.asm
+jccolor-sse2-64.lo:  jccolext-sse2-64.asm
+jcgray-sse2-64.lo:   jcgryext-sse2-64.asm
+jdcolor-sse2-64.lo:  jdcolext-sse2-64.asm
+jdmerge-sse2-64.lo:  jdmrgext-sse2-64.asm
 
 endif
 
 if SIMD_I386
 
-libsimd_la_SOURCES = jsimd_i386.c \
-	jsimd.h jsimdcfg.inc.h \
-	jsimdext.inc jcolsamp.inc jdct.inc \
-	jsimdcpu.asm \
-	i386-mmx/jccolor.asm   i386-mmx/jdcolor.asm    i386-mmx/jcgray.asm \
-	i386-mmx/jcsample.asm  i386-mmx/jdsample.asm   i386-mmx/jdmerge.asm \
-	i386-mmx/jquant.asm    i386-mmx/jfdctfst.asm   i386-mmx/jfdctint.asm \
-	i386-mmx/jidctred.asm  i386-mmx/jidctint.asm   i386-mmx/jidctfst.asm \
-	i386-3dnow/jquant.asm  i386-3dnow/jfdctflt.asm i386-3dnow/jidctflt.asm \
-	i386-sse/jquant.asm    i386-sse/jfdctflt.asm   i386-sse/jidctflt.asm \
-	i386-sse2/jccolor.asm  i386-sse2/jdcolor.asm   i386-sse2/jcgray.asm \
-	i386-sse2/jcsample.asm i386-sse2/jdsample.asm  i386-sse2/jdmerge.asm \
-	i386-sse2/jquanti.asm  i386-sse2/jfdctfst.asm  i386-sse2/jfdctint.asm \
-	i386-sse2/jidctred.asm i386-sse2/jidctint.asm  i386-sse2/jidctfst.asm \
-	i386-sse2/jquantf.asm  i386-sse2/jidctflt.asm
+libsimd_la_SOURCES = jsimd_i386.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
+	jcolsamp.inc jdct.inc jsimdcpu.asm \
+	jfdctflt-3dn.asm   jidctflt-3dn.asm   jquant-3dn.asm \
+	jccolor-mmx.asm    jcgray-mmx.asm     jcsample-mmx.asm \
+	jdcolor-mmx.asm    jdmerge-mmx.asm    jdsample-mmx.asm \
+	jfdctfst-mmx.asm   jfdctint-mmx.asm   jidctfst-mmx.asm \
+	jidctint-mmx.asm   jidctred-mmx.asm   jquant-mmx.asm \
+	jfdctflt-sse.asm   jidctflt-sse.asm   jquant-sse.asm \
+	jccolor-sse2.asm   jcgray-sse2.asm    jcsample-sse2.asm \
+	jdcolor-sse2.asm   jdmerge-sse2.asm   jdsample-sse2.asm \
+	jfdctfst-sse2.asm  jfdctint-sse2.asm  jidctflt-sse2.asm \
+	jidctfst-sse2.asm  jidctint-sse2.asm  jidctred-sse2.asm  \
+	jquantf-sse2.asm   jquanti-sse2.asm
 
-i386-mmx/jccolor.lo:  i386-mmx/jccolext.asm
-i386-mmx/jcgray.lo:   i386-mmx/jcgryext.asm
-i386-mmx/jdcolor.lo:  i386-mmx/jdcolext.asm
-i386-mmx/jdmerge.lo:  i386-mmx/jdmrgext.asm
-i386-sse2/jccolor.lo: i386-sse2/jccolext.asm
-i386-sse2/jcgray.lo:  i386-sse2/jcgryext.asm
-i386-sse2/jdcolor.lo: i386-sse2/jdcolext.asm
-i386-sse2/jdmerge.lo: i386-sse2/jdmrgext.asm
+jccolor-mmx.lo:   jccolext-mmx.asm
+jcgray.-mmx.lo:   jcgryext-mmx.asm
+jdcolor-mmx.lo:   jdcolext-mmx.asm
+jdmerge-mmx.lo:   jdmrgext-mmx.asm
+jccolor-sse2.lo:  jccolext-sse2.asm
+jcgray-sse2.lo:   jcgryext-sse2.asm
+jdcolor-sse2.lo:  jdcolext-sse2.asm
+jdmerge-sse2.lo:  jdmrgext-sse2.asm
 
 endif
 

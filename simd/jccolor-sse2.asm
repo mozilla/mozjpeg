@@ -1,12 +1,9 @@
 ;
-; jccolor.asm - colorspace conversion (MMX)
+; jccolor.asm - colorspace conversion (SSE2)
 ;
-; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright 2009 D. R. Commander
-;
-; Based on
 ; x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
+; Copyright (C) 2009, D. R. Commander.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
 ; This file should be assembled with NASM (Netwide Assembler),
@@ -37,16 +34,16 @@ F_0_337 equ     (F_0_587 - F_0_250)     ; FIX(0.58700) - FIX(0.25000)
         SECTION SEG_CONST
 
         alignz  16
-        global  EXTN(jconst_rgb_ycc_convert_mmx)
+        global  EXTN(jconst_rgb_ycc_convert_sse2)
 
-EXTN(jconst_rgb_ycc_convert_mmx):
+EXTN(jconst_rgb_ycc_convert_sse2):
 
-PW_F0299_F0337  times 2 dw  F_0_299, F_0_337
-PW_F0114_F0250  times 2 dw  F_0_114, F_0_250
-PW_MF016_MF033  times 2 dw -F_0_168,-F_0_331
-PW_MF008_MF041  times 2 dw -F_0_081,-F_0_418
-PD_ONEHALFM1_CJ times 2 dd  (1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)
-PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
+PW_F0299_F0337  times 4 dw  F_0_299, F_0_337
+PW_F0114_F0250  times 4 dw  F_0_114, F_0_250
+PW_MF016_MF033  times 4 dw -F_0_168,-F_0_331
+PW_MF008_MF041  times 4 dw -F_0_081,-F_0_418
+PD_ONEHALFM1_CJ times 4 dd  (1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)
+PD_ONEHALF      times 4 dd  (1 << (SCALEBITS-1))
 
         alignz  16
 
@@ -54,7 +51,7 @@ PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
         SECTION SEG_TEXT
         BITS    32
 
-%include "i386-mmx/jccolext.asm"
+%include "jccolext-sse2.asm"
 
 %undef RGB_RED
 %undef RGB_GREEN
@@ -64,8 +61,8 @@ PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
 %define RGB_GREEN EXT_RGB_GREEN
 %define RGB_BLUE EXT_RGB_BLUE
 %define RGB_PIXELSIZE EXT_RGB_PIXELSIZE
-%define jsimd_rgb_ycc_convert_mmx jsimd_extrgb_ycc_convert_mmx
-%include "i386-mmx/jccolext.asm"
+%define jsimd_rgb_ycc_convert_sse2 jsimd_extrgb_ycc_convert_sse2
+%include "jccolext-sse2.asm"
 
 %undef RGB_RED
 %undef RGB_GREEN
@@ -75,8 +72,8 @@ PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
 %define RGB_GREEN EXT_RGBX_GREEN
 %define RGB_BLUE EXT_RGBX_BLUE
 %define RGB_PIXELSIZE EXT_RGBX_PIXELSIZE
-%define jsimd_rgb_ycc_convert_mmx jsimd_extrgbx_ycc_convert_mmx
-%include "i386-mmx/jccolext.asm"
+%define jsimd_rgb_ycc_convert_sse2 jsimd_extrgbx_ycc_convert_sse2
+%include "jccolext-sse2.asm"
 
 %undef RGB_RED
 %undef RGB_GREEN
@@ -86,8 +83,8 @@ PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
 %define RGB_GREEN EXT_BGR_GREEN
 %define RGB_BLUE EXT_BGR_BLUE
 %define RGB_PIXELSIZE EXT_BGR_PIXELSIZE
-%define jsimd_rgb_ycc_convert_mmx jsimd_extbgr_ycc_convert_mmx
-%include "i386-mmx/jccolext.asm"
+%define jsimd_rgb_ycc_convert_sse2 jsimd_extbgr_ycc_convert_sse2
+%include "jccolext-sse2.asm"
 
 %undef RGB_RED
 %undef RGB_GREEN
@@ -97,8 +94,8 @@ PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
 %define RGB_GREEN EXT_BGRX_GREEN
 %define RGB_BLUE EXT_BGRX_BLUE
 %define RGB_PIXELSIZE EXT_BGRX_PIXELSIZE
-%define jsimd_rgb_ycc_convert_mmx jsimd_extbgrx_ycc_convert_mmx
-%include "i386-mmx/jccolext.asm"
+%define jsimd_rgb_ycc_convert_sse2 jsimd_extbgrx_ycc_convert_sse2
+%include "jccolext-sse2.asm"
 
 %undef RGB_RED
 %undef RGB_GREEN
@@ -108,8 +105,8 @@ PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
 %define RGB_GREEN EXT_XBGR_GREEN
 %define RGB_BLUE EXT_XBGR_BLUE
 %define RGB_PIXELSIZE EXT_XBGR_PIXELSIZE
-%define jsimd_rgb_ycc_convert_mmx jsimd_extxbgr_ycc_convert_mmx
-%include "i386-mmx/jccolext.asm"
+%define jsimd_rgb_ycc_convert_sse2 jsimd_extxbgr_ycc_convert_sse2
+%include "jccolext-sse2.asm"
 
 %undef RGB_RED
 %undef RGB_GREEN
@@ -119,5 +116,5 @@ PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
 %define RGB_GREEN EXT_XRGB_GREEN
 %define RGB_BLUE EXT_XRGB_BLUE
 %define RGB_PIXELSIZE EXT_XRGB_PIXELSIZE
-%define jsimd_rgb_ycc_convert_mmx jsimd_extxrgb_ycc_convert_mmx
-%include "i386-mmx/jccolext.asm"
+%define jsimd_rgb_ycc_convert_sse2 jsimd_extxrgb_ycc_convert_sse2
+%include "jccolext-sse2.asm"

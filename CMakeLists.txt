@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 project(libmozjpeg C)
-set(VERSION 1.0.0)
+set(VERSION 2.0pre)
 
 if(MINGW OR CYGWIN)
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)

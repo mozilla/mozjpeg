@@ -442,11 +442,31 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Save unquantized transform coefficients for later trellis quantization */
     if (dst) {
       int i;
-      for (i = 0; i < DCTSIZE2; i++) {
-        dst[bi][i] = workspace[i];
-        //printf("d%d ", workspace[i]);
+      if (cinfo->dct_method == JDCT_IFAST) {
+	static const INT16 aanscales[DCTSIZE2] = {
+	  /* precomputed values scaled up by 14 bits */
+	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
+	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
+	  19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
+	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+	  12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
+          8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
+          4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
+	};
+        
+        for (i = 0; i < DCTSIZE2; i++) {
+          int x = workspace[i];
+          int s = aanscales[i];
+          x = (x >= 0) ? (x * 32768 + s) / (2*s) : (x * 32768 - s) / (2*s);
+          dst[bi][i] = x;
+        }
+        
+      } else {
+        for (i = 0; i < DCTSIZE2; i++) {
+          dst[bi][i] = workspace[i];
+        }
       }
-      //printf("\n");
     }
     
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
@@ -539,6 +559,26 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
     /* Perform the DCT */
     (*do_dct) (workspace);
+
+    /* Save unquantized transform coefficients for later trellis quantization */
+    /* Currently save as integer values. Could save float values but would require */
+    /* modifications to memory allocation and trellis quantization */
+    
+    if (dst) {
+      int i;
+      static const double aanscalefactor[DCTSIZE] = {
+        1.0, 1.387039845, 1.306562965, 1.175875602,
+        1.0, 0.785694958, 0.541196100, 0.275899379
+      };
+
+      for (i = 0; i < DCTSIZE2; i++) {
+        float v = workspace[i];
+        v /= aanscalefactor[i%8];
+        v /= aanscalefactor[i/8];
+        int x = (v >= 0.0) ? (int)(v + 0.5) : (int)(v - 0.5);
+        dst[bi][i] = x;
+      }
+    }
 
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
     (*do_quantize) (coef_blocks[bi], divisors, workspace);

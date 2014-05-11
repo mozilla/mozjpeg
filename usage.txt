@@ -171,7 +171,6 @@ Switches for advanced users:
 
         -dct int        Use integer DCT method (default).
         -dct fast       Use fast integer DCT (less accurate).
-        -dct float      Use floating-point DCT method.
                         In libjpeg-turbo, the fast method is generally about
                         5-15% faster than the int method when using the
                         x86/x86-64 SIMD extensions (results may vary with other
@@ -187,13 +186,18 @@ Switches for advanced users:
                         Do not use the fast method with quality levels above
                         97.  The algorithm often degenerates at quality=98 and
                         above and can actually produce a more lossy image than
-                        if lower quality levels had been used.  The float
-                        method is mostly a legacy feature.  It does not produce
-                        significantly more accurate results than the int
-                        method, and it is much slower.  The float method may
-                        also give different results on different machines due
-                        to varying roundoff behavior, whereas the integer
-                        methods should give the same results on all machines.
+                        if lower quality levels had been used.  Also, in
+                        libjpeg-turbo, the fast method is not fully accerated
+                        for quality levels above 97, so it will be slower than
+                        the int method.
+        -dct float      Use floating-point DCT method.
+                        The float method is mainly a legacy feature.  It does
+                        not produce significantly more accurate results than
+                        the int method, and it is much slower.  The float
+                        method may also give different results on different
+                        machines due to varying roundoff behavior, whereas the
+                        integer methods should give the same results on all
+                        machines.
 
         -restart N      Emit a JPEG restart marker every N MCU rows, or every
                         N MCU blocks if "B" is attached to the number.
@@ -310,7 +314,6 @@ Switches for advanced users:
 
         -dct int        Use integer DCT method (default).
         -dct fast       Use fast integer DCT (less accurate).
-        -dct float      Use floating-point DCT method.
                         In libjpeg-turbo, the fast method is generally about
                         5-15% faster than the int method when using the
                         x86/x86-64 SIMD extensions (results may vary with other
@@ -330,13 +333,15 @@ Switches for advanced users:
                         using quality levels above 97.  The algorithm often
                         degenerates for such images and can actually produce
                         a more lossy output image than if the JPEG image had
-                        been compressed using lower quality levels.  The float
-                        method is mostly a legacy feature.  It does not produce
-                        significantly more accurate results than the int
-                        method, and it is much slower.  The float method may
-                        also give different results on different machines due
-                        to varying roundoff behavior, whereas the integer
-                        methods should give the same results on all machines.
+                        been compressed using lower quality levels.
+        -dct float      Use floating-point DCT method.
+                        The float method is mainly a legacy feature.  It does
+                        not produce significantly more accurate results than
+                        the int method, and it is much slower.  The float
+                        method may also give different results on different
+                        machines due to varying roundoff behavior, whereas the
+                        integer methods should give the same results on all
+                        machines.
 
         -dither fs      Use Floyd-Steinberg dithering in color quantization.
         -dither ordered Use ordered dithering in color quantization.

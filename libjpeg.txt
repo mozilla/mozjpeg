@@ -897,12 +897,14 @@ J_DCT_METHOD dct_method
         JDCT_ISLOW, but this can be larger for some images.  Do not use
         JDCT_IFAST with quality levels above 97.  The algorithm often
         degenerates at quality=98 and above and can actually produce a more
-        lossy image than if lower quality levels had been used.  JDCT_FLOAT is
-        mostly a legacy feature.  It does not produce significantly more
-        accurate results than the ISLOW method, and it is much slower.  The
-        FLOAT method may also give different results on different machines due
-        to varying roundoff behavior, whereas the integer methods should give
-        the same results on all machines.
+        lossy image than if lower quality levels had been used.  Also, in
+        libjpeg-turbo, JDCT_IFAST is not fully accelerated for quality levels
+        above 97, so it will be slower than JDCT_ISLOW.  JDCT_FLOAT is mainly a
+        legacy feature.  It does not produce significantly more accurate
+        results than the ISLOW method, and it is much slower.  The FLOAT method
+        may also give different results on different machines due to varying
+        roundoff behavior, whereas the integer methods should give the same
+        results on all machines.
 
 J_COLOR_SPACE jpeg_color_space
 int num_components
@@ -1199,7 +1201,7 @@ J_DCT_METHOD dct_method
         when decompressing images that were compressed using quality levels
         above 97.  The algorithm often degenerates for such images and can
         actually produce a more lossy output image than if the JPEG image had
-        been compressed using lower quality levels.  JDCT_FLOAT is mostly a
+        been compressed using lower quality levels.  JDCT_FLOAT is mainly a
         legacy feature.  It does not produce significantly more accurate
         results than the ISLOW method, and it is much slower.  The FLOAT method
         may also give different results on different machines due to varying

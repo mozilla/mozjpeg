@@ -54,6 +54,14 @@ if compiler optimization was enabled when libjpeg-turbo was built.  This caused
 the regression tests to fail when doing a release build under Visual C++ 2010
 and later.
 
+[7] Improved the accuracy and performance of the non-SIMD implementation of the
+floating point inverse DCT (using code borrowed from libjpeg v8a and later.)
+The accuracy of this implementation now matches the accuracy of the SSE/SSE2
+implementation.  Note, however, that the floating point DCT/IDCT algorithms are
+mainly a legacy feature.  They generally do not produce significantly better
+accuracy than the slow integer DCT/IDCT algorithms, and they are quite a bit
+slower.
+
 
 1.3.1
 =====

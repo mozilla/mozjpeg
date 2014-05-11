@@ -1,4 +1,4 @@
-.TH DJPEG 1 "18 January 2013"
+.TH DJPEG 1 "11 May 2014"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -115,14 +115,28 @@ Use integer DCT method (default).
 .TP
 .B \-dct fast
 Use fast integer DCT (less accurate).
+In libjpeg-turbo, the fast method is generally about 5-15% faster than the int
+method when using the x86/x86-64 SIMD extensions (results may vary with other
+SIMD implementations, or when using libjpeg-turbo without SIMD extensions.)  If
+the JPEG image was compressed using a quality level of 85 or below, then there
+should be little or no perceptible difference between the two algorithms.  When
+decompressing images that were compressed using quality levels above 85,
+however, the difference between the fast and int methods becomes more
+pronounced.  With images compressed using quality=97, for instance, the fast
+method incurs generally about a 4-6 dB loss (in PSNR) relative to the int
+method, but this can be larger for some images.  If you can avoid it, do not
+use the fast method when decompressing images that were compressed using
+quality levels above 97.  The algorithm often degenerates for such images and
+can actually produce a more lossy output image than if the JPEG image had been
+compressed using lower quality levels.
 .TP
 .B \-dct float
 Use floating-point DCT method.
-The float method is very slightly more accurate than the int method, but is
-much slower unless your machine has very fast floating-point hardware.  Also
-note that results of the floating-point method may vary slightly across
-machines, while the integer methods should give the same results everywhere.
-The fast integer method is much less accurate than the other two.
+The float method is mostly a legacy feature.  It does not produce significantly
+more accurate results than the int method, and it is much slower.  The float
+method may also give different results on different machines due to varying
+roundoff behavior, whereas the integer methods should give the same results on
+all machines.
 .TP
 .B \-dither fs
 Use Floyd-Steinberg dithering in color quantization.

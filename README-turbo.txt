@@ -294,10 +294,16 @@ details.
 
 For the most part, libjpeg-turbo should produce identical output to libjpeg
 v6b.  The one exception to this is when using the floating point DCT/IDCT, in
-which case the outputs of libjpeg v6b and libjpeg-turbo are not guaranteed to
-be identical (the accuracy of the floating point DCT/IDCT is constant when
-using libjpeg-turbo's SIMD extensions, but otherwise, it can depend heavily on
-the compiler and compiler settings.)
+which case the outputs of libjpeg v6b and libjpeg-turbo can differ for the
+following reasons:
+
+-- The SSE/SSE2 floating point DCT implementation in libjpeg-turbo is ever so
+   slightly more accurate than the implementation in libjpeg v6b, but not by
+   any amount perceptible to human vision (generally in the range of 0.01 to
+   0.08 dB gain in PNSR.)
+-- When not using the SIMD extensions, then the accuracy of the floating point
+   DCT/IDCT can depend on the compiler and compiler settings.
+
 
 While libjpeg-turbo does emulate the libjpeg v8 API/ABI, under the hood, it is
 still using the same algorithms as libjpeg v6b, so there are several specific
@@ -305,12 +311,14 @@ cases in which libjpeg-turbo cannot be expected to produce the same output as
 libjpeg v8:
 
 -- When decompressing using scaling factors of 1/2 and 1/4, because libjpeg v8
-   implements those scaling algorithms a bit differently than libjpeg v6b does,
-   and libjpeg-turbo's SIMD extensions are based on the libjpeg v6b behavior.
+   implements those scaling algorithms differently than libjpeg v6b does, and
+   libjpeg-turbo's SIMD extensions are based on the libjpeg v6b behavior.
 
 -- When using chrominance subsampling, because libjpeg v8 implements this
    with its DCT/IDCT scaling algorithms rather than with a separate
-   downsampling/upsampling algorithm.
+   downsampling/upsampling algorithm.  In our testing, the subsampled/upsampled
+   output of libjpeg v8 is less accurate than that of libjpeg v6b for this
+   reason.
 
 -- When using the floating point IDCT, for the reasons stated above and also
    because the floating point IDCT algorithm was modified in libjpeg v8a to

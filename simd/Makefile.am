@@ -58,7 +58,7 @@ libsimd_la_SOURCES = jsimd_arm.c jsimd_arm_neon.S
 
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir) 
+AM_CPPFLAGS = -I$(top_srcdir)
 
 .asm.lo:
 	$(LIBTOOL) --mode=compile --tag NASM $(srcdir)/nasm_lt.sh $(NASM) $(NAFLAGS) -I$(srcdir) -I. $< -o $@

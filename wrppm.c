@@ -16,7 +16,7 @@
  * an ordinary stdio stream.
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
 #ifdef PPM_SUPPORTED
 
@@ -42,11 +42,11 @@
 #define PPM_MAXVAL 255
 #else
 /* The word-per-sample format always puts the MSB first. */
-#define PUTPPMSAMPLE(ptr,v)			\
-	{ register int val_ = v;		\
-	  *ptr++ = (char) ((val_ >> 8) & 0xFF);	\
-	  *ptr++ = (char) (val_ & 0xFF);	\
-	}
+#define PUTPPMSAMPLE(ptr,v)                     \
+        { register int val_ = v;                \
+          *ptr++ = (char) ((val_ >> 8) & 0xFF); \
+          *ptr++ = (char) (val_ & 0xFF);        \
+        }
 #define BYTESPERSAMPLE 2
 #define PPM_MAXVAL ((1<<BITS_IN_JSAMPLE)-1)
 #endif
@@ -67,13 +67,13 @@
 /* Private version of data destination object */
 
 typedef struct {
-  struct djpeg_dest_struct pub;	/* public fields */
+  struct djpeg_dest_struct pub; /* public fields */
 
   /* Usually these two pointers point to the same place: */
-  char *iobuffer;		/* fwrite's I/O buffer */
-  JSAMPROW pixrow;		/* decompressor output buffer */
-  size_t buffer_width;		/* width of I/O buffer */
-  JDIMENSION samples_per_row;	/* JSAMPLEs per output row */
+  char *iobuffer;               /* fwrite's I/O buffer */
+  JSAMPROW pixrow;              /* decompressor output buffer */
+  size_t buffer_width;          /* width of I/O buffer */
+  JDIMENSION samples_per_row;   /* JSAMPLEs per output row */
 } ppm_dest_struct;
 
 typedef ppm_dest_struct * ppm_dest_ptr;
@@ -89,7 +89,7 @@ typedef ppm_dest_struct * ppm_dest_ptr;
 
 METHODDEF(void)
 put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-		JDIMENSION rows_supplied)
+                JDIMENSION rows_supplied)
 {
   ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
 
@@ -104,7 +104,7 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
 METHODDEF(void)
 copy_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-		 JDIMENSION rows_supplied)
+                 JDIMENSION rows_supplied)
 {
   ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
   register char * bufferptr;
@@ -127,7 +127,7 @@ copy_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
 METHODDEF(void)
 put_demapped_rgb (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-		  JDIMENSION rows_supplied)
+                  JDIMENSION rows_supplied)
 {
   ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
   register char * bufferptr;
@@ -152,7 +152,7 @@ put_demapped_rgb (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
 METHODDEF(void)
 put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-		   JDIMENSION rows_supplied)
+                   JDIMENSION rows_supplied)
 {
   ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
   register char * bufferptr;
@@ -183,14 +183,14 @@ start_output_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   case JCS_GRAYSCALE:
     /* emit header for raw PGM format */
     fprintf(dest->pub.output_file, "P5\n%ld %ld\n%d\n",
-	    (long) cinfo->output_width, (long) cinfo->output_height,
-	    PPM_MAXVAL);
+            (long) cinfo->output_width, (long) cinfo->output_height,
+            PPM_MAXVAL);
     break;
   case JCS_RGB:
     /* emit header for raw PPM format */
     fprintf(dest->pub.output_file, "P6\n%ld %ld\n%d\n",
-	    (long) cinfo->output_width, (long) cinfo->output_height,
-	    PPM_MAXVAL);
+            (long) cinfo->output_width, (long) cinfo->output_height,
+            PPM_MAXVAL);
     break;
   default:
     ERREXIT(cinfo, JERR_PPM_COLORSPACE);
@@ -224,7 +224,7 @@ jinit_write_ppm (j_decompress_ptr cinfo)
   /* Create module interface object, fill in method pointers */
   dest = (ppm_dest_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(ppm_dest_struct));
+                                  SIZEOF(ppm_dest_struct));
   dest->pub.start_output = start_output_ppm;
   dest->pub.finish_output = finish_output_ppm;
 

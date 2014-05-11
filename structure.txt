@@ -24,8 +24,8 @@ In this document, JPEG-specific terminology follows the JPEG standard:
   A "coefficient" is a frequency coefficient (a DCT transform output number).
   A "block" is an 8x8 group of samples or coefficients.
   An "MCU" (minimum coded unit) is an interleaved set of blocks of size
-	determined by the sampling factors, or a single block in a
-	noninterleaved scan.
+        determined by the sampling factors, or a single block in a
+        noninterleaved scan.
 We do not use the terms "pixel" and "sample" interchangeably.  When we say
 pixel, we mean an element of the full-size image, while a sample is an element
 of the downsampled image.  Thus the number of samples may vary across
@@ -264,14 +264,14 @@ responsibilities:
    1B.  Per-pass control.  This determines how many passes will be performed
         and calls each active processing module to configure itself
         appropriately at the beginning of each pass.  End-of-pass processing,
-	where necessary, is also invoked from the master control module.
+        where necessary, is also invoked from the master control module.
 
    Method selection is partially distributed, in that a particular processing
    module may contain several possible implementations of a particular method,
    which it will select among when given its initialization call.  The master
    control code need only be concerned with decisions that affect more than
    one module.
- 
+
 2. Data buffering control.  A separate control module exists for each
    inter-processing-step data buffer.  This module is responsible for
    invoking the processing steps that write or read that data buffer.
@@ -573,10 +573,10 @@ there isn't any real need for it.
 
 Arrays of pixel sample values use the following data structure:
 
-    typedef something JSAMPLE;		a pixel component value, 0..MAXJSAMPLE
-    typedef JSAMPLE *JSAMPROW;		ptr to a row of samples
-    typedef JSAMPROW *JSAMPARRAY;	ptr to a list of rows
-    typedef JSAMPARRAY *JSAMPIMAGE;	ptr to a list of color-component arrays
+    typedef something JSAMPLE;          a pixel component value, 0..MAXJSAMPLE
+    typedef JSAMPLE *JSAMPROW;          ptr to a row of samples
+    typedef JSAMPROW *JSAMPARRAY;       ptr to a list of rows
+    typedef JSAMPARRAY *JSAMPIMAGE;     ptr to a list of color-component arrays
 
 The basic element type JSAMPLE will typically be one of unsigned char,
 (signed) char, or short.  Short will be used if samples wider than 8 bits are
@@ -617,7 +617,7 @@ we can read or write each component to a temporary file independently, which
 is helpful when dealing with noninterleaved JPEG files.
 
 In general, a specific sample value is accessed by code such as
-	GETJSAMPLE(image[colorcomponent][row][col])
+        GETJSAMPLE(image[colorcomponent][row][col])
 where col is measured from the image left edge, but row is measured from the
 first sample row currently in memory.  Either of the first two indexings can
 be precomputed by copying the relevant pointer.
@@ -636,11 +636,11 @@ with component-wise storage.)
 
 Arrays of DCT-coefficient values use the following data structure:
 
-    typedef short JCOEF;		a 16-bit signed integer
-    typedef JCOEF JBLOCK[DCTSIZE2];	an 8x8 block of coefficients
-    typedef JBLOCK *JBLOCKROW;		ptr to one horizontal row of 8x8 blocks
-    typedef JBLOCKROW *JBLOCKARRAY;	ptr to a list of such rows
-    typedef JBLOCKARRAY *JBLOCKIMAGE;	ptr to a list of color component arrays
+    typedef short JCOEF;                a 16-bit signed integer
+    typedef JCOEF JBLOCK[DCTSIZE2];     an 8x8 block of coefficients
+    typedef JBLOCK *JBLOCKROW;          ptr to one horizontal row of 8x8 blocks
+    typedef JBLOCKROW *JBLOCKARRAY;     ptr to a list of such rows
+    typedef JBLOCKARRAY *JBLOCKIMAGE;   ptr to a list of color component arrays
 
 The underlying type is at least a 16-bit signed integer; while "short" is big
 enough on all machines of interest, on some machines it is preferable to use
@@ -759,8 +759,8 @@ can be freed at once.  This approach helps prevent storage-leak bugs, and
 it speeds up operations whenever malloc/free are slow (as they often are).
 The pools can be regarded as lifetime identifiers for objects.  Two
 pools/lifetimes are defined:
-  * JPOOL_PERMANENT	lasts until master record is destroyed
-  * JPOOL_IMAGE		lasts until done with image (JPEG datastream)
+  * JPOOL_PERMANENT     lasts until master record is destroyed
+  * JPOOL_IMAGE         lasts until done with image (JPEG datastream)
 Permanent lifetime is used for parameters and tables that should be carried
 across from one datastream to another; this includes all application-visible
 parameters.  Image lifetime is used for everything else.  (A third lifetime,
@@ -857,20 +857,20 @@ outlined above are implemented by the front end.  The back end provides
 the following routines for use by the front end (none of these routines
 are known to the rest of the JPEG code):
 
-jpeg_mem_init, jpeg_mem_term	system-dependent initialization/shutdown
+jpeg_mem_init, jpeg_mem_term    system-dependent initialization/shutdown
 
-jpeg_get_small, jpeg_free_small	interface to malloc and free library routines
-				(or their equivalents)
+jpeg_get_small, jpeg_free_small interface to malloc and free library routines
+                                (or their equivalents)
 
-jpeg_get_large, jpeg_free_large	interface to FAR malloc/free in MSDOS machines;
-				else usually the same as
-				jpeg_get_small/jpeg_free_small
+jpeg_get_large, jpeg_free_large interface to FAR malloc/free in MSDOS machines;
+                                else usually the same as
+                                jpeg_get_small/jpeg_free_small
 
-jpeg_mem_available		estimate available memory
+jpeg_mem_available              estimate available memory
 
-jpeg_open_backing_store		create a backing-store object
+jpeg_open_backing_store         create a backing-store object
 
-read_backing_store,		manipulate a backing-store object
+read_backing_store,             manipulate a backing-store object
 write_backing_store,
 close_backing_store
 

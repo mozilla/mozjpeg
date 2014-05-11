@@ -301,9 +301,18 @@ following reasons:
    slightly more accurate than the implementation in libjpeg v6b, but not by
    any amount perceptible to human vision (generally in the range of 0.01 to
    0.08 dB gain in PNSR.)
+-- When not using the SIMD extensions, libjpeg-turbo uses the more accurate
+   (and slightly faster) floating point IDCT algorithm introduced in libjpeg
+   v8a as opposed to the algorithm used in libjpeg v6b.  It should be noted,
+   however, that this algorithm basically brings the accuracy of the floating
+   point IDCT in line with the accuracy of the slow integer IDCT.  The floating
+   point DCT/IDCT algorithms are mainly a legacy feature, and they do not
+   produce significantly more accuracy than the slow integer algorithms (to put
+   numbers on this, the typical difference in PNSR between the two algorithms
+   is less than 0.10 dB, whereas changing the quality level by 1 in the upper
+   range of the quality scale is typically more like a 1.0 dB difference.)
 -- When not using the SIMD extensions, then the accuracy of the floating point
    DCT/IDCT can depend on the compiler and compiler settings.
-
 
 While libjpeg-turbo does emulate the libjpeg v8 API/ABI, under the hood, it is
 still using the same algorithms as libjpeg v6b, so there are several specific
@@ -319,10 +328,6 @@ libjpeg v8:
    downsampling/upsampling algorithm.  In our testing, the subsampled/upsampled
    output of libjpeg v8 is less accurate than that of libjpeg v6b for this
    reason.
-
--- When using the floating point IDCT, for the reasons stated above and also
-   because the floating point IDCT algorithm was modified in libjpeg v8a to
-   improve accuracy.
 
 -- When decompressing using a scaling factor > 1 and merged (AKA "non-fancy" or
    "non-smooth") chrominance upsampling, because libjpeg v8 does not support

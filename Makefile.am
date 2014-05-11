@@ -175,15 +175,13 @@ MD5_JPEG_GRAY_ISLOW = 72b51f894b8f4a10b3ee3066770aa38d
 MD5_PPM_GRAY_ISLOW = 8d3596c56eace32f205deccc229aa5ed
 MD5_PPM_GRAY_RGB_ISLOW = 116424ac07b79e5e801f00508eab48ec
 MD5_JPEG_420S_IFAST_OPT = 388708217ac46273ca33086b22827ed8
-# The SSE/SSE2 DCT/IDCT implementation has always produced a slight round-off
-# error relative to the C code, so in this case, we just test for regression
-# rather than verifying that the output matches libjpeg.
+# See README-turbo.txt for more details on why this next bit is necessary.
 if WITH_SSE_FLOAT_DCT
 MD5_JPEG_3x2_FLOAT_PROG = 343e3f8caf8af5986ebaf0bdc13b5c71
 MD5_PPM_3x2_FLOAT = 1a75f36e5904d6fc3a85a43da9ad89bb
 else
 MD5_JPEG_3x2_FLOAT_PROG = 9bca803d2042bd1eb03819e2bf92b3e5
-MD5_PPM_3x2_FLOAT = ef6a420e369440edd6b918a0cf54ba3f
+MD5_PPM_3x2_FLOAT = f6bfab038438ed8f5522fbd33595dcdc
 endif
 MD5_JPEG_420_ISLOW_ARI = e986fb0a637a8d833d96e8a6d6d84ea1
 MD5_JPEG_444_ISLOW_PROGARI = 0a8f1c8f66e113c3cf635df0a475a617

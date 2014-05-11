@@ -176,11 +176,13 @@ With quality=97, for instance, the fast method incurs generally about a 1-3 dB
 loss (in PSNR) relative to the int method, but this can be larger for some
 images.  Do not use the fast method with quality levels above 97.  The
 algorithm often degenerates at quality=98 and above and can actually produce a
-more lossy image than if lower quality levels had been used.
+more lossy image than if lower quality levels had been used.  Also, in
+libjpeg-turbo, the fast method is not fully accelerated for quality levels
+above 97, so it will be slower than the int method.
 .TP
 .B \-dct float
 Use floating-point DCT method.
-The float method is mostly a legacy feature.  It does not produce significantly
+The float method is mainly a legacy feature.  It does not produce significantly
 more accurate results than the int method, and it is much slower.  The float
 method may also give different results on different machines due to varying
 roundoff behavior, whereas the integer methods should give the same results on

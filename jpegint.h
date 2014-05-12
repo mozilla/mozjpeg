@@ -14,12 +14,12 @@
 
 /* Declarations for both compression & decompression */
 
-typedef enum {                  /* Operating modes for buffer controllers */
-        JBUF_PASS_THRU,         /* Plain stripwise operation */
-        /* Remaining modes require a full-image buffer to have been created */
-        JBUF_SAVE_SOURCE,       /* Run source subobject only, save output */
-        JBUF_CRANK_DEST,        /* Run dest subobject only, using saved data */
-        JBUF_SAVE_AND_PASS      /* Run both subobjects, save output */
+typedef enum {            /* Operating modes for buffer controllers */
+  JBUF_PASS_THRU,         /* Plain stripwise operation */
+  /* Remaining modes require a full-image buffer to have been created */
+  JBUF_SAVE_SOURCE,       /* Run source subobject only, save output */
+  JBUF_CRANK_DEST,        /* Run dest subobject only, using saved data */
+  JBUF_SAVE_AND_PASS      /* Run both subobjects, save output */
 } J_BUF_MODE;
 
 /* Values of global_state field (jdapi.c has some dependencies on ordering!) */

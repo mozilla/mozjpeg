@@ -6,6 +6,8 @@
  * Modified 2002-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, D. R. Commander.
+ * Copyright (C) 2013, Linaro Limited.
+
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains master control logic for the JPEG decompressor.
@@ -51,9 +53,10 @@ use_merged_upsample (j_decompress_ptr cinfo)
   /* Merging is the equivalent of plain box-filter upsampling */
   if (cinfo->do_fancy_upsampling || cinfo->CCIR601_sampling)
     return FALSE;
-  /* jdmerge.c only supports YCC=>RGB color conversion */
+  /* jdmerge.c only supports YCC=>RGB and YCC=>RGB565 color conversion */
   if (cinfo->jpeg_color_space != JCS_YCbCr || cinfo->num_components != 3 ||
       (cinfo->out_color_space != JCS_RGB &&
+      cinfo->out_color_space != JCS_RGB565 &&
       cinfo->out_color_space != JCS_EXT_RGB &&
       cinfo->out_color_space != JCS_EXT_RGBX &&
       cinfo->out_color_space != JCS_EXT_BGR &&
@@ -63,8 +66,12 @@ use_merged_upsample (j_decompress_ptr cinfo)
       cinfo->out_color_space != JCS_EXT_RGBA &&
       cinfo->out_color_space != JCS_EXT_BGRA &&
       cinfo->out_color_space != JCS_EXT_ABGR &&
-      cinfo->out_color_space != JCS_EXT_ARGB) ||
-      cinfo->out_color_components != rgb_pixelsize[cinfo->out_color_space])
+      cinfo->out_color_space != JCS_EXT_ARGB))
+    return FALSE;
+  if ((cinfo->out_color_space == JCS_RGB565 &&
+      cinfo->out_color_components != 3) ||
+      (cinfo->out_color_space != JCS_RGB565 &&
+      cinfo->out_color_components != rgb_pixelsize[cinfo->out_color_space]))
     return FALSE;
   /* and it only handles 2h1v or 2h2v sampling ratios */
   if (cinfo->comp_info[0].h_samp_factor != 2 ||
@@ -352,6 +359,7 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
     cinfo->out_color_components = rgb_pixelsize[cinfo->out_color_space];
     break;
   case JCS_YCbCr:
+  case JCS_RGB565:
     cinfo->out_color_components = 3;
     break;
   case JCS_CMYK:

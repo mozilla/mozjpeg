@@ -7,6 +7,7 @@
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2009, 2011-2012, D. R. Commander.
+ * Copyright (C) 2013, Linaro Limited.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains output colorspace conversion routines.
@@ -543,6 +544,9 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
 }
 
 
+#include "jdcol565.c"
+
+
 /*
  * Empty method for start_pass.
  */
@@ -647,6 +651,32 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
         cconvert->pub.color_convert = rgb_rgb_convert;
     } else
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    break;
+
+  case JCS_RGB565:
+    cinfo->out_color_components = 3;
+    if (cinfo->dither_mode == JDITHER_NONE) {
+      if (cinfo->jpeg_color_space == JCS_YCbCr) {
+        cconvert->pub.color_convert = ycc_rgb565_convert;
+        build_ycc_rgb_table(cinfo);
+      } else if (cinfo->jpeg_color_space == JCS_GRAYSCALE) {
+        cconvert->pub.color_convert = gray_rgb565_convert;
+      } else if (cinfo->jpeg_color_space == JCS_RGB) {
+        cconvert->pub.color_convert = rgb_rgb565_convert;
+      } else
+        ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    } else {
+      /* only ordered dithering is supported */
+      if (cinfo->jpeg_color_space == JCS_YCbCr) {
+        cconvert->pub.color_convert = ycc_rgb565D_convert;
+        build_ycc_rgb_table(cinfo);
+      } else if (cinfo->jpeg_color_space == JCS_GRAYSCALE) {
+        cconvert->pub.color_convert = gray_rgb565D_convert;
+      } else if (cinfo->jpeg_color_space == JCS_RGB) {
+        cconvert->pub.color_convert = rgb_rgb565D_convert;
+      } else
+        ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    }
     break;
 
   case JCS_CMYK:

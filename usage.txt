@@ -17,7 +17,7 @@ INTRODUCTION
 
 These programs implement JPEG image encoding, decoding, and transcoding.
 JPEG (pronounced "jay-peg") is a standardized compression method for
-full-color and gray-scale images.
+full-color and grayscale images.
 
 
 GENERAL USAGE
@@ -50,7 +50,7 @@ or
 This syntax works on all systems, so it is useful for scripts.
 
 The currently supported image file formats are: PPM (PBMPLUS color format),
-PGM (PBMPLUS gray-scale format), BMP, Targa, and RLE (Utah Raster Toolkit
+PGM (PBMPLUS grayscale format), BMP, Targa, and RLE (Utah Raster Toolkit
 format).  (RLE is supported only if the URT library is available.)
 cjpeg recognizes the input image format automatically, with the exception
 of some Targa-format files.  You have to tell djpeg which format to generate.
@@ -271,7 +271,7 @@ The basic command line switches for djpeg are:
                         highest quality output.)  Currently, this is equivalent
                         to "-dct fast -nosmooth -onepass -dither ordered".
 
-        -grayscale      Force gray-scale output even if JPEG file is color.
+        -grayscale      Force grayscale output even if JPEG file is color.
                         Useful for viewing on monochrome displays; also,
                         djpeg runs noticeably faster in this mode.
 
@@ -284,7 +284,7 @@ The basic command line switches for djpeg are:
 
         -bmp            Select BMP output format (Windows flavor).  8-bit
                         colormapped format is emitted if -colors or -grayscale
-                        is specified, or if the JPEG file is gray-scale;
+                        is specified, or if the JPEG file is grayscale;
                         otherwise, 24-bit full-color format is emitted.
 
         -gif            Select GIF output format.  Since GIF does not support
@@ -294,18 +294,18 @@ The basic command line switches for djpeg are:
 
         -os2            Select BMP output format (OS/2 1.x flavor).  8-bit
                         colormapped format is emitted if -colors or -grayscale
-                        is specified, or if the JPEG file is gray-scale;
+                        is specified, or if the JPEG file is grayscale;
                         otherwise, 24-bit full-color format is emitted.
 
         -pnm            Select PBMPLUS (PPM/PGM) output format (this is the
                         default format).  PGM is emitted if the JPEG file is
-                        gray-scale or if -grayscale is specified; otherwise
+                        grayscale or if -grayscale is specified; otherwise
                         PPM is emitted.
 
         -rle            Select RLE output format.  (Requires URT library.)
 
-        -targa          Select Targa output format.  Gray-scale format is
-                        emitted if the JPEG file is gray-scale or if
+        -targa          Select Targa output format.  Grayscale format is
+                        emitted if the JPEG file is grayscale or if
                         -grayscale is specified; otherwise, colormapped format
                         is emitted if -colors is specified; otherwise, 24-bit
                         full-color format is emitted.
@@ -367,7 +367,7 @@ Switches for advanced users:
                         The one-pass method is faster and needs less memory,
                         but it produces a lower-quality image.  -onepass is
                         ignored unless you also say -colors N.  Also,
-                        the one-pass method is always used for gray-scale
+                        the one-pass method is always used for grayscale
                         output (the two-pass method is no improvement then).
 
         -maxmemory N    Set limit for amount of memory to use in processing

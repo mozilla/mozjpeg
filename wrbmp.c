@@ -1,8 +1,10 @@
 /*
  * wrbmp.c
  *
+ * This file was part of the Independent JPEG Group's software.
  * Copyright (C) 1994-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * Modifications:
+ * Copyright (C) 2013, Linaro Limited.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to write output images in Microsoft "BMP"
@@ -89,11 +91,30 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
    */
   inptr = dest->pub.buffer[0];
   outptr = image_ptr[0];
-  for (col = cinfo->output_width; col > 0; col--) {
-    outptr[2] = *inptr++;       /* can omit GETJSAMPLE() safely */
-    outptr[1] = *inptr++;
-    outptr[0] = *inptr++;
-    outptr += 3;
+
+  if(cinfo->out_color_space == JCS_RGB565) {
+    #define red_mask    0xF800
+    #define green_mask  0x7E0
+    #define blue_mask   0x1F
+    unsigned char  r, g, b;
+    unsigned short *inptr2 = (unsigned short *)inptr;
+    for (col = cinfo->output_width; col > 0; col--) {
+      r = (*inptr2 & red_mask) >> 11;
+      g = (*inptr2 & green_mask) >> 5;
+      b = (*inptr2 & blue_mask);
+      outptr[0] = b << 3;
+      outptr[1] = g << 2;
+      outptr[2] = r << 3;
+      outptr += 3;
+      inptr2++;
+    }
+  } else {
+    for (col = cinfo->output_width; col > 0; col--) {
+      outptr[2] = *inptr++;       /* can omit GETJSAMPLE() safely */
+      outptr[1] = *inptr++;
+      outptr[0] = *inptr++;
+      outptr += 3;
+    }
   }
 
   /* Zero out the pad bytes. */
@@ -181,6 +202,9 @@ write_bmp_header (j_decompress_ptr cinfo, bmp_dest_ptr dest)
       bits_per_pixel = 24;
       cmap_entries = 0;
     }
+  } else if (cinfo->out_color_space == JCS_RGB565) {
+    bits_per_pixel = 24;
+    cmap_entries   = 0;
   } else {
     /* Grayscale output.  We need to fake a 256-entry colormap. */
     bits_per_pixel = 8;
@@ -246,6 +270,9 @@ write_os2_header (j_decompress_ptr cinfo, bmp_dest_ptr dest)
       bits_per_pixel = 24;
       cmap_entries = 0;
     }
+  } else if (cinfo->out_color_space == JCS_RGB565) {
+    bits_per_pixel = 24;
+    cmap_entries   = 0;
   } else {
     /* Grayscale output.  We need to fake a 256-entry colormap. */
     bits_per_pixel = 8;
@@ -407,6 +434,8 @@ jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2)
       dest->pub.put_pixel_rows = put_gray_rows;
     else
       dest->pub.put_pixel_rows = put_pixel_rows;
+  } else if(cinfo->out_color_space == JCS_RGB565 ) {
+      dest->pub.put_pixel_rows = put_pixel_rows;
   } else {
     ERREXIT(cinfo, JERR_BMP_COLORSPACE);
   }
@@ -415,16 +444,26 @@ jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2)
   jpeg_calc_output_dimensions(cinfo);
 
   /* Determine width of rows in the BMP file (padded to 4-byte boundary). */
-  row_width = cinfo->output_width * cinfo->output_components;
-  dest->data_width = row_width;
-  while ((row_width & 3) != 0) row_width++;
-  dest->row_width = row_width;
-  dest->pad_bytes = (int) (row_width - dest->data_width);
+  if (cinfo->out_color_space == JCS_RGB565) {
+    row_width = cinfo->output_width * 2;
+    dest->row_width = dest->data_width = cinfo->output_width * 3;
+  } else {
+    row_width = cinfo->output_width * cinfo->output_components;
+    dest->row_width = dest->data_width = row_width;
+  }
+  while ((dest->row_width & 3) != 0) dest->row_width++;
+  dest->pad_bytes = (int) (dest->row_width - dest->data_width);
+  if (cinfo->out_color_space == JCS_RGB565) {
+    while ((row_width & 3) != 0) row_width++;
+  } else {
+    row_width = dest->row_width;
+  }
+
 
   /* Allocate space for inversion array, prepare for write pass */
   dest->whole_image = (*cinfo->mem->request_virt_sarray)
     ((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
-     row_width, cinfo->output_height, (JDIMENSION) 1);
+     dest->row_width, cinfo->output_height, (JDIMENSION) 1);
   dest->cur_output_row = 0;
   if (cinfo->progress != NULL) {
     cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;

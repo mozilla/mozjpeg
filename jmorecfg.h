@@ -298,18 +298,24 @@ typedef int boolean;
 
 
 /*
- * Ordering of RGB data in scanlines passed to or from the application.
- * If your application wants to deal with data in the order B,G,R, just
- * change these macros.  You can also deal with formats such as R,G,B,X
- * (one extra byte per pixel) by changing RGB_PIXELSIZE.  Note that changing
- * the offsets will also change the order in which colormap data is organized.
- * RESTRICTIONS:
- * 1. The sample applications cjpeg,djpeg do NOT support modified RGB formats.
- * 2. These macros only affect RGB<=>YCbCr color conversion, so they are not
- *    useful if you are using JPEG color spaces other than YCbCr or grayscale.
- * 3. The color quantizer modules will not behave desirably if RGB_PIXELSIZE
- *    is not 3 (they don't understand about dummy color components!).  So you
- *    can't use color quantization if you change that value.
+ * The RGB_RED, RGB_GREEN, RGB_BLUE, and RGB_PIXELSIZE macros are a vestigial
+ * feature of libjpeg.  The idea was that, if an application developer needed
+ * to compress from/decompress to a BGR/BGRX/RGBX/XBGR/XRGB buffer, they could
+ * change these macros, rebuild libjpeg, and link their application statically
+ * with it.  In reality, few people ever did this, because there were some
+ * severe restrictions involved (cjpeg and djpeg no longer worked properly,
+ * compressing/decompressing RGB JPEGs no longer worked properly, and the color
+ * quantizer wouldn't work with pixel sizes other than 3.)  Further, since all
+ * of the O/S-supplied versions of libjpeg were built with the default values
+ * of RGB_RED, RGB_GREEN, RGB_BLUE, and RGB_PIXELSIZE, many applications have
+ * come to regard these values as immutable.
+ *
+ * The libjpeg-turbo colorspace extensions provide a much cleaner way of
+ * compressing from/decompressing to buffers with arbitrary component orders
+ * and pixel sizes.  Thus, we do not support changing the values of RGB_RED,
+ * RGB_GREEN, RGB_BLUE, or RGB_PIXELSIZE.  In addition to the restrictions
+ * listed above, changing these values will also break the SIMD extensions and
+ * the regression tests.
  */
 
 #define RGB_RED         0       /* Offset of Red in an RGB scanline element */

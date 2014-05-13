@@ -1,7 +1,7 @@
 /*
  * MIPS DSPr2 optimizations for libjpeg-turbo
  *
- * Copyright (C) 2013, MIPS Technologies, Inc., California.
+ * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * All rights reserved.
  * Authors:  Teodora Novkovic (teodora.novkovic@imgtec.com)
  *           Darko Laus       (darko.laus@imgtec.com)
@@ -375,6 +375,393 @@ GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extrgbx, 4, 0, 1, 2
 GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extbgrx, 4, 2, 1, 0
 GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxbgr, 4, 3, 2, 1
 GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3
+/*****************************************************************************/
+/*
+ * jsimd_h2v2_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extrgb_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extrgbx_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extbgrx_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extxbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extxrgb_merged_upsample_mips_dspr2
+ *
+ * Merged h2v2 upsample routines
+ */
+.macro GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 colorid,    \
+                                                pixel_size, \
+                                                r1_offs,    \
+                                                g1_offs,    \
+                                                b1_offs,    \
+                                                a1_offs,    \
+                                                r2_offs,    \
+                                                g2_offs,    \
+                                                b2_offs,    \
+                                                a2_offs
+
+.macro STORE_H2V2_2_PIXELS  scratch0 \
+                            scratch1 \
+                            scratch2 \
+                            scratch3 \
+                            scratch4 \
+                            scratch5 \
+                            outptr
+    sb       \scratch0, \r1_offs(\outptr)
+    sb       \scratch1, \g1_offs(\outptr)
+    sb       \scratch2, \b1_offs(\outptr)
+    sb       \scratch3, \r2_offs(\outptr)
+    sb       \scratch4, \g2_offs(\outptr)
+    sb       \scratch5, \b2_offs(\outptr)
+.if (\pixel_size == 8)
+    li       \scratch0, 0xFF
+    sb       \scratch0, \a1_offs(\outptr)
+    sb       \scratch0, \a2_offs(\outptr)
+.endif
+    addiu    \outptr, \pixel_size
+.endm
+
+.macro STORE_H2V2_1_PIXEL  scratch0 \
+                           scratch1 \
+                           scratch2 \
+                           outptr
+    sb    \scratch0, \r1_offs(\outptr)
+    sb    \scratch1, \g1_offs(\outptr)
+    sb    \scratch2, \b1_offs(\outptr)
+
+.if (\pixel_size == 8)
+    li    t0, 0xFF
+    sb    t0, \a1_offs(\outptr)
+.endif
+.endm
+
+LEAF_MIPS_DSPR2(jsimd_h2v2_\colorid\()_merged_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->output_width
+ * a1     - input_buf
+ * a2     - in_row_group_ctr
+ * a3     - output_buf
+ * 16(sp) - cinfo->sample_range_limit
+ */
+
+    SAVE_REGS_ON_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    lw           t9, 56(sp)        // cinfo->sample_range_limit
+    lw           v0, 0(a1)
+    lw           v1, 4(a1)
+    lw           t0, 8(a1)
+    sll          t1, a2, 3
+    addiu        t2, t1, 4
+    sll          t3, a2, 2
+    lw           t4, 0(a3)         // t4 = output_buf[0]
+    lwx          t1, t1(v0)        // t1 = input_buf[0][in_row_group_ctr*2]
+    lwx          t2, t2(v0)        // t2 = input_buf[0][in_row_group_ctr*2 + 1]
+    lwx          t5, t3(v1)        // t5 = input_buf[1][in_row_group_ctr]
+    lwx          t6, t3(t0)        // t6 = input_buf[2][in_row_group_ctr]
+    lw           t7, 4(a3)         // t7 = output_buf[1]
+    li           s1, 0xe6ea
+    addiu        t8, s1, 0x7fff    // t8 = 0x166e9 [FIX(1.40200)]
+    addiu        s0, t8, 0x5eb9    // s0 = 0x1c5a2 [FIX(1.77200)]
+    addiu        s1, zero, 0xa7e6  // s4 = 0xffffa7e6 [-FIX(0.34414)]
+    xori         s2, s1, 0xeec8    // s3 = 0xffff492e [-FIX(0.71414)]
+    srl          t3, a0, 1
+    blez         t3, 2f
+     addu        t0, t5, t3        // t0 = end address
+ 1:
+    lbu          t3, 0(t5)
+    lbu          s3, 0(t6)
+    addiu        t5, t5, 1
+    addiu        t3, t3, -128      // (cb - 128)
+    addiu        s3, s3, -128      // (cr - 128)
+    mult         $ac1, s1, t3
+    madd         $ac1, s2, s3
+    sll          s3, s3, 15
+    sll          t3, t3, 15
+    mulq_rs.w    s4, t8, s3        // s4 = (C1 * cr + ONE_HALF)>> SCALEBITS
+    extr_r.w     s5, $ac1, 16
+    mulq_rs.w    s6, s0, t3        // s6 = (C2 * cb + ONE_HALF)>> SCALEBITS
+    lbu          v0, 0(t1)
+    addiu        t6, t6, 1
+    addiu        t1, t1, 2
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          AT, 0(t3)
+    lbu          s7, 0(s3)
+    lbu          ra, 0(v1)
+    lbu          v0, -1(t1)
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+    lbu          v0, 0(t2)
+
+    STORE_H2V2_2_PIXELS AT, s7, ra, t3, s3, v1, t4
+
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          AT, 0(t3)
+    lbu          s7, 0(s3)
+    lbu          ra, 0(v1)
+    lbu          v0, 1(t2)
+    addiu        t2, t2, 2
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+
+    STORE_H2V2_2_PIXELS AT, s7, ra, t3, s3, v1, t7
+
+    bne          t0, t5, 1b
+     nop
+2:
+    andi         t0, a0, 1
+    beqz         t0, 4f
+     lbu          t3, 0(t5)
+    lbu          s3, 0(t6)
+    addiu        t3, t3, -128      // (cb - 128)
+    addiu        s3, s3, -128      // (cr - 128)
+    mult         $ac1, s1, t3
+    madd         $ac1, s2, s3
+    sll          s3, s3, 15
+    sll          t3, t3, 15
+    lbu          v0, 0(t1)
+    extr_r.w     s5, $ac1, 16
+    mulq_rs.w    s4, t8, s3        // s4 = (C1 * cr + ONE_HALF)>> SCALEBITS
+    mulq_rs.w    s6, s0, t3        // s6 = (C2 * cb + ONE_HALF)>> SCALEBITS
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+    lbu          v0, 0(t2)
+
+    STORE_H2V2_1_PIXEL t3, s3, v1, t4
+
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+
+    STORE_H2V2_1_PIXEL t3, s3, v1, t7
+4:
+    RESTORE_REGS_FROM_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    j           ra
+     nop
+
+END(jsimd_h2v2_\colorid\()_merged_upsample_mips_dspr2)
+
+.purgem STORE_H2V2_1_PIXEL
+.purgem STORE_H2V2_2_PIXELS
+.endm
+
+/*-----------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
+/*****************************************************************************/
+/*
+ * jsimd_h2v1_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extrgb_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extrgbx_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extbgrx_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extxbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extxrgb_merged_upsample_mips_dspr2
+ *
+ * Merged h2v1 upsample routines
+ */
+
+.macro GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 colorid,    \
+                                                pixel_size, \
+                                                r1_offs,    \
+                                                g1_offs,    \
+                                                b1_offs,    \
+                                                a1_offs,    \
+                                                r2_offs,    \
+                                                g2_offs,    \
+                                                b2_offs,    \
+                                                a2_offs
+
+.macro STORE_H2V1_2_PIXELS  scratch0 \
+                            scratch1 \
+                            scratch2 \
+                            scratch3 \
+                            scratch4 \
+                            scratch5 \
+                            outptr
+    sb       \scratch0, \r1_offs(\outptr)
+    sb       \scratch1, \g1_offs(\outptr)
+    sb       \scratch2, \b1_offs(\outptr)
+    sb       \scratch3, \r2_offs(\outptr)
+    sb       \scratch4, \g2_offs(\outptr)
+    sb       \scratch5, \b2_offs(\outptr)
+.if (\pixel_size == 8)
+    li       t0, 0xFF
+    sb       t0, \a1_offs(\outptr)
+    sb       t0, \a2_offs(\outptr)
+.endif
+    addiu    \outptr, \pixel_size
+.endm
+
+.macro STORE_H2V1_1_PIXEL  scratch0 \
+                           scratch1 \
+                           scratch2 \
+                           outptr
+    sb    \scratch0, \r1_offs(\outptr)
+    sb    \scratch1, \g1_offs(\outptr)
+    sb    \scratch2, \b1_offs(\outptr)
+.if (\pixel_size == 8)
+    li    t0, 0xFF
+    sb    t0, \a1_offs(\outptr)
+.endif
+.endm
+
+LEAF_MIPS_DSPR2(jsimd_h2v1_\colorid\()_merged_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->output_width
+ * a1     - input_buf
+ * a2     - in_row_group_ctr
+ * a3     - output_buf
+ * 16(sp) - range_limit
+ */
+
+    SAVE_REGS_ON_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    li           t0, 0xe6ea
+    lw           t1, 0(a1)         // t1 = input_buf[0]
+    lw           t2, 4(a1)         // t2 = input_buf[1]
+    lw           t3, 8(a1)         // t3 = input_buf[2]
+    lw           t8, 56(sp)        // t8 = range_limit
+    addiu        s1, t0, 0x7fff    // s1 = 0x166e9 [FIX(1.40200)]
+    addiu        s2, s1, 0x5eb9    // s2 = 0x1c5a2 [FIX(1.77200)]
+    addiu        s0, t0, 0x9916    // s0 = 0x8000
+    addiu        s4, zero, 0xa7e6  // s4 = 0xffffa7e6 [-FIX(0.34414)]
+    xori         s3, s4, 0xeec8    // s3 = 0xffff492e [-FIX(0.71414)]
+    srl          t0, a0, 1
+    sll          t4, a2, 2
+    lwx          s5, t4(t1)        // s5 = inptr0
+    lwx          s6, t4(t2)        // s6 = inptr1
+    lwx          s7, t4(t3)        // s7 = inptr2
+    lw           t7, 0(a3)         // t7 = outptr
+    blez         t0, 2f
+     addu        t9, s6, t0        // t9 = end address
+1:
+    lbu          t2, 0(s6)         // t2 = cb
+    lbu          t0, 0(s7)         // t0 = cr
+    lbu          t1, 0(s5)         // t1 = y
+    addiu        t2, t2, -128      // t2 = cb - 128
+    addiu        t0, t0, -128      // t0 = cr - 128
+    mult         $ac1, s4, t2
+    madd         $ac1, s3, t0
+    sll          t0, t0, 15
+    sll          t2, t2, 15
+    mulq_rs.w    t0, s1, t0        // t0 = (C1*cr + ONE_HALF)>> SCALEBITS
+    extr_r.w     t5, $ac1, 16
+    mulq_rs.w    t6, s2, t2        // t6 = (C2*cb + ONE_HALF)>> SCALEBITS
+    addiu        s7, s7, 1
+    addiu        s6, s6, 1
+    addu         t2, t1, t0        // t2 = y + cred
+    addu         t3, t1, t5        // t3 = y + cgreen
+    addu         t4, t1, t6        // t4 = y + cblue
+    addu         t2, t8, t2
+    addu         t3, t8, t3
+    addu         t4, t8, t4
+    lbu          t1, 1(s5)
+    lbu          v0, 0(t2)
+    lbu          v1, 0(t3)
+    lbu          ra, 0(t4)
+    addu         t2, t1, t0
+    addu         t3, t1, t5
+    addu         t4, t1, t6
+    addu         t2, t8, t2
+    addu         t3, t8, t3
+    addu         t4, t8, t4
+    lbu          t2, 0(t2)
+    lbu          t3, 0(t3)
+    lbu          t4, 0(t4)
+
+    STORE_H2V1_2_PIXELS v0, v1, ra, t2, t3, t4, t7
+
+    bne          t9, s6, 1b
+     addiu       s5, s5, 2
+2:
+    andi         t0, a0, 1
+    beqz         t0, 4f
+     nop
+3:
+    lbu          t2, 0(s6)
+    lbu          t0, 0(s7)
+    lbu          t1, 0(s5)
+    addiu        t2, t2, -128      //(cb - 128)
+    addiu        t0, t0, -128      //(cr - 128)
+    mul          t3, s4, t2
+    mul          t4, s3, t0
+    sll          t0, t0, 15
+    sll          t2, t2, 15
+    mulq_rs.w    t0, s1, t0       // (C1*cr + ONE_HALF)>> SCALEBITS
+    mulq_rs.w    t6, s2, t2       // (C2*cb + ONE_HALF)>> SCALEBITS
+    addu         t3, t3, s0
+    addu         t3, t4, t3
+    sra          t5, t3, 16       // (C4*cb + ONE_HALF + C3*cr)>> SCALEBITS
+    addu         t2, t1, t0       // y + cred
+    addu         t3, t1, t5       // y + cgreen
+    addu         t4, t1, t6       // y + cblue
+    addu         t2, t8, t2
+    addu         t3, t8, t3
+    addu         t4, t8, t4
+    lbu          t2, 0(t2)
+    lbu          t3, 0(t3)
+    lbu          t4, 0(t4)
+
+    STORE_H2V1_1_PIXEL t2, t3, t4, t7
+4:
+    RESTORE_REGS_FROM_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    j            ra
+     nop
+
+END(jsimd_h2v1_\colorid\()_merged_upsample_mips_dspr2)
+
+.purgem STORE_H2V1_1_PIXEL
+.purgem STORE_H2V1_2_PIXELS
+.endm
+
+/*-----------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
 /*****************************************************************************/
 /*
  * jsimd_h2v2_fancy_upsample_mips_dspr2

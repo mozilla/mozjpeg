@@ -506,12 +506,13 @@ jinit_downsampler (j_compress_ptr cinfo)
       if (cinfo->smoothing_factor) {
         downsample->methods[ci] = h2v2_smooth_downsample;
         downsample->pub.need_context_rows = TRUE;
-      } else
+      } else {
 #endif
         if (jsimd_can_h2v2_downsample())
           downsample->methods[ci] = jsimd_h2v2_downsample;
         else
           downsample->methods[ci] = h2v2_downsample;
+      }
     } else if ((cinfo->max_h_samp_factor % compptr->h_samp_factor) == 0 &&
                (cinfo->max_v_samp_factor % compptr->v_samp_factor) == 0) {
       smoothok = FALSE;

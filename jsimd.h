@@ -60,6 +60,13 @@ EXTERN(int) jsimd_can_h2v1_downsample JPP((void));
 EXTERN(void) jsimd_h2v2_downsample
         JPP((j_compress_ptr cinfo, jpeg_component_info * compptr,
              JSAMPARRAY input_data, JSAMPARRAY output_data));
+
+EXTERN(int) jsimd_can_h2v2_smooth_downsample JPP((void));
+
+EXTERN(void) jsimd_h2v2_smooth_downsample
+        JPP((j_compress_ptr cinfo, jpeg_component_info * compptr,
+             JSAMPARRAY input_data, JSAMPARRAY output_data));
+
 EXTERN(void) jsimd_h2v1_downsample
         JPP((j_compress_ptr cinfo, jpeg_component_info * compptr,
              JSAMPARRAY input_data, JSAMPARRAY output_data));

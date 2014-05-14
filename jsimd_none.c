@@ -69,8 +69,20 @@ jsimd_can_h2v1_downsample (void)
   return 0;
 }
 
+GLOBAL(int)
+jsimd_can_h2v2_smooth_downsample (void)
+{
+  return 0;
+}
+
 GLOBAL(void)
 jsimd_h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+                       JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+}
+
+GLOBAL(void)
+jsimd_h2v2_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
                        JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
 }

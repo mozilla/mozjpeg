@@ -1210,6 +1210,306 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_downsample_mips_dspr2)
      nop
 END(jsimd_h2v2_downsample_mips_dspr2)
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_h2v2_smooth_downsample_mips_dspr2)
+/*
+ * a0     - input_data
+ * a1     - output_data
+ * a2     - compptr->v_samp_factor
+ * a3     - cinfo->max_v_samp_factor
+ * 16(sp) - cinfo->smoothing_factor
+ * 20(sp) - compptr->width_in_blocks
+ * 24(sp) - cinfo->image_width
+ */
+
+    .set at
+
+    SAVE_REGS_ON_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    lw          s7, 52(sp)      // compptr->width_in_blocks
+    lw          s0, 56(sp)      // cinfo->image_width
+    lw          s6, 48(sp)      // cinfo->smoothing_factor
+    sll         s7, 3           // output_cols = width_in_blocks * DCTSIZE
+    sll         v0, s7, 1
+    subu        v0, v0, s0
+    blez        v0, 2f
+    move        v1, zero
+    addiu       t0, a3, 2       // t0 = cinfo->max_v_samp_factor + 2
+0:
+    addiu       t1, a0, -4
+    sll         t2, v1, 2
+    lwx         t1, t2(t1)
+    move        t3, v0
+    addu        t1, t1, s0
+    lbu         t2, -1(t1)
+1:
+    addiu       t3, t3, -1
+    sb          t2, 0(t1)
+    bgtz        t3, 1b
+    addiu       t1, t1, 1
+    addiu       v1, v1, 1
+    bne         v1, t0, 0b
+    nop
+2:
+    li          v0, 80
+    mul         v0, s6, v0
+    li          v1, 16384
+    move        t4, zero
+    move        t5, zero
+    subu        t6, v1, v0      // t6 = 16384 - tmp_smoot_f * 80
+    sll         t7, s6, 4       // t7 = tmp_smoot_f * 16
+3:
+/* Special case for first column: pretend column -1 is same as column 0 */
+    sll         v0, t4, 2
+    lwx         t8, v0(a1)      //  outptr = output_data[outrow]
+    sll         v1, t5, 2
+    addiu       t9, v1, 4
+    addiu       s0, v1, -4
+    addiu       s1, v1, 8
+    lwx         s2, v1(a0)      // inptr0 = input_data[inrow]
+    lwx         t9, t9(a0)      // inptr1 = input_data[inrow+1]
+    lwx         s0, s0(a0)      // above_ptr = input_data[inrow-1]
+    lwx         s1, s1(a0)      // below_ptr = input_data[inrow+2]
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, 0(s2)
+    lbu         v1, 2(s2)
+    lbu         t0, 0(t9)
+    lbu         t1, 2(t9)
+    addu        v0, v0, v1
+    mult        $ac1,t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 2(s0)
+    addu        t0, t0, v0
+    lbu         t3, 2(s1)
+    addu        s3, t0, s3
+    lbu         v0, 0(s0)
+    lbu         t0, 0(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    addu        t0, t0, v0
+    addu        s3, t0, s3
+    madd        $ac1,s3, t7
+    extr_r.w    v0, $ac1, 16
+    addiu       t8, t8, 1
+    addiu       s2, s2, 2
+    addiu       t9, t9, 2
+    addiu       s0, s0, 2
+    addiu       s1, s1, 2
+    sb          v0, -1(t8)
+    addiu       s4, s7, -2
+    and         s4, s4, 3
+    addu        s5, s4, t8      //end adress
+4:
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, -1(s2)
+    lbu         v1, 2(s2)
+    lbu         t0, -1(t9)
+    lbu         t1, 2(t9)
+    addu        v0, v0, v1
+    mult        $ac1, t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 2(s0)
+    addu        t0, t0, v0
+    lbu         t3, 2(s1)
+    addu        s3, t0, s3
+    lbu         v0, -1(s0)
+    lbu         t0, -1(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    addu        t0, t0, v0
+    addu        s3, t0, s3
+    madd        $ac1, s3, t7
+    extr_r.w    t2, $ac1, 16
+    addiu       t8, t8, 1
+    addiu       s2, s2, 2
+    addiu       t9, t9, 2
+    addiu       s0, s0, 2
+    sb          t2, -1(t8)
+    bne         s5, t8, 4b
+    addiu       s1, s1, 2
+    addiu       s5, s7, -2
+    subu        s5, s5, s4
+    addu        s5, s5, t8      //end adress
+5:
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, -1(s2)
+    lbu         v1, 2(s2)
+    lbu         t0, -1(t9)
+    lbu         t1, 2(t9)
+    addu        v0, v0, v1
+    mult        $ac1, t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 2(s0)
+    addu        t0, t0, v0
+    lbu         t3, 2(s1)
+    addu        s3, t0, s3
+    lbu         v0, -1(s0)
+    lbu         t0, -1(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    lh          v1, 2(t9)
+    addu        t0, t0, v0
+    lh          v0, 2(s2)
+    addu        s3, t0, s3
+    lh          t0, 2(s0)
+    lh          t1, 2(s1)
+    madd        $ac1, s3, t7
+    extr_r.w    t2, $ac1, 16
+    ins         t0, t1, 16, 16
+    ins         v0, v1, 16, 16
+    raddu.w.qb  s3, t0
+    lbu         v1, 4(s2)
+    lbu         t0, 1(t9)
+    lbu         t1, 4(t9)
+    sb          t2, 0(t8)
+    raddu.w.qb  t3, v0
+    lbu         v0, 1(s2)
+    addu        t0, t0, t1
+    mult        $ac1, t3, t6
+    addu        v0, v0, v1
+    lbu         t2, 4(s0)
+    addu        t0, t0, v0
+    lbu         v0, 1(s0)
+    addu        s3, t0, s3
+    lbu         t0, 1(s1)
+    lbu         t3, 4(s1)
+    addu        v0, v0, t2
+    sll         s3, s3, 1
+    addu        t0, t0, t3
+    lh          v1, 4(t9)
+    addu        t0, t0, v0
+    lh          v0, 4(s2)
+    addu        s3, t0, s3
+    lh          t0, 4(s0)
+    lh          t1, 4(s1)
+    madd        $ac1, s3, t7
+    extr_r.w    t2, $ac1, 16
+    ins         t0, t1, 16, 16
+    ins         v0, v1, 16, 16
+    raddu.w.qb  s3, t0
+    lbu         v1, 6(s2)
+    lbu         t0, 3(t9)
+    lbu         t1, 6(t9)
+    sb          t2, 1(t8)
+    raddu.w.qb  t3, v0
+    lbu         v0, 3(s2)
+    addu        t0, t0,t1
+    mult        $ac1, t3, t6
+    addu        v0, v0, v1
+    lbu         t2, 6(s0)
+    addu        t0, t0, v0
+    lbu         v0, 3(s0)
+    addu        s3, t0, s3
+    lbu         t0, 3(s1)
+    lbu         t3, 6(s1)
+    addu        v0, v0, t2
+    sll         s3, s3, 1
+    addu        t0, t0, t3
+    lh          v1, 6(t9)
+    addu        t0, t0, v0
+    lh          v0, 6(s2)
+    addu        s3, t0, s3
+    lh          t0, 6(s0)
+    lh          t1, 6(s1)
+    madd        $ac1, s3, t7
+    extr_r.w    t3, $ac1, 16
+    ins         t0, t1, 16, 16
+    ins         v0, v1, 16, 16
+    raddu.w.qb  s3, t0
+    lbu         v1, 8(s2)
+    lbu         t0, 5(t9)
+    lbu         t1, 8(t9)
+    sb          t3, 2(t8)
+    raddu.w.qb  t2, v0
+    lbu         v0, 5(s2)
+    addu        t0, t0, t1
+    mult        $ac1, t2, t6
+    addu        v0, v0, v1
+    lbu         t2, 8(s0)
+    addu        t0, t0, v0
+    lbu         v0, 5(s0)
+    addu        s3, t0, s3
+    lbu         t0, 5(s1)
+    lbu         t3, 8(s1)
+    addu        v0, v0, t2
+    sll         s3, s3, 1
+    addu        t0, t0, t3
+    addiu       t8, t8, 4
+    addu        t0, t0, v0
+    addiu       s2, s2, 8
+    addu        s3, t0, s3
+    addiu       t9, t9, 8
+    madd        $ac1, s3, t7
+    extr_r.w    t1, $ac1, 16
+    addiu       s0, s0, 8
+    addiu       s1, s1, 8
+    bne         s5, t8, 5b
+    sb          t1, -1(t8)
+/* Special case for last column */
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, -1(s2)
+    lbu         v1, 1(s2)
+    lbu         t0, -1(t9)
+    lbu         t1, 1(t9)
+    addu        v0, v0, v1
+    mult        $ac1, t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 1(s0)
+    addu        t0, t0, v0
+    lbu         t3, 1(s1)
+    addu        s3, t0, s3
+    lbu         v0, -1(s0)
+    lbu         t0, -1(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    addu        t0, t0, v0
+    addu        s3, t0, s3
+    madd        $ac1, s3, t7
+    extr_r.w    t0, $ac1, 16
+    addiu       t5, t5, 2
+    sb          t0, 0(t8)
+    addiu       t4, t4, 1
+    bne         t4, a2, 3b
+    addiu       t5, t5, 2
+
+    RESTORE_REGS_FROM_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    j           ra
+     nop
+
+END(jsimd_h2v2_downsample_mips_dspr2)
+/*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
 /*
  * a0     - cinfo->max_v_samp_factor

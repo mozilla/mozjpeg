@@ -498,6 +498,11 @@ EXTERN(void) jsimd_h2v2_downsample_mips_dspr2
         JPP((JDIMENSION image_width, int max_v_samp_factor,
              JDIMENSION v_samp_factor, JDIMENSION width_blocks,
              JSAMPARRAY input_data, JSAMPARRAY output_data));
+EXTERN(void) jsimd_h2v2_smooth_downsample_mips_dspr2
+        JPP((JSAMPARRAY input_data, JSAMPARRAY output_data,
+             JDIMENSION v_samp_factor, int max_v_samp_factor,
+             int smoothing_factor, JDIMENSION width_blocks,
+             JDIMENSION image_width));
 EXTERN(void) jsimd_h2v1_downsample_mips_dspr2
         JPP((JDIMENSION image_width, int max_v_samp_factor,
              JDIMENSION v_samp_factor, JDIMENSION width_blocks,

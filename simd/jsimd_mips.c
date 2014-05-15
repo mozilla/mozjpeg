@@ -139,6 +139,22 @@ jsimd_can_ycc_rgb (void)
   return 0;
 }
 
+GLOBAL(int)
+jsimd_c_can_null_convert (void)
+{
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    return 1;
+
+  return 0;
+}
+
 GLOBAL(void)
 jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
@@ -260,6 +276,16 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
   if (simd_support & JSIMD_MIPS_DSPR2)
     mipsdspr2fct(cinfo->output_width, input_buf,
         input_row, output_buf, num_rows);
+}
+
+GLOBAL(void)
+jsimd_c_null_convert (j_compress_ptr cinfo,
+                      JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+                      JDIMENSION output_row, int num_rows)
+{
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    jsimd_null_convert_compr_mips_dspr2 (cinfo->image_width, input_buf,
+        output_buf, output_row, num_rows, cinfo->num_components);
 }
 
 GLOBAL(int)

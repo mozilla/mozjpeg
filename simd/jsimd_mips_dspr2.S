@@ -1508,7 +1508,7 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_smooth_downsample_mips_dspr2)
     j           ra
      nop
 
-END(jsimd_h2v2_downsample_mips_dspr2)
+END(jsimd_h2v2_smooth_downsample_mips_dspr2)
 /*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
 /*

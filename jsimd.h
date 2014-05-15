@@ -40,6 +40,7 @@
 EXTERN(int) jsimd_can_rgb_ycc JPP((void));
 EXTERN(int) jsimd_can_rgb_gray JPP((void));
 EXTERN(int) jsimd_can_ycc_rgb JPP((void));
+EXTERN(int) jsimd_c_can_null_convert JPP((void));
 
 EXTERN(void) jsimd_rgb_ycc_convert
         JPP((j_compress_ptr cinfo,
@@ -53,6 +54,10 @@ EXTERN(void) jsimd_ycc_rgb_convert
         JPP((j_decompress_ptr cinfo,
              JSAMPIMAGE input_buf, JDIMENSION input_row,
              JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_c_null_convert
+        JPP((j_compress_ptr cinfo,
+             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+             JDIMENSION output_row, int num_rows));
 
 EXTERN(int) jsimd_can_h2v2_downsample JPP((void));
 EXTERN(int) jsimd_can_h2v1_downsample JPP((void));

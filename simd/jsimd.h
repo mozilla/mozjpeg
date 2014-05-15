@@ -475,6 +475,11 @@ EXTERN(void) jsimd_ycc_extxrgb_convert_mips_dspr2
              JSAMPIMAGE input_buf, JDIMENSION input_row,
              JSAMPARRAY output_buf, int num_rows));
 
+EXTERN(void) jsimd_c_null_convert_mips_dspr2
+        JPP((JDIMENSION img_width, JSAMPARRAY input_buf,
+             JSAMPIMAGE output_buf, JDIMENSION output_row,
+             int num_rows, int num_components));
+
 /* SIMD Downsample */
 EXTERN(void) jsimd_h2v2_downsample_mmx
         JPP((JDIMENSION image_width, int max_v_samp_factor,

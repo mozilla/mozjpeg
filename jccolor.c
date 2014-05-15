@@ -587,19 +587,24 @@ jinit_color_converter (j_compress_ptr cinfo)
     if (rgb_red[cinfo->in_color_space] == 0 &&
         rgb_green[cinfo->in_color_space] == 1 &&
         rgb_blue[cinfo->in_color_space] == 2 &&
-        rgb_pixelsize[cinfo->in_color_space] == 3)
-      cconvert->pub.color_convert = null_convert;
-    else if (cinfo->in_color_space == JCS_RGB ||
-             cinfo->in_color_space == JCS_EXT_RGB ||
-             cinfo->in_color_space == JCS_EXT_RGBX ||
-             cinfo->in_color_space == JCS_EXT_BGR ||
-             cinfo->in_color_space == JCS_EXT_BGRX ||
-             cinfo->in_color_space == JCS_EXT_XBGR ||
-             cinfo->in_color_space == JCS_EXT_XRGB ||
-             cinfo->in_color_space == JCS_EXT_RGBA ||
-             cinfo->in_color_space == JCS_EXT_BGRA ||
-             cinfo->in_color_space == JCS_EXT_ABGR ||
-             cinfo->in_color_space == JCS_EXT_ARGB)
+        rgb_pixelsize[cinfo->in_color_space] == 3) {
+#if defined(__mips__)
+      if (jsimd_c_can_null_convert())
+        cconvert->pub.color_convert = jsimd_c_null_convert;
+      else
+#endif
+        cconvert->pub.color_convert = null_convert;
+    } else if (cinfo->in_color_space == JCS_RGB ||
+               cinfo->in_color_space == JCS_EXT_RGB ||
+               cinfo->in_color_space == JCS_EXT_RGBX ||
+               cinfo->in_color_space == JCS_EXT_BGR ||
+               cinfo->in_color_space == JCS_EXT_BGRX ||
+               cinfo->in_color_space == JCS_EXT_XBGR ||
+               cinfo->in_color_space == JCS_EXT_XRGB ||
+               cinfo->in_color_space == JCS_EXT_RGBA ||
+               cinfo->in_color_space == JCS_EXT_BGRA ||
+               cinfo->in_color_space == JCS_EXT_ABGR ||
+               cinfo->in_color_space == JCS_EXT_ARGB)
       cconvert->pub.color_convert = rgb_rgb_convert;
     else
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
@@ -625,18 +630,28 @@ jinit_color_converter (j_compress_ptr cinfo)
         cconvert->pub.start_pass = rgb_ycc_start;
         cconvert->pub.color_convert = rgb_ycc_convert;
       }
-    } else if (cinfo->in_color_space == JCS_YCbCr)
-      cconvert->pub.color_convert = null_convert;
-    else
+    } else if (cinfo->in_color_space == JCS_YCbCr) {
+#if defined(__mips__)
+      if (jsimd_c_can_null_convert())
+        cconvert->pub.color_convert = jsimd_c_null_convert;
+      else
+#endif
+        cconvert->pub.color_convert = null_convert;
+    } else
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;
 
   case JCS_CMYK:
     if (cinfo->num_components != 4)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
-    if (cinfo->in_color_space == JCS_CMYK)
-      cconvert->pub.color_convert = null_convert;
-    else
+    if (cinfo->in_color_space == JCS_CMYK) {
+#if defined(__mips__)
+      if (jsimd_c_can_null_convert())
+        cconvert->pub.color_convert = jsimd_c_null_convert;
+      else
+#endif
+        cconvert->pub.color_convert = null_convert;
+    } else
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;
 
@@ -646,9 +661,14 @@ jinit_color_converter (j_compress_ptr cinfo)
     if (cinfo->in_color_space == JCS_CMYK) {
       cconvert->pub.start_pass = rgb_ycc_start;
       cconvert->pub.color_convert = cmyk_ycck_convert;
-    } else if (cinfo->in_color_space == JCS_YCCK)
-      cconvert->pub.color_convert = null_convert;
-    else
+    } else if (cinfo->in_color_space == JCS_YCCK) {
+#if defined(__mips__)
+      if (jsimd_c_can_null_convert())
+        cconvert->pub.color_convert = jsimd_c_null_convert;
+      else
+#endif
+        cconvert->pub.color_convert = null_convert;
+    } else
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;
 
@@ -656,7 +676,12 @@ jinit_color_converter (j_compress_ptr cinfo)
     if (cinfo->jpeg_color_space != cinfo->in_color_space ||
         cinfo->num_components != cinfo->input_components)
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
-    cconvert->pub.color_convert = null_convert;
+#if defined(__mips__)
+    if (jsimd_c_can_null_convert())
+      cconvert->pub.color_convert = jsimd_c_null_convert;
+    else
+#endif
+      cconvert->pub.color_convert = null_convert;
     break;
   }
 }

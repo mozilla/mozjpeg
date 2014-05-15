@@ -504,9 +504,11 @@ jinit_downsampler (j_compress_ptr cinfo)
                compptr->v_samp_factor * 2 == cinfo->max_v_samp_factor) {
 #ifdef INPUT_SMOOTHING_SUPPORTED
       if (cinfo->smoothing_factor) {
+#if defined(__mips__)
         if (jsimd_can_h2v2_smooth_downsample())
           downsample->methods[ci] = jsimd_h2v2_smooth_downsample;
         else
+#endif
           downsample->methods[ci] = h2v2_smooth_downsample;
         downsample->pub.need_context_rows = TRUE;
       } else {

@@ -30,13 +30,6 @@ typedef struct {
   /* If no code has been allocated for a symbol S, ehufsi[S] contains 0 */
 } c_derived_tbl;
 
-/* Short forms of external names for systems with brain-damaged linkers. */
-
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_make_c_derived_tbl jMkCDerived
-#define jpeg_gen_optimal_table  jGenOptTbl
-#endif /* NEED_SHORT_EXTERNAL_NAMES */
-
 /* Expand a Huffman table definition into the derived format */
 EXTERN(void) jpeg_make_c_derived_tbl
         JPP((j_compress_ptr cinfo, boolean isDC, int tblno,

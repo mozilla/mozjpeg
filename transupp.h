@@ -77,19 +77,6 @@
  */
 
 
-/* Short forms of external names for systems with brain-damaged linkers. */
-
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jtransform_parse_crop_spec      jTrParCrop
-#define jtransform_request_workspace    jTrRequest
-#define jtransform_adjust_parameters    jTrAdjust
-#define jtransform_execute_transform    jTrExec
-#define jtransform_perfect_transform    jTrPerfect
-#define jcopy_markers_setup             jCMrkSetup
-#define jcopy_markers_execute           jCMrkExec
-#endif /* NEED_SHORT_EXTERNAL_NAMES */
-
-
 /*
  * Codes for supported types of image transformations.
  */

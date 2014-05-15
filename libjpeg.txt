@@ -2949,11 +2949,7 @@ The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
 and GIF file formats; you must disable the other file formats to compile a
 12-bit cjpeg or djpeg.  (install.txt has more information about that.)
 At present, a 12-bit library can handle *only* 12-bit images, not both
-precisions.  (If you need to include both 8- and 12-bit libraries in a single
-application, you could probably do it by defining NEED_SHORT_EXTERNAL_NAMES
-for just one of the copies.  You'd have to access the 8-bit and 12-bit copies
-from separate application source files.  This is untested ... if you try it,
-we'd like to hear whether it works!)
+precisions.
 
 Note that a 12-bit library always compresses in Huffman optimization mode,
 in order to generate valid Huffman tables.  This is necessary because our
@@ -3034,10 +3030,6 @@ handler, all of which are application-replaceable.  (cjpeg/djpeg are more
 heavily dependent on stdio.)  malloc and free are called only from the memory
 manager "back end" module, so you can use a different memory allocator by
 replacing that one file.
-
-The code generally assumes that C names must be unique in the first 15
-characters.  However, global function names can be made unique in the
-first 6 characters by defining NEED_SHORT_EXTERNAL_NAMES.
 
 More info about porting the code may be gleaned by reading jconfig.txt,
 jmorecfg.h, and jinclude.h.

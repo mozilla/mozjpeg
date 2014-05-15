@@ -89,32 +89,6 @@ struct cdjpeg_progress_mgr {
 typedef struct cdjpeg_progress_mgr * cd_progress_ptr;
 
 
-/* Short forms of external names for systems with brain-damaged linkers. */
-
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jinit_read_bmp          jIRdBMP
-#define jinit_write_bmp         jIWrBMP
-#define jinit_read_gif          jIRdGIF
-#define jinit_write_gif         jIWrGIF
-#define jinit_read_ppm          jIRdPPM
-#define jinit_write_ppm         jIWrPPM
-#define jinit_read_rle          jIRdRLE
-#define jinit_write_rle         jIWrRLE
-#define jinit_read_targa        jIRdTarga
-#define jinit_write_targa       jIWrTarga
-#define read_quant_tables       RdQTables
-#define read_scan_script        RdScnScript
-#define set_quality_ratings     SetQRates
-#define set_quant_slots         SetQSlots
-#define set_sample_factors      SetSFacts
-#define read_color_map          RdCMap
-#define enable_signal_catcher   EnSigCatcher
-#define start_progress_monitor  StProgMon
-#define end_progress_monitor    EnProgMon
-#define read_stdin              RdStdin
-#define write_stdout            WrStdout
-#endif /* NEED_SHORT_EXTERNAL_NAMES */
-
 /* Module selection routines for I/O modules. */
 
 EXTERN(cjpeg_source_ptr) jinit_read_bmp JPP((j_compress_ptr cinfo));

@@ -136,16 +136,6 @@ AC_TRY_RUN(
   [AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(Assuming that right shift is signed on target machine.)])
 
-# test whether global names are unique to at least 15 chars
-AC_MSG_CHECKING([for short external names])
-AC_TRY_LINK(
-  [int possibly_duplicate_function () { return 0; }
-   int possibly_dupli_function () { return 1; }], [ ],
-  [AC_MSG_RESULT(ok)],
-  [AC_MSG_RESULT(short)
-   AC_DEFINE([NEED_SHORT_EXTERNAL_NAMES], 1,
-     [Define if linker requires that the first 15 characters of global names be unique.])])
-
 # Checks for library functions.
 AC_CHECK_FUNCS([memset memcpy], [],
   [AC_DEFINE([NEED_BSD_STRINGS], 1,

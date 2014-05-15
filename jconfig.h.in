@@ -40,10 +40,6 @@
    memset/memcpy in <string.h>. */
 #undef NEED_BSD_STRINGS
 
-/* Define if linker requires that the first 15 characters of global names be
-   unique. */
-#undef NEED_SHORT_EXTERNAL_NAMES
-
 /* Define if you need to include <sys/types.h> to get size_t. */
 #undef NEED_SYS_TYPES_H
 

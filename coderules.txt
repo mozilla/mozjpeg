@@ -94,9 +94,7 @@ pass these through the common routines provided.
 wherever possible.  (Note that our method-based calling conventions help this
 a lot: in many modules only the initialization function will ever need to be
 called directly, so only that function need be externally visible.)  All
-global function names should begin with "jpeg_", and should have an
-abbreviated name (unique in the first six characters) substituted by macro
-when NEED_SHORT_EXTERNAL_NAMES is set.
+global function names should begin with "jpeg_".
 
 3. Don't use global variables; anything that must be used in another module
 should be in the common data structures.

@@ -19,20 +19,6 @@
  */
 
 
-/* Short forms of external names for systems with brain-damaged linkers. */
-
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_get_small          jGetSmall
-#define jpeg_free_small         jFreeSmall
-#define jpeg_get_large          jGetLarge
-#define jpeg_free_large         jFreeLarge
-#define jpeg_mem_available      jMemAvail
-#define jpeg_open_backing_store jOpenBackStore
-#define jpeg_mem_init           jMemInit
-#define jpeg_mem_term           jMemTerm
-#endif /* NEED_SHORT_EXTERNAL_NAMES */
-
-
 /*
  * These two functions are used to allocate and release small chunks of
  * memory.  (Typically the total amount requested through jpeg_get_small is

@@ -41,10 +41,6 @@
  * want to refer to it directly.
  */
 
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_std_message_table  jMsgTable
-#endif
-
 #define JMESSAGE(code,string)   string ,
 
 const char * const jpeg_std_message_table[] = {

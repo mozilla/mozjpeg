@@ -36,6 +36,12 @@ jsimd_can_ycc_rgb (void)
   return 0;
 }
 
+GLOBAL(int)
+jsimd_c_can_null_convert (void)
+{
+  return 0;
+}
+
 GLOBAL(void)
 jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
@@ -54,6 +60,13 @@ GLOBAL(void)
 jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
                        JSAMPIMAGE input_buf, JDIMENSION input_row,
                        JSAMPARRAY output_buf, int num_rows)
+{
+}
+
+GLOBAL(void)
+jsimd_c_null_convert (j_compress_ptr cinfo,
+                      JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+                      JDIMENSION output_row, int num_rows)
 {
 }
 

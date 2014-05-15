@@ -25,6 +25,110 @@
 #include "jsimd_mips_dspr2_asm.h"
 
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_c_null_convert_mips_dspr2)
+/*
+ * a0     - cinfo->image_width
+ * a1     - input_buf
+ * a2     - output_buf
+ * a3     - output_row
+ * 16(sp) - num_rows
+ * 20(sp) - cinfo->num_components
+ *
+ * Null conversion for compression
+ */
+
+    SAVE_REGS_ON_STACK 8, s0, s1
+
+    lw        t9, 24(sp)   // t9 = num_rows
+    lw        s0, 28(sp)   // s0 = cinfo->num_components
+    andi      t0, a0, 3    // t0 = cinfo->image_width & 3
+    beqz      t0, 4f       // no residual
+     nop
+0:
+    addiu     t9, t9, -1
+    bltz      t9, 7f
+     li       t1, 0
+1:
+    sll       t3, t1, 2
+    lwx       t5, t3(a2)   // t5 = outptr = output_buf[ci]
+    lw        t2, 0(a1)    // t2 = inptr = *input_buf
+    sll       t4, a3, 2
+    lwx       t5, t4(t5)   // t5 = outptr = output_buf[ci][output_row]
+    addu      t2, t2, t1
+    addu      s1, t5, a0
+    addu      t6, t5, t0
+2:
+    lbu       t3, 0(t2)
+    addiu     t5, t5, 1
+    sb        t3, -1(t5)
+    bne       t6, t5, 2b
+     addu     t2, t2, s0
+3:
+    lbu       t3, 0(t2)
+    addu      t4, t2, s0
+    addu      t7, t4, s0
+    addu      t8, t7, s0
+    addu      t2, t8, s0
+    lbu       t4, 0(t4)
+    lbu       t7, 0(t7)
+    lbu       t8, 0(t8)
+    addiu     t5, t5, 4
+    sb        t3, -4(t5)
+    sb        t4, -3(t5)
+    sb        t7, -2(t5)
+    bne       s1, t5, 3b
+     sb       t8, -1(t5)
+    addiu     t1, t1, 1
+    bne       t1, s0, 1b
+     nop
+    addiu     a1, a1, 4
+    bgez      t9, 0b
+     addiu    a3, a3, 1
+    b         7f
+     nop
+4:
+    addiu     t9, t9, -1
+    bltz      t9, 7f
+     li       t1, 0
+5:
+    sll       t3, t1, 2
+    lwx       t5, t3(a2)   // t5 = outptr = output_buf[ci]
+    lw        t2, 0(a1)    // t2 = inptr = *input_buf
+    sll       t4, a3, 2
+    lwx       t5, t4(t5)   // t5 = outptr = output_buf[ci][output_row]
+    addu      t2, t2, t1
+    addu      s1, t5, a0
+    addu      t6, t5, t0
+6:
+    lbu       t3, 0(t2)
+    addu      t4, t2, s0
+    addu      t7, t4, s0
+    addu      t8, t7, s0
+    addu      t2, t8, s0
+    lbu       t4, 0(t4)
+    lbu       t7, 0(t7)
+    lbu       t8, 0(t8)
+    addiu     t5, t5, 4
+    sb        t3, -4(t5)
+    sb        t4, -3(t5)
+    sb        t7, -2(t5)
+    bne       s1, t5, 6b
+     sb       t8, -1(t5)
+    addiu     t1, t1, 1
+    bne       t1, s0, 5b
+     nop
+    addiu     a1, a1, 4
+    bgez      t9, 4b
+     addiu    a3, a3, 1
+7:
+    RESTORE_REGS_FROM_STACK 8, s0, s1
+
+    j         ra
+     nop
+
+END(jsimd_c_null_convert_mips_dspr2)
+
+/*****************************************************************************/
 /*
  * jsimd_extrgb_ycc_convert_mips_dspr2
  * jsimd_extbgr_ycc_convert_mips_dspr2

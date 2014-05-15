@@ -343,22 +343,22 @@ jsimd_can_idct_float (void)
 
 GLOBAL(void)
 jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-                JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                JDIMENSION output_col)
+                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
+                  JDIMENSION output_col)
 {
 }
 
 GLOBAL(void)
 jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-                JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                JDIMENSION output_col)
+                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
+                  JDIMENSION output_col)
 {
 }
 
 GLOBAL(void)
 jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-                JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                JDIMENSION output_col)
+                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
+                  JDIMENSION output_col)
 {
 }
 

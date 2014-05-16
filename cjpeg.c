@@ -667,7 +667,8 @@ main (int argc, char **argv)
   (*src_mgr->start_input) (&cinfo, src_mgr);
 
   /* Now that we know input colorspace, fix colorspace-dependent defaults */
-  jpeg_default_colorspace(&cinfo);
+  if (!is_jpeg)
+    jpeg_default_colorspace(&cinfo);
 
   /* Adjust default compression parameters by re-parsing the options */
   file_index = parse_switches(&cinfo, argc, argv, 0, TRUE);

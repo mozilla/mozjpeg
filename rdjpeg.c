@@ -11,7 +11,7 @@
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 
-#define NUM_ROWS 16
+#define NUM_ROWS 32
 
 /* Private version of data source object */
 
@@ -33,9 +33,9 @@ get_rows (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   jpeg_source_ptr source = (jpeg_source_ptr) sinfo;
   
-  jpeg_read_raw_data(&source->dinfo, source->pub.plane_pointer, NUM_ROWS);
+  jpeg_read_raw_data(&source->dinfo, source->pub.plane_pointer, 8*cinfo->max_v_samp_factor);
 
-  return NUM_ROWS;
+  return 8*cinfo->max_v_samp_factor;
 }
 
 
@@ -64,12 +64,21 @@ start_input_jpeg (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   cinfo->data_precision = source->dinfo.data_precision;
   cinfo->image_width = source->dinfo.image_width;
   cinfo->image_height = source->dinfo.image_height;
+  
+  jpeg_set_colorspace(cinfo, source->dinfo.jpeg_color_space);
+  
+  cinfo->max_v_samp_factor = source->dinfo.max_v_samp_factor;
+  cinfo->max_h_samp_factor = source->dinfo.max_h_samp_factor;
+  
   cinfo->raw_data_in = TRUE;
 #if JPEG_LIB_VERSION >= 70
   cinfo->do_fancy_upsampling = FALSE;
 #endif
   
   for (i = 0; i < cinfo->input_components; i++) {
+    cinfo->comp_info[i].h_samp_factor = source->dinfo.comp_info[i].h_samp_factor;
+    cinfo->comp_info[i].v_samp_factor = source->dinfo.comp_info[i].v_samp_factor;
+    
     source->pub.plane_pointer[i] =  (*cinfo->mem->alloc_sarray)
     ((j_common_ptr) cinfo, JPOOL_IMAGE,
      (JDIMENSION) cinfo->image_width, (JDIMENSION) NUM_ROWS);

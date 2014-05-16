@@ -60,8 +60,8 @@ typedef bmp_dest_struct * bmp_dest_ptr;
 
 /* Forward declarations */
 LOCAL(void) write_colormap
-        JPP((j_decompress_ptr cinfo, bmp_dest_ptr dest,
-             int map_colors, int map_entry_size));
+        (j_decompress_ptr cinfo, bmp_dest_ptr dest, int map_colors,
+         int map_entry_size);
 
 
 /*

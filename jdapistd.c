@@ -23,7 +23,7 @@
 
 
 /* Forward declarations */
-LOCAL(boolean) output_pass_setup JPP((j_decompress_ptr cinfo));
+LOCAL(boolean) output_pass_setup (j_decompress_ptr cinfo);
 
 
 /*

@@ -29,9 +29,10 @@
 
 
 /* Pointer to routine to upsample a single component */
-typedef JMETHOD(void, upsample1_ptr,
-                (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-                 JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr));
+typedef void (*upsample1_ptr) (j_decompress_ptr cinfo,
+                               jpeg_component_info * compptr,
+                               JSAMPARRAY input_data,
+                               JSAMPARRAY * output_data_ptr);
 
 /* Private subobject */
 

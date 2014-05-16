@@ -59,12 +59,12 @@ typedef my_coef_controller * my_coef_ptr;
 
 /* Forward declarations */
 METHODDEF(boolean) compress_data
-    JPP((j_compress_ptr cinfo, JSAMPIMAGE input_buf));
+        (j_compress_ptr cinfo, JSAMPIMAGE input_buf);
 #ifdef FULL_COEF_BUFFER_SUPPORTED
 METHODDEF(boolean) compress_first_pass
-    JPP((j_compress_ptr cinfo, JSAMPIMAGE input_buf));
+        (j_compress_ptr cinfo, JSAMPIMAGE input_buf);
 METHODDEF(boolean) compress_output
-    JPP((j_compress_ptr cinfo, JSAMPIMAGE input_buf));
+        (j_compress_ptr cinfo, JSAMPIMAGE input_buf);
 #endif
 
 

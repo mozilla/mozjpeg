@@ -16,7 +16,7 @@
 
 
 /* Forward declarations */
-LOCAL(void) transdecode_master_selection JPP((j_decompress_ptr cinfo));
+LOCAL(void) transdecode_master_selection (j_decompress_ptr cinfo);
 
 
 /*

@@ -23,8 +23,8 @@
 #include "jerror.h"
 
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc(),free() */
-extern void * malloc JPP((size_t size));
-extern void free JPP((void *ptr));
+extern void * malloc (size_t size);
+extern void free (void *ptr);
 #endif
 
 

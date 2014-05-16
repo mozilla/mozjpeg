@@ -247,7 +247,7 @@ set_property(TARGET tjbench-static PROPERTY COMPILE_FLAGS
   "-DBMP_SUPPORTED -DPPM_SUPPORTED")
 
 add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c rdswitch.c
-  rdtarga.c)
+  rdtarga.c rdjpeg.c)
 set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
   "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
 target_link_libraries(cjpeg-static jpeg-static)

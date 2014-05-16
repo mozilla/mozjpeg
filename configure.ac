@@ -8,9 +8,6 @@ BUILD=`date +%Y%m%d`
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
 AC_PREFIX_DEFAULT(/opt/libjpeg-turbo)
 
-# Always build with prototypes
-AC_DEFINE([HAVE_PROTOTYPES], 1, [Define if your compiler supports prototypes])
-
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.

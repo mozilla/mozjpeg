@@ -123,13 +123,12 @@ typedef struct {
 
 
 /* Forward declarations */
-METHODDEF(boolean) encode_mcu_huff JPP((j_compress_ptr cinfo,
-                                        JBLOCKROW *MCU_data));
-METHODDEF(void) finish_pass_huff JPP((j_compress_ptr cinfo));
+METHODDEF(boolean) encode_mcu_huff (j_compress_ptr cinfo, JBLOCKROW *MCU_data);
+METHODDEF(void) finish_pass_huff (j_compress_ptr cinfo);
 #ifdef ENTROPY_OPT_SUPPORTED
-METHODDEF(boolean) encode_mcu_gather JPP((j_compress_ptr cinfo,
-                                          JBLOCKROW *MCU_data));
-METHODDEF(void) finish_pass_gather JPP((j_compress_ptr cinfo));
+METHODDEF(boolean) encode_mcu_gather (j_compress_ptr cinfo,
+                                      JBLOCKROW *MCU_data);
+METHODDEF(void) finish_pass_gather (j_compress_ptr cinfo);
 #endif
 
 

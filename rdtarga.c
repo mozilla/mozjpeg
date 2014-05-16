@@ -56,7 +56,7 @@ typedef struct _tga_source_struct {
   JDIMENSION current_row;       /* Current logical row number to read */
 
   /* Pointer to routine to extract next Targa pixel from input file */
-  JMETHOD(void, read_pixel, (tga_source_ptr sinfo));
+  void (*read_pixel) (tga_source_ptr sinfo);
 
   /* Result of read_pixel is delivered here: */
   U_CHAR tga_pixel[4];
@@ -68,8 +68,7 @@ typedef struct _tga_source_struct {
   int dup_pixel_count;          /* # of times to duplicate previous pixel */
 
   /* This saves the correct pixel-row-expansion method for preload_image */
-  JMETHOD(JDIMENSION, get_pixel_rows, (j_compress_ptr cinfo,
-                                       cjpeg_source_ptr sinfo));
+  JDIMENSION (*get_pixel_rows) (j_compress_ptr cinfo, cjpeg_source_ptr sinfo);
 } tga_source_struct;
 
 

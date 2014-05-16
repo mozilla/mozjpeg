@@ -1311,8 +1311,8 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	unsigned char *rgbBuf=NULL;
 	unsigned char *_dstBuf=NULL;  int _pitch=0;
 	#endif
-	JMETHOD(int, old_read_markers, (j_decompress_ptr));
-	JMETHOD(void, old_reset_marker_reader, (j_decompress_ptr));
+	int (*old_read_markers)(j_decompress_ptr);
+	void (*old_reset_marker_reader)(j_decompress_ptr);
 
 	getdinstance(handle);
 

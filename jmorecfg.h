@@ -192,19 +192,6 @@ typedef unsigned int JDIMENSION;
 #define EXTERN(type)            extern type
 
 
-/* This macro is used to declare a "method", that is, a function pointer.
- * We want to supply prototype parameters if the compiler can cope.
- * Note that the arglist parameter must be parenthesized!
- * Again, you can customize this if you need special linkage keywords.
- */
-
-#ifdef HAVE_PROTOTYPES
-#define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
-#else
-#define JMETHOD(type,methodname,arglist)  type (*methodname) ()
-#endif
-
-
 /* Here is the pseudo-keyword for declaring pointers that must be "far"
  * on 80x86 machines.  Most of the specialized coding for 80x86 is handled
  * by just saying "FAR *" where such a pointer is needed.  In a few places
@@ -402,17 +389,10 @@ static const int rgb_pixelsize[JPEG_NUMCS] = {
 /* FAST_FLOAT should be either float or double, whichever is done faster
  * by your compiler.  (Note that this type is only used in the floating point
  * DCT routines, so it only matters if you've defined DCT_FLOAT_SUPPORTED.)
- * Typically, float is faster in ANSI C compilers, while double is faster in
- * pre-ANSI compilers (because they insist on converting to double anyway).
- * The code below therefore chooses float if we have ANSI-style prototypes.
  */
 
 #ifndef FAST_FLOAT
-#ifdef HAVE_PROTOTYPES
 #define FAST_FLOAT  float
-#else
-#define FAST_FLOAT  double
-#endif
 #endif
 
 #endif /* JPEG_INTERNAL_OPTIONS */

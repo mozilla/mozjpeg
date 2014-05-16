@@ -31,7 +31,7 @@ typedef my_input_controller * my_inputctl_ptr;
 
 
 /* Forward declarations */
-METHODDEF(int) consume_markers JPP((j_decompress_ptr cinfo));
+METHODDEF(int) consume_markers (j_decompress_ptr cinfo);
 
 
 /*

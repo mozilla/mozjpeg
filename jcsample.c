@@ -53,9 +53,10 @@
 
 
 /* Pointer to routine to downsample a single component */
-typedef JMETHOD(void, downsample1_ptr,
-                (j_compress_ptr cinfo, jpeg_component_info * compptr,
-                 JSAMPARRAY input_data, JSAMPARRAY output_data));
+typedef void (*downsample1_ptr) (j_compress_ptr cinfo,
+                                 jpeg_component_info * compptr,
+                                 JSAMPARRAY input_data,
+                                 JSAMPARRAY output_data);
 
 /* Private subobject */
 

@@ -144,15 +144,15 @@ typedef my_main_controller * my_main_ptr;
 
 /* Forward declarations */
 METHODDEF(void) process_data_simple_main
-        JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
-             JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
+        (j_decompress_ptr cinfo, JSAMPARRAY output_buf,
+         JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
 METHODDEF(void) process_data_context_main
-        JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
-             JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
+        (j_decompress_ptr cinfo, JSAMPARRAY output_buf,
+         JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
 #ifdef QUANT_2PASS_SUPPORTED
 METHODDEF(void) process_data_crank_post
-        JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
-             JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
+        (j_decompress_ptr cinfo, JSAMPARRAY output_buf,
+         JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
 #endif
 
 

@@ -18,9 +18,9 @@
 
 /* Forward declarations */
 LOCAL(void) transencode_master_selection
-        JPP((j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays));
+        (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays);
 LOCAL(void) transencode_coef_controller
-        JPP((j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays));
+        (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays);
 
 
 /*

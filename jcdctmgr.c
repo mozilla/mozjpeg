@@ -24,22 +24,21 @@
 
 /* Private subobject for this module */
 
-typedef JMETHOD(void, forward_DCT_method_ptr, (DCTELEM * data));
-typedef JMETHOD(void, float_DCT_method_ptr, (FAST_FLOAT * data));
+typedef void (*forward_DCT_method_ptr) (DCTELEM * data);
+typedef void (*float_DCT_method_ptr) (FAST_FLOAT * data);
 
-typedef JMETHOD(void, convsamp_method_ptr,
-                (JSAMPARRAY sample_data, JDIMENSION start_col,
-                 DCTELEM * workspace));
-typedef JMETHOD(void, float_convsamp_method_ptr,
-                (JSAMPARRAY sample_data, JDIMENSION start_col,
-                 FAST_FLOAT *workspace));
+typedef void (*convsamp_method_ptr) (JSAMPARRAY sample_data,
+                                     JDIMENSION start_col,
+                                     DCTELEM * workspace);
+typedef void (*float_convsamp_method_ptr) (JSAMPARRAY sample_data,
+                                           JDIMENSION start_col,
+                                           FAST_FLOAT *workspace);
 
-typedef JMETHOD(void, quantize_method_ptr,
-                (JCOEFPTR coef_block, DCTELEM * divisors,
-                 DCTELEM * workspace));
-typedef JMETHOD(void, float_quantize_method_ptr,
-                (JCOEFPTR coef_block, FAST_FLOAT * divisors,
-                 FAST_FLOAT * workspace));
+typedef void (*quantize_method_ptr) (JCOEFPTR coef_block, DCTELEM * divisors,
+                                     DCTELEM * workspace);
+typedef void (*float_quantize_method_ptr) (JCOEFPTR coef_block,
+                                           FAST_FLOAT * divisors,
+                                           FAST_FLOAT * workspace);
 
 METHODDEF(void) quantize (JCOEFPTR, DCTELEM *, DCTELEM *);
 

@@ -204,7 +204,7 @@ GLOBAL(void)
 jpeg_write_marker (j_compress_ptr cinfo, int marker,
                    const JOCTET *dataptr, unsigned int datalen)
 {
-  JMETHOD(void, write_marker_byte, (j_compress_ptr info, int val));
+  void (*write_marker_byte) (j_compress_ptr info, int val);
 
   if (cinfo->next_scanline != 0 ||
       (cinfo->global_state != CSTATE_SCANNING &&

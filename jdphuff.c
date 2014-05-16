@@ -74,14 +74,14 @@ typedef struct {
 typedef phuff_entropy_decoder * phuff_entropy_ptr;
 
 /* Forward declarations */
-METHODDEF(boolean) decode_mcu_DC_first JPP((j_decompress_ptr cinfo,
-                                            JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_AC_first JPP((j_decompress_ptr cinfo,
-                                            JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_DC_refine JPP((j_decompress_ptr cinfo,
-                                             JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_AC_refine JPP((j_decompress_ptr cinfo,
-                                             JBLOCKROW *MCU_data));
+METHODDEF(boolean) decode_mcu_DC_first (j_decompress_ptr cinfo,
+                                        JBLOCKROW *MCU_data);
+METHODDEF(boolean) decode_mcu_AC_first (j_decompress_ptr cinfo,
+                                        JBLOCKROW *MCU_data);
+METHODDEF(boolean) decode_mcu_DC_refine (j_decompress_ptr cinfo,
+                                         JBLOCKROW *MCU_data);
+METHODDEF(boolean) decode_mcu_AC_refine (j_decompress_ptr cinfo,
+                                         JBLOCKROW *MCU_data);
 
 
 /*

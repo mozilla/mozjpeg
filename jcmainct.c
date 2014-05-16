@@ -52,12 +52,12 @@ typedef my_main_controller * my_main_ptr;
 
 /* Forward declarations */
 METHODDEF(void) process_data_simple_main
-        JPP((j_compress_ptr cinfo, JSAMPARRAY input_buf,
-             JDIMENSION *in_row_ctr, JDIMENSION in_rows_avail));
+        (j_compress_ptr cinfo, JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
+         JDIMENSION in_rows_avail);
 #ifdef FULL_MAIN_BUFFER_SUPPORTED
 METHODDEF(void) process_data_buffer_main
-        JPP((j_compress_ptr cinfo, JSAMPARRAY input_buf,
-             JDIMENSION *in_row_ctr, JDIMENSION in_rows_avail));
+        (j_compress_ptr cinfo, JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
+         JDIMENSION in_rows_avail);
 #endif
 
 

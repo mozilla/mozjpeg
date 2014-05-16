@@ -7,7 +7,6 @@
 #cmakedefine D_ARITH_CODING_SUPPORTED
 #cmakedefine MEM_SRCDST_SUPPORTED
 
-#define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR
 #define HAVE_UNSIGNED_SHORT
 /* #define void char */

@@ -86,16 +86,16 @@ typedef phuff_entropy_encoder * phuff_entropy_ptr;
 #endif
 
 /* Forward declarations */
-METHODDEF(boolean) encode_mcu_DC_first JPP((j_compress_ptr cinfo,
-                                            JBLOCKROW *MCU_data));
-METHODDEF(boolean) encode_mcu_AC_first JPP((j_compress_ptr cinfo,
-                                            JBLOCKROW *MCU_data));
-METHODDEF(boolean) encode_mcu_DC_refine JPP((j_compress_ptr cinfo,
-                                             JBLOCKROW *MCU_data));
-METHODDEF(boolean) encode_mcu_AC_refine JPP((j_compress_ptr cinfo,
-                                             JBLOCKROW *MCU_data));
-METHODDEF(void) finish_pass_phuff JPP((j_compress_ptr cinfo));
-METHODDEF(void) finish_pass_gather_phuff JPP((j_compress_ptr cinfo));
+METHODDEF(boolean) encode_mcu_DC_first (j_compress_ptr cinfo,
+                                        JBLOCKROW *MCU_data);
+METHODDEF(boolean) encode_mcu_AC_first (j_compress_ptr cinfo,
+                                        JBLOCKROW *MCU_data);
+METHODDEF(boolean) encode_mcu_DC_refine (j_compress_ptr cinfo,
+                                         JBLOCKROW *MCU_data);
+METHODDEF(boolean) encode_mcu_AC_refine (j_compress_ptr cinfo,
+                                         JBLOCKROW *MCU_data);
+METHODDEF(void) finish_pass_phuff (j_compress_ptr cinfo);
+METHODDEF(void) finish_pass_gather_phuff (j_compress_ptr cinfo);
 
 
 /*

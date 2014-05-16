@@ -69,15 +69,15 @@ typedef my_coef_controller * my_coef_ptr;
 
 /* Forward declarations */
 METHODDEF(int) decompress_onepass
-        JPP((j_decompress_ptr cinfo, JSAMPIMAGE output_buf));
+        (j_decompress_ptr cinfo, JSAMPIMAGE output_buf);
 #ifdef D_MULTISCAN_FILES_SUPPORTED
 METHODDEF(int) decompress_data
-        JPP((j_decompress_ptr cinfo, JSAMPIMAGE output_buf));
+        (j_decompress_ptr cinfo, JSAMPIMAGE output_buf);
 #endif
 #ifdef BLOCK_SMOOTHING_SUPPORTED
-LOCAL(boolean) smoothing_ok JPP((j_decompress_ptr cinfo));
+LOCAL(boolean) smoothing_ok (j_decompress_ptr cinfo);
 METHODDEF(int) decompress_smooth_data
-        JPP((j_decompress_ptr cinfo, JSAMPIMAGE output_buf));
+        (j_decompress_ptr cinfo, JSAMPIMAGE output_buf);
 #endif
 
 

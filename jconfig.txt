@@ -23,11 +23,6 @@
  * #define the symbol if yes, #undef it if no.
  */
 
-/* Does your compiler support function prototypes?
- * (If not, you also need to use ansi2knr, see install.txt)
- */
-#define HAVE_PROTOTYPES
-
 /* Does your compiler support the declaration "unsigned char" ?
  * How about "unsigned short" ?
  */

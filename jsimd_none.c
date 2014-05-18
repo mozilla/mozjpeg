@@ -118,6 +118,18 @@ jsimd_can_h2v1_upsample (void)
   return 0;
 }
 
+GLOBAL(int)
+jsimd_can_int_upsample (void)
+{
+  return 0;
+}
+
+GLOBAL(void)
+jsimd_int_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+                      JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+}
+
 GLOBAL(void)
 jsimd_h2v2_upsample (j_decompress_ptr cinfo,
                      jpeg_component_info * compptr,

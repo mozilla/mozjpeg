@@ -1613,6 +1613,94 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_smooth_downsample_mips_dspr2)
      nop
 
 END(jsimd_h2v2_smooth_downsample_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_int_upsample_mips_dspr2)
+/*
+ * a0     - upsample->h_expand[compptr->component_index]
+ * a1     - upsample->v_expand[compptr->component_index]
+ * a2     - input_data
+ * a3     - output_data_ptr
+ * 16(sp) - cinfo->output_width
+ * 20(sp) - cinfo->max_v_samp_factor
+ */
+    .set at
+
+    SAVE_REGS_ON_STACK 16, s0, s1, s2, s3
+
+    lw      s0, 0(a3)    // s0 = output_data
+    lw      s1, 32(sp)   // s1 = cinfo->output_width
+    lw      s2, 36(sp)   // s2 = cinfo->max_v_samp_factor
+    li      t6, 0        // t6 = inrow
+    beqz    s2, 10f
+     li     s3, 0        // s3 = outrow
+0:
+    addu    t0, a2, t6
+    addu    t7, s0, s3
+    lw      t3, 0(t0)    // t3 = inptr
+    lw      t8, 0(t7)    // t8 = outptr
+    beqz    s1, 4f
+     addu   t5, t8, s1   // t5 = outend
+1:
+    lb      t2, 0(t3)    // t2 = invalue = *inptr++
+    addiu   t3, 1
+    beqz    a0, 3f
+     move   t0, a0       // t0 = h_expand
+2:
+    sb      t2, 0(t8)
+    addiu   t0, -1
+    bgtz    t0, 2b
+     addiu  t8, 1
+3:
+    bgt     t5, t8, 1b
+     nop
+4:
+    addiu   t9, a1, -1   // t9 = v_expand - 1
+    blez    t9, 9f
+     nop
+5:
+    lw      t3, 0(s0)
+    lw      t4, 4(s0)
+    subu    t0, s1, 0xF
+    blez    t0, 7f
+     addu   t5, t3, s1   // t5 = end address
+    andi    t7, s1, 0xF  // t7 = residual
+    subu    t8, t5, t7
+6:
+    ulw     t0, 0(t3)
+    ulw     t1, 4(t3)
+    ulw     t2, 8(t3)
+    usw     t0, 0(t4)
+    ulw     t0, 12(t3)
+    usw     t1, 4(t4)
+    usw     t2, 8(t4)
+    usw     t0, 12(t4)
+    addiu   t3, 16
+    bne     t3, t8, 6b
+     addiu  t4, 16
+    beqz    t7, 8f
+     nop
+7:
+    lbu     t0, 0(t3)
+    sb      t0, 0(t4)
+    addiu   t3, 1
+    bne     t3, t5, 7b
+     addiu  t4, 1
+8:
+    addiu   t9, -1
+    bgtz    t9, 5b
+     addiu  s0, 8
+9:
+    addu    s3, s3, a1
+    bne     s3, s2, 0b
+     addiu  t6, 1
+10:
+    RESTORE_REGS_FROM_STACK 16, s0, s1, s2, s3
+
+    j       ra
+     nop
+END(jsimd_int_upsample_mips_dspr2)
+
 /*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
 /*

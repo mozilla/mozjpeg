@@ -85,6 +85,25 @@ static const int mips_idct_ifast_coefs[4] = {
   0xAC60AC60            // FIX(-2.613125930 / 4) = -21407 = 0xAC61
 };
 
+/* The following struct is borrowed from jdsample.c */
+typedef void (*upsample1_ptr) (j_decompress_ptr cinfo,
+                               jpeg_component_info * compptr,
+                               JSAMPARRAY input_data,
+                               JSAMPARRAY * output_data_ptr);
+
+typedef struct {
+  struct jpeg_upsampler pub;
+  JSAMPARRAY color_buf[MAX_COMPONENTS];
+  upsample1_ptr methods[MAX_COMPONENTS];
+  int next_row_out;
+  JDIMENSION rows_to_go;
+  int rowgroup_height[MAX_COMPONENTS];
+  UINT8 h_expand[MAX_COMPONENTS];
+  UINT8 v_expand[MAX_COMPONENTS];
+} my_upsampler;
+
+typedef my_upsampler * my_upsample_ptr;
+
 GLOBAL(int)
 jsimd_can_rgb_ycc (void)
 {
@@ -415,6 +434,23 @@ jsimd_can_h2v1_upsample (void)
   return 0;
 }
 
+GLOBAL(int)
+jsimd_can_int_upsample (void)
+{
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+
+  if (simd_support & JSIMD_MIPS_DSPR2)
+    return 1;
+
+  return 0;
+}
+
 GLOBAL(void)
 jsimd_h2v2_upsample (j_decompress_ptr cinfo,
                      jpeg_component_info * compptr,
@@ -437,6 +473,19 @@ jsimd_h2v1_upsample (j_decompress_ptr cinfo,
     jsimd_h2v1_upsample_mips_dspr2(cinfo->max_v_samp_factor,
                                    cinfo->output_width, input_data,
                                    output_data_ptr);
+}
+
+GLOBAL(void)
+jsimd_int_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+                    JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+
+  jsimd_int_upsample_mips_dspr2(upsample->h_expand[compptr->component_index],
+                                upsample->v_expand[compptr->component_index],
+                                input_data, output_data_ptr,
+                                cinfo->output_width,
+                                cinfo->max_v_samp_factor);
 }
 
 GLOBAL(int)

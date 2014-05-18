@@ -286,9 +286,9 @@ jsimd_c_null_convert (j_compress_ptr cinfo,
                       JDIMENSION output_row, int num_rows)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
-    jsimd_null_convert_compr_mips_dspr2(cinfo->image_width, input_buf,
-                                        output_buf, output_row, num_rows,
-                                        cinfo->num_components);
+    jsimd_c_null_convert_mips_dspr2(cinfo->image_width, input_buf,
+                                    output_buf, output_row, num_rows,
+                                    cinfo->num_components);
 }
 
 GLOBAL(int)

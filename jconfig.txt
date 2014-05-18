@@ -1,8 +1,10 @@
 /*
  * jconfig.txt
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1994, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file documents the configuration options that are required to
@@ -64,14 +66,6 @@
  */
 #undef NEED_SYS_TYPES_H
 
-/* For 80x86 machines, you need to define NEED_FAR_POINTERS,
- * unless you are using a large-data memory model or 80386 flat-memory mode.
- * On less brain-damaged CPUs this symbol must not be defined.
- * (Defining this symbol causes large data structures to be referenced through
- * "far" pointers and to be allocated with a special version of malloc.)
- */
-#undef NEED_FAR_POINTERS
-
 /* Although a real ANSI C compiler can deal perfectly well with pointers to
  * unspecified structures (see "incomplete types" in the spec), a few pre-ANSI
  * and pseudo-ANSI compilers get confused.  To keep one of these bozos happy,
@@ -132,12 +126,6 @@ typedef unsigned char boolean;
  * head of cjpeg.c or djpeg.c.
  */
 #undef TWO_FILE_COMMANDLINE
-
-/* Define this if your system needs explicit cleanup of temporary files.
- * This is crucial under MS-DOS, where the temporary "files" may be areas
- * of extended memory; on most other systems it's not as important.
- */
-#undef NEED_SIGNAL_CATCHER
 
 /* By default, we open image files with fopen(...,"rb") or fopen(...,"wb").
  * This is necessary on systems that distinguish text files from binary files,

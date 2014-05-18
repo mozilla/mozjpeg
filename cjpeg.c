@@ -510,11 +510,6 @@ main (int argc, char **argv)
   jerr.first_addon_message = JMSG_FIRSTADDONCODE;
   jerr.last_addon_message = JMSG_LASTADDONCODE;
 
-  /* Now safe to enable signal catcher. */
-#ifdef NEED_SIGNAL_CATCHER
-  enable_signal_catcher((j_common_ptr) &cinfo);
-#endif
-
   /* Initialize JPEG parameters.
    * Much of this may be overridden later.
    * In particular, we don't yet know the input file's color space,

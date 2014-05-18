@@ -121,9 +121,6 @@ static const UINT8 base_dither_matrix[ODITHER_SIZE][ODITHER_SIZE] = {
  * The fserrors[] array is indexed [component#][position].
  * We provide (#columns + 2) entries per component; the extra entry at each
  * end saves us from special-casing the first and last pixels.
- *
- * Note: on a wide image, we might not have enough room in a PC's near data
- * segment to hold the error array; so it is allocated with alloc_large.
  */
 
 #if BITS_IN_JSAMPLE == 8
@@ -134,7 +131,7 @@ typedef INT32 FSERROR;          /* may need more than 16 bits */
 typedef INT32 LOCFSERROR;       /* be sure calculation temps are big enough */
 #endif
 
-typedef FSERROR FAR *FSERRPTR;  /* pointer to error array (in FAR storage!) */
+typedef FSERROR *FSERRPTR;  /* pointer to error array */
 
 
 /* Private subobject */
@@ -535,8 +532,7 @@ quantize_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 
   for (row = 0; row < num_rows; row++) {
     /* Initialize output values to 0 so can process components separately */
-    jzero_far((void FAR *) output_buf[row],
-              (size_t) (width * SIZEOF(JSAMPLE)));
+    jzero_far((void *) output_buf[row], (size_t) (width * SIZEOF(JSAMPLE)));
     row_index = cquantize->row_index;
     for (ci = 0; ci < nc; ci++) {
       input_ptr = input_buf[row] + ci;
@@ -640,8 +636,7 @@ quantize_fs_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 
   for (row = 0; row < num_rows; row++) {
     /* Initialize output values to 0 so can process components separately */
-    jzero_far((void FAR *) output_buf[row],
-              (size_t) (width * SIZEOF(JSAMPLE)));
+    jzero_far((void *) output_buf[row], (size_t) (width * SIZEOF(JSAMPLE)));
     for (ci = 0; ci < nc; ci++) {
       input_ptr = input_buf[row] + ci;
       output_ptr = output_buf[row];
@@ -786,7 +781,7 @@ start_pass_1_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
     /* Initialize the propagated errors to zero. */
     arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
     for (i = 0; i < cinfo->out_color_components; i++)
-      jzero_far((void FAR *) cquantize->fserrors[i], arraysize);
+      jzero_far((void *) cquantize->fserrors[i], arraysize);
     break;
   default:
     ERREXIT(cinfo, JERR_NOT_COMPILED);
@@ -849,10 +844,10 @@ jinit_1pass_quantizer (j_decompress_ptr cinfo)
   create_colorindex(cinfo);
 
   /* Allocate Floyd-Steinberg workspace now if requested.
-   * We do this now since it is FAR storage and may affect the memory
-   * manager's space calculations.  If the user changes to FS dither
-   * mode in a later pass, we will allocate the space then, and will
-   * possibly overrun the max_memory_to_use setting.
+   * We do this now since it may affect the memory manager's space
+   * calculations.  If the user changes to FS dither mode in a later pass, we
+   * will allocate the space then, and will possibly overrun the
+   * max_memory_to_use setting.
    */
   if (cinfo->dither_mode == JDITHER_FS)
     alloc_fs_workspace(cinfo);

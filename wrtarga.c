@@ -1,8 +1,10 @@
 /*
  * wrtarga.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only information
+ * relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to write output images in Targa format.
@@ -27,15 +29,6 @@
 #if BITS_IN_JSAMPLE != 8
   Sorry, this code only copes with 8-bit JSAMPLEs. /* deliberate syntax err */
 #endif
-
-/*
- * The output buffer needs to be writable by fwrite().  On PCs, we must
- * allocate the buffer in near data space, because we are assuming small-data
- * memory model, wherein fwrite() can't reach far memory.  If you need to
- * process very wide images on a PC, you might have to compile in large-memory
- * model, or else replace fwrite() with a putc() loop --- which will be much
- * slower.
- */
 
 
 /* Private version of data destination object */
@@ -236,7 +229,7 @@ jinit_write_targa (j_decompress_ptr cinfo)
   /* Calculate output image dimensions so we can allocate space */
   jpeg_calc_output_dimensions(cinfo);
 
-  /* Create I/O buffer.  Note we make this near on a PC. */
+  /* Create I/O buffer. */
   dest->buffer_width = cinfo->output_width * cinfo->output_components;
   dest->iobuffer = (char *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,

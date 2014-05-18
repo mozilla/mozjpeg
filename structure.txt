@@ -84,36 +84,6 @@ low-quality modes may not meet the JPEG standard's accuracy requirements;
 nonetheless, they are useful for viewers.
 
 
-*** Portability issues ***
-
-Portability is an essential requirement for the library.  The key portability
-issues that show up at the level of system architecture are:
-
-1.  Memory usage.  We want the code to be able to run on PC-class machines
-with limited memory.  Images should therefore be processed sequentially (in
-strips), to avoid holding the whole image in memory at once.  Where a
-full-image buffer is necessary, we should be able to use either virtual memory
-or temporary files.
-
-2.  Near/far pointer distinction.  To run efficiently on 80x86 machines, the
-code should distinguish "small" objects (kept in near data space) from
-"large" ones (kept in far data space).  This is an annoying restriction, but
-fortunately it does not impact code quality for less brain-damaged machines,
-and the source code clutter turns out to be minimal with sufficient use of
-pointer typedefs.
-
-3. Data precision.  We assume that "char" is at least 8 bits, "short" and
-"int" at least 16, "long" at least 32.  The code will work fine with larger
-data sizes, although memory may be used inefficiently in some cases.  However,
-the JPEG compressed datastream must ultimately appear on external storage as a
-sequence of 8-bit bytes if it is to conform to the standard.  This may pose a
-problem on machines where char is wider than 8 bits.  The library represents
-compressed data as an array of values of typedef JOCTET.  If no data type
-exactly 8 bits wide is available, custom data source and data destination
-modules must be written to unpack and pack the chosen JOCTET datatype into
-8-bit external representation.
-
-
 *** System overview ***
 
 The compressor and decompressor are each divided into two main sections:
@@ -661,17 +631,6 @@ Notice that the allocation unit is now a row of 8x8 blocks, corresponding to
 eight rows of samples.  Otherwise the structure is much the same as for
 samples, and for the same reasons.
 
-On machines where malloc() can't handle a request bigger than 64Kb, this data
-structure limits us to rows of less than 512 JBLOCKs, or a picture width of
-4000+ pixels.  This seems an acceptable restriction.
-
-
-On 80x86 machines, the bottom-level pointer types (JSAMPROW and JBLOCKROW)
-must be declared as "far" pointers, but the upper levels can be "near"
-(implying that the pointer lists are allocated in the DS segment).
-We use a #define symbol FAR, which expands to the "far" keyword when
-compiling on 80x86 machines and to nothing elsewhere.
-
 
 *** Suspendable processing ***
 
@@ -773,12 +732,11 @@ The memory manager deals with three kinds of object:
 1. "Small" objects.  Typically these require no more than 10K-20K total.
 2. "Large" objects.  These may require tens to hundreds of K depending on
    image size.  Semantically they behave the same as small objects, but we
-   distinguish them for two reasons:
-     * On MS-DOS machines, large objects are referenced by FAR pointers,
-       small objects by NEAR pointers.
-     * Pool allocation heuristics may differ for large and small objects.
-   Note that individual "large" objects cannot exceed the size allowed by
-   type size_t, which may be 64K or less on some machines.
+   distinguish them because pool allocation heuristics may differ for large and
+   small objects (historically, large objects were also referenced by far
+   pointers on MS-DOS machines.)  Note that individual "large" objects cannot
+   exceed the size allowed by type size_t, which may be 64K or less on some
+   machines.
 3. "Virtual" objects.  These are large 2-D arrays of JSAMPLEs or JBLOCKs
    (typically large enough for the entire image being processed).  The
    memory manager provides stripwise access to these arrays.  On machines
@@ -862,9 +820,9 @@ jpeg_mem_init, jpeg_mem_term    system-dependent initialization/shutdown
 jpeg_get_small, jpeg_free_small interface to malloc and free library routines
                                 (or their equivalents)
 
-jpeg_get_large, jpeg_free_large interface to FAR malloc/free in MSDOS machines;
-                                else usually the same as
-                                jpeg_get_small/jpeg_free_small
+jpeg_get_large, jpeg_free_large historically was used to interface with
+                                FAR malloc/free on MS-DOS machines;  now the
+                                same as jpeg_get_small/jpeg_free_small
 
 jpeg_mem_available              estimate available memory
 

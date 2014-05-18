@@ -102,9 +102,7 @@ static const int c_scales[3]={R_SCALE, G_SCALE, B_SCALE};
  * machines, we can't just allocate the histogram in one chunk.  Instead
  * of a true 3-D array, we use a row of pointers to 2-D arrays.  Each
  * pointer corresponds to a C0 value (typically 2^5 = 32 pointers) and
- * each 2-D array has 2^6*2^5 = 2048 or 2^6*2^6 = 4096 entries.  Note that
- * on 80x86 machines, the pointer row is in near memory but the actual
- * arrays are in far memory (same arrangement as we use for image arrays).
+ * each 2-D array has 2^6*2^5 = 2048 or 2^6*2^6 = 4096 entries.
  */
 
 #define MAXNUMCOLORS  (MAXJSAMPLE+1) /* maximum size of colormap */
@@ -129,10 +127,10 @@ static const int c_scales[3]={R_SCALE, G_SCALE, B_SCALE};
 
 typedef UINT16 histcell;        /* histogram cell; prefer an unsigned type */
 
-typedef histcell FAR * histptr; /* for pointers to histogram cells */
+typedef histcell * histptr; /* for pointers to histogram cells */
 
 typedef histcell hist1d[HIST_C2_ELEMS]; /* typedefs for the array */
-typedef hist1d FAR * hist2d;    /* type for the 2nd-level pointers */
+typedef hist1d * hist2d;    /* type for the 2nd-level pointers */
 typedef hist2d * hist3d;        /* type for top-level pointer */
 
 
@@ -155,9 +153,6 @@ typedef hist2d * hist3d;        /* type for top-level pointer */
  * The fserrors[] array has (#columns + 2) entries; the extra entry at
  * each end saves us from special-casing the first and last pixels.
  * Each entry is three values long, one value for each color component.
- *
- * Note: on a wide image, we might not have enough room in a PC's near data
- * segment to hold the error array; so it is allocated with alloc_large.
  */
 
 #if BITS_IN_JSAMPLE == 8
@@ -168,7 +163,7 @@ typedef INT32 FSERROR;          /* may need more than 16 bits */
 typedef INT32 LOCFSERROR;       /* be sure calculation temps are big enough */
 #endif
 
-typedef FSERROR FAR *FSERRPTR;  /* pointer to error array (in FAR storage!) */
+typedef FSERROR *FSERRPTR;      /* pointer to error array */
 
 
 /* Private subobject */
@@ -1178,7 +1173,7 @@ start_pass_2_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
         cquantize->fserrors = (FSERRPTR) (*cinfo->mem->alloc_large)
           ((j_common_ptr) cinfo, JPOOL_IMAGE, arraysize);
       /* Initialize the propagated errors to zero. */
-      jzero_far((void FAR *) cquantize->fserrors, arraysize);
+      jzero_far((void *) cquantize->fserrors, arraysize);
       /* Make the error-limit table if we didn't already. */
       if (cquantize->error_limiter == NULL)
         init_error_limit(cinfo);
@@ -1189,7 +1184,7 @@ start_pass_2_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
   /* Zero the histogram or inverse color map, if necessary */
   if (cquantize->needs_zeroed) {
     for (i = 0; i < HIST_C0_ELEMS; i++) {
-      jzero_far((void FAR *) histogram[i],
+      jzero_far((void *) histogram[i],
                 HIST_C1_ELEMS*HIST_C2_ELEMS * SIZEOF(histcell));
     }
     cquantize->needs_zeroed = FALSE;
@@ -1245,8 +1240,8 @@ jinit_2pass_quantizer (j_decompress_ptr cinfo)
   cquantize->needs_zeroed = TRUE; /* histogram is garbage now */
 
   /* Allocate storage for the completed colormap, if required.
-   * We do this now since it is FAR storage and may affect
-   * the memory manager's space calculations.
+   * We do this now since it may affect the memory manager's space
+   * calculations.
    */
   if (cinfo->enable_2pass_quant) {
     /* Make sure color count is acceptable */
@@ -1269,9 +1264,10 @@ jinit_2pass_quantizer (j_decompress_ptr cinfo)
     cinfo->dither_mode = JDITHER_FS;
 
   /* Allocate Floyd-Steinberg workspace if necessary.
-   * This isn't really needed until pass 2, but again it is FAR storage.
-   * Although we will cope with a later change in dither_mode,
-   * we do not promise to honor max_memory_to_use if dither_mode changes.
+   * This isn't really needed until pass 2, but again it may affect the memory
+   * manager's space calculations.  Although we will cope with a later change
+   * in dither_mode, we do not promise to honor max_memory_to_use if
+   * dither_mode changes.
    */
   if (cinfo->dither_mode == JDITHER_FS) {
     cquantize->fserrors = (FSERRPTR) (*cinfo->mem->alloc_large)

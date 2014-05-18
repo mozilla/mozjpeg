@@ -1,8 +1,10 @@
 /*
  * cdjpeg.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains common support routines used by the IJG application
@@ -11,50 +13,10 @@
 
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include <ctype.h>              /* to declare isupper(), tolower() */
-#ifdef NEED_SIGNAL_CATCHER
-#include <signal.h>             /* to declare signal() */
-#endif
 #ifdef USE_SETMODE
 #include <fcntl.h>              /* to declare setmode()'s parameter macros */
 /* If you have setmode() but not <io.h>, just delete this line: */
 #include <io.h>                 /* to declare setmode() */
-#endif
-
-
-/*
- * Signal catcher to ensure that temporary files are removed before aborting.
- * NB: for Amiga Manx C this is actually a global routine named _abort();
- * we put "#define signal_catcher _abort" in jconfig.h.  Talk about bogus...
- */
-
-#ifdef NEED_SIGNAL_CATCHER
-
-static j_common_ptr sig_cinfo;
-
-void                            /* must be global for Manx C */
-signal_catcher (int signum)
-{
-  if (sig_cinfo != NULL) {
-    if (sig_cinfo->err != NULL) /* turn off trace output */
-      sig_cinfo->err->trace_level = 0;
-    jpeg_destroy(sig_cinfo);    /* clean up memory allocation & temp files */
-  }
-  exit(EXIT_FAILURE);
-}
-
-
-GLOBAL(void)
-enable_signal_catcher (j_common_ptr cinfo)
-{
-  sig_cinfo = cinfo;
-#ifdef SIGINT                   /* not all systems have SIGINT */
-  signal(SIGINT, signal_catcher);
-#endif
-#ifdef SIGTERM                  /* not all systems have SIGTERM */
-  signal(SIGTERM, signal_catcher);
-#endif
-}
-
 #endif
 
 

@@ -65,6 +65,11 @@ slower.
 [8] Added a new output colorspace (JCS_RGB565) to the libjpeg API that allows
 for decompressing JPEG images into RGB565 (16-bit) pixels.
 
+[9] Numerous obsolete features, such as support for compilers that can't
+handle prototypes and support for the MS-DOS memory model, were removed from
+the libjpeg code, greatly improving its readability and making it easier to
+maintain and extend.
+
 
 1.3.1
 =====

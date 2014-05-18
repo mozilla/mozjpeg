@@ -62,20 +62,18 @@ extern "C" {
 
 
 /* Data structures for images (arrays of samples and of DCT coefficients).
- * On 80x86 machines, the image arrays are too big for near pointers,
- * but the pointer arrays can fit in near memory.
  */
 
-typedef JSAMPLE FAR *JSAMPROW;  /* ptr to one image row of pixel samples. */
+typedef JSAMPLE *JSAMPROW;      /* ptr to one image row of pixel samples. */
 typedef JSAMPROW *JSAMPARRAY;   /* ptr to some rows (a 2-D sample array) */
 typedef JSAMPARRAY *JSAMPIMAGE; /* a 3-D sample array: top index is color */
 
 typedef JCOEF JBLOCK[DCTSIZE2]; /* one block of coefficients */
-typedef JBLOCK FAR *JBLOCKROW;  /* pointer to one row of coefficient blocks */
+typedef JBLOCK *JBLOCKROW;      /* pointer to one row of coefficient blocks */
 typedef JBLOCKROW *JBLOCKARRAY;         /* a 2-D array of coefficient blocks */
 typedef JBLOCKARRAY *JBLOCKIMAGE;       /* a 3-D array of coefficient blocks */
 
-typedef JCOEF FAR *JCOEFPTR;    /* useful in a couple of places */
+typedef JCOEF *JCOEFPTR;        /* useful in a couple of places */
 
 
 /* Types for JPEG compression parameters and working tables. */
@@ -198,14 +196,14 @@ typedef struct {
 
 /* The decompressor can save APPn and COM markers in a list of these: */
 
-typedef struct jpeg_marker_struct FAR * jpeg_saved_marker_ptr;
+typedef struct jpeg_marker_struct * jpeg_saved_marker_ptr;
 
 struct jpeg_marker_struct {
   jpeg_saved_marker_ptr next;   /* next in list, or NULL */
   UINT8 marker;                 /* marker code: JPEG_COM, or JPEG_APP0+n */
   unsigned int original_length; /* # bytes of data in the file */
   unsigned int data_length;     /* # bytes of data saved at data[] */
-  JOCTET FAR * data;            /* the data contained in the marker */
+  JOCTET * data;                /* the data contained in the marker */
   /* the marker length word is not counted in data_length or original_length */
 };
 
@@ -833,8 +831,8 @@ typedef struct jvirt_barray_control * jvirt_barray_ptr;
 struct jpeg_memory_mgr {
   /* Method pointers */
   void * (*alloc_small) (j_common_ptr cinfo, int pool_id, size_t sizeofobject);
-  void FAR * (*alloc_large) (j_common_ptr cinfo, int pool_id,
-                             size_t sizeofobject);
+  void * (*alloc_large) (j_common_ptr cinfo, int pool_id,
+                         size_t sizeofobject);
   JSAMPARRAY (*alloc_sarray) (j_common_ptr cinfo, int pool_id,
                               JDIMENSION samplesperrow, JDIMENSION numrows);
   JBLOCKARRAY (*alloc_barray) (j_common_ptr cinfo, int pool_id,

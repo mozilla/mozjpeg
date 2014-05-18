@@ -1,9 +1,11 @@
 /*
  * jpegint.h
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file provides common declarations for the various JPEG modules.
@@ -325,7 +327,7 @@ EXTERN(void) jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
                                 int num_rows, JDIMENSION num_cols);
 EXTERN(void) jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
                               JDIMENSION num_blocks);
-EXTERN(void) jzero_far (void FAR * target, size_t bytestozero);
+EXTERN(void) jzero_far (void * target, size_t bytestozero);
 /* Constant tables in jutils.c */
 #if 0                           /* This table is not actually needed in v6a */
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */

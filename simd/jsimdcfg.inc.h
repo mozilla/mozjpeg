@@ -84,10 +84,10 @@
 %define JDIMENSION              dword         ; unsigned int
 %define SIZEOF_JDIMENSION       SIZEOF_DWORD  ; sizeof(JDIMENSION)
 
-%define JSAMPROW                POINTER       ; JSAMPLE FAR * (jpeglib.h)
+%define JSAMPROW                POINTER       ; JSAMPLE *     (jpeglib.h)
 %define JSAMPARRAY              POINTER       ; JSAMPROW *    (jpeglib.h)
 %define JSAMPIMAGE              POINTER       ; JSAMPARRAY *  (jpeglib.h)
-%define JCOEFPTR                POINTER       ; JCOEF FAR *   (jpeglib.h)
+%define JCOEFPTR                POINTER       ; JCOEF *       (jpeglib.h)
 %define SIZEOF_JSAMPROW         SIZEOF_POINTER  ; sizeof(JSAMPROW)
 %define SIZEOF_JSAMPARRAY       SIZEOF_POINTER  ; sizeof(JSAMPARRAY)
 %define SIZEOF_JSAMPIMAGE       SIZEOF_POINTER  ; sizeof(JSAMPIMAGE)

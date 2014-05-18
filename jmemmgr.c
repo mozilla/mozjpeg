@@ -1,8 +1,10 @@
 /*
  * jmemmgr.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code and
+ * information relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the JPEG system-independent memory management
@@ -91,8 +93,7 @@ round_up_pow2 (size_t a, size_t b)
  * request to jpeg_get_small() or jpeg_get_large().  There is no per-object
  * overhead within a pool, except for alignment padding.  Each pool has a
  * header with a link to the next pool of the same class.
- * Small and large pool headers are identical except that the latter's
- * link pointer must be FAR on 80x86 machines.
+ * Small and large pool headers are identical.
  */
 
 typedef struct small_pool_struct * small_pool_ptr;
@@ -103,7 +104,7 @@ typedef struct small_pool_struct {
   size_t bytes_left;            /* bytes still available in this pool */
 } small_pool_hdr;
 
-typedef struct large_pool_struct FAR * large_pool_ptr;
+typedef struct large_pool_struct * large_pool_ptr;
 
 typedef struct large_pool_struct {
   large_pool_ptr next;  /* next in list of pools */
@@ -339,9 +340,8 @@ alloc_small (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
 /*
  * Allocation of "large" objects.
  *
- * The external semantics of these are the same as "small" objects,
- * except that FAR pointers are used on 80x86.  However the pool
- * management heuristics are quite different.  We assume that each
+ * The external semantics of these are the same as "small" objects.  However,
+ * the pool management heuristics are quite different.  We assume that each
  * request is large enough that it may as well be passed directly to
  * jpeg_get_large; the pool management just links everything together
  * so that we can free it all on demand.
@@ -350,13 +350,13 @@ alloc_small (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
  * deliberately bunch rows together to ensure a large request size.
  */
 
-METHODDEF(void FAR *)
+METHODDEF(void *)
 alloc_large (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
 /* Allocate a "large" object */
 {
   my_mem_ptr mem = (my_mem_ptr) cinfo->mem;
   large_pool_ptr hdr_ptr;
-  char FAR * data_ptr;
+  char * data_ptr;
 
   /*
    * Round up the requested size to a multiple of ALIGN_SIZE so that
@@ -394,13 +394,12 @@ alloc_large (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
   if ((size_t)data_ptr % ALIGN_SIZE) /* ...and adjust for alignment */
     data_ptr += ALIGN_SIZE - (size_t)data_ptr % ALIGN_SIZE;
 
-  return (void FAR *) data_ptr;
+  return (void *) data_ptr;
 }
 
 
 /*
  * Creation of 2-D sample arrays.
- * The pointers are in near heap, the samples themselves in FAR heap.
  *
  * To minimize allocation overhead and to allow I/O of large contiguous
  * blocks, we allocate the sample rows in groups of as many rows as possible
@@ -741,11 +740,11 @@ do_sarray_io (j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)
     byte_count = rows * bytesperrow;
     if (writing)
       (*ptr->b_s_info.write_backing_store) (cinfo, & ptr->b_s_info,
-                                            (void FAR *) ptr->mem_buffer[i],
+                                            (void *) ptr->mem_buffer[i],
                                             file_offset, byte_count);
     else
       (*ptr->b_s_info.read_backing_store) (cinfo, & ptr->b_s_info,
-                                           (void FAR *) ptr->mem_buffer[i],
+                                           (void *) ptr->mem_buffer[i],
                                            file_offset, byte_count);
     file_offset += byte_count;
   }
@@ -774,11 +773,11 @@ do_barray_io (j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)
     byte_count = rows * bytesperrow;
     if (writing)
       (*ptr->b_s_info.write_backing_store) (cinfo, & ptr->b_s_info,
-                                            (void FAR *) ptr->mem_buffer[i],
+                                            (void *) ptr->mem_buffer[i],
                                             file_offset, byte_count);
     else
       (*ptr->b_s_info.read_backing_store) (cinfo, & ptr->b_s_info,
-                                           (void FAR *) ptr->mem_buffer[i],
+                                           (void *) ptr->mem_buffer[i],
                                            file_offset, byte_count);
     file_offset += byte_count;
   }
@@ -854,7 +853,7 @@ access_virt_sarray (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
       undef_row -= ptr->cur_start_row; /* make indexes relative to buffer */
       end_row -= ptr->cur_start_row;
       while (undef_row < end_row) {
-        jzero_far((void FAR *) ptr->mem_buffer[undef_row], bytesperrow);
+        jzero_far((void *) ptr->mem_buffer[undef_row], bytesperrow);
         undef_row++;
       }
     } else {
@@ -939,7 +938,7 @@ access_virt_barray (j_common_ptr cinfo, jvirt_barray_ptr ptr,
       undef_row -= ptr->cur_start_row; /* make indexes relative to buffer */
       end_row -= ptr->cur_start_row;
       while (undef_row < end_row) {
-        jzero_far((void FAR *) ptr->mem_buffer[undef_row], bytesperrow);
+        jzero_far((void *) ptr->mem_buffer[undef_row], bytesperrow);
         undef_row++;
       }
     } else {
@@ -1005,7 +1004,7 @@ free_pool (j_common_ptr cinfo, int pool_id)
     space_freed = lhdr_ptr->bytes_used +
                   lhdr_ptr->bytes_left +
                   SIZEOF(large_pool_hdr);
-    jpeg_free_large(cinfo, (void FAR *) lhdr_ptr, space_freed);
+    jpeg_free_large(cinfo, (void *) lhdr_ptr, space_freed);
     mem->total_space_allocated -= space_freed;
     lhdr_ptr = next_lhdr_ptr;
   }

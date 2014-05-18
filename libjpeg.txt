@@ -52,7 +52,6 @@ Advanced features:
         Memory usage
         Library compile-time options
         Portability considerations
-        Notes for MS-DOS implementors
 
 You should read at least the overview and basic usage sections before trying
 to program with the library.  The sections on advanced features can be read
@@ -763,12 +762,6 @@ compatible across versions; we only try to ensure source-code compatibility.
 (In hindsight, it might have been smarter to hide the parameter structs from
 applications and introduce a ton of access functions instead.  Too late now,
 however.)
-
-On some systems your application may need to set up a signal handler to ensure
-that temporary files are deleted if the program is interrupted.  This is most
-critical if you are on MS-DOS and use the jmemdos.c memory manager back end;
-it will try to grab extended memory for temp files, and that space will NOT be
-freed automatically.  See cjpeg.c or djpeg.c for an example signal handler.
 
 It may be worth pointing out that the core JPEG library does not actually
 require the stdio library: only the default source/destination managers and
@@ -2877,18 +2870,6 @@ that space allocated with alloc_small() is ignored, on the assumption that
 it's too small to be worth worrying about; so a reasonable safety margin
 should be left when setting max_memory_to_use.
 
-If you use the jmemname.c or jmemdos.c memory manager back end, it is
-important to clean up the JPEG object properly to ensure that the temporary
-files get deleted.  (This is especially crucial with jmemdos.c, where the
-"temporary files" may be extended-memory segments; if they are not freed,
-DOS will require a reboot to recover the memory.)  Thus, with these memory
-managers, it's a good idea to provide a signal handler that will trap any
-early exit from your program.  The handler should call either jpeg_abort()
-or jpeg_destroy() for any active JPEG objects.  A handler is not needed with
-jmemnobs.c, and shouldn't be necessary with jmemansi.c or jmemmac.c either,
-since the C library is supposed to take care of deleting files made with
-tmpfile().
-
 
 Memory usage
 ------------
@@ -3033,46 +3014,3 @@ replacing that one file.
 
 More info about porting the code may be gleaned by reading jconfig.txt,
 jmorecfg.h, and jinclude.h.
-
-
-Notes for MS-DOS implementors
------------------------------
-
-The IJG code is designed to work efficiently in 80x86 "small" or "medium"
-memory models (i.e., data pointers are 16 bits unless explicitly declared
-"far"; code pointers can be either size).  You may be able to use small
-model to compile cjpeg or djpeg by itself, but you will probably have to use
-medium model for any larger application.  This won't make much difference in
-performance.  You *will* take a noticeable performance hit if you use a
-large-data memory model (perhaps 10%-25%), and you should avoid "huge" model
-if at all possible.
-
-The JPEG library typically needs 2Kb-3Kb of stack space.  It will also
-malloc about 20K-30K of near heap space while executing (and lots of far
-heap, but that doesn't count in this calculation).  This figure will vary
-depending on selected operating mode, and to a lesser extent on image size.
-There is also about 5Kb-6Kb of constant data which will be allocated in the
-near data segment (about 4Kb of this is the error message table).
-Thus you have perhaps 20K available for other modules' static data and near
-heap space before you need to go to a larger memory model.  The C library's
-static data will account for several K of this, but that still leaves a good
-deal for your needs.  (If you are tight on space, you could reduce the sizes
-of the I/O buffers allocated by jdatasrc.c and jdatadst.c, say from 4K to
-1K.  Another possibility is to move the error message table to far memory;
-this should be doable with only localized hacking on jerror.c.)
-
-About 2K of the near heap space is "permanent" memory that will not be
-released until you destroy the JPEG object.  This is only an issue if you
-save a JPEG object between compression or decompression operations.
-
-Far data space may also be a tight resource when you are dealing with large
-images.  The most memory-intensive case is decompression with two-pass color
-quantization, or single-pass quantization to an externally supplied color
-map.  This requires a 128Kb color lookup table plus strip buffers amounting
-to about 40 bytes per column for typical sampling ratios (eg, about 25600
-bytes for a 640-pixel-wide image).  You may not be able to process wide
-images if you have large data structures of your own.
-
-Of course, all of these concerns vanish if you use a 32-bit flat-memory-model
-compiler, such as DJGPP or Watcom C.  We highly recommend flat model if you
-can use it; the JPEG library is significantly faster in flat model.

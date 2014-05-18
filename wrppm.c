@@ -1,9 +1,11 @@
 /*
  * wrppm.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * Modified 2009 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only information
+ * relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to write output images in PPM/PGM format.
@@ -55,12 +57,7 @@
 
 /*
  * When JSAMPLE is the same size as char, we can just fwrite() the
- * decompressed data to the PPM or PGM file.  On PCs, in order to make this
- * work the output buffer must be allocated in near data space, because we are
- * assuming small-data memory model wherein fwrite() can't reach far memory.
- * If you need to process very wide images on a PC, you might have to compile
- * in large-memory model, or else replace fwrite() with a putc() loop ---
- * which will be much slower.
+ * decompressed data to the PPM or PGM file.
  */
 
 
@@ -231,7 +228,7 @@ jinit_write_ppm (j_decompress_ptr cinfo)
   /* Calculate output image dimensions so we can allocate space */
   jpeg_calc_output_dimensions(cinfo);
 
-  /* Create physical I/O buffer.  Note we make this near on a PC. */
+  /* Create physical I/O buffer */
   dest->samples_per_row = cinfo->output_width * cinfo->out_color_components;
   dest->buffer_width = dest->samples_per_row * (BYTESPERSAMPLE * SIZEOF(char));
   dest->iobuffer = (char *) (*cinfo->mem->alloc_small)
@@ -256,7 +253,6 @@ jinit_write_ppm (j_decompress_ptr cinfo)
   } else {
     /* We will fwrite() directly from decompressor output buffer. */
     /* Synthesize a JSAMPARRAY pointer structure */
-    /* Cast here implies near->far pointer conversion on PCs */
     dest->pixrow = (JSAMPROW) dest->iobuffer;
     dest->pub.buffer = & dest->pixrow;
     dest->pub.buffer_height = 1;

@@ -1,9 +1,11 @@
 /*
  * rdppm.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code and
+ * information relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to read input images in PPM/PGM format.
@@ -56,24 +58,14 @@ typedef char U_CHAR;
 #define ReadOK(file,buffer,len) (JFREAD(file,buffer,len) == ((size_t) (len)))
 
 
-/*
- * On most systems, reading individual bytes with getc() is drastically less
- * efficient than buffering a row at a time with fread().  On PCs, we must
- * allocate the buffer in near data space, because we are assuming small-data
- * memory model, wherein fread() can't reach far memory.  If you need to
- * process very wide images on a PC, you might have to compile in large-memory
- * model, or else replace fread() with a getc() loop --- which will be much
- * slower.
- */
-
-
 /* Private version of data source object */
 
 typedef struct {
   struct cjpeg_source_struct pub; /* public fields */
 
-  U_CHAR *iobuffer;             /* non-FAR pointer to I/O buffer */
-  JSAMPROW pixrow;              /* FAR pointer to same */
+  /* Usually these two pointers point to the same place: */
+  U_CHAR *iobuffer;             /* fread's I/O buffer */
+  JSAMPROW pixrow;              /* compressor input buffer */
   size_t buffer_width;          /* width of I/O buffer */
   JSAMPLE *rescale;             /* => maxval-remapping array, or NULL */
 } ppm_source_struct;
@@ -396,7 +388,6 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (use_raw_buffer) {
     /* For unscaled raw-input case, we can just map it onto the I/O buffer. */
     /* Synthesize a JSAMPARRAY pointer structure */
-    /* Cast here implies near->far pointer conversion on PCs */
     source->pixrow = (JSAMPROW) source->iobuffer;
     source->pub.buffer = & source->pixrow;
     source->pub.buffer_height = 1;

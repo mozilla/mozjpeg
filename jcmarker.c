@@ -649,7 +649,7 @@ jinit_marker_writer (j_compress_ptr cinfo)
   /* Create the subobject */
   marker = (my_marker_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_marker_writer));
+                                sizeof(my_marker_writer));
   cinfo->marker = (struct jpeg_marker_writer *) marker;
   /* Initialize method pointers */
   marker->pub.write_file_header = write_file_header;

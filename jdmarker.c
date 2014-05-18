@@ -276,7 +276,7 @@ get_sof (j_decompress_ptr cinfo, boolean is_prog, boolean is_arith)
   if (cinfo->comp_info == NULL) /* do only once, even if suspend */
     cinfo->comp_info = (jpeg_component_info *) (*cinfo->mem->alloc_small)
                         ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                         cinfo->num_components * SIZEOF(jpeg_component_info));
+                         cinfo->num_components * sizeof(jpeg_component_info));
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
@@ -472,7 +472,7 @@ get_dht (j_decompress_ptr cinfo)
     for (i = 0; i < count; i++)
       INPUT_BYTE(cinfo, huffval[i], return FALSE);
 
-    MEMZERO(&huffval[count], (256 - count) * SIZEOF(UINT8));
+    MEMZERO(&huffval[count], (256 - count) * sizeof(UINT8));
 
     length -= count;
 
@@ -490,8 +490,8 @@ get_dht (j_decompress_ptr cinfo)
     if (*htblptr == NULL)
       *htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
 
-    MEMCOPY((*htblptr)->bits, bits, SIZEOF((*htblptr)->bits));
-    MEMCOPY((*htblptr)->huffval, huffval, SIZEOF((*htblptr)->huffval));
+    MEMCOPY((*htblptr)->bits, bits, sizeof((*htblptr)->bits));
+    MEMCOPY((*htblptr)->huffval, huffval, sizeof((*htblptr)->huffval));
   }
 
   if (length != 0)
@@ -778,7 +778,7 @@ save_marker (j_decompress_ptr cinfo)
       /* allocate and initialize the marker item */
       cur_marker = (jpeg_saved_marker_ptr)
         (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                    SIZEOF(struct jpeg_marker_struct) + limit);
+                                    sizeof(struct jpeg_marker_struct) + limit);
       cur_marker->next = NULL;
       cur_marker->marker = (UINT8) cinfo->unread_marker;
       cur_marker->original_length = (unsigned int) length;
@@ -1283,7 +1283,7 @@ jinit_marker_reader (j_decompress_ptr cinfo)
   /* Create subobject in permanent pool */
   marker = (my_marker_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-                                SIZEOF(my_marker_reader));
+                                sizeof(my_marker_reader));
   cinfo->marker = (struct jpeg_marker_reader *) marker;
   /* Initialize public method pointers */
   marker->pub.reset_marker_reader = reset_marker_reader;
@@ -1323,7 +1323,7 @@ jpeg_save_markers (j_decompress_ptr cinfo, int marker_code,
   /* Length limit mustn't be larger than what we can allocate
    * (should only be a concern in a 16-bit environment).
    */
-  maxlength = cinfo->mem->max_alloc_chunk - SIZEOF(struct jpeg_marker_struct);
+  maxlength = cinfo->mem->max_alloc_chunk - sizeof(struct jpeg_marker_struct);
   if (((long) length_limit) > maxlength)
     length_limit = (unsigned int) maxlength;
 

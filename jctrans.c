@@ -101,7 +101,7 @@ jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
         *qtblptr = jpeg_alloc_quant_table((j_common_ptr) dstinfo);
       MEMCOPY((*qtblptr)->quantval,
               srcinfo->quant_tbl_ptrs[tblno]->quantval,
-              SIZEOF((*qtblptr)->quantval));
+              sizeof((*qtblptr)->quantval));
       (*qtblptr)->sent_table = FALSE;
     }
   }
@@ -382,7 +382,7 @@ transencode_coef_controller (j_compress_ptr cinfo,
 
   coef = (my_coef_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_coef_controller));
+                                sizeof(my_coef_controller));
   cinfo->coef = (struct jpeg_c_coef_controller *) coef;
   coef->pub.start_pass = start_pass_coef;
   coef->pub.compress_data = compress_output;
@@ -393,8 +393,8 @@ transencode_coef_controller (j_compress_ptr cinfo,
   /* Allocate and pre-zero space for dummy DCT blocks. */
   buffer = (JBLOCKROW)
     (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
-  jzero_far((void *) buffer, C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
+                                C_MAX_BLOCKS_IN_MCU * sizeof(JBLOCK));
+  jzero_far((void *) buffer, C_MAX_BLOCKS_IN_MCU * sizeof(JBLOCK));
   for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
     coef->dummy_buffer[i] = buffer + i;
   }

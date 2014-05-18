@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only information
- * relevant to libjpeg-turbo.
+ * It was modified by The libjpeg-turbo Project to include only code and
+ * information relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to read input images in Utah RLE format.
@@ -376,7 +376,7 @@ jinit_read_rle (j_compress_ptr cinfo)
   /* Create module interface object */
   source = (rle_source_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  SIZEOF(rle_source_struct));
+                                  sizeof(rle_source_struct));
   /* Fill in method ptrs */
   source->pub.start_input = start_input_rle;
   source->pub.finish_input = finish_input_rle;

@@ -192,7 +192,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   if (cinfo->comp_info == NULL)
     cinfo->comp_info = (jpeg_component_info *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-                                  MAX_COMPONENTS * SIZEOF(jpeg_component_info));
+                                  MAX_COMPONENTS * sizeof(jpeg_component_info));
 
   /* Initialize everything not dependent on the color space */
 
@@ -498,7 +498,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     cinfo->script_space_size = MAX(nscans, 10);
     cinfo->script_space = (jpeg_scan_info *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-                        cinfo->script_space_size * SIZEOF(jpeg_scan_info));
+                        cinfo->script_space_size * sizeof(jpeg_scan_info));
   }
   scanptr = cinfo->script_space;
   cinfo->scan_info = scanptr;

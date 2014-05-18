@@ -166,7 +166,7 @@ decompress_onepass (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
          MCU_col_num++) {
       /* Try to fetch an MCU.  Entropy decoder expects buffer to be zeroed. */
       jzero_far((void *) coef->MCU_buffer[0],
-                (size_t) (cinfo->blocks_in_MCU * SIZEOF(JBLOCK)));
+                (size_t) (cinfo->blocks_in_MCU * sizeof(JBLOCK)));
       if (! (*cinfo->entropy->decode_mcu) (cinfo, coef->MCU_buffer)) {
         /* Suspension forced; update state counters and exit */
         coef->MCU_vert_offset = yoffset;
@@ -423,7 +423,7 @@ smoothing_ok (j_decompress_ptr cinfo)
     coef->coef_bits_latch = (int *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                   cinfo->num_components *
-                                  (SAVED_COEFS * SIZEOF(int)));
+                                  (SAVED_COEFS * sizeof(int)));
   coef_bits_latch = coef->coef_bits_latch;
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
@@ -685,7 +685,7 @@ jinit_d_coef_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
 
   coef = (my_coef_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_coef_controller));
+                                sizeof(my_coef_controller));
   cinfo->coef = (struct jpeg_d_coef_controller *) coef;
   coef->pub.start_input_pass = start_input_pass;
   coef->pub.start_output_pass = start_output_pass;
@@ -731,7 +731,7 @@ jinit_d_coef_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
 
     buffer = (JBLOCKROW)
       (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  D_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
+                                  D_MAX_BLOCKS_IN_MCU * sizeof(JBLOCK));
     for (i = 0; i < D_MAX_BLOCKS_IN_MCU; i++) {
       coef->MCU_buffer[i] = buffer + i;
     }
@@ -743,5 +743,5 @@ jinit_d_coef_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
   /* Allocate the workspace buffer */
   coef->workspace = (JCOEF *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(JCOEF) * DCTSIZE2);
+                                sizeof(JCOEF) * DCTSIZE2);
 }

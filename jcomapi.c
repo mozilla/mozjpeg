@@ -1,8 +1,10 @@
 /*
  * jcomapi.c
  *
- * Copyright (C) 1994-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * This file was part of the Independent JPEG Group's software:
+ * Copyright (C) 1994-1997, Thomas G. Lane.0
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface routines that are used for both
@@ -88,7 +90,7 @@ jpeg_alloc_quant_table (j_common_ptr cinfo)
   JQUANT_TBL *tbl;
 
   tbl = (JQUANT_TBL *)
-    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, SIZEOF(JQUANT_TBL));
+    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, sizeof(JQUANT_TBL));
   tbl->sent_table = FALSE;      /* make sure this is false in any new table */
   return tbl;
 }
@@ -100,7 +102,7 @@ jpeg_alloc_huff_table (j_common_ptr cinfo)
   JHUFF_TBL *tbl;
 
   tbl = (JHUFF_TBL *)
-    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, SIZEOF(JHUFF_TBL));
+    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, sizeof(JHUFF_TBL));
   tbl->sent_table = FALSE;      /* make sure this is false in any new table */
   return tbl;
 }

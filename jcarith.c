@@ -1,8 +1,10 @@
 /*
  * jcarith.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2009 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains portable arithmetic entropy encoding routines for JPEG
@@ -909,7 +911,7 @@ jinit_arith_encoder (j_compress_ptr cinfo)
 
   entropy = (arith_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(arith_entropy_encoder));
+                                sizeof(arith_entropy_encoder));
   cinfo->entropy = (struct jpeg_entropy_encoder *) entropy;
   entropy->pub.start_pass = start_pass;
   entropy->pub.finish_pass = finish_pass;

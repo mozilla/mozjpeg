@@ -161,7 +161,7 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
   if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-                                  SIZEOF(my_mem_destination_mgr));
+                                  sizeof(my_mem_destination_mgr));
     dest = (my_mem_dest_ptr) cinfo->dest;
     dest->newbuffer = NULL;
   }

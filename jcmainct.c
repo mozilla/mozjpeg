@@ -252,7 +252,7 @@ jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 
   main_ptr = (my_main_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_main_controller));
+                                sizeof(my_main_controller));
   cinfo->main = (struct jpeg_c_main_controller *) main_ptr;
   main_ptr->pub.start_pass = start_pass_main;
 

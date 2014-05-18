@@ -261,8 +261,8 @@ bogus:
      */
     scanptr = (jpeg_scan_info *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  scanno * SIZEOF(jpeg_scan_info));
-    MEMCOPY(scanptr, scans, scanno * SIZEOF(jpeg_scan_info));
+                                  scanno * sizeof(jpeg_scan_info));
+    MEMCOPY(scanptr, scans, scanno * sizeof(jpeg_scan_info));
     cinfo->scan_info = scanptr;
     cinfo->num_scans = scanno;
   }

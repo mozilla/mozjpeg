@@ -45,11 +45,6 @@ keywords can be inserted for use in Windows DLLs.)
 A similar solution is used for external function declarations (see the EXTERN
 macro.)
 
-It seems there are some non-ANSI compilers in which the sizeof() operator
-is defined to return int, yet size_t is defined as long.  Needless to say,
-this is brain-damaged.  Always use the SIZEOF() macro in place of sizeof(),
-so that the result is guaranteed to be of type size_t.
-
 
 The JPEG library is intended to be used within larger programs.  Furthermore,
 we want it to be reentrant so that it can be used by applications that process

@@ -180,7 +180,7 @@ compress_data (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
             if (blockcnt < compptr->MCU_width) {
               /* Create some dummy blocks at the right edge of the image. */
               jzero_far((void *) coef->MCU_buffer[blkn + blockcnt],
-                        (compptr->MCU_width - blockcnt) * SIZEOF(JBLOCK));
+                        (compptr->MCU_width - blockcnt) * sizeof(JBLOCK));
               for (bi = blockcnt; bi < compptr->MCU_width; bi++) {
                 coef->MCU_buffer[blkn+bi][0][0] = coef->MCU_buffer[blkn+bi-1][0][0];
               }
@@ -188,7 +188,7 @@ compress_data (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
           } else {
             /* Create a row of dummy blocks at the bottom of the image. */
             jzero_far((void *) coef->MCU_buffer[blkn],
-                      compptr->MCU_width * SIZEOF(JBLOCK));
+                      compptr->MCU_width * sizeof(JBLOCK));
             for (bi = 0; bi < compptr->MCU_width; bi++) {
               coef->MCU_buffer[blkn+bi][0][0] = coef->MCU_buffer[blkn-1][0][0];
             }
@@ -285,7 +285,7 @@ compress_first_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
       if (ndummy > 0) {
         /* Create dummy blocks at the right edge of the image. */
         thisblockrow += blocks_across; /* => first dummy block */
-        jzero_far((void *) thisblockrow, ndummy * SIZEOF(JBLOCK));
+        jzero_far((void *) thisblockrow, ndummy * sizeof(JBLOCK));
         lastDC = thisblockrow[-1][0];
         for (bi = 0; bi < ndummy; bi++) {
           thisblockrow[bi][0] = lastDC;
@@ -305,7 +305,7 @@ compress_first_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
         thisblockrow = buffer[block_row];
         lastblockrow = buffer[block_row-1];
         jzero_far((void *) thisblockrow,
-                  (size_t) (blocks_across * SIZEOF(JBLOCK)));
+                  (size_t) (blocks_across * sizeof(JBLOCK)));
         for (MCUindex = 0; MCUindex < MCUs_across; MCUindex++) {
           lastDC = lastblockrow[h_samp_factor-1][0];
           for (bi = 0; bi < h_samp_factor; bi++) {
@@ -407,7 +407,7 @@ jinit_c_coef_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 
   coef = (my_coef_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_coef_controller));
+                                sizeof(my_coef_controller));
   cinfo->coef = (struct jpeg_c_coef_controller *) coef;
   coef->pub.start_pass = start_pass_coef;
 
@@ -439,7 +439,7 @@ jinit_c_coef_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 
     buffer = (JBLOCKROW)
       (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
+                                  C_MAX_BLOCKS_IN_MCU * sizeof(JBLOCK));
     for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
       coef->MCU_buffer[i] = buffer + i;
     }

@@ -1,8 +1,10 @@
 /*
  * jdarith.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2009 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains portable arithmetic entropy decoding routines for JPEG
@@ -734,7 +736,7 @@ jinit_arith_decoder (j_decompress_ptr cinfo)
 
   entropy = (arith_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(arith_entropy_decoder));
+                                sizeof(arith_entropy_decoder));
   cinfo->entropy = (struct jpeg_entropy_decoder *) entropy;
   entropy->pub.start_pass = start_pass;
 
@@ -752,7 +754,7 @@ jinit_arith_decoder (j_decompress_ptr cinfo)
     int *coef_bit_ptr, ci;
     cinfo->coef_bits = (int (*)[DCTSIZE2])
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  cinfo->num_components*DCTSIZE2*SIZEOF(int));
+                                  cinfo->num_components*DCTSIZE2*sizeof(int));
     coef_bit_ptr = & cinfo->coef_bits[0][0];
     for (ci = 0; ci < cinfo->num_components; ci++)
       for (i = 0; i < DCTSIZE2; i++)

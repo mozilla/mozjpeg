@@ -1,8 +1,10 @@
 /*
  * jcprepct.c
  *
+ * This file is part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the compression preprocessing controller.
@@ -278,7 +280,7 @@ create_context_buffer (j_compress_ptr cinfo)
   fake_buffer = (JSAMPARRAY)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                 (cinfo->num_components * 5 * rgroup_height) *
-                                SIZEOF(JSAMPROW));
+                                sizeof(JSAMPROW));
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
@@ -293,7 +295,7 @@ create_context_buffer (j_compress_ptr cinfo)
        (JDIMENSION) (3 * rgroup_height));
     /* Copy true buffer row pointers into the middle of the fake row array */
     MEMCOPY(fake_buffer + rgroup_height, true_buffer,
-            3 * rgroup_height * SIZEOF(JSAMPROW));
+            3 * rgroup_height * sizeof(JSAMPROW));
     /* Fill in the above and below wraparound pointers */
     for (i = 0; i < rgroup_height; i++) {
       fake_buffer[i] = true_buffer[2 * rgroup_height + i];
@@ -323,7 +325,7 @@ jinit_c_prep_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 
   prep = (my_prep_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_prep_controller));
+                                sizeof(my_prep_controller));
   cinfo->prep = (struct jpeg_c_prep_controller *) prep;
   prep->pub.start_pass = start_pass_prep;
 

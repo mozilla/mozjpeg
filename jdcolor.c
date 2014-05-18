@@ -216,16 +216,16 @@ build_ycc_rgb_table (j_decompress_ptr cinfo)
 
   cconvert->Cr_r_tab = (int *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(int));
+                                (MAXJSAMPLE+1) * sizeof(int));
   cconvert->Cb_b_tab = (int *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(int));
+                                (MAXJSAMPLE+1) * sizeof(int));
   cconvert->Cr_g_tab = (INT32 *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(INT32));
+                                (MAXJSAMPLE+1) * sizeof(INT32));
   cconvert->Cb_g_tab = (INT32 *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(INT32));
+                                (MAXJSAMPLE+1) * sizeof(INT32));
 
   for (i = 0, x = -CENTERJSAMPLE; i <= MAXJSAMPLE; i++, x++) {
     /* i is the actual input pixel value, in the range 0..MAXJSAMPLE */
@@ -308,7 +308,7 @@ build_rgb_y_table (j_decompress_ptr cinfo)
   /* Allocate and fill in the conversion tables. */
   cconvert->rgb_y_tab = rgb_y_tab = (INT32 *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (TABLE_SIZE * SIZEOF(INT32)));
+                                (TABLE_SIZE * sizeof(INT32)));
 
   for (i = 0; i <= MAXJSAMPLE; i++) {
     rgb_y_tab[i+R_Y_OFF] = FIX(0.29900) * i;
@@ -570,7 +570,7 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
 
   cconvert = (my_cconvert_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_color_deconverter));
+                                sizeof(my_color_deconverter));
   cinfo->cconvert = (struct jpeg_color_deconverter *) cconvert;
   cconvert->pub.start_pass = start_pass_dcolor;
 

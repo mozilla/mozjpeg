@@ -115,7 +115,7 @@ start_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 
   if (cinfo->quantize_colors) {
     /* Allocate storage for RLE-style cmap, zero any extra entries */
-    cmapsize = cinfo->out_color_components * CMAPLENGTH * SIZEOF(rle_map);
+    cmapsize = cinfo->out_color_components * CMAPLENGTH * sizeof(rle_map);
     dest->colormap = (rle_map *) (*cinfo->mem->alloc_small)
       ((j_common_ptr) cinfo, JPOOL_IMAGE, cmapsize);
     MEMZERO(dest->colormap, cmapsize);
@@ -282,7 +282,7 @@ jinit_write_rle (j_decompress_ptr cinfo)
   /* Create module interface object, fill in method pointers */
   dest = (rle_dest_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  SIZEOF(rle_dest_struct));
+                                  sizeof(rle_dest_struct));
   dest->pub.start_output = start_output_rle;
   dest->pub.finish_output = finish_output_rle;
 

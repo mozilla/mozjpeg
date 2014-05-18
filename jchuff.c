@@ -174,13 +174,13 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
       if (entropy->dc_count_ptrs[dctbl] == NULL)
         entropy->dc_count_ptrs[dctbl] = (long *)
           (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                      257 * SIZEOF(long));
-      MEMZERO(entropy->dc_count_ptrs[dctbl], 257 * SIZEOF(long));
+                                      257 * sizeof(long));
+      MEMZERO(entropy->dc_count_ptrs[dctbl], 257 * sizeof(long));
       if (entropy->ac_count_ptrs[actbl] == NULL)
         entropy->ac_count_ptrs[actbl] = (long *)
           (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                      257 * SIZEOF(long));
-      MEMZERO(entropy->ac_count_ptrs[actbl], 257 * SIZEOF(long));
+                                      257 * sizeof(long));
+      MEMZERO(entropy->ac_count_ptrs[actbl], 257 * sizeof(long));
 #endif
     } else {
       /* Compute derived values for Huffman tables */
@@ -238,7 +238,7 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
   if (*pdtbl == NULL)
     *pdtbl = (c_derived_tbl *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  SIZEOF(c_derived_tbl));
+                                  sizeof(c_derived_tbl));
   dtbl = *pdtbl;
 
   /* Figure C.1: make table of Huffman code length for each symbol */
@@ -281,7 +281,7 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
    * this lets us detect duplicate VAL entries here, and later
    * allows emit_bits to detect any attempt to emit such symbols.
    */
-  MEMZERO(dtbl->ehufsi, SIZEOF(dtbl->ehufsi));
+  MEMZERO(dtbl->ehufsi, sizeof(dtbl->ehufsi));
 
   /* This is also a convenient place to check for out-of-range
    * and duplicated VAL entries.  We allow 0..255 for AC symbols
@@ -847,8 +847,8 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
 
   /* This algorithm is explained in section K.2 of the JPEG standard */
 
-  MEMZERO(bits, SIZEOF(bits));
-  MEMZERO(codesize, SIZEOF(codesize));
+  MEMZERO(bits, sizeof(bits));
+  MEMZERO(codesize, sizeof(codesize));
   for (i = 0; i < 257; i++)
     others[i] = -1;             /* init links to empty */
 
@@ -950,7 +950,7 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
   bits[i]--;
 
   /* Return final symbol counts (only for lengths 0..16) */
-  MEMCOPY(htbl->bits, bits, SIZEOF(htbl->bits));
+  MEMCOPY(htbl->bits, bits, sizeof(htbl->bits));
 
   /* Return a list of the symbols sorted by code length */
   /* It's not real clear to me why we don't need to consider the codelength
@@ -988,8 +988,8 @@ finish_pass_gather (j_compress_ptr cinfo)
   /* It's important not to apply jpeg_gen_optimal_table more than once
    * per table, because it clobbers the input frequency counts!
    */
-  MEMZERO(did_dc, SIZEOF(did_dc));
-  MEMZERO(did_ac, SIZEOF(did_ac));
+  MEMZERO(did_dc, sizeof(did_dc));
+  MEMZERO(did_ac, sizeof(did_ac));
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
@@ -1028,7 +1028,7 @@ jinit_huff_encoder (j_compress_ptr cinfo)
 
   entropy = (huff_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(huff_entropy_encoder));
+                                sizeof(huff_entropy_encoder));
   cinfo->entropy = (struct jpeg_entropy_encoder *) entropy;
   entropy->pub.start_pass = start_pass_huff;
 

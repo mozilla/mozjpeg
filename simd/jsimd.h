@@ -311,9 +311,11 @@ EXTERN(void) jsimd_h2v2_downsample_mips_dspr2
 
 /* h2v2 Smooth Downsampling */
 EXTERN(void) jsimd_h2v2_smooth_downsample_mips_dspr2
-        (JDIMENSION image_width, int max_v_samp_factor,
-         JDIMENSION v_samp_factor, JDIMENSION width_blocks,
-         JSAMPARRAY input_data, JSAMPARRAY output_data);
+        (JSAMPARRAY input_data, JSAMPARRAY output_data,
+         JDIMENSION v_samp_factor, int max_v_samp_factor,
+         int smoothing_factor, JDIMENSION width_blocks,
+         JDIMENSION image_width);
+
 
 /* Upsampling */
 EXTERN(void) jsimd_h2v1_upsample_mmx
@@ -626,8 +628,8 @@ EXTERN(void) jsimd_idct_islow_neon
          JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_islow_mips_dspr2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
-         JDIMENSION output_col);
+        (void * dct_table, JCOEFPTR coef_block, int * output_buf,
+         JSAMPLE * output_col);
 
 /* Fast Integer Inverse DCT */
 EXTERN(void) jsimd_idct_ifast_mmx

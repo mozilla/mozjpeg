@@ -234,7 +234,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
       if (fdct->divisors[qtblno] == NULL) {
         fdct->divisors[qtblno] = (DCTELEM *)
           (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                      (DCTSIZE2 * 4) * SIZEOF(DCTELEM));
+                                      (DCTSIZE2 * 4) * sizeof(DCTELEM));
       }
       dtbl = fdct->divisors[qtblno];
       for (i = 0; i < DCTSIZE2; i++) {
@@ -270,7 +270,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
         if (fdct->divisors[qtblno] == NULL) {
           fdct->divisors[qtblno] = (DCTELEM *)
             (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                        (DCTSIZE2 * 4) * SIZEOF(DCTELEM));
+                                        (DCTSIZE2 * 4) * sizeof(DCTELEM));
         }
         dtbl = fdct->divisors[qtblno];
         for (i = 0; i < DCTSIZE2; i++) {
@@ -305,7 +305,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
         if (fdct->float_divisors[qtblno] == NULL) {
           fdct->float_divisors[qtblno] = (FAST_FLOAT *)
             (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                        DCTSIZE2 * SIZEOF(FAST_FLOAT));
+                                        DCTSIZE2 * sizeof(FAST_FLOAT));
         }
         fdtbl = fdct->float_divisors[qtblno];
         i = 0;
@@ -546,7 +546,7 @@ jinit_forward_dct (j_compress_ptr cinfo)
 
   fdct = (my_fdct_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_fdct_controller));
+                                sizeof(my_fdct_controller));
   cinfo->fdct = (struct jpeg_forward_dct *) fdct;
   fdct->pub.start_pass = start_pass_fdctmgr;
 
@@ -625,12 +625,12 @@ jinit_forward_dct (j_compress_ptr cinfo)
   if (cinfo->dct_method == JDCT_FLOAT)
     fdct->float_workspace = (FAST_FLOAT *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  SIZEOF(FAST_FLOAT) * DCTSIZE2);
+                                  sizeof(FAST_FLOAT) * DCTSIZE2);
   else
 #endif
     fdct->workspace = (DCTELEM *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  SIZEOF(DCTELEM) * DCTSIZE2);
+                                  sizeof(DCTELEM) * DCTSIZE2);
 
   /* Mark divisor tables unallocated */
   for (i = 0; i < NUM_QUANT_TBLS; i++) {

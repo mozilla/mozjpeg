@@ -100,7 +100,7 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
  */
 {
   register JSAMPROW inptr, outptr;
-  register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+  register size_t count = (size_t) (num_cols * sizeof(JSAMPLE));
   register int row;
 
   input_array += source_row;
@@ -119,7 +119,7 @@ jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
                  JDIMENSION num_blocks)
 /* Copy a row of coefficient blocks from one place to another. */
 {
-  MEMCOPY(output_row, input_row, num_blocks * (DCTSIZE2 * SIZEOF(JCOEF)));
+  MEMCOPY(output_row, input_row, num_blocks * (DCTSIZE2 * sizeof(JCOEF)));
 }
 
 

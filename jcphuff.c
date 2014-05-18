@@ -134,7 +134,7 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
       if (entropy->bit_buffer == NULL)
         entropy->bit_buffer = (char *)
           (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                      MAX_CORR_BITS * SIZEOF(char));
+                                      MAX_CORR_BITS * sizeof(char));
     }
   }
   if (gather_statistics)
@@ -167,8 +167,8 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
       if (entropy->count_ptrs[tbl] == NULL)
         entropy->count_ptrs[tbl] = (long *)
           (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                      257 * SIZEOF(long));
-      MEMZERO(entropy->count_ptrs[tbl], 257 * SIZEOF(long));
+                                      257 * sizeof(long));
+      MEMZERO(entropy->count_ptrs[tbl], 257 * sizeof(long));
     } else {
       /* Compute derived values for Huffman table */
       /* We may do this more than once for a table, but it's not expensive */
@@ -781,7 +781,7 @@ finish_pass_gather_phuff (j_compress_ptr cinfo)
   /* It's important not to apply jpeg_gen_optimal_table more than once
    * per table, because it clobbers the input frequency counts!
    */
-  MEMZERO(did, SIZEOF(did));
+  MEMZERO(did, sizeof(did));
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
@@ -818,7 +818,7 @@ jinit_phuff_encoder (j_compress_ptr cinfo)
 
   entropy = (phuff_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(phuff_entropy_encoder));
+                                sizeof(phuff_entropy_encoder));
   cinfo->entropy = (struct jpeg_entropy_encoder *) entropy;
   entropy->pub.start_pass = start_pass_phuff;
 

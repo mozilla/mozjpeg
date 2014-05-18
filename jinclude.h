@@ -1,8 +1,10 @@
 /*
  * jinclude.h
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1994, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file exists to provide a single place to fix any problems with
@@ -68,16 +70,6 @@
 #define MEMCOPY(dest,src,size)  memcpy((void *)(dest), (const void *)(src), (size_t)(size))
 
 #endif
-
-/*
- * In ANSI C, and indeed any rational implementation, size_t is also the
- * type returned by sizeof().  However, it seems there are some irrational
- * implementations out there, in which sizeof() returns an int even though
- * size_t is defined as long or unsigned long.  To ensure consistent results
- * we always use this SIZEOF() macro in place of using sizeof() directly.
- */
-
-#define SIZEOF(object)  ((size_t) sizeof(object))
 
 /*
  * The modules that use fread() and fwrite() always invoke them through

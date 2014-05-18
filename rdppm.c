@@ -350,7 +350,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     TRACEMS2(cinfo, 1, JTRC_PGM, w, h);
     if (maxval > 255) {
       source->pub.get_pixel_rows = get_word_gray_row;
-    } else if (maxval == MAXJSAMPLE && SIZEOF(JSAMPLE) == SIZEOF(U_CHAR)) {
+    } else if (maxval == MAXJSAMPLE && sizeof(JSAMPLE) == sizeof(U_CHAR)) {
       source->pub.get_pixel_rows = get_raw_row;
       use_raw_buffer = TRUE;
       need_rescale = FALSE;
@@ -365,7 +365,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     TRACEMS2(cinfo, 1, JTRC_PPM, w, h);
     if (maxval > 255) {
       source->pub.get_pixel_rows = get_word_rgb_row;
-    } else if (maxval == MAXJSAMPLE && SIZEOF(JSAMPLE) == SIZEOF(U_CHAR)) {
+    } else if (maxval == MAXJSAMPLE && sizeof(JSAMPLE) == sizeof(U_CHAR)) {
       source->pub.get_pixel_rows = get_raw_row;
       use_raw_buffer = TRUE;
       need_rescale = FALSE;
@@ -378,7 +378,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Allocate space for I/O buffer: 1 or 3 bytes or words/pixel. */
   if (need_iobuffer) {
     source->buffer_width = (size_t) w * cinfo->input_components *
-      ((maxval<=255) ? SIZEOF(U_CHAR) : (2*SIZEOF(U_CHAR)));
+      ((maxval<=255) ? sizeof(U_CHAR) : (2*sizeof(U_CHAR)));
     source->iobuffer = (U_CHAR *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                   source->buffer_width);
@@ -406,7 +406,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     /* On 16-bit-int machines we have to be careful of maxval = 65535 */
     source->rescale = (JSAMPLE *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  (size_t) (((long) maxval + 1L) * SIZEOF(JSAMPLE)));
+                                  (size_t) (((long) maxval + 1L) * sizeof(JSAMPLE)));
     half_maxval = maxval / 2;
     for (val = 0; val <= (INT32) maxval; val++) {
       /* The multiplication here must be done in 32 bits to avoid overflow */
@@ -439,7 +439,7 @@ jinit_read_ppm (j_compress_ptr cinfo)
   /* Create module interface object */
   source = (ppm_source_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  SIZEOF(ppm_source_struct));
+                                  sizeof(ppm_source_struct));
   /* Fill in method ptrs, except get_pixel_rows which start_input sets */
   source->pub.start_input = start_input_ppm;
   source->pub.finish_input = finish_input_ppm;

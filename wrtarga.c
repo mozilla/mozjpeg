@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only information
- * relevant to libjpeg-turbo.
+ * It was modified by The libjpeg-turbo Project to include only code and
+ * information relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to write output images in Targa format.
@@ -50,7 +50,7 @@ write_header (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
   char targaheader[18];
 
   /* Set unused fields of header to 0 */
-  MEMZERO(targaheader, SIZEOF(targaheader));
+  MEMZERO(targaheader, sizeof(targaheader));
 
   if (num_colors > 0) {
     targaheader[1] = 1;         /* color map type 1 */
@@ -222,7 +222,7 @@ jinit_write_targa (j_decompress_ptr cinfo)
   /* Create module interface object, fill in method pointers */
   dest = (tga_dest_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  SIZEOF(tga_dest_struct));
+                                  sizeof(tga_dest_struct));
   dest->pub.start_output = start_output_tga;
   dest->pub.finish_output = finish_output_tga;
 
@@ -233,7 +233,7 @@ jinit_write_targa (j_decompress_ptr cinfo)
   dest->buffer_width = cinfo->output_width * cinfo->output_components;
   dest->iobuffer = (char *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (size_t) (dest->buffer_width * SIZEOF(char)));
+                                (size_t) (dest->buffer_width * sizeof(char)));
 
   /* Create decompressor output buffer. */
   dest->pub.buffer = (*cinfo->mem->alloc_sarray)

@@ -1,8 +1,10 @@
 /*
  * jdapimin.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1998, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the decompression half
@@ -35,9 +37,9 @@ jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
   cinfo->mem = NULL;            /* so jpeg_destroy knows mem mgr not called */
   if (version != JPEG_LIB_VERSION)
     ERREXIT2(cinfo, JERR_BAD_LIB_VERSION, JPEG_LIB_VERSION, version);
-  if (structsize != SIZEOF(struct jpeg_decompress_struct))
+  if (structsize != sizeof(struct jpeg_decompress_struct))
     ERREXIT2(cinfo, JERR_BAD_STRUCT_SIZE,
-             (int) SIZEOF(struct jpeg_decompress_struct), (int) structsize);
+             (int) sizeof(struct jpeg_decompress_struct), (int) structsize);
 
   /* For debugging purposes, we zero the whole master structure.
    * But the application has already set the err pointer, and may have set
@@ -48,7 +50,7 @@ jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
   {
     struct jpeg_error_mgr * err = cinfo->err;
     void * client_data = cinfo->client_data; /* ignore Purify complaint here */
-    MEMZERO(cinfo, SIZEOF(struct jpeg_decompress_struct));
+    MEMZERO(cinfo, sizeof(struct jpeg_decompress_struct));
     cinfo->err = err;
     cinfo->client_data = client_data;
   }

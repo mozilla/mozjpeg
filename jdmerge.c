@@ -227,16 +227,16 @@ build_ycc_rgb_table (j_decompress_ptr cinfo)
 
   upsample->Cr_r_tab = (int *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(int));
+                                (MAXJSAMPLE+1) * sizeof(int));
   upsample->Cb_b_tab = (int *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(int));
+                                (MAXJSAMPLE+1) * sizeof(int));
   upsample->Cr_g_tab = (INT32 *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(INT32));
+                                (MAXJSAMPLE+1) * sizeof(INT32));
   upsample->Cb_g_tab = (INT32 *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * SIZEOF(INT32));
+                                (MAXJSAMPLE+1) * sizeof(INT32));
 
   for (i = 0, x = -CENTERJSAMPLE; i <= MAXJSAMPLE; i++, x++) {
     /* i is the actual input pixel value, in the range 0..MAXJSAMPLE */
@@ -801,7 +801,7 @@ jinit_merged_upsampler (j_decompress_ptr cinfo)
 
   upsample = (my_upsample_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_upsampler));
+                                sizeof(my_upsampler));
   cinfo->upsample = (struct jpeg_upsampler *) upsample;
   upsample->pub.start_pass = start_pass_merged_upsample;
   upsample->pub.need_context_rows = FALSE;
@@ -824,7 +824,7 @@ jinit_merged_upsampler (j_decompress_ptr cinfo)
     /* Allocate a spare row buffer */
     upsample->spare_row = (JSAMPROW)
       (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                (size_t) (upsample->out_row_width * SIZEOF(JSAMPLE)));
+                (size_t) (upsample->out_row_width * sizeof(JSAMPLE)));
   } else {
     upsample->pub.upsample = merged_1v_upsample;
     if (jsimd_can_h2v1_merged_upsample())

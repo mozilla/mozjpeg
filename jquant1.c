@@ -403,7 +403,7 @@ make_odither_array (j_decompress_ptr cinfo, int ncolors)
 
   odither = (ODITHER_MATRIX_PTR)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(ODITHER_MATRIX));
+                                sizeof(ODITHER_MATRIX));
   /* The inter-value distance for this color is MAXJSAMPLE/(ncolors-1).
    * Hence the dither value for the matrix cell with fill order f
    * (f=0..N-1) should be (N-1-2*f)/(2*N) * MAXJSAMPLE/(ncolors-1).
@@ -532,7 +532,7 @@ quantize_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 
   for (row = 0; row < num_rows; row++) {
     /* Initialize output values to 0 so can process components separately */
-    jzero_far((void *) output_buf[row], (size_t) (width * SIZEOF(JSAMPLE)));
+    jzero_far((void *) output_buf[row], (size_t) (width * sizeof(JSAMPLE)));
     row_index = cquantize->row_index;
     for (ci = 0; ci < nc; ci++) {
       input_ptr = input_buf[row] + ci;
@@ -636,7 +636,7 @@ quantize_fs_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 
   for (row = 0; row < num_rows; row++) {
     /* Initialize output values to 0 so can process components separately */
-    jzero_far((void *) output_buf[row], (size_t) (width * SIZEOF(JSAMPLE)));
+    jzero_far((void *) output_buf[row], (size_t) (width * sizeof(JSAMPLE)));
     for (ci = 0; ci < nc; ci++) {
       input_ptr = input_buf[row] + ci;
       output_ptr = output_buf[row];
@@ -725,7 +725,7 @@ alloc_fs_workspace (j_decompress_ptr cinfo)
   size_t arraysize;
   int i;
 
-  arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
+  arraysize = (size_t) ((cinfo->output_width + 2) * sizeof(FSERROR));
   for (i = 0; i < cinfo->out_color_components; i++) {
     cquantize->fserrors[i] = (FSERRPTR)
       (*cinfo->mem->alloc_large)((j_common_ptr) cinfo, JPOOL_IMAGE, arraysize);
@@ -779,7 +779,7 @@ start_pass_1_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
     if (cquantize->fserrors[0] == NULL)
       alloc_fs_workspace(cinfo);
     /* Initialize the propagated errors to zero. */
-    arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
+    arraysize = (size_t) ((cinfo->output_width + 2) * sizeof(FSERROR));
     for (i = 0; i < cinfo->out_color_components; i++)
       jzero_far((void *) cquantize->fserrors[i], arraysize);
     break;
@@ -824,7 +824,7 @@ jinit_1pass_quantizer (j_decompress_ptr cinfo)
 
   cquantize = (my_cquantize_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                SIZEOF(my_cquantizer));
+                                sizeof(my_cquantizer));
   cinfo->cquantize = (struct jpeg_color_quantizer *) cquantize;
   cquantize->pub.start_pass = start_pass_1_quant;
   cquantize->pub.finish_pass = finish_pass_1_quant;

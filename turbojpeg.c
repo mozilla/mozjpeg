@@ -1263,7 +1263,7 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 
 	dinfo->comp_info=(jpeg_component_info *)
 		(*dinfo->mem->alloc_small)((j_common_ptr)dinfo, JPOOL_IMAGE,
-			dinfo->num_components*SIZEOF(jpeg_component_info));
+			dinfo->num_components*sizeof(jpeg_component_info));
 
 	for(i=0; i<dinfo->num_components; i++)
 	{

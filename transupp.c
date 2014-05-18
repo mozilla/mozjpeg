@@ -1093,7 +1093,7 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
   if (need_workspace) {
     coef_arrays = (jvirt_barray_ptr *)
       (*srcinfo->mem->alloc_small) ((j_common_ptr) srcinfo, JPOOL_IMAGE,
-                SIZEOF(jvirt_barray_ptr) * info->num_components);
+                sizeof(jvirt_barray_ptr) * info->num_components);
     width_in_iMCUs = (JDIMENSION)
       jdiv_round_up((long) info->output_width,
                     (long) info->iMCU_sample_width);

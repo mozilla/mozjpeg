@@ -597,7 +597,7 @@ get_dri (j_decompress_ptr cinfo)
 
 
 LOCAL(void)
-examine_app0 (j_decompress_ptr cinfo, JOCTET FAR * data,
+examine_app0 (j_decompress_ptr cinfo, JOCTET * data,
               unsigned int datalen, INT32 remaining)
 /* Examine first few bytes from an APP0.
  * Take appropriate action if it is a JFIF marker.
@@ -673,7 +673,7 @@ examine_app0 (j_decompress_ptr cinfo, JOCTET FAR * data,
 
 
 LOCAL(void)
-examine_app14 (j_decompress_ptr cinfo, JOCTET FAR * data,
+examine_app14 (j_decompress_ptr cinfo, JOCTET * data,
                unsigned int datalen, INT32 remaining)
 /* Examine first few bytes from an APP14.
  * Take appropriate action if it is an Adobe marker.
@@ -729,10 +729,10 @@ get_interesting_appn (j_decompress_ptr cinfo)
   /* process it */
   switch (cinfo->unread_marker) {
   case M_APP0:
-    examine_app0(cinfo, (JOCTET FAR *) b, numtoread, length);
+    examine_app0(cinfo, (JOCTET *) b, numtoread, length);
     break;
   case M_APP14:
-    examine_app14(cinfo, (JOCTET FAR *) b, numtoread, length);
+    examine_app14(cinfo, (JOCTET *) b, numtoread, length);
     break;
   default:
     /* can't get here unless jpeg_save_markers chooses wrong processor */
@@ -758,7 +758,7 @@ save_marker (j_decompress_ptr cinfo)
   my_marker_ptr marker = (my_marker_ptr) cinfo->marker;
   jpeg_saved_marker_ptr cur_marker = marker->cur_marker;
   unsigned int bytes_read, data_length;
-  JOCTET FAR * data;
+  JOCTET * data;
   INT32 length = 0;
   INPUT_VARS(cinfo);
 
@@ -784,7 +784,7 @@ save_marker (j_decompress_ptr cinfo)
       cur_marker->original_length = (unsigned int) length;
       cur_marker->data_length = limit;
       /* data area is just beyond the jpeg_marker_struct */
-      data = cur_marker->data = (JOCTET FAR *) (cur_marker + 1);
+      data = cur_marker->data = (JOCTET *) (cur_marker + 1);
       marker->cur_marker = cur_marker;
       marker->bytes_read = 0;
       bytes_read = 0;

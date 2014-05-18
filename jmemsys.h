@@ -1,8 +1,10 @@
 /*
  * jmemsys.h
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1992-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code and
+ * information relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This include file defines the interface between the system-independent
@@ -14,8 +16,7 @@
  * in the IJG distribution.  You may need to modify it if you write a
  * custom memory manager.  If system-dependent changes are needed in
  * this file, the best method is to #ifdef them based on a configuration
- * symbol supplied in jconfig.h, as we have done with USE_MSDOS_MEMMGR
- * and USE_MAC_MEMMGR.
+ * symbol supplied in jconfig.h.
  */
 
 
@@ -27,7 +28,6 @@
  * and free; in particular, jpeg_get_small must return NULL on failure.
  * On most systems, these ARE malloc and free.  jpeg_free_small is passed the
  * size of the object being freed, just in case it's needed.
- * On an 80x86 machine using small-data memory model, these manage near heap.
  */
 
 EXTERN(void *) jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject);
@@ -37,23 +37,21 @@ EXTERN(void) jpeg_free_small (j_common_ptr cinfo, void * object,
 /*
  * These two functions are used to allocate and release large chunks of
  * memory (up to the total free space designated by jpeg_mem_available).
- * The interface is the same as above, except that on an 80x86 machine,
- * far pointers are used.  On most other machines these are identical to
- * the jpeg_get/free_small routines; but we keep them separate anyway,
- * in case a different allocation strategy is desirable for large chunks.
+ * These are identical to the jpeg_get/free_small routines; but we keep them
+ * separate anyway, in case a different allocation strategy is desirable for
+ * large chunks.
  */
 
-EXTERN(void FAR *) jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject);
-EXTERN(void) jpeg_free_large (j_common_ptr cinfo, void FAR * object,
+EXTERN(void *) jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject);
+EXTERN(void) jpeg_free_large (j_common_ptr cinfo, void * object,
                               size_t sizeofobject);
 
 /*
  * The macro MAX_ALLOC_CHUNK designates the maximum number of bytes that may
  * be requested in a single call to jpeg_get_large (and jpeg_get_small for that
- * matter, but that case should never come into play).  This macro is needed
+ * matter, but that case should never come into play).  This macro was needed
  * to model the 64Kb-segment-size limit of far addressing on 80x86 machines.
- * On those machines, we expect that jconfig.h will provide a proper value.
- * On machines with 32-bit flat address spaces, any large constant may be used.
+ * On machines with flat address spaces, any large constant may be used.
  *
  * NB: jmemmgr.c expects that MAX_ALLOC_CHUNK will be representable as type
  * size_t and will be a multiple of sizeof(align_type).
@@ -123,10 +121,10 @@ typedef struct backing_store_struct * backing_store_ptr;
 typedef struct backing_store_struct {
   /* Methods for reading/writing/closing this backing-store object */
   void (*read_backing_store) (j_common_ptr cinfo, backing_store_ptr info,
-                              void FAR * buffer_address, long file_offset,
+                              void * buffer_address, long file_offset,
                               long byte_count);
   void (*write_backing_store) (j_common_ptr cinfo, backing_store_ptr info,
-                               void FAR * buffer_address, long file_offset,
+                               void * buffer_address, long file_offset,
                                long byte_count);
   void (*close_backing_store) (j_common_ptr cinfo, backing_store_ptr info);
 

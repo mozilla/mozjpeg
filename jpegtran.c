@@ -395,13 +395,6 @@ main (int argc, char **argv)
   dstinfo.err = jpeg_std_error(&jdsterr);
   jpeg_create_compress(&dstinfo);
 
-  /* Now safe to enable signal catcher.
-   * Note: we assume only the decompression object will have virtual arrays.
-   */
-#ifdef NEED_SIGNAL_CATCHER
-  enable_signal_catcher((j_common_ptr) &srcinfo);
-#endif
-
   /* Scan command line to find file names.
    * It is convenient to use just one switch-parsing routine, but the switch
    * values read here are mostly ignored; we will rescan the switches after

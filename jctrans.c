@@ -1,9 +1,11 @@
 /*
  * jctrans.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1998, Thomas G. Lane.
  * Modified 2000-2009 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains library routines for transcoding compression,
@@ -392,7 +394,7 @@ transencode_coef_controller (j_compress_ptr cinfo,
   buffer = (JBLOCKROW)
     (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                 C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
-  jzero_far((void FAR *) buffer, C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
+  jzero_far((void *) buffer, C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
   for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
     coef->dummy_buffer[i] = buffer + i;
   }

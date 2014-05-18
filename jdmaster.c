@@ -7,7 +7,6 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, D. R. Commander.
  * Copyright (C) 2013, Linaro Limited.
-
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains master control logic for the JPEG decompressor.
@@ -419,9 +418,6 @@ jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
  * We can save some space by overlapping the start of the post-IDCT table
  * with the simpler range limiting table.  The post-IDCT table begins at
  * sample_range_limit + CENTERJSAMPLE.
- *
- * Note that the table is allocated in near data space on PCs; it's small
- * enough and used often enough to justify this.
  */
 
 LOCAL(void)

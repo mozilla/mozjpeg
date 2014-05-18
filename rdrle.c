@@ -1,8 +1,10 @@
 /*
  * rdrle.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only information
+ * relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to read input images in Utah RLE format.
@@ -254,8 +256,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   rle_row = source->rle_row;
 
   /* Read the RLE data into our virtual array.
-   * We assume here that (a) rle_pixel is represented the same as JSAMPLE,
-   * and (b) we are not on a machine where FAR pointers differ from regular.
+   * We assume here that rle_pixel is represented the same as JSAMPLE.
    */
   RLE_CLR_BIT(source->header, RLE_ALPHA); /* don't read the alpha channel */
 

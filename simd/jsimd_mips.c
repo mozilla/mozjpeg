@@ -67,7 +67,7 @@ init_simd (void)
 
   simd_support = 0;
 
-#if defined(__mips__) && defined(__mips_dsp) && (__mips_dsp_rev >= 2)
+#if defined(__MIPSEL__) && defined(__mips_dsp) && (__mips_dsp_rev >= 2)
   simd_support |= JSIMD_MIPS_DSPR2;
 #elif defined(__linux__)
   /* We still have a chance to use MIPS DSPR2 regardless of globally used

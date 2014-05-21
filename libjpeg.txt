@@ -2975,9 +2975,8 @@ the design goals in this area.  (If you encounter any bugs that cause the
 library to be less portable than is claimed here, we'd appreciate hearing
 about them.)
 
-The code works fine on ANSI C, C++, and pre-ANSI C compilers, using any of
-the popular system include file setups, and some not-so-popular ones too.
-See install.txt for configuration procedures.
+The code works fine on ANSI C and C++ compilers, using any of the popular
+system include file setups, and some not-so-popular ones too.
 
 The code is not dependent on the exact sizes of the C data types.  As
 distributed, we make the assumptions that

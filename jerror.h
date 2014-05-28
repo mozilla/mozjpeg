@@ -1,9 +1,11 @@
 /*
  * jerror.h
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2014, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file defines the error and message codes for the JPEG library.
@@ -132,7 +134,7 @@ JMESSAGE(JERR_VIRTUAL_BUG, "Virtual array controller messed up")
 JMESSAGE(JERR_WIDTH_OVERFLOW, "Image too wide for this implementation")
 JMESSAGE(JERR_XMS_READ, "Read from XMS failed")
 JMESSAGE(JERR_XMS_WRITE, "Write to XMS failed")
-JMESSAGE(JMSG_COPYRIGHT, JCOPYRIGHT)
+JMESSAGE(JMSG_COPYRIGHT, JCOPYRIGHT_SHORT)
 JMESSAGE(JMSG_VERSION, JVERSION)
 JMESSAGE(JTRC_16BIT_TABLES,
          "Caution: quantization tables are too coarse for baseline JPEG")

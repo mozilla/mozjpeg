@@ -32,3 +32,5 @@
                         "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
                         "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
                         "Copyright (C) 2013 Linaro Limited"
+
+#define JCOPYRIGHT_SHORT "Copyright (C) 1991-2014 The libjpeg-turbo Project and many others"

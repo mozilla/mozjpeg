@@ -1,9 +1,11 @@
 /*
  * rdjpgcom.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a very simple stand-alone application that displays
@@ -38,22 +40,14 @@
 #ifdef DONT_USE_B_MODE          /* define mode parameters for fopen() */
 #define READ_BINARY     "r"
 #else
-#ifdef VMS                      /* VMS is very nonstandard */
-#define READ_BINARY     "rb", "ctx=stm"
-#else                           /* standard ANSI-compliant case */
 #define READ_BINARY     "rb"
-#endif
 #endif
 
 #ifndef EXIT_FAILURE            /* define exit() codes if not provided */
 #define EXIT_FAILURE  1
 #endif
 #ifndef EXIT_SUCCESS
-#ifdef VMS
-#define EXIT_SUCCESS  1         /* VMS is very nonstandard */
-#else
 #define EXIT_SUCCESS  0
-#endif
 #endif
 
 

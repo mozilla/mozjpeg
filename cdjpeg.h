@@ -129,29 +129,16 @@ EXTERN(FILE *) write_stdout (void);
 #define READ_BINARY     "r"
 #define WRITE_BINARY    "w"
 #else
-#ifdef VMS                      /* VMS is very nonstandard */
-#define READ_BINARY     "rb", "ctx=stm"
-#define WRITE_BINARY    "wb", "ctx=stm"
-#else                           /* standard ANSI-compliant case */
 #define READ_BINARY     "rb"
 #define WRITE_BINARY    "wb"
-#endif
 #endif
 
 #ifndef EXIT_FAILURE            /* define exit() codes if not provided */
 #define EXIT_FAILURE  1
 #endif
 #ifndef EXIT_SUCCESS
-#ifdef VMS
-#define EXIT_SUCCESS  1         /* VMS is very nonstandard */
-#else
 #define EXIT_SUCCESS  0
 #endif
-#endif
 #ifndef EXIT_WARNING
-#ifdef VMS
-#define EXIT_WARNING  1         /* VMS is very nonstandard */
-#else
 #define EXIT_WARNING  2
-#endif
 #endif

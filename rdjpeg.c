@@ -52,7 +52,9 @@ get_rows (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 METHODDEF(void)
 start_input_jpeg (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
+#if JPEG_RAW_READER
   int i;
+#endif
   int m;
   jpeg_source_ptr source = (jpeg_source_ptr) sinfo;
 

@@ -11,7 +11,9 @@
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 
+#if JPEG_RAW_READER
 #define NUM_ROWS 32
+#endif
 
 /* Private version of data source object */
 
@@ -33,9 +35,13 @@ get_rows (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   jpeg_source_ptr source = (jpeg_source_ptr) sinfo;
   
+#if !JPEG_RAW_READER
+  return jpeg_read_scanlines(&source->dinfo, source->pub.buffer, source->pub.buffer_height);
+#else
   jpeg_read_raw_data(&source->dinfo, source->pub.plane_pointer, 8*cinfo->max_v_samp_factor);
 
   return 8*cinfo->max_v_samp_factor;
+#endif
 }
 
 
@@ -47,13 +53,40 @@ METHODDEF(void)
 start_input_jpeg (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   int i;
+  int m;
   jpeg_source_ptr source = (jpeg_source_ptr) sinfo;
 
   source->dinfo.err = jpeg_std_error(&source->jerr);
   jpeg_create_decompress(&source->dinfo);
   jpeg_stdio_src(&source->dinfo, source->pub.input_file);
-  jpeg_read_header(&source->dinfo, TRUE);
   
+  jpeg_save_markers(&source->dinfo, JPEG_COM, 0xFFFF);
+  
+  for (m = 0; m < 16; m++)
+    jpeg_save_markers(&source->dinfo, JPEG_APP0 + m, 0xFFFF);
+
+  jpeg_read_header(&source->dinfo, TRUE);
+
+  source->pub.marker_list = source->dinfo.marker_list;
+  
+#if !JPEG_RAW_READER
+  source->dinfo.raw_data_out = FALSE;
+  
+  jpeg_start_decompress(&source->dinfo);
+
+  cinfo->in_color_space = source->dinfo.out_color_space;
+  cinfo->input_components = source->dinfo.output_components;
+  cinfo->data_precision = source->dinfo.data_precision;
+  cinfo->image_width = source->dinfo.image_width;
+  cinfo->image_height = source->dinfo.image_height;
+
+  cinfo->raw_data_in = FALSE;
+
+  source->pub.buffer = (*cinfo->mem->alloc_sarray)
+  ((j_common_ptr) cinfo, JPOOL_IMAGE,
+   (JDIMENSION) (cinfo->image_width * cinfo->input_components), (JDIMENSION) 1);
+  source->pub.buffer_height = 1;
+#else
   source->dinfo.raw_data_out = TRUE;
   source->dinfo.do_fancy_upsampling = FALSE;
   
@@ -83,7 +116,8 @@ start_input_jpeg (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     ((j_common_ptr) cinfo, JPOOL_IMAGE,
      (JDIMENSION) cinfo->image_width, (JDIMENSION) NUM_ROWS);
   }
-  
+#endif
+
   source->pub.get_pixel_rows = get_rows;
 }
 

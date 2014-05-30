@@ -18,6 +18,7 @@
 #include "jerror.h"		/* get library error codes too */
 #include "cderror.h"		/* get application-specific error codes */
 
+#define JPEG_RAW_READER 0
 
 /*
  * Object interface for cjpeg's source file decoding modules
@@ -38,8 +39,12 @@ struct cjpeg_source_struct {
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
   
+#if JPEG_RAW_READER
   // For reading JPEG
   JSAMPARRAY plane_pointer[4];
+#endif
+  
+  jpeg_saved_marker_ptr marker_list;
 };
 
 

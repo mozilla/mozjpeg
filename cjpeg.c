@@ -80,7 +80,7 @@ static const char * const cdjpeg_message_table[] = {
  */
 
 static boolean is_targa;	/* records user -targa switch */
-
+static boolean is_jpeg;
 
 LOCAL(cjpeg_source_ptr)
 select_file_type (j_compress_ptr cinfo, FILE * infile)
@@ -121,6 +121,9 @@ select_file_type (j_compress_ptr cinfo, FILE * infile)
   case 0x00:
     return jinit_read_targa(cinfo);
 #endif
+  case 0xff:
+    is_jpeg = TRUE;
+    return jinit_read_jpeg(cinfo);
   default:
     ERREXIT(cinfo, JERR_UNKNOWN_FORMAT);
     break;
@@ -664,7 +667,10 @@ main (int argc, char **argv)
   (*src_mgr->start_input) (&cinfo, src_mgr);
 
   /* Now that we know input colorspace, fix colorspace-dependent defaults */
-  jpeg_default_colorspace(&cinfo);
+#if JPEG_RAW_READER
+  if (!is_jpeg)
+#endif
+    jpeg_default_colorspace(&cinfo);
 
   /* Adjust default compression parameters by re-parsing the options */
   file_index = parse_switches(&cinfo, argc, argv, 0, TRUE);
@@ -680,10 +686,47 @@ main (int argc, char **argv)
   /* Start compressor */
   jpeg_start_compress(&cinfo, TRUE);
 
+  /* Copy metadata */
+  if (is_jpeg) {
+    jpeg_saved_marker_ptr marker;
+    
+    /* In the current implementation, we don't actually need to examine the
+     * option flag here; we just copy everything that got saved.
+     * But to avoid confusion, we do not output JFIF and Adobe APP14 markers
+     * if the encoder library already wrote one.
+     */
+    for (marker = src_mgr->marker_list; marker != NULL; marker = marker->next) {
+      if (cinfo.write_JFIF_header &&
+          marker->marker == JPEG_APP0 &&
+          marker->data_length >= 5 &&
+          GETJOCTET(marker->data[0]) == 0x4A &&
+          GETJOCTET(marker->data[1]) == 0x46 &&
+          GETJOCTET(marker->data[2]) == 0x49 &&
+          GETJOCTET(marker->data[3]) == 0x46 &&
+          GETJOCTET(marker->data[4]) == 0)
+        continue;			/* reject duplicate JFIF */
+      if (cinfo.write_Adobe_marker &&
+          marker->marker == JPEG_APP0+14 &&
+          marker->data_length >= 5 &&
+          GETJOCTET(marker->data[0]) == 0x41 &&
+          GETJOCTET(marker->data[1]) == 0x64 &&
+          GETJOCTET(marker->data[2]) == 0x6F &&
+          GETJOCTET(marker->data[3]) == 0x62 &&
+          GETJOCTET(marker->data[4]) == 0x65)
+        continue;			/* reject duplicate Adobe */
+      jpeg_write_marker(&cinfo, marker->marker, marker->data, marker->data_length);
+    }
+  }
+  
   /* Process data */
   while (cinfo.next_scanline < cinfo.image_height) {
     num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
-    (void) jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);
+#if JPEG_RAW_READER
+    if (is_jpeg)
+      (void) jpeg_write_raw_data(&cinfo, src_mgr->plane_pointer, num_scanlines);
+    else
+#endif
+      (void) jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);
   }
 
   /* Finish compression and release memory */

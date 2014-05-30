@@ -108,7 +108,7 @@ endif
 
 
 cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
-	rdppm.c rdswitch.c rdtarga.c 
+	rdppm.c rdswitch.c rdtarga.c rdjpeg.c
 
 cjpeg_LDADD = libjpeg.la
 

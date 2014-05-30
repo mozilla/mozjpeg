@@ -3,6 +3,8 @@
  *
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains common declarations for the sample applications
@@ -16,6 +18,7 @@
 #include "jerror.h"		/* get library error codes too */
 #include "cderror.h"		/* get application-specific error codes */
 
+#define JPEG_RAW_READER 0
 
 /*
  * Object interface for cjpeg's source file decoding modules
@@ -35,6 +38,13 @@ struct cjpeg_source_struct {
 
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
+  
+#if JPEG_RAW_READER
+  // For reading JPEG
+  JSAMPARRAY plane_pointer[4];
+#endif
+  
+  jpeg_saved_marker_ptr marker_list;
 };
 
 
@@ -94,6 +104,7 @@ typedef struct cdjpeg_progress_mgr * cd_progress_ptr;
 #ifdef NEED_SHORT_EXTERNAL_NAMES
 #define jinit_read_bmp		jIRdBMP
 #define jinit_write_bmp		jIWrBMP
+#define jinit_read_jpeg		jIRdJPG
 #define jinit_read_gif		jIRdGIF
 #define jinit_write_gif		jIWrGIF
 #define jinit_read_ppm		jIRdPPM
@@ -122,6 +133,7 @@ EXTERN(djpeg_dest_ptr) jinit_write_bmp JPP((j_decompress_ptr cinfo,
 					    boolean is_os2));
 EXTERN(cjpeg_source_ptr) jinit_read_gif JPP((j_compress_ptr cinfo));
 EXTERN(djpeg_dest_ptr) jinit_write_gif JPP((j_decompress_ptr cinfo));
+EXTERN(cjpeg_source_ptr) jinit_read_jpeg JPP((j_compress_ptr cinfo));
 EXTERN(cjpeg_source_ptr) jinit_read_ppm JPP((j_compress_ptr cinfo));
 EXTERN(djpeg_dest_ptr) jinit_write_ppm JPP((j_decompress_ptr cinfo));
 EXTERN(cjpeg_source_ptr) jinit_read_rle JPP((j_compress_ptr cinfo));

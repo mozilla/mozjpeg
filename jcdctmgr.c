@@ -630,10 +630,10 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   float lambda;
   const float *lambda_tbl = (cinfo->use_lambda_weight_tbl) ? jpeg_lambda_weights_csf_luma : jpeg_lambda_weights_flat;
   int Ss, Se;
-  float *accumulated_zero_block_cost;
-  float *accumulated_block_cost;
-  int *block_run_start;
-  int *requires_eob;
+  float *accumulated_zero_block_cost = NULL;
+  float *accumulated_block_cost = NULL;
+  int *block_run_start = NULL;
+  int *requires_eob = NULL;
   int has_eob;
   float cost_all_zeros;
   float best_cost_skip;

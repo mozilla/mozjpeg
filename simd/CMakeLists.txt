@@ -3,12 +3,15 @@ if(NOT DEFINED NASM)
 endif()
 
 if(SIMD_X86_64)
-  set(NAFLAGS -fwin64 -DWIN64 -D__x86_64__ -I${CMAKE_SOURCE_DIR}/win/
-    -I${CMAKE_CURRENT_SOURCE_DIR}/)
+  set(NAFLAGS -fwin64 -DWIN64 -D__x86_64__)
 else()
-  set(NAFLAGS -fwin32 -DWIN32 -I${CMAKE_SOURCE_DIR}/win/
-    -I${CMAKE_CURRENT_SOURCE_DIR}/)
+  if(BORLAND)
+    set(NAFLAGS -fobj -DOBJ32)
+  else()
+    set(NAFLAGS -fwin32 -DWIN32)
+  endif()
 endif()
+set(NAFLAGS ${NAFLAGS} -I${CMAKE_SOURCE_DIR}/win/ -I${CMAKE_CURRENT_SOURCE_DIR}/)
 
 # This only works if building from the command line.  There is currently no way
 # to set a variable's value based on the build type when using the MSVC IDE.

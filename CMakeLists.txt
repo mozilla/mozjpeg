@@ -268,7 +268,7 @@ set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
 
 add_executable(rdjpgcom rdjpgcom.c)
 
-add_executable(wrjpgcom rdjpgcom.c)
+add_executable(wrjpgcom wrjpgcom.c)
 
 
 #

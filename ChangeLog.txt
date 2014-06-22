@@ -36,6 +36,9 @@ and later.
 [9] Fixed a segfault that occurred when calling output_message() with msg_code
 set to JMSG_COPYRIGHT.
 
+[10] Fixed a bug in the build system that was causing the Windows version of
+wrjpgcom to be built using the rdjpgcom code.
+
 
 1.2.1
 =====

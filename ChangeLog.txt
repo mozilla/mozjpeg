@@ -77,6 +77,8 @@ set to JMSG_COPYRIGHT.
 characters to be passed on the command line, which was causing it to generate
 incorrect JPEG files.
 
+[12] Fixed a bug in the build system that was causing the Windows version of
+wrjpgcom to be built using the rdjpgcom code.
 
 
 1.3.1

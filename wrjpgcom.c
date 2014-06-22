@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2014, D. R. Commander
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a very simple stand-alone application that inserts
@@ -446,6 +446,11 @@ main (int argc, char **argv)
         comment_arg = (char *) malloc((size_t) MAX_COM_LENGTH);
         if (comment_arg == NULL)
           ERREXIT("Insufficient memory");
+        if (strlen(argv[argn]) + 2 >= (size_t) MAX_COM_LENGTH) {
+          fprintf(stderr, "Comment text may not exceed %u bytes\n",
+                  (unsigned int) MAX_COM_LENGTH);
+          exit(EXIT_FAILURE);
+        }
         strcpy(comment_arg, argv[argn]+1);
         for (;;) {
           comment_length = (unsigned int) strlen(comment_arg);
@@ -455,9 +460,19 @@ main (int argc, char **argv)
           }
           if (++argn >= argc)
             ERREXIT("Missing ending quote mark");
+          if (strlen(comment_arg) + strlen(argv[argn]) + 2 >=
+              (size_t) MAX_COM_LENGTH) {
+            fprintf(stderr, "Comment text may not exceed %u bytes\n",
+                    (unsigned int) MAX_COM_LENGTH);
+            exit(EXIT_FAILURE);
+          }
           strcat(comment_arg, " ");
           strcat(comment_arg, argv[argn]);
         }
+      } else if (strlen(argv[argn]) >= (size_t) MAX_COM_LENGTH) {
+        fprintf(stderr, "Comment text may not exceed %u bytes\n",
+                (unsigned int) MAX_COM_LENGTH);
+        exit(EXIT_FAILURE);
       }
       comment_length = (unsigned int) strlen(comment_arg);
     } else

@@ -73,6 +73,11 @@ maintain and extend.
 [10] Fixed a segfault that occurred when calling output_message() with msg_code
 set to JMSG_COPYRIGHT.
 
+[11] Fixed an issue whereby wrjpgcom was allowing comments longer than 65k
+characters to be passed on the command line, which was causing it to generate
+incorrect JPEG files.
+
+
 
 1.3.1
 =====

@@ -933,12 +933,8 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   else
     master->total_passes = cinfo->num_scans;
   
-  if (cinfo->trellis_quant) {
-    if (cinfo->progressive_mode)
-      master->total_passes += ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
-    else
-      master->total_passes += 1;
-  }
+  if (cinfo->trellis_quant)
+    master->total_passes += ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
   
   if (cinfo->optimize_scans) {
     int i;

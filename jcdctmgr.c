@@ -543,6 +543,8 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
   FAST_FLOAT * divisors = fdct->float_divisors[compptr->quant_tbl_no];
   FAST_FLOAT * workspace;
   JDIMENSION bi;
+  float v;
+  int x;
 
 
   /* Make sure the compiler doesn't look up these every pass */
@@ -572,10 +574,10 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
       };
 
       for (i = 0; i < DCTSIZE2; i++) {
-        float v = workspace[i];
+        v = workspace[i];
         v /= aanscalefactor[i%8];
         v /= aanscalefactor[i/8];
-        int x = (v >= 0.0) ? (int)(v + 0.5) : (int)(v - 0.5);
+        x = (v >= 0.0) ? (int)(v + 0.5) : (int)(v - 0.5);
         dst[bi][i] = x;
       }
     }
@@ -637,6 +639,10 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   int has_eob;
   float cost_all_zeros;
   float best_cost_skip;
+  float cost;
+  int zero_run;
+  int run_bits;
+  int rate;
 
   Ss = cinfo->Ss;
   Se = cinfo->Se;
@@ -725,11 +731,11 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
         if (j != Ss-1 && coef_blocks[bi][zz] == 0)
           continue;
         
-        int zero_run = i - 1 - j;
+        zero_run = i - 1 - j;
         if ((zero_run >> 4) && actbl->ehufsi[0xf0] == 0)
           continue;
         
-        int run_bits = (zero_run >> 4) * actbl->ehufsi[0xf0];
+        run_bits = (zero_run >> 4) * actbl->ehufsi[0xf0];
         zero_run &= 15;
 
         for (k = 0; k < num_candidates; k++) {
@@ -737,8 +743,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
           if (coef_bits == 0)
             continue;
           
-          int rate = coef_bits + candidate_bits[k] + run_bits;
-          float cost = rate + candidate_dist[k];
+          rate = coef_bits + candidate_bits[k] + run_bits;
+          cost = rate + candidate_dist[k];
           cost += accumulated_zero_dist[i-1] - accumulated_zero_dist[j] + accumulated_cost[j];
           
           if (cost < accumulated_cost[i]) {

@@ -1,4 +1,4 @@
-.TH CJPEG 1 "18 January 2013"
+.TH CJPEG 1 "11 May 2014"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -166,14 +166,25 @@ Use integer DCT method (default).
 .TP
 .B \-dct fast
 Use fast integer DCT (less accurate).
+In libjpeg-turbo, the fast method is generally about 5-15% faster than the int
+method when using the x86/x86-64 SIMD extensions (results may vary with other
+SIMD implementations, or when using libjpeg-turbo without SIMD extensions.)
+For quality levels of 90 and below, there should be little or no perceptible
+difference between the two algorithms.  For quality levels above 90, however,
+the difference between the fast and the int methods becomes more pronounced.
+With quality=97, for instance, the fast method incurs generally about a 1-3 dB
+loss (in PSNR) relative to the int method, but this can be larger for some
+images.  Do not use the fast method with quality levels above 97.  The
+algorithm often degenerates at quality=98 and above and can actually produce a
+more lossy image than if lower quality levels had been used.
 .TP
 .B \-dct float
 Use floating-point DCT method.
-The float method is very slightly more accurate than the int method, but is
-much slower unless your machine has very fast floating-point hardware.  Also
-note that results of the floating-point method may vary slightly across
-machines, while the integer methods should give the same results everywhere.
-The fast integer method is much less accurate than the other two.
+The float method is mostly a legacy feature.  It does not produce significantly
+more accurate results than the int method, and it is much slower.  The float
+method may also give different results on different machines due to varying
+roundoff behavior, whereas the integer methods should give the same results on
+all machines.
 .TP
 .BI \-restart " N"
 Emit a JPEG restart marker every N MCU rows, or every N MCU blocks if "B" is

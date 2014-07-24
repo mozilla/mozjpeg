@@ -590,9 +590,7 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 #endif /* DCT_FLOAT_SUPPORTED */
 
 #include "jchuff.h"
-
-static unsigned char jpeg_nbits_table[65536];
-static int jpeg_nbits_table_init = 0;
+#include "jpeg_nbits_table.h"
 
 static const float jpeg_lambda_weights_flat[64] = {
   1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
@@ -660,15 +658,6 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     requires_eob[0] = 0;
   }
   
-  if(!jpeg_nbits_table_init) {
-    for(i = 0; i < 65536; i++) {
-      int nbits = 0, temp = i;
-      while (temp) {temp >>= 1;  nbits++;}
-      jpeg_nbits_table[i] = nbits;
-    }
-    jpeg_nbits_table_init = 1;
-  }
-
   norm = 0.0;
   for (i = 1; i < DCTSIZE2; i++) {
     norm += qtbl->quantval[i] * qtbl->quantval[i];

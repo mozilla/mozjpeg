@@ -168,6 +168,7 @@ usage (void)
 #ifdef C_PROGRESSIVE_SUPPORTED
   fprintf(stderr, "  -progressive   Create progressive JPEG file (enabled by default)\n");
 #endif
+  fprintf(stderr, "  -baseline      Create baseline JPEG file (disable progressive coding)\n");
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
@@ -206,7 +207,6 @@ usage (void)
 #endif
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "Switches for wizards:\n");
-  fprintf(stderr, "  -baseline      Force baseline quantization tables\n");
   fprintf(stderr, "  -qtables file  Use quantization tables given in file\n");
   fprintf(stderr, "  -qslots N[,...]    Set component quantization tables\n");
   fprintf(stderr, "  -sample HxV[,...]  Set component sampling factors\n");
@@ -279,6 +279,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "baseline", 1)) {
       /* Force baseline-compatible output (8-bit quantizer values). */
       force_baseline = TRUE;
+      /* Disable multiple scans */
+      simple_progressive = FALSE;
+      cinfo->num_scans = 0;
+      cinfo->scan_info = NULL;
 
     } else if (keymatch(arg, "dct", 2)) {
       /* Select DCT algorithm. */

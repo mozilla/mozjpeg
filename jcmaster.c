@@ -757,7 +757,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
     if (cinfo->num_scans > cinfo->num_scans_luma && !cinfo->one_dc_scan) {
       base_scan_idx = cinfo->num_scans_luma;
       
-      if (master->interleave_chroma_dc)
+      if (master->interleave_chroma_dc && !cinfo->sep_dc_scan)
         copy_buffer(cinfo, base_scan_idx);
       else {
         copy_buffer(cinfo, base_scan_idx+1);

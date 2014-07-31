@@ -444,6 +444,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->trellis_freq_split = 8;
   cinfo->trellis_num_loops = 1;
   cinfo->trellis_q_opt = FALSE;
+  cinfo->trellis_quant_dc = FALSE;
 }
 
 

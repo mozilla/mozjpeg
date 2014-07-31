@@ -487,6 +487,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* disable trellis quantization */
       cinfo->trellis_quant = FALSE;
       
+    } else if (keymatch(arg, "trellis-dc", 9)) {
+      /* enable DC trellis quantization */
+      cinfo->trellis_quant_dc = TRUE;
+      
     } else if (keymatch(arg, "tune-psnr", 6)) {
       cinfo->use_flat_quant_tbl = TRUE;
       cinfo->lambda_log_scale1 = 9.0;

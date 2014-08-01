@@ -737,7 +737,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
               dc_delta >>= 1;
               bits++;
             }
-            cost = bits + dctbl->ehufsi[bits] + dc_candidate_dist;
+            cost = bits + dctbl->ehufsi[bits] + dc_candidate_dist + accumulated_dc_cost[l][bi-1];
             if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
               accumulated_dc_cost[k][bi] = cost;
               dc_cost_backtrack[k][bi] = l;

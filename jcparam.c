@@ -151,14 +151,20 @@ jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
 
 GLOBAL(int)
 jpeg_quality_scaling (int quality)
+{
+  return jpeg_float_quality_scaling(quality);
+}
+
+GLOBAL(float)
+jpeg_float_quality_scaling(float quality)
 /* Convert a user-specified quality rating to a percentage scaling factor
  * for an underlying quantization table, using our recommended scaling curve.
  * The input 'quality' factor should be 0 (terrible) to 100 (very good).
  */
 {
   /* Safety limit on quality factor.  Convert 0 to 1 to avoid zero divide. */
-  if (quality <= 0) quality = 1;
-  if (quality > 100) quality = 100;
+  if (quality <= 0.f) quality = 1.f;
+  if (quality > 100.f) quality = 100.f;
 
   /* The basic table is used as-is (scaling 100) for a quality of 50.
    * Qualities 50..100 are converted to scaling percentage 200 - 2*Q;
@@ -166,10 +172,10 @@ jpeg_quality_scaling (int quality)
    * to make all the table entries 1 (hence, minimum quantization loss).
    * Qualities 1..50 are converted to scaling percentage 5000/Q.
    */
-  if (quality < 50)
-    quality = 5000 / quality;
+  if (quality < 50.f)
+    quality = 5000.f / quality;
   else
-    quality = 200 - quality*2;
+    quality = 200.f - quality*2.f;
 
   return quality;
 }

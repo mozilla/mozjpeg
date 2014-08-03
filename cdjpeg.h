@@ -135,6 +135,7 @@ EXTERN(cjpeg_source_ptr) jinit_read_gif JPP((j_compress_ptr cinfo));
 EXTERN(djpeg_dest_ptr) jinit_write_gif JPP((j_decompress_ptr cinfo));
 EXTERN(cjpeg_source_ptr) jinit_read_jpeg JPP((j_compress_ptr cinfo));
 EXTERN(cjpeg_source_ptr) jinit_read_ppm JPP((j_compress_ptr cinfo));
+EXTERN(cjpeg_source_ptr) jinit_read_png JPP((j_compress_ptr cinfo));
 EXTERN(djpeg_dest_ptr) jinit_write_ppm JPP((j_decompress_ptr cinfo));
 EXTERN(cjpeg_source_ptr) jinit_read_rle JPP((j_compress_ptr cinfo));
 EXTERN(djpeg_dest_ptr) jinit_write_rle JPP((j_decompress_ptr cinfo));

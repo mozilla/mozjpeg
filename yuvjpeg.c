@@ -202,6 +202,7 @@ int main(int argc, char *argv[]) {
   jpg_fd = fopen(jpg_path, "wb");
   if (!jpg_fd) {
     fprintf(stderr, "Invalid path to JPEG file!\n");
+    free(image_buffer);
     return 1;
   }
 

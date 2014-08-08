@@ -653,6 +653,13 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     accumulated_block_cost = (float *)malloc((num_blocks + 1) * SIZEOF(float));
     block_run_start = (int *)malloc(num_blocks * SIZEOF(int));
     requires_eob = (int *)malloc((num_blocks + 1) * SIZEOF(int));
+    if (!accumulated_zero_block_cost ||
+        !accumulated_block_cost ||
+        !block_run_start ||
+        !requires_eob) {
+      ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+    }
+
     accumulated_zero_block_cost[0] = 0;
     accumulated_block_cost[0] = 0;
     requires_eob[0] = 0;

@@ -80,6 +80,9 @@ PW_F1306        times 8 dw  F_1_306 << CONST_SHIFT
         global  EXTN(jsimd_fdct_ifast_sse2)
 
 EXTN(jsimd_fdct_ifast_sse2):
+        push    rbp
+        mov     rax,rsp
+        mov     rbp,rsp
         collect_args
 
         ; ---- Pass 1: process rows.
@@ -343,6 +346,7 @@ EXTN(jsimd_fdct_ifast_sse2):
         movdqa  XMMWORD [XMMBLOCK(7,0,rdx,SIZEOF_DCTELEM)], xmm15
 
         uncollect_args
+        pop     rbp
         ret
 
 ; For some reason, the OS X linker does not honor the request to align the

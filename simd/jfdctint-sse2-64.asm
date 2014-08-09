@@ -101,6 +101,9 @@ PW_DESCALE_P2X  times 8 dw  1 << (PASS1_BITS-1)
         global  EXTN(jsimd_fdct_islow_sse2)
 
 EXTN(jsimd_fdct_islow_sse2):
+        push    rbp
+        mov     rax,rsp
+        mov     rbp,rsp
         collect_args
 
         ; ---- Pass 1: process rows.
@@ -552,6 +555,7 @@ EXTN(jsimd_fdct_islow_sse2):
         movdqa  XMMWORD [XMMBLOCK(7,0,rdx,SIZEOF_DCTELEM)], xmm15
 
         uncollect_args
+        pop     rbp
         ret
 
 ; For some reason, the OS X linker does not honor the request to align the

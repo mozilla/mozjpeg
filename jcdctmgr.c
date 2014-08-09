@@ -6,7 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011 D. R. Commander
+ * Copyright (C) 2011, 2014 D. R. Commander
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the forward-DCT management logic.
@@ -72,9 +72,12 @@ typedef struct {
 typedef my_fdct_controller * my_fdct_ptr;
 
 
+#if BITS_IN_JSAMPLE == 8
+
 /*
  * Find the highest bit in an integer through binary search.
  */
+
 LOCAL(int)
 flss (UINT16 val)
 {
@@ -104,6 +107,7 @@ flss (UINT16 val)
 
   return bit;
 }
+
 
 /*
  * Compute values to do a division using reciprocal.
@@ -163,6 +167,7 @@ flss (UINT16 val)
  * of in a consecutive manner, yet again in order to allow SIMD
  * routines.
  */
+
 LOCAL(int)
 compute_reciprocal (UINT16 divisor, DCTELEM * dtbl)
 {
@@ -196,6 +201,9 @@ compute_reciprocal (UINT16 divisor, DCTELEM * dtbl)
   if(r <= 16) return 0;
   else return 1;
 }
+
+#endif
+
 
 /*
  * Initialize for a processing pass.
@@ -238,9 +246,13 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
       }
       dtbl = fdct->divisors[qtblno];
       for (i = 0; i < DCTSIZE2; i++) {
+#if BITS_IN_JSAMPLE == 8
         if(!compute_reciprocal(qtbl->quantval[i] << 3, &dtbl[i])
           && fdct->quantize == jsimd_quantize)
           fdct->quantize = quantize;
+#else
+        dtbl[i] = ((DCTELEM) qtbl->quantval[i]) << 3;
+#endif
       }
       break;
 #endif
@@ -274,12 +286,19 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
         }
         dtbl = fdct->divisors[qtblno];
         for (i = 0; i < DCTSIZE2; i++) {
+#if BITS_IN_JSAMPLE == 8
           if(!compute_reciprocal(
             DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
                                   (INT32) aanscales[i]),
                     CONST_BITS-3), &dtbl[i])
             && fdct->quantize == jsimd_quantize)
             fdct->quantize = quantize;
+#else
+           dtbl[i] = (DCTELEM)
+             DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
+                                   (INT32) aanscales[i]),
+                     CONST_BITS-3);
+#endif
         }
       }
       break;
@@ -372,9 +391,12 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
 {
   int i;
   DCTELEM temp;
+  JCOEFPTR output_ptr = coef_block;
+
+#if BITS_IN_JSAMPLE == 8
+
   UDCTELEM recip, corr, shift;
   UDCTELEM2 product;
-  JCOEFPTR output_ptr = coef_block;
 
   for (i = 0; i < DCTSIZE2; i++) {
     temp = workspace[i];
@@ -393,9 +415,47 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
       product >>= shift + sizeof(DCTELEM)*8;
       temp = product;
     }
-
     output_ptr[i] = (JCOEF) temp;
   }
+
+#else
+
+  register DCTELEM qval;
+
+  for (i = 0; i < DCTSIZE2; i++) {
+    qval = divisors[i];
+    temp = workspace[i];
+    /* Divide the coefficient value by qval, ensuring proper rounding.
+     * Since C does not specify the direction of rounding for negative
+     * quotients, we have to force the dividend positive for portability.
+     *
+     * In most files, at least half of the output values will be zero
+     * (at default quantization settings, more like three-quarters...)
+     * so we should ensure that this case is fast.  On many machines,
+     * a comparison is enough cheaper than a divide to make a special test
+     * a win.  Since both inputs will be nonnegative, we need only test
+     * for a < b to discover whether a/b is 0.
+     * If your machine's division is fast enough, define FAST_DIVIDE.
+     */
+#ifdef FAST_DIVIDE
+#define DIVIDE_BY(a,b)  a /= b
+#else
+#define DIVIDE_BY(a,b)  if (a >= b) a /= b; else a = 0
+#endif
+    if (temp < 0) {
+      temp = -temp;
+      temp += qval>>1;  /* for rounding */
+      DIVIDE_BY(temp, qval);
+      temp = -temp;    
+    } else {
+      temp += qval>>1;  /* for rounding */
+      DIVIDE_BY(temp, qval);
+    }
+    output_ptr[i] = (JCOEF) temp;
+  }
+
+#endif
+
 }
 
 

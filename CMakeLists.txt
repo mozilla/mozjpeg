@@ -50,7 +50,20 @@ option(WITH_ARITH_DEC "Include arithmetic decoding support" TRUE)
 option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b)" FALSE)
 option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b)" FALSE)
 option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" TRUE)
+option(WITH_TURBOJPEG "Include the TurboJPEG wrapper library and associated test programs" TRUE)
 option(WITH_JAVA "Build Java wrapper for the TurboJPEG library" FALSE)
+option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_SIMD=0 WITH_TURBOJPEG=0 WITH_ARITH_ENC=0 WITH_ARITH_DEC=0)" FALSE)
+
+if(WITH_12BIT)
+  set(WITH_SIMD FALSE)
+  set(WITH_TURBOJPEG FALSE)
+  set(WITH_ARITH_ENC FALSE)
+  set(WITH_ARITH_DEC FALSE)
+  set(BITS_IN_JSAMPLE 12)
+  message(STATUS "12-bit JPEG support enabled")
+else()
+  set(BITS_IN_JSAMPLE 8)
+endif()
 
 if(WITH_ARITH_ENC)
   set(C_ARITH_CODING_SUPPORTED 1)
@@ -64,6 +77,12 @@ if(WITH_ARITH_DEC)
   message(STATUS "Arithmetic decoding support enabled")
 else()
   message(STATUS "Arithmetic decoding support disabled")
+endif()
+
+if(WITH_TURBOJPEG)
+  message(STATUS "TurboJPEG C wrapper enabled")
+else()
+  message(STATUS "TurboJPEG C wrapper disabled")
 endif()
 
 if(WITH_JAVA)
@@ -209,57 +228,65 @@ if(WITH_SIMD)
   add_dependencies(jpeg-static simd)
 endif()
 
-set(TURBOJPEG_SOURCES turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
-if(WITH_JAVA)
-  set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
-  include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+if(WITH_TURBOJPEG)
+  set(TURBOJPEG_SOURCES turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
+  if(WITH_JAVA)
+    set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
+    include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+  endif()
+
+  add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
+  set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
+  if(MINGW)
+    set_target_properties(turbojpeg PROPERTIES LINK_FLAGS -Wl,--kill-at)
+  endif()
+  target_link_libraries(turbojpeg jpeg-static)
+  set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")
+
+  add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS}
+    turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
+  if(NOT MSVC)
+    set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
+  endif()
+  if(WITH_SIMD)
+    add_dependencies(turbojpeg-static simd)
+  endif()
+
+  add_executable(tjunittest tjunittest.c tjutil.c)
+  target_link_libraries(tjunittest turbojpeg)
+
+  add_executable(tjunittest-static tjunittest.c tjutil.c)
+  target_link_libraries(tjunittest-static turbojpeg-static)
+
+  add_executable(tjbench tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
+    wrppm.c)
+  target_link_libraries(tjbench turbojpeg jpeg-static)
+  set_property(TARGET tjbench PROPERTY COMPILE_FLAGS
+    "-DBMP_SUPPORTED -DPPM_SUPPORTED")
+
+  add_executable(tjbench-static tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
+    wrppm.c)
+  target_link_libraries(tjbench-static turbojpeg-static jpeg-static)
+  set_property(TARGET tjbench-static PROPERTY COMPILE_FLAGS
+    "-DBMP_SUPPORTED -DPPM_SUPPORTED")
 endif()
 
-add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
-set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
-if(MINGW)
-  set_target_properties(turbojpeg PROPERTIES LINK_FLAGS -Wl,--kill-at)
-endif()
-target_link_libraries(turbojpeg jpeg-static)
-set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_OBJS}
-  turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
-if(NOT MSVC)
-  set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
-endif()
-if(WITH_SIMD)
-  add_dependencies(turbojpeg-static simd)
+if(WITH_12BIT)
+  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED -DUSE_SETMODE")
+else()
+  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
+	set(CJPEG_BMP_SOURCES rdbmp.c rdtarga.c)
+	set(DJPEG_BMP_SOURCES wrbmp.c wrtarga.c)
 endif()
 
-add_executable(tjunittest tjunittest.c tjutil.c)
-target_link_libraries(tjunittest turbojpeg)
-
-add_executable(tjunittest-static tjunittest.c tjutil.c)
-target_link_libraries(tjunittest-static turbojpeg-static)
-
-add_executable(tjbench tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
-  wrppm.c)
-target_link_libraries(tjbench turbojpeg jpeg-static)
-set_property(TARGET tjbench PROPERTY COMPILE_FLAGS
-  "-DBMP_SUPPORTED -DPPM_SUPPORTED")
-
-add_executable(tjbench-static tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
-  wrppm.c)
-target_link_libraries(tjbench-static turbojpeg-static jpeg-static)
-set_property(TARGET tjbench-static PROPERTY COMPILE_FLAGS
-  "-DBMP_SUPPORTED -DPPM_SUPPORTED")
-
-add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c rdswitch.c
-  rdtarga.c)
-set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
-  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
+add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c
+  ${CJPEG_BMP_SOURCES})
+set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(cjpeg-static jpeg-static)
 
-add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c wrgif.c
-  wrppm.c wrtarga.c)
-set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
-  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
+add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrgif.c
+  wrppm.c ${DJPEG_BMP_SOURCES})
+set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(djpeg-static jpeg-static)
 
 add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
@@ -283,53 +310,85 @@ endif()
 
 enable_testing()
 
-set(MD5_JPEG_RGB_ISLOW 768e970dd57b340ff1b83c9d3d47c77b)
-set(MD5_PPM_RGB_ISLOW 00a257f5393fef8821f2b88ac7421291)
-set(MD5_BMP_RGB_ISLOW_565 f07d2e75073e4bb10f6c6f4d36e2e3be)
-set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
-set(MD5_JPEG_422_IFAST_OPT 2540287b79d913f91665e660303ab2c8)
-set(MD5_PPM_422_IFAST 35bd6b3f833bad23de82acea847129fa)
-set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
-set(MD5_BMP_422M_IFAST_565 3294bd4d9a1f2b3d08ea6020d0db7065)
-set(MD5_BMP_422M_IFAST_565D da98c9c7b6039511be4a79a878a9abc1)
-set(MD5_JPEG_420_IFAST_Q100_PROG 990cbe0329c882420a2094da7e5adade)
-set(MD5_PPM_420_Q100_IFAST 5a732542015c278ff43635e473a8a294)
-set(MD5_PPM_420M_Q100_IFAST ff692ee9323a3b424894862557c092f1)
-set(MD5_JPEG_GRAY_ISLOW 72b51f894b8f4a10b3ee3066770aa38d)
-set(MD5_PPM_GRAY_ISLOW 8d3596c56eace32f205deccc229aa5ed)
-set(MD5_PPM_GRAY_ISLOW_RGB 116424ac07b79e5e801f00508eab48ec)
-set(MD5_BMP_GRAY_ISLOW_565 12f78118e56a2f48b966f792fedf23cc)
-set(MD5_BMP_GRAY_ISLOW_565D bdbbd616441a24354c98553df5dc82db)
-set(MD5_JPEG_420S_IFAST_OPT 388708217ac46273ca33086b22827ed8)
-if(WITH_SIMD)
-set(MD5_JPEG_3x2_FLOAT_PROG 343e3f8caf8af5986ebaf0bdc13b5c71)
-set(MD5_PPM_3x2_FLOAT 1a75f36e5904d6fc3a85a43da9ad89bb)
+if(WITH_12BIT)
+  set(TESTORIG testorig12.jpg)
+  set(MD5_JPEG_RGB_ISLOW 9620f424569594bb9242b48498ad801f)
+  set(MD5_PPM_RGB_ISLOW f3301d2219783b8b3d942b7239fa50c0)
+  set(MD5_JPEG_422_IFAST_OPT 7322e3bd2f127f7de4b40d4480ce60e4)
+  set(MD5_PPM_422_IFAST 79807fa552899e66a04708f533e16950)
+  set(MD5_PPM_422M_IFAST 07737bfe8a7c1c87aaa393a0098d16b0)
+  set(MD5_JPEG_420_IFAST_Q100_PROG a1da220b5604081863a504297ed59e55)
+  set(MD5_PPM_420_Q100_IFAST 1b3730122709f53d007255e8dfd3305e)
+  set(MD5_PPM_420M_Q100_IFAST 980a1a3c5bf9510022869d30b7d26566)
+  set(MD5_JPEG_GRAY_ISLOW 235c90707b16e2e069f37c888b2636d9)
+  set(MD5_PPM_GRAY_ISLOW 7213c10af507ad467da5578ca5ee1fca)
+  set(MD5_PPM_GRAY_ISLOW_RGB e96ee81c30a6ed422d466338bd3de65d)
+  set(MD5_JPEG_420S_IFAST_OPT 7af8e60be4d9c227ec63ac9b6630855e)
+  set(MD5_JPEG_3x2_FLOAT_PROG a8c17daf77b457725ec929e215b603f8)
+  set(MD5_PPM_3x2_FLOAT 42876ab9e5c2f76a87d08db5fbd57956)
+  set(MD5_PPM_420M_ISLOW_2_1 4ca6be2a6f326ff9eaab63e70a8259c0)
+  set(MD5_PPM_420M_ISLOW_15_8 12aa9f9534c1b3d7ba047322226365eb)
+  set(MD5_PPM_420M_ISLOW_13_8 f7e22817c7b25e1393e4ec101e9d4e96)
+  set(MD5_PPM_420M_ISLOW_11_8 800a16f9f4dc9b293197bfe11be10a82)
+  set(MD5_PPM_420M_ISLOW_9_8 06b7a92a9bc69f4dc36ec40f1937d55c)
+  set(MD5_PPM_420M_ISLOW_7_8 3ec444a14a4ab4eab88ffc49c48eca43)
+  set(MD5_PPM_420M_ISLOW_3_4 3e726b7ea872445b19437d1c1d4f0d93)
+  set(MD5_PPM_420M_ISLOW_5_8 a8a771abdc94301d20ffac119b2caccd)
+  set(MD5_PPM_420M_ISLOW_1_2 b419124dd5568b085787234866102866)
+  set(MD5_PPM_420M_ISLOW_3_8 343d19015531b7bbe746124127244fa8)
+  set(MD5_PPM_420M_ISLOW_1_4 35fd59d866e44659edfa3c18db2a3edb)
+  set(MD5_PPM_420M_ISLOW_1_8 ccaed48ac0aedefda5d4abe4013f4ad7)
+  set(MD5_JPEG_CROP cdb35ff4b4519392690ea040c56ea99c)
 else()
-set(MD5_JPEG_3x2_FLOAT_PROG 9bca803d2042bd1eb03819e2bf92b3e5)
-set(MD5_PPM_3x2_FLOAT f6bfab038438ed8f5522fbd33595dcdc)
+  set(TESTORIG testorig.jpg)
+  set(MD5_JPEG_RGB_ISLOW 768e970dd57b340ff1b83c9d3d47c77b)
+  set(MD5_PPM_RGB_ISLOW 00a257f5393fef8821f2b88ac7421291)
+  set(MD5_BMP_RGB_ISLOW_565 f07d2e75073e4bb10f6c6f4d36e2e3be)
+  set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
+  set(MD5_JPEG_422_IFAST_OPT 2540287b79d913f91665e660303ab2c8)
+  set(MD5_PPM_422_IFAST 35bd6b3f833bad23de82acea847129fa)
+  set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
+  set(MD5_BMP_422M_IFAST_565 3294bd4d9a1f2b3d08ea6020d0db7065)
+  set(MD5_BMP_422M_IFAST_565D da98c9c7b6039511be4a79a878a9abc1)
+  set(MD5_JPEG_420_IFAST_Q100_PROG 990cbe0329c882420a2094da7e5adade)
+  set(MD5_PPM_420_Q100_IFAST 5a732542015c278ff43635e473a8a294)
+  set(MD5_PPM_420M_Q100_IFAST ff692ee9323a3b424894862557c092f1)
+  set(MD5_JPEG_GRAY_ISLOW 72b51f894b8f4a10b3ee3066770aa38d)
+  set(MD5_PPM_GRAY_ISLOW 8d3596c56eace32f205deccc229aa5ed)
+  set(MD5_PPM_GRAY_ISLOW_RGB 116424ac07b79e5e801f00508eab48ec)
+  set(MD5_BMP_GRAY_ISLOW_565 12f78118e56a2f48b966f792fedf23cc)
+  set(MD5_BMP_GRAY_ISLOW_565D bdbbd616441a24354c98553df5dc82db)
+  set(MD5_JPEG_420S_IFAST_OPT 388708217ac46273ca33086b22827ed8)
+  if(WITH_SIMD)
+    set(MD5_JPEG_3x2_FLOAT_PROG 343e3f8caf8af5986ebaf0bdc13b5c71)
+    set(MD5_PPM_3x2_FLOAT 1a75f36e5904d6fc3a85a43da9ad89bb)
+  else()
+    set(MD5_JPEG_3x2_FLOAT_PROG 9bca803d2042bd1eb03819e2bf92b3e5)
+    set(MD5_PPM_3x2_FLOAT f6bfab038438ed8f5522fbd33595dcdc)
+  endif()
+  set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
+  set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
+  set(MD5_PPM_420M_IFAST_ARI 72b59a99bcf1de24c5b27d151bde2437)
+  set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
+  set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
+  set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
+  set(MD5_PPM_420M_ISLOW_13_8 bc3452573c8152f6ae552939ee19f82f)
+  set(MD5_PPM_420M_ISLOW_11_8 d8cc73c0aaacd4556569b59437ba00a5)
+  set(MD5_PPM_420M_ISLOW_9_8 d25e61bc7eac0002f5b393aa223747b6)
+  set(MD5_PPM_420M_ISLOW_7_8 ddb564b7c74a09494016d6cd7502a946)
+  set(MD5_PPM_420M_ISLOW_3_4 8ed8e68808c3fbc4ea764fc9d2968646)
+  set(MD5_PPM_420M_ISLOW_5_8 a3363274999da2366a024efae6d16c9b)
+  set(MD5_PPM_420M_ISLOW_1_2 e692a315cea26b988c8e8b29a5dbcd81)
+  set(MD5_PPM_420M_ISLOW_3_8 79eca9175652ced755155c90e785a996)
+  set(MD5_PPM_420M_ISLOW_1_4 79cd778f8bf1a117690052cacdd54eca)
+  set(MD5_PPM_420M_ISLOW_1_8 391b3d4aca640c8567d6f8745eb2142f)
+  set(MD5_BMP_420_ISLOW_256 4980185e3776e89bd931736e1cddeee6)
+  set(MD5_BMP_420_ISLOW_565 bf9d13e16c4923b92e1faa604d7922cb)
+  set(MD5_BMP_420_ISLOW_565D 6bde71526acc44bcff76f696df8638d2)
+  set(MD5_BMP_420M_ISLOW_565 8dc0185245353cfa32ad97027342216f)
+  set(MD5_BMP_420M_ISLOW_565D d1be3a3339166255e76fa50a0d70d73e)
+  set(MD5_JPEG_CROP b4197f377e621c4e9b1d20471432610d)
 endif()
-set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
-set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
-set(MD5_PPM_420M_IFAST_ARI 72b59a99bcf1de24c5b27d151bde2437)
-set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
-set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
-set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
-set(MD5_PPM_420M_ISLOW_13_8 bc3452573c8152f6ae552939ee19f82f)
-set(MD5_PPM_420M_ISLOW_11_8 d8cc73c0aaacd4556569b59437ba00a5)
-set(MD5_PPM_420M_ISLOW_9_8 d25e61bc7eac0002f5b393aa223747b6)
-set(MD5_PPM_420M_ISLOW_7_8 ddb564b7c74a09494016d6cd7502a946)
-set(MD5_PPM_420M_ISLOW_3_4 8ed8e68808c3fbc4ea764fc9d2968646)
-set(MD5_PPM_420M_ISLOW_5_8 a3363274999da2366a024efae6d16c9b)
-set(MD5_PPM_420M_ISLOW_1_2 e692a315cea26b988c8e8b29a5dbcd81)
-set(MD5_PPM_420M_ISLOW_3_8 79eca9175652ced755155c90e785a996)
-set(MD5_PPM_420M_ISLOW_1_4 79cd778f8bf1a117690052cacdd54eca)
-set(MD5_PPM_420M_ISLOW_1_8 391b3d4aca640c8567d6f8745eb2142f)
-set(MD5_BMP_420_ISLOW_256 4980185e3776e89bd931736e1cddeee6)
-set(MD5_BMP_420_ISLOW_565 bf9d13e16c4923b92e1faa604d7922cb)
-set(MD5_BMP_420_ISLOW_565D 6bde71526acc44bcff76f696df8638d2)
-set(MD5_BMP_420M_ISLOW_565 8dc0185245353cfa32ad97027342216f)
-set(MD5_BMP_420M_ISLOW_565D d1be3a3339166255e76fa50a0d70d73e)
-set(MD5_JPEG_CROP b4197f377e621c4e9b1d20471432610d)
 
 if(WITH_JAVA)
   add_test(TJUnitTest
@@ -365,11 +424,13 @@ foreach(libtype shared static)
     set(dir "")
     set(suffix -static)
   endif()
-  add_test(tjunittest${suffix} tjunittest${suffix})
-  add_test(tjunittest${suffix}-alloc tjunittest${suffix} -alloc)
-  add_test(tjunittest${suffix}-yuv tjunittest${suffix} -yuv)
-  add_test(tjunittest${suffix}-yuv-alloc tjunittest${suffix} -yuv -alloc)
-  add_test(tjunittest${suffix}-yuv-nopad tjunittest${suffix} -yuv -noyuvpad)
+  if(WITH_TURBOJPEG)
+    add_test(tjunittest${suffix} tjunittest${suffix})
+    add_test(tjunittest${suffix}-alloc tjunittest${suffix} -alloc)
+    add_test(tjunittest${suffix}-yuv tjunittest${suffix} -yuv)
+    add_test(tjunittest${suffix}-yuv-alloc tjunittest${suffix} -yuv -alloc)
+    add_test(tjunittest${suffix}-yuv-nopad tjunittest${suffix} -yuv -noyuvpad)
+  endif()
 
   # These tests are carefully chosen to provide full coverage of as many of the
   # underlying algorithms as possible (including all of the SIMD-accelerated
@@ -389,22 +450,24 @@ foreach(libtype shared static)
   add_test(djpeg${suffix}-rgb-islow-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_PPM_RGB_ISLOW} -DFILE=testout_rgb_islow.ppm
       -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-rgb-islow-565
-    ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
-      -outfile testout_rgb_islow_565.bmp testout_rgb_islow.jpg)
-  add_test(djpeg${suffix}-rgb-islow-565-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_RGB_ISLOW_565}
-      -DFILE=testout_rgb_islow_565.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: RGB->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-rgb-islow-565D
-    ${dir}djpeg${suffix} -dct int -rgb565 -bmp
-      -outfile testout_rgb_islow_565D.bmp testout_rgb_islow.jpg)
-  add_test(djpeg${suffix}-rgb-islow-565D-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_RGB_ISLOW_565D}
-      -DFILE=testout_rgb_islow_565D.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  if(NOT WITH_12BIT)
+    # CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-rgb-islow-565
+      ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
+        -outfile testout_rgb_islow_565.bmp testout_rgb_islow.jpg)
+    add_test(djpeg${suffix}-rgb-islow-565-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_RGB_ISLOW_565}
+        -DFILE=testout_rgb_islow_565.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: RGB->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-rgb-islow-565D
+      ${dir}djpeg${suffix} -dct int -rgb565 -bmp
+        -outfile testout_rgb_islow_565D.bmp testout_rgb_islow.jpg)
+    add_test(djpeg${suffix}-rgb-islow-565D-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_RGB_ISLOW_565D}
+        -DFILE=testout_rgb_islow_565D.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  endif()
 
   # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
   add_test(cjpeg${suffix}-422-ifast-opt
@@ -429,22 +492,24 @@ foreach(libtype shared static)
   add_test(djpeg${suffix}-422m-ifast-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_PPM_422M_IFAST} -DFILE=testout_422m_ifast.ppm
       -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: YCC->RGB565  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
-  add_test(djpeg${suffix}-422m-ifast-565
-    ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -dither none -bmp
-      -outfile testout_422m_ifast_565.bmp testout_422_ifast_opt.jpg)
-  add_test(djpeg${suffix}-422m-ifast-565-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_422M_IFAST_565}
-      -DFILE=testout_422m_ifast_565.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: YCC->RGB565 (dithered)  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
-  add_test(djpeg${suffix}-422m-ifast-565D
-    ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -bmp
-      -outfile testout_422m_ifast_565D.bmp testout_422_ifast_opt.jpg)
-  add_test(djpeg${suffix}-422m-ifast-565D-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_422M_IFAST_565D}
-      -DFILE=testout_422m_ifast_565D.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  if(NOT WITH_12BIT)
+    # CC: YCC->RGB565  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+    add_test(djpeg${suffix}-422m-ifast-565
+      ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -dither none -bmp
+        -outfile testout_422m_ifast_565.bmp testout_422_ifast_opt.jpg)
+    add_test(djpeg${suffix}-422m-ifast-565-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_422M_IFAST_565}
+        -DFILE=testout_422m_ifast_565.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: YCC->RGB565 (dithered)  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+    add_test(djpeg${suffix}-422m-ifast-565D
+      ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -bmp
+        -outfile testout_422m_ifast_565D.bmp testout_422_ifast_opt.jpg)
+    add_test(djpeg${suffix}-422m-ifast-565D-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_422M_IFAST_565D}
+        -DFILE=testout_422m_ifast_565D.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  endif()
 
   # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
   add_test(cjpeg${suffix}-420-q100-ifast-prog
@@ -496,22 +561,24 @@ foreach(libtype shared static)
     ${CMAKE_COMMAND} -DMD5=${MD5_PPM_GRAY_ISLOW_RGB}
       -DFILE=testout_gray_islow_rgb.ppm
       -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: Gray->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-gray-islow-565
-    ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
-      -outfile testout_gray_islow_565.bmp testout_gray_islow.jpg)
-  add_test(djpeg${suffix}-gray-islow-565-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_GRAY_ISLOW_565}
-      -DFILE=testout_gray_islow_565.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: Gray->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-gray-islow-565D
-    ${dir}djpeg${suffix} -dct int -rgb565 -bmp
-      -outfile testout_gray_islow_565D.bmp testout_gray_islow.jpg)
-  add_test(djpeg${suffix}-gray-islow-565D-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_GRAY_ISLOW_565D}
-      -DFILE=testout_gray_islow_565D.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  if(NOT WITH_12BIT)
+    # CC: Gray->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-gray-islow-565
+      ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
+        -outfile testout_gray_islow_565.bmp testout_gray_islow.jpg)
+    add_test(djpeg${suffix}-gray-islow-565-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_GRAY_ISLOW_565}
+        -DFILE=testout_gray_islow_565.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: Gray->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-gray-islow-565D
+      ${dir}djpeg${suffix} -dct int -rgb565 -bmp
+        -outfile testout_gray_islow_565D.bmp testout_gray_islow.jpg)
+    add_test(djpeg${suffix}-gray-islow-565D-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_GRAY_ISLOW_565D}
+        -DFILE=testout_gray_islow_565D.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  endif()
 
   # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
   # ENT: 2-pass huff
@@ -610,62 +677,63 @@ foreach(libtype shared static)
     add_test(djpeg${suffix}-420m-islow-${scale}
       ${dir}djpeg${suffix} -dct int -scale ${scalearg} -nosmooth -ppm
         -outfile testout_420m_islow_${scale}.ppm
-        ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
+        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
     add_test(djpeg${suffix}-420m-islow-${scale}-cmp
       ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_ISLOW_${scale}}
         -DFILE=testout_420m_islow_${scale}.ppm
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
   endforeach()
 
-  # CC: YCC->RGB (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-420-islow-256
-    ${dir}djpeg${suffix} -dct int -colors 256 -bmp
-      -outfile testout_420_islow_256.bmp
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-  add_test(djpeg${suffix}-420-islow-256-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_256}
-      -DFILE=testout_420_islow_256.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: YCC->RGB565  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-420-islow-565
-    ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
-      -outfile testout_420_islow_565.bmp
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-  add_test(djpeg${suffix}-420-islow-565-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_565}
-      -DFILE=testout_420_islow_565.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: YCC->RGB565 (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-420-islow-565D
-    ${dir}djpeg${suffix} -dct int -rgb565 -bmp
-      -outfile testout_420_islow_565D.bmp
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-  add_test(djpeg${suffix}-420-islow-565D-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_565D}
-      -DFILE=testout_420_islow_565D.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: YCC->RGB565  SAMP: h2v2 merged  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-420m-islow-565
-    ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -dither none -bmp
-      -outfile testout_420m_islow_565.bmp
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-  add_test(djpeg${suffix}-420m-islow-565-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420M_ISLOW_565}
-      -DFILE=testout_420m_islow_565.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-  # CC: YCC->RGB565 (dithered)  SAMP: h2v2 merged  IDCT: islow  ENT: huff
-  add_test(djpeg${suffix}-420m-islow-565D
-    ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -bmp
-      -outfile testout_420m_islow_565D.bmp
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
-  add_test(djpeg${suffix}-420m-islow-565D-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420M_ISLOW_565D}
-      -DFILE=testout_420m_islow_565D.bmp
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
-
+  if(NOT WITH_12BIT)
+    # CC: YCC->RGB (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-420-islow-256
+      ${dir}djpeg${suffix} -dct int -colors 256 -bmp
+        -outfile testout_420_islow_256.bmp
+        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+    add_test(djpeg${suffix}-420-islow-256-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_256}
+        -DFILE=testout_420_islow_256.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: YCC->RGB565  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-420-islow-565
+      ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
+        -outfile testout_420_islow_565.bmp
+        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+    add_test(djpeg${suffix}-420-islow-565-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_565}
+        -DFILE=testout_420_islow_565.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: YCC->RGB565 (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-420-islow-565D
+      ${dir}djpeg${suffix} -dct int -rgb565 -bmp
+        -outfile testout_420_islow_565D.bmp
+        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+    add_test(djpeg${suffix}-420-islow-565D-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_565D}
+        -DFILE=testout_420_islow_565D.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: YCC->RGB565  SAMP: h2v2 merged  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-420m-islow-565
+      ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -dither none -bmp
+        -outfile testout_420m_islow_565.bmp
+        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+    add_test(djpeg${suffix}-420m-islow-565-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420M_ISLOW_565}
+        -DFILE=testout_420m_islow_565.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    # CC: YCC->RGB565 (dithered)  SAMP: h2v2 merged  IDCT: islow  ENT: huff
+    add_test(djpeg${suffix}-420m-islow-565D
+      ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -bmp
+        -outfile testout_420m_islow_565D.bmp
+        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+    add_test(djpeg${suffix}-420m-islow-565D-cmp
+      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420M_ISLOW_565D}
+        -DFILE=testout_420m_islow_565D.bmp
+        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+  endif()
   add_test(jpegtran${suffix}-crop
     ${dir}jpegtran${suffix} -crop 120x90+20+50 -transpose -perfect
-      -outfile testout_crop.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.jpg)
+      -outfile testout_crop.jpg ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
   add_test(jpegtran${suffix}-crop-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_CROP} -DFILE=testout_crop.jpg
       -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
@@ -721,7 +789,10 @@ add_custom_target(installer
     cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
   SOURCES libjpeg-turbo.nsi)
 
-install(TARGETS jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom tjbench
+if(WITH_TURBOJPEG)
+  set(TURBOJPEG_TARGETS turbojpeg turbojpeg-static tjbench)
+endif()
+install(TARGETS jpeg-static rdjpgcom wrjpgcom ${TURBOJPEG_TARGETS}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

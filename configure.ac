@@ -269,6 +269,9 @@ AC_MSG_CHECKING([whether to include arithmetic encoding support])
 AC_ARG_WITH([arith-enc],
   AC_HELP_STRING([--without-arith-enc],
     [Do not include arithmetic encoding support]))
+if test "x$with_12bit" = "xyes"; then
+  with_arith_enc=no
+fi
 if test "x$with_arith_enc" = "xno"; then
   AC_MSG_RESULT(no)
   RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-arith-enc"
@@ -282,6 +285,9 @@ AC_MSG_CHECKING([whether to include arithmetic decoding support])
 AC_ARG_WITH([arith-dec],
   AC_HELP_STRING([--without-arith-dec],
     [Do not include arithmetic decoding support]))
+if test "x$with_12bit" = "xyes"; then
+  with_arith_dec=no
+fi
 if test "x$with_arith_dec" = "xno"; then
   AC_MSG_RESULT(no)
   RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-arith-dec"
@@ -294,11 +300,26 @@ AM_CONDITIONAL([WITH_ARITH_DEC], [test "x$with_arith_dec" != "xno"])
 AM_CONDITIONAL([WITH_ARITH],
   [test "x$with_arith_dec" != "xno" -o "x$with_arith_enc" != "xno"])
 
+# 12-bit component support
+AC_MSG_CHECKING([whether to use 12-bit samples])
+AC_ARG_WITH([12bit],
+  AC_HELP_STRING([--with-12bit], [Encode/decode JPEG images with 12-bit samples (implies --without-simd --without-turbojpeg --without-arith-dec --without-arith-enc)]))
+if test "x$with_12bit" = "xyes"; then
+  AC_DEFINE([BITS_IN_JSAMPLE], [12], [use 8 or 12])
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+fi
+AM_CONDITIONAL([WITH_12BIT], [test "x$with_12bit" = "xyes"])
+
 # TurboJPEG support
 AC_MSG_CHECKING([whether to build TurboJPEG C wrapper])
 AC_ARG_WITH([turbojpeg],
   AC_HELP_STRING([--without-turbojpeg],
     [Do not include the TurboJPEG wrapper library and associated test programs]))
+if test "x$with_12bit" = "xyes"; then
+  with_turbojpeg=no
+fi
 if test "x$with_turbojpeg" = "xno"; then
   AC_MSG_RESULT(no)
   RPM_CONFIG_ARGS="$RPM_CONFIG_ARGS --without-turbojpeg"
@@ -330,7 +351,7 @@ AC_ARG_VAR(JNI_CFLAGS,
 AC_MSG_CHECKING([whether to build TurboJPEG Java wrapper])
 AC_ARG_WITH([java],
   AC_HELP_STRING([--with-java], [Build Java wrapper for the TurboJPEG library]))
-if test "x$with_turbojpeg" = "xno"; then
+if test "x$with_12bit" = "xyes" -o "x$with_turbojpeg" = "xno"; then
   with_java=no
 fi
 
@@ -391,6 +412,9 @@ fi
 # SIMD is optional
 AC_ARG_WITH([simd],
   AC_HELP_STRING([--without-simd], [Do not include SIMD extensions]))
+if test "x$with_12bit" = "xyes"; then
+  with_simd=no
+fi
 if test "x${with_simd}" != "xno"; then
   require_simd=no
   if test "x${with_simd}" = "xyes"; then

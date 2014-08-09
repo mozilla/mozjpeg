@@ -41,7 +41,6 @@ typedef unsigned int UDCTELEM2;
 #endif
 #else
 typedef INT32 DCTELEM;          /* must have 32 bits */
-typedef UINT32 UDCTELEM;
 typedef unsigned long long UDCTELEM2;
 #endif
 

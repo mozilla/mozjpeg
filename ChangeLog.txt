@@ -80,6 +80,13 @@ incorrect JPEG files.
 [12] Fixed a bug in the build system that was causing the Windows version of
 wrjpgcom to be built using the rdjpgcom code.
 
+[13] Restored 12-bit-per-component JPEG support.  A 12-bit version of
+libjpeg-turbo can now be built by passing an argument of --with-12bit to
+configure (Unix) or -DWITH_12BIT=1 to cmake (Windows.)  12-bit JPEG support is
+included only for convenience.  Enabling this feature disables all of the
+performance features in libjpeg-turbo, as well as arithmetic coding and the
+TurboJPEG API.  The resulting library behaves no differently than libjpeg v6b.
+
 
 1.3.1
 =====

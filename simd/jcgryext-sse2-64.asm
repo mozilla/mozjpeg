@@ -37,6 +37,9 @@
         global  EXTN(jsimd_rgb_gray_convert_sse2)
 
 EXTN(jsimd_rgb_gray_convert_sse2):
+        push    rbp
+        mov     rax,rsp
+        mov     rbp,rsp
         collect_args
         push    rbx
 
@@ -338,6 +341,7 @@ EXTN(jsimd_rgb_gray_convert_sse2):
 .return:
         pop     rbx
         uncollect_args
+        pop     rbp
         ret
 
 ; For some reason, the OS X linker does not honor the request to align the

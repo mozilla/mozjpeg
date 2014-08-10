@@ -29,7 +29,7 @@
 package org.libjpegturbo.turbojpeg;
 
 /**
- * This class encapsulates a YUV planar image buffer and the metadata
+ * This class encapsulates a YUV planar image and the metadata
  * associated with it.  The TurboJPEG API allows both the JPEG compression and
  * decompression pipelines to be split into stages:  YUV encode, compress from
  * YUV, decompress to YUV, and YUV decode.  A <code>YUVImage</code> instance
@@ -40,18 +40,28 @@ package org.libjpegturbo.turbojpeg;
  * Technically, the JPEG format uses the YCbCr colorspace (which technically is
  * not a "colorspace" but rather a "color transform"), but per the convention
  * of the digital video community, the TurboJPEG API uses "YUV" to refer to an
- * image format consisting of Y, Cb, and Cr image planes.  In this image
- * format, the Y, Cb (U), and Cr (V) planes are stored sequentially in the same
- * image buffer, and the size of each plane is determined by the image width,
- * height, line padding, and level of chrominance subsampling.  If the
- * chrominance components are subsampled along the horizontal dimension, then
- * the width of the luminance plane would be padded to the nearest multiple of
- * 2 (same goes for the height of the luminance plane, if the chrominance
- * components are subsampled along the vertical dimension.)  For instance, if
- * the source image is 35 x 35 pixels and 4:2:2 subsampling is used, then the
- * luminance plane would be 36 x 35 bytes, and each of the chrominance planes
- * would be 18 x 35 bytes.  If you specify, for instance, a line padding of 4
- * bytes on top of this, then the luminance plane would be 36 x 35 bytes, and
+ * image format consisting of Y, Cb, and Cr image planes.
+ * <p>
+ * Each plane is simply a 2D array of bytes, each byte representing the value
+ * of one of the components at a particular location in the image.  The
+ * "component width" and "component height" of each plane are determined by the
+ * image width, height, and level of chrominance subsampling.  For the
+ * luminance plane, the component width is the image width padded to the
+ * nearest multiple of the horizontal subsampling factor (2 in the case of
+ * 4:2:0 and 4:2:2, 4 in the case of 4:1:1, 1 in the case of 4:4:4 or
+ * grayscale.)  Similarly, the component height of the luminance plane is the
+ * image height padded to the nearest multiple of the vertical subsampling
+ * factor (2 in the case of 4:2:0 or 4:4:0, 1 in the case of 4:4:4 or
+ * grayscale.)  The component width of the chrominance planes is equal to the
+ * component width of the luminance plane divided by the horizontal subsampling
+ * factor, and the component height of the chrominance planes is equal to the
+ * component height of the luminance plane divided by the vertical subsampling
+ * factor.
+ * <p>
+ * For example, if the source image is 35 x 35 pixels and 4:2:2 subsampling is
+ * used, then the luminance plane would be 36 x 35 bytes, and each of the
+ * chrominance planes would be 18 x 35 bytes.  If you specify a line padding of
+ * 4 bytes on top of this, then the luminance plane would be 36 x 35 bytes, and
  * each of the chrominance planes would be 20 x 35 bytes.
  */
 public class YUVImage {
@@ -83,9 +93,10 @@ public class YUVImage {
    * buffer.
    *
    * @param yuvImage image buffer that contains or will contain YUV planar
-   * image data.  See {@link YUVImage above} for a description of the image
-   * format.  Use {@link TJ#bufSizeYUV} to determine the minimum size for this
-   * buffer.
+   * image data.  Use {@link TJ#bufSizeYUV} to determine the minimum size for
+   * this buffer.  The Y, U (Cb), and V (Cr) image planes are stored
+   * sequentially in the buffer (see {@link YUVImage above} for a description
+   * of the image format.)
    *
    * @param width width (in pixels) of the YUV image
    *
@@ -108,9 +119,10 @@ public class YUVImage {
    * instance.
    *
    * @param yuvImage image buffer that contains or will contain YUV planar
-   * image data.  See {@link YUVImage above} for a description of the image
-   * format.  Use {@link TJ#bufSizeYUV} to determine the minimum size for this
-   * buffer.
+   * image data.  Use {@link TJ#bufSizeYUV} to determine the minimum size for
+   * this buffer.  The Y, U (Cb), and V (Cr) image planes are stored
+   * sequentially in the buffer (see {@link YUVImage above} for a description
+   * of the image format.)
    *
    * @param width width (in pixels) of the YUV image
    *

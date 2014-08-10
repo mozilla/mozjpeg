@@ -722,8 +722,8 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  *        calling #TJSCALED() with the JPEG image width and one of the scaling
  *        factors returned by #tjGetScalingFactors().)  You can also be clever
  *        and use the pitch parameter to skip lines, etc.  Setting this
- *        parameter to 0 is the equivalent of setting it to <tt>scaledWidth
- *        * #tjPixelSize[pixelFormat]</tt>.
+ *        parameter to 0 is the equivalent of setting it to <tt>scaledWidth *
+ *        #tjPixelSize[pixelFormat]</tt>.
  * @param height desired height (in pixels) of the destination image.  If this
  *        is different than the height of the JPEG image being decompressed,
  *        then TurboJPEG will use scaling in the JPEG decompressor to generate

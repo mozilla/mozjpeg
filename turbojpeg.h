@@ -42,10 +42,36 @@
  * TurboJPEG API.  This API provides an interface for generating, decoding, and
  * transforming planar YUV and JPEG images in memory.
  *
- * @note Technically, the JPEG format uses the YCbCr colorspace (which is
- * technically not a colorspace but a color transform), but per the convention
- * of the digital video community, the TurboJPEG API uses "YUV" to refer to an
- * image format consisting of Y, Cb, and Cr image planes.
+ * @anchor YUVnotes
+ * YUV Image Format Notes
+ * ----------------------
+ * Technically, the JPEG format uses the YCbCr colorspace (which is technically
+ * not a colorspace but a color transform), but per the convention of the
+ * digital video community, the TurboJPEG API uses "YUV" to refer to an image
+ * format consisting of Y, Cb, and Cr image planes.
+ *
+ * Each plane is simply a 2D array of bytes, each byte representing the value
+ * of one of the components (Y, Cb, or Cr) at a particular location in the
+ * image.  The "component width" and "component height" of each plane are
+ * determined by the image width, height, and level of chrominance subsampling.
+ * For the luminance plane, the component width is the image width padded to
+ * the nearest multiple of the horizontal subsampling factor (2 in the case of
+ * 4:2:0 and 4:2:2, 4 in the case of 4:1:1, 1 in the case of 4:4:4 or
+ * grayscale.)  Similarly, the component height of the luminance plane is the
+ * image height padded to the nearest multiple of the vertical subsampling
+ * factor (2 in the case of 4:2:0 or 4:4:0, 1 in the case of 4:4:4 or
+ * grayscale.)  This is irrespective of any additional padding that may be
+ * specified as an argument to the various YUV functions.  The component width
+ * of the chrominance planes is equal to the component width of the luminance
+ * plane divided by the horizontal subsampling factor, and the component height
+ * of the chrominance planes is equal to the component height of the luminance
+ * plane divided by the vertical subsampling factor.
+ *
+ * For example, if the source image is 35 x 35 pixels and 4:2:2 subsampling is
+ * used, then the luminance plane would be 36 x 35 bytes, and each of the
+ * chrominance planes would be 18 x 35 bytes.  If you specify a line padding of
+ * 4 bytes on top of this, then the luminance plane would be 36 x 35 bytes, and
+ * each of the chrominance planes would be 20 x 35 bytes.
  *
  * @{
  */
@@ -641,27 +667,22 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 /**
  * Compress a YUV planar image into a JPEG image.
  *
- * @note If the width or height of the YUV image is not an even multiple of the
- * MCU block size (see #tjMCUWidth and #tjMCUHeight), then an intermediate
- * buffer copy will be performed within TurboJPEG.
- *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
- * @param srcBuf pointer to an image buffer containing a YUV planar image
- *        to be compressed.  The Y, U (Cb), and V (Cr) image planes should be
- *        stored sequentially in the buffer, and the size of each plane
- *        is determined by the specified width, height, padding, and level of
- *        chrominance subsampling.  If the chrominance components are
- *        subsampled along the horizontal dimension, then the width of the
- *        luminance plane should be padded to the nearest multiple of 2 (same
- *        goes for the height of the luminance plane, if the chrominance
- *        components are subsampled along the vertical dimension.)  This is
- *        irrespective of any additional padding specified in the <tt>pad</tt>
- *        parameter.
- * @param width width (in pixels) of the source image
+ * @param srcBuf pointer to an image buffer containing a YUV planar image to be
+ *        compressed.  The size of this buffer should match the value returned
+ *        by #tjBufSizeYUV2() for the given image width, height, padding, and
+ *        level of chrominance subsampling.  The Y, U (Cb), and V (Cr) image
+ *        planes should be stored sequentially in the source buffer (refer to
+ *        @ref YUVnotes "YUV Image Format Notes".)
+ * @param width width (in pixels) of the source image.  If the width is not an
+ *        even multiple of the MCU block width (see #tjMCUWidth), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
  * @param pad the line padding used in the source image.  For instance, if each
  *        line in each plane of the YUV image is padded to the nearest multiple
  *        of 4 bytes, then <tt>pad</tt> should be set to 4.
- * @param height height (in pixels) of the source image
+ * @param height height (in pixels) of the source image.  If the height is not
+ *        an even multiple of the MCU block height (see #tjMCUHeight), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
  * @param subsamp the level of chrominance subsampling used in the source
  *        image (see @ref TJSAMP "Chrominance subsampling options".)
  * @param jpegBuf address of a pointer to an image buffer that will receive the
@@ -742,14 +763,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
  * Encode an RGB or grayscale image into a YUV planar image.  This function
  * uses the accelerated color conversion routines in the underlying
  * codec but does not execute any of the other steps in the JPEG compression
- * process.  The Y, U (Cb), and V (Cr) image planes are stored sequentially
- * into the destination buffer, and the size of each plane is determined by the
- * width and height of the source image, as well as the specified padding and
- * level of chrominance subsampling.  If the chrominance components are
- * subsampled along the horizontal dimension, then the width of the luminance
- * plane is padded to the nearest multiple of 2 in the output image (same goes
- * for the height of the luminance plane, if the chrominance components are
- * subsampled along the vertical dimension.)
+ * process.  
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels
@@ -768,7 +782,9 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
  * @param dstBuf pointer to an image buffer that will receive the YUV image.
  *        Use #tjBufSizeYUV2() to determine the appropriate size for this
  *        buffer based on the image width, height, padding, and level of
- *        chrominance subsampling.
+ *        chrominance subsampling.  The Y, U (Cb), and V (Cr) image planes will
+ *        be stored sequentially in the buffer (refer to @ref YUVnotes
+ *        "YUV Image Format Notes".)
  * @param pad the width of each line in each plane of the YUV image will be
  *        padded to the nearest multiple of this number of bytes (must be a
  *        power of 2.)  To generate images suitable for X Video, <tt>pad</tt>
@@ -885,12 +901,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 /**
  * Decompress a JPEG image to a YUV planar image.  This function performs JPEG
  * decompression but leaves out the color conversion step, so a planar YUV
- * image is generated instead of an RGB image.  The structure of the planes in
- * this image is the same as in the images generated by #tjEncodeYUV3().
- *
- * @note If the width or height of the JPEG image is not an even multiple of
- * the MCU block size (see #tjMCUWidth and #tjMCUHeight), then an intermediate
- * buffer copy will be performed within TurboJPEG.
+ * image is generated instead of an RGB image.
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
@@ -898,13 +909,17 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * @param dstBuf pointer to an image buffer that will receive the YUV image.
  *        Use #tjBufSizeYUV2() to determine the appropriate size for this
  *        buffer based on the image width, height, padding, and level of
- *        subsampling.
+ *        subsampling.  The Y, U (Cb), and V (Cr) image planes will be stored
+ *        sequentially in the buffer (refer to @ref YUVnotes
+ *        "YUV Image Format Notes".)
  * @param width desired width (in pixels) of the YUV image.  If this is
  *        different than the width of the JPEG image being decompressed, then
  *        TurboJPEG will use scaling in the JPEG decompressor to generate the
  *        largest possible image that will fit within the desired width.  If
  *        <tt>width</tt> is set to 0, then only the height will be considered
- *        when determining the scaled image size.
+ *        when determining the scaled image size.  If the scaled width is not
+ *        an even multiple of the MCU block width (see #tjMCUWidth), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
  * @param pad the width of each line in each plane of the YUV image will be
  *        padded to the nearest multiple of this number of bytes (must be a
  *        power of 2.)  To generate images suitable for X Video, <tt>pad</tt>
@@ -914,7 +929,9 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  *        TurboJPEG will use scaling in the JPEG decompressor to generate the
  *        largest possible image that will fit within the desired height.  If
  *        <tt>height</tt> is set to 0, then only the width will be considered
- *        when determining the scaled image size.
+ *        when determining the scaled image size.  If the scaled height is not
+ *        an even multiple of the MCU block height (see #tjMCUHeight), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  *        "flags".
  *
@@ -929,20 +946,15 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  * Decode a YUV planar image into an RGB or grayscale image.  This function
  * uses the accelerated color conversion routines in the underlying
  * codec but does not execute any of the other steps in the JPEG decompression
- * process.  The Y, U (Cb), and V (Cr) image planes should be stored
- * sequentially in the source buffer, and the size of each plane is determined
- * by the width and height of the source image, as well as the specified
- * padding and level of chrominance subsampling.  If the chrominance components
- * are subsampled along the horizontal dimension, then the width of the
- * luminance plane should be padded to the nearest multiple of 2 in the input
- * image (same goes for the height of the luminance plane, if the chrominance
- * components are subsampled along the vertical dimension.)
+ * process.
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param srcBuf pointer to an image buffer containing a YUV planar image to be
  *        decoded.  The size of this buffer should match the value returned
  *        by #tjBufSizeYUV2() for the given image width, height, padding, and
- *        level of chrominance subsampling.
+ *        level of chrominance subsampling.  The Y, U (Cb), and V (Cr) image
+ *        planes should be stored sequentially in the source buffer (refer to
+ *        @ref YUVnotes "YUV Image Format Notes".)
  * @param pad Use this parameter to specify that the width of each line in each
  *        plane of the YUV source image is padded to the nearest multiple of
  *        this number of bytes (must be a power of 2.)

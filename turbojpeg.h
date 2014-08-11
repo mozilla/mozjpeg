@@ -718,6 +718,65 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
 
 
 /**
+ * Compress a set of Y, U (Cb), and V (Cr) image planes into a JPEG image.
+ *
+ * @param handle a handle to a TurboJPEG compressor or transformer instance
+ * @param srcPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
+ *        (or just a Y plane, if compressing a grayscale image) that contain a
+ *        YUV image to be compressed.  These planes can be contiguous or
+ *        non-contiguous in memory.  Each plane should be at least
+ *        <b><i>{component stride} * {component height}</i></b> bytes in size.
+ *        (See below for a description of stride, and refer to @ref YUVnotes
+ *        "YUV Image Format Notes" for a description of component height.)
+ * @param width width (in pixels) of the source image.  If the width is not an
+ *        even multiple of the MCU block width (see #tjMCUWidth), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
+ * @param strides an array of integers, each specifying the number of bytes per
+ *        line in the corresponding plane of the YUV source image.  Setting the
+ *        stride for any plane to 0 is the same as setting it to the component
+ *        width for the plane.  If <tt>stride</tt> is NULL, then the strides
+ *        for all planes will be set to their respective component widths.  You
+ *        can adjust the strides in order to specify an arbitrary amount of
+ *        line padding in each plane or to create a JPEG image from a subregion
+ *        of a larger YUV planar image.
+ * @param height height (in pixels) of the source image.  If the height is not
+ *        an even multiple of the MCU block height (see #tjMCUHeight), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
+ * @param subsamp the level of chrominance subsampling used in the source
+ *        image (see @ref TJSAMP "Chrominance subsampling options".)
+ * @param jpegBuf address of a pointer to an image buffer that will receive the
+ *        JPEG image.  TurboJPEG has the ability to reallocate the JPEG buffer
+ *        to accommodate the size of the JPEG image.  Thus, you can choose to:
+ *        -# pre-allocate the JPEG buffer with an arbitrary size using
+ *        #tjAlloc() and let TurboJPEG grow the buffer as needed,
+ *        -# set <tt>*jpegBuf</tt> to NULL to tell TurboJPEG to allocate the
+ *        buffer for you, or
+ *        -# pre-allocate the buffer to a "worst case" size determined by
+ *        calling #tjBufSize().  This should ensure that the buffer never has
+ *        to be re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
+ *        .
+ *        If you choose option 1, <tt>*jpegSize</tt> should be set to the
+ *        size of your pre-allocated buffer.  In any case, unless you have
+ *        set #TJFLAG_NOREALLOC, you should always check <tt>*jpegBuf</tt> upon
+ *        return from this function, as it may have changed.
+ * @param jpegSize pointer to an unsigned long variable that holds the size of
+ *        the JPEG image buffer.  If <tt>*jpegBuf</tt> points to a
+ *        pre-allocated buffer, then <tt>*jpegSize</tt> should be set to the
+ *        size of the buffer.  Upon return, <tt>*jpegSize</tt> will contain the
+ *        size of the JPEG image (in bytes.)
+ * @param jpegQual the image quality of the generated JPEG image (1 = worst,
+          100 = best)
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
+ *
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+*/
+DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
+	unsigned char **srcBufs, int width, int *strides, int height, int subsamp,
+	unsigned char **jpegBuf, unsigned long *jpegSize, int jpegQual, int flags);
+
+
+/**
  * The maximum size of the buffer (in bytes) required to hold a JPEG image with
  * the given parameters.  The number of bytes returned by this function is
  * larger than the size of the uncompressed source image.  The reason for this
@@ -802,6 +861,56 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
 DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
   unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat,
   unsigned char *dstBuf, int pad, int subsamp, int flags);
+
+
+/**
+ * Encode an RGB or grayscale image into separate Y, U (Cb), and V (Cr) image
+ * planes.  This function uses the accelerated color conversion routines in the
+ * underlying codec but does not execute any of the other steps in the JPEG
+ * compression process.
+ *
+ * @param handle a handle to a TurboJPEG compressor or transformer instance
+ * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels
+ *        to be encoded
+ * @param width width (in pixels) of the source image
+ * @param pitch bytes per line of the source image.  Normally, this should be
+ *        <tt>width * #tjPixelSize[pixelFormat]</tt> if the image is unpadded,
+ *        or <tt>#TJPAD(width * #tjPixelSize[pixelFormat])</tt> if each line of
+ *        the image is padded to the nearest 32-bit boundary, as is the case
+ *        for Windows bitmaps.  You can also be clever and use this parameter
+ *        to skip lines, etc.  Setting this parameter to 0 is the equivalent of
+ *        setting it to <tt>width * #tjPixelSize[pixelFormat]</tt>.
+ * @param height height (in pixels) of the source image
+ * @param pixelFormat pixel format of the source image (see @ref TJPF
+ *        "Pixel formats".)
+ * @param dstPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
+ *        (or just a Y plane, if generating a grayscale image) that will
+ *        receive the encoded image.  These planes can be contiguous or
+ *        non-contiguous in memory.  Each plane should be at least
+ *        <b><i>{component stride} * {component height}</i></b> bytes in size.
+ *        (See below for a description of stride, and refer to @ref YUVnotes
+ *        "YUV Image Format Notes" for a description of component height.)
+ * @param strides an array of integers, each specifying the number of bytes per
+ *        line in the corresponding plane of the output image.  Setting the
+ *        stride for any plane to 0 is the same as setting it to the component
+ *        width for the plane.  If <tt>stride</tt> is NULL, then the strides
+ *        for all planes will be set to their respective component widths.  You
+ *        can adjust the strides in order to add an arbitrary amount of line
+ *        padding to each plane or to encode an RGB or grayscale image into a
+ *        subregion of a larger YUV planar image.
+ * @param subsamp the level of chrominance subsampling to be used when
+ *        generating the YUV image (see @ref TJSAMP
+ *        "Chrominance subsampling options".)  To generate images suitable for
+ *        X Video, <tt>subsamp</tt> should be set to @ref TJSAMP_420.  This
+ *        produces an image compatible with the I420 (AKA "YUV420P") format.
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
+ *
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+*/
+DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
+  unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat,
+  unsigned char **dstPlanes, int *strides, int subsamp, int flags);
 
 
 /**
@@ -943,6 +1052,56 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 
 
 /**
+ * Decompress a JPEG image into separate Y, U (Cb), and V (Cr) image
+ * planes.  This function performs JPEG decompression but leaves out the color
+ * conversion step, so a planar YUV image is generated instead of an RGB image.
+ *
+ * @param handle a handle to a TurboJPEG decompressor or transformer instance
+ * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
+ * @param jpegSize size of the JPEG image (in bytes)
+ * @param dstPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
+ *        (or just a Y plane, if decompressing a grayscale image) that will
+ *        receive the YUV image.  These planes can be contiguous or
+ *        non-contiguous in memory.  Each plane should be at least
+ *        <b><i>{component stride} * {scaled component height}</i></b> bytes in
+ *        size.  (See below for a description of stride, and refer to @ref
+ *        YUVnotes "YUV Image Format Notes" for a description of component
+ *        height.)
+ * @param width desired width (in pixels) of the YUV image.  If this is
+ *        different than the width of the JPEG image being decompressed, then
+ *        TurboJPEG will use scaling in the JPEG decompressor to generate the
+ *        largest possible image that will fit within the desired width.  If
+ *        <tt>width</tt> is set to 0, then only the height will be considered
+ *        when determining the scaled image size.  If the scaled width is not
+ *        an even multiple of the MCU block width (see #tjMCUWidth), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
+ * @param strides an array of integers, each specifying the number of bytes per
+ *        line in the corresponding plane of the output image.  Setting the
+ *        stride for any plane to 0 is the same as setting it to the scaled
+ *        component width for the plane.  If <tt>stride</tt> is NULL, then the
+ *        strides for all planes will be set to their respective scaled
+ *        component widths.  You can adjust the strides in order to add an
+ *        arbitrary amount of line padding to each plane or to decompress the
+ *        JPEG image into a subregion of a larger YUV planar image.
+ * @param height desired height (in pixels) of the YUV image.  If this is
+ *        different than the height of the JPEG image being decompressed, then
+ *        TurboJPEG will use scaling in the JPEG decompressor to generate the
+ *        largest possible image that will fit within the desired height.  If
+ *        <tt>height</tt> is set to 0, then only the width will be considered
+ *        when determining the scaled image size.  If the scaled height is not
+ *        an even multiple of the MCU block height (see #tjMCUHeight), then an
+ *        intermediate buffer copy will be performed within TurboJPEG.
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
+ *
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ */
+DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
+  unsigned char *jpegBuf, unsigned long jpegSize, unsigned char **dstPlanes,
+  int width, int *strides, int height, int flags);
+
+
+/**
  * Decode a YUV planar image into an RGB or grayscale image.  This function
  * uses the accelerated color conversion routines in the underlying
  * codec but does not execute any of the other steps in the JPEG decompression
@@ -985,6 +1144,57 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 	int pad, int subsamp, unsigned char *dstBuf, int width, int pitch,
 	int height, int pixelFormat, int flags);
+
+
+/**
+ * Decode a set of Y, U (Cb), and V (Cr) image planes into an RGB or grayscale
+ * image.  This function uses the accelerated color conversion routines in the
+ * underlying codec but does not execute any of the other steps in the JPEG
+ * decompression process.
+ *
+ * @param handle a handle to a TurboJPEG decompressor or transformer instance
+ * @param srcPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
+ *        (or just a Y plane, if decoding a grayscale image) that contain a
+ *        YUV image to be decoded.  These planes can be contiguous or
+ *        non-contiguous in memory.  Each plane should be at least
+ *        <b><i>{component stride} * {component height}</i></b> bytes in size.
+ *        (See below for a description of stride, and refer to @ref YUVnotes
+ *        "YUV Image Format Notes" for a description of component height.)
+ * @param strides an array of integers, each specifying the number of bytes per
+ *        line in the corresponding plane of the YUV source image.  Setting the
+ *        stride for any plane to 0 is the same as setting it to the component
+ *        width for the plane.  If <tt>stride</tt> is NULL, then the strides
+ *        for all planes will be set to their respective component widths.  You
+ *        can adjust the strides in order to specify an arbitrary amount of
+ *        line padding in each plane or to decode a subregion of a larger YUV
+ *        planar image.
+ * @param subsamp the level of chrominance subsampling used in the YUV source
+ *        image (see @ref TJSAMP "Chrominance subsampling options".)
+ * @param dstBuf pointer to an image buffer that will receive the decoded
+ *        image.  This buffer should normally be <tt>pitch * height</tt>
+ *        bytes in size, but the <tt>dstBuf</tt> pointer can also be used to
+ *        decode into a specific region of a larger buffer.
+ * @param width width (in pixels) of the source and destination images
+ * @param pitch bytes per line of the destination image.  Normally, this should
+ *        be <tt>width * #tjPixelSize[pixelFormat]</tt> if the destination
+ *        image is unpadded, or <tt>#TJPAD(width *
+ *        #tjPixelSize[pixelFormat])</tt> if each line of the destination
+ *        image should be padded to the nearest 32-bit boundary, as is the case
+ *        for Windows bitmaps.  You can also be clever and use the pitch
+ *        parameter to skip lines, etc.  Setting this parameter to 0 is the
+ *        equivalent of setting it to <tt>width *
+ *        #tjPixelSize[pixelFormat]</tt>.
+ * @param height height (in pixels) of the source and destination images
+ * @param pixelFormat pixel format of the destination image (see @ref TJPF
+ *        "Pixel formats".)
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ *        "flags".
+ *
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ */
+DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
+	unsigned char **srcPlanes, int *strides, int subsamp, unsigned char *dstBuf,
+	int width, int pitch, int height, int pixelFormat, int flags);
 
 
 /**

@@ -20,6 +20,11 @@ scope for a codec library.
 and should now be much more intuitive.
 -- The Java API now supports encoding a YUV image from an arbitrary position in
 a large image buffer.
+-- All of the YUV functions now have a corresponding function that operates on
+separate image planes instead of a unified image buffer.  This allows for
+compressing/decoding a YUV image from or decompressing/encoding a YUV image to
+an arbitrary position in a larger YUV image.  It also allows for handling YUV
+formats that swap the order of the U and V planes.
 
 [2] Added SIMD acceleration for DSPr2-capable MIPS platforms.  This speeds up
 the compression of full-color JPEGs by 70-80% on such platforms and

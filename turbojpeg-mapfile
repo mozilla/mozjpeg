@@ -42,8 +42,12 @@ TURBOJPEG_1.4
 	global:
 		tjBufSizeYUV2;
 		tjCompressFromYUV;
+		tjCompressFromYUVPlanes;
 		tjDecodeYUV;
+		tjDecodeYUVPlanes;
 		tjDecompressHeader3;
 		tjDecompressToYUV2;
+		tjDecompressToYUVPlanes;
 		tjEncodeYUV3;
+		tjEncodeYUVPlanes;
 } TURBOJPEG_1.2;

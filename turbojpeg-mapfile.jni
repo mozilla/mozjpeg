@@ -68,10 +68,14 @@ TURBOJPEG_1.4
 	global:
 		tjBufSizeYUV2;
 		tjCompressFromYUV;
+		tjCompressFromYUVPlanes;
 		tjDecodeYUV;
+		tjDecodeYUVPlanes;
 		tjDecompressHeader3;
 		tjDecompressToYUV2;
+		tjDecompressToYUVPlanes;
 		tjEncodeYUV3;
+		tjEncodeYUVPlanes;
 		Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3BIIII_3BII;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIIIII_3BIII;

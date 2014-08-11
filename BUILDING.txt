@@ -216,17 +216,6 @@ Add
 to the configure command line.
 
 
-64-bit Build on 64-bit OS X
----------------------------
-
-Add
-
-  --host x86_64-apple-darwin NASM=/opt/local/bin/nasm
-
-to the configure command line.  NASM 2.07 or later from MacPorts must be
-installed.
-
-
 32-bit Build on 64-bit OS X
 ---------------------------
 
@@ -235,36 +224,6 @@ Add
   --host i686-apple-darwin CFLAGS='-O3 -m32' LDFLAGS=-m32
 
 to the configure command line.
-
-
-64-bit Backward-Compatible Build on 64-bit OS X
------------------------------------------------
-
-Add
-
-  --host x86_64-apple-darwin NASM=/opt/local/bin/nasm \
-  CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -O3' \
-    LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4'
-
-to the configure command line.  The OS X 10.4 SDK, and NASM 2.07 or later from
-MacPorts, must be installed.
-
-
-32-bit Backward-Compatible Build on OS X
-----------------------------------------
-
-Add
-
-  --host i686-apple-darwin \
-    CFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -O3 -m32' \
-    LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.4u.sdk \
-    -mmacosx-version-min=10.4 -m32'
-
-to the configure command line.  The OS X 10.4 SDK must be installed.
-
 
 64-bit Library Build on 64-bit Solaris
 --------------------------------------

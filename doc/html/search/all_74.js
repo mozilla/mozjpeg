@@ -10,7 +10,7 @@ var searchData=
   ['tjbufsizeyuv2',['tjBufSizeYUV2',['../group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9',1,'turbojpeg.h']]],
   ['tjcompress2',['tjCompress2',['../group___turbo_j_p_e_g.html#gaba62b7a98f960839b588579898495cf2',1,'turbojpeg.h']]],
   ['tjcompressfromyuv',['tjCompressFromYUV',['../group___turbo_j_p_e_g.html#ga0b931126c7a615ddc3bbd0cca6698d67',1,'turbojpeg.h']]],
-  ['tjcompressfromyuvplanes',['tjCompressFromYUVPlanes',['../group___turbo_j_p_e_g.html#gab87b2b19ee8bdd8dba395b74d66a4835',1,'turbojpeg.h']]],
+  ['tjcompressfromyuvplanes',['tjCompressFromYUVPlanes',['../group___turbo_j_p_e_g.html#gaa89a1982cb4556b12ae7af4439991af6',1,'turbojpeg.h']]],
   ['tjcs',['TJCS',['../group___turbo_j_p_e_g.html#ga4f83ad3368e0e29d1957be0efa7c3720',1,'turbojpeg.h']]],
   ['tjcs_5fcmyk',['TJCS_CMYK',['../group___turbo_j_p_e_g.html#gga4f83ad3368e0e29d1957be0efa7c3720a6c8b636152ac8195b869587db315ee53',1,'turbojpeg.h']]],
   ['tjcs_5fgray',['TJCS_GRAY',['../group___turbo_j_p_e_g.html#gga4f83ad3368e0e29d1957be0efa7c3720ab3e7d6a87f695e45b81c1b5262b5a50a',1,'turbojpeg.h']]],

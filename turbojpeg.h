@@ -759,7 +759,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the YUV source image.  Setting the stride
  * for any plane to 0 is the same as setting it to the component width for the
- * plane.  If <tt>stride</tt> is NULL, then the strides for all planes will be
+ * plane.  If <tt>strides</tt> is NULL, then the strides for all planes will be
  * set to their respective component widths.  You can adjust the strides in
  * order to specify an arbitrary amount of line padding in each plane or to
  * create a JPEG image from a subregion of a larger YUV planar image.
@@ -943,7 +943,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the output image.  Setting the stride for
  * any plane to 0 is the same as setting it to the component width for the
- * plane.  If <tt>stride</tt> is NULL, then the strides for all planes will be
+ * plane.  If <tt>strides</tt> is NULL, then the strides for all planes will be
  * set to their respective component widths.  You can adjust the strides in
  * order to add an arbitrary amount of line padding to each plane or to encode
  * an RGB or grayscale image into a subregion of a larger YUV planar image.
@@ -1151,8 +1151,8 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the output image.  Setting the stride for
  * any plane to 0 is the same as setting it to the scaled component width for
- * the plane.  If <tt>stride</tt> is NULL, then the strides for all planes will
- * be set to their respective scaled component widths.  You can adjust the
+ * the plane.  If <tt>strides</tt> is NULL, then the strides for all planes
+ * will be set to their respective scaled component widths.  You can adjust the
  * strides in order to add an arbitrary amount of line padding to each plane or
  * to decompress the JPEG image into a subregion of a larger YUV planar image.
  *
@@ -1246,7 +1246,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the YUV source image.  Setting the stride
  * for any plane to 0 is the same as setting it to the component width for the
- * plane.  If <tt>stride</tt> is NULL, then the strides for all planes will be
+ * plane.  If <tt>strides</tt> is NULL, then the strides for all planes will be
  * set to their respective component widths.  You can adjust the strides in
  * order to specify an arbitrary amount of line padding in each plane or to
  * decode a subregion of a larger YUV planar image.

@@ -45,6 +45,7 @@ typedef struct {
   int pass_number_scan_opt_base; /* pass number where scan optimization begins */
   unsigned char * scan_buffer[64]; /* buffer for a given scan */
   unsigned long scan_size[64]; /* size for a given scan */
+  int actual_Al[64]; /* actual value of Al used for a scan */
   unsigned long best_cost; /* bit count for best frequency split */
   int best_freq_split_idx_luma; /* index for best frequency split (luma) */
   int best_freq_split_idx_chroma; /* index for best frequency split (chroma) */
@@ -364,6 +365,8 @@ select_scan_parameters (j_compress_ptr cinfo)
           master->scan_number < cinfo->num_scans)
         cinfo->Al = master->best_Al_chroma;
     }
+    /* save value for later retrieval during printout of scans */
+    master->actual_Al[master->scan_number] = cinfo->Al;
   }
   else
 #endif
@@ -613,7 +616,7 @@ copy_buffer (j_compress_ptr cinfo, int scan_idx)
     for (i = 0; i < cinfo->scan_info[scan_idx].comps_in_scan; i++)
       fprintf(stderr, "%s%d", (i==0)?"":",", cinfo->scan_info[scan_idx].component_index[i]);
     fprintf(stderr, ": %d %d", cinfo->scan_info[scan_idx].Ss, cinfo->scan_info[scan_idx].Se);
-    fprintf(stderr, " %d %d", cinfo->scan_info[scan_idx].Ah, cinfo->scan_info[scan_idx].Al);
+    fprintf(stderr, " %d %d", cinfo->scan_info[scan_idx].Ah, master->actual_Al[scan_idx]);
     fprintf(stderr, "\n");
   }
   

@@ -673,6 +673,11 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       accumulated_dc_cost[i] = (float *)malloc(num_blocks * SIZEOF(float));
       dc_cost_backtrack[i] = (int *)malloc(num_blocks * SIZEOF(int));
       dc_candidate[i] = (JCOEF *)malloc(num_blocks * SIZEOF(JCOEF));
+      if (!accumulated_dc_cost[i] ||
+          !dc_cost_backtrack[i] ||
+          !dc_candidate[i]) {
+        ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+      }
     }
   }
   norm = 0.0;

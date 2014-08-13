@@ -379,7 +379,9 @@ struct jpeg_compress_struct {
   boolean use_moz_defaults; /* TRUE=use Mozilla defaults */
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
   boolean one_dc_scan; /* TRUE=use a single DC scan interleaving all components */
+  boolean sep_dc_scan; /* TRUE=each DC scan is separate */
   boolean trellis_quant; /* TRUE=use trellis quantization */
+  boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
   boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
   boolean use_flat_quant_tbl; /* TRUE=use flat quantization table */
   boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */

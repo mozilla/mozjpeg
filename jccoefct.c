@@ -361,10 +361,13 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
   JBLOCKARRAY buffer_dst;
   
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
+    c_derived_tbl dctbl_data;
+    c_derived_tbl *dctbl = &dctbl_data;
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
     compptr = cinfo->cur_comp_info[ci];
 
+    jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
     jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
     
     /* Align the virtual buffer for this component. */
@@ -392,12 +395,15 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     ndummy = (int) (blocks_across % h_samp_factor);
     if (ndummy > 0)
       ndummy = h_samp_factor - ndummy;
+    
+    lastDC = 0;
+    
     /* Perform DCT for all non-dummy blocks in this iMCU row.  Each call
      * on forward_DCT processes a complete horizontal row of DCT blocks.
      */
     for (block_row = 0; block_row < block_rows; block_row++) {
       thisblockrow = buffer[block_row];
-      quantize_trellis(cinfo, actbl, thisblockrow, buffer_dst[block_row], blocks_across, cinfo->quant_tbl_ptrs[compptr->quant_tbl_no], cinfo->norm_src[compptr->quant_tbl_no], cinfo->norm_coef[compptr->quant_tbl_no]);
+      quantize_trellis(cinfo, dctbl, actbl, thisblockrow, buffer_dst[block_row], blocks_across, cinfo->quant_tbl_ptrs[compptr->quant_tbl_no], cinfo->norm_src[compptr->quant_tbl_no], cinfo->norm_coef[compptr->quant_tbl_no], &lastDC);
       
       if (ndummy > 0) {
 	/* Create dummy blocks at the right edge of the image. */

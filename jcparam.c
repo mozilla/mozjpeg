@@ -444,6 +444,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->trellis_freq_split = 8;
   cinfo->trellis_num_loops = 1;
   cinfo->trellis_q_opt = FALSE;
+  cinfo->trellis_quant_dc = FALSE;
 }
 
 
@@ -839,6 +840,11 @@ jpeg_simple_progression (j_compress_ptr cinfo)
       /* Initial DC scan */
       if (cinfo->one_dc_scan)
         scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
+      else if (cinfo->sep_dc_scan) {
+        scanptr = fill_a_scan(scanptr, 0, 0, 0, 0, 0);
+        scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
+        scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);
+      }
       else {
         scanptr = fill_dc_scans(scanptr, 1, 0, 0);
         scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);

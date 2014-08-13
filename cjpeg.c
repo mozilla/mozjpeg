@@ -174,7 +174,8 @@ usage (void)
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
-  fprintf(stderr, "  -multidcscan   Use multiple DC scans (may be incompatible with some JPEG decoders)\n");
+  fprintf(stderr, "  -opt-dc-scan   Optimize DC scans (may be incompatible with some JPEG decoders)\n");
+  fprintf(stderr, "  -split-dc-scan Use one DC scan per component (may be incompatible with some JPEG decoders?)\n");
   fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
   fprintf(stderr, "  -tune-psnr     Tune trellis optimization for PSNR\n");
   fprintf(stderr, "  -tune-hvs-psnr Tune trellis optimization for PSNR-HVS (default)\n");
@@ -353,7 +354,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
-    } else if (keymatch(arg, "multidcscan", 3)) {
+    } else if (keymatch(arg, "opt-dc-scan", 6)) {
       cinfo->one_dc_scan = FALSE;
 
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
@@ -479,6 +480,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 	usage();
       cinfo->smoothing_factor = val;
 
+    } else if (keymatch(arg, "split-dc-scans", 3)) {
+      cinfo->one_dc_scan = FALSE;
+      cinfo->sep_dc_scan = TRUE;
+      
     } else if (keymatch(arg, "targa", 1)) {
       /* Input file is Targa format. */
       is_targa = TRUE;
@@ -486,6 +491,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "notrellis", 1)) {
       /* disable trellis quantization */
       cinfo->trellis_quant = FALSE;
+      
+    } else if (keymatch(arg, "trellis-dc", 9)) {
+      /* enable DC trellis quantization */
+      cinfo->trellis_quant_dc = TRUE;
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
       cinfo->use_flat_quant_tbl = TRUE;

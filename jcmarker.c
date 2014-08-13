@@ -183,6 +183,69 @@ emit_dqt (j_compress_ptr cinfo, int index)
   return prec;
 }
 
+LOCAL(int)
+emit_multi_dqt (j_compress_ptr cinfo)
+/* Emits a DQT marker containing all quantization tables */
+/* Returns number of emitted 16-bit tables, or -1 for failed for baseline checking. */
+{
+  int prec[MAX_COMPONENTS];
+  int seen[MAX_COMPONENTS] = { 0 };
+  int fin_prec = 0;
+  int ci;
+
+  for (ci = 0; ci < cinfo->num_components; ci++) {
+    int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
+    int i;
+    JQUANT_TBL * qtbl = cinfo->quant_tbl_ptrs[tbl_num];
+
+    if (qtbl == NULL || qtbl->sent_table == TRUE)
+      return -1;
+
+    prec[ci] = 0;
+    for (i = 0; i < DCTSIZE2; i++)
+      prec[ci] = !!(prec[ci] + (qtbl->quantval[i] > 255));
+
+    fin_prec += prec[ci];
+  }
+
+  emit_marker(cinfo, M_DQT);
+
+  int size = 0;
+  for (ci = 0; ci < cinfo->num_components; ci++) {
+    int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
+
+    if (!seen[tbl_num]) {
+      size += DCTSIZE2 * (prec[ci] + 1) + 1;
+      seen[tbl_num] = 1;
+    }
+  }
+  size += 2;
+
+  emit_2bytes(cinfo, size);
+
+  for (ci = 0; ci < cinfo->num_components; ci++) {
+    int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
+    int i;
+    JQUANT_TBL * qtbl = cinfo->quant_tbl_ptrs[tbl_num];
+
+    if (qtbl->sent_table == TRUE)
+        continue;
+
+    emit_byte(cinfo, tbl_num + (prec[ci] << 4));
+
+    for (i = 0; i < DCTSIZE2; i++) {
+      unsigned int qval = qtbl->quantval[jpeg_natural_order[i]];
+
+      if (prec[ci])
+        emit_byte(cinfo, (int) (qval >> 8));
+      emit_byte(cinfo, (int) (qval & 0xFF));
+    }
+
+    qtbl->sent_table = TRUE;
+  }
+
+  return fin_prec;
+}
 
 LOCAL(void)
 emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
@@ -504,10 +567,13 @@ write_frame_header (j_compress_ptr cinfo)
   /* Emit DQT for each quantization table.
    * Note that emit_dqt() suppresses any duplicate tables.
    */
-  prec = 0;
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    prec += emit_dqt(cinfo, compptr->quant_tbl_no);
+  prec = emit_multi_dqt(cinfo);
+  if (prec == -1) {
+    prec = 0;
+    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+         ci++, compptr++) {
+      prec += emit_dqt(cinfo, compptr->quant_tbl_no);
+    }
   }
   /* now prec is nonzero iff there are any 16-bit quant tables. */
 

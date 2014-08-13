@@ -177,6 +177,7 @@ usage (void)
   fprintf(stderr, "  -opt-dc-scan   Optimize DC scans (may be incompatible with some JPEG decoders)\n");
   fprintf(stderr, "  -split-dc-scan Use one DC scan per component (may be incompatible with some JPEG decoders?)\n");
   fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
+  fprintf(stderr, "  -trellis-dc    Enable trellis optimization of DC coefficients\n");
   fprintf(stderr, "  -tune-psnr     Tune trellis optimization for PSNR\n");
   fprintf(stderr, "  -tune-hvs-psnr Tune trellis optimization for PSNR-HVS (default)\n");
   fprintf(stderr, "  -tune-ssim     Tune trellis optimization for SSIM\n");

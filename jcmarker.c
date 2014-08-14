@@ -284,6 +284,112 @@ emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
   }
 }
 
+LOCAL(boolean)
+emit_multi_dht (j_compress_ptr cinfo)
+/* Emit all DHT markers */
+/* Returns FALSE on failure, TRUE otherwise. */
+{
+  int i, j;
+  int length = 2;
+  int dclens[NUM_HUFF_TBLS] = { 0 };
+  int aclens[NUM_HUFF_TBLS] = { 0 };
+  JHUFF_TBL *dcseen[NUM_HUFF_TBLS] = { NULL };
+  JHUFF_TBL *acseen[NUM_HUFF_TBLS] = { NULL };
+
+  /* Calclate the total length. */
+  for (i = 0; i < cinfo->comps_in_scan; i++) {
+    jpeg_component_info *compptr = cinfo->cur_comp_info[i];
+    int dcidx = compptr->dc_tbl_no;
+    int acidx = compptr->ac_tbl_no;
+    JHUFF_TBL *dctbl = cinfo->dc_huff_tbl_ptrs[dcidx];
+    JHUFF_TBL *actbl = cinfo->ac_huff_tbl_ptrs[acidx];
+    int seen = 0;
+
+    /* Handle DC table lenghts */
+    if (cinfo->Ss == 0 && cinfo->Ah == 0) {
+      if (dctbl == NULL)
+        ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, dcidx);
+
+      if (dctbl->sent_table)
+          continue;
+
+      for (j = 0; j < NUM_HUFF_TBLS; j++)
+          seen += (dctbl == dcseen[j]);
+      if (seen)
+          continue;
+      dcseen[i] = dctbl;
+
+      for (j = 1; j <= 16; j++)
+        dclens[i] += dctbl->bits[j];
+      length += dclens[i] + 16 + 1;
+    }
+
+    /* Handle AC table lengths */
+    if (cinfo->Se) {
+      if (actbl == NULL)
+        ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, acidx + 0x10);
+
+      if (actbl->sent_table)
+          continue;
+
+      seen = 0;
+      for (j = 0; j < NUM_HUFF_TBLS; j++)
+          seen += (actbl == acseen[j]);
+      if (seen)
+          continue;
+      acseen[i] = actbl;
+
+      for (j = 1; j <= 16; j++)
+        aclens[i] += actbl->bits[j];
+      length += aclens[i] + 16 + 1;
+
+    }
+  }
+
+  /* Make sure we can fit it all into one DHT marker */
+  if (length > (1 << 16) - 1)
+    return FALSE;
+
+  emit_marker(cinfo, M_DHT);
+  emit_2bytes(cinfo, length);
+
+  for (i = 0; i < cinfo->comps_in_scan; i++) {
+    jpeg_component_info *compptr = cinfo->cur_comp_info[i];
+    int dcidx = compptr->dc_tbl_no;
+    int acidx = compptr->ac_tbl_no;
+    JHUFF_TBL *dctbl = cinfo->dc_huff_tbl_ptrs[dcidx];
+    JHUFF_TBL *actbl = cinfo->ac_huff_tbl_ptrs[acidx];
+
+    acidx += 0x10;
+
+    /* DC */
+    if (cinfo->Ss == 0 && cinfo->Ah == 0 && !dctbl->sent_table) {
+      emit_byte(cinfo, dcidx);
+
+      for (j = 1; j <= 16; j++)
+        emit_byte(cinfo, dctbl->bits[j]);
+
+      for (j = 0; j < dclens[i]; j++)
+        emit_byte(cinfo, dctbl->huffval[j]);
+
+      dctbl->sent_table = TRUE;
+    }
+
+    if (cinfo->Se && !actbl->sent_table) {
+      emit_byte(cinfo, acidx);
+
+      for (j = 1; j <= 16; j++)
+        emit_byte(cinfo, actbl->bits[j]);
+
+      for (j = 0; j < aclens[i]; j++)
+        emit_byte(cinfo, actbl->huffval[j]);
+
+      actbl->sent_table = TRUE;
+    }
+  }
+
+  return TRUE;
+}
 
 LOCAL(void)
 emit_dac (j_compress_ptr cinfo)
@@ -637,14 +743,16 @@ write_scan_header (j_compress_ptr cinfo)
     /* Emit Huffman tables.
      * Note that emit_dht() suppresses any duplicate tables.
      */
-    for (i = 0; i < cinfo->comps_in_scan; i++) {
-      compptr = cinfo->cur_comp_info[i];
-      /* DC needs no table for refinement scan */
-      if (cinfo->Ss == 0 && cinfo->Ah == 0)
-	emit_dht(cinfo, compptr->dc_tbl_no, FALSE);
-      /* AC needs no table when not present */
-      if (cinfo->Se)
-	emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
+    if (!emit_multi_dht(cinfo)) {
+      for (i = 0; i < cinfo->comps_in_scan; i++) {
+        compptr = cinfo->cur_comp_info[i];
+        /* DC needs no table for refinement scan */
+        if (cinfo->Ss == 0 && cinfo->Ah == 0)
+          emit_dht(cinfo, compptr->dc_tbl_no, FALSE);
+        /* AC needs no table when not present */
+        if (cinfo->Se)
+          emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
+      }
     }
   }
 

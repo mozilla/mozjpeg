@@ -95,6 +95,11 @@ fi
 # Checks for libraries.
 AC_CHECK_LIB([m],[pow])
 
+PKG_CHECK_MODULES([libpng], [libpng], [HAVE_LIBPNG=1], [
+  PKG_CHECK_MODULES([libpng], [libpng12], [HAVE_LIBPNG=1], [HAVE_LIBPNG=0])
+])
+AM_CONDITIONAL([HAVE_LIBPNG], [test "$HAVE_LIBPNG" -eq 1])
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])

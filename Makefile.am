@@ -108,12 +108,18 @@ endif
 
 
 cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
-	rdppm.c rdswitch.c rdtarga.c rdjpeg.c rdpng.c
+	rdppm.c rdswitch.c rdtarga.c rdjpeg.c
 
 cjpeg_LDADD = libjpeg.la
 
 cjpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
 	-DTARGA_SUPPORTED
+
+if HAVE_LIBPNG
+cjpeg_CFLAGS += -DPNG_SUPPORTED $(libpng_CFLAGS)
+cjpeg_LDADD += $(libpng_LIBS)
+cjpeg_SOURCES += rdpng.c
+endif
 
 djpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c djpeg.c rdcolmap.c rdswitch.c \
 	wrbmp.c wrgif.c wrppm.c wrtarga.c

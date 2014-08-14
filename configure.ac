@@ -265,7 +265,7 @@ AC_SUBST(VERSION_SCRIPT_FLAG)
 # Check for non-broken inline under various spellings
 AC_MSG_CHECKING(for inline)
 ljt_cv_inline=""
-AC_TRY_COMPILE(, [} __attribute__((always_inline)) int foo() { return 0; }
+AC_TRY_COMPILE(, [} inline __attribute__((always_inline)) int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="inline __attribute__((always_inline))",
 AC_TRY_COMPILE(, [} __inline__ int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="__inline__",
@@ -274,7 +274,7 @@ int bar() { return foo();], ljt_cv_inline="__inline",
 AC_TRY_COMPILE(, [} inline int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="inline"))))
 AC_MSG_RESULT($ljt_cv_inline)
-AC_DEFINE_UNQUOTED([INLINE],[inline $ljt_cv_inline],[How to obtain function inlining.])
+AC_DEFINE_UNQUOTED([INLINE],[$ljt_cv_inline],[How to obtain function inlining.])
 
 # Arithmetic coding support
 AC_MSG_CHECKING([whether to include arithmetic encoding support])

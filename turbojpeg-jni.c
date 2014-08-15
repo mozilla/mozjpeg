@@ -394,13 +394,15 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
 	(*env)->ReleasePrimitiveArrayCritical(env, src, jpegBuf, 0);  jpegBuf=NULL;
 
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcSubsamp", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
 	(*env)->SetIntField(env, obj, _fid, jpegSubsamp);
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcColorspace", "I"));
-	(*env)->SetIntField(env, obj, _fid, jpegColorspace);
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcWidth", "I"));
+	if((_fid=(*env)->GetFieldID(env, _cls, "jpegColorspace", "I"))==0)
+		(*env)->ExceptionClear(env);
+	else
+		(*env)->SetIntField(env, obj, _fid, jpegColorspace);
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
 	(*env)->SetIntField(env, obj, _fid, width);
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcHeight", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
 	(*env)->SetIntField(env, obj, _fid, height);
 
 	bailout:
@@ -507,11 +509,11 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
 	if((*env)->GetArrayLength(env, src)<jpegSize)
 		_throw("Source buffer is not large enough");
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcSubsamp", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
 	jpegSubsamp=(int)(*env)->GetIntField(env, obj, _fid);
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcWidth", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
 	jpegWidth=(int)(*env)->GetIntField(env, obj, _fid);
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcHeight", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
 	jpegHeight=(int)(*env)->GetIntField(env, obj, _fid);
 
 	yuvSize=(jsize)tjBufSizeYUV2(desiredWidth==0? jpegWidth:desiredWidth,
@@ -702,11 +704,11 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 
 	if((*env)->GetArrayLength(env, jsrcBuf)<jpegSize)
 		_throw("Source buffer is not large enough");
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcWidth", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
 	jpegWidth=(int)(*env)->GetIntField(env, obj, _fid);
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcHeight", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
 	jpegHeight=(int)(*env)->GetIntField(env, obj, _fid);
-	bailif0(_fid=(*env)->GetFieldID(env, _cls, "srcSubsamp", "I"));
+	bailif0(_fid=(*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
 	jpegSubsamp=(int)(*env)->GetIntField(env, obj, _fid);
 
 	n=(*env)->GetArrayLength(env, dstobjs);

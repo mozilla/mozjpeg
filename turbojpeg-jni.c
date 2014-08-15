@@ -57,6 +57,7 @@
 	bailif0(_fid=(*env)->GetFieldID(env, _cls, "handle", "J"));  \
 	handle=(tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);  \
 
+/* TurboJPEG 1.2.x: TJ::bufSize() */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 	(JNIEnv *env, jclass cls, jint width, jint height, jint jpegSubsamp)
 {
@@ -67,6 +68,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 	return retval;
 }
 
+/* TurboJPEG 1.2.x: TJ::bufSizeYUV() */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
 	(JNIEnv *env, jclass cls, jint width, jint height, jint subsamp)
 {
@@ -77,6 +79,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV
 	return retval;
 }
 
+/* TurboJPEG 1.2.x: TJCompressor::init() */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 	(JNIEnv *env, jobject obj)
 {
@@ -95,6 +98,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 	return;
 }
 
+/* TurboJPEG 1.3.x: TJCompressor::compress() byte source */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3BIIIIII_3BIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint x, jint y, jint width,
 		jint pitch, jint height, jint pf, jbyteArray dst, jint jpegSubsamp,
@@ -135,6 +139,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 	return (jint)jpegSize;
 }
 
+/* TurboJPEG 1.2.x: TJCompressor::compress() byte source */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3BIIII_3BIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint width, jint pitch,
 		jint height, jint pf, jbyteArray dst, jint jpegSubsamp, jint jpegQual,
@@ -145,6 +150,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 		flags);
 }
 
+/* TurboJPEG 1.3.x: TJCompressor::compress() int source */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3IIIIIII_3BIII
 	(JNIEnv *env, jobject obj, jintArray src, jint x, jint y, jint width,
 		jint stride, jint height, jint pf, jbyteArray dst, jint jpegSubsamp,
@@ -187,6 +193,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 	return (jint)jpegSize;
 }
 
+/* TurboJPEG 1.2.x: TJCompressor::compress() int source */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3IIIII_3BIII
 	(JNIEnv *env, jobject obj, jintArray src, jint width, jint pitch,
 		jint height, jint pf, jbyteArray dst, jint jpegSubsamp, jint jpegQual,
@@ -197,6 +204,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 		flags);
 }
 
+/* TurboJPEG 1.2.x: TJCompressor::encodeYUV() byte source */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIII_3BII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint width, jint pitch,
 		jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
@@ -233,6 +241,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 	return;
 }
 
+/* TurboJPEG 1.2.x: TJCompressor::encodeYUV() int source */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIII_3BII
 	(JNIEnv *env, jobject obj, jintArray src, jint width, jint stride,
 		jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
@@ -271,6 +280,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 	return;
 }
 
+/* TurboJPEG 1.2.x: TJCompressor::destroy() */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
 	(JNIEnv *env, jobject obj)
 {
@@ -285,6 +295,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
 	return;
 }
 
+/* TurboJPEG 1.2.x: TJDecompressor::init() */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 	(JNIEnv *env, jobject obj)
 {
@@ -302,6 +313,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 	return;
 }
 
+/* TurboJPEG 1.2.x: TJDecompressor::getScalingFactors() */
 JNIEXPORT jobjectArray JNICALL Java_org_libjpegturbo_turbojpeg_TJ_getScalingFactors
 	(JNIEnv *env, jclass cls)
 {
@@ -330,6 +342,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_libjpegturbo_turbojpeg_TJ_getScalingFact
 	return sfjava;
 }
 
+/* TurboJPEG 1.2.x: TJDecompressor::decompressHeader() */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressHeader
 	(JNIEnv *env, jobject obj, jbyteArray src, jint jpegSize)
 {
@@ -362,6 +375,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	return;
 }
 
+/* TurboJPEG 1.3.x: TJDecompressor::decompress() byte destination */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3BIIIIIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint jpegSize, jbyteArray dst,
 		jint x, jint y, jint width, jint pitch, jint height, jint pf, jint flags)
@@ -398,6 +412,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	return;
 }
 
+/* TurboJPEG 1.2.x: TJDecompressor::decompress() byte destination */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3BIIIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint jpegSize, jbyteArray dst,
 		jint width, jint pitch, jint height, jint pf, jint flags)
@@ -406,6 +421,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 		(env, obj, src, jpegSize, dst, 0, 0, width, pitch, height, pf, flags);
 }
 
+/* TurboJPEG 1.3.x: TJDecompressor::decompress() int destination */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3IIIIIIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint jpegSize, jintArray dst,
 		jint x, jint y, jint width, jint stride, jint height, jint pf, jint flags)
@@ -444,6 +460,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	return;
 }
 
+/* TurboJPEG 1.2.x: TJDecompressor::decompress() int destination */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3IIIIII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint jpegSize, jintArray dst,
 		jint width, jint stride, jint height, jint pf, jint flags)
@@ -453,6 +470,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
 }
 
+/* TurboJPEG 1.2.x: TJDecompressor::decompressToYUV() */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV
 	(JNIEnv *env, jobject obj, jbyteArray src, jint jpegSize, jbyteArray dst,
 		jint flags)
@@ -488,6 +506,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	return;
 }
 
+/* TurboJPEG 1.2.x: TJTransformer::init() */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_init
 	(JNIEnv *env, jobject obj)
 {
@@ -569,6 +588,7 @@ static int JNICustomFilter(short *coeffs, tjregion arrayRegion,
 	return -1;
 }
 
+/* TurboJPEG 1.2.x: TJTransformer::transform() */
 JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transform
 	(JNIEnv *env, jobject obj, jbyteArray jsrcBuf, jint jpegSize,
 		jobjectArray dstobjs, jobjectArray tobjs, jint flags)
@@ -694,6 +714,7 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 	return jdstSizes;
 }
 
+/* TurboJPEG 1.2.x: TJDecompressor::destroy() */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy
 	(JNIEnv *env, jobject obj)
 {

@@ -55,7 +55,7 @@
 	jfieldID _fid;  \
 	if(!_cls) goto bailout;  \
 	bailif0(_fid=(*env)->GetFieldID(env, _cls, "handle", "J"));  \
-	handle=(tjhandle)(jlong)(*env)->GetLongField(env, obj, _fid);  \
+	handle=(tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);  \
 
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 	(JNIEnv *env, jclass cls, jint width, jint height, jint jpegSubsamp)
@@ -96,7 +96,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
-	(*env)->SetLongField(env, obj, fid, (jlong)handle);
+	(*env)->SetLongField(env, obj, fid, (size_t)handle);
 
 	bailout:
 	return;
@@ -270,16 +270,16 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 		jint pitch, jint height, jint pf, jbyteArray dst, jint pad, jint subsamp,
 		jint flags)
 {
-	return TJCompressor_encodeYUV(env, obj, src, 1, x, y, width, pitch, height,
-		pf, dst, pad, subsamp, flags);
+	TJCompressor_encodeYUV(env, obj, src, 1, x, y, width, pitch, height, pf, dst,
+		pad, subsamp, flags);
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIII_3BII
 	(JNIEnv *env, jobject obj, jbyteArray src, jint width, jint pitch,
 		jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
 {
-	return TJCompressor_encodeYUV(env, obj, src, 1, 0, 0, width, pitch, height,
-		pf, dst, 4, subsamp, flags);
+	TJCompressor_encodeYUV(env, obj, src, 1, 0, 0, width, pitch, height, pf, dst,
+		4, subsamp, flags);
 }
 
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIIIII_3BIII
@@ -292,7 +292,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 	if(tjPixelSize[pf]!=sizeof(jint))
 		_throw("Pixel format must be 32-bit when encoding from an integer buffer.");
 
-	return TJCompressor_encodeYUV(env, obj, src, sizeof(jint), x, y, width,
+	TJCompressor_encodeYUV(env, obj, src, sizeof(jint), x, y, width,
 		stride*sizeof(jint), height, pf, dst, pad, subsamp, flags);
 
 	bailout:
@@ -308,7 +308,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 	if(tjPixelSize[pf]!=sizeof(jint))
 		_throw("Pixel format must be 32-bit when encoding from an integer buffer.");
 
-	return TJCompressor_encodeYUV(env, obj, src, sizeof(jint), 0, 0, width,
+	TJCompressor_encodeYUV(env, obj, src, sizeof(jint), 0, 0, width,
 		stride*sizeof(jint), height, pf, dst, 4, subsamp, flags);
 
 	bailout:
@@ -340,7 +340,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
-	(*env)->SetLongField(env, obj, fid, (jlong)handle);
+	(*env)->SetLongField(env, obj, fid, (size_t)handle);
 
 	bailout:
 	return;
@@ -618,7 +618,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_init
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
-	(*env)->SetLongField(env, obj, fid, (jlong)handle);
+	(*env)->SetLongField(env, obj, fid, (size_t)handle);
 
 	bailout:
 	return;

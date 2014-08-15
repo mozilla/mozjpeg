@@ -113,6 +113,10 @@ select_file_type (j_compress_ptr cinfo, FILE * infile)
   case 'P':
     return jinit_read_ppm(cinfo);
 #endif
+#ifdef PNG_SUPPORTED
+  case 0x89:
+    return jinit_read_png(cinfo);
+#endif
 #ifdef RLE_SUPPORTED
   case 'R':
     return jinit_read_rle(cinfo);

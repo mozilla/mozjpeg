@@ -98,7 +98,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 	return;
 }
 
-JNIEXPORT jint JNICALL TJCompressor_compress
+static jint TJCompressor_compress
 	(JNIEnv *env, jobject obj, jarray src, jint srcElementSize, jint x, jint y,
 		jint width, jint pitch, jint height, jint pf, jbyteArray dst,
 		jint jpegSubsamp, jint jpegQual, jint flags)
@@ -194,7 +194,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 	return 0;
 }
 
-JNIEXPORT void JNICALL TJCompressor_encodeYUV
+static void TJCompressor_encodeYUV
 	(JNIEnv *env, jobject obj, jarray src, jint srcElementSize, jint width,
 		jint pitch, jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
 {
@@ -351,7 +351,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 	return;
 }
 
-JNIEXPORT void JNICALL TJDecompressor_decompress
+static void TJDecompressor_decompress
 	(JNIEnv *env, jobject obj, jbyteArray src, jint jpegSize, jarray dst,
 		jint dstElementSize, jint x, jint y, jint width, jint pitch, jint height,
 		jint pf, jint flags)

@@ -365,7 +365,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 JNIEXPORT jobjectArray JNICALL Java_org_libjpegturbo_turbojpeg_TJ_getScalingFactors
 	(JNIEnv *env, jclass cls)
 {
-  jclass sfcls=NULL;  jfieldID fid=0;
+	jclass sfcls=NULL;  jfieldID fid=0;
 	tjscalingfactor *sf=NULL;  int n=0, i;
 	jobject sfobj=NULL;
 	jobjectArray sfjava=NULL;
@@ -664,20 +664,20 @@ static int JNICustomFilter(short *coeffs, tjregion arrayRegion,
 	JNICustomFilterParams *params=(JNICustomFilterParams *)transform->data;
 	JNIEnv *env=params->env;
 	jobject tobj=params->tobj, cfobj=params->cfobj;
-  jobject arrayRegionObj, planeRegionObj, bufobj, borobj;
+	jobject arrayRegionObj, planeRegionObj, bufobj, borobj;
 	jclass cls;  jmethodID mid;  jfieldID fid;
 
 	bailif0(bufobj=(*env)->NewDirectByteBuffer(env, coeffs,
 		sizeof(short)*arrayRegion.w*arrayRegion.h));
 	bailif0(cls=(*env)->FindClass(env, "java/nio/ByteOrder"));
-  bailif0(mid=(*env)->GetStaticMethodID(env, cls, "nativeOrder",
+	bailif0(mid=(*env)->GetStaticMethodID(env, cls, "nativeOrder",
 		"()Ljava/nio/ByteOrder;"));
 	bailif0(borobj=(*env)->CallStaticObjectMethod(env, cls, mid));
 	bailif0(cls=(*env)->GetObjectClass(env, bufobj));
 	bailif0(mid=(*env)->GetMethodID(env, cls, "order",
 		"(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;"));
 	(*env)->CallObjectMethod(env, bufobj, mid, borobj);
-  bailif0(mid=(*env)->GetMethodID(env, cls, "asShortBuffer",
+	bailif0(mid=(*env)->GetMethodID(env, cls, "asShortBuffer",
 		"()Ljava/nio/ShortBuffer;"));
 	bailif0(bufobj=(*env)->CallObjectMethod(env, bufobj, mid));
 

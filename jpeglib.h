@@ -1062,6 +1062,7 @@ EXTERN(void) jpeg_add_quant_table JPP((j_compress_ptr cinfo, int which_tbl,
 				       int scale_factor,
 				       boolean force_baseline));
 EXTERN(int) jpeg_quality_scaling JPP((int quality));
+EXTERN(float) jpeg_float_quality_scaling JPP((float quality));
 EXTERN(void) jpeg_simple_progression JPP((j_compress_ptr cinfo));
 EXTERN(void) jpeg_suppress_tables JPP((j_compress_ptr cinfo,
 				       boolean suppress));

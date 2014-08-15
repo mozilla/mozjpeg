@@ -336,31 +336,31 @@ set_quality_ratings (j_compress_ptr cinfo, char *arg, boolean force_baseline)
  * If there are more q-table slots than parameters, the last value is replicated.
  */
 {
-  int val = 75;			/* default value */
+  float val = 75.f;             /* default value */
   int tblno;
   char ch;
 
   for (tblno = 0; tblno < NUM_QUANT_TBLS; tblno++) {
     if (*arg) {
-      ch = ',';			/* if not set by sscanf, will be ',' */
-      if (sscanf(arg, "%d%c", &val, &ch) < 1)
-	return FALSE;
-      if (ch != ',')		/* syntax check */
-	return FALSE;
+      ch = ',';                 /* if not set by sscanf, will be ',' */
+      if (sscanf(arg, "%f%c", &val, &ch) < 1)
+        return FALSE;
+      if (ch != ',')            /* syntax check */
+        return FALSE;
       /* Convert user 0-100 rating to percentage scaling */
 #if JPEG_LIB_VERSION >= 70
-      cinfo->q_scale_factor[tblno] = jpeg_quality_scaling(val);
+      cinfo->q_scale_factor[tblno] = jpeg_float_quality_scaling(val);
 #else
-      q_scale_factor[tblno] = jpeg_quality_scaling(val);
+      q_scale_factor[tblno] = jpeg_float_quality_scaling(val);
 #endif
       while (*arg && *arg++ != ',') /* advance to next segment of arg string */
 	;
     } else {
       /* reached end of parameter, set remaining factors to last value */
 #if JPEG_LIB_VERSION >= 70
-      cinfo->q_scale_factor[tblno] = jpeg_quality_scaling(val);
+      cinfo->q_scale_factor[tblno] = jpeg_float_quality_scaling(val);
 #else
-      q_scale_factor[tblno] = jpeg_quality_scaling(val);
+      q_scale_factor[tblno] = jpeg_float_quality_scaling(val);
 #endif
     }
   }

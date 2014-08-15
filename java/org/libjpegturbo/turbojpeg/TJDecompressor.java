@@ -37,7 +37,7 @@ import java.nio.*;
 public class TJDecompressor {
 
   private static final String NO_ASSOC_ERROR =
-    "No source image is associated with this instance";
+    "No JPEG image is associated with this instance";
 
   /**
    * Create a TurboJPEG decompresssor instance.
@@ -139,9 +139,9 @@ public class TJDecompressor {
   public int getWidth() throws Exception {
     if (yuvImage != null)
       return yuvImage.getWidth();
-    if (srcWidth < 1)
+    if (jpegWidth < 1)
       throw new Exception(NO_ASSOC_ERROR);
-    return srcWidth;
+    return jpegWidth;
   }
 
   /**
@@ -154,9 +154,9 @@ public class TJDecompressor {
   public int getHeight() throws Exception {
     if (yuvImage != null)
       return yuvImage.getHeight();
-    if (srcHeight < 1)
+    if (jpegHeight < 1)
       throw new Exception(NO_ASSOC_ERROR);
-    return srcHeight;
+    return jpegHeight;
   }
 
   /**
@@ -170,11 +170,11 @@ public class TJDecompressor {
   public int getSubsamp() throws Exception {
     if (yuvImage != null)
       return yuvImage.getSubsamp();
-    if (srcSubsamp < 0)
+    if (jpegSubsamp < 0)
       throw new Exception(NO_ASSOC_ERROR);
-    if (srcSubsamp >= TJ.NUMSAMP)
+    if (jpegSubsamp >= TJ.NUMSAMP)
       throw new Exception("JPEG header information is invalid");
-    return srcSubsamp;
+    return jpegSubsamp;
   }
 
   /**
@@ -188,11 +188,11 @@ public class TJDecompressor {
   public int getColorspace() throws Exception {
     if (yuvImage != null)
       return TJ.CS_YCbCr;
-    if (srcColorspace < 0)
+    if (jpegColorspace < 0)
       throw new Exception(NO_ASSOC_ERROR);
-    if (srcColorspace >= TJ.NUMCS)
+    if (jpegColorspace >= TJ.NUMCS)
       throw new Exception("JPEG header information is invalid");
-    return srcColorspace;
+    return jpegColorspace;
   }
 
   /**
@@ -265,19 +265,19 @@ public class TJDecompressor {
    */
   public int getScaledWidth(int desiredWidth, int desiredHeight)
                             throws Exception {
-    if (srcWidth < 1 || srcHeight < 1)
+    if (jpegWidth < 1 || jpegHeight < 1)
       throw new Exception(NO_ASSOC_ERROR);
     if (desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledWidth()");
     TJScalingFactor[] sf = TJ.getScalingFactors();
     if (desiredWidth == 0)
-      desiredWidth = srcWidth;
+      desiredWidth = jpegWidth;
     if (desiredHeight == 0)
-      desiredHeight = srcHeight;
-    int scaledWidth = srcWidth, scaledHeight = srcHeight;
+      desiredHeight = jpegHeight;
+    int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
     for (int i = 0; i < sf.length; i++) {
-      scaledWidth = sf[i].getScaled(srcWidth);
-      scaledHeight = sf[i].getScaled(srcHeight);
+      scaledWidth = sf[i].getScaled(jpegWidth);
+      scaledHeight = sf[i].getScaled(jpegHeight);
       if (scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
         break;
     }
@@ -307,19 +307,19 @@ public class TJDecompressor {
    */
   public int getScaledHeight(int desiredWidth, int desiredHeight)
                              throws Exception {
-    if (srcWidth < 1 || srcHeight < 1)
+    if (jpegWidth < 1 || jpegHeight < 1)
       throw new Exception(NO_ASSOC_ERROR);
     if (desiredWidth < 0 || desiredHeight < 0)
       throw new Exception("Invalid argument in getScaledHeight()");
     TJScalingFactor[] sf = TJ.getScalingFactors();
     if (desiredWidth == 0)
-      desiredWidth = srcWidth;
+      desiredWidth = jpegWidth;
     if (desiredHeight == 0)
-      desiredHeight = srcHeight;
-    int scaledWidth = srcWidth, scaledHeight = srcHeight;
+      desiredHeight = jpegHeight;
+    int scaledWidth = jpegWidth, scaledHeight = jpegHeight;
     for (int i = 0; i < sf.length; i++) {
-      scaledWidth = sf[i].getScaled(srcWidth);
-      scaledHeight = sf[i].getScaled(srcHeight);
+      scaledWidth = sf[i].getScaled(jpegWidth);
+      scaledHeight = sf[i].getScaled(jpegHeight);
       if (scaledWidth <= desiredWidth && scaledHeight <= desiredHeight)
         break;
     }
@@ -497,7 +497,7 @@ public class TJDecompressor {
     if (scaledWidth != dstImage.getWidth() ||
         scaledHeight != dstImage.getHeight())
       throw new Exception("YUVImage dimensions do not match one of the scaled image sizes that TurboJPEG is capable of generating.");
-    if (srcSubsamp != dstImage.getSubsamp())
+    if (jpegSubsamp != dstImage.getSubsamp())
       throw new Exception("YUVImage subsampling level does not match that of the JPEG image");
 
     decompressToYUV(jpegBuf, jpegBufSize, dstImage.getBuf(),
@@ -510,8 +510,8 @@ public class TJDecompressor {
    */
   @Deprecated
   public void decompressToYUV(byte[] dstBuf, int flags) throws Exception {
-    YUVImage dstImage = new YUVImage(dstBuf, srcWidth, 4, srcHeight,
-                                     srcSubsamp);
+    YUVImage dstImage = new YUVImage(dstBuf, jpegWidth, 4, jpegHeight,
+                                     jpegSubsamp);
     decompressToYUV(dstImage, flags);
   }
 
@@ -553,9 +553,9 @@ public class TJDecompressor {
                                   int flags) throws Exception {
     if (flags < 0)
       throw new Exception("Invalid argument in decompressToYUV()");
-    if (srcWidth < 1 || srcHeight < 1 || srcSubsamp < 0)
+    if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
       throw new Exception(NO_ASSOC_ERROR);
-    if (srcSubsamp >= TJ.NUMSAMP)
+    if (jpegSubsamp >= TJ.NUMSAMP)
       throw new Exception("JPEG header information is invalid");
     if (yuvImage != null)
       throw new Exception("Source image is the wrong type");
@@ -563,7 +563,7 @@ public class TJDecompressor {
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
     YUVImage yuvImage = new YUVImage(scaledWidth, pad, scaledHeight,
-                                     srcSubsamp);
+                                     jpegSubsamp);
     decompressToYUV(yuvImage, flags);
     return yuvImage;
   }
@@ -573,7 +573,7 @@ public class TJDecompressor {
    */
   @Deprecated
   public byte[] decompressToYUV(int flags) throws Exception {
-    YUVImage dstImage = new YUVImage(srcWidth, 4, srcHeight, srcSubsamp);
+    YUVImage dstImage = new YUVImage(jpegWidth, 4, jpegHeight, jpegSubsamp);
     decompressToYUV(dstImage, flags);
     return dstImage.getBuf();
   }
@@ -855,9 +855,9 @@ public class TJDecompressor {
   protected byte[] jpegBuf = null;
   protected int jpegBufSize = 0;
   protected YUVImage yuvImage = null;
-  protected int srcWidth = 0;
-  protected int srcHeight = 0;
-  protected int srcSubsamp = -1;
-  protected int srcColorspace = -1;
+  protected int jpegWidth = 0;
+  protected int jpegHeight = 0;
+  protected int jpegSubsamp = -1;
+  protected int jpegColorspace = -1;
   private ByteOrder byteOrder = null;
 };

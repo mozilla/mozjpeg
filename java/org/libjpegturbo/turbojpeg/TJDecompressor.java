@@ -87,18 +87,18 @@ public class TJDecompressor {
 
   /**
    * Associate the JPEG image of length <code>imageSize</code> bytes stored in
-   * <code>srcImage</code> with this decompressor instance.  This image will
+   * <code>jpegImage</code> with this decompressor instance.  This image will
    * be used as the source image for subsequent decompress operations.
    *
-   * @param srcImage JPEG image buffer
+   * @param jpegImage JPEG image buffer
    *
    * @param imageSize size of the JPEG image (in bytes)
    */
-  public void setSourceImage(byte[] srcImage, int imageSize)
+  public void setSourceImage(byte[] jpegImage, int imageSize)
     throws Exception {
-    if (srcImage == null || imageSize < 1)
+    if (jpegImage == null || imageSize < 1)
       throw new Exception("Invalid argument in setSourceImage()");
-    jpegBuf = srcImage;
+    jpegBuf = jpegImage;
     jpegBufSize = imageSize;
     decompressHeader(jpegBuf, jpegBufSize);
     yuvImage = null;
@@ -134,7 +134,7 @@ public class TJDecompressor {
    * decompressor instance.
    *
    * @return the width of the source image (JPEG or YUV) associated with this
-   * decompressor instance
+   * decompressor instance.
    */
   public int getWidth() throws Exception {
     if (yuvImage != null)
@@ -149,7 +149,7 @@ public class TJDecompressor {
    * decompressor instance.
    *
    * @return the height of the source image (JPEG or YUV) associated with this
-   * decompressor instance
+   * decompressor instance.
    */
   public int getHeight() throws Exception {
     if (yuvImage != null)
@@ -165,7 +165,7 @@ public class TJDecompressor {
    * {@link TJ#SAMP_444 TJ.SAMP_*}.
    *
    * @return the level of chrominance subsampling used in the source image
-   * (JPEG or YUV) associated with this decompressor instance
+   * (JPEG or YUV) associated with this decompressor instance.
    */
   public int getSubsamp() throws Exception {
     if (yuvImage != null)
@@ -183,7 +183,7 @@ public class TJDecompressor {
    * source image is YUV, then this always returns {@link TJ#CS_YCbCr}.
    *
    * @return the colorspace used in the source image (JPEG or YUV) associated
-   * with this decompressor instance
+   * with this decompressor instance.
    */
   public int getColorspace() throws Exception {
     if (yuvImage != null)
@@ -196,23 +196,10 @@ public class TJDecompressor {
   }
 
   /**
-   * Returns the source image buffer associated with this decompressor
-   * instance.
+   * Returns the JPEG image buffer associated with this decompressor instance.
    *
-   * @return the source image buffer associated with this decompressor instance
+   * @return the JPEG image buffer associated with this decompressor instance.
    */
-  public byte[] getSourceBuf() throws Exception {
-    if (yuvImage != null)
-      return yuvImage.getBuf();
-    if (jpegBuf == null)
-      throw new Exception(NO_ASSOC_ERROR);
-    return jpegBuf;
-  }
-
-  /**
-   * @deprecated Use {@link #getSourceBuf} instead.
-   */
-  @Deprecated
   public byte[] getJPEGBuf() throws Exception {
     if (jpegBuf == null)
       throw new Exception(NO_ASSOC_ERROR);
@@ -220,24 +207,12 @@ public class TJDecompressor {
   }
 
   /**
-   * Returns the size of the source image (in bytes) associated with this
+   * Returns the size of the JPEG image (in bytes) associated with this
    * decompressor instance.
    *
-   * @return the size of the source image (in bytes) associated with this
-   * decompressor instance
+   * @return the size of the JPEG image (in bytes) associated with this
+   * decompressor instance.
    */
-  public int getSourceSize() throws Exception {
-    if (yuvImage != null)
-      return yuvImage.getSize();
-    if (jpegBufSize < 1)
-      throw new Exception(NO_ASSOC_ERROR);
-    return jpegBufSize;
-  }
-
-  /**
-   * @deprecated Use {@link #getSourceSize} instead.
-   */
-  @Deprecated
   public int getJPEGSize() throws Exception {
     if (jpegBufSize < 1)
       throw new Exception(NO_ASSOC_ERROR);
@@ -261,7 +236,7 @@ public class TJDecompressor {
    *
    * @return the width of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
-   * height
+   * height.
    */
   public int getScaledWidth(int desiredWidth, int desiredHeight)
                             throws Exception {
@@ -303,7 +278,7 @@ public class TJDecompressor {
    *
    * @return the height of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
-   * height
+   * height.
    */
   public int getScaledHeight(int desiredWidth, int desiredHeight)
                              throws Exception {
@@ -402,9 +377,10 @@ public class TJDecompressor {
         pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
       throw new Exception("Invalid argument in decompress()");
     if (yuvImage != null)
-      decodeYUV(yuvImage.getBuf(), yuvImage.getPad(), yuvImage.getSubsamp(),
-                dstBuf, x, y, yuvImage.getWidth(), pitch, yuvImage.getHeight(),
-                pixelFormat, flags);
+      decodeYUV(yuvImage.getPlanes(), yuvImage.getOffsets(),
+                yuvImage.getStrides(), yuvImage.getSubsamp(), dstBuf, x, y,
+                yuvImage.getWidth(), pitch, yuvImage.getHeight(), pixelFormat,
+                flags);
     else {
       if (x > 0 || y > 0)
         decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, pitch,
@@ -449,7 +425,7 @@ public class TJDecompressor {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
-   * @return a buffer containing the decompressed image
+   * @return a buffer containing the decompressed image.
    */
   public byte[] decompress(int desiredWidth, int pitch, int desiredHeight,
                            int pixelFormat, int flags) throws Exception {
@@ -500,9 +476,9 @@ public class TJDecompressor {
     if (jpegSubsamp != dstImage.getSubsamp())
       throw new Exception("YUVImage subsampling level does not match that of the JPEG image");
 
-    decompressToYUV(jpegBuf, jpegBufSize, dstImage.getBuf(),
-                    dstImage.getWidth(), dstImage.getPad(),
-                    dstImage.getHeight(), flags);
+    decompressToYUV(jpegBuf, jpegBufSize, dstImage.getPlanes(),
+                    dstImage.getOffsets(), dstImage.getWidth(),
+                    dstImage.getStrides(), dstImage.getHeight(), flags);
   }
 
   /**
@@ -517,12 +493,70 @@ public class TJDecompressor {
 
   /**
    * Decompress the JPEG source image associated with this decompressor
-   * instance into a YUV planar image and return a <code>YUVImage</code>
-   * instance containing the decompressed image.  This method performs JPEG
-   * decompression but leaves out the color conversion step, so a planar YUV
-   * image is generated instead of an RGB or grayscale image.  This method
-   * cannot be used to decompress JPEG source images with the CMYK or YCCK
-   * colorspace.
+   * instance into a set of Y, U (Cb), and V (Cr) image planes and return a
+   * <code>YUVImage</code> instance containing the decompressed image planes.
+   * This method performs JPEG decompression but leaves out the color
+   * conversion step, so a planar YUV image is generated instead of an RGB or
+   * grayscale image.  This method cannot be used to decompress JPEG source
+   * images with the CMYK or YCCK colorspace.
+   *
+   * @param desiredWidth desired width (in pixels) of the YUV image.  If the
+   * desired image dimensions are different than the dimensions of the JPEG
+   * image being decompressed, then TurboJPEG will use scaling in the JPEG
+   * decompressor to generate the largest possible image that will fit within
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the width of the JPEG image (in other words, the width will not be
+   * considered when determining the scaled image size.)
+   *
+   * @param strides an array of integers, each specifying the number of bytes
+   * per line in the corresponding plane of the output image.  Setting the
+   * stride for any plane to 0 is the same as setting it to the scaled
+   * component width of the plane.  If <tt>strides</tt> is NULL, then the
+   * strides for all planes will be set to their respective scaled component
+   * widths.  You can adjust the strides in order to add an arbitrary amount of
+   * line padding to each plane.
+   *
+   * @param desiredHeight desired height (in pixels) of the YUV image.  If the
+   * desired image dimensions are different than the dimensions of the JPEG
+   * image being decompressed, then TurboJPEG will use scaling in the JPEG
+   * decompressor to generate the largest possible image that will fit within
+   * the desired dimensions.  Setting this to 0 is the same as setting it to
+   * the height of the JPEG image (in other words, the height will not be
+   * considered when determining the scaled image size.)
+   *
+   * @param flags the bitwise OR of one or more of
+   * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
+   *
+   * @return a YUV planar image.
+   */
+  public YUVImage decompressToYUV(int desiredWidth, int[] strides,
+                                  int desiredHeight,
+                                  int flags) throws Exception {
+    if (flags < 0)
+      throw new Exception("Invalid argument in decompressToYUV()");
+    if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
+      throw new Exception(NO_ASSOC_ERROR);
+    if (jpegSubsamp >= TJ.NUMSAMP)
+      throw new Exception("JPEG header information is invalid");
+    if (yuvImage != null)
+      throw new Exception("Source image is the wrong type");
+
+    int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
+    int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
+    YUVImage yuvImage = new YUVImage(scaledWidth, null, scaledHeight,
+                                     jpegSubsamp);
+    decompressToYUV(yuvImage, flags);
+    return yuvImage;
+  }
+
+  /**
+   * Decompress the JPEG source image associated with this decompressor
+   * instance into a unified YUV planar image buffer and return a
+   * <code>YUVImage</code> instance containing the decompressed image.  This
+   * method performs JPEG decompression but leaves out the color conversion
+   * step, so a planar YUV image is generated instead of an RGB or grayscale
+   * image.  This method cannot be used to decompress JPEG source images with
+   * the CMYK or YCCK colorspace.
    *
    * @param desiredWidth desired width (in pixels) of the YUV image.  If the
    * desired image dimensions are different than the dimensions of the JPEG
@@ -547,7 +581,7 @@ public class TJDecompressor {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
-   * @return a YUV planar image
+   * @return a YUV planar image.
    */
   public YUVImage decompressToYUV(int desiredWidth, int pad, int desiredHeight,
                                   int flags) throws Exception {
@@ -650,9 +684,10 @@ public class TJDecompressor {
         pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
       throw new Exception("Invalid argument in decompress()");
     if (yuvImage != null)
-      decodeYUV(yuvImage.getBuf(), yuvImage.getPad(), yuvImage.getSubsamp(),
-                dstBuf, x, y, yuvImage.getWidth(), stride,
-                yuvImage.getHeight(), pixelFormat, flags);
+      decodeYUV(yuvImage.getPlanes(), yuvImage.getOffsets(),
+                yuvImage.getStrides(), yuvImage.getSubsamp(), dstBuf, x, y,
+                yuvImage.getWidth(), stride, yuvImage.getHeight(), pixelFormat,
+                flags);
     else
       decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, stride,
                  desiredHeight, pixelFormat, flags);
@@ -734,8 +769,9 @@ public class TJDecompressor {
       DataBufferInt db = (DataBufferInt)wr.getDataBuffer();
       int[] buf = db.getData();
       if (yuvImage != null)
-        decodeYUV(yuvImage.getBuf(), yuvImage.getPad(), yuvImage.getSubsamp(),
-                  buf, 0, 0, yuvImage.getWidth(), stride, yuvImage.getHeight(),
+        decodeYUV(yuvImage.getPlanes(), yuvImage.getOffsets(),
+                  yuvImage.getStrides(), yuvImage.getSubsamp(), buf, 0, 0,
+                  yuvImage.getWidth(), stride, yuvImage.getHeight(),
                   pixelFormat, flags);
       else {
         if (jpegBuf == null)
@@ -778,7 +814,7 @@ public class TJDecompressor {
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
    * @return a <code>BufferedImage</code> instance containing the
-   * decompressed/decoded image
+   * decompressed/decoded image.
    */
   public BufferedImage decompress(int desiredWidth, int desiredHeight,
                                   int bufferedImageType, int flags)
@@ -836,16 +872,17 @@ public class TJDecompressor {
   private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
     int flags) throws Exception; // deprecated
 
-  private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
-    int desiredWidth, int pad, int desiredheight, int flags) throws Exception;
+  private native void decompressToYUV(byte[] srcBuf, int size,
+    byte[][] dstPlanes, int[] dstOffsets, int desiredWidth, int[] dstStrides,
+    int desiredheight, int flags) throws Exception;
 
-  private native void decodeYUV(byte[] srcBuf, int pad, int subsamp,
-    byte[] dstBuf, int x, int y, int width, int pitch, int height,
-    int pixelFormat, int flags) throws Exception;
+  private native void decodeYUV(byte[][] srcPlanes, int[] srcOffsets,
+    int[] srcStrides, int subsamp, byte[] dstBuf, int x, int y, int width,
+    int pitch, int height, int pixelFormat, int flags) throws Exception;
 
-  private native void decodeYUV(byte[] srcBuf, int pad, int subsamp,
-    int[] dstBuf, int x, int y, int width, int stride, int height,
-    int pixelFormat, int flags) throws Exception;
+  private native void decodeYUV(byte[][] srcPlanes, int[] srcOffsets,
+    int[] srcStrides, int subsamp, int[] dstBuf, int x, int y, int width,
+    int stride, int height, int pixelFormat, int flags) throws Exception;
 
   static {
     TJLoader.load();

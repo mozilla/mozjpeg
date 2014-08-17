@@ -52,20 +52,18 @@
  *
  * Each plane is simply a 2D array of bytes, each byte representing the value
  * of one of the components (Y, Cb, or Cr) at a particular location in the
- * image.  The "component width" and "component height" of each plane are
- * determined by the image width, height, and level of chrominance subsampling.
- * For the luminance plane, the component width is the image width padded to
- * the nearest multiple of the horizontal subsampling factor (2 in the case of
- * 4:2:0 and 4:2:2, 4 in the case of 4:1:1, 1 in the case of 4:4:4 or
- * grayscale.)  Similarly, the component height of the luminance plane is the
- * image height padded to the nearest multiple of the vertical subsampling
- * factor (2 in the case of 4:2:0 or 4:4:0, 1 in the case of 4:4:4 or
- * grayscale.)  This is irrespective of any additional padding that may be
- * specified as an argument to the various YUV functions.  The component width
- * of the chrominance planes is equal to the component width of the luminance
- * plane divided by the horizontal subsampling factor, and the component height
- * of the chrominance planes is equal to the component height of the luminance
- * plane divided by the vertical subsampling factor.
+ * image.  The width and height of each plane are determined by the image
+ * width, height, and level of chrominance subsampling.   The luminance plane
+ * width is the image width padded to the nearest multiple of the horizontal
+ * subsampling factor (2 in the case of 4:2:0 and 4:2:2, 4 in the case of
+ * 4:1:1, 1 in the case of 4:4:4 or grayscale.)  Similarly, the luminance plane
+ * height is the image height padded to the nearest multiple of the vertical
+ * subsampling factor (2 in the case of 4:2:0 or 4:4:0, 1 in the case of 4:4:4
+ * or grayscale.)  This is irrespective of any additional padding that may be
+ * specified as an argument to the various YUV functions.  The chrominance
+ * plane width is equal to the luminance plane width divided by the horizontal
+ * subsampling factor, and the chrominance plane height is equal to the
+ * luminance plane height divided by the vertical subsampling factor.
  *
  * For example, if the source image is 35 x 35 pixels and 4:2:2 subsampling is
  * used, then the luminance plane would be 36 x 35 bytes, and each of the
@@ -625,7 +623,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  *
  * @param width width (in pixels) of the source image
  *
- * @param pitch bytes per line of the source image.  Normally, this should be
+ * @param pitch bytes per line in the source image.  Normally, this should be
  * <tt>width * #tjPixelSize[pixelFormat]</tt> if the image is unpadded, or
  * <tt>#TJPAD(width * #tjPixelSize[pixelFormat])</tt> if each line of the image
  * is padded to the nearest 32-bit boundary, as is the case for Windows
@@ -668,7 +666,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  * 100 = best)
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -730,7 +728,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
  * 100 = best)
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -747,10 +745,10 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * @param srcPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
  * (or just a Y plane, if compressing a grayscale image) that contain a YUV
  * image to be compressed.  These planes can be contiguous or non-contiguous in
- * memory.  Each plane should be at least
- * <b><i>{component stride} * {component height}</i></b> bytes in size.  (See
- * below for a description of stride, and refer to @ref YUVnotes
- * "YUV Image Format Notes" for a description of component height.)
+ * memory.  The size of each plane should match the value returned by
+ * #tjPlaneSizeYUV() for the given image width, height, strides, and level of
+ * chrominance subsampling.  Refer to @ref YUVnotes "YUV Image Format Notes"
+ * for more details.
  *
  * @param width width (in pixels) of the source image.  If the width is not an
  * even multiple of the MCU block width (see #tjMCUWidth), then an intermediate
@@ -758,11 +756,12 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  *
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the YUV source image.  Setting the stride
- * for any plane to 0 is the same as setting it to the component width for the
- * plane.  If <tt>strides</tt> is NULL, then the strides for all planes will be
- * set to their respective component widths.  You can adjust the strides in
- * order to specify an arbitrary amount of line padding in each plane or to
- * create a JPEG image from a subregion of a larger YUV planar image.
+ * for any plane to 0 is the same as setting it to the plane width (see
+ * @ref YUVnotes "YUV Image Format Notes".)  If <tt>strides</tt> is NULL, then
+ * the strides for all planes will be set to their respective plane widths. 
+ * You can adjust the strides in order to specify an arbitrary amount of line
+ * padding in each plane or to create a JPEG image from a subregion of a larger
+ * YUV planar image.
  *
  * @param height height (in pixels) of the source image.  If the height is not
  * an even multiple of the MCU block height (see #tjMCUHeight), then an
@@ -797,7 +796,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * 100 = best)
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -817,9 +816,9 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
  * size of a JPEG image prior to compression, the corner case has to be
  * handled.
  *
- * @param width width of the image (in pixels)
+ * @param width width (in pixels) of the image
  *
- * @param height height of the image (in pixels)
+ * @param height height (in pixels) of the image
  *
  * @param jpegSubsamp the level of chrominance subsampling to be used when
  * generating the JPEG image (see @ref TJSAMP
@@ -836,12 +835,12 @@ DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
  * The size of the buffer (in bytes) required to hold a YUV planar image with
  * the given parameters.
  *
- * @param width width of the image (in pixels)
+ * @param width width (in pixels) of the image
  *
  * @param pad the width of each line in each plane of the image is padded to
  * the nearest multiple of this number of bytes (must be a power of 2.)
  *
- * @param height height of the image (in pixels)
+ * @param height height (in pixels) of the image
  *
  * @param subsamp level of chrominance subsampling in the image (see
  * @ref TJSAMP "Chrominance subsampling options".)
@@ -851,6 +850,65 @@ DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
  */
 DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
   int subsamp);
+
+
+/**
+ * The size of the buffer (in bytes) required to hold a YUV image plane with
+ * the given parameters.
+ *
+ * @param componentID ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr)
+ *
+ * @param width width (in pixels) of the YUV image.  NOTE: this is the width of
+ * the whole image, not the plane width.
+ *
+ * @param stride bytes per line in the image plane.  Setting this to 0 is the
+ * equivalent of setting it to the plane width.
+ *
+ * @param height height (in pixels) of the YUV image.  NOTE: this is the height
+ * of the whole image, not the plane height.
+ *
+ * @param subsamp level of chrominance subsampling in the image (see
+ * @ref TJSAMP "Chrominance subsampling options".)
+ *
+ * @return the size of the buffer (in bytes) required to hold the YUV image
+ * plane, or -1 if the arguments are out of bounds.
+ */
+DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV(int componentID, int width,
+	int stride, int height, int subsamp);
+
+
+/**
+ * The plane width of a YUV image plane with the given parameters.  Refer to
+ * @ref YUVnotes "YUV Image Format Notes" for a description of plane width.
+ *
+ * @param componentID ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr)
+ *
+ * @param width width (in pixels) of the YUV image
+ *
+ * @param subsamp level of chrominance subsampling in the image (see
+ * @ref TJSAMP "Chrominance subsampling options".)
+ *
+ * @return the plane width of a YUV image plane with the given parameters, or
+ * -1 if the arguments are out of bounds.
+ */
+DLLEXPORT int tjPlaneWidth(int componentID, int width, int subsamp);
+
+
+/**
+ * The plane height of a YUV image plane with the given parameters.  Refer to
+ * @ref YUVnotes "YUV Image Format Notes" for a description of plane height.
+ *
+ * @param componentID ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr)
+ *
+ * @param height height (in pixels) of the YUV image
+ *
+ * @param subsamp level of chrominance subsampling in the image (see
+ * @ref TJSAMP "Chrominance subsampling options".)
+ *
+ * @return the plane height of a YUV image plane with the given parameters, or
+ * -1 if the arguments are out of bounds.
+ */
+DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp);
 
 
 /**
@@ -866,7 +924,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
  *
  * @param width width (in pixels) of the source image
  *
- * @param pitch bytes per line of the source image.  Normally, this should be
+ * @param pitch bytes per line in the source image.  Normally, this should be
  * <tt>width * #tjPixelSize[pixelFormat]</tt> if the image is unpadded, or
  * <tt>#TJPAD(width * #tjPixelSize[pixelFormat])</tt> if each line of the image
  * is padded to the nearest 32-bit boundary, as is the case for Windows
@@ -897,7 +955,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
  * image compatible with the I420 (AKA "YUV420P") format.
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -919,7 +977,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  *
  * @param width width (in pixels) of the source image
  *
- * @param pitch bytes per line of the source image.  Normally, this should be
+ * @param pitch bytes per line in the source image.  Normally, this should be
  * <tt>width * #tjPixelSize[pixelFormat]</tt> if the image is unpadded, or
  * <tt>#TJPAD(width * #tjPixelSize[pixelFormat])</tt> if each line of the image
  * is padded to the nearest 32-bit boundary, as is the case for Windows
@@ -935,18 +993,18 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  * @param dstPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
  * (or just a Y plane, if generating a grayscale image) that will receive the
  * encoded image.  These planes can be contiguous or non-contiguous in memory.
- * Each plane should be at least
- * <b><i>{component stride} * {component height}</i></b> bytes in size.
- * (See below for a description of stride, and refer to @ref YUVnotes
- * "YUV Image Format Notes" for a description of component height.)
+ * Use #tjPlaneSizeYUV() to determine the appropriate size for each plane based
+ * on the image width, height, strides, and level of chrominance subsampling.
+ * Refer to @ref YUVnotes "YUV Image Format Notes" for more details.
  *
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the output image.  Setting the stride for
- * any plane to 0 is the same as setting it to the component width for the
- * plane.  If <tt>strides</tt> is NULL, then the strides for all planes will be
- * set to their respective component widths.  You can adjust the strides in
- * order to add an arbitrary amount of line padding to each plane or to encode
- * an RGB or grayscale image into a subregion of a larger YUV planar image.
+ * any plane to 0 is the same as setting it to the plane width (see
+ * @ref YUVnotes "YUV Image Format Notes".)  If <tt>strides</tt> is NULL, then
+ * the strides for all planes will be set to their respective plane widths.
+ * You can adjust the strides in order to add an arbitrary amount of line
+ * padding to each plane or to encode an RGB or grayscale image into a
+ * subregion of a larger YUV planar image.
  *
  * @param subsamp the level of chrominance subsampling to be used when
  * generating the YUV image (see @ref TJSAMP
@@ -955,7 +1013,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  * image compatible with the I420 (AKA "YUV420P") format.
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
@@ -989,8 +1047,8 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
  * (in pixels) of the JPEG image
  *
  * @param jpegSubsamp pointer to an integer variable that will receive the
- * level of chrominance subsampling used when compressing the JPEG image (see
- * @ref TJSAMP "Chrominance subsampling options".)
+ * level of chrominance subsampling used when the JPEG image was compressed
+ * (see @ref TJSAMP "Chrominance subsampling options".)
  *
  * @param jpegColorspace pointer to an integer variable that will receive one
  * of the JPEG colorspace constants, indicating the colorspace of the JPEG
@@ -1039,7 +1097,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  * set to 0, then only the height will be considered when determining the
  * scaled image size.
  *
- * @param pitch bytes per line of the destination image.  Normally, this is
+ * @param pitch bytes per line in the destination image.  Normally, this is
  * <tt>scaledWidth * #tjPixelSize[pixelFormat]</tt> if the decompressed image
  * is unpadded, else <tt>#TJPAD(scaledWidth * #tjPixelSize[pixelFormat])</tt>
  * if each line of the decompressed image is padded to the nearest 32-bit
@@ -1061,7 +1119,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  * TJPF "Pixel formats".)
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -1111,7 +1169,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * performed within TurboJPEG.
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -1134,10 +1192,10 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  * @param dstPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
  * (or just a Y plane, if decompressing a grayscale image) that will receive
  * the YUV image.  These planes can be contiguous or non-contiguous in memory.
- * Each plane should be at least
- * <b><i>{component stride} * {scaled component height}</i></b> bytes in size.
- * (See below for a description of stride, and refer to @ref YUVnotes
- * "YUV Image Format Notes" for a description of component height.)
+ * Use #tjPlaneSizeYUV() to determine the appropriate size for each plane based
+ * on the scaled image width, scaled image height, strides, and level of
+ * chrominance subsampling.  Refer to @ref YUVnotes "YUV Image Format Notes"
+ * for more details.
  *
  * @param width desired width (in pixels) of the YUV image.  If this is
  * different than the width of the JPEG image being decompressed, then
@@ -1150,11 +1208,12 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  *
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the output image.  Setting the stride for
- * any plane to 0 is the same as setting it to the scaled component width for
- * the plane.  If <tt>strides</tt> is NULL, then the strides for all planes
- * will be set to their respective scaled component widths.  You can adjust the
- * strides in order to add an arbitrary amount of line padding to each plane or
- * to decompress the JPEG image into a subregion of a larger YUV planar image.
+ * any plane to 0 is the same as setting it to the scaled plane width (see
+ * @ref YUVnotes "YUV Image Format Notes".)  If <tt>strides</tt> is NULL, then
+ * the strides for all planes will be set to their respective scaled plane
+ * widths.  You can adjust the strides in order to add an arbitrary amount of
+ * line padding to each plane or to decompress the JPEG image into a subregion
+ * of a larger YUV planar image.
  *
  * @param height desired height (in pixels) of the YUV image.  If this is
  * different than the height of the JPEG image being decompressed, then
@@ -1166,7 +1225,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  * performed within TurboJPEG.
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -1204,7 +1263,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
  *
  * @param width width (in pixels) of the source and destination images
  *
- * @param pitch bytes per line of the destination image.  Normally, this should
+ * @param pitch bytes per line in the destination image.  Normally, this should
  * be <tt>width * #tjPixelSize[pixelFormat]</tt> if the destination image is
  * unpadded, or <tt>#TJPAD(width * #tjPixelSize[pixelFormat])</tt> if each line
  * of the destination image should be padded to the nearest 32-bit boundary, as
@@ -1218,7 +1277,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
  * "Pixel formats".)
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -1238,18 +1297,18 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
  * @param srcPlanes an array of pointers to Y, U (Cb), and V (Cr) image planes
  * (or just a Y plane, if decoding a grayscale image) that contain a YUV image
  * to be decoded.  These planes can be contiguous or non-contiguous in memory.
- * Each plane should be at least
- * <b><i>{component stride} * {component height}</i></b> bytes in size.
- * (See below for a description of stride, and refer to @ref YUVnotes
- * "YUV Image Format Notes" for a description of component height.)
+ * The size of each plane should match the value returned by #tjPlaneSizeYUV()
+ * for the given image width, height, strides, and level of chrominance
+ * subsampling.  Refer to @ref YUVnotes "YUV Image Format Notes" for more
+ * details.
  *
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the YUV source image.  Setting the stride
- * for any plane to 0 is the same as setting it to the component width for the
- * plane.  If <tt>strides</tt> is NULL, then the strides for all planes will be
- * set to their respective component widths.  You can adjust the strides in
- * order to specify an arbitrary amount of line padding in each plane or to
- * decode a subregion of a larger YUV planar image.
+ * for any plane to 0 is the same as setting it to the plane width (see
+ * @ref YUVnotes "YUV Image Format Notes".)  If <tt>strides</tt> is NULL, then
+ * the strides for all planes will be set to their respective plane widths.
+ * You can adjust the strides in order to specify an arbitrary amount of line
+ * padding in each plane or to decode a subregion of a larger YUV planar image.
  *
  * @param subsamp the level of chrominance subsampling used in the YUV source
  * image (see @ref TJSAMP "Chrominance subsampling options".)
@@ -1261,7 +1320,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
  *
  * @param width width (in pixels) of the source and destination images
  *
- * @param pitch bytes per line of the destination image.  Normally, this should
+ * @param pitch bytes per line in the destination image.  Normally, this should
  * be <tt>width * #tjPixelSize[pixelFormat]</tt> if the destination image is
  * unpadded, or <tt>#TJPAD(width * #tjPixelSize[pixelFormat])</tt> if each line
  * of the destination image should be padded to the nearest 32-bit boundary, as
@@ -1275,7 +1334,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
  * "Pixel formats".)
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -1295,9 +1354,9 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
 
 /**
  * Losslessly transform a JPEG image into another JPEG image.  Lossless
- * transforms work by moving the raw coefficients from one JPEG image structure
- * to another without altering the values of the coefficients.  While this is
- * typically faster than decompressing the image, transforming it, and
+ * transforms work by moving the raw DCT coefficients from one JPEG image
+ * structure to another without altering the values of the coefficients.  While
+ * this is typically faster than decompressing the image, transforming it, and
  * re-compressing it, lossless transforms are not free.  Each lossless
  * transform requires reading and performing Huffman decoding on all of the
  * coefficients in the source image, regardless of the size of the destination
@@ -1308,9 +1367,10 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *
  * @param handle a handle to a TurboJPEG transformer instance
  *
- * @param jpegBuf pointer to a buffer containing the JPEG image to transform
+ * @param jpegBuf pointer to a buffer containing the JPEG source image to
+ * transform
  *
- * @param jpegSize size of the JPEG image (in bytes)
+ * @param jpegSize size of the JPEG source image (in bytes)
  *
  * @param n the number of transformed JPEG images to generate
  *
@@ -1343,7 +1403,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  * corresponding transformed output image.
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
- * "flags".
+ * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
@@ -1372,7 +1432,7 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle handle);
  * @param bytes the number of bytes to allocate
  *
  * @return a pointer to a newly-allocated buffer with the specified number of
- * bytes
+ * bytes.
  *
  * @sa tjFree()
  */

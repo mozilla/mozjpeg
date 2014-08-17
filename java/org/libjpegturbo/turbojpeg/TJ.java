@@ -84,7 +84,8 @@ public final class TJ {
    * @param subsamp the level of chrominance subsampling (one of
    * <code>SAMP_*</code>)
    *
-   * @return the MCU block width for the given level of chrominance subsampling
+   * @return the MCU block width for the given level of chrominance
+   * subsampling.
    */
   public static int getMCUWidth(int subsamp) throws Exception {
     if (subsamp < 0 || subsamp >= NUMSAMP)
@@ -105,7 +106,7 @@ public final class TJ {
    * <code>SAMP_*</code>)
    *
    * @return the MCU block height for the given level of chrominance
-   * subsampling
+   * subsampling.
    */
   public static int getMCUHeight(int subsamp) throws Exception {
     if (subsamp < 0 || subsamp >= NUMSAMP)
@@ -214,7 +215,7 @@ public final class TJ {
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the pixel size (in bytes) for the given pixel format
+   * @return the pixel size (in bytes) for the given pixel format.
    */
   public static int getPixelSize(int pixelFormat) throws Exception {
     if (pixelFormat < 0 || pixelFormat >= NUMPF)
@@ -236,7 +237,7 @@ public final class TJ {
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the red offset for the given pixel format
+   * @return the red offset for the given pixel format.
    */
   public static int getRedOffset(int pixelFormat) throws Exception {
     if (pixelFormat < 0 || pixelFormat >= NUMPF)
@@ -258,7 +259,7 @@ public final class TJ {
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the green offset for the given pixel format
+   * @return the green offset for the given pixel format.
    */
   public static int getGreenOffset(int pixelFormat) throws Exception {
     if (pixelFormat < 0 || pixelFormat >= NUMPF)
@@ -280,7 +281,7 @@ public final class TJ {
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the blue offset for the given pixel format
+   * @return the blue offset for the given pixel format.
    */
   public static int getBlueOffset(int pixelFormat) throws Exception {
     if (pixelFormat < 0 || pixelFormat >= NUMPF)
@@ -404,7 +405,7 @@ public final class TJ {
    * generating the JPEG image (one of {@link TJ TJ.SAMP_*})
    *
    * @return the maximum size of the buffer (in bytes) required to hold a JPEG
-   * image with the given width, height, and level of chrominance subsampling
+   * image with the given width, height, and level of chrominance subsampling.
    */
   public static native int bufSize(int width, int height, int jpegSubsamp)
     throws Exception;
@@ -416,8 +417,7 @@ public final class TJ {
    * @param width the width (in pixels) of the YUV image
    *
    * @param pad the width of each line in each plane of the image is padded to
-   *        the nearest multiple of this number of bytes (must be a power of
-   *        2.)
+   * the nearest multiple of this number of bytes (must be a power of 2.)
    *
    * @param height the height (in pixels) of the YUV image
    *
@@ -425,7 +425,7 @@ public final class TJ {
    * image (one of {@link TJ TJ.SAMP_*})
    *
    * @return the size of the buffer (in bytes) required to hold a YUV planar
-   * image with the given width, height, and level of chrominance subsampling
+   * image with the given width, height, and level of chrominance subsampling.
    */
   public static native int bufSizeYUV(int width, int pad, int height,
                                       int subsamp)
@@ -439,11 +439,71 @@ public final class TJ {
     throws Exception;
 
   /**
+   * Returns the size of the buffer (in bytes) required to hold a YUV image
+   * plane with the given parameters.
+   *
+   * @param componentID ID number of the image plane (0 = Y, 1 = U/Cb,
+   * 2 = V/Cr)
+   *
+   * @param width width (in pixels) of the YUV image.  NOTE: this is the width
+   * of the whole image, not the plane width.
+   *
+   * @param stride bytes per line in the image plane.
+   *
+   * @param height height (in pixels) of the YUV image.  NOTE: this is the
+   * height of the whole image, not the plane height.
+   *
+   * @param subsamp the level of chrominance subsampling used in the YUV
+   * image (one of {@link TJ TJ.SAMP_*})
+   *
+   * @return the size of the buffer (in bytes) required to hold a YUV planar
+   * image with the given parameters.
+   */
+  public static native int planeSizeYUV(int componentID, int width, int stride,
+                                        int height, int subsamp)
+    throws Exception;
+
+  /**
+   * Returns the plane width of a YUV image plane with the given parameters.
+   * Refer to {@link YUVImage YUVImage} for a description of plane width.
+   *
+   * @param componentID ID number of the image plane (0 = Y, 1 = U/Cb,
+   * 2 = V/Cr)
+   *
+   * @param width width (in pixels) of the YUV image
+   *
+   * @param subsamp the level of chrominance subsampling used in the YUV image
+   * (one of {@link TJ TJ.SAMP_*})
+   *
+   * @return the plane width of a YUV image plane with the given parameters.
+   */
+  public static native int planeWidth(int componentID, int width, int subsamp)
+    throws Exception;
+
+  /**
+   * Returns the plane height of a YUV image plane with the given parameters.
+   * Refer to {@link YUVImage YUVImage} for a description of plane height.
+   *
+   * @param componentID ID number of the image plane (0 = Y, 1 = U/Cb,
+   * 2 = V/Cr)
+   *
+   * @param height height (in pixels) of the YUV image
+   *
+   * @param subsamp the level of chrominance subsampling used in the YUV image
+   * (one of {@link TJ TJ.SAMP_*})
+   *
+   * @return the plane height of a YUV image plane with the given parameters.
+   */
+  public static native int planeHeight(int componentID, int height,
+                                       int subsamp)
+    throws Exception;
+
+  /**
    * Returns a list of fractional scaling factors that the JPEG decompressor in
    * this implementation of TurboJPEG supports.
    *
    * @return a list of fractional scaling factors that the JPEG decompressor in
-   * this implementation of TurboJPEG supports
+   * this implementation of TurboJPEG supports.
    */
   public static native TJScalingFactor[] getScalingFactors()
     throws Exception;

@@ -21,5 +21,8 @@ var searchData=
   ['tjinitcompress',['tjInitCompress',['../group___turbo_j_p_e_g.html#ga3d10c47fbe4a2489a2b30c931551d01a',1,'turbojpeg.h']]],
   ['tjinitdecompress',['tjInitDecompress',['../group___turbo_j_p_e_g.html#gae5408179d041e2a2f7199c8283cf649e',1,'turbojpeg.h']]],
   ['tjinittransform',['tjInitTransform',['../group___turbo_j_p_e_g.html#ga3155b775bfbac9dbba869b95a0367902',1,'turbojpeg.h']]],
+  ['tjplaneheight',['tjPlaneHeight',['../group___turbo_j_p_e_g.html#ga1a209696c6a80748f20e134b3c64789f',1,'turbojpeg.h']]],
+  ['tjplanesizeyuv',['tjPlaneSizeYUV',['../group___turbo_j_p_e_g.html#ga6f98d977bfa9d167c97172e876ba61e2',1,'turbojpeg.h']]],
+  ['tjplanewidth',['tjPlaneWidth',['../group___turbo_j_p_e_g.html#ga63fb66bb1e36c74008c4634360becbb1',1,'turbojpeg.h']]],
   ['tjtransform',['tjTransform',['../group___turbo_j_p_e_g.html#gae403193ceb4aafb7e0f56ab587b48616',1,'turbojpeg.h']]]
 ];

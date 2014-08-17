@@ -241,6 +241,15 @@ Functions</h2></td></tr>
 <tr class="memitem:gaf451664a62c1f6c7cc5a6401f32908c9"><td class="memItemLeft" align="right" valign="top">DLLEXPORT unsigned long DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9">tjBufSizeYUV2</a> (int width, int pad, int height, int subsamp)</td></tr>
 <tr class="memdesc:gaf451664a62c1f6c7cc5a6401f32908c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters.  <a href="#gaf451664a62c1f6c7cc5a6401f32908c9">More...</a><br/></td></tr>
 <tr class="separator:gaf451664a62c1f6c7cc5a6401f32908c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6f98d977bfa9d167c97172e876ba61e2"><td class="memItemLeft" align="right" valign="top">DLLEXPORT unsigned long DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga6f98d977bfa9d167c97172e876ba61e2">tjPlaneSizeYUV</a> (int componentID, int width, int stride, int height, int subsamp)</td></tr>
+<tr class="memdesc:ga6f98d977bfa9d167c97172e876ba61e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">The size of the buffer (in bytes) required to hold a YUV image plane with the given parameters.  <a href="#ga6f98d977bfa9d167c97172e876ba61e2">More...</a><br/></td></tr>
+<tr class="separator:ga6f98d977bfa9d167c97172e876ba61e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga63fb66bb1e36c74008c4634360becbb1"><td class="memItemLeft" align="right" valign="top">DLLEXPORT int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga63fb66bb1e36c74008c4634360becbb1">tjPlaneWidth</a> (int componentID, int width, int subsamp)</td></tr>
+<tr class="memdesc:ga63fb66bb1e36c74008c4634360becbb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The plane width of a YUV image plane with the given parameters.  <a href="#ga63fb66bb1e36c74008c4634360becbb1">More...</a><br/></td></tr>
+<tr class="separator:ga63fb66bb1e36c74008c4634360becbb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1a209696c6a80748f20e134b3c64789f"><td class="memItemLeft" align="right" valign="top">DLLEXPORT int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga1a209696c6a80748f20e134b3c64789f">tjPlaneHeight</a> (int componentID, int height, int subsamp)</td></tr>
+<tr class="memdesc:ga1a209696c6a80748f20e134b3c64789f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The plane height of a YUV image plane with the given parameters.  <a href="#ga1a209696c6a80748f20e134b3c64789f">More...</a><br/></td></tr>
+<tr class="separator:ga1a209696c6a80748f20e134b3c64789f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0a5ffbf7cb58a5b6a8201114fe889360"><td class="memItemLeft" align="right" valign="top">DLLEXPORT int DLLCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0a5ffbf7cb58a5b6a8201114fe889360">tjEncodeYUV3</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf, int pad, int subsamp, int flags)</td></tr>
 <tr class="memdesc:ga0a5ffbf7cb58a5b6a8201114fe889360"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode an RGB or grayscale image into a YUV planar image.  <a href="#ga0a5ffbf7cb58a5b6a8201114fe889360">More...</a><br/></td></tr>
 <tr class="separator:ga0a5ffbf7cb58a5b6a8201114fe889360"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -317,7 +326,7 @@ Variables</h2></td></tr>
 <p><a class="anchor" id="YUVnotes"></a></p>
 <h2>YUV Image Format Notes</h2>
 <p>Technically, the JPEG format uses the YCbCr colorspace (which is technically not a colorspace but a color transform), but per the convention of the digital video community, the TurboJPEG API uses "YUV" to refer to an image format consisting of Y, Cb, and Cr image planes.</p>
-<p>Each plane is simply a 2D array of bytes, each byte representing the value of one of the components (Y, Cb, or Cr) at a particular location in the image. The "component width" and "component height" of each plane are determined by the image width, height, and level of chrominance subsampling. For the luminance plane, the component width is the image width padded to the nearest multiple of the horizontal subsampling factor (2 in the case of 4:2:0 and 4:2:2, 4 in the case of 4:1:1, 1 in the case of 4:4:4 or grayscale.) Similarly, the component height of the luminance plane is the image height padded to the nearest multiple of the vertical subsampling factor (2 in the case of 4:2:0 or 4:4:0, 1 in the case of 4:4:4 or grayscale.) This is irrespective of any additional padding that may be specified as an argument to the various YUV functions. The component width of the chrominance planes is equal to the component width of the luminance plane divided by the horizontal subsampling factor, and the component height of the chrominance planes is equal to the component height of the luminance plane divided by the vertical subsampling factor.</p>
+<p>Each plane is simply a 2D array of bytes, each byte representing the value of one of the components (Y, Cb, or Cr) at a particular location in the image. The width and height of each plane are determined by the image width, height, and level of chrominance subsampling. The luminance plane width is the image width padded to the nearest multiple of the horizontal subsampling factor (2 in the case of 4:2:0 and 4:2:2, 4 in the case of 4:1:1, 1 in the case of 4:4:4 or grayscale.) Similarly, the luminance plane height is the image height padded to the nearest multiple of the vertical subsampling factor (2 in the case of 4:2:0 or 4:4:0, 1 in the case of 4:4:4 or grayscale.) This is irrespective of any additional padding that may be specified as an argument to the various YUV functions. The chrominance plane width is equal to the luminance plane width divided by the horizontal subsampling factor, and the chrominance plane height is equal to the luminance plane height divided by the vertical subsampling factor.</p>
 <p>For example, if the source image is 35 x 35 pixels and 4:2:2 subsampling is used, then the luminance plane would be 36 x 35 bytes, and each of the chrominance planes would be 18 x 35 bytes. If you specify a line padding of 4 bytes on top of this, then the luminance plane would be 36 x 35 bytes, and each of the chrominance planes would be 20 x 35 bytes. </p>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="ga39f57a6fb02d9cf32e7b6890099b5a71"></a>
@@ -810,7 +819,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>a pointer to a newly-allocated buffer with the specified number of bytes</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>a pointer to a newly-allocated buffer with the specified number of bytes.</dd></dl>
 <dl class="section see"><dt>See Also</dt><dd><a class="el" href="group___turbo_j_p_e_g.html#ga8c4a1231dc06a450514c835f6471f137" title="Free an image buffer previously allocated by TurboJPEG.">tjFree()</a> </dd></dl>
 
 </div>
@@ -849,8 +858,8 @@ Variables</h2></td></tr>
 <p>The number of bytes returned by this function is larger than the size of the uncompressed source image. The reason for this is that the JPEG format uses 16-bit coefficients, and it is thus possible for a very high-quality JPEG image with very high-frequency content to expand rather than compress when converted to the JPEG format. Such images represent a very rare corner case, but since there is no way to predict the size of a JPEG image prior to compression, the corner case has to be handled.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">width</td><td>width of the image (in pixels)</td></tr>
-    <tr><td class="paramname">height</td><td>height of the image (in pixels)</td></tr>
+    <tr><td class="paramname">width</td><td>width (in pixels) of the image</td></tr>
+    <tr><td class="paramname">height</td><td>height (in pixels) of the image</td></tr>
     <tr><td class="paramname">jpegSubsamp</td><td>the level of chrominance subsampling to be used when generating the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
   </table>
   </dd>
@@ -898,9 +907,9 @@ Variables</h2></td></tr>
 <p>The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">width</td><td>width of the image (in pixels)</td></tr>
+    <tr><td class="paramname">width</td><td>width (in pixels) of the image</td></tr>
     <tr><td class="paramname">pad</td><td>the width of each line in each plane of the image is padded to the nearest multiple of this number of bytes (must be a power of 2.)</td></tr>
-    <tr><td class="paramname">height</td><td>height of the image (in pixels)</td></tr>
+    <tr><td class="paramname">height</td><td>height (in pixels) of the image</td></tr>
     <tr><td class="paramname">subsamp</td><td>level of chrominance subsampling in the image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
   </table>
   </dd>
@@ -993,7 +1002,7 @@ Variables</h2></td></tr>
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG compressor or transformer instance</td></tr>
     <tr><td class="paramname">srcBuf</td><td>pointer to an image buffer containing RGB, grayscale, or CMYK pixels to be compressed</td></tr>
     <tr><td class="paramname">width</td><td>width (in pixels) of the source image</td></tr>
-    <tr><td class="paramname">pitch</td><td>bytes per line of the source image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use this parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
+    <tr><td class="paramname">pitch</td><td>bytes per line in the source image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use this parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source image</td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the source image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.)</td></tr>
     <tr><td class="paramname">jpegBuf</td><td>address of a pointer to an image buffer that will receive the JPEG image. TurboJPEG has the ability to reallocate the JPEG buffer to accommodate the size of the JPEG image. Thus, you can choose to:<ol type="1">
@@ -1005,7 +1014,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">jpegSize</td><td>pointer to an unsigned long variable that holds the size of the JPEG image buffer. If <code>*jpegBuf</code> points to a pre-allocated buffer, then <code>*jpegSize</code> should be set to the size of the buffer. Upon return, <code>*jpegSize</code> will contain the size of the JPEG image (in bytes.)</td></tr>
     <tr><td class="paramname">jpegSubsamp</td><td>the level of chrominance subsampling to be used when generating the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
     <tr><td class="paramname">jpegQual</td><td>the image quality of the generated JPEG image (1 = worst, 100 = best)</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1102,7 +1111,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 If you choose option 1, <code>*jpegSize</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>*jpegBuf</code> upon return from this function, as it may have changed.</td></tr>
     <tr><td class="paramname">jpegSize</td><td>pointer to an unsigned long variable that holds the size of the JPEG image buffer. If <code>*jpegBuf</code> points to a pre-allocated buffer, then <code>*jpegSize</code> should be set to the size of the buffer. Upon return, <code>*jpegSize</code> will contain the size of the JPEG image (in bytes.)</td></tr>
     <tr><td class="paramname">jpegQual</td><td>the image quality of the generated JPEG image (1 = worst, 100 = best)</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1186,9 +1195,9 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG compressor or transformer instance</td></tr>
-    <tr><td class="paramname">srcPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if compressing a grayscale image) that contain a YUV image to be compressed. These planes can be contiguous or non-contiguous in memory. Each plane should be at least <b><em>{component stride} * {component height}</em></b> bytes in size. (See below for a description of stride, and refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for a description of component height.)</td></tr>
+    <tr><td class="paramname">srcPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if compressing a grayscale image) that contain a YUV image to be compressed. These planes can be contiguous or non-contiguous in memory. The size of each plane should match the value returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6f98d977bfa9d167c97172e876ba61e2" title="The size of the buffer (in bytes) required to hold a YUV image plane with the given parameters...">tjPlaneSizeYUV()</a> for the given image width, height, strides, and level of chrominance subsampling. Refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for more details.</td></tr>
     <tr><td class="paramname">width</td><td>width (in pixels) of the source image. If the width is not an even multiple of the MCU block width (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a>), then an intermediate buffer copy will be performed within TurboJPEG.</td></tr>
-    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the YUV source image. Setting the stride for any plane to 0 is the same as setting it to the component width for the plane. If <code>strides</code> is NULL, then the strides for all planes will be set to their respective component widths. You can adjust the strides in order to specify an arbitrary amount of line padding in each plane or to create a JPEG image from a subregion of a larger YUV planar image.</td></tr>
+    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the YUV source image. Setting the stride for any plane to 0 is the same as setting it to the plane width (see <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a>.) If <code>strides</code> is NULL, then the strides for all planes will be set to their respective plane widths. You can adjust the strides in order to specify an arbitrary amount of line padding in each plane or to create a JPEG image from a subregion of a larger YUV planar image.</td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source image. If the height is not an even multiple of the MCU block height (see <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</td></tr>
     <tr><td class="paramname">subsamp</td><td>the level of chrominance subsampling used in the source image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
     <tr><td class="paramname">jpegBuf</td><td>address of a pointer to an image buffer that will receive the JPEG image. TurboJPEG has the ability to reallocate the JPEG buffer to accommodate the size of the JPEG image. Thus, you can choose to:<ol type="1">
@@ -1199,7 +1208,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 If you choose option 1, <code>*jpegSize</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>*jpegBuf</code> upon return from this function, as it may have changed.</td></tr>
     <tr><td class="paramname">jpegSize</td><td>pointer to an unsigned long variable that holds the size of the JPEG image buffer. If <code>*jpegBuf</code> points to a pre-allocated buffer, then <code>*jpegSize</code> should be set to the size of the buffer. Upon return, <code>*jpegSize</code> will contain the size of the JPEG image (in bytes.)</td></tr>
     <tr><td class="paramname">jpegQual</td><td>the image quality of the generated JPEG image (1 = worst, 100 = best)</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1289,10 +1298,10 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">subsamp</td><td>the level of chrominance subsampling used in the YUV source image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
     <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the decoded image. This buffer should normally be <code>pitch * height</code> bytes in size, but the <code>dstBuf</code> pointer can also be used to decode into a specific region of a larger buffer.</td></tr>
     <tr><td class="paramname">width</td><td>width (in pixels) of the source and destination images</td></tr>
-    <tr><td class="paramname">pitch</td><td>bytes per line of the destination image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the destination image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the destination image should be padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use the pitch parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
+    <tr><td class="paramname">pitch</td><td>bytes per line in the destination image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the destination image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the destination image should be padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use the pitch parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source and destination images</td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the destination image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.)</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1377,15 +1386,15 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG decompressor or transformer instance</td></tr>
-    <tr><td class="paramname">srcPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if decoding a grayscale image) that contain a YUV image to be decoded. These planes can be contiguous or non-contiguous in memory. Each plane should be at least <b><em>{component stride} * {component height}</em></b> bytes in size. (See below for a description of stride, and refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for a description of component height.)</td></tr>
-    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the YUV source image. Setting the stride for any plane to 0 is the same as setting it to the component width for the plane. If <code>strides</code> is NULL, then the strides for all planes will be set to their respective component widths. You can adjust the strides in order to specify an arbitrary amount of line padding in each plane or to decode a subregion of a larger YUV planar image.</td></tr>
+    <tr><td class="paramname">srcPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if decoding a grayscale image) that contain a YUV image to be decoded. These planes can be contiguous or non-contiguous in memory. The size of each plane should match the value returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6f98d977bfa9d167c97172e876ba61e2" title="The size of the buffer (in bytes) required to hold a YUV image plane with the given parameters...">tjPlaneSizeYUV()</a> for the given image width, height, strides, and level of chrominance subsampling. Refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for more details.</td></tr>
+    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the YUV source image. Setting the stride for any plane to 0 is the same as setting it to the plane width (see <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a>.) If <code>strides</code> is NULL, then the strides for all planes will be set to their respective plane widths. You can adjust the strides in order to specify an arbitrary amount of line padding in each plane or to decode a subregion of a larger YUV planar image.</td></tr>
     <tr><td class="paramname">subsamp</td><td>the level of chrominance subsampling used in the YUV source image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
     <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the decoded image. This buffer should normally be <code>pitch * height</code> bytes in size, but the <code>dstBuf</code> pointer can also be used to decode into a specific region of a larger buffer.</td></tr>
     <tr><td class="paramname">width</td><td>width (in pixels) of the source and destination images</td></tr>
-    <tr><td class="paramname">pitch</td><td>bytes per line of the destination image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the destination image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the destination image should be padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use the pitch parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
+    <tr><td class="paramname">pitch</td><td>bytes per line in the destination image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the destination image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the destination image should be padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use the pitch parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source and destination images</td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the destination image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.)</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1467,10 +1476,10 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes)</td></tr>
     <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the decompressed image. This buffer should normally be <code>pitch * scaledHeight</code> bytes in size, where <code>scaledHeight</code> can be determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga84878bb65404204743aa18cac02781df" title="Compute the scaled value of dimension using the given scaling factor.">TJSCALED()</a> with the JPEG image height and one of the scaling factors returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6449044b9af402999ccf52f401333be8" title="Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of Tur...">tjGetScalingFactors()</a>. The <code>dstBuf</code> pointer may also be used to decompress into a specific region of a larger buffer.</td></tr>
     <tr><td class="paramname">width</td><td>desired width (in pixels) of the destination image. If this is different than the width of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired width. If <code>width</code> is set to 0, then only the height will be considered when determining the scaled image size.</td></tr>
-    <tr><td class="paramname">pitch</td><td>bytes per line of the destination image. Normally, this is <code>scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the decompressed image is unpadded, else <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the decompressed image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. (NOTE: <code>scaledWidth</code> can be determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga84878bb65404204743aa18cac02781df" title="Compute the scaled value of dimension using the given scaling factor.">TJSCALED()</a> with the JPEG image width and one of the scaling factors returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6449044b9af402999ccf52f401333be8" title="Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of Tur...">tjGetScalingFactors()</a>.) You can also be clever and use the pitch parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
+    <tr><td class="paramname">pitch</td><td>bytes per line in the destination image. Normally, this is <code>scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the decompressed image is unpadded, else <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the decompressed image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. (NOTE: <code>scaledWidth</code> can be determined by calling <a class="el" href="group___turbo_j_p_e_g.html#ga84878bb65404204743aa18cac02781df" title="Compute the scaled value of dimension using the given scaling factor.">TJSCALED()</a> with the JPEG image width and one of the scaling factors returned by <a class="el" href="group___turbo_j_p_e_g.html#ga6449044b9af402999ccf52f401333be8" title="Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of Tur...">tjGetScalingFactors()</a>.) You can also be clever and use the pitch parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>scaledWidth * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
     <tr><td class="paramname">height</td><td>desired height (in pixels) of the destination image. If this is different than the height of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired height. If <code>height</code> is set to 0, then only the width will be considered when determining the scaled image size.</td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the destination image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.)</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1540,7 +1549,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes)</td></tr>
     <tr><td class="paramname">width</td><td>pointer to an integer variable that will receive the width (in pixels) of the JPEG image</td></tr>
     <tr><td class="paramname">height</td><td>pointer to an integer variable that will receive the height (in pixels) of the JPEG image</td></tr>
-    <tr><td class="paramname">jpegSubsamp</td><td>pointer to an integer variable that will receive the level of chrominance subsampling used when compressing the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
+    <tr><td class="paramname">jpegSubsamp</td><td>pointer to an integer variable that will receive the level of chrominance subsampling used when the JPEG image was compressed (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
     <tr><td class="paramname">jpegColorspace</td><td>pointer to an integer variable that will receive one of the JPEG colorspace constants, indicating the colorspace of the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga4f83ad3368e0e29d1957be0efa7c3720">JPEG colorspaces</a>.)</td></tr>
   </table>
   </dd>
@@ -1620,7 +1629,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">width</td><td>desired width (in pixels) of the YUV image. If this is different than the width of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired width. If <code>width</code> is set to 0, then only the height will be considered when determining the scaled image size. If the scaled width is not an even multiple of the MCU block width (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a>), then an intermediate buffer copy will be performed within TurboJPEG.</td></tr>
     <tr><td class="paramname">pad</td><td>the width of each line in each plane of the YUV image will be padded to the nearest multiple of this number of bytes (must be a power of 2.) To generate images suitable for X Video, <code>pad</code> should be set to 4.</td></tr>
     <tr><td class="paramname">height</td><td>desired height (in pixels) of the YUV image. If this is different than the height of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired height. If <code>height</code> is set to 0, then only the width will be considered when determining the scaled image size. If the scaled height is not an even multiple of the MCU block height (see <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1695,11 +1704,11 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG decompressor or transformer instance</td></tr>
     <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing the JPEG image to decompress</td></tr>
     <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes)</td></tr>
-    <tr><td class="paramname">dstPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if decompressing a grayscale image) that will receive the YUV image. These planes can be contiguous or non-contiguous in memory. Each plane should be at least <b><em>{component stride} * {scaled component height}</em></b> bytes in size. (See below for a description of stride, and refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for a description of component height.)</td></tr>
+    <tr><td class="paramname">dstPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if decompressing a grayscale image) that will receive the YUV image. These planes can be contiguous or non-contiguous in memory. Use <a class="el" href="group___turbo_j_p_e_g.html#ga6f98d977bfa9d167c97172e876ba61e2" title="The size of the buffer (in bytes) required to hold a YUV image plane with the given parameters...">tjPlaneSizeYUV()</a> to determine the appropriate size for each plane based on the scaled image width, scaled image height, strides, and level of chrominance subsampling. Refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for more details.</td></tr>
     <tr><td class="paramname">width</td><td>desired width (in pixels) of the YUV image. If this is different than the width of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired width. If <code>width</code> is set to 0, then only the height will be considered when determining the scaled image size. If the scaled width is not an even multiple of the MCU block width (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="MCU block width (in pixels) for a given level of chrominance subsampling.">tjMCUWidth</a>), then an intermediate buffer copy will be performed within TurboJPEG.</td></tr>
-    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the output image. Setting the stride for any plane to 0 is the same as setting it to the scaled component width for the plane. If <code>strides</code> is NULL, then the strides for all planes will be set to their respective scaled component widths. You can adjust the strides in order to add an arbitrary amount of line padding to each plane or to decompress the JPEG image into a subregion of a larger YUV planar image.</td></tr>
+    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the output image. Setting the stride for any plane to 0 is the same as setting it to the scaled plane width (see <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a>.) If <code>strides</code> is NULL, then the strides for all planes will be set to their respective scaled plane widths. You can adjust the strides in order to add an arbitrary amount of line padding to each plane or to decompress the JPEG image into a subregion of a larger YUV planar image.</td></tr>
     <tr><td class="paramname">height</td><td>desired height (in pixels) of the YUV image. If this is different than the height of the JPEG image being decompressed, then TurboJPEG will use scaling in the JPEG decompressor to generate the largest possible image that will fit within the desired height. If <code>height</code> is set to 0, then only the width will be considered when determining the scaled image size. If the scaled height is not an even multiple of the MCU block height (see <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="MCU block height (in pixels) for a given level of chrominance subsampling.">tjMCUHeight</a>), then an intermediate buffer copy will be performed within TurboJPEG.</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1811,13 +1820,13 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG compressor or transformer instance</td></tr>
     <tr><td class="paramname">srcBuf</td><td>pointer to an image buffer containing RGB or grayscale pixels to be encoded</td></tr>
     <tr><td class="paramname">width</td><td>width (in pixels) of the source image</td></tr>
-    <tr><td class="paramname">pitch</td><td>bytes per line of the source image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use this parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
+    <tr><td class="paramname">pitch</td><td>bytes per line in the source image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use this parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source image</td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the source image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.)</td></tr>
     <tr><td class="paramname">dstBuf</td><td>pointer to an image buffer that will receive the YUV image. Use <a class="el" href="group___turbo_j_p_e_g.html#gaf451664a62c1f6c7cc5a6401f32908c9" title="The size of the buffer (in bytes) required to hold a YUV planar image with the given parameters...">tjBufSizeYUV2()</a> to determine the appropriate size for this buffer based on the image width, height, padding, and level of chrominance subsampling. The Y, U (Cb), and V (Cr) image planes will be stored sequentially in the buffer (refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a>.)</td></tr>
     <tr><td class="paramname">pad</td><td>the width of each line in each plane of the YUV image will be padded to the nearest multiple of this number of bytes (must be a power of 2.) To generate images suitable for X Video, <code>pad</code> should be set to 4.</td></tr>
     <tr><td class="paramname">subsamp</td><td>the level of chrominance subsampling to be used when generating the YUV image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.) To generate images suitable for X Video, <code>subsamp</code> should be set to <a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a63085dbf683cfe39e513cdb6343e3737">TJSAMP_420</a>. This produces an image compatible with the I420 (AKA "YUV420P") format.</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -1904,13 +1913,13 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG compressor or transformer instance</td></tr>
     <tr><td class="paramname">srcBuf</td><td>pointer to an image buffer containing RGB or grayscale pixels to be encoded</td></tr>
     <tr><td class="paramname">width</td><td>width (in pixels) of the source image</td></tr>
-    <tr><td class="paramname">pitch</td><td>bytes per line of the source image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use this parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
+    <tr><td class="paramname">pitch</td><td>bytes per line in the source image. Normally, this should be <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code> if the image is unpadded, or <code><a class="el" href="group___turbo_j_p_e_g.html#ga0aba955473315e405295d978f0c16511" title="Pad the given width to the nearest 32-bit boundary.">TJPAD</a>(width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat])</code> if each line of the image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps. You can also be clever and use this parameter to skip lines, etc. Setting this parameter to 0 is the equivalent of setting it to <code>width * <a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c" title="Pixel size (in bytes) for a given pixel format.">tjPixelSize</a>[pixelFormat]</code>.</td></tr>
     <tr><td class="paramname">height</td><td>height (in pixels) of the source image</td></tr>
     <tr><td class="paramname">pixelFormat</td><td>pixel format of the source image (see <a class="el" href="group___turbo_j_p_e_g.html#gac916144e26c3817ac514e64ae5d12e2a">Pixel formats</a>.)</td></tr>
-    <tr><td class="paramname">dstPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if generating a grayscale image) that will receive the encoded image. These planes can be contiguous or non-contiguous in memory. Each plane should be at least <b><em>{component stride} * {component height}</em></b> bytes in size. (See below for a description of stride, and refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for a description of component height.)</td></tr>
-    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the output image. Setting the stride for any plane to 0 is the same as setting it to the component width for the plane. If <code>strides</code> is NULL, then the strides for all planes will be set to their respective component widths. You can adjust the strides in order to add an arbitrary amount of line padding to each plane or to encode an RGB or grayscale image into a subregion of a larger YUV planar image.</td></tr>
+    <tr><td class="paramname">dstPlanes</td><td>an array of pointers to Y, U (Cb), and V (Cr) image planes (or just a Y plane, if generating a grayscale image) that will receive the encoded image. These planes can be contiguous or non-contiguous in memory. Use <a class="el" href="group___turbo_j_p_e_g.html#ga6f98d977bfa9d167c97172e876ba61e2" title="The size of the buffer (in bytes) required to hold a YUV image plane with the given parameters...">tjPlaneSizeYUV()</a> to determine the appropriate size for each plane based on the image width, height, strides, and level of chrominance subsampling. Refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for more details.</td></tr>
+    <tr><td class="paramname">strides</td><td>an array of integers, each specifying the number of bytes per line in the corresponding plane of the output image. Setting the stride for any plane to 0 is the same as setting it to the plane width (see <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a>.) If <code>strides</code> is NULL, then the strides for all planes will be set to their respective plane widths. You can adjust the strides in order to add an arbitrary amount of line padding to each plane or to encode an RGB or grayscale image into a subregion of a larger YUV planar image.</td></tr>
     <tr><td class="paramname">subsamp</td><td>the level of chrominance subsampling to be used when generating the YUV image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.) To generate images suitable for X Video, <code>subsamp</code> should be set to <a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a63085dbf683cfe39e513cdb6343e3737">TJSAMP_420</a>. This produces an image compatible with the I420 (AKA "YUV420P") format.</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>
@@ -2045,6 +2054,151 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 
 </div>
 </div>
+<a class="anchor" id="ga1a209696c6a80748f20e134b3c64789f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DLLEXPORT int tjPlaneHeight </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>componentID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>subsamp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The plane height of a YUV image plane with the given parameters. </p>
+<p>Refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for a description of plane height.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">componentID</td><td>ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr)</td></tr>
+    <tr><td class="paramname">height</td><td>height (in pixels) of the YUV image</td></tr>
+    <tr><td class="paramname">subsamp</td><td>level of chrominance subsampling in the image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the plane height of a YUV image plane with the given parameters, or -1 if the arguments are out of bounds. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6f98d977bfa9d167c97172e876ba61e2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>componentID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>stride</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>subsamp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The size of the buffer (in bytes) required to hold a YUV image plane with the given parameters. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">componentID</td><td>ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr)</td></tr>
+    <tr><td class="paramname">width</td><td>width (in pixels) of the YUV image. NOTE: this is the width of the whole image, not the plane width.</td></tr>
+    <tr><td class="paramname">stride</td><td>bytes per line in the image plane. Setting this to 0 is the equivalent of setting it to the plane width.</td></tr>
+    <tr><td class="paramname">height</td><td>height (in pixels) of the YUV image. NOTE: this is the height of the whole image, not the plane height.</td></tr>
+    <tr><td class="paramname">subsamp</td><td>level of chrominance subsampling in the image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the size of the buffer (in bytes) required to hold the YUV image plane, or -1 if the arguments are out of bounds. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga63fb66bb1e36c74008c4634360becbb1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DLLEXPORT int tjPlaneWidth </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>componentID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>subsamp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The plane width of a YUV image plane with the given parameters. </p>
+<p>Refer to <a class="el" href="group___turbo_j_p_e_g.html#YUVnotes">YUV Image Format Notes</a> for a description of plane width.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">componentID</td><td>ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr)</td></tr>
+    <tr><td class="paramname">width</td><td>width (in pixels) of the YUV image</td></tr>
+    <tr><td class="paramname">subsamp</td><td>level of chrominance subsampling in the image (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the plane width of a YUV image plane with the given parameters, or -1 if the arguments are out of bounds. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="gae403193ceb4aafb7e0f56ab587b48616"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2106,12 +2260,12 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 </div><div class="memdoc">
 
 <p>Losslessly transform a JPEG image into another JPEG image. </p>
-<p>Lossless transforms work by moving the raw coefficients from one JPEG image structure to another without altering the values of the coefficients. While this is typically faster than decompressing the image, transforming it, and re-compressing it, lossless transforms are not free. Each lossless transform requires reading and performing Huffman decoding on all of the coefficients in the source image, regardless of the size of the destination image. Thus, this function provides a means of generating multiple transformed images from the same source or applying multiple transformations simultaneously, in order to eliminate the need to read the source coefficients multiple times.</p>
+<p>Lossless transforms work by moving the raw DCT coefficients from one JPEG image structure to another without altering the values of the coefficients. While this is typically faster than decompressing the image, transforming it, and re-compressing it, lossless transforms are not free. Each lossless transform requires reading and performing Huffman decoding on all of the coefficients in the source image, regardless of the size of the destination image. Thus, this function provides a means of generating multiple transformed images from the same source or applying multiple transformations simultaneously, in order to eliminate the need to read the source coefficients multiple times.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG transformer instance</td></tr>
-    <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing the JPEG image to transform</td></tr>
-    <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes)</td></tr>
+    <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing the JPEG source image to transform</td></tr>
+    <tr><td class="paramname">jpegSize</td><td>size of the JPEG source image (in bytes)</td></tr>
     <tr><td class="paramname">n</td><td>the number of transformed JPEG images to generate</td></tr>
     <tr><td class="paramname">dstBufs</td><td>pointer to an array of n image buffers. <code>dstBufs[i]</code> will receive a JPEG image that has been transformed using the parameters in <code>transforms[i]</code>. TurboJPEG has the ability to reallocate the JPEG buffer to accommodate the size of the JPEG image. Thus, you can choose to:<ol type="1">
 <li>pre-allocate the JPEG buffer with an arbitrary size using <a class="el" href="group___turbo_j_p_e_g.html#ga5c9234bda6d993cdaffdd89bf81a00ff" title="Allocate an image buffer for use with TurboJPEG.">tjAlloc()</a> and let TurboJPEG grow the buffer as needed,</li>
@@ -2121,7 +2275,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 If you choose option 1, <code>dstSizes[i]</code> should be set to the size of your pre-allocated buffer. In any case, unless you have set <a class="el" href="group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963" title="Disable buffer (re)allocation.">TJFLAG_NOREALLOC</a>, you should always check <code>dstBufs[i]</code> upon return from this function, as it may have changed.</td></tr>
     <tr><td class="paramname">dstSizes</td><td>pointer to an array of n unsigned long variables that will receive the actual sizes (in bytes) of each transformed JPEG image. If <code>dstBufs[i]</code> points to a pre-allocated buffer, then <code>dstSizes[i]</code> should be set to the size of the buffer. Upon return, <code>dstSizes[i]</code> will contain the size of the JPEG image (in bytes.)</td></tr>
     <tr><td class="paramname">transforms</td><td>pointer to an array of n <a class="el" href="structtjtransform.html" title="Lossless transform.">tjtransform</a> structures, each of which specifies the transform parameters and/or cropping region for the corresponding transformed output image.</td></tr>
-    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a>.</td></tr>
+    <tr><td class="paramname">flags</td><td>the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#ga72ecf4ebe6eb702d3c6f5ca27455e1ec">flags</a></td></tr>
   </table>
   </dd>
 </dl>

@@ -117,7 +117,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;org.libjpegturbo.turbojpeg.<a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</a></h3>
-<code><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#handle">handle</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegBuf">jpegBuf</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegBufSize">jpegBufSize</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#srcColorspace">srcColorspace</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#srcHeight">srcHeight</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#srcSubsamp">srcSubsamp</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#srcWidth">srcWidth</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#yuvImage">yuvImage</a></code></li>
+<code><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#handle">handle</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegBuf">jpegBuf</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegBufSize">jpegBufSize</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegColorspace">jpegColorspace</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegHeight">jpegHeight</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegSubsamp">jpegSubsamp</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegWidth">jpegWidth</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#yuvImage">yuvImage</a></code></li>
 </ul>
 </li>
 </ul>
@@ -144,7 +144,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 </td>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#TJTransformer(byte[], int)">TJTransformer</a></strong>(byte[]&nbsp;jpegImage,
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#TJTransformer(byte[],%20int)">TJTransformer</a></strong>(byte[]&nbsp;jpegImage,
              int&nbsp;imageSize)</code>
 <div class="block">Create a TurboJPEG lossless transformer instance and associate the JPEG
  image of length <code>imageSize</code> bytes stored in
@@ -175,7 +175,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)">transform</a></strong>(byte[][]&nbsp;dstBufs,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][],%20org.libjpegturbo.turbojpeg.TJTransform[],%20int)">transform</a></strong>(byte[][]&nbsp;dstBufs,
          <a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a>[]&nbsp;transforms,
          int&nbsp;flags)</code>
 <div class="block">Losslessly transform the JPEG image associated with this transformer
@@ -185,7 +185,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</a>[]</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(org.libjpegturbo.turbojpeg.TJTransform[], int)">transform</a></strong>(<a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a>[]&nbsp;transforms,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(org.libjpegturbo.turbojpeg.TJTransform[],%20int)">transform</a></strong>(<a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a>[]&nbsp;transforms,
          int&nbsp;flags)</code>
 <div class="block">Losslessly transform the JPEG image associated with this transformer
  instance and return an array of <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg"><code>TJDecompressor</code></a> instances, each of
@@ -198,7 +198,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.libjpegturbo.turbojpeg.<a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</a></h3>
-<code><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#close()">close</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(java.awt.image.BufferedImage, int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[], int, int, int, int, int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[], int, int, int, int, int, int, int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int[], int, int, int, int, int, int, int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int, int, int, int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int, int, int, int, int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(byte[], int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int, int, int, int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(org.libjpegturbo.turbojpeg.YUVImage, int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#finalize()">finalize</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getColorspace()">getColorspace</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getHeight()">getHeight</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGBuf()">getJPEGBuf</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGSize()">getJPEGSize</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getScaledHeight(int, int)">getScaledHeight</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getScaledWidth(int, int)">getScaledWidth</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getSourceBuf()">getSourceBuf</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getSourceSize()">getSourceSize</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getSubsamp()">getSubsamp</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getWidth()">getWidth</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setJPEGImage(byte[], int)">setJPEGImage</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(byte[], int)">setSourceImage</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(org.libjpegturbo.turbojpeg.YUVImage)">setSourceImage</a></code></li>
+<code><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#close()">close</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(java.awt.image.BufferedImage,%20int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[],%20int,%20int,%20int,%20int,%20int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[],%20int,%20int,%20int,%20int,%20int,%20int,%20int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int[],%20int,%20int,%20int,%20int,%20int,%20int,%20int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int,%20int,%20int,%20int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(int,%20int,%20int,%20int,%20int)">decompress</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(byte[],%20int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int,%20int[],%20int,%20int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(int,%20int,%20int,%20int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompressToYUV(org.libjpegturbo.turbojpeg.YUVImage,%20int)">decompressToYUV</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#finalize()">finalize</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getColorspace()">getColorspace</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getHeight()">getHeight</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGBuf()">getJPEGBuf</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGSize()">getJPEGSize</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getScaledHeight(int,%20int)">getScaledHeight</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getScaledWidth(int,%20int)">getScaledWidth</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getSubsamp()">getSubsamp</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getWidth()">getWidth</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setJPEGImage(byte[],%20int)">setJPEGImage</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(byte[],%20int)">setSourceImage</a>, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(org.libjpegturbo.turbojpeg.YUVImage)">setSourceImage</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
@@ -299,7 +299,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
  read the source coefficients multiple times.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>dstBufs</code> - an array of image buffers.  <code>dstbufs[i]</code> will
  receive a JPEG image that has been transformed using the parameters in
- <code>transforms[i]</code>.  Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSize(int, int, int)"><code>TJ.bufSize(int, int, int)</code></a> to determine the
+ <code>transforms[i]</code>.  Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSize(int,%20int,%20int)"><code>TJ.bufSize(int, int, int)</code></a> to determine the
  maximum size for each buffer based on the transformed or cropped width and
  height and the level of subsampling used in the source image.</dd><dd><code>transforms</code> - an array of <a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg"><code>TJTransform</code></a> instances, each of
  which specifies the transform parameters and/or cropping region for the
@@ -326,7 +326,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
  corresponding transformed output image</dd><dd><code>flags</code> - the bitwise OR of one or more of
  <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>TJ.FLAG_*</code></a></dd>
 <dt><span class="strong">Returns:</span></dt><dd>an array of <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg"><code>TJDecompressor</code></a> instances, each of
- which has a transformed JPEG image associated with it</dd>
+ which has a transformed JPEG image associated with it.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -342,7 +342,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <div class="block">Returns an array containing the sizes of the transformed JPEG images
  generated by the most recent transform operation.</div>
 <dl><dt><span class="strong">Returns:</span></dt><dd>an array containing the sizes of the transformed JPEG images
- generated by the most recent transform operation</dd>
+ generated by the most recent transform operation.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>

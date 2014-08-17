@@ -118,7 +118,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(java.awt.image.BufferedImage, int, int, int, int)">TJCompressor</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)">TJCompressor</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
             int&nbsp;x,
             int&nbsp;y,
             int&nbsp;width,
@@ -129,19 +129,19 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int)">TJCompressor</a></strong>(byte[]&nbsp;srcImage,
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[],%20int,%20int,%20int,%20int)">TJCompressor</a></strong>(byte[]&nbsp;srcImage,
             int&nbsp;width,
             int&nbsp;pitch,
             int&nbsp;height,
             int&nbsp;pixelFormat)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
 <div class="block"><i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int, int, int)"><code>TJCompressor(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>TJCompressor(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int, int, int)">TJCompressor</a></strong>(byte[]&nbsp;srcImage,
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[],%20int,%20int,%20int,%20int,%20int,%20int)">TJCompressor</a></strong>(byte[]&nbsp;srcImage,
             int&nbsp;x,
             int&nbsp;y,
             int&nbsp;width,
@@ -176,30 +176,30 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(java.awt.image.BufferedImage, byte[], int)">compress</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(java.awt.image.BufferedImage,%20byte[],%20int)">compress</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
         byte[]&nbsp;dstBuf,
         int&nbsp;flags)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
 <div class="block"><i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(byte[], int)"><code>compress(byte[], int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(byte[],%20int)"><code>compress(byte[], int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>byte[]</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(java.awt.image.BufferedImage, int)">compress</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(java.awt.image.BufferedImage,%20int)">compress</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
         int&nbsp;flags)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
 <div class="block"><i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
  <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(int)"><code>compress(int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(byte[], int)">compress</a></strong>(byte[]&nbsp;dstBuf,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(byte[],%20int)">compress</a></strong>(byte[]&nbsp;dstBuf,
         int&nbsp;flags)</code>
 <div class="block">Compress the uncompressed source image associated with this compressor
  instance and output a JPEG image to the given destination buffer.</div>
@@ -214,33 +214,33 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(java.awt.image.BufferedImage, byte[], int)">encodeYUV</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(java.awt.image.BufferedImage,%20byte[],%20int)">encodeYUV</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
          byte[]&nbsp;dstBuf,
          int&nbsp;flags)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
 <div class="block"><i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[], int)"><code>encodeYUV(byte[], int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[],%20int)"><code>encodeYUV(byte[], int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>byte[]</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(java.awt.image.BufferedImage, int)">encodeYUV</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(java.awt.image.BufferedImage,%20int)">encodeYUV</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
          int&nbsp;flags)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
 <div class="block"><i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int)"><code>encodeYUV(int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int,%20int)"><code>encodeYUV(int, int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[], int)">encodeYUV</a></strong>(byte[]&nbsp;dstBuf,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[],%20int)">encodeYUV</a></strong>(byte[]&nbsp;dstBuf,
          int&nbsp;flags)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
-<div class="block"><i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage, int)"><code>encodeYUV(YUVImage, int)</code></a> instead.</i></div>
+<div class="block"><i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage,%20int)"><code>encodeYUV(YUVImage, int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
@@ -248,48 +248,57 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>byte[]</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int)">encodeYUV</a></strong>(int&nbsp;flags)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
-<div class="block"><i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int, int)"><code>encodeYUV(int, int)</code></a> instead.</i></div>
+<div class="block"><i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int,%20int)"><code>encodeYUV(int, int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int, int)">encodeYUV</a></strong>(int&nbsp;pad,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int[],%20int)">encodeYUV</a></strong>(int[]&nbsp;strides,
          int&nbsp;flags)</code>
 <div class="block">Encode the uncompressed source image associated with this compressor
- instance into a YUV planar image and return a <code>YUVImage</code>
- instance containing the encoded image.</div>
+ instance into separate Y, U (Cb), and V (Cr) image planes and return a
+ <code>YUVImage</code> instance containing the encoded image planes.</div>
 </td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code><a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a></code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int,%20int)">encodeYUV</a></strong>(int&nbsp;pad,
+         int&nbsp;flags)</code>
+<div class="block">Encode the uncompressed source image associated with this compressor
+ instance into a unified YUV planar image buffer and return a
+ <code>YUVImage</code> instance containing the encoded image.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage, int)">encodeYUV</a></strong>(<a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a>&nbsp;dstImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage,%20int)">encodeYUV</a></strong>(<a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a>&nbsp;dstImage,
          int&nbsp;flags)</code>
 <div class="block">Encode the uncompressed source image associated with this compressor
  instance into a YUV planar image and store it in the given
  <code>YUVImage</code> instance.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#finalize()">finalize</a></strong>()</code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#getCompressedSize()">getCompressedSize</a></strong>()</code>
 <div class="block">Returns the size of the image (in bytes) generated by the most recent
- compress/encode operation.</div>
+ compress operation.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setJPEGQuality(int)">setJPEGQuality</a></strong>(int&nbsp;quality)</code>
 <div class="block">Set the JPEG image quality level for subsequent compress operations.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)">setSourceImage</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)">setSourceImage</a></strong>(java.awt.image.BufferedImage&nbsp;srcImage,
               int&nbsp;x,
               int&nbsp;y,
               int&nbsp;width,
@@ -298,22 +307,22 @@ extends java.lang.Object</pre>
  compressor instance.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int)">setSourceImage</a></strong>(byte[]&nbsp;srcImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int)">setSourceImage</a></strong>(byte[]&nbsp;srcImage,
               int&nbsp;width,
               int&nbsp;pitch,
               int&nbsp;height,
               int&nbsp;pixelFormat)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
 <div class="block"><i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)">setSourceImage</a></strong>(byte[]&nbsp;srcImage,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)">setSourceImage</a></strong>(byte[]&nbsp;srcImage,
               int&nbsp;x,
               int&nbsp;y,
               int&nbsp;width,
@@ -324,14 +333,14 @@ extends java.lang.Object</pre>
  compressor instance.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(org.libjpegturbo.turbojpeg.YUVImage)">setSourceImage</a></strong>(<a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a>&nbsp;srcImage)</code>
 <div class="block">Associate an uncompressed YUV planar source image with this compressor
  instance.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSubsamp(int)">setSubsamp</a></strong>(int&nbsp;newSubsamp)</code>
 <div class="block">Set the level of chrominance subsampling for subsequent compress/encode
@@ -390,7 +399,7 @@ extends java.lang.Object</pre>
 <div class="block">Create a TurboJPEG compressor instance and associate the uncompressed
  source image stored in <code>srcImage</code> with the newly created
  instance.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>x</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>y</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>width</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>pitch</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>height</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>pixelFormat</code> - pixel format of the source image (one of
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>x</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>y</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>width</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>pitch</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>height</code> - see <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> for description</dd><dd><code>pixelFormat</code> - pixel format of the source image (one of
  <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#PF_RGB"><code>TJ.PF_*</code></a>)</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
@@ -410,7 +419,7 @@ public&nbsp;TJCompressor(byte[]&nbsp;srcImage,
                        int&nbsp;pixelFormat)
              throws java.lang.Exception</pre>
 <div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[], int, int, int, int, int, int)"><code>TJCompressor(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#TJCompressor(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>TJCompressor(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -431,11 +440,11 @@ public&nbsp;TJCompressor(byte[]&nbsp;srcImage,
  source image stored in <code>srcImage</code> with the newly created
  instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - see
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>x</code> - see
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>y</code> - see
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>width</code> - see
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>height</code> - see
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>x</code> - see
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>y</code> - see
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>width</code> - see
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd><dd><code>height</code> - see
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> for description</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -496,7 +505,7 @@ public&nbsp;void&nbsp;setSourceImage(byte[]&nbsp;srcImage,
                              int&nbsp;pixelFormat)
                     throws java.lang.Exception</pre>
 <div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[], int, int, int, int, int, int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(byte[],%20int,%20int,%20int,%20int,%20int,%20int)"><code>setSourceImage(byte[], int, int, int, int, int, int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -599,7 +608,7 @@ public&nbsp;void&nbsp;setSourceImage(byte[]&nbsp;srcImage,
 <div class="block">Compress the uncompressed source image associated with this compressor
  instance and output a JPEG image to the given destination buffer.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>dstBuf</code> - buffer that will receive the JPEG image.  Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSize(int, int, int)"><code>TJ.bufSize(int, int, int)</code></a> to determine the maximum size for this buffer based on
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSize(int,%20int,%20int)"><code>TJ.bufSize(int, int, int)</code></a> to determine the maximum size for this buffer based on
  the source image's width and height and the desired level of chrominance
  subsampling.</dd><dd><code>flags</code> - the bitwise OR of one or more of
  <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>TJ.FLAG_*</code></a></dd>
@@ -637,8 +646,8 @@ public&nbsp;void&nbsp;compress(java.awt.image.BufferedImage&nbsp;srcImage,
                        int&nbsp;flags)
               throws java.lang.Exception</pre>
 <div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(byte[], int)"><code>compress(byte[], int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(byte[],%20int)"><code>compress(byte[], int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -654,7 +663,7 @@ public&nbsp;byte[]&nbsp;compress(java.awt.image.BufferedImage&nbsp;srcImage,
                          int&nbsp;flags)
                 throws java.lang.Exception</pre>
 <div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
  <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#compress(int)"><code>compress(int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
@@ -692,7 +701,7 @@ public&nbsp;byte[]&nbsp;compress(java.awt.image.BufferedImage&nbsp;srcImage,
 public&nbsp;void&nbsp;encodeYUV(byte[]&nbsp;dstBuf,
                         int&nbsp;flags)
                throws java.lang.Exception</pre>
-<div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage, int)"><code>encodeYUV(YUVImage, int)</code></a> instead.</i></div>
+<div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(org.libjpegturbo.turbojpeg.YUVImage,%20int)"><code>encodeYUV(YUVImage, int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -707,16 +716,44 @@ public&nbsp;void&nbsp;encodeYUV(byte[]&nbsp;dstBuf,
                  int&nbsp;flags)
                    throws java.lang.Exception</pre>
 <div class="block">Encode the uncompressed source image associated with this compressor
- instance into a YUV planar image and return a <code>YUVImage</code>
- instance containing the encoded image.  This method uses the accelerated
- color conversion routines in TurboJPEG's underlying codec but does not
- execute any of the other steps in the JPEG compression process.  Encoding
- CMYK source images to YUV is not supported.</div>
+ instance into a unified YUV planar image buffer and return a
+ <code>YUVImage</code> instance containing the encoded image.  This method
+ uses the accelerated color conversion routines in TurboJPEG's underlying
+ codec but does not execute any of the other steps in the JPEG compression
+ process.  Encoding CMYK source images to YUV is not supported.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pad</code> - the width of each line in each plane of the YUV image will be
  padded to the nearest multiple of this number of bytes (must be a power of
  2.)</dd><dd><code>flags</code> - the bitwise OR of one or more of
  <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>TJ.FLAG_*</code></a></dd>
-<dt><span class="strong">Returns:</span></dt><dd>a YUV planar image</dd>
+<dt><span class="strong">Returns:</span></dt><dd>a YUV planar image.</dd>
+<dt><span class="strong">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd></dl>
+</li>
+</ul>
+<a name="encodeYUV(int[], int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>encodeYUV</h4>
+<pre>public&nbsp;<a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a>&nbsp;encodeYUV(int[]&nbsp;strides,
+                 int&nbsp;flags)
+                   throws java.lang.Exception</pre>
+<div class="block">Encode the uncompressed source image associated with this compressor
+ instance into separate Y, U (Cb), and V (Cr) image planes and return a
+ <code>YUVImage</code> instance containing the encoded image planes.  This
+ method uses the accelerated color conversion routines in TurboJPEG's
+ underlying codec but does not execute any of the other steps in the JPEG
+ compression process.  Encoding CMYK source images to YUV is not supported.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>strides</code> - an array of integers, each specifying the number of bytes
+ per line in the corresponding plane of the output image.  Setting the
+ stride for any plane to 0 is the same as setting it to the component width
+ of the plane.  If <code>strides</code> is null, then the strides for all
+ planes will be set to their respective component widths.  You can adjust
+ the strides in order to add an arbitrary amount of line padding to each
+ plane.</dd><dd><code>flags</code> - the bitwise OR of one or more of
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>TJ.FLAG_*</code></a></dd>
+<dt><span class="strong">Returns:</span></dt><dd>a YUV planar image.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -730,7 +767,7 @@ public&nbsp;void&nbsp;encodeYUV(byte[]&nbsp;dstBuf,
 <pre>@Deprecated
 public&nbsp;byte[]&nbsp;encodeYUV(int&nbsp;flags)
                  throws java.lang.Exception</pre>
-<div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int, int)"><code>encodeYUV(int, int)</code></a> instead.</i></div>
+<div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int,%20int)"><code>encodeYUV(int, int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -747,8 +784,8 @@ public&nbsp;void&nbsp;encodeYUV(java.awt.image.BufferedImage&nbsp;srcImage,
                         int&nbsp;flags)
                throws java.lang.Exception</pre>
 <div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[], int)"><code>encodeYUV(byte[], int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(byte[],%20int)"><code>encodeYUV(byte[], int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -764,8 +801,8 @@ public&nbsp;byte[]&nbsp;encodeYUV(java.awt.image.BufferedImage&nbsp;srcImage,
                           int&nbsp;flags)
                  throws java.lang.Exception</pre>
 <div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage, int, int, int, int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
- <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int)"><code>encodeYUV(int)</code></a> instead.</i></div>
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#setSourceImage(java.awt.image.BufferedImage,%20int,%20int,%20int,%20int)"><code>setSourceImage(BufferedImage, int, int, int, int)</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJCompressor.html#encodeYUV(int,%20int)"><code>encodeYUV(int, int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -778,9 +815,9 @@ public&nbsp;byte[]&nbsp;encodeYUV(java.awt.image.BufferedImage&nbsp;srcImage,
 <h4>getCompressedSize</h4>
 <pre>public&nbsp;int&nbsp;getCompressedSize()</pre>
 <div class="block">Returns the size of the image (in bytes) generated by the most recent
- compress/encode operation.</div>
+ compress operation.</div>
 <dl><dt><span class="strong">Returns:</span></dt><dd>the size of the image (in bytes) generated by the most recent
- compress/encode operation</dd></dl>
+ compress operation.</dd></dl>
 </li>
 </ul>
 <a name="close()">

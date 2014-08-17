@@ -332,9 +332,10 @@ public class TJCompressor {
       throw new Exception("Subsampling level not set");
 
     if (srcYUVImage != null)
-      compressedSize = compressFromYUV(srcYUVImage.getBuf(),
+      compressedSize = compressFromYUV(srcYUVImage.getPlanes(),
+                                       srcYUVImage.getOffsets(),
                                        srcYUVImage.getWidth(),
-                                       srcYUVImage.getPad(),
+                                       srcYUVImage.getStrides(),
                                        srcYUVImage.getHeight(),
                                        srcYUVImage.getSubsamp(),
                                        dstBuf, jpegQuality, flags);
@@ -429,14 +430,14 @@ public class TJCompressor {
 
     if (srcBufInt != null) {
       encodeYUV(srcBufInt, srcX, srcY, srcWidth, srcStride, srcHeight,
-                srcPixelFormat, dstImage.getBuf(), dstImage.getPad(),
-                dstImage.getSubsamp(), flags);
+                srcPixelFormat, dstImage.getPlanes(), dstImage.getOffsets(),
+                dstImage.getStrides(), dstImage.getSubsamp(), flags);
     } else {
       encodeYUV(srcBuf, srcX, srcY, srcWidth, srcPitch, srcHeight,
-                srcPixelFormat, dstImage.getBuf(), dstImage.getPad(),
-                dstImage.getSubsamp(), flags);
+                srcPixelFormat, dstImage.getPlanes(), dstImage.getOffsets(),
+                dstImage.getStrides(), dstImage.getSubsamp(), flags);
     }
-    compressedSize = dstImage.getSize();
+    compressedSize = 0;
   }
 
   /**
@@ -456,11 +457,11 @@ public class TJCompressor {
 
   /**
    * Encode the uncompressed source image associated with this compressor
-   * instance into a YUV planar image and return a <code>YUVImage</code>
-   * instance containing the encoded image.  This method uses the accelerated
-   * color conversion routines in TurboJPEG's underlying codec but does not
-   * execute any of the other steps in the JPEG compression process.  Encoding
-   * CMYK source images to YUV is not supported.
+   * instance into a unified YUV planar image buffer and return a
+   * <code>YUVImage</code> instance containing the encoded image.  This method
+   * uses the accelerated color conversion routines in TurboJPEG's underlying
+   * codec but does not execute any of the other steps in the JPEG compression
+   * process.  Encoding CMYK source images to YUV is not supported.
    *
    * @param pad the width of each line in each plane of the YUV image will be
    * padded to the nearest multiple of this number of bytes (must be a power of
@@ -469,7 +470,7 @@ public class TJCompressor {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
-   * @return a YUV planar image
+   * @return a YUV planar image.
    */
   public YUVImage encodeYUV(int pad, int flags) throws Exception {
     if (srcWidth < 1 || srcHeight < 1)
@@ -479,6 +480,37 @@ public class TJCompressor {
     if(pad < 1 || ((pad & (pad - 1)) != 0))
       throw new Exception("Invalid argument in encodeYUV()");
     YUVImage yuvImage = new YUVImage(srcWidth, pad, srcHeight, subsamp);
+    encodeYUV(yuvImage, flags);
+    return yuvImage;
+  }
+
+  /**
+   * Encode the uncompressed source image associated with this compressor
+   * instance into separate Y, U (Cb), and V (Cr) image planes and return a
+   * <code>YUVImage</code> instance containing the encoded image planes.  This
+   * method uses the accelerated color conversion routines in TurboJPEG's
+   * underlying codec but does not execute any of the other steps in the JPEG
+   * compression process.  Encoding CMYK source images to YUV is not supported.
+   *
+   * @param strides an array of integers, each specifying the number of bytes
+   * per line in the corresponding plane of the output image.  Setting the
+   * stride for any plane to 0 is the same as setting it to the component width
+   * of the plane.  If <code>strides</code> is null, then the strides for all
+   * planes will be set to their respective component widths.  You can adjust
+   * the strides in order to add an arbitrary amount of line padding to each
+   * plane.
+   *
+   * @param flags the bitwise OR of one or more of
+   * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
+   *
+   * @return a YUV planar image.
+   */
+  public YUVImage encodeYUV(int[] strides, int flags) throws Exception {
+    if (srcWidth < 1 || srcHeight < 1)
+      throw new Exception(NO_ASSOC_ERROR);
+    if (subsamp < 0)
+      throw new Exception("Subsampling level not set");
+    YUVImage yuvImage = new YUVImage(srcWidth, strides, srcHeight, subsamp);
     encodeYUV(yuvImage, flags);
     return yuvImage;
   }
@@ -512,7 +544,7 @@ public class TJCompressor {
   /**
    * @deprecated Use
    * {@link #setSourceImage(BufferedImage, int, int, int, int)} and
-   * {@link #encodeYUV(int)} instead.
+   * {@link #encodeYUV(int, int)} instead.
    */
   @Deprecated
   public byte[] encodeYUV(BufferedImage srcImage, int flags) throws Exception {
@@ -522,10 +554,10 @@ public class TJCompressor {
 
   /**
    * Returns the size of the image (in bytes) generated by the most recent
-   * compress/encode operation.
+   * compress operation.
    *
    * @return the size of the image (in bytes) generated by the most recent
-   * compress/encode operation
+   * compress operation.
    */
   public int getCompressedSize() {
     return compressedSize;
@@ -568,8 +600,9 @@ public class TJCompressor {
     int stride, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
     int jpegQual, int flags) throws Exception;
 
-  private native int compressFromYUV(byte[] srcBuf, int width, int pad,
-    int height, int subsamp, byte[] dstBuf, int jpegQual, int flags)
+  private native int compressFromYUV(byte[][] srcPlanes, int[] srcOffsets,
+    int width, int[] srcStrides, int height, int subsamp, byte[] dstBuf,
+    int jpegQual, int flags)
     throws Exception;
 
   private native void encodeYUV(byte[] srcBuf, int width, int pitch,
@@ -577,16 +610,18 @@ public class TJCompressor {
     throws Exception; // deprecated
 
   private native void encodeYUV(byte[] srcBuf, int x, int y, int width,
-    int pitch, int height, int pixelFormat, byte[] dstBuf, int pad,
-    int subsamp, int flags) throws Exception;
+    int pitch, int height, int pixelFormat, byte[][] dstPlanes,
+    int[] dstOffsets, int[] dstStrides, int subsamp, int flags)
+    throws Exception;
 
   private native void encodeYUV(int[] srcBuf, int width, int stride,
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
     throws Exception; // deprecated
 
   private native void encodeYUV(int[] srcBuf, int x, int y, int width,
-    int pitch, int height, int pixelFormat, byte[] dstBuf, int pad,
-    int subsamp, int flags) throws Exception;
+    int srcStride, int height, int pixelFormat, byte[][] dstPlanes,
+    int[] dstOffsets, int[] dstStrides, int subsamp, int flags)
+    throws Exception;
 
   static {
     TJLoader.load();

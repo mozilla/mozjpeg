@@ -13,18 +13,18 @@ compatibility, since 4:1:1 is not fully accelerated in libjpeg-turbo and has no
 significant advantages relative to 4:2:0.
 -- CMYK images are now supported.  This feature allows CMYK source images to be
 compressed to YCCK JPEGs and YCCK or CMYK JPEGs to be decompressed to CMYK
-destination images.  Conversion between CMYK and RGB or YUV images is not
-supported.  Such conversion requires a color management system and is out of
-scope for a codec library.
+destination images.  Conversion between CMYK/YCCK and RGB or YUV images is not
+supported.  Such conversion requires a color management system and is thus out
+of scope for a codec library.
 -- The handling of YUV images in the Java API has been significantly refactored
 and should now be much more intuitive.
 -- The Java API now supports encoding a YUV image from an arbitrary position in
 a large image buffer.
 -- All of the YUV functions now have a corresponding function that operates on
 separate image planes instead of a unified image buffer.  This allows for
-compressing/decoding a YUV image from or decompressing/encoding a YUV image to
-an arbitrary position in a larger YUV image.  It also allows for handling YUV
-formats that swap the order of the U and V planes.
+compressing/decoding from or decompressing/encoding to a subregion of a larger
+YUV image.  It also allows for handling YUV formats that swap the order of the
+U and V planes.
 
 [2] Added SIMD acceleration for DSPr2-capable MIPS platforms.  This speeds up
 the compression of full-color JPEGs by 70-80% on such platforms and
@@ -51,7 +51,7 @@ Android devices that were tested, two demonstrated a small overall performance
 loss (~3-4% on average) with ARMv6 code and a small gain (also ~3-4%) with
 ARMv7 code when enabling this new feature, but the other two devices
 demonstrated a significant overall performance gain with both ARMv6 and ARMv7
-code (~10-20%.)  Actual mileage may vary.
+code (~10-20%) when enabling the feature.  Actual mileage may vary.
 
 [6] Worked around an issue with Visual C++ 2010 and later that caused incorrect
 pixels to be generated when decompressing a JPEG image to a 256-color bitmap,
@@ -70,10 +70,9 @@ slower.
 [8] Added a new output colorspace (JCS_RGB565) to the libjpeg API that allows
 for decompressing JPEG images into RGB565 (16-bit) pixels.
 
-[9] Numerous obsolete features, such as support for compilers that can't
-handle prototypes and support for the MS-DOS memory model, were removed from
-the libjpeg code, greatly improving its readability and making it easier to
-maintain and extend.
+[9] Numerous obsolete features, such as support for non-ANSI compilers and
+support for the MS-DOS memory model, were removed from the libjpeg code,
+greatly improving its readability and making it easier to maintain and extend.
 
 [10] Fixed a segfault that occurred when calling output_message() with msg_code
 set to JMSG_COPYRIGHT.
@@ -83,14 +82,16 @@ characters to be passed on the command line, which was causing it to generate
 incorrect JPEG files.
 
 [12] Fixed a bug in the build system that was causing the Windows version of
-wrjpgcom to be built using the rdjpgcom code.
+wrjpgcom to be built using the rdjpgcom source code.
 
 [13] Restored 12-bit-per-component JPEG support.  A 12-bit version of
 libjpeg-turbo can now be built by passing an argument of --with-12bit to
 configure (Unix) or -DWITH_12BIT=1 to cmake (Windows.)  12-bit JPEG support is
 included only for convenience.  Enabling this feature disables all of the
 performance features in libjpeg-turbo, as well as arithmetic coding and the
-TurboJPEG API.  The resulting library behaves no differently than libjpeg v6b.
+TurboJPEG API.  The resulting library still contains the other libjpeg-turbo
+features (such as the colorspace extensions), but in general, it performs no
+faster than libjpeg v6b.
 
 [14] Added ARM 64-bit SIMD acceleration for the YCC-to-RGB color conversion
 and IDCT algorithms (both are used during JPEG decompression.)  For unknown

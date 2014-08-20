@@ -219,6 +219,7 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_ARM64_ASSEMBLER_IFELSE],[
   CC="$CCAS"
   AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     .text
+    .arch armv8-a+fp+simd
     movi v0.16b, #100]])], ac_good_gnu_arm_assembler=yes)
 
   ac_use_gas_preprocessor=no
@@ -226,6 +227,7 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_ARM64_ASSEMBLER_IFELSE],[
     CC="gas-preprocessor.pl $CCAS"
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
       .text
+      .arch armv8-a+fp+simd
       movi v0.16b, #100]])], ac_use_gas_preprocessor=yes)
   fi
   CFLAGS="$ac_save_CFLAGS"

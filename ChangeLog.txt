@@ -92,6 +92,11 @@ included only for convenience.  Enabling this feature disables all of the
 performance features in libjpeg-turbo, as well as arithmetic coding and the
 TurboJPEG API.  The resulting library behaves no differently than libjpeg v6b.
 
+[14] Added ARM 64-bit SIMD acceleration for the YCC-to-RGB color conversion
+and IDCT algorithms (both are used during JPEG decompression.)  For unknown
+reasons (probably related to clang), this code cannot currently be compiled for
+iOS.
+
 
 1.3.1
 =====

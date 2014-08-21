@@ -98,6 +98,14 @@ and IDCT algorithms (both are used during JPEG decompression.)  For unknown
 reasons (probably related to clang), this code cannot currently be compiled for
 iOS.
 
+[15] Fixed an extremely rare bug that could cause the Huffman encoder's local
+buffer to overrun when a very high-frequency MCU is compressed using quality
+100 and no subsampling, and when the JPEG output buffer is being dynamically
+resized by the destination manager.  This issue was so rare that, even with a
+test program specifically designed to make the bug occur (by injecting random
+high-frequency YUV data into the compressor), it was reproducible only once in
+about every 25 million iterations.
+
 
 1.3.1
 =====

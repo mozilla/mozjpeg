@@ -165,15 +165,14 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
                                   sizeof(my_mem_destination_mgr));
     dest = (my_mem_dest_ptr) cinfo->dest;
     dest->newbuffer = NULL;
-    dest->outbuffer = NULL;
+    dest->buffer = NULL;
   }
 
   dest = (my_mem_dest_ptr) cinfo->dest;
   dest->pub.init_destination = init_mem_destination;
   dest->pub.empty_output_buffer = empty_mem_output_buffer;
   dest->pub.term_destination = term_mem_destination;
-  if (dest->outbuffer && *(dest->outbuffer) == *outbuffer &&
-      *outbuffer != NULL && alloc)
+  if (dest->buffer == *outbuffer && *outbuffer != NULL && alloc) {
     reused = TRUE;
   dest->outbuffer = outbuffer;
   dest->outsize = outsize;

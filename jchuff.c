@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014 D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains Huffman entropy encoding routines.
@@ -443,7 +443,7 @@ dump_buffer (working_state * state)
 LOCAL(boolean)
 flush_bits (working_state * state)
 {
-  JOCTET _buffer[BUFSIZE], *buffer;
+  JOCTET _buffer[BUFSIZE + 8], *buffer;
   size_t put_buffer;  int put_bits;
   size_t bytes, bytestocopy;  int localbuf = 0;
 
@@ -472,7 +472,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
   int temp, temp2, temp3;
   int nbits;
   int r, code, size;
-  JOCTET _buffer[BUFSIZE], *buffer;
+  JOCTET _buffer[BUFSIZE + 8], *buffer;
   size_t put_buffer;  int put_bits;
   int code_0xf0 = actbl->ehufco[0xf0], size_0xf0 = actbl->ehufsi[0xf0];
   size_t bytes, bytestocopy;  int localbuf = 0;

@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2012 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, D. R. Commander.
+ * Copyright (C) 2011, 2014 D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains compression data destination routines for the case of
@@ -150,6 +150,7 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
                unsigned char ** outbuffer, unsigned long * outsize,
                boolean alloc)
 {
+  boolean reused = FALSE;
   my_mem_dest_ptr dest;
 
   if (outbuffer == NULL || outsize == NULL)     /* sanity check */
@@ -164,12 +165,16 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
                                   sizeof(my_mem_destination_mgr));
     dest = (my_mem_dest_ptr) cinfo->dest;
     dest->newbuffer = NULL;
+    dest->outbuffer = NULL;
   }
 
   dest = (my_mem_dest_ptr) cinfo->dest;
   dest->pub.init_destination = init_mem_destination;
   dest->pub.empty_output_buffer = empty_mem_output_buffer;
   dest->pub.term_destination = term_mem_destination;
+  if (dest->outbuffer && *(dest->outbuffer) == *outbuffer &&
+      *outbuffer != NULL && alloc)
+    reused = TRUE;
   dest->outbuffer = outbuffer;
   dest->outsize = outsize;
   dest->alloc = alloc;
@@ -186,5 +191,7 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
   }
 
   dest->pub.next_output_byte = dest->buffer = *outbuffer;
-  dest->pub.free_in_buffer = dest->bufsize = *outsize;
+  if (!reused)
+    dest->bufsize = *outsize;
+  dest->pub.free_in_buffer = dest->bufsize;
 }

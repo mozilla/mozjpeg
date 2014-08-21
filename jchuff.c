@@ -408,7 +408,7 @@ dump_buffer (working_state * state)
 #endif
 
 
-#define BUFSIZE (DCTSIZE2 * 2)
+#define BUFSIZE (DCTSIZE2 * 2) + 8
 
 #define LOAD_BUFFER() { \
   if (state->free_in_buffer < BUFSIZE) { \
@@ -443,7 +443,7 @@ dump_buffer (working_state * state)
 LOCAL(boolean)
 flush_bits (working_state * state)
 {
-  JOCTET _buffer[BUFSIZE + 8], *buffer;
+  JOCTET _buffer[BUFSIZE], *buffer;
   size_t put_buffer;  int put_bits;
   size_t bytes, bytestocopy;  int localbuf = 0;
 
@@ -472,7 +472,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
   int temp, temp2, temp3;
   int nbits;
   int r, code, size;
-  JOCTET _buffer[BUFSIZE + 8], *buffer;
+  JOCTET _buffer[BUFSIZE], *buffer;
   size_t put_buffer;  int put_bits;
   int code_0xf0 = actbl->ehufco[0xf0], size_0xf0 = actbl->ehufsi[0xf0];
   size_t bytes, bytestocopy;  int localbuf = 0;

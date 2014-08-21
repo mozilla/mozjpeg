@@ -106,6 +106,15 @@ test program specifically designed to make the bug occur (by injecting random
 high-frequency YUV data into the compressor), it was reproducible only once in
 about every 25 million iterations.
 
+[16] Fixed an oversight in the TurboJPEG C wrapper:  if any of the JPEG
+compression functions was called repeatedly with the same
+automatically-allocated destination buffer, then TurboJPEG would erroneously
+assume that the jpegSize parameter was equal to the size of the buffer, when in
+fact that parameter was probably equal to the size of the most recently
+compressed JPEG image.  If the size of the previous JPEG image was not as large
+as the current JPEG image, then TurboJPEG would unnecessarily reallocate the
+destination buffer.
+
 
 1.3.1
 =====

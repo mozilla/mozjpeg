@@ -638,7 +638,10 @@ void bufSizeTest(void)
 						&dstSize, subsamp, 100, alloc? 0:TJFLAG_NOREALLOC));
 				}
 				free(srcBuf);  srcBuf=NULL;
-				tjFree(dstBuf);  dstBuf=NULL;
+				if(!alloc)
+				{
+					tjFree(dstBuf);  dstBuf=NULL;
+				}
 
 				if((srcBuf=(unsigned char *)malloc(h*w*4))==NULL)
 					_throw("Memory allocation failure");
@@ -667,7 +670,10 @@ void bufSizeTest(void)
 						&dstSize, subsamp, 100, alloc? 0:TJFLAG_NOREALLOC));
 				}
 				free(srcBuf);  srcBuf=NULL;
-				tjFree(dstBuf);  dstBuf=NULL;
+				if(!alloc)
+				{
+					tjFree(dstBuf);  dstBuf=NULL;
+				}
 			}
 		}
 	}

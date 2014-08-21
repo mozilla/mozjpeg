@@ -656,7 +656,9 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  * the JPEG image buffer.  If <tt>*jpegBuf</tt> points to a pre-allocated
  * buffer, then <tt>*jpegSize</tt> should be set to the size of the buffer.
  * Upon return, <tt>*jpegSize</tt> will contain the size of the JPEG image (in
- * bytes.)
+ * bytes.)  If <tt>*jpegBuf</tt> points to a JPEG image buffer that is being
+ * reused from a previous call to one of the JPEG compression functions, then
+ * <tt>*jpegSize</tt> is ignored.
  *
  * @param jpegSubsamp the level of chrominance subsampling to be used when
  * generating the JPEG image (see @ref TJSAMP
@@ -722,7 +724,9 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
  * the JPEG image buffer.  If <tt>*jpegBuf</tt> points to a pre-allocated
  * buffer, then <tt>*jpegSize</tt> should be set to the size of the buffer.
  * Upon return, <tt>*jpegSize</tt> will contain the size of the JPEG image (in
- * bytes.)
+ * bytes.)  If <tt>*jpegBuf</tt> points to a JPEG image buffer that is being
+ * reused from a previous call to one of the JPEG compression functions, then
+ * <tt>*jpegSize</tt> is ignored.
  *
  * @param jpegQual the image quality of the generated JPEG image (1 = worst,
  * 100 = best)
@@ -790,7 +794,9 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * the JPEG image buffer.  If <tt>*jpegBuf</tt> points to a pre-allocated
  * buffer, then <tt>*jpegSize</tt> should be set to the size of the buffer.
  * Upon return, <tt>*jpegSize</tt> will contain the size of the JPEG image (in
- * bytes.)
+ * bytes.)  If <tt>*jpegBuf</tt> points to a JPEG image buffer that is being
+ * reused from a previous call to one of the JPEG compression functions, then
+ * <tt>*jpegSize</tt> is ignored.
  *
  * @param jpegQual the image quality of the generated JPEG image (1 = worst,
  * 100 = best)

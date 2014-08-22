@@ -3,7 +3,7 @@
 ;
 ; x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
-; Copyright (C) 2011, 2014, D. R. Commander.
+; Copyright (C) 2011, D. R. Commander.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
 ; This file should be assembled with NASM (Netwide Assembler),
@@ -32,14 +32,21 @@
 ; r13 = JDIMENSION output_row
 ; r14 = int num_rows
 
+%define wk(i)           rbp-(WK_NUM-(i))*SIZEOF_XMMWORD ; xmmword wk[WK_NUM]
+%define WK_NUM          2
+
         align   16
 
         global  EXTN(jsimd_rgb_gray_convert_sse2)
 
 EXTN(jsimd_rgb_gray_convert_sse2):
         push    rbp
-        mov     rax,rsp
-        mov     rbp,rsp
+        mov     rax,rsp                         ; rax = original rbp
+        sub     rsp, byte 4
+        and     rsp, byte (-SIZEOF_XMMWORD)     ; align to 128 bits
+        mov     [rsp],rax
+        mov     rbp,rsp                         ; rbp = aligned rbp
+        lea     rsp, [wk(0)]
         collect_args
         push    rbx
 
@@ -277,7 +284,7 @@ EXTN(jsimd_rgb_gray_convert_sse2):
         pmaddwd   xmm1,[rel PW_F0299_F0337] ; xmm1=ROL*FIX(0.299)+GOL*FIX(0.337)
         pmaddwd   xmm6,[rel PW_F0299_F0337] ; xmm6=ROH*FIX(0.299)+GOH*FIX(0.337)
 
-        movdqa    xmm7, xmm6            ; xmm7=ROH*FIX(0.299)+GOH*FIX(0.337)
+        movdqa    xmm7, xmm6    ; xmm7=ROH*FIX(0.299)+GOH*FIX(0.337)
 
         movdqa    xmm6,xmm0
         punpcklwd xmm0,xmm2
@@ -285,41 +292,47 @@ EXTN(jsimd_rgb_gray_convert_sse2):
         pmaddwd   xmm0,[rel PW_F0299_F0337] ; xmm0=REL*FIX(0.299)+GEL*FIX(0.337)
         pmaddwd   xmm6,[rel PW_F0299_F0337] ; xmm6=REH*FIX(0.299)+GEH*FIX(0.337)
 
-        movdqa    xmm12,xmm5
-        punpcklwd xmm5,xmm3
-        punpckhwd xmm12,xmm3
-        pmaddwd   xmm5,[rel PW_F0114_F0250] ; xmm5=BOL*FIX(0.114)+GOL*FIX(0.250)
-        pmaddwd   xmm12,[rel PW_F0114_F0250] ; xmm12=BOH*FIX(0.114)+GOH*FIX(0.250)
+        movdqa    XMMWORD [wk(0)], xmm0 ; wk(0)=REL*FIX(0.299)+GEL*FIX(0.337)
+        movdqa    XMMWORD [wk(1)], xmm6 ; wk(1)=REH*FIX(0.299)+GEH*FIX(0.337)
+
+        movdqa    xmm0, xmm5    ; xmm0=BO
+        movdqa    xmm6, xmm4    ; xmm6=BE
+
+        movdqa    xmm4,xmm0
+        punpcklwd xmm0,xmm3
+        punpckhwd xmm4,xmm3
+        pmaddwd   xmm0,[rel PW_F0114_F0250] ; xmm0=BOL*FIX(0.114)+GOL*FIX(0.250)
+        pmaddwd   xmm4,[rel PW_F0114_F0250] ; xmm4=BOH*FIX(0.114)+GOH*FIX(0.250)
 
         movdqa    xmm3,[rel PD_ONEHALF] ; xmm3=[PD_ONEHALF]
 
-        paddd     xmm5, xmm1
-        paddd     xmm12, xmm7
-        paddd     xmm5,xmm3
-        paddd     xmm12,xmm3
-        psrld     xmm5,SCALEBITS        ; xmm5=YOL
-        psrld     xmm12,SCALEBITS       ; xmm12=YOH
-        packssdw  xmm5,xmm12            ; xmm5=YO
+        paddd     xmm0, xmm1
+        paddd     xmm4, xmm7
+        paddd     xmm0,xmm3
+        paddd     xmm4,xmm3
+        psrld     xmm0,SCALEBITS        ; xmm0=YOL
+        psrld     xmm4,SCALEBITS        ; xmm4=YOH
+        packssdw  xmm0,xmm4             ; xmm0=YO
 
-        movdqa    xmm12,xmm4
-        punpcklwd xmm4,xmm2
-        punpckhwd xmm12,xmm2
-        pmaddwd   xmm4,[rel PW_F0114_F0250] ; xmm4=BEL*FIX(0.114)+GEL*FIX(0.250)
-        pmaddwd   xmm12,[rel PW_F0114_F0250] ; xmm12=BEH*FIX(0.114)+GEH*FIX(0.250)
+        movdqa    xmm4,xmm6
+        punpcklwd xmm6,xmm2
+        punpckhwd xmm4,xmm2
+        pmaddwd   xmm6,[rel PW_F0114_F0250] ; xmm6=BEL*FIX(0.114)+GEL*FIX(0.250)
+        pmaddwd   xmm4,[rel PW_F0114_F0250] ; xmm4=BEH*FIX(0.114)+GEH*FIX(0.250)
 
         movdqa    xmm2,[rel PD_ONEHALF] ; xmm2=[PD_ONEHALF]
 
-        paddd     xmm4,xmm0             ; xmm4=REL*FIX(0.299)+GEL*FIX(0.337)
-        paddd     xmm12,xmm6            ; xmm12=REH*FIX(0.299)+GEH*FIX(0.337)
+        paddd     xmm6, XMMWORD [wk(0)]
+        paddd     xmm4, XMMWORD [wk(1)]
+        paddd     xmm6,xmm2
         paddd     xmm4,xmm2
-        paddd     xmm12,xmm2
-        psrld     xmm4,SCALEBITS        ; xmm4=YEL
-        psrld     xmm12,SCALEBITS       ; xmm12=YEH
-        packssdw  xmm4,xmm12            ; xmm4=YE
+        psrld     xmm6,SCALEBITS        ; xmm6=YEL
+        psrld     xmm4,SCALEBITS        ; xmm4=YEH
+        packssdw  xmm6,xmm4             ; xmm6=YE
 
-        psllw     xmm5,BYTE_BIT
-        por       xmm4,xmm5             ; xmm4=Y
-        movdqa    XMMWORD [rdi], xmm4   ; Save Y
+        psllw     xmm0,BYTE_BIT
+        por       xmm6,xmm0             ; xmm6=Y
+        movdqa    XMMWORD [rdi], xmm6   ; Save Y
 
         sub     rcx, byte SIZEOF_XMMWORD
         add     rsi, byte RGB_PIXELSIZE*SIZEOF_XMMWORD  ; inptr
@@ -341,6 +354,8 @@ EXTN(jsimd_rgb_gray_convert_sse2):
 .return:
         pop     rbx
         uncollect_args
+        mov     rsp,rbp         ; rsp <- aligned rbp
+        pop     rsp             ; rsp <- original rbp
         pop     rbp
         ret
 

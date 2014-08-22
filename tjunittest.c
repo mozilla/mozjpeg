@@ -613,7 +613,7 @@ void bufSizeTest(void)
 
 	bailout:
 	if(srcBuf) free(srcBuf);
-	if(dstBuf) free(dstBuf);
+	if(dstBuf) tjFree(dstBuf);
 	if(handle) tjDestroy(handle);
 }
 

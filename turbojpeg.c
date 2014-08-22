@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <jinclude.h>
 #define JPEG_INTERNALS
 #include <jpeglib.h>
@@ -161,6 +162,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	int pixelFormat, int subsamp, int jpegQual, int flags)
 {
 	int retval=0;
+	char *env=NULL;
 
 	switch(pixelFormat)
 	{
@@ -203,6 +205,26 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
 	jpeg_set_defaults(cinfo);
+
+	if((env=getenv("TJ_OPTIMIZE"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
+		cinfo->optimize_coding=TRUE;
+	if((env=getenv("TJ_ARITHMETIC"))!=NULL && strlen(env)>0	&& !strcmp(env, "1"))
+		cinfo->arith_code=TRUE;
+	if((env=getenv("TJ_RESTART"))!=NULL && strlen(env)>0)
+	{
+		int temp=-1;  char tempc=0;
+		if(sscanf(env, "%d%c", &temp, &tempc)>=1 && temp>=0 && temp<=65535)
+		{
+			if(toupper(tempc)=='B')
+			{
+				cinfo->restart_interval=temp;
+				cinfo->restart_in_rows=0;
+			}
+			else
+				cinfo->restart_in_rows=temp;
+		}
+	}
+
 	if(jpegQual>=0)
 	{
 		jpeg_set_quality(cinfo, jpegQual, TRUE);
@@ -214,6 +236,10 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	else if(pixelFormat==TJPF_CMYK)
 		jpeg_set_colorspace(cinfo, JCS_YCCK);
 	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
+
+	if((env=getenv("TJ_PROGRESSIVE"))!=NULL && strlen(env)>0
+		&& !strcmp(env, "1"))
+		jpeg_simple_progression(cinfo);
 
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
 	cinfo->comp_info[1].h_samp_factor=1;

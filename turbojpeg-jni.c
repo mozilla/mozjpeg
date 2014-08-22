@@ -59,6 +59,10 @@
 	bailif0(_fid=(*env)->GetFieldID(env, _cls, "handle", "J"));  \
 	handle=(tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);  \
 
+#ifdef _WIN32
+#define setenv(envvar, value, dummy) _putenv_s(envvar, value)
+#endif
+
 #define prop2env(property, envvar)  \
 {  \
 	if((jName=(*env)->NewStringUTF(env, property))!=NULL  \

@@ -318,6 +318,7 @@ testclean:
 
 tjtest:
 	sh ./tjbenchtest
+	sh ./tjbenchtest -alloc
 if WITH_JAVA
 	sh ./tjbenchtest.java
 endif

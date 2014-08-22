@@ -22,7 +22,7 @@ runme()
 EXT=bmp
 IMAGES="vgl_5674_0098.${EXT} vgl_6434_0018a.${EXT} vgl_6548_0026a.${EXT} nightshot_iso_100.${EXT}"
 IMGDIR=@srcdir@/testimages
-OUTDIR=__tjbenchtest_output
+OUTDIR=`mktemp -d /tmp/__tjbenchtest_output.XXXXXX`
 EXEDIR=.
 BMPARG=
 NSARG=

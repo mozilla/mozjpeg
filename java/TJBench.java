@@ -236,7 +236,7 @@ class TJBench {
                            "_" + sizeStr + ".bmp");
 
     saveImage(tempStr, dstBuf, scaledw, scaledh, pf);
-    int ndx = tempStr.indexOf('.');
+    int ndx = tempStr.lastIndexOf('.');
     tempStr = new String(tempStr.substring(0, ndx) + "-err.bmp");
     if (srcBuf != null && sf.getNum() == 1 && sf.getDenom() == 1) {
       if (quiet == 0)
@@ -432,7 +432,7 @@ class TJBench {
     fis.read(srcBuf, 0, srcSize);
     fis.close();
 
-    int index = fileName.indexOf('.');
+    int index = fileName.lastIndexOf('.');
     if (index >= 0)
       fileName = new String(fileName.substring(0, index));
 
@@ -846,7 +846,7 @@ class TJBench {
         srcBuf = loadImage(argv[0], width, height, pf);
         w = width[0];  h = height[0];
         int index = -1;
-        if ((index = argv[0].indexOf('.')) >= 0)
+        if ((index = argv[0].lastIndexOf('.')) >= 0)
           argv[0] = argv[0].substring(0, index);
       }
 

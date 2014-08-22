@@ -312,7 +312,7 @@ int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 		if((flags&TJFLAG_NOREALLOC)!=0)
 			for(i=0; i<ntilesw*ntilesh; i++)
 			{
-				if((jpegbuf[i]=(unsigned char *)malloc(tjBufSize(tilew, tileh,
+				if((jpegbuf[i]=(unsigned char *)tjAlloc(tjBufSize(tilew, tileh,
 					subsamp)))==NULL)
 					_throwunix("allocating JPEG tiles");
 			}
@@ -444,7 +444,7 @@ int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 
 		for(i=0; i<ntilesw*ntilesh; i++)
 		{
-			if(jpegbuf[i]) free(jpegbuf[i]);  jpegbuf[i]=NULL;
+			if(jpegbuf[i]) tjFree(jpegbuf[i]);  jpegbuf[i]=NULL;
 		}
 		free(jpegbuf);  jpegbuf=NULL;
 		free(jpegsize);  jpegsize=NULL;
@@ -462,7 +462,7 @@ int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 	{
 		for(i=0; i<ntilesw*ntilesh; i++)
 		{
-			if(jpegbuf[i]) free(jpegbuf[i]);  jpegbuf[i]=NULL;
+			if(jpegbuf[i]) tjFree(jpegbuf[i]);  jpegbuf[i]=NULL;
 		}
 		free(jpegbuf);  jpegbuf=NULL;
 	}
@@ -540,7 +540,7 @@ int decompTest(char *filename)
 		if((flags&TJFLAG_NOREALLOC)!=0 || !dotile)
 			for(i=0; i<ntilesw*ntilesh; i++)
 			{
-				if((jpegbuf[i]=(unsigned char *)malloc(tjBufSize(tilew, tileh,
+				if((jpegbuf[i]=(unsigned char *)tjAlloc(tjBufSize(tilew, tileh,
 					subsamp)))==NULL)
 					_throwunix("allocating JPEG tiles");
 			}
@@ -606,7 +606,7 @@ int decompTest(char *filename)
 					t[tile].customFilter=customFilter;
 					if(t[tile].options&TJXOPT_NOOUTPUT && jpegbuf[tile])
 					{
-						free(jpegbuf[tile]);  jpegbuf[tile]=NULL;
+						tjFree(jpegbuf[tile]);  jpegbuf[tile]=NULL;
 					}
 				}
 			}
@@ -671,7 +671,7 @@ int decompTest(char *filename)
 
 		for(i=0; i<ntilesw*ntilesh; i++)
 		{
-			free(jpegbuf[i]);  jpegbuf[i]=NULL;
+			tjFree(jpegbuf[i]);  jpegbuf[i]=NULL;
 		}
 		free(jpegbuf);  jpegbuf=NULL;
 		if(jpegsize) {free(jpegsize);  jpegsize=NULL;}
@@ -685,7 +685,7 @@ int decompTest(char *filename)
 	{
 		for(i=0; i<ntilesw*ntilesh; i++)
 		{
-			if(jpegbuf[i]) free(jpegbuf[i]);  jpegbuf[i]=NULL;
+			if(jpegbuf[i]) tjFree(jpegbuf[i]);  jpegbuf[i]=NULL;
 		}
 		free(jpegbuf);  jpegbuf=NULL;
 	}

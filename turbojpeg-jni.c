@@ -59,6 +59,39 @@
 	bailif0(_fid=(*env)->GetFieldID(env, _cls, "handle", "J"));  \
 	handle=(tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);  \
 
+#define prop2env(property, envvar)  \
+{  \
+	if((jName=(*env)->NewStringUTF(env, property))!=NULL  \
+		&& (jValue=(*env)->CallStaticObjectMethod(env, cls, mid, jName))!=NULL)  \
+	{  \
+		if((value=(*env)->GetStringUTFChars(env, jValue, 0))!=NULL)  \
+		{  \
+			setenv(envvar, value, 1);  \
+			(*env)->ReleaseStringUTFChars(env, jValue, value);  \
+		}  \
+	}  \
+}
+
+int ProcessSystemProperties(JNIEnv *env)
+{
+	jclass cls;  jmethodID mid;
+	jstring jName, jValue;
+	const char *value;
+
+	bailif0(cls=(*env)->FindClass(env, "java/lang/System"));
+	bailif0(mid=(*env)->GetStaticMethodID(env, cls, "getProperty",
+		"(Ljava/lang/String;)Ljava/lang/String;"));
+
+	prop2env("turbojpeg.optimize", "TJ_OPTIMIZE");
+	prop2env("turbojpeg.arithmetic", "TJ_ARITHMETIC");
+	prop2env("turbojpeg.restart", "TJ_RESTART");
+	prop2env("turbojpeg.progressive", "TJ_PROGRESSIVE");
+	return 0;
+
+	bailout:
+	return -1;
+}
+
 /* TurboJPEG 1.2.x: TJ::bufSize() */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 	(JNIEnv *env, jclass cls, jint width, jint height, jint jpegSubsamp)
@@ -171,6 +204,8 @@ static jint TJCompressor_compress
 
 	bailif0(srcBuf=(*env)->GetPrimitiveArrayCritical(env, src, 0));
 	bailif0(jpegBuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
+
+	if(ProcessSystemProperties(env)<0) goto bailout;
 
 	if(tjCompress2(handle, &srcBuf[y*actualPitch + x*tjPixelSize[pf]], width,
 		pitch, height, pf, &jpegBuf, &jpegSize, jpegSubsamp, jpegQual,
@@ -294,6 +329,8 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFrom
 		srcPlanes[i]=&srcPlanes[i][srcOffsets[i]];
 	}
 	bailif0(jpegBuf=(*env)->GetPrimitiveArrayCritical(env, dst, 0));
+
+	if(ProcessSystemProperties(env)<0) goto bailout;
 
 	if(tjCompressFromYUVPlanes(handle, srcPlanes, width, srcStrides, height,
 		subsamp, &jpegBuf, &jpegSize, jpegQual, flags|TJFLAG_NOREALLOC)==-1)

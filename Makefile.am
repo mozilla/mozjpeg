@@ -513,7 +513,9 @@ testclean:
 
 tjtest:
 	sh ./tjbenchtest
+	sh ./tjbenchtest -alloc
 	sh ./tjbenchtest -yuv
+	sh ./tjbenchtest -yuv -alloc
 if WITH_JAVA
 	sh ./tjbenchtest.java
 	sh ./tjbenchtest.java -yuv

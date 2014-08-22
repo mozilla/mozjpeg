@@ -908,6 +908,13 @@ int main(int argc, char *argv[])
 		dotile=0;
 	}
 
+	if((flags&TJFLAG_NOREALLOC)==0 && dotile)
+	{
+		printf("Disabling tiled compression/decompression tests, because those tests do not\n");
+		printf("work when dynamic JPEG buffer allocation is enabled.\n\n");
+		dotile=0;
+	}
+
 	if(!decomponly)
 	{
 		if(loadbmp(argv[1], &srcbuf, &w, &h, pf, (flags&TJFLAG_BOTTOMUP)!=0)==-1)

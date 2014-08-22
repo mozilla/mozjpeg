@@ -41,11 +41,9 @@
 /* Supplementary macro for setting function attributes */
 .macro asm_function fname
 #ifdef __APPLE__
-    .func _\fname
     .globl _\fname
 _\fname:
 #else
-    .func \fname
     .global \fname
 #ifdef __ELF__
     .hidden \fname
@@ -753,7 +751,6 @@ asm_function jsimd_idct_islow_neon
     .unreq          ROW6R
     .unreq          ROW7L
     .unreq          ROW7R
-.endfunc
 
 
 /*****************************************************************************/
@@ -1059,7 +1056,6 @@ asm_function jsimd_idct_ifast_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 
 /*****************************************************************************/
@@ -1309,7 +1305,6 @@ asm_function jsimd_idct_4x4_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 .purgem idct_helper
 
@@ -1493,7 +1488,6 @@ asm_function jsimd_idct_2x2_neon
     .unreq          OUTPUT_COL
     .unreq          TMP1
     .unreq          TMP2
-.endfunc
 
 .purgem idct_helper
 
@@ -1804,7 +1798,6 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     .unreq          U
     .unreq          V
     .unreq          N
-.endfunc
 
 .purgem do_yuv_to_rgb
 .purgem do_yuv_to_rgb_stage1

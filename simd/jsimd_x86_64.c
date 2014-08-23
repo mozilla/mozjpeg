@@ -2,7 +2,7 @@
  * jsimd_x86_64.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009-2011 D. R. Commander
+ * Copyright 2009-2011, 2014 D. R. Commander
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -78,6 +78,12 @@ jsimd_can_ycc_rgb (void)
     return 0;
 
   return 1;
+}
+
+GLOBAL(int)
+jsimd_can_ycc_rgb565 (void)
+{
+  return 0;
 }
 
 GLOBAL(void)
@@ -192,6 +198,13 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
   }
 
   sse2fct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
+}
+
+GLOBAL(void)
+jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
+                          JSAMPIMAGE input_buf, JDIMENSION input_row,
+                          JSAMPARRAY output_buf, int num_rows)
+{
 }
 
 GLOBAL(int)

@@ -2,7 +2,7 @@
  * jsimd_arm.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009-2011, 2013 D. R. Commander
+ * Copyright 2009-2011, 2013-2014 D. R. Commander
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -175,6 +175,23 @@ jsimd_can_ycc_rgb (void)
   return 0;
 }
 
+GLOBAL(int)
+jsimd_can_ycc_rgb565 (void)
+{
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+
+  if (simd_support & JSIMD_ARM_NEON)
+    return 1;
+
+  return 0;
+}
+
 GLOBAL(void)
 jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
@@ -251,13 +268,23 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
     case JCS_EXT_ARGB:
       neonfct=jsimd_ycc_extxrgb_convert_neon;
       break;
-  default:
+    default:
       neonfct=jsimd_ycc_extrgb_convert_neon;
       break;
   }
 
   if (simd_support & JSIMD_ARM_NEON)
     neonfct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
+}
+
+GLOBAL(void)
+jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
+                          JSAMPIMAGE input_buf, JDIMENSION input_row,
+                          JSAMPARRAY output_buf, int num_rows)
+{
+  if (simd_support & JSIMD_ARM_NEON)
+    jsimd_ycc_rgb565_convert_neon(cinfo->output_width, input_buf, input_row,
+                                  output_buf, num_rows);
 }
 
 GLOBAL(int)

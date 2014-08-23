@@ -4,7 +4,7 @@
  * Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
  * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
- * Copyright (C) 2013, Linaro Limited
+ * Copyright (C) 2013-2014, Linaro Limited
  * Author: Ragesh Radhakrishnan <ragesh.r@linaro.org>
  *
  * This software is provided 'as-is', without any express or implied
@@ -1576,7 +1576,20 @@ asm_function jsimd_idct_2x2_neon
         .else
             .error unsupported macroblock size
         .endif
-    .else
+    .elseif \bpp==16
+        .if \size == 8
+            st1  {v25.8h}, [RGB],16
+        .elseif \size == 4
+            st1  {v25.4h}, [RGB],8
+        .elseif \size == 2
+            st1  {v25.h}[4], [RGB],2
+            st1  {v25.h}[5], [RGB],2
+        .elseif \size == 1
+            st1  {v25.h}[6], [RGB],2
+        .else
+            .error unsupported macroblock size
+        .endif
+     .else
         .error unsupported bpp
     .endif
 .endm
@@ -1610,24 +1623,33 @@ asm_function jsimd_idct_2x2_neon
     uaddw        v20.8h, v20.8h, v0.8b
     uaddw        v24.8h, v24.8h, v0.8b
     uaddw        v28.8h, v28.8h, v0.8b
+.if \bpp != 16
     sqxtun       v1\g_offs\defsize, v20.8h
     sqxtun       v1\r_offs\defsize, v24.8h
     sqxtun       v1\b_offs\defsize, v28.8h
+.else
+    sqshlu       v21.8h, v20.8h, #8
+    sqshlu       v25.8h, v24.8h, #8
+    sqshlu       v29.8h, v28.8h, #8
+    sri          v25.8h, v21.8h, #5
+    sri          v25.8h, v29.8h, #11
+.endif
 
 .endm
 
 .macro do_yuv_to_rgb_stage2_store_load_stage1
-    ld1          {v4.8b}, [U], 8
     rshrn        v20.4h, v20.4s, #15
-    rshrn2       v20.8h, v22.4s, #15
     rshrn        v24.4h, v24.4s, #14
-    rshrn2       v24.8h, v26.4s, #14
     rshrn        v28.4h, v28.4s, #14
-    ld1          {v5.8b}, [V], 8
+    ld1          {v4.8b}, [U], 8
+    rshrn2       v20.8h, v22.4s, #15
+    rshrn2       v24.8h, v26.4s, #14
     rshrn2       v28.8h, v30.4s, #14
+    ld1          {v5.8b}, [V], 8
     uaddw        v20.8h, v20.8h, v0.8b
     uaddw        v24.8h, v24.8h, v0.8b
     uaddw        v28.8h, v28.8h, v0.8b
+.if \bpp != 16 /**************** rgb24/rgb32 *********************************/
     sqxtun       v1\g_offs\defsize, v20.8h
     ld1          {v0.8b}, [Y], 8
     sqxtun       v1\r_offs\defsize, v24.8h
@@ -1637,13 +1659,32 @@ asm_function jsimd_idct_2x2_neon
     sqxtun       v1\b_offs\defsize, v28.8h
     uaddw        v6.8h, v2.8h, v4.8b     /* v6.16b = u - 128 */
     uaddw        v8.8h, v2.8h, v5.8b     /* q2 = v - 128 */
-    do_store     \bpp, 8
     smull        v20.4s, v6.4h, v1.4h[1] /* multiply by -11277 */
     smlal        v20.4s, v8.4h, v1.4h[2] /* multiply by -23401 */
     smull2       v22.4s, v6.8h, v1.4h[1] /* multiply by -11277 */
     smlal2       v22.4s, v8.8h, v1.4h[2] /* multiply by -23401 */
     smull        v24.4s, v8.4h, v1.4h[0] /* multiply by 22971 */
     smull2       v26.4s, v8.8h, v1.4h[0] /* multiply by 22971 */
+.else /**************************** rgb565 ***********************************/
+    sqshlu       v21.8h, v20.8h, #8
+    sqshlu       v25.8h, v24.8h, #8
+    sqshlu       v29.8h, v28.8h, #8
+    uaddw        v6.8h, v2.8h, v4.8b     /* v6.16b = u - 128 */
+    uaddw        v8.8h, v2.8h, v5.8b     /* q2 = v - 128 */
+    ld1          {v0.8b}, [Y], 8
+    smull        v20.4s, v6.4h, v1.4h[1] /* multiply by -11277 */
+    smlal        v20.4s, v8.4h, v1.4h[2] /* multiply by -23401 */
+    smull2       v22.4s, v6.8h, v1.4h[1] /* multiply by -11277 */
+    smlal2       v22.4s, v8.8h, v1.4h[2] /* multiply by -23401 */
+    sri          v25.8h, v21.8h, #5
+    smull        v24.4s, v8.4h, v1.4h[0] /* multiply by 22971 */
+    smull2       v26.4s, v8.8h, v1.4h[0] /* multiply by 22971 */
+    prfm         PLDL1KEEP, [U, #64]
+    prfm         PLDL1KEEP, [V, #64]
+    prfm         PLDL1KEEP, [Y, #64]
+    sri          v25.8h, v29.8h, #11
+.endif
+    do_store     \bpp, 8
     smull        v28.4s, v6.4h, v1.4h[3] /* multiply by 29033 */
     smull2       v30.4s, v6.8h, v1.4h[3] /* multiply by 29033 */
 .endm
@@ -1812,6 +1853,6 @@ generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, .4h,   1, .4h,   2, .4h,   .
 generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, .4h,   1, .4h,   0, .4h,   .8b
 generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, .4h,   2, .4h,   1, .4h,   .8b
 generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, .4h,   2, .4h,   3, .4h,   .8b
-
+generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,   0, .4h,   0, .4h,   .8b
 .purgem do_load
 .purgem do_store

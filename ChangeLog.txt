@@ -68,7 +68,8 @@ accuracy than the slow integer DCT/IDCT algorithms, and they are quite a bit
 slower.
 
 [8] Added a new output colorspace (JCS_RGB565) to the libjpeg API that allows
-for decompressing JPEG images into RGB565 (16-bit) pixels.
+for decompressing JPEG images into RGB565 (16-bit) pixels.  If dithering is not
+used, then this code path is SIMD-accelerated on ARM platforms.
 
 [9] Numerous obsolete features, such as support for non-ANSI compilers and
 support for the MS-DOS memory model, were removed from the libjpeg code,

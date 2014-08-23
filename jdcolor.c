@@ -6,7 +6,7 @@
  * Modified 2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009, 2011-2012, D. R. Commander.
+ * Copyright (C) 2009, 2011-2012, 2014, D. R. Commander.
  * Copyright (C) 2013, Linaro Limited.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -657,8 +657,12 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     cinfo->out_color_components = 3;
     if (cinfo->dither_mode == JDITHER_NONE) {
       if (cinfo->jpeg_color_space == JCS_YCbCr) {
-        cconvert->pub.color_convert = ycc_rgb565_convert;
-        build_ycc_rgb_table(cinfo);
+         if (jsimd_can_ycc_rgb565())
+           cconvert->pub.color_convert = jsimd_ycc_rgb565_convert;
+         else {
+           cconvert->pub.color_convert = ycc_rgb565_convert;
+           build_ycc_rgb_table(cinfo);
+        }
       } else if (cinfo->jpeg_color_space == JCS_GRAYSCALE) {
         cconvert->pub.color_convert = gray_rgb565_convert;
       } else if (cinfo->jpeg_color_space == JCS_RGB) {

@@ -2,7 +2,7 @@
  * jsimd_mips.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009-2011 D. R. Commander
+ * Copyright 2009-2011, 2014 D. R. Commander
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
@@ -162,6 +162,12 @@ jsimd_can_ycc_rgb (void)
 }
 
 GLOBAL(int)
+jsimd_can_ycc_rgb565 (void)
+{
+  return 0;
+}
+
+GLOBAL(int)
 jsimd_c_can_null_convert (void)
 {
   init_simd();
@@ -297,6 +303,13 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
   if (simd_support & JSIMD_MIPS_DSPR2)
     mipsdspr2fct(cinfo->output_width, input_buf, input_row, output_buf,
                  num_rows);
+}
+
+GLOBAL(void)
+jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
+                          JSAMPIMAGE input_buf, JDIMENSION input_row,
+                          JSAMPARRAY output_buf, int num_rows)
+{
 }
 
 GLOBAL(void)

@@ -349,17 +349,17 @@ Set the following shell variables for simplicity:
   Xcode 5.0.x and later:
   IOS_GCC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 
-  ARM v6 only (up to and including iPhone 3G):
+  ARM v6 (code will run on all iOS devices, not SIMD-accelerated):
   [NOTE: Requires Xcode 4.4.x or earlier]
   IOS_CFLAGS="-march=armv6 -mcpu=arm1176jzf-s -mfpu=vfp"
 
-  ARM v7 only (iPhone 3GS-4S, iPad 1st-3rd Generation):
+  ARM v7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer):
   Xcode 4.6.x and earlier:
   IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
   Xcode 5.0.x and later:
   IOS_CFLAGS="-arch armv7"
 
-  ARM v7s only (iPhone 5, iPad 4th Generation):
+  ARM v7s (code will run on iPhone 5/iPad 4th Generation and newer):
   [NOTE: Requires Xcode 4.5 or later]
   Xcode 4.6.x and earlier:
   IOS_CFLAGS="-march=armv7s -mcpu=swift -mtune=swift -mfpu=neon"

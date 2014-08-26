@@ -40,11 +40,9 @@
 /* Supplementary macro for setting function attributes */
 .macro asm_function fname
 #ifdef __APPLE__
-    .func _\fname
     .globl _\fname
 _\fname:
 #else
-    .func \fname
     .global \fname
 #ifdef __ELF__
     .hidden \fname
@@ -668,7 +666,6 @@ asm_function jsimd_idct_islow_neon
     .unreq          ROW6R
     .unreq          ROW7L
     .unreq          ROW7R
-.endfunc
 
 /*****************************************************************************/
 
@@ -892,7 +889,6 @@ asm_function jsimd_idct_ifast_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 /*****************************************************************************/
 
@@ -1104,7 +1100,6 @@ asm_function jsimd_idct_4x4_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 .purgem idct_helper
 
@@ -1258,7 +1253,6 @@ asm_function jsimd_idct_2x2_neon
     .unreq          OUTPUT_COL
     .unreq          TMP1
     .unreq          TMP2
-.endfunc
 
 .purgem idct_helper
 
@@ -1541,7 +1535,6 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     .unreq          U
     .unreq          V
     .unreq          N
-.endfunc
 
 .purgem do_yuv_to_rgb
 .purgem do_yuv_to_rgb_stage1
@@ -1851,7 +1844,6 @@ asm_function jsimd_\colorid\()_ycc_convert_neon
     .unreq          U
     .unreq          V
     .unreq          N
-.endfunc
 
 .purgem do_rgb_to_yuv
 .purgem do_rgb_to_yuv_stage1
@@ -1932,7 +1924,6 @@ asm_function jsimd_convsamp_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 /*****************************************************************************/
 
@@ -2055,7 +2046,6 @@ asm_function jsimd_fdct_ifast_neon
 
     .unreq          DATA
     .unreq          TMP
-.endfunc
 
 /*****************************************************************************/
 
@@ -2156,7 +2146,6 @@ asm_function jsimd_quantize_neon
     .unreq          CORRECTION
     .unreq          SHIFT
     .unreq          LOOP_COUNT
-.endfunc
 
 /*****************************************************************************/
 
@@ -2390,7 +2379,6 @@ asm_function jsimd_h2v1_fancy_upsample_neon
     .unreq          WIDTH
     .unreq          TMP
 
-.endfunc
 
 .purgem upsample16
 .purgem upsample32

@@ -11,3 +11,4 @@ Makefile.in
 /config.h.in
 /config.sub
 /ltmain.sh
+/ar-lib

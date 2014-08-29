@@ -35,7 +35,6 @@
 #define RESPECT_STRICT_ALIGNMENT 1
 
 
-
 /*****************************************************************************/
 
 /* Supplementary macro for setting function attributes */
@@ -363,6 +362,7 @@ asm_function jsimd_idct_islow_neon
       orr           x0,       x0,       x4
     add             v4.4s,    v10.4s,   v12.4s
       orr           x0,       x0,       x5
+    cmp             x0, #0 /* orrs instruction removed */
     sub             v2.4s,    v10.4s,   v12.4s
     add             v12.4s,   v4.4s,    v14.4s
       ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 0 * 8))]
@@ -377,7 +377,6 @@ asm_function jsimd_idct_islow_neon
     rshrn           ROW3L.4h, v10.4s,   #11
     rshrn           ROW0L.4h, v12.4s,   #11
     rshrn           ROW4L.4h, v6.4s,    #11
-    cmp             x0, #0 /* orrs instruction removed */
 
       beq             3f /* Go to do some special handling for the sparse right 4x8 half */
 
@@ -439,7 +438,7 @@ asm_function jsimd_idct_islow_neon
     add             v12.4s,   v4.4s,    v14.4s
     sub             v4.4s,    v4.4s,    v14.4s
     add             v10.4s,   v2.4s,    v8.4s
-    sub             v12.4s,   v2.4s,    v8.4s
+    sub             v6.4s,    v2.4s,    v8.4s
     rshrn           ROW7R.4h, v4.4s,    #11
     rshrn           ROW3R.4h, v10.4s,   #11
     rshrn           ROW0R.4h, v12.4s,   #11
@@ -1220,7 +1219,7 @@ asm_function jsimd_idct_4x4_neon
     mul             v12.4h, v12.4h, v26.4h
     mul             v13.4h, v13.4h, v27.4h
     ins             v12.2d[1], v13.2d[0]  /* 128 bit q12 */
-    ld1             {v30.8h}, [DCT_TABLE], 16
+    ld1             {v30.4h, v31.4h}, [DCT_TABLE], 16
     mul             v14.4h, v14.4h, v28.4h
     mul             v15.4h, v15.4h, v29.4h
     ins             v14.2d[1], v15.2d[0]  /* 128 bit q14 */
@@ -1327,17 +1326,17 @@ asm_function jsimd_idct_4x4_neon
 
 .balign 8
 jsimd_idct_2x2_neon_consts:
-    .short     -FIX_0_720959822    /* d0[0] */
-    .short     FIX_0_850430095     /* d0[1] */
-    .short     -FIX_1_272758580    /* d0[2] */
-    .short     FIX_3_624509785     /* d0[3] */
+    .short     -FIX_0_720959822    /* v14[0] */
+    .short     FIX_0_850430095     /* v14[1] */
+    .short     -FIX_1_272758580    /* v14[2] */
+    .short     FIX_3_624509785     /* v14[3] */
 
 .macro idct_helper x4, x6, x10, x12, x16, shift, y26, y27
     sshll      v15.4s, \x4,    #15
-    smull      v26.4s, \x6,    v0.4h[3]
-    smlal      v26.4s, \x10,   v0.4h[2]
-    smlal      v26.4s, \x12,   v0.4h[1]
-    smlal      v26.4s, \x16,   v0.4h[0]
+    smull      v26.4s, \x6,    v14.4h[3]
+    smlal      v26.4s, \x10,   v14.4h[2]
+    smlal      v26.4s, \x12,   v14.4h[1]
+    smlal      v26.4s, \x16,   v14.4h[0]
 
     add        v20.4s, v15.4s, v26.4s
     sub        v15.4s, v15.4s, v26.4s
@@ -1399,26 +1398,26 @@ asm_function jsimd_idct_2x2_neon
     ld1             {v16.4h, v17.4h}, [COEF_BLOCK], 16
     /* Dequantize */
     ld1             {v18.4h, v19.4h, v20.4h, v21.4h}, [DCT_TABLE], 32
-    mul             v4.8h, v4.8h, v18.8h
-    mul             v5.8h, v5.8h, v18.8h
+    mul             v4.4h, v4.4h, v18.4h
+    mul             v5.4h, v5.4h, v19.4h
     ins             v4.2d[1], v5.2d[0]
-    mul             v6.8h, v6.8h, v20.8h
-    mul             v7.8h, v7.8h, v21.8h
+    mul             v6.4h, v6.4h, v20.4h
+    mul             v7.4h, v7.4h, v21.4h
     ins             v6.2d[1], v7.2d[0]
     add             DCT_TABLE, DCT_TABLE, #16
     ld1             {v24.4h, v25.4h}, [DCT_TABLE], 16
-    mul             v10.8h, v10.8h, v24.8h
-    mul             v11.8h, v11.8h, v25.8h
+    mul             v10.4h, v10.4h, v24.4h
+    mul             v11.4h, v11.4h, v25.4h
     ins             v10.2d[1], v11.2d[0]
     add             DCT_TABLE, DCT_TABLE, #16
     ld1             {v26.4h, v27.4h}, [DCT_TABLE], 16
-    mul             v12.8h, v12.8h, v26.8h
-    mul             v13.8h, v13.8h, v27.8h
+    mul             v12.4h, v12.4h, v26.4h
+    mul             v13.4h, v13.4h, v27.4h
     ins             v12.2d[1], v13.2d[0]
     add             DCT_TABLE, DCT_TABLE, #16
     ld1             {v30.4h, v31.4h}, [DCT_TABLE], 16
-    mul             v16.8h, v16.8h, v30.8h
-    mul             v17.8h, v17.8h, v31.8h
+    mul             v16.4h, v16.4h, v30.4h
+    mul             v17.4h, v17.4h, v31.4h
     ins             v16.2d[1], v17.2d[0]
 
     /* Pass 1 */
@@ -1446,8 +1445,12 @@ asm_function jsimd_idct_2x2_neon
     sub             v15.4s, v30.4s, v24.4s
     rshrn           v5.4h,  v20.4s, #13
     rshrn           v7.4h,  v15.4s, #13
+    ins             v4.2d[1], v5.2d[0]
+    ins             v6.2d[1], v7.2d[0]
     transpose       v4, v6, v3, .16b, .8h
     transpose       v6, v10, v3, .16b, .4s
+    ins             v11.2d[0], v10.2d[1]
+    ins             v7.2d[0], v6.2d[1]
 #endif
 
     /* Pass 2 */
@@ -1515,11 +1518,11 @@ asm_function jsimd_idct_2x2_neon
         prfm PLDL1KEEP, [V, #64]
         prfm PLDL1KEEP, [Y, #64]
     .elseif \size == 4
-        ld1  {v4.b}[0], [U]
-        ld1  {v4.b}[1], [U]
-        ld1  {v4.b}[2], [U]
-        ld1  {v4.b}[3], [U]
-        ld1  {v5.b}[0], [V]
+        ld1  {v4.b}[0], [U], 1
+        ld1  {v4.b}[1], [U], 1
+        ld1  {v4.b}[2], [U], 1
+        ld1  {v4.b}[3], [U], 1
+        ld1  {v5.b}[0], [V], 1
         ld1  {v5.b}[1], [V], 1
         ld1  {v5.b}[2], [V], 1
         ld1  {v5.b}[3], [V], 1
@@ -1554,7 +1557,7 @@ asm_function jsimd_idct_2x2_neon
             st3  {v10.b, v11.b, v12.b}[3], [RGB], 3
         .elseif \size == 2
             st3  {v10.b, v11.b, v12.b}[4], [RGB], 3
-            st3  {v10.b, v11.b, v12.b}[4], [RGB], 3
+            st3  {v10.b, v11.b, v12.b}[5], [RGB], 3
         .elseif \size == 1
             st3  {v10.b, v11.b, v12.b}[6], [RGB], 3
         .else
@@ -1751,7 +1754,7 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
 
     /* Initially set v10, v11.4h, v12.8b, d13 to 0xFF */
     movi            v10.16b, #255
-    movi            v12.16b, #255
+    movi            v13.16b, #255
 
     /* Outer loop over scanlines */
     cmp             NUM_ROWS, #1

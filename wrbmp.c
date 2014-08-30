@@ -21,6 +21,7 @@
  */
 
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
+#include "jconfigint.h"
 
 #ifdef BMP_SUPPORTED
 
@@ -65,7 +66,7 @@ LOCAL(void) write_colormap
          int map_entry_size);
 
 
-static inline boolean is_big_endian(void)
+static INLINE boolean is_big_endian(void)
 {
   int test_value = 1;
   if(*(char *)&test_value != 1)

@@ -4,6 +4,9 @@
 [1] Fixed a build issue on OS X PowerPC platforms (md5cmp failed to build
 because OS X does not provide the le32toh() and htole32() functions.)
 
+[2] The non-SIMD RGB565 color conversion code did not work correctly on big
+endian machines.  This has been fixed.
+
 
 1.3.90 (1.4 beta1)
 ==================

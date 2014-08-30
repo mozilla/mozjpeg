@@ -5,6 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2013, Linaro Limited.
+ * Copyright (C) 2014, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to write output images in Microsoft "BMP"
@@ -64,6 +65,15 @@ LOCAL(void) write_colormap
          int map_entry_size);
 
 
+static inline boolean is_big_endian(void)
+{
+  int test_value = 1;
+  if(*(char *)&test_value != 1)
+    return TRUE;
+  return FALSE;
+}
+
+
 /*
  * Write some pixel data.
  * In this module rows_supplied will always be 1.
@@ -93,18 +103,18 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   outptr = image_ptr[0];
 
   if(cinfo->out_color_space == JCS_RGB565) {
-    #define red_mask    0xF800
-    #define green_mask  0x7E0
-    #define blue_mask   0x1F
-    unsigned char  r, g, b;
+    boolean big_endian = is_big_endian();
     unsigned short *inptr2 = (unsigned short *)inptr;
     for (col = cinfo->output_width; col > 0; col--) {
-      r = (*inptr2 & red_mask) >> 11;
-      g = (*inptr2 & green_mask) >> 5;
-      b = (*inptr2 & blue_mask);
-      outptr[0] = b << 3;
-      outptr[1] = g << 2;
-      outptr[2] = r << 3;
+      if (big_endian) {
+        outptr[0] = (*inptr2 >> 5) & 0xF8;
+        outptr[1] = ((*inptr2 << 5) & 0xE0) | ((*inptr2 >> 11) & 0x1C);
+        outptr[2] = *inptr2 & 0xF8;
+      } else {
+        outptr[0] = (*inptr2 << 3) & 0xF8;
+        outptr[1] = (*inptr2 >> 3) & 0xFC;
+        outptr[2] = (*inptr2 >> 8) & 0xF8;
+      }
       outptr += 3;
       inptr2++;
     }

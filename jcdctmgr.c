@@ -30,6 +30,8 @@
 typedef JMETHOD(void, forward_DCT_method_ptr, (DCTELEM * data));
 typedef JMETHOD(void, float_DCT_method_ptr, (FAST_FLOAT * data));
 
+typedef void (*preprocess_method_ptr)(DCTELEM*);
+
 typedef JMETHOD(void, convsamp_method_ptr,
                 (JSAMPARRAY sample_data, JDIMENSION start_col,
                  DCTELEM * workspace));
@@ -52,6 +54,7 @@ typedef struct {
   /* Pointer to the DCT routine actually in use */
   forward_DCT_method_ptr dct;
   convsamp_method_ptr convsamp;
+  preprocess_method_ptr preprocess;
   quantize_method_ptr quantize;
 
   /* The actual post-DCT divisors --- not identical to the quant table
@@ -331,6 +334,110 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
   }
 }
 
+METHODDEF(DCTELEM)
+catmull_rom(const DCTELEM value1, const DCTELEM value2, const DCTELEM value3, const DCTELEM value4, const float t, float size)
+{
+  const float tan1 = (value3 - value1) * size;
+  const float tan2 = (value4 - value2) * size;
+
+  const float t2 = t * t;
+  const float t3 = t2 * t;
+
+  const float f1 = 2.f * t3 - 3.f * t2 + 1.f;
+  const float f2 = -2.f * t3 + 3.f * t2;
+  const float f3 = t3 - 2.f * t2 + t;
+  const float f4 = t3 - t2;
+
+  return ceilf(value2 * f1 + tan1 * f3 +
+               value3 * f2 + tan2 * f4);
+}
+
+/** Prevents visible ringing artifacts near hard edges on white backgrounds.
+
+  1. JPEG can encode samples with higher values than it's possible to display (higher than 255 in RGB),
+     and the decoder will always clamp values to 0-255. To encode 255 you can use any value >= 255,
+     and distortions of the out-of-range values won't be visible as long as they decode to anything >= 255.
+
+  2. From DCT perspective pixels in a block are a waveform. Hard edges form square waves (bad).
+     Edges with white are similar to waveform clipping, and anti-clipping algorithms can turn square waves
+     into softer ones that compress better.
+
+ */
+METHODDEF(void)
+preprocess_deringing(DCTELEM *data)
+{
+  const DCTELEM maxsample = 255 - CENTERJSAMPLE;
+  const int size = DCTSIZE * DCTSIZE;
+
+  /* Decoders don't handle overflow of DC very well, so calculate
+     maximum overflow that is safe to do without increasing DC out of range */
+  int sum = 0;
+  int maxsample_count = 0;
+  for(int i=0; i < size; i++) {
+    sum += data[i];
+    if (data[i] >= maxsample) {
+      maxsample_count++;
+    }
+  }
+
+  /* If nothing reaches max value there's nothing to overshoot
+     and if the block is completely flat, it's already the best case. */
+  if (!maxsample_count || maxsample_count == size) {
+    return;
+  }
+
+  /* This is a cautious limit */
+  const int maxovershoot = maxsample + MIN(15, (maxsample * size - sum) / maxsample_count);
+
+  int n = 0;
+  do {
+    /* Pixels are traversed in zig-zag order to process them as a line */
+    if (data[jpeg_natural_order[n]] < maxsample) {
+      n++;
+      continue;
+    }
+
+    /* Find a run of maxsample pixels. Start is the first pixel inside the range, end the first pixel outside. */
+    int start = n;
+    while(++n < size && data[jpeg_natural_order[n]] >= maxsample) {}
+    int end = n;
+
+    /* the run will be replaced with a catmull-rom interpolation of values from the edges */
+
+    /* Find suitable upward slope from pixels around edges of the run.
+       Just feeding nearby pixels as catmull rom points isn't good enough,
+       as slope with one sample before the edge may have been flattened by clipping,
+       and slope of two samples before the edge could be downward. */
+    const DCTELEM f1 = data[jpeg_natural_order[start >= 1 ? start-1 : 0]];
+    const DCTELEM f2 = data[jpeg_natural_order[start >= 2 ? start-2 : 0]];
+
+    const DCTELEM l1 = data[jpeg_natural_order[end < size-1 ? end : size-1]];
+    const DCTELEM l2 = data[jpeg_natural_order[end < size-2 ? end+1 : size-1]];
+
+    DCTELEM fslope = MAX(f1-f2, maxsample-f1);
+    DCTELEM lslope = MAX(l1-l2, maxsample-l1);
+
+    /* if slope at the start/end is unknown, just make the curve symmetric */
+    if (start == 0) {
+      fslope = lslope;
+    }
+    if (end == size) {
+      lslope = fslope;
+    }
+
+    /* The curve fits better if first and last pixel is omitted */
+    const float size = end - start;
+    const float step = 1.f/(float)(size + 1);
+    float position = step;
+
+    for(int i = start; i < end; i++, position += step) {
+      DCTELEM tmp = catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, size);
+      data[jpeg_natural_order[i]] = MIN(tmp, maxovershoot);
+    }
+    n++;
+  }
+  while(n < size);
+}
 
 /*
  * Load data into workspace, applying unsigned->signed conversion.
@@ -427,6 +534,7 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
   /* Make sure the compiler doesn't look up these every pass */
   forward_DCT_method_ptr do_dct = fdct->dct;
   convsamp_method_ptr do_convsamp = fdct->convsamp;
+  preprocess_method_ptr do_preprocess = fdct->preprocess;
   quantize_method_ptr do_quantize = fdct->quantize;
   workspace = fdct->workspace;
 
@@ -435,6 +543,8 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
   for (bi = 0; bi < num_blocks; bi++, start_col += DCTSIZE) {
     /* Load data into workspace, applying unsigned->signed conversion */
     (*do_convsamp) (sample_data, start_col, workspace);
+
+    (*do_preprocess) (workspace);
 
     /* Perform the DCT */
     (*do_dct) (workspace);
@@ -1030,6 +1140,9 @@ jinit_forward_dct (j_compress_ptr cinfo)
       fdct->convsamp = jsimd_convsamp;
     else
       fdct->convsamp = convsamp;
+
+    fdct->preprocess = preprocess_deringing;
+
     if (jsimd_can_quantize())
       fdct->quantize = jsimd_quantize;
     else

@@ -335,10 +335,10 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 }
 
 METHODDEF(DCTELEM)
-catmull_rom(const DCTELEM value1, const DCTELEM value2, const DCTELEM value3, const DCTELEM value4, const float t, float size)
+catmull_rom(const DCTELEM value1, const DCTELEM value2, const DCTELEM value3, const DCTELEM value4, const float t, int size)
 {
-  const float tan1 = (value3 - value1) * size;
-  const float tan2 = (value4 - value2) * size;
+  const int tan1 = (value3 - value1) * size;
+  const int tan2 = (value4 - value2) * size;
 
   const float t2 = t * t;
   const float t3 = t2 * t;
@@ -426,7 +426,7 @@ preprocess_deringing(DCTELEM *data)
     }
 
     /* The curve fits better if first and last pixel is omitted */
-    const float size = end - start;
+    const int size = end - start;
     const float step = 1.f/(float)(size + 1);
     float position = step;
 

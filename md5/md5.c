@@ -39,6 +39,15 @@ static void MD5Transform(unsigned int [4], const unsigned char [64]);
 #else 
 
 /*
+ * OS X doesn't have le32toh() or htole32()
+ */
+#ifdef __APPLE__
+#include <libkern/OSByteOrder.h>
+#define le32toh(x) OSSwapLittleToHostInt32(x)
+#define htole32(x) OSSwapHostToLittleInt32(x)
+#endif
+
+/*
  * Encodes input (unsigned int) into output (unsigned char). Assumes len is
  * a multiple of 4.
  */

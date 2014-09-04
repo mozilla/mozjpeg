@@ -443,8 +443,6 @@ h2v2_merged_upsample (j_decompress_ptr cinfo,
   ((INT16*)(addr))[0] = (pixels) >> 16;  \
 }
 
-#define WRITE_TWO_ALIGNED_PIXELS(addr, pixels)  ((*(INT32 *)(addr)) = pixels)
-
 #define DITHER_565_R(r, dither)  ((r) + ((dither) & 0xFF))
 #define DITHER_565_G(g, dither)  ((g) + (((dither) & 0xFF) >> 1))
 #define DITHER_565_B(b, dither)  ((b) + ((dither) & 0xFF))

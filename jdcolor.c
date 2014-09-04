@@ -559,7 +559,7 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
 
 #define PACK_NEED_ALIGNMENT(ptr)     (((size_t)(ptr)) & 3)
 
-#define WRITE_TWO_ALIGNED_PIXELS(addr, pixels)  ((*(INT32 *)(addr)) = pixels)
+#define WRITE_TWO_ALIGNED_PIXELS(addr, pixels)  ((*(int *)(addr)) = pixels)
 
 #define DITHER_565_R(r, dither)  ((r) + ((dither) & 0xFF))
 #define DITHER_565_G(g, dither)  ((g) + (((dither) & 0xFF) >> 1))

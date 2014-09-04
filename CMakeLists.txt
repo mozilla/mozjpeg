@@ -9,7 +9,7 @@ if(POLICY CMP0022)
 endif()
 
 project(libjpeg-turbo C)
-set(VERSION 1.3.90)
+set(VERSION 1.4.80)
 
 if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)

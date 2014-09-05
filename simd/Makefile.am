@@ -70,6 +70,13 @@ libsimd_la_SOURCES = jsimd_mips.c jsimd_mips_dspr2_asm.h jsimd_mips_dspr2.S
 
 endif
 
+if SIMD_POWERPC64
+
+libsimd_la_SOURCES = jsimd_powerpc64.c jsimd_powerpc64_altivec.c
+libsimd_la_CFLAGS = -maltivec 
+
+endif
+
 AM_CPPFLAGS = -I$(top_srcdir)
 
 .asm.lo:

@@ -481,9 +481,9 @@ if test "x${with_simd}" != "xno"; then
         fi
       fi
       ;;
-    powerpc64)
-      AC_MSG_RESULT([yes (powerpc64)])
-      simd_arch=powerpc64
+    powerpc*)
+      AC_MSG_RESULT([yes (powerpc)])
+      simd_arch=powerpc
       ;;
     *)
       AC_MSG_RESULT([no ("$host_cpu")])
@@ -510,7 +510,7 @@ AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
 AM_CONDITIONAL([SIMD_ARM], [test "x$simd_arch" = "xarm"])
 AM_CONDITIONAL([SIMD_ARM_64], [test "x$simd_arch" = "xaarch64"])
 AM_CONDITIONAL([SIMD_MIPS], [test "x$simd_arch" = "xmips"])
-AM_CONDITIONAL([SIMD_POWERPC64], [test "x$simd_arch" = "xpowerpc64"])
+AM_CONDITIONAL([SIMD_POWERPC], [test "x$simd_arch" = "xpowerpc"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 AM_CONDITIONAL([WITH_TURBOJPEG], [test "x$with_turbojpeg" != "xno"])
 

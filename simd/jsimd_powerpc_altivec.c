@@ -67,8 +67,6 @@
   col##7 = vec_mergel(col67e, col67o); /* col7=(07 17 27 37 47 57 67 77) */   \
 }
 
-#define PRE_MULTIPLY_SCALE_BITS 2
-
 static const __vector short constants __attribute__((aligned(16))) =
 {
   98 << 5,   /* FIX(0.382683433) */
@@ -90,7 +88,7 @@ static const __vector short constants __attribute__((aligned(16))) =
   out4  = vec_sub(tmp10, tmp11);  \
   \
   z1 = vec_add(tmp12, tmp13);  \
-  z1 = z1 << PRE_MULTIPLY_SCALE_BITS;  \
+  z1 = vec_sl(z1, PRE_MULTIPLY_SCALE_BITS);  \
   z1 = vec_madds(z1, PW_0707, zero);  \
   \
   out2 = vec_add(tmp13, z1);  \
@@ -102,8 +100,8 @@ static const __vector short constants __attribute__((aligned(16))) =
   tmp11 = vec_add(tmp5, tmp6);  \
   tmp12 = vec_add(tmp6, tmp7);  \
   \
-  tmp10 = tmp10 << PRE_MULTIPLY_SCALE_BITS;  \
-  tmp12 = tmp12 << PRE_MULTIPLY_SCALE_BITS;  \
+  tmp10 = vec_sl(tmp10, PRE_MULTIPLY_SCALE_BITS);  \
+  tmp12 = vec_sl(tmp12, PRE_MULTIPLY_SCALE_BITS);  \
   z5 = vec_sub(tmp10, tmp12);  \
   z5 = vec_madds(z5, PW_0382, zero);  \
   \
@@ -113,7 +111,7 @@ static const __vector short constants __attribute__((aligned(16))) =
   z4 = vec_madds(tmp12, PW_1306, zero);  \
   z4 = vec_add(z4, z5);  \
   \
-  tmp11 = tmp11 << PRE_MULTIPLY_SCALE_BITS;  \
+  tmp11 = vec_sl(tmp11, PRE_MULTIPLY_SCALE_BITS);  \
   z3 = vec_madds(tmp11, PW_0707, zero);  \
   \
   z11 = vec_add(tmp7, z3);  \
@@ -140,6 +138,7 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
     PW_0541 = vec_splat(constants, 1),
     PW_0707 = vec_splat(constants, 2),
     PW_1306 = vec_splat(constants, 3);
+  __vector unsigned short PRE_MULTIPLY_SCALE_BITS = vec_splat_u16(2);
 
   /* Pass 1: process rows. */
 

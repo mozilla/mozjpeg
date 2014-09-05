@@ -2,7 +2,7 @@
  * simd/jsimd.h
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2011 D. R. Commander
+ * Copyright (C) 2011, 2014 D. R. Commander
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California
  * Copyright (C) 2014 Linaro Limited
  *
@@ -21,6 +21,7 @@
 #define JSIMD_SSE2       0x08
 #define JSIMD_ARM_NEON   0x10
 #define JSIMD_MIPS_DSPR2 0x20
+#define JSIMD_ALTIVEC    0x40
 
 /* SIMD Ext: retrieve SIMD/CPU information */
 EXTERN(unsigned int) jpeg_simd_cpu_support (void);
@@ -553,6 +554,8 @@ EXTERN(void) jsimd_fdct_ifast_sse2 (DCTELEM * data);
 EXTERN(void) jsimd_fdct_ifast_neon (DCTELEM * data);
 
 EXTERN(void) jsimd_fdct_ifast_mips_dspr2 (DCTELEM * data);
+
+EXTERN(void) jsimd_fdct_ifast_altivec (DCTELEM * data);
 
 /* Floating Point Forward DCT */
 EXTERN(void) jsimd_fdct_float_3dnow (FAST_FLOAT * data);

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains initialization logic for the JPEG compressor.
@@ -60,7 +62,7 @@ jinit_compress_master (j_compress_ptr cinfo)
 
   /* Need a full-image coefficient buffer in any multi-pass mode. */
   jinit_c_coef_controller(cinfo,
-		(boolean) (cinfo->num_scans > 1 || cinfo->optimize_coding));
+		(boolean) (cinfo->num_scans > 1 || cinfo->optimize_coding || cinfo->optimize_scans));
   jinit_c_main_controller(cinfo, FALSE /* never need full buffer here */);
 
   jinit_marker_writer(cinfo);

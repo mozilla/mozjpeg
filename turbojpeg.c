@@ -1,5 +1,7 @@
 /*
  * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -121,7 +123,10 @@ static const tjscalingfactor sf[NUMSF]={
 	j_compress_ptr cinfo=NULL;  j_decompress_ptr dinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
-	cinfo=&this->cinfo;  dinfo=&this->dinfo;
+	cinfo=&this->cinfo; \
+	(void)cinfo; \
+	dinfo=&this->dinfo; \
+	(void)dinfo
 
 static int getPixelFormat(int pixelSize, int flags)
 {
@@ -192,6 +197,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	}
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
+	cinfo->use_moz_defaults = TRUE;
 	jpeg_set_defaults(cinfo);
 	if(jpegQual>=0)
 	{
@@ -205,6 +211,10 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 		jpeg_set_colorspace(cinfo, JCS_YCCK);
 	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
+	/* Set scan pattern again as colorspace might have changed */
+	if (cinfo->use_moz_defaults)
+		jpeg_simple_progression(cinfo);
+  
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
 	cinfo->comp_info[1].h_samp_factor=1;
 	cinfo->comp_info[2].h_samp_factor=1;
@@ -605,7 +615,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	unsigned char *rgbBuf=NULL;
 	#endif
 
-	getinstance(handle)
+	getinstance(handle);
 	if((this->init&COMPRESS)==0)
 		_throw("tjCompress2(): Instance has not been initialized for compression");
 
@@ -871,7 +881,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
 		tmpbufsize=0, usetmpbuf=0, th[MAX_COMPONENTS];
 	JSAMPLE *_tmpbuf=NULL, *ptr=srcBuf;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 
-	getinstance(handle)
+	getinstance(handle);
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{

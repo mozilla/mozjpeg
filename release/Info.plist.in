@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleGetInfoString</key>
-	<string>@VERSION@, The libjpeg-turbo Project</string>
+	<string>@VERSION@, The libmozjpeg Project</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.libjpeg-turbo.libjpeg-turbo</string>
+	<string>com.libmozjpeg.libmozjpeg</string>
 	<key>CFBundleShortVersionString</key>
 	<string>@VERSION@</string>
 	<key>IFMajorVersion</key>

@@ -46,7 +46,7 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}turbojpeg.dll"
 !endif
 !ifdef GCC
-	File "/oname=libjpeg-@DLL_VERSION@.dll" "@CMAKE_BINARY_DIR@\sharedlib\libjpeg-*.dll" 
+	File "/oname=libjpeg-@DLL_VERSION@.dll" "@CMAKE_BINARY_DIR@\sharedlib\libjpeg-*.dll"
 !else
 	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpeg@DLL_VERSION@.dll"
 !endif
@@ -80,6 +80,7 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_SOURCE_DIR@\turbojpeg.h"
 	SetOutPath $INSTDIR\doc
 	File "@CMAKE_SOURCE_DIR@\README"
+	File "@CMAKE_SOURCE_DIR@\README-mozilla.txt"
 	File "@CMAKE_SOURCE_DIR@\README-turbo.txt"
 	File "@CMAKE_SOURCE_DIR@\example.c"
 	File "@CMAKE_SOURCE_DIR@\libjpeg.txt"
@@ -139,6 +140,7 @@ Section "Uninstall"
 	Delete $INSTDIR\include\turbojpeg.h"
 	Delete $INSTDIR\uninstall_@VERSION@.exe
 	Delete $INSTDIR\doc\README
+	Delete $INSTDIR\doc\README-mozilla.txt
 	Delete $INSTDIR\doc\README-turbo.txt
 	Delete $INSTDIR\doc\example.c
 	Delete $INSTDIR\doc\libjpeg.txt

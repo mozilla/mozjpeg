@@ -300,14 +300,31 @@ static const unsigned int std_chrominance_quant_tbl[DCTSIZE2] = {
   99,  99,  99,  99,  99,  99,  99,  99
 };
 
+static const unsigned int flat_quant_tbl[DCTSIZE2] = {
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16,
+  16,  16,  16,  16,  16,  16,  16,  16
+};
 
 LOCAL(void)
 jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
 {
-  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
-		       q_scale_factor[0], force_baseline);
-  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
-		       q_scale_factor[1], force_baseline);
+  if (cinfo->use_flat_quant_tbl) {
+    jpeg_add_quant_table(cinfo, 0, flat_quant_tbl,
+                         q_scale_factor[0], force_baseline);
+    jpeg_add_quant_table(cinfo, 1, flat_quant_tbl,
+                         q_scale_factor[1], force_baseline);
+  } else {
+    jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
+                         q_scale_factor[0], force_baseline);
+    jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
+                         q_scale_factor[1], force_baseline);
+  }
 }
 #endif
 

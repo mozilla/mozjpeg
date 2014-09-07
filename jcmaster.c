@@ -6,6 +6,8 @@
  * Modified 2003-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, D. R. Commander.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains master control logic for the JPEG compressor.
@@ -25,7 +27,8 @@
 typedef enum {
 	main_pass,		/* input data, also do first output step */
 	huff_opt_pass,		/* Huffman code optimization pass */
-	output_pass		/* data output pass */
+	output_pass,		/* data output pass */
+        trellis_pass            /* trellis quantization pass */
 } c_pass_type;
 
 typedef struct {
@@ -37,6 +40,18 @@ typedef struct {
   int total_passes;		/* total # of passes needed */
 
   int scan_number;		/* current index in scan_info[] */
+  
+  /* fields for scan optimisation */
+  int pass_number_scan_opt_base; /* pass number where scan optimization begins */
+  unsigned char * scan_buffer[64]; /* buffer for a given scan */
+  unsigned long scan_size[64]; /* size for a given scan */
+  unsigned long best_cost; /* bit count for best frequency split */
+  int best_freq_split_idx_luma; /* index for best frequency split (luma) */
+  int best_freq_split_idx_chroma; /* index for best frequency split (chroma) */
+  int best_Al_luma; /* best value for Al found in scan search (luma) */
+  int best_Al_chroma; /* best value for Al found in scan search (luma) */
+  boolean interleave_chroma_dc; /* indicate whether to interleave chroma DC scans */
+  struct jpeg_destination_mgr * saved_dest; /* saved value of cinfo->dest */
 } my_comp_master;
 
 typedef my_comp_master * my_master_ptr;
@@ -177,6 +192,14 @@ validate_script (j_compress_ptr cinfo)
   /* -1 until that coefficient has been seen; then last Al for it */
 #endif
 
+  if (cinfo->optimize_scans) {
+    cinfo->progressive_mode = TRUE;
+    /* When we optimize scans, there is redundancy in the scan list
+     * and this function will fail. Therefore skip all this checking
+     */
+    return;
+  }
+  
   if (cinfo->num_scans <= 0)
     ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, 0);
 
@@ -305,9 +328,21 @@ select_scan_parameters (j_compress_ptr cinfo)
   int ci;
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED
-  if (cinfo->scan_info != NULL) {
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+  if (master->pass_number < master->pass_number_scan_opt_base) {
+    cinfo->comps_in_scan = 1;
+    if (cinfo->use_scans_in_trellis) {
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/(4*cinfo->trellis_num_loops)];
+      cinfo->Ss = (master->pass_number%4 < 2) ? 1 : cinfo->trellis_freq_split+1;
+      cinfo->Se = (master->pass_number%4 < 2) ? cinfo->trellis_freq_split : DCTSIZE2-1;
+    } else {
+      cinfo->cur_comp_info[0] = &cinfo->comp_info[master->pass_number/(2*cinfo->trellis_num_loops)];
+      cinfo->Ss = 1;
+      cinfo->Se = DCTSIZE2-1;
+    }
+  }
+  else if (cinfo->scan_info != NULL) {
     /* Prepare for current scan --- the script is already validated */
-    my_master_ptr master = (my_master_ptr) cinfo->master;
     const jpeg_scan_info * scanptr = cinfo->scan_info + master->scan_number;
 
     cinfo->comps_in_scan = scanptr->comps_in_scan;
@@ -319,6 +354,16 @@ select_scan_parameters (j_compress_ptr cinfo)
     cinfo->Se = scanptr->Se;
     cinfo->Ah = scanptr->Ah;
     cinfo->Al = scanptr->Al;
+    if (cinfo->optimize_scans) {
+      /* luma frequency split passes */
+      if (master->scan_number >= cinfo->num_scans_luma_dc+3*cinfo->Al_max_luma+2 &&
+          master->scan_number < cinfo->num_scans_luma)
+        cinfo->Al = master->best_Al_luma;
+      /* chroma frequency split passes */
+      if (master->scan_number >= cinfo->num_scans_luma+cinfo->num_scans_chroma_dc+(6*cinfo->Al_max_chroma+4) &&
+          master->scan_number < cinfo->num_scans)
+        cinfo->Al = master->best_Al_chroma;
+    }
   }
   else
 #endif
@@ -436,6 +481,7 @@ METHODDEF(void)
 prepare_for_pass (j_compress_ptr cinfo)
 {
   my_master_ptr master = (my_master_ptr) cinfo->master;
+  cinfo->trellis_passes = master->pass_number < master->pass_number_scan_opt_base;
 
   switch (master->pass_type) {
   case main_pass:
@@ -488,6 +534,13 @@ prepare_for_pass (j_compress_ptr cinfo)
       select_scan_parameters(cinfo);
       per_scan_setup(cinfo);
     }
+    if (cinfo->optimize_scans) {
+      master->saved_dest = cinfo->dest;
+      cinfo->dest = NULL;
+      master->scan_size[master->scan_number] = 0;
+      jpeg_mem_dest(cinfo, &master->scan_buffer[master->scan_number], &master->scan_size[master->scan_number]);
+      (*cinfo->dest->init_destination)(cinfo);
+    }
     (*cinfo->entropy->start_pass) (cinfo, FALSE);
     (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
     /* We emit frame/scan headers now */
@@ -496,6 +549,22 @@ prepare_for_pass (j_compress_ptr cinfo)
     (*cinfo->marker->write_scan_header) (cinfo);
     master->pub.call_pass_startup = FALSE;
     break;
+  case trellis_pass:
+    if (master->pass_number%(cinfo->num_components*(cinfo->use_scans_in_trellis?4:2)) == 1 && cinfo->trellis_q_opt) {
+      int i, j;
+
+      for (i = 0; i < NUM_QUANT_TBLS; i++) {
+        for (j = 1; j < DCTSIZE2; j++) {
+          cinfo->norm_src[i][j] = 0.0;
+          cinfo->norm_coef[i][j] = 0.0;
+        }
+      }
+    }
+    (*cinfo->entropy->start_pass) (cinfo, TRUE);
+    (*cinfo->coef->start_pass) (cinfo, JBUF_REQUANT);
+    master->pub.call_pass_startup = FALSE;
+    break;
+      
   default:
     ERREXIT(cinfo, JERR_NOT_COMPILED);
   }
@@ -530,6 +599,219 @@ pass_startup (j_compress_ptr cinfo)
 }
 
 
+LOCAL(void)
+copy_buffer (j_compress_ptr cinfo, int scan_idx)
+{
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+  
+  unsigned long size = master->scan_size[scan_idx];
+  unsigned char * src = master->scan_buffer[scan_idx];
+  int i;
+  
+  if (cinfo->err->trace_level > 0) {
+    fprintf(stderr, "SCAN ");
+    for (i = 0; i < cinfo->scan_info[scan_idx].comps_in_scan; i++)
+      fprintf(stderr, "%s%d", (i==0)?"":",", cinfo->scan_info[scan_idx].component_index[i]);
+    fprintf(stderr, ": %d %d", cinfo->scan_info[scan_idx].Ss, cinfo->scan_info[scan_idx].Se);
+    fprintf(stderr, " %d %d", cinfo->scan_info[scan_idx].Ah, cinfo->scan_info[scan_idx].Al);
+    fprintf(stderr, "\n");
+  }
+  
+  while (size >= cinfo->dest->free_in_buffer)
+  {
+    MEMCOPY(cinfo->dest->next_output_byte, src, cinfo->dest->free_in_buffer);
+    src += cinfo->dest->free_in_buffer;
+    size -= cinfo->dest->free_in_buffer;
+    cinfo->dest->next_output_byte += cinfo->dest->free_in_buffer;
+    cinfo->dest->free_in_buffer = 0;
+    (*cinfo->dest->empty_output_buffer)(cinfo);
+  }
+
+  MEMCOPY(cinfo->dest->next_output_byte, src, size);
+  cinfo->dest->next_output_byte += size;
+  cinfo->dest->free_in_buffer -= size;
+}
+
+LOCAL(void)
+select_scans (j_compress_ptr cinfo, int next_scan_number)
+{
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+  
+  int base_scan_idx = 0;
+  int luma_freq_split_scan_start = cinfo->num_scans_luma_dc + 3 * cinfo->Al_max_luma + 2;
+  int chroma_freq_split_scan_start = cinfo->num_scans_luma+cinfo->num_scans_chroma_dc+(6*cinfo->Al_max_chroma+4);
+
+  if (next_scan_number > 1 && next_scan_number <= luma_freq_split_scan_start) {
+    if ((next_scan_number - 1) % 3 == 2) {
+      int Al = (next_scan_number - 1) / 3;
+      int i;
+      unsigned long cost = 0;
+      cost += master->scan_size[next_scan_number-2];
+      cost += master->scan_size[next_scan_number-1];
+      for (i = 0; i < Al; i++)
+        cost += master->scan_size[3 + 3*i];
+      
+      if (Al == 0 || cost < master->best_cost) {
+        master->best_cost = cost;
+        master->best_Al_luma = Al;
+      } else {
+        master->scan_number = luma_freq_split_scan_start - 1;
+        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+      }
+    }
+  
+  } else if (next_scan_number > luma_freq_split_scan_start && next_scan_number <= cinfo->num_scans_luma) {
+    if (next_scan_number == luma_freq_split_scan_start + 1) {
+      master->best_freq_split_idx_luma = 0;
+      master->best_cost = master->scan_size[next_scan_number-1];
+      
+    } else if ((next_scan_number - luma_freq_split_scan_start) % 2 == 1) {
+      int idx = (next_scan_number - luma_freq_split_scan_start) >> 1;
+      unsigned long cost = 0;
+      cost += master->scan_size[next_scan_number-2];
+      cost += master->scan_size[next_scan_number-1];
+      
+      if (cost < master->best_cost) {
+        master->best_cost = cost;
+        master->best_freq_split_idx_luma = idx;
+      }
+      
+      /* if after testing first 3, no split is the best, don't search further */
+      if ((idx == 2 && master->best_freq_split_idx_luma == 0) ||
+          (idx == 3 && master->best_freq_split_idx_luma != 2) ||
+          (idx == 4 && master->best_freq_split_idx_luma != 4)) {
+        master->scan_number = cinfo->num_scans_luma - 1;
+        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+        master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
+      }
+    }
+    
+  } else if (cinfo->num_scans > cinfo->num_scans_luma) {
+
+    if (next_scan_number == cinfo->num_scans_luma+cinfo->num_scans_chroma_dc) {
+      base_scan_idx = cinfo->num_scans_luma;
+      
+      master->interleave_chroma_dc = master->scan_size[base_scan_idx] <= master->scan_size[base_scan_idx+1] + master->scan_size[base_scan_idx+2];
+      
+    } else if (next_scan_number > cinfo->num_scans_luma+cinfo->num_scans_chroma_dc && next_scan_number <= chroma_freq_split_scan_start) {
+      base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;
+      if ((next_scan_number - base_scan_idx) % 6 == 4) {
+        int Al = (next_scan_number - base_scan_idx) / 6;
+        int i;
+        unsigned long cost = 0;
+        cost += master->scan_size[next_scan_number-4];
+        cost += master->scan_size[next_scan_number-3];
+        cost += master->scan_size[next_scan_number-2];
+        cost += master->scan_size[next_scan_number-1];
+        for (i = 0; i < Al; i++) {
+          cost += master->scan_size[base_scan_idx + 4 + 6*i];
+          cost += master->scan_size[base_scan_idx + 5 + 6*i];
+        }
+        
+        if (Al == 0 || cost < master->best_cost) {
+          master->best_cost = cost;
+          master->best_Al_chroma = Al;
+        } else {
+          master->scan_number = chroma_freq_split_scan_start - 1;
+          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+        }
+      }
+
+    } else if (next_scan_number > chroma_freq_split_scan_start && next_scan_number <= cinfo->num_scans) {
+      if (next_scan_number == chroma_freq_split_scan_start + 2) {
+        master->best_freq_split_idx_chroma = 0;
+        master->best_cost  = master->scan_size[next_scan_number-2];
+        master->best_cost += master->scan_size[next_scan_number-1];
+        
+      } else if ((next_scan_number - chroma_freq_split_scan_start) % 4 == 2) {
+        int idx = (next_scan_number - chroma_freq_split_scan_start) >> 2;
+        unsigned long cost = 0;
+        cost += master->scan_size[next_scan_number-4];
+        cost += master->scan_size[next_scan_number-3];
+        cost += master->scan_size[next_scan_number-2];
+        cost += master->scan_size[next_scan_number-1];
+        
+        if (cost < master->best_cost) {
+          master->best_cost = cost;
+          master->best_freq_split_idx_chroma = idx;
+        }
+        
+        /* if after testing first 3, no split is the best, don't search further */
+        if ((idx == 2 && master->best_freq_split_idx_chroma == 0) ||
+            (idx == 3 && master->best_freq_split_idx_chroma != 2) ||
+            (idx == 4 && master->best_freq_split_idx_chroma != 4)) {
+          master->scan_number = cinfo->num_scans - 1;
+          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+          master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
+        }
+      }
+    }
+  }
+  
+  if (master->scan_number == cinfo->num_scans - 1) {
+    int i, Al;
+    int min_Al = MIN(master->best_Al_luma, master->best_Al_chroma);
+    
+    copy_buffer(cinfo, 0);
+
+    if (cinfo->num_scans > cinfo->num_scans_luma && !cinfo->one_dc_scan) {
+      base_scan_idx = cinfo->num_scans_luma;
+      
+      if (master->interleave_chroma_dc)
+        copy_buffer(cinfo, base_scan_idx);
+      else {
+        copy_buffer(cinfo, base_scan_idx+1);
+        copy_buffer(cinfo, base_scan_idx+2);
+      }
+    }
+    
+    if (master->best_freq_split_idx_luma == 0)
+      copy_buffer(cinfo, luma_freq_split_scan_start);
+    else {
+      copy_buffer(cinfo, luma_freq_split_scan_start+2*(master->best_freq_split_idx_luma-1)+1);
+      copy_buffer(cinfo, luma_freq_split_scan_start+2*(master->best_freq_split_idx_luma-1)+2);
+    }
+    
+    /* copy the LSB refinements as well */
+    for (Al = master->best_Al_luma-1; Al >= min_Al; Al--)
+      copy_buffer(cinfo, 3 + 3*Al);
+
+    if (cinfo->num_scans > cinfo->num_scans_luma) {
+      if (master->best_freq_split_idx_chroma == 0) {
+        copy_buffer(cinfo, chroma_freq_split_scan_start);
+        copy_buffer(cinfo, chroma_freq_split_scan_start+1);
+      }
+      else {
+        copy_buffer(cinfo, chroma_freq_split_scan_start+4*(master->best_freq_split_idx_chroma-1)+2);
+        copy_buffer(cinfo, chroma_freq_split_scan_start+4*(master->best_freq_split_idx_chroma-1)+3);
+        copy_buffer(cinfo, chroma_freq_split_scan_start+4*(master->best_freq_split_idx_chroma-1)+4);
+        copy_buffer(cinfo, chroma_freq_split_scan_start+4*(master->best_freq_split_idx_chroma-1)+5);
+      }
+      
+      base_scan_idx = cinfo->num_scans_luma + cinfo->num_scans_chroma_dc;
+      
+      for (Al = master->best_Al_chroma-1; Al >= min_Al; Al--) {
+        copy_buffer(cinfo, base_scan_idx + 6*Al + 4);
+        copy_buffer(cinfo, base_scan_idx + 6*Al + 5);
+      }
+    }
+    
+    for (Al = min_Al-1; Al >= 0; Al--) {
+      copy_buffer(cinfo, 3 + 3*Al);
+      
+      if (cinfo->num_scans > cinfo->num_scans_luma) {
+        copy_buffer(cinfo, base_scan_idx + 6*Al + 4);
+        copy_buffer(cinfo, base_scan_idx + 6*Al + 5);
+      }
+    }
+    
+    /* free the memory allocated for buffers */
+    for (i = 0; i < cinfo->num_scans; i++)
+      if (master->scan_buffer[i])
+        free(master->scan_buffer[i]);
+  }
+}
+
 /*
  * Finish up at end of pass.
  */
@@ -550,19 +832,47 @@ finish_pass_master (j_compress_ptr cinfo)
     /* next pass is either output of scan 0 (after optimization)
      * or output of scan 1 (if no optimization).
      */
-    master->pass_type = output_pass;
-    if (! cinfo->optimize_coding)
-      master->scan_number++;
+    if (cinfo->trellis_quant)
+      master->pass_type = trellis_pass;
+    else {
+      master->pass_type = output_pass;
+      if (! cinfo->optimize_coding)
+        master->scan_number++;
+    }
     break;
   case huff_opt_pass:
     /* next pass is always output of current scan */
-    master->pass_type = output_pass;
+    master->pass_type = (master->pass_number < master->pass_number_scan_opt_base-1) ? trellis_pass : output_pass;
     break;
   case output_pass:
     /* next pass is either optimization or output of next scan */
     if (cinfo->optimize_coding)
       master->pass_type = huff_opt_pass;
+    if (cinfo->optimize_scans) {
+      (*cinfo->dest->term_destination)(cinfo);
+      cinfo->dest = master->saved_dest;
+      select_scans(cinfo, master->scan_number + 1);
+    }
+
     master->scan_number++;
+    break;
+  case trellis_pass:
+    master->pass_type = (cinfo->optimize_coding || master->pass_number < master->pass_number_scan_opt_base-1) ? huff_opt_pass : output_pass;
+      
+    if ((master->pass_number+1)%(cinfo->num_components*(cinfo->use_scans_in_trellis?4:2)) == 0 && cinfo->trellis_q_opt) {
+      int i, j;
+
+      for (i = 0; i < NUM_QUANT_TBLS; i++) {
+        for (j = 1; j < DCTSIZE2; j++) {
+          if (cinfo->norm_coef[i][j] != 0.0) {
+            int q = (int)(cinfo->norm_src[i][j] / cinfo->norm_coef[i][j] + 0.5);
+            if (q > 254) q = 254;
+            if (q < 1) q = 1;
+            cinfo->quant_tbl_ptrs[i]->quantval[j] = q;
+          }
+        }
+      }
+    }
     break;
   }
 
@@ -622,4 +932,20 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     master->total_passes = cinfo->num_scans * 2;
   else
     master->total_passes = cinfo->num_scans;
+  
+  if (cinfo->trellis_quant)
+    master->total_passes += ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
+  
+  if (cinfo->optimize_scans) {
+    int i;
+    master->best_Al_chroma = 0;
+    
+    for (i = 0; i < cinfo->num_scans; i++)
+      master->scan_buffer[i] = NULL;
+  }
+  
+  if (cinfo->trellis_quant)
+    master->pass_number_scan_opt_base = ((cinfo->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components * cinfo->trellis_num_loops;
+  else
+    master->pass_number_scan_opt_base = 0;
 }

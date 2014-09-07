@@ -3,6 +3,8 @@
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the compression half
@@ -43,6 +45,10 @@ jpeg_start_compress (j_compress_ptr cinfo, boolean write_all_tables)
   if (write_all_tables)
     jpeg_suppress_tables(cinfo, FALSE);	/* mark all tables to be written */
 
+  /* setting up scan optimisation pattern failed, disable scan optimisation */
+  if (cinfo->num_scans_luma == 0 || cinfo->scan_info == NULL || cinfo->num_scans == 0)
+    cinfo->optimize_scans = FALSE;
+  
   /* (Re)initialize error mgr and destination modules */
   (*cinfo->err->reset_error_mgr) ((j_common_ptr) cinfo);
   (*cinfo->dest->init_destination) (cinfo);

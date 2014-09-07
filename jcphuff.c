@@ -2,6 +2,8 @@
  * jcphuff.c
  *
  * Copyright (C) 1995-1997, Thomas G. Lane.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -167,6 +169,14 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
 	  (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				      257 * SIZEOF(long));
       MEMZERO(entropy->count_ptrs[tbl], 257 * SIZEOF(long));
+      if (cinfo->trellis_passes) {
+        /* When generating tables for trellis passes, make sure that all */
+        /* codewords have an assigned length */
+        int i, j;
+        for (i = 0; i < 16; i++)
+          for (j = 0; j < 12; j++)
+          entropy->count_ptrs[tbl][16*i+j] = 1;
+      }
     } else {
       /* Compute derived values for Huffman table */
       /* We may do this more than once for a table, but it's not expensive */
@@ -468,6 +478,8 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   int Se = cinfo->Se;
   int Al = cinfo->Al;
   JBLOCKROW block;
+  int deadzone = (1 << Al) - 1;
+  int sign;
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;
@@ -485,29 +497,24 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   r = 0;			/* r = run length of zeros */
    
   for (k = cinfo->Ss; k <= Se; k++) {
-    if ((temp = (*block)[jpeg_natural_order[k]]) == 0) {
+    temp = (*block)[jpeg_natural_order[k]];
+    if ((unsigned)(temp + deadzone) <= 2*deadzone) {
       r++;
       continue;
     }
+
     /* We must apply the point transform by Al.  For AC coefficients this
-     * is an integer division with rounding towards 0.  To do this portably
-     * in C, we shift after obtaining the absolute value; so the code is
+     * is an integer division with rounding towards 0.  The code is
      * interwoven with finding the abs value (temp) and output bits (temp2).
      */
-    if (temp < 0) {
-      temp = -temp;		/* temp is abs value of input */
-      temp >>= Al;		/* apply the point transform */
-      /* For a negative coef, want temp2 = bitwise complement of abs(coef) */
-      temp2 = ~temp;
-    } else {
-      temp >>= Al;		/* apply the point transform */
-      temp2 = temp;
-    }
-    /* Watch out for case that nonzero coef is zero after point transform */
-    if (temp == 0) {
-      r++;
-      continue;
-    }
+#ifdef RIGHT_SHIFT_IS_UNSIGNED
+    sign = (temp < 0) ? ~0 : 0;
+#else
+    sign = temp >> (8*sizeof(temp)-1);
+#endif
+    temp += sign;
+    temp = (temp ^ sign) >> Al;
+    temp2 = temp ^ sign;
 
     /* Emit any pending EOBRUN */
     if (entropy->EOBRUN > 0)

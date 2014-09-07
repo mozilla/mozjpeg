@@ -35,7 +35,7 @@ __PWD=`pwd`
 make install DESTDIR=$TMPDIR/pkg docdir=/usr/share/doc/$PACKAGE_NAME-$VERSION \
 	exampledir=/usr/share/doc/$PACKAGE_NAME-$VERSION
 rm $TMPDIR/pkg$LIBDIR/*.la
-if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" = "/opt/libjpeg-turbo/doc" ]; then
+if [ "$PREFIX" = "/opt/libmozjpeg" -a "$DOCDIR" = "/opt/libmozjpeg/doc" ]; then
 	ln -fs /usr/share/doc/$PACKAGE_NAME-$VERSION $TMPDIR/pkg$DOCDIR
 fi
 cd $TMPDIR/pkg

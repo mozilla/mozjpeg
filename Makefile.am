@@ -84,7 +84,7 @@ endif
 
 
 bin_PROGRAMS = cjpeg djpeg jpegtran rdjpgcom wrjpgcom
-noinst_PROGRAMS = jcstest
+noinst_PROGRAMS = jcstest jpegyuv yuvjpeg
 
 
 if WITH_TURBOJPEG
@@ -108,7 +108,7 @@ endif
 
 
 cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
-	rdppm.c rdswitch.c rdtarga.c 
+	rdppm.c rdswitch.c rdtarga.c rdjpeg.c
 
 cjpeg_LDADD = libjpeg.la
 
@@ -139,13 +139,21 @@ jcstest_SOURCES = jcstest.c
 
 jcstest_LDADD = libjpeg.la
 
+jpegyuv_SOURCES = jpegyuv.c
+
+jpegyuv_LDADD = libjpeg.la
+
+yuvjpeg_SOURCES = yuvjpeg.c
+
+yuvjpeg_LDADD = libjpeg.la
+
 dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
 DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.txt \
 	ChangeLog.txt
 
 docdir = $(datadir)/doc
-dist_doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
+dist_doc_DATA = README README-mozilla.txt README-turbo.txt libjpeg.txt structure.txt usage.txt \
 	wizard.txt 
 
 exampledir = $(datadir)/doc
@@ -332,26 +340,26 @@ if WITH_JAVA
 endif
 
 
-pkgscripts/libjpeg-turbo.spec: pkgscripts/libjpeg-turbo.spec.tmpl
-	cat pkgscripts/libjpeg-turbo.spec.tmpl | sed s@%{__prefix}@$(prefix)@g | \
+pkgscripts/libmozjpeg.spec: pkgscripts/libmozjpeg.spec.tmpl
+	cat pkgscripts/libmozjpeg.spec.tmpl | sed s@%{__prefix}@$(prefix)@g | \
 		sed s@%{__bindir}@$(bindir)@g | sed s@%{__datadir}@$(datadir)@g | \
 		sed s@%{__docdir}@$(docdir)@g | sed s@%{__includedir}@$(includedir)@g | \
 		sed s@%{__libdir}@$(libdir)@g | sed s@%{__mandir}@$(mandir)@g \
-		> pkgscripts/libjpeg-turbo.spec
+		> pkgscripts/libmozjpeg.spec
 
-rpm: all pkgscripts/libjpeg-turbo.spec
+rpm: all pkgscripts/libmozjpeg.spec
 	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
 	mkdir -p $$TMPDIR/RPMS; \
 	ln -fs `pwd` $$TMPDIR/BUILD; \
 	rm -f ${PKGNAME}-${VERSION}.${RPMARCH}.rpm; \
 	rpmbuild -bb --define "_blddir $$TMPDIR/buildroot"  \
 		--define "_topdir $$TMPDIR" \
-		--target ${RPMARCH} pkgscripts/libjpeg-turbo.spec; \
+		--target ${RPMARCH} pkgscripts/libmozjpeg.spec; \
 	cp $$TMPDIR/RPMS/${RPMARCH}/${PKGNAME}-${VERSION}-${BUILD}.${RPMARCH}.rpm \
 		${PKGNAME}-${VERSION}.${RPMARCH}.rpm; \
 	rm -rf $$TMPDIR
 
-srpm: dist-gzip pkgscripts/libjpeg-turbo.spec
+srpm: dist-gzip pkgscripts/libmozjpeg.spec
 	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
 	mkdir -p $$TMPDIR/RPMS; \
 	mkdir -p $$TMPDIR/SRPMS; \
@@ -360,10 +368,10 @@ srpm: dist-gzip pkgscripts/libjpeg-turbo.spec
 	mkdir -p $$TMPDIR/SPECS; \
 	rm -f ${PKGNAME}-${VERSION}.src.rpm; \
 	cp ${PACKAGE_NAME}-${VERSION}.tar.gz $$TMPDIR/SOURCES; \
-	cat pkgscripts/libjpeg-turbo.spec | sed s/%{_blddir}/%{_tmppath}/g \
+	cat pkgscripts/libmozjpeg.spec | sed s/%{_blddir}/%{_tmppath}/g \
 		| sed s/#--\>//g \
-		> $$TMPDIR/SPECS/libjpeg-turbo.spec; \
-	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/libjpeg-turbo.spec; \
+		> $$TMPDIR/SPECS/libmozjpeg.spec; \
+	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/libmozjpeg.spec; \
 	cp $$TMPDIR/SRPMS/${PKGNAME}-${VERSION}-${BUILD}.src.rpm \
 		${PKGNAME}-${VERSION}.src.rpm; \
 	rm -rf $$TMPDIR

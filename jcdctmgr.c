@@ -20,7 +20,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jdct.h"               /* Private declarations for DCT subsystem */
+#include "jdct.h"		/* Private declarations for DCT subsystem */
 #include "jsimddct.h"
 #include <assert.h>
 #include <math.h>
@@ -46,7 +46,7 @@ typedef void (*float_quantize_method_ptr) (JCOEFPTR coef_block,
 METHODDEF(void) quantize (JCOEFPTR, DCTELEM *, DCTELEM *);
 
 typedef struct {
-  struct jpeg_forward_dct pub;  /* public fields */
+  struct jpeg_forward_dct pub;	/* public fields */
 
   /* Pointer to the DCT routine actually in use */
   forward_DCT_method_ptr dct;
@@ -149,7 +149,7 @@ flss (UINT16 val)
  *
  * In order to allow SIMD implementations we also tweak the values to
  * allow the same calculation to be made at all times:
- *
+ * 
  *   dctbl[0] = f rounded to nearest integer
  *   dctbl[1] = divisor / 2 (+ 1 if fractional part of f < 0.5)
  *   dctbl[2] = 1 << ((word size) * 2 - r)
@@ -223,7 +223,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
     qtblno = compptr->quant_tbl_no;
     /* Make sure specified quantization table is present */
     if (qtblno < 0 || qtblno >= NUM_QUANT_TBLS ||
-        cinfo->quant_tbl_ptrs[qtblno] == NULL)
+	cinfo->quant_tbl_ptrs[qtblno] == NULL)
       ERREXIT1(cinfo, JERR_NO_QUANT_TABLE, qtblno);
     qtbl = cinfo->quant_tbl_ptrs[qtblno];
     /* Compute divisors for this quant table */
@@ -235,91 +235,91 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
        * coefficients multiplied by 8 (to counteract scaling).
        */
       if (fdct->divisors[qtblno] == NULL) {
-        fdct->divisors[qtblno] = (DCTELEM *)
-          (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+	fdct->divisors[qtblno] = (DCTELEM *)
+	  (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                       (DCTSIZE2 * 4) * sizeof(DCTELEM));
       }
       dtbl = fdct->divisors[qtblno];
       for (i = 0; i < DCTSIZE2; i++) {
-        if(!compute_reciprocal(qtbl->quantval[i] << 3, &dtbl[i])
-          && fdct->quantize == jsimd_quantize)
-          fdct->quantize = quantize;
+	if(!compute_reciprocal(qtbl->quantval[i] << 3, &dtbl[i])
+	  && fdct->quantize == jsimd_quantize)
+	  fdct->quantize = quantize;
       }
       break;
 #endif
 #ifdef DCT_IFAST_SUPPORTED
     case JDCT_IFAST:
       {
-        /* For AA&N IDCT method, divisors are equal to quantization
-         * coefficients scaled by scalefactor[row]*scalefactor[col], where
-         *   scalefactor[0] = 1
-         *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
-         * We apply a further scale factor of 8.
-         */
+	/* For AA&N IDCT method, divisors are equal to quantization
+	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
+	 *   scalefactor[0] = 1
+	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
+	 * We apply a further scale factor of 8.
+	 */
 #define CONST_BITS 14
-        static const INT16 aanscales[DCTSIZE2] = {
-          /* precomputed values scaled up by 14 bits */
-          16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-          22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
-          21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
-          19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
-          16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-          12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
-           8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
-           4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
-        };
-        SHIFT_TEMPS
+	static const INT16 aanscales[DCTSIZE2] = {
+	  /* precomputed values scaled up by 14 bits */
+	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
+	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
+	  19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
+	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+	  12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
+	   8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
+	   4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
+	};
+	SHIFT_TEMPS
 
-        if (fdct->divisors[qtblno] == NULL) {
-          fdct->divisors[qtblno] = (DCTELEM *)
-            (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+	if (fdct->divisors[qtblno] == NULL) {
+	  fdct->divisors[qtblno] = (DCTELEM *)
+	    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                         (DCTSIZE2 * 4) * sizeof(DCTELEM));
-        }
-        dtbl = fdct->divisors[qtblno];
-        for (i = 0; i < DCTSIZE2; i++) {
-          if(!compute_reciprocal(
-            DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
-                                  (INT32) aanscales[i]),
-                    CONST_BITS-3), &dtbl[i])
-            && fdct->quantize == jsimd_quantize)
-            fdct->quantize = quantize;
-        }
+	}
+	dtbl = fdct->divisors[qtblno];
+	for (i = 0; i < DCTSIZE2; i++) {
+	  if(!compute_reciprocal(
+	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
+				  (INT32) aanscales[i]),
+		    CONST_BITS-3), &dtbl[i])
+	    && fdct->quantize == jsimd_quantize)
+	    fdct->quantize = quantize;
+	}
       }
       break;
 #endif
 #ifdef DCT_FLOAT_SUPPORTED
     case JDCT_FLOAT:
       {
-        /* For float AA&N IDCT method, divisors are equal to quantization
-         * coefficients scaled by scalefactor[row]*scalefactor[col], where
-         *   scalefactor[0] = 1
-         *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
-         * We apply a further scale factor of 8.
-         * What's actually stored is 1/divisor so that the inner loop can
-         * use a multiplication rather than a division.
-         */
-        FAST_FLOAT * fdtbl;
-        int row, col;
-        static const double aanscalefactor[DCTSIZE] = {
-          1.0, 1.387039845, 1.306562965, 1.175875602,
-          1.0, 0.785694958, 0.541196100, 0.275899379
-        };
+	/* For float AA&N IDCT method, divisors are equal to quantization
+	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
+	 *   scalefactor[0] = 1
+	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
+	 * We apply a further scale factor of 8.
+	 * What's actually stored is 1/divisor so that the inner loop can
+	 * use a multiplication rather than a division.
+	 */
+	FAST_FLOAT * fdtbl;
+	int row, col;
+	static const double aanscalefactor[DCTSIZE] = {
+	  1.0, 1.387039845, 1.306562965, 1.175875602,
+	  1.0, 0.785694958, 0.541196100, 0.275899379
+	};
 
-        if (fdct->float_divisors[qtblno] == NULL) {
-          fdct->float_divisors[qtblno] = (FAST_FLOAT *)
-            (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+	if (fdct->float_divisors[qtblno] == NULL) {
+	  fdct->float_divisors[qtblno] = (FAST_FLOAT *)
+	    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                         DCTSIZE2 * sizeof(FAST_FLOAT));
-        }
-        fdtbl = fdct->float_divisors[qtblno];
-        i = 0;
-        for (row = 0; row < DCTSIZE; row++) {
-          for (col = 0; col < DCTSIZE; col++) {
-            fdtbl[i] = (FAST_FLOAT)
-              (1.0 / (((double) qtbl->quantval[i] *
-                       aanscalefactor[row] * aanscalefactor[col] * 8.0)));
-            i++;
-          }
-        }
+	}
+	fdtbl = fdct->float_divisors[qtblno];
+	i = 0;
+	for (row = 0; row < DCTSIZE; row++) {
+	  for (col = 0; col < DCTSIZE; col++) {
+	    fdtbl[i] = (FAST_FLOAT)
+	      (1.0 / (((double) qtbl->quantval[i] *
+		       aanscalefactor[row] * aanscalefactor[col] * 8.0)));
+	    i++;
+	  }
+	}
       }
       break;
 #endif
@@ -346,7 +346,7 @@ convsamp (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace)
   for (elemr = 0; elemr < DCTSIZE; elemr++) {
     elemptr = sample_data[elemr] + start_col;
 
-#if DCTSIZE == 8                /* unroll the inner loop */
+#if DCTSIZE == 8		/* unroll the inner loop */
     *workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
     *workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
     *workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
@@ -412,8 +412,8 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
 
 METHODDEF(void)
 forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
-             JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
-             JDIMENSION start_row, JDIMENSION start_col,
+	     JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
+	     JDIMENSION start_row, JDIMENSION start_col,
 	     JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for integer DCT implementations. */
 {
@@ -429,7 +429,7 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
   quantize_method_ptr do_quantize = fdct->quantize;
   workspace = fdct->workspace;
 
-  sample_data += start_row;     /* fold in the vertical offset once */
+  sample_data += start_row;	/* fold in the vertical offset once */
 
   for (bi = 0; bi < num_blocks; bi++, start_col += DCTSIZE) {
     /* Load data into workspace, applying unsigned->signed conversion */
@@ -487,7 +487,7 @@ convsamp_float (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT * works
   workspaceptr = workspace;
   for (elemr = 0; elemr < DCTSIZE; elemr++) {
     elemptr = sample_data[elemr] + start_col;
-#if DCTSIZE == 8                /* unroll the inner loop */
+#if DCTSIZE == 8		/* unroll the inner loop */
     *workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
     *workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
     *workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
@@ -532,8 +532,8 @@ quantize_float (JCOEFPTR coef_block, FAST_FLOAT * divisors, FAST_FLOAT * workspa
 
 METHODDEF(void)
 forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
-                   JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
-                   JDIMENSION start_row, JDIMENSION start_col,
+		   JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
+		   JDIMENSION start_row, JDIMENSION start_col,
 		   JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for floating-point DCT implementations. */
 {
@@ -552,7 +552,7 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
   float_quantize_method_ptr do_quantize = fdct->float_quantize;
   workspace = fdct->float_workspace;
 
-  sample_data += start_row;     /* fold in the vertical offset once */
+  sample_data += start_row;	/* fold in the vertical offset once */
 
   for (bi = 0; bi < num_blocks; bi++, start_col += DCTSIZE) {
     /* Load data into workspace, applying unsigned->signed conversion */
@@ -614,10 +614,10 @@ static const float jpeg_lambda_weights_csf_luma[64] = {
 };
 
 GLOBAL(void)
-quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef)
+quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val)
 {
-  int i, j, k;
+  int i, j, k, l;
   float accumulated_zero_dist[DCTSIZE2];
   float accumulated_cost[DCTSIZE2];
   int run_start[DCTSIZE2];
@@ -627,6 +627,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   float norm = 0.0;
   float lambda_base;
   float lambda;
+  float lambda_dc;
   const float *lambda_tbl = (cinfo->use_lambda_weight_tbl) ? jpeg_lambda_weights_csf_luma : jpeg_lambda_weights_flat;
   int Ss, Se;
   float *accumulated_zero_block_cost = NULL;
@@ -640,6 +641,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   int zero_run;
   int run_bits;
   int rate;
+  float *accumulated_dc_cost[3];
+  int *dc_cost_backtrack[3];
+  JCOEF *dc_candidate[3];
 
   Ss = cinfo->Ss;
   Se = cinfo->Se;
@@ -652,11 +656,29 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     accumulated_block_cost = (float *)malloc((num_blocks + 1) * sizeof(float));
     block_run_start = (int *)malloc(num_blocks * sizeof(int));
     requires_eob = (int *)malloc((num_blocks + 1) * sizeof(int));
+    if (!accumulated_zero_block_cost ||
+        !accumulated_block_cost ||
+        !block_run_start ||
+        !requires_eob) {
+      ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+    }
+
     accumulated_zero_block_cost[0] = 0;
     accumulated_block_cost[0] = 0;
     requires_eob[0] = 0;
   }
-  
+  if (cinfo->trellis_quant_dc) {
+    for (i = 0; i < 3; i++) {
+      accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
+      dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
+      dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
+      if (!accumulated_dc_cost[i] ||
+          !dc_cost_backtrack[i] ||
+          !dc_candidate[i]) {
+        ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+      }
+    }
+  }
   norm = 0.0;
   for (i = 1; i < DCTSIZE2; i++) {
     norm += qtbl->quantval[i] * qtbl->quantval[i];
@@ -678,9 +700,65 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     else
       lambda = pow(2.0, cinfo->lambda_log_scale1-12.0) * lambda_base;
     
+    lambda_dc = lambda * lambda_tbl[0];
+    
     accumulated_zero_dist[Ss-1] = 0.0;
     accumulated_cost[Ss-1] = 0.0;
     
+    // Do DC coefficient
+    if (cinfo->trellis_quant_dc) {
+      int sign = src[bi][0] >> 31;
+      int x = abs(src[bi][0]);
+      int q = 8 * qtbl->quantval[0];
+      int qval;
+      float dc_candidate_dist;
+
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
+      for (k = 0; k < 3; k++) {
+        int delta;
+        int dc_delta;
+        int bits;
+        
+        dc_candidate[k][bi] = qval - 1 + k;
+        delta = dc_candidate[k][bi] * q - x;
+        dc_candidate_dist = delta * delta * lambda_dc;
+        dc_candidate[k][bi] *= 1 + 2*sign;
+        
+        if (bi == 0) {
+          dc_delta = dc_candidate[k][bi] - *last_dc_val;
+          
+          // Derive number of suffix bits
+          bits = 0;
+          dc_delta = abs(dc_delta);
+          while (dc_delta) {
+            dc_delta >>= 1;
+            bits++;
+          }
+          cost = bits + dctbl->ehufsi[bits] + dc_candidate_dist;
+          accumulated_dc_cost[k][0] = cost;
+          dc_cost_backtrack[k][0] = -1;
+        } else {
+          for (l = 0; l < 3; l++) {
+            dc_delta = dc_candidate[k][bi] - dc_candidate[l][bi-1];
+            
+            // Derive number of suffix bits
+            bits = 0;
+            dc_delta = abs(dc_delta);
+            while (dc_delta) {
+              dc_delta >>= 1;
+              bits++;
+            }
+            cost = bits + dctbl->ehufsi[bits] + dc_candidate_dist + accumulated_dc_cost[l][bi-1];
+            if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
+              accumulated_dc_cost[k][bi] = cost;
+              dc_cost_backtrack[k][bi] = l;
+            }
+          }
+        }        
+      }
+    }
+    
+    // Do AC coefficients
     for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
       
@@ -864,6 +942,28 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
       }
     }
   }
+  
+  if (cinfo->trellis_quant_dc) {
+    j = 0;
+    for (i = 1; i < 3; i++) {
+      if (accumulated_dc_cost[i][num_blocks-1] < accumulated_dc_cost[j][num_blocks-1])
+        j = i;
+    }
+    for (bi = num_blocks-1; bi >= 0; bi--) {
+      coef_blocks[bi][0] = dc_candidate[j][bi];
+      j = dc_cost_backtrack[j][bi];
+    }
+    
+    // Save DC predictor
+    *last_dc_val = coef_blocks[num_blocks-1][0];
+    
+    for (i = 0; i < 3; i++) {
+      free(accumulated_dc_cost[i]);
+      free(dc_cost_backtrack[i]);
+      free(dc_candidate[i]);
+    }
+  }
+
 }
 
 /*

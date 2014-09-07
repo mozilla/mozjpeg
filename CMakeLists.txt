@@ -9,7 +9,7 @@ if(POLICY CMP0022)
 endif()
 
 project(libmozjpeg C)
-set(VERSION 2.0.1)
+set(VERSION 2.1)
 
 if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)

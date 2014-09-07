@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.56])
-AC_INIT([libmozjpeg], [2.0.1])
+AC_INIT([libmozjpeg], [2.1])
 BUILD=`date +%Y%m%d`
 
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
@@ -92,6 +92,11 @@ fi
 
 # Checks for libraries.
 AC_CHECK_LIB([m],[pow])
+
+PKG_CHECK_MODULES([libpng], [libpng], [HAVE_LIBPNG=1], [
+  PKG_CHECK_MODULES([libpng], [libpng12], [HAVE_LIBPNG=1], [HAVE_LIBPNG=0])
+])
+AM_CONDITIONAL([HAVE_LIBPNG], [test "$HAVE_LIBPNG" -eq 1])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -263,7 +268,7 @@ int bar() { return foo();], ljt_cv_inline="__inline",
 AC_TRY_COMPILE(, [} inline int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="inline"))))
 AC_MSG_RESULT($ljt_cv_inline)
-AC_DEFINE_UNQUOTED([INLINE],[inline $ljt_cv_inline],[How to obtain function inlining.])
+AC_DEFINE_UNQUOTED([INLINE],[$ljt_cv_inline],[How to obtain function inlining.])
 
 # Arithmetic coding support
 AC_MSG_CHECKING([whether to include arithmetic encoding support])

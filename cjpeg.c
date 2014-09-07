@@ -113,6 +113,10 @@ select_file_type (j_compress_ptr cinfo, FILE * infile)
   case 'P':
     return jinit_read_ppm(cinfo);
 #endif
+#ifdef PNG_SUPPORTED
+  case 0x89:
+    return jinit_read_png(cinfo);
+#endif
 #ifdef RLE_SUPPORTED
   case 'R':
     return jinit_read_rle(cinfo);
@@ -168,13 +172,17 @@ usage (void)
 #ifdef C_PROGRESSIVE_SUPPORTED
   fprintf(stderr, "  -progressive   Create progressive JPEG file (enabled by default)\n");
 #endif
+  fprintf(stderr, "  -baseline      Create baseline JPEG file (disable progressive coding)\n");
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
-  fprintf(stderr, "  -multidcscan   Use multiple DC scans (may be incompatible with some JPEG decoders)\n");
+  fprintf(stderr, "  -opt-dc-scan   Optimize DC scans (may be incompatible with some JPEG decoders)\n");
+  fprintf(stderr, "  -split-dc-scan Use one DC scan per component (may be incompatible with some JPEG decoders?)\n");
   fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
+  fprintf(stderr, "  -trellis-dc    Enable trellis optimization of DC coefficients (default)\n");
+  fprintf(stderr, "  -notrellis-dc  Disable trellis optimization of DC coefficients\n");
   fprintf(stderr, "  -tune-psnr     Tune trellis optimization for PSNR\n");
   fprintf(stderr, "  -tune-hvs-psnr Tune trellis optimization for PSNR-HVS (default)\n");
   fprintf(stderr, "  -tune-ssim     Tune trellis optimization for SSIM\n");
@@ -206,7 +214,6 @@ usage (void)
 #endif
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "Switches for wizards:\n");
-  fprintf(stderr, "  -baseline      Force baseline quantization tables\n");
   fprintf(stderr, "  -qtables file  Use quantization tables given in file\n");
   fprintf(stderr, "  -qslots N[,...]    Set component quantization tables\n");
   fprintf(stderr, "  -sample HxV[,...]  Set component sampling factors\n");
@@ -279,6 +286,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "baseline", 1)) {
       /* Force baseline-compatible output (8-bit quantizer values). */
       force_baseline = TRUE;
+      /* Disable multiple scans */
+      simple_progressive = FALSE;
+      cinfo->num_scans = 0;
+      cinfo->scan_info = NULL;
 
     } else if (keymatch(arg, "dct", 2)) {
       /* Select DCT algorithm. */
@@ -349,7 +360,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
-    } else if (keymatch(arg, "multidcscan", 3)) {
+    } else if (keymatch(arg, "opt-dc-scan", 6)) {
       cinfo->one_dc_scan = FALSE;
 
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
@@ -475,13 +486,25 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         usage();
       cinfo->smoothing_factor = val;
 
+    } else if (keymatch(arg, "split-dc-scans", 3)) {
+      cinfo->one_dc_scan = FALSE;
+      cinfo->sep_dc_scan = TRUE;
+      
     } else if (keymatch(arg, "targa", 1)) {
       /* Input file is Targa format. */
       is_targa = TRUE;
 
+    } else if (keymatch(arg, "notrellis-dc", 11)) {
+      /* disable trellis quantization */
+      cinfo->trellis_quant_dc = FALSE;
+      
     } else if (keymatch(arg, "notrellis", 1)) {
       /* disable trellis quantization */
       cinfo->trellis_quant = FALSE;
+      
+    } else if (keymatch(arg, "trellis-dc", 9)) {
+      /* enable DC trellis quantization */
+      cinfo->trellis_quant_dc = TRUE;
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
       cinfo->use_flat_quant_tbl = TRUE;

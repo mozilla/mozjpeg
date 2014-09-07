@@ -16,7 +16,7 @@ cjpeg \- compress an image file to a JPEG file
 compresses the named image file, or the standard input if no file is
 named, and produces a JPEG/JFIF file on the standard output.
 The currently supported input file formats are: PPM (PBMPLUS color
-format), PGM (PBMPLUS gray-scale format), BMP, Targa, and RLE (Utah Raster
+format), PGM (PBMPLUS grayscale format), BMP, Targa, and RLE (Utah Raster
 Toolkit format).  (RLE is supported only if the URT library is available.)
 .SH OPTIONS
 All switch names may be abbreviated; for example,
@@ -176,11 +176,13 @@ With quality=97, for instance, the fast method incurs generally about a 1-3 dB
 loss (in PSNR) relative to the int method, but this can be larger for some
 images.  Do not use the fast method with quality levels above 97.  The
 algorithm often degenerates at quality=98 and above and can actually produce a
-more lossy image than if lower quality levels had been used.
+more lossy image than if lower quality levels had been used.  Also, in
+libjpeg-turbo, the fast method is not fully accelerated for quality levels
+above 97, so it will be slower than the int method.
 .TP
 .B \-dct float
 Use floating-point DCT method.
-The float method is mostly a legacy feature.  It does not produce significantly
+The float method is mainly a legacy feature.  It does not produce significantly
 more accurate results than the int method, and it is much slower.  The float
 method may also give different results on different machines due to varying
 roundoff behavior, whereas the integer methods should give the same results on

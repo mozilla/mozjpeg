@@ -1,10 +1,12 @@
 /*
  * jchuff.h
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
- * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains declarations for Huffman entropy encoding routines
@@ -27,27 +29,20 @@
 /* Derived data constructed for each Huffman table */
 
 typedef struct {
-  unsigned int ehufco[256];	/* code for each symbol */
-  char ehufsi[256];		/* length of code for each symbol */
+  unsigned int ehufco[256];     /* code for each symbol */
+  char ehufsi[256];             /* length of code for each symbol */
   /* If no code has been allocated for a symbol S, ehufsi[S] contains 0 */
 } c_derived_tbl;
 
-/* Short forms of external names for systems with brain-damaged linkers. */
-
-#ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_make_c_derived_tbl	jMkCDerived
-#define jpeg_gen_optimal_table	jGenOptTbl
-#endif /* NEED_SHORT_EXTERNAL_NAMES */
-
 /* Expand a Huffman table definition into the derived format */
 EXTERN(void) jpeg_make_c_derived_tbl
-	JPP((j_compress_ptr cinfo, boolean isDC, int tblno,
-	     c_derived_tbl ** pdtbl));
+        (j_compress_ptr cinfo, boolean isDC, int tblno,
+         c_derived_tbl ** pdtbl);
 
 /* Generate an optimal table definition given the specified counts */
 EXTERN(void) jpeg_gen_optimal_table
-	JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]));
+        (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]);
 
 EXTERN(void) quantize_trellis
-        JPP((j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef));
+        (j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef);

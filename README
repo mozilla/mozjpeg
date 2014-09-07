@@ -62,7 +62,7 @@ OVERVIEW
 
 This package contains C software to implement JPEG image encoding, decoding,
 and transcoding.  JPEG (pronounced "jay-peg") is a standardized compression
-method for full-color and gray-scale images.  JPEG's strong suit is compressing
+method for full-color and grayscale images.  JPEG's strong suit is compressing
 photographic images or other types of images that have smooth color and
 brightness transitions between neighboring pixels.  Images with sharp lines or
 other abrupt features may not compress well with JPEG, and a higher JPEG

@@ -80,7 +80,7 @@ int main(void)
   jerr.pub.output_message = my_output_message;
 
   if(setjmp(jerr.jb)) {
-    // this will execute if libjpeg has an error
+    /* this will execute if libjpeg has an error */
     jcs_valid = 0;
     goto done;
   }
@@ -108,7 +108,7 @@ int main(void)
   #endif
 
   if(setjmp(jerr.jb)) {
-    // this will execute if libjpeg has an error
+    /* this will execute if libjpeg has an error */
     jcs_alpha_valid = 0;
     goto done2;
   }

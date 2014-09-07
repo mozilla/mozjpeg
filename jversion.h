@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
  * Modifications:
- * Copyright (C) 2010, 2012-2013, D. R. Commander.
+ * Copyright (C) 2010, 2012-2014, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -30,7 +30,8 @@
 #define JCOPYRIGHT	"Copyright (C) 1991-2012 Thomas G. Lane, Guido Vollbeding\n" \
 			"Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
 			"Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
-			"Copyright (C) 2009-2013 D. R. Commander\n" \
+			"Copyright (C) 2009-2014 D. R. Commander\n" \
 			"Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
-                        "Copyright (C) 2014 Mozilla Corporation\n"
-
+			"Copyright (C) 2014 Mozilla Corporation\n" \
+			"Copyright (C) 2013 MIPS Technologies, Inc.\n" \
+			"Copyright (C) 2013 Linaro Limited"

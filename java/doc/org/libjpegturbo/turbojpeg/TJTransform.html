@@ -1,767 +1,712 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<!--NewPage-->
-<HTML>
-<HEAD>
-<TITLE>
-TJTransform
-</TITLE>
-
-
-<LINK REL ="stylesheet" TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
-
-<SCRIPT type="text/javascript">
-function windowTitle()
-{
+<!-- NewPage -->
+<html lang="en">
+<head>
+<title>TJTransform</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<script type="text/javascript"><!--
     if (location.href.indexOf('is-external=true') == -1) {
         parent.document.title="TJTransform";
     }
-}
-</SCRIPT>
-<NOSCRIPT>
-</NOSCRIPT>
-
-</HEAD>
-
-<BODY BGCOLOR="white" onload="windowTitle();">
-<HR>
-
-
+//-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
 <!-- ========= START OF TOP NAVBAR ======= -->
-<A NAME="navbar_top"><!-- --></A>
-<A HREF="#skip-navbar_top" title="Skip navigation links"></A>
-<TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
-<TR>
-<TD COLSPAN=2 BGCOLOR="#EEEEFF" CLASS="NavBarCell1">
-<A NAME="navbar_top_firstrow"><!-- --></A>
-<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
-  <TR ALIGN="center" VALIGN="top">
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../org/libjpegturbo/turbojpeg/package-summary.html"><FONT CLASS="NavBarFont1"><B>Package</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>Class</B></FONT>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="package-tree.html"><FONT CLASS="NavBarFont1"><B>Tree</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
-  </TR>
-</TABLE>
-</TD>
-<TD ALIGN="right" VALIGN="top" ROWSPAN=3><EM>
-</EM>
-</TD>
-</TR>
-
-<TR>
-<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg"><B>PREV CLASS</B></A>&nbsp;
-&nbsp;<A HREF="../../../org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg"><B>NEXT CLASS</B></A></FONT></TD>
-<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-  <A HREF="../../../index.html?org/libjpegturbo/turbojpeg/TJTransform.html" target="_top"><B>FRAMES</B></A>  &nbsp;
-&nbsp;<A HREF="TJTransform.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
-&nbsp;<SCRIPT type="text/javascript">
-  <!--
+<div class="topNav"><a name="navbar_top">
+<!--   -->
+</a><a href="#skip-navbar_top" title="Skip navigation links"></a><a name="navbar_top_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../org/libjpegturbo/turbojpeg/package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?org/libjpegturbo/turbojpeg/TJTransform.html" target="_top">Frames</a></li>
+<li><a href="TJTransform.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_top">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
   if(window==top) {
-    document.writeln('<A HREF="../../../allclasses-noframe.html"><B>All Classes</B></A>');
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
   }
   //-->
-</SCRIPT>
-<NOSCRIPT>
-  <A HREF="../../../allclasses-noframe.html"><B>All Classes</B></A>
-</NOSCRIPT>
-
-
-</FONT></TD>
-</TR>
-<TR>
-<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;<A HREF="#nested_classes_inherited_from_class_java.awt.geom.Rectangle2D">NESTED</A>&nbsp;|&nbsp;<A HREF="#field_summary">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#methods_inherited_from_class_java.awt.Rectangle">METHOD</A></FONT></TD>
-<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-DETAIL:&nbsp;<A HREF="#field_detail">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;METHOD</FONT></TD>
-</TR>
-</TABLE>
-<A NAME="skip-navbar_top"></A>
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_classes_inherited_from_class_java.awt.geom.Rectangle2D">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#methods_inherited_from_class_java.awt.Rectangle">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li>Method</li>
+</ul>
+</div>
+<a name="skip-navbar_top">
+<!--   -->
+</a></div>
 <!-- ========= END OF TOP NAVBAR ========= -->
-
-<HR>
 <!-- ======== START OF CLASS DATA ======== -->
-<H2>
-<FONT SIZE="-1">
-org.libjpegturbo.turbojpeg</FONT>
-<BR>
-Class TJTransform</H2>
-<PRE>
-java.lang.Object
-  <IMG SRC="../../../resources/inherit.gif" ALT="extended by ">java.awt.geom.RectangularShape
-      <IMG SRC="../../../resources/inherit.gif" ALT="extended by ">java.awt.geom.Rectangle2D
-          <IMG SRC="../../../resources/inherit.gif" ALT="extended by ">java.awt.Rectangle
-              <IMG SRC="../../../resources/inherit.gif" ALT="extended by "><B>org.libjpegturbo.turbojpeg.TJTransform</B>
-</PRE>
-<DL>
-<DT><B>All Implemented Interfaces:</B> <DD>java.awt.Shape, java.io.Serializable, java.lang.Cloneable</DD>
-</DL>
-<HR>
-<DL>
-<DT><PRE>public class <B>TJTransform</B><DT>extends java.awt.Rectangle</DL>
-</PRE>
-
-<P>
-Lossless transform parameters
-<P>
-
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../serialized-form.html#org.libjpegturbo.turbojpeg.TJTransform">Serialized Form</A></DL>
-<HR>
-
-<P>
+<div class="header">
+<div class="subTitle">org.libjpegturbo.turbojpeg</div>
+<h2 title="Class TJTransform" class="title">Class TJTransform</h2>
+</div>
+<div class="contentContainer">
+<ul class="inheritance">
+<li>java.lang.Object</li>
+<li>
+<ul class="inheritance">
+<li>java.awt.geom.RectangularShape</li>
+<li>
+<ul class="inheritance">
+<li>java.awt.geom.Rectangle2D</li>
+<li>
+<ul class="inheritance">
+<li>java.awt.Rectangle</li>
+<li>
+<ul class="inheritance">
+<li>org.libjpegturbo.turbojpeg.TJTransform</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="description">
+<ul class="blockList">
+<li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd>java.awt.Shape, java.io.Serializable, java.lang.Cloneable</dd>
+</dl>
+<hr>
+<br>
+<pre>public class <span class="strong">TJTransform</span>
+extends java.awt.Rectangle</pre>
+<div class="block">Lossless transform parameters</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../serialized-form.html#org.libjpegturbo.turbojpeg.TJTransform">Serialized Form</a></dd></dl>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
 <!-- ======== NESTED CLASS SUMMARY ======== -->
-
-<A NAME="nested_class_summary"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
-<B>Nested Class Summary</B></FONT></TH>
-</TR>
-</TABLE>
-&nbsp;<A NAME="nested_classes_inherited_from_class_java.awt.geom.Rectangle2D"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Nested classes/interfaces inherited from class java.awt.geom.Rectangle2D</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>java.awt.geom.Rectangle2D.Double, java.awt.geom.Rectangle2D.Float</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;
+<ul class="blockList">
+<li class="blockList"><a name="nested_class_summary">
+<!--   -->
+</a>
+<h3>Nested Class Summary</h3>
+<ul class="blockList">
+<li class="blockList"><a name="nested_classes_inherited_from_class_java.awt.geom.Rectangle2D">
+<!--   -->
+</a>
+<h3>Nested classes/interfaces inherited from class&nbsp;java.awt.geom.Rectangle2D</h3>
+<code>java.awt.geom.Rectangle2D.Double, java.awt.geom.Rectangle2D.Float</code></li>
+</ul>
+</li>
+</ul>
 <!-- =========== FIELD SUMMARY =========== -->
-
-<A NAME="field_summary"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
-<B>Field Summary</B></FONT></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#cf">cf</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Custom filter instance</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#NUMOP">NUMOP</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The number of lossless transform operations</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#op">op</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Transform operation (one of <code>OP_*</code>)</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_HFLIP">OP_HFLIP</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Flip (mirror) image horizontally.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_NONE">OP_NONE</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Do not transform the position of the image pixels.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_ROT180">OP_ROT180</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rotate image 180 degrees.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_ROT270">OP_ROT270</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rotate image counter-clockwise by 90 degrees.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_ROT90">OP_ROT90</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rotate image clockwise by 90 degrees.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_TRANSPOSE">OP_TRANSPOSE</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Transpose image (flip/mirror along upper left to lower right axis).</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_TRANSVERSE">OP_TRANSVERSE</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Transverse transpose image (flip/mirror along upper right to lower left
- axis).</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_VFLIP">OP_VFLIP</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Flip (mirror) image vertically.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_CROP">OPT_CROP</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This option will enable lossless cropping.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_GRAY">OPT_GRAY</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This option will discard the color data in the input image and produce
- a grayscale output image.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_NOOUTPUT">OPT_NOOUTPUT</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This option will prevent <A HREF="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><CODE>TJTransformer.transform()</CODE></A> from outputting a JPEG image for this
- particular transform.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT">OPT_PERFECT</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This option will cause <A HREF="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><CODE>TJTransformer.transform()</CODE></A> to throw an exception if the transform is not
- perfect.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_TRIM">OPT_TRIM</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This option will discard any partial MCU blocks that cannot be
- transformed.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#options">options</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Transform options (bitwise OR of one or more of <code>OPT_*</code>)</TD>
-</TR>
-</TABLE>
-&nbsp;<A NAME="fields_inherited_from_class_java.awt.Rectangle"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Fields inherited from class java.awt.Rectangle</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>height, width, x, y</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;<A NAME="fields_inherited_from_class_java.awt.geom.Rectangle2D"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Fields inherited from class java.awt.geom.Rectangle2D</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>OUT_BOTTOM, OUT_LEFT, OUT_RIGHT, OUT_TOP</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;
+<ul class="blockList">
+<li class="blockList"><a name="field_summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a></code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#cf">cf</a></strong></code>
+<div class="block">Custom filter instance</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#NUMOP">NUMOP</a></strong></code>
+<div class="block">The number of lossless transform operations</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#op">op</a></strong></code>
+<div class="block">Transform operation (one of <code>OP_*</code>)</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_HFLIP">OP_HFLIP</a></strong></code>
+<div class="block">Flip (mirror) image horizontally.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_NONE">OP_NONE</a></strong></code>
+<div class="block">Do not transform the position of the image pixels.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_ROT180">OP_ROT180</a></strong></code>
+<div class="block">Rotate image 180 degrees.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_ROT270">OP_ROT270</a></strong></code>
+<div class="block">Rotate image counter-clockwise by 90 degrees.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_ROT90">OP_ROT90</a></strong></code>
+<div class="block">Rotate image clockwise by 90 degrees.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_TRANSPOSE">OP_TRANSPOSE</a></strong></code>
+<div class="block">Transpose image (flip/mirror along upper left to lower right axis).</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_TRANSVERSE">OP_TRANSVERSE</a></strong></code>
+<div class="block">Transverse transpose image (flip/mirror along upper right to lower left
+ axis).</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OP_VFLIP">OP_VFLIP</a></strong></code>
+<div class="block">Flip (mirror) image vertically.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_CROP">OPT_CROP</a></strong></code>
+<div class="block">This option will enable lossless cropping.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_GRAY">OPT_GRAY</a></strong></code>
+<div class="block">This option will discard the color data in the input image and produce
+ a grayscale output image.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_NOOUTPUT">OPT_NOOUTPUT</a></strong></code>
+<div class="block">This option will prevent <a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><code>TJTransformer.transform()</code></a> from outputting a JPEG image for this
+ particular transform.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT">OPT_PERFECT</a></strong></code>
+<div class="block">This option will cause <a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><code>TJTransformer.transform()</code></a> to throw an exception if the transform is not
+ perfect.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_TRIM">OPT_TRIM</a></strong></code>
+<div class="block">This option will discard any partial MCU blocks that cannot be
+ transformed.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#options">options</a></strong></code>
+<div class="block">Transform options (bitwise OR of one or more of <code>OPT_*</code>)</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="fields_inherited_from_class_java.awt.Rectangle">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;java.awt.Rectangle</h3>
+<code>height, width, x, y</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="fields_inherited_from_class_java.awt.geom.Rectangle2D">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;java.awt.geom.Rectangle2D</h3>
+<code>OUT_BOTTOM, OUT_LEFT, OUT_RIGHT, OUT_TOP</code></li>
+</ul>
+</li>
+</ul>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
-
-<A NAME="constructor_summary"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
-<B>Constructor Summary</B></FONT></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform()">TJTransform</A></B>()</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create a new lossless transform instance.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform(int, int, int, int, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)">TJTransform</A></B>(int&nbsp;x,
-            int&nbsp;y,
-            int&nbsp;w,
-            int&nbsp;h,
-            int&nbsp;op,
-            int&nbsp;options,
-            <A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</A>&nbsp;cf)</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create a new lossless transform instance with the given parameters.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform(java.awt.Rectangle, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)">TJTransform</A></B>(java.awt.Rectangle&nbsp;r,
-            int&nbsp;op,
-            int&nbsp;options,
-            <A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</A>&nbsp;cf)</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create a new lossless transform instance with the given parameters.</TD>
-</TR>
-</TABLE>
-&nbsp;
+<ul class="blockList">
+<li class="blockList"><a name="constructor_summary">
+<!--   -->
+</a>
+<h3>Constructor Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
+<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colOne" scope="col">Constructor and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform()">TJTransform</a></strong>()</code>
+<div class="block">Create a new lossless transform instance.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform(int, int, int, int, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)">TJTransform</a></strong>(int&nbsp;x,
+           int&nbsp;y,
+           int&nbsp;w,
+           int&nbsp;h,
+           int&nbsp;op,
+           int&nbsp;options,
+           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)</code>
+<div class="block">Create a new lossless transform instance with the given parameters.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform(java.awt.Rectangle, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)">TJTransform</a></strong>(java.awt.Rectangle&nbsp;r,
+           int&nbsp;op,
+           int&nbsp;options,
+           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)</code>
+<div class="block">Create a new lossless transform instance with the given parameters.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
 <!-- ========== METHOD SUMMARY =========== -->
-
-<A NAME="method_summary"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
-<B>Method Summary</B></FONT></TH>
-</TR>
-</TABLE>
-&nbsp;<A NAME="methods_inherited_from_class_java.awt.Rectangle"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Methods inherited from class java.awt.Rectangle</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>add, add, add, contains, contains, contains, contains, createIntersection, createUnion, equals, getBounds, getBounds2D, getHeight, getLocation, getSize, getWidth, getX, getY, grow, inside, intersection, intersects, isEmpty, move, outcode, reshape, resize, setBounds, setBounds, setLocation, setLocation, setRect, setSize, setSize, toString, translate, union</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;<A NAME="methods_inherited_from_class_java.awt.geom.Rectangle2D"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Methods inherited from class java.awt.geom.Rectangle2D</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>add, add, add, contains, contains, getPathIterator, getPathIterator, hashCode, intersect, intersects, intersectsLine, intersectsLine, outcode, setFrame, setRect, union</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;<A NAME="methods_inherited_from_class_java.awt.geom.RectangularShape"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Methods inherited from class java.awt.geom.RectangularShape</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>clone, contains, contains, getCenterX, getCenterY, getFrame, getMaxX, getMaxY, getMinX, getMinY, intersects, setFrame, setFrame, setFrameFromCenter, setFrameFromCenter, setFrameFromDiagonal, setFrameFromDiagonal</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;<A NAME="methods_inherited_from_class_java.lang.Object"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Methods inherited from class java.lang.Object</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>finalize, getClass, notify, notifyAll, wait, wait, wait</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;<A NAME="methods_inherited_from_class_java.awt.Shape"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
-<TH ALIGN="left"><B>Methods inherited from interface java.awt.Shape</B></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE>contains, contains, contains, contains, getPathIterator, getPathIterator, intersects, intersects</CODE></TD>
-</TR>
-</TABLE>
-&nbsp;
-<P>
-
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.awt.Rectangle">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.awt.Rectangle</h3>
+<code>add, add, add, contains, contains, contains, contains, createIntersection, createUnion, equals, getBounds, getBounds2D, getHeight, getLocation, getSize, getWidth, getX, getY, grow, inside, intersection, intersects, isEmpty, move, outcode, reshape, resize, setBounds, setBounds, setLocation, setLocation, setRect, setSize, setSize, toString, translate, union</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.awt.geom.Rectangle2D">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.awt.geom.Rectangle2D</h3>
+<code>add, add, add, contains, contains, getPathIterator, getPathIterator, hashCode, intersect, intersects, intersectsLine, intersectsLine, outcode, setFrame, setRect, union</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.awt.geom.RectangularShape">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.awt.geom.RectangularShape</h3>
+<code>clone, contains, contains, getCenterX, getCenterY, getFrame, getMaxX, getMaxY, getMinX, getMinY, intersects, setFrame, setFrame, setFrameFromCenter, setFrameFromCenter, setFrameFromDiagonal, setFrameFromDiagonal</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>finalize, getClass, notify, notifyAll, wait, wait, wait</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.awt.Shape">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;java.awt.Shape</h3>
+<code>contains, contains, contains, contains, getPathIterator, getPathIterator, intersects, intersects</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
 <!-- ============ FIELD DETAIL =========== -->
-
-<A NAME="field_detail"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
-<B>Field Detail</B></FONT></TH>
-</TR>
-</TABLE>
-
-<A NAME="NUMOP"><!-- --></A><H3>
-NUMOP</H3>
-<PRE>
-public static final int <B>NUMOP</B></PRE>
-<DL>
-<DD>The number of lossless transform operations
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.NUMOP">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_NONE"><!-- --></A><H3>
-OP_NONE</H3>
-<PRE>
-public static final int <B>OP_NONE</B></PRE>
-<DL>
-<DD>Do not transform the position of the image pixels.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_NONE">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_HFLIP"><!-- --></A><H3>
-OP_HFLIP</H3>
-<PRE>
-public static final int <B>OP_HFLIP</B></PRE>
-<DL>
-<DD>Flip (mirror) image horizontally.  This transform is imperfect if there
- are any partial MCU blocks on the right edge.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><CODE>OPT_PERFECT</CODE></A>, 
-<A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_HFLIP">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_VFLIP"><!-- --></A><H3>
-OP_VFLIP</H3>
-<PRE>
-public static final int <B>OP_VFLIP</B></PRE>
-<DL>
-<DD>Flip (mirror) image vertically.  This transform is imperfect if there are
- any partial MCU blocks on the bottom edge.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><CODE>OPT_PERFECT</CODE></A>, 
-<A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_VFLIP">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_TRANSPOSE"><!-- --></A><H3>
-OP_TRANSPOSE</H3>
-<PRE>
-public static final int <B>OP_TRANSPOSE</B></PRE>
-<DL>
-<DD>Transpose image (flip/mirror along upper left to lower right axis).  This
- transform is always perfect.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><CODE>OPT_PERFECT</CODE></A>, 
-<A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_TRANSPOSE">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_TRANSVERSE"><!-- --></A><H3>
-OP_TRANSVERSE</H3>
-<PRE>
-public static final int <B>OP_TRANSVERSE</B></PRE>
-<DL>
-<DD>Transverse transpose image (flip/mirror along upper right to lower left
+<ul class="blockList">
+<li class="blockList"><a name="field_detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="NUMOP">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>NUMOP</h4>
+<pre>public static final&nbsp;int NUMOP</pre>
+<div class="block">The number of lossless transform operations</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.NUMOP">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_NONE">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_NONE</h4>
+<pre>public static final&nbsp;int OP_NONE</pre>
+<div class="block">Do not transform the position of the image pixels.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_NONE">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_HFLIP">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_HFLIP</h4>
+<pre>public static final&nbsp;int OP_HFLIP</pre>
+<div class="block">Flip (mirror) image horizontally.  This transform is imperfect if there
+ are any partial MCU blocks on the right edge.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
+<a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_HFLIP">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_VFLIP">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_VFLIP</h4>
+<pre>public static final&nbsp;int OP_VFLIP</pre>
+<div class="block">Flip (mirror) image vertically.  This transform is imperfect if there are
+ any partial MCU blocks on the bottom edge.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
+<a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_VFLIP">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_TRANSPOSE">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_TRANSPOSE</h4>
+<pre>public static final&nbsp;int OP_TRANSPOSE</pre>
+<div class="block">Transpose image (flip/mirror along upper left to lower right axis).  This
+ transform is always perfect.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
+<a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_TRANSPOSE">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_TRANSVERSE">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_TRANSVERSE</h4>
+<pre>public static final&nbsp;int OP_TRANSVERSE</pre>
+<div class="block">Transverse transpose image (flip/mirror along upper right to lower left
  axis).  This transform is imperfect if there are any partial MCU blocks in
- the image.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><CODE>OPT_PERFECT</CODE></A>, 
-<A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_TRANSVERSE">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_ROT90"><!-- --></A><H3>
-OP_ROT90</H3>
-<PRE>
-public static final int <B>OP_ROT90</B></PRE>
-<DL>
-<DD>Rotate image clockwise by 90 degrees.  This transform is imperfect if
- there are any partial MCU blocks on the bottom edge.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><CODE>OPT_PERFECT</CODE></A>, 
-<A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_ROT90">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_ROT180"><!-- --></A><H3>
-OP_ROT180</H3>
-<PRE>
-public static final int <B>OP_ROT180</B></PRE>
-<DL>
-<DD>Rotate image 180 degrees.  This transform is imperfect if there are any
- partial MCU blocks in the image.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><CODE>OPT_PERFECT</CODE></A>, 
-<A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_ROT180">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OP_ROT270"><!-- --></A><H3>
-OP_ROT270</H3>
-<PRE>
-public static final int <B>OP_ROT270</B></PRE>
-<DL>
-<DD>Rotate image counter-clockwise by 90 degrees.  This transform is imperfect
- if there are any partial MCU blocks on the right edge.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><CODE>OPT_PERFECT</CODE></A>, 
-<A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_ROT270">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OPT_PERFECT"><!-- --></A><H3>
-OPT_PERFECT</H3>
-<PRE>
-public static final int <B>OPT_PERFECT</B></PRE>
-<DL>
-<DD>This option will cause <A HREF="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><CODE>TJTransformer.transform()</CODE></A> to throw an exception if the transform is not
+ the image.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
+<a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_TRANSVERSE">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_ROT90">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_ROT90</h4>
+<pre>public static final&nbsp;int OP_ROT90</pre>
+<div class="block">Rotate image clockwise by 90 degrees.  This transform is imperfect if
+ there are any partial MCU blocks on the bottom edge.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
+<a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_ROT90">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_ROT180">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_ROT180</h4>
+<pre>public static final&nbsp;int OP_ROT180</pre>
+<div class="block">Rotate image 180 degrees.  This transform is imperfect if there are any
+ partial MCU blocks in the image.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
+<a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_ROT180">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OP_ROT270">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OP_ROT270</h4>
+<pre>public static final&nbsp;int OP_ROT270</pre>
+<div class="block">Rotate image counter-clockwise by 90 degrees.  This transform is imperfect
+ if there are any partial MCU blocks on the right edge.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
+<a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OP_ROT270">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OPT_PERFECT">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OPT_PERFECT</h4>
+<pre>public static final&nbsp;int OPT_PERFECT</pre>
+<div class="block">This option will cause <a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><code>TJTransformer.transform()</code></a> to throw an exception if the transform is not
  perfect.  Lossless transforms operate on MCU blocks, whose size depends on
  the level of chrominance subsampling used.  If the image's width or height
- is not evenly divisible by the MCU block size (see <A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUWidth(int)"><CODE>TJ.getMCUWidth(int)</CODE></A>
- and <A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUHeight(int)"><CODE>TJ.getMCUHeight(int)</CODE></A>), then there will be partial MCU blocks on the
+ is not evenly divisible by the MCU block size (see <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth(int)</code></a>
+ and <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight(int)</code></a>), then there will be partial MCU blocks on the
  right and/or bottom edges.   It is not possible to move these partial MCU
  blocks to the top or left of the image, so any transform that would
  require that is "imperfect."  If this option is not specified, then any
  partial MCU blocks that cannot be transformed will be left in place, which
- will create odd-looking strips on the right or bottom edge of the image.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_PERFECT">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OPT_TRIM"><!-- --></A><H3>
-OPT_TRIM</H3>
-<PRE>
-public static final int <B>OPT_TRIM</B></PRE>
-<DL>
-<DD>This option will discard any partial MCU blocks that cannot be
- transformed.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_TRIM">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OPT_CROP"><!-- --></A><H3>
-OPT_CROP</H3>
-<PRE>
-public static final int <B>OPT_CROP</B></PRE>
-<DL>
-<DD>This option will enable lossless cropping.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_CROP">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OPT_GRAY"><!-- --></A><H3>
-OPT_GRAY</H3>
-<PRE>
-public static final int <B>OPT_GRAY</B></PRE>
-<DL>
-<DD>This option will discard the color data in the input image and produce
- a grayscale output image.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_GRAY">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="OPT_NOOUTPUT"><!-- --></A><H3>
-OPT_NOOUTPUT</H3>
-<PRE>
-public static final int <B>OPT_NOOUTPUT</B></PRE>
-<DL>
-<DD>This option will prevent <A HREF="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><CODE>TJTransformer.transform()</CODE></A> from outputting a JPEG image for this
+ will create odd-looking strips on the right or bottom edge of the image.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_PERFECT">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OPT_TRIM">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OPT_TRIM</h4>
+<pre>public static final&nbsp;int OPT_TRIM</pre>
+<div class="block">This option will discard any partial MCU blocks that cannot be
+ transformed.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_TRIM">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OPT_CROP">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OPT_CROP</h4>
+<pre>public static final&nbsp;int OPT_CROP</pre>
+<div class="block">This option will enable lossless cropping.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_CROP">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OPT_GRAY">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OPT_GRAY</h4>
+<pre>public static final&nbsp;int OPT_GRAY</pre>
+<div class="block">This option will discard the color data in the input image and produce
+ a grayscale output image.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_GRAY">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="OPT_NOOUTPUT">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>OPT_NOOUTPUT</h4>
+<pre>public static final&nbsp;int OPT_NOOUTPUT</pre>
+<div class="block">This option will prevent <a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html#transform(byte[][], org.libjpegturbo.turbojpeg.TJTransform[], int)"><code>TJTransformer.transform()</code></a> from outputting a JPEG image for this
  particular transform.  This can be used in conjunction with a custom
  filter to capture the transformed DCT coefficients without transcoding
- them.
-<P>
-<DL>
-<DT><B>See Also:</B><DD><A HREF="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_NOOUTPUT">Constant Field Values</A></DL>
-</DL>
-<HR>
-
-<A NAME="op"><!-- --></A><H3>
-op</H3>
-<PRE>
-public int <B>op</B></PRE>
-<DL>
-<DD>Transform operation (one of <code>OP_*</code>)
-<P>
-<DL>
-</DL>
-</DL>
-<HR>
-
-<A NAME="options"><!-- --></A><H3>
-options</H3>
-<PRE>
-public int <B>options</B></PRE>
-<DL>
-<DD>Transform options (bitwise OR of one or more of <code>OPT_*</code>)
-<P>
-<DL>
-</DL>
-</DL>
-<HR>
-
-<A NAME="cf"><!-- --></A><H3>
-cf</H3>
-<PRE>
-public <A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</A> <B>cf</B></PRE>
-<DL>
-<DD>Custom filter instance
-<P>
-<DL>
-</DL>
-</DL>
-
+ them.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_NOOUTPUT">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="op">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>op</h4>
+<pre>public&nbsp;int op</pre>
+<div class="block">Transform operation (one of <code>OP_*</code>)</div>
+</li>
+</ul>
+<a name="options">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>options</h4>
+<pre>public&nbsp;int options</pre>
+<div class="block">Transform options (bitwise OR of one or more of <code>OPT_*</code>)</div>
+</li>
+</ul>
+<a name="cf">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>cf</h4>
+<pre>public&nbsp;<a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a> cf</pre>
+<div class="block">Custom filter instance</div>
+</li>
+</ul>
+</li>
+</ul>
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
-
-<A NAME="constructor_detail"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
-<B>Constructor Detail</B></FONT></TH>
-</TR>
-</TABLE>
-
-<A NAME="TJTransform()"><!-- --></A><H3>
-TJTransform</H3>
-<PRE>
-public <B>TJTransform</B>()</PRE>
-<DL>
-<DD>Create a new lossless transform instance.
-<P>
-</DL>
-<HR>
-
-<A NAME="TJTransform(int, int, int, int, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)"><!-- --></A><H3>
-TJTransform</H3>
-<PRE>
-public <B>TJTransform</B>(int&nbsp;x,
-                   int&nbsp;y,
-                   int&nbsp;w,
-                   int&nbsp;h,
-                   int&nbsp;op,
-                   int&nbsp;options,
-                   <A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</A>&nbsp;cf)
-            throws java.lang.Exception</PRE>
-<DL>
-<DD>Create a new lossless transform instance with the given parameters.
-<P>
-<DL>
-<DT><B>Parameters:</B><DD><CODE>x</CODE> - the left boundary of the cropping region.  This must be evenly
- divisible by the MCU block width (see <A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUWidth(int)"><CODE>TJ.getMCUWidth(int)</CODE></A>)<DD><CODE>y</CODE> - the upper boundary of the cropping region.  This must be evenly
- divisible by the MCU block height (see <A HREF="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUHeight(int)"><CODE>TJ.getMCUHeight(int)</CODE></A>)<DD><CODE>w</CODE> - the width of the cropping region.  Setting this to 0 is the
+<ul class="blockList">
+<li class="blockList"><a name="constructor_detail">
+<!--   -->
+</a>
+<h3>Constructor Detail</h3>
+<a name="TJTransform()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>TJTransform</h4>
+<pre>public&nbsp;TJTransform()</pre>
+<div class="block">Create a new lossless transform instance.</div>
+</li>
+</ul>
+<a name="TJTransform(int, int, int, int, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>TJTransform</h4>
+<pre>public&nbsp;TJTransform(int&nbsp;x,
+           int&nbsp;y,
+           int&nbsp;w,
+           int&nbsp;h,
+           int&nbsp;op,
+           int&nbsp;options,
+           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)
+            throws java.lang.Exception</pre>
+<div class="block">Create a new lossless transform instance with the given parameters.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>x</code> - the left boundary of the cropping region.  This must be evenly
+ divisible by the MCU block width (see <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth(int)</code></a>)</dd><dd><code>y</code> - the upper boundary of the cropping region.  This must be evenly
+ divisible by the MCU block height (see <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight(int)</code></a>)</dd><dd><code>w</code> - the width of the cropping region.  Setting this to 0 is the
  equivalent of setting it to (width of the source JPEG image -
- <code>x</code>).<DD><CODE>h</CODE> - the height of the cropping region.  Setting this to 0 is the
+ <code>x</code>).</dd><dd><code>h</code> - the height of the cropping region.  Setting this to 0 is the
  equivalent of setting it to (height of the source JPEG image -
- <code>y</code>).<DD><CODE>op</CODE> - one of the transform operations (<code>OP_*</code>)<DD><CODE>options</CODE> - the bitwise OR of one or more of the transform options
- (<code>OPT_*</code>)<DD><CODE>cf</CODE> - an instance of an object that implements the <A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><CODE>TJCustomFilter</CODE></A> interface, or null if no custom filter is needed
-<DT><B>Throws:</B>
-<DD><CODE>java.lang.Exception</CODE></DL>
-</DL>
-<HR>
-
-<A NAME="TJTransform(java.awt.Rectangle, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)"><!-- --></A><H3>
-TJTransform</H3>
-<PRE>
-public <B>TJTransform</B>(java.awt.Rectangle&nbsp;r,
-                   int&nbsp;op,
-                   int&nbsp;options,
-                   <A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</A>&nbsp;cf)
-            throws java.lang.Exception</PRE>
-<DL>
-<DD>Create a new lossless transform instance with the given parameters.
-<P>
-<DL>
-<DT><B>Parameters:</B><DD><CODE>r</CODE> - a <code>Rectangle</code> instance that specifies the cropping
- region.  See <A HREF="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform(int, int, int, int, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)"><CODE>TJTransform(int, int, int, int, int, int, TJCustomFilter)</CODE></A> for more
- detail.<DD><CODE>op</CODE> - one of the transform operations (<code>OP_*</code>)<DD><CODE>options</CODE> - the bitwise OR of one or more of the transform options
- (<code>OPT_*</code>)<DD><CODE>cf</CODE> - an instance of an object that implements the <A HREF="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><CODE>TJCustomFilter</CODE></A> interface, or null if no custom filter is needed
-<DT><B>Throws:</B>
-<DD><CODE>java.lang.Exception</CODE></DL>
-</DL>
+ <code>y</code>).</dd><dd><code>op</code> - one of the transform operations (<code>OP_*</code>)</dd><dd><code>options</code> - the bitwise OR of one or more of the transform options
+ (<code>OPT_*</code>)</dd><dd><code>cf</code> - an instance of an object that implements the <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><code>TJCustomFilter</code></a> interface, or null if no custom filter is needed</dd>
+<dt><span class="strong">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd></dl>
+</li>
+</ul>
+<a name="TJTransform(java.awt.Rectangle, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>TJTransform</h4>
+<pre>public&nbsp;TJTransform(java.awt.Rectangle&nbsp;r,
+           int&nbsp;op,
+           int&nbsp;options,
+           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)
+            throws java.lang.Exception</pre>
+<div class="block">Create a new lossless transform instance with the given parameters.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>r</code> - a <code>Rectangle</code> instance that specifies the cropping
+ region.  See <a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform(int, int, int, int, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)"><code>TJTransform(int, int, int, int, int, int, TJCustomFilter)</code></a> for more
+ detail.</dd><dd><code>op</code> - one of the transform operations (<code>OP_*</code>)</dd><dd><code>options</code> - the bitwise OR of one or more of the transform options
+ (<code>OPT_*</code>)</dd><dd><code>cf</code> - an instance of an object that implements the <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><code>TJCustomFilter</code></a> interface, or null if no custom filter is needed</dd>
+<dt><span class="strong">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <!-- ========= END OF CLASS DATA ========= -->
-<HR>
-
-
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
-<A NAME="navbar_bottom"><!-- --></A>
-<A HREF="#skip-navbar_bottom" title="Skip navigation links"></A>
-<TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
-<TR>
-<TD COLSPAN=2 BGCOLOR="#EEEEFF" CLASS="NavBarCell1">
-<A NAME="navbar_bottom_firstrow"><!-- --></A>
-<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
-  <TR ALIGN="center" VALIGN="top">
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../org/libjpegturbo/turbojpeg/package-summary.html"><FONT CLASS="NavBarFont1"><B>Package</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>Class</B></FONT>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="package-tree.html"><FONT CLASS="NavBarFont1"><B>Tree</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
-  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
-  </TR>
-</TABLE>
-</TD>
-<TD ALIGN="right" VALIGN="top" ROWSPAN=3><EM>
-</EM>
-</TD>
-</TR>
-
-<TR>
-<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg"><B>PREV CLASS</B></A>&nbsp;
-&nbsp;<A HREF="../../../org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg"><B>NEXT CLASS</B></A></FONT></TD>
-<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-  <A HREF="../../../index.html?org/libjpegturbo/turbojpeg/TJTransform.html" target="_top"><B>FRAMES</B></A>  &nbsp;
-&nbsp;<A HREF="TJTransform.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
-&nbsp;<SCRIPT type="text/javascript">
-  <!--
+<div class="bottomNav"><a name="navbar_bottom">
+<!--   -->
+</a><a href="#skip-navbar_bottom" title="Skip navigation links"></a><a name="navbar_bottom_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../org/libjpegturbo/turbojpeg/package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?org/libjpegturbo/turbojpeg/TJTransform.html" target="_top">Frames</a></li>
+<li><a href="TJTransform.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_bottom">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_bottom");
   if(window==top) {
-    document.writeln('<A HREF="../../../allclasses-noframe.html"><B>All Classes</B></A>');
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
   }
   //-->
-</SCRIPT>
-<NOSCRIPT>
-  <A HREF="../../../allclasses-noframe.html"><B>All Classes</B></A>
-</NOSCRIPT>
-
-
-</FONT></TD>
-</TR>
-<TR>
-<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;<A HREF="#nested_classes_inherited_from_class_java.awt.geom.Rectangle2D">NESTED</A>&nbsp;|&nbsp;<A HREF="#field_summary">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#methods_inherited_from_class_java.awt.Rectangle">METHOD</A></FONT></TD>
-<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-DETAIL:&nbsp;<A HREF="#field_detail">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;METHOD</FONT></TD>
-</TR>
-</TABLE>
-<A NAME="skip-navbar_bottom"></A>
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_classes_inherited_from_class_java.awt.geom.Rectangle2D">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#methods_inherited_from_class_java.awt.Rectangle">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li>Method</li>
+</ul>
+</div>
+<a name="skip-navbar_bottom">
+<!--   -->
+</a></div>
 <!-- ======== END OF BOTTOM NAVBAR ======= -->
-
-<HR>
-
-</BODY>
-</HTML>
+</body>
+</html>

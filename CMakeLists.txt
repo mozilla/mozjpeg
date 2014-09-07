@@ -2,7 +2,8 @@
 # Setup
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
+cmake_policy(SET CMP0022 OLD)
 
 project(libmozjpeg C)
 set(VERSION 2.0.1)

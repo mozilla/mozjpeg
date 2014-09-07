@@ -2,7 +2,7 @@
  * jsimd.h
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2011 D. R. Commander
+ * Copyright 2011, 2014 D. R. Commander
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -13,6 +13,7 @@
 EXTERN(int) jsimd_can_rgb_ycc (void);
 EXTERN(int) jsimd_can_rgb_gray (void);
 EXTERN(int) jsimd_can_ycc_rgb (void);
+EXTERN(int) jsimd_can_ycc_rgb565 (void);
 EXTERN(int) jsimd_c_can_null_convert (void);
 
 EXTERN(void) jsimd_rgb_ycc_convert
@@ -22,6 +23,9 @@ EXTERN(void) jsimd_rgb_gray_convert
         (j_compress_ptr cinfo, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
          JDIMENSION output_row, int num_rows);
 EXTERN(void) jsimd_ycc_rgb_convert
+        (j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_rgb565_convert
         (j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row,
          JSAMPARRAY output_buf, int num_rows);
 EXTERN(void) jsimd_c_null_convert

@@ -21,7 +21,7 @@ runme()
 
 IMAGES="vgl_5674_0098.bmp vgl_6434_0018a.bmp vgl_6548_0026a.bmp nightshot_iso_100.bmp"
 IMGDIR=@srcdir@/testimages
-OUTDIR=__tjbenchtest_java_output
+OUTDIR=`mktemp -d /tmp/__tjbenchtest_java_output.XXXXXX`
 EXEDIR=.
 JAVA="@JAVA@ -cp java/turbojpeg.jar -Djava.library.path=.libs"
 BMPARG=

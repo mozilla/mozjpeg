@@ -355,7 +355,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSize(int, int, int)">bufSize</a></strong>(int&nbsp;width,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSize(int,%20int,%20int)">bufSize</a></strong>(int&nbsp;width,
        int&nbsp;height,
        int&nbsp;jpegSubsamp)</code>
 <div class="block">Returns the maximum size of the buffer (in bytes) required to hold a JPEG
@@ -364,17 +364,17 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int)">bufSizeYUV</a></strong>(int&nbsp;width,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int,%20int,%20int)">bufSizeYUV</a></strong>(int&nbsp;width,
           int&nbsp;height,
           int&nbsp;subsamp)</code>
 <div class="block"><strong>Deprecated.</strong>&nbsp;
-<div class="block"><i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int, int)"><code>bufSizeYUV(int, int, int, int)</code></a> instead.</i></div>
+<div class="block"><i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int,%20int,%20int,%20int)"><code>bufSizeYUV(int, int, int, int)</code></a> instead.</i></div>
 </div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int, int)">bufSizeYUV</a></strong>(int&nbsp;width,
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int,%20int,%20int,%20int)">bufSizeYUV</a></strong>(int&nbsp;width,
           int&nbsp;pad,
           int&nbsp;height,
           int&nbsp;subsamp)</code>
@@ -428,6 +428,33 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getScalingFactors()">getScalingFactors</a></strong>()</code>
 <div class="block">Returns a list of fractional scaling factors that the JPEG decompressor in
  this implementation of TurboJPEG supports.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#planeHeight(int,%20int,%20int)">planeHeight</a></strong>(int&nbsp;componentID,
+           int&nbsp;height,
+           int&nbsp;subsamp)</code>
+<div class="block">Returns the plane height of a YUV image plane with the given parameters.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#planeSizeYUV(int,%20int,%20int,%20int,%20int)">planeSizeYUV</a></strong>(int&nbsp;componentID,
+            int&nbsp;width,
+            int&nbsp;stride,
+            int&nbsp;height,
+            int&nbsp;subsamp)</code>
+<div class="block">Returns the size of the buffer (in bytes) required to hold a YUV image
+ plane with the given parameters.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#planeWidth(int,%20int,%20int)">planeWidth</a></strong>(int&nbsp;componentID,
+          int&nbsp;width,
+          int&nbsp;subsamp)</code>
+<div class="block">Returns the plane width of a YUV image plane with the given parameters.</div>
 </td>
 </tr>
 </table>
@@ -962,7 +989,8 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  subsampling.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>subsamp</code> - the level of chrominance subsampling (one of
  <code>SAMP_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the MCU block width for the given level of chrominance subsampling</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the MCU block width for the given level of chrominance
+ subsampling.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -980,7 +1008,7 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>subsamp</code> - the level of chrominance subsampling (one of
  <code>SAMP_*</code>)</dd>
 <dt><span class="strong">Returns:</span></dt><dd>the MCU block height for the given level of chrominance
- subsampling</dd>
+ subsampling.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -995,7 +1023,7 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
                         throws java.lang.Exception</pre>
 <div class="block">Returns the pixel size (in bytes) for the given pixel format.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the pixel size (in bytes) for the given pixel format</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the pixel size (in bytes) for the given pixel format.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -1014,7 +1042,7 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  then the red component will be
  <code>pixel[TJ.getRedOffset(TJ.PF_BGRX)]</code>.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the red offset for the given pixel format</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the red offset for the given pixel format.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -1033,7 +1061,7 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  then the green component will be
  <code>pixel[TJ.getGreenOffset(TJ.PF_BGRX)]</code>.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the green offset for the given pixel format</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the green offset for the given pixel format.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -1052,7 +1080,7 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  then the blue component will be
  <code>pixel[TJ.getBlueOffset(TJ.PF_BGRX)]</code>.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the blue offset for the given pixel format</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the blue offset for the given pixel format.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -1072,7 +1100,7 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>width</code> - the width (in pixels) of the JPEG image</dd><dd><code>height</code> - the height (in pixels) of the JPEG image</dd><dd><code>jpegSubsamp</code> - the level of chrominance subsampling to be used when
  generating the JPEG image (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.SAMP_*</code></a>)</dd>
 <dt><span class="strong">Returns:</span></dt><dd>the maximum size of the buffer (in bytes) required to hold a JPEG
- image with the given width, height, and level of chrominance subsampling</dd>
+ image with the given width, height, and level of chrominance subsampling.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -1091,11 +1119,10 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
 <div class="block">Returns the size of the buffer (in bytes) required to hold a YUV planar
  image with the given width, height, and level of chrominance subsampling.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>width</code> - the width (in pixels) of the YUV image</dd><dd><code>pad</code> - the width of each line in each plane of the image is padded to
-        the nearest multiple of this number of bytes (must be a power of
-        2.)</dd><dd><code>height</code> - the height (in pixels) of the YUV image</dd><dd><code>subsamp</code> - the level of chrominance subsampling used in the YUV
+ the nearest multiple of this number of bytes (must be a power of 2.)</dd><dd><code>height</code> - the height (in pixels) of the YUV image</dd><dd><code>subsamp</code> - the level of chrominance subsampling used in the YUV
  image (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.SAMP_*</code></a>)</dd>
 <dt><span class="strong">Returns:</span></dt><dd>the size of the buffer (in bytes) required to hold a YUV planar
- image with the given width, height, and level of chrominance subsampling</dd>
+ image with the given width, height, and level of chrominance subsampling.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -1111,8 +1138,73 @@ public static&nbsp;int&nbsp;bufSizeYUV(int&nbsp;width,
                         int&nbsp;height,
                         int&nbsp;subsamp)
                       throws java.lang.Exception</pre>
-<div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int, int, int, int)"><code>bufSizeYUV(int, int, int, int)</code></a> instead.</i></div>
+<div class="block"><span class="strong">Deprecated.</span>&nbsp;<i>Use <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#bufSizeYUV(int,%20int,%20int,%20int)"><code>bufSizeYUV(int, int, int, int)</code></a> instead.</i></div>
 <dl><dt><span class="strong">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd></dl>
+</li>
+</ul>
+<a name="planeSizeYUV(int, int, int, int, int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>planeSizeYUV</h4>
+<pre>public static&nbsp;int&nbsp;planeSizeYUV(int&nbsp;componentID,
+               int&nbsp;width,
+               int&nbsp;stride,
+               int&nbsp;height,
+               int&nbsp;subsamp)
+                        throws java.lang.Exception</pre>
+<div class="block">Returns the size of the buffer (in bytes) required to hold a YUV image
+ plane with the given parameters.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>componentID</code> - ID number of the image plane (0 = Y, 1 = U/Cb,
+ 2 = V/Cr)</dd><dd><code>width</code> - width (in pixels) of the YUV image.  NOTE: this is the width
+ of the whole image, not the plane width.</dd><dd><code>stride</code> - bytes per line in the image plane.</dd><dd><code>height</code> - height (in pixels) of the YUV image.  NOTE: this is the
+ height of the whole image, not the plane height.</dd><dd><code>subsamp</code> - the level of chrominance subsampling used in the YUV
+ image (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.SAMP_*</code></a>)</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the size of the buffer (in bytes) required to hold a YUV planar
+ image with the given parameters.</dd>
+<dt><span class="strong">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd></dl>
+</li>
+</ul>
+<a name="planeWidth(int, int, int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>planeWidth</h4>
+<pre>public static&nbsp;int&nbsp;planeWidth(int&nbsp;componentID,
+             int&nbsp;width,
+             int&nbsp;subsamp)
+                      throws java.lang.Exception</pre>
+<div class="block">Returns the plane width of a YUV image plane with the given parameters.
+ Refer to <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> for a description of plane width.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>componentID</code> - ID number of the image plane (0 = Y, 1 = U/Cb,
+ 2 = V/Cr)</dd><dd><code>width</code> - width (in pixels) of the YUV image</dd><dd><code>subsamp</code> - the level of chrominance subsampling used in the YUV image
+ (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.SAMP_*</code></a>)</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the plane width of a YUV image plane with the given parameters.</dd>
+<dt><span class="strong">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd></dl>
+</li>
+</ul>
+<a name="planeHeight(int, int, int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>planeHeight</h4>
+<pre>public static&nbsp;int&nbsp;planeHeight(int&nbsp;componentID,
+              int&nbsp;height,
+              int&nbsp;subsamp)
+                       throws java.lang.Exception</pre>
+<div class="block">Returns the plane height of a YUV image plane with the given parameters.
+ Refer to <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> for a description of plane height.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>componentID</code> - ID number of the image plane (0 = Y, 1 = U/Cb,
+ 2 = V/Cr)</dd><dd><code>height</code> - height (in pixels) of the YUV image</dd><dd><code>subsamp</code> - the level of chrominance subsampling used in the YUV image
+ (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.SAMP_*</code></a>)</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the plane height of a YUV image plane with the given parameters.</dd>
+<dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
 </ul>
@@ -1127,7 +1219,7 @@ public static&nbsp;int&nbsp;bufSizeYUV(int&nbsp;width,
 <div class="block">Returns a list of fractional scaling factors that the JPEG decompressor in
  this implementation of TurboJPEG supports.</div>
 <dl><dt><span class="strong">Returns:</span></dt><dd>a list of fractional scaling factors that the JPEG decompressor in
- this implementation of TurboJPEG supports</dd>
+ this implementation of TurboJPEG supports.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>

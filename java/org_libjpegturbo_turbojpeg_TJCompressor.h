@@ -58,10 +58,10 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    compressFromYUV
- * Signature: ([BIIII[BII)I
+ * Signature: ([[B[II[III[BII)I
  */
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3BIIII_3BII
-  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jbyteArray, jint, jint);
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3_3B_3II_3III_3BII
+  (JNIEnv *, jobject, jobjectArray, jintArray, jint, jintArray, jint, jint, jbyteArray, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
@@ -74,10 +74,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    encodeYUV
- * Signature: ([BIIIIII[BIII)V
+ * Signature: ([BIIIIII[[B[I[III)V
  */
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIIIII_3BIII
-  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIIIII_3_3B_3I_3III
+  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jint, jint, jobjectArray, jintArray, jintArray, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
@@ -90,10 +90,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    encodeYUV
- * Signature: ([IIIIIII[BIII)V
+ * Signature: ([IIIIIII[[B[I[III)V
  */
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIIIII_3BIII
-  (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
+JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIIIII_3_3B_3I_3III
+  (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jint, jint, jobjectArray, jintArray, jintArray, jint, jint);
 
 #ifdef __cplusplus
 }

@@ -7,12 +7,18 @@ trap onexit TERM
 trap onexit EXIT
 
 TMPDIR=
+SUDO=
 
 onexit()
 {
 	if [ ! "$TMPDIR" = "" ]; then
-		sudo rm -rf $TMPDIR
+		$SUDO rm -rf $TMPDIR
 	fi
+}
+
+uid()
+{
+	id | cut -f2 -d = | cut -f1 -d \(;
 }
 
 makedeb()
@@ -29,9 +35,6 @@ makedeb()
 	rm -f $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
 	TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
 	mkdir $TMPDIR/DEBIAN
-	(cat $SRCDIR/release/deb-control.tmpl | sed s/{__PKGNAME}/$PACKAGE_NAME/g \
-		| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
-		| sed s/{__ARCH}/$DEBARCH/g > $TMPDIR/DEBIAN/control)
 
 	if [ $SUPPLEMENT = 1 ]; then
 		make install DESTDIR=$TMPDIR bindir=/dummy/bin datadir=/dummy/data \
@@ -47,9 +50,16 @@ makedeb()
 		fi
 	fi
 
+	SIZE=`du -s $TMPDIR | cut -f1`
+	(cat $SRCDIR/release/deb-control.tmpl | sed s/{__PKGNAME}/$PACKAGE_NAME/g \
+		| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
+		| sed s/{__ARCH}/$DEBARCH/g | sed s/{__SIZE}/$SIZE/g \
+		> $TMPDIR/DEBIAN/control)
+
+
 	/sbin/ldconfig -n $TMPDIR$LIBDIR
 
-	sudo chown -Rh root:root $TMPDIR/*
+	$SUDO chown -Rh root:root $TMPDIR/*
 	dpkg -b $TMPDIR $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
 }
 
@@ -61,6 +71,10 @@ SRCDIR=@abs_top_srcdir@
 PREFIX=%{__prefix}
 DOCDIR=%{__docdir}
 LIBDIR=%{__libdir}
+
+if [ ! `uid` -eq 0 ]; then
+	SUDO=sudo
+fi
 
 makedeb 0
 if [ "$DEBARCH" = "i386" ]; then makedeb 1; fi

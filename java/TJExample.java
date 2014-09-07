@@ -277,7 +277,7 @@ public class TJExample implements TJCustomFilter {
             scaleFactor.isOne()) {
           file = new File(argv[1]);
           FileOutputStream fos = new FileOutputStream(file);
-          fos.write(tjd.getSourceBuf(), 0, tjd.getSourceSize());
+          fos.write(tjd.getJPEGBuf(), 0, tjd.getJPEGSize());
           fos.close();
           System.exit(0);
         }

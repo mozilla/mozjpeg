@@ -93,6 +93,30 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__III
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJ
+ * Method:    planeSizeYUV
+ * Signature: (IIIII)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeSizeYUV__IIIII
+  (JNIEnv *, jclass, jint, jint, jint, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJ
+ * Method:    planeWidth
+ * Signature: (III)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeWidth__III
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJ
+ * Method:    planeHeight
+ * Signature: (III)I
+ */
+JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeHeight__III
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     org_libjpegturbo_turbojpeg_TJ
  * Method:    getScalingFactors
  * Signature: ()[Lorg/libjpegturbo/turbojpeg/TJScalingFactor;
  */

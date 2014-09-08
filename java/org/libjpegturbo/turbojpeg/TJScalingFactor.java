@@ -42,6 +42,7 @@ public class TJScalingFactor {
 
   /**
    * Returns numerator
+   *
    * @return numerator
    */
   public int getNum() {
@@ -50,6 +51,7 @@ public class TJScalingFactor {
 
   /**
    * Returns denominator
+   *
    * @return denominator
    */
   public int getDenom() {
@@ -60,7 +62,8 @@ public class TJScalingFactor {
    * Returns the scaled value of <code>dimension</code>.  This function
    * performs the integer equivalent of
    * <code>ceil(dimension * scalingFactor)</code>.
-   * @return the scaled value of <code>dimension</code>
+   *
+   * @return the scaled value of <code>dimension</code>.
    */
   public int getScaled(int dimension) {
     return (dimension * num + denom - 1) / denom;
@@ -69,8 +72,9 @@ public class TJScalingFactor {
   /**
    * Returns true or false, depending on whether this instance and
    * <code>other</code> have the same numerator and denominator.
+   *
    * @return true or false, depending on whether this instance and
-   * <code>other</code> have the same numerator and denominator
+   * <code>other</code> have the same numerator and denominator.
    */
   public boolean equals(TJScalingFactor other) {
     return (this.num == other.num && this.denom == other.denom);
@@ -79,8 +83,9 @@ public class TJScalingFactor {
   /**
    * Returns true or false, depending on whether this instance is equal to
    * 1/1.
+   *
    * @return true or false, depending on whether this instance is equal to
-   * 1/1
+   * 1/1.
    */
   public boolean isOne() {
     return (num == 1 && denom == 1);

@@ -1,9 +1,11 @@
 /*
  * rdppm.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code and
+ * information relevant to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to read input images in PPM/PGM format.
@@ -19,7 +21,7 @@
  * the file is indeed PPM format).
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
 #ifdef PPM_SUPPORTED
 
@@ -41,30 +43,19 @@
 
 #ifdef HAVE_UNSIGNED_CHAR
 typedef unsigned char U_CHAR;
-#define UCH(x)	((int) (x))
+#define UCH(x)  ((int) (x))
 #else /* !HAVE_UNSIGNED_CHAR */
-#ifdef CHAR_IS_UNSIGNED
+#ifdef __CHAR_UNSIGNED__
 typedef char U_CHAR;
-#define UCH(x)	((int) (x))
+#define UCH(x)  ((int) (x))
 #else
 typedef char U_CHAR;
-#define UCH(x)	((int) (x) & 0xFF)
+#define UCH(x)  ((int) (x) & 0xFF)
 #endif
 #endif /* HAVE_UNSIGNED_CHAR */
 
 
-#define	ReadOK(file,buffer,len)	(JFREAD(file,buffer,len) == ((size_t) (len)))
-
-
-/*
- * On most systems, reading individual bytes with getc() is drastically less
- * efficient than buffering a row at a time with fread().  On PCs, we must
- * allocate the buffer in near data space, because we are assuming small-data
- * memory model, wherein fread() can't reach far memory.  If you need to
- * process very wide images on a PC, you might have to compile in large-memory
- * model, or else replace fread() with a getc() loop --- which will be much
- * slower.
- */
+#define ReadOK(file,buffer,len) (JFREAD(file,buffer,len) == ((size_t) (len)))
 
 
 /* Private version of data source object */
@@ -72,10 +63,11 @@ typedef char U_CHAR;
 typedef struct {
   struct cjpeg_source_struct pub; /* public fields */
 
-  U_CHAR *iobuffer;		/* non-FAR pointer to I/O buffer */
-  JSAMPROW pixrow;		/* FAR pointer to same */
-  size_t buffer_width;		/* width of I/O buffer */
-  JSAMPLE *rescale;		/* => maxval-remapping array, or NULL */
+  /* Usually these two pointers point to the same place: */
+  U_CHAR *iobuffer;             /* fread's I/O buffer */
+  JSAMPROW pixrow;              /* compressor input buffer */
+  size_t buffer_width;          /* width of I/O buffer */
+  JSAMPLE *rescale;             /* => maxval-remapping array, or NULL */
 } ppm_source_struct;
 
 typedef ppm_source_struct * ppm_source_ptr;
@@ -308,10 +300,10 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   /* detect unsupported variants (ie, PBM) before trying to read header */
   switch (c) {
-  case '2':			/* it's a text-format PGM file */
-  case '3':			/* it's a text-format PPM file */
-  case '5':			/* it's a raw-format PGM file */
-  case '6':			/* it's a raw-format PPM file */
+  case '2':                     /* it's a text-format PGM file */
+  case '3':                     /* it's a text-format PPM file */
+  case '5':                     /* it's a raw-format PGM file */
+  case '6':                     /* it's a raw-format PPM file */
     break;
   default:
     ERREXIT(cinfo, JERR_PPM_NOT);
@@ -331,12 +323,12 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   cinfo->image_height = (JDIMENSION) h;
 
   /* initialize flags to most common settings */
-  need_iobuffer = TRUE;		/* do we need an I/O buffer? */
-  use_raw_buffer = FALSE;	/* do we map input buffer onto I/O buffer? */
-  need_rescale = TRUE;		/* do we need a rescale array? */
+  need_iobuffer = TRUE;         /* do we need an I/O buffer? */
+  use_raw_buffer = FALSE;       /* do we map input buffer onto I/O buffer? */
+  need_rescale = TRUE;          /* do we need a rescale array? */
 
   switch (c) {
-  case '2':			/* it's a text-format PGM file */
+  case '2':                     /* it's a text-format PGM file */
     cinfo->input_components = 1;
     cinfo->in_color_space = JCS_GRAYSCALE;
     TRACEMS2(cinfo, 1, JTRC_PGM_TEXT, w, h);
@@ -344,7 +336,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     need_iobuffer = FALSE;
     break;
 
-  case '3':			/* it's a text-format PPM file */
+  case '3':                     /* it's a text-format PPM file */
     cinfo->input_components = 3;
     cinfo->in_color_space = JCS_RGB;
     TRACEMS2(cinfo, 1, JTRC_PPM_TEXT, w, h);
@@ -352,13 +344,13 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     need_iobuffer = FALSE;
     break;
 
-  case '5':			/* it's a raw-format PGM file */
+  case '5':                     /* it's a raw-format PGM file */
     cinfo->input_components = 1;
     cinfo->in_color_space = JCS_GRAYSCALE;
     TRACEMS2(cinfo, 1, JTRC_PGM, w, h);
     if (maxval > 255) {
       source->pub.get_pixel_rows = get_word_gray_row;
-    } else if (maxval == MAXJSAMPLE && SIZEOF(JSAMPLE) == SIZEOF(U_CHAR)) {
+    } else if (maxval == MAXJSAMPLE && sizeof(JSAMPLE) == sizeof(U_CHAR)) {
       source->pub.get_pixel_rows = get_raw_row;
       use_raw_buffer = TRUE;
       need_rescale = FALSE;
@@ -367,13 +359,13 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     }
     break;
 
-  case '6':			/* it's a raw-format PPM file */
+  case '6':                     /* it's a raw-format PPM file */
     cinfo->input_components = 3;
     cinfo->in_color_space = JCS_RGB;
     TRACEMS2(cinfo, 1, JTRC_PPM, w, h);
     if (maxval > 255) {
       source->pub.get_pixel_rows = get_word_rgb_row;
-    } else if (maxval == MAXJSAMPLE && SIZEOF(JSAMPLE) == SIZEOF(U_CHAR)) {
+    } else if (maxval == MAXJSAMPLE && sizeof(JSAMPLE) == sizeof(U_CHAR)) {
       source->pub.get_pixel_rows = get_raw_row;
       use_raw_buffer = TRUE;
       need_rescale = FALSE;
@@ -386,17 +378,16 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Allocate space for I/O buffer: 1 or 3 bytes or words/pixel. */
   if (need_iobuffer) {
     source->buffer_width = (size_t) w * cinfo->input_components *
-      ((maxval<=255) ? SIZEOF(U_CHAR) : (2*SIZEOF(U_CHAR)));
+      ((maxval<=255) ? sizeof(U_CHAR) : (2*sizeof(U_CHAR)));
     source->iobuffer = (U_CHAR *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  source->buffer_width);
+                                  source->buffer_width);
   }
 
   /* Create compressor input buffer. */
   if (use_raw_buffer) {
     /* For unscaled raw-input case, we can just map it onto the I/O buffer. */
     /* Synthesize a JSAMPARRAY pointer structure */
-    /* Cast here implies near->far pointer conversion on PCs */
     source->pixrow = (JSAMPROW) source->iobuffer;
     source->pub.buffer = & source->pixrow;
     source->pub.buffer_height = 1;
@@ -415,7 +406,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     /* On 16-bit-int machines we have to be careful of maxval = 65535 */
     source->rescale = (JSAMPLE *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  (size_t) (((long) maxval + 1L) * SIZEOF(JSAMPLE)));
+                                  (size_t) (((long) maxval + 1L) * sizeof(JSAMPLE)));
     half_maxval = maxval / 2;
     for (val = 0; val <= (INT32) maxval; val++) {
       /* The multiplication here must be done in 32 bits to avoid overflow */
@@ -448,7 +439,7 @@ jinit_read_ppm (j_compress_ptr cinfo)
   /* Create module interface object */
   source = (ppm_source_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(ppm_source_struct));
+                                  sizeof(ppm_source_struct));
   /* Fill in method ptrs, except get_pixel_rows which start_input sets */
   source->pub.start_input = start_input_ppm;
   source->pub.finish_input = finish_input_ppm;

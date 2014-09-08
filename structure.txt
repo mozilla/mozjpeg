@@ -1,7 +1,7 @@
 IJG JPEG LIBRARY:  SYSTEM ARCHITECTURE
 
+This file was part of the Independent JPEG Group's software:
 Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
-This file was part of the Independent JPEG Group's software.
 It was modified by The libjpeg-turbo Project to include only information
 relevant to libjpeg-turbo.
 For conditions of distribution and use, see the accompanying README file.
@@ -24,8 +24,8 @@ In this document, JPEG-specific terminology follows the JPEG standard:
   A "coefficient" is a frequency coefficient (a DCT transform output number).
   A "block" is an 8x8 group of samples or coefficients.
   An "MCU" (minimum coded unit) is an interleaved set of blocks of size
-	determined by the sampling factors, or a single block in a
-	noninterleaved scan.
+        determined by the sampling factors, or a single block in a
+        noninterleaved scan.
 We do not use the terms "pixel" and "sample" interchangeably.  When we say
 pixel, we mean an element of the full-size image, while a sample is an element
 of the downsampled image.  Thus the number of samples may vary across
@@ -82,36 +82,6 @@ compression side we have generally not provided low-quality choices, since
 compression is normally less time-critical.  It should be understood that the
 low-quality modes may not meet the JPEG standard's accuracy requirements;
 nonetheless, they are useful for viewers.
-
-
-*** Portability issues ***
-
-Portability is an essential requirement for the library.  The key portability
-issues that show up at the level of system architecture are:
-
-1.  Memory usage.  We want the code to be able to run on PC-class machines
-with limited memory.  Images should therefore be processed sequentially (in
-strips), to avoid holding the whole image in memory at once.  Where a
-full-image buffer is necessary, we should be able to use either virtual memory
-or temporary files.
-
-2.  Near/far pointer distinction.  To run efficiently on 80x86 machines, the
-code should distinguish "small" objects (kept in near data space) from
-"large" ones (kept in far data space).  This is an annoying restriction, but
-fortunately it does not impact code quality for less brain-damaged machines,
-and the source code clutter turns out to be minimal with sufficient use of
-pointer typedefs.
-
-3. Data precision.  We assume that "char" is at least 8 bits, "short" and
-"int" at least 16, "long" at least 32.  The code will work fine with larger
-data sizes, although memory may be used inefficiently in some cases.  However,
-the JPEG compressed datastream must ultimately appear on external storage as a
-sequence of 8-bit bytes if it is to conform to the standard.  This may pose a
-problem on machines where char is wider than 8 bits.  The library represents
-compressed data as an array of values of typedef JOCTET.  If no data type
-exactly 8 bits wide is available, custom data source and data destination
-modules must be written to unpack and pack the chosen JOCTET datatype into
-8-bit external representation.
 
 
 *** System overview ***
@@ -264,14 +234,14 @@ responsibilities:
    1B.  Per-pass control.  This determines how many passes will be performed
         and calls each active processing module to configure itself
         appropriately at the beginning of each pass.  End-of-pass processing,
-	where necessary, is also invoked from the master control module.
+        where necessary, is also invoked from the master control module.
 
    Method selection is partially distributed, in that a particular processing
    module may contain several possible implementations of a particular method,
    which it will select among when given its initialization call.  The master
    control code need only be concerned with decisions that affect more than
    one module.
- 
+
 2. Data buffering control.  A separate control module exists for each
    inter-processing-step data buffer.  This module is responsible for
    invoking the processing steps that write or read that data buffer.
@@ -573,10 +543,10 @@ there isn't any real need for it.
 
 Arrays of pixel sample values use the following data structure:
 
-    typedef something JSAMPLE;		a pixel component value, 0..MAXJSAMPLE
-    typedef JSAMPLE *JSAMPROW;		ptr to a row of samples
-    typedef JSAMPROW *JSAMPARRAY;	ptr to a list of rows
-    typedef JSAMPARRAY *JSAMPIMAGE;	ptr to a list of color-component arrays
+    typedef something JSAMPLE;          a pixel component value, 0..MAXJSAMPLE
+    typedef JSAMPLE *JSAMPROW;          ptr to a row of samples
+    typedef JSAMPROW *JSAMPARRAY;       ptr to a list of rows
+    typedef JSAMPARRAY *JSAMPIMAGE;     ptr to a list of color-component arrays
 
 The basic element type JSAMPLE will typically be one of unsigned char,
 (signed) char, or short.  Short will be used if samples wider than 8 bits are
@@ -617,7 +587,7 @@ we can read or write each component to a temporary file independently, which
 is helpful when dealing with noninterleaved JPEG files.
 
 In general, a specific sample value is accessed by code such as
-	GETJSAMPLE(image[colorcomponent][row][col])
+        GETJSAMPLE(image[colorcomponent][row][col])
 where col is measured from the image left edge, but row is measured from the
 first sample row currently in memory.  Either of the first two indexings can
 be precomputed by copying the relevant pointer.
@@ -636,11 +606,11 @@ with component-wise storage.)
 
 Arrays of DCT-coefficient values use the following data structure:
 
-    typedef short JCOEF;		a 16-bit signed integer
-    typedef JCOEF JBLOCK[DCTSIZE2];	an 8x8 block of coefficients
-    typedef JBLOCK *JBLOCKROW;		ptr to one horizontal row of 8x8 blocks
-    typedef JBLOCKROW *JBLOCKARRAY;	ptr to a list of such rows
-    typedef JBLOCKARRAY *JBLOCKIMAGE;	ptr to a list of color component arrays
+    typedef short JCOEF;                a 16-bit signed integer
+    typedef JCOEF JBLOCK[DCTSIZE2];     an 8x8 block of coefficients
+    typedef JBLOCK *JBLOCKROW;          ptr to one horizontal row of 8x8 blocks
+    typedef JBLOCKROW *JBLOCKARRAY;     ptr to a list of such rows
+    typedef JBLOCKARRAY *JBLOCKIMAGE;   ptr to a list of color component arrays
 
 The underlying type is at least a 16-bit signed integer; while "short" is big
 enough on all machines of interest, on some machines it is preferable to use
@@ -660,17 +630,6 @@ quantization a la JPEG Part 3.)
 Notice that the allocation unit is now a row of 8x8 blocks, corresponding to
 eight rows of samples.  Otherwise the structure is much the same as for
 samples, and for the same reasons.
-
-On machines where malloc() can't handle a request bigger than 64Kb, this data
-structure limits us to rows of less than 512 JBLOCKs, or a picture width of
-4000+ pixels.  This seems an acceptable restriction.
-
-
-On 80x86 machines, the bottom-level pointer types (JSAMPROW and JBLOCKROW)
-must be declared as "far" pointers, but the upper levels can be "near"
-(implying that the pointer lists are allocated in the DS segment).
-We use a #define symbol FAR, which expands to the "far" keyword when
-compiling on 80x86 machines and to nothing elsewhere.
 
 
 *** Suspendable processing ***
@@ -759,8 +718,8 @@ can be freed at once.  This approach helps prevent storage-leak bugs, and
 it speeds up operations whenever malloc/free are slow (as they often are).
 The pools can be regarded as lifetime identifiers for objects.  Two
 pools/lifetimes are defined:
-  * JPOOL_PERMANENT	lasts until master record is destroyed
-  * JPOOL_IMAGE		lasts until done with image (JPEG datastream)
+  * JPOOL_PERMANENT     lasts until master record is destroyed
+  * JPOOL_IMAGE         lasts until done with image (JPEG datastream)
 Permanent lifetime is used for parameters and tables that should be carried
 across from one datastream to another; this includes all application-visible
 parameters.  Image lifetime is used for everything else.  (A third lifetime,
@@ -773,12 +732,11 @@ The memory manager deals with three kinds of object:
 1. "Small" objects.  Typically these require no more than 10K-20K total.
 2. "Large" objects.  These may require tens to hundreds of K depending on
    image size.  Semantically they behave the same as small objects, but we
-   distinguish them for two reasons:
-     * On MS-DOS machines, large objects are referenced by FAR pointers,
-       small objects by NEAR pointers.
-     * Pool allocation heuristics may differ for large and small objects.
-   Note that individual "large" objects cannot exceed the size allowed by
-   type size_t, which may be 64K or less on some machines.
+   distinguish them because pool allocation heuristics may differ for large and
+   small objects (historically, large objects were also referenced by far
+   pointers on MS-DOS machines.)  Note that individual "large" objects cannot
+   exceed the size allowed by type size_t, which may be 64K or less on some
+   machines.
 3. "Virtual" objects.  These are large 2-D arrays of JSAMPLEs or JBLOCKs
    (typically large enough for the entire image being processed).  The
    memory manager provides stripwise access to these arrays.  On machines
@@ -857,20 +815,20 @@ outlined above are implemented by the front end.  The back end provides
 the following routines for use by the front end (none of these routines
 are known to the rest of the JPEG code):
 
-jpeg_mem_init, jpeg_mem_term	system-dependent initialization/shutdown
+jpeg_mem_init, jpeg_mem_term    system-dependent initialization/shutdown
 
-jpeg_get_small, jpeg_free_small	interface to malloc and free library routines
-				(or their equivalents)
+jpeg_get_small, jpeg_free_small interface to malloc and free library routines
+                                (or their equivalents)
 
-jpeg_get_large, jpeg_free_large	interface to FAR malloc/free in MSDOS machines;
-				else usually the same as
-				jpeg_get_small/jpeg_free_small
+jpeg_get_large, jpeg_free_large historically was used to interface with
+                                FAR malloc/free on MS-DOS machines;  now the
+                                same as jpeg_get_small/jpeg_free_small
 
-jpeg_mem_available		estimate available memory
+jpeg_mem_available              estimate available memory
 
-jpeg_open_backing_store		create a backing-store object
+jpeg_open_backing_store         create a backing-store object
 
-read_backing_store,		manipulate a backing-store object
+read_backing_store,             manipulate a backing-store object
 write_backing_store,
 close_backing_store
 

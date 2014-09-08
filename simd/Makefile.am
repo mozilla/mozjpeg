@@ -2,54 +2,54 @@ noinst_LTLIBRARIES = libsimd.la
 
 BUILT_SOURCES = jsimdcfg.inc
 
-EXTRA_DIST = nasm_lt.sh jcclrmmx.asm jcclrss2.asm jdclrmmx.asm jdclrss2.asm \
-	jdmrgmmx.asm jdmrgss2.asm jcclrss2-64.asm jdclrss2-64.asm \
-	jdmrgss2-64.asm jcgryss2-64.asm jcgrymmx.asm jcgryss2.asm CMakeLists.txt
+EXTRA_DIST = nasm_lt.sh CMakeLists.txt \
+	jccolext-mmx.asm   jcgryext-mmx.asm   jdcolext-mmx.asm   jdmrgext-mmx.asm \
+	jccolext-sse2.asm  jcgryext-sse2.asm  jdcolext-sse2.asm  jdmrgext-sse2.asm \
+	jccolext-sse2-64.asm  jcgryext-sse2-64.asm  jdcolext-sse2-64.asm \
+	jdmrgext-sse2-64.asm
 
 if SIMD_X86_64
 
-libsimd_la_SOURCES = jsimd_x86_64.c \
-	jsimd.h jsimdcfg.inc.h \
-	jsimdext.inc jcolsamp.inc jdct.inc \
-	jfsseflt-64.asm jcgrass2-64.asm \
-	jccolss2-64.asm jdcolss2-64.asm \
-	jcsamss2-64.asm jdsamss2-64.asm jdmerss2-64.asm \
-	jcqnts2i-64.asm jfss2fst-64.asm jfss2int-64.asm \
-	jiss2red-64.asm jiss2int-64.asm jiss2fst-64.asm \
-	jcqnts2f-64.asm jiss2flt-64.asm
+libsimd_la_SOURCES = jsimd_x86_64.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
+	jcolsamp.inc jdct.inc jfdctflt-sse-64.asm \
+	jccolor-sse2-64.asm   jcgray-sse2-64.asm    jcsample-sse2-64.asm \
+	jdcolor-sse2-64.asm   jdmerge-sse2-64.asm   jdsample-sse2-64.asm \
+	jfdctfst-sse2-64.asm  jfdctint-sse2-64.asm  jidctflt-sse2-64.asm \
+	jidctfst-sse2-64.asm  jidctint-sse2-64.asm  jidctred-sse2-64.asm  \
+	jquantf-sse2-64.asm   jquanti-sse2-64.asm
 
-jccolss2-64.lo: jcclrss2-64.asm
-jdcolss2-64.lo: jdclrss2-64.asm
-jcgrass2-64.lo: jcgryss2-64.asm
-jdmerss2-64.lo: jdmrgss2-64.asm
+jccolor-sse2-64.lo:  jccolext-sse2-64.asm
+jcgray-sse2-64.lo:   jcgryext-sse2-64.asm
+jdcolor-sse2-64.lo:  jdcolext-sse2-64.asm
+jdmerge-sse2-64.lo:  jdmrgext-sse2-64.asm
+
 endif
 
 if SIMD_I386
 
-libsimd_la_SOURCES = jsimd_i386.c \
-	jsimd.h jsimdcfg.inc.h \
-	jsimdext.inc jcolsamp.inc jdct.inc \
-	jsimdcpu.asm \
-	jccolmmx.asm jdcolmmx.asm jcgrammx.asm \
-	jcsammmx.asm jdsammmx.asm jdmermmx.asm \
-	jcqntmmx.asm jfmmxfst.asm jfmmxint.asm \
-	jimmxred.asm jimmxint.asm jimmxfst.asm \
-	jcqnt3dn.asm jf3dnflt.asm ji3dnflt.asm \
-	jcqntsse.asm jfsseflt.asm jisseflt.asm \
-	jccolss2.asm jdcolss2.asm jcgrass2.asm \
-	jcsamss2.asm jdsamss2.asm jdmerss2.asm \
-	jcqnts2i.asm jfss2fst.asm jfss2int.asm \
-	jiss2red.asm jiss2int.asm jiss2fst.asm \
-	jcqnts2f.asm jiss2flt.asm
+libsimd_la_SOURCES = jsimd_i386.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
+	jcolsamp.inc jdct.inc jsimdcpu.asm \
+	jfdctflt-3dn.asm   jidctflt-3dn.asm   jquant-3dn.asm \
+	jccolor-mmx.asm    jcgray-mmx.asm     jcsample-mmx.asm \
+	jdcolor-mmx.asm    jdmerge-mmx.asm    jdsample-mmx.asm \
+	jfdctfst-mmx.asm   jfdctint-mmx.asm   jidctfst-mmx.asm \
+	jidctint-mmx.asm   jidctred-mmx.asm   jquant-mmx.asm \
+	jfdctflt-sse.asm   jidctflt-sse.asm   jquant-sse.asm \
+	jccolor-sse2.asm   jcgray-sse2.asm    jcsample-sse2.asm \
+	jdcolor-sse2.asm   jdmerge-sse2.asm   jdsample-sse2.asm \
+	jfdctfst-sse2.asm  jfdctint-sse2.asm  jidctflt-sse2.asm \
+	jidctfst-sse2.asm  jidctint-sse2.asm  jidctred-sse2.asm  \
+	jquantf-sse2.asm   jquanti-sse2.asm
 
-jccolmmx.lo: jcclrmmx.asm
-jcgrammx.lo: jcgrymmx.asm
-jccolss2.lo: jcclrss2.asm
-jcgrass2.lo: jcgryss2.asm
-jdcolmmx.lo: jdclrmmx.asm
-jdcolss2.lo: jdclrss2.asm
-jdmermmx.lo: jdmrgmmx.asm
-jdmerss2.lo: jdmrgss2.asm
+jccolor-mmx.lo:   jccolext-mmx.asm
+jcgray.-mmx.lo:   jcgryext-mmx.asm
+jdcolor-mmx.lo:   jdcolext-mmx.asm
+jdmerge-mmx.lo:   jdmrgext-mmx.asm
+jccolor-sse2.lo:  jccolext-sse2.asm
+jcgray-sse2.lo:   jcgryext-sse2.asm
+jdcolor-sse2.lo:  jdcolext-sse2.asm
+jdmerge-sse2.lo:  jdmrgext-sse2.asm
+
 endif
 
 if SIMD_ARM
@@ -58,13 +58,19 @@ libsimd_la_SOURCES = jsimd_arm.c jsimd_arm_neon.S
 
 endif
 
-if SIMD_MIPSEL
+if SIMD_ARM_64
+
+libsimd_la_SOURCES = jsimd_arm64.c jsimd_arm64_neon.S
+
+endif
+
+if SIMD_MIPS
 
 libsimd_la_SOURCES = jsimd_mips.c jsimd_mips_dspr2_asm.h jsimd_mips_dspr2.S
 
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir) 
+AM_CPPFLAGS = -I$(top_srcdir)
 
 .asm.lo:
 	$(AM_V_GEN) $(LIBTOOL) $(AM_V_lt) --mode=compile $(srcdir)/nasm_lt.sh $(AM_V_lt) $(NASM) $(NAFLAGS) -I$(srcdir) -I. $< -o $@

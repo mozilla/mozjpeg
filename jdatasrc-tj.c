@@ -157,21 +157,21 @@ term_source (j_decompress_ptr cinfo)
 
 GLOBAL(void)
 jpeg_mem_src_tj (j_decompress_ptr cinfo,
-	      unsigned char * inbuffer, unsigned long insize)
+              unsigned char * inbuffer, unsigned long insize)
 {
   struct jpeg_source_mgr * src;
 
-  if (inbuffer == NULL || insize == 0)	/* Treat empty input as fatal error */
+  if (inbuffer == NULL || insize == 0)  /* Treat empty input as fatal error */
     ERREXIT(cinfo, JERR_INPUT_EMPTY);
 
   /* The source object is made permanent so that a series of JPEG images
    * can be read from the same buffer by calling jpeg_mem_src only before
    * the first one.
    */
-  if (cinfo->src == NULL) {	/* first time for this JPEG object? */
+  if (cinfo->src == NULL) {     /* first time for this JPEG object? */
     cinfo->src = (struct jpeg_source_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  SIZEOF(struct jpeg_source_mgr));
+                                  sizeof(struct jpeg_source_mgr));
   }
 
   src = cinfo->src;

@@ -12,7 +12,8 @@ nodist_include_HEADERS = jconfig.h
 
 
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
-	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h
+	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h \
+	jpeg_nbits_table.h
 
 libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
 	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c \
@@ -107,13 +108,19 @@ tjunittest_LDADD = libturbojpeg.la
 endif
 
 
-cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdbmp.c rdgif.c \
-	rdppm.c rdswitch.c rdtarga.c rdjpeg.c
+cjpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c cjpeg.c rdgif.c rdppm.c rdswitch.c rdjpeg.c
+if WITH_12BIT
+else
+cjpeg_SOURCES += rdbmp.c rdtarga.c
+endif
 
 cjpeg_LDADD = libjpeg.la
 
-cjpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
-	-DTARGA_SUPPORTED
+cjpeg_CFLAGS = -DGIF_SUPPORTED -DPPM_SUPPORTED
+if WITH_12BIT
+else
+cjpeg_CFLAGS += -DBMP_SUPPORTED -DTARGA_SUPPORTED
+endif
 
 if HAVE_LIBPNG
 cjpeg_CFLAGS += -DPNG_SUPPORTED $(libpng_CFLAGS)
@@ -122,12 +129,19 @@ cjpeg_SOURCES += rdpng.c
 endif
 
 djpeg_SOURCES = cdjpeg.h cderror.h cdjpeg.c djpeg.c rdcolmap.c rdswitch.c \
-	wrbmp.c wrgif.c wrppm.c wrtarga.c
+	wrgif.c wrppm.c
+if WITH_12BIT
+else
+djpeg_SOURCES += wrbmp.c wrtarga.c
+endif
 
 djpeg_LDADD = libjpeg.la
 
-djpeg_CFLAGS = -DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED \
-	-DTARGA_SUPPORTED
+djpeg_CFLAGS = -DGIF_SUPPORTED -DPPM_SUPPORTED
+if WITH_12BIT
+else
+djpeg_CFLAGS += -DBMP_SUPPORTED -DTARGA_SUPPORTED
+endif
 
 jpegtran_SOURCES = jpegtran.c rdswitch.c cdjpeg.c transupp.c transupp.h
 
@@ -160,7 +174,7 @@ DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.txt \
 
 docdir = $(datadir)/doc
 dist_doc_DATA = README README-mozilla.txt README-turbo.txt libjpeg.txt structure.txt usage.txt \
-	wizard.txt 
+	wizard.txt
 
 exampledir = $(datadir)/doc
 dist_example_DATA = example.c
@@ -168,7 +182,7 @@ dist_example_DATA = example.c
 
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
-	jccolext.c jdcolext.c jdmrgext.c
+	doxygen-extra.css jccolext.c jdcolext.c jdcol565.c jdmrgext.c jstdhuff.c
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
@@ -176,40 +190,93 @@ dist-hook:
 
 SUBDIRS += md5
 
-MD5_JPEG_INT = 9a68f56bc76e466aa7e52f415d0f4a5f
-MD5_JPEG_FAST = 0e1502e7fa421835e376a314fac2a39f
-MD5_JPEG_FAST_100 = 7bf72a8e741d64eecb960c97323af77c
-MD5_JPEG_FLOAT = d1623885ffafcd40c684af09e3d65cd5
-MD5_JPEG_FLOAT_NOSIMD = fb4884c35f8273f498cb32879de5c455
-MD5_JPEG_INT_GRAY = 72b51f894b8f4a10b3ee3066770aa38d
-MD5_PPM_INT = d1ed0d11f076b842525271647716aeb8
-MD5_PPM_FAST = 048298a2d2410261c0533cb97bcfef23
-MD5_PPM_FLOAT = 7f5b446ee36b2630e06785b8d42af15f
-MD5_PPM_FLOAT_NOSIMD = 64072f1dbdc5b3a187777788604971a5
-MD5_PPM_INT_2_1 = 9f9de8c0612f8d06869b960b05abf9c9
-MD5_PPM_INT_15_8 = b6875bc070720b899566cc06459b63b7
-MD5_PPM_INT_7_4 = 06a177eae05f164fac57f7a2c346ee87
-MD5_PPM_INT_13_8 = bc3452573c8152f6ae552939ee19f82f
-MD5_PPM_INT_3_2 = f5a8b88a8a7f96016f04d259cf82ed67
-MD5_PPM_INT_11_8 = d8cc73c0aaacd4556569b59437ba00a5
-MD5_PPM_INT_5_4 = 32775dd9ad2ab90f4c5b219b53e0c86c
-MD5_PPM_INT_9_8 = d25e61bc7eac0002f5b393aa223747b6
-MD5_PPM_INT_7_8 = ddb564b7c74a09494016d6cd7502a946
-MD5_PPM_INT_3_4 = 8ed8e68808c3fbc4ea764fc9d2968646
-MD5_PPM_INT_5_8 = a3363274999da2366a024efae6d16c9b
-MD5_PPM_INT_1_2 = e692a315cea26b988c8e8b29a5dbcd81
-MD5_PPM_INT_3_8 = 79eca9175652ced755155c90e785a996
-MD5_PPM_INT_1_4 = 79cd778f8bf1a117690052cacdd54eca
-MD5_PPM_INT_1_8 = 391b3d4aca640c8567d6f8745eb2142f
-MD5_PPM_FAST_1_2 = f30bcf6d32ccd44cbdd9aeaacbd9454f
-MD5_BMP_256 = 4980185e3776e89bd931736e1cddeee6
-MD5_JPEG_ARI = e986fb0a637a8d833d96e8a6d6d84ea1
-MD5_PPM_ARI = 72b59a99bcf1de24c5b27d151bde2437
-MD5_JPEG_PROG = 1c4afddc05c0a43489ee54438a482d92
-MD5_JPEG_PROG_ARI = 0a8f1c8f66e113c3cf635df0a475a617
+if WITH_12BIT
+
+TESTORIG = testorig12.jpg
+MD5_JPEG_RGB_ISLOW = 9620f424569594bb9242b48498ad801f
+MD5_PPM_RGB_ISLOW = f3301d2219783b8b3d942b7239fa50c0
+MD5_JPEG_422_IFAST_OPT = 7322e3bd2f127f7de4b40d4480ce60e4
+MD5_PPM_422_IFAST = 79807fa552899e66a04708f533e16950
+MD5_PPM_422M_IFAST = 07737bfe8a7c1c87aaa393a0098d16b0
+MD5_JPEG_420_IFAST_Q100_PROG = a1da220b5604081863a504297ed59e55
+MD5_PPM_420_Q100_IFAST = 1b3730122709f53d007255e8dfd3305e
+MD5_PPM_420M_Q100_IFAST = 980a1a3c5bf9510022869d30b7d26566
+MD5_JPEG_GRAY_ISLOW = 235c90707b16e2e069f37c888b2636d9
+MD5_PPM_GRAY_ISLOW = 7213c10af507ad467da5578ca5ee1fca
+MD5_PPM_GRAY_ISLOW_RGB = e96ee81c30a6ed422d466338bd3de65d
+MD5_JPEG_420S_IFAST_OPT = 7af8e60be4d9c227ec63ac9b6630855e
+MD5_JPEG_3x2_FLOAT_PROG = a8c17daf77b457725ec929e215b603f8
+MD5_PPM_3x2_FLOAT = 42876ab9e5c2f76a87d08db5fbd57956
+MD5_PPM_420M_ISLOW_2_1 = 4ca6be2a6f326ff9eaab63e70a8259c0
+MD5_PPM_420M_ISLOW_15_8 = 12aa9f9534c1b3d7ba047322226365eb
+MD5_PPM_420M_ISLOW_13_8 = f7e22817c7b25e1393e4ec101e9d4e96
+MD5_PPM_420M_ISLOW_11_8 = 800a16f9f4dc9b293197bfe11be10a82
+MD5_PPM_420M_ISLOW_9_8 = 06b7a92a9bc69f4dc36ec40f1937d55c
+MD5_PPM_420M_ISLOW_7_8 = 3ec444a14a4ab4eab88ffc49c48eca43
+MD5_PPM_420M_ISLOW_3_4 = 3e726b7ea872445b19437d1c1d4f0d93
+MD5_PPM_420M_ISLOW_5_8 = a8a771abdc94301d20ffac119b2caccd
+MD5_PPM_420M_ISLOW_1_2 = b419124dd5568b085787234866102866
+MD5_PPM_420M_ISLOW_3_8 = 343d19015531b7bbe746124127244fa8
+MD5_PPM_420M_ISLOW_1_4 = 35fd59d866e44659edfa3c18db2a3edb
+MD5_PPM_420M_ISLOW_1_8 = ccaed48ac0aedefda5d4abe4013f4ad7
+MD5_JPEG_CROP = cdb35ff4b4519392690ea040c56ea99c
+
+else
+
+TESTORIG = testorig.jpg
+MD5_JPEG_RGB_ISLOW = 768e970dd57b340ff1b83c9d3d47c77b
+MD5_PPM_RGB_ISLOW = 00a257f5393fef8821f2b88ac7421291
+MD5_BMP_RGB_ISLOW_565 = f07d2e75073e4bb10f6c6f4d36e2e3be
+MD5_BMP_RGB_ISLOW_565D = 4cfa0928ef3e6bb626d7728c924cfda4
+MD5_JPEG_422_IFAST_OPT = 2540287b79d913f91665e660303ab2c8
+MD5_PPM_422_IFAST = 35bd6b3f833bad23de82acea847129fa
+MD5_PPM_422M_IFAST = 8dbc65323d62cca7c91ba02dd1cfa81d
+MD5_BMP_422M_IFAST_565 = 3294bd4d9a1f2b3d08ea6020d0db7065
+MD5_BMP_422M_IFAST_565D = da98c9c7b6039511be4a79a878a9abc1
+MD5_JPEG_420_IFAST_Q100_PROG = 990cbe0329c882420a2094da7e5adade
+MD5_PPM_420_Q100_IFAST = 5a732542015c278ff43635e473a8a294
+MD5_PPM_420M_Q100_IFAST = ff692ee9323a3b424894862557c092f1
+MD5_JPEG_GRAY_ISLOW = 72b51f894b8f4a10b3ee3066770aa38d
+MD5_PPM_GRAY_ISLOW = 8d3596c56eace32f205deccc229aa5ed
+MD5_PPM_GRAY_ISLOW_RGB = 116424ac07b79e5e801f00508eab48ec
+MD5_BMP_GRAY_ISLOW_565 = 12f78118e56a2f48b966f792fedf23cc
+MD5_BMP_GRAY_ISLOW_565D = bdbbd616441a24354c98553df5dc82db
+MD5_JPEG_420S_IFAST_OPT = 388708217ac46273ca33086b22827ed8
+# See README-turbo.txt for more details on why this next bit is necessary.
+if WITH_SSE_FLOAT_DCT
+MD5_JPEG_3x2_FLOAT_PROG = 343e3f8caf8af5986ebaf0bdc13b5c71
+MD5_PPM_3x2_FLOAT = 1a75f36e5904d6fc3a85a43da9ad89bb
+else
+MD5_JPEG_3x2_FLOAT_PROG = 9bca803d2042bd1eb03819e2bf92b3e5
+MD5_PPM_3x2_FLOAT = f6bfab038438ed8f5522fbd33595dcdc
+endif
+MD5_JPEG_420_ISLOW_ARI = e986fb0a637a8d833d96e8a6d6d84ea1
+MD5_JPEG_444_ISLOW_PROGARI = 0a8f1c8f66e113c3cf635df0a475a617
+MD5_PPM_420M_IFAST_ARI = 72b59a99bcf1de24c5b27d151bde2437
+MD5_JPEG_420_ISLOW = 9a68f56bc76e466aa7e52f415d0f4a5f
+MD5_PPM_420M_ISLOW_2_1 = 9f9de8c0612f8d06869b960b05abf9c9
+MD5_PPM_420M_ISLOW_15_8 = b6875bc070720b899566cc06459b63b7
+MD5_PPM_420M_ISLOW_13_8 = bc3452573c8152f6ae552939ee19f82f
+MD5_PPM_420M_ISLOW_11_8 = d8cc73c0aaacd4556569b59437ba00a5
+MD5_PPM_420M_ISLOW_9_8 = d25e61bc7eac0002f5b393aa223747b6
+MD5_PPM_420M_ISLOW_7_8 = ddb564b7c74a09494016d6cd7502a946
+MD5_PPM_420M_ISLOW_3_4 = 8ed8e68808c3fbc4ea764fc9d2968646
+MD5_PPM_420M_ISLOW_5_8 = a3363274999da2366a024efae6d16c9b
+MD5_PPM_420M_ISLOW_1_2 = e692a315cea26b988c8e8b29a5dbcd81
+MD5_PPM_420M_ISLOW_3_8 = 79eca9175652ced755155c90e785a996
+MD5_PPM_420M_ISLOW_1_4 = 79cd778f8bf1a117690052cacdd54eca
+MD5_PPM_420M_ISLOW_1_8 = 391b3d4aca640c8567d6f8745eb2142f
+MD5_BMP_420_ISLOW_256 = 4980185e3776e89bd931736e1cddeee6
+MD5_BMP_420_ISLOW_565 = bf9d13e16c4923b92e1faa604d7922cb
+MD5_BMP_420_ISLOW_565D = 6bde71526acc44bcff76f696df8638d2
+MD5_BMP_420M_ISLOW_565 = 8dc0185245353cfa32ad97027342216f
+MD5_BMP_420M_ISLOW_565D =d1be3a3339166255e76fa50a0d70d73e
 MD5_JPEG_CROP = b4197f377e621c4e9b1d20471432610d
 
+endif
+
 test: testclean all
+
 if WITH_TURBOJPEG
 if WITH_JAVA
 	$(JAVA) -cp java/turbojpeg.jar -Djava.library.path=.libs TJUnitTest
@@ -225,84 +292,203 @@ endif
 	./tjunittest -yuv -alloc
 	./tjunittest -yuv -noyuvpad
 endif
-	./cjpeg -dct int -outfile testoutint.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_INT) testoutint.jpg
-	./cjpeg -dct fast -opt -outfile testoutfst.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_FAST) testoutfst.jpg
-	./cjpeg -dct fast -quality 100 -opt -outfile testoutfst100.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_FAST_100) testoutfst100.jpg
-	./cjpeg -dct float -outfile testoutflt.jpg $(srcdir)/testimages/testorig.ppm
-if WITH_SSE_FLOAT_DCT
-	md5/md5cmp $(MD5_JPEG_FLOAT) testoutflt.jpg
+
+# These tests are carefully crafted to provide full coverage of as many of the
+# underlying algorithms as possible (including all of the SIMD-accelerated
+# ones.)
+
+# CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
+	./cjpeg -rgb -dct int -outfile testout_rgb_islow.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_RGB_ISLOW) testout_rgb_islow.jpg
+# CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
+	./djpeg -dct int -ppm -outfile testout_rgb_islow.ppm testout_rgb_islow.jpg
+	md5/md5cmp $(MD5_PPM_RGB_ISLOW) testout_rgb_islow.ppm
+	rm testout_rgb_islow.ppm
+if WITH_12BIT
+	rm testout_rgb_islow.jpg
 else
-	md5/md5cmp $(MD5_JPEG_FLOAT_NOSIMD) testoutflt.jpg
+# CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
+	./djpeg -dct int -rgb565 -dither none -bmp -outfile testout_rgb_islow_565.bmp testout_rgb_islow.jpg
+	md5/md5cmp $(MD5_BMP_RGB_ISLOW_565) testout_rgb_islow_565.bmp
+	rm testout_rgb_islow_565.bmp
+# CC: RGB->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
+	./djpeg -dct int -rgb565 -bmp -outfile testout_rgb_islow_565D.bmp testout_rgb_islow.jpg
+	md5/md5cmp $(MD5_BMP_RGB_ISLOW_565D) testout_rgb_islow_565D.bmp
+	rm testout_rgb_islow_565D.bmp testout_rgb_islow.jpg
 endif
-	./cjpeg -dct int -grayscale -outfile testoutgray.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_INT_GRAY) testoutgray.jpg
-	./djpeg -dct int -fast -ppm -outfile testoutint.ppm $(srcdir)/testimages/testorig.jpg
-	md5/md5cmp $(MD5_PPM_INT) testoutint.ppm
-	./djpeg -dct fast -ppm -outfile testoutfst.ppm $(srcdir)/testimages/testorig.jpg
-	md5/md5cmp $(MD5_PPM_FAST) testoutfst.ppm
-	./djpeg -dct float -ppm -outfile testoutflt.ppm $(srcdir)/testimages/testorig.jpg
-if WITH_SSE_FLOAT_DCT
-	md5/md5cmp $(MD5_PPM_FLOAT) testoutflt.ppm
+
+# CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
+	./cjpeg -sample 2x1 -dct fast -opt -outfile testout_422_ifast_opt.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_422_IFAST_OPT) testout_422_ifast_opt.jpg
+# CC: YCC->RGB  SAMP: fullsize/h2v1 fancy  IDCT: ifast  ENT: huff
+	./djpeg -dct fast -outfile testout_422_ifast.ppm testout_422_ifast_opt.jpg
+	md5/md5cmp $(MD5_PPM_422_IFAST) testout_422_ifast.ppm
+	rm testout_422_ifast.ppm
+# CC: YCC->RGB  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+	./djpeg -dct fast -nosmooth -outfile testout_422m_ifast.ppm testout_422_ifast_opt.jpg
+	md5/md5cmp $(MD5_PPM_422M_IFAST) testout_422m_ifast.ppm
+	rm testout_422m_ifast.ppm
+if WITH_12BIT
+	rm testout_422_ifast_opt.jpg
 else
-	md5/md5cmp $(MD5_PPM_FLOAT_NOSIMD) testoutflt.ppm
+# CC: YCC->RGB565  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+	./djpeg -dct int -nosmooth -rgb565 -dither none -bmp -outfile testout_422m_ifast_565.bmp testout_422_ifast_opt.jpg
+	md5/md5cmp $(MD5_BMP_422M_IFAST_565) testout_422m_ifast_565.bmp
+	rm testout_422m_ifast_565.bmp
+# CC: YCC->RGB565 (dithered)  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+	./djpeg -dct int -nosmooth -rgb565 -bmp -outfile testout_422m_ifast_565D.bmp testout_422_ifast_opt.jpg
+	md5/md5cmp $(MD5_BMP_422M_IFAST_565D) testout_422m_ifast_565D.bmp
+	rm testout_422m_ifast_565D.bmp testout_422_ifast_opt.jpg
 endif
-	./djpeg -dct int -nosmooth -scale 2/1 -ppm -outfile testoutint2_1.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_2_1) testoutint2_1.ppm;
-	./djpeg -dct int -nosmooth -scale 15/8 -ppm -outfile testoutint15_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_15_8) testoutint15_8.ppm;
-	./djpeg -dct int -nosmooth -scale 7/4 -ppm -outfile testoutint7_4.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_7_4) testoutint7_4.ppm;
-	./djpeg -dct int -nosmooth -scale 13/8 -ppm -outfile testoutint13_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_13_8) testoutint13_8.ppm;
-	./djpeg -dct int -nosmooth -scale 3/2 -ppm -outfile testoutint3_2.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_3_2) testoutint3_2.ppm;
-	./djpeg -dct int -nosmooth -scale 11/8 -ppm -outfile testoutint11_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_11_8) testoutint11_8.ppm;
-	./djpeg -dct int -nosmooth -scale 5/4 -ppm -outfile testoutint5_4.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_5_4) testoutint5_4.ppm;
-	./djpeg -dct int -nosmooth -scale 9/8 -ppm -outfile testoutint9_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_9_8) testoutint9_8.ppm;
-	./djpeg -dct int -nosmooth -scale 7/8 -ppm -outfile testoutint7_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_7_8) testoutint7_8.ppm;
-	./djpeg -dct int -nosmooth -scale 3/4 -ppm -outfile testoutint3_4.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_3_4) testoutint3_4.ppm;
-	./djpeg -dct int -nosmooth -scale 5/8 -ppm -outfile testoutint5_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_5_8) testoutint5_8.ppm;
-	./djpeg -dct int -nosmooth -scale 1/2 -ppm -outfile testoutint1_2.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_1_2) testoutint1_2.ppm;
-	./djpeg -dct int -nosmooth -scale 3/8 -ppm -outfile testoutint3_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_3_8) testoutint3_8.ppm;
-	./djpeg -dct int -nosmooth -scale 1/4 -ppm -outfile testoutint1_4.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_1_4) testoutint1_4.ppm;
-	./djpeg -dct int -nosmooth -scale 1/8 -ppm -outfile testoutint1_8.ppm $(srcdir)/testimages/testorig.jpg;
-	md5/md5cmp $(MD5_PPM_INT_1_8) testoutint1_8.ppm;
-	./djpeg -dct fast -scale 1/2 -ppm -outfile testoutfst1_2.ppm $(srcdir)/testimages/testorig.jpg
-	md5/md5cmp $(MD5_PPM_FAST_1_2) testoutfst1_2.ppm
-	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp $(srcdir)/testimages/testorig.jpg
-	md5/md5cmp $(MD5_BMP_256) testout.bmp
+
+# CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
+	./cjpeg -sample 2x2 -quality 100 -dct fast -prog -outfile testout_420_q100_ifast_prog.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_420_IFAST_Q100_PROG) testout_420_q100_ifast_prog.jpg
+# CC: YCC->RGB  SAMP: fullsize/h2v2 fancy  IDCT: ifast  ENT: prog huff
+	./djpeg -dct fast -outfile testout_420_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
+	md5/md5cmp $(MD5_PPM_420_Q100_IFAST) testout_420_q100_ifast.ppm
+	rm testout_420_q100_ifast.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: ifast  ENT: prog huff
+	./djpeg -dct fast -nosmooth -outfile testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
+	md5/md5cmp $(MD5_PPM_420M_Q100_IFAST) testout_420m_q100_ifast.ppm
+	rm testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
+
+# CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
+	./cjpeg -gray -dct int -outfile testout_gray_islow.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_GRAY_ISLOW) testout_gray_islow.jpg
+# CC: Gray->Gray  SAMP: fullsize  IDCT: islow  ENT: huff
+	./djpeg -dct int -outfile testout_gray_islow.ppm testout_gray_islow.jpg
+	md5/md5cmp $(MD5_PPM_GRAY_ISLOW) testout_gray_islow.ppm
+	rm testout_gray_islow.ppm
+# CC: Gray->RGB  SAMP: fullsize  IDCT: islow  ENT: huff
+	./djpeg -dct int -rgb -outfile testout_gray_islow_rgb.ppm testout_gray_islow.jpg
+	md5/md5cmp $(MD5_PPM_GRAY_ISLOW_RGB) testout_gray_islow_rgb.ppm
+	rm testout_gray_islow_rgb.ppm
+if WITH_12BIT
+	rm testout_gray_islow.jpg
+else
+# CC: Gray->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
+	./djpeg -dct int -rgb565 -dither none -bmp -outfile testout_gray_islow_565.bmp testout_gray_islow.jpg
+	md5/md5cmp $(MD5_BMP_GRAY_ISLOW_565) testout_gray_islow_565.bmp
+	rm testout_gray_islow_565.bmp
+# CC: Gray->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
+	./djpeg -dct int -rgb565 -bmp -outfile testout_gray_islow_565D.bmp testout_gray_islow.jpg
+	md5/md5cmp $(MD5_BMP_GRAY_ISLOW_565D) testout_gray_islow_565D.bmp
+	rm testout_gray_islow_565D.bmp testout_gray_islow.jpg
+endif
+
+# CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
+# ENT: 2-pass huff
+	./cjpeg -sample 2x2 -smooth 1 -dct int -opt -outfile testout_420s_ifast_opt.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_420S_IFAST_OPT) testout_420s_ifast_opt.jpg
+	rm testout_420s_ifast_opt.jpg
+
+# CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
+	./cjpeg -sample 3x2 -dct float -prog -outfile testout_3x2_float_prog.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG) testout_3x2_float_prog.jpg
+# CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
+	./djpeg -dct float -outfile testout_3x2_float.ppm testout_3x2_float_prog.jpg
+	md5/md5cmp $(MD5_PPM_3x2_FLOAT) testout_3x2_float.ppm
+	rm testout_3x2_float.ppm testout_3x2_float_prog.jpg
+
 if WITH_ARITH_ENC
-	./cjpeg -dct int -arithmetic -outfile testoutari.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_ARI) testoutari.jpg
-	./jpegtran -arithmetic -outfile testouta.jpg $(srcdir)/testimages/testimgint.jpg
-	md5/md5cmp $(MD5_JPEG_ARI) testouta.jpg
-	./cjpeg -dct int -progressive -arithmetic -sample 1x1 -outfile testoutpa.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_PROG_ARI) testoutpa.jpg
+# CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
+	./cjpeg -dct int -arithmetic -outfile testout_420_islow_ari.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_420_ISLOW_ARI) testout_420_islow_ari.jpg
+	rm testout_420_islow_ari.jpg
+	./jpegtran -arithmetic -outfile testout_420_islow_ari.jpg $(srcdir)/testimages/testimgint.jpg
+	md5/md5cmp $(MD5_JPEG_420_ISLOW_ARI) testout_420_islow_ari.jpg
+	rm testout_420_islow_ari.jpg
+# CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
+	./cjpeg -sample 1x1 -dct int -progressive -arithmetic -outfile testout_444_islow_progari.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_444_ISLOW_PROGARI) testout_444_islow_progari.jpg
+	rm testout_444_islow_progari.jpg
 endif
 if WITH_ARITH_DEC
-	./djpeg -dct int -fast -ppm -outfile testoutari.ppm $(srcdir)/testimages/testimgari.jpg
-	md5/md5cmp $(MD5_PPM_ARI) testoutari.ppm
-	./jpegtran -outfile testouta.jpg $(srcdir)/testimages/testimgari.jpg
-	md5/md5cmp $(MD5_JPEG_INT) testouta.jpg
+# CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
+	./djpeg -fast -ppm -outfile testout_420m_ifast_ari.ppm $(srcdir)/testimages/testimgari.jpg
+	md5/md5cmp $(MD5_PPM_420M_IFAST_ARI) testout_420m_ifast_ari.ppm
+	rm testout_420m_ifast_ari.ppm
+	./jpegtran -outfile testout_420_islow.jpg $(srcdir)/testimages/testimgari.jpg
+	md5/md5cmp $(MD5_JPEG_420_ISLOW) testout_420_islow.jpg
+	rm testout_420_islow.jpg
 endif
-	./cjpeg -dct int -progressive -outfile testoutp.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_PROG) testoutp.jpg
-	./jpegtran -outfile testoutt.jpg testoutp.jpg
-	md5/md5cmp $(MD5_JPEG_INT) testoutt.jpg
-	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testoutcrop.jpg $(srcdir)/testimages/testorig.jpg
-	md5/md5cmp $(MD5_JPEG_CROP) testoutcrop.jpg
+
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 16x16 islow  ENT: huff
+	./djpeg -dct int -scale 2/1 -nosmooth -ppm -outfile testout_420m_islow_2_1.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_2_1) testout_420m_islow_2_1.ppm
+	rm testout_420m_islow_2_1.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 15x15 islow  ENT: huff
+	./djpeg -dct int -scale 15/8 -nosmooth -ppm -outfile testout_420m_islow_15_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_15_8) testout_420m_islow_15_8.ppm
+	rm testout_420m_islow_15_8.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 13x13 islow  ENT: huff
+	./djpeg -dct int -scale 13/8 -nosmooth -ppm -outfile testout_420m_islow_13_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_13_8) testout_420m_islow_13_8.ppm
+	rm testout_420m_islow_13_8.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 11x11 islow  ENT: huff
+	./djpeg -dct int -scale 11/8 -nosmooth -ppm -outfile testout_420m_islow_11_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_11_8) testout_420m_islow_11_8.ppm
+	rm testout_420m_islow_11_8.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 9x9 islow  ENT: huff
+	./djpeg -dct int -scale 9/8 -nosmooth -ppm -outfile testout_420m_islow_9_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_9_8) testout_420m_islow_9_8.ppm
+	rm testout_420m_islow_9_8.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 7x7 islow/14x14 islow  ENT: huff
+	./djpeg -dct int -scale 7/8 -nosmooth -ppm -outfile testout_420m_islow_7_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_7_8) testout_420m_islow_7_8.ppm
+	rm testout_420m_islow_7_8.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 6x6 islow/12x12 islow  ENT: huff
+	./djpeg -dct int -scale 3/4 -nosmooth -ppm -outfile testout_420m_islow_3_4.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_3_4) testout_420m_islow_3_4.ppm
+	rm testout_420m_islow_3_4.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 5x5 islow/10x10 islow  ENT: huff
+	./djpeg -dct int -scale 5/8 -nosmooth -ppm -outfile testout_420m_islow_5_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_5_8) testout_420m_islow_5_8.ppm
+	rm testout_420m_islow_5_8.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 4x4 islow/8x8 islow  ENT: huff
+	./djpeg -dct int -scale 1/2 -nosmooth -ppm -outfile testout_420m_islow_1_2.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_1_2) testout_420m_islow_1_2.ppm
+	rm testout_420m_islow_1_2.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 3x3 islow/6x6 islow  ENT: huff
+	./djpeg -dct int -scale 3/8 -nosmooth -ppm -outfile testout_420m_islow_3_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_3_8) testout_420m_islow_3_8.ppm
+	rm testout_420m_islow_3_8.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 2x2 islow/4x4 islow  ENT: huff
+	./djpeg -dct int -scale 1/4 -nosmooth -ppm -outfile testout_420m_islow_1_4.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_1_4) testout_420m_islow_1_4.ppm
+	rm testout_420m_islow_1_4.ppm
+# CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 1x1 islow/2x2 islow  ENT: huff
+	./djpeg -dct int -scale 1/8 -nosmooth -ppm -outfile testout_420m_islow_1_8.ppm $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_PPM_420M_ISLOW_1_8) testout_420m_islow_1_8.ppm
+	rm testout_420m_islow_1_8.ppm
+if WITH_12BIT
+else
+# CC: YCC->RGB (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+	./djpeg -dct int -colors 256 -bmp -outfile testout_420_islow_256.bmp $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_BMP_420_ISLOW_256) testout_420_islow_256.bmp
+	rm testout_420_islow_256.bmp
+# CC: YCC->RGB565  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+	./djpeg -dct int -rgb565 -dither none -bmp -outfile testout_420_islow_565.bmp $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_BMP_420_ISLOW_565) testout_420_islow_565.bmp
+	rm testout_420_islow_565.bmp
+# CC: YCC->RGB565 (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+	./djpeg -dct int -rgb565 -bmp -outfile testout_420_islow_565D.bmp $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_BMP_420_ISLOW_565D) testout_420_islow_565D.bmp
+	rm testout_420_islow_565D.bmp
+# CC: YCC->RGB565  SAMP: h2v2 merged  IDCT: islow  ENT: huff
+	./djpeg -dct int -nosmooth -rgb565 -dither none -bmp -outfile testout_420m_islow_565.bmp $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_BMP_420M_ISLOW_565) testout_420m_islow_565.bmp
+	rm testout_420m_islow_565.bmp
+# CC: YCC->RGB565 (dithered)  SAMP: h2v2 merged  IDCT: islow  ENT: huff
+	./djpeg -dct int -nosmooth -rgb565 -bmp -outfile testout_420m_islow_565D.bmp $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_BMP_420M_ISLOW_565D) testout_420m_islow_565D.bmp
+	rm testout_420m_islow_565D.bmp
+endif
+
+	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testout_crop.jpg $(srcdir)/testimages/$(TESTORIG)
+	md5/md5cmp $(MD5_JPEG_CROP) testout_crop.jpg
+	rm testout_crop.jpg
 
 
 testclean:
@@ -341,8 +527,12 @@ testclean:
 
 tjtest:
 	sh ./tjbenchtest
+	sh ./tjbenchtest -alloc
+	sh ./tjbenchtest -yuv
+	sh ./tjbenchtest -yuv -alloc
 if WITH_JAVA
 	sh ./tjbenchtest.java
+	sh ./tjbenchtest.java -yuv
 endif
 
 

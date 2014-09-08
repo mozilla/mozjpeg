@@ -49,7 +49,7 @@ TURBOJPEG_1.2
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3BIIIII;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress___3BI_3IIIIII;
 		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3BI;
-		Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy;		
+		Java_org_libjpegturbo_turbojpeg_TJDecompressor_destroy;
 		Java_org_libjpegturbo_turbojpeg_TJTransformer_init;
 		Java_org_libjpegturbo_turbojpeg_TJTransformer_transform;
 } TURBOJPEG_1.1;
@@ -68,12 +68,22 @@ TURBOJPEG_1.4
 	global:
 		tjBufSizeYUV2;
 		tjCompressFromYUV;
+		tjCompressFromYUVPlanes;
+		tjDecodeYUV;
+		tjDecodeYUVPlanes;
 		tjDecompressHeader3;
 		tjDecompressToYUV2;
+		tjDecompressToYUVPlanes;
 		tjEncodeYUV3;
+		tjEncodeYUVPlanes;
 		Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII;
-		Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3BIIII_3BII;
-		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIII_3BIII;
-		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIII_3BIII;
-		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3BIIII;
+		Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3_3B_3II_3III_3BII;
+		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIIIII_3_3B_3I_3III;
+		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIIIII_3_3B_3I_3III;
+		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompressToYUV___3BI_3_3B_3II_3III;
+		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decodeYUV___3_3B_3I_3II_3BIIIIIII;
+		Java_org_libjpegturbo_turbojpeg_TJDecompressor_decodeYUV___3_3B_3I_3II_3IIIIIIII;
+		Java_org_libjpegturbo_turbojpeg_TJ_planeHeight__III;
+		Java_org_libjpegturbo_turbojpeg_TJ_planeSizeYUV__IIIII;
+		Java_org_libjpegturbo_turbojpeg_TJ_planeWidth__III;
 } TURBOJPEG_1.3;

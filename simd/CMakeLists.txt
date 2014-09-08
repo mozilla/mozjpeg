@@ -3,12 +3,15 @@ if(NOT DEFINED NASM)
 endif()
 
 if(SIMD_X86_64)
-  set(NAFLAGS -fwin64 -DWIN64 -D__x86_64__ "-I${CMAKE_SOURCE_DIR}/win/"
-    "-I${CMAKE_CURRENT_SOURCE_DIR}/")
+  set(NAFLAGS -fwin64 -DWIN64 -D__x86_64__)
 else()
-  set(NAFLAGS -fwin32 -DWIN32 "-I${CMAKE_SOURCE_DIR}/win/"
-    "-I${CMAKE_CURRENT_SOURCE_DIR}/")
+  if(BORLAND)
+    set(NAFLAGS -fobj -DOBJ32)
+  else()
+    set(NAFLAGS -fwin32 -DWIN32)
+  endif()
 endif()
+set(NAFLAGS ${NAFLAGS} -I${CMAKE_SOURCE_DIR}/win/ -I${CMAKE_CURRENT_SOURCE_DIR}/)
 
 # This only works if building from the command line.  There is currently no way
 # to set a variable's value based on the build type when using the MSVC IDE.
@@ -18,16 +21,18 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug"
 endif()
 
 if(SIMD_X86_64)
-  set(SIMD_BASENAMES jfsseflt-64 jccolss2-64 jdcolss2-64 jcgrass2-64
-    jcsamss2-64 jdsamss2-64 jdmerss2-64 jcqnts2i-64 jfss2fst-64 jfss2int-64
-    jiss2red-64 jiss2int-64 jiss2fst-64 jcqnts2f-64 jiss2flt-64)
+  set(SIMD_BASENAMES jfdctflt-sse-64 jccolor-sse2-64 jcgray-sse2-64
+    jcsample-sse2-64 jdcolor-sse2-64 jdmerge-sse2-64 jdsample-sse2-64
+    jfdctfst-sse2-64 jfdctint-sse2-64 jidctflt-sse2-64 jidctfst-sse2-64
+    jidctint-sse2-64 jidctred-sse2-64 jquantf-sse2-64 jquanti-sse2-64)
   message(STATUS "Building x86_64 SIMD extensions")
 else()
-  set(SIMD_BASENAMES jsimdcpu jccolmmx jcgrammx jdcolmmx jcsammmx jdsammmx
-    jdmermmx jcqntmmx jfmmxfst jfmmxint jimmxred jimmxint jimmxfst jcqnt3dn
-    jf3dnflt ji3dnflt jcqntsse jfsseflt jisseflt jccolss2 jcgrass2 jdcolss2
-    jcsamss2 jdsamss2 jdmerss2 jcqnts2i jfss2fst jfss2int jiss2red jiss2int
-    jiss2fst jcqnts2f jiss2flt)
+  set(SIMD_BASENAMES jsimdcpu jfdctflt-3dn jidctflt-3dn jquant-3dn jccolor-mmx
+    jcgray-mmx jcsample-mmx jdcolor-mmx jdmerge-mmx jdsample-mmx jfdctfst-mmx
+    jfdctint-mmx jidctfst-mmx jidctint-mmx jidctred-mmx jquant-mmx jfdctflt-sse
+    jidctflt-sse jquant-sse jccolor-sse2 jcgray-sse2 jcsample-sse2 jdcolor-sse2
+    jdmerge-sse2 jdsample-sse2 jfdctfst-sse2 jfdctint-sse2 jidctflt-sse2
+    jidctfst-sse2 jidctint-sse2 jidctred-sse2 jquantf-sse2 jquanti-sse2)
   message(STATUS "Building i386 SIMD extensions")
 endif()
 
@@ -41,28 +46,32 @@ file(GLOB INC_FILES *.inc)
 
 foreach(file ${SIMD_BASENAMES})
   set(DEPFILE "")
-  set(SIMD_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${file}.asm")
-  if("${file}" MATCHES col)
-    set(DEPFILE "${file}")
-    string(REGEX REPLACE "col" "clr" DEPFILE "${DEPFILE}")
-    set(DEPFILE "${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm")
+  set(SIMD_SRC ${CMAKE_CURRENT_SOURCE_DIR}/${file}.asm)
+  if(${file} MATCHES jccolor)
+    set(DEPFILE ${file})
+    string(REGEX REPLACE "jccolor" "jccolext" DEPFILE ${DEPFILE})
+    set(DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm)
   endif()
-  if("${file}" MATCHES mer)
-    set(DEPFILE "${file}")
-    string(REGEX REPLACE "mer" "mrg" DEPFILE "${DEPFILE}")
-    set(DEPFILE "${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm")
+  if(${file} MATCHES jcgray)
+    set(DEPFILE ${file})
+    string(REGEX REPLACE "jcgray" "jcgryext" DEPFILE ${DEPFILE})
+    set(DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm)
   endif()
-  if("${file}" MATCHES gra)
-    set(DEPFILE "${file}")
-    string(REGEX REPLACE "gra" "gry" DEPFILE "${DEPFILE}")
-    set(DEPFILE "${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm")
+  if(${file} MATCHES jdcolor)
+    set(DEPFILE ${file})
+    string(REGEX REPLACE "jdcolor" "jdcolext" DEPFILE ${DEPFILE})
+    set(DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm)
   endif()
-  set(SIMD_OBJ "${OBJDIR}/${file}.obj")
-  add_custom_command(OUTPUT "${SIMD_OBJ}"
-    DEPENDS "${SIMD_SRC}" "${DEPFILE}" ${INC_FILES}
-    COMMAND "${NASM}" ${NAFLAGS} "${SIMD_SRC}" "-o${SIMD_OBJ}"
-    VERBATIM)
-  list(APPEND SIMD_OBJS "${SIMD_OBJ}")
+  if(${file} MATCHES jdmerge)
+    set(DEPFILE ${file})
+    string(REGEX REPLACE "jdmerge" "jdmrgext" DEPFILE ${DEPFILE})
+    set(DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE}.asm)
+  endif()
+  set(SIMD_OBJ ${OBJDIR}/${file}.obj)
+  add_custom_command(OUTPUT ${SIMD_OBJ}
+    DEPENDS ${SIMD_SRC} ${DEPFILE} ${INC_FILES}
+    COMMAND ${NASM} ${NAFLAGS} ${SIMD_SRC} -o${SIMD_OBJ})
+  set(SIMD_OBJS ${SIMD_OBJS} ${SIMD_OBJ})
 endforeach()
 
 set(SIMD_OBJS ${SIMD_OBJS} PARENT_SCOPE)

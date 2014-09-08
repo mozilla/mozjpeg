@@ -391,7 +391,8 @@ preprocess_deringing(DCTELEM *data)
      maximum overflow that is safe to do without increasing DC out of range */
   int sum = 0;
   int maxsample_count = 0;
-  for(int i=0; i < size; i++) {
+  int i;
+  for(i=0; i < size; i++) {
     sum += data[i];
     if (data[i] >= maxsample) {
       maxsample_count++;
@@ -448,7 +449,7 @@ preprocess_deringing(DCTELEM *data)
     const float step = 1.f/(float)(size + 1);
     float position = step;
 
-    for(int i = start; i < end; i++, position += step) {
+    for(i = start; i < end; i++, position += step) {
       DCTELEM tmp = catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, size);
       data[jpeg_natural_order[i]] = MIN(tmp, maxovershoot);
     }

@@ -326,7 +326,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       cinfo->optimize_scans = FALSE;
 
     } else if (keymatch(arg, "flat", 4)) {
-      cinfo->use_flat_quant_tbl = TRUE;
+      cinfo->quant_tbl_master_idx = 1;
       jpeg_set_quality(cinfo, 75, TRUE);
 
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
@@ -507,28 +507,28 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       cinfo->trellis_quant_dc = TRUE;
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
-      cinfo->use_flat_quant_tbl = TRUE;
+      cinfo->quant_tbl_master_idx = 1;
       cinfo->lambda_log_scale1 = 9.0;
       cinfo->lambda_log_scale2 = 0.0;
       cinfo->use_lambda_weight_tbl = FALSE;
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ssim", 6)) {
-      cinfo->use_flat_quant_tbl = TRUE;
+      cinfo->quant_tbl_master_idx = 1;
       cinfo->lambda_log_scale1 = 12.0;
       cinfo->lambda_log_scale2 = 13.5;
       cinfo->use_lambda_weight_tbl = FALSE;
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ms-ssim", 6)) {
-      cinfo->use_flat_quant_tbl = FALSE;
+      cinfo->quant_tbl_master_idx = 0;
       cinfo->lambda_log_scale1 = 14.25;
       cinfo->lambda_log_scale2 = 12.75;
       cinfo->use_lambda_weight_tbl = TRUE;
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
-      cinfo->use_flat_quant_tbl = FALSE;
+      cinfo->quant_tbl_master_idx = 0;
       cinfo->lambda_log_scale1 = 16.0;
       cinfo->lambda_log_scale2 = 15.5;
       cinfo->use_lambda_weight_tbl = TRUE;

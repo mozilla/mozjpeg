@@ -381,7 +381,7 @@ struct jpeg_compress_struct {
   boolean trellis_quant; /* TRUE=use trellis quantization */
   boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
   boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
-  boolean use_flat_quant_tbl; /* TRUE=use flat quantization table */
+  int quant_tbl_master_idx; /* Quantization table master index */
   boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
   boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
   boolean trellis_passes; /* TRUE=currently doing trellis-related passes */

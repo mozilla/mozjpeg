@@ -30,7 +30,7 @@
 typedef void (*forward_DCT_method_ptr) (DCTELEM * data);
 typedef void (*float_DCT_method_ptr) (FAST_FLOAT * data);
 
-typedef void (*preprocess_method_ptr)(DCTELEM*);
+typedef void (*preprocess_method_ptr)(DCTELEM*, const JQUANT_TBL*);
 
 typedef void (*convsamp_method_ptr) (JSAMPARRAY sample_data,
                                      JDIMENSION start_col,
@@ -382,7 +382,7 @@ catmull_rom(const DCTELEM value1, const DCTELEM value2, const DCTELEM value3, co
 
  */
 METHODDEF(void)
-preprocess_deringing(DCTELEM *data)
+preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
 {
   const DCTELEM maxsample = 255 - CENTERJSAMPLE;
   const int size = DCTSIZE * DCTSIZE;
@@ -405,8 +405,8 @@ preprocess_deringing(DCTELEM *data)
     return;
   }
 
-  /* This is a cautious limit */
-  const int maxovershoot = maxsample + MIN(15, (maxsample * size - sum) / maxsample_count);
+  /* Too much overshoot is not good: increased amplitude will cost bits, and the cost is proportional to quantization (here using DC quant as a rough guide). */
+  const int maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
 
   int n = 0;
   do {
@@ -588,6 +588,7 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
   /* This routine is heavily used, so it's worth coding it tightly. */
   my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
   DCTELEM * divisors = fdct->divisors[compptr->quant_tbl_no];
+  JQUANT_TBL *qtbl = cinfo->quant_tbl_ptrs[compptr->quant_tbl_no];
   DCTELEM * workspace;
   JDIMENSION bi;
 
@@ -604,7 +605,7 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Load data into workspace, applying unsigned->signed conversion */
     (*do_convsamp) (sample_data, start_col, workspace);
 
-    (*do_preprocess) (workspace);
+    (*do_preprocess) (workspace, qtbl);
 
     /* Perform the DCT */
     (*do_dct) (workspace);

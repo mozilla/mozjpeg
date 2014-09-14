@@ -303,9 +303,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         cinfo->dct_method = JDCT_IFAST;
       } else if (keymatch(argv[argn], "float", 2)) {
         cinfo->dct_method = JDCT_FLOAT;
-      } else
+      } else {
         fprintf(stderr, "%s: invalid argument for dct\n", progname);
         usage();
+      }
 
     } else if (keymatch(arg, "debug", 1) || keymatch(arg, "verbose", 1)) {
       /* Enable debug printouts. */

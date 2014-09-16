@@ -104,3 +104,4 @@ EXPORTS
 	jzero_far @ 103 ; 
 	jpeg_mem_dest @ 104 ; 
 	jpeg_mem_src @ 105 ; 
+	jpeg_float_quality_scaling @ 1000 ; 

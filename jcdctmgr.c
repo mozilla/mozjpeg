@@ -406,7 +406,7 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
   }
 
   /* Too much overshoot is not good: increased amplitude will cost bits, and the cost is proportional to quantization (here using DC quant as a rough guide). */
-  const int maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
+  const DCTELEM maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
 
   int n = 0;
   do {

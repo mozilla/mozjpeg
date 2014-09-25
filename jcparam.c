@@ -293,6 +293,8 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->do_fancy_downsampling = TRUE;
 #endif
 
+  cinfo->overshoot_deringing = cinfo->use_moz_defaults;
+
   /* No input smoothing */
   cinfo->smoothing_factor = 0;
 

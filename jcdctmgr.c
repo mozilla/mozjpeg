@@ -672,7 +672,9 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Load data into workspace, applying unsigned->signed conversion */
     (*do_convsamp) (sample_data, start_col, workspace);
 
-    (*do_preprocess) (workspace, qtbl);
+    if (do_preprocess) {
+      (*do_preprocess) (workspace, qtbl);
+    }
 
     /* Perform the DCT */
     (*do_dct) (workspace);
@@ -799,7 +801,9 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Load data into workspace, applying unsigned->signed conversion */
     (*do_convsamp) (sample_data, start_col, workspace);
 
-    (*do_preprocess) (workspace, qtbl);
+    if (do_preprocess) {
+      (*do_preprocess) (workspace, qtbl);
+    }
 
     /* Perform the DCT */
     (*do_dct) (workspace);
@@ -1273,7 +1277,11 @@ jinit_forward_dct (j_compress_ptr cinfo)
     else
       fdct->convsamp = convsamp;
 
-    fdct->preprocess = preprocess_deringing;
+    if (cinfo->overshoot_deringing) {
+      fdct->preprocess = preprocess_deringing;
+    } else {
+      fdct->preprocess = NULL;
+    }
 
     if (jsimd_can_quantize())
       fdct->quantize = jsimd_quantize;
@@ -1288,7 +1296,11 @@ jinit_forward_dct (j_compress_ptr cinfo)
     else
       fdct->float_convsamp = convsamp_float;
 
-    fdct->float_preprocess = float_preprocess_deringing;
+    if (cinfo->overshoot_deringing) {
+      fdct->float_preprocess = float_preprocess_deringing;
+    } else {
+      fdct->float_preprocess = NULL;
+    }
 
     if (jsimd_can_quantize_float())
       fdct->float_quantize = jsimd_quantize_float;

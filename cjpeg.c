@@ -188,6 +188,7 @@ usage (void)
   fprintf(stderr, "  -tune-ssim     Tune trellis optimization for SSIM\n");
   fprintf(stderr, "  -tune-ms-ssim  Tune trellis optimization for MS-SSIM\n");
   fprintf(stderr, "Switches for advanced users:\n");
+  fprintf(stderr, "  -noovershoot   Disable black-on-white deringing via overshoot\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
@@ -534,7 +535,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       cinfo->lambda_log_scale2 = 15.5;
       cinfo->use_lambda_weight_tbl = TRUE;
       jpeg_set_quality(cinfo, 75, TRUE);
-      
+
+    } else if (keymatch(arg, "noovershoot", 11)) {
+      cinfo->overshoot_deringing = FALSE;
     } else {
       fprintf(stderr, "%s: unknown option '%s'\n", progname, arg);
       usage();                  /* bogus switch */

@@ -876,8 +876,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     
     accumulated_zero_dist[Ss-1] = 0.0;
     accumulated_cost[Ss-1] = 0.0;
-    
-    // Do DC coefficient
+
+    /* Do DC coefficient */
     if (cinfo->trellis_quant_dc) {
       int sign = src[bi][0] >> 31;
       int x = abs(src[bi][0]);
@@ -898,8 +898,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
         
         if (bi == 0) {
           dc_delta = dc_candidate[k][bi] - *last_dc_val;
-          
-          // Derive number of suffix bits
+
+          /* Derive number of suffix bits */
           bits = 0;
           dc_delta = abs(dc_delta);
           while (dc_delta) {
@@ -912,8 +912,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
         } else {
           for (l = 0; l < 3; l++) {
             dc_delta = dc_candidate[k][bi] - dc_candidate[l][bi-1];
-            
-            // Derive number of suffix bits
+
+            /* Derive number of suffix bits */
             bits = 0;
             dc_delta = abs(dc_delta);
             while (dc_delta) {
@@ -929,8 +929,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
         }        
       }
     }
-    
-    // Do AC coefficients
+
+    /* Do AC coefficients */
     for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
       
@@ -1125,8 +1125,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       coef_blocks[bi][0] = dc_candidate[j][bi];
       j = dc_cost_backtrack[j][bi];
     }
-    
-    // Save DC predictor
+
+    /* Save DC predictor */
     *last_dc_val = coef_blocks[num_blocks-1][0];
     
     for (i = 0; i < 3; i++) {

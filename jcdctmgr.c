@@ -394,6 +394,9 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
   int sum = 0;
   int maxsample_count = 0;
   int i;
+  DCTELEM maxovershoot;
+  int n;
+  
   for(i=0; i < size; i++) {
     sum += data[i];
     if (data[i] >= maxsample) {
@@ -408,10 +411,14 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
   }
 
   /* Too much overshoot is not good: increased amplitude will cost bits, and the cost is proportional to quantization (here using DC quant as a rough guide). */
-  const DCTELEM maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
+  maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
 
-  int n = 0;
+  n = 0;
   do {
+    int start, end, length;
+    DCTELEM f1, f2, l1, l2, fslope, lslope;
+    float step, position;
+    
     /* Pixels are traversed in zig-zag order to process them as a line */
     if (data[jpeg_natural_order[n]] < maxsample) {
       n++;
@@ -419,9 +426,9 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
     }
 
     /* Find a run of maxsample pixels. Start is the first pixel inside the range, end the first pixel outside. */
-    int start = n;
+    start = n;
     while(++n < size && data[jpeg_natural_order[n]] >= maxsample) {}
-    int end = n;
+    end = n;
 
     /* the run will be replaced with a catmull-rom interpolation of values from the edges */
 
@@ -429,14 +436,14 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
        Just feeding nearby pixels as catmull rom points isn't good enough,
        as slope with one sample before the edge may have been flattened by clipping,
        and slope of two samples before the edge could be downward. */
-    const DCTELEM f1 = data[jpeg_natural_order[start >= 1 ? start-1 : 0]];
-    const DCTELEM f2 = data[jpeg_natural_order[start >= 2 ? start-2 : 0]];
+    f1 = data[jpeg_natural_order[start >= 1 ? start-1 : 0]];
+    f2 = data[jpeg_natural_order[start >= 2 ? start-2 : 0]];
 
-    const DCTELEM l1 = data[jpeg_natural_order[end < size-1 ? end : size-1]];
-    const DCTELEM l2 = data[jpeg_natural_order[end < size-2 ? end+1 : size-1]];
+    l1 = data[jpeg_natural_order[end < size-1 ? end : size-1]];
+    l2 = data[jpeg_natural_order[end < size-2 ? end+1 : size-1]];
 
-    DCTELEM fslope = MAX(f1-f2, maxsample-f1);
-    DCTELEM lslope = MAX(l1-l2, maxsample-l1);
+    fslope = MAX(f1-f2, maxsample-f1);
+    lslope = MAX(l1-l2, maxsample-l1);
 
     /* if slope at the start/end is unknown, just make the curve symmetric */
     if (start == 0) {
@@ -447,12 +454,12 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
     }
 
     /* The curve fits better if first and last pixel is omitted */
-    const int size = end - start;
-    const float step = 1.f/(float)(size + 1);
-    float position = step;
+    length = end - start;
+    step = 1.f/(float)(length + 1);
+    position = step;
 
     for(i = start; i < end; i++, position += step) {
-      DCTELEM tmp = ceilf(catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, size));
+      DCTELEM tmp = ceilf(catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, length));
       data[jpeg_natural_order[i]] = MIN(tmp, maxovershoot);
     }
     n++;
@@ -472,6 +479,9 @@ float_preprocess_deringing(FAST_FLOAT *data, const JQUANT_TBL *quantization_tabl
   FAST_FLOAT sum = 0;
   int maxsample_count = 0;
   int i;
+  int n;
+  FAST_FLOAT maxovershoot;
+  
   for(i=0; i < size; i++) {
     sum += data[i];
     if (data[i] >= maxsample) {
@@ -483,27 +493,31 @@ float_preprocess_deringing(FAST_FLOAT *data, const JQUANT_TBL *quantization_tabl
     return;
   }
 
-  const FAST_FLOAT maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
+  maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
 
-  int n = 0;
+  n = 0;
   do {
+    int start, end, length;
+    FAST_FLOAT f1, f2, l1, l2, fslope, lslope;
+    float step, position;
+    
     if (data[jpeg_natural_order[n]] < maxsample) {
       n++;
       continue;
     }
 
-    int start = n;
+    start = n;
     while(++n < size && data[jpeg_natural_order[n]] >= maxsample) {}
-    int end = n;
+    end = n;
 
-    const FAST_FLOAT f1 = data[jpeg_natural_order[start >= 1 ? start-1 : 0]];
-    const FAST_FLOAT f2 = data[jpeg_natural_order[start >= 2 ? start-2 : 0]];
+    f1 = data[jpeg_natural_order[start >= 1 ? start-1 : 0]];
+    f2 = data[jpeg_natural_order[start >= 2 ? start-2 : 0]];
 
-    const FAST_FLOAT l1 = data[jpeg_natural_order[end < size-1 ? end : size-1]];
-    const FAST_FLOAT l2 = data[jpeg_natural_order[end < size-2 ? end+1 : size-1]];
+    l1 = data[jpeg_natural_order[end < size-1 ? end : size-1]];
+    l2 = data[jpeg_natural_order[end < size-2 ? end+1 : size-1]];
 
-    FAST_FLOAT fslope = MAX(f1-f2, maxsample-f1);
-    FAST_FLOAT lslope = MAX(l1-l2, maxsample-l1);
+    fslope = MAX(f1-f2, maxsample-f1);
+    lslope = MAX(l1-l2, maxsample-l1);
 
     if (start == 0) {
       fslope = lslope;
@@ -512,12 +526,12 @@ float_preprocess_deringing(FAST_FLOAT *data, const JQUANT_TBL *quantization_tabl
       lslope = fslope;
     }
 
-    const int size = end - start;
-    const float step = 1.f/(float)(size + 1);
-    float position = step;
+    length = end - start;
+    step = 1.f/(float)(length + 1);
+    position = step;
 
     for(i = start; i < end; i++, position += step) {
-      FAST_FLOAT tmp = catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, size);
+      FAST_FLOAT tmp = catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, length);
       data[jpeg_natural_order[i]] = MIN(tmp, maxovershoot);
     }
     n++;

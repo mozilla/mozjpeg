@@ -31,6 +31,7 @@ typedef void (*forward_DCT_method_ptr) (DCTELEM * data);
 typedef void (*float_DCT_method_ptr) (FAST_FLOAT * data);
 
 typedef void (*preprocess_method_ptr)(DCTELEM*, const JQUANT_TBL*);
+typedef void (*float_preprocess_method_ptr)(FAST_FLOAT*, const JQUANT_TBL*);
 
 typedef void (*convsamp_method_ptr) (JSAMPARRAY sample_data,
                                      JDIMENSION start_col,
@@ -69,6 +70,7 @@ typedef struct {
   /* Same as above for the floating-point case. */
   float_DCT_method_ptr float_dct;
   float_convsamp_method_ptr float_convsamp;
+  float_preprocess_method_ptr float_preprocess;
   float_quantize_method_ptr float_quantize;
   FAST_FLOAT * float_divisors[NUM_QUANT_TBLS];
   FAST_FLOAT * float_workspace;
@@ -352,7 +354,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
   }
 }
 
-METHODDEF(DCTELEM)
+METHODDEF(float)
 catmull_rom(const DCTELEM value1, const DCTELEM value2, const DCTELEM value3, const DCTELEM value4, const float t, int size)
 {
   const int tan1 = (value3 - value1) * size;
@@ -366,8 +368,8 @@ catmull_rom(const DCTELEM value1, const DCTELEM value2, const DCTELEM value3, co
   const float f3 = t3 - 2.f * t2 + t;
   const float f4 = t3 - t2;
 
-  return ceilf(value2 * f1 + tan1 * f3 +
-               value3 * f2 + tan2 * f4);
+  return value2 * f1 + tan1 * f3 +
+         value3 * f2 + tan2 * f4;
 }
 
 /** Prevents visible ringing artifacts near hard edges on white backgrounds.
@@ -406,7 +408,7 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
   }
 
   /* Too much overshoot is not good: increased amplitude will cost bits, and the cost is proportional to quantization (here using DC quant as a rough guide). */
-  const int maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
+  const DCTELEM maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
 
   int n = 0;
   do {
@@ -450,7 +452,72 @@ preprocess_deringing(DCTELEM *data, const JQUANT_TBL *quantization_table)
     float position = step;
 
     for(i = start; i < end; i++, position += step) {
-      DCTELEM tmp = catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, size);
+      DCTELEM tmp = ceilf(catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, size));
+      data[jpeg_natural_order[i]] = MIN(tmp, maxovershoot);
+    }
+    n++;
+  }
+  while(n < size);
+}
+
+/*
+  Float version of preprocess_deringing()
+ */
+METHODDEF(void)
+float_preprocess_deringing(FAST_FLOAT *data, const JQUANT_TBL *quantization_table)
+{
+  const FAST_FLOAT maxsample = 255 - CENTERJSAMPLE;
+  const int size = DCTSIZE * DCTSIZE;
+
+  FAST_FLOAT sum = 0;
+  int maxsample_count = 0;
+  int i;
+  for(i=0; i < size; i++) {
+    sum += data[i];
+    if (data[i] >= maxsample) {
+      maxsample_count++;
+    }
+  }
+
+  if (!maxsample_count || maxsample_count == size) {
+    return;
+  }
+
+  const FAST_FLOAT maxovershoot = maxsample + MIN(MIN(31, 2*quantization_table->quantval[0]), (maxsample * size - sum) / maxsample_count);
+
+  int n = 0;
+  do {
+    if (data[jpeg_natural_order[n]] < maxsample) {
+      n++;
+      continue;
+    }
+
+    int start = n;
+    while(++n < size && data[jpeg_natural_order[n]] >= maxsample) {}
+    int end = n;
+
+    const FAST_FLOAT f1 = data[jpeg_natural_order[start >= 1 ? start-1 : 0]];
+    const FAST_FLOAT f2 = data[jpeg_natural_order[start >= 2 ? start-2 : 0]];
+
+    const FAST_FLOAT l1 = data[jpeg_natural_order[end < size-1 ? end : size-1]];
+    const FAST_FLOAT l2 = data[jpeg_natural_order[end < size-2 ? end+1 : size-1]];
+
+    FAST_FLOAT fslope = MAX(f1-f2, maxsample-f1);
+    FAST_FLOAT lslope = MAX(l1-l2, maxsample-l1);
+
+    if (start == 0) {
+      fslope = lslope;
+    }
+    if (end == size) {
+      lslope = fslope;
+    }
+
+    const int size = end - start;
+    const float step = 1.f/(float)(size + 1);
+    float position = step;
+
+    for(i = start; i < end; i++, position += step) {
+      FAST_FLOAT tmp = catmull_rom(maxsample - fslope, maxsample, maxsample, maxsample - lslope, position, size);
       data[jpeg_natural_order[i]] = MIN(tmp, maxovershoot);
     }
     n++;
@@ -557,7 +624,7 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
       temp = -temp;
       temp += qval>>1;  /* for rounding */
       DIVIDE_BY(temp, qval);
-      temp = -temp;    
+      temp = -temp;
     } else {
       temp += qval>>1;  /* for rounding */
       DIVIDE_BY(temp, qval);
@@ -605,7 +672,9 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Load data into workspace, applying unsigned->signed conversion */
     (*do_convsamp) (sample_data, start_col, workspace);
 
-    (*do_preprocess) (workspace, qtbl);
+    if (do_preprocess) {
+      (*do_preprocess) (workspace, qtbl);
+    }
 
     /* Perform the DCT */
     (*do_dct) (workspace);
@@ -712,6 +781,7 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
   /* This routine is heavily used, so it's worth coding it tightly. */
   my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
   FAST_FLOAT * divisors = fdct->float_divisors[compptr->quant_tbl_no];
+  JQUANT_TBL *qtbl = cinfo->quant_tbl_ptrs[compptr->quant_tbl_no];
   FAST_FLOAT * workspace;
   JDIMENSION bi;
   float v;
@@ -721,6 +791,7 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
   /* Make sure the compiler doesn't look up these every pass */
   float_DCT_method_ptr do_dct = fdct->float_dct;
   float_convsamp_method_ptr do_convsamp = fdct->float_convsamp;
+  float_preprocess_method_ptr do_preprocess = fdct->float_preprocess;
   float_quantize_method_ptr do_quantize = fdct->float_quantize;
   workspace = fdct->float_workspace;
 
@@ -730,13 +801,17 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
     /* Load data into workspace, applying unsigned->signed conversion */
     (*do_convsamp) (sample_data, start_col, workspace);
 
+    if (do_preprocess) {
+      (*do_preprocess) (workspace, qtbl);
+    }
+
     /* Perform the DCT */
     (*do_dct) (workspace);
 
     /* Save unquantized transform coefficients for later trellis quantization */
     /* Currently save as integer values. Could save float values but would require */
     /* modifications to memory allocation and trellis quantization */
-    
+
     if (dst) {
       int i;
       static const double aanscalefactor[DCTSIZE] = {
@@ -926,14 +1001,14 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
               dc_cost_backtrack[k][bi] = l;
             }
           }
-        }        
+        }
       }
     }
 
     /* Do AC coefficients */
     for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
-      
+
       int sign = src[bi][z] >> 31;
       int x = abs(src[bi][z]);
       int q = 8 * qtbl->quantval[z];
@@ -1202,7 +1277,11 @@ jinit_forward_dct (j_compress_ptr cinfo)
     else
       fdct->convsamp = convsamp;
 
-    fdct->preprocess = preprocess_deringing;
+    if (cinfo->overshoot_deringing) {
+      fdct->preprocess = preprocess_deringing;
+    } else {
+      fdct->preprocess = NULL;
+    }
 
     if (jsimd_can_quantize())
       fdct->quantize = jsimd_quantize;
@@ -1216,6 +1295,13 @@ jinit_forward_dct (j_compress_ptr cinfo)
       fdct->float_convsamp = jsimd_convsamp_float;
     else
       fdct->float_convsamp = convsamp_float;
+
+    if (cinfo->overshoot_deringing) {
+      fdct->float_preprocess = float_preprocess_deringing;
+    } else {
+      fdct->float_preprocess = NULL;
+    }
+
     if (jsimd_can_quantize_float())
       fdct->float_quantize = jsimd_quantize_float;
     else

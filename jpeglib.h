@@ -386,13 +386,14 @@ struct jpeg_compress_struct {
   boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
   boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
   boolean trellis_q_opt; /* TRUE=optimize quant table in trellis loop */
-  
+  boolean overshoot_deringing; /* TRUE=preprocess input to reduce ringing of edges on white background */
+
   double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
   double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
 
   int trellis_freq_split; /* splitting point for frequency in trellis quantization */
   int trellis_num_loops; /* number of trellis loops */
-  
+
   int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
   int num_scans_luma_dc;
   int num_scans_chroma_dc;

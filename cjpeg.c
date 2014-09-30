@@ -508,29 +508,29 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
       cinfo->quant_tbl_master_idx = 1;
-      cinfo->lambda_log_scale1 = 9.0;
+      cinfo->lambda_log_scale1 = 9.25;
       cinfo->lambda_log_scale2 = 0.0;
       cinfo->use_lambda_weight_tbl = FALSE;
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ssim", 6)) {
       cinfo->quant_tbl_master_idx = 1;
-      cinfo->lambda_log_scale1 = 12.0;
-      cinfo->lambda_log_scale2 = 13.5;
+      cinfo->lambda_log_scale1 = 11.25;
+      cinfo->lambda_log_scale2 = 12.75;
       cinfo->use_lambda_weight_tbl = FALSE;
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ms-ssim", 6)) {
-      cinfo->quant_tbl_master_idx = 0;
-      cinfo->lambda_log_scale1 = 14.25;
-      cinfo->lambda_log_scale2 = 12.75;
+      cinfo->quant_tbl_master_idx = 2;
+      cinfo->lambda_log_scale1 = 12.25;
+      cinfo->lambda_log_scale2 = 13.25;
       cinfo->use_lambda_weight_tbl = TRUE;
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
-      cinfo->quant_tbl_master_idx = 0;
-      cinfo->lambda_log_scale1 = 16.0;
-      cinfo->lambda_log_scale2 = 15.5;
+      cinfo->quant_tbl_master_idx = 4;
+      cinfo->lambda_log_scale1 = 13.75;
+      cinfo->lambda_log_scale2 = 15.25;
       cinfo->use_lambda_weight_tbl = TRUE;
       jpeg_set_quality(cinfo, 75, TRUE);
       

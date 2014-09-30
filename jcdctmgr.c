@@ -704,6 +704,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   float *accumulated_dc_cost[3];
   int *dc_cost_backtrack[3];
   JCOEF *dc_candidate[3];
+  int mode = 1;
+  float lambda_table[DCTSIZE2];
 
   Ss = cinfo->Ss;
   Se = cinfo->Se;
@@ -739,13 +741,20 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       }
     }
   }
+  
   norm = 0.0;
   for (i = 1; i < DCTSIZE2; i++) {
     norm += qtbl->quantval[i] * qtbl->quantval[i];
   }
   norm /= 63.0;
-  
-  lambda_base = 1.0 / norm;
+
+  if (mode == 1) {
+    lambda_base = 1.0;
+    lambda_tbl = lambda_table;
+    for (i = 0; i < DCTSIZE2; i++)
+      lambda_table[i] = 1.0 / (qtbl->quantval[i] * qtbl->quantval[i]);
+  } else
+    lambda_base = 1.0 / norm;
   
   for (bi = 0; bi < num_blocks; bi++) {
     

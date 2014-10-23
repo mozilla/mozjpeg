@@ -613,9 +613,10 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
 	nc=(subsamp==TJSAMP_GRAY? 1:3);
 	for(i=0; i<nc; i++)
 	{
-		int stride=PAD(tjPlaneWidth(i, width, subsamp), pad);
+		int pw=tjPlaneWidth(i, width, subsamp);
+		int stride=PAD(pw, pad);
 		int ph=tjPlaneHeight(i, height, subsamp);
-		if(stride<0 || ph<0) return -1;
+		if(pw<0 || ph<0) return -1;
 		else retval+=stride*ph;
 	}
 

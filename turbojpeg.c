@@ -689,6 +689,7 @@ DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV(int componentID, int width,
 
 	pw=tjPlaneWidth(componentID, width, subsamp);
 	ph=tjPlaneHeight(componentID, height, subsamp);
+	if(pw<0 || ph<0) return -1;
 
 	if(stride==0) stride=pw;
 	else stride=abs(stride);

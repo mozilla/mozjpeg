@@ -203,6 +203,13 @@ usage (void)
   fprintf(stderr, "  -dct float     Use floating-point DCT method%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
+  fprintf(stderr, "  -quant-table N Use predefined quantization table N:\n");
+  fprintf(stderr, "                 - 0 JPEG Annex K\n");
+  fprintf(stderr, "                 - 1 Flat\n");
+  fprintf(stderr, "                 - 2 Custom, tuned for MS-SSIM\n");
+  fprintf(stderr, "                 - 3 ImageMagick table by N. Robidoux\n");
+  fprintf(stderr, "                 - 4 Custom, tuned for PSNR-HVS\n");
+  fprintf(stderr, "                 - 5 Table from paper by Klein, Silverstein and Carney\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
 #ifdef INPUT_SMOOTHING_SUPPORTED
   fprintf(stderr, "  -smooth N      Smooth dithered input (N=1..100 is strength)\n");
@@ -325,10 +332,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "fastcrush", 4)) {
       cinfo->optimize_scans = FALSE;
 
-    } else if (keymatch(arg, "flat", 4)) {
-      cinfo->quant_tbl_master_idx = 1;
-      jpeg_set_quality(cinfo, 75, TRUE);
-
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
@@ -427,6 +430,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       qtablefile = argv[argn];
       /* We postpone actually reading the file in case -quality comes later. */
 
+    } else if (keymatch(arg, "quant_table", 2)) {
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      cinfo->quant_tbl_master_idx = atoi(argv[argn]);
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
       long lval;

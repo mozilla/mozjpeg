@@ -189,7 +189,7 @@ fi
 RPM_CONFIG_ARGS=
 
 # Memory source/destination managers
-SO_AGE=0
+SO_AGE=1
 MEM_SRCDST_FUNCTIONS=
 if test "x${with_jpeg8}" != "xyes"; then
   AC_MSG_CHECKING([whether to include in-memory source/destination managers])
@@ -200,7 +200,7 @@ if test "x${with_jpeg8}" != "xyes"; then
     AC_MSG_RESULT(yes)
     AC_DEFINE([MEM_SRCDST_SUPPORTED], [1],
       [Support in-memory source/destination managers])
-    SO_AGE=1
+    SO_AGE=2
     MEM_SRCDST_FUNCTIONS="global:  jpeg_mem_dest;  jpeg_mem_src;";
   else
     AC_MSG_RESULT(no)

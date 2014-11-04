@@ -136,7 +136,7 @@ jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
  */
 {
   /* Set up two quantization tables using the specified scaling */
-  if (cinfo->use_flat_quant_tbl) {
+  if (cinfo->master->use_flat_quant_tbl) {
     jpeg_add_quant_table(cinfo, 0, flat_quant_tbl,
                          scale_factor, force_baseline);
     jpeg_add_quant_table(cinfo, 1, flat_quant_tbl,
@@ -248,7 +248,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 #ifdef C_PROGRESSIVE_SUPPORTED
   cinfo->scan_info = NULL;
   cinfo->num_scans = 0;
-  if (!cinfo->use_moz_defaults) {
+  if (!cinfo->master->use_moz_defaults) {
   /* Default is no multiple-scan output */
   cinfo->scan_info = NULL;
   cinfo->num_scans = 0;
@@ -266,7 +266,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->arith_code = FALSE;
 
 #ifdef ENTROPY_OPT_SUPPORTED
-  if (cinfo->use_moz_defaults)
+  if (cinfo->master->use_moz_defaults)
     /* By default, do extra passes to optimize entropy coding */
     cinfo->optimize_coding = TRUE;
   else
@@ -293,7 +293,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->do_fancy_downsampling = TRUE;
 #endif
 
-  cinfo->overshoot_deringing = cinfo->use_moz_defaults;
+  cinfo->master->overshoot_deringing = cinfo->master->use_moz_defaults;
 
   /* No input smoothing */
   cinfo->smoothing_factor = 0;
@@ -324,26 +324,26 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 
   jpeg_default_colorspace(cinfo);
   
-  cinfo->one_dc_scan = TRUE;
+  cinfo->master->one_dc_scan = TRUE;
   
 #ifdef C_PROGRESSIVE_SUPPORTED
-  if (cinfo->use_moz_defaults) {
-    cinfo->optimize_scans = TRUE;
+  if (cinfo->master->use_moz_defaults) {
+    cinfo->master->optimize_scans = TRUE;
     jpeg_simple_progression(cinfo);
   } else
-    cinfo->optimize_scans = FALSE;
+    cinfo->master->optimize_scans = FALSE;
 #endif
   
-  cinfo->trellis_quant = cinfo->use_moz_defaults;
-  cinfo->lambda_log_scale1 = 16.0;
-  cinfo->lambda_log_scale2 = 15.5;
+  cinfo->master->trellis_quant = cinfo->master->use_moz_defaults;
+  cinfo->master->lambda_log_scale1 = 16.0;
+  cinfo->master->lambda_log_scale2 = 15.5;
   
-  cinfo->use_lambda_weight_tbl = TRUE;
-  cinfo->use_scans_in_trellis = FALSE;
-  cinfo->trellis_freq_split = 8;
-  cinfo->trellis_num_loops = 1;
-  cinfo->trellis_q_opt = FALSE;
-  cinfo->trellis_quant_dc = TRUE;
+  cinfo->master->use_lambda_weight_tbl = TRUE;
+  cinfo->master->use_scans_in_trellis = FALSE;
+  cinfo->master->trellis_freq_split = 8;
+  cinfo->master->trellis_num_loops = 1;
+  cinfo->master->trellis_q_opt = FALSE;
+  cinfo->master->trellis_quant_dc = TRUE;
 }
 
 
@@ -576,7 +576,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
   } else if (ncomps == 1) {
     nscans = 23;
   } else {
-    cinfo->num_scans_luma = 0;
+    cinfo->master->num_scans_luma = 0;
     return FALSE;
   }
   
@@ -597,10 +597,12 @@ jpeg_search_progression (j_compress_ptr cinfo)
   cinfo->scan_info = scanptr;
   cinfo->num_scans = nscans;
   
-  cinfo->Al_max_luma = 3;
-  cinfo->num_scans_luma_dc = 1;
-  cinfo->num_frequency_splits = 5;
-  cinfo->num_scans_luma = cinfo->num_scans_luma_dc + (3 * cinfo->Al_max_luma + 2) + (2 * cinfo->num_frequency_splits + 1);
+  cinfo->master->Al_max_luma = 3;
+  cinfo->master->num_scans_luma_dc = 1;
+  cinfo->master->num_frequency_splits = 5;
+  cinfo->master->num_scans_luma =
+    cinfo->master->num_scans_luma_dc + (3 * cinfo->master->Al_max_luma + 2) +
+    (2 * cinfo->master->num_frequency_splits + 1);
   
   /* 23 scans for luma */
   /* 1 scan for DC */
@@ -611,7 +613,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
   /* last 4 done conditionally */
   
   /* luma DC by itself */
-  if (cinfo->one_dc_scan)
+  if (cinfo->master->one_dc_scan)
     scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
   else
     scanptr = fill_dc_scans(scanptr, 1, 0, 0);
@@ -619,7 +621,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
   scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
   scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
   
-  for (Al = 0; Al < cinfo->Al_max_luma; Al++) {
+  for (Al = 0; Al < cinfo->master->Al_max_luma; Al++) {
     scanptr = fill_a_scan(scanptr, 0, 1, 63, Al+1, Al);
     scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, Al+1);
     scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, Al+1);
@@ -627,17 +629,17 @@ jpeg_search_progression (j_compress_ptr cinfo)
   
   scanptr = fill_a_scan(scanptr, 0, 1, 63, 0, 0);
   
-  for (i = 0; i < cinfo->num_frequency_splits; i++) {
+  for (i = 0; i < cinfo->master->num_frequency_splits; i++) {
     scanptr = fill_a_scan(scanptr, 0, 1, frequency_split[i], 0, 0);
     scanptr = fill_a_scan(scanptr, 0, frequency_split[i]+1, 63, 0, 0);
   }
   
   if (ncomps == 1) {
-    cinfo->Al_max_chroma = 0;
-    cinfo->num_scans_chroma_dc = 0;
+    cinfo->master->Al_max_chroma = 0;
+    cinfo->master->num_scans_chroma_dc = 0;
   } else {
-    cinfo->Al_max_chroma = 2;
-    cinfo->num_scans_chroma_dc = 3;
+    cinfo->master->Al_max_chroma = 2;
+    cinfo->master->num_scans_chroma_dc = 3;
     /* 41 scans for chroma */
     
     /* chroma DC combined */
@@ -651,7 +653,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
     scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
 
-    for (Al = 0; Al < cinfo->Al_max_chroma; Al++) {
+    for (Al = 0; Al < cinfo->master->Al_max_chroma; Al++) {
       scanptr = fill_a_scan(scanptr, 1, 1, 63, Al+1, Al);
       scanptr = fill_a_scan(scanptr, 2, 1, 63, Al+1, Al);
       scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, Al+1);
@@ -663,7 +665,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
     scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 0);
 
-    for (i = 0; i < cinfo->num_frequency_splits; i++) {
+    for (i = 0; i < cinfo->master->num_frequency_splits; i++) {
       scanptr = fill_a_scan(scanptr, 1, 1, frequency_split[i], 0, 0);
       scanptr = fill_a_scan(scanptr, 1, frequency_split[i]+1, 63, 0, 0);
       scanptr = fill_a_scan(scanptr, 2, 1, frequency_split[i], 0, 0);
@@ -686,7 +688,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
   int nscans;
   jpeg_scan_info * scanptr;
 
-  if (cinfo->optimize_scans) {
+  if (cinfo->master->optimize_scans) {
     if (jpeg_search_progression(cinfo) == TRUE)
       return;
   }
@@ -702,7 +704,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     nscans = 10;
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->use_moz_defaults == TRUE) {
+    if (cinfo->master->use_moz_defaults == TRUE) {
     if (ncomps > MAX_COMPS_IN_SCAN)
         nscans = 5 * ncomps;	/* 2 DC + 4 AC scans per component */
       else
@@ -734,12 +736,12 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
-    if (cinfo->use_moz_defaults == TRUE) {
+    if (cinfo->master->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
     /* Initial DC scan */
-      if (cinfo->one_dc_scan)
+      if (cinfo->master->one_dc_scan)
         scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
-      else if (cinfo->sep_dc_scan) {
+      else if (cinfo->master->sep_dc_scan) {
         scanptr = fill_a_scan(scanptr, 0, 0, 0, 0, 0);
         scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
         scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);
@@ -782,7 +784,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     }
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->use_moz_defaults == TRUE) {
+    if (cinfo->master->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_bw.txt in jpgcrush */
       /* DC component, no successive approximation */
       scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);

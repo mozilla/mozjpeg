@@ -265,6 +265,45 @@ typedef enum {
 } J_DITHER_MODE;
 
 
+/* These 32-bit GUIDs and the corresponding jpeg_*_get_*_param()/
+ * jpeg_*_set_*_param() functions allow for extending the libjpeg API without
+ * breaking backward ABI compatibility.  The actual parameters are stored in
+ * the opaque jpeg_comp_master and jpeg_decomp_master structs.
+ */
+
+/* Boolean extension parameters */
+
+typedef enum {
+  JBOOLEAN_USE_MOZ_DEFAULTS = 0xAE2F5D7F, /* TRUE=use Mozilla defaults */
+  JBOOLEAN_OPTIMIZE_SCANS = 0x680C061E, /* TRUE=optimize progressive coding scans */
+  JBOOLEAN_ONE_DC_SCAN = 0x3DA6A269, /* TRUE=use a single DC scan interleaving all components */
+  JBOOLEAN_SEP_DC_SCAN = 0xE20DFA9F, /* TRUE=each DC scan is separate */
+  JBOOLEAN_TRELLIS_QUANT = 0xC5122033, /* TRUE=use trellis quantization */
+  JBOOLEAN_TRELLIS_QUANT_DC = 0x339D4C0C, /* TRUE=use trellis quant for DC coefficient */
+  JBOOLEAN_TRELLIS_EOB_OPT = 0xD7F73780, /* TRUE=optimize for sequences of EOB */
+  JBOOLEAN_USE_FLAT_QUANT_TBL = 0xE807EC6C, /* TRUE=use flat quantization table */
+  JBOOLEAN_USE_LAMBDA_WEIGHT_TBL = 0x339DB65F, /* TRUE=use lambda weighting table */
+  JBOOLEAN_USE_SCANS_IN_TRELLIS = 0xFD841435, /* TRUE=use scans in trellis optimization */
+  JBOOLEAN_TRELLIS_PASSES = 0x3FF8A439, /* TRUE=currently doing trellis-related passes */
+  JBOOLEAN_TRELLIS_Q_OPT = 0xE12AE269, /* TRUE=optimize quant table in trellis loop */
+  JBOOLEAN_OVERSHOOT_DERINGING = 0x3F4BBBF9 /* TRUE=preprocess input to reduce ringing of edges on white background */
+} J_BOOLEAN_PARAM;
+
+/* Floating point parameters */
+
+typedef enum {
+  JFLOAT_LAMBDA_LOG_SCALE1 = 0x5B61A599,
+  JFLOAT_LAMBDA_LOG_SCALE2 = 0xB9BBAE03
+} J_FLOAT_PARAM;
+
+/* Integer parameters */
+
+typedef enum {
+  JINT_TRELLIS_FREQ_SPLIT = 0x6FAFF127, /* splitting point for frequency in trellis quantization */
+  JINT_TRELLIS_NUM_LOOPS = 0xB63EBF39 /* number of trellis loops */
+} J_INT_PARAM;
+
+
 /* Common fields between JPEG compression and decompression master structs. */
 
 #define jpeg_common_fields \
@@ -374,37 +413,6 @@ struct jpeg_compress_struct {
   int smoothing_factor;		/* 1..100, or 0 for no input smoothing */
   J_DCT_METHOD dct_method;	/* DCT algorithm selector */
 
-  boolean use_moz_defaults; /* TRUE=use Mozilla defaults */
-  boolean optimize_scans; /* TRUE=optimize progressive coding scans */
-  boolean one_dc_scan; /* TRUE=use a single DC scan interleaving all components */
-  boolean sep_dc_scan; /* TRUE=each DC scan is separate */
-  boolean trellis_quant; /* TRUE=use trellis quantization */
-  boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
-  boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
-  boolean use_flat_quant_tbl; /* TRUE=use flat quantization table */
-  boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
-  boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
-  boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
-  boolean trellis_q_opt; /* TRUE=optimize quant table in trellis loop */
-  boolean overshoot_deringing; /* TRUE=preprocess input to reduce ringing of edges on white background */
-
-  double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
-  double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
-
-  int trellis_freq_split; /* splitting point for frequency in trellis quantization */
-  int trellis_num_loops; /* number of trellis loops */
-
-  int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
-  int num_scans_luma_dc;
-  int num_scans_chroma_dc;
-  int num_frequency_splits;
-  
-  int Al_max_luma; /* maximum value of Al tested when optimizing scans (luma) */
-  int Al_max_chroma; /* maximum value of Al tested when optimizing scans (chroma) */
-
-  float lambda_log_scale1;
-  float lambda_log_scale2;
-  
   /* The restart interval can be specified in absolute MCUs by setting
    * restart_interval, or in MCU rows by setting restart_in_rows
    * (in which case the correct restart_interval will be figured
@@ -1073,6 +1081,27 @@ EXTERN(void) jpeg_destroy (j_common_ptr cinfo);
 
 /* Default restart-marker-resync procedure for use by data source modules */
 EXTERN(boolean) jpeg_resync_to_restart (j_decompress_ptr cinfo, int desired);
+
+/* Accessor functions for extension parameters */
+EXTERN(boolean) jpeg_c_bool_param_supported (j_compress_ptr cinfo,
+                                             J_BOOLEAN_PARAM param);
+EXTERN(void) jpeg_c_set_bool_param (j_compress_ptr cinfo,
+                                    J_BOOLEAN_PARAM param, boolean value);
+EXTERN(boolean) jpeg_c_get_bool_param (j_compress_ptr cinfo,
+                                       J_BOOLEAN_PARAM param);
+
+EXTERN(boolean) jpeg_c_float_param_supported (j_compress_ptr cinfo,
+                                              J_FLOAT_PARAM param);
+EXTERN(void) jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param,
+                                     float value);
+EXTERN(float) jpeg_c_get_float_param (j_compress_ptr cinfo,
+                                      J_FLOAT_PARAM param);
+
+EXTERN(boolean) jpeg_c_int_param_supported (j_compress_ptr cinfo,
+                                            J_INT_PARAM param);
+EXTERN(void) jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param,
+                                   int value);
+EXTERN(int) jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param);
 
 
 /* These marker codes are exported since applications and data source modules

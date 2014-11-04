@@ -100,4 +100,13 @@ EXPORTS
 	jpeg_write_tables @ 99 ; 
 	jround_up @ 100 ; 
 	jzero_far @ 101 ; 
+        jpeg_c_bool_param_supported @ 102 ; 
+        jpeg_c_set_bool_param @ 103 ; 
+        jpeg_c_get_bool_param @ 104 ; 
+        jpeg_c_float_param_supported @ 105 ; 
+        jpeg_c_set_float_param @ 106 ; 
+        jpeg_c_get_float_param @ 107 ; 
+        jpeg_c_int_param_supported @ 108 ; 
+        jpeg_c_set_int_param @ 109 ; 
+        jpeg_c_get_int_param @ 110 ; 
 	jpeg_float_quality_scaling @ 1000 ; 

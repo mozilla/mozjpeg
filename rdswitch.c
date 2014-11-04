@@ -314,7 +314,8 @@ static const unsigned int flat_quant_tbl[DCTSIZE2] = {
 LOCAL(void)
 jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
 {
-  if (cinfo->use_flat_quant_tbl) {
+  if (jpeg_c_bool_param_supported(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL) &&
+      jpeg_c_get_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL)) {
     jpeg_add_quant_table(cinfo, 0, flat_quant_tbl,
                          q_scale_factor[0], force_baseline);
     jpeg_add_quant_table(cinfo, 1, flat_quant_tbl,

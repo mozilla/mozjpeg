@@ -874,6 +874,8 @@ static const float jpeg_lambda_weights_csf_luma[64] = {
   0.43454f, 0.42146f, 0.34609f, 0.24072f, 0.15975f, 0.10701f, 0.07558f, 0.05875f,
 };
 
+#define DC_TRELLIS_CANDIDATES 3
+
 GLOBAL(void)
 quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val)
@@ -902,9 +904,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   int zero_run;
   int run_bits;
   int rate;
-  float *accumulated_dc_cost[3];
-  int *dc_cost_backtrack[3];
-  JCOEF *dc_candidate[3];
+  float *accumulated_dc_cost[DC_TRELLIS_CANDIDATES];
+  int *dc_cost_backtrack[DC_TRELLIS_CANDIDATES];
+  JCOEF *dc_candidate[DC_TRELLIS_CANDIDATES];
 
   Ss = cinfo->Ss;
   Se = cinfo->Se;
@@ -929,7 +931,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     requires_eob[0] = 0;
   }
   if (cinfo->trellis_quant_dc) {
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < DC_TRELLIS_CANDIDATES; i++) {
       accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
       dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
       dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
@@ -975,12 +977,12 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       float dc_candidate_dist;
 
       qval = (x + q/2) / q; /* quantized value (round nearest) */
-      for (k = 0; k < 3; k++) {
+      for (k = 0; k < DC_TRELLIS_CANDIDATES; k++) {
         int delta;
         int dc_delta;
         int bits;
-        
-        dc_candidate[k][bi] = qval - 1 + k;
+
+        dc_candidate[k][bi] = qval - DC_TRELLIS_CANDIDATES/2 + k;
         delta = dc_candidate[k][bi] * q - x;
         dc_candidate_dist = delta * delta * lambda_dc;
         dc_candidate[k][bi] *= 1 + 2*sign;
@@ -999,7 +1001,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
           accumulated_dc_cost[k][0] = cost;
           dc_cost_backtrack[k][0] = -1;
         } else {
-          for (l = 0; l < 3; l++) {
+          for (l = 0; l < DC_TRELLIS_CANDIDATES; l++) {
             dc_delta = dc_candidate[k][bi] - dc_candidate[l][bi-1];
 
             /* Derive number of suffix bits */
@@ -1206,7 +1208,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   
   if (cinfo->trellis_quant_dc) {
     j = 0;
-    for (i = 1; i < 3; i++) {
+    for (i = 1; i < DC_TRELLIS_CANDIDATES; i++) {
       if (accumulated_dc_cost[i][num_blocks-1] < accumulated_dc_cost[j][num_blocks-1])
         j = i;
     }
@@ -1217,8 +1219,8 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
 
     /* Save DC predictor */
     *last_dc_val = coef_blocks[num_blocks-1][0];
-    
-    for (i = 0; i < 3; i++) {
+
+    for (i = 0; i < DC_TRELLIS_CANDIDATES; i++) {
       free(accumulated_dc_cost[i]);
       free(dc_cost_backtrack[i]);
       free(dc_candidate[i]);

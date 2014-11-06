@@ -446,7 +446,7 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
       temp = -temp;
       temp += qval>>1;  /* for rounding */
       DIVIDE_BY(temp, qval);
-      temp = -temp;    
+      temp = -temp;
     } else {
       temp += qval>>1;  /* for rounding */
       DIVIDE_BY(temp, qval);

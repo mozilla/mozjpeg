@@ -72,7 +72,7 @@ fi
 if [ -d $INCLUDEDIR ]; then
 	rmdir $INCLUDEDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ "$PREFIX" = "/opt/libmozjpeg" -a "$LIBDIR" = "/opt/libmozjpeg/lib" ]; then
+if [ "$PREFIX" = "/opt/mozjpeg" -a "$LIBDIR" = "/opt/mozjpeg/lib" ]; then
 	if [ -h $LIBDIR\32 ]; then
 		rm $LIBDIR\32 2>&1 || EXITSTATUS=-1
 	fi
@@ -92,7 +92,7 @@ fi
 if [ -d $DATADIR -a "$DATADIR" != "$PREFIX" ]; then
 	rmdir $DATADIR 2>&1 || EXITSTATUS=-1
 fi
-if [ "$PREFIX" = "/opt/libmozjpeg" -a -h "$PREFIX/doc" ]; then
+if [ "$PREFIX" = "/opt/mozjpeg" -a -h "$PREFIX/doc" ]; then
 	rm $PREFIX/doc 2>&1 || EXITSTATUS=-1
 fi
 rmdir $PREFIX 2>&1 || EXITSTATUS=-1

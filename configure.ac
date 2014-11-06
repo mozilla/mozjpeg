@@ -2,12 +2,12 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.56])
-AC_INIT([libmozjpeg], [2.1])
+AC_INIT([mozjpeg], [2.1])
 BUILD=`date +%Y%m%d`
 
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)])
-AC_PREFIX_DEFAULT(/opt/libmozjpeg)
+AC_PREFIX_DEFAULT(/opt/mozjpeg)
 
 # Checks for programs.
 SAVED_CFLAGS=${CFLAGS}
@@ -22,7 +22,7 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
 
-# When the prefix is /opt/libmozjpeg, we assume that an "official" binary is
+# When the prefix is /opt/mozjpeg, we assume that an "official" binary is
 # being created, and thus we install things into specific locations.
 
 old_prefix=${prefix}
@@ -31,12 +31,12 @@ if test "x$prefix" = "xNONE" -a "x$ac_default_prefix" != "x"; then
 fi
 DATADIR=`eval echo ${datadir}`
 DATADIR=`eval echo $DATADIR`
-if test "$DATADIR" = "/opt/libmozjpeg/share"; then
+if test "$DATADIR" = "/opt/mozjpeg/share"; then
   datadir='${prefix}'
 fi
 DATADIR=`eval echo ${datarootdir}`
 DATADIR=`eval echo $DATADIR`
-if test "$DATADIR" = "/opt/libmozjpeg/share"; then
+if test "$DATADIR" = "/opt/mozjpeg/share"; then
   datarootdir='${prefix}'
 fi
 
@@ -48,7 +48,7 @@ fi
 if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib'; then
   LIBDIR=`eval echo ${libdir}`
   LIBDIR=`eval echo $LIBDIR`
-  if test "$LIBDIR" = "/opt/libmozjpeg/lib"; then
+  if test "$LIBDIR" = "/opt/mozjpeg/lib"; then
     case $host_os in
       darwin*)
         ;;
@@ -515,7 +515,7 @@ AM_CONDITIONAL([SIMD_MIPS], [test "x$simd_arch" = "xmips"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 AM_CONDITIONAL([WITH_TURBOJPEG], [test "x$with_turbojpeg" != "xno"])
 
-AC_ARG_VAR(PKGNAME, [distribution package name (default: libmozjpeg)])
+AC_ARG_VAR(PKGNAME, [distribution package name (default: mozjpeg)])
 if test "x$PKGNAME" = "x"; then
   PKGNAME=$PACKAGE_NAME
 fi
@@ -546,7 +546,7 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [libjpeg-turbo build number])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
 AC_CONFIG_HEADERS([jconfigint.h])
-AC_CONFIG_FILES([pkgscripts/libmozjpeg.spec.tmpl:release/libmozjpeg.spec.in])
+AC_CONFIG_FILES([pkgscripts/mozjpeg.spec.tmpl:release/mozjpeg.spec.in])
 AC_CONFIG_FILES([pkgscripts/makecygwinpkg.tmpl:release/makecygwinpkg.in])
 AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])
 AC_CONFIG_FILES([pkgscripts/makemacpkg.tmpl:release/makemacpkg.in])

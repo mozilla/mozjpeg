@@ -8,7 +8,7 @@ if(POLICY CMP0022)
   cmake_policy(SET CMP0022 OLD)
 endif()
 
-project(libmozjpeg C)
+project(mozjpeg C)
 set(VERSION 2.1)
 
 if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
@@ -778,16 +778,16 @@ endif()
 
 STRING(REGEX REPLACE "/" "\\\\" INST_DIR "${CMAKE_INSTALL_PREFIX}")
 
-configure_file(release/libmozjpeg.nsi.in libmozjpeg.nsi @ONLY)
+configure_file(release/mozjpeg.nsi.in mozjpeg.nsi @ONLY)
 
 if(WITH_JAVA)
   set(JAVA_DEPEND java)
 endif()
 add_custom_target(installer
-  makensis -nocd ${INST_DEFS} libmozjpeg.nsi
+  makensis -nocd ${INST_DEFS} mozjpeg.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
     cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
-  SOURCES libmozjpeg.nsi)
+  SOURCES mozjpeg.nsi)
 
 if(WITH_TURBOJPEG)
   set(TURBOJPEG_TARGETS turbojpeg turbojpeg-static tjbench)

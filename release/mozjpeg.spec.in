@@ -17,7 +17,7 @@
 %ifarch x86_64
 %define _lib lib64
 %else
-%if "%{_prefix}" == "/opt/libmozjpeg"
+%if "%{_prefix}" == "/opt/mozjpeg"
 %define _lib lib32
 %endif
 %endif
@@ -87,7 +87,7 @@ fi
 #-->%endif
 
 LJT_DOCDIR=%{__docdir}
-if [ "%{_prefix}" = "/opt/libmozjpeg" -a "$LJT_DOCDIR" = "/opt/libmozjpeg/doc" ]; then
+if [ "%{_prefix}" = "/opt/mozjpeg" -a "$LJT_DOCDIR" = "/opt/mozjpeg/doc" ]; then
 	ln -fs %{_docdir} $RPM_BUILD_ROOT/$LJT_DOCDIR
 fi
 
@@ -103,7 +103,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_docdir}
 %doc %{_docdir}/*
 %dir %{_prefix}
-%if "%{_prefix}" == "/opt/libmozjpeg" && "%{_docdir}" != "%{_prefix}/doc"
+%if "%{_prefix}" == "/opt/mozjpeg" && "%{_docdir}" != "%{_prefix}/doc"
  %{_prefix}/doc
 %endif
 %dir %{_bindir}

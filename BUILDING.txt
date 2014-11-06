@@ -173,8 +173,8 @@ For example,
 
 will install the header files in /usr/local/include and the library files in
 /usr/local/lib64.  If 'prefix' and 'libdir' are not specified, then the default
-is to install the header files in /opt/libmozjpeg/include and the library
-files in /opt/libmozjpeg/lib32 (32-bit) or /opt/libmozjpeg/lib64
+is to install the header files in /opt/mozjpeg/include and the library
+files in /opt/mozjpeg/lib32 (32-bit) or /opt/mozjpeg/lib64
 (64-bit.)
 
 NOTE: You can specify a prefix of /usr and a libdir of, for instance,
@@ -635,12 +635,12 @@ to the cmake command line.
 For example,
 
   cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=c:\libmozjpeg {source_directory}
+    -DCMAKE_INSTALL_PREFIX=c:\mozjpeg {source_directory}
   nmake install
 
-will install the header files in c:\libmozjpeg\include, the library files
-in c:\libmozjpeg\lib, the DLL's in c:\libmozjpeg\bin, and the
-documentation in c:\libmozjpeg\doc.
+will install the header files in c:\mozjpeg\include, the library files
+in c:\mozjpeg\lib, the DLL's in c:\mozjpeg\bin, and the
+documentation in c:\mozjpeg\doc.
 
 
 =============
@@ -773,7 +773,7 @@ If using MinGW:
 
 If using the Visual Studio IDE, build the "installer" project.
 
-The installer package (libmozjpeg[-gcc][64].exe) will be located under
+The installer package (mozjpeg[-gcc][64].exe) will be located under
 {build_directory}.  If building using the Visual Studio IDE, then the installer
 package will be located in a subdirectory with the same name as the
 configuration you built (such as {build_directory}\Debug\ or

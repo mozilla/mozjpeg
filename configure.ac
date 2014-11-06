@@ -149,10 +149,10 @@ AC_ARG_VAR(JPEG_LIB_VERSION, [libjpeg API version (62, 70, or 80)])
 if test "x$JPEG_LIB_VERSION" = "x"; then
   AC_ARG_WITH([jpeg7],
     AC_HELP_STRING([--with-jpeg7],
-      [Emulate libjpeg v7 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b.)]))
+      [Emulate libjpeg v7 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b.)]))
   AC_ARG_WITH([jpeg8],
     AC_HELP_STRING([--with-jpeg8],
-      [Emulate libjpeg v8 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b.)]))
+      [Emulate libjpeg v8 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b.)]))
   if test "x${with_jpeg8}" = "xyes"; then
     JPEG_LIB_VERSION=80
   else
@@ -170,9 +170,9 @@ AC_DEFINE_UNQUOTED(JPEG_LIB_VERSION, [$JPEG_LIB_VERSION],
   [libjpeg API version])
 
 AC_ARG_VAR(SO_MAJOR_VERSION,
-  [Major version of the libmozjpeg shared library (default is determined by the API version)])
+  [Major version of the mozjpeg shared library (default is determined by the API version)])
 AC_ARG_VAR(SO_MINOR_VERSION,
-  [Minor version of the libmozjpeg shared library (default is determined by the API version)])
+  [Minor version of the mozjpeg shared library (default is determined by the API version)])
 if test "x$SO_MAJOR_VERSION" = "x"; then
   case "$JPEG_LIB_VERSION" in
     62)  SO_MAJOR_VERSION=$JPEG_LIB_VERSION ;;
@@ -217,12 +217,12 @@ AC_SUBST(SO_MINOR_VERSION)
 AC_SUBST(SO_AGE)
 AC_SUBST(MEM_SRCDST_FUNCTIONS)
 
-AC_DEFINE_UNQUOTED(LIBMOZJPEG_VERSION, [$VERSION], [libmozjpeg version])
+AC_DEFINE_UNQUOTED(MOZJPEG_VERSION, [$VERSION], [mozjpeg version])
 
 VERSION_SCRIPT=yes
 AC_ARG_ENABLE([ld-version-script],
   AS_HELP_STRING([--disable-ld-version-script],
-    [Disable linker version script for libmozjpeg (default is to use linker version script if the linker supports it)]),
+    [Disable linker version script for mozjpeg (default is to use linker version script if the linker supports it)]),
   [VERSION_SCRIPT=$enableval], [])
 
 AC_MSG_CHECKING([whether the linker supports version scripts])
@@ -250,7 +250,7 @@ if test "x$VERSION_SCRIPT_FLAG" = "x"; then
 fi
 LDFLAGS="$SAVED_LDFLAGS"
 
-AC_MSG_CHECKING([whether to use version script when building libmozjpeg])
+AC_MSG_CHECKING([whether to use version script when building mozjpeg])
 AC_MSG_RESULT($VERSION_SCRIPT)
 
 AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")

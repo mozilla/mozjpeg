@@ -254,7 +254,7 @@ cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadM
 
 mkdir $TMPDIR/dmg
 pkgbuild --root $PKGROOT --version $VERSION.$BUILD \
-	--identifier com.libjpeg-turbo.libjpeg-turbo $TMPDIR/pkg/$PACKAGE_NAME.pkg
+	--identifier com.mozilla.$PACKAGE_NAME $TMPDIR/pkg/$PACKAGE_NAME.pkg
 productbuild --distribution $SRCDIR/release/Distribution.xml \
 	--package-path $TMPDIR/pkg/ --resources $TMPDIR/pkg/ \
 	$TMPDIR/dmg/$PACKAGE_NAME.pkg

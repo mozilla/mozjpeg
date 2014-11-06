@@ -32,7 +32,7 @@ if [ ! "`id -u`" = "0" ]; then
 fi
 
 PACKAGE=@PKGNAME@
-MACPACKAGE=com.$PACKAGE.$PACKAGE
+MACPACKAGE=com.mozilla.$PACKAGE
 RECEIPT=/Library/Receipts/$PACKAGE.pkg
 
 LSBOM=

@@ -243,7 +243,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	/* Set scan pattern again as colorspace might have changed */
 	if (cinfo->master->use_moz_defaults)
 		jpeg_simple_progression(cinfo);
-  
+
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
 	cinfo->comp_info[1].h_samp_factor=1;
 	cinfo->comp_info[2].h_samp_factor=1;

@@ -889,7 +889,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   float lambda_base;
   float lambda;
   float lambda_dc;
-  const float *lambda_tbl = (cinfo->use_lambda_weight_tbl) ? jpeg_lambda_weights_csf_luma : jpeg_lambda_weights_flat;
+  const float *lambda_tbl = (cinfo->master->use_lambda_weight_tbl) ?
+                            jpeg_lambda_weights_csf_luma :
+                            jpeg_lambda_weights_flat;
   int Ss, Se;
   float *accumulated_zero_block_cost = NULL;
   float *accumulated_block_cost = NULL;
@@ -912,7 +914,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     Ss = 1;
   if (Se < Ss)
     return;
-  if (cinfo->trellis_eob_opt) {
+  if (cinfo->master->trellis_eob_opt) {
     accumulated_zero_block_cost = (float *)malloc((num_blocks + 1) * sizeof(float));
     accumulated_block_cost = (float *)malloc((num_blocks + 1) * sizeof(float));
     block_run_start = (int *)malloc(num_blocks * sizeof(int));
@@ -928,7 +930,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     accumulated_block_cost[0] = 0;
     requires_eob[0] = 0;
   }
-  if (cinfo->trellis_quant_dc) {
+  if (cinfo->master->trellis_quant_dc) {
     for (i = 0; i < 3; i++) {
       accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
       dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
@@ -956,10 +958,11 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     }
     norm /= 63.0;
     
-    if (cinfo->lambda_log_scale2 > 0.0)
-      lambda = pow(2.0, cinfo->lambda_log_scale1) * lambda_base / (pow(2.0, cinfo->lambda_log_scale2) + norm);
+    if (cinfo->master->lambda_log_scale2 > 0.0)
+      lambda = pow(2.0, cinfo->master->lambda_log_scale1) * lambda_base /
+                   (pow(2.0, cinfo->master->lambda_log_scale2) + norm);
     else
-      lambda = pow(2.0, cinfo->lambda_log_scale1-12.0) * lambda_base;
+      lambda = pow(2.0, cinfo->master->lambda_log_scale1 - 12.0) * lambda_base;
     
     lambda_dc = lambda * lambda_tbl[0];
     
@@ -967,7 +970,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     accumulated_cost[Ss-1] = 0.0;
 
     /* Do DC coefficient */
-    if (cinfo->trellis_quant_dc) {
+    if (cinfo->master->trellis_quant_dc) {
       int sign = src[bi][0] >> 31;
       int x = abs(src[bi][0]);
       int q = 8 * qtbl->quantval[0];
@@ -1120,7 +1123,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       i--;
     }
     
-    if (cinfo->trellis_eob_opt) {
+    if (cinfo->master->trellis_eob_opt) {
       accumulated_zero_block_cost[bi+1] = accumulated_zero_block_cost[bi];
       accumulated_zero_block_cost[bi+1] += cost_all_zeros;
       requires_eob[bi+1] = has_eob;
@@ -1154,7 +1157,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     }
   }
   
-  if (cinfo->trellis_eob_opt) {
+  if (cinfo->master->trellis_eob_opt) {
     int last_block = num_blocks;
     best_cost = 1e38;
     
@@ -1195,7 +1198,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     free(requires_eob);
   }
   
-  if (cinfo->trellis_q_opt) {
+  if (cinfo->master->trellis_q_opt) {
     for (bi = 0; bi < num_blocks; bi++) {
       for (i = 1; i < DCTSIZE2; i++) {
         norm_src[i] += src[bi][i] * coef_blocks[bi][i];
@@ -1204,7 +1207,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     }
   }
   
-  if (cinfo->trellis_quant_dc) {
+  if (cinfo->master->trellis_quant_dc) {
     j = 0;
     for (i = 1; i < 3; i++) {
       if (accumulated_dc_cost[i][num_blocks-1] < accumulated_dc_cost[j][num_blocks-1])
@@ -1291,7 +1294,7 @@ jinit_forward_dct (j_compress_ptr cinfo)
     else
       fdct->convsamp = convsamp;
 
-    if (cinfo->overshoot_deringing) {
+    if (cinfo->master->overshoot_deringing) {
       fdct->preprocess = preprocess_deringing;
     } else {
       fdct->preprocess = NULL;
@@ -1310,7 +1313,7 @@ jinit_forward_dct (j_compress_ptr cinfo)
     else
       fdct->float_convsamp = convsamp_float;
 
-    if (cinfo->overshoot_deringing) {
+    if (cinfo->master->overshoot_deringing) {
       fdct->float_preprocess = float_preprocess_deringing;
     } else {
       fdct->float_preprocess = NULL;

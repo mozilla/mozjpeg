@@ -206,7 +206,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	}
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
-	cinfo->use_moz_defaults = TRUE;
+	cinfo->master->use_moz_defaults = TRUE;
 	jpeg_set_defaults(cinfo);
 
 	if((env=getenv("TJ_OPTIMIZE"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
@@ -241,7 +241,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
 	/* Set scan pattern again as colorspace might have changed */
-	if (cinfo->use_moz_defaults)
+	if (cinfo->master->use_moz_defaults)
 		jpeg_simple_progression(cinfo);
   
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;

@@ -171,7 +171,7 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
           (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                       257 * sizeof(long));
       MEMZERO(entropy->count_ptrs[tbl], 257 * sizeof(long));
-      if (cinfo->trellis_passes) {
+      if (cinfo->master->trellis_passes) {
         /* When generating tables for trellis passes, make sure that all */
         /* codewords have an assigned length */
         int i, j;

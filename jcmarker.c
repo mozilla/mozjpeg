@@ -192,6 +192,7 @@ emit_multi_dqt (j_compress_ptr cinfo)
   int seen[MAX_COMPONENTS] = { 0 };
   int fin_prec = 0;
   int ci;
+  int size = 0;
 
   for (ci = 0; ci < cinfo->num_components; ci++) {
     int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
@@ -210,7 +211,6 @@ emit_multi_dqt (j_compress_ptr cinfo)
 
   emit_marker(cinfo, M_DQT);
 
-  int size = 0;
   for (ci = 0; ci < cinfo->num_components; ci++) {
     int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
 

@@ -57,6 +57,38 @@ struct jpeg_comp_master {
   /* State variables made visible to other modules */
   boolean call_pass_startup;    /* True if pass_startup must be called */
   boolean is_last_pass;         /* True during last pass */
+
+  /* Extension parameters */
+  boolean use_moz_defaults; /* TRUE=use Mozilla defaults */
+  boolean optimize_scans; /* TRUE=optimize progressive coding scans */
+  boolean one_dc_scan; /* TRUE=use a single DC scan interleaving all components */
+  boolean sep_dc_scan; /* TRUE=each DC scan is separate */
+  boolean trellis_quant; /* TRUE=use trellis quantization */
+  boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
+  boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
+  boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
+  boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
+  boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
+  boolean trellis_q_opt; /* TRUE=optimize quant table in trellis loop */
+  boolean overshoot_deringing; /* TRUE=preprocess input to reduce ringing of edges on white background */
+
+  double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
+  double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
+
+  int quant_tbl_master_idx; /* Quantization table master index */
+  int trellis_freq_split; /* splitting point for frequency in trellis quantization */
+  int trellis_num_loops; /* number of trellis loops */
+
+  int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
+  int num_scans_luma_dc;
+  int num_scans_chroma_dc;
+  int num_frequency_splits;
+
+  int Al_max_luma; /* maximum value of Al tested when optimizing scans (luma) */
+  int Al_max_chroma; /* maximum value of Al tested when optimizing scans (chroma) */
+
+  float lambda_log_scale1;
+  float lambda_log_scale2;
 };
 
 /* Main buffer control (downsampled-data buffer) */

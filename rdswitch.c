@@ -446,9 +446,13 @@ static const unsigned int std_chrominance_quant_tbl[6][DCTSIZE2] = {
 LOCAL(void)
 jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
 {
-  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl[cinfo->quant_tbl_master_idx],
+  int quant_tbl_master_idx = 0;
+  if (jpeg_c_int_param_supported(cinfo, JINT_BASE_QUANT_TBL_IDX))
+    quant_tbl_master_idx = jpeg_c_get_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX);
+  
+  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl[quant_tbl_master_idx],
                        q_scale_factor[0], force_baseline);
-  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl[cinfo->quant_tbl_master_idx],
+  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl[quant_tbl_master_idx],
                        q_scale_factor[1], force_baseline);
 }
 #endif

@@ -46,8 +46,9 @@ jpeg_start_compress (j_compress_ptr cinfo, boolean write_all_tables)
     jpeg_suppress_tables(cinfo, FALSE); /* mark all tables to be written */
 
   /* setting up scan optimisation pattern failed, disable scan optimisation */
-  if (cinfo->num_scans_luma == 0 || cinfo->scan_info == NULL || cinfo->num_scans == 0)
-    cinfo->optimize_scans = FALSE;
+  if (cinfo->master->num_scans_luma == 0 || cinfo->scan_info == NULL ||
+      cinfo->num_scans == 0)
+    cinfo->master->optimize_scans = FALSE;
   
   /* (Re)initialize error mgr and destination modules */
   (*cinfo->err->reset_error_mgr) ((j_common_ptr) cinfo);

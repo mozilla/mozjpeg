@@ -188,6 +188,7 @@ usage (void)
   fprintf(stderr, "  -tune-ssim     Tune trellis optimization for SSIM\n");
   fprintf(stderr, "  -tune-ms-ssim  Tune trellis optimization for MS-SSIM\n");
   fprintf(stderr, "Switches for advanced users:\n");
+  fprintf(stderr, "  -noovershoot   Disable black-on-white deringing via overshoot\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
@@ -310,9 +311,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         cinfo->dct_method = JDCT_IFAST;
       } else if (keymatch(argv[argn], "float", 2)) {
         cinfo->dct_method = JDCT_FLOAT;
-      } else
+      } else {
         fprintf(stderr, "%s: invalid argument for dct\n", progname);
         usage();
+      }
 
     } else if (keymatch(arg, "debug", 1) || keymatch(arg, "verbose", 1)) {
       /* Enable debug printouts. */
@@ -330,7 +332,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       cinfo->err->trace_level++;
 
     } else if (keymatch(arg, "fastcrush", 4)) {
-      cinfo->optimize_scans = FALSE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
 
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
@@ -343,12 +345,14 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "lambda1", 7)) {
       if (++argn >= argc)	/* advance to next argument */
 	usage();
-      cinfo->lambda_log_scale1 = atof(argv[argn]);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1,
+                             atof(argv[argn]));
 
     } else if (keymatch(arg, "lambda2", 7)) {
       if (++argn >= argc)	/* advance to next argument */
 	usage();
-      cinfo->lambda_log_scale2 = atof(argv[argn]);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2,
+                             atof(argv[argn]));
 
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */
@@ -364,7 +368,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
     } else if (keymatch(arg, "opt-dc-scan", 6)) {
-      cinfo->one_dc_scan = FALSE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_ONE_DC_SCAN, FALSE);
 
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */
@@ -433,7 +437,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "quant_table", 2)) {
       if (++argn >= argc)       /* advance to next argument */
         usage();
-      cinfo->quant_tbl_master_idx = atoi(argv[argn]);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, atoi(argv[argn]));
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "restart", 1)) {
@@ -457,7 +461,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
-      cinfo->use_moz_defaults = FALSE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, FALSE);
       jpeg_set_defaults(cinfo);
 
     } else if (keymatch(arg, "sample", 2)) {
@@ -496,8 +500,8 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       cinfo->smoothing_factor = val;
 
     } else if (keymatch(arg, "split-dc-scans", 3)) {
-      cinfo->one_dc_scan = FALSE;
-      cinfo->sep_dc_scan = TRUE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_ONE_DC_SCAN, FALSE);
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_SEP_DC_SCAN, TRUE);
       
     } else if (keymatch(arg, "targa", 1)) {
       /* Input file is Targa format. */
@@ -505,44 +509,46 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "notrellis-dc", 11)) {
       /* disable trellis quantization */
-      cinfo->trellis_quant_dc = FALSE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, FALSE);
       
     } else if (keymatch(arg, "notrellis", 1)) {
       /* disable trellis quantization */
-      cinfo->trellis_quant = FALSE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT, FALSE);
       
     } else if (keymatch(arg, "trellis-dc", 9)) {
       /* enable DC trellis quantization */
-      cinfo->trellis_quant_dc = TRUE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, TRUE);
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
-      cinfo->quant_tbl_master_idx = 1;
-      cinfo->lambda_log_scale1 = 9.0;
-      cinfo->lambda_log_scale2 = 0.0;
-      cinfo->use_lambda_weight_tbl = FALSE;
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 9.0);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 0.0);
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ssim", 6)) {
-      cinfo->quant_tbl_master_idx = 1;
-      cinfo->lambda_log_scale1 = 11.5;
-      cinfo->lambda_log_scale2 = 12.75;
-      cinfo->use_lambda_weight_tbl = FALSE;
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 11.5);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 12.75);
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ms-ssim", 6)) {
-      cinfo->quant_tbl_master_idx = 2;
-      cinfo->lambda_log_scale1 = 12.0;
-      cinfo->lambda_log_scale2 = 13.0;
-      cinfo->use_lambda_weight_tbl = TRUE;
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 2);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 12.0);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 13.0);
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
-      cinfo->quant_tbl_master_idx = 4;
-      cinfo->lambda_log_scale1 = 14.75;
-      cinfo->lambda_log_scale2 = 16.5;
-      cinfo->use_lambda_weight_tbl = TRUE;
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 4);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 14.75);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 16.5);
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
-      
+
+    } else if (keymatch(arg, "noovershoot", 11)) {
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_OVERSHOOT_DERINGING, FALSE);
     } else {
       fprintf(stderr, "%s: unknown option '%s'\n", progname, arg);
       usage();                  /* bogus switch */
@@ -637,7 +643,8 @@ main (int argc, char **argv)
    */
 
   cinfo.in_color_space = JCS_RGB; /* arbitrary guess */
-  cinfo.use_moz_defaults = TRUE;
+  if (jpeg_c_bool_param_supported(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
+    jpeg_c_set_bool_param(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
   jpeg_set_defaults(&cinfo);
 
   /* Scan command line to find file names.

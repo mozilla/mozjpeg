@@ -234,7 +234,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         usage();
 
     } else if (keymatch(arg, "fastcrush", 4)) {
-      cinfo->optimize_scans = FALSE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
       
     } else if (keymatch(arg, "grayscale", 1) || keymatch(arg, "greyscale",1)) {
       /* Force to grayscale. */
@@ -310,7 +310,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
-      cinfo->use_moz_defaults = FALSE;
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, FALSE);
       
     } else if (keymatch(arg, "rotate", 2)) {
       /* Rotate 90, 180, or 270 degrees (measured clockwise). */
@@ -415,7 +415,8 @@ main (int argc, char **argv)
   /* Initialize the JPEG compression object with default error handling. */
   dstinfo.err = jpeg_std_error(&jdsterr);
   jpeg_create_compress(&dstinfo);
-  dstinfo.use_moz_defaults = TRUE;
+  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
+    jpeg_c_set_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
 
   /* Scan command line to find file names.
    * It is convenient to use just one switch-parsing routine, but the switch
@@ -469,7 +470,8 @@ main (int argc, char **argv)
 #endif
 
   /* Specify data source for decompression */
-  memsrc = dstinfo.use_moz_defaults; /* needed to revert to original */
+  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
+    memsrc = jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS); /* needed to revert to original */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   if (memsrc) {
     size_t nbytes;
@@ -555,7 +557,8 @@ main (int argc, char **argv)
 
   /* Specify data destination for compression */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
-  if (dstinfo.use_moz_defaults)
+  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS) &&
+      jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
     jpeg_mem_dest(&dstinfo, &outbuffer, &outsize);
   else
 #endif
@@ -577,7 +580,8 @@ main (int argc, char **argv)
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
   
-  if (dstinfo.use_moz_defaults) {
+  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS) &&
+      jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS)) {
     size_t nbytes;
     
     unsigned char *buffer = outbuffer;

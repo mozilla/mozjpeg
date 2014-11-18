@@ -13,6 +13,9 @@ instead of -1 if componentID was > 0 and subsamp was TJSAMP_GRAY.
 [3] Fixed an issue in tjBufSizeYUV2() wherby it would erroneously return 0
 instead of -1 if width was < 1.
 
+[5] The Huffman encoder now uses clz and bsr instructions for bit counting on
+ARM64 platforms (see 1.4 beta1 [5].)
+
 
 1.3.90 (1.4 beta1)
 ==================

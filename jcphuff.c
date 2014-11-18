@@ -177,7 +177,7 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
         int i, j;
         for (i = 0; i < 16; i++)
           for (j = 0; j < 12; j++)
-          entropy->count_ptrs[tbl][16*i+j] = 1;
+            entropy->count_ptrs[tbl][16 * i + j] = 1;
       }
     } else {
       /* Compute derived values for Huffman table */

@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <math.h>
 
+
 /* Private subobject for this module */
 
 typedef void (*forward_DCT_method_ptr) (DCTELEM * data);
@@ -663,7 +664,7 @@ METHODDEF(void)
 forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
              JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
              JDIMENSION start_row, JDIMENSION start_col,
-	     JDIMENSION num_blocks, JBLOCKROW dst)
+             JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for integer DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
@@ -697,17 +698,17 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     if (dst) {
       int i;
       if (cinfo->dct_method == JDCT_IFAST) {
-	static const INT16 aanscales[DCTSIZE2] = {
-	  /* precomputed values scaled up by 14 bits */
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
-	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
-	  19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
+        static const INT16 aanscales[DCTSIZE2] = {
+          /* precomputed values scaled up by 14 bits */
+          16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+          22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
+          21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
+          19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
+          16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+          12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
           8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
           4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
-	};
+        };
         
         for (i = 0; i < DCTSIZE2; i++) {
           int x = workspace[i];
@@ -789,7 +790,7 @@ METHODDEF(void)
 forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
                    JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
                    JDIMENSION start_row, JDIMENSION start_col,
-		   JDIMENSION num_blocks, JBLOCKROW dst)
+                   JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for floating-point DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */

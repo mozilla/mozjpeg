@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="1">
-	<title>libjpeg-turbo</title>
+	<title>mozjpeg</title>
 	<welcome file="Welcome.rtf" />
 	<readme file="ReadMe.txt" />
 	<license file="License.rtf" />
@@ -12,13 +12,13 @@
 	<options customize="never" />
 	<choices-outline>
 		<line choice="default">
-			<line choice="com.libjpeg-turbo.libjpeg-turbo"/>
+			<line choice="com.mozilla.mozjpeg"/>
 		</line>
 	</choices-outline>
 	<choice id="default"/>
-	<choice id="com.libjpeg-turbo.libjpeg-turbo" visible="false">
-		<pkg-ref id="com.libjpeg-turbo.libjpeg-turbo"/>
+	<choice id="com.mozilla.mozjpeg" visible="false">
+		<pkg-ref id="com.mozilla.mozjpeg"/>
 	</choice>
 	<pkg-ref auth="root"
-		id="com.libjpeg-turbo.libjpeg-turbo">libjpeg-turbo.pkg</pkg-ref>
+		id="com.mozilla.mozjpeg">mozjpeg.pkg</pkg-ref>
 </installer-gui-script>

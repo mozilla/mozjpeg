@@ -536,26 +536,26 @@ if WITH_JAVA
 endif
 
 
-pkgscripts/libmozjpeg.spec: pkgscripts/libmozjpeg.spec.tmpl
-	cat pkgscripts/libmozjpeg.spec.tmpl | sed s@%{__prefix}@$(prefix)@g | \
+pkgscripts/mozjpeg.spec: pkgscripts/mozjpeg.spec.tmpl
+	cat pkgscripts/mozjpeg.spec.tmpl | sed s@%{__prefix}@$(prefix)@g | \
 		sed s@%{__bindir}@$(bindir)@g | sed s@%{__datadir}@$(datadir)@g | \
 		sed s@%{__docdir}@$(docdir)@g | sed s@%{__includedir}@$(includedir)@g | \
 		sed s@%{__libdir}@$(libdir)@g | sed s@%{__mandir}@$(mandir)@g \
-		> pkgscripts/libmozjpeg.spec
+		> pkgscripts/mozjpeg.spec
 
-rpm: all pkgscripts/libmozjpeg.spec
+rpm: all pkgscripts/mozjpeg.spec
 	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
 	mkdir -p $$TMPDIR/RPMS; \
 	ln -fs `pwd` $$TMPDIR/BUILD; \
 	rm -f ${PKGNAME}-${VERSION}.${RPMARCH}.rpm; \
 	rpmbuild -bb --define "_blddir $$TMPDIR/buildroot"  \
 		--define "_topdir $$TMPDIR" \
-		--target ${RPMARCH} pkgscripts/libmozjpeg.spec; \
+		--target ${RPMARCH} pkgscripts/mozjpeg.spec; \
 	cp $$TMPDIR/RPMS/${RPMARCH}/${PKGNAME}-${VERSION}-${BUILD}.${RPMARCH}.rpm \
 		${PKGNAME}-${VERSION}.${RPMARCH}.rpm; \
 	rm -rf $$TMPDIR
 
-srpm: dist-gzip pkgscripts/libmozjpeg.spec
+srpm: dist-gzip pkgscripts/mozjpeg.spec
 	TMPDIR=`mktemp -d /tmp/${PACKAGE_NAME}-build.XXXXXX`; \
 	mkdir -p $$TMPDIR/RPMS; \
 	mkdir -p $$TMPDIR/SRPMS; \
@@ -564,10 +564,10 @@ srpm: dist-gzip pkgscripts/libmozjpeg.spec
 	mkdir -p $$TMPDIR/SPECS; \
 	rm -f ${PKGNAME}-${VERSION}.src.rpm; \
 	cp ${PACKAGE_NAME}-${VERSION}.tar.gz $$TMPDIR/SOURCES; \
-	cat pkgscripts/libmozjpeg.spec | sed s/%{_blddir}/%{_tmppath}/g \
+	cat pkgscripts/mozjpeg.spec | sed s/%{_blddir}/%{_tmppath}/g \
 		| sed s/#--\>//g \
-		> $$TMPDIR/SPECS/libmozjpeg.spec; \
-	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/libmozjpeg.spec; \
+		> $$TMPDIR/SPECS/mozjpeg.spec; \
+	rpmbuild -bs --define "_topdir $$TMPDIR" $$TMPDIR/SPECS/mozjpeg.spec; \
 	cp $$TMPDIR/SRPMS/${PKGNAME}-${VERSION}-${BUILD}.src.rpm \
 		${PKGNAME}-${VERSION}.src.rpm; \
 	rm -rf $$TMPDIR

@@ -294,7 +294,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "dct", 2)) {
       /* Select DCT algorithm. */
-      if (++argn >= argc) { /* advance to next argument */
+      if (++argn >= argc) {      /* advance to next argument */
         fprintf(stderr, "%s: missing argument for dct\n", progname);
         usage();
       }
@@ -340,14 +340,14 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       jpeg_set_colorspace(cinfo, JCS_RGB);
 
     } else if (keymatch(arg, "lambda1", 7)) {
-      if (++argn >= argc)	/* advance to next argument */
-	usage();
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1,
                              atof(argv[argn]));
 
     } else if (keymatch(arg, "lambda2", 7)) {
-      if (++argn >= argc)	/* advance to next argument */
-	usage();
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2,
                              atof(argv[argn]));
 
@@ -379,7 +379,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "outfile", 4)) {
       /* Set output file name. */
-      if (++argn >= argc)	{ /* advance to next argument */
+      if (++argn >= argc) {      /* advance to next argument */
         fprintf(stderr, "%s: missing argument for outfile\n", progname);
         usage();
       }
@@ -408,7 +408,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "quality", 1)) {
       /* Quality ratings (quantization table scaling factors). */
-      if (++argn >= argc)	{ /* advance to next argument */
+      if (++argn >= argc) {      /* advance to next argument */
         fprintf(stderr, "%s: missing argument for quality\n", progname);
         usage();
       }
@@ -743,7 +743,7 @@ main (int argc, char **argv)
           GETJOCTET(marker->data[2]) == 0x49 &&
           GETJOCTET(marker->data[3]) == 0x46 &&
           GETJOCTET(marker->data[4]) == 0)
-        continue;			/* reject duplicate JFIF */
+        continue;                       /* reject duplicate JFIF */
       if (cinfo.write_Adobe_marker &&
           marker->marker == JPEG_APP0+14 &&
           marker->data_length >= 5 &&
@@ -752,8 +752,9 @@ main (int argc, char **argv)
           GETJOCTET(marker->data[2]) == 0x6F &&
           GETJOCTET(marker->data[3]) == 0x62 &&
           GETJOCTET(marker->data[4]) == 0x65)
-        continue;			/* reject duplicate Adobe */
-      jpeg_write_marker(&cinfo, marker->marker, marker->data, marker->data_length);
+        continue;                       /* reject duplicate Adobe */
+      jpeg_write_marker(&cinfo, marker->marker, marker->data,
+                        marker->data_length);
     }
   }
   

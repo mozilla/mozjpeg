@@ -8,7 +8,7 @@ if(POLICY CMP0022)
   cmake_policy(SET CMP0022 OLD)
 endif()
 
-project(libmozjpeg C)
+project(mozjpeg C)
 set(VERSION 2.1)
 
 if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
@@ -47,8 +47,8 @@ message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 option(WITH_SIMD "Include SIMD extensions" TRUE)
 option(WITH_ARITH_ENC "Include arithmetic encoding support" TRUE)
 option(WITH_ARITH_DEC "Include arithmetic decoding support" TRUE)
-option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b)" FALSE)
-option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" FALSE)
 option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" TRUE)
 option(WITH_TURBOJPEG "Include the TurboJPEG wrapper library and associated test programs" TRUE)
 option(WITH_JAVA "Build Java wrapper for the TurboJPEG library" FALSE)
@@ -155,7 +155,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX_DEFAULT ${CMAKE_INSTALL_PREFIX_DEFAULT}64)
   endif()
   set(CMAKE_INSTALL_PREFIX "c:/${CMAKE_INSTALL_PREFIX_DEFAULT}" CACHE PATH
-    "Directory into which to install libmozjpeg (default: c:/${CMAKE_INSTALL_PREFIX_DEFAULT})"
+    "Directory into which to install mozjpeg (default: c:/${CMAKE_INSTALL_PREFIX_DEFAULT})"
     FORCE)
 endif()
 
@@ -778,16 +778,16 @@ endif()
 
 STRING(REGEX REPLACE "/" "\\\\" INST_DIR "${CMAKE_INSTALL_PREFIX}")
 
-configure_file(release/libmozjpeg.nsi.in libmozjpeg.nsi @ONLY)
+configure_file(release/mozjpeg.nsi.in mozjpeg.nsi @ONLY)
 
 if(WITH_JAVA)
   set(JAVA_DEPEND java)
 endif()
 add_custom_target(installer
-  makensis -nocd ${INST_DEFS} libmozjpeg.nsi
+  makensis -nocd ${INST_DEFS} mozjpeg.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
     cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
-  SOURCES libmozjpeg.nsi)
+  SOURCES mozjpeg.nsi)
 
 if(WITH_TURBOJPEG)
   set(TURBOJPEG_TARGETS turbojpeg turbojpeg-static tjbench)

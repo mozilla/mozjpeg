@@ -316,6 +316,14 @@ static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 static int getSubsamp(j_decompress_ptr dinfo)
 {
 	int retval=-1, i, k;
+
+	/* The sampling factors actually have no meaning with grayscale JPEG files,
+	   and in fact it's possible to generate grayscale JPEGs with sampling
+	   factors > 1 (even though those sampling factors are ignored by the
+	   decompressor.)  Thus, we need to treat grayscale as a special case. */
+	if(dinfo->num_components==1 && dinfo->jpeg_color_space==JCS_GRAYSCALE)
+		return TJSAMP_GRAY;
+
 	for(i=0; i<NUMSUBOPT; i++)
 	{
 		if(dinfo->num_components==pixelsize[i]

@@ -23,6 +23,15 @@ caused an exception to be thrown during finalization, if the close() method had
 already been called.  The exception was caught, but it was still an expensive
 operation.
 
+[7] The TurboJPEG API previously generated an error ("Could not determine
+subsampling type for JPEG image") when attempting to decompress grayscale JPEG
+images that were compressed with a sampling factor other than 1 (for instance,
+with 'cjpeg -grayscale -sample 2x2').  Subsampling technically has no meaning
+with grayscale JPEGs, and thus the horizontal and vertical sampling factors
+for such images are ignored by the decompressor.  However, the TurboJPEG API
+was being too rigid and was expecting the sampling factors to be equal to 1
+before it treated the image as a grayscale JPEG.
+
 
 1.3.90 (1.4 beta1)
 ==================

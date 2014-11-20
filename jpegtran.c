@@ -415,8 +415,6 @@ main (int argc, char **argv)
   /* Initialize the JPEG compression object with default error handling. */
   dstinfo.err = jpeg_std_error(&jdsterr);
   jpeg_create_compress(&dstinfo);
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    jpeg_c_set_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
 
   /* Scan command line to find file names.
    * It is convenient to use just one switch-parsing routine, but the switch

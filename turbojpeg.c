@@ -206,7 +206,6 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	}
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
-	cinfo->master->use_moz_defaults = TRUE;
 	jpeg_set_defaults(cinfo);
 
 	if((env=getenv("TJ_OPTIMIZE"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))

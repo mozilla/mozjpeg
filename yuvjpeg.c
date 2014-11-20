@@ -217,9 +217,6 @@ int main(int argc, char *argv[]) {
 
   jpeg_stdio_dest(&cinfo, jpg_fd);
 
-  if (jpeg_c_bool_param_supported(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    jpeg_c_set_bool_param(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
-
   cinfo.image_width = luma_width;
   cinfo.image_height = luma_height;
   cinfo.input_components = 3;

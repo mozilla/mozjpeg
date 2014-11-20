@@ -634,8 +634,6 @@ main (int argc, char **argv)
    */
 
   cinfo.in_color_space = JCS_RGB; /* arbitrary guess */
-  if (jpeg_c_bool_param_supported(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    jpeg_c_set_bool_param(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
   jpeg_set_defaults(&cinfo);
 
   /* Scan command line to find file names.

@@ -99,6 +99,7 @@ jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
   cinfo->master = (struct jpeg_comp_master *)
       jpeg_get_small ((j_common_ptr) cinfo, sizeof(struct jpeg_comp_master));
   MEMZERO(cinfo->master, sizeof(struct jpeg_comp_master));
+  cinfo->master->use_moz_defaults = TRUE;
 }
 
 

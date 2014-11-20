@@ -1,7 +1,5 @@
 /*
  * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
- * mozjpeg Modifications:
- * Copyright (C) 2014, Mozilla Corporation.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -87,8 +85,6 @@ int main(void)
 
   jpeg_create_compress(&cinfo);
   cinfo.input_components = 3;
-  if (jpeg_c_bool_param_supported(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    jpeg_c_set_bool_param(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
   jpeg_set_defaults(&cinfo);
   cinfo.in_color_space = JCS_EXT_RGB;
   jpeg_default_colorspace(&cinfo);

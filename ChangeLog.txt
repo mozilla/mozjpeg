@@ -28,6 +28,15 @@ about every 25 million iterations.
 [6] Fixed a build issue on OS X PowerPC platforms (md5cmp failed to build
 because OS X does not provide the le32toh() and htole32() functions.)
 
+[7] The TurboJPEG API previously generated an error ("Could not determine
+subsampling type for JPEG image") when attempting to decompress grayscale JPEG
+images that were compressed with a sampling factor other than 1 (for instance,
+with 'cjpeg -grayscale -sample 2x2').  Subsampling technically has no meaning
+with grayscale JPEGs, and thus the horizontal and vertical sampling factors
+for such images are ignored by the decompressor.  However, the TurboJPEG API
+was being too rigid and was expecting the sampling factors to be equal to 1
+before it treated the image as a grayscale JPEG.
+
 
 1.3.1
 =====

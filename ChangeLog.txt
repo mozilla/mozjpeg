@@ -28,7 +28,14 @@ about every 25 million iterations.
 [6] Fixed a build issue on OS X PowerPC platforms (md5cmp failed to build
 because OS X does not provide the le32toh() and htole32() functions.)
 
-[7] The TurboJPEG API previously generated an error ("Could not determine
+[7] The close() method in the TJCompressor and TJDecompressor Java classes is
+now idempotent.  Previously, that method would call the native tjDestroy()
+function even if the TurboJPEG instance had already been destroyed.  This
+caused an exception to be thrown during finalization, if the close() method had
+already been called.  The exception was caught, but it was still an expensive
+operation.
+
+[8] The TurboJPEG API previously generated an error ("Could not determine
 subsampling type for JPEG image") when attempting to decompress grayscale JPEG
 images that were compressed with a sampling factor other than 1 (for instance,
 with 'cjpeg -grayscale -sample 2x2').  Subsampling technically has no meaning

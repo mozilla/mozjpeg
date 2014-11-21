@@ -594,7 +594,8 @@ public class TJDecompressor {
    * Free the native structures associated with this decompressor instance.
    */
   public void close() throws Exception {
-    destroy();
+    if (handle != 0)
+      destroy();
   }
 
   protected void finalize() throws Throwable {

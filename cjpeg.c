@@ -290,13 +290,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
                 JVERSION);
         printed_version = TRUE;
       }
-
       cinfo->err->trace_level++;
 
     } else if (keymatch(arg, "version", 4)) {
       fprintf(stderr, "%s version %s (build %s)\n",
               PACKAGE_NAME, VERSION, BUILD);
-      exit(EXIT_SUCCESS);        
+      exit(EXIT_SUCCESS);
 
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */

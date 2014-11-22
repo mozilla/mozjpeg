@@ -35,6 +35,18 @@ before it treated the image as a grayscale JPEG.
 [8] cjpeg, djpeg, and jpegtran now accept an argument of -version, which will
 print the library version and exit.
 
+[9] Referring to 1.4 beta1 [15], another extremely rare circumstance was
+discovered under which the Huffman encoder's local buffer can be overrun
+when a buffered destination manager is being used and an
+extremely-high-frequency block (basically junk image data) is being encoded.
+Even though the Huffman local buffer was increased from 128 bytes to 136 bytes
+to address the previous issue, the new issue caused even the larger buffer to
+be overrun.  Further analysis reveals that, in the absolute worst case (such as
+setting alternating AC coefficients to 32767 and -32768 in the JPEG scanning
+order), the Huffman encoder can produce encoded blocks that approach double the
+size of the unencoded blocks.  Thus, the Huffman local buffer was increased to
+256 bytes, which should prevent any such issue from re-occurring in the future.
+
 
 1.3.90 (1.4 beta1)
 ==================

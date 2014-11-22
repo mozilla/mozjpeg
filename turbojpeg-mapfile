@@ -50,4 +50,7 @@ TURBOJPEG_1.4
 		tjDecompressToYUVPlanes;
 		tjEncodeYUV3;
 		tjEncodeYUVPlanes;
+		tjPlaneHeight;
+		tjPlaneSizeYUV;
+		tjPlaneWidth;
 } TURBOJPEG_1.2;

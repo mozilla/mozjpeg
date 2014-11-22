@@ -47,6 +47,11 @@ order), the Huffman encoder can produce encoded blocks that approach double the
 size of the unencoded blocks.  Thus, the Huffman local buffer was increased to
 256 bytes, which should prevent any such issue from re-occurring in the future.
 
+[10] The new tjPlaneSizeYUV(), tjPlaneWidth(), and tjPlaneHeight() functions
+were not actually usable on any platform except OS X and Windows, because
+those functions were not included in the libturbojpeg mapfile.  This has been
+fixed.
+
 
 1.3.90 (1.4 beta1)
 ==================

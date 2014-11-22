@@ -216,7 +216,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "version", 4)) {
       fprintf(stderr, "%s version %s (build %s)\n",
               PACKAGE_NAME, VERSION, BUILD);
-      exit(EXIT_SUCCESS);        
+      exit(EXIT_SUCCESS);
 
     } else if (keymatch(arg, "flip", 1)) {
       /* Mirror left-right or top-bottom. */

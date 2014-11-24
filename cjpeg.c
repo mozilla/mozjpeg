@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -214,6 +214,7 @@ usage (void)
   fprintf(stderr, "  -memdst        Compress to memory instead of file (useful for benchmarking)\n");
 #endif
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
+  fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
   fprintf(stderr, "  -qtables file  Use quantization tables given in file\n");
   fprintf(stderr, "  -qslots N[,...]    Set component quantization tables\n");
@@ -323,6 +324,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         printed_version = TRUE;
       }
       cinfo->err->trace_level++;
+
+    } else if (keymatch(arg, "version", 4)) {
+      fprintf(stderr, "%s version %s (build %s)\n",
+              PACKAGE_NAME, VERSION, BUILD);
+      exit(EXIT_SUCCESS);
 
     } else if (keymatch(arg, "fastcrush", 4)) {
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);

@@ -52,10 +52,13 @@ were not actually usable on any platform except OS X and Windows, because
 those functions were not included in the libturbojpeg mapfile.  This has been
 fixed.
 
-[11] Restored the JPP() and JMETHOD() macros in the libjpeg-turbo header files.
-libjpeg-turbo no longer supports compilers that don't support prototype
-parameters, so the JPP() and JMETHOD() macros are no longer needed, but some
-software packages still use them to define their own prototypes.  A pretty
+[11] Restored the JPP(), JMETHOD(), and FAR macros in the libjpeg-turbo header
+files.  The JPP() and JMETHOD() macros were originally implemented in libjpeg
+as a way of supporting non-ANSI compilers that lacked support for prototype
+parameters.  libjpeg-turbo has never supported such compilers, but some
+software packages still use the macros to define their own prototypes.
+Similarly, libjpeg-turbo has never supported MS-DOS and other platforms that
+have far symbols, but some software packages still use the FAR macro.  A pretty
 good argument can be made that this is a bad practice on the part of the
 software in question, but since this affects more than one package, it's just
 easier to fix it here.

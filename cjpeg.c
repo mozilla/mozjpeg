@@ -534,14 +534,14 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ms-ssim", 6)) {
-      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 2);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 12.0);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 13.0);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
-      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 4);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 14.75);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 16.5);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);

@@ -279,8 +279,10 @@ bogus:
  * The spec says that the values given produce "good" quality, and
  * when divided by 2, "very good" quality.
  */
-static const unsigned int std_luminance_quant_tbl[6][DCTSIZE2] = {
+static const unsigned int std_luminance_quant_tbl[9][DCTSIZE2] = {
   {
+    /* JPEG Annex K
+     */
     16,  11,  10,  16,  24,  40,  51,  61,
     12,  12,  14,  19,  26,  58,  60,  55,
     14,  13,  16,  24,  40,  57,  69,  56,
@@ -291,6 +293,8 @@ static const unsigned int std_luminance_quant_tbl[6][DCTSIZE2] = {
     72,  92,  95,  98, 112, 100, 103,  99
   },
   {
+    /* flat
+     */
     16,  16,  16,  16,  16,  16,  16,  16,
     16,  16,  16,  16,  16,  16,  16,  16,
     16,  16,  16,  16,  16,  16,  16,  16,
@@ -311,7 +315,8 @@ static const unsigned int std_luminance_quant_tbl[6][DCTSIZE2] = {
     68, 90, 90, 96, 113, 102, 105, 103
   },
   {
-    // From http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
+    /* From http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
+     */
     16,  16,  16,  18,  25,  37,  56,  85,
     16,  17,  20,  27,  34,  40,  53,  75,
     16,  20,  24,  31,  43,  62,  91,  135,
@@ -332,30 +337,8 @@ static const unsigned int std_luminance_quant_tbl[6][DCTSIZE2] = {
     70, 75, 100, 102, 116, 100, 107, 98
   },
   {
-#if 0
-    // DCTune perceptual optimization of compressed dental X-Rays (1997) Watson, Taylor, Borthwick
-    7, 8, 10, 14, 23, 44, 95, 241,
-    8, 8, 11, 15, 25, 47, 102, 255,
-    10, 11, 13, 19, 31, 58, 127, 255,
-    14, 15, 19, 27, 44, 83, 181, 255,
-    23, 25, 31, 44, 72, 136, 255, 255,
-    44, 47, 58, 83, 136, 255, 255, 255,
-    95, 102, 127, 181, 255, 255, 255, 255,
-    241, 255, 255, 255, 255, 255, 255, 255
-#endif
-#if 0
-    // A visual detection model for DCT coefficient quantization (12/9/93) Ahumada, Watson, Peterson
-    15, 11, 11, 12, 15, 19, 25, 32,
-    11, 13, 10, 10, 12, 15, 19, 24,
-    11, 10, 14, 14, 16, 18, 22, 27,
-    12, 10, 14, 18, 21, 24, 28, 33,
-    15, 12, 16, 21, 26, 31, 36, 42,
-    19, 15, 18, 24, 31, 38, 45, 53,
-    25, 19, 22, 28, 36, 45, 55, 65,
-    32, 24, 27, 33, 42, 53, 65, 77
-#endif
-#if 1
-    // Relevance of human vision to JPEG-DCT compression (1992) Klein, Silverstein and Carney.
+    /* Relevance of human vision to JPEG-DCT compression (1992) Klein, Silverstein and Carney.
+     */
     10, 12, 14, 19, 26, 38, 57, 86,
     12, 18, 21, 28, 35, 41, 54, 76,
     14, 21, 25, 32, 44, 63, 92, 136,
@@ -364,9 +347,34 @@ static const unsigned int std_luminance_quant_tbl[6][DCTSIZE2] = {
     38, 41, 63, 75, 95, 125, 170, 239,
     57, 54, 92, 107, 132, 170, 227, 312,
     86, 76, 136, 157, 190, 239, 312, 419
-#endif
-#if 0
-    // An improved detection model for DCT coefficient quantization (1993) Peterson, Ahumada and Watson
+  },
+  {
+    /* DCTune perceptual optimization of compressed dental X-Rays (1997) Watson, Taylor, Borthwick
+     */
+    7, 8, 10, 14, 23, 44, 95, 241,
+    8, 8, 11, 15, 25, 47, 102, 255,
+    10, 11, 13, 19, 31, 58, 127, 255,
+    14, 15, 19, 27, 44, 83, 181, 255,
+    23, 25, 31, 44, 72, 136, 255, 255,
+    44, 47, 58, 83, 136, 255, 255, 255,
+    95, 102, 127, 181, 255, 255, 255, 255,
+    241, 255, 255, 255, 255, 255, 255, 255
+  },
+  {
+    /* A visual detection model for DCT coefficient quantization (12/9/93) Ahumada, Watson, Peterson
+     */
+    15, 11, 11, 12, 15, 19, 25, 32,
+    11, 13, 10, 10, 12, 15, 19, 24,
+    11, 10, 14, 14, 16, 18, 22, 27,
+    12, 10, 14, 18, 21, 24, 28, 33,
+    15, 12, 16, 21, 26, 31, 36, 42,
+    19, 15, 18, 24, 31, 38, 45, 53,
+    25, 19, 22, 28, 36, 45, 55, 65,
+    32, 24, 27, 33, 42, 53, 65, 77
+  },
+  {
+    /* An improved detection model for DCT coefficient quantization (1993) Peterson, Ahumada and Watson
+     */
     14, 10, 11, 14, 19, 25, 34, 45,
     10, 11, 11, 12, 15, 20, 26, 33,
     11, 11, 15, 18, 21, 25, 31, 38,
@@ -375,12 +383,13 @@ static const unsigned int std_luminance_quant_tbl[6][DCTSIZE2] = {
     25, 20, 25, 33, 43, 54, 64, 74,
     34, 26, 31, 39, 51, 64, 77, 91,
     45, 33, 38, 47, 59, 74, 91, 108
-#endif
   }
 };
 
-static const unsigned int std_chrominance_quant_tbl[6][DCTSIZE2] = {
+static const unsigned int std_chrominance_quant_tbl[9][DCTSIZE2] = {
   {
+    /* JPEG Annex K
+     */
     17,  18,  24,  47,  99,  99,  99,  99,
     18,  21,  26,  66,  99,  99,  99,  99,
     24,  26,  56,  99,  99,  99,  99,  99,
@@ -391,6 +400,8 @@ static const unsigned int std_chrominance_quant_tbl[6][DCTSIZE2] = {
     99,  99,  99,  99,  99,  99,  99,  99
   },
   {
+    /* flat
+     */
     16,  16,  16,  16,  16,  16,  16,  16,
     16,  16,  16,  16,  16,  16,  16,  16,
     16,  16,  16,  16,  16,  16,  16,  16,
@@ -432,14 +443,56 @@ static const unsigned int std_chrominance_quant_tbl[6][DCTSIZE2] = {
     97, 97, 99, 99, 99, 99, 97, 99
   },
   {
-    17,  18,  24,  47,  99,  99,  99,  99,
-    18,  21,  26,  66,  99,  99,  99,  99,
-    24,  26,  56,  99,  99,  99,  99,  99,
-    47,  66,  99,  99,  99,  99,  99,  99,
-    99,  99,  99,  99,  99,  99,  99,  99,
-    99,  99,  99,  99,  99,  99,  99,  99,
-    99,  99,  99,  99,  99,  99,  99,  99,
-    99,  99,  99,  99,  99,  99,  99,  99    
+    /* Relevance of human vision to JPEG-DCT compression (1992) Klein, Silverstein and Carney.
+     * Copied from luma
+     */
+    10, 12, 14, 19, 26, 38, 57, 86,
+    12, 18, 21, 28, 35, 41, 54, 76,
+    14, 21, 25, 32, 44, 63, 92, 136,
+    19, 28, 32, 41, 54, 75, 107, 157,
+    26, 35, 44, 54, 70, 95, 132, 190,
+    38, 41, 63, 75, 95, 125, 170, 239,
+    57, 54, 92, 107, 132, 170, 227, 312,
+    86, 76, 136, 157, 190, 239, 312, 419
+  },
+  {
+    /* DCTune perceptual optimization of compressed dental X-Rays (1997) Watson, Taylor, Borthwick
+     * Copied from luma
+     */
+    7, 8, 10, 14, 23, 44, 95, 241,
+    8, 8, 11, 15, 25, 47, 102, 255,
+    10, 11, 13, 19, 31, 58, 127, 255,
+    14, 15, 19, 27, 44, 83, 181, 255,
+    23, 25, 31, 44, 72, 136, 255, 255,
+    44, 47, 58, 83, 136, 255, 255, 255,
+    95, 102, 127, 181, 255, 255, 255, 255,
+    241, 255, 255, 255, 255, 255, 255, 255
+  },
+  {
+    /* A visual detection model for DCT coefficient quantization (12/9/93) Ahumada, Watson, Peterson
+     * Copied from luma
+     */
+    15, 11, 11, 12, 15, 19, 25, 32,
+    11, 13, 10, 10, 12, 15, 19, 24,
+    11, 10, 14, 14, 16, 18, 22, 27,
+    12, 10, 14, 18, 21, 24, 28, 33,
+    15, 12, 16, 21, 26, 31, 36, 42,
+    19, 15, 18, 24, 31, 38, 45, 53,
+    25, 19, 22, 28, 36, 45, 55, 65,
+    32, 24, 27, 33, 42, 53, 65, 77
+  },
+  {
+    /* An improved detection model for DCT coefficient quantization (1993) Peterson, Ahumada and Watson
+     * Copied from luma
+     */
+    14, 10, 11, 14, 19, 25, 34, 45,
+    10, 11, 11, 12, 15, 20, 26, 33,
+    11, 11, 15, 18, 21, 25, 31, 38,
+    14, 12, 18, 24, 28, 33, 39, 47,
+    19, 15, 21, 28, 36, 43, 51, 59,
+    25, 20, 25, 33, 43, 54, 64, 74,
+    34, 26, 31, 39, 51, 64, 77, 91,
+    45, 33, 38, 47, 59, 74, 91, 108
   }
 };
 

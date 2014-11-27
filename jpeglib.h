@@ -281,7 +281,6 @@ typedef enum {
   JBOOLEAN_TRELLIS_QUANT = 0xC5122033, /* TRUE=use trellis quantization */
   JBOOLEAN_TRELLIS_QUANT_DC = 0x339D4C0C, /* TRUE=use trellis quant for DC coefficient */
   JBOOLEAN_TRELLIS_EOB_OPT = 0xD7F73780, /* TRUE=optimize for sequences of EOB */
-  JBOOLEAN_USE_FLAT_QUANT_TBL = 0xE807EC6C, /* TRUE=use flat quantization table */
   JBOOLEAN_USE_LAMBDA_WEIGHT_TBL = 0x339DB65F, /* TRUE=use lambda weighting table */
   JBOOLEAN_USE_SCANS_IN_TRELLIS = 0xFD841435, /* TRUE=use scans in trellis optimization */
   JBOOLEAN_TRELLIS_PASSES = 0x3FF8A439, /* TRUE=currently doing trellis-related passes */
@@ -300,7 +299,8 @@ typedef enum {
 
 typedef enum {
   JINT_TRELLIS_FREQ_SPLIT = 0x6FAFF127, /* splitting point for frequency in trellis quantization */
-  JINT_TRELLIS_NUM_LOOPS = 0xB63EBF39 /* number of trellis loops */
+  JINT_TRELLIS_NUM_LOOPS = 0xB63EBF39, /* number of trellis loops */
+  JINT_BASE_QUANT_TBL_IDX = 0x44492AB1 /* base quantization table index */
 } J_INT_PARAM;
 
 

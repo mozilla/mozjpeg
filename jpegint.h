@@ -65,7 +65,6 @@ struct jpeg_comp_master {
   boolean trellis_quant; /* TRUE=use trellis quantization */
   boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
   boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
-  boolean use_flat_quant_tbl; /* TRUE=use flat quantization table */
   boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
   boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
   boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
@@ -75,6 +74,7 @@ struct jpeg_comp_master {
   double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
   double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
 
+  int quant_tbl_master_idx; /* Quantization table master index */
   int trellis_freq_split; /* splitting point for frequency in trellis quantization */
   int trellis_num_loops; /* number of trellis loops */
 

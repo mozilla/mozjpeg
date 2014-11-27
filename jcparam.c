@@ -70,36 +70,221 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
  * The spec says that the values given produce "good" quality, and
  * when divided by 2, "very good" quality.
  */
-static const unsigned int std_luminance_quant_tbl[DCTSIZE2] = {
-  16,  11,  10,  16,  24,  40,  51,  61,
-  12,  12,  14,  19,  26,  58,  60,  55,
-  14,  13,  16,  24,  40,  57,  69,  56,
-  14,  17,  22,  29,  51,  87,  80,  62,
-  18,  22,  37,  56,  68, 109, 103,  77,
-  24,  35,  55,  64,  81, 104, 113,  92,
-  49,  64,  78,  87, 103, 121, 120, 101,
-  72,  92,  95,  98, 112, 100, 103,  99
-};
-static const unsigned int std_chrominance_quant_tbl[DCTSIZE2] = {
-  17,  18,  24,  47,  99,  99,  99,  99,
-  18,  21,  26,  66,  99,  99,  99,  99,
-  24,  26,  56,  99,  99,  99,  99,  99,
-  47,  66,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99,
-  99,  99,  99,  99,  99,  99,  99,  99
+static const unsigned int std_luminance_quant_tbl[9][DCTSIZE2] = {
+  {
+    /* JPEG Annex K
+     */
+    16,  11,  10,  16,  24,  40,  51,  61,
+    12,  12,  14,  19,  26,  58,  60,  55,
+    14,  13,  16,  24,  40,  57,  69,  56,
+    14,  17,  22,  29,  51,  87,  80,  62,
+    18,  22,  37,  56,  68, 109, 103,  77,
+    24,  35,  55,  64,  81, 104, 113,  92,
+    49,  64,  78,  87, 103, 121, 120, 101,
+    72,  92,  95,  98, 112, 100, 103,  99
+  },
+  {
+    /* flat
+     */
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16
+  },
+  {
+    12, 17, 20, 21, 30, 34, 56, 63,
+    18, 20, 20, 26, 28, 51, 61, 55,
+    19, 20, 21, 26, 33, 58, 69, 55,
+    26, 26, 26, 30, 46, 87, 86, 66,
+    31, 33, 36, 40, 46, 96, 100, 73,
+    40, 35, 46, 62, 81, 100, 111, 91,
+    46, 66, 76, 86, 102, 121, 120, 101,
+    68, 90, 90, 96, 113, 102, 105, 103
+  },
+  {
+    /* From http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
+     */
+    16,  16,  16,  18,  25,  37,  56,  85,
+    16,  17,  20,  27,  34,  40,  53,  75,
+    16,  20,  24,  31,  43,  62,  91,  135,
+    18,  27,  31,  40,  53,  74,  106, 156,
+    25,  34,  43,  53,  69,  94,  131, 189,
+    37,  40,  62,  74,  94,  124, 169, 238,
+    56,  53,  91,  106, 131, 169, 226, 311,
+    85,  75,  135, 156, 189, 238, 311, 418
+  },
+  {
+    9, 10, 12, 14, 27, 32, 51, 62,
+    11, 12, 14, 19, 27, 44, 59, 73,
+    12, 14, 18, 25, 42, 59, 79, 78,
+    17, 18, 25, 42, 61, 92, 87, 92,
+    23, 28, 42, 75, 79, 112, 112, 99,
+    40, 42, 59, 84, 88, 124, 132, 111,
+    42, 64, 78, 95, 105, 126, 125, 99,
+    70, 75, 100, 102, 116, 100, 107, 98
+  },
+  {
+    /* Relevance of human vision to JPEG-DCT compression (1992) Klein, Silverstein and Carney.
+     */
+    10, 12, 14, 19, 26, 38, 57, 86,
+    12, 18, 21, 28, 35, 41, 54, 76,
+    14, 21, 25, 32, 44, 63, 92, 136,
+    19, 28, 32, 41, 54, 75, 107, 157,
+    26, 35, 44, 54, 70, 95, 132, 190,
+    38, 41, 63, 75, 95, 125, 170, 239,
+    57, 54, 92, 107, 132, 170, 227, 312,
+    86, 76, 136, 157, 190, 239, 312, 419
+  },
+  {
+    /* DCTune perceptual optimization of compressed dental X-Rays (1997) Watson, Taylor, Borthwick
+     */
+    7, 8, 10, 14, 23, 44, 95, 241,
+    8, 8, 11, 15, 25, 47, 102, 255,
+    10, 11, 13, 19, 31, 58, 127, 255,
+    14, 15, 19, 27, 44, 83, 181, 255,
+    23, 25, 31, 44, 72, 136, 255, 255,
+    44, 47, 58, 83, 136, 255, 255, 255,
+    95, 102, 127, 181, 255, 255, 255, 255,
+    241, 255, 255, 255, 255, 255, 255, 255
+  },
+  {
+    /* A visual detection model for DCT coefficient quantization (12/9/93) Ahumada, Watson, Peterson
+     */
+    15, 11, 11, 12, 15, 19, 25, 32,
+    11, 13, 10, 10, 12, 15, 19, 24,
+    11, 10, 14, 14, 16, 18, 22, 27,
+    12, 10, 14, 18, 21, 24, 28, 33,
+    15, 12, 16, 21, 26, 31, 36, 42,
+    19, 15, 18, 24, 31, 38, 45, 53,
+    25, 19, 22, 28, 36, 45, 55, 65,
+    32, 24, 27, 33, 42, 53, 65, 77
+  },
+  {
+    /* An improved detection model for DCT coefficient quantization (1993) Peterson, Ahumada and Watson
+     */
+    14, 10, 11, 14, 19, 25, 34, 45,
+    10, 11, 11, 12, 15, 20, 26, 33,
+    11, 11, 15, 18, 21, 25, 31, 38,
+    14, 12, 18, 24, 28, 33, 39, 47,
+    19, 15, 21, 28, 36, 43, 51, 59,
+    25, 20, 25, 33, 43, 54, 64, 74,
+    34, 26, 31, 39, 51, 64, 77, 91,
+    45, 33, 38, 47, 59, 74, 91, 108
+  }
 };
 
-static const unsigned int flat_quant_tbl[DCTSIZE2] = {
-  16,  16,  16,  16,  16,  16,  16,  16,
-  16,  16,  16,  16,  16,  16,  16,  16,
-  16,  16,  16,  16,  16,  16,  16,  16,
-  16,  16,  16,  16,  16,  16,  16,  16,
-  16,  16,  16,  16,  16,  16,  16,  16,
-  16,  16,  16,  16,  16,  16,  16,  16,
-  16,  16,  16,  16,  16,  16,  16,  16,
-  16,  16,  16,  16,  16,  16,  16,  16
+static const unsigned int std_chrominance_quant_tbl[9][DCTSIZE2] = {
+  {
+    /* JPEG Annex K
+     */
+    17,  18,  24,  47,  99,  99,  99,  99,
+    18,  21,  26,  66,  99,  99,  99,  99,
+    24,  26,  56,  99,  99,  99,  99,  99,
+    47,  66,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99
+  },
+  {
+    /* flat
+     */
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16,
+    16,  16,  16,  16,  16,  16,  16,  16
+  },
+  {
+    8, 12, 15, 15, 86, 96, 96, 98,
+    13, 13, 15, 26, 90, 96, 99, 98,
+    12, 15, 18, 96, 99, 99, 99, 99,
+    17, 16, 90, 96, 99, 99, 99, 99,
+    96, 96, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99
+  },
+  {
+    // From http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
+    16,  16,  16,  18,  25,  37,  56,  85,
+    16,  17,  20,  27,  34,  40,  53,  75,
+    16,  20,  24,  31,  43,  62,  91,  135,
+    18,  27,  31,  40,  53,  74,  106, 156,
+    25,  34,  43,  53,  69,  94,  131, 189,
+    37,  40,  62,  74,  94,  124, 169, 238,
+    56,  53,  91,  106, 131, 169, 226, 311,
+    85,  75,  135, 156, 189, 238, 311, 418
+  },
+  {
+    9, 10, 17, 19, 62, 89, 91, 97,
+    12, 13, 18, 29, 84, 91, 88, 98,
+    14, 19, 29, 93, 95, 95, 98, 97,
+    20, 26, 84, 88, 95, 95, 98, 94,
+    26, 86, 91, 93, 97, 99, 98, 99,
+    99, 100, 98, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    97, 97, 99, 99, 99, 99, 97, 99
+  },
+  {
+    /* Relevance of human vision to JPEG-DCT compression (1992) Klein, Silverstein and Carney.
+     * Copied from luma
+     */
+    10, 12, 14, 19, 26, 38, 57, 86,
+    12, 18, 21, 28, 35, 41, 54, 76,
+    14, 21, 25, 32, 44, 63, 92, 136,
+    19, 28, 32, 41, 54, 75, 107, 157,
+    26, 35, 44, 54, 70, 95, 132, 190,
+    38, 41, 63, 75, 95, 125, 170, 239,
+    57, 54, 92, 107, 132, 170, 227, 312,
+    86, 76, 136, 157, 190, 239, 312, 419
+  },
+  {
+    /* DCTune perceptual optimization of compressed dental X-Rays (1997) Watson, Taylor, Borthwick
+     * Copied from luma
+     */
+    7, 8, 10, 14, 23, 44, 95, 241,
+    8, 8, 11, 15, 25, 47, 102, 255,
+    10, 11, 13, 19, 31, 58, 127, 255,
+    14, 15, 19, 27, 44, 83, 181, 255,
+    23, 25, 31, 44, 72, 136, 255, 255,
+    44, 47, 58, 83, 136, 255, 255, 255,
+    95, 102, 127, 181, 255, 255, 255, 255,
+    241, 255, 255, 255, 255, 255, 255, 255
+  },
+  {
+    /* A visual detection model for DCT coefficient quantization (12/9/93) Ahumada, Watson, Peterson
+     * Copied from luma
+     */
+    15, 11, 11, 12, 15, 19, 25, 32,
+    11, 13, 10, 10, 12, 15, 19, 24,
+    11, 10, 14, 14, 16, 18, 22, 27,
+    12, 10, 14, 18, 21, 24, 28, 33,
+    15, 12, 16, 21, 26, 31, 36, 42,
+    19, 15, 18, 24, 31, 38, 45, 53,
+    25, 19, 22, 28, 36, 45, 55, 65,
+    32, 24, 27, 33, 42, 53, 65, 77
+  },
+  {
+    /* An improved detection model for DCT coefficient quantization (1993) Peterson, Ahumada and Watson
+     * Copied from luma
+     */
+    14, 10, 11, 14, 19, 25, 34, 45,
+    10, 11, 11, 12, 15, 20, 26, 33,
+    11, 11, 15, 18, 21, 25, 31, 38,
+    14, 12, 18, 24, 28, 33, 39, 47,
+    19, 15, 21, 28, 36, 43, 51, 59,
+    25, 20, 25, 33, 43, 54, 64, 74,
+    34, 26, 31, 39, 51, 64, 77, 91,
+    45, 33, 38, 47, 59, 74, 91, 108
+  }
 };
 
 #if JPEG_LIB_VERSION >= 70
@@ -111,17 +296,10 @@ jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
  */
 {
   /* Set up two quantization tables using the specified scaling */
-  if (cinfo->use_flat_quant_tbl) {
-    jpeg_add_quant_table(cinfo, 0, flat_quant_tbl,
-                         cinfo->q_scale_factor[0], force_baseline);
-    jpeg_add_quant_table(cinfo, 1, flat_quant_tbl,
-                         cinfo->q_scale_factor[1], force_baseline);
-  } else {
-    jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
-                         cinfo->q_scale_factor[0], force_baseline);
-    jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
-                         cinfo->q_scale_factor[1], force_baseline);
-  }
+  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl[cinfo->master->quant_tbl_master_idx],
+                       cinfo->q_scale_factor[0], force_baseline);
+  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl[cinfo->master->quant_tbl_master_idx],
+                       cinfo->q_scale_factor[1], force_baseline);
 }
 #endif
 
@@ -136,17 +314,10 @@ jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
  */
 {
   /* Set up two quantization tables using the specified scaling */
-  if (cinfo->master->use_flat_quant_tbl) {
-    jpeg_add_quant_table(cinfo, 0, flat_quant_tbl,
-                         scale_factor, force_baseline);
-    jpeg_add_quant_table(cinfo, 1, flat_quant_tbl,
-                         scale_factor, force_baseline);
-  } else {
-    jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
-                         scale_factor, force_baseline);
-    jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
-                         scale_factor, force_baseline);
-  }
+  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl[cinfo->master->quant_tbl_master_idx],
+                       scale_factor, force_baseline);
+  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl[cinfo->master->quant_tbl_master_idx],
+                       scale_factor, force_baseline);
 }
 
 
@@ -335,8 +506,9 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 #endif
   
   cinfo->master->trellis_quant = cinfo->master->use_moz_defaults;
-  cinfo->master->lambda_log_scale1 = 16.0;
-  cinfo->master->lambda_log_scale2 = 15.5;
+  cinfo->master->lambda_log_scale1 = 14.75;
+  cinfo->master->lambda_log_scale2 = 16.5;
+  cinfo->master->quant_tbl_master_idx = 3;
   
   cinfo->master->use_lambda_weight_tbl = TRUE;
   cinfo->master->use_scans_in_trellis = FALSE;

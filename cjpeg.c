@@ -204,6 +204,13 @@ usage (void)
   fprintf(stderr, "  -dct float     Use floating-point DCT method%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
+  fprintf(stderr, "  -quant-table N Use predefined quantization table N:\n");
+  fprintf(stderr, "                 - 0 JPEG Annex K\n");
+  fprintf(stderr, "                 - 1 Flat\n");
+  fprintf(stderr, "                 - 2 Custom, tuned for MS-SSIM\n");
+  fprintf(stderr, "                 - 3 ImageMagick table by N. Robidoux\n");
+  fprintf(stderr, "                 - 4 Custom, tuned for PSNR-HVS\n");
+  fprintf(stderr, "                 - 5 Table from paper by Klein, Silverstein and Carney\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
 #ifdef INPUT_SMOOTHING_SUPPORTED
   fprintf(stderr, "  -smooth N      Smooth dithered input (N=1..100 is strength)\n");
@@ -333,10 +340,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "fastcrush", 4)) {
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
 
-    } else if (keymatch(arg, "flat", 4)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, TRUE);
-      jpeg_set_quality(cinfo, 75, TRUE);
-
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
@@ -437,6 +440,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       qtablefile = argv[argn];
       /* We postpone actually reading the file in case -quality comes later. */
 
+    } else if (keymatch(arg, "quant_table", 2)) {
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, atoi(argv[argn]));
+      jpeg_set_quality(cinfo, 75, TRUE);
+      
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
       long lval;
@@ -517,30 +526,30 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, TRUE);
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, TRUE);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 9.0);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 0.0);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ssim", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, TRUE);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 12.0);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 13.5);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 11.5);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 12.75);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ms-ssim", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, FALSE);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 14.25);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 12.75);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 12.0);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 13.0);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, FALSE);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 16.0);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 15.5);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 14.75);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 16.5);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
 

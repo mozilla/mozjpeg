@@ -26,7 +26,6 @@ jpeg_c_bool_param_supported (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
   case JBOOLEAN_TRELLIS_QUANT:
   case JBOOLEAN_TRELLIS_QUANT_DC:
   case JBOOLEAN_TRELLIS_EOB_OPT:
-  case JBOOLEAN_USE_FLAT_QUANT_TBL:
   case JBOOLEAN_USE_LAMBDA_WEIGHT_TBL:
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
   case JBOOLEAN_TRELLIS_PASSES:
@@ -64,9 +63,6 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
     break;
   case JBOOLEAN_TRELLIS_EOB_OPT:
     cinfo->master->trellis_eob_opt = value;
-    break;
-  case JBOOLEAN_USE_FLAT_QUANT_TBL:
-    cinfo->master->use_flat_quant_tbl = value;
     break;
   case JBOOLEAN_USE_LAMBDA_WEIGHT_TBL:
     cinfo->master->use_lambda_weight_tbl = value;
@@ -107,8 +103,6 @@ jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
     return cinfo->master->trellis_quant_dc;
   case JBOOLEAN_TRELLIS_EOB_OPT:
     return cinfo->master->trellis_eob_opt;
-  case JBOOLEAN_USE_FLAT_QUANT_TBL:
-    return cinfo->master->use_flat_quant_tbl;
   case JBOOLEAN_USE_LAMBDA_WEIGHT_TBL:
     return cinfo->master->use_lambda_weight_tbl;
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
@@ -178,6 +172,7 @@ jpeg_c_int_param_supported (j_compress_ptr cinfo, J_INT_PARAM param)
   switch (param) {
   case JINT_TRELLIS_FREQ_SPLIT:
   case JINT_TRELLIS_NUM_LOOPS:
+  case JINT_BASE_QUANT_TBL_IDX:
     return TRUE;
   }
 
@@ -195,6 +190,9 @@ jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value)
   case JINT_TRELLIS_NUM_LOOPS:
     cinfo->master->trellis_num_loops = value;
     break;
+  case JINT_BASE_QUANT_TBL_IDX:
+    cinfo->master->quant_tbl_master_idx = value;
+    break;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }
@@ -209,6 +207,8 @@ jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param)
     return cinfo->master->trellis_freq_split;
   case JINT_TRELLIS_NUM_LOOPS:
     return cinfo->master->trellis_num_loops;
+  case JINT_BASE_QUANT_TBL_IDX:
+    return cinfo->master->quant_tbl_master_idx;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }

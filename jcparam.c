@@ -213,7 +213,8 @@ static const unsigned int std_chrominance_quant_tbl[9][DCTSIZE2] = {
     99, 99, 99, 99, 99, 99, 99, 99
   },
   {
-    // From http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
+    /* From http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
+     */
     16,  16,  16,  18,  25,  37,  56,  85,
     16,  17,  20,  27,  34,  40,  53,  75,
     16,  20,  24,  31,  43,  62,  91,  135,

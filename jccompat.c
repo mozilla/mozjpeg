@@ -28,7 +28,6 @@ jpeg_c_bool_param_supported (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
   case JBOOLEAN_TRELLIS_EOB_OPT:
   case JBOOLEAN_USE_LAMBDA_WEIGHT_TBL:
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
-  case JBOOLEAN_TRELLIS_PASSES:
   case JBOOLEAN_TRELLIS_Q_OPT:
   case JBOOLEAN_OVERSHOOT_DERINGING:
     return TRUE;
@@ -70,9 +69,6 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
     cinfo->master->use_scans_in_trellis = value;
     break;
-  case JBOOLEAN_TRELLIS_PASSES:
-    cinfo->master->trellis_passes = value;
-    break;
   case JBOOLEAN_TRELLIS_Q_OPT:
     cinfo->master->trellis_q_opt = value;
     break;
@@ -107,8 +103,6 @@ jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
     return cinfo->master->use_lambda_weight_tbl;
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
     return cinfo->master->use_scans_in_trellis;
-  case JBOOLEAN_TRELLIS_PASSES:
-    return cinfo->master->trellis_passes;
   case JBOOLEAN_TRELLIS_Q_OPT:
     return cinfo->master->trellis_q_opt;
   case JBOOLEAN_OVERSHOOT_DERINGING:

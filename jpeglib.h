@@ -283,7 +283,6 @@ typedef enum {
   JBOOLEAN_TRELLIS_EOB_OPT = 0xD7F73780, /* TRUE=optimize for sequences of EOB */
   JBOOLEAN_USE_LAMBDA_WEIGHT_TBL = 0x339DB65F, /* TRUE=use lambda weighting table */
   JBOOLEAN_USE_SCANS_IN_TRELLIS = 0xFD841435, /* TRUE=use scans in trellis optimization */
-  JBOOLEAN_TRELLIS_PASSES = 0x3FF8A439, /* TRUE=currently doing trellis-related passes */
   JBOOLEAN_TRELLIS_Q_OPT = 0xE12AE269, /* TRUE=optimize quant table in trellis loop */
   JBOOLEAN_OVERSHOOT_DERINGING = 0x3F4BBBF9 /* TRUE=preprocess input to reduce ringing of edges on white background */
 } J_BOOLEAN_PARAM;

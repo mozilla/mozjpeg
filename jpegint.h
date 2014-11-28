@@ -67,7 +67,7 @@ struct jpeg_comp_master {
   boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
   boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
   boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
-  boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
+  boolean trellis_passes; /* TRUE=currently doing trellis-related passes [not exposed] */
   boolean trellis_q_opt; /* TRUE=optimize quant table in trellis loop */
   boolean overshoot_deringing; /* TRUE=preprocess input to reduce ringing of edges on white background */
 

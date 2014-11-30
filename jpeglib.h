@@ -276,8 +276,6 @@ typedef enum {
 typedef enum {
   JBOOLEAN_USE_MOZ_DEFAULTS = 0xAE2F5D7F, /* TRUE=use Mozilla defaults */
   JBOOLEAN_OPTIMIZE_SCANS = 0x680C061E, /* TRUE=optimize progressive coding scans */
-  JBOOLEAN_ONE_DC_SCAN = 0x3DA6A269, /* TRUE=use a single DC scan interleaving all components */
-  JBOOLEAN_SEP_DC_SCAN = 0xE20DFA9F, /* TRUE=each DC scan is separate */
   JBOOLEAN_TRELLIS_QUANT = 0xC5122033, /* TRUE=use trellis quantization */
   JBOOLEAN_TRELLIS_QUANT_DC = 0x339D4C0C, /* TRUE=use trellis quant for DC coefficient */
   JBOOLEAN_TRELLIS_EOB_OPT = 0xD7F73780, /* TRUE=optimize for sequences of EOB */
@@ -299,7 +297,8 @@ typedef enum {
 typedef enum {
   JINT_TRELLIS_FREQ_SPLIT = 0x6FAFF127, /* splitting point for frequency in trellis quantization */
   JINT_TRELLIS_NUM_LOOPS = 0xB63EBF39, /* number of trellis loops */
-  JINT_BASE_QUANT_TBL_IDX = 0x44492AB1 /* base quantization table index */
+  JINT_BASE_QUANT_TBL_IDX = 0x44492AB1, /* base quantization table index */
+  JINT_DC_SCAN_OPT_MODE = 0x0BE7AD3C /* DC scan optimization mode */
 } J_INT_PARAM;
 
 

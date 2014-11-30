@@ -779,10 +779,10 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
     copy_buffer(cinfo, 0);
 
     if (cinfo->num_scans > cinfo->master->num_scans_luma &&
-        !cinfo->master->one_dc_scan) {
+        cinfo->master->dc_scan_opt_mode != 0) {
       base_scan_idx = cinfo->master->num_scans_luma;
       
-      if (master->interleave_chroma_dc && !cinfo->master->sep_dc_scan)
+      if (master->interleave_chroma_dc && cinfo->master->dc_scan_opt_mode != 1)
         copy_buffer(cinfo, base_scan_idx);
       else {
         copy_buffer(cinfo, base_scan_idx+1);

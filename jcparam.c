@@ -496,7 +496,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
 
   jpeg_default_colorspace(cinfo);
   
-  cinfo->master->one_dc_scan = TRUE;
+  cinfo->master->dc_scan_opt_mode = 1;
   
 #ifdef C_PROGRESSIVE_SUPPORTED
   if (cinfo->master->use_moz_defaults) {
@@ -786,7 +786,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
   /* last 4 done conditionally */
   
   /* luma DC by itself */
-  if (cinfo->master->one_dc_scan)
+  if (cinfo->master->dc_scan_opt_mode == 0)
     scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
   else
     scanptr = fill_dc_scans(scanptr, 1, 0, 0);
@@ -912,9 +912,9 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     if (cinfo->master->use_moz_defaults == TRUE) {
       /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
     /* Initial DC scan */
-      if (cinfo->master->one_dc_scan)
+      if (cinfo->master->dc_scan_opt_mode == 0)
         scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
-      else if (cinfo->master->sep_dc_scan) {
+      else if (cinfo->master->dc_scan_opt_mode == 1) {
         scanptr = fill_a_scan(scanptr, 0, 0, 0, 0, 0);
         scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
         scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);

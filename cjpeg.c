@@ -178,8 +178,11 @@ usage (void)
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
-  fprintf(stderr, "  -opt-dc-scan   Optimize DC scans (may be incompatible with some JPEG decoders)\n");
-  fprintf(stderr, "  -split-dc-scan Use one DC scan per component (may be incompatible with some JPEG decoders?)\n");
+  fprintf(stderr, "  -dc-scan-opt   DC scan optimization mode\n");
+  fprintf(stderr, "                 - 0 One scan for all components\n");
+  fprintf(stderr, "                 - 1 One scan per component (default)\n");
+  fprintf(stderr, "                 - 2 Optimize between one scan for all components and one scan for 1st component\n");
+  fprintf(stderr, "                     plus one scan for remaining components\n");
   fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
   fprintf(stderr, "  -trellis-dc    Enable trellis optimization of DC coefficients (default)\n");
   fprintf(stderr, "  -notrellis-dc  Disable trellis optimization of DC coefficients\n");
@@ -373,8 +376,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
-    } else if (keymatch(arg, "opt-dc-scan", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_ONE_DC_SCAN, FALSE);
+    } else if (keymatch(arg, "dc-scan-opt", 3)) {
+      if (++argn >= argc) {      /* advance to next argument */
+        fprintf(stderr, "%s: missing argument for dc-scan-opt\n", progname);
+        usage();
+      }
+      jpeg_c_set_int_param(cinfo, JINT_DC_SCAN_OPT_MODE, atoi(argv[argn]));
 
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */
@@ -505,10 +512,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         usage();
       cinfo->smoothing_factor = val;
 
-    } else if (keymatch(arg, "split-dc-scans", 3)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_ONE_DC_SCAN, FALSE);
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_SEP_DC_SCAN, TRUE);
-      
     } else if (keymatch(arg, "targa", 1)) {
       /* Input file is Targa format. */
       is_targa = TRUE;

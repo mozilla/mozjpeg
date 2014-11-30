@@ -21,8 +21,6 @@ jpeg_c_bool_param_supported (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
   switch (param) {
   case JBOOLEAN_USE_MOZ_DEFAULTS:
   case JBOOLEAN_OPTIMIZE_SCANS:
-  case JBOOLEAN_ONE_DC_SCAN:
-  case JBOOLEAN_SEP_DC_SCAN:
   case JBOOLEAN_TRELLIS_QUANT:
   case JBOOLEAN_TRELLIS_QUANT_DC:
   case JBOOLEAN_TRELLIS_EOB_OPT:
@@ -47,12 +45,6 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
     break;
   case JBOOLEAN_OPTIMIZE_SCANS:
     cinfo->master->optimize_scans = value;
-    break;
-  case JBOOLEAN_ONE_DC_SCAN:
-    cinfo->master->one_dc_scan = value;
-    break;
-  case JBOOLEAN_SEP_DC_SCAN:
-    cinfo->master->sep_dc_scan = value;
     break;
   case JBOOLEAN_TRELLIS_QUANT:
     cinfo->master->trellis_quant = value;
@@ -89,10 +81,6 @@ jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
     return cinfo->master->use_moz_defaults;
   case JBOOLEAN_OPTIMIZE_SCANS:
     return cinfo->master->optimize_scans;
-  case JBOOLEAN_ONE_DC_SCAN:
-    return cinfo->master->one_dc_scan;
-  case JBOOLEAN_SEP_DC_SCAN:
-    return cinfo->master->sep_dc_scan;
   case JBOOLEAN_TRELLIS_QUANT:
     return cinfo->master->trellis_quant;
   case JBOOLEAN_TRELLIS_QUANT_DC:
@@ -167,6 +155,7 @@ jpeg_c_int_param_supported (j_compress_ptr cinfo, J_INT_PARAM param)
   case JINT_TRELLIS_FREQ_SPLIT:
   case JINT_TRELLIS_NUM_LOOPS:
   case JINT_BASE_QUANT_TBL_IDX:
+  case JINT_DC_SCAN_OPT_MODE:
     return TRUE;
   }
 
@@ -187,6 +176,9 @@ jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value)
   case JINT_BASE_QUANT_TBL_IDX:
     cinfo->master->quant_tbl_master_idx = value;
     break;
+  case JINT_DC_SCAN_OPT_MODE:
+    cinfo->master->dc_scan_opt_mode = value;
+    break;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }
@@ -203,6 +195,8 @@ jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param)
     return cinfo->master->trellis_num_loops;
   case JINT_BASE_QUANT_TBL_IDX:
     return cinfo->master->quant_tbl_master_idx;
+  case JINT_DC_SCAN_OPT_MODE:
+    return cinfo->master->dc_scan_opt_mode;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }

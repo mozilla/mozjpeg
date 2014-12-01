@@ -514,8 +514,9 @@ jinit_downsampler (j_compress_ptr cinfo)
 #endif
           downsample->methods[ci] = h2v2_smooth_downsample;
         downsample->pub.need_context_rows = TRUE;
-      } else {
+      } else
 #endif
+      {
         if (jsimd_can_h2v2_downsample())
           downsample->methods[ci] = jsimd_h2v2_downsample;
         else

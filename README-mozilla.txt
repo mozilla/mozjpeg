@@ -1,109 +1,178 @@
 Mozilla JPEG Encoder Project
 ============================
 
-This project's goal is to reduce the size of JPEG files without reducing
-quality or compatibility with the vast majority of the world's deployed decoders.
+mozjpeg is a fork of libjpeg-turbo that aims to speed up load times of web
+pages by reducing the size (and, by extension, the transmission time) of JPEG
+files.  It accomplishes this by enabling optimized Huffman trees and
+progressive entropy coding by default in the JPEG compressor, as well as
+splitting the spectrum of DCT coefficients into separate scans and using
+Trellis quantisation.
 
-The idea is to reduce transfer times for JPEGs on the Web, thus reducing page load times.
-
-'mozjpeg' is not intended to be a general JPEG library replacement. It makes tradeoffs that
-are intended to benefit Web use cases and focuses solely on improving encoding. It is best
-used as part of a Web encoding workflow. For a general JPEG library (e.g. your system libjpeg),
-especially if you care about decoding, we recommend libjpeg-turbo.
-
-
-Data structures
-===============
-
-New parameters introduced by the Mozilla JPEG encoder are placed into the jpeg_comp_master data
-structure which his not directly accessible. Several functions are introduced to get and set these
-parameters:
-
-EXTERN(boolean) jpeg_c_bool_param_supported (j_compress_ptr cinfo, J_BOOLEAN_PARAM param);
-EXTERN(void) jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param, boolean value);
-EXTERN(boolean) jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param);
-
-EXTERN(boolean) jpeg_c_float_param_supported (j_compress_ptr cinfo, J_FLOAT_PARAM param);
-EXTERN(void) jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param, float value);
-EXTERN(float) jpeg_c_get_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param);
-
-EXTERN(boolean) jpeg_c_int_param_supported (j_compress_ptr cinfo, J_INT_PARAM param);
-EXTERN(void) jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value);
-EXTERN(int) jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param);
+Although it is based on libjpeg-turbo, mozjpeg is not intended to be a
+general-purpose or high-performance JPEG library.  Its performance is highly
+"asymmetric".  That is, the JPEG files it generates require much more time to
+compress than to decompress.  When the default settings are used, mozjpeg is
+considerably slower than libjpeg-turbo or even libjpeg at compressing images.
+Thus, it is not generally suitable for real-time compression.  It is best used
+as part of a web encoding workflow.
 
 
-Boolean parameters
-------------------
+libjpeg API Extensibility Framework
+===================================
 
-* JBOOLEAN_USE_MOZ_DEFAULTS indicates whether the Mozilla default settings should be used. Otherwise
-  the behavior reverts to the default from libjpeg-turbo. Note that this parameter should be set
-  before calling jpeg_set_defaults(). By default this parameter is enabled.
+mozjpeg's implementation of the libjpeg API includes an extensibility framework
+that allows new features to be added without modifying the transparent libjpeg
+compress/decompress structures (which would break backward ABI compatibility.)
+Extension parameters are placed into the opaque jpeg_comp_master structure, and
+a set of accessor functions and globally unique tokens allows for 
+getting/setting those parameters without directly accessing the structure.
 
-* JBOOLEAN_OPTIMIZE_SCANS indicates whether to optimize scan parameters. Parameter optimization is
-  done as in jpgcrush. By default this parameter is enabled.
+Currently, only the accessor functions necessary to support the mozjpeg
+extensions are implemented, but the framework can be easily extended in the
+future to accommodate additional simple parameter types, complex or
+multi-valued parameters, or decompressor extensions.
 
-* JBOOLEAN_TRELLIS_QUANT indicates whether to apply trellis quantization. For each 8x8 block trellis
-  quantization determines the best trade-off between rate and distortion. By default this parameter
-  is enabled.
 
-* JBOOLEAN_TRELLIS_QUANT_DC indicates whether to apply trellis quantization to DC coefficients. By
-  default this parameter is enabled.
+The currently-implemented accessor functions are as follows:
 
-* JBOOLEAN_TRELLIS_EOB_OPT indicates whether to optimize runs of zero blocks in trellis quantization.
-  This is applicable only when JBOOLEAN_USE_SCANS_IN_TRELLIS is enabled. By default this parameter
-  is disabled.
+boolean jpeg_c_bool_param_supported (j_compress_ptr cinfo,
+                                     J_BOOLEAN_PARAM param)
+        Returns TRUE if the given boolean extension parameter is supported by
+        this implementation of the libjpeg API, or FALSE otherwise.
 
-* JBOOLEAN_USE_LAMBDA_WEIGHT_TBL has currently no effect.
+void jpeg_c_set_bool_param (j_compress_ptr cinfo,
+                            J_BOOLEAN_PARAM param, boolean value);
+        Set the given boolean extension parameter to the given value (TRUE or
+        FALSE.)
 
-* JBOOLEAN_USE_SCANS_IN_TRELLIS indicates whether multiple scans are considered during trellis
-  quantization. By default this parameter is disabled.
+boolean jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
+        Get the value of the given boolean extension parameter (TRUE or FALSE.)
 
-* JBOOLEAN_TRELLIS_Q_OPT indicates whether to optimize the quantization table after trellis quantization.
-  If enabled a revised quantization table is derived such as to minimize the reconstruction error
-  given the quantized coefficients. By default this parameter is disabled.
+boolean jpeg_c_float_param_supported (j_compress_ptr cinfo,
+                                      J_FLOAT_PARAM param)
+        Returns TRUE if the given floating point extension parameter is
+        supported by this implementation of the libjpeg API, or FALSE
+        otherwise.
 
-* JBOOLEAN_OVERSHOOT_DERINGING indicates whether overshooting is applied to samples with extreme
-  values (e.g., 0 and 255 for 8-bit samples). Overshooting may reduce ringing artifacts from
-  compression, in particular in areas where black text appears on a white background. By default
-  this parameter is enabled.
+void jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param,
+                             float value)
+        Set the given floating point extension parameter to the given value.
 
-Floating-point parameters
--------------------------
+float jpeg_c_get_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param);
+        Get the value of the given floating point extension parameter.
 
-* JFLOAT_LAMBDA_LOG_SCALE1 and JFLOAT_LAMBDA_LOG_SCALE2 determine the lambda value used in
-  trellis quantization. By default these parameters are set to 14.75 and 16.5. The lambda value
-  (Lagrance multiplier) in the R + lambda * D equation is derived from
-  lambda = 2^s1 / ((2^s2 + n) * q^2) where s1 and s2 are the values of JFLOAT_LAMBDA_LOG_SCALE1
-  and JFLOAT_LAMBDA_LOG_SCALE2, n is the average of the squared unquantized AC coefficients
-  within the current 8x8 block, and q is the quantization table entry associated with the
-  current coefficient frequency. If JFLOAT_LAMBDA_LOG_SCALE2 is 0, an alternate form is used that
-  does not rely on n: lambda = 2^(s1-12) / q^2.
+boolean jpeg_c_int_param_supported (j_compress_ptr cinfo,
+                                    J_INT_PARAM param)
+        Returns TRUE if the given integer extension parameter is supported by
+        this implementation of the libjpeg API, or FALSE otherwise.
 
-Integer parameters
-------------------
+void jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param,
+                          int value)
+        Set the given integer extension parameter to the given value.
 
-* JINT_TRELLIS_FREQ_SPLIT determines the position within the zigzag scan at which the split between
-  scans is positioned in the context of trellis quantization. JBOOLEAN_USE_SCANS_IN_TRELLIS must
-  be enabled for this parameter to take effect. By default this parameter is set to value 8.
+int jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param)
+        Get the value of the given integer extension parameter.
 
-* JINT_TRELLIS_NUM_LOOPS determines the number of trellis quantization passes. Huffman tables are
-  updated between passes. By default this parameter is set to value 1.
 
-* JINT_BASE_QUANT_TBL_IDX determines which quantization table set to use. Multiple sets are defined
-  as below. By default this parameter is set to value 3.
-  - 0  Tables from JPEG Annex K
-  - 1  Flat table
-  - 2  Table tuned for MSSIM on Kodak image set
-  - 3  Table from http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
-  - 4  Table tuned for PSNR-HVS-M on Kodak image set
-  - 5  Table from Relevance of human vision to JPEG-DCT compression (1992) Klein, Silverstein and Carney
-  - 6  Table from DCTune perceptual optimization of compressed dental X-Rays (1997) Watson, Taylor, Borthwick
-  - 7  Table from A visual detection model for DCT coefficient quantization (12/9/93) Ahumada, Watson, Peterson
-  - 8  Table from An improved detection model for DCT coefficient quantization (1993) Peterson, Ahumada and Watson
+Boolean Extension Parameters Supported by mozjpeg
+-------------------------------------------------
 
-* JINT_DC_SCAN_OPT_MODE determines the DC scan optimization mode. Modes are defined as below. By default
-  this parameter is set to value 1.
-  - 0  One scan for all components
-  - 1  One scan per component
-  - 2  Optimize between one scan for all components and one scan for 1st component plus one scan for
-       remaining components
+* JBOOLEAN_USE_MOZ_DEFAULTS (default: TRUE)
+  This parameter controls the behavior of the jpeg_set_defaults() function and
+  should thus be set prior to calling that function.  If this parameter is
+  TRUE, then jpeg_set_defaults() will configure the library to use the mozjpeg
+  defaults (which will enable settings that increase the compression ratio as
+  much as possible, at the expense of increased encoding time.)  If this
+  parameter is FALSE, then jpeg_set_defaults() will configure the library to
+  use the libjpeg[-turbo] defaults (baseline entropy coding, no mozjpeg
+  extensions enabled.)
+
+* JBOOLEAN_OPTIMIZE_SCANS (default: TRUE)
+  Specifies whether scan parameters should be optimized.  Parameter
+  optimization is done as in jpgcrush.
+
+* JBOOLEAN_TRELLIS_QUANT (default: TRUE)
+  Specifies whether to apply trellis quantization.  For each 8x8 block, trellis
+  quantization determines the best tradeoff between rate and distortion.
+
+* JBOOLEAN_TRELLIS_QUANT_DC (default: TRUE)
+  Specifies whether to apply trellis quantization to DC coefficients.
+
+* JBOOLEAN_TRELLIS_EOB_OPT (default: FALSE)
+  Specifies whether to optimize runs of zero blocks in trellis quantization.
+  This is applicable only when JBOOLEAN_USE_SCANS_IN_TRELLIS is enabled.
+
+* JBOOLEAN_USE_LAMBDA_WEIGHT_TBL currently has no effect.
+
+* JBOOLEAN_USE_SCANS_IN_TRELLIS (default: FALSE)
+  Specifies whether multiple scans should be considered during trellis
+  quantization.
+
+* JBOOLEAN_TRELLIS_Q_OPT (default: FALSE)
+  Specifies whether to optimize the quantization table after trellis
+  quantization.  If enabled, then a revised quantization table is derived so
+  as to minimize the reconstruction error of the quantized coefficients.
+
+* JBOOLEAN_OVERSHOOT_DERINGING (default: TRUE)
+  Specifies whether overshooting is applied to samples with extreme values
+  (for example, 0 and 255 for 8-bit samples).  Overshooting may reduce ringing
+  artifacts from compression, in particular in areas where black text appears
+  on a white background.
+
+
+Floating Point Extension Parameters Supported by mozjpeg
+--------------------------------------------------------
+
+* JFLOAT_LAMBDA_LOG_SCALE1 (default: 14.75)
+  JFLOAT_LAMBDA_LOG_SCALE2 (default: 16.5)
+  These parameters specify the lambda value used in trellis quantization.  The
+  lambda value (Lagrange multiplier) in the
+    R + lambda * D
+  equation is derived from
+    lambda = 2^s1 / ((2^s2 + n) * q^2),
+  where s1 and s2 are the values of JFLOAT_LAMBDA_LOG_SCALE1 and
+  JFLOAT_LAMBDA_LOG_SCALE2, n is the average of the squared unquantized AC
+  coefficients within the current 8x8 block, and q is the quantization table
+  entry associated with the current coefficient frequency.  If
+  JFLOAT_LAMBDA_LOG_SCALE2 is 0, then an alternate form is used that does not
+  rely on n:
+    lambda = 2^(s1-12) / q^2.
+
+
+Integer Extension Parameters Supported by mozjpeg
+-------------------------------------------------
+
+* JINT_TRELLIS_FREQ_SPLIT (default: 8)
+  Specifies the position within the zigzag scan at which the split between
+  scans is positioned in the context of trellis quantization.
+  JBOOLEAN_USE_SCANS_IN_TRELLIS must be enabled for this parameter to have any
+  effect.
+
+* JINT_TRELLIS_NUM_LOOPS (default: 1)
+  Specifies the number of trellis quantization passes.  Huffman tables are
+  updated between passes.
+
+* JINT_BASE_QUANT_TBL_IDX (default: 3)
+  Specifies which quantization table set to use.  The following options are
+  available:
+  0 = Tables from JPEG Annex K
+  1 = Flat table
+  2 = Table tuned for MSSIM on Kodak image set
+  3 = Table from http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=20333&p=98008#p98008
+  4 = Table tuned for PSNR-HVS-M on Kodak image set
+  5 = Table from:  Relevance of Human Vision to JPEG-DCT Compression
+      (1992) Klein, Silverstein and Carney
+  6 = Table from:  DCTune Perceptual Optimization of Compressed Dental X-Rays
+      (1997) Watson, Taylor, Borthwick
+  7 = Table from:  A Visual Detection Model for DCT Coefficient Quantization
+      (12/9/93) Ahumada, Watson, Peterson
+  8 = Table from:  An Improved Detection Model for DCT Coefficient Quantization
+      (1993) Peterson, Ahumada and Watson
+
+* JINT_DC_SCAN_OPT_MODE (default: 1)
+  Specifies the DC scan optimization mode.  The following options are
+  available:
+  0 = One scan for all components
+  1 = One scan per component
+  2 = Optimize between one scan for all components and one scan for the first
+      component plus one scan for the remaining components

@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
   int chroma_width;
   int chroma_height;
   int frame_width;
-  int frame_height;
   int yuv_size;
   JSAMPLE *image_buffer;
   JSAMPROW yrow_pointer[16];
@@ -110,7 +109,6 @@ int main(int argc, char *argv[]) {
   }
 
   frame_width = (cinfo.output_width + (16 - 1)) & ~(16 - 1);
-  frame_height = (cinfo.output_height + (16 - 1)) & ~(16 - 1);
 
   image_buffer = malloc(frame_width*16 + 2*(frame_width/2)*8);
   if (!image_buffer) {

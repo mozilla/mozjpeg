@@ -447,7 +447,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       qtablefile = argv[argn];
       /* We postpone actually reading the file in case -quality comes later. */
 
-    } else if (keymatch(arg, "quant_table", 2)) {
+    } else if (keymatch(arg, "quant-table", 2)) {
       if (++argn >= argc)       /* advance to next argument */
         usage();
       jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, atoi(argv[argn]));

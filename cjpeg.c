@@ -448,9 +448,15 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* We postpone actually reading the file in case -quality comes later. */
 
     } else if (keymatch(arg, "quant-table", 2)) {
+      int val;
       if (++argn >= argc)       /* advance to next argument */
         usage();
-      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, atoi(argv[argn]));
+      val = atoi(argv[argn]);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, val);
+      if (jpeg_c_get_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX) != val) {
+        fprintf(stderr, "%s: %d is invalid argument for quant-table\n", progname, val);
+        usage();
+      }
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "restart", 1)) {

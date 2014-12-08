@@ -557,7 +557,7 @@ foreach(libtype shared static)
   add_test(djpeg${suffix}-gray-islow-rgb
     ${dir}djpeg${suffix} -dct int -rgb -outfile testout_gray_islow_rgb.ppm
       testout_gray_islow.jpg)
-  add_test(cjpeg${suffix}-gray-islow-rgb-cmp
+  add_test(djpeg${suffix}-gray-islow-rgb-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_PPM_GRAY_ISLOW_RGB}
       -DFILE=testout_gray_islow_rgb.ppm
       -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
@@ -637,10 +637,10 @@ foreach(libtype shared static)
   endif()
   if(WITH_ARITH_DEC)
     # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
-    add_test(cjpeg${suffix}-420m-ifast-ari
+    add_test(djpeg${suffix}-420m-ifast-ari
       ${dir}djpeg${suffix} -fast -ppm -outfile testout_420m_ifast_ari.ppm
         ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
-    add_test(cjpeg${suffix}-420m-ifast-ari-cmp
+    add_test(djpeg${suffix}-420m-ifast-ari-cmp
       ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_IFAST_ARI}
         -DFILE=testout_420m_ifast_ari.ppm
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)

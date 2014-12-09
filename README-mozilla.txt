@@ -89,7 +89,10 @@ Boolean Extension Parameters Supported by mozjpeg
 
 * JBOOLEAN_OPTIMIZE_SCANS (default: TRUE)
   Specifies whether scan parameters should be optimized.  Parameter
-  optimization is done as in jpgcrush.
+  optimization is done as in jpgcrush. jpeg_simple_progression() should be called
+  after setting JBOOLEAN_OPTIMIZE_SCANS.
+  When disabling JBOOLEAN_OPTIMIZE_SCANS, cinfo.scan_info should additionally be
+  set to NULL to disable use of the progressive coding mode, if so desired.
 
 * JBOOLEAN_TRELLIS_QUANT (default: TRUE)
   Specifies whether to apply trellis quantization.  For each 8x8 block, trellis

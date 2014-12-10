@@ -510,12 +510,12 @@ prepare_for_pass (j_compress_ptr cinfo)
       (*cinfo->prep->start_pass) (cinfo, JBUF_PASS_THRU);
     }
     (*cinfo->fdct->start_pass) (cinfo);
-    (*cinfo->entropy->start_pass) (cinfo, cinfo->optimize_coding);
+    (*cinfo->entropy->start_pass) (cinfo, cinfo->optimize_coding || cinfo->master->trellis_quant);
     (*cinfo->coef->start_pass) (cinfo,
                                 (master->total_passes > 1 ?
                                  JBUF_SAVE_AND_PASS : JBUF_PASS_THRU));
     (*cinfo->main->start_pass) (cinfo, JBUF_PASS_THRU);
-    if (cinfo->optimize_coding) {
+    if (cinfo->optimize_coding || cinfo->master->trellis_quant) {
       /* No immediate data output; postpone writing frame/scan headers */
       master->pub.call_pass_startup = FALSE;
     } else {
@@ -883,7 +883,10 @@ finish_pass_master (j_compress_ptr cinfo)
     master->scan_number++;
     break;
   case trellis_pass:
-    master->pass_type = (cinfo->optimize_coding || master->pass_number < master->pass_number_scan_opt_base-1) ? huff_opt_pass : output_pass;
+    if (cinfo->optimize_coding)
+      master->pass_type = huff_opt_pass;
+    else
+      master->pass_type = (master->pass_number < master->pass_number_scan_opt_base-1) ? trellis_pass : output_pass;
       
     if ((master->pass_number + 1) %
         (cinfo->num_components * (cinfo->master->use_scans_in_trellis ? 4 : 2)) == 0 &&
@@ -969,9 +972,14 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
   
   master->pass_number_scan_opt_base = 0;
   if (cinfo->master->trellis_quant) {
-    master->pass_number_scan_opt_base =
-      ((cinfo->master->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components *
-      cinfo->master->trellis_num_loops;
+    if (cinfo->optimize_coding)
+      master->pass_number_scan_opt_base =
+        ((cinfo->master->use_scans_in_trellis) ? 4 : 2) * cinfo->num_components *
+        cinfo->master->trellis_num_loops;
+    else
+      master->pass_number_scan_opt_base =
+        ((cinfo->master->use_scans_in_trellis) ? 2 : 1) * cinfo->num_components *
+        cinfo->master->trellis_num_loops + 1;
     master->total_passes += master->pass_number_scan_opt_base;
   }
   

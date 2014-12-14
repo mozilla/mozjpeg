@@ -11,8 +11,8 @@ endif
 nodist_include_HEADERS = jconfig.h
 
 
-HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
-	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h \
+HDRS = jchuff.h jcmaster.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h \
+	jmorecfg.h jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h \
 	jpeg_nbits_table.h
 
 libjpeg_la_SOURCES = $(HDRS) jcapimin.c jcapistd.c jccoefct.c jccolor.c \
@@ -182,7 +182,8 @@ dist_example_DATA = example.c
 
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
-	doxygen-extra.css jccolext.c jdcolext.c jdcol565.c jdmrgext.c jstdhuff.c
+	doxygen-extra.css jccolext.c jdcolext.c jdcol565.c jdmrgext.c jdmrg565.c \
+	jstdhuff.c
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`

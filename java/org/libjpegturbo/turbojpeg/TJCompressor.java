@@ -567,7 +567,8 @@ public class TJCompressor {
    * Free the native structures associated with this compressor instance.
    */
   public void close() throws Exception {
-    destroy();
+    if (handle != 0)
+      destroy();
   }
 
   protected void finalize() throws Throwable {

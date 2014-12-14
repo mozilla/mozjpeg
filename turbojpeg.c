@@ -316,6 +316,14 @@ static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 static int getSubsamp(j_decompress_ptr dinfo)
 {
 	int retval=-1, i, k;
+
+	/* The sampling factors actually have no meaning with grayscale JPEG files,
+	   and in fact it's possible to generate grayscale JPEGs with sampling
+	   factors > 1 (even though those sampling factors are ignored by the
+	   decompressor.)  Thus, we need to treat grayscale as a special case. */
+	if(dinfo->num_components==1 && dinfo->jpeg_color_space==JCS_GRAYSCALE)
+		return TJSAMP_GRAY;
+
 	for(i=0; i<NUMSUBOPT; i++)
 	{
 		if(dinfo->num_components==pixelsize[i]
@@ -613,9 +621,10 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
 	nc=(subsamp==TJSAMP_GRAY? 1:3);
 	for(i=0; i<nc; i++)
 	{
-		int stride=PAD(tjPlaneWidth(i, width, subsamp), pad);
+		int pw=tjPlaneWidth(i, width, subsamp);
+		int stride=PAD(pw, pad);
 		int ph=tjPlaneHeight(i, height, subsamp);
-		if(stride<0 || ph<0) return -1;
+		if(pw<0 || ph<0) return -1;
 		else retval+=stride*ph;
 	}
 
@@ -689,6 +698,7 @@ DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV(int componentID, int width,
 
 	pw=tjPlaneWidth(componentID, width, subsamp);
 	ph=tjPlaneHeight(componentID, height, subsamp);
+	if(pw<0 || ph<0) return -1;
 
 	if(stride==0) stride=pw;
 	else stride=abs(stride);

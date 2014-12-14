@@ -76,6 +76,9 @@ TURBOJPEG_1.4
 		tjDecompressToYUVPlanes;
 		tjEncodeYUV3;
 		tjEncodeYUVPlanes;
+		tjPlaneHeight;
+		tjPlaneSizeYUV;
+		tjPlaneWidth;
 		Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFromYUV___3_3B_3II_3III_3BII;
 		Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIIIII_3_3B_3I_3III;

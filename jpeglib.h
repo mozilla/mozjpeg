@@ -274,7 +274,6 @@ typedef enum {
 /* Boolean extension parameters */
 
 typedef enum {
-  JBOOLEAN_USE_MOZ_DEFAULTS = 0xAE2F5D7F, /* TRUE=use Mozilla defaults */
   JBOOLEAN_OPTIMIZE_SCANS = 0x680C061E, /* TRUE=optimize progressive coding scans */
   JBOOLEAN_TRELLIS_QUANT = 0xC5122033, /* TRUE=use trellis quantization */
   JBOOLEAN_TRELLIS_QUANT_DC = 0x339D4C0C, /* TRUE=use trellis quant for DC coefficient */
@@ -295,11 +294,20 @@ typedef enum {
 /* Integer parameters */
 
 typedef enum {
+  JINT_COMPRESS_PROFILE = 0xE9918625, /* compression profile */
   JINT_TRELLIS_FREQ_SPLIT = 0x6FAFF127, /* splitting point for frequency in trellis quantization */
   JINT_TRELLIS_NUM_LOOPS = 0xB63EBF39, /* number of trellis loops */
   JINT_BASE_QUANT_TBL_IDX = 0x44492AB1, /* base quantization table index */
   JINT_DC_SCAN_OPT_MODE = 0x0BE7AD3C /* DC scan optimization mode */
 } J_INT_PARAM;
+
+
+/* Values for the JINT_COMPRESS_PROFILE parameter (32-bit GUIDs) */
+
+enum {
+  JCP_MAX_COMPRESSION = 0x5D083AAD, /* best compression ratio (progressive, all mozjpeg extensions) */
+  JCP_FASTEST = 0x2AEA5CB4 /* libjpeg[-turbo] defaults (baseline, no mozjpeg extensions) */
+};
 
 
 /* Common fields between JPEG compression and decompression master structs. */

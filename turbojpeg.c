@@ -240,7 +240,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
 	/* Set scan pattern again as colorspace might have changed */
-	if (cinfo->master->use_moz_defaults)
+	if(cinfo->master->compress_profile == JCP_MAX_COMPRESSION)
 		jpeg_simple_progression(cinfo);
 
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;

@@ -77,16 +77,6 @@ int jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param)
 Boolean Extension Parameters Supported by mozjpeg
 -------------------------------------------------
 
-* JBOOLEAN_USE_MOZ_DEFAULTS (default: TRUE)
-  This parameter controls the behavior of the jpeg_set_defaults() function and
-  should thus be set prior to calling that function.  If this parameter is
-  TRUE, then jpeg_set_defaults() will configure the library to use the mozjpeg
-  defaults (which will enable settings that increase the compression ratio as
-  much as possible, at the expense of increased encoding time.)  If this
-  parameter is FALSE, then jpeg_set_defaults() will configure the library to
-  use the libjpeg[-turbo] defaults (baseline entropy coding, no mozjpeg
-  extensions enabled.)
-
 * JBOOLEAN_OPTIMIZE_SCANS (default: TRUE)
   Specifies whether scan parameters should be optimized.  Parameter
   optimization is done as in jpgcrush. jpeg_simple_progression() should be called
@@ -144,6 +134,22 @@ Floating Point Extension Parameters Supported by mozjpeg
 
 Integer Extension Parameters Supported by mozjpeg
 -------------------------------------------------
+
+* JINT_COMPRESS_PROFILE (default: JCP_MAX_COMPRESSION)
+  Select a compression profile, which is a set of default parameters that will
+  achieve a desired compression goal.  This parameter controls the behavior of
+  the jpeg_set_defaults() function.  Thus, setting JINT_COMPRESS_PROFILE does
+  not cause any other parameters to be modified until jpeg_set_defaults() is
+  called.  The following compression profiles are supported:
+
+  - JCP_MAX_COMPRESSION (default)
+    Increase the compression ratio as much as possible, at the expense of
+    increased encoding time.  This enables progressive entropy coding and all
+    mozjpeg extensions.
+
+  - JCP_FASTEST
+    Use the libjpeg[-turbo] defaults (baseline entropy coding, no mozjpeg
+    extensions enabled.)
 
 * JINT_TRELLIS_FREQ_SPLIT (default: 8)
   Specifies the position within the zigzag scan at which the split between

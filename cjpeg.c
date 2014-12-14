@@ -480,7 +480,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, FALSE);
+      jpeg_c_set_int_param(cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
       jpeg_set_defaults(cinfo);
 
     } else if (keymatch(arg, "sample", 2)) {

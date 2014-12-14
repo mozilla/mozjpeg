@@ -206,6 +206,8 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	}
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
+	if((env=getenv("TJ_REVERT"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
+		cinfo->master->compress_profile=JCP_FASTEST;
 	jpeg_set_defaults(cinfo);
 
 	if((env=getenv("TJ_OPTIMIZE"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))

@@ -21,42 +21,7 @@
 #include "jpeglib.h"
 #include "jpegcomp.h"
 #include "jmemsys.h"
-
-
-/* Private state */
-
-typedef enum {
-        main_pass,              /* input data, also do first output step */
-        huff_opt_pass,          /* Huffman code optimization pass */
-        output_pass,            /* data output pass */
-        trellis_pass            /* trellis quantization pass */
-} c_pass_type;
-
-typedef struct {
-  struct jpeg_comp_master pub;  /* public fields */
-
-  c_pass_type pass_type;        /* the type of the current pass */
-
-  int pass_number;              /* # of passes completed */
-  int total_passes;             /* total # of passes needed */
-
-  int scan_number;              /* current index in scan_info[] */
-  
-  /* fields for scan optimisation */
-  int pass_number_scan_opt_base; /* pass number where scan optimization begins */
-  unsigned char * scan_buffer[64]; /* buffer for a given scan */
-  unsigned long scan_size[64]; /* size for a given scan */
-  int actual_Al[64]; /* actual value of Al used for a scan */
-  unsigned long best_cost; /* bit count for best frequency split */
-  int best_freq_split_idx_luma; /* index for best frequency split (luma) */
-  int best_freq_split_idx_chroma; /* index for best frequency split (chroma) */
-  int best_Al_luma; /* best value for Al found in scan search (luma) */
-  int best_Al_chroma; /* best value for Al found in scan search (luma) */
-  boolean interleave_chroma_dc; /* indicate whether to interleave chroma DC scans */
-  struct jpeg_destination_mgr * saved_dest; /* saved value of cinfo->dest */
-} my_comp_master;
-
-typedef my_comp_master * my_master_ptr;
+#include "jcmaster.h"
 
 
 /*
@@ -919,21 +884,13 @@ finish_pass_master (j_compress_ptr cinfo)
 GLOBAL(void)
 jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
 {
-  my_master_ptr master;
+  my_master_ptr master = (my_master_ptr) cinfo->master;
 
-  master = (my_master_ptr)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  sizeof(my_comp_master));
-  if (cinfo->master) {
-    MEMCOPY(&master->pub, cinfo->master, sizeof(struct jpeg_comp_master));
-    jpeg_free_small((j_common_ptr) cinfo, cinfo->master,
-                    sizeof(struct jpeg_comp_master));
-  }
-  cinfo->master = (struct jpeg_comp_master *) master;
   master->pub.prepare_for_pass = prepare_for_pass;
   master->pub.pass_startup = pass_startup;
   master->pub.finish_pass = finish_pass_master;
   master->pub.is_last_pass = FALSE;
+  master->pub.call_pass_startup = FALSE;
 
   /* Validate parameters, determine derived values */
   initial_setup(cinfo, transcode_only);

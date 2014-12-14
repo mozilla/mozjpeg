@@ -501,7 +501,8 @@ jpeg_set_defaults (j_compress_ptr cinfo)
     cinfo->master->compress_profile == JCP_MAX_COMPRESSION;
   cinfo->master->lambda_log_scale1 = 14.75;
   cinfo->master->lambda_log_scale2 = 16.5;
-  cinfo->master->quant_tbl_master_idx = 3;
+  cinfo->master->quant_tbl_master_idx =
+    cinfo->master->compress_profile == JCP_MAX_COMPRESSION ? 3 : 0;
   
   cinfo->master->use_lambda_weight_tbl = TRUE;
   cinfo->master->use_scans_in_trellis = FALSE;

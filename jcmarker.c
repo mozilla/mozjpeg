@@ -194,6 +194,9 @@ emit_multi_dqt (j_compress_ptr cinfo)
   int ci;
   int size = 0;
 
+  if (cinfo->master->compress_profile == JCP_FASTEST)
+    return -1;
+
   for (ci = 0; ci < cinfo->num_components; ci++) {
     int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
     int i;
@@ -295,6 +298,9 @@ emit_multi_dht (j_compress_ptr cinfo)
   int aclens[NUM_HUFF_TBLS] = { 0 };
   JHUFF_TBL *dcseen[NUM_HUFF_TBLS] = { NULL };
   JHUFF_TBL *acseen[NUM_HUFF_TBLS] = { NULL };
+
+  if (cinfo->master->compress_profile == JCP_FASTEST)
+    return 0;
 
   /* Calclate the total length. */
   for (i = 0; i < cinfo->comps_in_scan; i++) {

@@ -298,7 +298,7 @@ endif
 # ones.)
 
 # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
-	./cjpeg -rgb -dct int -outfile testout_rgb_islow.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -rgb -dct int -outfile testout_rgb_islow.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_RGB_ISLOW) testout_rgb_islow.jpg
 # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
 	./djpeg -dct int -ppm -outfile testout_rgb_islow.ppm testout_rgb_islow.jpg
@@ -318,7 +318,7 @@ else
 endif
 
 # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
-	./cjpeg -sample 2x1 -dct fast -opt -outfile testout_422_ifast_opt.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -sample 2x1 -dct fast -opt -outfile testout_422_ifast_opt.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_422_IFAST_OPT) testout_422_ifast_opt.jpg
 # CC: YCC->RGB  SAMP: fullsize/h2v1 fancy  IDCT: ifast  ENT: huff
 	./djpeg -dct fast -outfile testout_422_ifast.ppm testout_422_ifast_opt.jpg
@@ -342,7 +342,7 @@ else
 endif
 
 # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
-	./cjpeg -sample 2x2 -quality 100 -dct fast -prog -outfile testout_420_q100_ifast_prog.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -sample 2x2 -quality 100 -dct fast -prog -outfile testout_420_q100_ifast_prog.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_420_IFAST_Q100_PROG) testout_420_q100_ifast_prog.jpg
 # CC: YCC->RGB  SAMP: fullsize/h2v2 fancy  IDCT: ifast  ENT: prog huff
 	./djpeg -dct fast -outfile testout_420_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
@@ -354,7 +354,7 @@ endif
 	rm testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
 
 # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
-	./cjpeg -gray -dct int -outfile testout_gray_islow.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -gray -dct int -outfile testout_gray_islow.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_GRAY_ISLOW) testout_gray_islow.jpg
 # CC: Gray->Gray  SAMP: fullsize  IDCT: islow  ENT: huff
 	./djpeg -dct int -outfile testout_gray_islow.ppm testout_gray_islow.jpg
@@ -379,12 +379,12 @@ endif
 
 # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
 # ENT: 2-pass huff
-	./cjpeg -sample 2x2 -smooth 1 -dct int -opt -outfile testout_420s_ifast_opt.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -sample 2x2 -smooth 1 -dct int -opt -outfile testout_420s_ifast_opt.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_420S_IFAST_OPT) testout_420s_ifast_opt.jpg
 	rm testout_420s_ifast_opt.jpg
 
 # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
-	./cjpeg -sample 3x2 -dct float -prog -outfile testout_3x2_float_prog.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -sample 3x2 -dct float -prog -outfile testout_3x2_float_prog.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG) testout_3x2_float_prog.jpg
 # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
 	./djpeg -dct float -outfile testout_3x2_float.ppm testout_3x2_float_prog.jpg
@@ -393,14 +393,14 @@ endif
 
 if WITH_ARITH_ENC
 # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
-	./cjpeg -dct int -arithmetic -outfile testout_420_islow_ari.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -dct int -arithmetic -outfile testout_420_islow_ari.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_420_ISLOW_ARI) testout_420_islow_ari.jpg
 	rm testout_420_islow_ari.jpg
-	./jpegtran -arithmetic -outfile testout_420_islow_ari.jpg $(srcdir)/testimages/testimgint.jpg
+	./jpegtran -revert -arithmetic -outfile testout_420_islow_ari.jpg $(srcdir)/testimages/testimgint.jpg
 	md5/md5cmp $(MD5_JPEG_420_ISLOW_ARI) testout_420_islow_ari.jpg
 	rm testout_420_islow_ari.jpg
 # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
-	./cjpeg -sample 1x1 -dct int -progressive -arithmetic -outfile testout_444_islow_progari.jpg $(srcdir)/testimages/testorig.ppm
+	./cjpeg -revert -sample 1x1 -dct int -progressive -arithmetic -outfile testout_444_islow_progari.jpg $(srcdir)/testimages/testorig.ppm
 	md5/md5cmp $(MD5_JPEG_444_ISLOW_PROGARI) testout_444_islow_progari.jpg
 	rm testout_444_islow_progari.jpg
 endif
@@ -409,7 +409,7 @@ if WITH_ARITH_DEC
 	./djpeg -fast -ppm -outfile testout_420m_ifast_ari.ppm $(srcdir)/testimages/testimgari.jpg
 	md5/md5cmp $(MD5_PPM_420M_IFAST_ARI) testout_420m_ifast_ari.ppm
 	rm testout_420m_ifast_ari.ppm
-	./jpegtran -outfile testout_420_islow.jpg $(srcdir)/testimages/testimgari.jpg
+	./jpegtran -revert -outfile testout_420_islow.jpg $(srcdir)/testimages/testimgari.jpg
 	md5/md5cmp $(MD5_JPEG_420_ISLOW) testout_420_islow.jpg
 	rm testout_420_islow.jpg
 endif
@@ -486,7 +486,7 @@ else
 	rm testout_420m_islow_565D.bmp
 endif
 
-	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testout_crop.jpg $(srcdir)/testimages/$(TESTORIG)
+	./jpegtran -revert -crop 120x90+20+50 -transpose -perfect -outfile testout_crop.jpg $(srcdir)/testimages/$(TESTORIG)
 	md5/md5cmp $(MD5_JPEG_CROP) testout_crop.jpg
 	rm testout_crop.jpg
 

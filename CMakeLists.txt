@@ -438,7 +438,7 @@ foreach(libtype shared static)
 
   # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
   add_test(cjpeg${suffix}-rgb-islow
-    ${dir}cjpeg${suffix} -rgb -dct int -outfile testout_rgb_islow.jpg
+    ${dir}cjpeg${suffix} -revert -rgb -dct int -outfile testout_rgb_islow.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-rgb-islow-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_RGB_ISLOW} -DFILE=testout_rgb_islow.jpg
@@ -471,7 +471,7 @@ foreach(libtype shared static)
 
   # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
   add_test(cjpeg${suffix}-422-ifast-opt
-    ${dir}cjpeg${suffix} -sample 2x1 -dct fast -opt
+    ${dir}cjpeg${suffix} -revert -sample 2x1 -dct fast -opt
       -outfile testout_422_ifast_opt.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-422-ifast-opt-cmp
@@ -513,7 +513,7 @@ foreach(libtype shared static)
 
   # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
   add_test(cjpeg${suffix}-420-q100-ifast-prog
-    ${dir}cjpeg${suffix} -sample 2x2 -quality 100 -dct fast -prog
+    ${dir}cjpeg${suffix} -revert -sample 2x2 -quality 100 -dct fast -prog
       -outfile testout_420_q100_ifast_prog.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-420-q100-ifast-prog-cmp
@@ -539,7 +539,7 @@ foreach(libtype shared static)
 
   # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
   add_test(cjpeg${suffix}-gray-islow
-    ${dir}cjpeg${suffix} -gray -dct int -outfile testout_gray_islow.jpg
+    ${dir}cjpeg${suffix} -revert -gray -dct int -outfile testout_gray_islow.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-gray-islow-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_GRAY_ISLOW}
@@ -583,7 +583,7 @@ foreach(libtype shared static)
   # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
   # ENT: 2-pass huff
   add_test(cjpeg${suffix}-420s-ifast-opt
-    ${dir}cjpeg${suffix} -sample 2x2 -smooth 1 -dct int -opt -outfile
+    ${dir}cjpeg${suffix} -revert -sample 2x2 -smooth 1 -dct int -opt -outfile
       testout_420s_ifast_opt.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-420s-ifast-opt-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420S_IFAST_OPT}
@@ -592,7 +592,7 @@ foreach(libtype shared static)
 
   # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
   add_test(cjpeg${suffix}-3x2-float-prog
-    ${dir}cjpeg${suffix} -sample 3x2 -dct float -prog
+    ${dir}cjpeg${suffix} -revert -sample 3x2 -dct float -prog
       -outfile testout_3x2_float_prog.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-3x2-float-prog-cmp
@@ -610,7 +610,7 @@ foreach(libtype shared static)
   if(WITH_ARITH_ENC)
     # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
     add_test(cjpeg${suffix}-420-islow-ari
-      ${dir}cjpeg${suffix} -dct int -arithmetic
+      ${dir}cjpeg${suffix} -revert -dct int -arithmetic
         -outfile testout_420_islow_ari.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
     add_test(cjpeg${suffix}-420-islow-ari-cmp
@@ -618,7 +618,7 @@ foreach(libtype shared static)
         -DFILE=testout_420_islow_ari.jpg
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
     add_test(jpegtran${suffix}-420-islow-ari
-      ${dir}jpegtran${suffix} -arithmetic
+      ${dir}jpegtran${suffix} -revert -arithmetic
         -outfile testout_420_islow_ari.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testimgint.jpg)
     add_test(jpegtran${suffix}-420-islow-ari-cmp
@@ -627,7 +627,7 @@ foreach(libtype shared static)
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
     # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
     add_test(cjpeg${suffix}-444-islow-progari
-      ${dir}cjpeg${suffix} -sample 1x1 -dct int -progressive -arithmetic
+      ${dir}cjpeg${suffix} -revert -sample 1x1 -dct int -progressive -arithmetic
         -outfile testout_444_islow_progari.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
     add_test(cjpeg${suffix}-444-islow-progari-cmp
@@ -645,7 +645,7 @@ foreach(libtype shared static)
         -DFILE=testout_420m_ifast_ari.ppm
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
     add_test(jpegtran${suffix}-420-islow
-      ${dir}jpegtran${suffix} -outfile testout_420_islow.jpg
+      ${dir}jpegtran${suffix} -revert -outfile testout_420_islow.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
     add_test(jpegtran${suffix}-420-islow-cmp
       ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW}
@@ -732,7 +732,7 @@ foreach(libtype shared static)
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
   endif()
   add_test(jpegtran${suffix}-crop
-    ${dir}jpegtran${suffix} -crop 120x90+20+50 -transpose -perfect
+    ${dir}jpegtran${suffix} -revert -crop 120x90+20+50 -transpose -perfect
       -outfile testout_crop.jpg ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
   add_test(jpegtran${suffix}-crop-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_CROP} -DFILE=testout_crop.jpg

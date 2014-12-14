@@ -417,19 +417,9 @@ jpeg_set_defaults (j_compress_ptr cinfo)
     cinfo->arith_ac_K[i] = 5;
   }
 
-#ifdef C_PROGRESSIVE_SUPPORTED
-  cinfo->scan_info = NULL;
-  cinfo->num_scans = 0;
-  if (!cinfo->master->use_moz_defaults) {
-    /* Default is no multiple-scan output */
-    cinfo->scan_info = NULL;
-    cinfo->num_scans = 0;
-  }
-#else
   /* Default is no multiple-scan output */
   cinfo->scan_info = NULL;
   cinfo->num_scans = 0;
-#endif
 
   /* Expect normal source image, not raw downsampled data */
   cinfo->raw_data_in = FALSE;
@@ -438,7 +428,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->arith_code = FALSE;
 
 #ifdef ENTROPY_OPT_SUPPORTED
-  if (cinfo->master->use_moz_defaults)
+  if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION)
     /* By default, do extra passes to optimize entropy coding */
     cinfo->optimize_coding = TRUE;
   else
@@ -465,7 +455,8 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->do_fancy_downsampling = TRUE;
 #endif
 
-  cinfo->master->overshoot_deringing = cinfo->master->use_moz_defaults;
+  cinfo->master->overshoot_deringing =
+    cinfo->master->compress_profile == JCP_MAX_COMPRESSION;
 
   /* No input smoothing */
   cinfo->smoothing_factor = 0;
@@ -499,14 +490,15 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->master->dc_scan_opt_mode = 1;
   
 #ifdef C_PROGRESSIVE_SUPPORTED
-  if (cinfo->master->use_moz_defaults) {
+  if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
     cinfo->master->optimize_scans = TRUE;
     jpeg_simple_progression(cinfo);
   } else
     cinfo->master->optimize_scans = FALSE;
 #endif
   
-  cinfo->master->trellis_quant = cinfo->master->use_moz_defaults;
+  cinfo->master->trellis_quant =
+    cinfo->master->compress_profile == JCP_MAX_COMPRESSION;
   cinfo->master->lambda_log_scale1 = 14.75;
   cinfo->master->lambda_log_scale2 = 16.5;
   cinfo->master->quant_tbl_master_idx = 3;
@@ -877,7 +869,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     nscans = 10;
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->master->use_moz_defaults == TRUE) {
+    if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
       if (ncomps > MAX_COMPS_IN_SCAN)
         nscans = 5 * ncomps;      /* 2 DC + 4 AC scans per component */
       else
@@ -909,7 +901,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
-    if (cinfo->master->use_moz_defaults == TRUE) {
+    if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
       /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
     /* Initial DC scan */
       if (cinfo->master->dc_scan_opt_mode == 0)
@@ -957,7 +949,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     }
   } else {
     /* All-purpose script for other color spaces. */
-    if (cinfo->master->use_moz_defaults == TRUE) {
+    if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
       /* scan defined in jpeg_scan_bw.txt in jpgcrush */
       /* DC component, no successive approximation */
       scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);

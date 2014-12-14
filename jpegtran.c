@@ -44,7 +44,7 @@ static const char * progname;   /* program name for error messages */
 static char * outfilename;      /* for -outfile switch */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
-boolean memsrc;  /* for -memsrc switch */
+boolean memsrc = FALSE;  /* for -memsrc switch */
 #define INPUT_BUF_SIZE  4096
 
 
@@ -316,7 +316,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, FALSE);
+      jpeg_c_set_int_param(cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
       
     } else if (keymatch(arg, "rotate", 2)) {
       /* Rotate 90, 180, or 270 degrees (measured clockwise). */
@@ -474,8 +474,10 @@ main (int argc, char **argv)
 #endif
 
   /* Specify data source for decompression */
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    memsrc = jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS); /* needed to revert to original */
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION)
+    memsrc = TRUE; /* needed to revert to original */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   if (memsrc) {
     size_t nbytes;
@@ -561,8 +563,9 @@ main (int argc, char **argv)
 
   /* Specify data destination for compression */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS) &&
-      jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION)
     jpeg_mem_dest(&dstinfo, &outbuffer, &outsize);
   else
 #endif
@@ -584,8 +587,9 @@ main (int argc, char **argv)
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
   
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS) &&
-      jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS)) {
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION) {
     size_t nbytes;
     
     unsigned char *buffer = outbuffer;

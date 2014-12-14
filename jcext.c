@@ -19,7 +19,6 @@ GLOBAL(boolean)
 jpeg_c_bool_param_supported (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 {
   switch (param) {
-  case JBOOLEAN_USE_MOZ_DEFAULTS:
   case JBOOLEAN_OPTIMIZE_SCANS:
   case JBOOLEAN_TRELLIS_QUANT:
   case JBOOLEAN_TRELLIS_QUANT_DC:
@@ -40,9 +39,6 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
                        boolean value)
 {
   switch(param) {
-  case JBOOLEAN_USE_MOZ_DEFAULTS:
-    cinfo->master->use_moz_defaults = value;
-    break;
   case JBOOLEAN_OPTIMIZE_SCANS:
     cinfo->master->optimize_scans = value;
     break;
@@ -77,8 +73,6 @@ GLOBAL(boolean)
 jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 {
   switch(param) {
-  case JBOOLEAN_USE_MOZ_DEFAULTS:
-    return cinfo->master->use_moz_defaults;
   case JBOOLEAN_OPTIMIZE_SCANS:
     return cinfo->master->optimize_scans;
   case JBOOLEAN_TRELLIS_QUANT:
@@ -152,6 +146,7 @@ GLOBAL(boolean)
 jpeg_c_int_param_supported (j_compress_ptr cinfo, J_INT_PARAM param)
 {
   switch (param) {
+  case JINT_COMPRESS_PROFILE:
   case JINT_TRELLIS_FREQ_SPLIT:
   case JINT_TRELLIS_NUM_LOOPS:
   case JINT_BASE_QUANT_TBL_IDX:
@@ -167,6 +162,16 @@ GLOBAL(void)
 jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value)
 {
   switch (param) {
+  case JINT_COMPRESS_PROFILE:
+    switch (value) {
+    case JCP_MAX_COMPRESSION:
+    case JCP_FASTEST:
+      cinfo->master->compress_profile = value;
+      break;
+    default:
+      ERREXIT(cinfo, JERR_BAD_PARAM_VALUE);
+    }
+    break;
   case JINT_TRELLIS_FREQ_SPLIT:
     cinfo->master->trellis_freq_split = value;
     break;
@@ -190,6 +195,8 @@ GLOBAL(int)
 jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param)
 {
   switch (param) {
+  case JINT_COMPRESS_PROFILE:
+    return cinfo->master->compress_profile;
   case JINT_TRELLIS_FREQ_SPLIT:
     return cinfo->master->trellis_freq_split;
   case JINT_TRELLIS_NUM_LOOPS:

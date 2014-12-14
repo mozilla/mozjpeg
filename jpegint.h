@@ -58,7 +58,6 @@ struct jpeg_comp_master {
   boolean is_last_pass;         /* True during last pass */
 
   /* Extension parameters */
-  boolean use_moz_defaults; /* TRUE=use Mozilla defaults */
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
   boolean trellis_quant; /* TRUE=use trellis quantization */
   boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
@@ -72,6 +71,7 @@ struct jpeg_comp_master {
   double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
   double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
 
+  int compress_profile; /* compression profile */
   int dc_scan_opt_mode; /* DC scan optimization mode */
   int quant_tbl_master_idx; /* Quantization table master index */
   int trellis_freq_split; /* splitting point for frequency in trellis quantization */

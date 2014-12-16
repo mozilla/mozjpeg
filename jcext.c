@@ -1,5 +1,5 @@
 /*
- * jccompat.c
+ * jcext.c
  *
  * Copyright (C) 2014, D. R. Commander.
  * Copyright (C) 2014, Mozilla Corporation.

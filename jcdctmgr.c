@@ -879,7 +879,8 @@ static const float jpeg_lambda_weights_csf_luma[64] = {
 
 GLOBAL(void)
 quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val)
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+                 JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
 {
   int i, j, k, l;
   float accumulated_zero_dist[DCTSIZE2];
@@ -999,6 +1000,24 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
         delta = dc_candidate[k][bi] * q - x;
         dc_candidate_dist = delta * delta * lambda_dc;
         dc_candidate[k][bi] *= 1 + 2*sign;
+        
+        /* Take into account DC differences */
+        if (coef_blocks_above && src_above && cinfo->master->trellis_delta_dc_weight > 0.0) {
+          int dc_above_orig;
+          int dc_above_recon;
+          int dc_orig;
+          int dc_recon;
+          float vertical_dist;
+          
+          dc_above_orig = src_above[bi][0];
+          dc_above_recon = coef_blocks_above[bi][0] * q;
+          dc_orig = src[bi][0];
+          dc_recon = dc_candidate[k][bi] * q;
+          /* delta is difference of vertical gradients */
+          delta = (dc_above_orig - dc_orig) - (dc_above_recon - dc_recon);
+          vertical_dist = delta * delta * lambda_dc;
+          dc_candidate_dist +=  cinfo->master->trellis_delta_dc_weight * (vertical_dist - dc_candidate_dist);
+        }
         
         if (bi == 0) {
           dc_delta = dc_candidate[k][bi] - *last_dc_val;

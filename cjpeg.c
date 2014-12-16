@@ -530,6 +530,13 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* disable trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT, FALSE);
       
+    } else if (keymatch(arg, "trellis-dc-ver-weight", 12)) {
+      if (++argn >= argc) {      /* advance to next argument */
+        fprintf(stderr, "%s: missing argument for trellis-dc-ver-weight\n", progname);
+        usage();
+      }
+      jpeg_c_set_float_param(cinfo, JFLOAT_TRELLIS_DELTA_DC_WEIGHT, atof(argv[argn]));
+      
     } else if (keymatch(arg, "trellis-dc", 9)) {
       /* enable DC trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, TRUE);

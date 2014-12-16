@@ -131,6 +131,13 @@ Floating Point Extension Parameters Supported by mozjpeg
   rely on n:
     lambda = 2^(s1-12) / q^2.
 
+* JFLOAT_TRELLIS_DELTA_DC_WEIGHT (default: 0.0)
+  This parameter controls how distortion is calculated in DC trellis quantization
+  (enabled with JBOOLEAN_TRELLIS_QUANT_DC). It defines weighting between distortion
+  of the DC coefficient and distortion of the vertical gradient of DC coefficients.
+  The value of the parameter corresponds to the weight applied to the distortion
+  of the vertical gradient.
+
 
 Integer Extension Parameters Supported by mozjpeg
 -------------------------------------------------

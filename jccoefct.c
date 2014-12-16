@@ -405,12 +405,13 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
      */
     for (block_row = 0; block_row < block_rows; block_row++) {
       thisblockrow = buffer[block_row];
+      lastblockrow = (block_row > 0) ? buffer[block_row-1] : NULL;
       quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
                        buffer_dst[block_row], blocks_across,
                        cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
                        cinfo->master->norm_src[compptr->quant_tbl_no],
                        cinfo->master->norm_coef[compptr->quant_tbl_no],
-                       &lastDC);
+                       &lastDC, lastblockrow, buffer_dst[block_row-1]);
       
       if (ndummy > 0) {
         /* Create dummy blocks at the right edge of the image. */

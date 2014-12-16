@@ -103,6 +103,7 @@ jpeg_c_float_param_supported (j_compress_ptr cinfo, J_FLOAT_PARAM param)
   switch (param) {
   case JFLOAT_LAMBDA_LOG_SCALE1:
   case JFLOAT_LAMBDA_LOG_SCALE2:
+  case JFLOAT_TRELLIS_DELTA_DC_WEIGHT:
     return TRUE;
   }
 
@@ -120,6 +121,9 @@ jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param, float value)
   case JFLOAT_LAMBDA_LOG_SCALE2:
     cinfo->master->lambda_log_scale2 = value;
     break;
+  case JFLOAT_TRELLIS_DELTA_DC_WEIGHT:
+    cinfo->master->trellis_delta_dc_weight = value;
+    break;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }
@@ -134,6 +138,8 @@ jpeg_c_get_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param)
     return cinfo->master->lambda_log_scale1;
   case JFLOAT_LAMBDA_LOG_SCALE2:
     return cinfo->master->lambda_log_scale2;
+  case JFLOAT_TRELLIS_DELTA_DC_WEIGHT:
+    return cinfo->master->trellis_delta_dc_weight;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }

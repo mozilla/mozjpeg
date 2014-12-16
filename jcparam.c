@@ -510,6 +510,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   cinfo->master->trellis_num_loops = 1;
   cinfo->master->trellis_q_opt = FALSE;
   cinfo->master->trellis_quant_dc = TRUE;
+  cinfo->master->trellis_delta_dc_weight = 0.0;
 }
 
 

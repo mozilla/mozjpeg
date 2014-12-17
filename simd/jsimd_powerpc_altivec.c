@@ -47,7 +47,7 @@
   row37h = vec_mergel(row##3, row##7); /* row37h=(34 74 35 75 36 76 37 77) */ \
   \
                                        /* transpose coefficients (phase 2) */ \
-  col01e = vec_mergeh(row04l, row26l); /* col01e=(00 20 40 60 01 21 41 61} */ \
+  col01e = vec_mergeh(row04l, row26l); /* col01e=(00 20 40 60 01 21 41 61) */ \
   col23e = vec_mergel(row04l, row26l); /* col23e=(02 22 42 62 03 23 43 63) */ \
   col45e = vec_mergeh(row04h, row26h); /* col45e=(04 24 44 64 05 25 45 65) */ \
   col67e = vec_mergel(row04h, row26h); /* col67e=(06 26 46 66 07 27 47 67) */ \
@@ -58,7 +58,7 @@
   \
                                        /* transpose coefficients (phase 3) */ \
   col##0 = vec_mergeh(col01e, col01o); /* col0=(00 10 20 30 40 50 60 70) */   \
-  col##1 = vec_mergel(col01e, col01o); /* col1=(01 11 21 31 41 51 61 71} */   \
+  col##1 = vec_mergel(col01e, col01o); /* col1=(01 11 21 31 41 51 61 71) */   \
   col##2 = vec_mergeh(col23e, col23o); /* col2=(02 12 22 32 42 52 62 72) */   \
   col##3 = vec_mergel(col23e, col23o); /* col3=(03 13 23 33 43 53 63 73) */   \
   col##4 = vec_mergeh(col45e, col45o); /* col4=(04 14 24 34 44 54 64 74) */   \

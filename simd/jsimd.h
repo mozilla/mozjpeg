@@ -545,6 +545,8 @@ EXTERN(void) jsimd_fdct_islow_sse2 (DCTELEM * data);
 
 EXTERN(void) jsimd_fdct_islow_mips_dspr2 (DCTELEM * data);
 
+EXTERN(void) jsimd_fdct_islow_altivec (DCTELEM * data);
+
 /* Fast Integer Forward DCT */
 EXTERN(void) jsimd_fdct_ifast_mmx (DCTELEM * data);
 

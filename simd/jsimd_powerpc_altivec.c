@@ -80,6 +80,11 @@
  *     (the elements in arg1 * the elements in arg2).
  */
 
+#define IFAST_F_0_382 98   /* FIX(0.382683433) */
+#define IFAST_F_0_541 139  /* FIX(0.541196100) */
+#define IFAST_F_0_707 181  /* FIX(0.707106781) */
+#define IFAST_F_1_306 334  /* FIX(1.306562965) */
+
 #define IFAST_CONST_BITS 8
 #define IFAST_PRE_MULTIPLY_SCALE_BITS 2
 #define IFAST_CONST_SHIFT \
@@ -87,10 +92,10 @@
 
 static const __vector short jconst_fdct_ifast __attribute__((aligned(16))) =
 {
-  98 << IFAST_CONST_SHIFT,   /* FIX(0.382683433) */
-  139 << IFAST_CONST_SHIFT,  /* FIX(0.541196100) */
-  181 << IFAST_CONST_SHIFT,  /* FIX(0.707106781) */
-  334 << IFAST_CONST_SHIFT   /* FIX(1.306562965) */
+  IFAST_F_0_382 << IFAST_CONST_SHIFT,
+  IFAST_F_0_541 << IFAST_CONST_SHIFT,
+  IFAST_F_0_707 << IFAST_CONST_SHIFT,
+  IFAST_F_1_306 << IFAST_CONST_SHIFT
 };
 
 #define DO_FDCT_IFAST()  \
@@ -211,18 +216,18 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
 
 /* SLOW INTEGER FORWARD DCT */
 
-#define F_0_298 2446   /* FIX(0.298631336) */
-#define F_0_390 3196   /* FIX(0.390180644) */
-#define F_0_541 4433   /* FIX(0.541196100) */
-#define F_0_765 6270   /* FIX(0.765366865) */
-#define F_0_899 7373   /* FIX(0.899976223) */
-#define F_1_175 9633   /* FIX(1.175875602) */
-#define F_1_501 12299  /* FIX(1.501321110) */
-#define F_1_847 15137  /* FIX(1.847759065) */
-#define F_1_961 16069  /* FIX(1.961570560) */
-#define F_2_053 16819  /* FIX(2.053119869) */
-#define F_2_562 20995  /* FIX(2.562915447) */
-#define F_3_072 25172  /* FIX(3.072711026) */
+#define ISLOW_F_0_298 2446   /* FIX(0.298631336) */
+#define ISLOW_F_0_390 3196   /* FIX(0.390180644) */
+#define ISLOW_F_0_541 4433   /* FIX(0.541196100) */
+#define ISLOW_F_0_765 6270   /* FIX(0.765366865) */
+#define ISLOW_F_0_899 7373   /* FIX(0.899976223) */
+#define ISLOW_F_1_175 9633   /* FIX(1.175875602) */
+#define ISLOW_F_1_501 12299  /* FIX(1.501321110) */
+#define ISLOW_F_1_847 15137  /* FIX(1.847759065) */
+#define ISLOW_F_1_961 16069  /* FIX(1.961570560) */
+#define ISLOW_F_2_053 16819  /* FIX(2.053119869) */
+#define ISLOW_F_2_562 20995  /* FIX(2.562915447) */
+#define ISLOW_F_3_072 25172  /* FIX(3.072711026) */
 
 #define ISLOW_CONST_BITS 13
 #define ISLOW_PASS1_BITS 2
@@ -252,13 +257,13 @@ static const __vector short jconst_fdct_islow2 __attribute__((aligned(16))) =
   \
   out2l = vec_add(out2l, PD_DESCALE_P##PASS);  \
   out2h = vec_add(out2h, PD_DESCALE_P##PASS);  \
-  out2l = vec_sr(out2l, DESCALE_P##PASS);  \
-  out2h = vec_sr(out2h, DESCALE_P##PASS);  \
+  out2l = vec_sra(out2l, DESCALE_P##PASS);  \
+  out2h = vec_sra(out2h, DESCALE_P##PASS);  \
   \
   out6l = vec_add(out6l, PD_DESCALE_P##PASS);  \
   out6h = vec_add(out6h, PD_DESCALE_P##PASS);  \
-  out6l = vec_sr(out6l, DESCALE_P##PASS);  \
-  out6h = vec_sr(out6h, DESCALE_P##PASS);  \
+  out6l = vec_sra(out6l, DESCALE_P##PASS);  \
+  out6h = vec_sra(out6h, DESCALE_P##PASS);  \
   \
   out2 = vec_pack(out2l, out2h);  \
   out6 = vec_pack(out6l, out6h);  \
@@ -291,13 +296,13 @@ static const __vector short jconst_fdct_islow2 __attribute__((aligned(16))) =
   \
   out7l = vec_add(out7l, PD_DESCALE_P##PASS);  \
   out7h = vec_add(out7h, PD_DESCALE_P##PASS);  \
-  out7l = vec_sr(out7l, DESCALE_P##PASS);  \
-  out7h = vec_sr(out7h, DESCALE_P##PASS);  \
+  out7l = vec_sra(out7l, DESCALE_P##PASS);  \
+  out7h = vec_sra(out7h, DESCALE_P##PASS);  \
   \
   out1l = vec_add(out1l, PD_DESCALE_P##PASS);  \
   out1h = vec_add(out1h, PD_DESCALE_P##PASS);  \
-  out1l = vec_sr(out1l, DESCALE_P##PASS);  \
-  out1h = vec_sr(out1h, DESCALE_P##PASS);  \
+  out1l = vec_sra(out1l, DESCALE_P##PASS);  \
+  out1h = vec_sra(out1h, DESCALE_P##PASS);  \
   \
   out7 = vec_pack(out7l, out7h);  \
   out1 = vec_pack(out1l, out1h);  \
@@ -317,13 +322,13 @@ static const __vector short jconst_fdct_islow2 __attribute__((aligned(16))) =
   \
   out5l = vec_add(out5l, PD_DESCALE_P##PASS);  \
   out5h = vec_add(out5h, PD_DESCALE_P##PASS);  \
-  out5l = vec_sr(out5l, DESCALE_P##PASS);  \
-  out5h = vec_sr(out5h, DESCALE_P##PASS);  \
+  out5l = vec_sra(out5l, DESCALE_P##PASS);  \
+  out5h = vec_sra(out5h, DESCALE_P##PASS);  \
   \
   out3l = vec_add(out3l, PD_DESCALE_P##PASS);  \
   out3h = vec_add(out3h, PD_DESCALE_P##PASS);  \
-  out3l = vec_sr(out3l, DESCALE_P##PASS);  \
-  out3h = vec_sr(out3h, DESCALE_P##PASS);  \
+  out3l = vec_sra(out3l, DESCALE_P##PASS);  \
+  out3h = vec_sra(out3h, DESCALE_P##PASS);  \
   \
   out5 = vec_pack(out5l, out5h);  \
   out3 = vec_pack(out3l, out3h);  \
@@ -379,30 +384,42 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
     out1l, out1h, out2l, out2h, out3l, out3h, out5l, out5h, out6l, out6h,
     out7l, out7h;
 
-  __vector short PW_F130_F054 = {F_0_541 + F_0_765, F_0_541,
-    F_0_541 + F_0_765, F_0_541, F_0_541 + F_0_765, F_0_541,
-    F_0_541 + F_0_765, F_0_541};
-  __vector short PW_F054_MF130 = {F_0_541, F_0_541 - F_1_847,
-    F_0_541, F_0_541 - F_1_847, F_0_541, F_0_541 - F_1_847,
-    F_0_541, F_0_541 - F_1_847};
-  __vector short PW_MF078_F117 = {F_1_175 - F_1_961, F_1_175,
-    F_1_175 - F_1_961, F_1_175, F_1_175 - F_1_961, F_1_175,
-    F_1_175 - F_1_961, F_1_175};
-  __vector short PW_F117_F078 = {F_1_175, F_1_175 - F_0_390,
-    F_1_175, F_1_175 - F_0_390, F_1_175, F_1_175 - F_0_390,
-    F_1_175, F_1_175 - F_0_390};
-  __vector short PW_MF060_MF089 = {F_0_298 - F_0_899, -F_0_899,
-    F_0_298 - F_0_899, -F_0_899, F_0_298 - F_0_899, -F_0_899,
-    F_0_298 - F_0_899, -F_0_899};
-  __vector short PW_MF089_F060 = {-F_0_899, F_1_501 - F_0_899,
-    -F_0_899, F_1_501 - F_0_899, -F_0_899, F_1_501 - F_0_899,
-    -F_0_899, F_1_501 - F_0_899};
-  __vector short PW_MF050_MF256 = {F_2_053 - F_2_562, -F_2_562,
-    F_2_053 - F_2_562, -F_2_562, F_2_053 - F_2_562, -F_2_562,
-    F_2_053 - F_2_562, -F_2_562};
-  __vector short PW_MF256_F050 = {-F_2_562, F_3_072 - F_2_562,
-    -F_2_562, F_3_072 - F_2_562, -F_2_562, F_3_072 - F_2_562,
-    -F_2_562, F_3_072 - F_2_562};
+  __vector short PW_F130_F054 = {ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541,
+    ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541,
+    ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541,
+    ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541};
+  __vector short PW_F054_MF130 = {ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847,
+    ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847,
+    ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847,
+    ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847};
+  __vector short PW_MF078_F117 = {ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175,
+    ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175,
+    ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175,
+    ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175};
+  __vector short PW_F117_F078 = {ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390,
+    ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390,
+    ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390,
+    ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390};
+  __vector short PW_MF060_MF089 = {
+    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899,
+    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899,
+    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899,
+    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899};
+  __vector short PW_MF089_F060 = {
+    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899,
+    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899,
+    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899,
+    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899};
+  __vector short PW_MF050_MF256 = {
+    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562,
+    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562,
+    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562,
+    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562};
+  __vector short PW_MF256_F050 = {
+    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562,
+    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562,
+    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562,
+    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562};
   __vector short PW_DESCALE_P2X = vec_splat(jconst_fdct_islow2, 0);
 
   /* Constants */

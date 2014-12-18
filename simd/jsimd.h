@@ -667,6 +667,10 @@ EXTERN(void) jsimd_idct_ifast_rows_mips_dspr2
         (DCTELEM * wsptr, JSAMPARRAY output_buf, JDIMENSION output_col,
          const int * idct_coefs);
 
+EXTERN(void) jsimd_idct_ifast_altivec
+        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+         JDIMENSION output_col);
+
 /* Floating Point Inverse DCT */
 EXTERN(void) jsimd_idct_float_3dnow
         (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,

@@ -63,6 +63,10 @@ good argument can be made that this is a bad practice on the part of the
 software in question, but since this affects more than one package, it's just
 easier to fix it here.
 
+[12] Fixed issues that were preventing the ARM 64-bit SIMD code from compiling
+for iOS, and included an ARMv8 architecture in all of the binaries installed by
+the "official" libjpeg-turbo SDK for OS X.
+
 
 1.3.90 (1.4 beta1)
 ==================

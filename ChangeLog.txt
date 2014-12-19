@@ -315,7 +315,7 @@ configure/CMake switch in order to retain strict API/ABI compatibility with the
 libjpeg v6b or v7 API/ABI (or with previous versions of libjpeg-turbo.)  See
 README-turbo.txt for more details.
 
-[13] Added ARM v7s architecture to libjpeg.a and libturbojpeg.a in the official
+[13] Added ARMv7s architecture to libjpeg.a and libturbojpeg.a in the official
 libjpeg-turbo binary package for OS X, so that those libraries can be used to
 build applications that leverage the faster CPUs in the iPhone 5 and iPad 4.
 
@@ -398,7 +398,7 @@ K component is assigned a component ID of 1 instead of 4.  Although these files
 are in violation of the spec, other JPEG implementations handle them
 correctly.
 
-[7] Added ARM v6 and ARM v7 architectures to libjpeg.a and libturbojpeg.a in
+[7] Added ARMv6 and ARMv7 architectures to libjpeg.a and libturbojpeg.a in
 the official libjpeg-turbo binary package for OS X, so that those libraries can
 be used to build both OS X and iOS applications.
 

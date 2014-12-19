@@ -584,12 +584,12 @@ udmg: all pkgscripts/makemacpkg pkgscripts/uninstall
 	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32}
 
 iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
-	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
+	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
 
 else
 
 iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
-	sh pkgscripts/makemacpkg -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
+	sh pkgscripts/makemacpkg -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
 
 endif
 

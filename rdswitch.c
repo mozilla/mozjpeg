@@ -265,6 +265,9 @@ bogus:
     MEMCOPY(scanptr, scans, scanno * sizeof(jpeg_scan_info));
     cinfo->scan_info = scanptr;
     cinfo->num_scans = scanno;
+    
+    /* Disable scan optimization if using custom scan */
+    jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
   }
 
   fclose(fp);

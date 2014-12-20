@@ -333,6 +333,17 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(int)
 jsimd_can_idct_islow (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -364,6 +375,8 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
+  jsimd_idct_islow_altivec(compptr->dct_table, coef_block, output_buf,
+                           output_col);
 }
 
 GLOBAL(void)

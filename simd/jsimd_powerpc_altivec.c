@@ -32,6 +32,11 @@
 
 /* Common code */
 
+#define __4X(a) a, a, a, a
+#define __4X2(a, b) a, b, a, b, a, b, a, b
+#define __8X(a) __4X(a), __4X(a)
+#define __16X(a) __8X(a), __8X(a)
+
 #define TRANSPOSE(row, col)  \
 {  \
   __vector short row04l, row04h, row15l, row15h,  \
@@ -90,17 +95,6 @@
 #define ISLOW_PASS1_BITS 2
 #define ISLOW_DESCALE_P1 (ISLOW_CONST_BITS - ISLOW_PASS1_BITS)
 #define ISLOW_DESCALE_P2 (ISLOW_CONST_BITS + ISLOW_PASS1_BITS)
-
-static const __vector int jconst_fdct_islow __attribute__((aligned(16))) =
-{
-  1 << (ISLOW_DESCALE_P1 - 1),
-  1 << (ISLOW_DESCALE_P2 - 1)
-};
-
-static const __vector short jconst_fdct_islow2 __attribute__((aligned(16))) =
-{
-  1 << (ISLOW_PASS1_BITS - 1)
-};
 
 #define DO_FDCT_ISLOW_COMMON(PASS)  \
 {  \
@@ -241,51 +235,24 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
     out1l, out1h, out2l, out2h, out3l, out3h, out5l, out5h, out6l, out6h,
     out7l, out7h;
 
-  __vector short PW_F130_F054 = {ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541,
-    ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541,
-    ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541,
-    ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541};
-  __vector short PW_F054_MF130 = {ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847,
-    ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847,
-    ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847,
-    ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847};
-  __vector short PW_MF078_F117 = {ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175,
-    ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175,
-    ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175,
-    ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175};
-  __vector short PW_F117_F078 = {ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390,
-    ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390,
-    ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390,
-    ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390};
-  __vector short PW_MF060_MF089 = {
-    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899,
-    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899,
-    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899,
-    ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899};
-  __vector short PW_MF089_F060 = {
-    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899,
-    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899,
-    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899,
-    -ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899};
-  __vector short PW_MF050_MF256 = {
-    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562,
-    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562,
-    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562,
-    ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562};
-  __vector short PW_MF256_F050 = {
-    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562,
-    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562,
-    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562,
-    -ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562};
-  __vector short PW_DESCALE_P2X = vec_splat(jconst_fdct_islow2, 0);
+  __vector short
+    PW_F130_F054 = { __4X2(ISLOW_F_0_541 + ISLOW_F_0_765, ISLOW_F_0_541) },
+    PW_F054_MF130 = { __4X2(ISLOW_F_0_541, ISLOW_F_0_541 - ISLOW_F_1_847) },
+    PW_MF078_F117 = { __4X2(ISLOW_F_1_175 - ISLOW_F_1_961, ISLOW_F_1_175) },
+    PW_F117_F078 = { __4X2(ISLOW_F_1_175, ISLOW_F_1_175 - ISLOW_F_0_390) },
+    PW_MF060_MF089 = { __4X2(ISLOW_F_0_298 - ISLOW_F_0_899, -ISLOW_F_0_899) },
+    PW_MF089_F060 = { __4X2(-ISLOW_F_0_899, ISLOW_F_1_501 - ISLOW_F_0_899) },
+    PW_MF050_MF256 = { __4X2(ISLOW_F_2_053 - ISLOW_F_2_562, -ISLOW_F_2_562) },
+    PW_MF256_F050 = { __4X2(-ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562) },
+    PW_DESCALE_P2X = { __8X(1 << (ISLOW_PASS1_BITS - 1)) };
 
   /* Constants */
-  __vector unsigned short PASS1_BITS = vec_splat_u16(ISLOW_PASS1_BITS);
-  __vector int zero = vec_splat_s32(0),
-    PD_DESCALE_P1 = vec_splat(jconst_fdct_islow, 0),
-    PD_DESCALE_P2 = vec_splat(jconst_fdct_islow, 1);
-  __vector unsigned int DESCALE_P1 = vec_splat_u32(ISLOW_DESCALE_P1),
-    DESCALE_P2 = vec_splat_u32(ISLOW_DESCALE_P2);
+  __vector unsigned short PASS1_BITS = { __8X(ISLOW_PASS1_BITS) };
+  __vector int zero = { __4X(0) },
+    PD_DESCALE_P1 = { __4X(1 << (ISLOW_DESCALE_P1 - 1)) },
+    PD_DESCALE_P2 = { __4X(1 << (ISLOW_DESCALE_P2 - 1)) };
+  __vector unsigned int DESCALE_P1 = { __4X(ISLOW_DESCALE_P1) },
+    DESCALE_P2 = { __4X(ISLOW_DESCALE_P2) };
 
   /* Pass 1: process rows. */
 
@@ -356,14 +323,6 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
 #define IFAST_CONST_SHIFT \
   (16 - IFAST_PRE_MULTIPLY_SCALE_BITS - IFAST_CONST_BITS - 1)
 
-static const __vector short jconst_fdct_ifast __attribute__((aligned(16))) =
-{
-  IFAST_F_0_382 << IFAST_CONST_SHIFT,
-  IFAST_F_0_541 << IFAST_CONST_SHIFT,
-  IFAST_F_0_707 << IFAST_CONST_SHIFT,
-  IFAST_F_1_306 << IFAST_CONST_SHIFT
-};
-
 #define DO_FDCT_IFAST()  \
 {  \
   /* Even part */  \
@@ -423,12 +382,12 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
 
   /* Constants */
   __vector short zero = vec_splat_s16(0),
-    PW_0382 = vec_splat(jconst_fdct_ifast, 0),
-    PW_0541 = vec_splat(jconst_fdct_ifast, 1),
-    PW_0707 = vec_splat(jconst_fdct_ifast, 2),
-    PW_1306 = vec_splat(jconst_fdct_ifast, 3);
-  __vector unsigned short PRE_MULTIPLY_SCALE_BITS =
-    vec_splat_u16(IFAST_PRE_MULTIPLY_SCALE_BITS);
+    PW_0382 = { __8X(IFAST_F_0_382 << IFAST_CONST_SHIFT) },
+    PW_0541 = { __8X(IFAST_F_0_541 << IFAST_CONST_SHIFT) },
+    PW_0707 = { __8X(IFAST_F_0_707 << IFAST_CONST_SHIFT) },
+    PW_1306 = { __8X(IFAST_F_1_306 << IFAST_CONST_SHIFT) };
+  __vector unsigned short
+    PRE_MULTIPLY_SCALE_BITS = { __8X(IFAST_PRE_MULTIPLY_SCALE_BITS) };
 
   /* Pass 1: process rows. */
 
@@ -489,28 +448,14 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
  *     (the elements in arg1 * the elements in arg2).
  */
 
-#define F_1_082 277              /* FIX(1.082392200) */
-#define F_1_414 362              /* FIX(1.414213562) */
-#define F_1_847 473              /* FIX(1.847759065) */
-#define F_2_613 669              /* FIX(2.613125930) */
-#define F_1_613 (F_2_613 - 256)  /* FIX(2.613125930) - FIX(1) */
+#define IFAST_F_1_082 277                    /* FIX(1.082392200) */
+#define IFAST_F_1_414 362                    /* FIX(1.414213562) */
+#define IFAST_F_1_847 473                    /* FIX(1.847759065) */
+#define IFAST_F_2_613 669                    /* FIX(2.613125930) */
+#define IFAST_F_1_613 (IFAST_F_2_613 - 256)  /* FIX(2.613125930) - FIX(1) */
 
 #define IFAST_PASS1_BITS 2
 #define IFAST_CENTERJSAMPLE 128
-
-static const __vector short jconst_idct_ifast __attribute__((aligned(16))) =
-{
-  F_1_414 << IFAST_CONST_SHIFT,
-  F_1_847 << IFAST_CONST_SHIFT,
-  -F_1_613 << IFAST_CONST_SHIFT,
-  F_1_082 << IFAST_CONST_SHIFT
-};
-
-static const __vector signed char jconst_idct_ifast2
-  __attribute__((aligned(16))) =
-{
-  IFAST_CENTERJSAMPLE
-};
 
 #define DO_IDCT_IFAST(in)  \
 {  \
@@ -583,15 +528,15 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
   long long *outptr, *outbptr = (long long *)(&outb);
 
   /* Constants */
-  __vector short zero = vec_splat_s16(0),
-    PW_F1414 = vec_splat(jconst_idct_ifast, 0),
-    PW_F1847 = vec_splat(jconst_idct_ifast, 1),
-    PW_MF1613 = vec_splat(jconst_idct_ifast, 2),
-    PW_F1082 = vec_splat(jconst_idct_ifast, 3);
+  __vector short zero = { __8X(0) },
+    PW_F1414 = { __8X(IFAST_F_1_414 << IFAST_CONST_SHIFT) },
+    PW_F1847 = { __8X(IFAST_F_1_847 << IFAST_CONST_SHIFT) },
+    PW_MF1613 = { __8X(-IFAST_F_1_613 << IFAST_CONST_SHIFT) },
+    PW_F1082 = { __8X(IFAST_F_1_082 << IFAST_CONST_SHIFT) };
   __vector unsigned short
-    PRE_MULTIPLY_SCALE_BITS = vec_splat_u16(IFAST_PRE_MULTIPLY_SCALE_BITS),
-    PASS1_BITS3 = vec_splat_u16(IFAST_PASS1_BITS + 3);
-  __vector signed char PB_CENTERJSAMP = vec_splat(jconst_idct_ifast2, 0);
+    PRE_MULTIPLY_SCALE_BITS = { __8X(IFAST_PRE_MULTIPLY_SCALE_BITS) },
+    PASS1_BITS3 = { __8X(IFAST_PASS1_BITS + 3) };
+  __vector signed char PB_CENTERJSAMP = { __16X(IFAST_CENTERJSAMPLE) };
 
   /* Pass 1: process columns. */
 

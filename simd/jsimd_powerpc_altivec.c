@@ -101,18 +101,13 @@
   tmp1312l = vec_mergeh(tmp13, tmp12);  \
   tmp1312h = vec_mergel(tmp13, tmp12);  \
   \
-  out2l = vec_msums(tmp1312l, PW_F130_F054, zero);  \
-  out2h = vec_msums(tmp1312h, PW_F130_F054, zero);  \
-  out6l = vec_msums(tmp1312l, PW_F054_MF130, zero);  \
-  out6h = vec_msums(tmp1312h, PW_F054_MF130, zero);  \
+  out2l = vec_msums(tmp1312l, PW_F130_F054, PD_DESCALE_P##PASS);  \
+  out2h = vec_msums(tmp1312h, PW_F130_F054, PD_DESCALE_P##PASS);  \
+  out6l = vec_msums(tmp1312l, PW_F054_MF130, PD_DESCALE_P##PASS);  \
+  out6h = vec_msums(tmp1312h, PW_F054_MF130, PD_DESCALE_P##PASS);  \
   \
-  out2l = vec_add(out2l, PD_DESCALE_P##PASS);  \
-  out2h = vec_add(out2h, PD_DESCALE_P##PASS);  \
   out2l = vec_sra(out2l, DESCALE_P##PASS);  \
   out2h = vec_sra(out2h, DESCALE_P##PASS);  \
-  \
-  out6l = vec_add(out6l, PD_DESCALE_P##PASS);  \
-  out6h = vec_add(out6h, PD_DESCALE_P##PASS);  \
   out6l = vec_sra(out6l, DESCALE_P##PASS);  \
   out6h = vec_sra(out6h, DESCALE_P##PASS);  \
   \
@@ -127,31 +122,21 @@
   z34l = vec_mergeh(z3, z4);  \
   z34h = vec_mergel(z3, z4);  \
   \
-  z3l = vec_msums(z34l, PW_MF078_F117, zero);  \
-  z3h = vec_msums(z34h, PW_MF078_F117, zero);  \
-  z4l = vec_msums(z34l, PW_F117_F078, zero);  \
-  z4h = vec_msums(z34h, PW_F117_F078, zero);  \
+  z3l = vec_msums(z34l, PW_MF078_F117, PD_DESCALE_P##PASS);  \
+  z3h = vec_msums(z34h, PW_MF078_F117, PD_DESCALE_P##PASS);  \
+  z4l = vec_msums(z34l, PW_F117_F078, PD_DESCALE_P##PASS);  \
+  z4h = vec_msums(z34h, PW_F117_F078, PD_DESCALE_P##PASS);  \
   \
   tmp47l = vec_mergeh(tmp4, tmp7);  \
   tmp47h = vec_mergel(tmp4, tmp7);  \
   \
-  tmp4l = vec_msums(tmp47l, PW_MF060_MF089, zero);  \
-  tmp4h = vec_msums(tmp47h, PW_MF060_MF089, zero);  \
-  tmp7l = vec_msums(tmp47l, PW_MF089_F060, zero);  \
-  tmp7h = vec_msums(tmp47h, PW_MF089_F060, zero);  \
+  out7l = vec_msums(tmp47l, PW_MF060_MF089, z3l);  \
+  out7h = vec_msums(tmp47h, PW_MF060_MF089, z3h);  \
+  out1l = vec_msums(tmp47l, PW_MF089_F060, z4l);  \
+  out1h = vec_msums(tmp47h, PW_MF089_F060, z4h);  \
   \
-  out7l = vec_add(z3l, tmp4l);  \
-  out7h = vec_add(z3h, tmp4h);  \
-  out1l = vec_add(z4l, tmp7l);  \
-  out1h = vec_add(z4h, tmp7h);  \
-  \
-  out7l = vec_add(out7l, PD_DESCALE_P##PASS);  \
-  out7h = vec_add(out7h, PD_DESCALE_P##PASS);  \
   out7l = vec_sra(out7l, DESCALE_P##PASS);  \
   out7h = vec_sra(out7h, DESCALE_P##PASS);  \
-  \
-  out1l = vec_add(out1l, PD_DESCALE_P##PASS);  \
-  out1h = vec_add(out1h, PD_DESCALE_P##PASS);  \
   out1l = vec_sra(out1l, DESCALE_P##PASS);  \
   out1h = vec_sra(out1h, DESCALE_P##PASS);  \
   \
@@ -161,23 +146,13 @@
   tmp56l = vec_mergeh(tmp5, tmp6);  \
   tmp56h = vec_mergel(tmp5, tmp6);  \
   \
-  tmp5l = vec_msums(tmp56l, PW_MF050_MF256, zero);  \
-  tmp5h = vec_msums(tmp56h, PW_MF050_MF256, zero);  \
-  tmp6l = vec_msums(tmp56l, PW_MF256_F050, zero);  \
-  tmp6h = vec_msums(tmp56h, PW_MF256_F050, zero);  \
+  out5l = vec_msums(tmp56l, PW_MF050_MF256, z4l);  \
+  out5h = vec_msums(tmp56h, PW_MF050_MF256, z4h);  \
+  out3l = vec_msums(tmp56l, PW_MF256_F050, z3l);  \
+  out3h = vec_msums(tmp56h, PW_MF256_F050, z3h);  \
   \
-  out5l = vec_add(tmp5l, z4l);  \
-  out5h = vec_add(tmp5h, z4h);  \
-  out3l = vec_add(tmp6l, z3l);  \
-  out3h = vec_add(tmp6h, z3h);  \
-  \
-  out5l = vec_add(out5l, PD_DESCALE_P##PASS);  \
-  out5h = vec_add(out5h, PD_DESCALE_P##PASS);  \
   out5l = vec_sra(out5l, DESCALE_P##PASS);  \
   out5h = vec_sra(out5h, DESCALE_P##PASS);  \
-  \
-  out3l = vec_add(out3l, PD_DESCALE_P##PASS);  \
-  out3h = vec_add(out3h, PD_DESCALE_P##PASS);  \
   out3l = vec_sra(out3l, DESCALE_P##PASS);  \
   out3h = vec_sra(out3h, DESCALE_P##PASS);  \
   \
@@ -230,8 +205,7 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
     tmp47l, tmp47h, tmp56l, tmp56h, tmp1312l, tmp1312h,
     z3, z4, z34l, z34h,
     out0, out1, out2, out3, out4, out5, out6, out7;
-  __vector int tmp4l, tmp4h, tmp5l, tmp5h, tmp6l, tmp6h, tmp7l, tmp7h,
-    z3l, z3h, z4l, z4h,
+  __vector int z3l, z3h, z4l, z4h,
     out1l, out1h, out2l, out2h, out3l, out3h, out5l, out5h, out6l, out6h,
     out7l, out7h;
 
@@ -247,8 +221,7 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
     PW_MF256_F050 = { __4X2(-ISLOW_F_2_562, ISLOW_F_3_072 - ISLOW_F_2_562) },
     PW_DESCALE_P2X = { __8X(1 << (ISLOW_PASS1_BITS - 1)) };
   __vector unsigned short PASS1_BITS = { __8X(ISLOW_PASS1_BITS) };
-  __vector int zero = { __4X(0) },
-    PD_DESCALE_P1 = { __4X(1 << (ISLOW_DESCALE_P1 - 1)) },
+  __vector int PD_DESCALE_P1 = { __4X(1 << (ISLOW_DESCALE_P1 - 1)) },
     PD_DESCALE_P2 = { __4X(1 << (ISLOW_DESCALE_P2 - 1)) };
   __vector unsigned int DESCALE_P1 = { __4X(ISLOW_DESCALE_P1) },
     DESCALE_P2 = { __4X(ISLOW_DESCALE_P2) };
@@ -352,11 +325,8 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
   z5 = vec_sub(tmp10, tmp12);  \
   z5 = vec_madds(z5, PW_0382, zero);  \
   \
-  z2 = vec_madds(tmp10, PW_0541, zero);  \
-  z2 = vec_add(z2, z5);  \
-  \
-  z4 = vec_madds(tmp12, PW_1306, zero);  \
-  z4 = vec_add(z4, z5);  \
+  z2 = vec_madds(tmp10, PW_0541, z5);  \
+  z4 = vec_madds(tmp12, PW_1306, z5);  \
   \
   tmp11 = vec_sl(tmp11, PRE_MULTIPLY_SCALE_BITS);  \
   z3 = vec_madds(tmp11, PW_0707, zero);  \
@@ -459,6 +429,8 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
   tmp0h = vec_unpackl(tmp0);  \
   tmp0l = vec_sl(tmp0l, CONST_BITS);  \
   tmp0h = vec_sl(tmp0h, CONST_BITS);  \
+  tmp0l = vec_add(tmp0l, PD_DESCALE_P##PASS);  \
+  tmp0h = vec_add(tmp0h, PD_DESCALE_P##PASS);  \
   \
   tmp10l = vec_add(tmp0l, tmp3l);  \
   tmp10h = vec_add(tmp0h, tmp3h);  \
@@ -469,6 +441,8 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
   tmp1h = vec_unpackl(tmp1);  \
   tmp1l = vec_sl(tmp1l, CONST_BITS);  \
   tmp1h = vec_sl(tmp1h, CONST_BITS);  \
+  tmp1l = vec_add(tmp1l, PD_DESCALE_P##PASS);  \
+  tmp1h = vec_add(tmp1h, PD_DESCALE_P##PASS);  \
   \
   tmp11l = vec_add(tmp1l, tmp2l);  \
   tmp11h = vec_add(tmp1h, tmp2h);  \
@@ -511,13 +485,8 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
   out7l = vec_sub(tmp10l, tmp3l);  \
   out7h = vec_sub(tmp10h, tmp3h);  \
   \
-  out0l = vec_add(out0l, PD_DESCALE_P##PASS);  \
-  out0h = vec_add(out0h, PD_DESCALE_P##PASS);  \
   out0l = vec_sra(out0l, DESCALE_P##PASS);  \
   out0h = vec_sra(out0h, DESCALE_P##PASS);  \
-  \
-  out7l = vec_add(out7l, PD_DESCALE_P##PASS);  \
-  out7h = vec_add(out7h, PD_DESCALE_P##PASS);  \
   out7l = vec_sra(out7l, DESCALE_P##PASS);  \
   out7h = vec_sra(out7h, DESCALE_P##PASS);  \
   \
@@ -529,13 +498,8 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
   out6l = vec_sub(tmp11l, tmp2l);  \
   out6h = vec_sub(tmp11h, tmp2h);  \
   \
-  out1l = vec_add(out1l, PD_DESCALE_P##PASS);  \
-  out1h = vec_add(out1h, PD_DESCALE_P##PASS);  \
   out1l = vec_sra(out1l, DESCALE_P##PASS);  \
   out1h = vec_sra(out1h, DESCALE_P##PASS);  \
-  \
-  out6l = vec_add(out6l, PD_DESCALE_P##PASS);  \
-  out6h = vec_add(out6h, PD_DESCALE_P##PASS);  \
   out6l = vec_sra(out6l, DESCALE_P##PASS);  \
   out6h = vec_sra(out6h, DESCALE_P##PASS);  \
   \
@@ -547,13 +511,8 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
   out5l = vec_sub(tmp12l, tmp1l);  \
   out5h = vec_sub(tmp12h, tmp1h);  \
   \
-  out2l = vec_add(out2l, PD_DESCALE_P##PASS);  \
-  out2h = vec_add(out2h, PD_DESCALE_P##PASS);  \
   out2l = vec_sra(out2l, DESCALE_P##PASS);  \
   out2h = vec_sra(out2h, DESCALE_P##PASS);  \
-  \
-  out5l = vec_add(out5l, PD_DESCALE_P##PASS);  \
-  out5h = vec_add(out5h, PD_DESCALE_P##PASS);  \
   out5l = vec_sra(out5l, DESCALE_P##PASS);  \
   out5h = vec_sra(out5h, DESCALE_P##PASS);  \
   \
@@ -565,13 +524,8 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
   out4l = vec_sub(tmp13l, tmp0l);  \
   out4h = vec_sub(tmp13h, tmp0h);  \
   \
-  out3l = vec_add(out3l, PD_DESCALE_P##PASS);  \
-  out3h = vec_add(out3h, PD_DESCALE_P##PASS);  \
   out3l = vec_sra(out3l, DESCALE_P##PASS);  \
   out3h = vec_sra(out3h, DESCALE_P##PASS);  \
-  \
-  out4l = vec_add(out4l, PD_DESCALE_P##PASS);  \
-  out4h = vec_add(out4h, PD_DESCALE_P##PASS);  \
   out4l = vec_sra(out4l, DESCALE_P##PASS);  \
   out4h = vec_sra(out4h, DESCALE_P##PASS);  \
   \
@@ -765,9 +719,8 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
   \
   tmp10 = vec_madds(z12s, PW_F1082, zero);  \
   tmp10 = vec_sub(tmp10, z5);  \
-  tmp12 = vec_madds(z10s, PW_MF1613, zero);  \
+  tmp12 = vec_madds(z10s, PW_MF1613, z5);  \
   tmp12 = vec_sub(tmp12, z10);  \
-  tmp12 = vec_add(tmp12, z5);  \
   \
   tmp6 = vec_sub(tmp12, tmp7);  \
   tmp5 = vec_sub(tmp11, tmp6);  \

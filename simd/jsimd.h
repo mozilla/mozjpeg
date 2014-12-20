@@ -646,6 +646,10 @@ EXTERN(void) jsimd_idct_islow_mips_dspr2
         (void * dct_table, JCOEFPTR coef_block, int * output_buf,
          JSAMPLE * output_col);
 
+EXTERN(void) jsimd_idct_islow_altivec
+        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+         JDIMENSION output_col);
+
 /* Fast Integer Inverse DCT */
 EXTERN(void) jsimd_idct_ifast_mmx
         (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,

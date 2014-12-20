@@ -624,7 +624,8 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
   int chroma_freq_split_scan_start = cinfo->master->num_scans_luma +
                                      cinfo->master->num_scans_chroma_dc +
                                      (6 * cinfo->master->Al_max_chroma + 4);
-
+  int passes_per_scan = cinfo->optimize_coding ? 2 : 1;
+  
   if (next_scan_number > 1 && next_scan_number <= luma_freq_split_scan_start) {
     if ((next_scan_number - 1) % 3 == 2) {
       int Al = (next_scan_number - 1) / 3;
@@ -640,7 +641,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
         master->best_Al_luma = Al;
       } else {
         master->scan_number = luma_freq_split_scan_start - 1;
-        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+        master->pass_number = passes_per_scan * (master->scan_number + 1) - 1 + master->pass_number_scan_opt_base;
       }
     }
   
@@ -666,7 +667,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
           (idx == 3 && master->best_freq_split_idx_luma != 2) ||
           (idx == 4 && master->best_freq_split_idx_luma != 4)) {
         master->scan_number = cinfo->master->num_scans_luma - 1;
-        master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+        master->pass_number = passes_per_scan * (master->scan_number + 1) - 1 + master->pass_number_scan_opt_base;
         master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
       }
     }
@@ -702,7 +703,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
           master->best_Al_chroma = Al;
         } else {
           master->scan_number = chroma_freq_split_scan_start - 1;
-          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+          master->pass_number = passes_per_scan * (master->scan_number + 1) - 1 + master->pass_number_scan_opt_base;
         }
       }
 
@@ -730,7 +731,7 @@ select_scans (j_compress_ptr cinfo, int next_scan_number)
             (idx == 3 && master->best_freq_split_idx_chroma != 2) ||
             (idx == 4 && master->best_freq_split_idx_chroma != 4)) {
           master->scan_number = cinfo->num_scans - 1;
-          master->pass_number = 2 * master->scan_number + 1 + master->pass_number_scan_opt_base;
+          master->pass_number = passes_per_scan * (master->scan_number + 1) - 1 + master->pass_number_scan_opt_base;
           master->pub.is_last_pass = (master->pass_number == master->total_passes - 1);
         }
       }

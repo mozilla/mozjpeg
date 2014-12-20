@@ -178,9 +178,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
       /* No table optimization required for AC */
       cinfo->optimize_coding = FALSE;
-      
-      /* Scan optimization currently incompatible with AC */
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
 #else
       fprintf(stderr, "%s: sorry, arithmetic coding not supported\n",
               progname);

@@ -71,149 +71,6 @@
 }
 
 
-/* FAST INTEGER FORWARD DCT
- *
- * This is similar to the SSE2 implementation, except that we left-shift the
- * constants by 1 less bit (the -1 in IFAST_CONST_SHIFT.)  This is because
- * vec_madds(arg1, arg2, arg3) generates the 16-bit saturated sum of:
- *   the elements in arg3 + the most significant 17 bits of
- *     (the elements in arg1 * the elements in arg2).
- */
-
-#define IFAST_F_0_382 98   /* FIX(0.382683433) */
-#define IFAST_F_0_541 139  /* FIX(0.541196100) */
-#define IFAST_F_0_707 181  /* FIX(0.707106781) */
-#define IFAST_F_1_306 334  /* FIX(1.306562965) */
-
-#define IFAST_CONST_BITS 8
-#define IFAST_PRE_MULTIPLY_SCALE_BITS 2
-#define IFAST_CONST_SHIFT \
-  (16 - IFAST_PRE_MULTIPLY_SCALE_BITS - IFAST_CONST_BITS - 1)
-
-static const __vector short jconst_fdct_ifast __attribute__((aligned(16))) =
-{
-  IFAST_F_0_382 << IFAST_CONST_SHIFT,
-  IFAST_F_0_541 << IFAST_CONST_SHIFT,
-  IFAST_F_0_707 << IFAST_CONST_SHIFT,
-  IFAST_F_1_306 << IFAST_CONST_SHIFT
-};
-
-#define DO_FDCT_IFAST()  \
-{  \
-  /* Even part */  \
-  \
-  tmp10 = vec_add(tmp0, tmp3);  \
-  tmp13 = vec_sub(tmp0, tmp3);  \
-  tmp11 = vec_add(tmp1, tmp2);  \
-  tmp12 = vec_sub(tmp1, tmp2);  \
-  \
-  out0  = vec_add(tmp10, tmp11);  \
-  out4  = vec_sub(tmp10, tmp11);  \
-  \
-  z1 = vec_add(tmp12, tmp13);  \
-  z1 = vec_sl(z1, PRE_MULTIPLY_SCALE_BITS);  \
-  z1 = vec_madds(z1, PW_0707, zero);  \
-  \
-  out2 = vec_add(tmp13, z1);  \
-  out6 = vec_sub(tmp13, z1);  \
-  \
-  /* Odd part */  \
-  \
-  tmp10 = vec_add(tmp4, tmp5);  \
-  tmp11 = vec_add(tmp5, tmp6);  \
-  tmp12 = vec_add(tmp6, tmp7);  \
-  \
-  tmp10 = vec_sl(tmp10, PRE_MULTIPLY_SCALE_BITS);  \
-  tmp12 = vec_sl(tmp12, PRE_MULTIPLY_SCALE_BITS);  \
-  z5 = vec_sub(tmp10, tmp12);  \
-  z5 = vec_madds(z5, PW_0382, zero);  \
-  \
-  z2 = vec_madds(tmp10, PW_0541, zero);  \
-  z2 = vec_add(z2, z5);  \
-  \
-  z4 = vec_madds(tmp12, PW_1306, zero);  \
-  z4 = vec_add(z4, z5);  \
-  \
-  tmp11 = vec_sl(tmp11, PRE_MULTIPLY_SCALE_BITS);  \
-  z3 = vec_madds(tmp11, PW_0707, zero);  \
-  \
-  z11 = vec_add(tmp7, z3);  \
-  z13 = vec_sub(tmp7, z3);  \
-  \
-  out5 = vec_add(z13, z2);  \
-  out3 = vec_sub(z13, z2);  \
-  out1 = vec_add(z11, z4);  \
-  out7 = vec_sub(z11, z4);  \
-}
-
-void
-jsimd_fdct_ifast_altivec (DCTELEM *data)
-{
-  __vector short row0, row1, row2, row3, row4, row5, row6, row7,
-    col0, col1, col2, col3, col4, col5, col6, col7,
-    tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp10, tmp11, tmp12, tmp13,
-    z1, z2, z3, z4, z5, z11, z13,
-    out0, out1, out2, out3, out4, out5, out6, out7;
-
-  /* Constants */
-  __vector short zero = vec_splat_s16(0),
-    PW_0382 = vec_splat(jconst_fdct_ifast, 0),
-    PW_0541 = vec_splat(jconst_fdct_ifast, 1),
-    PW_0707 = vec_splat(jconst_fdct_ifast, 2),
-    PW_1306 = vec_splat(jconst_fdct_ifast, 3);
-  __vector unsigned short PRE_MULTIPLY_SCALE_BITS =
-    vec_splat_u16(IFAST_PRE_MULTIPLY_SCALE_BITS);
-
-  /* Pass 1: process rows. */
-
-  row0 = *(__vector short *)&data[0];
-  row1 = *(__vector short *)&data[8];
-  row2 = *(__vector short *)&data[16];
-  row3 = *(__vector short *)&data[24];
-  row4 = *(__vector short *)&data[32];
-  row5 = *(__vector short *)&data[40];
-  row6 = *(__vector short *)&data[48];
-  row7 = *(__vector short *)&data[56];
-
-  TRANSPOSE(row, col);
-
-  tmp0 = vec_add(col0, col7);
-  tmp7 = vec_sub(col0, col7);
-  tmp1 = vec_add(col1, col6);
-  tmp6 = vec_sub(col1, col6);
-  tmp2 = vec_add(col2, col5);
-  tmp5 = vec_sub(col2, col5);
-  tmp3 = vec_add(col3, col4);
-  tmp4 = vec_sub(col3, col4);
-
-  DO_FDCT_IFAST();
-
-  /* Pass 2: process columns. */
-
-  TRANSPOSE(out, row);
-
-  tmp0 = vec_add(row0, row7);
-  tmp7 = vec_sub(row0, row7);
-  tmp1 = vec_add(row1, row6);
-  tmp6 = vec_sub(row1, row6);
-  tmp2 = vec_add(row2, row5);
-  tmp5 = vec_sub(row2, row5);
-  tmp3 = vec_add(row3, row4);
-  tmp4 = vec_sub(row3, row4);
-
-  DO_FDCT_IFAST();
-
-  *(__vector short *)&data[0] = out0;
-  *(__vector short *)&data[8] = out1;
-  *(__vector short *)&data[16] = out2;
-  *(__vector short *)&data[24] = out3;
-  *(__vector short *)&data[32] = out4;
-  *(__vector short *)&data[40] = out5;
-  *(__vector short *)&data[48] = out6;
-  *(__vector short *)&data[56] = out7;
-}
-
-
 /* SLOW INTEGER FORWARD DCT */
 
 #define ISLOW_F_0_298 2446   /* FIX(0.298631336) */
@@ -468,6 +325,149 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
   tmp4 = vec_sub(row3, row4);
 
   DO_FDCT_ISLOW_COLS();
+
+  *(__vector short *)&data[0] = out0;
+  *(__vector short *)&data[8] = out1;
+  *(__vector short *)&data[16] = out2;
+  *(__vector short *)&data[24] = out3;
+  *(__vector short *)&data[32] = out4;
+  *(__vector short *)&data[40] = out5;
+  *(__vector short *)&data[48] = out6;
+  *(__vector short *)&data[56] = out7;
+}
+
+
+/* FAST INTEGER FORWARD DCT
+ *
+ * This is similar to the SSE2 implementation, except that we left-shift the
+ * constants by 1 less bit (the -1 in IFAST_CONST_SHIFT.)  This is because
+ * vec_madds(arg1, arg2, arg3) generates the 16-bit saturated sum of:
+ *   the elements in arg3 + the most significant 17 bits of
+ *     (the elements in arg1 * the elements in arg2).
+ */
+
+#define IFAST_F_0_382 98   /* FIX(0.382683433) */
+#define IFAST_F_0_541 139  /* FIX(0.541196100) */
+#define IFAST_F_0_707 181  /* FIX(0.707106781) */
+#define IFAST_F_1_306 334  /* FIX(1.306562965) */
+
+#define IFAST_CONST_BITS 8
+#define IFAST_PRE_MULTIPLY_SCALE_BITS 2
+#define IFAST_CONST_SHIFT \
+  (16 - IFAST_PRE_MULTIPLY_SCALE_BITS - IFAST_CONST_BITS - 1)
+
+static const __vector short jconst_fdct_ifast __attribute__((aligned(16))) =
+{
+  IFAST_F_0_382 << IFAST_CONST_SHIFT,
+  IFAST_F_0_541 << IFAST_CONST_SHIFT,
+  IFAST_F_0_707 << IFAST_CONST_SHIFT,
+  IFAST_F_1_306 << IFAST_CONST_SHIFT
+};
+
+#define DO_FDCT_IFAST()  \
+{  \
+  /* Even part */  \
+  \
+  tmp10 = vec_add(tmp0, tmp3);  \
+  tmp13 = vec_sub(tmp0, tmp3);  \
+  tmp11 = vec_add(tmp1, tmp2);  \
+  tmp12 = vec_sub(tmp1, tmp2);  \
+  \
+  out0  = vec_add(tmp10, tmp11);  \
+  out4  = vec_sub(tmp10, tmp11);  \
+  \
+  z1 = vec_add(tmp12, tmp13);  \
+  z1 = vec_sl(z1, PRE_MULTIPLY_SCALE_BITS);  \
+  z1 = vec_madds(z1, PW_0707, zero);  \
+  \
+  out2 = vec_add(tmp13, z1);  \
+  out6 = vec_sub(tmp13, z1);  \
+  \
+  /* Odd part */  \
+  \
+  tmp10 = vec_add(tmp4, tmp5);  \
+  tmp11 = vec_add(tmp5, tmp6);  \
+  tmp12 = vec_add(tmp6, tmp7);  \
+  \
+  tmp10 = vec_sl(tmp10, PRE_MULTIPLY_SCALE_BITS);  \
+  tmp12 = vec_sl(tmp12, PRE_MULTIPLY_SCALE_BITS);  \
+  z5 = vec_sub(tmp10, tmp12);  \
+  z5 = vec_madds(z5, PW_0382, zero);  \
+  \
+  z2 = vec_madds(tmp10, PW_0541, zero);  \
+  z2 = vec_add(z2, z5);  \
+  \
+  z4 = vec_madds(tmp12, PW_1306, zero);  \
+  z4 = vec_add(z4, z5);  \
+  \
+  tmp11 = vec_sl(tmp11, PRE_MULTIPLY_SCALE_BITS);  \
+  z3 = vec_madds(tmp11, PW_0707, zero);  \
+  \
+  z11 = vec_add(tmp7, z3);  \
+  z13 = vec_sub(tmp7, z3);  \
+  \
+  out5 = vec_add(z13, z2);  \
+  out3 = vec_sub(z13, z2);  \
+  out1 = vec_add(z11, z4);  \
+  out7 = vec_sub(z11, z4);  \
+}
+
+void
+jsimd_fdct_ifast_altivec (DCTELEM *data)
+{
+  __vector short row0, row1, row2, row3, row4, row5, row6, row7,
+    col0, col1, col2, col3, col4, col5, col6, col7,
+    tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp10, tmp11, tmp12, tmp13,
+    z1, z2, z3, z4, z5, z11, z13,
+    out0, out1, out2, out3, out4, out5, out6, out7;
+
+  /* Constants */
+  __vector short zero = vec_splat_s16(0),
+    PW_0382 = vec_splat(jconst_fdct_ifast, 0),
+    PW_0541 = vec_splat(jconst_fdct_ifast, 1),
+    PW_0707 = vec_splat(jconst_fdct_ifast, 2),
+    PW_1306 = vec_splat(jconst_fdct_ifast, 3);
+  __vector unsigned short PRE_MULTIPLY_SCALE_BITS =
+    vec_splat_u16(IFAST_PRE_MULTIPLY_SCALE_BITS);
+
+  /* Pass 1: process rows. */
+
+  row0 = *(__vector short *)&data[0];
+  row1 = *(__vector short *)&data[8];
+  row2 = *(__vector short *)&data[16];
+  row3 = *(__vector short *)&data[24];
+  row4 = *(__vector short *)&data[32];
+  row5 = *(__vector short *)&data[40];
+  row6 = *(__vector short *)&data[48];
+  row7 = *(__vector short *)&data[56];
+
+  TRANSPOSE(row, col);
+
+  tmp0 = vec_add(col0, col7);
+  tmp7 = vec_sub(col0, col7);
+  tmp1 = vec_add(col1, col6);
+  tmp6 = vec_sub(col1, col6);
+  tmp2 = vec_add(col2, col5);
+  tmp5 = vec_sub(col2, col5);
+  tmp3 = vec_add(col3, col4);
+  tmp4 = vec_sub(col3, col4);
+
+  DO_FDCT_IFAST();
+
+  /* Pass 2: process columns. */
+
+  TRANSPOSE(out, row);
+
+  tmp0 = vec_add(row0, row7);
+  tmp7 = vec_sub(row0, row7);
+  tmp1 = vec_add(row1, row6);
+  tmp6 = vec_sub(row1, row6);
+  tmp2 = vec_add(row2, row5);
+  tmp5 = vec_sub(row2, row5);
+  tmp3 = vec_add(row3, row4);
+  tmp4 = vec_sub(row3, row4);
+
+  DO_FDCT_IFAST();
 
   *(__vector short *)&data[0] = out0;
   *(__vector short *)&data[8] = out1;

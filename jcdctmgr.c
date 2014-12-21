@@ -1358,6 +1358,8 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
       float dc_candidate_dist;
       
       qval = (x + q/2) / q; /* quantized value (round nearest) */
+      
+      /* loop over candidates in current block */
       for (k = 0; k < DC_TRELLIS_CANDIDATES; k++) {
         int delta;
         int dc_delta;
@@ -1389,10 +1391,14 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
           dc_candidate_dist +=  cinfo->master->trellis_delta_dc_weight * (vertical_dist - dc_candidate_dist);
         }
         
-        if (bi == 0) {
-          dc_delta = dc_candidate[k][bi] - *last_dc_val;
+        /* loop of candidates from previous block */
+        for (l = 0; l < (bi == 0 ? 1 : DC_TRELLIS_CANDIDATES); l++) {
+          int dc_pred = (bi == 0 ? *last_dc_val : dc_candidate[l][bi-1]);
+          
+          dc_delta = dc_candidate[k][bi] - dc_pred;
           
           bits = r->rate_dc[st][dc_delta != 0];
+          
           if (dc_delta != 0) {
             bits += r->rate_dc[st+1][dc_delta < 0];
             st += 2 + (dc_delta < 0);
@@ -1415,42 +1421,14 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
             while (m >>= 1)
               bits += r->rate_dc[st][(m & dc_delta) ? 1 : 0];
           }
+          
           cost = bits + dc_candidate_dist;
-          accumulated_dc_cost[k][0] = cost;
-          dc_cost_backtrack[k][0] = -1;
-        } else {
-          for (l = 0; l < DC_TRELLIS_CANDIDATES; l++) {
-            dc_delta = dc_candidate[k][bi] - dc_candidate[l][bi-1];
-            
-            bits = r->rate_dc[st][dc_delta != 0];
-            if (dc_delta != 0) {
-              bits += r->rate_dc[st+1][dc_delta < 0];
-              st += 2 + (dc_delta < 0);
-              dc_delta = abs(dc_delta);
-              
-              m = 0;
-              if (dc_delta -= 1) {
-                bits += r->rate_dc[st][1];
-                st = 20;
-                m = 1;
-                v2 = dc_delta;
-                while (v2 >>= 1) {
-                  bits += r->rate_dc[st][1];
-                  m <<= 1;
-                  st++;
-                }
-              }
-              bits += r->rate_dc[st][0];
-              st += 14;
-              while (m >>= 1)
-                bits += r->rate_dc[st][(m & dc_delta) ? 1 : 0];
-            }
-            
-            cost = bits + dc_candidate_dist + accumulated_dc_cost[l][bi-1];
-            if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
-              accumulated_dc_cost[k][bi] = cost;
-              dc_cost_backtrack[k][bi] = l;
-            }
+          if (bi != 0)
+            cost += accumulated_dc_cost[l][bi-1];
+          
+          if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
+            accumulated_dc_cost[k][bi] = cost;
+            dc_cost_backtrack[k][bi] = (bi == 0 ? -1 : l);
           }
         }
       }

@@ -18,7 +18,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-
+#include <math.h>
 
 /* Expanded entropy encoder object for arithmetic encoding. */
 
@@ -120,6 +120,10 @@ emit_byte (int val, j_compress_ptr cinfo)
 {
   struct jpeg_destination_mgr * dest = cinfo->dest;
 
+  /* Do not emit bytes during trellis passes */
+  if (cinfo->master->trellis_passes)
+    return;
+  
   *dest->next_output_byte++ = (JOCTET) val;
   if (--dest->free_in_buffer == 0)
     if (! (*dest->empty_output_buffer) (cinfo))
@@ -826,6 +830,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   int ci, tbl;
   jpeg_component_info * compptr;
+  boolean progressive_mode;
 
   if (gather_statistics)
     /* Make sure to avoid that in the master control logic!
@@ -836,8 +841,12 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
 
   /* We assume jcmaster.c already validated the progressive scan parameters. */
 
+  /* Trellis optimization does DC and AC in same pass and without refinement
+   * so consider progressive mode to be off in such case */
+  progressive_mode = (cinfo->master->trellis_passes) ? FALSE : cinfo->progressive_mode;
+  
   /* Select execution routines */
-  if (cinfo->progressive_mode) {
+  if (progressive_mode) {
     if (cinfo->Ah == 0) {
       if (cinfo->Ss == 0)
         entropy->pub.encode_mcu = encode_mcu_DC_first;
@@ -856,7 +865,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
     /* DC needs no table for refinement scan */
-    if (cinfo->progressive_mode == 0 || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
+    if (progressive_mode == 0 || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
       tbl = compptr->dc_tbl_no;
       if (tbl < 0 || tbl >= NUM_ARITH_TBLS)
         ERREXIT1(cinfo, JERR_NO_ARITH_TABLE, tbl);
@@ -869,7 +878,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
       entropy->dc_context[ci] = 0;
     }
     /* AC needs no table when not present */
-    if (cinfo->progressive_mode == 0 || cinfo->Se) {
+    if (progressive_mode == 0 || cinfo->Se) {
       tbl = compptr->ac_tbl_no;
       if (tbl < 0 || tbl >= NUM_ARITH_TBLS)
         ERREXIT1(cinfo, JERR_NO_ARITH_TABLE, tbl);
@@ -878,7 +887,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
           ((j_common_ptr) cinfo, JPOOL_IMAGE, AC_STAT_BINS);
       MEMZERO(entropy->ac_stats[tbl], AC_STAT_BINS);
 #ifdef CALCULATE_SPECTRAL_CONDITIONING
-      if (cinfo->progressive_mode)
+      if (progressive_mode)
         /* Section G.1.3.2: Set appropriate arithmetic conditioning value Kx */
         cinfo->arith_ac_K[tbl] = cinfo->Ss + ((8 + cinfo->Se - cinfo->Ss) >> 4);
 #endif
@@ -924,4 +933,30 @@ jinit_arith_encoder (j_compress_ptr cinfo)
 
   /* Initialize index for fixed probability estimation */
   entropy->fixed_bin[0] = 113;
+}
+
+GLOBAL(void)
+jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r)
+{
+  int i;
+  arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
+  for (i = 0; i < DC_STAT_BINS; i++) {
+    int state = entropy->dc_stats[dc_tbl_no][i];
+    int mps_val = state >> 7;
+    float prob_lps = (jpeg_aritab[state & 0x7f] >> 16) / 46340.95; /* 32768*sqrt(2) */
+    float prob_0 = (mps_val) ? prob_lps : 1.0 - prob_lps;
+    float prob_1 = 1.0 - prob_0;
+    r->rate_dc[i][0] = -log(prob_0) / log(2.0);
+    r->rate_dc[i][1] = -log(prob_1) / log(2.0);
+  }
+
+  for (i = 0; i < AC_STAT_BINS; i++) {
+    int state = entropy->ac_stats[ac_tbl_no][i];
+    int mps_val = state >> 7;
+    float prob_lps = (jpeg_aritab[state & 0x7f] >> 16) / 46340.95;
+    float prob_0 = (mps_val) ? prob_lps : 1.0 - prob_lps;
+    float prob_1 = 1.0 - prob_0;
+    r->rate_ac[i][0] = -log(prob_0) / log(2.0);
+    r->rate_ac[i][1] = -log(prob_1) / log(2.0);
+  }
 }

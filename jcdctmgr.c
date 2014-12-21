@@ -1261,6 +1261,361 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
 
 }
 
+GLOBAL(void)
+quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+                 JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
+{
+  int i, j, k, l;
+  float accumulated_zero_dist[DCTSIZE2];
+  float accumulated_cost[DCTSIZE2];
+  int run_start[DCTSIZE2];
+  int bi;
+  float best_cost;
+  int last_coeff_idx; /* position of last nonzero coefficient */
+  float norm = 0.0;
+  float lambda_base;
+  float lambda;
+  float lambda_dc;
+  const float *lambda_tbl = (cinfo->master->use_lambda_weight_tbl) ?
+  jpeg_lambda_weights_csf_luma :
+  jpeg_lambda_weights_flat;
+  int Ss, Se;
+  int has_eob;
+  float cost_all_zeros;
+  float best_cost_skip;
+  float cost;
+  float run_bits;
+  int rate;
+  float *accumulated_dc_cost[DC_TRELLIS_CANDIDATES];
+  int *dc_cost_backtrack[DC_TRELLIS_CANDIDATES];
+  JCOEF *dc_candidate[DC_TRELLIS_CANDIDATES];
+  int mode = 1;
+  float lambda_table[DCTSIZE2];
+  
+  /* Arithmetic coding context. Set to 0 for now but can refined */
+  int dc_context = 0;
+  
+  Ss = cinfo->Ss;
+  Se = cinfo->Se;
+  if (Ss == 0)
+    Ss = 1;
+  if (Se < Ss)
+    return;
+  
+  if (cinfo->master->trellis_quant_dc) {
+    for (i = 0; i < DC_TRELLIS_CANDIDATES; i++) {
+      accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
+      dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
+      dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
+      if (!accumulated_dc_cost[i] ||
+          !dc_cost_backtrack[i] ||
+          !dc_candidate[i]) {
+        ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+      }
+    }
+  }
+  
+  norm = 0.0;
+  for (i = 1; i < DCTSIZE2; i++) {
+    norm += qtbl->quantval[i] * qtbl->quantval[i];
+  }
+  norm /= 63.0;
+  
+  if (mode == 1) {
+    lambda_base = 1.0;
+    lambda_tbl = lambda_table;
+    for (i = 0; i < DCTSIZE2; i++)
+      lambda_table[i] = 1.0 / (qtbl->quantval[i] * qtbl->quantval[i]);
+  } else
+    lambda_base = 1.0 / norm;
+  
+  for (bi = 0; bi < num_blocks; bi++) {
+    
+    norm = 0.0;
+    for (i = 1; i < DCTSIZE2; i++) {
+      norm += src[bi][i] * src[bi][i];
+    }
+    norm /= 63.0;
+    
+    if (cinfo->master->lambda_log_scale2 > 0.0)
+      lambda = pow(2.0, cinfo->master->lambda_log_scale1) * lambda_base /
+      (pow(2.0, cinfo->master->lambda_log_scale2) + norm);
+    else
+      lambda = pow(2.0, cinfo->master->lambda_log_scale1 - 12.0) * lambda_base;
+    
+    lambda_dc = lambda * lambda_tbl[0];
+    
+    accumulated_zero_dist[Ss-1] = 0.0;
+    accumulated_cost[Ss-1] = 0.0;
+    
+    /* Do DC coefficient */
+    if (cinfo->master->trellis_quant_dc) {
+      int sign = src[bi][0] >> 31;
+      int x = abs(src[bi][0]);
+      int q = 8 * qtbl->quantval[0];
+      int qval;
+      float dc_candidate_dist;
+      
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
+      for (k = 0; k < DC_TRELLIS_CANDIDATES; k++) {
+        int delta;
+        int dc_delta;
+        float bits;
+        int st = dc_context;
+        int m;
+        int v2;
+        
+        dc_candidate[k][bi] = qval - DC_TRELLIS_CANDIDATES/2 + k;
+        delta = dc_candidate[k][bi] * q - x;
+        dc_candidate_dist = delta * delta * lambda_dc;
+        dc_candidate[k][bi] *= 1 + 2*sign;
+        
+        /* Take into account DC differences */
+        if (coef_blocks_above && src_above && cinfo->master->trellis_delta_dc_weight > 0.0) {
+          int dc_above_orig;
+          int dc_above_recon;
+          int dc_orig;
+          int dc_recon;
+          float vertical_dist;
+          
+          dc_above_orig = src_above[bi][0];
+          dc_above_recon = coef_blocks_above[bi][0] * q;
+          dc_orig = src[bi][0];
+          dc_recon = dc_candidate[k][bi] * q;
+          /* delta is difference of vertical gradients */
+          delta = (dc_above_orig - dc_orig) - (dc_above_recon - dc_recon);
+          vertical_dist = delta * delta * lambda_dc;
+          dc_candidate_dist +=  cinfo->master->trellis_delta_dc_weight * (vertical_dist - dc_candidate_dist);
+        }
+        
+        if (bi == 0) {
+          dc_delta = dc_candidate[k][bi] - *last_dc_val;
+          
+          bits = r->rate_dc[st][dc_delta != 0];
+          if (dc_delta != 0) {
+            bits += r->rate_dc[st+1][dc_delta < 0];
+            st += 2 + (dc_delta < 0);
+            dc_delta = abs(dc_delta);
+            
+            m = 0;
+            if (dc_delta -= 1) {
+              bits += r->rate_dc[st][1];
+              st = 20;
+              m = 1;
+              v2 = dc_delta;
+              while (v2 >>= 1) {
+                bits += r->rate_dc[st][1];
+                m <<= 1;
+                st++;
+              }
+            }
+            bits += r->rate_dc[st][0];
+            st += 14;
+            while (m >>= 1)
+              bits += r->rate_dc[st][(m & dc_delta) ? 1 : 0];
+          }
+          cost = bits + dc_candidate_dist;
+          accumulated_dc_cost[k][0] = cost;
+          dc_cost_backtrack[k][0] = -1;
+        } else {
+          for (l = 0; l < DC_TRELLIS_CANDIDATES; l++) {
+            dc_delta = dc_candidate[k][bi] - dc_candidate[l][bi-1];
+            
+            bits = r->rate_dc[st][dc_delta != 0];
+            if (dc_delta != 0) {
+              bits += r->rate_dc[st+1][dc_delta < 0];
+              st += 2 + (dc_delta < 0);
+              dc_delta = abs(dc_delta);
+              
+              m = 0;
+              if (dc_delta -= 1) {
+                bits += r->rate_dc[st][1];
+                st = 20;
+                m = 1;
+                v2 = dc_delta;
+                while (v2 >>= 1) {
+                  bits += r->rate_dc[st][1];
+                  m <<= 1;
+                  st++;
+                }
+              }
+              bits += r->rate_dc[st][0];
+              st += 14;
+              while (m >>= 1)
+                bits += r->rate_dc[st][(m & dc_delta) ? 1 : 0];
+            }
+            
+            cost = bits + dc_candidate_dist + accumulated_dc_cost[l][bi-1];
+            if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
+              accumulated_dc_cost[k][bi] = cost;
+              dc_cost_backtrack[k][bi] = l;
+            }
+          }
+        }
+      }
+    }
+    
+    /* Do AC coefficients */
+    for (i = Ss; i <= Se; i++) {
+      int z = jpeg_natural_order[i];
+      
+      int sign = src[bi][z] >> 31;
+      int x = abs(src[bi][z]);
+      int q = 8 * qtbl->quantval[z];
+      int candidate[16];
+      float candidate_dist[16];
+      int num_candidates;
+      int qval;
+      int delta;
+      
+      accumulated_zero_dist[i] = x * x * lambda * lambda_tbl[z] + accumulated_zero_dist[i-1];
+      
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
+      
+      if (qval == 0) {
+        coef_blocks[bi][z] = 0;
+        accumulated_cost[i] = 1e38; /* Shouldn't be needed */
+        continue;
+      }
+      
+      k = 0;
+      candidate[k] = qval;
+      delta = candidate[k] * q - x;
+      candidate_dist[k] = delta * delta * lambda * lambda_tbl[z];
+      k++;
+      if (qval > 1) {
+        candidate[k] = qval - 1;
+        delta = candidate[k] * q - x;
+        candidate_dist[k] = delta * delta * lambda * lambda_tbl[z];
+        k++;
+      }
+      num_candidates = k;
+      
+      accumulated_cost[i] = 1e38;
+      
+      for (j = Ss-1; j < i; j++) {
+        int zz = jpeg_natural_order[j];
+        if (j != Ss-1 && coef_blocks[bi][zz] == 0)
+          continue;
+        
+        run_bits = r->rate_ac[3*j][0]; /* EOB */
+        for (k = j+1; k < i; k++)
+          run_bits += r->rate_ac[3*(k-1)+1][0];
+        run_bits += r->rate_ac[3*(i-1)+1][1];
+        
+        for (k = 0; k < num_candidates; k++) {
+          float coef_bits = 1.0; /* sign bit */
+          int v = candidate[k];
+          int v2;
+          int m;
+          int st;
+          
+          st = 3*(i-1)+2;
+          m = 0;
+          if (v -= 1) {
+            coef_bits += r->rate_ac[st][1];
+            m = 1;
+            v2 = v;
+            if (v2 >>= 1) {
+              coef_bits += r->rate_ac[st][1];
+              m <<= 1;
+              st = 189; /* TODO: condition 189/217 */
+              while (v2 >>= 1) {
+                coef_bits += r->rate_ac[st][1];
+                m <<= 1;
+                st++;
+              }
+            }
+          }
+          coef_bits += r->rate_ac[st][0];
+          st += 14;
+          while (m >>= 1)
+            coef_bits += r->rate_ac[st][(m & v) ? 1 : 0];
+          
+          rate = coef_bits + run_bits;
+          cost = rate + candidate_dist[k];
+          cost += accumulated_zero_dist[i-1] - accumulated_zero_dist[j] + accumulated_cost[j];
+          
+          if (cost < accumulated_cost[i]) {
+            coef_blocks[bi][z] = (candidate[k] ^ sign) - sign;
+            accumulated_cost[i] = cost;
+            run_start[i] = j;
+          }
+        }
+      }
+    }
+    
+    last_coeff_idx = Ss-1;
+    best_cost = accumulated_zero_dist[Se] + r->rate_ac[0][1];
+    cost_all_zeros = accumulated_zero_dist[Se];
+    best_cost_skip = cost_all_zeros;
+    
+    for (i = Ss; i <= Se; i++) {
+      int z = jpeg_natural_order[i];
+      if (coef_blocks[bi][z] != 0) {
+        float cost = accumulated_cost[i] + accumulated_zero_dist[Se] - accumulated_zero_dist[i];
+        float cost_wo_eob = cost;
+        
+        if (i < Se)
+          cost += r->rate_ac[3*(i-1)][1];
+        
+        if (cost < best_cost) {
+          best_cost = cost;
+          last_coeff_idx = i;
+          best_cost_skip = cost_wo_eob;
+        }
+      }
+    }
+    
+    has_eob = (last_coeff_idx < Se) + (last_coeff_idx == Ss-1);
+    
+    /* Zero out coefficients that are part of runs */
+    i = Se;
+    while (i >= Ss)
+    {
+      while (i > last_coeff_idx) {
+        int z = jpeg_natural_order[i];
+        coef_blocks[bi][z] = 0;
+        i--;
+      }
+      last_coeff_idx = run_start[i];
+      i--;
+    }
+    
+  }
+  
+  if (cinfo->master->trellis_q_opt) {
+    for (bi = 0; bi < num_blocks; bi++) {
+      for (i = 1; i < DCTSIZE2; i++) {
+        norm_src[i] += src[bi][i] * coef_blocks[bi][i];
+        norm_coef[i] += 8 * coef_blocks[bi][i] * coef_blocks[bi][i];
+      }
+    }
+  }
+  
+  if (cinfo->master->trellis_quant_dc) {
+    j = 0;
+    for (i = 1; i < DC_TRELLIS_CANDIDATES; i++) {
+      if (accumulated_dc_cost[i][num_blocks-1] < accumulated_dc_cost[j][num_blocks-1])
+        j = i;
+    }
+    for (bi = num_blocks-1; bi >= 0; bi--) {
+      coef_blocks[bi][0] = dc_candidate[j][bi];
+      j = dc_cost_backtrack[j][bi];
+    }
+    
+    /* Save DC predictor */
+    *last_dc_val = coef_blocks[num_blocks-1][0];
+    
+    for (i = 0; i < DC_TRELLIS_CANDIDATES; i++) {
+      free(accumulated_dc_cost[i]);
+      free(dc_cost_backtrack[i]);
+      free(dc_candidate[i]);
+    }
+  }
+}
+
 /*
  * Initialize FDCT manager.
  */

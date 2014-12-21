@@ -475,7 +475,7 @@ prepare_for_pass (j_compress_ptr cinfo)
       (*cinfo->prep->start_pass) (cinfo, JBUF_PASS_THRU);
     }
     (*cinfo->fdct->start_pass) (cinfo);
-    (*cinfo->entropy->start_pass) (cinfo, cinfo->optimize_coding || cinfo->master->trellis_quant);
+    (*cinfo->entropy->start_pass) (cinfo, (cinfo->optimize_coding || cinfo->master->trellis_quant) && !cinfo->arith_code);
     (*cinfo->coef->start_pass) (cinfo,
                                 (master->total_passes > 1 ?
                                  JBUF_SAVE_AND_PASS : JBUF_PASS_THRU));
@@ -541,7 +541,7 @@ prepare_for_pass (j_compress_ptr cinfo)
         }
       }
     }
-    (*cinfo->entropy->start_pass) (cinfo, TRUE);
+    (*cinfo->entropy->start_pass) (cinfo, !cinfo->arith_code);
     (*cinfo->coef->start_pass) (cinfo, JBUF_REQUANT);
     master->pub.call_pass_startup = FALSE;
     break;

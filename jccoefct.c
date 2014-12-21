@@ -19,7 +19,6 @@
 #include "jpeglib.h"
 #include "jchuff.h"
 
-
 /* We use a full-image coefficient buffer when doing Huffman optimization,
  * and also for writing multiple-scan JPEG files.  In all cases, the DCT
  * step is run during the first pass, and subsequent passes need only read
@@ -367,10 +366,18 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     c_derived_tbl *dctbl = &dctbl_data;
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
+    
+    arith_rates arith_r_data;
+    arith_rates *arith_r = &arith_r_data;
+    
     compptr = cinfo->cur_comp_info[ci];
 
-    jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
-    jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
+    if (cinfo->arith_code)
+      jget_arith_rates(cinfo, compptr->dc_tbl_no, compptr->ac_tbl_no, arith_r);
+    else {
+      jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
+      jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
+    }
     
     /* Align the virtual buffer for this component. */
     buffer = (*cinfo->mem->access_virt_barray)
@@ -406,12 +413,20 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     for (block_row = 0; block_row < block_rows; block_row++) {
       thisblockrow = buffer[block_row];
       lastblockrow = (block_row > 0) ? buffer[block_row-1] : NULL;
-      quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
-                       buffer_dst[block_row], blocks_across,
-                       cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
-                       cinfo->master->norm_src[compptr->quant_tbl_no],
-                       cinfo->master->norm_coef[compptr->quant_tbl_no],
-                       &lastDC, lastblockrow, buffer_dst[block_row-1]);
+      if (cinfo->arith_code)
+        quantize_trellis_arith(cinfo, arith_r, thisblockrow,
+                               buffer_dst[block_row], blocks_across,
+                               cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
+                               cinfo->master->norm_src[compptr->quant_tbl_no],
+                               cinfo->master->norm_coef[compptr->quant_tbl_no],
+                               &lastDC, lastblockrow, buffer_dst[block_row-1]);
+      else
+        quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
+                         buffer_dst[block_row], blocks_across,
+                         cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
+                         cinfo->master->norm_src[compptr->quant_tbl_no],
+                         cinfo->master->norm_coef[compptr->quant_tbl_no],
+                         &lastDC, lastblockrow, buffer_dst[block_row-1]);
       
       if (ndummy > 0) {
         /* Create dummy blocks at the right edge of the image. */

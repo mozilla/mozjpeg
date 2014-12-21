@@ -91,6 +91,27 @@ struct jpeg_comp_master {
   float trellis_delta_dc_weight;
 };
 
+/* The following two definitions specify the allocation chunk size
+ * for the statistics area.
+ * According to sections F.1.4.4.1.3 and F.1.4.4.2, we need at least
+ * 49 statistics bins for DC, and 245 statistics bins for AC coding.
+ *
+ * We use a compact representation with 1 byte per statistics bin,
+ * thus the numbers directly represent byte sizes.
+ * This 1 byte per statistics bin contains the meaning of the MPS
+ * (more probable symbol) in the highest bit (mask 0x80), and the
+ * index into the probability estimation state machine table
+ * in the lower bits (mask 0x7F).
+ */
+
+#define DC_STAT_BINS 64
+#define AC_STAT_BINS 256
+
+typedef struct {
+  float rate_dc[DC_STAT_BINS][2];
+  float rate_ac[AC_STAT_BINS][2];
+} arith_rates;
+
 /* Main buffer control (downsampled-data buffer) */
 struct jpeg_c_main_controller {
   void (*start_pass) (j_compress_ptr cinfo, J_BUF_MODE pass_mode);
@@ -364,6 +385,14 @@ EXTERN(void) jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 EXTERN(void) jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
                               JDIMENSION num_blocks);
 EXTERN(void) jzero_far (void * target, size_t bytestozero);
+
+EXTERN(void) jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r);
+
+EXTERN(void) quantize_trellis_arith
+(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+ JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+ JBLOCKROW coef_blocks_above, JBLOCKROW src_above);
+
 /* Constant tables in jutils.c */
 #if 0                           /* This table is not actually needed in v6a */
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */

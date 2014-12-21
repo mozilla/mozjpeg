@@ -110,6 +110,8 @@ struct jpeg_comp_master {
 typedef struct {
   float rate_dc[DC_STAT_BINS][2];
   float rate_ac[AC_STAT_BINS][2];
+  int arith_dc_L;
+  int arith_dc_U;
   int arith_ac_K;
 } arith_rates;
 

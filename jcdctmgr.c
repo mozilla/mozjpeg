@@ -1290,11 +1290,10 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
   float *accumulated_dc_cost[DC_TRELLIS_CANDIDATES];
   int *dc_cost_backtrack[DC_TRELLIS_CANDIDATES];
   JCOEF *dc_candidate[DC_TRELLIS_CANDIDATES];
+  int *dc_context[DC_TRELLIS_CANDIDATES];
+  
   int mode = 1;
   float lambda_table[DCTSIZE2];
-  
-  /* Arithmetic coding context. Set to 0 for now but can refined */
-  int dc_context = 0;
   
   Ss = cinfo->Ss;
   Se = cinfo->Se;
@@ -1308,9 +1307,11 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
       accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
       dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
       dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
+      dc_context[i] = (int *)malloc(num_blocks * sizeof(int));
       if (!accumulated_dc_cost[i] ||
           !dc_cost_backtrack[i] ||
-          !dc_candidate[i]) {
+          !dc_candidate[i] ||
+          !dc_context[i]) {
         ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
       }
     }
@@ -1364,7 +1365,6 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
         int delta;
         int dc_delta;
         float bits;
-        int st = dc_context;
         int m;
         int v2;
         
@@ -1394,7 +1394,8 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
         /* loop of candidates from previous block */
         for (l = 0; l < (bi == 0 ? 1 : DC_TRELLIS_CANDIDATES); l++) {
           int dc_pred = (bi == 0 ? *last_dc_val : dc_candidate[l][bi-1]);
-          
+          int updated_dc_context = 0;
+          int st = (bi == 0) ? 0 : dc_context[l][bi-1];
           dc_delta = dc_candidate[k][bi] - dc_pred;
           
           bits = r->rate_dc[st][dc_delta != 0];
@@ -1402,6 +1403,8 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
           if (dc_delta != 0) {
             bits += r->rate_dc[st+1][dc_delta < 0];
             st += 2 + (dc_delta < 0);
+            updated_dc_context = (dc_delta < 0) ? 8 : 4;
+            
             dc_delta = abs(dc_delta);
             
             m = 0;
@@ -1417,6 +1420,12 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
               }
             }
             bits += r->rate_dc[st][0];
+            
+            if (m < (int) ((1L << r->arith_dc_L) >> 1))
+              updated_dc_context = 0;    /* zero diff category */
+            else if (m > (int) ((1L << r->arith_dc_U) >> 1))
+              updated_dc_context += 8;   /* large diff category */
+
             st += 14;
             while (m >>= 1)
               bits += r->rate_dc[st][(m & dc_delta) ? 1 : 0];
@@ -1429,6 +1438,7 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
           if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
             accumulated_dc_cost[k][bi] = cost;
             dc_cost_backtrack[k][bi] = (bi == 0 ? -1 : l);
+            dc_context[k][bi] = updated_dc_context;
           }
         }
       }
@@ -1590,6 +1600,7 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
       free(accumulated_dc_cost[i]);
       free(dc_cost_backtrack[i]);
       free(dc_candidate[i]);
+      free(dc_context[i]);
     }
   }
 }

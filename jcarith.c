@@ -941,6 +941,8 @@ jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rate
   int i;
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   
+  r->arith_dc_L = cinfo->arith_dc_L[dc_tbl_no];
+  r->arith_dc_U = cinfo->arith_dc_U[dc_tbl_no];
   r->arith_ac_K = cinfo->arith_ac_K[ac_tbl_no];
   
   for (i = 0; i < DC_STAT_BINS; i++) {

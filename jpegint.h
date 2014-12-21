@@ -110,6 +110,7 @@ struct jpeg_comp_master {
 typedef struct {
   float rate_dc[DC_STAT_BINS][2];
   float rate_ac[AC_STAT_BINS][2];
+  int arith_ac_K;
 } arith_rates;
 
 /* Main buffer control (downsampled-data buffer) */

@@ -1520,7 +1520,7 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
             if (v2 >>= 1) {
               coef_bits += r->rate_ac[st][1];
               m <<= 1;
-              st = 189; /* TODO: condition 189/217 */
+              st = (i <= r->arith_ac_K) ? 189 : 217;
               while (v2 >>= 1) {
                 coef_bits += r->rate_ac[st][1];
                 m <<= 1;

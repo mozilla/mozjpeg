@@ -108,14 +108,14 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
 
   /* Pass 1: process rows */
 
-  row0 = *(__vector short *)&data[0];
-  row1 = *(__vector short *)&data[8];
-  row2 = *(__vector short *)&data[16];
-  row3 = *(__vector short *)&data[24];
-  row4 = *(__vector short *)&data[32];
-  row5 = *(__vector short *)&data[40];
-  row6 = *(__vector short *)&data[48];
-  row7 = *(__vector short *)&data[56];
+  row0 = vec_ld(0, data);
+  row1 = vec_ld(16, data);
+  row2 = vec_ld(32, data);
+  row3 = vec_ld(48, data);
+  row4 = vec_ld(64, data);
+  row5 = vec_ld(80, data);
+  row6 = vec_ld(96, data);
+  row7 = vec_ld(112, data);
 
   TRANSPOSE(row, col);
 
@@ -145,12 +145,12 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
 
   DO_FDCT();
 
-  *(__vector short *)&data[0] = out0;
-  *(__vector short *)&data[8] = out1;
-  *(__vector short *)&data[16] = out2;
-  *(__vector short *)&data[24] = out3;
-  *(__vector short *)&data[32] = out4;
-  *(__vector short *)&data[40] = out5;
-  *(__vector short *)&data[48] = out6;
-  *(__vector short *)&data[56] = out7;
+  vec_st(out0, 0, data);
+  vec_st(out1, 16, data);
+  vec_st(out2, 32, data);
+  vec_st(out3, 48, data);
+  vec_st(out4, 64, data);
+  vec_st(out5, 80, data);
+  vec_st(out6, 96, data);
+  vec_st(out7, 112, data);
 }

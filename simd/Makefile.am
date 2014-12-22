@@ -78,6 +78,8 @@ libsimd_la_SOURCES = jsimd_powerpc.c \
 	jidctfst-altivec.c    jidctint-altivec.c
 libsimd_la_CFLAGS = -maltivec
 
+jccolor-altivec.lo:  jccolext-altivec.c
+
 endif
 
 AM_CPPFLAGS = -I$(top_srcdir)

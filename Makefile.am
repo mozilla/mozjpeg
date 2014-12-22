@@ -262,6 +262,7 @@ MD5_JPEG_CROP = b4197f377e621c4e9b1d20471432610d
 
 endif
 
+.PHONY: test
 test: tjquicktest bittest
 
 tjquicktest: testclean all

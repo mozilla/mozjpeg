@@ -175,7 +175,7 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
   __vector unsigned int descale_p1 = { __4X(DESCALE_P1) },
     descale_p2 = { __4X(DESCALE_P2) };
 
-  /* Pass 1: process rows. */
+  /* Pass 1: process rows */
 
   row0 = *(__vector short *)&data[0];
   row1 = *(__vector short *)&data[8];
@@ -199,7 +199,7 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
 
   DO_FDCT_ROWS();
 
-  /* Pass 2: process columns. */
+  /* Pass 2: process columns */
 
   TRANSPOSE(out, row);
 

@@ -207,7 +207,7 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
     const_bits = { __4X(CONST_BITS) };
   __vector signed char pb_centerjsamp = { __16X(CENTERJSAMPLE) };
 
-  /* Pass 1: process columns. */
+  /* Pass 1: process columns */
 
   col0 = *(__vector short *)&coef_block[0];
   col1 = *(__vector short *)&coef_block[8];
@@ -264,6 +264,8 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
 
     TRANSPOSE(out, row);
   }
+
+  /* Pass 2: process rows */
 
   DO_IDCT(row, 2);
 

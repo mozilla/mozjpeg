@@ -116,6 +116,28 @@ EXTERN(void) jsimd_extxrgb_ycc_convert_mips_dspr2
         (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
          JDIMENSION output_row, int num_rows);
 
+EXTERN(void) jsimd_rgb_ycc_convert_altivec
+        (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+         JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extrgb_ycc_convert_altivec
+        (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+         JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extrgbx_ycc_convert_altivec
+        (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+         JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extbgr_ycc_convert_altivec
+        (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+         JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extbgrx_ycc_convert_altivec
+        (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+         JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extxbgr_ycc_convert_altivec
+        (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+         JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extxrgb_ycc_convert_altivec
+        (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+         JDIMENSION output_row, int num_rows);
+
 /* RGB & extended RGB --> Grayscale Colorspace Conversion */
 EXTERN(void) jsimd_rgb_gray_convert_mmx
         (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,

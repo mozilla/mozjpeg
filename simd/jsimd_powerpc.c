@@ -1,5 +1,5 @@
 /*
- * jsimd_powerpc64.c
+ * jsimd_powerpc.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2009-2011, 2014 D. R. Commander
@@ -338,7 +338,7 @@ jsimd_can_idct_islow (void)
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
-  if (sizeof(DCTELEM) != 2)
+  if (sizeof(JCOEF) != 2)
     return 0;
 
   if (simd_support & JSIMD_ALTIVEC)
@@ -355,7 +355,7 @@ jsimd_can_idct_ifast (void)
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
-  if (sizeof(DCTELEM) != 2)
+  if (sizeof(JCOEF) != 2)
     return 0;
 
   if (simd_support & JSIMD_ALTIVEC)

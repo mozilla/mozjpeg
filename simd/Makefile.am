@@ -72,8 +72,10 @@ endif
 
 if SIMD_POWERPC
 
-libsimd_la_SOURCES = jsimd_powerpc.c jsimd_powerpc_altivec.c
-libsimd_la_CFLAGS = -maltivec 
+libsimd_la_SOURCES = jsimd_powerpc.c \
+	jfdctfst-altivec.c    jfdctint-altivec.c \
+	jidctfst-altivec.c    jidctint-altivec.c
+libsimd_la_CFLAGS = -maltivec
 
 endif
 

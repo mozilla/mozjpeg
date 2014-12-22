@@ -42,6 +42,19 @@ init_simd (void)
 GLOBAL(int)
 jsimd_can_rgb_ycc (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -68,6 +81,37 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                        JDIMENSION output_row, int num_rows)
 {
+  void (*altivecfct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch(cinfo->in_color_space) {
+    case JCS_EXT_RGB:
+      altivecfct=jsimd_extrgb_ycc_convert_altivec;
+      break;
+    case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
+      altivecfct=jsimd_extrgbx_ycc_convert_altivec;
+      break;
+    case JCS_EXT_BGR:
+      altivecfct=jsimd_extbgr_ycc_convert_altivec;
+      break;
+    case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
+      altivecfct=jsimd_extbgrx_ycc_convert_altivec;
+      break;
+    case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
+      altivecfct=jsimd_extxbgr_ycc_convert_altivec;
+      break;
+    case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
+      altivecfct=jsimd_extxrgb_ycc_convert_altivec;
+      break;
+    default:
+      altivecfct=jsimd_rgb_ycc_convert_altivec;
+      break;
+  }
+
+  altivecfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)

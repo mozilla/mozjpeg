@@ -73,12 +73,13 @@ endif
 if SIMD_POWERPC
 
 libsimd_la_SOURCES = jsimd_powerpc.c \
-	jccolor-altivec.c \
+	jccolor-altivec.c     jcgray-altivec.c \
 	jfdctfst-altivec.c    jfdctint-altivec.c \
 	jidctfst-altivec.c    jidctint-altivec.c
 libsimd_la_CFLAGS = -maltivec
 
 jccolor-altivec.lo:  jccolext-altivec.c
+jcgray-altivec.lo:   jcgryext-altivec.c
 
 endif
 

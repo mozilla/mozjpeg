@@ -112,7 +112,7 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
     z5, z10, z10s, z11, z12s, z13,
     out0, out1, out2, out3, out4, out5, out6, out7;
   __vector signed char outb;
-  long long *outptr, *outbptr = (long long *)(&outb);
+  int *outptr;
 
   /* Constants */
   __vector short zero = { __8X(0) },
@@ -127,14 +127,14 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
 
   /* Pass 1: process columns */
 
-  col0 = *(__vector short *)&coef_block[0];
-  col1 = *(__vector short *)&coef_block[8];
-  col2 = *(__vector short *)&coef_block[16];
-  col3 = *(__vector short *)&coef_block[24];
-  col4 = *(__vector short *)&coef_block[32];
-  col5 = *(__vector short *)&coef_block[40];
-  col6 = *(__vector short *)&coef_block[48];
-  col7 = *(__vector short *)&coef_block[56];
+  col0 = vec_ld(0, coef_block);
+  col1 = vec_ld(16, coef_block);
+  col2 = vec_ld(32, coef_block);
+  col3 = vec_ld(48, coef_block);
+  col4 = vec_ld(64, coef_block);
+  col5 = vec_ld(80, coef_block);
+  col6 = vec_ld(96, coef_block);
+  col7 = vec_ld(112, coef_block);
 
   tmp1 = vec_or(col1, col2);
   tmp2 = vec_or(col3, col4);
@@ -196,31 +196,51 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
 
   TRANSPOSE(out, col);
 
-  outb = vec_packs(col0, col1);
+  outb = vec_packs(col0, col0);
   outb = vec_add(outb, pb_centerjsamp);
-  outptr = (long long *)(output_buf[0] + output_col);
-  *outptr = outbptr[0];
-  outptr = (long long *)(output_buf[1] + output_col);
-  *outptr = outbptr[1];
+  outptr = (int *)(output_buf[0] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
 
-  outb = vec_packs(col2, col3);
+  outb = vec_packs(col1, col1);
   outb = vec_add(outb, pb_centerjsamp);
-  outptr = (long long *)(output_buf[2] + output_col);
-  *outptr = outbptr[0];
-  outptr = (long long *)(output_buf[3] + output_col);
-  *outptr = outbptr[1];
+  outptr = (int *)(output_buf[1] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
 
-  outb = vec_packs(col4, col5);
+  outb = vec_packs(col2, col2);
   outb = vec_add(outb, pb_centerjsamp);
-  outptr = (long long *)(output_buf[4] + output_col);
-  *outptr = outbptr[0];
-  outptr = (long long *)(output_buf[5] + output_col);
-  *outptr = outbptr[1];
+  outptr = (int *)(output_buf[2] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
 
-  outb = vec_packs(col6, col7);
+  outb = vec_packs(col3, col3);
   outb = vec_add(outb, pb_centerjsamp);
-  outptr = (long long *)(output_buf[6] + output_col);
-  *outptr = outbptr[0];
-  outptr = (long long *)(output_buf[7] + output_col);
-  *outptr = outbptr[1];
+  outptr = (int *)(output_buf[3] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
+
+  outb = vec_packs(col4, col4);
+  outb = vec_add(outb, pb_centerjsamp);
+  outptr = (int *)(output_buf[4] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
+
+  outb = vec_packs(col5, col5);
+  outb = vec_add(outb, pb_centerjsamp);
+  outptr = (int *)(output_buf[5] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
+
+  outb = vec_packs(col6, col6);
+  outb = vec_add(outb, pb_centerjsamp);
+  outptr = (int *)(output_buf[6] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
+
+  outb = vec_packs(col7, col7);
+  outb = vec_add(outb, pb_centerjsamp);
+  outptr = (int *)(output_buf[7] + output_col);
+  vec_ste((__vector int)outb, 0, outptr);
+  vec_ste((__vector int)outb, 4, outptr);
 }

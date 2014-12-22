@@ -106,7 +106,7 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
   __vector unsigned short
     pre_multiply_scale_bits = { __8X(PRE_MULTIPLY_SCALE_BITS) };
 
-  /* Pass 1: process rows. */
+  /* Pass 1: process rows */
 
   row0 = *(__vector short *)&data[0];
   row1 = *(__vector short *)&data[8];
@@ -130,7 +130,7 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
 
   DO_FDCT();
 
-  /* Pass 2: process columns. */
+  /* Pass 2: process columns */
 
   TRANSPOSE(out, row);
 

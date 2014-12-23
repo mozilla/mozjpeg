@@ -568,6 +568,9 @@ EXTERN(void) jsimd_convsamp_neon
 EXTERN(void) jsimd_convsamp_mips_dspr2
         (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace);
 
+EXTERN(void) jsimd_convsamp_altivec
+        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace);
+
 /* Floating Point Sample Conversion */
 EXTERN(void) jsimd_convsamp_float_3dnow
         (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT * workspace);
@@ -620,6 +623,9 @@ EXTERN(void) jsimd_quantize_neon
         (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
 
 EXTERN(void) jsimd_quantize_mips_dspr2
+        (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
+
+EXTERN(void) jsimd_quantize_altivec
         (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
 
 /* Floating Point Quantization */

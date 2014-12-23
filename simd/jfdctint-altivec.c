@@ -46,6 +46,16 @@
 
 #define DO_FDCT_COMMON(PASS)  \
 {  \
+  /* (Original)  \
+   * z1 = (tmp12 + tmp13) * 0.541196100;  \
+   * data2 = z1 + tmp13 * 0.765366865;  \
+   * data6 = z1 + tmp12 * -1.847759065;  \
+   *  \
+   * (This implementation)  \
+   * data2 = tmp13 * (0.541196100 + 0.765366865) + tmp12 * 0.541196100;  \
+   * data6 = tmp13 * 0.541196100 + tmp12 * (0.541196100 - 1.847759065);  \
+   */  \
+  \
   tmp1312l = vec_mergeh(tmp13, tmp12);  \
   tmp1312h = vec_mergel(tmp13, tmp12);  \
   \
@@ -67,6 +77,16 @@
   z3 = vec_add(tmp4, tmp6);  \
   z4 = vec_add(tmp5, tmp7);  \
   \
+  /* (Original)  \
+   * z5 = (z3 + z4) * 1.175875602;  \
+   * z3 = z3 * -1.961570560;  z4 = z4 * -0.390180644;  \
+   * z3 += z5;  z4 += z5;  \
+   *  \
+   * (This implementation)  \
+   * z3 = z3 * (1.175875602 - 1.961570560) + z4 * 1.175875602;  \
+   * z4 = z3 * 1.175875602 + z4 * (1.175875602 - 0.390180644);  \
+   */  \
+  \
   z34l = vec_mergeh(z3, z4);  \
   z34h = vec_mergel(z3, z4);  \
   \
@@ -74,6 +94,23 @@
   z3h = vec_msums(z34h, pw_mf078_f117, pd_descale_p##PASS);  \
   z4l = vec_msums(z34l, pw_f117_f078, pd_descale_p##PASS);  \
   z4h = vec_msums(z34h, pw_f117_f078, pd_descale_p##PASS);  \
+  \
+  /* (Original)  \
+   * z1 = tmp4 + tmp7;  z2 = tmp5 + tmp6;  \
+   * tmp4 = tmp4 * 0.298631336;  tmp5 = tmp5 * 2.053119869;  \
+   * tmp6 = tmp6 * 3.072711026;  tmp7 = tmp7 * 1.501321110;  \
+   * z1 = z1 * -0.899976223;  z2 = z2 * -2.562915447;  \
+   * data7 = tmp4 + z1 + z3;  data5 = tmp5 + z2 + z4;  \
+   * data3 = tmp6 + z2 + z3;  data1 = tmp7 + z1 + z4;  \
+   *  \
+   * (This implementation)  \
+   * tmp4 = tmp4 * (0.298631336 - 0.899976223) + tmp7 * -0.899976223;  \
+   * tmp5 = tmp5 * (2.053119869 - 2.562915447) + tmp6 * -2.562915447;  \
+   * tmp6 = tmp5 * -2.562915447 + tmp6 * (3.072711026 - 2.562915447);  \
+   * tmp7 = tmp4 * -0.899976223 + tmp7 * (1.501321110 - 0.899976223);  \
+   * data7 = tmp4 + z3;  data5 = tmp5 + z4;  \
+   * data3 = tmp6 + z3;  data1 = tmp7 + z4;  \
+   */  \
   \
   tmp47l = vec_mergeh(tmp4, tmp7);  \
   tmp47h = vec_mergel(tmp4, tmp7);  \

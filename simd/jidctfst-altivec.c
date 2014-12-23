@@ -77,6 +77,16 @@
   \
   tmp7 = vec_add(z11, z13);  \
   \
+  /* To avoid overflow...  \
+   *  \
+   * (Original)  \
+   * tmp12 = -2.613125930 * z10 + z5;  \
+   *  \
+   * (This implementation)  \
+   * tmp12 = (-1.613125930 - 1) * z10 + z5;  \
+   *       = -1.613125930 * z10 - z10 + z5;  \
+   */  \
+  \
   z5 = vec_add(z10s, z12s);  \
   z5 = vec_madds(z5, pw_F1847, zero);  \
   \

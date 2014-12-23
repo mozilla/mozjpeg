@@ -46,7 +46,17 @@
 
 #define DO_IDCT(in, PASS)  \
 {  \
-  /* Even part */  \
+  /* Even part  \
+   *  \
+   * (Original)  \
+   * z1 = (z2 + z3) * 0.541196100;  \
+   * tmp2 = z1 + z3 * -1.847759065;  \
+   * tmp3 = z1 + z2 * 0.765366865;  \
+   *  \
+   * (This implementation)  \
+   * tmp2 = z2 * 0.541196100 + z3 * (0.541196100 - 1.847759065);  \
+   * tmp3 = z2 * (0.541196100 + 0.765366865) + z3 * 0.541196100;  \
+   */  \
   \
   in##26l = vec_mergeh(in##2, in##6);  \
   in##26h = vec_mergel(in##2, in##6);  \
@@ -88,6 +98,16 @@
   z3 = vec_add(in##3, in##7);  \
   z4 = vec_add(in##1, in##5);  \
   \
+  /* (Original)  \
+   * z5 = (z3 + z4) * 1.175875602;  \
+   * z3 = z3 * -1.961570560;  z4 = z4 * -0.390180644;  \
+   * z3 += z5;  z4 += z5;  \
+   *  \
+   * (This implementation)  \
+   * z3 = z3 * (1.175875602 - 1.961570560) + z4 * 1.175875602;  \
+   * z4 = z3 * 1.175875602 + z4 * (1.175875602 - 0.390180644);  \
+   */  \
+  \
   z34l = vec_mergeh(z3, z4);  \
   z34h = vec_mergel(z3, z4);  \
   \
@@ -95,6 +115,23 @@
   z3h = vec_msums(z34h, pw_mf078_f117, zero32);  \
   z4l = vec_msums(z34l, pw_f117_f078, zero32);  \
   z4h = vec_msums(z34h, pw_f117_f078, zero32);  \
+  \
+  /* (Original)  \
+   * z1 = tmp0 + tmp3;  z2 = tmp1 + tmp2;  \
+   * tmp0 = tmp0 * 0.298631336;  tmp1 = tmp1 * 2.053119869;  \
+   * tmp2 = tmp2 * 3.072711026;  tmp3 = tmp3 * 1.501321110;  \
+   * z1 = z1 * -0.899976223;  z2 = z2 * -2.562915447;  \
+   * tmp0 += z1 + z3;  tmp1 += z2 + z4;  \
+   * tmp2 += z2 + z3;  tmp3 += z1 + z4;  \
+   *  \
+   * (This implementation)  \
+   * tmp0 = tmp0 * (0.298631336 - 0.899976223) + tmp3 * -0.899976223;  \
+   * tmp1 = tmp1 * (2.053119869 - 2.562915447) + tmp2 * -2.562915447;  \
+   * tmp2 = tmp1 * -2.562915447 + tmp2 * (3.072711026 - 2.562915447);  \
+   * tmp3 = tmp0 * -0.899976223 + tmp3 * (1.501321110 - 0.899976223);  \
+   * tmp0 += z3;  tmp1 += z4;  \
+   * tmp2 += z3;  tmp3 += z4;  \
+   */  \
   \
   in##71l = vec_mergeh(in##7, in##1);  \
   in##71h = vec_mergel(in##7, in##1);  \

@@ -75,7 +75,8 @@ if SIMD_POWERPC
 libsimd_la_SOURCES = jsimd_powerpc.c \
 	jccolor-altivec.c     jcgray-altivec.c \
 	jfdctfst-altivec.c    jfdctint-altivec.c \
-	jidctfst-altivec.c    jidctint-altivec.c
+	jidctfst-altivec.c    jidctint-altivec.c \
+  jquanti-altivec.c
 libsimd_la_CFLAGS = -maltivec
 
 jccolor-altivec.lo:  jccolext-altivec.c

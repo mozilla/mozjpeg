@@ -1261,6 +1261,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
 
 }
 
+#ifdef C_ARITH_CODING_SUPPORTED
 GLOBAL(void)
 quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
@@ -1604,6 +1605,7 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
     }
   }
 }
+#endif
 
 /*
  * Initialize FDCT manager.

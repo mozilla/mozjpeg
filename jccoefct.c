@@ -367,18 +367,23 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
     
+#ifdef C_ARITH_CODING_SUPPORTED
     arith_rates arith_r_data;
     arith_rates *arith_r = &arith_r_data;
+#endif
     
     compptr = cinfo->cur_comp_info[ci];
 
+#ifdef C_ARITH_CODING_SUPPORTED
     if (cinfo->arith_code)
       jget_arith_rates(cinfo, compptr->dc_tbl_no, compptr->ac_tbl_no, arith_r);
-    else {
+    else
+#endif
+    {
       jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
       jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
     }
-    
+
     /* Align the virtual buffer for this component. */
     buffer = (*cinfo->mem->access_virt_barray)
     ((j_common_ptr) cinfo, coef->whole_image[compptr->component_index],
@@ -413,6 +418,7 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     for (block_row = 0; block_row < block_rows; block_row++) {
       thisblockrow = buffer[block_row];
       lastblockrow = (block_row > 0) ? buffer[block_row-1] : NULL;
+#ifdef C_ARITH_CODING_SUPPORTED
       if (cinfo->arith_code)
         quantize_trellis_arith(cinfo, arith_r, thisblockrow,
                                buffer_dst[block_row], blocks_across,
@@ -421,6 +427,7 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
                                cinfo->master->norm_coef[compptr->quant_tbl_no],
                                &lastDC, lastblockrow, buffer_dst[block_row-1]);
       else
+#endif
         quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
                          buffer_dst[block_row], blocks_across,
                          cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],

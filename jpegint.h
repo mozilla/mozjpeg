@@ -91,6 +91,7 @@ struct jpeg_comp_master {
   float trellis_delta_dc_weight;
 };
 
+#ifdef C_ARITH_CODING_SUPPORTED
 /* The following two definitions specify the allocation chunk size
  * for the statistics area.
  * According to sections F.1.4.4.1.3 and F.1.4.4.2, we need at least
@@ -114,6 +115,7 @@ typedef struct {
   int arith_dc_U;
   int arith_ac_K;
 } arith_rates;
+#endif
 
 /* Main buffer control (downsampled-data buffer) */
 struct jpeg_c_main_controller {
@@ -389,12 +391,14 @@ EXTERN(void) jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
                               JDIMENSION num_blocks);
 EXTERN(void) jzero_far (void * target, size_t bytestozero);
 
+#ifdef C_ARITH_CODING_SUPPORTED
 EXTERN(void) jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r);
 
 EXTERN(void) quantize_trellis_arith
 (j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
  JBLOCKROW coef_blocks_above, JBLOCKROW src_above);
+#endif
 
 /* Constant tables in jutils.c */
 #if 0                           /* This table is not actually needed in v6a */

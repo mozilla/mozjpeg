@@ -74,6 +74,7 @@ JMESSAGE(JWRN_GIF_NOMOREDATA, "Ran out of GIF bits")
 #ifdef PPM_SUPPORTED
 JMESSAGE(JERR_PPM_COLORSPACE, "PPM output must be grayscale or RGB")
 JMESSAGE(JERR_PPM_NONNUMERIC, "Nonnumeric data in PPM file")
+JMESSAGE(JERR_PPM_TOOLARGE, "Integer value too large in PPM file")
 JMESSAGE(JERR_PPM_NOT, "Not a PPM/PGM file")
 JMESSAGE(JTRC_PGM, "%ux%u PGM image")
 JMESSAGE(JTRC_PGM_TEXT, "%ux%u text PGM image")

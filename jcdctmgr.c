@@ -1282,9 +1282,6 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
   jpeg_lambda_weights_csf_luma :
   jpeg_lambda_weights_flat;
   int Ss, Se;
-  int has_eob;
-  float cost_all_zeros;
-  float best_cost_skip;
   float cost;
   float run_bits;
   int rate;
@@ -1537,14 +1534,11 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
     
     last_coeff_idx = Ss-1;
     best_cost = accumulated_zero_dist[Se] + r->rate_ac[0][1];
-    cost_all_zeros = accumulated_zero_dist[Se];
-    best_cost_skip = cost_all_zeros;
     
     for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
       if (coef_blocks[bi][z] != 0) {
         float cost = accumulated_cost[i] + accumulated_zero_dist[Se] - accumulated_zero_dist[i];
-        float cost_wo_eob = cost;
         
         if (i < Se)
           cost += r->rate_ac[3*(i-1)][1];
@@ -1552,12 +1546,9 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
         if (cost < best_cost) {
           best_cost = cost;
           last_coeff_idx = i;
-          best_cost_skip = cost_wo_eob;
         }
       }
     }
-    
-    has_eob = (last_coeff_idx < Se) + (last_coeff_idx == Ss-1);
     
     /* Zero out coefficients that are part of runs */
     i = Se;

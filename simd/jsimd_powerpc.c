@@ -1,5 +1,5 @@
 /*
- * jsimd_powerpc64.c
+ * jsimd_powerpc.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2009-2011, 2014 D. R. Commander
@@ -42,12 +42,38 @@ init_simd (void)
 GLOBAL(int)
 jsimd_can_rgb_ycc (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
 GLOBAL(int)
 jsimd_can_rgb_gray (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -68,6 +94,37 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                        JDIMENSION output_row, int num_rows)
 {
+  void (*altivecfct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch(cinfo->in_color_space) {
+    case JCS_EXT_RGB:
+      altivecfct=jsimd_extrgb_ycc_convert_altivec;
+      break;
+    case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
+      altivecfct=jsimd_extrgbx_ycc_convert_altivec;
+      break;
+    case JCS_EXT_BGR:
+      altivecfct=jsimd_extbgr_ycc_convert_altivec;
+      break;
+    case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
+      altivecfct=jsimd_extbgrx_ycc_convert_altivec;
+      break;
+    case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
+      altivecfct=jsimd_extxbgr_ycc_convert_altivec;
+      break;
+    case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
+      altivecfct=jsimd_extxrgb_ycc_convert_altivec;
+      break;
+    default:
+      altivecfct=jsimd_rgb_ycc_convert_altivec;
+      break;
+  }
+
+  altivecfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)
@@ -75,6 +132,37 @@ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
                         JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                         JDIMENSION output_row, int num_rows)
 {
+  void (*altivecfct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch(cinfo->in_color_space) {
+    case JCS_EXT_RGB:
+      altivecfct=jsimd_extrgb_gray_convert_altivec;
+      break;
+    case JCS_EXT_RGBX:
+    case JCS_EXT_RGBA:
+      altivecfct=jsimd_extrgbx_gray_convert_altivec;
+      break;
+    case JCS_EXT_BGR:
+      altivecfct=jsimd_extbgr_gray_convert_altivec;
+      break;
+    case JCS_EXT_BGRX:
+    case JCS_EXT_BGRA:
+      altivecfct=jsimd_extbgrx_gray_convert_altivec;
+      break;
+    case JCS_EXT_XBGR:
+    case JCS_EXT_ABGR:
+      altivecfct=jsimd_extxbgr_gray_convert_altivec;
+      break;
+    case JCS_EXT_XRGB:
+    case JCS_EXT_ARGB:
+      altivecfct=jsimd_extxrgb_gray_convert_altivec;
+      break;
+    default:
+      altivecfct=jsimd_rgb_gray_convert_altivec;
+      break;
+  }
+
+  altivecfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)
@@ -202,6 +290,21 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
 GLOBAL(int)
 jsimd_can_convsamp (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -215,6 +318,7 @@ GLOBAL(void)
 jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
                 DCTELEM * workspace)
 {
+  jsimd_convsamp_altivec(sample_data, start_col, workspace);
 }
 
 GLOBAL(void)
@@ -226,6 +330,17 @@ jsimd_convsamp_float (JSAMPARRAY sample_data, JDIMENSION start_col,
 GLOBAL(int)
 jsimd_can_fdct_islow (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -255,6 +370,7 @@ jsimd_can_fdct_float (void)
 GLOBAL(void)
 jsimd_fdct_islow (DCTELEM * data)
 {
+  jsimd_fdct_islow_altivec(data);
 }
 
 GLOBAL(void)
@@ -271,6 +387,19 @@ jsimd_fdct_float (FAST_FLOAT * data)
 GLOBAL(int)
 jsimd_can_quantize (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -284,6 +413,7 @@ GLOBAL(void)
 jsimd_quantize (JCOEFPTR coef_block, DCTELEM * divisors,
                 DCTELEM * workspace)
 {
+  jsimd_quantize_altivec(coef_block, divisors, workspace);
 }
 
 GLOBAL(void)
@@ -321,12 +451,34 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(int)
 jsimd_can_idct_islow (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
 GLOBAL(int)
 jsimd_can_idct_ifast (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -341,6 +493,8 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
+  jsimd_idct_islow_altivec(compptr->dct_table, coef_block, output_buf,
+                           output_col);
 }
 
 GLOBAL(void)
@@ -348,6 +502,8 @@ jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
+  jsimd_idct_ifast_altivec(compptr->dct_table, coef_block, output_buf,
+                           output_col);
 }
 
 GLOBAL(void)

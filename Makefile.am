@@ -276,7 +276,10 @@ MD5_JPEG_CROP = b4197f377e621c4e9b1d20471432610d
 
 endif
 
-test: testclean all
+.PHONY: test
+test: tjquicktest bittest
+
+tjquicktest: testclean all
 
 if WITH_TURBOJPEG
 if WITH_JAVA
@@ -293,6 +296,8 @@ endif
 	./tjunittest -yuv -alloc
 	./tjunittest -yuv -noyuvpad
 endif
+
+bittest: testclean all
 
 # These tests are carefully crafted to provide full coverage of as many of the
 # underlying algorithms as possible (including all of the SIMD-accelerated
@@ -598,12 +603,12 @@ udmg: all pkgscripts/makemacpkg pkgscripts/uninstall
 	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32}
 
 iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
-	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
+	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
 
 else
 
 iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
-	sh pkgscripts/makemacpkg -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S}
+	sh pkgscripts/makemacpkg -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
 
 endif
 

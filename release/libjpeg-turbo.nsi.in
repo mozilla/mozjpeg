@@ -110,6 +110,7 @@ Section "Uninstall"
 
 !ifdef GCC
 	Delete $INSTDIR\bin\libjpeg-@DLL_VERSION@.dll
+	Delete $INSTDIR\bin\libturbojpeg.dll
 	Delete $SYSDIR\libturbojpeg.dll
 	Delete $INSTDIR\lib\libturbojpeg.dll.a"
 	Delete $INSTDIR\lib\libturbojpeg.a"
@@ -117,6 +118,7 @@ Section "Uninstall"
 	Delete $INSTDIR\lib\libjpeg.a"
 !else
 	Delete $INSTDIR\bin\jpeg@DLL_VERSION@.dll
+	Delete $INSTDIR\bin\turbojpeg.dll
 	Delete $SYSDIR\turbojpeg.dll
 	Delete $INSTDIR\lib\jpeg.lib
 	Delete $INSTDIR\lib\jpeg-static.lib

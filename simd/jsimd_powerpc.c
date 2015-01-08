@@ -10,7 +10,7 @@
  *
  * This file contains the interface between the "normal" portions
  * of the library and the SIMD implementations when running on a
- * 64-bit x86 architecture.
+ * PowerPC architecture.
  */
 
 #define JPEG_INTERNALS
@@ -182,12 +182,34 @@ jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
 GLOBAL(int)
 jsimd_can_h2v2_downsample (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
 GLOBAL(int)
 jsimd_can_h2v1_downsample (void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
   return 0;
 }
 
@@ -195,12 +217,20 @@ GLOBAL(void)
 jsimd_h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
                        JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
+  jsimd_h2v2_downsample_altivec(cinfo->image_width, cinfo->max_v_samp_factor,
+                                compptr->v_samp_factor,
+                                compptr->width_in_blocks,
+                                input_data, output_data);
 }
 
 GLOBAL(void)
 jsimd_h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
                        JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
+  jsimd_h2v1_downsample_altivec(cinfo->image_width, cinfo->max_v_samp_factor,
+                                compptr->v_samp_factor,
+                                compptr->width_in_blocks,
+                                input_data, output_data);
 }
 
 GLOBAL(int)

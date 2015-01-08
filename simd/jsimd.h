@@ -342,6 +342,11 @@ EXTERN(void) jsimd_h2v1_downsample_mips_dspr2
          JDIMENSION v_samp_factor, JDIMENSION width_blocks,
          JSAMPARRAY input_data, JSAMPARRAY output_data);
 
+EXTERN(void) jsimd_h2v1_downsample_altivec
+        (JDIMENSION image_width, int max_v_samp_factor,
+         JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+         JSAMPARRAY input_data, JSAMPARRAY output_data);
+
 /* h2v2 Downsampling */
 EXTERN(void) jsimd_h2v2_downsample_mmx
         (JDIMENSION image_width, int max_v_samp_factor,
@@ -354,6 +359,11 @@ EXTERN(void) jsimd_h2v2_downsample_sse2
          JSAMPARRAY input_data, JSAMPARRAY output_data);
 
 EXTERN(void) jsimd_h2v2_downsample_mips_dspr2
+        (JDIMENSION image_width, int max_v_samp_factor,
+         JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+         JSAMPARRAY input_data, JSAMPARRAY output_data);
+
+EXTERN(void) jsimd_h2v2_downsample_altivec
         (JDIMENSION image_width, int max_v_samp_factor,
          JDIMENSION v_samp_factor, JDIMENSION width_blocks,
          JSAMPARRAY input_data, JSAMPARRAY output_data);

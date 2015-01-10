@@ -69,9 +69,9 @@ void jsimd_rgb_gray_convert_altivec (JDIMENSION img_width,
           /* Slow path to prevent buffer overread.  Since there is no way to
            * read a partial AltiVec register, overread would occur on the last
            * chunk of the last image row if the right edge is not on a 16-byte
-           * 16-byte boundary.  It could also occur on other rows if the bytes
-           * per row is low enough.  Since we can't determine whether we're on
-           * the last image row, we have to assume every row is the last.
+           * boundary.  It could also occur on other rows if the bytes per row
+           * is low enough.  Since we can't determine whether we're on the last
+           * image row, we have to assume every row is the last.
            */
           memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
           rgb0 = vec_ld(0, tmpbuf);

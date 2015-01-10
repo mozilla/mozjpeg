@@ -28,13 +28,14 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
                                     JSAMPIMAGE output_buf,
                                     JDIMENSION output_row, int num_rows)
 {
-  JSAMPROW inptr;
-  JSAMPROW outptr0, outptr1, outptr2;
-  int pitch;
-  __vector unsigned char rgb0, rgb1 = {0}, rgb2 = {0}, rgb3 = {0}, rgbg0,
-    rgbg1, rgbg2, rgbg3, y, cb, cr;
+  JSAMPROW inptr, outptr0, outptr1, outptr2;
+  int pitch = img_width * RGB_PIXELSIZE, offset, num_cols;
+  unsigned char __attribute__((aligned(16))) tmpbuf[RGB_PIXELSIZE * 16];
+
+  __vector unsigned char rgb0, rgb1 = {0}, rgb2 = {0}, rgb3 = {0},
+    rgbg0, rgbg1, rgbg2, rgbg3, y, cb, cr;
 #if RGB_PIXELSIZE == 4
-  __vector unsigned char rgb4;
+  __vector unsigned char rgb4 = {0};
 #endif
   __vector short rg0, rg1, rg2, rg3, bg0, bg1, bg2, bg3;
   __vector unsigned short y01, y23, cr01, cr23, cb01, cb23;
@@ -59,39 +60,112 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
     outptr2 = output_buf[2][output_row];
     output_row++;
 
-    for (pitch = img_width * RGB_PIXELSIZE; pitch > 0;
-         pitch -= RGB_PIXELSIZE * 16, inptr += RGB_PIXELSIZE * 16,
+    for (num_cols = pitch; num_cols > 0;
+         num_cols -= RGB_PIXELSIZE * 16, inptr += RGB_PIXELSIZE * 16,
          outptr0 += 16, outptr1 += 16, outptr2 += 16) {
 
-#if RGB_PIXELSIZE == 3
-      /* Load 16 pixels == 48 bytes */
-      if ((size_t)inptr & 15) {
+      /* Load 16 pixels == 48 or 64 bytes */
+      offset = (size_t)inptr & 15;
+      if (offset) {
         __vector unsigned char unaligned_shift_index;
-        rgb0 = vec_ld(0, inptr);
-        if (pitch > 16)
+        int bytes = num_cols + offset;
+
+        if (bytes >= (RGB_PIXELSIZE + 1) * 16) {
+          /* Fast path -- we have enough buffer space to load all vectors.
+           * Even if we don't need them all, this is faster than narrowing
+           * down which ones we need.
+           */
+          rgb0 = vec_ld(0, inptr);
           rgb1 = vec_ld(16, inptr);
-        else
-          rgb1 = vec_ld(-1, inptr + pitch);
-        if (pitch > 32)
           rgb2 = vec_ld(32, inptr);
-        else
-          rgb2 = vec_ld(-1, inptr + pitch);
-        if (pitch > 48)
           rgb3 = vec_ld(48, inptr);
-        else
-          rgb3 = vec_ld(-1, inptr + pitch);
+#if RGB_PIXELSIZE == 4
+          rgb4 = vec_ld(64, inptr);
+#endif
+        } else {
+          if (bytes & 15) {
+            /* Slow path to prevent buffer overread.  Since there is no way to
+             * read a partial AltiVec register, overread would occur on the
+             * last chunk of the last image row if the right edge is not on a
+             * 16-byte boundary.  It could also occur on other rows if the
+             * bytes per row is low enough.  Since we can't determine whether
+             * we're on the last image row, we have to assume every row is the
+             * last.
+             */
+            memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
+            rgb0 = vec_ld(0, tmpbuf);
+            rgb1 = vec_ld(16, tmpbuf);
+            rgb2 = vec_ld(32, tmpbuf);
+#if RGB_PIXELSIZE == 4
+            rgb3 = vec_ld(48, tmpbuf);
+#endif
+            goto start;  /* Skip permutation */
+          } else {
+            /* Medium path -- if the right edge is vector-aligned, then we can
+             * read full vectors (but with a lot of branches.)
+             */
+            rgb0 = vec_ld(0, inptr);
+            if (bytes > 16) {
+              rgb1 = vec_ld(16, inptr);
+              if (bytes > 32) {
+                rgb2 = vec_ld(32, inptr);
+                if (bytes > 48) {
+                  rgb3 = vec_ld(48, inptr);
+#if RGB_PIXELSIZE == 4
+                  if (bytes > 64)
+                    rgb4 = vec_ld(64, inptr);
+#endif
+                }
+              }
+            }
+          }
+        }
+
         unaligned_shift_index = vec_lvsl(0, inptr);
         rgb0 = vec_perm(rgb0, rgb1, unaligned_shift_index);
         rgb1 = vec_perm(rgb1, rgb2, unaligned_shift_index);
         rgb2 = vec_perm(rgb2, rgb3, unaligned_shift_index);
+#if RGB_PIXELSIZE == 4
+        rgb3 = vec_perm(rgb3, rgb4, unaligned_shift_index);
+#endif
       } else {
-        rgb0 = vec_ld(0, inptr);
-        if (pitch > 16)
+        if (num_cols >= RGB_PIXELSIZE * 16) {
+          /* Fast path */
+          rgb0 = vec_ld(0, inptr);
           rgb1 = vec_ld(16, inptr);
-        if (pitch > 32)
           rgb2 = vec_ld(32, inptr);
+#if RGB_PIXELSIZE == 4
+          rgb3 = vec_ld(48, inptr);
+#endif
+        } else {
+          if (num_cols & 15) {
+            /* Slow path */
+            memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
+            rgb0 = vec_ld(0, tmpbuf);
+            rgb1 = vec_ld(16, tmpbuf);
+            rgb2 = vec_ld(32, tmpbuf);
+#if RGB_PIXELSIZE == 4
+            rgb3 = vec_ld(48, tmpbuf);
+#endif
+          } else {
+            /* Medium path */
+            rgb0 = vec_ld(0, inptr);
+            if (num_cols > 16) {
+              rgb1 = vec_ld(16, inptr);
+              if (num_cols > 32) {
+                rgb2 = vec_ld(32, inptr);
+#if RGB_PIXELSIZE == 4
+                if (num_cols > 48)
+                  rgb3 = vec_ld(48, inptr);
+#endif
+              }
+            }
+          }
+        }
       }
 
+start:
+#if RGB_PIXELSIZE == 3
       /* rgb0 = R0 G0 B0 R1 G1 B1 R2 G2 B2 R3 G3 B3 R4 G4 B4 R5
        * rgb1 = G5 B5 R6 G6 B6 R7 G7 B7 R8 G8 B8 R9 G9 B9 Ra Ga
        * rgb2 = Ba Rb Gb Bb Rc Gc Bc Rd Gd Bd Re Ge Be Rf Gf Bf
@@ -106,41 +180,6 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
       rgbg2 = vec_perm(rgb1, rgb2, (__vector unsigned char)RGBG_INDEX2);
       rgbg3 = vec_perm(rgb2, rgb2, (__vector unsigned char)RGBG_INDEX3);
 #else
-      /* Load 16 pixels == 64 bytes */
-      if ((size_t)inptr & 15) {
-        __vector unsigned char unaligned_shift_index;
-        rgb0 = vec_ld(0, inptr);
-        if (pitch > 16)
-          rgb1 = vec_ld(16, inptr);
-        else
-          rgb1 = vec_ld(-1, inptr + pitch);
-        if (pitch > 32)
-          rgb2 = vec_ld(32, inptr);
-        else
-          rgb2 = vec_ld(-1, inptr + pitch);
-        if (pitch > 48)
-          rgb3 = vec_ld(48, inptr);
-        else
-          rgb3 = vec_ld(-1, inptr + pitch);
-        if (pitch > 64)
-          rgb4 = vec_ld(64, inptr);
-        else
-          rgb4 = vec_ld(-1, inptr + pitch);
-        unaligned_shift_index = vec_lvsl(0, inptr);
-        rgb0 = vec_perm(rgb0, rgb1, unaligned_shift_index);
-        rgb1 = vec_perm(rgb1, rgb2, unaligned_shift_index);
-        rgb2 = vec_perm(rgb2, rgb3, unaligned_shift_index);
-        rgb3 = vec_perm(rgb3, rgb4, unaligned_shift_index);
-      } else {
-        rgb0 = vec_ld(0, inptr);
-        if (pitch > 16)
-          rgb1 = vec_ld(16, inptr);
-        if (pitch > 32)
-          rgb2 = vec_ld(32, inptr);
-        if (pitch > 48)
-          rgb3 = vec_ld(48, inptr);
-      }
-
       /* rgb0 = R0 G0 B0 X0 R1 G1 B1 X1 R2 G2 B2 X2 R3 G3 B3 X3
        * rgb1 = R4 G4 B4 X4 R5 G5 B5 X5 R6 G6 B6 X6 R7 G7 B7 X7
        * rgb2 = R8 G8 B8 X8 R9 G9 B9 X9 Ra Ga Ba Xa Rb Gb Bb Xb

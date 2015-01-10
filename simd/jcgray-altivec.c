@@ -25,6 +25,11 @@
 #include "jsimd_altivec.h"
 
 
+#ifndef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
+
 #define F_0_114 7471                 /* FIX(0.11400) */
 #define F_0_250 16384                /* FIX(0.25000) */
 #define F_0_299 19595                /* FIX(0.29900) */

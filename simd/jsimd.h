@@ -321,6 +321,28 @@ EXTERN(void) jsimd_ycc_extxrgb_convert_mips_dspr2
         (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
          JSAMPARRAY output_buf, int num_rows);
 
+EXTERN(void) jsimd_ycc_rgb_convert_altivec
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extrgb_convert_altivec
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extrgbx_convert_altivec
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extbgr_convert_altivec
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extbgrx_convert_altivec
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extxbgr_convert_altivec
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extxrgb_convert_altivec
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+
 /* NULL Colorspace Conversion */
 EXTERN(void) jsimd_c_null_convert_mips_dspr2
         (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,

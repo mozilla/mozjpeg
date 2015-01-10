@@ -74,3 +74,7 @@
   col##6 = vec_mergeh(col67e, col67o); /* col6=(06 16 26 36 46 56 66 76) */   \
   col##7 = vec_mergel(col67e, col67o); /* col7=(07 17 27 37 47 57 67 77) */   \
 }
+
+#ifndef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#endif

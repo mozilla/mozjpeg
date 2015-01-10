@@ -70,101 +70,66 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
         __vector unsigned char unaligned_shift_index;
         int bytes = num_cols + offset;
 
-        if (bytes >= (RGB_PIXELSIZE + 1) * 16) {
-          /* Fast path -- we have enough buffer space to load all vectors.
-           * Even if we don't need them all, this is faster than narrowing
-           * down which ones we need.
+        if (bytes < (RGB_PIXELSIZE + 1) * 16 && (bytes & 15)) {
+          /* Slow path to prevent buffer overread.  Since there is no way to
+           * read a partial AltiVec register, overread would occur on the last
+           * chunk of the last image row if the right edge is not on a 16-byte
+           * 16-byte boundary.  It could also occur on other rows if the bytes
+           * per row is low enough.  Since we can't determine whether we're on
+           * the last image row, we have to assume every row is the last.
            */
-          rgb0 = vec_ld(0, inptr);
-          rgb1 = vec_ld(16, inptr);
-          rgb2 = vec_ld(32, inptr);
-          rgb3 = vec_ld(48, inptr);
+          memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
+          rgb0 = vec_ld(0, tmpbuf);
+          rgb1 = vec_ld(16, tmpbuf);
+          rgb2 = vec_ld(32, tmpbuf);
 #if RGB_PIXELSIZE == 4
-          rgb4 = vec_ld(64, inptr);
+          rgb3 = vec_ld(48, tmpbuf);
 #endif
         } else {
-          if (bytes & 15) {
-            /* Slow path to prevent buffer overread.  Since there is no way to
-             * read a partial AltiVec register, overread would occur on the
-             * last chunk of the last image row if the right edge is not on a
-             * 16-byte boundary.  It could also occur on other rows if the
-             * bytes per row is low enough.  Since we can't determine whether
-             * we're on the last image row, we have to assume every row is the
-             * last.
-             */
-            memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
-            rgb0 = vec_ld(0, tmpbuf);
-            rgb1 = vec_ld(16, tmpbuf);
-            rgb2 = vec_ld(32, tmpbuf);
-#if RGB_PIXELSIZE == 4
-            rgb3 = vec_ld(48, tmpbuf);
-#endif
-            goto start;  /* Skip permutation */
-          } else {
-            /* Medium path -- if the right edge is vector-aligned, then we can
-             * read full vectors (but with a lot of branches.)
-             */
-            rgb0 = vec_ld(0, inptr);
-            if (bytes > 16) {
-              rgb1 = vec_ld(16, inptr);
-              if (bytes > 32) {
-                rgb2 = vec_ld(32, inptr);
-                if (bytes > 48) {
-                  rgb3 = vec_ld(48, inptr);
-#if RGB_PIXELSIZE == 4
-                  if (bytes > 64)
-                    rgb4 = vec_ld(64, inptr);
-#endif
-                }
-              }
-            }
-          }
-        }
-
-        unaligned_shift_index = vec_lvsl(0, inptr);
-        rgb0 = vec_perm(rgb0, rgb1, unaligned_shift_index);
-        rgb1 = vec_perm(rgb1, rgb2, unaligned_shift_index);
-        rgb2 = vec_perm(rgb2, rgb3, unaligned_shift_index);
-#if RGB_PIXELSIZE == 4
-        rgb3 = vec_perm(rgb3, rgb4, unaligned_shift_index);
-#endif
-      } else {
-        if (num_cols >= RGB_PIXELSIZE * 16) {
           /* Fast path */
           rgb0 = vec_ld(0, inptr);
-          rgb1 = vec_ld(16, inptr);
-          rgb2 = vec_ld(32, inptr);
+          if (bytes > 16)
+            rgb1 = vec_ld(16, inptr);
+          if (bytes > 32)
+            rgb2 = vec_ld(32, inptr);
+          if (bytes > 48)
+            rgb3 = vec_ld(48, inptr);
 #if RGB_PIXELSIZE == 4
-          rgb3 = vec_ld(48, inptr);
+          if (bytes > 64)
+            rgb4 = vec_ld(64, inptr);
+#endif
+          unaligned_shift_index = vec_lvsl(0, inptr);
+          rgb0 = vec_perm(rgb0, rgb1, unaligned_shift_index);
+          rgb1 = vec_perm(rgb1, rgb2, unaligned_shift_index);
+          rgb2 = vec_perm(rgb2, rgb3, unaligned_shift_index);
+#if RGB_PIXELSIZE == 4
+          rgb3 = vec_perm(rgb3, rgb4, unaligned_shift_index);
+#endif
+        }
+      } else {
+        if (num_cols < RGB_PIXELSIZE * 16 && (num_cols & 15)) {
+          /* Slow path */
+          memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
+          rgb0 = vec_ld(0, tmpbuf);
+          rgb1 = vec_ld(16, tmpbuf);
+          rgb2 = vec_ld(32, tmpbuf);
+#if RGB_PIXELSIZE == 4
+          rgb3 = vec_ld(48, tmpbuf);
 #endif
         } else {
-          if (num_cols & 15) {
-            /* Slow path */
-            memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
-            rgb0 = vec_ld(0, tmpbuf);
-            rgb1 = vec_ld(16, tmpbuf);
-            rgb2 = vec_ld(32, tmpbuf);
+          /* Fast path */
+          rgb0 = vec_ld(0, inptr);
+          if (num_cols > 16)
+            rgb1 = vec_ld(16, inptr);
+          if (num_cols > 32)
+            rgb2 = vec_ld(32, inptr);
 #if RGB_PIXELSIZE == 4
-            rgb3 = vec_ld(48, tmpbuf);
+          if (num_cols > 48)
+            rgb3 = vec_ld(48, inptr);
 #endif
-          } else {
-            /* Medium path */
-            rgb0 = vec_ld(0, inptr);
-            if (num_cols > 16) {
-              rgb1 = vec_ld(16, inptr);
-              if (num_cols > 32) {
-                rgb2 = vec_ld(32, inptr);
-#if RGB_PIXELSIZE == 4
-                if (num_cols > 48)
-                  rgb3 = vec_ld(48, inptr);
-#endif
-              }
-            }
-          }
         }
       }
 
-start:
 #if RGB_PIXELSIZE == 3
       /* rgb0 = R0 G0 B0 R1 G1 B1 R2 G2 B2 R3 G3 B3 R4 G4 B4 R5
        * rgb1 = G5 B5 R6 G6 B6 R7 G7 B7 R8 G8 B8 R9 G9 B9 Ra Ga

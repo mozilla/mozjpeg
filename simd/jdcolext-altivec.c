@@ -132,12 +132,8 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
        * descaling the 32-bit results (right-shifting by 16 bits) and then
        * packing them.
        */
-      gl = (__vector short)vec_perm((__vector unsigned short)g0,
-                                    (__vector unsigned short)g1,
-                                    shift_pack_index);
-      gh = (__vector short)vec_perm((__vector unsigned short)g2,
-                                    (__vector unsigned short)g3,
-                                    shift_pack_index);
+      gl = vec_perm((__vector short)g0, (__vector short)g1, shift_pack_index);
+      gh = vec_perm((__vector short)g2, (__vector short)g3, shift_pack_index);
       gl = vec_sub(gl, crl);
       gh = vec_sub(gh, crh);
       gl = vec_add(gl, yl);

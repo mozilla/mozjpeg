@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * All rights reserved.
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -153,7 +153,7 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
   tmp3 = vec_or(tmp3, col7);
   tmp1 = vec_or(tmp1, tmp3);
 
-  quant0 = *(__vector short *)&dct_table[0];
+  quant0 = vec_ld(0, dct_table);
   col0 = vec_mladd(col0, quant0, zero);
 
   if (vec_all_eq(tmp1, zero)) {
@@ -170,13 +170,13 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
 
   } else {
 
-    quant1 = *(__vector short *)&dct_table[8];
-    quant2 = *(__vector short *)&dct_table[16];
-    quant3 = *(__vector short *)&dct_table[24];
-    quant4 = *(__vector short *)&dct_table[32];
-    quant5 = *(__vector short *)&dct_table[40];
-    quant6 = *(__vector short *)&dct_table[48];
-    quant7 = *(__vector short *)&dct_table[56];
+    quant1 = vec_ld(16, dct_table);
+    quant2 = vec_ld(32, dct_table);
+    quant3 = vec_ld(48, dct_table);
+    quant4 = vec_ld(64, dct_table);
+    quant5 = vec_ld(80, dct_table);
+    quant6 = vec_ld(96, dct_table);
+    quant7 = vec_ld(112, dct_table);
 
     col1 = vec_mladd(col1, quant1, zero);
     col2 = vec_mladd(col2, quant2, zero);

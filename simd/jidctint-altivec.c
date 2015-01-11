@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * All rights reserved.
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -246,14 +246,14 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
 
   /* Pass 1: process columns */
 
-  col0 = *(__vector short *)&coef_block[0];
-  col1 = *(__vector short *)&coef_block[8];
-  col2 = *(__vector short *)&coef_block[16];
-  col3 = *(__vector short *)&coef_block[24];
-  col4 = *(__vector short *)&coef_block[32];
-  col5 = *(__vector short *)&coef_block[40];
-  col6 = *(__vector short *)&coef_block[48];
-  col7 = *(__vector short *)&coef_block[56];
+  col0 = vec_ld(0, coef_block);
+  col1 = vec_ld(16, coef_block);
+  col2 = vec_ld(32, coef_block);
+  col3 = vec_ld(48, coef_block);
+  col4 = vec_ld(64, coef_block);
+  col5 = vec_ld(80, coef_block);
+  col6 = vec_ld(96, coef_block);
+  col7 = vec_ld(112, coef_block);
 
   tmp1 = vec_or(col1, col2);
   tmp2 = vec_or(col3, col4);
@@ -262,7 +262,7 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
   tmp3 = vec_or(tmp3, col7);
   tmp1 = vec_or(tmp1, tmp3);
 
-  quant0 = *(__vector short *)&dct_table[0];
+  quant0 = vec_ld(0, dct_table);
   col0 = vec_mladd(col0, quant0, zero16);
 
   if (vec_all_eq(tmp1, zero16)) {
@@ -281,13 +281,13 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
 
   } else {
 
-    quant1 = *(__vector short *)&dct_table[8];
-    quant2 = *(__vector short *)&dct_table[16];
-    quant3 = *(__vector short *)&dct_table[24];
-    quant4 = *(__vector short *)&dct_table[32];
-    quant5 = *(__vector short *)&dct_table[40];
-    quant6 = *(__vector short *)&dct_table[48];
-    quant7 = *(__vector short *)&dct_table[56];
+    quant1 = vec_ld(16, dct_table);
+    quant2 = vec_ld(32, dct_table);
+    quant3 = vec_ld(48, dct_table);
+    quant4 = vec_ld(64, dct_table);
+    quant5 = vec_ld(80, dct_table);
+    quant6 = vec_ld(96, dct_table);
+    quant7 = vec_ld(112, dct_table);
 
     col1 = vec_mladd(col1, quant1, zero16);
     col2 = vec_mladd(col2, quant2, zero16);

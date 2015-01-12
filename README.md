@@ -9,7 +9,7 @@ The idea is to reduce transfer times for JPEGs on the Web, thus reducing page lo
 
 More information:
 
-* [Version 1.0 Announcement](https://blog.mozilla.org/research/2014/03/05/introducing-the-mozjpeg-project/)
-* [Version 2.0 Announcement](https://blog.mozilla.org/research/2014/07/15/mozilla-advances-jpeg-encoding-with-mozjpeg-2-0/)
-* [Version 3.0 Announcement](https://boomswaggerboom.wordpress.com/2014/12/30/mozjpeg-3-0-released/)
 * [Mailing List](https://lists.mozilla.org/listinfo/dev-mozjpeg)</a>
+* [Version 3.0 Announcement](https://boomswaggerboom.wordpress.com/2014/12/30/mozjpeg-3-0-released/)
+* [Version 2.0 Announcement](https://blog.mozilla.org/research/2014/07/15/mozilla-advances-jpeg-encoding-with-mozjpeg-2-0/)
+* [Version 1.0 Announcement](https://blog.mozilla.org/research/2014/03/05/introducing-the-mozjpeg-project/)

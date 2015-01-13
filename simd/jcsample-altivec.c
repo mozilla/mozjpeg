@@ -43,7 +43,7 @@ jsimd_h2v1_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
   __vector unsigned short pw_bias = { __4X2(0, 1) },
     pw_one = { __8X(1) };
   __vector unsigned char even_odd_index =
-    { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 },
+    {0,2,4,6,8,10,12,14,1,3,5,7,9,11,13,15},
     pb_zero = { __16X(0) };
 
   expand_right_edge(input_data, max_v_samp_factor, image_width,

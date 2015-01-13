@@ -39,14 +39,14 @@ void jsimd_rgb_gray_convert_altivec (JDIMENSION img_width,
   __vector unsigned char rgb4 = {0};
 #endif
   __vector short rg0, rg1, rg2, rg3, bg0, bg1, bg2, bg3;
-  __vector unsigned short y01, y23;
+  __vector unsigned short yl, yh;
   __vector int y0, y1, y2, y3;
 
   /* Constants */
   __vector short pw_f0299_f0337 = { __4X2(F_0_299, F_0_337) },
     pw_f0114_f0250 = { __4X2(F_0_114, F_0_250) };
   __vector int pd_onehalf = { __4X(ONE_HALF) };
-  __vector unsigned char zero = { __16X(0) },
+  __vector unsigned char pb_zero = { __16X(0) },
     shift_pack_index =
       { 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29};
 
@@ -163,14 +163,14 @@ void jsimd_rgb_gray_convert_altivec (JDIMENSION img_width,
        * NOTE: We have to use vec_merge*() here because vec_unpack*() doesn't
        * support unsigned vectors.
        */
-      rg0 = (__vector signed short)vec_mergeh(zero, rgbg0);
-      bg0 = (__vector signed short)vec_mergel(zero, rgbg0);
-      rg1 = (__vector signed short)vec_mergeh(zero, rgbg1);
-      bg1 = (__vector signed short)vec_mergel(zero, rgbg1);
-      rg2 = (__vector signed short)vec_mergeh(zero, rgbg2);
-      bg2 = (__vector signed short)vec_mergel(zero, rgbg2);
-      rg3 = (__vector signed short)vec_mergeh(zero, rgbg3);
-      bg3 = (__vector signed short)vec_mergel(zero, rgbg3);
+      rg0 = (__vector signed short)vec_mergeh(pb_zero, rgbg0);
+      bg0 = (__vector signed short)vec_mergel(pb_zero, rgbg0);
+      rg1 = (__vector signed short)vec_mergeh(pb_zero, rgbg1);
+      bg1 = (__vector signed short)vec_mergel(pb_zero, rgbg1);
+      rg2 = (__vector signed short)vec_mergeh(pb_zero, rgbg2);
+      bg2 = (__vector signed short)vec_mergel(pb_zero, rgbg2);
+      rg3 = (__vector signed short)vec_mergeh(pb_zero, rgbg3);
+      bg3 = (__vector signed short)vec_mergel(pb_zero, rgbg3);
 
       /* (Original)
        * Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B
@@ -194,11 +194,11 @@ void jsimd_rgb_gray_convert_altivec (JDIMENSION img_width,
        * descaling the 32-bit results (right-shifting by 16 bits) and then
        * packing them.
        */
-      y01 = vec_perm((__vector unsigned short)y0, (__vector unsigned short)y1,
-                     shift_pack_index);
-      y23 = vec_perm((__vector unsigned short)y2, (__vector unsigned short)y3,
-                     shift_pack_index);
-      y = vec_pack(y01, y23);
+      yl = vec_perm((__vector unsigned short)y0, (__vector unsigned short)y1,
+                    shift_pack_index);
+      yh = vec_perm((__vector unsigned short)y2, (__vector unsigned short)y3,
+                    shift_pack_index);
+      y = vec_pack(yl, yh);
       vec_st(y, 0, outptr);
     }
   }

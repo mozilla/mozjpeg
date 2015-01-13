@@ -56,7 +56,7 @@
   \
   z1 = vec_add(tmp12, tmp13);  \
   z1 = vec_sl(z1, pre_multiply_scale_bits);  \
-  z1 = vec_madds(z1, pw_0707, zero);  \
+  z1 = vec_madds(z1, pw_0707, pw_zero);  \
   \
   out2 = vec_add(tmp13, z1);  \
   out6 = vec_sub(tmp13, z1);  \
@@ -70,13 +70,13 @@
   tmp10 = vec_sl(tmp10, pre_multiply_scale_bits);  \
   tmp12 = vec_sl(tmp12, pre_multiply_scale_bits);  \
   z5 = vec_sub(tmp10, tmp12);  \
-  z5 = vec_madds(z5, pw_0382, zero);  \
+  z5 = vec_madds(z5, pw_0382, pw_zero);  \
   \
   z2 = vec_madds(tmp10, pw_0541, z5);  \
   z4 = vec_madds(tmp12, pw_1306, z5);  \
   \
   tmp11 = vec_sl(tmp11, pre_multiply_scale_bits);  \
-  z3 = vec_madds(tmp11, pw_0707, zero);  \
+  z3 = vec_madds(tmp11, pw_0707, pw_zero);  \
   \
   z11 = vec_add(tmp7, z3);  \
   z13 = vec_sub(tmp7, z3);  \
@@ -98,7 +98,7 @@ jsimd_fdct_ifast_altivec (DCTELEM *data)
     out0, out1, out2, out3, out4, out5, out6, out7;
 
   /* Constants */
-  __vector short zero = vec_splat_s16(0),
+  __vector short pw_zero = { __8X(0) },
     pw_0382 = { __8X(F_0_382 << CONST_SHIFT) },
     pw_0541 = { __8X(F_0_541 << CONST_SHIFT) },
     pw_0707 = { __8X(F_0_707 << CONST_SHIFT) },

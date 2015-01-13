@@ -37,7 +37,7 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
   __vector unsigned char rgb3, out4;
 #endif
   __vector short rg0, rg1, rg2, rg3, bx0, bx1, bx2, bx3, yl, yh, cbl, cbh,
-    crl, crh, rl, rh, gl, gh, bl, bh, g0s, g1s, g2s, g3s;
+    crl, crh, rl, rh, gl, gh, bl, bh, g0w, g1w, g2w, g3w;
   __vector int g0, g1, g2, g3;
 
   /* Constants
@@ -47,11 +47,10 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
   __vector short pw_f0402 = { __8X(F_0_402 >> 1) },
     pw_mf0228 = { __8X(-F_0_228 >> 1) },
     pw_mf0344_f0285 = { __4X2(-F_0_344, F_0_285) },
-    pw_one = { __8X(1) },
-    pw_255 = { __8X(255) },
+    pw_one = { __8X(1) }, pw_255 = { __8X(255) },
     pw_cj = { __8X(CENTERJSAMPLE) };
   __vector int pd_onehalf = { __4X(ONE_HALF) };
-  __vector unsigned char zero = { __16X(0) },
+  __vector unsigned char pb_zero = { __16X(0) },
     shift_pack_index =
       { 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29};
 
@@ -70,18 +69,18 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
       /* NOTE: We have to use vec_merge*() here because vec_unpack*() doesn't
        * support unsigned vectors.
        */
-      yl = (__vector signed short)vec_mergeh(zero, y);
-      yh = (__vector signed short)vec_mergel(zero, y);
+      yl = (__vector signed short)vec_mergeh(pb_zero, y);
+      yh = (__vector signed short)vec_mergel(pb_zero, y);
 
       cb = vec_ld(0, inptr1);
-      cbl = (__vector signed short)vec_mergeh(zero, cb);
-      cbh = (__vector signed short)vec_mergel(zero, cb);
+      cbl = (__vector signed short)vec_mergeh(pb_zero, cb);
+      cbh = (__vector signed short)vec_mergel(pb_zero, cb);
       cbl = vec_sub(cbl, pw_cj);
       cbh = vec_sub(cbh, pw_cj);
 
       cr = vec_ld(0, inptr2);
-      crl = (__vector signed short)vec_mergeh(zero, cr);
-      crh = (__vector signed short)vec_mergel(zero, cr);
+      crl = (__vector signed short)vec_mergeh(pb_zero, cr);
+      crh = (__vector signed short)vec_mergel(pb_zero, cr);
       crl = vec_sub(crl, pw_cj);
       crh = vec_sub(crh, pw_cj);
 
@@ -119,14 +118,14 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
       rl = vec_add(rl, yl);
       rh = vec_add(rh, yh);
 
-      g0s = vec_mergeh(cbl, crl);
-      g1s = vec_mergel(cbl, crl);
-      g0 = vec_msums(g0s, pw_mf0344_f0285, pd_onehalf);
-      g1 = vec_msums(g1s, pw_mf0344_f0285, pd_onehalf);
-      g2s = vec_mergeh(cbh, crh);
-      g3s = vec_mergel(cbh, crh);
-      g2 = vec_msums(g2s, pw_mf0344_f0285, pd_onehalf);
-      g3 = vec_msums(g3s, pw_mf0344_f0285, pd_onehalf);
+      g0w = vec_mergeh(cbl, crl);
+      g1w = vec_mergel(cbl, crl);
+      g0 = vec_msums(g0w, pw_mf0344_f0285, pd_onehalf);
+      g1 = vec_msums(g1w, pw_mf0344_f0285, pd_onehalf);
+      g2w = vec_mergeh(cbh, crh);
+      g3w = vec_mergel(cbh, crh);
+      g2 = vec_msums(g2w, pw_mf0344_f0285, pd_onehalf);
+      g3 = vec_msums(g3w, pw_mf0344_f0285, pd_onehalf);
       /* Clever way to avoid 4 shifts + 2 packs.  This packs the high word from
        * each dword into a new 16-bit vector, which is the equivalent of
        * descaling the 32-bit results (right-shifting by 16 bits) and then

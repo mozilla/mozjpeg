@@ -54,7 +54,7 @@
   \
   tmp12 = vec_sub(in##2, in##6);  \
   tmp12 = vec_sl(tmp12, pre_multiply_scale_bits);  \
-  tmp12 = vec_madds(tmp12, pw_F1414, zero);  \
+  tmp12 = vec_madds(tmp12, pw_F1414, pw_zero);  \
   tmp12 = vec_sub(tmp12, tmp13);  \
   \
   tmp0 = vec_add(tmp10, tmp13);  \
@@ -73,7 +73,7 @@
   \
   tmp11 = vec_sub(z11, z13);  \
   tmp11 = vec_sl(tmp11, pre_multiply_scale_bits);  \
-  tmp11 = vec_madds(tmp11, pw_F1414, zero);  \
+  tmp11 = vec_madds(tmp11, pw_F1414, pw_zero);  \
   \
   tmp7 = vec_add(z11, z13);  \
   \
@@ -88,9 +88,9 @@
    */  \
   \
   z5 = vec_add(z10s, z12s);  \
-  z5 = vec_madds(z5, pw_F1847, zero);  \
+  z5 = vec_madds(z5, pw_F1847, pw_zero);  \
   \
-  tmp10 = vec_madds(z12s, pw_F1082, zero);  \
+  tmp10 = vec_madds(z12s, pw_F1082, pw_zero);  \
   tmp10 = vec_sub(tmp10, z5);  \
   tmp12 = vec_madds(z10s, pw_MF1613, z5);  \
   tmp12 = vec_sub(tmp12, z10);  \
@@ -115,6 +115,8 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
                           JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   short *dct_table = (short *)dct_table_;
+  int *outptr;
+
   __vector short row0, row1, row2, row3, row4, row5, row6, row7,
     col0, col1, col2, col3, col4, col5, col6, col7,
     quant0, quant1, quant2, quant3, quant4, quant5, quant6, quant7,
@@ -122,10 +124,9 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
     z5, z10, z10s, z11, z12s, z13,
     out0, out1, out2, out3, out4, out5, out6, out7;
   __vector signed char outb;
-  int *outptr;
 
   /* Constants */
-  __vector short zero = { __8X(0) },
+  __vector short pw_zero = { __8X(0) },
     pw_F1414 = { __8X(F_1_414 << CONST_SHIFT) },
     pw_F1847 = { __8X(F_1_847 << CONST_SHIFT) },
     pw_MF1613 = { __8X(-F_1_613 << CONST_SHIFT) },
@@ -154,9 +155,9 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
   tmp1 = vec_or(tmp1, tmp3);
 
   quant0 = vec_ld(0, dct_table);
-  col0 = vec_mladd(col0, quant0, zero);
+  col0 = vec_mladd(col0, quant0, pw_zero);
 
-  if (vec_all_eq(tmp1, zero)) {
+  if (vec_all_eq(tmp1, pw_zero)) {
     /* AC terms all zero */
 
     row0 = vec_splat(col0, 0);
@@ -178,13 +179,13 @@ jsimd_idct_ifast_altivec (void * dct_table_, JCOEFPTR coef_block,
     quant6 = vec_ld(96, dct_table);
     quant7 = vec_ld(112, dct_table);
 
-    col1 = vec_mladd(col1, quant1, zero);
-    col2 = vec_mladd(col2, quant2, zero);
-    col3 = vec_mladd(col3, quant3, zero);
-    col4 = vec_mladd(col4, quant4, zero);
-    col5 = vec_mladd(col5, quant5, zero);
-    col6 = vec_mladd(col6, quant6, zero);
-    col7 = vec_mladd(col7, quant7, zero);
+    col1 = vec_mladd(col1, quant1, pw_zero);
+    col2 = vec_mladd(col2, quant2, pw_zero);
+    col3 = vec_mladd(col3, quant3, pw_zero);
+    col4 = vec_mladd(col4, quant4, pw_zero);
+    col5 = vec_mladd(col5, quant5, pw_zero);
+    col6 = vec_mladd(col6, quant6, pw_zero);
+    col7 = vec_mladd(col7, quant7, pw_zero);
 
     DO_IDCT(col);
 

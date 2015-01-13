@@ -35,12 +35,13 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
   JSAMPROW inptr, outptr;
   int inrow, col;
 
-  __vector unsigned char block, last, next, lastblock, nextblock = {0}, out;
-  __vector short blocke, blocko, blockl, blockh, lastl, lasth, nextl, nexth,
-    outle, outhe, outlo, outho;
+  __vector unsigned char this0, last0, p_last0, next0 = {0}, p_next0,
+    out;
+  __vector short this0e, this0o, this0l, this0h, last0l, last0h,
+    next0l, next0h, outle, outhe, outlo, outho;
 
   /* Constants */
-  __vector unsigned char pb_three = { __16X(3) }, pb_zero = { __16X(0) },
+  __vector unsigned char pb_zero = { __16X(0) }, pb_three = { __16X(3) },
     last_index_col0 = {0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14},
     last_index = {15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30},
     next_index = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
@@ -52,44 +53,44 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
     inptr = input_data[inrow];
     outptr = output_data[inrow];
 
-    block = vec_ld(0, inptr);
-    last = vec_perm(block, block, last_index_col0);
-    lastblock = block;
+    this0 = vec_ld(0, inptr);
+    p_last0 = vec_perm(this0, this0, last_index_col0);
+    last0 = this0;
 
     for (col = 0; col < downsampled_width;
          col += 16, inptr += 16, outptr += 32) {
 
       if (col > 0) {
-        last = vec_perm(lastblock, block, last_index);
-        lastblock = block;
+        p_last0 = vec_perm(last0, this0, last_index);
+        last0 = this0;
       }
 
       if (downsampled_width - col <= 16)
-        next = vec_perm(block, block, next_index_lastcol);
+        p_next0 = vec_perm(this0, this0, next_index_lastcol);
       else {
-        nextblock = vec_ld(16, inptr);
-        next = vec_perm(block, nextblock, next_index);
+        next0 = vec_ld(16, inptr);
+        p_next0 = vec_perm(this0, next0, next_index);
       }
 
-      blocke = (__vector short)vec_mule(block, pb_three);
-      blocko = (__vector short)vec_mulo(block, pb_three);
-      blockl = vec_mergeh(blocke, blocko);
-      blockh = vec_mergel(blocke, blocko);
+      this0e = (__vector short)vec_mule(this0, pb_three);
+      this0o = (__vector short)vec_mulo(this0, pb_three);
+      this0l = vec_mergeh(this0e, this0o);
+      this0h = vec_mergel(this0e, this0o);
 
-      lastl = (__vector short)vec_mergeh(pb_zero, last);
-      lasth = (__vector short)vec_mergel(pb_zero, last);
-      lastl = vec_add(lastl, pw_one);
-      lasth = vec_add(lasth, pw_one);
+      last0l = (__vector short)vec_mergeh(pb_zero, p_last0);
+      last0h = (__vector short)vec_mergel(pb_zero, p_last0);
+      last0l = vec_add(last0l, pw_one);
+      last0h = vec_add(last0h, pw_one);
 
-      nextl = (__vector short)vec_mergeh(pb_zero, next);
-      nexth = (__vector short)vec_mergel(pb_zero, next);
-      nextl = vec_add(nextl, pw_two);
-      nexth = vec_add(nexth, pw_two);
+      next0l = (__vector short)vec_mergeh(pb_zero, p_next0);
+      next0h = (__vector short)vec_mergel(pb_zero, p_next0);
+      next0l = vec_add(next0l, pw_two);
+      next0h = vec_add(next0h, pw_two);
 
-      outle = vec_add(blockl, lastl);
-      outhe = vec_add(blockh, lasth);
-      outlo = vec_add(blockl, nextl);
-      outho = vec_add(blockh, nexth);
+      outle = vec_add(this0l, last0l);
+      outhe = vec_add(this0h, last0h);
+      outlo = vec_add(this0l, next0l);
+      outho = vec_add(this0h, next0h);
       outle = vec_sr(outle, (__vector unsigned short)pw_two);
       outhe = vec_sr(outhe, (__vector unsigned short)pw_two);
       outlo = vec_sr(outlo, (__vector unsigned short)pw_two);
@@ -102,7 +103,7 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
                      (__vector unsigned char)outho, merge_pack_index);
       vec_st(out, 16, outptr);
 
-      block = nextblock;
+      this0 = next0;
     }
   }
 }
@@ -118,8 +119,8 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
   JSAMPROW inptr_1, inptr0, inptr1, outptr0, outptr1;
   int inrow, outrow, col;
 
-  __vector unsigned char block_1, block0, block1, out;
-  __vector short block_1l, block_1h, block0l, block0h, block1l, block1h,
+  __vector unsigned char this_1, this0, this1, out;
+  __vector short this_1l, this_1h, this0l, this0h, this1l, this1h,
     lastcolsum_1h, lastcolsum1h,
     p_lastcolsum_1l, p_lastcolsum_1h, p_lastcolsum1l, p_lastcolsum1h,
     thiscolsum_1l, thiscolsum_1h, thiscolsum1l, thiscolsum1h,
@@ -147,26 +148,26 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     outptr0 = output_data[outrow++];
     outptr1 = output_data[outrow++];
 
-    block0 = vec_ld(0, inptr0);
-    block0l = (__vector short)vec_mergeh(pb_zero, block0);
-    block0h = (__vector short)vec_mergel(pb_zero, block0);
-    block0l = vec_mladd(block0l, pw_three, pw_zero);
-    block0h = vec_mladd(block0h, pw_three, pw_zero);
+    this0 = vec_ld(0, inptr0);
+    this0l = (__vector short)vec_mergeh(pb_zero, this0);
+    this0h = (__vector short)vec_mergel(pb_zero, this0);
+    this0l = vec_mladd(this0l, pw_three, pw_zero);
+    this0h = vec_mladd(this0h, pw_three, pw_zero);
 
-    block_1 = vec_ld(0, inptr_1);
-    block_1l = (__vector short)vec_mergeh(pb_zero, block_1);
-    block_1h = (__vector short)vec_mergel(pb_zero, block_1);
-    thiscolsum_1l = vec_add(block0l, block_1l);
-    thiscolsum_1h = vec_add(block0h, block_1h);
+    this_1 = vec_ld(0, inptr_1);
+    this_1l = (__vector short)vec_mergeh(pb_zero, this_1);
+    this_1h = (__vector short)vec_mergel(pb_zero, this_1);
+    thiscolsum_1l = vec_add(this0l, this_1l);
+    thiscolsum_1h = vec_add(this0h, this_1h);
     lastcolsum_1h = thiscolsum_1h;
     p_lastcolsum_1l = vec_perm(thiscolsum_1l, thiscolsum_1l, last_index_col0);
     p_lastcolsum_1h = vec_perm(thiscolsum_1l, thiscolsum_1h, last_index);
 
-    block1 = vec_ld(0, inptr1);
-    block1l = (__vector short)vec_mergeh(pb_zero, block1);
-    block1h = (__vector short)vec_mergel(pb_zero, block1);
-    thiscolsum1l = vec_add(block0l, block1l);
-    thiscolsum1h = vec_add(block0h, block1h);
+    this1 = vec_ld(0, inptr1);
+    this1l = (__vector short)vec_mergeh(pb_zero, this1);
+    this1h = (__vector short)vec_mergel(pb_zero, this1);
+    thiscolsum1l = vec_add(this0l, this1l);
+    thiscolsum1h = vec_add(this0h, this1h);
     lastcolsum1h = thiscolsum1h;
     p_lastcolsum1l = vec_perm(thiscolsum1l, thiscolsum1l, last_index_col0);
     p_lastcolsum1h = vec_perm(thiscolsum1l, thiscolsum1h, last_index);
@@ -191,25 +192,25 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
         p_nextcolsum1h = vec_perm(thiscolsum1h, thiscolsum1h,
                                   next_index_lastcol);
       } else {
-        block0 = vec_ld(16, inptr0);
-        block0l = (__vector short)vec_mergeh(pb_zero, block0);
-        block0h = (__vector short)vec_mergel(pb_zero, block0);
-        block0l = vec_mladd(block0l, pw_three, pw_zero);
-        block0h = vec_mladd(block0h, pw_three, pw_zero);
+        this0 = vec_ld(16, inptr0);
+        this0l = (__vector short)vec_mergeh(pb_zero, this0);
+        this0h = (__vector short)vec_mergel(pb_zero, this0);
+        this0l = vec_mladd(this0l, pw_three, pw_zero);
+        this0h = vec_mladd(this0h, pw_three, pw_zero);
 
-        block_1 = vec_ld(16, inptr_1);
-        block_1l = (__vector short)vec_mergeh(pb_zero, block_1);
-        block_1h = (__vector short)vec_mergel(pb_zero, block_1);
-        nextcolsum_1l = vec_add(block0l, block_1l);
-        nextcolsum_1h = vec_add(block0h, block_1h);
+        this_1 = vec_ld(16, inptr_1);
+        this_1l = (__vector short)vec_mergeh(pb_zero, this_1);
+        this_1h = (__vector short)vec_mergel(pb_zero, this_1);
+        nextcolsum_1l = vec_add(this0l, this_1l);
+        nextcolsum_1h = vec_add(this0h, this_1h);
         p_nextcolsum_1l = vec_perm(thiscolsum_1l, thiscolsum_1h, next_index);
         p_nextcolsum_1h = vec_perm(thiscolsum_1h, nextcolsum_1l, next_index);
 
-        block1 = vec_ld(16, inptr1);
-        block1l = (__vector short)vec_mergeh(pb_zero, block1);
-        block1h = (__vector short)vec_mergel(pb_zero, block1);
-        nextcolsum1l = vec_add(block0l, block1l);
-        nextcolsum1h = vec_add(block0h, block1h);
+        this1 = vec_ld(16, inptr1);
+        this1l = (__vector short)vec_mergeh(pb_zero, this1);
+        this1h = (__vector short)vec_mergel(pb_zero, this1);
+        nextcolsum1l = vec_add(this0l, this1l);
+        nextcolsum1h = vec_add(this0h, this1h);
         p_nextcolsum1l = vec_perm(thiscolsum1l, thiscolsum1h, next_index);
         p_nextcolsum1h = vec_perm(thiscolsum1h, nextcolsum1l, next_index);
       }

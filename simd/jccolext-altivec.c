@@ -38,7 +38,7 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
   __vector unsigned char rgb4 = {0};
 #endif
   __vector short rg0, rg1, rg2, rg3, bg0, bg1, bg2, bg3;
-  __vector unsigned short y01, y23, cr01, cr23, cb01, cb23;
+  __vector unsigned short yl, yh, crl, crh, cbl, cbh;
   __vector int y0, y1, y2, y3, cr0, cr1, cr2, cr3, cb0, cb1, cb2, cb3;
 
   /* Constants */
@@ -49,7 +49,7 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
   __vector unsigned short pw_f050_f000 = { __4X2(F_0_500, 0) };
   __vector int pd_onehalf = { __4X(ONE_HALF) },
     pd_onehalfm1_cj = { __4X(ONE_HALF - 1 + (CENTERJSAMPLE << SCALEBITS)) };
-  __vector unsigned char zero = { __16X(0) },
+  __vector unsigned char pb_zero = { __16X(0) },
     shift_pack_index =
       { 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29};
 
@@ -168,14 +168,14 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
        * NOTE: We have to use vec_merge*() here because vec_unpack*() doesn't
        * support unsigned vectors.
        */
-      rg0 = (__vector signed short)vec_mergeh(zero, rgbg0);
-      bg0 = (__vector signed short)vec_mergel(zero, rgbg0);
-      rg1 = (__vector signed short)vec_mergeh(zero, rgbg1);
-      bg1 = (__vector signed short)vec_mergel(zero, rgbg1);
-      rg2 = (__vector signed short)vec_mergeh(zero, rgbg2);
-      bg2 = (__vector signed short)vec_mergel(zero, rgbg2);
-      rg3 = (__vector signed short)vec_mergeh(zero, rgbg3);
-      bg3 = (__vector signed short)vec_mergel(zero, rgbg3);
+      rg0 = (__vector signed short)vec_mergeh(pb_zero, rgbg0);
+      bg0 = (__vector signed short)vec_mergel(pb_zero, rgbg0);
+      rg1 = (__vector signed short)vec_mergeh(pb_zero, rgbg1);
+      bg1 = (__vector signed short)vec_mergel(pb_zero, rgbg1);
+      rg2 = (__vector signed short)vec_mergeh(pb_zero, rgbg2);
+      bg2 = (__vector signed short)vec_mergel(pb_zero, rgbg2);
+      rg3 = (__vector signed short)vec_mergeh(pb_zero, rgbg3);
+      bg3 = (__vector signed short)vec_mergel(pb_zero, rgbg3);
 
       /* (Original)
        * Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B
@@ -203,11 +203,11 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
        * descaling the 32-bit results (right-shifting by 16 bits) and then
        * packing them.
        */
-      y01 = vec_perm((__vector unsigned short)y0, (__vector unsigned short)y1,
-                     shift_pack_index);
-      y23 = vec_perm((__vector unsigned short)y2, (__vector unsigned short)y3,
-                     shift_pack_index);
-      y = vec_pack(y01, y23);
+      yl = vec_perm((__vector unsigned short)y0, (__vector unsigned short)y1,
+                    shift_pack_index);
+      yh = vec_perm((__vector unsigned short)y2, (__vector unsigned short)y3,
+                    shift_pack_index);
+      y = vec_pack(yl, yh);
       vec_st(y, 0, outptr0);
 
       /* Calculate Cb values */
@@ -223,11 +223,11 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
                                    (__vector unsigned int)cb2);
       cb3 = (__vector int)vec_msum((__vector unsigned short)bg3, pw_f050_f000,
                                    (__vector unsigned int)cb3);
-      cb01 = vec_perm((__vector unsigned short)cb0,
-                      (__vector unsigned short)cb1, shift_pack_index);
-      cb23 = vec_perm((__vector unsigned short)cb2,
-                      (__vector unsigned short)cb3, shift_pack_index);
-      cb = vec_pack(cb01, cb23);
+      cbl = vec_perm((__vector unsigned short)cb0,
+                     (__vector unsigned short)cb1, shift_pack_index);
+      cbh = vec_perm((__vector unsigned short)cb2,
+                     (__vector unsigned short)cb3, shift_pack_index);
+      cb = vec_pack(cbl, cbh);
       vec_st(cb, 0, outptr1);
 
       /* Calculate Cr values */
@@ -243,11 +243,11 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
                                    (__vector unsigned int)cr2);
       cr3 = (__vector int)vec_msum((__vector unsigned short)rg3, pw_f050_f000,
                                    (__vector unsigned int)cr3);
-      cr01 = vec_perm((__vector unsigned short)cr0,
-                      (__vector unsigned short)cr1, shift_pack_index);
-      cr23 = vec_perm((__vector unsigned short)cr2,
-                      (__vector unsigned short)cr3, shift_pack_index);
-      cr = vec_pack(cr01, cr23);
+      crl = vec_perm((__vector unsigned short)cr0,
+                     (__vector unsigned short)cr1, shift_pack_index);
+      crh = vec_perm((__vector unsigned short)cr2,
+                     (__vector unsigned short)cr3, shift_pack_index);
+      cr = vec_pack(crl, crh);
       vec_st(cr, 0, outptr2);
     }
   }

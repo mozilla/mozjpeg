@@ -42,12 +42,13 @@ jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
                         DCTELEM * workspace)
 {
   JSAMPROW elemptr;
+
   __vector unsigned char in0, in1, in2, in3, in4, in5, in6, in7;
   __vector short out0, out1, out2, out3, out4, out5, out6, out7;
 
   /* Constants */
   __vector short pw_centerjsamp = { __8X(CENTERJSAMPLE) };
-  __vector unsigned char zero = { __16X(0) };
+  __vector unsigned char pb_zero = { __16X(0) };
 
   LOAD_ROW(0);
   LOAD_ROW(1);
@@ -58,14 +59,14 @@ jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
   LOAD_ROW(6);
   LOAD_ROW(7);
 
-  out0 = (__vector short)vec_mergeh(zero, in0);
-  out1 = (__vector short)vec_mergeh(zero, in1);
-  out2 = (__vector short)vec_mergeh(zero, in2);
-  out3 = (__vector short)vec_mergeh(zero, in3);
-  out4 = (__vector short)vec_mergeh(zero, in4);
-  out5 = (__vector short)vec_mergeh(zero, in5);
-  out6 = (__vector short)vec_mergeh(zero, in6);
-  out7 = (__vector short)vec_mergeh(zero, in7);
+  out0 = (__vector short)vec_mergeh(pb_zero, in0);
+  out1 = (__vector short)vec_mergeh(pb_zero, in1);
+  out2 = (__vector short)vec_mergeh(pb_zero, in2);
+  out3 = (__vector short)vec_mergeh(pb_zero, in3);
+  out4 = (__vector short)vec_mergeh(pb_zero, in4);
+  out5 = (__vector short)vec_mergeh(pb_zero, in5);
+  out6 = (__vector short)vec_mergeh(pb_zero, in6);
+  out7 = (__vector short)vec_mergeh(pb_zero, in7);
 
   out0 = vec_sub(out0, pw_centerjsamp);
   out1 = vec_sub(out1, pw_centerjsamp);
@@ -89,7 +90,8 @@ jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
 
 #define WORD_BIT 16
 
-/* There is no AltiVec unsigned multiply instruction, hence this. */
+/* There is no AltiVec 16-bit unsigned multiply instruction, hence this.
+   We basically need an unsigned equivalent of vec_madds(). */
 
 #define MULTIPLY(vs0, vs1, out) {  \
   tmpe = vec_mule((__vector unsigned short)vs0,  \
@@ -105,13 +107,11 @@ void
 jsimd_quantize_altivec (JCOEFPTR coef_block, DCTELEM * divisors,
                         DCTELEM * workspace)
 {
-  __vector short row0, row1, row2, row3, row4, row5, row6, row7;
-  __vector short row0s, row1s, row2s, row3s, row4s, row5s, row6s, row7s;
-  __vector short corr0, corr1, corr2, corr3, corr4, corr5, corr6, corr7;
-  __vector short recip0, recip1, recip2, recip3, recip4, recip5, recip6,
-    recip7;
-  __vector short scale0, scale1, scale2, scale3, scale4, scale5, scale6,
-    scale7;
+  __vector short row0, row1, row2, row3, row4, row5, row6, row7,
+    row0s, row1s, row2s, row3s, row4s, row5s, row6s, row7s,
+    corr0, corr1, corr2, corr3, corr4, corr5, corr6, corr7,
+    recip0, recip1, recip2, recip3, recip4, recip5, recip6, recip7,
+    scale0, scale1, scale2, scale3, scale4, scale5, scale6, scale7;
   __vector unsigned int tmpe, tmpo;
 
   /* Constants */

@@ -2,7 +2,7 @@
  * simd/jsimd.h
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011, 2014 D. R. Commander
+ * Copyright (C) 2011, 2014-2015 D. R. Commander
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California
  * Copyright (C) 2014 Linaro Limited
  *
@@ -450,6 +450,13 @@ EXTERN(void) jsimd_h2v1_fancy_upsample_mips_dspr2
         (int max_v_samp_factor, JDIMENSION downsampled_width,
          JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
 EXTERN(void) jsimd_h2v2_fancy_upsample_mips_dspr2
+        (int max_v_samp_factor, JDIMENSION downsampled_width,
+         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+
+EXTERN(void) jsimd_h2v1_fancy_upsample_altivec
+        (int max_v_samp_factor, JDIMENSION downsampled_width,
+         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+EXTERN(void) jsimd_h2v2_fancy_upsample_altivec
         (int max_v_samp_factor, JDIMENSION downsampled_width,
          JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
 

@@ -117,7 +117,7 @@ jsimd_quantize_altivec (JCOEFPTR coef_block, DCTELEM * divisors,
   /* Constants */
   __vector unsigned short pw_word_bit_m1 = { __8X(WORD_BIT - 1) };
   __vector unsigned char shift_pack_index =
-      { 0, 1, 16, 17, 4, 5, 20, 21, 8, 9, 24, 25, 12, 13, 28, 29};
+    {0,1,16,17,4,5,20,21,8,9,24,25,12,13,28,29};
 
   row0 = vec_ld(0, workspace);
   row1 = vec_ld(16, workspace);

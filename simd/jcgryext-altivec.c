@@ -47,8 +47,7 @@ void jsimd_rgb_gray_convert_altivec (JDIMENSION img_width,
     pw_f0114_f0250 = { __4X2(F_0_114, F_0_250) };
   __vector int pd_onehalf = { __4X(ONE_HALF) };
   __vector unsigned char pb_zero = { __16X(0) },
-    shift_pack_index =
-      { 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29};
+    shift_pack_index = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29};
 
   while (--num_rows >= 0) {
     inptr = *input_buf++;

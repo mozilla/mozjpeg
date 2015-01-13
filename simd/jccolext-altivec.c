@@ -50,8 +50,7 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
   __vector int pd_onehalf = { __4X(ONE_HALF) },
     pd_onehalfm1_cj = { __4X(ONE_HALF - 1 + (CENTERJSAMPLE << SCALEBITS)) };
   __vector unsigned char pb_zero = { __16X(0) },
-    shift_pack_index =
-      { 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29};
+    shift_pack_index = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29};
 
   while (--num_rows >= 0) {
     inptr = *input_buf++;

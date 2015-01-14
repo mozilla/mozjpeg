@@ -425,6 +425,12 @@ EXTERN(void) jsimd_int_upsample_mips_dspr2
          JSAMPARRAY * output_data_ptr, JDIMENSION output_width,
          int max_v_samp_factor);
 
+EXTERN(void) jsimd_h2v1_upsample_altivec
+        (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
+         JSAMPARRAY * output_data_ptr);
+EXTERN(void) jsimd_h2v2_upsample_altivec
+        (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
+         JSAMPARRAY * output_data_ptr);
 
 /* Fancy Upsampling */
 EXTERN(void) jsimd_h2v1_fancy_upsample_mmx

@@ -294,3 +294,91 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     }
   }
 }
+
+
+/* These are rarely used (mainly just for decompressing YCCK images) */
+
+void
+jsimd_h2v1_upsample_altivec (int max_v_samp_factor,
+                             JDIMENSION output_width,
+                             JSAMPARRAY input_data,
+                             JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  JSAMPROW inptr, outptr;
+  int inrow, incol;
+
+  __vector unsigned char in, inl, inh;
+
+  for (inrow = 0; inrow < max_v_samp_factor; inrow++) {
+    inptr = input_data[inrow];
+    outptr = output_data[inrow];
+
+    for (incol = (output_width + 31) & (~31); incol > 0;
+         incol -= 64, inptr += 32, outptr += 64) {
+
+      in = vec_ld(0, inptr);
+      inl = vec_mergeh(in, in);
+      inh = vec_mergel(in, in);
+
+      vec_st(inl, 0, outptr);
+      vec_st(inh, 16, outptr);
+
+      if (incol > 32) {
+        in = vec_ld(16, inptr);
+        inl = vec_mergeh(in, in);
+        inh = vec_mergel(in, in);
+
+        vec_st(inl, 32, outptr);
+        vec_st(inh, 48, outptr);
+      }
+    }
+  }
+}
+
+
+void
+jsimd_h2v2_upsample_altivec (int max_v_samp_factor,
+                             JDIMENSION output_width,
+                             JSAMPARRAY input_data,
+                             JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  JSAMPROW inptr, outptr0, outptr1;
+  int inrow, outrow, incol;
+
+  __vector unsigned char in, inl, inh;
+
+  for (inrow = 0, outrow = 0; outrow < max_v_samp_factor; inrow++) {
+
+    inptr = input_data[inrow];
+    outptr0 = output_data[outrow++];
+    outptr1 = output_data[outrow++];
+
+    for (incol = (output_width + 31) & (~31); incol > 0;
+         incol -= 64, inptr += 32, outptr0 += 64, outptr1 += 64) {
+
+      in = vec_ld(0, inptr);
+      inl = vec_mergeh(in, in);
+      inh = vec_mergel(in, in);
+
+      vec_st(inl, 0, outptr0);
+      vec_st(inl, 0, outptr1);
+
+      vec_st(inh, 16, outptr0);
+      vec_st(inh, 16, outptr1);
+
+      if (incol > 32) {
+        in = vec_ld(16, inptr);
+        inl = vec_mergeh(in, in);
+        inh = vec_mergel(in, in);
+
+        vec_st(inl, 32, outptr0);
+        vec_st(inl, 32, outptr1);
+
+        vec_st(inh, 48, outptr0);
+        vec_st(inh, 48, outptr1);
+      }
+    }
+  }
+}

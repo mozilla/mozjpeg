@@ -1,3 +1,14 @@
+1.5 pre-beta
+============
+
+[1] Added full SIMD acceleration for PowerPC platforms using AltiVec VMX
+(128-bit SIMD) instructions.  Although the performance of libjpeg-turbo on
+PowerPC was already good, due to the increased number of registers available
+to the compiler vs. x86, it was still possible to speed up compression by about
+3-4x and decompression by about 2-2.5x (relative to libjpeg v6b) through the
+use of AltiVec instructions.
+
+
 1.4.0
 =====
 

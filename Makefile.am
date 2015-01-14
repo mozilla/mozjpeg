@@ -263,7 +263,7 @@ MD5_JPEG_CROP = b4197f377e621c4e9b1d20471432610d
 endif
 
 .PHONY: test
-test: tjquicktest bittest
+test: tjquicktest tjbittest bittest
 
 tjquicktest: testclean all
 
@@ -281,6 +281,64 @@ endif
 	./tjunittest -yuv
 	./tjunittest -yuv -alloc
 	./tjunittest -yuv -noyuvpad
+endif
+	echo GREAT SUCCESS!
+
+tjbittest: testclean all
+
+if WITH_TURBOJPEG
+
+MD5_PPM_GRAY_TILE = 89d3ca21213d9d864b50b4e4e7de4ca6
+MD5_PPM_420_8x8_TILE = 847fceab15c5b7b911cb986cf0f71de3
+MD5_PPM_420_16x16_TILE = ca45552a93687e078f7137cc4126a7b0
+MD5_PPM_420_32x32_TILE = d8676f1d6b68df358353bba9844f4a00
+MD5_PPM_420_64x64_TILE = 4e4c1a3d7ea4bace4f868bcbe83b7050
+MD5_PPM_420_128x128_TILE = f24c3429c52265832beab9df72a0ceae
+MD5_PPM_420M_8x8_TILE = bc25320e1f4c31ce2e610e43e9fd173c
+MD5_PPM_420M_TILE = 75ffdf14602258c5c189522af57fa605
+MD5_PPM_422_8x8_TILE = d83dacd9fc73b0a6f10c09acad64eb1e
+MD5_PPM_422_16x16_TILE = 35077fb610d72dd743b1eb0cbcfe10fb
+MD5_PPM_422_32x32_TILE = e6902ed8a449ecc0f0d6f2bf945f65f7
+MD5_PPM_422_64x64_TILE = 2b4502a8f316cedbde1da7bce3d2231e
+MD5_PPM_422_128x128_TILE = f0b5617d578f5e13c8eee215d64d4877
+MD5_PPM_422M_8x8_TILE = 828941d7f41cd6283abd6beffb7fd51d
+MD5_PPM_422M_TILE = e877ae1324c4a280b95376f7f018172f
+MD5_PPM_444_TILE = 7964e41e67cfb8d0a587c0aa4798f9c3
+
+# Test compressing from/decompressing to an arbitrary subregion of a larger
+# image buffer
+	cp $(srcdir)/testimages/testorig.ppm testout_tile.ppm
+	./tjbench testout_tile.ppm 95 -rgb -quiet -tile -benchtime 0.01 >/dev/null 2>&1
+	for i in 8 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_GRAY_TILE) testout_tile_GRAY_Q95_$$i\x$$i.ppm; \
+	done
+	md5/md5cmp $(MD5_PPM_420_8x8_TILE) testout_tile_420_Q95_8x8.ppm
+	md5/md5cmp $(MD5_PPM_420_16x16_TILE) testout_tile_420_Q95_16x16.ppm
+	md5/md5cmp $(MD5_PPM_420_32x32_TILE) testout_tile_420_Q95_32x32.ppm
+	md5/md5cmp $(MD5_PPM_420_64x64_TILE) testout_tile_420_Q95_64x64.ppm
+	md5/md5cmp $(MD5_PPM_420_128x128_TILE) testout_tile_420_Q95_128x128.ppm
+	md5/md5cmp $(MD5_PPM_422_8x8_TILE) testout_tile_422_Q95_8x8.ppm
+	md5/md5cmp $(MD5_PPM_422_16x16_TILE) testout_tile_422_Q95_16x16.ppm
+	md5/md5cmp $(MD5_PPM_422_32x32_TILE) testout_tile_422_Q95_32x32.ppm
+	md5/md5cmp $(MD5_PPM_422_64x64_TILE) testout_tile_422_Q95_64x64.ppm
+	md5/md5cmp $(MD5_PPM_422_128x128_TILE) testout_tile_422_Q95_128x128.ppm
+	for i in 8 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_444_TILE) testout_tile_444_Q95_$$i\x$$i.ppm; \
+	done
+	rm testout_tile_GRAY_* testout_tile_420_* testout_tile_422_* testout_tile_444_*
+
+	./tjbench testout_tile.ppm 95 -rgb -fastupsample -quiet -tile -benchtime 0.01 >/dev/null 2>&1
+	md5/md5cmp $(MD5_PPM_420M_8x8_TILE) testout_tile_420_Q95_8x8.ppm
+	for i in 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_420M_TILE) testout_tile_420_Q95_$$i\x$$i.ppm; \
+	done
+	md5/md5cmp $(MD5_PPM_422M_8x8_TILE) testout_tile_422_Q95_8x8.ppm
+	for i in 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_422M_TILE) testout_tile_422_Q95_$$i\x$$i.ppm; \
+	done
+	rm testout_tile_GRAY_* testout_tile_420_* testout_tile_422_* testout_tile_444_* testout_tile.ppm
+	echo GREAT SUCCESS!
+
 endif
 
 bittest: testclean all
@@ -481,6 +539,7 @@ endif
 	./jpegtran -crop 120x90+20+50 -transpose -perfect -outfile testout_crop.jpg $(srcdir)/testimages/$(TESTORIG)
 	md5/md5cmp $(MD5_JPEG_CROP) testout_crop.jpg
 	rm testout_crop.jpg
+	echo GREAT SUCCESS!
 
 
 testclean:

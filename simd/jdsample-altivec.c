@@ -33,7 +33,7 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr, outptr;
-  int inrow, col;
+  int inrow, incol;
 
   __vector unsigned char this0, last0, p_last0, next0 = {0}, p_next0,
     out;
@@ -53,19 +53,22 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
     inptr = input_data[inrow];
     outptr = output_data[inrow];
 
+    if (downsampled_width & 15)
+      inptr[downsampled_width] = inptr[downsampled_width - 1];
+
     this0 = vec_ld(0, inptr);
     p_last0 = vec_perm(this0, this0, last_index_col0);
     last0 = this0;
 
-    for (col = 0; col < downsampled_width;
-         col += 16, inptr += 16, outptr += 32) {
+    for (incol = downsampled_width; incol > 0;
+         incol -= 16, inptr += 16, outptr += 32) {
 
-      if (col > 0) {
+      if (downsampled_width - incol > 0) {
         p_last0 = vec_perm(last0, this0, last_index);
         last0 = this0;
       }
 
-      if (downsampled_width - col <= 16)
+      if (incol <= 16)
         p_next0 = vec_perm(this0, this0, next_index_lastcol);
       else {
         next0 = vec_ld(16, inptr);
@@ -80,28 +83,33 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
       last0l = (__vector short)vec_mergeh(pb_zero, p_last0);
       last0h = (__vector short)vec_mergel(pb_zero, p_last0);
       last0l = vec_add(last0l, pw_one);
-      last0h = vec_add(last0h, pw_one);
 
       next0l = (__vector short)vec_mergeh(pb_zero, p_next0);
       next0h = (__vector short)vec_mergel(pb_zero, p_next0);
       next0l = vec_add(next0l, pw_two);
-      next0h = vec_add(next0h, pw_two);
 
       outle = vec_add(this0l, last0l);
-      outhe = vec_add(this0h, last0h);
       outlo = vec_add(this0l, next0l);
-      outho = vec_add(this0h, next0h);
       outle = vec_sr(outle, (__vector unsigned short)pw_two);
-      outhe = vec_sr(outhe, (__vector unsigned short)pw_two);
       outlo = vec_sr(outlo, (__vector unsigned short)pw_two);
-      outho = vec_sr(outho, (__vector unsigned short)pw_two);
 
       out = vec_perm((__vector unsigned char)outle,
                      (__vector unsigned char)outlo, merge_pack_index);
       vec_st(out, 0, outptr);
-      out = vec_perm((__vector unsigned char)outhe,
-                     (__vector unsigned char)outho, merge_pack_index);
-      vec_st(out, 16, outptr);
+
+      if (incol > 8) {
+        last0h = vec_add(last0h, pw_one);
+        next0h = vec_add(next0h, pw_two);
+
+        outhe = vec_add(this0h, last0h);
+        outho = vec_add(this0h, next0h);
+        outhe = vec_sr(outhe, (__vector unsigned short)pw_two);
+        outho = vec_sr(outho, (__vector unsigned short)pw_two);
+
+        out = vec_perm((__vector unsigned char)outhe,
+                       (__vector unsigned char)outho, merge_pack_index);
+        vec_st(out, 16, outptr);
+      }
 
       this0 = next0;
     }
@@ -117,7 +125,7 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr_1, inptr0, inptr1, outptr0, outptr1;
-  int inrow, outrow, col;
+  int inrow, outrow, incol;
 
   __vector unsigned char this_1, this0, this1, out;
   __vector short this_1l, this_1h, this0l, this0h, this1l, this1h,
@@ -148,6 +156,12 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     outptr0 = output_data[outrow++];
     outptr1 = output_data[outrow++];
 
+    if (downsampled_width & 15) {
+      inptr_1[downsampled_width] = inptr_1[downsampled_width - 1];
+      inptr0[downsampled_width] = inptr0[downsampled_width - 1];
+      inptr1[downsampled_width] = inptr1[downsampled_width - 1];
+    }
+
     this0 = vec_ld(0, inptr0);
     this0l = (__vector short)vec_mergeh(pb_zero, this0);
     this0h = (__vector short)vec_mergel(pb_zero, this0);
@@ -172,11 +186,11 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     p_lastcolsum1l = vec_perm(thiscolsum1l, thiscolsum1l, last_index_col0);
     p_lastcolsum1h = vec_perm(thiscolsum1l, thiscolsum1h, last_index);
 
-    for (col = 0; col < downsampled_width;
-         col += 16, inptr_1 += 16, inptr0 += 16, inptr1 += 16,
+    for (incol = downsampled_width; incol > 0;
+         incol -= 16, inptr_1 += 16, inptr0 += 16, inptr1 += 16,
          outptr0 += 32, outptr1 += 32) {
 
-      if (col > 0) {
+      if (downsampled_width - incol > 0) {
         p_lastcolsum_1l = vec_perm(lastcolsum_1h, thiscolsum_1l, last_index);
         p_lastcolsum_1h = vec_perm(thiscolsum_1l, thiscolsum_1h, last_index);
         p_lastcolsum1l = vec_perm(lastcolsum1h, thiscolsum1l, last_index);
@@ -184,7 +198,7 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
         lastcolsum_1h = thiscolsum_1h;  lastcolsum1h = thiscolsum1h;
       }
 
-      if (downsampled_width - col <= 16) {
+      if (incol <= 16) {
         p_nextcolsum_1l = vec_perm(thiscolsum_1l, thiscolsum_1h, next_index);
         p_nextcolsum_1h = vec_perm(thiscolsum_1h, thiscolsum_1h,
                                    next_index_lastcol);
@@ -218,53 +232,62 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
       /* Process the upper row */
 
       tmpl = vec_mladd(thiscolsum_1l, pw_three, pw_zero);
-      tmph = vec_mladd(thiscolsum_1h, pw_three, pw_zero);
       outle = vec_add(tmpl, p_lastcolsum_1l);
-      outhe = vec_add(tmph, p_lastcolsum_1h);
       outle = vec_add(outle, pw_eight);
-      outhe = vec_add(outhe, pw_eight);
       outle = vec_sr(outle, pw_four);
-      outhe = vec_sr(outhe, pw_four);
 
       outlo = vec_add(tmpl, p_nextcolsum_1l);
-      outho = vec_add(tmph, p_nextcolsum_1h);
       outlo = vec_add(outlo, pw_seven);
-      outho = vec_add(outho, pw_seven);
       outlo = vec_sr(outlo, pw_four);
-      outho = vec_sr(outho, pw_four);
 
       out = vec_perm((__vector unsigned char)outle,
                      (__vector unsigned char)outlo, merge_pack_index);
       vec_st(out, 0, outptr0);
 
-      out = vec_perm((__vector unsigned char)outhe,
-                     (__vector unsigned char)outho, merge_pack_index);
-      vec_st(out, 16, outptr0);
+      if (incol > 8) {
+        tmph = vec_mladd(thiscolsum_1h, pw_three, pw_zero);
+        outhe = vec_add(tmph, p_lastcolsum_1h);
+        outhe = vec_add(outhe, pw_eight);
+        outhe = vec_sr(outhe, pw_four);
+
+        outho = vec_add(tmph, p_nextcolsum_1h);
+        outho = vec_add(outho, pw_seven);
+        outho = vec_sr(outho, pw_four);
+
+        out = vec_perm((__vector unsigned char)outhe,
+                       (__vector unsigned char)outho, merge_pack_index);
+        vec_st(out, 16, outptr0);
+      }
 
       /* Process the lower row */
 
       tmpl = vec_mladd(thiscolsum1l, pw_three, pw_zero);
-      tmph = vec_mladd(thiscolsum1h, pw_three, pw_zero);
       outle = vec_add(tmpl, p_lastcolsum1l);
-      outhe = vec_add(tmph, p_lastcolsum1h);
       outle = vec_add(outle, pw_eight);
-      outhe = vec_add(outhe, pw_eight);
       outle = vec_sr(outle, pw_four);
-      outhe = vec_sr(outhe, pw_four);
 
       outlo = vec_add(tmpl, p_nextcolsum1l);
-      outho = vec_add(tmph, p_nextcolsum1h);
       outlo = vec_add(outlo, pw_seven);
-      outho = vec_add(outho, pw_seven);
       outlo = vec_sr(outlo, pw_four);
-      outho = vec_sr(outho, pw_four);
 
       out = vec_perm((__vector unsigned char)outle,
                      (__vector unsigned char)outlo, merge_pack_index);
       vec_st(out, 0, outptr1);
-      out = vec_perm((__vector unsigned char)outhe,
-                     (__vector unsigned char)outho, merge_pack_index);
-      vec_st(out, 16, outptr1);
+
+      if (incol > 8) {
+        tmph = vec_mladd(thiscolsum1h, pw_three, pw_zero);
+        outhe = vec_add(tmph, p_lastcolsum1h);
+        outhe = vec_add(outhe, pw_eight);
+        outhe = vec_sr(outhe, pw_four);
+
+        outho = vec_add(tmph, p_nextcolsum1h);
+        outho = vec_add(outho, pw_seven);
+        outho = vec_sr(outho, pw_four);
+
+        out = vec_perm((__vector unsigned char)outhe,
+                       (__vector unsigned char)outho, merge_pack_index);
+        vec_st(out, 16, outptr1);
+      }
 
       thiscolsum_1l = nextcolsum_1l;  thiscolsum_1h = nextcolsum_1h;
       thiscolsum1l = nextcolsum1l;  thiscolsum1h = nextcolsum1h;

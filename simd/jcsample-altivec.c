@@ -64,7 +64,7 @@ jsimd_h2v1_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
       outl = vec_add(outl, pw_bias);
       outl = vec_sr(outl, pw_one);
 
-      if (outcol > 16) {
+      if (outcol > 8) {
         next0 = vec_ld(16, inptr);
         next0 = vec_perm(next0, next0, even_odd_index);
         next0e = (__vector unsigned short)vec_mergeh(pb_zero, next0);
@@ -132,7 +132,7 @@ jsimd_h2v2_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
       outl = vec_add(outl, pw_bias);
       outl = vec_sr(outl, pw_two);
 
-      if (outcol > 16) {
+      if (outcol > 8) {
         next0 = vec_ld(16, inptr0);
         next0 = vec_perm(next0, next0, even_odd_index);
         next0e = (__vector unsigned short)vec_mergeh(pb_zero, next0);

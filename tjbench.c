@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ int flags=TJFLAG_NOREALLOC, componly=0, decomponly=0, doyuv=0, quiet=0,
 char *ext="ppm";
 const char *pixFormatStr[TJ_NUMPF]=
 {
-	"RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY"
+	"RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY", "", "", "", "", "CMYK"
 };
 const char *subNameLong[TJ_NUMSAMP]=
 {
@@ -506,6 +506,10 @@ int decompTest(char *filename)
 		_throwtj("executing tjInitTransform()");
 	if(tjDecompressHeader3(handle, srcbuf, srcsize, &w, &h, &subsamp, &cs)==-1)
 		_throwtj("executing tjDecompressHeader3()");
+	if(cs==TJCS_YCCK || cs==TJCS_CMYK)
+	{
+		pf=TJPF_CMYK;  ps=tjPixelSize[pf];
+	}
 
 	if(quiet==1)
 	{
@@ -712,6 +716,9 @@ void usage(char *progname)
 	printf("     tiles of varying sizes.\n");
 	printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
 	printf("     Test the specified color conversion path in the codec (default = BGR)\n");
+	printf("-cmyk = Indirectly test YCCK JPEG compression/decompression (the source\n");
+	printf("     and destination bitmaps are still RGB.  The conversion is done\n");
+	printf("     internally prior to compression or after decompression.)\n");
 	printf("-fastupsample = Use the fastest chrominance upsampling algorithm available in\n");
 	printf("     the underlying codec\n");
 	printf("-fastdct = Use the fastest DCT/IDCT algorithms available in the underlying\n");
@@ -820,6 +827,7 @@ int main(int argc, char *argv[])
 			if(!strcasecmp(argv[i], "-bgrx")) pf=TJPF_BGRX;
 			if(!strcasecmp(argv[i], "-xbgr")) pf=TJPF_XBGR;
 			if(!strcasecmp(argv[i], "-xrgb")) pf=TJPF_XRGB;
+			if(!strcasecmp(argv[i], "-cmyk")) pf=TJPF_CMYK;
 			if(!strcasecmp(argv[i], "-bottomup")) flags|=TJFLAG_BOTTOMUP;
 			if(!strcasecmp(argv[i], "-quiet")) quiet=1;
 			if(!strcasecmp(argv[i], "-qq")) quiet=2;
@@ -953,9 +961,12 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		for(i=maxqual; i>=minqual; i--)
-			fullTest(srcbuf, w, h, TJSAMP_GRAY, i, argv[1]);
-		printf("\n");
+		if(pf!=TJPF_CMYK)
+		{
+			for(i=maxqual; i>=minqual; i--)
+				fullTest(srcbuf, w, h, TJSAMP_GRAY, i, argv[1]);
+			printf("\n");
+		}
 		for(i=maxqual; i>=minqual; i--)
 			fullTest(srcbuf, w, h, TJSAMP_420, i, argv[1]);
 		printf("\n");

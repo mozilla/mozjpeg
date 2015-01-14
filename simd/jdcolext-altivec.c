@@ -205,7 +205,7 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
           /* Fast path */
           unaligned_shift_index = vec_lvsl(0, outptr);
           edgel = vec_ld(0, outptr);
-          edgeh = vec_ld(min(num_cols, RGB_PIXELSIZE * 16) + offset, outptr);
+          edgeh = vec_ld(min(num_cols - 1, RGB_PIXELSIZE * 16), outptr);
           edges = vec_perm(edgeh, edgel, unaligned_shift_index);
           unaligned_shift_index = vec_lvsr(0, outptr);
           out0 = vec_perm(edges, rgb0, unaligned_shift_index);

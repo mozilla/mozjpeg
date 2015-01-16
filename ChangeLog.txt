@@ -11,6 +11,10 @@ not benchmarked.  NOTE: The quick & dirty CMYK<->RGB conversions that tjbench
 uses are suitable for testing only.  Proper conversion between CMYK and RGB
 requires a color management system.
 
+[2] 'make test' now performs additional bitwise regression tests using tjbench,
+mainly for the purpose of testing compression from/decompression to a subregion
+of a larger image buffer.
+
 
 1.4.0
 =====

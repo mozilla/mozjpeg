@@ -145,7 +145,7 @@
   out3 = vec_pack(out3l, out3h);  \
 }
 
-#define DO_FDCT_ROWS()  \
+#define DO_FDCT_PASS1()  \
 {  \
   /* Even part */  \
   \
@@ -162,7 +162,7 @@
   DO_FDCT_COMMON(1);  \
 }
 
-#define DO_FDCT_COLS()  \
+#define DO_FDCT_PASS2()  \
 {  \
   /* Even part */  \
   \
@@ -234,7 +234,7 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
   tmp3 = vec_add(col3, col4);
   tmp4 = vec_sub(col3, col4);
 
-  DO_FDCT_ROWS();
+  DO_FDCT_PASS1();
 
   /* Pass 2: process columns */
 
@@ -249,7 +249,7 @@ jsimd_fdct_islow_altivec (DCTELEM *data)
   tmp3 = vec_add(row3, row4);
   tmp4 = vec_sub(row3, row4);
 
-  DO_FDCT_COLS();
+  DO_FDCT_PASS2();
 
   vec_st(out0, 0, data);
   vec_st(out1, 16, data);

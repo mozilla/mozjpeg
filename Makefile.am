@@ -440,17 +440,18 @@ endif
 
 # The output of the floating point tests is not validated by default, because
 # the output differs depending on the type of floating point math used, and
-# this is only deterministic if there is full SIMD coverage of all of the
-# floating point algorithms in libjpeg-turbo.  Pass one of the following on the
-# make command line to validate the floating point tests against one of the
-# expected results:
+# this is only deterministic if the DCT/IDCT are implemented using SIMD
+# instructions on a particular platform.  Pass one of the following on the make
+# command line to validate the floating point tests against one of the expected # results:
 #
 # FLOATTEST=sse  validate against the expected results from the libjpeg-turbo
 #                SSE SIMD extensions
-# FLOATTEST=32bit  validate against the expected results from the MIPS DSPr2
-#                  SIMD extensions or 32-bit FPUs or GCC when -mfpmath=sse is
-#                  used (which is the default on x86-64 systems)
-# FLOATTEST=64bit  validate against the exepected results from 64-bit FPUs
+# FLOATTEST=32bit  validate against the expected results from the C code
+#                  when running on a 32-bit FPU (or when SSE is being used for
+#                  floating point math, which is generally the default with
+#                  x86-64 compilers)
+# FLOATTEST=64bit  validate against the exepected results from the C code
+#                  when running on a 64-bit FPU
 
 # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
 	./cjpeg -sample 3x2 -dct float -prog -outfile testout_3x2_float_prog.jpg $(srcdir)/testimages/testorig.ppm

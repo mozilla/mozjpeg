@@ -1,3 +1,17 @@
+1.4.1
+=====
+
+[1] tjbench now properly handles CMYK/YCCK JPEG files.  Passing an argument of
+-cmyk (instead of, for instance, -rgb) will cause tjbench to internally convert
+the source bitmap to CMYK prior to compression, to generate YCCK JPEG files,
+and to internally convert the decompressed CMYK pixels back to RGB after
+decompression (the latter is done automatically if a CMYK or YCCK JPEG is
+passed to tjbench as a source image.)  The CMYK<->RGB conversion operation is
+not benchmarked.  NOTE: The quick & dirty CMYK<->RGB conversions that tjbench
+uses are suitable for testing only.  Proper conversion between CMYK and RGB
+requires a color management system.
+
+
 1.4.0
 =====
 

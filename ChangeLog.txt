@@ -15,6 +15,13 @@ requires a color management system.
 mainly for the purpose of testing compression from/decompression to a subregion
 of a larger image buffer.
 
+[3] 'make test' no longer tests the regression of the floating point DCT/IDCT
+by default, since the results of those tests can vary if the algorithms in
+question are not implemented using SIMD instructions on a particular platform.
+See the comments in Makefile.am for information on how to re-enable the tests
+and to specify an expected result for them based on the particulars of your
+platform.
+
 
 1.4.0
 =====

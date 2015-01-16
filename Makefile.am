@@ -192,8 +192,13 @@ MD5_JPEG_GRAY_ISLOW = 235c90707b16e2e069f37c888b2636d9
 MD5_PPM_GRAY_ISLOW = 7213c10af507ad467da5578ca5ee1fca
 MD5_PPM_GRAY_ISLOW_RGB = e96ee81c30a6ed422d466338bd3de65d
 MD5_JPEG_420S_IFAST_OPT = 7af8e60be4d9c227ec63ac9b6630855e
-MD5_JPEG_3x2_FLOAT_PROG = a8c17daf77b457725ec929e215b603f8
-MD5_PPM_3x2_FLOAT = 42876ab9e5c2f76a87d08db5fbd57956
+MD5_JPEG_3x2_FLOAT_PROG_SSE = a8c17daf77b457725ec929e215b603f8
+MD5_PPM_3x2_FLOAT_SSE = 42876ab9e5c2f76a87d08db5fbd57956
+MD5_JPEG_3x2_FLOAT_PROG_32BIT = a8c17daf77b457725ec929e215b603f8
+MD5_PPM_3x2_FLOAT_32BIT = 42876ab9e5c2f76a87d08db5fbd57956
+MD5_PPM_3x2_FLOAT_64BIT = d6fbc71153b3d8ded484dbc17c7b9cf4
+MD5_JPEG_3x2_IFAST_PROG = 1396cc2b7185cfe943d408c9d305339e
+MD5_PPM_3x2_IFAST = 3975985ef6eeb0a2cdc58daa651ccc00
 MD5_PPM_420M_ISLOW_2_1 = 4ca6be2a6f326ff9eaab63e70a8259c0
 MD5_PPM_420M_ISLOW_15_8 = 12aa9f9534c1b3d7ba047322226365eb
 MD5_PPM_420M_ISLOW_13_8 = f7e22817c7b25e1393e4ec101e9d4e96
@@ -230,13 +235,13 @@ MD5_BMP_GRAY_ISLOW_565 = 12f78118e56a2f48b966f792fedf23cc
 MD5_BMP_GRAY_ISLOW_565D = bdbbd616441a24354c98553df5dc82db
 MD5_JPEG_420S_IFAST_OPT = 388708217ac46273ca33086b22827ed8
 # See README-turbo.txt for more details on why this next bit is necessary.
-if WITH_SSE_FLOAT_DCT
-MD5_JPEG_3x2_FLOAT_PROG = 343e3f8caf8af5986ebaf0bdc13b5c71
-MD5_PPM_3x2_FLOAT = 1a75f36e5904d6fc3a85a43da9ad89bb
-else
-MD5_JPEG_3x2_FLOAT_PROG = 9bca803d2042bd1eb03819e2bf92b3e5
-MD5_PPM_3x2_FLOAT = f6bfab038438ed8f5522fbd33595dcdc
-endif
+MD5_JPEG_3x2_FLOAT_PROG_SSE = 343e3f8caf8af5986ebaf0bdc13b5c71
+MD5_PPM_3x2_FLOAT_SSE = 1a75f36e5904d6fc3a85a43da9ad89bb
+MD5_JPEG_3x2_FLOAT_PROG_32BIT = 9bca803d2042bd1eb03819e2bf92b3e5
+MD5_PPM_3x2_FLOAT_32BIT = f6bfab038438ed8f5522fbd33595dcdc
+MD5_PPM_3x2_FLOAT_64BIT = 0e917a34193ef976b679a6b069b1be26
+MD5_JPEG_3x2_IFAST_PROG = 1ee5d2c1a77f2da495f993c8c7cceca5
+MD5_PPM_3x2_IFAST = fd283664b3b49127984af0a7f118fccd
 MD5_JPEG_420_ISLOW_ARI = e986fb0a637a8d833d96e8a6d6d84ea1
 MD5_JPEG_444_ISLOW_PROGARI = 0a8f1c8f66e113c3cf635df0a475a617
 MD5_PPM_420M_IFAST_ARI = 72b59a99bcf1de24c5b27d151bde2437
@@ -433,13 +438,45 @@ endif
 	md5/md5cmp $(MD5_JPEG_420S_IFAST_OPT) testout_420s_ifast_opt.jpg
 	rm testout_420s_ifast_opt.jpg
 
+# The output of the floating point tests is not validated by default, because
+# the output differs depending on the type of floating point math used, and
+# this is only deterministic if there is full SIMD coverage of all of the
+# floating point algorithms in libjpeg-turbo.  Pass one of the following on the
+# make command line to validate the floating point tests against one of the
+# expected results:
+#
+# FLOATTEST=sse  validate against the expected results from the libjpeg-turbo
+#                SSE SIMD extensions
+# FLOATTEST=32bit  validate against the expected results from the MIPS DSPr2
+#                  SIMD extensions or 32-bit FPUs or GCC when -mfpmath=sse is
+#                  used (which is the default on x86-64 systems)
+# FLOATTEST=64bit  validate against the exepected results from 64-bit FPUs
+
 # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
 	./cjpeg -sample 3x2 -dct float -prog -outfile testout_3x2_float_prog.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG) testout_3x2_float_prog.jpg
+	if [ "${FLOATTEST}" = "sse" ]; then \
+		md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG_SSE) testout_3x2_float_prog.jpg; \
+	elif [ "${FLOATTEST}" = "32bit" -o "${FLOATTEST}" = "64bit" ]; then \
+		md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG_32BIT) testout_3x2_float_prog.jpg; \
+	fi
 # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
 	./djpeg -dct float -outfile testout_3x2_float.ppm testout_3x2_float_prog.jpg
-	md5/md5cmp $(MD5_PPM_3x2_FLOAT) testout_3x2_float.ppm
+	if [ "${FLOATTEST}" = "sse" ]; then \
+		md5/md5cmp $(MD5_PPM_3x2_FLOAT_SSE) testout_3x2_float.ppm; \
+	elif [ "${FLOATTEST}" = "32bit" ]; then \
+		md5/md5cmp $(MD5_PPM_3x2_FLOAT_32BIT) testout_3x2_float.ppm; \
+	elif [ "${FLOATTEST}" = "64bit" ]; then \
+		md5/md5cmp $(MD5_PPM_3x2_FLOAT_64BIT) testout_3x2_float.ppm; \
+	fi
 	rm testout_3x2_float.ppm testout_3x2_float_prog.jpg
+
+# CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
+	./cjpeg -sample 3x2 -dct fast -prog -outfile testout_3x2_ifast_prog.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_3x2_IFAST_PROG) testout_3x2_ifast_prog.jpg
+# CC: YCC->RGB  SAMP: fullsize/int  IDCT: ifast  ENT: prog huff
+	./djpeg -dct fast -outfile testout_3x2_ifast.ppm testout_3x2_ifast_prog.jpg
+	md5/md5cmp $(MD5_PPM_3x2_IFAST) testout_3x2_ifast.ppm
+	rm testout_3x2_ifast.ppm testout_3x2_ifast_prog.jpg
 
 if WITH_ARITH_ENC
 # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith

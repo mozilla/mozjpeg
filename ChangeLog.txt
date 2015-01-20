@@ -22,6 +22,11 @@ See the comments in Makefile.am for information on how to re-enable the tests
 and to specify an expected result for them based on the particulars of your
 platform.
 
+[4] The NULL color conversion routines have been significantly optimized,
+which speeds up the compression of RGB and CMYK JPEGs by 5-20% when using
+64-bit code and 0-3% when using 32-bit code, and the decompression of those
+images by 10-30% when using 64-bit code and 3-12% when using 32-bit code.
+
 
 1.4.0
 =====

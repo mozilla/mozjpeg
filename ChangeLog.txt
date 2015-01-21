@@ -27,6 +27,11 @@ which speeds up the compression of RGB and CMYK JPEGs by 5-20% when using
 64-bit code and 0-3% when using 32-bit code, and the decompression of those
 images by 10-30% when using 64-bit code and 3-12% when using 32-bit code.
 
+[5] Fixed an "illegal instruction" error that occurred when djpeg from a
+SIMD-enabled libjpeg-turbo MIPS build was executed with the -nosmooth option on
+a MIPS machine that lacked DSPr2 support.  The MIPS SIMD routines for h2v1 and
+h2v2 merged upsampling were not properly checking for the existence of DSPr2.
+
 
 1.4.0
 =====

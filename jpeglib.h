@@ -1094,21 +1094,21 @@ EXTERN(boolean) jpeg_c_bool_param_supported (const j_compress_ptr cinfo,
                                              J_BOOLEAN_PARAM param);
 EXTERN(void) jpeg_c_set_bool_param (j_compress_ptr cinfo,
                                     J_BOOLEAN_PARAM param, boolean value);
-EXTERN(boolean) jpeg_c_get_bool_param (j_compress_ptr cinfo,
+EXTERN(boolean) jpeg_c_get_bool_param (const j_compress_ptr cinfo,
                                        J_BOOLEAN_PARAM param);
 
 EXTERN(boolean) jpeg_c_float_param_supported (const j_compress_ptr cinfo,
                                               J_FLOAT_PARAM param);
 EXTERN(void) jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param,
                                      float value);
-EXTERN(float) jpeg_c_get_float_param (j_compress_ptr cinfo,
+EXTERN(float) jpeg_c_get_float_param (const j_compress_ptr cinfo,
                                       J_FLOAT_PARAM param);
 
 EXTERN(boolean) jpeg_c_int_param_supported (const j_compress_ptr cinfo,
                                             J_INT_PARAM param);
 EXTERN(void) jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param,
                                    int value);
-EXTERN(int) jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param);
+EXTERN(int) jpeg_c_get_int_param (const j_compress_ptr cinfo, J_INT_PARAM param);
 
 
 /* These marker codes are exported since applications and data source modules

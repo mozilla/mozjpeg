@@ -1036,10 +1036,10 @@ EXTERN(JDIMENSION) jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
                                        JDIMENSION max_lines);
 
 /* Additional entry points for buffered-image mode. */
-EXTERN(boolean) jpeg_has_multiple_scans (j_decompress_ptr cinfo);
+EXTERN(boolean) jpeg_has_multiple_scans (const j_decompress_ptr cinfo);
 EXTERN(boolean) jpeg_start_output (j_decompress_ptr cinfo, int scan_number);
 EXTERN(boolean) jpeg_finish_output (j_decompress_ptr cinfo);
-EXTERN(boolean) jpeg_input_complete (j_decompress_ptr cinfo);
+EXTERN(boolean) jpeg_input_complete (const j_decompress_ptr cinfo);
 EXTERN(void) jpeg_new_colormap (j_decompress_ptr cinfo);
 EXTERN(int) jpeg_consume_input (j_decompress_ptr cinfo);
 /* Return value is one of: */
@@ -1068,7 +1068,7 @@ EXTERN(void) jpeg_set_marker_processor (j_decompress_ptr cinfo,
 EXTERN(jvirt_barray_ptr *) jpeg_read_coefficients (j_decompress_ptr cinfo);
 EXTERN(void) jpeg_write_coefficients (j_compress_ptr cinfo,
                                       jvirt_barray_ptr * coef_arrays);
-EXTERN(void) jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
+EXTERN(void) jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo,
                                             j_compress_ptr dstinfo);
 
 /* If you choose to abort compression or decompression before completing
@@ -1090,21 +1090,21 @@ EXTERN(void) jpeg_destroy (j_common_ptr cinfo);
 EXTERN(boolean) jpeg_resync_to_restart (j_decompress_ptr cinfo, int desired);
 
 /* Accessor functions for extension parameters */
-EXTERN(boolean) jpeg_c_bool_param_supported (j_compress_ptr cinfo,
+EXTERN(boolean) jpeg_c_bool_param_supported (const j_compress_ptr cinfo,
                                              J_BOOLEAN_PARAM param);
 EXTERN(void) jpeg_c_set_bool_param (j_compress_ptr cinfo,
                                     J_BOOLEAN_PARAM param, boolean value);
 EXTERN(boolean) jpeg_c_get_bool_param (j_compress_ptr cinfo,
                                        J_BOOLEAN_PARAM param);
 
-EXTERN(boolean) jpeg_c_float_param_supported (j_compress_ptr cinfo,
+EXTERN(boolean) jpeg_c_float_param_supported (const j_compress_ptr cinfo,
                                               J_FLOAT_PARAM param);
 EXTERN(void) jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param,
                                      float value);
 EXTERN(float) jpeg_c_get_float_param (j_compress_ptr cinfo,
                                       J_FLOAT_PARAM param);
 
-EXTERN(boolean) jpeg_c_int_param_supported (j_compress_ptr cinfo,
+EXTERN(boolean) jpeg_c_int_param_supported (const j_compress_ptr cinfo,
                                             J_INT_PARAM param);
 EXTERN(void) jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param,
                                    int value);

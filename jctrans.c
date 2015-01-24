@@ -69,7 +69,7 @@ jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays)
  */
 
 GLOBAL(void)
-jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
+jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo,
                                j_compress_ptr dstinfo)
 {
   JQUANT_TBL ** qtblptr;

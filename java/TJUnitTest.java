@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012, 2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -104,7 +104,7 @@ public class TJUnitTest {
         return TJ.PF_BGR;
       case BufferedImage.TYPE_4BYTE_ABGR:
       case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-        return TJ.PF_XBGR;
+        return TJ.PF_ABGR;
       case BufferedImage.TYPE_BYTE_GRAY:
         return TJ.PF_GRAY;
       case BufferedImage.TYPE_INT_BGR:

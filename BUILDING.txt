@@ -396,7 +396,7 @@ to the configure command line.
 
 ARMv8 64-bit Build (Xcode 5.0.x and later, Clang):
 
-Code will run on iPhone 5S/iPad Mini 2 and newer.
+Code will run on iPhone 5S/iPad Mini 2/iPad Air and newer.
 
 Set the following shell variables for simplicity:
 

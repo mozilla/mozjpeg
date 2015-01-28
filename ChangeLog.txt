@@ -9,6 +9,41 @@ to the compiler vs. x86, it was still possible to speed up compression by about
 use of AltiVec instructions.
 
 
+1.4.1
+=====
+
+[1] tjbench now properly handles CMYK/YCCK JPEG files.  Passing an argument of
+-cmyk (instead of, for instance, -rgb) will cause tjbench to internally convert
+the source bitmap to CMYK prior to compression, to generate YCCK JPEG files,
+and to internally convert the decompressed CMYK pixels back to RGB after
+decompression (the latter is done automatically if a CMYK or YCCK JPEG is
+passed to tjbench as a source image.)  The CMYK<->RGB conversion operation is
+not benchmarked.  NOTE: The quick & dirty CMYK<->RGB conversions that tjbench
+uses are suitable for testing only.  Proper conversion between CMYK and RGB
+requires a color management system.
+
+[2] 'make test' now performs additional bitwise regression tests using tjbench,
+mainly for the purpose of testing compression from/decompression to a subregion
+of a larger image buffer.
+
+[3] 'make test' no longer tests the regression of the floating point DCT/IDCT
+by default, since the results of those tests can vary if the algorithms in
+question are not implemented using SIMD instructions on a particular platform.
+See the comments in Makefile.am for information on how to re-enable the tests
+and to specify an expected result for them based on the particulars of your
+platform.
+
+[4] The NULL color conversion routines have been significantly optimized,
+which speeds up the compression of RGB and CMYK JPEGs by 5-20% when using
+64-bit code and 0-3% when using 32-bit code, and the decompression of those
+images by 10-30% when using 64-bit code and 3-12% when using 32-bit code.
+
+[5] Fixed an "illegal instruction" error that occurred when djpeg from a
+SIMD-enabled libjpeg-turbo MIPS build was executed with the -nosmooth option on
+a MIPS machine that lacked DSPr2 support.  The MIPS SIMD routines for h2v1 and
+h2v2 merged upsampling were not properly checking for the existence of DSPr2.
+
+
 1.4.0
 =====
 

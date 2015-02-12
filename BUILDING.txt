@@ -7,6 +7,7 @@
 Build Requirements
 ==================
 
+-- pkg-config
 -- autoconf 2.56 or later
 -- automake 1.7 or later
 -- libtool 1.4 or later

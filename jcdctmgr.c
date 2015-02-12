@@ -22,6 +22,7 @@
 #include "jpeglib.h"
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 #include "jsimddct.h"
+#include "jchuff.h"
 #include <assert.h>
 #include <math.h>
 
@@ -726,6 +727,17 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
     (*do_quantize) (coef_blocks[bi], divisors, workspace);
+
+    if (do_preprocess) {
+      int i;
+      int maxval = (1 << MAX_COEF_BITS) - 1;
+      for (i = 0; i < 64; i++) {
+        if (coef_blocks[bi][i] < -maxval)
+          coef_blocks[bi][i] = -maxval;
+        if (coef_blocks[bi][i] > maxval)
+          coef_blocks[bi][i] = maxval;
+      }
+    }
   }
 }
 
@@ -845,12 +857,22 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
     (*do_quantize) (coef_blocks[bi], divisors, workspace);
+    
+    if (do_preprocess) {
+      int i;
+      int maxval = (1 << MAX_COEF_BITS) - 1;
+      for (i = 0; i < 64; i++) {
+        if (coef_blocks[bi][i] < -maxval)
+          coef_blocks[bi][i] = -maxval;
+        if (coef_blocks[bi][i] > maxval)
+          coef_blocks[bi][i] = maxval;
+      }
+    }
   }
 }
 
 #endif /* DCT_FLOAT_SUPPORTED */
 
-#include "jchuff.h"
 #include "jpeg_nbits_table.h"
 
 static const float jpeg_lambda_weights_flat[64] = {
@@ -997,6 +1019,11 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
         int bits;
 
         dc_candidate[k][bi] = qval - DC_TRELLIS_CANDIDATES/2 + k;
+        if (dc_candidate[k][bi] >= (1<<MAX_COEF_BITS))
+          dc_candidate[k][bi] = (1<<MAX_COEF_BITS)-1;
+        if (dc_candidate[k][bi] <= -(1<<MAX_COEF_BITS))
+          dc_candidate[k][bi] = -(1<<MAX_COEF_BITS)+1;
+
         delta = dc_candidate[k][bi] * q - x;
         dc_candidate_dist = delta * delta * lambda_dc;
         dc_candidate[k][bi] *= 1 + 2*sign;
@@ -1076,6 +1103,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
         continue;
       }
 
+      if (qval >= (1<<MAX_COEF_BITS))
+        qval = (1<<MAX_COEF_BITS)-1;
+      
       num_candidates = jpeg_nbits_table[qval];
       for (k = 0; k < num_candidates; k++) {
         int delta;

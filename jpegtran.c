@@ -503,7 +503,7 @@ main (int argc, char **argv)
     jpeg_mem_src(&srcinfo, inbuffer, insize);
   } else
 #endif
-    jpeg_stdio_src(&srcinfo, fp);
+  jpeg_stdio_src(&srcinfo, fp);
 
   /* Enable saving of extra markers that we want to copy */
   jcopy_markers_setup(&srcinfo, copyoption);
@@ -572,7 +572,7 @@ main (int argc, char **argv)
     jpeg_mem_dest(&dstinfo, &outbuffer, &outsize);
   else
 #endif
-    jpeg_stdio_dest(&dstinfo, fp);
+  jpeg_stdio_dest(&dstinfo, fp);
 
   /* Start compressor (note no image data is actually written here) */
   jpeg_write_coefficients(&dstinfo, dst_coef_arrays);

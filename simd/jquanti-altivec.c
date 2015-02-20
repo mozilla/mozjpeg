@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * All rights reserved.
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,12 +29,23 @@
  * always get the data we want by using a single vector load (although we may
  * have to permute the result.)
  */
+#if __BIG_ENDIAN__
+
 #define LOAD_ROW(row) {  \
   elemptr = sample_data[row] + start_col;  \
   in##row = vec_ld(0, elemptr);  \
   if ((size_t)elemptr & 15)  \
     in##row = vec_perm(in##row, in##row, vec_lvsl(0, elemptr));  \
 }
+
+#else
+
+#define LOAD_ROW(row) {  \
+  elemptr = sample_data[row] + start_col;  \
+  in##row = vec_vsx_ld(0, elemptr);  \
+}
+
+#endif
 
 
 void
@@ -59,14 +70,14 @@ jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
   LOAD_ROW(6);
   LOAD_ROW(7);
 
-  out0 = (__vector short)vec_mergeh(pb_zero, in0);
-  out1 = (__vector short)vec_mergeh(pb_zero, in1);
-  out2 = (__vector short)vec_mergeh(pb_zero, in2);
-  out3 = (__vector short)vec_mergeh(pb_zero, in3);
-  out4 = (__vector short)vec_mergeh(pb_zero, in4);
-  out5 = (__vector short)vec_mergeh(pb_zero, in5);
-  out6 = (__vector short)vec_mergeh(pb_zero, in6);
-  out7 = (__vector short)vec_mergeh(pb_zero, in7);
+  out0 = (__vector short)VEC_UNPACKHU(in0);
+  out1 = (__vector short)VEC_UNPACKHU(in1);
+  out2 = (__vector short)VEC_UNPACKHU(in2);
+  out3 = (__vector short)VEC_UNPACKHU(in3);
+  out4 = (__vector short)VEC_UNPACKHU(in4);
+  out5 = (__vector short)VEC_UNPACKHU(in5);
+  out6 = (__vector short)VEC_UNPACKHU(in6);
+  out7 = (__vector short)VEC_UNPACKHU(in7);
 
   out0 = vec_sub(out0, pw_centerjsamp);
   out1 = vec_sub(out1, pw_centerjsamp);
@@ -116,8 +127,13 @@ jsimd_quantize_altivec (JCOEFPTR coef_block, DCTELEM * divisors,
 
   /* Constants */
   __vector unsigned short pw_word_bit_m1 = { __8X(WORD_BIT - 1) };
+#if __BIG_ENDIAN__
   __vector unsigned char shift_pack_index =
     {0,1,16,17,4,5,20,21,8,9,24,25,12,13,28,29};
+#else
+  __vector unsigned char shift_pack_index =
+    {2,3,18,19,6,7,22,23,10,11,26,27,14,15,30,31};
+#endif
 
   row0 = vec_ld(0, workspace);
   row1 = vec_ld(16, workspace);

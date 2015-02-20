@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * All rights reserved.
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -77,4 +77,23 @@
 
 #ifndef min
 #define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
+
+/* Macros to abstract big/little endian bit twiddling */
+
+#if __BIG_ENDIAN__
+
+#define VEC_LD(a, b) vec_ld(a, b)
+#define VEC_ST(a, b, c) vec_st(a, b, c)
+#define VEC_UNPACKHU(a) vec_mergeh(pb_zero, a)
+#define VEC_UNPACKLU(a) vec_mergel(pb_zero, a)
+
+#else
+
+#define VEC_LD(a, b) vec_vsx_ld(a, b)
+#define VEC_ST(a, b, c) vec_vsx_st(a, b, c)
+#define VEC_UNPACKHU(a) vec_mergeh(a, pb_zero)
+#define VEC_UNPACKLU(a) vec_mergel(a, pb_zero)
+
 #endif

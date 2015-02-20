@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * Copyright (C) 2014, Jay Foad.
  * All rights reserved.
  * This software is provided 'as-is', without any express or implied
@@ -29,12 +29,18 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
                                     JDIMENSION output_row, int num_rows)
 {
   JSAMPROW inptr, outptr0, outptr1, outptr2;
-  int pitch = img_width * RGB_PIXELSIZE, offset, num_cols;
+  int pitch = img_width * RGB_PIXELSIZE, num_cols;
+#if __BIG_ENDIAN__
+  int offset;
+#endif
   unsigned char __attribute__((aligned(16))) tmpbuf[RGB_PIXELSIZE * 16];
 
-  __vector unsigned char rgb0, rgb1 = {0}, rgb2 = {0}, rgb3 = {0},
+  __vector unsigned char rgb0, rgb1 = {0}, rgb2 = {0},
     rgbg0, rgbg1, rgbg2, rgbg3, y, cb, cr;
-#if RGB_PIXELSIZE == 4
+#if __BIG_ENDIAN__ || RGB_PIXELSIZE == 4
+  __vector unsigned char rgb3 = {0};
+#endif
+#if __BIG_ENDIAN__ && RGB_PIXELSIZE == 4
   __vector unsigned char rgb4 = {0};
 #endif
   __vector short rg0, rg1, rg2, rg3, bg0, bg1, bg2, bg3;
@@ -50,7 +56,11 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
   __vector int pd_onehalf = { __4X(ONE_HALF) },
     pd_onehalfm1_cj = { __4X(ONE_HALF - 1 + (CENTERJSAMPLE << SCALEBITS)) };
   __vector unsigned char pb_zero = { __16X(0) },
+#if __BIG_ENDIAN__
     shift_pack_index = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29};
+#else
+    shift_pack_index = {2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31};
+#endif
 
   while (--num_rows >= 0) {
     inptr = *input_buf++;
@@ -63,6 +73,7 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
          num_cols -= RGB_PIXELSIZE * 16, inptr += RGB_PIXELSIZE * 16,
          outptr0 += 16, outptr1 += 16, outptr2 += 16) {
 
+#if __BIG_ENDIAN__
       /* Load 16 pixels == 48 or 64 bytes */
       offset = (size_t)inptr & 15;
       if (offset) {
@@ -106,28 +117,31 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
 #endif
         }
       } else {
+#endif /* __BIG_ENDIAN__ */
         if (num_cols < RGB_PIXELSIZE * 16 && (num_cols & 15)) {
           /* Slow path */
           memcpy(tmpbuf, inptr, min(num_cols, RGB_PIXELSIZE * 16));
-          rgb0 = vec_ld(0, tmpbuf);
-          rgb1 = vec_ld(16, tmpbuf);
-          rgb2 = vec_ld(32, tmpbuf);
+          rgb0 = VEC_LD(0, tmpbuf);
+          rgb1 = VEC_LD(16, tmpbuf);
+          rgb2 = VEC_LD(32, tmpbuf);
 #if RGB_PIXELSIZE == 4
-          rgb3 = vec_ld(48, tmpbuf);
+          rgb3 = VEC_LD(48, tmpbuf);
 #endif
         } else {
           /* Fast path */
-          rgb0 = vec_ld(0, inptr);
+          rgb0 = VEC_LD(0, inptr);
           if (num_cols > 16)
-            rgb1 = vec_ld(16, inptr);
+            rgb1 = VEC_LD(16, inptr);
           if (num_cols > 32)
-            rgb2 = vec_ld(32, inptr);
+            rgb2 = VEC_LD(32, inptr);
 #if RGB_PIXELSIZE == 4
           if (num_cols > 48)
-            rgb3 = vec_ld(48, inptr);
+            rgb3 = VEC_LD(48, inptr);
 #endif
         }
+#if __BIG_ENDIAN__
       }
+#endif
 
 #if RGB_PIXELSIZE == 3
       /* rgb0 = R0 G0 B0 R1 G1 B1 R2 G2 B2 R3 G3 B3 R4 G4 B4 R5
@@ -167,14 +181,14 @@ void jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
        * NOTE: We have to use vec_merge*() here because vec_unpack*() doesn't
        * support unsigned vectors.
        */
-      rg0 = (__vector signed short)vec_mergeh(pb_zero, rgbg0);
-      bg0 = (__vector signed short)vec_mergel(pb_zero, rgbg0);
-      rg1 = (__vector signed short)vec_mergeh(pb_zero, rgbg1);
-      bg1 = (__vector signed short)vec_mergel(pb_zero, rgbg1);
-      rg2 = (__vector signed short)vec_mergeh(pb_zero, rgbg2);
-      bg2 = (__vector signed short)vec_mergel(pb_zero, rgbg2);
-      rg3 = (__vector signed short)vec_mergeh(pb_zero, rgbg3);
-      bg3 = (__vector signed short)vec_mergel(pb_zero, rgbg3);
+      rg0 = (__vector signed short)VEC_UNPACKHU(rgbg0);
+      bg0 = (__vector signed short)VEC_UNPACKLU(rgbg0);
+      rg1 = (__vector signed short)VEC_UNPACKHU(rgbg1);
+      bg1 = (__vector signed short)VEC_UNPACKLU(rgbg1);
+      rg2 = (__vector signed short)VEC_UNPACKHU(rgbg2);
+      bg2 = (__vector signed short)VEC_UNPACKLU(rgbg2);
+      rg3 = (__vector signed short)VEC_UNPACKHU(rgbg3);
+      bg3 = (__vector signed short)VEC_UNPACKLU(rgbg3);
 
       /* (Original)
        * Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B

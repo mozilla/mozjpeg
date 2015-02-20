@@ -58,8 +58,8 @@ jsimd_h2v1_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
 
       this0 = vec_ld(0, inptr);
       this0 = vec_perm(this0, this0, even_odd_index);
-      this0e = (__vector unsigned short)vec_mergeh(pb_zero, this0);
-      this0o = (__vector unsigned short)vec_mergel(pb_zero, this0);
+      this0e = (__vector unsigned short)VEC_UNPACKHU(this0);
+      this0o = (__vector unsigned short)VEC_UNPACKLU(this0);
       outl = vec_add(this0e, this0o);
       outl = vec_add(outl, pw_bias);
       outl = vec_sr(outl, pw_one);
@@ -67,8 +67,8 @@ jsimd_h2v1_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
       if (outcol > 8) {
         next0 = vec_ld(16, inptr);
         next0 = vec_perm(next0, next0, even_odd_index);
-        next0e = (__vector unsigned short)vec_mergeh(pb_zero, next0);
-        next0o = (__vector unsigned short)vec_mergel(pb_zero, next0);
+        next0e = (__vector unsigned short)VEC_UNPACKHU(next0);
+        next0o = (__vector unsigned short)VEC_UNPACKLU(next0);
         outh = vec_add(next0e, next0o);
         outh = vec_add(outh, pw_bias);
         outh = vec_sr(outh, pw_one);
@@ -118,14 +118,14 @@ jsimd_h2v2_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
 
       this0 = vec_ld(0, inptr0);
       this0 = vec_perm(this0, this0, even_odd_index);
-      this0e = (__vector unsigned short)vec_mergeh(pb_zero, this0);
-      this0o = (__vector unsigned short)vec_mergel(pb_zero, this0);
+      this0e = (__vector unsigned short)VEC_UNPACKHU(this0);
+      this0o = (__vector unsigned short)VEC_UNPACKLU(this0);
       out0l = vec_add(this0e, this0o);
 
       this1 = vec_ld(0, inptr1);
       this1 = vec_perm(this1, this1, even_odd_index);
-      this1e = (__vector unsigned short)vec_mergeh(pb_zero, this1);
-      this1o = (__vector unsigned short)vec_mergel(pb_zero, this1);
+      this1e = (__vector unsigned short)VEC_UNPACKHU(this1);
+      this1o = (__vector unsigned short)VEC_UNPACKLU(this1);
       out1l = vec_add(this1e, this1o);
 
       outl = vec_add(out0l, out1l);
@@ -135,14 +135,14 @@ jsimd_h2v2_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
       if (outcol > 8) {
         next0 = vec_ld(16, inptr0);
         next0 = vec_perm(next0, next0, even_odd_index);
-        next0e = (__vector unsigned short)vec_mergeh(pb_zero, next0);
-        next0o = (__vector unsigned short)vec_mergel(pb_zero, next0);
+        next0e = (__vector unsigned short)VEC_UNPACKHU(next0);
+        next0o = (__vector unsigned short)VEC_UNPACKLU(next0);
         out0h = vec_add(next0e, next0o);
 
         next1 = vec_ld(16, inptr1);
         next1 = vec_perm(next1, next1, even_odd_index);
-        next1e = (__vector unsigned short)vec_mergeh(pb_zero, next1);
-        next1o = (__vector unsigned short)vec_mergel(pb_zero, next1);
+        next1e = (__vector unsigned short)VEC_UNPACKHU(next1);
+        next1o = (__vector unsigned short)VEC_UNPACKLU(next1);
         out1h = vec_add(next1e, next1o);
 
         outh = vec_add(out0h, out1h);

@@ -46,7 +46,11 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
     last_index = {15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30},
     next_index = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
     next_index_lastcol = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15},
+#if __BIG_ENDIAN__
     merge_pack_index = {1,17,3,19,5,21,7,23,9,25,11,27,13,29,15,31};
+#else
+    merge_pack_index = {0,16,2,18,4,20,6,22,8,24,10,26,12,28,14,30};
+#endif
   __vector short pw_one = { __8X(1) }, pw_two = { __8X(2) };
 
   for (inrow = 0; inrow < max_v_samp_factor; inrow++) {
@@ -80,12 +84,12 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
       this0l = vec_mergeh(this0e, this0o);
       this0h = vec_mergel(this0e, this0o);
 
-      last0l = (__vector short)vec_mergeh(pb_zero, p_last0);
-      last0h = (__vector short)vec_mergel(pb_zero, p_last0);
+      last0l = (__vector short)VEC_UNPACKHU(p_last0);
+      last0h = (__vector short)VEC_UNPACKLU(p_last0);
       last0l = vec_add(last0l, pw_one);
 
-      next0l = (__vector short)vec_mergeh(pb_zero, p_next0);
-      next0h = (__vector short)vec_mergel(pb_zero, p_next0);
+      next0l = (__vector short)VEC_UNPACKHU(p_next0);
+      next0h = (__vector short)VEC_UNPACKLU(p_next0);
       next0l = vec_add(next0l, pw_two);
 
       outle = vec_add(this0l, last0l);
@@ -143,7 +147,11 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     last_index={14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29},
     next_index = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17},
     next_index_lastcol = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,14,15},
+#if __BIG_ENDIAN__
     merge_pack_index = {1,17,3,19,5,21,7,23,9,25,11,27,13,29,15,31};
+#else
+    merge_pack_index = {0,16,2,18,4,20,6,22,8,24,10,26,12,28,14,30};
+#endif
   __vector short pw_zero = { __8X(0) }, pw_three = { __8X(3) },
     pw_seven = { __8X(7) }, pw_eight = { __8X(8) };
   __vector unsigned short pw_four = { __8X(4) };
@@ -163,14 +171,14 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     }
 
     this0 = vec_ld(0, inptr0);
-    this0l = (__vector short)vec_mergeh(pb_zero, this0);
-    this0h = (__vector short)vec_mergel(pb_zero, this0);
+    this0l = (__vector short)VEC_UNPACKHU(this0);
+    this0h = (__vector short)VEC_UNPACKLU(this0);
     this0l = vec_mladd(this0l, pw_three, pw_zero);
     this0h = vec_mladd(this0h, pw_three, pw_zero);
 
     this_1 = vec_ld(0, inptr_1);
-    this_1l = (__vector short)vec_mergeh(pb_zero, this_1);
-    this_1h = (__vector short)vec_mergel(pb_zero, this_1);
+    this_1l = (__vector short)VEC_UNPACKHU(this_1);
+    this_1h = (__vector short)VEC_UNPACKLU(this_1);
     thiscolsum_1l = vec_add(this0l, this_1l);
     thiscolsum_1h = vec_add(this0h, this_1h);
     lastcolsum_1h = thiscolsum_1h;
@@ -178,8 +186,8 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     p_lastcolsum_1h = vec_perm(thiscolsum_1l, thiscolsum_1h, last_index);
 
     this1 = vec_ld(0, inptr1);
-    this1l = (__vector short)vec_mergeh(pb_zero, this1);
-    this1h = (__vector short)vec_mergel(pb_zero, this1);
+    this1l = (__vector short)VEC_UNPACKHU(this1);
+    this1h = (__vector short)VEC_UNPACKLU(this1);
     thiscolsum1l = vec_add(this0l, this1l);
     thiscolsum1h = vec_add(this0h, this1h);
     lastcolsum1h = thiscolsum1h;
@@ -207,22 +215,22 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
                                   next_index_lastcol);
       } else {
         this0 = vec_ld(16, inptr0);
-        this0l = (__vector short)vec_mergeh(pb_zero, this0);
-        this0h = (__vector short)vec_mergel(pb_zero, this0);
+        this0l = (__vector short)VEC_UNPACKHU(this0);
+        this0h = (__vector short)VEC_UNPACKLU(this0);
         this0l = vec_mladd(this0l, pw_three, pw_zero);
         this0h = vec_mladd(this0h, pw_three, pw_zero);
 
         this_1 = vec_ld(16, inptr_1);
-        this_1l = (__vector short)vec_mergeh(pb_zero, this_1);
-        this_1h = (__vector short)vec_mergel(pb_zero, this_1);
+        this_1l = (__vector short)VEC_UNPACKHU(this_1);
+        this_1h = (__vector short)VEC_UNPACKLU(this_1);
         nextcolsum_1l = vec_add(this0l, this_1l);
         nextcolsum_1h = vec_add(this0h, this_1h);
         p_nextcolsum_1l = vec_perm(thiscolsum_1l, thiscolsum_1h, next_index);
         p_nextcolsum_1h = vec_perm(thiscolsum_1h, nextcolsum_1l, next_index);
 
         this1 = vec_ld(16, inptr1);
-        this1l = (__vector short)vec_mergeh(pb_zero, this1);
-        this1h = (__vector short)vec_mergel(pb_zero, this1);
+        this1l = (__vector short)VEC_UNPACKHU(this1);
+        this1h = (__vector short)VEC_UNPACKLU(this1);
         nextcolsum1l = vec_add(this0l, this1l);
         nextcolsum1h = vec_add(this0h, this1h);
         p_nextcolsum1l = vec_perm(thiscolsum1l, thiscolsum1h, next_index);

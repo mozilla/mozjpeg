@@ -28,13 +28,22 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
                                     JSAMPARRAY output_buf, int num_rows)
 {
   JSAMPROW outptr, inptr0, inptr1, inptr2;
-  int pitch = out_width * RGB_PIXELSIZE, offset, num_cols;
+  int pitch = out_width * RGB_PIXELSIZE, num_cols;
+#if __BIG_ENDIAN__
+  int offset;
+#endif
   unsigned char __attribute__((aligned(16))) tmpbuf[RGB_PIXELSIZE * 16];
 
   __vector unsigned char rgb0, rgb1, rgb2, rgbx0, rgbx1, rgbx2, rgbx3,
-    y, cb, cr, edgel, edgeh, edges, out0, out1, out2, out3;
+    y, cb, cr;
+#if __BIG_ENDIAN__
+  __vector unsigned char edgel, edgeh, edges, out0, out1, out2, out3;
 #if RGB_PIXELSIZE == 4
-  __vector unsigned char rgb3, out4;
+  __vector unsigned char out4;
+#endif
+#endif
+#if RGB_PIXELSIZE == 4
+  __vector unsigned char rgb3;
 #endif
   __vector short rg0, rg1, rg2, rg3, bx0, bx1, bx2, bx3, yl, yh, cbl, cbh,
     crl, crh, rl, rh, gl, gh, bl, bh, g0w, g1w, g2w, g3w;
@@ -51,7 +60,11 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
     pw_cj = { __8X(CENTERJSAMPLE) };
   __vector int pd_onehalf = { __4X(ONE_HALF) };
   __vector unsigned char pb_zero = { __16X(0) },
+#if __BIG_ENDIAN__
     shift_pack_index = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29};
+#else
+    shift_pack_index = {2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31};
+#endif
 
   while (--num_rows >= 0) {
     inptr0 = input_buf[0][input_row];
@@ -68,18 +81,18 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
       /* NOTE: We have to use vec_merge*() here because vec_unpack*() doesn't
        * support unsigned vectors.
        */
-      yl = (__vector signed short)vec_mergeh(pb_zero, y);
-      yh = (__vector signed short)vec_mergel(pb_zero, y);
+      yl = (__vector signed short)VEC_UNPACKHU(y);
+      yh = (__vector signed short)VEC_UNPACKLU(y);
 
       cb = vec_ld(0, inptr1);
-      cbl = (__vector signed short)vec_mergeh(pb_zero, cb);
-      cbh = (__vector signed short)vec_mergel(pb_zero, cb);
+      cbl = (__vector signed short)VEC_UNPACKHU(cb);
+      cbh = (__vector signed short)VEC_UNPACKLU(cb);
       cbl = vec_sub(cbl, pw_cj);
       cbh = vec_sub(cbh, pw_cj);
 
       cr = vec_ld(0, inptr2);
-      crl = (__vector signed short)vec_mergeh(pb_zero, cr);
-      crh = (__vector signed short)vec_mergel(pb_zero, cr);
+      crl = (__vector signed short)VEC_UNPACKHU(cr);
+      crh = (__vector signed short)VEC_UNPACKLU(cr);
       crl = vec_sub(crl, pw_cj);
       crh = vec_sub(crh, pw_cj);
 
@@ -181,6 +194,7 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
       rgb3 = vec_perm(rgbx3, rgbx3, (__vector unsigned char)RGB_INDEX);
 #endif
 
+#if __BIG_ENDIAN__
       offset = (size_t)outptr & 15;
       if (offset) {
         __vector unsigned char unaligned_shift_index;
@@ -230,28 +244,31 @@ void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
 #endif
         }
       } else {
+#endif /* __BIG_ENDIAN__ */
         if (num_cols < RGB_PIXELSIZE * 16 && (num_cols & 15)) {
           /* Slow path */
-          vec_st(rgb0, 0, tmpbuf);
-          vec_st(rgb1, 16, tmpbuf);
-          vec_st(rgb2, 32, tmpbuf);
+          VEC_ST(rgb0, 0, tmpbuf);
+          VEC_ST(rgb1, 16, tmpbuf);
+          VEC_ST(rgb2, 32, tmpbuf);
 #if RGB_PIXELSIZE == 4
-          vec_st(rgb3, 48, tmpbuf);
+          VEC_ST(rgb3, 48, tmpbuf);
 #endif
           memcpy(outptr, tmpbuf, min(num_cols, RGB_PIXELSIZE * 16));
         } else {
           /* Fast path */
-          vec_st(rgb0, 0, outptr);
+          VEC_ST(rgb0, 0, outptr);
           if (num_cols > 16)
-            vec_st(rgb1, 16, outptr);
+            VEC_ST(rgb1, 16, outptr);
           if (num_cols > 32)
-            vec_st(rgb2, 32, outptr);
+            VEC_ST(rgb2, 32, outptr);
 #if RGB_PIXELSIZE == 4
           if (num_cols > 48)
-            vec_st(rgb3, 48, outptr);
+            VEC_ST(rgb3, 48, outptr);
 #endif
         }
+#if __BIG_ENDIAN__
       }
+#endif
     }
   }
 }

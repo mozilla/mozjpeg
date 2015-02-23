@@ -206,6 +206,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	cinfo->input_components=tjPixelSize[pixelFormat];
 	jpeg_set_defaults(cinfo);
 
+#ifndef NO_GETENV
 	if((env=getenv("TJ_OPTIMIZE"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
 		cinfo->optimize_coding=TRUE;
 	if((env=getenv("TJ_ARITHMETIC"))!=NULL && strlen(env)>0	&& !strcmp(env, "1"))
@@ -224,6 +225,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 				cinfo->restart_in_rows=temp;
 		}
 	}
+#endif
 
 	if(jpegQual>=0)
 	{
@@ -237,9 +239,11 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 		jpeg_set_colorspace(cinfo, JCS_YCCK);
 	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
+#ifndef NO_GETENV
 	if((env=getenv("TJ_PROGRESSIVE"))!=NULL && strlen(env)>0
 		&& !strcmp(env, "1"))
 		jpeg_simple_progression(cinfo);
+#endif
 
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
 	cinfo->comp_info[1].h_samp_factor=1;

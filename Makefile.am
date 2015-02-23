@@ -158,11 +158,10 @@ dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.txt \
 	ChangeLog.txt
 
-docdir = $(datadir)/doc
 dist_doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
 	wizard.txt
 
-exampledir = $(datadir)/doc
+exampledir = $(docdir)
 dist_example_DATA = example.c
 
 

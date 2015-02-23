@@ -39,6 +39,11 @@ DATADIR=`eval echo $DATADIR`
 if test "$DATADIR" = "/opt/libjpeg-turbo/share"; then
   datarootdir='${prefix}'
 fi
+DOCDIR=`eval echo ${docdir}`
+DOCDIR=`eval echo $DOCDIR`
+if test "$DOCDIR" = "/opt/libjpeg-turbo/doc/libjpeg-turbo"; then
+  docdir='${datadir}/doc'
+fi
 
 old_exec_prefix=${exec_prefix}
 if test "x$exec_prefix" = "xNONE"; then
@@ -537,6 +542,11 @@ case "$host_cpu" in
     DEBARCH=$RPMARCH
     ;;
 esac
+
+if test "${docdir}" = ""; then
+  docdir=${datadir}/doc
+  AC_SUBST(docdir)
+fi
 
 AC_SUBST(RPMARCH)
 AC_SUBST(RPM_CONFIG_ARGS)

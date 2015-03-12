@@ -43,11 +43,15 @@ if(WITH_SIMD)
 endif()
 
 if(WITH_12BIT)
-  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED -DUSE_SETMODE")
+  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED")
 else()
-  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
+  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED")
 	set(CJPEG_BMP_SOURCES ../rdbmp.c ../rdtarga.c)
 	set(DJPEG_BMP_SOURCES ../wrbmp.c ../wrtarga.c)
+endif()
+
+if(USE_SETMODE)
+  set(COMPILE_FLAGS "${COMPILE_FLAGS} -DUSE_SETMODE")
 endif()
 
 add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c ../rdjpeg.c
@@ -62,7 +66,9 @@ target_link_libraries(djpeg jpeg)
 
 add_executable(jpegtran ../jpegtran.c ../cdjpeg.c ../rdswitch.c ../transupp.c)
 target_link_libraries(jpegtran jpeg)
-set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
+if (USE_SETMODE)
+  set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
+endif()
 
 add_executable(jcstest ../jcstest.c)
 target_link_libraries(jcstest jpeg)

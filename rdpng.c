@@ -76,6 +76,10 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
         cinfo->in_color_space = JCS_RGB;
         cinfo->input_components = 3;
     }
+
+    if (bit_depth == 16)
+        png_set_strip_16(source->png_ptr);
+
     cinfo->data_precision = 8;
     cinfo->image_width = width;
     cinfo->image_height = height;

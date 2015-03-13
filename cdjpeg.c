@@ -19,6 +19,9 @@
 /* If you have setmode() but not <io.h>, just delete this line: */
 #include <io.h>                 /* to declare setmode() */
 #endif
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 #endif
 
 

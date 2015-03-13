@@ -54,6 +54,9 @@ option(WITH_TURBOJPEG "Include the TurboJPEG wrapper library and associated test
 option(WITH_JAVA "Build Java wrapper for the TurboJPEG library" FALSE)
 option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_SIMD=0 WITH_TURBOJPEG=0 WITH_ARITH_ENC=0 WITH_ARITH_DEC=0)" FALSE)
 
+INCLUDE (CheckIncludeFiles)
+CHECK_INCLUDE_FILES (io.h HAVE_IO_H)
+
 if(WITH_12BIT)
   set(WITH_SIMD FALSE)
   set(WITH_TURBOJPEG FALSE)

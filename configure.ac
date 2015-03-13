@@ -100,7 +100,7 @@ AM_CONDITIONAL([HAVE_LIBPNG], [test "$HAVE_LIBPNG" -eq 1])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stddef.h stdlib.h locale.h string.h])
+AC_CHECK_HEADERS([stddef.h stdlib.h locale.h string.h io.h])
 AC_CHECK_HEADER([sys/types.h],
   AC_DEFINE([NEED_SYS_TYPES_H], 1, [Define if you need to include <sys/types.h> to get size_t.]))
 

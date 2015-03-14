@@ -333,7 +333,7 @@ jpeg_consume_input (j_decompress_ptr cinfo)
  */
 
 GLOBAL(boolean)
-jpeg_input_complete (j_decompress_ptr cinfo)
+jpeg_input_complete (const j_decompress_ptr cinfo)
 {
   /* Check for valid jpeg object */
   if (cinfo->global_state < DSTATE_START ||
@@ -348,7 +348,7 @@ jpeg_input_complete (j_decompress_ptr cinfo)
  */
 
 GLOBAL(boolean)
-jpeg_has_multiple_scans (j_decompress_ptr cinfo)
+jpeg_has_multiple_scans (const j_decompress_ptr cinfo)
 {
   /* Only valid after jpeg_read_header completes */
   if (cinfo->global_state < DSTATE_READY ||

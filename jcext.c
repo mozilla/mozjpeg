@@ -16,7 +16,7 @@
 
 
 GLOBAL(boolean)
-jpeg_c_bool_param_supported (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
+jpeg_c_bool_param_supported (const j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 {
   switch (param) {
   case JBOOLEAN_OPTIMIZE_SCANS:
@@ -70,7 +70,7 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
 
 
 GLOBAL(boolean)
-jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
+jpeg_c_get_bool_param (const j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 {
   switch(param) {
   case JBOOLEAN_OPTIMIZE_SCANS:
@@ -98,7 +98,7 @@ jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 
 
 GLOBAL(boolean)
-jpeg_c_float_param_supported (j_compress_ptr cinfo, J_FLOAT_PARAM param)
+jpeg_c_float_param_supported (const j_compress_ptr cinfo, J_FLOAT_PARAM param)
 {
   switch (param) {
   case JFLOAT_LAMBDA_LOG_SCALE1:
@@ -131,7 +131,7 @@ jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param, float value)
 
 
 GLOBAL(float)
-jpeg_c_get_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param)
+jpeg_c_get_float_param (const j_compress_ptr cinfo, J_FLOAT_PARAM param)
 {
   switch (param) {
   case JFLOAT_LAMBDA_LOG_SCALE1:
@@ -149,7 +149,7 @@ jpeg_c_get_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param)
 
 
 GLOBAL(boolean)
-jpeg_c_int_param_supported (j_compress_ptr cinfo, J_INT_PARAM param)
+jpeg_c_int_param_supported (const j_compress_ptr cinfo, J_INT_PARAM param)
 {
   switch (param) {
   case JINT_COMPRESS_PROFILE:
@@ -198,7 +198,7 @@ jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value)
 
 
 GLOBAL(int)
-jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param)
+jpeg_c_get_int_param (const j_compress_ptr cinfo, J_INT_PARAM param)
 {
   switch (param) {
   case JINT_COMPRESS_PROFILE:

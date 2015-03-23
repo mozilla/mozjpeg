@@ -207,6 +207,7 @@ usage (void)
   fprintf(stderr, "  -dct float     Use floating-point DCT method%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
+  fprintf(stderr, "  -quant-baseline Use 8-bit quantization table entries for baseline JPEG compatibility\n");
   fprintf(stderr, "  -quant-table N Use predefined quantization table N:\n");
   fprintf(stderr, "                 - 0 JPEG Annex K\n");
   fprintf(stderr, "                 - 1 Flat\n");
@@ -450,7 +451,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       qtablefile = argv[argn];
       /* We postpone actually reading the file in case -quality comes later. */
 
-    } else if (keymatch(arg, "quant-table", 2)) {
+    } else if (keymatch(arg, "quant-table", 7)) {
       int val;
       if (++argn >= argc)       /* advance to next argument */
         usage();
@@ -461,7 +462,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         usage();
       }
       jpeg_set_quality(cinfo, 75, TRUE);
-      
+
+    } else if (keymatch(arg, "quant-baseline", 7)) {
+      /* Force quantization table to meet baseline requirements */
+      force_baseline = TRUE;
+    
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
       long lval;

@@ -605,7 +605,9 @@ copy_buffer (j_compress_ptr cinfo, int scan_idx)
     size -= cinfo->dest->free_in_buffer;
     cinfo->dest->next_output_byte += cinfo->dest->free_in_buffer;
     cinfo->dest->free_in_buffer = 0;
-    (*cinfo->dest->empty_output_buffer)(cinfo);
+    
+    if (!(*cinfo->dest->empty_output_buffer)(cinfo))
+      ERREXIT(cinfo, JERR_UNSUPPORTED_SUSPEND);
   }
 
   MEMCOPY(cinfo->dest->next_output_byte, src, size);

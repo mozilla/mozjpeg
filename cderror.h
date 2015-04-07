@@ -127,8 +127,6 @@ JMESSAGE(JERR_UNSUPPORTED_FORMAT, "Unsupported output file format")
 JMESSAGE(JERR_PNG_ERROR, "Unable to read PNG file: %s")
 #endif
 
-JMESSAGE(JERR_UNSUPPORTED_SUSPEND, "I/O suspension not supported in scan optimization")
-
 #ifdef JMAKE_ENUM_LIST
 
   JMSG_LASTADDONCODE

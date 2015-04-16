@@ -624,6 +624,9 @@ main (int argc, char **argv)
   end_progress_monitor((j_common_ptr) &dstinfo);
 #endif
 
+  free(inbuffer);
+  free(outbuffer);
+
   /* All done. */
   exit(jsrcerr.num_warnings + jdsterr.num_warnings ?EXIT_WARNING:EXIT_SUCCESS);
   return 0;                     /* suppress no-return-value warnings */

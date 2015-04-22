@@ -22,6 +22,7 @@
 #include "jdhuff.h"             /* Declarations shared with jdphuff.c */
 #include "jpegcomp.h"
 #include "jstdhuff.c"
+#include <stdint.h>
 
 
 /*
@@ -418,6 +419,10 @@ jpeg_fill_bit_buffer (bitread_working_state * state,
     } \
   } \
 }
+
+#if !defined(_WIN32) && !defined(__WORDSIZE)
+#error __WORDSIZE is not defined
+#endif
 
 #if __WORDSIZE == 64 || defined(_WIN64)
 

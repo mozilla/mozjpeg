@@ -21,6 +21,7 @@
 #include "jpeglib.h"
 #include "jchuff.h"             /* Declarations shared with jcphuff.c */
 #include <limits.h>
+#include <stdint.h>
 
 /*
  * NOTE: If USE_CLZ_INTRINSIC is defined, then clz/bsr instructions will be
@@ -375,6 +376,10 @@ dump_buffer (working_state * state)
     EMIT_BYTE() \
   } \
 }
+
+#if !defined(_WIN32) && !defined(__WORDSIZE)
+#error __WORDSIZE is not defined
+#endif
 
 #if __WORDSIZE==64 || defined(_WIN64)
 

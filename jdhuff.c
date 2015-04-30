@@ -22,7 +22,9 @@
 #include "jdhuff.h"             /* Declarations shared with jdphuff.c */
 #include "jpegcomp.h"
 #include "jstdhuff.c"
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 
 
 /*

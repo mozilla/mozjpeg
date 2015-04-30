@@ -21,7 +21,9 @@
 #include "jpeglib.h"
 #include "jchuff.h"             /* Declarations shared with jcphuff.c */
 #include <limits.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 
 /*
  * NOTE: If USE_CLZ_INTRINSIC is defined, then clz/bsr instructions will be

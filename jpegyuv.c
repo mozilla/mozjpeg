@@ -112,6 +112,7 @@ int main(int argc, char *argv[]) {
 
   image_buffer = malloc(frame_width*16 + 2*(frame_width/2)*8);
   if (!image_buffer) {
+    free(yuv_buffer);
     fprintf(stderr, "Memory allocation failure!\n");
     return 1;
   }

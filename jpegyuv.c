@@ -164,6 +164,7 @@ int main(int argc, char *argv[]) {
   yuv_fd = fopen(yuv_path, "wb");
   if (!yuv_fd) {
     fprintf(stderr, "Invalid path to YUV file!");
+    free(yuv_buffer);
     return 1;
   }
   if (fwrite(yuv_buffer, yuv_size, 1, yuv_fd) != 1) {

@@ -37,6 +37,11 @@ h2v2 merged upsampling were not properly checking for the existence of DSPr2.
 version of the accelerated Huffman codec was not being compiled in when
 libjpeg-turbo was built on OS X.  Oops.
 
+[7] Fixed an extremely rare bug in the Huffman encoder that caused 64-bit
+builds of libjpeg-turbo to incorrectly encode a few specific test images when
+quality=98, an optimized Huffman table, and the slow integer forward DCT were
+used.
+
 
 1.4.0
 =====

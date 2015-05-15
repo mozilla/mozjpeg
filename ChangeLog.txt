@@ -32,10 +32,11 @@ SIMD-enabled libjpeg-turbo MIPS build was executed with the -nosmooth option on
 a MIPS machine that lacked DSPr2 support.  The MIPS SIMD routines for h2v1 and
 h2v2 merged upsampling were not properly checking for the existence of DSPr2.
 
-[6] Performance has been improved significantly on 64-bit Mac platforms
-(particularly compression performance.)  Due to an oversight, the 64-bit
-version of the accelerated Huffman codec was not being compiled in when
-libjpeg-turbo was built on OS X.  Oops.
+[6] Performance has been improved significantly on 64-bit non-Linux and
+non-Windows platforms (generally 10-20% faster compression and 5-10% faster
+decompression.)  Due to an oversight, the 64-bit version of the accelerated
+Huffman codec was not being compiled in when libjpeg-turbo was built on
+platforms other than Windows or Linux.  Oops.
 
 [7] Fixed an extremely rare bug in the Huffman encoder that caused 64-bit
 builds of libjpeg-turbo to incorrectly encode a few specific test images when

@@ -22,9 +22,6 @@
 #include "jdhuff.h"             /* Declarations shared with jdphuff.c */
 #include "jpegcomp.h"
 #include "jstdhuff.c"
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
 
 
 /*
@@ -422,11 +419,7 @@ jpeg_fill_bit_buffer (bitread_working_state * state,
   } \
 }
 
-#if !defined(_WIN32) && !defined(__WORDSIZE)
-#error __WORDSIZE is not defined
-#endif
-
-#if __WORDSIZE == 64 || defined(_WIN64)
+#if SIZEOF_SIZE_T==8 || defined(_WIN64)
 
 /* Pre-fetch 48 bytes, because the holding register is 64-bit */
 #define FILL_BIT_BUFFER_FAST \

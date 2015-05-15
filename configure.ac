@@ -50,6 +50,8 @@ if test "x$exec_prefix" = "xNONE"; then
   exec_prefix=${prefix}
 fi
 
+AC_CHECK_SIZEOF(size_t)
+
 if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib'; then
   LIBDIR=`eval echo ${libdir}`
   LIBDIR=`eval echo $LIBDIR`
@@ -58,10 +60,9 @@ if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib';
       darwin*)
         ;;
       *)
-        AC_CHECK_SIZEOF(long)
-        if test "${ac_cv_sizeof_long}" = "8"; then
+        if test "${ac_cv_sizeof_size_t}" = "8"; then
           libdir='${exec_prefix}/lib64'
-        elif test "${ac_cv_sizeof_long}" = "4"; then
+        elif test "${ac_cv_sizeof_size_t}" = "4"; then
           libdir='${exec_prefix}/lib32'
         fi
         ;;

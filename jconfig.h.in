@@ -32,9 +32,6 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define to 1 if you have the <stdint.h> header file. */
-#undef HAVE_STDINT_H
-
 /* Define to 1 if the system has the type `unsigned char'. */
 #undef HAVE_UNSIGNED_CHAR
 
@@ -71,3 +68,6 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t
+
+/* The size of `size_t', as computed by sizeof. */
+#undef SIZEOF_SIZE_T

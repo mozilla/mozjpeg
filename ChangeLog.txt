@@ -47,6 +47,10 @@ used.
 iOS would produce an undefined symbol error (_putenv$UNIX2003) when attempting
 to link the library with an i386 iOS application for the iOS simulator.
 
+[9] The Windows (CMake) build system now supports building only static or only
+shared libraries.  This is accomplished by adding either -DENABLE_STATIC=0 or
+-DENABLE_SHARED=0 to the CMake command line.
+
 
 1.4.0
 =====

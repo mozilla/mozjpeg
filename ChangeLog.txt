@@ -43,11 +43,7 @@ builds of libjpeg-turbo to incorrectly encode a few specific test images when
 quality=98, an optimized Huffman table, and the slow integer forward DCT were
 used.
 
-[8] Resolved an issue whereby the "official" TurboJPEG static library for OS X/
-iOS would produce an undefined symbol error (_putenv$UNIX2003) when attempting
-to link the library with an i386 iOS application for the iOS simulator.
-
-[9] The Windows (CMake) build system now supports building only static or only
+[8] The Windows (CMake) build system now supports building only static or only
 shared libraries.  This is accomplished by adding either -DENABLE_STATIC=0 or
 -DENABLE_SHARED=0 to the CMake command line.
 

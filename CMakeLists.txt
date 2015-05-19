@@ -15,8 +15,7 @@ if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)
   string(REGEX REPLACE "\n" "" BUILD "${BUILD}")
 elseif(WIN32)
-  execute_process(COMMAND "wmic.exe" "os" "get" "LocalDateTime" OUTPUT_VARIABLE
-    BUILD)
+  execute_process(COMMAND "wmic.exe" "os" "get" "LocalDateTime" OUTPUT_VARIABLE BUILD)
   string(REGEX REPLACE "[^0-9]" "" BUILD "${BUILD}")
   if (BUILD STREQUAL "")
     execute_process(COMMAND "cmd.exe" "/C" "DATE" "/T" OUTPUT_VARIABLE BUILD)
@@ -44,21 +43,21 @@ endif()
 
 message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 
-option(WITH_SIMD "Include SIMD extensions" TRUE)
-option(WITH_ARITH_ENC "Include arithmetic encoding support" TRUE)
-option(WITH_ARITH_DEC "Include arithmetic decoding support" TRUE)
-option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" FALSE)
-option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" FALSE)
-option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" TRUE)
-option(WITH_TURBOJPEG "Include the TurboJPEG wrapper library and associated test programs" TRUE)
-option(WITH_JAVA "Build Java wrapper for the TurboJPEG library" FALSE)
-option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_SIMD=0 WITH_TURBOJPEG=0 WITH_ARITH_ENC=0 WITH_ARITH_DEC=0)" FALSE)
+option(WITH_SIMD "Include SIMD extensions" ON)
+option(WITH_ARITH_ENC "Include arithmetic encoding support" ON)
+option(WITH_ARITH_DEC "Include arithmetic decoding support" ON)
+option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" OFF)
+option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" OFF)
+option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" ON)
+option(WITH_TURBOJPEG "Include the TurboJPEG wrapper library and associated test programs" ON)
+option(WITH_JAVA "Build Java wrapper for the TurboJPEG library" OFF)
+option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_SIMD=0 WITH_TURBOJPEG=0 WITH_ARITH_ENC=0 WITH_ARITH_DEC=0)" OFF)
 
 if(WITH_12BIT)
-  set(WITH_SIMD FALSE)
-  set(WITH_TURBOJPEG FALSE)
-  set(WITH_ARITH_ENC FALSE)
-  set(WITH_ARITH_DEC FALSE)
+  set(WITH_SIMD OFF)
+  set(WITH_TURBOJPEG OFF)
+  set(WITH_ARITH_ENC OFF)
+  set(WITH_ARITH_DEC OFF)
   set(BITS_IN_JSAMPLE 12)
   message(STATUS "12-bit JPEG support enabled")
 else()
@@ -174,6 +173,9 @@ if(WITH_JAVA)
   endif()
 endif()
 
+if(WINDOWS OR MINGW OR CYGWIN)
+  set(USE_SETMODE ON)
+endif()
 
 #
 # Targets
@@ -258,40 +260,42 @@ if(WITH_TURBOJPEG)
   add_executable(tjunittest-static tjunittest.c tjutil.c)
   target_link_libraries(tjunittest-static turbojpeg-static)
 
-  add_executable(tjbench tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
-    wrppm.c)
+  add_executable(tjbench tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c wrppm.c)
   target_link_libraries(tjbench turbojpeg jpeg-static)
   set_property(TARGET tjbench PROPERTY COMPILE_FLAGS
     "-DBMP_SUPPORTED -DPPM_SUPPORTED")
 
-  add_executable(tjbench-static tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
-    wrppm.c)
+  add_executable(tjbench-static tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c wrppm.c)
   target_link_libraries(tjbench-static turbojpeg-static jpeg-static)
   set_property(TARGET tjbench-static PROPERTY COMPILE_FLAGS
     "-DBMP_SUPPORTED -DPPM_SUPPORTED")
 endif()
 
 if(WITH_12BIT)
-  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED -DUSE_SETMODE")
+  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED")
 else()
-  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
+  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED")
 	set(CJPEG_BMP_SOURCES rdbmp.c rdtarga.c)
 	set(DJPEG_BMP_SOURCES wrbmp.c wrtarga.c)
 endif()
 
-add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c rdjpeg.c
-  ${CJPEG_BMP_SOURCES})
+if(USE_SETMODE)
+  set(COMPILE_FLAGS "${COMPILE_FLAGS} -DUSE_SETMODE")
+endif()
+
+add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c rdjpeg.c ${CJPEG_BMP_SOURCES})
 set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(cjpeg-static jpeg-static)
 
-add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrgif.c
-  wrppm.c ${DJPEG_BMP_SOURCES})
+add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrgif.c wrppm.c ${DJPEG_BMP_SOURCES})
 set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(djpeg-static jpeg-static)
 
 add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
 target_link_libraries(jpegtran-static jpeg-static)
-set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
+if (USE_SETMODE)
+  set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
+endif()
 
 add_executable(rdjpgcom rdjpgcom.c)
 

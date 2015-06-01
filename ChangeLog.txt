@@ -47,6 +47,12 @@ used.
 shared libraries.  This is accomplished by adding either -DENABLE_STATIC=0 or
 -DENABLE_SHARED=0 to the CMake command line.
 
+[9] TurboJPEG API functions will now return an error code if a warning is
+triggered in the underlying libjpeg API.  For instance, if a JPEG file is
+corrupt, the TurboJPEG decompression functions will attempt to decompress
+as much of the image as possible, but those functions will now return -1 to
+indicate that the decompression was not entirely successful.
+
 
 1.4.0
 =====

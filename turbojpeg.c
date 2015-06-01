@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -58,6 +58,8 @@ struct my_error_mgr
 {
 	struct jpeg_error_mgr pub;
 	jmp_buf setjmp_buffer;
+	void (*emit_message)(j_common_ptr, int);
+	boolean warning;
 };
 typedef struct my_error_mgr *my_error_ptr;
 
@@ -73,6 +75,13 @@ static void my_error_exit(j_common_ptr cinfo)
 static void my_output_message(j_common_ptr cinfo)
 {
 	(*cinfo->err->format_message)(cinfo, errStr);
+}
+
+static void my_emit_message(j_common_ptr cinfo, int msg_level)
+{
+	my_error_ptr myerr=(my_error_ptr)cinfo->err;
+	myerr->emit_message(cinfo, msg_level);
+	if(msg_level<0) myerr->warning=TRUE;
 }
 
 
@@ -122,17 +131,20 @@ static const tjscalingfactor sf[NUMSF]={
 	j_compress_ptr cinfo=NULL;  j_decompress_ptr dinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
-	cinfo=&this->cinfo;  dinfo=&this->dinfo;
+	cinfo=&this->cinfo;  dinfo=&this->dinfo;  \
+	this->jerr.warning=FALSE;
 #define getcinstance(handle) tjinstance *this=(tjinstance *)handle;  \
 	j_compress_ptr cinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
-	cinfo=&this->cinfo;
+	cinfo=&this->cinfo;  \
+	this->jerr.warning=FALSE;
 #define getdinstance(handle) tjinstance *this=(tjinstance *)handle;  \
 	j_decompress_ptr dinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
-	dinfo=&this->dinfo;
+	dinfo=&this->dinfo;  \
+	this->jerr.warning=FALSE;
 
 static int getPixelFormat(int pixelSize, int flags)
 {
@@ -550,6 +562,8 @@ static tjhandle _tjInitCompress(tjinstance *this)
 	this->cinfo.err=jpeg_std_error(&this->jerr.pub);
 	this->jerr.pub.error_exit=my_error_exit;
 	this->jerr.pub.output_message=my_output_message;
+	this->jerr.emit_message=this->jerr.pub.emit_message;
+	this->jerr.pub.emit_message=my_emit_message;
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -787,6 +801,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	if(rgbBuf) free(rgbBuf);
 	#endif
 	if(row_pointer) free(row_pointer);
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }
 
@@ -969,6 +984,7 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle, unsigned char *srcBuf,
 		if(_tmpbuf2[i]!=NULL) free(_tmpbuf2[i]);
 		if(outbuf[i]!=NULL) free(outbuf[i]);
 	}
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }
 
@@ -1152,6 +1168,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 		if(inbuf[i]) free(inbuf[i]);
 	}
 	if(_tmpbuf) free(_tmpbuf);
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }
 
@@ -1202,6 +1219,8 @@ static tjhandle _tjInitDecompress(tjinstance *this)
 	this->dinfo.err=jpeg_std_error(&this->jerr.pub);
 	this->jerr.pub.error_exit=my_error_exit;
 	this->jerr.pub.output_message=my_output_message;
+	this->jerr.emit_message=this->jerr.pub.emit_message;
+	this->jerr.pub.emit_message=my_emit_message;
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -1277,6 +1296,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader3(tjhandle handle,
 		_throw("tjDecompressHeader3(): Invalid data returned in header");
 
 	bailout:
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }
 
@@ -1410,6 +1430,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 	if(rgbBuf) free(rgbBuf);
 	#endif
 	if(row_pointer) free(row_pointer);
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }
 
@@ -1635,6 +1656,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 		if(_tmpbuf[i]!=NULL) free(_tmpbuf[i]);
 		if(inbuf[i]!=NULL) free(inbuf[i]);
 	}
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }
 
@@ -1844,6 +1866,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 		if(outbuf[i]) free(outbuf[i]);
 	}
 	if(_tmpbuf) free(_tmpbuf);
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }
 
@@ -2085,5 +2108,6 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
 	if(cinfo->global_state>CSTATE_START) jpeg_abort_compress(cinfo);
 	if(dinfo->global_state>DSTATE_START) jpeg_abort_decompress(dinfo);
 	if(xinfo) free(xinfo);
+	if(this->jerr.warning) retval=-1;
 	return retval;
 }

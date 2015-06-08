@@ -53,6 +53,10 @@ corrupt, the TurboJPEG decompression functions will attempt to decompress
 as much of the image as possible, but those functions will now return -1 to
 indicate that the decompression was not entirely successful.
 
+[10] Fixed a bug in the MIPS DSPr2 4:2:2 fancy upsampling routine that caused a
+buffer overflow (and subsequent segfault) when decompressing a 4:2:2 JPEG image
+in which the right-most MCU was 5 or 6 pixels wide.
+
 
 1.4.0
 =====

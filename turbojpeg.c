@@ -1568,6 +1568,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 		retval=-1;  goto bailout;
 	}
 	dinfo->do_fancy_upsampling=FALSE;
+	dinfo->Se=DCTSIZE2-1;
 	jinit_master_decompress(dinfo);
 	(*dinfo->upsample->start_pass)(dinfo);
 

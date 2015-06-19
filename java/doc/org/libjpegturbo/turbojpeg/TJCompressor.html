@@ -474,7 +474,7 @@ public&nbsp;TJCompressor(byte[]&nbsp;srcImage,
 <div class="block">Associate an uncompressed RGB, grayscale, or CMYK source image with this
  compressor instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - image buffer containing RGB, grayscale, or CMYK pixels to
- be compressed or encoded</dd><dd><code>x</code> - x offset (in pixels) of the region in the source image from which
+ be compressed or encoded.  This buffer is not modified.</dd><dd><code>x</code> - x offset (in pixels) of the region in the source image from which
  the JPEG or YUV image should be compressed/encoded</dd><dd><code>y</code> - y offset (in pixels) of the region in the source image from which
  the JPEG or YUV image should be compressed/encoded</dd><dd><code>width</code> - width (in pixels) of the region in the source image from
  which the JPEG or YUV image should be compressed/encoded</dd><dd><code>pitch</code> - bytes per line of the source image.  Normally, this should be
@@ -525,7 +525,7 @@ public&nbsp;void&nbsp;setSourceImage(byte[]&nbsp;srcImage,
 <div class="block">Associate an uncompressed RGB or grayscale source image with this
  compressor instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - a <code>BufferedImage</code> instance containing RGB or
- grayscale pixels to be compressed or encoded</dd><dd><code>x</code> - x offset (in pixels) of the region in the source image from which
+ grayscale pixels to be compressed or encoded.  This image is not modified.</dd><dd><code>x</code> - x offset (in pixels) of the region in the source image from which
  the JPEG or YUV image should be compressed/encoded</dd><dd><code>y</code> - y offset (in pixels) of the region in the source image from which
  the JPEG or YUV image should be compressed/encoded</dd><dd><code>width</code> - width (in pixels) of the region in the source image from
  which the JPEG or YUV image should be compressed/encoded (0 = use the
@@ -546,7 +546,8 @@ public&nbsp;void&nbsp;setSourceImage(byte[]&nbsp;srcImage,
                     throws java.lang.Exception</pre>
 <div class="block">Associate an uncompressed YUV planar source image with this compressor
  instance.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - YUV planar image to be compressed</dd>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - YUV planar image to be compressed.  This image is not
+ modified.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>

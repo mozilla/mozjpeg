@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -111,7 +111,7 @@ public class TJCompressor {
    * compressor instance.
    *
    * @param srcImage image buffer containing RGB, grayscale, or CMYK pixels to
-   * be compressed or encoded
+   * be compressed or encoded.  This buffer is not modified.
    *
    * @param x x offset (in pixels) of the region in the source image from which
    * the JPEG or YUV image should be compressed/encoded
@@ -174,7 +174,7 @@ public class TJCompressor {
    * compressor instance.
    *
    * @param srcImage a <code>BufferedImage</code> instance containing RGB or
-   * grayscale pixels to be compressed or encoded
+   * grayscale pixels to be compressed or encoded.  This image is not modified.
    *
    * @param x x offset (in pixels) of the region in the source image from which
    * the JPEG or YUV image should be compressed/encoded
@@ -259,7 +259,8 @@ public class TJCompressor {
    * Associate an uncompressed YUV planar source image with this compressor
    * instance.
    *
-   * @param srcImage YUV planar image to be compressed
+   * @param srcImage YUV planar image to be compressed.  This image is not
+   * modified.
    */
   public void setSourceImage(YUVImage srcImage) throws Exception {
     if (handle == 0) init();

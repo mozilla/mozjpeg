@@ -546,7 +546,7 @@ extends java.lang.Object</pre>
 <div class="block">Create a TurboJPEG decompressor instance and associate the JPEG source
  image stored in <code>jpegImage</code> with the newly created instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer (size of the JPEG image is assumed to
- be the length of the array)</dd>
+ be the length of the array.)  This buffer is not modified.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -563,7 +563,7 @@ extends java.lang.Object</pre>
 <div class="block">Create a TurboJPEG decompressor instance and associate the JPEG source
  image of length <code>imageSize</code> bytes stored in
  <code>jpegImage</code> with the newly created instance.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer.  This buffer is not modified.</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -580,7 +580,7 @@ extends java.lang.Object</pre>
  source image stored in <code>yuvImage</code> with the newly created
  instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>yuvImage</code> - <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> instance containing a YUV planar
- image to be decoded</dd>
+ image to be decoded.  This image is not modified.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -605,7 +605,7 @@ extends java.lang.Object</pre>
 <div class="block">Associate the JPEG image of length <code>imageSize</code> bytes stored in
  <code>jpegImage</code> with this decompressor instance.  This image will
  be used as the source image for subsequent decompress operations.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer.  This buffer is not modified.</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -637,7 +637,7 @@ public&nbsp;void&nbsp;setJPEGImage(byte[]&nbsp;jpegImage,
  instance.  Subsequent decompress operations will decode this image into an
  RGB or grayscale destination image.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> instance containing a YUV planar image to
- be decoded</dd>
+ be decoded.  This image is not modified.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>

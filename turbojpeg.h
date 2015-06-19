@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -619,7 +619,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  *
  * @param srcBuf pointer to an image buffer containing RGB, grayscale, or
- * CMYK pixels to be compressed
+ * CMYK pixels to be compressed.  This buffer is not modified.
  *
  * @param width width (in pixels) of the source image
  *
@@ -687,7 +687,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
  * #tjBufSizeYUV2() for the given image width, height, padding, and level of
  * chrominance subsampling.  The Y, U (Cb), and V (Cr) image planes should be
  * stored sequentially in the source buffer (refer to @ref YUVnotes
- * "YUV Image Format Notes".)
+ * "YUV Image Format Notes".)  This buffer is not modified.
  *
  * @param width width (in pixels) of the source image.  If the width is not an
  * even multiple of the MCU block width (see #tjMCUWidth), then an intermediate
@@ -752,7 +752,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * memory.  The size of each plane should match the value returned by
  * #tjPlaneSizeYUV() for the given image width, height, strides, and level of
  * chrominance subsampling.  Refer to @ref YUVnotes "YUV Image Format Notes"
- * for more details.
+ * for more details.  These image planes are not modified.
  *
  * @param width width (in pixels) of the source image.  If the width is not an
  * even multiple of the MCU block width (see #tjMCUWidth), then an intermediate
@@ -762,7 +762,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * line in the corresponding plane of the YUV source image.  Setting the stride
  * for any plane to 0 is the same as setting it to the plane width (see
  * @ref YUVnotes "YUV Image Format Notes".)  If <tt>strides</tt> is NULL, then
- * the strides for all planes will be set to their respective plane widths. 
+ * the strides for all planes will be set to their respective plane widths.
  * You can adjust the strides in order to specify an arbitrary amount of line
  * padding in each plane or to create a JPEG image from a subregion of a larger
  * YUV planar image.
@@ -921,12 +921,12 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp);
  * Encode an RGB or grayscale image into a YUV planar image.  This function
  * uses the accelerated color conversion routines in the underlying
  * codec but does not execute any of the other steps in the JPEG compression
- * process.  
+ * process.
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  *
  * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels
- * to be encoded
+ * to be encoded.  This buffer is not modified.
  *
  * @param width width (in pixels) of the source image
  *
@@ -979,7 +979,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  *
  * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels
- * to be encoded
+ * to be encoded.  This buffer is not modified.
  *
  * @param width width (in pixels) of the source image
  *
@@ -1042,7 +1042,8 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  *
- * @param jpegBuf pointer to a buffer containing a JPEG image
+ * @param jpegBuf pointer to a buffer containing a JPEG image.  This buffer is
+ * not modified.
  *
  * @param jpegSize size of the JPEG image (in bytes)
  *
@@ -1085,7 +1086,8 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  *
- * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
+ * @param jpegBuf pointer to a buffer containing the JPEG image to decompress.
+ * This buffer is not modified.
  *
  * @param jpegSize size of the JPEG image (in bytes)
  *
@@ -1141,7 +1143,8 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  *
- * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
+ * @param jpegBuf pointer to a buffer containing the JPEG image to decompress.
+ * This buffer is not modified.
  *
  * @param jpegSize size of the JPEG image (in bytes)
  *
@@ -1191,7 +1194,8 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  *
- * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
+ * @param jpegBuf pointer to a buffer containing the JPEG image to decompress.
+ * This buffer is not modified.
  *
  * @param jpegSize size of the JPEG image (in bytes)
  *
@@ -1253,7 +1257,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
  * #tjBufSizeYUV2() for the given image width, height, padding, and level of
  * chrominance subsampling.  The Y, U (Cb), and V (Cr) image planes should be
  * stored sequentially in the source buffer (refer to @ref YUVnotes
- * "YUV Image Format Notes".)
+ * "YUV Image Format Notes".)  This buffer is not modified.
  *
  * @param pad Use this parameter to specify that the width of each line in each
  * plane of the YUV source image is padded to the nearest multiple of this
@@ -1306,7 +1310,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
  * The size of each plane should match the value returned by #tjPlaneSizeYUV()
  * for the given image width, height, strides, and level of chrominance
  * subsampling.  Refer to @ref YUVnotes "YUV Image Format Notes" for more
- * details.
+ * details.  These image planes are not modified.
  *
  * @param strides an array of integers, each specifying the number of bytes per
  * line in the corresponding plane of the YUV source image.  Setting the stride
@@ -1374,7 +1378,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  * @param handle a handle to a TurboJPEG transformer instance
  *
  * @param jpegBuf pointer to a buffer containing the JPEG source image to
- * transform
+ * transform.  This buffer is not modified.
  *
  * @param jpegSize size of the JPEG source image (in bytes)
  *

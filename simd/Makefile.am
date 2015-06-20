@@ -6,7 +6,8 @@ EXTRA_DIST = nasm_lt.sh CMakeLists.txt \
 	jccolext-mmx.asm   jcgryext-mmx.asm   jdcolext-mmx.asm   jdmrgext-mmx.asm \
 	jccolext-sse2.asm  jcgryext-sse2.asm  jdcolext-sse2.asm  jdmrgext-sse2.asm \
 	jccolext-sse2-64.asm  jcgryext-sse2-64.asm  jdcolext-sse2-64.asm \
-	jdmrgext-sse2-64.asm
+	jdmrgext-sse2-64.asm  jccolext-altivec.c    jcgryext-altivec.c \
+	jdcolext-altivec.c    jdmrgext-altivec.c
 
 if SIMD_X86_64
 
@@ -72,7 +73,7 @@ endif
 
 if SIMD_POWERPC
 
-libsimd_la_SOURCES = jsimd_powerpc.c \
+libsimd_la_SOURCES = jsimd_powerpc.c jsimd_altivec.h jcsample.h \
 	jccolor-altivec.c     jcgray-altivec.c      jcsample-altivec.c \
 	jdcolor-altivec.c     jdmerge-altivec.c     jdsample-altivec.c \
 	jfdctfst-altivec.c    jfdctint-altivec.c \
@@ -82,6 +83,8 @@ libsimd_la_CFLAGS = -maltivec
 
 jccolor-altivec.lo:  jccolext-altivec.c
 jcgray-altivec.lo:   jcgryext-altivec.c
+jdcolor-altivec.lo:  jdcolext-altivec.c
+jdmerge-altivec.lo:  jdmrgext-altivec.c
 
 endif
 

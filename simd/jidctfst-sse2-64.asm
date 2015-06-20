@@ -13,7 +13,7 @@
 ; can *not* be assembled with Microsoft's MASM or any compatible
 ; assembler (including Borland's Turbo Assembler).
 ; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/projecpt/showfiles.php?group_id=6208
+; http://sourceforge.net/project/showfiles.php?group_id=6208
 ;
 ; This file contains a fast, not so accurate integer implementation of
 ; the inverse DCT (Discrete Cosine Transform). The following code is

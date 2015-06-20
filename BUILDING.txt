@@ -47,7 +47,7 @@ Build Requirements
      code, relative to building libjpeg-turbo with GCC v4.2.  If you are
      running Snow Leopard or earlier, it is suggested that you continue to use
      Xcode v3.2.6, which provides GCC v4.2.  If you are using Lion or later, it
-     is suggested that you install Apple GCC v4.2 through MacPorts.
+     is suggested that you install Apple GCC v4.2 or GCC v5 through MacPorts.
 
 -- If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
    required.  Some systems, such as Solaris 10 and later and Red Hat Enterprise

@@ -68,3 +68,6 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t
+
+/* The size of `size_t', as computed by sizeof. */
+#undef SIZEOF_SIZE_T

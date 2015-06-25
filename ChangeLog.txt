@@ -8,6 +8,9 @@ to the compiler vs. x86, it was still possible to speed up compression by about
 3-4x and decompression by about 2-2.5x (relative to libjpeg v6b) through the
 use of AltiVec instructions.
 
+[2] Added a new libjpeg API function (jpeg_skip_scanlines()) that can be used
+to partially decode a JPEG image.  See libjpeg.txt for more details.
+
 
 1.4.1
 =====

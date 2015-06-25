@@ -4,7 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2015, D. R. Commander.
+ * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the decompression half
@@ -16,11 +17,10 @@
  * whole decompression library into a transcoder.
  */
 
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-#include "jpegcomp.h"
-
+#include "jdmainct.h"
+#include "jdcoefct.h"
+#include "jdsample.h"
+#include "jmemsys.h"
 
 /* Forward declarations */
 LOCAL(boolean) output_pass_setup (j_decompress_ptr cinfo);
@@ -179,6 +179,242 @@ jpeg_read_scanlines (j_decompress_ptr cinfo, JSAMPARRAY scanlines,
 }
 
 
+/* Prepare temporary row buffer */
+
+LOCAL(void)
+dummy_buffer_setup (j_decompress_ptr cinfo)
+{
+  int nc;
+
+  if (!cinfo->master || cinfo->master->dummy_row_buffer)
+    return;
+
+  nc = (cinfo->out_color_space == JCS_RGB565) ?
+       2 : cinfo->out_color_components;
+  cinfo->master->dummy_row_buffer =
+    jpeg_get_small((j_common_ptr) cinfo,
+                   cinfo->output_width * nc * sizeof(JSAMPLE));
+}
+
+
+/*
+ * Called by jpeg_skip_scanlines().  This partially skips a decompress block by
+ * incrementing the rowgroup counter.
+ */
+
+LOCAL(void)
+increment_simple_rowgroup_ctr (j_decompress_ptr cinfo, JDIMENSION rows)
+{
+  int i;
+  JDIMENSION rows_left;
+  my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
+
+  /* Increment the counter to the next row group after the skipped rows. */
+  main_ptr->rowgroup_ctr += rows / cinfo->max_v_samp_factor;
+
+  /* Partially skipping a row group would involve modifying the internal state
+   * of the upsampler, so read the remaining rows into a dummy buffer instead.
+   */
+  rows_left = rows % cinfo->max_v_samp_factor;
+  cinfo->output_scanline += rows - rows_left;
+
+  dummy_buffer_setup(cinfo);
+  for (i = 0; i < rows_left; i++)
+    jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+}
+
+
+/*
+ * Called by jpeg_skip_scanlines().  When we skip iMCU rows, we must update the
+ * iMCU row counter.
+ */
+
+LOCAL(void)
+increment_iMCU_ctr (j_decompress_ptr cinfo, JDIMENSION iMCU_rows)
+{
+  my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
+  if (main_ptr->iMCU_row_ctr == 0 && iMCU_rows > 0)
+    set_wraparound_pointers(cinfo);
+  main_ptr->iMCU_row_ctr += iMCU_rows;
+}
+
+
+/*
+ * Skips some scanlines of data from the JPEG decompressor.
+ *
+ * The return value will be the number of lines actually skipped.  If skipping
+ * num_lines would move beyond the end of the image, then the actual number of
+ * lines remaining in the image is returned.  Otherwise, the return value will
+ * be equal to num_lines.
+ *
+ * Refer to libjpeg.txt for more information.
+ */
+
+GLOBAL(JDIMENSION)
+jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
+{
+  my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
+  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
+  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+  int i, y, x;
+  JDIMENSION lines_per_iMCU_row, lines_left_in_iMCU_row, lines_after_iMCU_row;
+  JDIMENSION lines_to_skip, lines_to_read;
+
+  if (cinfo->global_state != DSTATE_SCANNING)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* Do not skip past the bottom of the image. */
+  if (cinfo->output_scanline + num_lines >= cinfo->output_height) {
+    cinfo->output_scanline = cinfo->output_height;
+    return cinfo->output_height - cinfo->output_scanline;
+  }
+
+  if (num_lines == 0)
+    return 0;
+
+  lines_per_iMCU_row = cinfo->_min_DCT_scaled_size * cinfo->max_v_samp_factor;
+  lines_left_in_iMCU_row =
+    (lines_per_iMCU_row - (cinfo->output_scanline % lines_per_iMCU_row)) %
+    lines_per_iMCU_row;
+  lines_after_iMCU_row = num_lines - lines_left_in_iMCU_row;
+
+  /* Skip the lines remaining in the current iMCU row.  When upsampling
+   * requires context rows, we need the previous and next rows in order to read
+   * the current row.  This adds some complexity.
+   */
+  if (cinfo->upsample->need_context_rows) {
+    /* If the skipped lines would not move us past the current iMCU row, we
+     * read the lines and ignore them.  There might be a faster way of doing
+     * this, but we are facing increasing complexity for diminishing returns.
+     * The increasing complexity would be a by-product of meddling with the
+     * state machine used to skip context rows.  Near the end of an iMCU row,
+     * the next iMCU row may have already been entropy-decoded.  In this unique
+     * case, we will read the next iMCU row if we cannot skip past it as well.
+     */
+    if ((num_lines < lines_left_in_iMCU_row + 1) ||
+        (lines_left_in_iMCU_row <= 1 && main_ptr->buffer_full &&
+         lines_after_iMCU_row < lines_per_iMCU_row + 1)) {
+      dummy_buffer_setup(cinfo);
+      for (i = 0; i < num_lines; i++)
+        jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+      return num_lines;
+    }
+
+    /* If the next iMCU row has already been entropy-decoded, make sure that
+     * we do not skip too far.
+     */
+    if (lines_left_in_iMCU_row <= 1 && main_ptr->buffer_full) {
+      cinfo->output_scanline += lines_left_in_iMCU_row + lines_per_iMCU_row;
+      lines_after_iMCU_row -= lines_per_iMCU_row;
+    } else {
+      cinfo->output_scanline += lines_left_in_iMCU_row;
+    }
+    main_ptr->buffer_full = FALSE;
+    main_ptr->rowgroup_ctr = 0;
+    main_ptr->context_state = CTX_PREPARE_FOR_IMCU;
+    upsample->next_row_out = cinfo->max_v_samp_factor;
+    upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+  }
+
+  /* Skipping is much simpler when context rows are not required. */
+  else {
+    if (num_lines < lines_left_in_iMCU_row) {
+      increment_simple_rowgroup_ctr(cinfo, num_lines);
+      return num_lines;
+    } else {
+      cinfo->output_scanline += lines_left_in_iMCU_row;
+      main_ptr->buffer_full = FALSE;
+      main_ptr->rowgroup_ctr = 0;
+      upsample->next_row_out = cinfo->max_v_samp_factor;
+      upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    }
+  }
+
+  /* Calculate how many full iMCU rows we can skip. */
+  if (cinfo->upsample->need_context_rows)
+    lines_to_skip = ((lines_after_iMCU_row - 1) / lines_per_iMCU_row) *
+                    lines_per_iMCU_row;
+  else
+    lines_to_skip = (lines_after_iMCU_row / lines_per_iMCU_row) *
+                    lines_per_iMCU_row;
+  /* Calculate the number of lines that remain to be skipped after skipping all
+   * of the full iMCU rows that we can.  We will not read these lines unless we
+   * have to.
+   */
+  lines_to_read = lines_after_iMCU_row - lines_to_skip;
+
+  /* For images requiring multiple scans (progressive, non-interleaved, etc.),
+   * all of the entropy decoding occurs in jpeg_start_decompress(), assuming
+   * that the input data source is non-suspending.  This makes skipping easy.
+   */
+  if (cinfo->inputctl->has_multiple_scans) {
+    if (cinfo->upsample->need_context_rows) {
+      cinfo->output_scanline += lines_to_skip;
+      cinfo->output_iMCU_row += lines_to_skip / lines_per_iMCU_row;
+      increment_iMCU_ctr(cinfo, lines_after_iMCU_row / lines_per_iMCU_row);
+      /* It is complex to properly move to the middle of a context block, so
+       * read the remaining lines instead of skipping them.
+       */
+      dummy_buffer_setup(cinfo);
+      for (i = 0; i < lines_to_read; i++)
+        jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+    } else {
+      cinfo->output_scanline += lines_to_skip;
+      cinfo->output_iMCU_row += lines_to_skip / lines_per_iMCU_row;
+      increment_simple_rowgroup_ctr(cinfo, lines_to_read);
+    }
+    upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    return num_lines;
+  }
+
+  /* Skip the iMCU rows that we can safely skip. */
+  for (i = 0; i < lines_to_skip; i += lines_per_iMCU_row) {
+    for (y = 0; y < coef->MCU_rows_per_iMCU_row; y++) {
+      for (x = 0; x < cinfo->MCUs_per_row; x++) {
+        /* Calling decode_mcu() with a NULL pointer causes it to discard the
+         * decoded coefficients.  This is ~5% faster for large subsets, but
+         * it's tough to tell a difference for smaller images.  Another
+         * advantage of discarding coefficients is that it allows us to avoid
+         * accessing the private field cinfo->coef->MCU_buffer (which would
+         * normally be a parameter to decode_mcu().)
+         */
+        (*cinfo->entropy->decode_mcu) (cinfo, NULL);
+      }
+    }
+    cinfo->input_iMCU_row++;
+    cinfo->output_iMCU_row++;
+    if (cinfo->input_iMCU_row < cinfo->total_iMCU_rows)
+      start_iMCU_row(cinfo);
+    else
+      (*cinfo->inputctl->finish_input_pass) (cinfo);
+  }
+  cinfo->output_scanline += lines_to_skip;
+
+  if (cinfo->upsample->need_context_rows) {
+    /* Context-based upsampling keeps track of iMCU rows. */
+    increment_iMCU_ctr(cinfo, lines_to_skip / lines_per_iMCU_row);
+
+    /* It is complex to properly move to the middle of a context block, so
+     * read the remaining lines instead of skipping them.
+     */
+    dummy_buffer_setup(cinfo);
+    for (i = 0; i < lines_to_read; i++)
+      jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+  } else {
+    increment_simple_rowgroup_ctr(cinfo, lines_to_read);
+  }
+
+  /* Since skipping lines involves skipping the upsampling step, the value of
+   * "rows_to_go" will become invalid unless we set it here.  NOTE: This is a
+   * bit odd, since "rows_to_go" seems to be redundantly keeping track of
+   * output_scanline.
+   */
+  upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+
+  /* Always skip the requested number of lines. */
+  return num_lines;
+}
+
 /*
  * Alternate entry point to read raw data.
  * Processes exactly one iMCU row per call, unless suspended.
@@ -270,6 +506,13 @@ jpeg_finish_output (j_decompress_ptr cinfo)
          ! cinfo->inputctl->eoi_reached) {
     if ((*cinfo->inputctl->consume_input) (cinfo) == JPEG_SUSPENDED)
       return FALSE;             /* Suspend, come back later */
+  }
+  /* Clean up row buffer */
+  if (cinfo->master->dummy_row_buffer) {
+    int nc = (cinfo->out_color_space == JCS_RGB565) ?
+             2 : cinfo->out_color_components;
+    jpeg_free_small((j_common_ptr) cinfo, cinfo->master->dummy_row_buffer,
+                   cinfo->output_width * nc * sizeof(JSAMPLE));
   }
   cinfo->global_state = DSTATE_BUFIMAGE;
   return TRUE;

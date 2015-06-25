@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2009 by Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains portable arithmetic entropy decoding routines for JPEG
@@ -516,7 +516,7 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   /* Outer loop handles each block in the MCU */
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    block = MCU_data[blkn];
+    block = MCU_data ? MCU_data[blkn] : NULL;
     ci = cinfo->MCU_membership[blkn];
     compptr = cinfo->cur_comp_info[ci];
 
@@ -563,7 +563,8 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       entropy->last_dc_val[ci] += v;
     }
 
-    (*block)[0] = (JCOEF) entropy->last_dc_val[ci];
+    if (block)
+      (*block)[0] = (JCOEF) entropy->last_dc_val[ci];
 
     /* Sections F.2.4.2 & F.1.4.4.2: Decoding of AC coefficients */
 
@@ -607,7 +608,8 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       while (m >>= 1)
         if (arith_decode(cinfo, st)) v |= m;
       v += 1; if (sign) v = -v;
-      (*block)[jpeg_natural_order[k]] = (JCOEF) v;
+      if (block)
+        (*block)[jpeg_natural_order[k]] = (JCOEF) v;
     }
   }
 

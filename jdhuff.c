@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, D. R. Commander.
+ * Copyright (C) 2009-2011, 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains Huffman entropy decoding routines.
@@ -562,7 +562,7 @@ decode_mcu_slow (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   ASSIGN_STATE(state, entropy->saved);
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    JBLOCKROW block = MCU_data[blkn];
+    JBLOCKROW block = MCU_data ? MCU_data[blkn] : NULL;
     d_derived_tbl * dctbl = entropy->dc_cur_tbls[blkn];
     d_derived_tbl * actbl = entropy->ac_cur_tbls[blkn];
     register int s, k, r;
@@ -582,11 +582,13 @@ decode_mcu_slow (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       int ci = cinfo->MCU_membership[blkn];
       s += state.last_dc_val[ci];
       state.last_dc_val[ci] = s;
-      /* Output the DC coefficient (assumes jpeg_natural_order[0] = 0) */
-      (*block)[0] = (JCOEF) s;
+      if (block) {
+        /* Output the DC coefficient (assumes jpeg_natural_order[0] = 0) */
+        (*block)[0] = (JCOEF) s;
+      }
     }
 
-    if (entropy->ac_needed[blkn]) {
+    if (entropy->ac_needed[blkn] && block) {
 
       /* Section F.2.2.2: decode the AC coefficients */
       /* Since zeroes are skipped, output area must be cleared beforehand */
@@ -659,7 +661,7 @@ decode_mcu_fast (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   ASSIGN_STATE(state, entropy->saved);
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    JBLOCKROW block = MCU_data[blkn];
+    JBLOCKROW block = MCU_data ? MCU_data[blkn] : NULL;
     d_derived_tbl * dctbl = entropy->dc_cur_tbls[blkn];
     d_derived_tbl * actbl = entropy->ac_cur_tbls[blkn];
     register int s, k, r, l;
@@ -675,10 +677,11 @@ decode_mcu_fast (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       int ci = cinfo->MCU_membership[blkn];
       s += state.last_dc_val[ci];
       state.last_dc_val[ci] = s;
-      (*block)[0] = (JCOEF) s;
+      if (block)
+        (*block)[0] = (JCOEF) s;
     }
 
-    if (entropy->ac_needed[blkn]) {
+    if (entropy->ac_needed[blkn] && block) {
 
       for (k = 1; k < DCTSIZE2; k++) {
         HUFF_DECODE_FAST(s, l, actbl);

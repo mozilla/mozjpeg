@@ -3,7 +3,8 @@ USING THE IJG JPEG LIBRARY
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2011, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014, D. R. Commander.
+Copyright (C) 2010, 2014, 2015, D. R. Commander.
+Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README file.
 
 
@@ -727,6 +728,49 @@ You can abort a decompression cycle by calling jpeg_destroy_decompress() or
 jpeg_destroy() if you don't need the JPEG object any more, or
 jpeg_abort_decompress() or jpeg_abort() if you want to reuse the object.
 The previous discussion of aborting compression cycles applies here too.
+
+
+Skipping rows when decompressing
+--------------------------------
+
+jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines);
+
+This function provides application programmers with the ability to skip over
+multiple rows in the JPEG image, thus decoding only a subset of the image data.
+This is convenient for performance-critical applications that wish to view only
+a portion of a large JPEG image without decompressing the whole thing.  It it
+also useful in memory-constrained environments (such as on mobile devices.)
+
+Suspending data sources are not supported by this function.  Calling
+jpeg_skip_scanlines() with a suspending data source will result in undefined
+behavior.
+
+jpeg_skip_scanlines() will not allow skipping past the bottom of the image.  If
+the value of num_lines is large enough to skip past the bottom of the image,
+then the function will skip to the end of the image instead.
+
+If the value of num_lines is valid, then jpeg_skip_scanlines() will always
+skip all of the input rows requested.  There is no need to inspect the return
+value of the function in that case.
+
+Best results will be achieved by calling jpeg_skip_scanlines() for large chunks
+of rows.  The function should be viewed as a way to quickly jump to a
+particular vertical offset in the JPEG image in order to decode a subset of the
+image.  Used in this manner, it will provide significant performance
+improvements.
+
+Calling jpeg_skip_scanlines() for small values of num_lines has several
+potential drawbacks:
+    1) JPEG decompression occurs in blocks, so if jpeg_skip_scanlines() is
+       called from the middle of a decompression block, then it is likely that
+       much of the decompression work has already been done for the first
+       couple of rows that need to be skipped.
+    2) When this function returns, it must leave the decompressor in a state
+       such that it is ready to read the next line.  This may involve
+       decompressing a block that must be partially skipped.
+These issues are especially tricky for cases in which upsampling requires
+context rows.  In the worst case, jpeg_skip_scanlines() will perform similarly
+to jpeg_read_scanlines() (since it will actually call jpeg_read_scanlines().)
 
 
 Mechanics of usage: include files, linking, etc

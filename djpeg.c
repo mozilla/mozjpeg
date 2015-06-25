@@ -4,7 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2014, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2015, D. R. Commander.
+ * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for the JPEG decompressor.
@@ -88,6 +89,8 @@ static IMAGE_FORMATS requested_fmt;
 static const char * progname;   /* program name for error messages */
 static char * outfilename;      /* for -outfile switch */
 boolean memsrc;  /* for -memsrc switch */
+boolean stripe;
+JDIMENSION startY, endY;
 #define INPUT_BUF_SIZE  4096
 
 
@@ -164,6 +167,7 @@ usage (void)
   fprintf(stderr, "  -memsrc        Load input file into memory before decompressing\n");
 #endif
 
+  fprintf(stderr, "  -stripe Y0,Y1  Decode a horizontal stripe of the image [Y0, Y1)\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   exit(EXIT_FAILURE);
@@ -189,6 +193,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
   requested_fmt = DEFAULT_FMT;  /* set default output file format */
   outfilename = NULL;
   memsrc = FALSE;
+  stripe = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -361,13 +366,20 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       /* RLE output format. */
       requested_fmt = FMT_RLE;
 
-    } else if (keymatch(arg, "scale", 1)) {
+    } else if (keymatch(arg, "scale", 2)) {
       /* Scale the output image by a fraction M/N. */
       if (++argn >= argc)       /* advance to next argument */
         usage();
       if (sscanf(argv[argn], "%d/%d",
                  &cinfo->scale_num, &cinfo->scale_denom) != 2)
         usage();
+
+    } else if (keymatch(arg, "stripe", 2)) {
+      if (++argn >= argc)
+        usage();
+      if (sscanf(argv[argn], "%d,%d", &startY, &endY) != 2 || startY > endY)
+        usage();
+      stripe = TRUE;
 
     } else if (keymatch(arg, "targa", 1)) {
       /* Targa output format. */
@@ -634,14 +646,48 @@ main (int argc, char **argv)
   /* Start decompressor */
   (void) jpeg_start_decompress(&cinfo);
 
-  /* Write output file header */
-  (*dest_mgr->start_output) (&cinfo, dest_mgr);
+  /* Stripe decode */
+  if (stripe) {
+    JDIMENSION tmp;
 
-  /* Process data */
-  while (cinfo.output_scanline < cinfo.output_height) {
-    num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                        dest_mgr->buffer_height);
-    (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+    /* Check for valid endY.  We cannot check this value until after
+     * jpeg_start_decompress() is called.  Note that we have already verified
+     * that startY <= endY.
+     */
+    if (endY > cinfo.output_height) {
+      fprintf(stderr, "%s: stripe %d-%d exceeds image height %d\n", progname,
+              startY, endY, cinfo.output_height);
+      exit(EXIT_FAILURE);
+    }
+
+    /* Write output file header.  This is a hack to ensure that the destination
+     * manager creates an image of the proper size for the partial decode.
+     */
+    tmp = cinfo.output_height;
+    cinfo.output_height = endY - startY;
+    (*dest_mgr->start_output) (&cinfo, dest_mgr);
+    cinfo.output_height = tmp;
+
+    /* Process data */
+    (void) jpeg_skip_scanlines(&cinfo, startY);
+    while (cinfo.output_scanline < endY) {
+      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                          dest_mgr->buffer_height);
+      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+    }
+    (void) jpeg_skip_scanlines(&cinfo, cinfo.output_height - endY);
+
+  /* Normal full image decode */
+  } else {
+    /* Write output file header */
+    (*dest_mgr->start_output) (&cinfo, dest_mgr);
+
+    /* Process data */
+    while (cinfo.output_scanline < cinfo.output_height) {
+      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                          dest_mgr->buffer_height);
+      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+    }
   }
 
 #ifdef PROGRESS_REPORT

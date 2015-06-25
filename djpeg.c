@@ -89,7 +89,7 @@ static IMAGE_FORMATS requested_fmt;
 static const char * progname;   /* program name for error messages */
 static char * outfilename;      /* for -outfile switch */
 boolean memsrc;  /* for -memsrc switch */
-boolean stripe;
+boolean stripe, skip;
 JDIMENSION startY, endY;
 #define INPUT_BUF_SIZE  4096
 
@@ -167,7 +167,8 @@ usage (void)
   fprintf(stderr, "  -memsrc        Load input file into memory before decompressing\n");
 #endif
 
-  fprintf(stderr, "  -stripe Y0,Y1  Decode a horizontal stripe of the image [Y0, Y1)\n");
+  fprintf(stderr, "  -skip Y0,Y1    Skip decoding a horizontal stripe of the image [Y0, Y1)\n");
+  fprintf(stderr, "  -stripe Y0,Y1  Decode only a horizontal stripe of the image [Y0, Y1)\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   exit(EXIT_FAILURE);
@@ -194,6 +195,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
   outfilename = NULL;
   memsrc = FALSE;
   stripe = FALSE;
+  skip = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -380,6 +382,14 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       if (sscanf(argv[argn], "%d,%d", &startY, &endY) != 2 || startY > endY)
         usage();
       stripe = TRUE;
+
+
+    } else if (keymatch(arg, "skip", 2)) {
+      if (++argn >= argc)
+        usage();
+      if (sscanf(argv[argn], "%d,%d", &startY, &endY) != 2 || startY > endY)
+        usage();
+      skip = TRUE;
 
     } else if (keymatch(arg, "targa", 1)) {
       /* Targa output format. */
@@ -647,7 +657,7 @@ main (int argc, char **argv)
   (void) jpeg_start_decompress(&cinfo);
 
   /* Stripe decode */
-  if (stripe) {
+  if (stripe || skip) {
     JDIMENSION tmp;
 
     /* Check for valid endY.  We cannot check this value until after
@@ -665,17 +675,33 @@ main (int argc, char **argv)
      */
     tmp = cinfo.output_height;
     cinfo.output_height = endY - startY;
+    if (skip)
+      cinfo.output_height = tmp - cinfo.output_height;
     (*dest_mgr->start_output) (&cinfo, dest_mgr);
     cinfo.output_height = tmp;
 
     /* Process data */
-    (void) jpeg_skip_scanlines(&cinfo, startY);
-    while (cinfo.output_scanline < endY) {
-      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                          dest_mgr->buffer_height);
-      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+    if (skip) {
+      while (cinfo.output_scanline < startY) {
+        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                            dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+      jpeg_skip_scanlines(&cinfo, endY - startY);
+      while (cinfo.output_scanline < cinfo.output_height) {
+        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                            dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+    } else {
+      jpeg_skip_scanlines(&cinfo, startY);
+      while (cinfo.output_scanline < endY) {
+        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                            dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+      jpeg_skip_scanlines(&cinfo, cinfo.output_height - endY);
     }
-    (void) jpeg_skip_scanlines(&cinfo, cinfo.output_height - endY);
 
   /* Normal full image decode */
   } else {

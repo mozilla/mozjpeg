@@ -223,22 +223,6 @@ increment_simple_rowgroup_ctr (j_decompress_ptr cinfo, JDIMENSION rows)
     jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
 }
 
-
-/*
- * Called by jpeg_skip_scanlines().  When we skip iMCU rows, we must update the
- * iMCU row counter.
- */
-
-LOCAL(void)
-increment_iMCU_ctr (j_decompress_ptr cinfo, JDIMENSION iMCU_rows)
-{
-  my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
-  if (main_ptr->iMCU_row_ctr == 0 && iMCU_rows > 0)
-    set_wraparound_pointers(cinfo);
-  main_ptr->iMCU_row_ctr += iMCU_rows;
-}
-
-
 /*
  * Skips some scanlines of data from the JPEG decompressor.
  *
@@ -309,6 +293,11 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
     } else {
       cinfo->output_scanline += lines_left_in_iMCU_row;
     }
+
+    /* If we have just completed the first block, adjust the buffer pointers */
+    if (main_ptr->iMCU_row_ctr == 0 ||
+        (main_ptr->iMCU_row_ctr == 1 && lines_left_in_iMCU_row > 2))
+      set_wraparound_pointers(cinfo);
     main_ptr->buffer_full = FALSE;
     main_ptr->rowgroup_ctr = 0;
     main_ptr->context_state = CTX_PREPARE_FOR_IMCU;
@@ -351,7 +340,7 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
     if (cinfo->upsample->need_context_rows) {
       cinfo->output_scanline += lines_to_skip;
       cinfo->output_iMCU_row += lines_to_skip / lines_per_iMCU_row;
-      increment_iMCU_ctr(cinfo, lines_after_iMCU_row / lines_per_iMCU_row);
+      main_ptr->iMCU_row_ctr += lines_after_iMCU_row / lines_per_iMCU_row;
       /* It is complex to properly move to the middle of a context block, so
        * read the remaining lines instead of skipping them.
        */
@@ -373,10 +362,7 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
       for (x = 0; x < cinfo->MCUs_per_row; x++) {
         /* Calling decode_mcu() with a NULL pointer causes it to discard the
          * decoded coefficients.  This is ~5% faster for large subsets, but
-         * it's tough to tell a difference for smaller images.  Another
-         * advantage of discarding coefficients is that it allows us to avoid
-         * accessing the private field cinfo->coef->MCU_buffer (which would
-         * normally be a parameter to decode_mcu().)
+         * it's tough to tell a difference for smaller images.
          */
         (*cinfo->entropy->decode_mcu) (cinfo, NULL);
       }
@@ -392,7 +378,7 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
 
   if (cinfo->upsample->need_context_rows) {
     /* Context-based upsampling keeps track of iMCU rows. */
-    increment_iMCU_ctr(cinfo, lines_to_skip / lines_per_iMCU_row);
+    main_ptr->iMCU_row_ctr += lines_to_skip / lines_per_iMCU_row;
 
     /* It is complex to properly move to the middle of a context block, so
      * read the remaining lines instead of skipping them.

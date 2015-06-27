@@ -100,3 +100,4 @@ EXPORTS
 	jpeg_write_tables @ 99 ; 
 	jround_up @ 100 ; 
 	jzero_far @ 101 ; 
+	jpeg_skip_scanlines @ 102 ; 

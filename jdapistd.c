@@ -205,8 +205,7 @@ dummy_buffer_setup (j_decompress_ptr cinfo)
 LOCAL(void)
 increment_simple_rowgroup_ctr (j_decompress_ptr cinfo, JDIMENSION rows)
 {
-  int i;
-  JDIMENSION rows_left;
+  JDIMENSION i, rows_left;
   my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
 
   /* Increment the counter to the next row group after the skipped rows. */
@@ -240,7 +239,8 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
   my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
   my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
   my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-  int i, y, x;
+  JDIMENSION i, x;
+  int y;
   JDIMENSION lines_per_iMCU_row, lines_left_in_iMCU_row, lines_after_iMCU_row;
   JDIMENSION lines_to_skip, lines_to_read;
 

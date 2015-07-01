@@ -192,8 +192,8 @@ dummy_buffer_setup (j_decompress_ptr cinfo)
   nc = (cinfo->out_color_space == JCS_RGB565) ?
        2 : cinfo->out_color_components;
   cinfo->master->dummy_row_buffer =
-    jpeg_get_small((j_common_ptr) cinfo,
-                   cinfo->output_width * nc * sizeof(JSAMPLE));
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+                                cinfo->output_width * nc * sizeof(JSAMPLE));
 }
 
 
@@ -492,13 +492,6 @@ jpeg_finish_output (j_decompress_ptr cinfo)
          ! cinfo->inputctl->eoi_reached) {
     if ((*cinfo->inputctl->consume_input) (cinfo) == JPEG_SUSPENDED)
       return FALSE;             /* Suspend, come back later */
-  }
-  /* Clean up row buffer */
-  if (cinfo->master->dummy_row_buffer) {
-    int nc = (cinfo->out_color_space == JCS_RGB565) ?
-             2 : cinfo->out_color_components;
-    jpeg_free_small((j_common_ptr) cinfo, cinfo->master->dummy_row_buffer,
-                   cinfo->output_width * nc * sizeof(JSAMPLE));
   }
   cinfo->global_state = DSTATE_BUFIMAGE;
   return TRUE;

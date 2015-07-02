@@ -35,9 +35,6 @@
 
 #include <errno.h>
 #include <stdio.h>
-#include <inttypes.h>
-#include <sys/stat.h>
-#include <string.h>
 #include <stdlib.h>
 
 #include "jpeglib.h"

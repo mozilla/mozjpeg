@@ -3,6 +3,7 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009, 2011, 2014, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
@@ -148,7 +149,13 @@ typedef short INT16;
 /* INT32 must hold at least signed 32-bit values. */
 
 #ifndef XMD_H                   /* X11/xmd.h correctly defines INT32 */
+#ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
+#ifndef _BASETSD_H		/* MinGW is slightly different */
+#ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
 typedef long INT32;
+#endif
+#endif
+#endif
 #endif
 
 /* Datatype used for image dimensions.  The JPEG standard only supports

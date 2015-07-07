@@ -11,6 +11,10 @@ use of AltiVec instructions.
 [2] Added a new libjpeg API function (jpeg_skip_scanlines()) that can be used
 to partially decode a JPEG image.  See libjpeg.txt for more details.
 
+[3] The TJCompressor and TJDecompressor classes in the TurboJPEG Java API now
+implement the Closeable interface, so those classes can be used with a
+try-with-resources statement.
+
 
 1.4.1
 =====

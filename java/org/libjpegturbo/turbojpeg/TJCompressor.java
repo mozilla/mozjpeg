@@ -30,11 +30,12 @@ package org.libjpegturbo.turbojpeg;
 
 import java.awt.image.*;
 import java.nio.*;
+import java.io.*;
 
 /**
  * TurboJPEG compressor
  */
-public class TJCompressor {
+public class TJCompressor implements Closeable {
 
   private static final String NO_ASSOC_ERROR =
     "No source image is associated with this instance";
@@ -567,7 +568,7 @@ public class TJCompressor {
   /**
    * Free the native structures associated with this compressor instance.
    */
-  public void close() throws Exception {
+  public void close() throws IOException {
     if (handle != 0)
       destroy();
   }
@@ -583,7 +584,7 @@ public class TJCompressor {
 
   private native void init() throws Exception;
 
-  private native void destroy() throws Exception;
+  private native void destroy() throws IOException;
 
   // JPEG size in bytes is returned
   private native int compress(byte[] srcBuf, int width, int pitch,

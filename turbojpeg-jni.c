@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,6 +41,13 @@
 
 #define _throw(msg) {  \
 	jclass _exccls=(*env)->FindClass(env, "java/lang/Exception");  \
+	if(!_exccls) goto bailout;  \
+	(*env)->ThrowNew(env, _exccls, msg);  \
+	goto bailout;  \
+}
+
+#define _throwio(msg) {  \
+	jclass _exccls=(*env)->FindClass(env, "java/io/IOException");  \
 	if(!_exccls) goto bailout;  \
 	(*env)->ThrowNew(env, _exccls, msg);  \
 	goto bailout;  \
@@ -531,7 +538,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
 
 	gethandle();
 
-	if(tjDestroy(handle)==-1) _throw(tjGetErrorStr());
+	if(tjDestroy(handle)==-1) _throwio(tjGetErrorStr());
 	(*env)->SetLongField(env, obj, _fid, 0);
 
 	bailout:

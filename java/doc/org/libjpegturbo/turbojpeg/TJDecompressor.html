@@ -91,13 +91,18 @@
 <ul class="blockList">
 <li class="blockList">
 <dl>
+<dt>All Implemented Interfaces:</dt>
+<dd>java.io.Closeable, java.lang.AutoCloseable</dd>
+</dl>
+<dl>
 <dt>Direct Known Subclasses:</dt>
 <dd><a href="../../../org/libjpegturbo/turbojpeg/TJTransformer.html" title="class in org.libjpegturbo.turbojpeg">TJTransformer</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public class <span class="strong">TJDecompressor</span>
-extends java.lang.Object</pre>
+extends java.lang.Object
+implements java.io.Closeable</pre>
 <div class="block">TurboJPEG decompressor</div>
 </li>
 </ul>
@@ -1162,10 +1167,15 @@ public&nbsp;byte[]&nbsp;decompressToYUV(int&nbsp;flags)
 <li class="blockList">
 <h4>close</h4>
 <pre>public&nbsp;void&nbsp;close()
-           throws java.lang.Exception</pre>
+           throws java.io.IOException</pre>
 <div class="block">Free the native structures associated with this decompressor instance.</div>
-<dl><dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl>
+<dt><strong>Specified by:</strong></dt>
+<dd><code>close</code>&nbsp;in interface&nbsp;<code>java.io.Closeable</code></dd>
+<dt><strong>Specified by:</strong></dt>
+<dd><code>close</code>&nbsp;in interface&nbsp;<code>java.lang.AutoCloseable</code></dd>
+<dt><span class="strong">Throws:</span></dt>
+<dd><code>java.io.IOException</code></dd></dl>
 </li>
 </ul>
 <a name="finalize()">

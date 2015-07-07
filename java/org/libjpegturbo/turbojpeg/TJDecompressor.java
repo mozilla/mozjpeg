@@ -30,11 +30,12 @@ package org.libjpegturbo.turbojpeg;
 
 import java.awt.image.*;
 import java.nio.*;
+import java.io.*;
 
 /**
  * TurboJPEG decompressor
  */
-public class TJDecompressor {
+public class TJDecompressor implements Closeable {
 
   private static final String NO_ASSOC_ERROR =
     "No JPEG image is associated with this instance";
@@ -833,7 +834,7 @@ public class TJDecompressor {
   /**
    * Free the native structures associated with this decompressor instance.
    */
-  public void close() throws Exception {
+  public void close() throws IOException {
     if (handle != 0)
       destroy();
   }
@@ -849,7 +850,7 @@ public class TJDecompressor {
 
   private native void init() throws Exception;
 
-  private native void destroy() throws Exception;
+  private native void destroy() throws IOException;
 
   private native void decompressHeader(byte[] srcBuf, int size)
     throws Exception;

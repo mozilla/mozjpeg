@@ -98,7 +98,7 @@ public class TJDecompressor implements Closeable {
   public void setSourceImage(byte[] jpegImage, int imageSize)
     throws Exception {
     if (jpegImage == null || imageSize < 1)
-      throw new Exception("Invalid argument in setSourceImage()");
+      throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     jpegBuf = jpegImage;
     jpegBufSize = imageSize;
     decompressHeader(jpegBuf, jpegBufSize);
@@ -123,7 +123,7 @@ public class TJDecompressor implements Closeable {
    */
   public void setSourceImage(YUVImage srcImage) throws Exception {
     if (srcImage == null)
-      throw new Exception("Invalid argument in setSourceImage()");
+      throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     yuvImage = srcImage;
     jpegBuf = null;
     jpegBufSize = 0;
@@ -137,11 +137,11 @@ public class TJDecompressor implements Closeable {
    * @return the width of the source image (JPEG or YUV) associated with this
    * decompressor instance.
    */
-  public int getWidth() throws Exception {
+  public int getWidth() {
     if (yuvImage != null)
       return yuvImage.getWidth();
     if (jpegWidth < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return jpegWidth;
   }
 
@@ -152,11 +152,11 @@ public class TJDecompressor implements Closeable {
    * @return the height of the source image (JPEG or YUV) associated with this
    * decompressor instance.
    */
-  public int getHeight() throws Exception {
+  public int getHeight() {
     if (yuvImage != null)
       return yuvImage.getHeight();
     if (jpegHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return jpegHeight;
   }
 
@@ -168,13 +168,13 @@ public class TJDecompressor implements Closeable {
    * @return the level of chrominance subsampling used in the source image
    * (JPEG or YUV) associated with this decompressor instance.
    */
-  public int getSubsamp() throws Exception {
+  public int getSubsamp() {
     if (yuvImage != null)
       return yuvImage.getSubsamp();
     if (jpegSubsamp < 0)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (jpegSubsamp >= TJ.NUMSAMP)
-      throw new Exception("JPEG header information is invalid");
+      throw new IllegalStateException("JPEG header information is invalid");
     return jpegSubsamp;
   }
 
@@ -186,13 +186,13 @@ public class TJDecompressor implements Closeable {
    * @return the colorspace used in the source image (JPEG or YUV) associated
    * with this decompressor instance.
    */
-  public int getColorspace() throws Exception {
+  public int getColorspace() {
     if (yuvImage != null)
       return TJ.CS_YCbCr;
     if (jpegColorspace < 0)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (jpegColorspace >= TJ.NUMCS)
-      throw new Exception("JPEG header information is invalid");
+      throw new IllegalStateException("JPEG header information is invalid");
     return jpegColorspace;
   }
 
@@ -201,9 +201,9 @@ public class TJDecompressor implements Closeable {
    *
    * @return the JPEG image buffer associated with this decompressor instance.
    */
-  public byte[] getJPEGBuf() throws Exception {
+  public byte[] getJPEGBuf() {
     if (jpegBuf == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return jpegBuf;
   }
 
@@ -214,9 +214,9 @@ public class TJDecompressor implements Closeable {
    * @return the size of the JPEG image (in bytes) associated with this
    * decompressor instance.
    */
-  public int getJPEGSize() throws Exception {
+  public int getJPEGSize() {
     if (jpegBufSize < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return jpegBufSize;
   }
 
@@ -242,9 +242,9 @@ public class TJDecompressor implements Closeable {
   public int getScaledWidth(int desiredWidth, int desiredHeight)
                             throws Exception {
     if (jpegWidth < 1 || jpegHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (desiredWidth < 0 || desiredHeight < 0)
-      throw new Exception("Invalid argument in getScaledWidth()");
+      throw new IllegalArgumentException("Invalid argument in getScaledWidth()");
     TJScalingFactor[] sf = TJ.getScalingFactors();
     if (desiredWidth == 0)
       desiredWidth = jpegWidth;
@@ -258,7 +258,7 @@ public class TJDecompressor implements Closeable {
         break;
     }
     if (scaledWidth > desiredWidth || scaledHeight > desiredHeight)
-      throw new Exception("Could not scale down to desired image dimensions");
+      throw new IllegalArgumentException("Could not scale down to desired image dimensions");
     return scaledWidth;
   }
 
@@ -284,9 +284,9 @@ public class TJDecompressor implements Closeable {
   public int getScaledHeight(int desiredWidth, int desiredHeight)
                              throws Exception {
     if (jpegWidth < 1 || jpegHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (desiredWidth < 0 || desiredHeight < 0)
-      throw new Exception("Invalid argument in getScaledHeight()");
+      throw new IllegalArgumentException("Invalid argument in getScaledHeight()");
     TJScalingFactor[] sf = TJ.getScalingFactors();
     if (desiredWidth == 0)
       desiredWidth = jpegWidth;
@@ -300,7 +300,7 @@ public class TJDecompressor implements Closeable {
         break;
     }
     if (scaledWidth > desiredWidth || scaledHeight > desiredHeight)
-      throw new Exception("Could not scale down to desired image dimensions");
+      throw new IllegalArgumentException("Could not scale down to desired image dimensions");
     return scaledHeight;
   }
 
@@ -372,11 +372,11 @@ public class TJDecompressor implements Closeable {
                          int pitch, int desiredHeight, int pixelFormat,
                          int flags) throws Exception {
     if (jpegBuf == null && yuvImage == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (dstBuf == null || x < 0 || y < 0 || pitch < 0 ||
         (yuvImage != null && (desiredWidth < 0 || desiredHeight < 0)) ||
         pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
-      throw new Exception("Invalid argument in decompress()");
+      throw new IllegalArgumentException("Invalid argument in decompress()");
     if (yuvImage != null)
       decodeYUV(yuvImage.getPlanes(), yuvImage.getOffsets(),
                 yuvImage.getStrides(), yuvImage.getSubsamp(), dstBuf, x, y,
@@ -433,7 +433,7 @@ public class TJDecompressor implements Closeable {
     if (pitch < 0 ||
         (yuvImage == null && (desiredWidth < 0 || desiredHeight < 0)) ||
         pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
-      throw new Exception("Invalid argument in decompress()");
+      throw new IllegalArgumentException("Invalid argument in decompress()");
     int pixelSize = TJ.getPixelSize(pixelFormat);
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
@@ -464,18 +464,18 @@ public class TJDecompressor implements Closeable {
    */
   public void decompressToYUV(YUVImage dstImage, int flags) throws Exception {
     if (jpegBuf == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (dstImage == null || flags < 0)
-      throw new Exception("Invalid argument in decompressToYUV()");
+      throw new IllegalArgumentException("Invalid argument in decompressToYUV()");
     int scaledWidth = getScaledWidth(dstImage.getWidth(),
                                      dstImage.getHeight());
     int scaledHeight = getScaledHeight(dstImage.getWidth(),
                                        dstImage.getHeight());
     if (scaledWidth != dstImage.getWidth() ||
         scaledHeight != dstImage.getHeight())
-      throw new Exception("YUVImage dimensions do not match one of the scaled image sizes that TurboJPEG is capable of generating.");
+      throw new IllegalArgumentException("YUVImage dimensions do not match one of the scaled image sizes that TurboJPEG is capable of generating.");
     if (jpegSubsamp != dstImage.getSubsamp())
-      throw new Exception("YUVImage subsampling level does not match that of the JPEG image");
+      throw new IllegalArgumentException("YUVImage subsampling level does not match that of the JPEG image");
 
     decompressToYUV(jpegBuf, jpegBufSize, dstImage.getPlanes(),
                     dstImage.getOffsets(), dstImage.getWidth(),
@@ -534,13 +534,13 @@ public class TJDecompressor implements Closeable {
                                   int desiredHeight,
                                   int flags) throws Exception {
     if (flags < 0)
-      throw new Exception("Invalid argument in decompressToYUV()");
+      throw new IllegalArgumentException("Invalid argument in decompressToYUV()");
     if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (jpegSubsamp >= TJ.NUMSAMP)
-      throw new Exception("JPEG header information is invalid");
+      throw new IllegalStateException("JPEG header information is invalid");
     if (yuvImage != null)
-      throw new Exception("Source image is the wrong type");
+      throw new IllegalStateException("Source image is the wrong type");
 
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
@@ -587,13 +587,13 @@ public class TJDecompressor implements Closeable {
   public YUVImage decompressToYUV(int desiredWidth, int pad, int desiredHeight,
                                   int flags) throws Exception {
     if (flags < 0)
-      throw new Exception("Invalid argument in decompressToYUV()");
+      throw new IllegalArgumentException("Invalid argument in decompressToYUV()");
     if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (jpegSubsamp >= TJ.NUMSAMP)
-      throw new Exception("JPEG header information is invalid");
+      throw new IllegalStateException("JPEG header information is invalid");
     if (yuvImage != null)
-      throw new Exception("Source image is the wrong type");
+      throw new IllegalStateException("Source image is the wrong type");
 
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
@@ -679,11 +679,11 @@ public class TJDecompressor implements Closeable {
                          int stride, int desiredHeight, int pixelFormat,
                          int flags) throws Exception {
     if (jpegBuf == null && yuvImage == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (dstBuf == null || x < 0 || y < 0 || stride < 0 ||
         (yuvImage != null && (desiredWidth < 0 || desiredHeight < 0)) ||
         pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
-      throw new Exception("Invalid argument in decompress()");
+      throw new IllegalArgumentException("Invalid argument in decompress()");
     if (yuvImage != null)
       decodeYUV(yuvImage.getPlanes(), yuvImage.getOffsets(),
                 yuvImage.getStrides(), yuvImage.getSubsamp(), dstBuf, x, y,
@@ -712,7 +712,7 @@ public class TJDecompressor implements Closeable {
    */
   public void decompress(BufferedImage dstImage, int flags) throws Exception {
     if (dstImage == null || flags < 0)
-      throw new Exception("Invalid argument in decompress()");
+      throw new IllegalArgumentException("Invalid argument in decompress()");
     int desiredWidth = dstImage.getWidth();
     int desiredHeight = dstImage.getHeight();
     int scaledWidth, scaledHeight;
@@ -720,14 +720,14 @@ public class TJDecompressor implements Closeable {
     if (yuvImage != null) {
       if (desiredWidth != yuvImage.getWidth() ||
           desiredHeight != yuvImage.getHeight())
-        throw new Exception("BufferedImage dimensions do not match the dimensions of the source image.");
+        throw new IllegalArgumentException("BufferedImage dimensions do not match the dimensions of the source image.");
       scaledWidth = yuvImage.getWidth();
       scaledHeight = yuvImage.getHeight();
     } else {
       scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
       scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
       if (scaledWidth != desiredWidth || scaledHeight != desiredHeight)
-        throw new Exception("BufferedImage dimensions do not match one of the scaled image sizes that TurboJPEG is capable of generating.");
+        throw new IllegalArgumentException("BufferedImage dimensions do not match one of the scaled image sizes that TurboJPEG is capable of generating.");
     }
     int pixelFormat;  boolean intPixels = false;
     if (byteOrder == null)
@@ -760,7 +760,7 @@ public class TJDecompressor implements Closeable {
           pixelFormat = TJ.PF_BGRA;
         intPixels = true;  break;
       default:
-        throw new Exception("Unsupported BufferedImage format");
+        throw new IllegalArgumentException("Unsupported BufferedImage format");
     }
     WritableRaster wr = dstImage.getRaster();
     if (intPixels) {
@@ -776,7 +776,7 @@ public class TJDecompressor implements Closeable {
                   pixelFormat, flags);
       else {
         if (jpegBuf == null)
-          throw new Exception(NO_ASSOC_ERROR);
+          throw new IllegalStateException(NO_ASSOC_ERROR);
         decompress(jpegBuf, jpegBufSize, buf, 0, 0, scaledWidth, stride,
                    scaledHeight, pixelFormat, flags);
       }
@@ -785,7 +785,7 @@ public class TJDecompressor implements Closeable {
         (ComponentSampleModel)dstImage.getSampleModel();
       int pixelSize = sm.getPixelStride();
       if (pixelSize != TJ.getPixelSize(pixelFormat))
-        throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
+        throw new IllegalArgumentException("Inconsistency between pixel format and pixel size in BufferedImage");
       int pitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
       byte[] buf = db.getData();
@@ -822,7 +822,7 @@ public class TJDecompressor implements Closeable {
                                   throws Exception {
     if ((yuvImage == null && (desiredWidth < 0 || desiredHeight < 0)) ||
         flags < 0)
-      throw new Exception("Invalid argument in decompress()");
+      throw new IllegalArgumentException("Invalid argument in decompress()");
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
     BufferedImage img = new BufferedImage(scaledWidth, scaledHeight,
@@ -834,11 +834,13 @@ public class TJDecompressor implements Closeable {
   /**
    * Free the native structures associated with this decompressor instance.
    */
+  @Override
   public void close() throws IOException {
     if (handle != 0)
       destroy();
   }
 
+  @Override
   protected void finalize() throws Throwable {
     try {
       close();
@@ -899,4 +901,4 @@ public class TJDecompressor implements Closeable {
   protected int jpegSubsamp = -1;
   protected int jpegColorspace = -1;
   private ByteOrder byteOrder = null;
-};
+}

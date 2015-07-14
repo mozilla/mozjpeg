@@ -610,12 +610,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getWidth</h4>
-<pre>public&nbsp;int&nbsp;getWidth()
-             throws java.lang.Exception</pre>
+<pre>public&nbsp;int&nbsp;getWidth()</pre>
 <div class="block">Returns the width of the YUV image (or subregion.)</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the width of the YUV image (or subregion)</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the width of the YUV image (or subregion)</dd></dl>
 </li>
 </ul>
 <a name="getHeight()">
@@ -624,12 +621,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getHeight</h4>
-<pre>public&nbsp;int&nbsp;getHeight()
-              throws java.lang.Exception</pre>
+<pre>public&nbsp;int&nbsp;getHeight()</pre>
 <div class="block">Returns the height of the YUV image (or subregion.)</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the height of the YUV image (or subregion)</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the height of the YUV image (or subregion)</dd></dl>
 </li>
 </ul>
 <a name="getPad()">
@@ -638,13 +632,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getPad</h4>
-<pre>public&nbsp;int&nbsp;getPad()
-           throws java.lang.Exception</pre>
+<pre>public&nbsp;int&nbsp;getPad()</pre>
 <div class="block">Returns the line padding used in the YUV image buffer (if this image is
  stored in a unified buffer rather than separate image planes.)</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the line padding used in the YUV image buffer</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the line padding used in the YUV image buffer</dd></dl>
 </li>
 </ul>
 <a name="getStrides()">
@@ -653,12 +644,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getStrides</h4>
-<pre>public&nbsp;int[]&nbsp;getStrides()
-                 throws java.lang.Exception</pre>
+<pre>public&nbsp;int[]&nbsp;getStrides()</pre>
 <div class="block">Returns the number of bytes per line of each plane in the YUV image.</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the number of bytes per line of each plane in the YUV image</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the number of bytes per line of each plane in the YUV image</dd></dl>
 </li>
 </ul>
 <a name="getOffsets()">
@@ -667,14 +655,11 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getOffsets</h4>
-<pre>public&nbsp;int[]&nbsp;getOffsets()
-                 throws java.lang.Exception</pre>
+<pre>public&nbsp;int[]&nbsp;getOffsets()</pre>
 <div class="block">Returns the offsets (in bytes) of each plane within the planes of a larger
  YUV image.</div>
 <dl><dt><span class="strong">Returns:</span></dt><dd>the offsets (in bytes) of each plane within the planes of a larger
- YUV image</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+ YUV image</dd></dl>
 </li>
 </ul>
 <a name="getSubsamp()">
@@ -683,13 +668,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getSubsamp</h4>
-<pre>public&nbsp;int&nbsp;getSubsamp()
-               throws java.lang.Exception</pre>
+<pre>public&nbsp;int&nbsp;getSubsamp()</pre>
 <div class="block">Returns the level of chrominance subsampling used in the YUV image.  See
  <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#SAMP_444"><code>TJ.SAMP_*</code></a>.</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the level of chrominance subsampling used in the YUV image</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the level of chrominance subsampling used in the YUV image</dd></dl>
 </li>
 </ul>
 <a name="getPlanes()">
@@ -698,13 +680,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getPlanes</h4>
-<pre>public&nbsp;byte[][]&nbsp;getPlanes()
-                   throws java.lang.Exception</pre>
+<pre>public&nbsp;byte[][]&nbsp;getPlanes()</pre>
 <div class="block">Returns the YUV image planes.  If the image is stored in a unified buffer,
  then all image planes will point to that buffer.</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the YUV image planes</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the YUV image planes</dd></dl>
 </li>
 </ul>
 <a name="getBuf()">
@@ -713,13 +692,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getBuf</h4>
-<pre>public&nbsp;byte[]&nbsp;getBuf()
-              throws java.lang.Exception</pre>
+<pre>public&nbsp;byte[]&nbsp;getBuf()</pre>
 <div class="block">Returns the YUV image buffer (if this image is stored in a unified
  buffer rather than separate image planes.)</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the YUV image buffer</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the YUV image buffer</dd></dl>
 </li>
 </ul>
 <a name="getSize()">

@@ -87,9 +87,8 @@ public final class TJ {
    * @return the MCU block width for the given level of chrominance
    * subsampling.
    */
-  public static int getMCUWidth(int subsamp) throws Exception {
-    if (subsamp < 0 || subsamp >= NUMSAMP)
-      throw new Exception("Invalid subsampling type");
+  public static int getMCUWidth(int subsamp) {
+    checkSubsampling(subsamp);
     return mcuWidth[subsamp];
   }
 
@@ -108,9 +107,8 @@ public final class TJ {
    * @return the MCU block height for the given level of chrominance
    * subsampling.
    */
-  public static int getMCUHeight(int subsamp) throws Exception {
-    if (subsamp < 0 || subsamp >= NUMSAMP)
-      throw new Exception("Invalid subsampling type");
+  public static int getMCUHeight(int subsamp) {
+    checkSubsampling(subsamp);
     return mcuHeight[subsamp];
   }
 
@@ -217,9 +215,8 @@ public final class TJ {
    *
    * @return the pixel size (in bytes) for the given pixel format.
    */
-  public static int getPixelSize(int pixelFormat) throws Exception {
-    if (pixelFormat < 0 || pixelFormat >= NUMPF)
-      throw new Exception("Invalid pixel format");
+  public static int getPixelSize(int pixelFormat) {
+    checkPixelFormat(pixelFormat);
     return pixelSize[pixelFormat];
   }
 
@@ -239,9 +236,8 @@ public final class TJ {
    *
    * @return the red offset for the given pixel format.
    */
-  public static int getRedOffset(int pixelFormat) throws Exception {
-    if (pixelFormat < 0 || pixelFormat >= NUMPF)
-      throw new Exception("Invalid pixel format");
+  public static int getRedOffset(int pixelFormat) {
+    checkPixelFormat(pixelFormat);
     return redOffset[pixelFormat];
   }
 
@@ -261,9 +257,8 @@ public final class TJ {
    *
    * @return the green offset for the given pixel format.
    */
-  public static int getGreenOffset(int pixelFormat) throws Exception {
-    if (pixelFormat < 0 || pixelFormat >= NUMPF)
-      throw new Exception("Invalid pixel format");
+  public static int getGreenOffset(int pixelFormat) {
+    checkPixelFormat(pixelFormat);
     return greenOffset[pixelFormat];
   }
 
@@ -283,9 +278,8 @@ public final class TJ {
    *
    * @return the blue offset for the given pixel format.
    */
-  public static int getBlueOffset(int pixelFormat) throws Exception {
-    if (pixelFormat < 0 || pixelFormat >= NUMPF)
-      throw new Exception("Invalid pixel format");
+  public static int getBlueOffset(int pixelFormat) {
+    checkPixelFormat(pixelFormat);
     return blueOffset[pixelFormat];
   }
 
@@ -511,4 +505,15 @@ public final class TJ {
   static {
     TJLoader.load();
   }
-};
+
+  private static void checkPixelFormat(int pixelFormat) {
+    if (pixelFormat < 0 || pixelFormat >= NUMPF)
+      throw new IllegalArgumentException("Invalid pixel format");
+  }
+
+  private static void checkSubsampling(int subsamp) {
+    if (subsamp < 0 || subsamp >= NUMSAMP)
+      throw new IllegalArgumentException("Invalid subsampling type");
+  }
+
+}

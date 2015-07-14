@@ -144,7 +144,7 @@ public class TJCompressor implements Closeable {
     if (handle == 0) init();
     if (srcImage == null || x < 0 || y < 0 || width < 1 || height < 1 ||
         pitch < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF)
-      throw new Exception("Invalid argument in setSourceImage()");
+      throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     srcBuf = srcImage;
     srcWidth = width;
     if (pitch == 0)
@@ -195,13 +195,13 @@ public class TJCompressor implements Closeable {
                              int height) throws Exception {
     if (handle == 0) init();
     if (srcImage == null || x < 0 || y < 0 || width < 0 || height < 0)
-      throw new Exception("Invalid argument in setSourceImage()");
+      throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     srcX = x;
     srcY = y;
     srcWidth = (width == 0) ? srcImage.getWidth(): width;
     srcHeight = (height == 0) ? srcImage.getHeight() : height;
     if (x + width > srcImage.getWidth() || y + height > srcImage.getHeight())
-      throw new Exception("Compression region exceeds the bounds of the source image");
+      throw new IllegalArgumentException("Compression region exceeds the bounds of the source image");
 
     int pixelFormat;
     boolean intPixels = false;
@@ -230,7 +230,7 @@ public class TJCompressor implements Closeable {
           pixelFormat = TJ.PF_BGRX;
         intPixels = true;  break;
       default:
-        throw new Exception("Unsupported BufferedImage format");
+        throw new IllegalArgumentException("Unsupported BufferedImage format");
     }
     srcPixelFormat = pixelFormat;
 
@@ -247,7 +247,7 @@ public class TJCompressor implements Closeable {
         (ComponentSampleModel)srcImage.getSampleModel();
       int pixelSize = sm.getPixelStride();
       if (pixelSize != TJ.getPixelSize(pixelFormat))
-        throw new Exception("Inconsistency between pixel format and pixel size in BufferedImage");
+        throw new IllegalArgumentException("Inconsistency between pixel format and pixel size in BufferedImage");
       srcPitch = sm.getScanlineStride();
       DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
       srcBuf = db.getData();
@@ -266,7 +266,7 @@ public class TJCompressor implements Closeable {
   public void setSourceImage(YUVImage srcImage) throws Exception {
     if (handle == 0) init();
     if (srcImage == null)
-      throw new Exception("Invalid argument in setSourceImage()");
+      throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     srcYUVImage = srcImage;
     srcBuf = null;
     srcBufInt = null;
@@ -293,9 +293,9 @@ public class TJCompressor implements Closeable {
    * subsequent compress/encode oeprations (one of
    * {@link TJ#SAMP_444 TJ.SAMP_*})
    */
-  public void setSubsamp(int newSubsamp) throws Exception {
+  public void setSubsamp(int newSubsamp) {
     if (newSubsamp < 0 || newSubsamp >= TJ.NUMSAMP)
-      throw new Exception("Invalid argument in setSubsamp()");
+      throw new IllegalArgumentException("Invalid argument in setSubsamp()");
     subsamp = newSubsamp;
   }
 
@@ -305,9 +305,9 @@ public class TJCompressor implements Closeable {
    * @param quality the new JPEG image quality level (1 to 100, 1 = worst,
    * 100 = best)
    */
-  public void setJPEGQuality(int quality) throws Exception {
+  public void setJPEGQuality(int quality) {
     if (quality < 1 || quality > 100)
-      throw new Exception("Invalid argument in setJPEGQuality()");
+      throw new IllegalArgumentException("Invalid argument in setJPEGQuality()");
     jpegQuality = quality;
   }
 
@@ -325,13 +325,13 @@ public class TJCompressor implements Closeable {
    */
   public void compress(byte[] dstBuf, int flags) throws Exception {
     if (dstBuf == null || flags < 0)
-      throw new Exception("Invalid argument in compress()");
+      throw new IllegalArgumentException("Invalid argument in compress()");
     if (srcBuf == null && srcBufInt == null && srcYUVImage == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (jpegQuality < 0)
-      throw new Exception("JPEG Quality not set");
+      throw new IllegalStateException("JPEG Quality not set");
     if (subsamp < 0 && srcYUVImage == null)
-      throw new Exception("Subsampling level not set");
+      throw new IllegalStateException("Subsampling level not set");
 
     if (srcYUVImage != null)
       compressedSize = compressFromYUV(srcYUVImage.getPlanes(),
@@ -374,8 +374,7 @@ public class TJCompressor implements Closeable {
    * #getCompressedSize} to obtain the size of the JPEG image.
    */
   public byte[] compress(int flags) throws Exception {
-    if (srcWidth < 1 || srcHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+    checkSourceImage();
     byte[] buf = new byte[TJ.bufSize(srcWidth, srcHeight, subsamp)];
     compress(buf, flags);
     return buf;
@@ -420,15 +419,14 @@ public class TJCompressor implements Closeable {
    */
   public void encodeYUV(YUVImage dstImage, int flags) throws Exception {
     if (dstImage == null || flags < 0)
-      throw new Exception("Invalid argument in encodeYUV()");
+      throw new IllegalArgumentException("Invalid argument in encodeYUV()");
     if (srcBuf == null && srcBufInt == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (srcYUVImage != null)
-      throw new Exception("Source image is not correct type");
-    if (subsamp < 0)
-      throw new Exception("Subsampling level not set");
+      throw new IllegalStateException("Source image is not correct type");
+    checkSubsampling();
     if (srcWidth != dstImage.getWidth() || srcHeight != dstImage.getHeight())
-      throw new Exception("Destination image is the wrong size");
+      throw new IllegalStateException("Destination image is the wrong size");
 
     if (srcBufInt != null) {
       encodeYUV(srcBufInt, srcX, srcY, srcWidth, srcStride, srcHeight,
@@ -448,11 +446,9 @@ public class TJCompressor implements Closeable {
   @Deprecated
   public void encodeYUV(byte[] dstBuf, int flags) throws Exception {
     if(dstBuf == null)
-      throw new Exception("Invalid argument in encodeYUV()");
-    if (srcWidth < 1 || srcHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
-    if (subsamp < 0)
-      throw new Exception("Subsampling level not set");
+      throw new IllegalArgumentException("Invalid argument in encodeYUV()");
+    checkSourceImage();
+    checkSubsampling();
     YUVImage yuvImage = new YUVImage(dstBuf, srcWidth, 4, srcHeight, subsamp);
     encodeYUV(yuvImage, flags);
   }
@@ -475,12 +471,10 @@ public class TJCompressor implements Closeable {
    * @return a YUV planar image.
    */
   public YUVImage encodeYUV(int pad, int flags) throws Exception {
-    if (srcWidth < 1 || srcHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
-    if (subsamp < 0)
-      throw new Exception("Subsampling level not set");
+    checkSourceImage();
+    checkSubsampling();
     if(pad < 1 || ((pad & (pad - 1)) != 0))
-      throw new Exception("Invalid argument in encodeYUV()");
+      throw new IllegalStateException("Invalid argument in encodeYUV()");
     YUVImage yuvImage = new YUVImage(srcWidth, pad, srcHeight, subsamp);
     encodeYUV(yuvImage, flags);
     return yuvImage;
@@ -508,10 +502,8 @@ public class TJCompressor implements Closeable {
    * @return a YUV planar image.
    */
   public YUVImage encodeYUV(int[] strides, int flags) throws Exception {
-    if (srcWidth < 1 || srcHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
-    if (subsamp < 0)
-      throw new Exception("Subsampling level not set");
+    checkSourceImage();
+    checkSubsampling();
     YUVImage yuvImage = new YUVImage(srcWidth, strides, srcHeight, subsamp);
     encodeYUV(yuvImage, flags);
     return yuvImage;
@@ -522,10 +514,8 @@ public class TJCompressor implements Closeable {
    */
   @Deprecated
   public byte[] encodeYUV(int flags) throws Exception {
-    if (srcWidth < 1 || srcHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
-    if (subsamp < 0)
-      throw new Exception("Subsampling level not set");
+    checkSourceImage();
+    checkSubsampling();
     YUVImage yuvImage = new YUVImage(srcWidth, 4, srcHeight, subsamp);
     encodeYUV(yuvImage, flags);
     return yuvImage.getBuf();
@@ -568,11 +558,13 @@ public class TJCompressor implements Closeable {
   /**
    * Free the native structures associated with this compressor instance.
    */
+  @Override
   public void close() throws IOException {
     if (handle != 0)
       destroy();
   }
 
+  @Override
   protected void finalize() throws Throwable {
     try {
       close();
@@ -630,6 +622,16 @@ public class TJCompressor implements Closeable {
     TJLoader.load();
   }
 
+  private void checkSourceImage() {
+    if (srcWidth < 1 || srcHeight < 1)
+      throw new IllegalStateException(NO_ASSOC_ERROR);
+  }
+
+  private void checkSubsampling() {
+    if (subsamp < 0)
+      throw new IllegalStateException("Subsampling level not set");
+  }
+
   private long handle = 0;
   private byte[] srcBuf = null;
   private int[] srcBufInt = null;
@@ -646,4 +648,4 @@ public class TJCompressor implements Closeable {
   private int compressedSize = 0;
   private int yuvPad = 4;
   private ByteOrder byteOrder = null;
-};
+}

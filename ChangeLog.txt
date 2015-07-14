@@ -15,6 +15,10 @@ to partially decode a JPEG image.  See libjpeg.txt for more details.
 implement the Closeable interface, so those classes can be used with a
 try-with-resources statement.
 
+[4] The TurboJPEG Java classes now throw unchecked idiomatic exceptions
+(IllegalArgumentException, IllegalStateException) for unrecoverable errors
+caused by incorrect API usage.
+
 
 1.4.1
 =====

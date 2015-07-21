@@ -179,21 +179,37 @@ jpeg_read_scanlines (j_decompress_ptr cinfo, JSAMPARRAY scanlines,
 }
 
 
-/* Prepare temporary row buffer */
+/* Dummy color convert function used by jpeg_skip_scanlines() */
+LOCAL(void)
+noop_convert (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+              JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)
+{
+}
+
+
+/*
+ * In some cases, it is best to call jpeg_read_scanlines() and discard the
+ * output, rather than skipping the scanlines, because this allows us to
+ * maintain the internal state of the context-based upsampler.  In these cases,
+ * we set up and tear down a dummy color converter in order to avoid valgrind
+ * errors and to achieve the best possible performance.
+ */
 
 LOCAL(void)
-dummy_buffer_setup (j_decompress_ptr cinfo)
+read_and_discard_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
 {
-  int nc;
+  JDIMENSION n;
+  void (*color_convert) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                         JDIMENSION input_row, JSAMPARRAY output_buf,
+                         int num_rows);
 
-  if (!cinfo->master || cinfo->master->dummy_row_buffer)
-    return;
+  color_convert = cinfo->cconvert->color_convert;
+  cinfo->cconvert->color_convert = noop_convert;
 
-  nc = (cinfo->out_color_space == JCS_RGB565) ?
-       2 : cinfo->out_color_components;
-  cinfo->master->dummy_row_buffer =
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                cinfo->output_width * nc * sizeof(JSAMPLE));
+  for (n = 0; n < num_lines; n++)
+    jpeg_read_scanlines(cinfo, NULL, 1);
+
+  cinfo->cconvert->color_convert = color_convert;
 }
 
 
@@ -205,7 +221,7 @@ dummy_buffer_setup (j_decompress_ptr cinfo)
 LOCAL(void)
 increment_simple_rowgroup_ctr (j_decompress_ptr cinfo, JDIMENSION rows)
 {
-  JDIMENSION i, rows_left;
+  JDIMENSION rows_left;
   my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
 
   /* Increment the counter to the next row group after the skipped rows. */
@@ -217,9 +233,7 @@ increment_simple_rowgroup_ctr (j_decompress_ptr cinfo, JDIMENSION rows)
   rows_left = rows % cinfo->max_v_samp_factor;
   cinfo->output_scanline += rows - rows_left;
 
-  dummy_buffer_setup(cinfo);
-  for (i = 0; i < rows_left; i++)
-    jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+  read_and_discard_scanlines(cinfo, rows_left);
 }
 
 /*
@@ -278,9 +292,7 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
     if ((num_lines < lines_left_in_iMCU_row + 1) ||
         (lines_left_in_iMCU_row <= 1 && main_ptr->buffer_full &&
          lines_after_iMCU_row < lines_per_iMCU_row + 1)) {
-      dummy_buffer_setup(cinfo);
-      for (i = 0; i < num_lines; i++)
-        jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+      read_and_discard_scanlines(cinfo, num_lines);
       return num_lines;
     }
 
@@ -344,9 +356,7 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
       /* It is complex to properly move to the middle of a context block, so
        * read the remaining lines instead of skipping them.
        */
-      dummy_buffer_setup(cinfo);
-      for (i = 0; i < lines_to_read; i++)
-        jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+      read_and_discard_scanlines(cinfo, lines_to_read);
     } else {
       cinfo->output_scanline += lines_to_skip;
       cinfo->output_iMCU_row += lines_to_skip / lines_per_iMCU_row;
@@ -383,9 +393,7 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
     /* It is complex to properly move to the middle of a context block, so
      * read the remaining lines instead of skipping them.
      */
-    dummy_buffer_setup(cinfo);
-    for (i = 0; i < lines_to_read; i++)
-      jpeg_read_scanlines(cinfo, &(cinfo->master->dummy_row_buffer), 1);
+    read_and_discard_scanlines(cinfo, lines_to_read);
   } else {
     increment_simple_rowgroup_ctr(cinfo, lines_to_read);
   }

@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2002-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2015 D. R. Commander.
+ * Copyright (C) 2009-2011, D. R. Commander.
  * Copyright (C) 2013, Linaro Limited.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -732,8 +732,6 @@ jinit_master_decompress (j_decompress_ptr cinfo)
   master->pub.finish_output_pass = finish_output_pass;
 
   master->pub.is_dummy_pass = FALSE;
-
-  master->pub.dummy_row_buffer = NULL;
 
   master_selection(cinfo);
 }

@@ -423,7 +423,7 @@ jpeg_fill_bit_buffer (bitread_working_state * state,
 
 /* Pre-fetch 48 bytes, because the holding register is 64-bit */
 #define FILL_BIT_BUFFER_FAST \
-  if (bits_left < 16) { \
+  if (bits_left <= 16) { \
     GET_BYTE GET_BYTE GET_BYTE GET_BYTE GET_BYTE GET_BYTE \
   }
 
@@ -431,7 +431,7 @@ jpeg_fill_bit_buffer (bitread_working_state * state,
 
 /* Pre-fetch 16 bytes, because the holding register is 32-bit */
 #define FILL_BIT_BUFFER_FAST \
-  if (bits_left < 16) { \
+  if (bits_left <= 16) { \
     GET_BYTE GET_BYTE \
   }
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2011-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,7 +44,7 @@ public class TJDecompressor implements Closeable {
   /**
    * Create a TurboJPEG decompresssor instance.
    */
-  public TJDecompressor() throws Exception {
+  public TJDecompressor() throws TJException {
     init();
   }
 
@@ -54,7 +55,7 @@ public class TJDecompressor implements Closeable {
    * @param jpegImage JPEG image buffer (size of the JPEG image is assumed to
    * be the length of the array.)  This buffer is not modified.
    */
-  public TJDecompressor(byte[] jpegImage) throws Exception {
+  public TJDecompressor(byte[] jpegImage) throws TJException {
     init();
     setSourceImage(jpegImage, jpegImage.length);
   }
@@ -68,7 +69,7 @@ public class TJDecompressor implements Closeable {
    *
    * @param imageSize size of the JPEG image (in bytes)
    */
-  public TJDecompressor(byte[] jpegImage, int imageSize) throws Exception {
+  public TJDecompressor(byte[] jpegImage, int imageSize) throws TJException {
     init();
     setSourceImage(jpegImage, imageSize);
   }
@@ -81,7 +82,7 @@ public class TJDecompressor implements Closeable {
    * @param yuvImage {@link YUVImage} instance containing a YUV planar
    * image to be decoded.  This image is not modified.
    */
-  public TJDecompressor(YUVImage yuvImage) throws Exception {
+  public TJDecompressor(YUVImage yuvImage) throws TJException {
     init();
     setSourceImage(yuvImage);
   }
@@ -96,7 +97,7 @@ public class TJDecompressor implements Closeable {
    * @param imageSize size of the JPEG image (in bytes)
    */
   public void setSourceImage(byte[] jpegImage, int imageSize)
-    throws Exception {
+                             throws TJException {
     if (jpegImage == null || imageSize < 1)
       throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     jpegBuf = jpegImage;
@@ -109,7 +110,8 @@ public class TJDecompressor implements Closeable {
    * @deprecated Use {@link #setSourceImage(byte[], int)} instead.
    */
   @Deprecated
-  public void setJPEGImage(byte[] jpegImage, int imageSize) throws Exception {
+  public void setJPEGImage(byte[] jpegImage, int imageSize)
+                           throws TJException {
     setSourceImage(jpegImage, imageSize);
   }
 
@@ -121,7 +123,7 @@ public class TJDecompressor implements Closeable {
    * @param srcImage {@link YUVImage} instance containing a YUV planar image to
    * be decoded.  This image is not modified.
    */
-  public void setSourceImage(YUVImage srcImage) throws Exception {
+  public void setSourceImage(YUVImage srcImage) {
     if (srcImage == null)
       throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     yuvImage = srcImage;
@@ -239,8 +241,7 @@ public class TJDecompressor implements Closeable {
    * decompressor can generate without exceeding the desired image width and
    * height.
    */
-  public int getScaledWidth(int desiredWidth, int desiredHeight)
-                            throws Exception {
+  public int getScaledWidth(int desiredWidth, int desiredHeight) {
     if (jpegWidth < 1 || jpegHeight < 1)
       throw new IllegalStateException(NO_ASSOC_ERROR);
     if (desiredWidth < 0 || desiredHeight < 0)
@@ -281,8 +282,7 @@ public class TJDecompressor implements Closeable {
    * decompressor can generate without exceeding the desired image width and
    * height.
    */
-  public int getScaledHeight(int desiredWidth, int desiredHeight)
-                             throws Exception {
+  public int getScaledHeight(int desiredWidth, int desiredHeight) {
     if (jpegWidth < 1 || jpegHeight < 1)
       throw new IllegalStateException(NO_ASSOC_ERROR);
     if (desiredWidth < 0 || desiredHeight < 0)
@@ -370,7 +370,7 @@ public class TJDecompressor implements Closeable {
    */
   public void decompress(byte[] dstBuf, int x, int y, int desiredWidth,
                          int pitch, int desiredHeight, int pixelFormat,
-                         int flags) throws Exception {
+                         int flags) throws TJException {
     if (jpegBuf == null && yuvImage == null)
       throw new IllegalStateException(NO_ASSOC_ERROR);
     if (dstBuf == null || x < 0 || y < 0 || pitch < 0 ||
@@ -399,7 +399,7 @@ public class TJDecompressor implements Closeable {
   @Deprecated
   public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
                          int desiredHeight, int pixelFormat, int flags)
-                         throws Exception {
+                         throws TJException {
     decompress(dstBuf, 0, 0, desiredWidth, pitch, desiredHeight, pixelFormat,
                flags);
   }
@@ -429,7 +429,7 @@ public class TJDecompressor implements Closeable {
    * @return a buffer containing the decompressed image.
    */
   public byte[] decompress(int desiredWidth, int pitch, int desiredHeight,
-                           int pixelFormat, int flags) throws Exception {
+                           int pixelFormat, int flags) throws TJException {
     if (pitch < 0 ||
         (yuvImage == null && (desiredWidth < 0 || desiredHeight < 0)) ||
         pixelFormat < 0 || pixelFormat >= TJ.NUMPF || flags < 0)
@@ -462,7 +462,8 @@ public class TJDecompressor implements Closeable {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    */
-  public void decompressToYUV(YUVImage dstImage, int flags) throws Exception {
+  public void decompressToYUV(YUVImage dstImage, int flags)
+                              throws TJException {
     if (jpegBuf == null)
       throw new IllegalStateException(NO_ASSOC_ERROR);
     if (dstImage == null || flags < 0)
@@ -486,7 +487,7 @@ public class TJDecompressor implements Closeable {
    * @deprecated Use {@link #decompressToYUV(YUVImage, int)} instead.
    */
   @Deprecated
-  public void decompressToYUV(byte[] dstBuf, int flags) throws Exception {
+  public void decompressToYUV(byte[] dstBuf, int flags) throws TJException {
     YUVImage dstImage = new YUVImage(dstBuf, jpegWidth, 4, jpegHeight,
                                      jpegSubsamp);
     decompressToYUV(dstImage, flags);
@@ -532,7 +533,7 @@ public class TJDecompressor implements Closeable {
    */
   public YUVImage decompressToYUV(int desiredWidth, int[] strides,
                                   int desiredHeight,
-                                  int flags) throws Exception {
+                                  int flags) throws TJException {
     if (flags < 0)
       throw new IllegalArgumentException("Invalid argument in decompressToYUV()");
     if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
@@ -585,7 +586,7 @@ public class TJDecompressor implements Closeable {
    * @return a YUV planar image.
    */
   public YUVImage decompressToYUV(int desiredWidth, int pad, int desiredHeight,
-                                  int flags) throws Exception {
+                                  int flags) throws TJException {
     if (flags < 0)
       throw new IllegalArgumentException("Invalid argument in decompressToYUV()");
     if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
@@ -607,7 +608,7 @@ public class TJDecompressor implements Closeable {
    * @deprecated Use {@link #decompressToYUV(int, int, int, int)} instead.
    */
   @Deprecated
-  public byte[] decompressToYUV(int flags) throws Exception {
+  public byte[] decompressToYUV(int flags) throws TJException {
     YUVImage dstImage = new YUVImage(jpegWidth, 4, jpegHeight, jpegSubsamp);
     decompressToYUV(dstImage, flags);
     return dstImage.getBuf();
@@ -677,7 +678,7 @@ public class TJDecompressor implements Closeable {
    */
   public void decompress(int[] dstBuf, int x, int y, int desiredWidth,
                          int stride, int desiredHeight, int pixelFormat,
-                         int flags) throws Exception {
+                         int flags) throws TJException {
     if (jpegBuf == null && yuvImage == null)
       throw new IllegalStateException(NO_ASSOC_ERROR);
     if (dstBuf == null || x < 0 || y < 0 || stride < 0 ||
@@ -710,7 +711,8 @@ public class TJDecompressor implements Closeable {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    */
-  public void decompress(BufferedImage dstImage, int flags) throws Exception {
+  public void decompress(BufferedImage dstImage, int flags)
+                         throws TJException {
     if (dstImage == null || flags < 0)
       throw new IllegalArgumentException("Invalid argument in decompress()");
     int desiredWidth = dstImage.getWidth();
@@ -819,7 +821,7 @@ public class TJDecompressor implements Closeable {
    */
   public BufferedImage decompress(int desiredWidth, int desiredHeight,
                                   int bufferedImageType, int flags)
-                                  throws Exception {
+                                  throws TJException {
     if ((yuvImage == null && (desiredWidth < 0 || desiredHeight < 0)) ||
         flags < 0)
       throw new IllegalArgumentException("Invalid argument in decompress()");
@@ -835,7 +837,7 @@ public class TJDecompressor implements Closeable {
    * Free the native structures associated with this decompressor instance.
    */
   @Override
-  public void close() throws IOException {
+  public void close() throws TJException {
     if (handle != 0)
       destroy();
   }
@@ -844,49 +846,52 @@ public class TJDecompressor implements Closeable {
   protected void finalize() throws Throwable {
     try {
       close();
-    } catch(Exception e) {
+    } catch(TJException e) {
     } finally {
       super.finalize();
     }
   };
 
-  private native void init() throws Exception;
+  private native void init() throws TJException;
 
-  private native void destroy() throws IOException;
+  private native void destroy() throws TJException;
 
   private native void decompressHeader(byte[] srcBuf, int size)
-    throws Exception;
+    throws TJException;
 
+  @Deprecated
   private native void decompress(byte[] srcBuf, int size, byte[] dstBuf,
     int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
-    throws Exception; // deprecated
+    throws TJException;
 
   private native void decompress(byte[] srcBuf, int size, byte[] dstBuf, int x,
     int y, int desiredWidth, int pitch, int desiredHeight, int pixelFormat,
-    int flags) throws Exception;
+    int flags) throws TJException;
 
+  @Deprecated
   private native void decompress(byte[] srcBuf, int size, int[] dstBuf,
     int desiredWidth, int stride, int desiredHeight, int pixelFormat,
-    int flags) throws Exception; // deprecated
+    int flags) throws TJException;
 
   private native void decompress(byte[] srcBuf, int size, int[] dstBuf, int x,
     int y, int desiredWidth, int stride, int desiredHeight, int pixelFormat,
-    int flags) throws Exception;
+    int flags) throws TJException;
 
+  @Deprecated
   private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
-    int flags) throws Exception; // deprecated
+    int flags) throws TJException;
 
   private native void decompressToYUV(byte[] srcBuf, int size,
     byte[][] dstPlanes, int[] dstOffsets, int desiredWidth, int[] dstStrides,
-    int desiredheight, int flags) throws Exception;
+    int desiredheight, int flags) throws TJException;
 
   private native void decodeYUV(byte[][] srcPlanes, int[] srcOffsets,
     int[] srcStrides, int subsamp, byte[] dstBuf, int x, int y, int width,
-    int pitch, int height, int pixelFormat, int flags) throws Exception;
+    int pitch, int height, int pixelFormat, int flags) throws TJException;
 
   private native void decodeYUV(byte[][] srcPlanes, int[] srcOffsets,
     int[] srcStrides, int subsamp, int[] dstBuf, int x, int y, int width,
-    int stride, int height, int pixelFormat, int flags) throws Exception;
+    int stride, int height, int pixelFormat, int flags) throws TJException;
 
   static {
     TJLoader.load();

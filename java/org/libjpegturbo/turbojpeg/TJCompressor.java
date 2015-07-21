@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2011-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,7 +44,7 @@ public class TJCompressor implements Closeable {
   /**
    * Create a TurboJPEG compressor instance.
    */
-  public TJCompressor() throws Exception {
+  public TJCompressor() throws TJException {
     init();
   }
 
@@ -68,7 +69,7 @@ public class TJCompressor implements Closeable {
    * {@link TJ#PF_RGB TJ.PF_*})
    */
   public TJCompressor(byte[] srcImage, int x, int y, int width, int pitch,
-                      int height, int pixelFormat) throws Exception {
+                      int height, int pixelFormat) throws TJException {
     setSourceImage(srcImage, x, y, width, pitch, height, pixelFormat);
   }
 
@@ -78,7 +79,7 @@ public class TJCompressor implements Closeable {
    */
   @Deprecated
   public TJCompressor(byte[] srcImage, int width, int pitch, int height,
-                      int pixelFormat) throws Exception {
+                      int pixelFormat) throws TJException {
     setSourceImage(srcImage, width, pitch, height, pixelFormat);
   }
 
@@ -103,7 +104,7 @@ public class TJCompressor implements Closeable {
    * {@link #setSourceImage(BufferedImage, int, int, int, int)} for description
    */
   public TJCompressor(BufferedImage srcImage, int x, int y, int width,
-                      int height) throws Exception {
+                      int height) throws TJException {
     setSourceImage(srcImage, x, y, width, height);
   }
 
@@ -140,7 +141,7 @@ public class TJCompressor implements Closeable {
    */
   public void setSourceImage(byte[] srcImage, int x, int y, int width,
                              int pitch, int height, int pixelFormat)
-                             throws Exception {
+                             throws TJException {
     if (handle == 0) init();
     if (srcImage == null || x < 0 || y < 0 || width < 1 || height < 1 ||
         pitch < 0 || pixelFormat < 0 || pixelFormat >= TJ.NUMPF)
@@ -165,7 +166,7 @@ public class TJCompressor implements Closeable {
    */
   @Deprecated
   public void setSourceImage(byte[] srcImage, int width, int pitch,
-                             int height, int pixelFormat) throws Exception {
+                             int height, int pixelFormat) throws TJException {
     setSourceImage(srcImage, 0, 0, width, pitch, height, pixelFormat);
     srcX = srcY = -1;
   }
@@ -192,7 +193,7 @@ public class TJCompressor implements Closeable {
    * height of the source image)
    */
   public void setSourceImage(BufferedImage srcImage, int x, int y, int width,
-                             int height) throws Exception {
+                             int height) throws TJException {
     if (handle == 0) init();
     if (srcImage == null || x < 0 || y < 0 || width < 0 || height < 0)
       throw new IllegalArgumentException("Invalid argument in setSourceImage()");
@@ -263,7 +264,7 @@ public class TJCompressor implements Closeable {
    * @param srcImage YUV planar image to be compressed.  This image is not
    * modified.
    */
-  public void setSourceImage(YUVImage srcImage) throws Exception {
+  public void setSourceImage(YUVImage srcImage) throws TJException {
     if (handle == 0) init();
     if (srcImage == null)
       throw new IllegalArgumentException("Invalid argument in setSourceImage()");
@@ -323,7 +324,7 @@ public class TJCompressor implements Closeable {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    */
-  public void compress(byte[] dstBuf, int flags) throws Exception {
+  public void compress(byte[] dstBuf, int flags) throws TJException {
     if (dstBuf == null || flags < 0)
       throw new IllegalArgumentException("Invalid argument in compress()");
     if (srcBuf == null && srcBufInt == null && srcYUVImage == null)
@@ -373,7 +374,7 @@ public class TJCompressor implements Closeable {
    * not be equal to the size of the JPEG image.  Use {@link
    * #getCompressedSize} to obtain the size of the JPEG image.
    */
-  public byte[] compress(int flags) throws Exception {
+  public byte[] compress(int flags) throws TJException {
     checkSourceImage();
     byte[] buf = new byte[TJ.bufSize(srcWidth, srcHeight, subsamp)];
     compress(buf, flags);
@@ -387,7 +388,7 @@ public class TJCompressor implements Closeable {
    */
   @Deprecated
   public void compress(BufferedImage srcImage, byte[] dstBuf, int flags)
-                       throws Exception {
+                       throws TJException {
     setSourceImage(srcImage, 0, 0, 0, 0);
     compress(dstBuf, flags);
   }
@@ -398,7 +399,8 @@ public class TJCompressor implements Closeable {
    * {@link #compress(int)} instead.
    */
   @Deprecated
-  public byte[] compress(BufferedImage srcImage, int flags) throws Exception {
+  public byte[] compress(BufferedImage srcImage, int flags)
+                         throws TJException {
     setSourceImage(srcImage, 0, 0, 0, 0);
     return compress(flags);
   }
@@ -417,7 +419,7 @@ public class TJCompressor implements Closeable {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    */
-  public void encodeYUV(YUVImage dstImage, int flags) throws Exception {
+  public void encodeYUV(YUVImage dstImage, int flags) throws TJException {
     if (dstImage == null || flags < 0)
       throw new IllegalArgumentException("Invalid argument in encodeYUV()");
     if (srcBuf == null && srcBufInt == null)
@@ -444,7 +446,7 @@ public class TJCompressor implements Closeable {
    * @deprecated Use {@link #encodeYUV(YUVImage, int)} instead.
    */
   @Deprecated
-  public void encodeYUV(byte[] dstBuf, int flags) throws Exception {
+  public void encodeYUV(byte[] dstBuf, int flags) throws TJException {
     if(dstBuf == null)
       throw new IllegalArgumentException("Invalid argument in encodeYUV()");
     checkSourceImage();
@@ -470,7 +472,7 @@ public class TJCompressor implements Closeable {
    *
    * @return a YUV planar image.
    */
-  public YUVImage encodeYUV(int pad, int flags) throws Exception {
+  public YUVImage encodeYUV(int pad, int flags) throws TJException {
     checkSourceImage();
     checkSubsampling();
     if(pad < 1 || ((pad & (pad - 1)) != 0))
@@ -501,7 +503,7 @@ public class TJCompressor implements Closeable {
    *
    * @return a YUV planar image.
    */
-  public YUVImage encodeYUV(int[] strides, int flags) throws Exception {
+  public YUVImage encodeYUV(int[] strides, int flags) throws TJException {
     checkSourceImage();
     checkSubsampling();
     YUVImage yuvImage = new YUVImage(srcWidth, strides, srcHeight, subsamp);
@@ -513,7 +515,7 @@ public class TJCompressor implements Closeable {
    * @deprecated Use {@link #encodeYUV(int, int)} instead.
    */
   @Deprecated
-  public byte[] encodeYUV(int flags) throws Exception {
+  public byte[] encodeYUV(int flags) throws TJException {
     checkSourceImage();
     checkSubsampling();
     YUVImage yuvImage = new YUVImage(srcWidth, 4, srcHeight, subsamp);
@@ -528,7 +530,7 @@ public class TJCompressor implements Closeable {
    */
   @Deprecated
   public void encodeYUV(BufferedImage srcImage, byte[] dstBuf, int flags)
-    throws Exception {
+                        throws TJException {
     setSourceImage(srcImage, 0, 0, 0, 0);
     encodeYUV(dstBuf, flags);
   }
@@ -539,7 +541,8 @@ public class TJCompressor implements Closeable {
    * {@link #encodeYUV(int, int)} instead.
    */
   @Deprecated
-  public byte[] encodeYUV(BufferedImage srcImage, int flags) throws Exception {
+  public byte[] encodeYUV(BufferedImage srcImage, int flags)
+                          throws TJException {
     setSourceImage(srcImage, 0, 0, 0, 0);
     return encodeYUV(flags);
   }
@@ -559,7 +562,7 @@ public class TJCompressor implements Closeable {
    * Free the native structures associated with this compressor instance.
    */
   @Override
-  public void close() throws IOException {
+  public void close() throws TJException {
     if (handle != 0)
       destroy();
   }
@@ -568,55 +571,59 @@ public class TJCompressor implements Closeable {
   protected void finalize() throws Throwable {
     try {
       close();
-    } catch(Exception e) {
+    } catch(TJException e) {
     } finally {
       super.finalize();
     }
   };
 
-  private native void init() throws Exception;
+  private native void init() throws TJException;
 
-  private native void destroy() throws IOException;
+  private native void destroy() throws TJException;
 
   // JPEG size in bytes is returned
+  @Deprecated
   private native int compress(byte[] srcBuf, int width, int pitch,
     int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp, int jpegQual,
-    int flags) throws Exception; // deprecated
+    int flags) throws TJException;
 
   private native int compress(byte[] srcBuf, int x, int y, int width,
     int pitch, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
-    int jpegQual, int flags) throws Exception;
+    int jpegQual, int flags) throws TJException;
 
+  @Deprecated
   private native int compress(int[] srcBuf, int width, int stride,
     int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp, int jpegQual,
-    int flags) throws Exception; // deprecated
+    int flags) throws TJException;
 
   private native int compress(int[] srcBuf, int x, int y, int width,
     int stride, int height, int pixelFormat, byte[] dstBuf, int jpegSubsamp,
-    int jpegQual, int flags) throws Exception;
+    int jpegQual, int flags) throws TJException;
 
   private native int compressFromYUV(byte[][] srcPlanes, int[] srcOffsets,
     int width, int[] srcStrides, int height, int subsamp, byte[] dstBuf,
     int jpegQual, int flags)
-    throws Exception;
+    throws TJException;
 
+  @Deprecated
   private native void encodeYUV(byte[] srcBuf, int width, int pitch,
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
-    throws Exception; // deprecated
+    throws TJException;
 
   private native void encodeYUV(byte[] srcBuf, int x, int y, int width,
     int pitch, int height, int pixelFormat, byte[][] dstPlanes,
     int[] dstOffsets, int[] dstStrides, int subsamp, int flags)
-    throws Exception;
+    throws TJException;
 
+  @Deprecated
   private native void encodeYUV(int[] srcBuf, int width, int stride,
     int height, int pixelFormat, byte[] dstBuf, int subsamp, int flags)
-    throws Exception; // deprecated
+    throws TJException;
 
   private native void encodeYUV(int[] srcBuf, int x, int y, int width,
     int srcStride, int height, int pixelFormat, byte[][] dstPlanes,
     int[] dstOffsets, int[] dstStrides, int subsamp, int flags)
-    throws Exception;
+    throws TJException;
 
   static {
     TJLoader.load();

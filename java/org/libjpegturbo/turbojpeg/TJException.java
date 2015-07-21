@@ -1,5 +1,4 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,76 +28,26 @@
 
 package org.libjpegturbo.turbojpeg;
 
-/**
- * Fractional scaling factor
- */
-public class TJScalingFactor {
+import java.io.IOException;
 
-  public TJScalingFactor(int num, int denom) {
-    if (num < 1 || denom < 1)
-      throw new IllegalArgumentException("Numerator and denominator must be >= 1");
-    this.num = num;
-    this.denom = denom;
+public class TJException extends IOException {
+
+  private static final long serialVersionUID = 1L;
+
+  public TJException() {
+    super();
   }
 
-  /**
-   * Returns numerator
-   *
-   * @return numerator
-   */
-  public int getNum() {
-    return num;
+  public TJException(String message, Throwable cause) {
+    super(message, cause);
   }
 
-  /**
-   * Returns denominator
-   *
-   * @return denominator
-   */
-  public int getDenom() {
-    return denom;
+  public TJException(String message) {
+    super(message);
   }
 
-  /**
-   * Returns the scaled value of <code>dimension</code>.  This function
-   * performs the integer equivalent of
-   * <code>ceil(dimension * scalingFactor)</code>.
-   *
-   * @return the scaled value of <code>dimension</code>.
-   */
-  public int getScaled(int dimension) {
-    return (dimension * num + denom - 1) / denom;
+  public TJException(Throwable cause) {
+    super(cause);
   }
 
-  /**
-   * Returns true or false, depending on whether this instance and
-   * <code>other</code> have the same numerator and denominator.
-   *
-   * @return true or false, depending on whether this instance and
-   * <code>other</code> have the same numerator and denominator.
-   */
-  public boolean equals(TJScalingFactor other) {
-    return this.num == other.num && this.denom == other.denom;
-  }
-
-  /**
-   * Returns true or false, depending on whether this instance is equal to
-   * 1/1.
-   *
-   * @return true or false, depending on whether this instance is equal to
-   * 1/1.
-   */
-  public boolean isOne() {
-    return num == 1 && denom == 1;
-  }
-
-  /**
-   * Numerator
-   */
-  private int num = 1;
-
-  /**
-   * Denominator
-   */
-  private int denom = 1;
 }

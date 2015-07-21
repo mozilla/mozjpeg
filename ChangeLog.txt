@@ -17,7 +17,8 @@ try-with-resources statement.
 
 [4] The TurboJPEG Java classes now throw unchecked idiomatic exceptions
 (IllegalArgumentException, IllegalStateException) for unrecoverable errors
-caused by incorrect API usage.
+caused by incorrect API usage, and those classes throw a new checked exception
+type (TJException) for errors that are passed through from the C library.
 
 
 1.4.1

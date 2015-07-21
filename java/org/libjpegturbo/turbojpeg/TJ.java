@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -401,8 +402,7 @@ public final class TJ {
    * @return the maximum size of the buffer (in bytes) required to hold a JPEG
    * image with the given width, height, and level of chrominance subsampling.
    */
-  public static native int bufSize(int width, int height, int jpegSubsamp)
-    throws Exception;
+  public static native int bufSize(int width, int height, int jpegSubsamp);
 
   /**
    * Returns the size of the buffer (in bytes) required to hold a YUV planar
@@ -422,15 +422,13 @@ public final class TJ {
    * image with the given width, height, and level of chrominance subsampling.
    */
   public static native int bufSizeYUV(int width, int pad, int height,
-                                      int subsamp)
-    throws Exception;
+                                      int subsamp);
 
   /**
    * @deprecated Use {@link #bufSizeYUV(int, int, int, int)} instead.
    */
   @Deprecated
-  public static native int bufSizeYUV(int width, int height, int subsamp)
-    throws Exception;
+  public static native int bufSizeYUV(int width, int height, int subsamp);
 
   /**
    * Returns the size of the buffer (in bytes) required to hold a YUV image
@@ -454,8 +452,7 @@ public final class TJ {
    * image with the given parameters.
    */
   public static native int planeSizeYUV(int componentID, int width, int stride,
-                                        int height, int subsamp)
-    throws Exception;
+                                        int height, int subsamp);
 
   /**
    * Returns the plane width of a YUV image plane with the given parameters.
@@ -471,8 +468,7 @@ public final class TJ {
    *
    * @return the plane width of a YUV image plane with the given parameters.
    */
-  public static native int planeWidth(int componentID, int width, int subsamp)
-    throws Exception;
+  public static native int planeWidth(int componentID, int width, int subsamp);
 
   /**
    * Returns the plane height of a YUV image plane with the given parameters.
@@ -489,8 +485,7 @@ public final class TJ {
    * @return the plane height of a YUV image plane with the given parameters.
    */
   public static native int planeHeight(int componentID, int height,
-                                       int subsamp)
-    throws Exception;
+                                       int subsamp);
 
   /**
    * Returns a list of fractional scaling factors that the JPEG decompressor in
@@ -499,8 +494,7 @@ public final class TJ {
    * @return a list of fractional scaling factors that the JPEG decompressor in
    * this implementation of TurboJPEG supports.
    */
-  public static native TJScalingFactor[] getScalingFactors()
-    throws Exception;
+  public static native TJScalingFactor[] getScalingFactors();
 
   static {
     TJLoader.load();

@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -86,8 +87,7 @@ public class YUVImage {
    * @param subsamp the level of chrominance subsampling to be used in the YUV
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
-  public YUVImage(int width, int[] strides, int height, int subsamp)
-    throws Exception {
+  public YUVImage(int width, int[] strides, int height, int subsamp) {
     setBuf(null, null, width, strides, height, subsamp, true);
   }
 
@@ -105,8 +105,7 @@ public class YUVImage {
    * @param subsamp the level of chrominance subsampling to be used in the YUV
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
-  public YUVImage(int width, int pad, int height, int subsamp)
-    throws Exception {
+  public YUVImage(int width, int pad, int height, int subsamp) {
     setBuf(new byte[TJ.bufSizeYUV(width, pad, height, subsamp)], width, pad,
            height, subsamp);
   }
@@ -146,7 +145,7 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public YUVImage(byte[][] planes, int[] offsets, int width, int[] strides,
-                  int height, int subsamp) throws Exception {
+                  int height, int subsamp) {
     setBuf(planes, offsets, width, strides, height, subsamp, false);
   }
 
@@ -172,7 +171,7 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public YUVImage(byte[] yuvImage, int width, int pad, int height,
-                  int subsamp) throws Exception {
+                  int subsamp) {
     setBuf(yuvImage, width, pad, height, subsamp);
   }
 
@@ -210,12 +209,12 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public void setBuf(byte[][] planes, int[] offsets, int width, int strides[],
-                     int height, int subsamp) throws Exception {
+                     int height, int subsamp) {
     setBuf(planes, offsets, width, strides, height, subsamp, false);
   }
 
   private void setBuf(byte[][] planes, int[] offsets, int width, int strides[],
-                     int height, int subsamp, boolean alloc) throws Exception {
+                     int height, int subsamp, boolean alloc) {
     if ((planes == null && !alloc) || width < 1 || height < 1 || subsamp < 0 ||
         subsamp >= TJ.NUMSAMP)
       throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
@@ -279,7 +278,7 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public void setBuf(byte[] yuvImage, int width, int pad, int height,
-                     int subsamp) throws Exception {
+                     int subsamp) {
     if (yuvImage == null || width < 1 || pad < 1 || ((pad & (pad - 1)) != 0) ||
         height < 1 || subsamp < 0 || subsamp >= TJ.NUMSAMP)
       throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
@@ -413,7 +412,7 @@ public class YUVImage {
    *
    * @return the size (in bytes) of the YUV image buffer
    */
-  public int getSize() throws Exception {
+  public int getSize() {
     if (yuvPlanes == null || yuvSubsamp < 0 || yuvSubsamp >= TJ.NUMSAMP)
       throw new IllegalStateException(NO_ASSOC_ERROR);
     int nc = (yuvSubsamp == TJ.SAMP_GRAY ? 1 : 3);

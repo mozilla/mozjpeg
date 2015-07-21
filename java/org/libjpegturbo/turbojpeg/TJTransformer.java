@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2011, 2013-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,7 +37,7 @@ public class TJTransformer extends TJDecompressor {
   /**
    * Create a TurboJPEG lossless transformer instance.
    */
-  public TJTransformer() throws Exception {
+  public TJTransformer() throws TJException {
     init();
   }
 
@@ -47,7 +48,7 @@ public class TJTransformer extends TJDecompressor {
    * @param jpegImage JPEG image buffer (size of the JPEG image is assumed to
    * be the length of the array.)  This buffer is not modified.
    */
-  public TJTransformer(byte[] jpegImage) throws Exception {
+  public TJTransformer(byte[] jpegImage) throws TJException {
     init();
     setSourceImage(jpegImage, jpegImage.length);
   }
@@ -61,7 +62,7 @@ public class TJTransformer extends TJDecompressor {
    *
    * @param imageSize size of the JPEG image (in bytes)
    */
-  public TJTransformer(byte[] jpegImage, int imageSize) throws Exception {
+  public TJTransformer(byte[] jpegImage, int imageSize) throws TJException {
     init();
     setSourceImage(jpegImage, imageSize);
   }
@@ -94,7 +95,7 @@ public class TJTransformer extends TJDecompressor {
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    */
   public void transform(byte[][] dstBufs, TJTransform[] transforms,
-                        int flags) throws Exception {
+                        int flags) throws TJException {
     if (jpegBuf == null)
       throw new IllegalStateException("JPEG buffer not initialized");
     transformedSizes = transform(jpegBuf, jpegBufSize, dstBufs, transforms,
@@ -117,7 +118,7 @@ public class TJTransformer extends TJDecompressor {
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    */
   public TJDecompressor[] transform(TJTransform[] transforms, int flags)
-    throws Exception {
+                                    throws TJException {
     byte[][] dstBufs = new byte[transforms.length][];
     if (jpegWidth < 1 || jpegHeight < 1)
       throw new IllegalStateException("JPEG buffer not initialized");
@@ -149,10 +150,10 @@ public class TJTransformer extends TJDecompressor {
     return transformedSizes;
   }
 
-  private native void init() throws Exception;
+  private native void init() throws TJException;
 
   private native int[] transform(byte[] srcBuf, int srcSize, byte[][] dstBufs,
-    TJTransform[] transforms, int flags) throws Exception;
+    TJTransform[] transforms, int flags) throws TJException;
 
   static {
     TJLoader.load();

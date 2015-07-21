@@ -608,8 +608,7 @@ extends java.awt.Rectangle</pre>
            int&nbsp;h,
            int&nbsp;op,
            int&nbsp;options,
-           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)
-            throws java.lang.Exception</pre>
+           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)</pre>
 <div class="block">Create a new lossless transform instance with the given parameters.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>x</code> - the left boundary of the cropping region.  This must be evenly
  divisible by the MCU block width (see <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth(int)</code></a>)</dd><dd><code>y</code> - the upper boundary of the cropping region.  This must be evenly
@@ -618,9 +617,7 @@ extends java.awt.Rectangle</pre>
  <code>x</code>).</dd><dd><code>h</code> - the height of the cropping region.  Setting this to 0 is the
  equivalent of setting it to (height of the source JPEG image -
  <code>y</code>).</dd><dd><code>op</code> - one of the transform operations (<code>OP_*</code>)</dd><dd><code>options</code> - the bitwise OR of one or more of the transform options
- (<code>OPT_*</code>)</dd><dd><code>cf</code> - an instance of an object that implements the <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><code>TJCustomFilter</code></a> interface, or null if no custom filter is needed</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+ (<code>OPT_*</code>)</dd><dd><code>cf</code> - an instance of an object that implements the <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><code>TJCustomFilter</code></a> interface, or null if no custom filter is needed</dd></dl>
 </li>
 </ul>
 <a name="TJTransform(java.awt.Rectangle, int, int, org.libjpegturbo.turbojpeg.TJCustomFilter)">
@@ -632,15 +629,12 @@ extends java.awt.Rectangle</pre>
 <pre>public&nbsp;TJTransform(java.awt.Rectangle&nbsp;r,
            int&nbsp;op,
            int&nbsp;options,
-           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)
-            throws java.lang.Exception</pre>
+           <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg">TJCustomFilter</a>&nbsp;cf)</pre>
 <div class="block">Create a new lossless transform instance with the given parameters.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>r</code> - a <code>Rectangle</code> instance that specifies the cropping
  region.  See <a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html#TJTransform(int,%20int,%20int,%20int,%20int,%20int,%20org.libjpegturbo.turbojpeg.TJCustomFilter)"><code>TJTransform(int, int, int, int, int, int, TJCustomFilter)</code></a> for more
  detail.</dd><dd><code>op</code> - one of the transform operations (<code>OP_*</code>)</dd><dd><code>options</code> - the bitwise OR of one or more of the transform options
- (<code>OPT_*</code>)</dd><dd><code>cf</code> - an instance of an object that implements the <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><code>TJCustomFilter</code></a> interface, or null if no custom filter is needed</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+ (<code>OPT_*</code>)</dd><dd><code>cf</code> - an instance of an object that implements the <a href="../../../org/libjpegturbo/turbojpeg/TJCustomFilter.html" title="interface in org.libjpegturbo.turbojpeg"><code>TJCustomFilter</code></a> interface, or null if no custom filter is needed</dd></dl>
 </li>
 </ul>
 </li>

@@ -332,7 +332,7 @@ libjpeg-turbo for these platforms.
 Additional build requirements:
 
   gas-preprocessor.pl
-  (https://sourceforge.net/p/libjpeg-turbo/code/HEAD/tree/gas-preprocessor)
+  (https://raw.githubusercontent.com/libjpeg-turbo/gas-preprocessor/master/gas-preprocessor.pl)
   should be installed in your PATH.
 
 

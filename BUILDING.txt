@@ -11,11 +11,14 @@ Build Requirements
 -- automake 1.7 or later
 -- libtool 1.4 or later
 
--- NASM (if building x86 or x86-64 SIMD extensions)
-   * 0.98, or 2.01 or later is required for a 32-bit build
-   * NASM 2.00 or later is required for a 64-bit build
-   * NASM 2.07 or later is required for a 64-bit build on OS X.  This can be
-     obtained from MacPorts (http://www.macports.org/).
+-- NASM or YASM (if building x86 or x86-64 SIMD extensions)
+   * NASM 0.98, or 2.01 or later is required for an x86 build (0.99 and 2.00 do
+     not work properly with libjpeg-turbo's x86 SIMD code.)
+   * NASM 2.00 or later is required for an x86-64 build.
+   * NASM 2.07, or 2.11.09 or later is required for an x86-64 Mac build
+     (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD code when
+     building macho64 objects.)  NASM or YASM can be obtained from MacPorts
+     (http://www.macports.org/).
 
    The binary RPMs released by the NASM project do not work on older Linux
    systems, such as Red Hat Enterprise Linux 4.  On such systems, you can

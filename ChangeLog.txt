@@ -20,6 +20,11 @@ try-with-resources statement.
 caused by incorrect API usage, and those classes throw a new checked exception
 type (TJException) for errors that are passed through from the C library.
 
+[5] Fixed an issue whereby cjpeg would segfault if a Windows bitmap with a
+negative width or height was used as an input image (Windows bitmaps can have
+a negative height if they are stored in top-down order, but such files are
+rare and not supported by libjpeg-turbo.)
+
 
 1.4.1
 =====

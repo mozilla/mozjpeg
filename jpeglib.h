@@ -919,7 +919,8 @@ EXTERN(void) jpeg_stdio_src (j_decompress_ptr cinfo, FILE * infile);
 /* Data source and destination managers: memory buffers. */
 EXTERN(void) jpeg_mem_dest (j_compress_ptr cinfo, unsigned char ** outbuffer,
                             unsigned long * outsize);
-EXTERN(void) jpeg_mem_src (j_decompress_ptr cinfo, unsigned char * inbuffer,
+EXTERN(void) jpeg_mem_src (j_decompress_ptr cinfo,
+                           const unsigned char * inbuffer,
                            unsigned long insize);
 #endif
 

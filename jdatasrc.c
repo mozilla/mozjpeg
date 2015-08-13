@@ -254,7 +254,7 @@ jpeg_stdio_src (j_decompress_ptr cinfo, FILE * infile)
 
 GLOBAL(void)
 jpeg_mem_src (j_decompress_ptr cinfo,
-              unsigned char * inbuffer, unsigned long insize)
+              const unsigned char * inbuffer, unsigned long insize)
 {
   struct jpeg_source_mgr * src;
 
@@ -278,6 +278,6 @@ jpeg_mem_src (j_decompress_ptr cinfo,
   src->resync_to_restart = jpeg_resync_to_restart; /* use default method */
   src->term_source = term_source;
   src->bytes_in_buffer = (size_t) insize;
-  src->next_input_byte = (JOCTET *) inbuffer;
+  src->next_input_byte = (const JOCTET *) inbuffer;
 }
 #endif

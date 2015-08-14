@@ -291,7 +291,8 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFrom
 	tjhandle handle=0;
 	unsigned long jpegSize=0;
 	jbyteArray jSrcPlanes[3]={NULL, NULL, NULL};
-	unsigned char *srcPlanes[3], *jpegBuf=NULL;
+	const unsigned char *srcPlanes[3];
+	unsigned char *jpegBuf=NULL;
 	int *srcOffsets=NULL, *srcStrides=NULL;
 	int nc=(subsamp==org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY? 1:3), i;
 
@@ -349,8 +350,8 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFrom
 	for(i=0; i<nc; i++)
 	{
 		if(srcPlanes[i] && jSrcPlanes[i])
-			(*env)->ReleasePrimitiveArrayCritical(env, jSrcPlanes[i], srcPlanes[i],
-				0);
+			(*env)->ReleasePrimitiveArrayCritical(env, jSrcPlanes[i],
+				(unsigned char *)srcPlanes[i], 0);
 	}
 	if(srcStrides)
 		(*env)->ReleasePrimitiveArrayCritical(env, jSrcStrides, srcStrides, 0);
@@ -449,7 +450,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
 /* TurboJPEG 1.4.x: TJCompressor::encodeYUV() int source */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIIIII_3_3B_3I_3III
 	(JNIEnv *env, jobject obj, jintArray src, jint x, jint y, jint width,
-		jint stride, jint height, jint pf, jobjectArray dstobjs, 
+		jint stride, jint height, jint pf, jobjectArray dstobjs,
 		jintArray jDstOffsets, jintArray jDstStrides, jint subsamp, jint flags)
 {
 	if(pf<0 || pf>=org_libjpegturbo_turbojpeg_TJ_NUMPF)
@@ -847,7 +848,8 @@ static void TJDecompressor_decodeYUV
 	tjhandle handle=0;
 	jsize arraySize=0, actualPitch;
 	jbyteArray jSrcPlanes[3]={NULL, NULL, NULL};
-	unsigned char *srcPlanes[3], *dstBuf=NULL;
+	const unsigned char *srcPlanes[3];
+	unsigned char *dstBuf=NULL;
 	int *srcOffsets=NULL, *srcStrides=NULL;
 	int nc=(subsamp==org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY? 1:3), i;
 
@@ -907,8 +909,8 @@ static void TJDecompressor_decodeYUV
 	for(i=0; i<nc; i++)
 	{
 		if(srcPlanes[i] && jSrcPlanes[i])
-			(*env)->ReleasePrimitiveArrayCritical(env, jSrcPlanes[i], srcPlanes[i],
-				0);
+			(*env)->ReleasePrimitiveArrayCritical(env, jSrcPlanes[i],
+				(unsigned char *)srcPlanes[i], 0);
 	}
 	if(srcStrides)
 		(*env)->ReleasePrimitiveArrayCritical(env, jSrcStrides, srcStrides, 0);

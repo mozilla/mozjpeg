@@ -25,6 +25,12 @@ negative width or height was used as an input image (Windows bitmaps can have
 a negative height if they are stored in top-down order, but such files are
 rare and not supported by libjpeg-turbo.)
 
+[6] Source buffers for the TurboJPEG C API functions, as well as the
+jpeg_mem_src() function in the libjpeg API, are now declared as const pointers.
+This facilitates passing read-only buffers to those functions and ensures the
+caller that the source buffer will not be modified.  This should not create any
+backward API or ABI incompatibilities with prior libjpeg-turbo releases.
+
 
 1.4.1
 =====

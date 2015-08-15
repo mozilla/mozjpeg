@@ -31,6 +31,9 @@ This facilitates passing read-only buffers to those functions and ensures the
 caller that the source buffer will not be modified.  This should not create any
 backward API or ABI incompatibilities with prior libjpeg-turbo releases.
 
+[7] The MIPS DSPr2 SIMD code can now be compiled to support either FR=0 or FR=1
+FPUs.
+
 
 1.4.1
 =====

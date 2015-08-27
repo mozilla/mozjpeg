@@ -1381,7 +1381,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 		if(scaledw<=width && scaledh<=height)
 			break;
 	}
-	if(scaledw>width || scaledh>height)
+	if(i>=NUMSF)
 		_throw("tjDecompress2(): Could not scale down to desired image dimensions");
 	width=scaledw;  height=scaledh;
 	dinfo->scale_num=sf[i].num;
@@ -1756,7 +1756,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 		if(scaledw<=width && scaledh<=height)
 			break;
 	}
-	if(scaledw>width || scaledh>height)
+	if(i>=NUMSF)
 		_throw("tjDecompressToYUVPlanes(): Could not scale down to desired image dimensions");
 	if(dinfo->num_components>3)
 		_throw("tjDecompressToYUVPlanes(): JPEG image must have 3 or fewer components");
@@ -1902,7 +1902,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 		if(scaledw<=width && scaledh<=height)
 			break;
 	}
-	if(scaledw>width || scaledh>height)
+	if(i>=NUMSF)
 		_throw("tjDecompressToYUV2(): Could not scale down to desired image dimensions");
 
 	pw0=tjPlaneWidth(0, width, jpegSubsamp);

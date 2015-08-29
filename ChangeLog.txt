@@ -6,6 +6,11 @@ negative width or height was used as an input image (Windows bitmaps can have
 a negative height if they are stored in top-down order, but such files are
 rare and not supported by libjpeg-turbo.)
 
+[2] Fixed an issue whereby, under certain circumstances, libjpeg-turbo would
+incorrectly encode certain JPEG images when quality=100 and the fast integer
+forward DCT were used.  This was known to cause 'make test' to fail when the
+library was built with '-march=haswell' on x86 systems.
+
 
 1.4.1
 =====

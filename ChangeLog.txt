@@ -34,6 +34,11 @@ backward API or ABI incompatibilities with prior libjpeg-turbo releases.
 [7] The MIPS DSPr2 SIMD code can now be compiled to support either FR=0 or FR=1
 FPUs.
 
+[8] Fixed an issue whereby, under certain circumstances, libjpeg-turbo would
+incorrectly encode certain JPEG images when quality=100 and the fast integer
+forward DCT were used.  This was known to cause 'make test' to fail when the
+library was built with '-march=haswell' on x86 systems.
+
 
 1.4.1
 =====

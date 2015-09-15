@@ -162,7 +162,9 @@ typedef long INT32;
  * images up to 64K*64K due to 16-bit fields in SOF markers.  Therefore
  * "unsigned int" is sufficient on all machines.  However, if you need to
  * handle larger images and you don't mind deviating from the spec, you
- * can change this datatype.
+ * can change this datatype.  (Note that changing this datatype will
+ * potentially require modifying the SIMD code.  The x86-64 SIMD extensions,
+ * in particular, assume a 32-bit JDIMENSION.)
  */
 
 typedef unsigned int JDIMENSION;

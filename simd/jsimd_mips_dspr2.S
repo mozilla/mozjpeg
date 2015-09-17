@@ -1811,12 +1811,11 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
     bgtz    t4, 2b
      addiu  t5, 2
 3:
-    ulw     t6, 0(t7)       // t6 = outptr
-    ulw     t5, 4(t7)       // t5 = outptr[1]
+    lw      t6, 0(t7)       // t6 = outptr[0]
+    lw      t5, 4(t7)       // t5 = outptr[1]
     addu    t4, t6, a1      // t4 = new end address
-    subu    t8, t4, t9
-    beqz    t8, 5f
-     nop
+    beq     a1, t9, 5f
+     subu   t8, t4, t9
 4:
     ulw     t0, 0(t6)
     ulw     t1, 4(t6)

@@ -21,6 +21,13 @@ Clang/LLVM optimizer uses load combining to transfer multiple adjacent 32-bit
 structure members into a single 64-bit register, and this exposed the ABI
 conformance issue.
 
+[4] Fixed a bug in the MIPS DSPr2 4:2:0 "plain" (non-fancy and non-merged)
+upsampling routine that caused a buffer overflow (and subsequent segfault) when
+decompressing a 4:2:0 JPEG image whose scaled output width was less than 16
+pixels.  The "plain" upsampling routines are normally only used when
+decompressing a non-YCbCr JPEG image, but they are also used when decompressing
+a JPEG image whose scaled output height is 1.
+
 
 1.4.1
 =====

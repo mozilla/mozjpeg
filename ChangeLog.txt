@@ -39,6 +39,23 @@ incorrectly encode certain JPEG images when quality=100 and the fast integer
 forward DCT were used.  This was known to cause 'make test' to fail when the
 library was built with '-march=haswell' on x86 systems.
 
+[3] Fixed an issue whereby libjpeg-turbo would crash when built with the latest
+& greatest development version of the Clang/LLVM compiler.  This was caused by
+an x86-64 ABI conformance issue in some of libjpeg-turbo's 64-bit SSE2 SIMD
+routines.  Those routines were incorrectly using a 64-bit mov instruction to
+transfer a 32-bit JDIMENSION argument, whereas the x86-64 ABI allows the upper
+(unused) 32 bits of a 32-bit argument's register to be undefined.  The new
+Clang/LLVM optimizer uses load combining to transfer multiple adjacent 32-bit
+structure members into a single 64-bit register, and this exposed the ABI
+conformance issue.
+
+[4] Fixed a bug in the MIPS DSPr2 4:2:0 "plain" (non-fancy and non-merged)
+upsampling routine that caused a buffer overflow (and subsequent segfault) when
+decompressing a 4:2:0 JPEG image whose scaled output width was less than 16
+pixels.  The "plain" upsampling routines are normally only used when
+decompressing a non-YCbCr JPEG image, but they are also used when decompressing
+a JPEG image whose scaled output height is 1.
+
 
 1.4.1
 =====

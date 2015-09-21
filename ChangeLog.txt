@@ -56,6 +56,11 @@ pixels.  The "plain" upsampling routines are normally only used when
 decompressing a non-YCbCr JPEG image, but they are also used when decompressing
 a JPEG image whose scaled output height is 1.
 
+[11] Fixed various negative left shifts and other issues reported by the GCC
+and Clang undefined behavior sanitizers.  None of these was known to pose a
+security threat, but removing the warnings makes it easier to detect actual
+security issues, should they arise in the future.
+
 
 1.4.1
 =====

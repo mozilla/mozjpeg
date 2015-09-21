@@ -168,7 +168,7 @@ dist_example_DATA = example.c
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
 	doxygen-extra.css jccolext.c jdcolext.c jdcol565.c jdmrgext.c jdmrg565.c \
-	jstdhuff.c
+	jstdhuff.c LICENSE.txt
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`

@@ -441,7 +441,7 @@ ABI.  The "age number" of the libjpeg-turbo library on Un*x systems has been
 incremented by 1 to reflect this.  You can disable this feature with a
 configure/CMake switch in order to retain strict API/ABI compatibility with the
 libjpeg v6b or v7 API/ABI (or with previous versions of libjpeg-turbo.)  See
-README-turbo.txt for more details.
+README.md for more details.
 
 [13] Added ARMv7s architecture to libjpeg.a and libturbojpeg.a in the official
 libjpeg-turbo binary package for OS X, so that those libraries can be used to
@@ -677,7 +677,7 @@ tjDecompressToYUV(), to replace the somewhat hackish TJ_YUV flag.
 ==================
 
 [1] Added emulation of the libjpeg v7 and v8 APIs and ABIs.  See
-README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
+README.md for more details.  This feature was sponsored by CamTrace SAS.
 
 [2] Created a new CMake-based build system for the Visual C++ and MinGW builds.
 

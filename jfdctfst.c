@@ -3,7 +3,8 @@
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains a fast, not so accurate integer implementation of the
  * forward DCT (Discrete Cosine Transform).
@@ -15,8 +16,8 @@
  * This implementation is based on Arai, Agui, and Nakajima's algorithm for
  * scaled DCT.  Their original paper (Trans. IEICE E-71(11):1095) is in
  * Japanese, but the algorithm is described in the Pennebaker & Mitchell
- * JPEG textbook (see REFERENCES section in file README).  The following code
- * is based directly on figure 4-8 in P&M.
+ * JPEG textbook (see REFERENCES section in file README.ijg).  The following
+ * code is based directly on figure 4-8 in P&M.
  * While an 8-point DCT cannot be done in less than 11 multiplies, it is
  * possible to arrange the computation so that many of the multiplies are
  * simple scalings of the final outputs.  These multiplies can then be

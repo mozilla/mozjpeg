@@ -5,7 +5,8 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010-2011, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains declarations for Huffman entropy decoding routines
  * that are shared between the sequential decoder (jdhuff.c) and the

@@ -6,7 +6,8 @@
  * Modified 2003-2008 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains optional default-setting code for the JPEG compressor.
  * Applications do not have to use this file, but those that don't use it

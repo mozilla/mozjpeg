@@ -5,7 +5,8 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2014, D. R. Commander
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains a very simple stand-alone application that inserts
  * user-supplied text as a COM (comment) marker in a JFIF file.

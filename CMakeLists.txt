@@ -944,7 +944,7 @@ endif()
 
 install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION bin)
 
-install(FILES ${CMAKE_SOURCE_DIR}/README ${CMAKE_SOURCE_DIR}/README-turbo.txt
+install(FILES ${CMAKE_SOURCE_DIR}/README.ijg ${CMAKE_SOURCE_DIR}/README.md
   ${CMAKE_SOURCE_DIR}/example.c ${CMAKE_SOURCE_DIR}/libjpeg.txt
   ${CMAKE_SOURCE_DIR}/structure.txt ${CMAKE_SOURCE_DIR}/usage.txt
   ${CMAKE_SOURCE_DIR}/wizard.txt

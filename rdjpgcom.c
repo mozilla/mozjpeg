@@ -6,7 +6,8 @@
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains a very simple stand-alone application that displays
  * the text in COM (comment) markers in a JFIF file.

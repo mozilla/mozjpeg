@@ -7,7 +7,8 @@
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2010, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains upsampling routines.
  *

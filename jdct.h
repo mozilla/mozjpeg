@@ -5,7 +5,8 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This include file contains common declarations for the forward and
  * inverse DCT modules.  These declarations are private to the DCT managers

@@ -6,7 +6,8 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010-2011, 2013-2015, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains a command-line user interface for the JPEG decompressor.
  * It should work on any system with Unix- or MS-DOS-style command lines.

@@ -5,7 +5,8 @@
  * Developed 1997-2009 by Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains portable arithmetic entropy encoding routines for JPEG
  * (implementing the ISO/IEC IS 10918-1 and CCITT Recommendation ITU-T T.81).

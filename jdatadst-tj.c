@@ -6,7 +6,8 @@
  * Modified 2009-2012 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2011, 2014 D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains compression data destination routines for the case of
  * emitting JPEG data to memory or to a file (or any stdio stream).

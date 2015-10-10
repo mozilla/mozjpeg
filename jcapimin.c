@@ -6,7 +6,8 @@
  * Modified 2003-2010 by Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains application interface code for the compression half
  * of the JPEG library.  These are the "minimum" API routines that may be

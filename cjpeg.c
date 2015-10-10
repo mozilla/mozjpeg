@@ -6,7 +6,8 @@
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, 2013-2014, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains a command-line user interface for the JPEG compressor.
  * It should work on any system with Unix- or MS-DOS-style command lines.

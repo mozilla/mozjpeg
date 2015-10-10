@@ -6,7 +6,8 @@
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code and
  * information relevant to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to read input images in PPM/PGM format.
  * The extended 2-byte-per-sample raw PPM/PGM formats are supported.

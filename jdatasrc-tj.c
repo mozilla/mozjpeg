@@ -6,7 +6,8 @@
  * Modified 2009-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2011, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains decompression data source routines for the case of
  * reading JPEG data from memory or from a file (or any stdio stream).

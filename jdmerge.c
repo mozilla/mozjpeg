@@ -7,7 +7,8 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009, 2011, 2014 D. R. Commander.
  * Copyright (C) 2013, Linaro Limited.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains code for merged upsampling/color conversion.
  *

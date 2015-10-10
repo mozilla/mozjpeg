@@ -79,8 +79,8 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_SOURCE_DIR@\jpeglib.h"
 	File "@CMAKE_SOURCE_DIR@\turbojpeg.h"
 	SetOutPath $INSTDIR\doc
-	File "@CMAKE_SOURCE_DIR@\README"
-	File "@CMAKE_SOURCE_DIR@\README-turbo.txt"
+	File "@CMAKE_SOURCE_DIR@\README.ijg"
+	File "@CMAKE_SOURCE_DIR@\README.md"
 	File "@CMAKE_SOURCE_DIR@\example.c"
 	File "@CMAKE_SOURCE_DIR@\libjpeg.txt"
 	File "@CMAKE_SOURCE_DIR@\structure.txt"
@@ -140,8 +140,8 @@ Section "Uninstall"
 	Delete $INSTDIR\include\jpeglib.h"
 	Delete $INSTDIR\include\turbojpeg.h"
 	Delete $INSTDIR\uninstall_@VERSION@.exe
-	Delete $INSTDIR\doc\README
-	Delete $INSTDIR\doc\README-turbo.txt
+	Delete $INSTDIR\doc\README.ijg
+	Delete $INSTDIR\doc\README.md
 	Delete $INSTDIR\doc\example.c
 	Delete $INSTDIR\doc\libjpeg.txt
 	Delete $INSTDIR\doc\structure.txt

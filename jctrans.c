@@ -6,7 +6,8 @@
  * Modified 2000-2009 by Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains library routines for transcoding compression,
  * that is, writing raw DCT coefficient arrays to an output JPEG file.

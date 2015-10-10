@@ -5,7 +5,7 @@ Copyright (C) 1994-2011, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
 Copyright (C) 2010, 2014, 2015, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
-For conditions of distribution and use, see the accompanying README file.
+For conditions of distribution and use, see the accompanying README.ijg file.
 
 
 This file describes how to use the IJG JPEG library within an application
@@ -201,7 +201,7 @@ or full grayscale (or sometimes another colorspace such as CMYK).  You can
 feed in a colormapped image by expanding it to full-color format.  However
 JPEG often doesn't work very well with source data that has been colormapped,
 because of dithering noise.  This is discussed in more detail in the JPEG FAQ
-and the other references mentioned in the README file.
+and the other references mentioned in the README.ijg file.
 
 Pixels are stored by scanlines, with each scanline running from left to
 right.  The component values for each pixel are adjacent in the row; for
@@ -825,7 +825,7 @@ This section describes all the optional parameters you can set for JPEG
 compression, as well as the "helper" routines provided to assist in this
 task.  Proper setting of some parameters requires detailed understanding
 of the JPEG standard; if you don't know what a parameter is for, it's best
-not to mess with it!  See REFERENCES in the README file for pointers to
+not to mess with it!  See REFERENCES in the README.ijg file for pointers to
 more info about JPEG.
 
 It's a good idea to call jpeg_set_defaults() first, even if you plan to set

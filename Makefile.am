@@ -158,7 +158,7 @@ dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.txt \
 	ChangeLog.txt
 
-dist_doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
+dist_doc_DATA = README.ijg README.md libjpeg.txt structure.txt usage.txt \
 	wizard.txt
 
 exampledir = $(docdir)
@@ -237,7 +237,7 @@ MD5_PPM_GRAY_ISLOW_RGB = 116424ac07b79e5e801f00508eab48ec
 MD5_BMP_GRAY_ISLOW_565 = 12f78118e56a2f48b966f792fedf23cc
 MD5_BMP_GRAY_ISLOW_565D = bdbbd616441a24354c98553df5dc82db
 MD5_JPEG_420S_IFAST_OPT = 388708217ac46273ca33086b22827ed8
-# See README-turbo.txt for more details on why this next bit is necessary.
+# See README.md for more details on why this next bit is necessary.
 MD5_JPEG_3x2_FLOAT_PROG_SSE = 343e3f8caf8af5986ebaf0bdc13b5c71
 MD5_PPM_3x2_FLOAT_SSE = 1a75f36e5904d6fc3a85a43da9ad89bb
 MD5_JPEG_3x2_FLOAT_PROG_32BIT = 9bca803d2042bd1eb03819e2bf92b3e5

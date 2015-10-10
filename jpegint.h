@@ -6,7 +6,8 @@
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2015, D. R. Commander
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file provides common declarations for the various JPEG modules.
  * These declarations are considered internal to the JPEG library; most

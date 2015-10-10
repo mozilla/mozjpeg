@@ -5,7 +5,8 @@
  * Copyright (C) 1997-2011, Thomas G. Lane, Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains declarations for image transformation routines and
  * other utility code used by the jpegtran sample application.  These are

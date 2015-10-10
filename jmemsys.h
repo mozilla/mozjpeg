@@ -5,7 +5,8 @@
  * Copyright (C) 1992-1997, Thomas G. Lane.
  * It was modified by The libjpeg-turbo Project to include only code and
  * information relevant to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This include file defines the interface between the system-independent
  * and system-dependent portions of the JPEG memory manager.  No other

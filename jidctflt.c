@@ -6,7 +6,7 @@
  * Modified 2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2014, D. R. Commander.
-  * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a floating-point implementation of the
  * inverse DCT (Discrete Cosine Transform).  In the IJG code, this routine

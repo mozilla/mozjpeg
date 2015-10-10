@@ -102,8 +102,9 @@ extensions at compile time with:
 
     #ifdef JCS_ALPHA_EXTENSIONS
 
-jcstest.c, located in the libjpeg-turbo source tree, demonstrates how to check
-for the existence of the colorspace extensions at compile time and run time.
+[jcstest.c](jcstest.c), located in the libjpeg-turbo source tree, demonstrates
+how to check for the existence of the colorspace extensions at compile time and
+run time.
 
 libjpeg v7 and v8 API/ABI Emulation
 -----------------------------------

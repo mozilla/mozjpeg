@@ -20,26 +20,30 @@ try-with-resources statement.
 caused by incorrect API usage, and those classes throw a new checked exception
 type (TJException) for errors that are passed through from the C library.
 
-[5] Fixed an issue whereby cjpeg would segfault if a Windows bitmap with a
-negative width or height was used as an input image (Windows bitmaps can have
-a negative height if they are stored in top-down order, but such files are
-rare and not supported by libjpeg-turbo.)
-
-[6] Source buffers for the TurboJPEG C API functions, as well as the
+[5] Source buffers for the TurboJPEG C API functions, as well as the
 jpeg_mem_src() function in the libjpeg API, are now declared as const pointers.
 This facilitates passing read-only buffers to those functions and ensures the
 caller that the source buffer will not be modified.  This should not create any
 backward API or ABI incompatibilities with prior libjpeg-turbo releases.
 
-[7] The MIPS DSPr2 SIMD code can now be compiled to support either FR=0 or FR=1
+[6] The MIPS DSPr2 SIMD code can now be compiled to support either FR=0 or FR=1
 FPUs.
 
-[8] Fixed an issue whereby, under certain circumstances, libjpeg-turbo would
+
+1.4.2
+=====
+
+[1] Fixed an issue whereby cjpeg would segfault if a Windows bitmap with a
+negative width or height was used as an input image (Windows bitmaps can have
+a negative height if they are stored in top-down order, but such files are
+rare and not supported by libjpeg-turbo.)
+
+[2] Fixed an issue whereby, under certain circumstances, libjpeg-turbo would
 incorrectly encode certain JPEG images when quality=100 and the fast integer
 forward DCT were used.  This was known to cause 'make test' to fail when the
 library was built with '-march=haswell' on x86 systems.
 
-[9] Fixed an issue whereby libjpeg-turbo would crash when built with the latest
+[3] Fixed an issue whereby libjpeg-turbo would crash when built with the latest
 & greatest development version of the Clang/LLVM compiler.  This was caused by
 an x86-64 ABI conformance issue in some of libjpeg-turbo's 64-bit SSE2 SIMD
 routines.  Those routines were incorrectly using a 64-bit mov instruction to
@@ -49,15 +53,15 @@ Clang/LLVM optimizer uses load combining to transfer multiple adjacent 32-bit
 structure members into a single 64-bit register, and this exposed the ABI
 conformance issue.
 
-[10] Fixed a bug in the MIPS DSPr2 4:2:0 "plain" (non-fancy and non-merged)
+[4] Fixed a bug in the MIPS DSPr2 4:2:0 "plain" (non-fancy and non-merged)
 upsampling routine that caused a buffer overflow (and subsequent segfault) when
 decompressing a 4:2:0 JPEG image whose scaled output width was less than 16
 pixels.  The "plain" upsampling routines are normally only used when
 decompressing a non-YCbCr JPEG image, but they are also used when decompressing
 a JPEG image whose scaled output height is 1.
 
-[11] Fixed various negative left shifts and other issues reported by the GCC
-and Clang undefined behavior sanitizers.  None of these was known to pose a
+[5] Fixed various negative left shifts and other issues reported by the GCC and
+Clang undefined behavior sanitizers.  None of these was known to pose a
 security threat, but removing the warnings makes it easier to detect actual
 security issues, should they arise in the future.
 

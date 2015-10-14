@@ -302,15 +302,15 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
         for (i = 0; i < DCTSIZE2; i++) {
 #if BITS_IN_JSAMPLE == 8
           if(!compute_reciprocal(
-            DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
-                                  (INT32) aanscales[i]),
+            DESCALE(MULTIPLY16V16((JLONG) qtbl->quantval[i],
+                                  (JLONG) aanscales[i]),
                     CONST_BITS-3), &dtbl[i])
             && fdct->quantize == jsimd_quantize)
             fdct->quantize = quantize;
 #else
            dtbl[i] = (DCTELEM)
-             DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
-                                   (INT32) aanscales[i]),
+             DESCALE(MULTIPLY16V16((JLONG) qtbl->quantval[i],
+                                   (JLONG) aanscales[i]),
                      CONST_BITS-3);
 #endif
         }

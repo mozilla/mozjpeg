@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -35,7 +35,7 @@ typedef struct {
    */
   JOCTET * next_output_byte;    /* => next byte to write in buffer */
   size_t free_in_buffer;        /* # of byte spaces remaining in buffer */
-  INT32 put_buffer;             /* current bit-accumulation buffer */
+  JLONG put_buffer;             /* current bit-accumulation buffer */
   int put_bits;                 /* # of bits now in it */
   j_compress_ptr cinfo;         /* link to cinfo (needed for dump_buffer) */
 
@@ -72,8 +72,8 @@ typedef phuff_entropy_encoder * phuff_entropy_ptr;
 
 #define MAX_CORR_BITS  1000     /* Max # of correction bits I can buffer */
 
-/* IRIGHT_SHIFT is like RIGHT_SHIFT, but works on int rather than INT32.
- * We assume that int right shift is unsigned if INT32 right shift is,
+/* IRIGHT_SHIFT is like RIGHT_SHIFT, but works on int rather than JLONG.
+ * We assume that int right shift is unsigned if JLONG right shift is,
  * which should be safe.
  */
 
@@ -231,7 +231,7 @@ emit_bits (phuff_entropy_ptr entropy, unsigned int code, int size)
 /* Emit some bits, unless we are in gather mode */
 {
   /* This routine is heavily used, so it's worth coding tightly. */
-  register INT32 put_buffer = (INT32) code;
+  register JLONG put_buffer = (JLONG) code;
   register int put_bits = entropy->put_bits;
 
   /* if size is 0, caller used an invalid Huffman table entry */
@@ -241,7 +241,7 @@ emit_bits (phuff_entropy_ptr entropy, unsigned int code, int size)
   if (entropy->gather_statistics)
     return;                     /* do nothing if we're only getting stats */
 
-  put_buffer &= (((INT32) 1)<<size) - 1; /* mask off any extra bits in code */
+  put_buffer &= (((JLONG) 1)<<size) - 1; /* mask off any extra bits in code */
 
   put_bits += size;             /* new number of bits in buffer */
 

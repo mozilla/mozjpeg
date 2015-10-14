@@ -43,16 +43,16 @@ typedef enum {            /* Operating modes for buffer controllers */
 #define DSTATE_STOPPING 210     /* looking for EOI in jpeg_finish_decompress */
 
 
+/* JLONG must hold at least signed 32-bit values. */
+typedef long JLONG;
+
+
 /*
  * Left shift macro that handles a negative operand without causing any
  * sanitizer warnings
  */
 
-#ifdef __INT32_IS_ACTUALLY_LONG
-#define LEFT_SHIFT(a, b) ((INT32)((unsigned long)(a) << (b)))
-#else
-#define LEFT_SHIFT(a, b) ((INT32)((unsigned int)(a) << (b)))
-#endif
+#define LEFT_SHIFT(a, b) ((JLONG)((unsigned long)(a) << (b)))
 
 
 /* Declarations for compression modules */
@@ -276,16 +276,16 @@ struct jpeg_color_quantizer {
  * shift" instructions that shift in copies of the sign bit.  But some
  * C compilers implement >> with an unsigned shift.  For these machines you
  * must define RIGHT_SHIFT_IS_UNSIGNED.
- * RIGHT_SHIFT provides a proper signed right shift of an INT32 quantity.
+ * RIGHT_SHIFT provides a proper signed right shift of a JLONG quantity.
  * It is only applied with constant shift counts.  SHIFT_TEMPS must be
  * included in the variables of any routine using RIGHT_SHIFT.
  */
 
 #ifdef RIGHT_SHIFT_IS_UNSIGNED
-#define SHIFT_TEMPS     INT32 shift_temp;
+#define SHIFT_TEMPS     JLONG shift_temp;
 #define RIGHT_SHIFT(x,shft)  \
         ((shift_temp = (x)) < 0 ? \
-         (shift_temp >> (shft)) | ((~((INT32) 0)) << (32-(shft))) : \
+         (shift_temp >> (shft)) | ((~((JLONG) 0)) << (32-(shft))) : \
          (shift_temp >> (shft)))
 #else
 #define SHIFT_TEMPS
@@ -348,7 +348,7 @@ extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */
 extern const int jpeg_natural_order[]; /* zigzag coef order to natural order */
 
 /* Arithmetic coding probability estimation tables in jaricom.c */
-extern const INT32 jpeg_aritab[];
+extern const JLONG jpeg_aritab[];
 
 /* Suppress undefined-structure complaints if necessary. */
 

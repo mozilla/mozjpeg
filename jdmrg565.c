@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2013, Linaro Limited.
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -30,10 +30,10 @@ h2v1_merged_upsample_565_internal (j_decompress_ptr cinfo,
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   int * Crrtab = upsample->Cr_r_tab;
   int * Cbbtab = upsample->Cb_b_tab;
-  INT32 * Crgtab = upsample->Cr_g_tab;
-  INT32 * Cbgtab = upsample->Cb_g_tab;
+  JLONG * Crgtab = upsample->Cr_g_tab;
+  JLONG * Cbgtab = upsample->Cb_g_tab;
   unsigned int r, g, b;
-  INT32 rgb;
+  JLONG rgb;
   SHIFT_TEMPS
 
   inptr0 = input_buf[0][in_row_group_ctr];
@@ -101,11 +101,11 @@ h2v1_merged_upsample_565D_internal (j_decompress_ptr cinfo,
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   int * Crrtab = upsample->Cr_r_tab;
   int * Cbbtab = upsample->Cb_b_tab;
-  INT32 * Crgtab = upsample->Cr_g_tab;
-  INT32 * Cbgtab = upsample->Cb_g_tab;
-  INT32 d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
+  JLONG * Crgtab = upsample->Cr_g_tab;
+  JLONG * Cbgtab = upsample->Cb_g_tab;
+  JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
   unsigned int r, g, b;
-  INT32 rgb;
+  JLONG rgb;
   SHIFT_TEMPS
 
   inptr0 = input_buf[0][in_row_group_ctr];
@@ -175,10 +175,10 @@ h2v2_merged_upsample_565_internal (j_decompress_ptr cinfo,
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   int * Crrtab = upsample->Cr_r_tab;
   int * Cbbtab = upsample->Cb_b_tab;
-  INT32 * Crgtab = upsample->Cr_g_tab;
-  INT32 * Cbgtab = upsample->Cb_g_tab;
+  JLONG * Crgtab = upsample->Cr_g_tab;
+  JLONG * Cbgtab = upsample->Cb_g_tab;
   unsigned int r, g, b;
-  INT32 rgb;
+  JLONG rgb;
   SHIFT_TEMPS
 
   inptr00 = input_buf[0][in_row_group_ctr * 2];
@@ -271,12 +271,12 @@ h2v2_merged_upsample_565D_internal (j_decompress_ptr cinfo,
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   int * Crrtab = upsample->Cr_r_tab;
   int * Cbbtab = upsample->Cb_b_tab;
-  INT32 * Crgtab = upsample->Cr_g_tab;
-  INT32 * Cbgtab = upsample->Cb_g_tab;
-  INT32 d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
-  INT32 d1 = dither_matrix[(cinfo->output_scanline+1) & DITHER_MASK];
+  JLONG * Crgtab = upsample->Cr_g_tab;
+  JLONG * Cbgtab = upsample->Cb_g_tab;
+  JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
+  JLONG d1 = dither_matrix[(cinfo->output_scanline+1) & DITHER_MASK];
   unsigned int r, g, b;
-  INT32 rgb;
+  JLONG rgb;
   SHIFT_TEMPS
 
   inptr00 = input_buf[0][in_row_group_ctr*2];

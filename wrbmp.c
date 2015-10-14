@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2013, Linaro Limited.
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -200,7 +200,7 @@ write_bmp_header (j_decompress_ptr cinfo, bmp_dest_ptr dest)
          array[offset+1] = (char) (((value) >> 8) & 0xFF), \
          array[offset+2] = (char) (((value) >> 16) & 0xFF), \
          array[offset+3] = (char) (((value) >> 24) & 0xFF))
-  INT32 headersize, bfSize;
+  long headersize, bfSize;
   int bits_per_pixel, cmap_entries;
 
   /* Compute colormap size and total file size */
@@ -224,7 +224,7 @@ write_bmp_header (j_decompress_ptr cinfo, bmp_dest_ptr dest)
   }
   /* File size */
   headersize = 14 + 40 + cmap_entries * 4; /* Header and colormap */
-  bfSize = headersize + (INT32) dest->row_width * (INT32) cinfo->output_height;
+  bfSize = headersize + (long) dest->row_width * (long) cinfo->output_height;
 
   /* Set unused fields of header to 0 */
   MEMZERO(bmpfileheader, sizeof(bmpfileheader));
@@ -246,8 +246,8 @@ write_bmp_header (j_decompress_ptr cinfo, bmp_dest_ptr dest)
   /* we leave biCompression = 0, for none */
   /* we leave biSizeImage = 0; this is correct for uncompressed data */
   if (cinfo->density_unit == 2) { /* if have density in dots/cm, then */
-    PUT_4B(bmpinfoheader, 24, (INT32) (cinfo->X_density*100)); /* XPels/M */
-    PUT_4B(bmpinfoheader, 28, (INT32) (cinfo->Y_density*100)); /* XPels/M */
+    PUT_4B(bmpinfoheader, 24, (long) (cinfo->X_density*100)); /* XPels/M */
+    PUT_4B(bmpinfoheader, 28, (long) (cinfo->Y_density*100)); /* XPels/M */
   }
   PUT_2B(bmpinfoheader, 32, cmap_entries); /* biClrUsed */
   /* we leave biClrImportant = 0 */
@@ -268,7 +268,7 @@ write_os2_header (j_decompress_ptr cinfo, bmp_dest_ptr dest)
 {
   char bmpfileheader[14];
   char bmpcoreheader[12];
-  INT32 headersize, bfSize;
+  long headersize, bfSize;
   int bits_per_pixel, cmap_entries;
 
   /* Compute colormap size and total file size */
@@ -292,7 +292,7 @@ write_os2_header (j_decompress_ptr cinfo, bmp_dest_ptr dest)
   }
   /* File size */
   headersize = 14 + 12 + cmap_entries * 3; /* Header and colormap */
-  bfSize = headersize + (INT32) dest->row_width * (INT32) cinfo->output_height;
+  bfSize = headersize + (long) dest->row_width * (long) cinfo->output_height;
 
   /* Set unused fields of header to 0 */
   MEMZERO(bmpfileheader, sizeof(bmpfileheader));

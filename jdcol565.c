@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modifications:
  * Copyright (C) 2013, Linaro Limited.
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -31,12 +31,12 @@ ycc_rgb565_convert_internal (j_decompress_ptr cinfo,
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   register int * Crrtab = cconvert->Cr_r_tab;
   register int * Cbbtab = cconvert->Cb_b_tab;
-  register INT32 * Crgtab = cconvert->Cr_g_tab;
-  register INT32 * Cbgtab = cconvert->Cb_g_tab;
+  register JLONG * Crgtab = cconvert->Cr_g_tab;
+  register JLONG * Cbgtab = cconvert->Cb_g_tab;
   SHIFT_TEMPS
 
   while (--num_rows >= 0) {
-    INT32 rgb;
+    JLONG rgb;
     unsigned int r, g, b;
     inptr0 = input_buf[0][input_row];
     inptr1 = input_buf[1][input_row];
@@ -110,13 +110,13 @@ ycc_rgb565D_convert_internal (j_decompress_ptr cinfo,
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   register int * Crrtab = cconvert->Cr_r_tab;
   register int * Cbbtab = cconvert->Cb_b_tab;
-  register INT32 * Crgtab = cconvert->Cr_g_tab;
-  register INT32 * Cbgtab = cconvert->Cb_g_tab;
-  INT32 d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
+  register JLONG * Crgtab = cconvert->Cr_g_tab;
+  register JLONG * Cbgtab = cconvert->Cb_g_tab;
+  JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
   SHIFT_TEMPS
 
   while (--num_rows >= 0) {
-    INT32 rgb;
+    JLONG rgb;
     unsigned int r, g, b;
 
     inptr0 = input_buf[0][input_row];
@@ -193,7 +193,7 @@ rgb_rgb565_convert_internal (j_decompress_ptr cinfo,
   SHIFT_TEMPS
 
   while (--num_rows >= 0) {
-    INT32 rgb;
+    JLONG rgb;
     unsigned int r, g, b;
 
     inptr0 = input_buf[0][input_row];
@@ -246,11 +246,11 @@ rgb_rgb565D_convert_internal (j_decompress_ptr cinfo,
   register JDIMENSION col;
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   JDIMENSION num_cols = cinfo->output_width;
-  INT32 d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
+  JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
   SHIFT_TEMPS
 
   while (--num_rows >= 0) {
-    INT32 rgb;
+    JLONG rgb;
     unsigned int r, g, b;
 
     inptr0 = input_buf[0][input_row];
@@ -305,7 +305,7 @@ gray_rgb565_convert_internal (j_decompress_ptr cinfo,
   JDIMENSION num_cols = cinfo->output_width;
 
   while (--num_rows >= 0) {
-    INT32 rgb;
+    JLONG rgb;
     unsigned int g;
 
     inptr = input_buf[0][input_row++];
@@ -344,10 +344,10 @@ gray_rgb565D_convert_internal (j_decompress_ptr cinfo,
   register JDIMENSION col;
   register JSAMPLE * range_limit = cinfo->sample_range_limit;
   JDIMENSION num_cols = cinfo->output_width;
-  INT32 d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
+  JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
 
   while (--num_rows >= 0) {
-    INT32 rgb;
+    JLONG rgb;
     unsigned int g;
 
     inptr = input_buf[0][input_row++];

@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2015, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -318,7 +318,7 @@ h2v2_fancy_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 #if BITS_IN_JSAMPLE == 8
   register int thiscolsum, lastcolsum, nextcolsum;
 #else
-  register INT32 thiscolsum, lastcolsum, nextcolsum;
+  register JLONG thiscolsum, lastcolsum, nextcolsum;
 #endif
   register JDIMENSION colctr;
   int inrow, outrow, v;

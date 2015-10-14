@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -411,7 +411,7 @@ decompress_smooth_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
   JCOEF * workspace;
   int *coef_bits;
   JQUANT_TBL *quanttbl;
-  INT32 Q00,Q01,Q02,Q10,Q11,Q20, num;
+  JLONG Q00,Q01,Q02,Q10,Q11,Q20, num;
   int DC1,DC2,DC3,DC4,DC5,DC6,DC7,DC8,DC9;
   int Al, pred;
 

@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, D. R. Commander.
+ * Copyright (C) 2010-2011, 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -20,9 +20,9 @@
 
 typedef struct {
   /* Basic tables: (element [0] of each array is unused) */
-  INT32 maxcode[18];            /* largest code of length k (-1 if none) */
+  JLONG maxcode[18];            /* largest code of length k (-1 if none) */
   /* (maxcode[17] is a sentinel to ensure jpeg_huff_decode terminates) */
-  INT32 valoffset[18];          /* huffval[] offset for codes of length k */
+  JLONG valoffset[18];          /* huffval[] offset for codes of length k */
   /* valoffset[k] = huffval[] index of 1st symbol of code length k, less
    * the smallest code of length k; so given a code of length k, the
    * corresponding symbol is huffval[code + valoffset[k]]
@@ -79,7 +79,7 @@ typedef size_t bit_buf_type;    /* type of bit-extraction buffer */
 
 #else
 
-typedef INT32 bit_buf_type;     /* type of bit-extraction buffer */
+typedef JLONG bit_buf_type;     /* type of bit-extraction buffer */
 #define BIT_BUF_SIZE  32                /* size of buffer in bits */
 
 #endif

@@ -4,8 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code and
- * information relevant to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -410,14 +410,14 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   /* Compute the rescaling array if required. */
   if (need_rescale) {
-    INT32 val, half_maxval;
+    long val, half_maxval;
 
     /* On 16-bit-int machines we have to be careful of maxval = 65535 */
     source->rescale = (JSAMPLE *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                   (size_t) (((long) maxval + 1L) * sizeof(JSAMPLE)));
     half_maxval = maxval / 2;
-    for (val = 0; val <= (INT32) maxval; val++) {
+    for (val = 0; val <= (long) maxval; val++) {
       /* The multiplication here must be done in 32 bits to avoid overflow */
       source->rescale[val] = (JSAMPLE) ((val*MAXJSAMPLE + half_maxval)/maxval);
     }

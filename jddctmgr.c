@@ -6,7 +6,7 @@
  * Modified 2002-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2015, D. R. Commander.
  * Copyright (C) 2013, MIPS Technologies, Inc., California
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -280,8 +280,8 @@ start_pass (j_decompress_ptr cinfo)
 
         for (i = 0; i < DCTSIZE2; i++) {
           ifmtbl[i] = (IFAST_MULT_TYPE)
-            DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
-                                  (INT32) aanscales[i]),
+            DESCALE(MULTIPLY16V16((JLONG) qtbl->quantval[i],
+                                  (JLONG) aanscales[i]),
                     CONST_BITS-IFAST_SCALE_BITS);
         }
       }

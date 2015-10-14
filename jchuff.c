@@ -269,7 +269,7 @@ jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
     /* code is now 1 more than the last code used for codelength si; but
      * it must still fit in si bits, since no code is allowed to be all ones.
      */
-    if (((INT32) code) >= (((INT32) 1) << si))
+    if (((JLONG) code) >= (((JLONG) 1) << si))
       ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
     code <<= 1;
     si++;
@@ -389,7 +389,7 @@ dump_buffer (working_state * state)
 }
 
 #define EMIT_CODE(code, size) { \
-  temp2 &= (((INT32) 1)<<nbits) - 1; \
+  temp2 &= (((JLONG) 1)<<nbits) - 1; \
   CHECKBUF31() \
   PUT_BITS(code, size) \
   PUT_BITS(temp2, nbits) \
@@ -403,7 +403,7 @@ dump_buffer (working_state * state)
 }
 
 #define EMIT_CODE(code, size) { \
-  temp2 &= (((INT32) 1)<<nbits) - 1; \
+  temp2 &= (((JLONG) 1)<<nbits) - 1; \
   PUT_BITS(code, size) \
   CHECKBUF15() \
   PUT_BITS(temp2, nbits) \
@@ -521,7 +521,7 @@ encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
   EMIT_BITS(code, size)
 
   /* Mask off any extra bits in code */
-  temp2 &= (((INT32) 1)<<nbits) - 1;
+  temp2 &= (((JLONG) 1)<<nbits) - 1;
 
   /* Emit that number of bits of the value, if positive, */
   /* or the complement of its magnitude, if negative. */

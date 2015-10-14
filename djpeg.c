@@ -431,7 +431,7 @@ METHODDEF(boolean)
 print_text_marker (j_decompress_ptr cinfo)
 {
   boolean traceit = (cinfo->err->trace_level >= 1);
-  INT32 length;
+  long length;
   unsigned int ch;
   unsigned int lastch = 0;
 

@@ -6,6 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2014, MIPS Technologies, Inc., California
+ * Copyright (C) 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -150,7 +151,7 @@ int_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
   JDIMENSION outcol, outcol_h;  /* outcol_h == outcol*h_expand */
   JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   JSAMPROW inptr, outptr;
-  INT32 outvalue;
+  JLONG outvalue;
 
   h_expand = cinfo->max_h_samp_factor / compptr->h_samp_factor;
   v_expand = cinfo->max_v_samp_factor / compptr->v_samp_factor;
@@ -173,7 +174,7 @@ int_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
       for (v = 0; v < v_expand; v++) {
         inptr = input_data[inrow+v] + outcol_h;
         for (h = 0; h < h_expand; h++) {
-          outvalue += (INT32) GETJSAMPLE(*inptr++);
+          outvalue += (JLONG) GETJSAMPLE(*inptr++);
         }
       }
       *outptr++ = (JSAMPLE) ((outvalue + numpix2) / numpix);
@@ -302,7 +303,7 @@ h2v2_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
   JDIMENSION colctr;
   JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   register JSAMPROW inptr0, inptr1, above_ptr, below_ptr, outptr;
-  INT32 membersum, neighsum, memberscale, neighscale;
+  JLONG membersum, neighsum, memberscale, neighscale;
 
   /* Expand input data enough to let all the output samples be generated
    * by the standard loop.  Special-casing padded output would be more
@@ -402,7 +403,7 @@ fullsize_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
   JDIMENSION colctr;
   JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
   register JSAMPROW inptr, above_ptr, below_ptr, outptr;
-  INT32 membersum, neighsum, memberscale, neighscale;
+  JLONG membersum, neighsum, memberscale, neighscale;
   int colsum, lastcolsum, nextcolsum;
 
   /* Expand input data enough to let all the output samples be generated

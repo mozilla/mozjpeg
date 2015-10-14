@@ -5,6 +5,7 @@
  * All rights reserved.
  * Authors:  Teodora Novkovic (teodora.novkovic@imgtec.com)
  *           Darko Laus       (darko.laus@imgtec.com)
+ * Copyright (C) 2015, D. R. Commander.  All Rights Reserved.
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
@@ -1992,14 +1993,14 @@ LEAF_MIPS_DSPR2(jsimd_idct_islow_mips_dspr2)
     move      v0, sp
     addiu     v1, zero, 8
 4:
-    lw        t0, 8(v0)        // z2 = (INT32) wsptr[2]
-    lw        t1, 24(v0)       // z3 = (INT32) wsptr[6]
-    lw        t2, 0(v0)        // (INT32) wsptr[0]
-    lw        t3, 16(v0)       // (INT32) wsptr[4]
-    lw        s4, 4(v0)        // (INT32) wsptr[1]
-    lw        s5, 12(v0)       // (INT32) wsptr[3]
-    lw        s6, 20(v0)       // (INT32) wsptr[5]
-    lw        s7, 28(v0)       // (INT32) wsptr[7]
+    lw        t0, 8(v0)        // z2 = (JLONG) wsptr[2]
+    lw        t1, 24(v0)       // z3 = (JLONG) wsptr[6]
+    lw        t2, 0(v0)        // (JLONG) wsptr[0]
+    lw        t3, 16(v0)       // (JLONG) wsptr[4]
+    lw        s4, 4(v0)        // (JLONG) wsptr[1]
+    lw        s5, 12(v0)       // (JLONG) wsptr[3]
+    lw        s6, 20(v0)       // (JLONG) wsptr[5]
+    lw        s7, 28(v0)       // (JLONG) wsptr[7]
     or        s4, s4, t0
     or        s4, s4, t1
     or        s4, s4, t3
@@ -2025,8 +2026,8 @@ LEAF_MIPS_DSPR2(jsimd_idct_islow_mips_dspr2)
     mul       t1, t1, t8       // MULTIPLY(z3, FIX_1_847759065)
     addiu     t8, zero, 6270   // FIX_0_765366865
     mul       t0, t0, t8       // MULTIPLY(z2, FIX_0_765366865)
-    addu      t4, t2, t3       // (INT32) wsptr[0] + (INT32) wsptr[4]
-    subu      t2, t2, t3       // (INT32) wsptr[0] - (INT32) wsptr[4]
+    addu      t4, t2, t3       // (JLONG) wsptr[0] + (JLONG) wsptr[4]
+    subu      t2, t2, t3       // (JLONG) wsptr[0] - (JLONG) wsptr[4]
     sll       t4, t4, 13       // tmp0 = ((wsptr[0] + wsptr[4]) << CONST_BITS
     sll       t2, t2, 13       // tmp1 = ((wsptr[0] - wsptr[4]) << CONST_BITS
     subu      t1, t5, t1       // tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065)
@@ -2035,10 +2036,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_islow_mips_dspr2)
     addu      t5, t5, t0       // tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865)
     subu      t1, t4, t5       // tmp13 = tmp0 - tmp3
     addu      t0, t4, t5       // tmp10 = tmp0 + tmp3
-    lw        t4, 28(v0)       // tmp0 = (INT32) wsptr[7]
-    lw        t6, 12(v0)       // tmp2 = (INT32) wsptr[3]
-    lw        t5, 20(v0)       // tmp1 = (INT32) wsptr[5]
-    lw        t7, 4(v0)        // tmp3 = (INT32) wsptr[1]
+    lw        t4, 28(v0)       // tmp0 = (JLONG) wsptr[7]
+    lw        t6, 12(v0)       // tmp2 = (JLONG) wsptr[3]
+    lw        t5, 20(v0)       // tmp1 = (JLONG) wsptr[5]
+    lw        t7, 4(v0)        // tmp3 = (JLONG) wsptr[1]
     addu      s0, t4, t6       // z3 = tmp0 + tmp2
     addiu     t8, zero, 9633   // FIX_1_175875602
     addu      s1, t5, t7       // z4 = tmp1 + tmp3
@@ -3269,9 +3270,9 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     lw        s6, 8(t1)         // wsptr[2]
     li        s5, 6270
     lw        s7, 24(t1)        // wsptr[6]
-    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    mul       s4, s4, s6        // MULTIPLY((JLONG) wsptr[2], FIX_1_847759065)
     lw        t2, 0(t1)         // wsptr[0]
-    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], - FIX_0_765366865)
+    mul       s5, s5, s7        // MULTIPLY((JLONG) wsptr[6], - FIX_0_765366865)
     lh        t5, 28(t1)        // wsptr[7]
     lh        t6, 20(t1)        // wsptr[5]
     lh        t7, 12(t1)        // wsptr[3]
@@ -3284,7 +3285,7 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     mult      $ac1, zero, zero
     dpa.w.ph  $ac1, t5, s2
     dpa.w.ph  $ac1, t7, s3
-    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    sll       t2, t2, 14        // tmp0 = ((JLONG) wsptr[0]) << (CONST_BITS+1)
     mflo      s6, $ac0
     // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
     subu      s4, s4, s5
@@ -3323,9 +3324,9 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     lw        s6, 40(t1)        // wsptr[2]
     li        s5, 6270
     lw        s7, 56(t1)        // wsptr[6]
-    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    mul       s4, s4, s6        // MULTIPLY((JLONG) wsptr[2], FIX_1_847759065)
     lw        t2, 32(t1)        // wsptr[0]
-    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], - FIX_0_765366865)
+    mul       s5, s5, s7        // MULTIPLY((JLONG) wsptr[6], - FIX_0_765366865)
     lh        t5, 60(t1)        // wsptr[7]
     lh        t6, 52(t1)        // wsptr[5]
     lh        t7, 44(t1)        // wsptr[3]
@@ -3338,7 +3339,7 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     mult      $ac1, zero, zero
     dpa.w.ph  $ac1, t5, s2
     dpa.w.ph  $ac1, t7, s3
-    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    sll       t2, t2, 14        // tmp0 = ((JLONG) wsptr[0]) << (CONST_BITS+1)
     mflo      s6, $ac0
     // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
     subu      s4, s4, s5
@@ -3377,9 +3378,9 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     lw        s6, 72(t1)        // wsptr[2]
     li        s5, 6270
     lw        s7, 88(t1)        // wsptr[6]
-    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    mul       s4, s4, s6        // MULTIPLY((JLONG) wsptr[2], FIX_1_847759065)
     lw        t2, 64(t1)        // wsptr[0]
-    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], - FIX_0_765366865)
+    mul       s5, s5, s7        // MULTIPLY((JLONG) wsptr[6], - FIX_0_765366865)
     lh        t5, 92(t1)        // wsptr[7]
     lh        t6, 84(t1)        // wsptr[5]
     lh        t7, 76(t1)        // wsptr[3]
@@ -3392,7 +3393,7 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     mult      $ac1, zero, zero
     dpa.w.ph  $ac1, t5, s2
     dpa.w.ph  $ac1, t7, s3
-    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    sll       t2, t2, 14        // tmp0 = ((JLONG) wsptr[0]) << (CONST_BITS+1)
     mflo      s6, $ac0
     // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
     subu      s4, s4, s5
@@ -3430,9 +3431,9 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     lw        s6, 104(t1)       // wsptr[2]
     li        s5, 6270
     lw        s7, 120(t1)       // wsptr[6]
-    mul       s4, s4, s6        // MULTIPLY((INT32) wsptr[2], FIX_1_847759065)
+    mul       s4, s4, s6        // MULTIPLY((JLONG) wsptr[2], FIX_1_847759065)
     lw        t2, 96(t1)        // wsptr[0]
-    mul       s5, s5, s7        // MULTIPLY((INT32) wsptr[6], -FIX_0_765366865)
+    mul       s5, s5, s7        // MULTIPLY((JLONG) wsptr[6], -FIX_0_765366865)
     lh        t5, 124(t1)       // wsptr[7]
     lh        t6, 116(t1)       // wsptr[5]
     lh        t7, 108(t1)       // wsptr[3]
@@ -3445,7 +3446,7 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
     mult      $ac1, zero, zero
     dpa.w.ph  $ac1, t5, s2
     dpa.w.ph  $ac1, t7, s3
-    sll       t2, t2, 14        // tmp0 = ((INT32) wsptr[0]) << (CONST_BITS+1)
+    sll       t2, t2, 14        // tmp0 = ((JLONG) wsptr[0]) << (CONST_BITS+1)
     mflo      s6, $ac0
     // MULTIPLY(wsptr[2], FIX_1_847759065 + MULTIPLY(wsptr[6], -FIX_0_765366865)
     subu      s4, s4, s5

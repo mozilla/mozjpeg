@@ -26,8 +26,8 @@
 typedef struct {
   struct jpeg_entropy_decoder pub; /* public fields */
 
-  INT32 c;       /* C register, base of coding interval + input bit buffer */
-  INT32 a;               /* A register, normalized size of coding interval */
+  JLONG c;       /* C register, base of coding interval + input bit buffer */
+  JLONG a;               /* A register, normalized size of coding interval */
   int ct;     /* bit shift counter, # of bits left in bit buffer part of C */
                                                          /* init: ct = -16 */
                                                          /* run: ct = 0..7 */
@@ -110,7 +110,7 @@ arith_decode (j_decompress_ptr cinfo, unsigned char *st)
 {
   register arith_entropy_ptr e = (arith_entropy_ptr) cinfo->entropy;
   register unsigned char nl, nm;
-  register INT32 qe, temp;
+  register JLONG qe, temp;
   register int sv, data;
 
   /* Renormalization & data input per section D.2.6 */

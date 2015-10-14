@@ -6,6 +6,7 @@
  * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
  * Copyright (C) 2014 Siarhei Siamashka.  All Rights Reserved.
  * Copyright (C) 2014 Linaro Limited.  All Rights Reserved.
+ * Copyright (C) 2015 D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -105,8 +106,8 @@ _\fname:
 #define REF_1D_IDCT(xrow0, xrow1, xrow2, xrow3, xrow4, xrow5, xrow6, xrow7)   \
 {                                                                             \
     DCTELEM row0, row1, row2, row3, row4, row5, row6, row7;                   \
-    INT32   q1, q2, q3, q4, q5, q6, q7;                                       \
-    INT32   tmp11_plus_tmp2, tmp11_minus_tmp2;                                \
+    JLONG   q1, q2, q3, q4, q5, q6, q7;                                       \
+    JLONG   tmp11_plus_tmp2, tmp11_minus_tmp2;                                \
                                                                               \
     /* 1-D iDCT input data */                                                 \
     row0 = xrow0;                                                             \
@@ -127,7 +128,7 @@ _\fname:
     q2 = MULTIPLY(row2, FIX_0_541196100) +                                    \
          MULTIPLY(row6, FIX_0_541196100_MINUS_1_847759065);                   \
     q4 = q6;                                                                  \
-    q3 = ((INT32) row0 - (INT32) row4) << 13;                                 \
+    q3 = ((JLONG) row0 - (JLONG) row4) << 13;                                 \
     q6 += MULTIPLY(row5, -FIX_2_562915447) +                                  \
           MULTIPLY(row3, FIX_3_072711026_MINUS_2_562915447);                  \
     /* now we can use q1 (reloadable constants have been used up) */          \
@@ -154,7 +155,7 @@ _\fname:
     /* (tmp11 - tmp2) has been calculated (out_row6 before descale) */        \
     tmp11_minus_tmp2 = q1;                                                    \
                                                                               \
-    q1 = ((INT32) row0 + (INT32) row4) << 13;                                 \
+    q1 = ((JLONG) row0 + (JLONG) row4) << 13;                                 \
     q2 = q1 + q6;                                                             \
     q1 = q1 - q6;                                                             \
                                                                               \

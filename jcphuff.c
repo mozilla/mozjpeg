@@ -35,7 +35,7 @@ typedef struct {
    */
   JOCTET * next_output_byte;    /* => next byte to write in buffer */
   size_t free_in_buffer;        /* # of byte spaces remaining in buffer */
-  JLONG put_buffer;             /* current bit-accumulation buffer */
+  size_t put_buffer;            /* current bit-accumulation buffer */
   int put_bits;                 /* # of bits now in it */
   j_compress_ptr cinfo;         /* link to cinfo (needed for dump_buffer) */
 
@@ -241,7 +241,7 @@ emit_bits (phuff_entropy_ptr entropy, unsigned int code, int size)
   if (entropy->gather_statistics)
     return;                     /* do nothing if we're only getting stats */
 
-  put_buffer &= (((JLONG) 1)<<size) - 1; /* mask off any extra bits in code */
+  put_buffer &= (((size_t) 1)<<size) - 1; /* mask off any extra bits in code */
 
   put_bits += size;             /* new number of bits in buffer */
 

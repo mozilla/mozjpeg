@@ -79,7 +79,7 @@ h2v1_merged_upsample_565_internal (j_decompress_ptr cinfo,
     g = range_limit[y + cgreen];
     b = range_limit[y + cblue];
     rgb = PACK_SHORT_565(r, g, b);
-    *(INT16*)outptr = rgb;
+    *(INT16*)outptr = (INT16)rgb;
    }
  }
 
@@ -153,7 +153,7 @@ h2v1_merged_upsample_565D_internal (j_decompress_ptr cinfo,
     g = range_limit[DITHER_565_G(y + cgreen, d0)];
     b = range_limit[DITHER_565_B(y + cblue, d0)];
     rgb = PACK_SHORT_565(r, g, b);
-    *(INT16*)outptr = rgb;
+    *(INT16*)outptr = (INT16)rgb;
   }
 }
 
@@ -242,14 +242,14 @@ h2v2_merged_upsample_565_internal (j_decompress_ptr cinfo,
     g = range_limit[y + cgreen];
     b = range_limit[y + cblue];
     rgb = PACK_SHORT_565(r, g, b);
-    *(INT16*)outptr0 = rgb;
+    *(INT16*)outptr0 = (INT16)rgb;
 
     y  = GETJSAMPLE(*inptr01);
     r = range_limit[y + cred];
     g = range_limit[y + cgreen];
     b = range_limit[y + cblue];
     rgb = PACK_SHORT_565(r, g, b);
-    *(INT16*)outptr1 = rgb;
+    *(INT16*)outptr1 = (INT16)rgb;
   }
 }
 
@@ -344,13 +344,13 @@ h2v2_merged_upsample_565D_internal (j_decompress_ptr cinfo,
     g = range_limit[DITHER_565_G(y + cgreen, d0)];
     b = range_limit[DITHER_565_B(y + cblue, d0)];
     rgb = PACK_SHORT_565(r, g, b);
-    *(INT16*)outptr0 = rgb;
+    *(INT16*)outptr0 = (INT16)rgb;
 
     y  = GETJSAMPLE(*inptr01);
     r = range_limit[DITHER_565_R(y + cred, d1)];
     g = range_limit[DITHER_565_G(y + cgreen, d1)];
     b = range_limit[DITHER_565_B(y + cblue, d1)];
     rgb = PACK_SHORT_565(r, g, b);
-    *(INT16*)outptr1 = rgb;
+    *(INT16*)outptr1 = (INT16)rgb;
   }
 }

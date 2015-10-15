@@ -99,8 +99,7 @@ read_pbm_integer (j_compress_ptr cinfo, FILE * infile, int maxval)
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
 /* This should not be a problem in practice. */
 {
-  register int ch;
-  register unsigned int val;
+  register int ch, val;
 
   /* Skip any leading whitespace */
   do {

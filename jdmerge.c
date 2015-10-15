@@ -436,12 +436,12 @@ h2v2_merged_upsample (j_decompress_ptr cinfo,
 #define PACK_NEED_ALIGNMENT(ptr)  (((size_t)(ptr)) & 3)
 
 #define WRITE_TWO_PIXELS_LE(addr, pixels) {  \
-  ((INT16*)(addr))[0] = (pixels);  \
-  ((INT16*)(addr))[1] = (pixels) >> 16;  \
+  ((INT16*)(addr))[0] = (INT16)(pixels);  \
+  ((INT16*)(addr))[1] = (INT16)((pixels) >> 16);  \
 }
 #define WRITE_TWO_PIXELS_BE(addr, pixels) {  \
-  ((INT16*)(addr))[1] = (pixels);  \
-  ((INT16*)(addr))[0] = (pixels) >> 16;  \
+  ((INT16*)(addr))[1] = (INT16)(pixels);  \
+  ((INT16*)(addr))[0] = (INT16)((pixels) >> 16);  \
 }
 
 #define DITHER_565_R(r, dither)  ((r) + ((dither) & 0xFF))

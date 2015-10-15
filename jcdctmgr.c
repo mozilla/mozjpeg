@@ -185,7 +185,7 @@ compute_reciprocal (UINT16 divisor, DCTELEM * dtbl)
     dtbl[DCTSIZE2 * 0] = (DCTELEM) 1;                       /* reciprocal */
     dtbl[DCTSIZE2 * 1] = (DCTELEM) 0;                       /* correction */
     dtbl[DCTSIZE2 * 2] = (DCTELEM) 1;                       /* scale */
-    dtbl[DCTSIZE2 * 3] = (DCTELEM) (-sizeof(DCTELEM) * 8);  /* shift */
+    dtbl[DCTSIZE2 * 3] = -(DCTELEM) (sizeof(DCTELEM) * 8);  /* shift */
     return 0;
   }
 
@@ -427,12 +427,12 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
       temp = -temp;
       product = (UDCTELEM2)(temp + corr) * recip;
       product >>= shift + sizeof(DCTELEM)*8;
-      temp = product;
+      temp = (DCTELEM)product;
       temp = -temp;
     } else {
       product = (UDCTELEM2)(temp + corr) * recip;
       product >>= shift + sizeof(DCTELEM)*8;
-      temp = product;
+      temp = (DCTELEM)product;
     }
     output_ptr[i] = (JCOEF) temp;
   }

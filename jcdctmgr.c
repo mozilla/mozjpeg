@@ -6,7 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011, 2014-2015 D. R. Commander
+ * Copyright (C) 2011, 2014-2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -209,7 +209,11 @@ compute_reciprocal (UINT16 divisor, DCTELEM * dtbl)
 
   dtbl[DCTSIZE2 * 0] = (DCTELEM) fq;      /* reciprocal */
   dtbl[DCTSIZE2 * 1] = (DCTELEM) c;       /* correction + roundfactor */
+#ifdef WITH_SIMD
   dtbl[DCTSIZE2 * 2] = (DCTELEM) (1 << (sizeof(DCTELEM)*8*2 - r));  /* scale */
+#else
+  dtbl[DCTSIZE2 * 2] = 1;
+#endif
   dtbl[DCTSIZE2 * 3] = (DCTELEM) r - sizeof(DCTELEM)*8; /* shift */
 
   if(r <= 16) return 0;

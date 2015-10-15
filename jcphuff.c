@@ -231,7 +231,7 @@ emit_bits (phuff_entropy_ptr entropy, unsigned int code, int size)
 /* Emit some bits, unless we are in gather mode */
 {
   /* This routine is heavily used, so it's worth coding tightly. */
-  register JLONG put_buffer = (JLONG) code;
+  register size_t put_buffer = (size_t) code;
   register int put_bits = entropy->put_bits;
 
   /* if size is 0, caller used an invalid Huffman table entry */

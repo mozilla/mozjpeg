@@ -604,7 +604,7 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
  */
 
 #define DITHER_MASK       0x3
-#define DITHER_ROTATE(x)  (((x) << 24) | (((x) >> 8) & 0x00FFFFFF))
+#define DITHER_ROTATE(x)  ((((x) & 0xFF) << 24) | (((x) >> 8) & 0x00FFFFFF))
 static const JLONG dither_matrix[4] = {
   0x0008020A,
   0x0C040E06,

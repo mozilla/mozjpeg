@@ -29,6 +29,12 @@ backward API or ABI incompatibilities with prior libjpeg-turbo releases.
 [6] The MIPS DSPr2 SIMD code can now be compiled to support either FR=0 or FR=1
 FPUs.
 
+[7] Fixed additional negative left shifts and other issues reported by the GCC
+and Clang undefined behavior sanitizers.  Most of these issues affected only
+32-bit code, and none of them was known to pose a security threat, but removing
+the warnings makes it easier to detect actual security issues, should they
+arise in the future.
+
 
 1.4.2
 =====

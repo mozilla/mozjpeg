@@ -30,7 +30,6 @@
 #endif
 
 .text
-.arch armv8-a+fp+simd
 
 
 #define RESPECT_STRICT_ALIGNMENT 1

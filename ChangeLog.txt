@@ -35,6 +35,10 @@ and Clang undefined behavior sanitizers.  Most of these issues affected only
 the warnings makes it easier to detect actual security issues, should they
 arise in the future.
 
+[8] Removed the unnecessary .arch directive from the ARM64 NEON SIMD code.
+This directive was preventing the code from assembling using the clang
+integrated assembler.
+
 
 1.4.2
 =====

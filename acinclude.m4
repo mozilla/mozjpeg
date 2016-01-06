@@ -219,14 +219,20 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_ARM64_ASSEMBLER_IFELSE],[
   CC="$CCAS"
   AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
     .text
-    movi v0.16b, #100]])], ac_good_gnu_arm_assembler=yes)
+    MYVAR .req x0
+    movi v0.16b, #100
+    mov MYVAR, #100
+    .unreq MYVAR]])], ac_good_gnu_arm_assembler=yes)
 
   ac_use_gas_preprocessor=no
   if test "x$ac_good_gnu_arm_assembler" = "xno" ; then
     CC="gas-preprocessor.pl $CCAS"
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
       .text
-      movi v0.16b, #100]])], ac_use_gas_preprocessor=yes)
+      MYVAR .req x0
+      movi v0.16b, #100
+      mov MYVAR, #100
+      .unreq MYVAR]])], ac_use_gas_preprocessor=yes)
   fi
   CFLAGS="$ac_save_CFLAGS"
   CC="$ac_save_CC"

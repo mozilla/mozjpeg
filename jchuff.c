@@ -5,6 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, 2014-2016 D. R. Commander.
+ * Copyright (C) 2015 Matthieu Darbois.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -20,7 +21,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jchuff.h"             /* Declarations shared with jcphuff.c */
+#include "jsimd.h"
 #include "jconfigint.h"
 #include <limits.h>
 
@@ -108,6 +109,8 @@ typedef struct {
   long * dc_count_ptrs[NUM_HUFF_TBLS];
   long * ac_count_ptrs[NUM_HUFF_TBLS];
 #endif
+
+  int simd;
 } huff_entropy_encoder;
 
 typedef huff_entropy_encoder * huff_entropy_ptr;
@@ -158,6 +161,8 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
     entropy->pub.encode_mcu = encode_mcu_huff;
     entropy->pub.finish_pass = finish_pass_huff;
   }
+
+  entropy->simd = jsimd_can_huff_encode_one_block();
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
@@ -481,6 +486,23 @@ flush_bits (working_state * state)
 /* Encode a single block's worth of coefficients */
 
 LOCAL(boolean)
+encode_one_block_simd (working_state * state, JCOEFPTR block, int last_dc_val,
+                       c_derived_tbl *dctbl, c_derived_tbl *actbl)
+{
+  JOCTET _buffer[BUFSIZE], *buffer;
+  size_t bytes, bytestocopy;  int localbuf = 0;
+
+  LOAD_BUFFER()
+
+  buffer = jsimd_huff_encode_one_block(state, buffer, block, last_dc_val,
+                                       dctbl, actbl);
+
+  STORE_BUFFER()
+
+  return TRUE;
+}
+
+LOCAL(boolean)
 encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
                   c_derived_tbl *dctbl, c_derived_tbl *actbl)
 {
@@ -640,16 +662,30 @@ encode_mcu_huff (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   }
 
   /* Encode the MCU data blocks */
-  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    ci = cinfo->MCU_membership[blkn];
-    compptr = cinfo->cur_comp_info[ci];
-    if (! encode_one_block(&state,
-                           MCU_data[blkn][0], state.cur.last_dc_val[ci],
-                           entropy->dc_derived_tbls[compptr->dc_tbl_no],
-                           entropy->ac_derived_tbls[compptr->ac_tbl_no]))
-      return FALSE;
-    /* Update last_dc_val */
-    state.cur.last_dc_val[ci] = MCU_data[blkn][0][0];
+  if (entropy->simd) {
+    for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
+      ci = cinfo->MCU_membership[blkn];
+      compptr = cinfo->cur_comp_info[ci];
+      if (! encode_one_block_simd(&state,
+                                  MCU_data[blkn][0], state.cur.last_dc_val[ci],
+                                  entropy->dc_derived_tbls[compptr->dc_tbl_no],
+                                  entropy->ac_derived_tbls[compptr->ac_tbl_no]))
+        return FALSE;
+      /* Update last_dc_val */
+      state.cur.last_dc_val[ci] = MCU_data[blkn][0][0];
+    }
+  } else {
+    for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
+      ci = cinfo->MCU_membership[blkn];
+      compptr = cinfo->cur_comp_info[ci];
+      if (! encode_one_block(&state,
+                             MCU_data[blkn][0], state.cur.last_dc_val[ci],
+                             entropy->dc_derived_tbls[compptr->dc_tbl_no],
+                             entropy->ac_derived_tbls[compptr->ac_tbl_no]))
+        return FALSE;
+      /* Update last_dc_val */
+      state.cur.last_dc_val[ci] = MCU_data[blkn][0][0];
+    }
   }
 
   /* Completed MCU, so update state */

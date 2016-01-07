@@ -57,6 +57,16 @@ benchmark from outputting any images.  This removes any potential operating
 system overhead that might be caused by lazy writes to disk and thus improves
 the consistency of the performance measurements.
 
+[12] Added SIMD acceleration for Huffman encoding on SSE2-capable x86 and
+x86-64 platforms.  This speeds up the compression of full-color JPEGs by about
+10-15% on average (relative to libjpeg-turbo 1.4.x) when using modern Intel and
+AMD CPUs.  Additionally, this works around an issue in the clang optimizer that
+prevents it (as of this writing) from achieving the same performance as GCC
+when compiling the C version of the Huffman encoder
+(https://llvm.org/bugs/show_bug.cgi?id=16035). For the purposes of benchmarking
+or regression testing, SIMD-accelerated Huffman encoding can be disabled by
+setting the JSIMD_NOHUFFENC environment variable to 1.
+
 
 1.4.2
 =====

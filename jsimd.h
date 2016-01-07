@@ -3,12 +3,15 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2011, 2014 D. R. Commander
+ * Copyright 2015 Matthieu Darbois
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * For conditions of distribution and use, see copyright notice in jsimdext.inc
  *
  */
+
+#include "jchuff.h"             /* Declarations shared with jcphuff.c */
 
 EXTERN(int) jsimd_can_rgb_ycc (void);
 EXTERN(int) jsimd_can_rgb_gray (void);
@@ -82,3 +85,9 @@ EXTERN(void) jsimd_h2v2_merged_upsample
 EXTERN(void) jsimd_h2v1_merged_upsample
         (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
          JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf);
+
+EXTERN(int) jsimd_can_huff_encode_one_block (void);
+
+EXTERN(JOCTET*) jsimd_huff_encode_one_block
+        (void * state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
+         c_derived_tbl *dctbl, c_derived_tbl *actbl);

@@ -38,19 +38,7 @@ Build Requirements
 
   NOTE: the NASM build will fail if texinfo is not installed.
 
-- GCC v4.1 or later recommended for best performance
-  * Beginning with Xcode 4, Apple stopped distributing GCC and switched to
-    the LLVM compiler.  Xcode v4.0 through v4.6 provides a GCC front end
-    called LLVM-GCC.  Unfortunately, as of this writing, neither LLVM-GCC nor
-    the LLVM (clang) compiler produces optimal performance with libjpeg-turbo.
-    Building libjpeg-turbo with LLVM-GCC v4.2 results in a 10% performance
-    degradation when compressing using 64-bit code, relative to building
-    libjpeg-turbo with GCC v4.2.  Building libjpeg-turbo with LLVM (clang)
-    results in a 20% performance degradation when compressing using 64-bit
-    code, relative to building libjpeg-turbo with GCC v4.2.  If you are
-    running Snow Leopard or earlier, it is suggested that you continue to use
-    Xcode v3.2.6, which provides GCC v4.2.  If you are using Lion or later, it
-    is suggested that you install Apple GCC v4.2 or GCC v5 through MacPorts.
+- GCC v4.1 (or later) or clang recommended for best performance
 
 - If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
   required.  Some systems, such as Solaris 10 and later and Red Hat Enterprise
@@ -89,38 +77,38 @@ for 64-bit build instructions.)
 
 This will generate the following files under .libs/:
 
-**libjpeg.a**  
+**libjpeg.a**
 Static link library for the libjpeg API
 
-**libjpeg.so.{version}** (Linux, Unix)  
-**libjpeg.{version}.dylib** (OS X)  
-**cygjpeg-{version}.dll** (Cygwin)  
+**libjpeg.so.{version}** (Linux, Unix)
+**libjpeg.{version}.dylib** (OS X)
+**cygjpeg-{version}.dll** (Cygwin)
 Shared library for the libjpeg API
 
 By default, *{version}* is 62.1.0, 7.1.0, or 8.0.2, depending on whether
 libjpeg v6b (default), v7, or v8 emulation is enabled.  If using Cygwin,
 *{version}* is 62, 7, or 8.
 
-**libjpeg.so** (Linux, Unix)  
-**libjpeg.dylib** (OS X)  
+**libjpeg.so** (Linux, Unix)
+**libjpeg.dylib** (OS X)
 Development symlink for the libjpeg API
 
-**libjpeg.dll.a** (Cygwin)  
+**libjpeg.dll.a** (Cygwin)
 Import library for the libjpeg API
 
-**libturbojpeg.a**  
+**libturbojpeg.a**
 Static link library for the TurboJPEG API
 
-**libturbojpeg.so.0.1.0** (Linux, Unix)  
-**libturbojpeg.0.1.0.dylib** (OS X)  
-**cygturbojpeg-0.dll** (Cygwin)  
+**libturbojpeg.so.0.1.0** (Linux, Unix)
+**libturbojpeg.0.1.0.dylib** (OS X)
+**cygturbojpeg-0.dll** (Cygwin)
 Shared library for the TurboJPEG API
 
-**libturbojpeg.so** (Linux, Unix)  
-**libturbojpeg.dylib** (OS X)  
+**libturbojpeg.so** (Linux, Unix)
+**libturbojpeg.dylib** (OS X)
 Development symlink for the TurboJPEG API
 
-**libturbojpeg.dll.a** (Cygwin)  
+**libturbojpeg.dll.a** (Cygwin)
 Import library for the TurboJPEG API
 
 
@@ -333,16 +321,16 @@ Set the following shell variables for simplicity:
     IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
     IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
 
-  *ARMv6 (code will run on all iOS devices, not SIMD-accelerated)*  
+  *ARMv6 (code will run on all iOS devices, not SIMD-accelerated)*
   [NOTE: Requires Xcode 4.4.x or earlier]
 
     IOS_CFLAGS="-march=armv6 -mcpu=arm1176jzf-s -mfpu=vfp"
 
-  *ARMv7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer)*  
+  *ARMv7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer)*
 
     IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
 
-  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*  
+  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*
   [NOTE: Requires Xcode 4.5 or later]
 
     IOS_CFLAGS="-march=armv7s -mcpu=swift -mtune=swift -mfpu=neon"
@@ -365,11 +353,11 @@ Set the following shell variables for simplicity:
     IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
     IOS_GCC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 
-  *ARMv7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer)*  
+  *ARMv7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer)*
 
     IOS_CFLAGS="-arch armv7"
 
-  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*  
+  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*
 
     IOS_CFLAGS="-arch armv7s"
 
@@ -527,22 +515,22 @@ on which version of cl.exe is in the `PATH`.
 
 The following files will be generated under *{build_directory}*:
 
-**jpeg-static.lib**  
+**jpeg-static.lib**
 Static link library for the libjpeg API
 
-**sharedlib/jpeg{version}.dll**  
+**sharedlib/jpeg{version}.dll**
 DLL for the libjpeg API
 
-**sharedlib/jpeg.lib**  
+**sharedlib/jpeg.lib**
 Import library for the libjpeg API
- 
-**turbojpeg-static.lib**  
+
+**turbojpeg-static.lib**
 Static link library for the TurboJPEG API
 
-**turbojpeg.dll**  
+**turbojpeg.dll**
 DLL for the TurboJPEG API
 
-**turbojpeg.lib**  
+**turbojpeg.lib**
 Import library for the TurboJPEG API
 
 *{version}* is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or
@@ -569,22 +557,22 @@ build of libjpeg-turbo.
 
 This will generate the following files under *{build_directory}*:
 
-**{configuration}/jpeg-static.lib**  
+**{configuration}/jpeg-static.lib**
 Static link library for the libjpeg API
 
-**sharedlib/{configuration}/jpeg{version}.dll**  
+**sharedlib/{configuration}/jpeg{version}.dll**
 DLL for the libjpeg API
 
-**sharedlib/{configuration}/jpeg.lib**  
+**sharedlib/{configuration}/jpeg.lib**
 Import library for the libjpeg API
 
-**{configuration}/turbojpeg-static.lib**  
+**{configuration}/turbojpeg-static.lib**
 Static link library for the TurboJPEG API
 
-**{configuration}/turbojpeg.dll**  
+**{configuration}/turbojpeg.dll**
 DLL for the TurboJPEG API
 
-**{configuration}/turbojpeg.lib**  
+**{configuration}/turbojpeg.lib**
 Import library for the TurboJPEG API
 
 *{configuration}* is Debug, Release, RelWithDebInfo, or MinSizeRel, depending
@@ -603,22 +591,22 @@ cross-compiling on a Linux/Unix machine, then see "Build Recipes" below.
 
 This will generate the following files under *{build_directory}*:
 
-**libjpeg.a**  
+**libjpeg.a**
 Static link library for the libjpeg API
 
-**sharedlib/libjpeg-{version}.dll**  
+**sharedlib/libjpeg-{version}.dll**
 DLL for the libjpeg API
 
-**sharedlib/libjpeg.dll.a**  
+**sharedlib/libjpeg.dll.a**
 Import library for the libjpeg API
 
-**libturbojpeg.a**  
+**libturbojpeg.a**
 Static link library for the TurboJPEG API
 
-**libturbojpeg.dll**  
+**libturbojpeg.dll**
 DLL for the TurboJPEG API
 
-**libturbojpeg.dll.a**  
+**libturbojpeg.dll.a**
 Import library for the TurboJPEG API
 
 *{version}* is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or

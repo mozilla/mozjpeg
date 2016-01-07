@@ -2,9 +2,10 @@
  * simd/jsimd.h
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011, 2014-2015 D. R. Commander
+ * Copyright (C) 2011, 2014-2016 D. R. Commander
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California
  * Copyright (C) 2014 Linaro Limited
+ * Copyright (C) 2015 Matthieu Darbois
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -828,3 +829,9 @@ extern const int jconst_idct_float_sse2[];
 EXTERN(void) jsimd_idct_float_sse2
         (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
+
+/* Huffman coding */
+extern const int jconst_huff_encode_one_block[];
+EXTERN(JOCTET*) jsimd_huff_encode_one_block_sse2
+        (void * state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
+         c_derived_tbl *dctbl, c_derived_tbl *actbl);

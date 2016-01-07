@@ -3,6 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2009-2011, 2013-2014 D. R. Commander
+ * Copyright 2015 Matthieu Darbois
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -705,4 +706,18 @@ jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
+}
+
+GLOBAL(int)
+jsimd_can_huff_encode_one_block (void)
+{
+  return 0;
+}
+
+GLOBAL(JOCTET*)
+jsimd_huff_encode_one_block (void * state, JOCTET *buffer, JCOEFPTR block,
+                             int last_dc_val, c_derived_tbl *dctbl,
+                             c_derived_tbl *actbl)
+{
+  return NULL;
 }

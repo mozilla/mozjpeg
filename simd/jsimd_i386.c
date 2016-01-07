@@ -2,7 +2,8 @@
  * jsimd_i386.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009-2011, 2013-2014 D. R. Commander
+ * Copyright 2009-2011, 2013-2014, 2016 D. R. Commander
+ * Copyright 2015 Matthieu Darbois
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -30,6 +31,7 @@
 #define IS_ALIGNED_SSE(ptr) (IS_ALIGNED(ptr, 4)) /* 16 byte alignment */
 
 static unsigned int simd_support = ~0;
+static unsigned int simd_huffman = 1;
 
 /*
  * Check what SIMD accelerations are supported.
@@ -62,6 +64,9 @@ init_simd (void)
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;
+  env = getenv("JSIMD_NOHUFFENC");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_huffman = 0;
 }
 
 GLOBAL(int)
@@ -1059,3 +1064,28 @@ jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                            output_col);
 }
 
+GLOBAL(int)
+jsimd_can_huff_encode_one_block (void)
+{
+  init_simd();
+
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+
+  if ((simd_support & JSIMD_SSE2) && simd_huffman &&
+      IS_ALIGNED_SSE(jconst_huff_encode_one_block))
+    return 1;
+
+  return 0;
+}
+
+GLOBAL(JOCTET*)
+jsimd_huff_encode_one_block (void * state, JOCTET *buffer, JCOEFPTR block,
+                             int last_dc_val, c_derived_tbl *dctbl,
+                             c_derived_tbl *actbl)
+{
+  return jsimd_huff_encode_one_block_sse2(state, buffer, block, last_dc_val,
+                                          dctbl, actbl);
+}

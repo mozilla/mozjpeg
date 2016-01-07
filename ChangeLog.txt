@@ -1,3 +1,15 @@
+1.4.3
+=====
+
+[1] Fixed a regression caused by 1.4.1[6] that prevented 32-bit and 64-bit
+libjpeg-turbo RPMs from being installed simultaneously on recent Red Hat/Fedora
+distributions.  This was due to the addition of a macro in jconfig.h that
+allows the Huffman codec to determine the word size at compile time.  Since
+that macro differs between 32-bit and 64-bit builds, this caused a conflict
+between the i386 and x86_64 RPMs (any differing files, other than executables,
+are not allowed when 32-bit and 64-bit RPMs are installed simultaneously.)
+Since the macro is used only internally, it has been moved into jconfigint.h.
+
 1.4.2
 =====
 

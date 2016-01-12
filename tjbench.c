@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2016 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -46,7 +46,7 @@
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
 int flags=TJFLAG_NOREALLOC, componly=0, decomponly=0, doyuv=0, quiet=0,
-	dotile=0, pf=TJPF_BGR, yuvpad=1, warmup=1;
+	dotile=0, pf=TJPF_BGR, yuvpad=1, warmup=1, write=1;
 char *ext="ppm";
 const char *pixFormatStr[TJ_NUMPF]=
 {
@@ -224,7 +224,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 		snprintf(tempstr, 1024, "%s_%s%s_%s.%s", filename, subName[subsamp],
 			qualstr, sizestr, ext);
 
-	if(savebmp(tempstr, dstbuf, scaledw, scaledh, pf,
+	if(write && savebmp(tempstr, dstbuf, scaledw, scaledh, pf,
 		(flags&TJFLAG_BOTTOMUP)!=0)==-1)
 		_throwbmp("saving bitmap");
 	ptr=strrchr(tempstr, '.');
@@ -259,7 +259,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 					dstbuf[pitch*row+col]
 						=abs(dstbuf[pitch*row+col]-srcbuf[pitch*row+col]);
 		}
-		if(savebmp(tempstr, dstbuf, w, h, pf,
+		if(write && savebmp(tempstr, dstbuf, w, h, pf,
 			(flags&TJFLAG_BOTTOMUP)!=0)==-1)
 			_throwbmp("saving bitmap");
 	}
@@ -422,7 +422,7 @@ int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 			printf("                  Output bit stream:  %f Megabits/sec\n",
 				(double)totaljpegsize*8./1000000.*(double)iter/elapsed);
 		}
-		if(tilew==w && tileh==h)
+		if(tilew==w && tileh==h && write)
 		{
 			snprintf(tempstr, 1024, "%s_%s_Q%d.jpg", filename, subName[subsamp],
 				jpegqual);
@@ -756,7 +756,9 @@ void usage(char *progname)
 	printf("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
 	printf("-warmup <w> = Execute each benchmark <w> times to prime the cache before\n");
 	printf("     taking performance measurements (default = 1)\n");
-	printf("-componly = Stop after running compression tests.  Do not test decompression.\n\n");
+	printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
+	printf("-nowrite = Do not write reference or output images (improves consistency of\n");
+	printf("           performance measurements.)\n\n");
 	printf("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate\n");
 	printf("test will be performed for all quality values in the range.\n\n");
 	exit(1);
@@ -906,6 +908,7 @@ int main(int argc, char *argv[])
 				}
 			}
 			if(!strcasecmp(argv[i], "-componly")) componly=1;
+			if(!strcasecmp(argv[i], "-nowrite")) write=0;
 		}
 	}
 

@@ -52,6 +52,11 @@ Since the macro is used only internally, it has been moved into jconfigint.h.
 JSIMD_FORCENONE environment variable to 1 (the other SIMD implementations
 already had this capability.)
 
+[11] Added a new command-line argument to TJBench (-nowrite) that prevents the
+benchmark from outputting any images.  This removes any potential operating
+system overhead that might be caused by lazy writes to disk and thus improves
+the consistency of the performance measurements.
+
 
 1.4.2
 =====

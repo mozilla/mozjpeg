@@ -29,9 +29,34 @@
 
 #define IS_ALIGNED_SSE(ptr) (IS_ALIGNED(ptr, 4)) /* 16 byte alignment */
 
+static unsigned int simd_support = ~0;
+
+/*
+ * Check what SIMD accelerations are supported.
+ *
+ * FIXME: This code is racy under a multi-threaded environment.
+ */
+LOCAL(void)
+init_simd (void)
+{
+  char *env = NULL;
+
+  if (simd_support != ~0U)
+    return;
+
+  simd_support = JSIMD_SSE2 | JSIMD_SSE;
+
+  /* Force different settings through environment variables */
+  env = getenv("JSIMD_FORCENONE");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_support = 0;
+}
+
 GLOBAL(int)
 jsimd_can_rgb_ycc (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
@@ -40,15 +65,18 @@ jsimd_can_rgb_ycc (void)
   if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_rgb_ycc_convert_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_rgb_ycc_convert_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_rgb_gray (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
@@ -57,15 +85,18 @@ jsimd_can_rgb_gray (void)
   if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_rgb_gray_convert_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_rgb_gray_convert_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_ycc_rgb (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
@@ -74,10 +105,11 @@ jsimd_can_ycc_rgb (void)
   if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_ycc_rgb_convert_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_ycc_rgb_convert_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
@@ -210,25 +242,35 @@ jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
 GLOBAL(int)
 jsimd_can_h2v2_downsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_h2v1_downsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(void)
@@ -252,25 +294,35 @@ jsimd_h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(int)
 jsimd_can_h2v2_upsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_h2v1_upsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(void)
@@ -296,31 +348,37 @@ jsimd_h2v1_upsample (j_decompress_ptr cinfo,
 GLOBAL(int)
 jsimd_can_h2v2_fancy_upsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_fancy_upsample_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_fancy_upsample_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_h2v1_fancy_upsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_fancy_upsample_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_fancy_upsample_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(void)
@@ -348,31 +406,37 @@ jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
 GLOBAL(int)
 jsimd_can_h2v2_merged_upsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_merged_upsample_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_merged_upsample_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_h2v1_merged_upsample (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (BITS_IN_JSAMPLE != 8)
     return 0;
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_merged_upsample_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) &&
+      IS_ALIGNED_SSE(jconst_merged_upsample_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(void)
@@ -456,6 +520,8 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
 GLOBAL(int)
 jsimd_can_convsamp (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -466,12 +532,17 @@ jsimd_can_convsamp (void)
   if (sizeof(DCTELEM) != 2)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_convsamp_float (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -482,7 +553,10 @@ jsimd_can_convsamp_float (void)
   if (sizeof(FAST_FLOAT) != 4)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(void)
@@ -502,46 +576,52 @@ jsimd_convsamp_float (JSAMPARRAY sample_data, JDIMENSION start_col,
 GLOBAL(int)
 jsimd_can_fdct_islow (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
   if (sizeof(DCTELEM) != 2)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_fdct_islow_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_fdct_islow_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_fdct_ifast (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
   if (sizeof(DCTELEM) != 2)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_fdct_ifast_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_fdct_ifast_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_fdct_float (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
   if (sizeof(FAST_FLOAT) != 4)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_fdct_float_sse))
-    return 0;
+  if ((simd_support & JSIMD_SSE) && IS_ALIGNED_SSE(jconst_fdct_float_sse))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(void)
@@ -565,6 +645,8 @@ jsimd_fdct_float (FAST_FLOAT * data)
 GLOBAL(int)
 jsimd_can_quantize (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -573,12 +655,17 @@ jsimd_can_quantize (void)
   if (sizeof(DCTELEM) != 2)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_quantize_float (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -587,7 +674,10 @@ jsimd_can_quantize_float (void)
   if (sizeof(FAST_FLOAT) != 4)
     return 0;
 
-  return 1;
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
+  return 0;
 }
 
 GLOBAL(void)
@@ -607,6 +697,8 @@ jsimd_quantize_float (JCOEFPTR coef_block, FAST_FLOAT * divisors,
 GLOBAL(int)
 jsimd_can_idct_2x2 (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -619,15 +711,17 @@ jsimd_can_idct_2x2 (void)
   if (sizeof(ISLOW_MULT_TYPE) != 2)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_idct_red_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_red_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_idct_4x4 (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -640,10 +734,10 @@ jsimd_can_idct_4x4 (void)
   if (sizeof(ISLOW_MULT_TYPE) != 2)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_idct_red_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_red_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(void)
@@ -665,6 +759,8 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(int)
 jsimd_can_idct_islow (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -677,15 +773,17 @@ jsimd_can_idct_islow (void)
   if (sizeof(ISLOW_MULT_TYPE) != 2)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_idct_islow_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_islow_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_idct_ifast (void)
 {
+  init_simd();
+
   /* The code is optimised for these values only */
   if (DCTSIZE != 8)
     return 0;
@@ -700,15 +798,17 @@ jsimd_can_idct_ifast (void)
   if (IFAST_SCALE_BITS != 2)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_idct_ifast_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_ifast_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(int)
 jsimd_can_idct_float (void)
 {
+  init_simd();
+
   if (DCTSIZE != 8)
     return 0;
   if (sizeof(JCOEF) != 2)
@@ -722,10 +822,10 @@ jsimd_can_idct_float (void)
   if (sizeof(FLOAT_MULT_TYPE) != 4)
     return 0;
 
-  if (!IS_ALIGNED_SSE(jconst_idct_float_sse2))
-    return 0;
+  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_float_sse2))
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 GLOBAL(void)
@@ -754,4 +854,3 @@ jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
   jsimd_idct_float_sse2(compptr->dct_table, coef_block, output_buf,
                         output_col);
 }
-

@@ -48,6 +48,10 @@ between the i386 and x86_64 RPMs (any differing files, other than executables,
 are not allowed when 32-bit and 64-bit RPMs are installed simultaneously.)
 Since the macro is used only internally, it has been moved into jconfigint.h.
 
+[10] The x86-64 SIMD code can now be disabled at run time by setting the
+JSIMD_FORCENONE environment variable to 1 (the other SIMD implementations
+already had this capability.)
+
 
 1.4.2
 =====

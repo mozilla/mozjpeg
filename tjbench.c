@@ -213,6 +213,9 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 				(double)(w*h)/1000000.*(double)iter/elapsedDecode);
 		}
 	}
+
+	if (!write) goto bailout;
+
 	if(sf.num!=1 || sf.denom!=1)
 		snprintf(sizestr, 20, "%d_%d", sf.num, sf.denom);
 	else if(tilew!=w || tileh!=h)
@@ -224,7 +227,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 		snprintf(tempstr, 1024, "%s_%s%s_%s.%s", filename, subName[subsamp],
 			qualstr, sizestr, ext);
 
-	if(write && savebmp(tempstr, dstbuf, scaledw, scaledh, pf,
+	if(savebmp(tempstr, dstbuf, scaledw, scaledh, pf,
 		(flags&TJFLAG_BOTTOMUP)!=0)==-1)
 		_throwbmp("saving bitmap");
 	ptr=strrchr(tempstr, '.');
@@ -259,7 +262,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 					dstbuf[pitch*row+col]
 						=abs(dstbuf[pitch*row+col]-srcbuf[pitch*row+col]);
 		}
-		if(write && savebmp(tempstr, dstbuf, w, h, pf,
+		if(savebmp(tempstr, dstbuf, w, h, pf,
 			(flags&TJFLAG_BOTTOMUP)!=0)==-1)
 			_throwbmp("saving bitmap");
 	}
@@ -758,7 +761,7 @@ void usage(char *progname)
 	printf("     taking performance measurements (default = 1)\n");
 	printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
 	printf("-nowrite = Do not write reference or output images (improves consistency of\n");
-	printf("           performance measurements.)\n\n");
+	printf("     performance measurements.)\n\n");
 	printf("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate\n");
 	printf("test will be performed for all quality values in the range.\n\n");
 	exit(1);

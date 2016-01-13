@@ -2,8 +2,8 @@
  * jsimd_arm.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009-2011, 2013-2014 D. R. Commander
- * Copyright 2015 Matthieu Darbois
+ * Copyright 2009-2011, 2013-2014, 2016 D. R. Commander
+ * Copyright 2015-2016 Matthieu Darbois
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -228,8 +228,7 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
       break;
   }
 
-  if (simd_support & JSIMD_ARM_NEON)
-    neonfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
+  neonfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)
@@ -274,8 +273,7 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
       break;
   }
 
-  if (simd_support & JSIMD_ARM_NEON)
-    neonfct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
+  neonfct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
 }
 
 GLOBAL(void)
@@ -283,9 +281,8 @@ jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
                           JSAMPIMAGE input_buf, JDIMENSION input_row,
                           JSAMPARRAY output_buf, int num_rows)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_ycc_rgb565_convert_neon(cinfo->output_width, input_buf, input_row,
-                                  output_buf, num_rows);
+  jsimd_ycc_rgb565_convert_neon(cinfo->output_width, input_buf, input_row,
+                                output_buf, num_rows);
 }
 
 GLOBAL(int)
@@ -387,10 +384,9 @@ jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
                            JSAMPARRAY input_data,
                            JSAMPARRAY * output_data_ptr)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_h2v1_fancy_upsample_neon(cinfo->max_v_samp_factor,
-                                   compptr->downsampled_width, input_data,
-                                   output_data_ptr);
+  jsimd_h2v1_fancy_upsample_neon(cinfo->max_v_samp_factor,
+                                 compptr->downsampled_width, input_data,
+                                 output_data_ptr);
 }
 
 GLOBAL(int)
@@ -458,8 +454,7 @@ GLOBAL(void)
 jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
                 DCTELEM * workspace)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_convsamp_neon(sample_data, start_col, workspace);
+  jsimd_convsamp_neon(sample_data, start_col, workspace);
 }
 
 GLOBAL(void)
@@ -509,8 +504,7 @@ jsimd_fdct_islow (DCTELEM * data)
 GLOBAL(void)
 jsimd_fdct_ifast (DCTELEM * data)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_fdct_ifast_neon(data);
+  jsimd_fdct_ifast_neon(data);
 }
 
 GLOBAL(void)
@@ -549,8 +543,7 @@ GLOBAL(void)
 jsimd_quantize (JCOEFPTR coef_block, DCTELEM * divisors,
                 DCTELEM * workspace)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_quantize_neon(coef_block, divisors, workspace);
+  jsimd_quantize_neon(coef_block, divisors, workspace);
 }
 
 GLOBAL(void)
@@ -610,9 +603,8 @@ jsimd_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
                 JDIMENSION output_col)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_idct_2x2_neon(compptr->dct_table, coef_block, output_buf,
-                        output_col);
+  jsimd_idct_2x2_neon(compptr->dct_table, coef_block, output_buf,
+                      output_col);
 }
 
 GLOBAL(void)
@@ -620,9 +612,8 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
                 JDIMENSION output_col)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_idct_4x4_neon(compptr->dct_table, coef_block, output_buf,
-                        output_col);
+  jsimd_idct_4x4_neon(compptr->dct_table, coef_block, output_buf,
+                      output_col);
 }
 
 GLOBAL(int)
@@ -686,9 +677,8 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_idct_islow_neon(compptr->dct_table, coef_block, output_buf,
-                          output_col);
+  jsimd_idct_islow_neon(compptr->dct_table, coef_block, output_buf,
+                        output_col);
 }
 
 GLOBAL(void)
@@ -696,9 +686,8 @@ jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
-  if (simd_support & JSIMD_ARM_NEON)
-    jsimd_idct_ifast_neon(compptr->dct_table, coef_block, output_buf,
-                          output_col);
+  jsimd_idct_ifast_neon(compptr->dct_table, coef_block, output_buf,
+                        output_col);
 }
 
 GLOBAL(void)
@@ -711,6 +700,16 @@ jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(int)
 jsimd_can_huff_encode_one_block (void)
 {
+  init_simd();
+
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ARM_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -719,5 +718,6 @@ jsimd_huff_encode_one_block (void * state, JOCTET *buffer, JCOEFPTR block,
                              int last_dc_val, c_derived_tbl *dctbl,
                              c_derived_tbl *actbl)
 {
-  return NULL;
+  return jsimd_huff_encode_one_block_neon(state, buffer, block, last_dc_val,
+                                          dctbl, actbl);
 }

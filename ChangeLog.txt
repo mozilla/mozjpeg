@@ -67,6 +67,10 @@ when compiling the C version of the Huffman encoder
 or regression testing, SIMD-accelerated Huffman encoding can be disabled by
 setting the JSIMD_NOHUFFENC environment variable to 1.
 
+[13] Added SIMD acceleration for Huffman encoding on NEON-capable ARM 32-bit
+platforms.  This speeds up the compression of full-color JPEGs by about 30% on
+average.
+
 
 1.4.2
 =====

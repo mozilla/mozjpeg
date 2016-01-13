@@ -71,9 +71,13 @@ Solaris/x86 systems (on Solaris, this generates a 32-bit library.  See below
 for 64-bit build instructions.)
 
     cd {source_directory}
+    autoreconf -fiv
     cd {build_directory}
     sh {source_directory}/configure [additional configure flags]
     make
+
+NOTE: Running autoreconf in the source directory is not necessary if building
+libjpeg-turbo from one of the official release tarballs.
 
 This will generate the following files under .libs/:
 

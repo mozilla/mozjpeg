@@ -69,7 +69,9 @@ setting the JSIMD_NOHUFFENC environment variable to 1.
 
 [13] Added SIMD acceleration for Huffman encoding on NEON-capable ARM 32-bit
 platforms.  This speeds up the compression of full-color JPEGs by about 30% on
-average.
+average.  For the purposes of benchmarking or regression testing,
+SIMD-accelerated Huffman encoding can be disabled by setting the
+JSIMD_NOHUFFENC environment variable to 1.
 
 [14] Completed the ARM 64-bit (ARMv8) NEON SIMD implementation.  64-bit ARM
 now has SIMD coverage for all of the algorithms that are covered in the 32-bit

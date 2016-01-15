@@ -27,6 +27,7 @@
 #include <ctype.h>
 
 static unsigned int simd_support = ~0;
+static unsigned int simd_huffman = 1;
 
 #if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
 
@@ -128,6 +129,9 @@ init_simd (void)
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;
+  env = getenv("JSIMD_NOHUFFENC");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_huffman = 0;
 }
 
 GLOBAL(int)
@@ -707,7 +711,7 @@ jsimd_can_huff_encode_one_block (void)
   if (sizeof(JCOEF) != 2)
     return 0;
 
-  if (simd_support & JSIMD_ARM_NEON)
+  if (simd_support & JSIMD_ARM_NEON && simd_huffman)
     return 1;
 
   return 0;

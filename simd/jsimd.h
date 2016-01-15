@@ -360,6 +360,11 @@ EXTERN(void) jsimd_h2v1_downsample_sse2
          JDIMENSION v_samp_factor, JDIMENSION width_blocks,
          JSAMPARRAY input_data, JSAMPARRAY output_data);
 
+EXTERN(void) jsimd_h2v1_downsample_neon
+        (JDIMENSION image_width, int max_v_samp_factor,
+         JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+         JSAMPARRAY input_data, JSAMPARRAY output_data);
+
 EXTERN(void) jsimd_h2v1_downsample_mips_dspr2
         (JDIMENSION image_width, int max_v_samp_factor,
          JDIMENSION v_samp_factor, JDIMENSION width_blocks,
@@ -377,6 +382,11 @@ EXTERN(void) jsimd_h2v2_downsample_mmx
          JSAMPARRAY input_data, JSAMPARRAY output_data);
 
 EXTERN(void) jsimd_h2v2_downsample_sse2
+        (JDIMENSION image_width, int max_v_samp_factor,
+         JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+         JSAMPARRAY input_data, JSAMPARRAY output_data);
+
+EXTERN(void) jsimd_h2v2_downsample_neon
         (JDIMENSION image_width, int max_v_samp_factor,
          JDIMENSION v_samp_factor, JDIMENSION width_blocks,
          JSAMPARRAY input_data, JSAMPARRAY output_data);
@@ -679,6 +689,8 @@ EXTERN(void) jsimd_fdct_islow_mmx (DCTELEM * data);
 
 extern const int jconst_fdct_islow_sse2[];
 EXTERN(void) jsimd_fdct_islow_sse2 (DCTELEM * data);
+
+EXTERN(void) jsimd_fdct_islow_neon (DCTELEM * data);
 
 EXTERN(void) jsimd_fdct_islow_mips_dspr2 (DCTELEM * data);
 

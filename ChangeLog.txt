@@ -71,6 +71,13 @@ setting the JSIMD_NOHUFFENC environment variable to 1.
 platforms.  This speeds up the compression of full-color JPEGs by about 30% on
 average.
 
+[14] Completed the ARM 64-bit (ARMv8) NEON SIMD implementation.  64-bit ARM
+now has SIMD coverage for all of the algorithms that are covered in the 32-bit
+(ARMv7) implementation, except for h2v1 (4:2:2) fancy upsampling.
+Additionally, the ARM 64-bit SIMD implementation now accelerates the slow
+integer forward DCT and h2v2 & h2v1 downsampling algorithms, which are not
+accelerated in the 32-bit implementation.
+
 
 1.4.2
 =====

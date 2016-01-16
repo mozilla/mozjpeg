@@ -73,12 +73,11 @@ average.  For the purposes of benchmarking or regression testing,
 SIMD-accelerated Huffman encoding can be disabled by setting the
 JSIMD_NOHUFFENC environment variable to 1.
 
-[14] Completed the ARM 64-bit (ARMv8) NEON SIMD implementation.  64-bit ARM
-now has SIMD coverage for all of the algorithms that are covered in the 32-bit
-(ARMv7) implementation, except for h2v1 (4:2:2) fancy upsampling.
-Additionally, the ARM 64-bit SIMD implementation now accelerates the slow
-integer forward DCT and h2v2 & h2v1 downsampling algorithms, which are not
-accelerated in the 32-bit implementation.
+[14] Added ARM 64-bit (ARMv8) NEON SIMD implementations of the commonly-used
+compression algorithms (including the slow integer forward DCT and h2v2 & h2v1
+downsampling algorithms, which are not accelerated in the 32-bit NEON
+implementation.)  This speeds up the overall 64-bit compression performance by
+about 2x on ARMv8 processors.
 
 
 1.4.2

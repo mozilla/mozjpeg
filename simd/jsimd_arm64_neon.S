@@ -6,8 +6,9 @@
  * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
  * Copyright (C) 2013-2014, Linaro Limited
  * Author: Ragesh Radhakrishnan <ragesh.r@linaro.org>
- * Copyright (C) 2014-2015, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2014-2016, D. R. Commander.  All Rights Reserved.
  * Copyright (C) 2015-2016, Matthieu Darbois.  All Rights Reserved.
+ * Copyright (C) 2016, Siarhei Siamashka.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -1938,10 +1939,50 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,   0, .4h,   0, .4h,   .
     .endif
 .endm
 
+#if __APPLE__
+/* TODO: expand this to include other devices that are known not to have a slow
+ *       ld3 implementation. */
+#define LD3_IS_FAST
+#endif
+
 .macro do_load bpp, size
     .if \bpp == 24
         .if \size == 8
+#ifdef LD3_IS_FAST
             ld3  {v10.8b, v11.8b, v12.8b}, [RGB], #24
+#else
+            ld1  {v10.b}[0], [RGB], #1
+            ld1  {v11.b}[0], [RGB], #1
+            ld1  {v12.b}[0], [RGB], #1
+
+            ld1  {v10.b}[1], [RGB], #1
+            ld1  {v11.b}[1], [RGB], #1
+            ld1  {v12.b}[1], [RGB], #1
+
+            ld1  {v10.b}[2], [RGB], #1
+            ld1  {v11.b}[2], [RGB], #1
+            ld1  {v12.b}[2], [RGB], #1
+
+            ld1  {v10.b}[3], [RGB], #1
+            ld1  {v11.b}[3], [RGB], #1
+            ld1  {v12.b}[3], [RGB], #1
+
+            ld1  {v10.b}[4], [RGB], #1
+            ld1  {v11.b}[4], [RGB], #1
+            ld1  {v12.b}[4], [RGB], #1
+
+            ld1  {v10.b}[5], [RGB], #1
+            ld1  {v11.b}[5], [RGB], #1
+            ld1  {v12.b}[5], [RGB], #1
+
+            ld1  {v10.b}[6], [RGB], #1
+            ld1  {v11.b}[6], [RGB], #1
+            ld1  {v12.b}[6], [RGB], #1
+
+            ld1  {v10.b}[7], [RGB], #1
+            ld1  {v11.b}[7], [RGB], #1
+            ld1  {v12.b}[7], [RGB], #1
+#endif
             prfm pldl1keep, [RGB, #128]
         .elseif \size == 4
             ld3  {v10.b, v11.b, v12.b}[0], [RGB], #3
@@ -1985,46 +2026,40 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,   0, .4h,   0, .4h,   .
  */
 
 .macro do_rgb_to_yuv_stage1
-    ushll       v4.8h, v1\r_offs\().8b, #0  /* r = { d4, d5 } */
-    ushll       v6.8h, v1\g_offs\().8b, #0  /* g = { d6, d7 } */
-    ushll       v8.8h, v1\b_offs\().8b, #0  /* b = { d8, d9 } */
-    ins         v5.d[0], v4.d[1]
-    ins         v7.d[0], v6.d[1]
-    ins         v9.d[0], v8.d[1]
+    ushll       v4.8h, v1\r_offs\().8b, #0  /* r = v4 */
+    ushll       v6.8h, v1\g_offs\().8b, #0  /* g = v6 */
+    ushll       v8.8h, v1\b_offs\().8b, #0  /* b = v8 */
     rev64       v18.4s, v1.4s
     rev64       v26.4s, v1.4s
     rev64       v28.4s, v1.4s
     rev64       v30.4s, v1.4s
     umull       v14.4s, v4.4h, v0.h[0]
-    umull       v16.4s, v5.4h, v0.h[0]
+    umull2      v16.4s, v4.8h, v0.h[0]
     umlsl       v18.4s, v4.4h, v0.h[3]
-    umlsl       v26.4s, v5.4h, v0.h[3]
+    umlsl2      v26.4s, v4.8h, v0.h[3]
     umlal       v28.4s, v4.4h, v0.h[5]
-    umlal       v30.4s, v5.4h, v0.h[5]
+    umlal2      v30.4s, v4.8h, v0.h[5]
     umlal       v14.4s, v6.4h, v0.h[1]
-    umlal       v16.4s, v7.4h, v0.h[1]
+    umlal2      v16.4s, v6.8h, v0.h[1]
     umlsl       v18.4s, v6.4h, v0.h[4]
-    umlsl       v26.4s, v7.4h, v0.h[4]
+    umlsl2      v26.4s, v6.8h, v0.h[4]
     umlsl       v28.4s, v6.4h, v0.h[6]
-    umlsl       v30.4s, v7.4h, v0.h[6]
+    umlsl2      v30.4s, v6.8h, v0.h[6]
     umlal       v14.4s, v8.4h, v0.h[2]
-    umlal       v16.4s, v9.4h, v0.h[2]
+    umlal2      v16.4s, v8.8h, v0.h[2]
     umlal       v18.4s, v8.4h, v0.h[5]
-    umlal       v26.4s, v9.4h, v0.h[5]
+    umlal2      v26.4s, v8.8h, v0.h[5]
     umlsl       v28.4s, v8.4h, v0.h[7]
-    umlsl       v30.4s, v9.4h, v0.h[7]
+    umlsl2      v30.4s, v8.8h, v0.h[7]
 .endm
 
 .macro do_rgb_to_yuv_stage2
     rshrn       v20.4h, v14.4s, #16
-    rshrn       v21.4h, v16.4s, #16
     shrn        v22.4h, v18.4s, #16
-    shrn        v23.4h, v26.4s, #16
     shrn        v24.4h, v28.4s, #16
-    shrn        v25.4h, v30.4s, #16
-    ins         v20.d[1], v21.d[0]
-    ins         v22.d[1], v23.d[0]
-    ins         v24.d[1], v25.d[0]
+    rshrn2      v20.8h, v16.4s, #16
+    shrn2       v22.8h, v26.4s, #16
+    shrn2       v24.8h, v30.4s, #16
     xtn         v20.8b, v20.8h      /* v20 = y */
     xtn         v21.8b, v22.8h      /* v21 = u */
     xtn         v22.8b, v24.8h      /* v22 = v */
@@ -2035,51 +2070,15 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,   0, .4h,   0, .4h,   .
     do_rgb_to_yuv_stage2
 .endm
 
+/* TODO: expand macros and interleave instructions if some in-order
+ *       ARM64 processor actually can dual-issue LOAD/STORE with ALU */
 .macro do_rgb_to_yuv_stage2_store_load_stage1
-      rshrn       v20.4h, v14.4s, #16
-      rshrn       v21.4h, v16.4s, #16
-      shrn        v22.4h, v18.4s, #16
-    rev64       v18.4s, v1.4s
-      shrn        v23.4h, v26.4s, #16
-      ins         v20.d[1], v21.d[0]
-    rev64       v26.4s, v1.4s
-      shrn        v24.4h, v28.4s, #16
-      shrn        v25.4h, v30.4s, #16
-      ins         v22.d[1], v23.d[0]
+    do_rgb_to_yuv_stage2
     do_load     \bpp, 8
-      xtn         v20.8b, v20.8h            /* dv0 = y */
-      ins         v24.d[1], v25.d[0]
-    ushll       v4.8h, v1\r_offs\().8b, #0  /* r = { v4.8h } */
-      xtn         v21.8b, v22.8h            /* v21 = u */
-    ushll       v6.8h, v1\g_offs\().8b, #0  /* g = { v6.8h } */
-    ushll       v8.8h, v1\b_offs\().8b, #0  /* b = { v8.8h } */
-      xtn         v22.8b, v24.8h            /* v22 = v */
-    ins         v5.d[0], v4.d[1]
-    ins         v7.d[0], v6.d[1]
-    ins         v9.d[0], v8.d[1]
-      st1         {v20.8b}, [Y], #8
-    umull       v14.4s, v4.4h, v0.h[0]
-    umull       v16.4s, v5.4h, v0.h[0]
-    umlsl       v18.4s, v4.4h, v0.h[3]
-    umlal       v14.4s, v6.4h, v0.h[1]
-    umlal       v16.4s, v7.4h, v0.h[1]
-    umlsl       v18.4s, v6.4h, v0.h[4]
-    umlal       v14.4s, v8.4h, v0.h[2]
-    umlal       v16.4s, v9.4h, v0.h[2]
-    umlal       v18.4s, v8.4h, v0.h[5]
-    rev64       v28.4s, v1.4s
-    rev64       v30.4s, v1.4s
-      st1         {v21.8b}, [U], #8
-    umlsl       v26.4s, v5.4h, v0.h[3]
-    umlal       v28.4s, v4.4h, v0.h[5]
-    umlal       v30.4s, v5.4h, v0.h[5]
-      st1         {v22.8b}, [V], #8
-    umlsl       v26.4s, v7.4h, v0.h[4]
-    umlsl       v28.4s, v6.4h, v0.h[6]
-    umlsl       v30.4s, v7.4h, v0.h[6]
-    umlal       v26.4s, v9.4h, v0.h[5]
-    umlsl       v28.4s, v8.4h, v0.h[7]
-    umlsl       v30.4s, v9.4h, v0.h[7]
+    st1         {v20.8b}, [Y], #8
+    st1         {v21.8b}, [U], #8
+    st1         {v22.8b}, [V], #8
+    do_rgb_to_yuv_stage1
 .endm
 
 .balign 16
@@ -2852,39 +2851,39 @@ asm_function jsimd_quantize_neon
  */
 
 .balign 16
-Ljsimd_h2v1_downsample_neon_consts:
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E  /* diff 0, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F  /* diff 0, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E  /* diff 1, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0E  /* diff 1, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0D  /* diff 2, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0D  /* diff 2, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0C  /* diff 3, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0C, 0x0C  /* diff 3, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0B, 0x0B  /* diff 4, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0B, 0x0B  /* diff 4, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0A, 0x0A  /* diff 5, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0A, 0x0A, 0x0A  /* diff 5, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x09, 0x09, 0x09  /* diff 6, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x09, 0x09, 0x09  /* diff 6, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x08, 0x08, 0x08  /* diff 7, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x08, 0x08, 0x08, 0x08  /* diff 7, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x07, 0x07, 0x07, 0x07  /* diff 8, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x07, 0x07, 0x07, 0x07  /* diff 8, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x06, 0x06, 0x06, 0x06  /* diff 9, even */
-    .byte 0x01, 0x03, 0x05, 0x06, 0x06, 0x06, 0x06, 0x06  /* diff 9, odd */
-    .byte 0x00, 0x02, 0x04, 0x05, 0x05, 0x05, 0x05, 0x05  /* diff 10, even */
-    .byte 0x01, 0x03, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05  /* diff 10, odd */
-    .byte 0x00, 0x02, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04  /* diff 11, even */
-    .byte 0x01, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04  /* diff 11, odd */
-    .byte 0x00, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03  /* diff 12, even */
-    .byte 0x01, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03  /* diff 12, odd */
-    .byte 0x00, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02  /* diff 13, even */
-    .byte 0x01, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02  /* diff 13, odd */
-    .byte 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01  /* diff 14, even */
-    .byte 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01  /* diff 14, odd */
-    .byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* diff 15, even */
-    .byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* diff 15, odd */
+Ljsimd_h2_downsample_neon_consts:
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F  /* diff 0 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0E  /* diff 1 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0D, 0x0D  /* diff 2 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0C, 0x0C, 0x0C  /* diff 3 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x09, 0x0A, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B  /* diff 4 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x09, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A  /* diff 5 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x09, 0x09, 0x09, 0x09, 0x09, 0x09, 0x09  /* diff 6 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08  /* diff 7 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+          0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07  /* diff 8 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x06, \
+          0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06  /* diff 9 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x05, 0x05, \
+          0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05  /* diff 10 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x04, 0x04, 0x04, 0x04, \
+          0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04  /* diff 11 */
+    .byte 0x00, 0x01, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, \
+          0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03  /* diff 12 */
+    .byte 0x00, 0x01, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, \
+          0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02  /* diff 13 */
+    .byte 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, \
+          0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01  /* diff 14 */
+    .byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* diff 15 */
 
 asm_function jsimd_h2v1_downsample_neon
     IMAGE_WIDTH     .req x0
@@ -2900,40 +2899,39 @@ asm_function jsimd_h2v1_downsample_neon
     TMP3            .req x13
     TMPDUP          .req w15
 
-    mov   TMPDUP, #0x10000
-    lsl   TMP2, BLOCK_WIDTH, #4
-    sub   TMP2, TMP2, IMAGE_WIDTH
-    adr   TMP3, Ljsimd_h2v1_downsample_neon_consts
-    add   TMP3, TMP3, TMP2, lsl #4
-    dup   v16.4s, TMPDUP
-    ld1   {v18.8b, v19.8b}, [TMP3]
+    mov    TMPDUP, #0x10000
+    lsl    TMP2, BLOCK_WIDTH, #4
+    sub    TMP2, TMP2, IMAGE_WIDTH
+    adr    TMP3, Ljsimd_h2_downsample_neon_consts
+    add    TMP3, TMP3, TMP2, lsl #4
+    dup    v16.4s, TMPDUP
+    ld1    {v18.16b}, [TMP3]
 
 1:  /* row loop */
-    ldr   INPTR, [INPUT_DATA], #8
-    ldr   OUTPTR, [OUTPUT_DATA], #8
-    subs  TMP1, BLOCK_WIDTH, #1
-    b.eq  3f
+    ldr    INPTR, [INPUT_DATA], #8
+    ldr    OUTPTR, [OUTPUT_DATA], #8
+    subs   TMP1, BLOCK_WIDTH, #1
+    b.eq   3f
 2:  /* columns */
-    ld2   {v0.8b, v1.8b}, [INPTR], #16
-    subs  TMP1, TMP1, #1
-    uaddl v2.8h, v0.8b, v1.8b
-    add   v2.8h, v2.8h, v16.8h
-    shrn  v2.8b, v2.8h, #1
-    st1   {v2.8b}, [OUTPTR], #8
-    b.ne  2b
+    ld1    {v0.16b}, [INPTR], #16
+    mov    v4.16b, v16.16b
+    subs   TMP1, TMP1, #1
+    uadalp v4.8h, v0.16b
+    shrn   v6.8b, v4.8h, #1
+    st1    {v6.8b}, [OUTPTR], #8
+    b.ne   2b
 3:  /* last columns */
-    ld1   {v0.16b}, [INPTR]
-    subs  V_SAMP, V_SAMP, #1
+    ld1    {v0.16b}, [INPTR]
+    mov    v4.16b, v16.16b
+    subs   V_SAMP, V_SAMP, #1
     /* expand right */
-    tbl   v2.8b, {v0.16b}, v18.8b
-    tbl   v3.8b, {v0.16b}, v19.8b
-    uaddl v2.8h, v2.8b, v3.8b
-    add   v2.8h, v2.8h, v16.8h
-    shrn  v2.8b, v2.8h, #1
-    st1   {v2.8b}, [OUTPTR], #8
-    b.ne  1b
+    tbl    v2.16b, {v0.16b}, v18.16b
+    uadalp v4.8h, v2.16b
+    shrn   v6.8b, v4.8h, #1
+    st1    {v6.8b}, [OUTPTR], #8
+    b.ne   1b
 
-    br              x30
+    br     x30
 
     .unreq          IMAGE_WIDTH
     .unreq          MAX_V_SAMP
@@ -2962,40 +2960,6 @@ asm_function jsimd_h2v1_downsample_neon
  */
 
 .balign 16
-Ljsimd_h2v2_downsample_neon_consts:
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E  /* diff 0, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F  /* diff 0, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E  /* diff 1, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0E  /* diff 1, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0D  /* diff 2, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0D  /* diff 2, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0C  /* diff 3, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0C, 0x0C  /* diff 3, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0B, 0x0B  /* diff 4, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0B, 0x0B  /* diff 4, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0A, 0x0A  /* diff 5, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x0A, 0x0A, 0x0A  /* diff 5, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x09, 0x09, 0x09  /* diff 6, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x09, 0x09, 0x09, 0x09  /* diff 6, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x08, 0x08, 0x08, 0x08  /* diff 7, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x08, 0x08, 0x08, 0x08  /* diff 7, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x07, 0x07, 0x07, 0x07  /* diff 8, even */
-    .byte 0x01, 0x03, 0x05, 0x07, 0x07, 0x07, 0x07, 0x07  /* diff 8, odd */
-    .byte 0x00, 0x02, 0x04, 0x06, 0x06, 0x06, 0x06, 0x06  /* diff 9, even */
-    .byte 0x01, 0x03, 0x05, 0x06, 0x06, 0x06, 0x06, 0x06  /* diff 9, odd */
-    .byte 0x00, 0x02, 0x04, 0x05, 0x05, 0x05, 0x05, 0x05  /* diff 10, even */
-    .byte 0x01, 0x03, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05  /* diff 10, odd */
-    .byte 0x00, 0x02, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04  /* diff 11, even */
-    .byte 0x01, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04  /* diff 11, odd */
-    .byte 0x00, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03  /* diff 12, even */
-    .byte 0x01, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03  /* diff 12, odd */
-    .byte 0x00, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02  /* diff 13, even */
-    .byte 0x01, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02  /* diff 13, odd */
-    .byte 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01  /* diff 14, even */
-    .byte 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01  /* diff 14, odd */
-    .byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* diff 15, even */
-    .byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* diff 15, odd */
-
 asm_function jsimd_h2v2_downsample_neon
     IMAGE_WIDTH     .req x0
     MAX_V_SAMP      .req x1
@@ -3011,51 +2975,47 @@ asm_function jsimd_h2v2_downsample_neon
     TMP3            .req x13
     TMPDUP          .req w15
 
-    mov   TMPDUP, #1
-    lsl   TMP2, BLOCK_WIDTH, #4
-    lsl   TMPDUP, TMPDUP, #17
-    sub   TMP2, TMP2, IMAGE_WIDTH
-    adr   TMP3, Ljsimd_h2v2_downsample_neon_consts
-    orr   TMPDUP, TMPDUP, #1
-    add   TMP3, TMP3, TMP2, lsl #4
-    dup   v16.4s, TMPDUP
-    ld1   {v18.8b, v19.8b}, [TMP3]
+    mov    TMPDUP, #1
+    lsl    TMP2, BLOCK_WIDTH, #4
+    lsl    TMPDUP, TMPDUP, #17
+    sub    TMP2, TMP2, IMAGE_WIDTH
+    adr    TMP3, Ljsimd_h2_downsample_neon_consts
+    orr    TMPDUP, TMPDUP, #1
+    add    TMP3, TMP3, TMP2, lsl #4
+    dup    v16.4s, TMPDUP
+    ld1    {v18.16b}, [TMP3]
 
 1:  /* row loop */
-    ldr   INPTR0, [INPUT_DATA], #8
-    ldr   OUTPTR, [OUTPUT_DATA], #8
-    ldr   INPTR1, [INPUT_DATA], #8
-    subs  TMP1, BLOCK_WIDTH, #1
-    b.eq  3f
+    ldr    INPTR0, [INPUT_DATA], #8
+    ldr    OUTPTR, [OUTPUT_DATA], #8
+    ldr    INPTR1, [INPUT_DATA], #8
+    subs   TMP1, BLOCK_WIDTH, #1
+    b.eq   3f
 2:  /* columns */
-    ld2   {v0.8b, v1.8b}, [INPTR0], #16
-    ld2   {v2.8b, v3.8b}, [INPTR1], #16
-    subs  TMP1, TMP1, #1
-    uaddl v4.8h, v0.8b, v1.8b
-    uaddl v6.8h, v2.8b, v3.8b
-    add   v4.8h, v4.8h, v6.8h
-    add   v4.8h, v4.8h, v16.8h
-    shrn  v4.8b, v4.8h, #2
-    st1   {v4.8b}, [OUTPTR], #8
-    b.ne  2b
+    ld1    {v0.16b}, [INPTR0], #16
+    ld1    {v1.16b}, [INPTR1], #16
+    mov    v4.16b, v16.16b
+    subs   TMP1, TMP1, #1
+    uadalp v4.8h, v0.16b
+    uadalp v4.8h, v1.16b
+    shrn   v6.8b, v4.8h, #2
+    st1    {v6.8b}, [OUTPTR], #8
+    b.ne   2b
 3:  /* last columns */
-    ld1   {v0.16b}, [INPTR0]
-    ld1   {v1.16b}, [INPTR1]
-    subs  V_SAMP, V_SAMP, #1
+    ld1    {v0.16b}, [INPTR0], #16
+    ld1    {v1.16b}, [INPTR1], #16
+    mov    v4.16b, v16.16b
+    subs   V_SAMP, V_SAMP, #1
     /* expand right */
-    tbl   v4.8b, {v0.16b}, v18.8b
-    tbl   v5.8b, {v0.16b}, v19.8b
-    tbl   v6.8b, {v1.16b}, v18.8b
-    tbl   v7.8b, {v1.16b}, v19.8b
-    uaddl v4.8h, v4.8b, v5.8b
-    uaddl v6.8h, v6.8b, v7.8b
-    add   v4.8h, v4.8h, v6.8h
-    add   v4.8h, v4.8h, v16.8h
-    shrn  v4.8b, v4.8h, #2
-    st1   {v4.8b}, [OUTPTR], #8
-    b.ne  1b
+    tbl    v2.16b, {v0.16b}, v18.16b
+    tbl    v3.16b, {v1.16b}, v18.16b
+    uadalp v4.8h, v2.16b
+    uadalp v4.8h, v3.16b
+    shrn   v6.8b, v4.8h, #2
+    st1    {v6.8b}, [OUTPTR], #8
+    b.ne   1b
 
-    br              x30
+    br     x30
 
     .unreq          IMAGE_WIDTH
     .unreq          MAX_V_SAMP

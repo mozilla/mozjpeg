@@ -1,4 +1,5 @@
-/* jconfig.vc --- jconfig.h for Microsoft Visual C++ on Windows 95 or NT. */
+/* jconfig.vc --- jconfig.h for Microsoft Visual C++ on Windows 9x or NT. */
+/* This file also works for Borland C++ 32-bit (bcc32) on Windows 9x or NT. */
 /* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES

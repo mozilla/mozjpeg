@@ -14,7 +14,7 @@ INTRODUCTION
 
 These programs implement JPEG image encoding, decoding, and transcoding.
 JPEG (pronounced "jay-peg") is a standardized compression method for
-full-color and gray-scale images.
+full-color and grayscale images.
 
 
 GENERAL USAGE
@@ -47,12 +47,13 @@ or
 This syntax works on all systems, so it is useful for scripts.
 
 The currently supported image file formats are: PPM (PBMPLUS color format),
-PGM (PBMPLUS gray-scale format), BMP, Targa, and RLE (Utah Raster Toolkit
-format).  (RLE is supported only if the URT library is available.)
-cjpeg recognizes the input image format automatically, with the exception
-of some Targa-format files.  You have to tell djpeg which format to generate.
+PGM (PBMPLUS grayscale format), BMP, Targa, and RLE (Utah Raster Toolkit
+format).  (RLE is supported only if the URT library is available, which it
+isn't on most non-Unix systems.)  cjpeg recognizes the input image format
+automatically, with the exception of some Targa-format files.  You have to
+tell djpeg which format to generate.
 
-JPEG files are in the defacto standard JFIF file format.  There are other,
+JPEG files are in the standard JFIF file format.  There are other,
 less widely used JPEG-based file formats, but we don't support them.
 
 All switch names may be abbreviated; for example, -grayscale may be written
@@ -292,9 +293,13 @@ The basic command line switches for djpeg are:
 			highest quality output.)  Currently, this is equivalent
 			to "-dct fast -nosmooth -onepass -dither ordered".
 
-	-grayscale	Force gray-scale output even if JPEG file is color.
+	-grayscale	Force grayscale output even if JPEG file is color.
 			Useful for viewing on monochrome displays; also,
 			djpeg runs noticeably faster in this mode.
+
+	-rgb		Force RGB output even if JPEG file is grayscale.
+			This is provided to support applications that don't
+			want to cope with grayscale as a separate case.
 
 	-scale M/N	Scale the output image by a factor M/N.  Currently
 			supported scale factors are M/N with all M from 1 to
@@ -309,7 +314,7 @@ The basic command line switches for djpeg are:
 
 	-bmp		Select BMP output format (Windows flavor).  8-bit
 			colormapped format is emitted if -colors or -grayscale
-			is specified, or if the JPEG file is gray-scale;
+			is specified, or if the JPEG file is grayscale;
 			otherwise, 24-bit full-color format is emitted.
 
 	-gif		Select GIF output format.  Since GIF does not support
@@ -319,18 +324,18 @@ The basic command line switches for djpeg are:
 
 	-os2		Select BMP output format (OS/2 1.x flavor).  8-bit
 			colormapped format is emitted if -colors or -grayscale
-			is specified, or if the JPEG file is gray-scale;
+			is specified, or if the JPEG file is grayscale;
 			otherwise, 24-bit full-color format is emitted.
 
 	-pnm		Select PBMPLUS (PPM/PGM) output format (this is the
 			default format).  PGM is emitted if the JPEG file is
-			gray-scale or if -grayscale is specified; otherwise
+			grayscale or if -grayscale is specified; otherwise
 			PPM is emitted.
 
 	-rle		Select RLE output format.  (Requires URT library.)
 
-	-targa		Select Targa output format.  Gray-scale format is
-			emitted if the JPEG file is gray-scale or if
+	-targa		Select Targa output format.  Grayscale format is
+			emitted if the JPEG file is grayscale or if
 			-grayscale is specified; otherwise, colormapped format
 			is emitted if -colors is specified; otherwise, 24-bit
 			full-color format is emitted.
@@ -372,7 +377,7 @@ Switches for advanced users:
 			The one-pass method is faster and needs less memory,
 			but it produces a lower-quality image.  -onepass is
 			ignored unless you also say -colors N.  Also,
-			the one-pass method is always used for gray-scale
+			the one-pass method is always used for grayscale
 			output (the two-pass method is no improvement then).
 
 	-maxmemory N	Set limit for amount of memory to use in processing
@@ -479,14 +484,16 @@ jpegtran performs various useful transformations of JPEG files.
 It can translate the coded representation from one variant of JPEG to another,
 for example from baseline JPEG to progressive JPEG or vice versa.  It can also
 perform some rearrangements of the image data, for example turning an image
-from landscape to portrait format by rotation.
+from landscape to portrait format by rotation.  For EXIF files and JPEG files
+containing Exif data, you may prefer to use exiftran instead.
 
 jpegtran works by rearranging the compressed data (DCT coefficients), without
 ever fully decoding the image.  Therefore, its transformations are lossless:
 there is no image degradation at all, which would not be true if you used
 djpeg followed by cjpeg to accomplish the same conversion.  But by the same
 token, jpegtran cannot perform lossy operations such as changing the image
-quality.
+quality.  However, while the image data is losslessly transformed, metadata
+can be removed.  See the -copy option for specifics.
 
 jpegtran uses a command line syntax similar to cjpeg or djpeg.
 On Unix-like systems, you say:
@@ -557,7 +564,8 @@ this does not hold for the given crop parameters, we silently move the upper
 left corner up and/or left to make it so, simultaneously increasing the
 region dimensions to keep the lower right crop corner unchanged.  (Thus, the
 output image covers at least the requested region, but may cover more.)
-The adjustment of the region dimensions may be optionally disabled.
+The adjustment of the region dimensions may be optionally disabled by
+attaching an 'f' character ("force") to the width or height number.
 
 The image can be losslessly cropped by giving the switch:
 	-crop WxH+X+Y	Crop to a rectangular subarea of width W, height H
@@ -592,16 +600,18 @@ extended JPEG file at all.
 
 jpegtran also recognizes these switches that control what to do with "extra"
 markers, such as comment blocks:
-	-copy none	Copy no extra markers from source file.  This setting
-			suppresses all comments and other excess baggage
-			present in the source file.
-	-copy comments	Copy only comment markers.  This setting copies
-			comments from the source file, but discards
-			any other inessential (for image display) data.
+	-copy none	Copy no extra markers from source file.
+			This setting suppresses all comments
+			and other metadata in the source file.
+	-copy comments	Copy only comment markers.
+			This setting copies comments from the source file,
+			but discards any other metadata.
 	-copy all	Copy all extra markers.  This setting preserves
-			miscellaneous markers found in the source file, such
-			as JFIF thumbnails, Exif data, and Photoshop settings.
+			metadata found in the source file, such as JFIF
+			thumbnails, Exif data, and Photoshop settings.
 			In some files these extra markers can be sizable.
+			Note that this option will copy thumbnails as-is;
+			they will not be transformed.
 The default behavior is -copy comments.  (Note: in IJG releases v6 and v6a,
 jpegtran always did the equivalent of -copy none.)
 

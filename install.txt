@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-2013, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1991-2015, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -147,9 +147,10 @@ makefile.bcc	jconfig.bcc	MS-DOS or OS/2, Borland C
 makefile.dj	jconfig.dj	MS-DOS, DJGPP (Delorie's port of GNU C)
 makefile.mc6	jconfig.mc6	MS-DOS, Microsoft C (16-bit only)
 makefile.wat	jconfig.wat	MS-DOS, OS/2, or Windows NT, Watcom C
-makefile.vc	jconfig.vc	Windows NT/95, MS Visual C++
-make*.vc6	jconfig.vc	Windows NT/95, MS Visual C++ 6
-make*.v10	jconfig.vc	Windows NT/95, MS Visual C++ 2010 (v10)
+makefile.vc	jconfig.vc	Windows NT/9x, MS Visual C++
+make*.vc6	jconfig.vc	Windows NT/9x, MS Visual C++ 6
+make*.v10	jconfig.vc	Windows NT/9x, MS Visual C++ 2010 (v10)
+makefile.b32	jconfig.vc	Windows NT/9x, Borland C++ 32-bit (bcc32)
 makefile.mms	jconfig.vms	Digital VMS, with MMS software
 makefile.vms	jconfig.vms	Digital VMS, without MMS software
 

@@ -25,6 +25,8 @@ AC_ARG_WITH([build-date], [Use custom build string to enable reproducible builds
   [BUILD="$with_build_date"],
   [BUILD=`date +%Y%m%d`])
 
+PKG_PROG_PKG_CONFIG
+
 # When the prefix is /opt/libjpeg-turbo, we assume that an "official" binary is
 # being created, and thus we install things into specific locations.
 
@@ -576,6 +578,8 @@ AC_CONFIG_FILES([pkgscripts/makecygwinpkg.tmpl:release/makecygwinpkg.in])
 AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])
 AC_CONFIG_FILES([pkgscripts/makemacpkg.tmpl:release/makemacpkg.in])
 AC_CONFIG_FILES([pkgscripts/uninstall.tmpl:release/uninstall.in])
+AC_CONFIG_FILES([pkgscripts/libjpeg.pc:release/libjpeg.pc.in])
+AC_CONFIG_FILES([pkgscripts/libturbojpeg.pc:release/libturbojpeg.pc.in])
 if test "x$with_turbojpeg" != "xno"; then
   AC_CONFIG_FILES([tjbenchtest])
 fi

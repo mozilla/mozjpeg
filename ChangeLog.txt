@@ -79,6 +79,11 @@ downsampling algorithms, which are not accelerated in the 32-bit NEON
 implementation.)  This speeds up the overall 64-bit compression performance by
 about 2x on ARMv8 processors.
 
+[15] pkg-config (.pc) scripts are now included for both the libjpeg and
+TurboJPEG API libraries on Un*x systems.  Note that if a project's build system
+relies on these scripts, then it will not be possible to build that project
+with libjpeg or with a prior version of libjpeg-turbo.
+
 
 1.4.2
 =====

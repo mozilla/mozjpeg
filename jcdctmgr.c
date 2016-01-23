@@ -905,7 +905,7 @@ LOCAL(int) get_num_dc_trellis_candidates(int dc_quantval) {
 }
 
 GLOBAL(void)
-quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+quantize_trellis(j_compress_ptr cinfo, jpeg_component_info *compptr, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks, JDIMENSION row_num,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
                  JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
 {
@@ -1300,7 +1300,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
 
 #ifdef C_ARITH_CODING_SUPPORTED
 GLOBAL(void)
-quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+quantize_trellis_arith(j_compress_ptr cinfo, jpeg_component_info *compptr, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks, JDIMENSION row_num,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
                  JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
 {

@@ -416,20 +416,21 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
      * on forward_DCT processes a complete horizontal row of DCT blocks.
      */
     for (block_row = 0; block_row < block_rows; block_row++) {
+      int row_num = block_row + coef->iMCU_row_num * compptr->v_samp_factor;
       thisblockrow = buffer[block_row];
       lastblockrow = (block_row > 0) ? buffer[block_row-1] : NULL;
 #ifdef C_ARITH_CODING_SUPPORTED
       if (cinfo->arith_code)
-        quantize_trellis_arith(cinfo, arith_r, thisblockrow,
-                               buffer_dst[block_row], blocks_across,
+        quantize_trellis_arith(cinfo, compptr, arith_r, thisblockrow,
+                               buffer_dst[block_row], blocks_across, row_num,
                                cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
                                cinfo->master->norm_src[compptr->quant_tbl_no],
                                cinfo->master->norm_coef[compptr->quant_tbl_no],
                                &lastDC, lastblockrow, buffer_dst[block_row-1]);
       else
 #endif
-        quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
-                         buffer_dst[block_row], blocks_across,
+        quantize_trellis(cinfo, compptr, dctbl, actbl, thisblockrow,
+                         buffer_dst[block_row], blocks_across, row_num,
                          cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
                          cinfo->master->norm_src[compptr->quant_tbl_no],
                          cinfo->master->norm_coef[compptr->quant_tbl_no],

@@ -89,6 +89,9 @@ struct jpeg_comp_master {
   float lambda_log_scale2;
   
   float trellis_delta_dc_weight;
+
+  jpeg_lambda_callback *lambda;
+  void *lambda_user_data;
 };
 
 #ifdef C_ARITH_CODING_SUPPORTED

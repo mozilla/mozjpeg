@@ -46,7 +46,7 @@
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
 int flags=TJFLAG_NOREALLOC, componly=0, decomponly=0, doyuv=0, quiet=0,
-	dotile=0, pf=TJPF_BGR, yuvpad=1, warmup=1, write=1;
+	dotile=0, pf=TJPF_BGR, yuvpad=1, warmup=1, dowrite=1;
 char *ext="ppm";
 const char *pixFormatStr[TJ_NUMPF]=
 {
@@ -214,7 +214,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 		}
 	}
 
-	if (!write) goto bailout;
+	if (!dowrite) goto bailout;
 
 	if(sf.num!=1 || sf.denom!=1)
 		snprintf(sizestr, 20, "%d_%d", sf.num, sf.denom);
@@ -425,7 +425,7 @@ int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 			printf("                  Output bit stream:  %f Megabits/sec\n",
 				(double)totaljpegsize*8./1000000.*(double)iter/elapsed);
 		}
-		if(tilew==w && tileh==h && write)
+		if(tilew==w && tileh==h && dowrite)
 		{
 			snprintf(tempstr, 1024, "%s_%s_Q%d.jpg", filename, subName[subsamp],
 				jpegqual);
@@ -911,7 +911,7 @@ int main(int argc, char *argv[])
 				}
 			}
 			if(!strcasecmp(argv[i], "-componly")) componly=1;
-			if(!strcasecmp(argv[i], "-nowrite")) write=0;
+			if(!strcasecmp(argv[i], "-nowrite")) dowrite=0;
 		}
 	}
 

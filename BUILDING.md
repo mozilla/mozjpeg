@@ -414,18 +414,25 @@ a general recipe script that can be modified for your specific needs.
     # Set these variables to suit your needs
     NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/ndk}
     BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64"}
-    TOOLCHAIN_VERSION={"4.6", "4.8", etc.  This corresponds to a toolchain
-      directory under ${NDK_PATH}/toolchains/.}
+      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+      toolchain directory under ${NDK_PATH}/toolchains/.}
     ANDROID_VERSION={The minimum version of Android to support-- for example,
-      "9", "19", etc.}
+      "16", "19", etc.  "21" or later is required for a 64-bit build.}
 
+    # 32-bit ARMv7 build
     HOST=arm-linux-androideabi
-    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
     SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
-    ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
     ANDROID_CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
-      -fstrict-aliasing --sysroot=${SYSROOT}"
+      --sysroot=${SYSROOT}"
+
+    # 64-bit ARMv8 build
+    HOST=aarch64-linux-android
+    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm64
+    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+
+    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+    ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
     export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
     export AR=${TOOLCHAIN}/bin/${HOST}-ar
     export AS=${TOOLCHAIN}/bin/${HOST}-as
@@ -437,10 +444,13 @@ a general recipe script that can be modified for your specific needs.
     export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
     cd {build_directory}
     sh {source_directory}/configure --host=${HOST} \
-      CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3" \
+      CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3 -fPIE" \
       CPPFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS}" \
-      LDFLAGS="${ANDROID_CFLAGS}" --with-simd ${1+"$@"}
+      LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
     make
+
+If building for Android 4.0.x (API level < 16) or earlier, remove `-fPIE` from
+`CFLAGS` and `-pie` from `LDFLAGS`.
 
 
 Building on Windows (Visual C++ or MinGW)

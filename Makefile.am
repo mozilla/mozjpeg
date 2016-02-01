@@ -454,7 +454,8 @@ endif
 # the output differs depending on the type of floating point math used, and
 # this is only deterministic if the DCT/IDCT are implemented using SIMD
 # instructions on a particular platform.  Pass one of the following on the make
-# command line to validate the floating point tests against one of the expected # results:
+# command line to validate the floating point tests against one of the expected
+# results:
 #
 # FLOATTEST=sse  validate against the expected results from the libjpeg-turbo
 #                SSE SIMD extensions

@@ -122,7 +122,6 @@ _\fname:
     trn2 \l5\().2d, \t0\().2d, \l5\().2d
 .endm
 
-
 #define CENTERJSAMPLE 128
 
 /*****************************************************************************/
@@ -135,626 +134,603 @@ _\fname:
  *                        JSAMPARRAY output_buf, JDIMENSION output_col)
  */
 
-#define FIX_0_298631336  (2446)
-#define FIX_0_390180644  (3196)
-#define FIX_0_541196100  (4433)
-#define FIX_0_765366865  (6270)
-#define FIX_0_899976223  (7373)
-#define FIX_1_175875602  (9633)
-#define FIX_1_501321110  (12299)
-#define FIX_1_847759065  (15137)
-#define FIX_1_961570560  (16069)
-#define FIX_2_053119869  (16819)
-#define FIX_2_562915447  (20995)
-#define FIX_3_072711026  (25172)
+#define CENTERJSAMPLE 128
+#define CONST_BITS    13
+#define PASS1_BITS    2
 
-#define FIX_1_175875602_MINUS_1_961570560 (FIX_1_175875602 - FIX_1_961570560)
-#define FIX_1_175875602_MINUS_0_390180644 (FIX_1_175875602 - FIX_0_390180644)
-#define FIX_0_541196100_MINUS_1_847759065 (FIX_0_541196100 - FIX_1_847759065)
-#define FIX_3_072711026_MINUS_2_562915447 (FIX_3_072711026 - FIX_2_562915447)
-#define FIX_0_298631336_MINUS_0_899976223 (FIX_0_298631336 - FIX_0_899976223)
-#define FIX_1_501321110_MINUS_0_899976223 (FIX_1_501321110 - FIX_0_899976223)
-#define FIX_2_053119869_MINUS_2_562915447 (FIX_2_053119869 - FIX_2_562915447)
-#define FIX_0_541196100_PLUS_0_765366865  (FIX_0_541196100 + FIX_0_765366865)
-
-/*
- * Reference SIMD-friendly 1-D ISLOW iDCT C implementation.
- * Uses some ideas from the comments in 'simd/jiss2int-64.asm'
- */
-#define REF_1D_IDCT(xrow0, xrow1, xrow2, xrow3, xrow4, xrow5, xrow6, xrow7)   \
-{                                                                             \
-    DCTELEM row0, row1, row2, row3, row4, row5, row6, row7;                   \
-    JLONG   q1, q2, q3, q4, q5, q6, q7;                                       \
-    JLONG   tmp11_plus_tmp2, tmp11_minus_tmp2;                                \
-                                                                              \
-    /* 1-D iDCT input data */                                                 \
-    row0 = xrow0;                                                             \
-    row1 = xrow1;                                                             \
-    row2 = xrow2;                                                             \
-    row3 = xrow3;                                                             \
-    row4 = xrow4;                                                             \
-    row5 = xrow5;                                                             \
-    row6 = xrow6;                                                             \
-    row7 = xrow7;                                                             \
-                                                                              \
-    q5 = row7 + row3;                                                         \
-    q4 = row5 + row1;                                                         \
-    q6 = MULTIPLY(q5, FIX_1_175875602_MINUS_1_961570560) +                    \
-         MULTIPLY(q4, FIX_1_175875602);                                       \
-    q7 = MULTIPLY(q5, FIX_1_175875602) +                                      \
-         MULTIPLY(q4, FIX_1_175875602_MINUS_0_390180644);                     \
-    q2 = MULTIPLY(row2, FIX_0_541196100) +                                    \
-         MULTIPLY(row6, FIX_0_541196100_MINUS_1_847759065);                   \
-    q4 = q6;                                                                  \
-    q3 = ((JLONG) row0 - (JLONG) row4) << 13;                                 \
-    q6 += MULTIPLY(row5, -FIX_2_562915447) +                                  \
-          MULTIPLY(row3, FIX_3_072711026_MINUS_2_562915447);                  \
-    /* now we can use q1 (reloadable constants have been used up) */          \
-    q1 = q3 + q2;                                                             \
-    q4 += MULTIPLY(row7, FIX_0_298631336_MINUS_0_899976223) +                 \
-          MULTIPLY(row1, -FIX_0_899976223);                                   \
-    q5 = q7;                                                                  \
-    q1 = q1 + q6;                                                             \
-    q7 += MULTIPLY(row7, -FIX_0_899976223) +                                  \
-          MULTIPLY(row1, FIX_1_501321110_MINUS_0_899976223);                  \
-                                                                              \
-    /* (tmp11 + tmp2) has been calculated (out_row1 before descale) */        \
-    tmp11_plus_tmp2 = q1;                                                     \
-    row1 = 0;                                                                 \
-                                                                              \
-    q1 = q1 - q6;                                                             \
-    q5 += MULTIPLY(row5, FIX_2_053119869_MINUS_2_562915447) +                 \
-          MULTIPLY(row3, -FIX_2_562915447);                                   \
-    q1 = q1 - q6;                                                             \
-    q6 = MULTIPLY(row2, FIX_0_541196100_PLUS_0_765366865) +                   \
-         MULTIPLY(row6, FIX_0_541196100);                                     \
-    q3 = q3 - q2;                                                             \
-                                                                              \
-    /* (tmp11 - tmp2) has been calculated (out_row6 before descale) */        \
-    tmp11_minus_tmp2 = q1;                                                    \
-                                                                              \
-    q1 = ((JLONG) row0 + (JLONG) row4) << 13;                                 \
-    q2 = q1 + q6;                                                             \
-    q1 = q1 - q6;                                                             \
-                                                                              \
-    /* pick up the results */                                                 \
-    tmp0  = q4;                                                               \
-    tmp1  = q5;                                                               \
-    tmp2  = (tmp11_plus_tmp2 - tmp11_minus_tmp2) / 2;                         \
-    tmp3  = q7;                                                               \
-    tmp10 = q2;                                                               \
-    tmp11 = (tmp11_plus_tmp2 + tmp11_minus_tmp2) / 2;                         \
-    tmp12 = q3;                                                               \
-    tmp13 = q1;                                                               \
-}
-
-#define XFIX_0_899976223                    v0.h[0]
-#define XFIX_0_541196100                    v0.h[1]
-#define XFIX_2_562915447                    v0.h[2]
-#define XFIX_0_298631336_MINUS_0_899976223  v0.h[3]
-#define XFIX_1_501321110_MINUS_0_899976223  v1.h[0]
-#define XFIX_2_053119869_MINUS_2_562915447  v1.h[1]
-#define XFIX_0_541196100_PLUS_0_765366865   v1.h[2]
-#define XFIX_1_175875602                    v1.h[3]
-#define XFIX_1_175875602_MINUS_0_390180644  v2.h[0]
-#define XFIX_0_541196100_MINUS_1_847759065  v2.h[1]
-#define XFIX_3_072711026_MINUS_2_562915447  v2.h[2]
-#define XFIX_1_175875602_MINUS_1_961570560  v2.h[3]
+#define F_0_298      2446           /* FIX(0.298631336) */
+#define F_0_390      3196           /* FIX(0.390180644) */
+#define F_0_541      4433           /* FIX(0.541196100) */
+#define F_0_765      6270           /* FIX(0.765366865) */
+#define F_0_899      7373           /* FIX(0.899976223) */
+#define F_1_175      9633           /* FIX(1.175875602) */
+#define F_1_501     12299           /* FIX(1.501321110) */
+#define F_1_847     15137           /* FIX(1.847759065) */
+#define F_1_961     16069           /* FIX(1.961570560) */
+#define F_2_053     16819           /* FIX(2.053119869) */
+#define F_2_562     20995           /* FIX(2.562915447) */
+#define F_3_072     25172           /* FIX(3.072711026) */
 
 .balign 16
 Ljsimd_idct_islow_neon_consts:
-    .short FIX_0_899976223                    /* d0[0] */
-    .short FIX_0_541196100                    /* d0[1] */
-    .short FIX_2_562915447                    /* d0[2] */
-    .short FIX_0_298631336_MINUS_0_899976223  /* d0[3] */
-    .short FIX_1_501321110_MINUS_0_899976223  /* d1[0] */
-    .short FIX_2_053119869_MINUS_2_562915447  /* d1[1] */
-    .short FIX_0_541196100_PLUS_0_765366865   /* d1[2] */
-    .short FIX_1_175875602                    /* d1[3] */
-    /* reloadable constants */
-    .short FIX_1_175875602_MINUS_0_390180644  /* d2[0] */
-    .short FIX_0_541196100_MINUS_1_847759065  /* d2[1] */
-    .short FIX_3_072711026_MINUS_2_562915447  /* d2[2] */
-    .short FIX_1_175875602_MINUS_1_961570560  /* d2[3] */
+    .short F_0_298
+    .short -F_0_390
+    .short F_0_541
+    .short F_0_765
+    .short - F_0_899
+    .short F_1_175
+    .short F_1_501
+    .short - F_1_847
+    .short - F_1_961
+    .short F_2_053
+    .short - F_2_562
+    .short F_3_072
+    .short 0  /* padding */
+    .short 0
+    .short 0
+    .short 0
+
+#undef F_0_298
+#undef F_0_390
+#undef F_0_541
+#undef F_0_765
+#undef F_0_899
+#undef F_1_175
+#undef F_1_501
+#undef F_1_847
+#undef F_1_961
+#undef F_2_053
+#undef F_2_562
+#undef F_3_072
+
+#define XFIX_P_0_298 v0.h[0]
+#define XFIX_N_0_390 v0.h[1]
+#define XFIX_P_0_541 v0.h[2]
+#define XFIX_P_0_765 v0.h[3]
+#define XFIX_N_0_899 v0.h[4]
+#define XFIX_P_1_175 v0.h[5]
+#define XFIX_P_1_501 v0.h[6]
+#define XFIX_N_1_847 v0.h[7]
+#define XFIX_N_1_961 v1.h[0]
+#define XFIX_P_2_053 v1.h[1]
+#define XFIX_N_2_562 v1.h[2]
+#define XFIX_P_3_072 v1.h[3]
 
 asm_function jsimd_idct_islow_neon
-
     DCT_TABLE       .req x0
     COEF_BLOCK      .req x1
     OUTPUT_BUF      .req x2
     OUTPUT_COL      .req x3
     TMP1            .req x0
     TMP2            .req x1
-    TMP3            .req x2
-    TMP4            .req x15
+    TMP3            .req x9
+    TMP4            .req x10
+    TMP5            .req x11
+    TMP6            .req x12
+    TMP7            .req x13
+    TMP8            .req x14
 
-    ROW0L           .req v16
-    ROW0R           .req v17
-    ROW1L           .req v18
-    ROW1R           .req v19
-    ROW2L           .req v20
-    ROW2R           .req v21
-    ROW3L           .req v22
-    ROW3R           .req v23
-    ROW4L           .req v24
-    ROW4R           .req v25
-    ROW5L           .req v26
-    ROW5R           .req v27
-    ROW6L           .req v28
-    ROW6R           .req v29
-    ROW7L           .req v30
-    ROW7R           .req v31
-    /* Save all NEON registers and x15 (32 NEON registers * 8 bytes + 16) */
-    sub             sp, sp, 272
-    str             x15, [sp], 16
+    sub             sp, sp, #64
     adr             x15, Ljsimd_idct_islow_neon_consts
-    st1             {v0.8b, v1.8b, v2.8b, v3.8b}, [sp], 32
-    st1             {v4.8b, v5.8b, v6.8b, v7.8b}, [sp], 32
-    st1             {v8.8b, v9.8b, v10.8b, v11.8b}, [sp], 32
-    st1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], 32
-    st1             {v16.8b, v17.8b, v18.8b, v19.8b}, [sp], 32
-    st1             {v20.8b, v21.8b, v22.8b, v23.8b}, [sp], 32
-    st1             {v24.8b, v25.8b, v26.8b, v27.8b}, [sp], 32
-    st1             {v28.8b, v29.8b, v30.8b, v31.8b}, [sp], 32
-    ld1             {v16.4h, v17.4h, v18.4h, v19.4h}, [COEF_BLOCK], 32
-    ld1             {v0.4h, v1.4h, v2.4h, v3.4h}, [DCT_TABLE], 32
-    ld1             {v20.4h, v21.4h, v22.4h, v23.4h}, [COEF_BLOCK], 32
-    mul             v16.4h, v16.4h, v0.4h
-    mul             v17.4h, v17.4h, v1.4h
-    ins             v16.d[1], v17.d[0]  /* 128 bit q8 */
-    ld1             {v4.4h, v5.4h, v6.4h, v7.4h}, [DCT_TABLE], 32
-    mul             v18.4h, v18.4h, v2.4h
-    mul             v19.4h, v19.4h, v3.4h
-    ins             v18.d[1], v19.d[0]  /* 128 bit q9 */
-    ld1             {v24.4h, v25.4h, v26.4h, v27.4h}, [COEF_BLOCK], 32
-    mul             v20.4h, v20.4h, v4.4h
-    mul             v21.4h, v21.4h, v5.4h
-    ins             v20.d[1], v21.d[0]  /* 128 bit q10 */
-    ld1             {v0.4h, v1.4h, v2.4h, v3.4h}, [DCT_TABLE], 32
-    mul             v22.4h, v22.4h, v6.4h
-    mul             v23.4h, v23.4h, v7.4h
-    ins             v22.d[1], v23.d[0]  /* 128 bit q11 */
-    ld1             {v28.4h, v29.4h, v30.4h, v31.4h}, [COEF_BLOCK]
-    mul             v24.4h, v24.4h, v0.4h
-    mul             v25.4h, v25.4h, v1.4h
-    ins             v24.d[1], v25.d[0]  /* 128 bit q12 */
-    ld1             {v4.4h, v5.4h, v6.4h, v7.4h}, [DCT_TABLE], 32
-    mul             v28.4h, v28.4h, v4.4h
-    mul             v29.4h, v29.4h, v5.4h
-    ins             v28.d[1], v29.d[0]  /* 128 bit q14 */
-    mul             v26.4h, v26.4h, v2.4h
-    mul             v27.4h, v27.4h, v3.4h
-    ins             v26.d[1], v27.d[0]  /* 128 bit q13 */
-    ld1             {v0.4h, v1.4h, v2.4h, v3.4h}, [x15]  /* load constants */
-    add             x15, x15, #16
-    mul             v30.4h, v30.4h, v6.4h
-    mul             v31.4h, v31.4h, v7.4h
-    ins             v30.d[1], v31.d[0]  /* 128 bit q15 */
-    /* Go to the bottom of the stack */
-    sub             sp, sp, 352
-    stp             x4, x5, [sp], 16
-    st1             {v8.4h, v9.4h, v10.4h, v11.4h}, [sp], 32  /* save NEON registers */
-    st1             {v12.4h, v13.4h, v14.4h, v15.4h}, [sp], 32
-    /* 1-D IDCT, pass 1, left 4x8 half */
-    add             v4.4h,    ROW7L.4h, ROW3L.4h
-    add             v5.4h,    ROW5L.4h, ROW1L.4h
-    smull           v12.4s,   v4.4h,    XFIX_1_175875602_MINUS_1_961570560
-    smlal           v12.4s,   v5.4h,    XFIX_1_175875602
-    smull           v14.4s,   v4.4h,    XFIX_1_175875602
-    /* Check for the zero coefficients in the right 4x8 half */
-    smlal           v14.4s,   v5.4h,    XFIX_1_175875602_MINUS_0_390180644
-    ssubl           v6.4s,    ROW0L.4h, ROW4L.4h
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 1 * 8))]
-    smull           v4.4s,    ROW2L.4h, XFIX_0_541196100
-    smlal           v4.4s,    ROW6L.4h, XFIX_0_541196100_MINUS_1_847759065
-      orr           x0,       x4,       x5
-    mov             v8.16b,   v12.16b
-    smlsl           v12.4s,   ROW5L.4h, XFIX_2_562915447
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 2 * 8))]
-    smlal           v12.4s,   ROW3L.4h, XFIX_3_072711026_MINUS_2_562915447
-    shl             v6.4s,    v6.4s,    #13
-      orr           x0,       x0,       x4
-    smlsl           v8.4s,    ROW1L.4h, XFIX_0_899976223
-      orr           x0,       x0 ,      x5
-    add             v2.4s,    v6.4s,    v4.4s
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 3 * 8))]
-    mov             v10.16b,  v14.16b
-    add             v2.4s,    v2.4s,    v12.4s
-      orr           x0,       x0,       x4
-    smlsl           v14.4s,   ROW7L.4h, XFIX_0_899976223
-      orr           x0,       x0,       x5
-    smlal           v14.4s,   ROW1L.4h, XFIX_1_501321110_MINUS_0_899976223
-    rshrn           ROW1L.4h, v2.4s,    #11
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 4 * 8))]
-    sub             v2.4s,    v2.4s,    v12.4s
-    smlal           v10.4s,   ROW5L.4h, XFIX_2_053119869_MINUS_2_562915447
-      orr           x0,       x0,       x4
-    smlsl           v10.4s,   ROW3L.4h, XFIX_2_562915447
-      orr           x0,       x0,       x5
-    sub             v2.4s,    v2.4s,    v12.4s
-    smull           v12.4s,   ROW2L.4h, XFIX_0_541196100_PLUS_0_765366865
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 5 * 8))]
-    smlal           v12.4s,   ROW6L.4h, XFIX_0_541196100
-    sub             v6.4s,    v6.4s,    v4.4s
-      orr           x0,       x0,       x4
-    rshrn           ROW6L.4h, v2.4s,    #11
-      orr           x0,       x0,       x5
-    add             v2.4s,    v6.4s,    v10.4s
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 6 * 8))]
-    sub             v6.4s,    v6.4s,    v10.4s
-    saddl           v10.4s,   ROW0L.4h, ROW4L.4h
-      orr           x0,       x0,       x4
-    rshrn           ROW2L.4h, v2.4s,    #11
-      orr           x0,       x0,       x5
-    rshrn           ROW5L.4h, v6.4s,    #11
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 7 * 8))]
-    shl             v10.4s,   v10.4s,   #13
-    smlal           v8.4s,    ROW7L.4h, XFIX_0_298631336_MINUS_0_899976223
-      orr           x0,       x0,       x4
-    add             v4.4s,    v10.4s,   v12.4s
-      orr           x0,       x0,       x5
-    cmp             x0, #0 /* orrs instruction removed */
-    sub             v2.4s,    v10.4s,   v12.4s
-    add             v12.4s,   v4.4s,    v14.4s
-      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 0 * 8))]
-    sub             v4.4s,    v4.4s,    v14.4s
-    add             v10.4s,   v2.4s,    v8.4s
-      orr           x0,       x4,       x5
-    sub             v6.4s,    v2.4s,    v8.4s
-      /* pop             {x4, x5} */
-      sub           sp, sp, 80
-      ldp           x4, x5, [sp], 16
-    rshrn           ROW7L.4h, v4.4s,    #11
-    rshrn           ROW3L.4h, v10.4s,   #11
-    rshrn           ROW0L.4h, v12.4s,   #11
-    rshrn           ROW4L.4h, v6.4s,    #11
+    st1             { v8.8b,  v9.8b, v10.8b, v11.8b}, [sp], #32
+    st1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], #32
+    ld1             { v0.8h,  v1.8h}, [x15]
+    ld1             { v2.8h,  v3.8h,  v4.8h,  v5.8h}, [COEF_BLOCK], #64
+    ld1             {v18.8h, v19.8h, v20.8h, v21.8h}, [DCT_TABLE],  #64
+    ld1             { v6.8h,  v7.8h,  v8.8h,  v9.8h}, [COEF_BLOCK], #64
+    ld1             {v22.8h, v23.8h, v24.8h, v25.8h}, [DCT_TABLE],  #64
 
-      b.eq          3f /* Go to do some special handling for the sparse right 4x8 half */
+    cmeq            v16.8h,    v3.8h,   #0
+    cmeq            v26.8h,    v4.8h,   #0
+    cmeq            v27.8h,    v5.8h,   #0
+    cmeq            v28.8h,    v6.8h,   #0
+    cmeq            v29.8h,    v7.8h,   #0
+    cmeq            v30.8h,    v8.8h,   #0
+    cmeq            v31.8h,    v9.8h,   #0
 
-    /* 1-D IDCT, pass 1, right 4x8 half */
-    ld1             {v2.4h},  [x15]    /* reload constants */
-    add             v10.4h,   ROW7R.4h, ROW3R.4h
-    add             v8.4h,    ROW5R.4h, ROW1R.4h
-    /* Transpose ROW6L <-> ROW7L   (v3 available free register) */
-    transpose       ROW6L, ROW7L, v3, .16b, .4h
-    smull           v12.4s,   v10.4h,   XFIX_1_175875602_MINUS_1_961570560
-    smlal           v12.4s,   v8.4h,    XFIX_1_175875602
-    /* Transpose ROW2L <-> ROW3L   (v3 available free register) */
-    transpose       ROW2L, ROW3L, v3, .16b, .4h
-    smull           v14.4s,   v10.4h,   XFIX_1_175875602
-    smlal           v14.4s,   v8.4h,    XFIX_1_175875602_MINUS_0_390180644
-    /* Transpose ROW0L <-> ROW1L   (v3 available free register) */
-    transpose       ROW0L, ROW1L, v3, .16b, .4h
-    ssubl           v6.4s,    ROW0R.4h, ROW4R.4h
-    smull           v4.4s,    ROW2R.4h, XFIX_0_541196100
-    smlal           v4.4s,    ROW6R.4h, XFIX_0_541196100_MINUS_1_847759065
-    /* Transpose ROW4L <-> ROW5L   (v3 available free register) */
-    transpose       ROW4L, ROW5L, v3, .16b, .4h
-    mov             v8.16b,   v12.16b
-    smlsl           v12.4s,   ROW5R.4h, XFIX_2_562915447
-    smlal           v12.4s,   ROW3R.4h, XFIX_3_072711026_MINUS_2_562915447
-    /* Transpose ROW1L <-> ROW3L   (v3 available free register) */
-    transpose       ROW1L, ROW3L, v3, .16b, .2s
-    shl             v6.4s,    v6.4s,    #13
-    smlsl           v8.4s,    ROW1R.4h, XFIX_0_899976223
-    /* Transpose ROW4L <-> ROW6L   (v3 available free register) */
-    transpose       ROW4L, ROW6L, v3, .16b, .2s
-    add             v2.4s,    v6.4s,    v4.4s
-    mov             v10.16b,  v14.16b
-    add             v2.4s,    v2.4s,    v12.4s
-    /* Transpose ROW0L <-> ROW2L   (v3 available free register) */
-    transpose       ROW0L, ROW2L, v3, .16b, .2s
-    smlsl           v14.4s,   ROW7R.4h, XFIX_0_899976223
-    smlal           v14.4s,   ROW1R.4h, XFIX_1_501321110_MINUS_0_899976223
-    rshrn           ROW1R.4h, v2.4s,    #11
-    /* Transpose ROW5L <-> ROW7L   (v3 available free register) */
-    transpose       ROW5L, ROW7L, v3, .16b, .2s
-    sub             v2.4s,    v2.4s,    v12.4s
-    smlal           v10.4s,   ROW5R.4h, XFIX_2_053119869_MINUS_2_562915447
-    smlsl           v10.4s,   ROW3R.4h, XFIX_2_562915447
-    sub             v2.4s,    v2.4s,    v12.4s
-    smull           v12.4s,   ROW2R.4h, XFIX_0_541196100_PLUS_0_765366865
-    smlal           v12.4s,   ROW6R.4h, XFIX_0_541196100
-    sub             v6.4s,    v6.4s,    v4.4s
-    rshrn           ROW6R.4h, v2.4s,    #11
-    add             v2.4s,    v6.4s,    v10.4s
-    sub             v6.4s,    v6.4s,    v10.4s
-    saddl           v10.4s,   ROW0R.4h, ROW4R.4h
-    rshrn           ROW2R.4h, v2.4s,    #11
-    rshrn           ROW5R.4h, v6.4s,    #11
-    shl             v10.4s,   v10.4s,   #13
-    smlal           v8.4s,    ROW7R.4h, XFIX_0_298631336_MINUS_0_899976223
-    add             v4.4s,    v10.4s,   v12.4s
-    sub             v2.4s,    v10.4s,   v12.4s
-    add             v12.4s,   v4.4s,    v14.4s
-    sub             v4.4s,    v4.4s,    v14.4s
-    add             v10.4s,   v2.4s,    v8.4s
-    sub             v6.4s,    v2.4s,    v8.4s
-    rshrn           ROW7R.4h, v4.4s,    #11
-    rshrn           ROW3R.4h, v10.4s,   #11
-    rshrn           ROW0R.4h, v12.4s,   #11
-    rshrn           ROW4R.4h, v6.4s,    #11
-    /* Transpose right 4x8 half */
-    transpose       ROW6R, ROW7R, v3, .16b, .4h
-    transpose       ROW2R, ROW3R, v3, .16b, .4h
-    transpose       ROW0R, ROW1R, v3, .16b, .4h
-    transpose       ROW4R, ROW5R, v3, .16b, .4h
-    transpose       ROW1R, ROW3R, v3, .16b, .2s
-    transpose       ROW4R, ROW6R, v3, .16b, .2s
-    transpose       ROW0R, ROW2R, v3, .16b, .2s
-    transpose       ROW5R, ROW7R, v3, .16b, .2s
+    and            v10.16b,  v16.16b,   v26.16b
+    and            v11.16b,  v27.16b,   v28.16b
+    and            v12.16b,  v29.16b,   v30.16b
+    and            v13.16b,  v31.16b,   v10.16b
+    and            v14.16b,  v11.16b,   v12.16b
+    mul              v2.8h,    v2.8h,   v18.8h
+    and            v15.16b,  v13.16b,   v14.16b
+    shl             v10.8h,    v2.8h,   #(PASS1_BITS)
+    sqxtn           v16.8b,   v15.8h
+    mov               TMP1,  v16.d[0]
+    sub                 sp,       sp,   #64
+    mvn               TMP2,  TMP1
 
-1:  /* 1-D IDCT, pass 2 (normal variant), left 4x8 half */
-    ld1             {v2.4h},  [x15]    /* reload constants */
-    smull           v12.4S,   ROW1R.4h, XFIX_1_175875602 /* ROW5L.4h <-> ROW1R.4h */
-    smlal           v12.4s,   ROW1L.4h, XFIX_1_175875602
-    smlal           v12.4s,   ROW3R.4h, XFIX_1_175875602_MINUS_1_961570560 /* ROW7L.4h <-> ROW3R.4h */
-    smlal           v12.4s,   ROW3L.4h, XFIX_1_175875602_MINUS_1_961570560
-    smull           v14.4s,   ROW3R.4h, XFIX_1_175875602 /* ROW7L.4h <-> ROW3R.4h */
-    smlal           v14.4s,   ROW3L.4h, XFIX_1_175875602
-    smlal           v14.4s,   ROW1R.4h, XFIX_1_175875602_MINUS_0_390180644 /* ROW5L.4h <-> ROW1R.4h */
-    smlal           v14.4s,   ROW1L.4h, XFIX_1_175875602_MINUS_0_390180644
-    ssubl           v6.4s,    ROW0L.4h, ROW0R.4h /* ROW4L.4h <-> ROW0R.4h */
-    smull           v4.4s,    ROW2L.4h, XFIX_0_541196100
-    smlal           v4.4s,    ROW2R.4h, XFIX_0_541196100_MINUS_1_847759065 /* ROW6L.4h <-> ROW2R.4h */
-    mov             v8.16b,   v12.16b
-    smlsl           v12.4s,   ROW1R.4h, XFIX_2_562915447 /* ROW5L.4h <-> ROW1R.4h */
-    smlal           v12.4s,   ROW3L.4h, XFIX_3_072711026_MINUS_2_562915447
-    shl             v6.4s,    v6.4s,    #13
-    smlsl           v8.4s,    ROW1L.4h, XFIX_0_899976223
-    add             v2.4s,    v6.4s,    v4.4s
-    mov             v10.16b,  v14.16b
-    add             v2.4s,    v2.4s,    v12.4s
-    smlsl           v14.4s,   ROW3R.4h, XFIX_0_899976223 /* ROW7L.4h <-> ROW3R.4h */
-    smlal           v14.4s,   ROW1L.4h, XFIX_1_501321110_MINUS_0_899976223
-    shrn            ROW1L.4h, v2.4s,    #16
-    sub             v2.4s,    v2.4s,    v12.4s
-    smlal           v10.4s,   ROW1R.4h, XFIX_2_053119869_MINUS_2_562915447 /* ROW5L.4h <-> ROW1R.4h */
-    smlsl           v10.4s,   ROW3L.4h, XFIX_2_562915447
-    sub             v2.4s,    v2.4s,    v12.4s
-    smull           v12.4s,   ROW2L.4h, XFIX_0_541196100_PLUS_0_765366865
-    smlal           v12.4s,   ROW2R.4h, XFIX_0_541196100 /* ROW6L.4h <-> ROW2R.4h */
-    sub             v6.4s,    v6.4s,    v4.4s
-    shrn            ROW2R.4h, v2.4s,    #16 /* ROW6L.4h <-> ROW2R.4h */
-    add             v2.4s,    v6.4s,    v10.4s
-    sub             v6.4s,    v6.4s,    v10.4s
-    saddl           v10.4s,   ROW0L.4h, ROW0R.4h /* ROW4L.4h <-> ROW0R.4h */
-    shrn            ROW2L.4h, v2.4s,    #16
-    shrn            ROW1R.4h, v6.4s,    #16 /* ROW5L.4h <-> ROW1R.4h */
-    shl             v10.4s,   v10.4s,   #13
-    smlal           v8.4s,    ROW3R.4h, XFIX_0_298631336_MINUS_0_899976223 /* ROW7L.4h <-> ROW3R.4h */
-    add             v4.4s,    v10.4s,   v12.4s
-    sub             v2.4s,    v10.4s,   v12.4s
-    add             v12.4s,   v4.4s,    v14.4s
-    sub             v4.4s,    v4.4s,    v14.4s
-    add             v10.4s,   v2.4s,    v8.4s
-    sub             v6.4s,    v2.4s,    v8.4s
-    shrn            ROW3R.4h, v4.4s,    #16 /* ROW7L.4h <-> ROW3R.4h */
-    shrn            ROW3L.4h, v10.4s,   #16
-    shrn            ROW0L.4h, v12.4s,   #16
-    shrn            ROW0R.4h, v6.4s,    #16 /* ROW4L.4h <-> ROW0R.4h */
-    /* 1-D IDCT, pass 2, right 4x8 half */
-    ld1             {v2.4h},  [x15]    /* reload constants */
-    smull           v12.4s,   ROW5R.4h, XFIX_1_175875602
-    smlal           v12.4s,   ROW5L.4h, XFIX_1_175875602 /* ROW5L.4h <-> ROW1R.4h */
-    smlal           v12.4s,   ROW7R.4h, XFIX_1_175875602_MINUS_1_961570560
-    smlal           v12.4s,   ROW7L.4h, XFIX_1_175875602_MINUS_1_961570560 /* ROW7L.4h <-> ROW3R.4h */
-    smull           v14.4s,   ROW7R.4h, XFIX_1_175875602
-    smlal           v14.4s,   ROW7L.4h, XFIX_1_175875602 /* ROW7L.4h <-> ROW3R.4h */
-    smlal           v14.4s,   ROW5R.4h, XFIX_1_175875602_MINUS_0_390180644
-    smlal           v14.4s,   ROW5L.4h, XFIX_1_175875602_MINUS_0_390180644 /* ROW5L.4h <-> ROW1R.4h */
-    ssubl           v6.4s,    ROW4L.4h, ROW4R.4h /* ROW4L.4h <-> ROW0R.4h */
-    smull           v4.4s,    ROW6L.4h, XFIX_0_541196100 /* ROW6L.4h <-> ROW2R.4h */
-    smlal           v4.4s,    ROW6R.4h, XFIX_0_541196100_MINUS_1_847759065
-    mov             v8.16b,   v12.16b
-    smlsl           v12.4s,   ROW5R.4h, XFIX_2_562915447
-    smlal           v12.4s,   ROW7L.4h, XFIX_3_072711026_MINUS_2_562915447 /* ROW7L.4h <-> ROW3R.4h */
-    shl             v6.4s,    v6.4s,    #13
-    smlsl           v8.4s,    ROW5L.4h, XFIX_0_899976223 /* ROW5L.4h <-> ROW1R.4h */
-    add             v2.4s,    v6.4s,    v4.4s
-    mov             v10.16b,  v14.16b
-    add             v2.4s,    v2.4s,    v12.4s
-    smlsl           v14.4s,   ROW7R.4h, XFIX_0_899976223
-    smlal           v14.4s,   ROW5L.4h, XFIX_1_501321110_MINUS_0_899976223 /* ROW5L.4h <-> ROW1R.4h */
-    shrn            ROW5L.4h, v2.4s,    #16 /* ROW5L.4h <-> ROW1R.4h */
-    sub             v2.4s,    v2.4s,    v12.4s
-    smlal           v10.4s,   ROW5R.4h, XFIX_2_053119869_MINUS_2_562915447
-    smlsl           v10.4s,   ROW7L.4h, XFIX_2_562915447 /* ROW7L.4h <-> ROW3R.4h */
-    sub             v2.4s,    v2.4s,    v12.4s
-    smull           v12.4s,   ROW6L.4h, XFIX_0_541196100_PLUS_0_765366865 /* ROW6L.4h <-> ROW2R.4h */
-    smlal           v12.4s,   ROW6R.4h, XFIX_0_541196100
-    sub             v6.4s,    v6.4s,    v4.4s
-    shrn            ROW6R.4h, v2.4s,    #16
-    add             v2.4s,    v6.4s,    v10.4s
-    sub             v6.4s,    v6.4s,    v10.4s
-    saddl           v10.4s,   ROW4L.4h, ROW4R.4h /* ROW4L.4h <-> ROW0R.4h */
-    shrn            ROW6L.4h, v2.4s,    #16 /* ROW6L.4h <-> ROW2R.4h */
-    shrn            ROW5R.4h, v6.4s,    #16
-    shl             v10.4s,   v10.4s,   #13
-    smlal           v8.4s,    ROW7R.4h, XFIX_0_298631336_MINUS_0_899976223
-    add             v4.4s,    v10.4s,   v12.4s
-    sub             v2.4s,    v10.4s,   v12.4s
-    add             v12.4s,   v4.4s,    v14.4s
-    sub             v4.4s,    v4.4s,    v14.4s
-    add             v10.4s,   v2.4s,    v8.4s
-    sub             v6.4s,    v2.4s,    v8.4s
-    shrn            ROW7R.4h, v4.4s,    #16
-    shrn            ROW7L.4h, v10.4s,   #16 /* ROW7L.4h <-> ROW3R.4h */
-    shrn            ROW4L.4h, v12.4s,   #16 /* ROW4L.4h <-> ROW0R.4h */
-    shrn            ROW4R.4h, v6.4s,    #16
+    cbnz              TMP2,  2f
+    /* case all AC coeffs are zeros */
+    dup              v2.2d, v10.d[0]
+    dup              v6.2d, v10.d[1]
+    mov             v3.16b,   v2.16b
+    mov             v7.16b,   v6.16b
+    mov             v4.16b,   v2.16b
+    mov             v8.16b,   v6.16b
+    mov             v5.16b,   v2.16b
+    mov             v9.16b,   v6.16b
+1:
+    /* for this transpose, we should organise data like this:
+     * 00, 01, 02, 03, 40, 41, 42, 43
+     * 10, 11, 12, 13, 50, 51, 52, 53
+     * 20, 21, 22, 23, 60, 61, 62, 63
+     * 30, 31, 32, 33, 70, 71, 72, 73
+     * 04, 05, 06, 07, 44, 45, 46, 47
+     * 14, 15, 16, 17, 54, 55, 56, 57
+     * 24, 25, 26, 27, 64, 65, 66, 67
+     * 34, 35, 36, 37, 74, 75, 76, 77
+     */
+    trn1            v28.8h,    v2.8h,   v3.8h
+    trn1            v29.8h,    v4.8h,   v5.8h
+    trn1            v30.8h,    v6.8h,   v7.8h
+    trn1            v31.8h,    v8.8h,   v9.8h
+    trn2            v16.8h,    v2.8h,   v3.8h
+    trn2            v17.8h,    v4.8h,   v5.8h
+    trn2            v18.8h,    v6.8h,   v7.8h
+    trn2            v19.8h,    v8.8h,   v9.8h
+    trn1             v2.4s,   v28.4s,  v29.4s
+    trn1             v6.4s,   v30.4s,  v31.4s
+    trn1             v3.4s,   v16.4s,  v17.4s
+    trn1             v7.4s,   v18.4s,  v19.4s
+    trn2             v4.4s,   v28.4s,  v29.4s
+    trn2             v8.4s,   v30.4s,  v31.4s
+    trn2             v5.4s,   v16.4s,  v17.4s
+    trn2             v9.4s,   v18.4s,  v19.4s
+    /* Even part: reverse the even part of the forward DCT. */
+    add             v18.8h,    v4.8h,   v8.8h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*2], quantptr[DCTSIZE*2]) + DEQUANTIZE(inptr[DCTSIZE*6], quantptr[DCTSIZE*6]) */
+    add             v22.8h,    v2.8h,   v6.8h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) + DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    smull2          v19.4s,   v18.8h,   XFIX_P_0_541 /* z1h z1 = MULTIPLY(z2 + z3, FIX_0_541196100); */
+    sub             v26.8h,    v2.8h,   v6.8h /* z2 - z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) - DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    smull           v18.4s,   v18.4h,   XFIX_P_0_541 /* z1l z1 = MULTIPLY(z2 + z3, FIX_0_541196100); */
+    sshll2          v23.4s,   v22.8h,   #(CONST_BITS) /* tmp0h tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
+    mov            v21.16b,  v19.16b /* tmp3 = z1 */
+    mov            v20.16b,  v18.16b /* tmp3 = z1 */
+    smlal2          v19.4s,    v8.8h,   XFIX_N_1_847 /* tmp2h tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    smlal           v18.4s,    v8.4h,   XFIX_N_1_847 /* tmp2l tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    sshll2          v27.4s,   v26.8h,   #(CONST_BITS) /* tmp1h tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
+    smlal2          v21.4s,    v4.8h,   XFIX_P_0_765 /* tmp3h tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
+    smlal           v20.4s,    v4.4h,   XFIX_P_0_765 /* tmp3l tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
+    sshll           v22.4s,   v22.4h,   #(CONST_BITS) /* tmp0l tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
+    sshll           v26.4s,   v26.4h,   #(CONST_BITS) /* tmp1l tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
+    add              v2.4s,   v22.4s,   v20.4s /* tmp10l tmp10 = tmp0 + tmp3; */
+    sub              v6.4s,   v22.4s,   v20.4s /* tmp13l tmp13 = tmp0 - tmp3; */
+    add              v8.4s,   v26.4s,   v18.4s /* tmp11l tmp11 = tmp1 + tmp2; */
+    sub              v4.4s,   v26.4s,   v18.4s /* tmp12l tmp12 = tmp1 - tmp2; */
+    add             v28.4s,   v23.4s,   v21.4s /* tmp10h tmp10 = tmp0 + tmp3; */
+    sub             v31.4s,   v23.4s,   v21.4s /* tmp13h tmp13 = tmp0 - tmp3; */
+    add             v29.4s,   v27.4s,   v19.4s /* tmp11h tmp11 = tmp1 + tmp2; */
+    sub             v30.4s,   v27.4s,   v19.4s /* tmp12h tmp12 = tmp1 - tmp2; */
 
-2:  /* Descale to 8-bit and range limit */
-    ins             v16.d[1], v17.d[0]
-    ins             v18.d[1], v19.d[0]
-    ins             v20.d[1], v21.d[0]
-    ins             v22.d[1], v23.d[0]
-    sqrshrn         v16.8b,   v16.8h,   #2
-    sqrshrn2        v16.16b,  v18.8h,   #2
-    sqrshrn         v18.8b,   v20.8h,   #2
-    sqrshrn2        v18.16b,  v22.8h,   #2
+    /* Odd part per figure 8; the matrix is unitary and hence its
+     * transpose is its inverse.  i0..i3 are y7,y5,y3,y1 respectively.
+     */
 
-    /* vpop            {v8.4h - d15.4h} */ /* restore NEON registers */
-    ld1             {v8.4h, v9.4h, v10.4h, v11.4h}, [sp], 32
-    ld1             {v12.4h, v13.4h, v14.4h, v15.4h}, [sp], 32
-    ins             v24.d[1], v25.d[0]
+    add             v22.8h,    v9.8h,   v5.8h /* z3 = tmp0 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v24.8h,    v7.8h,   v3.8h /* z4 = tmp1 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v18.8h,    v9.8h,   v3.8h /* z1 = tmp0 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v20.8h,    v7.8h,   v5.8h /* z2 = tmp1 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v26.8h,   v22.8h,   v24.8h /* z5 = z3 + z4 */
 
-    sqrshrn         v20.8b,   v24.8h,   #2
-      /* Transpose the final 8-bit samples and do signed->unsigned conversion */
-    /* trn1            v16.8h,    v16.8h,  v18.8h */
-    transpose       v16, v18, v3, .16b, .8h
-    ins             v26.d[1], v27.d[0]
-    ins             v28.d[1], v29.d[0]
-    ins             v30.d[1], v31.d[0]
-    sqrshrn2        v20.16b,  v26.8h,   #2
-    sqrshrn         v22.8b,   v28.8h,   #2
+    smull2          v11.4s,    v9.8h,   XFIX_P_0_298 /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
+    smull2          v13.4s,    v7.8h,   XFIX_P_2_053 /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
+    smull2          v15.4s,    v5.8h,   XFIX_P_3_072 /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
+    smull2          v17.4s,    v3.8h,   XFIX_P_1_501 /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
+    smull2          v27.4s,   v26.8h,   XFIX_P_1_175 /* z5h z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
+    smull2          v23.4s,   v22.8h,   XFIX_N_1_961 /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
+    smull2          v25.4s,   v24.8h,   XFIX_N_0_390 /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
+    smull2          v19.4s,   v18.8h,   XFIX_N_0_899 /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
+    smull2          v21.4s,   v20.8h,   XFIX_N_2_562 /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+
+    smull           v10.4s,    v9.4h,   XFIX_P_0_298 /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
+    smull           v12.4s,    v7.4h,   XFIX_P_2_053 /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
+    smull           v14.4s,    v5.4h,   XFIX_P_3_072 /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
+    smull           v16.4s,    v3.4h,   XFIX_P_1_501 /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
+    smull           v26.4s,   v26.4h,   XFIX_P_1_175 /* z5l z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
+    smull           v22.4s,   v22.4h,   XFIX_N_1_961 /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
+    smull           v24.4s,   v24.4h,   XFIX_N_0_390 /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
+    smull           v18.4s,   v18.4h,   XFIX_N_0_899 /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
+    smull           v20.4s,   v20.4h,   XFIX_N_2_562 /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+
+    add             v23.4s,   v23.4s,   v27.4s /* z3 += z5 */
+    add             v22.4s,   v22.4s,   v26.4s /* z3 += z5 */
+    add             v25.4s,   v25.4s,   v27.4s /* z4 += z5 */
+    add             v24.4s,   v24.4s,   v26.4s /* z4 += z5 */
+
+    add             v11.4s,   v11.4s,   v19.4s /* tmp0 += z1 */
+    add             v10.4s,   v10.4s,   v18.4s /* tmp0 += z1 */
+    add             v13.4s,   v13.4s,   v21.4s /* tmp1 += z2 */
+    add             v12.4s,   v12.4s,   v20.4s /* tmp1 += z2 */
+    add             v15.4s,   v15.4s,   v21.4s /* tmp2 += z2 */
+    add             v14.4s,   v14.4s,   v20.4s /* tmp2 += z2 */
+    add             v17.4s,   v17.4s,   v19.4s /* tmp3 += z1 */
+    add             v16.4s,   v16.4s,   v18.4s /* tmp3 += z1 */
+
+    add             v11.4s,   v11.4s,   v23.4s /* tmp0 += z3 */
+    add             v10.4s,   v10.4s,   v22.4s /* tmp0 += z3 */
+    add             v13.4s,   v13.4s,   v25.4s /* tmp1 += z4 */
+    add             v12.4s,   v12.4s,   v24.4s /* tmp1 += z4 */
+    add             v17.4s,   v17.4s,   v25.4s /* tmp3 += z4 */
+    add             v16.4s,   v16.4s,   v24.4s /* tmp3 += z4 */
+    add             v15.4s,   v15.4s,   v23.4s /* tmp2 += z3 */
+    add             v14.4s,   v14.4s,   v22.4s /* tmp2 += z3 */
+
+    /* Final output stage: inputs are tmp10..tmp13, tmp0..tmp3 */
+
+    add             v18.4s,    v2.4s,   v16.4s /* tmp10 + tmp3 */
+    add             v19.4s,   v28.4s,   v17.4s /* tmp10 + tmp3 */
+    sub             v20.4s,    v2.4s,   v16.4s /* tmp10 - tmp3 */
+    sub             v21.4s,   v28.4s,   v17.4s /* tmp10 - tmp3 */
+    add             v22.4s,    v8.4s,   v14.4s /* tmp11 + tmp2 */
+    add             v23.4s,   v29.4s,   v15.4s /* tmp11 + tmp2 */
+    sub             v24.4s,    v8.4s,   v14.4s /* tmp11 - tmp2 */
+    sub             v25.4s,   v29.4s,   v15.4s /* tmp11 - tmp2 */
+    add             v26.4s,    v4.4s,   v12.4s /* tmp12 + tmp1 */
+    add             v27.4s,   v30.4s,   v13.4s /* tmp12 + tmp1 */
+    sub             v28.4s,    v4.4s,   v12.4s /* tmp12 - tmp1 */
+    sub             v29.4s,   v30.4s,   v13.4s /* tmp12 - tmp1 */
+    add             v14.4s,    v6.4s,   v10.4s /* tmp13 + tmp0 */
+    add             v15.4s,   v31.4s,   v11.4s /* tmp13 + tmp0 */
+    sub             v16.4s,    v6.4s,   v10.4s /* tmp13 - tmp0 */
+    sub             v17.4s,   v31.4s,   v11.4s /* tmp13 - tmp0 */
+
+    shrn             v2.4h,   v18.4s,   #16 /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn             v9.4h,   v20.4s,   #16 /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn             v3.4h,   v22.4s,   #16 /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn             v8.4h,   v24.4s,   #16 /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn             v4.4h,   v26.4s,   #16 /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn             v7.4h,   v28.4s,   #16 /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn             v5.4h,   v14.4s,   #16 /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS+PASS1_BITS+3) */
+    shrn             v6.4h,   v16.4s,   #16 /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v2.8h,   v19.4s,   #16 /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v9.8h,   v21.4s,   #16 /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v3.8h,   v23.4s,   #16 /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v8.8h,   v25.4s,   #16 /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v4.8h,   v27.4s,   #16 /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v7.8h,   v29.4s,   #16 /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v5.8h,   v15.4s,   #16 /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS+PASS1_BITS+3) */
+    shrn2            v6.8h,   v17.4s,   #16 /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS+PASS1_BITS+3) */
     movi            v0.16b,   #(CENTERJSAMPLE)
-    sqrshrn2        v22.16b,  v30.8h,   #2
-    transpose_single v16, v17, v3, .d, .8b
-    transpose_single v18, v19, v3, .d, .8b
-    add             v16.8b,   v16.8b,   v0.8b
-    add             v17.8b,   v17.8b,   v0.8b
-    add             v18.8b,   v18.8b,   v0.8b
-    add             v19.8b,   v19.8b,   v0.8b
-    transpose       v20, v22, v3, .16b, .8h
+/* Prepare pointers (dual-issue with NEON instructions) */
+      ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
+    sqrshrn         v28.8b,    v2.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      ldp             TMP3,     TMP4,     [OUTPUT_BUF], 16
+    sqrshrn         v29.8b,    v3.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      add             TMP1,     TMP1,     OUTPUT_COL
+    sqrshrn         v30.8b,    v4.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      add             TMP2,     TMP2,     OUTPUT_COL
+    sqrshrn         v31.8b,    v5.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      add             TMP3,     TMP3,     OUTPUT_COL
+    sqrshrn2        v28.16b,   v6.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      add              TMP4,    TMP4,     OUTPUT_COL
+    sqrshrn2        v29.16b,   v7.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      ldp              TMP5,    TMP6,     [OUTPUT_BUF], 16
+    sqrshrn2        v30.16b,   v8.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      ldp              TMP7,    TMP8,     [OUTPUT_BUF], 16
+    sqrshrn2        v31.16b,   v9.8h,   #(CONST_BITS+PASS1_BITS+3-16)
+      add              TMP5,    TMP5,     OUTPUT_COL
+    add             v16.16b, v28.16b,   v0.16b
+      add              TMP6,    TMP6,     OUTPUT_COL
+    add             v18.16b, v29.16b,   v0.16b
+      add              TMP7,    TMP7,     OUTPUT_COL
+    add             v20.16b, v30.16b,   v0.16b
+      add              TMP8,    TMP8,     OUTPUT_COL
+    add             v22.16b, v31.16b,   v0.16b
+
+    /* Transpose the final 8-bit samples */
+    trn1            v28.16b, v16.16b,   v18.16b
+    trn1            v30.16b, v20.16b,   v22.16b
+    trn2            v29.16b, v16.16b,   v18.16b
+    trn2            v31.16b, v20.16b,   v22.16b
+
+    trn1            v16.8h,   v28.8h,   v30.8h
+    trn2            v18.8h,   v28.8h,   v30.8h
+    trn1            v20.8h,   v29.8h,   v31.8h
+    trn2            v22.8h,   v29.8h,   v31.8h
+
+    uzp1            v28.4s,   v16.4s,   v18.4s
+    uzp2            v30.4s,   v16.4s,   v18.4s
+    uzp1            v29.4s,   v20.4s,   v22.4s
+    uzp2            v31.4s,   v20.4s,   v22.4s
+
     /* Store results to the output buffer */
-    ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
-    add             TMP1,     TMP1,     OUTPUT_COL
-    add             TMP2,     TMP2,     OUTPUT_COL
-    st1             {v16.8b}, [TMP1]
-    transpose_single v20, v21, v3, .d, .8b
-    st1             {v17.8b}, [TMP2]
-    ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
-    add             TMP1,     TMP1,     OUTPUT_COL
-    add             TMP2,     TMP2,     OUTPUT_COL
-    st1             {v18.8b}, [TMP1]
-    add             v20.8b,   v20.8b,   v0.8b
-    add             v21.8b,   v21.8b,   v0.8b
-    st1             {v19.8b}, [TMP2]
-    ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
-    ldp             TMP3,     TMP4,     [OUTPUT_BUF]
-    add             TMP1,     TMP1,     OUTPUT_COL
-    add             TMP2,     TMP2,     OUTPUT_COL
-    add             TMP3,     TMP3,     OUTPUT_COL
-    add             TMP4,     TMP4,     OUTPUT_COL
-    transpose_single v22, v23, v3, .d, .8b
-    st1             {v20.8b}, [TMP1]
-    add             v22.8b,   v22.8b,   v0.8b
-    add             v23.8b,   v23.8b,   v0.8b
-    st1             {v21.8b}, [TMP2]
-    st1             {v22.8b}, [TMP3]
-    st1             {v23.8b}, [TMP4]
-    ldr             x15, [sp], 16
-    ld1             {v0.8b, v1.8b, v2.8b, v3.8b}, [sp], 32
-    ld1             {v4.8b, v5.8b, v6.8b, v7.8b}, [sp], 32
-    ld1             {v8.8b, v9.8b, v10.8b, v11.8b}, [sp], 32
-    ld1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], 32
-    ld1             {v16.8b, v17.8b, v18.8b, v19.8b}, [sp], 32
-    ld1             {v20.8b, v21.8b, v22.8b, v23.8b}, [sp], 32
-    ld1             {v24.8b, v25.8b, v26.8b, v27.8b}, [sp], 32
-    ld1             {v28.8b, v29.8b, v30.8b, v31.8b}, [sp], 32
+    st1             {v28.d}[0], [TMP1]
+    st1             {v29.d}[0], [TMP2]
+    st1             {v28.d}[1], [TMP3]
+    st1             {v29.d}[1], [TMP4]
+    st1             {v30.d}[0], [TMP5]
+    st1             {v31.d}[0], [TMP6]
+    st1             {v30.d}[1], [TMP7]
+    st1             {v31.d}[1], [TMP8]
+    ld1             { v8.8b,  v9.8b, v10.8b, v11.8b}, [sp], #32
+    ld1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], #32
     blr             x30
 
-3:  /* Left 4x8 half is done, right 4x8 half contains mostly zeros */
+.balign 16
+2:
+    mul              v3.8h,    v3.8h,   v19.8h
+    mul              v4.8h,    v4.8h,   v20.8h
+    mul              v5.8h,    v5.8h,   v21.8h
+    add               TMP4,      xzr,   TMP2,  LSL #32
+    mul              v6.8h,    v6.8h,   v22.8h
+    mul              v7.8h,    v7.8h,   v23.8h
+    adds              TMP3,      xzr,   TMP2,  LSR #32
+    mul              v8.8h,    v8.8h,   v24.8h
+    mul              v9.8h,    v9.8h,   v25.8h
+    b.ne             3f
+    /* Right AC coef is zero */
+    dup             v15.2d, v10.d[1]
+    /* Even part: reverse the even part of the forward DCT. */
+    add             v18.4h,    v4.4h,   v8.4h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*2], quantptr[DCTSIZE*2]) + DEQUANTIZE(inptr[DCTSIZE*6], quantptr[DCTSIZE*6]) */
+    add             v22.4h,    v2.4h,   v6.4h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) + DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    sub             v26.4h,    v2.4h,   v6.4h /* z2 - z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) - DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    smull           v18.4s,   v18.4h,   XFIX_P_0_541 /* z1l z1 = MULTIPLY(z2 + z3, FIX_0_541196100); */
+    sshll           v22.4s,   v22.4h,   #(CONST_BITS) /* tmp0l tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
+    mov            v20.16b,  v18.16b /* tmp3 = z1 */
+    sshll           v26.4s,   v26.4h,   #(CONST_BITS) /* tmp1l tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
+    smlal           v18.4s,    v8.4h,   XFIX_N_1_847 /* tmp2l tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    smlal           v20.4s,    v4.4h,   XFIX_P_0_765 /* tmp3l tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
+    add              v2.4s,   v22.4s,   v20.4s /* tmp10l tmp10 = tmp0 + tmp3; */
+    sub              v6.4s,   v22.4s,   v20.4s /* tmp13l tmp13 = tmp0 - tmp3; */
+    add              v8.4s,   v26.4s,   v18.4s /* tmp11l tmp11 = tmp1 + tmp2; */
+    sub              v4.4s,   v26.4s,   v18.4s /* tmp12l tmp12 = tmp1 - tmp2; */
 
-    /* Transpose left 4x8 half */
-    transpose       ROW6L, ROW7L, v3, .16b, .4h
-    transpose       ROW2L, ROW3L, v3, .16b, .4h
-    transpose       ROW0L, ROW1L, v3, .16b, .4h
-    transpose       ROW4L, ROW5L, v3, .16b, .4h
-    shl             ROW0R.4h, ROW0R.4h, #2 /* PASS1_BITS */
-    transpose       ROW1L, ROW3L, v3, .16b, .2s
-    transpose       ROW4L, ROW6L, v3, .16b, .2s
-    transpose       ROW0L, ROW2L, v3, .16b, .2s
-    transpose       ROW5L, ROW7L, v3, .16b, .2s
-    cmp             x0, #0
-    b.eq            4f /* Right 4x8 half has all zeros, go to 'sparse' second pass */
+    /* Odd part per figure 8; the matrix is unitary and hence its
+     * transpose is its inverse.  i0..i3 are y7,y5,y3,y1 respectively.
+     */
 
-    /* Only row 0 is non-zero for the right 4x8 half  */
-    dup             ROW1R.4h, ROW0R.h[1]
-    dup             ROW2R.4h, ROW0R.h[2]
-    dup             ROW3R.4h, ROW0R.h[3]
-    dup             ROW4R.4h, ROW0R.h[0]
-    dup             ROW5R.4h, ROW0R.h[1]
-    dup             ROW6R.4h, ROW0R.h[2]
-    dup             ROW7R.4h, ROW0R.h[3]
-    dup             ROW0R.4h, ROW0R.h[0]
-    b               1b /* Go to 'normal' second pass */
+    add             v22.4h,    v9.4h,   v5.4h /* z3 = tmp0 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v24.4h,    v7.4h,   v3.4h /* z4 = tmp1 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v18.4h,    v9.4h,   v3.4h /* z1 = tmp0 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v20.4h,    v7.4h,   v5.4h /* z2 = tmp1 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v26.4h,   v22.4h,   v24.4h /* z5 = z3 + z4 */
 
-4:  /* 1-D IDCT, pass 2 (sparse variant with zero rows 4-7), left 4x8 half */
-    ld1             {v2.4h},  [x15]    /* reload constants */
-    smull           v12.4s,   ROW1L.4h, XFIX_1_175875602
-    smlal           v12.4s,   ROW3L.4h, XFIX_1_175875602_MINUS_1_961570560
-    smull           v14.4s,   ROW3L.4h, XFIX_1_175875602
-    smlal           v14.4s,   ROW1L.4h, XFIX_1_175875602_MINUS_0_390180644
-    smull           v4.4s,    ROW2L.4h, XFIX_0_541196100
-    sshll           v6.4s,    ROW0L.4h, #13
-    mov             v8.16b,   v12.16b
-    smlal           v12.4s,   ROW3L.4h, XFIX_3_072711026_MINUS_2_562915447
-    smlsl           v8.4s,    ROW1L.4h, XFIX_0_899976223
-    add             v2.4s,    v6.4s,    v4.4s
-    mov             v10.16b,  v14.16b
-    smlal           v14.4s,   ROW1L.4h, XFIX_1_501321110_MINUS_0_899976223
-    add             v2.4s,    v2.4s,    v12.4s
-    add             v12.4s,   v12.4s,   v12.4s
-    smlsl           v10.4s,   ROW3L.4h, XFIX_2_562915447
-    shrn            ROW1L.4h, v2.4s,    #16
-    sub             v2.4s,    v2.4s,    v12.4s
-    smull           v12.4s,   ROW2L.4h, XFIX_0_541196100_PLUS_0_765366865
-    sub             v6.4s,    v6.4s,    v4.4s
-    shrn            ROW2R.4h, v2.4s,    #16 /* ROW6L.4h <-> ROW2R.4h */
-    add             v2.4s,    v6.4s,    v10.4s
-    sub             v6.4s,    v6.4s,    v10.4s
-    sshll           v10.4s,   ROW0L.4h, #13
-    shrn            ROW2L.4h, v2.4s,    #16
-    shrn            ROW1R.4h, v6.4s,    #16 /* ROW5L.4h <-> ROW1R.4h */
-    add             v4.4s,    v10.4s,   v12.4s
-    sub             v2.4s,    v10.4s,   v12.4s
-    add             v12.4s,   v4.4s,    v14.4s
-    sub             v4.4s,    v4.4s,    v14.4s
-    add             v10.4s,   v2.4s,    v8.4s
-    sub             v6.4s,    v2.4s,    v8.4s
-    shrn            ROW3R.4h, v4.4s,    #16 /* ROW7L.4h <-> ROW3R.4h */
-    shrn            ROW3L.4h, v10.4s,   #16
-    shrn            ROW0L.4h, v12.4s,   #16
-    shrn            ROW0R.4h, v6.4s,    #16 /* ROW4L.4h <-> ROW0R.4h */
-    /* 1-D IDCT, pass 2 (sparse variant with zero rows 4-7), right 4x8 half */
-    ld1             {v2.4h},  [x15]    /* reload constants */
-    smull           v12.4s,   ROW5L.4h, XFIX_1_175875602
-    smlal           v12.4s,   ROW7L.4h, XFIX_1_175875602_MINUS_1_961570560
-    smull           v14.4s,   ROW7L.4h, XFIX_1_175875602
-    smlal           v14.4s,   ROW5L.4h, XFIX_1_175875602_MINUS_0_390180644
-    smull           v4.4s,    ROW6L.4h, XFIX_0_541196100
-    sshll           v6.4s,    ROW4L.4h, #13
-    mov             v8.16b,   v12.16b
-    smlal           v12.4s,   ROW7L.4h, XFIX_3_072711026_MINUS_2_562915447
-    smlsl           v8.4s,    ROW5L.4h, XFIX_0_899976223
-    add             v2.4s,    v6.4s,    v4.4s
-    mov             v10.16b,  v14.16b
-    smlal           v14.4s,   ROW5L.4h, XFIX_1_501321110_MINUS_0_899976223
-    add             v2.4s,    v2.4s,    v12.4s
-    add             v12.4s,   v12.4s,   v12.4s
-    smlsl           v10.4s,   ROW7L.4h, XFIX_2_562915447
-    shrn            ROW5L.4h, v2.4s,    #16 /* ROW5L.4h <-> ROW1R.4h */
-    sub             v2.4s,    v2.4s,    v12.4s
-    smull           v12.4s,   ROW6L.4h, XFIX_0_541196100_PLUS_0_765366865
-    sub             v6.4s,    v6.4s,    v4.4s
-    shrn            ROW6R.4h, v2.4s,    #16
-    add             v2.4s,    v6.4s,    v10.4s
-    sub             v6.4s,    v6.4s,    v10.4s
-    sshll           v10.4s,   ROW4L.4h, #13
-    shrn            ROW6L.4h, v2.4s,    #16 /* ROW6L.4h <-> ROW2R.4h */
-    shrn            ROW5R.4h, v6.4s,    #16
-    add             v4.4s,    v10.4s,   v12.4s
-    sub             v2.4s,    v10.4s,   v12.4s
-    add             v12.4s,   v4.4s,    v14.4s
-    sub             v4.4s,    v4.4s,    v14.4s
-    add             v10.4s,   v2.4s,    v8.4s
-    sub             v6.4s,    v2.4s,    v8.4s
-    shrn            ROW7R.4h, v4.4s,    #16
-    shrn            ROW7L.4h, v10.4s,   #16 /* ROW7L.4h <-> ROW3R.4h */
-    shrn            ROW4L.4h, v12.4s,   #16 /* ROW4L.4h <-> ROW0R.4h */
-    shrn            ROW4R.4h, v6.4s,    #16
-    b               2b /* Go to epilogue */
+    smull           v10.4s,    v9.4h,   XFIX_P_0_298 /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
+    smull           v12.4s,    v7.4h,   XFIX_P_2_053 /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
+    smull           v14.4s,    v5.4h,   XFIX_P_3_072 /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
+    smull           v16.4s,    v3.4h,   XFIX_P_1_501 /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
+    smull           v26.4s,   v26.4h,   XFIX_P_1_175 /* z5l z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
+    smull           v22.4s,   v22.4h,   XFIX_N_1_961 /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
+    smull           v24.4s,   v24.4h,   XFIX_N_0_390 /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
+    smull           v18.4s,   v18.4h,   XFIX_N_0_899 /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
+    smull           v20.4s,   v20.4h,   XFIX_N_2_562 /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+
+    add             v22.4s,   v22.4s,   v26.4s /* z3 += z5 */
+    add             v24.4s,   v24.4s,   v26.4s /* z4 += z5 */
+
+    add             v10.4s,   v10.4s,   v18.4s /* tmp0 += z1 */
+    add             v12.4s,   v12.4s,   v20.4s /* tmp1 += z2 */
+    add             v14.4s,   v14.4s,   v20.4s /* tmp2 += z2 */
+    add             v16.4s,   v16.4s,   v18.4s /* tmp3 += z1 */
+
+    add             v10.4s,   v10.4s,   v22.4s /* tmp0 += z3 */
+    add             v12.4s,   v12.4s,   v24.4s /* tmp1 += z4 */
+    add             v16.4s,   v16.4s,   v24.4s /* tmp3 += z4 */
+    add             v14.4s,   v14.4s,   v22.4s /* tmp2 += z3 */
+
+    /* Final output stage: inputs are tmp10..tmp13, tmp0..tmp3 */
+
+    add             v18.4s,    v2.4s,   v16.4s /* tmp10 + tmp3 */
+    sub             v20.4s,    v2.4s,   v16.4s /* tmp10 - tmp3 */
+    add             v22.4s,    v8.4s,   v14.4s /* tmp11 + tmp2 */
+    sub             v24.4s,    v8.4s,   v14.4s /* tmp11 - tmp2 */
+    add             v26.4s,    v4.4s,   v12.4s /* tmp12 + tmp1 */
+    sub             v28.4s,    v4.4s,   v12.4s /* tmp12 - tmp1 */
+    add             v14.4s,    v6.4s,   v10.4s /* tmp13 + tmp0 */
+    sub             v16.4s,    v6.4s,   v10.4s /* tmp13 - tmp0 */
+
+    rshrn            v2.4h,   v18.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn            v3.4h,   v22.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn            v4.4h,   v26.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn            v5.4h,   v14.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2           v2.8h,   v16.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2           v3.8h,   v28.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2           v4.8h,   v24.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2           v5.8h,   v20.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    mov             v6.16b,  v15.16b
+    mov             v7.16b,  v15.16b
+    mov             v8.16b,  v15.16b
+    mov             v9.16b,  v15.16b
+    b                1b
+
+.balign 16
+3:
+    cbnz              TMP4,    4f
+    /* Left AC coef is zero */
+    dup             v14.2d, v10.d[0]
+    /* Even part: reverse the even part of the forward DCT. */
+    add             v18.8h,    v4.8h,   v8.8h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*2], quantptr[DCTSIZE*2]) + DEQUANTIZE(inptr[DCTSIZE*6], quantptr[DCTSIZE*6]) */
+    add             v22.8h,    v2.8h,   v6.8h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) + DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    smull2          v19.4s,   v18.8h,   XFIX_P_0_541 /* z1h z1 = MULTIPLY(z2 + z3, FIX_0_541196100); */
+    sub             v26.8h,    v2.8h,   v6.8h /* z2 - z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) - DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    sshll2          v23.4s,   v22.8h,   #(CONST_BITS) /* tmp0h tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
+    mov            v21.16b,  v19.16b /* tmp3 = z1 */
+    smlal2          v19.4s,    v8.8h,   XFIX_N_1_847 /* tmp2h tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    sshll2          v27.4s,   v26.8h,   #(CONST_BITS) /* tmp1h tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
+    smlal2          v21.4s,    v4.8h,   XFIX_P_0_765 /* tmp3h tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
+    add             v28.4s,   v23.4s,   v21.4s /* tmp10h tmp10 = tmp0 + tmp3; */
+    sub             v31.4s,   v23.4s,   v21.4s /* tmp13h tmp13 = tmp0 - tmp3; */
+    add             v29.4s,   v27.4s,   v19.4s /* tmp11h tmp11 = tmp1 + tmp2; */
+    sub             v30.4s,   v27.4s,   v19.4s /* tmp12h tmp12 = tmp1 - tmp2; */
+
+    /* Odd part per figure 8; the matrix is unitary and hence its
+     * transpose is its inverse.  i0..i3 are y7,y5,y3,y1 respectively.
+     */
+
+    add             v22.8h,    v9.8h,   v5.8h /* z3 = tmp0 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v24.8h,    v7.8h,   v3.8h /* z4 = tmp1 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v18.8h,    v9.8h,   v3.8h /* z1 = tmp0 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v20.8h,    v7.8h,   v5.8h /* z2 = tmp1 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v26.8h,   v22.8h,   v24.8h /* z5 = z3 + z4 */
+
+    smull2          v11.4s,    v9.8h,   XFIX_P_0_298 /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
+    smull2          v13.4s,    v7.8h,   XFIX_P_2_053 /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
+    smull2          v15.4s,    v5.8h,   XFIX_P_3_072 /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
+    smull2          v17.4s,    v3.8h,   XFIX_P_1_501 /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
+    smull2          v27.4s,   v26.8h,   XFIX_P_1_175 /* z5h z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
+    smull2          v23.4s,   v22.8h,   XFIX_N_1_961 /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
+    smull2          v25.4s,   v24.8h,   XFIX_N_0_390 /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
+    smull2          v19.4s,   v18.8h,   XFIX_N_0_899 /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
+    smull2          v21.4s,   v20.8h,   XFIX_N_2_562 /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+
+    add             v23.4s,   v23.4s,   v27.4s /* z3 += z5 */
+    add             v22.4s,   v22.4s,   v26.4s /* z3 += z5 */
+    add             v25.4s,   v25.4s,   v27.4s /* z4 += z5 */
+    add             v24.4s,   v24.4s,   v26.4s /* z4 += z5 */
+
+    add             v11.4s,   v11.4s,   v19.4s /* tmp0 += z1 */
+    add             v13.4s,   v13.4s,   v21.4s /* tmp1 += z2 */
+    add             v15.4s,   v15.4s,   v21.4s /* tmp2 += z2 */
+    add             v17.4s,   v17.4s,   v19.4s /* tmp3 += z1 */
+
+    add             v11.4s,   v11.4s,   v23.4s /* tmp0 += z3 */
+    add             v13.4s,   v13.4s,   v25.4s /* tmp1 += z4 */
+    add             v17.4s,   v17.4s,   v25.4s /* tmp3 += z4 */
+    add             v15.4s,   v15.4s,   v23.4s /* tmp2 += z3 */
+
+    /* Final output stage: inputs are tmp10..tmp13, tmp0..tmp3 */
+
+    add             v19.4s,   v28.4s,   v17.4s /* tmp10 + tmp3 */
+    sub             v21.4s,   v28.4s,   v17.4s /* tmp10 - tmp3 */
+    add             v23.4s,   v29.4s,   v15.4s /* tmp11 + tmp2 */
+    sub             v25.4s,   v29.4s,   v15.4s /* tmp11 - tmp2 */
+    add             v27.4s,   v30.4s,   v13.4s /* tmp12 + tmp1 */
+    sub             v29.4s,   v30.4s,   v13.4s /* tmp12 - tmp1 */
+    add             v15.4s,   v31.4s,   v11.4s /* tmp13 + tmp0 */
+    sub             v17.4s,   v31.4s,   v11.4s /* tmp13 - tmp0 */
+
+    mov             v2.16b,  v14.16b
+    mov             v3.16b,  v14.16b
+    mov             v4.16b,  v14.16b
+    mov             v5.16b,  v14.16b
+    rshrn            v6.4h,   v19.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn            v7.4h,   v23.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn            v8.4h,   v27.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn            v9.4h,   v15.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2           v6.8h,   v17.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2           v7.8h,   v29.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2           v8.8h,   v25.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2           v9.8h,   v21.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    b                1b
+
+.balign 16
+4:
+    /* "No" AC coef is zero */
+    /* Even part: reverse the even part of the forward DCT. */
+    add             v18.8h,    v4.8h,   v8.8h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*2], quantptr[DCTSIZE*2]) + DEQUANTIZE(inptr[DCTSIZE*6], quantptr[DCTSIZE*6]) */
+    add             v22.8h,    v2.8h,   v6.8h /* z2 + z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) + DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    smull2          v19.4s,   v18.8h,   XFIX_P_0_541 /* z1h z1 = MULTIPLY(z2 + z3, FIX_0_541196100); */
+    sub             v26.8h,    v2.8h,   v6.8h /* z2 - z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) - DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
+    smull           v18.4s,   v18.4h,   XFIX_P_0_541 /* z1l z1 = MULTIPLY(z2 + z3, FIX_0_541196100); */
+    sshll2          v23.4s,   v22.8h,   #(CONST_BITS) /* tmp0h tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
+    mov            v21.16b,  v19.16b /* tmp3 = z1 */
+    mov            v20.16b,  v18.16b /* tmp3 = z1 */
+    smlal2          v19.4s,    v8.8h,   XFIX_N_1_847 /* tmp2h tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    smlal           v18.4s,    v8.4h,   XFIX_N_1_847 /* tmp2l tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    sshll2          v27.4s,   v26.8h,   #(CONST_BITS) /* tmp1h tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
+    smlal2          v21.4s,    v4.8h,   XFIX_P_0_765 /* tmp3h tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
+    smlal           v20.4s,    v4.4h,   XFIX_P_0_765 /* tmp3l tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
+    sshll           v22.4s,   v22.4h,   #(CONST_BITS) /* tmp0l tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
+    sshll           v26.4s,   v26.4h,   #(CONST_BITS) /* tmp1l tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
+    add              v2.4s,   v22.4s,   v20.4s /* tmp10l tmp10 = tmp0 + tmp3; */
+    sub              v6.4s,   v22.4s,   v20.4s /* tmp13l tmp13 = tmp0 - tmp3; */
+    add              v8.4s,   v26.4s,   v18.4s /* tmp11l tmp11 = tmp1 + tmp2; */
+    sub              v4.4s,   v26.4s,   v18.4s /* tmp12l tmp12 = tmp1 - tmp2; */
+    add             v28.4s,   v23.4s,   v21.4s /* tmp10h tmp10 = tmp0 + tmp3; */
+    sub             v31.4s,   v23.4s,   v21.4s /* tmp13h tmp13 = tmp0 - tmp3; */
+    add             v29.4s,   v27.4s,   v19.4s /* tmp11h tmp11 = tmp1 + tmp2; */
+    sub             v30.4s,   v27.4s,   v19.4s /* tmp12h tmp12 = tmp1 - tmp2; */
+
+    /* Odd part per figure 8; the matrix is unitary and hence its
+     * transpose is its inverse.  i0..i3 are y7,y5,y3,y1 respectively.
+     */
+
+    add             v22.8h,    v9.8h,   v5.8h /* z3 = tmp0 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v24.8h,    v7.8h,   v3.8h /* z4 = tmp1 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v18.8h,    v9.8h,   v3.8h /* z1 = tmp0 + tmp3 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]) + DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]) */
+    add             v20.8h,    v7.8h,   v5.8h /* z2 = tmp1 + tmp2 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]) + DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]) */
+    add             v26.8h,   v22.8h,   v24.8h /* z5 = z3 + z4 */
+
+    smull2          v11.4s,    v9.8h,   XFIX_P_0_298 /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
+    smull2          v13.4s,    v7.8h,   XFIX_P_2_053 /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
+    smull2          v15.4s,    v5.8h,   XFIX_P_3_072 /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
+    smull2          v17.4s,    v3.8h,   XFIX_P_1_501 /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
+    smull2          v27.4s,   v26.8h,   XFIX_P_1_175 /* z5h z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
+    smull2          v23.4s,   v22.8h,   XFIX_N_1_961 /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
+    smull2          v25.4s,   v24.8h,   XFIX_N_0_390 /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
+    smull2          v19.4s,   v18.8h,   XFIX_N_0_899 /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
+    smull2          v21.4s,   v20.8h,   XFIX_N_2_562 /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+
+    smull           v10.4s,    v9.4h,   XFIX_P_0_298 /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
+    smull           v12.4s,    v7.4h,   XFIX_P_2_053 /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
+    smull           v14.4s,    v5.4h,   XFIX_P_3_072 /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
+    smull           v16.4s,    v3.4h,   XFIX_P_1_501 /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
+    smull           v26.4s,   v26.4h,   XFIX_P_1_175 /* z5l z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
+    smull           v22.4s,   v22.4h,   XFIX_N_1_961 /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
+    smull           v24.4s,   v24.4h,   XFIX_N_0_390 /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
+    smull           v18.4s,   v18.4h,   XFIX_N_0_899 /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
+    smull           v20.4s,   v20.4h,   XFIX_N_2_562 /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+
+    add             v23.4s,   v23.4s,   v27.4s /* z3 += z5 */
+    add             v22.4s,   v22.4s,   v26.4s /* z3 += z5 */
+    add             v25.4s,   v25.4s,   v27.4s /* z4 += z5 */
+    add             v24.4s,   v24.4s,   v26.4s /* z4 += z5 */
+
+    add             v11.4s,   v11.4s,   v19.4s /* tmp0 += z1 */
+    add             v10.4s,   v10.4s,   v18.4s /* tmp0 += z1 */
+    add             v13.4s,   v13.4s,   v21.4s /* tmp1 += z2 */
+    add             v12.4s,   v12.4s,   v20.4s /* tmp1 += z2 */
+    add             v15.4s,   v15.4s,   v21.4s /* tmp2 += z2 */
+    add             v14.4s,   v14.4s,   v20.4s /* tmp2 += z2 */
+    add             v17.4s,   v17.4s,   v19.4s /* tmp3 += z1 */
+    add             v16.4s,   v16.4s,   v18.4s /* tmp3 += z1 */
+
+    add             v11.4s,   v11.4s,   v23.4s /* tmp0 += z3 */
+    add             v10.4s,   v10.4s,   v22.4s /* tmp0 += z3 */
+    add             v13.4s,   v13.4s,   v25.4s /* tmp1 += z4 */
+    add             v12.4s,   v12.4s,   v24.4s /* tmp1 += z4 */
+    add             v17.4s,   v17.4s,   v25.4s /* tmp3 += z4 */
+    add             v16.4s,   v16.4s,   v24.4s /* tmp3 += z4 */
+    add             v15.4s,   v15.4s,   v23.4s /* tmp2 += z3 */
+    add             v14.4s,   v14.4s,   v22.4s /* tmp2 += z3 */
+
+    /* Final output stage: inputs are tmp10..tmp13, tmp0..tmp3 */
+
+    add             v18.4s,    v2.4s,   v16.4s /* tmp10 + tmp3 */
+    add             v19.4s,   v28.4s,   v17.4s /* tmp10 + tmp3 */
+    sub             v20.4s,    v2.4s,   v16.4s /* tmp10 - tmp3 */
+    sub             v21.4s,   v28.4s,   v17.4s /* tmp10 - tmp3 */
+    add             v22.4s,    v8.4s,   v14.4s /* tmp11 + tmp2 */
+    add             v23.4s,   v29.4s,   v15.4s /* tmp11 + tmp2 */
+    sub             v24.4s,    v8.4s,   v14.4s /* tmp11 - tmp2 */
+    sub             v25.4s,   v29.4s,   v15.4s /* tmp11 - tmp2 */
+    add             v26.4s,    v4.4s,   v12.4s /* tmp12 + tmp1 */
+    add             v27.4s,   v30.4s,   v13.4s /* tmp12 + tmp1 */
+    sub             v28.4s,    v4.4s,   v12.4s /* tmp12 - tmp1 */
+    sub             v29.4s,   v30.4s,   v13.4s /* tmp12 - tmp1 */
+    add             v14.4s,    v6.4s,   v10.4s /* tmp13 + tmp0 */
+    add             v15.4s,   v31.4s,   v11.4s /* tmp13 + tmp0 */
+    sub             v16.4s,    v6.4s,   v10.4s /* tmp13 - tmp0 */
+    sub             v17.4s,   v31.4s,   v11.4s /* tmp13 - tmp0 */
+
+    rshrn            v2.4h,   v18.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn            v3.4h,   v22.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn            v4.4h,   v26.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn            v5.4h,   v14.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn            v6.4h,   v19.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn            v7.4h,   v23.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn            v8.4h,   v27.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn            v9.4h,   v15.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2           v2.8h,   v16.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2           v3.8h,   v28.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2           v4.8h,   v24.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2           v5.8h,   v20.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn2           v6.8h,   v17.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2           v7.8h,   v29.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2           v8.8h,   v25.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2           v9.8h,   v21.4s,   #(CONST_BITS-PASS1_BITS) /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    b                1b
 
     .unreq          DCT_TABLE
     .unreq          COEF_BLOCK
@@ -764,23 +740,26 @@ asm_function jsimd_idct_islow_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
+    .unreq          TMP5
+    .unreq          TMP6
+    .unreq          TMP7
+    .unreq          TMP8
 
-    .unreq          ROW0L
-    .unreq          ROW0R
-    .unreq          ROW1L
-    .unreq          ROW1R
-    .unreq          ROW2L
-    .unreq          ROW2R
-    .unreq          ROW3L
-    .unreq          ROW3R
-    .unreq          ROW4L
-    .unreq          ROW4R
-    .unreq          ROW5L
-    .unreq          ROW5R
-    .unreq          ROW6L
-    .unreq          ROW6R
-    .unreq          ROW7L
-    .unreq          ROW7R
+#undef CENTERJSAMPLE
+#undef CONST_BITS
+#undef PASS1_BITS
+#undef XFIX_P_0_298
+#undef XFIX_N_0_390
+#undef XFIX_P_0_541
+#undef XFIX_P_0_765
+#undef XFIX_N_0_899
+#undef XFIX_P_1_175
+#undef XFIX_P_1_501
+#undef XFIX_N_1_847
+#undef XFIX_N_1_961
+#undef XFIX_P_2_053
+#undef XFIX_N_2_562
+#undef XFIX_P_3_072
 
 
 /*****************************************************************************/
@@ -821,261 +800,182 @@ asm_function jsimd_idct_ifast_neon
     OUTPUT_COL      .req x3
     TMP1            .req x0
     TMP2            .req x1
-    TMP3            .req x2
-    TMP4            .req x22
-    TMP5            .req x23
+    TMP3            .req x9
+    TMP4            .req x10
+    TMP5            .req x11
+    TMP6            .req x12
+    TMP7            .req x13
+    TMP8            .req x14
 
     /* Load and dequantize coefficients into NEON registers
      * with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
-     *   0 | d16     | d17     ( v8.8h  )
-     *   1 | d18     | d19     ( v9.8h  )
-     *   2 | d20     | d21     ( v10.8h )
-     *   3 | d22     | d23     ( v11.8h )
-     *   4 | d24     | d25     ( v12.8h )
-     *   5 | d26     | d27     ( v13.8h )
-     *   6 | d28     | d29     ( v14.8h )
-     *   7 | d30     | d31     ( v15.8h )
+     *   0 | d16     | d17     ( v16.8h  )
+     *   1 | d18     | d19     ( v17.8h  )
+     *   2 | d20     | d21     ( v18.8h )
+     *   3 | d22     | d23     ( v19.8h )
+     *   4 | d24     | d25     ( v20.8h )
+     *   5 | d26     | d27     ( v21.8h )
+     *   6 | d28     | d29     ( v22.8h )
+     *   7 | d30     | d31     ( v23.8h )
      */
     /* Save NEON registers used in fast IDCT */
-    sub             sp, sp, #176
-    stp             x22, x23, [sp], 16
-    adr             x23, Ljsimd_idct_ifast_neon_consts
-    st1             {v0.8b, v1.8b, v2.8b, v3.8b}, [sp], 32
-    st1             {v4.8b, v5.8b, v6.8b, v7.8b}, [sp], 32
-    st1             {v8.8b, v9.8b, v10.8b, v11.8b}, [sp], 32
-    st1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], 32
-    st1             {v16.8b, v17.8b, v18.8b, v19.8b}, [sp], 32
-    ld1             {v8.8h, v9.8h}, [COEF_BLOCK], 32
+    adr             TMP5, Ljsimd_idct_ifast_neon_consts
+    ld1             {v16.8h, v17.8h}, [COEF_BLOCK], 32
     ld1             {v0.8h, v1.8h}, [DCT_TABLE], 32
-    ld1             {v10.8h, v11.8h}, [COEF_BLOCK], 32
-    mul             v8.8h,  v8.8h,  v0.8h
+    ld1             {v18.8h, v19.8h}, [COEF_BLOCK], 32
+    mul             v16.8h,  v16.8h,  v0.8h
     ld1             {v2.8h, v3.8h}, [DCT_TABLE], 32
-    mul             v9.8h,  v9.8h,  v1.8h
-    ld1             {v12.8h, v13.8h}, [COEF_BLOCK], 32
-    mul             v10.8h, v10.8h, v2.8h
+    mul             v17.8h,  v17.8h,  v1.8h
+    ld1             {v20.8h, v21.8h}, [COEF_BLOCK], 32
+    mul             v18.8h, v18.8h, v2.8h
     ld1             {v0.8h, v1.8h}, [DCT_TABLE], 32
-    mul             v11.8h, v11.8h, v3.8h
-    ld1             {v14.8h, v15.8h}, [COEF_BLOCK], 32
-    mul             v12.8h, v12.8h, v0.8h
+    mul             v19.8h, v19.8h, v3.8h
+    ld1             {v22.8h, v23.8h}, [COEF_BLOCK], 32
+    mul             v20.8h, v20.8h, v0.8h
     ld1             {v2.8h, v3.8h}, [DCT_TABLE], 32
-    mul             v14.8h, v14.8h, v2.8h
-    mul             v13.8h, v13.8h, v1.8h
-    ld1             {v0.4h}, [x23]      /* load constants */
-    mul             v15.8h, v15.8h, v3.8h
+    mul             v22.8h, v22.8h, v2.8h
+    mul             v21.8h, v21.8h, v1.8h
+    ld1             {v0.4h}, [TMP5]      /* load constants */
+    mul             v23.8h, v23.8h, v3.8h
 
     /* 1-D IDCT, pass 1 */
-    sub             v2.8h,    v10.8h,   v14.8h
-    add             v14.8h,   v10.8h,   v14.8h
-    sub             v1.8h,    v11.8h,   v13.8h
-    add             v13.8h,   v11.8h,   v13.8h
-    sub             v5.8h,    v9.8h,    v15.8h
-    add             v15.8h,   v9.8h,    v15.8h
+    sub             v2.8h,    v18.8h,   v22.8h
+    add             v22.8h,   v18.8h,   v22.8h
+    sub             v1.8h,    v19.8h,   v21.8h
+    add             v21.8h,   v19.8h,   v21.8h
+    sub             v5.8h,    v17.8h,   v23.8h
+    add             v23.8h,   v17.8h,   v23.8h
     sqdmulh         v4.8h,    v2.8h,    XFIX_1_414213562
     sqdmulh         v6.8h,    v1.8h,    XFIX_2_613125930
     add             v3.8h,    v1.8h,    v1.8h
     sub             v1.8h,    v5.8h,    v1.8h
-    add             v10.8h,   v2.8h,    v4.8h
+    add             v18.8h,   v2.8h,    v4.8h
     sqdmulh         v4.8h,    v1.8h,    XFIX_1_847759065
-    sub             v2.8h,    v15.8h,   v13.8h
+    sub             v2.8h,    v23.8h,   v21.8h
     add             v3.8h,    v3.8h,    v6.8h
     sqdmulh         v6.8h,    v2.8h,    XFIX_1_414213562
     add             v1.8h,    v1.8h,    v4.8h
     sqdmulh         v4.8h,    v5.8h,    XFIX_1_082392200
-    sub             v10.8h,   v10.8h,   v14.8h
+    sub             v18.8h,   v18.8h,   v22.8h
     add             v2.8h,    v2.8h,    v6.8h
-    sub             v6.8h,    v8.8h,    v12.8h
-    add             v12.8h,   v8.8h,    v12.8h
-    add             v9.8h,    v5.8h,    v4.8h
-    add             v5.8h,    v6.8h,    v10.8h
-    sub             v10.8h,   v6.8h,    v10.8h
-    add             v6.8h,    v15.8h,   v13.8h
-    add             v8.8h,    v12.8h,   v14.8h
+    sub             v6.8h,    v16.8h,   v20.8h
+    add             v20.8h,   v16.8h,   v20.8h
+    add             v17.8h,   v5.8h,    v4.8h
+    add             v5.8h,    v6.8h,    v18.8h
+    sub             v18.8h,   v6.8h,    v18.8h
+    add             v6.8h,    v23.8h,   v21.8h
+    add             v16.8h,   v20.8h,   v22.8h
     sub             v3.8h,    v6.8h,    v3.8h
-    sub             v12.8h,   v12.8h,   v14.8h
+    sub             v20.8h,   v20.8h,   v22.8h
     sub             v3.8h,    v3.8h,    v1.8h
-    sub             v1.8h,    v9.8h,    v1.8h
+    sub             v1.8h,    v17.8h,   v1.8h
     add             v2.8h,    v3.8h,    v2.8h
-    sub             v15.8h,   v8.8h,    v6.8h
+    sub             v23.8h,   v16.8h,   v6.8h
     add             v1.8h,    v1.8h,    v2.8h
-    add             v8.8h,    v8.8h,    v6.8h
-    add             v14.8h,   v5.8h,    v3.8h
-    sub             v9.8h,    v5.8h,    v3.8h
-    sub             v13.8h,   v10.8h,   v2.8h
-    add             v10.8h,   v10.8h,   v2.8h
-    /* Transpose  q8-q9 */
-    mov             v18.16b,  v8.16b
-    trn1            v8.8h,    v8.8h,    v9.8h
-    trn2            v9.8h,    v18.8h,   v9.8h
-    sub             v11.8h,   v12.8h,   v1.8h
-    /* Transpose  q14-q15 */
-    mov             v18.16b,  v14.16b
-    trn1            v14.8h,   v14.8h,   v15.8h
-    trn2            v15.8h,   v18.8h,   v15.8h
-    add             v12.8h,   v12.8h,   v1.8h
-    /* Transpose  q10-q11 */
-    mov             v18.16b,  v10.16b
-    trn1            v10.8h,   v10.8h,   v11.8h
-    trn2            v11.8h,   v18.8h,   v11.8h
-    /* Transpose  q12-q13 */
-    mov             v18.16b,  v12.16b
-    trn1            v12.8h,   v12.8h,   v13.8h
-    trn2            v13.8h,   v18.8h,   v13.8h
-    /* Transpose  q9-q11 */
-    mov             v18.16b,  v9.16b
-    trn1            v9.4s,    v9.4s,    v11.4s
-    trn2            v11.4s,   v18.4s,   v11.4s
-    /* Transpose  q12-q14 */
-    mov             v18.16b,  v12.16b
-    trn1            v12.4s,   v12.4s,   v14.4s
-    trn2            v14.4s,   v18.4s,   v14.4s
-    /* Transpose  q8-q10 */
-    mov             v18.16b,  v8.16b
-    trn1            v8.4s,    v8.4s,    v10.4s
-    trn2            v10.4s,   v18.4s,   v10.4s
-    /* Transpose  q13-q15 */
-    mov             v18.16b,  v13.16b
-    trn1            v13.4s,   v13.4s,   v15.4s
-    trn2            v15.4s,   v18.4s,   v15.4s
-    /* vswp            v14.4h,   v10-MSB.4h */
-    umov            x22, v14.d[0]
-    ins             v14.d[0], v10.d[1]
-    ins             v10.d[1], x22
-    /* vswp            v13.4h,   v9MSB.4h */
-
-    umov            x22, v13.d[0]
-    ins             v13.d[0], v9.d[1]
-    ins             v9.d[1], x22
+    add             v16.8h,   v16.8h,   v6.8h
+    add             v22.8h,   v5.8h,    v3.8h
+    sub             v17.8h,   v5.8h,    v3.8h
+    sub             v21.8h,   v18.8h,   v2.8h
+    add             v18.8h,   v18.8h,   v2.8h
+    sub             v19.8h,   v20.8h,   v1.8h
+    add             v20.8h,   v20.8h,   v1.8h
+    transpose_8x8   v16, v17, v18, v19, v20, v21, v22, v23, v28, v29, v30, v31
     /* 1-D IDCT, pass 2 */
-    sub             v2.8h,    v10.8h,   v14.8h
-    /* vswp            v15.4h,   v11MSB.4h */
-    umov            x22, v15.d[0]
-    ins             v15.d[0], v11.d[1]
-    ins             v11.d[1], x22
-    add             v14.8h,   v10.8h,   v14.8h
-    /* vswp            v12.4h,   v8-MSB.4h */
-    umov            x22, v12.d[0]
-    ins             v12.d[0], v8.d[1]
-    ins             v8.d[1],  x22
-    sub             v1.8h,    v11.8h,   v13.8h
-    add             v13.8h,   v11.8h,   v13.8h
-    sub             v5.8h,    v9.8h,    v15.8h
-    add             v15.8h,   v9.8h,    v15.8h
+    sub             v2.8h,    v18.8h,   v22.8h
+    add             v22.8h,   v18.8h,   v22.8h
+    sub             v1.8h,    v19.8h,   v21.8h
+    add             v21.8h,   v19.8h,   v21.8h
+    sub             v5.8h,    v17.8h,   v23.8h
+    add             v23.8h,   v17.8h,   v23.8h
     sqdmulh         v4.8h,    v2.8h,    XFIX_1_414213562
     sqdmulh         v6.8h,    v1.8h,    XFIX_2_613125930
     add             v3.8h,    v1.8h,    v1.8h
     sub             v1.8h,    v5.8h,    v1.8h
-    add             v10.8h,   v2.8h,    v4.8h
+    add             v18.8h,   v2.8h,    v4.8h
     sqdmulh         v4.8h,    v1.8h,    XFIX_1_847759065
-    sub             v2.8h,    v15.8h,   v13.8h
+    sub             v2.8h,    v23.8h,   v21.8h
     add             v3.8h,    v3.8h,    v6.8h
     sqdmulh         v6.8h,    v2.8h,    XFIX_1_414213562
     add             v1.8h,    v1.8h,    v4.8h
     sqdmulh         v4.8h,    v5.8h,    XFIX_1_082392200
-    sub             v10.8h,   v10.8h,   v14.8h
+    sub             v18.8h,   v18.8h,   v22.8h
     add             v2.8h,    v2.8h,    v6.8h
-    sub             v6.8h,    v8.8h,    v12.8h
-    add             v12.8h,   v8.8h,    v12.8h
-    add             v9.8h,    v5.8h,    v4.8h
-    add             v5.8h,    v6.8h,    v10.8h
-    sub             v10.8h,   v6.8h,    v10.8h
-    add             v6.8h,    v15.8h,   v13.8h
-    add             v8.8h,    v12.8h,   v14.8h
+    sub             v6.8h,    v16.8h,   v20.8h
+    add             v20.8h,   v16.8h,   v20.8h
+    add             v17.8h,   v5.8h,    v4.8h
+    add             v5.8h,    v6.8h,    v18.8h
+    sub             v18.8h,   v6.8h,    v18.8h
+    add             v6.8h,    v23.8h,   v21.8h
+    add             v16.8h,   v20.8h,   v22.8h
     sub             v3.8h,    v6.8h,    v3.8h
-    sub             v12.8h,   v12.8h,   v14.8h
+    sub             v20.8h,   v20.8h,   v22.8h
     sub             v3.8h,    v3.8h,    v1.8h
-    sub             v1.8h,    v9.8h,    v1.8h
+    sub             v1.8h,    v17.8h,   v1.8h
     add             v2.8h,    v3.8h,    v2.8h
-    sub             v15.8h,   v8.8h,    v6.8h
+    sub             v23.8h,   v16.8h,   v6.8h
     add             v1.8h,    v1.8h,    v2.8h
-    add             v8.8h,    v8.8h,    v6.8h
-    add             v14.8h,   v5.8h,    v3.8h
-    sub             v9.8h,    v5.8h,    v3.8h
-    sub             v13.8h,   v10.8h,   v2.8h
-    add             v10.8h,   v10.8h,   v2.8h
-    sub             v11.8h,   v12.8h,   v1.8h
-    add             v12.8h,   v12.8h,   v1.8h
+    add             v16.8h,   v16.8h,   v6.8h
+    add             v22.8h,   v5.8h,    v3.8h
+    sub             v17.8h,   v5.8h,    v3.8h
+    sub             v21.8h,   v18.8h,   v2.8h
+    add             v18.8h,   v18.8h,   v2.8h
+    sub             v19.8h,   v20.8h,   v1.8h
+    add             v20.8h,   v20.8h,   v1.8h
     /* Descale to 8-bit and range limit */
     movi            v0.16b,   #0x80
-    sqshrn          v8.8b,    v8.8h,    #5
-    sqshrn2         v8.16b,   v9.8h,    #5
-    sqshrn          v9.8b,    v10.8h,   #5
-    sqshrn2         v9.16b,   v11.8h,   #5
-    sqshrn          v10.8b,   v12.8h,   #5
-    sqshrn2         v10.16b,  v13.8h,   #5
-    sqshrn          v11.8b,   v14.8h,   #5
-    sqshrn2         v11.16b,  v15.8h,   #5
-    add             v8.16b,   v8.16b,   v0.16b
-    add             v9.16b,   v9.16b,   v0.16b
-    add             v10.16b,  v10.16b,  v0.16b
-    add             v11.16b,  v11.16b,  v0.16b
+      /* Prepare pointers (dual-issue with NEON instructions) */
+      ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
+    sqshrn          v28.8b,   v16.8h,   #5
+      ldp             TMP3,     TMP4,     [OUTPUT_BUF], 16
+    sqshrn          v29.8b,   v17.8h,   #5
+      add             TMP1,     TMP1,     OUTPUT_COL
+    sqshrn          v30.8b,   v18.8h,   #5
+      add             TMP2,     TMP2,     OUTPUT_COL
+    sqshrn          v31.8b,   v19.8h,   #5
+      add             TMP3,     TMP3,     OUTPUT_COL
+    sqshrn2         v28.16b,  v20.8h,   #5
+      add             TMP4,     TMP4,     OUTPUT_COL
+    sqshrn2         v29.16b,  v21.8h,   #5
+      ldp             TMP5,     TMP6,     [OUTPUT_BUF], 16
+    sqshrn2         v30.16b,  v22.8h,   #5
+      ldp             TMP7,     TMP8,     [OUTPUT_BUF], 16
+    sqshrn2         v31.16b,  v23.8h,   #5
+      add             TMP5,     TMP5,     OUTPUT_COL
+    add             v16.16b,  v28.16b,  v0.16b
+      add             TMP6,     TMP6,     OUTPUT_COL
+    add             v18.16b,  v29.16b,  v0.16b
+      add             TMP7,     TMP7,     OUTPUT_COL
+    add             v20.16b,  v30.16b,  v0.16b
+      add             TMP8,     TMP8,     OUTPUT_COL
+    add             v22.16b,  v31.16b,  v0.16b
+
     /* Transpose the final 8-bit samples */
-    /* Transpose  q8-q9 */
-    mov             v18.16b,  v8.16b
-    trn1            v8.8h,    v8.8h,    v9.8h
-    trn2            v9.8h,    v18.8h,   v9.8h
-    /* Transpose  q10-q11 */
-    mov             v18.16b,  v10.16b
-    trn1            v10.8h,   v10.8h,   v11.8h
-    trn2            v11.8h,   v18.8h,   v11.8h
-    /* Transpose  q8-q10 */
-    mov             v18.16b,  v8.16b
-    trn1            v8.4s,    v8.4s,    v10.4s
-    trn2            v10.4s,   v18.4s,   v10.4s
-    /* Transpose  q9-q11 */
-    mov             v18.16b,  v9.16b
-    trn1            v9.4s,    v9.4s,    v11.4s
-    trn2            v11.4s,   v18.4s,   v11.4s
-    /* make copy */
-    ins             v17.d[0], v8.d[1]
-    /* Transpose  d16-d17-msb */
-    mov             v18.16b,  v8.16b
-    trn1            v8.8b,    v8.8b,    v17.8b
-    trn2            v17.8b,   v18.8b,   v17.8b
-    /* make copy */
-    ins             v19.d[0], v9.d[1]
-    mov             v18.16b,  v9.16b
-    trn1            v9.8b,    v9.8b,    v19.8b
-    trn2            v19.8b,   v18.8b,   v19.8b
+    trn1            v28.16b,  v16.16b,  v18.16b
+    trn1            v30.16b,  v20.16b,  v22.16b
+    trn2            v29.16b,  v16.16b,  v18.16b
+    trn2            v31.16b,  v20.16b,  v22.16b
+
+    trn1            v16.8h,   v28.8h,   v30.8h
+    trn2            v18.8h,   v28.8h,   v30.8h
+    trn1            v20.8h,   v29.8h,   v31.8h
+    trn2            v22.8h,   v29.8h,   v31.8h
+
+    uzp1            v28.4s,   v16.4s,   v18.4s
+    uzp2            v30.4s,   v16.4s,   v18.4s
+    uzp1            v29.4s,   v20.4s,   v22.4s
+    uzp2            v31.4s,   v20.4s,   v22.4s
+
     /* Store results to the output buffer */
-    ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
-    add             TMP1,     TMP1,     OUTPUT_COL
-    add             TMP2,     TMP2,     OUTPUT_COL
-    st1             {v8.8b},  [TMP1]
-    st1             {v17.8b}, [TMP2]
-    ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
-    add             TMP1,     TMP1,     OUTPUT_COL
-    add             TMP2,     TMP2,     OUTPUT_COL
-    st1             {v9.8b},  [TMP1]
-    /* make copy */
-    ins             v7.d[0],  v10.d[1]
-    mov             v18.16b,  v10.16b
-    trn1            v10.8b,   v10.8b,   v7.8b
-    trn2            v7.8b,    v18.8b,   v7.8b
-    st1             {v19.8b}, [TMP2]
-    ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
-    ldp             TMP4,     TMP5,     [OUTPUT_BUF], 16
-    add             TMP1,     TMP1,     OUTPUT_COL
-    add             TMP2,     TMP2,     OUTPUT_COL
-    add             TMP4,     TMP4,     OUTPUT_COL
-    add             TMP5,     TMP5,     OUTPUT_COL
-    st1             {v10.8b}, [TMP1]
-    /* make copy */
-    ins             v16.d[0], v11.d[1]
-    mov             v18.16b,  v11.16b
-    trn1            v11.8b,   v11.8b,   v16.8b
-    trn2            v16.8b,   v18.8b,   v16.8b
-    st1             {v7.8b},  [TMP2]
-    st1             {v11.8b}, [TMP4]
-    st1             {v16.8b}, [TMP5]
-    sub             sp, sp, #176
-    ldp             x22, x23, [sp], 16
-    ld1             {v0.8b, v1.8b, v2.8b, v3.8b}, [sp], 32
-    ld1             {v4.8b, v5.8b, v6.8b, v7.8b}, [sp], 32
-    ld1             {v8.8b, v9.8b, v10.8b, v11.8b}, [sp], 32
-    ld1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], 32
-    ld1             {v16.8b, v17.8b, v18.8b, v19.8b}, [sp], 32
+    st1             {v28.d}[0], [TMP1]
+    st1             {v29.d}[0], [TMP2]
+    st1             {v28.d}[1], [TMP3]
+    st1             {v29.d}[1], [TMP4]
+    st1             {v30.d}[0], [TMP5]
+    st1             {v31.d}[0], [TMP6]
+    st1             {v30.d}[1], [TMP7]
+    st1             {v31.d}[1], [TMP8]
     blr             x30
 
     .unreq          DCT_TABLE
@@ -1087,6 +987,9 @@ asm_function jsimd_idct_ifast_neon
     .unreq          TMP3
     .unreq          TMP4
     .unreq          TMP5
+    .unreq          TMP6
+    .unreq          TMP7
+    .unreq          TMP8
 
 
 /*****************************************************************************/
@@ -1540,6 +1443,11 @@ asm_function jsimd_idct_2x2_neon
  * Colorspace conversion YCbCr -> RGB
  */
 
+#if defined(__APPLE__) || defined(__ANDROID__)
+/* TODO: expand this to include other devices that are known not to have a slow
+ *       ld3 implementation. */
+#define ST3_IS_FAST
+#endif
 
 .macro do_load size
     .if \size == 8
@@ -1581,7 +1489,41 @@ asm_function jsimd_idct_2x2_neon
 .macro do_store bpp, size
     .if \bpp == 24
         .if \size == 8
+#ifdef ST3_IS_FAST
             st3  {v10.8b, v11.8b, v12.8b}, [RGB], 24
+#else
+            st1  {v10.b}[0], [RGB], #1
+            st1  {v11.b}[0], [RGB], #1
+            st1  {v12.b}[0], [RGB], #1
+
+            st1  {v10.b}[1], [RGB], #1
+            st1  {v11.b}[1], [RGB], #1
+            st1  {v12.b}[1], [RGB], #1
+
+            st1  {v10.b}[2], [RGB], #1
+            st1  {v11.b}[2], [RGB], #1
+            st1  {v12.b}[2], [RGB], #1
+
+            st1  {v10.b}[3], [RGB], #1
+            st1  {v11.b}[3], [RGB], #1
+            st1  {v12.b}[3], [RGB], #1
+
+            st1  {v10.b}[4], [RGB], #1
+            st1  {v11.b}[4], [RGB], #1
+            st1  {v12.b}[4], [RGB], #1
+
+            st1  {v10.b}[5], [RGB], #1
+            st1  {v11.b}[5], [RGB], #1
+            st1  {v12.b}[5], [RGB], #1
+
+            st1  {v10.b}[6], [RGB], #1
+            st1  {v11.b}[6], [RGB], #1
+            st1  {v12.b}[6], [RGB], #1
+
+            st1  {v10.b}[7], [RGB], #1
+            st1  {v11.b}[7], [RGB], #1
+            st1  {v12.b}[7], [RGB], #1
+#endif
         .elseif \size == 4
             st3  {v10.b, v11.b, v12.b}[0], [RGB], 3
             st3  {v10.b, v11.b, v12.b}[1], [RGB], 3
@@ -1939,7 +1881,7 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,   0, .4h,   0, .4h,   .
     .endif
 .endm
 
-#if __APPLE__
+#if defined(__APPLE__) || defined(__ANDROID__)
 /* TODO: expand this to include other devices that are known not to have a slow
  *       ld3 implementation. */
 #define LD3_IS_FAST
@@ -2298,7 +2240,6 @@ asm_function jsimd_convsamp_neon
 #define DESCALE_P1      (CONST_BITS-PASS1_BITS)
 #define DESCALE_P2      (CONST_BITS+PASS1_BITS)
 
-#if CONST_BITS == 13
 #define F_0_298      2446           /* FIX(0.298631336) */
 #define F_0_390      3196           /* FIX(0.390180644) */
 #define F_0_541      4433           /* FIX(0.541196100) */
@@ -2311,21 +2252,6 @@ asm_function jsimd_convsamp_neon
 #define F_2_053     16819           /* FIX(2.053119869) */
 #define F_2_562     20995           /* FIX(2.562915447) */
 #define F_3_072     25172           /* FIX(3.072711026) */
-#else
-#define DESCALE(x,n)  (((x)+(1<<((n)-1)))>>(n))
-#define F_0_298     DESCALE( 320652955, 30-CONST_BITS)  /* FIX(0.298631336) */
-#define F_0_390     DESCALE( 418953276, 30-CONST_BITS)  /* FIX(0.390180644) */
-#define F_0_541     DESCALE( 581104887, 30-CONST_BITS)  /* FIX(0.541196100) */
-#define F_0_765     DESCALE( 821806413, 30-CONST_BITS)  /* FIX(0.765366865) */
-#define F_0_899     DESCALE( 966342111, 30-CONST_BITS)  /* FIX(0.899976223) */
-#define F_1_175     DESCALE(1262586813, 30-CONST_BITS)  /* FIX(1.175875602) */
-#define F_1_501     DESCALE(1612031267, 30-CONST_BITS)  /* FIX(1.501321110) */
-#define F_1_847     DESCALE(1984016188, 30-CONST_BITS)  /* FIX(1.847759065) */
-#define F_1_961     DESCALE(2106220350, 30-CONST_BITS)  /* FIX(1.961570560) */
-#define F_2_053     DESCALE(2204520673, 30-CONST_BITS)  /* FIX(2.053119869) */
-#define F_2_562     DESCALE(2751909506, 30-CONST_BITS)  /* FIX(2.562915447) */
-#define F_3_072     DESCALE(3299298341, 30-CONST_BITS)  /* FIX(3.072711026) */
-#endif
 
 .balign 16
 Ljsimd_fdct_islow_neon_consts:

@@ -69,20 +69,27 @@ setting the JSIMD_NOHUFFENC environment variable to 1.
 
 [13] Added SIMD acceleration for Huffman encoding on NEON-capable ARM 32-bit
 platforms.  This speeds up the compression of full-color JPEGs by about 30% on
-average.  For the purposes of benchmarking or regression testing,
-SIMD-accelerated Huffman encoding can be disabled by setting the
-JSIMD_NOHUFFENC environment variable to 1.
+average on a Cortex-A9 core (iPhone 4S) and by about 6-7% on average on
+Cortex-A53 and Cortex-A57 cores.  For the purposes of benchmarking or
+regression testing, SIMD-accelerated Huffman encoding can be disabled by
+setting the JSIMD_NOHUFFENC environment variable to 1.
 
 [14] Added ARM 64-bit (ARMv8) NEON SIMD implementations of the commonly-used
 compression algorithms (including the slow integer forward DCT and h2v2 & h2v1
 downsampling algorithms, which are not accelerated in the 32-bit NEON
-implementation.)  This speeds up the overall 64-bit compression performance by
-about 2x on ARMv8 processors.
+implementation.)  This speeds up the compression of full-color JPEGs by about
+75% on average on a Cavium ThunderX processor and by about 2-2.5x on average on
+Cortex-A53 and Cortex-A57 cores.
 
 [15] pkg-config (.pc) scripts are now included for both the libjpeg and
 TurboJPEG API libraries on Un*x systems.  Note that if a project's build system
 relies on these scripts, then it will not be possible to build that project
 with libjpeg or with a prior version of libjpeg-turbo.
+
+[16] Optimized the ARM 64-bit (ARMv8) NEON SIMD decompression routines to
+improve performance on CPUs with in-order pipelines.  This speeds up the
+decompression of full-color JPEGs by nearly 2x on average on a Cavium ThunderX
+processor and by about 15% on average on a Cortex-A53 core.
 
 
 1.4.2

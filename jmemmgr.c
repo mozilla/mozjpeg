@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code and
- * information relevant to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the JPEG system-independent memory management
@@ -275,6 +275,11 @@ alloc_small (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
    * and so that algorithms can straddle outside the proper area up
    * to the next alignment.
    */
+  if (sizeofobject > MAX_ALLOC_CHUNK) {
+    /* This prevents overflow/wrap-around in round_up_pow2() if sizeofobject
+       is close to SIZE_MAX. */
+    out_of_memory(cinfo, 7);
+  }
   sizeofobject = round_up_pow2(sizeofobject, ALIGN_SIZE);
 
   /* Check for unsatisfiable request (do now to ensure no overflow below) */
@@ -364,6 +369,11 @@ alloc_large (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
    * algorithms can straddle outside the proper area up to the next
    * alignment.
    */
+  if (sizeofobject > MAX_ALLOC_CHUNK) {
+    /* This prevents overflow/wrap-around in round_up_pow2() if sizeofobject
+       is close to SIZE_MAX. */
+    out_of_memory(cinfo, 8);
+  }
   sizeofobject = round_up_pow2(sizeofobject, ALIGN_SIZE);
 
   /* Check for unsatisfiable request (do now to ensure no overflow below) */
@@ -431,6 +441,12 @@ alloc_sarray (j_common_ptr cinfo, int pool_id,
   /* Make sure each row is properly aligned */
   if ((ALIGN_SIZE % sizeof(JSAMPLE)) != 0)
     out_of_memory(cinfo, 5);    /* safety check */
+
+  if (samplesperrow > MAX_ALLOC_CHUNK) {
+    /* This prevents overflow/wrap-around in round_up_pow2() if sizeofobject
+       is close to SIZE_MAX. */
+    out_of_memory(cinfo, 9);
+  }
   samplesperrow = (JDIMENSION)round_up_pow2(samplesperrow, (2 * ALIGN_SIZE) /
                                                            sizeof(JSAMPLE));
 

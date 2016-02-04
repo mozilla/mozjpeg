@@ -92,7 +92,7 @@ pbm_getc (FILE * infile)
 
 
 LOCAL(unsigned int)
-read_pbm_integer (j_compress_ptr cinfo, FILE * infile, int maxval)
+read_pbm_integer (j_compress_ptr cinfo, FILE * infile, unsigned int maxval)
 /* Read an unsigned decimal integer from the PPM file */
 /* Swallows one trailing character after the integer */
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
@@ -144,7 +144,7 @@ get_text_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   register JSAMPROW ptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
-  int maxval = source->maxval;
+  unsigned int maxval = source->maxval;
 
   ptr = source->pub.buffer[0];
   for (col = cinfo->image_width; col > 0; col--) {
@@ -163,7 +163,7 @@ get_text_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   register JSAMPROW ptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
-  int maxval = source->maxval;
+  unsigned int maxval = source->maxval;
 
   ptr = source->pub.buffer[0];
   for (col = cinfo->image_width; col > 0; col--) {

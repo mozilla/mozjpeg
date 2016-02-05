@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modifications:
- * Copyright (C) 2009-2011, D. R. Commander.
+ * Copyright (C) 2009-2011, 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains Huffman entropy decoding routines.
@@ -743,7 +743,7 @@ decode_mcu_fast (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
  * this module, since we'll just re-assign them on the next call.)
  */
 
-#define BUFSIZE (DCTSIZE2 * 2)
+#define BUFSIZE (DCTSIZE2 * 8)
 
 METHODDEF(boolean)
 decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)

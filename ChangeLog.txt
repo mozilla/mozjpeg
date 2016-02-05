@@ -56,6 +56,15 @@ encoder can produce encoded blocks that approach double the size of the
 unencoded blocks.  Thus, the Huffman local buffer was increased to 256 bytes,
 which should prevent any such issue from re-occurring in the future.
 
+[10] Fixed an issue in the accelerated Huffman decoder that could have caused
+the decoder to read past the end of the input buffer when a malformed,
+specially-crafted JPEG image was being decompressed.  In prior versions of
+libjpeg-turbo, the accelerated Huffman decoder was invoked (in most cases) only
+if there were > 128 bytes of data in the input buffer.  However, it is possible
+to construct a JPEG image in which a single Huffman block is over 430 bytes
+long, so this version of libjpeg-turbo activates the accelerated Huffman
+decoder only if there are > 512 bytes of data in the input buffer.
+
 
 1.3.1
 =====

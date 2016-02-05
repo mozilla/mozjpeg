@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2016 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -557,7 +557,8 @@ DLLEXPORT unsigned char *DLLCALL tjAlloc(int bytes)
 
 static tjhandle _tjInitCompress(tjinstance *this)
 {
-	unsigned char buffer[1], *buf=buffer;  unsigned long size=1;
+	static unsigned char buffer[1];
+	unsigned char *buf=buffer;  unsigned long size=1;
 
 	/* This is also straight out of example.c */
 	this->cinfo.err=jpeg_std_error(&this->jerr.pub);
@@ -1218,7 +1219,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
 
 static tjhandle _tjInitDecompress(tjinstance *this)
 {
-	unsigned char buffer[1];
+	static unsigned char buffer[1];
 
 	/* This is also straight out of example.c */
 	this->dinfo.err=jpeg_std_error(&this->jerr.pub);

@@ -532,6 +532,7 @@ AM_CONDITIONAL([SIMD_MIPS], [test "x$simd_arch" = "xmips"])
 AM_CONDITIONAL([SIMD_POWERPC], [test "x$simd_arch" = "xpowerpc"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 AM_CONDITIONAL([WITH_TURBOJPEG], [test "x$with_turbojpeg" != "xno"])
+AM_CONDITIONAL([CROSS_COMPILING], [test "x$cross_compiling" = "xyes"])
 
 AC_ARG_VAR(PKGNAME, [distribution package name (default: libjpeg-turbo)])
 if test "x$PKGNAME" = "x"; then

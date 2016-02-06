@@ -320,6 +320,8 @@ add_executable(wrjpgcom wrjpgcom.c)
 # Tests
 #
 
+add_subdirectory(md5)
+
 if(MSVC_IDE)
   set(OBJDIR "\${CTEST_CONFIGURATION_TYPE}/")
 else()
@@ -454,6 +456,13 @@ if(ENABLE_STATIC)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} static)
 endif()
 
+set(TESTIMAGES ${CMAKE_SOURCE_DIR}/testimages)
+set(MD5CMP ${CMAKE_CURRENT_BINARY_DIR}/md5/md5cmp)
+if(CMAKE_CROSSCOMPILING)
+  file(RELATIVE_PATH TESTIMAGES ${CMAKE_CURRENT_BINARY_DIR} ${TESTIMAGES})
+  file(RELATIVE_PATH MD5CMP ${CMAKE_CURRENT_BINARY_DIR} ${MD5CMP})
+endif()
+
 foreach(libtype ${TEST_LIBTYPES})
   if(libtype STREQUAL "shared")
     set(dir sharedlib/)
@@ -475,219 +484,186 @@ foreach(libtype ${TEST_LIBTYPES})
 
   # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
   add_test(cjpeg${suffix}-rgb-islow
-    ${dir}cjpeg${suffix} -rgb -dct int -outfile testout_rgb_islow.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+    ${dir}cjpeg${suffix} -rgb -dct int
+      -outfile testout_rgb_islow.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(cjpeg${suffix}-rgb-islow-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_RGB_ISLOW} -DFILE=testout_rgb_islow.jpg
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_JPEG_RGB_ISLOW} testout_rgb_islow.jpg)
+
   # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
   add_test(djpeg${suffix}-rgb-islow
-    ${dir}djpeg${suffix} -dct int -ppm -outfile testout_rgb_islow.ppm
-      testout_rgb_islow.jpg)
+    ${dir}djpeg${suffix} -dct int -ppm
+      -outfile testout_rgb_islow.ppm testout_rgb_islow.jpg)
   add_test(djpeg${suffix}-rgb-islow-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_RGB_ISLOW} -DFILE=testout_rgb_islow.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_RGB_ISLOW} testout_rgb_islow.ppm)
+
   if(NOT WITH_12BIT)
     # CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-rgb-islow-565
       ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
         -outfile testout_rgb_islow_565.bmp testout_rgb_islow.jpg)
     add_test(djpeg${suffix}-rgb-islow-565-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_RGB_ISLOW_565}
-        -DFILE=testout_rgb_islow_565.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_RGB_ISLOW_565} testout_rgb_islow_565.bmp)
+
     # CC: RGB->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-rgb-islow-565D
       ${dir}djpeg${suffix} -dct int -rgb565 -bmp
         -outfile testout_rgb_islow_565D.bmp testout_rgb_islow.jpg)
     add_test(djpeg${suffix}-rgb-islow-565D-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_RGB_ISLOW_565D}
-        -DFILE=testout_rgb_islow_565D.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_RGB_ISLOW_565D} testout_rgb_islow_565D.bmp)
   endif()
 
   # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
   add_test(cjpeg${suffix}-422-ifast-opt
     ${dir}cjpeg${suffix} -sample 2x1 -dct fast -opt
-      -outfile testout_422_ifast_opt.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+      -outfile testout_422_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(cjpeg${suffix}-422-ifast-opt-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_422_IFAST_OPT}
-      -DFILE=testout_422_ifast_opt.jpg
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_JPEG_422_IFAST_OPT} testout_422_ifast_opt.jpg)
+
   # CC: YCC->RGB  SAMP: fullsize/h2v1 fancy  IDCT: ifast  ENT: huff
   add_test(djpeg${suffix}-422-ifast
-    ${dir}djpeg${suffix} -dct fast -outfile testout_422_ifast.ppm
-      testout_422_ifast_opt.jpg)
+    ${dir}djpeg${suffix} -dct fast
+      -outfile testout_422_ifast.ppm testout_422_ifast_opt.jpg)
   add_test(djpeg${suffix}-422-ifast-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_422_IFAST} -DFILE=testout_422_ifast.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_422_IFAST} testout_422_ifast.ppm)
+
   # CC: YCC->RGB  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
   add_test(djpeg${suffix}-422m-ifast
-    ${dir}djpeg${suffix} -dct fast -nosmooth -outfile testout_422m_ifast.ppm
-      testout_422_ifast_opt.jpg)
+    ${dir}djpeg${suffix} -dct fast -nosmooth
+      -outfile testout_422m_ifast.ppm testout_422_ifast_opt.jpg)
   add_test(djpeg${suffix}-422m-ifast-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_422M_IFAST} -DFILE=testout_422m_ifast.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_422M_IFAST} testout_422m_ifast.ppm)
+
   if(NOT WITH_12BIT)
     # CC: YCC->RGB565  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
     add_test(djpeg${suffix}-422m-ifast-565
       ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -dither none -bmp
         -outfile testout_422m_ifast_565.bmp testout_422_ifast_opt.jpg)
     add_test(djpeg${suffix}-422m-ifast-565-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_422M_IFAST_565}
-        -DFILE=testout_422m_ifast_565.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_422M_IFAST_565} testout_422m_ifast_565.bmp)
+
     # CC: YCC->RGB565 (dithered)  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
     add_test(djpeg${suffix}-422m-ifast-565D
       ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -bmp
         -outfile testout_422m_ifast_565D.bmp testout_422_ifast_opt.jpg)
     add_test(djpeg${suffix}-422m-ifast-565D-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_422M_IFAST_565D}
-        -DFILE=testout_422m_ifast_565D.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_422M_IFAST_565D} testout_422m_ifast_565D.bmp)
   endif()
 
   # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
   add_test(cjpeg${suffix}-420-q100-ifast-prog
     ${dir}cjpeg${suffix} -sample 2x2 -quality 100 -dct fast -prog
-      -outfile testout_420_q100_ifast_prog.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+      -outfile testout_420_q100_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(cjpeg${suffix}-420-q100-ifast-prog-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_IFAST_Q100_PROG}
-      -DFILE=testout_420_q100_ifast_prog.jpg
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_JPEG_420_IFAST_Q100_PROG} testout_420_q100_ifast_prog.jpg)
+
   # CC: YCC->RGB  SAMP: fullsize/h2v2 fancy  IDCT: ifast  ENT: prog huff
   add_test(djpeg${suffix}-420-q100-ifast-prog
-    ${dir}djpeg${suffix} -dct fast -outfile testout_420_q100_ifast.ppm
-      testout_420_q100_ifast_prog.jpg)
+    ${dir}djpeg${suffix} -dct fast
+      -outfile testout_420_q100_ifast.ppm testout_420_q100_ifast_prog.jpg)
   add_test(djpeg${suffix}-420-q100-ifast-prog-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420_Q100_IFAST}
-      -DFILE=testout_420_q100_ifast.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_420_Q100_IFAST} testout_420_q100_ifast.ppm)
+
   # CC: YCC->RGB  SAMP: h2v2 merged  IDCT: ifast  ENT: prog huff
   add_test(djpeg${suffix}-420m-q100-ifast-prog
     ${dir}djpeg${suffix} -dct fast -nosmooth
       -outfile testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg)
   add_test(djpeg${suffix}-420m-q100-ifast-prog-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_Q100_IFAST}
-      -DFILE=testout_420m_q100_ifast.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_420M_Q100_IFAST} testout_420m_q100_ifast.ppm)
 
   # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
   add_test(cjpeg${suffix}-gray-islow
-    ${dir}cjpeg${suffix} -gray -dct int -outfile testout_gray_islow.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+    ${dir}cjpeg${suffix} -gray -dct int
+      -outfile testout_gray_islow.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(cjpeg${suffix}-gray-islow-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_GRAY_ISLOW}
-      -DFILE=testout_gray_islow.jpg
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_JPEG_GRAY_ISLOW} testout_gray_islow.jpg)
+
   # CC: Gray->Gray  SAMP: fullsize  IDCT: islow  ENT: huff
   add_test(djpeg${suffix}-gray-islow
-    ${dir}djpeg${suffix} -dct int -outfile testout_gray_islow.ppm
-      testout_gray_islow.jpg)
+    ${dir}djpeg${suffix} -dct int
+      -outfile testout_gray_islow.ppm testout_gray_islow.jpg)
   add_test(djpeg${suffix}-gray-islow-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_GRAY_ISLOW}
-      -DFILE=testout_gray_islow.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_GRAY_ISLOW} testout_gray_islow.ppm)
+
   # CC: Gray->RGB  SAMP: fullsize  IDCT: islow  ENT: huff
   add_test(djpeg${suffix}-gray-islow-rgb
-    ${dir}djpeg${suffix} -dct int -rgb -outfile testout_gray_islow_rgb.ppm
-      testout_gray_islow.jpg)
+    ${dir}djpeg${suffix} -dct int -rgb
+      -outfile testout_gray_islow_rgb.ppm testout_gray_islow.jpg)
   add_test(djpeg${suffix}-gray-islow-rgb-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_GRAY_ISLOW_RGB}
-      -DFILE=testout_gray_islow_rgb.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_GRAY_ISLOW_RGB} testout_gray_islow_rgb.ppm)
+
   if(NOT WITH_12BIT)
     # CC: Gray->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-gray-islow-565
       ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
         -outfile testout_gray_islow_565.bmp testout_gray_islow.jpg)
     add_test(djpeg${suffix}-gray-islow-565-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_GRAY_ISLOW_565}
-        -DFILE=testout_gray_islow_565.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_GRAY_ISLOW_565} testout_gray_islow_565.bmp)
+
     # CC: Gray->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-gray-islow-565D
       ${dir}djpeg${suffix} -dct int -rgb565 -bmp
         -outfile testout_gray_islow_565D.bmp testout_gray_islow.jpg)
     add_test(djpeg${suffix}-gray-islow-565D-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_GRAY_ISLOW_565D}
-        -DFILE=testout_gray_islow_565D.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_GRAY_ISLOW_565D} testout_gray_islow_565D.bmp)
   endif()
 
   # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
   # ENT: 2-pass huff
   add_test(cjpeg${suffix}-420s-ifast-opt
-    ${dir}cjpeg${suffix} -sample 2x2 -smooth 1 -dct int -opt -outfile
-      testout_420s_ifast_opt.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+    ${dir}cjpeg${suffix} -sample 2x2 -smooth 1 -dct int -opt
+      -outfile testout_420s_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(cjpeg${suffix}-420s-ifast-opt-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420S_IFAST_OPT}
-      -DFILE=testout_420s_ifast_opt.jpg
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_JPEG_420S_IFAST_OPT} testout_420s_ifast_opt.jpg)
 
   # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
   add_test(cjpeg${suffix}-3x2-float-prog
     ${dir}cjpeg${suffix} -sample 3x2 -dct float -prog
-      -outfile testout_3x2_float_prog.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+      -outfile testout_3x2_float_prog.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(cjpeg${suffix}-3x2-float-prog-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_3x2_FLOAT_PROG}
-      -DFILE=testout_3x2_float_prog.jpg
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_JPEG_3x2_FLOAT_PROG} testout_3x2_float_prog.jpg)
+
   # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
   add_test(djpeg${suffix}-3x2-float-prog
-    ${dir}djpeg${suffix} -dct float -outfile testout_3x2_float.ppm
-      testout_3x2_float_prog.jpg)
+    ${dir}djpeg${suffix} -dct float
+      -outfile testout_3x2_float.ppm testout_3x2_float_prog.jpg)
   add_test(djpeg${suffix}-3x2-float-prog-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_3x2_FLOAT} -DFILE=testout_3x2_float.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_3x2_FLOAT} testout_3x2_float.ppm)
 
   if(WITH_ARITH_ENC)
     # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
     add_test(cjpeg${suffix}-420-islow-ari
       ${dir}cjpeg${suffix} -dct int -arithmetic
-        -outfile testout_420_islow_ari.jpg
-        ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+        -outfile testout_420_islow_ari.jpg ${TESTIMAGES}/testorig.ppm)
     add_test(cjpeg${suffix}-420-islow-ari-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW_ARI}
-        -DFILE=testout_420_islow_ari.jpg
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_JPEG_420_ISLOW_ARI} testout_420_islow_ari.jpg)
+
     add_test(jpegtran${suffix}-420-islow-ari
       ${dir}jpegtran${suffix} -arithmetic
-        -outfile testout_420_islow_ari.jpg
-        ${CMAKE_SOURCE_DIR}/testimages/testimgint.jpg)
+        -outfile testout_420_islow_ari.jpg ${TESTIMAGES}/testimgint.jpg)
     add_test(jpegtran${suffix}-420-islow-ari-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW_ARI}
-        -DFILE=testout_420_islow_ari.jpg
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_JPEG_420_ISLOW_ARI} testout_420_islow_ari.jpg)
+
     # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
     add_test(cjpeg${suffix}-444-islow-progari
       ${dir}cjpeg${suffix} -sample 1x1 -dct int -prog -arithmetic
-        -outfile testout_444_islow_progari.jpg
-        ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+        -outfile testout_444_islow_progari.jpg ${TESTIMAGES}/testorig.ppm)
     add_test(cjpeg${suffix}-444-islow-progari-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_444_ISLOW_PROGARI}
-        -DFILE=testout_444_islow_progari.jpg
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_JPEG_444_ISLOW_PROGARI} testout_444_islow_progari.jpg)
   endif()
+
   if(WITH_ARITH_DEC)
     # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
     add_test(djpeg${suffix}-420m-ifast-ari
-      ${dir}djpeg${suffix} -fast -ppm -outfile testout_420m_ifast_ari.ppm
-        ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
+      ${dir}djpeg${suffix} -fast -ppm
+        -outfile testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg)
     add_test(djpeg${suffix}-420m-ifast-ari-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_IFAST_ARI}
-        -DFILE=testout_420m_ifast_ari.ppm
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_PPM_420M_IFAST_ARI} testout_420m_ifast_ari.ppm)
+
     add_test(jpegtran${suffix}-420-islow
-      ${dir}jpegtran${suffix} -outfile testout_420_islow.jpg
-        ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
+      ${dir}jpegtran${suffix}
+        -outfile testout_420_islow.jpg ${TESTIMAGES}/testimgari.jpg)
     add_test(jpegtran${suffix}-420-islow-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW}
-        -DFILE=testout_420_islow.jpg
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_JPEG_420_ISLOW} testout_420_islow.jpg)
   endif()
 
   # 2/1--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 16x16 islow  ENT: huff
@@ -713,60 +689,46 @@ foreach(libtype ${TEST_LIBTYPES})
     string(REGEX REPLACE "_" "/" scalearg ${scale})
     add_test(djpeg${suffix}-420m-islow-${scale}
       ${dir}djpeg${suffix} -dct int -scale ${scalearg} -nosmooth -ppm
-        -outfile testout_420m_islow_${scale}.ppm
-        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+        -outfile testout_420m_islow_${scale}.ppm ${TESTIMAGES}/${TESTORIG})
     add_test(djpeg${suffix}-420m-islow-${scale}-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_ISLOW_${scale}}
-        -DFILE=testout_420m_islow_${scale}.ppm
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_PPM_420M_ISLOW_${scale}} testout_420m_islow_${scale}.ppm)
   endforeach()
 
   if(NOT WITH_12BIT)
     # CC: YCC->RGB (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-420-islow-256
       ${dir}djpeg${suffix} -dct int -colors 256 -bmp
-        -outfile testout_420_islow_256.bmp
-        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+        -outfile testout_420_islow_256.bmp ${TESTIMAGES}/${TESTORIG})
     add_test(djpeg${suffix}-420-islow-256-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_256}
-        -DFILE=testout_420_islow_256.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_420_ISLOW_256} testout_420_islow_256.bmp)
+
     # CC: YCC->RGB565  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-420-islow-565
       ${dir}djpeg${suffix} -dct int -rgb565 -dither none -bmp
-        -outfile testout_420_islow_565.bmp
-        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+        -outfile testout_420_islow_565.bmp ${TESTIMAGES}/${TESTORIG})
     add_test(djpeg${suffix}-420-islow-565-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_565}
-        -DFILE=testout_420_islow_565.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_420_ISLOW_565} testout_420_islow_565.bmp)
+
     # CC: YCC->RGB565 (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-420-islow-565D
       ${dir}djpeg${suffix} -dct int -rgb565 -bmp
-        -outfile testout_420_islow_565D.bmp
-        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+        -outfile testout_420_islow_565D.bmp ${TESTIMAGES}/${TESTORIG})
     add_test(djpeg${suffix}-420-islow-565D-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420_ISLOW_565D}
-        -DFILE=testout_420_islow_565D.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_420_ISLOW_565D} testout_420_islow_565D.bmp)
+
     # CC: YCC->RGB565  SAMP: h2v2 merged  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-420m-islow-565
       ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -dither none -bmp
-        -outfile testout_420m_islow_565.bmp
-        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+        -outfile testout_420m_islow_565.bmp ${TESTIMAGES}/${TESTORIG})
     add_test(djpeg${suffix}-420m-islow-565-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420M_ISLOW_565}
-        -DFILE=testout_420m_islow_565.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_420M_ISLOW_565} testout_420m_islow_565.bmp)
+
     # CC: YCC->RGB565 (dithered)  SAMP: h2v2 merged  IDCT: islow  ENT: huff
     add_test(djpeg${suffix}-420m-islow-565D
       ${dir}djpeg${suffix} -dct int -nosmooth -rgb565 -bmp
-        -outfile testout_420m_islow_565D.bmp
-        ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+        -outfile testout_420m_islow_565D.bmp ${TESTIMAGES}/${TESTORIG})
     add_test(djpeg${suffix}-420m-islow-565D-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_BMP_420M_ISLOW_565D}
-        -DFILE=testout_420m_islow_565D.bmp
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_BMP_420M_ISLOW_565D} testout_420m_islow_565D.bmp)
   endif()
 
   # Partial decode tests.  These tests are designed to cover all of the
@@ -775,96 +737,90 @@ foreach(libtype ${TEST_LIBTYPES})
   # Context rows: Yes  Intra-iMCU row: Yes  iMCU row prefetch: No   ENT: huff
   add_test(djpeg${suffix}-420-islow-skip15_31
     ${dir}djpeg${suffix} -dct int -skip 15,31 -ppm
-      -outfile testout_420_islow_skip15,31.ppm
-      ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+      -outfile testout_420_islow_skip15,31.ppm ${TESTIMAGES}/${TESTORIG})
   add_test(djpeg${suffix}-420-islow-skip15_31-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420_ISLOW_SKIP15_31}
-      -DFILE=testout_420_islow_skip15,31.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_420_ISLOW_SKIP15_31} testout_420_islow_skip15,31.ppm)
+
   # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: Yes  ENT: arith
   if(WITH_ARITH_DEC)
     add_test(djpeg${suffix}-420-islow-ari-skip16_139
       ${dir}djpeg${suffix} -dct int -skip 16,139 -ppm
         -outfile testout_420_islow_ari_skip16,139.ppm
-        ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
+        ${TESTIMAGES}/testimgari.jpg)
     add_test(djpeg${suffix}-420-islow-ari_skip16_139-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420_ISLOW_ARI_SKIP16_139}
-        -DFILE=testout_420_islow_ari_skip16,139.ppm
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_PPM_420_ISLOW_ARI_SKIP16_139}
+        testout_420_islow_ari_skip16,139.ppm)
   endif()
+
   # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No   ENT: prog huff
   add_test(cjpeg${suffix}-420-islow-prog
-    ${dir}cjpeg${suffix} -dct int -prog -outfile testout_420_islow_prog.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+    ${dir}cjpeg${suffix} -dct int -prog
+      -outfile testout_420_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(djpeg${suffix}-420-islow-prog-strip71_132
     ${dir}djpeg${suffix} -dct int -strip 71,132 -ppm
       -outfile testout_420_islow_strip71,132.ppm testout_420_islow_prog.jpg)
   add_test(djpeg${suffix}-420-islow-prog-strip71_132-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420_ISLOW_PROG_STRIP71_132}
-      -DFILE=testout_420_islow_strip71,132.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_420_ISLOW_PROG_STRIP71_132}
+      testout_420_islow_strip71,132.ppm)
+
   # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No   ENT: arith
   if(WITH_ARITH_DEC)
     add_test(djpeg${suffix}-420-islow-ari-strip4_56
       ${dir}djpeg${suffix} -dct int -strip 4,56 -ppm
         -outfile testout_420_islow_ari_strip4,56.ppm
-        ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
+        ${TESTIMAGES}/testimgari.jpg)
     add_test(djpeg${suffix}-420-islow-ari-strip4_56-cmp
-      ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420_ISLOW_ARI_STRIP4_56}
-        -DFILE=testout_420_islow_ari_strip4,56.ppm
-        -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+      ${MD5CMP} ${MD5_PPM_420_ISLOW_ARI_STRIP4_56}
+        testout_420_islow_ari_strip4,56.ppm)
   endif()
+
   # Context rows: No   Intra-iMCU row: Yes  ENT: huff
   add_test(cjpeg${suffix}-444-islow
-    ${dir}cjpeg${suffix} -dct int -sample 1x1 -outfile testout_444_islow.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+    ${dir}cjpeg${suffix} -dct int -sample 1x1
+      -outfile testout_444_islow.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(djpeg${suffix}-444-islow-skip1_6
     ${dir}djpeg${suffix} -dct int -skip 1,6 -ppm
       -outfile testout_444_islow_skip1,6.ppm testout_444_islow.jpg)
   add_test(djpeg${suffix}-444-islow-skip1_6-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_444_ISLOW_SKIP1_6}
-      -DFILE=testout_444_islow_skip1,6.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_444_ISLOW_SKIP1_6} testout_444_islow_skip1,6.ppm)
+
   # Context rows: No   Intra-iMCU row: No   ENT: prog huff
   add_test(cjpeg${suffix}-444-islow-prog
     ${dir}cjpeg${suffix} -dct int -prog -sample 1x1
-      -outfile testout_444_islow_prog.jpg
-      ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+      -outfile testout_444_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
   add_test(djpeg${suffix}-444-islow-prog-strip13_110
     ${dir}djpeg${suffix} -dct int -strip 13,110 -ppm
-      -outfile testout_444_islow_prog_strip13,110.ppm testout_444_islow_prog.jpg)
+      -outfile testout_444_islow_prog_strip13,110.ppm
+      testout_444_islow_prog.jpg)
   add_test(djpeg${suffix}-444-islow-prog_strip13_110-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_PPM_444_ISLOW_PROG_STRIP13_110}
-      -DFILE=testout_444_islow_prog_strip13,110.ppm
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_PPM_444_ISLOW_PROG_STRIP13_110}
+      testout_444_islow_prog_strip13,110.ppm)
+
   # Context rows: No   Intra-iMCU row: No   ENT: arith
   if(WITH_ARITH_ENC)
     add_test(cjpeg${suffix}-444-islow-ari
       ${dir}cjpeg${suffix} -dct int -arithmetic -sample 1x1
-        -outfile testout_444_islow_ari.jpg
-        ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
+        -outfile testout_444_islow_ari.jpg ${TESTIMAGES}/testorig.ppm)
     if(WITH_ARITH_DEC)
       add_test(djpeg${suffix}-444-islow-ari-strip0_36
         ${dir}djpeg${suffix} -dct int -strip 0,36 -ppm
           -outfile testout_444_islow_ari_strip0,36.ppm
           testout_444_islow_ari.jpg)
       add_test(djpeg${suffix}-444-islow-ari-strip0_36-cmp
-        ${CMAKE_COMMAND} -DMD5=${MD5_PPM_444_ISLOW_ARI_STRIP0_36}
-          -DFILE=testout_444_islow_ari_strip0,36.ppm
-          -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+        ${MD5CMP} ${MD5_PPM_444_ISLOW_ARI_STRIP0_36}
+          testout_444_islow_ari_strip0,36.ppm)
     endif()
   endif()
 
   add_test(jpegtran${suffix}-crop
     ${dir}jpegtran${suffix} -crop 120x90+20+50 -transpose -perfect
-      -outfile testout_crop.jpg ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
+      -outfile testout_crop.jpg ${TESTIMAGES}/${TESTORIG})
   add_test(jpegtran${suffix}-crop-cmp
-    ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_CROP} -DFILE=testout_crop.jpg
-      -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
+    ${MD5CMP} ${MD5_JPEG_CROP} testout_crop.jpg)
 
 endforeach()
 
-add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
+add_custom_target(testclean COMMAND ${MD5CMP} -P
   ${CMAKE_SOURCE_DIR}/cmakescripts/testclean.cmake)
 
 

@@ -36,7 +36,7 @@ static void MD5Transform(unsigned int [4], const unsigned char [64]);
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #define Encode memcpy
 #define Decode memcpy
-#else 
+#else
 
 /*
  * OS X doesn't have le32toh() or htole32()
@@ -134,7 +134,7 @@ MD5Init (context)
 	context->state[3] = 0x10325476;
 }
 
-/* 
+/*
  * MD5 block update operation. Continues an MD5 message-digest
  * operation, processing another message block, and updating the
  * context.

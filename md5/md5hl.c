@@ -4,12 +4,25 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
  * ----------------------------------------------------------------------------
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2016, D. R. Commander
+ * Modifications are under the same license as the original code (see above)
+ * ----------------------------------------------------------------------------
  */
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef _WIN32
+#include <io.h>
+#define close _close
+#define fstat _fstat
+#define lseek _lseek
+#define read _read
+#define stat _stat
+#else
 #include <unistd.h>
+#endif
 
 #include <errno.h>
 #include <stdio.h>
@@ -55,7 +68,11 @@ MD5FileChunk(const char *filename, char *buf, off_t ofs, off_t len)
 	off_t n;
 
 	MD5Init(&ctx);
+#if _WIN32
+	f = _open(filename, O_RDONLY|O_BINARY);
+#else
 	f = open(filename, O_RDONLY);
+#endif
 	if (f < 0)
 		return 0;
 	if (fstat(f, &stbuf) < 0)
@@ -73,11 +90,11 @@ MD5FileChunk(const char *filename, char *buf, off_t ofs, off_t len)
 			i = read(f, buffer, sizeof(buffer));
 		else
 			i = read(f, buffer, n);
-		if (i < 0) 
+		if (i < 0)
 			break;
 		MD5Update(&ctx, buffer, i);
 		n -= i;
-	} 
+	}
 	e = errno;
 	close(f);
 	errno = e;

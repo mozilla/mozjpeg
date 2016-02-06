@@ -734,11 +734,12 @@ mingw64-i686-gcc-g++ packages (and their dependencies) must be installed.
 ### MinGW Build on Linux
 
     cd {build_directory}
-    CC={mingw_binary_path}/i386-mingw32-gcc \
+    CC={mingw_binary_path}/i686-pc-mingw32-gcc \
       cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
-      -DCMAKE_AR={mingw_binary_path}/i386-mingw32-ar \
-      -DCMAKE_RANLIB={mingw_binary_path}/i386-mingw32-ranlib \
-    {source_directory}
+      -DCMAKE_RC_COMPILER={mingw_binary_path}/i686-pc-mingw32-windres \
+      -DCMAKE_AR={mingw_binary_path}/i686-pc-mingw32-ar \
+      -DCMAKE_RANLIB={mingw_binary_path}/i686-pc-mingw32-ranlib \
+      {source_directory}
     make
 
 

@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -18,6 +18,7 @@
  * Also, the input side (only) is used when reading a file for transcoding.
  */
 
+#include "jinclude.h"
 #include "jdcoefct.h"
 #include "jpegcomp.h"
 

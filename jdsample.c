@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -23,6 +23,7 @@
  *   Pub. by IEEE Computer Society Press, Los Alamitos, CA. ISBN 0-8186-8944-7.
  */
 
+#include "jinclude.h"
 #include "jdsample.h"
 #include "jsimd.h"
 #include "jpegcomp.h"

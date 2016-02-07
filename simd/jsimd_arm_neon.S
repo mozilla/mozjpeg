@@ -2444,9 +2444,9 @@ asm_function jsimd_h2v1_fancy_upsample_neon
 
 /*
  * GLOBAL(JOCTET*)
- * jsimd_chuff_encode_one_block (working_state * state, JOCTET *buffer,
- *                               JCOEFPTR block, int last_dc_val,
- *                               c_derived_tbl *dctbl, c_derived_tbl *actbl)
+ * jsimd_huff_encode_one_block (working_state * state, JOCTET *buffer,
+ *                              JCOEFPTR block, int last_dc_val,
+ *                              c_derived_tbl *dctbl, c_derived_tbl *actbl)
  *
  */
 

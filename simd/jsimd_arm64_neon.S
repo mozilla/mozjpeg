@@ -1447,7 +1447,7 @@ asm_function jsimd_idct_2x2_neon
 
 #if defined(__APPLE__) || defined(__ANDROID__)
 /* TODO: expand this to include other devices that are known not to have a slow
- *       ld3 implementation. */
+ *       st3 implementation. */
 #define ST3_IS_FAST
 #endif
 

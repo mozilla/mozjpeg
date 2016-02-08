@@ -67,19 +67,31 @@ when compiling the C version of the Huffman encoder
 or regression testing, SIMD-accelerated Huffman encoding can be disabled by
 setting the JSIMD_NOHUFFENC environment variable to 1.
 
-[13] Added SIMD acceleration for Huffman encoding on NEON-capable ARM 32-bit
-platforms.  This speeds up the compression of full-color JPEGs by about 30% on
-average on a Cortex-A9 core (iPhone 4S) and by about 6-7% on average on
-Cortex-A53 and Cortex-A57 cores.  For the purposes of benchmarking or
-regression testing, SIMD-accelerated Huffman encoding can be disabled by
-setting the JSIMD_NOHUFFENC environment variable to 1.
-
-[14] Added ARM 64-bit (ARMv8) NEON SIMD implementations of the commonly-used
+[13] Added ARM 64-bit (ARMv8) NEON SIMD implementations of the commonly-used
 compression algorithms (including the slow integer forward DCT and h2v2 & h2v1
 downsampling algorithms, which are not accelerated in the 32-bit NEON
 implementation.)  This speeds up the compression of full-color JPEGs by about
 75% on average on a Cavium ThunderX processor and by about 2-2.5x on average on
 Cortex-A53 and Cortex-A57 cores.
+
+[14] Added SIMD acceleration for Huffman encoding on NEON-capable ARM 32-bit
+and 64-bit platforms.
+
+For 32-bit code, this speeds up the compression of full-color JPEGs by about
+30% on average on a typical iOS device (iPhone 4S, Cortex-A9) and by about 6-7%
+on average on a typical Android device (Nexus 5X, Cortex-A53 and Cortex-A57),
+relative to libjpeg-turbo 1.4.x.  Note that the larger speedup under iOS is due
+to the fact that iOS builds use LLVM, which does not optimize the C Huffman
+encoder as well as GCC does.
+
+For 64-bit code, NEON-accelerated Huffman encoding speeds up the compression of
+full-color JPEGs by about 40% on average on a typical iOS device (iPhone 5S,
+Apple A7) and by about 7-8% on average on a typical Android device (Nexus 5X,
+Cortex-A53 and Cortex-A57), in addition to the speedup described in [13] above.
+
+For the purposes of benchmarking or regression testing, SIMD-accelerated
+Huffman encoding can be disabled by setting the JSIMD_NOHUFFENC environment
+variable to 1.
 
 [15] pkg-config (.pc) scripts are now included for both the libjpeg and
 TurboJPEG API libraries on Un*x systems.  Note that if a project's build system

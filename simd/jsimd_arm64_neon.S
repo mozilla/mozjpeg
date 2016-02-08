@@ -1445,12 +1445,6 @@ asm_function jsimd_idct_2x2_neon
  * Colorspace conversion YCbCr -> RGB
  */
 
-#if defined(__APPLE__) || defined(__ANDROID__)
-/* TODO: expand this to include other devices that are known not to have a slow
- *       st3 implementation. */
-#define ST3_IS_FAST
-#endif
-
 .macro do_load size
   .if \size == 8
     ld1             {v4.8b}, [U], 8
@@ -1488,44 +1482,44 @@ asm_function jsimd_idct_2x2_neon
   .endif
 .endm
 
-.macro do_store bpp, size
+.macro do_store bpp, size, fast_st3
   .if \bpp == 24
     .if \size == 8
-#ifdef ST3_IS_FAST
-      st3           {v10.8b, v11.8b, v12.8b}, [RGB], 24
-#else
-      st1           {v10.b}[0], [RGB], #1
-      st1           {v11.b}[0], [RGB], #1
-      st1           {v12.b}[0], [RGB], #1
+      .if \fast_st3 == 1
+        st3         {v10.8b, v11.8b, v12.8b}, [RGB], 24
+      .else
+        st1         {v10.b}[0], [RGB], #1
+        st1         {v11.b}[0], [RGB], #1
+        st1         {v12.b}[0], [RGB], #1
 
-      st1           {v10.b}[1], [RGB], #1
-      st1           {v11.b}[1], [RGB], #1
-      st1           {v12.b}[1], [RGB], #1
+        st1         {v10.b}[1], [RGB], #1
+        st1         {v11.b}[1], [RGB], #1
+        st1         {v12.b}[1], [RGB], #1
 
-      st1           {v10.b}[2], [RGB], #1
-      st1           {v11.b}[2], [RGB], #1
-      st1           {v12.b}[2], [RGB], #1
+        st1         {v10.b}[2], [RGB], #1
+        st1         {v11.b}[2], [RGB], #1
+        st1         {v12.b}[2], [RGB], #1
 
-      st1           {v10.b}[3], [RGB], #1
-      st1           {v11.b}[3], [RGB], #1
-      st1           {v12.b}[3], [RGB], #1
+        st1         {v10.b}[3], [RGB], #1
+        st1         {v11.b}[3], [RGB], #1
+        st1         {v12.b}[3], [RGB], #1
 
-      st1           {v10.b}[4], [RGB], #1
-      st1           {v11.b}[4], [RGB], #1
-      st1           {v12.b}[4], [RGB], #1
+        st1         {v10.b}[4], [RGB], #1
+        st1         {v11.b}[4], [RGB], #1
+        st1         {v12.b}[4], [RGB], #1
 
-      st1           {v10.b}[5], [RGB], #1
-      st1           {v11.b}[5], [RGB], #1
-      st1           {v12.b}[5], [RGB], #1
+        st1         {v10.b}[5], [RGB], #1
+        st1         {v11.b}[5], [RGB], #1
+        st1         {v12.b}[5], [RGB], #1
 
-      st1           {v10.b}[6], [RGB], #1
-      st1           {v11.b}[6], [RGB], #1
-      st1           {v12.b}[6], [RGB], #1
+        st1         {v10.b}[6], [RGB], #1
+        st1         {v11.b}[6], [RGB], #1
+        st1         {v12.b}[6], [RGB], #1
 
-      st1           {v10.b}[7], [RGB], #1
-      st1           {v11.b}[7], [RGB], #1
-      st1           {v12.b}[7], [RGB], #1
-#endif
+        st1         {v10.b}[7], [RGB], #1
+        st1         {v11.b}[7], [RGB], #1
+        st1         {v12.b}[7], [RGB], #1
+      .endif
     .elseif \size == 4
       st3           {v10.b, v11.b, v12.b}[0], [RGB], 3
       st3           {v10.b, v11.b, v12.b}[1], [RGB], 3
@@ -1573,7 +1567,9 @@ asm_function jsimd_idct_2x2_neon
   .endif
 .endm
 
-.macro generate_jsimd_ycc_rgb_convert_neon colorid, bpp, r_offs, rsize, g_offs, gsize, b_offs, bsize, defsize
+.macro generate_jsimd_ycc_rgb_convert_neon colorid, bpp, r_offs, rsize, \
+                                           g_offs, gsize, b_offs, bsize, \
+                                           defsize, fast_st3 = 1
 
 /*
  * 2-stage pipelined YCbCr->RGB conversion
@@ -1615,7 +1611,7 @@ asm_function jsimd_idct_2x2_neon
   .endif
 .endm
 
-.macro do_yuv_to_rgb_stage2_store_load_stage1
+.macro do_yuv_to_rgb_stage2_store_load_stage1 fast_st3
     rshrn           v20.4h, v20.4s, #15
     rshrn           v24.4h, v24.4s, #14
     rshrn           v28.4h, v28.4s, #14
@@ -1662,7 +1658,7 @@ asm_function jsimd_idct_2x2_neon
     prfm            pldl1keep, [Y, #64]
     sri             v25.8h, v29.8h, #11
   .endif
-    do_store        \bpp, 8
+    do_store        \bpp, 8, \fast_st3
     smull           v28.4s, v6.4h, v1.h[3]  /* multiply by 29033 */
     smull2          v30.4s, v6.8h, v1.h[3]  /* multiply by 29033 */
 .endm
@@ -1677,13 +1673,21 @@ asm_function jsimd_idct_2x2_neon
  */
 
 .balign 16
+.if \fast_st3 == 1
 Ljsimd_ycc_\colorid\()_neon_consts:
+.else
+Ljsimd_ycc_\colorid\()_neon_slowst3_consts:
+.endif
   .short 0,      0,     0,      0
   .short 22971, -11277, -23401, 29033
   .short -128,  -128,   -128,   -128
   .short -128,  -128,   -128,   -128
 
+.if \fast_st3 == 1
 asm_function jsimd_ycc_\colorid\()_convert_neon
+.else
+asm_function jsimd_ycc_\colorid\()_convert_neon_slowst3
+.endif
     OUTPUT_WIDTH    .req x0
     INPUT_BUF       .req x1
     INPUT_ROW       .req x2
@@ -1753,12 +1757,12 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     subs            N, N, #8
     b.lt            2f
 1:
-    do_yuv_to_rgb_stage2_store_load_stage1
+    do_yuv_to_rgb_stage2_store_load_stage1 \fast_st3
     subs            N, N, #8
     b.ge            1b
 2:
     do_yuv_to_rgb_stage2
-    do_store        \bpp, 8
+    do_store        \bpp, 8, \fast_st3
     tst             N, #7
     b.eq            8f
 3:
@@ -1777,15 +1781,15 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     do_yuv_to_rgb
     tst             N, #4
     b.eq            6f
-    do_store        \bpp, 4
+    do_store        \bpp, 4, \fast_st3
 6:
     tst             N, #2
     b.eq            7f
-    do_store        \bpp, 2
+    do_store        \bpp, 2, \fast_st3
 7:
     tst             N, #1
     b.eq            8f
-    do_store        \bpp, 1
+    do_store        \bpp, 1, \fast_st3
 8:
     subs            NUM_ROWS, NUM_ROWS, #1
     b.gt            0b
@@ -1827,7 +1831,7 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
 
 .endm
 
-/*--------------------------------- id ----- bpp R  rsize G  gsize B  bsize defsize */
+/*--------------------------------- id ----- bpp R  rsize G  gsize B  bsize defsize fast_st3*/
 generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,  1, .4h,  2, .4h,  .8b
 generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b
 generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, .4h,  1, .4h,  2, .4h,  .8b
@@ -1835,6 +1839,9 @@ generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, .4h,  1, .4h,  0, .4h,  .8b
 generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, .4h,  2, .4h,  1, .4h,  .8b
 generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, .4h,  2, .4h,  3, .4h,  .8b
 generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b
+
+generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,  1, .4h,  2, .4h,  .8b,    0
+generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,    0
 
 .purgem do_load
 .purgem do_store
@@ -1887,50 +1894,44 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b
   .endif
 .endm
 
-#if defined(__APPLE__) || defined(__ANDROID__)
-/* TODO: expand this to include other devices that are known not to have a slow
- *       ld3 implementation. */
-#define LD3_IS_FAST
-#endif
-
-.macro do_load bpp, size
+.macro do_load bpp, size, fast_ld3
   .if \bpp == 24
     .if \size == 8
-#ifdef LD3_IS_FAST
-      ld3           {v10.8b, v11.8b, v12.8b}, [RGB], #24
-#else
-      ld1           {v10.b}[0], [RGB], #1
-      ld1           {v11.b}[0], [RGB], #1
-      ld1           {v12.b}[0], [RGB], #1
+      .if \fast_ld3 == 1
+        ld3         {v10.8b, v11.8b, v12.8b}, [RGB], #24
+      .else
+        ld1         {v10.b}[0], [RGB], #1
+        ld1         {v11.b}[0], [RGB], #1
+        ld1         {v12.b}[0], [RGB], #1
 
-      ld1           {v10.b}[1], [RGB], #1
-      ld1           {v11.b}[1], [RGB], #1
-      ld1           {v12.b}[1], [RGB], #1
+        ld1         {v10.b}[1], [RGB], #1
+        ld1         {v11.b}[1], [RGB], #1
+        ld1         {v12.b}[1], [RGB], #1
 
-      ld1           {v10.b}[2], [RGB], #1
-      ld1           {v11.b}[2], [RGB], #1
-      ld1           {v12.b}[2], [RGB], #1
+        ld1         {v10.b}[2], [RGB], #1
+        ld1         {v11.b}[2], [RGB], #1
+        ld1         {v12.b}[2], [RGB], #1
 
-      ld1           {v10.b}[3], [RGB], #1
-      ld1           {v11.b}[3], [RGB], #1
-      ld1           {v12.b}[3], [RGB], #1
+        ld1         {v10.b}[3], [RGB], #1
+        ld1         {v11.b}[3], [RGB], #1
+        ld1         {v12.b}[3], [RGB], #1
 
-      ld1           {v10.b}[4], [RGB], #1
-      ld1           {v11.b}[4], [RGB], #1
-      ld1           {v12.b}[4], [RGB], #1
+        ld1         {v10.b}[4], [RGB], #1
+        ld1         {v11.b}[4], [RGB], #1
+        ld1         {v12.b}[4], [RGB], #1
 
-      ld1           {v10.b}[5], [RGB], #1
-      ld1           {v11.b}[5], [RGB], #1
-      ld1           {v12.b}[5], [RGB], #1
+        ld1         {v10.b}[5], [RGB], #1
+        ld1         {v11.b}[5], [RGB], #1
+        ld1         {v12.b}[5], [RGB], #1
 
-      ld1           {v10.b}[6], [RGB], #1
-      ld1           {v11.b}[6], [RGB], #1
-      ld1           {v12.b}[6], [RGB], #1
+        ld1         {v10.b}[6], [RGB], #1
+        ld1         {v11.b}[6], [RGB], #1
+        ld1         {v12.b}[6], [RGB], #1
 
-      ld1           {v10.b}[7], [RGB], #1
-      ld1           {v11.b}[7], [RGB], #1
-      ld1           {v12.b}[7], [RGB], #1
-#endif
+        ld1         {v10.b}[7], [RGB], #1
+        ld1         {v11.b}[7], [RGB], #1
+        ld1         {v12.b}[7], [RGB], #1
+      .endif
       prfm          pldl1keep, [RGB, #128]
     .elseif \size == 4
       ld3           {v10.b, v11.b, v12.b}[0], [RGB], #3
@@ -1967,7 +1968,8 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b
   .endif
 .endm
 
-.macro generate_jsimd_rgb_ycc_convert_neon colorid, bpp, r_offs, g_offs, b_offs
+.macro generate_jsimd_rgb_ycc_convert_neon colorid, bpp, r_offs, g_offs, \
+                                           b_offs, fast_ld3 = 1
 
 /*
  * 2-stage pipelined RGB->YCbCr conversion
@@ -2020,9 +2022,9 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b
 
 /* TODO: expand macros and interleave instructions if some in-order
  *       ARM64 processor actually can dual-issue LOAD/STORE with ALU */
-.macro do_rgb_to_yuv_stage2_store_load_stage1
+.macro do_rgb_to_yuv_stage2_store_load_stage1 fast_ld3
     do_rgb_to_yuv_stage2
-    do_load         \bpp, 8
+    do_load         \bpp, 8, \fast_ld3
     st1             {v20.8b}, [Y], #8
     st1             {v21.8b}, [U], #8
     st1             {v22.8b}, [V], #8
@@ -2030,13 +2032,21 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b
 .endm
 
 .balign 16
+.if \fast_ld3 == 1
 Ljsimd_\colorid\()_ycc_neon_consts:
+.else
+Ljsimd_\colorid\()_ycc_neon_slowld3_consts:
+.endif
   .short 19595, 38470, 7471, 11059
   .short 21709, 32768, 27439, 5329
   .short 32767, 128, 32767, 128
   .short 32767, 128, 32767, 128
 
+.if \fast_ld3 == 1
 asm_function jsimd_\colorid\()_ycc_convert_neon
+.else
+asm_function jsimd_\colorid\()_ycc_convert_neon_slowld3
+.endif
     OUTPUT_WIDTH    .req w0
     INPUT_BUF       .req x1
     OUTPUT_BUF      .req x2
@@ -2081,12 +2091,12 @@ asm_function jsimd_\colorid\()_ycc_convert_neon
     /* Inner loop over pixels */
     subs            N, N, #8
     b.lt            3f
-    do_load         \bpp, 8
+    do_load         \bpp, 8, \fast_ld3
     do_rgb_to_yuv_stage1
     subs            N, N, #8
     b.lt            2f
 1:
-    do_rgb_to_yuv_stage2_store_load_stage1
+    do_rgb_to_yuv_stage2_store_load_stage1 \fast_ld3
     subs            N, N, #8
     b.ge            1b
 2:
@@ -2096,13 +2106,13 @@ asm_function jsimd_\colorid\()_ycc_convert_neon
     b.eq            8f
 3:
     tbz             N, #2, 3f
-    do_load         \bpp, 4
+    do_load         \bpp, 4, \fast_ld3
 3:
     tbz             N, #1, 4f
-    do_load         \bpp, 2
+    do_load         \bpp, 2, \fast_ld3
 4:
     tbz             N, #0, 5f
-    do_load         \bpp, 1
+    do_load         \bpp, 1, \fast_ld3
 5:
     do_rgb_to_yuv
     tbz             N, #2, 6f
@@ -2143,13 +2153,16 @@ asm_function jsimd_\colorid\()_ycc_convert_neon
 
 .endm
 
-/*--------------------------------- id ----- bpp R  G  B */
+/*--------------------------------- id ----- bpp R  G  B  Fast LD3 */
 generate_jsimd_rgb_ycc_convert_neon extrgb,  24, 0, 1, 2
 generate_jsimd_rgb_ycc_convert_neon extbgr,  24, 2, 1, 0
 generate_jsimd_rgb_ycc_convert_neon extrgbx, 32, 0, 1, 2
 generate_jsimd_rgb_ycc_convert_neon extbgrx, 32, 2, 1, 0
 generate_jsimd_rgb_ycc_convert_neon extxbgr, 32, 3, 2, 1
 generate_jsimd_rgb_ycc_convert_neon extxrgb, 32, 1, 2, 3
+
+generate_jsimd_rgb_ycc_convert_neon extrgb,  24, 0, 1, 2, 0
+generate_jsimd_rgb_ycc_convert_neon extbgr,  24, 2, 1, 0, 0
 
 .purgem do_load
 .purgem do_store

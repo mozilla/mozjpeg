@@ -27,6 +27,70 @@
 #include <ctype.h>
 
 static unsigned int simd_support = ~0;
+static unsigned int simd_huffman = 1;
+
+#if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
+
+#define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT (1024 * 1024)
+
+LOCAL(int)
+check_cpuinfo (char *buffer, const char *field, char *value)
+{
+  char *p;
+  if (*value == 0)
+    return 0;
+  if (strncmp(buffer, field, strlen(field)) != 0)
+    return 0;
+  buffer += strlen(field);
+  while (isspace(*buffer))
+    buffer++;
+
+  /* Check if 'value' is present in the buffer as a separate word */
+  while ((p = strstr(buffer, value))) {
+    if (p > buffer && !isspace(*(p - 1))) {
+      buffer++;
+      continue;
+    }
+    p += strlen(value);
+    if (*p != 0 && !isspace(*p)) {
+      buffer++;
+      continue;
+    }
+    return 1;
+  }
+  return 0;
+}
+
+LOCAL(int)
+parse_proc_cpuinfo (int bufsize)
+{
+  char *buffer = (char *)malloc(bufsize);
+  FILE *fd;
+
+  if (!buffer)
+    return 0;
+
+  fd = fopen("/proc/cpuinfo", "r");
+  if (fd) {
+    while (fgets(buffer, bufsize, fd)) {
+      if (!strchr(buffer, '\n') && !feof(fd)) {
+        /* "impossible" happened - insufficient size of the buffer! */
+        fclose(fd);
+        free(buffer);
+        return 0;
+      }
+      if (check_cpuinfo(buffer, "CPU part", "0x0a1"))
+        /* The SIMD version of Huffman encoding is slower than the C version on
+           Cavium ThunderX. */
+        simd_huffman = 0;
+    }
+    fclose(fd);
+  }
+  free(buffer);
+  return 1;
+}
+
+#endif
 
 /*
  * Check what SIMD accelerations are supported.
@@ -44,6 +108,9 @@ LOCAL(void)
 init_simd (void)
 {
   char *env = NULL;
+#if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
+  int bufsize = 1024; /* an initial guess for the line buffer size limit */
+#endif
 
   if (simd_support != ~0U)
     return;
@@ -51,6 +118,13 @@ init_simd (void)
   simd_support = 0;
 
   simd_support |= JSIMD_ARM_NEON;
+#if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
+  while (!parse_proc_cpuinfo(bufsize)) {
+    bufsize *= 2;
+    if (bufsize > SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT)
+      break;
+  }
+#endif
 
   /* Force different settings through environment variables */
   env = getenv("JSIMD_FORCENEON");
@@ -59,6 +133,9 @@ init_simd (void)
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;
+  env = getenv("JSIMD_NOHUFFENC");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_huffman = 0;
 }
 
 GLOBAL(int)
@@ -657,6 +734,16 @@ jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 GLOBAL(int)
 jsimd_can_huff_encode_one_block (void)
 {
+  init_simd();
+
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ARM_NEON && simd_huffman)
+    return 1;
+
   return 0;
 }
 
@@ -665,5 +752,6 @@ jsimd_huff_encode_one_block (void * state, JOCTET *buffer, JCOEFPTR block,
                              int last_dc_val, c_derived_tbl *dctbl,
                              c_derived_tbl *actbl)
 {
-  return NULL;
+  return jsimd_huff_encode_one_block_neon(state, buffer, block, last_dc_val,
+                                          dctbl, actbl);
 }

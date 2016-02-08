@@ -42,11 +42,11 @@ Build Requirements
 
 - If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
   required.  Some systems, such as Solaris 10 and later and Red Hat Enterprise
-  Linux 5 and later, have this pre-installed.  On OS X 10.5 and later, it will
+  Linux 5 and later, have this pre-installed.  On OS X 10.5 and 10.6, it will
   be necessary to install the Java Developer Package, which can be downloaded
-  from http://developer.apple.com/downloads (Apple ID required.)  For systems
-  that do not have a JDK installed, you can obtain the Oracle Java Development
-  Kit from http://www.java.com.
+  from http://developer.apple.com/downloads (Apple ID required.)  For other
+  systems, you can obtain the Oracle Java Development Kit from
+  http://www.java.com.
 
 
 Out-of-Tree Builds

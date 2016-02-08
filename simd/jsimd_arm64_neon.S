@@ -1569,7 +1569,7 @@ asm_function jsimd_idct_2x2_neon
 
 .macro generate_jsimd_ycc_rgb_convert_neon colorid, bpp, r_offs, rsize, \
                                            g_offs, gsize, b_offs, bsize, \
-                                           defsize, fast_st3 = 1
+                                           defsize, fast_st3
 
 /*
  * 2-stage pipelined YCbCr->RGB conversion
@@ -1708,7 +1708,11 @@ asm_function jsimd_ycc_\colorid\()_convert_neon_slowst3
     str             x15, [sp], 16
 
     /* Load constants to d1, d2, d3 (v0.4h is just used for padding) */
-    adr             x15, Ljsimd_ycc_\colorid\()_neon_consts
+    .if \fast_st3 == 1
+      adr           x15, Ljsimd_ycc_\colorid\()_neon_consts
+    .else
+      adr           x15, Ljsimd_ycc_\colorid\()_neon_slowst3_consts
+    .endif
 
     /* Save NEON registers */
     st1             {v0.8b, v1.8b, v2.8b, v3.8b}, [sp], 32
@@ -1832,13 +1836,13 @@ asm_function jsimd_ycc_\colorid\()_convert_neon_slowst3
 .endm
 
 /*--------------------------------- id ----- bpp R  rsize G  gsize B  bsize defsize fast_st3*/
-generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,  1, .4h,  2, .4h,  .8b
-generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b
-generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, .4h,  1, .4h,  2, .4h,  .8b
-generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, .4h,  1, .4h,  0, .4h,  .8b
-generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, .4h,  2, .4h,  1, .4h,  .8b
-generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, .4h,  2, .4h,  3, .4h,  .8b
-generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b
+generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,  1, .4h,  2, .4h,  .8b,    1
+generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,    1
+generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, .4h,  1, .4h,  2, .4h,  .8b,    1
+generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, .4h,  1, .4h,  0, .4h,  .8b,    1
+generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, .4h,  2, .4h,  1, .4h,  .8b,    1
+generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, .4h,  2, .4h,  3, .4h,  .8b,    1
+generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b,    1
 
 generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,  1, .4h,  2, .4h,  .8b,    0
 generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,    0
@@ -1969,7 +1973,7 @@ generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,
 .endm
 
 .macro generate_jsimd_rgb_ycc_convert_neon colorid, bpp, r_offs, g_offs, \
-                                           b_offs, fast_ld3 = 1
+                                           b_offs, fast_ld3
 
 /*
  * 2-stage pipelined RGB->YCbCr conversion
@@ -2064,7 +2068,11 @@ asm_function jsimd_\colorid\()_ycc_convert_neon_slowld3
     N               .req w12
 
     /* Load constants to d0, d1, d2, d3 */
-    adr             x13, Ljsimd_\colorid\()_ycc_neon_consts
+    .if \fast_ld3 == 1
+      adr           x13, Ljsimd_\colorid\()_ycc_neon_consts
+    .else
+      adr           x13, Ljsimd_\colorid\()_ycc_neon_slowld3_consts
+    .endif
     ld1             {v0.8h, v1.8h}, [x13]
 
     ldr             OUTPUT_BUF0, [OUTPUT_BUF]
@@ -2154,12 +2162,12 @@ asm_function jsimd_\colorid\()_ycc_convert_neon_slowld3
 .endm
 
 /*--------------------------------- id ----- bpp R  G  B  Fast LD3 */
-generate_jsimd_rgb_ycc_convert_neon extrgb,  24, 0, 1, 2
-generate_jsimd_rgb_ycc_convert_neon extbgr,  24, 2, 1, 0
-generate_jsimd_rgb_ycc_convert_neon extrgbx, 32, 0, 1, 2
-generate_jsimd_rgb_ycc_convert_neon extbgrx, 32, 2, 1, 0
-generate_jsimd_rgb_ycc_convert_neon extxbgr, 32, 3, 2, 1
-generate_jsimd_rgb_ycc_convert_neon extxrgb, 32, 1, 2, 3
+generate_jsimd_rgb_ycc_convert_neon extrgb,  24, 0, 1, 2, 1
+generate_jsimd_rgb_ycc_convert_neon extbgr,  24, 2, 1, 0, 1
+generate_jsimd_rgb_ycc_convert_neon extrgbx, 32, 0, 1, 2, 1
+generate_jsimd_rgb_ycc_convert_neon extbgrx, 32, 2, 1, 0, 1
+generate_jsimd_rgb_ycc_convert_neon extxbgr, 32, 3, 2, 1, 1
+generate_jsimd_rgb_ycc_convert_neon extxrgb, 32, 1, 2, 3, 1
 
 generate_jsimd_rgb_ycc_convert_neon extrgb,  24, 0, 1, 2, 0
 generate_jsimd_rgb_ycc_convert_neon extbgr,  24, 2, 1, 0, 0

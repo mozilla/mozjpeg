@@ -157,11 +157,11 @@ jcstest_LDADD = libjpeg.la
 
 dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
-DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.txt \
+DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.md \
 	ChangeLog.txt
 
 dist_doc_DATA = README.ijg README.md libjpeg.txt structure.txt usage.txt \
-	wizard.txt
+	wizard.txt LICENSE.md
 
 exampledir = $(docdir)
 dist_example_DATA = example.c
@@ -170,7 +170,7 @@ dist_example_DATA = example.c
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
 	doxygen-extra.css jccolext.c jdcolext.c jdcol565.c jdmrgext.c jdmrg565.c \
-	jstdhuff.c jdcoefct.h jdmainct.h jdsample.h
+	jstdhuff.c jdcoefct.h jdmainct.h jdsample.h md5/CMakeLists.txt
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`

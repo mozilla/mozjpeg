@@ -12,7 +12,7 @@ EXTRA_DIST = nasm_lt.sh CMakeLists.txt \
 if SIMD_X86_64
 
 libsimd_la_SOURCES = jsimd_x86_64.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
-	jcolsamp.inc jdct.inc jfdctflt-sse-64.asm \
+	jcolsamp.inc jdct.inc jpeg_nbits_table.inc jfdctflt-sse-64.asm \
 	jccolor-sse2-64.asm   jcgray-sse2-64.asm    jchuff-sse2-64.asm \
 	jcsample-sse2-64.asm  jdcolor-sse2-64.asm   jdmerge-sse2-64.asm \
 	jdsample-sse2-64.asm  jfdctfst-sse2-64.asm  jfdctint-sse2-64.asm \
@@ -29,7 +29,7 @@ endif
 if SIMD_I386
 
 libsimd_la_SOURCES = jsimd_i386.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
-	jcolsamp.inc jdct.inc jsimdcpu.asm \
+	jcolsamp.inc jdct.inc jpeg_nbits_table.inc jsimdcpu.asm \
 	jfdctflt-3dn.asm   jidctflt-3dn.asm   jquant-3dn.asm \
 	jccolor-mmx.asm    jcgray-mmx.asm     jcsample-mmx.asm \
 	jdcolor-mmx.asm    jdmerge-mmx.asm    jdsample-mmx.asm \

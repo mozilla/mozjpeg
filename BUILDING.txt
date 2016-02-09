@@ -461,6 +461,9 @@ Build Requirements
 
 -- CMake (http://www.cmake.org) v2.8.8 or later
 
+-- NASM (http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
+   a 64-bit build)
+
 -- Microsoft Visual C++ 2005 or later
 
    If you don't already have Visual C++, then the easiest way to get it is by

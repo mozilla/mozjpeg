@@ -2986,8 +2986,6 @@ asm_function jsimd_h2v2_downsample_neon
 
 /*****************************************************************************/
 
-#define TBL_IS_FAST
-
 /*
  * GLOBAL(JOCTET*)
  * jsimd_huff_encode_one_block (working_state * state, JOCTET *buffer,
@@ -3037,11 +3035,17 @@ asm_function jsimd_h2v2_downsample_neon
 47:
 .endm
 
+.macro generate_jsimd_huff_encode_one_block fast_tbl
+
 .balign 16
+.if \fast_tbl == 1
 Ljsimd_huff_encode_one_block_neon_consts:
+.else
+Ljsimd_huff_encode_one_block_neon_slowtbl_consts:
+.endif
     .byte 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, \
           0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80
-#if defined(TBL_IS_FAST)
+.if \fast_tbl == 1
     .byte    0,   1,   2,   3,  16,  17,  32,  33, \
             18,  19,   4,   5,   6,   7,  20,  21  /* L0 => L3 : 4 lines OK */
     .byte   34,  35,  48,  49, 255, 255,  50,  51, \
@@ -3066,19 +3070,27 @@ Ljsimd_huff_encode_one_block_neon_consts:
            255, 255, 255, 255,   8,   9,  22,  23  /* L5 => L6 : 2 lines OK */
     .byte    4,   5,   6,   7, 255, 255, 255, 255, \
            255, 255, 255, 255, 255, 255, 255, 255  /* L7 : 1 line OK */
-#endif
+.endif
 
+.if \fast_tbl == 1
 asm_function jsimd_huff_encode_one_block_neon
+.else
+asm_function jsimd_huff_encode_one_block_neon_slowtbl
+.endif
     sub             sp, sp, 272
     sub             BUFFER, BUFFER, #0x1    /* BUFFER=buffer-- */
     /* Save ARM registers */
     stp             x19, x20, [sp], 16
+.if \fast_tbl == 1
     adr             x15, Ljsimd_huff_encode_one_block_neon_consts
+.else
+    adr             x15, Ljsimd_huff_encode_one_block_neon_slowtbl_consts
+.endif
     ldr             PUT_BUFFER, [x0, #0x10]
     ldr             PUT_BITSw, [x0, #0x18]
     ldrsh           w12, [x2]               /* load DC coeff in w12 */
     /* prepare data */
-#if defined(TBL_IS_FAST)
+.if \fast_tbl == 1
     ld1             {v23.16b}, [x15], #16
     ld1             {v0.16b, v1.16b, v2.16b, v3.16b}, [x15], #64
     ld1             {v4.16b, v5.16b, v6.16b, v7.16b}, [x15], #64
@@ -3100,7 +3112,7 @@ asm_function jsimd_huff_encode_one_block_neon
     tbx             v2.16b, {v29.16b, v30.16b}, v17.16b
     tbx             v5.16b, {v29.16b, v30.16b}, v18.16b
     tbx             v6.16b, {v31.16b}, v19.16b
-#else
+.else
       add             x13, x2, #0x22
       sub             w12, w12, w3    /* last_dc_val, not used afterwards */
     ld1             {v23.16b}, [x15]
@@ -3230,7 +3242,7 @@ asm_function jsimd_huff_encode_one_block_neon
     ld1             {v5.h}[7], [x15]
     ld1             {v6.h}[7], [x19]
     ld1             {v7.h}[7], [x20]
-#endif
+.endif
     cmlt            v24.8h, v0.8h, #0
     cmlt            v25.8h, v1.8h, #0
     cmlt            v26.8h, v2.8h, #0
@@ -3424,6 +3436,11 @@ asm_function jsimd_huff_encode_one_block_neon
     add             x0, BUFFER, #0x1
     add             sp, sp, 256
     br              x30
+
+.endm
+
+generate_jsimd_huff_encode_one_block 1
+generate_jsimd_huff_encode_one_block 0
 
     .unreq          BUFFER
     .unreq          PUT_BUFFER

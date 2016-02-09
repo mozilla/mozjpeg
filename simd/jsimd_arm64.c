@@ -28,10 +28,12 @@
 
 #define JSIMD_FASTLD3 1
 #define JSIMD_FASTST3 2
+#define JSIMD_FASTTBL 4
 
 static unsigned int simd_support = ~0;
 static unsigned int simd_huffman = 1;
-static unsigned int simd_features = JSIMD_FASTLD3 | JSIMD_FASTST3;
+static unsigned int simd_features = JSIMD_FASTLD3 | JSIMD_FASTST3 |
+                                    JSIMD_FASTTBL;
 
 #if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
 
@@ -83,7 +85,13 @@ parse_proc_cpuinfo (int bufsize)
         free(buffer);
         return 0;
       }
-      if (check_cpuinfo(buffer, "CPU part", "0x0a1"))
+      if (check_cpuinfo(buffer, "CPU part", "0xd03") ||
+          check_cpuinfo(buffer, "CPU part", "0xd07"))
+        /* The Cortex-A53 has a slow tbl implementation.  We can gain a few
+           percent speedup by disabling the use of that instruction.  The
+           speedup on Cortex-A57 is more subtle but still measurable. */
+        simd_features &= ~JSIMD_FASTTBL;
+      else if (check_cpuinfo(buffer, "CPU part", "0x0a1"))
         /* The SIMD version of Huffman encoding is slower than the C version on
            Cavium ThunderX.  Also, ld3 and st3 are abyssmally slow on that
            CPU. */
@@ -785,6 +793,10 @@ jsimd_huff_encode_one_block (void * state, JOCTET *buffer, JCOEFPTR block,
                              int last_dc_val, c_derived_tbl *dctbl,
                              c_derived_tbl *actbl)
 {
-  return jsimd_huff_encode_one_block_neon(state, buffer, block, last_dc_val,
-                                          dctbl, actbl);
+  if (simd_features & JSIMD_FASTTBL)
+    return jsimd_huff_encode_one_block_neon(state, buffer, block, last_dc_val,
+                                            dctbl, actbl);
+  else
+    return jsimd_huff_encode_one_block_neon_slowtbl(state, buffer, block,
+                                                    last_dc_val, dctbl, actbl);
 }

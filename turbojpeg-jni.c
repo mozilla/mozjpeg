@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2016 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -758,6 +758,8 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 		if(scaledWidth<=width && scaledHeight<=height)
 			break;
 	}
+	if(i>=nsf)
+		_throwarg("Could not scale down to desired image dimensions");
 
 	bailif0(dstOffsets=(*env)->GetPrimitiveArrayCritical(env, jDstOffsets, 0));
 	bailif0(dstStrides=(*env)->GetPrimitiveArrayCritical(env, jDstStrides, 0));

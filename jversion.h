@@ -26,13 +26,23 @@
 
 #endif
 
-#define JCOPYRIGHT      "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding\n" \
-                        "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
-                        "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
-                        "Copyright (C) 2009-2016 D. R. Commander\n" \
-                        "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
+/*
+ * NOTE: It is our convention to place the authors in the following order:
+ * - libjpeg-turbo authors (2009-) in descending order of the date of their
+ *   most recent contribution to the project, then in ascending order of the
+ *   date of their first contribution to the project
+ * - Upstream authors in descending order of the date of the first inclusion of
+ *   their code
+ */
+
+#define JCOPYRIGHT      "Copyright (C) 2009-2016 D. R. Commander\n" \
+                        "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
+                        "Copyright (C) 2015-2016 Matthieu Darbois\n" \
                         "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
                         "Copyright (C) 2013 Linaro Limited\n" \
-                        "Copyright (C) 2015 Matthieu Darbois"
+                        "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
+                        "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
+                        "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
+                        "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding" \
 
 #define JCOPYRIGHT_SHORT "Copyright (C) 1991-2016 The libjpeg-turbo Project and many others"

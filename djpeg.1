@@ -1,4 +1,4 @@
-.TH DJPEG 1 "26 June 2015"
+.TH DJPEG 1 "17 February 2016"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -281,8 +281,10 @@ Independent JPEG Group
 This file was modified by The libjpeg-turbo Project to include only information
 relevant to libjpeg-turbo, to wordsmith certain sections, and to describe
 features not present in libjpeg.
-.SH BUGS
-To avoid the Unisys LZW patent,
-.B djpeg
-produces uncompressed GIF files.  These are larger than they should be, but
-are readable by standard GIF decoders.
+.SH ISSUES
+Support for compressed GIF output files was removed in djpeg v6b due to
+concerns over the Unisys LZW patent.  Although this patent expired in 2006,
+djpeg still lacks compressed GIF support, for these historical reasons.
+(Conversion of JPEG files to GIF is usually a bad idea anyway, since GIF is a
+256-color format.)  The uncompressed GIF files that djpeg generates are larger
+than they should be, but they are readable by standard GIF decoders.

@@ -1,4 +1,4 @@
-.TH CJPEG 1 "17 December 2015"
+.TH CJPEG 1 "17 February 2016"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -337,11 +337,11 @@ Independent JPEG Group
 This file was modified by The libjpeg-turbo Project to include only information
 relevant to libjpeg-turbo, to wordsmith certain sections, and to describe
 features not present in libjpeg.
-.SH BUGS
+.SH ISSUES
 Support for GIF input files was removed in cjpeg v6b due to concerns over
 the Unisys LZW patent.  Although this patent expired in 2006, cjpeg still
 lacks GIF support, for these historical reasons.  (Conversion of GIF files to
-JPEG is usually a bad idea anyway.)
+JPEG is usually a bad idea anyway, since GIF is a 256-color format.)
 .PP
 Not all variants of BMP and Targa file formats are supported.
 .PP

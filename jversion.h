@@ -26,7 +26,7 @@
 
 #endif
 
-#define JCOPYRIGHT      "Copyright (C) 1991-2012 Thomas G. Lane, Guido Vollbeding\n" \
+#define JCOPYRIGHT      "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding\n" \
                         "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
                         "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
                         "Copyright (C) 2009-2016 D. R. Commander\n" \

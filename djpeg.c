@@ -3,6 +3,7 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Modified 2013 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010-2011, 2013-2015, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
@@ -373,7 +374,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       /* Scale the output image by a fraction M/N. */
       if (++argn >= argc)       /* advance to next argument */
         usage();
-      if (sscanf(argv[argn], "%d/%d",
+      if (sscanf(argv[argn], "%u/%u",
                  &cinfo->scale_num, &cinfo->scale_denom) != 2)
         usage();
 

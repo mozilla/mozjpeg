@@ -1,7 +1,7 @@
 USING THE IJG JPEG LIBRARY
 
 This file was part of the Independent JPEG Group's software:
-Copyright (C) 1994-2011, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
 Copyright (C) 2010, 2014, 2015, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
@@ -915,6 +915,10 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
 
 Compression parameters (cinfo fields) include:
+
+boolean arith_code
+	If TRUE, use arithmetic coding.
+	If FALSE, use Huffman coding.
 
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:

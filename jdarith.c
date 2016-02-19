@@ -203,13 +203,13 @@ process_restart (j_decompress_ptr cinfo)
   /* Re-initialize statistics areas */
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
-    if (! cinfo->progressive_mode || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
+    if (!cinfo->progressive_mode || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
       MEMZERO(entropy->dc_stats[compptr->dc_tbl_no], DC_STAT_BINS);
       /* Reset DC predictions to 0 */
       entropy->last_dc_val[ci] = 0;
       entropy->dc_context[ci] = 0;
     }
-    if (! cinfo->progressive_mode || cinfo->Ss) {
+    if (!cinfo->progressive_mode || cinfo->Ss) {
       MEMZERO(entropy->ac_stats[compptr->ac_tbl_no], AC_STAT_BINS);
     }
   }
@@ -694,7 +694,7 @@ start_pass (j_decompress_ptr cinfo)
   /* Allocate & initialize requested statistics areas */
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
-    if (! cinfo->progressive_mode || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
+    if (!cinfo->progressive_mode || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
       tbl = compptr->dc_tbl_no;
       if (tbl < 0 || tbl >= NUM_ARITH_TBLS)
         ERREXIT1(cinfo, JERR_NO_ARITH_TABLE, tbl);
@@ -706,7 +706,7 @@ start_pass (j_decompress_ptr cinfo)
       entropy->last_dc_val[ci] = 0;
       entropy->dc_context[ci] = 0;
     }
-    if (! cinfo->progressive_mode || cinfo->Ss) {
+    if (!cinfo->progressive_mode || cinfo->Ss) {
       tbl = compptr->ac_tbl_no;
       if (tbl < 0 || tbl >= NUM_ARITH_TBLS)
         ERREXIT1(cinfo, JERR_NO_ARITH_TABLE, tbl);

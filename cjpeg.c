@@ -140,7 +140,7 @@ select_file_type (j_compress_ptr cinfo, FILE *infile)
 
 static const char *progname;    /* program name for error messages */
 static char *outfilename;       /* for -outfile switch */
-boolean memdst;  /* for -memdst switch */
+boolean memdst;                 /* for -memdst switch */
 
 
 LOCAL(void)

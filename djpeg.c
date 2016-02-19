@@ -90,7 +90,7 @@ static IMAGE_FORMATS requested_fmt;
 
 static const char *progname;    /* program name for error messages */
 static char *outfilename;       /* for -outfile switch */
-boolean memsrc;  /* for -memsrc switch */
+boolean memsrc;                 /* for -memsrc switch */
 boolean strip, skip;
 JDIMENSION startY, endY;
 #define INPUT_BUF_SIZE  4096

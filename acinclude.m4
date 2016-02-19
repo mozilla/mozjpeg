@@ -3,8 +3,11 @@
 # Check that NASM exists and determine flags
 AC_DEFUN([AC_PROG_NASM],[
 
-AC_CHECK_PROGS(NASM, [nasm nasmw yasm])
-test -z "$NASM" && AC_MSG_ERROR([no nasm (Netwide Assembler) found])
+AC_ARG_VAR(NASM, [NASM command (used to build the x86/x86-64 SIMD code)])
+if test "x$NASM" = "x"; then
+  AC_CHECK_PROGS(NASM, [nasm nasmw yasm])
+  test -z "$NASM" && AC_MSG_ERROR([no nasm (Netwide Assembler) found])
+fi
 
 AC_MSG_CHECKING([for object file format of host system])
 case "$host_os" in

@@ -125,7 +125,7 @@ jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
 
 
 GLOBAL(void)
-jzero_far (void * target, size_t bytestozero)
+jzero_far (void *target, size_t bytestozero)
 /* Zero out a chunk of memory. */
 /* This might be sample-array data, block-array data, or alloc_large data. */
 {

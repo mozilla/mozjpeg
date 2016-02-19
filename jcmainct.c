@@ -35,7 +35,7 @@ typedef struct {
   JSAMPARRAY buffer[MAX_COMPONENTS];
 } my_main_controller;
 
-typedef my_main_controller * my_main_ptr;
+typedef my_main_controller *my_main_ptr;
 
 
 /* Forward declarations */

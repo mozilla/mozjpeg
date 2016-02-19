@@ -58,7 +58,7 @@ typedef struct {
   JDIMENSION cur_output_row;    /* next row# to write to virtual array */
 } bmp_dest_struct;
 
-typedef bmp_dest_struct * bmp_dest_ptr;
+typedef bmp_dest_struct *bmp_dest_ptr;
 
 
 /* Forward declarations */
@@ -333,7 +333,7 @@ write_colormap (j_decompress_ptr cinfo, bmp_dest_ptr dest,
 {
   JSAMPARRAY colormap = cinfo->colormap;
   int num_colors = cinfo->actual_number_of_colors;
-  FILE * outfile = dest->pub.output_file;
+  FILE *outfile = dest->pub.output_file;
   int i;
 
   if (colormap != NULL) {
@@ -383,7 +383,7 @@ METHODDEF(void)
 finish_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
-  register FILE * outfile = dest->pub.output_file;
+  register FILE *outfile = dest->pub.output_file;
   JSAMPARRAY image_ptr;
   register JSAMPROW data_ptr;
   JDIMENSION row;

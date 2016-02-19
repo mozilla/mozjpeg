@@ -310,7 +310,7 @@ void
 jsimd_h2v1_upsample_altivec (int max_v_samp_factor,
                              JDIMENSION output_width,
                              JSAMPARRAY input_data,
-                             JSAMPARRAY * output_data_ptr)
+                             JSAMPARRAY *output_data_ptr)
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr, outptr;
@@ -349,7 +349,7 @@ void
 jsimd_h2v2_upsample_altivec (int max_v_samp_factor,
                              JDIMENSION output_width,
                              JSAMPARRAY input_data,
-                             JSAMPARRAY * output_data_ptr)
+                             JSAMPARRAY *output_data_ptr)
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr, outptr0, outptr1;

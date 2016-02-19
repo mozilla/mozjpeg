@@ -82,7 +82,7 @@ static boolean is_targa;        /* records user -targa switch */
 
 
 LOCAL(cjpeg_source_ptr)
-select_file_type (j_compress_ptr cinfo, FILE * infile)
+select_file_type (j_compress_ptr cinfo, FILE *infile)
 {
   int c;
 
@@ -138,8 +138,8 @@ select_file_type (j_compress_ptr cinfo, FILE * infile)
  */
 
 
-static const char * progname;   /* program name for error messages */
-static char * outfilename;      /* for -outfile switch */
+static const char *progname;    /* program name for error messages */
+static char *outfilename;       /* for -outfile switch */
 boolean memdst;  /* for -memdst switch */
 
 
@@ -220,14 +220,14 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
  */
 {
   int argn;
-  char * arg;
+  char *arg;
   boolean force_baseline;
   boolean simple_progressive;
-  char * qualityarg = NULL;     /* saves -quality parm if any */
-  char * qtablefile = NULL;     /* saves -qtables filename if any */
-  char * qslotsarg = NULL;      /* saves -qslots parm if any */
-  char * samplearg = NULL;      /* saves -sample parm if any */
-  char * scansarg = NULL;       /* saves -scans parm if any */
+  char *qualityarg = NULL;      /* saves -quality parm if any */
+  char *qtablefile = NULL;      /* saves -qtables filename if any */
+  char *qslotsarg = NULL;       /* saves -qslots parm if any */
+  char *samplearg = NULL;       /* saves -sample parm if any */
+  char *scansarg = NULL;        /* saves -scans parm if any */
 
   /* Set up default JPEG parameters. */
 
@@ -495,8 +495,8 @@ main (int argc, char **argv)
 #endif
   int file_index;
   cjpeg_source_ptr src_mgr;
-  FILE * input_file;
-  FILE * output_file = NULL;
+  FILE *input_file;
+  FILE *output_file = NULL;
   unsigned char *outbuffer = NULL;
   unsigned long outsize = 0;
   JDIMENSION num_scanlines;

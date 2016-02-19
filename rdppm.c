@@ -72,11 +72,11 @@ typedef struct {
   int maxval;
 } ppm_source_struct;
 
-typedef ppm_source_struct * ppm_source_ptr;
+typedef ppm_source_struct *ppm_source_ptr;
 
 
 LOCAL(int)
-pbm_getc (FILE * infile)
+pbm_getc (FILE *infile)
 /* Read next char, skipping over any comments */
 /* A comment/newline sequence is returned as a newline */
 {
@@ -93,7 +93,7 @@ pbm_getc (FILE * infile)
 
 
 LOCAL(unsigned int)
-read_pbm_integer (j_compress_ptr cinfo, FILE * infile, unsigned int maxval)
+read_pbm_integer (j_compress_ptr cinfo, FILE *infile, unsigned int maxval)
 /* Read an unsigned decimal integer from the PPM file */
 /* Swallows one trailing character after the integer */
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
@@ -141,7 +141,7 @@ get_text_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading text-format PGM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
-  FILE * infile = source->pub.input_file;
+  FILE *infile = source->pub.input_file;
   register JSAMPROW ptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
@@ -160,7 +160,7 @@ get_text_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading text-format PPM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
-  FILE * infile = source->pub.input_file;
+  FILE *infile = source->pub.input_file;
   register JSAMPROW ptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
@@ -182,7 +182,7 @@ get_scaled_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
 
@@ -203,7 +203,7 @@ get_scaled_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
 
@@ -241,7 +241,7 @@ get_word_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
 
@@ -265,7 +265,7 @@ get_word_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
 

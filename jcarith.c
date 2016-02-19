@@ -41,14 +41,14 @@ typedef struct {
   int next_restart_num;         /* next restart number to write (0-7) */
 
   /* Pointers to statistics areas (these workspaces have image lifespan) */
-  unsigned char * dc_stats[NUM_ARITH_TBLS];
-  unsigned char * ac_stats[NUM_ARITH_TBLS];
+  unsigned char *dc_stats[NUM_ARITH_TBLS];
+  unsigned char *ac_stats[NUM_ARITH_TBLS];
 
   /* Statistics bin for coding with fixed probability 0.5 */
   unsigned char fixed_bin[4];
 } arith_entropy_encoder;
 
-typedef arith_entropy_encoder * arith_entropy_ptr;
+typedef arith_entropy_encoder *arith_entropy_ptr;
 
 /* The following two definitions specify the allocation chunk size
  * for the statistics area.
@@ -119,7 +119,7 @@ LOCAL(void)
 emit_byte (int val, j_compress_ptr cinfo)
 /* Write next output byte; we do not support suspension in this module. */
 {
-  struct jpeg_destination_mgr * dest = cinfo->dest;
+  struct jpeg_destination_mgr *dest = cinfo->dest;
 
   *dest->next_output_byte++ = (JOCTET) val;
   if (--dest->free_in_buffer == 0)
@@ -323,7 +323,7 @@ emit_restart (j_compress_ptr cinfo, int restart_num)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   int ci;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
 
   finish_pass(cinfo);
 
@@ -683,7 +683,7 @@ METHODDEF(boolean)
 encode_mcu (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   JBLOCKROW block;
   unsigned char *st;
   int blkn, ci, tbl, k, ke;
@@ -826,7 +826,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   int ci, tbl;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
 
   if (gather_statistics)
     /* Make sure to avoid that in the master control logic!

@@ -58,7 +58,7 @@
 
 /* Pointer to routine to downsample a single component */
 typedef void (*downsample1_ptr) (j_compress_ptr cinfo,
-                                 jpeg_component_info * compptr,
+                                 jpeg_component_info *compptr,
                                  JSAMPARRAY input_data,
                                  JSAMPARRAY output_data);
 
@@ -71,7 +71,7 @@ typedef struct {
   downsample1_ptr methods[MAX_COMPONENTS];
 } my_downsampler;
 
-typedef my_downsampler * my_downsample_ptr;
+typedef my_downsampler *my_downsample_ptr;
 
 
 /*
@@ -124,7 +124,7 @@ sep_downsample (j_compress_ptr cinfo,
 {
   my_downsample_ptr downsample = (my_downsample_ptr) cinfo->downsample;
   int ci;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   JSAMPARRAY in_ptr, out_ptr;
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
@@ -144,7 +144,7 @@ sep_downsample (j_compress_ptr cinfo,
  */
 
 METHODDEF(void)
-int_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+int_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                 JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int inrow, outrow, h_expand, v_expand, numpix, numpix2, h, v;
@@ -191,7 +191,7 @@ int_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
  */
 
 METHODDEF(void)
-fullsize_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+fullsize_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                      JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   /* Copy the data */
@@ -216,7 +216,7 @@ fullsize_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
  */
 
 METHODDEF(void)
-h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                  JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int outrow;
@@ -253,7 +253,7 @@ h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
  */
 
 METHODDEF(void)
-h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                  JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int inrow, outrow;
@@ -296,7 +296,7 @@ h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
  */
 
 METHODDEF(void)
-h2v2_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+h2v2_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                         JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int inrow, outrow;
@@ -472,7 +472,7 @@ jinit_downsampler (j_compress_ptr cinfo)
 {
   my_downsample_ptr downsample;
   int ci;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   boolean smoothok = TRUE;
 
   downsample = (my_downsample_ptr)

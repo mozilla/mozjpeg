@@ -24,7 +24,7 @@
 #include "jmemsys.h"            /* import the system-dependent declarations */
 
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc(),free() */
-extern void * malloc (size_t size);
+extern void *malloc (size_t size);
 extern void free (void *ptr);
 #endif
 
@@ -41,7 +41,7 @@ jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 }
 
 GLOBAL(void)
-jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
+jpeg_free_small (j_common_ptr cinfo, void *object, size_t sizeofobject)
 {
   free(object);
 }
@@ -58,7 +58,7 @@ jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
 }
 
 GLOBAL(void)
-jpeg_free_large (j_common_ptr cinfo, void * object, size_t sizeofobject)
+jpeg_free_large (j_common_ptr cinfo, void *object, size_t sizeofobject)
 {
   free(object);
 }

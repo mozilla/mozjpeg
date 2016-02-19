@@ -107,7 +107,7 @@ typedef struct {
   /* Note: cur_marker is not linked into marker_list until it's all read. */
 } my_marker_reader;
 
-typedef my_marker_reader * my_marker_ptr;
+typedef my_marker_reader *my_marker_ptr;
 
 
 /*
@@ -120,8 +120,8 @@ typedef my_marker_reader * my_marker_ptr;
 
 /* Declare and initialize local copies of input pointer/count */
 #define INPUT_VARS(cinfo)  \
-        struct jpeg_source_mgr * datasrc = (cinfo)->src;  \
-        const JOCTET * next_input_byte = datasrc->next_input_byte;  \
+        struct jpeg_source_mgr *datasrc = (cinfo)->src;  \
+        const JOCTET *next_input_byte = datasrc->next_input_byte;  \
         size_t bytes_in_buffer = datasrc->bytes_in_buffer
 
 /* Unload the local copies --- do this only at a restart boundary */
@@ -242,7 +242,7 @@ get_sof (j_decompress_ptr cinfo, boolean is_prog, boolean is_arith)
 {
   JLONG length;
   int c, ci;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   INPUT_VARS(cinfo);
 
   cinfo->progressive_mode = is_prog;
@@ -306,7 +306,7 @@ get_sos (j_decompress_ptr cinfo)
 {
   JLONG length;
   int i, ci, n, c, cc, pi;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   INPUT_VARS(cinfo);
 
   if (! cinfo->marker->saw_SOF)
@@ -598,7 +598,7 @@ get_dri (j_decompress_ptr cinfo)
 
 
 LOCAL(void)
-examine_app0 (j_decompress_ptr cinfo, JOCTET * data,
+examine_app0 (j_decompress_ptr cinfo, JOCTET *data,
               unsigned int datalen, JLONG remaining)
 /* Examine first few bytes from an APP0.
  * Take appropriate action if it is a JFIF marker.
@@ -674,7 +674,7 @@ examine_app0 (j_decompress_ptr cinfo, JOCTET * data,
 
 
 LOCAL(void)
-examine_app14 (j_decompress_ptr cinfo, JOCTET * data,
+examine_app14 (j_decompress_ptr cinfo, JOCTET *data,
                unsigned int datalen, JLONG remaining)
 /* Examine first few bytes from an APP14.
  * Take appropriate action if it is an Adobe marker.
@@ -759,7 +759,7 @@ save_marker (j_decompress_ptr cinfo)
   my_marker_ptr marker = (my_marker_ptr) cinfo->marker;
   jpeg_saved_marker_ptr cur_marker = marker->cur_marker;
   unsigned int bytes_read, data_length;
-  JOCTET * data;
+  JOCTET *data;
   JLONG length = 0;
   INPUT_VARS(cinfo);
 

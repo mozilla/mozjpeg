@@ -38,14 +38,14 @@ typedef struct {
   unsigned int restarts_to_go;  /* MCUs left in this restart interval */
 
   /* Pointers to statistics areas (these workspaces have image lifespan) */
-  unsigned char * dc_stats[NUM_ARITH_TBLS];
-  unsigned char * ac_stats[NUM_ARITH_TBLS];
+  unsigned char *dc_stats[NUM_ARITH_TBLS];
+  unsigned char *ac_stats[NUM_ARITH_TBLS];
 
   /* Statistics bin for coding with fixed probability 0.5 */
   unsigned char fixed_bin[4];
 } arith_entropy_decoder;
 
-typedef arith_entropy_decoder * arith_entropy_ptr;
+typedef arith_entropy_decoder *arith_entropy_ptr;
 
 /* The following two definitions specify the allocation chunk size
  * for the statistics area.
@@ -68,7 +68,7 @@ LOCAL(int)
 get_byte (j_decompress_ptr cinfo)
 /* Read next input byte; we do not support suspension in this module. */
 {
-  struct jpeg_source_mgr * src = cinfo->src;
+  struct jpeg_source_mgr *src = cinfo->src;
 
   if (src->bytes_in_buffer == 0)
     if (! (*src->fill_input_buffer) (cinfo))
@@ -194,7 +194,7 @@ process_restart (j_decompress_ptr cinfo)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   int ci;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
 
   /* Advance past the RSTn marker */
   if (! (*cinfo->marker->read_restart_marker) (cinfo))
@@ -499,7 +499,7 @@ METHODDEF(boolean)
 decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   JBLOCKROW block;
   unsigned char *st;
   int blkn, ci, tbl, sign, k;
@@ -627,7 +627,7 @@ start_pass (j_decompress_ptr cinfo)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   int ci, tbl;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
 
   if (cinfo->progressive_mode) {
     /* Validate progressive scan parameters */

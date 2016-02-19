@@ -52,7 +52,7 @@ typedef char U_CHAR;
 
 /* Private version of data source object */
 
-typedef struct _bmp_source_struct * bmp_source_ptr;
+typedef struct _bmp_source_struct *bmp_source_ptr;
 
 typedef struct _bmp_source_struct {
   struct cjpeg_source_struct pub; /* public fields */

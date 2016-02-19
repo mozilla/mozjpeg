@@ -74,7 +74,7 @@ _\fname:
  * Perform dequantization and inverse DCT on one block of coefficients.
  *
  * GLOBAL(void)
- * jsimd_idct_islow_neon (void * dct_table, JCOEFPTR coef_block,
+ * jsimd_idct_islow_neon (void *dct_table, JCOEFPTR coef_block,
  *                        JSAMPARRAY output_buf, JDIMENSION output_col)
  */
 
@@ -2106,8 +2106,8 @@ asm_function jsimd_fdct_ifast_neon
 
 /*
  * GLOBAL(void)
- * jsimd_quantize_neon (JCOEFPTR coef_block, DCTELEM * divisors,
- *                      DCTELEM * workspace);
+ * jsimd_quantize_neon (JCOEFPTR coef_block, DCTELEM *divisors,
+ *                      DCTELEM *workspace);
  *
  * Note: the code uses 2 stage pipelining in order to improve instructions
  *       scheduling and eliminate stalls (this provides ~15% better
@@ -2210,7 +2210,7 @@ asm_function jsimd_quantize_neon
  * jsimd_h2v1_fancy_upsample_neon (int max_v_samp_factor,
  *                                 JDIMENSION downsampled_width,
  *                                 JSAMPARRAY input_data,
- *                                 JSAMPARRAY * output_data_ptr);
+ *                                 JSAMPARRAY *output_data_ptr);
  *
  * Note: the use of unaligned writes is the main remaining bottleneck in
  *       this code, which can be potentially solved to get up to tens
@@ -2444,7 +2444,7 @@ asm_function jsimd_h2v1_fancy_upsample_neon
 
 /*
  * GLOBAL(JOCTET*)
- * jsimd_huff_encode_one_block (working_state * state, JOCTET *buffer,
+ * jsimd_huff_encode_one_block (working_state *state, JOCTET *buffer,
  *                              JCOEFPTR block, int last_dc_val,
  *                              c_derived_tbl *dctbl, c_derived_tbl *actbl)
  *

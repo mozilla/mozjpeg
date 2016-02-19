@@ -79,7 +79,7 @@ prefix=${old_prefix}
 
 # Check whether compiler supports pointers to undefined structures
 AC_MSG_CHECKING(whether compiler supports pointers to undefined structures)
-AC_TRY_COMPILE([ typedef struct undefined_structure * undef_struct_ptr; ], ,
+AC_TRY_COMPILE([ typedef struct undefined_structure *undef_struct_ptr; ], ,
   AC_MSG_RESULT(yes),
   [AC_MSG_RESULT(no)
    AC_DEFINE([INCOMPLETE_TYPES_BROKEN], [1],

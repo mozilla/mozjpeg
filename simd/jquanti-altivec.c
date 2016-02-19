@@ -50,7 +50,7 @@
 
 void
 jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
-                        DCTELEM * workspace)
+                        DCTELEM *workspace)
 {
   JSAMPROW elemptr;
 
@@ -115,8 +115,8 @@ jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
 }
 
 void
-jsimd_quantize_altivec (JCOEFPTR coef_block, DCTELEM * divisors,
-                        DCTELEM * workspace)
+jsimd_quantize_altivec (JCOEFPTR coef_block, DCTELEM *divisors,
+                        DCTELEM *workspace)
 {
   __vector short row0, row1, row2, row3, row4, row5, row6, row7,
     row0s, row1s, row2s, row3s, row4s, row5s, row6s, row7s,

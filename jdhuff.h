@@ -101,7 +101,7 @@ typedef struct {                /* Bitreading state saved across MCUs */
 typedef struct {                /* Bitreading working state within an MCU */
   /* Current data source location */
   /* We need a copy, rather than munging the original, in case of suspension */
-  const JOCTET * next_input_byte; /* => next byte to read from source */
+  const JOCTET *next_input_byte; /* => next byte to read from source */
   size_t bytes_in_buffer;       /* # of bytes remaining in source buffer */
   /* Bit input buffer --- note these values are kept in register variables,
    * not in this struct, inside the inner loops.
@@ -166,7 +166,7 @@ typedef struct {                /* Bitreading working state within an MCU */
 
 /* Load up the bit buffer to a depth of at least nbits */
 EXTERN(boolean) jpeg_fill_bit_buffer
-        (bitread_working_state * state, register bit_buf_type get_buffer,
+        (bitread_working_state *state, register bit_buf_type get_buffer,
          register int bits_left, int nbits);
 
 
@@ -230,5 +230,5 @@ slowlabel: \
 
 /* Out-of-line case for Huffman code fetching */
 EXTERN(int) jpeg_huff_decode
-        (bitread_working_state * state, register bit_buf_type get_buffer,
-         register int bits_left, d_derived_tbl * htbl, int min_bits);
+        (bitread_working_state *state, register bit_buf_type get_buffer,
+         register int bits_left, d_derived_tbl *htbl, int min_bits);

@@ -54,7 +54,7 @@ typedef struct {
   jvirt_barray_ptr whole_image[MAX_COMPONENTS];
 } my_coef_controller;
 
-typedef my_coef_controller * my_coef_ptr;
+typedef my_coef_controller *my_coef_ptr;
 
 
 /* Forward declarations */

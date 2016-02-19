@@ -57,7 +57,7 @@
  */
 
 GLOBAL(void)
-jpeg_fdct_float (FAST_FLOAT * data)
+jpeg_fdct_float (FAST_FLOAT *data)
 {
   FAST_FLOAT tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   FAST_FLOAT tmp10, tmp11, tmp12, tmp13;

@@ -113,7 +113,7 @@ struct jpeg_downsampler {
 struct jpeg_forward_dct {
   void (*start_pass) (j_compress_ptr cinfo);
   /* perhaps this should be an array??? */
-  void (*forward_DCT) (j_compress_ptr cinfo, jpeg_component_info * compptr,
+  void (*forward_DCT) (j_compress_ptr cinfo, jpeg_component_info *compptr,
                        JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
                        JDIMENSION start_row, JDIMENSION start_col,
                        JDIMENSION num_blocks);
@@ -223,7 +223,7 @@ struct jpeg_entropy_decoder {
 
 /* Inverse DCT (also performs dequantization) */
 typedef void (*inverse_DCT_method_ptr) (j_decompress_ptr cinfo,
-                                        jpeg_component_info * compptr,
+                                        jpeg_component_info *compptr,
                                         JCOEFPTR coef_block,
                                         JSAMPARRAY output_buf,
                                         JDIMENSION output_col);
@@ -340,7 +340,7 @@ EXTERN(void) jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
                                 int num_rows, JDIMENSION num_cols);
 EXTERN(void) jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
                               JDIMENSION num_blocks);
-EXTERN(void) jzero_far (void * target, size_t bytestozero);
+EXTERN(void) jzero_far (void *target, size_t bytestozero);
 /* Constant tables in jutils.c */
 #if 0                           /* This table is not actually needed in v6a */
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */

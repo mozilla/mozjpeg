@@ -34,11 +34,11 @@ typedef struct {
   /* Saved references to initialized quantizer modules,
    * in case we need to switch modes.
    */
-  struct jpeg_color_quantizer * quantizer_1pass;
-  struct jpeg_color_quantizer * quantizer_2pass;
+  struct jpeg_color_quantizer *quantizer_1pass;
+  struct jpeg_color_quantizer *quantizer_2pass;
 } my_decomp_master;
 
-typedef my_decomp_master * my_master_ptr;
+typedef my_decomp_master *my_master_ptr;
 
 
 /*
@@ -425,7 +425,7 @@ LOCAL(void)
 prepare_range_limit_table (j_decompress_ptr cinfo)
 /* Allocate and fill in the sample_range_limit table */
 {
-  JSAMPLE * table;
+  JSAMPLE *table;
   int i;
 
   table = (JSAMPLE *)

@@ -426,70 +426,70 @@ EXTERN(void) jsimd_h2v2_smooth_downsample_mips_dspr2
 /* Upsampling */
 EXTERN(void) jsimd_h2v1_upsample_mmx
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_upsample_mmx
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 
 EXTERN(void) jsimd_h2v1_upsample_sse2
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_upsample_sse2
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 
 EXTERN(void) jsimd_h2v1_upsample_mips_dspr2
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_upsample_mips_dspr2
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 
 EXTERN(void) jsimd_int_upsample_mips_dspr2
         (UINT8 h_expand, UINT8 v_expand, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr, JDIMENSION output_width,
+         JSAMPARRAY *output_data_ptr, JDIMENSION output_width,
          int max_v_samp_factor);
 
 EXTERN(void) jsimd_h2v1_upsample_altivec
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_upsample_altivec
         (int max_v_samp_factor, JDIMENSION output_width, JSAMPARRAY input_data,
-         JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY *output_data_ptr);
 
 /* Fancy Upsampling */
 EXTERN(void) jsimd_h2v1_fancy_upsample_mmx
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_fancy_upsample_mmx
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 
 extern const int jconst_fancy_upsample_sse2[];
 EXTERN(void) jsimd_h2v1_fancy_upsample_sse2
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_fancy_upsample_sse2
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 
 EXTERN(void) jsimd_h2v1_fancy_upsample_neon
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 
 EXTERN(void) jsimd_h2v1_fancy_upsample_mips_dspr2
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_fancy_upsample_mips_dspr2
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 
 EXTERN(void) jsimd_h2v1_fancy_upsample_altivec
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v2_fancy_upsample_altivec
         (int max_v_samp_factor, JDIMENSION downsampled_width,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 
 /* Merged Upsampling */
 EXTERN(void) jsimd_h2v1_merged_upsample_mmx
@@ -671,201 +671,201 @@ EXTERN(void) jsimd_h2v2_extxrgb_merged_upsample_altivec
 
 /* Sample Conversion */
 EXTERN(void) jsimd_convsamp_mmx
-        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
 
 EXTERN(void) jsimd_convsamp_sse2
-        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
 
 EXTERN(void) jsimd_convsamp_neon
-        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
 
 EXTERN(void) jsimd_convsamp_mips_dspr2
-        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
 
 EXTERN(void) jsimd_convsamp_altivec
-        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
 
 /* Floating Point Sample Conversion */
 EXTERN(void) jsimd_convsamp_float_3dnow
-        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT *workspace);
 
 EXTERN(void) jsimd_convsamp_float_sse
-        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT *workspace);
 
 EXTERN(void) jsimd_convsamp_float_sse2
-        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT *workspace);
 
 EXTERN(void) jsimd_convsamp_float_mips_dspr2
-        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT * workspace);
+        (JSAMPARRAY sample_data, JDIMENSION start_col, FAST_FLOAT *workspace);
 
 /* Slow Integer Forward DCT */
-EXTERN(void) jsimd_fdct_islow_mmx (DCTELEM * data);
+EXTERN(void) jsimd_fdct_islow_mmx (DCTELEM *data);
 
 extern const int jconst_fdct_islow_sse2[];
-EXTERN(void) jsimd_fdct_islow_sse2 (DCTELEM * data);
+EXTERN(void) jsimd_fdct_islow_sse2 (DCTELEM *data);
 
-EXTERN(void) jsimd_fdct_islow_neon (DCTELEM * data);
+EXTERN(void) jsimd_fdct_islow_neon (DCTELEM *data);
 
-EXTERN(void) jsimd_fdct_islow_mips_dspr2 (DCTELEM * data);
+EXTERN(void) jsimd_fdct_islow_mips_dspr2 (DCTELEM *data);
 
-EXTERN(void) jsimd_fdct_islow_altivec (DCTELEM * data);
+EXTERN(void) jsimd_fdct_islow_altivec (DCTELEM *data);
 
 /* Fast Integer Forward DCT */
-EXTERN(void) jsimd_fdct_ifast_mmx (DCTELEM * data);
+EXTERN(void) jsimd_fdct_ifast_mmx (DCTELEM *data);
 
 extern const int jconst_fdct_ifast_sse2[];
-EXTERN(void) jsimd_fdct_ifast_sse2 (DCTELEM * data);
+EXTERN(void) jsimd_fdct_ifast_sse2 (DCTELEM *data);
 
-EXTERN(void) jsimd_fdct_ifast_neon (DCTELEM * data);
+EXTERN(void) jsimd_fdct_ifast_neon (DCTELEM *data);
 
-EXTERN(void) jsimd_fdct_ifast_mips_dspr2 (DCTELEM * data);
+EXTERN(void) jsimd_fdct_ifast_mips_dspr2 (DCTELEM *data);
 
-EXTERN(void) jsimd_fdct_ifast_altivec (DCTELEM * data);
+EXTERN(void) jsimd_fdct_ifast_altivec (DCTELEM *data);
 
 /* Floating Point Forward DCT */
-EXTERN(void) jsimd_fdct_float_3dnow (FAST_FLOAT * data);
+EXTERN(void) jsimd_fdct_float_3dnow (FAST_FLOAT *data);
 
 extern const int jconst_fdct_float_sse[];
-EXTERN(void) jsimd_fdct_float_sse (FAST_FLOAT * data);
+EXTERN(void) jsimd_fdct_float_sse (FAST_FLOAT *data);
 
 /* Quantization */
 EXTERN(void) jsimd_quantize_mmx
-        (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
+        (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
 
 EXTERN(void) jsimd_quantize_sse2
-        (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
+        (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
 
 EXTERN(void) jsimd_quantize_neon
-        (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
+        (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
 
 EXTERN(void) jsimd_quantize_mips_dspr2
-        (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
+        (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
 
 EXTERN(void) jsimd_quantize_altivec
-        (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace);
+        (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
 
 /* Floating Point Quantization */
 EXTERN(void) jsimd_quantize_float_3dnow
-        (JCOEFPTR coef_block, FAST_FLOAT * divisors, FAST_FLOAT * workspace);
+        (JCOEFPTR coef_block, FAST_FLOAT *divisors, FAST_FLOAT *workspace);
 
 EXTERN(void) jsimd_quantize_float_sse
-        (JCOEFPTR coef_block, FAST_FLOAT * divisors, FAST_FLOAT * workspace);
+        (JCOEFPTR coef_block, FAST_FLOAT *divisors, FAST_FLOAT *workspace);
 
 EXTERN(void) jsimd_quantize_float_sse2
-        (JCOEFPTR coef_block, FAST_FLOAT * divisors, FAST_FLOAT * workspace);
+        (JCOEFPTR coef_block, FAST_FLOAT *divisors, FAST_FLOAT *workspace);
 
 EXTERN(void) jsimd_quantize_float_mips_dspr2
-        (JCOEFPTR coef_block, FAST_FLOAT * divisors, FAST_FLOAT * workspace);
+        (JCOEFPTR coef_block, FAST_FLOAT *divisors, FAST_FLOAT *workspace);
 
 /* Scaled Inverse DCT */
 EXTERN(void) jsimd_idct_2x2_mmx
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 EXTERN(void) jsimd_idct_4x4_mmx
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 extern const int jconst_idct_red_sse2[];
 EXTERN(void) jsimd_idct_2x2_sse2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 EXTERN(void) jsimd_idct_4x4_sse2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_2x2_neon
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 EXTERN(void) jsimd_idct_4x4_neon
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_2x2_mips_dspr2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 EXTERN(void) jsimd_idct_4x4_mips_dspr2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
-         JDIMENSION output_col, int * workspace);
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+         JDIMENSION output_col, int *workspace);
 EXTERN(void) jsimd_idct_6x6_mips_dspr2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 EXTERN(void) jsimd_idct_12x12_pass1_mips_dspr2
-        (JCOEFPTR coef_block, void * dct_table, int * workspace);
+        (JCOEFPTR coef_block, void *dct_table, int *workspace);
 EXTERN(void) jsimd_idct_12x12_pass2_mips_dspr2
-        (int * workspace, int * output);
+        (int *workspace, int *output);
 
 /* Slow Integer Inverse DCT */
 EXTERN(void) jsimd_idct_islow_mmx
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 extern const int jconst_idct_islow_sse2[];
 EXTERN(void) jsimd_idct_islow_sse2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_islow_neon
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_islow_mips_dspr2
-        (void * dct_table, JCOEFPTR coef_block, int * output_buf,
-         JSAMPLE * output_col);
+        (void *dct_table, JCOEFPTR coef_block, int *output_buf,
+         JSAMPLE *output_col);
 
 EXTERN(void) jsimd_idct_islow_altivec
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 /* Fast Integer Inverse DCT */
 EXTERN(void) jsimd_idct_ifast_mmx
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 extern const int jconst_idct_ifast_sse2[];
 EXTERN(void) jsimd_idct_ifast_sse2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_ifast_neon
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_ifast_cols_mips_dspr2
-        (JCOEF * inptr, IFAST_MULT_TYPE * quantptr, DCTELEM * wsptr,
-         const int * idct_coefs);
+        (JCOEF *inptr, IFAST_MULT_TYPE *quantptr, DCTELEM *wsptr,
+         const int *idct_coefs);
 EXTERN(void) jsimd_idct_ifast_rows_mips_dspr2
-        (DCTELEM * wsptr, JSAMPARRAY output_buf, JDIMENSION output_col,
-         const int * idct_coefs);
+        (DCTELEM *wsptr, JSAMPARRAY output_buf, JDIMENSION output_col,
+         const int *idct_coefs);
 
 EXTERN(void) jsimd_idct_ifast_altivec
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 /* Floating Point Inverse DCT */
 EXTERN(void) jsimd_idct_float_3dnow
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 extern const int jconst_idct_float_sse[];
 EXTERN(void) jsimd_idct_float_sse
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 extern const int jconst_idct_float_sse2[];
 EXTERN(void) jsimd_idct_float_sse2
-        (void * dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
 /* Huffman coding */
 extern const int jconst_huff_encode_one_block[];
 EXTERN(JOCTET*) jsimd_huff_encode_one_block_sse2
-        (void * state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
+        (void *state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
          c_derived_tbl *dctbl, c_derived_tbl *actbl);
 
 EXTERN(JOCTET*) jsimd_huff_encode_one_block_neon
-        (void * state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
+        (void *state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
          c_derived_tbl *dctbl, c_derived_tbl *actbl);
 
 EXTERN(JOCTET*) jsimd_huff_encode_one_block_neon_slowtbl
-        (void * state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
+        (void *state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
          c_derived_tbl *dctbl, c_derived_tbl *actbl);

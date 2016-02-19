@@ -88,8 +88,8 @@ static IMAGE_FORMATS requested_fmt;
  */
 
 
-static const char * progname;   /* program name for error messages */
-static char * outfilename;      /* for -outfile switch */
+static const char *progname;    /* program name for error messages */
+static char *outfilename;       /* for -outfile switch */
 boolean memsrc;  /* for -memsrc switch */
 boolean strip, skip;
 JDIMENSION startY, endY;
@@ -190,7 +190,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
  */
 {
   int argn;
-  char * arg;
+  char *arg;
 
   /* Set up default JPEG parameters. */
   requested_fmt = DEFAULT_FMT;  /* set default output file format */
@@ -307,7 +307,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
         usage();
       if (for_real) {           /* too expensive to do twice! */
 #ifdef QUANT_2PASS_SUPPORTED    /* otherwise can't quantize to supplied map */
-        FILE * mapfile;
+        FILE *mapfile;
 
         if ((mapfile = fopen(argv[argn], READ_BINARY)) == NULL) {
           fprintf(stderr, "%s: can't open %s\n", progname, argv[argn]);
@@ -417,7 +417,7 @@ LOCAL(unsigned int)
 jpeg_getc (j_decompress_ptr cinfo)
 /* Read next byte */
 {
-  struct jpeg_source_mgr * datasrc = cinfo->src;
+  struct jpeg_source_mgr *datasrc = cinfo->src;
 
   if (datasrc->bytes_in_buffer == 0) {
     if (! (*datasrc->fill_input_buffer) (cinfo))
@@ -493,8 +493,8 @@ main (int argc, char **argv)
 #endif
   int file_index;
   djpeg_dest_ptr dest_mgr = NULL;
-  FILE * input_file;
-  FILE * output_file;
+  FILE *input_file;
+  FILE *output_file;
   unsigned char *inbuffer = NULL;
   unsigned long insize = 0;
   JDIMENSION num_scanlines;

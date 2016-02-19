@@ -62,7 +62,7 @@ typedef enum
  * then fetch the required row from the virtual array on subsequent calls.
  */
 
-typedef struct _rle_source_struct * rle_source_ptr;
+typedef struct _rle_source_struct *rle_source_ptr;
 
 typedef struct _rle_source_struct {
   struct cjpeg_source_struct pub; /* public fields */
@@ -216,7 +216,7 @@ get_pseudocolor_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   colormap = source->header.cmap;
   dest_row = source->pub.buffer[0];
   source->row--;
-  src_row = * (*cinfo->mem->access_virt_sarray)
+  src_row = *(*cinfo->mem->access_virt_sarray)
     ((j_common_ptr) cinfo, source->image, source->row, (JDIMENSION) 1, FALSE);
 
   for (col = cinfo->image_width; col > 0; col--) {
@@ -289,7 +289,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   case MAPPEDGRAY:
   case TRUECOLOR:
     for (row = 0; row < cinfo->image_height; row++) {
-      scanline = * (*cinfo->mem->access_virt_sarray)
+      scanline = *(*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, source->image, row, (JDIMENSION) 1, TRUE);
       rle_row = source->rle_row;
       rle_getrow(&source->header, rle_row);
@@ -312,7 +312,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   case DIRECTCOLOR:
     for (row = 0; row < cinfo->image_height; row++) {
-      scanline = * (*cinfo->mem->access_virt_sarray)
+      scanline = *(*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, source->image, row, (JDIMENSION) 1, TRUE);
       rle_getrow(&source->header, rle_row);
 

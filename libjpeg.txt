@@ -293,7 +293,7 @@ destination module if you want to do something else, as discussed later.
 If you use the standard destination module, you must open the target stdio
 stream beforehand.  Typical code for this step looks like:
 
-        FILE * outfile;
+        FILE *outfile;
         ...
         if ((outfile = fopen(filename, "wb")) == NULL) {
             fprintf(stderr, "can't open %s\n", filename);
@@ -540,7 +540,7 @@ to do something else, as discussed later.
 If you use the standard source module, you must open the source stdio stream
 beforehand.  Typical code for this step looks like:
 
-        FILE * infile;
+        FILE *infile;
         ...
         if ((infile = fopen(filename, "rb")) == NULL) {
             fprintf(stderr, "can't open %s\n", filename);
@@ -976,7 +976,7 @@ int restart_in_rows
         If you use restarts, you may want to use larger intervals in those
         cases.
 
-const jpeg_scan_info * scan_info
+const jpeg_scan_info *scan_info
 int num_scans
         By default, scan_info is NULL; this causes the compressor to write a
         single-scan sequential JPEG file.  If not NULL, scan_info points to
@@ -1022,7 +1022,7 @@ boolean write_Adobe_marker
         default behavior ensures that the JPEG file's color space can be
         recognized by the decoder.
 
-JQUANT_TBL * quant_tbl_ptrs[NUM_QUANT_TBLS]
+JQUANT_TBL *quant_tbl_ptrs[NUM_QUANT_TBLS]
         Pointers to coefficient quantization tables, one per table slot,
         or NULL if no table is defined for a slot.  Usually these should
         be set via one of the above helper routines; jpeg_add_quant_table()
@@ -1057,8 +1057,8 @@ int q_scale_factor[NUM_QUANT_TBLS]
                 cinfo->comp_info[0].v_samp_factor = 1;
                 cinfo->comp_info[0].h_samp_factor = 1;
 
-JHUFF_TBL * dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
-JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
+JHUFF_TBL *dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
+JHUFF_TBL *ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
         Pointers to Huffman coding tables, one per table slot, or NULL if
         no table is defined for a slot.  Slots 0 and 1 are filled with the
         JPEG sample tables by jpeg_set_defaults().  If you need to allocate
@@ -1442,7 +1442,7 @@ output_message (j_common_ptr cinfo)
         somewhere other than stderr.  Note that this method does not know
         how to generate a message, only where to send it.
 
-format_message (j_common_ptr cinfo, char * buffer)
+format_message (j_common_ptr cinfo, char *buffer)
         Constructs a readable error message string based on the error info
         stored in cinfo->err.  This method is called by output_message.  Few
         applications should need to override this method.  One possible
@@ -1519,7 +1519,7 @@ on external storage.
 A data destination manager struct contains a pointer and count defining the
 next byte to write in the work buffer and the remaining free space:
 
-        JOCTET * next_output_byte;  /* => next byte to write in buffer */
+        JOCTET *next_output_byte;   /* => next byte to write in buffer */
         size_t free_in_buffer;      /* # of byte spaces remaining in buffer */
 
 The library increments the pointer and decrements the count until the buffer
@@ -1568,7 +1568,7 @@ additional frammishes.  The source manager struct contains a pointer and count
 defining the next byte to read from the work buffer and the number of bytes
 remaining:
 
-        const JOCTET * next_input_byte; /* => next byte to read from buffer */
+        const JOCTET *next_input_byte;  /* => next byte to read from buffer */
         size_t bytes_in_buffer;         /* # of bytes remaining in buffer */
 
 The library increments the pointer and decrements the count until the buffer

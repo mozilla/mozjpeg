@@ -67,20 +67,20 @@ typedef struct {
   unsigned int restarts_to_go;  /* MCUs left in this restart interval */
 
   /* Pointers to derived tables (these workspaces have image lifespan) */
-  d_derived_tbl * dc_derived_tbls[NUM_HUFF_TBLS];
-  d_derived_tbl * ac_derived_tbls[NUM_HUFF_TBLS];
+  d_derived_tbl *dc_derived_tbls[NUM_HUFF_TBLS];
+  d_derived_tbl *ac_derived_tbls[NUM_HUFF_TBLS];
 
   /* Precalculated info set up by start_pass for use in decode_mcu: */
 
   /* Pointers to derived tables to be used for each block within an MCU */
-  d_derived_tbl * dc_cur_tbls[D_MAX_BLOCKS_IN_MCU];
-  d_derived_tbl * ac_cur_tbls[D_MAX_BLOCKS_IN_MCU];
+  d_derived_tbl *dc_cur_tbls[D_MAX_BLOCKS_IN_MCU];
+  d_derived_tbl *ac_cur_tbls[D_MAX_BLOCKS_IN_MCU];
   /* Whether we care about the DC and AC coefficient values for each block */
   boolean dc_needed[D_MAX_BLOCKS_IN_MCU];
   boolean ac_needed[D_MAX_BLOCKS_IN_MCU];
 } huff_entropy_decoder;
 
-typedef huff_entropy_decoder * huff_entropy_ptr;
+typedef huff_entropy_decoder *huff_entropy_ptr;
 
 
 /*
@@ -93,7 +93,7 @@ start_pass_huff_decoder (j_decompress_ptr cinfo)
   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
   int ci, blkn, dctbl, actbl;
   d_derived_tbl **pdtbl;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
 
   /* Check that the scan parameters Ss, Se, Ah/Al are OK for sequential JPEG.
    * This ought to be an error condition, but we make it a warning because
@@ -296,13 +296,13 @@ jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
 
 
 GLOBAL(boolean)
-jpeg_fill_bit_buffer (bitread_working_state * state,
+jpeg_fill_bit_buffer (bitread_working_state *state,
                       register bit_buf_type get_buffer, register int bits_left,
                       int nbits)
 /* Load up the bit buffer to a depth of at least nbits */
 {
   /* Copy heavily used state fields into locals (hopefully registers) */
-  register const JOCTET * next_input_byte = state->next_input_byte;
+  register const JOCTET *next_input_byte = state->next_input_byte;
   register size_t bytes_in_buffer = state->bytes_in_buffer;
   j_decompress_ptr cinfo = state->cinfo;
 
@@ -446,9 +446,9 @@ jpeg_fill_bit_buffer (bitread_working_state * state,
  */
 
 GLOBAL(int)
-jpeg_huff_decode (bitread_working_state * state,
+jpeg_huff_decode (bitread_working_state *state,
                   register bit_buf_type get_buffer, register int bits_left,
-                  d_derived_tbl * htbl, int min_bits)
+                  d_derived_tbl *htbl, int min_bits)
 {
   register int l = min_bits;
   register JLONG code;
@@ -566,8 +566,8 @@ decode_mcu_slow (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
     JBLOCKROW block = MCU_data ? MCU_data[blkn] : NULL;
-    d_derived_tbl * dctbl = entropy->dc_cur_tbls[blkn];
-    d_derived_tbl * actbl = entropy->ac_cur_tbls[blkn];
+    d_derived_tbl *dctbl = entropy->dc_cur_tbls[blkn];
+    d_derived_tbl *actbl = entropy->ac_cur_tbls[blkn];
     register int s, k, r;
 
     /* Decode a single block's worth of coefficients */
@@ -665,8 +665,8 @@ decode_mcu_fast (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
     JBLOCKROW block = MCU_data ? MCU_data[blkn] : NULL;
-    d_derived_tbl * dctbl = entropy->dc_cur_tbls[blkn];
-    d_derived_tbl * actbl = entropy->ac_cur_tbls[blkn];
+    d_derived_tbl *dctbl = entropy->dc_cur_tbls[blkn];
+    d_derived_tbl *actbl = entropy->ac_cur_tbls[blkn];
     register int s, k, r, l;
 
     HUFF_DECODE_FAST(s, l, dctbl);

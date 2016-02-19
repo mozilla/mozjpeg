@@ -152,7 +152,7 @@ EXTN(jconst_huff_encode_one_block):
 ; Encode a single block's worth of coefficients.
 ;
 ; GLOBAL(JOCTET*)
-; jsimd_huff_encode_one_block_sse2 (working_state * state, JOCTET *buffer,
+; jsimd_huff_encode_one_block_sse2 (working_state *state, JOCTET *buffer,
 ;                                   JCOEFPTR block, int last_dc_val,
 ;                                   c_derived_tbl *dctbl, c_derived_tbl *actbl)
 ;
@@ -175,7 +175,7 @@ EXTN(jconst_huff_encode_one_block):
 %define temp3           temp2+SIZEOF_DWORD
 %define temp4           temp3+SIZEOF_DWORD
 %define temp5           temp4+SIZEOF_DWORD
-%define gotptr          temp5+SIZEOF_DWORD  ; void * gotptr
+%define gotptr          temp5+SIZEOF_DWORD  ; void *gotptr
 %define put_buffer      ebx
 %define put_bits        edi
 

@@ -27,16 +27,16 @@ typedef struct {
   struct jpeg_color_deconverter pub; /* public fields */
 
   /* Private state for YCC->RGB conversion */
-  int * Cr_r_tab;               /* => table for Cr to R conversion */
-  int * Cb_b_tab;               /* => table for Cb to B conversion */
-  JLONG * Cr_g_tab;             /* => table for Cr to G conversion */
-  JLONG * Cb_g_tab;             /* => table for Cb to G conversion */
+  int *Cr_r_tab;                /* => table for Cr to R conversion */
+  int *Cb_b_tab;                /* => table for Cb to B conversion */
+  JLONG *Cr_g_tab;              /* => table for Cr to G conversion */
+  JLONG *Cb_g_tab;              /* => table for Cb to G conversion */
 
   /* Private state for RGB->Y conversion */
-  JLONG * rgb_y_tab;            /* => table for RGB to Y conversion */
+  JLONG *rgb_y_tab;             /* => table for RGB to Y conversion */
 } my_color_deconverter;
 
-typedef my_color_deconverter * my_cconvert_ptr;
+typedef my_color_deconverter *my_cconvert_ptr;
 
 
 /**************** YCbCr -> RGB conversion: most common case **************/
@@ -303,7 +303,7 @@ LOCAL(void)
 build_rgb_y_table (j_decompress_ptr cinfo)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  JLONG * rgb_y_tab;
+  JLONG *rgb_y_tab;
   JLONG i;
 
   /* Allocate and fill in the conversion tables. */
@@ -330,7 +330,7 @@ rgb_gray_convert (j_decompress_ptr cinfo,
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
   register int r, g, b;
-  register JLONG * ctab = cconvert->rgb_y_tab;
+  register JLONG *ctab = cconvert->rgb_y_tab;
   register JSAMPROW outptr;
   register JSAMPROW inptr0, inptr1, inptr2;
   register JDIMENSION col;
@@ -543,11 +543,11 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
   register JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
   /* copy these pointers into registers if possible */
-  register JSAMPLE * range_limit = cinfo->sample_range_limit;
-  register int * Crrtab = cconvert->Cr_r_tab;
-  register int * Cbbtab = cconvert->Cb_b_tab;
-  register JLONG * Crgtab = cconvert->Cr_g_tab;
-  register JLONG * Cbgtab = cconvert->Cb_g_tab;
+  register JSAMPLE *range_limit = cinfo->sample_range_limit;
+  register int *Crrtab = cconvert->Cr_r_tab;
+  register int *Cbbtab = cconvert->Cb_b_tab;
+  register JLONG *Crgtab = cconvert->Cr_g_tab;
+  register JLONG *Cbgtab = cconvert->Cb_g_tab;
   SHIFT_TEMPS
 
   while (--num_rows >= 0) {

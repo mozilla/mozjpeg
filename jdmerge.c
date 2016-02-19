@@ -56,10 +56,10 @@ typedef struct {
                     JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf);
 
   /* Private state for YCC->RGB conversion */
-  int * Cr_r_tab;               /* => table for Cr to R conversion */
-  int * Cb_b_tab;               /* => table for Cb to B conversion */
-  JLONG * Cr_g_tab;             /* => table for Cr to G conversion */
-  JLONG * Cb_g_tab;             /* => table for Cb to G conversion */
+  int *Cr_r_tab;                /* => table for Cr to R conversion */
+  int *Cb_b_tab;                /* => table for Cb to B conversion */
+  JLONG *Cr_g_tab;              /* => table for Cr to G conversion */
+  JLONG *Cb_g_tab;              /* => table for Cb to G conversion */
 
   /* For 2:1 vertical sampling, we produce two output rows at a time.
    * We need a "spare" row buffer to hold the second output row if the
@@ -73,7 +73,7 @@ typedef struct {
   JDIMENSION rows_to_go;        /* counts rows remaining in image */
 } my_upsampler;
 
-typedef my_upsampler * my_upsample_ptr;
+typedef my_upsampler *my_upsample_ptr;
 
 #define SCALEBITS       16      /* speediest right-shift on some machines */
 #define ONE_HALF        ((JLONG) 1 << (SCALEBITS-1))

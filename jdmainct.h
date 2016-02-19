@@ -34,7 +34,7 @@ typedef struct {
   JDIMENSION iMCU_row_ctr;      /* counts iMCU rows to detect image top/bot */
 } my_main_controller;
 
-typedef my_main_controller * my_main_ptr;
+typedef my_main_controller *my_main_ptr;
 
 
 /* context_state values: */

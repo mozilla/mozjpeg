@@ -88,9 +88,9 @@ static const int mips_idct_ifast_coefs[4] = {
 
 /* The following struct is borrowed from jdsample.c */
 typedef void (*upsample1_ptr) (j_decompress_ptr cinfo,
-                               jpeg_component_info * compptr,
+                               jpeg_component_info *compptr,
                                JSAMPARRAY input_data,
-                               JSAMPARRAY * output_data_ptr);
+                               JSAMPARRAY *output_data_ptr);
 
 typedef struct {
   struct jpeg_upsampler pub;
@@ -103,7 +103,7 @@ typedef struct {
   UINT8 v_expand[MAX_COMPONENTS];
 } my_upsampler;
 
-typedef my_upsampler * my_upsample_ptr;
+typedef my_upsampler *my_upsample_ptr;
 
 GLOBAL(int)
 jsimd_can_rgb_ycc (void)
@@ -378,7 +378,7 @@ jsimd_can_h2v1_downsample (void)
 }
 
 GLOBAL(void)
-jsimd_h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                        JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
@@ -391,7 +391,7 @@ jsimd_h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
 GLOBAL(void)
 jsimd_h2v2_smooth_downsample (j_compress_ptr cinfo,
-                              jpeg_component_info * compptr,
+                              jpeg_component_info *compptr,
                               JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   jsimd_h2v2_smooth_downsample_mips_dspr2(input_data, output_data,
@@ -403,7 +403,7 @@ jsimd_h2v2_smooth_downsample (j_compress_ptr cinfo,
 }
 
 GLOBAL(void)
-jsimd_h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                        JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
@@ -467,9 +467,9 @@ jsimd_can_int_upsample (void)
 
 GLOBAL(void)
 jsimd_h2v2_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info * compptr,
+                     jpeg_component_info *compptr,
                      JSAMPARRAY input_data,
-                     JSAMPARRAY * output_data_ptr)
+                     JSAMPARRAY *output_data_ptr)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_h2v2_upsample_mips_dspr2(cinfo->max_v_samp_factor,
@@ -479,9 +479,9 @@ jsimd_h2v2_upsample (j_decompress_ptr cinfo,
 
 GLOBAL(void)
 jsimd_h2v1_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info * compptr,
+                     jpeg_component_info *compptr,
                      JSAMPARRAY input_data,
-                     JSAMPARRAY * output_data_ptr)
+                     JSAMPARRAY *output_data_ptr)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_h2v1_upsample_mips_dspr2(cinfo->max_v_samp_factor,
@@ -490,8 +490,8 @@ jsimd_h2v1_upsample (j_decompress_ptr cinfo,
 }
 
 GLOBAL(void)
-jsimd_int_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-                    JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+jsimd_int_upsample (j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                    JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)
 {
   my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
 
@@ -538,9 +538,9 @@ jsimd_can_h2v1_fancy_upsample (void)
 
 GLOBAL(void)
 jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info * compptr,
+                           jpeg_component_info *compptr,
                            JSAMPARRAY input_data,
-                           JSAMPARRAY * output_data_ptr)
+                           JSAMPARRAY *output_data_ptr)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_h2v2_fancy_upsample_mips_dspr2(cinfo->max_v_samp_factor,
@@ -550,9 +550,9 @@ jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
 
 GLOBAL(void)
 jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info * compptr,
+                           jpeg_component_info *compptr,
                            JSAMPARRAY input_data,
-                           JSAMPARRAY * output_data_ptr)
+                           JSAMPARRAY *output_data_ptr)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_h2v1_fancy_upsample_mips_dspr2(cinfo->max_v_samp_factor,
@@ -720,7 +720,7 @@ jsimd_can_convsamp_float (void)
 
 GLOBAL(void)
 jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
-                DCTELEM * workspace)
+                DCTELEM *workspace)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_convsamp_mips_dspr2(sample_data, start_col, workspace);
@@ -728,7 +728,7 @@ jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
 
 GLOBAL(void)
 jsimd_convsamp_float (JSAMPARRAY sample_data, JDIMENSION start_col,
-                      FAST_FLOAT * workspace)
+                      FAST_FLOAT *workspace)
 {
   if ((simd_support & JSIMD_MIPS_DSPR2))
     jsimd_convsamp_float_mips_dspr2(sample_data, start_col, workspace);
@@ -777,21 +777,21 @@ jsimd_can_fdct_float (void)
 }
 
 GLOBAL(void)
-jsimd_fdct_islow (DCTELEM * data)
+jsimd_fdct_islow (DCTELEM *data)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_fdct_islow_mips_dspr2(data);
 }
 
 GLOBAL(void)
-jsimd_fdct_ifast (DCTELEM * data)
+jsimd_fdct_ifast (DCTELEM *data)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_fdct_ifast_mips_dspr2(data);
 }
 
 GLOBAL(void)
-jsimd_fdct_float (FAST_FLOAT * data)
+jsimd_fdct_float (FAST_FLOAT *data)
 {
 }
 
@@ -838,16 +838,16 @@ jsimd_can_quantize_float (void)
 }
 
 GLOBAL(void)
-jsimd_quantize (JCOEFPTR coef_block, DCTELEM * divisors,
-                DCTELEM * workspace)
+jsimd_quantize (JCOEFPTR coef_block, DCTELEM *divisors,
+                DCTELEM *workspace)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_quantize_mips_dspr2(coef_block, divisors, workspace);
 }
 
 GLOBAL(void)
-jsimd_quantize_float (JCOEFPTR coef_block, FAST_FLOAT * divisors,
-                      FAST_FLOAT * workspace)
+jsimd_quantize_float (JCOEFPTR coef_block, FAST_FLOAT *divisors,
+                      FAST_FLOAT *workspace)
 {
   if (simd_support & JSIMD_MIPS_DSPR2)
     jsimd_quantize_float_mips_dspr2(coef_block, divisors, workspace);
@@ -945,7 +945,7 @@ jsimd_can_idct_12x12 (void)
 }
 
 GLOBAL(void)
-jsimd_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
                 JDIMENSION output_col)
 {
@@ -955,7 +955,7 @@ jsimd_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 }
 
 GLOBAL(void)
-jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
                 JDIMENSION output_col)
 {
@@ -967,7 +967,7 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 }
 
 GLOBAL(void)
-jsimd_idct_6x6 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_idct_6x6 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
            JCOEFPTR coef_block, JSAMPARRAY output_buf,
            JDIMENSION output_col)
 {
@@ -977,7 +977,7 @@ jsimd_idct_6x6 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 }
 
 GLOBAL(void)
-jsimd_idct_12x12 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_idct_12x12 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                   JCOEFPTR coef_block,
                   JSAMPARRAY output_buf, JDIMENSION output_col)
 {
@@ -1060,7 +1060,7 @@ jsimd_can_idct_float (void)
 }
 
 GLOBAL(void)
-jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
@@ -1082,13 +1082,13 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 }
 
 GLOBAL(void)
-jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
   if (simd_support & JSIMD_MIPS_DSPR2) {
     JCOEFPTR inptr;
-    IFAST_MULT_TYPE * quantptr;
+    IFAST_MULT_TYPE *quantptr;
     DCTELEM workspace[DCTSIZE2];  /* buffers data between passes */
 
     /* Pass 1: process columns from input, store into work array. */
@@ -1109,7 +1109,7 @@ jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 }
 
 GLOBAL(void)
-jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
@@ -1122,7 +1122,7 @@ jsimd_can_huff_encode_one_block (void)
 }
 
 GLOBAL(JOCTET*)
-jsimd_huff_encode_one_block (void * state, JOCTET *buffer, JCOEFPTR block,
+jsimd_huff_encode_one_block (void *state, JOCTET *buffer, JCOEFPTR block,
                              int last_dc_val, c_derived_tbl *dctbl,
                              c_derived_tbl *actbl)
 {

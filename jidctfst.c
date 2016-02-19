@@ -168,7 +168,7 @@
  */
 
 GLOBAL(void)
-jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                  JCOEFPTR coef_block,
                  JSAMPARRAY output_buf, JDIMENSION output_col)
 {
@@ -176,8 +176,8 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
   DCTELEM tmp10, tmp11, tmp12, tmp13;
   DCTELEM z5, z10, z11, z12, z13;
   JCOEFPTR inptr;
-  IFAST_MULT_TYPE * quantptr;
-  int * wsptr;
+  IFAST_MULT_TYPE *quantptr;
+  int *wsptr;
   JSAMPROW outptr;
   JSAMPLE *range_limit = IDCT_range_limit(cinfo);
   int ctr;

@@ -346,9 +346,9 @@ smoothing_ok (j_decompress_ptr cinfo)
   boolean smoothing_useful = FALSE;
   int ci, coefi;
   jpeg_component_info *compptr;
-  JQUANT_TBL * qtable;
-  int * coef_bits;
-  int * coef_bits_latch;
+  JQUANT_TBL *qtable;
+  int *coef_bits;
+  int *coef_bits_latch;
 
   if (! cinfo->progressive_mode || cinfo->coef_bits == NULL)
     return FALSE;
@@ -409,7 +409,7 @@ decompress_smooth_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
   jpeg_component_info *compptr;
   inverse_DCT_method_ptr inverse_DCT;
   boolean first_row, last_row;
-  JCOEF * workspace;
+  JCOEF *workspace;
   int *coef_bits;
   JQUANT_TBL *quanttbl;
   JLONG Q00,Q01,Q02,Q10,Q11,Q20, num;

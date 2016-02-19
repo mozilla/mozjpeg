@@ -164,7 +164,7 @@ typedef struct {
   boolean on_odd_row;           /* flag to remember which row we are on */
 } my_cquantizer;
 
-typedef my_cquantizer * my_cquantize_ptr;
+typedef my_cquantizer *my_cquantize_ptr;
 
 
 /*
@@ -523,7 +523,7 @@ quantize_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
   register JSAMPROW input_ptr;
   register JSAMPROW output_ptr;
   JSAMPROW colorindex_ci;
-  int * dither;                 /* points to active row of dither matrix */
+  int *dither;                  /* points to active row of dither matrix */
   int row_index, col_index;     /* current indexes into dither matrix */
   int nc = cinfo->out_color_components;
   int ci;
@@ -575,9 +575,9 @@ quantize3_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
   JSAMPROW colorindex0 = cquantize->colorindex[0];
   JSAMPROW colorindex1 = cquantize->colorindex[1];
   JSAMPROW colorindex2 = cquantize->colorindex[2];
-  int * dither0;                /* points to active row of dither matrix */
-  int * dither1;
-  int * dither2;
+  int *dither0;                 /* points to active row of dither matrix */
+  int *dither1;
+  int *dither2;
   int row_index, col_index;     /* current indexes into dither matrix */
   int row;
   JDIMENSION col;

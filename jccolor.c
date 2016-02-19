@@ -26,10 +26,10 @@ typedef struct {
   struct jpeg_color_converter pub; /* public fields */
 
   /* Private state for RGB->YCC conversion */
-  JLONG * rgb_ycc_tab;          /* => table for RGB to YCbCr conversion */
+  JLONG *rgb_ycc_tab;           /* => table for RGB to YCbCr conversion */
 } my_color_converter;
 
-typedef my_color_converter * my_cconvert_ptr;
+typedef my_color_converter *my_cconvert_ptr;
 
 
 /**************** RGB -> YCbCr conversion: most common case **************/
@@ -198,7 +198,7 @@ METHODDEF(void)
 rgb_ycc_start (j_compress_ptr cinfo)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  JLONG * rgb_ycc_tab;
+  JLONG *rgb_ycc_tab;
   JLONG i;
 
   /* Allocate and fill in the conversion tables. */
@@ -382,7 +382,7 @@ cmyk_ycck_convert (j_compress_ptr cinfo,
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
   register int r, g, b;
-  register JLONG * ctab = cconvert->rgb_ycc_tab;
+  register JLONG *ctab = cconvert->rgb_ycc_tab;
   register JSAMPROW inptr;
   register JSAMPROW outptr0, outptr1, outptr2, outptr3;
   register JDIMENSION col;

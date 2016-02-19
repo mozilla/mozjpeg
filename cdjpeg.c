@@ -82,7 +82,7 @@ end_progress_monitor (j_common_ptr cinfo)
  */
 
 GLOBAL(boolean)
-keymatch (char * arg, const char * keyword, int minchars)
+keymatch (char *arg, const char *keyword, int minchars)
 {
   register int ca, ck;
   register int nmatched = 0;

@@ -764,9 +764,9 @@ do_transverse (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
  */
 
 LOCAL(boolean)
-jt_read_integer (const char ** strptr, JDIMENSION * result)
+jt_read_integer (const char **strptr, JDIMENSION *result)
 {
-  const char * ptr = *strptr;
+  const char *ptr = *strptr;
   JDIMENSION val = 0;
 
   for (; isdigit(*ptr); ptr++) {
@@ -1179,7 +1179,7 @@ transpose_critical_parameters (j_compress_ptr dstinfo)
 
 #if JPEG_LIB_VERSION >= 70
 LOCAL(void)
-adjust_exif_parameters (JOCTET * data, unsigned int length,
+adjust_exif_parameters (JOCTET *data, unsigned int length,
                         JDIMENSION new_width, JDIMENSION new_height)
 {
   boolean is_motorola; /* Flag for byte order */

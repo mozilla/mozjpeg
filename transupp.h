@@ -143,7 +143,7 @@ typedef struct {
 
   /* Internal workspace: caller should not touch these */
   int num_components;           /* # of components in workspace */
-  jvirt_barray_ptr * workspace_coef_arrays; /* workspace for transformations */
+  jvirt_barray_ptr *workspace_coef_arrays; /* workspace for transformations */
   JDIMENSION output_width;      /* cropped destination dimensions */
   JDIMENSION output_height;
   JDIMENSION x_crop_offset;     /* destination crop offsets measured in iMCUs */

@@ -42,7 +42,7 @@ typedef struct {
   JDIMENSION next_row;          /* index of next row to fill/empty in strip */
 } my_post_controller;
 
-typedef my_post_controller * my_post_ptr;
+typedef my_post_controller *my_post_ptr;
 
 
 /* Forward declarations */

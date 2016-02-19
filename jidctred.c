@@ -118,15 +118,15 @@
  */
 
 GLOBAL(void)
-jpeg_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jpeg_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                JCOEFPTR coef_block,
                JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   JLONG tmp0, tmp2, tmp10, tmp12;
   JLONG z1, z2, z3, z4;
   JCOEFPTR inptr;
-  ISLOW_MULT_TYPE * quantptr;
-  int * wsptr;
+  ISLOW_MULT_TYPE *quantptr;
+  int *wsptr;
   JSAMPROW outptr;
   JSAMPLE *range_limit = IDCT_range_limit(cinfo);
   int ctr;
@@ -272,14 +272,14 @@ jpeg_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
  */
 
 GLOBAL(void)
-jpeg_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jpeg_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                JCOEFPTR coef_block,
                JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   JLONG tmp0, tmp10, z1;
   JCOEFPTR inptr;
-  ISLOW_MULT_TYPE * quantptr;
-  int * wsptr;
+  ISLOW_MULT_TYPE *quantptr;
+  int *wsptr;
   JSAMPROW outptr;
   JSAMPLE *range_limit = IDCT_range_limit(cinfo);
   int ctr;
@@ -381,12 +381,12 @@ jpeg_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
  */
 
 GLOBAL(void)
-jpeg_idct_1x1 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jpeg_idct_1x1 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                JCOEFPTR coef_block,
                JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   int dcval;
-  ISLOW_MULT_TYPE * quantptr;
+  ISLOW_MULT_TYPE *quantptr;
   JSAMPLE *range_limit = IDCT_range_limit(cinfo);
   SHIFT_TEMPS
 

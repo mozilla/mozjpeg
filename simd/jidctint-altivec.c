@@ -206,7 +206,7 @@
 
 
 void
-jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
+jsimd_idct_islow_altivec (void *dct_table_, JCOEFPTR coef_block,
                           JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   short *dct_table = (short *)dct_table_;

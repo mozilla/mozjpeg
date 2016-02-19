@@ -69,7 +69,7 @@ typedef struct {
 
 } gif_dest_struct;
 
-typedef gif_dest_struct * gif_dest_ptr;
+typedef gif_dest_struct *gif_dest_ptr;
 
 /* Largest value that will fit in N bits */
 #define MAXCODE(n_bits) ((1 << (n_bits)) - 1)

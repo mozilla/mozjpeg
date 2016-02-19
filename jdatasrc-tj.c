@@ -106,7 +106,7 @@ fill_mem_input_buffer (j_decompress_ptr cinfo)
 METHODDEF(void)
 skip_input_data (j_decompress_ptr cinfo, long num_bytes)
 {
-  struct jpeg_source_mgr * src = cinfo->src;
+  struct jpeg_source_mgr *src = cinfo->src;
 
   /* Just a dumb implementation for now.  Could use fseek() except
    * it doesn't work on pipes.  Not clear that being smart is worth
@@ -158,9 +158,9 @@ term_source (j_decompress_ptr cinfo)
 
 GLOBAL(void)
 jpeg_mem_src_tj (j_decompress_ptr cinfo,
-                 const unsigned char * inbuffer, unsigned long insize)
+                 const unsigned char *inbuffer, unsigned long insize)
 {
-  struct jpeg_source_mgr * src;
+  struct jpeg_source_mgr *src;
 
   if (inbuffer == NULL || insize == 0)  /* Treat empty input as fatal error */
     ERREXIT(cinfo, JERR_INPUT_EMPTY);

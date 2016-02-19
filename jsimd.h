@@ -39,17 +39,17 @@ EXTERN(int) jsimd_can_h2v2_downsample (void);
 EXTERN(int) jsimd_can_h2v1_downsample (void);
 
 EXTERN(void) jsimd_h2v2_downsample
-        (j_compress_ptr cinfo, jpeg_component_info * compptr,
+        (j_compress_ptr cinfo, jpeg_component_info *compptr,
          JSAMPARRAY input_data, JSAMPARRAY output_data);
 
 EXTERN(int) jsimd_can_h2v2_smooth_downsample (void);
 
 EXTERN(void) jsimd_h2v2_smooth_downsample
-        (j_compress_ptr cinfo, jpeg_component_info * compptr,
+        (j_compress_ptr cinfo, jpeg_component_info *compptr,
          JSAMPARRAY input_data, JSAMPARRAY output_data);
 
 EXTERN(void) jsimd_h2v1_downsample
-        (j_compress_ptr cinfo, jpeg_component_info * compptr,
+        (j_compress_ptr cinfo, jpeg_component_info *compptr,
         JSAMPARRAY input_data, JSAMPARRAY output_data);
 
 EXTERN(int) jsimd_can_h2v2_upsample (void);
@@ -57,24 +57,24 @@ EXTERN(int) jsimd_can_h2v1_upsample (void);
 EXTERN(int) jsimd_can_int_upsample (void);
 
 EXTERN(void) jsimd_h2v2_upsample
-        (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+        (j_decompress_ptr cinfo, jpeg_component_info *compptr,
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v1_upsample
-        (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+        (j_decompress_ptr cinfo, jpeg_component_info *compptr,
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_int_upsample
-        (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+        (j_decompress_ptr cinfo, jpeg_component_info *compptr,
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 
 EXTERN(int) jsimd_can_h2v2_fancy_upsample (void);
 EXTERN(int) jsimd_can_h2v1_fancy_upsample (void);
 
 EXTERN(void) jsimd_h2v2_fancy_upsample
-        (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+        (j_decompress_ptr cinfo, jpeg_component_info *compptr,
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 EXTERN(void) jsimd_h2v1_fancy_upsample
-        (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-         JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr);
+        (j_decompress_ptr cinfo, jpeg_component_info *compptr,
+         JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 
 EXTERN(int) jsimd_can_h2v2_merged_upsample (void);
 EXTERN(int) jsimd_can_h2v1_merged_upsample (void);
@@ -89,5 +89,5 @@ EXTERN(void) jsimd_h2v1_merged_upsample
 EXTERN(int) jsimd_can_huff_encode_one_block (void);
 
 EXTERN(JOCTET*) jsimd_huff_encode_one_block
-        (void * state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
+        (void *state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
          c_derived_tbl *dctbl, c_derived_tbl *actbl);

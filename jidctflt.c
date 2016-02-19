@@ -69,7 +69,7 @@
  */
 
 GLOBAL(void)
-jpeg_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+jpeg_idct_float (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                  JCOEFPTR coef_block,
                  JSAMPARRAY output_buf, JDIMENSION output_col)
 {
@@ -77,8 +77,8 @@ jpeg_idct_float (j_decompress_ptr cinfo, jpeg_component_info * compptr,
   FAST_FLOAT tmp10, tmp11, tmp12, tmp13;
   FAST_FLOAT z5, z10, z11, z12, z13;
   JCOEFPTR inptr;
-  FLOAT_MULT_TYPE * quantptr;
-  FAST_FLOAT * wsptr;
+  FLOAT_MULT_TYPE *quantptr;
+  FAST_FLOAT *wsptr;
   JSAMPROW outptr;
   JSAMPLE *range_limit = cinfo->sample_range_limit;
   int ctr;

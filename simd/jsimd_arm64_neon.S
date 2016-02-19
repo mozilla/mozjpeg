@@ -131,7 +131,7 @@ _\fname:
  * Perform dequantization and inverse DCT on one block of coefficients.
  *
  * GLOBAL(void)
- * jsimd_idct_islow_neon (void * dct_table, JCOEFPTR coef_block,
+ * jsimd_idct_islow_neon (void *dct_table, JCOEFPTR coef_block,
  *                        JSAMPARRAY output_buf, JDIMENSION output_col)
  */
 
@@ -2703,8 +2703,8 @@ asm_function jsimd_fdct_ifast_neon
 
 /*
  * GLOBAL(void)
- * jsimd_quantize_neon (JCOEFPTR coef_block, DCTELEM * divisors,
- *                      DCTELEM * workspace);
+ * jsimd_quantize_neon (JCOEFPTR coef_block, DCTELEM *divisors,
+ *                      DCTELEM *workspace);
  *
  */
 asm_function jsimd_quantize_neon
@@ -2988,7 +2988,7 @@ asm_function jsimd_h2v2_downsample_neon
 
 /*
  * GLOBAL(JOCTET*)
- * jsimd_huff_encode_one_block (working_state * state, JOCTET *buffer,
+ * jsimd_huff_encode_one_block (working_state *state, JOCTET *buffer,
  *                              JCOEFPTR block, int last_dc_val,
  *                              c_derived_tbl *dctbl, c_derived_tbl *actbl)
  *

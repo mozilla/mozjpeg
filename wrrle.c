@@ -62,7 +62,7 @@ typedef struct {
 
 } rle_dest_struct;
 
-typedef rle_dest_struct * rle_dest_ptr;
+typedef rle_dest_struct *rle_dest_ptr;
 
 /* Forward declarations */
 METHODDEF(void) rle_put_pixel_rows
@@ -237,7 +237,7 @@ finish_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   } else {
     for (row = cinfo->output_height-1; row >= 0; row--) {
       rle_row = (rle_pixel **) dest->rle_row;
-      output_row = * (*cinfo->mem->access_virt_sarray)
+      output_row = *(*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, dest->image,
          (JDIMENSION) row, (JDIMENSION) 1, FALSE);
       red = rle_row[0];

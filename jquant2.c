@@ -128,11 +128,11 @@ static const int c_scales[3]={R_SCALE, G_SCALE, B_SCALE};
 
 typedef UINT16 histcell;        /* histogram cell; prefer an unsigned type */
 
-typedef histcell * histptr; /* for pointers to histogram cells */
+typedef histcell *histptr; /* for pointers to histogram cells */
 
 typedef histcell hist1d[HIST_C2_ELEMS]; /* typedefs for the array */
-typedef hist1d * hist2d;    /* type for the 2nd-level pointers */
-typedef hist2d * hist3d;        /* type for top-level pointer */
+typedef hist1d *hist2d;         /* type for the 2nd-level pointers */
+typedef hist2d *hist3d;         /* type for top-level pointer */
 
 
 /* Declarations for Floyd-Steinberg dithering.
@@ -184,10 +184,10 @@ typedef struct {
   /* Variables for Floyd-Steinberg dithering */
   FSERRPTR fserrors;            /* accumulated errors */
   boolean on_odd_row;           /* flag to remember which row we are on */
-  int * error_limiter;          /* table for clamping the applied error */
+  int *error_limiter;           /* table for clamping the applied error */
 } my_cquantizer;
 
-typedef my_cquantizer * my_cquantize_ptr;
+typedef my_cquantizer *my_cquantize_ptr;
 
 
 /*
@@ -245,7 +245,7 @@ typedef struct {
   long colorcount;
 } box;
 
-typedef box * boxptr;
+typedef box *boxptr;
 
 
 LOCAL(boxptr)
@@ -763,8 +763,8 @@ find_best_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
 {
   int ic0, ic1, ic2;
   int i, icolor;
-  register JLONG * bptr;        /* pointer into bestdist[] array */
-  JSAMPLE * cptr;               /* pointer into bestcolor[] array */
+  register JLONG *bptr;         /* pointer into bestdist[] array */
+  JSAMPLE *cptr;                /* pointer into bestcolor[] array */
   JLONG dist0, dist1;           /* initial distance values */
   register JLONG dist2;         /* current distance in inner loop */
   JLONG xx0, xx1;               /* distance increments */
@@ -841,7 +841,7 @@ fill_inverse_cmap (j_decompress_ptr cinfo, int c0, int c1, int c2)
   hist3d histogram = cquantize->histogram;
   int minc0, minc1, minc2;      /* lower left corner of update box */
   int ic0, ic1, ic2;
-  register JSAMPLE * cptr;      /* pointer into bestcolor[] array */
+  register JSAMPLE *cptr;       /* pointer into bestcolor[] array */
   register histptr cachep;      /* pointer into main cache array */
   /* This array lists the candidate colormap indexes. */
   JSAMPLE colorlist[MAXNUMCOLORS];
@@ -1080,7 +1080,7 @@ init_error_limit (j_decompress_ptr cinfo)
 /* Allocate and fill in the error_limiter table */
 {
   my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
-  int * table;
+  int *table;
   int in, out;
 
   table = (int *) (*cinfo->mem->alloc_small)

@@ -28,7 +28,7 @@ typedef struct {
   boolean inheaders;            /* TRUE until first SOS is reached */
 } my_input_controller;
 
-typedef my_input_controller * my_inputctl_ptr;
+typedef my_input_controller *my_inputctl_ptr;
 
 
 /* Forward declarations */
@@ -239,7 +239,7 @@ latch_quant_tables (j_decompress_ptr cinfo)
 {
   int ci, qtblno;
   jpeg_component_info *compptr;
-  JQUANT_TBL * qtbl;
+  JQUANT_TBL *qtbl;
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];

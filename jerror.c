@@ -126,7 +126,7 @@ output_message (j_common_ptr cinfo)
 METHODDEF(void)
 emit_message (j_common_ptr cinfo, int msg_level)
 {
-  struct jpeg_error_mgr * err = cinfo->err;
+  struct jpeg_error_mgr *err = cinfo->err;
 
   if (msg_level < 0) {
     /* It's a warning message.  Since corrupt files may generate many warnings,
@@ -153,12 +153,12 @@ emit_message (j_common_ptr cinfo, int msg_level)
  */
 
 METHODDEF(void)
-format_message (j_common_ptr cinfo, char * buffer)
+format_message (j_common_ptr cinfo, char *buffer)
 {
-  struct jpeg_error_mgr * err = cinfo->err;
+  struct jpeg_error_mgr *err = cinfo->err;
   int msg_code = err->msg_code;
-  const char * msgtext = NULL;
-  const char * msgptr;
+  const char *msgtext = NULL;
+  const char *msgptr;
   char ch;
   boolean isstring;
 
@@ -227,7 +227,7 @@ reset_error_mgr (j_common_ptr cinfo)
  */
 
 GLOBAL(struct jpeg_error_mgr *)
-jpeg_std_error (struct jpeg_error_mgr * err)
+jpeg_std_error (struct jpeg_error_mgr *err)
 {
   err->error_exit = error_exit;
   err->emit_message = emit_message;

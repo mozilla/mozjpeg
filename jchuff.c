@@ -220,7 +220,7 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
 
 GLOBAL(void)
 jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
-                         c_derived_tbl ** pdtbl)
+                         c_derived_tbl **pdtbl)
 {
   JHUFF_TBL *htbl;
   c_derived_tbl *dtbl;

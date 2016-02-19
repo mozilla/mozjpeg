@@ -34,7 +34,7 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
  * are limited to 1..255 for JPEG baseline compatibility.
  */
 {
-  JQUANT_TBL ** qtblptr;
+  JQUANT_TBL **qtblptr;
   int i;
   long temp;
 

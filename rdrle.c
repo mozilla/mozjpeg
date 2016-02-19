@@ -71,7 +71,7 @@ typedef struct _rle_source_struct {
   jvirt_sarray_ptr image;       /* virtual array to hold the image */
   JDIMENSION row;               /* current row # in the virtual array */
   rle_hdr header;               /* Input file information */
-  rle_pixel** rle_row;          /* holds a row returned by rle_getrow() */
+  rle_pixel **rle_row;          /* holds a row returned by rle_getrow() */
 
 } rle_source_struct;
 

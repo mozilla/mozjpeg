@@ -67,7 +67,7 @@ GLOBAL(void)
 jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
                                j_compress_ptr dstinfo)
 {
-  JQUANT_TBL ** qtblptr;
+  JQUANT_TBL **qtblptr;
   jpeg_component_info *incomp, *outcomp;
   JQUANT_TBL *c_quant, *slot_quant;
   int tblno, ci, coefi;

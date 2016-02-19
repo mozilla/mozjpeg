@@ -153,7 +153,7 @@ start_pass_huff_decoder (j_decompress_ptr cinfo)
 
 GLOBAL(void)
 jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
-                         d_derived_tbl ** pdtbl)
+                         d_derived_tbl **pdtbl)
 {
   JHUFF_TBL *htbl;
   d_derived_tbl *dtbl;

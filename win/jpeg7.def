@@ -103,3 +103,4 @@ EXPORTS
 	jround_up @ 102 ; 
 	jzero_far @ 103 ; 
 	jpeg_skip_scanlines @ 104 ; 
+	jpeg_crop_scanline @ 105 ; 

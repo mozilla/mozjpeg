@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2002-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2013-2014, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, 2016, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -995,6 +995,8 @@ EXTERN(JDIMENSION) jpeg_read_scanlines (j_decompress_ptr cinfo,
                                         JDIMENSION max_lines);
 EXTERN(JDIMENSION) jpeg_skip_scanlines (j_decompress_ptr cinfo,
                                         JDIMENSION num_lines);
+EXTERN(void) jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
+                                 JDIMENSION *width);
 EXTERN(boolean) jpeg_finish_decompress (j_decompress_ptr cinfo);
 
 /* Replaces jpeg_read_scanlines when reading raw downsampled data. */

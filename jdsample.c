@@ -7,6 +7,7 @@
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2010, 2015-2016, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California
+ * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -373,13 +374,16 @@ jinit_upsampler (j_decompress_ptr cinfo)
   boolean need_buffer, do_fancy;
   int h_in_group, v_in_group, h_out_group, v_out_group;
 
-  upsample = (my_upsample_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                sizeof(my_upsampler));
-  cinfo->upsample = (struct jpeg_upsampler *) upsample;
-  upsample->pub.start_pass = start_pass_upsample;
-  upsample->pub.upsample = sep_upsample;
-  upsample->pub.need_context_rows = FALSE; /* until we find out differently */
+  if (!cinfo->master->jinit_upsampler_no_alloc) {
+    upsample = (my_upsample_ptr)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+                                  sizeof(my_upsampler));
+    cinfo->upsample = (struct jpeg_upsampler *) upsample;
+    upsample->pub.start_pass = start_pass_upsample;
+    upsample->pub.upsample = sep_upsample;
+    upsample->pub.need_context_rows = FALSE; /* until we find out differently */
+  } else
+    upsample = (my_upsample_ptr) cinfo->upsample;
 
   if (cinfo->CCIR601_sampling)  /* this isn't supported */
     ERREXIT(cinfo, JERR_CCIR601_NOTIMPL);
@@ -455,7 +459,7 @@ jinit_upsampler (j_decompress_ptr cinfo)
       upsample->v_expand[ci] = (UINT8) (v_out_group / v_in_group);
     } else
       ERREXIT(cinfo, JERR_FRACT_SAMPLE_NOTIMPL);
-    if (need_buffer) {
+    if (need_buffer && !cinfo->master->jinit_upsampler_no_alloc) {
       upsample->color_buf[ci] = (*cinfo->mem->alloc_sarray)
         ((j_common_ptr) cinfo, JPOOL_IMAGE,
          (JDIMENSION) jround_up((long) cinfo->output_width,

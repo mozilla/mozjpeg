@@ -367,9 +367,9 @@ if(WITH_12BIT)
   set(MD5_PPM_420M_ISLOW_1_4 35fd59d866e44659edfa3c18db2a3edb)
   set(MD5_PPM_420M_ISLOW_1_8 ccaed48ac0aedefda5d4abe4013f4ad7)
   set(MD5_PPM_420_ISLOW_SKIP15_31 86664cd9dc956536409e44e244d20a97)
-  set(MD5_PPM_420_ISLOW_PROG_STRIP71_132 a5c3706bb2e59bd01786b1181f67f97c)
+  set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71 452a21656115a163029cfba5c04fa76a)
   set(MD5_PPM_444_ISLOW_SKIP1_6 ef63901f71ef7a75cd78253fc0914f84)
-  set(MD5_PPM_444_ISLOW_PROG_STRIP13_110 6d228f8d05381d8639f3d078b91b2ee0)
+  set(MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13 15b173fb5872d9575572fbcc1b05956f)
   set(MD5_JPEG_CROP cdb35ff4b4519392690ea040c56ea99c)
 else()
   set(TESTORIG testorig.jpg)
@@ -421,11 +421,11 @@ else()
   set(MD5_BMP_420M_ISLOW_565D d1be3a3339166255e76fa50a0d70d73e)
   set(MD5_PPM_420_ISLOW_SKIP15_31 c4c65c1e43d7275cd50328a61e6534f0)
   set(MD5_PPM_420_ISLOW_ARI_SKIP16_139 087c6b123db16ac00cb88c5b590bb74a)
-  set(MD5_PPM_420_ISLOW_PROG_STRIP71_132 a7f2ba6ea335f03549888bed66a89fae)
-  set(MD5_PPM_420_ISLOW_ARI_STRIP4_56 0e5e44a39b94817917a1bac72903246b)
+  set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71 26eb36ccc7d1f0cb80cdabb0ac8b5d99)
+  set(MD5_PPM_420_ISLOW_ARI_CROP53x53_4_4 886c6775af22370257122f8b16207e6d)
   set(MD5_PPM_444_ISLOW_SKIP1_6 5606f86874cf26b8fcee1117a0a436a6)
-  set(MD5_PPM_444_ISLOW_PROG_STRIP13_110 40b5d9742558dca6229d7332fc2dda07)
-  set(MD5_PPM_444_ISLOW_ARI_STRIP0_36 9aceb5b9449c900b892a1d2fe39351b4)
+  set(MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13 db87dc7ce26bcdc7a6b56239ce2b9d6c)
+  set(MD5_PPM_444_ISLOW_ARI_CROP37x37_0_0 cb57b32bd6d03e35432362f7bf184b6d)
   set(MD5_JPEG_CROP b4197f377e621c4e9b1d20471432610d)
 endif()
 
@@ -764,22 +764,23 @@ foreach(libtype ${TEST_LIBTYPES})
   add_test(cjpeg${suffix}-420-islow-prog
     ${dir}cjpeg${suffix} -dct int -prog
       -outfile testout_420_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
-  add_test(djpeg${suffix}-420-islow-prog-strip71_132
-    ${dir}djpeg${suffix} -dct int -strip 71,132 -ppm
-      -outfile testout_420_islow_strip71,132.ppm testout_420_islow_prog.jpg)
-  add_test(djpeg${suffix}-420-islow-prog-strip71_132-cmp
-    ${MD5CMP} ${MD5_PPM_420_ISLOW_PROG_STRIP71_132}
-      testout_420_islow_strip71,132.ppm)
+  add_test(djpeg${suffix}-420-islow-prog-crop62x62_71_71
+    ${dir}djpeg${suffix} -dct int -crop 62x62+71+71 -ppm
+      -outfile testout_420_islow_prog_crop62x62,71,71.ppm
+      testout_420_islow_prog.jpg)
+  add_test(djpeg${suffix}-420-islow-prog-crop62x62_71_71-cmp
+    ${MD5CMP} ${MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71}
+      testout_420_islow_prog_crop62x62,71,71.ppm)
 
   # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No   ENT: arith
   if(WITH_ARITH_DEC)
-    add_test(djpeg${suffix}-420-islow-ari-strip4_56
-      ${dir}djpeg${suffix} -dct int -strip 4,56 -ppm
-        -outfile testout_420_islow_ari_strip4,56.ppm
+    add_test(djpeg${suffix}-420-islow-ari-crop53x53_4_4
+      ${dir}djpeg${suffix} -dct int -crop 53x53+4+4 -ppm
+        -outfile testout_420_islow_ari_crop53x53,4,4.ppm
         ${TESTIMAGES}/testimgari.jpg)
-    add_test(djpeg${suffix}-420-islow-ari-strip4_56-cmp
-      ${MD5CMP} ${MD5_PPM_420_ISLOW_ARI_STRIP4_56}
-        testout_420_islow_ari_strip4,56.ppm)
+    add_test(djpeg${suffix}-420-islow-ari-crop53x53_4_4-cmp
+      ${MD5CMP} ${MD5_PPM_420_ISLOW_ARI_CROP53x53_4_4}
+        testout_420_islow_ari_crop53x53,4,4.ppm)
   endif()
 
   # Context rows: No   Intra-iMCU row: Yes  ENT: huff
@@ -796,13 +797,13 @@ foreach(libtype ${TEST_LIBTYPES})
   add_test(cjpeg${suffix}-444-islow-prog
     ${dir}cjpeg${suffix} -dct int -prog -sample 1x1
       -outfile testout_444_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
-  add_test(djpeg${suffix}-444-islow-prog-strip13_110
-    ${dir}djpeg${suffix} -dct int -strip 13,110 -ppm
-      -outfile testout_444_islow_prog_strip13,110.ppm
+  add_test(djpeg${suffix}-444-islow-prog-crop98x98_13_13
+    ${dir}djpeg${suffix} -dct int -crop 98x98+13+13 -ppm
+      -outfile testout_444_islow_prog_crop98x98,13,13.ppm
       testout_444_islow_prog.jpg)
-  add_test(djpeg${suffix}-444-islow-prog_strip13_110-cmp
-    ${MD5CMP} ${MD5_PPM_444_ISLOW_PROG_STRIP13_110}
-      testout_444_islow_prog_strip13,110.ppm)
+  add_test(djpeg${suffix}-444-islow-prog_crop98x98_13_13-cmp
+    ${MD5CMP} ${MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13}
+      testout_444_islow_prog_crop98x98,13,13.ppm)
 
   # Context rows: No   Intra-iMCU row: No   ENT: arith
   if(WITH_ARITH_ENC)
@@ -810,13 +811,13 @@ foreach(libtype ${TEST_LIBTYPES})
       ${dir}cjpeg${suffix} -dct int -arithmetic -sample 1x1
         -outfile testout_444_islow_ari.jpg ${TESTIMAGES}/testorig.ppm)
     if(WITH_ARITH_DEC)
-      add_test(djpeg${suffix}-444-islow-ari-strip0_36
-        ${dir}djpeg${suffix} -dct int -strip 0,36 -ppm
-          -outfile testout_444_islow_ari_strip0,36.ppm
+      add_test(djpeg${suffix}-444-islow-ari-crop37x37_0_0
+        ${dir}djpeg${suffix} -dct int -crop 37x37+0+0 -ppm
+          -outfile testout_444_islow_ari_crop37x37,0,0.ppm
           testout_444_islow_ari.jpg)
-      add_test(djpeg${suffix}-444-islow-ari-strip0_36-cmp
-        ${MD5CMP} ${MD5_PPM_444_ISLOW_ARI_STRIP0_36}
-          testout_444_islow_ari_strip0,36.ppm)
+      add_test(djpeg${suffix}-444-islow-ari-crop37x37_0_0-cmp
+        ${MD5CMP} ${MD5_PPM_444_ISLOW_ARI_CROP37x37_0_0}
+          testout_444_islow_ari_crop37x37,0,0.ppm)
     endif()
   endif()
 

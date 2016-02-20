@@ -3,7 +3,7 @@ USING THE IJG JPEG LIBRARY
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014, 2015, D. R. Commander.
+Copyright (C) 2010, 2014-2016, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -730,16 +730,21 @@ jpeg_abort_decompress() or jpeg_abort() if you want to reuse the object.
 The previous discussion of aborting compression cycles applies here too.
 
 
-Skipping rows when decompressing
---------------------------------
+Partial image decompression
+---------------------------
 
-jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines);
+Partial image decompression is convenient for performance-critical applications
+that wish to view only a portion of a large JPEG image without decompressing
+the whole thing.  It it also useful in memory-constrained environments (such as
+on mobile devices.)  This library provides the following functions to support
+partial image decompression:
+
+1. Skipping rows when decompressing
+
+        jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines);
 
 This function provides application programmers with the ability to skip over
-multiple rows in the JPEG image, thus decoding only a subset of the image data.
-This is convenient for performance-critical applications that wish to view only
-a portion of a large JPEG image without decompressing the whole thing.  It it
-also useful in memory-constrained environments (such as on mobile devices.)
+multiple rows in the JPEG image.
 
 Suspending data sources are not supported by this function.  Calling
 jpeg_skip_scanlines() with a suspending data source will result in undefined
@@ -771,6 +776,43 @@ potential drawbacks:
 These issues are especially tricky for cases in which upsampling requires
 context rows.  In the worst case, jpeg_skip_scanlines() will perform similarly
 to jpeg_read_scanlines() (since it will actually call jpeg_read_scanlines().)
+
+2. Decompressing partial scanlines
+
+        jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
+                            JDIMENSION *width)
+
+This function provides application programmers with the ability to decompress
+only a portion of each row in the JPEG image.  It must be called after
+jpeg_start_decompress() and before any calls to jpeg_read_scanlines() or
+jpeg_skip_scanlines().
+
+If xoffset and width do not form a valid subset of the image row, then this
+function will generate an error.  Note that if the output image is scaled, then
+xoffset and width are relative to the scaled image dimensions.
+
+xoffset and width are passed by reference because xoffset must fall on an iMCU
+boundary.  If it doesn't, then it will be moved left to the nearest iMCU
+boundary, and width will be increased accordingly.  If the calling program does
+not like the adjusted values of xoffset and width, then it can call
+jpeg_crop_scanline() again with new values (for instance, if it wants to move
+xoffset to the nearest iMCU boundary to the right instead of to the left.)
+
+After calling this function, cinfo->output_width will be set to the adjusted
+width.  This value should be used when allocating an output buffer to pass to
+jpeg_read_scanlines().
+
+The output image from a partial-width decompression will be identical to the
+corresponding image region from a full decode, with one exception:  The "fancy"
+(smooth) h2v2 (4:2:0) and h2v1 (4:2:2) upsampling algorithms fill in the
+missing chroma components by averaging the chroma components from neighboring
+pixels, except on the right and left edges of the image (where there are no
+neighboring pixels.)  When performing a partial-width decompression, these
+"fancy" upsampling algorithms may treat the left and right edges of the partial
+image region as if they are the left and right edges of the image, meaning that
+the upsampling algorithm may be simplified.  The result is that the pixels on
+the left or right edge of the partial image may not be exactly identical to the
+corresponding pixels in the original image.
 
 
 Mechanics of usage: include files, linking, etc

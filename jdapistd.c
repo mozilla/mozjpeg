@@ -141,6 +141,110 @@ output_pass_setup (j_decompress_ptr cinfo)
 
 
 /*
+ * Enable partial scanline decompression
+ *
+ * Must be called after jpeg_start_decompress() and before any calls to
+ * jpeg_read_scanlines() or jpeg_skip_scanlines().
+ *
+ * Refer to libjpeg.txt for more information.
+ */
+
+GLOBAL(void)
+jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
+                    JDIMENSION *width)
+{
+  int ci, align, orig_downsampled_width;
+  JDIMENSION input_xoffset;
+  boolean reinit_upsampler = FALSE;
+  jpeg_component_info *compptr;
+
+  if (cinfo->global_state != DSTATE_SCANNING || cinfo->output_scanline != 0)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  if (!xoffset || !width)
+    ERREXIT(cinfo, JERR_BAD_CROP_SPEC);
+
+  /* xoffset and width must fall within the output image dimensions. */
+  if (*width == 0 || *xoffset + *width > cinfo->output_width)
+    ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
+
+  /* No need to do anything if the caller wants the entire width. */
+  if (*width == cinfo->output_width)
+    return;
+
+  /* Ensuring the proper alignment of xoffset is tricky.  At minimum, it
+   * must align with an MCU boundary, because:
+   *
+   *   (1) The IDCT is performed in blocks, and it is not feasible to modify
+   *       the algorithm so that it can transform partial blocks.
+   *   (2) Because of the SIMD extensions, any input buffer passed to the
+   *       upsampling and color conversion routines must be aligned to the
+   *       SIMD word size (for instance, 128-bit in the case of SSE2.)  The
+   *       easiest way to accomplish this without copying data is to ensure
+   *       that upsampling and color conversion begin at the start of the
+   *       first MCU column that will be inverse transformed.
+   *
+   * In practice, we actually impose a stricter alignment requirement.  We
+   * require that xoffset be a multiple of the maximum MCU column width of all
+   * of the components (the "iMCU column width.")  This is to simplify the
+   * single-pass decompression case, allowing us to use the same MCU column
+   * width for all of the components.
+   */
+  align = cinfo->min_DCT_scaled_size * cinfo->max_h_samp_factor;
+
+  /* Adjust xoffset to the nearest iMCU boundary <= the requested value */
+  input_xoffset = *xoffset;
+  *xoffset = (input_xoffset / align) * align;
+
+  /* Adjust the width so that the right edge of the output image is as
+   * requested (only the left edge is altered.)  It is important that calling
+   * programs check this value after this function returns, so that they can
+   * allocate an output buffer with the appropriate size.
+   */
+  *width = *width + input_xoffset - *xoffset;
+  cinfo->output_width = *width;
+
+  /* Set the first and last iMCU columns that we must decompress.  These values
+   * will be used in single-scan decompressions.
+   */
+  cinfo->master->first_iMCU_col =
+    (JDIMENSION) (long) (*xoffset) / (long) align;
+  cinfo->master->last_iMCU_col =
+    (JDIMENSION) jdiv_round_up((long) (*xoffset + cinfo->output_width),
+                               (long) align) - 1;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    /* Set downsampled_width to the new output width. */
+    orig_downsampled_width = compptr->downsampled_width;
+    compptr->downsampled_width =
+      (JDIMENSION) jdiv_round_up((long) (cinfo->output_width *
+                                         compptr->h_samp_factor),
+                                 (long) cinfo->max_h_samp_factor);
+    if (compptr->downsampled_width < 2 && orig_downsampled_width >= 2)
+      reinit_upsampler = TRUE;
+
+    /* Set the first and last iMCU columns that we must decompress.  These
+     * values will be used in multi-scan decompressions.
+     */
+    cinfo->master->first_MCU_col[ci] =
+      (JDIMENSION) (long) (*xoffset * compptr->h_samp_factor) /
+                   (long) align;
+    cinfo->master->last_MCU_col[ci] =
+      (JDIMENSION) jdiv_round_up((long) ((*xoffset + cinfo->output_width) *
+                                         compptr->h_samp_factor),
+                                 (long) align) - 1;
+  }
+
+  if (reinit_upsampler) {
+    cinfo->master->jinit_upsampler_no_alloc = TRUE;
+    jinit_upsampler(cinfo);
+    cinfo->master->jinit_upsampler_no_alloc = FALSE;
+  }
+}
+
+
+/*
  * Read some scanlines of data from the JPEG decompressor.
  *
  * The return value will be the number of lines actually read.

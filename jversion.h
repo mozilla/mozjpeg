@@ -38,6 +38,7 @@
 #define JCOPYRIGHT      "Copyright (C) 2009-2016 D. R. Commander\n" \
                         "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
                         "Copyright (C) 2015-2016 Matthieu Darbois\n" \
+                        "Copyright (C) 2015 Google, Inc.\n" \
                         "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
                         "Copyright (C) 2013 Linaro Limited\n" \
                         "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \

@@ -6,6 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2010, 2015-2016, D. R. Commander.
+ * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -108,38 +109,46 @@ decompress_onepass (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
         coef->MCU_ctr = MCU_col_num;
         return JPEG_SUSPENDED;
       }
-      /* Determine where data should go in output_buf and do the IDCT thing.
-       * We skip dummy blocks at the right and bottom edges (but blkn gets
-       * incremented past them!).  Note the inner loop relies on having
-       * allocated the MCU_buffer[] blocks sequentially.
+
+      /* Only perform the IDCT on blocks that are contained within the desired
+       * cropping region.
        */
-      blkn = 0;                 /* index of current DCT block within MCU */
-      for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-        compptr = cinfo->cur_comp_info[ci];
-        /* Don't bother to IDCT an uninteresting component. */
-        if (! compptr->component_needed) {
-          blkn += compptr->MCU_blocks;
-          continue;
-        }
-        inverse_DCT = cinfo->idct->inverse_DCT[compptr->component_index];
-        useful_width = (MCU_col_num < last_MCU_col) ? compptr->MCU_width
-                                                    : compptr->last_col_width;
-        output_ptr = output_buf[compptr->component_index] +
-          yoffset * compptr->_DCT_scaled_size;
-        start_col = MCU_col_num * compptr->MCU_sample_width;
-        for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
-          if (cinfo->input_iMCU_row < last_iMCU_row ||
-              yoffset+yindex < compptr->last_row_height) {
-            output_col = start_col;
-            for (xindex = 0; xindex < useful_width; xindex++) {
-              (*inverse_DCT) (cinfo, compptr,
-                              (JCOEFPTR) coef->MCU_buffer[blkn+xindex],
-                              output_ptr, output_col);
-              output_col += compptr->_DCT_scaled_size;
-            }
+      if (MCU_col_num >= cinfo->master->first_iMCU_col &&
+          MCU_col_num <= cinfo->master->last_iMCU_col) {
+        /* Determine where data should go in output_buf and do the IDCT thing.
+         * We skip dummy blocks at the right and bottom edges (but blkn gets
+         * incremented past them!).  Note the inner loop relies on having
+         * allocated the MCU_buffer[] blocks sequentially.
+         */
+        blkn = 0;                 /* index of current DCT block within MCU */
+        for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
+          compptr = cinfo->cur_comp_info[ci];
+          /* Don't bother to IDCT an uninteresting component. */
+          if (! compptr->component_needed) {
+            blkn += compptr->MCU_blocks;
+            continue;
           }
-          blkn += compptr->MCU_width;
-          output_ptr += compptr->_DCT_scaled_size;
+          inverse_DCT = cinfo->idct->inverse_DCT[compptr->component_index];
+          useful_width = (MCU_col_num < last_MCU_col) ? compptr->MCU_width
+                                                      : compptr->last_col_width;
+          output_ptr = output_buf[compptr->component_index] +
+            yoffset * compptr->_DCT_scaled_size;
+          start_col = (MCU_col_num - cinfo->master->first_iMCU_col) *
+              compptr->MCU_sample_width;
+          for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
+            if (cinfo->input_iMCU_row < last_iMCU_row ||
+                yoffset+yindex < compptr->last_row_height) {
+              output_col = start_col;
+              for (xindex = 0; xindex < useful_width; xindex++) {
+                (*inverse_DCT) (cinfo, compptr,
+                                (JCOEFPTR) coef->MCU_buffer[blkn+xindex],
+                                output_ptr, output_col);
+                output_col += compptr->_DCT_scaled_size;
+              }
+            }
+            blkn += compptr->MCU_width;
+            output_ptr += compptr->_DCT_scaled_size;
+          }
         }
       }
     }
@@ -294,9 +303,10 @@ decompress_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
     output_ptr = output_buf[ci];
     /* Loop over all DCT blocks to be processed. */
     for (block_row = 0; block_row < block_rows; block_row++) {
-      buffer_ptr = buffer[block_row];
+      buffer_ptr = buffer[block_row] + cinfo->master->first_MCU_col[ci];
       output_col = 0;
-      for (block_num = 0; block_num < compptr->width_in_blocks; block_num++) {
+      for (block_num = cinfo->master->first_MCU_col[ci];
+           block_num <= cinfo->master->last_MCU_col[ci]; block_num++) {
         (*inverse_DCT) (cinfo, compptr, (JCOEFPTR) buffer_ptr,
                         output_ptr, output_col);
         buffer_ptr++;
@@ -482,7 +492,7 @@ decompress_smooth_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
     output_ptr = output_buf[ci];
     /* Loop over all DCT blocks to be processed. */
     for (block_row = 0; block_row < block_rows; block_row++) {
-      buffer_ptr = buffer[block_row];
+      buffer_ptr = buffer[block_row] + cinfo->master->first_MCU_col[ci];
       if (first_row && block_row == 0)
         prev_block_row = buffer_ptr;
       else
@@ -499,7 +509,8 @@ decompress_smooth_data (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
       DC7 = DC8 = DC9 = (int) next_block_row[0][0];
       output_col = 0;
       last_block_column = compptr->width_in_blocks - 1;
-      for (block_num = 0; block_num <= last_block_column; block_num++) {
+      for (block_num = cinfo->master->first_MCU_col[ci];
+           block_num <= cinfo->master->last_MCU_col[ci]; block_num++) {
         /* Fetch current DCT block into workspace so we can modify it. */
         jcopy_block_row(buffer_ptr, (JBLOCKROW) workspace, (JDIMENSION) 1);
         /* Update DC values */

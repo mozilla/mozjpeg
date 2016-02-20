@@ -20,6 +20,7 @@
  */
 
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
+#include "wrppm.h"
 
 #ifdef PPM_SUPPORTED
 
@@ -60,21 +61,6 @@
  * When JSAMPLE is the same size as char, we can just fwrite() the
  * decompressed data to the PPM or PGM file.
  */
-
-
-/* Private version of data destination object */
-
-typedef struct {
-  struct djpeg_dest_struct pub; /* public fields */
-
-  /* Usually these two pointers point to the same place: */
-  char *iobuffer;               /* fwrite's I/O buffer */
-  JSAMPROW pixrow;              /* decompressor output buffer */
-  size_t buffer_width;          /* width of I/O buffer */
-  JDIMENSION samples_per_row;   /* JSAMPLEs per output row */
-} ppm_dest_struct;
-
-typedef ppm_dest_struct *ppm_dest_ptr;
 
 
 /*

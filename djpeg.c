@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2015, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2016, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -31,6 +31,7 @@
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"           /* for version message */
 #include "jconfigint.h"
+#include "wrppm.h"
 
 #include <ctype.h>              /* to declare isprint() */
 
@@ -91,8 +92,9 @@ static IMAGE_FORMATS requested_fmt;
 static const char *progname;    /* program name for error messages */
 static char *outfilename;       /* for -outfile switch */
 boolean memsrc;                 /* for -memsrc switch */
-boolean strip, skip;
-JDIMENSION startY, endY;
+boolean skip, crop;
+JDIMENSION skip_start, skip_end;
+JDIMENSION crop_x, crop_y, crop_width, crop_height;
 #define INPUT_BUF_SIZE  4096
 
 
@@ -169,8 +171,8 @@ usage (void)
   fprintf(stderr, "  -memsrc        Load input file into memory before decompressing\n");
 #endif
 
-  fprintf(stderr, "  -skip Y0,Y1    Decode all rows except those between Y0 and Y1 (inclusive)\n");
-  fprintf(stderr, "  -strip Y0,Y1   Decode only rows between Y0 and Y1 (inclusive)\n");
+  fprintf(stderr, "  -skip Y0,Y1    Decompress all rows except those between Y0 and Y1 (inclusive)\n");
+  fprintf(stderr, "  -crop WxH+X+Y  Decompress only a rectangular subregion of the image\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   exit(EXIT_FAILURE);
@@ -196,8 +198,8 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
   requested_fmt = DEFAULT_FMT;  /* set default output file format */
   outfilename = NULL;
   memsrc = FALSE;
-  strip = FALSE;
   skip = FALSE;
+  crop = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -378,20 +380,23 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
                  &cinfo->scale_num, &cinfo->scale_denom) != 2)
         usage();
 
-    } else if (keymatch(arg, "strip", 2)) {
-      if (++argn >= argc)
-        usage();
-      if (sscanf(argv[argn], "%d,%d", &startY, &endY) != 2 || startY > endY)
-        usage();
-      strip = TRUE;
-
-
     } else if (keymatch(arg, "skip", 2)) {
       if (++argn >= argc)
         usage();
-      if (sscanf(argv[argn], "%d,%d", &startY, &endY) != 2 || startY > endY)
+      if (sscanf(argv[argn], "%u,%u", &skip_start, &skip_end) != 2 ||
+          skip_start > skip_end)
         usage();
       skip = TRUE;
+
+    } else if (keymatch(arg, "crop", 2)) {
+      char c;
+      if (++argn >= argc)
+        usage();
+      if (sscanf(argv[argn], "%u%c%u+%u+%u", &crop_width, &c, &crop_height,
+                 &crop_x, &crop_y) != 5 ||
+          (c != 'X' && c != 'x') || crop_width < 1 || crop_height < 1)
+        usage();
+      crop = TRUE;
 
     } else if (keymatch(arg, "targa", 1)) {
       /* Targa output format. */
@@ -658,54 +663,78 @@ main (int argc, char **argv)
   /* Start decompressor */
   (void) jpeg_start_decompress(&cinfo);
 
-  /* Strip decode */
-  if (strip || skip) {
+  /* Skip rows */
+  if (skip) {
     JDIMENSION tmp;
 
-    /* Check for valid endY.  We cannot check this value until after
+    /* Check for valid skip_end.  We cannot check this value until after
      * jpeg_start_decompress() is called.  Note that we have already verified
-     * that startY <= endY.
+     * that skip_start <= skip_end.
      */
-    if (endY > cinfo.output_height - 1) {
-      fprintf(stderr, "%s: strip %d-%d exceeds image height %d\n", progname,
-              startY, endY, cinfo.output_height);
+    if (skip_end > cinfo.output_height - 1) {
+      fprintf(stderr, "%s: skip region exceeds image height %d\n", progname,
+              cinfo.output_height);
       exit(EXIT_FAILURE);
     }
 
     /* Write output file header.  This is a hack to ensure that the destination
-     * manager creates an image of the proper size for the partial decode.
+     * manager creates an output image of the proper size.
      */
     tmp = cinfo.output_height;
-    cinfo.output_height = endY - startY + 1;
-    if (skip)
-      cinfo.output_height = tmp - cinfo.output_height;
+    cinfo.output_height -= (skip_end - skip_start + 1);
     (*dest_mgr->start_output) (&cinfo, dest_mgr);
     cinfo.output_height = tmp;
 
     /* Process data */
-    if (skip) {
-      while (cinfo.output_scanline < startY) {
-        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                            dest_mgr->buffer_height);
-        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
-      }
-      jpeg_skip_scanlines(&cinfo, endY - startY + 1);
-      while (cinfo.output_scanline < cinfo.output_height) {
-        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                            dest_mgr->buffer_height);
-        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
-      }
-    } else {
-      jpeg_skip_scanlines(&cinfo, startY);
-      while (cinfo.output_scanline <= endY) {
-        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                            dest_mgr->buffer_height);
-        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
-      }
-      jpeg_skip_scanlines(&cinfo, cinfo.output_height - endY + 1);
+    while (cinfo.output_scanline < skip_start) {
+      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                          dest_mgr->buffer_height);
+      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+    }
+    jpeg_skip_scanlines(&cinfo, skip_end - skip_start + 1);
+    while (cinfo.output_scanline < cinfo.output_height) {
+      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                          dest_mgr->buffer_height);
+      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
     }
 
-  /* Normal full image decode */
+  /* Decompress a subregion */
+  } else if (crop) {
+    JDIMENSION tmp;
+
+    /* Check for valid crop dimensions.  We cannot check these values until
+     * after jpeg_start_decompress() is called.
+     */
+    if (crop_x + crop_width > cinfo.output_width ||
+        crop_y + crop_height > cinfo.output_height) {
+      fprintf(stderr, "%s: crop dimensions exceed image dimensions %d x %d\n",
+              progname, cinfo.output_width, cinfo.output_height);
+      exit(EXIT_FAILURE);
+    }
+
+    jpeg_crop_scanline(&cinfo, &crop_x, &crop_width);
+    ((ppm_dest_ptr) dest_mgr)->buffer_width = cinfo.output_width *
+                                              cinfo.out_color_components *
+                                              sizeof(JSAMPLE);
+
+    /* Write output file header.  This is a hack to ensure that the destination
+     * manager creates an output image of the proper size.
+     */
+    tmp = cinfo.output_height;
+    cinfo.output_height = crop_height;
+    (*dest_mgr->start_output) (&cinfo, dest_mgr);
+    cinfo.output_height = tmp;
+
+    /* Process data */
+    jpeg_skip_scanlines(&cinfo, crop_y);
+    while (cinfo.output_scanline < crop_y + crop_height) {
+      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                          dest_mgr->buffer_height);
+      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+    }
+    jpeg_skip_scanlines(&cinfo, cinfo.output_height - crop_y - crop_height);
+
+  /* Normal full-image decompress */
   } else {
     /* Write output file header */
     (*dest_mgr->start_output) (&cinfo, dest_mgr);

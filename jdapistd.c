@@ -190,7 +190,7 @@ jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
    * single-pass decompression case, allowing us to use the same MCU column
    * width for all of the components.
    */
-  align = cinfo->min_DCT_scaled_size * cinfo->max_h_samp_factor;
+  align = cinfo->_min_DCT_scaled_size * cinfo->max_h_samp_factor;
 
   /* Adjust xoffset to the nearest iMCU boundary <= the requested value */
   input_xoffset = *xoffset;

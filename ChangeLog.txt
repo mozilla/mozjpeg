@@ -112,6 +112,9 @@ to construct a JPEG image in which a single Huffman block is over 430 bytes
 long, so this version of libjpeg-turbo activates the accelerated Huffman
 decoder only if there are > 512 bytes of data in the input buffer.
 
+[18] Fixed a memory leak in tjunittest encountered when running the program
+with the -yuv option.
+
 
 1.4.2
 =====

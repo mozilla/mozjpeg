@@ -1,5 +1,5 @@
-1.5 pre-beta
-============
+1.5 beta1
+=========
 
 [1] Added full SIMD acceleration for PowerPC platforms using AltiVec VMX
 (128-bit SIMD) instructions.  Although the performance of libjpeg-turbo on

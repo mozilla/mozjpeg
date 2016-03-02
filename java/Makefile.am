@@ -44,7 +44,7 @@ JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 
 all: all-am turbojpeg.jar
 
-turbojpeg.jar: $(JAVA_CLASSES) ${srcdir}/MANIFEST.MF
+turbojpeg.jar: classnoinst.stamp ${srcdir}/MANIFEST.MF
 	$(JAR) cfm turbojpeg.jar ${srcdir}/MANIFEST.MF $(JAVA_CLASSES)
 
 clean-local:

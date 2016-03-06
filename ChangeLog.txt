@@ -22,6 +22,9 @@ decoder only if there are > 512 bytes of data in the input buffer.
 [3] Fixed a memory leak in tjunittest encountered when running the program
 with the -yuv option.
 
+[4] Fixed an issue whereby a malformed motion-JPEG frame could cause the "fast
+path" of libjpeg-turbo's Huffman decoder to read from uninitialized memory.
+
 
 1.4.2
 =====

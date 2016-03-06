@@ -5,8 +5,8 @@
 path" of libjpeg-turbo's Huffman decoder to read from uninitialized memory.
 
 
-1.5 beta1
-=========
+1.4.90 (1.5 beta1)
+==================
 
 [1] Added full SIMD acceleration for PowerPC platforms using AltiVec VMX
 (128-bit SIMD) instructions.  Although the performance of libjpeg-turbo on

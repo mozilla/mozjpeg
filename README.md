@@ -36,7 +36,7 @@ Using libjpeg-turbo
 libjpeg-turbo includes two APIs that can be used to compress and decompress
 JPEG images:
 
-- **TurboJPEG API**
+- **TurboJPEG API**  
   This API provides an easy-to-use interface for compressing and decompressing
   JPEG images in memory.  It also provides some functionality that would not be
   straightforward to achieve using the underlying libjpeg API, such as
@@ -44,7 +44,7 @@ JPEG images:
   transforms on an image.  The Java interface for libjpeg-turbo is written on
   top of the TurboJPEG API.
 
-- **libjpeg API**
+- **libjpeg API**  
   This is the de facto industry-standard API for compressing and decompressing
   JPEG images.  It is more difficult to use than the TurboJPEG API but also
   more powerful.  The libjpeg API implementation in libjpeg-turbo is both
@@ -135,17 +135,17 @@ which aren't.
 
 #### Fully supported
 
-- **libjpeg: IDCT scaling extensions in decompressor**
+- **libjpeg: IDCT scaling extensions in decompressor**  
   libjpeg-turbo supports IDCT scaling with scaling factors of 1/8, 1/4, 3/8,
   1/2, 5/8, 3/4, 7/8, 9/8, 5/4, 11/8, 3/2, 13/8, 7/4, 15/8, and 2/1 (only 1/4
   and 1/2 are SIMD-accelerated.)
 
 - **libjpeg: Arithmetic coding**
 
-- **libjpeg: In-memory source and destination managers**
+- **libjpeg: In-memory source and destination managers**  
   See notes below.
 
-- **cjpeg: Separate quality settings for luminance and chrominance**
+- **cjpeg: Separate quality settings for luminance and chrominance**  
   Note that the libpjeg v7+ API was extended to accommodate this feature only
   for convenience purposes.  It has always been possible to implement this
   feature with libjpeg v6b (see rdswitch.c for an example.)
@@ -170,18 +170,18 @@ which aren't.
 NOTE:  As of this writing, extensive research has been conducted into the
 usefulness of DCT scaling as a means of data reduction and SmartScale as a
 means of quality improvement.  The reader is invited to peruse the research at
-http://www.libjpeg-turbo.org/About/SmartScale and draw his/her own conclusions,
+<http://www.libjpeg-turbo.org/About/SmartScale> and draw his/her own conclusions,
 but it is the general belief of our project that these features have not
 demonstrated sufficient usefulness to justify inclusion in libjpeg-turbo.
 
-- **libjpeg: DCT scaling in compressor**
+- **libjpeg: DCT scaling in compressor**  
   `cinfo.scale_num` and `cinfo.scale_denom` are silently ignored.
   There is no technical reason why DCT scaling could not be supported when
   emulating the libjpeg v7+ API/ABI, but without the SmartScale extension (see
   below), only scaling factors of 1/2, 8/15, 4/7, 8/13, 2/3, 8/11, 4/5, and
   8/9 would be available, which is of limited usefulness.
 
-- **libjpeg: SmartScale**
+- **libjpeg: SmartScale**  
   `cinfo.block_size` is silently ignored.
   SmartScale is an extension to the JPEG format that allows for DCT block
   sizes other than 8x8.  Providing support for this new format would be
@@ -194,15 +194,15 @@ demonstrated sufficient usefulness to justify inclusion in libjpeg-turbo.
   interest in providing this feature would be as a means of supporting
   additional DCT scaling factors.
 
-- **libjpeg: Fancy downsampling in compressor**
+- **libjpeg: Fancy downsampling in compressor**  
   `cinfo.do_fancy_downsampling` is silently ignored.
   This requires the DCT scaling feature, which is not supported.
 
-- **jpegtran: Scaling**
+- **jpegtran: Scaling**  
   This requires both the DCT scaling and SmartScale features, which are not
   supported.
 
-- **Lossless RGB JPEG files**
+- **Lossless RGB JPEG files**  
   This requires the SmartScale feature, which is not supported.
 
 ### What About libjpeg v9?

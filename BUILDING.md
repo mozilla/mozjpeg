@@ -6,9 +6,7 @@ Build Requirements
 ------------------
 
 - autoconf 2.56 or later
-
 - automake 1.7 or later
-
 - libtool 1.4 or later
   * If using Xcode 4.3 or later on OS X, autoconf and automake are no longer
     provided.  The easiest way to obtain them is from
@@ -28,7 +26,7 @@ Build Requirements
    easily build and install NASM from a source RPM by downloading one of the
   SRPMs from
 
-  http://www.nasm.us/pub/nasm/releasebuilds
+  <http://www.nasm.us/pub/nasm/releasebuilds>
 
   and executing the following as root:
 
@@ -44,9 +42,9 @@ Build Requirements
   required.  Some systems, such as Solaris 10 and later and Red Hat Enterprise
   Linux 5 and later, have this pre-installed.  On OS X 10.5 and 10.6, it will
   be necessary to install the Java Developer Package, which can be downloaded
-  from http://developer.apple.com/downloads (Apple ID required.)  For other
+  from <http://developer.apple.com/downloads> (Apple ID required.)  For other
   systems, you can obtain the Oracle Java Development Kit from
-  http://www.java.com.
+  <http://www.java.com>.
 
 
 Out-of-Tree Builds
@@ -81,38 +79,38 @@ libjpeg-turbo from one of the official release tarballs.
 
 This will generate the following files under .libs/:
 
-**libjpeg.a**
+**libjpeg.a**  
 Static link library for the libjpeg API
 
-**libjpeg.so.{version}** (Linux, Unix)
-**libjpeg.{version}.dylib** (OS X)
-**cygjpeg-{version}.dll** (Cygwin)
+**libjpeg.so.{version}** (Linux, Unix)  
+**libjpeg.{version}.dylib** (OS X)  
+**cygjpeg-{version}.dll** (Cygwin)  
 Shared library for the libjpeg API
 
 By default, *{version}* is 62.1.0, 7.1.0, or 8.0.2, depending on whether
 libjpeg v6b (default), v7, or v8 emulation is enabled.  If using Cygwin,
 *{version}* is 62, 7, or 8.
 
-**libjpeg.so** (Linux, Unix)
-**libjpeg.dylib** (OS X)
+**libjpeg.so** (Linux, Unix)  
+**libjpeg.dylib** (OS X)  
 Development symlink for the libjpeg API
 
-**libjpeg.dll.a** (Cygwin)
+**libjpeg.dll.a** (Cygwin)  
 Import library for the libjpeg API
 
-**libturbojpeg.a**
+**libturbojpeg.a**  
 Static link library for the TurboJPEG API
 
-**libturbojpeg.so.0.1.0** (Linux, Unix)
-**libturbojpeg.0.1.0.dylib** (OS X)
-**cygturbojpeg-0.dll** (Cygwin)
+**libturbojpeg.so.0.1.0** (Linux, Unix)  
+**libturbojpeg.0.1.0.dylib** (OS X)  
+**cygturbojpeg-0.dll** (Cygwin)  
 Shared library for the TurboJPEG API
 
-**libturbojpeg.so** (Linux, Unix)
-**libturbojpeg.dylib** (OS X)
+**libturbojpeg.so** (Linux, Unix)  
+**libturbojpeg.dylib** (OS X)  
 Development symlink for the TurboJPEG API
 
-**libturbojpeg.dll.a** (Cygwin)
+**libturbojpeg.dll.a** (Cygwin)  
 Import library for the TurboJPEG API
 
 
@@ -325,7 +323,7 @@ Set the following shell variables for simplicity:
     IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
     IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
 
-  *ARMv6 (code will run on all iOS devices, not SIMD-accelerated)*
+  *ARMv6 (code will run on all iOS devices, not SIMD-accelerated)*  
   [NOTE: Requires Xcode 4.4.x or earlier]
 
     IOS_CFLAGS="-march=armv6 -mcpu=arm1176jzf-s -mfpu=vfp"
@@ -334,7 +332,7 @@ Set the following shell variables for simplicity:
 
     IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
 
-  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*
+  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*  
   [NOTE: Requires Xcode 4.5 or later]
 
     IOS_CFLAGS="-march=armv7s -mcpu=swift -mtune=swift -mfpu=neon"
@@ -407,9 +405,9 @@ into a universal library.
 
 ### Building libjpeg-turbo for Android
 
-Building libjpeg-turbo for Android platforms requires the Android NDK
-(https://developer.android.com/tools/sdk/ndk) and autotools.  The following is
-a general recipe script that can be modified for your specific needs.
+Building libjpeg-turbo for Android platforms requires the
+{Android NDK}(https://developer.android.com/tools/sdk/ndk)
+and autotools.  The following is a general recipe script that can be modified for your specific needs.
 
     # Set these variables to suit your needs
     NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/ndk}
@@ -465,16 +463,14 @@ Build Requirements
 - Microsoft Visual C++ 2005 or later
 
   If you don't already have Visual C++, then the easiest way to get it is by
-  installing the Windows SDK:
-
-  http://msdn.microsoft.com/en-us/windows/bb980924.aspx
-
+  installing the
+  [Windows SDK](http://msdn.microsoft.com/en-us/windows/bb980924.aspx).
   The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
   everything necessary to build libjpeg-turbo.
 
-  * You can also use Microsoft Visual Studio Express Edition, which is a free
-    download.  (NOTE: versions prior to 2012 can only be used to build 32-bit
-    code.)
+  * You can also use Microsoft Visual Studio Express/Community Edition, which
+    is a free download.  (NOTE: versions prior to 2012 can only be used to
+    build 32-bit code.)
   * If you intend to build libjpeg-turbo from the command line, then add the
     appropriate compiler and SDK directories to the `INCLUDE`, `LIB`, and
     `PATH` environment variables.  This is generally accomplished by
@@ -488,8 +484,8 @@ Build Requirements
 
 - MinGW
 
-  MinGW-builds (http://sourceforge.net/projects/mingwbuilds/) or
-  tdm-gcc (http://tdm-gcc.tdragon.net/) recommended if building on a Windows
+  [MinGW-builds](http://sourceforge.net/projects/mingwbuilds/) or
+  [tdm-gcc](http://tdm-gcc.tdragon.net/) recommended if building on a Windows
   machine.  Both distributions install a Start Menu link that can be used to
   launch a command prompt with the appropriate compiler paths automatically
   set.
@@ -498,7 +494,7 @@ Build Requirements
   a 64-bit build)
 
 - If building the TurboJPEG Java wrapper, JDK 1.5 or later is required.  This
-  can be downloaded from http://www.java.com.
+  can be downloaded from <http://www.java.com>.
 
 
 Out-of-Tree Builds
@@ -529,22 +525,22 @@ on which version of cl.exe is in the `PATH`.
 
 The following files will be generated under *{build_directory}*:
 
-**jpeg-static.lib**
+**jpeg-static.lib**  
 Static link library for the libjpeg API
 
-**sharedlib/jpeg{version}.dll**
+**sharedlib/jpeg{version}.dll**  
 DLL for the libjpeg API
 
-**sharedlib/jpeg.lib**
+**sharedlib/jpeg.lib**  
 Import library for the libjpeg API
 
-**turbojpeg-static.lib**
+**turbojpeg-static.lib**  
 Static link library for the TurboJPEG API
 
-**turbojpeg.dll**
+**turbojpeg.dll**  
 DLL for the TurboJPEG API
 
-**turbojpeg.lib**
+**turbojpeg.lib**  
 Import library for the TurboJPEG API
 
 *{version}* is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or
@@ -571,22 +567,22 @@ build of libjpeg-turbo.
 
 This will generate the following files under *{build_directory}*:
 
-**{configuration}/jpeg-static.lib**
+**{configuration}/jpeg-static.lib**  
 Static link library for the libjpeg API
 
-**sharedlib/{configuration}/jpeg{version}.dll**
+**sharedlib/{configuration}/jpeg{version}.dll**  
 DLL for the libjpeg API
 
-**sharedlib/{configuration}/jpeg.lib**
+**sharedlib/{configuration}/jpeg.lib**  
 Import library for the libjpeg API
 
-**{configuration}/turbojpeg-static.lib**
+**{configuration}/turbojpeg-static.lib**  
 Static link library for the TurboJPEG API
 
-**{configuration}/turbojpeg.dll**
+**{configuration}/turbojpeg.dll**  
 DLL for the TurboJPEG API
 
-**{configuration}/turbojpeg.lib**
+**{configuration}/turbojpeg.lib**  
 Import library for the TurboJPEG API
 
 *{configuration}* is Debug, Release, RelWithDebInfo, or MinSizeRel, depending
@@ -605,22 +601,22 @@ cross-compiling on a Linux/Unix machine, then see "Build Recipes" below.
 
 This will generate the following files under *{build_directory}*:
 
-**libjpeg.a**
+**libjpeg.a**  
 Static link library for the libjpeg API
 
-**sharedlib/libjpeg-{version}.dll**
+**sharedlib/libjpeg-{version}.dll**  
 DLL for the libjpeg API
 
-**sharedlib/libjpeg.dll.a**
+**sharedlib/libjpeg.dll.a**  
 Import library for the libjpeg API
 
-**libturbojpeg.a**
+**libturbojpeg.a**  
 Static link library for the TurboJPEG API
 
-**libturbojpeg.dll**
+**libturbojpeg.dll**  
 DLL for the TurboJPEG API
 
-**libturbojpeg.dll.a**
+**libturbojpeg.dll.a**  
 Import library for the TurboJPEG API
 
 *{version}* is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or

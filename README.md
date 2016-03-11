@@ -30,6 +30,12 @@ libjpeg-turbo is covered by three compatible BSD-style open source licenses.
 Refer to [LICENSE.md](LICENSE.md) for a roll-up of license terms.
 
 
+Building libjpeg-turbo
+======================
+
+Refer to [BUILDING.md](BUILDING.md) for complete instructions.
+
+
 Using libjpeg-turbo
 ===================
 

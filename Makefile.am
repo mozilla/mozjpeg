@@ -158,7 +158,7 @@ jcstest_LDADD = libjpeg.la
 dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 
 DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.md \
-	ChangeLog.txt
+	ChangeLog.md
 
 dist_doc_DATA = README.ijg README.md libjpeg.txt structure.txt usage.txt \
 	wizard.txt LICENSE.md

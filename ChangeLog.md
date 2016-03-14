@@ -309,6 +309,7 @@ the "official" libjpeg-turbo SDK for OS X.
 ### Significant changes relative to 1.3.1:
 
 1. New features in the TurboJPEG API:
+
      - YUV planar images can now be generated with an arbitrary line padding
 (previously only 4-byte padding, which was compatible with X Video, was
 supported.)
@@ -475,6 +476,7 @@ source cleanup.
 md5sum executable to be present on other Un*x platforms.
 
 2. Overhauled the packaging system:
+
      - To avoid conflict with vendor-supplied libjpeg-turbo packages, the
 official RPMs and DEBs for libjpeg-turbo have been renamed to
 "libjpeg-turbo-official".

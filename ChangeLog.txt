@@ -25,6 +25,12 @@ with the -yuv option.
 [4] Fixed an issue whereby a malformed motion-JPEG frame could cause the "fast
 path" of libjpeg-turbo's Huffman decoder to read from uninitialized memory.
 
+[5] Added libjpeg-turbo version and build information to the global string
+table of the libjpeg and TurboJPEG API libraries.  This is a common practice in
+other infrastructure libraries, such as OpenSSL and libpng, because it makes it
+easy to examine an application binary and determine which version of the
+library the application was linked against.
+
 
 1.4.2
 =====

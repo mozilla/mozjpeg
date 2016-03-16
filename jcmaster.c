@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2003-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -19,6 +19,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jpegcomp.h"
+#include "jconfigint.h"
 
 
 /* Private state */
@@ -38,6 +39,16 @@ typedef struct {
   int total_passes;             /* total # of passes needed */
 
   int scan_number;              /* current index in scan_info[] */
+
+  /*
+   * This is here so we can add libjpeg-turbo version/build information to the
+   * global string table without introducing a new global symbol.  Adding this
+   * information to the global string table allows one to examine a binary
+   * object and determine which version of libjpeg-turbo it was built from or
+   * linked against.
+   */
+  const char *jpeg_version;
+
 } my_comp_master;
 
 typedef my_comp_master *my_master_ptr;
@@ -623,4 +634,6 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     master->total_passes = cinfo->num_scans * 2;
   else
     master->total_passes = cinfo->num_scans;
+
+  master->jpeg_version = PACKAGE_NAME " version " VERSION " (build " BUILD ")";
 }

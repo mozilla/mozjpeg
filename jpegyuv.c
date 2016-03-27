@@ -63,12 +63,13 @@ int main(int argc, char *argv[]) {
   int x;
   int y;
   FILE *yuv_fd;
+  int ret = 1;
 
   if (argc != 3) {
     fprintf(stderr, "Required arguments:\n");
     fprintf(stderr, "1. Path to JPG input file\n");
     fprintf(stderr, "2. Path to YUV output file\n");
-    return 1;
+    goto out;
   }
 
   errno = 0;
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
   jpg_fd = fopen(jpg_path, "rb");
   if (!jpg_fd) {
     fprintf(stderr, "Invalid path to JPEG file!\n");
-    return 1;
+    goto out;
   }
 
   jpeg_stdio_src(&cinfo, jpg_fd);
@@ -105,16 +106,15 @@ int main(int argc, char *argv[]) {
   yuv_buffer = malloc(yuv_size);
   if (!yuv_buffer) {
     fprintf(stderr, "Memory allocation failure!\n");
-    return 1;
+    goto exit_close_fd;
   }
 
   frame_width = (cinfo.output_width + (16 - 1)) & ~(16 - 1);
 
   image_buffer = malloc(frame_width*16 + 2*(frame_width/2)*8);
   if (!image_buffer) {
-    free(yuv_buffer);
     fprintf(stderr, "Memory allocation failure!\n");
-    return 1;
+    goto clean_yuv_buff;
   }
 
   plane_pointer[0] = yrow_pointer;
@@ -157,22 +157,26 @@ int main(int argc, char *argv[]) {
 
   jpeg_destroy_decompress(&cinfo);
 
-  fclose(jpg_fd);
-
-  free(image_buffer);
-
   yuv_fd = fopen(yuv_path, "wb");
   if (!yuv_fd) {
     fprintf(stderr, "Invalid path to YUV file!");
-    free(yuv_buffer);
-    return 1;
+    goto clean_buffs;
   }
   if (fwrite(yuv_buffer, yuv_size, 1, yuv_fd) != 1) {
     fprintf(stderr, "Error writing yuv file\n");
+    goto clean;
   }
+
+  ret = 0;
+
+clean:
   fclose(yuv_fd);
-
+clean_buffs:
+  free(image_buffer);
+clean_yuv_buff:
   free(yuv_buffer);
-
-  return 0;
+exit_close_fd:
+  fclose(jpg_fd);
+out:
+  return ret;
 }

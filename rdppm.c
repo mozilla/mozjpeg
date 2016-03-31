@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, D. R. Commander.
+ * Copyright (C) 2015, 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -244,6 +244,7 @@ get_word_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
+  unsigned int maxval = source->maxval;
 
   if (! ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
     ERREXIT(cinfo, JERR_INPUT_EOF);
@@ -253,6 +254,8 @@ get_word_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     register int temp;
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
+    if (temp > maxval)
+      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
     *ptr++ = rescale[temp];
   }
   return 1;
@@ -268,6 +271,7 @@ get_word_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
+  unsigned int maxval = source->maxval;
 
   if (! ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
     ERREXIT(cinfo, JERR_INPUT_EOF);
@@ -277,12 +281,18 @@ get_word_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     register int temp;
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
+    if (temp > maxval)
+      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
     *ptr++ = rescale[temp];
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
+    if (temp > maxval)
+      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
     *ptr++ = rescale[temp];
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
+    if (temp > maxval)
+      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
     *ptr++ = rescale[temp];
   }
   return 1;

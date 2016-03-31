@@ -12,6 +12,13 @@ infrastructure libraries, such as OpenSSL and libpng, because it makes it easy
 to examine an application binary and determine which version of the library the
 application was linked against.
 
+3. Fixed a couple of issues in the PPM reader that would cause buffer overruns
+in cjpeg if one of the values in a binary PPM/PGM input file exceeded the
+maximum value defined in the file's header.  libjpeg-turbo 1.4.2 already
+included a similar fix for ASCII PPM/PGM files.  Note that these issues were
+not security bugs, since they were confined to the cjpeg program and did not
+affect any of the libjpeg-turbo libraries.
+
 
 1.4.90 (1.5 beta1)
 ==================

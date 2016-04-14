@@ -484,7 +484,7 @@ Build Requirements
     SDK.  You can pass optional arguments to `SetEnv.cmd` to specify a 32-bit
     or 64-bit build environment.
 
-    ... OR ...
+   ... OR ...
 
 - MinGW
 

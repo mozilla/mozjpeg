@@ -460,6 +460,10 @@ Build Requirements
 
 - [CMake](http://www.cmake.org) v2.8.8 or later
 
+- [NASM](http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
+  a 64-bit build)
+  * nasm.exe should be in your `PATH`.
+
 - Microsoft Visual C++ 2005 or later
 
   If you don't already have Visual C++, then the easiest way to get it is by
@@ -480,7 +484,7 @@ Build Requirements
     SDK.  You can pass optional arguments to `SetEnv.cmd` to specify a 32-bit
     or 64-bit build environment.
 
-... OR ...
+    ... OR ...
 
 - MinGW
 
@@ -489,9 +493,6 @@ Build Requirements
   machine.  Both distributions install a Start Menu link that can be used to
   launch a command prompt with the appropriate compiler paths automatically
   set.
-
-- [NASM](http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
-  a 64-bit build)
 
 - If building the TurboJPEG Java wrapper, JDK 1.5 or later is required.  This
   can be downloaded from <http://www.java.com>.

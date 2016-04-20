@@ -1892,6 +1892,12 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 		|| !isPow2(pad) || height<0)
 		_throw("tjDecompressToYUV2(): Invalid argument");
 
+	if(setjmp(this->jerr.setjmp_buffer))
+	{
+		/* If we get here, the JPEG code has signaled an error. */
+		return -1;
+	}
+
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
 	jpegSubsamp=getSubsamp(dinfo);

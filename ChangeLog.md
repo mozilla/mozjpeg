@@ -21,10 +21,11 @@ affect any of the libjpeg-turbo libraries.
 
 4. Fixed an issue whereby attempting to decompress a JPEG file with a corrupt
 header using the `tjDecompressToYUV2()` function would cause the function to
-abort without returning an error.  This only occurred if `tjDecompressToYUV2()`
-was called prior to calling `tjDecompressHeader3()`, or if the return value
-from `tjDecompressHeader3()` was ignored (both cases represent incorrect usage
-of the TurboJPEG API.)
+abort without returning an error and, under certain circumstances, corrupt the
+stack.  This only occurred if `tjDecompressToYUV2()` was called prior to
+calling `tjDecompressHeader3()`, or if the return value from
+`tjDecompressHeader3()` was ignored (both cases represent incorrect usage of
+the TurboJPEG API.)
 
 
 1.4.90 (1.5 beta1)

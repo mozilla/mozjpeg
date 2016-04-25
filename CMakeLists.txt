@@ -11,10 +11,7 @@ endif()
 project(libjpeg-turbo C)
 set(VERSION 1.4.3)
 
-if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-  execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)
-  string(REGEX REPLACE "\n" "" BUILD ${BUILD})
-elseif(WIN32)
+if(WIN32)
   execute_process(COMMAND "wmic.exe" "os" "get" "LocalDateTime" OUTPUT_VARIABLE
     BUILD)
   string(REGEX REPLACE "[^0-9]" "" BUILD "${BUILD}")

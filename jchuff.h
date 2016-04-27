@@ -29,8 +29,8 @@
 /* Derived data constructed for each Huffman table */
 
 typedef struct {
-  unsigned int ehufco[256];	/* code for each symbol */
-  char ehufsi[256];		/* length of code for each symbol */
+  unsigned int ehufco[256];     /* code for each symbol */
+  char ehufsi[256];             /* length of code for each symbol */
   /* If no code has been allocated for a symbol S, ehufsi[S] contains 0 */
 } c_derived_tbl;
 
@@ -45,4 +45,5 @@ EXTERN(void) jpeg_gen_optimal_table
 
 EXTERN(void) quantize_trellis
         (j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val);
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+         JBLOCKROW coef_blocks_above, JBLOCKROW src_above);

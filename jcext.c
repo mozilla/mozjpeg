@@ -1,5 +1,5 @@
 /*
- * jccompat.c
+ * jcext.c
  *
  * Copyright (C) 2014, D. R. Commander.
  * Copyright (C) 2014, Mozilla Corporation.
@@ -16,20 +16,15 @@
 
 
 GLOBAL(boolean)
-jpeg_c_bool_param_supported (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
+jpeg_c_bool_param_supported (const j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 {
   switch (param) {
-  case JBOOLEAN_USE_MOZ_DEFAULTS:
   case JBOOLEAN_OPTIMIZE_SCANS:
-  case JBOOLEAN_ONE_DC_SCAN:
-  case JBOOLEAN_SEP_DC_SCAN:
   case JBOOLEAN_TRELLIS_QUANT:
   case JBOOLEAN_TRELLIS_QUANT_DC:
   case JBOOLEAN_TRELLIS_EOB_OPT:
-  case JBOOLEAN_USE_FLAT_QUANT_TBL:
   case JBOOLEAN_USE_LAMBDA_WEIGHT_TBL:
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
-  case JBOOLEAN_TRELLIS_PASSES:
   case JBOOLEAN_TRELLIS_Q_OPT:
   case JBOOLEAN_OVERSHOOT_DERINGING:
     return TRUE;
@@ -44,17 +39,8 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
                        boolean value)
 {
   switch(param) {
-  case JBOOLEAN_USE_MOZ_DEFAULTS:
-    cinfo->master->use_moz_defaults = value;
-    break;
   case JBOOLEAN_OPTIMIZE_SCANS:
     cinfo->master->optimize_scans = value;
-    break;
-  case JBOOLEAN_ONE_DC_SCAN:
-    cinfo->master->one_dc_scan = value;
-    break;
-  case JBOOLEAN_SEP_DC_SCAN:
-    cinfo->master->sep_dc_scan = value;
     break;
   case JBOOLEAN_TRELLIS_QUANT:
     cinfo->master->trellis_quant = value;
@@ -65,17 +51,11 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
   case JBOOLEAN_TRELLIS_EOB_OPT:
     cinfo->master->trellis_eob_opt = value;
     break;
-  case JBOOLEAN_USE_FLAT_QUANT_TBL:
-    cinfo->master->use_flat_quant_tbl = value;
-    break;
   case JBOOLEAN_USE_LAMBDA_WEIGHT_TBL:
     cinfo->master->use_lambda_weight_tbl = value;
     break;
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
     cinfo->master->use_scans_in_trellis = value;
-    break;
-  case JBOOLEAN_TRELLIS_PASSES:
-    cinfo->master->trellis_passes = value;
     break;
   case JBOOLEAN_TRELLIS_Q_OPT:
     cinfo->master->trellis_q_opt = value;
@@ -90,31 +70,21 @@ jpeg_c_set_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param,
 
 
 GLOBAL(boolean)
-jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
+jpeg_c_get_bool_param (const j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 {
   switch(param) {
-  case JBOOLEAN_USE_MOZ_DEFAULTS:
-    return cinfo->master->use_moz_defaults;
   case JBOOLEAN_OPTIMIZE_SCANS:
     return cinfo->master->optimize_scans;
-  case JBOOLEAN_ONE_DC_SCAN:
-    return cinfo->master->one_dc_scan;
-  case JBOOLEAN_SEP_DC_SCAN:
-    return cinfo->master->sep_dc_scan;
   case JBOOLEAN_TRELLIS_QUANT:
     return cinfo->master->trellis_quant;
   case JBOOLEAN_TRELLIS_QUANT_DC:
     return cinfo->master->trellis_quant_dc;
   case JBOOLEAN_TRELLIS_EOB_OPT:
     return cinfo->master->trellis_eob_opt;
-  case JBOOLEAN_USE_FLAT_QUANT_TBL:
-    return cinfo->master->use_flat_quant_tbl;
   case JBOOLEAN_USE_LAMBDA_WEIGHT_TBL:
     return cinfo->master->use_lambda_weight_tbl;
   case JBOOLEAN_USE_SCANS_IN_TRELLIS:
     return cinfo->master->use_scans_in_trellis;
-  case JBOOLEAN_TRELLIS_PASSES:
-    return cinfo->master->trellis_passes;
   case JBOOLEAN_TRELLIS_Q_OPT:
     return cinfo->master->trellis_q_opt;
   case JBOOLEAN_OVERSHOOT_DERINGING:
@@ -128,11 +98,12 @@ jpeg_c_get_bool_param (j_compress_ptr cinfo, J_BOOLEAN_PARAM param)
 
 
 GLOBAL(boolean)
-jpeg_c_float_param_supported (j_compress_ptr cinfo, J_FLOAT_PARAM param)
+jpeg_c_float_param_supported (const j_compress_ptr cinfo, J_FLOAT_PARAM param)
 {
   switch (param) {
   case JFLOAT_LAMBDA_LOG_SCALE1:
   case JFLOAT_LAMBDA_LOG_SCALE2:
+  case JFLOAT_TRELLIS_DELTA_DC_WEIGHT:
     return TRUE;
   }
 
@@ -150,6 +121,9 @@ jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param, float value)
   case JFLOAT_LAMBDA_LOG_SCALE2:
     cinfo->master->lambda_log_scale2 = value;
     break;
+  case JFLOAT_TRELLIS_DELTA_DC_WEIGHT:
+    cinfo->master->trellis_delta_dc_weight = value;
+    break;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }
@@ -157,13 +131,15 @@ jpeg_c_set_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param, float value)
 
 
 GLOBAL(float)
-jpeg_c_get_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param)
+jpeg_c_get_float_param (const j_compress_ptr cinfo, J_FLOAT_PARAM param)
 {
   switch (param) {
   case JFLOAT_LAMBDA_LOG_SCALE1:
     return cinfo->master->lambda_log_scale1;
   case JFLOAT_LAMBDA_LOG_SCALE2:
     return cinfo->master->lambda_log_scale2;
+  case JFLOAT_TRELLIS_DELTA_DC_WEIGHT:
+    return cinfo->master->trellis_delta_dc_weight;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }
@@ -173,11 +149,14 @@ jpeg_c_get_float_param (j_compress_ptr cinfo, J_FLOAT_PARAM param)
 
 
 GLOBAL(boolean)
-jpeg_c_int_param_supported (j_compress_ptr cinfo, J_INT_PARAM param)
+jpeg_c_int_param_supported (const j_compress_ptr cinfo, J_INT_PARAM param)
 {
   switch (param) {
+  case JINT_COMPRESS_PROFILE:
   case JINT_TRELLIS_FREQ_SPLIT:
   case JINT_TRELLIS_NUM_LOOPS:
+  case JINT_BASE_QUANT_TBL_IDX:
+  case JINT_DC_SCAN_OPT_MODE:
     return TRUE;
   }
 
@@ -189,11 +168,28 @@ GLOBAL(void)
 jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value)
 {
   switch (param) {
+  case JINT_COMPRESS_PROFILE:
+    switch (value) {
+    case JCP_MAX_COMPRESSION:
+    case JCP_FASTEST:
+      cinfo->master->compress_profile = value;
+      break;
+    default:
+      ERREXIT(cinfo, JERR_BAD_PARAM_VALUE);
+    }
+    break;
   case JINT_TRELLIS_FREQ_SPLIT:
     cinfo->master->trellis_freq_split = value;
     break;
   case JINT_TRELLIS_NUM_LOOPS:
     cinfo->master->trellis_num_loops = value;
+    break;
+  case JINT_BASE_QUANT_TBL_IDX:
+    if (value >= 0 && value <= 8)
+      cinfo->master->quant_tbl_master_idx = value;
+    break;
+  case JINT_DC_SCAN_OPT_MODE:
+    cinfo->master->dc_scan_opt_mode = value;
     break;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
@@ -202,13 +198,19 @@ jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value)
 
 
 GLOBAL(int)
-jpeg_c_get_int_param (j_compress_ptr cinfo, J_INT_PARAM param)
+jpeg_c_get_int_param (const j_compress_ptr cinfo, J_INT_PARAM param)
 {
   switch (param) {
+  case JINT_COMPRESS_PROFILE:
+    return cinfo->master->compress_profile;
   case JINT_TRELLIS_FREQ_SPLIT:
     return cinfo->master->trellis_freq_split;
   case JINT_TRELLIS_NUM_LOOPS:
     return cinfo->master->trellis_num_loops;
+  case JINT_BASE_QUANT_TBL_IDX:
+    return cinfo->master->quant_tbl_master_idx;
+  case JINT_DC_SCAN_OPT_MODE:
+    return cinfo->master->dc_scan_opt_mode;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }

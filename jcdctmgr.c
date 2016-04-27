@@ -22,8 +22,10 @@
 #include "jpeglib.h"
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 #include "jsimddct.h"
+#include "jchuff.h"
 #include <assert.h>
 #include <math.h>
+
 
 /* Private subobject for this module */
 
@@ -663,7 +665,7 @@ METHODDEF(void)
 forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
              JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
              JDIMENSION start_row, JDIMENSION start_col,
-	     JDIMENSION num_blocks, JBLOCKROW dst)
+             JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for integer DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
@@ -697,17 +699,17 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     if (dst) {
       int i;
       if (cinfo->dct_method == JDCT_IFAST) {
-	static const INT16 aanscales[DCTSIZE2] = {
-	  /* precomputed values scaled up by 14 bits */
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
-	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
-	  19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
+        static const INT16 aanscales[DCTSIZE2] = {
+          /* precomputed values scaled up by 14 bits */
+          16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+          22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
+          21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
+          19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
+          16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+          12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
           8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
           4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
-	};
+        };
         
         for (i = 0; i < DCTSIZE2; i++) {
           int x = workspace[i];
@@ -725,6 +727,17 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
     
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
     (*do_quantize) (coef_blocks[bi], divisors, workspace);
+
+    if (do_preprocess) {
+      int i;
+      int maxval = (1 << MAX_COEF_BITS) - 1;
+      for (i = 0; i < 64; i++) {
+        if (coef_blocks[bi][i] < -maxval)
+          coef_blocks[bi][i] = -maxval;
+        if (coef_blocks[bi][i] > maxval)
+          coef_blocks[bi][i] = maxval;
+      }
+    }
   }
 }
 
@@ -789,7 +802,7 @@ METHODDEF(void)
 forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
                    JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
                    JDIMENSION start_row, JDIMENSION start_col,
-		   JDIMENSION num_blocks, JBLOCKROW dst)
+                   JDIMENSION num_blocks, JBLOCKROW dst)
 /* This version is used for floating-point DCT implementations. */
 {
   /* This routine is heavily used, so it's worth coding it tightly. */
@@ -844,12 +857,22 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
 
     /* Quantize/descale the coefficients, and store into coef_blocks[] */
     (*do_quantize) (coef_blocks[bi], divisors, workspace);
+    
+    if (do_preprocess) {
+      int i;
+      int maxval = (1 << MAX_COEF_BITS) - 1;
+      for (i = 0; i < 64; i++) {
+        if (coef_blocks[bi][i] < -maxval)
+          coef_blocks[bi][i] = -maxval;
+        if (coef_blocks[bi][i] > maxval)
+          coef_blocks[bi][i] = maxval;
+      }
+    }
   }
 }
 
 #endif /* DCT_FLOAT_SUPPORTED */
 
-#include "jchuff.h"
 #include "jpeg_nbits_table.h"
 
 static const float jpeg_lambda_weights_flat[64] = {
@@ -874,11 +897,17 @@ static const float jpeg_lambda_weights_csf_luma[64] = {
   0.43454f, 0.42146f, 0.34609f, 0.24072f, 0.15975f, 0.10701f, 0.07558f, 0.05875f,
 };
 
-#define DC_TRELLIS_CANDIDATES 3
+#define DC_TRELLIS_MAX_CANDIDATES 9
+
+LOCAL(int) get_num_dc_trellis_candidates(int dc_quantval) {
+  /* Higher qualities can tolerate higher DC distortion */
+  return MIN(DC_TRELLIS_MAX_CANDIDATES, (2 + 60 / dc_quantval)|1);
+}
 
 GLOBAL(void)
 quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val)
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+                 JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
 {
   int i, j, k, l;
   float accumulated_zero_dist[DCTSIZE2];
@@ -906,10 +935,13 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   int zero_run;
   int run_bits;
   int rate;
-  float *accumulated_dc_cost[DC_TRELLIS_CANDIDATES];
-  int *dc_cost_backtrack[DC_TRELLIS_CANDIDATES];
-  JCOEF *dc_candidate[DC_TRELLIS_CANDIDATES];
-
+  float *accumulated_dc_cost[DC_TRELLIS_MAX_CANDIDATES];
+  int *dc_cost_backtrack[DC_TRELLIS_MAX_CANDIDATES];
+  JCOEF *dc_candidate[DC_TRELLIS_MAX_CANDIDATES];
+  int mode = 1;
+  float lambda_table[DCTSIZE2];
+  const int dc_trellis_candidates = get_num_dc_trellis_candidates(qtbl->quantval[0]);
+  
   Ss = cinfo->Ss;
   Se = cinfo->Se;
   if (Ss == 0)
@@ -932,8 +964,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     accumulated_block_cost[0] = 0;
     requires_eob[0] = 0;
   }
+  
   if (cinfo->master->trellis_quant_dc) {
-    for (i = 0; i < DC_TRELLIS_CANDIDATES; i++) {
+    for (i = 0; i < dc_trellis_candidates; i++) {
       accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
       dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
       dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
@@ -944,13 +977,20 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       }
     }
   }
+  
   norm = 0.0;
   for (i = 1; i < DCTSIZE2; i++) {
     norm += qtbl->quantval[i] * qtbl->quantval[i];
   }
   norm /= 63.0;
-  
-  lambda_base = 1.0 / norm;
+
+  if (mode == 1) {
+    lambda_base = 1.0;
+    lambda_tbl = lambda_table;
+    for (i = 0; i < DCTSIZE2; i++)
+      lambda_table[i] = 1.0 / (qtbl->quantval[i] * qtbl->quantval[i]);
+  } else
+    lambda_base = 1.0 / norm;
   
   for (bi = 0; bi < num_blocks; bi++) {
     
@@ -980,15 +1020,38 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       float dc_candidate_dist;
 
       qval = (x + q/2) / q; /* quantized value (round nearest) */
-      for (k = 0; k < DC_TRELLIS_CANDIDATES; k++) {
+      for (k = 0; k < dc_trellis_candidates; k++) {
         int delta;
         int dc_delta;
         int bits;
 
-        dc_candidate[k][bi] = qval - DC_TRELLIS_CANDIDATES/2 + k;
+        dc_candidate[k][bi] = qval - dc_trellis_candidates/2 + k;
+        if (dc_candidate[k][bi] >= (1<<MAX_COEF_BITS))
+          dc_candidate[k][bi] = (1<<MAX_COEF_BITS)-1;
+        if (dc_candidate[k][bi] <= -(1<<MAX_COEF_BITS))
+          dc_candidate[k][bi] = -(1<<MAX_COEF_BITS)+1;
+
         delta = dc_candidate[k][bi] * q - x;
         dc_candidate_dist = delta * delta * lambda_dc;
         dc_candidate[k][bi] *= 1 + 2*sign;
+        
+        /* Take into account DC differences */
+        if (coef_blocks_above && src_above && cinfo->master->trellis_delta_dc_weight > 0.0) {
+          int dc_above_orig;
+          int dc_above_recon;
+          int dc_orig;
+          int dc_recon;
+          float vertical_dist;
+          
+          dc_above_orig = src_above[bi][0];
+          dc_above_recon = coef_blocks_above[bi][0] * q;
+          dc_orig = src[bi][0];
+          dc_recon = dc_candidate[k][bi] * q;
+          /* delta is difference of vertical gradients */
+          delta = (dc_above_orig - dc_orig) - (dc_above_recon - dc_recon);
+          vertical_dist = delta * delta * lambda_dc;
+          dc_candidate_dist +=  cinfo->master->trellis_delta_dc_weight * (vertical_dist - dc_candidate_dist);
+        }
         
         if (bi == 0) {
           dc_delta = dc_candidate[k][bi] - *last_dc_val;
@@ -1004,7 +1067,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
           accumulated_dc_cost[k][0] = cost;
           dc_cost_backtrack[k][0] = -1;
         } else {
-          for (l = 0; l < DC_TRELLIS_CANDIDATES; l++) {
+          for (l = 0; l < dc_trellis_candidates; l++) {
             dc_delta = dc_candidate[k][bi] - dc_candidate[l][bi-1];
 
             /* Derive number of suffix bits */
@@ -1047,6 +1110,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
         continue;
       }
 
+      if (qval >= (1<<MAX_COEF_BITS))
+        qval = (1<<MAX_COEF_BITS)-1;
+      
       num_candidates = jpeg_nbits_table[qval];
       for (k = 0; k < num_candidates; k++) {
         int delta;
@@ -1211,7 +1277,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   
   if (cinfo->master->trellis_quant_dc) {
     j = 0;
-    for (i = 1; i < DC_TRELLIS_CANDIDATES; i++) {
+    for (i = 1; i < dc_trellis_candidates; i++) {
       if (accumulated_dc_cost[i][num_blocks-1] < accumulated_dc_cost[j][num_blocks-1])
         j = i;
     }
@@ -1223,7 +1289,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     /* Save DC predictor */
     *last_dc_val = coef_blocks[num_blocks-1][0];
 
-    for (i = 0; i < DC_TRELLIS_CANDIDATES; i++) {
+    for (i = 0; i < dc_trellis_candidates; i++) {
       free(accumulated_dc_cost[i]);
       free(dc_cost_backtrack[i]);
       free(dc_candidate[i]);
@@ -1231,6 +1297,344 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   }
 
 }
+
+#ifdef C_ARITH_CODING_SUPPORTED
+GLOBAL(void)
+quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+                 JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
+{
+  int i, j, k, l;
+  float accumulated_zero_dist[DCTSIZE2];
+  float accumulated_cost[DCTSIZE2];
+  int run_start[DCTSIZE2];
+  int bi;
+  float best_cost;
+  int last_coeff_idx; /* position of last nonzero coefficient */
+  float norm = 0.0;
+  float lambda_base;
+  float lambda;
+  float lambda_dc;
+  const float *lambda_tbl = (cinfo->master->use_lambda_weight_tbl) ?
+  jpeg_lambda_weights_csf_luma :
+  jpeg_lambda_weights_flat;
+  int Ss, Se;
+  float cost;
+  float run_bits;
+  int rate;
+  float *accumulated_dc_cost[DC_TRELLIS_MAX_CANDIDATES];
+  int *dc_cost_backtrack[DC_TRELLIS_MAX_CANDIDATES];
+  JCOEF *dc_candidate[DC_TRELLIS_MAX_CANDIDATES];
+  int *dc_context[DC_TRELLIS_MAX_CANDIDATES];
+  
+  int mode = 1;
+  float lambda_table[DCTSIZE2];
+  const int dc_trellis_candidates = get_num_dc_trellis_candidates(qtbl->quantval[0]);
+  
+  Ss = cinfo->Ss;
+  Se = cinfo->Se;
+  if (Ss == 0)
+    Ss = 1;
+  if (Se < Ss)
+    return;
+  
+  if (cinfo->master->trellis_quant_dc) {
+    for (i = 0; i < dc_trellis_candidates; i++) {
+      accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
+      dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
+      dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
+      dc_context[i] = (int *)malloc(num_blocks * sizeof(int));
+      if (!accumulated_dc_cost[i] ||
+          !dc_cost_backtrack[i] ||
+          !dc_candidate[i] ||
+          !dc_context[i]) {
+        ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+      }
+    }
+  }
+  
+  norm = 0.0;
+  for (i = 1; i < DCTSIZE2; i++) {
+    norm += qtbl->quantval[i] * qtbl->quantval[i];
+  }
+  norm /= 63.0;
+  
+  if (mode == 1) {
+    lambda_base = 1.0;
+    lambda_tbl = lambda_table;
+    for (i = 0; i < DCTSIZE2; i++)
+      lambda_table[i] = 1.0 / (qtbl->quantval[i] * qtbl->quantval[i]);
+  } else
+    lambda_base = 1.0 / norm;
+  
+  for (bi = 0; bi < num_blocks; bi++) {
+    
+    norm = 0.0;
+    for (i = 1; i < DCTSIZE2; i++) {
+      norm += src[bi][i] * src[bi][i];
+    }
+    norm /= 63.0;
+    
+    if (cinfo->master->lambda_log_scale2 > 0.0)
+      lambda = pow(2.0, cinfo->master->lambda_log_scale1) * lambda_base /
+      (pow(2.0, cinfo->master->lambda_log_scale2) + norm);
+    else
+      lambda = pow(2.0, cinfo->master->lambda_log_scale1 - 12.0) * lambda_base;
+    
+    lambda_dc = lambda * lambda_tbl[0];
+    
+    accumulated_zero_dist[Ss-1] = 0.0;
+    accumulated_cost[Ss-1] = 0.0;
+    
+    /* Do DC coefficient */
+    if (cinfo->master->trellis_quant_dc) {
+      int sign = src[bi][0] >> 31;
+      int x = abs(src[bi][0]);
+      int q = 8 * qtbl->quantval[0];
+      int qval;
+      float dc_candidate_dist;
+      
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
+      
+      /* loop over candidates in current block */
+      for (k = 0; k < dc_trellis_candidates; k++) {
+        int delta;
+        int dc_delta;
+        float bits;
+        int m;
+        int v2;
+        
+        dc_candidate[k][bi] = qval - dc_trellis_candidates/2 + k;
+        delta = dc_candidate[k][bi] * q - x;
+        dc_candidate_dist = delta * delta * lambda_dc;
+        dc_candidate[k][bi] *= 1 + 2*sign;
+        
+        /* Take into account DC differences */
+        if (coef_blocks_above && src_above && cinfo->master->trellis_delta_dc_weight > 0.0) {
+          int dc_above_orig;
+          int dc_above_recon;
+          int dc_orig;
+          int dc_recon;
+          float vertical_dist;
+          
+          dc_above_orig = src_above[bi][0];
+          dc_above_recon = coef_blocks_above[bi][0] * q;
+          dc_orig = src[bi][0];
+          dc_recon = dc_candidate[k][bi] * q;
+          /* delta is difference of vertical gradients */
+          delta = (dc_above_orig - dc_orig) - (dc_above_recon - dc_recon);
+          vertical_dist = delta * delta * lambda_dc;
+          dc_candidate_dist +=  cinfo->master->trellis_delta_dc_weight * (vertical_dist - dc_candidate_dist);
+        }
+        
+        /* loop of candidates from previous block */
+        for (l = 0; l < (bi == 0 ? 1 : dc_trellis_candidates); l++) {
+          int dc_pred = (bi == 0 ? *last_dc_val : dc_candidate[l][bi-1]);
+          int updated_dc_context = 0;
+          int st = (bi == 0) ? 0 : dc_context[l][bi-1];
+          dc_delta = dc_candidate[k][bi] - dc_pred;
+          
+          bits = r->rate_dc[st][dc_delta != 0];
+          
+          if (dc_delta != 0) {
+            bits += r->rate_dc[st+1][dc_delta < 0];
+            st += 2 + (dc_delta < 0);
+            updated_dc_context = (dc_delta < 0) ? 8 : 4;
+            
+            dc_delta = abs(dc_delta);
+            
+            m = 0;
+            if (dc_delta -= 1) {
+              bits += r->rate_dc[st][1];
+              st = 20;
+              m = 1;
+              v2 = dc_delta;
+              while (v2 >>= 1) {
+                bits += r->rate_dc[st][1];
+                m <<= 1;
+                st++;
+              }
+            }
+            bits += r->rate_dc[st][0];
+            
+            if (m < (int) ((1L << r->arith_dc_L) >> 1))
+              updated_dc_context = 0;    /* zero diff category */
+            else if (m > (int) ((1L << r->arith_dc_U) >> 1))
+              updated_dc_context += 8;   /* large diff category */
+
+            st += 14;
+            while (m >>= 1)
+              bits += r->rate_dc[st][(m & dc_delta) ? 1 : 0];
+          }
+          
+          cost = bits + dc_candidate_dist;
+          if (bi != 0)
+            cost += accumulated_dc_cost[l][bi-1];
+          
+          if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
+            accumulated_dc_cost[k][bi] = cost;
+            dc_cost_backtrack[k][bi] = (bi == 0 ? -1 : l);
+            dc_context[k][bi] = updated_dc_context;
+          }
+        }
+      }
+    }
+    
+    /* Do AC coefficients */
+    for (i = Ss; i <= Se; i++) {
+      int z = jpeg_natural_order[i];
+      
+      int sign = src[bi][z] >> 31;
+      int x = abs(src[bi][z]);
+      int q = 8 * qtbl->quantval[z];
+      int candidate[16];
+      float candidate_dist[16];
+      int num_candidates;
+      int qval;
+      int delta;
+      
+      accumulated_zero_dist[i] = x * x * lambda * lambda_tbl[z] + accumulated_zero_dist[i-1];
+      
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
+      
+      if (qval == 0) {
+        coef_blocks[bi][z] = 0;
+        accumulated_cost[i] = 1e38; /* Shouldn't be needed */
+        continue;
+      }
+      
+      k = 0;
+      candidate[k] = qval;
+      delta = candidate[k] * q - x;
+      candidate_dist[k] = delta * delta * lambda * lambda_tbl[z];
+      k++;
+      if (qval > 1) {
+        candidate[k] = qval - 1;
+        delta = candidate[k] * q - x;
+        candidate_dist[k] = delta * delta * lambda * lambda_tbl[z];
+        k++;
+      }
+      num_candidates = k;
+      
+      accumulated_cost[i] = 1e38;
+      
+      for (j = Ss-1; j < i; j++) {
+        int zz = jpeg_natural_order[j];
+        if (j != Ss-1 && coef_blocks[bi][zz] == 0)
+          continue;
+        
+        run_bits = r->rate_ac[3*j][0]; /* EOB */
+        for (k = j+1; k < i; k++)
+          run_bits += r->rate_ac[3*(k-1)+1][0];
+        run_bits += r->rate_ac[3*(i-1)+1][1];
+        
+        for (k = 0; k < num_candidates; k++) {
+          float coef_bits = 1.0; /* sign bit */
+          int v = candidate[k];
+          int v2;
+          int m;
+          int st;
+          
+          st = 3*(i-1)+2;
+          m = 0;
+          if (v -= 1) {
+            coef_bits += r->rate_ac[st][1];
+            m = 1;
+            v2 = v;
+            if (v2 >>= 1) {
+              coef_bits += r->rate_ac[st][1];
+              m <<= 1;
+              st = (i <= r->arith_ac_K) ? 189 : 217;
+              while (v2 >>= 1) {
+                coef_bits += r->rate_ac[st][1];
+                m <<= 1;
+                st++;
+              }
+            }
+          }
+          coef_bits += r->rate_ac[st][0];
+          st += 14;
+          while (m >>= 1)
+            coef_bits += r->rate_ac[st][(m & v) ? 1 : 0];
+          
+          rate = coef_bits + run_bits;
+          cost = rate + candidate_dist[k];
+          cost += accumulated_zero_dist[i-1] - accumulated_zero_dist[j] + accumulated_cost[j];
+          
+          if (cost < accumulated_cost[i]) {
+            coef_blocks[bi][z] = (candidate[k] ^ sign) - sign;
+            accumulated_cost[i] = cost;
+            run_start[i] = j;
+          }
+        }
+      }
+    }
+    
+    last_coeff_idx = Ss-1;
+    best_cost = accumulated_zero_dist[Se] + r->rate_ac[0][1];
+    
+    for (i = Ss; i <= Se; i++) {
+      int z = jpeg_natural_order[i];
+      if (coef_blocks[bi][z] != 0) {
+        float cost = accumulated_cost[i] + accumulated_zero_dist[Se] - accumulated_zero_dist[i];
+        
+        if (i < Se)
+          cost += r->rate_ac[3*(i-1)][1];
+        
+        if (cost < best_cost) {
+          best_cost = cost;
+          last_coeff_idx = i;
+        }
+      }
+    }
+    
+    /* Zero out coefficients that are part of runs */
+    i = Se;
+    while (i >= Ss)
+    {
+      while (i > last_coeff_idx) {
+        int z = jpeg_natural_order[i];
+        coef_blocks[bi][z] = 0;
+        i--;
+      }
+      last_coeff_idx = run_start[i];
+      i--;
+    }
+    
+  }
+  
+  if (cinfo->master->trellis_q_opt) {
+    for (bi = 0; bi < num_blocks; bi++) {
+      for (i = 1; i < DCTSIZE2; i++) {
+        norm_src[i] += src[bi][i] * coef_blocks[bi][i];
+        norm_coef[i] += 8 * coef_blocks[bi][i] * coef_blocks[bi][i];
+      }
+    }
+  }
+  
+  if (cinfo->master->trellis_quant_dc) {
+    j = 0;
+    for (i = 1; i < dc_trellis_candidates; i++) {
+      if (accumulated_dc_cost[i][num_blocks-1] < accumulated_dc_cost[j][num_blocks-1])
+        j = i;
+    }
+    for (bi = num_blocks-1; bi >= 0; bi--) {
+      coef_blocks[bi][0] = dc_candidate[j][bi];
+      j = dc_cost_backtrack[j][bi];
+    }
+    
+    /* Save DC predictor */
+    *last_dc_val = coef_blocks[num_blocks-1][0];
+    
+    for (i = 0; i < dc_trellis_candidates; i++) {
+      free(accumulated_dc_cost[i]);
+      free(dc_cost_backtrack[i]);
+      free(dc_candidate[i]);
+      free(dc_context[i]);
+    }
+  }
+}
+#endif
 
 /*
  * Initialize FDCT manager.

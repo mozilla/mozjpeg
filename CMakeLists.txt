@@ -8,8 +8,8 @@ if(POLICY CMP0022)
   cmake_policy(SET CMP0022 OLD)
 endif()
 
-project(libmozjpeg C)
-set(VERSION 2.1)
+project(mozjpeg C)
+set(VERSION 3.1)
 
 if(CYGWIN OR NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
   execute_process(COMMAND "date" "+%Y%m%d" OUTPUT_VARIABLE BUILD)
@@ -47,8 +47,8 @@ message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 option(WITH_SIMD "Include SIMD extensions" TRUE)
 option(WITH_ARITH_ENC "Include arithmetic encoding support" TRUE)
 option(WITH_ARITH_DEC "Include arithmetic decoding support" TRUE)
-option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b)" FALSE)
-option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes libmozjpeg backward incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b)" FALSE)
 option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" TRUE)
 option(WITH_TURBOJPEG "Include the TurboJPEG wrapper library and associated test programs" TRUE)
 option(WITH_JAVA "Build Java wrapper for the TurboJPEG library" FALSE)
@@ -155,7 +155,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX_DEFAULT ${CMAKE_INSTALL_PREFIX_DEFAULT}64)
   endif()
   set(CMAKE_INSTALL_PREFIX "c:/${CMAKE_INSTALL_PREFIX_DEFAULT}" CACHE PATH
-    "Directory into which to install libmozjpeg (default: c:/${CMAKE_INSTALL_PREFIX_DEFAULT})"
+    "Directory into which to install mozjpeg (default: c:/${CMAKE_INSTALL_PREFIX_DEFAULT})"
     FORCE)
 endif()
 
@@ -179,8 +179,8 @@ endif()
 # Targets
 #
 
-set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
-  jccompat.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
+set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jcext.c
+  jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
   jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
   jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdinput.c jdmainct.c
   jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c jdtrans.c
@@ -438,7 +438,7 @@ foreach(libtype shared static)
 
   # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
   add_test(cjpeg${suffix}-rgb-islow
-    ${dir}cjpeg${suffix} -rgb -dct int -outfile testout_rgb_islow.jpg
+    ${dir}cjpeg${suffix} -revert -rgb -dct int -outfile testout_rgb_islow.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-rgb-islow-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_RGB_ISLOW} -DFILE=testout_rgb_islow.jpg
@@ -471,7 +471,7 @@ foreach(libtype shared static)
 
   # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
   add_test(cjpeg${suffix}-422-ifast-opt
-    ${dir}cjpeg${suffix} -sample 2x1 -dct fast -opt
+    ${dir}cjpeg${suffix} -revert -sample 2x1 -dct fast -opt
       -outfile testout_422_ifast_opt.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-422-ifast-opt-cmp
@@ -513,7 +513,7 @@ foreach(libtype shared static)
 
   # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
   add_test(cjpeg${suffix}-420-q100-ifast-prog
-    ${dir}cjpeg${suffix} -sample 2x2 -quality 100 -dct fast -prog
+    ${dir}cjpeg${suffix} -revert -sample 2x2 -quality 100 -dct fast -prog
       -outfile testout_420_q100_ifast_prog.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-420-q100-ifast-prog-cmp
@@ -539,7 +539,7 @@ foreach(libtype shared static)
 
   # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
   add_test(cjpeg${suffix}-gray-islow
-    ${dir}cjpeg${suffix} -gray -dct int -outfile testout_gray_islow.jpg
+    ${dir}cjpeg${suffix} -revert -gray -dct int -outfile testout_gray_islow.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-gray-islow-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_GRAY_ISLOW}
@@ -557,7 +557,7 @@ foreach(libtype shared static)
   add_test(djpeg${suffix}-gray-islow-rgb
     ${dir}djpeg${suffix} -dct int -rgb -outfile testout_gray_islow_rgb.ppm
       testout_gray_islow.jpg)
-  add_test(cjpeg${suffix}-gray-islow-rgb-cmp
+  add_test(djpeg${suffix}-gray-islow-rgb-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_PPM_GRAY_ISLOW_RGB}
       -DFILE=testout_gray_islow_rgb.ppm
       -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
@@ -583,7 +583,7 @@ foreach(libtype shared static)
   # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
   # ENT: 2-pass huff
   add_test(cjpeg${suffix}-420s-ifast-opt
-    ${dir}cjpeg${suffix} -sample 2x2 -smooth 1 -dct int -opt -outfile
+    ${dir}cjpeg${suffix} -revert -sample 2x2 -smooth 1 -dct int -opt -outfile
       testout_420s_ifast_opt.jpg ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-420s-ifast-opt-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420S_IFAST_OPT}
@@ -592,7 +592,7 @@ foreach(libtype shared static)
 
   # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
   add_test(cjpeg${suffix}-3x2-float-prog
-    ${dir}cjpeg${suffix} -sample 3x2 -dct float -prog
+    ${dir}cjpeg${suffix} -revert -sample 3x2 -dct float -prog
       -outfile testout_3x2_float_prog.jpg
       ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
   add_test(cjpeg${suffix}-3x2-float-prog-cmp
@@ -610,7 +610,7 @@ foreach(libtype shared static)
   if(WITH_ARITH_ENC)
     # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
     add_test(cjpeg${suffix}-420-islow-ari
-      ${dir}cjpeg${suffix} -dct int -arithmetic
+      ${dir}cjpeg${suffix} -revert -dct int -arithmetic
         -outfile testout_420_islow_ari.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
     add_test(cjpeg${suffix}-420-islow-ari-cmp
@@ -618,7 +618,7 @@ foreach(libtype shared static)
         -DFILE=testout_420_islow_ari.jpg
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
     add_test(jpegtran${suffix}-420-islow-ari
-      ${dir}jpegtran${suffix} -arithmetic
+      ${dir}jpegtran${suffix} -revert -arithmetic
         -outfile testout_420_islow_ari.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testimgint.jpg)
     add_test(jpegtran${suffix}-420-islow-ari-cmp
@@ -627,7 +627,7 @@ foreach(libtype shared static)
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
     # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
     add_test(cjpeg${suffix}-444-islow-progari
-      ${dir}cjpeg${suffix} -sample 1x1 -dct int -progressive -arithmetic
+      ${dir}cjpeg${suffix} -revert -sample 1x1 -dct int -progressive -arithmetic
         -outfile testout_444_islow_progari.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testorig.ppm)
     add_test(cjpeg${suffix}-444-islow-progari-cmp
@@ -637,15 +637,15 @@ foreach(libtype shared static)
   endif()
   if(WITH_ARITH_DEC)
     # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
-    add_test(cjpeg${suffix}-420m-ifast-ari
+    add_test(djpeg${suffix}-420m-ifast-ari
       ${dir}djpeg${suffix} -fast -ppm -outfile testout_420m_ifast_ari.ppm
         ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
-    add_test(cjpeg${suffix}-420m-ifast-ari-cmp
+    add_test(djpeg${suffix}-420m-ifast-ari-cmp
       ${CMAKE_COMMAND} -DMD5=${MD5_PPM_420M_IFAST_ARI}
         -DFILE=testout_420m_ifast_ari.ppm
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
     add_test(jpegtran${suffix}-420-islow
-      ${dir}jpegtran${suffix} -outfile testout_420_islow.jpg
+      ${dir}jpegtran${suffix} -revert -outfile testout_420_islow.jpg
         ${CMAKE_SOURCE_DIR}/testimages/testimgari.jpg)
     add_test(jpegtran${suffix}-420-islow-cmp
       ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_420_ISLOW}
@@ -732,7 +732,7 @@ foreach(libtype shared static)
         -P ${CMAKE_SOURCE_DIR}/cmakescripts/md5cmp.cmake)
   endif()
   add_test(jpegtran${suffix}-crop
-    ${dir}jpegtran${suffix} -crop 120x90+20+50 -transpose -perfect
+    ${dir}jpegtran${suffix} -revert -crop 120x90+20+50 -transpose -perfect
       -outfile testout_crop.jpg ${CMAKE_SOURCE_DIR}/testimages/${TESTORIG})
   add_test(jpegtran${suffix}-crop-cmp
     ${CMAKE_COMMAND} -DMD5=${MD5_JPEG_CROP} -DFILE=testout_crop.jpg
@@ -778,16 +778,16 @@ endif()
 
 STRING(REGEX REPLACE "/" "\\\\" INST_DIR "${CMAKE_INSTALL_PREFIX}")
 
-configure_file(release/libmozjpeg.nsi.in libmozjpeg.nsi @ONLY)
+configure_file(release/mozjpeg.nsi.in mozjpeg.nsi @ONLY)
 
 if(WITH_JAVA)
   set(JAVA_DEPEND java)
 endif()
 add_custom_target(installer
-  makensis -nocd ${INST_DEFS} libmozjpeg.nsi
+  makensis -nocd ${INST_DEFS} mozjpeg.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
     cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
-  SOURCES libmozjpeg.nsi)
+  SOURCES mozjpeg.nsi)
 
 if(WITH_TURBOJPEG)
   set(TURBOJPEG_TARGETS turbojpeg turbojpeg-static tjbench)

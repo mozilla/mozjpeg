@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2014, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -44,7 +44,7 @@ static const char * progname;   /* program name for error messages */
 static char * outfilename;      /* for -outfile switch */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
-boolean memsrc;  /* for -memsrc switch */
+boolean memsrc = FALSE;  /* for -memsrc switch */
 #define INPUT_BUF_SIZE  4096
 
 
@@ -92,6 +92,7 @@ usage (void)
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
+  fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
 #ifdef C_MULTISCAN_FILES_SUPPORTED
   fprintf(stderr, "  -scans file    Create multi-scan JPEG per script file\n");
@@ -174,6 +175,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Use arithmetic coding. */
 #ifdef C_ARITH_CODING_SUPPORTED
       cinfo->arith_code = TRUE;
+
+      /* No table optimization required for AC */
+      cinfo->optimize_coding = FALSE;
 #else
       fprintf(stderr, "%s: sorry, arithmetic coding not supported\n",
               progname);
@@ -221,6 +225,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         printed_version = TRUE;
       }
       cinfo->err->trace_level++;
+
+    } else if (keymatch(arg, "version", 4)) {
+      fprintf(stderr, "%s version %s (build %s)\n",
+              PACKAGE_NAME, VERSION, BUILD);
+      exit(EXIT_SUCCESS);
 
     } else if (keymatch(arg, "flip", 1)) {
       /* Mirror left-right or top-bottom. */
@@ -310,7 +319,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, FALSE);
+      jpeg_c_set_int_param(cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
       
     } else if (keymatch(arg, "rotate", 2)) {
       /* Rotate 90, 180, or 270 degrees (measured clockwise). */
@@ -415,8 +424,6 @@ main (int argc, char **argv)
   /* Initialize the JPEG compression object with default error handling. */
   dstinfo.err = jpeg_std_error(&jdsterr);
   jpeg_create_compress(&dstinfo);
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    jpeg_c_set_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
 
   /* Scan command line to find file names.
    * It is convenient to use just one switch-parsing routine, but the switch
@@ -470,8 +477,10 @@ main (int argc, char **argv)
 #endif
 
   /* Specify data source for decompression */
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    memsrc = jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS); /* needed to revert to original */
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION)
+    memsrc = TRUE; /* needed to revert to original */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   if (memsrc) {
     size_t nbytes;
@@ -494,7 +503,7 @@ main (int argc, char **argv)
     jpeg_mem_src(&srcinfo, inbuffer, insize);
   } else
 #endif
-    jpeg_stdio_src(&srcinfo, fp);
+  jpeg_stdio_src(&srcinfo, fp);
 
   /* Enable saving of extra markers that we want to copy */
   jcopy_markers_setup(&srcinfo, copyoption);
@@ -557,12 +566,13 @@ main (int argc, char **argv)
 
   /* Specify data destination for compression */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS) &&
-      jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION)
     jpeg_mem_dest(&dstinfo, &outbuffer, &outsize);
   else
 #endif
-    jpeg_stdio_dest(&dstinfo, fp);
+  jpeg_stdio_dest(&dstinfo, fp);
 
   /* Start compressor (note no image data is actually written here) */
   jpeg_write_coefficients(&dstinfo, dst_coef_arrays);
@@ -580,8 +590,9 @@ main (int argc, char **argv)
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
   
-  if (jpeg_c_bool_param_supported(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS) &&
-      jpeg_c_get_bool_param(&dstinfo, JBOOLEAN_USE_MOZ_DEFAULTS)) {
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION) {
     size_t nbytes;
     
     unsigned char *buffer = outbuffer;
@@ -612,6 +623,9 @@ main (int argc, char **argv)
 #ifdef PROGRESS_REPORT
   end_progress_monitor((j_common_ptr) &dstinfo);
 #endif
+
+  free(inbuffer);
+  free(outbuffer);
 
   /* All done. */
   exit(jsrcerr.num_warnings + jdsterr.num_warnings ?EXIT_WARNING:EXIT_SUCCESS);

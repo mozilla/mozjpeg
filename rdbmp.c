@@ -381,7 +381,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     return;
   }
 
-  if (biWidth <= 0 || biHeight <= 0)
+  if (biWidth <= 0 || biHeight <= 0 || biWidth > 0x7fffffffL || biHeight > 0x7fffffffL)
     ERREXIT(cinfo, JERR_BMP_EMPTY);
   if (biPlanes != 1)
     ERREXIT(cinfo, JERR_BMP_BADPLANES);

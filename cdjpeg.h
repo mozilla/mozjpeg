@@ -13,12 +13,12 @@
  * cjpeg and djpeg.  It is NOT used by the core JPEG library.
  */
 
-#define JPEG_CJPEG_DJPEG	/* define proper options in jconfig.h */
-#define JPEG_INTERNAL_OPTIONS	/* cjpeg.c,djpeg.c need to see xxx_SUPPORTED */
+#define JPEG_CJPEG_DJPEG        /* define proper options in jconfig.h */
+#define JPEG_INTERNAL_OPTIONS   /* cjpeg.c,djpeg.c need to see xxx_SUPPORTED */
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jerror.h"		/* get library error codes too */
-#include "cderror.h"		/* get application-specific error codes */
+#include "jerror.h"             /* get library error codes too */
+#include "cderror.h"            /* get application-specific error codes */
 
 #define JPEG_RAW_READER 0
 
@@ -85,9 +85,9 @@ struct djpeg_dest_struct {
  */
 
 struct cdjpeg_progress_mgr {
-  struct jpeg_progress_mgr pub;	/* fields known to JPEG library */
-  int completed_extra_passes;	/* extra passes completed */
-  int total_extra_passes;	/* total extra */
+  struct jpeg_progress_mgr pub; /* fields known to JPEG library */
+  int completed_extra_passes;   /* extra passes completed */
+  int total_extra_passes;       /* total extra */
   /* last printed percentage stored here to avoid multiple printouts */
   int percent_done;
 };
@@ -137,15 +137,15 @@ EXTERN(FILE *) write_stdout (void);
 
 /* miscellaneous useful macros */
 
-#ifdef DONT_USE_B_MODE		/* define mode parameters for fopen() */
-#define READ_BINARY	"r"
-#define WRITE_BINARY	"w"
+#ifdef DONT_USE_B_MODE          /* define mode parameters for fopen() */
+#define READ_BINARY     "r"
+#define WRITE_BINARY    "w"
 #else
-#define READ_BINARY	"rb"
-#define WRITE_BINARY	"wb"
+#define READ_BINARY     "rb"
+#define WRITE_BINARY    "wb"
 #endif
 
-#ifndef EXIT_FAILURE		/* define exit() codes if not provided */
+#ifndef EXIT_FAILURE            /* define exit() codes if not provided */
 #define EXIT_FAILURE  1
 #endif
 #ifndef EXIT_SUCCESS

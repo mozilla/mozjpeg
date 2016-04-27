@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -178,8 +178,11 @@ usage (void)
 #endif
   fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
   fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
-  fprintf(stderr, "  -opt-dc-scan   Optimize DC scans (may be incompatible with some JPEG decoders)\n");
-  fprintf(stderr, "  -split-dc-scan Use one DC scan per component (may be incompatible with some JPEG decoders?)\n");
+  fprintf(stderr, "  -dc-scan-opt   DC scan optimization mode\n");
+  fprintf(stderr, "                 - 0 One scan for all components\n");
+  fprintf(stderr, "                 - 1 One scan per component (default)\n");
+  fprintf(stderr, "                 - 2 Optimize between one scan for all components and one scan for 1st component\n");
+  fprintf(stderr, "                     plus one scan for remaining components\n");
   fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
   fprintf(stderr, "  -trellis-dc    Enable trellis optimization of DC coefficients (default)\n");
   fprintf(stderr, "  -notrellis-dc  Disable trellis optimization of DC coefficients\n");
@@ -204,6 +207,14 @@ usage (void)
   fprintf(stderr, "  -dct float     Use floating-point DCT method%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
+  fprintf(stderr, "  -quant-baseline Use 8-bit quantization table entries for baseline JPEG compatibility\n");
+  fprintf(stderr, "  -quant-table N Use predefined quantization table N:\n");
+  fprintf(stderr, "                 - 0 JPEG Annex K\n");
+  fprintf(stderr, "                 - 1 Flat\n");
+  fprintf(stderr, "                 - 2 Custom, tuned for MS-SSIM\n");
+  fprintf(stderr, "                 - 3 ImageMagick table by N. Robidoux\n");
+  fprintf(stderr, "                 - 4 Custom, tuned for PSNR-HVS\n");
+  fprintf(stderr, "                 - 5 Table from paper by Klein, Silverstein and Carney\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
 #ifdef INPUT_SMOOTHING_SUPPORTED
   fprintf(stderr, "  -smooth N      Smooth dithered input (N=1..100 is strength)\n");
@@ -214,6 +225,7 @@ usage (void)
   fprintf(stderr, "  -memdst        Compress to memory instead of file (useful for benchmarking)\n");
 #endif
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
+  fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
   fprintf(stderr, "  -qtables file  Use quantization tables given in file\n");
   fprintf(stderr, "  -qslots N[,...]    Set component quantization tables\n");
@@ -278,6 +290,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Use arithmetic coding. */
 #ifdef C_ARITH_CODING_SUPPORTED
       cinfo->arith_code = TRUE;
+      
+      /* No table optimization required for AC */
+      cinfo->optimize_coding = FALSE;
 #else
       fprintf(stderr, "%s: sorry, arithmetic coding not supported\n",
               progname);
@@ -294,7 +309,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "dct", 2)) {
       /* Select DCT algorithm. */
-      if (++argn >= argc) { /* advance to next argument */
+      if (++argn >= argc) {      /* advance to next argument */
         fprintf(stderr, "%s: missing argument for dct\n", progname);
         usage();
       }
@@ -324,12 +339,13 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       }
       cinfo->err->trace_level++;
 
+    } else if (keymatch(arg, "version", 4)) {
+      fprintf(stderr, "%s version %s (build %s)\n",
+              PACKAGE_NAME, VERSION, BUILD);
+      exit(EXIT_SUCCESS);
+
     } else if (keymatch(arg, "fastcrush", 4)) {
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
-
-    } else if (keymatch(arg, "flat", 4)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, TRUE);
-      jpeg_set_quality(cinfo, 75, TRUE);
 
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force a monochrome JPEG file to be generated. */
@@ -340,14 +356,14 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       jpeg_set_colorspace(cinfo, JCS_RGB);
 
     } else if (keymatch(arg, "lambda1", 7)) {
-      if (++argn >= argc)	/* advance to next argument */
-	usage();
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1,
                              atof(argv[argn]));
 
     } else if (keymatch(arg, "lambda2", 7)) {
-      if (++argn >= argc)	/* advance to next argument */
-	usage();
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2,
                              atof(argv[argn]));
 
@@ -364,8 +380,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
-    } else if (keymatch(arg, "opt-dc-scan", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_ONE_DC_SCAN, FALSE);
+    } else if (keymatch(arg, "dc-scan-opt", 3)) {
+      if (++argn >= argc) {      /* advance to next argument */
+        fprintf(stderr, "%s: missing argument for dc-scan-opt\n", progname);
+        usage();
+      }
+      jpeg_c_set_int_param(cinfo, JINT_DC_SCAN_OPT_MODE, atoi(argv[argn]));
 
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */
@@ -379,7 +399,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "outfile", 4)) {
       /* Set output file name. */
-      if (++argn >= argc)	{ /* advance to next argument */
+      if (++argn >= argc) {      /* advance to next argument */
         fprintf(stderr, "%s: missing argument for outfile\n", progname);
         usage();
       }
@@ -408,7 +428,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "quality", 1)) {
       /* Quality ratings (quantization table scaling factors). */
-      if (++argn >= argc)	{ /* advance to next argument */
+      if (++argn >= argc) {      /* advance to next argument */
         fprintf(stderr, "%s: missing argument for quality\n", progname);
         usage();
       }
@@ -431,6 +451,22 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       qtablefile = argv[argn];
       /* We postpone actually reading the file in case -quality comes later. */
 
+    } else if (keymatch(arg, "quant-table", 7)) {
+      int val;
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      val = atoi(argv[argn]);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, val);
+      if (jpeg_c_get_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX) != val) {
+        fprintf(stderr, "%s: %d is invalid argument for quant-table\n", progname, val);
+        usage();
+      }
+      jpeg_set_quality(cinfo, 75, TRUE);
+
+    } else if (keymatch(arg, "quant-baseline", 7)) {
+      /* Force quantization table to meet baseline requirements */
+      force_baseline = TRUE;
+    
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
       long lval;
@@ -452,7 +488,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, FALSE);
+      jpeg_c_set_int_param(cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
       jpeg_set_defaults(cinfo);
 
     } else if (keymatch(arg, "sample", 2)) {
@@ -490,10 +526,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         usage();
       cinfo->smoothing_factor = val;
 
-    } else if (keymatch(arg, "split-dc-scans", 3)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_ONE_DC_SCAN, FALSE);
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_SEP_DC_SCAN, TRUE);
-      
     } else if (keymatch(arg, "targa", 1)) {
       /* Input file is Targa format. */
       is_targa = TRUE;
@@ -506,35 +538,42 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* disable trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT, FALSE);
       
+    } else if (keymatch(arg, "trellis-dc-ver-weight", 12)) {
+      if (++argn >= argc) {      /* advance to next argument */
+        fprintf(stderr, "%s: missing argument for trellis-dc-ver-weight\n", progname);
+        usage();
+      }
+      jpeg_c_set_float_param(cinfo, JFLOAT_TRELLIS_DELTA_DC_WEIGHT, atof(argv[argn]));
+      
     } else if (keymatch(arg, "trellis-dc", 9)) {
       /* enable DC trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, TRUE);
       
     } else if (keymatch(arg, "tune-psnr", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, TRUE);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 9.0);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 0.0);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ssim", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, TRUE);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 12.0);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 13.5);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 11.5);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 12.75);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-ms-ssim", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, FALSE);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 14.25);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 12.75);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 12.0);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 13.0);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
       
     } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
-      jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_FLAT_QUANT_TBL, FALSE);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 16.0);
-      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 15.5);
+      jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 14.75);
+      jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 16.5);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
 
@@ -634,8 +673,6 @@ main (int argc, char **argv)
    */
 
   cinfo.in_color_space = JCS_RGB; /* arbitrary guess */
-  if (jpeg_c_bool_param_supported(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS))
-    jpeg_c_set_bool_param(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE);
   jpeg_set_defaults(&cinfo);
 
   /* Scan command line to find file names.
@@ -743,7 +780,7 @@ main (int argc, char **argv)
           GETJOCTET(marker->data[2]) == 0x49 &&
           GETJOCTET(marker->data[3]) == 0x46 &&
           GETJOCTET(marker->data[4]) == 0)
-        continue;			/* reject duplicate JFIF */
+        continue;                       /* reject duplicate JFIF */
       if (cinfo.write_Adobe_marker &&
           marker->marker == JPEG_APP0+14 &&
           marker->data_length >= 5 &&
@@ -752,8 +789,9 @@ main (int argc, char **argv)
           GETJOCTET(marker->data[2]) == 0x6F &&
           GETJOCTET(marker->data[3]) == 0x62 &&
           GETJOCTET(marker->data[4]) == 0x65)
-        continue;			/* reject duplicate Adobe */
-      jpeg_write_marker(&cinfo, marker->marker, marker->data, marker->data_length);
+        continue;                       /* reject duplicate Adobe */
+      jpeg_write_marker(&cinfo, marker->marker, marker->data,
+                        marker->data_length);
     }
   }
   

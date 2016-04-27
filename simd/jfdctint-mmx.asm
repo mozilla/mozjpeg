@@ -444,11 +444,11 @@ EXTN(jsimd_fdct_islow_mmx):
         psubw   mm6,mm4                 ; mm6=tmp12
 
         movq    mm7,mm5
-        paddw   mm5,mm0                 ; mm5=tmp10+tmp11
-        psubw   mm7,mm0                 ; mm7=tmp10-tmp11
+        paddsw   mm5,mm0                 ; mm5=tmp10+tmp11
+        psubsw   mm7,mm0                 ; mm7=tmp10-tmp11
 
-        paddw   mm5,[GOTOFF(ebx,PW_DESCALE_P2X)]
-        paddw   mm7,[GOTOFF(ebx,PW_DESCALE_P2X)]
+        paddsw   mm5,[GOTOFF(ebx,PW_DESCALE_P2X)]
+        paddsw   mm7,[GOTOFF(ebx,PW_DESCALE_P2X)]
         psraw   mm5,PASS1_BITS          ; mm5=data0
         psraw   mm7,PASS1_BITS          ; mm7=data4
 

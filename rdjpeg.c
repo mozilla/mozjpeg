@@ -9,7 +9,7 @@
  *
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
 #if JPEG_RAW_READER
 #define NUM_ROWS 32
@@ -22,7 +22,7 @@ typedef struct _jpeg_source_struct * jpeg_source_ptr;
 typedef struct _jpeg_source_struct {
   struct cjpeg_source_struct pub; /* public fields */
 
-  j_compress_ptr cinfo;		/* back link saves passing separate parm */
+  j_compress_ptr cinfo;         /* back link saves passing separate parm */
   
   struct jpeg_decompress_struct dinfo;
   struct jpeg_error_mgr jerr;
@@ -150,8 +150,8 @@ jinit_read_jpeg (j_compress_ptr cinfo)
   /* Create module interface object */
   source = (jpeg_source_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  sizeof(jpeg_source_struct));
-  source->cinfo = cinfo;	/* make back link for subroutines */
+                                  sizeof(jpeg_source_struct));
+  source->cinfo = cinfo;        /* make back link for subroutines */
   /* Fill in method ptrs, except get_pixel_rows which start_input sets */
   source->pub.start_input = start_input_jpeg;
   source->pub.finish_input = finish_input_jpeg;

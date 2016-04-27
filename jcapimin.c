@@ -23,6 +23,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jmemsys.h"
+#include "jcmaster.h"
 
 
 /*
@@ -97,8 +98,11 @@ jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
    * here.  It is later reallocated by jinit_c_master_control().
    */
   cinfo->master = (struct jpeg_comp_master *)
-      jpeg_get_small ((j_common_ptr) cinfo, sizeof(struct jpeg_comp_master));
-  MEMZERO(cinfo->master, sizeof(struct jpeg_comp_master));
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+                                  sizeof(my_comp_master));
+  MEMZERO(cinfo->master, sizeof(my_comp_master));
+
+  cinfo->master->compress_profile = JCP_MAX_COMPRESSION;
 }
 
 

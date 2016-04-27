@@ -208,6 +208,9 @@ JMESSAGE(JWRN_ARITH_BAD_CODE, "Corrupt JPEG data: bad arithmetic code")
 #endif
 #endif
 JMESSAGE(JERR_BAD_PARAM, "Bogus parameter")
+JMESSAGE(JERR_BAD_PARAM_VALUE, "Bogus parameter value")
+
+JMESSAGE(JERR_UNSUPPORTED_SUSPEND, "I/O suspension not supported in scan optimization")  
 
 #ifdef JMAKE_ENUM_LIST
 

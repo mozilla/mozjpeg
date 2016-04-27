@@ -8,7 +8,7 @@
 # - Redistributions in binary form must reproduce the above copyright notice,
 #   this list of conditions and the following disclaimer in the documentation
 #   and/or other materials provided with the distribution.
-# - Neither the name of the libmozjpeg Project nor the names of its
+# - Neither the name of the mozjpeg Project nor the names of its
 #   contributors may be used to endorse or promote products derived from this
 #   software without specific prior written permission.
 #
@@ -32,7 +32,7 @@ if [ ! "`id -u`" = "0" ]; then
 fi
 
 PACKAGE=@PKGNAME@
-MACPACKAGE=com.$PACKAGE.$PACKAGE
+MACPACKAGE=com.mozilla.$PACKAGE
 RECEIPT=/Library/Receipts/$PACKAGE.pkg
 
 LSBOM=
@@ -72,7 +72,7 @@ fi
 if [ -d $INCLUDEDIR ]; then
 	rmdir $INCLUDEDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ "$PREFIX" = "/opt/libmozjpeg" -a "$LIBDIR" = "/opt/libmozjpeg/lib" ]; then
+if [ "$PREFIX" = "/opt/mozjpeg" -a "$LIBDIR" = "/opt/mozjpeg/lib" ]; then
 	if [ -h $LIBDIR\32 ]; then
 		rm $LIBDIR\32 2>&1 || EXITSTATUS=-1
 	fi
@@ -92,7 +92,7 @@ fi
 if [ -d $DATADIR -a "$DATADIR" != "$PREFIX" ]; then
 	rmdir $DATADIR 2>&1 || EXITSTATUS=-1
 fi
-if [ "$PREFIX" = "/opt/libmozjpeg" -a -h "$PREFIX/doc" ]; then
+if [ "$PREFIX" = "/opt/mozjpeg" -a -h "$PREFIX/doc" ]; then
 	rm $PREFIX/doc 2>&1 || EXITSTATUS=-1
 fi
 rmdir $PREFIX 2>&1 || EXITSTATUS=-1

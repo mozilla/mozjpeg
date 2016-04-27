@@ -17,14 +17,6 @@
 #include "jpeglib.h"
 
 
-/* Note: currently, there is no operating mode in which a full-image buffer
- * is needed at this step.  If there were, that mode could not be used with
- * "raw data" input, since this module is bypassed in that case.  However,
- * we've left the code here for possible use in special applications.
- */
-#undef FULL_MAIN_BUFFER_SUPPORTED
-
-
 /* Private buffer controller object */
 
 typedef struct {
@@ -40,13 +32,6 @@ typedef struct {
    * points to the currently accessible strips of the virtual arrays.
    */
   JSAMPARRAY buffer[MAX_COMPONENTS];
-
-#ifdef FULL_MAIN_BUFFER_SUPPORTED
-  /* If using full-image storage, this array holds pointers to virtual-array
-   * control blocks for each component.  Unused if not full-image storage.
-   */
-  jvirt_sarray_ptr whole_image[MAX_COMPONENTS];
-#endif
 } my_main_controller;
 
 typedef my_main_controller * my_main_ptr;
@@ -56,11 +41,6 @@ typedef my_main_controller * my_main_ptr;
 METHODDEF(void) process_data_simple_main
         (j_compress_ptr cinfo, JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
          JDIMENSION in_rows_avail);
-#ifdef FULL_MAIN_BUFFER_SUPPORTED
-METHODDEF(void) process_data_buffer_main
-        (j_compress_ptr cinfo, JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
-         JDIMENSION in_rows_avail);
-#endif
 
 
 /*
@@ -76,32 +56,14 @@ start_pass_main (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
   if (cinfo->raw_data_in)
     return;
 
+  if (pass_mode != JBUF_PASS_THRU)
+    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+
   main_ptr->cur_iMCU_row = 0;   /* initialize counters */
   main_ptr->rowgroup_ctr = 0;
   main_ptr->suspended = FALSE;
   main_ptr->pass_mode = pass_mode;      /* save mode for use by process_data */
-
-  switch (pass_mode) {
-  case JBUF_PASS_THRU:
-#ifdef FULL_MAIN_BUFFER_SUPPORTED
-    if (main_ptr->whole_image[0] != NULL)
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-#endif
-    main_ptr->pub.process_data = process_data_simple_main;
-    break;
-#ifdef FULL_MAIN_BUFFER_SUPPORTED
-  case JBUF_SAVE_SOURCE:
-  case JBUF_CRANK_DEST:
-  case JBUF_SAVE_AND_PASS:
-    if (main_ptr->whole_image[0] == NULL)
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    main_ptr->pub.process_data = process_data_buffer_main;
-    break;
-#endif
-  default:
-    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    break;
-  }
+  main_ptr->pub.process_data = process_data_simple_main;
 }
 
 
@@ -160,85 +122,6 @@ process_data_simple_main (j_compress_ptr cinfo,
 }
 
 
-#ifdef FULL_MAIN_BUFFER_SUPPORTED
-
-/*
- * Process some data.
- * This routine handles all of the modes that use a full-size buffer.
- */
-
-METHODDEF(void)
-process_data_buffer_main (j_compress_ptr cinfo,
-                          JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
-                          JDIMENSION in_rows_avail)
-{
-  my_main_ptr main_ptr = (my_main_ptr) cinfo->main;
-  int ci;
-  jpeg_component_info *compptr;
-  boolean writing = (main_ptr->pass_mode != JBUF_CRANK_DEST);
-
-  while (main_ptr->cur_iMCU_row < cinfo->total_iMCU_rows) {
-    /* Realign the virtual buffers if at the start of an iMCU row. */
-    if (main_ptr->rowgroup_ctr == 0) {
-      for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-           ci++, compptr++) {
-        main_ptr->buffer[ci] = (*cinfo->mem->access_virt_sarray)
-          ((j_common_ptr) cinfo, main_ptr->whole_image[ci],
-           main_ptr->cur_iMCU_row * (compptr->v_samp_factor * DCTSIZE),
-           (JDIMENSION) (compptr->v_samp_factor * DCTSIZE), writing);
-      }
-      /* In a read pass, pretend we just read some source data. */
-      if (! writing) {
-        *in_row_ctr += cinfo->max_v_samp_factor * DCTSIZE;
-        main_ptr->rowgroup_ctr = DCTSIZE;
-      }
-    }
-
-    /* If a write pass, read input data until the current iMCU row is full. */
-    /* Note: preprocessor will pad if necessary to fill the last iMCU row. */
-    if (writing) {
-      (*cinfo->prep->pre_process_data) (cinfo,
-                                        input_buf, in_row_ctr, in_rows_avail,
-                                        main_ptr->buffer, &main_ptr->rowgroup_ctr,
-                                        (JDIMENSION) DCTSIZE);
-      /* Return to application if we need more data to fill the iMCU row. */
-      if (main_ptr->rowgroup_ctr < DCTSIZE)
-        return;
-    }
-
-    /* Emit data, unless this is a sink-only pass. */
-    if (main_ptr->pass_mode != JBUF_SAVE_SOURCE) {
-      if (! (*cinfo->coef->compress_data) (cinfo, main_ptr->buffer)) {
-        /* If compressor did not consume the whole row, then we must need to
-         * suspend processing and return to the application.  In this situation
-         * we pretend we didn't yet consume the last input row; otherwise, if
-         * it happened to be the last row of the image, the application would
-         * think we were done.
-         */
-        if (! main_ptr->suspended) {
-          (*in_row_ctr)--;
-          main_ptr->suspended = TRUE;
-        }
-        return;
-      }
-      /* We did finish the row.  Undo our little suspension hack if a previous
-       * call suspended; then mark the main buffer empty.
-       */
-      if (main_ptr->suspended) {
-        (*in_row_ctr)++;
-        main_ptr->suspended = FALSE;
-      }
-    }
-
-    /* If get here, we are done with this iMCU row.  Mark buffer empty. */
-    main_ptr->rowgroup_ctr = 0;
-    main_ptr->cur_iMCU_row++;
-  }
-}
-
-#endif /* FULL_MAIN_BUFFER_SUPPORTED */
-
-
 /*
  * Initialize main buffer controller.
  */
@@ -264,25 +147,8 @@ jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
    * may be of a different size.
    */
   if (need_full_buffer) {
-#ifdef FULL_MAIN_BUFFER_SUPPORTED
-    /* Allocate a full-image virtual array for each component */
-    /* Note we pad the bottom to a multiple of the iMCU height */
-    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-         ci++, compptr++) {
-      main_ptr->whole_image[ci] = (*cinfo->mem->request_virt_sarray)
-        ((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
-         compptr->width_in_blocks * DCTSIZE,
-         (JDIMENSION) jround_up((long) compptr->height_in_blocks,
-                                (long) compptr->v_samp_factor) * DCTSIZE,
-         (JDIMENSION) (compptr->v_samp_factor * DCTSIZE));
-    }
-#else
     ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-#endif
   } else {
-#ifdef FULL_MAIN_BUFFER_SUPPORTED
-    main_ptr->whole_image[0] = NULL; /* flag for no virtual arrays */
-#endif
     /* Allocate a strip buffer for each component */
     for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
          ci++, compptr++) {

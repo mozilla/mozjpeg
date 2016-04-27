@@ -23,9 +23,8 @@ typedef enum {            /* Operating modes for buffer controllers */
   /* Remaining modes require a full-image buffer to have been created */
   JBUF_SAVE_SOURCE,       /* Run source subobject only, save output */
   JBUF_CRANK_DEST,        /* Run dest subobject only, using saved data */
-	JBUF_SAVE_AND_PASS,	/* Run both subobjects, save output */
-        JBUF_REQUANT            /* Requantize */
-
+  JBUF_SAVE_AND_PASS,     /* Run both subobjects, save output */
+  JBUF_REQUANT            /* Requantize */
 } J_BUF_MODE;
 
 /* Values of global_state field (jdapi.c has some dependencies on ordering!) */
@@ -59,23 +58,22 @@ struct jpeg_comp_master {
   boolean is_last_pass;         /* True during last pass */
 
   /* Extension parameters */
-  boolean use_moz_defaults; /* TRUE=use Mozilla defaults */
   boolean optimize_scans; /* TRUE=optimize progressive coding scans */
-  boolean one_dc_scan; /* TRUE=use a single DC scan interleaving all components */
-  boolean sep_dc_scan; /* TRUE=each DC scan is separate */
   boolean trellis_quant; /* TRUE=use trellis quantization */
   boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
   boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
-  boolean use_flat_quant_tbl; /* TRUE=use flat quantization table */
   boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
   boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
-  boolean trellis_passes; /* TRUE=currently doing trellis-related passes */
+  boolean trellis_passes; /* TRUE=currently doing trellis-related passes [not exposed] */
   boolean trellis_q_opt; /* TRUE=optimize quant table in trellis loop */
   boolean overshoot_deringing; /* TRUE=preprocess input to reduce ringing of edges on white background */
 
   double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
   double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
 
+  int compress_profile; /* compression profile */
+  int dc_scan_opt_mode; /* DC scan optimization mode */
+  int quant_tbl_master_idx; /* Quantization table master index */
   int trellis_freq_split; /* splitting point for frequency in trellis quantization */
   int trellis_num_loops; /* number of trellis loops */
 
@@ -89,7 +87,35 @@ struct jpeg_comp_master {
 
   float lambda_log_scale1;
   float lambda_log_scale2;
+  
+  float trellis_delta_dc_weight;
 };
+
+#ifdef C_ARITH_CODING_SUPPORTED
+/* The following two definitions specify the allocation chunk size
+ * for the statistics area.
+ * According to sections F.1.4.4.1.3 and F.1.4.4.2, we need at least
+ * 49 statistics bins for DC, and 245 statistics bins for AC coding.
+ *
+ * We use a compact representation with 1 byte per statistics bin,
+ * thus the numbers directly represent byte sizes.
+ * This 1 byte per statistics bin contains the meaning of the MPS
+ * (more probable symbol) in the highest bit (mask 0x80), and the
+ * index into the probability estimation state machine table
+ * in the lower bits (mask 0x7F).
+ */
+
+#define DC_STAT_BINS 64
+#define AC_STAT_BINS 256
+
+typedef struct {
+  float rate_dc[DC_STAT_BINS][2];
+  float rate_ac[AC_STAT_BINS][2];
+  int arith_dc_L;
+  int arith_dc_U;
+  int arith_ac_K;
+} arith_rates;
+#endif
 
 /* Main buffer control (downsampled-data buffer) */
 struct jpeg_c_main_controller {
@@ -364,6 +390,16 @@ EXTERN(void) jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 EXTERN(void) jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
                               JDIMENSION num_blocks);
 EXTERN(void) jzero_far (void * target, size_t bytestozero);
+
+#ifdef C_ARITH_CODING_SUPPORTED
+EXTERN(void) jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r);
+
+EXTERN(void) quantize_trellis_arith
+(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+ JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+ JBLOCKROW coef_blocks_above, JBLOCKROW src_above);
+#endif
+
 /* Constant tables in jutils.c */
 #if 0                           /* This table is not actually needed in v6a */
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */

@@ -190,7 +190,8 @@ compress_data (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
             (*cinfo->fdct->forward_DCT) (cinfo, compptr,
                                          input_buf[compptr->component_index],
                                          coef->MCU_buffer[blkn],
-					 ypos, xpos, (JDIMENSION) blockcnt, NULL);
+                                         ypos, xpos, (JDIMENSION) blockcnt,
+                                         NULL);
             if (blockcnt < compptr->MCU_width) {
               /* Create some dummy blocks at the right edge of the image. */
               jzero_far((void *) coef->MCU_buffer[blkn + blockcnt],
@@ -302,7 +303,8 @@ compress_first_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
       (*cinfo->fdct->forward_DCT) (cinfo, compptr,
                                    input_buf[ci], thisblockrow,
                                    (JDIMENSION) (block_row * DCTSIZE),
-				   (JDIMENSION) 0, blocks_across, buffer_dst[block_row]);
+                                   (JDIMENSION) 0, blocks_across,
+                                   buffer_dst[block_row]);
       if (ndummy > 0) {
         /* Create dummy blocks at the right edge of the image. */
         thisblockrow += blocks_across; /* => first dummy block */
@@ -364,11 +366,24 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     c_derived_tbl *dctbl = &dctbl_data;
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
+    
+#ifdef C_ARITH_CODING_SUPPORTED
+    arith_rates arith_r_data;
+    arith_rates *arith_r = &arith_r_data;
+#endif
+    
     compptr = cinfo->cur_comp_info[ci];
 
-    jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
-    jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
-    
+#ifdef C_ARITH_CODING_SUPPORTED
+    if (cinfo->arith_code)
+      jget_arith_rates(cinfo, compptr->dc_tbl_no, compptr->ac_tbl_no, arith_r);
+    else
+#endif
+    {
+      jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
+      jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
+    }
+
     /* Align the virtual buffer for this component. */
     buffer = (*cinfo->mem->access_virt_barray)
     ((j_common_ptr) cinfo, coef->whole_image[compptr->component_index],
@@ -402,21 +417,32 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
      */
     for (block_row = 0; block_row < block_rows; block_row++) {
       thisblockrow = buffer[block_row];
-      quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
-                       buffer_dst[block_row], blocks_across,
-                       cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
-                       cinfo->master->norm_src[compptr->quant_tbl_no],
-                       cinfo->master->norm_coef[compptr->quant_tbl_no],
-                       &lastDC);
+      lastblockrow = (block_row > 0) ? buffer[block_row-1] : NULL;
+#ifdef C_ARITH_CODING_SUPPORTED
+      if (cinfo->arith_code)
+        quantize_trellis_arith(cinfo, arith_r, thisblockrow,
+                               buffer_dst[block_row], blocks_across,
+                               cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
+                               cinfo->master->norm_src[compptr->quant_tbl_no],
+                               cinfo->master->norm_coef[compptr->quant_tbl_no],
+                               &lastDC, lastblockrow, buffer_dst[block_row-1]);
+      else
+#endif
+        quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
+                         buffer_dst[block_row], blocks_across,
+                         cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
+                         cinfo->master->norm_src[compptr->quant_tbl_no],
+                         cinfo->master->norm_coef[compptr->quant_tbl_no],
+                         &lastDC, lastblockrow, buffer_dst[block_row-1]);
       
       if (ndummy > 0) {
-	/* Create dummy blocks at the right edge of the image. */
-	thisblockrow += blocks_across; /* => first dummy block */
-	jzero_far((void *) thisblockrow, ndummy * sizeof(JBLOCK));
-	lastDC = thisblockrow[-1][0];
-	for (bi = 0; bi < ndummy; bi++) {
-	  thisblockrow[bi][0] = lastDC;
-	}
+        /* Create dummy blocks at the right edge of the image. */
+        thisblockrow += blocks_across; /* => first dummy block */
+        jzero_far((void *) thisblockrow, ndummy * sizeof(JBLOCK));
+        lastDC = thisblockrow[-1][0];
+        for (bi = 0; bi < ndummy; bi++) {
+          thisblockrow[bi][0] = lastDC;
+        }
       }
     }
     /* If at end of image, create dummy block rows as needed.
@@ -425,22 +451,22 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
      * This squeezes a few more bytes out of the resulting file...
      */
     if (coef->iMCU_row_num == last_iMCU_row) {
-      blocks_across += ndummy;	/* include lower right corner */
+      blocks_across += ndummy;  /* include lower right corner */
       MCUs_across = blocks_across / h_samp_factor;
       for (block_row = block_rows; block_row < compptr->v_samp_factor;
-	   block_row++) {
-	thisblockrow = buffer[block_row];
-	lastblockrow = buffer[block_row-1];
-	jzero_far((void *) thisblockrow,
-		  (size_t) (blocks_across * sizeof(JBLOCK)));
-	for (MCUindex = 0; MCUindex < MCUs_across; MCUindex++) {
-	  lastDC = lastblockrow[h_samp_factor-1][0];
-	  for (bi = 0; bi < h_samp_factor; bi++) {
-	    thisblockrow[bi][0] = lastDC;
-	  }
-	  thisblockrow += h_samp_factor; /* advance to next MCU in row */
-	  lastblockrow += h_samp_factor;
-	}
+           block_row++) {
+        thisblockrow = buffer[block_row];
+        lastblockrow = buffer[block_row-1];
+        jzero_far((void *) thisblockrow,
+                  (size_t) (blocks_across * sizeof(JBLOCK)));
+        for (MCUindex = 0; MCUindex < MCUs_across; MCUindex++) {
+          lastDC = lastblockrow[h_samp_factor-1][0];
+          for (bi = 0; bi < h_samp_factor; bi++) {
+            thisblockrow[bi][0] = lastDC;
+          }
+          thisblockrow += h_samp_factor; /* advance to next MCU in row */
+          lastblockrow += h_samp_factor;
+        }
       }
     }
   }
@@ -503,7 +529,6 @@ compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
           }
         }
       }
-
       /* Try to write the MCU. */
       if (! (*cinfo->entropy->encode_mcu) (cinfo, coef->MCU_buffer)) {
         /* Suspension forced; update state counters and exit */

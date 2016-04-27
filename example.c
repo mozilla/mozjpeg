@@ -126,7 +126,7 @@ write_JPEG_file (char * filename, int quality)
   cinfo.image_height = image_height;
   cinfo.input_components = 3;           /* # of color components per pixel */
   cinfo.in_color_space = JCS_RGB;       /* colorspace of input image */
-  cinfo.use_moz_defaults = TRUE;        /* use Mozilla defaults for improved compression */
+  jpeg_c_set_bool_param(&cinfo, JBOOLEAN_USE_MOZ_DEFAULTS, TRUE); /* use Mozilla defaults for improved compression */
   
   /* Now use the library's routine to set default compression parameters.
    * (You must set at least cinfo.in_color_space before calling this,

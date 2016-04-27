@@ -206,7 +206,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	}
 
 	cinfo->input_components=tjPixelSize[pixelFormat];
-	cinfo->use_moz_defaults = TRUE;
+	cinfo->master->use_moz_defaults = TRUE;
 	jpeg_set_defaults(cinfo);
 
 	if((env=getenv("TJ_OPTIMIZE"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
@@ -241,7 +241,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
 	/* Set scan pattern again as colorspace might have changed */
-	if (cinfo->use_moz_defaults)
+	if (cinfo->master->use_moz_defaults)
 		jpeg_simple_progression(cinfo);
   
 	cinfo->comp_info[0].h_samp_factor=tjMCUWidth[subsamp]/8;
@@ -616,9 +616,10 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
 	nc=(subsamp==TJSAMP_GRAY? 1:3);
 	for(i=0; i<nc; i++)
 	{
-		int stride=PAD(tjPlaneWidth(i, width, subsamp), pad);
+		int pw=tjPlaneWidth(i, width, subsamp);
+		int stride=PAD(pw, pad);
 		int ph=tjPlaneHeight(i, height, subsamp);
-		if(stride<0 || ph<0) return -1;
+		if(pw<0 || ph<0) return -1;
 		else retval+=stride*ph;
 	}
 
@@ -692,6 +693,7 @@ DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV(int componentID, int width,
 
 	pw=tjPlaneWidth(componentID, width, subsamp);
 	ph=tjPlaneHeight(componentID, height, subsamp);
+	if(pw<0 || ph<0) return -1;
 
 	if(stride==0) stride=pw;
 	else stride=abs(stride);

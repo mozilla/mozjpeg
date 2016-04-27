@@ -6,6 +6,8 @@
  * Modified 2000-2009 by Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains library routines for transcoding compression,
@@ -41,8 +43,8 @@ GLOBAL(void)
 jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays)
 {
   /* setting up scan optimisation pattern failed, disable scan optimisation */
-  if (cinfo->num_scans_luma == 0)
-    cinfo->optimize_scans = FALSE;
+  if (cinfo->master->num_scans_luma == 0)
+    cinfo->master->optimize_scans = FALSE;
   
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
@@ -91,7 +93,7 @@ jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
 #endif
   /* Initialize all parameters to default values */
   jpeg_set_defaults(dstinfo);
-  dstinfo->trellis_quant = FALSE;
+  dstinfo->master->trellis_quant = FALSE;
   
   /* jpeg_set_defaults may choose wrong colorspace, eg YCbCr if input is RGB.
    * Fix it to get the right header markers for the image colorspace.

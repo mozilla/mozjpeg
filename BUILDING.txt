@@ -15,11 +15,14 @@ Build Requirements
      provided.  The easiest way to obtain them is from MacPorts
      (http://www.macports.org/).
 
--- NASM (if building x86 or x86-64 SIMD extensions)
-   * 0.98, or 2.01 or later is required for a 32-bit build
-   * NASM 2.00 or later is required for a 64-bit build
-   * NASM 2.07 or later is required for a 64-bit build on OS X.  This can be
-     obtained from MacPorts (http://www.macports.org/).
+-- NASM or YASM (if building x86 or x86-64 SIMD extensions)
+   * NASM 0.98, or 2.01 or later is required for an x86 build (0.99 and 2.00 do
+     not work properly with libjpeg-turbo's x86 SIMD code.)
+   * NASM 2.00 or later is required for an x86-64 build.
+   * NASM 2.07, or 2.11.09 or later is required for an x86-64 Mac build
+     (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD code when
+     building macho64 objects.)  NASM or YASM can be obtained from MacPorts
+     (http://www.macports.org/).
 
    The binary RPMs released by the NASM project do not work on older Linux
    systems, such as Red Hat Enterprise Linux 4.  On such systems, you can
@@ -36,7 +39,19 @@ Build Requirements
 
    NOTE: the NASM build will fail if texinfo is not installed.
 
--- GCC v4.1 (or later) or clang recommended
+-- GCC v4.1 or later recommended for best performance
+   * Beginning with Xcode 4, Apple stopped distributing GCC and switched to
+     the LLVM compiler.  Xcode v4.0 through v4.6 provides a GCC front end
+     called LLVM-GCC.  Unfortunately, as of this writing, neither LLVM-GCC nor
+     the LLVM (clang) compiler produces optimal performance with libjpeg-turbo.
+     Building mozjpeg with LLVM-GCC v4.2 results in a 10% performance
+     degradation when compressing using 64-bit code, relative to building
+     libjpeg-turbo with GCC v4.2.  Building libjpeg-turbo with LLVM (clang)
+     results in a 20% performance degradation when compressing using 64-bit
+     code, relative to building libjpeg-turbo with GCC v4.2.  If you are
+     running Snow Leopard or earlier, it is suggested that you continue to use
+     Xcode v3.2.6, which provides GCC v4.2.  If you are using Lion or later, it
+     is suggested that you install Apple GCC v4.2 or GCC v5 through MacPorts.
 
 -- If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
    required.  Some systems, such as Solaris 10 and later and Red Hat Enterprise
@@ -85,8 +100,8 @@ Non-Release Source Build (e.g. GitHub clone)
   sh {source_directory}/configure [additional configure flags]
   make
 
-Results
--------
+NOTE: Running autoreconf in the source directory is not necessary if building
+mozjpeg from one of the official release tarballs.
 
 This will generate the following files under .libs/
 
@@ -331,7 +346,7 @@ mozjpeg for these platforms.
 Additional build requirements:
 
   gas-preprocessor.pl
-  (https://sourceforge.net/p/libjpeg-turbo/code/HEAD/tree/gas-preprocessor)
+  (https://raw.githubusercontent.com/libjpeg-turbo/gas-preprocessor/master/gas-preprocessor.pl)
   should be installed in your PATH.
 
 
@@ -395,7 +410,7 @@ to the configure command line.
 
 ARMv8 64-bit Build (Xcode 5.0.x and later, Clang):
 
-Code will run on iPhone 5S/iPad Mini 2 and newer.
+Code will run on iPhone 5S/iPad Mini 2/iPad Air and newer.
 
 Set the following shell variables for simplicity:
 
@@ -432,18 +447,25 @@ a general recipe script that can be modified for your specific needs.
   # Set these variables to suit your needs
   NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/ndk}
   BUILD_PLATFORM={the platform name for the NDK package you installed--
-    for example, "windows-x86" or "linux-x86_64"}
-  TOOLCHAIN_VERSION={"4.6", "4.8", etc.  This corresponds to a toolchain
-    directory under ${NDK_PATH}/toolchains/.}
+    for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+  TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+    toolchain directory under ${NDK_PATH}/toolchains/.}
   ANDROID_VERSION={The minimum version of Android to support-- for example,
-    "9", "19", etc.}
+    "16", "19", etc.  "21" or later is required for a 64-bit build.}
 
+  # 32-bit ARMv7 build
   HOST=arm-linux-androideabi
-  TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
   SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
-  ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
   ANDROID_CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
-    -fstrict-aliasing --sysroot=${SYSROOT}"
+    --sysroot=${SYSROOT}"
+
+  # 64-bit ARMv8 build
+  HOST=aarch64-linux-android
+  SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm64
+  ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+
+  TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+  ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
   export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
   export AR=${TOOLCHAIN}/bin/${HOST}-ar
   export AS=${TOOLCHAIN}/bin/${HOST}-as
@@ -455,10 +477,13 @@ a general recipe script that can be modified for your specific needs.
   export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
   cd {build_directory}
   sh {source_directory}/configure --host=${HOST} \
-    CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3" \
+    CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3 -fPIE" \
     CPPFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS}" \
-    LDFLAGS="${ANDROID_CFLAGS}" --with-simd ${1+"$@"}
+    LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
   make
+
+If building for Android 4.0.x (API level < 16) or earlier, remove -fPIE from
+CFLAGS and -pie from LDFLAGS.
 
 
 *******************************************************************************

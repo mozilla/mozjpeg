@@ -6,8 +6,9 @@ AC_INIT([mozjpeg], [3.1])
 BUILD=`date +%Y%m%d`
 
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)])
 AC_PREFIX_DEFAULT(/opt/mozjpeg)
+
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
 SAVED_CFLAGS=${CFLAGS}
@@ -21,6 +22,10 @@ AC_PROG_INSTALL
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
+
+AC_ARG_WITH([build-date], [Use custom build string to enable reproducible builds (default: YYMMDD)],
+  [BUILD="$with_build_date"],
+  [BUILD=`date +%Y%m%d`])
 
 # When the prefix is /opt/libjpeg-turbo, we assume that an "official" binary is
 # being created, and thus we install things into specific locations.

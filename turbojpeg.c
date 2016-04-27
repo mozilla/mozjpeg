@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2016 D. R. Commander.  All Rights Reserved.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  *
@@ -564,7 +564,8 @@ DLLEXPORT unsigned char *DLLCALL tjAlloc(int bytes)
 
 static tjhandle _tjInitCompress(tjinstance *this)
 {
-	unsigned char buffer[1], *buf=buffer;  unsigned long size=1;
+	static unsigned char buffer[1];
+	unsigned char *buf=buffer;  unsigned long size=1;
 
 	/* This is also straight out of example.c */
 	this->cinfo.err=jpeg_std_error(&this->jerr.pub);
@@ -1221,7 +1222,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
 
 static tjhandle _tjInitDecompress(tjinstance *this)
 {
-	unsigned char buffer[1];
+	static unsigned char buffer[1];
 
 	/* This is also straight out of example.c */
 	this->dinfo.err=jpeg_std_error(&this->jerr.pub);
@@ -1389,7 +1390,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 		if(scaledw<=width && scaledh<=height)
 			break;
 	}
-	if(scaledw>width || scaledh>height)
+	if(i>=NUMSF)
 		_throw("tjDecompress2(): Could not scale down to desired image dimensions");
 	width=scaledw;  height=scaledh;
 	dinfo->scale_num=sf[i].num;
@@ -1764,7 +1765,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 		if(scaledw<=width && scaledh<=height)
 			break;
 	}
-	if(scaledw>width || scaledh>height)
+	if(i>=NUMSF)
 		_throw("tjDecompressToYUVPlanes(): Could not scale down to desired image dimensions");
 	if(dinfo->num_components>3)
 		_throw("tjDecompressToYUVPlanes(): JPEG image must have 3 or fewer components");
@@ -1893,6 +1894,12 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 		|| !isPow2(pad) || height<0)
 		_throw("tjDecompressToYUV2(): Invalid argument");
 
+	if(setjmp(this->jerr.setjmp_buffer))
+	{
+		/* If we get here, the JPEG code has signaled an error. */
+		return -1;
+	}
+
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
 	jpegSubsamp=getSubsamp(dinfo);
@@ -1910,7 +1917,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 		if(scaledw<=width && scaledh<=height)
 			break;
 	}
-	if(scaledw>width || scaledh>height)
+	if(i>=NUMSF)
 		_throw("tjDecompressToYUV2(): Could not scale down to desired image dimensions");
 
 	pw0=tjPlaneWidth(0, width, jpegSubsamp);

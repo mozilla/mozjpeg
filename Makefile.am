@@ -172,18 +172,17 @@ dist_man1_MANS = cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1
 DOCS= coderules.txt jconfig.txt change.log rdrle.c wrrle.c BUILDING.txt \
 	ChangeLog.txt
 
-docdir = $(datadir)/doc
-dist_doc_DATA = README README-mozilla.txt README-turbo.txt libjpeg.txt structure.txt usage.txt \
+dist_doc_DATA = README README-turbo.txt libjpeg.txt structure.txt usage.txt \
 	wizard.txt
 
-exampledir = $(datadir)/doc
+exampledir = $(docdir)
 dist_example_DATA = example.c
 
 
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
 	doxygen-extra.css jccolext.c jdcolext.c jdcol565.c jdmrgext.c jdmrg565.c \
-	jstdhuff.c
+	jstdhuff.c LICENSE.txt
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
@@ -456,7 +455,8 @@ endif
 # the output differs depending on the type of floating point math used, and
 # this is only deterministic if the DCT/IDCT are implemented using SIMD
 # instructions on a particular platform.  Pass one of the following on the make
-# command line to validate the floating point tests against one of the expected # results:
+# command line to validate the floating point tests against one of the expected
+# results:
 #
 # FLOATTEST=sse  validate against the expected results from the libjpeg-turbo
 #                SSE SIMD extensions

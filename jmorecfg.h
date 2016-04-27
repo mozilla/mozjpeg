@@ -3,8 +3,9 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009, 2011, 2014, D. R. Commander.
+ * Copyright (C) 2009, 2011, 2014-2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains additional configuration options that customize the
@@ -148,14 +149,23 @@ typedef short INT16;
 /* INT32 must hold at least signed 32-bit values. */
 
 #ifndef XMD_H                   /* X11/xmd.h correctly defines INT32 */
+#ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
+#ifndef _BASETSD_H		/* MinGW is slightly different */
+#ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
+#define __INT32_IS_ACTUALLY_LONG
 typedef long INT32;
+#endif
+#endif
+#endif
 #endif
 
 /* Datatype used for image dimensions.  The JPEG standard only supports
  * images up to 64K*64K due to 16-bit fields in SOF markers.  Therefore
  * "unsigned int" is sufficient on all machines.  However, if you need to
  * handle larger images and you don't mind deviating from the spec, you
- * can change this datatype.
+ * can change this datatype.  (Note that changing this datatype will
+ * potentially require modifying the SIMD code.  The x86-64 SIMD extensions,
+ * in particular, assume a 32-bit JDIMENSION.)
  */
 
 typedef unsigned int JDIMENSION;

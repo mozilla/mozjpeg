@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2003-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2014, D. R. Commander.
+ * Copyright (C) 2010, 2016, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -20,6 +20,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jpegcomp.h"
+#include "jconfigint.h"
 #include "jmemsys.h"
 #include "jcmaster.h"
 
@@ -929,6 +930,8 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
     master->total_passes = cinfo->num_scans * 2;
   else
     master->total_passes = cinfo->num_scans;
+
+  master->jpeg_version = PACKAGE_NAME " version " VERSION " (build " BUILD ")";
   
   master->pass_number_scan_opt_base = 0;
   if (cinfo->master->trellis_quant) {

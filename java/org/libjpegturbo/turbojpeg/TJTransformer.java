@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011, 2013-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2013-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -45,7 +45,7 @@ public class TJTransformer extends TJDecompressor {
    * image stored in <code>jpegImage</code> with the newly created instance.
    *
    * @param jpegImage JPEG image buffer (size of the JPEG image is assumed to
-   * be the length of the array)
+   * be the length of the array.)  This buffer is not modified.
    */
   public TJTransformer(byte[] jpegImage) throws Exception {
     init();
@@ -57,7 +57,7 @@ public class TJTransformer extends TJDecompressor {
    * image of length <code>imageSize</code> bytes stored in
    * <code>jpegImage</code> with the newly created instance.
    *
-   * @param jpegImage JPEG image buffer
+   * @param jpegImage JPEG image buffer.  This buffer is not modified.
    *
    * @param imageSize size of the JPEG image (in bytes)
    */

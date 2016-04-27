@@ -42,6 +42,15 @@ typedef struct {
   int best_Al_chroma; /* best value for Al found in scan search (luma) */
   boolean interleave_chroma_dc; /* indicate whether to interleave chroma DC scans */
   struct jpeg_destination_mgr * saved_dest; /* saved value of cinfo->dest */
+
+  /*
+   * This is here so we can add libjpeg-turbo version/build information to the
+   * global string table without introducing a new global symbol.  Adding this
+   * information to the global string table allows one to examine a binary
+   * object and determine which version of libjpeg-turbo it was built from or
+   * linked against.
+   */
+  const char *jpeg_version;
 } my_comp_master;
 
 typedef my_comp_master * my_master_ptr;

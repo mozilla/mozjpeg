@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -51,7 +51,7 @@ public class TJDecompressor {
    * image stored in <code>jpegImage</code> with the newly created instance.
    *
    * @param jpegImage JPEG image buffer (size of the JPEG image is assumed to
-   * be the length of the array)
+   * be the length of the array.)  This buffer is not modified.
    */
   public TJDecompressor(byte[] jpegImage) throws Exception {
     init();
@@ -63,7 +63,7 @@ public class TJDecompressor {
    * image of length <code>imageSize</code> bytes stored in
    * <code>jpegImage</code> with the newly created instance.
    *
-   * @param jpegImage JPEG image buffer
+   * @param jpegImage JPEG image buffer.  This buffer is not modified.
    *
    * @param imageSize size of the JPEG image (in bytes)
    */
@@ -78,7 +78,7 @@ public class TJDecompressor {
    * instance.
    *
    * @param yuvImage {@link YUVImage} instance containing a YUV planar
-   * image to be decoded
+   * image to be decoded.  This image is not modified.
    */
   public TJDecompressor(YUVImage yuvImage) throws Exception {
     init();
@@ -90,7 +90,7 @@ public class TJDecompressor {
    * <code>jpegImage</code> with this decompressor instance.  This image will
    * be used as the source image for subsequent decompress operations.
    *
-   * @param jpegImage JPEG image buffer
+   * @param jpegImage JPEG image buffer.  This buffer is not modified.
    *
    * @param imageSize size of the JPEG image (in bytes)
    */
@@ -118,7 +118,7 @@ public class TJDecompressor {
    * RGB or grayscale destination image.
    *
    * @param srcImage {@link YUVImage} instance containing a YUV planar image to
-   * be decoded
+   * be decoded.  This image is not modified.
    */
   public void setSourceImage(YUVImage srcImage) throws Exception {
     if (srcImage == null)

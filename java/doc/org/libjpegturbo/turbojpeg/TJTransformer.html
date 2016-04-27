@@ -245,7 +245,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <div class="block">Create a TurboJPEG lossless transformer instance and associate the JPEG
  image stored in <code>jpegImage</code> with the newly created instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer (size of the JPEG image is assumed to
- be the length of the array)</dd>
+ be the length of the array.)  This buffer is not modified.</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>
@@ -262,7 +262,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <div class="block">Create a TurboJPEG lossless transformer instance and associate the JPEG
  image of length <code>imageSize</code> bytes stored in
  <code>jpegImage</code> with the newly created instance.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer.  This buffer is not modified.</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code>java.lang.Exception</code></dd></dl>
 </li>

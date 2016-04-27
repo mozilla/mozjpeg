@@ -104,11 +104,19 @@ int main(int argc, char *argv[]) {
 
   yuv_size = luma_width*luma_height + 2*chroma_width*chroma_height;
   yuv_buffer = malloc(yuv_size);
+  if (!yuv_buffer) {
+    fprintf(stderr, "Memory allocation failure!\n");
+    return 1;
+  }
 
   frame_width = (cinfo.output_width + (16 - 1)) & ~(16 - 1);
   frame_height = (cinfo.output_height + (16 - 1)) & ~(16 - 1);
 
   image_buffer = malloc(frame_width*16 + 2*(frame_width/2)*8);
+  if (!image_buffer) {
+    fprintf(stderr, "Memory allocation failure!\n");
+    return 1;
+  }
 
   plane_pointer[0] = yrow_pointer;
   plane_pointer[1] = cbrow_pointer;

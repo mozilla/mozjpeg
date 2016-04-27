@@ -27,98 +27,29 @@
 
 static unsigned int simd_support = ~0;
 
-#if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
-
-#define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT (1024 * 1024)
-
-LOCAL(int)
-check_feature (char *buffer, char *feature)
-{
-  char *p;
-  if (*feature == 0)
-    return 0;
-  if (strncmp(buffer, "Features", 8) != 0)
-    return 0;
-  buffer += 8;
-  while (isspace(*buffer))
-    buffer++;
-
-  /* Check if 'feature' is present in the buffer as a separate word */
-  while ((p = strstr(buffer, feature))) {
-    if (p > buffer && !isspace(*(p - 1))) {
-      buffer++;
-      continue;
-    }
-    p += strlen(feature);
-    if (*p != 0 && !isspace(*p)) {
-      buffer++;
-      continue;
-    }
-    return 1;
-  }
-  return 0;
-}
-
-LOCAL(int)
-parse_proc_cpuinfo (int bufsize)
-{
-  char *buffer = (char *)malloc(bufsize);
-  FILE *fd;
-  simd_support = 0;
-
-  if (!buffer)
-    return 0;
-
-  fd = fopen("/proc/cpuinfo", "r");
-  if (fd) {
-    while (fgets(buffer, bufsize, fd)) {
-      if (!strchr(buffer, '\n') && !feof(fd)) {
-        /* "impossible" happened - insufficient size of the buffer! */
-        fclose(fd);
-        free(buffer);
-        return 0;
-      }
-      if (check_feature(buffer, "neon"))
-        simd_support |= JSIMD_ARM_NEON;
-    }
-    fclose(fd);
-  }
-  free(buffer);
-  return 1;
-}
-
-#endif
-
 /*
  * Check what SIMD accelerations are supported.
  *
  * FIXME: This code is racy under a multi-threaded environment.
  */
+
+/* 
+ * ARMv8 architectures support NEON extensions by default.
+ * It is no longer optional as it was with ARMv7.
+ */ 
+
+
 LOCAL(void)
 init_simd (void)
 {
   char *env = NULL;
-#if !defined(__ARM_NEON__) && defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
-  int bufsize = 1024; /* an initial guess for the line buffer size limit */
-#endif
 
   if (simd_support != ~0U)
     return;
 
   simd_support = 0;
 
-#if defined(__ARM_NEON__)
   simd_support |= JSIMD_ARM_NEON;
-#elif defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
-  /* We still have a chance to use NEON regardless of globally used
-   * -mcpu/-mfpu options passed to gcc by performing runtime detection via
-   * /proc/cpuinfo parsing on linux/android */
-  while (!parse_proc_cpuinfo(bufsize)) {
-    bufsize *= 2;
-    if (bufsize > SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT)
-      break;
-  }
-#endif
 
   /* Force different settings through environment variables */
   env = getenv("JSIMD_FORCENEON");
@@ -156,6 +87,23 @@ jsimd_can_ycc_rgb (void)
   if (sizeof(JDIMENSION) != 4)
     return 0;
   if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (simd_support & JSIMD_ARM_NEON)
+    return 1;
+
+  return 0;
+}
+
+GLOBAL(int)
+jsimd_can_ycc_rgb565 (void)
+{
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
     return 0;
 
   if (simd_support & JSIMD_ARM_NEON)
@@ -208,13 +156,23 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
     case JCS_EXT_ARGB:
       neonfct=jsimd_ycc_extxrgb_convert_neon;
       break;
-  default:
+    default:
       neonfct=jsimd_ycc_extrgb_convert_neon;
       break;
   }
 
   if (simd_support & JSIMD_ARM_NEON)
     neonfct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
+}
+
+GLOBAL(void)
+jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
+                          JSAMPIMAGE input_buf, JDIMENSION input_row,
+                          JSAMPARRAY output_buf, int num_rows)
+{
+  if (simd_support & JSIMD_ARM_NEON)
+    jsimd_ycc_rgb565_convert_neon(cinfo->output_width, input_buf, input_row,
+                                  output_buf, num_rows);
 }
 
 GLOBAL(int)

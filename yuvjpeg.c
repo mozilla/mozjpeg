@@ -179,6 +179,11 @@ int main(int argc, char *argv[]) {
   }
 
   yuv_buffer = malloc(yuv_size);
+  if (!yuv_buffer) {
+    fprintf(stderr, "Memory allocation failure!\n");
+    return 1;
+  }
+
   if (fread(yuv_buffer, yuv_size, 1, yuv_fd) != 1) {
     fprintf(stderr, "Error reading yuv file\n");
   };
@@ -190,6 +195,10 @@ int main(int argc, char *argv[]) {
 
   image_buffer =
    malloc(frame_width*frame_height + 2*(frame_width/2)*(frame_height/2));
+  if (!image_buffer) {
+    fprintf(stderr, "Memory allocation failure!\n");
+    return 1;
+  }
 
   extend_edge(image_buffer, frame_width, frame_height,
    yuv_buffer, luma_width, luma_height, chroma_width, chroma_height);
@@ -202,6 +211,7 @@ int main(int argc, char *argv[]) {
   jpg_fd = fopen(jpg_path, "wb");
   if (!jpg_fd) {
     fprintf(stderr, "Invalid path to JPEG file!\n");
+    free(image_buffer);
     return 1;
   }
 

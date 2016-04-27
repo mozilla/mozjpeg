@@ -4,7 +4,7 @@
  * Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
  * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
- * Copyright (C) 2013, Linaro Limited
+ * Copyright (C) 2013-2014, Linaro Limited
  * Author: Ragesh Radhakrishnan <ragesh.r@linaro.org>
  *
  * This software is provided 'as-is', without any express or implied
@@ -34,19 +34,15 @@
 
 #define RESPECT_STRICT_ALIGNMENT 1
 
-#define RTSM_SQSHRN_SIM_ISSUE
-
 
 /*****************************************************************************/
 
 /* Supplementary macro for setting function attributes */
 .macro asm_function fname
 #ifdef __APPLE__
-    .func _\fname
     .globl _\fname
 _\fname:
 #else
-    .func \fname
     .global \fname
 #ifdef __ELF__
     .hidden \fname
@@ -257,8 +253,18 @@ asm_function jsimd_idct_islow_neon
     ROW6R           .req v29
     ROW7L           .req v30
     ROW7R           .req v31
-
+    /* Save all NEON registers and x15 (32 NEON registers * 8 bytes + 16) */
+    sub             sp, sp, 272
+    str             x15, [sp], 16
     adr             x15, jsimd_idct_islow_neon_consts
+    st1             {v0.8b - v3.8b}, [sp], 32
+    st1             {v4.8b - v7.8b}, [sp], 32
+    st1             {v8.8b - v11.8b}, [sp], 32
+    st1             {v12.8b - v15.8b}, [sp], 32
+    st1             {v16.8b - v19.8b}, [sp], 32
+    st1             {v20.8b - v23.8b}, [sp], 32
+    st1             {v24.8b - v27.8b}, [sp], 32
+    st1             {v28.8b - v31.8b}, [sp], 32
     ld1             {v16.4h, v17.4h, v18.4h, v19.4h}, [COEF_BLOCK], 32
     ld1             {v0.4h, v1.4h, v2.4h, v3.4h}, [DCT_TABLE], 32
     ld1             {v20.4h, v21.4h, v22.4h, v23.4h}, [COEF_BLOCK], 32
@@ -277,7 +283,7 @@ asm_function jsimd_idct_islow_neon
     mul             v22.4h, v22.4h, v6.4h
     mul             v23.4h, v23.4h, v7.4h
     ins             v22.2d[1], v23.2d[0]  /* 128 bit q11 */
-    ld1             {v28.4h, v29.4h, v30.4h, v31.4h}, [COEF_BLOCK], 32
+    ld1             {v28.4h, v29.4h, v30.4h, v31.4h}, [COEF_BLOCK]
     mul             v24.4h, v24.4h, v0.4h
     mul             v25.4h, v25.4h, v1.4h
     ins             v24.2d[1], v25.2d[0]  /* 128 bit q12 */
@@ -293,85 +299,84 @@ asm_function jsimd_idct_islow_neon
     mul             v30.4h, v30.4h, v6.4h
     mul             v31.4h, v31.4h, v7.4h
     ins             v30.2d[1], v31.2d[0]  /* 128 bit q15 */
-    sub             sp, sp, #32
-    st1             {v8.4h-v11.4h}, [sp]  /* save NEON registers */
-    sub             sp, sp, #32
-    st1             {v12.4h-v15.4h}, [sp]
+    /* Go to the bottom of the stack */
+    sub             sp, sp, 352
+    stp             x4, x5, [sp], 16
+    st1             {v8.4h - v11.4h}, [sp], 32  /* save NEON registers */
+    st1             {v12.4h - v15.4h}, [sp], 32
     /* 1-D IDCT, pass 1, left 4x8 half */
     add             v4.4h,    ROW7L.4h, ROW3L.4h
     add             v5.4h,    ROW5L.4h, ROW1L.4h
     smull           v12.4s,   v4.4h,    XFIX_1_175875602_MINUS_1_961570560
     smlal           v12.4s,   v5.4h,    XFIX_1_175875602
     smull           v14.4s,   v4.4h,    XFIX_1_175875602
-      /* Check for the zero coefficients in the right 4x8 half */
-      /* push            {x4, x5} */
-      stp             x4, x5, [sp, -16]!
-      mov             x5, #0
+    /* Check for the zero coefficients in the right 4x8 half */
     smlal           v14.4s,   v5.4h,    XFIX_1_175875602_MINUS_0_390180644
     ssubl           v6.4s,    ROW0L.4h, ROW4L.4h
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 1 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 1 * 8))]
     smull           v4.4s,    ROW2L.4h, XFIX_0_541196100
     smlal           v4.4s,    ROW6L.4h, XFIX_0_541196100_MINUS_1_847759065
-      orr             x0,       x4,       x5
+      orr           x0,       x4,       x5
     mov             v8.16b,   v12.16b
     smlsl           v12.4s,   ROW5L.4h, XFIX_2_562915447
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 2 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 2 * 8))]
     smlal           v12.4s,   ROW3L.4h, XFIX_3_072711026_MINUS_2_562915447
     shl             v6.4s,    v6.4s,    #13
-      orr             x0,       x0,       x4
+      orr           x0,       x0,       x4
     smlsl           v8.4s,    ROW1L.4h, XFIX_0_899976223
-      orr             x0,       x0 ,      x5
+      orr           x0,       x0 ,      x5
     add             v2.4s,    v6.4s,    v4.4s
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 3 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 3 * 8))]
     mov             v10.16b,  v14.16b
     add             v2.4s,    v2.4s,    v12.4s
-      orr             x0,       x0,       x4
+      orr           x0,       x0,       x4
     smlsl           v14.4s,   ROW7L.4h, XFIX_0_899976223
-      orr             x0,       x0,       x5
+      orr           x0,       x0,       x5
     smlal           v14.4s,   ROW1L.4h, XFIX_1_501321110_MINUS_0_899976223
     rshrn           ROW1L.4h, v2.4s,    #11
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 4 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 4 * 8))]
     sub             v2.4s,    v2.4s,    v12.4s
     smlal           v10.4s,   ROW5L.4h, XFIX_2_053119869_MINUS_2_562915447
-      orr             x0,       x0,       x4
+      orr           x0,       x0,       x4
     smlsl           v10.4s,   ROW3L.4h, XFIX_2_562915447
-      orr             x0,       x0,       x5
+      orr           x0,       x0,       x5
     sub             v2.4s,    v2.4s,    v12.4s
     smull           v12.4s,   ROW2L.4h, XFIX_0_541196100_PLUS_0_765366865
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 5 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 5 * 8))]
     smlal           v12.4s,   ROW6L.4h, XFIX_0_541196100
     sub             v6.4s,    v6.4s,    v4.4s
-      orr             x0,       x0,       x4
+      orr           x0,       x0,       x4
     rshrn           ROW6L.4h, v2.4s,    #11
-      orr             x0,       x0,       x5
+      orr           x0,       x0,       x5
     add             v2.4s,    v6.4s,    v10.4s
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 6 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 6 * 8))]
     sub             v6.4s,    v6.4s,    v10.4s
     saddl           v10.4s,   ROW0L.4h, ROW4L.4h
-      orr             x0,       x0,       x4
+      orr           x0,       x0,       x4
     rshrn           ROW2L.4h, v2.4s,    #11
-      orr             x0,       x0,       x5
+      orr           x0,       x0,       x5
     rshrn           ROW5L.4h, v6.4s,    #11
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 7 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 7 * 8))]
     shl             v10.4s,   v10.4s,   #13
     smlal           v8.4s,    ROW7L.4h, XFIX_0_298631336_MINUS_0_899976223
-      orr             x0,       x0,       x4
+      orr           x0,       x0,       x4
     add             v4.4s,    v10.4s,   v12.4s
-      orr             x0,       x0,       x5
+      orr           x0,       x0,       x5
+    cmp             x0, #0 /* orrs instruction removed */
     sub             v2.4s,    v10.4s,   v12.4s
     add             v12.4s,   v4.4s,    v14.4s
-      ldr             x4,       [COEF_BLOCK, #(-96 + 2 * (4 + 0 * 8))]
+      ldp           w4,       w5,       [COEF_BLOCK, #(-96 + 2 * (4 + 0 * 8))]
     sub             v4.4s,    v4.4s,    v14.4s
     add             v10.4s,   v2.4s,    v8.4s
-      orr             x0,       x4,       x5
+      orr           x0,       x4,       x5
     sub             v6.4s,    v2.4s,    v8.4s
       /* pop             {x4, x5} */
-      ldp             x4, x5, [sp], 16
+      sub           sp, sp, 80
+      ldp           x4, x5, [sp], 16
     rshrn           ROW7L.4h, v4.4s,    #11
     rshrn           ROW3L.4h, v10.4s,   #11
     rshrn           ROW0L.4h, v12.4s,   #11
     rshrn           ROW4L.4h, v6.4s,    #11
-    cmp             x0, #0 /* orrs instruction removed */
 
       beq             3f /* Go to do some special handling for the sparse right 4x8 half */
 
@@ -433,7 +438,7 @@ asm_function jsimd_idct_islow_neon
     add             v12.4s,   v4.4s,    v14.4s
     sub             v4.4s,    v4.4s,    v14.4s
     add             v10.4s,   v2.4s,    v8.4s
-    sub             v12.4s,   v2.4s,    v8.4s
+    sub             v6.4s,    v2.4s,    v8.4s
     rshrn           ROW7R.4h, v4.4s,    #11
     rshrn           ROW3R.4h, v10.4s,   #11
     rshrn           ROW0R.4h, v12.4s,   #11
@@ -552,48 +557,27 @@ asm_function jsimd_idct_islow_neon
     ins             v18.2d[1], v19.2d[0]
     ins             v20.2d[1], v21.2d[0]
     ins             v22.2d[1], v23.2d[0]
-#ifdef RTSM_SQSHRN_SIM_ISSUE
     sqrshrn         v16.8b,   v16.8h,   #2
     sqrshrn2        v16.16b,  v18.8h,   #2
     sqrshrn         v18.8b,   v20.8h,   #2
     sqrshrn2        v18.16b,  v22.8h,   #2
-#else
-    sqrshrn         v16.4h,   v16.4s,   #2
-    sqrshrn2        v16.8h,   v18.4s,   #2
-    sqrshrn         v18.4h,   v20.4s,   #2
-    sqrshrn2        v18.8h,   v22.4s,   #2
-#endif
-    /* vpop            {v8.4h-d15.4h} */ /* restore NEON registers */
 
-    ld1             {v12.4h-v15.4h}, [sp], 32
-    ld1             {v8.4h-v11.4h}, [sp], 32
+    /* vpop            {v8.4h - d15.4h} */ /* restore NEON registers */
+    ld1             {v8.4h - v11.4h}, [sp], 32
+    ld1             {v12.4h - v15.4h}, [sp], 32
     ins             v24.2d[1], v25.2d[0]
-#ifdef RTSM_SQSHRN_SIM_ISSUE
 
     sqrshrn         v20.8b,   v24.8h,   #2
-#else
-
-    sqrshrn         v20.4h,   v24.4s,   #2
-#endif
       /* Transpose the final 8-bit samples and do signed->unsigned conversion */
     /* trn1            v16.8h,    v16.8h,  v18.8h */
     transpose       v16, v18, v3, .16b, .8h
     ins             v26.2d[1], v27.2d[0]
     ins             v28.2d[1], v29.2d[0]
     ins             v30.2d[1], v31.2d[0]
-#ifdef RTSM_SQSHRN_SIM_ISSUE
     sqrshrn2        v20.16b,  v26.8h,   #2
     sqrshrn         v22.8b,   v28.8h,   #2
-#else
-    sqrshrn2        v20.8h,   v26.4s,   #2
-    sqrshrn         v22.4h,   v28.4s,   #2
-#endif
     movi            v0.16b,   #(CENTERJSAMPLE)
-#ifdef RTSM_SQSHRN_SIM_ISSUE
     sqrshrn2        v22.16b,  v30.8h,   #2
-#else
-    sqrshrn2        v22.8h,   v30.4s,   #2
-#endif
     transpose_single v16, v17, v3, .2d, .8b
     transpose_single v18, v19, v3, .2d, .8b
     add             v16.8b,   v16.8b,   v0.8b
@@ -628,6 +612,15 @@ asm_function jsimd_idct_islow_neon
     st1             {v21.8b}, [TMP2]
     st1             {v22.8b}, [TMP3]
     st1             {v23.8b}, [TMP4]
+    ldr             x15, [sp], 16
+    ld1             {v0.8b - v3.8b}, [sp], 32
+    ld1             {v4.8b - v7.8b}, [sp], 32
+    ld1             {v8.8b - v11.8b}, [sp], 32
+    ld1             {v12.8b - v15.8b}, [sp], 32
+    ld1             {v16.8b - v19.8b}, [sp], 32
+    ld1             {v20.8b - v23.8b}, [sp], 32
+    ld1             {v24.8b - v27.8b}, [sp], 32
+    ld1             {v28.8b - v31.8b}, [sp], 32
     blr             x30
 
 3:  /* Left 4x8 half is done, right 4x8 half contains mostly zeros */
@@ -757,7 +750,6 @@ asm_function jsimd_idct_islow_neon
     .unreq          ROW6R
     .unreq          ROW7L
     .unreq          ROW7R
-.endfunc
 
 
 /*****************************************************************************/
@@ -799,7 +791,8 @@ asm_function jsimd_idct_ifast_neon
     TMP1            .req x0
     TMP2            .req x1
     TMP3            .req x2
-    TMP4            .req x15
+    TMP4            .req x22
+    TMP5            .req x23
 
     /* Load and dequantize coefficients into NEON registers
      * with the following allocation:
@@ -814,7 +807,15 @@ asm_function jsimd_idct_ifast_neon
      *   6 | d28     | d29     ( v14.8h )
      *   7 | d30     | d31     ( v15.8h )
      */
-    adr             x15, jsimd_idct_ifast_neon_consts
+    /* Save NEON registers used in fast IDCT */
+    sub             sp, sp, #176
+    stp             x22, x23, [sp], 16
+    adr             x23, jsimd_idct_ifast_neon_consts
+    st1             {v0.8b - v3.8b}, [sp], 32
+    st1             {v4.8b - v7.8b}, [sp], 32
+    st1             {v8.8b - v11.8b}, [sp], 32
+    st1             {v12.8b - v15.8b}, [sp], 32
+    st1             {v16.8b - v19.8b}, [sp], 32
     ld1             {v8.8h, v9.8h}, [COEF_BLOCK], 32
     ld1             {v0.8h, v1.8h}, [DCT_TABLE], 32
     ld1             {v10.8h, v11.8h}, [COEF_BLOCK], 32
@@ -830,14 +831,9 @@ asm_function jsimd_idct_ifast_neon
     ld1             {v2.8h, v3.8h}, [DCT_TABLE], 32
     mul             v14.8h, v14.8h, v2.8h
     mul             v13.8h, v13.8h, v1.8h
-    ld1             {v0.4h}, [x15]      /* load constants */
+    ld1             {v0.4h}, [x23]      /* load constants */
     mul             v15.8h, v15.8h, v3.8h
 
-    /* vpush           {v4.8h-v6.8h} */ /* save NEON registers */
-    sub             sp, sp, #32
-    st1             {v4.8h-v5.8h}, [sp] /* save NEON registers */
-    sub             sp, sp, #16
-    st1             {v6.8h}, [sp]
     /* 1-D IDCT, pass 1 */
     sub             v2.8h,    v10.8h,   v14.8h
     add             v14.8h,   v10.8h,   v14.8h
@@ -912,25 +908,25 @@ asm_function jsimd_idct_ifast_neon
     trn1            v13.4s,   v13.4s,   v15.4s
     trn2            v15.4s,   v18.4s,   v15.4s
     /* vswp            v14.4h,   v10-MSB.4h */
-    umov            x10, v14.d[0]
+    umov            x22, v14.d[0]
     ins             v14.2d[0], v10.2d[1]
-    ins             v10.2d[1], x10
+    ins             v10.2d[1], x22
     /* vswp            v13.4h,   v9MSB.4h */
 
-    umov            x10, v13.d[0]
+    umov            x22, v13.d[0]
     ins             v13.2d[0], v9.2d[1]
-    ins             v9.2d[1], x10
+    ins             v9.2d[1], x22
     /* 1-D IDCT, pass 2 */
     sub             v2.8h,    v10.8h,   v14.8h
     /* vswp            v15.4h,   v11MSB.4h */
-    umov            x10, v15.d[0]
+    umov            x22, v15.d[0]
     ins             v15.2d[0], v11.2d[1]
-    ins             v11.2d[1], x10
+    ins             v11.2d[1], x22
     add             v14.8h,   v10.8h,   v14.8h
     /* vswp            v12.4h,   v8-MSB.4h */
-    umov            x10, v12.d[0]
+    umov            x22, v12.d[0]
     ins             v12.2d[0], v8.2d[1]
-    ins             v8.2d[1], x10
+    ins             v8.2d[1], x22
     sub             v1.8h,    v11.8h,   v13.8h
     add             v13.8h,   v11.8h,   v13.8h
     sub             v5.8h,    v9.8h,    v15.8h
@@ -966,15 +962,11 @@ asm_function jsimd_idct_ifast_neon
     add             v14.8h,   v5.8h,    v3.8h
     sub             v9.8h,    v5.8h,    v3.8h
     sub             v13.8h,   v10.8h,   v2.8h
-    /* vpop            {v4.8h-v7.4h} */  /* restore NEON registers...not available */
-    ld1             {v6.8h}, [sp], 16
-    ld1             {v4.8h-v5.8h}, [sp], 32
     add             v10.8h,   v10.8h,   v2.8h
     sub             v11.8h,   v12.8h,   v1.8h
     add             v12.8h,   v12.8h,   v1.8h
     /* Descale to 8-bit and range limit */
     movi            v0.16b,   #0x80
-#ifdef RTSM_SQSHRN_SIM_ISSUE
     sqshrn          v8.8b,    v8.8h,    #5
     sqshrn2         v8.16b,   v9.8h,    #5
     sqshrn          v9.8b,    v10.8h,   #5
@@ -983,16 +975,6 @@ asm_function jsimd_idct_ifast_neon
     sqshrn2         v10.16b,  v13.8h,   #5
     sqshrn          v11.8b,   v14.8h,   #5
     sqshrn2         v11.16b,  v15.8h,   #5
-#else
-    sqshrn          v8.4h,    v8.4s,    #5
-    sqshrn2         v8.8h,    v9.4s,    #5
-    sqshrn          v9.4h,    v10.4s,   #5
-    sqshrn2         v9.8h,    v11.4s,   #5
-    sqshrn          v10.4h,   v12.4s,   #5
-    sqshrn2         v10.8h,   v13.4s,   #5
-    sqshrn          v11.4h,   v14.4s,   #5
-    sqshrn2         v11.8h,   v15.4s,   #5
-#endif
     add             v8.16b,   v8.16b,   v0.16b
     add             v9.16b,   v9.16b,   v0.16b
     add             v10.16b,  v10.16b,  v0.16b
@@ -1036,26 +1018,33 @@ asm_function jsimd_idct_ifast_neon
     add             TMP2,     TMP2,     OUTPUT_COL
     st1             {v9.8b},  [TMP1]
     /* make copy */
-    ins             v21.2d[0], v10.2d[1]
+    ins             v7.2d[0], v10.2d[1]
     mov             v18.16b,  v10.16b
-    trn1            v10.8b,   v10.8b,   v21.8b
-    trn2            v21.8b,   v18.8b,   v21.8b
+    trn1            v10.8b,   v10.8b,   v7.8b
+    trn2            v7.8b,    v18.8b,   v7.8b
     st1             {v19.8b}, [TMP2]
     ldp             TMP1,     TMP2,     [OUTPUT_BUF], 16
-    ldp             TMP3,     TMP4,     [OUTPUT_BUF]
+    ldp             TMP4,     TMP5,     [OUTPUT_BUF], 16
     add             TMP1,     TMP1,     OUTPUT_COL
     add             TMP2,     TMP2,     OUTPUT_COL
-    add             TMP3,     TMP3,     OUTPUT_COL
     add             TMP4,     TMP4,     OUTPUT_COL
+    add             TMP5,     TMP5,     OUTPUT_COL
     st1             {v10.8b}, [TMP1]
     /* make copy */
-    ins             v23.2d[0], v11.2d[1]
+    ins             v16.2d[0], v11.2d[1]
     mov             v18.16b,  v11.16b
-    trn1            v11.8b,   v11.8b,   v23.8b
-    trn2            v23.8b,   v18.8b,   v23.8b
-    st1             {v21.8b}, [TMP2]
-    st1             {v11.8b}, [TMP3]
-    st1             {v23.8b}, [TMP4]
+    trn1            v11.8b,   v11.8b,   v16.8b
+    trn2            v16.8b,   v18.8b,   v16.8b
+    st1             {v7.8b},  [TMP2]
+    st1             {v11.8b}, [TMP4]
+    st1             {v16.8b}, [TMP5]
+    sub             sp, sp, #176
+    ldp             x22, x23, [sp], 16
+    ld1             {v0.8b - v3.8b}, [sp], 32
+    ld1             {v4.8b - v7.8b}, [sp], 32
+    ld1             {v8.8b - v11.8b}, [sp], 32
+    ld1             {v12.8b - v15.8b}, [sp], 32
+    ld1             {v16.8b - v19.8b}, [sp], 32
     blr             x30
 
     .unreq          DCT_TABLE
@@ -1066,7 +1055,6 @@ asm_function jsimd_idct_ifast_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 
 /*****************************************************************************/
@@ -1179,14 +1167,19 @@ asm_function jsimd_idct_4x4_neon
     TMP3            .req x2
     TMP4            .req x15
 
-    /* vpush           {v8.4h-v15.4h} */
-    sub             sp, sp, #32
-    st1             {v8.4h-v11.4h}, [sp] /* save NEON registers */
-    sub             sp, sp, #32
-    st1             {v12.4h-v15.4h}, [sp]
-
+    /* Save all used NEON registers */
+    sub             sp, sp, 272
+    str             x15, [sp], 16
     /* Load constants (v3.4h is just used for padding) */
     adr             TMP4, jsimd_idct_4x4_neon_consts
+    st1             {v0.8b - v3.8b}, [sp], 32
+    st1             {v4.8b - v7.8b}, [sp], 32
+    st1             {v8.8b - v11.8b}, [sp], 32
+    st1             {v12.8b - v15.8b}, [sp], 32
+    st1             {v16.8b - v19.8b}, [sp], 32
+    st1             {v20.8b - v23.8b}, [sp], 32
+    st1             {v24.8b - v27.8b}, [sp], 32
+    st1             {v28.8b - v31.8b}, [sp], 32
     ld1             {v0.4h, v1.4h, v2.4h, v3.4h}, [TMP4]
 
     /* Load all COEF_BLOCK into NEON registers with the following allocation:
@@ -1226,7 +1219,7 @@ asm_function jsimd_idct_4x4_neon
     mul             v12.4h, v12.4h, v26.4h
     mul             v13.4h, v13.4h, v27.4h
     ins             v12.2d[1], v13.2d[0]  /* 128 bit q12 */
-    ld1             {v30.8h}, [DCT_TABLE], 16
+    ld1             {v30.4h, v31.4h}, [DCT_TABLE], 16
     mul             v14.4h, v14.4h, v28.4h
     mul             v15.4h, v15.4h, v29.4h
     ins             v14.2d[1], v15.2d[0]  /* 128 bit q14 */
@@ -1290,10 +1283,17 @@ asm_function jsimd_idct_4x4_neon
     st1             {v27.b}[7], [TMP4], 1
 #endif
 
-    /* vpop            {v8.4h-v15.4h}    ;not available */
-    ld1             {v12.4h-v15.4h}, [sp], 32
-    ld1             {v8.4h-v11.4h}, [sp], 32
-
+    /* vpop            {v8.4h - v15.4h}    ;not available */
+    sub             sp, sp, #272
+    ldr             x15, [sp], 16
+    ld1             {v0.8b - v3.8b}, [sp], 32
+    ld1             {v4.8b - v7.8b}, [sp], 32
+    ld1             {v8.8b - v11.8b}, [sp], 32
+    ld1             {v12.8b - v15.8b}, [sp], 32
+    ld1             {v16.8b - v19.8b}, [sp], 32
+    ld1             {v20.8b - v23.8b}, [sp], 32
+    ld1             {v24.8b - v27.8b}, [sp], 32
+    ld1             {v28.8b - v31.8b}, [sp], 32
     blr             x30
 
     .unreq          DCT_TABLE
@@ -1304,7 +1304,6 @@ asm_function jsimd_idct_4x4_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 .purgem idct_helper
 
@@ -1327,29 +1326,29 @@ asm_function jsimd_idct_4x4_neon
 
 .balign 8
 jsimd_idct_2x2_neon_consts:
-    .short     -FIX_0_720959822    /* d0[0] */
-    .short     FIX_0_850430095     /* d0[1] */
-    .short     -FIX_1_272758580    /* d0[2] */
-    .short     FIX_3_624509785     /* d0[3] */
+    .short     -FIX_0_720959822    /* v14[0] */
+    .short     FIX_0_850430095     /* v14[1] */
+    .short     -FIX_1_272758580    /* v14[2] */
+    .short     FIX_3_624509785     /* v14[3] */
 
 .macro idct_helper x4, x6, x10, x12, x16, shift, y26, y27
-    sshll      v28.4s, \x4,    #15
-    smull      v26.4s, \x6,    v0.4h[3]
-    smlal      v26.4s, \x10,   v0.4h[2]
-    smlal      v26.4s, \x12,   v0.4h[1]
-    smlal      v26.4s, \x16,   v0.4h[0]
+    sshll      v15.4s, \x4,    #15
+    smull      v26.4s, \x6,    v14.4h[3]
+    smlal      v26.4s, \x10,   v14.4h[2]
+    smlal      v26.4s, \x12,   v14.4h[1]
+    smlal      v26.4s, \x16,   v14.4h[0]
 
-    add        v20.4s, v28.4s, v26.4s
-    sub        v28.4s, v28.4s, v26.4s
+    add        v20.4s, v15.4s, v26.4s
+    sub        v15.4s, v15.4s, v26.4s
 
 .if \shift > 16
     srshr      v20.4s, v20.4s, #\shift
-    srshr      v28.4s, v28.4s, #\shift
+    srshr      v15.4s, v15.4s, #\shift
     xtn        \y26,   v20.4s
-    xtn        \y27,   v28.4s
+    xtn        \y27,   v15.4s
 .else
     rshrn      \y26,   v20.4s, #\shift
-    rshrn      \y27,   v28.4s, #\shift
+    rshrn      \y27,   v15.4s, #\shift
 .endif
 
 .endm
@@ -1363,15 +1362,20 @@ asm_function jsimd_idct_2x2_neon
     TMP1            .req x0
     TMP2            .req x15
 
-    /* vpush           {v8.4h-v15.4h}            ; not available */
-    sub             sp, sp, #32
-    st1             {v8.4h-v11.4h}, [sp]  /* save NEON registers */
-    sub             sp, sp, #32
-    st1             {v12.4h-v15.4h}, [sp]
+    /* vpush           {v8.4h - v15.4h}            ; not available */
+    sub             sp, sp, 208
+    str             x15, [sp], 16
 
     /* Load constants */
     adr             TMP2, jsimd_idct_2x2_neon_consts
-    ld1             {v0.4h}, [TMP2]
+    st1             {v4.8b - v7.8b}, [sp], 32
+    st1             {v8.8b - v11.8b}, [sp], 32
+    st1             {v12.8b - v15.8b}, [sp], 32
+    st1             {v16.8b - v19.8b}, [sp], 32
+    st1             {v21.8b - v22.8b}, [sp], 16
+    st1             {v24.8b - v27.8b}, [sp], 32
+    st1             {v30.8b - v31.8b}, [sp], 16
+    ld1             {v14.4h}, [TMP2]
 
     /* Load all COEF_BLOCK into NEON registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
@@ -1394,26 +1398,26 @@ asm_function jsimd_idct_2x2_neon
     ld1             {v16.4h, v17.4h}, [COEF_BLOCK], 16
     /* Dequantize */
     ld1             {v18.4h, v19.4h, v20.4h, v21.4h}, [DCT_TABLE], 32
-    mul             v4.8h, v4.8h, v18.8h
-    mul             v5.8h, v5.8h, v18.8h
+    mul             v4.4h, v4.4h, v18.4h
+    mul             v5.4h, v5.4h, v19.4h
     ins             v4.2d[1], v5.2d[0]
-    mul             v6.8h, v6.8h, v20.8h
-    mul             v7.8h, v7.8h, v21.8h
+    mul             v6.4h, v6.4h, v20.4h
+    mul             v7.4h, v7.4h, v21.4h
     ins             v6.2d[1], v7.2d[0]
     add             DCT_TABLE, DCT_TABLE, #16
     ld1             {v24.4h, v25.4h}, [DCT_TABLE], 16
-    mul             v10.8h, v10.8h, v24.8h
-    mul             v11.8h, v11.8h, v25.8h
+    mul             v10.4h, v10.4h, v24.4h
+    mul             v11.4h, v11.4h, v25.4h
     ins             v10.2d[1], v11.2d[0]
     add             DCT_TABLE, DCT_TABLE, #16
     ld1             {v26.4h, v27.4h}, [DCT_TABLE], 16
-    mul             v12.8h, v12.8h, v26.8h
-    mul             v13.8h, v13.8h, v27.8h
+    mul             v12.4h, v12.4h, v26.4h
+    mul             v13.4h, v13.4h, v27.4h
     ins             v12.2d[1], v13.2d[0]
     add             DCT_TABLE, DCT_TABLE, #16
     ld1             {v30.4h, v31.4h}, [DCT_TABLE], 16
-    mul             v16.8h, v16.8h, v30.8h
-    mul             v17.8h, v17.8h, v31.8h
+    mul             v16.4h, v16.4h, v30.4h
+    mul             v17.4h, v17.4h, v31.4h
     ins             v16.2d[1], v17.2d[0]
 
     /* Pass 1 */
@@ -1423,26 +1427,30 @@ asm_function jsimd_idct_2x2_neon
     idct_helper     v5.4h, v7.4h, v11.4h, v13.4h, v17.4h, 13, v5.4h, v7.4h
     transpose_4x4   v5.4h, v7.4h, v9.4h,  v11.4h
 #else
-    smull           v26.4s, v6.4h,  v0.4h[3]
-    smlal           v26.4s, v10.4h, v0.4h[2]
-    smlal           v26.4s, v12.4h, v0.4h[1]
-    smlal           v26.4s, v16.4h, v0.4h[0]
-    smull           v24.4s, v7.4h,  v0.4h[3]
-    smlal           v24.4s, v11.4h, v0.4h[2]
-    smlal           v24.4s, v13.4h, v0.4h[1]
-    smlal           v24.4s, v17.4h, v0.4h[0]
-    sshll           v28.4s, v4.4h,  #15
+    smull           v26.4s, v6.4h,  v14.4h[3]
+    smlal           v26.4s, v10.4h, v14.4h[2]
+    smlal           v26.4s, v12.4h, v14.4h[1]
+    smlal           v26.4s, v16.4h, v14.4h[0]
+    smull           v24.4s, v7.4h,  v14.4h[3]
+    smlal           v24.4s, v11.4h, v14.4h[2]
+    smlal           v24.4s, v13.4h, v14.4h[1]
+    smlal           v24.4s, v17.4h, v14.4h[0]
+    sshll           v15.4s, v4.4h,  #15
     sshll           v30.4s, v5.4h,  #15
-    add             v20.4s, v28.4s, v26.4s
-    sub             v28.4s, v28.4s, v26.4s
+    add             v20.4s, v15.4s, v26.4s
+    sub             v15.4s, v15.4s, v26.4s
     rshrn           v4.4h,  v20.4s, #13
-    rshrn           v6.4h,  v28.4s, #13
+    rshrn           v6.4h,  v15.4s, #13
     add             v20.4s, v30.4s, v24.4s
-    sub             v28.4s, v30.4s, v24.4s
+    sub             v15.4s, v30.4s, v24.4s
     rshrn           v5.4h,  v20.4s, #13
-    rshrn           v7.4h,  v28.4s, #13
+    rshrn           v7.4h,  v15.4s, #13
+    ins             v4.2d[1], v5.2d[0]
+    ins             v6.2d[1], v7.2d[0]
     transpose       v4, v6, v3, .16b, .8h
     transpose       v6, v10, v3, .16b, .4s
+    ins             v11.2d[0], v10.2d[1]
+    ins             v7.2d[0], v6.2d[1]
 #endif
 
     /* Pass 2 */
@@ -1466,11 +1474,15 @@ asm_function jsimd_idct_2x2_neon
     st1             {v26.b}[1], [TMP2], 1
     st1             {v27.b}[5], [TMP2], 1
 
-    /* vpop            {v8.4h-v15.4h} ;not available */
-
-    ld1             {v12.4h-v15.4h}, [sp], 32
-    ld1             {v8.4h-v11.4h}, [sp], 32
-
+    sub             sp, sp, #208
+    ldr             x15, [sp], 16
+    ld1             {v4.8b - v7.8b}, [sp], 32
+    ld1             {v8.8b - v11.8b}, [sp], 32
+    ld1             {v12.8b - v15.8b}, [sp], 32
+    ld1             {v16.8b - v19.8b}, [sp], 32
+    ld1             {v21.8b - v22.8b}, [sp], 16
+    ld1             {v24.8b - v27.8b}, [sp], 32
+    ld1             {v30.8b - v31.8b}, [sp], 16
     blr             x30
 
     .unreq          DCT_TABLE
@@ -1479,7 +1491,6 @@ asm_function jsimd_idct_2x2_neon
     .unreq          OUTPUT_COL
     .unreq          TMP1
     .unreq          TMP2
-.endfunc
 
 .purgem idct_helper
 
@@ -1507,11 +1518,11 @@ asm_function jsimd_idct_2x2_neon
         prfm PLDL1KEEP, [V, #64]
         prfm PLDL1KEEP, [Y, #64]
     .elseif \size == 4
-        ld1  {v4.b}[0], [U]
-        ld1  {v4.b}[1], [U]
-        ld1  {v4.b}[2], [U]
-        ld1  {v4.b}[3], [U]
-        ld1  {v5.b}[0], [V]
+        ld1  {v4.b}[0], [U], 1
+        ld1  {v4.b}[1], [U], 1
+        ld1  {v4.b}[2], [U], 1
+        ld1  {v4.b}[3], [U], 1
+        ld1  {v5.b}[0], [V], 1
         ld1  {v5.b}[1], [V], 1
         ld1  {v5.b}[2], [V], 1
         ld1  {v5.b}[3], [V], 1
@@ -1546,7 +1557,7 @@ asm_function jsimd_idct_2x2_neon
             st3  {v10.b, v11.b, v12.b}[3], [RGB], 3
         .elseif \size == 2
             st3  {v10.b, v11.b, v12.b}[4], [RGB], 3
-            st3  {v10.b, v11.b, v12.b}[4], [RGB], 3
+            st3  {v10.b, v11.b, v12.b}[5], [RGB], 3
         .elseif \size == 1
             st3  {v10.b, v11.b, v12.b}[6], [RGB], 3
         .else
@@ -1568,17 +1579,28 @@ asm_function jsimd_idct_2x2_neon
         .else
             .error unsupported macroblock size
         .endif
-    .else
+    .elseif \bpp==16
+        .if \size == 8
+            st1  {v25.8h}, [RGB],16
+        .elseif \size == 4
+            st1  {v25.4h}, [RGB],8
+        .elseif \size == 2
+            st1  {v25.h}[4], [RGB],2
+            st1  {v25.h}[5], [RGB],2
+        .elseif \size == 1
+            st1  {v25.h}[6], [RGB],2
+        .else
+            .error unsupported macroblock size
+        .endif
+     .else
         .error unsupported bpp
     .endif
 .endm
-#ifdef RTSM_SQSHRN_SIM_ISSUE
+
 .macro generate_jsimd_ycc_rgb_convert_neon colorid, bpp, r_offs, rsize, g_offs, gsize, b_offs, bsize, defsize
-#else
-.macro generate_jsimd_ycc_rgb_convert_neon colorid, bpp, r_offs, rsize, g_offs, gsize, b_offs, bsize
-#endif
+
 /*
- * 2 stage pipelined YCbCr->RGB conversion
+ * 2-stage pipelined YCbCr->RGB conversion
  */
 
 .macro do_yuv_to_rgb_stage1
@@ -1604,58 +1626,68 @@ asm_function jsimd_idct_2x2_neon
     uaddw        v20.8h, v20.8h, v0.8b
     uaddw        v24.8h, v24.8h, v0.8b
     uaddw        v28.8h, v28.8h, v0.8b
-#ifdef RTSM_SQSHRN_SIM_ISSUE
+.if \bpp != 16
     sqxtun       v1\g_offs\defsize, v20.8h
     sqxtun       v1\r_offs\defsize, v24.8h
     sqxtun       v1\b_offs\defsize, v28.8h
+.else
+    sqshlu       v21.8h, v20.8h, #8
+    sqshlu       v25.8h, v24.8h, #8
+    sqshlu       v29.8h, v28.8h, #8
+    sri          v25.8h, v21.8h, #5
+    sri          v25.8h, v29.8h, #11
+.endif
 
-#else
-    sqxtun       v1\g_offs\gsize, v20.4s
-    sqxtun       v1\r_offs\rsize, v24.4s
-    sqxtun       v1\b_offs\bsize, v28.4s
-#endif
 .endm
 
 .macro do_yuv_to_rgb_stage2_store_load_stage1
-    ld1          {v4.8b}, [U], 8
     rshrn        v20.4h, v20.4s, #15
-    rshrn2       v20.8h, v22.4s, #15
     rshrn        v24.4h, v24.4s, #14
-    rshrn2       v24.8h, v26.4s, #14
     rshrn        v28.4h, v28.4s, #14
-    ld1          {v5.8b}, [V], 8
+    ld1          {v4.8b}, [U], 8
+    rshrn2       v20.8h, v22.4s, #15
+    rshrn2       v24.8h, v26.4s, #14
     rshrn2       v28.8h, v30.4s, #14
+    ld1          {v5.8b}, [V], 8
     uaddw        v20.8h, v20.8h, v0.8b
     uaddw        v24.8h, v24.8h, v0.8b
     uaddw        v28.8h, v28.8h, v0.8b
-#ifdef RTSM_SQSHRN_SIM_ISSUE
+.if \bpp != 16 /**************** rgb24/rgb32 *********************************/
     sqxtun       v1\g_offs\defsize, v20.8h
-#else
-    sqxtun       v1\g_offs\gsize, v20.4s
-#endif
     ld1          {v0.8b}, [Y], 8
-#ifdef RTSM_SQSHRN_SIM_ISSUE
     sqxtun       v1\r_offs\defsize, v24.8h
-#else
-    sqxtun       v1\r_offs\rsize, v24.4s
-#endif
     prfm         PLDL1KEEP, [U, #64]
     prfm         PLDL1KEEP, [V, #64]
     prfm         PLDL1KEEP, [Y, #64]
-#ifdef RTSM_SQSHRN_SIM_ISSUE
     sqxtun       v1\b_offs\defsize, v28.8h
-#else
-    sqxtun       v1\b_offs\gsize, v28.4s
-#endif
     uaddw        v6.8h, v2.8h, v4.8b     /* v6.16b = u - 128 */
     uaddw        v8.8h, v2.8h, v5.8b     /* q2 = v - 128 */
-    do_store     \bpp, 8
     smull        v20.4s, v6.4h, v1.4h[1] /* multiply by -11277 */
     smlal        v20.4s, v8.4h, v1.4h[2] /* multiply by -23401 */
     smull2       v22.4s, v6.8h, v1.4h[1] /* multiply by -11277 */
     smlal2       v22.4s, v8.8h, v1.4h[2] /* multiply by -23401 */
     smull        v24.4s, v8.4h, v1.4h[0] /* multiply by 22971 */
     smull2       v26.4s, v8.8h, v1.4h[0] /* multiply by 22971 */
+.else /**************************** rgb565 ***********************************/
+    sqshlu       v21.8h, v20.8h, #8
+    sqshlu       v25.8h, v24.8h, #8
+    sqshlu       v29.8h, v28.8h, #8
+    uaddw        v6.8h, v2.8h, v4.8b     /* v6.16b = u - 128 */
+    uaddw        v8.8h, v2.8h, v5.8b     /* q2 = v - 128 */
+    ld1          {v0.8b}, [Y], 8
+    smull        v20.4s, v6.4h, v1.4h[1] /* multiply by -11277 */
+    smlal        v20.4s, v8.4h, v1.4h[2] /* multiply by -23401 */
+    smull2       v22.4s, v6.8h, v1.4h[1] /* multiply by -11277 */
+    smlal2       v22.4s, v8.8h, v1.4h[2] /* multiply by -23401 */
+    sri          v25.8h, v21.8h, #5
+    smull        v24.4s, v8.4h, v1.4h[0] /* multiply by 22971 */
+    smull2       v26.4s, v8.8h, v1.4h[0] /* multiply by 22971 */
+    prfm         PLDL1KEEP, [U, #64]
+    prfm         PLDL1KEEP, [V, #64]
+    prfm         PLDL1KEEP, [Y, #64]
+    sri          v25.8h, v29.8h, #11
+.endif
+    do_store     \bpp, 8
     smull        v28.4s, v6.4h, v1.4h[3] /* multiply by 29033 */
     smull2       v30.4s, v6.8h, v1.4h[3] /* multiply by 29033 */
 .endm
@@ -1693,32 +1725,36 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     V               .req x10
     N               .req x15
 
+    sub             sp, sp, 336
+    str             x15, [sp], 16
     /* Load constants to d1, d2, d3 (v0.4h is just used for padding) */
     adr             x15, jsimd_ycc_\colorid\()_neon_consts
+    /* Save NEON registers */
+    st1             {v0.8b - v3.8b}, [sp], 32
+    st1             {v4.8b - v7.8b}, [sp], 32
+    st1             {v8.8b - v11.8b}, [sp], 32
+    st1             {v12.8b - v15.8b}, [sp], 32
+    st1             {v16.8b - v19.8b}, [sp], 32
+    st1             {v20.8b - v23.8b}, [sp], 32
+    st1             {v24.8b - v27.8b}, [sp], 32
+    st1             {v28.8b - v31.8b}, [sp], 32
     ld1             {v0.4h, v1.4h}, [x15], 16
     ld1             {v2.8h}, [x15]
 
     /* Save ARM registers and handle input arguments */
     /* push            {x4, x5, x6, x7, x8, x9, x10, x30} */
-    stp             x4, x5, [sp,-16]!
-    stp             x6, x7, [sp,-16]!
-    stp             x8, x9, [sp,-16]!
-    stp             x10, x30, [sp,-16]!
+    stp             x4, x5, [sp], 16
+    stp             x6, x7, [sp], 16
+    stp             x8, x9, [sp], 16
+    stp             x10, x30, [sp], 16
     ldr             INPUT_BUF0, [INPUT_BUF]
     ldr             INPUT_BUF1, [INPUT_BUF, 8]
     ldr             INPUT_BUF2, [INPUT_BUF, 16]
     .unreq          INPUT_BUF
 
-    /* Save NEON registers */
-    /* vpush           {v8.4h-v15.4h} */
-    sub             sp, sp, #32
-    st1             {v8.4h-v11.4h}, [sp]
-    sub             sp, sp, #32
-    st1             {v12.4h-v15.4h}, [sp]
-
     /* Initially set v10, v11.4h, v12.8b, d13 to 0xFF */
     movi            v10.16b, #255
-    movi            v12.16b, #255
+    movi            v13.16b, #255
 
     /* Outer loop over scanlines */
     cmp             NUM_ROWS, #1
@@ -1778,14 +1814,21 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     bgt             0b
 9:
     /* Restore all registers and return */
-    /* vpop            {v8.4h-v15.4h} */
-    ld1             {v12.4h-v15.4h}, [sp], #32
-    ld1             {v8.4h-v11.4h}, [sp], #32
+    sub             sp, sp, #336
+    ldr             x15, [sp], 16
+    ld1             {v0.8b - v3.8b}, [sp], 32
+    ld1             {v4.8b - v7.8b}, [sp], 32
+    ld1             {v8.8b - v11.8b}, [sp], 32
+    ld1             {v12.8b - v15.8b}, [sp], 32
+    ld1             {v16.8b - v19.8b}, [sp], 32
+    ld1             {v20.8b - v23.8b}, [sp], 32
+    ld1             {v24.8b - v27.8b}, [sp], 32
+    ld1             {v28.8b - v31.8b}, [sp], 32
     /* pop             {r4, r5, r6, r7, r8, r9, r10, pc} */
-    ldp             x10, x30, [sp], #16
-    ldp             x8, x9, [sp], #16
-    ldp             x6, x5, [sp], #16
-    ldp             x4, x5, [sp], #16
+    ldp             x4, x5, [sp], 16
+    ldp             x6, x7, [sp], 16
+    ldp             x8, x9, [sp], 16
+    ldp             x10, x30, [sp], 16
     br              x30
     .unreq          OUTPUT_WIDTH
     .unreq          INPUT_ROW
@@ -1799,7 +1842,6 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     .unreq          U
     .unreq          V
     .unreq          N
-.endfunc
 
 .purgem do_yuv_to_rgb
 .purgem do_yuv_to_rgb_stage1
@@ -1807,10 +1849,6 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
 .purgem do_yuv_to_rgb_stage2_store_load_stage1
 .endm
 
-/* RTSM simulator fix integer saturation works on 8b boundry add a new parameter
- * as a workaround for the simulator fix
- */
-#ifdef RTSM_SQSHRN_SIM_ISSUE
 /*--------------------------------- id ----- bpp R  rsize  G  gsize  B  bsize  defsize   */
 generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,   1, .4h,   2, .4h,   .8b
 generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,   1, .4h,   0, .4h,   .8b
@@ -1818,15 +1856,6 @@ generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, .4h,   1, .4h,   2, .4h,   .
 generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, .4h,   1, .4h,   0, .4h,   .8b
 generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, .4h,   2, .4h,   1, .4h,   .8b
 generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, .4h,   2, .4h,   3, .4h,   .8b
-#else
-/*--------------------------------- id ----- bpp R  rsize  G  gsize  B  bsize  */
-generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,   1, .4h,   2, .4h
-generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,   1, .4h,   0, .4h
-generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, .4h,   1, .4h,   2, .4h
-generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, .4h,   1, .4h,   0, .4h
-generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, .4h,   2, .4h,   1, .4h
-generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, .4h,   2, .4h,   3, .4h
-#endif
-
+generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,   0, .4h,   0, .4h,   .8b
 .purgem do_load
 .purgem do_store

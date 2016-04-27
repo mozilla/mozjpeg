@@ -6,7 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011 D. R. Commander
+ * Copyright (C) 2011, 2014 D. R. Commander
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -75,9 +75,12 @@ typedef struct {
 typedef my_fdct_controller * my_fdct_ptr;
 
 
+#if BITS_IN_JSAMPLE == 8
+
 /*
  * Find the highest bit in an integer through binary search.
  */
+
 LOCAL(int)
 flss (UINT16 val)
 {
@@ -107,6 +110,7 @@ flss (UINT16 val)
 
   return bit;
 }
+
 
 /*
  * Compute values to do a division using reciprocal.
@@ -166,6 +170,7 @@ flss (UINT16 val)
  * of in a consecutive manner, yet again in order to allow SIMD
  * routines.
  */
+
 LOCAL(int)
 compute_reciprocal (UINT16 divisor, DCTELEM * dtbl)
 {
@@ -199,6 +204,9 @@ compute_reciprocal (UINT16 divisor, DCTELEM * dtbl)
   if(r <= 16) return 0;
   else return 1;
 }
+
+#endif
+
 
 /*
  * Initialize for a processing pass.
@@ -241,9 +249,13 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
       }
       dtbl = fdct->divisors[qtblno];
       for (i = 0; i < DCTSIZE2; i++) {
+#if BITS_IN_JSAMPLE == 8
         if(!compute_reciprocal(qtbl->quantval[i] << 3, &dtbl[i])
           && fdct->quantize == jsimd_quantize)
           fdct->quantize = quantize;
+#else
+        dtbl[i] = ((DCTELEM) qtbl->quantval[i]) << 3;
+#endif
       }
       break;
 #endif
@@ -277,12 +289,19 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
         }
         dtbl = fdct->divisors[qtblno];
         for (i = 0; i < DCTSIZE2; i++) {
+#if BITS_IN_JSAMPLE == 8
           if(!compute_reciprocal(
             DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
                                   (INT32) aanscales[i]),
                     CONST_BITS-3), &dtbl[i])
             && fdct->quantize == jsimd_quantize)
             fdct->quantize = quantize;
+#else
+           dtbl[i] = (DCTELEM)
+             DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
+                                   (INT32) aanscales[i]),
+                     CONST_BITS-3);
+#endif
         }
       }
       break;
@@ -375,9 +394,12 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
 {
   int i;
   DCTELEM temp;
+  JCOEFPTR output_ptr = coef_block;
+
+#if BITS_IN_JSAMPLE == 8
+
   UDCTELEM recip, corr, shift;
   UDCTELEM2 product;
-  JCOEFPTR output_ptr = coef_block;
 
   for (i = 0; i < DCTSIZE2; i++) {
     temp = workspace[i];
@@ -396,9 +418,47 @@ quantize (JCOEFPTR coef_block, DCTELEM * divisors, DCTELEM * workspace)
       product >>= shift + sizeof(DCTELEM)*8;
       temp = product;
     }
-
     output_ptr[i] = (JCOEF) temp;
   }
+
+#else
+
+  register DCTELEM qval;
+
+  for (i = 0; i < DCTSIZE2; i++) {
+    qval = divisors[i];
+    temp = workspace[i];
+    /* Divide the coefficient value by qval, ensuring proper rounding.
+     * Since C does not specify the direction of rounding for negative
+     * quotients, we have to force the dividend positive for portability.
+     *
+     * In most files, at least half of the output values will be zero
+     * (at default quantization settings, more like three-quarters...)
+     * so we should ensure that this case is fast.  On many machines,
+     * a comparison is enough cheaper than a divide to make a special test
+     * a win.  Since both inputs will be nonnegative, we need only test
+     * for a < b to discover whether a/b is 0.
+     * If your machine's division is fast enough, define FAST_DIVIDE.
+     */
+#ifdef FAST_DIVIDE
+#define DIVIDE_BY(a,b)  a /= b
+#else
+#define DIVIDE_BY(a,b)  if (a >= b) a /= b; else a = 0
+#endif
+    if (temp < 0) {
+      temp = -temp;
+      temp += qval>>1;  /* for rounding */
+      DIVIDE_BY(temp, qval);
+      temp = -temp;    
+    } else {
+      temp += qval>>1;  /* for rounding */
+      DIVIDE_BY(temp, qval);
+    }
+    output_ptr[i] = (JCOEF) temp;
+  }
+
+#endif
+
 }
 
 
@@ -614,10 +674,10 @@ static const float jpeg_lambda_weights_csf_luma[64] = {
 };
 
 GLOBAL(void)
-quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
-                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef)
+quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+                 JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val)
 {
-  int i, j, k;
+  int i, j, k, l;
   float accumulated_zero_dist[DCTSIZE2];
   float accumulated_cost[DCTSIZE2];
   int run_start[DCTSIZE2];
@@ -627,6 +687,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   float norm = 0.0;
   float lambda_base;
   float lambda;
+  float lambda_dc;
   const float *lambda_tbl = (cinfo->use_lambda_weight_tbl) ? jpeg_lambda_weights_csf_luma : jpeg_lambda_weights_flat;
   int Ss, Se;
   float *accumulated_zero_block_cost = NULL;
@@ -640,6 +701,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
   int zero_run;
   int run_bits;
   int rate;
+  float *accumulated_dc_cost[3];
+  int *dc_cost_backtrack[3];
+  JCOEF *dc_candidate[3];
 
   Ss = cinfo->Ss;
   Se = cinfo->Se;
@@ -652,11 +716,29 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     accumulated_block_cost = (float *)malloc((num_blocks + 1) * sizeof(float));
     block_run_start = (int *)malloc(num_blocks * sizeof(int));
     requires_eob = (int *)malloc((num_blocks + 1) * sizeof(int));
+    if (!accumulated_zero_block_cost ||
+        !accumulated_block_cost ||
+        !block_run_start ||
+        !requires_eob) {
+      ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+    }
+
     accumulated_zero_block_cost[0] = 0;
     accumulated_block_cost[0] = 0;
     requires_eob[0] = 0;
   }
-  
+  if (cinfo->trellis_quant_dc) {
+    for (i = 0; i < 3; i++) {
+      accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
+      dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
+      dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
+      if (!accumulated_dc_cost[i] ||
+          !dc_cost_backtrack[i] ||
+          !dc_candidate[i]) {
+        ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
+      }
+    }
+  }
   norm = 0.0;
   for (i = 1; i < DCTSIZE2; i++) {
     norm += qtbl->quantval[i] * qtbl->quantval[i];
@@ -678,9 +760,65 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
     else
       lambda = pow(2.0, cinfo->lambda_log_scale1-12.0) * lambda_base;
     
+    lambda_dc = lambda * lambda_tbl[0];
+    
     accumulated_zero_dist[Ss-1] = 0.0;
     accumulated_cost[Ss-1] = 0.0;
     
+    // Do DC coefficient
+    if (cinfo->trellis_quant_dc) {
+      int sign = src[bi][0] >> 31;
+      int x = abs(src[bi][0]);
+      int q = 8 * qtbl->quantval[0];
+      int qval;
+      float dc_candidate_dist;
+
+      qval = (x + q/2) / q; /* quantized value (round nearest) */
+      for (k = 0; k < 3; k++) {
+        int delta;
+        int dc_delta;
+        int bits;
+        
+        dc_candidate[k][bi] = qval - 1 + k;
+        delta = dc_candidate[k][bi] * q - x;
+        dc_candidate_dist = delta * delta * lambda_dc;
+        dc_candidate[k][bi] *= 1 + 2*sign;
+        
+        if (bi == 0) {
+          dc_delta = dc_candidate[k][bi] - *last_dc_val;
+          
+          // Derive number of suffix bits
+          bits = 0;
+          dc_delta = abs(dc_delta);
+          while (dc_delta) {
+            dc_delta >>= 1;
+            bits++;
+          }
+          cost = bits + dctbl->ehufsi[bits] + dc_candidate_dist;
+          accumulated_dc_cost[k][0] = cost;
+          dc_cost_backtrack[k][0] = -1;
+        } else {
+          for (l = 0; l < 3; l++) {
+            dc_delta = dc_candidate[k][bi] - dc_candidate[l][bi-1];
+            
+            // Derive number of suffix bits
+            bits = 0;
+            dc_delta = abs(dc_delta);
+            while (dc_delta) {
+              dc_delta >>= 1;
+              bits++;
+            }
+            cost = bits + dctbl->ehufsi[bits] + dc_candidate_dist + accumulated_dc_cost[l][bi-1];
+            if (l == 0 || cost < accumulated_dc_cost[k][bi]) {
+              accumulated_dc_cost[k][bi] = cost;
+              dc_cost_backtrack[k][bi] = l;
+            }
+          }
+        }        
+      }
+    }
+    
+    // Do AC coefficients
     for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
       
@@ -864,6 +1002,28 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *actbl, JBLOCKROW coef_bloc
       }
     }
   }
+  
+  if (cinfo->trellis_quant_dc) {
+    j = 0;
+    for (i = 1; i < 3; i++) {
+      if (accumulated_dc_cost[i][num_blocks-1] < accumulated_dc_cost[j][num_blocks-1])
+        j = i;
+    }
+    for (bi = num_blocks-1; bi >= 0; bi--) {
+      coef_blocks[bi][0] = dc_candidate[j][bi];
+      j = dc_cost_backtrack[j][bi];
+    }
+    
+    // Save DC predictor
+    *last_dc_val = coef_blocks[num_blocks-1][0];
+    
+    for (i = 0; i < 3; i++) {
+      free(accumulated_dc_cost[i]);
+      free(dc_cost_backtrack[i]);
+      free(dc_candidate[i]);
+    }
+  }
+
 }
 
 /*

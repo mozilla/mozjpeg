@@ -4,6 +4,8 @@
  * Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
  * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
+ * Copyright (C) 2014 Siarhei Siamashka.  All Rights Reserved.
+ * Copyright (C) 2014 Linaro Limited.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,11 +43,9 @@
 /* Supplementary macro for setting function attributes */
 .macro asm_function fname
 #ifdef __APPLE__
-    .func _\fname
     .globl _\fname
 _\fname:
 #else
-    .func \fname
     .global \fname
 #ifdef __ELF__
     .hidden \fname
@@ -670,7 +670,6 @@ asm_function jsimd_idct_islow_neon
     .unreq          ROW6R
     .unreq          ROW7L
     .unreq          ROW7R
-.endfunc
 
 
 /*****************************************************************************/
@@ -895,7 +894,6 @@ asm_function jsimd_idct_ifast_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 
 /*****************************************************************************/
@@ -1108,7 +1106,6 @@ asm_function jsimd_idct_4x4_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 .purgem idct_helper
 
@@ -1263,7 +1260,6 @@ asm_function jsimd_idct_2x2_neon
     .unreq          OUTPUT_COL
     .unreq          TMP1
     .unreq          TMP2
-.endfunc
 
 .purgem idct_helper
 
@@ -1352,6 +1348,19 @@ asm_function jsimd_idct_2x2_neon
         .else
             .error unsupported macroblock size
         .endif
+    .elseif \bpp == 16
+        .if \size == 8
+            vst1.16  {q15}, [RGB]!
+        .elseif \size == 4
+            vst1.16  {d30}, [RGB]!
+        .elseif \size == 2
+            vst1.16  {d31[0]}, [RGB]!
+            vst1.16  {d31[1]}, [RGB]!
+        .elseif \size == 1
+            vst1.16  {d31[2]}, [RGB]!
+        .else
+            .error unsupported macroblock size
+        .endif
     .else
         .error unsupported bpp
     .endif
@@ -1383,44 +1392,71 @@ asm_function jsimd_idct_2x2_neon
     vrshrn.s32      d25, q13, #14
     vrshrn.s32      d28, q14, #14
     vrshrn.s32      d29, q15, #14
-    vaddw.u8        q10, q10, d0
+    vaddw.u8        q11, q10, d0
     vaddw.u8        q12, q12, d0
     vaddw.u8        q14, q14, d0
-    vqmovun.s16     d1\g_offs, q10
+.if \bpp != 16
+    vqmovun.s16     d1\g_offs, q11
     vqmovun.s16     d1\r_offs, q12
     vqmovun.s16     d1\b_offs, q14
+.else /* rgb565 */
+    vqshlu.s16      q13, q11, #8
+    vqshlu.s16      q15, q12, #8
+    vqshlu.s16      q14, q14, #8
+    vsri.u16        q15, q13, #5
+    vsri.u16        q15, q14, #11
+.endif
 .endm
 
 .macro do_yuv_to_rgb_stage2_store_load_stage1
-    vld1.8          {d4}, [U, :64]!
-      vrshrn.s32      d20, q10, #15
-      vrshrn.s32      d21, q11, #15
-      vrshrn.s32      d24, q12, #14
-      vrshrn.s32      d25, q13, #14
-      vrshrn.s32      d28, q14, #14
-    vld1.8          {d5}, [V, :64]!
-      vrshrn.s32      d29, q15, #14
-      vaddw.u8        q10, q10, d0
-      vaddw.u8        q12, q12, d0
-      vaddw.u8        q14, q14, d0
-      vqmovun.s16     d1\g_offs, q10
-    vld1.8          {d0}, [Y, :64]!
-      vqmovun.s16     d1\r_offs, q12
+                                       /* "do_yuv_to_rgb_stage2" and "store" */
+                                       vrshrn.s32      d20, q10, #15
+    /* "load" and "do_yuv_to_rgb_stage1" */
     pld             [U, #64]
+                                       vrshrn.s32      d21, q11, #15
     pld             [V, #64]
-    pld             [Y, #64]
-      vqmovun.s16     d1\b_offs, q14
+                                       vrshrn.s32      d24, q12, #14
+                                       vrshrn.s32      d25, q13, #14
+    vld1.8          {d4}, [U, :64]!
+                                       vrshrn.s32      d28, q14, #14
+    vld1.8          {d5}, [V, :64]!
+                                       vrshrn.s32      d29, q15, #14
     vaddw.u8        q3, q1, d4     /* q3 = u - 128 */
     vaddw.u8        q4, q1, d5     /* q2 = v - 128 */
-      do_store        \bpp, 8
+                                       vaddw.u8        q11, q10, d0
     vmull.s16       q10, d6, d1[1] /* multiply by -11277 */
     vmlal.s16       q10, d8, d1[2] /* multiply by -23401 */
+                                       vaddw.u8        q12, q12, d0
+                                       vaddw.u8        q14, q14, d0
+.if \bpp != 16 /**************** rgb24/rgb32 *********************************/
+                                       vqmovun.s16     d1\g_offs, q11
+    pld             [Y, #64]
+                                       vqmovun.s16     d1\r_offs, q12
+    vld1.8          {d0}, [Y, :64]!
+                                       vqmovun.s16     d1\b_offs, q14
     vmull.s16       q11, d7, d1[1] /* multiply by -11277 */
     vmlal.s16       q11, d9, d1[2] /* multiply by -23401 */
+                                       do_store        \bpp, 8
     vmull.s16       q12, d8, d1[0] /* multiply by 22971 */
     vmull.s16       q13, d9, d1[0] /* multiply by 22971 */
     vmull.s16       q14, d6, d1[3] /* multiply by 29033 */
     vmull.s16       q15, d7, d1[3] /* multiply by 29033 */
+.else /**************************** rgb565 ***********************************/
+                                       vqshlu.s16      q13, q11, #8
+    pld             [Y, #64]
+                                       vqshlu.s16      q15, q12, #8
+                                       vqshlu.s16      q14, q14, #8
+    vld1.8          {d0}, [Y, :64]!
+    vmull.s16       q11, d7, d1[1]
+    vmlal.s16       q11, d9, d1[2]
+                                       vsri.u16        q15, q13, #5
+    vmull.s16       q12, d8, d1[0]
+                                       vsri.u16        q15, q14, #11
+    vmull.s16       q13, d9, d1[0]
+    vmull.s16       q14, d6, d1[3]
+                                       do_store        \bpp, 8
+    vmull.s16       q15, d7, d1[3]
+.endif
 .endm
 
 .macro do_yuv_to_rgb
@@ -1547,7 +1583,6 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     .unreq          U
     .unreq          V
     .unreq          N
-.endfunc
 
 .purgem do_yuv_to_rgb
 .purgem do_yuv_to_rgb_stage1
@@ -1563,6 +1598,7 @@ generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, 1, 2
 generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, 1, 0
 generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, 2, 1
 generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, 2, 3
+generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, 0, 0
 
 .purgem do_load
 .purgem do_store
@@ -1858,7 +1894,6 @@ asm_function jsimd_\colorid\()_ycc_convert_neon
     .unreq          U
     .unreq          V
     .unreq          N
-.endfunc
 
 .purgem do_rgb_to_yuv
 .purgem do_rgb_to_yuv_stage1
@@ -1940,7 +1975,6 @@ asm_function jsimd_convsamp_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
-.endfunc
 
 
 /*****************************************************************************/
@@ -2064,7 +2098,6 @@ asm_function jsimd_fdct_ifast_neon
 
     .unreq          DATA
     .unreq          TMP
-.endfunc
 
 
 /*****************************************************************************/
@@ -2166,7 +2199,6 @@ asm_function jsimd_quantize_neon
     .unreq          CORRECTION
     .unreq          SHIFT
     .unreq          LOOP_COUNT
-.endfunc
 
 
 /*****************************************************************************/
@@ -2401,7 +2433,6 @@ asm_function jsimd_h2v1_fancy_upsample_neon
     .unreq          WIDTH
     .unreq          TMP
 
-.endfunc
 
 .purgem upsample16
 .purgem upsample32

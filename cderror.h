@@ -122,6 +122,10 @@ JMESSAGE(JERR_UNKNOWN_FORMAT, "Unrecognized input file format")
 #endif
 JMESSAGE(JERR_UNSUPPORTED_FORMAT, "Unsupported output file format")
 
+#ifdef PNG_SUPPORTED
+JMESSAGE(JERR_PNG_ERROR, "Unable to read PNG file: %s")
+#endif
+
 #ifdef JMAKE_ENUM_LIST
 
   JMSG_LASTADDONCODE

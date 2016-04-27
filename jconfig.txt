@@ -1,8 +1,10 @@
 /*
  * jconfig.txt
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1994, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * It was modified by The libjpeg-turbo Project to include only code relevant
+ * to libjpeg-turbo.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file documents the configuration options that are required to
@@ -22,11 +24,6 @@
  * These symbols indicate the properties of your machine or compiler.
  * #define the symbol if yes, #undef it if no.
  */
-
-/* Does your compiler support function prototypes?
- * (If not, you also need to use ansi2knr, see install.txt)
- */
-#define HAVE_PROTOTYPES
 
 /* Does your compiler support the declaration "unsigned char" ?
  * How about "unsigned short" ?
@@ -48,7 +45,7 @@
  * If you're not sure, leaving it undefined will work at some cost in speed.
  * If you defined HAVE_UNSIGNED_CHAR then the speed difference is minimal.
  */
-#undef CHAR_IS_UNSIGNED
+#undef __CHAR_UNSIGNED__
 
 /* Define this if your system has an ANSI-conforming <stddef.h> file.
  */
@@ -69,19 +66,6 @@
  */
 #undef NEED_SYS_TYPES_H
 
-/* For 80x86 machines, you need to define NEED_FAR_POINTERS,
- * unless you are using a large-data memory model or 80386 flat-memory mode.
- * On less brain-damaged CPUs this symbol must not be defined.
- * (Defining this symbol causes large data structures to be referenced through
- * "far" pointers and to be allocated with a special version of malloc.)
- */
-#undef NEED_FAR_POINTERS
-
-/* Define this if your linker needs global names to be unique in less
- * than the first 15 characters.
- */
-#undef NEED_SHORT_EXTERNAL_NAMES
-
 /* Although a real ANSI C compiler can deal perfectly well with pointers to
  * unspecified structures (see "incomplete types" in the spec), a few pre-ANSI
  * and pseudo-ANSI compilers get confused.  To keep one of these bozos happy,
@@ -94,10 +78,10 @@
 /* Define "boolean" as unsigned char, not int, on Windows systems.
  */
 #ifdef _WIN32
-#ifndef __RPCNDR_H__		/* don't conflict if rpcndr.h already read */
+#ifndef __RPCNDR_H__            /* don't conflict if rpcndr.h already read */
 typedef unsigned char boolean;
 #endif
-#define HAVE_BOOLEAN		/* prevent jmorecfg.h from redefining it */
+#define HAVE_BOOLEAN            /* prevent jmorecfg.h from redefining it */
 #endif
 
 
@@ -130,11 +114,11 @@ typedef unsigned char boolean;
 
 /* These defines indicate which image (non-JPEG) file formats are allowed. */
 
-#define BMP_SUPPORTED		/* BMP image file format */
-#define GIF_SUPPORTED		/* GIF image file format */
-#define PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */
-#undef RLE_SUPPORTED		/* Utah RLE image file format */
-#define TARGA_SUPPORTED		/* Targa image file format */
+#define BMP_SUPPORTED           /* BMP image file format */
+#define GIF_SUPPORTED           /* GIF image file format */
+#define PPM_SUPPORTED           /* PBMPLUS PPM/PGM image file format */
+#undef RLE_SUPPORTED            /* Utah RLE image file format */
+#define TARGA_SUPPORTED         /* Targa image file format */
 
 /* Define this if you want to name both input and output files on the command
  * line, rather than using stdout and optionally stdin.  You MUST do this if
@@ -142,12 +126,6 @@ typedef unsigned char boolean;
  * head of cjpeg.c or djpeg.c.
  */
 #undef TWO_FILE_COMMANDLINE
-
-/* Define this if your system needs explicit cleanup of temporary files.
- * This is crucial under MS-DOS, where the temporary "files" may be areas
- * of extended memory; on most other systems it's not as important.
- */
-#undef NEED_SIGNAL_CATCHER
 
 /* By default, we open image files with fopen(...,"rb") or fopen(...,"wb").
  * This is necessary on systems that distinguish text files from binary files,

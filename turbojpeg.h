@@ -563,7 +563,7 @@ typedef void* tjhandle;
 /**
  * Compute the scaled value of <tt>dimension</tt> using the given scaling
  * factor.  This macro performs the integer equivalent of <tt>ceil(dimension *
- * scalingFactor)</tt>. 
+ * scalingFactor)</tt>.
  */
 #define TJSCALED(dimension, scalingFactor) ((dimension * scalingFactor.num \
   + scalingFactor.denom - 1) / scalingFactor.denom)
@@ -1063,7 +1063,7 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle handle);
  * (re)allocation (by setting #TJFLAG_NOREALLOC.)
  *
  * @param bytes the number of bytes to allocate
- * 
+ *
  * @return a pointer to a newly-allocated buffer with the specified number of
  *         bytes
  *

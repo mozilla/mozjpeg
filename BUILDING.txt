@@ -319,17 +319,15 @@ This release of libmozjpeg can use ARM NEON SIMD instructions to accelerate
 JPEG compression/decompression by approximately 2-4x on ARMv7 and later
 platforms.  If libmozjpeg is configured on an ARM Linux platform, then the
 build system will automatically include the NEON SIMD routines, if they are
-supported.
+supported.  Build instructions for other ARM-based platforms follow.
 
 
 Building libmozjpeg for iOS
 ------------------------------
 
-iOS platforms, such as the iPhone and iPad, also use ARM processors, some of
-which support NEON instructions.  Additional steps are required to build
-libmozjpeg for these platforms.  The steps below assume iOS SDK v4.3.  If
-you are using a different SDK version, then you will need to modify the
-examples accordingly.
+iOS platforms, such as the iPhone and iPad, use ARM processors, some of which
+support NEON instructions.  Additional steps are required in order to build
+libmozjpeg for these platforms.
 
 Additional build requirements:
 
@@ -395,6 +393,45 @@ described above.  Otherwise, you may get a libtool error such as "unable to
 infer tagged configuration."
 
 
+Building libjpeg-turbo for Android
+----------------------------------
+
+Building libjpeg-turbo for Android platforms requires the Android NDK
+(https://developer.android.com/tools/sdk/ndk) and autotools.  The following is
+a general recipe script that can be modified for your specific needs.
+
+  # Set these variables to suit your needs
+  NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/ndk}
+  BUILD_PLATFORM={the platform name for the NDK package you installed--
+    for example, "windows-x86" or "linux-x86_64"}
+  TOOLCHAIN_VERSION={"4.6", "4.8", etc.  This corresponds to a toolchain
+    directory under ${NDK_PATH}/toolchains/.}
+  ANDROID_VERSION={The minimum version of Android to support-- for example,
+    "9", "19", etc.}
+
+  HOST=arm-linux-androideabi
+  TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+  SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
+  ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
+  ANDROID_CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
+    -fstrict-aliasing --sysroot=${SYSROOT}"
+  export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
+  export AR=${TOOLCHAIN}/bin/${HOST}-ar
+  export AS=${TOOLCHAIN}/bin/${HOST}-as
+  export NM=${TOOLCHAIN}/bin/${HOST}-nm
+  export CC=${TOOLCHAIN}/bin/${HOST}-gcc
+  export LD=${TOOLCHAIN}/bin/${HOST}-ld
+  export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
+  export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
+  export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
+  cd {build_directory}
+  sh {source_directory}/configure --host=${HOST} \
+    CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3" \
+    CPPFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS}" \
+    LDFLAGS="${ANDROID_CFLAGS}" --with-simd ${1+"$@"}
+  make
+
+
 *******************************************************************************
 **     Building on Windows (Visual C++ or MinGW)
 *******************************************************************************
@@ -404,7 +441,7 @@ infer tagged configuration."
 Build Requirements
 ==================
 
--- CMake (http://www.cmake.org) v2.6 or later
+-- CMake (http://www.cmake.org) v2.8.8 or later
 
 -- Microsoft Visual C++ 2005 or later
 
@@ -416,8 +453,9 @@ Build Requirements
    The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
    everything necessary to build libmozjpeg.
 
-   * For 32-bit builds, you can also use Microsoft Visual C++ Express
-     Edition.  Visual C++ Express Edition is a free download.
+   * You can also use Microsoft Visual Studio Express Edition, which is a free
+     download.  (NOTE: versions prior to 2012 can only be used to build 32-bit
+     code.)
    * If you intend to build libmozjpeg from the command line, then add the
      appropriate compiler and SDK directories to the INCLUDE, LIB, and PATH
      environment variables.  This is generally accomplished by executing
@@ -431,7 +469,11 @@ Build Requirements
 
 -- MinGW
 
-   GCC v4.1 or later recommended for best performance
+   MinGW-builds (http://sourceforge.net/projects/mingwbuilds/) or
+   tdm-gcc (http://tdm-gcc.tdragon.net/) recommended if building on a Windows
+   machine.  Both distributions install a Start Menu link that can be used to
+   launch a command prompt with the appropriate compiler paths automatically
+   set.
 
 -- NASM (http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
    a 64-bit build)
@@ -496,7 +538,12 @@ Choose the appropriate CMake generator option for your version of Visual Studio
 instance:
 
   cd {build_directory}
-  cmake -G "Visual Studio 9 2008" {source_directory}
+  cmake -G "Visual Studio 10" {source_directory}
+
+NOTE:  Add "Win64" to the generator name (for example, "Visual Studio 10
+Win64") to build a 64-bit version of libjpeg-turbo.  Recent versions of CMake
+no longer document that.  A separate build directory must be used for 32-bit
+and 64-bit builds.
 
 You can then open ALL_BUILD.vcproj in Visual Studio and build one of the
 configurations in that project ("Debug", "Release", etc.) to generate a full
@@ -525,9 +572,12 @@ depending on whether libjpeg v6b (default), v7, or v8 emulation is enabled.
 MinGW
 -----
 
+NOTE: This assumes that you are building on a Windows machine.  If you are
+cross-compiling on a Linux/Unix machine, then see "Build Recipes" below.
+
   cd {build_directory}
-  cmake -G "MSYS Makefiles" {source_directory}
-  make
+  cmake -G "MinGW Makefiles" {source_directory}
+  mingw32-make
 
 This will generate the following files under {build_directory}
 
@@ -636,8 +686,8 @@ Build Recipes
   cd {build_directory}
   CC=/usr/bin/x86_64-w64-mingw32-gcc \
     cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
-    -DCMAKE_AR=/usr/bin/x86_64-w64-mingw32-ar \
-    -DCMAKE_RANLIB=/usr/bin/x86_64-w64-mingw32-ranlib {source_directory}
+    -DCMAKE_RC_COMPILER=/usr/bin/x86_64-w64-mingw32-windres.exe \
+    {source_directory}
   make
 
 This produces a 64-bit build of libmozjpeg that does not depend on
@@ -651,28 +701,13 @@ mingw64-x86_64-gcc-g++ packages (and their dependencies) must be installed.
   cd {build_directory}
   CC=/usr/bin/i686-w64-mingw32-gcc \
     cmake -G "Unix Makefiles" -DCMAKE_SYSTEM_NAME=Windows \
-    -DDCMAKE_AR=/usr/bin/i686-w64-mingw32-ar \
-    -DCMAKE_RANLIB=/usr/bin/i686-w64-mingw32-ranlib {source_directory}
+    -DCMAKE_RC_COMPILER=/usr/bin/i686-w64-mingw32-windres.exe \
+    {source_directory}
   make
 
 This produces a 32-bit build of libmozjpeg that does not depend on
 cygwin1.dll or other Cygwin DLL's.  The mingw64-i686-gcc-core and
 mingw64-i686-gcc-g++ packages (and their dependencies) must be installed.
-
-
-MinGW-w64 Build on Windows
---------------------------
-
-This produces a 64-bit build of libmozjpeg using the "native" MinGW-w64
-toolchain (which is faster than the Cygwin version):
-
-  cd {build_directory}
-  CC={mingw-w64_binary_path}/x86_64-w64-mingw32-gcc \
-    cmake -G "MSYS Makefiles" \
-    -DCMAKE_AR={mingw-w64_binary_path}/x86_64-w64-mingw32-ar \
-    -DCMAKE_RANLIB={mingw-w64_binary_path}/x86_64-w64-mingw32-ranlib \
-    {source_directory}
-  make
 
 
 MinGW Build on Linux

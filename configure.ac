@@ -9,9 +9,6 @@ AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)])
 AC_PREFIX_DEFAULT(/opt/libmozjpeg)
 
-# Always build with prototypes
-AC_DEFINE([HAVE_PROTOTYPES], 1, [Define if your compiler supports prototypes])
-
 # Checks for programs.
 SAVED_CFLAGS=${CFLAGS}
 SAVED_CPPFLAGS=${CPPFLAGS}
@@ -98,9 +95,9 @@ AC_CHECK_LIB([m],[pow])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
+AC_CHECK_HEADERS([stddef.h stdlib.h locale.h string.h])
 AC_CHECK_HEADER([sys/types.h],
-  AC_DEFINE([NEED_SYS_TYPES_H], 1, [Define if you have sys/types.h]))
+  AC_DEFINE([NEED_SYS_TYPES_H], 1, [Define if you need to include <sys/types.h> to get size_t.]))
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -132,24 +129,15 @@ AC_TRY_RUN(
      exit(is_shifting_signed(-0x7F7E80B1L));
    }],
   [AC_MSG_RESULT(no)
-   AC_DEFINE([RIGHT_SHIFT_IS_UNSIGNED], 1, [Define if shift is unsigned])],
+   AC_DEFINE([RIGHT_SHIFT_IS_UNSIGNED], 1,
+     [Define if your (broken) compiler shifts signed values as if they were unsigned.])],
   [AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(Assuming that right shift is signed on target machine.)])
-
-# test whether global names are unique to at least 15 chars
-AC_MSG_CHECKING([for short external names])
-AC_TRY_LINK(
-  [int possibly_duplicate_function () { return 0; }
-   int possibly_dupli_function () { return 1; }], [ ],
-  [AC_MSG_RESULT(ok)],
-  [AC_MSG_RESULT(short)
-   AC_DEFINE([NEED_SHORT_EXTERNAL_NAMES], 1,
-     [Define if you need short function names])])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memset memcpy], [],
   [AC_DEFINE([NEED_BSD_STRINGS], 1,
-     [Define if you have BSD-like bzero and bcopy])])
+     [Define if you have BSD-like bzero and bcopy in <strings.h> rather than memset/memcpy in <string.h>.])])
 
 AC_MSG_CHECKING([libjpeg API version])
 AC_ARG_VAR(JPEG_LIB_VERSION, [libjpeg API version (62, 70, or 80)])
@@ -266,7 +254,7 @@ AC_SUBST(VERSION_SCRIPT_FLAG)
 # Check for non-broken inline under various spellings
 AC_MSG_CHECKING(for inline)
 ljt_cv_inline=""
-AC_TRY_COMPILE(, [} __attribute__((always_inline)) int foo() { return 0; }
+AC_TRY_COMPILE(, [} inline __attribute__((always_inline)) int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="inline __attribute__((always_inline))",
 AC_TRY_COMPILE(, [} __inline__ int foo() { return 0; }
 int bar() { return foo();], ljt_cv_inline="__inline__",
@@ -454,12 +442,12 @@ if test "x${with_simd}" != "xno"; then
         fi
       fi
       ;;
-    mipsel*)
-      AC_MSG_RESULT([yes (mipsel)])
+    mips*)
+      AC_MSG_RESULT([yes (mips)])
       AC_MSG_CHECKING([if the assembler is GNU-compatible and can be used])
-      AC_CHECK_COMPATIBLE_MIPSEL_ASSEMBLER_IFELSE(
+      AC_CHECK_COMPATIBLE_MIPS_ASSEMBLER_IFELSE(
         [AC_MSG_RESULT([yes])
-         simd_arch=mipsel],
+         simd_arch=mips],
         [AC_MSG_RESULT([no])
          with_simd=no])
       if test "x${with_simd}" = "xno"; then
@@ -494,7 +482,7 @@ AM_CONDITIONAL([SIMD_I386], [test "x$simd_arch" = "xi386"])
 AM_CONDITIONAL([SIMD_X86_64], [test "x$simd_arch" = "xx86_64"])
 AM_CONDITIONAL([SIMD_ARM], [test "x$simd_arch" = "xarm"])
 AM_CONDITIONAL([SIMD_ARM_64], [test "x$simd_arch" = "xaarch64"])
-AM_CONDITIONAL([SIMD_MIPSEL], [test "x$simd_arch" = "xmipsel"])
+AM_CONDITIONAL([SIMD_MIPS], [test "x$simd_arch" = "xmips"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 AM_CONDITIONAL([WITH_TURBOJPEG], [test "x$with_turbojpeg" != "xno"])
 
@@ -519,14 +507,16 @@ AC_SUBST(RPMARCH)
 AC_SUBST(RPM_CONFIG_ARGS)
 AC_SUBST(DEBARCH)
 AC_SUBST(BUILD)
-AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [Build number])
+AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [libjpeg-turbo build number])
 
-# jconfig.h is the file we use, but we have another before that to
-# fool autoheader. the reason is that we include this header in our
-# API headers, which can screw things up for users of the lib.
-# jconfig.h is a minimal version that allows this package to be built
+# NOTE: autoheader automatically modifies the input file of the first
+# invocation of AC_CONFIG_HEADERS, so we put config.h first to prevent
+# jconfig.h.in from being clobbered.  config.h is used only internally, whereas
+# jconfig.h contains macros that are relevant to external programs (macros that
+# specify which features were built into the library.)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
+AC_CONFIG_HEADERS([jconfigint.h])
 AC_CONFIG_FILES([pkgscripts/libmozjpeg.spec.tmpl:release/libmozjpeg.spec.in])
 AC_CONFIG_FILES([pkgscripts/makecygwinpkg.tmpl:release/makecygwinpkg.in])
 AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])

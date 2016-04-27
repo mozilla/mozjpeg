@@ -1,7 +1,7 @@
 /*
  * MIPS DSPr2 optimizations for libjpeg-turbo
  *
- * Copyright (C) 2013, MIPS Technologies, Inc., California.
+ * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * All rights reserved.
  * Authors:  Teodora Novkovic (teodora.novkovic@imgtec.com)
  *           Darko Laus       (darko.laus@imgtec.com)
@@ -23,6 +23,110 @@
  */
 
 #include "jsimd_mips_dspr2_asm.h"
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_c_null_convert_mips_dspr2)
+/*
+ * a0     - cinfo->image_width
+ * a1     - input_buf
+ * a2     - output_buf
+ * a3     - output_row
+ * 16(sp) - num_rows
+ * 20(sp) - cinfo->num_components
+ *
+ * Null conversion for compression
+ */
+
+    SAVE_REGS_ON_STACK 8, s0, s1
+
+    lw        t9, 24(sp)   // t9 = num_rows
+    lw        s0, 28(sp)   // s0 = cinfo->num_components
+    andi      t0, a0, 3    // t0 = cinfo->image_width & 3
+    beqz      t0, 4f       // no residual
+     nop
+0:
+    addiu     t9, t9, -1
+    bltz      t9, 7f
+     li       t1, 0
+1:
+    sll       t3, t1, 2
+    lwx       t5, t3(a2)   // t5 = outptr = output_buf[ci]
+    lw        t2, 0(a1)    // t2 = inptr = *input_buf
+    sll       t4, a3, 2
+    lwx       t5, t4(t5)   // t5 = outptr = output_buf[ci][output_row]
+    addu      t2, t2, t1
+    addu      s1, t5, a0
+    addu      t6, t5, t0
+2:
+    lbu       t3, 0(t2)
+    addiu     t5, t5, 1
+    sb        t3, -1(t5)
+    bne       t6, t5, 2b
+     addu     t2, t2, s0
+3:
+    lbu       t3, 0(t2)
+    addu      t4, t2, s0
+    addu      t7, t4, s0
+    addu      t8, t7, s0
+    addu      t2, t8, s0
+    lbu       t4, 0(t4)
+    lbu       t7, 0(t7)
+    lbu       t8, 0(t8)
+    addiu     t5, t5, 4
+    sb        t3, -4(t5)
+    sb        t4, -3(t5)
+    sb        t7, -2(t5)
+    bne       s1, t5, 3b
+     sb       t8, -1(t5)
+    addiu     t1, t1, 1
+    bne       t1, s0, 1b
+     nop
+    addiu     a1, a1, 4
+    bgez      t9, 0b
+     addiu    a3, a3, 1
+    b         7f
+     nop
+4:
+    addiu     t9, t9, -1
+    bltz      t9, 7f
+     li       t1, 0
+5:
+    sll       t3, t1, 2
+    lwx       t5, t3(a2)   // t5 = outptr = output_buf[ci]
+    lw        t2, 0(a1)    // t2 = inptr = *input_buf
+    sll       t4, a3, 2
+    lwx       t5, t4(t5)   // t5 = outptr = output_buf[ci][output_row]
+    addu      t2, t2, t1
+    addu      s1, t5, a0
+    addu      t6, t5, t0
+6:
+    lbu       t3, 0(t2)
+    addu      t4, t2, s0
+    addu      t7, t4, s0
+    addu      t8, t7, s0
+    addu      t2, t8, s0
+    lbu       t4, 0(t4)
+    lbu       t7, 0(t7)
+    lbu       t8, 0(t8)
+    addiu     t5, t5, 4
+    sb        t3, -4(t5)
+    sb        t4, -3(t5)
+    sb        t7, -2(t5)
+    bne       s1, t5, 6b
+     sb       t8, -1(t5)
+    addiu     t1, t1, 1
+    bne       t1, s0, 5b
+     nop
+    addiu     a1, a1, 4
+    bgez      t9, 4b
+     addiu    a3, a3, 1
+7:
+    RESTORE_REGS_FROM_STACK 8, s0, s1
+
+    j         ra
+     nop
+
+END(jsimd_c_null_convert_mips_dspr2)
 
 /*****************************************************************************/
 /*
@@ -377,6 +481,393 @@ GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxbgr, 4, 3, 2, 1
 GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3
 /*****************************************************************************/
 /*
+ * jsimd_h2v2_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extrgb_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extrgbx_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extbgrx_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extxbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v2_extxrgb_merged_upsample_mips_dspr2
+ *
+ * Merged h2v2 upsample routines
+ */
+.macro GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 colorid,    \
+                                                pixel_size, \
+                                                r1_offs,    \
+                                                g1_offs,    \
+                                                b1_offs,    \
+                                                a1_offs,    \
+                                                r2_offs,    \
+                                                g2_offs,    \
+                                                b2_offs,    \
+                                                a2_offs
+
+.macro STORE_H2V2_2_PIXELS  scratch0 \
+                            scratch1 \
+                            scratch2 \
+                            scratch3 \
+                            scratch4 \
+                            scratch5 \
+                            outptr
+    sb       \scratch0, \r1_offs(\outptr)
+    sb       \scratch1, \g1_offs(\outptr)
+    sb       \scratch2, \b1_offs(\outptr)
+    sb       \scratch3, \r2_offs(\outptr)
+    sb       \scratch4, \g2_offs(\outptr)
+    sb       \scratch5, \b2_offs(\outptr)
+.if (\pixel_size == 8)
+    li       \scratch0, 0xFF
+    sb       \scratch0, \a1_offs(\outptr)
+    sb       \scratch0, \a2_offs(\outptr)
+.endif
+    addiu    \outptr, \pixel_size
+.endm
+
+.macro STORE_H2V2_1_PIXEL  scratch0 \
+                           scratch1 \
+                           scratch2 \
+                           outptr
+    sb    \scratch0, \r1_offs(\outptr)
+    sb    \scratch1, \g1_offs(\outptr)
+    sb    \scratch2, \b1_offs(\outptr)
+
+.if (\pixel_size == 8)
+    li    t0, 0xFF
+    sb    t0, \a1_offs(\outptr)
+.endif
+.endm
+
+LEAF_MIPS_DSPR2(jsimd_h2v2_\colorid\()_merged_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->output_width
+ * a1     - input_buf
+ * a2     - in_row_group_ctr
+ * a3     - output_buf
+ * 16(sp) - cinfo->sample_range_limit
+ */
+
+    SAVE_REGS_ON_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    lw           t9, 56(sp)        // cinfo->sample_range_limit
+    lw           v0, 0(a1)
+    lw           v1, 4(a1)
+    lw           t0, 8(a1)
+    sll          t1, a2, 3
+    addiu        t2, t1, 4
+    sll          t3, a2, 2
+    lw           t4, 0(a3)         // t4 = output_buf[0]
+    lwx          t1, t1(v0)        // t1 = input_buf[0][in_row_group_ctr*2]
+    lwx          t2, t2(v0)        // t2 = input_buf[0][in_row_group_ctr*2 + 1]
+    lwx          t5, t3(v1)        // t5 = input_buf[1][in_row_group_ctr]
+    lwx          t6, t3(t0)        // t6 = input_buf[2][in_row_group_ctr]
+    lw           t7, 4(a3)         // t7 = output_buf[1]
+    li           s1, 0xe6ea
+    addiu        t8, s1, 0x7fff    // t8 = 0x166e9 [FIX(1.40200)]
+    addiu        s0, t8, 0x5eb9    // s0 = 0x1c5a2 [FIX(1.77200)]
+    addiu        s1, zero, 0xa7e6  // s4 = 0xffffa7e6 [-FIX(0.34414)]
+    xori         s2, s1, 0xeec8    // s3 = 0xffff492e [-FIX(0.71414)]
+    srl          t3, a0, 1
+    blez         t3, 2f
+     addu        t0, t5, t3        // t0 = end address
+ 1:
+    lbu          t3, 0(t5)
+    lbu          s3, 0(t6)
+    addiu        t5, t5, 1
+    addiu        t3, t3, -128      // (cb - 128)
+    addiu        s3, s3, -128      // (cr - 128)
+    mult         $ac1, s1, t3
+    madd         $ac1, s2, s3
+    sll          s3, s3, 15
+    sll          t3, t3, 15
+    mulq_rs.w    s4, t8, s3        // s4 = (C1 * cr + ONE_HALF)>> SCALEBITS
+    extr_r.w     s5, $ac1, 16
+    mulq_rs.w    s6, s0, t3        // s6 = (C2 * cb + ONE_HALF)>> SCALEBITS
+    lbu          v0, 0(t1)
+    addiu        t6, t6, 1
+    addiu        t1, t1, 2
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          AT, 0(t3)
+    lbu          s7, 0(s3)
+    lbu          ra, 0(v1)
+    lbu          v0, -1(t1)
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+    lbu          v0, 0(t2)
+
+    STORE_H2V2_2_PIXELS AT, s7, ra, t3, s3, v1, t4
+
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          AT, 0(t3)
+    lbu          s7, 0(s3)
+    lbu          ra, 0(v1)
+    lbu          v0, 1(t2)
+    addiu        t2, t2, 2
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+
+    STORE_H2V2_2_PIXELS AT, s7, ra, t3, s3, v1, t7
+
+    bne          t0, t5, 1b
+     nop
+2:
+    andi         t0, a0, 1
+    beqz         t0, 4f
+     lbu          t3, 0(t5)
+    lbu          s3, 0(t6)
+    addiu        t3, t3, -128      // (cb - 128)
+    addiu        s3, s3, -128      // (cr - 128)
+    mult         $ac1, s1, t3
+    madd         $ac1, s2, s3
+    sll          s3, s3, 15
+    sll          t3, t3, 15
+    lbu          v0, 0(t1)
+    extr_r.w     s5, $ac1, 16
+    mulq_rs.w    s4, t8, s3        // s4 = (C1 * cr + ONE_HALF)>> SCALEBITS
+    mulq_rs.w    s6, s0, t3        // s6 = (C2 * cb + ONE_HALF)>> SCALEBITS
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+    lbu          v0, 0(t2)
+
+    STORE_H2V2_1_PIXEL t3, s3, v1, t4
+
+    addu         t3, v0, s4        // y+cred
+    addu         s3, v0, s5        // y+cgreen
+    addu         v1, v0, s6        // y+cblue
+    addu         t3, t9, t3        // y+cred
+    addu         s3, t9, s3        // y+cgreen
+    addu         v1, t9, v1        // y+cblue
+    lbu          t3, 0(t3)
+    lbu          s3, 0(s3)
+    lbu          v1, 0(v1)
+
+    STORE_H2V2_1_PIXEL t3, s3, v1, t7
+4:
+    RESTORE_REGS_FROM_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    j           ra
+     nop
+
+END(jsimd_h2v2_\colorid\()_merged_upsample_mips_dspr2)
+
+.purgem STORE_H2V2_1_PIXEL
+.purgem STORE_H2V2_2_PIXELS
+.endm
+
+/*-----------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
+GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
+/*****************************************************************************/
+/*
+ * jsimd_h2v1_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extrgb_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extrgbx_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extbgrx_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extxbgr_merged_upsample_mips_dspr2
+ * jsimd_h2v1_extxrgb_merged_upsample_mips_dspr2
+ *
+ * Merged h2v1 upsample routines
+ */
+
+.macro GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 colorid,    \
+                                                pixel_size, \
+                                                r1_offs,    \
+                                                g1_offs,    \
+                                                b1_offs,    \
+                                                a1_offs,    \
+                                                r2_offs,    \
+                                                g2_offs,    \
+                                                b2_offs,    \
+                                                a2_offs
+
+.macro STORE_H2V1_2_PIXELS  scratch0 \
+                            scratch1 \
+                            scratch2 \
+                            scratch3 \
+                            scratch4 \
+                            scratch5 \
+                            outptr
+    sb       \scratch0, \r1_offs(\outptr)
+    sb       \scratch1, \g1_offs(\outptr)
+    sb       \scratch2, \b1_offs(\outptr)
+    sb       \scratch3, \r2_offs(\outptr)
+    sb       \scratch4, \g2_offs(\outptr)
+    sb       \scratch5, \b2_offs(\outptr)
+.if (\pixel_size == 8)
+    li       t0, 0xFF
+    sb       t0, \a1_offs(\outptr)
+    sb       t0, \a2_offs(\outptr)
+.endif
+    addiu    \outptr, \pixel_size
+.endm
+
+.macro STORE_H2V1_1_PIXEL  scratch0 \
+                           scratch1 \
+                           scratch2 \
+                           outptr
+    sb    \scratch0, \r1_offs(\outptr)
+    sb    \scratch1, \g1_offs(\outptr)
+    sb    \scratch2, \b1_offs(\outptr)
+.if (\pixel_size == 8)
+    li    t0, 0xFF
+    sb    t0, \a1_offs(\outptr)
+.endif
+.endm
+
+LEAF_MIPS_DSPR2(jsimd_h2v1_\colorid\()_merged_upsample_mips_dspr2)
+/*
+ * a0     - cinfo->output_width
+ * a1     - input_buf
+ * a2     - in_row_group_ctr
+ * a3     - output_buf
+ * 16(sp) - range_limit
+ */
+
+    SAVE_REGS_ON_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    li           t0, 0xe6ea
+    lw           t1, 0(a1)         // t1 = input_buf[0]
+    lw           t2, 4(a1)         // t2 = input_buf[1]
+    lw           t3, 8(a1)         // t3 = input_buf[2]
+    lw           t8, 56(sp)        // t8 = range_limit
+    addiu        s1, t0, 0x7fff    // s1 = 0x166e9 [FIX(1.40200)]
+    addiu        s2, s1, 0x5eb9    // s2 = 0x1c5a2 [FIX(1.77200)]
+    addiu        s0, t0, 0x9916    // s0 = 0x8000
+    addiu        s4, zero, 0xa7e6  // s4 = 0xffffa7e6 [-FIX(0.34414)]
+    xori         s3, s4, 0xeec8    // s3 = 0xffff492e [-FIX(0.71414)]
+    srl          t0, a0, 1
+    sll          t4, a2, 2
+    lwx          s5, t4(t1)        // s5 = inptr0
+    lwx          s6, t4(t2)        // s6 = inptr1
+    lwx          s7, t4(t3)        // s7 = inptr2
+    lw           t7, 0(a3)         // t7 = outptr
+    blez         t0, 2f
+     addu        t9, s6, t0        // t9 = end address
+1:
+    lbu          t2, 0(s6)         // t2 = cb
+    lbu          t0, 0(s7)         // t0 = cr
+    lbu          t1, 0(s5)         // t1 = y
+    addiu        t2, t2, -128      // t2 = cb - 128
+    addiu        t0, t0, -128      // t0 = cr - 128
+    mult         $ac1, s4, t2
+    madd         $ac1, s3, t0
+    sll          t0, t0, 15
+    sll          t2, t2, 15
+    mulq_rs.w    t0, s1, t0        // t0 = (C1*cr + ONE_HALF)>> SCALEBITS
+    extr_r.w     t5, $ac1, 16
+    mulq_rs.w    t6, s2, t2        // t6 = (C2*cb + ONE_HALF)>> SCALEBITS
+    addiu        s7, s7, 1
+    addiu        s6, s6, 1
+    addu         t2, t1, t0        // t2 = y + cred
+    addu         t3, t1, t5        // t3 = y + cgreen
+    addu         t4, t1, t6        // t4 = y + cblue
+    addu         t2, t8, t2
+    addu         t3, t8, t3
+    addu         t4, t8, t4
+    lbu          t1, 1(s5)
+    lbu          v0, 0(t2)
+    lbu          v1, 0(t3)
+    lbu          ra, 0(t4)
+    addu         t2, t1, t0
+    addu         t3, t1, t5
+    addu         t4, t1, t6
+    addu         t2, t8, t2
+    addu         t3, t8, t3
+    addu         t4, t8, t4
+    lbu          t2, 0(t2)
+    lbu          t3, 0(t3)
+    lbu          t4, 0(t4)
+
+    STORE_H2V1_2_PIXELS v0, v1, ra, t2, t3, t4, t7
+
+    bne          t9, s6, 1b
+     addiu       s5, s5, 2
+2:
+    andi         t0, a0, 1
+    beqz         t0, 4f
+     nop
+3:
+    lbu          t2, 0(s6)
+    lbu          t0, 0(s7)
+    lbu          t1, 0(s5)
+    addiu        t2, t2, -128      //(cb - 128)
+    addiu        t0, t0, -128      //(cr - 128)
+    mul          t3, s4, t2
+    mul          t4, s3, t0
+    sll          t0, t0, 15
+    sll          t2, t2, 15
+    mulq_rs.w    t0, s1, t0       // (C1*cr + ONE_HALF)>> SCALEBITS
+    mulq_rs.w    t6, s2, t2       // (C2*cb + ONE_HALF)>> SCALEBITS
+    addu         t3, t3, s0
+    addu         t3, t4, t3
+    sra          t5, t3, 16       // (C4*cb + ONE_HALF + C3*cr)>> SCALEBITS
+    addu         t2, t1, t0       // y + cred
+    addu         t3, t1, t5       // y + cgreen
+    addu         t4, t1, t6       // y + cblue
+    addu         t2, t8, t2
+    addu         t3, t8, t3
+    addu         t4, t8, t4
+    lbu          t2, 0(t2)
+    lbu          t3, 0(t3)
+    lbu          t4, 0(t4)
+
+    STORE_H2V1_1_PIXEL t2, t3, t4, t7
+4:
+    RESTORE_REGS_FROM_STACK 40, s0, s1, s2, s3, s4, s5, s6, s7, ra
+
+    j            ra
+     nop
+
+END(jsimd_h2v1_\colorid\()_merged_upsample_mips_dspr2)
+
+.purgem STORE_H2V1_1_PIXEL
+.purgem STORE_H2V1_2_PIXELS
+.endm
+
+/*-----------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
+GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
+/*****************************************************************************/
+/*
  * jsimd_h2v2_fancy_upsample_mips_dspr2
  *
  * Fancy processing for the common case of 2:1 horizontal and 2:1 vertical.
@@ -522,8 +1013,8 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
     beqz           a0, 3f
      sll           t0, a0, 2
     lw             s1, 0(a3)
-    addu           s0, s1, t0
     li             s3, 0x10001
+    addu           s0, s1, t0
 0:
     addiu          t8, a1, -2
     srl            t9, t8, 2
@@ -574,8 +1065,9 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
      addiu         t7, 4
 11:
     andi           t8, 3
-    beqz           t8, 3f
+    beqz           t8, 22f
      addiu         t7, 1
+
 2:
     lbu            t0, 0(t7)
     addiu          t7, 1
@@ -595,6 +1087,7 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
     bgtz           t8, 2b
      addiu         s2, 2
 
+22:
     lbu            t0, 0(t7)
     lbu            t2, -1(t7)
     sll            t1, t0, 1
@@ -821,6 +1314,394 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_downsample_mips_dspr2)
      nop
 END(jsimd_h2v2_downsample_mips_dspr2)
 /*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_h2v2_smooth_downsample_mips_dspr2)
+/*
+ * a0     - input_data
+ * a1     - output_data
+ * a2     - compptr->v_samp_factor
+ * a3     - cinfo->max_v_samp_factor
+ * 16(sp) - cinfo->smoothing_factor
+ * 20(sp) - compptr->width_in_blocks
+ * 24(sp) - cinfo->image_width
+ */
+
+    .set at
+
+    SAVE_REGS_ON_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    lw          s7, 52(sp)      // compptr->width_in_blocks
+    lw          s0, 56(sp)      // cinfo->image_width
+    lw          s6, 48(sp)      // cinfo->smoothing_factor
+    sll         s7, 3           // output_cols = width_in_blocks * DCTSIZE
+    sll         v0, s7, 1
+    subu        v0, v0, s0
+    blez        v0, 2f
+    move        v1, zero
+    addiu       t0, a3, 2       // t0 = cinfo->max_v_samp_factor + 2
+0:
+    addiu       t1, a0, -4
+    sll         t2, v1, 2
+    lwx         t1, t2(t1)
+    move        t3, v0
+    addu        t1, t1, s0
+    lbu         t2, -1(t1)
+1:
+    addiu       t3, t3, -1
+    sb          t2, 0(t1)
+    bgtz        t3, 1b
+    addiu       t1, t1, 1
+    addiu       v1, v1, 1
+    bne         v1, t0, 0b
+    nop
+2:
+    li          v0, 80
+    mul         v0, s6, v0
+    li          v1, 16384
+    move        t4, zero
+    move        t5, zero
+    subu        t6, v1, v0      // t6 = 16384 - tmp_smoot_f * 80
+    sll         t7, s6, 4       // t7 = tmp_smoot_f * 16
+3:
+/* Special case for first column: pretend column -1 is same as column 0 */
+    sll         v0, t4, 2
+    lwx         t8, v0(a1)      //  outptr = output_data[outrow]
+    sll         v1, t5, 2
+    addiu       t9, v1, 4
+    addiu       s0, v1, -4
+    addiu       s1, v1, 8
+    lwx         s2, v1(a0)      // inptr0 = input_data[inrow]
+    lwx         t9, t9(a0)      // inptr1 = input_data[inrow+1]
+    lwx         s0, s0(a0)      // above_ptr = input_data[inrow-1]
+    lwx         s1, s1(a0)      // below_ptr = input_data[inrow+2]
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, 0(s2)
+    lbu         v1, 2(s2)
+    lbu         t0, 0(t9)
+    lbu         t1, 2(t9)
+    addu        v0, v0, v1
+    mult        $ac1,t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 2(s0)
+    addu        t0, t0, v0
+    lbu         t3, 2(s1)
+    addu        s3, t0, s3
+    lbu         v0, 0(s0)
+    lbu         t0, 0(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    addu        t0, t0, v0
+    addu        s3, t0, s3
+    madd        $ac1,s3, t7
+    extr_r.w    v0, $ac1, 16
+    addiu       t8, t8, 1
+    addiu       s2, s2, 2
+    addiu       t9, t9, 2
+    addiu       s0, s0, 2
+    addiu       s1, s1, 2
+    sb          v0, -1(t8)
+    addiu       s4, s7, -2
+    and         s4, s4, 3
+    addu        s5, s4, t8      //end adress
+4:
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, -1(s2)
+    lbu         v1, 2(s2)
+    lbu         t0, -1(t9)
+    lbu         t1, 2(t9)
+    addu        v0, v0, v1
+    mult        $ac1, t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 2(s0)
+    addu        t0, t0, v0
+    lbu         t3, 2(s1)
+    addu        s3, t0, s3
+    lbu         v0, -1(s0)
+    lbu         t0, -1(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    addu        t0, t0, v0
+    addu        s3, t0, s3
+    madd        $ac1, s3, t7
+    extr_r.w    t2, $ac1, 16
+    addiu       t8, t8, 1
+    addiu       s2, s2, 2
+    addiu       t9, t9, 2
+    addiu       s0, s0, 2
+    sb          t2, -1(t8)
+    bne         s5, t8, 4b
+    addiu       s1, s1, 2
+    addiu       s5, s7, -2
+    subu        s5, s5, s4
+    addu        s5, s5, t8      //end adress
+5:
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, -1(s2)
+    lbu         v1, 2(s2)
+    lbu         t0, -1(t9)
+    lbu         t1, 2(t9)
+    addu        v0, v0, v1
+    mult        $ac1, t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 2(s0)
+    addu        t0, t0, v0
+    lbu         t3, 2(s1)
+    addu        s3, t0, s3
+    lbu         v0, -1(s0)
+    lbu         t0, -1(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    lh          v1, 2(t9)
+    addu        t0, t0, v0
+    lh          v0, 2(s2)
+    addu        s3, t0, s3
+    lh          t0, 2(s0)
+    lh          t1, 2(s1)
+    madd        $ac1, s3, t7
+    extr_r.w    t2, $ac1, 16
+    ins         t0, t1, 16, 16
+    ins         v0, v1, 16, 16
+    raddu.w.qb  s3, t0
+    lbu         v1, 4(s2)
+    lbu         t0, 1(t9)
+    lbu         t1, 4(t9)
+    sb          t2, 0(t8)
+    raddu.w.qb  t3, v0
+    lbu         v0, 1(s2)
+    addu        t0, t0, t1
+    mult        $ac1, t3, t6
+    addu        v0, v0, v1
+    lbu         t2, 4(s0)
+    addu        t0, t0, v0
+    lbu         v0, 1(s0)
+    addu        s3, t0, s3
+    lbu         t0, 1(s1)
+    lbu         t3, 4(s1)
+    addu        v0, v0, t2
+    sll         s3, s3, 1
+    addu        t0, t0, t3
+    lh          v1, 4(t9)
+    addu        t0, t0, v0
+    lh          v0, 4(s2)
+    addu        s3, t0, s3
+    lh          t0, 4(s0)
+    lh          t1, 4(s1)
+    madd        $ac1, s3, t7
+    extr_r.w    t2, $ac1, 16
+    ins         t0, t1, 16, 16
+    ins         v0, v1, 16, 16
+    raddu.w.qb  s3, t0
+    lbu         v1, 6(s2)
+    lbu         t0, 3(t9)
+    lbu         t1, 6(t9)
+    sb          t2, 1(t8)
+    raddu.w.qb  t3, v0
+    lbu         v0, 3(s2)
+    addu        t0, t0,t1
+    mult        $ac1, t3, t6
+    addu        v0, v0, v1
+    lbu         t2, 6(s0)
+    addu        t0, t0, v0
+    lbu         v0, 3(s0)
+    addu        s3, t0, s3
+    lbu         t0, 3(s1)
+    lbu         t3, 6(s1)
+    addu        v0, v0, t2
+    sll         s3, s3, 1
+    addu        t0, t0, t3
+    lh          v1, 6(t9)
+    addu        t0, t0, v0
+    lh          v0, 6(s2)
+    addu        s3, t0, s3
+    lh          t0, 6(s0)
+    lh          t1, 6(s1)
+    madd        $ac1, s3, t7
+    extr_r.w    t3, $ac1, 16
+    ins         t0, t1, 16, 16
+    ins         v0, v1, 16, 16
+    raddu.w.qb  s3, t0
+    lbu         v1, 8(s2)
+    lbu         t0, 5(t9)
+    lbu         t1, 8(t9)
+    sb          t3, 2(t8)
+    raddu.w.qb  t2, v0
+    lbu         v0, 5(s2)
+    addu        t0, t0, t1
+    mult        $ac1, t2, t6
+    addu        v0, v0, v1
+    lbu         t2, 8(s0)
+    addu        t0, t0, v0
+    lbu         v0, 5(s0)
+    addu        s3, t0, s3
+    lbu         t0, 5(s1)
+    lbu         t3, 8(s1)
+    addu        v0, v0, t2
+    sll         s3, s3, 1
+    addu        t0, t0, t3
+    addiu       t8, t8, 4
+    addu        t0, t0, v0
+    addiu       s2, s2, 8
+    addu        s3, t0, s3
+    addiu       t9, t9, 8
+    madd        $ac1, s3, t7
+    extr_r.w    t1, $ac1, 16
+    addiu       s0, s0, 8
+    addiu       s1, s1, 8
+    bne         s5, t8, 5b
+    sb          t1, -1(t8)
+/* Special case for last column */
+    lh          v0, 0(s2)
+    lh          v1, 0(t9)
+    lh          t0, 0(s0)
+    lh          t1, 0(s1)
+    ins         v0, v1, 16, 16
+    ins         t0, t1, 16, 16
+    raddu.w.qb  t2, v0
+    raddu.w.qb  s3, t0
+    lbu         v0, -1(s2)
+    lbu         v1, 1(s2)
+    lbu         t0, -1(t9)
+    lbu         t1, 1(t9)
+    addu        v0, v0, v1
+    mult        $ac1, t2, t6
+    addu        t0, t0, t1
+    lbu         t2, 1(s0)
+    addu        t0, t0, v0
+    lbu         t3, 1(s1)
+    addu        s3, t0, s3
+    lbu         v0, -1(s0)
+    lbu         t0, -1(s1)
+    sll         s3, s3, 1
+    addu        v0, v0, t2
+    addu        t0, t0, t3
+    addu        t0, t0, v0
+    addu        s3, t0, s3
+    madd        $ac1, s3, t7
+    extr_r.w    t0, $ac1, 16
+    addiu       t5, t5, 2
+    sb          t0, 0(t8)
+    addiu       t4, t4, 1
+    bne         t4, a2, 3b
+    addiu       t5, t5, 2
+
+    RESTORE_REGS_FROM_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    j           ra
+     nop
+
+END(jsimd_h2v2_smooth_downsample_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_int_upsample_mips_dspr2)
+/*
+ * a0     - upsample->h_expand[compptr->component_index]
+ * a1     - upsample->v_expand[compptr->component_index]
+ * a2     - input_data
+ * a3     - output_data_ptr
+ * 16(sp) - cinfo->output_width
+ * 20(sp) - cinfo->max_v_samp_factor
+ */
+    .set at
+
+    SAVE_REGS_ON_STACK 16, s0, s1, s2, s3
+
+    lw      s0, 0(a3)    // s0 = output_data
+    lw      s1, 32(sp)   // s1 = cinfo->output_width
+    lw      s2, 36(sp)   // s2 = cinfo->max_v_samp_factor
+    li      t6, 0        // t6 = inrow
+    beqz    s2, 10f
+     li     s3, 0        // s3 = outrow
+0:
+    addu    t0, a2, t6
+    addu    t7, s0, s3
+    lw      t3, 0(t0)    // t3 = inptr
+    lw      t8, 0(t7)    // t8 = outptr
+    beqz    s1, 4f
+     addu   t5, t8, s1   // t5 = outend
+1:
+    lb      t2, 0(t3)    // t2 = invalue = *inptr++
+    addiu   t3, 1
+    beqz    a0, 3f
+     move   t0, a0       // t0 = h_expand
+2:
+    sb      t2, 0(t8)
+    addiu   t0, -1
+    bgtz    t0, 2b
+     addiu  t8, 1
+3:
+    bgt     t5, t8, 1b
+     nop
+4:
+    addiu   t9, a1, -1   // t9 = v_expand - 1
+    blez    t9, 9f
+     nop
+5:
+    lw      t3, 0(s0)
+    lw      t4, 4(s0)
+    subu    t0, s1, 0xF
+    blez    t0, 7f
+     addu   t5, t3, s1   // t5 = end address
+    andi    t7, s1, 0xF  // t7 = residual
+    subu    t8, t5, t7
+6:
+    ulw     t0, 0(t3)
+    ulw     t1, 4(t3)
+    ulw     t2, 8(t3)
+    usw     t0, 0(t4)
+    ulw     t0, 12(t3)
+    usw     t1, 4(t4)
+    usw     t2, 8(t4)
+    usw     t0, 12(t4)
+    addiu   t3, 16
+    bne     t3, t8, 6b
+     addiu  t4, 16
+    beqz    t7, 8f
+     nop
+7:
+    lbu     t0, 0(t3)
+    sb      t0, 0(t4)
+    addiu   t3, 1
+    bne     t3, t5, 7b
+     addiu  t4, 1
+8:
+    addiu   t9, -1
+    bgtz    t9, 5b
+     addiu  s0, 8
+9:
+    addu    s3, s3, a1
+    bne     s3, s2, 0b
+     addiu  t6, 1
+10:
+    RESTORE_REGS_FROM_STACK 16, s0, s1, s2, s3
+
+    j       ra
+     nop
+END(jsimd_int_upsample_mips_dspr2)
+
+/*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
 /*
  * a0     - cinfo->max_v_samp_factor
@@ -963,6 +1844,286 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
     j       ra
      nop
 END(jsimd_h2v2_upsample_mips_dspr2)
+
+/*****************************************************************************/
+LEAF_MIPS_DSPR2(jsimd_idct_islow_mips_dspr2)
+/*
+ * a0     - coef_block
+ * a1     - compptr->dcttable
+ * a2     - output
+ * a3     - range_limit
+ */
+
+    SAVE_REGS_ON_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    addiu     sp, sp, -256
+    move      v0, sp
+    addiu     v1, zero, 8      // v1 = DCTSIZE = 8
+1:
+    lh        s4, 32(a0)       // s4 = inptr[16]
+    lh        s5, 64(a0)       // s5 = inptr[32]
+    lh        s6, 96(a0)       // s6 = inptr[48]
+    lh        t1, 112(a0)      // t1 = inptr[56]
+    lh        t7, 16(a0)       // t7 = inptr[8]
+    lh        t5, 80(a0)       // t5 = inptr[40]
+    lh        t3, 48(a0)       // t3 = inptr[24]
+    or        s4, s4, t1
+    or        s4, s4, t3
+    or        s4, s4, t5
+    or        s4, s4, t7
+    or        s4, s4, s5
+    or        s4, s4, s6
+    bnez      s4, 2f
+     addiu    v1, v1, -1
+    lh        s5, 0(a1)        // quantptr[DCTSIZE*0]
+    lh        s6, 0(a0)        // inptr[DCTSIZE*0]
+    mul       s5, s5, s6       // DEQUANTIZE(inptr[0], quantptr[0])
+    sll       s5, s5, 2
+    sw        s5, 0(v0)
+    sw        s5, 32(v0)
+    sw        s5, 64(v0)
+    sw        s5, 96(v0)
+    sw        s5, 128(v0)
+    sw        s5, 160(v0)
+    sw        s5, 192(v0)
+    b         3f
+     sw       s5, 224(v0)
+2:
+    lh        t0, 112(a1)
+    lh        t2, 48(a1)
+    lh        t4, 80(a1)
+    lh        t6, 16(a1)
+    mul       t0, t0, t1       // DEQUANTIZE(inptr[DCTSIZE*7],quant[DCTSIZE*7])
+    mul       t1, t2, t3       // DEQUANTIZE(inptr[DCTSIZE*3],quant[DCTSIZE*3])
+    mul       t2, t4, t5       // DEQUANTIZE(inptr[DCTSIZE*5],quant[DCTSIZE*5])
+    mul       t3, t6, t7       // DEQUANTIZE(inptr[DCTSIZE*1],quant[DCTSIZE*1])
+    lh        t4, 32(a1)
+    lh        t5, 32(a0)
+    lh        t6, 96(a1)
+    lh        t7, 96(a0)
+    addu      s0, t0, t1       // z3 = tmp0 + tmp2
+    addu      s1, t1, t2       // z2 = tmp1 + tmp2
+    addu      s2, t2, t3       // z4 = tmp1 + tmp3
+    addu      s3, s0, s2       // z3 + z4
+    addiu     t9, zero, 9633   // FIX_1_175875602
+    mul       s3, s3, t9       // z5 = MULTIPLY(z3 + z4, FIX_1_175875602)
+    addu      t8, t0, t3       // z1 = tmp0 + tmp3
+    addiu     t9, zero, 2446   // FIX_0_298631336
+    mul       t0, t0, t9       // tmp0 = MULTIPLY(tmp0, FIX_0_298631336)
+    addiu     t9, zero, 16819  // FIX_2_053119869
+    mul       t2, t2, t9       // tmp1 = MULTIPLY(tmp1, FIX_2_053119869)
+    addiu     t9, zero, 25172  // FIX_3_072711026
+    mul       t1, t1, t9       // tmp2 = MULTIPLY(tmp2, FIX_3_072711026)
+    addiu     t9, zero, 12299  // FIX_1_501321110
+    mul       t3, t3, t9       // tmp3 = MULTIPLY(tmp3, FIX_1_501321110)
+    addiu     t9, zero, 16069  // FIX_1_961570560
+    mul       s0, s0, t9       // -z3 = MULTIPLY(z3, FIX_1_961570560)
+    addiu     t9, zero, 3196   // FIX_0_390180644
+    mul       s2, s2, t9       // -z4 = MULTIPLY(z4, FIX_0_390180644)
+    addiu     t9, zero, 7373   // FIX_0_899976223
+    mul       t8, t8, t9       // -z1 = MULTIPLY(z1, FIX_0_899976223)
+    addiu     t9, zero, 20995  // FIX_2_562915447
+    mul       s1, s1, t9       // -z2 = MULTIPLY(z2, FIX_2_562915447)
+    subu      s0, s3, s0       // z3 += z5
+    addu      t0, t0, s0       // tmp0 += z3
+    addu      t1, t1, s0       // tmp2 += z3
+    subu      s2, s3, s2       // z4 += z5
+    addu      t2, t2, s2       // tmp1 += z4
+    addu      t3, t3, s2       // tmp3 += z4
+    subu      t0, t0, t8       // tmp0 += z1
+    subu      t1, t1, s1       // tmp2 += z2
+    subu      t2, t2, s1       // tmp1 += z2
+    subu      t3, t3, t8       // tmp3 += z1
+    mul       s0, t4, t5       // DEQUANTIZE(inptr[DCTSIZE*2],quant[DCTSIZE*2])
+    addiu     t9, zero, 6270   // FIX_0_765366865
+    mul       s1, t6, t7       // DEQUANTIZE(inptr[DCTSIZE*6],quant[DCTSIZE*6])
+    lh        t4, 0(a1)
+    lh        t5, 0(a0)
+    lh        t6, 64(a1)
+    lh        t7, 64(a0)
+    mul       s2, t9, s0       // MULTIPLY(z2, FIX_0_765366865)
+    mul       t5, t4, t5       // DEQUANTIZE(inptr[DCTSIZE*0],quant[DCTSIZE*0])
+    mul       t6, t6, t7       // DEQUANTIZE(inptr[DCTSIZE*4],quant[DCTSIZE*4])
+    addiu     t9, zero, 4433   // FIX_0_541196100
+    addu      s3, s0, s1       // z2 + z3
+    mul       s3, s3, t9       // z1 = MULTIPLY(z2 + z3, FIX_0_541196100)
+    addiu     t9, zero, 15137  // FIX_1_847759065
+    mul       t8, s1, t9       // MULTIPLY(z3, FIX_1_847759065)
+    addu      t4, t5, t6
+    subu      t5, t5, t6
+    sll       t4, t4, 13       // tmp0 = (z2 + z3) << CONST_BITS
+    sll       t5, t5, 13       // tmp1 = (z2 - z3) << CONST_BITS
+    addu      t7, s3, s2       // tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865)
+    subu      t6, s3, t8       // tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065)
+    addu      s0, t4, t7
+    subu      s1, t4, t7
+    addu      s2, t5, t6
+    subu      s3, t5, t6
+    addu      t4, s0, t3
+    subu      s0, s0, t3
+    addu      t3, s2, t1
+    subu      s2, s2, t1
+    addu      t1, s3, t2
+    subu      s3, s3, t2
+    addu      t2, s1, t0
+    subu      s1, s1, t0
+    shra_r.w  t4, t4, 11
+    shra_r.w  t3, t3, 11
+    shra_r.w  t1, t1, 11
+    shra_r.w  t2, t2, 11
+    shra_r.w  s1, s1, 11
+    shra_r.w  s3, s3, 11
+    shra_r.w  s2, s2, 11
+    shra_r.w  s0, s0, 11
+    sw        t4, 0(v0)
+    sw        t3, 32(v0)
+    sw        t1, 64(v0)
+    sw        t2, 96(v0)
+    sw        s1, 128(v0)
+    sw        s3, 160(v0)
+    sw        s2, 192(v0)
+    sw        s0, 224(v0)
+3:
+    addiu     a1, a1, 2
+    addiu     a0, a0, 2
+    bgtz      v1, 1b
+     addiu    v0, v0, 4
+    move      v0, sp
+    addiu     v1, zero, 8
+4:
+    lw        t0, 8(v0)        // z2 = (INT32) wsptr[2]
+    lw        t1, 24(v0)       // z3 = (INT32) wsptr[6]
+    lw        t2, 0(v0)        // (INT32) wsptr[0]
+    lw        t3, 16(v0)       // (INT32) wsptr[4]
+    lw        s4, 4(v0)        // (INT32) wsptr[1]
+    lw        s5, 12(v0)       // (INT32) wsptr[3]
+    lw        s6, 20(v0)       // (INT32) wsptr[5]
+    lw        s7, 28(v0)       // (INT32) wsptr[7]
+    or        s4, s4, t0
+    or        s4, s4, t1
+    or        s4, s4, t3
+    or        s4, s4, s7
+    or        s4, s4, s5
+    or        s4, s4, s6
+    bnez      s4, 5f
+     addiu    v1, v1, -1
+    shra_r.w  s5, t2, 5
+    andi      s5, s5, 0x3ff
+    lbux      s5, s5(a3)
+    lw        s1, 0(a2)
+    replv.qb  s5, s5
+    usw       s5, 0(s1)
+    usw       s5, 4(s1)
+    b         6f
+     nop
+5:
+    addu      t4, t0, t1       // z2 + z3
+    addiu     t8, zero, 4433   // FIX_0_541196100
+    mul       t5, t4, t8       // z1 = MULTIPLY(z2 + z3, FIX_0_541196100)
+    addiu     t8, zero, 15137  // FIX_1_847759065
+    mul       t1, t1, t8       // MULTIPLY(z3, FIX_1_847759065)
+    addiu     t8, zero, 6270   // FIX_0_765366865
+    mul       t0, t0, t8       // MULTIPLY(z2, FIX_0_765366865)
+    addu      t4, t2, t3       // (INT32) wsptr[0] + (INT32) wsptr[4]
+    subu      t2, t2, t3       // (INT32) wsptr[0] - (INT32) wsptr[4]
+    sll       t4, t4, 13       // tmp0 = ((wsptr[0] + wsptr[4]) << CONST_BITS
+    sll       t2, t2, 13       // tmp1 = ((wsptr[0] - wsptr[4]) << CONST_BITS
+    subu      t1, t5, t1       // tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065)
+    subu      t3, t2, t1       // tmp12 = tmp1 - tmp2
+    addu      t2, t2, t1       // tmp11 = tmp1 + tmp2
+    addu      t5, t5, t0       // tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865)
+    subu      t1, t4, t5       // tmp13 = tmp0 - tmp3
+    addu      t0, t4, t5       // tmp10 = tmp0 + tmp3
+    lw        t4, 28(v0)       // tmp0 = (INT32) wsptr[7]
+    lw        t6, 12(v0)       // tmp2 = (INT32) wsptr[3]
+    lw        t5, 20(v0)       // tmp1 = (INT32) wsptr[5]
+    lw        t7, 4(v0)        // tmp3 = (INT32) wsptr[1]
+    addu      s0, t4, t6       // z3 = tmp0 + tmp2
+    addiu     t8, zero, 9633   // FIX_1_175875602
+    addu      s1, t5, t7       // z4 = tmp1 + tmp3
+    addu      s2, s0, s1       // z3 + z4
+    mul       s2, s2, t8       // z5 = MULTIPLY(z3 + z4, FIX_1_175875602)
+    addu      s3, t4, t7       // z1 = tmp0 + tmp3
+    addu      t9, t5, t6       // z2 = tmp1 + tmp2
+    addiu     t8, zero, 16069  // FIX_1_961570560
+    mul       s0, s0, t8       // -z3 = MULTIPLY(z3, FIX_1_961570560)
+    addiu     t8, zero, 3196   // FIX_0_390180644
+    mul       s1, s1, t8       // -z4 = MULTIPLY(z4, FIX_0_390180644)
+    addiu     t8, zero, 2446   // FIX_0_298631336
+    mul       t4, t4, t8       // tmp0 = MULTIPLY(tmp0, FIX_0_298631336)
+    addiu     t8, zero, 7373   // FIX_0_899976223
+    mul       s3, s3, t8       // -z1 = MULTIPLY(z1, FIX_0_899976223)
+    addiu     t8, zero, 16819  // FIX_2_053119869
+    mul       t5, t5, t8       // tmp1 = MULTIPLY(tmp1, FIX_2_053119869)
+    addiu     t8, zero, 20995  // FIX_2_562915447
+    mul       t9, t9, t8       // -z2 = MULTIPLY(z2, FIX_2_562915447)
+    addiu     t8, zero, 25172  // FIX_3_072711026
+    mul       t6, t6, t8       // tmp2 = MULTIPLY(tmp2, FIX_3_072711026)
+    addiu     t8, zero, 12299  // FIX_1_501321110
+    mul       t7, t7, t8       // tmp3 = MULTIPLY(tmp3, FIX_1_501321110)
+    subu      s0, s2, s0       // z3 += z5
+    subu      s1, s2, s1       // z4 += z5
+    addu      t4, t4, s0
+    subu      t4, t4, s3       // tmp0
+    addu      t5, t5, s1
+    subu      t5, t5, t9       // tmp1
+    addu      t6, t6, s0
+    subu      t6, t6, t9       // tmp2
+    addu      t7, t7, s1
+    subu      t7, t7, s3       // tmp3
+    addu      s0, t0, t7
+    subu      t0, t0, t7
+    addu      t7, t2, t6
+    subu      t2, t2, t6
+    addu      t6, t3, t5
+    subu      t3, t3, t5
+    addu      t5, t1, t4
+    subu      t1, t1, t4
+    shra_r.w  s0, s0, 18
+    shra_r.w  t7, t7, 18
+    shra_r.w  t6, t6, 18
+    shra_r.w  t5, t5, 18
+    shra_r.w  t1, t1, 18
+    shra_r.w  t3, t3, 18
+    shra_r.w  t2, t2, 18
+    shra_r.w  t0, t0, 18
+    andi      s0, s0, 0x3ff
+    andi      t7, t7, 0x3ff
+    andi      t6, t6, 0x3ff
+    andi      t5, t5, 0x3ff
+    andi      t1, t1, 0x3ff
+    andi      t3, t3, 0x3ff
+    andi      t2, t2, 0x3ff
+    andi      t0, t0, 0x3ff
+    lw        s1, 0(a2)
+    lbux      s0, s0(a3)
+    lbux      t7, t7(a3)
+    lbux      t6, t6(a3)
+    lbux      t5, t5(a3)
+    lbux      t1, t1(a3)
+    lbux      t3, t3(a3)
+    lbux      t2, t2(a3)
+    lbux      t0, t0(a3)
+    sb        s0, 0(s1)
+    sb        t7, 1(s1)
+    sb        t6, 2(s1)
+    sb        t5, 3(s1)
+    sb        t1, 4(s1)
+    sb        t3, 5(s1)
+    sb        t2, 6(s1)
+    sb        t0, 7(s1)
+6:
+    addiu     v0, v0, 32
+    bgtz      v1, 4b
+     addiu    a2, a2, 4
+    addiu     sp, sp, 256
+
+    RESTORE_REGS_FROM_STACK 32, s0, s1, s2, s3, s4, s5, s6, s7
+
+    j         ra
+     nop
+
+END(jsimd_idct_islow_mips_dspr2)
 
 /*****************************************************************************/
 LEAF_MIPS_DSPR2(jsimd_idct_ifast_cols_mips_dspr2)

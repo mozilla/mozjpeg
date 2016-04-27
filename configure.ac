@@ -22,7 +22,7 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
 
-# When the prefix is /opt/mozjpeg, we assume that an "official" binary is
+# When the prefix is /opt/libjpeg-turbo, we assume that an "official" binary is
 # being created, and thus we install things into specific locations.
 
 old_prefix=${prefix}
@@ -31,19 +31,26 @@ if test "x$prefix" = "xNONE" -a "x$ac_default_prefix" != "x"; then
 fi
 DATADIR=`eval echo ${datadir}`
 DATADIR=`eval echo $DATADIR`
-if test "$DATADIR" = "/opt/mozjpeg/share"; then
+if test "$DATADIR" = "/opt/libjpeg-turbo/share"; then
   datadir='${prefix}'
 fi
 DATADIR=`eval echo ${datarootdir}`
 DATADIR=`eval echo $DATADIR`
-if test "$DATADIR" = "/opt/mozjpeg/share"; then
+if test "$DATADIR" = "/opt/libjpeg-turbo/share"; then
   datarootdir='${prefix}'
+fi
+DOCDIR=`eval echo ${docdir}`
+DOCDIR=`eval echo $DOCDIR`
+if test "$DOCDIR" = "/opt/libjpeg-turbo/doc/libjpeg-turbo"; then
+  docdir='${datadir}/doc'
 fi
 
 old_exec_prefix=${exec_prefix}
 if test "x$exec_prefix" = "xNONE"; then
   exec_prefix=${prefix}
 fi
+
+AC_CHECK_SIZEOF(size_t)
 
 if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib'; then
   LIBDIR=`eval echo ${libdir}`
@@ -53,10 +60,9 @@ if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib';
       darwin*)
         ;;
       *)
-        AC_CHECK_SIZEOF(long)
-        if test "${ac_cv_sizeof_long}" = "8"; then
+        if test "${ac_cv_sizeof_size_t}" = "8"; then
           libdir='${exec_prefix}/lib64'
-        elif test "${ac_cv_sizeof_long}" = "4"; then
+        elif test "${ac_cv_sizeof_size_t}" = "4"; then
           libdir='${exec_prefix}/lib32'
         fi
         ;;
@@ -543,7 +549,16 @@ case "$host_cpu" in
     RPMARCH=i386
     DEBARCH=i386
     ;;
+  *)
+    RPMARCH=`uname -m`
+    DEBARCH=$RPMARCH
+    ;;
 esac
+
+if test "${docdir}" = ""; then
+  docdir=${datadir}/doc
+  AC_SUBST(docdir)
+fi
 
 AC_SUBST(RPMARCH)
 AC_SUBST(RPM_CONFIG_ARGS)

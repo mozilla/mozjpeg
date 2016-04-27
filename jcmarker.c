@@ -681,11 +681,11 @@ write_frame_header (j_compress_ptr cinfo)
    */
   prec = emit_multi_dqt(cinfo);
   if (prec == -1) {
-    prec = 0;
-    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-         ci++, compptr++) {
-      prec += emit_dqt(cinfo, compptr->quant_tbl_no);
-    }
+  prec = 0;
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    prec += emit_dqt(cinfo, compptr->quant_tbl_no);
+  }
   }
   /* now prec is nonzero iff there are any 16-bit quant tables. */
 
@@ -750,16 +750,16 @@ write_scan_header (j_compress_ptr cinfo)
      * Note that emit_dht() suppresses any duplicate tables.
      */
     if (!emit_multi_dht(cinfo)) {
-      for (i = 0; i < cinfo->comps_in_scan; i++) {
-        compptr = cinfo->cur_comp_info[i];
-        /* DC needs no table for refinement scan */
-        if (cinfo->Ss == 0 && cinfo->Ah == 0)
-          emit_dht(cinfo, compptr->dc_tbl_no, FALSE);
-        /* AC needs no table when not present */
-        if (cinfo->Se)
-          emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
-      }
+    for (i = 0; i < cinfo->comps_in_scan; i++) {
+      compptr = cinfo->cur_comp_info[i];
+      /* DC needs no table for refinement scan */
+      if (cinfo->Ss == 0 && cinfo->Ah == 0)
+        emit_dht(cinfo, compptr->dc_tbl_no, FALSE);
+      /* AC needs no table when not present */
+      if (cinfo->Se)
+        emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
     }
+  }
   }
 
   /* Emit DRI if required --- note that DRI value could change for each scan.

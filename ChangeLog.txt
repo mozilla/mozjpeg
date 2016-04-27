@@ -1,3 +1,63 @@
+1.4.1
+=====
+
+[1] tjbench now properly handles CMYK/YCCK JPEG files.  Passing an argument of
+-cmyk (instead of, for instance, -rgb) will cause tjbench to internally convert
+the source bitmap to CMYK prior to compression, to generate YCCK JPEG files,
+and to internally convert the decompressed CMYK pixels back to RGB after
+decompression (the latter is done automatically if a CMYK or YCCK JPEG is
+passed to tjbench as a source image.)  The CMYK<->RGB conversion operation is
+not benchmarked.  NOTE: The quick & dirty CMYK<->RGB conversions that tjbench
+uses are suitable for testing only.  Proper conversion between CMYK and RGB
+requires a color management system.
+
+[2] 'make test' now performs additional bitwise regression tests using tjbench,
+mainly for the purpose of testing compression from/decompression to a subregion
+of a larger image buffer.
+
+[3] 'make test' no longer tests the regression of the floating point DCT/IDCT
+by default, since the results of those tests can vary if the algorithms in
+question are not implemented using SIMD instructions on a particular platform.
+See the comments in Makefile.am for information on how to re-enable the tests
+and to specify an expected result for them based on the particulars of your
+platform.
+
+[4] The NULL color conversion routines have been significantly optimized,
+which speeds up the compression of RGB and CMYK JPEGs by 5-20% when using
+64-bit code and 0-3% when using 32-bit code, and the decompression of those
+images by 10-30% when using 64-bit code and 3-12% when using 32-bit code.
+
+[5] Fixed an "illegal instruction" error that occurred when djpeg from a
+SIMD-enabled libjpeg-turbo MIPS build was executed with the -nosmooth option on
+a MIPS machine that lacked DSPr2 support.  The MIPS SIMD routines for h2v1 and
+h2v2 merged upsampling were not properly checking for the existence of DSPr2.
+
+[6] Performance has been improved significantly on 64-bit non-Linux and
+non-Windows platforms (generally 10-20% faster compression and 5-10% faster
+decompression.)  Due to an oversight, the 64-bit version of the accelerated
+Huffman codec was not being compiled in when libjpeg-turbo was built on
+platforms other than Windows or Linux.  Oops.
+
+[7] Fixed an extremely rare bug in the Huffman encoder that caused 64-bit
+builds of libjpeg-turbo to incorrectly encode a few specific test images when
+quality=98, an optimized Huffman table, and the slow integer forward DCT were
+used.
+
+[8] The Windows (CMake) build system now supports building only static or only
+shared libraries.  This is accomplished by adding either -DENABLE_STATIC=0 or
+-DENABLE_SHARED=0 to the CMake command line.
+
+[9] TurboJPEG API functions will now return an error code if a warning is
+triggered in the underlying libjpeg API.  For instance, if a JPEG file is
+corrupt, the TurboJPEG decompression functions will attempt to decompress
+as much of the image as possible, but those functions will now return -1 to
+indicate that the decompression was not entirely successful.
+
+[10] Fixed a bug in the MIPS DSPr2 4:2:2 fancy upsampling routine that caused a
+buffer overflow (and subsequent segfault) when decompressing a 4:2:2 JPEG image
+in which the right-most MCU was 5 or 6 pixels wide.
+
+
 1.4.0
 =====
 
@@ -10,7 +70,7 @@ endian machines.  This has been fixed.
 [3] Fixed an issue in tjPlaneSizeYUV() whereby it would erroneously return 1
 instead of -1 if componentID was > 0 and subsamp was TJSAMP_GRAY.
 
-[3] Fixed an issue in tjBufSizeYUV2() wherby it would erroneously return 0
+[3] Fixed an issue in tjBufSizeYUV2() whereby it would erroneously return 0
 instead of -1 if width was < 1.
 
 [5] The Huffman encoder now uses clz and bsr instructions for bit counting on

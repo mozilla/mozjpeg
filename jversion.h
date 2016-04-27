@@ -30,10 +30,10 @@
 #define JCOPYRIGHT      "Copyright (C) 1991-2012 Thomas G. Lane, Guido Vollbeding\n" \
                         "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
                         "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
-                        "Copyright (C) 2009-2014 D. R. Commander\n" \
+                        "Copyright (C) 2009-2015 D. R. Commander\n" \
                         "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
                         "Copyright (C) 2014 Mozilla Corporation\n" \
                         "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
                         "Copyright (C) 2013 Linaro Limited"
 
-#define JCOPYRIGHT_SHORT "Copyright (C) 1991-2014 The libjpeg-turbo Project and many others"
+#define JCOPYRIGHT_SHORT "Copyright (C) 1991-2015 The libjpeg-turbo Project and many others"

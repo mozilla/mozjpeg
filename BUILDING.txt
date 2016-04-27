@@ -215,6 +215,17 @@ Add
 to the configure command line.
 
 
+64-bit Build on 64-bit OS X
+---------------------------
+
+Add
+
+  --host x86_64-apple-darwin NASM=/opt/local/bin/nasm
+
+to the configure command line.  NASM 2.07 or later from MacPorts must be
+installed.
+
+
 32-bit Build on 64-bit OS X
 ---------------------------
 

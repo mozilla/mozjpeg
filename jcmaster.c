@@ -339,7 +339,7 @@ select_scan_parameters (j_compress_ptr cinfo)
                                  (6 * cinfo->master->Al_max_chroma + 4) &&
           master->scan_number < cinfo->num_scans)
         cinfo->Al = master->best_Al_chroma;
-    }
+  }
     /* save value for later retrieval during printout of scans */
     master->actual_Al[master->scan_number] = cinfo->Al;
   }
@@ -829,9 +829,9 @@ finish_pass_master (j_compress_ptr cinfo)
     if (cinfo->master->trellis_quant)
       master->pass_type = trellis_pass;
     else {
-      master->pass_type = output_pass;
-      if (! cinfo->optimize_coding)
-        master->scan_number++;
+    master->pass_type = output_pass;
+    if (! cinfo->optimize_coding)
+      master->scan_number++;
     }
     break;
   case huff_opt_pass:
@@ -869,7 +869,7 @@ finish_pass_master (j_compress_ptr cinfo)
             if (q > 254) q = 254;
             if (q < 1) q = 1;
             cinfo->quant_tbl_ptrs[i]->quantval[j] = q;
-          }
+  }
         }
       }
     }
@@ -941,7 +941,7 @@ jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
         ((cinfo->master->use_scans_in_trellis) ? 2 : 1) * cinfo->num_components *
         cinfo->master->trellis_num_loops + 1;
     master->total_passes += master->pass_number_scan_opt_base;
-  }
+}
   
   if (cinfo->master->optimize_scans) {
     int i;

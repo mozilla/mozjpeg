@@ -311,8 +311,9 @@ following reasons:
    numbers on this, the typical difference in PNSR between the two algorithms
    is less than 0.10 dB, whereas changing the quality level by 1 in the upper
    range of the quality scale is typically more like a 1.0 dB difference.)
--- When not using the SIMD extensions, then the accuracy of the floating point
-   DCT/IDCT can depend on the compiler and compiler settings.
+-- If the floating point algorithms in libjpeg-turbo are not implemented using
+   SIMD instructions on a particular platform, then the accuracy of the
+   floating point DCT/IDCT can depend on the compiler settings.
 
 While libjpeg-turbo does emulate the libjpeg v8 API/ABI, under the hood, it is
 still using the same algorithms as libjpeg v6b, so there are several specific

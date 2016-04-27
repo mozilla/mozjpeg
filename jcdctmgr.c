@@ -736,8 +736,8 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
           coef_blocks[bi][i] = -maxval;
         if (coef_blocks[bi][i] > maxval)
           coef_blocks[bi][i] = maxval;
-      }
-    }
+  }
+}
   }
 }
 
@@ -866,8 +866,8 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
           coef_blocks[bi][i] = -maxval;
         if (coef_blocks[bi][i] > maxval)
           coef_blocks[bi][i] = maxval;
-      }
-    }
+  }
+}
   }
 }
 

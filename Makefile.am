@@ -206,8 +206,13 @@ MD5_JPEG_GRAY_ISLOW = 235c90707b16e2e069f37c888b2636d9
 MD5_PPM_GRAY_ISLOW = 7213c10af507ad467da5578ca5ee1fca
 MD5_PPM_GRAY_ISLOW_RGB = e96ee81c30a6ed422d466338bd3de65d
 MD5_JPEG_420S_IFAST_OPT = 7af8e60be4d9c227ec63ac9b6630855e
-MD5_JPEG_3x2_FLOAT_PROG = a8c17daf77b457725ec929e215b603f8
-MD5_PPM_3x2_FLOAT = 42876ab9e5c2f76a87d08db5fbd57956
+MD5_JPEG_3x2_FLOAT_PROG_SSE = a8c17daf77b457725ec929e215b603f8
+MD5_PPM_3x2_FLOAT_SSE = 42876ab9e5c2f76a87d08db5fbd57956
+MD5_JPEG_3x2_FLOAT_PROG_32BIT = a8c17daf77b457725ec929e215b603f8
+MD5_PPM_3x2_FLOAT_32BIT = 42876ab9e5c2f76a87d08db5fbd57956
+MD5_PPM_3x2_FLOAT_64BIT = d6fbc71153b3d8ded484dbc17c7b9cf4
+MD5_JPEG_3x2_IFAST_PROG = 1396cc2b7185cfe943d408c9d305339e
+MD5_PPM_3x2_IFAST = 3975985ef6eeb0a2cdc58daa651ccc00
 MD5_PPM_420M_ISLOW_2_1 = 4ca6be2a6f326ff9eaab63e70a8259c0
 MD5_PPM_420M_ISLOW_15_8 = 12aa9f9534c1b3d7ba047322226365eb
 MD5_PPM_420M_ISLOW_13_8 = f7e22817c7b25e1393e4ec101e9d4e96
@@ -244,13 +249,13 @@ MD5_BMP_GRAY_ISLOW_565 = 12f78118e56a2f48b966f792fedf23cc
 MD5_BMP_GRAY_ISLOW_565D = bdbbd616441a24354c98553df5dc82db
 MD5_JPEG_420S_IFAST_OPT = 388708217ac46273ca33086b22827ed8
 # See README-turbo.txt for more details on why this next bit is necessary.
-if WITH_SSE_FLOAT_DCT
-MD5_JPEG_3x2_FLOAT_PROG = 343e3f8caf8af5986ebaf0bdc13b5c71
-MD5_PPM_3x2_FLOAT = 1a75f36e5904d6fc3a85a43da9ad89bb
-else
-MD5_JPEG_3x2_FLOAT_PROG = 9bca803d2042bd1eb03819e2bf92b3e5
-MD5_PPM_3x2_FLOAT = f6bfab038438ed8f5522fbd33595dcdc
-endif
+MD5_JPEG_3x2_FLOAT_PROG_SSE = 343e3f8caf8af5986ebaf0bdc13b5c71
+MD5_PPM_3x2_FLOAT_SSE = 1a75f36e5904d6fc3a85a43da9ad89bb
+MD5_JPEG_3x2_FLOAT_PROG_32BIT = 9bca803d2042bd1eb03819e2bf92b3e5
+MD5_PPM_3x2_FLOAT_32BIT = f6bfab038438ed8f5522fbd33595dcdc
+MD5_PPM_3x2_FLOAT_64BIT = 0e917a34193ef976b679a6b069b1be26
+MD5_JPEG_3x2_IFAST_PROG = 1ee5d2c1a77f2da495f993c8c7cceca5
+MD5_PPM_3x2_IFAST = fd283664b3b49127984af0a7f118fccd
 MD5_JPEG_420_ISLOW_ARI = e986fb0a637a8d833d96e8a6d6d84ea1
 MD5_JPEG_444_ISLOW_PROGARI = 0a8f1c8f66e113c3cf635df0a475a617
 MD5_PPM_420M_IFAST_ARI = 72b59a99bcf1de24c5b27d151bde2437
@@ -277,7 +282,7 @@ MD5_JPEG_CROP = b4197f377e621c4e9b1d20471432610d
 endif
 
 .PHONY: test
-test: tjquicktest bittest
+test: tjquicktest tjbittest bittest
 
 tjquicktest: testclean all
 
@@ -295,6 +300,64 @@ endif
 	./tjunittest -yuv
 	./tjunittest -yuv -alloc
 	./tjunittest -yuv -noyuvpad
+endif
+	echo GREAT SUCCESS!
+
+tjbittest: testclean all
+
+if WITH_TURBOJPEG
+
+MD5_PPM_GRAY_TILE = 89d3ca21213d9d864b50b4e4e7de4ca6
+MD5_PPM_420_8x8_TILE = 847fceab15c5b7b911cb986cf0f71de3
+MD5_PPM_420_16x16_TILE = ca45552a93687e078f7137cc4126a7b0
+MD5_PPM_420_32x32_TILE = d8676f1d6b68df358353bba9844f4a00
+MD5_PPM_420_64x64_TILE = 4e4c1a3d7ea4bace4f868bcbe83b7050
+MD5_PPM_420_128x128_TILE = f24c3429c52265832beab9df72a0ceae
+MD5_PPM_420M_8x8_TILE = bc25320e1f4c31ce2e610e43e9fd173c
+MD5_PPM_420M_TILE = 75ffdf14602258c5c189522af57fa605
+MD5_PPM_422_8x8_TILE = d83dacd9fc73b0a6f10c09acad64eb1e
+MD5_PPM_422_16x16_TILE = 35077fb610d72dd743b1eb0cbcfe10fb
+MD5_PPM_422_32x32_TILE = e6902ed8a449ecc0f0d6f2bf945f65f7
+MD5_PPM_422_64x64_TILE = 2b4502a8f316cedbde1da7bce3d2231e
+MD5_PPM_422_128x128_TILE = f0b5617d578f5e13c8eee215d64d4877
+MD5_PPM_422M_8x8_TILE = 828941d7f41cd6283abd6beffb7fd51d
+MD5_PPM_422M_TILE = e877ae1324c4a280b95376f7f018172f
+MD5_PPM_444_TILE = 7964e41e67cfb8d0a587c0aa4798f9c3
+
+# Test compressing from/decompressing to an arbitrary subregion of a larger
+# image buffer
+	cp $(srcdir)/testimages/testorig.ppm testout_tile.ppm
+	./tjbench testout_tile.ppm 95 -rgb -quiet -tile -benchtime 0.01 >/dev/null 2>&1
+	for i in 8 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_GRAY_TILE) testout_tile_GRAY_Q95_$$i\x$$i.ppm; \
+	done
+	md5/md5cmp $(MD5_PPM_420_8x8_TILE) testout_tile_420_Q95_8x8.ppm
+	md5/md5cmp $(MD5_PPM_420_16x16_TILE) testout_tile_420_Q95_16x16.ppm
+	md5/md5cmp $(MD5_PPM_420_32x32_TILE) testout_tile_420_Q95_32x32.ppm
+	md5/md5cmp $(MD5_PPM_420_64x64_TILE) testout_tile_420_Q95_64x64.ppm
+	md5/md5cmp $(MD5_PPM_420_128x128_TILE) testout_tile_420_Q95_128x128.ppm
+	md5/md5cmp $(MD5_PPM_422_8x8_TILE) testout_tile_422_Q95_8x8.ppm
+	md5/md5cmp $(MD5_PPM_422_16x16_TILE) testout_tile_422_Q95_16x16.ppm
+	md5/md5cmp $(MD5_PPM_422_32x32_TILE) testout_tile_422_Q95_32x32.ppm
+	md5/md5cmp $(MD5_PPM_422_64x64_TILE) testout_tile_422_Q95_64x64.ppm
+	md5/md5cmp $(MD5_PPM_422_128x128_TILE) testout_tile_422_Q95_128x128.ppm
+	for i in 8 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_444_TILE) testout_tile_444_Q95_$$i\x$$i.ppm; \
+	done
+	rm testout_tile_GRAY_* testout_tile_420_* testout_tile_422_* testout_tile_444_*
+
+	./tjbench testout_tile.ppm 95 -rgb -fastupsample -quiet -tile -benchtime 0.01 >/dev/null 2>&1
+	md5/md5cmp $(MD5_PPM_420M_8x8_TILE) testout_tile_420_Q95_8x8.ppm
+	for i in 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_420M_TILE) testout_tile_420_Q95_$$i\x$$i.ppm; \
+	done
+	md5/md5cmp $(MD5_PPM_422M_8x8_TILE) testout_tile_422_Q95_8x8.ppm
+	for i in 16 32 64 128; do \
+		md5/md5cmp $(MD5_PPM_422M_TILE) testout_tile_422_Q95_$$i\x$$i.ppm; \
+	done
+	rm testout_tile_GRAY_* testout_tile_420_* testout_tile_422_* testout_tile_444_* testout_tile.ppm
+	echo GREAT SUCCESS!
+
 endif
 
 bittest: testclean all
@@ -389,13 +452,46 @@ endif
 	md5/md5cmp $(MD5_JPEG_420S_IFAST_OPT) testout_420s_ifast_opt.jpg
 	rm testout_420s_ifast_opt.jpg
 
+# The output of the floating point tests is not validated by default, because
+# the output differs depending on the type of floating point math used, and
+# this is only deterministic if the DCT/IDCT are implemented using SIMD
+# instructions on a particular platform.  Pass one of the following on the make
+# command line to validate the floating point tests against one of the expected # results:
+#
+# FLOATTEST=sse  validate against the expected results from the libjpeg-turbo
+#                SSE SIMD extensions
+# FLOATTEST=32bit  validate against the expected results from the C code
+#                  when running on a 32-bit FPU (or when SSE is being used for
+#                  floating point math, which is generally the default with
+#                  x86-64 compilers)
+# FLOATTEST=64bit  validate against the exepected results from the C code
+#                  when running on a 64-bit FPU
+
 # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
 	./cjpeg -revert -sample 3x2 -dct float -prog -outfile testout_3x2_float_prog.jpg $(srcdir)/testimages/testorig.ppm
-	md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG) testout_3x2_float_prog.jpg
+	if [ "${FLOATTEST}" = "sse" ]; then \
+		md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG_SSE) testout_3x2_float_prog.jpg; \
+	elif [ "${FLOATTEST}" = "32bit" -o "${FLOATTEST}" = "64bit" ]; then \
+		md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG_32BIT) testout_3x2_float_prog.jpg; \
+	fi
 # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
 	./djpeg -dct float -outfile testout_3x2_float.ppm testout_3x2_float_prog.jpg
-	md5/md5cmp $(MD5_PPM_3x2_FLOAT) testout_3x2_float.ppm
+	if [ "${FLOATTEST}" = "sse" ]; then \
+		md5/md5cmp $(MD5_PPM_3x2_FLOAT_SSE) testout_3x2_float.ppm; \
+	elif [ "${FLOATTEST}" = "32bit" ]; then \
+		md5/md5cmp $(MD5_PPM_3x2_FLOAT_32BIT) testout_3x2_float.ppm; \
+	elif [ "${FLOATTEST}" = "64bit" ]; then \
+		md5/md5cmp $(MD5_PPM_3x2_FLOAT_64BIT) testout_3x2_float.ppm; \
+	fi
 	rm testout_3x2_float.ppm testout_3x2_float_prog.jpg
+
+# CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
+	./cjpeg -revert -sample 3x2 -dct fast -prog -outfile testout_3x2_ifast_prog.jpg $(srcdir)/testimages/testorig.ppm
+	md5/md5cmp $(MD5_JPEG_3x2_IFAST_PROG) testout_3x2_ifast_prog.jpg
+# CC: YCC->RGB  SAMP: fullsize/int  IDCT: ifast  ENT: prog huff
+	./djpeg -dct fast -outfile testout_3x2_ifast.ppm testout_3x2_ifast_prog.jpg
+	md5/md5cmp $(MD5_PPM_3x2_IFAST) testout_3x2_ifast.ppm
+	rm testout_3x2_ifast.ppm testout_3x2_ifast_prog.jpg
 
 if WITH_ARITH_ENC
 # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
@@ -495,6 +591,7 @@ endif
 	./jpegtran -revert -crop 120x90+20+50 -transpose -perfect -outfile testout_crop.jpg $(srcdir)/testimages/$(TESTORIG)
 	md5/md5cmp $(MD5_JPEG_CROP) testout_crop.jpg
 	rm testout_crop.jpg
+	echo GREAT SUCCESS!
 
 
 testclean:

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -75,24 +75,84 @@ static void my_output_message(j_common_ptr cinfo)
 static void pixelconvert(unsigned char *srcbuf, int srcpf, int srcbottomup,
 	unsigned char *dstbuf, int dstpf, int dstbottomup, int w, int h)
 {
-	unsigned char *srcptr=srcbuf, *srcptr2;
+	unsigned char *srcrowptr=srcbuf, *srccolptr;
 	int srcps=tjPixelSize[srcpf];
 	int srcstride=srcbottomup? -w*srcps:w*srcps;
-	unsigned char *dstptr=dstbuf, *dstptr2;
+	unsigned char *dstrowptr=dstbuf, *dstcolptr;
 	int dstps=tjPixelSize[dstpf];
 	int dststride=dstbottomup? -w*dstps:w*dstps;
 	int row, col;
 
-	if(srcbottomup) srcptr=&srcbuf[w*srcps*(h-1)];
-	if(dstbottomup) dstptr=&dstbuf[w*dstps*(h-1)];
-	for(row=0; row<h; row++, srcptr+=srcstride, dstptr+=dststride)
+	if(srcbottomup) srcrowptr=&srcbuf[w*srcps*(h-1)];
+	if(dstbottomup) dstrowptr=&dstbuf[w*dstps*(h-1)];
+
+	/* NOTE: These quick & dirty CMYK<->RGB conversion routines are for testing
+	   purposes only.  Properly converting between CMYK and RGB requires a color
+	   management system. */
+
+	if(dstpf==TJPF_CMYK)
 	{
-		for(col=0, srcptr2=srcptr, dstptr2=dstptr; col<w; col++, srcptr2+=srcps,
-			dstptr2+=dstps)
+		for(row=0; row<h; row++, srcrowptr+=srcstride, dstrowptr+=dststride)
 		{
-			dstptr2[tjRedOffset[dstpf]]=srcptr2[tjRedOffset[srcpf]];
-			dstptr2[tjGreenOffset[dstpf]]=srcptr2[tjGreenOffset[srcpf]];
-			dstptr2[tjBlueOffset[dstpf]]=srcptr2[tjBlueOffset[srcpf]];
+			for(col=0, srccolptr=srcrowptr, dstcolptr=dstrowptr;
+				col<w; col++, srccolptr+=srcps)
+			{
+				double c=1.0-((double)(srccolptr[tjRedOffset[srcpf]])/255.);
+				double m=1.0-((double)(srccolptr[tjGreenOffset[srcpf]])/255.);
+				double y=1.0-((double)(srccolptr[tjBlueOffset[srcpf]])/255.);
+				double k=min(min(c,m),min(y,1.0));
+				if(k==1.0) c=m=y=0.0;
+				else
+				{
+					c=(c-k)/(1.0-k);
+					m=(m-k)/(1.0-k);
+					y=(y-k)/(1.0-k);
+				}
+				if(c>1.0) c=1.0;  if(c<0.) c=0.;
+				if(m>1.0) m=1.0;  if(m<0.) m=0.;
+				if(y>1.0) y=1.0;  if(y<0.) y=0.;
+				if(k>1.0) k=1.0;  if(k<0.) k=0.;
+				*dstcolptr++=(unsigned char)(255.0-c*255.0+0.5);
+				*dstcolptr++=(unsigned char)(255.0-m*255.0+0.5);
+				*dstcolptr++=(unsigned char)(255.0-y*255.0+0.5);
+				*dstcolptr++=(unsigned char)(255.0-k*255.0+0.5);
+			}
+		}
+	}
+	else if(srcpf==TJPF_CMYK)
+	{
+		for(row=0; row<h; row++, srcrowptr+=srcstride, dstrowptr+=dststride)
+		{
+			for(col=0, srccolptr=srcrowptr, dstcolptr=dstrowptr;
+				col<w; col++, dstcolptr+=dstps)
+			{
+				double c=(double)(*srccolptr++);
+				double m=(double)(*srccolptr++);
+				double y=(double)(*srccolptr++);
+				double k=(double)(*srccolptr++);
+				double r=c*k/255.;
+				double g=m*k/255.;
+				double b=y*k/255.;
+				if(r>255.0) r=255.0;  if(r<0.) r=0.;
+				if(g>255.0) g=255.0;  if(g<0.) g=0.;
+				if(b>255.0) b=255.0;  if(b<0.) b=0.;
+				dstcolptr[tjRedOffset[dstpf]]=(unsigned char)(r+0.5);
+				dstcolptr[tjGreenOffset[dstpf]]=(unsigned char)(g+0.5);
+				dstcolptr[tjBlueOffset[dstpf]]=(unsigned char)(b+0.5);
+			}
+		}
+	}
+	else
+	{
+		for(row=0; row<h; row++, srcrowptr+=srcstride, dstrowptr+=dststride)
+		{
+			for(col=0, srccolptr=srcrowptr, dstcolptr=dstrowptr;
+				col<w; col++, srccolptr+=srcps, dstcolptr+=dstps)
+			{
+				dstcolptr[tjRedOffset[dstpf]]=srccolptr[tjRedOffset[srcpf]];
+				dstcolptr[tjGreenOffset[dstpf]]=srccolptr[tjGreenOffset[srcpf]];
+				dstcolptr[tjBlueOffset[dstpf]]=srccolptr[tjBlueOffset[srcpf]];
+			}
 		}
 	}
 }

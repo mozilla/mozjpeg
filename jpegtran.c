@@ -40,8 +40,8 @@
  */
 
 
-static const char * progname;   /* program name for error messages */
-static char * outfilename;      /* for -outfile switch */
+static const char *progname;    /* program name for error messages */
+static char *outfilename;       /* for -outfile switch */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
 boolean memsrc = FALSE;  /* for -memsrc switch */
@@ -137,9 +137,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
  */
 {
   int argn;
-  char * arg;
+  char *arg;
   boolean simple_progressive;
-  char * scansarg = NULL;       /* saves -scans parm if any */
+  char *scansarg = NULL;        /* saves -scans parm if any */
 
   /* Set up default JPEG parameters. */
 #ifdef C_PROGRESSIVE_SUPPORTED
@@ -397,13 +397,13 @@ main (int argc, char **argv)
 #ifdef PROGRESS_REPORT
   struct cdjpeg_progress_mgr progress;
 #endif
-  jvirt_barray_ptr * src_coef_arrays;
-  jvirt_barray_ptr * dst_coef_arrays;
+  jvirt_barray_ptr *src_coef_arrays;
+  jvirt_barray_ptr *dst_coef_arrays;
   int file_index;
   /* We assume all-in-memory processing and can therefore use only a
    * single file pointer for sequential input and output operation.
    */
-  FILE * fp;
+  FILE *fp;
   unsigned char *inbuffer = NULL;
   unsigned long insize = 0;
   unsigned char *outbuffer = NULL;

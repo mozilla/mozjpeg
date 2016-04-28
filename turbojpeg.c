@@ -46,7 +46,8 @@
 
 extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **,
 	unsigned long *, boolean);
-extern void jpeg_mem_src_tj(j_decompress_ptr, unsigned char *, unsigned long);
+extern void jpeg_mem_src_tj(j_decompress_ptr, const unsigned char *,
+	unsigned long);
 
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 #define isPow2(x) (((x)&(x-1))==0)
@@ -737,7 +738,7 @@ DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV(int componentID, int width,
 }
 
 
-DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
+DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 	int width, int pitch, int height, int pixelFormat, unsigned char **jpegBuf,
 	unsigned long *jpegSize, int jpegSubsamp, int jpegQual, int flags)
 {
@@ -794,8 +795,9 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 		_throw("tjCompress2(): Memory allocation failure");
 	for(i=0; i<height; i++)
 	{
-		if(flags&TJFLAG_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
-		else row_pointer[i]=&srcBuf[i*pitch];
+		if(flags&TJFLAG_BOTTOMUP)
+			row_pointer[i]=(JSAMPROW)&srcBuf[(height-i-1)*pitch];
+		else row_pointer[i]=(JSAMPROW)&srcBuf[i*pitch];
 	}
 	while(cinfo->next_scanline<cinfo->image_height)
 	{
@@ -836,9 +838,10 @@ DLLEXPORT int DLLCALL tjCompress(tjhandle handle, unsigned char *srcBuf,
 }
 
 
-DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle, unsigned char *srcBuf,
-	int width, int pitch, int height, int pixelFormat, unsigned char **dstPlanes,
-	int *strides, int subsamp, int flags)
+DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
+	const unsigned char *srcBuf, int width, int pitch, int height,
+	int pixelFormat, unsigned char **dstPlanes, int *strides, int subsamp,
+	int flags)
 {
 	int i, retval=0;  JSAMPROW *row_pointer=NULL;
 	JSAMPLE *_tmpbuf[MAX_COMPONENTS], *_tmpbuf2[MAX_COMPONENTS];
@@ -919,8 +922,9 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle, unsigned char *srcBuf,
 		_throw("tjEncodeYUVPlanes(): Memory allocation failure");
 	for(i=0; i<height; i++)
 	{
-		if(flags&TJFLAG_BOTTOMUP) row_pointer[i]=&srcBuf[(height-i-1)*pitch];
-		else row_pointer[i]=&srcBuf[i*pitch];
+		if(flags&TJFLAG_BOTTOMUP)
+			row_pointer[i]=(JSAMPROW)&srcBuf[(height-i-1)*pitch];
+		else row_pointer[i]=(JSAMPROW)&srcBuf[i*pitch];
 	}
 	if(height<ph0)
 		for(i=height; i<ph0; i++) row_pointer[i]=row_pointer[height-1];
@@ -997,9 +1001,9 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle, unsigned char *srcBuf,
 	return retval;
 }
 
-DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle, unsigned char *srcBuf,
-	int width, int pitch, int height, int pixelFormat, unsigned char *dstBuf,
-	int pad, int subsamp, int flags)
+DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
+	const unsigned char *srcBuf, int width, int pitch, int height,
+	int pixelFormat, unsigned char *dstBuf, int pad, int subsamp, int flags)
 {
 	unsigned char *dstPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
@@ -1051,8 +1055,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV(tjhandle handle, unsigned char *srcBuf,
 
 
 DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
-	unsigned char **srcPlanes, int width, int *strides, int height, int subsamp,
-	unsigned char **jpegBuf, unsigned long *jpegSize, int jpegQual, int flags)
+	const unsigned char **srcPlanes, int width, const int *strides, int height,
+	int subsamp, unsigned char **jpegBuf, unsigned long *jpegSize, int jpegQual,
+	int flags)
 {
 	int i, row, retval=0, alloc=1;  JSAMPROW *inbuf[MAX_COMPONENTS];
 	int pw[MAX_COMPONENTS], ph[MAX_COMPONENTS], iw[MAX_COMPONENTS],
@@ -1115,7 +1120,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 		tmpbufsize+=iw[i]*th[i];
 		if((inbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ph[i]))==NULL)
 			_throw("tjCompressFromYUVPlanes(): Memory allocation failure");
-		ptr=srcPlanes[i];
+		ptr=(JSAMPLE *)srcPlanes[i];
 		for(row=0; row<ph[i]; row++)
 		{
 			inbuf[i][row]=ptr;
@@ -1181,11 +1186,11 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 	return retval;
 }
 
-DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
-	int width, int pad, int height, int subsamp, unsigned char **jpegBuf,
-	unsigned long *jpegSize, int jpegQual, int flags)
+DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
+	const unsigned char *srcBuf, int width, int pad, int height, int subsamp,
+	unsigned char **jpegBuf, unsigned long *jpegSize, int jpegQual, int flags)
 {
-	unsigned char *srcPlanes[3];
+	const unsigned char *srcPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
 
 	if(srcBuf==NULL || width<=0 || pad<1 || height<=0 || subsamp<0
@@ -1260,8 +1265,8 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void)
 
 
 DLLEXPORT int DLLCALL tjDecompressHeader3(tjhandle handle,
-	unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height,
-	int *jpegSubsamp, int *jpegColorspace)
+	const unsigned char *jpegBuf, unsigned long jpegSize, int *width,
+	int *height, int *jpegSubsamp, int *jpegColorspace)
 {
 	int retval=0;
 
@@ -1341,9 +1346,9 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors)
 }
 
 
-DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
-	unsigned long jpegSize, unsigned char *dstBuf, int width, int pitch,
-	int height, int pixelFormat, int flags)
+DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
+	const unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
+	int width, int pitch, int height, int pixelFormat, int flags)
 {
 	int i, retval=0;  JSAMPROW *row_pointer=NULL;
 	int jpegwidth, jpegheight, scaledw, scaledh;
@@ -1509,8 +1514,9 @@ void my_reset_marker_reader(j_decompress_ptr dinfo)
 }
 
 DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
-	unsigned char **srcPlanes, int *strides, int subsamp, unsigned char *dstBuf,
-	int width, int pitch, int height, int pixelFormat, int flags)
+	const unsigned char **srcPlanes, const int *strides, int subsamp,
+	unsigned char *dstBuf, int width, int pitch, int height, int pixelFormat,
+	int flags)
 {
 	int i, retval=0;  JSAMPROW *row_pointer=NULL;
 	JSAMPLE *_tmpbuf[MAX_COMPONENTS];
@@ -1629,7 +1635,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 		ph[i]=ph0*compptr->v_samp_factor/dinfo->max_v_samp_factor;
 		inbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ph[i]);
 		if(!inbuf[i]) _throw("tjDecodeYUVPlanes(): Memory allocation failure");
-		ptr=srcPlanes[i];
+		ptr=(JSAMPLE *)srcPlanes[i];
 		for(row=0; row<ph[i]; row++)
 		{
 			inbuf[i][row]=ptr;
@@ -1670,11 +1676,11 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	return retval;
 }
 
-DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
+DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
 	int pad, int subsamp, unsigned char *dstBuf, int width, int pitch,
 	int height, int pixelFormat, int flags)
 {
-	unsigned char *srcPlanes[3];
+	const unsigned char *srcPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
 
 	if(srcBuf==NULL || pad<0 || !isPow2(pad) || subsamp<0 || subsamp>=NUMSUBOPT
@@ -1707,8 +1713,8 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
 }
 
 DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
-	unsigned char *jpegBuf, unsigned long jpegSize, unsigned char **dstPlanes,
-	int width, int *strides, int height, int flags)
+	const unsigned char *jpegBuf, unsigned long jpegSize,
+	unsigned char **dstPlanes, int width, int *strides, int height, int flags)
 {
 	int i, sfi, row, retval=0;  JSAMPROW *outbuf[MAX_COMPONENTS];
 	int jpegwidth, jpegheight, jpegSubsamp, scaledw, scaledh;
@@ -1881,7 +1887,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 }
 
 DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
-	unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
+	const unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
 	int width, int pad, int height, int flags)
 {
 	unsigned char *dstPlanes[3];
@@ -1974,9 +1980,9 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void)
 }
 
 
-DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
-	unsigned long jpegSize, int n, unsigned char **dstBufs,
-	unsigned long *dstSizes, tjtransform *t, int flags)
+DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
+	const unsigned char *jpegBuf, unsigned long jpegSize, int n,
+	unsigned char **dstBufs, unsigned long *dstSizes, tjtransform *t, int flags)
 {
 	jpeg_transform_info *xinfo=NULL;
 	jvirt_barray_ptr *srccoefs, *dstcoefs;

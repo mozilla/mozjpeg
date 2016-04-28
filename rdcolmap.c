@@ -3,7 +3,8 @@
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file implements djpeg's "-map file" switch.  It reads a source image
  * and constructs a colormap to be supplied to the JPEG decompressor.
@@ -76,7 +77,7 @@ add_map_entry (j_decompress_ptr cinfo, int R, int G, int B)
  */
 
 LOCAL(void)
-read_gif_map (j_decompress_ptr cinfo, FILE * infile)
+read_gif_map (j_decompress_ptr cinfo, FILE *infile)
 {
   int header[13];
   int i, colormaplen;
@@ -118,7 +119,7 @@ read_gif_map (j_decompress_ptr cinfo, FILE * infile)
 
 
 LOCAL(int)
-pbm_getc (FILE * infile)
+pbm_getc (FILE *infile)
 /* Read next char, skipping over any comments */
 /* A comment/newline sequence is returned as a newline */
 {
@@ -135,7 +136,7 @@ pbm_getc (FILE * infile)
 
 
 LOCAL(unsigned int)
-read_pbm_integer (j_decompress_ptr cinfo, FILE * infile)
+read_pbm_integer (j_decompress_ptr cinfo, FILE *infile)
 /* Read an unsigned decimal integer from the PPM file */
 /* Swallows one trailing character after the integer */
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
@@ -168,7 +169,7 @@ read_pbm_integer (j_decompress_ptr cinfo, FILE * infile)
  */
 
 LOCAL(void)
-read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
+read_ppm_map (j_decompress_ptr cinfo, FILE *infile)
 {
   int c;
   unsigned int w, h, maxval, row, col;
@@ -228,7 +229,7 @@ read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
  */
 
 GLOBAL(void)
-read_color_map (j_decompress_ptr cinfo, FILE * infile)
+read_color_map (j_decompress_ptr cinfo, FILE *infile)
 {
   /* Allocate space for a color map of maximum supported size. */
   cinfo->colormap = (*cinfo->mem->alloc_sarray)

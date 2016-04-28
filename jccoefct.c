@@ -59,7 +59,7 @@ typedef struct {
 
 } my_coef_controller;
 
-typedef my_coef_controller * my_coef_ptr;
+typedef my_coef_controller *my_coef_ptr;
 
 
 /* Forward declarations */

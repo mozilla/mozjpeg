@@ -10,6 +10,7 @@ JAVASOURCES = org/libjpegturbo/turbojpeg/TJ.java \
 	org/libjpegturbo/turbojpeg/TJCompressor.java \
 	org/libjpegturbo/turbojpeg/TJCustomFilter.java \
 	org/libjpegturbo/turbojpeg/TJDecompressor.java \
+	org/libjpegturbo/turbojpeg/TJException.java \
 	org/libjpegturbo/turbojpeg/TJScalingFactor.java \
 	org/libjpegturbo/turbojpeg/TJTransform.java \
 	org/libjpegturbo/turbojpeg/TJTransformer.java \
@@ -31,6 +32,7 @@ JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 	org/libjpegturbo/turbojpeg/TJCompressor.class \
 	org/libjpegturbo/turbojpeg/TJCustomFilter.class \
 	org/libjpegturbo/turbojpeg/TJDecompressor.class \
+	org/libjpegturbo/turbojpeg/TJException.class \
 	org/libjpegturbo/turbojpeg/TJLoader.class \
 	org/libjpegturbo/turbojpeg/TJScalingFactor.class \
 	org/libjpegturbo/turbojpeg/TJTransform.class \
@@ -42,7 +44,7 @@ JAVA_CLASSES = org/libjpegturbo/turbojpeg/TJ.class \
 
 all: all-am turbojpeg.jar
 
-turbojpeg.jar: $(JAVA_CLASSES) ${srcdir}/MANIFEST.MF
+turbojpeg.jar: classnoinst.stamp ${srcdir}/MANIFEST.MF
 	$(JAR) cfm turbojpeg.jar ${srcdir}/MANIFEST.MF $(JAVA_CLASSES)
 
 clean-local:

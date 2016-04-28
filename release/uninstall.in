@@ -1,4 +1,4 @@
-# Copyright (C)2009-2011, 2013 D. R. Commander.  All Rights Reserved.
+# Copyright (C)2009-2011, 2013, 2016 D. R. Commander.  All Rights Reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -65,6 +65,9 @@ MANDIR=%{__mandir}
 
 if [ -d $BINDIR ]; then
 	rmdir $BINDIR 2>&1 || EXITSTATUS=-1
+fi
+if [ -d $LIBDIR/pkgconfig ]; then
+	rmdir $LIBDIR/pkgconfig 2>&1 || EXITSTATUS=-1
 fi
 if [ -d $LIBDIR ]; then
 	rmdir $LIBDIR 2>&1 || EXITSTATUS=-1

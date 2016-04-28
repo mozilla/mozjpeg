@@ -4,7 +4,7 @@ This file was part of the Independent JPEG Group's software:
 Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
 It was modified by The libjpeg-turbo Project to include only information
 relevant to libjpeg-turbo.
-For conditions of distribution and use, see the accompanying README file.
+For conditions of distribution and use, see the accompanying README.ijg file.
 
 
 This file provides an overview of the architecture of the IJG JPEG software;
@@ -13,7 +13,7 @@ between modules.  For more precise details about any data structure or calling
 convention, see the include files and comments in the source code.
 
 We assume that the reader is already somewhat familiar with the JPEG standard.
-The README file includes references for learning about JPEG.  The file
+The README.ijg file includes references for learning about JPEG.  The file
 libjpeg.txt describes the library from the viewpoint of an application
 programmer using the library; it's best to read that file before this one.
 Also, the file coderules.txt describes the coding style conventions we use.

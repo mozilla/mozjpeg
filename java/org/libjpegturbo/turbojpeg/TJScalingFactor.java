@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,9 +34,9 @@ package org.libjpegturbo.turbojpeg;
  */
 public class TJScalingFactor {
 
-  public TJScalingFactor(int num, int denom) throws Exception {
+  public TJScalingFactor(int num, int denom) {
     if (num < 1 || denom < 1)
-      throw new Exception("Numerator and denominator must be >= 1");
+      throw new IllegalArgumentException("Numerator and denominator must be >= 1");
     this.num = num;
     this.denom = denom;
   }
@@ -77,7 +78,7 @@ public class TJScalingFactor {
    * <code>other</code> have the same numerator and denominator.
    */
   public boolean equals(TJScalingFactor other) {
-    return (this.num == other.num && this.denom == other.denom);
+    return this.num == other.num && this.denom == other.denom;
   }
 
   /**
@@ -88,7 +89,7 @@ public class TJScalingFactor {
    * 1/1.
    */
   public boolean isOne() {
-    return (num == 1 && denom == 1);
+    return num == 1 && denom == 1;
   }
 
   /**
@@ -100,4 +101,4 @@ public class TJScalingFactor {
    * Denominator
    */
   private int denom = 1;
-};
+}

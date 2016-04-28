@@ -35,7 +35,7 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
  * are limited to 1..255 for JPEG baseline compatibility.
  */
 {
-  JQUANT_TBL ** qtblptr;
+  JQUANT_TBL **qtblptr;
   int i;
   long temp;
 
@@ -563,7 +563,7 @@ jpeg_default_colorspace (j_compress_ptr cinfo)
 GLOBAL(void)
 jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
 {
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   int ci;
 
 #define SET_COMP(index,id,hsamp,vsamp,quant,dctbl,actbl)  \
@@ -645,7 +645,7 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
 #ifdef C_PROGRESSIVE_SUPPORTED
 
 LOCAL(jpeg_scan_info *)
-fill_a_scan (jpeg_scan_info * scanptr, int ci,
+fill_a_scan (jpeg_scan_info *scanptr, int ci,
              int Ss, int Se, int Ah, int Al)
 /* Support routine: generate one scan for specified component */
 {
@@ -676,7 +676,7 @@ fill_a_scan_pair (jpeg_scan_info * scanptr, int ci,
 }
 
 LOCAL(jpeg_scan_info *)
-fill_scans (jpeg_scan_info * scanptr, int ncomps,
+fill_scans (jpeg_scan_info *scanptr, int ncomps,
             int Ss, int Se, int Ah, int Al)
 /* Support routine: generate one scan for each component */
 {
@@ -695,7 +695,7 @@ fill_scans (jpeg_scan_info * scanptr, int ncomps,
 }
 
 LOCAL(jpeg_scan_info *)
-fill_dc_scans (jpeg_scan_info * scanptr, int ncomps, int Ah, int Al)
+fill_dc_scans (jpeg_scan_info *scanptr, int ncomps, int Ah, int Al)
 /* Support routine: generate interleaved DC scan if possible, else N scans */
 {
   int ci;
@@ -853,7 +853,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 {
   int ncomps;
   int nscans;
-  jpeg_scan_info * scanptr;
+  jpeg_scan_info *scanptr;
 
   if (cinfo->master->optimize_scans) {
     if (jpeg_search_progression(cinfo) == TRUE)

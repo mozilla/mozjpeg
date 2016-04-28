@@ -5,7 +5,8 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to read input images in Targa format.
  *
@@ -45,7 +46,7 @@ typedef char U_CHAR;
 
 /* Private version of data source object */
 
-typedef struct _tga_source_struct * tga_source_ptr;
+typedef struct _tga_source_struct *tga_source_ptr;
 
 typedef struct _tga_source_struct {
   struct cjpeg_source_struct pub; /* public fields */

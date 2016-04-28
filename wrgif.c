@@ -3,9 +3,10 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2015, D. R. Commander.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to write output images in GIF format.
  *
@@ -54,7 +55,7 @@ typedef struct {
   /* State for packing variable-width codes into a bitstream */
   int n_bits;                   /* current number of bits/code */
   int maxcode;                  /* maximum code, given n_bits */
-  INT32 cur_accum;              /* holds bits not yet output */
+  long cur_accum;               /* holds bits not yet output */
   int cur_bits;                 /* # of bits in cur_accum */
 
   /* State for GIF code assignment */
@@ -68,7 +69,7 @@ typedef struct {
 
 } gif_dest_struct;
 
-typedef gif_dest_struct * gif_dest_ptr;
+typedef gif_dest_struct *gif_dest_ptr;
 
 /* Largest value that will fit in N bits */
 #define MAXCODE(n_bits) ((1 << (n_bits)) - 1)
@@ -108,7 +109,7 @@ output (gif_dest_ptr dinfo, int code)
 /* Emit a code of n_bits bits */
 /* Uses cur_accum and cur_bits to reblock into 8-bit bytes */
 {
-  dinfo->cur_accum |= ((INT32) code) << dinfo->cur_bits;
+  dinfo->cur_accum |= ((long) code) << dinfo->cur_bits;
   dinfo->cur_bits += dinfo->n_bits;
 
   while (dinfo->cur_bits >= 8) {

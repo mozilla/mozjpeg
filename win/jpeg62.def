@@ -100,6 +100,8 @@ EXPORTS
 	jpeg_write_tables @ 99 ; 
 	jround_up @ 100 ; 
 	jzero_far @ 101 ; 
+	jpeg_skip_scanlines @ 102 ; 
+	jpeg_crop_scanline @ 103 ; 
 	jpeg_c_bool_param_supported @ 200 ; 
 	jpeg_c_set_bool_param @ 201 ; 
 	jpeg_c_get_bool_param @ 202 ; 

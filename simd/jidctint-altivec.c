@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014-2015, D. R. Commander.
  * All rights reserved.
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,10 +61,10 @@
   in##26l = vec_mergeh(in##2, in##6);  \
   in##26h = vec_mergel(in##2, in##6);  \
   \
-  tmp3l = vec_msums(in##26l, pw_f130_f054, zero32);  \
-  tmp3h = vec_msums(in##26h, pw_f130_f054, zero32);  \
-  tmp2l = vec_msums(in##26l, pw_f054_mf130, zero32);  \
-  tmp2h = vec_msums(in##26h, pw_f054_mf130, zero32);  \
+  tmp3l = vec_msums(in##26l, pw_f130_f054, pd_zero);  \
+  tmp3h = vec_msums(in##26h, pw_f130_f054, pd_zero);  \
+  tmp2l = vec_msums(in##26l, pw_f054_mf130, pd_zero);  \
+  tmp2h = vec_msums(in##26h, pw_f054_mf130, pd_zero);  \
   \
   tmp0 = vec_add(in##0, in##4);  \
   tmp1 = vec_sub(in##0, in##4);  \
@@ -111,10 +111,10 @@
   z34l = vec_mergeh(z3, z4);  \
   z34h = vec_mergel(z3, z4);  \
   \
-  z3l = vec_msums(z34l, pw_mf078_f117, zero32);  \
-  z3h = vec_msums(z34h, pw_mf078_f117, zero32);  \
-  z4l = vec_msums(z34l, pw_f117_f078, zero32);  \
-  z4h = vec_msums(z34h, pw_f117_f078, zero32);  \
+  z3l = vec_msums(z34l, pw_mf078_f117, pd_zero);  \
+  z3h = vec_msums(z34h, pw_mf078_f117, pd_zero);  \
+  z4l = vec_msums(z34l, pw_f117_f078, pd_zero);  \
+  z4h = vec_msums(z34h, pw_f117_f078, pd_zero);  \
   \
   /* (Original)  \
    * z1 = tmp0 + tmp3;  z2 = tmp1 + tmp2;  \
@@ -206,10 +206,12 @@
 
 
 void
-jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
+jsimd_idct_islow_altivec (void *dct_table_, JCOEFPTR coef_block,
                           JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   short *dct_table = (short *)dct_table_;
+  int *outptr;
+
   __vector short row0, row1, row2, row3, row4, row5, row6, row7,
     col0, col1, col2, col3, col4, col5, col6, col7,
     quant0, quant1, quant2, quant3, quant4, quant5, quant6, quant7,
@@ -223,10 +225,9 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
     out0l, out0h, out1l, out1h, out2l, out2h, out3l, out3h, out4l, out4h,
     out5l, out5h, out6l, out6h, out7l, out7h;
   __vector signed char outb;
-  int *outptr;
 
   /* Constants */
-  __vector short zero16 = { __8X(0) },
+  __vector short pw_zero = { __8X(0) },
     pw_f130_f054 = { __4X2(F_0_541 + F_0_765, F_0_541) },
     pw_f054_mf130 = { __4X2(F_0_541, F_0_541 - F_1_847) },
     pw_mf078_f117 = { __4X2(F_1_175 - F_1_961, F_1_175) },
@@ -236,7 +237,7 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
     pw_mf050_mf256 = { __4X2(F_2_053 - F_2_562, -F_2_562) },
     pw_mf256_f050 = { __4X2(-F_2_562, F_3_072 - F_2_562) };
   __vector unsigned short pass1_bits = { __8X(PASS1_BITS) };
-  __vector int zero32 = { __4X(0) },
+  __vector int pd_zero = { __4X(0) },
     pd_descale_p1 = { __4X(1 << (DESCALE_P1 - 1)) },
     pd_descale_p2 = { __4X(1 << (DESCALE_P2 - 1)) };
   __vector unsigned int descale_p1 = { __4X(DESCALE_P1) },
@@ -246,14 +247,14 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
 
   /* Pass 1: process columns */
 
-  col0 = *(__vector short *)&coef_block[0];
-  col1 = *(__vector short *)&coef_block[8];
-  col2 = *(__vector short *)&coef_block[16];
-  col3 = *(__vector short *)&coef_block[24];
-  col4 = *(__vector short *)&coef_block[32];
-  col5 = *(__vector short *)&coef_block[40];
-  col6 = *(__vector short *)&coef_block[48];
-  col7 = *(__vector short *)&coef_block[56];
+  col0 = vec_ld(0, coef_block);
+  col1 = vec_ld(16, coef_block);
+  col2 = vec_ld(32, coef_block);
+  col3 = vec_ld(48, coef_block);
+  col4 = vec_ld(64, coef_block);
+  col5 = vec_ld(80, coef_block);
+  col6 = vec_ld(96, coef_block);
+  col7 = vec_ld(112, coef_block);
 
   tmp1 = vec_or(col1, col2);
   tmp2 = vec_or(col3, col4);
@@ -262,10 +263,10 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
   tmp3 = vec_or(tmp3, col7);
   tmp1 = vec_or(tmp1, tmp3);
 
-  quant0 = *(__vector short *)&dct_table[0];
-  col0 = vec_mladd(col0, quant0, zero16);
+  quant0 = vec_ld(0, dct_table);
+  col0 = vec_mladd(col0, quant0, pw_zero);
 
-  if (vec_all_eq(tmp1, zero16)) {
+  if (vec_all_eq(tmp1, pw_zero)) {
     /* AC terms all zero */
 
     col0 = vec_sl(col0, pass1_bits);
@@ -281,21 +282,21 @@ jsimd_idct_islow_altivec (void * dct_table_, JCOEFPTR coef_block,
 
   } else {
 
-    quant1 = *(__vector short *)&dct_table[8];
-    quant2 = *(__vector short *)&dct_table[16];
-    quant3 = *(__vector short *)&dct_table[24];
-    quant4 = *(__vector short *)&dct_table[32];
-    quant5 = *(__vector short *)&dct_table[40];
-    quant6 = *(__vector short *)&dct_table[48];
-    quant7 = *(__vector short *)&dct_table[56];
+    quant1 = vec_ld(16, dct_table);
+    quant2 = vec_ld(32, dct_table);
+    quant3 = vec_ld(48, dct_table);
+    quant4 = vec_ld(64, dct_table);
+    quant5 = vec_ld(80, dct_table);
+    quant6 = vec_ld(96, dct_table);
+    quant7 = vec_ld(112, dct_table);
 
-    col1 = vec_mladd(col1, quant1, zero16);
-    col2 = vec_mladd(col2, quant2, zero16);
-    col3 = vec_mladd(col3, quant3, zero16);
-    col4 = vec_mladd(col4, quant4, zero16);
-    col5 = vec_mladd(col5, quant5, zero16);
-    col6 = vec_mladd(col6, quant6, zero16);
-    col7 = vec_mladd(col7, quant7, zero16);
+    col1 = vec_mladd(col1, quant1, pw_zero);
+    col2 = vec_mladd(col2, quant2, pw_zero);
+    col3 = vec_mladd(col3, quant3, pw_zero);
+    col4 = vec_mladd(col4, quant4, pw_zero);
+    col5 = vec_mladd(col5, quant5, pw_zero);
+    col6 = vec_mladd(col6, quant6, pw_zero);
+    col7 = vec_mladd(col7, quant7, pw_zero);
 
     DO_IDCT(col, 1);
 

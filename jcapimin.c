@@ -51,8 +51,8 @@ jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
    * complain here.
    */
   {
-    struct jpeg_error_mgr * err = cinfo->err;
-    void * client_data = cinfo->client_data; /* ignore Purify complaint here */
+    struct jpeg_error_mgr *err = cinfo->err;
+    void *client_data = cinfo->client_data; /* ignore Purify complaint here */
     MEMZERO(cinfo, sizeof(struct jpeg_compress_struct));
     cinfo->err = err;
     cinfo->client_data = client_data;
@@ -145,8 +145,8 @@ GLOBAL(void)
 jpeg_suppress_tables (j_compress_ptr cinfo, boolean suppress)
 {
   int i;
-  JQUANT_TBL * qtbl;
-  JHUFF_TBL * htbl;
+  JQUANT_TBL *qtbl;
+  JHUFF_TBL *htbl;
 
   for (i = 0; i < NUM_QUANT_TBLS; i++) {
     if ((qtbl = cinfo->quant_tbl_ptrs[i]) != NULL)

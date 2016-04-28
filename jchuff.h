@@ -41,7 +41,7 @@ EXTERN(void) jpeg_make_c_derived_tbl
 
 /* Generate an optimal table definition given the specified counts */
 EXTERN(void) jpeg_gen_optimal_table
-        (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]);
+        (j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[]);
 
 EXTERN(void) quantize_trellis
         (j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,

@@ -1,10 +1,11 @@
 USING THE IJG JPEG LIBRARY
 
 This file was part of the Independent JPEG Group's software:
-Copyright (C) 1994-2011, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014, D. R. Commander.
-For conditions of distribution and use, see the accompanying README file.
+Copyright (C) 2010, 2014-2016, D. R. Commander.
+Copyright (C) 2015, Google, Inc.
+For conditions of distribution and use, see the accompanying README.ijg file.
 
 
 This file describes how to use the IJG JPEG library within an application
@@ -200,7 +201,7 @@ or full grayscale (or sometimes another colorspace such as CMYK).  You can
 feed in a colormapped image by expanding it to full-color format.  However
 JPEG often doesn't work very well with source data that has been colormapped,
 because of dithering noise.  This is discussed in more detail in the JPEG FAQ
-and the other references mentioned in the README file.
+and the other references mentioned in the README.ijg file.
 
 Pixels are stored by scanlines, with each scanline running from left to
 right.  The component values for each pixel are adjacent in the row; for
@@ -292,7 +293,7 @@ destination module if you want to do something else, as discussed later.
 If you use the standard destination module, you must open the target stdio
 stream beforehand.  Typical code for this step looks like:
 
-        FILE * outfile;
+        FILE *outfile;
         ...
         if ((outfile = fopen(filename, "wb")) == NULL) {
             fprintf(stderr, "can't open %s\n", filename);
@@ -539,7 +540,7 @@ to do something else, as discussed later.
 If you use the standard source module, you must open the source stdio stream
 beforehand.  Typical code for this step looks like:
 
-        FILE * infile;
+        FILE *infile;
         ...
         if ((infile = fopen(filename, "rb")) == NULL) {
             fprintf(stderr, "can't open %s\n", filename);
@@ -729,6 +730,91 @@ jpeg_abort_decompress() or jpeg_abort() if you want to reuse the object.
 The previous discussion of aborting compression cycles applies here too.
 
 
+Partial image decompression
+---------------------------
+
+Partial image decompression is convenient for performance-critical applications
+that wish to view only a portion of a large JPEG image without decompressing
+the whole thing.  It it also useful in memory-constrained environments (such as
+on mobile devices.)  This library provides the following functions to support
+partial image decompression:
+
+1. Skipping rows when decompressing
+
+        jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines);
+
+This function provides application programmers with the ability to skip over
+multiple rows in the JPEG image.
+
+Suspending data sources are not supported by this function.  Calling
+jpeg_skip_scanlines() with a suspending data source will result in undefined
+behavior.
+
+jpeg_skip_scanlines() will not allow skipping past the bottom of the image.  If
+the value of num_lines is large enough to skip past the bottom of the image,
+then the function will skip to the end of the image instead.
+
+If the value of num_lines is valid, then jpeg_skip_scanlines() will always
+skip all of the input rows requested.  There is no need to inspect the return
+value of the function in that case.
+
+Best results will be achieved by calling jpeg_skip_scanlines() for large chunks
+of rows.  The function should be viewed as a way to quickly jump to a
+particular vertical offset in the JPEG image in order to decode a subset of the
+image.  Used in this manner, it will provide significant performance
+improvements.
+
+Calling jpeg_skip_scanlines() for small values of num_lines has several
+potential drawbacks:
+    1) JPEG decompression occurs in blocks, so if jpeg_skip_scanlines() is
+       called from the middle of a decompression block, then it is likely that
+       much of the decompression work has already been done for the first
+       couple of rows that need to be skipped.
+    2) When this function returns, it must leave the decompressor in a state
+       such that it is ready to read the next line.  This may involve
+       decompressing a block that must be partially skipped.
+These issues are especially tricky for cases in which upsampling requires
+context rows.  In the worst case, jpeg_skip_scanlines() will perform similarly
+to jpeg_read_scanlines() (since it will actually call jpeg_read_scanlines().)
+
+2. Decompressing partial scanlines
+
+        jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
+                            JDIMENSION *width)
+
+This function provides application programmers with the ability to decompress
+only a portion of each row in the JPEG image.  It must be called after
+jpeg_start_decompress() and before any calls to jpeg_read_scanlines() or
+jpeg_skip_scanlines().
+
+If xoffset and width do not form a valid subset of the image row, then this
+function will generate an error.  Note that if the output image is scaled, then
+xoffset and width are relative to the scaled image dimensions.
+
+xoffset and width are passed by reference because xoffset must fall on an iMCU
+boundary.  If it doesn't, then it will be moved left to the nearest iMCU
+boundary, and width will be increased accordingly.  If the calling program does
+not like the adjusted values of xoffset and width, then it can call
+jpeg_crop_scanline() again with new values (for instance, if it wants to move
+xoffset to the nearest iMCU boundary to the right instead of to the left.)
+
+After calling this function, cinfo->output_width will be set to the adjusted
+width.  This value should be used when allocating an output buffer to pass to
+jpeg_read_scanlines().
+
+The output image from a partial-width decompression will be identical to the
+corresponding image region from a full decode, with one exception:  The "fancy"
+(smooth) h2v2 (4:2:0) and h2v1 (4:2:2) upsampling algorithms fill in the
+missing chroma components by averaging the chroma components from neighboring
+pixels, except on the right and left edges of the image (where there are no
+neighboring pixels.)  When performing a partial-width decompression, these
+"fancy" upsampling algorithms may treat the left and right edges of the partial
+image region as if they are the left and right edges of the image, meaning that
+the upsampling algorithm may be simplified.  The result is that the pixels on
+the left or right edge of the partial image may not be exactly identical to the
+corresponding pixels in the original image.
+
+
 Mechanics of usage: include files, linking, etc
 -----------------------------------------------
 
@@ -781,7 +867,7 @@ This section describes all the optional parameters you can set for JPEG
 compression, as well as the "helper" routines provided to assist in this
 task.  Proper setting of some parameters requires detailed understanding
 of the JPEG standard; if you don't know what a parameter is for, it's best
-not to mess with it!  See REFERENCES in the README file for pointers to
+not to mess with it!  See REFERENCES in the README.ijg file for pointers to
 more info about JPEG.
 
 It's a good idea to call jpeg_set_defaults() first, even if you plan to set
@@ -872,6 +958,10 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 
 Compression parameters (cinfo fields) include:
 
+boolean arith_code
+	If TRUE, use arithmetic coding.
+	If FALSE, use Huffman coding.
+
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:
                 JDCT_ISLOW: slow but accurate integer algorithm
@@ -928,7 +1018,7 @@ int restart_in_rows
         If you use restarts, you may want to use larger intervals in those
         cases.
 
-const jpeg_scan_info * scan_info
+const jpeg_scan_info *scan_info
 int num_scans
         By default, scan_info is NULL; this causes the compressor to write a
         single-scan sequential JPEG file.  If not NULL, scan_info points to
@@ -974,7 +1064,7 @@ boolean write_Adobe_marker
         default behavior ensures that the JPEG file's color space can be
         recognized by the decoder.
 
-JQUANT_TBL * quant_tbl_ptrs[NUM_QUANT_TBLS]
+JQUANT_TBL *quant_tbl_ptrs[NUM_QUANT_TBLS]
         Pointers to coefficient quantization tables, one per table slot,
         or NULL if no table is defined for a slot.  Usually these should
         be set via one of the above helper routines; jpeg_add_quant_table()
@@ -1009,8 +1099,8 @@ int q_scale_factor[NUM_QUANT_TBLS]
                 cinfo->comp_info[0].v_samp_factor = 1;
                 cinfo->comp_info[0].h_samp_factor = 1;
 
-JHUFF_TBL * dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
-JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
+JHUFF_TBL *dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
+JHUFF_TBL *ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
         Pointers to Huffman coding tables, one per table slot, or NULL if
         no table is defined for a slot.  Slots 0 and 1 are filled with the
         JPEG sample tables by jpeg_set_defaults().  If you need to allocate
@@ -1394,7 +1484,7 @@ output_message (j_common_ptr cinfo)
         somewhere other than stderr.  Note that this method does not know
         how to generate a message, only where to send it.
 
-format_message (j_common_ptr cinfo, char * buffer)
+format_message (j_common_ptr cinfo, char *buffer)
         Constructs a readable error message string based on the error info
         stored in cinfo->err.  This method is called by output_message.  Few
         applications should need to override this method.  One possible
@@ -1471,7 +1561,7 @@ on external storage.
 A data destination manager struct contains a pointer and count defining the
 next byte to write in the work buffer and the remaining free space:
 
-        JOCTET * next_output_byte;  /* => next byte to write in buffer */
+        JOCTET *next_output_byte;   /* => next byte to write in buffer */
         size_t free_in_buffer;      /* # of byte spaces remaining in buffer */
 
 The library increments the pointer and decrements the count until the buffer
@@ -1520,7 +1610,7 @@ additional frammishes.  The source manager struct contains a pointer and count
 defining the next byte to read from the work buffer and the number of bytes
 remaining:
 
-        const JOCTET * next_input_byte; /* => next byte to read from buffer */
+        const JOCTET *next_input_byte;  /* => next byte to read from buffer */
         size_t bytes_in_buffer;         /* # of bytes remaining in buffer */
 
 The library increments the pointer and decrements the count until the buffer

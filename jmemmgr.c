@@ -5,7 +5,8 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2016, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains the JPEG system-independent memory management
  * routines.  This code is usable across a wide variety of machines; most
@@ -34,7 +35,7 @@
 
 #ifndef NO_GETENV
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare getenv() */
-extern char * getenv (const char * name);
+extern char *getenv (const char *name);
 #endif
 #endif
 
@@ -96,7 +97,7 @@ round_up_pow2 (size_t a, size_t b)
  * Small and large pool headers are identical.
  */
 
-typedef struct small_pool_struct * small_pool_ptr;
+typedef struct small_pool_struct *small_pool_ptr;
 
 typedef struct small_pool_struct {
   small_pool_ptr next;  /* next in list of pools */
@@ -104,7 +105,7 @@ typedef struct small_pool_struct {
   size_t bytes_left;            /* bytes still available in this pool */
 } small_pool_hdr;
 
-typedef struct large_pool_struct * large_pool_ptr;
+typedef struct large_pool_struct *large_pool_ptr;
 
 typedef struct large_pool_struct {
   large_pool_ptr next;  /* next in list of pools */
@@ -140,7 +141,7 @@ typedef struct {
   JDIMENSION last_rowsperchunk; /* from most recent alloc_sarray/barray */
 } my_memory_mgr;
 
-typedef my_memory_mgr * my_mem_ptr;
+typedef my_memory_mgr *my_mem_ptr;
 
 
 /*
@@ -266,7 +267,7 @@ alloc_small (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
 {
   my_mem_ptr mem = (my_mem_ptr) cinfo->mem;
   small_pool_ptr hdr_ptr, prev_hdr_ptr;
-  char * data_ptr;
+  char *data_ptr;
   size_t min_request, slop;
 
   /*
@@ -362,7 +363,7 @@ alloc_large (j_common_ptr cinfo, int pool_id, size_t sizeofobject)
 {
   my_mem_ptr mem = (my_mem_ptr) cinfo->mem;
   large_pool_ptr hdr_ptr;
-  char * data_ptr;
+  char *data_ptr;
 
   /*
    * Round up the requested size to a multiple of ALIGN_SIZE so that
@@ -1153,7 +1154,7 @@ jinit_memory_mgr (j_common_ptr cinfo)
    * this feature.
    */
 #ifndef NO_GETENV
-  { char * memenv;
+  { char *memenv;
 
     if ((memenv = getenv("JPEGMEM")) != NULL) {
       char ch = 'x';

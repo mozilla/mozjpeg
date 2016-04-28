@@ -1,4 +1,4 @@
-.TH CJPEG 1 "21 November 2014"
+.TH CJPEG 1 "17 February 2016"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -85,8 +85,8 @@ reconstructed image: the higher the quality setting, the larger the JPEG file,
 and the closer the output image will be to the original input.  Normally you
 want to use the lowest quality setting (smallest file) that decompresses into
 something visually indistinguishable from the original image.  For this
-purpose the quality setting should be between 50 and 95; the default of 75 is
-often about right.  If you see defects at
+purpose the quality setting should generally be between 50 and 95 (the default
+is 75) for photographic images.  If you see defects at
 .B \-quality
 75, then go up 5 or 10 counts at a time until you are happy with the output
 image.  (The optimal setting will vary from one image to another.)
@@ -94,11 +94,10 @@ image.  (The optimal setting will vary from one image to another.)
 .B \-quality
 100 will generate a quantization table of all 1's, minimizing loss in the
 quantization step (but there is still information loss in subsampling, as well
-as roundoff error).  This setting is mainly of interest for experimental
-purposes.  Quality values above about 95 are
-.B not
-recommended for normal use; the compressed file size goes up dramatically for
-hardly any gain in output image quality.
+as roundoff error.)  For most images, specifying a quality value above
+about 95 will increase the size of the compressed file dramatically, and while
+the quality gain from these higher quality values is measurable (using metrics
+such as PSNR or SSIM), it is rarely perceivable by human vision.
 .PP
 In the other direction, quality values below 50 will produce very small files
 of low image quality.  Settings around 5 to 10 might be useful in preparing an
@@ -338,11 +337,11 @@ Independent JPEG Group
 This file was modified by The libjpeg-turbo Project to include only information
 relevant to libjpeg-turbo, to wordsmith certain sections, and to describe
 features not present in libjpeg.
-.SH BUGS
+.SH ISSUES
 Support for GIF input files was removed in cjpeg v6b due to concerns over
 the Unisys LZW patent.  Although this patent expired in 2006, cjpeg still
 lacks GIF support, for these historical reasons.  (Conversion of GIF files to
-JPEG is usually a bad idea anyway.)
+JPEG is usually a bad idea anyway, since GIF is a 256-color format.)
 .PP
 Not all variants of BMP and Targa file formats are supported.
 .PP

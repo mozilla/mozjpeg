@@ -5,7 +5,8 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * It was modified by The libjpeg-turbo Project to include only code and
  * information relevant to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to read input images in Utah RLE format.
  * The Utah Raster Toolkit library is required (version 3.1 or later).
@@ -61,7 +62,7 @@ typedef enum
  * then fetch the required row from the virtual array on subsequent calls.
  */
 
-typedef struct _rle_source_struct * rle_source_ptr;
+typedef struct _rle_source_struct *rle_source_ptr;
 
 typedef struct _rle_source_struct {
   struct cjpeg_source_struct pub; /* public fields */
@@ -70,7 +71,7 @@ typedef struct _rle_source_struct {
   jvirt_sarray_ptr image;       /* virtual array to hold the image */
   JDIMENSION row;               /* current row # in the virtual array */
   rle_hdr header;               /* Input file information */
-  rle_pixel** rle_row;          /* holds a row returned by rle_getrow() */
+  rle_pixel **rle_row;          /* holds a row returned by rle_getrow() */
 
 } rle_source_struct;
 
@@ -215,7 +216,7 @@ get_pseudocolor_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   colormap = source->header.cmap;
   dest_row = source->pub.buffer[0];
   source->row--;
-  src_row = * (*cinfo->mem->access_virt_sarray)
+  src_row = *(*cinfo->mem->access_virt_sarray)
     ((j_common_ptr) cinfo, source->image, source->row, (JDIMENSION) 1, FALSE);
 
   for (col = cinfo->image_width; col > 0; col--) {
@@ -288,7 +289,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   case MAPPEDGRAY:
   case TRUECOLOR:
     for (row = 0; row < cinfo->image_height; row++) {
-      scanline = * (*cinfo->mem->access_virt_sarray)
+      scanline = *(*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, source->image, row, (JDIMENSION) 1, TRUE);
       rle_row = source->rle_row;
       rle_getrow(&source->header, rle_row);
@@ -311,7 +312,7 @@ load_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   case DIRECTCOLOR:
     for (row = 0; row < cinfo->image_height; row++) {
-      scanline = * (*cinfo->mem->access_virt_sarray)
+      scanline = *(*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, source->image, row, (JDIMENSION) 1, TRUE);
       rle_getrow(&source->header, rle_row);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2016 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,7 +35,7 @@ import org.libjpegturbo.turbojpeg.*;
 class TJBench {
 
   static int flags = 0, quiet = 0, pf = TJ.PF_BGR, yuvpad = 1, warmup = 1;
-  static boolean compOnly, decompOnly, doTile, doYUV;
+  static boolean compOnly, decompOnly, doTile, doYUV, write;
 
   static final String[] pixFormatStr = {
     "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY"
@@ -223,6 +223,8 @@ class TJBench {
       }
     }
 
+    if (!write) return;
+
     if (sf.getNum() != 1 || sf.getDenom() != 1)
       sizeStr = new String(sf.getNum() + "_" + sf.getDenom());
     else if (tilew != w || tileh != h)
@@ -394,7 +396,7 @@ class TJBench {
         System.out.format("                  Output bit stream:  %f Megabits/sec\n",
           (double)totalJpegSize * 8. / 1000000. * (double)iter / elapsed);
       }
-      if (tilew == w && tileh == h) {
+      if (tilew == w && tileh == h && write) {
         String tempStr = fileName + "_" + subName[subsamp] + "_" + "Q" +
                          jpegQual + ".jpg";
         FileOutputStream fos = new FileOutputStream(tempStr);
@@ -659,7 +661,9 @@ class TJBench {
     System.out.println("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)");
     System.out.println("-warmup <w> = Execute each benchmark <w> times to prime the cache before");
     System.out.println("     taking performance measurements (default = 1)");
-    System.out.println("-componly = Stop after running compression tests.  Do not test decompression.\n");
+    System.out.println("-componly = Stop after running compression tests.  Do not test decompression.");
+    System.out.println("-nowrite = Do not write reference or output images (improves consistency");
+    System.out.println("     of performance measurements.)\n");
     System.out.println("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate");
     System.out.println("test will be performed for all quality values in the range.\n");
     System.exit(1);
@@ -817,6 +821,8 @@ class TJBench {
           }
           if (argv[i].equalsIgnoreCase("-componly"))
             compOnly = true;
+          if (argv[i].equalsIgnoreCase("-nowrite"))
+            write = false;
           if (argv[i].equalsIgnoreCase("-warmup") && i < argv.length - 1) {
             int temp = -1;
             try {

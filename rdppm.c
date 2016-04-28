@@ -5,8 +5,9 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2016, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * Copyright (C) 2015, 2016, D. R. Commander.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to read input images in PPM/PGM format.
  * The extended 2-byte-per-sample raw PPM/PGM formats are supported.
@@ -71,11 +72,11 @@ typedef struct {
   int maxval;
 } ppm_source_struct;
 
-typedef ppm_source_struct * ppm_source_ptr;
+typedef ppm_source_struct *ppm_source_ptr;
 
 
 LOCAL(int)
-pbm_getc (FILE * infile)
+pbm_getc (FILE *infile)
 /* Read next char, skipping over any comments */
 /* A comment/newline sequence is returned as a newline */
 {
@@ -92,7 +93,7 @@ pbm_getc (FILE * infile)
 
 
 LOCAL(unsigned int)
-read_pbm_integer (j_compress_ptr cinfo, FILE * infile, unsigned int maxval)
+read_pbm_integer (j_compress_ptr cinfo, FILE *infile, unsigned int maxval)
 /* Read an unsigned decimal integer from the PPM file */
 /* Swallows one trailing character after the integer */
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
@@ -140,7 +141,7 @@ get_text_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading text-format PGM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
-  FILE * infile = source->pub.input_file;
+  FILE *infile = source->pub.input_file;
   register JSAMPROW ptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
@@ -159,7 +160,7 @@ get_text_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading text-format PPM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
-  FILE * infile = source->pub.input_file;
+  FILE *infile = source->pub.input_file;
   register JSAMPROW ptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
@@ -181,7 +182,7 @@ get_scaled_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
 
@@ -202,7 +203,7 @@ get_scaled_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
 
@@ -240,7 +241,7 @@ get_word_gray_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
@@ -267,7 +268,7 @@ get_word_rgb_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr) sinfo;
   register JSAMPROW ptr;
-  register U_CHAR * bufferptr;
+  register U_CHAR *bufferptr;
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
@@ -419,7 +420,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   /* Compute the rescaling array if required. */
   if (need_rescale) {
-    INT32 val, half_maxval;
+    long val, half_maxval;
 
     /* On 16-bit-int machines we have to be careful of maxval = 65535 */
     source->rescale = (JSAMPLE *)
@@ -427,7 +428,7 @@ start_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
                                   (size_t) (((long) maxval + 1L) *
                                             sizeof(JSAMPLE)));
     half_maxval = maxval / 2;
-    for (val = 0; val <= (INT32) maxval; val++) {
+    for (val = 0; val <= (long) maxval; val++) {
       /* The multiplication here must be done in 32 bits to avoid overflow */
       source->rescale[val] = (JSAMPLE) ((val * MAXJSAMPLE + half_maxval) /
                                         maxval);

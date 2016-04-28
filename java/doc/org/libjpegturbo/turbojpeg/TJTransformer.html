@@ -95,6 +95,10 @@
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd>java.io.Closeable, java.lang.AutoCloseable</dd>
+</dl>
 <hr>
 <br>
 <pre>public class <span class="strong">TJTransformer</span>
@@ -228,10 +232,10 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <li class="blockList">
 <h4>TJTransformer</h4>
 <pre>public&nbsp;TJTransformer()
-              throws java.lang.Exception</pre>
+              throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Create a TurboJPEG lossless transformer instance.</div>
 <dl><dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dd><code><a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd></dl>
 </li>
 </ul>
 <a name="TJTransformer(byte[])">
@@ -241,13 +245,13 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <li class="blockList">
 <h4>TJTransformer</h4>
 <pre>public&nbsp;TJTransformer(byte[]&nbsp;jpegImage)
-              throws java.lang.Exception</pre>
+              throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Create a TurboJPEG lossless transformer instance and associate the JPEG
  image stored in <code>jpegImage</code> with the newly created instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer (size of the JPEG image is assumed to
  be the length of the array.)  This buffer is not modified.</dd>
 <dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dd><code><a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd></dl>
 </li>
 </ul>
 <a name="TJTransformer(byte[], int)">
@@ -258,13 +262,13 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <h4>TJTransformer</h4>
 <pre>public&nbsp;TJTransformer(byte[]&nbsp;jpegImage,
              int&nbsp;imageSize)
-              throws java.lang.Exception</pre>
+              throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Create a TurboJPEG lossless transformer instance and associate the JPEG
  image of length <code>imageSize</code> bytes stored in
  <code>jpegImage</code> with the newly created instance.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer.  This buffer is not modified.</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
 <dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dd><code><a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd></dl>
 </li>
 </ul>
 </li>
@@ -284,7 +288,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <pre>public&nbsp;void&nbsp;transform(byte[][]&nbsp;dstBufs,
              <a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a>[]&nbsp;transforms,
              int&nbsp;flags)
-               throws java.lang.Exception</pre>
+               throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Losslessly transform the JPEG image associated with this transformer
  instance into one or more JPEG images stored in the given destination
  buffers.  Lossless transforms work by moving the raw coefficients from one
@@ -306,7 +310,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
  corresponding transformed output image</dd><dd><code>flags</code> - the bitwise OR of one or more of
  <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>TJ.FLAG_*</code></a></dd>
 <dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dd><code><a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd></dl>
 </li>
 </ul>
 <a name="transform(org.libjpegturbo.turbojpeg.TJTransform[], int)">
@@ -317,7 +321,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <h4>transform</h4>
 <pre>public&nbsp;<a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg">TJDecompressor</a>[]&nbsp;transform(<a href="../../../org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a>[]&nbsp;transforms,
                          int&nbsp;flags)
-                           throws java.lang.Exception</pre>
+                           throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Losslessly transform the JPEG image associated with this transformer
  instance and return an array of <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg"><code>TJDecompressor</code></a> instances, each of
  which has a transformed JPEG image associated with it.</div>
@@ -328,7 +332,7 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <dt><span class="strong">Returns:</span></dt><dd>an array of <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg"><code>TJDecompressor</code></a> instances, each of
  which has a transformed JPEG image associated with it.</dd>
 <dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+<dd><code><a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd></dl>
 </li>
 </ul>
 <a name="getTransformedSizes()">
@@ -337,14 +341,11 @@ extends <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title=
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getTransformedSizes</h4>
-<pre>public&nbsp;int[]&nbsp;getTransformedSizes()
-                          throws java.lang.Exception</pre>
+<pre>public&nbsp;int[]&nbsp;getTransformedSizes()</pre>
 <div class="block">Returns an array containing the sizes of the transformed JPEG images
  generated by the most recent transform operation.</div>
 <dl><dt><span class="strong">Returns:</span></dt><dd>an array containing the sizes of the transformed JPEG images
- generated by the most recent transform operation.</dd>
-<dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd></dl>
+ generated by the most recent transform operation.</dd></dl>
 </li>
 </ul>
 </li>

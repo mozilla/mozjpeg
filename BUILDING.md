@@ -458,7 +458,7 @@ Building on Windows (Visual C++ or MinGW)
 Build Requirements
 ------------------
 
-- [CMake](http://www.cmake.org) v2.8.8 or later
+- [CMake](http://www.cmake.org) v2.8.11 or later
 
 - [NASM](http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
   a 64-bit build)
@@ -668,11 +668,11 @@ front-end classes to support it.  This allows the TurboJPEG shared library to
 be used directly from Java applications.  See [java/README](java/README) for
 more details.
 
-If you are using CMake 2.8, you can set the `Java_JAVAC_EXECUTABLE`,
-`Java_JAVA_EXECUTABLE`, and `Java_JAR_EXECUTABLE` CMake variables to specify
-alternate commands or locations for javac, jar, and java (respectively.)  You
-can also set the `JAVACFLAGS` CMake variable to specify arguments that should
-be passed to the Java compiler when building the front-end classes.
+You can set the `Java_JAVAC_EXECUTABLE`, `Java_JAVA_EXECUTABLE`, and
+`Java_JAR_EXECUTABLE` CMake variables to specify alternate commands or
+locations for javac, jar, and java (respectively.)  You can also set the
+`JAVACFLAGS` CMake variable to specify arguments that should be passed to the
+Java compiler when building the front-end classes.
 
 
 Installing libjpeg-turbo

@@ -484,7 +484,7 @@ CFLAGS and -pie from LDFLAGS.
 Build Requirements
 ==================
 
--- CMake (http://www.cmake.org) v2.8.8 or later
+-- CMake (http://www.cmake.org) v2.8.11 or later
 
 -- Microsoft Visual C++ 2005 or later
 
@@ -688,12 +688,11 @@ Native Interface wrapper into the TurboJPEG shared library and build the Java
 front-end classes to support it.  This allows the TurboJPEG shared library to
 be used directly from Java applications.  See java/README for more details.
 
-If you are using CMake 2.8, you can set the Java_JAVAC_EXECUTABLE,
-Java_JAVA_EXECUTABLE, and Java_JAR_EXECUTABLE CMake variables to specify
-alternate commands or locations for javac, jar, and java (respectively.)  If
-you are using CMake 2.6, set JAVA_COMPILE, JAVA_RUNTIME, and JAVA_ARCHIVE
-instead.  You can also set the JAVACFLAGS CMake variable to specify arguments
-that should be passed to the Java compiler when building the front-end classes.
+You can set the Java_JAVAC_EXECUTABLE, Java_JAVA_EXECUTABLE, and
+Java_JAR_EXECUTABLE CMake variables to specify alternate commands or locations
+for javac, jar, and java (respectively.)  You can also set the JAVACFLAGS CMake
+variable to specify arguments that should be passed to the Java compiler when
+building the front-end classes.
 
 
 ========================

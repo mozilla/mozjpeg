@@ -27,6 +27,9 @@ calling `tjDecompressHeader3()`, or if the return value from
 `tjDecompressHeader3()` was ignored (both cases represent incorrect usage of
 the TurboJPEG API.)
 
+5. Fixed an issue in the ARM 32-bit SIMD-accelerated Huffman encoder that
+prevented the code from assembling properly with clang.
+
 
 1.4.90 (1.5 beta1)
 ==================

@@ -35,6 +35,7 @@
 .arch armv7a
 .object_arch armv4
 .arm
+.syntax unified
 
 
 #define RESPECT_STRICT_ALIGNMENT 1
@@ -2457,11 +2458,7 @@ asm_function jsimd_h2v1_fancy_upsample_neon
     strb            \TMP, [\BUFFER, #1]!
     cmp             \TMP, #0xff
     /*it eq*/
-#if defined(__clang__)
     strbeq          \ZERO, [\BUFFER, #1]!
-#else
-    streqb          \ZERO, [\BUFFER, #1]!
-#endif
 .endm
 
 .macro put_bits PUT_BUFFER, PUT_BITS, CODE, SIZE

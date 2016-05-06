@@ -518,7 +518,7 @@ prepare_for_pass (j_compress_ptr cinfo)
       master->saved_dest = cinfo->dest;
       cinfo->dest = NULL;
       master->scan_size[master->scan_number] = 0;
-      jpeg_mem_dest(cinfo, &master->scan_buffer[master->scan_number], &master->scan_size[master->scan_number]);
+      jpeg_mem_dest_internal(cinfo, &master->scan_buffer[master->scan_number], &master->scan_size[master->scan_number], JPOOL_IMAGE);
       (*cinfo->dest->init_destination)(cinfo);
     }
     (*cinfo->entropy->start_pass) (cinfo, FALSE);

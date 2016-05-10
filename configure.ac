@@ -279,9 +279,12 @@ AC_DEFINE_UNQUOTED([INLINE],[$ljt_cv_inline],[How to obtain function inlining.])
 AC_MSG_CHECKING([whether to include arithmetic encoding support])
 AC_ARG_WITH([arith-enc],
   AC_HELP_STRING([--without-arith-enc],
-    [Do not include arithmetic encoding support]))
+    [Do not include arithmetic encoding support when emulating the libjpeg v6b API/ABI]))
 if test "x$with_12bit" = "xyes"; then
   with_arith_enc=no
+fi
+if test "x${with_jpeg8}" = "xyes" -o "x${with_jpeg7}" = "xyes"; then
+  with_arith_enc=yes
 fi
 if test "x$with_arith_enc" = "xno"; then
   AC_MSG_RESULT(no)
@@ -295,9 +298,12 @@ AM_CONDITIONAL([WITH_ARITH_ENC], [test "x$with_arith_enc" != "xno"])
 AC_MSG_CHECKING([whether to include arithmetic decoding support])
 AC_ARG_WITH([arith-dec],
   AC_HELP_STRING([--without-arith-dec],
-    [Do not include arithmetic decoding support]))
+    [Do not include arithmetic decoding support when emulating the libjpeg v6b API/ABI]))
 if test "x$with_12bit" = "xyes"; then
   with_arith_dec=no
+fi
+if test "x${with_jpeg8}" = "xyes" -o "x${with_jpeg7}" = "xyes"; then
+  with_arith_dec=yes
 fi
 if test "x$with_arith_dec" = "xno"; then
   AC_MSG_RESULT(no)

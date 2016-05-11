@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, D. R. Commander.
+ * Copyright (C) 2011, 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -173,6 +173,11 @@ jpeg_mem_src_tj (j_decompress_ptr cinfo,
     cinfo->src = (struct jpeg_source_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   sizeof(struct jpeg_source_mgr));
+  } else if (cinfo->src->init_source != init_mem_source) {
+    /* It is unsafe to reuse the existing source manager unless it was created
+     * by this function.
+     */
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
   src = cinfo->src;

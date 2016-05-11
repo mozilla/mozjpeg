@@ -224,6 +224,16 @@ AC_SUBST(MEM_SRCDST_FUNCTIONS)
 
 AC_DEFINE_UNQUOTED(LIBJPEG_TURBO_VERSION, [$VERSION], [libjpeg-turbo version])
 
+m4_define(version_triplet,m4_split(AC_PACKAGE_VERSION,[[.]]))
+m4_define(version_major,m4_argn(1,version_triplet))
+m4_define(version_minor,m4_argn(2,version_triplet))
+m4_define(version_revision,m4_argn(3,version_triplet))
+VERSION_MAJOR=version_major
+VERSION_MINOR=version_minor
+VERSION_REVISION=version_revision
+LIBJPEG_TURBO_VERSION_NUMBER=`printf "%d%03d%03d" $VERSION_MAJOR $VERSION_MINOR $VERSION_REVISION`
+AC_DEFINE_UNQUOTED(LIBJPEG_TURBO_VERSION_NUMBER, [$LIBJPEG_TURBO_VERSION_NUMBER], [libjpeg-turbo version in integer form])
+
 VERSION_SCRIPT=yes
 AC_ARG_ENABLE([ld-version-script],
   AS_HELP_STRING([--disable-ld-version-script],

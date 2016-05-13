@@ -5,7 +5,8 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * It was modified by The libjpeg-turbo Project to include only code and
  * information relevant to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to write output images in Targa format.
  *
@@ -40,7 +41,7 @@ typedef struct {
   JDIMENSION buffer_width;      /* width of one row */
 } tga_dest_struct;
 
-typedef tga_dest_struct * tga_dest_ptr;
+typedef tga_dest_struct *tga_dest_ptr;
 
 
 LOCAL(void)
@@ -95,7 +96,7 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   tga_dest_ptr dest = (tga_dest_ptr) dinfo;
   register JSAMPROW inptr;
-  register char * outptr;
+  register char *outptr;
   register JDIMENSION col;
 
   inptr = dest->pub.buffer[0];
@@ -116,7 +117,7 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   tga_dest_ptr dest = (tga_dest_ptr) dinfo;
   register JSAMPROW inptr;
-  register char * outptr;
+  register char *outptr;
   register JDIMENSION col;
 
   inptr = dest->pub.buffer[0];
@@ -139,7 +140,7 @@ put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   tga_dest_ptr dest = (tga_dest_ptr) dinfo;
   register JSAMPROW inptr;
-  register char * outptr;
+  register char *outptr;
   register JSAMPROW color_map0 = cinfo->colormap[0];
   register JDIMENSION col;
 

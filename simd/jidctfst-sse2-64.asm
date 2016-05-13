@@ -13,7 +13,7 @@
 ; can *not* be assembled with Microsoft's MASM or any compatible
 ; assembler (including Borland's Turbo Assembler).
 ; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/projecpt/showfiles.php?group_id=6208
+; http://sourceforge.net/project/showfiles.php?group_id=6208
 ;
 ; This file contains a fast, not so accurate integer implementation of
 ; the inverse DCT (Discrete Cosine Transform). The following code is
@@ -79,11 +79,11 @@ PB_CENTERJSAMP  times 16 db CENTERJSAMPLE
 ; Perform dequantization and inverse DCT on one block of coefficients.
 ;
 ; GLOBAL(void)
-; jsimd_idct_ifast_sse2 (void * dct_table, JCOEFPTR coef_block,
+; jsimd_idct_ifast_sse2 (void *dct_table, JCOEFPTR coef_block,
 ;                       JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
-; r10 = jpeg_component_info * compptr
+; r10 = jpeg_component_info *compptr
 ; r11 = JCOEFPTR coef_block
 ; r12 = JSAMPARRAY output_buf
 ; r13 = JDIMENSION output_col
@@ -323,7 +323,7 @@ EXTN(jsimd_idct_ifast_sse2):
 
         mov     rax, [original_rbp]
         mov     rdi, r12        ; (JSAMPROW *)
-        mov     rax, r13
+        mov     eax, r13d
 
         ; -- Even part
 

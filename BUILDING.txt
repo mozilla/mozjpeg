@@ -7,6 +7,7 @@
 Build Requirements
 ==================
 
+-- pkg-config
 -- autoconf 2.56 or later
 -- automake 1.7 or later
 -- libtool 1.4 or later
@@ -14,11 +15,14 @@ Build Requirements
      provided.  The easiest way to obtain them is from MacPorts
      (http://www.macports.org/).
 
--- NASM (if building x86 or x86-64 SIMD extensions)
-   * 0.98, or 2.01 or later is required for a 32-bit build
-   * NASM 2.00 or later is required for a 64-bit build
-   * NASM 2.07 or later is required for a 64-bit build on OS X.  This can be
-     obtained from MacPorts (http://www.macports.org/).
+-- NASM or YASM (if building x86 or x86-64 SIMD extensions)
+   * NASM 0.98, or 2.01 or later is required for an x86 build (0.99 and 2.00 do
+     not work properly with libjpeg-turbo's x86 SIMD code.)
+   * NASM 2.00 or later is required for an x86-64 build.
+   * NASM 2.07, or 2.11.09 or later is required for an x86-64 Mac build
+     (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD code when
+     building macho64 objects.)  NASM or YASM can be obtained from MacPorts
+     (http://www.macports.org/).
 
    The binary RPMs released by the NASM project do not work on older Linux
    systems, such as Red Hat Enterprise Linux 4.  On such systems, you can
@@ -40,14 +44,14 @@ Build Requirements
      the LLVM compiler.  Xcode v4.0 through v4.6 provides a GCC front end
      called LLVM-GCC.  Unfortunately, as of this writing, neither LLVM-GCC nor
      the LLVM (clang) compiler produces optimal performance with libjpeg-turbo.
-     Building libjpeg-turbo with LLVM-GCC v4.2 results in a 10% performance
+     Building mozjpeg with LLVM-GCC v4.2 results in a 10% performance
      degradation when compressing using 64-bit code, relative to building
      libjpeg-turbo with GCC v4.2.  Building libjpeg-turbo with LLVM (clang)
      results in a 20% performance degradation when compressing using 64-bit
      code, relative to building libjpeg-turbo with GCC v4.2.  If you are
      running Snow Leopard or earlier, it is suggested that you continue to use
      Xcode v3.2.6, which provides GCC v4.2.  If you are using Lion or later, it
-     is suggested that you install Apple GCC v4.2 through MacPorts.
+     is suggested that you install Apple GCC v4.2 or GCC v5 through MacPorts.
 
 -- If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
    required.  Some systems, such as Solaris 10 and later and Red Hat Enterprise
@@ -64,21 +68,31 @@ Out-of-Tree Builds
 
 Binary objects, libraries, and executables are generated in the same directory
 from which configure was executed (the "binary directory"), and this directory
-need not necessarily be the same as the libjpeg-turbo source directory.  You
+need not necessarily be the same as the mozjpeg source directory.  You
 can create multiple independent binary directories, in which different versions
-of libjpeg-turbo can be built from the same source tree using different
+of mozjpeg can be built from the same source tree using different
 compilers or settings.  In the sections below, {build_directory} refers to the
-binary directory, whereas {source_directory} refers to the libjpeg-turbo source
+binary directory, whereas {source_directory} refers to the mozjpeg source
 directory.  For in-tree builds, these directories are the same.
 
 
-======================
-Building libjpeg-turbo
-======================
+================
+Building mozjpeg
+================
 
-The following procedure will build libjpeg-turbo on Linux, FreeBSD, Cygwin, and
+The following procedure will build mozjpeg on Linux, FreeBSD, Cygwin, and
 Solaris/x86 systems (on Solaris, this generates a 32-bit library.  See below
 for 64-bit build instructions.)
+
+Simple Release tar.gz Source Build
+----------------------------------
+
+  cd {source_directory}
+  ./configure [additional configure flags]
+  make
+
+Non-Release Source Build (e.g. GitHub clone)
+--------------------------------------------
 
   cd {source_directory}
   autoreconf -fiv
@@ -86,8 +100,8 @@ for 64-bit build instructions.)
   sh {source_directory}/configure [additional configure flags]
   make
 
-NOTE: Running autoreconf in the source directory is usually only necessary if
-building libjpeg-turbo from the SVN repository.
+NOTE: Running autoreconf in the source directory is not necessary if building
+mozjpeg from one of the official release tarballs.
 
 This will generate the following files under .libs/
 
@@ -99,7 +113,7 @@ This will generate the following files under .libs/
   cygjpeg-{version}.dll (Cygwin)
       Shared library for the libjpeg API
 
-  By default, {version} is 62.1.0, 7.1.0, or 8.0.2, depending on whether
+  By default, {version} is 62.2.0, 7.2.0, or 8.1.2, depending on whether
   libjpeg v6b (default), v7, or v8 emulation is enabled.  If using Cygwin,
   {version} is 62, 7, or 8.
 
@@ -130,8 +144,8 @@ libjpeg v7 or v8 API/ABI Emulation
 ----------------------------------
 
 Add --with-jpeg7 to the configure command line to build a version of
-libjpeg-turbo that is API/ABI-compatible with libjpeg v7.  Add --with-jpeg8 to
-the configure command to build a version of libjpeg-turbo that is
+mozjpeg that is API/ABI-compatible with libjpeg v7.  Add --with-jpeg8 to
+the configure command to build a version of mozjpeg that is
 API/ABI-compatible with libjpeg v8.  See README-turbo.txt for more information
 on libjpeg v7 and v8 emulation.
 
@@ -140,7 +154,7 @@ In-Memory Source/Destination Managers
 -------------------------------------
 
 When using libjpeg v6b or v7 API/ABI emulation, add --without-mem-srcdst to the
-configure command line to build a version of libjpeg-turbo that lacks the
+configure command line to build a version of mozjpeg that lacks the
 jpeg_mem_src() and jpeg_mem_dest() functions.  These functions were not part of
 the original libjpeg v6b and v7 APIs, so removing them ensures strict
 conformance with those APIs.  See README-turbo.txt for more information.
@@ -150,7 +164,7 @@ Arithmetic Coding Support
 -------------------------
 
 Since the patent on arithmetic coding has expired, this functionality has been
-included in this release of libjpeg-turbo.  libjpeg-turbo's implementation is
+included in this release of mozjpeg.  mozjpeg's implementation is
 based on the implementation in libjpeg v8, but it works when emulating libjpeg
 v7 or v6b as well.  The default is to enable both arithmetic encoding and
 decoding, but those who have philosophical objections to arithmetic coding can
@@ -173,9 +187,9 @@ to specify arguments that should be passed to the C compiler when building the
 JNI wrapper.  Run 'configure --help' for more details.
 
 
-========================
-Installing libjpeg-turbo
-========================
+==================
+Installing mozjpeg
+==================
 
 If you intend to install these libraries and the associated header files, then
 replace 'make' in the instructions above with
@@ -188,16 +202,16 @@ For example,
 
 will install the header files in /usr/local/include and the library files in
 /usr/local/lib64.  If 'prefix' and 'libdir' are not specified, then the default
-is to install the header files in /opt/libjpeg-turbo/include and the library
-files in /opt/libjpeg-turbo/lib32 (32-bit) or /opt/libjpeg-turbo/lib64
+is to install the header files in /opt/mozjpeg/include and the library
+files in /opt/mozjpeg/lib32 (32-bit) or /opt/mozjpeg/lib64
 (64-bit.)
 
 NOTE: You can specify a prefix of /usr and a libdir of, for instance,
 /usr/lib64 to overwrite the system's version of libjpeg.  If you do this,
 however, then be sure to BACK UP YOUR SYSTEM'S INSTALLATION OF LIBJPEG before
-overwriting it.  It is recommended that you instead install libjpeg-turbo into
+overwriting it.  It is recommended that you instead install mozjpeg into
 a non-system directory and manipulate the LD_LIBRARY_PATH or create symlinks
-to force applications to use libjpeg-turbo instead of libjpeg.  See
+to force applications to use mozjpeg instead of libjpeg.  See
 README-turbo.txt for more information.
 
 
@@ -295,10 +309,10 @@ Add
 
   CC=cc
 
-to the configure command line.  libjpeg-turbo will automatically be built with
+to the configure command line.  mozjpeg will automatically be built with
 the maximum optimization level (-xO5) unless you override CFLAGS.
 
-To build a 64-bit version of libjpeg-turbo using Oracle Solaris Studio, add
+To build a 64-bit version of mozjpeg using Oracle Solaris Studio, add
 
   --host x86_64-pc-solaris CC=cc CFLAGS='-xO5 -m64' LDFLAGS=-m64
 
@@ -315,25 +329,28 @@ Use CMake (see recipes below)
 ARM Support
 ===========
 
-This release of libjpeg-turbo can use ARM NEON SIMD instructions to accelerate
+This release of mozjpeg can use ARM NEON SIMD instructions to accelerate
 JPEG compression/decompression by approximately 2-4x on ARMv7 and later
-platforms.  If libjpeg-turbo is configured on an ARM Linux platform, then the
+platforms.  If mozjpeg is configured on an ARM Linux platform, then the
 build system will automatically include the NEON SIMD routines, if they are
 supported.  Build instructions for other ARM-based platforms follow.
 
 
-Building libjpeg-turbo for iOS
-------------------------------
+Building mozjpeg for iOS
+------------------------
 
 iOS platforms, such as the iPhone and iPad, use ARM processors, some of which
 support NEON instructions.  Additional steps are required in order to build
-libjpeg-turbo for these platforms.
+mozjpeg for these platforms.
 
 Additional build requirements:
 
   gas-preprocessor.pl
-  (https://sourceforge.net/p/libjpeg-turbo/code/HEAD/tree/gas-preprocessor)
+  (https://raw.githubusercontent.com/libjpeg-turbo/gas-preprocessor/master/gas-preprocessor.pl)
   should be installed in your PATH.
+
+
+ARM 32-bit Build (Xcode 4.6.x and earlier, LLVM-GCC):
 
 Set the following shell variables for simplicity:
 
@@ -343,54 +360,81 @@ Set the following shell variables for simplicity:
   IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
 
   IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
-
-  Xcode 4.6.x and earlier:
   IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
-  Xcode 5.0.x and later:
-  IOS_GCC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 
-  ARM v6 (code will run on all iOS devices, not SIMD-accelerated):
+  ARMv6 (code will run on all iOS devices, not SIMD-accelerated):
   [NOTE: Requires Xcode 4.4.x or earlier]
   IOS_CFLAGS="-march=armv6 -mcpu=arm1176jzf-s -mfpu=vfp"
 
-  ARM v7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer):
-  Xcode 4.6.x and earlier:
+  ARMv7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer):
   IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
-  Xcode 5.0.x and later:
-  IOS_CFLAGS="-arch armv7"
 
-  ARM v7s (code will run on iPhone 5/iPad 4th Generation and newer):
+  ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer):
   [NOTE: Requires Xcode 4.5 or later]
-  Xcode 4.6.x and earlier:
   IOS_CFLAGS="-march=armv7s -mcpu=swift -mtune=swift -mfpu=neon"
-  Xcode 5.0.x and later:
-  IOS_CFLAGS="-arch armv7s"
 
-Follow the procedure under "Building libjpeg-turbo" above, adding
+Follow the procedure under "Building mozjpeg" above, adding
 
-  --host arm-apple-darwin10 --enable-static --disable-shared \
+  --host arm-apple-darwin10 \
     CC="$IOS_GCC" LD="$IOS_GCC" \
     CFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT -O3 $IOS_CFLAGS" \
     LDFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT $IOS_CFLAGS"
 
-to the configure command line.  If using Xcode 5.0.x or later, also add
+to the configure command line.
 
+
+ARM 32-bit Build (Xcode 5.0.x and later, Clang):
+
+Set the following shell variables for simplicity:
+
+  IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+  IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
+  IOS_GCC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+
+  ARMv7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer):
+  IOS_CFLAGS="-arch armv7"
+
+  ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer):
+  IOS_CFLAGS="-arch armv7s"
+
+Follow the procedure under "Building libjpeg-turbo" above, adding
+
+  --host arm-apple-darwin10 \
+    CC="$IOS_GCC" LD="$IOS_GCC" \
+    CFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT -O3 $IOS_CFLAGS" \
+    LDFLAGS="-mfloat-abi=softfp -isysroot $IOS_SYSROOT $IOS_CFLAGS" \
     CCASFLAGS="-no-integrated-as $IOS_CFLAGS"
 
 to the configure command line.
+
+
+ARMv8 64-bit Build (Xcode 5.0.x and later, Clang):
+
+Code will run on iPhone 5S/iPad Mini 2/iPad Air and newer.
+
+Set the following shell variables for simplicity:
+
+  IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+  IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
+  IOS_GCC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+  IOS_CFLAGS="-arch arm64"
+
+Follow the procedure under "Building libjpeg-turbo" above, adding
+
+  --host aarch64-apple-darwin \
+    CC="$IOS_GCC" LD="$IOS_GCC" \
+    CFLAGS="-isysroot $IOS_SYSROOT -O3 $IOS_CFLAGS" \
+    LDFLAGS="-isysroot $IOS_SYSROOT $IOS_CFLAGS"
+
+to the configure command line.
+
 
 NOTE:  You can also add -miphoneos-version-min={version} to $IOS_CFLAGS above
 in order to support older versions of iOS than the default version supported by
 the SDK.
 
-Once built, lipo can be used to combine the ARM v6, v7, and/or v7s variants
+Once built, lipo can be used to combine the ARMv6, v7, v7s, and/or v8 variants
 into a universal library.
-
-NOTE: If you are building libjpeg-turbo from the "official" project tarball,
-then it is highly likely that you will need to run 'autoreconf -fiv' in the
-source tree prior to building ARM v7 or v7s iOS binaries using the techniques
-described above.  Otherwise, you may get a libtool error such as "unable to
-infer tagged configuration."
 
 
 Building libjpeg-turbo for Android
@@ -403,18 +447,25 @@ a general recipe script that can be modified for your specific needs.
   # Set these variables to suit your needs
   NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/ndk}
   BUILD_PLATFORM={the platform name for the NDK package you installed--
-    for example, "windows-x86" or "linux-x86_64"}
-  TOOLCHAIN_VERSION={"4.6", "4.8", etc.  This corresponds to a toolchain
-    directory under ${NDK_PATH}/toolchains/.}
+    for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+  TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+    toolchain directory under ${NDK_PATH}/toolchains/.}
   ANDROID_VERSION={The minimum version of Android to support-- for example,
-    "9", "19", etc.}
+    "16", "19", etc.  "21" or later is required for a 64-bit build.}
 
+  # 32-bit ARMv7 build
   HOST=arm-linux-androideabi
-  TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
   SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
-  ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
   ANDROID_CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
-    -fstrict-aliasing --sysroot=${SYSROOT}"
+    --sysroot=${SYSROOT}"
+
+  # 64-bit ARMv8 build
+  HOST=aarch64-linux-android
+  SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm64
+  ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+
+  TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+  ANDROID_INCLUDES="-I${SYSROOT}/usr/include -I${TOOLCHAIN}/include"
   export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
   export AR=${TOOLCHAIN}/bin/${HOST}-ar
   export AS=${TOOLCHAIN}/bin/${HOST}-as
@@ -426,10 +477,13 @@ a general recipe script that can be modified for your specific needs.
   export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
   cd {build_directory}
   sh {source_directory}/configure --host=${HOST} \
-    CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3" \
+    CFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS} -O3 -fPIE" \
     CPPFLAGS="${ANDROID_INCLUDES} ${ANDROID_CFLAGS}" \
-    LDFLAGS="${ANDROID_CFLAGS}" --with-simd ${1+"$@"}
+    LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
   make
+
+If building for Android 4.0.x (API level < 16) or earlier, remove -fPIE from
+CFLAGS and -pie from LDFLAGS.
 
 
 *******************************************************************************
@@ -451,12 +505,12 @@ Build Requirements
    http://msdn.microsoft.com/en-us/windows/bb980924.aspx
 
    The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
-   everything necessary to build libjpeg-turbo.
+   everything necessary to build mozjpeg.
 
    * You can also use Microsoft Visual Studio Express Edition, which is a free
      download.  (NOTE: versions prior to 2012 can only be used to build 32-bit
      code.)
-   * If you intend to build libjpeg-turbo from the command line, then add the
+   * If you intend to build mozjpeg from the command line, then add the
      appropriate compiler and SDK directories to the INCLUDE, LIB, and PATH
      environment variables.  This is generally accomplished by executing
      vcvars32.bat or vcvars64.bat and SetEnv.cmd.  vcvars32.bat and
@@ -488,17 +542,17 @@ Out-of-Tree Builds
 
 Binary objects, libraries, and executables are generated in the same directory
 from which cmake was executed (the "binary directory"), and this directory need
-not necessarily be the same as the libjpeg-turbo source directory.  You can
+not necessarily be the same as the mozjpeg source directory.  You can
 create multiple independent binary directories, in which different versions of
-libjpeg-turbo can be built from the same source tree using different compilers
+mozjpeg can be built from the same source tree using different compilers
 or settings.  In the sections below, {build_directory} refers to the binary
-directory, whereas {source_directory} refers to the libjpeg-turbo source
+directory, whereas {source_directory} refers to the mozjpeg source
 directory.  For in-tree builds, these directories are the same.
 
 
-======================
-Building libjpeg-turbo
-======================
+================
+Building mozjpeg
+================
 
 
 Visual C++ (Command Line)
@@ -508,7 +562,7 @@ Visual C++ (Command Line)
   cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release {source_directory}
   nmake
 
-This will build either a 32-bit or a 64-bit version of libjpeg-turbo, depending
+This will build either a 32-bit or a 64-bit version of mozjpeg, depending
 on which version of cl.exe is in the PATH.
 
 The following files will be generated under {build_directory}:
@@ -547,7 +601,7 @@ and 64-bit builds.
 
 You can then open ALL_BUILD.vcproj in Visual Studio and build one of the
 configurations in that project ("Debug", "Release", etc.) to generate a full
-build of libjpeg-turbo.
+build of mozjpeg.
 
 This will generate the following files under {build_directory}:
 
@@ -610,8 +664,8 @@ libjpeg v7 or v8 API/ABI Emulation
 -----------------------------------
 
 Add "-DWITH_JPEG7=1" to the cmake command line to build a version of
-libjpeg-turbo that is API/ABI-compatible with libjpeg v7.  Add "-DWITH_JPEG8=1"
-to the cmake command to build a version of libjpeg-turbo that is
+mozjpeg that is API/ABI-compatible with libjpeg v7.  Add "-DWITH_JPEG8=1"
+to the cmake command to build a version of mozjpeg that is
 API/ABI-compatible with libjpeg v8.  See README-turbo.txt for more information
 on libjpeg v7 and v8 emulation.
 
@@ -620,7 +674,7 @@ In-Memory Source/Destination Managers
 -------------------------------------
 
 When using libjpeg v6b or v7 API/ABI emulation, add -DWITH_MEM_SRCDST=0 to the
-CMake command line to build a version of libjpeg-turbo that lacks the
+CMake command line to build a version of mozjpeg that lacks the
 jpeg_mem_src() and jpeg_mem_dest() functions.  These functions were not part of
 the original libjpeg v6b and v7 APIs, so removing them ensures strict
 conformance with those APIs.  See README-turbo.txt for more information.
@@ -630,7 +684,7 @@ Arithmetic Coding Support
 -------------------------
 
 Since the patent on arithmetic coding has expired, this functionality has been
-included in this release of libjpeg-turbo.  libjpeg-turbo's implementation is
+included in this release of mozjpeg.  mozjpeg's implementation is
 based on the implementation in libjpeg v8, but it works when emulating libjpeg
 v7 or v6b as well.  The default is to enable both arithmetic encoding and
 decoding, but those who have philosophical objections to arithmetic coding can
@@ -653,11 +707,11 @@ instead.  You can also set the JAVACFLAGS CMake variable to specify arguments
 that should be passed to the Java compiler when building the front-end classes.
 
 
-========================
-Installing libjpeg-turbo
-========================
+==================
+Installing mozjpeg
+==================
 
-You can use the build system to install libjpeg-turbo into a directory of your
+You can use the build system to install mozjpeg into a directory of your
 choosing (as opposed to creating an installer.)  To do this, add:
 
   -DCMAKE_INSTALL_PREFIX={install_directory}
@@ -667,12 +721,12 @@ to the cmake command line.
 For example,
 
   cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=c:\libjpeg-turbo {source_directory}
+    -DCMAKE_INSTALL_PREFIX=c:\mozjpeg {source_directory}
   nmake install
 
-will install the header files in c:\libjpeg-turbo\include, the library files
-in c:\libjpeg-turbo\lib, the DLL's in c:\libjpeg-turbo\bin, and the
-documentation in c:\libjpeg-turbo\doc.
+will install the header files in c:\mozjpeg\include, the library files
+in c:\mozjpeg\lib, the DLL's in c:\mozjpeg\bin, and the
+documentation in c:\mozjpeg\doc.
 
 
 =============
@@ -690,7 +744,7 @@ Build Recipes
     {source_directory}
   make
 
-This produces a 64-bit build of libjpeg-turbo that does not depend on
+This produces a 64-bit build of mozjpeg that does not depend on
 cygwin1.dll or other Cygwin DLL's.  The mingw64-x86_64-gcc-core and
 mingw64-x86_64-gcc-g++ packages (and their dependencies) must be installed.
 
@@ -705,7 +759,7 @@ mingw64-x86_64-gcc-g++ packages (and their dependencies) must be installed.
     {source_directory}
   make
 
-This produces a 32-bit build of libjpeg-turbo that does not depend on
+This produces a 32-bit build of mozjpeg that does not depend on
 cygwin1.dll or other Cygwin DLL's.  The mingw64-i686-gcc-core and
 mingw64-i686-gcc-g++ packages (and their dependencies) must be installed.
 
@@ -757,33 +811,39 @@ make udmg [BUILDDIR32={32-bit build directory}]
 
   On 64-bit OS X systems, this creates a Macintosh package and disk image that
   contains universal i386/x86-64 binaries.  You should first configure a 32-bit
-  out-of-tree build of libjpeg-turbo, then configure a 64-bit out-of-tree
+  out-of-tree build of mozjpeg, then configure a 64-bit out-of-tree
   build, then run 'make udmg' from the 64-bit build directory.  The build
   system will look for the 32-bit build under {source_directory}/osxx86 by
   default, but you can override this by setting the BUILDDIR32 variable on the
   make command line as shown above.
 
 make iosdmg [BUILDDIR32={32-bit build directory}] \
-  [BUILDDIRARMV6={ARM v6 build directory}] \
-  [BUILDDIRARMV7={ARM v7 build directory}] \
-  [BUILDDIRARMV7S={ARM v7s build directory}]
+  [BUILDDIRARMV6={ARMv6 build directory}] \
+  [BUILDDIRARMV7={ARMv7 build directory}] \
+  [BUILDDIRARMV7S={ARMv7s build directory}] \
+  [BUILDDIRARMV8={ARMv8 build directory}]
 
   On OS X systems, this creates a Macintosh package and disk image in which the
-  libjpeg-turbo static libraries contain ARM architectures necessary to build
+  mozjpeg static libraries contain ARM architectures necessary to build
   iOS applications.  If building on an x86-64 system, the binaries will also
   contain the i386 architecture, as with 'make udmg' above.  You should first
-  configure ARM v6, ARM v7, and/or ARM v7s out-of-tree builds of libjpeg-turbo
-  (see "Building libjpeg-turbo for iOS" above.)  If you are building an x86-64
-  version of libjpeg-turbo, you should configure a 32-bit out-of-tree build as
-  well.  Next, build libjpeg-turbo as you would normally, using an out-of-tree
-  build.  When it is built, run 'make iosdmg' from the build directory.  The
-  build system will look for the ARM v6 build under {source_directory}/iosarmv6
-  by default, the ARM v7 build under {source_directory}/iosarmv7 by default,
-  the ARM v7s build under {source_directory}/iosarmv7s by default, and (if
-  applicable) the 32-bit build under {source_directory}/osxx86 by default, but
-  you can override this by setting the BUILDDIR32, BUILDDIRARMV6,
-  BUILDDIRARMV7, and/or BUILDDIRARMV7S variables on the make command line as
-  shown above.
+  configure ARMv6, ARMv7, ARMv7s, and/or ARMv8 out-of-tree builds of
+  mozjpeg (see "Building mozjpeg for iOS" above.)  If you are
+  building an x86-64 version of mozjpeg, you should configure a 32-bit
+  out-of-tree build as well.  Next, build mozjpeg as you would normally,
+  using an out-of-tree build.  When it is built, run 'make iosdmg' from the
+  build directory.  The build system will look for the ARMv6 build under
+  {source_directory}/iosarmv6 by default, the ARMv7 build under
+  {source_directory}/iosarmv7 by default, the ARMv7s build under
+  {source_directory}/iosarmv7s by default, the ARMv8 build under
+  {source_directory}/iosarmv8 by default, and (if applicable) the 32-bit build
+  under {source_directory}/osxx86 by default, but you can override this by
+  setting the BUILDDIR32, BUILDDIRARMV6, BUILDDIRARMV7, BUILDDIRARMV7S, and/or
+  BUILDDIRARMV8 variables on the make command line as shown above.
+
+  NOTE: If including an ARMv8 build in the package, then you may need to use
+  Xcode's version of lipo instead of the operating system's.  To do this, pass
+  an argument of LIPO="xcrun lipo" on the make command line.
 
 make cygwinpkg
 
@@ -805,7 +865,7 @@ If using MinGW:
 
 If using the Visual Studio IDE, build the "installer" project.
 
-The installer package (libjpeg-turbo[-gcc][64].exe) will be located under
+The installer package (mozjpeg[-gcc][64].exe) will be located under
 {build_directory}.  If building using the Visual Studio IDE, then the installer
 package will be located in a subdirectory with the same name as the
 configuration you built (such as {build_directory}\Debug\ or
@@ -819,14 +879,14 @@ Building a Windows installer requires the Nullsoft Install System
 **     Regression testing
 *******************************************************************************
 
-The most common way to test libjpeg-turbo is by invoking 'make test' on
+The most common way to test mozjpeg is by invoking 'make test' on
 Unix/Linux platforms or 'ctest' on Windows platforms, once the build has
 completed.  This runs a series of tests to ensure that mathematical
-compatibility has been maintained between libjpeg-turbo and libjpeg v6b.  This
-also invokes the TurboJPEG unit tests, which ensure that the colorspace
-extensions, YUV encoding, decompression scaling, and other features of the
-TurboJPEG C and Java APIs are working properly (and, by extension, that the
-equivalent features of the underlying libjpeg API are also working.)
+compatibility has been maintained.  This also invokes the TurboJPEG unit tests,
+which ensure that the colorspace extensions, YUV encoding, decompression
+scaling, and other features of the TurboJPEG C and Java APIs are working
+properly (and, by extension, that the equivalent features of the underlying
+libjpeg API are also working.)
 
 Invoking 'make testclean' or 'nmake testclean' (if using NMake) or building
 the 'testclean' target (if using the Visual Studio IDE) will clean up the

@@ -3,9 +3,10 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2015, D. R. Commander.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains Huffman entropy decoding routines for progressive JPEG.
  *
@@ -68,12 +69,12 @@ typedef struct {
   unsigned int restarts_to_go;  /* MCUs left in this restart interval */
 
   /* Pointers to derived tables (these workspaces have image lifespan) */
-  d_derived_tbl * derived_tbls[NUM_HUFF_TBLS];
+  d_derived_tbl *derived_tbls[NUM_HUFF_TBLS];
 
-  d_derived_tbl * ac_derived_tbl; /* active table during an AC scan */
+  d_derived_tbl *ac_derived_tbl; /* active table during an AC scan */
 } phuff_entropy_decoder;
 
-typedef phuff_entropy_decoder * phuff_entropy_ptr;
+typedef phuff_entropy_decoder *phuff_entropy_ptr;
 
 /* Forward declarations */
 METHODDEF(boolean) decode_mcu_DC_first (j_decompress_ptr cinfo,
@@ -96,8 +97,9 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   boolean is_DC_band, bad;
   int ci, coefi, tbl;
+  d_derived_tbl **pdtbl;
   int *coef_bit_ptr;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
 
   is_DC_band = (cinfo->Ss == 0);
 
@@ -168,13 +170,13 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
     if (is_DC_band) {
       if (cinfo->Ah == 0) {     /* DC refinement needs no table */
         tbl = compptr->dc_tbl_no;
-        jpeg_make_d_derived_tbl(cinfo, TRUE, tbl,
-                                & entropy->derived_tbls[tbl]);
+        pdtbl = entropy->derived_tbls + tbl;
+        jpeg_make_d_derived_tbl(cinfo, TRUE, tbl, pdtbl);
       }
     } else {
       tbl = compptr->ac_tbl_no;
-      jpeg_make_d_derived_tbl(cinfo, FALSE, tbl,
-                              & entropy->derived_tbls[tbl]);
+      pdtbl = entropy->derived_tbls + tbl;
+      jpeg_make_d_derived_tbl(cinfo, FALSE, tbl, pdtbl);
       /* remember the single active table */
       entropy->ac_derived_tbl = entropy->derived_tbls[tbl];
     }
@@ -203,7 +205,8 @@ start_pass_phuff_decoder (j_decompress_ptr cinfo)
 #define AVOID_TABLES
 #ifdef AVOID_TABLES
 
-#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))
+#define NEG_1 ((unsigned)-1)
+#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((NEG_1)<<(s)) + 1) : (x))
 
 #else
 
@@ -295,8 +298,8 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   JBLOCKROW block;
   BITREAD_STATE_VARS;
   savable_state state;
-  d_derived_tbl * tbl;
-  jpeg_component_info * compptr;
+  d_derived_tbl *tbl;
+  jpeg_component_info *compptr;
 
   /* Process restart marker if needed; may have to suspend */
   if (cinfo->restart_interval) {
@@ -336,7 +339,7 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       s += state.last_dc_val[ci];
       state.last_dc_val[ci] = s;
       /* Scale and output the coefficient (assumes jpeg_natural_order[0]=0) */
-      (*block)[0] = (JCOEF) (s << Al);
+      (*block)[0] = (JCOEF) LEFT_SHIFT(s, Al);
     }
 
     /* Completed MCU, so update state */
@@ -366,7 +369,7 @@ decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   unsigned int EOBRUN;
   JBLOCKROW block;
   BITREAD_STATE_VARS;
-  d_derived_tbl * tbl;
+  d_derived_tbl *tbl;
 
   /* Process restart marker if needed; may have to suspend */
   if (cinfo->restart_interval) {
@@ -404,7 +407,7 @@ decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
           r = GET_BITS(s);
           s = HUFF_EXTEND(r, s);
           /* Scale and output coefficient in natural (dezigzagged) order */
-          (*block)[jpeg_natural_order[k]] = (JCOEF) (s << Al);
+          (*block)[jpeg_natural_order[k]] = (JCOEF) LEFT_SHIFT(s, Al);
         } else {
           if (r == 15) {        /* ZRL */
             k += 15;            /* skip 15 zeroes in band */
@@ -495,14 +498,14 @@ decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   int Se = cinfo->Se;
-  int p1 = 1 << cinfo->Al;      /* 1 in the bit position being coded */
-  int m1 = (-1) << cinfo->Al;   /* -1 in the bit position being coded */
+  int p1 = 1 << cinfo->Al;        /* 1 in the bit position being coded */
+  int m1 = (NEG_1) << cinfo->Al;  /* -1 in the bit position being coded */
   register int s, k, r;
   unsigned int EOBRUN;
   JBLOCKROW block;
   JCOEFPTR thiscoef;
   BITREAD_STATE_VARS;
-  d_derived_tbl * tbl;
+  d_derived_tbl *tbl;
   int num_newnz;
   int newnz_pos[DCTSIZE2];
 

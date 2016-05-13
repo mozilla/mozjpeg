@@ -18,17 +18,17 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-
+#include <math.h>
 
 /* Expanded entropy encoder object for arithmetic encoding. */
 
 typedef struct {
   struct jpeg_entropy_encoder pub; /* public fields */
 
-  INT32 c; /* C register, base of coding interval, layout as in sec. D.1.3 */
-  INT32 a;               /* A register, normalized size of coding interval */
-  INT32 sc;        /* counter for stacked 0xFF values which might overflow */
-  INT32 zc;          /* counter for pending 0x00 output values which might *
+  JLONG c; /* C register, base of coding interval, layout as in sec. D.1.3 */
+  JLONG a;               /* A register, normalized size of coding interval */
+  JLONG sc;        /* counter for stacked 0xFF values which might overflow */
+  JLONG zc;          /* counter for pending 0x00 output values which might *
                           * be discarded at the end ("Pacman" termination) */
   int ct;  /* bit shift counter, determines when next byte will be written */
   int buffer;                /* buffer for most recent output byte != 0xFF */
@@ -40,14 +40,14 @@ typedef struct {
   int next_restart_num;         /* next restart number to write (0-7) */
 
   /* Pointers to statistics areas (these workspaces have image lifespan) */
-  unsigned char * dc_stats[NUM_ARITH_TBLS];
-  unsigned char * ac_stats[NUM_ARITH_TBLS];
+  unsigned char *dc_stats[NUM_ARITH_TBLS];
+  unsigned char *ac_stats[NUM_ARITH_TBLS];
 
   /* Statistics bin for coding with fixed probability 0.5 */
   unsigned char fixed_bin[4];
 } arith_entropy_encoder;
 
-typedef arith_entropy_encoder * arith_entropy_ptr;
+typedef arith_entropy_encoder *arith_entropy_ptr;
 
 /* The following two definitions specify the allocation chunk size
  * for the statistics area.
@@ -97,8 +97,8 @@ typedef arith_entropy_encoder * arith_entropy_ptr;
 #define CALCULATE_SPECTRAL_CONDITIONING
  */
 
-/* IRIGHT_SHIFT is like RIGHT_SHIFT, but works on int rather than INT32.
- * We assume that int right shift is unsigned if INT32 right shift is,
+/* IRIGHT_SHIFT is like RIGHT_SHIFT, but works on int rather than JLONG.
+ * We assume that int right shift is unsigned if JLONG right shift is,
  * which should be safe.
  */
 
@@ -118,8 +118,12 @@ LOCAL(void)
 emit_byte (int val, j_compress_ptr cinfo)
 /* Write next output byte; we do not support suspension in this module. */
 {
-  struct jpeg_destination_mgr * dest = cinfo->dest;
+  struct jpeg_destination_mgr *dest = cinfo->dest;
 
+  /* Do not emit bytes during trellis passes */
+  if (cinfo->master->trellis_passes)
+    return;
+  
   *dest->next_output_byte++ = (JOCTET) val;
   if (--dest->free_in_buffer == 0)
     if (! (*dest->empty_output_buffer) (cinfo))
@@ -135,7 +139,7 @@ METHODDEF(void)
 finish_pass (j_compress_ptr cinfo)
 {
   arith_entropy_ptr e = (arith_entropy_ptr) cinfo->entropy;
-  INT32 temp;
+  JLONG temp;
 
   /* Section D.1.8: Termination of encoding */
 
@@ -222,7 +226,7 @@ arith_encode (j_compress_ptr cinfo, unsigned char *st, int val)
 {
   register arith_entropy_ptr e = (arith_entropy_ptr) cinfo->entropy;
   register unsigned char nl, nm;
-  register INT32 qe, temp;
+  register JLONG qe, temp;
   register int sv;
 
   /* Fetch values from our compact representation of Table D.2:
@@ -322,7 +326,7 @@ emit_restart (j_compress_ptr cinfo, int restart_num)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   int ci;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
 
   finish_pass(cinfo);
 
@@ -682,7 +686,7 @@ METHODDEF(boolean)
 encode_mcu (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
   JBLOCKROW block;
   unsigned char *st;
   int blkn, ci, tbl, k, ke;
@@ -825,7 +829,8 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
 {
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
   int ci, tbl;
-  jpeg_component_info * compptr;
+  jpeg_component_info *compptr;
+  boolean progressive_mode;
 
   if (gather_statistics)
     /* Make sure to avoid that in the master control logic!
@@ -836,8 +841,12 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
 
   /* We assume jcmaster.c already validated the progressive scan parameters. */
 
+  /* Trellis optimization does DC and AC in same pass and without refinement
+   * so consider progressive mode to be off in such case */
+  progressive_mode = (cinfo->master->trellis_passes) ? FALSE : cinfo->progressive_mode;
+  
   /* Select execution routines */
-  if (cinfo->progressive_mode) {
+  if (progressive_mode) {
     if (cinfo->Ah == 0) {
       if (cinfo->Ss == 0)
         entropy->pub.encode_mcu = encode_mcu_DC_first;
@@ -856,7 +865,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
     /* DC needs no table for refinement scan */
-    if (cinfo->progressive_mode == 0 || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
+    if (progressive_mode == 0 || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
       tbl = compptr->dc_tbl_no;
       if (tbl < 0 || tbl >= NUM_ARITH_TBLS)
         ERREXIT1(cinfo, JERR_NO_ARITH_TABLE, tbl);
@@ -869,7 +878,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
       entropy->dc_context[ci] = 0;
     }
     /* AC needs no table when not present */
-    if (cinfo->progressive_mode == 0 || cinfo->Se) {
+    if (progressive_mode == 0 || cinfo->Se) {
       tbl = compptr->ac_tbl_no;
       if (tbl < 0 || tbl >= NUM_ARITH_TBLS)
         ERREXIT1(cinfo, JERR_NO_ARITH_TABLE, tbl);
@@ -878,7 +887,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
           ((j_common_ptr) cinfo, JPOOL_IMAGE, AC_STAT_BINS);
       MEMZERO(entropy->ac_stats[tbl], AC_STAT_BINS);
 #ifdef CALCULATE_SPECTRAL_CONDITIONING
-      if (cinfo->progressive_mode)
+      if (progressive_mode)
         /* Section G.1.3.2: Set appropriate arithmetic conditioning value Kx */
         cinfo->arith_ac_K[tbl] = cinfo->Ss + ((8 + cinfo->Se - cinfo->Ss) >> 4);
 #endif
@@ -924,4 +933,35 @@ jinit_arith_encoder (j_compress_ptr cinfo)
 
   /* Initialize index for fixed probability estimation */
   entropy->fixed_bin[0] = 113;
+}
+
+GLOBAL(void)
+jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r)
+{
+  int i;
+  arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
+  
+  r->arith_dc_L = cinfo->arith_dc_L[dc_tbl_no];
+  r->arith_dc_U = cinfo->arith_dc_U[dc_tbl_no];
+  r->arith_ac_K = cinfo->arith_ac_K[ac_tbl_no];
+  
+  for (i = 0; i < DC_STAT_BINS; i++) {
+    int state = entropy->dc_stats[dc_tbl_no][i];
+    int mps_val = state >> 7;
+    float prob_lps = (jpeg_aritab[state & 0x7f] >> 16) / 46340.95; /* 32768*sqrt(2) */
+    float prob_0 = (mps_val) ? prob_lps : 1.0 - prob_lps;
+    float prob_1 = 1.0 - prob_0;
+    r->rate_dc[i][0] = -log(prob_0) / log(2.0);
+    r->rate_dc[i][1] = -log(prob_1) / log(2.0);
+  }
+
+  for (i = 0; i < AC_STAT_BINS; i++) {
+    int state = entropy->ac_stats[ac_tbl_no][i];
+    int mps_val = state >> 7;
+    float prob_lps = (jpeg_aritab[state & 0x7f] >> 16) / 46340.95;
+    float prob_0 = (mps_val) ? prob_lps : 1.0 - prob_lps;
+    float prob_1 = 1.0 - prob_0;
+    r->rate_ac[i][0] = -log(prob_0) / log(2.0);
+    r->rate_ac[i][1] = -log(prob_1) / log(2.0);
+  }
 }

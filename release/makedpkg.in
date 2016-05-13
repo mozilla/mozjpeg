@@ -45,7 +45,7 @@ makedeb()
 		make install DESTDIR=$TMPDIR docdir=/usr/share/doc/$DIRNAME-$VERSION \
 			exampledir=/usr/share/doc/$DIRNAME-$VERSION
 		rm -f $TMPDIR$LIBDIR/*.la
-		if [ "$PREFIX" = "/opt/libjpeg-turbo" -a "$DOCDIR" = "/opt/libjpeg-turbo/doc" ]; then
+		if [ "$PREFIX" = "/opt/mozjpeg" -a "$DOCDIR" = "/opt/mozjpeg/doc" ]; then
 			ln -fs /usr/share/doc/$DIRNAME-$VERSION $TMPDIR$DOCDIR
 		fi
 	fi

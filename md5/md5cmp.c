@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2013, 2016 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "./md5.h"
+#include "../tjutil.h"
 
 int main(int argc, char *argv[])
 {

@@ -6,6 +6,8 @@
  * Modified 2000-2009 by Guido Vollbeding.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains library routines for transcoding compression,
@@ -20,9 +22,9 @@
 
 /* Forward declarations */
 LOCAL(void) transencode_master_selection
-        (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays);
+        (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays);
 LOCAL(void) transencode_coef_controller
-        (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays);
+        (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays);
 
 
 /*
@@ -38,8 +40,12 @@ LOCAL(void) transencode_coef_controller
  */
 
 GLOBAL(void)
-jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays)
+jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays)
 {
+  /* setting up scan optimisation pattern failed, disable scan optimisation */
+  if (cinfo->master->num_scans_luma == 0)
+    cinfo->master->optimize_scans = FALSE;
+  
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
   /* Mark all tables to be written */
@@ -63,10 +69,10 @@ jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr * coef_arrays)
  */
 
 GLOBAL(void)
-jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
+jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo,
                                j_compress_ptr dstinfo)
 {
-  JQUANT_TBL ** qtblptr;
+  JQUANT_TBL **qtblptr;
   jpeg_component_info *incomp, *outcomp;
   JQUANT_TBL *c_quant, *slot_quant;
   int tblno, ci, coefi;
@@ -87,6 +93,8 @@ jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
 #endif
   /* Initialize all parameters to default values */
   jpeg_set_defaults(dstinfo);
+  dstinfo->master->trellis_quant = FALSE;
+  
   /* jpeg_set_defaults may choose wrong colorspace, eg YCbCr if input is RGB.
    * Fix it to get the right header markers for the image colorspace.
    */
@@ -165,7 +173,7 @@ jpeg_copy_critical_parameters (j_decompress_ptr srcinfo,
 
 LOCAL(void)
 transencode_master_selection (j_compress_ptr cinfo,
-                              jvirt_barray_ptr * coef_arrays)
+                              jvirt_barray_ptr *coef_arrays)
 {
   /* Although we don't actually use input_components for transcoding,
    * jcmaster.c's initial_setup will complain if input_components is 0.
@@ -227,13 +235,13 @@ typedef struct {
   int MCU_rows_per_iMCU_row;    /* number of such rows needed */
 
   /* Virtual block array for each component. */
-  jvirt_barray_ptr * whole_image;
+  jvirt_barray_ptr *whole_image;
 
   /* Workspace for constructing dummy blocks at right/bottom edges. */
   JBLOCKROW dummy_buffer[C_MAX_BLOCKS_IN_MCU];
 } my_coef_controller;
 
-typedef my_coef_controller * my_coef_ptr;
+typedef my_coef_controller *my_coef_ptr;
 
 
 LOCAL(void)
@@ -374,7 +382,7 @@ compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 
 LOCAL(void)
 transencode_coef_controller (j_compress_ptr cinfo,
-                             jvirt_barray_ptr * coef_arrays)
+                             jvirt_barray_ptr *coef_arrays)
 {
   my_coef_ptr coef;
   JBLOCKROW buffer;

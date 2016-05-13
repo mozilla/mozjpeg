@@ -6,7 +6,8 @@
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2014, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file defines the error and message codes for the JPEG library.
  * Edit this file to add new codes, or to translate the message strings to
@@ -207,6 +208,10 @@ JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")
 JMESSAGE(JWRN_ARITH_BAD_CODE, "Corrupt JPEG data: bad arithmetic code")
 #endif
 #endif
+JMESSAGE(JERR_BAD_PARAM, "Bogus parameter")
+JMESSAGE(JERR_BAD_PARAM_VALUE, "Bogus parameter value")
+
+JMESSAGE(JERR_UNSUPPORTED_SUSPEND, "I/O suspension not supported in scan optimization")  
 
 #ifdef JMAKE_ENUM_LIST
 

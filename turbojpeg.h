@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -672,7 +672,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
-DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
+DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
   int width, int pitch, int height, int pixelFormat, unsigned char **jpegBuf,
   unsigned long *jpegSize, int jpegSubsamp, int jpegQual, int flags);
 
@@ -736,9 +736,9 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
-DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
-  int width, int pad, int height, int subsamp, unsigned char **jpegBuf,
-  unsigned long *jpegSize, int jpegQual, int flags);
+DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
+  const unsigned char *srcBuf, int width, int pad, int height, int subsamp,
+  unsigned char **jpegBuf, unsigned long *jpegSize, int jpegQual, int flags);
 
 
 /**
@@ -762,7 +762,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * line in the corresponding plane of the YUV source image.  Setting the stride
  * for any plane to 0 is the same as setting it to the plane width (see
  * @ref YUVnotes "YUV Image Format Notes".)  If <tt>strides</tt> is NULL, then
- * the strides for all planes will be set to their respective plane widths. 
+ * the strides for all planes will be set to their respective plane widths.
  * You can adjust the strides in order to specify an arbitrary amount of line
  * padding in each plane or to create a JPEG image from a subregion of a larger
  * YUV planar image.
@@ -807,8 +807,9 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle, unsigned char *srcBuf,
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
 DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
-	unsigned char **srcPlanes, int width, int *strides, int height, int subsamp,
-	unsigned char **jpegBuf, unsigned long *jpegSize, int jpegQual, int flags);
+  const unsigned char **srcPlanes, int width, const int *strides, int height,
+  int subsamp, unsigned char **jpegBuf, unsigned long *jpegSize, int jpegQual,
+  int flags);
 
 
 /**
@@ -880,7 +881,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
  * plane, or -1 if the arguments are out of bounds.
  */
 DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV(int componentID, int width,
-	int stride, int height, int subsamp);
+  int stride, int height, int subsamp);
 
 
 /**
@@ -921,7 +922,7 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp);
  * Encode an RGB or grayscale image into a YUV planar image.  This function
  * uses the accelerated color conversion routines in the underlying
  * codec but does not execute any of the other steps in the JPEG compression
- * process.  
+ * process.
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  *
@@ -966,8 +967,8 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp);
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
 DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
-  unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat,
-  unsigned char *dstBuf, int pad, int subsamp, int flags);
+  const unsigned char *srcBuf, int width, int pitch, int height,
+  int pixelFormat, unsigned char *dstBuf, int pad, int subsamp, int flags);
 
 
 /**
@@ -1024,8 +1025,9 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
 DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
-  unsigned char *srcBuf, int width, int pitch, int height, int pixelFormat,
-  unsigned char **dstPlanes, int *strides, int subsamp, int flags);
+  const unsigned char *srcBuf, int width, int pitch, int height,
+  int pixelFormat, unsigned char **dstPlanes, int *strides, int subsamp,
+  int flags);
 
 
 /**
@@ -1063,8 +1065,8 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
 */
 DLLEXPORT int DLLCALL tjDecompressHeader3(tjhandle handle,
-  unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height,
-  int *jpegSubsamp, int *jpegColorspace);
+  const unsigned char *jpegBuf, unsigned long jpegSize, int *width,
+  int *height, int *jpegSubsamp, int *jpegColorspace);
 
 
 /**
@@ -1130,7 +1132,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
 DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
-  unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
+  const unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
   int width, int pitch, int height, int pixelFormat, int flags);
 
 
@@ -1180,7 +1182,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
 DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
-  unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
+  const unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
   int width, int pad, int height, int flags);
 
 
@@ -1236,8 +1238,8 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
 DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
-  unsigned char *jpegBuf, unsigned long jpegSize, unsigned char **dstPlanes,
-  int width, int *strides, int height, int flags);
+  const unsigned char *jpegBuf, unsigned long jpegSize,
+  unsigned char **dstPlanes, int width, int *strides, int height, int flags);
 
 
 /**
@@ -1287,9 +1289,9 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
-DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
-	int pad, int subsamp, unsigned char *dstBuf, int width, int pitch,
-	int height, int pixelFormat, int flags);
+DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
+  int pad, int subsamp, unsigned char *dstBuf, int width, int pitch,
+  int height, int pixelFormat, int flags);
 
 
 /**
@@ -1345,8 +1347,9 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, unsigned char *srcBuf,
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
 DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
-	unsigned char **srcPlanes, int *strides, int subsamp, unsigned char *dstBuf,
-	int width, int pitch, int height, int pixelFormat, int flags);
+  const unsigned char **srcPlanes, const int *strides, int subsamp,
+  unsigned char *dstBuf, int width, int pitch, int height, int pixelFormat,
+  int flags);
 
 
 /**
@@ -1413,9 +1416,10 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
  */
-DLLEXPORT int DLLCALL tjTransform(tjhandle handle, unsigned char *jpegBuf,
-  unsigned long jpegSize, int n, unsigned char **dstBufs,
-  unsigned long *dstSizes, tjtransform *transforms, int flags);
+DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
+  const unsigned char *jpegBuf, unsigned long jpegSize, int n,
+  unsigned char **dstBufs, unsigned long *dstSizes, tjtransform *transforms,
+  int flags);
 
 
 /**

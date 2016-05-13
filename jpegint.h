@@ -4,9 +4,13 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
- * For conditions of distribution and use, see the accompanying README file.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2015-2016, D. R. Commander
+ * Copyright (C) 2015, Google, Inc.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file provides common declarations for the various JPEG modules.
  * These declarations are considered internal to the JPEG library; most
@@ -21,7 +25,8 @@ typedef enum {            /* Operating modes for buffer controllers */
   /* Remaining modes require a full-image buffer to have been created */
   JBUF_SAVE_SOURCE,       /* Run source subobject only, save output */
   JBUF_CRANK_DEST,        /* Run dest subobject only, using saved data */
-  JBUF_SAVE_AND_PASS      /* Run both subobjects, save output */
+  JBUF_SAVE_AND_PASS,     /* Run both subobjects, save output */
+  JBUF_REQUANT            /* Requantize */
 } J_BUF_MODE;
 
 /* Values of global_state field (jdapi.c has some dependencies on ordering!) */
@@ -42,6 +47,18 @@ typedef enum {            /* Operating modes for buffer controllers */
 #define DSTATE_STOPPING 210     /* looking for EOI in jpeg_finish_decompress */
 
 
+/* JLONG must hold at least signed 32-bit values. */
+typedef long JLONG;
+
+
+/*
+ * Left shift macro that handles a negative operand without causing any
+ * sanitizer warnings
+ */
+
+#define LEFT_SHIFT(a, b) ((JLONG)((unsigned long)(a) << (b)))
+
+
 /* Declarations for compression modules */
 
 /* Master control module */
@@ -53,7 +70,66 @@ struct jpeg_comp_master {
   /* State variables made visible to other modules */
   boolean call_pass_startup;    /* True if pass_startup must be called */
   boolean is_last_pass;         /* True during last pass */
+
+  /* Extension parameters */
+  boolean optimize_scans; /* TRUE=optimize progressive coding scans */
+  boolean trellis_quant; /* TRUE=use trellis quantization */
+  boolean trellis_quant_dc; /* TRUE=use trellis quant for DC coefficient */
+  boolean trellis_eob_opt; /* TRUE=optimize for sequences of EOB */
+  boolean use_lambda_weight_tbl; /* TRUE=use lambda weighting table */
+  boolean use_scans_in_trellis; /* TRUE=use scans in trellis optimization */
+  boolean trellis_passes; /* TRUE=currently doing trellis-related passes [not exposed] */
+  boolean trellis_q_opt; /* TRUE=optimize quant table in trellis loop */
+  boolean overshoot_deringing; /* TRUE=preprocess input to reduce ringing of edges on white background */
+
+  double norm_src[NUM_QUANT_TBLS][DCTSIZE2];
+  double norm_coef[NUM_QUANT_TBLS][DCTSIZE2];
+
+  int compress_profile; /* compression profile */
+  int dc_scan_opt_mode; /* DC scan optimization mode */
+  int quant_tbl_master_idx; /* Quantization table master index */
+  int trellis_freq_split; /* splitting point for frequency in trellis quantization */
+  int trellis_num_loops; /* number of trellis loops */
+
+  int num_scans_luma; /* # of entries in scan_info array pertaining to luma (used when optimize_scans is TRUE */
+  int num_scans_luma_dc;
+  int num_scans_chroma_dc;
+  int num_frequency_splits;
+
+  int Al_max_luma; /* maximum value of Al tested when optimizing scans (luma) */
+  int Al_max_chroma; /* maximum value of Al tested when optimizing scans (chroma) */
+
+  float lambda_log_scale1;
+  float lambda_log_scale2;
+  
+  float trellis_delta_dc_weight;
 };
+
+#ifdef C_ARITH_CODING_SUPPORTED
+/* The following two definitions specify the allocation chunk size
+ * for the statistics area.
+ * According to sections F.1.4.4.1.3 and F.1.4.4.2, we need at least
+ * 49 statistics bins for DC, and 245 statistics bins for AC coding.
+ *
+ * We use a compact representation with 1 byte per statistics bin,
+ * thus the numbers directly represent byte sizes.
+ * This 1 byte per statistics bin contains the meaning of the MPS
+ * (more probable symbol) in the highest bit (mask 0x80), and the
+ * index into the probability estimation state machine table
+ * in the lower bits (mask 0x7F).
+ */
+
+#define DC_STAT_BINS 64
+#define AC_STAT_BINS 256
+
+typedef struct {
+  float rate_dc[DC_STAT_BINS][2];
+  float rate_ac[AC_STAT_BINS][2];
+  int arith_dc_L;
+  int arith_dc_U;
+  int arith_ac_K;
+} arith_rates;
+#endif
 
 /* Main buffer control (downsampled-data buffer) */
 struct jpeg_c_main_controller {
@@ -100,10 +176,10 @@ struct jpeg_downsampler {
 struct jpeg_forward_dct {
   void (*start_pass) (j_compress_ptr cinfo);
   /* perhaps this should be an array??? */
-  void (*forward_DCT) (j_compress_ptr cinfo, jpeg_component_info * compptr,
+  void (*forward_DCT) (j_compress_ptr cinfo, jpeg_component_info *compptr,
                        JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
                        JDIMENSION start_row, JDIMENSION start_col,
-                       JDIMENSION num_blocks);
+                       JDIMENSION num_blocks, JBLOCKROW dst);
 };
 
 /* Entropy encoding */
@@ -137,6 +213,13 @@ struct jpeg_decomp_master {
 
   /* State variables made visible to other modules */
   boolean is_dummy_pass;        /* True during 1st pass for 2-pass quant */
+
+  /* Partial decompression variables */
+  JDIMENSION first_iMCU_col;
+  JDIMENSION last_iMCU_col;
+  JDIMENSION first_MCU_col[MAX_COMPS_IN_SCAN];
+  JDIMENSION last_MCU_col[MAX_COMPS_IN_SCAN];
+  boolean jinit_upsampler_no_alloc;
 };
 
 /* Input control module */
@@ -210,7 +293,7 @@ struct jpeg_entropy_decoder {
 
 /* Inverse DCT (also performs dequantization) */
 typedef void (*inverse_DCT_method_ptr) (j_decompress_ptr cinfo,
-                                        jpeg_component_info * compptr,
+                                        jpeg_component_info *compptr,
                                         JCOEFPTR coef_block,
                                         JSAMPARRAY output_buf,
                                         JDIMENSION output_col);
@@ -263,16 +346,16 @@ struct jpeg_color_quantizer {
  * shift" instructions that shift in copies of the sign bit.  But some
  * C compilers implement >> with an unsigned shift.  For these machines you
  * must define RIGHT_SHIFT_IS_UNSIGNED.
- * RIGHT_SHIFT provides a proper signed right shift of an INT32 quantity.
+ * RIGHT_SHIFT provides a proper signed right shift of a JLONG quantity.
  * It is only applied with constant shift counts.  SHIFT_TEMPS must be
  * included in the variables of any routine using RIGHT_SHIFT.
  */
 
 #ifdef RIGHT_SHIFT_IS_UNSIGNED
-#define SHIFT_TEMPS     INT32 shift_temp;
+#define SHIFT_TEMPS     JLONG shift_temp;
 #define RIGHT_SHIFT(x,shft)  \
         ((shift_temp = (x)) < 0 ? \
-         (shift_temp >> (shft)) | ((~((INT32) 0)) << (32-(shft))) : \
+         (shift_temp >> (shft)) | ((~((JLONG) 0)) << (32-(shft))) : \
          (shift_temp >> (shft)))
 #else
 #define SHIFT_TEMPS
@@ -327,7 +410,17 @@ EXTERN(void) jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
                                 int num_rows, JDIMENSION num_cols);
 EXTERN(void) jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
                               JDIMENSION num_blocks);
-EXTERN(void) jzero_far (void * target, size_t bytestozero);
+EXTERN(void) jzero_far (void *target, size_t bytestozero);
+
+#ifdef C_ARITH_CODING_SUPPORTED
+EXTERN(void) jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r);
+
+EXTERN(void) quantize_trellis_arith
+(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+ JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
+ JBLOCKROW coef_blocks_above, JBLOCKROW src_above);
+#endif
+
 /* Constant tables in jutils.c */
 #if 0                           /* This table is not actually needed in v6a */
 extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */
@@ -335,7 +428,7 @@ extern const int jpeg_zigzag_order[]; /* natural coef order to zigzag order */
 extern const int jpeg_natural_order[]; /* zigzag coef order to natural order */
 
 /* Arithmetic coding probability estimation tables in jaricom.c */
-extern const INT32 jpeg_aritab[];
+extern const JLONG jpeg_aritab[];
 
 /* Suppress undefined-structure complaints if necessary. */
 

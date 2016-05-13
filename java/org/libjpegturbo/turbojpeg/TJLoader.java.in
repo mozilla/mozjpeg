@@ -32,4 +32,4 @@ final class TJLoader {
   static void load() {
     System.loadLibrary("@TURBOJPEG_DLL_NAME@");
   }
-};
+}

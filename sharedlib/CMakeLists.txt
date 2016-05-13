@@ -16,7 +16,7 @@ if(MSVC)
 endif()
 
 foreach(src ${JPEG_SOURCES})
-  set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_SOURCE_DIR}/${src})
+  list(APPEND JPEG_SRCS "${CMAKE_SOURCE_DIR}/${src}")
 endforeach()
 
 if(WITH_SIMD)
@@ -26,10 +26,10 @@ endif()
 
 if(WITH_MEM_SRCDST AND NOT WITH_JPEG8)
   add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
-    ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}-memsrcdst.def)
+    "${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}-memsrcdst.def")
 else()
   add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
-    ${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def)
+    "${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def")
 endif()
 set_target_properties(jpeg PROPERTIES SOVERSION ${DLL_VERSION}
   VERSION ${FULLVERSION})
@@ -50,7 +50,7 @@ else()
 	set(DJPEG_BMP_SOURCES ../wrbmp.c ../wrtarga.c)
 endif()
 
-add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c
+add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c ../rdjpeg.c
   ../rdswitch.c ${CJPEG_BMP_SOURCES})
 set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(cjpeg jpeg)

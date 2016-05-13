@@ -58,7 +58,7 @@
  * RGB color and is described by:
  */
 
-extern JSAMPLE * image_buffer;  /* Points to large array of R,G,B-order data */
+extern JSAMPLE *image_buffer;   /* Points to large array of R,G,B-order data */
 extern int image_height;        /* Number of rows in image */
 extern int image_width;         /* Number of columns in image */
 
@@ -69,7 +69,7 @@ extern int image_width;         /* Number of columns in image */
  */
 
 GLOBAL(void)
-write_JPEG_file (char * filename, int quality)
+write_JPEG_file (char *filename, int quality)
 {
   /* This struct contains the JPEG compression parameters and pointers to
    * working space (which is allocated as needed by the JPEG library).
@@ -88,7 +88,7 @@ write_JPEG_file (char * filename, int quality)
    */
   struct jpeg_error_mgr jerr;
   /* More stuff */
-  FILE * outfile;               /* target file */
+  FILE *outfile;                /* target file */
   JSAMPROW row_pointer[1];      /* pointer to JSAMPLE row[s] */
   int row_stride;               /* physical row width in image buffer */
 
@@ -253,7 +253,7 @@ struct my_error_mgr {
   jmp_buf setjmp_buffer;        /* for return to caller */
 };
 
-typedef struct my_error_mgr * my_error_ptr;
+typedef struct my_error_mgr *my_error_ptr;
 
 /*
  * Here's the routine that will replace the standard error_exit method:
@@ -281,7 +281,7 @@ my_error_exit (j_common_ptr cinfo)
 
 
 GLOBAL(int)
-read_JPEG_file (char * filename)
+read_JPEG_file (char *filename)
 {
   /* This struct contains the JPEG decompression parameters and pointers to
    * working space (which is allocated as needed by the JPEG library).
@@ -293,7 +293,7 @@ read_JPEG_file (char * filename)
    */
   struct my_error_mgr jerr;
   /* More stuff */
-  FILE * infile;                /* source file */
+  FILE *infile;                 /* source file */
   JSAMPARRAY buffer;            /* Output row buffer */
   int row_stride;               /* physical row width in output buffer */
 

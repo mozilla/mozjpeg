@@ -5,9 +5,10 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009-2012, D. R. Commander.
+ * Copyright (C) 2009-2012, 2015 D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains input colorspace conversion routines.
  */
@@ -25,10 +26,10 @@ typedef struct {
   struct jpeg_color_converter pub; /* public fields */
 
   /* Private state for RGB->YCC conversion */
-  INT32 * rgb_ycc_tab;          /* => table for RGB to YCbCr conversion */
+  JLONG *rgb_ycc_tab;           /* => table for RGB to YCbCr conversion */
 } my_color_converter;
 
-typedef my_color_converter * my_cconvert_ptr;
+typedef my_color_converter *my_cconvert_ptr;
 
 
 /**************** RGB -> YCbCr conversion: most common case **************/
@@ -62,9 +63,9 @@ typedef my_color_converter * my_cconvert_ptr;
  */
 
 #define SCALEBITS       16      /* speediest right-shift on some machines */
-#define CBCR_OFFSET     ((INT32) CENTERJSAMPLE << SCALEBITS)
-#define ONE_HALF        ((INT32) 1 << (SCALEBITS-1))
-#define FIX(x)          ((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
+#define CBCR_OFFSET     ((JLONG) CENTERJSAMPLE << SCALEBITS)
+#define ONE_HALF        ((JLONG) 1 << (SCALEBITS-1))
+#define FIX(x)          ((JLONG) ((x) * (1L<<SCALEBITS) + 0.5))
 
 /* We allocate one big table and divide it up into eight parts, instead of
  * doing eight alloc_small requests.  This lets us use a single table base
@@ -197,13 +198,13 @@ METHODDEF(void)
 rgb_ycc_start (j_compress_ptr cinfo)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  INT32 * rgb_ycc_tab;
-  INT32 i;
+  JLONG *rgb_ycc_tab;
+  JLONG i;
 
   /* Allocate and fill in the conversion tables. */
-  cconvert->rgb_ycc_tab = rgb_ycc_tab = (INT32 *)
+  cconvert->rgb_ycc_tab = rgb_ycc_tab = (JLONG *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (TABLE_SIZE * sizeof(INT32)));
+                                (TABLE_SIZE * sizeof(JLONG)));
 
   for (i = 0; i <= MAXJSAMPLE; i++) {
     rgb_ycc_tab[i+R_Y_OFF] = FIX(0.29900) * i;
@@ -381,7 +382,7 @@ cmyk_ycck_convert (j_compress_ptr cinfo,
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
   register int r, g, b;
-  register INT32 * ctab = cconvert->rgb_ycc_tab;
+  register JLONG *ctab = cconvert->rgb_ycc_tab;
   register JSAMPROW inptr;
   register JSAMPROW outptr0, outptr1, outptr2, outptr3;
   register JDIMENSION col;
@@ -464,24 +465,54 @@ null_convert (j_compress_ptr cinfo,
               JDIMENSION output_row, int num_rows)
 {
   register JSAMPROW inptr;
-  register JSAMPROW outptr;
+  register JSAMPROW outptr, outptr0, outptr1, outptr2, outptr3;
   register JDIMENSION col;
   register int ci;
   int nc = cinfo->num_components;
   JDIMENSION num_cols = cinfo->image_width;
 
-  while (--num_rows >= 0) {
-    /* It seems fastest to make a separate pass for each component. */
-    for (ci = 0; ci < nc; ci++) {
-      inptr = *input_buf;
-      outptr = output_buf[ci][output_row];
+  if (nc == 3) {
+    while (--num_rows >= 0) {
+      inptr = *input_buf++;
+      outptr0 = output_buf[0][output_row];
+      outptr1 = output_buf[1][output_row];
+      outptr2 = output_buf[2][output_row];
+      output_row++;
       for (col = 0; col < num_cols; col++) {
-        outptr[col] = inptr[ci]; /* don't need GETJSAMPLE() here */
-        inptr += nc;
+        outptr0[col] = *inptr++;
+        outptr1[col] = *inptr++;
+        outptr2[col] = *inptr++;
       }
     }
-    input_buf++;
-    output_row++;
+  } else if (nc == 4) {
+    while (--num_rows >= 0) {
+      inptr = *input_buf++;
+      outptr0 = output_buf[0][output_row];
+      outptr1 = output_buf[1][output_row];
+      outptr2 = output_buf[2][output_row];
+      outptr3 = output_buf[3][output_row];
+      output_row++;
+      for (col = 0; col < num_cols; col++) {
+        outptr0[col] = *inptr++;
+        outptr1[col] = *inptr++;
+        outptr2[col] = *inptr++;
+        outptr3[col] = *inptr++;
+      }
+    }
+  } else {
+    while (--num_rows >= 0) {
+      /* It seems fastest to make a separate pass for each component. */
+      for (ci = 0; ci < nc; ci++) {
+        inptr = *input_buf;
+        outptr = output_buf[ci][output_row];
+        for (col = 0; col < num_cols; col++) {
+          outptr[col] = inptr[ci]; /* don't need GETJSAMPLE() here */
+          inptr += nc;
+        }
+      }
+      input_buf++;
+      output_row++;
+    }
   }
 }
 

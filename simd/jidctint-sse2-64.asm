@@ -92,11 +92,11 @@ PB_CENTERJSAMP  times 16 db CENTERJSAMPLE
 ; Perform dequantization and inverse DCT on one block of coefficients.
 ;
 ; GLOBAL(void)
-; jsimd_idct_islow_sse2 (void * dct_table, JCOEFPTR coef_block,
+; jsimd_idct_islow_sse2 (void *dct_table, JCOEFPTR coef_block,
 ;                        JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
-; r10 = jpeg_component_info * compptr
+; r10 = jpeg_component_info *compptr
 ; r11 = JCOEFPTR coef_block
 ; r12 = JSAMPARRAY output_buf
 ; r13 = JDIMENSION output_col
@@ -515,7 +515,7 @@ EXTN(jsimd_idct_islow_sse2):
 
         mov     rax, [original_rbp]
         mov     rdi, r12        ; (JSAMPROW *)
-        mov     rax, r13
+        mov     eax, r13d
 
         ; -- Even part
 

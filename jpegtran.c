@@ -4,7 +4,9 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2014, D. R. Commander.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for JPEG transcoding.
@@ -38,10 +40,12 @@
  */
 
 
-static const char * progname;   /* program name for error messages */
-static char * outfilename;      /* for -outfile switch */
+static const char *progname;    /* program name for error messages */
+static char *outfilename;       /* for -outfile switch */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
+boolean memsrc = FALSE;  /* for -memsrc switch */
+#define INPUT_BUF_SIZE  4096
 
 
 LOCAL(void)
@@ -60,11 +64,13 @@ usage (void)
   fprintf(stderr, "  -copy comments Copy only comment markers (default)\n");
   fprintf(stderr, "  -copy all      Copy all extra markers\n");
 #ifdef ENTROPY_OPT_SUPPORTED
-  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
+  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression, enabled by default)\n");
 #endif
 #ifdef C_PROGRESSIVE_SUPPORTED
-  fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
+  fprintf(stderr, "  -progressive   Create progressive JPEG file (enabled by default)\n");
 #endif
+  fprintf(stderr, "  -revert        Revert to standard defaults (instead of mozjpeg defaults)\n");
+  fprintf(stderr, "  -fastcrush     Disable progressive scan optimization\n");
   fprintf(stderr, "Switches for modifying the image:\n");
 #if TRANSFORMS_SUPPORTED
   fprintf(stderr, "  -crop WxH+X+Y  Crop to a rectangular subarea\n");
@@ -86,6 +92,7 @@ usage (void)
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
+  fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
 #ifdef C_MULTISCAN_FILES_SUPPORTED
   fprintf(stderr, "  -scans file    Create multi-scan JPEG per script file\n");
@@ -130,12 +137,16 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
  */
 {
   int argn;
-  char * arg;
+  char *arg;
   boolean simple_progressive;
-  char * scansarg = NULL;       /* saves -scans parm if any */
+  char *scansarg = NULL;        /* saves -scans parm if any */
 
   /* Set up default JPEG parameters. */
+#ifdef C_PROGRESSIVE_SUPPORTED
+  simple_progressive = cinfo->num_scans == 0 ? FALSE : TRUE;
+#else
   simple_progressive = FALSE;
+#endif
   outfilename = NULL;
   copyoption = JCOPYOPT_DEFAULT;
   transformoption.transform = JXFORM_NONE;
@@ -164,6 +175,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Use arithmetic coding. */
 #ifdef C_ARITH_CODING_SUPPORTED
       cinfo->arith_code = TRUE;
+
+      /* No table optimization required for AC */
+      cinfo->optimize_coding = FALSE;
 #else
       fprintf(stderr, "%s: sorry, arithmetic coding not supported\n",
               progname);
@@ -212,6 +226,11 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       }
       cinfo->err->trace_level++;
 
+    } else if (keymatch(arg, "version", 4)) {
+      fprintf(stderr, "%s version %s (build %s)\n",
+              PACKAGE_NAME, VERSION, BUILD);
+      exit(EXIT_SUCCESS);
+
     } else if (keymatch(arg, "flip", 1)) {
       /* Mirror left-right or top-bottom. */
       if (++argn >= argc)       /* advance to next argument */
@@ -223,6 +242,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       else
         usage();
 
+    } else if (keymatch(arg, "fastcrush", 4)) {
+      jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
+      
     } else if (keymatch(arg, "grayscale", 1) || keymatch(arg, "greyscale",1)) {
       /* Force to grayscale. */
 #if TRANSFORMS_SUPPORTED
@@ -295,6 +317,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
         /* restart_interval will be computed during startup */
       }
 
+    } else if (keymatch(arg, "revert", 3)) {
+      /* revert to old JPEG default */
+      jpeg_c_set_int_param(cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
+      
     } else if (keymatch(arg, "rotate", 2)) {
       /* Rotate 90, 180, or 270 degrees (measured clockwise). */
       if (++argn >= argc)       /* advance to next argument */
@@ -371,13 +397,17 @@ main (int argc, char **argv)
 #ifdef PROGRESS_REPORT
   struct cdjpeg_progress_mgr progress;
 #endif
-  jvirt_barray_ptr * src_coef_arrays;
-  jvirt_barray_ptr * dst_coef_arrays;
+  jvirt_barray_ptr *src_coef_arrays;
+  jvirt_barray_ptr *dst_coef_arrays;
   int file_index;
   /* We assume all-in-memory processing and can therefore use only a
    * single file pointer for sequential input and output operation.
    */
-  FILE * fp;
+  FILE *fp;
+  unsigned char *inbuffer = NULL;
+  unsigned long insize = 0;
+  unsigned char *outbuffer = NULL;
+  unsigned long outsize = 0;
 
   /* On Mac, fetch a command line. */
 #ifdef USE_CCOMMAND
@@ -447,6 +477,32 @@ main (int argc, char **argv)
 #endif
 
   /* Specify data source for decompression */
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION)
+    memsrc = TRUE; /* needed to revert to original */
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+  if (memsrc) {
+    size_t nbytes;
+    do {
+      inbuffer = (unsigned char *)realloc(inbuffer, insize + INPUT_BUF_SIZE);
+      if (inbuffer == NULL) {
+        fprintf(stderr, "%s: memory allocation failure\n", progname);
+        exit(EXIT_FAILURE);
+      }
+      nbytes = JFREAD(fp, &inbuffer[insize], INPUT_BUF_SIZE);
+      if (nbytes < INPUT_BUF_SIZE && ferror(fp)) {
+        if (file_index < argc)
+          fprintf(stderr, "%s: can't read from %s\n", progname,
+                  argv[file_index]);
+        else
+          fprintf(stderr, "%s: can't read from stdin\n", progname);
+      }
+      insize += (unsigned long)nbytes;
+    } while (nbytes == INPUT_BUF_SIZE);
+    jpeg_mem_src(&srcinfo, inbuffer, insize);
+  } else
+#endif
   jpeg_stdio_src(&srcinfo, fp);
 
   /* Enable saving of extra markers that we want to copy */
@@ -509,6 +565,13 @@ main (int argc, char **argv)
   file_index = parse_switches(&dstinfo, argc, argv, 0, TRUE);
 
   /* Specify data destination for compression */
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION)
+    jpeg_mem_dest(&dstinfo, &outbuffer, &outsize);
+  else
+#endif
   jpeg_stdio_dest(&dstinfo, fp);
 
   /* Start compressor (note no image data is actually written here) */
@@ -526,6 +589,29 @@ main (int argc, char **argv)
 
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
+  
+  if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
+      jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
+        == JCP_MAX_COMPRESSION) {
+    size_t nbytes;
+    
+    unsigned char *buffer = outbuffer;
+    unsigned long size = outsize;
+    if (insize < size) {
+      size = insize;
+      buffer = inbuffer;
+    }
+
+    nbytes = JFWRITE(fp, buffer, size);
+    if (nbytes < size && ferror(fp)) {
+      if (file_index < argc)
+        fprintf(stderr, "%s: can't write to %s\n", progname,
+                argv[file_index]);
+      else
+        fprintf(stderr, "%s: can't write to stdout\n", progname);
+    }
+  }
+    
   jpeg_destroy_compress(&dstinfo);
   (void) jpeg_finish_decompress(&srcinfo);
   jpeg_destroy_decompress(&srcinfo);
@@ -537,6 +623,9 @@ main (int argc, char **argv)
 #ifdef PROGRESS_REPORT
   end_progress_monitor((j_common_ptr) &dstinfo);
 #endif
+
+  free(inbuffer);
+  free(outbuffer);
 
   /* All done. */
   exit(jsrcerr.num_warnings + jdsterr.num_warnings ?EXIT_WARNING:EXIT_SUCCESS);

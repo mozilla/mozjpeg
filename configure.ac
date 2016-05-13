@@ -2,11 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.56])
-AC_INIT([libjpeg-turbo], [1.4.80])
+AC_INIT([mozjpeg], [3.1])
 BUILD=`date +%Y%m%d`
 
 AM_INIT_AUTOMAKE([-Wall foreign dist-bzip2])
-AC_PREFIX_DEFAULT(/opt/libjpeg-turbo)
+AC_PREFIX_DEFAULT(/opt/mozjpeg)
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
@@ -19,8 +19,15 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AM_PROG_AS
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
+
+AC_ARG_WITH([build-date], [Use custom build string to enable reproducible builds (default: YYMMDD)],
+  [BUILD="$with_build_date"],
+  [BUILD=`date +%Y%m%d`])
+
+PKG_PROG_PKG_CONFIG
 
 # When the prefix is /opt/libjpeg-turbo, we assume that an "official" binary is
 # being created, and thus we install things into specific locations.
@@ -39,24 +46,30 @@ DATADIR=`eval echo $DATADIR`
 if test "$DATADIR" = "/opt/libjpeg-turbo/share"; then
   datarootdir='${prefix}'
 fi
+DOCDIR=`eval echo ${docdir}`
+DOCDIR=`eval echo $DOCDIR`
+if test "$DOCDIR" = "/opt/libjpeg-turbo/doc/libjpeg-turbo"; then
+  docdir='${datadir}/doc'
+fi
 
 old_exec_prefix=${exec_prefix}
 if test "x$exec_prefix" = "xNONE"; then
   exec_prefix=${prefix}
 fi
 
+AC_CHECK_SIZEOF(size_t)
+
 if test "x${libdir}" = 'x${exec_prefix}/lib' -o "x${libdir}" = 'x${prefix}/lib'; then
   LIBDIR=`eval echo ${libdir}`
   LIBDIR=`eval echo $LIBDIR`
-  if test "$LIBDIR" = "/opt/libjpeg-turbo/lib"; then
+  if test "$LIBDIR" = "/opt/mozjpeg/lib"; then
     case $host_os in
       darwin*)
         ;;
       *)
-        AC_CHECK_SIZEOF(long)
-        if test "${ac_cv_sizeof_long}" = "8"; then
+        if test "${ac_cv_sizeof_size_t}" = "8"; then
           libdir='${exec_prefix}/lib64'
-        elif test "${ac_cv_sizeof_long}" = "4"; then
+        elif test "${ac_cv_sizeof_size_t}" = "4"; then
           libdir='${exec_prefix}/lib32'
         fi
         ;;
@@ -68,7 +81,7 @@ prefix=${old_prefix}
 
 # Check whether compiler supports pointers to undefined structures
 AC_MSG_CHECKING(whether compiler supports pointers to undefined structures)
-AC_TRY_COMPILE([ typedef struct undefined_structure * undef_struct_ptr; ], ,
+AC_TRY_COMPILE([ typedef struct undefined_structure *undef_struct_ptr; ], ,
   AC_MSG_RESULT(yes),
   [AC_MSG_RESULT(no)
    AC_DEFINE([INCOMPLETE_TYPES_BROKEN], [1],
@@ -91,6 +104,12 @@ if test "x${SUNCC}" = "xyes"; then
 fi
 
 # Checks for libraries.
+AC_CHECK_LIB([m],[pow])
+
+PKG_CHECK_MODULES([libpng], [libpng], [HAVE_LIBPNG=1], [
+  PKG_CHECK_MODULES([libpng], [libpng12], [HAVE_LIBPNG=1], [HAVE_LIBPNG=0])
+])
+AM_CONDITIONAL([HAVE_LIBPNG], [test "$HAVE_LIBPNG" -eq 1])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -143,10 +162,10 @@ AC_ARG_VAR(JPEG_LIB_VERSION, [libjpeg API version (62, 70, or 80)])
 if test "x$JPEG_LIB_VERSION" = "x"; then
   AC_ARG_WITH([jpeg7],
     AC_HELP_STRING([--with-jpeg7],
-      [Emulate libjpeg v7 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
+      [Emulate libjpeg v7 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b.)]))
   AC_ARG_WITH([jpeg8],
     AC_HELP_STRING([--with-jpeg8],
-      [Emulate libjpeg v8 API/ABI (this makes libjpeg-turbo backward incompatible with libjpeg v6b.)]))
+      [Emulate libjpeg v8 API/ABI (this makes mozjpeg backward incompatible with libjpeg v6b.)]))
   if test "x${with_jpeg8}" = "xyes"; then
     JPEG_LIB_VERSION=80
   else
@@ -164,9 +183,9 @@ AC_DEFINE_UNQUOTED(JPEG_LIB_VERSION, [$JPEG_LIB_VERSION],
   [libjpeg API version])
 
 AC_ARG_VAR(SO_MAJOR_VERSION,
-  [Major version of the libjpeg-turbo shared library (default is determined by the API version)])
+  [Major version of the mozjpeg shared library (default is determined by the API version)])
 AC_ARG_VAR(SO_MINOR_VERSION,
-  [Minor version of the libjpeg-turbo shared library (default is determined by the API version)])
+  [Minor version of the mozjpeg shared library (default is determined by the API version)])
 if test "x$SO_MAJOR_VERSION" = "x"; then
   case "$JPEG_LIB_VERSION" in
     62)  SO_MAJOR_VERSION=$JPEG_LIB_VERSION ;;
@@ -183,7 +202,7 @@ fi
 RPM_CONFIG_ARGS=
 
 # Memory source/destination managers
-SO_AGE=0
+SO_AGE=1
 MEM_SRCDST_FUNCTIONS=
 if test "x${with_jpeg8}" != "xyes"; then
   AC_MSG_CHECKING([whether to include in-memory source/destination managers])
@@ -194,7 +213,7 @@ if test "x${with_jpeg8}" != "xyes"; then
     AC_MSG_RESULT(yes)
     AC_DEFINE([MEM_SRCDST_SUPPORTED], [1],
       [Support in-memory source/destination managers])
-    SO_AGE=1
+    SO_AGE=2
     MEM_SRCDST_FUNCTIONS="global:  jpeg_mem_dest;  jpeg_mem_src;";
   else
     AC_MSG_RESULT(no)
@@ -211,12 +230,12 @@ AC_SUBST(SO_MINOR_VERSION)
 AC_SUBST(SO_AGE)
 AC_SUBST(MEM_SRCDST_FUNCTIONS)
 
-AC_DEFINE_UNQUOTED(LIBJPEG_TURBO_VERSION, [$VERSION], [libjpeg-turbo version])
+AC_DEFINE_UNQUOTED(MOZJPEG_VERSION, [$VERSION], [mozjpeg version])
 
 VERSION_SCRIPT=yes
 AC_ARG_ENABLE([ld-version-script],
   AS_HELP_STRING([--disable-ld-version-script],
-    [Disable linker version script for libjpeg-turbo (default is to use linker version script if the linker supports it)]),
+    [Disable linker version script for mozjpeg (default is to use linker version script if the linker supports it)]),
   [VERSION_SCRIPT=$enableval], [])
 
 AC_MSG_CHECKING([whether the linker supports version scripts])
@@ -227,13 +246,13 @@ VERS_1 {
   global: *;
 };
 EOF
-AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_PROGRAM([], [])])],
   [VERSION_SCRIPT_FLAG=-Wl,--version-script,;
    AC_MSG_RESULT([yes (GNU style)])],
   [])
 if test "x$VERSION_SCRIPT_FLAG" = "x"; then
   LDFLAGS="$SAVED_LDFLAGS -Wl,-M,conftest.map"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+  AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_PROGRAM([], [])])],
     [VERSION_SCRIPT_FLAG=-Wl,-M,;
      AC_MSG_RESULT([yes (Sun style)])],
     [])
@@ -244,7 +263,7 @@ if test "x$VERSION_SCRIPT_FLAG" = "x"; then
 fi
 LDFLAGS="$SAVED_LDFLAGS"
 
-AC_MSG_CHECKING([whether to use version script when building libjpeg-turbo])
+AC_MSG_CHECKING([whether to use version script when building mozjpeg])
 AC_MSG_RESULT($VERSION_SCRIPT)
 
 AM_CONDITIONAL(VERSION_SCRIPT, test "x$VERSION_SCRIPT" = "xyes")
@@ -437,7 +456,11 @@ if test "x${with_simd}" != "xno"; then
       AC_MSG_RESULT([yes (arm)])
       AC_MSG_CHECKING([if the assembler is GNU-compatible and can be used])
       AC_CHECK_COMPATIBLE_ARM_ASSEMBLER_IFELSE(
-        [AC_MSG_RESULT([yes])
+        [if test "x$ac_use_gas_preprocessor" = "xyes"; then
+           AC_MSG_RESULT([yes (with gas-preprocessor)])
+         else
+           AC_MSG_RESULT([yes])
+         fi
          simd_arch=arm],
         [AC_MSG_RESULT([no])
          with_simd=no])
@@ -453,7 +476,11 @@ if test "x${with_simd}" != "xno"; then
       AC_MSG_RESULT([yes (arm64)])
       AC_MSG_CHECKING([if the assembler is GNU-compatible and can be used])
       AC_CHECK_COMPATIBLE_ARM64_ASSEMBLER_IFELSE(
-        [AC_MSG_RESULT([yes])
+        [if test "x$ac_use_gas_preprocessor" = "xyes"; then
+           AC_MSG_RESULT([yes (with gas-preprocessor)])
+         else
+           AC_MSG_RESULT([yes])
+         fi
          simd_arch=aarch64],
         [AC_MSG_RESULT([no])
          with_simd=no])
@@ -513,8 +540,9 @@ AM_CONDITIONAL([SIMD_MIPS], [test "x$simd_arch" = "xmips"])
 AM_CONDITIONAL([SIMD_POWERPC], [test "x$simd_arch" = "xpowerpc"])
 AM_CONDITIONAL([X86_64], [test "x$host_cpu" = "xx86_64" -o "x$host_cpu" = "xamd64"])
 AM_CONDITIONAL([WITH_TURBOJPEG], [test "x$with_turbojpeg" != "xno"])
+AM_CONDITIONAL([CROSS_COMPILING], [test "x$cross_compiling" = "xyes"])
 
-AC_ARG_VAR(PKGNAME, [distribution package name (default: libjpeg-turbo)])
+AC_ARG_VAR(PKGNAME, [distribution package name (default: mozjpeg)])
 if test "x$PKGNAME" = "x"; then
   PKGNAME=$PACKAGE_NAME
 fi
@@ -529,7 +557,16 @@ case "$host_cpu" in
     RPMARCH=i386
     DEBARCH=i386
     ;;
+  *)
+    RPMARCH=`uname -m`
+    DEBARCH=$RPMARCH
+    ;;
 esac
+
+if test "${docdir}" = ""; then
+  docdir=${datadir}/doc
+  AC_SUBST(docdir)
+fi
 
 AC_SUBST(RPMARCH)
 AC_SUBST(RPM_CONFIG_ARGS)
@@ -545,11 +582,13 @@ AC_DEFINE_UNQUOTED([BUILD], "$BUILD", [libjpeg-turbo build number])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([jconfig.h])
 AC_CONFIG_HEADERS([jconfigint.h])
-AC_CONFIG_FILES([pkgscripts/libjpeg-turbo.spec.tmpl:release/libjpeg-turbo.spec.in])
+AC_CONFIG_FILES([pkgscripts/mozjpeg.spec.tmpl:release/mozjpeg.spec.in])
 AC_CONFIG_FILES([pkgscripts/makecygwinpkg.tmpl:release/makecygwinpkg.in])
 AC_CONFIG_FILES([pkgscripts/makedpkg.tmpl:release/makedpkg.in])
 AC_CONFIG_FILES([pkgscripts/makemacpkg.tmpl:release/makemacpkg.in])
 AC_CONFIG_FILES([pkgscripts/uninstall.tmpl:release/uninstall.in])
+AC_CONFIG_FILES([pkgscripts/libjpeg.pc:release/libjpeg.pc.in])
+AC_CONFIG_FILES([pkgscripts/libturbojpeg.pc:release/libturbojpeg.pc.in])
 if test "x$with_turbojpeg" != "xno"; then
   AC_CONFIG_FILES([tjbenchtest])
 fi

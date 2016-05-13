@@ -28,12 +28,12 @@
 ;
 ; GLOBAL(void)
 ; jsimd_convsamp_sse2 (JSAMPARRAY sample_data, JDIMENSION start_col,
-;                      DCTELEM * workspace);
+;                      DCTELEM *workspace);
 ;
 
 ; r10 = JSAMPARRAY sample_data
 ; r11 = JDIMENSION start_col
-; r12 = DCTELEM * workspace
+; r12 = DCTELEM *workspace
 
         align   16
         global  EXTN(jsimd_convsamp_sse2)
@@ -50,7 +50,7 @@ EXTN(jsimd_convsamp_sse2):
         psllw   xmm7,7                  ; xmm7={0xFF80 0xFF80 0xFF80 0xFF80 ..}
 
         mov rsi, r10
-        mov rax, r11
+        mov eax, r11d
         mov rdi, r12
         mov     rcx, DCTSIZE/4
 .convloop:
@@ -99,8 +99,8 @@ EXTN(jsimd_convsamp_sse2):
 ;   (http://www.agner.org/assem/).
 ;
 ; GLOBAL(void)
-; jsimd_quantize_sse2 (JCOEFPTR coef_block, DCTELEM * divisors,
-;                      DCTELEM * workspace);
+; jsimd_quantize_sse2 (JCOEFPTR coef_block, DCTELEM *divisors,
+;                      DCTELEM *workspace);
 ;
 
 %define RECIPROCAL(m,n,b) XMMBLOCK(DCTSIZE*0+(m),(n),(b),SIZEOF_DCTELEM)
@@ -108,8 +108,8 @@ EXTN(jsimd_convsamp_sse2):
 %define SCALE(m,n,b)      XMMBLOCK(DCTSIZE*2+(m),(n),(b),SIZEOF_DCTELEM)
 
 ; r10 = JCOEFPTR coef_block
-; r11 = DCTELEM * divisors
-; r12 = DCTELEM * workspace
+; r11 = DCTELEM *divisors
+; r12 = DCTELEM *workspace
 
         align   16
         global  EXTN(jsimd_quantize_sse2)

@@ -1,15 +1,16 @@
 /*
-* jstdhuff.c
-*
-* This file was part of the Independent JPEG Group's software:
-* Copyright (C) 1991-1998, Thomas G. Lane.
-* libjpeg-turbo Modifications:
-* Copyright (C) 2013, D. R. Commander.
-* For conditions of distribution and use, see the accompanying README file.
-*
-* This file contains routines to set the default Huffman tables, if they are
-* not already set.
-*/
+ * jstdhuff.c
+ *
+ * This file was part of the Independent JPEG Group's software:
+ * Copyright (C) 1991-1998, Thomas G. Lane.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2013, D. R. Commander.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
+ *
+ * This file contains routines to set the default Huffman tables, if they are
+ * not already set.
+ */
 
 /*
  * Huffman table setup routines
@@ -41,6 +42,7 @@ add_huff_table (j_common_ptr cinfo,
     ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
 
   MEMCOPY((*htblptr)->huffval, val, nsymbols * sizeof(UINT8));
+  MEMZERO(&((*htblptr)->huffval[nsymbols]), (256 - nsymbols) * sizeof(UINT8));
 
   /* Initialize sent_table FALSE so table will be written to JPEG file. */
   (*htblptr)->sent_table = FALSE;

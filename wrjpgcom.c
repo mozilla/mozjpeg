@@ -5,7 +5,8 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2014, D. R. Commander
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains a very simple stand-alone application that inserts
  * user-supplied text as a COM (comment) marker in a JFIF file.
@@ -17,7 +18,7 @@
 #include "jinclude.h"           /* get auto-config symbols, <stdio.h> */
 
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc() */
-extern void * malloc ();
+extern void *malloc ();
 #endif
 #include <ctype.h>              /* to declare isupper(), tolower() */
 #ifdef USE_SETMODE
@@ -65,12 +66,12 @@ extern void * malloc ();
  * To reuse this code in another application, you might need to change these.
  */
 
-static FILE * infile;           /* input JPEG file */
+static FILE *infile;            /* input JPEG file */
 
 /* Return next input byte, or EOF if no more */
 #define NEXTBYTE()  getc(infile)
 
-static FILE * outfile;          /* output JPEG file */
+static FILE *outfile;           /* output JPEG file */
 
 /* Emit an output byte */
 #define PUTBYTE(x)  putc((x), outfile)
@@ -337,7 +338,7 @@ scan_JPEG_header (int keep_COM)
 
 /* Command line parsing code */
 
-static const char * progname;   /* program name for error messages */
+static const char *progname;    /* program name for error messages */
 
 
 static void
@@ -374,7 +375,7 @@ usage (void)
 
 
 static int
-keymatch (char * arg, const char * keyword, int minchars)
+keymatch (char *arg, const char *keyword, int minchars)
 /* Case-insensitive matching of (possibly abbreviated) keyword switches. */
 /* keyword is the constant keyword (must be lower case already), */
 /* minchars is length of minimum legal abbreviation. */
@@ -406,10 +407,10 @@ int
 main (int argc, char **argv)
 {
   int argn;
-  char * arg;
+  char *arg;
   int keep_COM = 1;
-  char * comment_arg = NULL;
-  FILE * comment_file = NULL;
+  char *comment_arg = NULL;
+  FILE *comment_file = NULL;
   unsigned int comment_length = 0;
   int marker;
 
@@ -543,7 +544,7 @@ main (int argc, char **argv)
 
   /* Collect comment text from comment_file or stdin, if necessary */
   if (comment_arg == NULL) {
-    FILE * src_file;
+    FILE *src_file;
     int c;
 
     comment_arg = (char *) malloc((size_t) MAX_COM_LENGTH);

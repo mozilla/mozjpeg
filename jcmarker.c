@@ -6,7 +6,8 @@
  * Modified 2003-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, D. R. Commander.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to write JPEG datastream markers.
  */
@@ -93,7 +94,7 @@ typedef struct {
   unsigned int last_restart_interval; /* last DRI value emitted; 0 after SOI */
 } my_marker_writer;
 
-typedef my_marker_writer * my_marker_ptr;
+typedef my_marker_writer *my_marker_ptr;
 
 
 /*
@@ -112,7 +113,7 @@ LOCAL(void)
 emit_byte (j_compress_ptr cinfo, int val)
 /* Emit a byte */
 {
-  struct jpeg_destination_mgr * dest = cinfo->dest;
+  struct jpeg_destination_mgr *dest = cinfo->dest;
 
   *(dest->next_output_byte)++ = (JOCTET) val;
   if (--dest->free_in_buffer == 0) {
@@ -149,7 +150,7 @@ emit_dqt (j_compress_ptr cinfo, int index)
 /* Emit a DQT marker */
 /* Returns the precision used (0 = 8bits, 1 = 16bits) for baseline checking */
 {
-  JQUANT_TBL * qtbl = cinfo->quant_tbl_ptrs[index];
+  JQUANT_TBL *qtbl = cinfo->quant_tbl_ptrs[index];
   int prec;
   int i;
 
@@ -183,12 +184,78 @@ emit_dqt (j_compress_ptr cinfo, int index)
   return prec;
 }
 
+LOCAL(int)
+emit_multi_dqt (j_compress_ptr cinfo)
+/* Emits a DQT marker containing all quantization tables */
+/* Returns number of emitted 16-bit tables, or -1 for failed for baseline checking. */
+{
+  int prec[MAX_COMPONENTS];
+  int seen[MAX_COMPONENTS] = { 0 };
+  int fin_prec = 0;
+  int ci;
+  int size = 0;
+
+  if (cinfo->master->compress_profile == JCP_FASTEST)
+    return -1;
+
+  for (ci = 0; ci < cinfo->num_components; ci++) {
+    int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
+    int i;
+    JQUANT_TBL * qtbl = cinfo->quant_tbl_ptrs[tbl_num];
+
+    if (qtbl == NULL || qtbl->sent_table == TRUE)
+      return -1;
+
+    prec[ci] = 0;
+    for (i = 0; i < DCTSIZE2; i++)
+      prec[ci] = !!(prec[ci] + (qtbl->quantval[i] > 255));
+
+    fin_prec += prec[ci];
+  }
+
+  emit_marker(cinfo, M_DQT);
+
+  for (ci = 0; ci < cinfo->num_components; ci++) {
+    int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
+
+    if (!seen[tbl_num]) {
+      size += DCTSIZE2 * (prec[ci] + 1) + 1;
+      seen[tbl_num] = 1;
+    }
+  }
+  size += 2;
+
+  emit_2bytes(cinfo, size);
+
+  for (ci = 0; ci < cinfo->num_components; ci++) {
+    int tbl_num = cinfo->comp_info[ci].quant_tbl_no;
+    int i;
+    JQUANT_TBL * qtbl = cinfo->quant_tbl_ptrs[tbl_num];
+
+    if (qtbl->sent_table == TRUE)
+        continue;
+
+    emit_byte(cinfo, tbl_num + (prec[ci] << 4));
+
+    for (i = 0; i < DCTSIZE2; i++) {
+      unsigned int qval = qtbl->quantval[jpeg_natural_order[i]];
+
+      if (prec[ci])
+        emit_byte(cinfo, (int) (qval >> 8));
+      emit_byte(cinfo, (int) (qval & 0xFF));
+    }
+
+    qtbl->sent_table = TRUE;
+  }
+
+  return fin_prec;
+}
 
 LOCAL(void)
 emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
 /* Emit a DHT marker */
 {
-  JHUFF_TBL * htbl;
+  JHUFF_TBL *htbl;
   int length, i;
 
   if (is_ac) {
@@ -221,6 +288,115 @@ emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
   }
 }
 
+LOCAL(boolean)
+emit_multi_dht (j_compress_ptr cinfo)
+/* Emit all DHT markers */
+/* Returns FALSE on failure, TRUE otherwise. */
+{
+  int i, j;
+  int length = 2;
+  int dclens[NUM_HUFF_TBLS] = { 0 };
+  int aclens[NUM_HUFF_TBLS] = { 0 };
+  JHUFF_TBL *dcseen[NUM_HUFF_TBLS] = { NULL };
+  JHUFF_TBL *acseen[NUM_HUFF_TBLS] = { NULL };
+
+  if (cinfo->master->compress_profile == JCP_FASTEST)
+    return 0;
+
+  /* Calclate the total length. */
+  for (i = 0; i < cinfo->comps_in_scan; i++) {
+    jpeg_component_info *compptr = cinfo->cur_comp_info[i];
+    int dcidx = compptr->dc_tbl_no;
+    int acidx = compptr->ac_tbl_no;
+    JHUFF_TBL *dctbl = cinfo->dc_huff_tbl_ptrs[dcidx];
+    JHUFF_TBL *actbl = cinfo->ac_huff_tbl_ptrs[acidx];
+    int seen = 0;
+
+    /* Handle DC table lenghts */
+    if (cinfo->Ss == 0 && cinfo->Ah == 0) {
+      if (dctbl == NULL)
+        ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, dcidx);
+
+      if (dctbl->sent_table)
+          continue;
+
+      for (j = 0; j < NUM_HUFF_TBLS; j++)
+          seen += (dctbl == dcseen[j]);
+      if (seen)
+          continue;
+      dcseen[i] = dctbl;
+
+      for (j = 1; j <= 16; j++)
+        dclens[i] += dctbl->bits[j];
+      length += dclens[i] + 16 + 1;
+    }
+
+    /* Handle AC table lengths */
+    if (cinfo->Se) {
+      if (actbl == NULL)
+        ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, acidx + 0x10);
+
+      if (actbl->sent_table)
+          continue;
+
+      seen = 0;
+      for (j = 0; j < NUM_HUFF_TBLS; j++)
+          seen += (actbl == acseen[j]);
+      if (seen)
+          continue;
+      acseen[i] = actbl;
+
+      for (j = 1; j <= 16; j++)
+        aclens[i] += actbl->bits[j];
+      length += aclens[i] + 16 + 1;
+
+    }
+  }
+
+  /* Make sure we can fit it all into one DHT marker */
+  if (length > (1 << 16) - 1)
+    return FALSE;
+
+  emit_marker(cinfo, M_DHT);
+  emit_2bytes(cinfo, length);
+
+  for (i = 0; i < cinfo->comps_in_scan; i++) {
+    jpeg_component_info *compptr = cinfo->cur_comp_info[i];
+    int dcidx = compptr->dc_tbl_no;
+    int acidx = compptr->ac_tbl_no;
+    JHUFF_TBL *dctbl = cinfo->dc_huff_tbl_ptrs[dcidx];
+    JHUFF_TBL *actbl = cinfo->ac_huff_tbl_ptrs[acidx];
+
+    acidx += 0x10;
+
+    /* DC */
+    if (cinfo->Ss == 0 && cinfo->Ah == 0 && !dctbl->sent_table) {
+      emit_byte(cinfo, dcidx);
+
+      for (j = 1; j <= 16; j++)
+        emit_byte(cinfo, dctbl->bits[j]);
+
+      for (j = 0; j < dclens[i]; j++)
+        emit_byte(cinfo, dctbl->huffval[j]);
+
+      dctbl->sent_table = TRUE;
+    }
+
+    if (cinfo->Se && !actbl->sent_table) {
+      emit_byte(cinfo, acidx);
+
+      for (j = 1; j <= 16; j++)
+        emit_byte(cinfo, actbl->bits[j]);
+
+      for (j = 0; j < aclens[i]; j++)
+        emit_byte(cinfo, actbl->huffval[j]);
+
+      actbl->sent_table = TRUE;
+    }
+  }
+
+  return TRUE;
+}
 
 LOCAL(void)
 emit_dac (j_compress_ptr cinfo)
@@ -504,10 +680,13 @@ write_frame_header (j_compress_ptr cinfo)
   /* Emit DQT for each quantization table.
    * Note that emit_dqt() suppresses any duplicate tables.
    */
+  prec = emit_multi_dqt(cinfo);
+  if (prec == -1) {
   prec = 0;
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
     prec += emit_dqt(cinfo, compptr->quant_tbl_no);
+  }
   }
   /* now prec is nonzero iff there are any 16-bit quant tables. */
 
@@ -571,6 +750,7 @@ write_scan_header (j_compress_ptr cinfo)
     /* Emit Huffman tables.
      * Note that emit_dht() suppresses any duplicate tables.
      */
+    if (!emit_multi_dht(cinfo)) {
     for (i = 0; i < cinfo->comps_in_scan; i++) {
       compptr = cinfo->cur_comp_info[i];
       /* DC needs no table for refinement scan */
@@ -580,6 +760,7 @@ write_scan_header (j_compress_ptr cinfo)
       if (cinfo->Se)
         emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
     }
+  }
   }
 
   /* Emit DRI if required --- note that DRI value could change for each scan.

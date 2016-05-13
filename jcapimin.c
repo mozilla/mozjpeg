@@ -4,8 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1998, Thomas G. Lane.
  * Modified 2003-2010 by Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2014, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the compression half
@@ -22,6 +22,8 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jmemsys.h"
+#include "jcmaster.h"
 
 
 /*
@@ -49,8 +51,8 @@ jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
    * complain here.
    */
   {
-    struct jpeg_error_mgr * err = cinfo->err;
-    void * client_data = cinfo->client_data; /* ignore Purify complaint here */
+    struct jpeg_error_mgr *err = cinfo->err;
+    void *client_data = cinfo->client_data; /* ignore Purify complaint here */
     MEMZERO(cinfo, sizeof(struct jpeg_compress_struct));
     cinfo->err = err;
     cinfo->client_data = client_data;
@@ -91,6 +93,16 @@ jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
 
   /* OK, I'm ready */
   cinfo->global_state = CSTATE_START;
+
+  /* The master struct is used to store extension parameters, so we allocate it
+   * here.  It is later reallocated by jinit_c_master_control().
+   */
+  cinfo->master = (struct jpeg_comp_master *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+                                  sizeof(my_comp_master));
+  MEMZERO(cinfo->master, sizeof(my_comp_master));
+
+  cinfo->master->compress_profile = JCP_MAX_COMPRESSION;
 }
 
 
@@ -133,8 +145,8 @@ GLOBAL(void)
 jpeg_suppress_tables (j_compress_ptr cinfo, boolean suppress)
 {
   int i;
-  JQUANT_TBL * qtbl;
-  JHUFF_TBL * htbl;
+  JQUANT_TBL *qtbl;
+  JHUFF_TBL *htbl;
 
   for (i = 0; i < NUM_QUANT_TBLS; i++) {
     if ((qtbl = cinfo->quant_tbl_ptrs[i]) != NULL)

@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -86,8 +87,7 @@ public class YUVImage {
    * @param subsamp the level of chrominance subsampling to be used in the YUV
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
-  public YUVImage(int width, int[] strides, int height, int subsamp)
-    throws Exception {
+  public YUVImage(int width, int[] strides, int height, int subsamp) {
     setBuf(null, null, width, strides, height, subsamp, true);
   }
 
@@ -105,8 +105,7 @@ public class YUVImage {
    * @param subsamp the level of chrominance subsampling to be used in the YUV
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
-  public YUVImage(int width, int pad, int height, int subsamp)
-    throws Exception {
+  public YUVImage(int width, int pad, int height, int subsamp) {
     setBuf(new byte[TJ.bufSizeYUV(width, pad, height, subsamp)], width, pad,
            height, subsamp);
   }
@@ -146,7 +145,7 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public YUVImage(byte[][] planes, int[] offsets, int width, int[] strides,
-                  int height, int subsamp) throws Exception {
+                  int height, int subsamp) {
     setBuf(planes, offsets, width, strides, height, subsamp, false);
   }
 
@@ -172,7 +171,7 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public YUVImage(byte[] yuvImage, int width, int pad, int height,
-                  int subsamp) throws Exception {
+                  int subsamp) {
     setBuf(yuvImage, width, pad, height, subsamp);
   }
 
@@ -210,20 +209,20 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public void setBuf(byte[][] planes, int[] offsets, int width, int strides[],
-                     int height, int subsamp) throws Exception {
+                     int height, int subsamp) {
     setBuf(planes, offsets, width, strides, height, subsamp, false);
   }
 
   private void setBuf(byte[][] planes, int[] offsets, int width, int strides[],
-                     int height, int subsamp, boolean alloc) throws Exception {
+                     int height, int subsamp, boolean alloc) {
     if ((planes == null && !alloc) || width < 1 || height < 1 || subsamp < 0 ||
         subsamp >= TJ.NUMSAMP)
-      throw new Exception("Invalid argument in YUVImage::setBuf()");
+      throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
 
     int nc = (subsamp == TJ.SAMP_GRAY ? 1 : 3);
     if (planes.length != nc || (offsets != null && offsets.length != nc) ||
         (strides != null && strides.length != nc))
-      throw new Exception("YUVImage::setBuf(): planes, offsets, or strides array is the wrong size");
+      throw new IllegalArgumentException("YUVImage::setBuf(): planes, offsets, or strides array is the wrong size");
 
     if (offsets == null)
       offsets = new int[nc];
@@ -239,15 +238,15 @@ public class YUVImage {
         strides[i] = pw;
       if (alloc) {
         if (strides[i] < pw)
-          throw new Exception("Stride must be >= plane width when allocating a new YUV image");
+          throw new IllegalArgumentException("Stride must be >= plane width when allocating a new YUV image");
         planes[i] = new byte[strides[i] * ph];
       }
       if (planes[i] == null || offsets[i] < 0)
-        throw new Exception("Invalid argument in YUVImage::setBuf()");
+        throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
       if (strides[i] < 0 && offsets[i] - planeSize + pw < 0)
-        throw new Exception("Stride for plane " + i + " would cause memory to be accessed below plane boundary");
+        throw new IllegalArgumentException("Stride for plane " + i + " would cause memory to be accessed below plane boundary");
       if (planes[i].length < offsets[i] + planeSize)
-        throw new Exception("Image plane " + i + " is not large enough");
+        throw new IllegalArgumentException("Image plane " + i + " is not large enough");
     }
 
     yuvPlanes = planes;
@@ -279,13 +278,13 @@ public class YUVImage {
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
   public void setBuf(byte[] yuvImage, int width, int pad, int height,
-                     int subsamp) throws Exception {
+                     int subsamp) {
     if (yuvImage == null || width < 1 || pad < 1 || ((pad & (pad - 1)) != 0) ||
         height < 1 || subsamp < 0 || subsamp >= TJ.NUMSAMP)
-      throw new Exception("Invalid argument in YUVImage::setBuf()");
+      throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
     if (yuvImage.length < TJ.bufSizeYUV(width, pad, height, subsamp))
-      throw new Exception("YUV image buffer is not large enough");
-    
+      throw new IllegalArgumentException("YUV image buffer is not large enough");
+
     int nc = (subsamp == TJ.SAMP_GRAY ? 1 : 3);
     byte[][] planes = new byte[nc][];
     int[] strides = new int[nc];
@@ -311,9 +310,9 @@ public class YUVImage {
    *
    * @return the width of the YUV image (or subregion)
    */
-  public int getWidth() throws Exception {
+  public int getWidth() {
     if (yuvWidth < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return yuvWidth;
   }
 
@@ -322,9 +321,9 @@ public class YUVImage {
    *
    * @return the height of the YUV image (or subregion)
    */
-  public int getHeight() throws Exception {
+  public int getHeight() {
     if (yuvHeight < 1)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return yuvHeight;
   }
 
@@ -334,11 +333,11 @@ public class YUVImage {
    *
    * @return the line padding used in the YUV image buffer
    */
-  public int getPad() throws Exception {
+  public int getPad() {
     if (yuvPlanes == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     if (yuvPad < 1 || ((yuvPad & (yuvPad - 1)) != 0))
-      throw new Exception("Image is not stored in a unified buffer");
+      throw new IllegalStateException("Image is not stored in a unified buffer");
     return yuvPad;
   }
 
@@ -347,9 +346,9 @@ public class YUVImage {
    *
    * @return the number of bytes per line of each plane in the YUV image
    */
-  public int[] getStrides() throws Exception {
+  public int[] getStrides() {
     if (yuvStrides == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return yuvStrides;
   }
 
@@ -360,9 +359,9 @@ public class YUVImage {
    * @return the offsets (in bytes) of each plane within the planes of a larger
    * YUV image
    */
-  public int[] getOffsets() throws Exception {
+  public int[] getOffsets() {
     if (yuvOffsets == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return yuvOffsets;
   }
 
@@ -372,9 +371,9 @@ public class YUVImage {
    *
    * @return the level of chrominance subsampling used in the YUV image
    */
-  public int getSubsamp() throws Exception {
+  public int getSubsamp() {
     if (yuvSubsamp < 0 || yuvSubsamp >= TJ.NUMSAMP)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return yuvSubsamp;
   }
 
@@ -384,9 +383,9 @@ public class YUVImage {
    *
    * @return the YUV image planes
    */
-  public byte[][] getPlanes() throws Exception {
+  public byte[][] getPlanes() {
     if (yuvPlanes == null)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     return yuvPlanes;
   }
 
@@ -396,13 +395,13 @@ public class YUVImage {
    *
    * @return the YUV image buffer
    */
-  public byte[] getBuf() throws Exception {
+  public byte[] getBuf() {
     if (yuvPlanes == null || yuvSubsamp < 0 || yuvSubsamp >= TJ.NUMSAMP)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     int nc = (yuvSubsamp == TJ.SAMP_GRAY ? 1 : 3);
     for (int i = 1; i < nc; i++) {
       if (yuvPlanes[i] != yuvPlanes[0])
-        throw new Exception("Image is not stored in a unified buffer");
+        throw new IllegalStateException("Image is not stored in a unified buffer");
     }
     return yuvPlanes[0];
   }
@@ -413,15 +412,15 @@ public class YUVImage {
    *
    * @return the size (in bytes) of the YUV image buffer
    */
-  public int getSize() throws Exception {
+  public int getSize() {
     if (yuvPlanes == null || yuvSubsamp < 0 || yuvSubsamp >= TJ.NUMSAMP)
-      throw new Exception(NO_ASSOC_ERROR);
+      throw new IllegalStateException(NO_ASSOC_ERROR);
     int nc = (yuvSubsamp == TJ.SAMP_GRAY ? 1 : 3);
     if (yuvPad < 1)
-      throw new Exception("Image is not stored in a unified buffer");
+      throw new IllegalStateException("Image is not stored in a unified buffer");
     for (int i = 1; i < nc; i++) {
       if (yuvPlanes[i] != yuvPlanes[0])
-        throw new Exception("Image is not stored in a unified buffer");
+        throw new IllegalStateException("Image is not stored in a unified buffer");
     }
     return TJ.bufSizeYUV(yuvWidth, yuvPad, yuvHeight, yuvSubsamp);
   }
@@ -438,4 +437,4 @@ public class YUVImage {
   protected int yuvWidth = 0;
   protected int yuvHeight = 0;
   protected int yuvSubsamp = -1;
-};
+}

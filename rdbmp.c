@@ -6,7 +6,9 @@
  * Modified 2009-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Modified 2011 by Siarhei Siamashka.
- * For conditions of distribution and use, see the accompanying README file.
+ * Copyright (C) 2015, D. R. Commander.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains routines to read input images in Microsoft "BMP"
  * format (MS Windows 3.x, OS/2 1.x, and OS/2 2.x flavors).
@@ -50,7 +52,7 @@ typedef char U_CHAR;
 
 /* Private version of data source object */
 
-typedef struct _bmp_source_struct * bmp_source_ptr;
+typedef struct _bmp_source_struct *bmp_source_ptr;
 
 typedef struct _bmp_source_struct {
   struct cjpeg_source_struct pub; /* public fields */
@@ -279,22 +281,22 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   bmp_source_ptr source = (bmp_source_ptr) sinfo;
   U_CHAR bmpfileheader[14];
   U_CHAR bmpinfoheader[64];
-#define GET_2B(array,offset)  ((unsigned int) UCH(array[offset]) + \
-                               (((unsigned int) UCH(array[offset+1])) << 8))
-#define GET_4B(array,offset)  ((INT32) UCH(array[offset]) + \
-                               (((INT32) UCH(array[offset+1])) << 8) + \
-                               (((INT32) UCH(array[offset+2])) << 16) + \
-                               (((INT32) UCH(array[offset+3])) << 24))
-  INT32 bfOffBits;
-  INT32 headerSize;
-  INT32 biWidth;
-  INT32 biHeight;
-  unsigned int biPlanes;
-  INT32 biCompression;
-  INT32 biXPelsPerMeter,biYPelsPerMeter;
-  INT32 biClrUsed = 0;
+#define GET_2B(array,offset)  ((unsigned short) UCH(array[offset]) + \
+                               (((unsigned short) UCH(array[offset+1])) << 8))
+#define GET_4B(array,offset)  ((unsigned int) UCH(array[offset]) + \
+                               (((unsigned int) UCH(array[offset+1])) << 8) + \
+                               (((unsigned int) UCH(array[offset+2])) << 16) + \
+                               (((unsigned int) UCH(array[offset+3])) << 24))
+  unsigned int bfOffBits;
+  unsigned int headerSize;
+  int biWidth;
+  int biHeight;
+  unsigned short biPlanes;
+  unsigned int biCompression;
+  int biXPelsPerMeter,biYPelsPerMeter;
+  unsigned int biClrUsed = 0;
   int mapentrysize = 0;         /* 0 indicates no colormap */
-  INT32 bPad;
+  int bPad;
   JDIMENSION row_width;
 
   /* Read and verify the bitmap file header */
@@ -302,7 +304,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     ERREXIT(cinfo, JERR_INPUT_EOF);
   if (GET_2B(bmpfileheader,0) != 0x4D42) /* 'BM' */
     ERREXIT(cinfo, JERR_BMP_NOT);
-  bfOffBits = (INT32) GET_4B(bmpfileheader,10);
+  bfOffBits = GET_4B(bmpfileheader,10);
   /* We ignore the remaining fileheader fields */
 
   /* The infoheader might be 12 bytes (OS/2 1.x), 40 bytes (Windows),
@@ -310,27 +312,27 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
    */
   if (! ReadOK(source->pub.input_file, bmpinfoheader, 4))
     ERREXIT(cinfo, JERR_INPUT_EOF);
-  headerSize = (INT32) GET_4B(bmpinfoheader,0);
+  headerSize = GET_4B(bmpinfoheader,0);
   if (headerSize < 12 || headerSize > 64)
     ERREXIT(cinfo, JERR_BMP_BADHEADER);
   if (! ReadOK(source->pub.input_file, bmpinfoheader+4, headerSize-4))
     ERREXIT(cinfo, JERR_INPUT_EOF);
 
-  switch ((int) headerSize) {
+  switch (headerSize) {
   case 12:
     /* Decode OS/2 1.x header (Microsoft calls this a BITMAPCOREHEADER) */
-    biWidth = (INT32) GET_2B(bmpinfoheader,4);
-    biHeight = (INT32) GET_2B(bmpinfoheader,6);
+    biWidth = (int) GET_2B(bmpinfoheader,4);
+    biHeight = (int) GET_2B(bmpinfoheader,6);
     biPlanes = GET_2B(bmpinfoheader,8);
     source->bits_per_pixel = (int) GET_2B(bmpinfoheader,10);
 
     switch (source->bits_per_pixel) {
     case 8:                     /* colormapped image */
       mapentrysize = 3;         /* OS/2 uses RGBTRIPLE colormap */
-      TRACEMS2(cinfo, 1, JTRC_BMP_OS2_MAPPED, (int) biWidth, (int) biHeight);
+      TRACEMS2(cinfo, 1, JTRC_BMP_OS2_MAPPED, biWidth, biHeight);
       break;
     case 24:                    /* RGB image */
-      TRACEMS2(cinfo, 1, JTRC_BMP_OS2, (int) biWidth, (int) biHeight);
+      TRACEMS2(cinfo, 1, JTRC_BMP_OS2, biWidth, biHeight);
       break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
@@ -341,26 +343,26 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   case 64:
     /* Decode Windows 3.x header (Microsoft calls this a BITMAPINFOHEADER) */
     /* or OS/2 2.x header, which has additional fields that we ignore */
-    biWidth = GET_4B(bmpinfoheader,4);
-    biHeight = GET_4B(bmpinfoheader,8);
+    biWidth = (int) GET_4B(bmpinfoheader,4);
+    biHeight = (int) GET_4B(bmpinfoheader,8);
     biPlanes = GET_2B(bmpinfoheader,12);
     source->bits_per_pixel = (int) GET_2B(bmpinfoheader,14);
     biCompression = GET_4B(bmpinfoheader,16);
-    biXPelsPerMeter = GET_4B(bmpinfoheader,24);
-    biYPelsPerMeter = GET_4B(bmpinfoheader,28);
+    biXPelsPerMeter = (int) GET_4B(bmpinfoheader,24);
+    biYPelsPerMeter = (int) GET_4B(bmpinfoheader,28);
     biClrUsed = GET_4B(bmpinfoheader,32);
     /* biSizeImage, biClrImportant fields are ignored */
 
     switch (source->bits_per_pixel) {
     case 8:                     /* colormapped image */
       mapentrysize = 4;         /* Windows uses RGBQUAD colormap */
-      TRACEMS2(cinfo, 1, JTRC_BMP_MAPPED, (int) biWidth, (int) biHeight);
+      TRACEMS2(cinfo, 1, JTRC_BMP_MAPPED, biWidth, biHeight);
       break;
     case 24:                    /* RGB image */
-      TRACEMS2(cinfo, 1, JTRC_BMP, (int) biWidth, (int) biHeight);
+      TRACEMS2(cinfo, 1, JTRC_BMP, biWidth, biHeight);
       break;
     case 32:                    /* RGB image + Alpha channel */
-      TRACEMS2(cinfo, 1, JTRC_BMP, (int) biWidth, (int) biHeight);
+      TRACEMS2(cinfo, 1, JTRC_BMP, biWidth, biHeight);
       break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
@@ -381,7 +383,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     return;
   }
 
-  if (biWidth <= 0 || biHeight <= 0)
+  if (biWidth <= 0 || biHeight <= 0 || biWidth > 0x7fffffffL || biHeight > 0x7fffffffL)
     ERREXIT(cinfo, JERR_BMP_EMPTY);
   if (biPlanes != 1)
     ERREXIT(cinfo, JERR_BMP_BADPLANES);

@@ -21,7 +21,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug"
 endif()
 
 if(SIMD_X86_64)
-  set(SIMD_BASENAMES jfdctflt-sse-64 jccolor-sse2-64 jcgray-sse2-64
+  set(SIMD_BASENAMES jsimdcpu-64 jfdctflt-sse-64 jccolor-sse2-64 jcgray-sse2-64
     jchuff-sse2-64 jcsample-sse2-64 jdcolor-sse2-64 jdmerge-sse2-64
     jdsample-sse2-64 jfdctfst-sse2-64 jfdctint-sse2-64 jidctflt-sse2-64
     jidctfst-sse2-64 jidctint-sse2-64 jidctred-sse2-64 jquantf-sse2-64

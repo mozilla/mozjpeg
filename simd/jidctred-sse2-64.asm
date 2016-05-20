@@ -2,7 +2,7 @@
 ; jidctred.asm - reduced-size IDCT (64-bit SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, D. R. Commander.
+; Copyright (C) 2009, 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -71,7 +71,7 @@ F_3_624 equ DESCALE(3891787747, 30-CONST_BITS)  ; FIX(3.624509785)
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      16
+    alignz      32
     global      EXTN(jconst_idct_red_sse2)
 
 EXTN(jconst_idct_red_sse2):
@@ -89,7 +89,7 @@ PD_DESCALE_P1_2 times 4  dd  1 << (DESCALE_P1_2-1)
 PD_DESCALE_P2_2 times 4  dd  1 << (DESCALE_P2_2-1)
 PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 
-    alignz      16
+    alignz      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -112,7 +112,7 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 %define wk(i)         rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM        2
 
-    align       16
+    align       32
     global      EXTN(jsimd_idct_4x4_sse2)
 
 EXTN(jsimd_idct_4x4_sse2):
@@ -411,7 +411,7 @@ EXTN(jsimd_idct_4x4_sse2):
 ; r12 = JSAMPARRAY output_buf
 ; r13d = JDIMENSION output_col
 
-    align       16
+    align       32
     global      EXTN(jsimd_idct_2x2_sse2)
 
 EXTN(jsimd_idct_2x2_sse2):
@@ -572,4 +572,4 @@ EXTN(jsimd_idct_2x2_sse2):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

@@ -2,6 +2,7 @@
 ; jsimdcpu.asm - SIMD instruction support check
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -73,6 +74,16 @@ EXTN(jpeg_simd_cpu_support):
         jz      short .no_sse2
         or      edi, byte JSIMD_SSE2
 .no_sse2:
+
+        ; Check for AVX2 instruction support
+        mov     eax, 7
+        xor     ecx,ecx
+        cpuid
+        mov     eax,ebx
+        test    eax, 1<<5               ; bit5:AVX2
+        jz      short .no_avx2
+        or      edi, JSIMD_AVX2
+.no_avx2:
 
         ; Check for 3DNow! instruction support
         mov     eax, 0x80000000

@@ -2,7 +2,7 @@
 ; jdsample.asm - upsampling (64-bit SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, D. R. Commander.
+; Copyright (C) 2009, 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -21,7 +21,7 @@
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      16
+    alignz      32
     global      EXTN(jconst_fancy_upsample_sse2)
 
 EXTN(jconst_fancy_upsample_sse2):
@@ -32,7 +32,7 @@ PW_THREE times 8 dw 3
 PW_SEVEN times 8 dw 7
 PW_EIGHT times 8 dw 8
 
-    alignz      16
+    alignz      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -57,7 +57,7 @@ PW_EIGHT times 8 dw 8
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
-    align       16
+    align       32
     global      EXTN(jsimd_h2v1_fancy_upsample_sse2)
 
 EXTN(jsimd_h2v1_fancy_upsample_sse2):
@@ -199,7 +199,7 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
 %define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM  4
 
-    align       16
+    align       32
     global      EXTN(jsimd_h2v2_fancy_upsample_sse2)
 
 EXTN(jsimd_h2v2_fancy_upsample_sse2):
@@ -496,7 +496,7 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
-    align       16
+    align       32
     global      EXTN(jsimd_h2v1_upsample_sse2)
 
 EXTN(jsimd_h2v1_upsample_sse2):
@@ -585,7 +585,7 @@ EXTN(jsimd_h2v1_upsample_sse2):
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
-    align       16
+    align       32
     global      EXTN(jsimd_h2v2_upsample_sse2)
 
 EXTN(jsimd_h2v2_upsample_sse2):
@@ -667,4 +667,4 @@ EXTN(jsimd_h2v2_upsample_sse2):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

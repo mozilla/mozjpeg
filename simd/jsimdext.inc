@@ -2,7 +2,7 @@
 ; jsimdext.inc - common declarations
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2010, D. R. Commander.
+; Copyright (C) 2010, 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library - version 1.02
 ;
@@ -38,11 +38,11 @@
 ; -- segment definition --
 ;
 %ifdef __YASM_VER__
-%define SEG_TEXT   .text  align=16
-%define SEG_CONST  .rdata align=16
+%define SEG_TEXT   .text  align=32
+%define SEG_CONST  .rdata align=32
 %else
-%define SEG_TEXT   .text  align=16 public use32 class=CODE
-%define SEG_CONST  .rdata align=16 public use32 class=CONST
+%define SEG_TEXT   .text  align=32 public use32 class=CODE
+%define SEG_CONST  .rdata align=32 public use32 class=CONST
 %endif
 
 %elifdef WIN64  ; ----(nasm -fwin64 -DWIN64 ...)--------
@@ -51,11 +51,11 @@
 ; -- segment definition --
 ;
 %ifdef __YASM_VER__
-%define SEG_TEXT    .text  align=16
-%define SEG_CONST   .rdata align=16
+%define SEG_TEXT    .text  align=32
+%define SEG_CONST   .rdata align=32
 %else
-%define SEG_TEXT    .text  align=16 public use64 class=CODE
-%define SEG_CONST   .rdata align=16 public use64 class=CONST
+%define SEG_TEXT    .text  align=32 public use64 class=CODE
+%define SEG_CONST   .rdata align=32 public use64 class=CONST
 %endif
 %define EXTN(name)  name                ; foo() -> foo
 
@@ -78,11 +78,11 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 ; -- segment definition --
 ;
 %ifdef __x86_64__
-%define SEG_TEXT   .text   progbits align=16
-%define SEG_CONST  .rodata progbits align=16
+%define SEG_TEXT   .text   progbits align=32
+%define SEG_CONST  .rodata progbits align=32
 %else
-%define SEG_TEXT   .text   progbits alloc exec   nowrite align=16
-%define SEG_CONST  .rodata progbits alloc noexec nowrite align=16
+%define SEG_TEXT   .text   progbits alloc exec   nowrite align=32
+%define SEG_CONST  .rodata progbits alloc noexec nowrite align=32
 %endif
 
 ; To make the code position-independent, append -DPIC to the commandline
@@ -108,8 +108,8 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 
 ; -- segment definition --
 ;
-%define SEG_TEXT   .text  ;align=16     ; nasm doesn't accept align=16. why?
-%define SEG_CONST  .rodata align=16
+%define SEG_TEXT   .text  ;align=32     ; nasm doesn't accept align=16. why?
+%define SEG_CONST  .rodata align=32
 
 ; The generation of position-independent code (PIC) is the default on Darwin.
 ;
@@ -158,6 +158,10 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 %define SIZEOF_XMMWORD  SIZEOF_OWORD    ; sizeof(XMMWORD)
 %define XMMWORD_BIT     OWORD_BIT       ; sizeof(XMMWORD)*BYTE_BIT
 
+%define YMMWORD                         ; int256 (AVX register)
+%define SIZEOF_YMMWORD  SIZEOF_YWORD    ; sizeof(YMMWORD)
+%define YMMWORD_BIT     YWORD_BIT       ; sizeof(YMMWORD)*BYTE_BIT
+
 ; Similar hacks for when we load a dword or MMWORD into an xmm# register
 %define XMM_DWORD
 %define XMM_MMWORD
@@ -167,12 +171,14 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 %define SIZEOF_DWORD  4                 ; sizeof(DWORD)
 %define SIZEOF_QWORD  8                 ; sizeof(QWORD)
 %define SIZEOF_OWORD  16                ; sizeof(OWORD)
+%define SIZEOF_YWORD  32                ; sizeof(YWORD)
 
 %define BYTE_BIT      8                 ; CHAR_BIT in C
 %define WORD_BIT      16                ; sizeof(WORD)*BYTE_BIT
 %define DWORD_BIT     32                ; sizeof(DWORD)*BYTE_BIT
 %define QWORD_BIT     64                ; sizeof(QWORD)*BYTE_BIT
 %define OWORD_BIT     128               ; sizeof(OWORD)*BYTE_BIT
+%define YWORD_BIT     256               ; sizeof(YWORD)*BYTE_BIT
 
 ; --------------------------------------------------------------------------
 ;  External Symbol Name

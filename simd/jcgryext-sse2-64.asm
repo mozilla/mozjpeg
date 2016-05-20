@@ -1,7 +1,7 @@
 ;
 ; jcgryext.asm - grayscale colorspace conversion (64-bit SSE2)
 ;
-; Copyright (C) 2011, D. R. Commander.
+; Copyright (C) 2011, 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -36,7 +36,7 @@
 %define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM  2
 
-    align       16
+    align       32
 
     global      EXTN(jsimd_rgb_gray_convert_sse2)
 
@@ -362,4 +362,4 @@ EXTN(jsimd_rgb_gray_convert_sse2):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

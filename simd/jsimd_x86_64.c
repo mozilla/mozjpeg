@@ -46,9 +46,15 @@ init_simd (void)
   if (simd_support != ~0U)
     return;
 
-  simd_support = JSIMD_SSE2 | JSIMD_SSE;
+  simd_support = jpeg_simd_cpu_support();
 
   /* Force different settings through environment variables */
+  env = getenv("JSIMD_FORCESSE2");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_support &= JSIMD_SSE2;
+  env = getenv("JSIMD_FORCEAVX2");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_support &= JSIMD_AVX2;
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;

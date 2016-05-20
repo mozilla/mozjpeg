@@ -23,6 +23,7 @@
 #define JSIMD_ARM_NEON   0x10
 #define JSIMD_MIPS_DSPR2 0x20
 #define JSIMD_ALTIVEC    0x40
+#define JSIMD_AVX2       0x80
 
 /* SIMD Ext: retrieve SIMD/CPU information */
 EXTERN(unsigned int) jpeg_simd_cpu_support (void);

@@ -128,3 +128,4 @@
 %define _cpp_protection_JSIMD_3DNOW  JSIMD_3DNOW
 %define _cpp_protection_JSIMD_SSE    JSIMD_SSE
 %define _cpp_protection_JSIMD_SSE2   JSIMD_SSE2
+%define _cpp_protection_JSIMD_AVX2   JSIMD_AVX2

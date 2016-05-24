@@ -4,8 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2014-2016 D. R. Commander.
- * Copyright (C) 2015 Matthieu Darbois.
+ * Copyright (C) 2009-2011, 2014-2016, D. R. Commander.
+ * Copyright (C) 2015, Matthieu Darbois.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *

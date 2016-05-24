@@ -1,9 +1,9 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014-2015, D. R. Commander.
- * Copyright (C) 2014, Jay Foad.
- * All rights reserved.
+ * Copyright (C) 2014-2015, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2014, Jay Foad.  All Rights Reserved.
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.

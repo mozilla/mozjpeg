@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   int chroma_height;
   int frame_width;
   int yuv_size;
-  JSAMPLE *image_buffer;
+  JSAMPLE *jpg_buffer;
   JSAMPROW yrow_pointer[16];
   JSAMPROW cbrow_pointer[8];
   JSAMPROW crrow_pointer[8];
@@ -98,14 +98,16 @@ int main(int argc, char *argv[]) {
   yuv_size = luma_width*luma_height + 2*chroma_width*chroma_height;
   yuv_buffer = malloc(yuv_size);
   if (!yuv_buffer) {
+    fclose(jpg_fd);
     fprintf(stderr, "Memory allocation failure!\n");
     return 1;
   }
 
   frame_width = (cinfo.output_width + (16 - 1)) & ~(16 - 1);
 
-  image_buffer = malloc(frame_width*16 + 2*(frame_width/2)*8);
-  if (!image_buffer) {
+  jpg_buffer = malloc(frame_width*16 + 2*(frame_width/2)*8);
+  if (!jpg_buffer) {
+    fclose(jpg_fd);
     free(yuv_buffer);
     fprintf(stderr, "Memory allocation failure!\n");
     return 1;
@@ -116,11 +118,11 @@ int main(int argc, char *argv[]) {
   plane_pointer[2] = crrow_pointer;
 
   for (y = 0; y < 16; y++) {
-    yrow_pointer[y] = &image_buffer[frame_width*y];
+    yrow_pointer[y] = &jpg_buffer[frame_width*y];
   }
   for (y = 0; y < 8; y++) {
-    cbrow_pointer[y] = &image_buffer[frame_width*16 + (frame_width/2)*y];
-    crrow_pointer[y] = &image_buffer[frame_width*16 + (frame_width/2)*(8 + y)];
+    cbrow_pointer[y] = &jpg_buffer[frame_width*16 + (frame_width/2)*y];
+    crrow_pointer[y] = &jpg_buffer[frame_width*16 + (frame_width/2)*(8 + y)];
   }
 
   while (cinfo.output_scanline < cinfo.output_height) {
@@ -148,12 +150,10 @@ int main(int argc, char *argv[]) {
   }
 
   jpeg_finish_decompress(&cinfo);
-
   jpeg_destroy_decompress(&cinfo);
 
   fclose(jpg_fd);
-
-  free(image_buffer);
+  free(jpg_buffer);
 
   yuv_fd = fopen(yuv_path, "wb");
   if (!yuv_fd) {
@@ -164,8 +164,8 @@ int main(int argc, char *argv[]) {
   if (fwrite(yuv_buffer, yuv_size, 1, yuv_fd) != 1) {
     fprintf(stderr, "Error writing yuv file\n");
   }
-  fclose(yuv_fd);
 
+  fclose(yuv_fd);
   free(yuv_buffer);
 
   return 0;

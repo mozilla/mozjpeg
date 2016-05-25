@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
   FILE *yuv_fd;
   size_t yuv_size;
   unsigned char *yuv_buffer;
-  JSAMPLE *image_buffer;
+  JSAMPLE *jpg_buffer;
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;
   FILE *jpg_fd;
@@ -172,12 +172,14 @@ int main(int argc, char *argv[]) {
   /* Check that the file size matches 4:2:0 yuv. */
   if (yuv_size !=
    (size_t)luma_width*luma_height + 2*chroma_width*chroma_height) {
+    fclose(yuv_fd);
     fprintf(stderr, "Unexpected input format!\n");
     return 1;
   }
 
   yuv_buffer = malloc(yuv_size);
   if (!yuv_buffer) {
+    fclose(yuv_fd);
     fprintf(stderr, "Memory allocation failure!\n");
     return 1;
   }
@@ -191,15 +193,15 @@ int main(int argc, char *argv[]) {
   frame_width = (luma_width + (16 - 1)) & ~(16 - 1);
   frame_height = (luma_height + (16 - 1)) & ~(16 - 1);
 
-  image_buffer =
+  jpg_buffer =
    malloc(frame_width*frame_height + 2*(frame_width/2)*(frame_height/2));
-  if (!image_buffer) {
+  if (!jpg_buffer) {
     free(yuv_buffer);
     fprintf(stderr, "Memory allocation failure!\n");
     return 1;
   }
 
-  extend_edge(image_buffer, frame_width, frame_height,
+  extend_edge(jpg_buffer, frame_width, frame_height,
    yuv_buffer, luma_width, luma_height, chroma_width, chroma_height);
 
   free(yuv_buffer);
@@ -208,9 +210,9 @@ int main(int argc, char *argv[]) {
   jpeg_create_compress(&cinfo);
 
   jpg_fd = fopen(jpg_path, "wb");
-  if (!jpg_fd) {
+  if (!jpg_fd) {    
+    free(jpg_buffer);
     fprintf(stderr, "Invalid path to JPEG file!\n");
-    free(image_buffer);
     return 1;
   }
 
@@ -257,23 +259,21 @@ int main(int argc, char *argv[]) {
     scanline = cinfo.next_scanline;
 
     for (y = 0; y < 16; y++) {
-      yrow_pointer[y] = &image_buffer[frame_width*(scanline + y)];
+      yrow_pointer[y] = &jpg_buffer[frame_width*(scanline + y)];
     }
     for (y = 0; y < 8; y++) {
-      cbrow_pointer[y] = &image_buffer[frame_width*frame_height +
+      cbrow_pointer[y] = &jpg_buffer[frame_width*frame_height +
        (frame_width/2)*((scanline/2) + y)];
-      crrow_pointer[y] = &image_buffer[frame_width*frame_height +
+      crrow_pointer[y] = &jpg_buffer[frame_width*frame_height +
        (frame_width/2)*(frame_height/2) + (frame_width/2)*((scanline/2) + y)];
     }
     jpeg_write_raw_data(&cinfo, plane_pointer, 16);
   }
 
   jpeg_finish_compress(&cinfo);
-
   jpeg_destroy_compress(&cinfo);
 
-  free(image_buffer);
-
+  free(jpg_buffer);
   fclose(jpg_fd);
 
   return 0;

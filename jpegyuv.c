@@ -33,11 +33,7 @@
 
 /* gcc -std=c99 jpegyuv.c -I/opt/local/include/ -L/opt/local/lib/ -ljpeg -o jpegyuv */
 
-#include <errno.h>
 #include <stdio.h>
-#include <inttypes.h>
-#include <sys/stat.h>
-#include <string.h>
 #include <stdlib.h>
 
 #include "jpeglib.h"
@@ -70,8 +66,6 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "2. Path to YUV output file\n");
     return 1;
   }
-
-  errno = 0;
 
   /* Will check these for validity when opening via 'fopen'. */
   jpg_path = argv[1];

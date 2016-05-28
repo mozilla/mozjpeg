@@ -29,6 +29,7 @@
 #define IS_ALIGNED(ptr, order) (((size_t)ptr & ((1 << order) - 1)) == 0)
 
 #define IS_ALIGNED_SSE(ptr) (IS_ALIGNED(ptr, 4)) /* 16 byte alignment */
+#define IS_ALIGNED_AVX(ptr) (IS_ALIGNED(ptr, 8)) /* 32 byte alignment */
 
 static unsigned int simd_support = ~0;
 static unsigned int simd_huffman = 1;
@@ -76,6 +77,9 @@ jsimd_can_rgb_ycc (void)
   if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
     return 0;
 
+  if ((simd_support & JSIMD_AVX2) &&
+      IS_ALIGNED_AVX(jconst_rgb_ycc_convert_avx2))
+    return 1;
   if ((simd_support & JSIMD_SSE2) &&
       IS_ALIGNED_SSE(jconst_rgb_ycc_convert_sse2))
     return 1;
@@ -134,37 +138,48 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                        JDIMENSION output_row, int num_rows)
 {
+  void (*avx2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
   void (*sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
 
   switch(cinfo->in_color_space) {
     case JCS_EXT_RGB:
+      avx2fct=jsimd_extrgb_ycc_convert_avx2;
       sse2fct=jsimd_extrgb_ycc_convert_sse2;
       break;
     case JCS_EXT_RGBX:
     case JCS_EXT_RGBA:
+      avx2fct=jsimd_extrgbx_ycc_convert_avx2;
       sse2fct=jsimd_extrgbx_ycc_convert_sse2;
       break;
     case JCS_EXT_BGR:
+      avx2fct=jsimd_extbgr_ycc_convert_avx2;
       sse2fct=jsimd_extbgr_ycc_convert_sse2;
       break;
     case JCS_EXT_BGRX:
     case JCS_EXT_BGRA:
+      avx2fct=jsimd_extbgrx_ycc_convert_avx2;
       sse2fct=jsimd_extbgrx_ycc_convert_sse2;
       break;
     case JCS_EXT_XBGR:
     case JCS_EXT_ABGR:
+      avx2fct=jsimd_extxbgr_ycc_convert_avx2;
       sse2fct=jsimd_extxbgr_ycc_convert_sse2;
       break;
     case JCS_EXT_XRGB:
     case JCS_EXT_ARGB:
+      avx2fct=jsimd_extxrgb_ycc_convert_avx2;
       sse2fct=jsimd_extxrgb_ycc_convert_sse2;
       break;
     default:
+      avx2fct=jsimd_rgb_ycc_convert_avx2;
       sse2fct=jsimd_rgb_ycc_convert_sse2;
       break;
   }
 
-  sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
+  if (simd_support & JSIMD_AVX2)
+    avx2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
+  else
+    sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)

@@ -13,13 +13,13 @@ Build Requirements
     [MacPorts](http://www.MacPorts.org).
 
 - NASM or YASM (if building x86 or x86-64 SIMD extensions)
-  * NASM 0.98, or 2.01 or later is required for an x86 build (0.99 and 2.00 do
-    not work properly with libjpeg-turbo's x86 SIMD code.)
-  * NASM 2.00 or later is required for an x86-64 build.
-  * NASM 2.07, or 2.11.09 or later is required for an x86-64 Mac build
-    (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD code when
-    building macho64 objects.)  NASM or YASM can be obtained from
-    [MacPorts](http://www.MacPorts.org).
+  * If using NASM, 0.98, or 2.01 or later is required for an x86 build (0.99
+    and 2.00 do not work properly with libjpeg-turbo's x86 SIMD code.)
+  * If using NASM, 2.00 or later is required for an x86-64 build.
+  * If using NASM, 2.07 or later (except 2.11.08) is required for an x86-64
+    Mac build (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD
+    code when building macho64 objects.)  NASM or YASM can be obtained from
+    [MacPorts](http://www.macports.org/).
 
   The binary RPMs released by the NASM project do not work on older Linux
   systems, such as Red Hat Enterprise Linux 4.  On such systems, you can
@@ -460,8 +460,9 @@ Build Requirements
 
 - [CMake](http://www.cmake.org) v2.8.11 or later
 
-- [NASM](http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
-  a 64-bit build)
+- [NASM](http://www.nasm.us) or [YASM](http://yasm.tortall.net)
+  * If using NASM, 0.98 or later is required for an x86 build.
+  * If using NASM, 2.05 or later is required for an x86-64 build.
   * nasm.exe should be in your `PATH`.
 
 - Microsoft Visual C++ 2005 or later

@@ -329,6 +329,29 @@ EXTERN(void) jsimd_ycc_extxrgb_convert_sse2
         (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
          JSAMPARRAY output_buf, int num_rows);
 
+extern const int jconst_ycc_rgb_convert_avx2[];
+EXTERN(void) jsimd_ycc_rgb_convert_avx2
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extrgb_convert_avx2
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extrgbx_convert_avx2
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extbgr_convert_avx2
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extbgrx_convert_avx2
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extxbgr_convert_avx2
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+EXTERN(void) jsimd_ycc_extxrgb_convert_avx2
+        (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
+         JSAMPARRAY output_buf, int num_rows);
+
 EXTERN(void) jsimd_ycc_rgb_convert_neon
         (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
          JSAMPARRAY output_buf, int num_rows);

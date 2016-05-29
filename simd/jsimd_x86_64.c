@@ -100,6 +100,9 @@ jsimd_can_rgb_gray (void)
   if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
     return 0;
 
+  if ((simd_support & JSIMD_AVX2) &&
+      IS_ALIGNED_AVX(jconst_rgb_gray_convert_avx2))
+    return 1;
   if ((simd_support & JSIMD_SSE2) &&
       IS_ALIGNED_SSE(jconst_rgb_gray_convert_sse2))
     return 1;
@@ -187,37 +190,48 @@ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
                         JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                         JDIMENSION output_row, int num_rows)
 {
+  void (*avx2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
   void (*sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
 
   switch(cinfo->in_color_space) {
     case JCS_EXT_RGB:
+      avx2fct=jsimd_extrgb_gray_convert_avx2;
       sse2fct=jsimd_extrgb_gray_convert_sse2;
       break;
     case JCS_EXT_RGBX:
     case JCS_EXT_RGBA:
+      avx2fct=jsimd_extrgbx_gray_convert_avx2;
       sse2fct=jsimd_extrgbx_gray_convert_sse2;
       break;
     case JCS_EXT_BGR:
+      avx2fct=jsimd_extbgr_gray_convert_avx2;
       sse2fct=jsimd_extbgr_gray_convert_sse2;
       break;
     case JCS_EXT_BGRX:
     case JCS_EXT_BGRA:
+      avx2fct=jsimd_extbgrx_gray_convert_avx2;
       sse2fct=jsimd_extbgrx_gray_convert_sse2;
       break;
     case JCS_EXT_XBGR:
     case JCS_EXT_ABGR:
+      avx2fct=jsimd_extxbgr_gray_convert_avx2;
       sse2fct=jsimd_extxbgr_gray_convert_sse2;
       break;
     case JCS_EXT_XRGB:
     case JCS_EXT_ARGB:
+      avx2fct=jsimd_extxrgb_gray_convert_avx2;
       sse2fct=jsimd_extxrgb_gray_convert_sse2;
       break;
     default:
+      avx2fct=jsimd_rgb_gray_convert_avx2;
       sse2fct=jsimd_rgb_gray_convert_sse2;
       break;
   }
 
-  sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
+  if (simd_support & JSIMD_AVX2)
+    avx2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
+  else
+    sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)

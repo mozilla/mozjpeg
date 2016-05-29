@@ -193,14 +193,8 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         [rsp], rax
     mov         rbp,rsp                      ; rbp = aligned rbp
     lea         rsp, [t2]
+    push_xmm    4
     collect_args 6
-%ifdef WIN64
-    movaps      XMMWORD [rsp-1*SIZEOF_XMMWORD], xmm8
-    movaps      XMMWORD [rsp-2*SIZEOF_XMMWORD], xmm9
-    movaps      XMMWORD [rsp-3*SIZEOF_XMMWORD], xmm10
-    movaps      XMMWORD [rsp-4*SIZEOF_XMMWORD], xmm11
-    sub         rsp, 4*SIZEOF_XMMWORD
-%endif
     push        rbx
 
     mov         buffer, r11                  ; r11 is now sratch
@@ -342,14 +336,8 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         DWORD  [r10+24], put_bits    ; state->cur.put_bits = put_bits;
 
     pop         rbx
-%ifdef WIN64
-    movaps      xmm11, XMMWORD [rsp+0*SIZEOF_XMMWORD]
-    movaps      xmm10, XMMWORD [rsp+1*SIZEOF_XMMWORD]
-    movaps      xmm9, XMMWORD [rsp+2*SIZEOF_XMMWORD]
-    movaps      xmm8, XMMWORD [rsp+3*SIZEOF_XMMWORD]
-    add         rsp, 4*SIZEOF_XMMWORD
-%endif
     uncollect_args 6
+    pop_xmm     4
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

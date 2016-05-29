@@ -363,6 +363,34 @@ const_base:
     add         rsp, SIZEOF_XMMWORD
 %endmacro
 
+%imacro push_xmm 1
+    movaps      XMMWORD [rsp-1*SIZEOF_XMMWORD], xmm8
+%if %1 > 1
+    movaps      XMMWORD [rsp-2*SIZEOF_XMMWORD], xmm9
+%endif
+%if %1 > 2
+    movaps      XMMWORD [rsp-3*SIZEOF_XMMWORD], xmm10
+%endif
+%if %1 > 3
+    movaps      XMMWORD [rsp-4*SIZEOF_XMMWORD], xmm11
+%endif
+    sub         rsp, %1 * SIZEOF_XMMWORD
+%endmacro
+
+%imacro pop_xmm 1
+%if %1 > 3
+    movaps      xmm11, XMMWORD [rsp+0*SIZEOF_XMMWORD]
+%endif
+%if %1 > 2
+    movaps      xmm10, XMMWORD [rsp+1*SIZEOF_XMMWORD]
+%endif
+%if %1 > 1
+    movaps      xmm9, XMMWORD [rsp+2*SIZEOF_XMMWORD]
+%endif
+    movaps      xmm8, XMMWORD [rsp+3*SIZEOF_XMMWORD]
+    add         rsp, %1 * SIZEOF_XMMWORD
+%endmacro
+
 %else
 
 %imacro collect_args 1
@@ -407,6 +435,12 @@ const_base:
     pop         r11
 %endif
     pop         r10
+%endmacro
+
+%imacro push_xmm 1
+%endmacro
+
+%imacro pop_xmm 1
 %endmacro
 
 %endif

@@ -26,7 +26,7 @@ if(SIMD_X86_64)
     jdsample-sse2-64 jfdctfst-sse2-64 jfdctint-sse2-64 jidctflt-sse2-64
     jidctfst-sse2-64 jidctint-sse2-64 jidctred-sse2-64 jquantf-sse2-64
     jquanti-sse2-64 jccolor-avx2-64 jcgray-avx2-64 jcsample-avx2-64
-    jdcolor-avx2-64)
+    jdcolor-avx2-64 jdsample-avx2-64)
   message(STATUS "Building x86_64 SIMD extensions")
 else()
   set(SIMD_BASENAMES jsimdcpu jfdctflt-3dn jidctflt-3dn jquant-3dn jccolor-mmx

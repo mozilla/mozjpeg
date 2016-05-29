@@ -98,7 +98,7 @@ PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 ; r10 = jpeg_component_info *compptr
 ; r11 = JCOEFPTR coef_block
 ; r12 = JSAMPARRAY output_buf
-; r13 = JDIMENSION output_col
+; r13d = JDIMENSION output_col
 
 %define original_rbp  rbp+0
 %define wk(i)         rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
@@ -115,7 +115,7 @@ EXTN(jsimd_idct_islow_sse2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    collect_args
+    collect_args 4
 
     ; ---- Pass 1: process columns from input.
 
@@ -836,7 +836,7 @@ EXTN(jsimd_idct_islow_sse2):
     movq        XMM_MMWORD [rdx+rax*SIZEOF_JSAMPLE], xmm2
     movq        XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE], xmm5
 
-    uncollect_args
+    uncollect_args 4
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

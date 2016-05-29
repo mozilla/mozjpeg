@@ -27,11 +27,11 @@
 ;                              JDIMENSION output_row, int num_rows);
 ;
 
-; r10 = JDIMENSION img_width
+; r10d = JDIMENSION img_width
 ; r11 = JSAMPARRAY input_buf
 ; r12 = JSAMPIMAGE output_buf
-; r13 = JDIMENSION output_row
-; r14 = int num_rows
+; r13d = JDIMENSION output_row
+; r14d = int num_rows
 
 %define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM  2
@@ -48,7 +48,7 @@ EXTN(jsimd_rgb_gray_convert_sse2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    collect_args
+    collect_args 5
     push        rbx
 
     mov         ecx, r10d
@@ -354,7 +354,7 @@ EXTN(jsimd_rgb_gray_convert_sse2):
 
 .return:
     pop         rbx
-    uncollect_args
+    uncollect_args 5
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

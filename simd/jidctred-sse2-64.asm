@@ -106,7 +106,7 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 ; r10 = void *dct_table
 ; r11 = JCOEFPTR coef_block
 ; r12 = JSAMPARRAY output_buf
-; r13 = JDIMENSION output_col
+; r13d = JDIMENSION output_col
 
 %define original_rbp  rbp+0
 %define wk(i)         rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
@@ -123,7 +123,7 @@ EXTN(jsimd_idct_4x4_sse2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    collect_args
+    collect_args 4
 
     ; ---- Pass 1: process columns from input.
 
@@ -389,7 +389,7 @@ EXTN(jsimd_idct_4x4_sse2):
     movd        XMM_DWORD [rdx+rax*SIZEOF_JSAMPLE], xmm1
     movd        XMM_DWORD [rsi+rax*SIZEOF_JSAMPLE], xmm3
 
-    uncollect_args
+    uncollect_args 4
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp
@@ -409,7 +409,7 @@ EXTN(jsimd_idct_4x4_sse2):
 ; r10 = void *dct_table
 ; r11 = JCOEFPTR coef_block
 ; r12 = JSAMPARRAY output_buf
-; r13 = JDIMENSION output_col
+; r13d = JDIMENSION output_col
 
     align       16
     global      EXTN(jsimd_idct_2x2_sse2)
@@ -418,7 +418,7 @@ EXTN(jsimd_idct_2x2_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 4
     push        rbx
 
     ; ---- Pass 1: process columns from input.
@@ -566,7 +566,7 @@ EXTN(jsimd_idct_2x2_sse2):
     mov         WORD [rsi+rax*SIZEOF_JSAMPLE], cx
 
     pop         rbx
-    uncollect_args
+    uncollect_args 4
     pop         rbp
     ret
 

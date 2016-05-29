@@ -307,61 +307,99 @@ const_base:
 
 %ifdef WIN64
 
-%imacro collect_args 0
-    push        r12
-    push        r13
-    push        r14
-    push        r15
-    mov         r10, rcx
-    mov         r11, rdx
-    mov         r12, r8
-    mov         r13, r9
-    mov         r14, [rax+48]
-    mov         r15, [rax+56]
-    push        rsi
-    push        rdi
+%imacro collect_args 1
     sub         rsp, SIZEOF_XMMWORD
     movaps      XMMWORD [rsp], xmm6
     sub         rsp, SIZEOF_XMMWORD
     movaps      XMMWORD [rsp], xmm7
+    mov         r10, rcx
+%if %1 > 1
+    mov         r11, rdx
+%endif
+%if %1 > 2
+    push        r12
+    mov         r12, r8
+%endif
+%if %1 > 3
+    push        r13
+    mov         r13, r9
+%endif
+%if %1 > 4
+    push        r14
+    mov         r14, [rax+48]
+%endif
+%if %1 > 5
+    push        r15
+    mov         r15, [rax+56]
+%endif
+    push        rsi
+    push        rdi
 %endmacro
 
-%imacro uncollect_args 0
+%imacro uncollect_args 1
+    pop         rdi
+    pop         rsi
+%if %1 > 5
+    pop         r15
+%endif
+%if %1 > 4
+    pop         r14
+%endif
+%if %1 > 3
+    pop         r13
+%endif
+%if %1 > 2
+    pop         r12
+%endif
     movaps      xmm7, XMMWORD [rsp]
     add         rsp, SIZEOF_XMMWORD
     movaps      xmm6, XMMWORD [rsp]
     add         rsp, SIZEOF_XMMWORD
-    pop         rdi
-    pop         rsi
-    pop         r15
-    pop         r14
-    pop         r13
-    pop         r12
 %endmacro
 
 %else
 
-%imacro collect_args 0
+%imacro collect_args 1
     push        r10
-    push        r11
-    push        r12
-    push        r13
-    push        r14
-    push        r15
     mov         r10, rdi
+%if %1 > 1
+    push        r11
     mov         r11, rsi
+%endif
+%if %1 > 2
+    push        r12
     mov         r12, rdx
+%endif
+%if %1 > 3
+    push        r13
     mov         r13, rcx
+%endif
+%if %1 > 4
+    push        r14
     mov         r14, r8
+%endif
+%if %1 > 5
+    push        r15
     mov         r15, r9
+%endif
 %endmacro
 
-%imacro uncollect_args 0
+%imacro uncollect_args 1
+%if %1 > 5
     pop         r15
+%endif
+%if %1 > 4
     pop         r14
+%endif
+%if %1 > 3
     pop         r13
+%endif
+%if %1 > 2
     pop         r12
+%endif
+%if %1 > 1
     pop         r11
+%endif
     pop         r10
 %endmacro
 

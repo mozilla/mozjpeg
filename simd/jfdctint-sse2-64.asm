@@ -110,7 +110,7 @@ EXTN(jsimd_fdct_islow_sse2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    collect_args
+    collect_args 1
 
     ; ---- Pass 1: process rows.
 
@@ -610,7 +610,7 @@ EXTN(jsimd_fdct_islow_sse2):
     movdqa      XMMWORD [XMMBLOCK(5,0,rdx,SIZEOF_DCTELEM)], xmm1
     movdqa      XMMWORD [XMMBLOCK(3,0,rdx,SIZEOF_DCTELEM)], xmm3
 
-    uncollect_args
+    uncollect_args 1
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

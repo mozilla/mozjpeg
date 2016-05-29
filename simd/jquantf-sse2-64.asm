@@ -31,7 +31,7 @@
 ;
 
 ; r10 = JSAMPARRAY sample_data
-; r11 = JDIMENSION start_col
+; r11d = JDIMENSION start_col
 ; r12 = FAST_FLOAT *workspace
 
     align       16
@@ -41,7 +41,7 @@ EXTN(jsimd_convsamp_float_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 3
     push        rbx
 
     pcmpeqw     xmm7, xmm7
@@ -90,7 +90,7 @@ EXTN(jsimd_convsamp_float_sse2):
     jnz         short .convloop
 
     pop         rbx
-    uncollect_args
+    uncollect_args 3
     pop         rbp
     ret
 
@@ -115,7 +115,7 @@ EXTN(jsimd_quantize_float_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 3
 
     mov         rsi, r12
     mov         rdx, r11
@@ -148,7 +148,7 @@ EXTN(jsimd_quantize_float_sse2):
     dec         rax
     jnz         short .quantloop
 
-    uncollect_args
+    uncollect_args 3
     pop         rbp
     ret
 

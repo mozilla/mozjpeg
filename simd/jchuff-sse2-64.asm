@@ -172,7 +172,7 @@ EXTN(jconst_huff_encode_one_block):
 ; r10 = working_state *state
 ; r11 = JOCTET *buffer
 ; r12 = JCOEFPTR block
-; r13 = int last_dc_val
+; r13d = int last_dc_val
 ; r14 = c_derived_tbl *dctbl
 ; r15 = c_derived_tbl *actbl
 
@@ -193,7 +193,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         [rsp], rax
     mov         rbp,rsp                      ; rbp = aligned rbp
     lea         rsp, [t2]
-    collect_args
+    collect_args 6
 %ifdef WIN64
     movaps      XMMWORD [rsp-1*SIZEOF_XMMWORD], xmm8
     movaps      XMMWORD [rsp-2*SIZEOF_XMMWORD], xmm9
@@ -349,7 +349,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     movaps      xmm8, XMMWORD [rsp+3*SIZEOF_XMMWORD]
     add         rsp, 4*SIZEOF_XMMWORD
 %endif
-    uncollect_args
+    uncollect_args 6
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

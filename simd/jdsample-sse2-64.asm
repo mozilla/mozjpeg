@@ -53,7 +53,7 @@ PW_EIGHT times 8 dw 8
 ;
 
 ; r10 = int max_v_samp_factor
-; r11 = JDIMENSION downsampled_width
+; r11d = JDIMENSION downsampled_width
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
@@ -64,7 +64,7 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 4
 
     mov         eax, r11d               ; colctr
     test        rax, rax
@@ -175,7 +175,7 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
     jg          near .rowloop
 
 .return:
-    uncollect_args
+    uncollect_args 4
     pop         rbp
     ret
 
@@ -192,7 +192,7 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
 ;
 
 ; r10 = int max_v_samp_factor
-; r11 = JDIMENSION downsampled_width
+; r11d = JDIMENSION downsampled_width
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
@@ -210,7 +210,7 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    collect_args
+    collect_args 4
     push        rbx
 
     mov         eax, r11d               ; colctr
@@ -473,7 +473,7 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
 
 .return:
     pop         rbx
-    uncollect_args
+    uncollect_args 4
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp
@@ -492,7 +492,7 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
 ;
 
 ; r10 = int max_v_samp_factor
-; r11 = JDIMENSION output_width
+; r11d = JDIMENSION output_width
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
@@ -503,7 +503,7 @@ EXTN(jsimd_h2v1_upsample_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 4
 
     mov         edx, r11d
     add         rdx, byte (2*SIZEOF_XMMWORD)-1
@@ -564,7 +564,7 @@ EXTN(jsimd_h2v1_upsample_sse2):
     jg          short .rowloop
 
 .return:
-    uncollect_args
+    uncollect_args 4
     pop         rbp
     ret
 
@@ -581,7 +581,7 @@ EXTN(jsimd_h2v1_upsample_sse2):
 ;
 
 ; r10 = int max_v_samp_factor
-; r11 = JDIMENSION output_width
+; r11d = JDIMENSION output_width
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
@@ -592,7 +592,7 @@ EXTN(jsimd_h2v2_upsample_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 4
     push        rbx
 
     mov         edx, r11d
@@ -661,7 +661,7 @@ EXTN(jsimd_h2v2_upsample_sse2):
 
 .return:
     pop         rbx
-    uncollect_args
+    uncollect_args 4
     pop         rbp
     ret
 

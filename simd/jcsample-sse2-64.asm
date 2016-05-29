@@ -32,10 +32,10 @@
 ;                             JSAMPARRAY input_data, JSAMPARRAY output_data);
 ;
 
-; r10 = JDIMENSION image_width
+; r10d = JDIMENSION image_width
 ; r11 = int max_v_samp_factor
-; r12 = JDIMENSION v_samp_factor
-; r13 = JDIMENSION width_blocks
+; r12d = JDIMENSION v_samp_factor
+; r13d = JDIMENSION width_blocks
 ; r14 = JSAMPARRAY input_data
 ; r15 = JSAMPARRAY output_data
 
@@ -46,7 +46,7 @@ EXTN(jsimd_h2v1_downsample_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 6
 
     mov         ecx, r13d
     shl         rcx, 3                  ; imul rcx,DCTSIZE (rcx = output_cols)
@@ -160,7 +160,7 @@ EXTN(jsimd_h2v1_downsample_sse2):
     jg          near .rowloop
 
 .return:
-    uncollect_args
+    uncollect_args 6
     pop         rbp
     ret
 
@@ -176,10 +176,10 @@ EXTN(jsimd_h2v1_downsample_sse2):
 ;                             JSAMPARRAY input_data, JSAMPARRAY output_data);
 ;
 
-; r10 = JDIMENSION image_width
+; r10d = JDIMENSION image_width
 ; r11 = int max_v_samp_factor
-; r12 = JDIMENSION v_samp_factor
-; r13 = JDIMENSION width_blocks
+; r12d = JDIMENSION v_samp_factor
+; r13d = JDIMENSION width_blocks
 ; r14 = JSAMPARRAY input_data
 ; r15 = JSAMPARRAY output_data
 
@@ -190,7 +190,7 @@ EXTN(jsimd_h2v2_downsample_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 6
 
     mov         ecx, r13d
     shl         rcx, 3                  ; imul rcx,DCTSIZE (rcx = output_cols)
@@ -320,7 +320,7 @@ EXTN(jsimd_h2v2_downsample_sse2):
     jg          near .rowloop
 
 .return:
-    uncollect_args
+    uncollect_args 6
     pop         rbp
     ret
 

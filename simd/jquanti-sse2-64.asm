@@ -31,7 +31,7 @@
 ;
 
 ; r10 = JSAMPARRAY sample_data
-; r11 = JDIMENSION start_col
+; r11d = JDIMENSION start_col
 ; r12 = DCTELEM *workspace
 
     align       16
@@ -41,7 +41,7 @@ EXTN(jsimd_convsamp_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 3
     push        rbx
 
     pxor        xmm6, xmm6              ; xmm6=(all 0's)
@@ -85,7 +85,7 @@ EXTN(jsimd_convsamp_sse2):
     jnz         short .convloop
 
     pop         rbx
-    uncollect_args
+    uncollect_args 3
     pop         rbp
     ret
 
@@ -117,7 +117,7 @@ EXTN(jsimd_quantize_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 3
 
     mov         rsi, r12
     mov         rdx, r11
@@ -177,7 +177,7 @@ EXTN(jsimd_quantize_sse2):
     dec         rax
     jnz         near .quantloop
 
-    uncollect_args
+    uncollect_args 3
     pop         rbp
     ret
 

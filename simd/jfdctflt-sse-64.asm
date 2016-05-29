@@ -74,7 +74,7 @@ EXTN(jsimd_fdct_float_sse):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    collect_args
+    collect_args 1
 
     ; ---- Pass 1: process rows.
 
@@ -346,7 +346,7 @@ EXTN(jsimd_fdct_float_sse):
     dec         rcx
     jnz         near .columnloop
 
-    uncollect_args
+    uncollect_args 1
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

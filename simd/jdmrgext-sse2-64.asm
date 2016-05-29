@@ -29,9 +29,9 @@
 ;                                  JSAMPARRAY output_buf);
 ;
 
-; r10 = JDIMENSION output_width
+; r10d = JDIMENSION output_width
 ; r11 = JSAMPIMAGE input_buf
-; r12 = JDIMENSION in_row_group_ctr
+; r12d = JDIMENSION in_row_group_ctr
 ; r13 = JSAMPARRAY output_buf
 
 %define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
@@ -48,7 +48,7 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    collect_args
+    collect_args 4
     push        rbx
 
     mov         ecx, r10d               ; col
@@ -422,7 +422,7 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 
 .return:
     pop         rbx
-    uncollect_args
+    uncollect_args 4
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp
@@ -439,9 +439,9 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 ;                                  JSAMPARRAY output_buf);
 ;
 
-; r10 = JDIMENSION output_width
+; r10d = JDIMENSION output_width
 ; r11 = JSAMPIMAGE input_buf
-; r12 = JDIMENSION in_row_group_ctr
+; r12d = JDIMENSION in_row_group_ctr
 ; r13 = JSAMPARRAY output_buf
 
     align       16
@@ -451,7 +451,7 @@ EXTN(jsimd_h2v2_merged_upsample_sse2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    collect_args
+    collect_args 4
     push        rbx
 
     mov         eax, r10d
@@ -528,7 +528,7 @@ EXTN(jsimd_h2v2_merged_upsample_sse2):
     pop         rdx
 
     pop         rbx
-    uncollect_args
+    uncollect_args 4
     pop         rbp
     ret
 

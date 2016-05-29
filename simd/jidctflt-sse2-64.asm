@@ -64,7 +64,7 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 ; r10 = void *dct_table
 ; r11 = JCOEFPTR coef_block
 ; r12 = JSAMPARRAY output_buf
-; r13 = JDIMENSION output_col
+; r13d = JDIMENSION output_col
 
 %define original_rbp  rbp+0
 %define wk(i)         rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
@@ -83,7 +83,7 @@ EXTN(jsimd_idct_float_sse2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [workspace]
-    collect_args
+    collect_args 4
     push        rbx
 
     ; ---- Pass 1: process columns from input, store into work array.
@@ -471,7 +471,7 @@ EXTN(jsimd_idct_float_sse2):
     jnz         near .rowloop
 
     pop         rbx
-    uncollect_args
+    uncollect_args 4
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

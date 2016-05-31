@@ -514,6 +514,9 @@ jsimd_can_h2v2_merged_upsample (void)
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
+  if ((simd_support & JSIMD_AVX2) &&
+      IS_ALIGNED_AVX(jconst_merged_upsample_avx2))
+    return 1;
   if ((simd_support & JSIMD_SSE2) &&
       IS_ALIGNED_SSE(jconst_merged_upsample_sse2))
     return 1;
@@ -532,6 +535,9 @@ jsimd_can_h2v1_merged_upsample (void)
   if (sizeof(JDIMENSION) != 4)
     return 0;
 
+  if ((simd_support & JSIMD_AVX2) &&
+      IS_ALIGNED_AVX(jconst_merged_upsample_avx2))
+    return 1;
   if ((simd_support & JSIMD_SSE2) &&
       IS_ALIGNED_SSE(jconst_merged_upsample_sse2))
     return 1;
@@ -545,37 +551,48 @@ jsimd_h2v2_merged_upsample (j_decompress_ptr cinfo,
                             JDIMENSION in_row_group_ctr,
                             JSAMPARRAY output_buf)
 {
+  void (*avx2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
   void (*sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
 
   switch(cinfo->out_color_space) {
     case JCS_EXT_RGB:
+      avx2fct=jsimd_h2v2_extrgb_merged_upsample_avx2;
       sse2fct=jsimd_h2v2_extrgb_merged_upsample_sse2;
       break;
     case JCS_EXT_RGBX:
     case JCS_EXT_RGBA:
+      avx2fct=jsimd_h2v2_extrgbx_merged_upsample_avx2;
       sse2fct=jsimd_h2v2_extrgbx_merged_upsample_sse2;
       break;
     case JCS_EXT_BGR:
+      avx2fct=jsimd_h2v2_extbgr_merged_upsample_avx2;
       sse2fct=jsimd_h2v2_extbgr_merged_upsample_sse2;
       break;
     case JCS_EXT_BGRX:
     case JCS_EXT_BGRA:
+      avx2fct=jsimd_h2v2_extbgrx_merged_upsample_avx2;
       sse2fct=jsimd_h2v2_extbgrx_merged_upsample_sse2;
       break;
     case JCS_EXT_XBGR:
     case JCS_EXT_ABGR:
+      avx2fct=jsimd_h2v2_extxbgr_merged_upsample_avx2;
       sse2fct=jsimd_h2v2_extxbgr_merged_upsample_sse2;
       break;
     case JCS_EXT_XRGB:
     case JCS_EXT_ARGB:
+      avx2fct=jsimd_h2v2_extxrgb_merged_upsample_avx2;
       sse2fct=jsimd_h2v2_extxrgb_merged_upsample_sse2;
       break;
     default:
+      avx2fct=jsimd_h2v2_merged_upsample_avx2;
       sse2fct=jsimd_h2v2_merged_upsample_sse2;
       break;
   }
 
-  sse2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
+  if (simd_support & JSIMD_AVX2)
+    avx2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
+  else
+    sse2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
 }
 
 GLOBAL(void)
@@ -584,37 +601,48 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
                             JDIMENSION in_row_group_ctr,
                             JSAMPARRAY output_buf)
 {
+  void (*avx2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
   void (*sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
 
   switch(cinfo->out_color_space) {
     case JCS_EXT_RGB:
+      avx2fct=jsimd_h2v1_extrgb_merged_upsample_avx2;
       sse2fct=jsimd_h2v1_extrgb_merged_upsample_sse2;
       break;
     case JCS_EXT_RGBX:
     case JCS_EXT_RGBA:
+      avx2fct=jsimd_h2v1_extrgbx_merged_upsample_avx2;
       sse2fct=jsimd_h2v1_extrgbx_merged_upsample_sse2;
       break;
     case JCS_EXT_BGR:
+      avx2fct=jsimd_h2v1_extbgr_merged_upsample_avx2;
       sse2fct=jsimd_h2v1_extbgr_merged_upsample_sse2;
       break;
     case JCS_EXT_BGRX:
     case JCS_EXT_BGRA:
+      avx2fct=jsimd_h2v1_extbgrx_merged_upsample_avx2;
       sse2fct=jsimd_h2v1_extbgrx_merged_upsample_sse2;
       break;
     case JCS_EXT_XBGR:
     case JCS_EXT_ABGR:
+      avx2fct=jsimd_h2v1_extxbgr_merged_upsample_avx2;
       sse2fct=jsimd_h2v1_extxbgr_merged_upsample_sse2;
       break;
     case JCS_EXT_XRGB:
     case JCS_EXT_ARGB:
+      avx2fct=jsimd_h2v1_extxrgb_merged_upsample_avx2;
       sse2fct=jsimd_h2v1_extxrgb_merged_upsample_sse2;
       break;
     default:
+      avx2fct=jsimd_h2v1_merged_upsample_avx2;
       sse2fct=jsimd_h2v1_merged_upsample_sse2;
       break;
   }
 
-  sse2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
+  if (simd_support & JSIMD_AVX2)
+    avx2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
+  else
+    sse2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
 }
 
 GLOBAL(int)

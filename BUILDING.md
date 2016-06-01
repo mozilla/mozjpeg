@@ -463,7 +463,7 @@ Build Requirements
 - [NASM](http://www.nasm.us) or [YASM](http://yasm.tortall.net)
   * If using NASM, 0.98 or later is required for an x86 build.
   * If using NASM, 2.05 or later is required for an x86-64 build.
-  * nasm.exe should be in your `PATH`.
+  * nasm.exe/yasm.exe should be in your `PATH`.
 
 - Microsoft Visual C++ 2005 or later
 

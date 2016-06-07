@@ -1,10 +1,10 @@
 /*
  * ARMv8 NEON optimizations for libjpeg-turbo
  *
- * Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
+ * Copyright (C) 2009-2011, Nokia Corporation and/or its subsidiary(-ies).
+ * All Rights Reserved.
  * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
- * Copyright (C) 2013-2014, Linaro Limited
+ * Copyright (C) 2013-2014, Linaro Limited.  All Rights Reserved.
  * Author: Ragesh Radhakrishnan <ragesh.r@linaro.org>
  * Copyright (C) 2014-2016, D. R. Commander.  All Rights Reserved.
  * Copyright (C) 2015-2016, Matthieu Darbois.  All Rights Reserved.

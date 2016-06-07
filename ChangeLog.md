@@ -27,6 +27,17 @@ calling `tjDecompressHeader3()`, or if the return value from
 `tjDecompressHeader3()` was ignored (both cases represent incorrect usage of
 the TurboJPEG API.)
 
+5. Fixed an issue in the ARM 32-bit SIMD-accelerated Huffman encoder that
+prevented the code from assembling properly with clang.
+
+6. The `jpeg_stdio_src()`, `jpeg_mem_src()`, `jpeg_stdio_dest()`, and
+`jpeg_mem_dest()` functions in the libjpeg API will now throw an error if a
+source/destination manager has already been assigned to the compress or
+decompress object by a different function or by the calling program.  This
+prevents these functions from attempting to reuse a source/destination manager
+structure that was allocated elsewhere, because there is no way to ensure that
+it would be big enough to accommodate the new source/destination manager.
+
 
 1.4.90 (1.5 beta1)
 ==================

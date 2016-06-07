@@ -1,11 +1,10 @@
 ;
 ; jchuff-sse2-64.asm - Huffman entropy encoding (64-bit SSE2)
 ;
-; Copyright 2009-2011, 2014-2016 D. R. Commander.
-; Copyright 2015 Matthieu Darbois
+; Copyright (C) 2009-2011, 2014-2016, D. R. Commander.
+; Copyright (C) 2015, Matthieu Darbois.
 ;
-; Based on
-; x86 SIMD extension for IJG JPEG library
+; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;

@@ -2,7 +2,7 @@
 # Setup
 #
 
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.11)
 # Use LINK_INTERFACE_LIBRARIES instead of INTERFACE_LINK_LIBRARIES
 if(POLICY CMP0022)
   cmake_policy(SET CMP0022 OLD)
@@ -11,19 +11,11 @@ endif()
 project(mozjpeg C)
 set(VERSION 3.1)
 
-if(WIN32)
-  execute_process(COMMAND "wmic.exe" "os" "get" "LocalDateTime" OUTPUT_VARIABLE
-    BUILD)
-  string(REGEX REPLACE "[^0-9]" "" BUILD "${BUILD}")
-  if (BUILD STREQUAL "")
-    execute_process(COMMAND "cmd.exe" "/C" "DATE" "/T" OUTPUT_VARIABLE BUILD)
-    string(REGEX REPLACE ".*[ ]([0-9]*)[/.]([0-9]*)[/.]([0-9]*).*" "\\3\\2\\1" BUILD "${BUILD}")
-  else()
-    string(SUBSTRING "${BUILD}" 0 8 BUILD)
-  endif()
-else()
+if(NOT WIN32)
   message(FATAL_ERROR "Platform not supported by this build system.  Use autotools instead.")
 endif()
+
+string(TIMESTAMP BUILD "%Y%m%d")
 
 # This does nothing except when using MinGW.  CMAKE_BUILD_TYPE has no meaning
 # in Visual Studio, and it always defaults to Debug when using NMake.
@@ -63,6 +55,14 @@ if(WITH_12BIT)
   message(STATUS "12-bit JPEG support enabled")
 else()
   set(BITS_IN_JSAMPLE 8)
+endif()
+
+if(WITH_JPEG8 OR WITH_JPEG7)
+  set(WITH_ARITH_ENC 1)
+  set(WITH_ARITH_DEC 1)
+endif()
+if(WITH_JPEG8)
+  set(WITH_MEM_SRCDST 1)
 endif()
 
 if(WITH_ARITH_ENC)

@@ -2,10 +2,10 @@
  * simd/jsimd.h
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011, 2014-2016 D. R. Commander
- * Copyright (C) 2013-2014, MIPS Technologies, Inc., California
- * Copyright (C) 2014 Linaro Limited
- * Copyright (C) 2015-2016 Matthieu Darbois
+ * Copyright (C) 2011, 2014-2016, D. R. Commander.
+ * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
+ * Copyright (C) 2014, Linaro Limited.
+ * Copyright (C) 2015-2016, Matthieu Darbois.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.

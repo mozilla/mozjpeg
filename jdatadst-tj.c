@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2012 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, 2014 D. R. Commander.
+ * Copyright (C) 2011, 2014, 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -167,6 +167,11 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
     dest = (my_mem_dest_ptr) cinfo->dest;
     dest->newbuffer = NULL;
     dest->buffer = NULL;
+  } else if (cinfo->dest->init_destination != init_mem_destination) {
+    /* It is unsafe to reuse the existing destination manager unless it was
+     * created by this function.
+     */
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
   dest = (my_mem_dest_ptr) cinfo->dest;

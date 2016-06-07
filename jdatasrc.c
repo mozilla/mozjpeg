@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2013, D. R. Commander.
+ * Copyright (C) 2013, 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -222,8 +222,6 @@ jpeg_stdio_src (j_decompress_ptr cinfo, FILE *infile)
    * of JPEG images can be read from the same file by calling jpeg_stdio_src
    * only before the first one.  (If we discarded the buffer at the end of
    * one image, we'd likely lose the start of the next one.)
-   * This makes it unsafe to use this manager and a different source
-   * manager serially with the same JPEG object.  Caveat programmer.
    */
   if (cinfo->src == NULL) {     /* first time for this JPEG object? */
     cinfo->src = (struct jpeg_source_mgr *)
@@ -233,6 +231,14 @@ jpeg_stdio_src (j_decompress_ptr cinfo, FILE *infile)
     src->buffer = (JOCTET *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   INPUT_BUF_SIZE * sizeof(JOCTET));
+  } else if (cinfo->src->init_source != init_source) {
+    /* It is unsafe to reuse the existing source manager unless it was created
+     * by this function.  Otherwise, there is no guarantee that the opaque
+     * structure is the right size.  Note that we could just create a new
+     * structure, but the old structure would not be freed until
+     * jpeg_destroy_decompress() was called.
+     */
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
   src = (my_src_ptr) cinfo->src;
@@ -270,6 +276,11 @@ jpeg_mem_src (j_decompress_ptr cinfo,
     cinfo->src = (struct jpeg_source_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   sizeof(struct jpeg_source_mgr));
+  } else if (cinfo->src->init_source != init_mem_source) {
+    /* It is unsafe to reuse the existing source manager unless it was created
+     * by this function.
+     */
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
   src = cinfo->src;

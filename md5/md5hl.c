@@ -5,7 +5,7 @@
  * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
  * ----------------------------------------------------------------------------
  * libjpeg-turbo Modifications:
- * Copyright (C) 2016, D. R. Commander
+ * Copyright (C) 2016, D. R. Commander.
  * Modifications are under the same license as the original code (see above)
  * ----------------------------------------------------------------------------
  */

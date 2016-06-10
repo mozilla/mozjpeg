@@ -150,56 +150,84 @@ EXTN(jsimd_rgb_ycc_convert_avx2):
     vmovdqu     ymmB, YMMWORD [rsi+2*SIZEOF_YMMWORD]
 
 .rgb_ycc_cnv:
+    ; ymmA=(00 10 20 01 11 21 02 12 22 03 13 23 04 14 24 05
+    ;       15 25 06 16 26 07 17 27 08 18 28 09 19 29 0A 1A)
+    ; ymmF=(2A 0B 1B 2B 0C 1C 2C 0D 1D 2D 0E 1E 2E 0F 1F 2F
+    ;       0G 1G 2G 0H 1H 2H 0I 1I 2I 0J 1J 2J 0K 1K 2K 0L)
+    ; ymmB=(1L 2L 0M 1M 2M 0N 1N 2N 0O 1O 2O 0P 1P 2P 0Q 1Q
+    ;       2Q 0R 1R 2R 0S 1S 2S 0T 1T 2T 0U 1U 2U 0V 1V 2V)
 
     vmovdqu     ymmC, ymmA
-    vinserti128 ymmA, ymmF, xmmA, 0
-    vinserti128 ymmC, ymmC, xmmB, 0
-    vinserti128 ymmB, ymmB, xmmF, 0
-    vperm2i128  ymmF, ymmC, ymmC, 1
+    vinserti128 ymmA, ymmF, xmmA, 0  ; ymmA=(00 10 20 01 11 21 02 12 22 03 13 23 04 14 24 05
+                                     ;       0G 1G 2G 0H 1H 2H 0I 1I 2I 0J 1J 2J 0K 1K 2K 0L)
+    vinserti128 ymmC, ymmC, xmmB, 0  ; ymmC=(1L 2L 0M 1M 2M 0N 1N 2N 0O 1O 2O 0P 1P 2P 0Q 1Q
+                                     ;       15 25 06 16 26 07 17 27 08 18 28 09 19 29 0A 1A)
+    vinserti128 ymmB, ymmB, xmmF, 0  ; ymmB=(2A 0B 1B 2B 0C 1C 2C 0D 1D 2D 0E 1E 2E 0F 1F 2F
+                                     ;       2Q 0R 1R 2R 0S 1S 2S 0T 1T 2T 0U 1U 2U 0V 1V 2V)
+    vperm2i128  ymmF, ymmC, ymmC, 1  ; ymmF=(15 25 06 16 26 07 17 27 08 18 28 09 19 29 0A 1A
+                                     ;       1L 2L 0M 1M 2M 0N 1N 2N 0O 1O 2O 0P 1P 2P 0Q 1Q)
 
     vmovdqa     ymmG, ymmA
-    vpslldq     ymmA, ymmA, 8
-    vpsrldq     ymmG, ymmG, 8
+    vpslldq     ymmA, ymmA, 8     ; ymmA=(-- -- -- -- -- -- -- -- 00 10 20 01 11 21 02 12
+                                  ;       22 03 13 23 04 14 24 05 0G 1G 2G 0H 1H 2H 0I 1I)
+    vpsrldq     ymmG, ymmG, 8     ; ymmG=(22 03 13 23 04 14 24 05 0G 1G 2G 0H 1H 2H 0I 1I
+                                  ;       2I 0J 1J 2J 0K 1K 2K 0L -- -- -- -- -- -- -- --)
 
-    vpunpckhbw  ymmA, ymmA, ymmF
-    vpslldq     ymmF, ymmF, 8
+    vpunpckhbw  ymmA, ymmA, ymmF  ; ymmA=(00 08 10 18 20 28 01 09 11 19 21 29 02 0A 12 1A
+                                  ;       0G 0O 1G 1O 2G 2O 0H 0P 1H 1P 2H 2P 0I 0Q 1I 1Q)
+    vpslldq     ymmF, ymmF, 8     ; ymmF=(-- -- -- -- -- -- -- -- 15 25 06 16 26 07 17 27
+                                  ;       08 18 28 09 19 29 0A 1A 1L 2L 0M 1M 2M 0N 1N 2N)
 
-    vpunpcklbw  ymmG, ymmG, ymmB
-    vpunpckhbw  ymmF, ymmF, ymmB
+    vpunpcklbw  ymmG, ymmG, ymmB  ; ymmG=(22 2A 03 0B 13 1B 23 2B 04 0C 14 1C 24 2C 05 0D
+                                  ;       2I 2Q 0J 0R 1J 1R 2J 2R 0K 0S 1K 1S 2K 2S 0L 0T)
+    vpunpckhbw  ymmF, ymmF, ymmB  ; ymmF=(15 1D 25 2D 06 0E 16 1E 26 2E 07 0F 17 1F 27 2F
+                                  ;       1L 1T 2L 2T 0M 0U 1M 1U 2M 2U 0N 0V 1N 1V 2N 2V)
 
     vmovdqa     ymmD, ymmA
-    vpslldq     ymmA, ymmA, 8
-    vpsrldq     ymmD, ymmD, 8
+    vpslldq     ymmA, ymmA, 8     ; ymmA=(-- -- -- -- -- -- -- -- 00 08 10 18 20 28 01 09
+                                  ;       11 19 21 29 02 0A 12 1A 0G 0O 1G 1O 2G 2O 0H 0P)
+    vpsrldq     ymmD, ymmD, 8     ; ymmD=(11 19 21 29 02 0A 12 1A 0G 0O 1G 1O 2G 2O 0H 0P
+                                  ;       1H 1P 2H 2P 0I 0Q 1I 1Q -- -- -- -- -- -- -- --)
 
-    vpunpckhbw  ymmA, ymmA, ymmG
-    vpslldq     ymmG, ymmG, 8
+    vpunpckhbw  ymmA, ymmA, ymmG  ; ymmA=(00 04 08 0C 10 14 18 1C 20 24 28 2C 01 05 09 0D
+                                  ;       0G 0K 0O 0S 1G 1K 1O 1S 2G 2K 2O 2S 0H 0L 0P 0T)
+    vpslldq     ymmG, ymmG, 8     ; ymmG=(-- -- -- -- -- -- -- -- 22 2A 03 0B 13 1B 23 2B
+                                  ;       04 0C 14 1C 24 2C 05 0D 2I 2Q 0J 0R 1J 1R 2J 2R)
 
-    vpunpcklbw  ymmD, ymmD, ymmF
-    vpunpckhbw  ymmG, ymmG, ymmF
+    vpunpcklbw  ymmD, ymmD, ymmF  ; ymmD=(11 15 19 1D 21 25 29 2D 02 06 0A 0E 12 16 1A 1E
+                                  ;       1H 1L 1P 1T 2H 2L 2P 2T 0I 0M 0Q 0U 1I 1M 1Q 1U)
+    vpunpckhbw  ymmG, ymmG, ymmF  ; ymmG=(22 26 2A 2E 03 07 0B 0F 13 17 1B 1F 23 27 2B 2F
+                                  ;       2I 2M 2Q 2U 0J 0N 0R 0V 1J 1N 1R 1V 2J 2N 2R 2V)
 
     vmovdqa     ymmE, ymmA
-    vpslldq     ymmA, ymmA, 8
-    vpsrldq     ymmE, ymmE, 8
+    vpslldq     ymmA, ymmA, 8     ; ymmA=(-- -- -- -- -- -- -- -- 00 04 08 0C 10 14 18 1C
+                                  ;       20 24 28 2C 01 05 09 0D 0G 0K 0O 0S 1G 1K 1O 1S)
+    vpsrldq     ymmE, ymmE, 8     ; ymmE=(20 24 28 2C 01 05 09 0D 0G 0K 0O 0S 1G 1K 1O 1S
+                                  ;       2G 2K 2O 2S 0H 0L 0P 0T -- -- -- -- -- -- -- --)
 
-    vpunpckhbw  ymmA, ymmA, ymmD
-    vpslldq     ymmD, ymmD, 8
+    vpunpckhbw  ymmA, ymmA, ymmD  ; ymmA=(00 02 04 06 08 0A 0C 0E 10 12 14 16 18 1A 1C 1E
+                                  ;       0G 0I 0K 0M 0O 0Q 0S 0U 1G 1I 1K 1M 1O 1Q 1S 1U)
+    vpslldq     ymmD, ymmD, 8     ; ymmD=(-- -- -- -- -- -- -- -- 11 15 19 1D 21 25 29 2D
+                                  ;       02 06 0A 0E 12 16 1A 1E 1H 1L 1P 1T 2H 2L 2P 2T)
 
-    vpunpcklbw  ymmE, ymmE, ymmG
-    vpunpckhbw  ymmD, ymmD, ymmG
+    vpunpcklbw  ymmE, ymmE, ymmG  ; ymmE=(20 22 24 26 28 2A 2C 2E 01 03 05 07 09 0B 0D 0F
+                                  ;       2G 2I 2K 2M 2O 2Q 2S 2U 0H 0J 0L 0N 0P 0R 0T 0V)
+    vpunpckhbw  ymmD, ymmD, ymmG  ; ymmD=(11 13 15 17 19 1B 1D 1F 21 23 25 27 29 2B 2D 2F
+                                  ;       1H 1J 1L 1N 1P 1R 1T 1V 2H 2J 2L 2N 2P 2R 2T 2V)
 
     vpxor       ymmH, ymmH, ymmH
 
     vmovdqa     ymmC, ymmA
-    vpunpcklbw  ymmA, ymmA, ymmH
-    vpunpckhbw  ymmC, ymmC, ymmH
+    vpunpcklbw  ymmA, ymmA, ymmH  ; ymmA=(00 02 04 06 08 0A 0C 0E 0G 0I 0K 0M 0O 0Q 0S 0U)
+    vpunpckhbw  ymmC, ymmC, ymmH  ; ymmC=(10 12 14 16 18 1A 1C 1E 1G 1I 1K 1M 1O 1Q 1S 1U)
 
     vmovdqa     ymmB, ymmE
-    vpunpcklbw  ymmE, ymmE, ymmH
-    vpunpckhbw  ymmB, ymmB, ymmH
+    vpunpcklbw  ymmE, ymmE, ymmH  ; ymmE=(20 22 24 26 28 2A 2C 2E 2G 2I 2K 2M 2O 2Q 2S 2U)
+    vpunpckhbw  ymmB, ymmB, ymmH  ; ymmB=(01 03 05 07 09 0B 0D 0F 0H 0J 0L 0N 0P 0R 0T 0V)
 
     vmovdqa     ymmF, ymmD
-    vpunpcklbw  ymmD, ymmD, ymmH
-    vpunpckhbw  ymmF, ymmF, ymmH
+    vpunpcklbw  ymmD, ymmD, ymmH  ; ymmD=(11 13 15 17 19 1B 1D 1F 1H 1J 1L 1N 1P 1R 1T 1V)
+    vpunpckhbw  ymmF, ymmF, ymmH  ; ymmF=(21 23 25 27 29 2B 2D 2F 2H 2J 2L 2N 2P 2R 2T 2V)
 
 %else  ; RGB_PIXELSIZE == 4 ; -----------
 
@@ -212,99 +240,120 @@ EXTN(jsimd_rgb_ycc_convert_avx2):
     test        cl, SIZEOF_XMMWORD/8
     jz          short .column_ld4
     sub         rcx, byte SIZEOF_XMMWORD/8
-    vmovq       xmmE, XMM_MMWORD [rsi+rcx*RGB_PIXELSIZE]
+    vmovq       xmmF, XMM_MMWORD [rsi+rcx*RGB_PIXELSIZE]
     vpslldq     xmmA, xmmA, SIZEOF_MMWORD
-    vpor        xmmA, xmmA, xmmE
+    vpor        xmmA, xmmA, xmmF
 .column_ld4:
     test        cl, SIZEOF_XMMWORD/4
     jz          short .column_ld8
     sub         rcx, byte SIZEOF_XMMWORD/4
-    vmovdqa     xmmE, xmmA
-    vperm2i128  ymmE, ymmE, ymmE, 1
+    vmovdqa     xmmF, xmmA
+    vperm2i128  ymmF, ymmF, ymmF, 1
     vmovdqu     xmmA, XMMWORD [rsi+rcx*RGB_PIXELSIZE]
-    vpor        ymmA, ymmA, ymmE
+    vpor        ymmA, ymmA, ymmF
 .column_ld8:
     test        cl, SIZEOF_XMMWORD/2
     jz          short .column_ld16
     sub         rcx, byte SIZEOF_XMMWORD/2
-    vmovdqa     ymmE, ymmA
+    vmovdqa     ymmF, ymmA
     vmovdqu     ymmA, YMMWORD [rsi+rcx*RGB_PIXELSIZE]
 .column_ld16:
     test        cl, SIZEOF_XMMWORD
     mov         rcx, SIZEOF_YMMWORD
     jz          short .rgb_ycc_cnv
-    vmovdqa     ymmF, ymmA
-    vmovdqa     ymmH, ymmE
+    vmovdqa     ymmE, ymmA
+    vmovdqa     ymmH, ymmF
     vmovdqu     ymmA, YMMWORD [rsi+0*SIZEOF_YMMWORD]
-    vmovdqu     ymmE, YMMWORD [rsi+1*SIZEOF_YMMWORD]
+    vmovdqu     ymmF, YMMWORD [rsi+1*SIZEOF_YMMWORD]
     jmp         short .rgb_ycc_cnv
 
 .columnloop:
     vmovdqu     ymmA, YMMWORD [rsi+0*SIZEOF_YMMWORD]
-    vmovdqu     ymmE, YMMWORD [rsi+1*SIZEOF_YMMWORD]
-    vmovdqu     ymmF, YMMWORD [rsi+2*SIZEOF_YMMWORD]
+    vmovdqu     ymmF, YMMWORD [rsi+1*SIZEOF_YMMWORD]
+    vmovdqu     ymmE, YMMWORD [rsi+2*SIZEOF_YMMWORD]
     vmovdqu     ymmH, YMMWORD [rsi+3*SIZEOF_YMMWORD]
 
 .rgb_ycc_cnv:
+    ; ymmA=(00 10 20 30 01 11 21 31 02 12 22 32 03 13 23 33
+    ;       04 14 24 34 05 15 25 35 06 16 26 36 07 17 27 37)
+    ; ymmF=(08 18 28 38 09 19 29 39 0A 1A 2A 3A 0B 1B 2B 3B
+    ;       0C 1C 2C 3C 0D 1D 2D 3D 0E 1E 2E 3E 0F 1F 2F 3F)
+    ; ymmE=(0G 1G 2G 3G 0H 1H 2H 3H 0I 1I 2I 3I 0J 1J 2J 3J
+    ;       0K 1K 2K 3K 0L 1L 2L 3L 0M 1M 2M 3M 0N 1N 2N 3N)
+    ; ymmH=(0O 1O 2O 3O 0P 1P 2P 3P 0Q 1Q 2Q 3Q 0R 1R 2R 3R
+    ;       0S 1S 2S 3S 0T 1T 2T 3T 0U 1U 2U 3U 0V 1V 2V 3V)
+
     vmovdqa     ymmB, ymmA
-    vinserti128 ymmA, ymmA, xmmF, 1
-    vperm2i128  ymmF, ymmB, ymmF, 0x31
+    vinserti128 ymmA, ymmA, xmmE, 1     ; ymmA=(00 10 20 30 01 11 21 31 02 12 22 32 03 13 23 33
+                                        ;       0G 1G 2G 3G 0H 1H 2H 3H 0I 1I 2I 3I 0J 1J 2J 3J)
+    vperm2i128  ymmE, ymmB, ymmE, 0x31  ; ymmE=(04 14 24 34 05 15 25 35 06 16 26 36 07 17 27 37
+                                        ;       0K 1K 2K 3K 0L 1L 2L 3L 0M 1M 2M 3M 0N 1N 2N 3N)
 
-    vmovdqa     ymmB, ymmE
-    vinserti128 ymmE, ymmE, xmmH, 1
-    vperm2i128  ymmH, ymmB, ymmH, 0x31
-
-    vmovdqa     ymmB, ymmE
-    vmovdqa     ymmE, ymmF
-    vmovdqa     ymmF, ymmB
+    vmovdqa     ymmB, ymmF
+    vinserti128 ymmF, ymmF, xmmH, 1     ; ymmF=(08 18 28 38 09 19 29 39 0A 1A 2A 3A 0B 1B 2B 3B
+                                        ;       0O 1O 2O 3O 0P 1P 2P 3P 0Q 1Q 2Q 3Q 0R 1R 2R 3R)
+    vperm2i128  ymmH, ymmB, ymmH, 0x31  ; ymmH=(0C 1C 2C 3C 0D 1D 2D 3D 0E 1E 2E 3E 0F 1F 2F 3F
+                                        ;       0S 1S 2S 3S 0T 1T 2T 3T 0U 1U 2U 3U 0V 1V 2V 3V)
 
     vmovdqa     ymmD, ymmA
-    vpunpcklbw  ymmA, ymmA, ymmE
-    vpunpckhbw  ymmD, ymmD, ymmE
+    vpunpcklbw  ymmA, ymmA, ymmE      ; ymmA=(00 04 10 14 20 24 30 34 01 05 11 15 21 25 31 35
+                                      ;       0G 0K 1G 1K 2G 2K 3G 3K 0H 0L 1H 1L 2H 2L 3H 3L)
+    vpunpckhbw  ymmD, ymmD, ymmE      ; ymmD=(02 06 12 16 22 26 32 36 03 07 13 17 23 27 33 37
+                                      ;       0I 0M 1I 1M 2I 2M 3I 3M 0J 0N 1J 1N 2J 2N 3J 3N)
 
     vmovdqa     ymmC, ymmF
-    vpunpcklbw  ymmF, ymmF, ymmH
-    vpunpckhbw  ymmC, ymmC, ymmH
+    vpunpcklbw  ymmF, ymmF, ymmH      ; ymmF=(08 0C 18 1C 28 2C 38 3C 09 0D 19 1D 29 2D 39 3D
+                                      ;       0O 0S 1O 1S 2O 2S 3O 3S 0P 0T 1P 1T 2P 2T 3P 3T)
+    vpunpckhbw  ymmC, ymmC, ymmH      ; ymmC=(0A 0E 1A 1E 2A 2E 3A 3E 0B 0F 1B 1F 2B 2F 3B 3F
+                                      ;       0Q 0U 1Q 1U 2Q 2U 3Q 3U 0R 0V 1R 1V 2R 2V 3R 3V)
 
     vmovdqa     ymmB, ymmA
-    vpunpcklwd  ymmA, ymmA, ymmF
-    vpunpckhwd  ymmB, ymmB, ymmF
+    vpunpcklwd  ymmA, ymmA, ymmF      ; ymmA=(00 04 08 0C 10 14 18 1C 20 24 28 2C 30 34 38 3C
+                                      ;       0G 0K 0O 0S 1G 1K 1O 1S 2G 2K 2O 2S 3G 3K 3O 3S)
+    vpunpckhwd  ymmB, ymmB, ymmF      ; ymmB=(01 05 09 0D 11 15 19 1D 21 25 29 2D 31 35 39 3D
+                                      ;       0H 0L 0P 0T 1H 1L 1P 1T 2H 2L 2P 2T 3H 3L 3P 3T)
 
     vmovdqa     ymmG, ymmD
-    vpunpcklwd  ymmD, ymmD, ymmC
-    vpunpckhwd  ymmG, ymmG, ymmC
+    vpunpcklwd  ymmD, ymmD, ymmC      ; ymmD=(02 06 0A 0E 12 16 1A 1E 22 26 2A 2E 32 36 3A 3E
+                                      ;       0I 0M 0Q 0U 1I 1M 1Q 1U 2I 2M 2Q 2U 3I 3M 3Q 3U)
+    vpunpckhwd  ymmG, ymmG, ymmC      ; ymmG=(03 07 0B 0F 13 17 1B 1F 23 27 2B 2F 33 37 3B 3F
+                                      ;       0J 0N 0R 0V 1J 1N 1R 1V 2J 2N 2R 2V 3J 3N 3R 3V)
 
     vmovdqa     ymmE, ymmA
-    vpunpcklbw  ymmA, ymmA, ymmD
-    vpunpckhbw  ymmE, ymmE, ymmD
+    vpunpcklbw  ymmA, ymmA, ymmD      ; ymmA=(00 02 04 06 08 0A 0C 0E 10 12 14 16 18 1A 1C 1E
+                                      ;       0G 0I 0K 0M 0O 0Q 0S 0U 1G 1I 1K 1M 1O 1Q 1S 1U)
+    vpunpckhbw  ymmE, ymmE, ymmD      ; ymmE=(20 22 24 26 28 2A 2C 2E 30 32 34 36 38 3A 3C 3E
+                                      ;       2G 2I 2K 2M 2O 2Q 2S 2U 3G 3I 3K 3M 3O 3Q 3S 3U)
 
     vmovdqa     ymmH, ymmB
-    vpunpcklbw  ymmB, ymmB, ymmG
-    vpunpckhbw  ymmH, ymmH, ymmG
+    vpunpcklbw  ymmB, ymmB, ymmG      ; ymmB=(01 03 05 07 09 0B 0D 0F 11 13 15 17 19 1B 1D 1F
+                                      ;       0H 0J 0L 0N 0P 0R 0T 0V 1H 1J 1L 1N 1P 1R 1T 1V)
+    vpunpckhbw  ymmH, ymmH, ymmG      ; ymmH=(21 23 25 27 29 2B 2D 2F 31 33 35 37 39 3B 3D 3F
+                                      ;       2H 2J 2L 2N 2P 2R 2T 2V 3H 3J 3L 3N 3P 3R 3T 3V)
 
     vpxor       ymmF, ymmF, ymmF
 
     vmovdqa     ymmC, ymmA
-    vpunpcklbw  ymmA, ymmA, ymmF
-    vpunpckhbw  ymmC, ymmC, ymmF
+    vpunpcklbw  ymmA, ymmA, ymmF      ; ymmA=(00 02 04 06 08 0A 0C 0E 0G 0I 0K 0M 0O 0Q 0S 0U)
+    vpunpckhbw  ymmC, ymmC, ymmF      ; ymmC=(10 12 14 16 18 1A 1C 1E 1G 1I 1K 1M 1O 1Q 1S 1U)
 
     vmovdqa     ymmD, ymmB
-    vpunpcklbw  ymmB, ymmB, ymmF
-    vpunpckhbw  ymmD, ymmD, ymmF
+    vpunpcklbw  ymmB, ymmB, ymmF      ; ymmB=(01 03 05 07 09 0B 0D 0F 0H 0J 0L 0N 0P 0R 0T 0V)
+    vpunpckhbw  ymmD, ymmD, ymmF      ; ymmD=(11 13 15 17 19 1B 1D 1F 1H 1J 1L 1N 1P 1R 1T 1V)
 
     vmovdqa     ymmG, ymmE
-    vpunpcklbw  ymmE, ymmE, ymmF
-    vpunpckhbw  ymmG, ymmG, ymmF
+    vpunpcklbw  ymmE, ymmE, ymmF      ; ymmE=(20 22 24 26 28 2A 2C 2E 2G 2I 2K 2M 2O 2Q 2S 2U)
+    vpunpckhbw  ymmG, ymmG, ymmF      ; ymmG=(30 32 34 36 38 3A 3C 3E 3G 3I 3K 3M 3O 3Q 3S 3U)
 
     vpunpcklbw  ymmF, ymmF, ymmH
     vpunpckhbw  ymmH, ymmH, ymmH
-    vpsrlw      ymmF, ymmF, BYTE_BIT
-    vpsrlw      ymmH, ymmH, BYTE_BIT
+    vpsrlw      ymmF, ymmF, BYTE_BIT  ; ymmF=(21 23 25 27 29 2B 2D 2F 2H 2J 2L 2N 2P 2R 2T 2V)
+    vpsrlw      ymmH, ymmH, BYTE_BIT  ; ymmH=(31 33 35 37 39 3B 3D 3F 3H 3J 3L 3N 3P 3R 3T 3V)
 
 %endif  ; RGB_PIXELSIZE ; ---------------
 
-    ; ymm0=R(02468ACE)=RE, ymm2=G(02468ACE)=GE, ymm4=B(02468ACE)=BE
-    ; ymm1=R(13579BDF)=RO, ymm3=G(13579BDF)=GO, ymm5=B(13579BDF)=BO
+    ; ymm0=R(02468ACEGIKMOQSU)=RE, ymm2=G(02468ACEGIKMOQSU)=GE, ymm4=B(02468ACEGIKMOQSU)=BE
+    ; ymm1=R(13579BDFHJLNPRTV)=RO, ymm3=G(13579BDFHJLNPRTV)=GO, ymm5=B(13579BDFHJLNPRTV)=BO
 
     ; (Original)
     ; Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B

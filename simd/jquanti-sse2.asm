@@ -2,6 +2,7 @@
 ; jquanti.asm - sample data conversion and quantization (SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -33,7 +34,7 @@
 %define start_col    ebp+12             ; JDIMENSION start_col
 %define workspace    ebp+16             ; DCTELEM *workspace
 
-    align       16
+    align       32
     global      EXTN(jsimd_convsamp_sse2)
 
 EXTN(jsimd_convsamp_sse2):
@@ -115,7 +116,7 @@ EXTN(jsimd_convsamp_sse2):
 %define divisors    ebp+12              ; DCTELEM *divisors
 %define workspace   ebp+16              ; DCTELEM *workspace
 
-    align       16
+    align       32
     global      EXTN(jsimd_quantize_sse2)
 
 EXTN(jsimd_quantize_sse2):
@@ -196,4 +197,4 @@ EXTN(jsimd_quantize_sse2):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

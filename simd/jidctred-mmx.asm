@@ -2,6 +2,7 @@
 ; jidctred.asm - reduced-size IDCT (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -70,7 +71,7 @@ F_3_624 equ     DESCALE(3891787747,30-CONST_BITS)       ; FIX(3.624509785)
 ; --------------------------------------------------------------------------
         SECTION SEG_CONST
 
-        alignz  16
+        alignz  32
         global  EXTN(jconst_idct_red_mmx)
 
 EXTN(jconst_idct_red_mmx):
@@ -88,7 +89,7 @@ PD_DESCALE_P1_2 times 2 dd  1 << (DESCALE_P1_2-1)
 PD_DESCALE_P2_2 times 2 dd  1 << (DESCALE_P2_2-1)
 PB_CENTERJSAMP  times 8 db  CENTERJSAMPLE
 
-        alignz  16
+        alignz  32
 
 ; --------------------------------------------------------------------------
         SECTION SEG_TEXT
@@ -113,7 +114,7 @@ PB_CENTERJSAMP  times 8 db  CENTERJSAMPLE
 %define workspace       wk(0)-DCTSIZE2*SIZEOF_JCOEF
                                         ; JCOEF workspace[DCTSIZE2]
 
-        align   16
+        align   32
         global  EXTN(jsimd_idct_4x4_mmx)
 
 EXTN(jsimd_idct_4x4_mmx):
@@ -501,7 +502,7 @@ EXTN(jsimd_idct_4x4_mmx):
 %define output_buf(b)   (b)+16          ; JSAMPARRAY output_buf
 %define output_col(b)   (b)+20          ; JDIMENSION output_col
 
-        align   16
+        align   32
         global  EXTN(jsimd_idct_2x2_mmx)
 
 EXTN(jsimd_idct_2x2_mmx):
@@ -702,4 +703,4 @@ EXTN(jsimd_idct_2x2_mmx):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-        align   16
+        align   32

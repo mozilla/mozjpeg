@@ -926,29 +926,29 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 		compptr=&cinfo->comp_info[i];
 		_tmpbuf[i]=(JSAMPLE *)malloc(
 			PAD((compptr->width_in_blocks*cinfo->max_h_samp_factor*DCTSIZE)
-				/compptr->h_samp_factor, 16) * cinfo->max_v_samp_factor + 16);
+				/compptr->h_samp_factor, 32) * cinfo->max_v_samp_factor + 32);
 		if(!_tmpbuf[i]) _throw("tjEncodeYUVPlanes(): Memory allocation failure");
 		tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*cinfo->max_v_samp_factor);
 		if(!tmpbuf[i]) _throw("tjEncodeYUVPlanes(): Memory allocation failure");
 		for(row=0; row<cinfo->max_v_samp_factor; row++)
 		{
 			unsigned char *_tmpbuf_aligned=
-				(unsigned char *)PAD((size_t)_tmpbuf[i], 16);
+				(unsigned char *)PAD((size_t)_tmpbuf[i], 32);
 			tmpbuf[i][row]=&_tmpbuf_aligned[
 				PAD((compptr->width_in_blocks*cinfo->max_h_samp_factor*DCTSIZE)
-					/compptr->h_samp_factor, 16) * row];
+					/compptr->h_samp_factor, 32) * row];
 		}
-		_tmpbuf2[i]=(JSAMPLE *)malloc(PAD(compptr->width_in_blocks*DCTSIZE, 16)
-			* compptr->v_samp_factor + 16);
+		_tmpbuf2[i]=(JSAMPLE *)malloc(PAD(compptr->width_in_blocks*DCTSIZE, 32)
+			* compptr->v_samp_factor + 32);
 		if(!_tmpbuf2[i]) _throw("tjEncodeYUVPlanes(): Memory allocation failure");
 		tmpbuf2[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*compptr->v_samp_factor);
 		if(!tmpbuf2[i]) _throw("tjEncodeYUVPlanes(): Memory allocation failure");
 		for(row=0; row<compptr->v_samp_factor; row++)
 		{
 			unsigned char *_tmpbuf2_aligned=
-				(unsigned char *)PAD((size_t)_tmpbuf2[i], 16);
+				(unsigned char *)PAD((size_t)_tmpbuf2[i], 32);
 			tmpbuf2[i][row]=&_tmpbuf2_aligned[
-				PAD(compptr->width_in_blocks*DCTSIZE, 16) * row];
+				PAD(compptr->width_in_blocks*DCTSIZE, 32) * row];
 		}
 		pw[i]=pw0*compptr->h_samp_factor/cinfo->max_h_samp_factor;
 		ph[i]=ph0*compptr->v_samp_factor/cinfo->max_v_samp_factor;
@@ -1611,17 +1611,17 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	for(i=0; i<dinfo->num_components; i++)
 	{
 		compptr=&dinfo->comp_info[i];
-		_tmpbuf[i]=(JSAMPLE *)malloc(PAD(compptr->width_in_blocks*DCTSIZE, 16)
-			* compptr->v_samp_factor + 16);
+		_tmpbuf[i]=(JSAMPLE *)malloc(PAD(compptr->width_in_blocks*DCTSIZE, 32)
+			* compptr->v_samp_factor + 32);
 		if(!_tmpbuf[i]) _throw("tjDecodeYUVPlanes(): Memory allocation failure");
 		tmpbuf[i]=(JSAMPROW *)malloc(sizeof(JSAMPROW)*compptr->v_samp_factor);
 		if(!tmpbuf[i]) _throw("tjDecodeYUVPlanes(): Memory allocation failure");
 		for(row=0; row<compptr->v_samp_factor; row++)
 		{
 			unsigned char *_tmpbuf_aligned=
-				(unsigned char *)PAD((size_t)_tmpbuf[i], 16);
+				(unsigned char *)PAD((size_t)_tmpbuf[i], 32);
 			tmpbuf[i][row]=&_tmpbuf_aligned[
-				PAD(compptr->width_in_blocks*DCTSIZE, 16) * row];
+				PAD(compptr->width_in_blocks*DCTSIZE, 32) * row];
 		}
 		pw[i]=pw0*compptr->h_samp_factor/dinfo->max_h_samp_factor;
 		ph[i]=ph0*compptr->v_samp_factor/dinfo->max_v_samp_factor;

@@ -2,6 +2,7 @@
 ; jidctfst.asm - fast integer IDCT (SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -57,7 +58,7 @@ F_1_613 equ (F_2_613 - (1 << CONST_BITS))       ; FIX(2.613125930) - FIX(1)
 %define PRE_MULTIPLY_SCALE_BITS  2
 %define CONST_SHIFT              (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
 
-    alignz      16
+    alignz      32
     global      EXTN(jconst_idct_ifast_sse2)
 
 EXTN(jconst_idct_ifast_sse2):
@@ -68,7 +69,7 @@ PW_MF1613      times 8  dw -F_1_613 << CONST_SHIFT
 PW_F1082       times 8  dw  F_1_082 << CONST_SHIFT
 PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 
-    alignz      16
+    alignz      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -90,7 +91,7 @@ PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 %define wk(i)          ebp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM         2
 
-    align       16
+    align       32
     global      EXTN(jsimd_idct_ifast_sse2)
 
 EXTN(jsimd_idct_ifast_sse2):
@@ -498,4 +499,4 @@ EXTN(jsimd_idct_ifast_sse2):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

@@ -25,14 +25,14 @@
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      16
+    alignz      32
     global      EXTN(jconst_huff_encode_one_block)
 
 EXTN(jconst_huff_encode_one_block):
 
 %include "jpeg_nbits_table.inc"
 
-    alignz      16
+    alignz      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -178,7 +178,7 @@ EXTN(jconst_huff_encode_one_block):
 %define put_buffer  ebx
 %define put_bits    edi
 
-    align       16
+    align       32
     global      EXTN(jsimd_huff_encode_one_block_sse2)
 
 EXTN(jsimd_huff_encode_one_block_sse2):
@@ -423,4 +423,4 @@ EXTN(jsimd_huff_encode_one_block_sse2):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

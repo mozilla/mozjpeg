@@ -2,6 +2,7 @@
 ; jfdctflt.asm - floating-point FDCT (SSE)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -35,7 +36,7 @@
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      16
+    alignz      32
     global      EXTN(jconst_fdct_float_sse)
 
 EXTN(jconst_fdct_float_sse):
@@ -45,7 +46,7 @@ PD_0_707 times 4 dd 0.707106781186547524400844
 PD_0_541 times 4 dd 0.541196100146196984399723
 PD_1_306 times 4 dd 1.306562964876376527856643
 
-    alignz      16
+    alignz      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -63,7 +64,7 @@ PD_1_306 times 4 dd 1.306562964876376527856643
 %define wk(i)         ebp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM        2
 
-    align       16
+    align       32
     global      EXTN(jsimd_fdct_float_sse)
 
 EXTN(jsimd_fdct_float_sse):
@@ -366,4 +367,4 @@ EXTN(jsimd_fdct_float_sse):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

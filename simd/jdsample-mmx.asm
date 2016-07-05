@@ -2,6 +2,7 @@
 ; jdsample.asm - upsampling (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -20,7 +21,7 @@
 ; --------------------------------------------------------------------------
         SECTION SEG_CONST
 
-        alignz  16
+        alignz  32
         global  EXTN(jconst_fancy_upsample_mmx)
 
 EXTN(jconst_fancy_upsample_mmx):
@@ -31,7 +32,7 @@ PW_THREE        times 4 dw  3
 PW_SEVEN        times 4 dw  7
 PW_EIGHT        times 4 dw  8
 
-        alignz  16
+        alignz  32
 
 ; --------------------------------------------------------------------------
         SECTION SEG_TEXT
@@ -56,7 +57,7 @@ PW_EIGHT        times 4 dw  8
 %define input_data(b)           (b)+16          ; JSAMPARRAY input_data
 %define output_data_ptr(b)      (b)+20          ; JSAMPARRAY *output_data_ptr
 
-        align   16
+        align   32
         global  EXTN(jsimd_h2v1_fancy_upsample_mmx)
 
 EXTN(jsimd_h2v1_fancy_upsample_mmx):
@@ -214,7 +215,7 @@ EXTN(jsimd_h2v1_fancy_upsample_mmx):
 %define WK_NUM          4
 %define gotptr          wk(0)-SIZEOF_POINTER    ; void *gotptr
 
-        align   16
+        align   32
         global  EXTN(jsimd_h2v2_fancy_upsample_mmx)
 
 EXTN(jsimd_h2v2_fancy_upsample_mmx):
@@ -540,7 +541,7 @@ EXTN(jsimd_h2v2_fancy_upsample_mmx):
 %define input_data(b)           (b)+16          ; JSAMPARRAY input_data
 %define output_data_ptr(b)      (b)+20          ; JSAMPARRAY *output_data_ptr
 
-        align   16
+        align   32
         global  EXTN(jsimd_h2v1_upsample_mmx)
 
 EXTN(jsimd_h2v1_upsample_mmx):
@@ -641,7 +642,7 @@ EXTN(jsimd_h2v1_upsample_mmx):
 %define input_data(b)           (b)+16          ; JSAMPARRAY input_data
 %define output_data_ptr(b)      (b)+20          ; JSAMPARRAY *output_data_ptr
 
-        align   16
+        align   32
         global  EXTN(jsimd_h2v2_upsample_mmx)
 
 EXTN(jsimd_h2v2_upsample_mmx):
@@ -733,4 +734,4 @@ EXTN(jsimd_h2v2_upsample_mmx):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-        align   16
+        align   32

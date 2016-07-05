@@ -2,6 +2,7 @@
 ; jidctflt.asm - floating-point IDCT (3DNow! & MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -25,7 +26,7 @@
 ; --------------------------------------------------------------------------
         SECTION SEG_CONST
 
-        alignz  16
+        alignz  32
         global  EXTN(jconst_idct_float_3dnow)
 
 EXTN(jconst_idct_float_3dnow):
@@ -37,7 +38,7 @@ PD_2_613        times 2 dd  2.613125929752753055713286
 PD_RNDINT_MAGIC times 2 dd  100663296.0 ; (float)(0x00C00000 << 3)
 PB_CENTERJSAMP  times 8 db  CENTERJSAMPLE
 
-        alignz  16
+        alignz  32
 
 ; --------------------------------------------------------------------------
         SECTION SEG_TEXT
@@ -61,7 +62,7 @@ PB_CENTERJSAMP  times 8 db  CENTERJSAMPLE
 %define workspace       wk(0)-DCTSIZE2*SIZEOF_FAST_FLOAT
                                         ; FAST_FLOAT workspace[DCTSIZE2]
 
-        align   16
+        align   32
         global  EXTN(jsimd_idct_float_3dnow)
 
 EXTN(jsimd_idct_float_3dnow):
@@ -448,4 +449,4 @@ EXTN(jsimd_idct_float_3dnow):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-        align   16
+        align   32

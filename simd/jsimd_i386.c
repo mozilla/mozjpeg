@@ -61,6 +61,9 @@ init_simd (void)
   env = getenv("JSIMD_FORCESSE2");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support &= JSIMD_SSE2;
+  env = getenv("JSIMD_FORCEAVX2");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_support &= JSIMD_AVX2;
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;

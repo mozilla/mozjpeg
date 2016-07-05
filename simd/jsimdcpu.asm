@@ -28,7 +28,7 @@
 ; jpeg_simd_cpu_support (void)
 ;
 
-        align   16
+        align   32
         global  EXTN(jpeg_simd_cpu_support)
 
 EXTN(jpeg_simd_cpu_support):
@@ -112,4 +112,4 @@ EXTN(jpeg_simd_cpu_support):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-        align   16
+        align   32

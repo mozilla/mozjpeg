@@ -2,6 +2,7 @@
 ; jdmrgext.asm - merged upsampling/color conversion (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -38,7 +39,7 @@
 %define WK_NUM          3
 %define gotptr          wk(0)-SIZEOF_POINTER    ; void * gotptr
 
-        align   16
+        align   32
         global  EXTN(jsimd_h2v1_merged_upsample_mmx)
 
 EXTN(jsimd_h2v1_merged_upsample_mmx):
@@ -407,7 +408,7 @@ EXTN(jsimd_h2v1_merged_upsample_mmx):
 %define in_row_group_ctr(b)     (b)+16          ; JDIMENSION in_row_group_ctr
 %define output_buf(b)           (b)+20          ; JSAMPARRAY output_buf
 
-        align   16
+        align   32
         global  EXTN(jsimd_h2v2_merged_upsample_mmx)
 
 EXTN(jsimd_h2v2_merged_upsample_mmx):
@@ -460,4 +461,4 @@ EXTN(jsimd_h2v2_merged_upsample_mmx):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-        align   16
+        align   32

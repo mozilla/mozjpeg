@@ -2,7 +2,7 @@
 ; jccolor.asm - colorspace conversion (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, D. R. Commander.
+; Copyright (C) 2009, 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -35,7 +35,7 @@ F_0_337 equ     (F_0_587 - F_0_250)     ; FIX(0.58700) - FIX(0.25000)
 ; --------------------------------------------------------------------------
         SECTION SEG_CONST
 
-        alignz  16
+        alignz  32
         global  EXTN(jconst_rgb_ycc_convert_mmx)
 
 EXTN(jconst_rgb_ycc_convert_mmx):
@@ -47,7 +47,7 @@ PW_MF008_MF041  times 2 dw -F_0_081,-F_0_418
 PD_ONEHALFM1_CJ times 2 dd  (1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)
 PD_ONEHALF      times 2 dd  (1 << (SCALEBITS-1))
 
-        alignz  16
+        alignz  32
 
 ; --------------------------------------------------------------------------
         SECTION SEG_TEXT

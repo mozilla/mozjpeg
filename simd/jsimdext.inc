@@ -64,8 +64,8 @@
 
 ; -- segment definition --
 ;
-%define SEG_TEXT   _text align=16 public use32 class=CODE
-%define SEG_CONST  _data align=16 public use32 class=DATA
+%define SEG_TEXT   _text align=32 public use32 class=CODE
+%define SEG_CONST  _data align=32 public use32 class=DATA
 
 %elifdef ELF    ; ----(nasm -felf[64] -DELF ...)------------
 ; * Linux
@@ -108,7 +108,7 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 
 ; -- segment definition --
 ;
-%define SEG_TEXT   .text  ;align=32     ; nasm doesn't accept align=16. why?
+%define SEG_TEXT   .text  ;align=32     ; nasm doesn't accept align=32. why?
 %define SEG_CONST  .rodata align=32
 
 ; The generation of position-independent code (PIC) is the default on Darwin.

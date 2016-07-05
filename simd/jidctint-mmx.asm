@@ -2,6 +2,7 @@
 ; jidctint.asm - accurate integer IDCT (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -64,7 +65,7 @@ F_3_072 equ     DESCALE(3299298341,30-CONST_BITS)       ; FIX(3.072711026)
 ; --------------------------------------------------------------------------
         SECTION SEG_CONST
 
-        alignz  16
+        alignz  32
         global  EXTN(jconst_idct_islow_mmx)
 
 EXTN(jconst_idct_islow_mmx):
@@ -81,7 +82,7 @@ PD_DESCALE_P1   times 2 dd  1 << (DESCALE_P1-1)
 PD_DESCALE_P2   times 2 dd  1 << (DESCALE_P2-1)
 PB_CENTERJSAMP  times 8 db  CENTERJSAMPLE
 
-        alignz  16
+        alignz  32
 
 ; --------------------------------------------------------------------------
         SECTION SEG_TEXT
@@ -105,7 +106,7 @@ PB_CENTERJSAMP  times 8 db  CENTERJSAMPLE
 %define workspace       wk(0)-DCTSIZE2*SIZEOF_JCOEF
                                         ; JCOEF workspace[DCTSIZE2]
 
-        align   16
+        align   32
         global  EXTN(jsimd_idct_islow_mmx)
 
 EXTN(jsimd_idct_islow_mmx):
@@ -848,4 +849,4 @@ EXTN(jsimd_idct_islow_mmx):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-        align   16
+        align   32

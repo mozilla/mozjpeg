@@ -2,6 +2,7 @@
 ; jcsample.asm - downsampling (SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2016, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -38,7 +39,7 @@
 %define input_data(b)   (b)+24          ; JSAMPARRAY input_data
 %define output_data(b)  (b)+28          ; JSAMPARRAY output_data
 
-    align       16
+    align       32
     global      EXTN(jsimd_h2v1_downsample_sse2)
 
 EXTN(jsimd_h2v1_downsample_sse2):
@@ -193,7 +194,7 @@ EXTN(jsimd_h2v1_downsample_sse2):
 %define input_data(b)   (b)+24          ; JSAMPARRAY input_data
 %define output_data(b)  (b)+28          ; JSAMPARRAY output_data
 
-    align       16
+    align       32
     global      EXTN(jsimd_h2v2_downsample_sse2)
 
 EXTN(jsimd_h2v2_downsample_sse2):
@@ -347,4 +348,4 @@ EXTN(jsimd_h2v2_downsample_sse2):
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-    align       16
+    align       32

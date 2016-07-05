@@ -47,7 +47,8 @@ libsimd_la_SOURCES = jsimd_i386.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
 	jcsample-sse2.asm  jdcolor-sse2.asm   jdmerge-sse2.asm \
 	jdsample-sse2.asm  jfdctfst-sse2.asm  jfdctint-sse2.asm \
 	jidctflt-sse2.asm  jidctfst-sse2.asm  jidctint-sse2.asm \
-	jidctred-sse2.asm  jquantf-sse2.asm   jquanti-sse2.asm
+	jidctred-sse2.asm  jquantf-sse2.asm   jquanti-sse2.asm \
+	jccolor-avx2.asm   jcgray-avx2.asm
 
 jccolor-mmx.lo:   jccolext-mmx.asm
 jcgray.-mmx.lo:   jcgryext-mmx.asm
@@ -57,6 +58,8 @@ jccolor-sse2.lo:  jccolext-sse2.asm
 jcgray-sse2.lo:   jcgryext-sse2.asm
 jdcolor-sse2.lo:  jdcolext-sse2.asm
 jdmerge-sse2.lo:  jdmrgext-sse2.asm
+jccolor-avx2.lo:  jccolext-avx2.asm
+jcgray-avx2.lo:   jcgryext-avx2.asm
 
 endif
 

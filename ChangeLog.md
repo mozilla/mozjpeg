@@ -20,6 +20,19 @@ These environment variables provide a workaround for those attempting to test
 ARM and MIPS builds of libjpeg-turbo in QEMU, which passes through
 /proc/cpuinfo from the host system.
 
+2. libjpeg-turbo previously assumed that AltiVec instructions were always
+available on PowerPC platforms, which led to "illegal instruction" errors when
+running on PowerPC chips that lack AltiVec support (such as the older 7xx/G3
+and newer e5500 series.)  libjpeg-turbo now examines /proc/cpuinfo on
+Linux/Android systems and enables AltiVec instructions only if the CPU supports
+them.  It also now provides two environment variables, `JSIMD_FORCEALTIVEC` and
+`JSIMD_FORCENONE`, to force-enable and force-disable AltiVec instructions in
+environments where /proc/cpuinfo is an unreliable means of CPU feature
+detection (such as when running in QEMU.)  On OS X, libjpeg-turbo continues to
+assume that AltiVec support is always available, which means that libjpeg-turbo
+cannot be used with G3 Macs unless you set the environment variable
+`JSIMD_FORCENONE` to `1`.
+
 
 1.5.0
 =====

@@ -1,3 +1,26 @@
+1.5.1
+=====
+
+### Significant changes relative to 1.5.0:
+
+1. Previously, the undocumented `JSIMD_FORCE*` environment variables could be
+used to force-enable a particular SIMD instruction set if multiple instruction
+sets were available on a particular platform.  On x86 platforms, where CPU
+feature detection is bulletproof and multiple SIMD instruction sets are
+available, it makes sense for those environment variables to allow forcing the
+use of an instruction set only if that instruction set is available.  However,
+since the ARM implementations of libjpeg-turbo can only use one SIMD
+instruction set, and since their feature detection code is less bulletproof
+(parsing /proc/cpuinfo), it makes sense for the `JSIMD_FORCENEON` environment
+variable to bypass the feature detection code and really force the use of NEON
+instructions.  A new environment variable (`JSIMD_FORCEDSPR2`) was introduced
+in the MIPS implementation for the same reasons, and the existing
+`JSIMD_FORCENONE` environment variable was extended to that implementation.
+These environment variables provide a workaround for those attempting to test
+ARM and MIPS builds of libjpeg-turbo in QEMU, which passes through
+/proc/cpuinfo from the host system.
+
+
 1.5.0
 =====
 

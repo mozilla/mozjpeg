@@ -29,7 +29,7 @@
 #define IS_ALIGNED(ptr, order) (((size_t)ptr & ((1 << order) - 1)) == 0)
 
 #define IS_ALIGNED_SSE(ptr) (IS_ALIGNED(ptr, 4)) /* 16 byte alignment */
-#define IS_ALIGNED_AVX(ptr) (IS_ALIGNED(ptr, 8)) /* 32 byte alignment */
+#define IS_ALIGNED_AVX(ptr) (IS_ALIGNED(ptr, 5)) /* 32 byte alignment */
 
 static unsigned int simd_support = ~0;
 static unsigned int simd_huffman = 1;

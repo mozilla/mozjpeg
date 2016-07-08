@@ -875,6 +875,9 @@ EXTERN(void) jsimd_quantize_mmx
 EXTERN(void) jsimd_quantize_sse2
         (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
 
+EXTERN(void) jsimd_quantize_avx2
+        (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
+
 EXTERN(void) jsimd_quantize_neon
         (JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace);
 

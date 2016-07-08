@@ -783,6 +783,8 @@ jsimd_can_quantize (void)
   if (sizeof(DCTELEM) != 2)
     return 0;
 
+  if (simd_support & JSIMD_AVX2)
+    return 1;
   if (simd_support & JSIMD_SSE2)
     return 1;
 
@@ -812,7 +814,10 @@ GLOBAL(void)
 jsimd_quantize (JCOEFPTR coef_block, DCTELEM *divisors,
                 DCTELEM *workspace)
 {
-  jsimd_quantize_sse2(coef_block, divisors, workspace);
+  if (simd_support & JSIMD_AVX2)
+    jsimd_quantize_avx2(coef_block, divisors, workspace);
+  else
+    jsimd_quantize_sse2(coef_block, divisors, workspace);
 }
 
 GLOBAL(void)

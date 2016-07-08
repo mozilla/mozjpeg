@@ -20,7 +20,8 @@ libsimd_la_SOURCES = jsimd_x86_64.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
 	jidctflt-sse2-64.asm  jidctfst-sse2-64.asm  jidctint-sse2-64.asm \
 	jidctred-sse2-64.asm  jquantf-sse2-64.asm   jquanti-sse2-64.asm \
 	jccolor-avx2-64.asm   jcgray-avx2-64.asm    jcsample-avx2-64.asm \
-	jdcolor-avx2-64.asm   jdmerge-avx2-64.asm   jdsample-avx2-64.asm
+	jdcolor-avx2-64.asm   jdmerge-avx2-64.asm   jdsample-avx2-64.asm \
+	jquanti-avx2-64.asm
 
 jccolor-sse2-64.lo:  jccolext-sse2-64.asm
 jcgray-sse2-64.lo:   jcgryext-sse2-64.asm

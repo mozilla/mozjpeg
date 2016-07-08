@@ -20,7 +20,7 @@ libsimd_la_SOURCES = jsimd_x86_64.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
 	jidctflt-sse2-64.asm  jidctfst-sse2-64.asm  jidctint-sse2-64.asm \
 	jidctred-sse2-64.asm  jquantf-sse2-64.asm   jquanti-sse2-64.asm \
 	jccolor-avx2-64.asm   jcgray-avx2-64.asm    jcsample-avx2-64.asm \
-	jdcolor-avx2-64.asm   jdsample-avx2-64.asm  jdmerge-avx2-64.asm
+	jdcolor-avx2-64.asm   jdmerge-avx2-64.asm   jdsample-avx2-64.asm
 
 jccolor-sse2-64.lo:  jccolext-sse2-64.asm
 jcgray-sse2-64.lo:   jcgryext-sse2-64.asm
@@ -49,7 +49,7 @@ libsimd_la_SOURCES = jsimd_i386.c jsimd.h jsimdcfg.inc.h jsimdext.inc \
 	jidctflt-sse2.asm  jidctfst-sse2.asm  jidctint-sse2.asm \
 	jidctred-sse2.asm  jquantf-sse2.asm   jquanti-sse2.asm \
 	jccolor-avx2.asm   jcgray-avx2.asm    jcsample-avx2.asm \
-	jdcolor-avx2.asm   jdsample-avx2.asm
+	jdcolor-avx2.asm   jdmerge-avx2.asm   jdsample-avx2.asm
 
 jccolor-mmx.lo:   jccolext-mmx.asm
 jcgray.-mmx.lo:   jcgryext-mmx.asm
@@ -62,6 +62,7 @@ jdmerge-sse2.lo:  jdmrgext-sse2.asm
 jccolor-avx2.lo:  jccolext-avx2.asm
 jcgray-avx2.lo:   jcgryext-avx2.asm
 jdcolor-avx2.lo:  jdcolext-avx2.asm
+jdmerge-avx2.lo:  jdmrgext-avx2.asm
 
 endif
 

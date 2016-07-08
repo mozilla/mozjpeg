@@ -65,7 +65,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
     push        rbp
     mov         rax, rsp
     mov         rbp, rsp
-    push_xmm    4
+    push_xmm    3
     collect_args 4
 
     mov         eax, r11d               ; colctr
@@ -80,12 +80,12 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
     mov         rdi, r13
     mov         rdi, JSAMPARRAY [rdi]   ; output_data
 
-    vpxor       ymm0, ymm0, ymm0                  ; ymm0=(all 0's)
-    vpcmpeqb    xmm10, xmm10, xmm10
-    vpsrldq     xmm11, xmm10, (SIZEOF_XMMWORD-1)  ; (ff -- -- -- ... -- --) LSB is ff
+    vpxor       ymm0, ymm0, ymm0                 ; ymm0=(all 0's)
+    vpcmpeqb    xmm9, xmm9, xmm9
+    vpsrldq     xmm10, xmm9, (SIZEOF_XMMWORD-1)  ; (ff -- -- -- ... -- --) LSB is ff
 
-    vpslldq     xmm10, xmm10, (SIZEOF_XMMWORD-1)
-    vperm2i128  ymm10, ymm10, ymm10, 1            ; (---- ---- ... ---- ---- ff) MSB is ff
+    vpslldq     xmm9, xmm9, (SIZEOF_XMMWORD-1)
+    vperm2i128  ymm9, ymm9, ymm9, 1              ; (---- ---- ... ---- ---- ff) MSB is ff
 
 .rowloop:
     push        rax                     ; colctr
@@ -100,7 +100,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
     mov         dl, JSAMPLE [rsi+(rax-1)*SIZEOF_JSAMPLE]
     mov         JSAMPLE [rsi+rax*SIZEOF_JSAMPLE], dl    ; insert a dummy sample
 .skip:
-    vpand       ymm7, ymm11, YMMWORD [rsi+0*SIZEOF_YMMWORD]
+    vpand       ymm7, ymm10, YMMWORD [rsi+0*SIZEOF_YMMWORD]
 
     add         rax, byte SIZEOF_YMMWORD-1
     and         rax, byte -SIZEOF_YMMWORD
@@ -108,38 +108,36 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
     ja          short .columnloop
 
 .columnloop_last:
-    vpand       ymm6, ymm10, YMMWORD [rsi+0*SIZEOF_YMMWORD]
+    vpand       ymm6, ymm9, YMMWORD [rsi+0*SIZEOF_YMMWORD]
     jmp         short .upsample
 
 .columnloop:
     vmovdqu     ymm6, YMMWORD [rsi+1*SIZEOF_YMMWORD]
-    vperm2i128  ymm8, ymm0, ymm6, 0x20
-    vpslldq     ymm6, ymm8, 15
+    vperm2i128  ymm6, ymm0, ymm6, 0x20
+    vpslldq     ymm6, ymm6, 15
 
 .upsample:
-    vmovdqu     ymm1, YMMWORD [rsi+0*SIZEOF_YMMWORD]
+    vmovdqu     ymm1, YMMWORD [rsi+0*SIZEOF_YMMWORD]  ; ymm1=( 0  1  2 ... 29 30 31)
 
-    vmovdqa     ymm2, ymm1
-    vmovdqa     ymm3, ymm1                      ; ymm1=( 0  1  2 ... 29 30 31)
-    vperm2i128  ymm8, ymm0, ymm2, 0x20
-    vpalignr    ymm2, ymm2, ymm8, 15            ; ymm2=(--  0  1 ... 28 29 30)
-    vperm2i128  ymm8, ymm0, ymm3, 0x03
-    vpalignr    ymm3, ymm8, ymm3, 1             ; ymm3=( 1  2  3 ... 30 31 --)
+    vperm2i128  ymm2, ymm0, ymm1, 0x20
+    vpalignr    ymm2, ymm1, ymm2, 15            ; ymm2=(--  0  1 ... 28 29 30)
+    vperm2i128  ymm4, ymm0, ymm1, 0x03
+    vpalignr    ymm3, ymm4, ymm1, 1             ; ymm3=( 1  2  3 ... 30 31 --)
 
     vpor        ymm2, ymm2, ymm7                ; ymm2=(-1  0  1 ... 28 29 30)
     vpor        ymm3, ymm3, ymm6                ; ymm3=( 1  2  3 ... 30 31 32)
 
-    vpsrldq     ymm7, ymm8, (SIZEOF_XMMWORD-1)  ; ymm7=(31 -- -- ... -- -- --)
+    vpsrldq     ymm7, ymm4, (SIZEOF_XMMWORD-1)  ; ymm7=(31 -- -- ... -- -- --)
 
     vpunpckhbw  ymm4, ymm1, ymm0                ; ymm4=( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
-    vpunpcklbw  ymm8, ymm1, ymm0                ; ymm8=( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
-    vperm2i128  ymm1, ymm8, ymm4, 0x20          ; ymm1=( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vperm2i128  ymm4, ymm8, ymm4, 0x31          ; ymm4=(16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
+    vpunpcklbw  ymm5, ymm1, ymm0                ; ymm5=( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
+    vperm2i128  ymm1, ymm5, ymm4, 0x20          ; ymm1=( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vperm2i128  ymm4, ymm5, ymm4, 0x31          ; ymm4=(16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
     vpunpckhbw  ymm5, ymm2, ymm0                ; ymm5=( 7  8  9 10 11 12 13 14 23 24 25 26 27 28 29 30)
-    vpunpcklbw  ymm8, ymm2, ymm0                ; ymm8=(-1  0  1  2  3  4  5  6 15 16 17 18 19 20 21 22)
-    vperm2i128  ymm2, ymm8, ymm5, 0x20          ; ymm2=(-1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
-    vperm2i128  ymm5, ymm8, ymm5, 0x31          ; ymm5=(15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
+    vpunpcklbw  ymm6, ymm2, ymm0                ; ymm6=(-1  0  1  2  3  4  5  6 15 16 17 18 19 20 21 22)
+    vperm2i128  ymm2, ymm6, ymm5, 0x20          ; ymm2=(-1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
+    vperm2i128  ymm5, ymm6, ymm5, 0x31          ; ymm5=(15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
 
     vpunpckhbw  ymm6, ymm3, ymm0                ; ymm6=( 1  2  3  4  5  6  7  8 17 18 19 20 21 22 23 24)
     vpunpcklbw  ymm8, ymm3, ymm0                ; ymm8=( 9 10 11 12 13 14 15 16 25 26 27 28 29 30 31 32)
@@ -189,7 +187,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
 
 .return:
     uncollect_args 4
-    pop_xmm     4
+    pop_xmm     3
     pop         rbp
     ret
 
@@ -224,7 +222,7 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     mov         [rsp], rax
     mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [wk(0)]
-    push_xmm    4
+    push_xmm    3
     collect_args 4
     push        rbx
 
@@ -251,11 +249,11 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     mov         rdx, JSAMPROW [rdi+0*SIZEOF_JSAMPROW]  ; outptr0
     mov         rdi, JSAMPROW [rdi+1*SIZEOF_JSAMPROW]  ; outptr1
 
-    vpxor       ymm9, ymm9, ymm9
-    vpcmpeqb    xmm10, xmm10, xmm10
-    vpsrldq     xmm11, xmm10, (SIZEOF_XMMWORD-2)  ; (ffff ---- ---- ... ---- ----) LSB is ffff
-    vpslldq     xmm10, xmm10, (SIZEOF_XMMWORD-2)
-    vperm2i128  ymm10, ymm10, ymm10, 1            ; (---- ---- ... ---- ---- ffff) MSB is ffff
+    vpxor       ymm8, ymm8, ymm8                 ; ymm8=(all 0's)
+    vpcmpeqb    xmm9, xmm9, xmm9
+    vpsrldq     xmm10, xmm9, (SIZEOF_XMMWORD-2)  ; (ffff ---- ---- ... ---- ----) LSB is ffff
+    vpslldq     xmm9, xmm9, (SIZEOF_XMMWORD-2)
+    vperm2i128  ymm9, ymm9, ymm9, 1              ; (---- ---- ... ---- ---- ffff) MSB is ffff
 
     test        rax, SIZEOF_YMMWORD-1
     jz          short .skip
@@ -274,20 +272,20 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     vmovdqu     ymm1, YMMWORD [rcx+0*SIZEOF_YMMWORD]  ; ymm1=row[-1][0]
     vmovdqu     ymm2, YMMWORD [rsi+0*SIZEOF_YMMWORD]  ; ymm2=row[+1][0]
 
-    vpunpckhbw  ymm4, ymm0, ymm9        ; ymm4=row[ 0]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
-    vpunpcklbw  ymm8, ymm0, ymm9        ; ymm8=row[ 0]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
-    vperm2i128  ymm0, ymm8, ymm4, 0x20  ; ymm0=row[ 0]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vperm2i128  ymm4, ymm8, ymm4, 0x31  ; ymm4=row[ 0](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
+    vpunpckhbw  ymm4, ymm0, ymm8        ; ymm4=row[ 0]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
+    vpunpcklbw  ymm5, ymm0, ymm8        ; ymm5=row[ 0]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
+    vperm2i128  ymm0, ymm5, ymm4, 0x20  ; ymm0=row[ 0]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vperm2i128  ymm4, ymm5, ymm4, 0x31  ; ymm4=row[ 0](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
-    vpunpckhbw  ymm5, ymm1, ymm9        ; ymm5=row[-1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
-    vpunpcklbw  ymm8, ymm1, ymm9        ; ymm8=row[-1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
-    vperm2i128  ymm1, ymm8, ymm5, 0x20  ; ymm1=row[-1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vperm2i128  ymm5, ymm8, ymm5, 0x31  ; ymm5=row[-1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
+    vpunpckhbw  ymm5, ymm1, ymm8        ; ymm5=row[-1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
+    vpunpcklbw  ymm6, ymm1, ymm8        ; ymm6=row[-1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
+    vperm2i128  ymm1, ymm6, ymm5, 0x20  ; ymm1=row[-1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vperm2i128  ymm5, ymm6, ymm5, 0x31  ; ymm5=row[-1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
-    vpunpckhbw  ymm6, ymm2, ymm9        ; ymm6=row[+1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
-    vpunpcklbw  ymm8, ymm2, ymm9        ; ymm8=row[+1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
-    vperm2i128  ymm2, ymm8, ymm6, 0x20  ; ymm2=row[+1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vperm2i128  ymm6, ymm8, ymm6, 0x31  ; ymm6=row[+1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
+    vpunpckhbw  ymm6, ymm2, ymm8        ; ymm6=row[+1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
+    vpunpcklbw  ymm3, ymm2, ymm8        ; ymm3=row[+1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
+    vperm2i128  ymm2, ymm3, ymm6, 0x20  ; ymm2=row[+1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vperm2i128  ymm6, ymm3, ymm6, 0x31  ; ymm6=row[+1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
     vpmullw     ymm0, ymm0, [rel PW_THREE]
     vpmullw     ymm4, ymm4, [rel PW_THREE]
@@ -302,8 +300,8 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     vmovdqu     YMMWORD [rdi+0*SIZEOF_YMMWORD], ymm2
     vmovdqu     YMMWORD [rdi+1*SIZEOF_YMMWORD], ymm6
 
-    vpand       ymm1, ymm1, ymm11       ; ymm1=( 0 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
-    vpand       ymm2, ymm2, ymm11       ; ymm2=( 0 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
+    vpand       ymm1, ymm1, ymm10       ; ymm1=( 0 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
+    vpand       ymm2, ymm2, ymm10       ; ymm2=( 0 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
 
     vmovdqa     YMMWORD [wk(0)], ymm1
     vmovdqa     YMMWORD [wk(1)], ymm2
@@ -316,8 +314,8 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
 .columnloop_last:
     ; -- process the last column block
 
-    vpand       ymm1, ymm10, YMMWORD [rdx+1*SIZEOF_YMMWORD]
-    vpand       ymm2, ymm10, YMMWORD [rdi+1*SIZEOF_YMMWORD]
+    vpand       ymm1, ymm9, YMMWORD [rdx+1*SIZEOF_YMMWORD]
+    vpand       ymm2, ymm9, YMMWORD [rdi+1*SIZEOF_YMMWORD]
 
     vmovdqa     YMMWORD [wk(2)], ymm1   ; ymm1=(-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 31)
     vmovdqa     YMMWORD [wk(3)], ymm2   ; ymm2=(-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 31)
@@ -331,20 +329,20 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     vmovdqu     ymm1, YMMWORD [rcx+1*SIZEOF_YMMWORD]  ; ymm1=row[-1][1]
     vmovdqu     ymm2, YMMWORD [rsi+1*SIZEOF_YMMWORD]  ; ymm2=row[+1][1]
 
-    vpunpckhbw  ymm4, ymm0, ymm9        ; ymm4=row[ 0]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
-    vpunpcklbw  ymm8, ymm0, ymm9        ; ymm8=row[ 0]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
-    vperm2i128  ymm0, ymm8, ymm4, 0x20  ; ymm0=row[ 0]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vperm2i128  ymm4, ymm8, ymm4, 0x31  ; ymm4=row[ 0](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
+    vpunpckhbw  ymm4, ymm0, ymm8        ; ymm4=row[ 0]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
+    vpunpcklbw  ymm5, ymm0, ymm8        ; ymm5=row[ 0]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
+    vperm2i128  ymm0, ymm5, ymm4, 0x20  ; ymm0=row[ 0]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vperm2i128  ymm4, ymm5, ymm4, 0x31  ; ymm4=row[ 0](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
-    vpunpckhbw  ymm5, ymm1, ymm9        ; ymm5=row[-1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
-    vpunpcklbw  ymm8, ymm1, ymm9        ; ymm8=row[-1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
-    vperm2i128  ymm1, ymm8, ymm5, 0x20  ; ymm1=row[-1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vperm2i128  ymm5, ymm8, ymm5, 0x31  ; ymm5=row[-1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
+    vpunpckhbw  ymm5, ymm1, ymm8        ; ymm5=row[-1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
+    vpunpcklbw  ymm6, ymm1, ymm8        ; ymm6=row[-1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
+    vperm2i128  ymm1, ymm6, ymm5, 0x20  ; ymm1=row[-1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vperm2i128  ymm5, ymm6, ymm5, 0x31  ; ymm5=row[-1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
-    vpunpckhbw  ymm6, ymm2, ymm9        ; ymm6=row[+1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
-    vpunpcklbw  ymm8, ymm2, ymm9        ; ymm8=row[+1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
-    vperm2i128  ymm2, ymm8, ymm6, 0x20  ; ymm2=row[+1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vperm2i128  ymm6, ymm8, ymm6, 0x31  ; ymm6=row[+1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
+    vpunpckhbw  ymm6, ymm2, ymm8        ; ymm6=row[+1]( 8  9 10 11 12 13 14 15 24 25 26 27 28 29 30 31)
+    vpunpcklbw  ymm7, ymm2, ymm8        ; ymm7=row[+1]( 0  1  2  3  4  5  6  7 16 17 18 19 20 21 22 23)
+    vperm2i128  ymm2, ymm7, ymm6, 0x20  ; ymm2=row[+1]( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vperm2i128  ymm6, ymm7, ymm6, 0x31  ; ymm6=row[+1](16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
     vpmullw     ymm0, ymm0, [rel PW_THREE]
     vpmullw     ymm4, ymm4, [rel PW_THREE]
@@ -359,9 +357,9 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     vmovdqu     YMMWORD [rdi+2*SIZEOF_YMMWORD], ymm2
     vmovdqu     YMMWORD [rdi+3*SIZEOF_YMMWORD], ymm6
 
-    vperm2i128  ymm1, ymm9, ymm1, 0x20
+    vperm2i128  ymm1, ymm8, ymm1, 0x20
     vpslldq     ymm1, ymm1, 14          ; ymm1=(-- -- -- -- -- -- -- -- -- -- -- -- -- -- --  0)
-    vperm2i128  ymm2, ymm9, ymm2, 0x20
+    vperm2i128  ymm2, ymm8, ymm2, 0x20
     vpslldq     ymm2, ymm2, 14          ; ymm2=(-- -- -- -- -- -- -- -- -- -- -- -- -- -- --  0)
 
     vmovdqa     YMMWORD [wk(2)], ymm1
@@ -370,35 +368,28 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
 .upsample:
     ; -- process the upper row
 
-    vmovdqu     ymm7, YMMWORD [rdx+0*SIZEOF_YMMWORD]
-    vmovdqu     ymm3, YMMWORD [rdx+1*SIZEOF_YMMWORD]
+    vmovdqu     ymm7, YMMWORD [rdx+0*SIZEOF_YMMWORD]  ; ymm7=Int0L=( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vmovdqu     ymm3, YMMWORD [rdx+1*SIZEOF_YMMWORD]  ; ymm3=Int0H=(16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
-    vmovdqa     ymm0, ymm7              ; ymm7=Int0L=( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vmovdqa     ymm4, ymm3              ; ymm3=Int0H=(16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
-    vperm2i128  ymm8, ymm9, ymm0, 0x03
-    vpalignr    ymm0, ymm8, ymm0, 2     ; ymm0=( 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 --)
-    vperm2i128  ymm4, ymm9, ymm4, 0x20
+    vperm2i128  ymm0, ymm8, ymm7, 0x03
+    vpalignr    ymm0, ymm0, ymm7, 2     ; ymm0=( 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 --)
+    vperm2i128  ymm4, ymm8, ymm3, 0x20
     vpslldq     ymm4, ymm4, 14          ; ymm4=(-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 16)
 
-    vmovdqa     ymm5, ymm7
-    vmovdqa     ymm6, ymm3
-    vperm2i128  ymm5, ymm9, ymm5, 0x03
+    vperm2i128  ymm5, ymm8, ymm7, 0x03
     vpsrldq     ymm5, ymm5, 14          ; ymm5=(15 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
-    vperm2i128  ymm8, ymm9, ymm6, 0x20
-    vpalignr    ymm6, ymm6, ymm8, 14    ; ymm6=(-- 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
+    vperm2i128  ymm6, ymm8, ymm3, 0x20
+    vpalignr    ymm6, ymm3, ymm6, 14    ; ymm6=(-- 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
 
     vpor        ymm0, ymm0, ymm4        ; ymm0=( 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16)
     vpor        ymm5, ymm5, ymm6        ; ymm5=(15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
 
-    vmovdqa     ymm1, ymm7
-    vmovdqa     ymm2, ymm3
-    vperm2i128  ymm8, ymm9, ymm1, 0x20
-    vpalignr    ymm1, ymm1, ymm8, 14    ; ymm1=(--  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
-    vperm2i128  ymm8, ymm9, ymm2, 0x03
-    vpalignr    ymm2, ymm8, ymm2, 2     ; ymm2=(17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 --)
-    vmovdqa     ymm4, ymm3
-    vperm2i128  ymm4, ymm9, ymm4, 0x03
+    vperm2i128  ymm2, ymm8, ymm3, 0x03
+    vpalignr    ymm2, ymm2, ymm3, 2     ; ymm2=(17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 --)
+    vperm2i128  ymm4, ymm8, ymm3, 0x03
     vpsrldq     ymm4, ymm4, 14          ; ymm4=(31 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
+    vperm2i128  ymm1, ymm8, ymm7, 0x20
+    vpalignr    ymm1, ymm7, ymm1, 14    ; ymm1=(--  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
 
     vpor        ymm1, ymm1, YMMWORD [wk(0)]  ; ymm1=(-1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
     vpor        ymm2, ymm2, YMMWORD [wk(2)]  ; ymm2=(17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32)
@@ -431,35 +422,28 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
 
     ; -- process the lower row
 
-    vmovdqu     ymm6, YMMWORD [rdi+0*SIZEOF_YMMWORD]
-    vmovdqu     ymm4, YMMWORD [rdi+1*SIZEOF_YMMWORD]
+    vmovdqu     ymm6, YMMWORD [rdi+0*SIZEOF_YMMWORD]  ; ymm6=Int1L=( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
+    vmovdqu     ymm4, YMMWORD [rdi+1*SIZEOF_YMMWORD]  ; ymm4=Int1H=(16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 
-    vmovdqa     ymm7, ymm6              ; ymm6=Int1L=( 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
-    vmovdqa     ymm3, ymm4              ; ymm4=Int1H=(16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
-    vperm2i128  ymm8, ymm9, ymm7, 0x03
-    vpalignr    ymm7, ymm8, ymm7, 2     ; ymm7=( 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 --)
-    vperm2i128  ymm3, ymm9, ymm3, 0x20
+    vperm2i128  ymm7, ymm8, ymm6, 0x03
+    vpalignr    ymm7, ymm7, ymm6, 2     ; ymm7=( 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 --)
+    vperm2i128  ymm3, ymm8, ymm4, 0x20
     vpslldq     ymm3, ymm3, 14          ; ymm3=(-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 16)
 
-    vmovdqa     ymm0, ymm6
-    vmovdqa     ymm2, ymm4
-    vperm2i128  ymm0, ymm9, ymm0, 0x03
+    vperm2i128  ymm0, ymm8, ymm6, 0x03
     vpsrldq     ymm0, ymm0, 14          ; ymm0=(15 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
-    vperm2i128  ymm8, ymm9, ymm2, 0x20
-    vpalignr    ymm2, ymm2, ymm8, 14    ; ymm2=(-- 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
+    vperm2i128  ymm2, ymm8, ymm4, 0x20
+    vpalignr    ymm2, ymm4, ymm2, 14    ; ymm2=(-- 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
 
     vpor        ymm7, ymm7, ymm3        ; ymm7=( 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16)
     vpor        ymm0, ymm0, ymm2        ; ymm0=(15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30)
 
-    vmovdqa     ymm1, ymm6
-    vmovdqa     ymm5, ymm4
-    vperm2i128  ymm8, ymm9, ymm1, 0x20
-    vpalignr    ymm1, ymm1, ymm8, 14    ; ymm1=(--  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
-    vperm2i128  ymm8, ymm9, ymm5, 0x03
-    vpalignr    ymm5, ymm8, ymm5, 2     ; ymm5=(17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 --)
-    vmovdqa     ymm3, ymm4
-    vperm2i128  ymm3, ymm9, ymm3, 0x03
+    vperm2i128  ymm5, ymm8, ymm4, 0x03
+    vpalignr    ymm5, ymm5, ymm4, 2     ; ymm5=(17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 --)
+    vperm2i128  ymm3, ymm8, ymm4, 0x03
     vpsrldq     ymm3, ymm3, 14          ; ymm3=(31 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --)
+    vperm2i128  ymm1, ymm8, ymm6, 0x20
+    vpalignr    ymm1, ymm6, ymm1, 14    ; ymm1=(--  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
 
     vpor        ymm1, ymm1, YMMWORD [wk(1)]  ; ymm1=(-1  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14)
     vpor        ymm5, ymm5, YMMWORD [wk(3)]  ; ymm5=(17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32)
@@ -514,7 +498,7 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
 .return:
     pop         rbx
     uncollect_args 4
-    pop_xmm     4
+    pop_xmm     3
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp
     pop         rbp

@@ -565,6 +565,7 @@ EXTN(jsimd_rgb_ycc_convert_avx2):
     jg          near .rowloop
 
 .return:
+    vzeroupper
     pop         edi
     pop         esi
 ;   pop         edx                     ; need not be preserved

@@ -186,6 +186,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
     jg          near .rowloop
 
 .return:
+    vzeroupper
     uncollect_args 4
     pop_xmm     3
     pop         rbp
@@ -497,6 +498,7 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
 
 .return:
     pop         rbx
+    vzeroupper
     uncollect_args 4
     pop_xmm     3
     mov         rsp, rbp                ; rsp <- aligned rbp
@@ -590,6 +592,7 @@ EXTN(jsimd_h2v1_upsample_avx2):
     jg          short .rowloop
 
 .return:
+    vzeroupper
     uncollect_args 4
     pop         rbp
     ret
@@ -688,6 +691,7 @@ EXTN(jsimd_h2v2_upsample_avx2):
 
 .return:
     pop         rbx
+    vzeroupper
     uncollect_args 4
     pop         rbp
     ret

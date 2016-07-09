@@ -479,6 +479,7 @@ EXTN(jsimd_h2v1_merged_upsample_avx2):
 
 .return:
     pop         rbx
+    vzeroupper
     uncollect_args 4
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp

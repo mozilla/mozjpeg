@@ -428,6 +428,7 @@ EXTN(jsimd_rgb_gray_convert_avx2):
 
 .return:
     pop         rbx
+    vzeroupper
     uncollect_args 5
     mov         rsp, rbp                ; rsp <- aligned rbp
     pop         rsp                     ; rsp <- original rbp

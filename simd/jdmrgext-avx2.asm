@@ -493,6 +493,7 @@ EXTN(jsimd_h2v1_merged_upsample_avx2):
     sfence                              ; flush the write buffer
 
 .return:
+    vzeroupper
     pop         edi
     pop         esi
 ;   pop         edx                     ; need not be preserved

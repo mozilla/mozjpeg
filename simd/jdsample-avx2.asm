@@ -193,6 +193,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
     jg          near .rowloop
 
 .return:
+    vzeroupper
     pop         edi
     pop         esi
 ;   pop         edx                     ; need not be preserved
@@ -540,6 +541,7 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     jg          near .rowloop
 
 .return:
+    vzeroupper
     pop         edi
     pop         esi
 ;   pop         edx                     ; need not be preserved
@@ -642,6 +644,7 @@ EXTN(jsimd_h2v1_upsample_avx2):
     jg          short .rowloop
 
 .return:
+    vzeroupper
     pop         edi
     pop         esi
 ;   pop         edx                     ; need not be preserved
@@ -748,6 +751,7 @@ EXTN(jsimd_h2v2_upsample_avx2):
     jg          near .rowloop
 
 .return:
+    vzeroupper
     pop         edi
     pop         esi
 ;   pop         edx                     ; need not be preserved

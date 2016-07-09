@@ -177,6 +177,7 @@ EXTN(jsimd_h2v1_downsample_avx2):
     jg          near .rowloop
 
 .return:
+    vzeroupper
     uncollect_args 6
     pop         rbp
     ret
@@ -355,6 +356,7 @@ EXTN(jsimd_h2v2_downsample_avx2):
     jg          near .rowloop
 
 .return:
+    vzeroupper
     uncollect_args 6
     pop         rbp
     ret

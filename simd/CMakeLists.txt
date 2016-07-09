@@ -36,7 +36,7 @@ else()
     jdcolor-sse2 jdmerge-sse2 jdsample-sse2 jfdctfst-sse2 jfdctint-sse2
     jidctflt-sse2 jidctfst-sse2 jidctint-sse2 jidctred-sse2 jquantf-sse2
     jquanti-sse2 jccolor-avx2 jcgray-avx2 jcsample-avx2 jdcolor-avx2
-    jdmerge-avx2 jdsample-avx2)
+    jdmerge-avx2 jdsample-avx2 jquanti-avx2)
   message(STATUS "Building i386 SIMD extensions")
 endif()
 

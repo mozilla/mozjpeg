@@ -43,6 +43,11 @@ Clang/LLVM optimizer uses load combining to transfer multiple adjacent 32-bit
 structure members into a single 64-bit register, and this exposed the ABI
 conformance issue.
 
+4. Fancy upsampling is now supported when decompressing JPEG images that use
+4:4:0 (h1v2) chroma subsampling.  These images are generated when losslessly
+rotating or transposing JPEG images that use 4:2:2 (h2v1) chroma subsampling.
+The h1v2 fancy upsampling algorithm is not currently SIMD-accelerated.
+
 
 1.5.0
 =====

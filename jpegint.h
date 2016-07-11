@@ -402,6 +402,12 @@ EXTERN(void) jinit_merged_upsampler (j_decompress_ptr cinfo);
 /* Memory manager initialization */
 EXTERN(void) jinit_memory_mgr (j_common_ptr cinfo);
 
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
+EXTERN(void)
+jpeg_mem_dest_internal (j_compress_ptr cinfo,
+               unsigned char **outbuffer, unsigned long *outsize, int pool_id);
+#endif
+
 /* Utility routines in jutils.c */
 EXTERN(long) jdiv_round_up (long a, long b);
 EXTERN(long) jround_up (long a, long b);

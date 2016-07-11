@@ -1,3 +1,39 @@
+1.5.1
+=====
+
+### Significant changes relative to 1.5.0:
+
+1. Previously, the undocumented `JSIMD_FORCE*` environment variables could be
+used to force-enable a particular SIMD instruction set if multiple instruction
+sets were available on a particular platform.  On x86 platforms, where CPU
+feature detection is bulletproof and multiple SIMD instruction sets are
+available, it makes sense for those environment variables to allow forcing the
+use of an instruction set only if that instruction set is available.  However,
+since the ARM implementations of libjpeg-turbo can only use one SIMD
+instruction set, and since their feature detection code is less bulletproof
+(parsing /proc/cpuinfo), it makes sense for the `JSIMD_FORCENEON` environment
+variable to bypass the feature detection code and really force the use of NEON
+instructions.  A new environment variable (`JSIMD_FORCEDSPR2`) was introduced
+in the MIPS implementation for the same reasons, and the existing
+`JSIMD_FORCENONE` environment variable was extended to that implementation.
+These environment variables provide a workaround for those attempting to test
+ARM and MIPS builds of libjpeg-turbo in QEMU, which passes through
+/proc/cpuinfo from the host system.
+
+2. libjpeg-turbo previously assumed that AltiVec instructions were always
+available on PowerPC platforms, which led to "illegal instruction" errors when
+running on PowerPC chips that lack AltiVec support (such as the older 7xx/G3
+and newer e5500 series.)  libjpeg-turbo now examines /proc/cpuinfo on
+Linux/Android systems and enables AltiVec instructions only if the CPU supports
+them.  It also now provides two environment variables, `JSIMD_FORCEALTIVEC` and
+`JSIMD_FORCENONE`, to force-enable and force-disable AltiVec instructions in
+environments where /proc/cpuinfo is an unreliable means of CPU feature
+detection (such as when running in QEMU.)  On OS X, libjpeg-turbo continues to
+assume that AltiVec support is always available, which means that libjpeg-turbo
+cannot be used with G3 Macs unless you set the environment variable
+`JSIMD_FORCENONE` to `1`.
+
+
 1.5.0
 =====
 

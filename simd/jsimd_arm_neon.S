@@ -1,13 +1,13 @@
 /*
  * ARMv7 NEON optimizations for libjpeg-turbo
  *
- * Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
+ * Copyright (C) 2009-2011, Nokia Corporation and/or its subsidiary(-ies).
+ * All Rights Reserved.
  * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
- * Copyright (C) 2014 Siarhei Siamashka.  All Rights Reserved.
- * Copyright (C) 2014 Linaro Limited.  All Rights Reserved.
- * Copyright (C) 2015 D. R. Commander.  All Rights Reserved.
- * Copyright (C) 2015-2016 Matthieu Darbois.  All Rights Reserved.
+ * Copyright (C) 2014, Siarhei Siamashka.  All Rights Reserved.
+ * Copyright (C) 2014, Linaro Limited.  All Rights Reserved.
+ * Copyright (C) 2015, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2015-2016, Matthieu Darbois.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,7 @@
 .arch armv7a
 .object_arch armv4
 .arm
+.syntax unified
 
 
 #define RESPECT_STRICT_ALIGNMENT 1
@@ -2457,7 +2458,7 @@ asm_function jsimd_h2v1_fancy_upsample_neon
     strb            \TMP, [\BUFFER, #1]!
     cmp             \TMP, #0xff
     /*it eq*/
-    streqb          \ZERO, [\BUFFER, #1]!
+    strbeq          \ZERO, [\BUFFER, #1]!
 .endm
 
 .macro put_bits PUT_BUFFER, PUT_BITS, CODE, SIZE

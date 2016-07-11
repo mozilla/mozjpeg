@@ -6,6 +6,9 @@
 /* libjpeg-turbo version */
 #define LIBJPEG_TURBO_VERSION 0
 
+/* libjpeg-turbo version in integer form */
+#define LIBJPEG_TURBO_VERSION_NUMBER 0
+
 /* Support arithmetic encoding */
 #undef C_ARITH_CODING_SUPPORTED
 

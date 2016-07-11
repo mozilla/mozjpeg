@@ -1,7 +1,7 @@
 /*
  * jpegcomp.h
  *
- * Copyright (C) 2010, D. R. Commander
+ * Copyright (C) 2010, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *

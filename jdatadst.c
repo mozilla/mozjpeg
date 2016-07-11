@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2012 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2013, D. R. Commander.
+ * Copyright (C) 2013, 2016, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -210,14 +210,19 @@ jpeg_stdio_dest (j_compress_ptr cinfo, FILE *outfile)
 
   /* The destination object is made permanent so that multiple JPEG images
    * can be written to the same file without re-executing jpeg_stdio_dest.
-   * This makes it dangerous to use this manager and a different destination
-   * manager serially with the same JPEG object, because their private object
-   * sizes may be different.  Caveat programmer.
    */
   if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   sizeof(my_destination_mgr));
+  } else if (cinfo->dest->init_destination != init_destination) {
+    /* It is unsafe to reuse the existing destination manager unless it was
+     * created by this function.  Otherwise, there is no guarantee that the
+     * opaque structure is the right size.  Note that we could just create a
+     * new structure, but the old structure would not be freed until
+     * jpeg_destroy_compress() was called.
+     */
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
   dest = (my_dest_ptr) cinfo->dest;
@@ -259,6 +264,11 @@ jpeg_mem_dest (j_compress_ptr cinfo,
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   sizeof(my_mem_destination_mgr));
+  } else if (cinfo->dest->init_destination != init_mem_destination) {
+    /* It is unsafe to reuse the existing destination manager unless it was
+     * created by this function.
+     */
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
   dest = (my_mem_dest_ptr) cinfo->dest;

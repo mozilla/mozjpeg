@@ -82,6 +82,16 @@ EXTN(jpeg_simd_cpu_support):
     mov         eax, ebx
     test        eax, 1<<5               ; bit5:AVX2
     jz          short .no_avx2
+
+    ; Check for AVX2 O/S support
+    mov         eax, 1
+    xor         ecx, ecx
+    cpuid
+    test        ecx, 1<<27
+    jz          short .no_avx2          ; O/S does not support XSAVE
+    test        ecx, 1<<28
+    jz          short .no_avx2          ; CPU does not support AVX2
+
     or          edi, JSIMD_AVX2
 .no_avx2:
 

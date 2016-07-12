@@ -48,6 +48,16 @@ EXTN(jpeg_simd_cpu_support):
     or          rdi, JSIMD_SSE
     test        rax, 1<<5               ; bit5:AVX2
     jz          short .return
+
+    ; Check for AVX2 O/S support
+    mov         rax, 1
+    xor         rcx, rcx
+    cpuid
+    test        rcx, 1<<27
+    jz          short .return           ; O/S does not support XSAVE
+    test        rcx, 1<<28
+    jz          short .return           ; CPU does not support AVX2
+
     or          rdi, JSIMD_AVX2
 
 .return:

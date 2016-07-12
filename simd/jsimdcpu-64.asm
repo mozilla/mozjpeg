@@ -20,8 +20,8 @@
 %include "jsimdext.inc"
 
 ; --------------------------------------------------------------------------
-        SECTION SEG_TEXT
-        BITS    64
+    SECTION     SEG_TEXT
+    BITS        64
 ;
 ; Check if the CPU supports SIMD instructions
 ;
@@ -29,34 +29,34 @@
 ; jpeg_simd_cpu_support (void)
 ;
 
-        align   32
-        global  EXTN(jpeg_simd_cpu_support)
+    align       32
+    global      EXTN(jpeg_simd_cpu_support)
 
 EXTN(jpeg_simd_cpu_support):
-        push    rbx
-        push    rdi
+    push        rbx
+    push        rdi
 
-        xor     rdi,rdi                 ; simd support flag
+    xor         rdi, rdi                ; simd support flag
 
-        ; Check for AVX2 instruction support
-        mov     rax, 7
-        xor     rcx,rcx
-        cpuid
-        mov     rax,rbx                 ; rax = Extended feature flags
+    ; Check for AVX2 instruction support
+    mov         rax, 7
+    xor         rcx, rcx
+    cpuid
+    mov         rax, rbx                ; rax = Extended feature flags
 
-        or      rdi, JSIMD_SSE2
-        or      rdi, JSIMD_SSE
-        test    rax, 1<<5               ; bit5:AVX2
-        jz      short .return
-        or      rdi, JSIMD_AVX2
+    or          rdi, JSIMD_SSE2
+    or          rdi, JSIMD_SSE
+    test        rax, 1<<5               ; bit5:AVX2
+    jz          short .return
+    or          rdi, JSIMD_AVX2
 
 .return:
-        mov     rax,rdi
+    mov         rax, rdi
 
-        pop     rdi
-        pop     rbx
-        ret
+    pop         rdi
+    pop         rbx
+    ret
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.
-        align   32
+    align       32

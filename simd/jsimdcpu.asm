@@ -49,13 +49,13 @@ EXTN(jpeg_simd_cpu_support):
     pushfd
     pop         eax
     xor         eax, edx
-    jz          short .return           ; CPUID is not supported
+    jz          near .return            ; CPUID is not supported
 
     ; Check for MMX instruction support
     xor         eax, eax
     cpuid
     test        eax, eax
-    jz          short .return
+    jz          near .return
 
     xor         eax, eax
     inc         eax
@@ -91,6 +91,12 @@ EXTN(jpeg_simd_cpu_support):
     jz          short .no_avx2          ; O/S does not support XSAVE
     test        ecx, 1<<28
     jz          short .no_avx2          ; CPU does not support AVX2
+
+    xor         ecx, ecx
+    xgetbv
+    test        eax, 6                  ; O/S does not manage XMM/YMM state
+                                        ; using XSAVE
+    jz          short .no_avx2
 
     or          edi, JSIMD_AVX2
 .no_avx2:

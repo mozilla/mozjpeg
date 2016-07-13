@@ -58,6 +58,12 @@ EXTN(jpeg_simd_cpu_support):
     test        rcx, 1<<28
     jz          short .return           ; CPU does not support AVX2
 
+    xor         rcx, rcx
+    xgetbv
+    test        rax, 6                  ; O/S does not manage XMM/YMM state
+                                        ; using XSAVE
+    jz          short .return
+
     or          rdi, JSIMD_AVX2
 
 .return:

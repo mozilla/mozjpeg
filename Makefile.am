@@ -11,7 +11,10 @@ endif
 nodist_include_HEADERS = jconfig.h
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = pkgscripts/libjpeg.pc pkgscripts/libturbojpeg.pc
+pkgconfig_DATA = pkgscripts/libjpeg.pc
+if WITH_TURBOJPEG
+pkgconfig_DATA += pkgscripts/libturbojpeg.pc
+endif
 
 HDRS = jchuff.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h jmorecfg.h \
 	jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h \

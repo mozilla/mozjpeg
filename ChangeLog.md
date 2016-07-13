@@ -33,6 +33,16 @@ assume that AltiVec support is always available, which means that libjpeg-turbo
 cannot be used with G3 Macs unless you set the environment variable
 `JSIMD_FORCENONE` to `1`.
 
+3. Fixed an issue whereby 64-bit ARM (AArch64) builds of libjpeg-turbo would
+crash when built with recent releases of the Clang/LLVM compiler.  This was
+caused by an ABI conformance issue in some of libjpeg-turbo's 64-bit NEON SIMD
+routines.  Those routines were incorrectly using 64-bit instructions to
+transfer a 32-bit JDIMENSION argument, whereas the ABI allows the upper
+(unused) 32 bits of a 32-bit argument's register to be undefined.  The new
+Clang/LLVM optimizer uses load combining to transfer multiple adjacent 32-bit
+structure members into a single 64-bit register, and this exposed the ABI
+conformance issue.
+
 
 1.5.0
 =====

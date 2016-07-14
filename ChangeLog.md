@@ -48,6 +48,13 @@ conformance issue.
 rotating or transposing JPEG images that use 4:2:2 (h2v1) chroma subsampling.
 The h1v2 fancy upsampling algorithm is not currently SIMD-accelerated.
 
+5. If merged upsampling isn't SIMD-accelerated but YCbCr-to-RGB conversion is,
+then libjpeg-turbo will now disable merged upsampling when decompressing YCbCr
+JPEG images into RGB or extended RGB output images.  This significantly speeds
+up the decompression of 4:2:0 and 4:2:2 JPEGs on ARM platforms if fancy
+upsampling is not used (for example, if the `-nosmooth` option to djpeg is
+specified.)
+
 
 1.5.0
 =====

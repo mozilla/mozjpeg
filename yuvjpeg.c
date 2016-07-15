@@ -91,8 +91,7 @@ void extend_edge(JSAMPLE *image, int width, int height, unsigned char *yuv,
 
 int main(int argc, char *argv[]) {
   long quality;
-  const char *size;
-  char *x;
+  int matches;
   int luma_width;
   int luma_height;
   int chroma_width;
@@ -131,19 +130,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  size = argv[2];
-  x = strchr(size, 'x');
-  if (!x && x != size && x != (x + strlen(x) - 1)) {
-    fprintf(stderr, "Invalid image size input!\n");
-    return 1;
-  }
-  luma_width = (int)strtol(size, NULL, 10);
-  if (errno != 0) {
-    fprintf(stderr, "Invalid image size input!\n");
-    return 1;
-  }
-  luma_height = (int)strtol(x + 1, NULL, 10);
-  if (errno != 0) {
+  matches = sscanf(argv[2], "%dx%d", &luma_width, &luma_height);
+  if (matches != 2) {
     fprintf(stderr, "Invalid image size input!\n");
     return 1;
   }

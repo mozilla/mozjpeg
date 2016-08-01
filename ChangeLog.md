@@ -55,6 +55,13 @@ up the decompression of 4:2:0 and 4:2:2 JPEGs on ARM platforms if fancy
 upsampling is not used (for example, if the `-nosmooth` option to djpeg is
 specified.)
 
+6. The TurboJPEG API will now decompress 4:2:2 and 4:4:0 JPEG images with
+2x2 luminance sampling factors and 2x1 or 1x2 chrominance sampling factors.
+This is a non-standard way of specifying 2x subsampling (normally 4:2:2 JPEGs
+have 2x1 luminance and 1x1 chrominance sampling factors, and 4:4:0 JPEGs have
+1x2 luminance and 1x1 chrominance sampling factors), but the JPEG specification
+and the libjpeg API both allow it.
+
 
 1.5.0
 =====

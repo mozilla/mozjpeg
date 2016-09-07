@@ -62,6 +62,13 @@ have 2x1 luminance and 1x1 chrominance sampling factors, and 4:4:0 JPEGs have
 1x2 luminance and 1x1 chrominance sampling factors), but the JPEG specification
 and the libjpeg API both allow it.
 
+7. Fixed an unsigned integer overflow in the libjpeg memory manager, detected
+by the Clang undefined behavior sanitizer, that could be triggered by
+attempting to decompress a specially-crafted malformed JPEG image.  This issue
+affected only 32-bit code and did not pose a security threat, but removing the
+warning makes it easier to detect actual security issues, should they arise in
+the future.
+
 
 1.5.0
 =====

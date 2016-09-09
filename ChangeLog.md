@@ -75,6 +75,13 @@ specially-crafted malformed JPEG images.  None of these issues posed a security
 threat, but removing the warnings makes it easier to detect actual security
 issues, should they arise in the future.
 
+9. Fixed an out-of-bounds array reference, introduced by 1.4.90[2] (partial
+image decompression) and detected by the Clang undefined behavior sanitizer,
+that could be triggered by a specially-crafted malformed JPEG image with more
+than four components.  Because the out-of-bounds reference was still within the
+same structure, it was not known to pose a security threat, but removing the
+warning makes it easier to detect actual security issues, should they arise in
+the future.
 
 1.5.0
 =====

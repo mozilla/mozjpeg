@@ -69,6 +69,12 @@ affected only 32-bit code and did not pose a security threat, but removing the
 warning makes it easier to detect actual security issues, should they arise in
 the future.
 
+8. Fixed additional negative left shifts and other issues reported by the GCC
+and Clang undefined behavior sanitizers when attempting to decompress
+specially-crafted malformed JPEG images.  None of these issues posed a security
+threat, but removing the warnings makes it easier to detect actual security
+issues, should they arise in the future.
+
 
 1.5.0
 =====

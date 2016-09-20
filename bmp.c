@@ -108,10 +108,14 @@ static void pixelconvert(unsigned char *srcbuf, int srcpf, int srcbottomup,
 					m=(m-k)/(1.0-k);
 					y=(y-k)/(1.0-k);
 				}
-				if(c>1.0) c=1.0;  if(c<0.) c=0.;
-				if(m>1.0) m=1.0;  if(m<0.) m=0.;
-				if(y>1.0) y=1.0;  if(y<0.) y=0.;
-				if(k>1.0) k=1.0;  if(k<0.) k=0.;
+				if(c>1.0) c=1.0;
+				if(c<0.) c=0.;
+				if(m>1.0) m=1.0;
+				if(m<0.) m=0.;
+				if(y>1.0) y=1.0;
+				if(y<0.) y=0.;
+				if(k>1.0) k=1.0;
+				if(k<0.) k=0.;
 				*dstcolptr++=(unsigned char)(255.0-c*255.0+0.5);
 				*dstcolptr++=(unsigned char)(255.0-m*255.0+0.5);
 				*dstcolptr++=(unsigned char)(255.0-y*255.0+0.5);
@@ -133,9 +137,12 @@ static void pixelconvert(unsigned char *srcbuf, int srcpf, int srcbottomup,
 				double r=c*k/255.;
 				double g=m*k/255.;
 				double b=y*k/255.;
-				if(r>255.0) r=255.0;  if(r<0.) r=0.;
-				if(g>255.0) g=255.0;  if(g<0.) g=0.;
-				if(b>255.0) b=255.0;  if(b<0.) b=0.;
+				if(r>255.0) r=255.0;
+				if(r<0.) r=0.;
+				if(g>255.0) g=255.0;
+				if(g<0.) g=0.;
+				if(b>255.0) b=255.0;
+				if(b<0.) b=0.;
 				dstcolptr[tjRedOffset[dstpf]]=(unsigned char)(r+0.5);
 				dstcolptr[tjGreenOffset[dstpf]]=(unsigned char)(g+0.5);
 				dstcolptr[tjBlueOffset[dstpf]]=(unsigned char)(b+0.5);

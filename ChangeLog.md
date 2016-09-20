@@ -33,6 +33,61 @@ assume that AltiVec support is always available, which means that libjpeg-turbo
 cannot be used with G3 Macs unless you set the environment variable
 `JSIMD_FORCENONE` to `1`.
 
+3. Fixed an issue whereby 64-bit ARM (AArch64) builds of libjpeg-turbo would
+crash when built with recent releases of the Clang/LLVM compiler.  This was
+caused by an ABI conformance issue in some of libjpeg-turbo's 64-bit NEON SIMD
+routines.  Those routines were incorrectly using 64-bit instructions to
+transfer a 32-bit JDIMENSION argument, whereas the ABI allows the upper
+(unused) 32 bits of a 32-bit argument's register to be undefined.  The new
+Clang/LLVM optimizer uses load combining to transfer multiple adjacent 32-bit
+structure members into a single 64-bit register, and this exposed the ABI
+conformance issue.
+
+4. Fancy upsampling is now supported when decompressing JPEG images that use
+4:4:0 (h1v2) chroma subsampling.  These images are generated when losslessly
+rotating or transposing JPEG images that use 4:2:2 (h2v1) chroma subsampling.
+The h1v2 fancy upsampling algorithm is not currently SIMD-accelerated.
+
+5. If merged upsampling isn't SIMD-accelerated but YCbCr-to-RGB conversion is,
+then libjpeg-turbo will now disable merged upsampling when decompressing YCbCr
+JPEG images into RGB or extended RGB output images.  This significantly speeds
+up the decompression of 4:2:0 and 4:2:2 JPEGs on ARM platforms if fancy
+upsampling is not used (for example, if the `-nosmooth` option to djpeg is
+specified.)
+
+6. The TurboJPEG API will now decompress 4:2:2 and 4:4:0 JPEG images with
+2x2 luminance sampling factors and 2x1 or 1x2 chrominance sampling factors.
+This is a non-standard way of specifying 2x subsampling (normally 4:2:2 JPEGs
+have 2x1 luminance and 1x1 chrominance sampling factors, and 4:4:0 JPEGs have
+1x2 luminance and 1x1 chrominance sampling factors), but the JPEG specification
+and the libjpeg API both allow it.
+
+7. Fixed an unsigned integer overflow in the libjpeg memory manager, detected
+by the Clang undefined behavior sanitizer, that could be triggered by
+attempting to decompress a specially-crafted malformed JPEG image.  This issue
+affected only 32-bit code and did not pose a security threat, but removing the
+warning makes it easier to detect actual security issues, should they arise in
+the future.
+
+8. Fixed additional negative left shifts and other issues reported by the GCC
+and Clang undefined behavior sanitizers when attempting to decompress
+specially-crafted malformed JPEG images.  None of these issues posed a security
+threat, but removing the warnings makes it easier to detect actual security
+issues, should they arise in the future.
+
+9. Fixed an out-of-bounds array reference, introduced by 1.4.90[2] (partial
+image decompression) and detected by the Clang undefined behavior sanitizer,
+that could be triggered by a specially-crafted malformed JPEG image with more
+than four components.  Because the out-of-bounds reference was still within the
+same structure, it was not known to pose a security threat, but removing the
+warning makes it easier to detect actual security issues, should they arise in
+the future.
+
+10. Fixed another ABI conformance issue in the 64-bit ARM (AArch64) NEON SIMD
+code.  Some of the routines were incorrectly reading and storing data below the
+stack pointer, which caused segfaults in certain applications under specific
+circumstances.
+
 
 1.5.0
 =====

@@ -83,6 +83,12 @@ same structure, it was not known to pose a security threat, but removing the
 warning makes it easier to detect actual security issues, should they arise in
 the future.
 
+10. Fixed another ABI conformance issue in the 64-bit ARM (AArch64) NEON SIMD
+code.  Some of the routines were incorrectly reading and storing data below the
+stack pointer, which caused segfaults in certain applications under specific
+circumstances.
+
+
 1.5.0
 =====
 

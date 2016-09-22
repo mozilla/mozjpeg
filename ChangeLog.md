@@ -1,3 +1,12 @@
+1.5.2
+=====
+
+### Significant changes relative to 1.5.1:
+
+1. Fixed a regression introduced by 1.5.1[7] that prevented libjpeg-turbo from
+building with Android NDK platforms prior to android-21 (5.0).
+
+
 1.5.1
 =====
 

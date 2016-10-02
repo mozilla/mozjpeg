@@ -1,0 +1,104 @@
+language: c
+
+matrix:
+  include:
+    - os: linux
+      env: BUILD_OFFICIAL=1
+      sudo: required
+      services:
+        - docker
+    - os: osx
+      env: BUILD_OFFICIAL=1
+      osx_image: xcode7.2
+    - os: linux
+      compiler: clang
+      env:
+        CFLAGS="-O1 -g -fsanitize=address -fno-omit-frame-pointer"
+        CONFIGURE_FLAGS="--disable-shared"
+        ASAN_OPTIONS="detect_leaks=1 symbolize=1"
+      addons:
+        apt:
+          packages:
+            - nasm
+    - os: linux
+      compiler: gcc
+      env: CONFIGURE_FLAGS="--with-12bit"
+    - os: linux
+      compiler: gcc
+      env: CONFIGURE_FLAGS="--with-jpeg8"
+      addons:
+        apt:
+          packages:
+            - nasm
+    - os: linux
+      compiler: gcc
+      env: CONFIGURE_FLAGS="--without-simd"
+
+addons:
+  ssh_known_hosts: shell.sourceforge.net
+
+before_install:
+  - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
+      if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+        docker pull dcommander/buildljt;
+      fi &&
+      git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git ~/src/buildscripts &&
+      openssl aes-256-cbc -K $encrypted_b2c91331d5bb_key -iv $encrypted_b2c91331d5bb_iv -in ci/deploy_ljt.enc -out ~/.ssh/id_rsa -d &&
+      chmod 600 ~/.ssh/id_rsa;
+    fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      brew install nasm homebrew/versions/gcc5 md5sha1sum Caskroom/versions/java6 &&
+      git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
+      ln -fs /Applications/Xcode.app /Applications/Xcode72.app;
+    fi
+
+script:
+  - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
+      mkdir -p ~/src/ljt.nightly &&
+      if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -t dcommander/buildljt:latest bash -c "~/src/buildscripts/buildljt -v" &&
+        sudo chown -R travis:travis ~/src/ljt.nightly;
+      else
+        PATH=$PATH:~/src/gas-preprocessor ~/src/buildscripts/buildljt -v;
+      fi;
+    fi
+  - if [ "${BUILD_OFFICIAL:-}" == "" ]; then
+      autoreconf -fiv &&
+      mkdir build &&
+      pushd build &&
+      ../configure ${CONFIGURE_FLAGS} &&
+      make -j &&
+      if [[ "${CONFIGURE_FLAGS}" =~ "with-12bit" ||
+            "${CONFIGURE_FLAGS}" =~ "without-simd" ]]; then
+        make test FLOATTEST=32bit;
+      else
+        make test FLOATTEST=sse &&
+        JSIMD_FORCENONE=1 make test FLOATTEST=32bit;
+      fi &&
+      popd;
+    fi
+
+after_failure:
+  - if [ "${BUILD_OFFICIAL:-}" == "" ]; then
+      if [ -f $TRAVIS_BUILD_DIR/build/config.log ]; then
+        cat $TRAVIS_BUILD_DIR/build/config.log;
+      fi
+    fi
+
+before_deploy:
+  - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
+      eval "$(ssh-agent -s)" &&
+      ssh-add;
+    fi
+
+deploy:
+  provider: script
+  on:
+    branch: master
+  on:
+    branch: dev
+  script:
+    if [ "${BUILD_OFFICIAL:-}" != "" ]; then
+      mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/ &&
+      ~/src/buildscripts/uploadljt dcommander $TRAVIS_BRANCH.$TRAVIS_OS_NAME;
+    fi

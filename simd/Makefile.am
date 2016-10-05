@@ -5,9 +5,13 @@ BUILT_SOURCES = jsimdcfg.inc
 EXTRA_DIST = nasm_lt.sh CMakeLists.txt \
 	jccolext-mmx.asm   jcgryext-mmx.asm   jdcolext-mmx.asm   jdmrgext-mmx.asm \
 	jccolext-sse2.asm  jcgryext-sse2.asm  jdcolext-sse2.asm  jdmrgext-sse2.asm \
+	jccolext-avx2.asm  jcgryext-avx2.asm  jdcolext-avx2.asm  jdmrgext-avx2.asm \
 	jccolext-sse2-64.asm  jcgryext-sse2-64.asm  jdcolext-sse2-64.asm \
-	jdmrgext-sse2-64.asm  jccolext-altivec.c    jcgryext-altivec.c \
-	jdcolext-altivec.c    jdmrgext-altivec.c
+	jdmrgext-sse2-64.asm \
+	jccolext-avx2-64.asm  jcgryext-avx2-64.asm  jdcolext-avx2-64.asm \
+	jdmrgext-avx2-64.asm \
+	jccolext-altivec.c    jcgryext-altivec.c    jdcolext-altivec.c \
+	jdmrgext-altivec.c
 
 if SIMD_X86_64
 

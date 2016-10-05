@@ -56,10 +56,10 @@ script:
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       mkdir -p ~/src/ljt.nightly &&
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -t dcommander/buildljt:latest bash -c "~/src/buildscripts/buildljt -v" &&
+        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -t dcommander/buildljt:latest bash -c "~/src/buildscripts/buildljt -r https://github.com/$TRAVIS_REPO_SLUG.git $TRAVIS_BRANCH -v" &&
         sudo chown -R travis:travis ~/src/ljt.nightly;
       else
-        PATH=$PATH:~/src/gas-preprocessor ~/src/buildscripts/buildljt -v;
+        PATH=$PATH:~/src/gas-preprocessor ~/src/buildscripts/buildljt -r https://github.com/$TRAVIS_REPO_SLUG.git $TRAVIS_BRANCH -v;
       fi;
     fi
   - if [ "${BUILD_OFFICIAL:-}" == "" ]; then

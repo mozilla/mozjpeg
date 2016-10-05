@@ -202,6 +202,8 @@ MD5_PPM_3x2_FLOAT_SSE = 42876ab9e5c2f76a87d08db5fbd57956
 MD5_JPEG_3x2_FLOAT_PROG_32BIT = a8c17daf77b457725ec929e215b603f8
 MD5_PPM_3x2_FLOAT_32BIT = 42876ab9e5c2f76a87d08db5fbd57956
 MD5_PPM_3x2_FLOAT_64BIT = d6fbc71153b3d8ded484dbc17c7b9cf4
+MD5_JPEG_3x2_FLOAT_PROG_387 = bc6dbbefac2872f6b9d6c4a0ae60c3c0
+MD5_PPM_3x2_FLOAT_387 = bcc5723c61560463ac60f772e742d092
 MD5_JPEG_3x2_IFAST_PROG = 1396cc2b7185cfe943d408c9d305339e
 MD5_PPM_3x2_IFAST = 3975985ef6eeb0a2cdc58daa651ccc00
 MD5_PPM_420M_ISLOW_2_1 = 4ca6be2a6f326ff9eaab63e70a8259c0
@@ -249,6 +251,8 @@ MD5_PPM_3x2_FLOAT_SSE = 1a75f36e5904d6fc3a85a43da9ad89bb
 MD5_JPEG_3x2_FLOAT_PROG_32BIT = 9bca803d2042bd1eb03819e2bf92b3e5
 MD5_PPM_3x2_FLOAT_32BIT = f6bfab038438ed8f5522fbd33595dcdc
 MD5_PPM_3x2_FLOAT_64BIT = 0e917a34193ef976b679a6b069b1be26
+MD5_JPEG_3x2_FLOAT_PROG_387 = 1657664a410e0822c924b54f6f65e6e9
+MD5_PPM_3x2_FLOAT_387 = cb0a1f027f3d2917c902b5640214e025
 MD5_JPEG_3x2_IFAST_PROG = 1ee5d2c1a77f2da495f993c8c7cceca5
 MD5_PPM_3x2_IFAST = fd283664b3b49127984af0a7f118fccd
 MD5_JPEG_420_ISLOW_ARI = e986fb0a637a8d833d96e8a6d6d84ea1
@@ -481,6 +485,9 @@ endif
 #                  x86-64 compilers)
 # FLOATTEST=64bit  validate against the exepected results from the C code
 #                  when running on a 64-bit FPU
+# FLOATTEST=387  validate against the expected results from the C code when
+#                the 387 FPU is being used for floating point math (which is
+#                generally the default with x86 compilers)
 
 # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
 	./cjpeg -sample 3x2 -dct float -prog -outfile testout_3x2_float_prog.jpg $(srcdir)/testimages/testorig.ppm
@@ -488,6 +495,8 @@ endif
 		md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG_SSE) testout_3x2_float_prog.jpg; \
 	elif [ "${FLOATTEST}" = "32bit" -o "${FLOATTEST}" = "64bit" ]; then \
 		md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG_32BIT) testout_3x2_float_prog.jpg; \
+	elif [ "${FLOATTEST}" = "387" ]; then \
+		md5/md5cmp $(MD5_JPEG_3x2_FLOAT_PROG_387) testout_3x2_float_prog.jpg; \
 	fi
 # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
 	./djpeg -dct float -outfile testout_3x2_float.ppm testout_3x2_float_prog.jpg
@@ -497,6 +506,8 @@ endif
 		md5/md5cmp $(MD5_PPM_3x2_FLOAT_32BIT) testout_3x2_float.ppm; \
 	elif [ "${FLOATTEST}" = "64bit" ]; then \
 		md5/md5cmp $(MD5_PPM_3x2_FLOAT_64BIT) testout_3x2_float.ppm; \
+	elif [ "${FLOATTEST}" = "387" ]; then \
+		md5/md5cmp $(MD5_PPM_3x2_FLOAT_387) testout_3x2_float.ppm; \
 	fi
 	rm -f testout_3x2_float.ppm testout_3x2_float_prog.jpg
 

@@ -226,7 +226,7 @@ generally accomplish anything that can't already be accomplished better with
 existing, standard lossless formats.  Therefore, at this time it is our belief
 that there is not sufficient technical justification for software projects to
 upgrade from libjpeg v8 to libjpeg v9, and thus there is not sufficient
-echnical justification for us to emulate the libjpeg v9 ABI.
+technical justification for us to emulate the libjpeg v9 ABI.
 
 In-Memory Source/Destination Managers
 -------------------------------------

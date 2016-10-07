@@ -36,7 +36,7 @@ install:
 
 build_script:
   - cmd: >-
-      bash c:/buildscripts/buildljt -r file://%CD:\=/% -b /c/ljt.nightly -v
+      bash c:/buildscripts/buildljt -r file://%CD:\=/% -b /c/ljt.nightly %APPVEYOR_REPO_BRANCH% -v
 
       move c:\ljt.nightly\files\*.tar.gz .
 

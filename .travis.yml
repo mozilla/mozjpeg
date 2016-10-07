@@ -99,12 +99,9 @@ before_deploy:
 
 deploy:
   provider: script
-  on:
-    branch: master
-  on:
-    branch: dev
   script:
     if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/ &&
       ~/src/buildscripts/uploadljt dcommander $TRAVIS_BRANCH.$TRAVIS_OS_NAME;
     fi
+  all_branches: true

@@ -43,8 +43,14 @@ before_install:
         docker pull dcommander/buildljt;
       fi &&
       git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git ~/src/buildscripts &&
-      openssl aes-256-cbc -K $encrypted_f92e8533f6f1_key -iv $encrypted_f92e8533f6f1_iv -in ci/deploy_ljt.enc -out ~/.ssh/id_rsa -d &&
-      chmod 600 ~/.ssh/id_rsa;
+      openssl aes-256-cbc -K $encrypted_f92e8533f6f1_key -iv $encrypted_f92e8533f6f1_iv -in ci/keys.enc -out ci/keys -d &&
+      tar xf ci/keys &&
+      rm ci/keys &&
+      mv ci/deploy_ljt ~/.ssh/id_rsa &&
+      chmod 600 ~/.ssh/id_rsa &&
+      mv ci/gpgsign ~/src/buildscripts &&
+      gpg --import ci/sign_ljt &&
+      rm ci/sign_ljt;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       brew install nasm homebrew/versions/gcc5 md5sha1sum Caskroom/versions/java6 &&
@@ -59,7 +65,7 @@ script:
         mv .git/shallow .git/shallow.bak;
       fi &&
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -v $TRAVIS_BUILD_DIR:/root/src/libjpeg-turbo -t dcommander/buildljt:latest bash -c "~/src/buildscripts/buildljt -r file:///root/src/libjpeg-turbo $TRAVIS_BRANCH -v" &&
+        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -v $TRAVIS_BUILD_DIR:/root/src/libjpeg-turbo -v $HOME/.gnupg:/root/.gnupg -t dcommander/buildljt:latest bash -c "rpm --import http://pgp.mit.edu/pks/lookup?op=get\&search=0x0575F26BD5B3FDB1 && ~/src/buildscripts/buildljt -r file:///root/src/libjpeg-turbo $TRAVIS_BRANCH -v" &&
         sudo chown -R travis:travis ~/src/ljt.nightly;
       else
         PATH=$PATH:~/src/gas-preprocessor ~/src/buildscripts/buildljt -r file://$TRAVIS_BUILD_DIR $TRAVIS_BRANCH -v;

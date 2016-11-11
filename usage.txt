@@ -233,12 +233,7 @@ factor will visibly blur the image, however.
 
 Switches for wizards:
 
-        -baseline       Force baseline-compatible quantization tables to be
-                        generated.  This clamps quantization values to 8 bits
-                        even at low quality settings.  (This switch is poorly
-                        named, since it does not ensure that the output is
-                        actually baseline JPEG.  For example, you can use
-                        -baseline and -progressive together.)
+        -baseline       Create baseline JPEG file (disable progressive coding)
 
         -qtables file   Use the quantization tables given in the specified
                         text file.

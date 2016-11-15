@@ -866,7 +866,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
 endforeach()
 
-add_custom_target(testclean COMMAND ${MD5CMP} -P
+add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
   ${CMAKE_SOURCE_DIR}/cmakescripts/testclean.cmake)
 
 

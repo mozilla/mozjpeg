@@ -14,34 +14,37 @@ matrix:
       dist: trusty
       compiler: clang
       env:
-        CFLAGS="-O1 -g -fsanitize=address -fno-omit-frame-pointer"
-        CONFIGURE_FLAGS="--disable-shared"
+        CMAKE_BUILD_TYPE=RelWithDebInfo
+        CFLAGS_RELWITHDEBINFO="-O1 -g -fsanitize=address -fno-omit-frame-pointer"
+        CMAKE_FLAGS="-DENABLE_SHARED=0"
         ASAN_OPTIONS="detect_leaks=1 symbolize=1"
       addons:
         apt:
           packages:
             - nasm
     - os: linux
+      dist: trusty
       compiler: gcc
-      env: CONFIGURE_FLAGS="--with-12bit"
+      env: CMAKE_FLAGS="-DWITH_12BIT=1"
     - os: linux
       dist: trusty
       compiler: gcc
-      env: CONFIGURE_FLAGS="--with-jpeg8"
+      env: CMAKE_FLAGS="-DWITH_JPEG8=1"
       addons:
         apt:
           packages:
             - nasm
     - os: linux
+      dist: trusty
       compiler: gcc
-      env: CONFIGURE_FLAGS="--without-simd"
+      env: CMAKE_FLAGS="-DWITH_SIMD=0"
 
 before_install:
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
         docker pull dcommander/buildljt;
       fi &&
-      git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git ~/src/buildscripts &&
+      git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $TRAVIS_BRANCH ~/src/buildscripts &&
       openssl aes-256-cbc -K $encrypted_f92e8533f6f1_key -iv $encrypted_f92e8533f6f1_iv -in ci/keys.enc -out ci/keys -d &&
       tar xf ci/keys &&
       rm ci/keys &&
@@ -74,18 +77,16 @@ script:
       fi
     fi
   - if [ "${BUILD_OFFICIAL:-}" == "" ]; then
-      autoreconf -fiv &&
       mkdir build &&
       pushd build &&
-      ../configure ${CONFIGURE_FLAGS} &&
+      cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE "-DCMAKE_C_FLAGS_RELWITHDEBINFO=$CFLAGS_RELWITHDEBINFO" $CMAKE_FLAGS .. &&
       make -j &&
-      if [[ "${CONFIGURE_FLAGS}" =~ "with-12bit" ||
-            "${CONFIGURE_FLAGS}" =~ "without-simd" ]]; then
-        make test FLOATTEST=32bit;
-      else
-        make test FLOATTEST=sse &&
-        JSIMD_FORCESSE2=1 make test FLOATTEST=sse &&
-        JSIMD_FORCENONE=1 make test FLOATTEST=32bit;
+      make test &&
+      if [[ ! "${CMAKE_FLAGS[0]}" =~ "WITH_12BIT" &&
+            ! "${CMAKE_FLAGS[0]}" =~ "WITH_SIMD" ]]; then
+        JSIMD_FORCESSE2=1 make test &&
+        cmake -DFLOATTEST=32bit .. &&
+        JSIMD_FORCENONE=1 make test;
       fi &&
       popd;
     fi

@@ -10,6 +10,29 @@ and 8-16% when using 32-bit code, and the decompression of RGB images by
 approximately 6-15% when using 64-bit code and 4-12% when using 32-bit code.
 (As tested on a 3 GHz Intel Core i7.  Actual mileage may vary.)
 
+2. Overhauled the build system to use CMake on all platforms, and removed the
+autotools-based build system.  This decision resulted from extensive
+discussions within the libjpeg-turbo community.  libjpeg-turbo traditionally
+used CMake only for Windows builds, but there was an increasing amount of
+demand to extend CMake support to other platforms.  However, because of the
+unique nature of our code base (the need to support different assemblers on
+each platform, the need for Java support, etc.), providing dual build systems
+as other OSS imaging libraries do (including libpng and libtiff) would have
+created a maintenance burden.  The use of CMake greatly simplifies some aspects
+of our build system, owing to CMake's built-in support for various assemblers,
+Java, and unit testing, as well as generally fewer quirks that have to be
+worked around in order to implement our packaging system.  Eliminating
+autotools puts our project slightly at odds with the traditional practices of
+the OSS community, since most "system libraries" tend to be built with
+autotools, but it is believed that the benefits of this move outweigh the
+risks.  In addition to providing a unified build environment, switching to
+CMake allows for the use of various build tools and IDEs that aren't supported
+under autotools, including XCode, Ninja, and Eclipse.  It also eliminates the
+need to install autotools via MacPorts/Homebrew on OS X and allows
+libjpeg-turbo to be configured without the use of a terminal/command prompt.
+Extensive testing was conducted to ensure that all features provided by the
+autotools-based build system are provided by the new build system.
+
 
 1.5.2
 =====

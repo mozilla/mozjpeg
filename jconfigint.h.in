@@ -1,14 +1,18 @@
 /* libjpeg-turbo build number */
-#undef BUILD
+#define BUILD "@BUILD@"
 
 /* How to obtain function inlining. */
-#undef INLINE
+#define INLINE @INLINE@
 
 /* Define to the full name of this package. */
-#undef PACKAGE_NAME
+#define PACKAGE_NAME "@CMAKE_PROJECT_NAME@"
 
 /* Version number of package */
-#undef VERSION
+#define VERSION "@VERSION@"
+
+#ifndef _WIN32
 
 /* The size of `size_t', as computed by sizeof. */
-#undef SIZEOF_SIZE_T
+#define SIZEOF_SIZE_T @SIZE_T@
+
+#endif

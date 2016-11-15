@@ -1,0 +1,43 @@
+#!/bin/sh
+
+set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
+
+TMPDIR=
+SUDO=
+
+onexit()
+{
+	if [ ! "$TMPDIR" = "" ]; then
+		$SUDO rm -rf $TMPDIR
+	fi
+}
+
+uid()
+{
+	id | cut -f2 -d = | cut -f1 -d \(;
+}
+
+PACKAGE_NAME=@PKGNAME@
+VERSION=@VERSION@
+ARCH=@CPU_TYPE@
+OS=@CMAKE_SYSTEM_NAME@
+PREFIX=@CMAKE_INSTALL_PREFIX@
+
+if [ ! `uid` -eq 0 ]; then
+	SUDO=sudo
+fi
+
+umask 022
+rm -f $PACKAGE_NAME-$VERSION-$OS-$ARCH.tar.bz2
+TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
+mkdir -p $TMPDIR/install
+
+make install DESTDIR=$TMPDIR/install
+$SUDO chown -Rh root:root $TMPDIR/install
+tar cf - -C $TMPDIR/install .$PREFIX | bzip2 -c >$PACKAGE_NAME-$VERSION-$OS-$ARCH.tar.bz2
+
+exit

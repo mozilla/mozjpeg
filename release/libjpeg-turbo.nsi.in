@@ -46,13 +46,13 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}turbojpeg.dll"
 !endif
 !ifdef GCC
-	File "/oname=libjpeg-@DLL_VERSION@.dll" "@CMAKE_BINARY_DIR@\sharedlib\libjpeg-*.dll"
+	File "@CMAKE_BINARY_DIR@\libjpeg-@SO_MAJOR_VERSION@.dll"
 !else
-	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpeg@DLL_VERSION@.dll"
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}jpeg@SO_MAJOR_VERSION@.dll"
 !endif
-	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}cjpeg.exe"
-	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}djpeg.exe"
-	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpegtran.exe"
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}cjpeg.exe"
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}djpeg.exe"
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}jpegtran.exe"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}tjbench.exe"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}rdjpgcom.exe"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}wrjpgcom.exe"
@@ -60,17 +60,17 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 !ifdef GCC
 	File "@CMAKE_BINARY_DIR@\libturbojpeg.dll.a"
 	File "@CMAKE_BINARY_DIR@\libturbojpeg.a"
-	File "@CMAKE_BINARY_DIR@\sharedlib\libjpeg.dll.a"
+	File "@CMAKE_BINARY_DIR@\libjpeg.dll.a"
 	File "@CMAKE_BINARY_DIR@\libjpeg.a"
 !else
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}turbojpeg.lib"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}turbojpeg-static.lib"
-	File "@CMAKE_BINARY_DIR@\sharedlib\${BUILDDIR}jpeg.lib"
+	File "@CMAKE_BINARY_DIR@\${BUILDDIR}jpeg.lib"
 	File "@CMAKE_BINARY_DIR@\${BUILDDIR}jpeg-static.lib"
 !endif
 !ifdef JAVA
 	SetOutPath $INSTDIR\classes
-	File "@CMAKE_BINARY_DIR@\java\${BUILDDIR}turbojpeg.jar"
+	File "@CMAKE_BINARY_DIR@\java\turbojpeg.jar"
 !endif
 	SetOutPath $INSTDIR\include
 	File "@CMAKE_BINARY_DIR@\jconfig.h"
@@ -110,7 +110,7 @@ Section "Uninstall"
 	DeleteRegKey HKLM "SOFTWARE\@INST_REG_NAME@ @VERSION@"
 
 !ifdef GCC
-	Delete $INSTDIR\bin\libjpeg-@DLL_VERSION@.dll
+	Delete $INSTDIR\bin\libjpeg-@SO_MAJOR_VERSION@.dll
 	Delete $INSTDIR\bin\libturbojpeg.dll
 	Delete $SYSDIR\libturbojpeg.dll
 	Delete $INSTDIR\lib\libturbojpeg.dll.a"
@@ -118,7 +118,7 @@ Section "Uninstall"
 	Delete $INSTDIR\lib\libjpeg.dll.a"
 	Delete $INSTDIR\lib\libjpeg.a"
 !else
-	Delete $INSTDIR\bin\jpeg@DLL_VERSION@.dll
+	Delete $INSTDIR\bin\jpeg@SO_MAJOR_VERSION@.dll
 	Delete $INSTDIR\bin\turbojpeg.dll
 	Delete $SYSDIR\turbojpeg.dll
 	Delete $INSTDIR\lib\jpeg.lib

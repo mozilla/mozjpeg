@@ -1,35 +1,20 @@
-# Path under which libjpeg-turbo should be installed
-%define _prefix %{__prefix}
-
-# Path under which executables should be installed
-%define _bindir %{__bindir}
-
-# Path under which Java classes and man pages should be installed
-%define _datadir %{__datadir}
-
-# Path under which docs should be installed
-%define _docdir /usr/share/doc/%{name}-%{version}
-
-# Path under which headers should be installed
-%define _includedir %{__includedir}
-
-# _libdir is set to %{_prefix}/%{_lib} by default
-%ifarch x86_64
-%define _lib lib64
-%else
-%if "%{_prefix}" == "/opt/libjpeg-turbo"
-%define _lib lib32
-%endif
-%endif
-
-# Path under which man pages should be installed
-%define _mandir %{__mandir}
+%define _prefix @CMAKE_INSTALL_PREFIX@
+%define _bindir @BINDIR@
+%define _datadir @DATADIR@
+%define _docdir %{_defaultdocdir}/%{name}-%{version}
+%define _includedir @INCLUDEDIR@
+%define _libdir @LIBDIR@
+%define _mandir @MANDIR@
+%define _enable_static @ENABLE_STATIC@
+%define _enable_shared @ENABLE_SHARED@
+%define _with_turbojpeg @WITH_TURBOJPEG@
+%define _with_java @WITH_JAVA@
 
 Summary: A SIMD-accelerated JPEG codec that provides both the libjpeg and TurboJPEG APIs
 Name: @PKGNAME@
 Version: @VERSION@
-Vendor: The libjpeg-turbo Project
-URL: http://www.libjpeg-turbo.org
+Vendor: @PKGVENDOR@
+URL: @PKGURL@
 Group: System Environment/Libraries
 #-->Source0: http://prdownloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-%{version}.tar.gz
 Release: @BUILD@
@@ -37,9 +22,9 @@ License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
 Prereq: /sbin/ldconfig
 %ifarch x86_64
-Provides: %{name} = %{version}-%{release}, @PACKAGE_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
+Provides: %{name} = %{version}-%{release}, @CMAKE_PROJECT_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
 %else
-Provides: %{name} = %{version}-%{release}, @PACKAGE_NAME@ = %{version}-%{release}, libturbojpeg.so
+Provides: %{name} = %{version}-%{release}, @CMAKE_PROJECT_NAME@ = %{version}-%{release}, libturbojpeg.so
 %endif
 
 %description
@@ -65,35 +50,74 @@ of making high-speed JPEG compression/decompression technology available to a
 broader range of users and developers.
 
 #-->%prep
-#-->%setup -q -n libjpeg-turbo-%{version}
+#-->%setup -q -n @CMAKE_PROJECT_NAME@-%{version}
 
 #-->%build
-#-->./configure prefix=%{_prefix} bindir=%{_bindir} datadir=%{_datadir} \
-#-->	docdir=%{_docdir} includedir=%{_includedir} libdir=%{_libdir} \
-#-->	mandir=%{_mandir} JPEG_LIB_VERSION=@JPEG_LIB_VERSION@ \
-#-->	SO_MAJOR_VERSION=@SO_MAJOR_VERSION@ SO_MINOR_VERSION=@SO_MINOR_VERSION@ \
-#-->	--with-pic @RPM_CONFIG_ARGS@
+#-->cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=@CMAKE_BUILD_TYPE@ \
+#-->  -DCMAKE_INSTALL_PREFIX=%{_prefix} \
+#-->  -DCMAKE_POSITION_INDEPENDENT_CODE=@CMAKE_POSITION_INDEPENDENT_CODE@ \
+#-->  -DBINDIR=%{_bindir} -DBUILD=%{release} -DDATADIR=%{_datadir} \
+#-->  -DDOCDIR=%{_docdir} \
+#-->  -DSO_MAJOR_VERSION=@SO_MAJOR_VERSION@ \
+#-->  -DSO_MINOR_VERSION=@SO_MINOR_VERSION@ \
+#-->  -DENABLE_SHARED=@ENABLE_SHARED@ -DENABLE_STATIC=@ENABLE_STATIC@ \
+#-->  -DINCLUDEDIR=%{_includedir} -DJPEG_LIB_VERSION=@JPEG_LIB_VERSION@ \
+#-->  -DLIBDIR=%{_libdir} -DMANDIR=%{_mandir} \
+#-->  -DREQUIRE_SIMD=@REQUIRE_SIMD@ \
+#-->  -DWITH_12BIT=@WITH_12BIT@ -DWITH_ARITH_DEC=@WITH_ARITH_DEC@ \
+#-->  -DWITH_ARITH_ENC=@WITH_ARITH_ENC@ -DWITH_JAVA=@WITH_JAVA@ \
+#-->  -DWITH_JPEG7=@WITH_JPEG7@ -DWITH_JPEG8=@WITH_JPEG8@ \
+#-->  -DWITH_MEM_SRCDST=@WITH_MEM_SRCDST@ -DWITH_SIMD=@WITH_SIMD@ \
+#-->  -DWITH_TURBOJPEG=@WITH_TURBOJPEG@ .
 #-->make DESTDIR=$RPM_BUILD_ROOT
 
 %install
 
 rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT docdir=%{_docdir} exampledir=%{_docdir}
-rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
+make install DESTDIR=$RPM_BUILD_ROOT
 /sbin/ldconfig -n $RPM_BUILD_ROOT%{_libdir}
 
 #-->%if 0
 
-LJT_LIBDIR=%{__libdir}
-if [ ! "$LJT_LIBDIR" = "%{_libdir}" ]; then
-	echo ERROR: libjpeg-turbo must be configured with libdir=%{_prefix}/%{_lib} when generating an in-tree RPM for this architecture.
-	exit 1
+# This is only needed to support in-tree RPM generation via 'make rpm'.  When
+# building from a SRPM, we control where things are installed via CMake
+# variables.
+
+safedirmove ()
+{
+	if [ "$1" = "$2" ]; then
+		return 0
+	fi
+	if [ "$1" = "" -o ! -d "$1" ]; then
+		echo safedirmove: source dir $1 is not valid
+		return 1
+	fi
+	if [ "$2" = "" -o -e "$2" ]; then
+		echo safedirmove: dest dir $2 is not valid
+		return 1
+	fi
+	if [ "$3" = "" -o -e "$3" ]; then
+		echo safedirmove: tmp dir $3 is not valid
+		return 1
+	fi
+	mkdir -p $3
+	mv $1/* $3/
+	rmdir $1
+	mkdir -p $2
+	mv $3/* $2/
+	rmdir $3
+	return 0
+}
+
+LJT_DOCDIR=@DOCDIR@
+if [ ! "$LJT_DOCDIR" = "%{_docdir}" ]; then
+	safedirmove $RPM_BUILD_ROOT/$LJT_DOCDIR $RPM_BUILD_ROOT/%{_docdir} $RPM_BUILD_ROOT/__tmpdoc
 fi
 
 #-->%endif
 
-LJT_DOCDIR=%{__docdir}
-if [ "%{_prefix}" = "/opt/libjpeg-turbo" -a "$LJT_DOCDIR" = "/opt/libjpeg-turbo/doc" ]; then
+LJT_DOCDIR=@DOCDIR@
+if [ "%{_prefix}" = "@DEFAULT_CMAKE_INSTALL_PREFIX@" -a "$LJT_DOCDIR" = "@DEFAULT_CMAKE_INSTALL_PREFIX@/doc" ]; then
 	ln -fs %{_docdir} $RPM_BUILD_ROOT/$LJT_DOCDIR
 fi
 
@@ -109,34 +133,48 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_docdir}
 %doc %{_docdir}/*
 %dir %{_prefix}
-%if "%{_prefix}" == "/opt/libjpeg-turbo" && "%{_docdir}" != "%{_prefix}/doc"
+%if "%{_prefix}" == "@DEFAULT_CMAKE_INSTALL_PREFIX@" && "%{_docdir}" != "%{_prefix}/doc"
  %{_prefix}/doc
 %endif
 %dir %{_bindir}
 %{_bindir}/cjpeg
 %{_bindir}/djpeg
 %{_bindir}/jpegtran
-%{_bindir}/tjbench
+%if "%{_with_turbojpeg}" == "1"
+ %{_bindir}/tjbench
+%endif
 %{_bindir}/rdjpgcom
 %{_bindir}/wrjpgcom
 %dir %{_libdir}
-%{_libdir}/libjpeg.so.@SO_MAJOR_VERSION@.@SO_AGE@.@SO_MINOR_VERSION@
-%{_libdir}/libjpeg.so.@SO_MAJOR_VERSION@
-%{_libdir}/libjpeg.so
-%{_libdir}/libjpeg.a
+%if "%{_enable_shared}" == "1"
+ %{_libdir}/libjpeg.so.@SO_MAJOR_VERSION@.@SO_AGE@.@SO_MINOR_VERSION@
+ %{_libdir}/libjpeg.so.@SO_MAJOR_VERSION@
+ %{_libdir}/libjpeg.so
+%endif
+%if "%{_enable_static}" == "1"
+ %{_libdir}/libjpeg.a
+%endif
 %{_libdir}/pkgconfig
 %{_libdir}/pkgconfig/libjpeg.pc
-%{_libdir}/libturbojpeg.so.0.1.0
-%{_libdir}/libturbojpeg.so.0
-%{_libdir}/libturbojpeg.so
-%{_libdir}/libturbojpeg.a
-%{_libdir}/pkgconfig/libturbojpeg.pc
+%if "%{_with_turbojpeg}" == "1"
+ %if "%{_enable_shared}" == "1" || "%{_with_java}" == "1"
+  %{_libdir}/libturbojpeg.so.@TURBOJPEG_SO_VERSION@
+  %{_libdir}/libturbojpeg.so.@TURBOJPEG_SO_MAJOR_VERSION@
+  %{_libdir}/libturbojpeg.so
+ %endif
+ %if "%{_enable_static}" == "1"
+  %{_libdir}/libturbojpeg.a
+ %endif
+ %{_libdir}/pkgconfig/libturbojpeg.pc
+%endif
 %dir %{_includedir}
 %{_includedir}/jconfig.h
 %{_includedir}/jerror.h
 %{_includedir}/jmorecfg.h
 %{_includedir}/jpeglib.h
-%{_includedir}/turbojpeg.h
+%if "%{_with_turbojpeg}" == "1"
+ %{_includedir}/turbojpeg.h
+%endif
 %dir %{_mandir}
 %dir %{_mandir}/man1
 %{_mandir}/man1/cjpeg.1*
@@ -147,7 +185,8 @@ rm -rf $RPM_BUILD_ROOT
 %if "%{_prefix}" != "%{_datadir}"
  %dir %{_datadir}
 %endif
-@JAVA_RPM_CONTENTS_1@
-@JAVA_RPM_CONTENTS_2@
-
+%if "%{_with_java}" == "1"
+ %dir %{_datadir}/classes
+ %{_datadir}/classes/turbojpeg.jar
+%endif
 %changelog

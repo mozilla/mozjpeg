@@ -79,38 +79,38 @@ libjpeg-turbo from one of the official release tarballs.
 
 This will generate the following files under .libs/:
 
-**libjpeg.a**  
+**libjpeg.a**<br>
 Static link library for the libjpeg API
 
-**libjpeg.so.{version}** (Linux, Unix)  
-**libjpeg.{version}.dylib** (OS X)  
-**cygjpeg-{version}.dll** (Cygwin)  
+**libjpeg.so.{version}** (Linux, Unix)<br>
+**libjpeg.{version}.dylib** (OS X)<br>
+**cygjpeg-{version}.dll** (Cygwin)<br>
 Shared library for the libjpeg API
 
 By default, *{version}* is 62.1.0, 7.1.0, or 8.0.2, depending on whether
 libjpeg v6b (default), v7, or v8 emulation is enabled.  If using Cygwin,
 *{version}* is 62, 7, or 8.
 
-**libjpeg.so** (Linux, Unix)  
-**libjpeg.dylib** (OS X)  
+**libjpeg.so** (Linux, Unix)<br>
+**libjpeg.dylib** (OS X)<br>
 Development symlink for the libjpeg API
 
-**libjpeg.dll.a** (Cygwin)  
+**libjpeg.dll.a** (Cygwin)<br>
 Import library for the libjpeg API
 
-**libturbojpeg.a**  
+**libturbojpeg.a**<br>
 Static link library for the TurboJPEG API
 
-**libturbojpeg.so.0.1.0** (Linux, Unix)  
-**libturbojpeg.0.1.0.dylib** (OS X)  
-**cygturbojpeg-0.dll** (Cygwin)  
+**libturbojpeg.so.0.1.0** (Linux, Unix)<br>
+**libturbojpeg.0.1.0.dylib** (OS X)<br>
+**cygturbojpeg-0.dll** (Cygwin)<br>
 Shared library for the TurboJPEG API
 
-**libturbojpeg.so** (Linux, Unix)  
-**libturbojpeg.dylib** (OS X)  
+**libturbojpeg.so** (Linux, Unix)<br>
+**libturbojpeg.dylib** (OS X)<br>
 Development symlink for the TurboJPEG API
 
-**libturbojpeg.dll.a** (Cygwin)  
+**libturbojpeg.dll.a** (Cygwin)<br>
 Import library for the TurboJPEG API
 
 
@@ -327,7 +327,7 @@ Set the following shell variables for simplicity:
 
     IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
 
-  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*  
+  *ARMv7s (code will run on iPhone 5/iPad 4th Generation and newer)*<br>
   [NOTE: Requires Xcode 4.5 or later]
 
     IOS_CFLAGS="-march=armv7s -mcpu=swift -mtune=swift -mfpu=neon"
@@ -522,22 +522,22 @@ on which version of cl.exe is in the `PATH`.
 
 The following files will be generated under *{build_directory}*:
 
-**jpeg-static.lib**  
+**jpeg-static.lib**<br>
 Static link library for the libjpeg API
 
-**sharedlib/jpeg{version}.dll**  
+**sharedlib/jpeg{version}.dll**<br>
 DLL for the libjpeg API
 
-**sharedlib/jpeg.lib**  
+**sharedlib/jpeg.lib**<br>
 Import library for the libjpeg API
 
-**turbojpeg-static.lib**  
+**turbojpeg-static.lib**<br>
 Static link library for the TurboJPEG API
 
-**turbojpeg.dll**  
+**turbojpeg.dll**<br>
 DLL for the TurboJPEG API
 
-**turbojpeg.lib**  
+**turbojpeg.lib**<br>
 Import library for the TurboJPEG API
 
 *{version}* is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or
@@ -564,22 +564,22 @@ build of libjpeg-turbo.
 
 This will generate the following files under *{build_directory}*:
 
-**{configuration}/jpeg-static.lib**  
+**{configuration}/jpeg-static.lib**<br>
 Static link library for the libjpeg API
 
-**sharedlib/{configuration}/jpeg{version}.dll**  
+**sharedlib/{configuration}/jpeg{version}.dll**<br>
 DLL for the libjpeg API
 
-**sharedlib/{configuration}/jpeg.lib**  
+**sharedlib/{configuration}/jpeg.lib**<br>
 Import library for the libjpeg API
 
-**{configuration}/turbojpeg-static.lib**  
+**{configuration}/turbojpeg-static.lib**<br>
 Static link library for the TurboJPEG API
 
-**{configuration}/turbojpeg.dll**  
+**{configuration}/turbojpeg.dll**<br>
 DLL for the TurboJPEG API
 
-**{configuration}/turbojpeg.lib**  
+**{configuration}/turbojpeg.lib**<br>
 Import library for the TurboJPEG API
 
 *{configuration}* is Debug, Release, RelWithDebInfo, or MinSizeRel, depending
@@ -598,22 +598,22 @@ cross-compiling on a Linux/Unix machine, then see "Build Recipes" below.
 
 This will generate the following files under *{build_directory}*:
 
-**libjpeg.a**  
+**libjpeg.a**<br>
 Static link library for the libjpeg API
 
-**sharedlib/libjpeg-{version}.dll**  
+**sharedlib/libjpeg-{version}.dll**<br>
 DLL for the libjpeg API
 
-**sharedlib/libjpeg.dll.a**  
+**sharedlib/libjpeg.dll.a**<br>
 Import library for the libjpeg API
 
-**libturbojpeg.a**  
+**libturbojpeg.a**<br>
 Static link library for the TurboJPEG API
 
-**libturbojpeg.dll**  
+**libturbojpeg.dll**<br>
 DLL for the TurboJPEG API
 
-**libturbojpeg.dll.a**  
+**libturbojpeg.dll.a**<br>
 Import library for the TurboJPEG API
 
 *{version}* is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or

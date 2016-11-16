@@ -1,3 +1,16 @@
+1.6 pre-beta
+============
+
+### Significant changes relative to 1.5.2:
+
+1. Added AVX2 SIMD implementations of the colorspace conversion, chroma
+downsampling and upsampling, and integer quantization algorithms.  This speeds
+up the compression of RGB images by approximately 10-20% when using 64-bit code
+and 8-16% when using 32-bit code, and the decompression of RGB images by
+approximately 6-15% when using 64-bit code and 4-12% when using 32-bit code.
+(As tested on a 3 GHz Intel Core i7.  Actual mileage may vary.)
+
+
 1.5.2
 =====
 

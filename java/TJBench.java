@@ -35,7 +35,7 @@ import org.libjpegturbo.turbojpeg.*;
 class TJBench {
 
   static int flags = 0, quiet = 0, pf = TJ.PF_BGR, yuvpad = 1, warmup = 1;
-  static boolean compOnly, decompOnly, doTile, doYUV, write;
+  static boolean compOnly, decompOnly, doTile, doYUV, write = true;
 
   static final String[] pixFormatStr = {
     "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY"

@@ -9,6 +9,10 @@ building with Android NDK platforms prior to android-21 (5.0).
 2. Fixed a regression introduced by 1.5.1[1] that prevented the MIPS DSPR2 SIMD
 code in libjpeg-turbo from building.
 
+3. Fixed a regression introduced by 1.5 beta1[11] that prevented the Java
+version of TJBench from outputting any reference images (the `-nowrite` switch
+was accidentally enabled by default.)
+
 
 1.5.1
 =====

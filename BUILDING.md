@@ -87,7 +87,7 @@ Static link library for the libjpeg API
 **cygjpeg-{version}.dll** (Cygwin)<br>
 Shared library for the libjpeg API
 
-By default, *{version}* is 62.1.0, 7.1.0, or 8.0.2, depending on whether
+By default, *{version}* is 62.2.0, 7.2.0, or 8.1.2, depending on whether
 libjpeg v6b (default), v7, or v8 emulation is enabled.  If using Cygwin,
 *{version}* is 62, 7, or 8.
 

@@ -249,8 +249,8 @@ libjpeg-turbo.  This will restore the pre-1.3 behavior, in which
 libjpeg v8 API/ABI.
 
 On Un*x systems, including the in-memory source/destination managers changes
-the dynamic library version from 62.0.0 to 62.1.0 if using libjpeg v6b API/ABI
-emulation and from 7.0.0 to 7.1.0 if using libjpeg v7 API/ABI emulation.
+the dynamic library version from 62.1.0 to 62.2.0 if using libjpeg v6b API/ABI
+emulation and from 7.1.0 to 7.2.0 if using libjpeg v7 API/ABI emulation.
 
 Note that, on most Un*x systems, the dynamic linker will not look for a
 function in a library until that function is actually used.  Thus, if a program

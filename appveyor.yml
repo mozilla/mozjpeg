@@ -8,23 +8,11 @@ install:
 
       7z x c:\installers\nasm-2.10.01-win32.zip -oc:\ > c:\installers\nasm.install.log
 
-      curl -fSL -o c:\installers\i686-4.8.1-release-win32-dwarf-rt_v3-rev2.7z "https://sourceforge.net/projects/mingw-w64/files/Toolchains targetting Win32/Personal Builds/mingw-builds/4.8.1/threads-win32/dwarf/i686-4.8.1-release-win32-dwarf-rt_v3-rev2.7z"
-
-      7z x c:\installers\i686-4.8.1-release-win32-dwarf-rt_v3-rev2.7z -oc:\ > c:\installers\mingw32.install.log
-
-      curl -fSL -o c:\installers\x86_64-4.8.1-release-win32-seh-rt_v3-rev2.7z "https://sourceforge.net/projects/mingw-w64/files/Toolchains targetting Win64/Personal Builds/mingw-builds/4.8.1/threads-win32/seh/x86_64-4.8.1-release-win32-seh-rt_v3-rev2.7z"
-
-      7z x c:\installers\x86_64-4.8.1-release-win32-seh-rt_v3-rev2.7z -oc:\ > c:\installers\mingw64.install.log
-
       set INCLUDE=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\include
 
       set LIB=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib\amd64;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib\x64
 
-      set PATH=c:\nasm-2.10.01;c:\Program Files (x86)\NSIS;c:\mingw32\bin;c:\msys64\usr\bin;c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64;c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\bin\x64;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\bin;%PATH%
-
-      bash -c "echo \"c:/mingw32 /mingw32\" >> /etc/fstab"
-
-      bash -c "echo \"c:/mingw64 /mingw64\" >> /etc/fstab"
+      set PATH=c:\nasm-2.10.01;c:\Program Files (x86)\NSIS;c:\msys64\mingw32\bin;c:\msys64\usr\bin;c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64;c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\bin\x64;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\bin;%PATH%
 
       set MSYSTEM=MINGW32
 

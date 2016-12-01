@@ -9,7 +9,7 @@ matrix:
         - docker
     - os: osx
       env: BUILD_OFFICIAL=1
-      osx_image: xcode7.2
+      osx_image: xcode7.3
     - os: linux
       compiler: clang
       env:
@@ -35,22 +35,22 @@ matrix:
       env: CONFIGURE_FLAGS="--without-simd"
 
 before_install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      brew install nasm homebrew/versions/gcc5 md5sha1sum Caskroom/versions/java6 gpg &&
+      git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
+      ln -fs /Applications/Xcode.app /Applications/Xcode72.app;
+    fi
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
         docker pull dcommander/buildljt;
       fi &&
-      git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git ~/src/buildscripts &&
+      git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $TRAVIS_BRANCH ~/src/buildscripts &&
       openssl aes-256-cbc -K $encrypted_f92e8533f6f1_key -iv $encrypted_f92e8533f6f1_iv -in ci/keys.enc -out ci/keys -d &&
       tar xf ci/keys &&
       rm ci/keys &&
       mv ci/gpgsign ~/src/buildscripts &&
       gpg --import ci/sign_ljt &&
       rm ci/sign_ljt;
-    fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      brew install nasm homebrew/versions/gcc5 md5sha1sum Caskroom/versions/java6 &&
-      git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
-      ln -fs /Applications/Xcode.app /Applications/Xcode72.app;
     fi
 
 script:

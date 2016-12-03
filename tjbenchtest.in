@@ -21,9 +21,9 @@ runme()
 
 EXT=bmp
 IMAGES="vgl_5674_0098.${EXT} vgl_6434_0018a.${EXT} vgl_6548_0026a.${EXT} nightshot_iso_100.${EXT}"
-IMGDIR=@CMAKE_SOURCE_DIR@/testimages
+IMGDIR=@CMAKE_CURRENT_SOURCE_DIR@/testimages
 OUTDIR=`mktemp -d /tmp/__tjbenchtest_output.XXXXXX`
-EXEDIR=.
+EXEDIR=@CMAKE_CURRENT_BINARY_DIR@
 BMPARG=
 NSARG=
 YUVARG=

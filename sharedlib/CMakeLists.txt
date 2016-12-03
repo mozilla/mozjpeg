@@ -5,9 +5,9 @@
 # better yet, provide a friendly way of configuring a Windows target to use the
 # static C library.
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
 
 if(MSVC)
   # Build all configurations against shared C library
@@ -20,7 +20,7 @@ if(MSVC)
 endif()
 
 foreach(src ${JPEG_SOURCES})
-  set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_SOURCE_DIR}/${src})
+  set(JPEG_SRCS ${JPEG_SRCS} ../${src})
 endforeach()
 
 if(WITH_SIMD AND MSVC_IDE)
@@ -30,9 +30,9 @@ endif()
 
 if(WIN32)
   if(WITH_MEM_SRCDST)
-    set(DEFFILE ${CMAKE_SOURCE_DIR}/win/jpeg${SO_MAJOR_VERSION}-memsrcdst.def)
+    set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}-memsrcdst.def)
   else()
-    set(DEFFILE ${CMAKE_SOURCE_DIR}/win/jpeg${SO_MAJOR_VERSION}.def)
+    set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}.def)
   endif()
 endif()
 add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} $<TARGET_OBJECTS:simd>
@@ -45,7 +45,7 @@ if(APPLE)
 endif()
 if(MAPFLAG)
   set_target_properties(jpeg PROPERTIES
-    LINK_FLAGS "${MAPFLAG}${CMAKE_BINARY_DIR}/libjpeg.map")
+    LINK_FLAGS "${MAPFLAG}${CMAKE_CURRENT_BINARY_DIR}/../libjpeg.map")
 endif()
 if(MSVC)
   set_target_properties(jpeg PROPERTIES SUFFIX ${SO_MAJOR_VERSION}.dll)

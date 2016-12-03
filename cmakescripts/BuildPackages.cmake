@@ -38,8 +38,7 @@ message(STATUS "RPM architecture = ${RPMARCH}, DEB architecture = ${DEBARCH}")
 boolean_number(CMAKE_POSITION_INDEPENDENT_CODE)
 
 configure_file(release/makerpm.in pkgscripts/makerpm)
-configure_file(release/${CMAKE_PROJECT_NAME}.spec.in
-  pkgscripts/${CMAKE_PROJECT_NAME}.spec @ONLY)
+configure_file(release/rpm.spec.in pkgscripts/rpm.spec @ONLY)
 
 add_custom_target(rpm sh pkgscripts/makerpm
   SOURCES pkgscripts/makerpm)
@@ -95,16 +94,16 @@ endif()
 
 STRING(REGEX REPLACE "/" "\\\\" INST_DIR ${CMAKE_INSTALL_PREFIX})
 
-configure_file(release/${CMAKE_PROJECT_NAME}.nsi.in ${CMAKE_PROJECT_NAME}.nsi @ONLY)
+configure_file(release/installer.nsi.in installer.nsi @ONLY)
 
 if(WITH_JAVA)
   set(JAVA_DEPEND java)
 endif()
 add_custom_target(installer
-  makensis -nocd ${INST_DEFS} ${CMAKE_PROJECT_NAME}.nsi
+  makensis -nocd ${INST_DEFS} installer.nsi
   DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
     cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
-  SOURCES ${CMAKE_PROJECT_NAME}.nsi)
+  SOURCES installer.nsi)
 
 endif() # WIN32
 
@@ -160,8 +159,8 @@ endif() # APPLE
 
 add_custom_target(dist
   COMMAND git archive --prefix=${CMAKE_PROJECT_NAME}-${VERSION}/ HEAD |
-    gzip > ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${VERSION}.tar.gz
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    gzip > ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${VERSION}.tar.gz
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 configure_file(release/maketarball.in pkgscripts/maketarball)
 

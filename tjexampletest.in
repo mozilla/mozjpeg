@@ -20,10 +20,10 @@ runme()
 }
 
 IMAGES="vgl_5674_0098.bmp vgl_6434_0018a.bmp vgl_6548_0026a.bmp nightshot_iso_100.bmp"
-IMGDIR=@CMAKE_SOURCE_DIR@/testimages
+IMGDIR=@CMAKE_CURRENT_SOURCE_DIR@/testimages
 OUTDIR=__tjexampletest_output
-EXEDIR=.
-JAVA="@Java_JAVA_EXECUTABLE@ -cp java/turbojpeg.jar -Djava.library.path=."
+EXEDIR=@CMAKE_CURRENT_BINARY_DIR@
+JAVA="@Java_JAVA_EXECUTABLE@ -cp $EXEDIR/java/turbojpeg.jar -Djava.library.path=$EXEDIR"
 
 if [ -d $OUTDIR ]; then
 	rm -rf $OUTDIR

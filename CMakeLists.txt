@@ -500,7 +500,7 @@ if(UNIX)
 endif()
 
 # Include directories and compiler definitions
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 ###############################################################################
@@ -561,11 +561,11 @@ if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} $<TARGET_OBJECTS:simd> ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
-    set(TJMAPFILE ${CMAKE_SOURCE_DIR}/turbojpeg-mapfile)
+    set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile)
     if(WITH_JAVA)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
       include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
-      set(TJMAPFILE ${CMAKE_SOURCE_DIR}/turbojpeg-mapfile.jni)
+      set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile.jni)
     endif()
     add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
     if(WIN32)
@@ -809,7 +809,7 @@ if(ENABLE_STATIC)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} static)
 endif()
 
-set(TESTIMAGES ${CMAKE_SOURCE_DIR}/testimages)
+set(TESTIMAGES ${CMAKE_CURRENT_SOURCE_DIR}/testimages)
 set(MD5CMP ${CMAKE_CURRENT_BINARY_DIR}/md5/md5cmp)
 if(CMAKE_CROSSCOMPILING)
   file(RELATIVE_PATH TESTIMAGES ${CMAKE_CURRENT_BINARY_DIR} ${TESTIMAGES})
@@ -1246,7 +1246,7 @@ foreach(libtype ${TEST_LIBTYPES})
 endforeach()
 
 add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
-  ${CMAKE_SOURCE_DIR}/cmakescripts/testclean.cmake)
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmakescripts/testclean.cmake)
 
 if(WITH_TURBOJPEG)
   configure_file(tjbenchtest.in tjbenchtest @ONLY)
@@ -1261,16 +1261,16 @@ if(WITH_TURBOJPEG)
       COMMAND echo ./tjbenchtest.java COMMAND ./tjbenchtest.java
       COMMAND echo ./tjbenchtest.java -yuv COMMAND ./tjbenchtest.java -yuv
       COMMAND echo ./tjexampletest COMMAND ./tjexampletest
-      DEPENDS ${CMAKE_BINARY_DIR}/tjbenchtest
-        ${CMAKE_BINARY_DIR}/tjbenchtest.java
-        ${CMAKE_BINARY_DIR}/tjexampletest)
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
+        ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
+        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
   else()
     add_custom_target(tjtest
       echo ./tjbenchtest COMMAND ./tjbenchtest
       COMMAND echo ./tjbenchtest -alloc COMMAND ./tjbenchtest -alloc
       COMMAND echo ./tjbenchtest -yuv COMMAND ./tjbenchtest -yuv
       COMMAND echo ./tjbenchtest -yuv -alloc COMMAND ./tjbenchtest -yuv -alloc
-      DEPENDS ${CMAKE_BINARY_DIR}/tjbenchtest)
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest)
   endif()
 endif()
 
@@ -1297,7 +1297,8 @@ if(WITH_TURBOJPEG)
         DESTINATION ${BINDIR} RENAME tjbench${EXE})
     endif()
   endif()
-  install(FILES ${CMAKE_SOURCE_DIR}/turbojpeg.h DESTINATION ${INCLUDEDIR})
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg.h
+    DESTINATION ${INCLUDEDIR})
 endif()
 
 if(ENABLE_STATIC)
@@ -1314,28 +1315,30 @@ endif()
 
 install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${BINDIR})
 
-install(FILES ${CMAKE_SOURCE_DIR}/README.ijg ${CMAKE_SOURCE_DIR}/README.md
-  ${CMAKE_SOURCE_DIR}/example.c ${CMAKE_SOURCE_DIR}/libjpeg.txt
-  ${CMAKE_SOURCE_DIR}/structure.txt ${CMAKE_SOURCE_DIR}/usage.txt
-  ${CMAKE_SOURCE_DIR}/wizard.txt ${CMAKE_SOURCE_DIR}/LICENSE.md
-  DESTINATION ${DOCDIR})
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.ijg
+  ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjpeg.txt
+  ${CMAKE_CURRENT_SOURCE_DIR}/structure.txt
+  ${CMAKE_CURRENT_SOURCE_DIR}/usage.txt ${CMAKE_CURRENT_SOURCE_DIR}/wizard.txt
+  ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md DESTINATION ${DOCDIR})
 
 if(UNIX)
-  install(FILES ${CMAKE_SOURCE_DIR}/cjpeg.1 ${CMAKE_SOURCE_DIR}/djpeg.1
-    ${CMAKE_SOURCE_DIR}/jpegtran.1 ${CMAKE_SOURCE_DIR}/rdjpgcom.1
-    ${CMAKE_SOURCE_DIR}/wrjpgcom.1 DESTINATION ${MANDIR}/man1)
-  install(FILES ${CMAKE_BINARY_DIR}/pkgscripts/libjpeg.pc
-    ${CMAKE_BINARY_DIR}/pkgscripts/libturbojpeg.pc
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cjpeg.1
+    ${CMAKE_CURRENT_SOURCE_DIR}/djpeg.1 ${CMAKE_CURRENT_SOURCE_DIR}/jpegtran.1
+    ${CMAKE_CURRENT_SOURCE_DIR}/rdjpgcom.1
+    ${CMAKE_CURRENT_SOURCE_DIR}/wrjpgcom.1 DESTINATION ${MANDIR}/man1)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
+    ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
     DESTINATION ${LIBDIR}/pkgconfig)
 endif()
 
-install(FILES ${CMAKE_BINARY_DIR}/jconfig.h ${CMAKE_SOURCE_DIR}/jerror.h
-  ${CMAKE_SOURCE_DIR}/jmorecfg.h ${CMAKE_SOURCE_DIR}/jpeglib.h
-  DESTINATION ${INCLUDEDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/jpeglib.h DESTINATION ${INCLUDEDIR})
 
 include(cmakescripts/BuildPackages.cmake)
 
-configure_file("${CMAKE_SOURCE_DIR}/cmakescripts/cmake_uninstall.cmake.in"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmakescripts/cmake_uninstall.cmake.in"
   "cmake_uninstall.cmake" IMMEDIATE @ONLY)
 
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P cmake_uninstall.cmake)

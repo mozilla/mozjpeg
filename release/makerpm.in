@@ -25,6 +25,6 @@ TMPDIR=`mktemp -d /tmp/@CMAKE_PROJECT_NAME@-build.XXXXXX`
 mkdir -p $TMPDIR/RPMS
 ln -fs `pwd` $TMPDIR/BUILD
 rpmbuild -bb --define "_blddir $TMPDIR/buildroot" --define "_topdir $TMPDIR" \
-	--target @RPMARCH@ pkgscripts/@CMAKE_PROJECT_NAME@.spec; \
+	--target @RPMARCH@ pkgscripts/rpm.spec; \
 cp $TMPDIR/RPMS/@RPMARCH@/@PKGNAME@-@VERSION@-@BUILD@.@RPMARCH@.rpm \
 	@PKGNAME@-@VERSION@.@RPMARCH@.rpm

@@ -39,10 +39,10 @@ fi
 
 cp $PROJECT-$VERSION.tar.gz $TMPDIR/SOURCES/$PROJECT-$VERSION.tar.gz
 
-cat pkgscripts/$PROJECT.spec | sed s/%{_blddir}/%{_tmppath}/g \
-	| sed s/#--\>//g > $TMPDIR/SPECS/$PROJECT.spec
+cat pkgscripts/rpm.spec | sed s/%{_blddir}/%{_tmppath}/g \
+	| sed s/#--\>//g > $TMPDIR/SPECS/rpm.spec
 
-rpmbuild -bs --define "_topdir $TMPDIR" $TMPDIR/SPECS/$PROJECT.spec
+rpmbuild -bs --define "_topdir $TMPDIR" $TMPDIR/SPECS/rpm.spec
 mv $TMPDIR/SRPMS/$PKGNAME-$VERSION-$BUILD.src.rpm $PKGNAME-$VERSION.src.rpm
 
 exit

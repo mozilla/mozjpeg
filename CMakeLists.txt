@@ -1255,7 +1255,7 @@ if(WITH_TURBOJPEG)
     configure_file(tjexampletest.in tjexampletest @ONLY)
     add_custom_target(tjtest
       echo ./tjbenchtest COMMAND ./tjbenchtest
-      COMMAND echo ./tjbenchtest COMMAND ./tjbenchtest -alloc
+      COMMAND echo ./tjbenchtest -alloc COMMAND ./tjbenchtest -alloc
       COMMAND echo ./tjbenchtest -yuv COMMAND ./tjbenchtest -yuv
       COMMAND echo ./tjbenchtest -yuv -alloc COMMAND ./tjbenchtest -yuv -alloc
       COMMAND echo ./tjbenchtest.java COMMAND ./tjbenchtest.java

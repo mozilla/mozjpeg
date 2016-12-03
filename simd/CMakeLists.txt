@@ -274,11 +274,12 @@ set(SIMD_SOURCES powerpc/jccolor-altivec.c powerpc/jcgray-altivec.c
   powerpc/jdmerge-altivec.c powerpc/jdsample-altivec.c
   powerpc/jfdctfst-altivec.c powerpc/jfdctint-altivec.c
   powerpc/jidctfst-altivec.c powerpc/jidctint-altivec.c
-  powerpc/jquanti-altivec.c powerpc/jsimd.c)
+  powerpc/jquanti-altivec.c)
 
-add_definitions(-maltivec)
+set_source_files_properties(${SIMD_SOURCES} PROPERTIES
+  COMPILE_FLAGS -maltivec)
 
-add_library(simd OBJECT ${SIMD_SOURCES})
+add_library(simd OBJECT ${SIMD_SOURCES} powerpc/jsimd.c)
 
 if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
   set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)

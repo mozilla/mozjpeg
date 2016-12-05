@@ -13,8 +13,8 @@ code in libjpeg-turbo from building.
 version of TJBench from outputting any reference images (the `-nowrite` switch
 was accidentally enabled by default.)
 
-4. libjpeg-turbo should now build and run on AmigaOS 4 (with full AltiVec
-SIMD acceleration.)
+4. libjpeg-turbo should now build and run with full AltiVec SIMD acceleration
+on PowerPC-based AmigaOS 4 and OpenBSD systems.
 
 
 1.5.1

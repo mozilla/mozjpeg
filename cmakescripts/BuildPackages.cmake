@@ -97,7 +97,7 @@ string(REGEX REPLACE "/" "\\\\" INST_DIR ${CMAKE_INSTALL_PREFIX})
 configure_file(release/installer.nsi.in installer.nsi @ONLY)
 
 if(WITH_JAVA)
-  set(JAVA_DEPEND java)
+  set(JAVA_DEPEND turbojpeg-java)
 endif()
 add_custom_target(installer
   makensis -nocd ${INST_DEFS} installer.nsi

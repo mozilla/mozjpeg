@@ -638,10 +638,32 @@ MinGW 64-bit build
 **/opt/libjpeg-turbo**<br>
 Un*x
 
-The `BINDIR`, `DATADIR`, `DOCDIR`, `INCLUDEDIR`, `LIBDIR`, and `MANDIR`
-CMake variables allow a finer degree of control over where specific files in
-the libjpeg-turbo distribution should be installed.
+The default value of `CMAKE_INSTALL_PREFIX` causes the libjpeg-turbo files to
+be installed with a directory structure resembling that of the official
+libjpeg-turbo binary packages.  Changing the value of `CMAKE_INSTALL_PREFIX`
+(for instance, to "/usr/local") causes the libjpeg-turbo files to be installed
+with a directory structure that conforms to GNU standards.
 
+The `CMAKE_INSTALL_BINDIR`, `CMAKE_INSTALL_DATAROOTDIR`,
+`CMAKE_INSTALL_DOCDIR`, `CMAKE_INSTALL_INCLUDEDIR`, `CMAKE_INSTALL_JAVADIR`,
+`CMAKE_INSTALL_LIBDIR`, and `CMAKE_INSTALL_MANDIR` CMake variables allow a
+finer degree of control over where specific files in the libjpeg-turbo
+distribution should be installed.  These directory variables can either be
+specified as absolute paths or as paths relative to `CMAKE_INSTALL_PREFIX` (for
+instance, setting `CMAKE_INSTALL_DOCDIR=doc` would cause the documentation to
+be installed in `${CMAKE_INSTALL_PREFIX}/doc`.)  If `CMAKE_INSTALL_DOCDIR`,
+`CMAKE_INSTALL_JAVADIR`, or `CMAKE_INSTALL_MANDIR` contains the special string
+`<DATAROOTDIR>`, then that string is automatically replaced by the value of
+`CMAKE_INSTALL_DATAROOTDIR`.
+
+NOTE: If setting one of these directory variables to a relative path using the
+CMake command line, you must specify that the variable is of type `PATH`.
+For example:
+
+    cmake -DCMAKE_INSTALL_LIBDIR:PATH=lib
+
+Otherwise, CMake will assume that the path is relative to the build directory
+rather than the install directory.
 
 
 Creating Distribution Packages

@@ -36,19 +36,19 @@ final class TJLoader {
       String os = System.getProperty("os.name").toLowerCase();
       if (os.indexOf("mac") >= 0) {
         try {
-          System.load("@LIBDIR@/libturbojpeg.jnilib");
+          System.load("@CMAKE_INSTALL_FULL_LIBDIR@/libturbojpeg.jnilib");
         } catch (java.lang.UnsatisfiedLinkError e2) {
           System.load("/usr/lib/libturbojpeg.jnilib");
         }
       } else {
         try {
-          System.load("@LIBDIR@/libturbojpeg.so");
+          System.load("@CMAKE_INSTALL_FULL_LIBDIR@/libturbojpeg.so");
         } catch (java.lang.UnsatisfiedLinkError e3) {
-          String libdir = "@LIBDIR@";
-          if (libdir.equals("@DEFAULT_CMAKE_INSTALL_PREFIX@/lib64")) {
-            System.load("@DEFAULT_CMAKE_INSTALL_PREFIX@/lib32/libturbojpeg.so");
-          } else if (libdir.equals("@DEFAULT_CMAKE_INSTALL_PREFIX@/lib32")) {
-            System.load("@DEFAULT_CMAKE_INSTALL_PREFIX@/lib64/libturbojpeg.so");
+          String libdir = "@CMAKE_INSTALL_FULL_LIBDIR@";
+          if (libdir.equals("@CMAKE_INSTALL_DEFAULT_PREFIX@/lib64")) {
+            System.load("@CMAKE_INSTALL_DEFAULT_PREFIX@/lib32/libturbojpeg.so");
+          } else if (libdir.equals("@CMAKE_INSTALL_DEFAULT_PREFIX@/lib32")) {
+            System.load("@CMAKE_INSTALL_DEFAULT_PREFIX@/lib64/libturbojpeg.so");
           } else {
             throw e3;
           }

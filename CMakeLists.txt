@@ -70,72 +70,58 @@ message(STATUS "${BITS}-bit build (${CPU_TYPE})")
 
 if(WIN32)
   if(MSVC)
-    set(DEFAULT_CMAKE_INSTALL_PREFIX "c:/${CMAKE_PROJECT_NAME}")
+    set(CMAKE_INSTALL_DEFAULT_PREFIX "c:/${CMAKE_PROJECT_NAME}")
   else()
-    set(DEFAULT_CMAKE_INSTALL_PREFIX "c:/${CMAKE_PROJECT_NAME}-gcc")
+    set(CMAKE_INSTALL_DEFAULT_PREFIX "c:/${CMAKE_PROJECT_NAME}-gcc")
   endif()
   if(BITS EQUAL 64)
-    set(DEFAULT_CMAKE_INSTALL_PREFIX "${DEFAULT_CMAKE_INSTALL_PREFIX}64")
+    set(CMAKE_INSTALL_DEFAULT_PREFIX "${CMAKE_INSTALL_DEFAULT_PREFIX}64")
   endif()
 else()
-  set(DEFAULT_CMAKE_INSTALL_PREFIX /opt/${CMAKE_PROJECT_NAME})
+  set(CMAKE_INSTALL_DEFAULT_PREFIX /opt/${CMAKE_PROJECT_NAME})
 endif()
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "${DEFAULT_CMAKE_INSTALL_PREFIX}" CACHE PATH
-    "Directory into which to install ${CMAKE_PROJECT_NAME} (default: ${DEFAULT_CMAKE_INSTALL_PREFIX})"
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_DEFAULT_PREFIX}" CACHE PATH
+    "Directory into which to install ${CMAKE_PROJECT_NAME} (default: ${CMAKE_INSTALL_DEFAULT_PREFIX})"
     FORCE)
 endif()
-
-set(DEFAULT_BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
-set(BINDIR ${DEFAULT_BINDIR} CACHE PATH
-  "Directory into which executables and scripts should be installed (default: ${DEFAULT_BINDIR})")
+message(STATUS "CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}")
 
 # When the prefix is /opt/${CMAKE_PROJECT_NAME}, we assume that an "official"
 # build is being created, and thus we install things into specific locations.
-if(CMAKE_INSTALL_PREFIX STREQUAL "${DEFAULT_CMAKE_INSTALL_PREFIX}" OR NOT UNIX)
-  set(DEFAULT_DATADIR ${CMAKE_INSTALL_PREFIX})
-else()
-  set(DEFAULT_DATADIR ${CMAKE_INSTALL_PREFIX}/share)
+
+if(CMAKE_INSTALL_PREFIX STREQUAL "${CMAKE_INSTALL_DEFAULT_PREFIX}" OR NOT UNIX)
+  set(CMAKE_INSTALL_DEFAULT_DATAROOTDIR "")
+  set(CMAKE_INSTALL_DEFAULT_DOCDIR "doc")
+  set(CMAKE_INSTALL_DEFAULT_JAVADIR "classes")
 endif()
-set(DATADIR ${DEFAULT_DATADIR} CACHE PATH
-  "Directory under which Java classes, docs, and man pages should be installed (default: ${DEFAULT_DATADIR})")
-
-if(CMAKE_INSTALL_PREFIX STREQUAL "${DEFAULT_CMAKE_INSTALL_PREFIX}" OR NOT UNIX)
-  set(DEFAULT_DOCDIR ${DATADIR}/doc)
-else()
-  set(DEFAULT_DOCDIR ${DATADIR}/doc/${CMAKE_PROJECT_NAME})
-endif()
-set(DOCDIR ${DEFAULT_DOCDIR} CACHE PATH
-  "Directory into which docs should be installed (default: ${DEFAULT_DOCDIR})")
-
-set(DEFAULT_INCLUDEDIR ${CMAKE_INSTALL_PREFIX}/include)
-set(INCLUDEDIR ${DEFAULT_INCLUDEDIR} CACHE PATH
-  "Directory into which include files should be installed (default: ${DEFAULT_INCLUDEDIR})")
-
-if(CMAKE_INSTALL_PREFIX STREQUAL "${DEFAULT_CMAKE_INSTALL_PREFIX}" AND UNIX AND
-  NOT APPLE)
-  if(BITS EQUAL 64)
-    set(DEFAULT_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib64)
-  else()
-    set(DEFAULT_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib32)
+if(CMAKE_INSTALL_PREFIX STREQUAL "${CMAKE_INSTALL_DEFAULT_PREFIX}" AND UNIX)
+  if(NOT APPLE)
+    if(BITS EQUAL 64)
+      set(CMAKE_INSTALL_DEFAULT_LIBDIR "lib64")
+    else()
+      set(CMAKE_INSTALL_DEFAULT_LIBDIR "lib32")
+    endif()
   endif()
-else()
-  set(DEFAULT_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
+  set(CMAKE_INSTALL_DEFAULT_MANDIR "man")
 endif()
-set(LIBDIR ${DEFAULT_LIBDIR} CACHE PATH
-  "Directory into which libraries should be installed (default: ${DEFAULT_LIBDIR})")
-set(CMAKE_INSTALL_RPATH ${LIBDIR})
 
-foreach(var CMAKE_INSTALL_PREFIX BINDIR DATADIR DOCDIR INCLUDEDIR LIBDIR)
-  message(STATUS "${var} = ${${var}}")
-endforeach()
+include(cmakescripts/GNUInstallDirs.cmake)
 
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+
+set(DIRLIST "BINDIR;DATAROOTDIR;DOCDIR;INCLUDEDIR;LIBDIR")
 if(UNIX)
-  set(DEFAULT_MANDIR ${DATADIR}/man)
-  set(MANDIR ${DEFAULT_MANDIR} CACHE PATH
-    "Directory into which man pages should be installed (default: ${DEFAULT_MANDIR})")
-  message(STATUS "MANDIR = ${MANDIR}")
+  list(APPEND DIRLIST "MANDIR")
 endif()
+foreach(var ${DIRLIST})
+  if(CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_FULL_${var})
+    message(STATUS "CMAKE_INSTALL_${var} = ${CMAKE_INSTALL_${var}}")
+  else()
+    message(STATUS "CMAKE_INSTALL_${var} = ${CMAKE_INSTALL_${var}} (${CMAKE_INSTALL_FULL_${var}})")
+  endif()
+  mark_as_advanced(CLEAR CMAKE_INSTALL_${var})
+endforeach()
 
 
 ###############################################################################
@@ -1280,55 +1266,58 @@ endif()
 if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
     install(TARGETS turbojpeg tjbench
-      ARCHIVE DESTINATION ${LIBDIR}
-      LIBRARY DESTINATION ${LIBDIR}
-      RUNTIME DESTINATION ${BINDIR})
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
   endif()
   if(ENABLE_STATIC)
-    install(TARGETS turbojpeg-static ARCHIVE DESTINATION ${LIBDIR})
+    install(TARGETS turbojpeg-static ARCHIVE
+      DESTINATION ${CMAKE_INSTALL_LIBDIR})
     if(NOT ENABLE_SHARED)
       install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/tjbench-static${EXE}
-        DESTINATION ${BINDIR} RENAME tjbench${EXE})
+        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME tjbench${EXE})
     endif()
   endif()
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg.h
-    DESTINATION ${INCLUDEDIR})
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
 if(ENABLE_STATIC)
-  install(TARGETS jpeg-static ARCHIVE DESTINATION ${LIBDIR})
+  install(TARGETS jpeg-static ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
   if(NOT ENABLE_SHARED)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/cjpeg-static${EXE}
-      DESTINATION ${BINDIR} RENAME cjpeg${EXE})
+      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME cjpeg${EXE})
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/djpeg-static${EXE}
-      DESTINATION ${BINDIR} RENAME djpeg${EXE})
+      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME djpeg${EXE})
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/jpegtran-static${EXE}
-      DESTINATION ${BINDIR} RENAME jpegtran${EXE})
+      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpegtran${EXE})
   endif()
 endif()
 
-install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${BINDIR})
+install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.ijg
   ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.c
   ${CMAKE_CURRENT_SOURCE_DIR}/libjpeg.txt
   ${CMAKE_CURRENT_SOURCE_DIR}/structure.txt
   ${CMAKE_CURRENT_SOURCE_DIR}/usage.txt ${CMAKE_CURRENT_SOURCE_DIR}/wizard.txt
-  ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md DESTINATION ${DOCDIR})
+  ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 if(UNIX)
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cjpeg.1
     ${CMAKE_CURRENT_SOURCE_DIR}/djpeg.1 ${CMAKE_CURRENT_SOURCE_DIR}/jpegtran.1
     ${CMAKE_CURRENT_SOURCE_DIR}/rdjpgcom.1
-    ${CMAKE_CURRENT_SOURCE_DIR}/wrjpgcom.1 DESTINATION ${MANDIR}/man1)
+    ${CMAKE_CURRENT_SOURCE_DIR}/wrjpgcom.1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
     ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
-    DESTINATION ${LIBDIR}/pkgconfig)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 endif()
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jpeglib.h DESTINATION ${INCLUDEDIR})
+  ${CMAKE_CURRENT_SOURCE_DIR}/jpeglib.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(cmakescripts/BuildPackages.cmake)
 

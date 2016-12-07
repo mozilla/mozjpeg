@@ -1,10 +1,11 @@
 %define _prefix @CMAKE_INSTALL_PREFIX@
-%define _bindir @BINDIR@
-%define _datadir @DATADIR@
+%define _bindir @CMAKE_INSTALL_FULL_BINDIR@
+%define _datadir @CMAKE_INSTALL_FULL_DATADIR@
 %define _docdir %{_defaultdocdir}/%{name}-%{version}
-%define _includedir @INCLUDEDIR@
-%define _libdir @LIBDIR@
-%define _mandir @MANDIR@
+%define _includedir @CMAKE_INSTALL_FULL_INCLUDEDIR@
+%define _javadir @CMAKE_INSTALL_FULL_JAVADIR@
+%define _libdir @CMAKE_INSTALL_FULL_LIBDIR@
+%define _mandir @CMAKE_INSTALL_FULL_MANDIR@
 %define _enable_static @ENABLE_STATIC@
 %define _enable_shared @ENABLE_SHARED@
 %define _with_turbojpeg @WITH_TURBOJPEG@
@@ -54,15 +55,20 @@ broader range of users and developers.
 
 #-->%build
 #-->cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=@CMAKE_BUILD_TYPE@ \
+#-->  -DBUILD=%{release} \
+#-->  -DCMAKE_INSTALL_BINDIR=%{_bindir} \
+#-->  -DCMAKE_INSTALL_DATADIR=%{_datadir} \
+#-->  -DCMAKE_INSTALL_DOCDIR=%{_docdir} \
+#-->  -DCMAKE_INSTALL_INCLUDEDIR=%{_includedir} \
+#-->  -DCMAKE_INSTALL_JAVADIR=%{_javadir} \
+#-->  -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
+#-->  -DCMAKE_INSTALL_MANDIR=%{_mandir} \
 #-->  -DCMAKE_INSTALL_PREFIX=%{_prefix} \
 #-->  -DCMAKE_POSITION_INDEPENDENT_CODE=@CMAKE_POSITION_INDEPENDENT_CODE@ \
-#-->  -DBINDIR=%{_bindir} -DBUILD=%{release} -DDATADIR=%{_datadir} \
-#-->  -DDOCDIR=%{_docdir} \
+#-->  -DENABLE_SHARED=@ENABLE_SHARED@ -DENABLE_STATIC=@ENABLE_STATIC@ \
 #-->  -DSO_MAJOR_VERSION=@SO_MAJOR_VERSION@ \
 #-->  -DSO_MINOR_VERSION=@SO_MINOR_VERSION@ \
-#-->  -DENABLE_SHARED=@ENABLE_SHARED@ -DENABLE_STATIC=@ENABLE_STATIC@ \
-#-->  -DINCLUDEDIR=%{_includedir} -DJPEG_LIB_VERSION=@JPEG_LIB_VERSION@ \
-#-->  -DLIBDIR=%{_libdir} -DMANDIR=%{_mandir} \
+#-->  -DJPEG_LIB_VERSION=@JPEG_LIB_VERSION@ \
 #-->  -DREQUIRE_SIMD=@REQUIRE_SIMD@ \
 #-->  -DWITH_12BIT=@WITH_12BIT@ -DWITH_ARITH_DEC=@WITH_ARITH_DEC@ \
 #-->  -DWITH_ARITH_ENC=@WITH_ARITH_ENC@ -DWITH_JAVA=@WITH_JAVA@ \
@@ -109,15 +115,15 @@ safedirmove ()
 	return 0
 }
 
-LJT_DOCDIR=@DOCDIR@
+LJT_DOCDIR=@CMAKE_INSTALL_FULL_DOCDIR@
 if [ ! "$LJT_DOCDIR" = "%{_docdir}" ]; then
 	safedirmove $RPM_BUILD_ROOT/$LJT_DOCDIR $RPM_BUILD_ROOT/%{_docdir} $RPM_BUILD_ROOT/__tmpdoc
 fi
 
 #-->%endif
 
-LJT_DOCDIR=@DOCDIR@
-if [ "%{_prefix}" = "@DEFAULT_CMAKE_INSTALL_PREFIX@" -a "$LJT_DOCDIR" = "@DEFAULT_CMAKE_INSTALL_PREFIX@/doc" ]; then
+LJT_DOCDIR=@CMAKE_INSTALL_FULL_DOCDIR@
+if [ "%{_prefix}" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$LJT_DOCDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/doc" ]; then
 	ln -fs %{_docdir} $RPM_BUILD_ROOT/$LJT_DOCDIR
 fi
 
@@ -133,7 +139,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_docdir}
 %doc %{_docdir}/*
 %dir %{_prefix}
-%if "%{_prefix}" == "@DEFAULT_CMAKE_INSTALL_PREFIX@" && "%{_docdir}" != "%{_prefix}/doc"
+%if "%{_prefix}" == "@CMAKE_INSTALL_DEFAULT_PREFIX@" && "%{_docdir}" != "%{_prefix}/doc"
  %{_prefix}/doc
 %endif
 %dir %{_bindir}
@@ -186,7 +192,7 @@ rm -rf $RPM_BUILD_ROOT
  %dir %{_datadir}
 %endif
 %if "%{_with_java}" == "1"
- %dir %{_datadir}/classes
- %{_datadir}/classes/turbojpeg.jar
+ %dir %{_javadir}
+ %{_javadir}/turbojpeg.jar
 %endif
 %changelog

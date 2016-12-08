@@ -660,7 +660,7 @@ NOTE: If setting one of these directory variables to a relative path using the
 CMake command line, you must specify that the variable is of type `PATH`.
 For example:
 
-    cmake -DCMAKE_INSTALL_LIBDIR:PATH=lib
+    cmake -G"{generator type}" -DCMAKE_INSTALL_LIBDIR:PATH=lib {source_directory}
 
 Otherwise, CMake will assume that the path is relative to the build directory
 rather than the install directory.

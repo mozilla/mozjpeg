@@ -1,6 +1,6 @@
 %define _prefix @CMAKE_INSTALL_PREFIX@
 %define _bindir @CMAKE_INSTALL_FULL_BINDIR@
-%define _datadir @CMAKE_INSTALL_FULL_DATADIR@
+%define _datarootdir @CMAKE_INSTALL_FULL_DATAROOTDIR@
 %define _docdir %{_defaultdocdir}/%{name}-%{version}
 %define _includedir @CMAKE_INSTALL_FULL_INCLUDEDIR@
 %define _javadir @CMAKE_INSTALL_FULL_JAVADIR@
@@ -57,7 +57,7 @@ broader range of users and developers.
 #-->cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=@CMAKE_BUILD_TYPE@ \
 #-->  -DBUILD=%{release} \
 #-->  -DCMAKE_INSTALL_BINDIR=%{_bindir} \
-#-->  -DCMAKE_INSTALL_DATADIR=%{_datadir} \
+#-->  -DCMAKE_INSTALL_DATAROOTDIR=%{_datarootdir} \
 #-->  -DCMAKE_INSTALL_DOCDIR=%{_docdir} \
 #-->  -DCMAKE_INSTALL_INCLUDEDIR=%{_includedir} \
 #-->  -DCMAKE_INSTALL_JAVADIR=%{_javadir} \
@@ -188,8 +188,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/jpegtran.1*
 %{_mandir}/man1/rdjpgcom.1*
 %{_mandir}/man1/wrjpgcom.1*
-%if "%{_prefix}" != "%{_datadir}"
- %dir %{_datadir}
+%if "%{_prefix}" != "%{_datarootdir}"
+ %dir %{_datarootdir}
 %endif
 %if "%{_with_java}" == "1"
  %dir %{_javadir}

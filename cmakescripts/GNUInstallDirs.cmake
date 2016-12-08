@@ -286,7 +286,7 @@ set_dir(DATAROOTDIR
 # not set explicitly.  This auto-updates the defaults as DATAROOTDIR changes.
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_DATADIR)
-  set(CMAKE_INSTALL_DEFAULT_DATADIR "<DATAROOTDIR>")
+  set(CMAKE_INSTALL_DEFAULT_DATADIR "<CMAKE_INSTALL_DATAROOTDIR>")
 endif()
 set_dir(DATADIR
   "The directory under which read-only architecture-independent data files should be installed")
@@ -295,7 +295,7 @@ if(NOT DEFINED CMAKE_INSTALL_DEFAULT_INFODIR)
   if(CMAKE_SYSTEM_NAME MATCHES "^(.*BSD|DragonFly)$")
     set(CMAKE_INSTALL_DEFAULT_INFODIR "info")
   else()
-    set(CMAKE_INSTALL_DEFAULT_INFODIR "<DATAROOTDIR>/info")
+    set(CMAKE_INSTALL_DEFAULT_INFODIR "<CMAKE_INSTALL_DATAROOTDIR>/info")
   endif()
 endif()
 set_dir(INFODIR
@@ -305,44 +305,63 @@ if(NOT DEFINED CMAKE_INSTALL_DEFAULT_MANDIR)
   if(CMAKE_SYSTEM_NAME MATCHES "^(.*BSD|DragonFly)$")
     set(CMAKE_INSTALL_DEFAULT_MANDIR "man")
   else()
-    set(CMAKE_INSTALL_DEFAULT_MANDIR "<DATAROOTDIR>/man")
+    set(CMAKE_INSTALL_DEFAULT_MANDIR "<CMAKE_INSTALL_DATAROOTDIR>/man")
   endif()
 endif()
 set_dir(MANDIR "The directory under which man pages should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_LOCALEDIR)
-  set(CMAKE_INSTALL_DEFAULT_LOCALEDIR "<DATAROOTDIR>/locale")
+  set(CMAKE_INSTALL_DEFAULT_LOCALEDIR "<CMAKE_INSTALL_DATAROOTDIR>/locale")
 endif()
 set_dir(LOCALEDIR
   "The directory under which locale-specific message catalogs should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_DOCDIR)
-  set(CMAKE_INSTALL_DEFAULT_DOCDIR "<DATAROOTDIR>/doc/${PROJECT_NAME}")
+  set(CMAKE_INSTALL_DEFAULT_DOCDIR "<CMAKE_INSTALL_DATAROOTDIR>/doc/${PROJECT_NAME}")
 endif()
 set_dir(DOCDIR
   "The directory into which documentation files (other than info files) should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_JAVADIR)
-  set(CMAKE_INSTALL_DEFAULT_JAVADIR "<DATAROOTDIR>/java")
+  set(CMAKE_INSTALL_DEFAULT_JAVADIR "<CMAKE_INSTALL_DATAROOTDIR>/java")
 endif()
 set_dir(JAVADIR "The directory into which Java classes should be installed")
-
-string(REGEX REPLACE "<DATAROOTDIR>" "${CMAKE_INSTALL_DATAROOTDIR}"
-  CMAKE_INSTALL_DATADIR "${CMAKE_INSTALL_DATADIR}")
-foreach(var INFODIR MANDIR LOCALEDIR DOCDIR JAVADIR)
-  if(NOT CMAKE_INSTALL_DATAROOTDIR)
-    string(REGEX REPLACE "<DATAROOTDIR>/" "${CMAKE_INSTALL_DATAROOTDIR}"
-      CMAKE_INSTALL_${var} "${CMAKE_INSTALL_${var}}")
-  else()
-    string(REGEX REPLACE "<DATAROOTDIR>" "${CMAKE_INSTALL_DATAROOTDIR}"
-      CMAKE_INSTALL_${var} "${CMAKE_INSTALL_${var}}")
-  endif()
-endforeach()
 
 # Save for next run
 set(_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "CMAKE_INSTALL_PREFIX during last run")
 
 #-----------------------------------------------------------------------------
+
+foreach(dir
+    BINDIR
+    SBINDIR
+    LIBEXECDIR
+    SYSCONFDIR
+    SHAREDSTATEDIR
+    LOCALSTATEDIR
+    LIBDIR
+    INCLUDEDIR
+    OLDINCLUDEDIR
+    DATAROOTDIR
+    DATADIR
+    INFODIR
+    LOCALEDIR
+    MANDIR
+    DOCDIR
+    JAVADIR
+    )
+  string(REGEX REPLACE "[<>]" "@" CMAKE_INSTALL_${dir}
+    "${CMAKE_INSTALL_${dir}}")
+  # Handle the specific case of an empty CMAKE_INSTALL_DATAROOTDIR
+  if(NOT CMAKE_INSTALL_DATAROOTDIR AND
+    CMAKE_INSTALL_${dir} MATCHES "\@CMAKE_INSTALL_DATAROOTDIR\@/")
+    string(CONFIGURE "${CMAKE_INSTALL_${dir}}" CMAKE_INSTALL_${dir} @ONLY)
+    string(REGEX REPLACE "^/" "" CMAKE_INSTALL_${dir}
+      "${CMAKE_INSTALL_${dir}}")
+  else()
+    string(CONFIGURE "${CMAKE_INSTALL_${dir}}" CMAKE_INSTALL_${dir} @ONLY)
+  endif()
+endforeach()
 
 mark_as_advanced(
   CMAKE_INSTALL_BINDIR

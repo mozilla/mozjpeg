@@ -641,8 +641,8 @@ Un*x
 The default value of `CMAKE_INSTALL_PREFIX` causes the libjpeg-turbo files to
 be installed with a directory structure resembling that of the official
 libjpeg-turbo binary packages.  Changing the value of `CMAKE_INSTALL_PREFIX`
-(for instance, to "/usr/local") causes the libjpeg-turbo files to be installed
-with a directory structure that conforms to GNU standards.
+(for instance, to **/usr/local**) causes the libjpeg-turbo files to be
+installed with a directory structure that conforms to GNU standards.
 
 The `CMAKE_INSTALL_BINDIR`, `CMAKE_INSTALL_DATAROOTDIR`,
 `CMAKE_INSTALL_DOCDIR`, `CMAKE_INSTALL_INCLUDEDIR`, `CMAKE_INSTALL_JAVADIR`,
@@ -650,11 +650,12 @@ The `CMAKE_INSTALL_BINDIR`, `CMAKE_INSTALL_DATAROOTDIR`,
 finer degree of control over where specific files in the libjpeg-turbo
 distribution should be installed.  These directory variables can either be
 specified as absolute paths or as paths relative to `CMAKE_INSTALL_PREFIX` (for
-instance, setting `CMAKE_INSTALL_DOCDIR=doc` would cause the documentation to
-be installed in `${CMAKE_INSTALL_PREFIX}/doc`.)  If `CMAKE_INSTALL_DOCDIR`,
-`CMAKE_INSTALL_JAVADIR`, or `CMAKE_INSTALL_MANDIR` contains the special string
-`<DATAROOTDIR>`, then that string is automatically replaced by the value of
-`CMAKE_INSTALL_DATAROOTDIR`.
+instance, setting `CMAKE_INSTALL_DOCDIR` to **doc** would cause the
+documentation to be installed in **${CMAKE\_INSTALL\_PREFIX}/doc**.)  If a
+directory variable contains the name of another directory variable in angle
+brackets, then its final value will depend on the final value of that other
+variable.  For instance, the default value of `CMAKE_INSTALL_MANDIR` is
+**\<CMAKE\_INSTALL\_DATAROOTDIR\>/man**.
 
 NOTE: If setting one of these directory variables to a relative path using the
 CMake command line, you must specify that the variable is of type `PATH`.

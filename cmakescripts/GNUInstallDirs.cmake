@@ -162,7 +162,7 @@
 # Installation directories
 #
 
-macro(set_dir var docstring)
+macro(GNUInstallDirs_set_install_dir var docstring)
   # If CMAKE_INSTALL_PREFIX changes and CMAKE_INSTALL_*DIR is still set to the
   # default value, then modify it accordingly.  This presumes that the default
   # value may change based on the prefix.
@@ -171,9 +171,9 @@ macro(set_dir var docstring)
   if(NOT DEFINED CMAKE_INSTALL_${var})
     set(_GNUInstallDirs_CMAKE_INSTALL_DEFAULT_${var} 1 CACHE INTERNAL
       "CMAKE_INSTALL_${var} has default value")
-  elseif(DEFINED _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX AND
-    NOT "${_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX}" STREQUAL
-      "${CMAKE_INSTALL_PREFIX}" AND
+  elseif(DEFINED _GNUInstallDirs_CMAKE_INSTALL_LAST_DEFAULT_${var} AND
+    NOT "${_GNUInstallDirs_CMAKE_INSTALL_LAST_DEFAULT_${var}}" STREQUAL
+      "${CMAKE_INSTALL_DEFAULT_${var}}" AND
     _GNUInstallDirs_CMAKE_INSTALL_DEFAULT_${var} AND
     "${_GNUInstallDirs_CMAKE_INSTALL_LAST_${var}}" STREQUAL
       "${CMAKE_INSTALL_${var}}")
@@ -191,41 +191,45 @@ macro(set_dir var docstring)
   # Save for next run
   set(_GNUInstallDirs_CMAKE_INSTALL_LAST_${var} "${CMAKE_INSTALL_${var}}"
     CACHE INTERNAL "CMAKE_INSTALL_${var} during last run")
+  set(_GNUInstallDirs_CMAKE_INSTALL_LAST_DEFAULT_${var}
+    "${CMAKE_INSTALL_DEFAULT_${var}}" CACHE INTERNAL
+    "CMAKE_INSTALL_DEFAULT_${var} during last run")
 endmacro()
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_BINDIR)
   set(CMAKE_INSTALL_DEFAULT_BINDIR "bin")
 endif()
-set_dir(BINDIR "Directory into which user executables should be installed")
+GNUInstallDirs_set_install_dir(BINDIR
+  "Directory into which user executables should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_SBINDIR)
   set(CMAKE_INSTALL_DEFAULT_SBINDIR "sbin")
 endif()
-set_dir(SBINDIR
+GNUInstallDirs_set_install_dir(SBINDIR
   "Directory into which system admin executables should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_LIBEXECDIR)
   set(CMAKE_INSTALL_DEFAULT_LIBEXECDIR "libexec")
 endif()
-set_dir(LIBEXECDIR
+GNUInstallDirs_set_install_dir(LIBEXECDIR
   "Directory under which executables run by other programs should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_SYSCONFDIR)
   set(CMAKE_INSTALL_DEFAULT_SYSCONFDIR "etc")
 endif()
-set_dir(SYSCONFDIR
+GNUInstallDirs_set_install_dir(SYSCONFDIR
   "Directory into which machine-specific read-only ASCII data and configuration files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_SHAREDSTATEDIR)
   set(CMAKE_INSTALL_DEFAULT_SHAREDSTATEDIR "com")
 endif()
-set_dir(SHAREDSTATEDIR
+GNUInstallDirs_set_install_dir(SHAREDSTATEDIR
   "Directory into which architecture-independent run-time-modifiable data files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_LOCALSTATEDIR)
   set(CMAKE_INSTALL_DEFAULT_LOCALSTATEDIR "var")
 endif()
-set_dir(LOCALSTATEDIR
+GNUInstallDirs_set_install_dir(LOCALSTATEDIR
   "Directory into which machine-specific run-time-modifiable data files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_LIBDIR)
@@ -260,24 +264,25 @@ if(NOT DEFINED CMAKE_INSTALL_DEFAULT_LIBDIR)
     endif()
   endif()
 endif()
-set_dir(LIBDIR
+GNUInstallDirs_set_install_dir(LIBDIR
   "Directory into which object files and object code libraries should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_INCLUDEDIR)
   set(CMAKE_INSTALL_DEFAULT_INCLUDEDIR "include")
 endif()
-set_dir(INCLUDEDIR "Directory into which C header files should be installed")
+GNUInstallDirs_set_install_dir(INCLUDEDIR
+  "Directory into which C header files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_OLDINCLUDEDIR)
   set(CMAKE_INSTALL_DEFAULT_OLDINCLUDEDIR "/usr/include")
 endif()
-set_dir(OLDINCLUDEDIR
+GNUInstallDirs_set_install_dir(OLDINCLUDEDIR
   PATH "Directory into which C header files for non-GCC compilers should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_DATAROOTDIR)
   set(CMAKE_INSTALL_DEFAULT_DATAROOTDIR "share")
 endif()
-set_dir(DATAROOTDIR
+GNUInstallDirs_set_install_dir(DATAROOTDIR
   "The root of the directory tree for read-only architecture-independent data files")
 
 #-----------------------------------------------------------------------------
@@ -288,7 +293,7 @@ set_dir(DATAROOTDIR
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_DATADIR)
   set(CMAKE_INSTALL_DEFAULT_DATADIR "<CMAKE_INSTALL_DATAROOTDIR>")
 endif()
-set_dir(DATADIR
+GNUInstallDirs_set_install_dir(DATADIR
   "The directory under which read-only architecture-independent data files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_INFODIR)
@@ -298,7 +303,7 @@ if(NOT DEFINED CMAKE_INSTALL_DEFAULT_INFODIR)
     set(CMAKE_INSTALL_DEFAULT_INFODIR "<CMAKE_INSTALL_DATAROOTDIR>/info")
   endif()
 endif()
-set_dir(INFODIR
+GNUInstallDirs_set_install_dir(INFODIR
   "The directory into which info documentation files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_MANDIR)
@@ -308,60 +313,22 @@ if(NOT DEFINED CMAKE_INSTALL_DEFAULT_MANDIR)
     set(CMAKE_INSTALL_DEFAULT_MANDIR "<CMAKE_INSTALL_DATAROOTDIR>/man")
   endif()
 endif()
-set_dir(MANDIR "The directory under which man pages should be installed")
+GNUInstallDirs_set_install_dir(MANDIR
+  "The directory under which man pages should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_LOCALEDIR)
   set(CMAKE_INSTALL_DEFAULT_LOCALEDIR "<CMAKE_INSTALL_DATAROOTDIR>/locale")
 endif()
-set_dir(LOCALEDIR
+GNUInstallDirs_set_install_dir(LOCALEDIR
   "The directory under which locale-specific message catalogs should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_DOCDIR)
   set(CMAKE_INSTALL_DEFAULT_DOCDIR "<CMAKE_INSTALL_DATAROOTDIR>/doc/${PROJECT_NAME}")
 endif()
-set_dir(DOCDIR
+GNUInstallDirs_set_install_dir(DOCDIR
   "The directory into which documentation files (other than info files) should be installed")
 
-if(NOT DEFINED CMAKE_INSTALL_DEFAULT_JAVADIR)
-  set(CMAKE_INSTALL_DEFAULT_JAVADIR "<CMAKE_INSTALL_DATAROOTDIR>/java")
-endif()
-set_dir(JAVADIR "The directory into which Java classes should be installed")
-
-# Save for next run
-set(_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "CMAKE_INSTALL_PREFIX during last run")
-
 #-----------------------------------------------------------------------------
-
-foreach(dir
-    BINDIR
-    SBINDIR
-    LIBEXECDIR
-    SYSCONFDIR
-    SHAREDSTATEDIR
-    LOCALSTATEDIR
-    LIBDIR
-    INCLUDEDIR
-    OLDINCLUDEDIR
-    DATAROOTDIR
-    DATADIR
-    INFODIR
-    LOCALEDIR
-    MANDIR
-    DOCDIR
-    JAVADIR
-    )
-  string(REGEX REPLACE "[<>]" "@" CMAKE_INSTALL_${dir}
-    "${CMAKE_INSTALL_${dir}}")
-  # Handle the specific case of an empty CMAKE_INSTALL_DATAROOTDIR
-  if(NOT CMAKE_INSTALL_DATAROOTDIR AND
-    CMAKE_INSTALL_${dir} MATCHES "\@CMAKE_INSTALL_DATAROOTDIR\@/")
-    string(CONFIGURE "${CMAKE_INSTALL_${dir}}" CMAKE_INSTALL_${dir} @ONLY)
-    string(REGEX REPLACE "^/" "" CMAKE_INSTALL_${dir}
-      "${CMAKE_INSTALL_${dir}}")
-  else()
-    string(CONFIGURE "${CMAKE_INSTALL_${dir}}" CMAKE_INSTALL_${dir} @ONLY)
-  endif()
-endforeach()
 
 mark_as_advanced(
   CMAKE_INSTALL_BINDIR
@@ -379,10 +346,18 @@ mark_as_advanced(
   CMAKE_INSTALL_LOCALEDIR
   CMAKE_INSTALL_MANDIR
   CMAKE_INSTALL_DOCDIR
-  CMAKE_INSTALL_JAVADIR
   )
 
 macro(GNUInstallDirs_get_absolute_install_dir absvar var)
+  string(REGEX REPLACE "[<>]" "@" ${var} "${${var}}")
+  # Handle the specific case of an empty CMAKE_INSTALL_DATAROOTDIR
+  if(NOT CMAKE_INSTALL_DATAROOTDIR AND
+    ${var} MATCHES "\@CMAKE_INSTALL_DATAROOTDIR\@/")
+    string(CONFIGURE "${${var}}" ${var} @ONLY)
+    string(REGEX REPLACE "^/" "" ${var} "${${var}}")
+  else()
+    string(CONFIGURE "${${var}}" ${var} @ONLY)
+  endif()
   if(NOT IS_ABSOLUTE "${${var}}")
     # Handle special cases:
     # - CMAKE_INSTALL_PREFIX == /
@@ -436,7 +411,6 @@ foreach(dir
     LOCALEDIR
     MANDIR
     DOCDIR
-    JAVADIR
     )
   GNUInstallDirs_get_absolute_install_dir(CMAKE_INSTALL_FULL_${dir} CMAKE_INSTALL_${dir})
 endforeach()

@@ -107,17 +107,21 @@ include(cmakescripts/GNUInstallDirs.cmake)
 
 set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 
-set(DIRLIST "BINDIR;DATAROOTDIR;DOCDIR;INCLUDEDIR;LIBDIR")
-if(UNIX)
-  list(APPEND DIRLIST "MANDIR")
-endif()
-foreach(var ${DIRLIST})
+macro(report_directory var)
   if(CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_FULL_${var})
     message(STATUS "CMAKE_INSTALL_${var} = ${CMAKE_INSTALL_${var}}")
   else()
     message(STATUS "CMAKE_INSTALL_${var} = ${CMAKE_INSTALL_${var}} (${CMAKE_INSTALL_FULL_${var}})")
   endif()
   mark_as_advanced(CLEAR CMAKE_INSTALL_${var})
+endmacro()
+
+set(DIRLIST "BINDIR;DATAROOTDIR;DOCDIR;INCLUDEDIR;LIBDIR")
+if(UNIX)
+  list(APPEND DIRLIST "MANDIR")
+endif()
+foreach(dir ${DIRLIST})
+  report_directory(${dir})
 endforeach()
 
 

@@ -100,7 +100,7 @@ if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a -h "$PREFIX/doc" ]; then
 	rm $PREFIX/doc 2>&1 || EXITSTATUS=-1
 fi
 rmdir $PREFIX 2>&1 || EXITSTATUS=-1
-rmdir /Library/Documentation/@CMAKE_PROJECT_NAME@ 2>&1 || EXITSTATUS=-1
+rmdir /Library/Documentation/$PACKAGE 2>&1 || EXITSTATUS=-1
 
 if [ -d $RECEIPT ]; then
 	echo Removing package receipt ...

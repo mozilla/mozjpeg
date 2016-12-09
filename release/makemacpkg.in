@@ -100,8 +100,8 @@ make install DESTDIR=$PKGROOT
 
 if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/doc" ]; then
 	mkdir -p $PKGROOT/Library/Documentation
-	safedirmove $PKGROOT$DOCDIR $PKGROOT/Library/Documentation/@CMAKE_PROJECT_NAME@ $TMPDIR/__tmpdoc
-	ln -fs /Library/Documentation/@CMAKE_PROJECT_NAME@ $PKGROOT$DOCDIR
+	safedirmove $PKGROOT$DOCDIR $PKGROOT/Library/Documentation/$PACKAGE_NAME $TMPDIR/__tmpdoc
+	ln -fs /Library/Documentation/$PACKAGE_NAME $PKGROOT$DOCDIR
 fi
 
 if [ $UNIVERSAL = 1 -a "$BUILDDIR32" != "" ]; then

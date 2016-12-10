@@ -49,7 +49,7 @@ usage()
 
 UNIVERSAL=0
 
-PACKAGE_NAME=@PKGNAME@
+PKGNAME=@PKGNAME@
 VERSION=@VERSION@
 BUILD=@BUILD@
 SRCDIR=@CMAKE_CURRENT_SOURCE_DIR@
@@ -87,12 +87,12 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-if [ -f $PACKAGE_NAME-$VERSION.dmg ]; then
-	rm -f $PACKAGE_NAME-$VERSION.dmg
+if [ -f $PKGNAME-$VERSION.dmg ]; then
+	rm -f $PKGNAME-$VERSION.dmg
 fi
 
 umask 022
-TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
+TMPDIR=`mktemp -d /tmp/$PKGNAME-build.XXXXXX`
 PKGROOT=$TMPDIR/pkg/Package_Root
 mkdir -p $PKGROOT
 
@@ -100,8 +100,8 @@ make install DESTDIR=$PKGROOT
 
 if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/doc" ]; then
 	mkdir -p $PKGROOT/Library/Documentation
-	safedirmove $PKGROOT$DOCDIR $PKGROOT/Library/Documentation/$PACKAGE_NAME $TMPDIR/__tmpdoc
-	ln -fs /Library/Documentation/$PACKAGE_NAME $PKGROOT$DOCDIR
+	safedirmove $PKGROOT$DOCDIR $PKGROOT/Library/Documentation/$PKGNAME $TMPDIR/__tmpdoc
+	ln -fs /Library/Documentation/$PKGNAME $PKGROOT$DOCDIR
 fi
 
 if [ $UNIVERSAL = 1 -a "$BUILDDIR32" != "" ]; then
@@ -257,12 +257,12 @@ cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadM
 
 mkdir $TMPDIR/dmg
 pkgbuild --root $PKGROOT --version $VERSION.$BUILD --identifier @PKGID@ \
-	$TMPDIR/pkg/$PACKAGE_NAME.pkg
+	$TMPDIR/pkg/$PKGNAME.pkg
 productbuild --distribution pkgscripts/Distribution.xml \
 	--package-path $TMPDIR/pkg/ --resources $TMPDIR/pkg/ \
-	$TMPDIR/dmg/$PACKAGE_NAME.pkg
-hdiutil create -fs HFS+ -volname $PACKAGE_NAME-$VERSION \
-	-srcfolder "$TMPDIR/dmg" $TMPDIR/$PACKAGE_NAME-$VERSION.dmg
-cp $TMPDIR/$PACKAGE_NAME-$VERSION.dmg .
+	$TMPDIR/dmg/$PKGNAME.pkg
+hdiutil create -fs HFS+ -volname $PKGNAME-$VERSION \
+	-srcfolder "$TMPDIR/dmg" $TMPDIR/$PKGNAME-$VERSION.dmg
+cp $TMPDIR/$PKGNAME-$VERSION.dmg .
 
 exit

@@ -41,7 +41,7 @@ safedirmove ()
 	return 0
 }
 
-PACKAGE_NAME=@PKGNAME@
+PKGNAME=@PKGNAME@
 VERSION=@VERSION@
 BUILD=@BUILD@
 
@@ -50,16 +50,16 @@ DOCDIR=@CMAKE_INSTALL_FULL_DOCDIR@
 LIBDIR=@CMAKE_INSTALL_FULL_LIBDIR@
 
 umask 022
-rm -f $PACKAGE_NAME-$VERSION-$BUILD.tar.bz2
+rm -f $PKGNAME-$VERSION-$BUILD.tar.bz2
 TMPDIR=`mktemp -d /tmp/ljtbuild.XXXXXX`
 __PWD=`pwd`
 make install DESTDIR=$TMPDIR/pkg
 if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/doc" ]; then
-	safedirmove $TMPDIR/pkg$DOCDIR $TMPDIR/pkg/usr/share/doc/$PACKAGE_NAME-$VERSION $TMPDIR/__tmpdoc
-	ln -fs /usr/share/doc/$PACKAGE_NAME-$VERSION $TMPDIR/pkg$DOCDIR
+	safedirmove $TMPDIR/pkg$DOCDIR $TMPDIR/pkg/usr/share/doc/$PKGNAME-$VERSION $TMPDIR/__tmpdoc
+	ln -fs /usr/share/doc/$PKGNAME-$VERSION $TMPDIR/pkg$DOCDIR
 fi
 cd $TMPDIR/pkg
-tar cfj ../$PACKAGE_NAME-$VERSION-$BUILD.tar.bz2 *
+tar cfj ../$PKGNAME-$VERSION-$BUILD.tar.bz2 *
 cd $__PWD
 mv $TMPDIR/*.tar.bz2 .
 

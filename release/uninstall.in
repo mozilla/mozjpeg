@@ -31,15 +31,15 @@ if [ ! "`id -u`" = "0" ]; then
 	exit -1
 fi
 
-PACKAGE=@PKGNAME@
-MACPACKAGE=@PKGID@
-RECEIPT=/Library/Receipts/$PACKAGE.pkg
+PKGNAME=@PKGNAME@
+PKGID=@PKGID@
+RECEIPT=/Library/Receipts/$PKGNAME.pkg
 
 LSBOM=
 if [ -d $RECEIPT ]; then
 	LSBOM='lsbom -s -f -l '$RECEIPT'/Contents/Archive.bom'
 else
-	LSBOM='pkgutil --files '$MACPACKAGE
+	LSBOM='pkgutil --files '$PKGID
 fi
 
 mylsbom()
@@ -100,14 +100,14 @@ if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a -h "$PREFIX/doc" ]; then
 	rm $PREFIX/doc 2>&1 || EXITSTATUS=-1
 fi
 rmdir $PREFIX 2>&1 || EXITSTATUS=-1
-rmdir /Library/Documentation/$PACKAGE 2>&1 || EXITSTATUS=-1
+rmdir /Library/Documentation/$PKGNAME 2>&1 || EXITSTATUS=-1
 
 if [ -d $RECEIPT ]; then
 	echo Removing package receipt ...
 	rm -r $RECEIPT 2>&1 || EXITSTATUS=-1
 else
-	echo Forgetting package $MACPACKAGE ...
-	pkgutil --forget $MACPACKAGE
+	echo Forgetting package $PKGID ...
+	pkgutil --forget $PKGID
 fi
 
 exit $EXITSTATUS

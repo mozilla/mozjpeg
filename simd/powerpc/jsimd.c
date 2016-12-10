@@ -31,6 +31,12 @@
 #include <string.h>
 #include <ctype.h>
 
+#if defined(__OpenBSD__)
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#include <machine/cpu.h>
+#endif
+
 static unsigned int simd_support = ~0;
 
 #if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
@@ -106,6 +112,12 @@ init_simd (void)
   char *env = NULL;
 #if !defined(__ALTIVEC__) && (defined(__linux__) || defined(ANDROID) || defined(__ANDROID__))
   int bufsize = 1024; /* an initial guess for the line buffer size limit */
+#elif defined(__amigaos4__)
+  uint32 altivec = 0;
+#elif defined(__OpenBSD__)
+  int mib[2] = { CTL_MACHDEP, CPU_ALTIVEC };
+  int altivec;
+  size_t len = sizeof(altivec);
 #endif
 
   if (simd_support != ~0U)
@@ -122,9 +134,11 @@ init_simd (void)
       break;
   }
 #elif defined(__amigaos4__)
-  uint32 altivec = 0;
   IExec->GetCPUInfoTags(GCIT_VectorUnit, &altivec, TAG_DONE);
   if(altivec == VECTORTYPE_ALTIVEC)
+    simd_support |= JSIMD_ALTIVEC;
+#elif defined(__OpenBSD__)
+  if (sysctl(mib, 2, &altivec, &len, NULL, 0) == 0 && altivec != 0)
     simd_support |= JSIMD_ALTIVEC;
 #endif
 

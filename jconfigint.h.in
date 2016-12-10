@@ -1,6 +1,9 @@
 /* libjpeg-turbo build number */
 #define BUILD "@BUILD@"
 
+/* Compiler's inline keyword */
+#undef inline
+
 /* How to obtain function inlining. */
 #define INLINE @INLINE@
 

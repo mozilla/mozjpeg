@@ -193,9 +193,9 @@ instance:
     cd {build_directory}
     cmake -G"Visual Studio 10" [additional CMake flags] {source_directory}
 
-NOTE: Add "Win64" to the generator name (for example, "Visual Studio 10
-Win64") to build a 64-bit version of libjpeg-turbo.  A separate build directory
-must be used for 32-bit and 64-bit builds.
+NOTE: Add "Win64" to the generator name (for example, "Visual Studio 10 Win64")
+to build a 64-bit version of libjpeg-turbo.  A separate build directory must be
+used for 32-bit and 64-bit builds.
 
 You can then open **ALL_BUILD.vcproj** in Visual Studio and build one of the
 configurations in that project ("Debug", "Release", etc.) to generate a full
@@ -727,6 +727,10 @@ has been built, run `make udmg` from the build directory.  The packaging system
 will build the sub-builds, use lipo to combine them into a single set of
 universal binaries, then package the universal binaries in the same manner as
 `make dmg`.
+
+
+Cygwin
+------
 
     make cygwinpkg
 

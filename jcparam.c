@@ -438,7 +438,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   /* By default, don't do extra passes to optimize entropy coding */
   cinfo->optimize_coding = FALSE;
 #endif
-  
+
   /* The standard Huffman tables are only valid for 8-bit data precision.
    * If the precision is higher, force optimization on so that usable
    * tables will be computed.  This test can be removed if default tables
@@ -486,9 +486,9 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   /* Choose JPEG colorspace based on input space, set defaults accordingly */
 
   jpeg_default_colorspace(cinfo);
-  
+
   cinfo->master->dc_scan_opt_mode = 1;
-  
+
 #ifdef C_PROGRESSIVE_SUPPORTED
   if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
     cinfo->master->optimize_scans = TRUE;
@@ -496,14 +496,14 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   } else
     cinfo->master->optimize_scans = FALSE;
 #endif
-  
+
   cinfo->master->trellis_quant =
     cinfo->master->compress_profile == JCP_MAX_COMPRESSION;
   cinfo->master->lambda_log_scale1 = 14.75;
   cinfo->master->lambda_log_scale2 = 16.5;
   cinfo->master->quant_tbl_master_idx =
     cinfo->master->compress_profile == JCP_MAX_COMPRESSION ? 3 : 0;
-  
+
   cinfo->master->use_lambda_weight_tbl = TRUE;
   cinfo->master->use_scans_in_trellis = FALSE;
   cinfo->master->trellis_freq_split = 8;
@@ -731,11 +731,11 @@ jpeg_search_progression (j_compress_ptr cinfo)
   int Al;
   int frequency_split[] = { 2, 8, 5, 12, 18 };
   int i;
-  
+
   /* Safety check to ensure start_compress not called yet. */
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
-  
+
   /* Figure space needed for script.  Calculation must match code below! */
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
@@ -746,7 +746,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
     cinfo->master->num_scans_luma = 0;
     return FALSE;
   }
-  
+
   /* Allocate space for script.
    * We need to put it in the permanent pool in case the application performs
    * multiple compressions without changing the settings.  To avoid a memory
@@ -763,14 +763,14 @@ jpeg_search_progression (j_compress_ptr cinfo)
   scanptr = cinfo->script_space;
   cinfo->scan_info = scanptr;
   cinfo->num_scans = nscans;
-  
+
   cinfo->master->Al_max_luma = 3;
   cinfo->master->num_scans_luma_dc = 1;
   cinfo->master->num_frequency_splits = 5;
   cinfo->master->num_scans_luma =
     cinfo->master->num_scans_luma_dc + (3 * cinfo->master->Al_max_luma + 2) +
     (2 * cinfo->master->num_frequency_splits + 1);
-  
+
   /* 23 scans for luma */
   /* 1 scan for DC */
   /* 11 scans to determine successive approximation */
@@ -778,29 +778,29 @@ jpeg_search_progression (j_compress_ptr cinfo)
   /* after 12 scans need to update following 11 */
   /* after 23 scans need to determine which to keep */
   /* last 4 done conditionally */
-  
+
   /* luma DC by itself */
   if (cinfo->master->dc_scan_opt_mode == 0)
     scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
   else
     scanptr = fill_dc_scans(scanptr, 1, 0, 0);
-  
+
   scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, 0);
   scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, 0);
-  
+
   for (Al = 0; Al < cinfo->master->Al_max_luma; Al++) {
     scanptr = fill_a_scan(scanptr, 0, 1, 63, Al+1, Al);
     scanptr = fill_a_scan(scanptr, 0, 1, 8, 0, Al+1);
     scanptr = fill_a_scan(scanptr, 0, 9, 63, 0, Al+1);
   }
-  
+
   scanptr = fill_a_scan(scanptr, 0, 1, 63, 0, 0);
-  
+
   for (i = 0; i < cinfo->master->num_frequency_splits; i++) {
     scanptr = fill_a_scan(scanptr, 0, 1, frequency_split[i], 0, 0);
     scanptr = fill_a_scan(scanptr, 0, frequency_split[i]+1, 63, 0, 0);
   }
-  
+
   if (ncomps == 1) {
     cinfo->master->Al_max_chroma = 0;
     cinfo->master->num_scans_chroma_dc = 0;
@@ -808,13 +808,13 @@ jpeg_search_progression (j_compress_ptr cinfo)
     cinfo->master->Al_max_chroma = 2;
     cinfo->master->num_scans_chroma_dc = 3;
     /* 41 scans for chroma */
-    
+
     /* chroma DC combined */
     scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
     /* chroma DC separate */
     scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);
-    
+
     scanptr = fill_a_scan(scanptr, 1, 1, 8, 0, 0);
     scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, 0);
@@ -828,7 +828,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
       scanptr = fill_a_scan(scanptr, 2, 1, 8, 0, Al+1);
       scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, Al+1);
     }
-    
+
     scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 0);
     scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 0);
 
@@ -839,7 +839,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
       scanptr = fill_a_scan(scanptr, 2, frequency_split[i]+1, 63, 0, 0);
     }
   }
-  
+
   return TRUE;
 }
 

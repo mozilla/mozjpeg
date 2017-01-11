@@ -267,7 +267,7 @@ bogus:
     MEMCOPY(scanptr, scans, scanno * sizeof(jpeg_scan_info));
     cinfo->scan_info = scanptr;
     cinfo->num_scans = scanno;
-    
+
     /* Disable scan optimization if using custom scan */
     jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
   }
@@ -508,7 +508,7 @@ jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
   int quant_tbl_master_idx = 0;
   if (jpeg_c_int_param_supported(cinfo, JINT_BASE_QUANT_TBL_IDX))
     quant_tbl_master_idx = jpeg_c_get_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX);
-  
+
   jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl[quant_tbl_master_idx],
                        q_scale_factor[0], force_baseline);
   jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl[quant_tbl_master_idx],

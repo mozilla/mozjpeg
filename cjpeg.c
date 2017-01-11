@@ -291,7 +291,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Use arithmetic coding. */
 #ifdef C_ARITH_CODING_SUPPORTED
       cinfo->arith_code = TRUE;
-      
+
       /* No table optimization required for AC */
       cinfo->optimize_coding = FALSE;
 #else
@@ -467,7 +467,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "quant-baseline", 7)) {
       /* Force quantization table to meet baseline requirements */
       force_baseline = TRUE;
-    
+
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
       long lval;
@@ -534,43 +534,43 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "notrellis-dc", 11)) {
       /* disable trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, FALSE);
-      
+
     } else if (keymatch(arg, "notrellis", 1)) {
       /* disable trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT, FALSE);
-      
+
     } else if (keymatch(arg, "trellis-dc-ver-weight", 12)) {
       if (++argn >= argc) {      /* advance to next argument */
         fprintf(stderr, "%s: missing argument for trellis-dc-ver-weight\n", progname);
         usage();
       }
       jpeg_c_set_float_param(cinfo, JFLOAT_TRELLIS_DELTA_DC_WEIGHT, atof(argv[argn]));
-      
+
     } else if (keymatch(arg, "trellis-dc", 9)) {
       /* enable DC trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, TRUE);
-      
+
     } else if (keymatch(arg, "tune-psnr", 6)) {
       jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 9.0);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 0.0);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
-      
+
     } else if (keymatch(arg, "tune-ssim", 6)) {
       jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 1);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 11.5);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 12.75);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, FALSE);
       jpeg_set_quality(cinfo, 75, TRUE);
-      
+
     } else if (keymatch(arg, "tune-ms-ssim", 6)) {
       jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 12.0);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE2, 13.0);
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_USE_LAMBDA_WEIGHT_TBL, TRUE);
       jpeg_set_quality(cinfo, 75, TRUE);
-      
+
     } else if (keymatch(arg, "tune-hvs-psnr", 6)) {
       jpeg_c_set_int_param(cinfo, JINT_BASE_QUANT_TBL_IDX, 3);
       jpeg_c_set_float_param(cinfo, JFLOAT_LAMBDA_LOG_SCALE1, 14.75);
@@ -766,7 +766,7 @@ main (int argc, char **argv)
   /* Copy metadata */
   if (is_jpeg) {
     jpeg_saved_marker_ptr marker;
-    
+
     /* In the current implementation, we don't actually need to examine the
      * option flag here; we just copy everything that got saved.
      * But to avoid confusion, we do not output JFIF and Adobe APP14 markers
@@ -795,7 +795,7 @@ main (int argc, char **argv)
                         marker->data_length);
     }
   }
-  
+
   /* Process data */
   while (cinfo.next_scanline < cinfo.image_height) {
     num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);

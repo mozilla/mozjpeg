@@ -101,7 +101,7 @@ struct jpeg_comp_master {
 
   float lambda_log_scale1;
   float lambda_log_scale2;
-  
+
   float trellis_delta_dc_weight;
 };
 

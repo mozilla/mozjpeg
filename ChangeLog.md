@@ -16,6 +16,12 @@ was accidentally enabled by default.)
 4. libjpeg-turbo should now build and run with full AltiVec SIMD acceleration
 on PowerPC-based AmigaOS 4 and OpenBSD systems.
 
+5. Fixed build and runtime errors on Windows that occurred when building
+libjpeg-turbo with libjpeg v7 API/ABI emulation and the in-memory
+source/destination managers.  Due to an oversight, the `jpeg_skip_scanlines()`
+and `jpeg_crop_scanlines()` functions were not being included in jpeg7.dll when
+libjpeg-turbo was built with `-DWITH_JPEG7=1` and `-DWITH_MEMSRCDST=1`.
+
 
 1.5.1
 =====

@@ -104,3 +104,5 @@ EXPORTS
 	jzero_far @ 103 ; 
 	jpeg_mem_dest @ 104 ; 
 	jpeg_mem_src @ 105 ; 
+	jpeg_skip_scanlines @ 106 ; 
+	jpeg_crop_scanline @ 107 ; 

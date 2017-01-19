@@ -102,3 +102,5 @@ EXPORTS
 	jzero_far @ 101 ; 
 	jpeg_skip_scanlines @ 102 ; 
 	jpeg_crop_scanline @ 103 ; 
+	jpeg_read_icc_profile @ 104 ; 
+	jpeg_write_icc_profile @ 105 ; 

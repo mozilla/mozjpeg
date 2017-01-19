@@ -1576,9 +1576,12 @@ jcopy_markers_setup (j_decompress_ptr srcinfo, JCOPY_OPTION option)
     jpeg_save_markers(srcinfo, JPEG_COM, 0xFFFF);
   }
   /* Save all types of APPn markers iff ALL option */
-  if (option == JCOPYOPT_ALL) {
-    for (m = 0; m < 16; m++)
+  if (option == JCOPYOPT_ALL || option == JCOPYOPT_ALL_EXCEPT_ICC) {
+    for (m = 0; m < 16; m++) {
+      if (option == JCOPYOPT_ALL_EXCEPT_ICC && m == 2)
+        continue;
       jpeg_save_markers(srcinfo, JPEG_APP0 + m, 0xFFFF);
+    }
   }
 #endif /* SAVE_MARKERS_SUPPORTED */
 }

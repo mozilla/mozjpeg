@@ -3,7 +3,7 @@ USING THE IJG JPEG LIBRARY
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2016, D. R. Commander.
+Copyright (C) 2010, 2014-2017, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -47,6 +47,7 @@ Advanced features:
         Buffered-image mode
         Abbreviated datastreams and multiple images
         Special markers
+        ICC profiles
         Raw (downsampled) image data
         Really raw data: DCT coefficients
         Progress monitoring
@@ -2631,6 +2632,44 @@ particular marker type specified.
 
 A simple example of an external COM processor can be found in djpeg.c.
 Also, see jpegtran.c for an example of using jpeg_save_markers.
+
+
+ICC profiles
+------------
+
+Two functions are provided for writing and reading International Color
+Consortium (ICC) device profiles embedded in JFIF JPEG image files:
+
+        void jpeg_write_icc_profile (j_compress_ptr cinfo,
+                                     const JOCTET *icc_data_ptr,
+                                     unsigned int icc_data_len);
+        boolean jpeg_read_icc_profile (j_decompress_ptr cinfo,
+                                       JOCTET **icc_data_ptr,
+                                       unsigned int *icc_data_len);
+
+The ICC has defined a standard for including such data in JPEG "APP2" markers.
+The aforementioned functions do not know anything about the internal structure
+of the ICC profile data; they just know how to embed the profile data into a
+JPEG file while writing it, or to extract the profile data from a JPEG file
+while reading it.
+
+jpeg_write_icc_profile() must be called after calling jpeg_start_compress() and
+before the first call to jpeg_write_scanlines() or jpeg_write_raw_data().  This
+ordering ensures that the APP2 marker(s) will appear after the SOI and JFIF or
+Adobe markers, but before all other data.
+
+jpeg_read_icc_profile() returns TRUE if an ICC profile was found and FALSE
+otherwise.  If an ICC profile was found, then the function will allocate a
+memory region containing the profile and will return a pointer to that memory
+region in *icc_data_ptr, as well as the length of the region in *icc_data_len.
+This memory region is allocated by the library using malloc() and must be freed
+by the caller using free() when the memory region is no longer needed.  Callers
+wishing to use jpeg_read_icc_profile() must call
+
+        jpeg_save_markers(cinfo, JPEG_APP0 + 2, 0xFFFF);
+
+prior to calling jpeg_read_header().  jpeg_read_icc_profile() can be called at
+any point between jpeg_read_header() and jpeg_finish_decompress().
 
 
 Raw (downsampled) image data

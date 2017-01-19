@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014, 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -208,6 +208,7 @@ JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")
 JMESSAGE(JWRN_ARITH_BAD_CODE, "Corrupt JPEG data: bad arithmetic code")
 #endif
 #endif
+JMESSAGE(JWRN_BOGUS_ICC, "Corrupt JPEG data: bad ICC marker")
 
 #ifdef JMAKE_ENUM_LIST
 

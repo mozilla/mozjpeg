@@ -1,4 +1,4 @@
-.TH DJPEG 1 "18 February 2016"
+.TH DJPEG 1 "19 January 2017"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -156,6 +156,9 @@ that these switches have no effect unless color quantization is being done.
 Ordered dither is only available in
 .B \-onepass
 mode.
+.TP
+.BI \-icc " file"
+Extract ICC color management profile to the specified file.
 .TP
 .BI \-map " file"
 Quantize to the colors used in the specified image file.  This is useful for

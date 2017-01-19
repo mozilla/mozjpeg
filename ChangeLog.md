@@ -33,6 +33,13 @@ libjpeg-turbo to be configured without the use of a terminal/command prompt.
 Extensive testing was conducted to ensure that all features provided by the
 autotools-based build system are provided by the new build system.
 
+3. The libjpeg API in this version of libjpeg-turbo now includes two additional
+functions, `jpeg_read_icc_profile()` and `jpeg_write_icc_profile()`, that can
+be used to extract ICC profile data from a JPEG file while decompressing or to
+embed ICC profile data in a JPEG file while compressing or transforming.  This
+eliminates the need for downstream projects, such as color management libraries
+and browsers, to include their own glueware for accomplishing this.
+
 
 1.5.2
 =====

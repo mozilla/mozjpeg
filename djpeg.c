@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2016, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -32,6 +32,10 @@
 #include "jversion.h"           /* for version message */
 #include "jconfigint.h"
 #include "wrppm.h"
+
+#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare free() */
+extern void free (void *ptr);
+#endif
 
 #include <ctype.h>              /* to declare isprint() */
 
@@ -90,6 +94,7 @@ static IMAGE_FORMATS requested_fmt;
 
 
 static const char *progname;    /* program name for error messages */
+static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
 boolean memsrc;                 /* for -memsrc switch */
 boolean skip, crop;
@@ -158,6 +163,7 @@ usage (void)
   fprintf(stderr, "  -dither fs     Use F-S dithering (default)\n");
   fprintf(stderr, "  -dither none   Don't use dithering in quantization\n");
   fprintf(stderr, "  -dither ordered  Use ordered dither (medium speed, quality)\n");
+  fprintf(stderr, "  -icc FILE      Extract ICC profile to FILE\n");
 #ifdef QUANT_2PASS_SUPPORTED
   fprintf(stderr, "  -map FILE      Map to colors used in named image file\n");
 #endif
@@ -196,6 +202,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
 
   /* Set up default JPEG parameters. */
   requested_fmt = DEFAULT_FMT;  /* set default output file format */
+  icc_filename = NULL;
   outfilename = NULL;
   memsrc = FALSE;
   skip = FALSE;
@@ -302,6 +309,13 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "rgb565", 2)) {
       /* Force RGB565 output. */
       cinfo->out_color_space = JCS_RGB565;
+
+    } else if (keymatch(arg, "icc", 1)) {
+      /* Set ICC filename. */
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      icc_filename = argv[argn];
+      jpeg_save_markers(cinfo, JPEG_APP0 + 2, 0xFFFF);
 
     } else if (keymatch(arg, "map", 3)) {
       /* Quantize to a color map taken from an input file. */
@@ -753,6 +767,29 @@ main (int argc, char **argv)
    */
   progress.pub.completed_passes = progress.pub.total_passes;
 #endif
+
+  if (icc_filename != NULL) {
+    FILE *icc_file;
+    JOCTET *icc_profile;
+    unsigned int icc_len;
+
+    if ((icc_file = fopen(icc_filename, WRITE_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open %s\n", progname, icc_filename);
+      exit(EXIT_FAILURE);
+    }
+    if (jpeg_read_icc_profile(&cinfo, &icc_profile, &icc_len)) {
+      if (fwrite(icc_profile, icc_len, 1, icc_file) < 1) {
+        fprintf(stderr, "%s: can't read ICC profile from %s\n", progname,
+                icc_filename);
+        free(icc_profile);
+        fclose(icc_file);
+        exit(EXIT_FAILURE);
+      }
+      free(icc_profile);
+      fclose(icc_file);
+    } else if (cinfo.err->msg_code != JWRN_BOGUS_ICC)
+      fprintf(stderr, "%s: no ICC profile data in JPEG file\n", progname);
+  }
 
   /* Finish decompression and release memory.
    * I must do it in this order because output module has allocated memory

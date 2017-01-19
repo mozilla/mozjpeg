@@ -234,9 +234,9 @@ if(NOT WITH_JPEG8)
   report_option(WITH_MEM_SRCDST "In-memory source/destination managers")
 endif()
 
-set(SO_AGE 1)
+set(SO_AGE 2)
 if(WITH_MEM_SRCDST)
-  set(SO_AGE 2)
+  set(SO_AGE 3)
 endif()
 
 if(WITH_JPEG8)
@@ -489,12 +489,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 ###############################################################################
 
 set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
-  jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c
-  jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c jdatasrc.c
-  jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c
-  jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c jdtrans.c jerror.c
-  jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c
-  jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
+  jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
+  jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
+  jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c jdinput.c
+  jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c
+  jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
+  jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
 
 if(WITH_ARITH_ENC OR WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jaricom.c)
@@ -647,7 +647,8 @@ enable_testing()
 
 if(WITH_12BIT)
   set(TESTORIG testorig12.jpg)
-  set(MD5_JPEG_RGB_ISLOW 9620f424569594bb9242b48498ad801f)
+  set(MD5_JPEG_RGB_ISLOW 9d7369207c520d37f2c1cbfcb82b2964)
+  set(MD5_JPEG_RGB_ISLOW2 a00bd20d8ae49684640ef7177d2e0b64)
   set(MD5_PPM_RGB_ISLOW f3301d2219783b8b3d942b7239fa50c0)
   set(MD5_JPEG_422_IFAST_OPT 7322e3bd2f127f7de4b40d4480ce60e4)
   set(MD5_PPM_422_IFAST 79807fa552899e66a04708f533e16950)
@@ -692,7 +693,8 @@ if(WITH_12BIT)
   set(MD5_JPEG_CROP cdb35ff4b4519392690ea040c56ea99c)
 else()
   set(TESTORIG testorig.jpg)
-  set(MD5_JPEG_RGB_ISLOW 768e970dd57b340ff1b83c9d3d47c77b)
+  set(MD5_JPEG_RGB_ISLOW 1d44a406f61da743b5fd31c0a9abdca3)
+  set(MD5_JPEG_RGB_ISLOW2 31d121e57b6c2934c890a7fc7763bcd4)
   set(MD5_PPM_RGB_ISLOW 00a257f5393fef8821f2b88ac7421291)
   set(MD5_BMP_RGB_ISLOW_565 f07d2e75073e4bb10f6c6f4d36e2e3be)
   set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
@@ -955,14 +957,20 @@ foreach(libtype ${TEST_LIBTYPES})
   endmacro()
 
   # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
-  add_bittest(cjpeg rgb-islow "-rgb;-dct;int"
+  add_bittest(cjpeg rgb-islow "-rgb;-dct;int;-icc;${TESTIMAGES}/test1.icc"
     testout_rgb_islow.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_RGB_ISLOW})
 
   # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_bittest(djpeg rgb-islow "-dct;int;-ppm"
+  add_bittest(djpeg rgb-islow "-dct;int;-ppm;-icc;testout_rgb_islow.icc"
     testout_rgb_islow.ppm testout_rgb_islow.jpg
     ${MD5_PPM_RGB_ISLOW} cjpeg-${libtype}-rgb-islow)
+
+  add_test(djpeg-${libtype}-rgb-islow-icc-cmp
+    ${MD5CMP} b06a39d730129122e85c1363ed1bbc9e testout_rgb_islow.icc)
+
+  add_bittest(jpegtran icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
+    testout_rgb_islow2.jpg testout_rgb_islow.jpg ${MD5_JPEG_RGB_ISLOW2})
 
   if(NOT WITH_12BIT)
     # CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff

@@ -31,6 +31,11 @@
 #include "jversion.h"           /* for version message */
 #include "jconfigint.h"
 
+#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc(),free() */
+extern void *malloc (size_t size);
+extern void free (void *ptr);
+#endif
+
 #ifdef USE_CCOMMAND             /* command-line reader for Macintosh */
 #ifdef __MWERKS__
 #include <SIOUX.h>              /* Metrowerks needs this */
@@ -139,6 +144,7 @@ select_file_type (j_compress_ptr cinfo, FILE *infile)
 
 
 static const char *progname;    /* program name for error messages */
+static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
 boolean memdst;                 /* for -memdst switch */
 
@@ -184,6 +190,7 @@ usage (void)
   fprintf(stderr, "  -dct float     Use floating-point DCT method%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
+  fprintf(stderr, "  -icc FILE      Embed ICC profile contained in FILE\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
 #ifdef INPUT_SMOOTHING_SUPPORTED
   fprintf(stderr, "  -smooth N      Smooth dithered input (N=1..100 is strength)\n");
@@ -234,6 +241,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   force_baseline = FALSE;       /* by default, allow 16-bit quantizers */
   simple_progressive = FALSE;
   is_targa = FALSE;
+  icc_filename = NULL;
   outfilename = NULL;
   memdst = FALSE;
   cinfo->err->trace_level = 0;
@@ -306,6 +314,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "rgb", 3)) {
       /* Force an RGB JPEG file to be generated. */
       jpeg_set_colorspace(cinfo, JCS_RGB);
+
+    } else if (keymatch(arg, "icc", 1)) {
+      /* Set ICC filename. */
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      icc_filename = argv[argn];
 
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */
@@ -496,6 +510,9 @@ main (int argc, char **argv)
   int file_index;
   cjpeg_source_ptr src_mgr;
   FILE *input_file;
+  FILE *icc_file;
+  JOCTET *icc_profile = NULL;
+  long icc_len = 0;
   FILE *output_file = NULL;
   unsigned char *outbuffer = NULL;
   unsigned long outsize = 0;
@@ -583,6 +600,33 @@ main (int argc, char **argv)
     output_file = write_stdout();
   }
 
+  if (icc_filename != NULL) {
+    if ((icc_file = fopen(icc_filename, READ_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open %s\n", progname, icc_filename);
+      exit(EXIT_FAILURE);
+    }
+    if (fseek(icc_file, 0, SEEK_END) < 0 ||
+        (icc_len = ftell(icc_file)) < 1 ||
+        fseek(icc_file, 0, SEEK_SET) < 0) {
+      fprintf(stderr, "%s: can't determine size of %s\n", progname,
+              icc_filename);
+      exit(EXIT_FAILURE);
+    }
+    if ((icc_profile = (JOCTET *)malloc(icc_len)) == NULL) {
+      fprintf(stderr, "%s: can't allocate memory for ICC profile\n", progname);
+      fclose(icc_file);
+      exit(EXIT_FAILURE);
+    }
+    if (fread(icc_profile, icc_len, 1, icc_file) < 1) {
+      fprintf(stderr, "%s: can't read ICC profile from %s\n", progname,
+              icc_filename);
+      free(icc_profile);
+      fclose(icc_file);
+      exit(EXIT_FAILURE);
+    }
+    fclose(icc_file);
+  }
+
 #ifdef PROGRESS_REPORT
   start_progress_monitor((j_common_ptr) &cinfo, &progress);
 #endif
@@ -611,6 +655,9 @@ main (int argc, char **argv)
   /* Start compressor */
   jpeg_start_compress(&cinfo, TRUE);
 
+  if (icc_profile != NULL)
+    jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
+
   /* Process data */
   while (cinfo.next_scanline < cinfo.image_height) {
     num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
@@ -637,6 +684,9 @@ main (int argc, char **argv)
     if (outbuffer != NULL)
       free(outbuffer);
   }
+
+  if (icc_profile != NULL)
+    free(icc_profile);
 
   /* All done. */
   exit(jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);

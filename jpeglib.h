@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2002-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2013-2014, 2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, 2016-2017, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -976,6 +976,12 @@ EXTERN(void) jpeg_write_m_byte (j_compress_ptr cinfo, int val);
 /* Alternate compression function: just write an abbreviated table file */
 EXTERN(void) jpeg_write_tables (j_compress_ptr cinfo);
 
+/* Write ICC profile.  See libjpeg.txt for usage information. */
+EXTERN(void) jpeg_write_icc_profile (j_compress_ptr cinfo,
+                                     const JOCTET *icc_data_ptr,
+                                     unsigned int icc_data_len);
+
+
 /* Decompression startup: read start of JPEG datastream to see what's there */
 EXTERN(int) jpeg_read_header (j_decompress_ptr cinfo, boolean require_image);
 /* Return value is one of: */
@@ -1056,6 +1062,11 @@ EXTERN(void) jpeg_destroy (j_common_ptr cinfo);
 
 /* Default restart-marker-resync procedure for use by data source modules */
 EXTERN(boolean) jpeg_resync_to_restart (j_decompress_ptr cinfo, int desired);
+
+/* Read ICC profile.  See libjpeg.txt for usage information. */
+EXTERN(boolean) jpeg_read_icc_profile (j_decompress_ptr cinfo,
+                                       JOCTET **icc_data_ptr,
+                                       unsigned int *icc_data_len);
 
 
 /* These marker codes are exported since applications and data source modules

@@ -1,4 +1,4 @@
-.TH JPEGTRAN 1 "18 February 2016"
+.TH JPEGTRAN 1 "19 January 2017"
 .SH NAME
 jpegtran \- lossless transformation of JPEG files
 .SH SYNOPSIS
@@ -216,6 +216,11 @@ The default behavior is \fB-copy comments\fR.  (Note: in IJG releases v6 and
 v6a, \fBjpegtran\fR always did the equivalent of \fB-copy none\fR.)
 .PP
 Additional switches recognized by jpegtran are:
+.TP
+.BI \-icc " file"
+Embed ICC color management profile contained in the specified file.  Note that
+this will cause \fBjpegtran\fR to ignore any APP2 markers in the input file,
+even if \fB-copy all\fR is specified.
 .TP
 .BI \-maxmemory " N"
 Set limit for amount of memory to use in processing large images.  Value is

@@ -104,3 +104,5 @@ EXPORTS
 	jpeg_mem_src @ 103 ; 
 	jpeg_skip_scanlines @ 104 ; 
 	jpeg_crop_scanline @ 105 ; 
+	jpeg_read_icc_profile @ 106 ; 
+	jpeg_write_icc_profile @ 107 ; 

@@ -40,6 +40,7 @@
 
 
 static const char *progname;    /* program name for error messages */
+static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
@@ -83,6 +84,7 @@ usage (void)
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
+  fprintf(stderr, "  -icc FILE      Embed ICC profile contained in FILE\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
@@ -138,6 +140,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
   /* Set up default JPEG parameters. */
   simple_progressive = FALSE;
+  icc_filename = NULL;
   outfilename = NULL;
   copyoption = JCOPYOPT_DEFAULT;
   transformoption.transform = JXFORM_NONE;
@@ -237,6 +240,12 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 #else
       select_transform(JXFORM_NONE);    /* force an error */
 #endif
+
+    } else if (keymatch(arg, "icc", 1)) {
+      /* Set ICC filename. */
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      icc_filename = argv[argn];
 
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */
@@ -385,6 +394,9 @@ main (int argc, char **argv)
    * single file pointer for sequential input and output operation.
    */
   FILE *fp;
+  FILE *icc_file;
+  JOCTET *icc_profile = NULL;
+  long icc_len = 0;
 
   /* On Mac, fetch a command line. */
 #ifdef USE_CCOMMAND
@@ -447,6 +459,35 @@ main (int argc, char **argv)
   } else {
     /* default input file is stdin */
     fp = read_stdin();
+  }
+
+  if (icc_filename != NULL) {
+    if ((icc_file = fopen(icc_filename, READ_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open %s\n", progname, icc_filename);
+      exit(EXIT_FAILURE);
+    }
+    if (fseek(icc_file, 0, SEEK_END) < 0 ||
+        (icc_len = ftell(icc_file)) < 1 ||
+        fseek(icc_file, 0, SEEK_SET) < 0) {
+      fprintf(stderr, "%s: can't determine size of %s\n", progname,
+              icc_filename);
+      exit(EXIT_FAILURE);
+    }
+    if ((icc_profile = (JOCTET *)malloc(icc_len)) == NULL) {
+      fprintf(stderr, "%s: can't allocate memory for ICC profile\n", progname);
+      fclose(icc_file);
+      exit(EXIT_FAILURE);
+    }
+    if (fread(icc_profile, icc_len, 1, icc_file) < 1) {
+      fprintf(stderr, "%s: can't read ICC profile from %s\n", progname,
+              icc_filename);
+      free(icc_profile);
+      fclose(icc_file);
+      exit(EXIT_FAILURE);
+    }
+    fclose(icc_file);
+    if (copyoption == JCOPYOPT_ALL)
+      copyoption = JCOPYOPT_ALL_EXCEPT_ICC;
   }
 
 #ifdef PROGRESS_REPORT
@@ -524,6 +565,9 @@ main (int argc, char **argv)
   /* Copy to the output file any extra markers that we want to preserve */
   jcopy_markers_execute(&srcinfo, &dstinfo, copyoption);
 
+  if (icc_profile != NULL)
+    jpeg_write_icc_profile(&dstinfo, icc_profile, (unsigned int)icc_len);
+
   /* Execute image transformation, if any */
 #if TRANSFORMS_SUPPORTED
   jtransform_execute_transformation(&srcinfo, &dstinfo,
@@ -544,6 +588,9 @@ main (int argc, char **argv)
 #ifdef PROGRESS_REPORT
   end_progress_monitor((j_common_ptr) &dstinfo);
 #endif
+
+  if (icc_profile != NULL)
+    free(icc_profile);
 
   /* All done. */
   exit(jsrcerr.num_warnings + jdsterr.num_warnings ?EXIT_WARNING:EXIT_SUCCESS);

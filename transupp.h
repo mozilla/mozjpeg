@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2011, Thomas G. Lane, Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -193,7 +193,8 @@ EXTERN(boolean) jtransform_perfect_transform
 typedef enum {
   JCOPYOPT_NONE,          /* copy no optional markers */
   JCOPYOPT_COMMENTS,      /* copy only comment (COM) markers */
-  JCOPYOPT_ALL            /* copy all optional markers */
+  JCOPYOPT_ALL,           /* copy all optional markers */
+  JCOPYOPT_ALL_EXCEPT_ICC /* copy all optional markers except APP2 */
 } JCOPY_OPTION;
 
 #define JCOPYOPT_DEFAULT  JCOPYOPT_COMMENTS     /* recommended default */

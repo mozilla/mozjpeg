@@ -22,6 +22,12 @@ source/destination managers.  Due to an oversight, the `jpeg_skip_scanlines()`
 and `jpeg_crop_scanlines()` functions were not being included in jpeg7.dll when
 libjpeg-turbo was built with `-DWITH_JPEG7=1` and `-DWITH_MEMSRCDST=1`.
 
+6. Fixed "Bogus virtual array access" error that occurred when using the
+lossless crop feature in jpegtran or the TurboJPEG API, if libjpeg-turbo was
+built with libjpeg v7 API/ABI emulation.  This was apparently a long-standing
+bug that has existed since the introduction of libjpeg v7/v8 API/ABI emulation
+in libjpeg-turbo v1.1.
+
 
 1.5.1
 =====

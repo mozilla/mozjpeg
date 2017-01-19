@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2011, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -1384,7 +1384,7 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
   /* Correct the destination's image dimensions as necessary
    * for rotate/flip, resize, and crop operations.
    */
-#if JPEG_LIB_VERSION >= 70
+#if JPEG_LIB_VERSION >= 80
   dstinfo->jpeg_width = info->output_width;
   dstinfo->jpeg_height = info->output_height;
 #endif
@@ -1395,14 +1395,14 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
   case JXFORM_TRANSVERSE:
   case JXFORM_ROT_90:
   case JXFORM_ROT_270:
-#if JPEG_LIB_VERSION < 70
+#if JPEG_LIB_VERSION < 80
     dstinfo->image_width = info->output_height;
     dstinfo->image_height = info->output_width;
 #endif
     transpose_critical_parameters(dstinfo);
     break;
   default:
-#if JPEG_LIB_VERSION < 70
+#if JPEG_LIB_VERSION < 80
     dstinfo->image_width = info->output_width;
     dstinfo->image_height = info->output_height;
 #endif

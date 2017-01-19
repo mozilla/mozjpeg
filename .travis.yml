@@ -25,6 +25,13 @@ matrix:
       env: CONFIGURE_FLAGS="--with-12bit"
     - os: linux
       compiler: gcc
+      env: CONFIGURE_FLAGS="--with-jpeg7"
+      addons:
+        apt:
+          packages:
+            - nasm
+    - os: linux
+      compiler: gcc
       env: CONFIGURE_FLAGS="--with-jpeg8"
       addons:
         apt:

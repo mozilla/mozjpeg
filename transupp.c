@@ -1177,7 +1177,6 @@ transpose_critical_parameters (j_compress_ptr dstinfo)
  * We try to adjust the Tags ExifImageWidth and ExifImageHeight if possible.
  */
 
-#if JPEG_LIB_VERSION >= 70
 LOCAL(void)
 adjust_exif_parameters (JOCTET *data, unsigned int length,
                         JDIMENSION new_width, JDIMENSION new_height)
@@ -1327,7 +1326,6 @@ adjust_exif_parameters (JOCTET *data, unsigned int length,
     offset += 12;
   } while (--number_of_tags);
 }
-#endif
 
 
 /* Adjust output image parameters as needed.
@@ -1421,14 +1419,21 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
       GETJOCTET(srcinfo->marker_list->data[5]) == 0) {
     /* Suppress output of JFIF marker */
     dstinfo->write_JFIF_header = FALSE;
-#if JPEG_LIB_VERSION >= 70
     /* Adjust Exif image parameters */
+#if JPEG_LIB_VERSION >= 80
     if (dstinfo->jpeg_width != srcinfo->image_width ||
         dstinfo->jpeg_height != srcinfo->image_height)
       /* Align data segment to start of TIFF structure for parsing */
       adjust_exif_parameters(srcinfo->marker_list->data + 6,
         srcinfo->marker_list->data_length - 6,
         dstinfo->jpeg_width, dstinfo->jpeg_height);
+#else
+    if (dstinfo->image_width != srcinfo->image_width ||
+        dstinfo->image_height != srcinfo->image_height)
+      /* Align data segment to start of TIFF structure for parsing */
+      adjust_exif_parameters(srcinfo->marker_list->data + 6,
+        srcinfo->marker_list->data_length - 6,
+        dstinfo->image_width, dstinfo->image_height);
 #endif
   }
 

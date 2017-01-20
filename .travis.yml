@@ -29,6 +29,14 @@ matrix:
     - os: linux
       dist: trusty
       compiler: gcc
+      env: CMAKE_FLAGS="-DWITH_JPEG7=1"
+      addons:
+        apt:
+          packages:
+            - nasm
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: CMAKE_FLAGS="-DWITH_JPEG8=1"
       addons:
         apt:

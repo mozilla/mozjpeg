@@ -34,6 +34,7 @@ Basic library usage:
         Data formats
         Compression details
         Decompression details
+        Partial image decompression
         Mechanics of usage: include files, linking, etc
 Advanced features:
         Compression parameter selection

@@ -52,6 +52,28 @@ was accidentally enabled by default.)
 4. libjpeg-turbo should now build and run with full AltiVec SIMD acceleration
 on PowerPC-based AmigaOS 4 and OpenBSD systems.
 
+5. Fixed build and runtime errors on Windows that occurred when building
+libjpeg-turbo with libjpeg v7 API/ABI emulation and the in-memory
+source/destination managers.  Due to an oversight, the `jpeg_skip_scanlines()`
+and `jpeg_crop_scanlines()` functions were not being included in jpeg7.dll when
+libjpeg-turbo was built with `-DWITH_JPEG7=1` and `-DWITH_MEMSRCDST=1`.
+
+6. Fixed "Bogus virtual array access" error that occurred when using the
+lossless crop feature in jpegtran or the TurboJPEG API, if libjpeg-turbo was
+built with libjpeg v7 API/ABI emulation.  This was apparently a long-standing
+bug that has existed since the introduction of libjpeg v7/v8 API/ABI emulation
+in libjpeg-turbo v1.1.
+
+7. The lossless transform features in jpegtran and the TurboJPEG API will now
+always attempt to adjust the EXIF image width and height tags if the image size
+changed as a result of the transform.  This behavior has always existed when
+using libjpeg v8 API/ABI emulation.  It was supposed to be available with
+libjpeg v7 API/ABI emulation as well but did not work properly due to a bug.
+Furthermore, there was never any good reason not to enable it with libjpeg v6b
+API/ABI emulation, since the behavior is entirely internal.  Note that
+`-copy all` must be passed to jpegtran in order to transfer the EXIF tags from
+the source image to the destination image.
+
 
 1.5.1
 =====

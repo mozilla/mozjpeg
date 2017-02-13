@@ -9,7 +9,7 @@ if(POLICY CMP0022)
 endif()
 
 project(mozjpeg C)
-set(VERSION 3.1)
+set(VERSION 3.2)
 
 if(NOT WIN32)
   message(FATAL_ERROR "Platform not supported by this build system.  Use autotools instead.")

@@ -301,7 +301,7 @@ else()
 endif()
 
 if(ENABLE_STATIC)
-  add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c
+  add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdjpeg.c rdswitch.c
     ${CJPEG_BMP_SOURCES})
   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
   target_link_libraries(cjpeg-static jpeg-static)

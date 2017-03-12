@@ -323,11 +323,6 @@ Set the following shell variables for simplicity:
     IOS_SYSROOT=$IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk
     IOS_GCC=$IOS_PLATFORMDIR/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
 
-  *ARMv6 (code will run on all iOS devices, not SIMD-accelerated)*  
-  [NOTE: Requires Xcode 4.4.x or earlier]
-
-    IOS_CFLAGS="-march=armv6 -mcpu=arm1176jzf-s -mfpu=vfp"
-
   *ARMv7 (code will run on iPhone 3GS-4S/iPad 1st-3rd Generation and newer)*
 
     IOS_CFLAGS="-march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon"
@@ -399,8 +394,8 @@ NOTE:  You can also add `-miphoneos-version-min={version}` to `$IOS_CFLAGS`
 above in order to support older versions of iOS than the default version
 supported by the SDK.
 
-Once built, lipo can be used to combine the ARMv6, v7, v7s, and/or v8 variants
-into a universal library.
+Once built, lipo can be used to combine the ARMv7, v7s, and/or v8 variants into
+a universal library.
 
 
 ### Building libjpeg-turbo for Android
@@ -782,7 +777,6 @@ default, but you can override this by setting the `BUILDDIR32` variable on the
 make command line as shown above.
 
     make iosdmg [BUILDDIR32={32-bit build directory}] \
-      [BUILDDIRARMV6={ARMv6 build directory}] \
       [BUILDDIRARMV7={ARMv7 build directory}] \
       [BUILDDIRARMV7S={ARMv7s build directory}] \
       [BUILDDIRARMV8={ARMv8 build directory}]
@@ -791,19 +785,17 @@ On OS X systems, this creates a Macintosh package and disk image in which the
 libjpeg-turbo static libraries contain ARM architectures necessary to build
 iOS applications.  If building on an x86-64 system, the binaries will also
 contain the i386 architecture, as with `make udmg` above.  You should first
-configure ARMv6, ARMv7, ARMv7s, and/or ARMv8 out-of-tree builds of
-libjpeg-turbo (see "Building libjpeg-turbo for iOS" above.)  If you are
-building an x86-64 version of libjpeg-turbo, you should configure a 32-bit
-out-of-tree build as well.  Next, build libjpeg-turbo as you would normally,
-using an out-of-tree build.  When it is built, run `make iosdmg` from the
-build directory.  The build system will look for the ARMv6 build under
-*{source_directory}*/iosarmv6 by default, the ARMv7 build under
-*{source_directory}*/iosarmv7 by default, the ARMv7s build under
-*{source_directory}*/iosarmv7s by default, the ARMv8 build under
-*{source_directory}*/iosarmv8 by default, and (if applicable) the 32-bit build
-under *{source_directory}*/osxx86 by default, but you can override this by
-setting the `BUILDDIR32`, `BUILDDIRARMV6`, `BUILDDIRARMV7`, `BUILDDIRARMV7S`,
-and/or `BUILDDIRARMV8` variables on the `make` command line as shown above.
+configure ARMv7, ARMv7s, and/or ARMv8 out-of-tree builds of libjpeg-turbo (see
+"Building libjpeg-turbo for iOS" above.)  If you are building an x86-64 version
+of libjpeg-turbo, you should configure a 32-bit out-of-tree build as well.
+Next, build libjpeg-turbo as you would normally, using an out-of-tree build.
+When it is built, run `make iosdmg` from the build directory.  The build system
+will look for the ARMv7 build under *{source_directory}*/iosarmv7 by default,
+the ARMv7s build under *{source_directory}*/iosarmv7s by default, the ARMv8
+build under *{source_directory}*/iosarmv8 by default, and (if applicable) the
+32-bit build under *{source_directory}*/osxx86 by default, but you can override
+this by setting the `BUILDDIR32`, `BUILDDIRARMV7`, `BUILDDIRARMV7S`, and/or
+`BUILDDIRARMV8` variables on the `make` command line as shown above.
 
 NOTE: If including an ARMv8 build in the package, then you may need to use
 Xcode's version of lipo instead of the operating system's.  To do this, pass

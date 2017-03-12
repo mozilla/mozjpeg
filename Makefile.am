@@ -11,7 +11,10 @@ endif
 nodist_include_HEADERS = jconfig.h
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = pkgscripts/libjpeg.pc pkgscripts/libturbojpeg.pc
+pkgconfig_DATA = pkgscripts/libjpeg.pc
+if WITH_TURBOJPEG
+pkgconfig_DATA += pkgscripts/libturbojpeg.pc
+endif
 
 HDRS = jchuff.h jcmaster.h jdct.h jdhuff.h jerror.h jinclude.h jmemsys.h \
 	jmorecfg.h jpegint.h jpeglib.h jversion.h jsimd.h jsimddct.h jpegcomp.h \
@@ -771,12 +774,12 @@ udmg: all pkgscripts/makemacpkg pkgscripts/uninstall
 	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32}
 
 iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
-	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
+	sh pkgscripts/makemacpkg -build32 ${BUILDDIR32} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
 
 else
 
 iosdmg: all pkgscripts/makemacpkg pkgscripts/uninstall
-	sh pkgscripts/makemacpkg -buildarmv6 ${BUILDDIRARMV6} -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
+	sh pkgscripts/makemacpkg -buildarmv7 ${BUILDDIRARMV7} -buildarmv7s ${BUILDDIRARMV7S} -buildarmv8 ${BUILDDIRARMV8} -lipo "${LIPO}"
 
 endif
 

@@ -1107,6 +1107,7 @@ EXTERN(void) jpeg_destroy (j_common_ptr cinfo);
 EXTERN(boolean) jpeg_resync_to_restart (j_decompress_ptr cinfo, int desired);
 
 /* Accessor functions for extension parameters */
+#define JPEG_C_PARAM_SUPPORTED 1
 EXTERN(boolean) jpeg_c_bool_param_supported (const j_compress_ptr cinfo,
                                              J_BOOLEAN_PARAM param);
 EXTERN(void) jpeg_c_set_bool_param (j_compress_ptr cinfo,

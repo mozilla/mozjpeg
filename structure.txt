@@ -832,21 +832,19 @@ read_backing_store,             manipulate a backing-store object
 write_backing_store,
 close_backing_store
 
-On some systems there will be more than one type of backing-store object
-(specifically, in MS-DOS a backing store file might be an area of extended
-memory as well as a disk file).  jpeg_open_backing_store is responsible for
-choosing how to implement a given object.  The read/write/close routines
-are method pointers in the structure that describes a given object; this
-lets them be different for different object types.
+On some systems there will be more than one type of backing-store object.
+jpeg_open_backing_store is responsible for choosing how to implement a given
+object.  The read/write/close routines are method pointers in the structure
+that describes a given object; this lets them be different for different object
+types.
 
 It may be necessary to ensure that backing store objects are explicitly
-released upon abnormal program termination.  For example, MS-DOS won't free
-extended memory by itself.  To support this, we will expect the main program
-or surrounding application to arrange to call self_destruct (typically via
-jpeg_destroy) upon abnormal termination.  This may require a SIGINT signal
-handler or equivalent.  We don't want to have the back end module install its
-own signal handler, because that would pre-empt the surrounding application's
-ability to control signal handling.
+released upon abnormal program termination.  To support this, we will expect
+the main program or surrounding application to arrange to call self_destruct
+(typically via jpeg_destroy) upon abnormal termination.  This may require a
+SIGINT signal handler or equivalent.  We don't want to have the back end module
+install its own signal handler, because that would pre-empt the surrounding
+application's ability to control signal handling.
 
 The IJG distribution includes several memory manager back end implementations.
 Usually the same back end should be suitable for all applications on a given

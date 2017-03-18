@@ -38,6 +38,12 @@ API/ABI emulation, since the behavior is entirely internal.  Note that
 `-copy all` must be passed to jpegtran in order to transfer the EXIF tags from
 the source image to the destination image.
 
+8. Fixed several memory leaks in the TurboJPEG API library that could occur
+if the library was built with certain compilers and optimization levels
+(known to occur with GCC 4.x and clang with `-O1` and higher but not with
+GCC 5.x or 6.x) and one of the underlying libjpeg API functions threw an error
+after a TurboJPEG API function allocated a local buffer.
+
 
 1.5.1
 =====

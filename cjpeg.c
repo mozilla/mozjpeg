@@ -608,6 +608,8 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       if (! set_quant_slots(cinfo, qslotsarg))
         usage();
 
+    /* set_quality_ratings sets default subsampling, so the explicit
+       subsampling must be set after it */
     if (samplearg != NULL)      /* process -sample if it was present */
       if (! set_sample_factors(cinfo, samplearg)) {
         fprintf(stderr, "%s: can't set sample factors\n", progname);

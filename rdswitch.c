@@ -553,6 +553,17 @@ set_quality_ratings (j_compress_ptr cinfo, char *arg, boolean force_baseline)
     }
   }
   jpeg_default_qtables(cinfo, force_baseline);
+
+  /* For some images chroma subsampling significantly degrades color quality,
+     making it impossible to achieve high visual quality regardless of quality setting.
+     To make the quality setting more intuitive, disable subsampling when high-quality
+     color is desired. */
+  if (val >= 90) {
+    set_sample_factors(cinfo, "1x1");
+  } else if (val >= 80) {
+    set_sample_factors(cinfo, "2x1");
+  }
+
   return TRUE;
 }
 

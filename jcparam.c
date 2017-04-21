@@ -868,7 +868,13 @@ jpeg_simple_progression (j_compress_ptr cinfo)
   ncomps = cinfo->num_components;
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
-    nscans = 10;
+    if (cinfo->master->dc_scan_opt_mode == 0) {
+      nscans = 8;  /* 1 DC scan for all components */
+    } else if (cinfo->master->dc_scan_opt_mode == 1) {
+      nscans = 10; /* 1 DC scan for each component */
+    } else {
+      nscans = 9;  /* 1 DC scan for luminance and 1 DC scan for chroma */
+    }
   } else {
     /* All-purpose script for other color spaces. */
     if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
@@ -906,14 +912,16 @@ jpeg_simple_progression (j_compress_ptr cinfo)
     if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
       /* scan defined in jpeg_scan_rgb.txt in jpgcrush */
     /* Initial DC scan */
-      if (cinfo->master->dc_scan_opt_mode == 0)
+      if (cinfo->master->dc_scan_opt_mode == 0) {
+        /* 1 DC scan for all components */
         scanptr = fill_dc_scans(scanptr, ncomps, 0, 0);
-      else if (cinfo->master->dc_scan_opt_mode == 1) {
+      } else if (cinfo->master->dc_scan_opt_mode == 1) {
+        /* 1 DC scan for each component */
         scanptr = fill_a_scan(scanptr, 0, 0, 0, 0, 0);
         scanptr = fill_a_scan(scanptr, 1, 0, 0, 0, 0);
         scanptr = fill_a_scan(scanptr, 2, 0, 0, 0, 0);
-      }
-      else {
+      } else {
+        /* 1 DC scan for luminance and 1 DC scan for chroma */
         scanptr = fill_dc_scans(scanptr, 1, 0, 0);
         scanptr = fill_a_scan_pair(scanptr, 1, 0, 0, 0, 0);
       }

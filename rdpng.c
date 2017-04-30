@@ -69,6 +69,11 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     png_get_IHDR(source->png_ptr, source->info_ptr, &width, &height,
                  &bit_depth, &color_type, NULL, NULL, NULL);
 
+    if (width > 65535 || height > 65535) {
+        ERREXITS(cinfo, JERR_PNG_ERROR, "Image too large");
+        return;
+    }
+
     if (color_type == PNG_COLOR_TYPE_GRAY) {
         cinfo->in_color_space = JCS_GRAYSCALE;
         cinfo->input_components = 1;
@@ -77,8 +82,9 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
         cinfo->input_components = 3;
     }
 
-    if (bit_depth == 16)
+    if (bit_depth == 16) {
         png_set_strip_16(source->png_ptr);
+    }
 
     cinfo->data_precision = 8;
     cinfo->image_width = width;

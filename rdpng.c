@@ -74,7 +74,7 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
         return;
     }
 
-    if (color_type == PNG_COLOR_TYPE_GRAY) {
+    if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
         cinfo->in_color_space = JCS_GRAYSCALE;
         cinfo->input_components = 1;
     } else {

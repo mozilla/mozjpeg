@@ -126,6 +126,7 @@ JMESSAGE(JERR_UNSUPPORTED_FORMAT, "Unsupported output file format")
 
 #ifdef PNG_SUPPORTED
 JMESSAGE(JERR_PNG_ERROR, "Unable to read PNG file: %s")
+JMESSAGE(JERR_PNG_PROFILETOOLARGE, "Embedded profile was too large for this tool - dropped.")
 #endif
 
 #ifdef JMAKE_ENUM_LIST

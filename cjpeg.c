@@ -81,6 +81,7 @@ static const char * const cdjpeg_message_table[] = {
 
 static boolean is_targa;        /* records user -targa switch */
 static boolean is_jpeg;
+static boolean copy_markers;
 
 LOCAL(cjpeg_source_ptr)
 select_file_type (j_compress_ptr cinfo, FILE *infile)
@@ -115,6 +116,7 @@ select_file_type (j_compress_ptr cinfo, FILE *infile)
 #endif
 #ifdef PNG_SUPPORTED
   case 0x89:
+    copy_markers = TRUE;
     return jinit_read_png(cinfo);
 #endif
 #ifdef RLE_SUPPORTED
@@ -127,6 +129,7 @@ select_file_type (j_compress_ptr cinfo, FILE *infile)
 #endif
   case 0xff:
     is_jpeg = TRUE;
+    copy_markers = TRUE;
     return jinit_read_jpeg(cinfo);
   default:
     ERREXIT(cinfo, JERR_UNKNOWN_FORMAT);
@@ -766,7 +769,7 @@ main (int argc, char **argv)
   jpeg_start_compress(&cinfo, TRUE);
 
   /* Copy metadata */
-  if (is_jpeg) {
+  if (copy_markers) {
     jpeg_saved_marker_ptr marker;
     
     /* In the current implementation, we don't actually need to examine the

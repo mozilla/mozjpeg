@@ -225,9 +225,9 @@ AC_SUBST(MEM_SRCDST_FUNCTIONS)
 AC_DEFINE_UNQUOTED(LIBJPEG_TURBO_VERSION, [$VERSION], [libjpeg-turbo version])
 
 m4_define(version_triplet,m4_split(AC_PACKAGE_VERSION,[[.]]))
-m4_define(version_major,m4_argn(1,version_triplet))
-m4_define(version_minor,m4_argn(2,version_triplet))
-m4_define(version_revision,m4_argn(3,version_triplet))
+m4_define(version_major,m4_car(m4_shiftn(1,[],version_triplet)))
+m4_define(version_minor,m4_car(m4_shiftn(2,[],version_triplet)))
+m4_define(version_revision,m4_car(m4_shiftn(3,[],version_triplet)))
 VERSION_MAJOR=version_major
 VERSION_MINOR=version_minor
 VERSION_REVISION=version_revision

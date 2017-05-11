@@ -40,7 +40,7 @@
 
 #define _throw(op, err) {  \
 	printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err);  \
-  retval=-1;  goto bailout;}
+	retval=-1;  goto bailout;}
 #define _throwunix(m) _throw(m, strerror(errno))
 #define _throwtj(m) _throw(m, tjGetErrorStr())
 #define _throwbmp(m) _throw(m, bmpgeterr())
@@ -207,7 +207,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 			(double)(w*h)/1000000.*(double)iter/elapsed);
 		if(doyuv)
 		{
-			printf("YUV Decode    --> Frame rate:         %f fps\n",
+			printf("YUV Decode    --> Frame rate:         %f fps\n",
 				(double)iter/elapsedDecode);
 			printf("                  Throughput:         %f Megapixels/sec\n",
 				(double)(w*h)/1000000.*(double)iter/elapsedDecode);

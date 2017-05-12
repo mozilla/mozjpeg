@@ -55,6 +55,9 @@ if(MSYS)
   set(CMAKE_HOST_SYSTEM_NAME ${CMAKE_HOST_SYSTEM_NAME_BAK})
 endif()
 
+add_custom_target(javadoc COMMAND
+  javadoc -notimestamp -d ${CMAKE_CURRENT_SOURCE_DIR}/doc -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} org.libjpegturbo.turbojpeg)
+
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_JAVADIR)
   set(CMAKE_INSTALL_DEFAULT_JAVADIR "<CMAKE_INSTALL_DATAROOTDIR>/java")
 endif()

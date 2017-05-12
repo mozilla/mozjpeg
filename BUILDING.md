@@ -138,8 +138,8 @@ Import library for the libjpeg API
 **libturbojpeg.a**<br>
 Static link library for the TurboJPEG API
 
-**libturbojpeg.so.0.1.0** (Linux, Unix)<br>
-**libturbojpeg.0.1.0.dylib** (Mac)<br>
+**libturbojpeg.so.0.2.0** (Linux, Unix)<br>
+**libturbojpeg.0.2.0.dylib** (Mac)<br>
 **cygturbojpeg-0.dll** (Cygwin)<br>
 Shared library for the TurboJPEG API
 

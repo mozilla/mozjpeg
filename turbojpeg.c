@@ -96,6 +96,8 @@ typedef struct _tjinstance
 	struct jpeg_decompress_struct dinfo;
 	struct my_error_mgr jerr;
 	int init, headerRead;
+	char errStr[JMSG_LENGTH_MAX];
+	boolean isInstanceError;
 } tjinstance;
 
 static const int pixelsize[TJ_NUMSAMP]={3, 3, 3, 1, 3, 3};
@@ -126,26 +128,31 @@ static const tjscalingfactor sf[NUMSF]={
 	{1, 8}
 };
 
-#define _throw(m) {snprintf(errStr, JMSG_LENGTH_MAX, "%s", m);  \
+#define _throwg(m) {snprintf(errStr, JMSG_LENGTH_MAX, "%s", m);  \
 	retval=-1;  goto bailout;}
+#define _throw(m) {snprintf(this->errStr, JMSG_LENGTH_MAX, "%s", m);  \
+	this->isInstanceError=TRUE;  _throwg(m);}
 #define getinstance(handle) tjinstance *this=(tjinstance *)handle;  \
 	j_compress_ptr cinfo=NULL;  j_decompress_ptr dinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
 	cinfo=&this->cinfo;  dinfo=&this->dinfo;  \
-	this->jerr.warning=FALSE;
+	this->jerr.warning=FALSE;  \
+	this->isInstanceError=FALSE;
 #define getcinstance(handle) tjinstance *this=(tjinstance *)handle;  \
 	j_compress_ptr cinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
 	cinfo=&this->cinfo;  \
-	this->jerr.warning=FALSE;
+	this->jerr.warning=FALSE;  \
+	this->isInstanceError=FALSE;
 #define getdinstance(handle) tjinstance *this=(tjinstance *)handle;  \
 	j_decompress_ptr dinfo=NULL;  \
 	if(!this) {snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle");  \
 		return -1;}  \
 	dinfo=&this->dinfo;  \
-	this->jerr.warning=FALSE;
+	this->jerr.warning=FALSE;  \
+	this->isInstanceError=FALSE;
 
 static int getPixelFormat(int pixelSize, int flags)
 {
@@ -272,37 +279,36 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	return retval;
 }
 
-static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
-	int pixelFormat, int flags)
+static int setDecompDefaults(tjinstance *this, int pixelFormat, int flags)
 {
 	int retval=0;
 
 	switch(pixelFormat)
 	{
 		case TJPF_GRAY:
-			dinfo->out_color_space=JCS_GRAYSCALE;  break;
+			this->dinfo.out_color_space=JCS_GRAYSCALE;  break;
 		#if JCS_EXTENSIONS==1
 		case TJPF_RGB:
-			dinfo->out_color_space=JCS_EXT_RGB;  break;
+			this->dinfo.out_color_space=JCS_EXT_RGB;  break;
 		case TJPF_BGR:
-			dinfo->out_color_space=JCS_EXT_BGR;  break;
+			this->dinfo.out_color_space=JCS_EXT_BGR;  break;
 		case TJPF_RGBX:
-			dinfo->out_color_space=JCS_EXT_RGBX;  break;
+			this->dinfo.out_color_space=JCS_EXT_RGBX;  break;
 		case TJPF_BGRX:
-			dinfo->out_color_space=JCS_EXT_BGRX;  break;
+			this->dinfo.out_color_space=JCS_EXT_BGRX;  break;
 		case TJPF_XRGB:
-			dinfo->out_color_space=JCS_EXT_XRGB;  break;
+			this->dinfo.out_color_space=JCS_EXT_XRGB;  break;
 		case TJPF_XBGR:
-			dinfo->out_color_space=JCS_EXT_XBGR;  break;
+			this->dinfo.out_color_space=JCS_EXT_XBGR;  break;
 		#if JCS_ALPHA_EXTENSIONS==1
 		case TJPF_RGBA:
-			dinfo->out_color_space=JCS_EXT_RGBA;  break;
+			this->dinfo.out_color_space=JCS_EXT_RGBA;  break;
 		case TJPF_BGRA:
-			dinfo->out_color_space=JCS_EXT_BGRA;  break;
+			this->dinfo.out_color_space=JCS_EXT_BGRA;  break;
 		case TJPF_ARGB:
-			dinfo->out_color_space=JCS_EXT_ARGB;  break;
+			this->dinfo.out_color_space=JCS_EXT_ARGB;  break;
 		case TJPF_ABGR:
-			dinfo->out_color_space=JCS_EXT_ABGR;  break;
+			this->dinfo.out_color_space=JCS_EXT_ABGR;  break;
 		#endif
 		#else
 		case TJPF_RGB:
@@ -315,15 +321,15 @@ static int setDecompDefaults(struct jpeg_decompress_struct *dinfo,
 		case TJPF_BGRA:
 		case TJPF_ARGB:
 		case TJPF_ABGR:
-			dinfo->out_color_space=JCS_RGB;  break;
+			this->dinfo.out_color_space=JCS_RGB;  break;
 		#endif
 		case TJPF_CMYK:
-			dinfo->out_color_space=JCS_CMYK;  break;
+			this->dinfo.out_color_space=JCS_CMYK;  break;
 		default:
 			_throw("Unsupported pixel format");
 	}
 
-	if(flags&TJFLAG_FASTDCT) dinfo->dct_method=JDCT_FASTEST;
+	if(flags&TJFLAG_FASTDCT) this->dinfo.dct_method=JDCT_FASTEST;
 
 	bailout:
 	return retval;
@@ -542,6 +548,18 @@ static void fromRGB(unsigned char *src, unsigned char *dst, int width,
 
 /* General API functions */
 
+DLLEXPORT char* DLLCALL tjGetErrorStr2(tjhandle handle)
+{
+	tjinstance *this=(tjinstance *)handle;
+	if(this && this->isInstanceError)
+	{
+		this->isInstanceError=FALSE;
+		return this->errStr;
+	}
+	else return errStr;
+}
+
+
 DLLEXPORT char* DLLCALL tjGetErrorStr(void)
 {
 	return errStr;
@@ -615,6 +633,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 		return NULL;
 	}
 	MEMZERO(this, sizeof(tjinstance));
+	snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
 	return _tjInitCompress(this);
 }
 
@@ -624,7 +643,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSize(int width, int height,
 {
 	unsigned long retval=0;  int mcuw, mcuh, chromasf;
 	if(width<1 || height<1 || jpegSubsamp<0 || jpegSubsamp>=NUMSUBOPT)
-		_throw("tjBufSize(): Invalid argument");
+		_throwg("tjBufSize(): Invalid argument");
 
 	/* This allows for rare corner cases in which a JPEG image can actually be
 	   larger than the uncompressed input (we wouldn't mention it if it hadn't
@@ -642,7 +661,7 @@ DLLEXPORT unsigned long DLLCALL TJBUFSIZE(int width, int height)
 {
 	unsigned long retval=0;
 	if(width<1 || height<1)
-		_throw("TJBUFSIZE(): Invalid argument");
+		_throwg("TJBUFSIZE(): Invalid argument");
 
 	/* This allows for rare corner cases in which a JPEG image can actually be
 	   larger than the uncompressed input (we wouldn't mention it if it hadn't
@@ -660,7 +679,7 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV2(int width, int pad, int height,
 	int retval=0, nc, i;
 
 	if(subsamp<0 || subsamp>=NUMSUBOPT)
-		_throw("tjBufSizeYUV2(): Invalid argument");
+		_throwg("tjBufSizeYUV2(): Invalid argument");
 
 	nc=(subsamp==TJSAMP_GRAY? 1:3);
 	for(i=0; i<nc; i++)
@@ -694,10 +713,10 @@ DLLEXPORT int tjPlaneWidth(int componentID, int width, int subsamp)
 	int pw, nc, retval=0;
 
 	if(width<1 || subsamp<0 || subsamp>=TJ_NUMSAMP)
-		_throw("tjPlaneWidth(): Invalid argument");
+		_throwg("tjPlaneWidth(): Invalid argument");
 	nc=(subsamp==TJSAMP_GRAY? 1:3);
 	if(componentID<0 || componentID>=nc)
-		_throw("tjPlaneWidth(): Invalid argument");
+		_throwg("tjPlaneWidth(): Invalid argument");
 
 	pw=PAD(width, tjMCUWidth[subsamp]/8);
 	if(componentID==0)
@@ -715,10 +734,10 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp)
 	int ph, nc, retval=0;
 
 	if(height<1 || subsamp<0 || subsamp>=TJ_NUMSAMP)
-		_throw("tjPlaneHeight(): Invalid argument");
+		_throwg("tjPlaneHeight(): Invalid argument");
 	nc=(subsamp==TJSAMP_GRAY? 1:3);
 	if(componentID<0 || componentID>=nc)
-		_throw("tjPlaneHeight(): Invalid argument");
+		_throwg("tjPlaneHeight(): Invalid argument");
 
 	ph=PAD(height, tjMCUHeight[subsamp]/8);
 	if(componentID==0)
@@ -738,7 +757,7 @@ DLLEXPORT unsigned long DLLCALL tjPlaneSizeYUV(int componentID, int width,
 	int pw, ph;
 
 	if(width<1 || height<1 || subsamp<0 || subsamp>=NUMSUBOPT)
-		_throw("tjPlaneSizeYUV(): Invalid argument");
+		_throwg("tjPlaneSizeYUV(): Invalid argument");
 
 	pw=tjPlaneWidth(componentID, width, subsamp);
 	ph=tjPlaneHeight(componentID, height, subsamp);
@@ -1032,6 +1051,8 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
 	unsigned char *dstPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
 
+	getcinstance(handle);
+
 	if(width<=0 || height<=0 || dstBuf==NULL || pad<0 || !isPow2(pad)
 		|| subsamp<0 || subsamp>=NUMSUBOPT)
 		_throw("tjEncodeYUV3(): Invalid argument");
@@ -1224,6 +1245,8 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
 	const unsigned char *srcPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
 
+	getcinstance(handle);
+
 	if(srcBuf==NULL || width<=0 || pad<1 || height<=0 || subsamp<0
 		|| subsamp>=NUMSUBOPT)
 		_throw("tjCompressFromYUV(): Invalid argument");
@@ -1292,6 +1315,7 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void)
 		return NULL;
 	}
 	MEMZERO(this, sizeof(tjinstance));
+	snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
 	return _tjInitDecompress(this);
 }
 
@@ -1410,7 +1434,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
-	if(setDecompDefaults(dinfo, pixelFormat, flags)==-1)
+	if(setDecompDefaults(this, pixelFormat, flags)==-1)
 	{
 		retval=-1;  goto bailout;
 	}
@@ -1616,7 +1640,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	dinfo->marker->read_markers=old_read_markers;
 	dinfo->marker->reset_marker_reader=old_reset_marker_reader;
 
-	if(setDecompDefaults(dinfo, pixelFormat, flags)==-1)
+	if(setDecompDefaults(this, pixelFormat, flags)==-1)
 	{
 		retval=-1;  goto bailout;
 	}
@@ -1727,6 +1751,8 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
 {
 	const unsigned char *srcPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
+
+	getdinstance(handle);
 
 	if(srcBuf==NULL || pad<0 || !isPow2(pad) || subsamp<0 || subsamp>=NUMSUBOPT
 		|| width<=0 || height<=0)
@@ -2025,6 +2051,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void)
 		return NULL;
 	}
 	MEMZERO(this, sizeof(tjinstance));
+	snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
 	handle=_tjInitCompress(this);
 	if(!handle) return NULL;
 	handle=_tjInitDecompress(this);

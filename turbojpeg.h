@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015, 2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -608,7 +608,7 @@ extern "C" {
  * Create a TurboJPEG compressor instance.
  *
  * @return a handle to the newly-created instance, or NULL if an error
- * occurred (see #tjGetErrorStr().)
+ * occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
 
@@ -670,7 +670,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
 */
 DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
   int width, int pitch, int height, int pixelFormat, unsigned char **jpegBuf,
@@ -734,7 +734,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
 */
 DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
   const unsigned char *srcBuf, int width, int pad, int height, int subsamp,
@@ -804,7 +804,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
 */
 DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
   const unsigned char **srcPlanes, int width, const int *strides, int height,
@@ -964,7 +964,7 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp);
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
 */
 DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
   const unsigned char *srcBuf, int width, int pitch, int height,
@@ -1022,7 +1022,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
 */
 DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
   const unsigned char *srcBuf, int width, int pitch, int height,
@@ -1034,7 +1034,7 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
  * Create a TurboJPEG decompressor instance.
  *
  * @return a handle to the newly-created instance, or NULL if an error
- * occurred (see #tjGetErrorStr().)
+ * occurred (see #tjGetErrorStr2().)
 */
 DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
 
@@ -1062,7 +1062,7 @@ DLLEXPORT tjhandle DLLCALL tjInitDecompress(void);
  * of the JPEG colorspace constants, indicating the colorspace of the JPEG
  * image (see @ref TJCS "JPEG colorspaces".)
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
 */
 DLLEXPORT int DLLCALL tjDecompressHeader3(tjhandle handle,
   const unsigned char *jpegBuf, unsigned long jpegSize, int *width,
@@ -1077,7 +1077,7 @@ DLLEXPORT int DLLCALL tjDecompressHeader3(tjhandle handle,
  * the number of elements in the list
  *
  * @return a pointer to a list of fractional scaling factors, or NULL if an
- * error is encountered (see #tjGetErrorStr().)
+ * error is encountered (see #tjGetErrorStr2().)
 */
 DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
 
@@ -1129,7 +1129,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
   const unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
@@ -1179,7 +1179,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
   const unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
@@ -1235,7 +1235,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
   const unsigned char *jpegBuf, unsigned long jpegSize,
@@ -1287,7 +1287,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
   int pad, int subsamp, unsigned char *dstBuf, int width, int pitch,
@@ -1344,7 +1344,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
   const unsigned char **srcPlanes, const int *strides, int subsamp,
@@ -1356,7 +1356,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
  * Create a new TurboJPEG transformer instance.
  *
  * @return a handle to the newly-created instance, or NULL if an error
- * occurred (see #tjGetErrorStr().)
+ * occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
 
@@ -1414,7 +1414,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags"
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
   const unsigned char *jpegBuf, unsigned long jpegSize, int n,
@@ -1428,7 +1428,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
  * @param handle a handle to a TurboJPEG compressor, decompressor or
  * transformer instance
  *
- * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
  */
 DLLEXPORT int DLLCALL tjDestroy(tjhandle handle);
 
@@ -1465,9 +1465,14 @@ DLLEXPORT void DLLCALL tjFree(unsigned char *buffer);
 /**
  * Returns a descriptive error message explaining why the last command failed.
  *
+ * @param handle a handle to a TurboJPEG compressor, decompressor, or
+ * transformer instance, or NULL if the error was generated by a global
+ * function (but note that retrieving the error message for a global function
+ * is not thread-safe.)
+ *
  * @return a descriptive error message explaining why the last command failed.
  */
-DLLEXPORT char* DLLCALL tjGetErrorStr(void);
+DLLEXPORT char* DLLCALL tjGetErrorStr2(tjhandle handle);
 
 
 /* Deprecated functions and macros */
@@ -1529,6 +1534,8 @@ DLLEXPORT int DLLCALL tjDecompress(tjhandle handle,
 DLLEXPORT int DLLCALL tjDecompressToYUV(tjhandle handle,
   unsigned char *jpegBuf, unsigned long jpegSize, unsigned char *dstBuf,
   int flags);
+
+DLLEXPORT char* DLLCALL tjGetErrorStr(void);
 
 
 /**

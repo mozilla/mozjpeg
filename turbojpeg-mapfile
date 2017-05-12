@@ -54,3 +54,9 @@ TURBOJPEG_1.4
 		tjPlaneSizeYUV;
 		tjPlaneWidth;
 } TURBOJPEG_1.2;
+
+TURBOJPEG_1.6
+{
+	global:
+		tjGetErrorStr2;
+} TURBOJPEG_1.4;

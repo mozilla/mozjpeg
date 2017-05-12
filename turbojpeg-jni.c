@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2016 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -46,7 +46,7 @@
 	goto bailout;  \
 }
 
-#define _throwtj() _throw(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException")
+#define _throwtj() _throw(tjGetErrorStr2(handle), "org/libjpegturbo/turbojpeg/TJException")
 
 #define _throwarg(msg) _throw(msg, "java/lang/IllegalArgumentException")
 

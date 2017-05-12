@@ -40,6 +40,15 @@ embed ICC profile data in a JPEG file while compressing or transforming.  This
 eliminates the need for downstream projects, such as color management libraries
 and browsers, to include their own glueware for accomplishing this.
 
+4. Improved error handling in the TurboJPEG API library:
+
+     - Introduced a new function (`tjGetErrorStr2()`) in the TurboJPEG C API
+that allows compression/decompression/transform error messages to be retrieved
+in a thread-safe manner.  Retrieving error messages from global functions, such
+as `tjInitCompress()` or `tjBufSize()`, is still thread-unsafe, but since those
+functions will only throw errors if passed an invalid argument or if a memory
+allocation failure occurs, thread safety is not as much of a concern.
+
 
 1.5.2
 =====

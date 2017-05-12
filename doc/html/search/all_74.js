@@ -32,7 +32,7 @@ var searchData=
   ['tjflag_5ffastupsample',['TJFLAG_FASTUPSAMPLE',['../group___turbo_j_p_e_g.html#ga4ee4506c81177a06f77e2504a22efd2d',1,'turbojpeg.h']]],
   ['tjflag_5fnorealloc',['TJFLAG_NOREALLOC',['../group___turbo_j_p_e_g.html#ga8808d403c68b62aaa58a4c1e58e98963',1,'turbojpeg.h']]],
   ['tjfree',['tjFree',['../group___turbo_j_p_e_g.html#ga8c4a1231dc06a450514c835f6471f137',1,'turbojpeg.h']]],
-  ['tjgeterrorstr',['tjGetErrorStr',['../group___turbo_j_p_e_g.html#ga9af79c908ec131b1ae8d52fe40375abf',1,'turbojpeg.h']]],
+  ['tjgeterrorstr2',['tjGetErrorStr2',['../group___turbo_j_p_e_g.html#ga94a235bd4f1088f61ad87b4eadb64c9c',1,'turbojpeg.h']]],
   ['tjgetscalingfactors',['tjGetScalingFactors',['../group___turbo_j_p_e_g.html#ga6449044b9af402999ccf52f401333be8',1,'turbojpeg.h']]],
   ['tjgreenoffset',['tjGreenOffset',['../group___turbo_j_p_e_g.html#ga82d6e35da441112a411da41923c0ba2f',1,'turbojpeg.h']]],
   ['tjhandle',['tjhandle',['../group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763',1,'turbojpeg.h']]],

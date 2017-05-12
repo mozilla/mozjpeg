@@ -286,7 +286,7 @@ message(STATUS "libjpeg API shared library version = ${SO_MAJOR_VERSION}.${SO_AG
 # minor SO versions don't change.  However, we increase the middle number (the
 # SO "age") whenever functions are added to the API.
 set(TURBOJPEG_SO_MAJOR_VERSION 0)
-set(TURBOJPEG_SO_VERSION 0.1.0)
+set(TURBOJPEG_SO_VERSION 0.2.0)
 
 
 ###############################################################################

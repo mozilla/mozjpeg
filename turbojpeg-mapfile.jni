@@ -90,3 +90,9 @@ TURBOJPEG_1.4
 		Java_org_libjpegturbo_turbojpeg_TJ_planeSizeYUV__IIIII;
 		Java_org_libjpegturbo_turbojpeg_TJ_planeWidth__III;
 } TURBOJPEG_1.3;
+
+TURBOJPEG_1.6
+{
+	global:
+		tjGetErrorStr2;
+} TURBOJPEG_1.4;

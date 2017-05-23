@@ -45,6 +45,9 @@ option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_S
 option(ENABLE_STATIC "Build static libraries" TRUE)
 option(ENABLE_SHARED "Build shared libraries" TRUE)
 
+INCLUDE (CheckIncludeFiles)
+CHECK_INCLUDE_FILES (io.h HAVE_IO_H)
+
 if(WITH_12BIT)
   set(WITH_SIMD FALSE)
   set(WITH_TURBOJPEG FALSE)

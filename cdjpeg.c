@@ -16,8 +16,13 @@
 #include <ctype.h>              /* to declare isupper(), tolower() */
 #ifdef USE_SETMODE
 #include <fcntl.h>              /* to declare setmode()'s parameter macros */
+#ifdef HAVE_IO_H
 /* If you have setmode() but not <io.h>, just delete this line: */
 #include <io.h>                 /* to declare setmode() */
+#endif
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 #endif
 
 

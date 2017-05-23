@@ -45,7 +45,7 @@ jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays)
   /* setting up scan optimisation pattern failed, disable scan optimisation */
   if (cinfo->master->num_scans_luma == 0)
     cinfo->master->optimize_scans = FALSE;
-  
+
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
   /* Mark all tables to be written */
@@ -94,7 +94,7 @@ jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo,
   /* Initialize all parameters to default values */
   jpeg_set_defaults(dstinfo);
   dstinfo->master->trellis_quant = FALSE;
-  
+
   /* jpeg_set_defaults may choose wrong colorspace, eg YCbCr if input is RGB.
    * Fix it to get the right header markers for the image colorspace.
    */

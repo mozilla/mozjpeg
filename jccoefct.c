@@ -134,7 +134,7 @@ start_pass_coef (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
       ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
     coef->pub.compress_data = compress_trellis_pass;
     break;
-      
+
   default:
     ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
     break;
@@ -275,12 +275,12 @@ compress_first_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
       ((j_common_ptr) cinfo, coef->whole_image[ci],
        coef->iMCU_row_num * compptr->v_samp_factor,
        (JDIMENSION) compptr->v_samp_factor, TRUE);
-    
+
     buffer_dst = (*cinfo->mem->access_virt_barray)
       ((j_common_ptr) cinfo, coef->whole_image_uq[ci],
        coef->iMCU_row_num * compptr->v_samp_factor,
        (JDIMENSION) compptr->v_samp_factor, TRUE);
-    
+
     /* Count non-dummy DCT block rows in this iMCU row. */
     if (coef->iMCU_row_num < last_iMCU_row)
       block_rows = compptr->v_samp_factor;
@@ -366,12 +366,12 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     c_derived_tbl *dctbl = &dctbl_data;
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
-    
+
 #ifdef C_ARITH_CODING_SUPPORTED
     arith_rates arith_r_data;
     arith_rates *arith_r = &arith_r_data;
 #endif
-    
+
     compptr = cinfo->cur_comp_info[ci];
 
 #ifdef C_ARITH_CODING_SUPPORTED
@@ -389,12 +389,12 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     ((j_common_ptr) cinfo, coef->whole_image[compptr->component_index],
      coef->iMCU_row_num * compptr->v_samp_factor,
      (JDIMENSION) compptr->v_samp_factor, TRUE);
-    
+
     buffer_dst = (*cinfo->mem->access_virt_barray)
     ((j_common_ptr) cinfo, coef->whole_image_uq[compptr->component_index],
      coef->iMCU_row_num * compptr->v_samp_factor,
      (JDIMENSION) compptr->v_samp_factor, TRUE);
-    
+
     /* Count non-dummy DCT block rows in this iMCU row. */
     if (coef->iMCU_row_num < last_iMCU_row)
       block_rows = compptr->v_samp_factor;
@@ -409,9 +409,9 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     ndummy = (int) (blocks_across % h_samp_factor);
     if (ndummy > 0)
       ndummy = h_samp_factor - ndummy;
-    
+
     lastDC = 0;
-    
+
     /* Perform DCT for all non-dummy blocks in this iMCU row.  Each call
      * on forward_DCT processes a complete horizontal row of DCT blocks.
      */
@@ -434,7 +434,7 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
                          cinfo->master->norm_src[compptr->quant_tbl_no],
                          cinfo->master->norm_coef[compptr->quant_tbl_no],
                          &lastDC, lastblockrow, buffer_dst[block_row-1]);
-      
+
       if (ndummy > 0) {
         /* Create dummy blocks at the right edge of the image. */
         thisblockrow += blocks_across; /* => first dummy block */
@@ -474,7 +474,7 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
   /* NB: compress_output will increment iMCU_row_num if successful.
    * A suspension return will result in redoing all the work above next time.
    */
-  
+
   /* Emit data to the entropy encoder, sharing code with subsequent passes */
   return compress_output(cinfo, input_buf);
 }
@@ -581,7 +581,7 @@ jinit_c_coef_controller (j_compress_ptr cinfo, boolean need_full_buffer)
          (JDIMENSION) jround_up((long) compptr->height_in_blocks,
                                 (long) compptr->v_samp_factor),
          (JDIMENSION) compptr->v_samp_factor);
-      
+
       coef->whole_image_uq[ci] = (*cinfo->mem->request_virt_barray)
         ((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
          (JDIMENSION) jround_up((long) compptr->width_in_blocks,

@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
   jpeg_create_compress(&cinfo);
 
   jpg_fd = fopen(jpg_path, "wb");
-  if (!jpg_fd) {    
+  if (!jpg_fd) {
     free(jpg_buffer);
     fprintf(stderr, "Invalid path to JPEG file!\n");
     return 1;

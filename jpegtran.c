@@ -244,7 +244,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "fastcrush", 4)) {
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
-      
+
     } else if (keymatch(arg, "grayscale", 1) || keymatch(arg, "greyscale",1)) {
       /* Force to grayscale. */
 #if TRANSFORMS_SUPPORTED
@@ -320,7 +320,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
       jpeg_c_set_int_param(cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
-      
+
     } else if (keymatch(arg, "rotate", 2)) {
       /* Rotate 90, 180, or 270 degrees (measured clockwise). */
       if (++argn >= argc)       /* advance to next argument */
@@ -589,12 +589,12 @@ main (int argc, char **argv)
 
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
-  
+
   if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
       jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
         == JCP_MAX_COMPRESSION) {
     size_t nbytes;
-    
+
     unsigned char *buffer = outbuffer;
     unsigned long size = outsize;
     if (insize < size) {
@@ -611,7 +611,7 @@ main (int argc, char **argv)
         fprintf(stderr, "%s: can't write to stdout\n", progname);
     }
   }
-    
+
   jpeg_destroy_compress(&dstinfo);
   (void) jpeg_finish_decompress(&srcinfo);
   jpeg_destroy_decompress(&srcinfo);

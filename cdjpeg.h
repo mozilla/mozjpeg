@@ -37,12 +37,12 @@ struct cjpeg_source_struct {
 
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  
+
 #if JPEG_RAW_READER
   // For reading JPEG
   JSAMPARRAY plane_pointer[4];
 #endif
-  
+
   jpeg_saved_marker_ptr marker_list;
 };
 

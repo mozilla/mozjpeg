@@ -24,7 +24,7 @@ mozjpeg's implementation of the libjpeg API includes an extensibility framework
 that allows new features to be added without modifying the transparent libjpeg
 compress/decompress structures (which would break backward ABI compatibility.)
 Extension parameters are placed into the opaque jpeg_comp_master structure, and
-a set of accessor functions and globally unique tokens allows for 
+a set of accessor functions and globally unique tokens allows for
 getting/setting those parameters without directly accessing the structure.
 
 Currently, only the accessor functions necessary to support the mozjpeg

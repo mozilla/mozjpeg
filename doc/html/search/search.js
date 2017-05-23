@@ -40,11 +40,11 @@ function convertToId(search)
     {
       result+=c;
     }
-    else if (cn<16) 
+    else if (cn<16)
     {
       result+="_0"+cn.toString(16);
     }
-    else 
+    else
     {
       result+="_"+cn.toString(16);
     }
@@ -83,14 +83,14 @@ function getYPos(item)
 /* A class handling everything associated with the search panel.
 
    Parameters:
-   name - The name of the global variable that will be 
+   name - The name of the global variable that will be
           storing this instance.  Is needed to be able to set timeouts.
    resultPath - path to use for external files
 */
 function SearchBox(name, resultsPath, inFrame, label)
 {
   if (!name || !resultsPath) {  alert("Missing parameters to SearchBox."); }
-   
+
   // ---------- Instance variables
   this.name                  = name;
   this.resultsPath           = resultsPath;
@@ -167,7 +167,7 @@ function SearchBox(name, resultsPath, inFrame, label)
     }
 
     // stop selection hide timer
-    if (this.hideTimeout) 
+    if (this.hideTimeout)
     {
       clearTimeout(this.hideTimeout);
       this.hideTimeout=0;
@@ -196,7 +196,7 @@ function SearchBox(name, resultsPath, inFrame, label)
       if (e.shiftKey==1)
       {
         this.OnSearchSelectShow();
-        var win=this.DOMSearchSelectWindow(); 
+        var win=this.DOMSearchSelectWindow();
         for (i=0;i<win.childNodes.length;i++)
         {
           var child = win.childNodes[i]; // get span within a
@@ -247,7 +247,7 @@ function SearchBox(name, resultsPath, inFrame, label)
   this.SelectItemCount = function(id)
   {
     var count=0;
-    var win=this.DOMSearchSelectWindow(); 
+    var win=this.DOMSearchSelectWindow();
     for (i=0;i<win.childNodes.length;i++)
     {
       var child = win.childNodes[i]; // get span within a
@@ -262,7 +262,7 @@ function SearchBox(name, resultsPath, inFrame, label)
   this.SelectItemSet = function(id)
   {
     var i,j=0;
-    var win=this.DOMSearchSelectWindow(); 
+    var win=this.DOMSearchSelectWindow();
     for (i=0;i<win.childNodes.length;i++)
     {
       var child = win.childNodes[i]; // get span within a
@@ -342,11 +342,11 @@ function SearchBox(name, resultsPath, inFrame, label)
 
     var code = searchValue.toLowerCase().charCodeAt(0);
     var hexCode;
-    if (code<16) 
+    if (code<16)
     {
       hexCode="0"+code.toString(16);
     }
-    else 
+    else
     {
       hexCode=code.toString(16);
     }
@@ -368,7 +368,7 @@ function SearchBox(name, resultsPath, inFrame, label)
        hasResultsPage = false;
     }
 
-    window.frames.MSearchResults.location = resultsPageWithSearch;  
+    window.frames.MSearchResults.location = resultsPageWithSearch;
     var domPopupSearchResultsWindow = this.DOMPopupSearchResultsWindow();
 
     if (domPopupSearchResultsWindow.style.display!='block')
@@ -402,12 +402,12 @@ function SearchBox(name, resultsPath, inFrame, label)
 
   // -------- Activation Functions
 
-  // Activates or deactivates the search panel, resetting things to 
-  // their default values if necessary. 
+  // Activates or deactivates the search panel, resetting things to
+  // their default values if necessary.
   this.Activate = function(isActive)
   {
     if (isActive || // open it
-        this.DOMPopupSearchResultsWindow().style.display == 'block' 
+        this.DOMPopupSearchResultsWindow().style.display == 'block'
        )
     {
       this.DOMSearchBox().className = 'MSearchBoxActive';
@@ -415,8 +415,8 @@ function SearchBox(name, resultsPath, inFrame, label)
       var searchField = this.DOMSearchField();
 
       if (searchField.value == this.searchLabel) // clear "Search" term upon entry
-      {  
-        searchField.value = '';  
+      {
+        searchField.value = '';
         this.searchActive = true;
       }
     }
@@ -455,12 +455,12 @@ function SearchResults(name)
         }
 
         if (element.nodeName == 'DIV' && element.hasChildNodes())
-        {  
-           element = element.firstChild;  
+        {
+           element = element.firstChild;
         }
         else if (element.nextSibling)
-        {  
-           element = element.nextSibling;  
+        {
+           element = element.nextSibling;
         }
         else
         {
@@ -471,8 +471,8 @@ function SearchResults(name)
           while (element && element!=parentElement && !element.nextSibling);
 
           if (element && element!=parentElement)
-          {  
-            element = element.nextSibling;  
+          {
+            element = element.nextSibling;
           }
         }
       }
@@ -525,7 +525,7 @@ function SearchResults(name)
           var rowMatchName = row.id.toLowerCase();
           rowMatchName = rowMatchName.replace(/^sr\d*_/, ''); // strip 'sr123_'
 
-          if (search.length<=rowMatchName.length && 
+          if (search.length<=rowMatchName.length &&
              rowMatchName.substr(0, search.length)==search)
           {
             row.style.display = 'block';
@@ -596,7 +596,7 @@ function SearchResults(name)
 
     this.ProcessKeys = function(e)
     {
-      if (e.type == "keydown") 
+      if (e.type == "keydown")
       {
         this.repeatOn = false;
         this.lastKey = e.keyCode;
@@ -617,7 +617,7 @@ function SearchResults(name)
       return this.lastKey!=0;
     }
 
-    this.Nav = function(evt,itemIndex) 
+    this.Nav = function(evt,itemIndex)
     {
       var e  = (evt) ? evt : window.event; // for IE
       if (e.keyCode==13) return true;
@@ -631,7 +631,7 @@ function SearchResults(name)
         {
           var child = this.FindChildElement(focusItem.parentNode.parentNode.id);
           if (child && child.style.display == 'block') // children visible
-          { 
+          {
             var n=0;
             var tmpElem;
             while (1) // search for last child
@@ -724,7 +724,7 @@ function SearchResults(name)
         if (elem)
         {
           elem.focus();
-        } 
+        }
       }
       else if (this.lastKey==27) // Escape
       {

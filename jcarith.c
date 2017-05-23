@@ -123,7 +123,7 @@ emit_byte (int val, j_compress_ptr cinfo)
   /* Do not emit bytes during trellis passes */
   if (cinfo->master->trellis_passes)
     return;
-  
+
   *dest->next_output_byte++ = (JOCTET) val;
   if (--dest->free_in_buffer == 0)
     if (! (*dest->empty_output_buffer) (cinfo))
@@ -844,7 +844,7 @@ start_pass (j_compress_ptr cinfo, boolean gather_statistics)
   /* Trellis optimization does DC and AC in same pass and without refinement
    * so consider progressive mode to be off in such case */
   progressive_mode = (cinfo->master->trellis_passes) ? FALSE : cinfo->progressive_mode;
-  
+
   /* Select execution routines */
   if (progressive_mode) {
     if (cinfo->Ah == 0) {
@@ -940,11 +940,11 @@ jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rate
 {
   int i;
   arith_entropy_ptr entropy = (arith_entropy_ptr) cinfo->entropy;
-  
+
   r->arith_dc_L = cinfo->arith_dc_L[dc_tbl_no];
   r->arith_dc_U = cinfo->arith_dc_U[dc_tbl_no];
   r->arith_ac_K = cinfo->arith_ac_K[ac_tbl_no];
-  
+
   for (i = 0; i < DC_STAT_BINS; i++) {
     int state = entropy->dc_stats[dc_tbl_no][i];
     int mps_val = state >> 7;

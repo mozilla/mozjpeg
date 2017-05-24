@@ -61,6 +61,8 @@ Build Requirements
    that do not have a JDK installed, you can obtain the Oracle Java Development
    Kit from http://www.java.com.
 
+-- pkg-config when building on debian
+
 
 ==================
 Out-of-Tree Builds

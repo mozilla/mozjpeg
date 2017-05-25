@@ -923,7 +923,7 @@ LOCAL(int) get_num_dc_trellis_candidates(int dc_quantval) {
 }
 
 GLOBAL(void)
-quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+quantize_trellis(j_compress_ptr cinfo, jpeg_component_info *compptr, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks, JDIMENSION row_num,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
                  JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
 {
@@ -1011,21 +1011,21 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     lambda_base = 1.0 / norm;
   
   for (bi = 0; bi < num_blocks; bi++) {
-    
+
     norm = 0.0;
     for (i = 1; i < DCTSIZE2; i++) {
       norm += src[bi][i] * src[bi][i];
     }
     norm /= 63.0;
-    
+
     if (cinfo->master->lambda_log_scale2 > 0.0)
       lambda = pow(2.0, cinfo->master->lambda_log_scale1) * lambda_base /
                    (pow(2.0, cinfo->master->lambda_log_scale2) + norm);
     else
       lambda = pow(2.0, cinfo->master->lambda_log_scale1 - 12.0) * lambda_base;
-    
-    lambda_dc = lambda * lambda_tbl[0];
-    
+
+    lambda_dc = cinfo->master->lambda(cinfo->master->lambda_user_data, compptr, src[bi], bi, row_num, 0, lambda * lambda_tbl[0]);
+
     accumulated_zero_dist[Ss-1] = 0.0;
     accumulated_cost[Ss-1] = 0.0;
 
@@ -1108,6 +1108,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
     /* Do AC coefficients */
     for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
+      float lambda_ac = cinfo->master->lambda(cinfo->master->lambda_user_data, compptr, src[bi], bi, row_num, i, lambda * lambda_tbl[z]);
 
       int sign = src[bi][z] >> 31;
       int x = abs(src[bi][z]);
@@ -1117,9 +1118,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       float candidate_dist[16];
       int num_candidates;
       int qval;
-      
-      accumulated_zero_dist[i] = x * x * lambda * lambda_tbl[z] + accumulated_zero_dist[i-1];
-      
+
+      accumulated_zero_dist[i] = x * x * lambda_ac + accumulated_zero_dist[i-1];
+
       qval = (x + q/2) / q; /* quantized value (round nearest) */
 
       if (qval == 0) {
@@ -1318,7 +1319,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
 
 #ifdef C_ARITH_CODING_SUPPORTED
 GLOBAL(void)
-quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+quantize_trellis_arith(j_compress_ptr cinfo, jpeg_component_info *compptr, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks, JDIMENSION row_num,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
                  JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
 {
@@ -1398,9 +1399,9 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
       (pow(2.0, cinfo->master->lambda_log_scale2) + norm);
     else
       lambda = pow(2.0, cinfo->master->lambda_log_scale1 - 12.0) * lambda_base;
-    
-    lambda_dc = lambda * lambda_tbl[0];
-    
+
+    lambda_dc = cinfo->master->lambda(cinfo->master->lambda_user_data, compptr, src[bi], bi, row_num, 0, lambda * lambda_tbl[0]);
+
     accumulated_zero_dist[Ss-1] = 0.0;
     accumulated_cost[Ss-1] = 0.0;
     
@@ -1501,7 +1502,8 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
     /* Do AC coefficients */
     for (i = Ss; i <= Se; i++) {
       int z = jpeg_natural_order[i];
-      
+      float lambda_ac = cinfo->master->lambda(cinfo->master->lambda_user_data, compptr, src[bi], bi, row_num, i, lambda * lambda_tbl[z]);
+
       int sign = src[bi][z] >> 31;
       int x = abs(src[bi][z]);
       int q = 8 * qtbl->quantval[z];
@@ -1510,9 +1512,9 @@ quantize_trellis_arith(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_bloc
       int num_candidates;
       int qval;
       int delta;
-      
-      accumulated_zero_dist[i] = x * x * lambda * lambda_tbl[z] + accumulated_zero_dist[i-1];
-      
+
+      accumulated_zero_dist[i] = x * x * lambda_ac + accumulated_zero_dist[i-1];
+
       qval = (x + q/2) / q; /* quantized value (round nearest) */
       
       if (qval == 0) {

@@ -166,3 +166,8 @@ jpeg_write_raw_data (j_compress_ptr cinfo, JSAMPIMAGE data,
   cinfo->next_scanline += lines_per_iMCU_row;
   return lines_per_iMCU_row;
 }
+
+GLOBAL(void) jpeg_set_trellis_lambda_callback(const j_compress_ptr cinfo, jpeg_lambda_callback *callback, void *user_data) {
+  cinfo->master->lambda = callback;
+  cinfo->master->lambda_user_data = user_data;
+}

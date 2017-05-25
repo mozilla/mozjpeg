@@ -1129,6 +1129,25 @@ EXTERN(void) jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param,
 EXTERN(int) jpeg_c_get_int_param (const j_compress_ptr cinfo, J_INT_PARAM param);
 
 
+/**
+ * When trellis quantization is on, this function is consulted per coefficient
+ * to adjust lambda value. Lambda is a coefficient controlling tradeoff between
+ * file size and quality (higher values mean higher quality)
+ *
+ * @param  user_data   value from jpeg_set_trellis_lambda_callback, can be NULL
+ * @param  compptr     current component info
+ * @param  block       DCT coefficients
+ * @param  block_col   x coordinate of the current block
+ * @param  row_num     y coordinate of the current block
+ * @param  coef_index  index of the coefficient, in frequency order
+ * @param  lambda      default lambda value computed for this block
+ * @return             modified lambda value
+ */
+typedef float jpeg_lambda_callback(void *user_data, jpeg_component_info *compptr,
+  JBLOCK block, JDIMENSION block_col, JDIMENSION row_num, int coef_index, float lambda);
+EXTERN(void) jpeg_set_trellis_lambda_callback(const j_compress_ptr cinfo,
+  jpeg_lambda_callback *callback, void *user_data);
+
 /* These marker codes are exported since applications and data source modules
  * are likely to want to use them.
  */

@@ -25,6 +25,9 @@
 #include "jmemsys.h"
 #include "jcmaster.h"
 
+LOCAL(float) jpeg_no_op_lambda(void *user_data, jpeg_component_info *compptr, JBLOCK block, JDIMENSION block_col, JDIMENSION block_row, int coef_index_natural_order, float lambda) {
+  return lambda;
+}
 
 /*
  * Initialization of a JPEG compression object.
@@ -102,6 +105,7 @@ jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
                                   sizeof(my_comp_master));
   MEMZERO(cinfo->master, sizeof(my_comp_master));
 
+  cinfo->master->lambda = jpeg_no_op_lambda;
   cinfo->master->compress_profile = JCP_MAX_COMPRESSION;
 }
 

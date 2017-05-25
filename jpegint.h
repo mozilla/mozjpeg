@@ -103,6 +103,9 @@ struct jpeg_comp_master {
   float lambda_log_scale2;
   
   float trellis_delta_dc_weight;
+
+  jpeg_lambda_callback *lambda;
+  void *lambda_user_data;
 };
 
 #ifdef C_ARITH_CODING_SUPPORTED
@@ -422,7 +425,7 @@ EXTERN(void) jzero_far (void *target, size_t bytestozero);
 EXTERN(void) jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r);
 
 EXTERN(void) quantize_trellis_arith
-(j_compress_ptr cinfo, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+(j_compress_ptr cinfo, jpeg_component_info *compptr, arith_rates *r, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks, JDIMENSION row_num,
  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
  JBLOCKROW coef_blocks_above, JBLOCKROW src_above);
 #endif

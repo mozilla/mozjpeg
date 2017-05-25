@@ -44,6 +44,6 @@ EXTERN(void) jpeg_gen_optimal_table
         (j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[]);
 
 EXTERN(void) quantize_trellis
-        (j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
+        (j_compress_ptr cinfo, jpeg_component_info *compptr, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks, JDIMENSION row_num,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
          JBLOCKROW coef_blocks_above, JBLOCKROW src_above);

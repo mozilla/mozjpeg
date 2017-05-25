@@ -2115,6 +2115,10 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 			&xinfo[i]);
 		if(!(t[i].options&TJXOPT_NOOUTPUT))
 		{
+#ifdef C_PROGRESSIVE_SUPPORTED
+			if (cinfo->num_scans != 0)     /* process -progressive; -scans can override */
+				jpeg_simple_progression(cinfo);
+#endif
 			jpeg_write_coefficients(cinfo, dstcoefs);
 			jcopy_markers_execute(dinfo, cinfo, JCOPYOPT_ALL);
 		}

@@ -3,8 +3,8 @@
  */
 #define JPEG_LIB_VERSION  62	/* Version 6b */
 
-/* libjpeg-turbo version */
-#define LIBJPEG_TURBO_VERSION 0
+/* mozjpeg version */
+#define MOZJPEG_VERSION 0
 
 /* libjpeg-turbo version in integer form */
 #define LIBJPEG_TURBO_VERSION_NUMBER 0

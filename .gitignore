@@ -43,3 +43,4 @@ Makefile
 /tjunittest
 /wrjpgcom
 /yuvjpeg
+test_yuv*.jpg

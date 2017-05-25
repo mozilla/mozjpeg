@@ -73,18 +73,23 @@ endif
 
 if SIMD_POWERPC
 
-libsimd_la_SOURCES = jsimd_powerpc.c jsimd_altivec.h jcsample.h \
+noinst_LTLIBRARIES += libsimd_altivec.la
+
+libsimd_altivec_la_SOURCES = \
 	jccolor-altivec.c     jcgray-altivec.c      jcsample-altivec.c \
 	jdcolor-altivec.c     jdmerge-altivec.c     jdsample-altivec.c \
 	jfdctfst-altivec.c    jfdctint-altivec.c \
 	jidctfst-altivec.c    jidctint-altivec.c \
 	jquanti-altivec.c
-libsimd_la_CFLAGS = -maltivec
+libsimd_altivec_la_CFLAGS = -maltivec
 
 jccolor-altivec.lo:  jccolext-altivec.c
 jcgray-altivec.lo:   jcgryext-altivec.c
 jdcolor-altivec.lo:  jdcolext-altivec.c
 jdmerge-altivec.lo:  jdmrgext-altivec.c
+
+libsimd_la_SOURCES = jsimd_powerpc.c jsimd_altivec.h jcsample.h
+libsimd_la_LIBADD = libsimd_altivec.la
 
 endif
 

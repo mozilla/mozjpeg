@@ -703,10 +703,8 @@ write_frame_header (j_compress_ptr cinfo)
       if (compptr->dc_tbl_no > 1 || compptr->ac_tbl_no > 1)
         is_baseline = FALSE;
     }
-    if (prec && is_baseline) {
+    if (prec) {
       is_baseline = FALSE;
-      /* If it's baseline except for quantizer size, warn the user */
-      TRACEMS(cinfo, 0, JTRC_16BIT_TABLES);
     }
   }
 

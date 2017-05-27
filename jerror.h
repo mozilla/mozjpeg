@@ -137,8 +137,6 @@ JMESSAGE(JERR_XMS_READ, "Read from XMS failed")
 JMESSAGE(JERR_XMS_WRITE, "Write to XMS failed")
 JMESSAGE(JMSG_COPYRIGHT, JCOPYRIGHT_SHORT)
 JMESSAGE(JMSG_VERSION, JVERSION)
-JMESSAGE(JTRC_16BIT_TABLES,
-         "Caution: quantization tables are too coarse for baseline JPEG")
 JMESSAGE(JTRC_ADOBE,
          "Adobe APP14 marker: version %d, flags 0x%04x 0x%04x, transform %d")
 JMESSAGE(JTRC_APP0, "Unknown APP0 marker (not JFIF), length %u")

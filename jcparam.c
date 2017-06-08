@@ -590,7 +590,8 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
 
   switch (colorspace) {
   case JCS_GRAYSCALE:
-    cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
+	if (cinfo->use_moz_defaults == FALSE)
+		cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker (omitted by default to save 18 bytes) */
     cinfo->num_components = 1;
     /* JFIF specifies component ID 1 */
     SET_COMP(0, 1, 1,1, 0, 0,0);
@@ -603,7 +604,8 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
     SET_COMP(2, 0x42 /* 'B' */, 1,1, 0, 0,0);
     break;
   case JCS_YCbCr:
-    cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
+	if (cinfo->use_moz_defaults == FALSE)
+		cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker (omitted by default to save 18 bytes) */
     cinfo->num_components = 3;
     /* JFIF specifies component IDs 1,2,3 */
     /* We default to 2x2 subsamples of chrominance */

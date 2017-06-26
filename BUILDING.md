@@ -442,6 +442,79 @@ needs.
       LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
     make
 
+
+### x86 (32-bit)
+
+The following is a general recipe script that can be modified for your specific
+needs.
+
+    # Set these variables to suit your needs
+    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
+    BUILD_PLATFORM={the platform name for the NDK package you installed--
+      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+      toolchain directory under ${NDK_PATH}/toolchains/.}
+    ANDROID_VERSION={The minimum version of Android to support-- for example,
+      "16", "19", etc.}
+
+    # It should not be necessary to modify the rest
+    HOST=i686-linux-android
+    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86
+    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+
+    TOOLCHAIN=${NDK_PATH}/toolchains/x86-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+    export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
+    export AR=${TOOLCHAIN}/bin/${HOST}-ar
+    export NM=${TOOLCHAIN}/bin/${HOST}-nm
+    export CC=${TOOLCHAIN}/bin/${HOST}-gcc
+    export LD=${TOOLCHAIN}/bin/${HOST}-ld
+    export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
+    export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
+    export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
+    cd {build_directory}
+    sh {source_directory}/configure --host=${HOST} \
+      CFLAGS="${ANDROID_CFLAGS} -O3 -fPIE" \
+      CPPFLAGS="${ANDROID_CFLAGS}" \
+      LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
+    make
+
+
+### x86-64 (64-bit)
+
+The following is a general recipe script that can be modified for your specific
+needs.
+
+    # Set these variables to suit your needs
+    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
+    BUILD_PLATFORM={the platform name for the NDK package you installed--
+      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+      toolchain directory under ${NDK_PATH}/toolchains/.}
+    ANDROID_VERSION={The minimum version of Android to support.  "21" or later
+      is required for a 64-bit build.}
+
+    # It should not be necessary to modify the rest
+    HOST=x86_64-linux-android
+    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86_64
+    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+
+    TOOLCHAIN=${NDK_PATH}/toolchains/x86_64-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+    export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
+    export AR=${TOOLCHAIN}/bin/${HOST}-ar
+    export NM=${TOOLCHAIN}/bin/${HOST}-nm
+    export CC=${TOOLCHAIN}/bin/${HOST}-gcc
+    export LD=${TOOLCHAIN}/bin/${HOST}-ld
+    export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
+    export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
+    export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
+    cd {build_directory}
+    sh {source_directory}/configure --host=${HOST} \
+      CFLAGS="${ANDROID_CFLAGS} -O3 -fPIE" \
+      CPPFLAGS="${ANDROID_CFLAGS}" \
+      LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
+    make
+
+
 If building for Android 4.0.x (API level < 16) or earlier, remove `-fPIE` from
 `CFLAGS` and `-pie` from `LDFLAGS`.
 

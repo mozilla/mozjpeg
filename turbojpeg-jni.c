@@ -39,27 +39,41 @@
 
 #define PAD(v, p) ((v+(p)-1)&(~((p)-1)))
 
+#define bailif0(f) {if(!(f) || (*env)->ExceptionCheck(env)) {  \
+	goto bailout;  \
+}}
+
 #define _throw(msg, exceptionClass) {  \
 	jclass _exccls=(*env)->FindClass(env, exceptionClass);  \
-	if(!_exccls || (*env)->ExceptionCheck(env)) goto bailout;  \
+	bailif0(_exccls);  \
 	(*env)->ThrowNew(env, _exccls, msg);  \
 	goto bailout;  \
 }
 
-#define _throwtj() _throw(tjGetErrorStr2(handle), "org/libjpegturbo/turbojpeg/TJException")
+#define _throwtj() {  \
+	jclass _exccls;  \
+	jmethodID _excid;  \
+	jobject _excobj;  \
+	jstring _errstr;  \
+	bailif0(_errstr = (*env)->NewStringUTF(env, tjGetErrorStr2(handle)));  \
+	bailif0(_exccls = (*env)->FindClass(env,  \
+		"org/libjpegturbo/turbojpeg/TJException"));  \
+	bailif0(_excid = (*env)->GetMethodID(env, _exccls, "<init>",  \
+		"(Ljava/lang/String;I)V"));  \
+	bailif0(_excobj = (*env)->NewObject(env, _exccls, _excid, _errstr,  \
+		tjGetErrorCode(handle)));  \
+	(*env)->Throw(env, _excobj);  \
+	goto bailout;  \
+}
 
 #define _throwarg(msg) _throw(msg, "java/lang/IllegalArgumentException")
 
 #define _throwmem() _throw("Memory allocation failure", "java/lang/OutOfMemoryError");
 
-#define bailif0(f) {if(!(f) || (*env)->ExceptionCheck(env)) {  \
-	goto bailout;  \
-}}
-
 #define gethandle()  \
 	jclass _cls=(*env)->GetObjectClass(env, obj);  \
 	jfieldID _fid;  \
-	if(!_cls || (*env)->ExceptionCheck(env)) goto bailout;  \
+	bailif0(_cls);  \
 	bailif0(_fid=(*env)->GetFieldID(env, _cls, "handle", "J"));  \
 	handle=(tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);  \
 
@@ -174,7 +188,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
 	tjhandle handle;
 
 	if((handle=tjInitCompress())==NULL)
-		_throwtj();
+		_throw(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
@@ -551,7 +565,8 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
 	jfieldID fid;
 	tjhandle handle;
 
-	if((handle=tjInitDecompress())==NULL) _throwtj();
+	if((handle=tjInitDecompress())==NULL)
+		_throw(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));
@@ -958,7 +973,8 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_init
 	jfieldID fid;
 	tjhandle handle;
 
-	if((handle=tjInitTransform())==NULL) _throwtj();
+	if((handle=tjInitTransform())==NULL)
+		_throw(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
 
 	bailif0(cls=(*env)->GetObjectClass(env, obj));
 	bailif0(fid=(*env)->GetFieldID(env, cls, "handle", "J"));

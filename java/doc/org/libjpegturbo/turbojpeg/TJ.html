@@ -145,6 +145,19 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#ERR_FATAL">ERR_FATAL</a></strong></code>
+<div class="block">The error was fatal and non-recoverable.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#ERR_WARNING">ERR_WARNING</a></strong></code>
+<div class="block">The error was non-fatal and recoverable, but the image may still be
+ corrupt.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_ACCURATEDCT">FLAG_ACCURATEDCT</a></strong></code>
 <div class="block">Use the most accurate DCT/IDCT algorithm available in the underlying
  codec.</div>
@@ -197,8 +210,21 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_STOPONWARNING">FLAG_STOPONWARNING</a></strong></code>
+<div class="block">Immediately discontinue the current compression/decompression/transform
+ operation if the underlying codec throws a warning (non-fatal error).</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#NUMCS">NUMCS</a></strong></code>
 <div class="block">The number of JPEG colorspaces</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#NUMERR">NUMERR</a></strong></code>
+<div class="block">The number of error codes</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -938,7 +964,7 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
 <a name="FLAG_ACCURATEDCT">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>FLAG_ACCURATEDCT</h4>
 <pre>public static final&nbsp;int FLAG_ACCURATEDCT</pre>
@@ -950,6 +976,54 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  but it uses the accurate algorithm when decompressing, because this has
  been shown to have a larger effect.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.FLAG_ACCURATEDCT">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="FLAG_STOPONWARNING">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>FLAG_STOPONWARNING</h4>
+<pre>public static final&nbsp;int FLAG_STOPONWARNING</pre>
+<div class="block">Immediately discontinue the current compression/decompression/transform
+ operation if the underlying codec throws a warning (non-fatal error).  The
+ default behavior is to allow the operation to complete unless a fatal
+ error is encountered.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.FLAG_STOPONWARNING">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="NUMERR">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>NUMERR</h4>
+<pre>public static final&nbsp;int NUMERR</pre>
+<div class="block">The number of error codes</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.NUMERR">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="ERR_WARNING">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>ERR_WARNING</h4>
+<pre>public static final&nbsp;int ERR_WARNING</pre>
+<div class="block">The error was non-fatal and recoverable, but the image may still be
+ corrupt.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.ERR_WARNING">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+<a name="ERR_FATAL">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>ERR_FATAL</h4>
+<pre>public static final&nbsp;int ERR_FATAL</pre>
+<div class="block">The error was fatal and non-recoverable.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.ERR_FATAL">Constant Field Values</a></dd></dl>
 </li>
 </ul>
 </li>

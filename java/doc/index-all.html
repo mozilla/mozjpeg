@@ -278,6 +278,15 @@
 <div class="block">Returns true or false, depending on whether this instance and
  <code>other</code> have the same numerator and denominator.</div>
 </dd>
+<dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#ERR_FATAL">ERR_FATAL</a></span> - Static variable in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
+<dd>
+<div class="block">The error was fatal and non-recoverable.</div>
+</dd>
+<dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#ERR_WARNING">ERR_WARNING</a></span> - Static variable in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
+<dd>
+<div class="block">The error was non-fatal and recoverable, but the image may still be
+ corrupt.</div>
+</dd>
 </dl>
 <a name="_F_">
 <!--   -->
@@ -324,6 +333,11 @@
 <dd>
 <div class="block"><span class="strong">Deprecated.</span></div>
 </dd>
+<dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#FLAG_STOPONWARNING">FLAG_STOPONWARNING</a></span> - Static variable in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
+<dd>
+<div class="block">Immediately discontinue the current compression/decompression/transform
+ operation if the underlying codec throws a warning (non-fatal error).</div>
+</dd>
 </dl>
 <a name="_G_">
 <!--   -->
@@ -353,6 +367,11 @@
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJScalingFactor.html#getDenom()">getDenom()</a></span> - Method in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg">TJScalingFactor</a></dt>
 <dd>
 <div class="block">Returns denominator</div>
+</dd>
+<dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJException.html#getErrorCode()">getErrorCode()</a></span> - Method in exception org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></dt>
+<dd>
+<div class="block">Returns a code (one of <a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.ERR_*</code></a>) indicating the severity of the
+ last error.</div>
 </dd>
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#getGreenOffset(int)">getGreenOffset(int)</a></span> - Static method in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
 <dd>
@@ -515,6 +534,10 @@
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#NUMCS">NUMCS</a></span> - Static variable in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
 <dd>
 <div class="block">The number of JPEG colorspaces</div>
+</dd>
+<dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#NUMERR">NUMERR</a></span> - Static variable in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
+<dd>
+<div class="block">The number of error codes</div>
 </dd>
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJTransform.html#NUMOP">NUMOP</a></span> - Static variable in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a></dt>
 <dd>
@@ -828,6 +851,8 @@
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.String,%20java.lang.Throwable)">TJException(String, Throwable)</a></span> - Constructor for exception org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.String)">TJException(String)</a></span> - Constructor for exception org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.String,%20int)">TJException(String, int)</a></span> - Constructor for exception org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.Throwable)">TJException(Throwable)</a></span> - Constructor for exception org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></dt>
 <dd>&nbsp;</dd>

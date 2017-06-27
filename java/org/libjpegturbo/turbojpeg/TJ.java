@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2013, 2017 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -386,6 +386,28 @@ public final class TJ {
    * been shown to have a larger effect.
    */
   public static final int FLAG_ACCURATEDCT  =  4096;
+  /**
+   * Immediately discontinue the current compression/decompression/transform
+   * operation if the underlying codec throws a warning (non-fatal error).  The
+   * default behavior is to allow the operation to complete unless a fatal
+   * error is encountered.
+   */
+  public static final int FLAG_STOPONWARNING = 8192;
+
+
+  /**
+   * The number of error codes
+   */
+  public static final int NUMERR = 2;
+  /**
+   * The error was non-fatal and recoverable, but the image may still be
+   * corrupt.
+   */
+  public static final int ERR_WARNING = 0;
+  /**
+   * The error was fatal and non-recoverable.
+   */
+  public static final int ERR_FATAL = 1;
 
 
   /**

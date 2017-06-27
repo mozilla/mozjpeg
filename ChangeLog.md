@@ -48,6 +48,17 @@ in a thread-safe manner.  Retrieving error messages from global functions, such
 as `tjInitCompress()` or `tjBufSize()`, is still thread-unsafe, but since those
 functions will only throw errors if passed an invalid argument or if a memory
 allocation failure occurs, thread safety is not as much of a concern.
+     - Introduced a new function (`tjGetErrorCode()`) in the TurboJPEG C API
+and a new method (`TJException.getErrorCode()`) in the TurboJPEG Java API that
+can be used to determine the severity of the last
+compression/decompression/transform error.  This allows applications to
+choose whether to ignore warnings (non-fatal errors) from the underlying
+libjpeg API or to treat them as fatal.
+     - Introduced a new flag (`TJFLAG_STOPONWARNING` in the TurboJPEG C API and
+`TJ.FLAG_STOPONWARNING` in the TurboJPEG Java API) that causes the library to
+immediately halt a compression/decompression/transform operation if it
+encounters a warning from the underlying libjpeg API (the default behavior is
+to allow the operation to complete unless a fatal error is encountered.)
 
 
 1.5.2

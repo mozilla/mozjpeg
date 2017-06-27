@@ -663,7 +663,10 @@ class TJBench {
     System.out.println("     taking performance measurements (default = 1)");
     System.out.println("-componly = Stop after running compression tests.  Do not test decompression.");
     System.out.println("-nowrite = Do not write reference or output images (improves consistency");
-    System.out.println("     of performance measurements.)\n");
+    System.out.println("     of performance measurements.)");
+    System.out.println("-stoponwarning = Immediately discontinue the current");
+    System.out.println("     compression/decompression/transform operation if the underlying codec");
+    System.out.println("     throws a warning (non-fatal error)\n");
     System.out.println("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate");
     System.out.println("test will be performed for all quality values in the range.\n");
     System.exit(1);
@@ -833,6 +836,8 @@ class TJBench {
               System.out.format("Warmup runs = %d\n\n", warmup);
             }
           }
+          if (argv[i].equalsIgnoreCase("-stoponwarning"))
+            flags |= TJ.FLAG_STOPONWARNING;
           if (argv[i].equalsIgnoreCase("-?"))
             usage();
         }
@@ -905,7 +910,12 @@ class TJBench {
       }
 
     } catch (Exception e) {
-      System.out.println("ERROR: " + e.getMessage());
+      if (e instanceof TJException) {
+        TJException tje = (TJException)e;
+        System.out.println((tje.getErrorCode() == TJ.ERR_WARNING ?
+                            "WARNING: " : "ERROR: ") + tje.getMessage());
+      } else
+        System.out.println("ERROR: " + e.getMessage());
       e.printStackTrace();
       retval = -1;
     }

@@ -42,7 +42,11 @@
 	printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err);  \
 	retval=-1;  goto bailout;}
 #define _throwunix(m) _throw(m, strerror(errno))
-#define _throwtj(m) _throw(m, tjGetErrorStr())
+#define _throwtj(m) {  \
+	printf("%s in line %d while %s:\n%s\n",  \
+		tjGetErrorCode(handle)==TJERR_WARNING ? "WARNING" : "ERROR", __LINE__,  \
+		m, tjGetErrorStr2(handle));  \
+	retval=-1;  goto bailout;}
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
 int flags=TJFLAG_NOREALLOC, componly=0, decomponly=0, doyuv=0, quiet=0,
@@ -769,7 +773,10 @@ void usage(char *progname)
 	printf("     taking performance measurements (default = 1)\n");
 	printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
 	printf("-nowrite = Do not write reference or output images (improves consistency of\n");
-	printf("     performance measurements.)\n\n");
+	printf("     performance measurements.)\n");
+	printf("-stoponwarning = Immediately discontinue the current\n");
+	printf("     compression/decompression/transform operation if the underlying codec\n");
+	printf("     throws a warning (non-fatal error)\n\n");
 	printf("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate\n");
 	printf("test will be performed for all quality values in the range.\n\n");
 	exit(1);
@@ -783,7 +790,7 @@ int main(int argc, char *argv[])
 	int minarg=2, retval=0, subsamp=-1;
 
 	if((scalingfactors=tjGetScalingFactors(&nsf))==NULL || nsf==0)
-		_throwtj("executing tjGetScalingFactors()");
+		_throw("executing tjGetScalingFactors()", tjGetErrorStr());
 
 	if(argc<minarg) usage(argv[0]);
 
@@ -920,6 +927,7 @@ int main(int argc, char *argv[])
 			}
 			if(!strcasecmp(argv[i], "-componly")) componly=1;
 			if(!strcasecmp(argv[i], "-nowrite")) dowrite=0;
+			if(!strcasecmp(argv[i], "-stoponwarning")) flags|=TJFLAG_STOPONWARNING;
 		}
 	}
 

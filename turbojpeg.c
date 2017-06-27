@@ -60,7 +60,7 @@ struct my_error_mgr
 	struct jpeg_error_mgr pub;
 	jmp_buf setjmp_buffer;
 	void (*emit_message)(j_common_ptr, int);
-	boolean warning;
+	boolean warning, stopOnWarning;
 };
 typedef struct my_error_mgr *my_error_ptr;
 
@@ -82,7 +82,11 @@ static void my_emit_message(j_common_ptr cinfo, int msg_level)
 {
 	my_error_ptr myerr=(my_error_ptr)cinfo->err;
 	myerr->emit_message(cinfo, msg_level);
-	if(msg_level<0) myerr->warning=TRUE;
+	if(msg_level<0)
+	{
+		myerr->warning=TRUE;
+		if(myerr->stopOnWarning) longjmp(myerr->setjmp_buffer, 1);
+	}
 }
 
 
@@ -566,6 +570,14 @@ DLLEXPORT char* DLLCALL tjGetErrorStr(void)
 }
 
 
+DLLEXPORT int DLLCALL tjGetErrorCode(tjhandle handle)
+{
+	tjinstance *this=(tjinstance *)handle;
+	if(this && this->jerr.warning) return TJERR_WARNING;
+	else return TJERR_FATAL;
+}
+
+
 DLLEXPORT int DLLCALL tjDestroy(tjhandle handle)
 {
 	getinstance(handle);
@@ -783,6 +795,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 	#endif
 
 	getcinstance(handle)
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 	if((this->init&COMPRESS)==0)
 		_throw("tjCompress2(): Instance has not been initialized for compression");
 
@@ -891,6 +904,7 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 	#endif
 
 	getcinstance(handle);
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -1110,6 +1124,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 	JSAMPLE *_tmpbuf=NULL, *ptr;  JSAMPROW *tmpbuf[MAX_COMPONENTS];
 
 	getcinstance(handle)
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -1414,6 +1429,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 	#endif
 
 	getdinstance(handle);
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 	if((this->init&DECOMPRESS)==0)
 		_throw("tjDecompress2(): Instance has not been initialized for decompression");
 
@@ -1594,6 +1610,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	void (*old_reset_marker_reader)(j_decompress_ptr);
 
 	getdinstance(handle);
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -1795,6 +1812,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 	int dctsize;
 
 	getdinstance(handle);
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -1973,6 +1991,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 	int i, jpegwidth, jpegheight, scaledw, scaledh;
 
 	getdinstance(handle);
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 
 	if(jpegBuf==NULL || jpegSize<=0 || dstBuf==NULL || width<0 || pad<1
 		|| !isPow2(pad) || height<0)
@@ -2068,6 +2087,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 	int retval=0, i, jpegSubsamp;
 
 	getinstance(handle);
+	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
 	if((this->init&COMPRESS)==0 || (this->init&DECOMPRESS)==0)
 		_throw("tjTransform(): Instance has not been initialized for transformation");
 

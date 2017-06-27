@@ -58,5 +58,6 @@ TURBOJPEG_1.4
 TURBOJPEG_1.6
 {
 	global:
+		tjGetErrorCode;
 		tjGetErrorStr2;
 } TURBOJPEG_1.4;

@@ -263,8 +263,10 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 		jpeg_set_colorspace(cinfo, JCS_YCCK);
 	else jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
+	if(flags&TJFLAG_PROGRESSIVE)
+		jpeg_simple_progression(cinfo);
 #ifndef NO_GETENV
-	if((env=getenv("TJ_PROGRESSIVE"))!=NULL && strlen(env)>0
+	else if((env=getenv("TJ_PROGRESSIVE"))!=NULL && strlen(env)>0
 		&& !strcmp(env, "1"))
 		jpeg_simple_progression(cinfo);
 #endif
@@ -2187,6 +2189,8 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 		jpeg_copy_critical_parameters(dinfo, cinfo);
 		dstcoefs=jtransform_adjust_parameters(dinfo, cinfo, srccoefs,
 			&xinfo[i]);
+		if(flags&TJFLAG_PROGRESSIVE)
+			jpeg_simple_progression(cinfo);
 		if(!(t[i].options&TJXOPT_NOOUTPUT))
 		{
 			jpeg_write_coefficients(cinfo, dstcoefs);

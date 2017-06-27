@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2016 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -668,7 +668,9 @@ int decompTest(char *filename)
 		{
 			if(quiet==1) printf("N/A     N/A     ");
 			jpegsize[0]=srcsize;
-			memcpy(jpegbuf[0], srcbuf, srcsize);
+			free(jpegbuf[0]);
+			jpegbuf[0]=srcbuf;
+			srcbuf=NULL;
 		}
 
 		if(w==tilew) _tilew=_w;

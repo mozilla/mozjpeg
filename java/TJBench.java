@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014, 2016 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2016-2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -582,8 +582,8 @@ class TJBench {
           System.out.print("N/A     N/A     ");
         jpegBuf = new byte[1][TJ.bufSize(_tilew, _tileh, subsamp)];
         jpegSize = new int[1];
+        jpegBuf[0] = srcBuf;
         jpegSize[0] = srcSize;
-        System.arraycopy(srcBuf, 0, jpegBuf[0], 0, srcSize);
       }
 
       if (w == tilew)

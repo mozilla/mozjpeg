@@ -24,7 +24,9 @@ install:
 
 build_script:
   - cmd: >-
-      bash c:/buildscripts/buildljt -r file://%CD:\=/% -b /c/ljt.nightly %APPVEYOR_REPO_BRANCH% -v
+      for /f %%i in ('"cygpath %CD%"') do set MINGWPATH=%%i
+
+      bash c:/buildscripts/buildljt -r file://%MINGWPATH% -b /c/ljt.nightly %APPVEYOR_REPO_BRANCH% -v
 
       move c:\ljt.nightly\files\*.tar.gz .
 

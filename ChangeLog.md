@@ -81,6 +81,27 @@ API/ABI emulation, since the behavior is entirely internal.  Note that
 `-copy all` must be passed to jpegtran in order to transfer the EXIF tags from
 the source image to the destination image.
 
+8. Fixed several memory leaks in the TurboJPEG API library that could occur
+if the library was built with certain compilers and optimization levels
+(known to occur with GCC 4.x and clang with `-O1` and higher but not with
+GCC 5.x or 6.x) and one of the underlying libjpeg API functions threw an error
+after a TurboJPEG API function allocated a local buffer.
+
+9. The libjpeg-turbo memory manager will now honor the `max_memory_to_use`
+structure member in jpeg\_memory\_mgr, which can be set to the maximum amount
+of memory (in bytes) that libjpeg-turbo should use during decompression or
+multi-pass (including progressive) compression.  This limit can also be set
+using the `JPEGMEM` environment variable or using the `-maxmemory` switch in
+cjpeg/djpeg/jpegtran (refer to the respective man pages for more details.)
+This has been a documented feature of libjpeg since v5, but the
+`malloc()`/`free()` implementation of the memory manager (jmemnobs.c) never
+implemented the feature.  Restricting libjpeg-turbo's memory usage is useful
+for two reasons:  it allows testers to more easily work around the 2 GB limit
+in libFuzzer, and it allows developers of security-sensitive applications to
+more easily defend against one of the progressive JPEG exploits (LJT-01-004)
+identified in
+[this report](http://www.libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf).
+
 
 1.5.1
 =====

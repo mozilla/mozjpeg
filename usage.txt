@@ -212,7 +212,7 @@ Switches for advanced users:
                         large images.  Value is in thousands of bytes, or
                         millions of bytes if "M" is attached to the number.
                         For example, -max 4m selects 4000000 bytes.  If more
-                        space is needed, temporary files will be used.
+                        space is needed, an error will occur.
 
         -verbose        Enable debug printout.  More -v's give more printout.
         or  -debug      Also, version information is printed at startup.
@@ -377,7 +377,7 @@ Switches for advanced users:
                         large images.  Value is in thousands of bytes, or
                         millions of bytes if "M" is attached to the number.
                         For example, -max 4m selects 4000000 bytes.  If more
-                        space is needed, temporary files will be used.
+                        space is needed, an error will occur.
 
         -verbose        Enable debug printout.  More -v's give more printout.
         or  -debug      Also, version information is printed at startup.
@@ -423,11 +423,6 @@ When producing a color-quantized image, "-onepass -dither ordered" is fast but
 much lower quality than the default behavior.  "-dither none" may give
 acceptable results in two-pass mode, but is seldom tolerable in one-pass mode.
 
-Two-pass color quantization requires a good deal of memory; on MS-DOS machines
-it may run out of memory even with -maxmemory 0.  In that case you can still
-decompress, with some loss of image quality, by specifying -onepass for
-one-pass quantization.
-
 To avoid the Unisys LZW patent (now expired), djpeg produces uncompressed GIF
 files.  These are larger than they should be, but are readable by standard GIF
 decoders.
@@ -435,35 +430,15 @@ decoders.
 
 HINTS FOR BOTH PROGRAMS
 
-If more space is needed than will fit in the available main memory (as
-determined by -maxmemory), temporary files will be used.  (MS-DOS versions
-will try to get extended or expanded memory first.)  The temporary files are
-often rather large: in typical cases they occupy three bytes per pixel, for
-example 3*800*600 = 1.44Mb for an 800x600 image.  If you don't have enough
-free disk space, leave out -progressive and -optimize (for cjpeg) or specify
--onepass (for djpeg).
-
-On MS-DOS, the temporary files are created in the directory named by the TMP
-or TEMP environment variable, or in the current directory if neither of those
-exist.  Amiga implementations put the temp files in the directory named by
-JPEGTMP:, so be sure to assign JPEGTMP: to a disk partition with adequate free
-space.
-
-The default memory usage limit (-maxmemory) is set when the software is
-compiled.  If you get an "insufficient memory" error, try specifying a smaller
--maxmemory value, even -maxmemory 0 to use the absolute minimum space.  You
-may want to recompile with a smaller default value if this happens often.
+If the memory needed by cjpeg or djpeg exceeds the limit specified by
+-maxmemory, an error will occur.  You can leave out -progressive and -optimize
+(for cjpeg) or specify -onepass (for djpeg) to reduce memory usage.
 
 On machines that have "environment" variables, you can define the environment
 variable JPEGMEM to set the default memory limit.  The value is specified as
 described for the -maxmemory switch.  JPEGMEM overrides the default value
 specified when the program was compiled, and itself is overridden by an
 explicit -maxmemory switch.
-
-On MS-DOS machines, -maxmemory is the amount of main (conventional) memory to
-use.  (Extended or expanded memory is also used if available.)  Most
-DOS-specific versions of this software do their own memory space estimation
-and do not need you to specify -maxmemory.
 
 
 JPEGTRAN

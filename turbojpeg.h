@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015, 2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -348,7 +348,7 @@ enum TJCS
  * The uncompressed source/destination image is stored in bottom-up (Windows,
  * OpenGL) order, not top-down (X11) order.
  */
-#define TJFLAG_BOTTOMUP        2
+#define TJFLAG_BOTTOMUP      2
 /**
  * When decompressing an image that was compressed using chrominance
  * subsampling, use the fastest chrominance upsampling algorithm available in
@@ -358,11 +358,11 @@ enum TJCS
  */
 #define TJFLAG_FASTUPSAMPLE  256
 /**
- * Disable buffer (re)allocation.  If passed to #tjCompress2() or
- * #tjTransform(), this flag will cause those functions to generate an error if
- * the JPEG image buffer is invalid or too small rather than attempting to
- * allocate or reallocate that buffer.  This reproduces the behavior of earlier
- * versions of TurboJPEG.
+ * Disable buffer (re)allocation.  If passed to one of the JPEG compression or
+ * transform functions, this flag will cause those functions to generate an
+ * error if the JPEG image buffer is invalid or too small rather than
+ * attempting to allocate or reallocate that buffer.  This reproduces the
+ * behavior of earlier versions of TurboJPEG.
  */
 #define TJFLAG_NOREALLOC     1024
 /**
@@ -1435,8 +1435,8 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle handle);
 
 /**
  * Allocate an image buffer for use with TurboJPEG.  You should always use
- * this function to allocate the JPEG destination buffer(s) for #tjCompress2()
- * and #tjTransform() unless you are disabling automatic buffer
+ * this function to allocate the JPEG destination buffer(s) for the compression
+ * and transform functions unless you are disabling automatic buffer
  * (re)allocation (by setting #TJFLAG_NOREALLOC.)
  *
  * @param bytes the number of bytes to allocate
@@ -1452,8 +1452,8 @@ DLLEXPORT unsigned char* DLLCALL tjAlloc(int bytes);
 /**
  * Free an image buffer previously allocated by TurboJPEG.  You should always
  * use this function to free JPEG destination buffer(s) that were automatically
- * (re)allocated by #tjCompress2() or #tjTransform() or that were manually
- * allocated using #tjAlloc().
+ * (re)allocated by the compression and transform functions or that were
+ * manually allocated using #tjAlloc().
  *
  * @param buffer address of the buffer to free
  *

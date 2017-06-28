@@ -341,7 +341,7 @@ MD5_PPM_444_TILE = 7964e41e67cfb8d0a587c0aa4798f9c3
 # Test compressing from/decompressing to an arbitrary subregion of a larger
 # image buffer
 	cp $(srcdir)/testimages/testorig.ppm testout_tile.ppm
-	./tjbench testout_tile.ppm 95 -rgb -quiet -tile -benchtime 0.01 >/dev/null 2>&1
+	./tjbench testout_tile.ppm 95 -rgb -quiet -tile -benchtime 0.01 -warmup 0 >/dev/null 2>&1
 	for i in 8 16 32 64 128; do \
 		md5/md5cmp $(MD5_PPM_GRAY_TILE) testout_tile_GRAY_Q95_$$i\x$$i.ppm; \
 	done
@@ -360,7 +360,7 @@ MD5_PPM_444_TILE = 7964e41e67cfb8d0a587c0aa4798f9c3
 	done
 	rm -f testout_tile_GRAY_* testout_tile_420_* testout_tile_422_* testout_tile_444_*
 
-	./tjbench testout_tile.ppm 95 -rgb -fastupsample -quiet -tile -benchtime 0.01 >/dev/null 2>&1
+	./tjbench testout_tile.ppm 95 -rgb -fastupsample -quiet -tile -benchtime 0.01 -warmup 0 >/dev/null 2>&1
 	md5/md5cmp $(MD5_PPM_420M_8x8_TILE) testout_tile_420_Q95_8x8.ppm
 	for i in 16 32 64 128; do \
 		md5/md5cmp $(MD5_PPM_420M_TILE) testout_tile_420_Q95_$$i\x$$i.ppm; \

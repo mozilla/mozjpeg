@@ -669,6 +669,8 @@ class TJBench {
     System.out.println("     decompression (these options are mutually exclusive)");
     System.out.println("-grayscale = Perform lossless grayscale conversion prior to decompression");
     System.out.println("     test (can be combined with the other transforms above)");
+    System.out.println("-copynone = Do not copy any extra markers (including EXIF and ICC profile data)");
+    System.out.println("     when transforming the image.");
     System.out.println("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)");
     System.out.println("-warmup <t> = Run each benchmark for <t> seconds (default = 1.0) prior to");
     System.out.println("     starting the timer, in order to prime the caches and thus improve the");
@@ -801,6 +803,8 @@ class TJBench {
             xformOpt |= TJTransform.OPT_GRAY;
           if (argv[i].equalsIgnoreCase("-nooutput"))
             xformOpt |= TJTransform.OPT_NOOUTPUT;
+          if (argv[i].equalsIgnoreCase("-copynone"))
+            xformOpt |= TJTransform.OPT_COPYNONE;
           if (argv[i].equalsIgnoreCase("-benchtime") && i < argv.length - 1) {
             double temp = -1;
             try {

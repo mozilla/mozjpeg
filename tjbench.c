@@ -785,6 +785,8 @@ void usage(char *progname)
 	printf("     decompression (these options are mutually exclusive)\n");
 	printf("-grayscale = Perform lossless grayscale conversion prior to decompression\n");
 	printf("     test (can be combined with the other transforms above)\n");
+	printf("-copynone = Do not copy any extra markers (including EXIF and ICC profile data)\n");
+	printf("     when transforming the image.\n");
 	printf("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
 	printf("-warmup <t> = Run each benchmark for <t> seconds (default = 1.0) prior to\n");
 	printf("     starting the timer, in order to prime the caches and thus improve the\n");
@@ -902,6 +904,7 @@ int main(int argc, char *argv[])
 			if(!strcasecmp(argv[i], "-grayscale")) xformopt|=TJXOPT_GRAY;
 			if(!strcasecmp(argv[i], "-custom")) customFilter=dummyDCTFilter;
 			if(!strcasecmp(argv[i], "-nooutput")) xformopt|=TJXOPT_NOOUTPUT;
+			if(!strcasecmp(argv[i], "-copynone")) xformopt|=TJXOPT_COPYNONE;
 			if(!strcasecmp(argv[i], "-benchtime") && i<argc-1)
 			{
 				double temp=atof(argv[++i]);

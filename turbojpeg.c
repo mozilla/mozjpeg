@@ -2086,7 +2086,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 {
 	jpeg_transform_info *xinfo=NULL;
 	jvirt_barray_ptr *srccoefs, *dstcoefs;
-	int retval=0, i, jpegSubsamp;
+	int retval=0, i, jpegSubsamp, saveMarkers=0;
 
 	getinstance(handle);
 	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -2140,9 +2140,10 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 			}
 			else xinfo[i].crop_height=JCROP_UNSET;
 		}
+		if(!(t[i].options&TJXOPT_COPYNONE)) saveMarkers=1;
 	}
 
-	jcopy_markers_setup(dinfo, JCOPYOPT_ALL);
+	jcopy_markers_setup(dinfo, saveMarkers ? JCOPYOPT_ALL:JCOPYOPT_NONE);
 	jpeg_read_header(dinfo, TRUE);
 	jpegSubsamp=getSubsamp(dinfo);
 	if(jpegSubsamp<0)
@@ -2189,12 +2190,13 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 		jpeg_copy_critical_parameters(dinfo, cinfo);
 		dstcoefs=jtransform_adjust_parameters(dinfo, cinfo, srccoefs,
 			&xinfo[i]);
-		if(flags&TJFLAG_PROGRESSIVE)
+		if(flags&TJFLAG_PROGRESSIVE || t[i].options&TJXOPT_PROGRESSIVE)
 			jpeg_simple_progression(cinfo);
 		if(!(t[i].options&TJXOPT_NOOUTPUT))
 		{
 			jpeg_write_coefficients(cinfo, dstcoefs);
-			jcopy_markers_execute(dinfo, cinfo, JCOPYOPT_ALL);
+			jcopy_markers_execute(dinfo, cinfo,
+				t[i].options&TJXOPT_COPYNONE ? JCOPYOPT_NONE:JCOPYOPT_ALL);
 		}
 		else jinit_c_master_control(cinfo, TRUE);
 		jtransform_execute_transformation(dinfo, cinfo, srccoefs,

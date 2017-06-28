@@ -645,7 +645,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  * for you, or
  * -# pre-allocate the buffer to a "worst case" size determined by calling
  * #tjBufSize().  This should ensure that the buffer never has to be
- * re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
+ * re-allocated (setting #TJFLAG_NOREALLOC guarantees that it won't be.)
  * .
  * If you choose option 1, <tt>*jpegSize</tt> should be set to the size of your
  * pre-allocated buffer.  In any case, unless you have set #TJFLAG_NOREALLOC,
@@ -713,7 +713,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
  * for you, or
  * -# pre-allocate the buffer to a "worst case" size determined by calling
  * #tjBufSize().  This should ensure that the buffer never has to be
- * re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
+ * re-allocated (setting #TJFLAG_NOREALLOC guarantees that it won't be.)
  * .
  * If you choose option 1, <tt>*jpegSize</tt> should be set to the size of your
  * pre-allocated buffer.  In any case, unless you have set #TJFLAG_NOREALLOC,
@@ -783,7 +783,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
  * for you, or
  * -# pre-allocate the buffer to a "worst case" size determined by calling
  * #tjBufSize().  This should ensure that the buffer never has to be
- * re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
+ * re-allocated (setting #TJFLAG_NOREALLOC guarantees that it won't be.)
  * .
  * If you choose option 1, <tt>*jpegSize</tt> should be set to the size of your
  * pre-allocated buffer.  In any case, unless you have set #TJFLAG_NOREALLOC,
@@ -1392,9 +1392,13 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  * -# set <tt>dstBufs[i]</tt> to NULL to tell TurboJPEG to allocate the buffer
  * for you, or
  * -# pre-allocate the buffer to a "worst case" size determined by calling
- * #tjBufSize() with the transformed or cropped width and height.  This should
- * ensure that the buffer never has to be re-allocated (setting
- * #TJFLAG_NOREALLOC guarantees this.)
+ * #tjBufSize() with the transformed or cropped width and height.  Under normal
+ * circumstances, this should ensure that the buffer never has to be
+ * re-allocated (setting #TJFLAG_NOREALLOC guarantees that it won't be.)  Note,
+ * however, that there are some rare cases (such as transforming images with a
+ * large amount of embedded EXIF or ICC profile data) in which the output image
+ * will be larger than the worst-case size, and #TJFLAG_NOREALLOC cannot be
+ * used in those cases.
  * .
  * If you choose option 1, <tt>dstSizes[i]</tt> should be set to the size of
  * your pre-allocated buffer.  In any case, unless you have set

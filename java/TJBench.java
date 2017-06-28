@@ -834,14 +834,15 @@ class TJBench {
           if (argv[i].equalsIgnoreCase("-nowrite"))
             write = false;
           if (argv[i].equalsIgnoreCase("-warmup") && i < argv.length - 1) {
-            int temp = -1;
+            double temp = -1;
             try {
-             temp = Integer.parseInt(argv[++i]);
+             temp = Double.parseDouble(argv[++i]);
             } catch (NumberFormatException e) {}
-            if (temp >= 0) {
+            if (temp >= 0.0) {
               warmup = temp;
-              System.out.format("Warmup runs = %d\n\n", warmup);
-            }
+              System.out.format("Warmup time = %.1f seconds\n\n", warmup);
+            } else
+              usage();
           }
           if (argv[i].equalsIgnoreCase("-?"))
             usage();

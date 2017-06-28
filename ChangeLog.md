@@ -127,6 +127,11 @@ more easily defend against one of the progressive JPEG exploits (LJT-01-004)
 identified in
 [this report](http://www.libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf).
 
+10. TJBench will now run each benchmark for 1 second prior to starting the
+timer, in order to improve the consistency of the results.  Furthermore, the
+`-warmup` option is now used to specify the amount of warmup time rather than
+the number of warmup iterations.
+
 
 1.5.1
 =====

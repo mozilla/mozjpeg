@@ -888,7 +888,8 @@ foreach(libtype ${TEST_LIBTYPES})
       ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
         testout_tile.ppm)
     add_test(tjbench-${libtype}-tile
-      tjbench${suffix} testout_tile.ppm 95 -rgb -quiet -tile -benchtime 0.01)
+      tjbench${suffix} testout_tile.ppm 95 -rgb -quiet -tile -benchtime 0.01
+        -warmup 0)
     set_tests_properties(tjbench-${libtype}-tile
       PROPERTIES DEPENDS tjbench-${libtype}-tile-cp)
 
@@ -915,7 +916,7 @@ foreach(libtype ${TEST_LIBTYPES})
         testout_tilem.ppm)
     add_test(tjbench-${libtype}-tilem
       tjbench${suffix} testout_tilem.ppm 95 -rgb -fastupsample -quiet -tile
-        -benchtime 0.01)
+        -benchtime 0.01 -warmup 0)
     set_tests_properties(tjbench-${libtype}-tilem
       PROPERTIES DEPENDS tjbench-${libtype}-tilem-cp)
 

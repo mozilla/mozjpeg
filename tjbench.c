@@ -50,7 +50,7 @@
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
 int flags=TJFLAG_NOREALLOC, componly=0, decomponly=0, doyuv=0, quiet=0,
-	dotile=0, pf=TJPF_BGR, yuvpad=1, warmup=1, dowrite=1;
+	dotile=0, pf=TJPF_BGR, yuvpad=1, dowrite=1;
 char *ext="ppm";
 const char *pixFormatStr[TJ_NUMPF]=
 {
@@ -68,7 +68,7 @@ const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440", "411"};
 tjscalingfactor *scalingfactors=NULL, sf={1, 1};  int nsf=0;
 int xformop=TJXOP_NONE, xformopt=0;
 int (*customFilter)(short *, tjregion, tjregion, int, int, tjtransform *);
-double benchtime=5.0;
+double benchtime=5.0, warmup=1.0;
 
 
 char *formatName(int subsamp, int cs, char *buf)
@@ -150,7 +150,7 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 	}
 
 	/* Benchmark */
-	iter=-warmup;
+	iter=-1;
 	elapsed=elapsedDecode=0.;
 	while(1)
 	{
@@ -180,11 +180,16 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 						_throwtj("executing tjDecompress2()");
 			}
 		}
-		iter++;
-		if(iter>=1)
+		elapsed+=gettime()-start;
+		if(iter>=0)
 		{
-			elapsed+=gettime()-start;
+			iter++;
 			if(elapsed>=benchtime) break;
+		}
+		else if(elapsed>=warmup)
+		{
+			iter=0;
+			elapsed=elapsedDecode=0.;
 		}
 	}
 	if(doyuv) elapsed-=elapsedDecode;
@@ -344,7 +349,7 @@ int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 		}
 
 		/* Benchmark */
-		iter=-warmup;
+		iter=-1;
 		elapsed=elapsedEncode=0.;
 		while(1)
 		{
@@ -378,11 +383,16 @@ int fullTest(unsigned char *srcbuf, int w, int h, int subsamp, int jpegqual,
 					totaljpegsize+=jpegsize[tile];
 				}
 			}
-			iter++;
-			if(iter>=1)
+			elapsed+=gettime()-start;
+			if(iter>=0)
 			{
-				elapsed+=gettime()-start;
+				iter++;
 				if(elapsed>=benchtime) break;
+			}
+			else if(elapsed>=warmup)
+			{
+				iter=0;
+				elapsed=elapsedEncode=0.;
 			}
 		}
 		if(doyuv) elapsed-=elapsedEncode;
@@ -627,7 +637,7 @@ int decompTest(char *filename)
 				}
 			}
 
-			iter=-warmup;
+			iter=-1;
 			elapsed=0.;
 			while(1)
 			{
@@ -635,11 +645,16 @@ int decompTest(char *filename)
 				if(tjTransform(handle, srcbuf, srcsize, _ntilesw*_ntilesh, jpegbuf,
 					jpegsize, t, flags)==-1)
 					_throwtj("executing tjTransform()");
-				iter++;
-				if(iter>=1)
+				elapsed+=gettime()-start;
+				if(iter>=0)
 				{
-					elapsed+=gettime()-start;
+					iter++;
 					if(elapsed>=benchtime) break;
+				}
+				else if(elapsed>=warmup)
+				{
+					iter=0;
+					elapsed=0.;
 				}
 			}
 
@@ -771,8 +786,9 @@ void usage(char *progname)
 	printf("-grayscale = Perform lossless grayscale conversion prior to decompression\n");
 	printf("     test (can be combined with the other transforms above)\n");
 	printf("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
-	printf("-warmup <w> = Execute each benchmark <w> times to prime the cache before\n");
-	printf("     taking performance measurements (default = 1)\n");
+	printf("-warmup <t> = Run each benchmark for <t> seconds (default = 1.0) prior to\n");
+	printf("     starting the timer, in order to prime the caches and thus improve the\n");
+	printf("     consistency of the results.\n");
 	printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
 	printf("-nowrite = Do not write reference or output images (improves consistency of\n");
 	printf("     performance measurements.)\n");
@@ -894,13 +910,10 @@ int main(int argc, char *argv[])
 			}
 			if(!strcasecmp(argv[i], "-warmup") && i<argc-1)
 			{
-				int temp=atoi(argv[++i]);
-				if(temp>=0)
-				{
-					warmup=temp;
-					printf("Warmup runs = %d\n\n", warmup);
-				}
+				double temp=atof(argv[++i]);
+				if(temp>=0.0) warmup=temp;
 				else usage(argv[0]);
+				printf("Warmup time = %.1f seconds\n\n", warmup);
 			}
 			if(!strcmp(argv[i], "-?")) usage(argv[0]);
 			if(!strcasecmp(argv[i], "-alloc")) flags&=(~TJFLAG_NOREALLOC);

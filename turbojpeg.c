@@ -864,6 +864,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 	#endif
 	if(row_pointer) free(row_pointer);
 	if(this->jerr.warning) retval=-1;
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 }
 
@@ -1057,6 +1058,7 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 		if(outbuf[i]!=NULL) free(outbuf[i]);
 	}
 	if(this->jerr.warning) retval=-1;
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 }
 
@@ -1252,6 +1254,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 	}
 	if(_tmpbuf) free(_tmpbuf);
 	if(this->jerr.warning) retval=-1;
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 }
 
@@ -1525,6 +1528,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 	#endif
 	if(row_pointer) free(row_pointer);
 	if(this->jerr.warning) retval=-1;
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 }
 
@@ -1761,6 +1765,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 		if(inbuf[i]!=NULL) free(inbuf[i]);
 	}
 	if(this->jerr.warning) retval=-1;
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 }
 
@@ -1981,6 +1986,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 	}
 	if(_tmpbuf) free(_tmpbuf);
 	if(this->jerr.warning) retval=-1;
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 }
 
@@ -2048,6 +2054,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
 		strides, height, flags);
 
 	bailout:
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 
 }
@@ -2236,5 +2243,6 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 	if(dinfo->global_state>DSTATE_START) jpeg_abort_decompress(dinfo);
 	if(xinfo) free(xinfo);
 	if(this->jerr.warning) retval=-1;
+	this->jerr.stopOnWarning=FALSE;
 	return retval;
 }

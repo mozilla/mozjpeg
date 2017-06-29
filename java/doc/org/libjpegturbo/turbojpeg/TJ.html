@@ -995,7 +995,12 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
 <div class="block">Immediately discontinue the current compression/decompression/transform
  operation if the underlying codec throws a warning (non-fatal error).  The
  default behavior is to allow the operation to complete unless a fatal
- error is encountered.</div>
+ error is encountered.
+ <p>
+ NOTE: due to the design of the TurboJPEG Java API, only certain methods
+ (specifically, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg"><code>TJDecompressor.decompress*()</code></a> methods
+ with a void return type) will complete and leave the output image in a
+ fully recoverable state after a non-fatal error occurs.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.FLAG_STOPONWARNING">Constant Field Values</a></dd></dl>
 </li>
 </ul>
@@ -1032,7 +1037,12 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
 <h4>ERR_WARNING</h4>
 <pre>public static final&nbsp;int ERR_WARNING</pre>
 <div class="block">The error was non-fatal and recoverable, but the image may still be
- corrupt.</div>
+ corrupt.
+ <p>
+ NOTE: due to the design of the TurboJPEG Java API, only certain methods
+ (specifically, <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg"><code>TJDecompressor.decompress*()</code></a> methods
+ with a void return type) will complete and leave the output image in a
+ fully recoverable state after a non-fatal error occurs.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.ERR_WARNING">Constant Field Values</a></dd></dl>
 </li>
 </ul>

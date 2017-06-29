@@ -63,6 +63,26 @@ class TJBench {
   }
 
 
+  static String tjErrorMsg;
+  static int tjErrorCode = -1;
+
+  static void handleTJException(TJException e) throws TJException {
+    String _tjErrorMsg = e.getMessage();
+    int _tjErrorCode = e.getErrorCode();
+
+    if ((flags & TJ.FLAG_STOPONWARNING) == 0 &&
+        _tjErrorCode == TJ.ERR_WARNING) {
+      if (tjErrorMsg == null || !tjErrorMsg.equals(_tjErrorMsg) ||
+          tjErrorCode != _tjErrorCode) {
+        tjErrorMsg = _tjErrorMsg;
+        tjErrorCode = _tjErrorCode;
+        System.out.println("WARNING: " + _tjErrorMsg);
+      }
+    } else
+      throw e;
+  }
+
+
   static String formatName(int subsamp, int cs) {
     if (cs == TJ.CS_YCbCr)
       return subNameLong[subsamp];
@@ -174,14 +194,21 @@ class TJBench {
           tjd.setSourceImage(jpegBuf[tile], jpegSize[tile]);
           if (doYUV) {
             yuvImage.setBuf(yuvImage.getBuf(), width, yuvpad, height, subsamp);
-            tjd.decompressToYUV(yuvImage, flags);
+            try {
+              tjd.decompressToYUV(yuvImage, flags);
+            } catch (TJException e) { handleTJException(e); }
             double startDecode = getTime();
             tjd.setSourceImage(yuvImage);
-            tjd.decompress(dstBuf, x, y, width, pitch, height, pf, flags);
+            try {
+              tjd.decompress(dstBuf, x, y, width, pitch, height, pf, flags);
+            } catch (TJException e) { handleTJException(e); }
             if (iter >= 0)
               elapsedDecode += getTime() - startDecode;
-          } else
-            tjd.decompress(dstBuf, x, y, width, pitch, height, pf, flags);
+          } else {
+            try {
+              tjd.decompress(dstBuf, x, y, width, pitch, height, pf, flags);
+            } catch (TJException e) { handleTJException(e); }
+          }
         }
       }
       elapsed += getTime() - start;

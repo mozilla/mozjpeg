@@ -308,6 +308,10 @@ public class TJDecompressor implements Closeable {
    * Decompress the JPEG source image or decode the YUV source image associated
    * with this decompressor instance and output a grayscale, RGB, or CMYK image
    * to the given destination buffer.
+   * <p>
+   * NOTE: The output image is fully recoverable if this method throws a
+   * non-fatal {@link TJException} (unless
+   * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
    * @param dstBuf buffer that will receive the decompressed/decoded image.
    * If the source image is a JPEG image, then this buffer should normally be
@@ -451,6 +455,10 @@ public class TJDecompressor implements Closeable {
    * but leaves out the color conversion step, so a planar YUV image is
    * generated instead of an RGB or grayscale image.  This method cannot be
    * used to decompress JPEG source images with the CMYK or YCCK colorspace.
+   * <p>
+   * NOTE: The YUV planar output image is fully recoverable if this method
+   * throws a non-fatal {@link TJException} (unless
+   * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
    * @param dstImage {@link YUVImage} instance that will receive the YUV planar
    * image.  The level of subsampling specified in this <code>YUVImage</code>
@@ -618,6 +626,10 @@ public class TJDecompressor implements Closeable {
    * Decompress the JPEG source image or decode the YUV source image associated
    * with this decompressor instance and output a grayscale, RGB, or CMYK image
    * to the given destination buffer.
+   * <p>
+   * NOTE: The output image is fully recoverable if this method throws a
+   * non-fatal {@link TJException} (unless
+   * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
    * @param dstBuf buffer that will receive the decompressed/decoded image.
    * If the source image is a JPEG image, then this buffer should normally be
@@ -699,6 +711,10 @@ public class TJDecompressor implements Closeable {
    * Decompress the JPEG source image or decode the YUV source image associated
    * with this decompressor instance and output a decompressed/decoded image to
    * the given <code>BufferedImage</code> instance.
+   * <p>
+   * NOTE: The output image is fully recoverable if this method throws a
+   * non-fatal {@link TJException} (unless
+   * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
    * @param dstImage a <code>BufferedImage</code> instance that will receive
    * the decompressed/decoded image.  If the source image is a JPEG image, then

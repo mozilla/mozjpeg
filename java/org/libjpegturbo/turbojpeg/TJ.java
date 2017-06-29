@@ -391,6 +391,11 @@ public final class TJ {
    * operation if the underlying codec throws a warning (non-fatal error).  The
    * default behavior is to allow the operation to complete unless a fatal
    * error is encountered.
+   * <p>
+   * NOTE: due to the design of the TurboJPEG Java API, only certain methods
+   * (specifically, {@link TJDecompressor TJDecompressor.decompress*()} methods
+   * with a void return type) will complete and leave the output image in a
+   * fully recoverable state after a non-fatal error occurs.
    */
   public static final int FLAG_STOPONWARNING = 8192;
   /**
@@ -409,6 +414,11 @@ public final class TJ {
   /**
    * The error was non-fatal and recoverable, but the image may still be
    * corrupt.
+   * <p>
+   * NOTE: due to the design of the TurboJPEG Java API, only certain methods
+   * (specifically, {@link TJDecompressor TJDecompressor.decompress*()} methods
+   * with a void return type) will complete and leave the output image in a
+   * fully recoverable state after a non-fatal error occurs.
    */
   public static final int ERR_WARNING = 0;
   /**

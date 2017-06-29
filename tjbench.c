@@ -38,15 +38,44 @@
 #include "./turbojpeg.h"
 
 
-#define _throw(op, err) {  \
+#define _throw(op, err)  \
+{  \
 	printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err);  \
-	retval=-1;  goto bailout;}
+	retval=-1;  goto bailout;  \
+}
 #define _throwunix(m) _throw(m, strerror(errno))
-#define _throwtj(m) {  \
-	printf("%s in line %d while %s:\n%s\n",  \
-		tjGetErrorCode(handle)==TJERR_WARNING ? "WARNING" : "ERROR", __LINE__,  \
-		m, tjGetErrorStr2(handle));  \
-	retval=-1;  goto bailout;}
+
+char tjErrorStr[JMSG_LENGTH_MAX]="\0", tjErrorMsg[JMSG_LENGTH_MAX]="\0";
+int tjErrorLine=-1, tjErrorCode=-1;
+
+#define _throwtj(m)  \
+{  \
+	int _tjErrorCode=tjGetErrorCode(handle);  \
+	char *_tjErrorStr=tjGetErrorStr2(handle);  \
+  \
+	if(!(flags&TJFLAG_STOPONWARNING) && _tjErrorCode==TJERR_WARNING)  \
+	{  \
+		if(strncmp(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX) ||  \
+			strncmp(tjErrorMsg, m, JMSG_LENGTH_MAX) ||  \
+			tjErrorCode!=_tjErrorCode || tjErrorLine!=__LINE__)  \
+		{  \
+			strncpy(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX);  \
+			strncpy(tjErrorMsg, m, JMSG_LENGTH_MAX);  \
+			tjErrorCode=_tjErrorCode;  \
+			tjErrorLine=__LINE__;  \
+			printf("WARNING in line %d while %s:\n%s\n", __LINE__, m,  \
+				_tjErrorStr);  \
+		}  \
+	}  \
+	else  \
+	{  \
+		printf("%s in line %d while %s:\n%s\n",  \
+			_tjErrorCode==TJERR_WARNING ? "WARNING" : "ERROR", __LINE__, m,  \
+			_tjErrorStr);  \
+		retval=-1;  goto bailout;  \
+	}  \
+}
+
 #define _throwbmp(m) _throw(m, bmpgeterr())
 
 int flags=TJFLAG_NOREALLOC, componly=0, decomponly=0, doyuv=0, quiet=0,

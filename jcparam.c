@@ -864,16 +864,20 @@ jpeg_simple_progression (j_compress_ptr cinfo)
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
 
-  /* Figure space needed for script.  Calculation must match code below! */
+  /* Figure space needed for script. Calculation must match code below! */
   ncomps = cinfo->num_components;
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
-    if (cinfo->master->dc_scan_opt_mode == 0) {
-      nscans = 8;  /* 1 DC scan for all components */
-    } else if (cinfo->master->dc_scan_opt_mode == 1) {
-      nscans = 10; /* 1 DC scan for each component */
+    if (cinfo->master->compress_profile == JCP_MAX_COMPRESSION) {
+      if (cinfo->master->dc_scan_opt_mode == 0) {
+        nscans = 9;  /* 1 DC scan for all components */
+      } else if (cinfo->master->dc_scan_opt_mode == 1) {
+        nscans = 11; /* 1 DC scan for each component */
+      } else {
+        nscans = 10; /* 1 DC scan for luminance and 1 DC scan for chroma */
+      }
     } else {
-      nscans = 9;  /* 1 DC scan for luminance and 1 DC scan for chroma */
+      nscans = 10;   /* 2 DC scans and 8 AC scans */
     }
   } else {
     /* All-purpose script for other color spaces. */

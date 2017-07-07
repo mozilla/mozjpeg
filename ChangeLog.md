@@ -64,6 +64,10 @@ timer, in order to improve the consistency of the results.  Furthermore, the
 `-warmup` option is now used to specify the amount of warmup time rather than
 the number of warmup iterations.
 
+11. Fixed an error (`short jump is out of range`) that occurred when assembling
+the 32-bit x86 SIMD extensions with NASM versions prior to 2.04.  This was a
+regression introduced by 1.5 beta1[12].
+
 
 1.5.1
 =====

@@ -3,7 +3,7 @@ USING THE IJG JPEG LIBRARY
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2016, D. R. Commander.
+Copyright (C) 2010, 2014-2017, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -34,6 +34,7 @@ Basic library usage:
         Data formats
         Compression details
         Decompression details
+        Partial image decompression
         Mechanics of usage: include files, linking, etc
 Advanced features:
         Compression parameter selection
@@ -2941,13 +2942,6 @@ Some operating modes (eg, two-pass color quantization) require full-image
 buffers.  Such buffers are treated as "virtual arrays": only the current strip
 need be in memory, and the rest can be swapped out to a temporary file.
 
-If you use the simplest memory manager back end (jmemnobs.c), then no
-temporary files are used; virtual arrays are simply malloc()'d.  Images bigger
-than memory can be processed only if your system supports virtual memory.
-The other memory manager back ends support temporary files of various flavors
-and thus work in machines without virtual memory.  They may also be useful on
-Unix machines if you need to process images that exceed available swap space.
-
 When using temporary files, the library will make the in-memory buffers for
 its virtual arrays just big enough to stay within a "maximum memory" setting.
 Your application can set this limit by setting cinfo->mem->max_memory_to_use
@@ -2959,6 +2953,11 @@ order to have them counted against the max memory limit.  Also keep in mind
 that space allocated with alloc_small() is ignored, on the assumption that
 it's too small to be worth worrying about; so a reasonable safety margin
 should be left when setting max_memory_to_use.
+
+NOTE: Unless you develop your own memory manager back end, then temporary files
+will never be used.  The back end provided in libjpeg-turbo (jmemnobs.c) simply
+malloc()s and free()s virtual arrays, and an error occurs if the required
+memory exceeds the limit specified in cinfo->mem->max_memory_to_use.
 
 
 Memory usage

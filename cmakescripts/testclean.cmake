@@ -24,7 +24,12 @@ file(GLOB FILES
   *_440_*.png
   *_440_*.ppm
   *_440_*.jpg
-  *_440.yuv)
+  *_440.yuv
+  *_411_*.bmp
+  *_411_*.png
+  *_411_*.ppm
+  *_411_*.jpg
+  *_411.yuv)
 
 if(NOT FILES STREQUAL "")
   message(STATUS "Removing test files")

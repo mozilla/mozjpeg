@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014, 2016 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2016-2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,8 @@ import org.libjpegturbo.turbojpeg.*;
 
 class TJBench {
 
-  static int flags = 0, quiet = 0, pf = TJ.PF_BGR, yuvpad = 1, warmup = 1;
-  static boolean compOnly, decompOnly, doTile, doYUV, write;
+  static int flags = 0, quiet = 0, pf = TJ.PF_BGR, yuvpad = 1;
+  static boolean compOnly, decompOnly, doTile, doYUV, write = true;
 
   static final String[] pixFormatStr = {
     "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY"
@@ -55,7 +55,7 @@ class TJBench {
 
   static TJScalingFactor sf;
   static int xformOp = TJTransform.OP_NONE, xformOpt = 0;
-  static double benchTime = 5.0;
+  static double benchTime = 5.0, warmup = 1.0;
 
 
   static final double getTime() {
@@ -162,7 +162,7 @@ class TJBench {
     }
 
     /* Benchmark */
-    iter -= warmup;
+    iter = -1;
     elapsed = elapsedDecode = 0.0;
     while (true) {
       int tile = 0;
@@ -184,11 +184,14 @@ class TJBench {
             tjd.decompress(dstBuf, x, y, width, pitch, height, pf, flags);
         }
       }
-      iter++;
-      if (iter >= 1) {
-        elapsed += getTime() - start;
+      elapsed += getTime() - start;
+      if (iter >= 0) {
+        iter++;
         if (elapsed >= benchTime)
           break;
+      } else if (elapsed >= warmup) {
+        iter = 0;
+        elapsed = elapsedDecode = 0.0;
       }
     }
     if(doYUV)
@@ -321,7 +324,7 @@ class TJBench {
       }
 
       /* Benchmark */
-      iter = -warmup;
+      iter = -1;
       elapsed = elapsedEncode = 0.0;
       while (true) {
         int tile = 0;
@@ -346,11 +349,14 @@ class TJBench {
             totalJpegSize += jpegSize[tile];
           }
         }
-        iter++;
-        if (iter >= 1) {
-          elapsed += getTime() - start;
+        elapsed += getTime() - start;
+        if (iter >= 0) {
+          iter++;
           if (elapsed >= benchTime)
             break;
+        } else if (elapsed >= warmup) {
+          iter = 0;
+          elapsed = elapsedEncode = 0.0;
         }
       }
       if (doYUV)
@@ -541,17 +547,20 @@ class TJBench {
           }
         }
 
-        iter = -warmup;
+        iter = -1;
         elapsed = 0.;
         while (true) {
           start = getTime();
           tjt.transform(jpegBuf, t, flags);
           jpegSize = tjt.getTransformedSizes();
-          iter++;
-          if (iter >= 1) {
-            elapsed += getTime() - start;
+          elapsed += getTime() - start;
+          if (iter >= 0) {
+            iter++;
             if (elapsed >= benchTime)
               break;
+          } else if (elapsed >= warmup) {
+            iter = 0;
+            elapsed = 0.0;
           }
         }
         t = null;
@@ -582,8 +591,8 @@ class TJBench {
           System.out.print("N/A     N/A     ");
         jpegBuf = new byte[1][TJ.bufSize(_tilew, _tileh, subsamp)];
         jpegSize = new int[1];
+        jpegBuf[0] = srcBuf;
         jpegSize[0] = srcSize;
-        System.arraycopy(srcBuf, 0, jpegBuf[0], 0, srcSize);
       }
 
       if (w == tilew)
@@ -659,8 +668,9 @@ class TJBench {
     System.out.println("-grayscale = Perform lossless grayscale conversion prior to decompression");
     System.out.println("     test (can be combined with the other transforms above)");
     System.out.println("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)");
-    System.out.println("-warmup <w> = Execute each benchmark <w> times to prime the cache before");
-    System.out.println("     taking performance measurements (default = 1)");
+    System.out.println("-warmup <t> = Run each benchmark for <t> seconds (default = 1.0) prior to");
+    System.out.println("     starting the timer, in order to prime the caches and thus improve the");
+    System.out.println("     consistency of the results.");
     System.out.println("-componly = Stop after running compression tests.  Do not test decompression.");
     System.out.println("-nowrite = Do not write reference or output images (improves consistency");
     System.out.println("     of performance measurements.)\n");
@@ -824,14 +834,15 @@ class TJBench {
           if (argv[i].equalsIgnoreCase("-nowrite"))
             write = false;
           if (argv[i].equalsIgnoreCase("-warmup") && i < argv.length - 1) {
-            int temp = -1;
+            double temp = -1;
             try {
-             temp = Integer.parseInt(argv[++i]);
+             temp = Double.parseDouble(argv[++i]);
             } catch (NumberFormatException e) {}
-            if (temp >= 0) {
+            if (temp >= 0.0) {
               warmup = temp;
-              System.out.format("Warmup runs = %d\n\n", warmup);
-            }
+              System.out.format("Warmup time = %.1f seconds\n\n", warmup);
+            } else
+              usage();
           }
           if (argv[i].equalsIgnoreCase("-?"))
             usage();

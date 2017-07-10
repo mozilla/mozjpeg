@@ -32,7 +32,10 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jmemsys.h"            /* import the system-dependent declarations */
+#ifndef _WIN32
 #include <stdint.h>
+#endif
+#include <limits.h>
 
 #ifndef NO_GETENV
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare getenv() */

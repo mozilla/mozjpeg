@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2014, D. R. Commander.
+ * Copyright (C) 2010, 2014, 2017, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -95,7 +95,7 @@ usage (void)
   fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
 #ifdef C_MULTISCAN_FILES_SUPPORTED
-  fprintf(stderr, "  -scans file    Create multi-scan JPEG per script file\n");
+  fprintf(stderr, "  -scans FILE    Create multi-scan JPEG per script FILE\n");
 #endif
   exit(EXIT_FAILURE);
 }

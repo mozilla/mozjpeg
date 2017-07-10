@@ -44,3 +44,5 @@ Makefile
 /wrjpgcom
 /yuvjpeg
 test_yuv*.jpg
+CMakeCache.txt
+CTestTestfile.cmake

@@ -1,3 +1,13 @@
+1.5.3
+=====
+
+### Significant changes relative to 1.5.2:
+
+1. Fixed a NullPointerException in the TurboJPEG Java wrapper that occurred
+when using the YUVImage constructor that creates an instance backed by separate
+image planes and allocates memory for the image planes.
+
+
 1.5.2
 =====
 

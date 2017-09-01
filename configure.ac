@@ -517,17 +517,13 @@ if test "x${with_simd}" != "xno"; then
       fi
       ;;
     powerpc*)
-      AC_MSG_RESULT([yes (powerpc)])
-      simd_arch=powerpc
+      AC_CHECK_ALTIVEC(
+        [AC_MSG_RESULT([yes (powerpc)])
+         simd_arch=powerpc],
+        [AC_NO_SIMD(PowerPC SPE)])
       ;;
     *)
-      AC_MSG_RESULT([no ("$host_cpu")])
-      with_simd=no;
-      if test "x${require_simd}" = "xyes"; then
-        AC_MSG_ERROR([SIMD support not available for this CPU.])
-      else
-        AC_MSG_WARN([SIMD support not available for this CPU.  Performance will suffer.])
-      fi
+      AC_NO_SIMD($host_cpu)
       ;;
   esac
 

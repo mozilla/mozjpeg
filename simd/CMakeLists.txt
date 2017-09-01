@@ -284,6 +284,18 @@ endif()
 
 elseif(CPU_TYPE STREQUAL "powerpc")
 
+check_c_source_compiles("
+  #include <altivec.h>
+  int main(void) {
+    __vector int vi = { 0, 0, 0, 0 };
+    return vi[0];
+  }" HAVE_ALTIVEC)
+
+if(NOT HAVE_ALTIVEC)
+  simd_fail("SIMD extensions not available for this CPU (PowerPC SPE)")
+  return()
+endif()
+
 set(SIMD_SOURCES powerpc/jccolor-altivec.c powerpc/jcgray-altivec.c
   powerpc/jcsample-altivec.c powerpc/jdcolor-altivec.c
   powerpc/jdmerge-altivec.c powerpc/jdsample-altivec.c

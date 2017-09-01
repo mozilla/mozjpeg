@@ -263,7 +263,9 @@ AC_DEFUN([AC_CHECK_ALTIVEC],[
     #include <altivec.h>
     int main(void) {
       __vector int vi = { 0, 0, 0, 0 };
-      return vi[0];
+      int i[4];
+      vec_st(vi, 0, i);
+      return i[0];
     }]])], ac_has_altivec=yes)
   CFLAGS="$ac_save_CFLAGS"
   if test "x$ac_has_altivec" = "xyes" ; then

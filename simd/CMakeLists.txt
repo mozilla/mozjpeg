@@ -284,12 +284,16 @@ endif()
 
 elseif(CPU_TYPE STREQUAL "powerpc")
 
+set(CMAKE_REQUIRED_FLAGS -maltivec)
+
 check_c_source_compiles("
   #include <altivec.h>
   int main(void) {
     __vector int vi = { 0, 0, 0, 0 };
     return vi[0];
   }" HAVE_ALTIVEC)
+
+unset(CMAKE_REQUIRED_FLAGS)
 
 if(NOT HAVE_ALTIVEC)
   simd_fail("SIMD extensions not available for this CPU (PowerPC SPE)")

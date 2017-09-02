@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2016 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -109,21 +109,12 @@ public class TJUnitTest {
       case BufferedImage.TYPE_BYTE_GRAY:
         return TJ.PF_GRAY;
       case BufferedImage.TYPE_INT_BGR:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          return TJ.PF_XBGR;
-        else
-          return TJ.PF_RGBX;
+        return TJ.PF_RGBX;
       case BufferedImage.TYPE_INT_RGB:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          return TJ.PF_XRGB;
-        else
-          return TJ.PF_BGRX;
+        return TJ.PF_BGRX;
       case BufferedImage.TYPE_INT_ARGB:
       case BufferedImage.TYPE_INT_ARGB_PRE:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          return TJ.PF_ARGB;
-        else
-          return TJ.PF_BGRA;
+        return TJ.PF_BGRA;
     }
     return 0;
   }

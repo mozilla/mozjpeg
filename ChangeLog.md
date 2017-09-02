@@ -7,6 +7,9 @@
 when using the YUVImage constructor that creates an instance backed by separate
 image planes and allocates memory for the image planes.
 
+2. Fixed an issue whereby the Java version of TJUnitTest would fail when
+testing BufferedImage encoding/decoding on big endian systems.
+
 
 1.5.2
 =====

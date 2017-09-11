@@ -73,7 +73,8 @@ broader range of users and developers.
 #-->	mandir=%{_mandir} JPEG_LIB_VERSION=@JPEG_LIB_VERSION@ \
 #-->	SO_MAJOR_VERSION=@SO_MAJOR_VERSION@ SO_MINOR_VERSION=@SO_MINOR_VERSION@ \
 #-->	--with-pic @RPM_CONFIG_ARGS@
-#-->make DESTDIR=$RPM_BUILD_ROOT
+#-->export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
+#-->make -j$NUMCPUS --load-average=$NUMCPUS DESTDIR=$RPM_BUILD_ROOT
 
 %install
 

@@ -84,7 +84,8 @@ script:
       mkdir build &&
       pushd build &&
       ../configure ${CONFIGURE_FLAGS} &&
-      make -j &&
+      export NUMCPUS=`grep -c '^processor' /proc/cpuinfo` &&
+      make -j$NUMCPUS --load-average=$NUMCPUS &&
       if [[ "${CONFIGURE_FLAGS}" =~ "with-12bit" ||
             "${CONFIGURE_FLAGS}" =~ "without-simd" ]]; then
         make test FLOATTEST=32bit;

@@ -13,12 +13,11 @@
 # Path under which headers should be installed
 %define _includedir %{__includedir}
 
-# _libdir is set to %{_prefix}/%{_lib} by default
 %ifarch x86_64
-%define _lib lib64
+%define _libdir %{_exec_prefix}/lib64
 %else
 %if "%{_prefix}" == "/opt/libjpeg-turbo"
-%define _lib lib32
+%define _libdir %{_exec_prefix}/lib32
 %endif
 %endif
 
@@ -87,7 +86,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 
 LJT_LIBDIR=%{__libdir}
 if [ ! "$LJT_LIBDIR" = "%{_libdir}" ]; then
-	echo ERROR: libjpeg-turbo must be configured with libdir=%{_prefix}/%{_lib} when generating an in-tree RPM for this architecture.
+	echo ERROR: libjpeg-turbo must be configured with libdir=%{_libdir} when generating an in-tree RPM for this architecture.
 	exit 1
 fi
 

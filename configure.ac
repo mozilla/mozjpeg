@@ -565,6 +565,10 @@ case "$host_cpu" in
     RPMARCH=`uname -m`
     DEBARCH=ppc64el
     ;;
+  powerpc)
+    RPMARCH=ppc
+    DEBARCH=ppc
+    ;;
   *)
     RPMARCH=`uname -m`
     DEBARCH=$RPMARCH

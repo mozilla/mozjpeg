@@ -13,7 +13,18 @@
 # Path under which headers should be installed
 %define _includedir %{__includedir}
 
-%ifarch x86_64
+%if "%{?__isa_bits:1}" == "1"
+%define _bits %{__isa_bits}
+%else
+# RPM < 4.6
+%if "%{_lib}" == "lib64"
+%define _bits 64
+%else
+%define _bits 32
+%endif
+%endif
+
+%if "%{_bits}" == "64"
 %define _libdir %{_exec_prefix}/lib64
 %else
 %if "%{_prefix}" == "/opt/libjpeg-turbo"
@@ -35,7 +46,7 @@ Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
 Prereq: /sbin/ldconfig
-%ifarch x86_64
+%if "%{_bits}" == "64"
 Provides: %{name} = %{version}-%{release}, @PACKAGE_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
 %else
 Provides: %{name} = %{version}-%{release}, @PACKAGE_NAME@ = %{version}-%{release}, libturbojpeg.so

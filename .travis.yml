@@ -89,7 +89,8 @@ script:
       mkdir build &&
       pushd build &&
       cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE "-DCMAKE_C_FLAGS_RELWITHDEBINFO=$CFLAGS_RELWITHDEBINFO" $CMAKE_FLAGS .. &&
-      make -j &&
+      export NUMCPUS=`grep -c '^processor' /proc/cpuinfo` &&
+      make -j$NUMCPUS --load-average=$NUMCPUS &&
       make test &&
       if [[ ! "${CMAKE_FLAGS[0]}" =~ "WITH_12BIT" &&
             ! "${CMAKE_FLAGS[0]}" =~ "WITH_SIMD" ]]; then

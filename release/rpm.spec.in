@@ -11,6 +11,17 @@
 %define _with_turbojpeg @WITH_TURBOJPEG@
 %define _with_java @WITH_JAVA@
 
+%if "%{?__isa_bits:1}" == "1"
+%define _bits %{__isa_bits}
+%else
+# RPM < 4.6
+%if "%{_lib}" == "lib64"
+%define _bits 64
+%else
+%define _bits 32
+%endif
+%endif
+
 Summary: A SIMD-accelerated JPEG codec that provides both the libjpeg and TurboJPEG APIs
 Name: @PKGNAME@
 Version: @VERSION@
@@ -22,7 +33,7 @@ Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
 Prereq: /sbin/ldconfig
-%ifarch x86_64
+%if "%{_bits}" == "64"
 Provides: %{name} = %{version}-%{release}, @CMAKE_PROJECT_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
 %else
 Provides: %{name} = %{version}-%{release}, @CMAKE_PROJECT_NAME@ = %{version}-%{release}, libturbojpeg.so

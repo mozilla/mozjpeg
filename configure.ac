@@ -361,6 +361,7 @@ if test "x$JAVAC" = "x"; then
 fi
 AC_SUBST(JAVAC)
 AC_ARG_VAR(JAVACFLAGS, [Java compiler flags])
+JAVACFLAGS="$JAVACFLAGS -J-Dfile.encoding=UTF8"
 AC_SUBST(JAVACFLAGS)
 AC_ARG_VAR(JAR, [Java archive command (default: jar)])
 if test "x$JAR" = "x"; then

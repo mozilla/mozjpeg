@@ -4,7 +4,6 @@
 %define _docdir %{_defaultdocdir}/%{name}-%{version}
 %define _includedir @CMAKE_INSTALL_FULL_INCLUDEDIR@
 %define _javadir @CMAKE_INSTALL_FULL_JAVADIR@
-%define _libdir @CMAKE_INSTALL_FULL_LIBDIR@
 %define _mandir @CMAKE_INSTALL_FULL_MANDIR@
 %define _enable_static @ENABLE_STATIC@
 %define _enable_shared @ENABLE_SHARED@
@@ -21,6 +20,18 @@
 %define _bits 32
 %endif
 %endif
+
+#-->%if 1
+%if "%{_bits}" == "64"
+%define _libdir %{_exec_prefix}/lib64
+%else
+%if "%{_prefix}" == "/opt/libjpeg-turbo"
+%define _libdir %{_exec_prefix}/lib32
+%endif
+%endif
+#-->%else
+%define _libdir @CMAKE_INSTALL_FULL_LIBDIR@
+#-->%endif
 
 Summary: A SIMD-accelerated JPEG codec that provides both the libjpeg and TurboJPEG APIs
 Name: @PKGNAME@

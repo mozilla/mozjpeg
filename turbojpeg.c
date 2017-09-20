@@ -1068,8 +1068,10 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
 {
 	unsigned char *dstPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
+	tjinstance *this=(tjinstance *)handle;
 
-	getcinstance(handle);
+	if(!this) _throwg("tjEncodeYUV3(): Invalid handle");
+	this->isInstanceError=FALSE;
 
 	if(width<=0 || height<=0 || dstBuf==NULL || pad<0 || !isPow2(pad)
 		|| subsamp<0 || subsamp>=NUMSUBOPT)
@@ -1264,8 +1266,10 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
 {
 	const unsigned char *srcPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
+	tjinstance *this=(tjinstance *)handle;
 
-	getcinstance(handle);
+	if(!this) _throwg("tjCompressFromYUV(): Invalid handle");
+	this->isInstanceError=FALSE;
 
 	if(srcBuf==NULL || width<=0 || pad<1 || height<=0 || subsamp<0
 		|| subsamp>=NUMSUBOPT)
@@ -1775,8 +1779,10 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
 {
 	const unsigned char *srcPlanes[3];
 	int pw0, ph0, strides[3], retval=-1;
+	tjinstance *this=(tjinstance *)handle;
 
-	getdinstance(handle);
+	if(!this) _throwg("tjDecodeYUV(): Invalid handle");
+	this->isInstanceError=FALSE;
 
 	if(srcBuf==NULL || pad<0 || !isPow2(pad) || subsamp<0 || subsamp>=NUMSUBOPT
 		|| width<=0 || height<=0)

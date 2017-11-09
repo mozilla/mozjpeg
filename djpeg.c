@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2016, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -173,6 +173,7 @@ usage (void)
 
   fprintf(stderr, "  -skip Y0,Y1    Decompress all rows except those between Y0 and Y1 (inclusive)\n");
   fprintf(stderr, "  -crop WxH+X+Y  Decompress only a rectangular subregion of the image\n");
+  fprintf(stderr, "                 [requires PBMPLUS (PPM/PGM) output format]\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   exit(EXIT_FAILURE);
@@ -713,6 +714,8 @@ main (int argc, char **argv)
     }
 
     jpeg_crop_scanline(&cinfo, &crop_x, &crop_width);
+    if (requested_fmt != FMT_PPM)
+      ERREXIT(&cinfo, JERR_UNSUPPORTED_FORMAT);
     ((ppm_dest_ptr) dest_mgr)->buffer_width = cinfo.output_width *
                                               cinfo.out_color_components *
                                               sizeof(JSAMPLE);

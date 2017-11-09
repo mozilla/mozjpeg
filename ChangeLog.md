@@ -10,6 +10,10 @@ image planes and allocates memory for the image planes.
 2. Fixed an issue whereby the Java version of TJUnitTest would fail when
 testing BufferedImage encoding/decoding on big endian systems.
 
+3. djpeg will now exit gracefully if an output image format other than PPM/PGM
+is selected along with the `-crop` option.  That option does not currently work
+with other output image formats.
+
 
 1.5.2
 =====

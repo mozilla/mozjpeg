@@ -275,7 +275,6 @@ static const int tjGreenOffset[TJ_NUMPF] = {1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2, -1}
  * then the blue component will be <tt>pixel[tjBlueOffset[TJ_BGRX]]</tt>.
  */
 static const int tjBlueOffset[TJ_NUMPF] = {2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3, -1};
-
 /**
  * Pixel size (in bytes) for a given pixel format.
  */

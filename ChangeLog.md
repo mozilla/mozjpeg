@@ -14,6 +14,10 @@ testing BufferedImage encoding/decoding on big endian systems.
 is selected along with the `-crop` option.  That option does not currently work
 with other output image formats.
 
+4. TJBench (both C and Java versions) will now display usage information if any
+command-line argument is unrecognized.  This prevents the program from silently
+ignoring typos.
+
 
 1.5.2
 =====

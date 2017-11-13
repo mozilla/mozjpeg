@@ -902,15 +902,13 @@ public class TJUnitTest {
       for (int i = 0; i < argv.length; i++) {
         if (argv[i].equalsIgnoreCase("-yuv"))
           doYUV = true;
-        if (argv[i].equalsIgnoreCase("-noyuvpad"))
+        else if (argv[i].equalsIgnoreCase("-noyuvpad"))
           pad = 1;
-        if (argv[i].substring(0, 1).equalsIgnoreCase("-h") ||
-            argv[i].equalsIgnoreCase("-?"))
-          usage();
-        if (argv[i].equalsIgnoreCase("-bi")) {
+        else if (argv[i].equalsIgnoreCase("-bi")) {
           bi = true;
           testName = "javabitest";
-        }
+        } else
+          usage();
       }
       if (doYUV)
         _4byteFormats[4] = -1;

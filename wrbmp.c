@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2013, Linaro Limited.
- * Copyright (C) 2014-2015, D. R. Commander.
+ * Copyright (C) 2014-2015, 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -437,6 +437,7 @@ jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2)
                                   sizeof(bmp_dest_struct));
   dest->pub.start_output = start_output_bmp;
   dest->pub.finish_output = finish_output_bmp;
+  dest->pub.calc_buffer_dimensions = NULL;
   dest->is_os2 = is_os2;
 
   if (cinfo->out_color_space == JCS_GRAYSCALE) {

@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2016, D. R. Commander.
+ * Copyright (C) 2010, 2015-2017, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -293,6 +293,14 @@ noop_convert (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
 }
 
 
+/* Dummy quantize function used by jpeg_skip_scanlines() */
+LOCAL(void)
+noop_quantize (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+               JSAMPARRAY output_buf, int num_rows)
+{
+}
+
+
 /*
  * In some cases, it is best to call jpeg_read_scanlines() and discard the
  * output, rather than skipping the scanlines, because this allows us to
@@ -308,14 +316,22 @@ read_and_discard_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
   void (*color_convert) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                          JDIMENSION input_row, JSAMPARRAY output_buf,
                          int num_rows);
+  void (*color_quantize) (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+                          JSAMPARRAY output_buf, int num_rows) = NULL;
 
   color_convert = cinfo->cconvert->color_convert;
   cinfo->cconvert->color_convert = noop_convert;
+  if (cinfo->cquantize && cinfo->cquantize->color_quantize) {
+    color_quantize = cinfo->cquantize->color_quantize;
+    cinfo->cquantize->color_quantize = noop_quantize;
+  }
 
   for (n = 0; n < num_lines; n++)
     jpeg_read_scanlines(cinfo, NULL, 1);
 
   cinfo->cconvert->color_convert = color_convert;
+  if (color_quantize)
+    cinfo->cquantize->color_quantize = color_quantize;
 }
 
 

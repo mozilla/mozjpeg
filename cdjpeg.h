@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -54,6 +54,14 @@ struct djpeg_dest_struct {
                           JDIMENSION rows_supplied);
   /* Finish up at the end of the image. */
   void (*finish_output) (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo);
+  /* Re-calculate buffer dimensions based on output dimensions (for use with
+     partial image decompression.)  If this is NULL, then the output format
+     does not support partial image decompression (BMP and RLE, in particular,
+     cannot support partial decompression because they use an inversion buffer
+     to write the image in bottom-up order.) */
+  void (*calc_buffer_dimensions) (j_decompress_ptr cinfo,
+                                  djpeg_dest_ptr dinfo);
+
 
   /* Target file spec; filled in by djpeg.c after object is created. */
   FILE *output_file;

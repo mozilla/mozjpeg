@@ -502,7 +502,7 @@ int decompTest(char *filename)
 	char *temp=NULL, tempstr[80], tempstr2[80];
 	int row, col, i, iter, tilew, tileh, ntilesw=1, ntilesh=1, retval=0;
 	double start, elapsed;
-	int ps=tjPixelSize[pf], tile;
+	int ps=tjPixelSize[pf], tile, decompsrc=0;
 
 	if((file=fopen(filename, "rb"))==NULL)
 		_throwunix("opening file");
@@ -682,18 +682,17 @@ int decompTest(char *filename)
 		else
 		{
 			if(quiet==1) printf("N/A     N/A     ");
-			jpegsize[0]=srcsize;
-			free(jpegbuf[0]);
-			jpegbuf[0]=srcbuf;
-			srcbuf=NULL;
+			tjFree(jpegbuf[0]);
+			jpegbuf[0]=NULL;
+			decompsrc=1;
 		}
 
 		if(w==tilew) _tilew=_w;
 		if(h==tileh) _tileh=_h;
 		if(!(xformopt&TJXOPT_NOOUTPUT))
 		{
-			if(decomp(NULL, jpegbuf, jpegsize, NULL, _w, _h, _subsamp, 0,
-				filename, _tilew, _tileh)==-1)
+			if(decomp(NULL, decompsrc? &srcbuf:jpegbuf, decompsrc? &srcsize:jpegsize,
+					NULL, _w, _h, _subsamp, 0, filename, _tilew, _tileh)==-1)
 				goto bailout;
 		}
 		else if(quiet==1) printf("N/A\n");

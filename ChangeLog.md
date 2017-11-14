@@ -25,6 +25,9 @@ quantization was enabled.
 command-line argument is unrecognized.  This prevents the program from silently
 ignoring typos.
 
+6. Fixed an access violation in tjbench.exe (Windows) that occurred when the
+program was used to decompress an existing JPEG image.
+
 
 1.5.2
 =====

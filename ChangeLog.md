@@ -21,7 +21,7 @@ output format other than PPM/PGM, GIF, or Targa is selected along with the
 4. Fixed an issue whereby `jpeg_skip_scanlines()` would segfault if color
 quantization was enabled.
 
-4. TJBench (both C and Java versions) will now display usage information if any
+5. TJBench (both C and Java versions) will now display usage information if any
 command-line argument is unrecognized.  This prevents the program from silently
 ignoring typos.
 

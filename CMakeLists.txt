@@ -1240,26 +1240,40 @@ add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
 
 if(WITH_TURBOJPEG)
   configure_file(tjbenchtest.in tjbenchtest @ONLY)
+  if(WIN32)
+    set(BASH bash)
+  endif()
   if(WITH_JAVA)
     configure_file(tjbenchtest.java.in tjbenchtest.java @ONLY)
     configure_file(tjexampletest.in tjexampletest @ONLY)
     add_custom_target(tjtest
-      echo ./tjbenchtest COMMAND ./tjbenchtest
-      COMMAND echo ./tjbenchtest -alloc COMMAND ./tjbenchtest -alloc
-      COMMAND echo ./tjbenchtest -yuv COMMAND ./tjbenchtest -yuv
-      COMMAND echo ./tjbenchtest -yuv -alloc COMMAND ./tjbenchtest -yuv -alloc
-      COMMAND echo ./tjbenchtest.java COMMAND ./tjbenchtest.java
-      COMMAND echo ./tjbenchtest.java -yuv COMMAND ./tjbenchtest.java -yuv
-      COMMAND echo ./tjexampletest COMMAND ./tjexampletest
+      COMMAND echo tjbenchtest
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
+      COMMAND echo tjbenchtest -alloc
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -alloc
+      COMMAND echo tjbenchtest -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv
+      COMMAND echo tjbenchtest -yuv -alloc
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
+      COMMAND echo tjbenchtest.java
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
+      COMMAND echo tjbenchtest.java -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -yuv
+      COMMAND echo tjexampletest
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
         ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
         ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
   else()
     add_custom_target(tjtest
-      echo ./tjbenchtest COMMAND ./tjbenchtest
-      COMMAND echo ./tjbenchtest -alloc COMMAND ./tjbenchtest -alloc
-      COMMAND echo ./tjbenchtest -yuv COMMAND ./tjbenchtest -yuv
-      COMMAND echo ./tjbenchtest -yuv -alloc COMMAND ./tjbenchtest -yuv -alloc
+      COMMAND echo tjbenchtest
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
+      COMMAND echo tjbenchtest -alloc
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -alloc
+      COMMAND echo tjbenchtest -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv
+      COMMAND echo tjbenchtest -yuv -alloc
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest)
   endif()
 endif()

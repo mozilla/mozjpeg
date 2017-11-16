@@ -697,6 +697,8 @@ testclean:
 	rm -f *_411_*.ppm
 	rm -f *_411_*.jpg
 	rm -f *_411.yuv
+	rm -f tjbenchtest*.log
+	rm -f tjexampletest*.log
 
 
 tjtest:

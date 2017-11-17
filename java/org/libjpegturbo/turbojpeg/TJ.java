@@ -235,7 +235,8 @@ public final class TJ {
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the red offset for the given pixel format.
+   * @return the red offset for the given pixel format, or -1 if the pixel
+   * format does not have a red component.
    */
   public static int getRedOffset(int pixelFormat) {
     checkPixelFormat(pixelFormat);
@@ -243,7 +244,7 @@ public final class TJ {
   }
 
   private static final int[] redOffset = {
-    0, 2, 0, 2, 3, 1, 0, 0, 2, 3, 1, -1
+    0, 2, 0, 2, 3, 1, -1, 0, 2, 3, 1, -1
   };
 
 
@@ -256,7 +257,8 @@ public final class TJ {
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the green offset for the given pixel format.
+   * @return the green offset for the given pixel format, or -1 if the pixel
+   * format does not have a green component.
    */
   public static int getGreenOffset(int pixelFormat) {
     checkPixelFormat(pixelFormat);
@@ -264,7 +266,7 @@ public final class TJ {
   }
 
   private static final int[] greenOffset = {
-    1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2, -1
+    1, 1, 1, 1, 2, 2, -1, 1, 1, 2, 2, -1
   };
 
 
@@ -277,7 +279,8 @@ public final class TJ {
    *
    * @param pixelFormat the pixel format (one of <code>PF_*</code>)
    *
-   * @return the blue offset for the given pixel format.
+   * @return the blue offset for the given pixel format, or -1 if the pixel
+   * format does not have a blue component.
    */
   public static int getBlueOffset(int pixelFormat) {
     checkPixelFormat(pixelFormat);
@@ -285,7 +288,29 @@ public final class TJ {
   }
 
   private static final int[] blueOffset = {
-    2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3, -1
+    2, 0, 2, 0, 1, 3, -1, 2, 0, 1, 3, -1
+  };
+
+
+  /**
+   * For the given pixel format, returns the number of bytes that the alpha
+   * component is offset from the start of the pixel.  For instance, if a pixel
+   * of format <code>TJ.PF_BGRA</code> is stored in <code>char pixel[]</code>,
+   * then the alpha component will be
+   * <code>pixel[TJ.getAlphaOffset(TJ.PF_BGRA)]</code>.
+   *
+   * @param pixelFormat the pixel format (one of <code>PF_*</code>)
+   *
+   * @return the alpha offset for the given pixel format, or -1 if the pixel
+   * format does not have a alpha component.
+   */
+  public static int getAlphaOffset(int pixelFormat) {
+    checkPixelFormat(pixelFormat);
+    return alphaOffset[pixelFormat];
+  }
+
+  private static final int[] alphaOffset = {
+    -1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0, -1
   };
 
 

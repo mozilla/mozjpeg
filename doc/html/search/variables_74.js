@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['tjalphaoffset',['tjAlphaOffset',['../group___turbo_j_p_e_g.html#ga5af0ab065feefd526debf1e20c43e837',1,'turbojpeg.h']]],
   ['tjblueoffset',['tjBlueOffset',['../group___turbo_j_p_e_g.html#ga84e2e35d3f08025f976ec1ec53693dea',1,'turbojpeg.h']]],
   ['tjgreenoffset',['tjGreenOffset',['../group___turbo_j_p_e_g.html#ga82d6e35da441112a411da41923c0ba2f',1,'turbojpeg.h']]],
   ['tjmcuheight',['tjMCUHeight',['../group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf',1,'turbojpeg.h']]],

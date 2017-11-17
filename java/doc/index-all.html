@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="Index";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="Index";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>
@@ -349,6 +353,11 @@
 </a>
 <h2 class="title">G</h2>
 <dl>
+<dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#getAlphaOffset(int)">getAlphaOffset(int)</a></span> - Static method in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
+<dd>
+<div class="block">For the given pixel format, returns the number of bytes that the alpha
+ component is offset from the start of the pixel.</div>
+</dd>
 <dt><span class="strong"><a href="./org/libjpegturbo/turbojpeg/TJ.html#getBlueOffset(int)">getBlueOffset(int)</a></span> - Static method in class org.libjpegturbo.turbojpeg.<a href="./org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg">TJ</a></dt>
 <dd>
 <div class="block">For the given pixel format, returns the number of bytes that the blue

@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="Class Hierarchy";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="Class Hierarchy";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>

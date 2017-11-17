@@ -110,6 +110,16 @@ TJBench, and they also provide a convenient way for first-time users of
 libjpeg-turbo to quickly develop a complete JPEG compression/decompression
 program.
 
+14. The TurboJPEG C API now includes a new convenience array
+(`tjAlphaOffset[]`) that contains the alpha component index for each pixel
+format (or -1 if the pixel format lacks an alpha component.)  The TurboJPEG
+Java API now includes a new method (`TJ.getAlphaOffset()`) that returns the
+same value.  In addition, the `tjRedOffset[]`, `tjGreenOffset[]`, and
+`tjBlueOffset[]` arrays-- and the corresponding `TJ.getRedOffset()`,
+`TJ.getGreenOffset()`, and `TJ.getBlueOffset()` methods-- now return -1 for
+`TJPF_GRAY`/`TJ.PF_GRAY` rather than 0.  This allows programs to easily
+determine whether a pixel format has red, green, blue, and alpha components.
+
 
 1.5.2
 =====

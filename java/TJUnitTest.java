@@ -64,10 +64,6 @@ public class TJUnitTest {
     "RGBA", "BGRA", "ABGR", "ARGB", "CMYK"
   };
 
-  private static final int[] alphaOffset = {
-    -1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0, -1
-  };
-
   private static final int[] _3byteFormats = {
     TJ.PF_RGB, TJ.PF_BGR
   };
@@ -146,7 +142,7 @@ public class TJUnitTest {
     int roffset = TJ.getRedOffset(pf);
     int goffset = TJ.getGreenOffset(pf);
     int boffset = TJ.getBlueOffset(pf);
-    int aoffset = alphaOffset[pf];
+    int aoffset = TJ.getAlphaOffset(pf);
     int ps = TJ.getPixelSize(pf);
     int index, row, col, halfway = 16;
 
@@ -215,7 +211,7 @@ public class TJUnitTest {
     int rshift = TJ.getRedOffset(pf) * 8;
     int gshift = TJ.getGreenOffset(pf) * 8;
     int bshift = TJ.getBlueOffset(pf) * 8;
-    int ashift = alphaOffset[pf] * 8;
+    int ashift = TJ.getAlphaOffset(pf) * 8;
     int index, row, col, halfway = 16;
 
     Arrays.fill(buf, 0);
@@ -298,13 +294,16 @@ public class TJUnitTest {
     int roffset = TJ.getRedOffset(pf);
     int goffset = TJ.getGreenOffset(pf);
     int boffset = TJ.getBlueOffset(pf);
-    int aoffset = alphaOffset[pf];
+    int aoffset = TJ.getAlphaOffset(pf);
     int ps = TJ.getPixelSize(pf);
     int index, row, col, retval = 1;
     int halfway = 16 * sf.getNum() / sf.getDenom();
     int blockSize = 8 * sf.getNum() / sf.getDenom();
 
     try {
+
+      if (pf == TJ.PF_GRAY)
+        roffset = goffset = boffset = 0;
 
       if (pf == TJ.PF_CMYK) {
         for (row = 0; row < h; row++) {
@@ -422,7 +421,7 @@ public class TJUnitTest {
     int rshift = TJ.getRedOffset(pf) * 8;
     int gshift = TJ.getGreenOffset(pf) * 8;
     int bshift = TJ.getBlueOffset(pf) * 8;
-    int ashift = alphaOffset[pf] * 8;
+    int ashift = TJ.getAlphaOffset(pf) * 8;
     int index, row, col, retval = 1;
     int halfway = 16 * sf.getNum() / sf.getDenom();
     int blockSize = 8 * sf.getNum() / sf.getDenom();

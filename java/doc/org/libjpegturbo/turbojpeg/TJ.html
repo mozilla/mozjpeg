@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="TJ";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="TJ";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>
@@ -417,53 +421,60 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getAlphaOffset(int)">getAlphaOffset</a></strong>(int&nbsp;pixelFormat)</code>
+<div class="block">For the given pixel format, returns the number of bytes that the alpha
+ component is offset from the start of the pixel.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getBlueOffset(int)">getBlueOffset</a></strong>(int&nbsp;pixelFormat)</code>
 <div class="block">For the given pixel format, returns the number of bytes that the blue
  component is offset from the start of the pixel.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getGreenOffset(int)">getGreenOffset</a></strong>(int&nbsp;pixelFormat)</code>
 <div class="block">For the given pixel format, returns the number of bytes that the green
  component is offset from the start of the pixel.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUHeight(int)">getMCUHeight</a></strong>(int&nbsp;subsamp)</code>
 <div class="block">Returns the MCU block height for the given level of chrominance
  subsampling.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getMCUWidth(int)">getMCUWidth</a></strong>(int&nbsp;subsamp)</code>
 <div class="block">Returns the MCU block width for the given level of chrominance
  subsampling.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getPixelSize(int)">getPixelSize</a></strong>(int&nbsp;pixelFormat)</code>
 <div class="block">Returns the pixel size (in bytes) for the given pixel format.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getRedOffset(int)">getRedOffset</a></strong>(int&nbsp;pixelFormat)</code>
 <div class="block">For the given pixel format, returns the number of bytes that the red
  component is offset from the start of the pixel.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static <a href="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg">TJScalingFactor</a>[]</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getScalingFactors()">getScalingFactors</a></strong>()</code>
 <div class="block">Returns a list of fractional scaling factors that the JPEG decompressor in
  this implementation of TurboJPEG supports.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#planeHeight(int,%20int,%20int)">planeHeight</a></strong>(int&nbsp;componentID,
            int&nbsp;height,
@@ -471,7 +482,7 @@ extends java.lang.Object</pre>
 <div class="block">Returns the plane height of a YUV image plane with the given parameters.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#planeSizeYUV(int,%20int,%20int,%20int,%20int)">planeSizeYUV</a></strong>(int&nbsp;componentID,
             int&nbsp;width,
@@ -482,7 +493,7 @@ extends java.lang.Object</pre>
  plane with the given parameters.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#planeWidth(int,%20int,%20int)">planeWidth</a></strong>(int&nbsp;componentID,
           int&nbsp;width,
@@ -1137,7 +1148,8 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  then the red component will be
  <code>pixel[TJ.getRedOffset(TJ.PF_BGRX)]</code>.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the red offset for the given pixel format.</dd></dl>
+<dt><span class="strong">Returns:</span></dt><dd>the red offset for the given pixel format, or -1 if the pixel
+ format does not have a red component.</dd></dl>
 </li>
 </ul>
 <a name="getGreenOffset(int)">
@@ -1153,7 +1165,8 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  then the green component will be
  <code>pixel[TJ.getGreenOffset(TJ.PF_BGRX)]</code>.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the green offset for the given pixel format.</dd></dl>
+<dt><span class="strong">Returns:</span></dt><dd>the green offset for the given pixel format, or -1 if the pixel
+ format does not have a green component.</dd></dl>
 </li>
 </ul>
 <a name="getBlueOffset(int)">
@@ -1169,7 +1182,25 @@ public static final&nbsp;int FLAG_FORCESSE3</pre>
  then the blue component will be
  <code>pixel[TJ.getBlueOffset(TJ.PF_BGRX)]</code>.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
-<dt><span class="strong">Returns:</span></dt><dd>the blue offset for the given pixel format.</dd></dl>
+<dt><span class="strong">Returns:</span></dt><dd>the blue offset for the given pixel format, or -1 if the pixel
+ format does not have a blue component.</dd></dl>
+</li>
+</ul>
+<a name="getAlphaOffset(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAlphaOffset</h4>
+<pre>public static&nbsp;int&nbsp;getAlphaOffset(int&nbsp;pixelFormat)</pre>
+<div class="block">For the given pixel format, returns the number of bytes that the alpha
+ component is offset from the start of the pixel.  For instance, if a pixel
+ of format <code>TJ.PF_BGRA</code> is stored in <code>char pixel[]</code>,
+ then the alpha component will be
+ <code>pixel[TJ.getAlphaOffset(TJ.PF_BGRA)]</code>.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>pixelFormat</code> - the pixel format (one of <code>PF_*</code>)</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the alpha offset for the given pixel format, or -1 if the pixel
+ format does not have a alpha component.</dd></dl>
 </li>
 </ul>
 <a name="bufSize(int, int, int)">

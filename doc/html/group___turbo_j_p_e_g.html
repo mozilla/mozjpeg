@@ -347,6 +347,9 @@ Variables</h2></td></tr>
 <tr class="memitem:ga84e2e35d3f08025f976ec1ec53693dea"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga84e2e35d3f08025f976ec1ec53693dea">tjBlueOffset</a> [<a class="el" href="group___turbo_j_p_e_g.html#ga7010a4402f54a45ba822ad8675a4655e">TJ_NUMPF</a>]</td></tr>
 <tr class="memdesc:ga84e2e35d3f08025f976ec1ec53693dea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blue offset (in bytes) for a given pixel format.  <a href="#ga84e2e35d3f08025f976ec1ec53693dea">More...</a><br/></td></tr>
 <tr class="separator:ga84e2e35d3f08025f976ec1ec53693dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5af0ab065feefd526debf1e20c43e837"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga5af0ab065feefd526debf1e20c43e837">tjAlphaOffset</a> [<a class="el" href="group___turbo_j_p_e_g.html#ga7010a4402f54a45ba822ad8675a4655e">TJ_NUMPF</a>]</td></tr>
+<tr class="memdesc:ga5af0ab065feefd526debf1e20c43e837"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alpha offset (in bytes) for a given pixel format.  <a href="#ga5af0ab065feefd526debf1e20c43e837">More...</a><br/></td></tr>
+<tr class="separator:ga5af0ab065feefd526debf1e20c43e837"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad77cf8fe5b2bfd3cb3f53098146abb4c"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gad77cf8fe5b2bfd3cb3f53098146abb4c">tjPixelSize</a> [<a class="el" href="group___turbo_j_p_e_g.html#ga7010a4402f54a45ba822ad8675a4655e">TJ_NUMPF</a>]</td></tr>
 <tr class="memdesc:gad77cf8fe5b2bfd3cb3f53098146abb4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pixel size (in bytes) for a given pixel format.  <a href="#gad77cf8fe5b2bfd3cb3f53098146abb4c">More...</a><br/></td></tr>
 <tr class="separator:gad77cf8fe5b2bfd3cb3f53098146abb4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2581,6 +2584,29 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="ga5af0ab065feefd526debf1e20c43e837"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const int tjAlphaOffset[<a class="el" href="group___turbo_j_p_e_g.html#ga7010a4402f54a45ba822ad8675a4655e">TJ_NUMPF</a>]</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Alpha offset (in bytes) for a given pixel format. </p>
+<p>This specifies the number of bytes that the Alpha component is offset from the start of the pixel. For instance, if a pixel of format TJ_BGRA is stored in <code>char pixel[]</code>, then the alpha component will be <code>pixel[tjAlphaOffset[TJ_BGRA]]</code>. This will be -1 if the pixel format does not have an alpha component. </p>
+
+</div>
+</div>
 <a class="anchor" id="ga84e2e35d3f08025f976ec1ec53693dea"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2600,7 +2626,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </div><div class="memdoc">
 
 <p>Blue offset (in bytes) for a given pixel format. </p>
-<p>This specifies the number of bytes that the Blue component is offset from the start of the pixel. For instance, if a pixel of format TJ_BGRX is stored in <code>char pixel[]</code>, then the blue component will be <code>pixel[tjBlueOffset[TJ_BGRX]]</code>. </p>
+<p>This specifies the number of bytes that the Blue component is offset from the start of the pixel. For instance, if a pixel of format TJ_BGRX is stored in <code>char pixel[]</code>, then the blue component will be <code>pixel[tjBlueOffset[TJ_BGRX]]</code>. This will be -1 if the pixel format does not have a blue component. </p>
 
 </div>
 </div>
@@ -2623,7 +2649,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </div><div class="memdoc">
 
 <p>Green offset (in bytes) for a given pixel format. </p>
-<p>This specifies the number of bytes that the green component is offset from the start of the pixel. For instance, if a pixel of format TJ_BGRX is stored in <code>char pixel[]</code>, then the green component will be <code>pixel[tjGreenOffset[TJ_BGRX]]</code>. </p>
+<p>This specifies the number of bytes that the green component is offset from the start of the pixel. For instance, if a pixel of format TJ_BGRX is stored in <code>char pixel[]</code>, then the green component will be <code>pixel[tjGreenOffset[TJ_BGRX]]</code>. This will be -1 if the pixel format does not have a green component. </p>
 
 </div>
 </div>
@@ -2728,7 +2754,7 @@ If you choose option 1, <code>dstSizes[i]</code> should be set to the size of yo
 </div><div class="memdoc">
 
 <p>Red offset (in bytes) for a given pixel format. </p>
-<p>This specifies the number of bytes that the red component is offset from the start of the pixel. For instance, if a pixel of format TJ_BGRX is stored in <code>char pixel[]</code>, then the red component will be <code>pixel[tjRedOffset[TJ_BGRX]]</code>. </p>
+<p>This specifies the number of bytes that the red component is offset from the start of the pixel. For instance, if a pixel of format TJ_BGRX is stored in <code>char pixel[]</code>, then the red component will be <code>pixel[tjRedOffset[TJ_BGRX]]</code>. This will be -1 if the pixel format does not have a red component. </p>
 
 </div>
 </div>

@@ -84,8 +84,6 @@ const char *pixFormatStr[TJ_NUMPF]=
 	"RGBA", "BGRA", "ABGR", "ARGB", "CMYK"
 };
 
-const int alphaOffset[TJ_NUMPF] = {-1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0, -1};
-
 const int _3byteFormats[]={TJPF_RGB, TJPF_BGR};
 const int _4byteFormats[]={TJPF_RGBX, TJPF_BGRX, TJPF_XBGR, TJPF_XRGB,
 	TJPF_CMYK};
@@ -196,11 +194,13 @@ int checkBuf(unsigned char *buf, int w, int h, int pf, int subsamp,
 	int roffset=tjRedOffset[pf];
 	int goffset=tjGreenOffset[pf];
 	int boffset=tjBlueOffset[pf];
-	int aoffset=alphaOffset[pf];
+	int aoffset=tjAlphaOffset[pf];
 	int ps=tjPixelSize[pf];
 	int index, row, col, retval=1;
 	int halfway=16*sf.num/sf.denom;
 	int blocksize=8*sf.num/sf.denom;
+
+	if(pf==TJPF_GRAY) roffset=goffset=boffset=0;
 
 	if(pf==TJPF_CMYK)
 	{
@@ -738,7 +738,7 @@ int cmpBitmap(unsigned char *buf, int width, int pitch, int height, int pf,
 	int roffset=tjRedOffset[pf];
 	int goffset=tjGreenOffset[pf];
 	int boffset=tjBlueOffset[pf];
-	int aoffset=alphaOffset[pf];
+	int aoffset=tjAlphaOffset[pf];
 	int ps=tjPixelSize[pf];
 	int i, j;
 

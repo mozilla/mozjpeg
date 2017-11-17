@@ -20,6 +20,7 @@
  */
 
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
+#include "cmyk.h"
 
 #ifdef PPM_SUPPORTED
 
@@ -107,12 +108,73 @@ copy_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
   register char *bufferptr;
   register JSAMPROW ptr;
+#if BITS_IN_JSAMPLE != 8 || (!defined(HAVE_UNSIGNED_CHAR) && !defined(__CHAR_UNSIGNED__))
+  register JDIMENSION col;
+#endif
+
+  ptr = dest->pub.buffer[0];
+  bufferptr = dest->iobuffer;
+#if BITS_IN_JSAMPLE == 8 && (defined(HAVE_UNSIGNED_CHAR) || defined(__CHAR_UNSIGNED__))
+  MEMCOPY(bufferptr, ptr, dest->samples_per_row);
+#else
+  for (col = dest->samples_per_row; col > 0; col--) {
+    PUTPPMSAMPLE(bufferptr, GETJSAMPLE(*ptr++));
+  }
+#endif
+  (void) JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+}
+
+
+/*
+ * Convert extended RGB to RGB.
+ */
+
+METHODDEF(void)
+put_rgb (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
+         JDIMENSION rows_supplied)
+{
+  ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
+  register char *bufferptr;
+  register JSAMPROW ptr;
+  register JDIMENSION col;
+  register int rindex = rgb_red[cinfo->out_color_space];
+  register int gindex = rgb_green[cinfo->out_color_space];
+  register int bindex = rgb_blue[cinfo->out_color_space];
+  register int ps = rgb_pixelsize[cinfo->out_color_space];
+
+  ptr = dest->pub.buffer[0];
+  bufferptr = dest->iobuffer;
+  for (col = cinfo->output_width; col > 0; col--) {
+    PUTPPMSAMPLE(bufferptr, ptr[rindex]);
+    PUTPPMSAMPLE(bufferptr, ptr[gindex]);
+    PUTPPMSAMPLE(bufferptr, ptr[bindex]);
+    ptr += ps;
+  }
+  (void) JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+}
+
+
+/*
+ * Convert CMYK to RGB.
+ */
+
+METHODDEF(void)
+put_cmyk (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
+          JDIMENSION rows_supplied)
+{
+  ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
+  register char *bufferptr;
+  register JSAMPROW ptr;
   register JDIMENSION col;
 
   ptr = dest->pub.buffer[0];
   bufferptr = dest->iobuffer;
-  for (col = dest->samples_per_row; col > 0; col--) {
-    PUTPPMSAMPLE(bufferptr, GETJSAMPLE(*ptr++));
+  for (col = cinfo->output_width; col > 0; col--) {
+    JSAMPLE r, g, b, c = *ptr++, m = *ptr++, y = *ptr++, k = *ptr++;
+    cmyk_to_rgb(c, m, y, k, &r, &g, &b);
+    PUTPPMSAMPLE(bufferptr, r);
+    PUTPPMSAMPLE(bufferptr, g);
+    PUTPPMSAMPLE(bufferptr, b);
   }
   (void) JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
@@ -185,6 +247,17 @@ start_output_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
             PPM_MAXVAL);
     break;
   case JCS_RGB:
+  case JCS_EXT_RGB:
+  case JCS_EXT_RGBX:
+  case JCS_EXT_BGR:
+  case JCS_EXT_BGRX:
+  case JCS_EXT_XBGR:
+  case JCS_EXT_XRGB:
+  case JCS_EXT_RGBA:
+  case JCS_EXT_BGRA:
+  case JCS_EXT_ABGR:
+  case JCS_EXT_ARGB:
+  case JCS_CMYK:
     /* emit header for raw PPM format */
     fprintf(dest->pub.output_file, "P6\n%ld %ld\n%d\n",
             (long) cinfo->output_width, (long) cinfo->output_height,
@@ -219,7 +292,10 @@ calc_buffer_dimensions_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
 
-  dest->samples_per_row = cinfo->output_width * cinfo->out_color_components;
+  if (cinfo->out_color_space == JCS_GRAYSCALE)
+    dest->samples_per_row = cinfo->output_width * cinfo->out_color_components;
+  else
+    dest->samples_per_row = cinfo->output_width * 3;
   dest->buffer_width = dest->samples_per_row * (BYTESPERSAMPLE * sizeof(char));
 }
 
@@ -250,7 +326,12 @@ jinit_write_ppm (j_decompress_ptr cinfo)
     ((j_common_ptr) cinfo, JPOOL_IMAGE, dest->buffer_width);
 
   if (cinfo->quantize_colors || BITS_IN_JSAMPLE != 8 ||
-      sizeof(JSAMPLE) != sizeof(char)) {
+      sizeof(JSAMPLE) != sizeof(char) ||
+      (cinfo->out_color_space != JCS_EXT_RGB
+#if RGB_RED == 0 && RGB_GREEN == 1 && RGB_BLUE == 2 && RGB_PIXELSIZE == 3
+       && cinfo->out_color_space != JCS_RGB
+#endif
+      )) {
     /* When quantizing, we need an output buffer for colormap indexes
      * that's separate from the physical I/O buffer.  We also need a
      * separate buffer if pixel format translation must take place.
@@ -259,7 +340,11 @@ jinit_write_ppm (j_decompress_ptr cinfo)
       ((j_common_ptr) cinfo, JPOOL_IMAGE,
        cinfo->output_width * cinfo->output_components, (JDIMENSION) 1);
     dest->pub.buffer_height = 1;
-    if (! cinfo->quantize_colors)
+    if (IsExtRGB(cinfo->out_color_space))
+      dest->pub.put_pixel_rows = put_rgb;
+    else if (cinfo->out_color_space == JCS_CMYK)
+      dest->pub.put_pixel_rows = put_cmyk;
+    else if (! cinfo->quantize_colors)
       dest->pub.put_pixel_rows = copy_pixel_rows;
     else if (cinfo->out_color_space == JCS_GRAYSCALE)
       dest->pub.put_pixel_rows = put_demapped_gray;

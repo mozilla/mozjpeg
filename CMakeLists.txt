@@ -541,7 +541,8 @@ endif()
 if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} $<TARGET_OBJECTS:simd> ${SIMD_OBJS}
-      turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
+      turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
+      wrbmp.c wrppm.c)
     set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile)
     if(WITH_JAVA)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
@@ -549,6 +550,8 @@ if(WITH_TURBOJPEG)
       set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile.jni)
     endif()
     add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
+    set_property(TARGET turbojpeg PROPERTY COMPILE_FLAGS
+      "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(WIN32)
       set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
     endif()
@@ -565,37 +568,35 @@ if(WITH_TURBOJPEG)
         LINK_FLAGS "${TJMAPFLAG}${TJMAPFILE}")
     endif()
 
-    add_executable(tjunittest tjunittest.c tjutil.c)
+    add_executable(tjunittest tjunittest.c tjutil.c md5/md5.c md5/md5hl.c)
     target_link_libraries(tjunittest turbojpeg)
 
-    add_executable(tjbench tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c wrbmp.c
-      wrppm.c)
-    target_link_libraries(tjbench turbojpeg jpeg)
+    add_executable(tjbench tjbench.c tjutil.c)
+    target_link_libraries(tjbench turbojpeg)
     if(UNIX)
       target_link_libraries(tjbench m)
     endif()
-    set_property(TARGET tjbench PROPERTY COMPILE_FLAGS
-      "-DBMP_SUPPORTED -DPPM_SUPPORTED")
   endif()
 
   if(ENABLE_STATIC)
     add_library(turbojpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
-      ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c)
+      ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c
+      rdppm.c wrbmp.c wrppm.c)
+    set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS
+      "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(NOT MSVC)
       set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
     endif()
 
-    add_executable(tjunittest-static tjunittest.c tjutil.c)
+    add_executable(tjunittest-static tjunittest.c tjutil.c md5/md5.c
+      md5/md5hl.c)
     target_link_libraries(tjunittest-static turbojpeg-static)
 
-    add_executable(tjbench-static tjbench.c bmp.c tjutil.c rdbmp.c rdppm.c
-      wrbmp.c wrppm.c)
-    target_link_libraries(tjbench-static turbojpeg-static jpeg-static)
+    add_executable(tjbench-static tjbench.c tjutil.c)
+    target_link_libraries(tjbench-static turbojpeg-static)
     if(UNIX)
       target_link_libraries(tjbench-static m)
     endif()
-    set_property(TARGET tjbench-static PROPERTY COMPILE_FLAGS
-      "-DBMP_SUPPORTED -DPPM_SUPPORTED")
   endif()
 endif()
 
@@ -864,6 +865,7 @@ foreach(libtype ${TEST_LIBTYPES})
     add_test(tjunittest-${libtype}-yuv tjunittest${suffix} -yuv)
     add_test(tjunittest-${libtype}-yuv-alloc tjunittest${suffix} -yuv -alloc)
     add_test(tjunittest-${libtype}-yuv-nopad tjunittest${suffix} -yuv -noyuvpad)
+    add_test(tjunittest-${libtype}-bmp tjunittest${suffix} -bmp)
 
     set(MD5_PPM_GRAY_TILE 89d3ca21213d9d864b50b4e4e7de4ca6)
     set(MD5_PPM_420_8x8_TILE 847fceab15c5b7b911cb986cf0f71de3)

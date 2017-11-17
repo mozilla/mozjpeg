@@ -28,7 +28,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
 #include "./md5.h"
 #include "../tjutil.h"
 

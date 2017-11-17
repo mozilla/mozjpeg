@@ -33,7 +33,6 @@
 #include <math.h>
 #include <errno.h>
 #include <cdjpeg.h>
-#include "./bmp.h"
 #include "./tjutil.h"
 #include "./turbojpeg.h"
 
@@ -47,6 +46,12 @@
 
 char tjErrorStr[JMSG_LENGTH_MAX]="\0", tjErrorMsg[JMSG_LENGTH_MAX]="\0";
 int tjErrorLine=-1, tjErrorCode=-1;
+
+#define _throwtjg(m) {  \
+	printf("ERROR in line %d while %s:\n%s\n", __LINE__, m,  \
+		tjGetErrorStr2(NULL));  \
+	retval=-1;  goto bailout;  \
+}
 
 #define _throwtj(m)  \
 {  \
@@ -75,8 +80,6 @@ int tjErrorLine=-1, tjErrorCode=-1;
 		retval=-1;  goto bailout;  \
 	}  \
 }
-
-#define _throwbmp(m) _throw(m, bmpgeterr())
 
 int flags=TJFLAG_NOREALLOC, componly=0, decomponly=0, doyuv=0, quiet=0,
 	dotile=0, pf=TJPF_BGR, yuvpad=1, dowrite=1;
@@ -265,9 +268,8 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 		snprintf(tempstr, 1024, "%s_%s%s_%s.%s", filename, subName[subsamp],
 			qualstr, sizestr, ext);
 
-	if(savebmp(tempstr, dstbuf, scaledw, scaledh, pf,
-		(flags&TJFLAG_BOTTOMUP)!=0)==-1)
-		_throwbmp("saving bitmap");
+	if(tjSaveImage(tempstr, dstbuf, scaledw, 0, scaledh, pf, flags)==-1)
+		_throwtjg("saving bitmap");
 	ptr=strrchr(tempstr, '.');
 	snprintf(ptr, 1024-(ptr-tempstr), "-err.%s", ext);
 	if(srcbuf && sf.num==1 && sf.denom==1)
@@ -301,9 +303,8 @@ int decomp(unsigned char *srcbuf, unsigned char **jpegbuf,
 					dstbuf[pitch*row+col]
 						=abs(dstbuf[pitch*row+col]-srcbuf[pitch*row+col]);
 		}
-		if(savebmp(tempstr, dstbuf, w, h, pf,
-			(flags&TJFLAG_BOTTOMUP)!=0)==-1)
-			_throwbmp("saving bitmap");
+		if(tjSaveImage(tempstr, dstbuf, w, 0, h, pf, flags)==-1)
+			_throwtjg("saving bitmap");
 	}
 
 	bailout:
@@ -998,8 +999,8 @@ int main(int argc, char *argv[])
 
 	if(!decomponly)
 	{
-		if(loadbmp(argv[1], &srcbuf, &w, &h, pf, (flags&TJFLAG_BOTTOMUP)!=0)==-1)
-			_throwbmp("loading bitmap");
+		if((srcbuf=tjLoadImage(argv[1], &w, 1, &h, &pf, flags))==NULL)
+			_throwtjg("loading bitmap");
 		temp=strrchr(argv[1], '.');
 		if(temp!=NULL) *temp='\0';
 	}
@@ -1052,6 +1053,6 @@ int main(int argc, char *argv[])
 	}
 
 	bailout:
-	if(srcbuf) free(srcbuf);
+	if(srcbuf) tjFree(srcbuf);
 	return retval;
 }

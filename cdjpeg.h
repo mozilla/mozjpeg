@@ -96,9 +96,11 @@ typedef struct cdjpeg_progress_mgr *cd_progress_ptr;
 
 /* Module selection routines for I/O modules. */
 
-EXTERN(cjpeg_source_ptr) jinit_read_bmp (j_compress_ptr cinfo);
+EXTERN(cjpeg_source_ptr) jinit_read_bmp (j_compress_ptr cinfo,
+                                         boolean use_inversion_array);
 EXTERN(djpeg_dest_ptr) jinit_write_bmp (j_decompress_ptr cinfo,
-                                        boolean is_os2);
+                                        boolean is_os2,
+                                        boolean use_inversion_array);
 EXTERN(cjpeg_source_ptr) jinit_read_gif (j_compress_ptr cinfo);
 EXTERN(djpeg_dest_ptr) jinit_write_gif (j_decompress_ptr cinfo);
 EXTERN(cjpeg_source_ptr) jinit_read_ppm (j_compress_ptr cinfo);
@@ -151,3 +153,10 @@ EXTERN(FILE *) write_stdout (void);
 #ifndef EXIT_WARNING
 #define EXIT_WARNING  2
 #endif
+
+#define RGB2GRAY(r, g, b)  \
+  (JSAMPLE)((double)(r) * 0.299 + (double)(g) * 0.587 +  \
+            (double)(b) * 0.114 + 0.5)
+
+#define IsExtRGB(cs)  \
+  (cs == JCS_RGB || (cs >= JCS_EXT_RGB && cs <= JCS_EXT_ARGB))

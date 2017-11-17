@@ -642,10 +642,10 @@ main (int argc, char **argv)
   switch (requested_fmt) {
 #ifdef BMP_SUPPORTED
   case FMT_BMP:
-    dest_mgr = jinit_write_bmp(&cinfo, FALSE);
+    dest_mgr = jinit_write_bmp(&cinfo, FALSE, TRUE);
     break;
   case FMT_OS2:
-    dest_mgr = jinit_write_bmp(&cinfo, TRUE);
+    dest_mgr = jinit_write_bmp(&cinfo, TRUE, TRUE);
     break;
 #endif
 #ifdef GIF_SUPPORTED

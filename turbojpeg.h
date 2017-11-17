@@ -249,7 +249,11 @@ enum TJPF
    * CMYK pixels into a YCCK JPEG image (see #TJCS_YCCK) and decompressing YCCK
    * JPEG images into CMYK pixels.
    */
-  TJPF_CMYK
+  TJPF_CMYK,
+  /**
+   * Unknown pixel format.  Currently this is only used by #tjLoadImage().
+   */
+  TJPF_UNKNOWN = -1
 };
 
 
@@ -1512,6 +1516,86 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle handle);
  * @sa tjFree()
  */
 DLLEXPORT unsigned char* DLLCALL tjAlloc(int bytes);
+
+
+/**
+ * Load an uncompressed image from disk into memory.
+ *
+ * @param filename name of a file containing an uncompressed image in Windows
+ * BMP or PBMPLUS (PPM/PGM) format
+ *
+ * @param width pointer to an integer variable that will receive the width (in
+ * pixels) of the uncompressed image
+ *
+ * @param align row alignment of the image buffer to be returned (must be a
+ * power of 2.)  For instance, setting this parameter to 4 will cause all rows
+ * in the image buffer to be padded to the nearest 32-bit boundary, and setting
+ * this parameter to 1 will cause all rows in the image buffer to be unpadded.
+ *
+ * @param height pointer to an integer variable that will receive the height
+ * (in pixels) of the uncompressed image
+ *
+ * @param pixelFormat pointer to an integer variable that specifies or will
+ * receive the pixel format of the uncompressed image buffer.  If
+ * <tt>*pixelFormat</tt> is set to @ref TJPF_UNKNOWN prior to calling this
+ * function, then the uncompressed image buffer returned by the function will
+ * use the most optimal pixel format for the file type, and
+ * <tt>*pixelFormat</tt> will contain the ID of this pixel format upon
+ * successful return from the function.  Otherwise, the uncompressed image
+ * buffer will use the @ref TJPF "pixel format" specified in
+ * <tt>*pixelFormat</tt>, and pixel format conversion will be performed if
+ * necessary.  If <tt>*pixelFormat</tt> is set to @ref TJPF_CMYK, then the RGB
+ * or grayscale pixels stored in the file will be converted using a quick &
+ * dirty algorithm that is suitable only for testing purposes (proper
+ * conversion between CMYK and other formats requires a color management
+ * system.)
+ *
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * "flags".
+ *
+ * @return a pointer to a newly-allocated buffer containing the uncompressed
+ * image, converted to the chosen pixel format and with the chosen row
+ * alignment, or NULL if an error occurred (see #tjGetErrorStr2().)  This
+ * buffer should be freed using #tjFree().
+ */
+DLLEXPORT unsigned char* DLLCALL tjLoadImage(const char *filename, int *width,
+  int align, int *height, int *pixelFormat, int flags);
+
+
+/**
+ * Save an uncompressed image from memory to disk.
+ *
+ * @param filename name of a file to which to save the uncompressed image.
+ * The image will be stored in Windows BMP or PBMPLUS (PPM/PGM) format,
+ * depending on the file extension.
+ *
+ * @param buffer pointer to an image buffer containing RGB, grayscale, or
+ * CMYK pixels to be saved
+ *
+ * @param width width (in pixels) of the uncompressed image
+ *
+ * @param pitch bytes per line in the image buffer.  Setting this parameter to
+ * 0 is the equivalent of setting it to
+ * <tt>width * #tjPixelSize[pixelFormat]</tt>.
+ *
+ * @param height height (in pixels) of the uncompressed image
+ *
+ * @param pixelFormat pixel format of the image buffer (see @ref TJPF
+ * "Pixel formats".)  If this parameter is set to @ref TJPF_GRAY, then the
+ * image will be stored in PGM or 8-bit (indexed color) BMP format.  Otherwise,
+ * the image will be stored in PPM or 24-bit BMP format.  If this parameter
+ * is set to @ref TJPF_CMYK, then the CMYK pixels will be converted to RGB
+ * using a quick & dirty algorithm that is suitable only for testing (proper
+ * conversion between CMYK and other formats requires a color management
+ * system.)
+ *
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * "flags".
+ *
+ * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2().)
+ */
+DLLEXPORT int DLLCALL tjSaveImage(const char *filename, unsigned char *buffer,
+  int width, int pitch, int height, int pixelFormat, int flags);
 
 
 /**

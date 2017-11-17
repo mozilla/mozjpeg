@@ -107,7 +107,7 @@ select_file_type (j_compress_ptr cinfo, FILE *infile)
   switch (c) {
 #ifdef BMP_SUPPORTED
   case 'B':
-    return jinit_read_bmp(cinfo);
+    return jinit_read_bmp(cinfo, TRUE);
 #endif
 #ifdef GIF_SUPPORTED
   case 'G':

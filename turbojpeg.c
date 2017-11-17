@@ -37,10 +37,12 @@
 #include <jpeglib.h>
 #include <jerror.h>
 #include <setjmp.h>
+#include <errno.h>
 #include "./turbojpeg.h"
 #include "./tjutil.h"
 #include "transupp.h"
 #include "./jpegcomp.h"
+#include "./cdjpeg.h"
 
 extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **,
 	unsigned long *, boolean);
@@ -132,8 +134,40 @@ static const tjscalingfactor sf[NUMSF]={
 	{1, 8}
 };
 
+static J_COLOR_SPACE pf2cs[TJ_NUMPF] =
+{
+	JCS_EXT_RGB, JCS_EXT_BGR, JCS_EXT_RGBX, JCS_EXT_BGRX, JCS_EXT_XBGR,
+	JCS_EXT_XRGB, JCS_GRAYSCALE, JCS_EXT_RGBA, JCS_EXT_BGRA, JCS_EXT_ABGR,
+	JCS_EXT_ARGB, JCS_CMYK
+};
+
+static int cs2pf[JPEG_NUMCS] =
+{
+	TJPF_UNKNOWN, TJPF_GRAY,
+#if RGB_RED == 0 && RGB_GREEN == 1 && RGB_BLUE == 2 && RGB_PIXELSIZE == 3
+	TJPF_RGB,
+#elif RGB_RED == 2 && RGB_GREEN == 1 && RGB_BLUE == 0 && RGB_PIXELSIZE == 3
+	TJPF_BGR,
+#elif RGB_RED == 0 && RGB_GREEN == 1 && RGB_BLUE == 2 && RGB_PIXELSIZE == 4
+	TJPF_RGBX,
+#elif RGB_RED == 2 && RGB_GREEN == 1 && RGB_BLUE == 0 && RGB_PIXELSIZE == 4
+	TJPF_BGRX,
+#elif RGB_RED == 3 && RGB_GREEN == 2 && RGB_BLUE == 1 && RGB_PIXELSIZE == 4
+	TJPF_XBGR,
+#elif RGB_RED == 1 && RGB_GREEN == 2 && RGB_BLUE == 3 && RGB_PIXELSIZE == 4
+	TJPF_XRGB,
+#endif
+	TJPF_UNKNOWN, TJPF_CMYK, TJPF_UNKNOWN, TJPF_RGB, TJPF_RGBX, TJPF_BGR,
+	TJPF_BGRX, TJPF_XBGR, TJPF_XRGB, TJPF_RGBA, TJPF_BGRA, TJPF_ABGR, TJPF_ARGB,
+	TJPF_UNKNOWN
+};
+
 #define _throwg(m) {snprintf(errStr, JMSG_LENGTH_MAX, "%s", m);  \
 	retval=-1;  goto bailout;}
+#define _throwunix(m) {  \
+	snprintf(errStr, JMSG_LENGTH_MAX, "%s\n%s", m, strerror(errno));  \
+	retval=-1;  goto bailout;  \
+}
 #define _throw(m) {snprintf(this->errStr, JMSG_LENGTH_MAX, "%s", m);  \
 	this->isInstanceError=TRUE;  _throwg(m);}
 #define getinstance(handle) tjinstance *this=(tjinstance *)handle;  \
@@ -188,45 +222,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	int retval=0;
 	char *env=NULL;
 
-	switch(pixelFormat)
-	{
-		case TJPF_GRAY:
-			cinfo->in_color_space=JCS_GRAYSCALE;  break;
-		#if JCS_EXTENSIONS==1
-		case TJPF_RGB:
-			cinfo->in_color_space=JCS_EXT_RGB;  break;
-		case TJPF_BGR:
-			cinfo->in_color_space=JCS_EXT_BGR;  break;
-		case TJPF_RGBX:
-		case TJPF_RGBA:
-			cinfo->in_color_space=JCS_EXT_RGBX;  break;
-		case TJPF_BGRX:
-		case TJPF_BGRA:
-			cinfo->in_color_space=JCS_EXT_BGRX;  break;
-		case TJPF_XRGB:
-		case TJPF_ARGB:
-			cinfo->in_color_space=JCS_EXT_XRGB;  break;
-		case TJPF_XBGR:
-		case TJPF_ABGR:
-			cinfo->in_color_space=JCS_EXT_XBGR;  break;
-		#else
-		case TJPF_RGB:
-		case TJPF_BGR:
-		case TJPF_RGBX:
-		case TJPF_BGRX:
-		case TJPF_XRGB:
-		case TJPF_XBGR:
-		case TJPF_RGBA:
-		case TJPF_BGRA:
-		case TJPF_ARGB:
-		case TJPF_ABGR:
-			cinfo->in_color_space=JCS_RGB;  pixelFormat=TJPF_RGB;
-			break;
-		#endif
-		case TJPF_CMYK:
-			cinfo->in_color_space=JCS_CMYK;  break;
-	}
-
+	cinfo->in_color_space=pf2cs[pixelFormat];
 	cinfo->input_components=tjPixelSize[pixelFormat];
 	jpeg_set_defaults(cinfo);
 
@@ -282,62 +278,6 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 	if(cinfo->num_components>3)
 		cinfo->comp_info[3].v_samp_factor=tjMCUHeight[subsamp]/8;
 
-	return retval;
-}
-
-static int setDecompDefaults(tjinstance *this, int pixelFormat, int flags)
-{
-	int retval=0;
-
-	switch(pixelFormat)
-	{
-		case TJPF_GRAY:
-			this->dinfo.out_color_space=JCS_GRAYSCALE;  break;
-		#if JCS_EXTENSIONS==1
-		case TJPF_RGB:
-			this->dinfo.out_color_space=JCS_EXT_RGB;  break;
-		case TJPF_BGR:
-			this->dinfo.out_color_space=JCS_EXT_BGR;  break;
-		case TJPF_RGBX:
-			this->dinfo.out_color_space=JCS_EXT_RGBX;  break;
-		case TJPF_BGRX:
-			this->dinfo.out_color_space=JCS_EXT_BGRX;  break;
-		case TJPF_XRGB:
-			this->dinfo.out_color_space=JCS_EXT_XRGB;  break;
-		case TJPF_XBGR:
-			this->dinfo.out_color_space=JCS_EXT_XBGR;  break;
-		#if JCS_ALPHA_EXTENSIONS==1
-		case TJPF_RGBA:
-			this->dinfo.out_color_space=JCS_EXT_RGBA;  break;
-		case TJPF_BGRA:
-			this->dinfo.out_color_space=JCS_EXT_BGRA;  break;
-		case TJPF_ARGB:
-			this->dinfo.out_color_space=JCS_EXT_ARGB;  break;
-		case TJPF_ABGR:
-			this->dinfo.out_color_space=JCS_EXT_ABGR;  break;
-		#endif
-		#else
-		case TJPF_RGB:
-		case TJPF_BGR:
-		case TJPF_RGBX:
-		case TJPF_BGRX:
-		case TJPF_XRGB:
-		case TJPF_XBGR:
-		case TJPF_RGBA:
-		case TJPF_BGRA:
-		case TJPF_ARGB:
-		case TJPF_ABGR:
-			this->dinfo.out_color_space=JCS_RGB;  break;
-		#endif
-		case TJPF_CMYK:
-			this->dinfo.out_color_space=JCS_CMYK;  break;
-		default:
-			_throw("Unsupported pixel format");
-	}
-
-	if(flags&TJFLAG_FASTDCT) this->dinfo.dct_method=JDCT_FASTEST;
-
-	bailout:
 	return retval;
 }
 
@@ -407,149 +347,6 @@ static int getSubsamp(j_decompress_ptr dinfo)
 	}
 	return retval;
 }
-
-
-#ifndef JCS_EXTENSIONS
-
-/* Conversion functions to emulate the colorspace extensions.  This allows the
-   TurboJPEG wrapper to be used with libjpeg */
-
-#define TORGB(PS, ROFFSET, GOFFSET, BOFFSET) {  \
-	int rowPad=pitch-width*PS;  \
-	while(height--)  \
-	{  \
-		unsigned char *endOfRow=src+width*PS;  \
-		while(src<endOfRow)  \
-		{  \
-			dst[RGB_RED]=src[ROFFSET];  \
-			dst[RGB_GREEN]=src[GOFFSET];  \
-			dst[RGB_BLUE]=src[BOFFSET];  \
-			dst+=RGB_PIXELSIZE;  src+=PS;  \
-		}  \
-		src+=rowPad;  \
-	}  \
-}
-
-static unsigned char *toRGB(unsigned char *src, int width, int pitch,
-	int height, int pixelFormat, unsigned char *dst)
-{
-	unsigned char *retval=src;
-	switch(pixelFormat)
-	{
-		case TJPF_RGB:
-			#if RGB_RED!=0 || RGB_GREEN!=1 || RGB_BLUE!=2 || RGB_PIXELSIZE!=3
-			retval=dst;  TORGB(3, 0, 1, 2);
-			#endif
-			break;
-		case TJPF_BGR:
-			#if RGB_RED!=2 || RGB_GREEN!=1 || RGB_BLUE!=0 || RGB_PIXELSIZE!=3
-			retval=dst;  TORGB(3, 2, 1, 0);
-			#endif
-			break;
-		case TJPF_RGBX:
-		case TJPF_RGBA:
-			#if RGB_RED!=0 || RGB_GREEN!=1 || RGB_BLUE!=2 || RGB_PIXELSIZE!=4
-			retval=dst;  TORGB(4, 0, 1, 2);
-			#endif
-			break;
-		case TJPF_BGRX:
-		case TJPF_BGRA:
-			#if RGB_RED!=2 || RGB_GREEN!=1 || RGB_BLUE!=0 || RGB_PIXELSIZE!=4
-			retval=dst;  TORGB(4, 2, 1, 0);
-			#endif
-			break;
-		case TJPF_XRGB:
-		case TJPF_ARGB:
-			#if RGB_RED!=1 || RGB_GREEN!=2 || RGB_BLUE!=3 || RGB_PIXELSIZE!=4
-			retval=dst;  TORGB(4, 1, 2, 3);
-			#endif
-			break;
-		case TJPF_XBGR:
-		case TJPF_ABGR:
-			#if RGB_RED!=3 || RGB_GREEN!=2 || RGB_BLUE!=1 || RGB_PIXELSIZE!=4
-			retval=dst;  TORGB(4, 3, 2, 1);
-			#endif
-			break;
-	}
-	return retval;
-}
-
-#define FROMRGB(PS, ROFFSET, GOFFSET, BOFFSET, SETALPHA) {  \
-	int rowPad=pitch-width*PS;  \
-	while(height--)  \
-	{  \
-		unsigned char *endOfRow=dst+width*PS;  \
-		while(dst<endOfRow)  \
-		{  \
-			dst[ROFFSET]=src[RGB_RED];  \
-			dst[GOFFSET]=src[RGB_GREEN];  \
-			dst[BOFFSET]=src[RGB_BLUE];  \
-			SETALPHA  \
-			dst+=PS;  src+=RGB_PIXELSIZE;  \
-		}  \
-		dst+=rowPad;  \
-	}  \
-}
-
-static void fromRGB(unsigned char *src, unsigned char *dst, int width,
-	int pitch, int height, int pixelFormat)
-{
-	switch(pixelFormat)
-	{
-		case TJPF_RGB:
-			#if RGB_RED!=0 || RGB_GREEN!=1 || RGB_BLUE!=2 || RGB_PIXELSIZE!=3
-			FROMRGB(3, 0, 1, 2,);
-			#endif
-			break;
-		case TJPF_BGR:
-			#if RGB_RED!=2 || RGB_GREEN!=1 || RGB_BLUE!=0 || RGB_PIXELSIZE!=3
-			FROMRGB(3, 2, 1, 0,);
-			#endif
-			break;
-		case TJPF_RGBX:
-			#if RGB_RED!=0 || RGB_GREEN!=1 || RGB_BLUE!=2 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 0, 1, 2,);
-			#endif
-			break;
-		case TJPF_RGBA:
-			#if RGB_RED!=0 || RGB_GREEN!=1 || RGB_BLUE!=2 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 0, 1, 2, dst[3]=0xFF;);
-			#endif
-			break;
-		case TJPF_BGRX:
-			#if RGB_RED!=2 || RGB_GREEN!=1 || RGB_BLUE!=0 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 2, 1, 0,);
-			#endif
-			break;
-		case TJPF_BGRA:
-			#if RGB_RED!=2 || RGB_GREEN!=1 || RGB_BLUE!=0 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 2, 1, 0, dst[3]=0xFF;);  return;
-			#endif
-			break;
-		case TJPF_XRGB:
-			#if RGB_RED!=1 || RGB_GREEN!=2 || RGB_BLUE!=3 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 1, 2, 3,);  return;
-			#endif
-			break;
-		case TJPF_ARGB:
-			#if RGB_RED!=1 || RGB_GREEN!=2 || RGB_BLUE!=3 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 1, 2, 3, dst[0]=0xFF;);  return;
-			#endif
-			break;
-		case TJPF_XBGR:
-			#if RGB_RED!=3 || RGB_GREEN!=2 || RGB_BLUE!=1 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 3, 2, 1,);  return;
-			#endif
-			break;
-		case TJPF_ABGR:
-			#if RGB_RED!=3 || RGB_GREEN!=2 || RGB_BLUE!=1 || RGB_PIXELSIZE!=4
-			FROMRGB(4, 3, 2, 1, dst[0]=0xFF;);  return;
-			#endif
-			break;
-	}
-}
-
-#endif
 
 
 /* General API functions */
@@ -792,9 +589,6 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 	unsigned long *jpegSize, int jpegSubsamp, int jpegQual, int flags)
 {
 	int i, retval=0, alloc=1;  JSAMPROW *row_pointer=NULL;
-	#ifndef JCS_EXTENSIONS
-	unsigned char *rgbBuf=NULL;
-	#endif
 
 	getcinstance(handle)
 	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -807,16 +601,6 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 		_throw("tjCompress2(): Invalid argument");
 
 	if(pitch==0) pitch=width*tjPixelSize[pixelFormat];
-
-	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK)
-	{
-		rgbBuf=(unsigned char *)malloc(width*height*RGB_PIXELSIZE);
-		if(!rgbBuf) _throw("tjCompress2(): Memory allocation failure");
-		srcBuf=toRGB(srcBuf, width, pitch, height, pixelFormat, rgbBuf);
-		pitch=width*RGB_PIXELSIZE;
-	}
-	#endif
 
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
 		_throw("tjCompress2(): Memory allocation failure");
@@ -858,9 +642,6 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 
 	bailout:
 	if(cinfo->global_state>CSTATE_START) jpeg_abort_compress(cinfo);
-	#ifndef JCS_EXTENSIONS
-	if(rgbBuf) free(rgbBuf);
-	#endif
 	if(row_pointer) free(row_pointer);
 	if(this->jerr.warning) retval=-1;
 	this->jerr.stopOnWarning=FALSE;
@@ -901,9 +682,6 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 	int row, pw0, ph0, pw[MAX_COMPONENTS], ph[MAX_COMPONENTS];
 	JSAMPLE *ptr;
 	jpeg_component_info *compptr;
-	#ifndef JCS_EXTENSIONS
-	unsigned char *rgbBuf=NULL;
-	#endif
 
 	getcinstance(handle);
 	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -928,16 +706,6 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 		_throw("tjEncodeYUVPlanes(): Cannot generate YUV images from CMYK pixels");
 
 	if(pitch==0) pitch=width*tjPixelSize[pixelFormat];
-
-	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK)
-	{
-		rgbBuf=(unsigned char *)malloc(width*height*RGB_PIXELSIZE);
-		if(!rgbBuf) _throw("tjEncodeYUVPlanes(): Memory allocation failure");
-		srcBuf=toRGB(srcBuf, width, pitch, height, pixelFormat, rgbBuf);
-		pitch=width*RGB_PIXELSIZE;
-	}
-	#endif
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -1042,9 +810,6 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 
 	bailout:
 	if(cinfo->global_state>CSTATE_START) jpeg_abort_compress(cinfo);
-	#ifndef JCS_EXTENSIONS
-	if(rgbBuf) free(rgbBuf);
-	#endif
 	if(row_pointer) free(row_pointer);
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -1427,10 +1192,6 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 {
 	int i, retval=0;  JSAMPROW *row_pointer=NULL;
 	int jpegwidth, jpegheight, scaledw, scaledh;
-	#ifndef JCS_EXTENSIONS
-	unsigned char *rgbBuf=NULL;
-	unsigned char *_dstBuf=NULL;  int _pitch=0;
-	#endif
 
 	getdinstance(handle);
 	this->jerr.stopOnWarning=(flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -1453,11 +1214,8 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 	jpeg_read_header(dinfo, TRUE);
-	if(setDecompDefaults(this, pixelFormat, flags)==-1)
-	{
-		retval=-1;  goto bailout;
-	}
-
+	this->dinfo.out_color_space=pf2cs[pixelFormat];
+	if(flags&TJFLAG_FASTDCT) this->dinfo.dct_method=JDCT_FASTEST;
 	if(flags&TJFLAG_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
 
 	jpegwidth=dinfo->image_width;  jpegheight=dinfo->image_height;
@@ -1478,20 +1236,6 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 
 	jpeg_start_decompress(dinfo);
 	if(pitch==0) pitch=dinfo->output_width*tjPixelSize[pixelFormat];
-
-	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK &&
-		(RGB_RED!=tjRedOffset[pixelFormat] ||
-			RGB_GREEN!=tjGreenOffset[pixelFormat] ||
-			RGB_BLUE!=tjBlueOffset[pixelFormat] ||
-			RGB_PIXELSIZE!=tjPixelSize[pixelFormat]))
-	{
-		rgbBuf=(unsigned char *)malloc(width*height*3);
-		if(!rgbBuf) _throw("tjDecompress2(): Memory allocation failure");
-		_pitch=pitch;  pitch=width*3;
-		_dstBuf=dstBuf;  dstBuf=rgbBuf;
-	}
-	#endif
 
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)
 		*dinfo->output_height))==NULL)
@@ -1514,15 +1258,8 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 	}
 	jpeg_finish_decompress(dinfo);
 
-	#ifndef JCS_EXTENSIONS
-	fromRGB(rgbBuf, _dstBuf, width, _pitch, height, pixelFormat);
-	#endif
-
 	bailout:
 	if(dinfo->global_state>DSTATE_START) jpeg_abort_decompress(dinfo);
-	#ifndef JCS_EXTENSIONS
-	if(rgbBuf) free(rgbBuf);
-	#endif
 	if(row_pointer) free(row_pointer);
 	if(this->jerr.warning) retval=-1;
 	this->jerr.stopOnWarning=FALSE;
@@ -1605,10 +1342,6 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	int row, pw0, ph0, pw[MAX_COMPONENTS], ph[MAX_COMPONENTS];
 	JSAMPLE *ptr;
 	jpeg_component_info *compptr;
-	#ifndef JCS_EXTENSIONS
-	unsigned char *rgbBuf=NULL;
-	unsigned char *_dstBuf=NULL;  int _pitch=0;
-	#endif
 	int (*old_read_markers)(j_decompress_ptr);
 	void (*old_reset_marker_reader)(j_decompress_ptr);
 
@@ -1659,10 +1392,8 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	dinfo->marker->read_markers=old_read_markers;
 	dinfo->marker->reset_marker_reader=old_reset_marker_reader;
 
-	if(setDecompDefaults(this, pixelFormat, flags)==-1)
-	{
-		retval=-1;  goto bailout;
-	}
+	this->dinfo.out_color_space=pf2cs[pixelFormat];
+	if(flags&TJFLAG_FASTDCT) this->dinfo.dct_method=JDCT_FASTEST;
 	dinfo->do_fancy_upsampling=FALSE;
 	dinfo->Se=DCTSIZE2-1;
 	jinit_master_decompress(dinfo);
@@ -1672,20 +1403,6 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	ph0=PAD(height, dinfo->max_v_samp_factor);
 
 	if(pitch==0) pitch=dinfo->output_width*tjPixelSize[pixelFormat];
-
-	#ifndef JCS_EXTENSIONS
-	if(pixelFormat!=TJPF_GRAY && pixelFormat!=TJPF_CMYK &&
-		(RGB_RED!=tjRedOffset[pixelFormat] ||
-			RGB_GREEN!=tjGreenOffset[pixelFormat] ||
-			RGB_BLUE!=tjBlueOffset[pixelFormat] ||
-			RGB_PIXELSIZE!=tjPixelSize[pixelFormat]))
-	{
-		rgbBuf=(unsigned char *)malloc(width*height*3);
-		if(!rgbBuf) _throw("tjDecodeYUVPlanes(): Memory allocation failure");
-		_pitch=pitch;  pitch=width*3;
-		_dstBuf=dstBuf;  dstBuf=rgbBuf;
-	}
-	#endif
 
 	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*ph0))==NULL)
 		_throw("tjDecodeYUVPlanes(): Memory allocation failure");
@@ -1743,15 +1460,8 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	}
 	jpeg_abort_decompress(dinfo);
 
-	#ifndef JCS_EXTENSIONS
-	fromRGB(rgbBuf, _dstBuf, width, _pitch, height, pixelFormat);
-	#endif
-
 	bailout:
 	if(dinfo->global_state>DSTATE_START) jpeg_abort_decompress(dinfo);
-	#ifndef JCS_EXTENSIONS
-	if(rgbBuf) free(rgbBuf);
-	#endif
 	if(row_pointer) free(row_pointer);
 	for(i=0; i<MAX_COMPONENTS; i++)
 	{
@@ -2238,5 +1948,170 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 	if(xinfo) free(xinfo);
 	if(this->jerr.warning) retval=-1;
 	this->jerr.stopOnWarning=FALSE;
+	return retval;
+}
+
+
+DLLEXPORT unsigned char* DLLCALL tjLoadImage(const char *filename, int *width,
+	int align, int *height, int *pixelFormat, int flags)
+{
+	int retval=0, tempc, pitch;
+	tjhandle handle=NULL;
+	tjinstance *this;
+	j_compress_ptr cinfo=NULL;
+	cjpeg_source_ptr src;
+	unsigned char *dstBuf=NULL;
+	FILE *file=NULL;
+	boolean invert;
+
+	if(!filename || !width || align<1 || !height || !pixelFormat ||
+		*pixelFormat<TJPF_UNKNOWN || *pixelFormat>=TJ_NUMPF)
+		_throwg("tjLoadImage(): Invalid argument");
+	if((align&(align-1))!=0)
+		_throwg("tjLoadImage(): Alignment must be a power of 2");
+
+	if((handle=tjInitCompress())==NULL) return NULL;
+	this=(tjinstance *)handle;
+	cinfo=&this->cinfo;
+
+	if((file=fopen(filename, "rb"))==NULL)
+		_throwunix("tjLoadImage(): Cannot open input file");
+
+	if((tempc=getc(file))<0 || ungetc(tempc, file)==EOF)
+		_throwunix("tjLoadImage(): Could not read input file")
+	else if(tempc==EOF) _throwg("tjLoadImage(): Input file contains no data");
+
+	if(setjmp(this->jerr.setjmp_buffer))
+	{
+		/* If we get here, the JPEG code has signaled an error. */
+		retval=-1;  goto bailout;
+	}
+
+	cinfo->in_color_space=pf2cs[*pixelFormat];
+	if(tempc=='B')
+	{
+		if((src=jinit_read_bmp(cinfo, FALSE))==NULL)
+			_throwg("tjLoadImage(): Could not initialize bitmap loader");
+		invert=(flags&TJFLAG_BOTTOMUP)==0;
+	}
+	else if(tempc=='P')
+	{
+		if((src=jinit_read_ppm(cinfo))==NULL)
+			_throwg("tjLoadImage(): Could not initialize bitmap loader");
+		invert=(flags&TJFLAG_BOTTOMUP)!=0;
+	}
+	else _throwg("tjLoadImage(): Unsupported file type");
+
+	src->input_file=file;
+	(*src->start_input)(cinfo, src);
+	(*cinfo->mem->realize_virt_arrays)((j_common_ptr)cinfo);
+
+	*width=cinfo->image_width;  *height=cinfo->image_height;
+	*pixelFormat=cs2pf[cinfo->in_color_space];
+
+	pitch=PAD((*width)*tjPixelSize[*pixelFormat], align);
+	if((dstBuf=(unsigned char *)malloc(pitch*(*height)))==NULL)
+		_throwg("tjLoadImage(): Memory allocation failure");
+
+	if(setjmp(this->jerr.setjmp_buffer))
+	{
+		/* If we get here, the JPEG code has signaled an error. */
+		retval=-1;  goto bailout;
+	}
+
+	while(cinfo->next_scanline<cinfo->image_height)
+	{
+		int i, nlines=(*src->get_pixel_rows)(cinfo, src);
+		for(i=0; i<nlines; i++)
+		{
+			unsigned char *dstptr;  int row;
+			row=cinfo->next_scanline+i;
+			if(invert) dstptr=&dstBuf[((*height)-row-1)*pitch];
+			else dstptr=&dstBuf[row*pitch];
+			memcpy(dstptr, src->buffer[i], (*width)*tjPixelSize[*pixelFormat]);
+		}
+		cinfo->next_scanline+=nlines;
+	}
+
+	(*src->finish_input)(cinfo, src);
+
+	bailout:
+	if(handle) tjDestroy(handle);
+	if(file) fclose(file);
+	if(retval<0 && dstBuf) {free(dstBuf);  dstBuf=NULL;}
+	return dstBuf;
+}
+
+
+DLLEXPORT int DLLCALL tjSaveImage(const char *filename, unsigned char *buffer,
+	int width, int pitch, int height, int pixelFormat, int flags)
+{
+	int retval=0;
+	tjhandle handle=NULL;
+	tjinstance *this;
+	j_decompress_ptr dinfo=NULL;
+	djpeg_dest_ptr dst;
+	FILE *file=NULL;
+	char *ptr=NULL;
+	boolean invert;
+
+	if(!filename || !buffer || width<1 || pitch<0 || height<1 || pixelFormat<0 ||
+		pixelFormat>=TJ_NUMPF)
+		_throwg("tjSaveImage(): Invalid argument");
+
+	if((handle=tjInitDecompress())==NULL)
+		return -1;
+	this=(tjinstance *)handle;
+	dinfo=&this->dinfo;
+
+	if((file=fopen(filename, "wb"))==NULL)
+		_throwunix("tjSaveImage(): Cannot open output file");
+
+	if(setjmp(this->jerr.setjmp_buffer))
+	{
+		/* If we get here, the JPEG code has signaled an error. */
+		retval=-1;  goto bailout;
+	}
+
+	this->dinfo.out_color_space=pf2cs[pixelFormat];
+	dinfo->image_width=width;  dinfo->image_height=height;
+	dinfo->global_state=DSTATE_READY;
+	dinfo->scale_num=dinfo->scale_denom=1;
+
+	ptr=strrchr(filename, '.');
+	if(ptr && !strcasecmp(ptr, ".bmp"))
+	{
+		if((dst=jinit_write_bmp(dinfo, FALSE, FALSE))==NULL)
+			_throwg("tjSaveImage(): Could not initialize bitmap writer");
+		invert=(flags&TJFLAG_BOTTOMUP)==0;
+	}
+	else
+	{
+		if((dst=jinit_write_ppm(dinfo))==NULL)
+			_throwg("tjSaveImage(): Could not initialize PPM writer");
+		invert=(flags&TJFLAG_BOTTOMUP)!=0;
+	}
+
+	dst->output_file=file;
+	(*dst->start_output)(dinfo, dst);
+	(*dinfo->mem->realize_virt_arrays)((j_common_ptr)dinfo);
+
+	if(pitch==0) pitch=width*tjPixelSize[pixelFormat];
+
+	while(dinfo->output_scanline<dinfo->output_height)
+	{
+		unsigned char *rowptr;
+		if(invert) rowptr=&buffer[(height-dinfo->output_scanline-1)*pitch];
+		else rowptr=&buffer[dinfo->output_scanline*pitch];
+		memcpy(dst->buffer[0], rowptr, width*tjPixelSize[pixelFormat]);
+		(*dst->put_pixel_rows)(dinfo, dst, 1);
+		dinfo->output_scanline++;
+	}
+
+	(*dst->finish_output)(dinfo, dst);
+
+	bailout:
+	if(handle) tjDestroy(handle);
+	if(file) fclose(file);
 	return retval;
 }

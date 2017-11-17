@@ -17,6 +17,7 @@ var searchData=
   ['tjpf_5frgb',['TJPF_RGB',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa7ce93230bff449518ce387c17e6ed37c',1,'turbojpeg.h']]],
   ['tjpf_5frgba',['TJPF_RGBA',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa88d2e88fab67f6503cf972e14851cc12',1,'turbojpeg.h']]],
   ['tjpf_5frgbx',['TJPF_RGBX',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa83973bebb7e2dc6fa8bae89ff3f42e01',1,'turbojpeg.h']]],
+  ['tjpf_5funknown',['TJPF_UNKNOWN',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aa84c1a6cead7952998e2fb895844a21ed',1,'turbojpeg.h']]],
   ['tjpf_5fxbgr',['TJPF_XBGR',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aaf6603b27147de47e212e75dac027b2af',1,'turbojpeg.h']]],
   ['tjpf_5fxrgb',['TJPF_XRGB',['../group___turbo_j_p_e_g.html#ggac916144e26c3817ac514e64ae5d12e2aadae996905efcfa3b42a0bb3bea7f9d84',1,'turbojpeg.h']]],
   ['tjsamp_5f411',['TJSAMP_411',['../group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a28ec62575e5ea295c3fde3001dc628e2',1,'turbojpeg.h']]],

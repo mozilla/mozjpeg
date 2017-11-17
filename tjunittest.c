@@ -34,11 +34,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "./tjutil.h"
-#include "./turbojpeg.h"
+#include "tjutil.h"
+#include "turbojpeg.h"
+#include "md5/md5.h"
+#include "cmyk.h"
 #ifdef _WIN32
  #include <time.h>
  #define random() rand()
+#else
+ #include <unistd.h>
 #endif
 
 
@@ -49,7 +53,8 @@ void usage(char *progName)
 	printf("-yuv = test YUV encoding/decoding support\n");
 	printf("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest\n");
 	printf("            4-byte boundary\n");
-	printf("-alloc = test automatic buffer allocation\n\n");
+	printf("-alloc = test automatic buffer allocation\n");
+	printf("-bmp = tjLoadImage()/tjSaveImage() unit test\n\n");
 	exit(1);
 }
 
@@ -58,6 +63,14 @@ void usage(char *progName)
 	bailout();}
 #define _tj(f) {if((f)==-1) _throwtj();}
 #define _throw(m) {printf("ERROR: %s\n", m);  bailout();}
+#define _throwmd5(filename, md5sum, ref) {  \
+	printf("\n%s has an MD5 sum of %s.\n   Should be %s.\n", filename,  \
+		md5sum, ref);  \
+	bailout();  \
+}
+
+#define RGB2GRAY(r, g, b)  \
+	(unsigned char)((double)(r)*0.299+(double)(g)*0.587+(double)(b)*0.114+0.5)
 
 const char *subNameLong[TJ_NUMSAMP]=
 {
@@ -686,6 +699,231 @@ void bufSizeTest(void)
 }
 
 
+void initBitmap(unsigned char *buf, int width, int pitch, int height, int pf,
+	int flags)
+{
+	int roffset=tjRedOffset[pf];
+	int goffset=tjGreenOffset[pf];
+	int boffset=tjBlueOffset[pf];
+	int ps=tjPixelSize[pf];
+	int i, j;
+
+	for(j=0; j<height; j++)
+	{
+		int row=(flags&TJFLAG_BOTTOMUP)? height-j-1:j;
+		for(i=0; i<width; i++)
+		{
+			unsigned char r=(i*256/width)%256;
+			unsigned char g=(j*256/height)%256;
+			unsigned char b=(j*256/height+i*256/width)%256;
+			memset(&buf[row*pitch+i*ps], 0, ps);
+			if(pf==TJPF_GRAY) buf[row*pitch+i*ps]=RGB2GRAY(r, g, b);
+			else if(pf==TJPF_CMYK)
+				rgb_to_cmyk(r, g, b, &buf[row*pitch+i*ps+0], &buf[row*pitch+i*ps+1],
+					&buf[row*pitch+i*ps+2], &buf[row*pitch+i*ps+3]);
+			else
+			{
+				buf[row*pitch+i*ps+roffset]=r;
+				buf[row*pitch+i*ps+goffset]=g;
+				buf[row*pitch+i*ps+boffset]=b;
+			}
+		}
+	}
+}
+
+
+int cmpBitmap(unsigned char *buf, int width, int pitch, int height, int pf,
+	int flags, int gray2rgb)
+{
+	int roffset=tjRedOffset[pf];
+	int goffset=tjGreenOffset[pf];
+	int boffset=tjBlueOffset[pf];
+	int aoffset=alphaOffset[pf];
+	int ps=tjPixelSize[pf];
+	int i, j;
+
+	for(j=0; j<height; j++)
+	{
+		int row=(flags&TJFLAG_BOTTOMUP)? height-j-1:j;
+		for(i=0; i<width; i++)
+		{
+			unsigned char r=(i*256/width)%256;
+			unsigned char g=(j*256/height)%256;
+			unsigned char b=(j*256/height+i*256/width)%256;
+			if(pf==TJPF_GRAY)
+			{
+				if(buf[row*pitch+i*ps]!=RGB2GRAY(r, g, b))
+					return 0;
+			}
+			else if(pf==TJPF_CMYK)
+			{
+				unsigned char rf, gf, bf;
+				cmyk_to_rgb(buf[row*pitch+i*ps+0], buf[row*pitch+i*ps+1],
+					buf[row*pitch+i*ps+2], buf[row*pitch+i*ps+3], &rf, &gf,
+					&bf);
+				if(gray2rgb)
+				{
+					unsigned char gray=RGB2GRAY(r, g, b);
+					if(rf!=gray || gf!=gray || bf!=gray)
+						return 0;
+				}
+				else if(rf!=r || gf!=g || bf!=b) return 0;
+			}
+			else
+			{
+				if(gray2rgb)
+				{
+					unsigned char gray=RGB2GRAY(r, g, b);
+					if(buf[row*pitch+i*ps+roffset]!=gray ||
+						buf[row*pitch+i*ps+goffset]!=gray ||
+						buf[row*pitch+i*ps+boffset]!=gray)
+						return 0;
+				}
+				else if(buf[row*pitch+i*ps+roffset]!=r ||
+					buf[row*pitch+i*ps+goffset]!=g ||
+					buf[row*pitch+i*ps+boffset]!=b)
+					return 0;
+				if(aoffset>=0 && buf[row*pitch+i*ps+aoffset]!=0xFF)
+					return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+
+int doBmpTest(const char *ext, int width, int align, int height, int pf,
+	int flags)
+{
+	char filename[80], *md5sum, md5buf[65];
+	int ps=tjPixelSize[pf], pitch=PAD(width*ps, align),
+		loadWidth=0, loadHeight=0, retval=0;
+	unsigned char *buf=NULL;
+	char *md5ref;
+
+	if(pf==TJPF_GRAY)
+	{
+		md5ref=!strcasecmp(ext, "ppm")? "bc77dea8eaf006aa187582b301f67e02":
+			"2670a3f8cf19d855183c02ccf18d2a35";
+	}
+	else
+	{
+		md5ref=!strcasecmp(ext, "ppm")? "c0c9f772b464d1896326883a5c79c545":
+			"6d659071b9bfcdee2def22cb58ddadca";
+	}
+
+	if((buf=(unsigned char *)tjAlloc(pitch*height))==NULL)
+		_throw("Could not allocate memory");
+	initBitmap(buf, width, pitch, height, pf, flags);
+
+	snprintf(filename, 80, "test_bmp_%s_%d_%s.%s", pixFormatStr[pf], align,
+		(flags&TJFLAG_BOTTOMUP)? "bu":"td", ext);
+	_tj(tjSaveImage(filename, buf, width, pitch, height, pf, flags));
+	md5sum=MD5File(filename, md5buf);
+	if(strcasecmp(md5sum, md5ref))
+		_throwmd5(filename, md5sum, md5ref);
+
+	tjFree(buf);  buf=NULL;
+	if((buf=tjLoadImage(filename, &loadWidth, align, &loadHeight, &pf,
+		flags))==NULL)
+		_throwtj();
+	if(width!=loadWidth || height!=loadHeight)
+	{
+		printf("\n   Image dimensions of %s are bogus\n", filename);
+		retval=-1;  goto bailout;
+	}
+	if(!cmpBitmap(buf, width, pitch, height, pf, flags, 0))
+	{
+		printf("\n   Pixel data in %s is bogus\n", filename);
+		retval=-1;  goto bailout;
+	}
+	if(pf==TJPF_GRAY)
+	{
+		tjFree(buf);  buf=NULL;
+		pf=TJPF_XBGR;
+		if((buf=tjLoadImage(filename, &loadWidth, align, &loadHeight, &pf,
+			flags))==NULL)
+			_throwtj();
+		pitch=PAD(width*tjPixelSize[pf], align);
+		if(!cmpBitmap(buf, width, pitch, height, pf, flags, 1))
+		{
+			printf("\n   Converting %s to RGB failed\n", filename);
+			retval=-1;  goto bailout;
+		}
+
+		tjFree(buf);  buf=NULL;
+		pf=TJPF_CMYK;
+		if((buf=tjLoadImage(filename, &loadWidth, align, &loadHeight, &pf,
+			flags))==NULL)
+			_throwtj();
+		pitch=PAD(width*tjPixelSize[pf], align);
+		if(!cmpBitmap(buf, width, pitch, height, pf, flags, 1))
+		{
+			printf("\n   Converting %s to CMYK failed\n", filename);
+			retval=-1;  goto bailout;
+		}
+	}
+	else if(pf!=TJPF_CMYK)
+	{
+		tjFree(buf);  buf=NULL;
+		pf=TJPF_GRAY;
+		if((buf=tjLoadImage(filename, &loadWidth, align, &loadHeight, &pf,
+			flags))==NULL)
+			_throwtj();
+		pitch=PAD(width, align);
+		if(!cmpBitmap(buf, width, pitch, height, pf, flags, 0))
+		{
+			printf("\n   Converting %s to grayscale failed\n", filename);
+			retval=-1;  goto bailout;
+		}
+	}
+	unlink(filename);
+
+	bailout:
+	if(buf) tjFree(buf);
+	if(exitStatus<0) return exitStatus;
+	return retval;
+}
+
+
+int bmpTest(void)
+{
+	int align, width=35, height=39, format;
+
+	for(align=1; align<=8; align*=2)
+	{
+		for(format=0; format<TJ_NUMPF; format++)
+		{
+			printf("%s Top-Down BMP (row alignment = %d bytes)  ...  ",
+				pixFormatStr[format], align);
+			if(doBmpTest("bmp", width, align, height, format, 0)==-1)
+				return -1;
+			printf("OK.\n");
+
+			printf("%s Top-Down PPM (row alignment = %d bytes)  ...  ",
+				pixFormatStr[format], align);
+			if(doBmpTest("ppm", width, align, height, format, TJFLAG_BOTTOMUP)==-1)
+				return -1;
+			printf("OK.\n");
+
+			printf("%s Bottom-Up BMP (row alignment = %d bytes)  ...  ",
+				pixFormatStr[format], align);
+			if(doBmpTest("bmp", width, align, height, format, 0)==-1)
+				return -1;
+			printf("OK.\n");
+
+			printf("%s Bottom-Up PPM (row alignment = %d bytes)  ...  ",
+				pixFormatStr[format], align);
+			if(doBmpTest("ppm", width, align, height, format, TJFLAG_BOTTOMUP)==-1)
+				return -1;
+			printf("OK.\n");
+		}
+	}
+
+	return 0;
+}
+
+
 int main(int argc, char *argv[])
 {
 	int i, num4bf=5;
@@ -699,6 +937,7 @@ int main(int argc, char *argv[])
 			if(!strcasecmp(argv[i], "-yuv")) doyuv=1;
 			else if(!strcasecmp(argv[i], "-noyuvpad")) pad=1;
 			else if(!strcasecmp(argv[i], "-alloc")) alloc=1;
+			else if(!strcasecmp(argv[i], "-bmp")) return bmpTest();
 			else usage(argv[0]);
 		}
 	}

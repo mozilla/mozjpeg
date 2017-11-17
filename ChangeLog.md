@@ -102,6 +102,14 @@ program was used to decompress an existing JPEG image.
 occurred when attempting to decompress a JPEG image that had been compressed
 with 4:1:1 chrominance subsampling.
 
+14. Added two functions to the TurboJPEG C API (`tjLoadImage()` and
+`tjSaveImage()`) that can be used to load/save a BMP or PPM/PGM image to/from a
+memory buffer with a specified pixel format and layout.  These functions
+replace the project-private (and slow) bmp API, which was previously used by
+TJBench, and they also provide a convenient way for first-time users of
+libjpeg-turbo to quickly develop a complete JPEG compression/decompression
+program.
+
 
 1.5.2
 =====

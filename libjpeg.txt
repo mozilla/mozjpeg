@@ -11,7 +11,7 @@ For conditions of distribution and use, see the accompanying README.ijg file.
 This file describes how to use the IJG JPEG library within an application
 program.  Read it if you want to write a program that uses the library.
 
-The file example.c provides heavily commented skeleton code for calling the
+The file example.txt provides heavily commented skeleton code for calling the
 JPEG library.  Also see jpeglib.h (the include file to be used by application
 programs) for full details about data structures and function parameter lists.
 The library source code, of course, is the ultimate reference.
@@ -402,7 +402,7 @@ this variable as the loop counter, so that the loop test looks like
 "while (cinfo.next_scanline < cinfo.image_height)".
 
 Code for this step depends heavily on the way that you store the source data.
-example.c shows the following code for the case of a full-size 2-D source
+example.txt shows the following code for the case of a full-size 2-D source
 array containing 3-byte RGB pixels:
 
         JSAMPROW row_pointer[1];        /* pointer to a single row */
@@ -1437,7 +1437,7 @@ When the default error handler is used, any error detected inside the JPEG
 routines will cause a message to be printed on stderr, followed by exit().
 You can supply your own error handling routines to override this behavior
 and to control the treatment of nonfatal warnings and trace/debug messages.
-The file example.c illustrates the most common case, which is to have the
+The file example.txt illustrates the most common case, which is to have the
 application regain control after an error rather than exiting.
 
 The JPEG library never writes any message directly; it always goes through
@@ -1454,7 +1454,7 @@ You may, if you wish, simply replace the entire JPEG error handling module
 only replacing some of the routines depending on the behavior you need.
 This is accomplished by calling jpeg_std_error() as usual, but then overriding
 some of the method pointers in the jpeg_error_mgr struct, as illustrated by
-example.c.
+example.txt.
 
 All of the error handling routines will receive a pointer to the JPEG object
 (a j_common_ptr which points to either a jpeg_compress_struct or a
@@ -1465,7 +1465,7 @@ additional data which is not known to the JPEG library or the standard error
 handler.  The most convenient way to do this is to embed either the JPEG
 object or the jpeg_error_mgr struct in a larger structure that contains
 additional fields; then casting the passed pointer provides access to the
-additional fields.  Again, see example.c for one way to do it.  (Beginning
+additional fields.  Again, see example.txt for one way to do it.  (Beginning
 with IJG version 6b, there is also a void pointer "client_data" in each
 JPEG object, which the application can also use to find related data.
 The library does not touch client_data at all.)

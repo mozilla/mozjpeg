@@ -1,5 +1,5 @@
 /*
- * example.c
+ * example.txt
  *
  * This file illustrates how to use the IJG code as a subroutine library
  * to read or write JPEG image files.  You should look at this code in
@@ -11,6 +11,20 @@
  * We present these routines in the same coding style used in the JPEG code
  * (ANSI function definitions, etc); but you are of course free to code your
  * routines in a different style if you prefer.
+ */
+
+/* This example was part of the original libjpeg documentation and has been
+ * unchanged since 1994.  It is, as described in libjpeg.txt, "heavily
+ * commented skeleton code for calling the JPEG library."  It is not meant to
+ * be compiled as a standalone program, since it has no main() function and
+ * does not compress from/decompress to a real image buffer (corollary:
+ * put_scanline_someplace() is not a real function.)  First-time users of
+ * libjpeg-turbo would be better served by looking at tjexample.c, which uses
+ * the more straightforward TurboJPEG API, or at cjpeg.c and djpeg.c, which are
+ * examples of libjpeg API usage that can be (and are) compiled into standalone
+ * programs.  Note that this example, as well as the examples in cjpeg.c and
+ * djpeg.c, interleave disk I/O with JPEG compression/decompression, so none of
+ * these examples is suitable for benchmarking purposes.
  */
 
 #include <stdio.h>

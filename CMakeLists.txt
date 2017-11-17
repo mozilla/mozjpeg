@@ -576,6 +576,9 @@ if(WITH_TURBOJPEG)
     if(UNIX)
       target_link_libraries(tjbench m)
     endif()
+
+    add_executable(tjexample tjexample.c)
+    target_link_libraries(tjexample turbojpeg)
   endif()
 
   if(ENABLE_STATIC)
@@ -1242,12 +1245,13 @@ add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
 
 if(WITH_TURBOJPEG)
   configure_file(tjbenchtest.in tjbenchtest @ONLY)
+  configure_file(tjexampletest.in tjexampletest @ONLY)
   if(WIN32)
     set(BASH bash)
   endif()
   if(WITH_JAVA)
     configure_file(tjbenchtest.java.in tjbenchtest.java @ONLY)
-    configure_file(tjexampletest.in tjexampletest @ONLY)
+    configure_file(tjexampletest.java.in tjexampletest.java @ONLY)
     add_custom_target(tjtest
       COMMAND echo tjbenchtest
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
@@ -1259,14 +1263,16 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
       COMMAND echo tjbenchtest -progressive
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive
+      COMMAND echo tjexampletest
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
       COMMAND echo tjbenchtest.java
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
       COMMAND echo tjbenchtest.java -yuv
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -yuv
       COMMAND echo tjbenchtest.java -progressive
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -progressive
-      COMMAND echo tjexampletest
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
+      COMMAND echo tjexampletest.java
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest.java
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
         ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
         ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
@@ -1280,6 +1286,8 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv
       COMMAND echo tjbenchtest -yuv -alloc
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
+      COMMAND echo tjexampletest
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest)
   endif()
 endif()
@@ -1327,11 +1335,16 @@ endif()
 install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.ijg
-  ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.txt
+  ${CMAKE_CURRENT_SOURCE_DIR}/tjexample.c
   ${CMAKE_CURRENT_SOURCE_DIR}/libjpeg.txt
   ${CMAKE_CURRENT_SOURCE_DIR}/structure.txt
   ${CMAKE_CURRENT_SOURCE_DIR}/usage.txt ${CMAKE_CURRENT_SOURCE_DIR}/wizard.txt
   ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
+if(WITH_JAVA)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/java/TJExample.java
+    DESTINATION ${CMAKE_INSTALL_DOCDIR})
+endif()
 
 if(UNIX)
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cjpeg.1

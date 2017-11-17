@@ -120,6 +120,10 @@ same value.  In addition, the `tjRedOffset[]`, `tjGreenOffset[]`, and
 `TJPF_GRAY`/`TJ.PF_GRAY` rather than 0.  This allows programs to easily
 determine whether a pixel format has red, green, blue, and alpha components.
 
+15. Added a new example (tjexample.c) that demonstrates the basic usage of the
+TurboJPEG C API.  This example mirrors the functionality of TJExample.java.
+Both files are now included in the libjpeg-turbo documentation.
+
 
 1.5.2
 =====

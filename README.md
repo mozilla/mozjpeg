@@ -48,7 +48,9 @@ JPEG images:
   straightforward to achieve using the underlying libjpeg API, such as
   generating planar YUV images and performing multiple simultaneous lossless
   transforms on an image.  The Java interface for libjpeg-turbo is written on
-  top of the TurboJPEG API.
+  top of the TurboJPEG API.  The TurboJPEG API is recommended for first-time
+  users of libjpeg-turbo.  Refer to [tjexample.c](tjexample.c) and
+  [TJExample.java](java/TJExample.java) for examples of its usage.
 
 - **libjpeg API**<br>
   This is the de facto industry-standard API for compressing and decompressing

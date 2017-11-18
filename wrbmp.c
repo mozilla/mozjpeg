@@ -70,7 +70,7 @@ LOCAL(void) write_colormap
 static INLINE boolean is_big_endian(void)
 {
   int test_value = 1;
-  if(*(char *)&test_value != 1)
+  if (*(char *)&test_value != 1)
     return TRUE;
   return FALSE;
 }
@@ -104,7 +104,7 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = image_ptr[0];
 
-  if(cinfo->out_color_space == JCS_RGB565) {
+  if (cinfo->out_color_space == JCS_RGB565) {
     boolean big_endian = is_big_endian();
     unsigned short *inptr2 = (unsigned short *)inptr;
     for (col = cinfo->output_width; col > 0; col--) {
@@ -447,7 +447,7 @@ jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2)
       dest->pub.put_pixel_rows = put_gray_rows;
     else
       dest->pub.put_pixel_rows = put_pixel_rows;
-  } else if(cinfo->out_color_space == JCS_RGB565 ) {
+  } else if (cinfo->out_color_space == JCS_RGB565) {
       dest->pub.put_pixel_rows = put_pixel_rows;
   } else {
     ERREXIT(cinfo, JERR_BMP_COLORSPACE);

@@ -616,7 +616,7 @@ static const JLONG dither_matrix[4] = {
 static INLINE boolean is_big_endian(void)
 {
   int test_value = 1;
-  if(*(char *)&test_value != 1)
+  if (*(char *)&test_value != 1)
     return TRUE;
   return FALSE;
 }

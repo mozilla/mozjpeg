@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -697,10 +697,9 @@ int main(int argc, char *argv[])
 		for(i=1; i<argc; i++)
 		{
 			if(!strcasecmp(argv[i], "-yuv")) doyuv=1;
-			if(!strcasecmp(argv[i], "-noyuvpad")) pad=1;
-			if(!strcasecmp(argv[i], "-alloc")) alloc=1;
-			if(!strncasecmp(argv[i], "-h", 2) || !strcasecmp(argv[i], "-?"))
-				usage(argv[0]);
+			else if(!strcasecmp(argv[i], "-noyuvpad")) pad=1;
+			else if(!strcasecmp(argv[i], "-alloc")) alloc=1;
+			else usage(argv[0]);
 		}
 	}
 	if(alloc) printf("Testing automatic buffer allocation\n");

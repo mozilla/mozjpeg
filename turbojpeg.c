@@ -824,8 +824,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	cinfo->image_width=width;
@@ -943,8 +942,7 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	cinfo->image_width=width;
@@ -1026,8 +1024,7 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	for(row=0; row<ph0; row+=cinfo->max_v_samp_factor)
@@ -1150,8 +1147,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	cinfo->image_width=width;
@@ -1213,8 +1209,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	for(row=0; row<(int)cinfo->image_height;
@@ -1453,8 +1448,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
@@ -1505,8 +1499,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 	for(i=0; i<(int)dinfo->output_height; i++)
 	{
@@ -1640,8 +1633,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	if(pixelFormat==TJPF_CMYK)
@@ -1735,8 +1727,7 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	for(row=0; row<ph0; row+=dinfo->max_v_samp_factor)
@@ -1846,8 +1837,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	if(!this->headerRead)
@@ -1928,8 +1918,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	if(flags&TJFLAG_FASTUPSAMPLE) dinfo->do_fancy_upsampling=FALSE;
@@ -2122,8 +2111,7 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		retval=-1;
-		goto bailout;
+		retval=-1;  goto bailout;
 	}
 
 	jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);

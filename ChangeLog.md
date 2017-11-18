@@ -80,6 +80,28 @@ image planes and allocates memory for the image planes.
 8. Fixed an issue whereby the Java version of TJUnitTest would fail when
 testing BufferedImage encoding/decoding on big endian systems.
 
+9. Fixed a segfault in djpeg that would occur if an output format other than
+PPM/PGM was selected along with the `-crop` option.  The `-crop` option now
+works with the GIF and Targa formats as well (unfortunately, it cannot be made
+to work with the BMP and RLE formats due to the fact that those output engines
+write scanlines in bottom-up order.)  djpeg will now exit gracefully if an
+output format other than PPM/PGM, GIF, or Targa is selected along with the
+`-crop` option.
+
+10. Fixed an issue whereby `jpeg_skip_scanlines()` would segfault if color
+quantization was enabled.
+
+11. TJBench (both C and Java versions) will now display usage information if
+any command-line argument is unrecognized.  This prevents the program from
+silently ignoring typos.
+
+12. Fixed an access violation in tjbench.exe (Windows) that occurred when the
+program was used to decompress an existing JPEG image.
+
+13. Fixed an ArrayIndexOutOfBoundsException in the TJExample Java program that
+occurred when attempting to decompress a JPEG image that had been compressed
+with 4:1:1 chrominance subsampling.
+
 
 1.5.2
 =====

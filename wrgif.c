@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, D. R. Commander.
+ * Copyright (C) 2015, 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -356,6 +356,16 @@ finish_output_gif (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 
 
 /*
+ * Re-calculate buffer dimensions based on output dimensions.
+ */
+
+METHODDEF(void)
+calc_buffer_dimensions_gif (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+{
+}
+
+
+/*
  * The module selection routine for GIF format output.
  */
 
@@ -372,6 +382,7 @@ jinit_write_gif (j_decompress_ptr cinfo)
   dest->pub.start_output = start_output_gif;
   dest->pub.put_pixel_rows = put_pixel_rows;
   dest->pub.finish_output = finish_output_gif;
+  dest->pub.calc_buffer_dimensions = calc_buffer_dimensions_gif;
 
   if (cinfo->out_color_space != JCS_GRAYSCALE &&
       cinfo->out_color_space != JCS_RGB)

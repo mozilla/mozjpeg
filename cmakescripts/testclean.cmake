@@ -29,7 +29,9 @@ file(GLOB FILES
   *_411_*.png
   *_411_*.ppm
   *_411_*.jpg
-  *_411.yuv)
+  *_411.yuv
+  tjbenchtest*.log
+  tjexampletest*.log)
 
 if(NOT FILES STREQUAL "")
   message(STATUS "Removing test files")

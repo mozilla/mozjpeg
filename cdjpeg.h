@@ -154,9 +154,5 @@ EXTERN(FILE *) write_stdout (void);
 #define EXIT_WARNING  2
 #endif
 
-#define RGB2GRAY(r, g, b)  \
-  (JSAMPLE)((double)(r) * 0.299 + (double)(g) * 0.587 +  \
-            (double)(b) * 0.114 + 0.5)
-
 #define IsExtRGB(cs)  \
   (cs == JCS_RGB || (cs >= JCS_EXT_RGB && cs <= JCS_EXT_ARGB))

@@ -1557,19 +1557,22 @@ DLLEXPORT unsigned char* DLLCALL tjAlloc(int bytes);
  * (in pixels) of the uncompressed image
  *
  * @param pixelFormat pointer to an integer variable that specifies or will
- * receive the pixel format of the uncompressed image buffer.  If
- * <tt>*pixelFormat</tt> is set to @ref TJPF_UNKNOWN prior to calling this
- * function, then the uncompressed image buffer returned by the function will
- * use the most optimal pixel format for the file type, and
+ * receive the pixel format of the uncompressed image buffer.  The behavior of
+ * #tjLoadImage() will vary depending on the value of <tt>*pixelFormat</tt>
+ * passed to the function:
+ * - @ref TJPF_UNKNOWN : The uncompressed image buffer returned by the function
+ * will use the most optimal pixel format for the file type, and
  * <tt>*pixelFormat</tt> will contain the ID of this pixel format upon
- * successful return from the function.  Otherwise, the uncompressed image
- * buffer will use the @ref TJPF "pixel format" specified in
- * <tt>*pixelFormat</tt>, and pixel format conversion will be performed if
- * necessary.  If <tt>*pixelFormat</tt> is set to @ref TJPF_CMYK, then the RGB
- * or grayscale pixels stored in the file will be converted using a quick &
- * dirty algorithm that is suitable only for testing purposes (proper
- * conversion between CMYK and other formats requires a color management
- * system.)
+ * successful return from the function.
+ * - @ref TJPF_GRAY : Only PGM files and 8-bit BMP files with a grayscale
+ * colormap can be loaded.
+ * - @ref TJPF_CMYK : The RGB or grayscale pixels stored in the file will be
+ * converted using a quick & dirty algorithm that is suitable only for testing
+ * purposes (proper conversion between CMYK and other formats requires a color
+ * management system.)
+ * - Other @ref TJPF "pixel formats" : The uncompressed image buffer will use
+ * the specified pixel format, and pixel format conversion will be performed if
+ * necessary.
  *
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  * "flags".

@@ -69,9 +69,6 @@ void usage(char *progName)
 	bailout();  \
 }
 
-#define RGB2GRAY(r, g, b)  \
-	(unsigned char)((double)(r)*0.299+(double)(g)*0.587+(double)(b)*0.114+0.5)
-
 const char *subNameLong[TJ_NUMSAMP]=
 {
 	"4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
@@ -717,7 +714,7 @@ void initBitmap(unsigned char *buf, int width, int pitch, int height, int pf,
 			unsigned char g=(j*256/height)%256;
 			unsigned char b=(j*256/height+i*256/width)%256;
 			memset(&buf[row*pitch+i*ps], 0, ps);
-			if(pf==TJPF_GRAY) buf[row*pitch+i*ps]=RGB2GRAY(r, g, b);
+			if(pf==TJPF_GRAY) buf[row*pitch+i*ps]=b;
 			else if(pf==TJPF_CMYK)
 				rgb_to_cmyk(r, g, b, &buf[row*pitch+i*ps+0], &buf[row*pitch+i*ps+1],
 					&buf[row*pitch+i*ps+2], &buf[row*pitch+i*ps+3]);
@@ -752,7 +749,7 @@ int cmpBitmap(unsigned char *buf, int width, int pitch, int height, int pf,
 			unsigned char b=(j*256/height+i*256/width)%256;
 			if(pf==TJPF_GRAY)
 			{
-				if(buf[row*pitch+i*ps]!=RGB2GRAY(r, g, b))
+				if(buf[row*pitch+i*ps]!=b)
 					return 0;
 			}
 			else if(pf==TJPF_CMYK)
@@ -763,8 +760,7 @@ int cmpBitmap(unsigned char *buf, int width, int pitch, int height, int pf,
 					&bf);
 				if(gray2rgb)
 				{
-					unsigned char gray=RGB2GRAY(r, g, b);
-					if(rf!=gray || gf!=gray || bf!=gray)
+					if(rf!=b || gf!=b || bf!=b)
 						return 0;
 				}
 				else if(rf!=r || gf!=g || bf!=b) return 0;
@@ -773,10 +769,9 @@ int cmpBitmap(unsigned char *buf, int width, int pitch, int height, int pf,
 			{
 				if(gray2rgb)
 				{
-					unsigned char gray=RGB2GRAY(r, g, b);
-					if(buf[row*pitch+i*ps+roffset]!=gray ||
-						buf[row*pitch+i*ps+goffset]!=gray ||
-						buf[row*pitch+i*ps+boffset]!=gray)
+					if(buf[row*pitch+i*ps+roffset]!=b ||
+						buf[row*pitch+i*ps+goffset]!=b ||
+						buf[row*pitch+i*ps+boffset]!=b)
 						return 0;
 				}
 				else if(buf[row*pitch+i*ps+roffset]!=r ||
@@ -803,8 +798,8 @@ int doBmpTest(const char *ext, int width, int align, int height, int pf,
 
 	if(pf==TJPF_GRAY)
 	{
-		md5ref=!strcasecmp(ext, "ppm")? "bc77dea8eaf006aa187582b301f67e02":
-			"2670a3f8cf19d855183c02ccf18d2a35";
+		md5ref=!strcasecmp(ext, "ppm")? "112c682e82ce5de1cca089e20d60000b":
+			"51976530acf75f02beddf5d21149101d";
 	}
 	else
 	{
@@ -860,20 +855,6 @@ int doBmpTest(const char *ext, int width, int align, int height, int pf,
 		if(!cmpBitmap(buf, width, pitch, height, pf, flags, 1))
 		{
 			printf("\n   Converting %s to CMYK failed\n", filename);
-			retval=-1;  goto bailout;
-		}
-	}
-	else if(pf!=TJPF_CMYK)
-	{
-		tjFree(buf);  buf=NULL;
-		pf=TJPF_GRAY;
-		if((buf=tjLoadImage(filename, &loadWidth, align, &loadHeight, &pf,
-			flags))==NULL)
-			_throwtj();
-		pitch=PAD(width, align);
-		if(!cmpBitmap(buf, width, pitch, height, pf, flags, 0))
-		{
-			printf("\n   Converting %s to grayscale failed\n", filename);
 			retval=-1;  goto bailout;
 		}
 	}

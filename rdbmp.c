@@ -102,7 +102,7 @@ LOCAL(void)
 read_colormap (bmp_source_ptr sinfo, int cmaplen, int mapentrysize)
 /* Read the colormap from a BMP file */
 {
-  int i;
+  int i, gray = 1;
 
   switch (mapentrysize) {
   case 3:
@@ -111,6 +111,9 @@ read_colormap (bmp_source_ptr sinfo, int cmaplen, int mapentrysize)
       sinfo->colormap[2][i] = (JSAMPLE) read_byte(sinfo);
       sinfo->colormap[1][i] = (JSAMPLE) read_byte(sinfo);
       sinfo->colormap[0][i] = (JSAMPLE) read_byte(sinfo);
+      if (sinfo->colormap[2][i] != sinfo->colormap[1][i] ||
+          sinfo->colormap[1][i] != sinfo->colormap[0][i])
+        gray = 0;
     }
     break;
   case 4:
@@ -120,12 +123,18 @@ read_colormap (bmp_source_ptr sinfo, int cmaplen, int mapentrysize)
       sinfo->colormap[1][i] = (JSAMPLE) read_byte(sinfo);
       sinfo->colormap[0][i] = (JSAMPLE) read_byte(sinfo);
       (void) read_byte(sinfo);
+      if (sinfo->colormap[2][i] != sinfo->colormap[1][i] ||
+          sinfo->colormap[1][i] != sinfo->colormap[0][i])
+        gray = 0;
     }
     break;
   default:
     ERREXIT(sinfo->cinfo, JERR_BMP_BADCMAP);
     break;
   }
+
+  if (sinfo->cinfo->in_color_space == JCS_GRAYSCALE && !gray)
+    ERREXIT(sinfo->cinfo, JERR_BAD_IN_COLORSPACE);
 }
 
 
@@ -165,7 +174,7 @@ get_8bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (cinfo->in_color_space == JCS_GRAYSCALE) {
     for (col = cinfo->image_width; col > 0; col--) {
       t = GETJSAMPLE(*inptr++);
-      *outptr++ = RGB2GRAY(colormap[0][t], colormap[1][t], colormap[2][t]);
+      *outptr++ = colormap[0][t];
     }
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
@@ -233,12 +242,6 @@ get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   outptr = source->pub.buffer[0];
   if (cinfo->in_color_space == JCS_EXT_BGR) {
     MEMCOPY(outptr, inptr, source->row_width);
-  } else if (cinfo->in_color_space == JCS_GRAYSCALE) {
-    for (col = cinfo->image_width; col > 0; col--) {
-      /* can omit GETJSAMPLE() safely */
-      JSAMPLE b = *inptr++, g = *inptr++, r = *inptr++;
-      *outptr++ = RGB2GRAY(r, g, b);
-    }
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
       /* can omit GETJSAMPLE() safely */
@@ -304,12 +307,6 @@ get_32bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (cinfo->in_color_space == JCS_EXT_BGRX ||
       cinfo->in_color_space == JCS_EXT_BGRA) {
     MEMCOPY(outptr, inptr, source->row_width);
-  } else if (cinfo->in_color_space == JCS_GRAYSCALE) {
-    for (col = cinfo->image_width; col > 0; col--) {
-      /* can omit GETJSAMPLE() safely */
-      JSAMPLE b = *inptr++, g = *inptr++, r = *inptr++;
-      *outptr++ = RGB2GRAY(r, g, b);
-    }
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
       /* can omit GETJSAMPLE() safely */
@@ -554,16 +551,36 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   case 8:
     if (cinfo->in_color_space == JCS_UNKNOWN)
       cinfo->in_color_space = JCS_EXT_RGB;
+    if (IsExtRGB(cinfo->in_color_space))
+      cinfo->input_components = rgb_pixelsize[cinfo->in_color_space];
+    else if (cinfo->in_color_space == JCS_GRAYSCALE)
+      cinfo->input_components = 1;
+    else if (cinfo->in_color_space == JCS_CMYK)
+      cinfo->input_components = 4;
+    else
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     row_width = (JDIMENSION) biWidth;
     break;
   case 24:
     if (cinfo->in_color_space == JCS_UNKNOWN)
       cinfo->in_color_space = JCS_EXT_BGR;
+    if (IsExtRGB(cinfo->in_color_space))
+      cinfo->input_components = rgb_pixelsize[cinfo->in_color_space];
+    else if (cinfo->in_color_space == JCS_CMYK)
+      cinfo->input_components = 4;
+    else
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     row_width = (JDIMENSION) (biWidth * 3);
     break;
   case 32:
     if (cinfo->in_color_space == JCS_UNKNOWN)
       cinfo->in_color_space = JCS_EXT_BGRA;
+    if (IsExtRGB(cinfo->in_color_space))
+      cinfo->input_components = rgb_pixelsize[cinfo->in_color_space];
+    else if (cinfo->in_color_space == JCS_CMYK)
+      cinfo->input_components = 4;
+    else
+      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     row_width = (JDIMENSION) (biWidth * 4);
     break;
   default:
@@ -600,15 +617,6 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
     }
   }
-
-  if (IsExtRGB(cinfo->in_color_space))
-    cinfo->input_components = rgb_pixelsize[cinfo->in_color_space];
-  else if (cinfo->in_color_space == JCS_GRAYSCALE)
-    cinfo->input_components = 1;
-  else if (cinfo->in_color_space == JCS_CMYK)
-    cinfo->input_components = 4;
-  else
-    ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
 
   /* Allocate one-row buffer for returned data */
   source->pub.buffer = (*cinfo->mem->alloc_sarray)

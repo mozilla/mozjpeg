@@ -95,7 +95,7 @@ public class TJExample implements TJCustomFilter {
   }
 
   private static final String[] sampName = {
-    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0"
+    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1"
   };
 
   public static void main(String[] argv) {

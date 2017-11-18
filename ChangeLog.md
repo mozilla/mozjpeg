@@ -28,6 +28,10 @@ ignoring typos.
 6. Fixed an access violation in tjbench.exe (Windows) that occurred when the
 program was used to decompress an existing JPEG image.
 
+7. Fixed an ArrayIndexOutOfBoundsException in the TJExample Java program that
+occurred when attempting to decompress a JPEG image that had been compressed
+with 4:1:1 chrominance subsampling.
+
 
 1.5.2
 =====

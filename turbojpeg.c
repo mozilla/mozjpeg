@@ -1987,7 +1987,8 @@ DLLEXPORT unsigned char* DLLCALL tjLoadImage(const char *filename, int *width,
 		retval=-1;  goto bailout;
 	}
 
-	cinfo->in_color_space=pf2cs[*pixelFormat];
+	if(*pixelFormat==TJPF_UNKNOWN) cinfo->in_color_space=JCS_UNKNOWN;
+	else cinfo->in_color_space=pf2cs[*pixelFormat];
 	if(tempc=='B')
 	{
 		if((src=jinit_read_bmp(cinfo, FALSE))==NULL)

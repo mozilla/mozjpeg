@@ -133,6 +133,9 @@ read_colormap (bmp_source_ptr sinfo, int cmaplen, int mapentrysize)
     break;
   }
 
+  if (sinfo->cinfo->in_color_space == JCS_UNKNOWN && gray)
+    sinfo->cinfo->in_color_space = JCS_GRAYSCALE;
+
   if (sinfo->cinfo->in_color_space == JCS_GRAYSCALE && !gray)
     ERREXIT(sinfo->cinfo, JERR_BAD_IN_COLORSPACE);
 }

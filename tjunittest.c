@@ -792,7 +792,7 @@ int doBmpTest(const char *ext, int width, int align, int height, int pf,
 {
 	char filename[80], *md5sum, md5buf[65];
 	int ps=tjPixelSize[pf], pitch=PAD(width*ps, align),
-		loadWidth=0, loadHeight=0, retval=0;
+		loadWidth=0, loadHeight=0, retval=0, pixelFormat=pf;
 	unsigned char *buf=NULL;
 	char *md5ref;
 
@@ -857,6 +857,22 @@ int doBmpTest(const char *ext, int width, int align, int height, int pf,
 			printf("\n   Converting %s to CMYK failed\n", filename);
 			retval=-1;  goto bailout;
 		}
+	}
+	/* Verify that tjLoadImage() returns the proper "preferred" pixel format for
+	   the file type. */
+	tjFree(buf);  buf=NULL;
+	pf=pixelFormat;
+	pixelFormat=TJPF_UNKNOWN;
+	if((buf=tjLoadImage(filename, &loadWidth, align, &loadHeight, &pixelFormat,
+		flags))==NULL)
+		_throwtj();
+	if((pf==TJPF_GRAY && pixelFormat!=TJPF_GRAY) ||
+		(pf!=TJPF_GRAY && !strcasecmp(ext, "bmp") && pixelFormat!=TJPF_BGR) ||
+		(pf!=TJPF_GRAY && !strcasecmp(ext, "ppm") && pixelFormat!=TJPF_RGB))
+	{
+		printf("\n   tjLoadImage() returned unexpected pixel format: %s\n",
+			pixFormatStr[pixelFormat]);
+		retval=-1;
 	}
 	unlink(filename);
 

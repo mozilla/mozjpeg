@@ -49,6 +49,7 @@ matrix:
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      brew update &&
       brew install nasm homebrew/versions/gcc5 md5sha1sum Caskroom/versions/java6 &&
       ln -fs /usr/local/bin/gpg1 /usr/local/bin/gpg &&
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&

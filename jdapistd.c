@@ -386,6 +386,8 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
   /* Do not skip past the bottom of the image. */
   if (cinfo->output_scanline + num_lines >= cinfo->output_height) {
     cinfo->output_scanline = cinfo->output_height;
+    (*cinfo->inputctl->finish_input_pass) (cinfo);
+    cinfo->inputctl->eoi_reached = TRUE;
     return cinfo->output_height - cinfo->output_scanline;
   }
 

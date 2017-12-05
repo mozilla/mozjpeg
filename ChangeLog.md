@@ -32,6 +32,11 @@ program was used to decompress an existing JPEG image.
 occurred when attempting to decompress a JPEG image that had been compressed
 with 4:1:1 chrominance subsampling.
 
+8. Fixed an issue whereby, when using `jpeg_skip_scanlines()` to skip to the
+end of a single-scan (non-progressive) image, subsequent calls to
+`jpeg_consume_input()` would return `JPEG_SUSPENDED` rather than
+`JPEG_REACHED_EOI`.
+
 
 1.5.2
 =====

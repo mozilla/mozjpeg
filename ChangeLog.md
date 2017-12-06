@@ -1,7 +1,7 @@
 1.6 pre-beta
 ============
 
-### Significant changes relative to 1.5.2:
+### Significant changes relative to 1.5.3:
 
 1. Added AVX2 SIMD implementations of the colorspace conversion, chroma
 downsampling and upsampling, and integer quantization algorithms.  This speeds
@@ -73,36 +73,7 @@ the C API and `TJTransform.OPT_COPYNONE` in the Java API) that allows the
 copying of markers (including EXIF and ICC profile data) to be disabled for a
 particular transform.
 
-7. Fixed a NullPointerException in the TurboJPEG Java wrapper that occurred
-when using the YUVImage constructor that creates an instance backed by separate
-image planes and allocates memory for the image planes.
-
-8. Fixed an issue whereby the Java version of TJUnitTest would fail when
-testing BufferedImage encoding/decoding on big endian systems.
-
-9. Fixed a segfault in djpeg that would occur if an output format other than
-PPM/PGM was selected along with the `-crop` option.  The `-crop` option now
-works with the GIF and Targa formats as well (unfortunately, it cannot be made
-to work with the BMP and RLE formats due to the fact that those output engines
-write scanlines in bottom-up order.)  djpeg will now exit gracefully if an
-output format other than PPM/PGM, GIF, or Targa is selected along with the
-`-crop` option.
-
-10. Fixed an issue whereby `jpeg_skip_scanlines()` would segfault if color
-quantization was enabled.
-
-11. TJBench (both C and Java versions) will now display usage information if
-any command-line argument is unrecognized.  This prevents the program from
-silently ignoring typos.
-
-12. Fixed an access violation in tjbench.exe (Windows) that occurred when the
-program was used to decompress an existing JPEG image.
-
-13. Fixed an ArrayIndexOutOfBoundsException in the TJExample Java program that
-occurred when attempting to decompress a JPEG image that had been compressed
-with 4:1:1 chrominance subsampling.
-
-14. Added two functions to the TurboJPEG C API (`tjLoadImage()` and
+7. Added two functions to the TurboJPEG C API (`tjLoadImage()` and
 `tjSaveImage()`) that can be used to load/save a BMP or PPM/PGM image to/from a
 memory buffer with a specified pixel format and layout.  These functions
 replace the project-private (and slow) bmp API, which was previously used by
@@ -110,19 +81,63 @@ TJBench, and they also provide a convenient way for first-time users of
 libjpeg-turbo to quickly develop a complete JPEG compression/decompression
 program.
 
-14. The TurboJPEG C API now includes a new convenience array
-(`tjAlphaOffset[]`) that contains the alpha component index for each pixel
-format (or -1 if the pixel format lacks an alpha component.)  The TurboJPEG
-Java API now includes a new method (`TJ.getAlphaOffset()`) that returns the
-same value.  In addition, the `tjRedOffset[]`, `tjGreenOffset[]`, and
-`tjBlueOffset[]` arrays-- and the corresponding `TJ.getRedOffset()`,
-`TJ.getGreenOffset()`, and `TJ.getBlueOffset()` methods-- now return -1 for
-`TJPF_GRAY`/`TJ.PF_GRAY` rather than 0.  This allows programs to easily
-determine whether a pixel format has red, green, blue, and alpha components.
+8. The TurboJPEG C API now includes a new convenience array (`tjAlphaOffset[]`)
+that contains the alpha component index for each pixel format (or -1 if the
+pixel format lacks an alpha component.)  The TurboJPEG Java API now includes a
+new method (`TJ.getAlphaOffset()`) that returns the same value.  In addition,
+the `tjRedOffset[]`, `tjGreenOffset[]`, and `tjBlueOffset[]` arrays-- and the
+corresponding `TJ.getRedOffset()`, `TJ.getGreenOffset()`, and
+`TJ.getBlueOffset()` methods-- now return -1 for `TJPF_GRAY`/`TJ.PF_GRAY`
+rather than 0.  This allows programs to easily determine whether a pixel format
+has red, green, blue, and alpha components.
 
-15. Added a new example (tjexample.c) that demonstrates the basic usage of the
+9. Added a new example (tjexample.c) that demonstrates the basic usage of the
 TurboJPEG C API.  This example mirrors the functionality of TJExample.java.
 Both files are now included in the libjpeg-turbo documentation.
+
+
+1.5.3
+=====
+
+### Significant changes relative to 1.5.2:
+
+1. Fixed a NullPointerException in the TurboJPEG Java wrapper that occurred
+when using the YUVImage constructor that creates an instance backed by separate
+image planes and allocates memory for the image planes.
+
+2. Fixed an issue whereby the Java version of TJUnitTest would fail when
+testing BufferedImage encoding/decoding on big endian systems.
+
+3. Fixed a segfault in djpeg that would occur if an output format other than
+PPM/PGM was selected along with the `-crop` option.  The `-crop` option now
+works with the GIF and Targa formats as well (unfortunately, it cannot be made
+to work with the BMP and RLE formats due to the fact that those output engines
+write scanlines in bottom-up order.)  djpeg will now exit gracefully if an
+output format other than PPM/PGM, GIF, or Targa is selected along with the
+`-crop` option.
+
+4. Fixed an issue whereby `jpeg_skip_scanlines()` would segfault if color
+quantization was enabled.
+
+5. TJBench (both C and Java versions) will now display usage information if any
+command-line argument is unrecognized.  This prevents the program from silently
+ignoring typos.
+
+6. Fixed an access violation in tjbench.exe (Windows) that occurred when the
+program was used to decompress an existing JPEG image.
+
+7. Fixed an ArrayIndexOutOfBoundsException in the TJExample Java program that
+occurred when attempting to decompress a JPEG image that had been compressed
+with 4:1:1 chrominance subsampling.
+
+8. Fixed an issue whereby, when using `jpeg_skip_scanlines()` to skip to the
+end of a single-scan (non-progressive) image, subsequent calls to
+`jpeg_consume_input()` would return `JPEG_SUSPENDED` rather than
+`JPEG_REACHED_EOI`.
+
+9. `jpeg_crop_scanlines()` now works correctly when decompressing grayscale
+JPEG images that were compressed with a sampling factor other than 1 (for
+instance, with `cjpeg -grayscale -sample 2x2`).
 
 
 1.5.2

@@ -190,7 +190,10 @@ jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
    * single-pass decompression case, allowing us to use the same MCU column
    * width for all of the components.
    */
-  align = cinfo->_min_DCT_scaled_size * cinfo->max_h_samp_factor;
+  if (cinfo->comps_in_scan == 1 && cinfo->num_components == 1)
+    align = cinfo->_min_DCT_scaled_size;
+  else
+    align = cinfo->_min_DCT_scaled_size * cinfo->max_h_samp_factor;
 
   /* Adjust xoffset to the nearest iMCU boundary <= the requested value */
   input_xoffset = *xoffset;
@@ -215,6 +218,9 @@ jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
+    int hsf = (cinfo->comps_in_scan == 1 && cinfo->num_components == 1) ?
+              1 : compptr->h_samp_factor;
+
     /* Set downsampled_width to the new output width. */
     orig_downsampled_width = compptr->downsampled_width;
     compptr->downsampled_width =
@@ -228,11 +234,10 @@ jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
      * values will be used in multi-scan decompressions.
      */
     cinfo->master->first_MCU_col[ci] =
-      (JDIMENSION) (long) (*xoffset * compptr->h_samp_factor) /
-                   (long) align;
+      (JDIMENSION) (long) (*xoffset * hsf) / (long) align;
     cinfo->master->last_MCU_col[ci] =
       (JDIMENSION) jdiv_round_up((long) ((*xoffset + cinfo->output_width) *
-                                         compptr->h_samp_factor),
+                                         hsf),
                                  (long) align) - 1;
   }
 
@@ -386,6 +391,8 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
   /* Do not skip past the bottom of the image. */
   if (cinfo->output_scanline + num_lines >= cinfo->output_height) {
     cinfo->output_scanline = cinfo->output_height;
+    (*cinfo->inputctl->finish_input_pass) (cinfo);
+    cinfo->inputctl->eoi_reached = TRUE;
     return cinfo->output_height - cinfo->output_scanline;
   }
 

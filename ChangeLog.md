@@ -37,6 +37,10 @@ end of a single-scan (non-progressive) image, subsequent calls to
 `jpeg_consume_input()` would return `JPEG_SUSPENDED` rather than
 `JPEG_REACHED_EOI`.
 
+9. `jpeg_crop_scanlines()` now works correctly when decompressing grayscale
+JPEG images that were compressed with a sampling factor other than 1 (for
+instance, with `cjpeg -grayscale -sample 2x2`).
+
 
 1.5.2
 =====

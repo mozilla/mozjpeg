@@ -388,7 +388,9 @@ needs.
     HOST=arm-linux-androideabi
     SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
     ANDROID_CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
-      --sysroot=${SYSROOT}"
+      -D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
 
     TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
     export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
@@ -424,7 +426,9 @@ needs.
     # It should not be necessary to modify the rest
     HOST=aarch64-linux-android
     SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm64
-    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+    ANDROID_CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
 
     TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
     export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
@@ -460,7 +464,9 @@ needs.
     # It should not be necessary to modify the rest
     HOST=i686-linux-android
     SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86
-    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+    ANDROID_CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
 
     TOOLCHAIN=${NDK_PATH}/toolchains/x86-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
     export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
@@ -496,7 +502,9 @@ needs.
     # It should not be necessary to modify the rest
     HOST=x86_64-linux-android
     SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86_64
-    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
+    ANDROID_CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
 
     TOOLCHAIN=${NDK_PATH}/toolchains/x86_64-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
     export CPP=${TOOLCHAIN}/bin/${HOST}-cpp

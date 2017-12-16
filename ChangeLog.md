@@ -1,3 +1,13 @@
+1.5.4
+=====
+
+1. Fixed two signed integer overflows in the arithmetic decoder, detected by
+the Clang undefined behavior sanitizer, that could be triggered by attempting
+to decompress a specially-crafted malformed JPEG image.  These issues did not
+pose a security threat, but removing the warnings makes it easier to detect
+actual security issues, should they arise in the future.
+
+
 1.5.3
 =====
 

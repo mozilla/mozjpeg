@@ -95,6 +95,12 @@ has red, green, blue, and alpha components.
 TurboJPEG C API.  This example mirrors the functionality of TJExample.java.
 Both files are now included in the libjpeg-turbo documentation.
 
+10. Fixed two signed integer overflows in the arithmetic decoder, detected by
+the Clang undefined behavior sanitizer, that could be triggered by attempting
+to decompress a specially-crafted malformed JPEG image.  These issues did not
+pose a security threat, but removing the warnings makes it easier to detect
+actual security issues, should they arise in the future.
+
 
 1.5.3
 =====

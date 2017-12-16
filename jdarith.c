@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2015 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2016, D. R. Commander.
+ * Copyright (C) 2015-2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -306,7 +306,7 @@ decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       while (m >>= 1)
         if (arith_decode(cinfo, st)) v |= m;
       v += 1; if (sign) v = -v;
-      entropy->last_dc_val[ci] += v;
+      entropy->last_dc_val[ci] = (entropy->last_dc_val[ci] + v) & 0xffff;
     }
 
     /* Scale and output the DC coefficient (assumes jpeg_natural_order[0]=0) */
@@ -564,7 +564,7 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       while (m >>= 1)
         if (arith_decode(cinfo, st)) v |= m;
       v += 1; if (sign) v = -v;
-      entropy->last_dc_val[ci] += v;
+      entropy->last_dc_val[ci] = (entropy->last_dc_val[ci] + v) & 0xffff;
     }
 
     if (block)

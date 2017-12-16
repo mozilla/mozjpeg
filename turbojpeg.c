@@ -229,7 +229,7 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo,
 #ifndef NO_GETENV
 	if((env=getenv("TJ_OPTIMIZE"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
 		cinfo->optimize_coding=TRUE;
-	if((env=getenv("TJ_ARITHMETIC"))!=NULL && strlen(env)>0	&& !strcmp(env, "1"))
+	if((env=getenv("TJ_ARITHMETIC"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
 		cinfo->arith_code=TRUE;
 	if((env=getenv("TJ_RESTART"))!=NULL && strlen(env)>0)
 	{

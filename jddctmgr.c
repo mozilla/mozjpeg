@@ -27,6 +27,7 @@
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 #include "jsimddct.h"
 #include "jpegcomp.h"
+#include "jdmaster.h"
 
 
 /*
@@ -85,6 +86,11 @@ typedef union {
 #define PROVIDE_ISLOW_TABLES
 #endif
 #endif
+
+EXTERN(void) jpeg_set_idct_method_selector (j_decompress_ptr cinfo, jpeg_idct_method_selector selector){
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+  master->custom_idct_selector = selector;
+}
 
 
 /*
@@ -225,6 +231,14 @@ start_pass (j_decompress_ptr cinfo)
       ERREXIT1(cinfo, JERR_BAD_DCTSIZE, compptr->_DCT_scaled_size);
       break;
     }
+
+    // Allow custom idct function to be set dynamically
+    my_master_ptr master = (my_master_ptr) cinfo->master;
+
+    if (master->custom_idct_selector != NULL) {
+      master->custom_idct_selector(cinfo, compptr, &method_ptr, &method);
+    }
+
     idct->pub.inverse_DCT[ci] = method_ptr;
     /* Create multiplier table from quant table.
      * However, we can skip this if the component is uninteresting

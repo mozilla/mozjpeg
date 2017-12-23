@@ -514,6 +514,8 @@ struct jpeg_compress_struct {
   int script_space_size;
 };
 
+typedef void (*jpeg_idct_method) (j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col);
+typedef void (*jpeg_idct_method_selector) (j_decompress_ptr cinfo, jpeg_component_info *compptr, jpeg_idct_method * set_idct_method, int * set_idct_category);
 
 /* Master record for a decompression instance */
 
@@ -1128,6 +1130,12 @@ EXTERN(void) jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param,
                                    int value);
 EXTERN(int) jpeg_c_get_int_param (const j_compress_ptr cinfo, J_INT_PARAM param);
 
+/*
+ * Permit users to replace the IDCT method dynamically.
+ * The selector callback is called after the default idct implementation was choosen,
+ * and is able to override it.
+ */
+EXTERN(void) jpeg_set_idct_method_selector (j_decompress_ptr cinfo, jpeg_idct_method_selector selector);
 
 /* These marker codes are exported since applications and data source modules
  * are likely to want to use them.

@@ -23,6 +23,11 @@ typedef struct {
    */
   struct jpeg_color_quantizer *quantizer_1pass;
   struct jpeg_color_quantizer *quantizer_2pass;
+
+  /*
+   * Permit users to replace the IDCT method
+  */
+  jpeg_idct_method_selector custom_idct_selector;
 } my_decomp_master;
 
 typedef my_decomp_master *my_master_ptr;

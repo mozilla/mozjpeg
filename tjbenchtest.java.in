@@ -33,8 +33,6 @@ if [ -d $OUTDIR ]; then
 fi
 mkdir -p $OUTDIR
 
-exec >$EXEDIR/tjbenchtest-java.log
-
 if [ $# -gt 0 ]; then
 	if [ "$1" = "-yuv" ]; then
 		NSARG=-nosmooth
@@ -59,6 +57,8 @@ if [ $# -gt 0 ]; then
 		IMAGES="vgl_6548_0026a.bmp"
 	fi
 fi
+
+exec >$EXEDIR/tjbenchtest-java$YUVARG.log
 
 # Standard tests
 for image in $IMAGES; do

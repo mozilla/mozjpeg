@@ -1,5 +1,6 @@
 /*
- * Copyright (C)2011-2012, 2014-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015, 2017 D. R. Commander.
+ *                                         All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -94,7 +95,7 @@ public class TJExample implements TJCustomFilter {
   }
 
   private static final String[] sampName = {
-    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0"
+    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1"
   };
 
   public static void main(String[] argv) {
@@ -117,114 +118,114 @@ public class TJExample implements TJCustomFilter {
       int outSubsamp = -1, outQual = 95;
       boolean display = false;
 
-      if (argv.length > 1) {
-        for (int i = 1; i < argv.length; i++) {
-          if (argv[i].length() < 2)
-            continue;
-          if (argv[i].length() > 2 &&
-              argv[i].substring(0, 3).equalsIgnoreCase("-sc")) {
-            int match = 0;
-            if (i < argv.length - 1) {
-              String[] scaleArg = argv[++i].split("/");
-              if (scaleArg.length == 2) {
-                TJScalingFactor tempsf =
-                  new TJScalingFactor(Integer.parseInt(scaleArg[0]),
-                                      Integer.parseInt(scaleArg[1]));
-                for (int j = 0; j < sf.length; j++) {
-                  if (tempsf.equals(sf[j])) {
-                    scaleFactor = sf[j];
-                    match = 1;
-                    break;
-                  }
+      if (argv[1].substring(0, 2).equalsIgnoreCase("-d"))
+        display = true;
+
+      for (int i = 2; i < argv.length; i++) {
+        if (argv[i].length() < 2)
+          continue;
+        else if (argv[i].length() > 2 &&
+            argv[i].substring(0, 3).equalsIgnoreCase("-sc")) {
+          int match = 0;
+          if (i < argv.length - 1) {
+            String[] scaleArg = argv[++i].split("/");
+            if (scaleArg.length == 2) {
+              TJScalingFactor tempsf =
+                new TJScalingFactor(Integer.parseInt(scaleArg[0]),
+                                    Integer.parseInt(scaleArg[1]));
+              for (int j = 0; j < sf.length; j++) {
+                if (tempsf.equals(sf[j])) {
+                  scaleFactor = sf[j];
+                  match = 1;
+                  break;
                 }
               }
             }
-            if (match != 1) usage();
           }
-          if (argv[i].equalsIgnoreCase("-h") || argv[i].equalsIgnoreCase("-?"))
-            usage();
-          if (argv[i].length() > 2 &&
-              argv[i].substring(0, 3).equalsIgnoreCase("-sa")) {
-            if (i < argv.length - 1) {
-              i++;
-              if (argv[i].substring(0, 1).equalsIgnoreCase("g"))
-                outSubsamp = TJ.SAMP_GRAY;
-              else if (argv[i].equals("444"))
-                outSubsamp = TJ.SAMP_444;
-              else if (argv[i].equals("422"))
-                outSubsamp = TJ.SAMP_422;
-              else if (argv[i].equals("420"))
-                outSubsamp = TJ.SAMP_420;
-              else
-                usage();
-            } else
-              usage();
-          }
-          if (argv[i].substring(0, 2).equalsIgnoreCase("-q")) {
-            if (i < argv.length - 1) {
-              int qual = Integer.parseInt(argv[++i]);
-              if (qual >= 1 && qual <= 100)
-                outQual = qual;
-              else
-                usage();
-            } else
-              usage();
-          }
-          if (argv[i].substring(0, 2).equalsIgnoreCase("-g"))
-            xform.options |= TJTransform.OPT_GRAY;
-          if (argv[i].equalsIgnoreCase("-hflip"))
-            xform.op = TJTransform.OP_HFLIP;
-          if (argv[i].equalsIgnoreCase("-vflip"))
-            xform.op = TJTransform.OP_VFLIP;
-          if (argv[i].equalsIgnoreCase("-transpose"))
-            xform.op = TJTransform.OP_TRANSPOSE;
-          if (argv[i].equalsIgnoreCase("-transverse"))
-            xform.op = TJTransform.OP_TRANSVERSE;
-          if (argv[i].equalsIgnoreCase("-rot90"))
-            xform.op = TJTransform.OP_ROT90;
-          if (argv[i].equalsIgnoreCase("-rot180"))
-            xform.op = TJTransform.OP_ROT180;
-          if (argv[i].equalsIgnoreCase("-rot270"))
-            xform.op = TJTransform.OP_ROT270;
-          if (argv[i].equalsIgnoreCase("-custom"))
-            xform.cf = new TJExample();
-          else if (argv[i].length() > 2 &&
-                   argv[i].substring(0, 2).equalsIgnoreCase("-c")) {
-            if (i >= argv.length - 1)
-              usage();
-            String[] cropArg = argv[++i].split(",");
-            if (cropArg.length != 3)
-              usage();
-            String[] dimArg = cropArg[2].split("[xX]");
-            if (dimArg.length != 2)
-              usage();
-            int tempx = Integer.parseInt(cropArg[0]);
-            int tempy = Integer.parseInt(cropArg[1]);
-            int tempw = Integer.parseInt(dimArg[0]);
-            int temph = Integer.parseInt(dimArg[1]);
-            if (tempx < 0 || tempy < 0 || tempw < 0 || temph < 0)
-              usage();
-            xform.x = tempx;
-            xform.y = tempy;
-            xform.width = tempw;
-            xform.height = temph;
-            xform.options |= TJTransform.OPT_CROP;
-          }
-          if (argv[i].substring(0, 2).equalsIgnoreCase("-d"))
-            display = true;
-          if (argv[i].equalsIgnoreCase("-fastupsample")) {
-            System.out.println("Using fast upsampling code");
-            flags |= TJ.FLAG_FASTUPSAMPLE;
-          }
-          if (argv[i].equalsIgnoreCase("-fastdct")) {
-            System.out.println("Using fastest DCT/IDCT algorithm");
-            flags |= TJ.FLAG_FASTDCT;
-          }
-          if (argv[i].equalsIgnoreCase("-accuratedct")) {
-            System.out.println("Using most accurate DCT/IDCT algorithm");
-            flags |= TJ.FLAG_ACCURATEDCT;
-          }
+          if (match != 1) usage();
         }
+        else if (argv[i].length() > 2 &&
+            argv[i].substring(0, 3).equalsIgnoreCase("-sa")) {
+          if (i < argv.length - 1) {
+            i++;
+            if (argv[i].substring(0, 1).equalsIgnoreCase("g"))
+              outSubsamp = TJ.SAMP_GRAY;
+            else if (argv[i].equals("444"))
+              outSubsamp = TJ.SAMP_444;
+            else if (argv[i].equals("422"))
+              outSubsamp = TJ.SAMP_422;
+            else if (argv[i].equals("420"))
+              outSubsamp = TJ.SAMP_420;
+            else
+              usage();
+          } else
+            usage();
+        }
+        else if (argv[i].substring(0, 2).equalsIgnoreCase("-q")) {
+          if (i < argv.length - 1) {
+            int qual = Integer.parseInt(argv[++i]);
+            if (qual >= 1 && qual <= 100)
+              outQual = qual;
+            else
+              usage();
+          } else
+            usage();
+        }
+        else if (argv[i].substring(0, 2).equalsIgnoreCase("-g"))
+          xform.options |= TJTransform.OPT_GRAY;
+        else if (argv[i].equalsIgnoreCase("-hflip"))
+          xform.op = TJTransform.OP_HFLIP;
+        else if (argv[i].equalsIgnoreCase("-vflip"))
+          xform.op = TJTransform.OP_VFLIP;
+        else if (argv[i].equalsIgnoreCase("-transpose"))
+          xform.op = TJTransform.OP_TRANSPOSE;
+        else if (argv[i].equalsIgnoreCase("-transverse"))
+          xform.op = TJTransform.OP_TRANSVERSE;
+        else if (argv[i].equalsIgnoreCase("-rot90"))
+          xform.op = TJTransform.OP_ROT90;
+        else if (argv[i].equalsIgnoreCase("-rot180"))
+          xform.op = TJTransform.OP_ROT180;
+        else if (argv[i].equalsIgnoreCase("-rot270"))
+          xform.op = TJTransform.OP_ROT270;
+        else if (argv[i].equalsIgnoreCase("-custom"))
+          xform.cf = new TJExample();
+        else if (argv[i].length() > 2 &&
+                 argv[i].substring(0, 2).equalsIgnoreCase("-c")) {
+          if (i >= argv.length - 1)
+            usage();
+          String[] cropArg = argv[++i].split(",");
+          if (cropArg.length != 3)
+            usage();
+          String[] dimArg = cropArg[2].split("[xX]");
+          if (dimArg.length != 2)
+            usage();
+          int tempx = Integer.parseInt(cropArg[0]);
+          int tempy = Integer.parseInt(cropArg[1]);
+          int tempw = Integer.parseInt(dimArg[0]);
+          int temph = Integer.parseInt(dimArg[1]);
+          if (tempx < 0 || tempy < 0 || tempw < 0 || temph < 0)
+            usage();
+          xform.x = tempx;
+          xform.y = tempy;
+          xform.width = tempw;
+          xform.height = temph;
+          xform.options |= TJTransform.OPT_CROP;
+        }
+        else if (argv[i].substring(0, 2).equalsIgnoreCase("-d"))
+          display = true;
+        else if (argv[i].equalsIgnoreCase("-fastupsample")) {
+          System.out.println("Using fast upsampling code");
+          flags |= TJ.FLAG_FASTUPSAMPLE;
+        }
+        else if (argv[i].equalsIgnoreCase("-fastdct")) {
+          System.out.println("Using fastest DCT/IDCT algorithm");
+          flags |= TJ.FLAG_FASTDCT;
+        }
+        else if (argv[i].equalsIgnoreCase("-accuratedct")) {
+          System.out.println("Using most accurate DCT/IDCT algorithm");
+          flags |= TJ.FLAG_ACCURATEDCT;
+        }
+        else usage();
       }
       String[] inFileTokens = argv[0].split("\\.");
       if (inFileTokens.length > 1)

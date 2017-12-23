@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2016, D. R. Commander.
+ * Copyright (C) 2010, 2015-2017, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -190,7 +190,10 @@ jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
    * single-pass decompression case, allowing us to use the same MCU column
    * width for all of the components.
    */
-  align = cinfo->_min_DCT_scaled_size * cinfo->max_h_samp_factor;
+  if (cinfo->comps_in_scan == 1 && cinfo->num_components == 1)
+    align = cinfo->_min_DCT_scaled_size;
+  else
+    align = cinfo->_min_DCT_scaled_size * cinfo->max_h_samp_factor;
 
   /* Adjust xoffset to the nearest iMCU boundary <= the requested value */
   input_xoffset = *xoffset;
@@ -215,6 +218,9 @@ jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
+    int hsf = (cinfo->comps_in_scan == 1 && cinfo->num_components == 1) ?
+              1 : compptr->h_samp_factor;
+
     /* Set downsampled_width to the new output width. */
     orig_downsampled_width = compptr->downsampled_width;
     compptr->downsampled_width =
@@ -228,11 +234,10 @@ jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
      * values will be used in multi-scan decompressions.
      */
     cinfo->master->first_MCU_col[ci] =
-      (JDIMENSION) (long) (*xoffset * compptr->h_samp_factor) /
-                   (long) align;
+      (JDIMENSION) (long) (*xoffset * hsf) / (long) align;
     cinfo->master->last_MCU_col[ci] =
       (JDIMENSION) jdiv_round_up((long) ((*xoffset + cinfo->output_width) *
-                                         compptr->h_samp_factor),
+                                         hsf),
                                  (long) align) - 1;
   }
 
@@ -293,6 +298,14 @@ noop_convert (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
 }
 
 
+/* Dummy quantize function used by jpeg_skip_scanlines() */
+LOCAL(void)
+noop_quantize (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+               JSAMPARRAY output_buf, int num_rows)
+{
+}
+
+
 /*
  * In some cases, it is best to call jpeg_read_scanlines() and discard the
  * output, rather than skipping the scanlines, because this allows us to
@@ -308,14 +321,22 @@ read_and_discard_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
   void (*color_convert) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                          JDIMENSION input_row, JSAMPARRAY output_buf,
                          int num_rows);
+  void (*color_quantize) (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+                          JSAMPARRAY output_buf, int num_rows) = NULL;
 
   color_convert = cinfo->cconvert->color_convert;
   cinfo->cconvert->color_convert = noop_convert;
+  if (cinfo->cquantize && cinfo->cquantize->color_quantize) {
+    color_quantize = cinfo->cquantize->color_quantize;
+    cinfo->cquantize->color_quantize = noop_quantize;
+  }
 
   for (n = 0; n < num_lines; n++)
     jpeg_read_scanlines(cinfo, NULL, 1);
 
   cinfo->cconvert->color_convert = color_convert;
+  if (color_quantize)
+    cinfo->cquantize->color_quantize = color_quantize;
 }
 
 
@@ -370,6 +391,8 @@ jpeg_skip_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
   /* Do not skip past the bottom of the image. */
   if (cinfo->output_scanline + num_lines >= cinfo->output_height) {
     cinfo->output_scanline = cinfo->output_height;
+    (*cinfo->inputctl->finish_input_pass) (cinfo);
+    cinfo->inputctl->eoi_reached = TRUE;
     return cinfo->output_height - cinfo->output_scanline;
   }
 

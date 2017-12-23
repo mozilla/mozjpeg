@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code and
- * information relevant to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -286,6 +286,7 @@ jinit_write_rle (j_decompress_ptr cinfo)
                                   sizeof(rle_dest_struct));
   dest->pub.start_output = start_output_rle;
   dest->pub.finish_output = finish_output_rle;
+  dest->pub.calc_buffer_dimensions = NULL;
 
   /* Calculate output image dimensions so we can allocate space */
   jpeg_calc_output_dimensions(cinfo);

@@ -275,7 +275,6 @@ static const int tjGreenOffset[TJ_NUMPF] = {1, 1, 1, 1, 2, 2, 0, 1, 1, 2, 2, -1}
  * then the blue component will be <tt>pixel[tjBlueOffset[TJ_BGRX]]</tt>.
  */
 static const int tjBlueOffset[TJ_NUMPF] = {2, 0, 2, 0, 1, 3, 0, 2, 0, 1, 3, -1};
-
 /**
  * Pixel size (in bytes) for a given pixel format.
  */
@@ -667,7 +666,7 @@ DLLEXPORT tjhandle DLLCALL tjInitCompress(void);
  * @param jpegQual the image quality of the generated JPEG image (1 = worst,
  * 100 = best)
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -731,7 +730,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
  * @param jpegQual the image quality of the generated JPEG image (1 = worst,
  * 100 = best)
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -801,7 +800,7 @@ DLLEXPORT int DLLCALL tjCompressFromYUV(tjhandle handle,
  * @param jpegQual the image quality of the generated JPEG image (1 = worst,
  * 100 = best)
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -961,7 +960,7 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp);
  * Video, <tt>subsamp</tt> should be set to @ref TJSAMP_420.  This produces an
  * image compatible with the I420 (AKA "YUV420P") format.
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -1019,7 +1018,7 @@ DLLEXPORT int DLLCALL tjEncodeYUV3(tjhandle handle,
  * Video, <tt>subsamp</tt> should be set to @ref TJSAMP_420.  This produces an
  * image compatible with the I420 (AKA "YUV420P") format.
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -1126,7 +1125,7 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  * @param pixelFormat pixel format of the destination image (see @ref
  * TJPF "Pixel formats".)
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -1176,7 +1175,7 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * block height (see #tjMCUHeight), then an intermediate buffer copy will be
  * performed within TurboJPEG.
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -1232,7 +1231,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUV2(tjhandle handle,
  * block height (see #tjMCUHeight), then an intermediate buffer copy will be
  * performed within TurboJPEG.
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -1284,7 +1283,7 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
  * @param pixelFormat pixel format of the destination image (see @ref TJPF
  * "Pixel formats".)
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -1341,7 +1340,7 @@ DLLEXPORT int DLLCALL tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
  * @param pixelFormat pixel format of the destination image (see @ref TJPF
  * "Pixel formats".)
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)
@@ -1415,7 +1414,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  * which specifies the transform parameters and/or cropping region for the
  * corresponding transformed output image.
  *
- * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
+ * @param flags the bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT
  * "flags"
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr().)

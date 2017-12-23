@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2016 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2017 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,10 +44,10 @@ public class TJUnitTest {
 
   private static void usage() {
     System.out.println("\nUSAGE: java " + classname + " [options]\n");
-    System.out.println("Options:\n");
-    System.out.println("-yuv = test YUV encoding/decoding support\n");
-    System.out.println("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest\n");
-    System.out.println("            4-byte boundary\n");
+    System.out.println("Options:");
+    System.out.println("-yuv = test YUV encoding/decoding support");
+    System.out.println("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest");
+    System.out.println("            4-byte boundary");
     System.out.println("-bi = test BufferedImage support\n");
     System.exit(1);
   }
@@ -109,21 +109,12 @@ public class TJUnitTest {
       case BufferedImage.TYPE_BYTE_GRAY:
         return TJ.PF_GRAY;
       case BufferedImage.TYPE_INT_BGR:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          return TJ.PF_XBGR;
-        else
-          return TJ.PF_RGBX;
+        return TJ.PF_RGBX;
       case BufferedImage.TYPE_INT_RGB:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          return TJ.PF_XRGB;
-        else
-          return TJ.PF_BGRX;
+        return TJ.PF_BGRX;
       case BufferedImage.TYPE_INT_ARGB:
       case BufferedImage.TYPE_INT_ARGB_PRE:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          return TJ.PF_ARGB;
-        else
-          return TJ.PF_BGRA;
+        return TJ.PF_BGRA;
     }
     return 0;
   }
@@ -911,15 +902,13 @@ public class TJUnitTest {
       for (int i = 0; i < argv.length; i++) {
         if (argv[i].equalsIgnoreCase("-yuv"))
           doYUV = true;
-        if (argv[i].equalsIgnoreCase("-noyuvpad"))
+        else if (argv[i].equalsIgnoreCase("-noyuvpad"))
           pad = 1;
-        if (argv[i].substring(0, 1).equalsIgnoreCase("-h") ||
-            argv[i].equalsIgnoreCase("-?"))
-          usage();
-        if (argv[i].equalsIgnoreCase("-bi")) {
+        else if (argv[i].equalsIgnoreCase("-bi")) {
           bi = true;
           testName = "javabitest";
-        }
+        } else
+          usage();
       }
       if (doYUV)
         _4byteFormats[4] = -1;

@@ -187,7 +187,7 @@ dist_example_DATA = example.c
 EXTRA_DIST = win release $(DOCS) testimages CMakeLists.txt \
 	sharedlib/CMakeLists.txt cmakescripts libjpeg.map.in doc doxygen.config \
 	doxygen-extra.css jccolext.c jdcolext.c jdcol565.c jdmrgext.c jdmrg565.c \
-	jstdhuff.c jdcoefct.h jdmainct.h jdmaster.h jdsample.h wrppm.h \
+	jstdhuff.c jdcoefct.h jdmainct.h jdmaster.h jdsample.h \
 	md5/CMakeLists.txt
 
 dist-hook:
@@ -711,6 +711,8 @@ testclean:
 	rm -f *_411_*.ppm
 	rm -f *_411_*.jpg
 	rm -f *_411.yuv
+	rm -f tjbenchtest*.log
+	rm -f tjexampletest*.log
 
 
 tjtest:

@@ -1,3 +1,47 @@
+1.5.3
+=====
+
+### Significant changes relative to 1.5.2:
+
+1. Fixed a NullPointerException in the TurboJPEG Java wrapper that occurred
+when using the YUVImage constructor that creates an instance backed by separate
+image planes and allocates memory for the image planes.
+
+2. Fixed an issue whereby the Java version of TJUnitTest would fail when
+testing BufferedImage encoding/decoding on big endian systems.
+
+3. Fixed a segfault in djpeg that would occur if an output format other than
+PPM/PGM was selected along with the `-crop` option.  The `-crop` option now
+works with the GIF and Targa formats as well (unfortunately, it cannot be made
+to work with the BMP and RLE formats due to the fact that those output engines
+write scanlines in bottom-up order.)  djpeg will now exit gracefully if an
+output format other than PPM/PGM, GIF, or Targa is selected along with the
+`-crop` option.
+
+4. Fixed an issue whereby `jpeg_skip_scanlines()` would segfault if color
+quantization was enabled.
+
+5. TJBench (both C and Java versions) will now display usage information if any
+command-line argument is unrecognized.  This prevents the program from silently
+ignoring typos.
+
+6. Fixed an access violation in tjbench.exe (Windows) that occurred when the
+program was used to decompress an existing JPEG image.
+
+7. Fixed an ArrayIndexOutOfBoundsException in the TJExample Java program that
+occurred when attempting to decompress a JPEG image that had been compressed
+with 4:1:1 chrominance subsampling.
+
+8. Fixed an issue whereby, when using `jpeg_skip_scanlines()` to skip to the
+end of a single-scan (non-progressive) image, subsequent calls to
+`jpeg_consume_input()` would return `JPEG_SUSPENDED` rather than
+`JPEG_REACHED_EOI`.
+
+9. `jpeg_crop_scanlines()` now works correctly when decompressing grayscale
+JPEG images that were compressed with a sampling factor other than 1 (for
+instance, with `cjpeg -grayscale -sample 2x2`).
+
+
 1.5.2
 =====
 

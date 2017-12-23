@@ -4,8 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * Modified 2009 by Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code and
- * information relevant to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -20,7 +20,6 @@
  */
 
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
-#include "wrppm.h"
 
 #ifdef PPM_SUPPORTED
 
@@ -61,6 +60,21 @@
  * When JSAMPLE is the same size as char, we can just fwrite() the
  * decompressed data to the PPM or PGM file.
  */
+
+
+/* Private version of data destination object */
+
+typedef struct {
+  struct djpeg_dest_struct pub; /* public fields */
+
+  /* Usually these two pointers point to the same place: */
+  char *iobuffer;               /* fwrite's I/O buffer */
+  JSAMPROW pixrow;              /* decompressor output buffer */
+  size_t buffer_width;          /* width of I/O buffer */
+  JDIMENSION samples_per_row;   /* JSAMPLEs per output row */
+} ppm_dest_struct;
+
+typedef ppm_dest_struct *ppm_dest_ptr;
 
 
 /*
@@ -197,6 +211,20 @@ finish_output_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 
 
 /*
+ * Re-calculate buffer dimensions based on output dimensions.
+ */
+
+METHODDEF(void)
+calc_buffer_dimensions_ppm (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+{
+  ppm_dest_ptr dest = (ppm_dest_ptr) dinfo;
+
+  dest->samples_per_row = cinfo->output_width * cinfo->out_color_components;
+  dest->buffer_width = dest->samples_per_row * (BYTESPERSAMPLE * sizeof(char));
+}
+
+
+/*
  * The module selection routine for PPM format output.
  */
 
@@ -211,13 +239,13 @@ jinit_write_ppm (j_decompress_ptr cinfo)
                                   sizeof(ppm_dest_struct));
   dest->pub.start_output = start_output_ppm;
   dest->pub.finish_output = finish_output_ppm;
+  dest->pub.calc_buffer_dimensions = calc_buffer_dimensions_ppm;
 
   /* Calculate output image dimensions so we can allocate space */
   jpeg_calc_output_dimensions(cinfo);
 
   /* Create physical I/O buffer */
-  dest->samples_per_row = cinfo->output_width * cinfo->out_color_components;
-  dest->buffer_width = dest->samples_per_row * (BYTESPERSAMPLE * sizeof(char));
+  dest->pub.calc_buffer_dimensions (cinfo, (djpeg_dest_ptr) dest);
   dest->iobuffer = (char *) (*cinfo->mem->alloc_small)
     ((j_common_ptr) cinfo, JPOOL_IMAGE, dest->buffer_width);
 

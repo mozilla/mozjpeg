@@ -13,12 +13,22 @@
 # Path under which headers should be installed
 %define _includedir %{__includedir}
 
-# _libdir is set to %{_prefix}/%{_lib} by default
-%ifarch x86_64
-%define _lib lib64
+%if "%{?__isa_bits:1}" == "1"
+%define _bits %{__isa_bits}
+%else
+# RPM < 4.6
+%if "%{_lib}" == "lib64"
+%define _bits 64
+%else
+%define _bits 32
+%endif
+%endif
+
+%if "%{_bits}" == "64"
+%define _libdir %{_exec_prefix}/lib64
 %else
 %if "%{_prefix}" == "/opt/mozjpeg"
-%define _lib lib32
+%define _libdir %{_exec_prefix}/lib32
 %endif
 %endif
 
@@ -36,7 +46,7 @@ Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
 Prereq: /sbin/ldconfig
-%ifarch x86_64
+%if "%{_bits}" == "64"
 Provides: %{name} = %{version}-%{release}, @PACKAGE_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
 %else
 Provides: %{name} = %{version}-%{release}, @PACKAGE_NAME@ = %{version}-%{release}, libturbojpeg.so
@@ -67,7 +77,8 @@ as part of a web encoding workflow.
 #-->	mandir=%{_mandir} JPEG_LIB_VERSION=@JPEG_LIB_VERSION@ \
 #-->	SO_MAJOR_VERSION=@SO_MAJOR_VERSION@ SO_MINOR_VERSION=@SO_MINOR_VERSION@ \
 #-->	--with-pic @RPM_CONFIG_ARGS@
-#-->make DESTDIR=$RPM_BUILD_ROOT
+#-->export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
+#-->make -j$NUMCPUS --load-average=$NUMCPUS DESTDIR=$RPM_BUILD_ROOT
 
 %install
 
@@ -80,7 +91,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 
 LJT_LIBDIR=%{__libdir}
 if [ ! "$LJT_LIBDIR" = "%{_libdir}" ]; then
-	echo ERROR: mozjpeg must be configured with libdir=%{_prefix}/%{_lib} when generating an in-tree RPM for this architecture.
+	echo ERROR: mozjpeg must be configured with libdir=%{_libdir} when generating an in-tree RPM for this architecture.
 	exit 1
 fi
 

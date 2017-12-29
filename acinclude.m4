@@ -252,3 +252,36 @@ AC_DEFUN([AC_CHECK_COMPATIBLE_ARM64_ASSEMBLER_IFELSE],[
     $2
   fi
 ])
+
+# AC_CHECK_ALTIVEC
+# ----------------
+# Test whether AltiVec intrinsics are supported
+AC_DEFUN([AC_CHECK_ALTIVEC],[
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -maltivec"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+    #include <altivec.h>
+    int main(void) {
+      __vector int vi = { 0, 0, 0, 0 };
+      int i[4];
+      vec_st(vi, 0, i);
+      return i[0];
+    }]])], ac_has_altivec=yes)
+  CFLAGS="$ac_save_CFLAGS"
+  if test "x$ac_has_altivec" = "xyes" ; then
+    $1
+  else
+    $2
+  fi
+])
+
+AC_DEFUN([AC_NO_SIMD],[
+  AC_MSG_RESULT([no ("$1")])
+  with_simd=no;
+  if test "x${require_simd}" = "xyes"; then
+    AC_MSG_ERROR([SIMD support not available for this CPU.])
+  else
+    AC_MSG_WARN([SIMD support not available for this CPU.  Performance will\
+ suffer.])
+  fi
+])

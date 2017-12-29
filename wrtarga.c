@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code and
- * information relevant to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -212,6 +212,19 @@ finish_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 
 
 /*
+ * Re-calculate buffer dimensions based on output dimensions.
+ */
+
+METHODDEF(void)
+calc_buffer_dimensions_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+{
+  tga_dest_ptr dest = (tga_dest_ptr) dinfo;
+
+  dest->buffer_width = cinfo->output_width * cinfo->output_components;
+}
+
+
+/*
  * The module selection routine for Targa format output.
  */
 
@@ -226,12 +239,13 @@ jinit_write_targa (j_decompress_ptr cinfo)
                                   sizeof(tga_dest_struct));
   dest->pub.start_output = start_output_tga;
   dest->pub.finish_output = finish_output_tga;
+  dest->pub.calc_buffer_dimensions = calc_buffer_dimensions_tga;
 
   /* Calculate output image dimensions so we can allocate space */
   jpeg_calc_output_dimensions(cinfo);
 
   /* Create I/O buffer. */
-  dest->buffer_width = cinfo->output_width * cinfo->output_components;
+  dest->pub.calc_buffer_dimensions (cinfo, (djpeg_dest_ptr) dest);
   dest->iobuffer = (char *)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                 (size_t) (dest->buffer_width * sizeof(char)));

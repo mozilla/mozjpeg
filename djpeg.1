@@ -1,4 +1,4 @@
-.TH DJPEG 1 "18 March 2017"
+.TH DJPEG 1 "13 November 2017"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -204,7 +204,8 @@ Decompress only a rectangular subregion of the image, starting at point X,Y
 with width W and height H.  If necessary, X will be shifted left to the nearest
 iMCU boundary, and the width will be increased accordingly.  Note that if
 decompression scaling is being used, then X, Y, W, and H are relative to the
-scaled image dimensions.
+scaled image dimensions.  Currently this option only works with the
+PBMPLUS (PPM/PGM), GIF, and Targa output formats.
 .TP
 .B \-verbose
 Enable debug printout.  More

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2014 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2014, 2017 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -220,10 +220,13 @@ public class YUVImage {
       throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
 
     int nc = (subsamp == TJ.SAMP_GRAY ? 1 : 3);
-    if (planes.length != nc || (offsets != null && offsets.length != nc) ||
+    if ((planes != null && planes.length != nc) ||
+        (offsets != null && offsets.length != nc) ||
         (strides != null && strides.length != nc))
       throw new IllegalArgumentException("YUVImage::setBuf(): planes, offsets, or strides array is the wrong size");
 
+    if (planes == null)
+      planes = new byte[nc][];
     if (offsets == null)
       offsets = new int[nc];
     if (strides == null)

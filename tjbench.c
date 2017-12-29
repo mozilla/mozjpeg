@@ -502,7 +502,7 @@ int decompTest(char *filename)
 	char *temp=NULL, tempstr[80], tempstr2[80];
 	int row, col, i, iter, tilew, tileh, ntilesw=1, ntilesh=1, retval=0;
 	double start, elapsed;
-	int ps=tjPixelSize[pf], tile;
+	int ps=tjPixelSize[pf], tile, decompsrc=0;
 
 	if((file=fopen(filename, "rb"))==NULL)
 		_throwunix("opening file");
@@ -682,18 +682,17 @@ int decompTest(char *filename)
 		else
 		{
 			if(quiet==1) printf("N/A     N/A     ");
-			jpegsize[0]=srcsize;
-			free(jpegbuf[0]);
-			jpegbuf[0]=srcbuf;
-			srcbuf=NULL;
+			tjFree(jpegbuf[0]);
+			jpegbuf[0]=NULL;
+			decompsrc=1;
 		}
 
 		if(w==tilew) _tilew=_w;
 		if(h==tileh) _tileh=_h;
 		if(!(xformopt&TJXOPT_NOOUTPUT))
 		{
-			if(decomp(NULL, jpegbuf, jpegsize, NULL, _w, _h, _subsamp, 0,
-				filename, _tilew, _tileh)==-1)
+			if(decomp(NULL, decompsrc? &srcbuf:jpegbuf, decompsrc? &srcsize:jpegsize,
+					NULL, _w, _h, _subsamp, 0, filename, _tilew, _tileh)==-1)
 				goto bailout;
 		}
 		else if(quiet==1) printf("N/A\n");
@@ -835,32 +834,32 @@ int main(int argc, char *argv[])
 			{
 				dotile=1;  xformopt|=TJXOPT_CROP;
 			}
-			if(!strcasecmp(argv[i], "-fastupsample"))
+			else if(!strcasecmp(argv[i], "-fastupsample"))
 			{
 				printf("Using fast upsampling code\n\n");
 				flags|=TJFLAG_FASTUPSAMPLE;
 			}
-			if(!strcasecmp(argv[i], "-fastdct"))
+			else if(!strcasecmp(argv[i], "-fastdct"))
 			{
 				printf("Using fastest DCT/IDCT algorithm\n\n");
 				flags|=TJFLAG_FASTDCT;
 			}
-			if(!strcasecmp(argv[i], "-accuratedct"))
+			else if(!strcasecmp(argv[i], "-accuratedct"))
 			{
 				printf("Using most accurate DCT/IDCT algorithm\n\n");
 				flags|=TJFLAG_ACCURATEDCT;
 			}
-			if(!strcasecmp(argv[i], "-rgb")) pf=TJPF_RGB;
-			if(!strcasecmp(argv[i], "-rgbx")) pf=TJPF_RGBX;
-			if(!strcasecmp(argv[i], "-bgr")) pf=TJPF_BGR;
-			if(!strcasecmp(argv[i], "-bgrx")) pf=TJPF_BGRX;
-			if(!strcasecmp(argv[i], "-xbgr")) pf=TJPF_XBGR;
-			if(!strcasecmp(argv[i], "-xrgb")) pf=TJPF_XRGB;
-			if(!strcasecmp(argv[i], "-cmyk")) pf=TJPF_CMYK;
-			if(!strcasecmp(argv[i], "-bottomup")) flags|=TJFLAG_BOTTOMUP;
-			if(!strcasecmp(argv[i], "-quiet")) quiet=1;
-			if(!strcasecmp(argv[i], "-qq")) quiet=2;
-			if(!strcasecmp(argv[i], "-scale") && i<argc-1)
+			else if(!strcasecmp(argv[i], "-rgb")) pf=TJPF_RGB;
+			else if(!strcasecmp(argv[i], "-rgbx")) pf=TJPF_RGBX;
+			else if(!strcasecmp(argv[i], "-bgr")) pf=TJPF_BGR;
+			else if(!strcasecmp(argv[i], "-bgrx")) pf=TJPF_BGRX;
+			else if(!strcasecmp(argv[i], "-xbgr")) pf=TJPF_XBGR;
+			else if(!strcasecmp(argv[i], "-xrgb")) pf=TJPF_XRGB;
+			else if(!strcasecmp(argv[i], "-cmyk")) pf=TJPF_CMYK;
+			else if(!strcasecmp(argv[i], "-bottomup")) flags|=TJFLAG_BOTTOMUP;
+			else if(!strcasecmp(argv[i], "-quiet")) quiet=1;
+			else if(!strcasecmp(argv[i], "-qq")) quiet=2;
+			else if(!strcasecmp(argv[i], "-scale") && i<argc-1)
 			{
 				int temp1=0, temp2=0, match=0;
 				if(sscanf(argv[++i], "%d/%d", &temp1, &temp2)==2)
@@ -878,43 +877,42 @@ int main(int argc, char *argv[])
 				}
 				else usage(argv[0]);
 			}
-			if(!strcasecmp(argv[i], "-hflip")) xformop=TJXOP_HFLIP;
-			if(!strcasecmp(argv[i], "-vflip")) xformop=TJXOP_VFLIP;
-			if(!strcasecmp(argv[i], "-transpose")) xformop=TJXOP_TRANSPOSE;
-			if(!strcasecmp(argv[i], "-transverse")) xformop=TJXOP_TRANSVERSE;
-			if(!strcasecmp(argv[i], "-rot90")) xformop=TJXOP_ROT90;
-			if(!strcasecmp(argv[i], "-rot180")) xformop=TJXOP_ROT180;
-			if(!strcasecmp(argv[i], "-rot270")) xformop=TJXOP_ROT270;
-			if(!strcasecmp(argv[i], "-grayscale")) xformopt|=TJXOPT_GRAY;
-			if(!strcasecmp(argv[i], "-custom")) customFilter=dummyDCTFilter;
-			if(!strcasecmp(argv[i], "-nooutput")) xformopt|=TJXOPT_NOOUTPUT;
-			if(!strcasecmp(argv[i], "-benchtime") && i<argc-1)
+			else if(!strcasecmp(argv[i], "-hflip")) xformop=TJXOP_HFLIP;
+			else if(!strcasecmp(argv[i], "-vflip")) xformop=TJXOP_VFLIP;
+			else if(!strcasecmp(argv[i], "-transpose")) xformop=TJXOP_TRANSPOSE;
+			else if(!strcasecmp(argv[i], "-transverse")) xformop=TJXOP_TRANSVERSE;
+			else if(!strcasecmp(argv[i], "-rot90")) xformop=TJXOP_ROT90;
+			else if(!strcasecmp(argv[i], "-rot180")) xformop=TJXOP_ROT180;
+			else if(!strcasecmp(argv[i], "-rot270")) xformop=TJXOP_ROT270;
+			else if(!strcasecmp(argv[i], "-grayscale")) xformopt|=TJXOPT_GRAY;
+			else if(!strcasecmp(argv[i], "-custom")) customFilter=dummyDCTFilter;
+			else if(!strcasecmp(argv[i], "-nooutput")) xformopt|=TJXOPT_NOOUTPUT;
+			else if(!strcasecmp(argv[i], "-benchtime") && i<argc-1)
 			{
 				double temp=atof(argv[++i]);
 				if(temp>0.0) benchtime=temp;
 				else usage(argv[0]);
 			}
-			if(!strcasecmp(argv[i], "-warmup") && i<argc-1)
+			else if(!strcasecmp(argv[i], "-warmup") && i<argc-1)
 			{
 				double temp=atof(argv[++i]);
 				if(temp>=0.0) warmup=temp;
 				else usage(argv[0]);
 				printf("Warmup time = %.1f seconds\n\n", warmup);
 			}
-			if(!strcmp(argv[i], "-?")) usage(argv[0]);
-			if(!strcasecmp(argv[i], "-alloc")) flags&=(~TJFLAG_NOREALLOC);
-			if(!strcasecmp(argv[i], "-bmp")) ext="bmp";
-			if(!strcasecmp(argv[i], "-yuv"))
+			else if(!strcasecmp(argv[i], "-alloc")) flags&=(~TJFLAG_NOREALLOC);
+			else if(!strcasecmp(argv[i], "-bmp")) ext="bmp";
+			else if(!strcasecmp(argv[i], "-yuv"))
 			{
 				printf("Testing YUV planar encoding/decoding\n\n");
 				doyuv=1;
 			}
-			if(!strcasecmp(argv[i], "-yuvpad") && i<argc-1)
+			else if(!strcasecmp(argv[i], "-yuvpad") && i<argc-1)
 			{
 				int temp=atoi(argv[++i]);
 				if(temp>=1) yuvpad=temp;
 			}
-			if(!strcasecmp(argv[i], "-subsamp") && i<argc-1)
+			else if(!strcasecmp(argv[i], "-subsamp") && i<argc-1)
 			{
 				i++;
 				if(toupper(argv[i][0])=='G') subsamp=TJSAMP_GRAY;
@@ -931,8 +929,9 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
-			if(!strcasecmp(argv[i], "-componly")) componly=1;
-			if(!strcasecmp(argv[i], "-nowrite")) dowrite=0;
+			else if(!strcasecmp(argv[i], "-componly")) componly=1;
+			else if(!strcasecmp(argv[i], "-nowrite")) dowrite=0;
+			else usage(argv[0]);
 		}
 	}
 

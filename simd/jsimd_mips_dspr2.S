@@ -4484,4 +4484,3 @@ LEAF_MIPS_DSPR2(jsimd_convsamp_float_mips_dspr2)
 END(jsimd_convsamp_float_mips_dspr2)
 
 /*****************************************************************************/
-

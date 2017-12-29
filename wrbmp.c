@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2013, Linaro Limited.
- * Copyright (C) 2014-2015, D. R. Commander.
+ * Copyright (C) 2014-2015, 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -70,7 +70,7 @@ LOCAL(void) write_colormap
 static INLINE boolean is_big_endian(void)
 {
   int test_value = 1;
-  if(*(char *)&test_value != 1)
+  if (*(char *)&test_value != 1)
     return TRUE;
   return FALSE;
 }
@@ -104,7 +104,7 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = image_ptr[0];
 
-  if(cinfo->out_color_space == JCS_RGB565) {
+  if (cinfo->out_color_space == JCS_RGB565) {
     boolean big_endian = is_big_endian();
     unsigned short *inptr2 = (unsigned short *)inptr;
     for (col = cinfo->output_width; col > 0; col--) {
@@ -437,6 +437,7 @@ jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2)
                                   sizeof(bmp_dest_struct));
   dest->pub.start_output = start_output_bmp;
   dest->pub.finish_output = finish_output_bmp;
+  dest->pub.calc_buffer_dimensions = NULL;
   dest->is_os2 = is_os2;
 
   if (cinfo->out_color_space == JCS_GRAYSCALE) {
@@ -446,7 +447,7 @@ jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2)
       dest->pub.put_pixel_rows = put_gray_rows;
     else
       dest->pub.put_pixel_rows = put_pixel_rows;
-  } else if(cinfo->out_color_space == JCS_RGB565 ) {
+  } else if (cinfo->out_color_space == JCS_RGB565) {
       dest->pub.put_pixel_rows = put_pixel_rows;
   } else {
     ERREXIT(cinfo, JERR_BMP_COLORSPACE);

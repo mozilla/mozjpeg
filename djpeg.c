@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2016, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -31,7 +31,6 @@
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"           /* for version message */
 #include "jconfigint.h"
-#include "wrppm.h"
 
 #include <ctype.h>              /* to declare isprint() */
 
@@ -173,6 +172,7 @@ usage (void)
 
   fprintf(stderr, "  -skip Y0,Y1    Decompress all rows except those between Y0 and Y1 (inclusive)\n");
   fprintf(stderr, "  -crop WxH+X+Y  Decompress only a rectangular subregion of the image\n");
+  fprintf(stderr, "                 [requires PBMPLUS (PPM/PGM), GIF, or Targa output format]\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   exit(EXIT_FAILURE);
@@ -713,9 +713,10 @@ main (int argc, char **argv)
     }
 
     jpeg_crop_scanline(&cinfo, &crop_x, &crop_width);
-    ((ppm_dest_ptr) dest_mgr)->buffer_width = cinfo.output_width *
-                                              cinfo.out_color_components *
-                                              sizeof(JSAMPLE);
+    if (dest_mgr->calc_buffer_dimensions)
+      (*dest_mgr->calc_buffer_dimensions) (&cinfo, dest_mgr);
+    else
+      ERREXIT(&cinfo, JERR_UNSUPPORTED_FORMAT);
 
     /* Write output file header.  This is a hack to ensure that the destination
      * manager creates an output image of the proper size.

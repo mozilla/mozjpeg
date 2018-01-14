@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-2015, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1991-2017, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -147,10 +147,12 @@ makefile.bcc	jconfig.bcc	MS-DOS or OS/2, Borland C
 makefile.dj	jconfig.dj	MS-DOS, DJGPP (Delorie's port of GNU C)
 makefile.mc6	jconfig.mc6	MS-DOS, Microsoft C (16-bit only)
 makefile.wat	jconfig.wat	MS-DOS, OS/2, or Windows NT, Watcom C
-makefile.vc	jconfig.vc	Windows NT/9x, MS Visual C++
-make*.vc6	jconfig.vc	Windows NT/9x, MS Visual C++ 6
-make*.v10	jconfig.vc	Windows NT/9x, MS Visual C++ 2010 (v10)
-makefile.b32	jconfig.vc	Windows NT/9x, Borland C++ 32-bit (bcc32)
+makefile.vc	jconfig.vc	Windows, MS Visual C++
+makefile.vs	jconfig.vc	Windows, MS Visual C++ 6 Developer Studio
+make*.vc6
+makefile.vs	jconfig.vc	Windows, Visual Studio 2017 (v15)
+make*.v15
+makefile.b32	jconfig.vc	Windows, Borland C++ 32-bit (bcc32)
 makefile.mms	jconfig.vms	Digital VMS, with MMS software
 makefile.vms	jconfig.vms	Digital VMS, without MMS software
 
@@ -1019,33 +1021,9 @@ the configuration to prevent jpeglib.h from using extern "C".
 
 Microsoft Windows, Microsoft Visual C++ 6 Developer Studio:
 
-We include makefiles that should work as project files in DevStudio 6.0 or
-later.  There is a library makefile that builds the IJG library as a static
-Win32 library, and application makefiles that build the sample applications
-as Win32 console applications.  (Even if you only want the library, we
-recommend building the applications so that you can run the self-test.)
-
-To use:
-1. Open the command prompt, change to the main directory and execute the
-   command line
-	NMAKE /f makefile.vc  setup-vc6
-   This will move jconfig.vc to jconfig.h and makefiles to project files.
-   (Note that the renaming is critical!)
-2. Open the workspace file jpeg.dsw, build the library project.
-   (If you are using DevStudio more recent than 6.0, you'll probably
-   get a message saying that the project files are being updated.)
-3. Open the workspace file apps.dsw, build the application projects.
-4. To perform the self-test, execute the command line
-	NMAKE /f makefile.vc  test-build
-5. Move the application .exe files from `app`\Release to an
-   appropriate location on your path.
-
-
-Microsoft Windows, Microsoft Visual C++ 2010 Developer Studio (v10):
-
-We include makefiles that should work as project files in Visual Studio
-2010 or later.  There is a library makefile that builds the IJG library
-as a static Win32 library, and application makefiles that build the sample
+We include makefiles that should work as project files in Developer Studio
+6.0 or later.  There is a library makefile that builds the IJG library as
+a static Win32 library, and application makefiles that build the sample
 applications as Win32 console applications.  (Even if you only want the
 library, we recommend building the applications so that you can run the
 self-test.)
@@ -1053,23 +1031,47 @@ self-test.)
 To use:
 1. Open the command prompt, change to the main directory and execute the
    command line
-	NMAKE /f makefile.vc  setup-v10
+	NMAKE /f makefile.vs  setup-vc6
    This will move jconfig.vc to jconfig.h and makefiles to project files.
    (Note that the renaming is critical!)
-2. Open the solution file jpeg.sln, build the library project.
-   (If you are using Visual Studio more recent than 2010 (v10), you'll
+2. Open the workspace file jpeg.dsw, build the library project.
+   (If you are using Developer Studio more recent than 6.0, you'll
    probably get a message saying that the project files are being updated.)
-3. Open the solution file apps.sln, build the application projects.
+3. Open the workspace file apps.dsw, build the application projects.
 4. To perform the self-test, execute the command line
-	NMAKE /f makefile.vc  test-build
+	NMAKE /f makefile.vs  test-build
 5. Move the application .exe files from `app`\Release to an
    appropriate location on your path.
 
-Note:
-There seems to be an optimization bug in the compiler which causes the
-self-test to fail with the color quantization option.
-We have disabled optimization for the file jquant2.c in the library
-project file which causes the self-test to pass properly.
+
+Microsoft Windows, Visual Studio 2017 (v15):
+
+We include makefiles that should work as project files in Visual Studio
+2017 (v15) or later.  There is a library makefile that builds the IJG
+library as a static Win32 library, and application makefiles that build
+the sample applications as Win32 console applications.  (Even if you only
+want the library, we recommend building the applications so that you can
+run the self-test.)
+
+To use:
+1. Open the Developer Command Prompt, change to the main directory and
+   execute the command line
+	NMAKE /f makefile.vs  setup-v15
+   This will move jconfig.vc to jconfig.h and makefiles to project files.
+   (Note that the renaming is critical!)
+2. Open the solution file jpeg.sln, build the library project.
+     a) If you are using Visual Studio more recent than
+	2017 (v15), you'll probably get a message saying
+	that the project files are being updated.
+     b) If necessary, open the project properties and
+	adapt the Windows Target Platform Version in
+	the Configuration Properties, General section;
+	we support the latest version at the time of release.
+3. Open the solution file apps.sln, build the application projects.
+4. To perform the self-test, execute the command line
+	NMAKE /f makefile.vs  test-build
+5. Move the application .exe files from `app`\Release to an
+   appropriate location on your path.
 
 
 OS/2, Borland C++:

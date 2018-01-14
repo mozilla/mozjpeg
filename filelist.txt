@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  FILE LIST
 
-Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2017, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -207,6 +207,7 @@ jconfig.txt	Template for making jconfig.h by hand.
 mak*.*		Sample makefiles for particular systems.
 jconfig.*	Sample jconfig.h for particular systems.
 libjpeg.map	Script to generate shared library with versioned symbols.
+libjpeg.pc.in	libjpeg.pc pkg-config file input for configure.
 aclocal.m4	M4 macro definitions for use with Autoconf.
 
 Test files (see install.txt for test procedure):

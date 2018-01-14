@@ -35,15 +35,15 @@ DOCS= README install.txt usage.txt wizard.txt example.c libjpeg.txt \
 # Makefiles for various systems
 MKFILES= configure Makefile.in makefile.ansi makefile.unix makefile.b32 \
         makefile.bcc makefile.mc6 makefile.dj makefile.wat makefile.vc \
-        makejdsw.vc6 makeadsw.vc6 makejdep.vc6 makejdsp.vc6 makejmak.vc6 \
-        makecdep.vc6 makecdsp.vc6 makecmak.vc6 makeddep.vc6 makeddsp.vc6 \
-        makedmak.vc6 maketdep.vc6 maketdsp.vc6 maketmak.vc6 makerdep.vc6 \
-        makerdsp.vc6 makermak.vc6 makewdep.vc6 makewdsp.vc6 makewmak.vc6 \
-        makejsln.v10 makeasln.v10 makejvcx.v10 makejfil.v10 makecvcx.v10 \
-        makecfil.v10 makedvcx.v10 makedfil.v10 maketvcx.v10 maketfil.v10 \
-        makervcx.v10 makerfil.v10 makewvcx.v10 makewfil.v10 makeproj.mac \
-        makcjpeg.st makdjpeg.st makljpeg.st maktjpeg.st makefile.manx \
-        makefile.sas makefile.mms makefile.vms makvms.opt
+        makefile.vs makejdsw.vc6 makeadsw.vc6 makejdep.vc6 makejdsp.vc6 \
+        makejmak.vc6 makecdep.vc6 makecdsp.vc6 makecmak.vc6 makeddep.vc6 \
+        makeddsp.vc6 makedmak.vc6 maketdep.vc6 maketdsp.vc6 maketmak.vc6 \
+        makerdep.vc6 makerdsp.vc6 makermak.vc6 makewdep.vc6 makewdsp.vc6 \
+        makewmak.vc6 makejsln.v15 makeasln.v15 makejvcx.v15 makejfil.v15 \
+        makecvcx.v15 makecfil.v15 makedvcx.v15 makedfil.v15 maketvcx.v15 \
+        maketfil.v15 makervcx.v15 makerfil.v15 makewvcx.v15 makewfil.v15 \
+        makeproj.mac makcjpeg.st makdjpeg.st makljpeg.st maktjpeg.st \
+        makefile.manx makefile.sas makefile.mms makefile.vms makvms.opt
 
 # Configuration files
 CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat \
@@ -55,7 +55,7 @@ CONFIGUREFILES= config.guess config.sub install-sh ltmain.sh depcomp \
         missing ar-lib
 
 # Miscellaneous support files
-OTHERFILES= jconfig.txt ckconfig.c jmemdosa.asm libjpeg.map
+OTHERFILES= jconfig.txt ckconfig.c jmemdosa.asm libjpeg.map libjpeg.pc.in
 
 # Test support files
 TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \
@@ -102,6 +102,10 @@ noinst_HEADERS = $(OTHERINCLUDES)
 # Other distributed files
 EXTRA_DIST =  $(DOCS) $(DISTMANS) $(MKFILES) $(CONFIGFILES) $(SYSDEPSOURCES) \
         $(OTHERFILES) $(TESTFILES)
+
+# pkg-config file
+pkgconfigdir = $(libdir)/pkgconfig
+nodist_pkgconfig_DATA = libjpeg.pc
 
 # Files to be cleaned
 CLEANFILES = testout.ppm testout.bmp testout.jpg testoutp.ppm testoutp.jpg \

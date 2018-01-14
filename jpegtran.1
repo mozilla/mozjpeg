@@ -1,4 +1,4 @@
-.TH JPEGTRAN 1 "20 September 2015"
+.TH JPEGTRAN 1 "30 September 2017"
 .SH NAME
 jpegtran \- lossless transformation of JPEG files
 .SH SYNOPSIS
@@ -181,6 +181,9 @@ inside a given image region while losslessly preserving what is outside:
 .B \-wipe WxH+X+Y
 Wipe (gray out) a rectangular subarea of width W, height H starting at point
 X,Y.
+.PP
+Attaching an 'f' character ("flatten") to the width number will fill
+the region with the average of adjacent blocks, instead of gray out.
 .PP
 Other not-strictly-lossless transformation switches are:
 .TP

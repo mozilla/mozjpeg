@@ -576,6 +576,9 @@ inside a given image region while losslessly preserving what is outside:
 	-wipe WxH+X+Y	Wipe (gray out) a rectangular subarea of
 			width W, height H starting at point X,Y.
 
+Attaching an 'f' character ("flatten") to the width number will fill
+the region with the average of adjacent blocks, instead of gray out.
+
 Other not-strictly-lossless transformation switches are:
 
 	-grayscale	Force grayscale output.

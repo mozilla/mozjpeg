@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2013, Linaro Limited.
- * Copyright (C) 2014-2015, D. R. Commander.
+ * Copyright (C) 2014-2015, 2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -304,20 +304,20 @@ h2v2_merged_upsample_565D_internal (j_decompress_ptr cinfo,
     rgb = PACK_SHORT_565(r, g, b);
 
     y  = GETJSAMPLE(*inptr00++);
-    r = range_limit[DITHER_565_R(y + cred, d1)];
-    g = range_limit[DITHER_565_G(y + cgreen, d1)];
-    b = range_limit[DITHER_565_B(y + cblue, d1)];
-    d1 = DITHER_ROTATE(d1);
+    r = range_limit[DITHER_565_R(y + cred, d0)];
+    g = range_limit[DITHER_565_G(y + cgreen, d0)];
+    b = range_limit[DITHER_565_B(y + cblue, d0)];
+    d0 = DITHER_ROTATE(d0);
     rgb = PACK_TWO_PIXELS(rgb, PACK_SHORT_565(r, g, b));
 
     WRITE_TWO_PIXELS(outptr0, rgb);
     outptr0 += 4;
 
     y  = GETJSAMPLE(*inptr01++);
-    r = range_limit[DITHER_565_R(y + cred, d0)];
-    g = range_limit[DITHER_565_G(y + cgreen, d0)];
-    b = range_limit[DITHER_565_B(y + cblue, d0)];
-    d0 = DITHER_ROTATE(d0);
+    r = range_limit[DITHER_565_R(y + cred, d1)];
+    g = range_limit[DITHER_565_G(y + cgreen, d1)];
+    b = range_limit[DITHER_565_B(y + cblue, d1)];
+    d1 = DITHER_ROTATE(d1);
     rgb = PACK_SHORT_565(r, g, b);
 
     y  = GETJSAMPLE(*inptr01++);

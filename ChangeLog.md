@@ -101,6 +101,10 @@ to decompress a specially-crafted malformed JPEG image.  These issues did not
 pose a security threat, but removing the warnings makes it easier to detect
 actual security issues, should they arise in the future.
 
+11. Fixed a bug in the merged 4:2:0 upsampling/dithered RGB565 color conversion
+algorithm that caused incorrect dithering in the output image.  This algorithm
+now produces bitwise-identical results to the unmerged algorithms.
+
 
 1.5.3
 =====

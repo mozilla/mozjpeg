@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, D. R. Commander.
+ * Copyright (C) 2011, 2015, 2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -19,8 +19,40 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jchuff.h"             /* Declarations shared with jchuff.c */
+#include <limits.h>
 
 #ifdef C_PROGRESSIVE_SUPPORTED
+
+/*
+ * NOTE: If USE_CLZ_INTRINSIC is defined, then clz/bsr instructions will be
+ * used for bit counting rather than the lookup table.  This will reduce the
+ * memory footprint by 64k, which is important for some mobile applications
+ * that create many isolated instances of libjpeg-turbo (web browsers, for
+ * instance.)  This may improve performance on some mobile platforms as well.
+ * This feature is enabled by default only on ARM processors, because some x86
+ * chips have a slow implementation of bsr, and the use of clz/bsr cannot be
+ * shown to have a significant performance impact even on the x86 chips that
+ * have a fast implementation of it.  When building for ARMv6, you can
+ * explicitly disable the use of clz/bsr by adding -mthumb to the compiler
+ * flags (this defines __thumb__).
+ */
+
+/* NOTE: Both GCC and Clang define __GNUC__ */
+#if defined __GNUC__ && (defined __arm__ || defined __aarch64__)
+#if !defined __thumb__ || defined __thumb2__
+#define USE_CLZ_INTRINSIC
+#endif
+#endif
+
+#ifdef USE_CLZ_INTRINSIC
+#define JPEG_NBITS_NONZERO(x) (32 - __builtin_clz(x))
+#define JPEG_NBITS(x) (x ? JPEG_NBITS_NONZERO(x) : 0)
+#else
+#include "jpeg_nbits_table.h"
+#define JPEG_NBITS(x) (jpeg_nbits_table[x])
+#define JPEG_NBITS_NONZERO(x) JPEG_NBITS(x)
+#endif
+
 
 /* Expanded entropy encoder object for progressive Huffman encoding. */
 
@@ -320,9 +352,7 @@ emit_eobrun (phuff_entropy_ptr entropy)
 
   if (entropy->EOBRUN > 0) {    /* if there is any pending EOBRUN */
     temp = entropy->EOBRUN;
-    nbits = 0;
-    while ((temp >>= 1))
-      nbits++;
+    nbits = JPEG_NBITS_NONZERO(temp) - 1;
     /* safety check: shouldn't happen given limited correction-bit buffer */
     if (nbits > 14)
       ERREXIT(entropy->cinfo, JERR_HUFF_MISSING_CODE);
@@ -378,7 +408,7 @@ METHODDEF(boolean)
 encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  register int temp, temp2;
+  register int temp, temp2, temp3;
   register int nbits;
   int blkn, ci;
   int Al = cinfo->Al;
@@ -410,20 +440,20 @@ encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     entropy->last_dc_val[ci] = temp2;
 
     /* Encode the DC coefficient difference per section G.1.2.1 */
-    temp2 = temp;
-    if (temp < 0) {
-      temp = -temp;             /* temp is abs value of input */
-      /* For a negative input, want temp2 = bitwise complement of abs(input) */
-      /* This code assumes we are on a two's complement machine */
-      temp2--;
-    }
+
+    /* This is a well-known technique for obtaining the absolute value without
+     * a branch.  It is derived from an assembly language technique presented
+     * in "How to Optimize for the Pentium Processors", Copyright (c) 1996,
+     * 1997 by Agner Fog.
+     */
+    temp3 = temp >> (CHAR_BIT * sizeof(int) - 1);
+    temp ^= temp3;
+    temp -= temp3;              /* temp is abs value of input */
+    /* For a negative input, want temp2 = bitwise complement of abs(input) */
+    temp2 = temp ^ temp3;
 
     /* Find the number of bits needed for the magnitude of the coefficient */
-    nbits = 0;
-    while (temp) {
-      nbits++;
-      temp >>= 1;
-    }
+    nbits = JPEG_NBITS(temp);
     /* Check for out-of-range coefficient values.
      * Since we're encoding a difference, the range limit is twice as much.
      */
@@ -465,7 +495,7 @@ METHODDEF(boolean)
 encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  register int temp, temp2;
+  register int temp, temp2, temp3;
   register int nbits;
   register int r, k;
   int Se = cinfo->Se;
@@ -497,15 +527,12 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
      * in C, we shift after obtaining the absolute value; so the code is
      * interwoven with finding the abs value (temp) and output bits (temp2).
      */
-    if (temp < 0) {
-      temp = -temp;             /* temp is abs value of input */
-      temp >>= Al;              /* apply the point transform */
-      /* For a negative coef, want temp2 = bitwise complement of abs(coef) */
-      temp2 = ~temp;
-    } else {
-      temp >>= Al;              /* apply the point transform */
-      temp2 = temp;
-    }
+    temp3 = temp >> (CHAR_BIT * sizeof(int) - 1);
+    temp ^= temp3;
+    temp -= temp3;              /* temp is abs value of input */
+    temp >>= Al;                /* apply the point transform */
+    /* For a negative coef, want temp2 = bitwise complement of abs(coef) */
+    temp2 = temp ^ temp3;
     /* Watch out for case that nonzero coef is zero after point transform */
     if (temp == 0) {
       r++;
@@ -522,9 +549,7 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     }
 
     /* Find the number of bits needed for the magnitude of the coefficient */
-    nbits = 1;                  /* there must be at least one 1 bit */
-    while ((temp >>= 1))
-      nbits++;
+    nbits = JPEG_NBITS_NONZERO(temp);  /* there must be at least one 1 bit */
     /* Check for out-of-range coefficient values */
     if (nbits > MAX_COEF_BITS)
       ERREXIT(cinfo, JERR_BAD_DCT_COEF);
@@ -619,7 +644,7 @@ METHODDEF(boolean)
 encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  register int temp;
+  register int temp, temp3;
   register int r, k;
   int EOB;
   char *BR_buffer;
@@ -650,8 +675,9 @@ encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
      * is an integer division with rounding towards 0.  To do this portably
      * in C, we shift after obtaining the absolute value.
      */
-    if (temp < 0)
-      temp = -temp;             /* temp is abs value of input */
+    temp3 = temp >> (CHAR_BIT * sizeof(int) - 1);
+    temp ^= temp3;
+    temp -= temp3;              /* temp is abs value of input */
     temp >>= Al;                /* apply the point transform */
     absvalues[k] = temp;        /* save abs value for main pass */
     if (temp == 1)

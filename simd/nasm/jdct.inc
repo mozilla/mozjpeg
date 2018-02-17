@@ -2,6 +2,7 @@
 ; jdct.inc - private declarations for forward & reverse DCT subsystems
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
+; Copyright (C) 2018, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -23,5 +24,6 @@
 %define DWBLOCK(m,n,b,s)   ((b)+(m)*DCTSIZE*(s)+(n)*SIZEOF_DWORD)
 %define MMBLOCK(m,n,b,s)   ((b)+(m)*DCTSIZE*(s)+(n)*SIZEOF_MMWORD)
 %define XMMBLOCK(m,n,b,s)  ((b)+(m)*DCTSIZE*(s)+(n)*SIZEOF_XMMWORD)
+%define YMMBLOCK(m,n,b,s)  ((b)+(m)*DCTSIZE*(s)+(n)*SIZEOF_YMMWORD)
 
 ; --------------------------------------------------------------------------

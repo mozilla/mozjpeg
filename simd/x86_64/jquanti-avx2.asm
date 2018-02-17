@@ -2,7 +2,7 @@
 ; jquanti.asm - sample data conversion and quantization (64-bit AVX2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2016, D. R. Commander.
+; Copyright (C) 2009, 2016, 2018, D. R. Commander.
 ; Copyright (C) 2016, Matthieu Darbois.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
@@ -37,9 +37,9 @@
 ;                      DCTELEM *workspace);
 ;
 
-%define RECIPROCAL(m,n,b)  XMMBLOCK(DCTSIZE*0+(m),(n),(b),SIZEOF_DCTELEM)
-%define CORRECTION(m,n,b)  XMMBLOCK(DCTSIZE*1+(m),(n),(b),SIZEOF_DCTELEM)
-%define SCALE(m,n,b)       XMMBLOCK(DCTSIZE*2+(m),(n),(b),SIZEOF_DCTELEM)
+%define RECIPROCAL(m,n,b)  YMMBLOCK(DCTSIZE*0+(m),(n),(b),SIZEOF_DCTELEM)
+%define CORRECTION(m,n,b)  YMMBLOCK(DCTSIZE*1+(m),(n),(b),SIZEOF_DCTELEM)
+%define SCALE(m,n,b)       YMMBLOCK(DCTSIZE*2+(m),(n),(b),SIZEOF_DCTELEM)
 
 ; r10 = JCOEFPTR coef_block
 ; r11 = DCTELEM *divisors
@@ -54,10 +54,10 @@ EXTN(jsimd_quantize_avx2):
     mov         rbp, rsp
     collect_args 3
 
-    vmovdqu     ymm4, [XMMBLOCK(0,0,r12,SIZEOF_DCTELEM)]
-    vmovdqu     ymm5, [XMMBLOCK(2,0,r12,SIZEOF_DCTELEM)]
-    vmovdqu     ymm6, [XMMBLOCK(4,0,r12,SIZEOF_DCTELEM)]
-    vmovdqu     ymm7, [XMMBLOCK(6,0,r12,SIZEOF_DCTELEM)]
+    vmovdqu     ymm4, [YMMBLOCK(0,0,r12,SIZEOF_DCTELEM)]
+    vmovdqu     ymm5, [YMMBLOCK(2,0,r12,SIZEOF_DCTELEM)]
+    vmovdqu     ymm6, [YMMBLOCK(4,0,r12,SIZEOF_DCTELEM)]
+    vmovdqu     ymm7, [YMMBLOCK(6,0,r12,SIZEOF_DCTELEM)]
     vpabsw      ymm0, ymm4
     vpabsw      ymm1, ymm5
     vpabsw      ymm2, ymm6
@@ -81,10 +81,10 @@ EXTN(jsimd_quantize_avx2):
     vpsignw     ymm2, ymm2, ymm6
     vpsignw     ymm3, ymm3, ymm7
 
-    vmovdqu     [XMMBLOCK(0,0,r10,SIZEOF_DCTELEM)], ymm0
-    vmovdqu     [XMMBLOCK(2,0,r10,SIZEOF_DCTELEM)], ymm1
-    vmovdqu     [XMMBLOCK(4,0,r10,SIZEOF_DCTELEM)], ymm2
-    vmovdqu     [XMMBLOCK(6,0,r10,SIZEOF_DCTELEM)], ymm3
+    vmovdqu     [YMMBLOCK(0,0,r10,SIZEOF_DCTELEM)], ymm0
+    vmovdqu     [YMMBLOCK(2,0,r10,SIZEOF_DCTELEM)], ymm1
+    vmovdqu     [YMMBLOCK(4,0,r10,SIZEOF_DCTELEM)], ymm2
+    vmovdqu     [YMMBLOCK(6,0,r10,SIZEOF_DCTELEM)], ymm3
 
     vzeroupper
     uncollect_args 3

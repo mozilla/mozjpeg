@@ -23,6 +23,71 @@
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
     BITS        64
+;
+; Load data into workspace, applying unsigned->signed conversion
+;
+; GLOBAL(void)
+; jsimd_convsamp_avx2 (JSAMPARRAY sample_data, JDIMENSION start_col,
+;                      DCTELEM *workspace);
+;
+
+; r10 = JSAMPARRAY sample_data
+; r11d = JDIMENSION start_col
+; r12 = DCTELEM *workspace
+
+    align       32
+    global      EXTN(jsimd_convsamp_avx2)
+
+EXTN(jsimd_convsamp_avx2):
+    push        rbp
+    mov         rax, rsp
+    mov         rbp, rsp
+    collect_args 3
+
+    mov         eax, r11d
+
+    mov         rsi, JSAMPROW [r10+0*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    mov         rdi, JSAMPROW [r10+1*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    movq        xmm0, XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE]
+    pinsrq      xmm0, XMM_MMWORD [rdi+rax*SIZEOF_JSAMPLE], 1
+
+    mov         rsi, JSAMPROW [r10+2*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    mov         rdi, JSAMPROW [r10+3*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    movq        xmm1, XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE]
+    pinsrq      xmm1, XMM_MMWORD [rdi+rax*SIZEOF_JSAMPLE], 1
+
+    mov         rsi, JSAMPROW [r10+4*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    mov         rdi, JSAMPROW [r10+5*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    movq        xmm2, XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE]
+    pinsrq      xmm2, XMM_MMWORD [rdi+rax*SIZEOF_JSAMPLE], 1
+
+    mov         rsi, JSAMPROW [r10+6*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    mov         rdi, JSAMPROW [r10+7*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
+    movq        xmm3, XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE]
+    pinsrq      xmm3, XMM_MMWORD [rdi+rax*SIZEOF_JSAMPLE], 1
+
+    vpmovzxbw   ymm0, xmm0              ; ymm0=(00 01 02 03 04 05 06 07 10 11 12 13 14 15 16 17)
+    vpmovzxbw   ymm1, xmm1              ; ymm1=(20 21 22 23 24 25 26 27 30 31 32 33 34 35 36 37)
+    vpmovzxbw   ymm2, xmm2              ; ymm2=(40 41 42 43 44 45 46 47 50 51 52 53 54 55 56 57)
+    vpmovzxbw   ymm3, xmm3              ; ymm3=(60 61 62 63 64 65 66 67 70 71 72 73 74 75 76 77)
+
+    vpcmpeqw    ymm7, ymm7, ymm7
+    vpsllw      ymm7, ymm7, 7           ; ymm7={0xFF80 0xFF80 0xFF80 0xFF80 ..}
+
+    vpaddw      ymm0, ymm0, ymm7
+    vpaddw      ymm1, ymm1, ymm7
+    vpaddw      ymm2, ymm2, ymm7
+    vpaddw      ymm3, ymm3, ymm7
+
+    vmovdqu     YMMWORD [YMMBLOCK(0,0,r12,SIZEOF_DCTELEM)], ymm0
+    vmovdqu     YMMWORD [YMMBLOCK(2,0,r12,SIZEOF_DCTELEM)], ymm1
+    vmovdqu     YMMWORD [YMMBLOCK(4,0,r12,SIZEOF_DCTELEM)], ymm2
+    vmovdqu     YMMWORD [YMMBLOCK(6,0,r12,SIZEOF_DCTELEM)], ymm3
+
+    vzeroupper
+    uncollect_args 3
+    pop         rbp
+    ret
 
 ; --------------------------------------------------------------------------
 ;

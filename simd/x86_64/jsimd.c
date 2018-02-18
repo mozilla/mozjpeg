@@ -660,6 +660,8 @@ jsimd_can_convsamp (void)
   if (sizeof(DCTELEM) != 2)
     return 0;
 
+  if (simd_support & JSIMD_AVX2)
+    return 1;
   if (simd_support & JSIMD_SSE2)
     return 1;
 
@@ -691,7 +693,10 @@ GLOBAL(void)
 jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
                 DCTELEM *workspace)
 {
-  jsimd_convsamp_sse2(sample_data, start_col, workspace);
+  if (simd_support & JSIMD_AVX2)
+    jsimd_convsamp_avx2(sample_data, start_col, workspace);
+  else
+    jsimd_convsamp_sse2(sample_data, start_col, workspace);
 }
 
 GLOBAL(void)

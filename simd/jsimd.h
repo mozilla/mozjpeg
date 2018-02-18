@@ -816,6 +816,9 @@ EXTERN(void) jsimd_convsamp_mmx
 EXTERN(void) jsimd_convsamp_sse2
         (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
 
+EXTERN(void) jsimd_convsamp_avx2
+        (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
+
 EXTERN(void) jsimd_convsamp_neon
         (JSAMPARRAY sample_data, JDIMENSION start_col, DCTELEM *workspace);
 

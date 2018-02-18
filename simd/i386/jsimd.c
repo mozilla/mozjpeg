@@ -2,7 +2,7 @@
  * jsimd_i386.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009-2011, 2013-2014, 2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, 2016, 2018, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
@@ -829,6 +829,8 @@ jsimd_can_fdct_islow (void)
   if (sizeof(DCTELEM) != 2)
     return 0;
 
+  if ((simd_support & JSIMD_AVX2) && IS_ALIGNED_SSE(jconst_fdct_islow_avx2))
+    return 1;
   if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_fdct_islow_sse2))
     return 1;
   if (simd_support & JSIMD_MMX)
@@ -878,7 +880,9 @@ jsimd_can_fdct_float (void)
 GLOBAL(void)
 jsimd_fdct_islow (DCTELEM *data)
 {
-  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_fdct_islow_sse2))
+  if (simd_support & JSIMD_AVX2)
+    jsimd_fdct_islow_avx2(data);
+  else if (simd_support & JSIMD_SSE2)
     jsimd_fdct_islow_sse2(data);
   else if (simd_support & JSIMD_MMX)
     jsimd_fdct_islow_mmx(data);

@@ -130,7 +130,7 @@ else()
     i386/jidctred-sse2.asm i386/jquantf-sse2.asm i386/jquanti-sse2.asm
     i386/jccolor-avx2.asm i386/jcgray-avx2.asm i386/jcsample-avx2.asm
     i386/jdcolor-avx2.asm i386/jdmerge-avx2.asm i386/jdsample-avx2.asm
-    i386/jquanti-avx2.asm)
+    i386/jfdctint-avx2.asm i386/jquanti-avx2.asm)
 endif()
 
 if(MSVC_IDE)

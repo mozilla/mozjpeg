@@ -52,7 +52,7 @@ F_1_306 equ DESCALE(1402911301, 30-CONST_BITS)  ; FIX(1.306562965)
 %define CONST_SHIFT              (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
 
     alignz      32
-    global      EXTN(jconst_fdct_ifast_sse2)
+    GLOBAL_DATA(jconst_fdct_ifast_sse2)
 
 EXTN(jconst_fdct_ifast_sse2):
 
@@ -79,7 +79,7 @@ PW_F1306 times 8 dw F_1_306 << CONST_SHIFT
 %define WK_NUM  2
 
     align       32
-    global      EXTN(jsimd_fdct_ifast_sse2)
+    GLOBAL_FUNCTION(jsimd_fdct_ifast_sse2)
 
 EXTN(jsimd_fdct_ifast_sse2):
     push        rbp

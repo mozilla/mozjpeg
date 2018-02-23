@@ -23,7 +23,7 @@
     SECTION     SEG_CONST
 
     alignz      32
-    global      EXTN(jconst_fancy_upsample_avx2)
+    GLOBAL_DATA(jconst_fancy_upsample_avx2)
 
 EXTN(jconst_fancy_upsample_avx2):
 
@@ -59,7 +59,7 @@ PW_EIGHT times 16 dw 8
 ; r13 = JSAMPARRAY *output_data_ptr
 
     align       32
-    global      EXTN(jsimd_h2v1_fancy_upsample_avx2)
+    GLOBAL_FUNCTION(jsimd_h2v1_fancy_upsample_avx2)
 
 EXTN(jsimd_h2v1_fancy_upsample_avx2):
     push        rbp
@@ -213,7 +213,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
 %define WK_NUM  4
 
     align       32
-    global      EXTN(jsimd_h2v2_fancy_upsample_avx2)
+    GLOBAL_FUNCTION(jsimd_h2v2_fancy_upsample_avx2)
 
 EXTN(jsimd_h2v2_fancy_upsample_avx2):
     push        rbp
@@ -524,7 +524,7 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
 ; r13 = JSAMPARRAY *output_data_ptr
 
     align       32
-    global      EXTN(jsimd_h2v1_upsample_avx2)
+    GLOBAL_FUNCTION(jsimd_h2v1_upsample_avx2)
 
 EXTN(jsimd_h2v1_upsample_avx2):
     push        rbp
@@ -615,7 +615,7 @@ EXTN(jsimd_h2v1_upsample_avx2):
 ; r13 = JSAMPARRAY *output_data_ptr
 
     align       32
-    global      EXTN(jsimd_h2v2_upsample_avx2)
+    GLOBAL_FUNCTION(jsimd_h2v2_upsample_avx2)
 
 EXTN(jsimd_h2v2_upsample_avx2):
     push        rbp

@@ -35,7 +35,7 @@
 ; r12 = FAST_FLOAT *workspace
 
     align       32
-    global      EXTN(jsimd_convsamp_float_sse2)
+    GLOBAL_FUNCTION(jsimd_convsamp_float_sse2)
 
 EXTN(jsimd_convsamp_float_sse2):
     push        rbp
@@ -109,7 +109,7 @@ EXTN(jsimd_convsamp_float_sse2):
 ; r12 = FAST_FLOAT *workspace
 
     align       32
-    global      EXTN(jsimd_quantize_float_sse2)
+    GLOBAL_FUNCTION(jsimd_quantize_float_sse2)
 
 EXTN(jsimd_quantize_float_sse2):
     push        rbp

@@ -31,7 +31,7 @@ F_0_337 equ (F_0_587 - F_0_250)  ; FIX(0.58700) - FIX(0.25000)
     SECTION     SEG_CONST
 
     alignz      32
-    global      EXTN(jconst_rgb_gray_convert_sse2)
+    GLOBAL_DATA(jconst_rgb_gray_convert_sse2)
 
 EXTN(jconst_rgb_gray_convert_sse2):
 

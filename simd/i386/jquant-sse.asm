@@ -35,7 +35,7 @@
 %define workspace       ebp+16          ; FAST_FLOAT *workspace
 
         align   32
-        global  EXTN(jsimd_convsamp_float_sse)
+        GLOBAL_FUNCTION(jsimd_convsamp_float_sse)
 
 EXTN(jsimd_convsamp_float_sse):
         push    ebp
@@ -138,7 +138,7 @@ EXTN(jsimd_convsamp_float_sse):
 %define workspace       ebp+16          ; FAST_FLOAT *workspace
 
         align   32
-        global  EXTN(jsimd_quantize_float_sse)
+        GLOBAL_FUNCTION(jsimd_quantize_float_sse)
 
 EXTN(jsimd_quantize_float_sse):
         push    ebp

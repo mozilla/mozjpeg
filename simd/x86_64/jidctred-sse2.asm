@@ -72,7 +72,7 @@ F_3_624 equ DESCALE(3891787747, 30-CONST_BITS)  ; FIX(3.624509785)
     SECTION     SEG_CONST
 
     alignz      32
-    global      EXTN(jconst_idct_red_sse2)
+    GLOBAL_DATA(jconst_idct_red_sse2)
 
 EXTN(jconst_idct_red_sse2):
 
@@ -113,7 +113,7 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 %define WK_NUM        2
 
     align       32
-    global      EXTN(jsimd_idct_4x4_sse2)
+    GLOBAL_FUNCTION(jsimd_idct_4x4_sse2)
 
 EXTN(jsimd_idct_4x4_sse2):
     push        rbp
@@ -412,7 +412,7 @@ EXTN(jsimd_idct_4x4_sse2):
 ; r13d = JDIMENSION output_col
 
     align       32
-    global      EXTN(jsimd_idct_2x2_sse2)
+    GLOBAL_FUNCTION(jsimd_idct_2x2_sse2)
 
 EXTN(jsimd_idct_2x2_sse2):
     push        rbp

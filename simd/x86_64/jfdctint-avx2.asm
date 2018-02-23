@@ -226,7 +226,7 @@ F_3_072 equ DESCALE(3299298341, 30-CONST_BITS)  ; FIX(3.072711026)
     SECTION     SEG_CONST
 
     alignz      32
-    global      EXTN(jconst_fdct_islow_avx2)
+    GLOBAL_DATA(jconst_fdct_islow_avx2)
 
 EXTN(jconst_fdct_islow_avx2):
 
@@ -259,7 +259,7 @@ PW_1_NEG1                  times 8  dw  1
 ; r10 = DCTELEM *data
 
     align       32
-    global      EXTN(jsimd_fdct_islow_avx2)
+    GLOBAL_FUNCTION(jsimd_fdct_islow_avx2)
 
 EXTN(jsimd_fdct_islow_avx2):
     push        rbp

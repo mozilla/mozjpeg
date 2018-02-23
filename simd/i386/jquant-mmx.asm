@@ -35,7 +35,7 @@
 %define workspace       ebp+16          ; DCTELEM *workspace
 
         align   32
-        global  EXTN(jsimd_convsamp_mmx)
+        GLOBAL_FUNCTION(jsimd_convsamp_mmx)
 
 EXTN(jsimd_convsamp_mmx):
         push    ebp
@@ -140,7 +140,7 @@ EXTN(jsimd_convsamp_mmx):
 %define workspace       ebp+16          ; DCTELEM *workspace
 
         align   32
-        global  EXTN(jsimd_quantize_mmx)
+        GLOBAL_FUNCTION(jsimd_quantize_mmx)
 
 EXTN(jsimd_quantize_mmx):
         push    ebp

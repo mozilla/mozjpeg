@@ -27,7 +27,7 @@
         SECTION SEG_CONST
 
         alignz  32
-        global  EXTN(jconst_fdct_float_3dnow)
+        GLOBAL_DATA(jconst_fdct_float_3dnow)
 
 EXTN(jconst_fdct_float_3dnow):
 
@@ -55,7 +55,7 @@ PD_1_306        times 2 dd  1.306562964876376527856643
 %define WK_NUM          2
 
         align   32
-        global  EXTN(jsimd_fdct_float_3dnow)
+        GLOBAL_FUNCTION(jsimd_fdct_float_3dnow)
 
 EXTN(jsimd_fdct_float_3dnow):
         push    ebp

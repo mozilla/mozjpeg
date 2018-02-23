@@ -36,7 +36,7 @@
 ; r12 = DCTELEM *workspace
 
     align       32
-    global      EXTN(jsimd_convsamp_avx2)
+    GLOBAL_FUNCTION(jsimd_convsamp_avx2)
 
 EXTN(jsimd_convsamp_avx2):
     push        rbp
@@ -111,7 +111,7 @@ EXTN(jsimd_convsamp_avx2):
 ; r12 = DCTELEM *workspace
 
     align       32
-    global      EXTN(jsimd_quantize_avx2)
+    GLOBAL_FUNCTION(jsimd_quantize_avx2)
 
 EXTN(jsimd_quantize_avx2):
     push        rbp

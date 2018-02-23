@@ -253,7 +253,7 @@ F_3_072 equ DESCALE(3299298341, 30-CONST_BITS)  ; FIX(3.072711026)
     SECTION     SEG_CONST
 
     alignz      32
-    global      EXTN(jconst_idct_islow_avx2)
+    GLOBAL_DATA(jconst_idct_islow_avx2)
 
 EXTN(jconst_idct_islow_avx2):
 
@@ -294,7 +294,7 @@ PW_1_NEG1                  times 8  dw  1
 %define WK_NUM         4
 
     align       32
-    global      EXTN(jsimd_idct_islow_avx2)
+    GLOBAL_FUNCTION(jsimd_idct_islow_avx2)
 
 EXTN(jsimd_idct_islow_avx2):
     push        ebp

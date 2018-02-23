@@ -30,7 +30,7 @@
 ;
 
     align       32
-    global      EXTN(jpeg_simd_cpu_support)
+    GLOBAL_FUNCTION(jpeg_simd_cpu_support)
 
 EXTN(jpeg_simd_cpu_support):
     push        rbx

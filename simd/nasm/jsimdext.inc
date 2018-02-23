@@ -3,6 +3,7 @@
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
 ; Copyright (C) 2010, 2016, D. R. Commander.
+; Copyright (C) 2018, Matthieu Darbois.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library - version 1.02
 ;
@@ -185,6 +186,20 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 ;
 %ifndef EXTN
 %define EXTN(name)  _ %+ name           ; foo() -> _foo
+%endif
+
+; --------------------------------------------------------------------------
+;  Hidden symbols
+;
+%ifdef ELF      ; ----(nasm -felf[64] -DELF ...)--------
+%define GLOBAL_FUNCTION(name)  global EXTN(name):function hidden
+%define GLOBAL_DATA(name)      global EXTN(name):data hidden
+;%elifdef MACHO  ; ----(nasm -fmacho -DMACHO ...)--------
+;%define GLOBAL_FUNCTION(name)  global EXTN(name):private_extern
+;%define GLOBAL_DATA(name)      global EXTN(name):private_extern
+%else
+%define GLOBAL_FUNCTION(name)  global EXTN(name)
+%define GLOBAL_DATA(name)      global EXTN(name)
 %endif
 
 ; --------------------------------------------------------------------------

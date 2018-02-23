@@ -40,7 +40,7 @@
 
     align       32
 
-    global      EXTN(jsimd_rgb_gray_convert_sse2)
+    GLOBAL_FUNCTION(jsimd_rgb_gray_convert_sse2)
 
 EXTN(jsimd_rgb_gray_convert_sse2):
     push        ebp

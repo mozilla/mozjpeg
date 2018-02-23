@@ -39,7 +39,7 @@
 %define WK_NUM  2
 
     align       32
-    global      EXTN(jsimd_ycc_rgb_convert_avx2)
+    GLOBAL_FUNCTION(jsimd_ycc_rgb_convert_avx2)
 
 EXTN(jsimd_ycc_rgb_convert_avx2):
     push        rbp

@@ -59,7 +59,7 @@ F_1_613 equ (F_2_613 - (1 << CONST_BITS))       ; FIX(2.613125930) - FIX(1)
 %define CONST_SHIFT              (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
 
     alignz      32
-    global      EXTN(jconst_idct_ifast_sse2)
+    GLOBAL_DATA(jconst_idct_ifast_sse2)
 
 EXTN(jconst_idct_ifast_sse2):
 
@@ -92,7 +92,7 @@ PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 %define WK_NUM         2
 
     align       32
-    global      EXTN(jsimd_idct_ifast_sse2)
+    GLOBAL_FUNCTION(jsimd_idct_ifast_sse2)
 
 EXTN(jsimd_idct_ifast_sse2):
     push        ebp

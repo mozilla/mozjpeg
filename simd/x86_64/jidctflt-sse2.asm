@@ -37,7 +37,7 @@
     SECTION     SEG_CONST
 
     alignz      32
-    global      EXTN(jconst_idct_float_sse2)
+    GLOBAL_DATA(jconst_idct_float_sse2)
 
 EXTN(jconst_idct_float_sse2):
 
@@ -73,7 +73,7 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
                                         ; FAST_FLOAT workspace[DCTSIZE2]
 
     align       32
-    global      EXTN(jsimd_idct_float_sse2)
+    GLOBAL_FUNCTION(jsimd_idct_float_sse2)
 
 EXTN(jsimd_idct_float_sse2):
     push        rbp

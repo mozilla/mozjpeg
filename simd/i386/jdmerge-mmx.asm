@@ -34,7 +34,7 @@ F_0_228 equ     (131072 - F_1_772)      ; FIX(2) - FIX(1.77200)
         SECTION SEG_CONST
 
         alignz  32
-        global  EXTN(jconst_merged_upsample_mmx)
+        GLOBAL_DATA(jconst_merged_upsample_mmx)
 
 EXTN(jconst_merged_upsample_mmx):
 

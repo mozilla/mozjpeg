@@ -40,7 +40,7 @@
 %define gotptr          wk(0)-SIZEOF_POINTER    ; void * gotptr
 
         align   32
-        global  EXTN(jsimd_ycc_rgb_convert_mmx)
+        GLOBAL_FUNCTION(jsimd_ycc_rgb_convert_mmx)
 
 EXTN(jsimd_ycc_rgb_convert_mmx):
         push    ebp

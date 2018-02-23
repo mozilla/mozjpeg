@@ -66,7 +66,7 @@ F_3_072 equ DESCALE(3299298341, 30-CONST_BITS)  ; FIX(3.072711026)
     SECTION     SEG_CONST
 
     alignz      32
-    global      EXTN(jconst_fdct_islow_sse2)
+    GLOBAL_DATA(jconst_fdct_islow_sse2)
 
 EXTN(jconst_fdct_islow_sse2):
 
@@ -100,7 +100,7 @@ PW_DESCALE_P2X times 8 dw  1 << (PASS1_BITS-1)
 %define WK_NUM  6
 
     align       32
-    global      EXTN(jsimd_fdct_islow_sse2)
+    GLOBAL_FUNCTION(jsimd_fdct_islow_sse2)
 
 EXTN(jsimd_fdct_islow_sse2):
     push        rbp

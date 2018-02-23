@@ -40,7 +40,7 @@
 %define output_data(b)  (b)+28          ; JSAMPARRAY output_data
 
         align   32
-        global  EXTN(jsimd_h2v1_downsample_mmx)
+        GLOBAL_FUNCTION(jsimd_h2v1_downsample_mmx)
 
 EXTN(jsimd_h2v1_downsample_mmx):
         push    ebp
@@ -182,7 +182,7 @@ EXTN(jsimd_h2v1_downsample_mmx):
 %define output_data(b)  (b)+28          ; JSAMPARRAY output_data
 
         align   32
-        global  EXTN(jsimd_h2v2_downsample_mmx)
+        GLOBAL_FUNCTION(jsimd_h2v2_downsample_mmx)
 
 EXTN(jsimd_h2v2_downsample_mmx):
         push    ebp

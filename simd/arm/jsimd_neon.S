@@ -7,7 +7,7 @@
  * Copyright (C) 2014, Siarhei Siamashka.  All Rights Reserved.
  * Copyright (C) 2014, Linaro Limited.  All Rights Reserved.
  * Copyright (C) 2015, D. R. Commander.  All Rights Reserved.
- * Copyright (C) 2015-2016, Matthieu Darbois.  All Rights Reserved.
+ * Copyright (C) 2015-2016, 2018, Matthieu Darbois.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,6 +46,7 @@
 /* Supplementary macro for setting function attributes */
 .macro asm_function fname
 #ifdef __APPLE__
+    .private_extern _\fname
     .globl _\fname
 _\fname:
 #else

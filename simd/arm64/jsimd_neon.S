@@ -7,7 +7,7 @@
  * Copyright (C) 2013-2014, Linaro Limited.  All Rights Reserved.
  * Author: Ragesh Radhakrishnan <ragesh.r@linaro.org>
  * Copyright (C) 2014-2016, D. R. Commander.  All Rights Reserved.
- * Copyright (C) 2015-2016, Matthieu Darbois.  All Rights Reserved.
+ * Copyright (C) 2015-2016, 2018, Matthieu Darbois.  All Rights Reserved.
  * Copyright (C) 2016, Siarhei Siamashka.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
@@ -42,6 +42,7 @@
 /* Supplementary macro for setting function attributes */
 .macro asm_function fname
 #ifdef __APPLE__
+    .private_extern _\fname
     .globl _\fname
 _\fname:
 #else

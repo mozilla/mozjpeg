@@ -1071,6 +1071,8 @@ jsimd_can_idct_islow (void)
   if (sizeof(ISLOW_MULT_TYPE) != 2)
     return 0;
 
+  if ((simd_support & JSIMD_AVX2) && IS_ALIGNED_AVX(jconst_idct_islow_avx2))
+    return 1;
   if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_islow_sse2))
     return 1;
   if (simd_support & JSIMD_MMX)
@@ -1139,7 +1141,10 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info *compptr,
                   JCOEFPTR coef_block, JSAMPARRAY output_buf,
                   JDIMENSION output_col)
 {
-  if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_islow_sse2))
+  if (simd_support & JSIMD_AVX2)
+    jsimd_idct_islow_avx2(compptr->dct_table, coef_block, output_buf,
+                          output_col);
+  else if (simd_support & JSIMD_SSE2)
     jsimd_idct_islow_sse2(compptr->dct_table, coef_block, output_buf,
                           output_col);
   else if (simd_support & JSIMD_MMX)

@@ -953,6 +953,11 @@ EXTERN(void) jsimd_idct_islow_sse2
         (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);
 
+extern const int jconst_idct_islow_avx2[];
+EXTERN(void) jsimd_idct_islow_avx2
+        (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+         JDIMENSION output_col);
+
 EXTERN(void) jsimd_idct_islow_neon
         (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
          JDIMENSION output_col);

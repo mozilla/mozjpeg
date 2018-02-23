@@ -833,7 +833,7 @@ jsimd_can_fdct_islow (void)
   if (sizeof(DCTELEM) != 2)
     return 0;
 
-  if ((simd_support & JSIMD_AVX2) && IS_ALIGNED_SSE(jconst_fdct_islow_avx2))
+  if ((simd_support & JSIMD_AVX2) && IS_ALIGNED_AVX(jconst_fdct_islow_avx2))
     return 1;
   if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_fdct_islow_sse2))
     return 1;

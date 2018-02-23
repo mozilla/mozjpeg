@@ -107,6 +107,10 @@ actual security issues, should they arise in the future.
 algorithm that caused incorrect dithering in the output image.  This algorithm
 now produces bitwise-identical results to the unmerged algorithms.
 
+12. The SIMD function symbols for x86[-64]/ELF, MIPS/ELF, and iOS/ARM[64]
+builds are now private.  This prevents those symbols from being exposed in
+applications or shared libraries that link statically with libjpeg-turbo.
+
 
 1.5.3
 =====

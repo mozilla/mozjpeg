@@ -286,6 +286,7 @@ EXTN(jsimd_idct_islow_avx2):
     push        rbp
     mov         rax, rsp                     ; rax = original rbp
     mov         rbp, rsp                     ; rbp = aligned rbp
+    push_xmm    4
     collect_args 4
 
     ; ---- Pass 1: process columns.
@@ -409,6 +410,7 @@ EXTN(jsimd_idct_islow_avx2):
     movq        XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE], xmm7
 
     uncollect_args 4
+    pop_xmm     4
     pop         rbp
     ret
 

@@ -195,11 +195,11 @@ EXTN(jsimd_huff_encode_one_block_sse2):
         lea     rsp, [t2]
         collect_args
 %ifdef WIN64
-        movaps  XMMWORD [rsp-1*SIZEOF_XMMWORD], xmm8
-        movaps  XMMWORD [rsp-2*SIZEOF_XMMWORD], xmm9
-        movaps  XMMWORD [rsp-3*SIZEOF_XMMWORD], xmm10
-        movaps  XMMWORD [rsp-4*SIZEOF_XMMWORD], xmm11
         sub     rsp, 4*SIZEOF_XMMWORD
+        movaps  XMMWORD [rsp+0*SIZEOF_XMMWORD], xmm8
+        movaps  XMMWORD [rsp+1*SIZEOF_XMMWORD], xmm9
+        movaps  XMMWORD [rsp+2*SIZEOF_XMMWORD], xmm10
+        movaps  XMMWORD [rsp+3*SIZEOF_XMMWORD], xmm11
 %endif
         push rbx
 
@@ -343,10 +343,10 @@ EXTN(jsimd_huff_encode_one_block_sse2):
 
         pop rbx
 %ifdef WIN64
-        movaps  xmm11, XMMWORD [rsp+0*SIZEOF_XMMWORD]
-        movaps  xmm10, XMMWORD [rsp+1*SIZEOF_XMMWORD]
-        movaps  xmm9, XMMWORD [rsp+2*SIZEOF_XMMWORD]
-        movaps  xmm8, XMMWORD [rsp+3*SIZEOF_XMMWORD]
+        movaps  xmm8, XMMWORD [rsp+0*SIZEOF_XMMWORD]
+        movaps  xmm9, XMMWORD [rsp+1*SIZEOF_XMMWORD]
+        movaps  xmm10, XMMWORD [rsp+2*SIZEOF_XMMWORD]
+        movaps  xmm11, XMMWORD [rsp+3*SIZEOF_XMMWORD]
         add     rsp, 4*SIZEOF_XMMWORD
 %endif
         uncollect_args

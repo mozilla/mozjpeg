@@ -435,7 +435,7 @@ Same as above, but replace the first line with:
 
     IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
     IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-    export CFLAGS="--mfloat-abi=softfp -arch armv7 -miphoneos-version-min=3.0"
+    export CFLAGS="-mfloat-abi=softfp -arch armv7 -miphoneos-version-min=3.0"
     export ASMFLAGS="-no-integrated-as"
 
     cat <<EOF >toolchain.cmake

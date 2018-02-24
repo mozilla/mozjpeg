@@ -318,7 +318,7 @@ EXTN(jsimd_idct_islow_avx2):
 
     vpunpcklwd  xmm4, xmm5, xmm5        ; xmm4=(00 00 01 01 02 02 03 03)
     vpunpckhwd  xmm5, xmm5, xmm5        ; xmm5=(04 04 05 05 06 06 07 07)
-    vinserti128 ymm4, xmm5, 1
+    vinserti128 ymm4, ymm4, xmm5, 1
 
     vpshufd     ymm0, ymm4, 0x00        ; ymm0=col0_4=(00 00 00 00 00 00 00 00  04 04 04 04 04 04 04 04)
     vpshufd     ymm1, ymm4, 0x55        ; ymm1=col1_5=(01 01 01 01 01 01 01 01  05 05 05 05 05 05 05 05)

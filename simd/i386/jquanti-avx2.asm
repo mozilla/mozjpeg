@@ -71,10 +71,10 @@ EXTN(jsimd_convsamp_avx2):
     movq        xmm6, XMM_MMWORD [ebx+eax*SIZEOF_JSAMPLE]
     movq        xmm7, XMM_MMWORD [edx+eax*SIZEOF_JSAMPLE]
 
-    vinserti128 ymm0, xmm1, 1
-    vinserti128 ymm2, xmm3, 1
-    vinserti128 ymm4, xmm5, 1
-    vinserti128 ymm6, xmm7, 1
+    vinserti128 ymm0, ymm0, xmm1, 1
+    vinserti128 ymm2, ymm2, xmm3, 1
+    vinserti128 ymm4, ymm4, xmm5, 1
+    vinserti128 ymm6, ymm6, xmm7, 1
 
     vpxor       ymm1, ymm1, ymm1        ; ymm1=(all 0's)
     vpunpcklbw  ymm0, ymm0, ymm1

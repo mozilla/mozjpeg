@@ -194,11 +194,17 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 %ifdef ELF      ; ----(nasm -felf[64] -DELF ...)--------
 %define GLOBAL_FUNCTION(name)  global EXTN(name):function hidden
 %define GLOBAL_DATA(name)      global EXTN(name):data hidden
-;%elifdef MACHO  ; ----(nasm -fmacho -DMACHO ...)--------
-;%define GLOBAL_FUNCTION(name)  global EXTN(name):private_extern
-;%define GLOBAL_DATA(name)      global EXTN(name):private_extern
-%else
+%elifdef MACHO  ; ----(nasm -fmacho -DMACHO ...)--------
+%ifdef __YASM_VER__
+%define GLOBAL_FUNCTION(name)  global EXTN(name):private_extern
+%define GLOBAL_DATA(name)      global EXTN(name):private_extern
+%endif
+%endif
+
+%ifndef GLOBAL_FUNCTION
 %define GLOBAL_FUNCTION(name)  global EXTN(name)
+%endif
+%ifndef GLOBAL_DATA
 %define GLOBAL_DATA(name)      global EXTN(name)
 %endif
 

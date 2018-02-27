@@ -18,6 +18,9 @@ Build Requirements
     when building macho64 objects.)  NASM or YASM can be obtained from
     [MacPorts](http://www.macports.org/) or [Homebrew](http://brew.sh/).
   * If using YASM, 1.2.0 or later is required.
+     - NOTE: Currently, if it is desirable to hide the SIMD function symbols in
+       Mac executables or shared libraries that statically link with
+       libjpeg-turbo, then YASM must be used when building libjpeg-turbo.
   * If building on Windows, **nasm.exe**/**yasm.exe** should be in your `PATH`.
 
   The binary RPMs released by the NASM project do not work on older Linux

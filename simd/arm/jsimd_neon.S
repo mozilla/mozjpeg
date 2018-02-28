@@ -2,8 +2,8 @@
  * ARMv7 NEON optimizations for libjpeg-turbo
  *
  * Copyright (C) 2009-2011, Nokia Corporation and/or its subsidiary(-ies).
- * All Rights Reserved.
- * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
+ *                          All Rights Reserved.
+ * Author:  Siarhei Siamashka <siarhei.siamashka@nokia.com>
  * Copyright (C) 2014, Siarhei Siamashka.  All Rights Reserved.
  * Copyright (C) 2014, Linaro Limited.  All Rights Reserved.
  * Copyright (C) 2015, D. R. Commander.  All Rights Reserved.

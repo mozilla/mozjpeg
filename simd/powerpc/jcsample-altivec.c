@@ -29,11 +29,11 @@
 void
 jsimd_h2v1_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
                                JDIMENSION v_samp_factor,
-                               JDIMENSION width_blocks,
+                               JDIMENSION width_in_blocks,
                                JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int outrow, outcol;
-  JDIMENSION output_cols = width_blocks * DCTSIZE;
+  JDIMENSION output_cols = width_in_blocks * DCTSIZE;
   JSAMPROW inptr, outptr;
 
   __vector unsigned char this0, next0, out;
@@ -85,11 +85,11 @@ jsimd_h2v1_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
 void
 jsimd_h2v2_downsample_altivec (JDIMENSION image_width, int max_v_samp_factor,
                                JDIMENSION v_samp_factor,
-                               JDIMENSION width_blocks,
+                               JDIMENSION width_in_blocks,
                                JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int inrow, outrow, outcol;
-  JDIMENSION output_cols = width_blocks * DCTSIZE;
+  JDIMENSION output_cols = width_in_blocks * DCTSIZE;
   JSAMPROW inptr0, inptr1, outptr;
 
   __vector unsigned char this0, next0, this1, next1, out;

@@ -23,10 +23,11 @@
 /* This file is included by jdmerge-altivec.c */
 
 
-void jsimd_h2v1_merged_upsample_altivec (JDIMENSION output_width,
-                                         JSAMPIMAGE input_buf,
-                                         JDIMENSION in_row_group_ctr,
-                                         JSAMPARRAY output_buf)
+void
+jsimd_h2v1_merged_upsample_altivec (JDIMENSION output_width,
+                                    JSAMPIMAGE input_buf,
+                                    JDIMENSION in_row_group_ctr,
+                                    JSAMPARRAY output_buf)
 {
   JSAMPROW outptr, inptr0, inptr1, inptr2;
   int pitch = output_width * RGB_PIXELSIZE, num_cols, yloop;
@@ -299,10 +300,11 @@ void jsimd_h2v1_merged_upsample_altivec (JDIMENSION output_width,
 }
 
 
-void jsimd_h2v2_merged_upsample_altivec (JDIMENSION output_width,
-                                         JSAMPIMAGE input_buf,
-                                         JDIMENSION in_row_group_ctr,
-                                         JSAMPARRAY output_buf)
+void
+jsimd_h2v2_merged_upsample_altivec (JDIMENSION output_width,
+                                    JSAMPIMAGE input_buf,
+                                    JDIMENSION in_row_group_ctr,
+                                    JSAMPARRAY output_buf)
 {
   JSAMPROW inptr, outptr;
 

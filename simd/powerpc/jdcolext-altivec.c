@@ -23,9 +23,10 @@
 /* This file is included by jdcolor-altivec.c */
 
 
-void jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
-                                    JDIMENSION input_row,
-                                    JSAMPARRAY output_buf, int num_rows)
+void
+jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
+                               JDIMENSION input_row, JSAMPARRAY output_buf,
+                               int num_rows)
 {
   JSAMPROW outptr, inptr0, inptr1, inptr2;
   int pitch = out_width * RGB_PIXELSIZE, num_cols;

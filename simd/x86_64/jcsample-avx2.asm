@@ -29,14 +29,15 @@
 ;
 ; GLOBAL(void)
 ; jsimd_h2v1_downsample_avx2 (JDIMENSION image_width, int max_v_samp_factor,
-;                             JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+;                             JDIMENSION v_samp_factor,
+;                             JDIMENSION width_in_blocks,
 ;                             JSAMPARRAY input_data, JSAMPARRAY output_data);
 ;
 
 ; r10d = JDIMENSION image_width
 ; r11 = int max_v_samp_factor
 ; r12d = JDIMENSION v_samp_factor
-; r13d = JDIMENSION width_blocks
+; r13d = JDIMENSION width_in_blocks
 ; r14 = JSAMPARRAY input_data
 ; r15 = JSAMPARRAY output_data
 
@@ -190,14 +191,15 @@ EXTN(jsimd_h2v1_downsample_avx2):
 ;
 ; GLOBAL(void)
 ; jsimd_h2v2_downsample_avx2 (JDIMENSION image_width, int max_v_samp_factor,
-;                             JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+;                             JDIMENSION v_samp_factor,
+;                             JDIMENSION width_in_blocks,
 ;                             JSAMPARRAY input_data, JSAMPARRAY output_data);
 ;
 
 ; r10d = JDIMENSION image_width
 ; r11 = int max_v_samp_factor
 ; r12d = JDIMENSION v_samp_factor
-; r13d = JDIMENSION width_blocks
+; r13d = JDIMENSION width_in_blocks
 ; r14 = JSAMPARRAY input_data
 ; r15 = JSAMPARRAY output_data
 

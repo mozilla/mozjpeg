@@ -2,10 +2,11 @@
  * MIPS DSPr2 optimizations for libjpeg-turbo
  *
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
- * All Rights Reserved.
- * Authors:  Teodora Novkovic (teodora.novkovic@imgtec.com)
- *           Darko Laus       (darko.laus@imgtec.com)
+ *                          All Rights Reserved.
+ * Authors:  Teodora Novkovic <teodora.novkovic@imgtec.com>
+ *           Darko Laus       <darko.laus@imgtec.com>
  * Copyright (C) 2015, D. R. Commander.  All Rights Reserved.
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
@@ -26,7 +27,7 @@
 #include "jsimd_dspr2_asm.h"
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_c_null_convert_mips_dspr2)
+LEAF_DSPR2(jsimd_c_null_convert_dspr2)
 /*
  * a0     - cinfo->image_width
  * a1     - input_buf
@@ -127,21 +128,21 @@ LEAF_MIPS_DSPR2(jsimd_c_null_convert_mips_dspr2)
     j         ra
      nop
 
-END(jsimd_c_null_convert_mips_dspr2)
+END(jsimd_c_null_convert_dspr2)
 
 /*****************************************************************************/
 /*
- * jsimd_extrgb_ycc_convert_mips_dspr2
- * jsimd_extbgr_ycc_convert_mips_dspr2
- * jsimd_extrgbx_ycc_convert_mips_dspr2
- * jsimd_extbgrx_ycc_convert_mips_dspr2
- * jsimd_extxbgr_ycc_convert_mips_dspr2
- * jsimd_extxrgb_ycc_convert_mips_dspr2
+ * jsimd_extrgb_ycc_convert_dspr2
+ * jsimd_extbgr_ycc_convert_dspr2
+ * jsimd_extrgbx_ycc_convert_dspr2
+ * jsimd_extbgrx_ycc_convert_dspr2
+ * jsimd_extxbgr_ycc_convert_dspr2
+ * jsimd_extxrgb_ycc_convert_dspr2
  *
  * Colorspace conversion RGB -> YCbCr
  */
 
-.macro GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 colorid, pixel_size, r_offs, g_offs, b_offs
+.macro GENERATE_JSIMD_RGB_YCC_CONVERT_DSPR2 colorid, pixel_size, r_offs, g_offs, b_offs
 
 .macro DO_RGB_TO_YCC r,    \
                      g,    \
@@ -153,7 +154,7 @@ END(jsimd_c_null_convert_mips_dspr2)
     addiu   \inptr, \pixel_size
 .endm
 
-LEAF_MIPS_DSPR2(jsimd_\colorid\()_ycc_convert_mips_dspr2)
+LEAF_DSPR2(jsimd_\colorid\()_ycc_convert_dspr2)
 /*
  * a0     - cinfo->image_width
  * a1     - input_buf
@@ -221,33 +222,33 @@ LEAF_MIPS_DSPR2(jsimd_\colorid\()_ycc_convert_mips_dspr2)
 
     j ra
      nop
-END(jsimd_\colorid\()_ycc_convert_mips_dspr2)
+END(jsimd_\colorid\()_ycc_convert_dspr2)
 
 .purgem DO_RGB_TO_YCC
 
 .endm
 
-/*------------------------------------------id -- pix R  G  B */
-GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 extrgb,  3, 0, 1, 2
-GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 extbgr,  3, 2, 1, 0
-GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 extrgbx, 4, 0, 1, 2
-GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 extbgrx, 4, 2, 1, 0
-GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 extxbgr, 4, 3, 2, 1
-GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3
+/*-------------------------------------id -- pix R  G  B */
+GENERATE_JSIMD_RGB_YCC_CONVERT_DSPR2 extrgb,  3, 0, 1, 2
+GENERATE_JSIMD_RGB_YCC_CONVERT_DSPR2 extbgr,  3, 2, 1, 0
+GENERATE_JSIMD_RGB_YCC_CONVERT_DSPR2 extrgbx, 4, 0, 1, 2
+GENERATE_JSIMD_RGB_YCC_CONVERT_DSPR2 extbgrx, 4, 2, 1, 0
+GENERATE_JSIMD_RGB_YCC_CONVERT_DSPR2 extxbgr, 4, 3, 2, 1
+GENERATE_JSIMD_RGB_YCC_CONVERT_DSPR2 extxrgb, 4, 1, 2, 3
 
 /*****************************************************************************/
 /*
- * jsimd_ycc_extrgb_convert_mips_dspr2
- * jsimd_ycc_extbgr_convert_mips_dspr2
- * jsimd_ycc_extrgbx_convert_mips_dspr2
- * jsimd_ycc_extbgrx_convert_mips_dspr2
- * jsimd_ycc_extxbgr_convert_mips_dspr2
- * jsimd_ycc_extxrgb_convert_mips_dspr2
+ * jsimd_ycc_extrgb_convert_dspr2
+ * jsimd_ycc_extbgr_convert_dspr2
+ * jsimd_ycc_extrgbx_convert_dspr2
+ * jsimd_ycc_extbgrx_convert_dspr2
+ * jsimd_ycc_extxbgr_convert_dspr2
+ * jsimd_ycc_extxrgb_convert_dspr2
  *
  * Colorspace conversion YCbCr -> RGB
  */
 
-.macro GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 colorid, pixel_size, r_offs, g_offs, b_offs, a_offs
+.macro GENERATE_JSIMD_YCC_RGB_CONVERT_DSPR2 colorid, pixel_size, r_offs, g_offs, b_offs, a_offs
 
 .macro STORE_YCC_TO_RGB  scratch0 \
                          scratch1 \
@@ -263,7 +264,7 @@ GENERATE_JSIMD_RGB_YCC_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3
     addiu    \outptr, \pixel_size
 .endm
 
-LEAF_MIPS_DSPR2(jsimd_ycc_\colorid\()_convert_mips_dspr2)
+LEAF_DSPR2(jsimd_ycc_\colorid\()_convert_dspr2)
 /*
  * a0     - cinfo->image_width
  * a1     - input_buf
@@ -338,33 +339,33 @@ LEAF_MIPS_DSPR2(jsimd_ycc_\colorid\()_convert_mips_dspr2)
 
     j ra
      nop
-END(jsimd_ycc_\colorid\()_convert_mips_dspr2)
+END(jsimd_ycc_\colorid\()_convert_dspr2)
 
 .purgem STORE_YCC_TO_RGB
 
 .endm
 
-/*------------------------------------------id -- pix R  G  B  A */
-GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extrgb,  3, 0, 1, 2, 3
-GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extbgr,  3, 2, 1, 0, 3
-GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extrgbx, 4, 0, 1, 2, 3
-GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extbgrx, 4, 2, 1, 0, 3
-GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extxbgr, 4, 3, 2, 1, 0
-GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3, 0
+/*-------------------------------------id -- pix R  G  B  A */
+GENERATE_JSIMD_YCC_RGB_CONVERT_DSPR2 extrgb,  3, 0, 1, 2, 3
+GENERATE_JSIMD_YCC_RGB_CONVERT_DSPR2 extbgr,  3, 2, 1, 0, 3
+GENERATE_JSIMD_YCC_RGB_CONVERT_DSPR2 extrgbx, 4, 0, 1, 2, 3
+GENERATE_JSIMD_YCC_RGB_CONVERT_DSPR2 extbgrx, 4, 2, 1, 0, 3
+GENERATE_JSIMD_YCC_RGB_CONVERT_DSPR2 extxbgr, 4, 3, 2, 1, 0
+GENERATE_JSIMD_YCC_RGB_CONVERT_DSPR2 extxrgb, 4, 1, 2, 3, 0
 
 /*****************************************************************************/
 /*
- * jsimd_extrgb_gray_convert_mips_dspr2
- * jsimd_extbgr_gray_convert_mips_dspr2
- * jsimd_extrgbx_gray_convert_mips_dspr2
- * jsimd_extbgrx_gray_convert_mips_dspr2
- * jsimd_extxbgr_gray_convert_mips_dspr2
- * jsimd_extxrgb_gray_convert_mips_dspr2
+ * jsimd_extrgb_gray_convert_dspr2
+ * jsimd_extbgr_gray_convert_dspr2
+ * jsimd_extrgbx_gray_convert_dspr2
+ * jsimd_extbgrx_gray_convert_dspr2
+ * jsimd_extxbgr_gray_convert_dspr2
+ * jsimd_extxrgb_gray_convert_dspr2
  *
  * Colorspace conversion RGB -> GRAY
  */
 
-.macro GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 colorid, pixel_size, r_offs, g_offs, b_offs
+.macro GENERATE_JSIMD_RGB_GRAY_CONVERT_DSPR2 colorid, pixel_size, r_offs, g_offs, b_offs
 
 .macro DO_RGB_TO_GRAY r,    \
                       g,    \
@@ -376,7 +377,7 @@ GENERATE_JSIMD_YCC_RGB_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3, 0
     addiu   \inptr, \pixel_size
 .endm
 
-LEAF_MIPS_DSPR2(jsimd_\colorid\()_gray_convert_mips_dspr2)
+LEAF_DSPR2(jsimd_\colorid\()_gray_convert_dspr2)
 /*
  * a0     - cinfo->image_width
  * a1     - input_buf
@@ -467,41 +468,41 @@ LEAF_MIPS_DSPR2(jsimd_\colorid\()_gray_convert_mips_dspr2)
 
     j ra
      nop
-END(jsimd_\colorid\()_gray_convert_mips_dspr2)
+END(jsimd_\colorid\()_gray_convert_dspr2)
 
 .purgem DO_RGB_TO_GRAY
 
 .endm
 
-/*------------------------------------------id --  pix R  G  B */
-GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extrgb,  3, 0, 1, 2
-GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extbgr,  3, 2, 1, 0
-GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extrgbx, 4, 0, 1, 2
-GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extbgrx, 4, 2, 1, 0
-GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxbgr, 4, 3, 2, 1
-GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3
+/*-------------------------------------id --  pix R  G  B */
+GENERATE_JSIMD_RGB_GRAY_CONVERT_DSPR2 extrgb,  3, 0, 1, 2
+GENERATE_JSIMD_RGB_GRAY_CONVERT_DSPR2 extbgr,  3, 2, 1, 0
+GENERATE_JSIMD_RGB_GRAY_CONVERT_DSPR2 extrgbx, 4, 0, 1, 2
+GENERATE_JSIMD_RGB_GRAY_CONVERT_DSPR2 extbgrx, 4, 2, 1, 0
+GENERATE_JSIMD_RGB_GRAY_CONVERT_DSPR2 extxbgr, 4, 3, 2, 1
+GENERATE_JSIMD_RGB_GRAY_CONVERT_DSPR2 extxrgb, 4, 1, 2, 3
 /*****************************************************************************/
 /*
- * jsimd_h2v2_merged_upsample_mips_dspr2
- * jsimd_h2v2_extrgb_merged_upsample_mips_dspr2
- * jsimd_h2v2_extrgbx_merged_upsample_mips_dspr2
- * jsimd_h2v2_extbgr_merged_upsample_mips_dspr2
- * jsimd_h2v2_extbgrx_merged_upsample_mips_dspr2
- * jsimd_h2v2_extxbgr_merged_upsample_mips_dspr2
- * jsimd_h2v2_extxrgb_merged_upsample_mips_dspr2
+ * jsimd_h2v2_merged_upsample_dspr2
+ * jsimd_h2v2_extrgb_merged_upsample_dspr2
+ * jsimd_h2v2_extrgbx_merged_upsample_dspr2
+ * jsimd_h2v2_extbgr_merged_upsample_dspr2
+ * jsimd_h2v2_extbgrx_merged_upsample_dspr2
+ * jsimd_h2v2_extxbgr_merged_upsample_dspr2
+ * jsimd_h2v2_extxrgb_merged_upsample_dspr2
  *
  * Merged h2v2 upsample routines
  */
-.macro GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 colorid,    \
-                                                pixel_size, \
-                                                r1_offs,    \
-                                                g1_offs,    \
-                                                b1_offs,    \
-                                                a1_offs,    \
-                                                r2_offs,    \
-                                                g2_offs,    \
-                                                b2_offs,    \
-                                                a2_offs
+.macro GENERATE_H2V2_MERGED_UPSAMPLE_DSPR2 colorid,    \
+                                           pixel_size, \
+                                           r1_offs,    \
+                                           g1_offs,    \
+                                           b1_offs,    \
+                                           a1_offs,    \
+                                           r2_offs,    \
+                                           g2_offs,    \
+                                           b2_offs,    \
+                                           a2_offs
 
 .macro STORE_H2V2_2_PIXELS  scratch0 \
                             scratch1 \
@@ -538,7 +539,7 @@ GENERATE_JSIMD_RGB_GRAY_CONVERT_MIPS_DSPR2 extxrgb, 4, 1, 2, 3
 .endif
 .endm
 
-LEAF_MIPS_DSPR2(jsimd_h2v2_\colorid\()_merged_upsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v2_\colorid\()_merged_upsample_dspr2)
 /*
  * a0     - cinfo->output_width
  * a1     - input_buf
@@ -679,42 +680,42 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_\colorid\()_merged_upsample_mips_dspr2)
     j           ra
      nop
 
-END(jsimd_h2v2_\colorid\()_merged_upsample_mips_dspr2)
+END(jsimd_h2v2_\colorid\()_merged_upsample_dspr2)
 
 .purgem STORE_H2V2_1_PIXEL
 .purgem STORE_H2V2_2_PIXELS
 .endm
 
-/*-----------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
-GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
-GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
-GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
-GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
-GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
-GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
+/*------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
+GENERATE_H2V2_MERGED_UPSAMPLE_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
+GENERATE_H2V2_MERGED_UPSAMPLE_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
+GENERATE_H2V2_MERGED_UPSAMPLE_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
+GENERATE_H2V2_MERGED_UPSAMPLE_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
+GENERATE_H2V2_MERGED_UPSAMPLE_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
+GENERATE_H2V2_MERGED_UPSAMPLE_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
 /*****************************************************************************/
 /*
- * jsimd_h2v1_merged_upsample_mips_dspr2
- * jsimd_h2v1_extrgb_merged_upsample_mips_dspr2
- * jsimd_h2v1_extrgbx_merged_upsample_mips_dspr2
- * jsimd_h2v1_extbgr_merged_upsample_mips_dspr2
- * jsimd_h2v1_extbgrx_merged_upsample_mips_dspr2
- * jsimd_h2v1_extxbgr_merged_upsample_mips_dspr2
- * jsimd_h2v1_extxrgb_merged_upsample_mips_dspr2
+ * jsimd_h2v1_merged_upsample_dspr2
+ * jsimd_h2v1_extrgb_merged_upsample_dspr2
+ * jsimd_h2v1_extrgbx_merged_upsample_dspr2
+ * jsimd_h2v1_extbgr_merged_upsample_dspr2
+ * jsimd_h2v1_extbgrx_merged_upsample_dspr2
+ * jsimd_h2v1_extxbgr_merged_upsample_dspr2
+ * jsimd_h2v1_extxrgb_merged_upsample_dspr2
  *
  * Merged h2v1 upsample routines
  */
 
-.macro GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 colorid,    \
-                                                pixel_size, \
-                                                r1_offs,    \
-                                                g1_offs,    \
-                                                b1_offs,    \
-                                                a1_offs,    \
-                                                r2_offs,    \
-                                                g2_offs,    \
-                                                b2_offs,    \
-                                                a2_offs
+.macro GENERATE_H2V1_MERGED_UPSAMPLE_DSPR2 colorid,    \
+                                           pixel_size, \
+                                           r1_offs,    \
+                                           g1_offs,    \
+                                           b1_offs,    \
+                                           a1_offs,    \
+                                           r2_offs,    \
+                                           g2_offs,    \
+                                           b2_offs,    \
+                                           a2_offs
 
 .macro STORE_H2V1_2_PIXELS  scratch0 \
                             scratch1 \
@@ -750,7 +751,7 @@ GENERATE_H2V2_MERGED_UPSAMPLE_MIPS_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
 .endif
 .endm
 
-LEAF_MIPS_DSPR2(jsimd_h2v1_\colorid\()_merged_upsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v1_\colorid\()_merged_upsample_dspr2)
 /*
  * a0     - cinfo->output_width
  * a1     - input_buf
@@ -854,26 +855,26 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_\colorid\()_merged_upsample_mips_dspr2)
     j            ra
      nop
 
-END(jsimd_h2v1_\colorid\()_merged_upsample_mips_dspr2)
+END(jsimd_h2v1_\colorid\()_merged_upsample_dspr2)
 
 .purgem STORE_H2V1_1_PIXEL
 .purgem STORE_H2V1_2_PIXELS
 .endm
 
-/*-----------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
-GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
-GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
-GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
-GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
-GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
-GENERATE_H2V1_MERGED_UPSAMPLE_MIPS_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
+/*------------------------------------id -- pix R1 G1 B1 A1 R2 G2 B2 A2 */
+GENERATE_H2V1_MERGED_UPSAMPLE_DSPR2 extrgb,  6, 0, 1, 2, 6, 3, 4, 5, 6
+GENERATE_H2V1_MERGED_UPSAMPLE_DSPR2 extbgr,  6, 2, 1, 0, 3, 5, 4, 3, 6
+GENERATE_H2V1_MERGED_UPSAMPLE_DSPR2 extrgbx, 8, 0, 1, 2, 3, 4, 5, 6, 7
+GENERATE_H2V1_MERGED_UPSAMPLE_DSPR2 extbgrx, 8, 2, 1, 0, 3, 6, 5, 4, 7
+GENERATE_H2V1_MERGED_UPSAMPLE_DSPR2 extxbgr, 8, 3, 2, 1, 0, 7, 6, 5, 4
+GENERATE_H2V1_MERGED_UPSAMPLE_DSPR2 extxrgb, 8, 1, 2, 3, 0, 5, 6, 7, 4
 /*****************************************************************************/
 /*
- * jsimd_h2v2_fancy_upsample_mips_dspr2
+ * jsimd_h2v2_fancy_upsample_dspr2
  *
  * Fancy processing for the common case of 2:1 horizontal and 2:1 vertical.
  */
-LEAF_MIPS_DSPR2(jsimd_h2v2_fancy_upsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v2_fancy_upsample_dspr2)
 /*
  * a0     - cinfo->max_v_samp_factor
  * a1     - downsampled_width
@@ -998,10 +999,10 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_fancy_upsample_mips_dspr2)
 
     j ra
      nop
-END(jsimd_h2v2_fancy_upsample_mips_dspr2)
+END(jsimd_h2v2_fancy_upsample_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v1_fancy_upsample_dspr2)
 /*
  * a0     - cinfo->max_v_samp_factor
  * a1     - downsampled_width
@@ -1108,10 +1109,10 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_fancy_upsample_mips_dspr2)
 
     j              ra
      nop
-END(jsimd_h2v1_fancy_upsample_mips_dspr2)
+END(jsimd_h2v1_fancy_upsample_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_h2v1_downsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v1_downsample_dspr2)
 /*
  * a0     - cinfo->image_width
  * a1     - cinfo->max_v_samp_factor
@@ -1203,10 +1204,10 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_downsample_mips_dspr2)
 
     j           ra
     nop
-END(jsimd_h2v1_downsample_mips_dspr2)
+END(jsimd_h2v1_downsample_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_h2v2_downsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v2_downsample_dspr2)
 
 /*
  * a0     - cinfo->image_width
@@ -1315,9 +1316,10 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_downsample_mips_dspr2)
 
     j            ra
      nop
-END(jsimd_h2v2_downsample_mips_dspr2)
+END(jsimd_h2v2_downsample_dspr2)
+
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_h2v2_smooth_downsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v2_smooth_downsample_dspr2)
 /*
  * a0     - input_data
  * a1     - output_data
@@ -1615,10 +1617,10 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_smooth_downsample_mips_dspr2)
     j           ra
      nop
 
-END(jsimd_h2v2_smooth_downsample_mips_dspr2)
+END(jsimd_h2v2_smooth_downsample_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_int_upsample_mips_dspr2)
+LEAF_DSPR2(jsimd_int_upsample_dspr2)
 /*
  * a0     - upsample->h_expand[compptr->component_index]
  * a1     - upsample->v_expand[compptr->component_index]
@@ -1702,10 +1704,10 @@ LEAF_MIPS_DSPR2(jsimd_int_upsample_mips_dspr2)
 
     j       ra
      nop
-END(jsimd_int_upsample_mips_dspr2)
+END(jsimd_int_upsample_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v1_upsample_dspr2)
 /*
  * a0     - cinfo->max_v_samp_factor
  * a1     - cinfo->output_width
@@ -1761,10 +1763,10 @@ LEAF_MIPS_DSPR2(jsimd_h2v1_upsample_mips_dspr2)
 4:
     j       ra
      nop
-END(jsimd_h2v1_upsample_mips_dspr2)
+END(jsimd_h2v1_upsample_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
+LEAF_DSPR2(jsimd_h2v2_upsample_dspr2)
 /*
  * a0     - cinfo->max_v_samp_factor
  * a1     - cinfo->output_width
@@ -1845,10 +1847,10 @@ LEAF_MIPS_DSPR2(jsimd_h2v2_upsample_mips_dspr2)
 7:
     j       ra
      nop
-END(jsimd_h2v2_upsample_mips_dspr2)
+END(jsimd_h2v2_upsample_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_islow_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_islow_dspr2)
 /*
  * a0     - coef_block
  * a1     - compptr->dcttable
@@ -2125,10 +2127,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_islow_mips_dspr2)
     j         ra
      nop
 
-END(jsimd_idct_islow_mips_dspr2)
+END(jsimd_idct_islow_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_ifast_cols_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_ifast_cols_dspr2)
 /*
  * a0     - inptr
  * a1     - quantptr
@@ -2266,10 +2268,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_ifast_cols_mips_dspr2)
     j              ra
      nop
 
-END(jsimd_idct_ifast_cols_mips_dspr2)
+END(jsimd_idct_ifast_cols_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_ifast_rows_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_ifast_rows_dspr2)
 /*
  * a0     - wsptr
  * a1     - output_buf
@@ -2417,10 +2419,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_ifast_rows_mips_dspr2)
     j             ra
      nop
 
-END(jsimd_idct_ifast_rows_mips_dspr2)
+END(jsimd_idct_ifast_rows_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_fdct_islow_mips_dspr2)
+LEAF_DSPR2(jsimd_fdct_islow_dspr2)
 /*
  * a0     - data
  */
@@ -2581,10 +2583,10 @@ LEAF_MIPS_DSPR2(jsimd_fdct_islow_mips_dspr2)
     jr       ra
      nop
 
-END(jsimd_fdct_islow_mips_dspr2)
+END(jsimd_fdct_islow_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_fdct_ifast_mips_dspr2)
+LEAF_DSPR2(jsimd_fdct_ifast_dspr2)
 /*
  * a0     - data
  */
@@ -2726,10 +2728,10 @@ LEAF_MIPS_DSPR2(jsimd_fdct_ifast_mips_dspr2)
 
     j            ra
      nop
-END(jsimd_fdct_ifast_mips_dspr2)
+END(jsimd_fdct_ifast_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_quantize_mips_dspr2)
+LEAF_DSPR2(jsimd_quantize_dspr2)
 /*
  * a0     - coef_block
  * a1     - divisors
@@ -2826,10 +2828,10 @@ LEAF_MIPS_DSPR2(jsimd_quantize_mips_dspr2)
     j       ra
      nop
 
-END(jsimd_quantize_mips_dspr2)
+END(jsimd_quantize_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_quantize_float_mips_dspr2)
+LEAF_DSPR2(jsimd_quantize_float_dspr2)
 /*
  * a0     - coef_block
  * a1     - divisors
@@ -2907,9 +2909,10 @@ LEAF_MIPS_DSPR2(jsimd_quantize_float_mips_dspr2)
     j          ra
      nop
 
-END(jsimd_quantize_float_mips_dspr2)
+END(jsimd_quantize_float_dspr2)
+
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_2x2_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_2x2_dspr2)
 /*
  * a0     - compptr->dct_table
  * a1     - coef_block
@@ -3125,10 +3128,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_2x2_mips_dspr2)
     j         ra
      nop
 
-END(jsimd_idct_2x2_mips_dspr2)
+END(jsimd_idct_2x2_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_4x4_dspr2)
 /*
  * a0     - compptr->dct_table
  * a1     - coef_block
@@ -3485,10 +3488,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_4x4_mips_dspr2)
 
     j         ra
      nop
-END(jsimd_idct_4x4_mips_dspr2)
+END(jsimd_idct_4x4_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_6x6_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_6x6_dspr2)
 /*
  * a0     - compptr->dct_table
  * a1     - coef_block
@@ -3640,10 +3643,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_6x6_mips_dspr2)
     j         ra
      nop
 
-END(jsimd_idct_6x6_mips_dspr2)
+END(jsimd_idct_6x6_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass1_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_12x12_pass1_dspr2)
 /*
  * a0     - compptr->dct_table
  * a1     - coef_block
@@ -3798,10 +3801,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass1_mips_dspr2)
     j          ra
      nop
 
-END(jsimd_idct_12x12_pass1_mips_dspr2)
+END(jsimd_idct_12x12_pass1_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass2_mips_dspr2)
+LEAF_DSPR2(jsimd_idct_12x12_pass2_dspr2)
 /*
  * a0     - workspace
  * a1     - output
@@ -3973,10 +3976,10 @@ LEAF_MIPS_DSPR2(jsimd_idct_12x12_pass2_mips_dspr2)
     jr        ra
      nop
 
-END(jsimd_idct_12x12_pass2_mips_dspr2)
+END(jsimd_idct_12x12_pass2_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_convsamp_mips_dspr2)
+LEAF_DSPR2(jsimd_convsamp_dspr2)
 /*
  * a0     - sample_data
  * a1     - start_col
@@ -4122,10 +4125,10 @@ LEAF_MIPS_DSPR2(jsimd_convsamp_mips_dspr2)
     j              ra
      nop
 
-END(jsimd_convsamp_mips_dspr2)
+END(jsimd_convsamp_dspr2)
 
 /*****************************************************************************/
-LEAF_MIPS_DSPR2(jsimd_convsamp_float_mips_dspr2)
+LEAF_DSPR2(jsimd_convsamp_float_dspr2)
 /*
  * a0     - sample_data
  * a1     - start_col
@@ -4481,6 +4484,6 @@ LEAF_MIPS_DSPR2(jsimd_convsamp_float_mips_dspr2)
     j        ra
      nop
 
-END(jsimd_convsamp_float_mips_dspr2)
+END(jsimd_convsamp_float_dspr2)
 
 /*****************************************************************************/

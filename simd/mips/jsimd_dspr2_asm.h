@@ -112,9 +112,9 @@ symbol:         .frame  sp, 0, ra;                      \
                 .set    noat;
 
 /*
- * LEAF_MIPS_DSPR2 - declare leaf routine for MIPS DSPr2
+ * LEAF_DSPR2 - declare leaf routine for MIPS DSPr2
  */
-#define LEAF_MIPS_DSPR2(symbol)                         \
+#define LEAF_DSPR2(symbol)                              \
 LEAF_MIPS32R2(symbol)                                   \
                 .set    dspr2;
 

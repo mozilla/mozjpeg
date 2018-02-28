@@ -2,10 +2,10 @@
  * ARMv8 NEON optimizations for libjpeg-turbo
  *
  * Copyright (C) 2009-2011, Nokia Corporation and/or its subsidiary(-ies).
- * All Rights Reserved.
- * Author: Siarhei Siamashka <siarhei.siamashka@nokia.com>
+ *                          All Rights Reserved.
+ * Author:  Siarhei Siamashka <siarhei.siamashka@nokia.com>
  * Copyright (C) 2013-2014, Linaro Limited.  All Rights Reserved.
- * Author: Ragesh Radhakrishnan <ragesh.r@linaro.org>
+ * Author:  Ragesh Radhakrishnan <ragesh.r@linaro.org>
  * Copyright (C) 2014-2016, D. R. Commander.  All Rights Reserved.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.  All Rights Reserved.
  * Copyright (C) 2016, Siarhei Siamashka.  All Rights Reserved.
@@ -2771,8 +2771,8 @@ asm_function jsimd_quantize_neon
  * GLOBAL(void)
  * jsimd_h2v1_downsample_neon (JDIMENSION image_width, int max_v_samp_factor,
  *                             JDIMENSION v_samp_factor,
- *                             JDIMENSION width_blocks, JSAMPARRAY input_data,
- *                             JSAMPARRAY output_data);
+ *                             JDIMENSION width_in_blocks,
+ *                             JSAMPARRAY input_data, JSAMPARRAY output_data);
  */
 
 .balign 16
@@ -2881,7 +2881,8 @@ asm_function jsimd_h2v1_downsample_neon
  *
  * GLOBAL(void)
  * jsimd_h2v2_downsample_neon (JDIMENSION image_width, int max_v_samp_factor,
- *                             JDIMENSION v_samp_factor, JDIMENSION width_blocks,
+ *                             JDIMENSION v_samp_factor,
+ *                             JDIMENSION width_in_blocks,
  *                             JSAMPARRAY input_data, JSAMPARRAY output_data);
  */
 

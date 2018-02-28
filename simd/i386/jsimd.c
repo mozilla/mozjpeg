@@ -209,7 +209,7 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
     avx2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
   else if (simd_support & JSIMD_SSE2)
     sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
-  else if (simd_support & JSIMD_MMX)
+  else
     mmxfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
@@ -268,7 +268,7 @@ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
     avx2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
   else if (simd_support & JSIMD_SSE2)
     sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
-  else if (simd_support & JSIMD_MMX)
+  else
     mmxfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
@@ -327,7 +327,7 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
     avx2fct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
   else if (simd_support & JSIMD_SSE2)
     sse2fct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
-  else if (simd_support & JSIMD_MMX)
+  else
     mmxfct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
 }
 
@@ -394,7 +394,7 @@ jsimd_h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                                compptr->v_samp_factor,
                                compptr->width_in_blocks, input_data,
                                output_data);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_h2v2_downsample_mmx(cinfo->image_width, cinfo->max_v_samp_factor,
                               compptr->v_samp_factor, compptr->width_in_blocks,
                               input_data, output_data);
@@ -414,7 +414,7 @@ jsimd_h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
                                compptr->v_samp_factor,
                                compptr->width_in_blocks, input_data,
                                output_data);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_h2v1_downsample_mmx(cinfo->image_width, cinfo->max_v_samp_factor,
                               compptr->v_samp_factor, compptr->width_in_blocks,
                               input_data, output_data);
@@ -474,7 +474,7 @@ jsimd_h2v2_upsample (j_decompress_ptr cinfo,
   else if (simd_support & JSIMD_SSE2)
     jsimd_h2v2_upsample_sse2(cinfo->max_v_samp_factor, cinfo->output_width,
                              input_data, output_data_ptr);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_h2v2_upsample_mmx(cinfo->max_v_samp_factor, cinfo->output_width,
                             input_data, output_data_ptr);
 }
@@ -491,7 +491,7 @@ jsimd_h2v1_upsample (j_decompress_ptr cinfo,
   else if (simd_support & JSIMD_SSE2)
     jsimd_h2v1_upsample_sse2(cinfo->max_v_samp_factor, cinfo->output_width,
                              input_data, output_data_ptr);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_h2v1_upsample_mmx(cinfo->max_v_samp_factor, cinfo->output_width,
                             input_data, output_data_ptr);
 }
@@ -556,7 +556,7 @@ jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
     jsimd_h2v2_fancy_upsample_sse2(cinfo->max_v_samp_factor,
                                    compptr->downsampled_width, input_data,
                                    output_data_ptr);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_h2v2_fancy_upsample_mmx(cinfo->max_v_samp_factor,
                                   compptr->downsampled_width, input_data,
                                   output_data_ptr);
@@ -576,7 +576,7 @@ jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
     jsimd_h2v1_fancy_upsample_sse2(cinfo->max_v_samp_factor,
                                    compptr->downsampled_width, input_data,
                                    output_data_ptr);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_h2v1_fancy_upsample_mmx(cinfo->max_v_samp_factor,
                                   compptr->downsampled_width, input_data,
                                   output_data_ptr);
@@ -684,7 +684,7 @@ jsimd_h2v2_merged_upsample (j_decompress_ptr cinfo,
     avx2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
   else if (simd_support & JSIMD_SSE2)
     sse2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
-  else if (simd_support & JSIMD_MMX)
+  else
     mmxfct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
 }
 
@@ -744,7 +744,7 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
     avx2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
   else if (simd_support & JSIMD_SSE2)
     sse2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
-  else if (simd_support & JSIMD_MMX)
+  else
     mmxfct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
 }
 
@@ -806,7 +806,7 @@ jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
     jsimd_convsamp_avx2(sample_data, start_col, workspace);
   else if (simd_support & JSIMD_SSE2)
     jsimd_convsamp_sse2(sample_data, start_col, workspace);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_convsamp_mmx(sample_data, start_col, workspace);
 }
 
@@ -818,7 +818,7 @@ jsimd_convsamp_float (JSAMPARRAY sample_data, JDIMENSION start_col,
     jsimd_convsamp_float_sse2(sample_data, start_col, workspace);
   else if (simd_support & JSIMD_SSE)
     jsimd_convsamp_float_sse(sample_data, start_col, workspace);
-  else if (simd_support & JSIMD_3DNOW)
+  else
     jsimd_convsamp_float_3dnow(sample_data, start_col, workspace);
 }
 
@@ -888,7 +888,7 @@ jsimd_fdct_islow (DCTELEM *data)
     jsimd_fdct_islow_avx2(data);
   else if (simd_support & JSIMD_SSE2)
     jsimd_fdct_islow_sse2(data);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_fdct_islow_mmx(data);
 }
 
@@ -897,7 +897,7 @@ jsimd_fdct_ifast (DCTELEM *data)
 {
   if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_fdct_islow_sse2))
     jsimd_fdct_ifast_sse2(data);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_fdct_ifast_mmx(data);
 }
 
@@ -964,7 +964,7 @@ jsimd_quantize (JCOEFPTR coef_block, DCTELEM *divisors,
     jsimd_quantize_avx2(coef_block, divisors, workspace);
   else if (simd_support & JSIMD_SSE2)
     jsimd_quantize_sse2(coef_block, divisors, workspace);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_quantize_mmx(coef_block, divisors, workspace);
 }
 
@@ -976,7 +976,7 @@ jsimd_quantize_float (JCOEFPTR coef_block, FAST_FLOAT *divisors,
     jsimd_quantize_float_sse2(coef_block, divisors, workspace);
   else if (simd_support & JSIMD_SSE)
     jsimd_quantize_float_sse(coef_block, divisors, workspace);
-  else if (simd_support & JSIMD_3DNOW)
+  else
     jsimd_quantize_float_3dnow(coef_block, divisors, workspace);
 }
 
@@ -1038,7 +1038,7 @@ jsimd_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
   if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_red_sse2))
     jsimd_idct_2x2_sse2(compptr->dct_table, coef_block, output_buf,
                         output_col);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_idct_2x2_mmx(compptr->dct_table, coef_block, output_buf, output_col);
 }
 
@@ -1050,7 +1050,7 @@ jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
   if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_red_sse2))
     jsimd_idct_4x4_sse2(compptr->dct_table, coef_block, output_buf,
                         output_col);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_idct_4x4_mmx(compptr->dct_table, coef_block, output_buf, output_col);
 }
 
@@ -1147,7 +1147,7 @@ jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info *compptr,
   else if (simd_support & JSIMD_SSE2)
     jsimd_idct_islow_sse2(compptr->dct_table, coef_block, output_buf,
                           output_col);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_idct_islow_mmx(compptr->dct_table, coef_block, output_buf,
                          output_col);
 }
@@ -1160,7 +1160,7 @@ jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info *compptr,
   if ((simd_support & JSIMD_SSE2) && IS_ALIGNED_SSE(jconst_idct_ifast_sse2))
     jsimd_idct_ifast_sse2(compptr->dct_table, coef_block, output_buf,
                           output_col);
-  else if (simd_support & JSIMD_MMX)
+  else
     jsimd_idct_ifast_mmx(compptr->dct_table, coef_block, output_buf,
                          output_col);
 }
@@ -1176,7 +1176,7 @@ jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info *compptr,
   else if ((simd_support & JSIMD_SSE) && IS_ALIGNED_SSE(jconst_idct_float_sse))
     jsimd_idct_float_sse(compptr->dct_table, coef_block, output_buf,
                          output_col);
-  else if (simd_support & JSIMD_3DNOW)
+  else
     jsimd_idct_float_3dnow(compptr->dct_table, coef_block, output_buf,
                            output_col);
 }

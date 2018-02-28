@@ -24,10 +24,10 @@
 /* This file is included by jcgray-altivec.c */
 
 
-void jsimd_rgb_gray_convert_altivec (JDIMENSION img_width,
-                                     JSAMPARRAY input_buf,
-                                     JSAMPIMAGE output_buf,
-                                     JDIMENSION output_row, int num_rows)
+void
+jsimd_rgb_gray_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
+                                JSAMPIMAGE output_buf, JDIMENSION output_row,
+                                int num_rows)
 {
   JSAMPROW inptr, outptr;
   int pitch = img_width * RGB_PIXELSIZE, num_cols;

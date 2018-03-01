@@ -277,6 +277,28 @@ if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
   set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)
 endif()
 
+###############################################################################
+# Loongson (Intrinsics)
+###############################################################################
+
+elseif(CPU_TYPE STREQUAL "loongson")
+
+set(SIMD_SOURCES loongson/jccolor-mmi.c loongson/jcsample-mmi.c
+  loongson/jdcolor-mmi.c loongson/jdsample-mmi.c loongson/jfdctint-mmi.c
+  loongson/jidctint-mmi.c loongson/jquanti-mmi.c)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+  foreach(file ${SIMD_SOURCES})
+    set_property(SOURCE ${file} APPEND_STRING PROPERTY COMPILE_FLAGS
+      " -fno-strict-aliasing")
+  endforeach()
+endif()
+
+add_library(simd OBJECT ${SIMD_SOURCES} loongson/jsimd.c)
+
+if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
+  set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)
+endif()
 
 ###############################################################################
 # PowerPC (Intrinsics)

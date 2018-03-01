@@ -112,6 +112,13 @@ libjpeg-turbo is built with YASM), and iOS/ARM[64] builds are now private.
 This prevents those symbols from being exposed in applications or shared
 libraries that link statically with libjpeg-turbo.
 
+13. Added Loongson MMI SIMD implementations of the RGB-to-YCbCr and
+YCbCr-to-RGB colorspace conversion, 4:2:0 chroma downsampling, 4:2:0 fancy
+chroma upsampling, integer quantization, and slow integer DCT/IDCT algorithms.
+When using the slow integer DCT/IDCT, this speeds up the compression of RGB
+images by approximately 70-100% and the decompression of RGB images by
+approximately 2-3.5x.
+
 
 1.5.3
 =====

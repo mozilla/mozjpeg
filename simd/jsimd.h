@@ -5,7 +5,7 @@
  * Copyright (C) 2011, 2014-2016, 2018, D. R. Commander.
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2014, Linaro Limited.
- * Copyright (C) 2015-2016, Matthieu Darbois.
+ * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
  * Copyright (C) 2016-2017, Loongson Technology Corporation Limited, BeiJing.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
@@ -1072,3 +1072,8 @@ EXTERN(JOCTET *) jsimd_huff_encode_one_block_neon
 EXTERN(JOCTET *) jsimd_huff_encode_one_block_neon_slowtbl
   (void *state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
    c_derived_tbl *dctbl, c_derived_tbl *actbl);
+
+/* Progressive Huffman encoding */
+EXTERN(int) jsimd_encode_mcu_AC_refine_prepare_sse2
+  (const JCOEF *block, const int *jpeg_natural_order_start, int Sl, int Al,
+   JCOEF *absvalues, size_t *bits);

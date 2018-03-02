@@ -3,7 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2009-2011, 2014-2016, 2018, D. R. Commander.
- * Copyright (C) 2015, Matthieu Darbois.
+ * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -842,4 +842,18 @@ jsimd_huff_encode_one_block(void *state, JOCTET *buffer, JCOEFPTR block,
                             c_derived_tbl *actbl)
 {
   return NULL;
+}
+
+GLOBAL(int)
+jsimd_can_encode_mcu_AC_refine_prepare(void)
+{
+  return 0;
+}
+
+GLOBAL(int)
+jsimd_encode_mcu_AC_refine_prepare(const JCOEF *block,
+                                   const int *jpeg_natural_order_start, int Sl,
+                                   int Al, JCOEF *absvalues, size_t *bits)
+{
+  return 0;
 }

@@ -11,6 +11,9 @@ actual security issues, should they arise in the future.
 algorithm that caused incorrect dithering in the output image.  This algorithm
 now produces bitwise-identical results to the unmerged algorithms.
 
+3. Fixed a build error when building with older MinGW releases (regression
+caused by 1.5.1[7].)
+
 
 1.5.3
 =====

@@ -23,11 +23,10 @@
 /* This file is included by jdmerge-altivec.c */
 
 
-void
-jsimd_h2v1_merged_upsample_altivec (JDIMENSION output_width,
-                                    JSAMPIMAGE input_buf,
-                                    JDIMENSION in_row_group_ctr,
-                                    JSAMPARRAY output_buf)
+void jsimd_h2v1_merged_upsample_altivec(JDIMENSION output_width,
+                                        JSAMPIMAGE input_buf,
+                                        JDIMENSION in_row_group_ctr,
+                                        JSAMPARRAY output_buf)
 {
   JSAMPROW outptr, inptr0, inptr1, inptr2;
   int pitch = output_width * RGB_PIXELSIZE, num_cols, yloop;
@@ -64,13 +63,19 @@ jsimd_h2v1_merged_upsample_altivec (JDIMENSION output_width,
   __vector int pd_onehalf = { __4X(ONE_HALF) };
   __vector unsigned char pb_zero = { __16X(0) },
 #if __BIG_ENDIAN__
-    shift_pack_index = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29},
-    even_index = {0,16,0,18,0,20,0,22,0,24,0,26,0,28,0,30},
-    odd_index = {0,17,0,19,0,21,0,23,0,25,0,27,0,29,0,31};
+    shift_pack_index =
+      {  0,  1,  4,  5,  8,  9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 },
+    even_index =
+      {  0, 16,  0, 18,  0, 20,  0, 22,  0, 24,  0, 26,  0, 28,  0, 30 },
+    odd_index =
+      {  0, 17,  0, 19,  0, 21,  0, 23,  0, 25,  0, 27,  0, 29,  0, 31 };
 #else
-    shift_pack_index = {2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31},
-    even_index = {16,0,18,0,20,0,22,0,24,0,26,0,28,0,30,0},
-    odd_index = {17,0,19,0,21,0,23,0,25,0,27,0,29,0,31,0};
+    shift_pack_index =
+      {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 },
+    even_index =
+      { 16,  0, 18,  0, 20,  0, 22,  0, 24,  0, 26,  0, 28,  0, 30,  0 },
+    odd_index =
+      { 17,  0, 19,  0, 21,  0, 23,  0, 25,  0, 27,  0, 29,  0, 31,  0 };
 #endif
 
   inptr0 = input_buf[0][in_row_group_ctr];
@@ -300,11 +305,10 @@ jsimd_h2v1_merged_upsample_altivec (JDIMENSION output_width,
 }
 
 
-void
-jsimd_h2v2_merged_upsample_altivec (JDIMENSION output_width,
-                                    JSAMPIMAGE input_buf,
-                                    JDIMENSION in_row_group_ctr,
-                                    JSAMPARRAY output_buf)
+void jsimd_h2v2_merged_upsample_altivec(JDIMENSION output_width,
+                                        JSAMPIMAGE input_buf,
+                                        JDIMENSION in_row_group_ctr,
+                                        JSAMPARRAY output_buf)
 {
   JSAMPROW inptr, outptr;
 

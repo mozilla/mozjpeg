@@ -50,13 +50,13 @@ enum const_index {
 };
 
 static uint64_t const_value[] = {
-  _uint64_set_pi32((int)(1 << (SCALEBITS-1)), (int)(1 << (SCALEBITS-1))),
+  _uint64_set_pi32((int)(1 << (SCALEBITS - 1)), (int)(1 << (SCALEBITS - 1))),
   _uint64_set_pi16(F_0_337, F_0_299, F_0_337, F_0_299),
   _uint64_set_pi16(F_0_250, F_0_114, F_0_250, F_0_114),
   _uint64_set_pi16(-F_0_331, -F_0_168, -F_0_331, -F_0_168),
   _uint64_set_pi16(-F_0_418, -F_0_081, -F_0_418, -F_0_081),
-  _uint64_set_pi32(((1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)),
-                   ((1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)))
+  _uint64_set_pi32(((1 << (SCALEBITS - 1)) - 1 + (CENTERJSAMPLE << SCALEBITS)),
+                   ((1 << (SCALEBITS - 1)) - 1 + (CENTERJSAMPLE << SCALEBITS)))
 };
 
 #define get_const_value(index) (*(__m64 *)&const_value[index])

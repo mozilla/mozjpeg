@@ -199,7 +199,7 @@ public class TJCompressor implements Closeable {
       throw new IllegalArgumentException("Invalid argument in setSourceImage()");
     srcX = x;
     srcY = y;
-    srcWidth = (width == 0) ? srcImage.getWidth(): width;
+    srcWidth = (width == 0) ? srcImage.getWidth() : width;
     srcHeight = (height == 0) ? srcImage.getHeight() : height;
     if (x + width > srcImage.getWidth() || y + height > srcImage.getHeight())
       throw new IllegalArgumentException("Compression region exceeds the bounds of the source image");
@@ -208,30 +208,30 @@ public class TJCompressor implements Closeable {
     boolean intPixels = false;
     if (byteOrder == null)
       byteOrder = ByteOrder.nativeOrder();
-    switch(srcImage.getType()) {
-      case BufferedImage.TYPE_3BYTE_BGR:
-        pixelFormat = TJ.PF_BGR;  break;
-      case BufferedImage.TYPE_4BYTE_ABGR:
-      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-        pixelFormat = TJ.PF_XBGR;  break;
-      case BufferedImage.TYPE_BYTE_GRAY:
-        pixelFormat = TJ.PF_GRAY;  break;
-      case BufferedImage.TYPE_INT_BGR:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XBGR;
-        else
-          pixelFormat = TJ.PF_RGBX;
-        intPixels = true;  break;
-      case BufferedImage.TYPE_INT_RGB:
-      case BufferedImage.TYPE_INT_ARGB:
-      case BufferedImage.TYPE_INT_ARGB_PRE:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XRGB;
-        else
-          pixelFormat = TJ.PF_BGRX;
-        intPixels = true;  break;
-      default:
-        throw new IllegalArgumentException("Unsupported BufferedImage format");
+    switch (srcImage.getType()) {
+    case BufferedImage.TYPE_3BYTE_BGR:
+      pixelFormat = TJ.PF_BGR;  break;
+    case BufferedImage.TYPE_4BYTE_ABGR:
+    case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+      pixelFormat = TJ.PF_XBGR;  break;
+    case BufferedImage.TYPE_BYTE_GRAY:
+      pixelFormat = TJ.PF_GRAY;  break;
+    case BufferedImage.TYPE_INT_BGR:
+      if (byteOrder == ByteOrder.BIG_ENDIAN)
+        pixelFormat = TJ.PF_XBGR;
+      else
+        pixelFormat = TJ.PF_RGBX;
+      intPixels = true;  break;
+    case BufferedImage.TYPE_INT_RGB:
+    case BufferedImage.TYPE_INT_ARGB:
+    case BufferedImage.TYPE_INT_ARGB_PRE:
+      if (byteOrder == ByteOrder.BIG_ENDIAN)
+        pixelFormat = TJ.PF_XRGB;
+      else
+        pixelFormat = TJ.PF_BGRX;
+      intPixels = true;  break;
+    default:
+      throw new IllegalArgumentException("Unsupported BufferedImage format");
     }
     srcPixelFormat = pixelFormat;
 
@@ -447,7 +447,7 @@ public class TJCompressor implements Closeable {
    */
   @Deprecated
   public void encodeYUV(byte[] dstBuf, int flags) throws TJException {
-    if(dstBuf == null)
+    if (dstBuf == null)
       throw new IllegalArgumentException("Invalid argument in encodeYUV()");
     checkSourceImage();
     checkSubsampling();
@@ -475,7 +475,7 @@ public class TJCompressor implements Closeable {
   public YUVImage encodeYUV(int pad, int flags) throws TJException {
     checkSourceImage();
     checkSubsampling();
-    if(pad < 1 || ((pad & (pad - 1)) != 0))
+    if (pad < 1 || ((pad & (pad - 1)) != 0))
       throw new IllegalStateException("Invalid argument in encodeYUV()");
     YUVImage yuvImage = new YUVImage(srcWidth, pad, srcHeight, subsamp);
     encodeYUV(yuvImage, flags);
@@ -571,7 +571,7 @@ public class TJCompressor implements Closeable {
   protected void finalize() throws Throwable {
     try {
       close();
-    } catch(TJException e) {
+    } catch (TJException e) {
     } finally {
       super.finalize();
     }

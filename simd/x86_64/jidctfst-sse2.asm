@@ -41,12 +41,12 @@ F_2_613 equ 669              ; FIX(2.613125930)
 F_1_613 equ (F_2_613 - 256)  ; FIX(2.613125930) - FIX(1)
 %else
 ; NASM cannot do compile-time arithmetic on floating-point constants.
-%define DESCALE(x,n)  (((x)+(1<<((n)-1)))>>(n))
-F_1_082 equ DESCALE(1162209775, 30-CONST_BITS)  ; FIX(1.082392200)
-F_1_414 equ DESCALE(1518500249, 30-CONST_BITS)  ; FIX(1.414213562)
-F_1_847 equ DESCALE(1984016188, 30-CONST_BITS)  ; FIX(1.847759065)
-F_2_613 equ DESCALE(2805822602, 30-CONST_BITS)  ; FIX(2.613125930)
-F_1_613 equ (F_2_613 - (1 << CONST_BITS))       ; FIX(2.613125930) - FIX(1)
+%define DESCALE(x, n)  (((x) + (1 << ((n) - 1))) >> (n))
+F_1_082 equ DESCALE(1162209775, 30 - CONST_BITS)  ; FIX(1.082392200)
+F_1_414 equ DESCALE(1518500249, 30 - CONST_BITS)  ; FIX(1.414213562)
+F_1_847 equ DESCALE(1984016188, 30 - CONST_BITS)  ; FIX(1.847759065)
+F_2_613 equ DESCALE(2805822602, 30 - CONST_BITS)  ; FIX(2.613125930)
+F_1_613 equ (F_2_613 - (1 << CONST_BITS))         ; FIX(2.613125930) - FIX(1)
 %endif
 
 ; --------------------------------------------------------------------------
@@ -78,8 +78,8 @@ PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 ; Perform dequantization and inverse DCT on one block of coefficients.
 ;
 ; GLOBAL(void)
-; jsimd_idct_ifast_sse2 (void *dct_table, JCOEFPTR coef_block,
-;                       JSAMPARRAY output_buf, JDIMENSION output_col)
+; jsimd_idct_ifast_sse2(void *dct_table, JCOEFPTR coef_block,
+;                      JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
 ; r10 = jpeg_component_info *compptr
@@ -87,8 +87,9 @@ PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 ; r12 = JSAMPARRAY output_buf
 ; r13d = JDIMENSION output_col
 
-%define original_rbp  rbp+0
-%define wk(i)         rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define original_rbp  rbp + 0
+%define wk(i)         rbp - (WK_NUM - (i)) * SIZEOF_XMMWORD
+                                        ; xmmword wk[WK_NUM]
 %define WK_NUM        2
 
     align       32

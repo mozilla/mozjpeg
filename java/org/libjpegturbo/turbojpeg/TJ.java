@@ -34,7 +34,6 @@ package org.libjpegturbo.turbojpeg;
  */
 public final class TJ {
 
-
   /**
    * The number of chrominance subsampling options
    */

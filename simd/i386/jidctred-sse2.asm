@@ -29,10 +29,10 @@
 %define CONST_BITS    13
 %define PASS1_BITS    2
 
-%define DESCALE_P1_4  (CONST_BITS-PASS1_BITS+1)
-%define DESCALE_P2_4  (CONST_BITS+PASS1_BITS+3+1)
-%define DESCALE_P1_2  (CONST_BITS-PASS1_BITS+2)
-%define DESCALE_P2_2  (CONST_BITS+PASS1_BITS+3+2)
+%define DESCALE_P1_4  (CONST_BITS - PASS1_BITS + 1)
+%define DESCALE_P2_4  (CONST_BITS + PASS1_BITS + 3 + 1)
+%define DESCALE_P1_2  (CONST_BITS - PASS1_BITS + 2)
+%define DESCALE_P2_2  (CONST_BITS + PASS1_BITS + 3 + 2)
 
 %if CONST_BITS == 13
 F_0_211 equ  1730  ; FIX(0.211164243)
@@ -51,21 +51,21 @@ F_2_562 equ 20995  ; FIX(2.562915447)
 F_3_624 equ 29692  ; FIX(3.624509785)
 %else
 ; NASM cannot do compile-time arithmetic on floating-point constants.
-%define DESCALE(x,n)  (((x)+(1<<((n)-1)))>>(n))
-F_0_211 equ DESCALE( 226735879, 30-CONST_BITS)  ; FIX(0.211164243)
-F_0_509 equ DESCALE( 547388834, 30-CONST_BITS)  ; FIX(0.509795579)
-F_0_601 equ DESCALE( 645689155, 30-CONST_BITS)  ; FIX(0.601344887)
-F_0_720 equ DESCALE( 774124714, 30-CONST_BITS)  ; FIX(0.720959822)
-F_0_765 equ DESCALE( 821806413, 30-CONST_BITS)  ; FIX(0.765366865)
-F_0_850 equ DESCALE( 913142361, 30-CONST_BITS)  ; FIX(0.850430095)
-F_0_899 equ DESCALE( 966342111, 30-CONST_BITS)  ; FIX(0.899976223)
-F_1_061 equ DESCALE(1139878239, 30-CONST_BITS)  ; FIX(1.061594337)
-F_1_272 equ DESCALE(1366614119, 30-CONST_BITS)  ; FIX(1.272758580)
-F_1_451 equ DESCALE(1558831516, 30-CONST_BITS)  ; FIX(1.451774981)
-F_1_847 equ DESCALE(1984016188, 30-CONST_BITS)  ; FIX(1.847759065)
-F_2_172 equ DESCALE(2332956230, 30-CONST_BITS)  ; FIX(2.172734803)
-F_2_562 equ DESCALE(2751909506, 30-CONST_BITS)  ; FIX(2.562915447)
-F_3_624 equ DESCALE(3891787747, 30-CONST_BITS)  ; FIX(3.624509785)
+%define DESCALE(x, n)  (((x) + (1 << ((n) - 1))) >> (n))
+F_0_211 equ DESCALE( 226735879, 30 - CONST_BITS)  ; FIX(0.211164243)
+F_0_509 equ DESCALE( 547388834, 30 - CONST_BITS)  ; FIX(0.509795579)
+F_0_601 equ DESCALE( 645689155, 30 - CONST_BITS)  ; FIX(0.601344887)
+F_0_720 equ DESCALE( 774124714, 30 - CONST_BITS)  ; FIX(0.720959822)
+F_0_765 equ DESCALE( 821806413, 30 - CONST_BITS)  ; FIX(0.765366865)
+F_0_850 equ DESCALE( 913142361, 30 - CONST_BITS)  ; FIX(0.850430095)
+F_0_899 equ DESCALE( 966342111, 30 - CONST_BITS)  ; FIX(0.899976223)
+F_1_061 equ DESCALE(1139878239, 30 - CONST_BITS)  ; FIX(1.061594337)
+F_1_272 equ DESCALE(1366614119, 30 - CONST_BITS)  ; FIX(1.272758580)
+F_1_451 equ DESCALE(1558831516, 30 - CONST_BITS)  ; FIX(1.451774981)
+F_1_847 equ DESCALE(1984016188, 30 - CONST_BITS)  ; FIX(1.847759065)
+F_2_172 equ DESCALE(2332956230, 30 - CONST_BITS)  ; FIX(2.172734803)
+F_2_562 equ DESCALE(2751909506, 30 - CONST_BITS)  ; FIX(2.562915447)
+F_3_624 equ DESCALE(3891787747, 30 - CONST_BITS)  ; FIX(3.624509785)
 %endif
 
 ; --------------------------------------------------------------------------
@@ -76,17 +76,17 @@ F_3_624 equ DESCALE(3891787747, 30-CONST_BITS)  ; FIX(3.624509785)
 
 EXTN(jconst_idct_red_sse2):
 
-PW_F184_MF076   times 4  dw  F_1_847,-F_0_765
-PW_F256_F089    times 4  dw  F_2_562, F_0_899
-PW_F106_MF217   times 4  dw  F_1_061,-F_2_172
-PW_MF060_MF050  times 4  dw -F_0_601,-F_0_509
-PW_F145_MF021   times 4  dw  F_1_451,-F_0_211
-PW_F362_MF127   times 4  dw  F_3_624,-F_1_272
-PW_F085_MF072   times 4  dw  F_0_850,-F_0_720
-PD_DESCALE_P1_4 times 4  dd  1 << (DESCALE_P1_4-1)
-PD_DESCALE_P2_4 times 4  dd  1 << (DESCALE_P2_4-1)
-PD_DESCALE_P1_2 times 4  dd  1 << (DESCALE_P1_2-1)
-PD_DESCALE_P2_2 times 4  dd  1 << (DESCALE_P2_2-1)
+PW_F184_MF076   times 4  dw  F_1_847, -F_0_765
+PW_F256_F089    times 4  dw  F_2_562,  F_0_899
+PW_F106_MF217   times 4  dw  F_1_061, -F_2_172
+PW_MF060_MF050  times 4  dw -F_0_601, -F_0_509
+PW_F145_MF021   times 4  dw  F_1_451, -F_0_211
+PW_F362_MF127   times 4  dw  F_3_624, -F_1_272
+PW_F085_MF072   times 4  dw  F_0_850, -F_0_720
+PD_DESCALE_P1_4 times 4  dd  1 << (DESCALE_P1_4 - 1)
+PD_DESCALE_P2_4 times 4  dd  1 << (DESCALE_P2_4 - 1)
+PD_DESCALE_P1_2 times 4  dd  1 << (DESCALE_P1_2 - 1)
+PD_DESCALE_P2_2 times 4  dd  1 << (DESCALE_P2_2 - 1)
 PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 
     alignz      32
@@ -99,17 +99,18 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 ; producing a reduced-size 4x4 output block.
 ;
 ; GLOBAL(void)
-; jsimd_idct_4x4_sse2 (void *dct_table, JCOEFPTR coef_block,
-;                      JSAMPARRAY output_buf, JDIMENSION output_col)
+; jsimd_idct_4x4_sse2(void *dct_table, JCOEFPTR coef_block,
+;                     JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
-%define dct_table(b)   (b)+8            ; void *dct_table
-%define coef_block(b)  (b)+12           ; JCOEFPTR coef_block
-%define output_buf(b)  (b)+16           ; JSAMPARRAY output_buf
-%define output_col(b)  (b)+20           ; JDIMENSION output_col
+%define dct_table(b)   (b) + 8          ; void *dct_table
+%define coef_block(b)  (b) + 12         ; JCOEFPTR coef_block
+%define output_buf(b)  (b) + 16         ; JSAMPARRAY output_buf
+%define output_col(b)  (b) + 20         ; JDIMENSION output_col
 
-%define original_ebp   ebp+0
-%define wk(i)          ebp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define original_ebp   ebp + 0
+%define wk(i)          ebp - (WK_NUM - (i)) * SIZEOF_XMMWORD
+                                        ; xmmword wk[WK_NUM]
 %define WK_NUM         2
 
     align       32
@@ -407,21 +408,20 @@ EXTN(jsimd_idct_4x4_sse2):
     pop         ebp
     ret
 
-
 ; --------------------------------------------------------------------------
 ;
 ; Perform dequantization and inverse DCT on one block of coefficients,
 ; producing a reduced-size 2x2 output block.
 ;
 ; GLOBAL(void)
-; jsimd_idct_2x2_sse2 (void *dct_table, JCOEFPTR coef_block,
-;                      JSAMPARRAY output_buf, JDIMENSION output_col)
+; jsimd_idct_2x2_sse2(void *dct_table, JCOEFPTR coef_block,
+;                     JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
-%define dct_table(b)   (b)+8            ; void *dct_table
-%define coef_block(b)  (b)+12           ; JCOEFPTR coef_block
-%define output_buf(b)  (b)+16           ; JSAMPARRAY output_buf
-%define output_col(b)  (b)+20           ; JDIMENSION output_col
+%define dct_table(b)   (b) + 8          ; void *dct_table
+%define coef_block(b)  (b) + 12         ; JCOEFPTR coef_block
+%define output_buf(b)  (b) + 16         ; JSAMPARRAY output_buf
+%define output_col(b)  (b) + 20         ; JDIMENSION output_col
 
     align       32
     GLOBAL_FUNCTION(jsimd_idct_2x2_sse2)

@@ -48,7 +48,7 @@ static uint64_t const_value[] = {
   _uint64_set_pi16(F_0_402, F_0_402, F_0_402, F_0_402),
   _uint64_set_pi16(-F_0_228, -F_0_228, -F_0_228, -F_0_228),
   _uint64_set_pi16(F_0_285, -F_0_344, F_0_285, -F_0_344),
-  _uint64_set_pi32((int)(1 << (SCALEBITS-1)), (int)(1 << (SCALEBITS-1)))
+  _uint64_set_pi32((int)(1 << (SCALEBITS - 1)), (int)(1 << (SCALEBITS - 1)))
 };
 
 #define PW_ONE          get_const_value(index_PW_ONE)

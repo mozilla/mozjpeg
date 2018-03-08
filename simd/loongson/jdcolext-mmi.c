@@ -89,10 +89,9 @@
 #endif
 
 
-void
-jsimd_ycc_rgb_convert_mmi (JDIMENSION out_width, JSAMPIMAGE input_buf,
-                           JDIMENSION input_row, JSAMPARRAY output_buf,
-                           int num_rows)
+void jsimd_ycc_rgb_convert_mmi(JDIMENSION out_width, JSAMPIMAGE input_buf,
+                               JDIMENSION input_row, JSAMPARRAY output_buf,
+                               int num_rows)
 {
   JSAMPROW outptr, inptr0, inptr1, inptr2;
   int num_cols, col;
@@ -233,15 +232,15 @@ jsimd_ycc_rgb_convert_mmi (JDIMENSION out_width, JSAMPIMAGE input_buf,
       mmA = _mm_unpacklo_pi16(mmA, mmE);    /* mmA=(00 10 20 01 02 12 22 03) */
       mmG = _mm_unpackhi_pi16(mmG, mmE);    /* mmG=(04 14 24 05 06 16 26 07) */
 
-      mmH = _mm_srli_si64(mmH, 2*BYTE_BIT);
-      mmE = _mm_srli_si64(mmE, 2*BYTE_BIT);
+      mmH = _mm_srli_si64(mmH, 2 * BYTE_BIT);
+      mmE = _mm_srli_si64(mmE, 2 * BYTE_BIT);
 
       mmC = mmD;
       mmB = mmD;
       mmD = _mm_unpacklo_pi16(mmD, mmH);    /* mmD=(11 21 02 12 13 23 04 14) */
       mmC = _mm_unpackhi_pi16(mmC, mmH);    /* mmC=(15 25 06 16 17 27 -- --) */
 
-      mmB = _mm_srli_si64(mmB, 2*BYTE_BIT); /* mmB=(13 23 15 25 17 27 -- --) */
+      mmB = _mm_srli_si64(mmB, 2 * BYTE_BIT); /* mmB=(13 23 15 25 17 27 -- --) */
 
       mmF = mmE;
       mmE = _mm_unpacklo_pi16(mmE, mmB);    /* mmE=(22 03 13 23 24 05 15 25) */
@@ -253,9 +252,9 @@ jsimd_ycc_rgb_convert_mmi (JDIMENSION out_width, JSAMPIMAGE input_buf,
 
       if (num_cols >= 8) {
         _mm_store_si64((__m64 *)outptr, mmA);
-        _mm_store_si64((__m64 *)(outptr+8), mmE);
-        _mm_store_si64((__m64 *)(outptr+16), mmC);
-        outptr += RGB_PIXELSIZE*8;
+        _mm_store_si64((__m64 *)(outptr + 8), mmE);
+        _mm_store_si64((__m64 *)(outptr + 16), mmC);
+        outptr += RGB_PIXELSIZE * 8;
       } else {
         col = num_cols * 3;
         asm(".set noreorder\r\n"
@@ -359,10 +358,10 @@ jsimd_ycc_rgb_convert_mmi (JDIMENSION out_width, JSAMPIMAGE input_buf,
 
       if (num_cols >= 8) {
         _mm_store_si64((__m64 *)outptr, mmA);
-        _mm_store_si64((__m64 *)(outptr+8), mmD);
-        _mm_store_si64((__m64 *)(outptr+16), mmC);
-        _mm_store_si64((__m64 *)(outptr+24), mmH);
-        outptr += RGB_PIXELSIZE*8;
+        _mm_store_si64((__m64 *)(outptr + 8), mmD);
+        _mm_store_si64((__m64 *)(outptr + 16), mmC);
+        _mm_store_si64((__m64 *)(outptr + 24), mmH);
+        outptr += RGB_PIXELSIZE * 8;
       } else {
         col = num_cols;
         asm(".set noreorder\r\n"              /* st16 */

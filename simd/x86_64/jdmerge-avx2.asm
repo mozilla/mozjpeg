@@ -43,7 +43,7 @@ PW_F0402        times 16 dw  F_0_402
 PW_MF0228       times 16 dw -F_0_228
 PW_MF0344_F0285 times 8  dw -F_0_344, F_0_285
 PW_ONE          times 16 dw  1
-PD_ONEHALF      times 8  dd  1 << (SCALEBITS-1)
+PD_ONEHALF      times 8  dd  1 << (SCALEBITS - 1)
 
     alignz      32
 

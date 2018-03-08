@@ -163,10 +163,10 @@ EXTN(jconst_huff_encode_one_block):
 ;
 ; Encode a single block's worth of coefficients.
 ;
-; GLOBAL(JOCTET*)
-; jsimd_huff_encode_one_block_sse2 (working_state *state, JOCTET *buffer,
-;                                   JCOEFPTR block, int last_dc_val,
-;                                   c_derived_tbl *dctbl, c_derived_tbl *actbl)
+; GLOBAL(JOCTET *)
+; jsimd_huff_encode_one_block_sse2(working_state *state, JOCTET *buffer,
+;                                  JCOEFPTR block, int last_dc_val,
+;                                  c_derived_tbl *dctbl, c_derived_tbl *actbl)
 ;
 
 ; r10 = working_state *state
@@ -176,8 +176,8 @@ EXTN(jconst_huff_encode_one_block):
 ; r14 = c_derived_tbl *dctbl
 ; r15 = c_derived_tbl *actbl
 
-%define t1          rbp-(DCTSIZE2*SIZEOF_WORD)
-%define t2          t1-(DCTSIZE2*SIZEOF_WORD)
+%define t1          rbp - (DCTSIZE2 * SIZEOF_WORD)
+%define t2          t1 - (DCTSIZE2 * SIZEOF_WORD)
 %define put_buffer  r8
 %define put_bits    r9d
 %define buffer      rax
@@ -191,7 +191,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     sub         rsp, byte 4
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
     mov         [rsp], rax
-    mov         rbp,rsp                      ; rbp = aligned rbp
+    mov         rbp, rsp                     ; rbp = aligned rbp
     lea         rsp, [t2]
     push_xmm    4
     collect_args 6
@@ -234,7 +234,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         ecx, edi
     shl         esi, cl
     dec         esi
-    and         ebx, esi                ; temp2 &= (((JLONG) 1)<<nbits) - 1;
+    and         ebx, esi                ; temp2 &= (((JLONG)1)<<nbits) - 1;
 
     ; Emit that number of bits of the value, if positive,
     ; or the complement of its magnitude, if negative.
@@ -315,7 +315,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         rdx, 1
     shl         rdx, cl
     dec         rdx
-    and         rbx, rdx                ; temp2 &= (((JLONG) 1)<<nbits) - 1;
+    and         rbx, rdx                ; temp2 &= (((JLONG)1)<<nbits) - 1;
     PUT_BITS    rbx                     ; PUT_BITS(temp2, nbits)
 
     shr         r11, 1                  ; index >>= 1;

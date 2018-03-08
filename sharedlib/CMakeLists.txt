@@ -62,8 +62,8 @@ if(WITH_12BIT)
   set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
 else()
   set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
-	set(CJPEG_BMP_SOURCES ../rdbmp.c ../rdtarga.c)
-	set(DJPEG_BMP_SOURCES ../wrbmp.c ../wrtarga.c)
+  set(CJPEG_BMP_SOURCES ../rdbmp.c ../rdtarga.c)
+  set(DJPEG_BMP_SOURCES ../wrbmp.c ../wrtarga.c)
 endif()
 
 add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c

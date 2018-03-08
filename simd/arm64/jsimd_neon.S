@@ -132,8 +132,8 @@ _\fname:
  * Perform dequantization and inverse DCT on one block of coefficients.
  *
  * GLOBAL(void)
- * jsimd_idct_islow_neon (void *dct_table, JCOEFPTR coef_block,
- *                        JSAMPARRAY output_buf, JDIMENSION output_col)
+ * jsimd_idct_islow_neon(void *dct_table, JCOEFPTR coef_block,
+ *                       JSAMPARRAY output_buf, JDIMENSION output_col)
  */
 
 #define CONST_BITS 13
@@ -293,8 +293,8 @@ asm_function jsimd_idct_islow_neon
     sshll2          v23.4s, v22.8h, #(CONST_BITS)  /* tmp0h tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
     mov             v21.16b, v19.16b               /* tmp3 = z1 */
     mov             v20.16b, v18.16b               /* tmp3 = z1 */
-    smlal2          v19.4s, v8.8h, XFIX_N_1_847    /* tmp2h tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
-    smlal           v18.4s, v8.4h, XFIX_N_1_847    /* tmp2l tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    smlal2          v19.4s, v8.8h, XFIX_N_1_847    /* tmp2h tmp2 = z1 + MULTIPLY(z3, -FIX_1_847759065); */
+    smlal           v18.4s, v8.4h, XFIX_N_1_847    /* tmp2l tmp2 = z1 + MULTIPLY(z3, -FIX_1_847759065); */
     sshll2          v27.4s, v26.8h, #(CONST_BITS)  /* tmp1h tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
     smlal2          v21.4s, v4.8h, XFIX_P_0_765    /* tmp3h tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
     smlal           v20.4s, v4.4h, XFIX_P_0_765    /* tmp3l tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
@@ -324,20 +324,20 @@ asm_function jsimd_idct_islow_neon
     smull2          v15.4s, v5.8h, XFIX_P_3_072   /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
     smull2          v17.4s, v3.8h, XFIX_P_1_501   /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
     smull2          v27.4s, v26.8h, XFIX_P_1_175  /* z5h z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
-    smull2          v23.4s, v22.8h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
-    smull2          v25.4s, v24.8h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
-    smull2          v19.4s, v18.8h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
-    smull2          v21.4s, v20.8h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+    smull2          v23.4s, v22.8h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560) */
+    smull2          v25.4s, v24.8h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644) */
+    smull2          v19.4s, v18.8h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, -FIX_0_899976223) */
+    smull2          v21.4s, v20.8h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, -FIX_2_562915447) */
 
     smull           v10.4s, v9.4h, XFIX_P_0_298   /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
     smull           v12.4s, v7.4h, XFIX_P_2_053   /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
     smull           v14.4s, v5.4h, XFIX_P_3_072   /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
     smull           v16.4s, v3.4h, XFIX_P_1_501   /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
     smull           v26.4s, v26.4h, XFIX_P_1_175  /* z5l z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
-    smull           v22.4s, v22.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
-    smull           v24.4s, v24.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
-    smull           v18.4s, v18.4h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
-    smull           v20.4s, v20.4h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+    smull           v22.4s, v22.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560) */
+    smull           v24.4s, v24.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644) */
+    smull           v18.4s, v18.4h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, -FIX_0_899976223) */
+    smull           v20.4s, v20.4h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, -FIX_2_562915447) */
 
     add             v23.4s, v23.4s, v27.4s  /* z3 += z5 */
     add             v22.4s, v22.4s, v26.4s  /* z3 += z5 */
@@ -381,22 +381,22 @@ asm_function jsimd_idct_islow_neon
     sub             v16.4s, v6.4s, v10.4s   /* tmp13 - tmp0 */
     sub             v17.4s, v31.4s, v11.4s  /* tmp13 - tmp0 */
 
-    shrn            v2.4h, v18.4s, #16  /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS+PASS1_BITS+3) */
-    shrn            v9.4h, v20.4s, #16  /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS+PASS1_BITS+3) */
-    shrn            v3.4h, v22.4s, #16  /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS+PASS1_BITS+3) */
-    shrn            v8.4h, v24.4s, #16  /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS+PASS1_BITS+3) */
-    shrn            v4.4h, v26.4s, #16  /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS+PASS1_BITS+3) */
-    shrn            v7.4h, v28.4s, #16  /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS+PASS1_BITS+3) */
-    shrn            v5.4h, v14.4s, #16  /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS+PASS1_BITS+3) */
-    shrn            v6.4h, v16.4s, #16  /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v2.8h, v19.4s, #16  /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v9.8h, v21.4s, #16  /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v3.8h, v23.4s, #16  /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v8.8h, v25.4s, #16  /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v4.8h, v27.4s, #16  /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v7.8h, v29.4s, #16  /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v5.8h, v15.4s, #16  /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS+PASS1_BITS+3) */
-    shrn2           v6.8h, v17.4s, #16  /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS+PASS1_BITS+3) */
+    shrn            v2.4h, v18.4s, #16  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn            v9.4h, v20.4s, #16  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn            v3.4h, v22.4s, #16  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn            v8.4h, v24.4s, #16  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn            v4.4h, v26.4s, #16  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn            v7.4h, v28.4s, #16  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn            v5.4h, v14.4s, #16  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS+PASS1_BITS+3) */
+    shrn            v6.4h, v16.4s, #16  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v2.8h, v19.4s, #16  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v9.8h, v21.4s, #16  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v3.8h, v23.4s, #16  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v8.8h, v25.4s, #16  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v4.8h, v27.4s, #16  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v7.8h, v29.4s, #16  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v5.8h, v15.4s, #16  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS+PASS1_BITS+3) */
+    shrn2           v6.8h, v17.4s, #16  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS+PASS1_BITS+3) */
     movi            v0.16b, #(CENTERJSAMPLE)
     /* Prepare pointers (dual-issue with NEON instructions) */
       ldp             TMP1, TMP2, [OUTPUT_BUF], 16
@@ -475,7 +475,7 @@ asm_function jsimd_idct_islow_neon
     sshll           v22.4s, v22.4h, #(CONST_BITS)  /* tmp0l tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
     mov             v20.16b, v18.16b               /* tmp3 = z1 */
     sshll           v26.4s, v26.4h, #(CONST_BITS)  /* tmp1l tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
-    smlal           v18.4s, v8.4h, XFIX_N_1_847    /* tmp2l tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    smlal           v18.4s, v8.4h, XFIX_N_1_847    /* tmp2l tmp2 = z1 + MULTIPLY(z3, -FIX_1_847759065); */
     smlal           v20.4s, v4.4h, XFIX_P_0_765    /* tmp3l tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
     add             v2.4s, v22.4s, v20.4s          /* tmp10l tmp10 = tmp0 + tmp3; */
     sub             v6.4s, v22.4s, v20.4s          /* tmp13l tmp13 = tmp0 - tmp3; */
@@ -497,10 +497,10 @@ asm_function jsimd_idct_islow_neon
     smull           v14.4s, v5.4h, XFIX_P_3_072   /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
     smull           v16.4s, v3.4h, XFIX_P_1_501   /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
     smull           v26.4s, v26.4h, XFIX_P_1_175  /* z5l z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
-    smull           v22.4s, v22.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
-    smull           v24.4s, v24.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
-    smull           v18.4s, v18.4h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
-    smull           v20.4s, v20.4h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+    smull           v22.4s, v22.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560) */
+    smull           v24.4s, v24.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644) */
+    smull           v18.4s, v18.4h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, -FIX_0_899976223) */
+    smull           v20.4s, v20.4h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, -FIX_2_562915447) */
 
     add             v22.4s, v22.4s, v26.4s  /* z3 += z5 */
     add             v24.4s, v24.4s, v26.4s  /* z4 += z5 */
@@ -526,14 +526,14 @@ asm_function jsimd_idct_islow_neon
     add             v14.4s, v6.4s, v10.4s  /* tmp13 + tmp0 */
     sub             v16.4s, v6.4s, v10.4s  /* tmp13 - tmp0 */
 
-    rshrn           v2.4h, v18.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v3.4h, v22.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v4.4h, v26.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v5.4h, v14.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v2.8h, v16.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v3.8h, v28.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v4.8h, v24.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v5.8h, v20.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v2.4h, v18.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v3.4h, v22.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v4.4h, v26.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v5.4h, v14.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v2.8h, v16.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v3.8h, v28.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v4.8h, v24.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v5.8h, v20.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
     mov             v6.16b, v15.16b
     mov             v7.16b, v15.16b
     mov             v8.16b, v15.16b
@@ -552,7 +552,7 @@ asm_function jsimd_idct_islow_neon
     sub             v26.8h, v2.8h, v6.8h           /* z2 - z3 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]) - DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]) */
     sshll2          v23.4s, v22.8h, #(CONST_BITS)  /* tmp0h tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
     mov             v21.16b, v19.16b               /* tmp3 = z1 */
-    smlal2          v19.4s, v8.8h, XFIX_N_1_847    /* tmp2h tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    smlal2          v19.4s, v8.8h, XFIX_N_1_847    /* tmp2h tmp2 = z1 + MULTIPLY(z3, -FIX_1_847759065); */
     sshll2          v27.4s, v26.8h, #(CONST_BITS)  /* tmp1h tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
     smlal2          v21.4s, v4.8h, XFIX_P_0_765    /* tmp3h tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
     add             v28.4s, v23.4s, v21.4s         /* tmp10h tmp10 = tmp0 + tmp3; */
@@ -575,10 +575,10 @@ asm_function jsimd_idct_islow_neon
     smull2          v15.4s, v5.8h, XFIX_P_3_072   /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
     smull2          v17.4s, v3.8h, XFIX_P_1_501   /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
     smull2          v27.4s, v26.8h, XFIX_P_1_175  /* z5h z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
-    smull2          v23.4s, v22.8h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
-    smull2          v25.4s, v24.8h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
-    smull2          v19.4s, v18.8h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
-    smull2          v21.4s, v20.8h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+    smull2          v23.4s, v22.8h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560) */
+    smull2          v25.4s, v24.8h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644) */
+    smull2          v19.4s, v18.8h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, -FIX_0_899976223) */
+    smull2          v21.4s, v20.8h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, -FIX_2_562915447) */
 
     add             v23.4s, v23.4s, v27.4s  /* z3 += z5 */
     add             v22.4s, v22.4s, v26.4s  /* z3 += z5 */
@@ -610,14 +610,14 @@ asm_function jsimd_idct_islow_neon
     mov             v3.16b, v14.16b
     mov             v4.16b, v14.16b
     mov             v5.16b, v14.16b
-    rshrn           v6.4h, v19.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v7.4h, v23.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v8.4h, v27.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v9.4h, v15.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v6.8h, v17.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v7.8h, v29.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v8.8h, v25.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v9.8h, v21.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v6.4h, v19.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v7.4h, v23.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v8.4h, v27.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v9.4h, v15.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v6.8h, v17.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v7.8h, v29.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v8.8h, v25.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v9.8h, v21.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
     b               1b
 
 .balign 16
@@ -632,8 +632,8 @@ asm_function jsimd_idct_islow_neon
     sshll2          v23.4s, v22.8h, #(CONST_BITS)  /* tmp0h tmp0 = LEFT_SHIFT(z2 + z3, CONST_BITS); */
     mov             v21.16b, v19.16b               /* tmp3 = z1 */
     mov             v20.16b, v18.16b               /* tmp3 = z1 */
-    smlal2          v19.4s, v8.8h, XFIX_N_1_847    /* tmp2h tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
-    smlal           v18.4s, v8.4h, XFIX_N_1_847    /* tmp2l tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065); */
+    smlal2          v19.4s, v8.8h, XFIX_N_1_847    /* tmp2h tmp2 = z1 + MULTIPLY(z3, -FIX_1_847759065); */
+    smlal           v18.4s, v8.4h, XFIX_N_1_847    /* tmp2l tmp2 = z1 + MULTIPLY(z3, -FIX_1_847759065); */
     sshll2          v27.4s, v26.8h, #(CONST_BITS)  /* tmp1h tmp1 = LEFT_SHIFT(z2 - z3, CONST_BITS); */
     smlal2          v21.4s, v4.8h, XFIX_P_0_765    /* tmp3h tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
     smlal           v20.4s, v4.4h, XFIX_P_0_765    /* tmp3l tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865); */
@@ -663,20 +663,20 @@ asm_function jsimd_idct_islow_neon
     smull2          v15.4s, v5.8h, XFIX_P_3_072   /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
     smull2          v17.4s, v3.8h, XFIX_P_1_501   /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
     smull2          v27.4s, v26.8h, XFIX_P_1_175  /* z5h z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
-    smull2          v23.4s, v22.8h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
-    smull2          v25.4s, v24.8h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
-    smull2          v19.4s, v18.8h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
-    smull2          v21.4s, v20.8h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+    smull2          v23.4s, v22.8h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560) */
+    smull2          v25.4s, v24.8h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644) */
+    smull2          v19.4s, v18.8h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, -FIX_0_899976223) */
+    smull2          v21.4s, v20.8h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, -FIX_2_562915447) */
 
     smull           v10.4s, v9.4h, XFIX_P_0_298   /* tmp0 = MULTIPLY(tmp0, FIX_0_298631336) */
     smull           v12.4s, v7.4h, XFIX_P_2_053   /* tmp1 = MULTIPLY(tmp1, FIX_2_053119869) */
     smull           v14.4s, v5.4h, XFIX_P_3_072   /* tmp2 = MULTIPLY(tmp2, FIX_3_072711026) */
     smull           v16.4s, v3.4h, XFIX_P_1_501   /* tmp3 = MULTIPLY(tmp3, FIX_1_501321110) */
     smull           v26.4s, v26.4h, XFIX_P_1_175  /* z5l z5 = MULTIPLY(z3 + z4, FIX_1_175875602) */
-    smull           v22.4s, v22.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560) */
-    smull           v24.4s, v24.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644) */
-    smull           v18.4s, v18.4h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, - FIX_0_899976223) */
-    smull           v20.4s, v20.4h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, - FIX_2_562915447) */
+    smull           v22.4s, v22.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560) */
+    smull           v24.4s, v24.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644) */
+    smull           v18.4s, v18.4h, XFIX_N_0_899  /* z1 = MULTIPLY(z1, -FIX_0_899976223) */
+    smull           v20.4s, v20.4h, XFIX_N_2_562  /* z2 = MULTIPLY(z2, -FIX_2_562915447) */
 
     add             v23.4s, v23.4s, v27.4s  /* z3 += z5 */
     add             v22.4s, v22.4s, v26.4s  /* z3 += z5 */
@@ -720,22 +720,22 @@ asm_function jsimd_idct_islow_neon
     sub             v16.4s, v6.4s, v10.4s   /* tmp13 - tmp0 */
     sub             v17.4s, v31.4s, v11.4s  /* tmp13 - tmp0 */
 
-    rshrn           v2.4h, v18.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v3.4h, v22.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v4.4h, v26.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v5.4h, v14.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn           v6.4h, v19.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int) DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v7.4h, v23.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int) DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v8.4h, v27.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int) DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v9.4h, v15.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int) DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v2.8h, v16.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v3.8h, v28.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v4.8h, v24.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v5.8h, v20.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn2          v6.8h, v17.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int) DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v7.8h, v29.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int) DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v8.8h, v25.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int) DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v9.8h, v21.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int) DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v2.4h, v18.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v3.4h, v22.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v4.4h, v26.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v5.4h, v14.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn           v6.4h, v19.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v7.4h, v23.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v8.4h, v27.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v9.4h, v15.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v2.8h, v16.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v3.8h, v28.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v4.8h, v24.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v5.8h, v20.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn2          v6.8h, v17.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v7.8h, v29.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v8.8h, v25.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v9.8h, v21.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
     b               1b
 
     .unreq          DCT_TABLE
@@ -1042,18 +1042,18 @@ asm_function jsimd_idct_ifast_neon
 
 .balign 16
 Ljsimd_idct_4x4_neon_consts:
-  .short FIX_1_847759065      /* v0.h[0] */
-  .short -FIX_0_765366865     /* v0.h[1] */
-  .short -FIX_0_211164243     /* v0.h[2] */
-  .short FIX_1_451774981      /* v0.h[3] */
-  .short -FIX_2_172734803     /* d1[0] */
-  .short FIX_1_061594337      /* d1[1] */
-  .short -FIX_0_509795579     /* d1[2] */
-  .short -FIX_0_601344887     /* d1[3] */
-  .short FIX_0_899976223      /* v2.h[0] */
-  .short FIX_2_562915447      /* v2.h[1] */
-  .short 1 << (CONST_BITS+1)  /* v2.h[2] */
-  .short 0                    /* v2.h[3] */
+  .short FIX_1_847759065        /* v0.h[0] */
+  .short -FIX_0_765366865       /* v0.h[1] */
+  .short -FIX_0_211164243       /* v0.h[2] */
+  .short FIX_1_451774981        /* v0.h[3] */
+  .short -FIX_2_172734803       /* d1[0] */
+  .short FIX_1_061594337        /* d1[1] */
+  .short -FIX_0_509795579       /* d1[2] */
+  .short -FIX_0_601344887       /* d1[3] */
+  .short FIX_0_899976223        /* v2.h[0] */
+  .short FIX_2_562915447        /* v2.h[1] */
+  .short 1 << (CONST_BITS + 1)  /* v2.h[2] */
+  .short 0                      /* v2.h[3] */
 
 .macro idct_helper x4, x6, x8, x10, x12, x14, x16, shift, y26, y27, y28, y29
     smull           v28.4s, \x4, v2.h[2]
@@ -1544,7 +1544,7 @@ asm_function jsimd_idct_2x2_neon
     .else
       .error unsupported macroblock size
     .endif
-  .elseif \bpp==16
+  .elseif \bpp == 16
     .if \size == 8
       st1           {v25.8h}, [RGB], 16
     .elseif \size == 4
@@ -2238,8 +2238,8 @@ asm_function jsimd_convsamp_neon
 #define CONST_BITS 13
 #define PASS1_BITS 2
 
-#define DESCALE_P1 (CONST_BITS-PASS1_BITS)
-#define DESCALE_P2 (CONST_BITS+PASS1_BITS)
+#define DESCALE_P1 (CONST_BITS - PASS1_BITS)
+#define DESCALE_P2 (CONST_BITS + PASS1_BITS)
 
 #define F_0_298  2446  /* FIX(0.298631336) */
 #define F_0_390  3196  /* FIX(0.390180644) */
@@ -2354,8 +2354,8 @@ asm_function jsimd_fdct_islow_neon
 
     add             v18.8h, v11.8h, v9.8h  /* tmp12 + tmp13 */
 
-    shl             v16.8h, v16.8h, #PASS1_BITS  /* dataptr[0] = (DCTELEM) LEFT_SHIFT(tmp10 + tmp11, PASS1_BITS); */
-    shl             v20.8h, v20.8h, #PASS1_BITS  /* dataptr[4] = (DCTELEM) LEFT_SHIFT(tmp10 - tmp11, PASS1_BITS); */
+    shl             v16.8h, v16.8h, #PASS1_BITS  /* dataptr[0] = (DCTELEM)LEFT_SHIFT(tmp10 + tmp11, PASS1_BITS); */
+    shl             v20.8h, v20.8h, #PASS1_BITS  /* dataptr[4] = (DCTELEM)LEFT_SHIFT(tmp10 - tmp11, PASS1_BITS); */
 
     smull2          v24.4s, v18.8h, XFIX_P_0_541  /* z1 hi = MULTIPLY(tmp12 + tmp13, XFIX_P_0_541); */
     smull           v18.4s, v18.4h, XFIX_P_0_541  /* z1 lo = MULTIPLY(tmp12 + tmp13, XFIX_P_0_541); */
@@ -2369,8 +2369,8 @@ asm_function jsimd_fdct_islow_neon
 
     rshrn           v18.4h, v18.4s, #DESCALE_P1
     rshrn           v22.4h, v22.4s, #DESCALE_P1
-    rshrn2          v18.8h, v24.4s, #DESCALE_P1  /* dataptr[2] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp13, XFIX_P_0_765), CONST_BITS-PASS1_BITS); */
-    rshrn2          v22.8h, v25.4s, #DESCALE_P1  /* dataptr[6] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp12, XFIX_N_1_847), CONST_BITS-PASS1_BITS); */
+    rshrn2          v18.8h, v24.4s, #DESCALE_P1  /* dataptr[2] = (DCTELEM)DESCALE(z1 + MULTIPLY(tmp13, XFIX_P_0_765), CONST_BITS-PASS1_BITS); */
+    rshrn2          v22.8h, v25.4s, #DESCALE_P1  /* dataptr[6] = (DCTELEM)DESCALE(z1 + MULTIPLY(tmp12, XFIX_N_1_847), CONST_BITS-PASS1_BITS); */
 
     /* Odd part */
 
@@ -2396,10 +2396,10 @@ asm_function jsimd_fdct_islow_neon
     smull2          v13.4s, v9.8h, XFIX_N_2_562
     smull2          v14.4s, v10.8h, XFIX_N_1_961
     smull2          v15.4s, v11.8h, XFIX_N_0_390
-    smull           v8.4s, v8.4h, XFIX_N_0_899    /* z1 = MULTIPLY(z1, - FIX_0_899976223); */
-    smull           v9.4s, v9.4h, XFIX_N_2_562    /* z2 = MULTIPLY(z2, - FIX_2_562915447); */
-    smull           v10.4s, v10.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560); */
-    smull           v11.4s, v11.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644); */
+    smull           v8.4s, v8.4h, XFIX_N_0_899    /* z1 = MULTIPLY(z1, -FIX_0_899976223); */
+    smull           v9.4s, v9.4h, XFIX_N_2_562    /* z2 = MULTIPLY(z2, -FIX_2_562915447); */
+    smull           v10.4s, v10.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560); */
+    smull           v11.4s, v11.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644); */
 
     add             v10.4s, v10.4s, v4.4s  /* z3 += z5 */
     add             v14.4s, v14.4s, v5.4s
@@ -2428,10 +2428,10 @@ asm_function jsimd_fdct_islow_neon
     rshrn           v21.4h, v29.4s, #DESCALE_P1
     rshrn           v19.4h, v30.4s, #DESCALE_P1
     rshrn           v17.4h, v31.4s, #DESCALE_P1
-    rshrn2          v23.8h, v24.4s, #DESCALE_P1  /* dataptr[7] = (DCTELEM) DESCALE(tmp4 + z1 + z3, CONST_BITS-PASS1_BITS); */
-    rshrn2          v21.8h, v25.4s, #DESCALE_P1  /* dataptr[5] = (DCTELEM) DESCALE(tmp5 + z2 + z4, CONST_BITS-PASS1_BITS); */
-    rshrn2          v19.8h, v26.4s, #DESCALE_P1  /* dataptr[3] = (DCTELEM) DESCALE(tmp6 + z2 + z3, CONST_BITS-PASS1_BITS); */
-    rshrn2          v17.8h, v27.4s, #DESCALE_P1  /* dataptr[1] = (DCTELEM) DESCALE(tmp7 + z1 + z4, CONST_BITS-PASS1_BITS); */
+    rshrn2          v23.8h, v24.4s, #DESCALE_P1  /* dataptr[7] = (DCTELEM)DESCALE(tmp4 + z1 + z3, CONST_BITS-PASS1_BITS); */
+    rshrn2          v21.8h, v25.4s, #DESCALE_P1  /* dataptr[5] = (DCTELEM)DESCALE(tmp5 + z2 + z4, CONST_BITS-PASS1_BITS); */
+    rshrn2          v19.8h, v26.4s, #DESCALE_P1  /* dataptr[3] = (DCTELEM)DESCALE(tmp6 + z2 + z3, CONST_BITS-PASS1_BITS); */
+    rshrn2          v17.8h, v27.4s, #DESCALE_P1  /* dataptr[1] = (DCTELEM)DESCALE(tmp7 + z1 + z4, CONST_BITS-PASS1_BITS); */
 
     /* Transpose */
     transpose_8x8   v16, v17, v18, v19, v20, v21, v22, v23, v31, v2, v3, v4
@@ -2457,8 +2457,8 @@ asm_function jsimd_fdct_islow_neon
 
     add             v18.8h, v11.8h, v9.8h  /* tmp12 + tmp13 */
 
-    srshr           v16.8h, v16.8h, #PASS1_BITS  /* dataptr[0] = (DCTELEM) DESCALE(tmp10 + tmp11, PASS1_BITS); */
-    srshr           v20.8h, v20.8h, #PASS1_BITS  /* dataptr[4] = (DCTELEM) DESCALE(tmp10 - tmp11, PASS1_BITS); */
+    srshr           v16.8h, v16.8h, #PASS1_BITS  /* dataptr[0] = (DCTELEM)DESCALE(tmp10 + tmp11, PASS1_BITS); */
+    srshr           v20.8h, v20.8h, #PASS1_BITS  /* dataptr[4] = (DCTELEM)DESCALE(tmp10 - tmp11, PASS1_BITS); */
 
     smull2          v24.4s, v18.8h, XFIX_P_0_541  /* z1 hi = MULTIPLY(tmp12 + tmp13, XFIX_P_0_541); */
     smull           v18.4s, v18.4h, XFIX_P_0_541  /* z1 lo = MULTIPLY(tmp12 + tmp13, XFIX_P_0_541); */
@@ -2472,8 +2472,8 @@ asm_function jsimd_fdct_islow_neon
 
     rshrn           v18.4h, v18.4s, #DESCALE_P2
     rshrn           v22.4h, v22.4s, #DESCALE_P2
-    rshrn2          v18.8h, v24.4s, #DESCALE_P2  /* dataptr[2] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp13, XFIX_P_0_765), CONST_BITS-PASS1_BITS); */
-    rshrn2          v22.8h, v25.4s, #DESCALE_P2  /* dataptr[6] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp12, XFIX_N_1_847), CONST_BITS-PASS1_BITS); */
+    rshrn2          v18.8h, v24.4s, #DESCALE_P2  /* dataptr[2] = (DCTELEM)DESCALE(z1 + MULTIPLY(tmp13, XFIX_P_0_765), CONST_BITS-PASS1_BITS); */
+    rshrn2          v22.8h, v25.4s, #DESCALE_P2  /* dataptr[6] = (DCTELEM)DESCALE(z1 + MULTIPLY(tmp12, XFIX_N_1_847), CONST_BITS-PASS1_BITS); */
 
     /* Odd part */
     add             v8.8h, v28.8h, v31.8h   /* z1 = tmp4 + tmp7; */
@@ -2499,10 +2499,10 @@ asm_function jsimd_fdct_islow_neon
     smull2          v13.4s, v9.8h, XFIX_N_2_562
     smull2          v14.4s, v10.8h, XFIX_N_1_961
     smull2          v15.4s, v11.8h, XFIX_N_0_390
-    smull           v8.4s, v8.4h, XFIX_N_0_899    /* z1 = MULTIPLY(z1, - FIX_0_899976223); */
-    smull           v9.4s, v9.4h, XFIX_N_2_562    /* z2 = MULTIPLY(z2, - FIX_2_562915447); */
-    smull           v10.4s, v10.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, - FIX_1_961570560); */
-    smull           v11.4s, v11.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, - FIX_0_390180644); */
+    smull           v8.4s, v8.4h, XFIX_N_0_899    /* z1 = MULTIPLY(z1, -FIX_0_899976223); */
+    smull           v9.4s, v9.4h, XFIX_N_2_562    /* z2 = MULTIPLY(z2, -FIX_2_562915447); */
+    smull           v10.4s, v10.4h, XFIX_N_1_961  /* z3 = MULTIPLY(z3, -FIX_1_961570560); */
+    smull           v11.4s, v11.4h, XFIX_N_0_390  /* z4 = MULTIPLY(z4, -FIX_0_390180644); */
 
     add             v10.4s, v10.4s, v4.4s
     add             v14.4s, v14.4s, v5.4s
@@ -2531,10 +2531,10 @@ asm_function jsimd_fdct_islow_neon
     rshrn           v21.4h, v29.4s, #DESCALE_P2
     rshrn           v19.4h, v30.4s, #DESCALE_P2
     rshrn           v17.4h, v31.4s, #DESCALE_P2
-    rshrn2          v23.8h, v24.4s, #DESCALE_P2  /* dataptr[7] = (DCTELEM) DESCALE(tmp4 + z1 + z3, CONST_BITS-PASS1_BITS); */
-    rshrn2          v21.8h, v25.4s, #DESCALE_P2  /* dataptr[5] = (DCTELEM) DESCALE(tmp5 + z2 + z4, CONST_BITS-PASS1_BITS); */
-    rshrn2          v19.8h, v26.4s, #DESCALE_P2  /* dataptr[3] = (DCTELEM) DESCALE(tmp6 + z2 + z3, CONST_BITS-PASS1_BITS); */
-    rshrn2          v17.8h, v27.4s, #DESCALE_P2  /* dataptr[1] = (DCTELEM) DESCALE(tmp7 + z1 + z4, CONST_BITS-PASS1_BITS); */
+    rshrn2          v23.8h, v24.4s, #DESCALE_P2  /* dataptr[7] = (DCTELEM)DESCALE(tmp4 + z1 + z3, CONST_BITS-PASS1_BITS); */
+    rshrn2          v21.8h, v25.4s, #DESCALE_P2  /* dataptr[5] = (DCTELEM)DESCALE(tmp5 + z2 + z4, CONST_BITS-PASS1_BITS); */
+    rshrn2          v19.8h, v26.4s, #DESCALE_P2  /* dataptr[3] = (DCTELEM)DESCALE(tmp6 + z2 + z3, CONST_BITS-PASS1_BITS); */
+    rshrn2          v17.8h, v27.4s, #DESCALE_P2  /* dataptr[1] = (DCTELEM)DESCALE(tmp7 + z1 + z4, CONST_BITS-PASS1_BITS); */
 
     /* store results */
     st1             {v16.8h, v17.8h, v18.8h, v19.8h}, [DATA], 64
@@ -2677,8 +2677,8 @@ asm_function jsimd_fdct_ifast_neon
 
 /*
  * GLOBAL(void)
- * jsimd_quantize_neon (JCOEFPTR coef_block, DCTELEM *divisors,
- *                      DCTELEM *workspace);
+ * jsimd_quantize_neon(JCOEFPTR coef_block, DCTELEM *divisors,
+ *                     DCTELEM *workspace);
  *
  */
 asm_function jsimd_quantize_neon
@@ -2769,10 +2769,10 @@ asm_function jsimd_quantize_neon
  * without smoothing.
  *
  * GLOBAL(void)
- * jsimd_h2v1_downsample_neon (JDIMENSION image_width, int max_v_samp_factor,
- *                             JDIMENSION v_samp_factor,
- *                             JDIMENSION width_in_blocks,
- *                             JSAMPARRAY input_data, JSAMPARRAY output_data);
+ * jsimd_h2v1_downsample_neon(JDIMENSION image_width, int max_v_samp_factor,
+ *                            JDIMENSION v_samp_factor,
+ *                            JDIMENSION width_in_blocks,
+ *                            JSAMPARRAY input_data, JSAMPARRAY output_data);
  */
 
 .balign 16
@@ -2880,10 +2880,10 @@ asm_function jsimd_h2v1_downsample_neon
  * without smoothing.
  *
  * GLOBAL(void)
- * jsimd_h2v2_downsample_neon (JDIMENSION image_width, int max_v_samp_factor,
- *                             JDIMENSION v_samp_factor,
- *                             JDIMENSION width_in_blocks,
- *                             JSAMPARRAY input_data, JSAMPARRAY output_data);
+ * jsimd_h2v2_downsample_neon(JDIMENSION image_width, int max_v_samp_factor,
+ *                            JDIMENSION v_samp_factor,
+ *                            JDIMENSION width_in_blocks,
+ *                            JSAMPARRAY input_data, JSAMPARRAY output_data);
  */
 
 .balign 16
@@ -2962,10 +2962,10 @@ asm_function jsimd_h2v2_downsample_neon
 /*****************************************************************************/
 
 /*
- * GLOBAL(JOCTET*)
- * jsimd_huff_encode_one_block (working_state *state, JOCTET *buffer,
- *                              JCOEFPTR block, int last_dc_val,
- *                              c_derived_tbl *dctbl, c_derived_tbl *actbl)
+ * GLOBAL(JOCTET *)
+ * jsimd_huff_encode_one_block(working_state *state, JOCTET *buffer,
+ *                             JCOEFPTR block, int last_dc_val,
+ *                             c_derived_tbl *dctbl, c_derived_tbl *actbl)
  *
  */
 
@@ -3280,7 +3280,7 @@ asm_function jsimd_huff_encode_one_block_neon_slowtbl
       put_bits        x10, x11
     addp            v16.16b, v16.16b, v18.16b
       checkbuf47
-    umov            x9,v16.D[0]
+    umov            x9, v16.D[0]
       put_bits        x13, x12
     cnt             v17.8b, v16.8b
       mvn             x9, x9

@@ -55,13 +55,14 @@ PD_1_306 times 4 dd 1.306562964876376527856643
 ; Perform the forward DCT on one block of samples.
 ;
 ; GLOBAL(void)
-; jsimd_fdct_float_sse (FAST_FLOAT *data)
+; jsimd_fdct_float_sse(FAST_FLOAT *data)
 ;
 
-%define data(b)       (b)+8             ; FAST_FLOAT *data
+%define data(b)       (b) + 8           ; FAST_FLOAT *data
 
-%define original_ebp  ebp+0
-%define wk(i)         ebp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define original_ebp  ebp + 0
+%define wk(i)         ebp - (WK_NUM - (i)) * SIZEOF_XMMWORD
+                                        ; xmmword wk[WK_NUM]
 %define WK_NUM        2
 
     align       32

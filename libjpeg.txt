@@ -411,7 +411,7 @@ array containing 3-byte RGB pixels:
         row_stride = image_width * 3;   /* JSAMPLEs per row in image_buffer */
 
         while (cinfo.next_scanline < cinfo.image_height) {
-            row_pointer[0] = & image_buffer[cinfo.next_scanline * row_stride];
+            row_pointer[0] = &image_buffer[cinfo.next_scanline * row_stride];
             jpeg_write_scanlines(&cinfo, row_pointer, 1);
         }
 
@@ -961,8 +961,8 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 Compression parameters (cinfo fields) include:
 
 boolean arith_code
-	If TRUE, use arithmetic coding.
-	If FALSE, use Huffman coding.
+        If TRUE, use arithmetic coding.
+        If FALSE, use Huffman coding.
 
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:
@@ -1974,7 +1974,7 @@ and how to display each pass.
 The simplest approach to displaying progressive images is to do one display
 pass for each scan appearing in the input file.  In this case the outer loop
 condition is typically
-        while (! jpeg_input_complete(&cinfo))
+        while (!jpeg_input_complete(&cinfo))
 and the start-output call should read
         jpeg_start_output(&cinfo, cinfo.input_scan_number);
 The second parameter to jpeg_start_output() indicates which scan of the input
@@ -2095,7 +2095,7 @@ something like this:
             jpeg_start_output(&cinfo, cinfo.input_scan_number);
             ...
             jpeg_finish_output()
-        } while (! final_pass);
+        } while (!final_pass);
 rather than quitting as soon as jpeg_input_complete() returns TRUE.  This
 arrangement makes it simple to use higher-quality decoding parameters
 for the final pass.  But if you don't want to use special parameters for
@@ -2968,7 +2968,7 @@ object is destroyed.  Most data is allocated "per image" and is freed by
 jpeg_finish_compress, jpeg_finish_decompress, or jpeg_abort.  You can call the
 memory manager yourself to allocate structures that will automatically be
 freed at these times.  Typical code for this is
-  ptr = (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE, size);
+  ptr = (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE, size);
 Use JPOOL_PERMANENT to get storage that lasts as long as the JPEG object.
 Use alloc_large instead of alloc_small for anything bigger than a few Kbytes.
 There are also alloc_sarray and alloc_barray routines that automatically

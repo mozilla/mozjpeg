@@ -24,21 +24,22 @@
 ; Convert some rows of samples to the output colorspace.
 ;
 ; GLOBAL(void)
-; jsimd_ycc_rgb_convert_avx2 (JDIMENSION out_width,
-;                             JSAMPIMAGE input_buf, JDIMENSION input_row,
-;                             JSAMPARRAY output_buf, int num_rows)
+; jsimd_ycc_rgb_convert_avx2(JDIMENSION out_width, JSAMPIMAGE input_buf,
+;                            JDIMENSION input_row, JSAMPARRAY output_buf,
+;                            int num_rows)
 ;
 
-%define out_width(b)   (b)+8            ; JDIMENSION out_width
-%define input_buf(b)   (b)+12           ; JSAMPIMAGE input_buf
-%define input_row(b)   (b)+16           ; JDIMENSION input_row
-%define output_buf(b)  (b)+20           ; JSAMPARRAY output_buf
-%define num_rows(b)    (b)+24           ; int num_rows
+%define out_width(b)   (b) + 8          ; JDIMENSION out_width
+%define input_buf(b)   (b) + 12         ; JSAMPIMAGE input_buf
+%define input_row(b)   (b) + 16         ; JDIMENSION input_row
+%define output_buf(b)  (b) + 20         ; JSAMPARRAY output_buf
+%define num_rows(b)    (b) + 24         ; int num_rows
 
-%define original_ebp  ebp+0
-%define wk(i)         ebp-(WK_NUM-(i))*SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
-%define WK_NUM        2
-%define gotptr        wk(0)-SIZEOF_POINTER  ; void * gotptr
+%define original_ebp   ebp + 0
+%define wk(i)          ebp - (WK_NUM - (i)) * SIZEOF_YMMWORD
+                                        ; ymmword wk[WK_NUM]
+%define WK_NUM         2
+%define gotptr         wk(0) - SIZEOF_POINTER  ; void * gotptr
 
     align       32
     GLOBAL_FUNCTION(jsimd_ycc_rgb_convert_avx2)

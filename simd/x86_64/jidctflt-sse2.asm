@@ -57,8 +57,8 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 ; Perform dequantization and inverse DCT on one block of coefficients.
 ;
 ; GLOBAL(void)
-; jsimd_idct_float_sse2 (void *dct_table, JCOEFPTR coef_block,
-;                        JSAMPARRAY output_buf, JDIMENSION output_col)
+; jsimd_idct_float_sse2(void *dct_table, JCOEFPTR coef_block,
+;                       JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
 ; r10 = void *dct_table
@@ -66,10 +66,11 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 ; r12 = JSAMPARRAY output_buf
 ; r13d = JDIMENSION output_col
 
-%define original_rbp  rbp+0
-%define wk(i)         rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define original_rbp  rbp + 0
+%define wk(i)         rbp - (WK_NUM - (i)) * SIZEOF_XMMWORD
+                                        ; xmmword wk[WK_NUM]
 %define WK_NUM        2
-%define workspace     wk(0)-DCTSIZE2*SIZEOF_FAST_FLOAT
+%define workspace     wk(0) - DCTSIZE2 * SIZEOF_FAST_FLOAT
                                         ; FAST_FLOAT workspace[DCTSIZE2]
 
     align       32

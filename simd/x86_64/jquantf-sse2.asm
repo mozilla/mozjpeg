@@ -26,8 +26,8 @@
 ; Load data into workspace, applying unsigned->signed conversion
 ;
 ; GLOBAL(void)
-; jsimd_convsamp_float_sse2 (JSAMPARRAY sample_data, JDIMENSION start_col,
-;                            FAST_FLOAT *workspace);
+; jsimd_convsamp_float_sse2(JSAMPARRAY sample_data, JDIMENSION start_col,
+;                           FAST_FLOAT *workspace);
 ;
 
 ; r10 = JSAMPARRAY sample_data
@@ -94,14 +94,13 @@ EXTN(jsimd_convsamp_float_sse2):
     pop         rbp
     ret
 
-
 ; --------------------------------------------------------------------------
 ;
 ; Quantize/descale the coefficients, and store into coef_block
 ;
 ; GLOBAL(void)
-; jsimd_quantize_float_sse2 (JCOEFPTR coef_block, FAST_FLOAT *divisors,
-;                         FAST_FLOAT *workspace);
+; jsimd_quantize_float_sse2(JCOEFPTR coef_block, FAST_FLOAT *divisors,
+;                           FAST_FLOAT *workspace);
 ;
 
 ; r10 = JCOEFPTR coef_block

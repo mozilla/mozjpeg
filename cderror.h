@@ -26,7 +26,7 @@
 #define JMAKE_ENUM_LIST
 #else
 /* Repeated inclusions of this file are no-ops unless JMESSAGE is defined */
-#define JMESSAGE(code,string)
+#define JMESSAGE(code, string)
 #endif /* CDERROR_H */
 #endif /* JMESSAGE */
 
@@ -34,11 +34,11 @@
 
 typedef enum {
 
-#define JMESSAGE(code,string)   code ,
+#define JMESSAGE(code, string)  code,
 
 #endif /* JMAKE_ENUM_LIST */
 
-JMESSAGE(JMSG_FIRSTADDONCODE=1000, NULL) /* Must be first entry! */
+JMESSAGE(JMSG_FIRSTADDONCODE = 1000, NULL) /* Must be first entry! */
 
 #ifdef BMP_SUPPORTED
 JMESSAGE(JERR_BMP_BADCMAP, "Unsupported BMP colormap format")

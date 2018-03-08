@@ -24,8 +24,8 @@
 #include "jerror.h"
 
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc(),free() */
-extern void *malloc (size_t size);
-extern void free (void *ptr);
+extern void *malloc(size_t size);
+extern void free(void *ptr);
 #endif
 
 
@@ -54,7 +54,7 @@ typedef my_mem_destination_mgr *my_mem_dest_ptr;
  */
 
 METHODDEF(void)
-init_mem_destination (j_compress_ptr cinfo)
+init_mem_destination(j_compress_ptr cinfo)
 {
   /* no work necessary here */
 }
@@ -84,17 +84,17 @@ init_mem_destination (j_compress_ptr cinfo)
  */
 
 METHODDEF(boolean)
-empty_mem_output_buffer (j_compress_ptr cinfo)
+empty_mem_output_buffer(j_compress_ptr cinfo)
 {
   size_t nextsize;
   JOCTET *nextbuffer;
-  my_mem_dest_ptr dest = (my_mem_dest_ptr) cinfo->dest;
+  my_mem_dest_ptr dest = (my_mem_dest_ptr)cinfo->dest;
 
   if (!dest->alloc) ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Try to allocate new buffer with double size */
   nextsize = dest->bufsize * 2;
-  nextbuffer = (JOCTET *) malloc(nextsize);
+  nextbuffer = (JOCTET *)malloc(nextsize);
 
   if (nextbuffer == NULL)
     ERREXIT1(cinfo, JERR_OUT_OF_MEMORY, 10);
@@ -126,9 +126,9 @@ empty_mem_output_buffer (j_compress_ptr cinfo)
  */
 
 METHODDEF(void)
-term_mem_destination (j_compress_ptr cinfo)
+term_mem_destination(j_compress_ptr cinfo)
 {
-  my_mem_dest_ptr dest = (my_mem_dest_ptr) cinfo->dest;
+  my_mem_dest_ptr dest = (my_mem_dest_ptr)cinfo->dest;
 
   if (dest->alloc) *dest->outbuffer = dest->buffer;
   *dest->outsize = (unsigned long)(dest->bufsize - dest->pub.free_in_buffer);
@@ -147,9 +147,8 @@ term_mem_destination (j_compress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_mem_dest_tj (j_compress_ptr cinfo,
-               unsigned char **outbuffer, unsigned long *outsize,
-               boolean alloc)
+jpeg_mem_dest_tj(j_compress_ptr cinfo, unsigned char **outbuffer,
+                 unsigned long *outsize, boolean alloc)
 {
   boolean reused = FALSE;
   my_mem_dest_ptr dest;
@@ -162,9 +161,9 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
    */
   if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_PERMANENT,
                                   sizeof(my_mem_destination_mgr));
-    dest = (my_mem_dest_ptr) cinfo->dest;
+    dest = (my_mem_dest_ptr)cinfo->dest;
     dest->newbuffer = NULL;
     dest->buffer = NULL;
   } else if (cinfo->dest->init_destination != init_mem_destination) {
@@ -174,7 +173,7 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
-  dest = (my_mem_dest_ptr) cinfo->dest;
+  dest = (my_mem_dest_ptr)cinfo->dest;
   dest->pub.init_destination = init_mem_destination;
   dest->pub.empty_output_buffer = empty_mem_output_buffer;
   dest->pub.term_destination = term_mem_destination;
@@ -187,12 +186,12 @@ jpeg_mem_dest_tj (j_compress_ptr cinfo,
   if (*outbuffer == NULL || *outsize == 0) {
     if (alloc) {
       /* Allocate initial buffer */
-      dest->newbuffer = *outbuffer = (unsigned char *) malloc(OUTPUT_BUF_SIZE);
+      dest->newbuffer = *outbuffer = (unsigned char *)malloc(OUTPUT_BUF_SIZE);
       if (dest->newbuffer == NULL)
         ERREXIT1(cinfo, JERR_OUT_OF_MEMORY, 10);
       *outsize = OUTPUT_BUF_SIZE;
-    }
-    else ERREXIT(cinfo, JERR_BUFFER_SIZE);
+    } else
+      ERREXIT(cinfo, JERR_BUFFER_SIZE);
   }
 
   dest->pub.next_output_byte = dest->buffer = *outbuffer;

@@ -46,8 +46,8 @@
  */
 
 GLOBAL(void)
-jpeg_write_icc_profile (j_compress_ptr cinfo, const JOCTET *icc_data_ptr,
-                        unsigned int icc_data_len)
+jpeg_write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr,
+                       unsigned int icc_data_len)
 {
   unsigned int num_markers;     /* total number of markers we'll write */
   int cur_marker = 1;           /* per spec, counting starts at 1 */
@@ -72,7 +72,7 @@ jpeg_write_icc_profile (j_compress_ptr cinfo, const JOCTET *icc_data_ptr,
 
     /* Write the JPEG marker header (APP2 code and marker length) */
     jpeg_write_m_header(cinfo, ICC_MARKER,
-                        (unsigned int) (length + ICC_OVERHEAD_LEN));
+                        (unsigned int)(length + ICC_OVERHEAD_LEN));
 
     /* Write the marker identifying string "ICC_PROFILE" (null-terminated).  We
      * code it in this less-than-transparent way so that the code works even if
@@ -93,7 +93,7 @@ jpeg_write_icc_profile (j_compress_ptr cinfo, const JOCTET *icc_data_ptr,
 
     /* Add the sequencing info */
     jpeg_write_m_byte(cinfo, cur_marker);
-    jpeg_write_m_byte(cinfo, (int) num_markers);
+    jpeg_write_m_byte(cinfo, (int)num_markers);
 
     /* Add the profile data */
     while (length--) {

@@ -47,7 +47,7 @@ static jpeg_transform_info transformoption; /* image transformation options */
 
 
 LOCAL(void)
-usage (void)
+usage(void)
 /* complain about bad command line */
 {
   fprintf(stderr, "usage: %s [switches] ", progname);
@@ -99,7 +99,7 @@ usage (void)
 
 
 LOCAL(void)
-select_transform (JXFORM_CODE transform)
+select_transform(JXFORM_CODE transform)
 /* Silly little routine to detect multiple transform options,
  * which we can't handle.
  */
@@ -122,8 +122,8 @@ select_transform (JXFORM_CODE transform)
 
 
 LOCAL(int)
-parse_switches (j_compress_ptr cinfo, int argc, char **argv,
-                int last_file_arg_seen, boolean for_real)
+parse_switches(j_compress_ptr cinfo, int argc, char **argv,
+               int last_file_arg_seen, boolean for_real)
 /* Parse optional switches.
  * Returns argv[] index of first file-name argument (== argc if none).
  * Any file names with indexes <= last_file_arg_seen are ignored;
@@ -193,7 +193,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 #if TRANSFORMS_SUPPORTED
       if (++argn >= argc)       /* advance to next argument */
         usage();
-      if (! jtransform_parse_crop_spec(&transformoption, argv[argn])) {
+      if (!jtransform_parse_crop_spec(&transformoption, argv[argn])) {
         fprintf(stderr, "%s: bogus -crop argument '%s'\n",
                 progname, argv[argn]);
         exit(EXIT_FAILURE);
@@ -207,7 +207,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* On first -d, print version identification */
       static boolean printed_version = FALSE;
 
-      if (! printed_version) {
+      if (!printed_version) {
         fprintf(stderr, "%s version %s (build %s)\n",
                 PACKAGE_NAME, VERSION, BUILD);
         fprintf(stderr, "%s\n\n", JCOPYRIGHT);
@@ -233,7 +233,8 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       else
         usage();
 
-    } else if (keymatch(arg, "grayscale", 1) || keymatch(arg, "greyscale",1)) {
+    } else if (keymatch(arg, "grayscale", 1) ||
+               keymatch(arg, "greyscale", 1)) {
       /* Force to grayscale. */
 #if TRANSFORMS_SUPPORTED
       transformoption.force_grayscale = TRUE;
@@ -304,10 +305,10 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       if (lval < 0 || lval > 65535L)
         usage();
       if (ch == 'b' || ch == 'B') {
-        cinfo->restart_interval = (unsigned int) lval;
+        cinfo->restart_interval = (unsigned int)lval;
         cinfo->restart_in_rows = 0; /* else prior '-restart n' overrides me */
       } else {
-        cinfo->restart_in_rows = (int) lval;
+        cinfo->restart_in_rows = (int)lval;
         /* restart_interval will be computed during startup */
       }
 
@@ -365,7 +366,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED
     if (scansarg != NULL)       /* process -scans if it was present */
-      if (! read_scan_script(cinfo, scansarg))
+      if (!read_scan_script(cinfo, scansarg))
         usage();
 #endif
   }
@@ -379,7 +380,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
  */
 
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
   struct jpeg_decompress_struct srcinfo;
   struct jpeg_compress_struct dstinfo;
@@ -429,14 +430,14 @@ main (int argc, char **argv)
 #ifdef TWO_FILE_COMMANDLINE
   /* Must have either -outfile switch or explicit output file name */
   if (outfilename == NULL) {
-    if (file_index != argc-2) {
+    if (file_index != argc - 2) {
       fprintf(stderr, "%s: must name one input and one output file\n",
               progname);
       usage();
     }
-    outfilename = argv[file_index+1];
+    outfilename = argv[file_index + 1];
   } else {
-    if (file_index != argc-1) {
+    if (file_index != argc - 1) {
       fprintf(stderr, "%s: must name one input and one output file\n",
               progname);
       usage();
@@ -444,7 +445,7 @@ main (int argc, char **argv)
   }
 #else
   /* Unix style: expect zero or one file name */
-  if (file_index < argc-1) {
+  if (file_index < argc - 1) {
     fprintf(stderr, "%s: only one input file\n", progname);
     usage();
   }
@@ -453,7 +454,8 @@ main (int argc, char **argv)
   /* Open the input file. */
   if (file_index < argc) {
     if ((fp = fopen(argv[file_index], READ_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open %s for reading\n", progname, argv[file_index]);
+      fprintf(stderr, "%s: can't open %s for reading\n", progname,
+              argv[file_index]);
       exit(EXIT_FAILURE);
     }
   } else {
@@ -491,7 +493,7 @@ main (int argc, char **argv)
   }
 
 #ifdef PROGRESS_REPORT
-  start_progress_monitor((j_common_ptr) &dstinfo, &progress);
+  start_progress_monitor((j_common_ptr)&dstinfo, &progress);
 #endif
 
   /* Specify data source for decompression */
@@ -501,7 +503,7 @@ main (int argc, char **argv)
   jcopy_markers_setup(&srcinfo, copyoption);
 
   /* Read file header */
-  (void) jpeg_read_header(&srcinfo, TRUE);
+  (void)jpeg_read_header(&srcinfo, TRUE);
 
   /* Any space needed by a transform option must be requested before
    * jpeg_read_coefficients so that memory allocation will be done right.
@@ -535,7 +537,7 @@ main (int argc, char **argv)
   /* Close input file, if we opened it.
    * Note: we assume that jpeg_read_coefficients consumed all input
    * until JPEG_REACHED_EOI, and that jpeg_finish_decompress will
-   * only consume more while (! cinfo->inputctl->eoi_reached).
+   * only consume more while (!cinfo->inputctl->eoi_reached).
    * We cannot call jpeg_finish_decompress here since we still need the
    * virtual arrays allocated from the source object for processing.
    */
@@ -545,7 +547,8 @@ main (int argc, char **argv)
   /* Open the output file. */
   if (outfilename != NULL) {
     if ((fp = fopen(outfilename, WRITE_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open %s for writing\n", progname, outfilename);
+      fprintf(stderr, "%s: can't open %s for writing\n", progname,
+              outfilename);
       exit(EXIT_FAILURE);
     }
   } else {
@@ -570,15 +573,14 @@ main (int argc, char **argv)
 
   /* Execute image transformation, if any */
 #if TRANSFORMS_SUPPORTED
-  jtransform_execute_transformation(&srcinfo, &dstinfo,
-                                    src_coef_arrays,
+  jtransform_execute_transformation(&srcinfo, &dstinfo, src_coef_arrays,
                                     &transformoption);
 #endif
 
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
   jpeg_destroy_compress(&dstinfo);
-  (void) jpeg_finish_decompress(&srcinfo);
+  (void)jpeg_finish_decompress(&srcinfo);
   jpeg_destroy_decompress(&srcinfo);
 
   /* Close output file, if we opened it */
@@ -586,13 +588,14 @@ main (int argc, char **argv)
     fclose(fp);
 
 #ifdef PROGRESS_REPORT
-  end_progress_monitor((j_common_ptr) &dstinfo);
+  end_progress_monitor((j_common_ptr)&dstinfo);
 #endif
 
   if (icc_profile != NULL)
     free(icc_profile);
 
   /* All done. */
-  exit(jsrcerr.num_warnings + jdsterr.num_warnings ?EXIT_WARNING:EXIT_SUCCESS);
+  exit(jsrcerr.num_warnings + jdsterr.num_warnings ?
+       EXIT_WARNING : EXIT_SUCCESS);
   return 0;                     /* suppress no-return-value warnings */
 }

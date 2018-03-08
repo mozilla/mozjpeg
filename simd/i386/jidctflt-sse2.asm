@@ -57,19 +57,20 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 ; Perform dequantization and inverse DCT on one block of coefficients.
 ;
 ; GLOBAL(void)
-; jsimd_idct_float_sse2 (void *dct_table, JCOEFPTR coef_block,
-;                        JSAMPARRAY output_buf, JDIMENSION output_col)
+; jsimd_idct_float_sse2(void *dct_table, JCOEFPTR coef_block,
+;                       JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
-%define dct_table(b)   (b)+8            ; void *dct_table
-%define coef_block(b)  (b)+12           ; JCOEFPTR coef_block
-%define output_buf(b)  (b)+16           ; JSAMPARRAY output_buf
-%define output_col(b)  (b)+20           ; JDIMENSION output_col
+%define dct_table(b)   (b) + 8          ; void *dct_table
+%define coef_block(b)  (b) + 12         ; JCOEFPTR coef_block
+%define output_buf(b)  (b) + 16         ; JSAMPARRAY output_buf
+%define output_col(b)  (b) + 20         ; JDIMENSION output_col
 
-%define original_ebp   ebp+0
-%define wk(i)          ebp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define original_ebp   ebp + 0
+%define wk(i)          ebp - (WK_NUM - (i)) * SIZEOF_XMMWORD
+                                        ; xmmword wk[WK_NUM]
 %define WK_NUM         2
-%define workspace      wk(0)-DCTSIZE2*SIZEOF_FAST_FLOAT
+%define workspace      wk(0) - DCTSIZE2 * SIZEOF_FAST_FLOAT
                                         ; FAST_FLOAT workspace[DCTSIZE2]
 
     align       32
@@ -245,8 +246,8 @@ EXTN(jsimd_idct_float_sse2):
     mulps       xmm0, [GOTOFF(ebx,PD_1_847)]   ; xmm0=z5
     mulps       xmm3, [GOTOFF(ebx,PD_M2_613)]  ; xmm3=(z10 * -2.613125930)
     mulps       xmm4, [GOTOFF(ebx,PD_1_082)]   ; xmm4=(z12 * 1.082392200)
-    addps       xmm3, xmm0              ; xmm3=tmp12
-    subps       xmm4, xmm0              ; xmm4=tmp10
+    addps       xmm3, xmm0                     ; xmm3=tmp12
+    subps       xmm4, xmm0                     ; xmm4=tmp10
 
     ; -- Final output stage
 

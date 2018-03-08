@@ -46,10 +46,10 @@ PW_EIGHT times 8 dw 8
 ; of the way between input pixel centers.
 ;
 ; GLOBAL(void)
-; jsimd_h2v1_fancy_upsample_sse2 (int max_v_samp_factor,
-;                                 JDIMENSION downsampled_width,
-;                                 JSAMPARRAY input_data,
-;                                 JSAMPARRAY *output_data_ptr);
+; jsimd_h2v1_fancy_upsample_sse2(int max_v_samp_factor,
+;                                JDIMENSION downsampled_width,
+;                                JSAMPARRAY input_data,
+;                                JSAMPARRAY *output_data_ptr);
 ;
 
 ; r10 = int max_v_samp_factor
@@ -185,10 +185,10 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
 ; Again a triangle filter; see comments for h2v1 case, above.
 ;
 ; GLOBAL(void)
-; jsimd_h2v2_fancy_upsample_sse2 (int max_v_samp_factor,
-;                                 JDIMENSION downsampled_width,
-;                                 JSAMPARRAY input_data,
-;                                 JSAMPARRAY *output_data_ptr);
+; jsimd_h2v2_fancy_upsample_sse2(int max_v_samp_factor,
+;                                JDIMENSION downsampled_width,
+;                                JSAMPARRAY input_data,
+;                                JSAMPARRAY *output_data_ptr);
 ;
 
 ; r10 = int max_v_samp_factor
@@ -196,7 +196,7 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
-%define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM  4
 
     align       32
@@ -485,10 +485,8 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
 ; It's still a box filter.
 ;
 ; GLOBAL(void)
-; jsimd_h2v1_upsample_sse2 (int max_v_samp_factor,
-;                           JDIMENSION output_width,
-;                           JSAMPARRAY input_data,
-;                           JSAMPARRAY *output_data_ptr);
+; jsimd_h2v1_upsample_sse2(int max_v_samp_factor, JDIMENSION output_width,
+;                          JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 ;
 
 ; r10 = int max_v_samp_factor
@@ -574,10 +572,8 @@ EXTN(jsimd_h2v1_upsample_sse2):
 ; It's still a box filter.
 ;
 ; GLOBAL(void)
-; jsimd_h2v2_upsample_sse2 (int max_v_samp_factor,
-;                           JDIMENSION output_width,
-;                           JSAMPARRAY input_data,
-;                           JSAMPARRAY *output_data_ptr);
+; jsimd_h2v2_upsample_sse2(int max_v_samp_factor, JDIMENSION output_width,
+;                          JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 ;
 
 ; r10 = int max_v_samp_factor

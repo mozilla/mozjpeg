@@ -29,8 +29,8 @@
 %define CONST_BITS  13
 %define PASS1_BITS  2
 
-%define DESCALE_P1  (CONST_BITS-PASS1_BITS)
-%define DESCALE_P2  (CONST_BITS+PASS1_BITS+3)
+%define DESCALE_P1  (CONST_BITS - PASS1_BITS)
+%define DESCALE_P2  (CONST_BITS + PASS1_BITS + 3)
 
 %if CONST_BITS == 13
 F_0_298 equ  2446  ; FIX(0.298631336)
@@ -47,19 +47,19 @@ F_2_562 equ 20995  ; FIX(2.562915447)
 F_3_072 equ 25172  ; FIX(3.072711026)
 %else
 ; NASM cannot do compile-time arithmetic on floating-point constants.
-%define DESCALE(x,n)  (((x)+(1<<((n)-1)))>>(n))
-F_0_298 equ DESCALE( 320652955, 30-CONST_BITS)  ; FIX(0.298631336)
-F_0_390 equ DESCALE( 418953276, 30-CONST_BITS)  ; FIX(0.390180644)
-F_0_541 equ DESCALE( 581104887, 30-CONST_BITS)  ; FIX(0.541196100)
-F_0_765 equ DESCALE( 821806413, 30-CONST_BITS)  ; FIX(0.765366865)
-F_0_899 equ DESCALE( 966342111, 30-CONST_BITS)  ; FIX(0.899976223)
-F_1_175 equ DESCALE(1262586813, 30-CONST_BITS)  ; FIX(1.175875602)
-F_1_501 equ DESCALE(1612031267, 30-CONST_BITS)  ; FIX(1.501321110)
-F_1_847 equ DESCALE(1984016188, 30-CONST_BITS)  ; FIX(1.847759065)
-F_1_961 equ DESCALE(2106220350, 30-CONST_BITS)  ; FIX(1.961570560)
-F_2_053 equ DESCALE(2204520673, 30-CONST_BITS)  ; FIX(2.053119869)
-F_2_562 equ DESCALE(2751909506, 30-CONST_BITS)  ; FIX(2.562915447)
-F_3_072 equ DESCALE(3299298341, 30-CONST_BITS)  ; FIX(3.072711026)
+%define DESCALE(x, n)  (((x) + (1 << ((n) - 1))) >> (n))
+F_0_298 equ DESCALE( 320652955, 30 - CONST_BITS)  ; FIX(0.298631336)
+F_0_390 equ DESCALE( 418953276, 30 - CONST_BITS)  ; FIX(0.390180644)
+F_0_541 equ DESCALE( 581104887, 30 - CONST_BITS)  ; FIX(0.541196100)
+F_0_765 equ DESCALE( 821806413, 30 - CONST_BITS)  ; FIX(0.765366865)
+F_0_899 equ DESCALE( 966342111, 30 - CONST_BITS)  ; FIX(0.899976223)
+F_1_175 equ DESCALE(1262586813, 30 - CONST_BITS)  ; FIX(1.175875602)
+F_1_501 equ DESCALE(1612031267, 30 - CONST_BITS)  ; FIX(1.501321110)
+F_1_847 equ DESCALE(1984016188, 30 - CONST_BITS)  ; FIX(1.847759065)
+F_1_961 equ DESCALE(2106220350, 30 - CONST_BITS)  ; FIX(1.961570560)
+F_2_053 equ DESCALE(2204520673, 30 - CONST_BITS)  ; FIX(2.053119869)
+F_2_562 equ DESCALE(2751909506, 30 - CONST_BITS)  ; FIX(2.562915447)
+F_3_072 equ DESCALE(3299298341, 30 - CONST_BITS)  ; FIX(3.072711026)
 %endif
 
 ; --------------------------------------------------------------------------
@@ -247,16 +247,16 @@ F_3_072 equ DESCALE(3299298341, 30-CONST_BITS)  ; FIX(3.072711026)
 
 EXTN(jconst_idct_islow_avx2):
 
-PW_F130_F054_MF130_F054    times 4  dw  (F_0_541+F_0_765), F_0_541
-                           times 4  dw  (F_0_541-F_1_847), F_0_541
-PW_MF078_F117_F078_F117    times 4  dw  (F_1_175-F_1_961), F_1_175
-                           times 4  dw  (F_1_175-F_0_390), F_1_175
-PW_MF060_MF089_MF050_MF256 times 4  dw  (F_0_298-F_0_899), -F_0_899
-                           times 4  dw  (F_2_053-F_2_562), -F_2_562
-PW_MF089_F060_MF256_F050   times 4  dw -F_0_899, (F_1_501-F_0_899)
-                           times 4  dw -F_2_562, (F_3_072-F_2_562)
-PD_DESCALE_P1              times 8  dd  1 << (DESCALE_P1-1)
-PD_DESCALE_P2              times 8  dd  1 << (DESCALE_P2-1)
+PW_F130_F054_MF130_F054    times 4  dw  (F_0_541 + F_0_765),  F_0_541
+                           times 4  dw  (F_0_541 - F_1_847),  F_0_541
+PW_MF078_F117_F078_F117    times 4  dw  (F_1_175 - F_1_961),  F_1_175
+                           times 4  dw  (F_1_175 - F_0_390),  F_1_175
+PW_MF060_MF089_MF050_MF256 times 4  dw  (F_0_298 - F_0_899), -F_0_899
+                           times 4  dw  (F_2_053 - F_2_562), -F_2_562
+PW_MF089_F060_MF256_F050   times 4  dw -F_0_899, (F_1_501 - F_0_899)
+                           times 4  dw -F_2_562, (F_3_072 - F_2_562)
+PD_DESCALE_P1              times 8  dd  1 << (DESCALE_P1 - 1)
+PD_DESCALE_P2              times 8  dd  1 << (DESCALE_P2 - 1)
 PB_CENTERJSAMP             times 32 db  CENTERJSAMPLE
 PW_1_NEG1                  times 8  dw  1
                            times 8  dw -1
@@ -270,8 +270,8 @@ PW_1_NEG1                  times 8  dw  1
 ; Perform dequantization and inverse DCT on one block of coefficients.
 ;
 ; GLOBAL(void)
-; jsimd_idct_islow_avx2 (void *dct_table, JCOEFPTR coef_block,
-;                        JSAMPARRAY output_buf, JDIMENSION output_col)
+; jsimd_idct_islow_avx2(void *dct_table, JCOEFPTR coef_block,
+;                       JSAMPARRAY output_buf, JDIMENSION output_col)
 ;
 
 ; r10 = jpeg_component_info *compptr

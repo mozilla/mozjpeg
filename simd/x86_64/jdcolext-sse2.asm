@@ -23,9 +23,9 @@
 ; Convert some rows of samples to the output colorspace.
 ;
 ; GLOBAL(void)
-; jsimd_ycc_rgb_convert_sse2 (JDIMENSION out_width,
-;                             JSAMPIMAGE input_buf, JDIMENSION input_row,
-;                             JSAMPARRAY output_buf, int num_rows)
+; jsimd_ycc_rgb_convert_sse2(JDIMENSION out_width, JSAMPIMAGE input_buf,
+;                            JDIMENSION input_row, JSAMPARRAY output_buf,
+;                            int num_rows)
 ;
 
 ; r10d = JDIMENSION out_width
@@ -34,7 +34,7 @@
 ; r13 = JSAMPARRAY output_buf
 ; r14d = int num_rows
 
-%define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM  2
 
     align       32

@@ -19,7 +19,7 @@
 #include "jerror.h"
 
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc() */
-extern void *malloc (size_t size);
+extern void *malloc(size_t size);
 #endif
 
 
@@ -32,7 +32,7 @@ extern void *malloc (size_t size);
  */
 
 LOCAL(boolean)
-marker_is_icc (jpeg_saved_marker_ptr marker)
+marker_is_icc(jpeg_saved_marker_ptr marker)
 {
   return
     marker->marker == ICC_MARKER &&
@@ -71,8 +71,8 @@ marker_is_icc (jpeg_saved_marker_ptr marker)
  */
 
 GLOBAL(boolean)
-jpeg_read_icc_profile (j_decompress_ptr cinfo, JOCTET **icc_data_ptr,
-                       unsigned int *icc_data_len)
+jpeg_read_icc_profile(j_decompress_ptr cinfo, JOCTET **icc_data_ptr,
+                      unsigned int *icc_data_len)
 {
   jpeg_saved_marker_ptr marker;
   int num_markers = 0;
@@ -80,9 +80,9 @@ jpeg_read_icc_profile (j_decompress_ptr cinfo, JOCTET **icc_data_ptr,
   JOCTET *icc_data;
   unsigned int total_length;
 #define MAX_SEQ_NO  255         /* sufficient since marker numbers are bytes */
-  char marker_present[MAX_SEQ_NO+1];      /* 1 if marker found */
-  unsigned int data_length[MAX_SEQ_NO+1]; /* size of profile data in marker */
-  unsigned int data_offset[MAX_SEQ_NO+1]; /* offset for data in marker */
+  char marker_present[MAX_SEQ_NO + 1];      /* 1 if marker found */
+  unsigned int data_length[MAX_SEQ_NO + 1]; /* size of profile data in marker */
+  unsigned int data_offset[MAX_SEQ_NO + 1]; /* offset for data in marker */
 
   if (icc_data_ptr == NULL || icc_data_len == NULL)
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
@@ -144,7 +144,7 @@ jpeg_read_icc_profile (j_decompress_ptr cinfo, JOCTET **icc_data_ptr,
   }
 
   /* Allocate space for assembled data */
-  icc_data = (JOCTET *) malloc(total_length * sizeof(JOCTET));
+  icc_data = (JOCTET *)malloc(total_length * sizeof(JOCTET));
   if (icc_data == NULL)
     ERREXIT1(cinfo, JERR_OUT_OF_MEMORY, 11);  /* oops, out of memory */
 

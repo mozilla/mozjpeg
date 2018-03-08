@@ -23,9 +23,9 @@
 ; Convert some rows of samples to the output colorspace.
 ;
 ; GLOBAL(void)
-; jsimd_rgb_gray_convert_avx2 (JDIMENSION img_width,
-;                              JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-;                              JDIMENSION output_row, int num_rows);
+; jsimd_rgb_gray_convert_avx2(JDIMENSION img_width, JSAMPARRAY input_buf,
+;                             JSAMPIMAGE output_buf, JDIMENSION output_row,
+;                             int num_rows);
 ;
 
 ; r10d = JDIMENSION img_width
@@ -34,11 +34,10 @@
 ; r13d = JDIMENSION output_row
 ; r14d = int num_rows
 
-%define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
+%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
 %define WK_NUM  2
 
     align       32
-
     GLOBAL_FUNCTION(jsimd_rgb_gray_convert_avx2)
 
 EXTN(jsimd_rgb_gray_convert_avx2):

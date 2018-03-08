@@ -89,10 +89,9 @@
 #endif
 
 
-void
-jsimd_rgb_ycc_convert_mmi (JDIMENSION image_width, JSAMPARRAY input_buf,
-                           JSAMPIMAGE output_buf, JDIMENSION output_row,
-                           int num_rows)
+void jsimd_rgb_ycc_convert_mmi(JDIMENSION image_width, JSAMPARRAY input_buf,
+                               JSAMPIMAGE output_buf, JDIMENSION output_row,
+                               int num_rows)
 {
   JSAMPROW inptr, outptr0, outptr1, outptr2;
   int num_cols, col;
@@ -188,24 +187,24 @@ jsimd_rgb_ycc_convert_mmi (JDIMENSION image_width, JSAMPARRAY input_buf,
         mmA = _mm_load_si64((__m64 *)&inptr[0]);
         mmG = _mm_load_si64((__m64 *)&inptr[8]);
         mmF = _mm_load_si64((__m64 *)&inptr[16]);
-        inptr += RGB_PIXELSIZE*8;
+        inptr += RGB_PIXELSIZE * 8;
       }
       mmD = mmA;
-      mmA = _mm_slli_si64(mmA, 4*BYTE_BIT);
-      mmD = _mm_srli_si64(mmD, 4*BYTE_BIT);
+      mmA = _mm_slli_si64(mmA, 4 * BYTE_BIT);
+      mmD = _mm_srli_si64(mmD, 4 * BYTE_BIT);
 
       mmA = _mm_unpackhi_pi8(mmA, mmG);
-      mmG = _mm_slli_si64(mmG, 4*BYTE_BIT);
+      mmG = _mm_slli_si64(mmG, 4 * BYTE_BIT);
 
       mmD = _mm_unpacklo_pi8(mmD, mmF);
       mmG = _mm_unpackhi_pi8(mmG, mmF);
 
       mmE = mmA;
-      mmA = _mm_slli_si64(mmA, 4*BYTE_BIT);
-      mmE = _mm_srli_si64(mmE, 4*BYTE_BIT);
+      mmA = _mm_slli_si64(mmA, 4 * BYTE_BIT);
+      mmE = _mm_srli_si64(mmE, 4 * BYTE_BIT);
 
       mmA = _mm_unpackhi_pi8(mmA, mmD);
-      mmD = _mm_slli_si64(mmD, 4*BYTE_BIT);
+      mmD = _mm_slli_si64(mmD, 4 * BYTE_BIT);
 
       mmE = _mm_unpacklo_pi8(mmE, mmG);
       mmD = _mm_unpackhi_pi8(mmD, mmG);
@@ -273,7 +272,7 @@ jsimd_rgb_ycc_convert_mmi (JDIMENSION image_width, JSAMPARRAY input_buf,
         mmF = _mm_load_si64((__m64 *)&inptr[8]);
         mmD = _mm_load_si64((__m64 *)&inptr[16]);
         mmC = _mm_load_si64((__m64 *)&inptr[24]);
-        inptr += RGB_PIXELSIZE*8;
+        inptr += RGB_PIXELSIZE * 8;
       }
       mmB = mmA;
       mmA = _mm_unpacklo_pi8(mmA, mmF);
@@ -395,7 +394,7 @@ jsimd_rgb_ycc_convert_mmi (JDIMENSION image_width, JSAMPARRAY input_buf,
       mm4 = _mm_add_pi32(mm4, mm3);
       mm0 = _mm_srli_pi32(mm0, SCALEBITS);
       mm4 = _mm_srli_pi32(mm4, SCALEBITS);
-      mm0 = _mm_packs_pi32(mm0,mm4);
+      mm0 = _mm_packs_pi32(mm0, mm4);
 
       mm3 = _mm_loadlo_pi16_f(mm1);
       mm4 = _mm_loadhi_pi16_f(mm1);

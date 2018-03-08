@@ -25,7 +25,7 @@
 ; Check if the CPU supports SIMD instructions
 ;
 ; GLOBAL(unsigned int)
-; jpeg_simd_cpu_support (void)
+; jpeg_simd_cpu_support(void)
 ;
 
     align       32

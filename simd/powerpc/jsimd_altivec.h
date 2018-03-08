@@ -37,12 +37,11 @@
 #define __8X(a) __4X(a), __4X(a)
 #define __16X(a) __8X(a), __8X(a)
 
-#define TRANSPOSE(row, col)  \
-{  \
-  __vector short row04l, row04h, row15l, row15h,  \
-                 row26l, row26h, row37l, row37h;  \
-  __vector short col01e, col01o, col23e, col23o,  \
-                 col45e, col45o, col67e, col67o;  \
+#define TRANSPOSE(row, col) { \
+  __vector short row04l, row04h, row15l, row15h, \
+                 row26l, row26h, row37l, row37h; \
+  __vector short col01e, col01o, col23e, col23o, \
+                 col45e, col45o, col67e, col67o; \
   \
                                        /* transpose coefficients (phase 1) */ \
   row04l = vec_mergeh(row##0, row##4); /* row04l=(00 40 01 41 02 42 03 43) */ \
@@ -65,18 +64,18 @@
   col67o = vec_mergel(row15h, row37h); /* col67o=(16 36 56 76 17 37 57 77) */ \
   \
                                        /* transpose coefficients (phase 3) */ \
-  col##0 = vec_mergeh(col01e, col01o); /* col0=(00 10 20 30 40 50 60 70) */   \
-  col##1 = vec_mergel(col01e, col01o); /* col1=(01 11 21 31 41 51 61 71) */   \
-  col##2 = vec_mergeh(col23e, col23o); /* col2=(02 12 22 32 42 52 62 72) */   \
-  col##3 = vec_mergel(col23e, col23o); /* col3=(03 13 23 33 43 53 63 73) */   \
-  col##4 = vec_mergeh(col45e, col45o); /* col4=(04 14 24 34 44 54 64 74) */   \
-  col##5 = vec_mergel(col45e, col45o); /* col5=(05 15 25 35 45 55 65 75) */   \
-  col##6 = vec_mergeh(col67e, col67o); /* col6=(06 16 26 36 46 56 66 76) */   \
-  col##7 = vec_mergel(col67e, col67o); /* col7=(07 17 27 37 47 57 67 77) */   \
+  col##0 = vec_mergeh(col01e, col01o); /* col0=(00 10 20 30 40 50 60 70) */ \
+  col##1 = vec_mergel(col01e, col01o); /* col1=(01 11 21 31 41 51 61 71) */ \
+  col##2 = vec_mergeh(col23e, col23o); /* col2=(02 12 22 32 42 52 62 72) */ \
+  col##3 = vec_mergel(col23e, col23o); /* col3=(03 13 23 33 43 53 63 73) */ \
+  col##4 = vec_mergeh(col45e, col45o); /* col4=(04 14 24 34 44 54 64 74) */ \
+  col##5 = vec_mergel(col45e, col45o); /* col5=(05 15 25 35 45 55 65 75) */ \
+  col##6 = vec_mergeh(col67e, col67o); /* col6=(06 16 26 36 46 56 66 76) */ \
+  col##7 = vec_mergel(col67e, col67o); /* col7=(07 17 27 37 47 57 67 77) */ \
 }
 
 #ifndef min
-#define min(a,b) ((a) < (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 

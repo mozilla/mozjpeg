@@ -44,9 +44,9 @@
 #define strncasecmp strnicmp
 #endif
 
-#define _throw(action, message) {  \
-  printf("ERROR in line %d while %s:\n%s\n", __LINE__, action, message);  \
-  retval = -1;  goto bailout;  \
+#define _throw(action, message) { \
+  printf("ERROR in line %d while %s:\n%s\n", __LINE__, action, message); \
+  retval = -1;  goto bailout; \
 }
 
 #define _throwtj(action) _throw(action, tjGetErrorStr2(tjInstance))
@@ -77,7 +77,7 @@ int customFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
 {
   int i;
 
-  for(i = 0; i < arrayRegion.w * arrayRegion.h; i++)
+  for (i = 0; i < arrayRegion.w * arrayRegion.h; i++)
     coeffs[i] = -coeffs[i];
 
   return 0;
@@ -182,6 +182,7 @@ int main(int argc, char **argv)
   for (i = 3; i < argc; i++) {
     if (!strncasecmp(argv[i], "-sc", 3) && i < argc - 1) {
       int match = 0, temp1 = 0, temp2 = 0, j;
+
       if (sscanf(argv[++i], "%d/%d", &temp1, &temp2) < 2)
         usage(argv[0]);
       for (j = 0; j < numScalingFactors; j++) {
@@ -265,7 +266,7 @@ int main(int argc, char **argv)
 
     /* Read the JPEG file into memory. */
     if ((jpegFile = fopen(argv[1], "rb")) == NULL)
-       _throwunix("opening input file");
+      _throwunix("opening input file");
     if (fseek(jpegFile, 0, SEEK_END) < 0 || ((size = ftell(jpegFile)) < 0) ||
         fseek(jpegFile, 0, SEEK_SET) < 0)
       _throwunix("determining input file size");
@@ -385,10 +386,10 @@ int main(int argc, char **argv)
       _throwtj("saving output image");
   }
 
-  bailout:
+bailout:
   if (imgBuf) tjFree(imgBuf);
   if (tjInstance) tjDestroy(tjInstance);
   if (jpegBuf) tjFree(jpegBuf);
   if (jpegFile) fclose(jpegFile);
   return retval;
-};
+}

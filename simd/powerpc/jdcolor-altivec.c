@@ -36,9 +36,12 @@
 #define SCALEBITS 16
 #define ONE_HALF (1 << (SCALEBITS - 1))
 
-#define RGB_INDEX0 {0,1,8,2,3,10,4,5,12,6,7,14,16,17,24,18}
-#define RGB_INDEX1 {3,10,4,5,12,6,7,14,16,17,24,18,19,26,20,21}
-#define RGB_INDEX2 {12,6,7,14,16,17,24,18,19,26,20,21,28,22,23,30}
+#define RGB_INDEX0 \
+  {  0,  1,  8,  2,  3, 10,  4,  5, 12,  6,  7, 14, 16, 17, 24, 18 }
+#define RGB_INDEX1 \
+  {  3, 10,  4,  5, 12,  6,  7, 14, 16, 17, 24, 18, 19, 26, 20, 21 }
+#define RGB_INDEX2 \
+  { 12,  6,  7, 14, 16, 17, 24, 18, 19, 26, 20, 21, 28, 22, 23, 30 }
 #include "jdcolext-altivec.c"
 #undef RGB_PIXELSIZE
 
@@ -52,7 +55,8 @@
 #undef jsimd_ycc_rgb_convert_altivec
 
 #define RGB_PIXELSIZE EXT_RGBX_PIXELSIZE
-#define RGB_INDEX {0,1,8,9,2,3,10,11,4,5,12,13,6,7,14,15}
+#define RGB_INDEX \
+  {  0,  1,  8,  9,  2,  3, 10, 11,  4,  5, 12, 13,  6,  7, 14, 15 }
 #define jsimd_ycc_rgb_convert_altivec jsimd_ycc_extrgbx_convert_altivec
 #include "jdcolext-altivec.c"
 #undef RGB_PIXELSIZE
@@ -60,9 +64,12 @@
 #undef jsimd_ycc_rgb_convert_altivec
 
 #define RGB_PIXELSIZE EXT_BGR_PIXELSIZE
-#define RGB_INDEX0 {8,1,0,10,3,2,12,5,4,14,7,6,24,17,16,26}
-#define RGB_INDEX1 {3,2,12,5,4,14,7,6,24,17,16,26,19,18,28,21}
-#define RGB_INDEX2 {4,14,7,6,24,17,16,26,19,18,28,21,20,30,23,22}
+#define RGB_INDEX0 \
+  {  8,  1,  0, 10,  3,  2, 12,  5,  4, 14,  7,  6, 24, 17, 16, 26 }
+#define RGB_INDEX1 \
+  {  3,  2, 12,  5,  4, 14,  7,  6, 24, 17, 16, 26, 19, 18, 28, 21 }
+#define RGB_INDEX2 \
+  {  4, 14,  7,  6, 24, 17, 16, 26, 19, 18, 28, 21, 20, 30, 23, 22 }
 #define jsimd_ycc_rgb_convert_altivec jsimd_ycc_extbgr_convert_altivec
 #include "jdcolext-altivec.c"
 #undef RGB_PIXELSIZE
@@ -72,7 +79,8 @@
 #undef jsimd_ycc_rgb_convert_altivec
 
 #define RGB_PIXELSIZE EXT_BGRX_PIXELSIZE
-#define RGB_INDEX {8,1,0,9,10,3,2,11,12,5,4,13,14,7,6,15}
+#define RGB_INDEX \
+  {  8,  1,  0,  9, 10,  3,  2, 11, 12,  5,  4, 13, 14,  7,  6, 15 }
 #define jsimd_ycc_rgb_convert_altivec jsimd_ycc_extbgrx_convert_altivec
 #include "jdcolext-altivec.c"
 #undef RGB_PIXELSIZE
@@ -80,7 +88,8 @@
 #undef jsimd_ycc_rgb_convert_altivec
 
 #define RGB_PIXELSIZE EXT_XBGR_PIXELSIZE
-#define RGB_INDEX {9,8,1,0,11,10,3,2,13,12,5,4,15,14,7,6}
+#define RGB_INDEX \
+  {  9,  8,  1,  0, 11, 10,  3,  2, 13, 12,  5,  4, 15, 14,  7,  6 }
 #define jsimd_ycc_rgb_convert_altivec jsimd_ycc_extxbgr_convert_altivec
 #include "jdcolext-altivec.c"
 #undef RGB_PIXELSIZE
@@ -88,7 +97,8 @@
 #undef jsimd_ycc_rgb_convert_altivec
 
 #define RGB_PIXELSIZE EXT_XRGB_PIXELSIZE
-#define RGB_INDEX {9,0,1,8,11,2,3,10,13,4,5,12,15,6,7,14}
+#define RGB_INDEX \
+  {  9,  0,  1,  8, 11,  2,  3, 10, 13,  4,  5, 12, 15,  6,  7, 14 }
 #define jsimd_ycc_rgb_convert_altivec jsimd_ycc_extxrgb_convert_altivec
 #include "jdcolext-altivec.c"
 #undef RGB_PIXELSIZE

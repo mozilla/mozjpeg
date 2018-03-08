@@ -23,9 +23,9 @@
 ; Convert some rows of samples to the output colorspace.
 ;
 ; GLOBAL(void)
-; jsimd_rgb_ycc_convert_avx2 (JDIMENSION img_width,
-;                             JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-;                             JDIMENSION output_row, int num_rows);
+; jsimd_rgb_ycc_convert_avx2(JDIMENSION img_width, JSAMPARRAY input_buf,
+;                            JSAMPIMAGE output_buf, JDIMENSION output_row,
+;                            int num_rows);
 ;
 
 ; r10d = JDIMENSION img_width
@@ -34,11 +34,10 @@
 ; r13d = JDIMENSION output_row
 ; r14d = int num_rows
 
-%define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
+%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
 %define WK_NUM  8
 
     align       32
-
     GLOBAL_FUNCTION(jsimd_rgb_ycc_convert_avx2)
 
 EXTN(jsimd_rgb_ycc_convert_avx2):
@@ -421,7 +420,6 @@ EXTN(jsimd_rgb_ycc_convert_avx2):
     vpunpckhwd  ymm6, ymm6, ymm1        ; ymm6=BEH
     vpsrld      ymm0, ymm0, 1           ; ymm0=BEL*FIX(0.500)
     vpsrld      ymm6, ymm6, 1           ; ymm6=BEH*FIX(0.500)
-
 
     vmovdqa     ymm1, [rel PD_ONEHALFM1_CJ]  ; ymm1=[PD_ONEHALFM1_CJ]
 

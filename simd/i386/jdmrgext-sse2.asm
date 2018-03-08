@@ -23,21 +23,22 @@
 ; Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
 ;
 ; GLOBAL(void)
-; jsimd_h2v1_merged_upsample_sse2 (JDIMENSION output_width,
-;                                  JSAMPIMAGE input_buf,
-;                                  JDIMENSION in_row_group_ctr,
-;                                  JSAMPARRAY output_buf);
+; jsimd_h2v1_merged_upsample_sse2(JDIMENSION output_width,
+;                                 JSAMPIMAGE input_buf,
+;                                 JDIMENSION in_row_group_ctr,
+;                                 JSAMPARRAY output_buf);
 ;
 
-%define output_width(b)      (b)+8      ; JDIMENSION output_width
-%define input_buf(b)         (b)+12     ; JSAMPIMAGE input_buf
-%define in_row_group_ctr(b)  (b)+16     ; JDIMENSION in_row_group_ctr
-%define output_buf(b)        (b)+20     ; JSAMPARRAY output_buf
+%define output_width(b)      (b) + 8    ; JDIMENSION output_width
+%define input_buf(b)         (b) + 12   ; JSAMPIMAGE input_buf
+%define in_row_group_ctr(b)  (b) + 16   ; JDIMENSION in_row_group_ctr
+%define output_buf(b)        (b) + 20   ; JSAMPARRAY output_buf
 
-%define original_ebp  ebp+0
-%define wk(i)         ebp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define original_ebp  ebp + 0
+%define wk(i)         ebp - (WK_NUM - (i)) * SIZEOF_XMMWORD
+                                        ; xmmword wk[WK_NUM]
 %define WK_NUM        3
-%define gotptr        wk(0)-SIZEOF_POINTER  ; void * gotptr
+%define gotptr        wk(0) - SIZEOF_POINTER  ; void * gotptr
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v1_merged_upsample_sse2)
@@ -451,16 +452,16 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 ; Upsample and color convert for the case of 2:1 horizontal and 2:1 vertical.
 ;
 ; GLOBAL(void)
-; jsimd_h2v2_merged_upsample_sse2 (JDIMENSION output_width,
-;                                  JSAMPIMAGE input_buf,
-;                                  JDIMENSION in_row_group_ctr,
-;                                  JSAMPARRAY output_buf);
+; jsimd_h2v2_merged_upsample_sse2(JDIMENSION output_width,
+;                                 JSAMPIMAGE input_buf,
+;                                 JDIMENSION in_row_group_ctr,
+;                                 JSAMPARRAY output_buf);
 ;
 
-%define output_width(b)      (b)+8      ; JDIMENSION output_width
-%define input_buf(b)         (b)+12     ; JSAMPIMAGE input_buf
-%define in_row_group_ctr(b)  (b)+16     ; JDIMENSION in_row_group_ctr
-%define output_buf(b)        (b)+20     ; JSAMPARRAY output_buf
+%define output_width(b)      (b) + 8    ; JDIMENSION output_width
+%define input_buf(b)         (b) + 12   ; JSAMPIMAGE input_buf
+%define in_row_group_ctr(b)  (b) + 16   ; JDIMENSION in_row_group_ctr
+%define output_buf(b)        (b) + 20   ; JSAMPARRAY output_buf
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v2_merged_upsample_sse2)

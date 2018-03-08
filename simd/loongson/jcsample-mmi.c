@@ -34,11 +34,10 @@
 #include "jcsample.h"
 
 
-void
-jsimd_h2v2_downsample_mmi (JDIMENSION image_width, int max_v_samp_factor,
-                           JDIMENSION v_samp_factor,
-                           JDIMENSION width_in_blocks, JSAMPARRAY input_data,
-                           JSAMPARRAY output_data)
+void jsimd_h2v2_downsample_mmi(JDIMENSION image_width, int max_v_samp_factor,
+                               JDIMENSION v_samp_factor,
+                               JDIMENSION width_in_blocks,
+                               JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   int inrow, outrow, outcol, bias;
   JDIMENSION output_cols = width_in_blocks * DCTSIZE;

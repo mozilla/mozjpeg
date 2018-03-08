@@ -33,7 +33,7 @@
 #include "jconfigint.h"
 
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare free() */
-extern void free (void *ptr);
+extern void free(void *ptr);
 #endif
 
 #include <ctype.h>              /* to declare isprint() */
@@ -51,7 +51,7 @@ extern void free (void *ptr);
 
 /* Create the add-on message string table. */
 
-#define JMESSAGE(code,string)   string ,
+#define JMESSAGE(code, string)  string,
 
 static const char * const cdjpeg_message_table[] = {
 #include "cderror.h"
@@ -67,13 +67,13 @@ static const char * const cdjpeg_message_table[] = {
  */
 
 typedef enum {
-        FMT_BMP,                /* BMP format (Windows flavor) */
-        FMT_GIF,                /* GIF format */
-        FMT_OS2,                /* BMP format (OS/2 flavor) */
-        FMT_PPM,                /* PPM/PGM (PBMPLUS formats) */
-        FMT_RLE,                /* RLE format */
-        FMT_TARGA,              /* Targa format */
-        FMT_TIFF                /* TIFF format */
+  FMT_BMP,                      /* BMP format (Windows flavor) */
+  FMT_GIF,                      /* GIF format */
+  FMT_OS2,                      /* BMP format (OS/2 flavor) */
+  FMT_PPM,                      /* PPM/PGM (PBMPLUS formats) */
+  FMT_RLE,                      /* RLE format */
+  FMT_TARGA,                    /* Targa format */
+  FMT_TIFF                      /* TIFF format */
 } IMAGE_FORMATS;
 
 #ifndef DEFAULT_FMT             /* so can override from CFLAGS in Makefile */
@@ -103,7 +103,7 @@ JDIMENSION crop_x, crop_y, crop_width, crop_height;
 
 
 LOCAL(void)
-usage (void)
+usage(void)
 /* complain about bad command line */
 {
   fprintf(stderr, "usage: %s [switches] ", progname);
@@ -186,8 +186,8 @@ usage (void)
 
 
 LOCAL(int)
-parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
-                int last_file_arg_seen, boolean for_real)
+parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
+               int last_file_arg_seen, boolean for_real)
 /* Parse optional switches.
  * Returns argv[] index of first file-name argument (== argc if none).
  * Any file names with indexes <= last_file_arg_seen are ignored;
@@ -270,7 +270,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       /* On first -d, print version identification */
       static boolean printed_version = FALSE;
 
-      if (! printed_version) {
+      if (!printed_version) {
         fprintf(stderr, "%s version %s (build %s)\n",
                 PACKAGE_NAME, VERSION, BUILD);
         fprintf(stderr, "%s\n\n", JCOPYRIGHT);
@@ -289,7 +289,7 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       /* Select recommended processing options for quick-and-dirty output. */
       cinfo->two_pass_quantize = FALSE;
       cinfo->dither_mode = JDITHER_ORDERED;
-      if (! cinfo->quantize_colors) /* don't override an earlier -colors */
+      if (!cinfo->quantize_colors) /* don't override an earlier -colors */
         cinfo->desired_number_of_colors = 216;
       cinfo->dct_method = JDCT_FASTEST;
       cinfo->do_fancy_upsampling = FALSE;
@@ -298,7 +298,8 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       /* GIF output format. */
       requested_fmt = FMT_GIF;
 
-    } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
+    } else if (keymatch(arg, "grayscale", 2) ||
+               keymatch(arg, "greyscale", 2)) {
       /* Force monochrome output. */
       cinfo->out_color_space = JCS_GRAYSCALE;
 
@@ -433,13 +434,13 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
  */
 
 LOCAL(unsigned int)
-jpeg_getc (j_decompress_ptr cinfo)
+jpeg_getc(j_decompress_ptr cinfo)
 /* Read next byte */
 {
   struct jpeg_source_mgr *datasrc = cinfo->src;
 
   if (datasrc->bytes_in_buffer == 0) {
-    if (! (*datasrc->fill_input_buffer) (cinfo))
+    if (!(*datasrc->fill_input_buffer) (cinfo))
       ERREXIT(cinfo, JERR_CANT_SUSPEND);
   }
   datasrc->bytes_in_buffer--;
@@ -448,7 +449,7 @@ jpeg_getc (j_decompress_ptr cinfo)
 
 
 METHODDEF(boolean)
-print_text_marker (j_decompress_ptr cinfo)
+print_text_marker(j_decompress_ptr cinfo)
 {
   boolean traceit = (cinfo->err->trace_level >= 1);
   long length;
@@ -461,10 +462,10 @@ print_text_marker (j_decompress_ptr cinfo)
 
   if (traceit) {
     if (cinfo->unread_marker == JPEG_COM)
-      fprintf(stderr, "Comment, length %ld:\n", (long) length);
+      fprintf(stderr, "Comment, length %ld:\n", (long)length);
     else                        /* assume it is an APPn otherwise */
       fprintf(stderr, "APP%d, length %ld:\n",
-              cinfo->unread_marker - JPEG_APP0, (long) length);
+              cinfo->unread_marker - JPEG_APP0, (long)length);
   }
 
   while (--length >= 0) {
@@ -503,7 +504,7 @@ print_text_marker (j_decompress_ptr cinfo)
  */
 
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -542,7 +543,7 @@ main (int argc, char **argv)
    * but don't try to override APP0 or APP14 this way (see libjpeg.txt).
    */
   jpeg_set_marker_processor(&cinfo, JPEG_COM, print_text_marker);
-  jpeg_set_marker_processor(&cinfo, JPEG_APP0+12, print_text_marker);
+  jpeg_set_marker_processor(&cinfo, JPEG_APP0 + 12, print_text_marker);
 
   /* Scan command line to find file names. */
   /* It is convenient to use just one switch-parsing routine, but the switch
@@ -557,14 +558,14 @@ main (int argc, char **argv)
 #ifdef TWO_FILE_COMMANDLINE
   /* Must have either -outfile switch or explicit output file name */
   if (outfilename == NULL) {
-    if (file_index != argc-2) {
+    if (file_index != argc - 2) {
       fprintf(stderr, "%s: must name one input and one output file\n",
               progname);
       usage();
     }
-    outfilename = argv[file_index+1];
+    outfilename = argv[file_index + 1];
   } else {
-    if (file_index != argc-1) {
+    if (file_index != argc - 1) {
       fprintf(stderr, "%s: must name one input and one output file\n",
               progname);
       usage();
@@ -572,7 +573,7 @@ main (int argc, char **argv)
   }
 #else
   /* Unix style: expect zero or one file name */
-  if (file_index < argc-1) {
+  if (file_index < argc - 1) {
     fprintf(stderr, "%s: only one input file\n", progname);
     usage();
   }
@@ -601,7 +602,7 @@ main (int argc, char **argv)
   }
 
 #ifdef PROGRESS_REPORT
-  start_progress_monitor((j_common_ptr) &cinfo, &progress);
+  start_progress_monitor((j_common_ptr)&cinfo, &progress);
 #endif
 
   /* Specify data source for decompression */
@@ -631,7 +632,7 @@ main (int argc, char **argv)
     jpeg_stdio_src(&cinfo, input_file);
 
   /* Read file header, set default decompression parameters */
-  (void) jpeg_read_header(&cinfo, TRUE);
+  (void)jpeg_read_header(&cinfo, TRUE);
 
   /* Adjust default decompression parameters by re-parsing the options */
   file_index = parse_switches(&cinfo, argc, argv, 0, TRUE);
@@ -675,7 +676,7 @@ main (int argc, char **argv)
   dest_mgr->output_file = output_file;
 
   /* Start decompressor */
-  (void) jpeg_start_decompress(&cinfo);
+  (void)jpeg_start_decompress(&cinfo);
 
   /* Skip rows */
   if (skip) {
@@ -797,7 +798,7 @@ main (int argc, char **argv)
    * of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
    */
   (*dest_mgr->finish_output) (&cinfo, dest_mgr);
-  (void) jpeg_finish_decompress(&cinfo);
+  (void)jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
 
   /* Close files, if we opened them */
@@ -807,7 +808,7 @@ main (int argc, char **argv)
     fclose(output_file);
 
 #ifdef PROGRESS_REPORT
-  end_progress_monitor((j_common_ptr) &cinfo);
+  end_progress_monitor((j_common_ptr)&cinfo);
 #endif
 
   if (memsrc && inbuffer != NULL)

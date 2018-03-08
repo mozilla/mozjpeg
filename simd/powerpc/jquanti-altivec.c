@@ -31,26 +31,25 @@
  */
 #if __BIG_ENDIAN__
 
-#define LOAD_ROW(row) {  \
-  elemptr = sample_data[row] + start_col;  \
-  in##row = vec_ld(0, elemptr);  \
-  if ((size_t)elemptr & 15)  \
-    in##row = vec_perm(in##row, in##row, vec_lvsl(0, elemptr));  \
+#define LOAD_ROW(row) { \
+  elemptr = sample_data[row] + start_col; \
+  in##row = vec_ld(0, elemptr); \
+  if ((size_t)elemptr & 15) \
+    in##row = vec_perm(in##row, in##row, vec_lvsl(0, elemptr)); \
 }
 
 #else
 
-#define LOAD_ROW(row) {  \
-  elemptr = sample_data[row] + start_col;  \
-  in##row = vec_vsx_ld(0, elemptr);  \
+#define LOAD_ROW(row) { \
+  elemptr = sample_data[row] + start_col; \
+  in##row = vec_vsx_ld(0, elemptr); \
 }
 
 #endif
 
 
-void
-jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
-                        DCTELEM *workspace)
+void jsimd_convsamp_altivec(JSAMPARRAY sample_data, JDIMENSION start_col,
+                            DCTELEM *workspace)
 {
   JSAMPROW elemptr;
 
@@ -104,19 +103,18 @@ jsimd_convsamp_altivec (JSAMPARRAY sample_data, JDIMENSION start_col,
 /* There is no AltiVec 16-bit unsigned multiply instruction, hence this.
    We basically need an unsigned equivalent of vec_madds(). */
 
-#define MULTIPLY(vs0, vs1, out) {  \
-  tmpe = vec_mule((__vector unsigned short)vs0,  \
-                  (__vector unsigned short)vs1);  \
-  tmpo = vec_mulo((__vector unsigned short)vs0,  \
-                  (__vector unsigned short)vs1);  \
-  out = (__vector short)vec_perm((__vector unsigned short)tmpe,  \
-                                 (__vector unsigned short)tmpo,  \
-                                 shift_pack_index);  \
+#define MULTIPLY(vs0, vs1, out) { \
+  tmpe = vec_mule((__vector unsigned short)vs0, \
+                  (__vector unsigned short)vs1); \
+  tmpo = vec_mulo((__vector unsigned short)vs0, \
+                  (__vector unsigned short)vs1); \
+  out = (__vector short)vec_perm((__vector unsigned short)tmpe, \
+                                 (__vector unsigned short)tmpo, \
+                                 shift_pack_index); \
 }
 
-void
-jsimd_quantize_altivec (JCOEFPTR coef_block, DCTELEM *divisors,
-                        DCTELEM *workspace)
+void jsimd_quantize_altivec(JCOEFPTR coef_block, DCTELEM *divisors,
+                            DCTELEM *workspace)
 {
   __vector short row0, row1, row2, row3, row4, row5, row6, row7,
     row0s, row1s, row2s, row3s, row4s, row5s, row6s, row7s,
@@ -129,10 +127,10 @@ jsimd_quantize_altivec (JCOEFPTR coef_block, DCTELEM *divisors,
   __vector unsigned short pw_word_bit_m1 = { __8X(WORD_BIT - 1) };
 #if __BIG_ENDIAN__
   __vector unsigned char shift_pack_index =
-    {0,1,16,17,4,5,20,21,8,9,24,25,12,13,28,29};
+    {  0,  1, 16, 17,  4,  5, 20, 21,  8,  9, 24, 25, 12, 13, 28, 29 };
 #else
   __vector unsigned char shift_pack_index =
-    {2,3,18,19,6,7,22,23,10,11,26,27,14,15,30,31};
+    {  2,  3, 18, 19,  6,  7, 22, 23, 10, 11, 26, 27, 14, 15, 30, 31 };
 #endif
 
   row0 = vec_ld(0, workspace);

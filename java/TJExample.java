@@ -70,7 +70,7 @@ public class TJExample implements TJCustomFilter {
   }
 
 
-  private static final void usage() throws Exception {
+  private static void usage() throws Exception {
     System.out.println("\nUSAGE: java [Java options] " + classname +
                        " <Input image> <Output image> [options]\n");
 
@@ -187,10 +187,9 @@ public class TJExample implements TJCustomFilter {
           }
           if (match != 1)
             usage();
-        }
-        else if (argv[i].length() > 2 &&
-                 argv[i].substring(0, 3).equalsIgnoreCase("-su") &&
-                 i < argv.length - 1) {
+        } else if (argv[i].length() > 2 &&
+                   argv[i].substring(0, 3).equalsIgnoreCase("-su") &&
+                   i < argv.length - 1) {
           i++;
           if (argv[i].substring(0, 1).equalsIgnoreCase("g"))
             outSubsamp = TJ.SAMP_GRAY;
@@ -202,9 +201,8 @@ public class TJExample implements TJCustomFilter {
             outSubsamp = TJ.SAMP_420;
           else
             usage();
-        }
-        else if (argv[i].substring(0, 2).equalsIgnoreCase("-q") &&
-                 i < argv.length - 1) {
+        } else if (argv[i].substring(0, 2).equalsIgnoreCase("-q") &&
+                   i < argv.length - 1) {
           outQual = Integer.parseInt(argv[++i]);
           if (outQual < 1 || outQual > 100)
             usage();
@@ -240,22 +238,18 @@ public class TJExample implements TJCustomFilter {
               xform.height < 1)
             usage();
           xform.options |= TJTransform.OPT_CROP;
-        }
-        else if (argv[i].substring(0, 2).equalsIgnoreCase("-d"))
+        } else if (argv[i].substring(0, 2).equalsIgnoreCase("-d"))
           display = true;
         else if (argv[i].equalsIgnoreCase("-fastupsample")) {
           System.out.println("Using fast upsampling code");
           flags |= TJ.FLAG_FASTUPSAMPLE;
-        }
-        else if (argv[i].equalsIgnoreCase("-fastdct")) {
+        } else if (argv[i].equalsIgnoreCase("-fastdct")) {
           System.out.println("Using fastest DCT/IDCT algorithm");
           flags |= TJ.FLAG_FASTDCT;
-        }
-        else if (argv[i].equalsIgnoreCase("-accuratedct")) {
+        } else if (argv[i].equalsIgnoreCase("-accuratedct")) {
           System.out.println("Using most accurate DCT/IDCT algorithm");
           flags |= TJ.FLAG_ACCURATEDCT;
-        }
-        else usage();
+        } else usage();
       }
 
       /* Determine input and output image formats based on file extensions. */
@@ -312,7 +306,7 @@ public class TJExample implements TJCustomFilter {
                            " subsampling, " + colorspaceName[inColorspace]);
 
         if (outFormat.equalsIgnoreCase("jpg") && doTransform &&
-             scalingFactor.isOne() && outSubsamp < 0 && outQual < 0) {
+            scalingFactor.isOne() && outSubsamp < 0 && outQual < 0) {
           /* Input image has been transformed, and no re-compression options
              have been selected.  Write the transformed image to disk and
              exit. */
@@ -395,7 +389,7 @@ public class TJExample implements TJCustomFilter {
         ImageIO.write(img, outFormat, outFile);
       }
 
-    } catch(Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       System.exit(-1);
     }

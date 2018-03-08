@@ -45,6 +45,6 @@
                         "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
                         "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
                         "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
-                        "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding" \
+                        "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding"
 
 #define JCOPYRIGHT_SHORT "Copyright (C) 1991-2017 The libjpeg-turbo Project and many others"

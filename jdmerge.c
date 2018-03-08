@@ -76,8 +76,8 @@ typedef struct {
 typedef my_upsampler *my_upsample_ptr;
 
 #define SCALEBITS       16      /* speediest right-shift on some machines */
-#define ONE_HALF        ((JLONG) 1 << (SCALEBITS-1))
-#define FIX(x)          ((JLONG) ((x) * (1L<<SCALEBITS) + 0.5))
+#define ONE_HALF        ((JLONG)1 << (SCALEBITS - 1))
+#define FIX(x)          ((JLONG)((x) * (1L << SCALEBITS) + 0.5))
 
 
 /* Include inline routines for colorspace extensions */
@@ -187,25 +187,25 @@ typedef my_upsampler *my_upsample_ptr;
  */
 
 LOCAL(void)
-build_ycc_rgb_table (j_decompress_ptr cinfo)
+build_ycc_rgb_table(j_decompress_ptr cinfo)
 {
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+  my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
   int i;
   JLONG x;
   SHIFT_TEMPS
 
   upsample->Cr_r_tab = (int *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * sizeof(int));
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                                (MAXJSAMPLE + 1) * sizeof(int));
   upsample->Cb_b_tab = (int *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * sizeof(int));
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                                (MAXJSAMPLE + 1) * sizeof(int));
   upsample->Cr_g_tab = (JLONG *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * sizeof(JLONG));
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                                (MAXJSAMPLE + 1) * sizeof(JLONG));
   upsample->Cb_g_tab = (JLONG *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (MAXJSAMPLE+1) * sizeof(JLONG));
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                                (MAXJSAMPLE + 1) * sizeof(JLONG));
 
   for (i = 0, x = -CENTERJSAMPLE; i <= MAXJSAMPLE; i++, x++) {
     /* i is the actual input pixel value, in the range 0..MAXJSAMPLE */
@@ -217,10 +217,10 @@ build_ycc_rgb_table (j_decompress_ptr cinfo)
     upsample->Cb_b_tab[i] = (int)
                     RIGHT_SHIFT(FIX(1.77200) * x + ONE_HALF, SCALEBITS);
     /* Cr=>G value is scaled-up -0.71414 * x */
-    upsample->Cr_g_tab[i] = (- FIX(0.71414)) * x;
+    upsample->Cr_g_tab[i] = (-FIX(0.71414)) * x;
     /* Cb=>G value is scaled-up -0.34414 * x */
     /* We also add in ONE_HALF so that need not do it in inner loop */
-    upsample->Cb_g_tab[i] = (- FIX(0.34414)) * x + ONE_HALF;
+    upsample->Cb_g_tab[i] = (-FIX(0.34414)) * x + ONE_HALF;
   }
 }
 
@@ -230,9 +230,9 @@ build_ycc_rgb_table (j_decompress_ptr cinfo)
  */
 
 METHODDEF(void)
-start_pass_merged_upsample (j_decompress_ptr cinfo)
+start_pass_merged_upsample(j_decompress_ptr cinfo)
 {
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+  my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
 
   /* Mark the spare buffer empty */
   upsample->spare_full = FALSE;
@@ -248,14 +248,13 @@ start_pass_merged_upsample (j_decompress_ptr cinfo)
  */
 
 METHODDEF(void)
-merged_2v_upsample (j_decompress_ptr cinfo,
-                    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-                    JDIMENSION in_row_groups_avail,
-                    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-                    JDIMENSION out_rows_avail)
+merged_2v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                   JDIMENSION *in_row_group_ctr,
+                   JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf,
+                   JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
 /* 2:1 vertical sampling case: may need a spare row. */
 {
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+  my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
   JSAMPROW work_ptrs[2];
   JDIMENSION num_rows;          /* number of rows returned to caller */
 
@@ -264,8 +263,8 @@ merged_2v_upsample (j_decompress_ptr cinfo,
     JDIMENSION size = upsample->out_row_width;
     if (cinfo->out_color_space == JCS_RGB565)
       size = cinfo->output_width * 2;
-    jcopy_sample_rows(& upsample->spare_row, 0, output_buf + *out_row_ctr, 0,
-                      1, size);
+    jcopy_sample_rows(&upsample->spare_row, 0, output_buf + *out_row_ctr, 0, 1,
+                      size);
     num_rows = 1;
     upsample->spare_full = FALSE;
   } else {
@@ -294,20 +293,19 @@ merged_2v_upsample (j_decompress_ptr cinfo,
   *out_row_ctr += num_rows;
   upsample->rows_to_go -= num_rows;
   /* When the buffer is emptied, declare this input row group consumed */
-  if (! upsample->spare_full)
+  if (!upsample->spare_full)
     (*in_row_group_ctr)++;
 }
 
 
 METHODDEF(void)
-merged_1v_upsample (j_decompress_ptr cinfo,
-                    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-                    JDIMENSION in_row_groups_avail,
-                    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-                    JDIMENSION out_rows_avail)
+merged_1v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                   JDIMENSION *in_row_group_ctr,
+                   JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf,
+                   JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
 /* 1:1 vertical sampling case: much easier, never need a spare row. */
 {
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+  my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
 
   /* Just do the upsampling. */
   (*upsample->upmethod) (cinfo, input_buf, *in_row_group_ctr,
@@ -333,43 +331,42 @@ merged_1v_upsample (j_decompress_ptr cinfo,
  */
 
 METHODDEF(void)
-h2v1_merged_upsample (j_decompress_ptr cinfo,
-                      JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-                      JSAMPARRAY output_buf)
+h2v1_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                     JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
   switch (cinfo->out_color_space) {
-    case JCS_EXT_RGB:
-      extrgb_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                           output_buf);
-      break;
-    case JCS_EXT_RGBX:
-    case JCS_EXT_RGBA:
-      extrgbx_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    case JCS_EXT_BGR:
-      extbgr_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                           output_buf);
-      break;
-    case JCS_EXT_BGRX:
-    case JCS_EXT_BGRA:
-      extbgrx_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    case JCS_EXT_XBGR:
-    case JCS_EXT_ABGR:
-      extxbgr_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    case JCS_EXT_XRGB:
-    case JCS_EXT_ARGB:
-      extxrgb_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    default:
-      h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                    output_buf);
-      break;
+  case JCS_EXT_RGB:
+    extrgb_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                         output_buf);
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    extrgbx_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  case JCS_EXT_BGR:
+    extbgr_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                         output_buf);
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    extbgrx_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    extxbgr_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    extxrgb_h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  default:
+    h2v1_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                  output_buf);
+    break;
   }
 }
 
@@ -379,43 +376,42 @@ h2v1_merged_upsample (j_decompress_ptr cinfo,
  */
 
 METHODDEF(void)
-h2v2_merged_upsample (j_decompress_ptr cinfo,
-                      JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-                      JSAMPARRAY output_buf)
+h2v2_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                     JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
   switch (cinfo->out_color_space) {
-    case JCS_EXT_RGB:
-      extrgb_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                           output_buf);
-      break;
-    case JCS_EXT_RGBX:
-    case JCS_EXT_RGBA:
-      extrgbx_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    case JCS_EXT_BGR:
-      extbgr_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                           output_buf);
-      break;
-    case JCS_EXT_BGRX:
-    case JCS_EXT_BGRA:
-      extbgrx_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    case JCS_EXT_XBGR:
-    case JCS_EXT_ABGR:
-      extxbgr_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    case JCS_EXT_XRGB:
-    case JCS_EXT_ARGB:
-      extxrgb_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                            output_buf);
-      break;
-    default:
-      h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
-                                    output_buf);
-      break;
+  case JCS_EXT_RGB:
+    extrgb_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                         output_buf);
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    extrgbx_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  case JCS_EXT_BGR:
+    extbgr_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                         output_buf);
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    extbgrx_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    extxbgr_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    extxrgb_h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                          output_buf);
+    break;
+  default:
+    h2v2_merged_upsample_internal(cinfo, input_buf, in_row_group_ctr,
+                                  output_buf);
+    break;
   }
 }
 
@@ -424,24 +420,24 @@ h2v2_merged_upsample (j_decompress_ptr cinfo,
  * RGB565 conversion
  */
 
-#define PACK_SHORT_565_LE(r, g, b)   ((((r) << 8) & 0xF800) |  \
-                                      (((g) << 3) & 0x7E0) | ((b) >> 3))
-#define PACK_SHORT_565_BE(r, g, b)   (((r) & 0xF8) | ((g) >> 5) |  \
-                                      (((g) << 11) & 0xE000) |  \
-                                      (((b) << 5) & 0x1F00))
+#define PACK_SHORT_565_LE(r, g, b)  ((((r) << 8) & 0xF800) | \
+                                     (((g) << 3) & 0x7E0) | ((b) >> 3))
+#define PACK_SHORT_565_BE(r, g, b)  (((r) & 0xF8) | ((g) >> 5) | \
+                                     (((g) << 11) & 0xE000) | \
+                                     (((b) << 5) & 0x1F00))
 
-#define PACK_TWO_PIXELS_LE(l, r)     ((r << 16) | l)
-#define PACK_TWO_PIXELS_BE(l, r)     ((l << 16) | r)
+#define PACK_TWO_PIXELS_LE(l, r)    ((r << 16) | l)
+#define PACK_TWO_PIXELS_BE(l, r)    ((l << 16) | r)
 
-#define PACK_NEED_ALIGNMENT(ptr)  (((size_t)(ptr)) & 3)
+#define PACK_NEED_ALIGNMENT(ptr)    (((size_t)(ptr)) & 3)
 
-#define WRITE_TWO_PIXELS_LE(addr, pixels) {  \
-  ((INT16*)(addr))[0] = (INT16)(pixels);  \
-  ((INT16*)(addr))[1] = (INT16)((pixels) >> 16);  \
+#define WRITE_TWO_PIXELS_LE(addr, pixels) { \
+  ((INT16 *)(addr))[0] = (INT16)(pixels); \
+  ((INT16 *)(addr))[1] = (INT16)((pixels) >> 16); \
 }
-#define WRITE_TWO_PIXELS_BE(addr, pixels) {  \
-  ((INT16*)(addr))[1] = (INT16)(pixels);  \
-  ((INT16*)(addr))[0] = (INT16)((pixels) >> 16);  \
+#define WRITE_TWO_PIXELS_BE(addr, pixels) { \
+  ((INT16 *)(addr))[1] = (INT16)(pixels); \
+  ((INT16 *)(addr))[0] = (INT16)((pixels) >> 16); \
 }
 
 #define DITHER_565_R(r, dither)  ((r) + ((dither) & 0xFF))
@@ -510,9 +506,8 @@ static INLINE boolean is_big_endian(void)
 
 
 METHODDEF(void)
-h2v1_merged_upsample_565 (j_decompress_ptr cinfo,
-                          JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-                          JSAMPARRAY output_buf)
+h2v1_merged_upsample_565(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                         JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
   if (is_big_endian())
     h2v1_merged_upsample_565_be(cinfo, input_buf, in_row_group_ctr,
@@ -520,13 +515,12 @@ h2v1_merged_upsample_565 (j_decompress_ptr cinfo,
   else
     h2v1_merged_upsample_565_le(cinfo, input_buf, in_row_group_ctr,
                                 output_buf);
- }
+}
 
 
 METHODDEF(void)
-h2v1_merged_upsample_565D (j_decompress_ptr cinfo,
-                           JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-                           JSAMPARRAY output_buf)
+h2v1_merged_upsample_565D(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                          JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
   if (is_big_endian())
     h2v1_merged_upsample_565D_be(cinfo, input_buf, in_row_group_ctr,
@@ -538,9 +532,8 @@ h2v1_merged_upsample_565D (j_decompress_ptr cinfo,
 
 
 METHODDEF(void)
-h2v2_merged_upsample_565 (j_decompress_ptr cinfo,
-                          JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-                          JSAMPARRAY output_buf)
+h2v2_merged_upsample_565(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                         JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
   if (is_big_endian())
     h2v2_merged_upsample_565_be(cinfo, input_buf, in_row_group_ctr,
@@ -552,9 +545,8 @@ h2v2_merged_upsample_565 (j_decompress_ptr cinfo,
 
 
 METHODDEF(void)
-h2v2_merged_upsample_565D (j_decompress_ptr cinfo,
-                           JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-                           JSAMPARRAY output_buf)
+h2v2_merged_upsample_565D(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                          JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
   if (is_big_endian())
     h2v2_merged_upsample_565D_be(cinfo, input_buf, in_row_group_ctr,
@@ -574,14 +566,14 @@ h2v2_merged_upsample_565D (j_decompress_ptr cinfo,
  */
 
 GLOBAL(void)
-jinit_merged_upsampler (j_decompress_ptr cinfo)
+jinit_merged_upsampler(j_decompress_ptr cinfo)
 {
   my_upsample_ptr upsample;
 
   upsample = (my_upsample_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 sizeof(my_upsampler));
-  cinfo->upsample = (struct jpeg_upsampler *) upsample;
+  cinfo->upsample = (struct jpeg_upsampler *)upsample;
   upsample->pub.start_pass = start_pass_merged_upsample;
   upsample->pub.need_context_rows = FALSE;
 
@@ -602,8 +594,8 @@ jinit_merged_upsampler (j_decompress_ptr cinfo)
     }
     /* Allocate a spare row buffer */
     upsample->spare_row = (JSAMPROW)
-      (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                (size_t) (upsample->out_row_width * sizeof(JSAMPLE)));
+      (*cinfo->mem->alloc_large) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                (size_t)(upsample->out_row_width * sizeof(JSAMPLE)));
   } else {
     upsample->pub.upsample = merged_1v_upsample;
     if (jsimd_can_h2v1_merged_upsample())

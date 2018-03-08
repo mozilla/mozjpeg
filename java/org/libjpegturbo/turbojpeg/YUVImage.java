@@ -208,12 +208,12 @@ public class YUVImage {
    * @param subsamp the level of chrominance subsampling used in the YUV
    * image (one of {@link TJ#SAMP_444 TJ.SAMP_*})
    */
-  public void setBuf(byte[][] planes, int[] offsets, int width, int strides[],
+  public void setBuf(byte[][] planes, int[] offsets, int width, int[] strides,
                      int height, int subsamp) {
     setBuf(planes, offsets, width, strides, height, subsamp, false);
   }
 
-  private void setBuf(byte[][] planes, int[] offsets, int width, int strides[],
+  private void setBuf(byte[][] planes, int[] offsets, int width, int[] strides,
                      int height, int subsamp, boolean alloc) {
     if ((planes == null && !alloc) || width < 1 || height < 1 || subsamp < 0 ||
         subsamp >= TJ.NUMSAMP)
@@ -428,7 +428,7 @@ public class YUVImage {
     return TJ.bufSizeYUV(yuvWidth, yuvPad, yuvHeight, yuvSubsamp);
   }
 
-  private static final int PAD(int v, int p) {
+  private static int PAD(int v, int p) {
     return (v + p - 1) & (~(p - 1));
   }
 

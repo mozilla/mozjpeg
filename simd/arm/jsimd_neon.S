@@ -76,8 +76,8 @@ _\fname:
  * Perform dequantization and inverse DCT on one block of coefficients.
  *
  * GLOBAL(void)
- * jsimd_idct_islow_neon (void *dct_table, JCOEFPTR coef_block,
- *                        JSAMPARRAY output_buf, JDIMENSION output_col)
+ * jsimd_idct_islow_neon(void *dct_table, JCOEFPTR coef_block,
+ *                       JSAMPARRAY output_buf, JDIMENSION output_col)
  */
 
 #define FIX_0_298631336 (2446)
@@ -106,71 +106,70 @@ _\fname:
  * Reference SIMD-friendly 1-D ISLOW iDCT C implementation.
  * Uses some ideas from the comments in 'simd/jiss2int-64.asm'
  */
-#define REF_1D_IDCT(xrow0, xrow1, xrow2, xrow3, xrow4, xrow5, xrow6, xrow7)   \
-{                                                                             \
-    DCTELEM row0, row1, row2, row3, row4, row5, row6, row7;                   \
-    JLONG   q1, q2, q3, q4, q5, q6, q7;                                       \
-    JLONG   tmp11_plus_tmp2, tmp11_minus_tmp2;                                \
-                                                                              \
-    /* 1-D iDCT input data */                                                 \
-    row0 = xrow0;                                                             \
-    row1 = xrow1;                                                             \
-    row2 = xrow2;                                                             \
-    row3 = xrow3;                                                             \
-    row4 = xrow4;                                                             \
-    row5 = xrow5;                                                             \
-    row6 = xrow6;                                                             \
-    row7 = xrow7;                                                             \
-                                                                              \
-    q5 = row7 + row3;                                                         \
-    q4 = row5 + row1;                                                         \
-    q6 = MULTIPLY(q5, FIX_1_175875602_MINUS_1_961570560) +                    \
-         MULTIPLY(q4, FIX_1_175875602);                                       \
-    q7 = MULTIPLY(q5, FIX_1_175875602) +                                      \
-         MULTIPLY(q4, FIX_1_175875602_MINUS_0_390180644);                     \
-    q2 = MULTIPLY(row2, FIX_0_541196100) +                                    \
-         MULTIPLY(row6, FIX_0_541196100_MINUS_1_847759065);                   \
-    q4 = q6;                                                                  \
-    q3 = ((JLONG) row0 - (JLONG) row4) << 13;                                 \
-    q6 += MULTIPLY(row5, -FIX_2_562915447) +                                  \
-          MULTIPLY(row3, FIX_3_072711026_MINUS_2_562915447);                  \
-    /* now we can use q1 (reloadable constants have been used up) */          \
-    q1 = q3 + q2;                                                             \
-    q4 += MULTIPLY(row7, FIX_0_298631336_MINUS_0_899976223) +                 \
-          MULTIPLY(row1, -FIX_0_899976223);                                   \
-    q5 = q7;                                                                  \
-    q1 = q1 + q6;                                                             \
-    q7 += MULTIPLY(row7, -FIX_0_899976223) +                                  \
-          MULTIPLY(row1, FIX_1_501321110_MINUS_0_899976223);                  \
-                                                                              \
-    /* (tmp11 + tmp2) has been calculated (out_row1 before descale) */        \
-    tmp11_plus_tmp2 = q1;                                                     \
-    row1 = 0;                                                                 \
-                                                                              \
-    q1 = q1 - q6;                                                             \
-    q5 += MULTIPLY(row5, FIX_2_053119869_MINUS_2_562915447) +                 \
-          MULTIPLY(row3, -FIX_2_562915447);                                   \
-    q1 = q1 - q6;                                                             \
-    q6 = MULTIPLY(row2, FIX_0_541196100_PLUS_0_765366865) +                   \
-         MULTIPLY(row6, FIX_0_541196100);                                     \
-    q3 = q3 - q2;                                                             \
-                                                                              \
-    /* (tmp11 - tmp2) has been calculated (out_row6 before descale) */        \
-    tmp11_minus_tmp2 = q1;                                                    \
-                                                                              \
-    q1 = ((JLONG) row0 + (JLONG) row4) << 13;                                 \
-    q2 = q1 + q6;                                                             \
-    q1 = q1 - q6;                                                             \
-                                                                              \
-    /* pick up the results */                                                 \
-    tmp0  = q4;                                                               \
-    tmp1  = q5;                                                               \
-    tmp2  = (tmp11_plus_tmp2 - tmp11_minus_tmp2) / 2;                         \
-    tmp3  = q7;                                                               \
-    tmp10 = q2;                                                               \
-    tmp11 = (tmp11_plus_tmp2 + tmp11_minus_tmp2) / 2;                         \
-    tmp12 = q3;                                                               \
-    tmp13 = q1;                                                               \
+#define REF_1D_IDCT(xrow0, xrow1, xrow2, xrow3, xrow4, xrow5, xrow6, xrow7) { \
+    DCTELEM row0, row1, row2, row3, row4, row5, row6, row7; \
+    JLONG   q1, q2, q3, q4, q5, q6, q7; \
+    JLONG   tmp11_plus_tmp2, tmp11_minus_tmp2; \
+    \
+    /* 1-D iDCT input data */ \
+    row0 = xrow0; \
+    row1 = xrow1; \
+    row2 = xrow2; \
+    row3 = xrow3; \
+    row4 = xrow4; \
+    row5 = xrow5; \
+    row6 = xrow6; \
+    row7 = xrow7; \
+    \
+    q5 = row7 + row3; \
+    q4 = row5 + row1; \
+    q6 = MULTIPLY(q5, FIX_1_175875602_MINUS_1_961570560) + \
+         MULTIPLY(q4, FIX_1_175875602); \
+    q7 = MULTIPLY(q5, FIX_1_175875602) + \
+         MULTIPLY(q4, FIX_1_175875602_MINUS_0_390180644); \
+    q2 = MULTIPLY(row2, FIX_0_541196100) + \
+         MULTIPLY(row6, FIX_0_541196100_MINUS_1_847759065); \
+    q4 = q6; \
+    q3 = ((JLONG)row0 - (JLONG)row4) << 13; \
+    q6 += MULTIPLY(row5, -FIX_2_562915447) + \
+          MULTIPLY(row3, FIX_3_072711026_MINUS_2_562915447); \
+    /* now we can use q1 (reloadable constants have been used up) */ \
+    q1 = q3 + q2; \
+    q4 += MULTIPLY(row7, FIX_0_298631336_MINUS_0_899976223) + \
+          MULTIPLY(row1, -FIX_0_899976223); \
+    q5 = q7; \
+    q1 = q1 + q6; \
+    q7 += MULTIPLY(row7, -FIX_0_899976223) + \
+          MULTIPLY(row1, FIX_1_501321110_MINUS_0_899976223); \
+    \
+    /* (tmp11 + tmp2) has been calculated (out_row1 before descale) */ \
+    tmp11_plus_tmp2 = q1; \
+    row1 = 0; \
+    \
+    q1 = q1 - q6; \
+    q5 += MULTIPLY(row5, FIX_2_053119869_MINUS_2_562915447) + \
+          MULTIPLY(row3, -FIX_2_562915447); \
+    q1 = q1 - q6; \
+    q6 = MULTIPLY(row2, FIX_0_541196100_PLUS_0_765366865) + \
+         MULTIPLY(row6, FIX_0_541196100); \
+    q3 = q3 - q2; \
+    \
+    /* (tmp11 - tmp2) has been calculated (out_row6 before descale) */ \
+    tmp11_minus_tmp2 = q1; \
+    \
+    q1 = ((JLONG)row0 + (JLONG)row4) << 13; \
+    q2 = q1 + q6; \
+    q1 = q1 - q6; \
+    \
+    /* pick up the results */ \
+    tmp0  = q4; \
+    tmp1  = q5; \
+    tmp2  = (tmp11_plus_tmp2 - tmp11_minus_tmp2) / 2; \
+    tmp3  = q7; \
+    tmp10 = q2; \
+    tmp11 = (tmp11_plus_tmp2 + tmp11_minus_tmp2) / 2; \
+    tmp12 = q3; \
+    tmp13 = q1; \
 }
 
 #define XFIX_0_899976223                   d0[0]
@@ -941,18 +940,18 @@ asm_function jsimd_idct_ifast_neon
 
 .balign 16
 jsimd_idct_4x4_neon_consts:
-  .short FIX_1_847759065      /* d0[0] */
-  .short -FIX_0_765366865     /* d0[1] */
-  .short -FIX_0_211164243     /* d0[2] */
-  .short FIX_1_451774981      /* d0[3] */
-  .short -FIX_2_172734803     /* d1[0] */
-  .short FIX_1_061594337      /* d1[1] */
-  .short -FIX_0_509795579     /* d1[2] */
-  .short -FIX_0_601344887     /* d1[3] */
-  .short FIX_0_899976223      /* d2[0] */
-  .short FIX_2_562915447      /* d2[1] */
-  .short 1 << (CONST_BITS+1)  /* d2[2] */
-  .short 0                    /* d2[3] */
+  .short FIX_1_847759065        /* d0[0] */
+  .short -FIX_0_765366865       /* d0[1] */
+  .short -FIX_0_211164243       /* d0[2] */
+  .short FIX_1_451774981        /* d0[3] */
+  .short -FIX_2_172734803       /* d1[0] */
+  .short FIX_1_061594337        /* d1[1] */
+  .short -FIX_0_509795579       /* d1[2] */
+  .short -FIX_0_601344887       /* d1[3] */
+  .short FIX_0_899976223        /* d2[0] */
+  .short FIX_2_562915447        /* d2[1] */
+  .short 1 << (CONST_BITS + 1)  /* d2[2] */
+  .short 0                      /* d2[3] */
 
 .macro idct_helper x4, x6, x8, x10, x12, x14, x16, shift, y26, y27, y28, y29
     vmull.s16       q14, \x4, d2[2]
@@ -2108,8 +2107,8 @@ asm_function jsimd_fdct_ifast_neon
 
 /*
  * GLOBAL(void)
- * jsimd_quantize_neon (JCOEFPTR coef_block, DCTELEM *divisors,
- *                      DCTELEM *workspace);
+ * jsimd_quantize_neon(JCOEFPTR coef_block, DCTELEM *divisors,
+ *                     DCTELEM *workspace);
  *
  * Note: the code uses 2 stage pipelining in order to improve instructions
  *       scheduling and eliminate stalls (this provides ~15% better
@@ -2209,10 +2208,10 @@ asm_function jsimd_quantize_neon
 
 /*
  * GLOBAL(void)
- * jsimd_h2v1_fancy_upsample_neon (int max_v_samp_factor,
- *                                 JDIMENSION downsampled_width,
- *                                 JSAMPARRAY input_data,
- *                                 JSAMPARRAY *output_data_ptr);
+ * jsimd_h2v1_fancy_upsample_neon(int max_v_samp_factor,
+ *                                JDIMENSION downsampled_width,
+ *                                JSAMPARRAY input_data,
+ *                                JSAMPARRAY *output_data_ptr);
  *
  * Note: the use of unaligned writes is the main remaining bottleneck in
  *       this code, which can be potentially solved to get up to tens
@@ -2445,10 +2444,10 @@ asm_function jsimd_h2v1_fancy_upsample_neon
 /*****************************************************************************/
 
 /*
- * GLOBAL(JOCTET*)
- * jsimd_huff_encode_one_block (working_state *state, JOCTET *buffer,
- *                              JCOEFPTR block, int last_dc_val,
- *                              c_derived_tbl *dctbl, c_derived_tbl *actbl)
+ * GLOBAL(JOCTET *)
+ * jsimd_huff_encode_one_block(working_state *state, JOCTET *buffer,
+ *                             JCOEFPTR block, int last_dc_val,
+ *                             c_derived_tbl *dctbl, c_derived_tbl *actbl)
  *
  */
 
@@ -2732,7 +2731,7 @@ asm_function jsimd_huff_encode_one_block_neon
     ldr             r11, [r0, #0x8]       /* r11 = put_buffer */
     ldr             r4, [r0, #0xc]        /* r4  = put_bits */
     ldrh            r2, [r6, #-128]       /* r2  = nbits */
-    ldrh            r3, [r6]              /* r3  = temp2 & (((JLONG) 1)<<nbits) - 1; */
+    ldrh            r3, [r6]              /* r3  = temp2 & (((JLONG)1)<<nbits) - 1; */
     ldr             r0, [lr, r2, lsl #2]
     ldrb            r5, [r1, r2]
     put_bits        r11, r4, r0, r5

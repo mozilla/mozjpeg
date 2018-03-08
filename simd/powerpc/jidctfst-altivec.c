@@ -44,75 +44,73 @@
 #define CONST_SHIFT (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS - 1)
 
 
-#define DO_IDCT(in)  \
-{  \
-  /* Even part */  \
+#define DO_IDCT(in) { \
+  /* Even part */ \
   \
-  tmp10 = vec_add(in##0, in##4);  \
-  tmp11 = vec_sub(in##0, in##4);  \
-  tmp13 = vec_add(in##2, in##6);  \
+  tmp10 = vec_add(in##0, in##4); \
+  tmp11 = vec_sub(in##0, in##4); \
+  tmp13 = vec_add(in##2, in##6); \
   \
-  tmp12 = vec_sub(in##2, in##6);  \
-  tmp12 = vec_sl(tmp12, pre_multiply_scale_bits);  \
-  tmp12 = vec_madds(tmp12, pw_F1414, pw_zero);  \
-  tmp12 = vec_sub(tmp12, tmp13);  \
+  tmp12 = vec_sub(in##2, in##6); \
+  tmp12 = vec_sl(tmp12, pre_multiply_scale_bits); \
+  tmp12 = vec_madds(tmp12, pw_F1414, pw_zero); \
+  tmp12 = vec_sub(tmp12, tmp13); \
   \
-  tmp0 = vec_add(tmp10, tmp13);  \
-  tmp3 = vec_sub(tmp10, tmp13);  \
-  tmp1 = vec_add(tmp11, tmp12);  \
-  tmp2 = vec_sub(tmp11, tmp12);  \
+  tmp0 = vec_add(tmp10, tmp13); \
+  tmp3 = vec_sub(tmp10, tmp13); \
+  tmp1 = vec_add(tmp11, tmp12); \
+  tmp2 = vec_sub(tmp11, tmp12); \
   \
-  /* Odd part */  \
+  /* Odd part */ \
   \
-  z13 = vec_add(in##5, in##3);  \
-  z10 = vec_sub(in##5, in##3);  \
-  z10s = vec_sl(z10, pre_multiply_scale_bits);  \
-  z11 = vec_add(in##1, in##7);  \
-  z12s = vec_sub(in##1, in##7);  \
-  z12s = vec_sl(z12s, pre_multiply_scale_bits);  \
+  z13 = vec_add(in##5, in##3); \
+  z10 = vec_sub(in##5, in##3); \
+  z10s = vec_sl(z10, pre_multiply_scale_bits); \
+  z11 = vec_add(in##1, in##7); \
+  z12s = vec_sub(in##1, in##7); \
+  z12s = vec_sl(z12s, pre_multiply_scale_bits); \
   \
-  tmp11 = vec_sub(z11, z13);  \
-  tmp11 = vec_sl(tmp11, pre_multiply_scale_bits);  \
-  tmp11 = vec_madds(tmp11, pw_F1414, pw_zero);  \
+  tmp11 = vec_sub(z11, z13); \
+  tmp11 = vec_sl(tmp11, pre_multiply_scale_bits); \
+  tmp11 = vec_madds(tmp11, pw_F1414, pw_zero); \
   \
-  tmp7 = vec_add(z11, z13);  \
+  tmp7 = vec_add(z11, z13); \
   \
-  /* To avoid overflow...  \
-   *  \
-   * (Original)  \
-   * tmp12 = -2.613125930 * z10 + z5;  \
-   *  \
-   * (This implementation)  \
-   * tmp12 = (-1.613125930 - 1) * z10 + z5;  \
-   *       = -1.613125930 * z10 - z10 + z5;  \
-   */  \
+  /* To avoid overflow... \
+   * \
+   * (Original) \
+   * tmp12 = -2.613125930 * z10 + z5; \
+   * \
+   * (This implementation) \
+   * tmp12 = (-1.613125930 - 1) * z10 + z5; \
+   *       = -1.613125930 * z10 - z10 + z5; \
+   */ \
   \
-  z5 = vec_add(z10s, z12s);  \
-  z5 = vec_madds(z5, pw_F1847, pw_zero);  \
+  z5 = vec_add(z10s, z12s); \
+  z5 = vec_madds(z5, pw_F1847, pw_zero); \
   \
-  tmp10 = vec_madds(z12s, pw_F1082, pw_zero);  \
-  tmp10 = vec_sub(tmp10, z5);  \
-  tmp12 = vec_madds(z10s, pw_MF1613, z5);  \
-  tmp12 = vec_sub(tmp12, z10);  \
+  tmp10 = vec_madds(z12s, pw_F1082, pw_zero); \
+  tmp10 = vec_sub(tmp10, z5); \
+  tmp12 = vec_madds(z10s, pw_MF1613, z5); \
+  tmp12 = vec_sub(tmp12, z10); \
   \
-  tmp6 = vec_sub(tmp12, tmp7);  \
-  tmp5 = vec_sub(tmp11, tmp6);  \
-  tmp4 = vec_add(tmp10, tmp5);  \
+  tmp6 = vec_sub(tmp12, tmp7); \
+  tmp5 = vec_sub(tmp11, tmp6); \
+  tmp4 = vec_add(tmp10, tmp5); \
   \
-  out0 = vec_add(tmp0, tmp7);  \
-  out1 = vec_add(tmp1, tmp6);  \
-  out2 = vec_add(tmp2, tmp5);  \
-  out3 = vec_sub(tmp3, tmp4);  \
-  out4 = vec_add(tmp3, tmp4);  \
-  out5 = vec_sub(tmp2, tmp5);  \
-  out6 = vec_sub(tmp1, tmp6);  \
-  out7 = vec_sub(tmp0, tmp7);  \
+  out0 = vec_add(tmp0, tmp7); \
+  out1 = vec_add(tmp1, tmp6); \
+  out2 = vec_add(tmp2, tmp5); \
+  out3 = vec_sub(tmp3, tmp4); \
+  out4 = vec_add(tmp3, tmp4); \
+  out5 = vec_sub(tmp2, tmp5); \
+  out6 = vec_sub(tmp1, tmp6); \
+  out7 = vec_sub(tmp0, tmp7); \
 }
 
 
-void
-jsimd_idct_ifast_altivec (void *dct_table_, JCOEFPTR coef_block,
-                          JSAMPARRAY output_buf, JDIMENSION output_col)
+void jsimd_idct_ifast_altivec(void *dct_table_, JCOEFPTR coef_block,
+                              JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   short *dct_table = (short *)dct_table_;
   int *outptr;

@@ -8,14 +8,14 @@
  */
 
 LOCAL(void)
-expand_right_edge (JSAMPARRAY image_data, int num_rows,
-                   JDIMENSION input_cols, JDIMENSION output_cols)
+expand_right_edge(JSAMPARRAY image_data, int num_rows, JDIMENSION input_cols,
+                  JDIMENSION output_cols)
 {
   register JSAMPROW ptr;
   register JSAMPLE pixval;
   register int count;
   int row;
-  int numcols = (int) (output_cols - input_cols);
+  int numcols = (int)(output_cols - input_cols);
 
   if (numcols > 0) {
     for (row = 0; row < num_rows; row++) {

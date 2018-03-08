@@ -44,7 +44,7 @@
  */
 
 LOCAL(void)
-add_map_entry (j_decompress_ptr cinfo, int R, int G, int B)
+add_map_entry(j_decompress_ptr cinfo, int R, int G, int B)
 {
   JSAMPROW colormap0 = cinfo->colormap[0];
   JSAMPROW colormap1 = cinfo->colormap[1];
@@ -61,13 +61,13 @@ add_map_entry (j_decompress_ptr cinfo, int R, int G, int B)
   }
 
   /* Check for map overflow. */
-  if (ncolors >= (MAXJSAMPLE+1))
-    ERREXIT1(cinfo, JERR_QUANT_MANY_COLORS, (MAXJSAMPLE+1));
+  if (ncolors >= (MAXJSAMPLE + 1))
+    ERREXIT1(cinfo, JERR_QUANT_MANY_COLORS, (MAXJSAMPLE + 1));
 
   /* OK, add color to map. */
-  colormap0[ncolors] = (JSAMPLE) R;
-  colormap1[ncolors] = (JSAMPLE) G;
-  colormap2[ncolors] = (JSAMPLE) B;
+  colormap0[ncolors] = (JSAMPLE)R;
+  colormap1[ncolors] = (JSAMPLE)G;
+  colormap2[ncolors] = (JSAMPLE)B;
   cinfo->actual_number_of_colors++;
 }
 
@@ -77,7 +77,7 @@ add_map_entry (j_decompress_ptr cinfo, int R, int G, int B)
  */
 
 LOCAL(void)
-read_gif_map (j_decompress_ptr cinfo, FILE *infile)
+read_gif_map(j_decompress_ptr cinfo, FILE *infile)
 {
   int header[13];
   int i, colormaplen;
@@ -108,9 +108,9 @@ read_gif_map (j_decompress_ptr cinfo, FILE *infile)
     if (R == EOF || G == EOF || B == EOF)
       ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
     add_map_entry(cinfo,
-                  R << (BITS_IN_JSAMPLE-8),
-                  G << (BITS_IN_JSAMPLE-8),
-                  B << (BITS_IN_JSAMPLE-8));
+                  R << (BITS_IN_JSAMPLE - 8),
+                  G << (BITS_IN_JSAMPLE - 8),
+                  B << (BITS_IN_JSAMPLE - 8));
   }
 }
 
@@ -119,7 +119,7 @@ read_gif_map (j_decompress_ptr cinfo, FILE *infile)
 
 
 LOCAL(int)
-pbm_getc (FILE *infile)
+pbm_getc(FILE *infile)
 /* Read next char, skipping over any comments */
 /* A comment/newline sequence is returned as a newline */
 {
@@ -136,7 +136,7 @@ pbm_getc (FILE *infile)
 
 
 LOCAL(unsigned int)
-read_pbm_integer (j_decompress_ptr cinfo, FILE *infile)
+read_pbm_integer(j_decompress_ptr cinfo, FILE *infile)
 /* Read an unsigned decimal integer from the PPM file */
 /* Swallows one trailing character after the integer */
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
@@ -169,7 +169,7 @@ read_pbm_integer (j_decompress_ptr cinfo, FILE *infile)
  */
 
 LOCAL(void)
-read_ppm_map (j_decompress_ptr cinfo, FILE *infile)
+read_ppm_map(j_decompress_ptr cinfo, FILE *infile)
 {
   int c;
   unsigned int w, h, maxval, row, col;
@@ -187,7 +187,7 @@ read_ppm_map (j_decompress_ptr cinfo, FILE *infile)
     ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
 
   /* For now, we don't support rescaling from an unusual maxval. */
-  if (maxval != (unsigned int) MAXJSAMPLE)
+  if (maxval != (unsigned int)MAXJSAMPLE)
     ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
 
   switch (c) {
@@ -229,12 +229,12 @@ read_ppm_map (j_decompress_ptr cinfo, FILE *infile)
  */
 
 GLOBAL(void)
-read_color_map (j_decompress_ptr cinfo, FILE *infile)
+read_color_map(j_decompress_ptr cinfo, FILE *infile)
 {
   /* Allocate space for a color map of maximum supported size. */
   cinfo->colormap = (*cinfo->mem->alloc_sarray)
-    ((j_common_ptr) cinfo, JPOOL_IMAGE,
-     (JDIMENSION) (MAXJSAMPLE+1), (JDIMENSION) 3);
+    ((j_common_ptr)cinfo, JPOOL_IMAGE,
+     (JDIMENSION)(MAXJSAMPLE + 1), (JDIMENSION)3);
   cinfo->actual_number_of_colors = 0; /* initialize map to empty */
 
   /* Read first byte to determine file format */

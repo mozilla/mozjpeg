@@ -225,7 +225,7 @@ section .note.GNU-stack noalloc noexec nowrite progbits
     SECTION     SEG_CONST
 const_base:
 
-%define GOTOFF(got,sym)  (got) + (sym) - const_base
+%define GOTOFF(got, sym)  (got) + (sym) - const_base
 
 %imacro get_GOT 1
     ; NOTE: this macro destroys ecx resister.
@@ -257,7 +257,7 @@ const_base:
 
 %else     ; GOT_SYMBOL != _MACHO_PIC_ ----------------
 
-%define GOTOFF(got,sym)  (got) + (sym) wrt ..gotoff
+%define GOTOFF(got, sym)  (got) + (sym) wrt ..gotoff
 
 %imacro get_GOT 1
     extern      GOT_SYMBOL
@@ -284,7 +284,7 @@ const_base:
 
 %else    ; !PIC -----------------------------------------
 
-%define GOTOFF(got,sym)  (sym)
+%define GOTOFF(got, sym)  (sym)
 
 %imacro get_GOT 1.nolist
 %endmacro
@@ -301,27 +301,27 @@ const_base:
 ;  Align the next instruction on {2,4,8,16,..}-byte boundary.
 ;  ".balign n,,m" in GNU as
 ;
-%define MSKLE(x,y)  (~(((y) & 0xFFFF) - ((x) & 0xFFFF)) >> 16)
-%define FILLB(b,n)  (($$-(b)) & ((n)-1))
+%define MSKLE(x, y)  (~(((y) & 0xFFFF) - ((x) & 0xFFFF)) >> 16)
+%define FILLB(b, n)  (($$-(b)) & ((n)-1))
 
 %imacro alignx 1-2.nolist 0xFFFF
-%%bs:  \
-    times MSKLE(FILLB(%%bs,%1),%2) & MSKLE(16,FILLB($,%1)) & FILLB($,%1)  \
-          db 0x90                                   ; nop
-    times MSKLE(FILLB(%%bs,%1),%2) & FILLB($,%1)/9  \
-          db 0x8D,0x9C,0x23,0x00,0x00,0x00,0x00     ; lea ebx,[ebx+0x00000000]
-    times MSKLE(FILLB(%%bs,%1),%2) & FILLB($,%1)/7  \
-          db 0x8D,0xAC,0x25,0x00,0x00,0x00,0x00     ; lea ebp,[ebp+0x00000000]
-    times MSKLE(FILLB(%%bs,%1),%2) & FILLB($,%1)/6  \
-          db 0x8D,0xAD,0x00,0x00,0x00,0x00          ; lea ebp,[ebp+0x00000000]
-    times MSKLE(FILLB(%%bs,%1),%2) & FILLB($,%1)/4  \
-          db 0x8D,0x6C,0x25,0x00                    ; lea ebp,[ebp+0x00]
-    times MSKLE(FILLB(%%bs,%1),%2) & FILLB($,%1)/3  \
-          db 0x8D,0x6D,0x00                         ; lea ebp,[ebp+0x00]
-    times MSKLE(FILLB(%%bs,%1),%2) & FILLB($,%1)/2  \
-          db 0x8B,0xED                              ; mov ebp,ebp
-    times MSKLE(FILLB(%%bs,%1),%2) & FILLB($,%1)/1  \
-          db 0x90                                   ; nop
+%%bs: \
+  times MSKLE(FILLB(%%bs, %1), %2) & MSKLE(16, FILLB($, %1)) & FILLB($, %1) \
+        db 0x90                                      ; nop
+  times MSKLE(FILLB(%%bs, %1), %2) & FILLB($, %1) / 9 \
+        db 0x8D, 0x9C, 0x23, 0x00, 0x00, 0x00, 0x00  ; lea ebx,[ebx+0x00000000]
+  times MSKLE(FILLB(%%bs, %1), %2) & FILLB($, %1) / 7 \
+        db 0x8D, 0xAC, 0x25, 0x00, 0x00, 0x00, 0x00  ; lea ebp,[ebp+0x00000000]
+  times MSKLE(FILLB(%%bs, %1), %2) & FILLB($, %1) / 6 \
+        db 0x8D, 0xAD, 0x00, 0x00, 0x00, 0x00        ; lea ebp,[ebp+0x00000000]
+  times MSKLE(FILLB(%%bs, %1), %2) & FILLB($, %1) / 4 \
+        db 0x8D, 0x6C, 0x25, 0x00                    ; lea ebp,[ebp+0x00]
+  times MSKLE(FILLB(%%bs, %1), %2) & FILLB($, %1) / 3 \
+        db 0x8D, 0x6D, 0x00                          ; lea ebp,[ebp+0x00]
+  times MSKLE(FILLB(%%bs, %1), %2) & FILLB($, %1) / 2 \
+        db 0x8B, 0xED                                ; mov ebp,ebp
+  times MSKLE(FILLB(%%bs, %1), %2) & FILLB($, %1) / 1 \
+        db 0x90                                      ; nop
 %endmacro
 
 ; Align the next data on {2,4,8,16,..}-byte boundary.

@@ -35,11 +35,11 @@ F_0_707 equ 181  ; FIX(0.707106781)
 F_1_306 equ 334  ; FIX(1.306562965)
 %else
 ; NASM cannot do compile-time arithmetic on floating-point constants.
-%define DESCALE(x,n)  (((x)+(1<<((n)-1)))>>(n))
-F_0_382 equ DESCALE( 410903207, 30-CONST_BITS)  ; FIX(0.382683433)
-F_0_541 equ DESCALE( 581104887, 30-CONST_BITS)  ; FIX(0.541196100)
-F_0_707 equ DESCALE( 759250124, 30-CONST_BITS)  ; FIX(0.707106781)
-F_1_306 equ DESCALE(1402911301, 30-CONST_BITS)  ; FIX(1.306562965)
+%define DESCALE(x, n)  (((x) + (1 << ((n) - 1))) >> (n))
+F_0_382 equ DESCALE( 410903207, 30 - CONST_BITS)  ; FIX(0.382683433)
+F_0_541 equ DESCALE( 581104887, 30 - CONST_BITS)  ; FIX(0.541196100)
+F_0_707 equ DESCALE( 759250124, 30 - CONST_BITS)  ; FIX(0.707106781)
+F_1_306 equ DESCALE(1402911301, 30 - CONST_BITS)  ; FIX(1.306562965)
 %endif
 
 ; --------------------------------------------------------------------------
@@ -70,12 +70,12 @@ PW_F1306 times 8 dw F_1_306 << CONST_SHIFT
 ; Perform the forward DCT on one block of samples.
 ;
 ; GLOBAL(void)
-; jsimd_fdct_ifast_sse2 (DCTELEM *data)
+; jsimd_fdct_ifast_sse2(DCTELEM *data)
 ;
 
 ; r10 = DCTELEM *data
 
-%define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM  2
 
     align       32

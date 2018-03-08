@@ -1,7 +1,7 @@
 /*
  * cmyk.h
  *
- * Copyright (C) 2017, D. R. Commander.
+ * Copyright (C) 2017-2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -11,16 +11,13 @@
  * system.
  */
 
-#include <jpeglib.h>
-#include "jconfigint.h"
-
 #ifndef CMYK_H
 #define CMYK_H
 
-
-#ifndef min
- #define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
+#include <jinclude.h>
+#define JPEG_INTERNALS
+#include <jpeglib.h>
+#include "jconfigint.h"
 
 
 /* Fully reversible */
@@ -33,7 +30,7 @@ rgb_to_cmyk(JSAMPLE r, JSAMPLE g, JSAMPLE b, JSAMPLE *c, JSAMPLE *m,
   double ctmp = 1.0 - ((double)r / 255.0);
   double mtmp = 1.0 - ((double)g / 255.0);
   double ytmp = 1.0 - ((double)b / 255.0);
-  double ktmp = min(min(ctmp, mtmp), ytmp);
+  double ktmp = MIN(MIN(ctmp, mtmp), ytmp);
 
   if (ktmp == 1.0) ctmp = mtmp = ytmp = 0.0;
   else {

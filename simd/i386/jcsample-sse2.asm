@@ -27,18 +27,18 @@
 ; without smoothing.
 ;
 ; GLOBAL(void)
-; jsimd_h2v1_downsample_sse2 (JDIMENSION image_width, int max_v_samp_factor,
-;                             JDIMENSION v_samp_factor,
-;                             JDIMENSION width_in_blocks,
-;                             JSAMPARRAY input_data, JSAMPARRAY output_data);
+; jsimd_h2v1_downsample_sse2(JDIMENSION image_width, int max_v_samp_factor,
+;                            JDIMENSION v_samp_factor,
+;                            JDIMENSION width_in_blocks, JSAMPARRAY input_data,
+;                            JSAMPARRAY output_data);
 ;
 
-%define img_width(b)    (b)+8           ; JDIMENSION image_width
-%define max_v_samp(b)   (b)+12          ; int max_v_samp_factor
-%define v_samp(b)       (b)+16          ; JDIMENSION v_samp_factor
-%define width_blks(b)   (b)+20          ; JDIMENSION width_in_blocks
-%define input_data(b)   (b)+24          ; JSAMPARRAY input_data
-%define output_data(b)  (b)+28          ; JSAMPARRAY output_data
+%define img_width(b)    (b) + 8         ; JDIMENSION image_width
+%define max_v_samp(b)   (b) + 12        ; int max_v_samp_factor
+%define v_samp(b)       (b) + 16        ; JDIMENSION v_samp_factor
+%define width_blks(b)   (b) + 20        ; JDIMENSION width_in_blocks
+%define input_data(b)   (b) + 24        ; JSAMPARRAY input_data
+%define output_data(b)  (b) + 28        ; JSAMPARRAY output_data
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v1_downsample_sse2)
@@ -183,18 +183,18 @@ EXTN(jsimd_h2v1_downsample_sse2):
 ; without smoothing.
 ;
 ; GLOBAL(void)
-; jsimd_h2v2_downsample_sse2 (JDIMENSION image_width, int max_v_samp_factor,
-;                             JDIMENSION v_samp_factor,
-;                             JDIMENSION width_in_blocks,
-;                             JSAMPARRAY input_data, JSAMPARRAY output_data);
+; jsimd_h2v2_downsample_sse2(JDIMENSION image_width, int max_v_samp_factor,
+;                            JDIMENSION v_samp_factor,
+;                            JDIMENSION width_in_blocks, JSAMPARRAY input_data,
+;                            JSAMPARRAY output_data);
 ;
 
-%define img_width(b)    (b)+8           ; JDIMENSION image_width
-%define max_v_samp(b)   (b)+12          ; int max_v_samp_factor
-%define v_samp(b)       (b)+16          ; JDIMENSION v_samp_factor
-%define width_blks(b)   (b)+20          ; JDIMENSION width_in_blocks
-%define input_data(b)   (b)+24          ; JSAMPARRAY input_data
-%define output_data(b)  (b)+28          ; JSAMPARRAY output_data
+%define img_width(b)    (b) + 8         ; JDIMENSION image_width
+%define max_v_samp(b)   (b) + 12        ; int max_v_samp_factor
+%define v_samp(b)       (b) + 16        ; JDIMENSION v_samp_factor
+%define width_blks(b)   (b) + 20        ; JDIMENSION width_in_blocks
+%define input_data(b)   (b) + 24        ; JSAMPARRAY input_data
+%define output_data(b)  (b) + 28        ; JSAMPARRAY output_data
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v2_downsample_sse2)

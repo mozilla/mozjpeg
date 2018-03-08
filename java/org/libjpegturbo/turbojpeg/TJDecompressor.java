@@ -750,35 +750,35 @@ public class TJDecompressor implements Closeable {
     int pixelFormat;  boolean intPixels = false;
     if (byteOrder == null)
       byteOrder = ByteOrder.nativeOrder();
-    switch(dstImage.getType()) {
-      case BufferedImage.TYPE_3BYTE_BGR:
-        pixelFormat = TJ.PF_BGR;  break;
-      case BufferedImage.TYPE_4BYTE_ABGR:
-      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-        pixelFormat = TJ.PF_XBGR;  break;
-      case BufferedImage.TYPE_BYTE_GRAY:
-        pixelFormat = TJ.PF_GRAY;  break;
-      case BufferedImage.TYPE_INT_BGR:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XBGR;
-        else
-          pixelFormat = TJ.PF_RGBX;
-        intPixels = true;  break;
-      case BufferedImage.TYPE_INT_RGB:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_XRGB;
-        else
-          pixelFormat = TJ.PF_BGRX;
-        intPixels = true;  break;
-      case BufferedImage.TYPE_INT_ARGB:
-      case BufferedImage.TYPE_INT_ARGB_PRE:
-        if (byteOrder == ByteOrder.BIG_ENDIAN)
-          pixelFormat = TJ.PF_ARGB;
-        else
-          pixelFormat = TJ.PF_BGRA;
-        intPixels = true;  break;
-      default:
-        throw new IllegalArgumentException("Unsupported BufferedImage format");
+    switch (dstImage.getType()) {
+    case BufferedImage.TYPE_3BYTE_BGR:
+      pixelFormat = TJ.PF_BGR;  break;
+    case BufferedImage.TYPE_4BYTE_ABGR:
+    case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+      pixelFormat = TJ.PF_XBGR;  break;
+    case BufferedImage.TYPE_BYTE_GRAY:
+      pixelFormat = TJ.PF_GRAY;  break;
+    case BufferedImage.TYPE_INT_BGR:
+      if (byteOrder == ByteOrder.BIG_ENDIAN)
+        pixelFormat = TJ.PF_XBGR;
+      else
+        pixelFormat = TJ.PF_RGBX;
+      intPixels = true;  break;
+    case BufferedImage.TYPE_INT_RGB:
+      if (byteOrder == ByteOrder.BIG_ENDIAN)
+        pixelFormat = TJ.PF_XRGB;
+      else
+        pixelFormat = TJ.PF_BGRX;
+      intPixels = true;  break;
+    case BufferedImage.TYPE_INT_ARGB:
+    case BufferedImage.TYPE_INT_ARGB_PRE:
+      if (byteOrder == ByteOrder.BIG_ENDIAN)
+        pixelFormat = TJ.PF_ARGB;
+      else
+        pixelFormat = TJ.PF_BGRA;
+      intPixels = true;  break;
+    default:
+      throw new IllegalArgumentException("Unsupported BufferedImage format");
     }
     WritableRaster wr = dstImage.getRaster();
     if (intPixels) {
@@ -862,7 +862,7 @@ public class TJDecompressor implements Closeable {
   protected void finalize() throws Throwable {
     try {
       close();
-    } catch(TJException e) {
+    } catch (TJException e) {
     } finally {
       super.finalize();
     }

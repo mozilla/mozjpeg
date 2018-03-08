@@ -25,31 +25,36 @@
 #include "jsimd_altivec.h"
 
 
-void
-jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
-                                   JDIMENSION downsampled_width,
-                                   JSAMPARRAY input_data,
-                                   JSAMPARRAY *output_data_ptr)
+void jsimd_h2v1_fancy_upsample_altivec(int max_v_samp_factor,
+                                       JDIMENSION downsampled_width,
+                                       JSAMPARRAY input_data,
+                                       JSAMPARRAY *output_data_ptr)
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr, outptr;
   int inrow, incol;
 
-  __vector unsigned char this0, last0, p_last0, next0 = {0}, p_next0,
+  __vector unsigned char this0, last0, p_last0, next0 = { 0 }, p_next0,
     out;
   __vector short this0e, this0o, this0l, this0h, last0l, last0h,
     next0l, next0h, outle, outhe, outlo, outho;
 
   /* Constants */
   __vector unsigned char pb_zero = { __16X(0) }, pb_three = { __16X(3) },
-    last_index_col0 = {0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14},
-    last_index = {15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30},
-    next_index = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
-    next_index_lastcol = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15},
+    last_index_col0 =
+      {  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14 },
+    last_index =
+      { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 },
+    next_index =
+      {  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16 },
+    next_index_lastcol =
+      {  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 15 },
 #if __BIG_ENDIAN__
-    merge_pack_index = {1,17,3,19,5,21,7,23,9,25,11,27,13,29,15,31};
+    merge_pack_index =
+      {  1, 17,  3, 19,  5, 21,  7, 23,  9, 25, 11, 27, 13, 29, 15, 31 };
 #else
-    merge_pack_index = {0,16,2,18,4,20,6,22,8,24,10,26,12,28,14,30};
+    merge_pack_index =
+      {  0, 16,  2, 18,  4, 20,  6, 22,  8, 24, 10, 26, 12, 28, 14, 30 };
 #endif
   __vector short pw_one = { __8X(1) }, pw_two = { __8X(2) };
 
@@ -121,11 +126,10 @@ jsimd_h2v1_fancy_upsample_altivec (int max_v_samp_factor,
 }
 
 
-void
-jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
-                                   JDIMENSION downsampled_width,
-                                   JSAMPARRAY input_data,
-                                   JSAMPARRAY *output_data_ptr)
+void jsimd_h2v2_fancy_upsample_altivec(int max_v_samp_factor,
+                                       JDIMENSION downsampled_width,
+                                       JSAMPARRAY input_data,
+                                       JSAMPARRAY *output_data_ptr)
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr_1, inptr0, inptr1, outptr0, outptr1;
@@ -136,21 +140,27 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
     lastcolsum_1h, lastcolsum1h,
     p_lastcolsum_1l, p_lastcolsum_1h, p_lastcolsum1l, p_lastcolsum1h,
     thiscolsum_1l, thiscolsum_1h, thiscolsum1l, thiscolsum1h,
-    nextcolsum_1l = {0}, nextcolsum_1h = {0},
-    nextcolsum1l = {0}, nextcolsum1h = {0},
+    nextcolsum_1l = { 0 }, nextcolsum_1h = { 0 },
+    nextcolsum1l = { 0 }, nextcolsum1h = { 0 },
     p_nextcolsum_1l, p_nextcolsum_1h, p_nextcolsum1l, p_nextcolsum1h,
     tmpl, tmph, outle, outhe, outlo, outho;
 
   /* Constants */
   __vector unsigned char pb_zero = { __16X(0) },
-    last_index_col0 = {0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13},
-    last_index={14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29},
-    next_index = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17},
-    next_index_lastcol = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,14,15},
+    last_index_col0 =
+      {  0,  1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13 },
+    last_index =
+      { 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 },
+    next_index =
+      {  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17 },
+    next_index_lastcol =
+      {  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 14, 15 },
 #if __BIG_ENDIAN__
-    merge_pack_index = {1,17,3,19,5,21,7,23,9,25,11,27,13,29,15,31};
+    merge_pack_index =
+      {  1, 17,  3, 19,  5, 21,  7, 23,  9, 25, 11, 27, 13, 29, 15, 31 };
 #else
-    merge_pack_index = {0,16,2,18,4,20,6,22,8,24,10,26,12,28,14,30};
+    merge_pack_index =
+      {  0, 16,  2, 18,  4, 20,  6, 22,  8, 24, 10, 26, 12, 28, 14, 30 };
 #endif
   __vector short pw_zero = { __8X(0) }, pw_three = { __8X(3) },
     pw_seven = { __8X(7) }, pw_eight = { __8X(8) };
@@ -306,11 +316,10 @@ jsimd_h2v2_fancy_upsample_altivec (int max_v_samp_factor,
 
 /* These are rarely used (mainly just for decompressing YCCK images) */
 
-void
-jsimd_h2v1_upsample_altivec (int max_v_samp_factor,
-                             JDIMENSION output_width,
-                             JSAMPARRAY input_data,
-                             JSAMPARRAY *output_data_ptr)
+void jsimd_h2v1_upsample_altivec(int max_v_samp_factor,
+                                 JDIMENSION output_width,
+                                 JSAMPARRAY input_data,
+                                 JSAMPARRAY *output_data_ptr)
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr, outptr;
@@ -345,11 +354,10 @@ jsimd_h2v1_upsample_altivec (int max_v_samp_factor,
 }
 
 
-void
-jsimd_h2v2_upsample_altivec (int max_v_samp_factor,
-                             JDIMENSION output_width,
-                             JSAMPARRAY input_data,
-                             JSAMPARRAY *output_data_ptr)
+void jsimd_h2v2_upsample_altivec(int max_v_samp_factor,
+                                 JDIMENSION output_width,
+                                 JSAMPARRAY input_data,
+                                 JSAMPARRAY *output_data_ptr)
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr, outptr0, outptr1;

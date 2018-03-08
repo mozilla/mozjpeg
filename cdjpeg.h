@@ -96,43 +96,42 @@ typedef struct cdjpeg_progress_mgr *cd_progress_ptr;
 
 /* Module selection routines for I/O modules. */
 
-EXTERN(cjpeg_source_ptr) jinit_read_bmp (j_compress_ptr cinfo,
-                                         boolean use_inversion_array);
-EXTERN(djpeg_dest_ptr) jinit_write_bmp (j_decompress_ptr cinfo,
-                                        boolean is_os2,
+EXTERN(cjpeg_source_ptr) jinit_read_bmp(j_compress_ptr cinfo,
                                         boolean use_inversion_array);
-EXTERN(cjpeg_source_ptr) jinit_read_gif (j_compress_ptr cinfo);
-EXTERN(djpeg_dest_ptr) jinit_write_gif (j_decompress_ptr cinfo);
-EXTERN(cjpeg_source_ptr) jinit_read_ppm (j_compress_ptr cinfo);
-EXTERN(djpeg_dest_ptr) jinit_write_ppm (j_decompress_ptr cinfo);
-EXTERN(cjpeg_source_ptr) jinit_read_rle (j_compress_ptr cinfo);
-EXTERN(djpeg_dest_ptr) jinit_write_rle (j_decompress_ptr cinfo);
-EXTERN(cjpeg_source_ptr) jinit_read_targa (j_compress_ptr cinfo);
-EXTERN(djpeg_dest_ptr) jinit_write_targa (j_decompress_ptr cinfo);
+EXTERN(djpeg_dest_ptr) jinit_write_bmp(j_decompress_ptr cinfo, boolean is_os2,
+                                       boolean use_inversion_array);
+EXTERN(cjpeg_source_ptr) jinit_read_gif(j_compress_ptr cinfo);
+EXTERN(djpeg_dest_ptr) jinit_write_gif(j_decompress_ptr cinfo);
+EXTERN(cjpeg_source_ptr) jinit_read_ppm(j_compress_ptr cinfo);
+EXTERN(djpeg_dest_ptr) jinit_write_ppm(j_decompress_ptr cinfo);
+EXTERN(cjpeg_source_ptr) jinit_read_rle(j_compress_ptr cinfo);
+EXTERN(djpeg_dest_ptr) jinit_write_rle(j_decompress_ptr cinfo);
+EXTERN(cjpeg_source_ptr) jinit_read_targa(j_compress_ptr cinfo);
+EXTERN(djpeg_dest_ptr) jinit_write_targa(j_decompress_ptr cinfo);
 
 /* cjpeg support routines (in rdswitch.c) */
 
-EXTERN(boolean) read_quant_tables (j_compress_ptr cinfo, char *filename,
-                                   boolean force_baseline);
-EXTERN(boolean) read_scan_script (j_compress_ptr cinfo, char *filename);
-EXTERN(boolean) set_quality_ratings (j_compress_ptr cinfo, char *arg,
-                                     boolean force_baseline);
-EXTERN(boolean) set_quant_slots (j_compress_ptr cinfo, char *arg);
-EXTERN(boolean) set_sample_factors (j_compress_ptr cinfo, char *arg);
+EXTERN(boolean) read_quant_tables(j_compress_ptr cinfo, char *filename,
+                                  boolean force_baseline);
+EXTERN(boolean) read_scan_script(j_compress_ptr cinfo, char *filename);
+EXTERN(boolean) set_quality_ratings(j_compress_ptr cinfo, char *arg,
+                                    boolean force_baseline);
+EXTERN(boolean) set_quant_slots(j_compress_ptr cinfo, char *arg);
+EXTERN(boolean) set_sample_factors(j_compress_ptr cinfo, char *arg);
 
 /* djpeg support routines (in rdcolmap.c) */
 
-EXTERN(void) read_color_map (j_decompress_ptr cinfo, FILE *infile);
+EXTERN(void) read_color_map(j_decompress_ptr cinfo, FILE *infile);
 
 /* common support routines (in cdjpeg.c) */
 
-EXTERN(void) enable_signal_catcher (j_common_ptr cinfo);
-EXTERN(void) start_progress_monitor (j_common_ptr cinfo,
-                                     cd_progress_ptr progress);
-EXTERN(void) end_progress_monitor (j_common_ptr cinfo);
-EXTERN(boolean) keymatch (char *arg, const char *keyword, int minchars);
-EXTERN(FILE *) read_stdin (void);
-EXTERN(FILE *) write_stdout (void);
+EXTERN(void) enable_signal_catcher(j_common_ptr cinfo);
+EXTERN(void) start_progress_monitor(j_common_ptr cinfo,
+                                    cd_progress_ptr progress);
+EXTERN(void) end_progress_monitor(j_common_ptr cinfo);
+EXTERN(boolean) keymatch(char *arg, const char *keyword, int minchars);
+EXTERN(FILE *) read_stdin(void);
+EXTERN(FILE *) write_stdout(void);
 
 /* miscellaneous useful macros */
 
@@ -154,5 +153,5 @@ EXTERN(FILE *) write_stdout (void);
 #define EXIT_WARNING  2
 #endif
 
-#define IsExtRGB(cs)  \
+#define IsExtRGB(cs) \
   (cs == JCS_RGB || (cs >= JCS_EXT_RGB && cs <= JCS_EXT_ARGB))

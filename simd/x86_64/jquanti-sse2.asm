@@ -26,8 +26,8 @@
 ; Load data into workspace, applying unsigned->signed conversion
 ;
 ; GLOBAL(void)
-; jsimd_convsamp_sse2 (JSAMPARRAY sample_data, JDIMENSION start_col,
-;                      DCTELEM *workspace);
+; jsimd_convsamp_sse2(JSAMPARRAY sample_data, JDIMENSION start_col,
+;                     DCTELEM *workspace);
 ;
 
 ; r10 = JSAMPARRAY sample_data
@@ -98,13 +98,16 @@ EXTN(jsimd_convsamp_sse2):
 ;   (http://www.agner.org/assem/).
 ;
 ; GLOBAL(void)
-; jsimd_quantize_sse2 (JCOEFPTR coef_block, DCTELEM *divisors,
-;                      DCTELEM *workspace);
+; jsimd_quantize_sse2(JCOEFPTR coef_block, DCTELEM *divisors,
+;                     DCTELEM *workspace);
 ;
 
-%define RECIPROCAL(m,n,b)  XMMBLOCK(DCTSIZE*0+(m),(n),(b),SIZEOF_DCTELEM)
-%define CORRECTION(m,n,b)  XMMBLOCK(DCTSIZE*1+(m),(n),(b),SIZEOF_DCTELEM)
-%define SCALE(m,n,b)       XMMBLOCK(DCTSIZE*2+(m),(n),(b),SIZEOF_DCTELEM)
+%define RECIPROCAL(m, n, b) \
+  XMMBLOCK(DCTSIZE * 0 + (m), (n), (b), SIZEOF_DCTELEM)
+%define CORRECTION(m, n, b) \
+  XMMBLOCK(DCTSIZE * 1 + (m), (n), (b), SIZEOF_DCTELEM)
+%define SCALE(m, n, b) \
+  XMMBLOCK(DCTSIZE * 2 + (m), (n), (b), SIZEOF_DCTELEM)
 
 ; r10 = JCOEFPTR coef_block
 ; r11 = DCTELEM *divisors

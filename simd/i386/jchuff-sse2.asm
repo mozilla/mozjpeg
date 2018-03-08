@@ -150,10 +150,10 @@ EXTN(jconst_huff_encode_one_block):
 ;
 ; Encode a single block's worth of coefficients.
 ;
-; GLOBAL(JOCTET*)
-; jsimd_huff_encode_one_block_sse2 (working_state *state, JOCTET *buffer,
-;                                   JCOEFPTR block, int last_dc_val,
-;                                   c_derived_tbl *dctbl, c_derived_tbl *actbl)
+; GLOBAL(JOCTET *)
+; jsimd_huff_encode_one_block_sse2(working_state *state, JOCTET *buffer,
+;                                  JCOEFPTR block, int last_dc_val,
+;                                  c_derived_tbl *dctbl, c_derived_tbl *actbl)
 ;
 
 ; eax + 8 = working_state *state
@@ -163,18 +163,18 @@ EXTN(jconst_huff_encode_one_block):
 ; eax + 24 = c_derived_tbl *dctbl
 ; eax + 28 = c_derived_tbl *actbl
 
-%define pad         6*SIZEOF_DWORD      ; Align to 16 bytes
+%define pad         6 * SIZEOF_DWORD    ; Align to 16 bytes
 %define t1          pad
-%define t2          t1+(DCTSIZE2*SIZEOF_WORD)
-%define block       t2+(DCTSIZE2*SIZEOF_WORD)
-%define actbl       block+SIZEOF_DWORD
-%define buffer      actbl+SIZEOF_DWORD
-%define temp        buffer+SIZEOF_DWORD
-%define temp2       temp+SIZEOF_DWORD
-%define temp3       temp2+SIZEOF_DWORD
-%define temp4       temp3+SIZEOF_DWORD
-%define temp5       temp4+SIZEOF_DWORD
-%define gotptr      temp5+SIZEOF_DWORD  ; void *gotptr
+%define t2          t1 + (DCTSIZE2 * SIZEOF_WORD)
+%define block       t2 + (DCTSIZE2 * SIZEOF_WORD)
+%define actbl       block + SIZEOF_DWORD
+%define buffer      actbl + SIZEOF_DWORD
+%define temp        buffer + SIZEOF_DWORD
+%define temp2       temp + SIZEOF_DWORD
+%define temp3       temp2 + SIZEOF_DWORD
+%define temp4       temp3 + SIZEOF_DWORD
+%define temp5       temp4 + SIZEOF_DWORD
+%define gotptr      temp5 + SIZEOF_DWORD  ; void *gotptr
 %define put_buffer  ebx
 %define put_bits    edi
 
@@ -183,11 +183,11 @@ EXTN(jconst_huff_encode_one_block):
 
 EXTN(jsimd_huff_encode_one_block_sse2):
     push        ebp
-    mov         eax,esp                        ; eax = original ebp
+    mov         eax, esp                       ; eax = original ebp
     sub         esp, byte 4
     and         esp, byte (-SIZEOF_XMMWORD)    ; align to 128 bits
-    mov         [esp],eax
-    mov         ebp,esp                        ; ebp = aligned ebp
+    mov         [esp], eax
+    mov         ebp, esp                       ; ebp = aligned ebp
     sub         esp, temp5+9*SIZEOF_DWORD-pad
     push        ebx
     push        ecx
@@ -248,7 +248,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         eax, 1
     shl         eax, cl
     dec         eax
-    and         eax, DWORD [esp+temp]   ; temp2 &= (((JLONG) 1)<<nbits) - 1;
+    and         eax, DWORD [esp+temp]   ; temp2 &= (((JLONG)1)<<nbits) - 1;
 
     ; Emit that number of bits of the value, if positive,
     ; or the complement of its magnitude, if negative.
@@ -320,7 +320,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         eax, 1
     shl         eax, cl
     dec         eax
-    and         eax, edx                ; temp2 &= (((JLONG) 1)<<nbits) - 1;
+    and         eax, edx                ; temp2 &= (((JLONG)1)<<nbits) - 1;
     EMIT_BITS   eax                     ; PUT_BITS(temp2, nbits)
     mov         edx, DWORD [esp+temp3]
     add         esi, 2                  ; ++k;
@@ -388,7 +388,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         eax, 1
     shl         eax, cl
     dec         eax
-    and         eax, edx                ; temp2 &= (((JLONG) 1)<<nbits) - 1;
+    and         eax, edx                ; temp2 &= (((JLONG)1)<<nbits) - 1;
     EMIT_BITS   eax                     ; PUT_BITS(temp2, nbits)
     mov         edx, DWORD [esp+temp3]
     add         esi, 2                  ; ++k;
@@ -416,7 +416,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
 ;   pop         edx                     ; need not be preserved
     pop         ecx
     pop         ebx
-    mov         esp,ebp                 ; esp <- aligned ebp
+    mov         esp, ebp                ; esp <- aligned ebp
     pop         esp                     ; esp <- original ebp
     pop         ebp
     ret

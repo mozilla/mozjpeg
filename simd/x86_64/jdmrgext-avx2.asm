@@ -24,10 +24,10 @@
 ; Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
 ;
 ; GLOBAL(void)
-; jsimd_h2v1_merged_upsample_avx2 (JDIMENSION output_width,
-;                                  JSAMPIMAGE input_buf,
-;                                  JDIMENSION in_row_group_ctr,
-;                                  JSAMPARRAY output_buf);
+; jsimd_h2v1_merged_upsample_avx2(JDIMENSION output_width,
+;                                 JSAMPIMAGE input_buf,
+;                                 JDIMENSION in_row_group_ctr,
+;                                 JSAMPARRAY output_buf);
 ;
 
 ; r10d = JDIMENSION output_width
@@ -35,7 +35,7 @@
 ; r12d = JDIMENSION in_row_group_ctr
 ; r13 = JSAMPARRAY output_buf
 
-%define wk(i)   rbp-(WK_NUM-(i))*SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
+%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
 %define WK_NUM  3
 
     align       32
@@ -491,10 +491,10 @@ EXTN(jsimd_h2v1_merged_upsample_avx2):
 ; Upsample and color convert for the case of 2:1 horizontal and 2:1 vertical.
 ;
 ; GLOBAL(void)
-; jsimd_h2v2_merged_upsample_avx2 (JDIMENSION output_width,
-;                                  JSAMPIMAGE input_buf,
-;                                  JDIMENSION in_row_group_ctr,
-;                                  JSAMPARRAY output_buf);
+; jsimd_h2v2_merged_upsample_avx2(JDIMENSION output_width,
+;                                 JSAMPIMAGE input_buf,
+;                                 JDIMENSION in_row_group_ctr,
+;                                 JSAMPARRAY output_buf);
 ;
 
 ; r10d = JDIMENSION output_width

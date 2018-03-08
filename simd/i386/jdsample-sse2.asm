@@ -46,16 +46,16 @@ PW_EIGHT times 8 dw 8
 ; of the way between input pixel centers.
 ;
 ; GLOBAL(void)
-; jsimd_h2v1_fancy_upsample_sse2 (int max_v_samp_factor,
-;                                 JDIMENSION downsampled_width,
-;                                 JSAMPARRAY input_data,
-;                                 JSAMPARRAY *output_data_ptr);
+; jsimd_h2v1_fancy_upsample_sse2(int max_v_samp_factor,
+;                                JDIMENSION downsampled_width,
+;                                JSAMPARRAY input_data,
+;                                JSAMPARRAY *output_data_ptr);
 ;
 
-%define max_v_samp(b)       (b)+8       ; int max_v_samp_factor
-%define downsamp_width(b)   (b)+12      ; JDIMENSION downsampled_width
-%define input_data(b)       (b)+16      ; JSAMPARRAY input_data
-%define output_data_ptr(b)  (b)+20      ; JSAMPARRAY *output_data_ptr
+%define max_v_samp(b)       (b) + 8     ; int max_v_samp_factor
+%define downsamp_width(b)   (b) + 12    ; JDIMENSION downsampled_width
+%define input_data(b)       (b) + 16    ; JSAMPARRAY input_data
+%define output_data_ptr(b)  (b) + 20    ; JSAMPARRAY *output_data_ptr
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v1_fancy_upsample_sse2)
@@ -197,21 +197,22 @@ EXTN(jsimd_h2v1_fancy_upsample_sse2):
 ; Again a triangle filter; see comments for h2v1 case, above.
 ;
 ; GLOBAL(void)
-; jsimd_h2v2_fancy_upsample_sse2 (int max_v_samp_factor,
-;                                 JDIMENSION downsampled_width,
-;                                 JSAMPARRAY input_data,
-;                                 JSAMPARRAY *output_data_ptr);
+; jsimd_h2v2_fancy_upsample_sse2(int max_v_samp_factor,
+;                                JDIMENSION downsampled_width,
+;                                JSAMPARRAY input_data,
+;                                JSAMPARRAY *output_data_ptr);
 ;
 
-%define max_v_samp(b)       (b)+8       ; int max_v_samp_factor
-%define downsamp_width(b)   (b)+12      ; JDIMENSION downsampled_width
-%define input_data(b)       (b)+16      ; JSAMPARRAY input_data
-%define output_data_ptr(b)  (b)+20      ; JSAMPARRAY *output_data_ptr
+%define max_v_samp(b)       (b) + 8     ; int max_v_samp_factor
+%define downsamp_width(b)   (b) + 12    ; JDIMENSION downsampled_width
+%define input_data(b)       (b) + 16    ; JSAMPARRAY input_data
+%define output_data_ptr(b)  (b) + 20    ; JSAMPARRAY *output_data_ptr
 
-%define original_ebp  ebp+0
-%define wk(i)         ebp-(WK_NUM-(i))*SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define original_ebp  ebp + 0
+%define wk(i)         ebp - (WK_NUM - (i)) * SIZEOF_XMMWORD
+                                        ; xmmword wk[WK_NUM]
 %define WK_NUM        4
-%define gotptr        wk(0)-SIZEOF_POINTER  ; void *gotptr
+%define gotptr        wk(0) - SIZEOF_POINTER  ; void *gotptr
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v2_fancy_upsample_sse2)
@@ -234,12 +235,12 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
     get_GOT     ebx                     ; get GOT address
     movpic      POINTER [gotptr], ebx   ; save GOT address
 
-    mov         edx, eax                               ; edx = original ebp
+    mov         edx, eax                ; edx = original ebp
     mov         eax, JDIMENSION [downsamp_width(edx)]  ; colctr
     test        eax, eax
     jz          near .return
 
-    mov         ecx, INT [max_v_samp(edx)]           ; rowctr
+    mov         ecx, INT [max_v_samp(edx)]  ; rowctr
     test        ecx, ecx
     jz          near .return
 
@@ -526,16 +527,14 @@ EXTN(jsimd_h2v2_fancy_upsample_sse2):
 ; It's still a box filter.
 ;
 ; GLOBAL(void)
-; jsimd_h2v1_upsample_sse2 (int max_v_samp_factor,
-;                           JDIMENSION output_width,
-;                           JSAMPARRAY input_data,
-;                           JSAMPARRAY *output_data_ptr);
+; jsimd_h2v1_upsample_sse2(int max_v_samp_factor, JDIMENSION output_width,
+;                          JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 ;
 
-%define max_v_samp(b)       (b)+8       ; int max_v_samp_factor
-%define output_width(b)     (b)+12      ; JDIMENSION output_width
-%define input_data(b)       (b)+16      ; JSAMPARRAY input_data
-%define output_data_ptr(b)  (b)+20      ; JSAMPARRAY *output_data_ptr
+%define max_v_samp(b)       (b) + 8     ; int max_v_samp_factor
+%define output_width(b)     (b) + 12    ; JDIMENSION output_width
+%define input_data(b)       (b) + 16    ; JSAMPARRAY input_data
+%define output_data_ptr(b)  (b) + 20    ; JSAMPARRAY *output_data_ptr
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v1_upsample_sse2)
@@ -625,16 +624,14 @@ EXTN(jsimd_h2v1_upsample_sse2):
 ; It's still a box filter.
 ;
 ; GLOBAL(void)
-; jsimd_h2v2_upsample_sse2 (nt max_v_samp_factor,
-;                           JDIMENSION output_width,
-;                           JSAMPARRAY input_data,
-;                           JSAMPARRAY *output_data_ptr);
+; jsimd_h2v2_upsample_sse2(int max_v_samp_factor, JDIMENSION output_width,
+;                          JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr);
 ;
 
-%define max_v_samp(b)       (b)+8       ; int max_v_samp_factor
-%define output_width(b)     (b)+12      ; JDIMENSION output_width
-%define input_data(b)       (b)+16      ; JSAMPARRAY input_data
-%define output_data_ptr(b)  (b)+20      ; JSAMPARRAY *output_data_ptr
+%define max_v_samp(b)       (b) + 8     ; int max_v_samp_factor
+%define output_width(b)     (b) + 12    ; JDIMENSION output_width
+%define input_data(b)       (b) + 16    ; JSAMPARRAY input_data
+%define output_data_ptr(b)  (b) + 20    ; JSAMPARRAY *output_data_ptr
 
     align       32
     GLOBAL_FUNCTION(jsimd_h2v2_upsample_sse2)

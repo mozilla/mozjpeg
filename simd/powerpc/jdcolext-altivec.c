@@ -23,10 +23,9 @@
 /* This file is included by jdcolor-altivec.c */
 
 
-void
-jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
-                               JDIMENSION input_row, JSAMPARRAY output_buf,
-                               int num_rows)
+void jsimd_ycc_rgb_convert_altivec(JDIMENSION out_width, JSAMPIMAGE input_buf,
+                                   JDIMENSION input_row, JSAMPARRAY output_buf,
+                                   int num_rows)
 {
   JSAMPROW outptr, inptr0, inptr1, inptr2;
   int pitch = out_width * RGB_PIXELSIZE, num_cols;
@@ -62,9 +61,11 @@ jsimd_ycc_rgb_convert_altivec (JDIMENSION out_width, JSAMPIMAGE input_buf,
   __vector int pd_onehalf = { __4X(ONE_HALF) };
   __vector unsigned char pb_zero = { __16X(0) },
 #if __BIG_ENDIAN__
-    shift_pack_index = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29};
+    shift_pack_index =
+      {  0,  1,  4,  5,  8,  9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 };
 #else
-    shift_pack_index = {2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31};
+    shift_pack_index =
+      {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 };
 #endif
 
   while (--num_rows >= 0) {

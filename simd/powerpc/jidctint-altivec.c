@@ -44,170 +44,168 @@
 #define DESCALE_P2 (CONST_BITS + PASS1_BITS + 3)
 
 
-#define DO_IDCT(in, PASS)  \
-{  \
-  /* Even part  \
-   *  \
-   * (Original)  \
-   * z1 = (z2 + z3) * 0.541196100;  \
-   * tmp2 = z1 + z3 * -1.847759065;  \
-   * tmp3 = z1 + z2 * 0.765366865;  \
-   *  \
-   * (This implementation)  \
-   * tmp2 = z2 * 0.541196100 + z3 * (0.541196100 - 1.847759065);  \
-   * tmp3 = z2 * (0.541196100 + 0.765366865) + z3 * 0.541196100;  \
-   */  \
+#define DO_IDCT(in, PASS) { \
+  /* Even part \
+   * \
+   * (Original) \
+   * z1 = (z2 + z3) * 0.541196100; \
+   * tmp2 = z1 + z3 * -1.847759065; \
+   * tmp3 = z1 + z2 * 0.765366865; \
+   * \
+   * (This implementation) \
+   * tmp2 = z2 * 0.541196100 + z3 * (0.541196100 - 1.847759065); \
+   * tmp3 = z2 * (0.541196100 + 0.765366865) + z3 * 0.541196100; \
+   */ \
   \
-  in##26l = vec_mergeh(in##2, in##6);  \
-  in##26h = vec_mergel(in##2, in##6);  \
+  in##26l = vec_mergeh(in##2, in##6); \
+  in##26h = vec_mergel(in##2, in##6); \
   \
-  tmp3l = vec_msums(in##26l, pw_f130_f054, pd_zero);  \
-  tmp3h = vec_msums(in##26h, pw_f130_f054, pd_zero);  \
-  tmp2l = vec_msums(in##26l, pw_f054_mf130, pd_zero);  \
-  tmp2h = vec_msums(in##26h, pw_f054_mf130, pd_zero);  \
+  tmp3l = vec_msums(in##26l, pw_f130_f054, pd_zero); \
+  tmp3h = vec_msums(in##26h, pw_f130_f054, pd_zero); \
+  tmp2l = vec_msums(in##26l, pw_f054_mf130, pd_zero); \
+  tmp2h = vec_msums(in##26h, pw_f054_mf130, pd_zero); \
   \
-  tmp0 = vec_add(in##0, in##4);  \
-  tmp1 = vec_sub(in##0, in##4);  \
+  tmp0 = vec_add(in##0, in##4); \
+  tmp1 = vec_sub(in##0, in##4); \
   \
-  tmp0l = vec_unpackh(tmp0);  \
-  tmp0h = vec_unpackl(tmp0);  \
-  tmp0l = vec_sl(tmp0l, const_bits);  \
-  tmp0h = vec_sl(tmp0h, const_bits);  \
-  tmp0l = vec_add(tmp0l, pd_descale_p##PASS);  \
-  tmp0h = vec_add(tmp0h, pd_descale_p##PASS);  \
+  tmp0l = vec_unpackh(tmp0); \
+  tmp0h = vec_unpackl(tmp0); \
+  tmp0l = vec_sl(tmp0l, const_bits); \
+  tmp0h = vec_sl(tmp0h, const_bits); \
+  tmp0l = vec_add(tmp0l, pd_descale_p##PASS); \
+  tmp0h = vec_add(tmp0h, pd_descale_p##PASS); \
   \
-  tmp10l = vec_add(tmp0l, tmp3l);  \
-  tmp10h = vec_add(tmp0h, tmp3h);  \
-  tmp13l = vec_sub(tmp0l, tmp3l);  \
-  tmp13h = vec_sub(tmp0h, tmp3h);  \
+  tmp10l = vec_add(tmp0l, tmp3l); \
+  tmp10h = vec_add(tmp0h, tmp3h); \
+  tmp13l = vec_sub(tmp0l, tmp3l); \
+  tmp13h = vec_sub(tmp0h, tmp3h); \
   \
-  tmp1l = vec_unpackh(tmp1);  \
-  tmp1h = vec_unpackl(tmp1);  \
-  tmp1l = vec_sl(tmp1l, const_bits);  \
-  tmp1h = vec_sl(tmp1h, const_bits);  \
-  tmp1l = vec_add(tmp1l, pd_descale_p##PASS);  \
-  tmp1h = vec_add(tmp1h, pd_descale_p##PASS);  \
+  tmp1l = vec_unpackh(tmp1); \
+  tmp1h = vec_unpackl(tmp1); \
+  tmp1l = vec_sl(tmp1l, const_bits); \
+  tmp1h = vec_sl(tmp1h, const_bits); \
+  tmp1l = vec_add(tmp1l, pd_descale_p##PASS); \
+  tmp1h = vec_add(tmp1h, pd_descale_p##PASS); \
   \
-  tmp11l = vec_add(tmp1l, tmp2l);  \
-  tmp11h = vec_add(tmp1h, tmp2h);  \
-  tmp12l = vec_sub(tmp1l, tmp2l);  \
-  tmp12h = vec_sub(tmp1h, tmp2h);  \
+  tmp11l = vec_add(tmp1l, tmp2l); \
+  tmp11h = vec_add(tmp1h, tmp2h); \
+  tmp12l = vec_sub(tmp1l, tmp2l); \
+  tmp12h = vec_sub(tmp1h, tmp2h); \
   \
-  /* Odd part */  \
+  /* Odd part */ \
   \
-  z3 = vec_add(in##3, in##7);  \
-  z4 = vec_add(in##1, in##5);  \
+  z3 = vec_add(in##3, in##7); \
+  z4 = vec_add(in##1, in##5); \
   \
-  /* (Original)  \
-   * z5 = (z3 + z4) * 1.175875602;  \
-   * z3 = z3 * -1.961570560;  z4 = z4 * -0.390180644;  \
-   * z3 += z5;  z4 += z5;  \
-   *  \
-   * (This implementation)  \
-   * z3 = z3 * (1.175875602 - 1.961570560) + z4 * 1.175875602;  \
-   * z4 = z3 * 1.175875602 + z4 * (1.175875602 - 0.390180644);  \
-   */  \
+  /* (Original) \
+   * z5 = (z3 + z4) * 1.175875602; \
+   * z3 = z3 * -1.961570560;  z4 = z4 * -0.390180644; \
+   * z3 += z5;  z4 += z5; \
+   * \
+   * (This implementation) \
+   * z3 = z3 * (1.175875602 - 1.961570560) + z4 * 1.175875602; \
+   * z4 = z3 * 1.175875602 + z4 * (1.175875602 - 0.390180644); \
+   */ \
   \
-  z34l = vec_mergeh(z3, z4);  \
-  z34h = vec_mergel(z3, z4);  \
+  z34l = vec_mergeh(z3, z4); \
+  z34h = vec_mergel(z3, z4); \
   \
-  z3l = vec_msums(z34l, pw_mf078_f117, pd_zero);  \
-  z3h = vec_msums(z34h, pw_mf078_f117, pd_zero);  \
-  z4l = vec_msums(z34l, pw_f117_f078, pd_zero);  \
-  z4h = vec_msums(z34h, pw_f117_f078, pd_zero);  \
+  z3l = vec_msums(z34l, pw_mf078_f117, pd_zero); \
+  z3h = vec_msums(z34h, pw_mf078_f117, pd_zero); \
+  z4l = vec_msums(z34l, pw_f117_f078, pd_zero); \
+  z4h = vec_msums(z34h, pw_f117_f078, pd_zero); \
   \
-  /* (Original)  \
-   * z1 = tmp0 + tmp3;  z2 = tmp1 + tmp2;  \
-   * tmp0 = tmp0 * 0.298631336;  tmp1 = tmp1 * 2.053119869;  \
-   * tmp2 = tmp2 * 3.072711026;  tmp3 = tmp3 * 1.501321110;  \
-   * z1 = z1 * -0.899976223;  z2 = z2 * -2.562915447;  \
-   * tmp0 += z1 + z3;  tmp1 += z2 + z4;  \
-   * tmp2 += z2 + z3;  tmp3 += z1 + z4;  \
-   *  \
-   * (This implementation)  \
-   * tmp0 = tmp0 * (0.298631336 - 0.899976223) + tmp3 * -0.899976223;  \
-   * tmp1 = tmp1 * (2.053119869 - 2.562915447) + tmp2 * -2.562915447;  \
-   * tmp2 = tmp1 * -2.562915447 + tmp2 * (3.072711026 - 2.562915447);  \
-   * tmp3 = tmp0 * -0.899976223 + tmp3 * (1.501321110 - 0.899976223);  \
-   * tmp0 += z3;  tmp1 += z4;  \
-   * tmp2 += z3;  tmp3 += z4;  \
-   */  \
+  /* (Original) \
+   * z1 = tmp0 + tmp3;  z2 = tmp1 + tmp2; \
+   * tmp0 = tmp0 * 0.298631336;  tmp1 = tmp1 * 2.053119869; \
+   * tmp2 = tmp2 * 3.072711026;  tmp3 = tmp3 * 1.501321110; \
+   * z1 = z1 * -0.899976223;  z2 = z2 * -2.562915447; \
+   * tmp0 += z1 + z3;  tmp1 += z2 + z4; \
+   * tmp2 += z2 + z3;  tmp3 += z1 + z4; \
+   * \
+   * (This implementation) \
+   * tmp0 = tmp0 * (0.298631336 - 0.899976223) + tmp3 * -0.899976223; \
+   * tmp1 = tmp1 * (2.053119869 - 2.562915447) + tmp2 * -2.562915447; \
+   * tmp2 = tmp1 * -2.562915447 + tmp2 * (3.072711026 - 2.562915447); \
+   * tmp3 = tmp0 * -0.899976223 + tmp3 * (1.501321110 - 0.899976223); \
+   * tmp0 += z3;  tmp1 += z4; \
+   * tmp2 += z3;  tmp3 += z4; \
+   */ \
   \
-  in##71l = vec_mergeh(in##7, in##1);  \
-  in##71h = vec_mergel(in##7, in##1);  \
+  in##71l = vec_mergeh(in##7, in##1); \
+  in##71h = vec_mergel(in##7, in##1); \
   \
-  tmp0l = vec_msums(in##71l, pw_mf060_mf089, z3l);  \
-  tmp0h = vec_msums(in##71h, pw_mf060_mf089, z3h);  \
-  tmp3l = vec_msums(in##71l, pw_mf089_f060, z4l);  \
-  tmp3h = vec_msums(in##71h, pw_mf089_f060, z4h);  \
+  tmp0l = vec_msums(in##71l, pw_mf060_mf089, z3l); \
+  tmp0h = vec_msums(in##71h, pw_mf060_mf089, z3h); \
+  tmp3l = vec_msums(in##71l, pw_mf089_f060, z4l); \
+  tmp3h = vec_msums(in##71h, pw_mf089_f060, z4h); \
   \
-  in##53l = vec_mergeh(in##5, in##3);  \
-  in##53h = vec_mergel(in##5, in##3);  \
+  in##53l = vec_mergeh(in##5, in##3); \
+  in##53h = vec_mergel(in##5, in##3); \
   \
-  tmp1l = vec_msums(in##53l, pw_mf050_mf256, z4l);  \
-  tmp1h = vec_msums(in##53h, pw_mf050_mf256, z4h);  \
-  tmp2l = vec_msums(in##53l, pw_mf256_f050, z3l);  \
-  tmp2h = vec_msums(in##53h, pw_mf256_f050, z3h);  \
+  tmp1l = vec_msums(in##53l, pw_mf050_mf256, z4l); \
+  tmp1h = vec_msums(in##53h, pw_mf050_mf256, z4h); \
+  tmp2l = vec_msums(in##53l, pw_mf256_f050, z3l); \
+  tmp2h = vec_msums(in##53h, pw_mf256_f050, z3h); \
   \
-  /* Final output stage */  \
+  /* Final output stage */ \
   \
-  out0l = vec_add(tmp10l, tmp3l);  \
-  out0h = vec_add(tmp10h, tmp3h);  \
-  out7l = vec_sub(tmp10l, tmp3l);  \
-  out7h = vec_sub(tmp10h, tmp3h);  \
+  out0l = vec_add(tmp10l, tmp3l); \
+  out0h = vec_add(tmp10h, tmp3h); \
+  out7l = vec_sub(tmp10l, tmp3l); \
+  out7h = vec_sub(tmp10h, tmp3h); \
   \
-  out0l = vec_sra(out0l, descale_p##PASS);  \
-  out0h = vec_sra(out0h, descale_p##PASS);  \
-  out7l = vec_sra(out7l, descale_p##PASS);  \
-  out7h = vec_sra(out7h, descale_p##PASS);  \
+  out0l = vec_sra(out0l, descale_p##PASS); \
+  out0h = vec_sra(out0h, descale_p##PASS); \
+  out7l = vec_sra(out7l, descale_p##PASS); \
+  out7h = vec_sra(out7h, descale_p##PASS); \
   \
-  out0 = vec_pack(out0l, out0h);  \
-  out7 = vec_pack(out7l, out7h);  \
+  out0 = vec_pack(out0l, out0h); \
+  out7 = vec_pack(out7l, out7h); \
   \
-  out1l = vec_add(tmp11l, tmp2l);  \
-  out1h = vec_add(tmp11h, tmp2h);  \
-  out6l = vec_sub(tmp11l, tmp2l);  \
-  out6h = vec_sub(tmp11h, tmp2h);  \
+  out1l = vec_add(tmp11l, tmp2l); \
+  out1h = vec_add(tmp11h, tmp2h); \
+  out6l = vec_sub(tmp11l, tmp2l); \
+  out6h = vec_sub(tmp11h, tmp2h); \
   \
-  out1l = vec_sra(out1l, descale_p##PASS);  \
-  out1h = vec_sra(out1h, descale_p##PASS);  \
-  out6l = vec_sra(out6l, descale_p##PASS);  \
-  out6h = vec_sra(out6h, descale_p##PASS);  \
+  out1l = vec_sra(out1l, descale_p##PASS); \
+  out1h = vec_sra(out1h, descale_p##PASS); \
+  out6l = vec_sra(out6l, descale_p##PASS); \
+  out6h = vec_sra(out6h, descale_p##PASS); \
   \
-  out1 = vec_pack(out1l, out1h);  \
-  out6 = vec_pack(out6l, out6h);  \
+  out1 = vec_pack(out1l, out1h); \
+  out6 = vec_pack(out6l, out6h); \
   \
-  out2l = vec_add(tmp12l, tmp1l);  \
-  out2h = vec_add(tmp12h, tmp1h);  \
-  out5l = vec_sub(tmp12l, tmp1l);  \
-  out5h = vec_sub(tmp12h, tmp1h);  \
+  out2l = vec_add(tmp12l, tmp1l); \
+  out2h = vec_add(tmp12h, tmp1h); \
+  out5l = vec_sub(tmp12l, tmp1l); \
+  out5h = vec_sub(tmp12h, tmp1h); \
   \
-  out2l = vec_sra(out2l, descale_p##PASS);  \
-  out2h = vec_sra(out2h, descale_p##PASS);  \
-  out5l = vec_sra(out5l, descale_p##PASS);  \
-  out5h = vec_sra(out5h, descale_p##PASS);  \
+  out2l = vec_sra(out2l, descale_p##PASS); \
+  out2h = vec_sra(out2h, descale_p##PASS); \
+  out5l = vec_sra(out5l, descale_p##PASS); \
+  out5h = vec_sra(out5h, descale_p##PASS); \
   \
-  out2 = vec_pack(out2l, out2h);  \
-  out5 = vec_pack(out5l, out5h);  \
+  out2 = vec_pack(out2l, out2h); \
+  out5 = vec_pack(out5l, out5h); \
   \
-  out3l = vec_add(tmp13l, tmp0l);  \
-  out3h = vec_add(tmp13h, tmp0h);  \
-  out4l = vec_sub(tmp13l, tmp0l);  \
-  out4h = vec_sub(tmp13h, tmp0h);  \
+  out3l = vec_add(tmp13l, tmp0l); \
+  out3h = vec_add(tmp13h, tmp0h); \
+  out4l = vec_sub(tmp13l, tmp0l); \
+  out4h = vec_sub(tmp13h, tmp0h); \
   \
-  out3l = vec_sra(out3l, descale_p##PASS);  \
-  out3h = vec_sra(out3h, descale_p##PASS);  \
-  out4l = vec_sra(out4l, descale_p##PASS);  \
-  out4h = vec_sra(out4h, descale_p##PASS);  \
+  out3l = vec_sra(out3l, descale_p##PASS); \
+  out3h = vec_sra(out3h, descale_p##PASS); \
+  out4l = vec_sra(out4l, descale_p##PASS); \
+  out4h = vec_sra(out4h, descale_p##PASS); \
   \
-  out3 = vec_pack(out3l, out3h);  \
-  out4 = vec_pack(out4l, out4h);  \
+  out3 = vec_pack(out3l, out3h); \
+  out4 = vec_pack(out4l, out4h); \
 }
 
 
-void
-jsimd_idct_islow_altivec (void *dct_table_, JCOEFPTR coef_block,
-                          JSAMPARRAY output_buf, JDIMENSION output_col)
+void jsimd_idct_islow_altivec(void *dct_table_, JCOEFPTR coef_block,
+                              JSAMPARRAY output_buf, JDIMENSION output_col)
 {
   short *dct_table = (short *)dct_table_;
   int *outptr;

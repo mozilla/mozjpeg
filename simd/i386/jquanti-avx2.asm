@@ -27,13 +27,13 @@
 ; Load data into workspace, applying unsigned->signed conversion
 ;
 ; GLOBAL(void)
-; jsimd_convsamp_avx2 (JSAMPARRAY sample_data, JDIMENSION start_col,
-;                      DCTELEM *workspace);
+; jsimd_convsamp_avx2(JSAMPARRAY sample_data, JDIMENSION start_col,
+;                     DCTELEM *workspace);
 ;
 
-%define sample_data  ebp+8              ; JSAMPARRAY sample_data
-%define start_col    ebp+12             ; JDIMENSION start_col
-%define workspace    ebp+16             ; DCTELEM *workspace
+%define sample_data  ebp + 8            ; JSAMPARRAY sample_data
+%define start_col    ebp + 12           ; JDIMENSION start_col
+%define workspace    ebp + 16           ; DCTELEM *workspace
 
     align       32
     GLOBAL_FUNCTION(jsimd_convsamp_avx2)
@@ -113,17 +113,20 @@ EXTN(jsimd_convsamp_avx2):
 ;   (http://www.agner.org/assem/).
 ;
 ; GLOBAL(void)
-; jsimd_quantize_avx2 (JCOEFPTR coef_block, DCTELEM *divisors,
-;                      DCTELEM *workspace);
+; jsimd_quantize_avx2(JCOEFPTR coef_block, DCTELEM *divisors,
+;                     DCTELEM *workspace);
 ;
 
-%define RECIPROCAL(m,n,b)  YMMBLOCK(DCTSIZE*0+(m),(n),(b),SIZEOF_DCTELEM)
-%define CORRECTION(m,n,b)  YMMBLOCK(DCTSIZE*1+(m),(n),(b),SIZEOF_DCTELEM)
-%define SCALE(m,n,b)       YMMBLOCK(DCTSIZE*2+(m),(n),(b),SIZEOF_DCTELEM)
+%define RECIPROCAL(m, n, b) \
+  YMMBLOCK(DCTSIZE * 0 + (m), (n), (b), SIZEOF_DCTELEM)
+%define CORRECTION(m, n, b) \
+  YMMBLOCK(DCTSIZE * 1 + (m), (n), (b), SIZEOF_DCTELEM)
+%define SCALE(m, n, b) \
+  YMMBLOCK(DCTSIZE * 2 + (m), (n), (b), SIZEOF_DCTELEM)
 
-%define coef_block  ebp+8               ; JCOEFPTR coef_block
-%define divisors    ebp+12              ; DCTELEM *divisors
-%define workspace   ebp+16              ; DCTELEM *workspace
+%define coef_block  ebp + 8             ; JCOEFPTR coef_block
+%define divisors    ebp + 12            ; DCTELEM *divisors
+%define workspace   ebp + 16            ; DCTELEM *workspace
 
     align       32
     GLOBAL_FUNCTION(jsimd_quantize_avx2)

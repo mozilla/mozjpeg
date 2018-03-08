@@ -50,65 +50,63 @@ static uint64_t const_value[] = {
 #define PW_EIGHT get_const_value(index_PW_EIGHT)
 
 
-#define PROCESS_ROW(r)  \
-{  \
-  mm7 = _mm_load_si64((__m64 *)outptr##r);    /* mm7=IntrL=( 0 1 2 3) */  \
-  mm3 = _mm_load_si64((__m64 *)outptr##r+1);  /* mm3=IntrH=( 4 5 6 7) */  \
+#define PROCESS_ROW(r) { \
+  mm7 = _mm_load_si64((__m64 *)outptr##r);      /* mm7=IntrL=( 0 1 2 3) */ \
+  mm3 = _mm_load_si64((__m64 *)outptr##r + 1);  /* mm3=IntrH=( 4 5 6 7) */ \
   \
-  mm0 = mm7;  \
-  mm4 = mm3;  \
-  mm0 = _mm_srli_si64(mm0, 2*BYTE_BIT);                 /* mm0=( 1 2 3 -) */  \
-  mm4 = _mm_slli_si64(mm4, (SIZEOF_MMWORD-2)*BYTE_BIT); /* mm4=( - - - 4) */  \
-  mm5 = mm7;  \
-  mm6 = mm3;  \
-  mm5 = _mm_srli_si64(mm5, (SIZEOF_MMWORD-2)*BYTE_BIT); /* mm5=( 3 - - -) */  \
-  mm6 = _mm_slli_si64(mm6, 2*BYTE_BIT);                 /* mm6=( - 4 5 6) */  \
+  mm0 = mm7; \
+  mm4 = mm3; \
+  mm0 = _mm_srli_si64(mm0, 2 * BYTE_BIT);                   /* mm0=( 1 2 3 -) */ \
+  mm4 = _mm_slli_si64(mm4, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm4=( - - - 4) */ \
+  mm5 = mm7; \
+  mm6 = mm3; \
+  mm5 = _mm_srli_si64(mm5, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm5=( 3 - - -) */ \
+  mm6 = _mm_slli_si64(mm6, 2 * BYTE_BIT);                   /* mm6=( - 4 5 6) */ \
   \
-  mm0 = _mm_or_si64(mm0, mm4);                /* mm0=( 1 2 3 4) */  \
-  mm5 = _mm_or_si64(mm5, mm6);                /* mm5=( 3 4 5 6) */  \
+  mm0 = _mm_or_si64(mm0, mm4);                /* mm0=( 1 2 3 4) */ \
+  mm5 = _mm_or_si64(mm5, mm6);                /* mm5=( 3 4 5 6) */ \
   \
-  mm1 = mm7;  \
-  mm2 = mm3;  \
-  mm1 = _mm_slli_si64(mm1, 2*BYTE_BIT);       /* mm1=( - 0 1 2) */  \
-  mm2 = _mm_srli_si64(mm2, 2*BYTE_BIT);       /* mm2=( 5 6 7 -) */  \
-  mm4 = mm3;  \
-  mm4 = _mm_srli_si64(mm4, (SIZEOF_MMWORD-2)*BYTE_BIT); /* mm4=( 7 - - -) */  \
+  mm1 = mm7; \
+  mm2 = mm3; \
+  mm1 = _mm_slli_si64(mm1, 2 * BYTE_BIT);     /* mm1=( - 0 1 2) */ \
+  mm2 = _mm_srli_si64(mm2, 2 * BYTE_BIT);     /* mm2=( 5 6 7 -) */ \
+  mm4 = mm3; \
+  mm4 = _mm_srli_si64(mm4, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm4=( 7 - - -) */ \
   \
-  mm1 = _mm_or_si64(mm1, wk[r]);              /* mm1=(-1 0 1 2) */  \
-  mm2 = _mm_or_si64(mm2, wk[r+2]);            /* mm2=( 5 6 6 8) */  \
+  mm1 = _mm_or_si64(mm1, wk[r]);              /* mm1=(-1 0 1 2) */ \
+  mm2 = _mm_or_si64(mm2, wk[r + 2]);          /* mm2=( 5 6 6 8) */ \
   \
-  wk[r] = mm4;  \
+  wk[r] = mm4; \
   \
-  mm7 = _mm_mullo_pi16(mm7, PW_THREE);  \
-  mm3 = _mm_mullo_pi16(mm3, PW_THREE);  \
-  mm1 = _mm_add_pi16(mm1, PW_EIGHT);  \
-  mm5 = _mm_add_pi16(mm5, PW_EIGHT);  \
-  mm0 = _mm_add_pi16(mm0, PW_SEVEN);  \
-  mm2 = _mm_add_pi16(mm2, PW_SEVEN);  \
+  mm7 = _mm_mullo_pi16(mm7, PW_THREE); \
+  mm3 = _mm_mullo_pi16(mm3, PW_THREE); \
+  mm1 = _mm_add_pi16(mm1, PW_EIGHT); \
+  mm5 = _mm_add_pi16(mm5, PW_EIGHT); \
+  mm0 = _mm_add_pi16(mm0, PW_SEVEN); \
+  mm2 = _mm_add_pi16(mm2, PW_SEVEN); \
   \
-  mm1 = _mm_add_pi16(mm1, mm7);  \
-  mm5 = _mm_add_pi16(mm5, mm3);  \
-  mm1 = _mm_srli_pi16(mm1, 4);                /* mm1=OutrLE=( 0  2  4  6) */  \
-  mm5 = _mm_srli_pi16(mm5, 4);                /* mm5=OutrHE=( 8 10 12 14) */  \
-  mm0 = _mm_add_pi16(mm0, mm7);  \
-  mm2 = _mm_add_pi16(mm2, mm3);  \
-  mm0 = _mm_srli_pi16(mm0, 4);                /* mm0=OutrLO=( 1  3  5  7) */  \
-  mm2 = _mm_srli_pi16(mm2, 4);                /* mm2=OutrHO=( 9 11 13 15) */  \
+  mm1 = _mm_add_pi16(mm1, mm7); \
+  mm5 = _mm_add_pi16(mm5, mm3); \
+  mm1 = _mm_srli_pi16(mm1, 4);                /* mm1=OutrLE=( 0  2  4  6) */ \
+  mm5 = _mm_srli_pi16(mm5, 4);                /* mm5=OutrHE=( 8 10 12 14) */ \
+  mm0 = _mm_add_pi16(mm0, mm7); \
+  mm2 = _mm_add_pi16(mm2, mm3); \
+  mm0 = _mm_srli_pi16(mm0, 4);                /* mm0=OutrLO=( 1  3  5  7) */ \
+  mm2 = _mm_srli_pi16(mm2, 4);                /* mm2=OutrHO=( 9 11 13 15) */ \
   \
-  mm0 = _mm_slli_pi16(mm0, BYTE_BIT);  \
-  mm2 = _mm_slli_pi16(mm2, BYTE_BIT);  \
-  mm1 = _mm_or_si64(mm1, mm0);     /* mm1=OutrL=( 0  1  2  3  4  5  6  7) */  \
-  mm5 = _mm_or_si64(mm5, mm2);     /* mm5=OutrH=( 8  9 10 11 12 13 14 15) */  \
+  mm0 = _mm_slli_pi16(mm0, BYTE_BIT); \
+  mm2 = _mm_slli_pi16(mm2, BYTE_BIT); \
+  mm1 = _mm_or_si64(mm1, mm0);     /* mm1=OutrL=( 0  1  2  3  4  5  6  7) */ \
+  mm5 = _mm_or_si64(mm5, mm2);     /* mm5=OutrH=( 8  9 10 11 12 13 14 15) */ \
   \
-  _mm_store_si64((__m64 *)outptr##r, mm1);  \
-  _mm_store_si64((__m64 *)outptr##r+1, mm5);  \
+  _mm_store_si64((__m64 *)outptr##r, mm1); \
+  _mm_store_si64((__m64 *)outptr##r + 1, mm5); \
 }
 
-void
-jsimd_h2v2_fancy_upsample_mmi (int max_v_samp_factor,
-                               JDIMENSION downsampled_width,
-                               JSAMPARRAY input_data,
-                               JSAMPARRAY *output_data_ptr)
+void jsimd_h2v2_fancy_upsample_mmi(int max_v_samp_factor,
+                                   JDIMENSION downsampled_width,
+                                   JSAMPARRAY input_data,
+                                   JSAMPARRAY *output_data_ptr)
 {
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr_1, inptr0, inptr1, outptr0, outptr1;
@@ -165,17 +163,17 @@ jsimd_h2v2_fancy_upsample_mmi (int max_v_samp_factor,
     mm4 = _mm_mullo_pi16(mm4, PW_THREE);
 
     mm7 = _mm_cmpeq_pi8(mm7, mm7);
-    mm7 = _mm_srli_si64(mm7, (SIZEOF_MMWORD-2)*BYTE_BIT);
+    mm7 = _mm_srli_si64(mm7, (SIZEOF_MMWORD - 2) * BYTE_BIT);
 
     mm1 = _mm_add_pi16(mm1, mm0);             /* mm1=Int0L=( 0 1 2 3) */
     mm5 = _mm_add_pi16(mm5, mm4);             /* mm5=Int0H=( 4 5 6 7) */
     mm2 = _mm_add_pi16(mm2, mm0);             /* mm2=Int1L=( 0 1 2 3) */
     mm6 = _mm_add_pi16(mm6, mm4);             /* mm6=Int1H=( 4 5 6 7) */
 
-    _mm_store_si64((__m64*)outptr0, mm1);     /* temporarily save */
-    _mm_store_si64((__m64*)outptr0+1, mm5);   /* the intermediate data */
-    _mm_store_si64((__m64*)outptr1, mm2);
-    _mm_store_si64((__m64*)outptr1+1, mm6);
+    _mm_store_si64((__m64 *)outptr0, mm1);      /* temporarily save */
+    _mm_store_si64((__m64 *)outptr0 + 1, mm5);  /* the intermediate data */
+    _mm_store_si64((__m64 *)outptr1, mm2);
+    _mm_store_si64((__m64 *)outptr1 + 1, mm6);
 
     mm1 = _mm_and_si64(mm1, mm7);             /* mm1=( 0 - - -) */
     mm2 = _mm_and_si64(mm2, mm7);             /* mm2=( 0 - - -) */
@@ -189,9 +187,9 @@ jsimd_h2v2_fancy_upsample_mmi (int max_v_samp_factor,
 
       if (incol > 8) {
         /* process the next column block */
-        mm0 = _mm_load_si64((__m64 *)inptr0+1);   /* mm0 = row[ 0][1] */
-        mm1 = _mm_load_si64((__m64 *)inptr_1+1);  /* mm1 = row[-1][1] */
-        mm2 = _mm_load_si64((__m64 *)inptr1+1);   /* mm2 = row[+1][1] */
+        mm0 = _mm_load_si64((__m64 *)inptr0 + 1);   /* mm0 = row[ 0][1] */
+        mm1 = _mm_load_si64((__m64 *)inptr_1 + 1);  /* mm1 = row[-1][1] */
+        mm2 = _mm_load_si64((__m64 *)inptr1 + 1);   /* mm2 = row[+1][1] */
 
         mm3 = _mm_setzero_si64();             /* mm3 = (all 0's) */
         mm4 = mm0;
@@ -212,25 +210,25 @@ jsimd_h2v2_fancy_upsample_mmi (int max_v_samp_factor,
         mm2 = _mm_add_pi16(mm2, mm0);         /* mm2 = Int1L = ( 0 1 2 3) */
         mm6 = _mm_add_pi16(mm6, mm4);         /* mm6 = Int1H = ( 4 5 6 7) */
 
-        _mm_store_si64((__m64*)outptr0+2, mm1);  /* temporarily save */
-        _mm_store_si64((__m64*)outptr0+3, mm5);  /* the intermediate data */
-        _mm_store_si64((__m64*)outptr1+2, mm2);
-        _mm_store_si64((__m64*)outptr1+3, mm6);
+        _mm_store_si64((__m64 *)outptr0 + 2, mm1);  /* temporarily save */
+        _mm_store_si64((__m64 *)outptr0 + 3, mm5);  /* the intermediate data */
+        _mm_store_si64((__m64 *)outptr1 + 2, mm2);
+        _mm_store_si64((__m64 *)outptr1 + 3, mm6);
 
-        mm1 = _mm_slli_si64(mm1, (SIZEOF_MMWORD-2)*BYTE_BIT);  /* mm1=( - - - 0) */
-        mm2 = _mm_slli_si64(mm2, (SIZEOF_MMWORD-2)*BYTE_BIT);  /* mm2=( - - - 0) */
+        mm1 = _mm_slli_si64(mm1, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm1=( - - - 0) */
+        mm2 = _mm_slli_si64(mm2, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm2=( - - - 0) */
 
         wk[2] = mm1;
         wk[3] = mm2;
       } else {
         /* process the last column block */
         mm1 = _mm_cmpeq_pi8(mm1, mm1);
-        mm1 = _mm_slli_si64(mm1, (SIZEOF_MMWORD-2)*BYTE_BIT);
+        mm1 = _mm_slli_si64(mm1, (SIZEOF_MMWORD - 2) * BYTE_BIT);
         mm2 = mm1;
 
-        mm_tmp = _mm_load_si64((__m64 *)outptr0+1);
+        mm_tmp = _mm_load_si64((__m64 *)outptr0 + 1);
         mm1 = _mm_and_si64(mm1, mm_tmp);      /* mm1=( - - - 7) */
-        mm_tmp = _mm_load_si64((__m64 *)outptr1+1);
+        mm_tmp = _mm_load_si64((__m64 *)outptr1 + 1);
         mm2 = _mm_and_si64(mm2, mm_tmp);      /* mm2=( - - - 7) */
 
         wk[2] = mm1;

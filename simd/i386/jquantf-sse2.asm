@@ -26,13 +26,13 @@
 ; Load data into workspace, applying unsigned->signed conversion
 ;
 ; GLOBAL(void)
-; jsimd_convsamp_float_sse2 (JSAMPARRAY sample_data, JDIMENSION start_col,
-;                            FAST_FLOAT *workspace);
+; jsimd_convsamp_float_sse2(JSAMPARRAY sample_data, JDIMENSION start_col,
+;                           FAST_FLOAT *workspace);
 ;
 
-%define sample_data  ebp+8              ; JSAMPARRAY sample_data
-%define start_col    ebp+12             ; JDIMENSION start_col
-%define workspace    ebp+16             ; FAST_FLOAT *workspace
+%define sample_data  ebp + 8            ; JSAMPARRAY sample_data
+%define start_col    ebp + 12           ; JDIMENSION start_col
+%define workspace    ebp + 16           ; FAST_FLOAT *workspace
 
     align       32
     GLOBAL_FUNCTION(jsimd_convsamp_float_sse2)
@@ -100,19 +100,18 @@ EXTN(jsimd_convsamp_float_sse2):
     pop         ebp
     ret
 
-
 ; --------------------------------------------------------------------------
 ;
 ; Quantize/descale the coefficients, and store into coef_block
 ;
 ; GLOBAL(void)
-; jsimd_quantize_float_sse2 (JCOEFPTR coef_block, FAST_FLOAT *divisors,
-;                            FAST_FLOAT *workspace);
+; jsimd_quantize_float_sse2(JCOEFPTR coef_block, FAST_FLOAT *divisors,
+;                           FAST_FLOAT *workspace);
 ;
 
-%define coef_block  ebp+8               ; JCOEFPTR coef_block
-%define divisors    ebp+12              ; FAST_FLOAT *divisors
-%define workspace   ebp+16              ; FAST_FLOAT *workspace
+%define coef_block  ebp + 8             ; JCOEFPTR coef_block
+%define divisors    ebp + 12            ; FAST_FLOAT *divisors
+%define workspace   ebp + 16            ; FAST_FLOAT *workspace
 
     align       32
     GLOBAL_FUNCTION(jsimd_quantize_float_sse2)

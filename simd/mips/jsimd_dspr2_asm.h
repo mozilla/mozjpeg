@@ -23,75 +23,75 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#define zero $0
-#define AT   $1
-#define v0   $2
-#define v1   $3
-#define a0   $4
-#define a1   $5
-#define a2   $6
-#define a3   $7
-#define t0   $8
-#define t1   $9
-#define t2   $10
-#define t3   $11
-#define t4   $12
-#define t5   $13
-#define t6   $14
-#define t7   $15
-#define s0   $16
-#define s1   $17
-#define s2   $18
-#define s3   $19
-#define s4   $20
-#define s5   $21
-#define s6   $22
-#define s7   $23
-#define t8   $24
-#define t9   $25
-#define k0   $26
-#define k1   $27
-#define gp   $28
-#define sp   $29
-#define fp   $30
-#define s8   $30
-#define ra   $31
+#define zero  $0
+#define AT    $1
+#define v0    $2
+#define v1    $3
+#define a0    $4
+#define a1    $5
+#define a2    $6
+#define a3    $7
+#define t0    $8
+#define t1    $9
+#define t2    $10
+#define t3    $11
+#define t4    $12
+#define t5    $13
+#define t6    $14
+#define t7    $15
+#define s0    $16
+#define s1    $17
+#define s2    $18
+#define s3    $19
+#define s4    $20
+#define s5    $21
+#define s6    $22
+#define s7    $23
+#define t8    $24
+#define t9    $25
+#define k0    $26
+#define k1    $27
+#define gp    $28
+#define sp    $29
+#define fp    $30
+#define s8    $30
+#define ra    $31
 
-#define f0   $f0
-#define f1   $f1
-#define f2   $f2
-#define f3   $f3
-#define f4   $f4
-#define f5   $f5
-#define f6   $f6
-#define f7   $f7
-#define f8   $f8
-#define f9   $f9
-#define f10  $f10
-#define f11  $f11
-#define f12  $f12
-#define f13  $f13
-#define f14  $f14
-#define f15  $f15
-#define f16  $f16
-#define f17  $f17
-#define f18  $f18
-#define f19  $f19
-#define f20  $f20
-#define f21  $f21
-#define f22  $f22
-#define f23  $f23
-#define f24  $f24
-#define f25  $f25
-#define f26  $f26
-#define f27  $f27
-#define f28  $f28
-#define f29  $f29
-#define f30  $f30
-#define f31  $f31
+#define f0    $f0
+#define f1    $f1
+#define f2    $f2
+#define f3    $f3
+#define f4    $f4
+#define f5    $f5
+#define f6    $f6
+#define f7    $f7
+#define f8    $f8
+#define f9    $f9
+#define f10   $f10
+#define f11   $f11
+#define f12   $f12
+#define f13   $f13
+#define f14   $f14
+#define f15   $f15
+#define f16   $f16
+#define f17   $f17
+#define f18   $f18
+#define f19   $f19
+#define f20   $f20
+#define f21   $f21
+#define f22   $f22
+#define f23   $f23
+#define f24   $f24
+#define f25   $f25
+#define f26   $f26
+#define f27   $f27
+#define f28   $f28
+#define f29   $f29
+#define f30   $f30
+#define f31   $f31
 
 #ifdef __ELF__
-#define HIDDEN_SYMBOL(symbol) .hidden symbol;
+#define HIDDEN_SYMBOL(symbol)  .hidden symbol;
 #else
 #define HIDDEN_SYMBOL(symbol)
 #endif
@@ -99,32 +99,33 @@
 /*
  * LEAF_MIPS32R2 - declare leaf routine for MIPS32r2
  */
-#define LEAF_MIPS32R2(symbol)                           \
-                .globl  symbol;                         \
-                HIDDEN_SYMBOL(symbol)                   \
-                .align  2;                              \
-                .type   symbol, @function;              \
-                .ent    symbol, 0;                      \
-symbol:         .frame  sp, 0, ra;                      \
-                .set    push;                           \
-                .set    arch=mips32r2;                  \
-                .set    noreorder;                      \
-                .set    noat;
+#define LEAF_MIPS32R2(symbol) \
+    .globl      symbol; \
+    HIDDEN_SYMBOL(symbol) \
+    .align      2; \
+    .type       symbol, @function; \
+    .ent        symbol, 0; \
+symbol: \
+    .frame      sp, 0, ra; \
+    .set        push; \
+    .set        arch = mips32r2; \
+    .set        noreorder; \
+    .set        noat;
 
 /*
  * LEAF_DSPR2 - declare leaf routine for MIPS DSPr2
  */
-#define LEAF_DSPR2(symbol)                              \
-LEAF_MIPS32R2(symbol)                                   \
-                .set    dspr2;
+#define LEAF_DSPR2(symbol) \
+LEAF_MIPS32R2(symbol) \
+    .set        dspr2;
 
 /*
  * END - mark end of function
  */
-#define END(function)                                   \
-                .set    pop;                            \
-                .end    function;                       \
-                .size   function,.-function
+#define END(function) \
+    .set        pop; \
+    .end        function; \
+    .size       function, .-function
 
 /*
  * Checks if stack offset is big enough for storing/restoring regs_num
@@ -151,68 +152,68 @@ LEAF_MIPS32R2(symbol)                                   \
  *  SAVE_REGS_ON_STACK      4, v0, v1, s0, s1
  *  RESTORE_REGS_FROM_STACK 4, v0, v1, s0, s1
  */
-.macro SAVE_REGS_ON_STACK stack_offset = 0, r1, \
-                          r2  = 0, r3  = 0, r4  = 0, \
-                          r5  = 0, r6  = 0, r7  = 0, \
-                          r8  = 0, r9  = 0, r10 = 0, \
-                          r11 = 0, r12 = 0, r13 = 0, \
-                          r14 = 0
-    .if (\stack_offset < 0) || (\stack_offset - (\stack_offset / 4) * 4)
+.macro SAVE_REGS_ON_STACK  stack_offset = 0, r1, \
+                           r2  = 0, r3  = 0, r4  = 0, \
+                           r5  = 0, r6  = 0, r7  = 0, \
+                           r8  = 0, r9  = 0, r10 = 0, \
+                           r11 = 0, r12 = 0, r13 = 0, \
+                           r14 = 0
+.if (\stack_offset < 0) || (\stack_offset - (\stack_offset / 4) * 4)
     .error "Stack offset must be pozitive and multiple of 4."
-    .endif
-    .if \stack_offset != 0
-    addiu           sp, sp, -\stack_offset
-    .endif
-    sw              \r1, 0(sp)
-    .if \r2 != 0
-    sw              \r2, 4(sp)
-    .endif
-    .if \r3 != 0
-    sw              \r3, 8(sp)
-    .endif
-    .if \r4 != 0
-    sw              \r4, 12(sp)
-    .endif
-    .if \r5 != 0
+.endif
+.if \stack_offset != 0
+    addiu       sp, sp, -\stack_offset
+.endif
+    sw          \r1, 0(sp)
+.if \r2 != 0
+    sw          \r2, 4(sp)
+.endif
+.if \r3 != 0
+    sw          \r3, 8(sp)
+.endif
+.if \r4 != 0
+    sw          \r4, 12(sp)
+.endif
+.if \r5 != 0
     CHECK_STACK_OFFSET 5, \stack_offset
-    sw              \r5, 16(sp)
-    .endif
-    .if \r6 != 0
+    sw          \r5, 16(sp)
+.endif
+.if \r6 != 0
     CHECK_STACK_OFFSET 6, \stack_offset
-    sw              \r6, 20(sp)
-    .endif
-    .if \r7 != 0
+    sw          \r6, 20(sp)
+.endif
+.if \r7 != 0
     CHECK_STACK_OFFSET 7, \stack_offset
-    sw              \r7, 24(sp)
-    .endif
-    .if \r8 != 0
+    sw          \r7, 24(sp)
+.endif
+.if \r8 != 0
     CHECK_STACK_OFFSET 8, \stack_offset
-    sw              \r8, 28(sp)
-    .endif
-    .if \r9 != 0
+    sw          \r8, 28(sp)
+.endif
+.if \r9 != 0
     CHECK_STACK_OFFSET 9, \stack_offset
-    sw              \r9, 32(sp)
-    .endif
-    .if \r10 != 0
+    sw          \r9, 32(sp)
+.endif
+.if \r10 != 0
     CHECK_STACK_OFFSET 10, \stack_offset
-    sw              \r10, 36(sp)
-    .endif
-    .if \r11 != 0
+    sw          \r10, 36(sp)
+.endif
+.if \r11 != 0
     CHECK_STACK_OFFSET 11, \stack_offset
-    sw              \r11, 40(sp)
-    .endif
-    .if \r12 != 0
+    sw          \r11, 40(sp)
+.endif
+.if \r12 != 0
     CHECK_STACK_OFFSET 12, \stack_offset
-    sw              \r12, 44(sp)
-    .endif
-    .if \r13 != 0
+    sw          \r12, 44(sp)
+.endif
+.if \r13 != 0
     CHECK_STACK_OFFSET 13, \stack_offset
-    sw              \r13, 48(sp)
-    .endif
-    .if \r14 != 0
+    sw          \r13, 48(sp)
+.endif
+.if \r14 != 0
     CHECK_STACK_OFFSET 14, \stack_offset
-    sw              \r14, 52(sp)
-    .endif
+    sw          \r14, 52(sp)
+.endif
 .endm
 
 /*
@@ -226,66 +227,66 @@ LEAF_MIPS32R2(symbol)                                   \
  *  SAVE_REGS_ON_STACK      4, v0, v1, s0, s1
  *  RESTORE_REGS_FROM_STACK 4, v0, v1, s0, s1
  */
-.macro RESTORE_REGS_FROM_STACK stack_offset = 0, r1, \
-                               r2  = 0, r3  = 0, r4  = 0, \
-                               r5  = 0, r6  = 0, r7  = 0, \
-                               r8  = 0, r9  = 0, r10 = 0, \
-                               r11 = 0, r12 = 0, r13 = 0, \
-                               r14 = 0
-    .if (\stack_offset < 0) || (\stack_offset - (\stack_offset/4)*4)
+.macro RESTORE_REGS_FROM_STACK  stack_offset = 0, r1, \
+                                r2  = 0, r3  = 0, r4  = 0, \
+                                r5  = 0, r6  = 0, r7  = 0, \
+                                r8  = 0, r9  = 0, r10 = 0, \
+                                r11 = 0, r12 = 0, r13 = 0, \
+                                r14 = 0
+.if (\stack_offset < 0) || (\stack_offset - (\stack_offset / 4) * 4)
     .error "Stack offset must be pozitive and multiple of 4."
-    .endif
-    lw              \r1, 0(sp)
-    .if \r2 != 0
-    lw              \r2, 4(sp)
-    .endif
-    .if \r3 != 0
-    lw              \r3, 8(sp)
-    .endif
-    .if \r4 != 0
-    lw              \r4, 12(sp)
-    .endif
-    .if \r5 != 0
+.endif
+    lw          \r1, 0(sp)
+.if \r2 != 0
+    lw          \r2, 4(sp)
+.endif
+.if \r3 != 0
+    lw          \r3, 8(sp)
+.endif
+.if \r4 != 0
+    lw          \r4, 12(sp)
+.endif
+.if \r5 != 0
     CHECK_STACK_OFFSET 5, \stack_offset
-    lw              \r5, 16(sp)
-    .endif
-    .if \r6 != 0
+    lw          \r5, 16(sp)
+.endif
+.if \r6 != 0
     CHECK_STACK_OFFSET 6, \stack_offset
-    lw              \r6, 20(sp)
-    .endif
-    .if \r7 != 0
+    lw          \r6, 20(sp)
+.endif
+.if \r7 != 0
     CHECK_STACK_OFFSET 7, \stack_offset
-    lw              \r7, 24(sp)
-    .endif
-    .if \r8 != 0
+    lw          \r7, 24(sp)
+.endif
+.if \r8 != 0
     CHECK_STACK_OFFSET 8, \stack_offset
-    lw              \r8, 28(sp)
-    .endif
-    .if \r9 != 0
+    lw          \r8, 28(sp)
+.endif
+.if \r9 != 0
     CHECK_STACK_OFFSET 9, \stack_offset
-    lw              \r9, 32(sp)
-    .endif
-    .if \r10 != 0
+    lw          \r9, 32(sp)
+.endif
+.if \r10 != 0
     CHECK_STACK_OFFSET 10, \stack_offset
-    lw              \r10, 36(sp)
-    .endif
-    .if \r11 != 0
+    lw          \r10, 36(sp)
+.endif
+.if \r11 != 0
     CHECK_STACK_OFFSET 11, \stack_offset
-    lw              \r11, 40(sp)
-    .endif
-    .if \r12 != 0
+    lw          \r11, 40(sp)
+.endif
+.if \r12 != 0
     CHECK_STACK_OFFSET 12, \stack_offset
-    lw              \r12, 44(sp)
-    .endif
-    .if \r13 != 0
+    lw          \r12, 44(sp)
+.endif
+.if \r13 != 0
     CHECK_STACK_OFFSET 13, \stack_offset
-    lw              \r13, 48(sp)
-    .endif
-    .if \r14 != 0
+    lw          \r13, 48(sp)
+.endif
+.if \r14 != 0
     CHECK_STACK_OFFSET 14, \stack_offset
-    lw              \r14, 52(sp)
-    .endif
-    .if \stack_offset != 0
-    addiu           sp, sp, \stack_offset
-    .endif
+    lw          \r14, 52(sp)
+.endif
+.if \stack_offset != 0
+    addiu       sp, sp, \stack_offset
+.endif
 .endm

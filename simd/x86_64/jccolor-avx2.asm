@@ -40,12 +40,13 @@ F_0_337 equ (F_0_587 - F_0_250)  ; FIX(0.58700) - FIX(0.25000)
 
 EXTN(jconst_rgb_ycc_convert_avx2):
 
-PW_F0299_F0337  times 8 dw  F_0_299, F_0_337
-PW_F0114_F0250  times 8 dw  F_0_114, F_0_250
-PW_MF016_MF033  times 8 dw -F_0_168,-F_0_331
-PW_MF008_MF041  times 8 dw -F_0_081,-F_0_418
-PD_ONEHALFM1_CJ times 8 dd  (1 << (SCALEBITS-1)) - 1 + (CENTERJSAMPLE << SCALEBITS)
-PD_ONEHALF      times 8 dd  (1 << (SCALEBITS-1))
+PW_F0299_F0337  times 8 dw  F_0_299,  F_0_337
+PW_F0114_F0250  times 8 dw  F_0_114,  F_0_250
+PW_MF016_MF033  times 8 dw -F_0_168, -F_0_331
+PW_MF008_MF041  times 8 dw -F_0_081, -F_0_418
+PD_ONEHALFM1_CJ times 8 dd  (1 << (SCALEBITS - 1)) - 1 + \
+                            (CENTERJSAMPLE << SCALEBITS)
+PD_ONEHALF      times 8 dd  (1 << (SCALEBITS - 1))
 
     alignz      32
 

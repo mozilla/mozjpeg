@@ -69,7 +69,7 @@ static FILE *infile;            /* input JPEG file */
 
 /* Read one byte, testing for EOF */
 static int
-read_1_byte (void)
+read_1_byte(void)
 {
   int c;
 
@@ -82,7 +82,7 @@ read_1_byte (void)
 /* Read 2 bytes, convert to unsigned int */
 /* All 2-byte quantities in JPEG markers are MSB first */
 static unsigned int
-read_2_bytes (void)
+read_2_bytes(void)
 {
   int c1, c2;
 
@@ -92,7 +92,7 @@ read_2_bytes (void)
   c2 = NEXTBYTE();
   if (c2 == EOF)
     ERREXIT("Premature EOF in JPEG file");
-  return (((unsigned int) c1) << 8) + ((unsigned int) c2);
+  return (((unsigned int)c1) << 8) + ((unsigned int)c2);
 }
 
 
@@ -134,7 +134,7 @@ read_2_bytes (void)
  */
 
 static int
-next_marker (void)
+next_marker(void)
 {
   int c;
   int discarded_bytes = 0;
@@ -169,7 +169,7 @@ next_marker (void)
  */
 
 static int
-first_marker (void)
+first_marker(void)
 {
   int c1, c2;
 
@@ -191,7 +191,7 @@ first_marker (void)
  */
 
 static void
-skip_variable (void)
+skip_variable(void)
 /* Skip over an unknown or uninteresting variable-length marker */
 {
   unsigned int length;
@@ -204,7 +204,7 @@ skip_variable (void)
   length -= 2;
   /* Skip over the remaining bytes */
   while (length > 0) {
-    (void) read_1_byte();
+    (void)read_1_byte();
     length--;
   }
 }
@@ -217,7 +217,7 @@ skip_variable (void)
  */
 
 static void
-process_COM (int raw)
+process_COM(int raw)
 {
   unsigned int length;
   int ch;
@@ -274,7 +274,7 @@ process_COM (int raw)
  */
 
 static void
-process_SOFn (int marker)
+process_SOFn(int marker)
 {
   unsigned int length;
   unsigned int image_height, image_width;
@@ -310,13 +310,13 @@ process_SOFn (int marker)
          image_width, image_height, num_components, data_precision);
   printf("JPEG process: %s\n", process);
 
-  if (length != (unsigned int) (8 + num_components * 3))
+  if (length != (unsigned int)(8 + num_components * 3))
     ERREXIT("Bogus SOF marker length");
 
   for (ci = 0; ci < num_components; ci++) {
-    (void) read_1_byte();       /* Component ID code */
-    (void) read_1_byte();       /* H, V sampling factors */
-    (void) read_1_byte();       /* Quantization table number */
+    (void)read_1_byte();        /* Component ID code */
+    (void)read_1_byte();        /* H, V sampling factors */
+    (void)read_1_byte();        /* Quantization table number */
   }
 }
 
@@ -332,7 +332,7 @@ process_SOFn (int marker)
  */
 
 static int
-scan_JPEG_header (int verbose, int raw)
+scan_JPEG_header(int verbose, int raw)
 {
   int marker;
 
@@ -401,7 +401,7 @@ static const char *progname;    /* program name for error messages */
 
 
 static void
-usage (void)
+usage(void)
 /* complain about bad command line */
 {
   fprintf(stderr, "rdjpgcom displays any textual comments in a JPEG file.\n");
@@ -417,7 +417,7 @@ usage (void)
 
 
 static int
-keymatch (char *arg, const char *keyword, int minchars)
+keymatch(char *arg, const char *keyword, int minchars)
 /* Case-insensitive matching of (possibly abbreviated) keyword switches. */
 /* keyword is the constant keyword (must be lower case already), */
 /* minchars is length of minimum legal abbreviation. */
@@ -446,7 +446,7 @@ keymatch (char *arg, const char *keyword, int minchars)
  */
 
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
   int argn;
   char *arg;
@@ -477,7 +477,7 @@ main (int argc, char **argv)
 
   /* Open the input file. */
   /* Unix style: expect zero or one file name */
-  if (argn < argc-1) {
+  if (argn < argc - 1) {
     fprintf(stderr, "%s: only one input file\n", progname);
     usage();
   }
@@ -502,7 +502,7 @@ main (int argc, char **argv)
   }
 
   /* Scan the JPEG headers. */
-  (void) scan_JPEG_header(verbose, raw);
+  (void)scan_JPEG_header(verbose, raw);
 
   /* All done. */
   exit(EXIT_SUCCESS);

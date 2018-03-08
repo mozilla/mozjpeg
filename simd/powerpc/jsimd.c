@@ -44,9 +44,10 @@ static unsigned int simd_support = ~0;
 #define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT (1024 * 1024)
 
 LOCAL(int)
-check_feature (char *buffer, char *feature)
+check_feature(char *buffer, char *feature)
 {
   char *p;
+
   if (*feature == 0)
     return 0;
   if (strncmp(buffer, "cpu", 3) != 0)
@@ -72,10 +73,11 @@ check_feature (char *buffer, char *feature)
 }
 
 LOCAL(int)
-parse_proc_cpuinfo (int bufsize)
+parse_proc_cpuinfo(int bufsize)
 {
   char *buffer = (char *)malloc(bufsize);
   FILE *fd;
+
   simd_support = 0;
 
   if (!buffer)
@@ -107,7 +109,7 @@ parse_proc_cpuinfo (int bufsize)
  * FIXME: This code is racy under a multi-threaded environment.
  */
 LOCAL(void)
-init_simd (void)
+init_simd(void)
 {
   char *env = NULL;
 #if !defined(__ALTIVEC__) && (defined(__linux__) || defined(ANDROID) || defined(__ANDROID__))
@@ -135,7 +137,7 @@ init_simd (void)
   }
 #elif defined(__amigaos4__)
   IExec->GetCPUInfoTags(GCIT_VectorUnit, &altivec, TAG_DONE);
-  if(altivec == VECTORTYPE_ALTIVEC)
+  if (altivec == VECTORTYPE_ALTIVEC)
     simd_support |= JSIMD_ALTIVEC;
 #elif defined(__OpenBSD__)
   if (sysctl(mib, 2, &altivec, &len, NULL, 0) == 0 && altivec != 0)
@@ -152,7 +154,7 @@ init_simd (void)
 }
 
 GLOBAL(int)
-jsimd_can_rgb_ycc (void)
+jsimd_can_rgb_ycc(void)
 {
   init_simd();
 
@@ -171,7 +173,7 @@ jsimd_can_rgb_ycc (void)
 }
 
 GLOBAL(int)
-jsimd_can_rgb_gray (void)
+jsimd_can_rgb_gray(void)
 {
   init_simd();
 
@@ -190,7 +192,7 @@ jsimd_can_rgb_gray (void)
 }
 
 GLOBAL(int)
-jsimd_can_ycc_rgb (void)
+jsimd_can_ycc_rgb(void)
 {
   init_simd();
 
@@ -209,134 +211,134 @@ jsimd_can_ycc_rgb (void)
 }
 
 GLOBAL(int)
-jsimd_can_ycc_rgb565 (void)
+jsimd_can_ycc_rgb565(void)
 {
   return 0;
 }
 
 GLOBAL(void)
-jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
-                       JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-                       JDIMENSION output_row, int num_rows)
+jsimd_rgb_ycc_convert(j_compress_ptr cinfo, JSAMPARRAY input_buf,
+                      JSAMPIMAGE output_buf, JDIMENSION output_row,
+                      int num_rows)
 {
-  void (*altivecfct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+  void (*altivecfct) (JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
 
-  switch(cinfo->in_color_space) {
-    case JCS_EXT_RGB:
-      altivecfct=jsimd_extrgb_ycc_convert_altivec;
-      break;
-    case JCS_EXT_RGBX:
-    case JCS_EXT_RGBA:
-      altivecfct=jsimd_extrgbx_ycc_convert_altivec;
-      break;
-    case JCS_EXT_BGR:
-      altivecfct=jsimd_extbgr_ycc_convert_altivec;
-      break;
-    case JCS_EXT_BGRX:
-    case JCS_EXT_BGRA:
-      altivecfct=jsimd_extbgrx_ycc_convert_altivec;
-      break;
-    case JCS_EXT_XBGR:
-    case JCS_EXT_ABGR:
-      altivecfct=jsimd_extxbgr_ycc_convert_altivec;
-      break;
-    case JCS_EXT_XRGB:
-    case JCS_EXT_ARGB:
-      altivecfct=jsimd_extxrgb_ycc_convert_altivec;
-      break;
-    default:
-      altivecfct=jsimd_rgb_ycc_convert_altivec;
-      break;
+  switch (cinfo->in_color_space) {
+  case JCS_EXT_RGB:
+    altivecfct = jsimd_extrgb_ycc_convert_altivec;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    altivecfct = jsimd_extrgbx_ycc_convert_altivec;
+    break;
+  case JCS_EXT_BGR:
+    altivecfct = jsimd_extbgr_ycc_convert_altivec;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    altivecfct = jsimd_extbgrx_ycc_convert_altivec;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    altivecfct = jsimd_extxbgr_ycc_convert_altivec;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    altivecfct = jsimd_extxrgb_ycc_convert_altivec;
+    break;
+  default:
+    altivecfct = jsimd_rgb_ycc_convert_altivec;
+    break;
   }
 
   altivecfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)
-jsimd_rgb_gray_convert (j_compress_ptr cinfo,
-                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-                        JDIMENSION output_row, int num_rows)
+jsimd_rgb_gray_convert(j_compress_ptr cinfo, JSAMPARRAY input_buf,
+                       JSAMPIMAGE output_buf, JDIMENSION output_row,
+                       int num_rows)
 {
-  void (*altivecfct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+  void (*altivecfct) (JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
 
-  switch(cinfo->in_color_space) {
-    case JCS_EXT_RGB:
-      altivecfct=jsimd_extrgb_gray_convert_altivec;
-      break;
-    case JCS_EXT_RGBX:
-    case JCS_EXT_RGBA:
-      altivecfct=jsimd_extrgbx_gray_convert_altivec;
-      break;
-    case JCS_EXT_BGR:
-      altivecfct=jsimd_extbgr_gray_convert_altivec;
-      break;
-    case JCS_EXT_BGRX:
-    case JCS_EXT_BGRA:
-      altivecfct=jsimd_extbgrx_gray_convert_altivec;
-      break;
-    case JCS_EXT_XBGR:
-    case JCS_EXT_ABGR:
-      altivecfct=jsimd_extxbgr_gray_convert_altivec;
-      break;
-    case JCS_EXT_XRGB:
-    case JCS_EXT_ARGB:
-      altivecfct=jsimd_extxrgb_gray_convert_altivec;
-      break;
-    default:
-      altivecfct=jsimd_rgb_gray_convert_altivec;
-      break;
+  switch (cinfo->in_color_space) {
+  case JCS_EXT_RGB:
+    altivecfct = jsimd_extrgb_gray_convert_altivec;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    altivecfct = jsimd_extrgbx_gray_convert_altivec;
+    break;
+  case JCS_EXT_BGR:
+    altivecfct = jsimd_extbgr_gray_convert_altivec;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    altivecfct = jsimd_extbgrx_gray_convert_altivec;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    altivecfct = jsimd_extxbgr_gray_convert_altivec;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    altivecfct = jsimd_extxrgb_gray_convert_altivec;
+    break;
+  default:
+    altivecfct = jsimd_rgb_gray_convert_altivec;
+    break;
   }
 
   altivecfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)
-jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
-                       JSAMPIMAGE input_buf, JDIMENSION input_row,
-                       JSAMPARRAY output_buf, int num_rows)
+jsimd_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                      JDIMENSION input_row, JSAMPARRAY output_buf,
+                      int num_rows)
 {
-  void (*altivecfct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY, int);
+  void (*altivecfct) (JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY, int);
 
-  switch(cinfo->out_color_space) {
-    case JCS_EXT_RGB:
-      altivecfct=jsimd_ycc_extrgb_convert_altivec;
-      break;
-    case JCS_EXT_RGBX:
-    case JCS_EXT_RGBA:
-      altivecfct=jsimd_ycc_extrgbx_convert_altivec;
-      break;
-    case JCS_EXT_BGR:
-      altivecfct=jsimd_ycc_extbgr_convert_altivec;
-      break;
-    case JCS_EXT_BGRX:
-    case JCS_EXT_BGRA:
-      altivecfct=jsimd_ycc_extbgrx_convert_altivec;
-      break;
-    case JCS_EXT_XBGR:
-    case JCS_EXT_ABGR:
-      altivecfct=jsimd_ycc_extxbgr_convert_altivec;
-      break;
-    case JCS_EXT_XRGB:
-    case JCS_EXT_ARGB:
-      altivecfct=jsimd_ycc_extxrgb_convert_altivec;
-      break;
-    default:
-      altivecfct=jsimd_ycc_rgb_convert_altivec;
-      break;
+  switch (cinfo->out_color_space) {
+  case JCS_EXT_RGB:
+    altivecfct = jsimd_ycc_extrgb_convert_altivec;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    altivecfct = jsimd_ycc_extrgbx_convert_altivec;
+    break;
+  case JCS_EXT_BGR:
+    altivecfct = jsimd_ycc_extbgr_convert_altivec;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    altivecfct = jsimd_ycc_extbgrx_convert_altivec;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    altivecfct = jsimd_ycc_extxbgr_convert_altivec;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    altivecfct = jsimd_ycc_extxrgb_convert_altivec;
+    break;
+  default:
+    altivecfct = jsimd_ycc_rgb_convert_altivec;
+    break;
   }
 
   altivecfct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
 }
 
 GLOBAL(void)
-jsimd_ycc_rgb565_convert (j_decompress_ptr cinfo,
-                          JSAMPIMAGE input_buf, JDIMENSION input_row,
-                          JSAMPARRAY output_buf, int num_rows)
+jsimd_ycc_rgb565_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                         JDIMENSION input_row, JSAMPARRAY output_buf,
+                         int num_rows)
 {
 }
 
 GLOBAL(int)
-jsimd_can_h2v2_downsample (void)
+jsimd_can_h2v2_downsample(void)
 {
   init_simd();
 
@@ -353,7 +355,7 @@ jsimd_can_h2v2_downsample (void)
 }
 
 GLOBAL(int)
-jsimd_can_h2v1_downsample (void)
+jsimd_can_h2v1_downsample(void)
 {
   init_simd();
 
@@ -370,27 +372,27 @@ jsimd_can_h2v1_downsample (void)
 }
 
 GLOBAL(void)
-jsimd_h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
-                       JSAMPARRAY input_data, JSAMPARRAY output_data)
+jsimd_h2v2_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
+                      JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   jsimd_h2v2_downsample_altivec(cinfo->image_width, cinfo->max_v_samp_factor,
                                 compptr->v_samp_factor,
-                                compptr->width_in_blocks,
-                                input_data, output_data);
+                                compptr->width_in_blocks, input_data,
+                                output_data);
 }
 
 GLOBAL(void)
-jsimd_h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
-                       JSAMPARRAY input_data, JSAMPARRAY output_data)
+jsimd_h2v1_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
+                      JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
   jsimd_h2v1_downsample_altivec(cinfo->image_width, cinfo->max_v_samp_factor,
                                 compptr->v_samp_factor,
-                                compptr->width_in_blocks,
-                                input_data, output_data);
+                                compptr->width_in_blocks, input_data,
+                                output_data);
 }
 
 GLOBAL(int)
-jsimd_can_h2v2_upsample (void)
+jsimd_can_h2v2_upsample(void)
 {
   init_simd();
 
@@ -407,7 +409,7 @@ jsimd_can_h2v2_upsample (void)
 }
 
 GLOBAL(int)
-jsimd_can_h2v1_upsample (void)
+jsimd_can_h2v1_upsample(void)
 {
   init_simd();
 
@@ -424,27 +426,23 @@ jsimd_can_h2v1_upsample (void)
 }
 
 GLOBAL(void)
-jsimd_h2v2_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info *compptr,
-                     JSAMPARRAY input_data,
-                     JSAMPARRAY *output_data_ptr)
+jsimd_h2v2_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                    JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)
 {
   jsimd_h2v2_upsample_altivec(cinfo->max_v_samp_factor, cinfo->output_width,
                               input_data, output_data_ptr);
 }
 
 GLOBAL(void)
-jsimd_h2v1_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info *compptr,
-                     JSAMPARRAY input_data,
-                     JSAMPARRAY *output_data_ptr)
+jsimd_h2v1_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                    JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)
 {
   jsimd_h2v1_upsample_altivec(cinfo->max_v_samp_factor, cinfo->output_width,
                               input_data, output_data_ptr);
 }
 
 GLOBAL(int)
-jsimd_can_h2v2_fancy_upsample (void)
+jsimd_can_h2v2_fancy_upsample(void)
 {
   init_simd();
 
@@ -461,7 +459,7 @@ jsimd_can_h2v2_fancy_upsample (void)
 }
 
 GLOBAL(int)
-jsimd_can_h2v1_fancy_upsample (void)
+jsimd_can_h2v1_fancy_upsample(void)
 {
   init_simd();
 
@@ -478,10 +476,8 @@ jsimd_can_h2v1_fancy_upsample (void)
 }
 
 GLOBAL(void)
-jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info *compptr,
-                           JSAMPARRAY input_data,
-                           JSAMPARRAY *output_data_ptr)
+jsimd_h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                          JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)
 {
   jsimd_h2v2_fancy_upsample_altivec(cinfo->max_v_samp_factor,
                                     compptr->downsampled_width, input_data,
@@ -489,10 +485,8 @@ jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
 }
 
 GLOBAL(void)
-jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info *compptr,
-                           JSAMPARRAY input_data,
-                           JSAMPARRAY *output_data_ptr)
+jsimd_h2v1_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                          JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)
 {
   jsimd_h2v1_fancy_upsample_altivec(cinfo->max_v_samp_factor,
                                     compptr->downsampled_width, input_data,
@@ -500,7 +494,7 @@ jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
 }
 
 GLOBAL(int)
-jsimd_can_h2v2_merged_upsample (void)
+jsimd_can_h2v2_merged_upsample(void)
 {
   init_simd();
 
@@ -517,7 +511,7 @@ jsimd_can_h2v2_merged_upsample (void)
 }
 
 GLOBAL(int)
-jsimd_can_h2v1_merged_upsample (void)
+jsimd_can_h2v1_merged_upsample(void)
 {
   init_simd();
 
@@ -534,85 +528,81 @@ jsimd_can_h2v1_merged_upsample (void)
 }
 
 GLOBAL(void)
-jsimd_h2v2_merged_upsample (j_decompress_ptr cinfo,
-                            JSAMPIMAGE input_buf,
-                            JDIMENSION in_row_group_ctr,
-                            JSAMPARRAY output_buf)
+jsimd_h2v2_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                           JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
-  void (*altivecfct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
+  void (*altivecfct) (JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
 
-  switch(cinfo->out_color_space) {
-    case JCS_EXT_RGB:
-      altivecfct=jsimd_h2v2_extrgb_merged_upsample_altivec;
-      break;
-    case JCS_EXT_RGBX:
-    case JCS_EXT_RGBA:
-      altivecfct=jsimd_h2v2_extrgbx_merged_upsample_altivec;
-      break;
-    case JCS_EXT_BGR:
-      altivecfct=jsimd_h2v2_extbgr_merged_upsample_altivec;
-      break;
-    case JCS_EXT_BGRX:
-    case JCS_EXT_BGRA:
-      altivecfct=jsimd_h2v2_extbgrx_merged_upsample_altivec;
-      break;
-    case JCS_EXT_XBGR:
-    case JCS_EXT_ABGR:
-      altivecfct=jsimd_h2v2_extxbgr_merged_upsample_altivec;
-      break;
-    case JCS_EXT_XRGB:
-    case JCS_EXT_ARGB:
-      altivecfct=jsimd_h2v2_extxrgb_merged_upsample_altivec;
-      break;
-    default:
-      altivecfct=jsimd_h2v2_merged_upsample_altivec;
-      break;
+  switch (cinfo->out_color_space) {
+  case JCS_EXT_RGB:
+    altivecfct = jsimd_h2v2_extrgb_merged_upsample_altivec;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    altivecfct = jsimd_h2v2_extrgbx_merged_upsample_altivec;
+    break;
+  case JCS_EXT_BGR:
+    altivecfct = jsimd_h2v2_extbgr_merged_upsample_altivec;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    altivecfct = jsimd_h2v2_extbgrx_merged_upsample_altivec;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    altivecfct = jsimd_h2v2_extxbgr_merged_upsample_altivec;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    altivecfct = jsimd_h2v2_extxrgb_merged_upsample_altivec;
+    break;
+  default:
+    altivecfct = jsimd_h2v2_merged_upsample_altivec;
+    break;
   }
 
   altivecfct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
 }
 
 GLOBAL(void)
-jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
-                            JSAMPIMAGE input_buf,
-                            JDIMENSION in_row_group_ctr,
-                            JSAMPARRAY output_buf)
+jsimd_h2v1_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                           JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)
 {
-  void (*altivecfct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
+  void (*altivecfct) (JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
 
-  switch(cinfo->out_color_space) {
-    case JCS_EXT_RGB:
-      altivecfct=jsimd_h2v1_extrgb_merged_upsample_altivec;
-      break;
-    case JCS_EXT_RGBX:
-    case JCS_EXT_RGBA:
-      altivecfct=jsimd_h2v1_extrgbx_merged_upsample_altivec;
-      break;
-    case JCS_EXT_BGR:
-      altivecfct=jsimd_h2v1_extbgr_merged_upsample_altivec;
-      break;
-    case JCS_EXT_BGRX:
-    case JCS_EXT_BGRA:
-      altivecfct=jsimd_h2v1_extbgrx_merged_upsample_altivec;
-      break;
-    case JCS_EXT_XBGR:
-    case JCS_EXT_ABGR:
-      altivecfct=jsimd_h2v1_extxbgr_merged_upsample_altivec;
-      break;
-    case JCS_EXT_XRGB:
-    case JCS_EXT_ARGB:
-      altivecfct=jsimd_h2v1_extxrgb_merged_upsample_altivec;
-      break;
-    default:
-      altivecfct=jsimd_h2v1_merged_upsample_altivec;
-      break;
+  switch (cinfo->out_color_space) {
+  case JCS_EXT_RGB:
+    altivecfct = jsimd_h2v1_extrgb_merged_upsample_altivec;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    altivecfct = jsimd_h2v1_extrgbx_merged_upsample_altivec;
+    break;
+  case JCS_EXT_BGR:
+    altivecfct = jsimd_h2v1_extbgr_merged_upsample_altivec;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    altivecfct = jsimd_h2v1_extbgrx_merged_upsample_altivec;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    altivecfct = jsimd_h2v1_extxbgr_merged_upsample_altivec;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    altivecfct = jsimd_h2v1_extxrgb_merged_upsample_altivec;
+    break;
+  default:
+    altivecfct = jsimd_h2v1_merged_upsample_altivec;
+    break;
   }
 
   altivecfct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
 }
 
 GLOBAL(int)
-jsimd_can_convsamp (void)
+jsimd_can_convsamp(void)
 {
   init_simd();
 
@@ -633,43 +623,26 @@ jsimd_can_convsamp (void)
 }
 
 GLOBAL(int)
-jsimd_can_convsamp_float (void)
+jsimd_can_convsamp_float(void)
 {
   return 0;
 }
 
 GLOBAL(void)
-jsimd_convsamp (JSAMPARRAY sample_data, JDIMENSION start_col,
-                DCTELEM *workspace)
+jsimd_convsamp(JSAMPARRAY sample_data, JDIMENSION start_col,
+               DCTELEM *workspace)
 {
   jsimd_convsamp_altivec(sample_data, start_col, workspace);
 }
 
 GLOBAL(void)
-jsimd_convsamp_float (JSAMPARRAY sample_data, JDIMENSION start_col,
-                      FAST_FLOAT *workspace)
+jsimd_convsamp_float(JSAMPARRAY sample_data, JDIMENSION start_col,
+                     FAST_FLOAT *workspace)
 {
 }
 
 GLOBAL(int)
-jsimd_can_fdct_islow (void)
-{
-  init_simd();
-
-  /* The code is optimised for these values only */
-  if (DCTSIZE != 8)
-    return 0;
-  if (sizeof(DCTELEM) != 2)
-    return 0;
-
-  if (simd_support & JSIMD_ALTIVEC)
-    return 1;
-
-  return 0;
-}
-
-GLOBAL(int)
-jsimd_can_fdct_ifast (void)
+jsimd_can_fdct_islow(void)
 {
   init_simd();
 
@@ -686,30 +659,47 @@ jsimd_can_fdct_ifast (void)
 }
 
 GLOBAL(int)
-jsimd_can_fdct_float (void)
+jsimd_can_fdct_ifast(void)
+{
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_ALTIVEC)
+    return 1;
+
+  return 0;
+}
+
+GLOBAL(int)
+jsimd_can_fdct_float(void)
 {
   return 0;
 }
 
 GLOBAL(void)
-jsimd_fdct_islow (DCTELEM *data)
+jsimd_fdct_islow(DCTELEM *data)
 {
   jsimd_fdct_islow_altivec(data);
 }
 
 GLOBAL(void)
-jsimd_fdct_ifast (DCTELEM *data)
+jsimd_fdct_ifast(DCTELEM *data)
 {
   jsimd_fdct_ifast_altivec(data);
 }
 
 GLOBAL(void)
-jsimd_fdct_float (FAST_FLOAT *data)
+jsimd_fdct_float(FAST_FLOAT *data)
 {
 }
 
 GLOBAL(int)
-jsimd_can_quantize (void)
+jsimd_can_quantize(void)
 {
   init_simd();
 
@@ -728,52 +718,51 @@ jsimd_can_quantize (void)
 }
 
 GLOBAL(int)
-jsimd_can_quantize_float (void)
+jsimd_can_quantize_float(void)
 {
   return 0;
 }
 
 GLOBAL(void)
-jsimd_quantize (JCOEFPTR coef_block, DCTELEM *divisors,
-                DCTELEM *workspace)
+jsimd_quantize(JCOEFPTR coef_block, DCTELEM *divisors, DCTELEM *workspace)
 {
   jsimd_quantize_altivec(coef_block, divisors, workspace);
 }
 
 GLOBAL(void)
-jsimd_quantize_float (JCOEFPTR coef_block, FAST_FLOAT *divisors,
-                      FAST_FLOAT *workspace)
+jsimd_quantize_float(JCOEFPTR coef_block, FAST_FLOAT *divisors,
+                     FAST_FLOAT *workspace)
 {
 }
 
 GLOBAL(int)
-jsimd_can_idct_2x2 (void)
+jsimd_can_idct_2x2(void)
 {
   return 0;
 }
 
 GLOBAL(int)
-jsimd_can_idct_4x4 (void)
+jsimd_can_idct_4x4(void)
 {
   return 0;
 }
 
 GLOBAL(void)
-jsimd_idct_2x2 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
-                JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                JDIMENSION output_col)
+jsimd_idct_2x2(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+               JCOEFPTR coef_block, JSAMPARRAY output_buf,
+               JDIMENSION output_col)
 {
 }
 
 GLOBAL(void)
-jsimd_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info *compptr,
-                JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                JDIMENSION output_col)
+jsimd_idct_4x4(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+               JCOEFPTR coef_block, JSAMPARRAY output_buf,
+               JDIMENSION output_col)
 {
 }
 
 GLOBAL(int)
-jsimd_can_idct_islow (void)
+jsimd_can_idct_islow(void)
 {
   init_simd();
 
@@ -790,7 +779,7 @@ jsimd_can_idct_islow (void)
 }
 
 GLOBAL(int)
-jsimd_can_idct_ifast (void)
+jsimd_can_idct_ifast(void)
 {
   init_simd();
 
@@ -807,46 +796,46 @@ jsimd_can_idct_ifast (void)
 }
 
 GLOBAL(int)
-jsimd_can_idct_float (void)
+jsimd_can_idct_float(void)
 {
   return 0;
 }
 
 GLOBAL(void)
-jsimd_idct_islow (j_decompress_ptr cinfo, jpeg_component_info *compptr,
-                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                  JDIMENSION output_col)
+jsimd_idct_islow(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
+                 JDIMENSION output_col)
 {
   jsimd_idct_islow_altivec(compptr->dct_table, coef_block, output_buf,
                            output_col);
 }
 
 GLOBAL(void)
-jsimd_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info *compptr,
-                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                  JDIMENSION output_col)
+jsimd_idct_ifast(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
+                 JDIMENSION output_col)
 {
   jsimd_idct_ifast_altivec(compptr->dct_table, coef_block, output_buf,
                            output_col);
 }
 
 GLOBAL(void)
-jsimd_idct_float (j_decompress_ptr cinfo, jpeg_component_info *compptr,
-                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
-                  JDIMENSION output_col)
+jsimd_idct_float(j_decompress_ptr cinfo, jpeg_component_info *compptr,
+                 JCOEFPTR coef_block, JSAMPARRAY output_buf,
+                 JDIMENSION output_col)
 {
 }
 
 GLOBAL(int)
-jsimd_can_huff_encode_one_block (void)
+jsimd_can_huff_encode_one_block(void)
 {
   return 0;
 }
 
-GLOBAL(JOCTET*)
-jsimd_huff_encode_one_block (void *state, JOCTET *buffer, JCOEFPTR block,
-                             int last_dc_val, c_derived_tbl *dctbl,
-                             c_derived_tbl *actbl)
+GLOBAL(JOCTET *)
+jsimd_huff_encode_one_block(void *state, JOCTET *buffer, JCOEFPTR block,
+                            int last_dc_val, c_derived_tbl *dctbl,
+                            c_derived_tbl *actbl)
 {
   return NULL;
 }

@@ -49,15 +49,15 @@
 #ifdef HAVE_UNSIGNED_CHAR
 
 typedef unsigned char JSAMPLE;
-#define GETJSAMPLE(value)  ((int) (value))
+#define GETJSAMPLE(value)  ((int)(value))
 
 #else /* not HAVE_UNSIGNED_CHAR */
 
 typedef char JSAMPLE;
 #ifdef __CHAR_UNSIGNED__
-#define GETJSAMPLE(value)  ((int) (value))
+#define GETJSAMPLE(value)  ((int)(value))
 #else
-#define GETJSAMPLE(value)  ((int) (value) & 0xFF)
+#define GETJSAMPLE(value)  ((int)(value) & 0xFF)
 #endif /* __CHAR_UNSIGNED__ */
 
 #endif /* HAVE_UNSIGNED_CHAR */
@@ -74,7 +74,7 @@ typedef char JSAMPLE;
  */
 
 typedef short JSAMPLE;
-#define GETJSAMPLE(value)  ((int) (value))
+#define GETJSAMPLE(value)  ((int)(value))
 
 #define MAXJSAMPLE      4095
 #define CENTERJSAMPLE   2048
@@ -173,9 +173,9 @@ typedef short INT16;
  */
 
 #ifndef XMD_H                   /* X11/xmd.h correctly defines INT32 */
-#ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
-#ifndef _BASETSD_H		/* MinGW is slightly different */
-#ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
+#ifndef _BASETSD_H_             /* Microsoft defines it in basetsd.h */
+#ifndef _BASETSD_H              /* MinGW is slightly different */
+#ifndef QGLOBAL_H               /* Qt defines it in qglobal.h */
 typedef long INT32;
 #endif
 #endif
@@ -220,7 +220,7 @@ typedef unsigned int JDIMENSION;
  * software out there that uses it.
  */
 
-#define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
+#define JMETHOD(type, methodname, arglist)  type (*methodname) arglist
 
 
 /* libjpeg-turbo no longer supports platforms that have far symbols (MS-DOS),

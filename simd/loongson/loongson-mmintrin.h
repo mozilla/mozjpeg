@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 
-#define FUNCTION_ATTRIBS  \
+#define FUNCTION_ATTRIBS \
   __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 
 
@@ -42,14 +42,14 @@ typedef float __m32;
 /********** Set Operations **********/
 
 extern __inline __m64
-_mm_setzero_si64 (void)
+_mm_setzero_si64(void)
 {
   return 0.0;
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_set_pi8 (uint8_t __b7, uint8_t __b6, uint8_t __b5, uint8_t __b4,
-             uint8_t __b3, uint8_t __b2, uint8_t __b1, uint8_t __b0)
+_mm_set_pi8(uint8_t __b7, uint8_t __b6, uint8_t __b5, uint8_t __b4,
+            uint8_t __b3, uint8_t __b2, uint8_t __b1, uint8_t __b0)
 {
   __m64 ret;
   uint32_t lo = ((uint32_t)__b6 << 24) |
@@ -73,7 +73,7 @@ _mm_set_pi8 (uint8_t __b7, uint8_t __b6, uint8_t __b5, uint8_t __b4,
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_set_pi16 (uint16_t __h3, uint16_t __h2, uint16_t __h1, uint16_t __h0)
+_mm_set_pi16(uint16_t __h3, uint16_t __h2, uint16_t __h1, uint16_t __h0)
 {
   __m64 ret;
   uint32_t lo = ((uint32_t)__h2 << 16) | (uint32_t)__h0;
@@ -94,18 +94,14 @@ _mm_set_pi16 (uint16_t __h3, uint16_t __h2, uint16_t __h1, uint16_t __h0)
   (((fp3) << 6) | ((fp2) << 4) | ((fp1) << 2) | (fp0))
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_set_pi32 (uint32_t __i1, uint32_t __i0)
+_mm_set_pi32(uint32_t __i1, uint32_t __i0)
 {
-  if (__builtin_constant_p(__i1) &&
-      __builtin_constant_p(__i0))
-  {
+  if (__builtin_constant_p(__i1) && __builtin_constant_p(__i0)) {
     uint64_t val = ((uint64_t)__i1 << 32) |
                    ((uint64_t)__i0 <<  0);
 
     return *(__m64 *)&val;
-  }
-  else if (__i1 == __i0)
-  {
+  } else if (__i1 == __i0) {
     uint64_t imm = _MM_SHUFFLE(1, 0, 1, 0);
     __m64 ret;
 
@@ -115,9 +111,7 @@ _mm_set_pi32 (uint32_t __i1, uint32_t __i0)
        );
 
     return ret;
-  }
-  else
-  {
+  } else {
     uint64_t val = ((uint64_t)__i1 << 32) |
                    ((uint64_t)__i0 <<  0);
 
@@ -126,7 +120,7 @@ _mm_set_pi32 (uint32_t __i1, uint32_t __i0)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_set1_pi8 (uint8_t __b0)
+_mm_set1_pi8(uint8_t __b0)
 {
   __m64 ret;
 
@@ -144,7 +138,7 @@ _mm_set1_pi8 (uint8_t __b0)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_set1_pi16 (uint16_t __h0)
+_mm_set1_pi16(uint16_t __h0)
 {
   __m64 ret;
 
@@ -160,27 +154,27 @@ _mm_set1_pi16 (uint16_t __h0)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_set1_pi32 (unsigned __i0)
+_mm_set1_pi32(unsigned __i0)
 {
   return _mm_set_pi32(__i0, __i0);
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_setr_pi8 (uint8_t __h0, uint8_t __h1, uint8_t __h2, uint8_t __h3,
-              uint8_t __h4, uint8_t __h5, uint8_t __h6, uint8_t __h7)
+_mm_setr_pi8(uint8_t __h0, uint8_t __h1, uint8_t __h2, uint8_t __h3,
+             uint8_t __h4, uint8_t __h5, uint8_t __h6, uint8_t __h7)
 {
   return _mm_set_pi8(__h7, __h6, __h5, __h4,
                      __h3, __h2, __h1, __h0);
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_setr_pi16 (uint16_t __w0, uint16_t __w1, uint16_t __w2, uint16_t __w3)
+_mm_setr_pi16(uint16_t __w0, uint16_t __w1, uint16_t __w2, uint16_t __w3)
 {
   return _mm_set_pi16(__w3, __w2, __w1, __w0);
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_setr_pi32 (uint32_t __i0, uint32_t __i1)
+_mm_setr_pi32(uint32_t __i0, uint32_t __i1)
 {
   return _mm_set_pi32(__i1, __i0);
 }
@@ -189,7 +183,7 @@ _mm_setr_pi32 (uint32_t __i0, uint32_t __i1)
 /********** Arithmetic Operations **********/
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_add_pi8 (__m64 __m1, __m64 __m2)
+_mm_add_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -202,7 +196,7 @@ _mm_add_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_add_pi16 (__m64 __m1, __m64 __m2)
+_mm_add_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -215,7 +209,7 @@ _mm_add_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_add_pi32 (__m64 __m1, __m64 __m2)
+_mm_add_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -228,7 +222,7 @@ _mm_add_pi32 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_add_si64 (__m64 __m1, __m64 __m2)
+_mm_add_si64(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -241,7 +235,7 @@ _mm_add_si64 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_adds_pi8 (__m64 __m1, __m64 __m2)
+_mm_adds_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -254,7 +248,7 @@ _mm_adds_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_adds_pi16 (__m64 __m1, __m64 __m2)
+_mm_adds_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -268,7 +262,7 @@ _mm_adds_pi16 (__m64 __m1, __m64 __m2)
 
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_adds_pu8 (__m64 __m1, __m64 __m2)
+_mm_adds_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -281,7 +275,7 @@ _mm_adds_pu8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_adds_pu16 (__m64 __m1, __m64 __m2)
+_mm_adds_pu16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -294,7 +288,7 @@ _mm_adds_pu16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_avg_pu8 (__m64 __m1, __m64 __m2)
+_mm_avg_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -307,7 +301,7 @@ _mm_avg_pu8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_avg_pu16 (__m64 __m1, __m64 __m2)
+_mm_avg_pu16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -320,7 +314,7 @@ _mm_avg_pu16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_madd_pi16 (__m64 __m1, __m64 __m2)
+_mm_madd_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -333,7 +327,7 @@ _mm_madd_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_max_pi16 (__m64 __m1, __m64 __m2)
+_mm_max_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -346,7 +340,7 @@ _mm_max_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_max_pu8 (__m64 __m1, __m64 __m2)
+_mm_max_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -359,7 +353,7 @@ _mm_max_pu8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_min_pi16 (__m64 __m1, __m64 __m2)
+_mm_min_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -372,7 +366,7 @@ _mm_min_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_min_pu8 (__m64 __m1, __m64 __m2)
+_mm_min_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -385,7 +379,7 @@ _mm_min_pu8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline int FUNCTION_ATTRIBS
-_mm_movemask_pi8 (__m64 __m1)
+_mm_movemask_pi8(__m64 __m1)
 {
   int ret;
 
@@ -398,7 +392,7 @@ _mm_movemask_pi8 (__m64 __m1)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
+_mm_mulhi_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -411,7 +405,7 @@ _mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_mulhi_pu16 (__m64 __m1, __m64 __m2)
+_mm_mulhi_pu16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -424,7 +418,7 @@ _mm_mulhi_pu16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_mullo_pi16 (__m64 __m1, __m64 __m2)
+_mm_mullo_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -437,7 +431,7 @@ _mm_mullo_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_mul_pu32 (__m64 __m1, __m64 __m2)
+_mm_mul_pu32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -450,7 +444,7 @@ _mm_mul_pu32 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_sad_pu8 (__m64 __m1, __m64 __m2)
+_mm_sad_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -464,7 +458,7 @@ _mm_sad_pu8 (__m64 __m1, __m64 __m2)
 
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_asub_pu8 (__m64 __m1, __m64 __m2)
+_mm_asub_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -477,7 +471,7 @@ _mm_asub_pu8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_biadd_pu8 (__m64 __m1, __m64 __m2)
+_mm_biadd_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -490,7 +484,7 @@ _mm_biadd_pu8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_sub_pi8 (__m64 __m1, __m64 __m2)
+_mm_sub_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -503,7 +497,7 @@ _mm_sub_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_sub_pi16 (__m64 __m1, __m64 __m2)
+_mm_sub_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -516,7 +510,7 @@ _mm_sub_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_sub_pi32 (__m64 __m1, __m64 __m2)
+_mm_sub_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -529,7 +523,7 @@ _mm_sub_pi32 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_sub_si64 (__m64 __m1, __m64 __m2)
+_mm_sub_si64(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -542,7 +536,7 @@ _mm_sub_si64 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_subs_pi8 (__m64 __m1, __m64 __m2)
+_mm_subs_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -555,7 +549,7 @@ _mm_subs_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_subs_pi16 (__m64 __m1, __m64 __m2)
+_mm_subs_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -569,7 +563,7 @@ _mm_subs_pi16 (__m64 __m1, __m64 __m2)
 
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_subs_pu8 (__m64 __m1, __m64 __m2)
+_mm_subs_pu8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -582,7 +576,7 @@ _mm_subs_pu8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_subs_pu16 (__m64 __m1, __m64 __m2)
+_mm_subs_pu16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -598,7 +592,7 @@ _mm_subs_pu16 (__m64 __m1, __m64 __m2)
 /********** Logical Operations **********/
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_and_si64 (__m64 __m1, __m64 __m2)
+_mm_and_si64(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -611,7 +605,7 @@ _mm_and_si64 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_andnot_si64 (__m64 __m1, __m64 __m2)
+_mm_andnot_si64(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -625,7 +619,7 @@ _mm_andnot_si64 (__m64 __m1, __m64 __m2)
 
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_or_si32 (__m32 __m1, __m32 __m2)
+_mm_or_si32(__m32 __m1, __m32 __m2)
 {
   __m32 ret;
 
@@ -638,7 +632,7 @@ _mm_or_si32 (__m32 __m1, __m32 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_or_si64 (__m64 __m1, __m64 __m2)
+_mm_or_si64(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -651,7 +645,7 @@ _mm_or_si64 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_xor_si64 (__m64 __m1, __m64 __m2)
+_mm_xor_si64(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -667,7 +661,7 @@ _mm_xor_si64 (__m64 __m1, __m64 __m2)
 /********** Shift Operations **********/
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_slli_pi16 (__m64 __m, int64_t __count)
+_mm_slli_pi16(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -680,7 +674,7 @@ _mm_slli_pi16 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_slli_pi32 (__m64 __m, int64_t __count)
+_mm_slli_pi32(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -693,7 +687,7 @@ _mm_slli_pi32 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_slli_si64 (__m64 __m, int64_t __count)
+_mm_slli_si64(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -706,7 +700,7 @@ _mm_slli_si64 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_srli_pi16 (__m64 __m, int64_t __count)
+_mm_srli_pi16(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -719,7 +713,7 @@ _mm_srli_pi16 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_srli_pi32 (__m64 __m, int64_t __count)
+_mm_srli_pi32(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -732,7 +726,7 @@ _mm_srli_pi32 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_srli_si64 (__m64 __m, int64_t __count)
+_mm_srli_si64(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -745,7 +739,7 @@ _mm_srli_si64 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_srai_pi16 (__m64 __m, int64_t __count)
+_mm_srai_pi16(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -758,7 +752,7 @@ _mm_srai_pi16 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_srai_pi32 (__m64 __m, int64_t __count)
+_mm_srai_pi32(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -771,7 +765,7 @@ _mm_srai_pi32 (__m64 __m, int64_t __count)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_srai_si64 (__m64 __m, int64_t __count)
+_mm_srai_si64(__m64 __m, int64_t __count)
 {
   __m64 ret;
 
@@ -787,13 +781,13 @@ _mm_srai_si64 (__m64 __m, int64_t __count)
 /********** Conversion Intrinsics **********/
 
 extern __inline __m64 FUNCTION_ATTRIBS
-to_m64 (uint64_t x)
+to_m64(uint64_t x)
 {
   return *(__m64 *)&x;
 }
 
 extern __inline uint64_t FUNCTION_ATTRIBS
-to_uint64 (__m64 x)
+to_uint64(__m64 x)
 {
   return *(uint64_t *)&x;
 }
@@ -802,7 +796,7 @@ to_uint64 (__m64 x)
 /********** Comparison Intrinsics **********/
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmpeq_pi8 (__m64 __m1, __m64 __m2)
+_mm_cmpeq_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -815,7 +809,7 @@ _mm_cmpeq_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmpeq_pi16 (__m64 __m1, __m64 __m2)
+_mm_cmpeq_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -828,7 +822,7 @@ _mm_cmpeq_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmpeq_pi32 (__m64 __m1, __m64 __m2)
+_mm_cmpeq_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -841,7 +835,7 @@ _mm_cmpeq_pi32 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmpgt_pi8 (__m64 __m1, __m64 __m2)
+_mm_cmpgt_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -854,7 +848,7 @@ _mm_cmpgt_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmpgt_pi16 (__m64 __m1, __m64 __m2)
+_mm_cmpgt_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -867,7 +861,7 @@ _mm_cmpgt_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmpgt_pi32 (__m64 __m1, __m64 __m2)
+_mm_cmpgt_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -880,7 +874,7 @@ _mm_cmpgt_pi32 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmplt_pi8 (__m64 __m1, __m64 __m2)
+_mm_cmplt_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -893,7 +887,7 @@ _mm_cmplt_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmplt_pi16 (__m64 __m1, __m64 __m2)
+_mm_cmplt_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -906,7 +900,7 @@ _mm_cmplt_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_cmplt_pi32 (__m64 __m1, __m64 __m2)
+_mm_cmplt_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -922,7 +916,7 @@ _mm_cmplt_pi32 (__m64 __m1, __m64 __m2)
 /********** Miscellaneous Operations **********/
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_packs_pi16 (__m64 __m1, __m64 __m2)
+_mm_packs_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -935,7 +929,7 @@ _mm_packs_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_packs_pi32 (__m64 __m1, __m64 __m2)
+_mm_packs_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -948,7 +942,7 @@ _mm_packs_pi32 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_packs_pi32_f (__m64 __m1, __m64 __m2)
+_mm_packs_pi32_f(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -961,7 +955,7 @@ _mm_packs_pi32_f (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_packs_pu16 (__m64 __m1, __m64 __m2)
+_mm_packs_pu16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -974,7 +968,7 @@ _mm_packs_pu16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_extract_pi16 (__m64 __m, int64_t __pos)
+_mm_extract_pi16(__m64 __m, int64_t __pos)
 {
   __m64 ret;
 
@@ -987,53 +981,52 @@ _mm_extract_pi16 (__m64 __m, int64_t __pos)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_insert_pi16 (__m64 __m1, __m64 __m2, int64_t __pos)
+_mm_insert_pi16(__m64 __m1, __m64 __m2, int64_t __pos)
 {
   __m64 ret;
 
-  switch (__pos)
-  {
-    case 0:
+  switch (__pos) {
+  case 0:
 
-      asm("pinsrh_0 %0, %1, %2\n\t"
-          : "=f" (ret)
-          : "f" (__m1), "f" (__m2), "i" (__pos)
-         );
+    asm("pinsrh_0 %0, %1, %2\n\t"
+        : "=f" (ret)
+        : "f" (__m1), "f" (__m2), "i" (__pos)
+       );
 
-      break;
+    break;
 
-    case 1:
+  case 1:
 
-      asm("pinsrh_1 %0, %1, %2\n\t"
-          : "=f" (ret)
-          : "f" (__m1), "f" (__m2), "i" (__pos)
-         );
+    asm("pinsrh_1 %0, %1, %2\n\t"
+        : "=f" (ret)
+        : "f" (__m1), "f" (__m2), "i" (__pos)
+       );
 
-      break;
-    case 2:
+    break;
+  case 2:
 
-      asm("pinsrh_2 %0, %1, %2\n\t"
-          : "=f" (ret)
-          : "f" (__m1), "f" (__m2), "i" (__pos)
-         );
+    asm("pinsrh_2 %0, %1, %2\n\t"
+        : "=f" (ret)
+        : "f" (__m1), "f" (__m2), "i" (__pos)
+       );
 
-      break;
+    break;
 
-    case 3:
+  case 3:
 
-      asm("pinsrh_3 %0, %1, %2\n\t"
-          : "=f" (ret)
-          : "f" (__m1), "f" (__m2), "i" (__pos)
-         );
+    asm("pinsrh_3 %0, %1, %2\n\t"
+        : "=f" (ret)
+        : "f" (__m1), "f" (__m2), "i" (__pos)
+       );
 
-      break;
+    break;
   }
 
   return ret;
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_shuffle_pi16 (__m64 __m, int64_t __n)
+_mm_shuffle_pi16(__m64 __m, int64_t __n)
 {
   __m64 ret;
 
@@ -1046,7 +1039,7 @@ _mm_shuffle_pi16 (__m64 __m, int64_t __n)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpackhi_pi8 (__m64 __m1, __m64 __m2)
+_mm_unpackhi_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1059,7 +1052,7 @@ _mm_unpackhi_pi8 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpackhi_pi8_f (__m64 __m1, __m64 __m2)
+_mm_unpackhi_pi8_f(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1072,7 +1065,7 @@ _mm_unpackhi_pi8_f (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpackhi_pi16 (__m64 __m1, __m64 __m2)
+_mm_unpackhi_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1085,7 +1078,7 @@ _mm_unpackhi_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpackhi_pi16_f (__m64 __m1, __m64 __m2)
+_mm_unpackhi_pi16_f(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1098,7 +1091,7 @@ _mm_unpackhi_pi16_f (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpackhi_pi32 (__m64 __m1, __m64 __m2)
+_mm_unpackhi_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1111,7 +1104,7 @@ _mm_unpackhi_pi32 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpacklo_pi8 (__m64 __m1, __m64 __m2)
+_mm_unpacklo_pi8(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1127,7 +1120,7 @@ _mm_unpacklo_pi8 (__m64 __m1, __m64 __m2)
    which preserves the data. */
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpacklo_pi8_f64 (__m64 __m1, __m64 __m2)
+_mm_unpacklo_pi8_f64(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1143,7 +1136,7 @@ _mm_unpacklo_pi8_f64 (__m64 __m1, __m64 __m2)
    datatype, which allows load8888 to use 32-bit loads. */
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpacklo_pi8_f (__m32 __m1, __m64 __m2)
+_mm_unpacklo_pi8_f(__m32 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1156,7 +1149,7 @@ _mm_unpacklo_pi8_f (__m32 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpacklo_pi16 (__m64 __m1, __m64 __m2)
+_mm_unpacklo_pi16(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1169,7 +1162,7 @@ _mm_unpacklo_pi16 (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpacklo_pi16_f (__m64 __m1, __m64 __m2)
+_mm_unpacklo_pi16_f(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1182,7 +1175,7 @@ _mm_unpacklo_pi16_f (__m64 __m1, __m64 __m2)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpacklo_pi32 (__m64 __m1, __m64 __m2)
+_mm_unpacklo_pi32(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1196,7 +1189,7 @@ _mm_unpacklo_pi32 (__m64 __m1, __m64 __m2)
 
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_unpacklo_pi32_f (__m64 __m1, __m64 __m2)
+_mm_unpacklo_pi32_f(__m64 __m1, __m64 __m2)
 {
   __m64 ret;
 
@@ -1209,7 +1202,7 @@ _mm_unpacklo_pi32_f (__m64 __m1, __m64 __m2)
 }
 
 extern __inline void FUNCTION_ATTRIBS
-_mm_store_pi32 (__m32 *dest, __m64 src)
+_mm_store_pi32(__m32 *dest, __m64 src)
 {
   src = _mm_packs_pu16(src, _mm_setzero_si64());
 
@@ -1221,7 +1214,7 @@ _mm_store_pi32 (__m32 *dest, __m64 src)
 }
 
 extern __inline void FUNCTION_ATTRIBS
-_mm_store_si64 (__m64 *dest, __m64 src)
+_mm_store_si64(__m64 *dest, __m64 src)
 {
   asm("gssdlc1 %1, 7+%0\n\t"
       "gssdrc1 %1, %0\n\t"
@@ -1232,7 +1225,7 @@ _mm_store_si64 (__m64 *dest, __m64 src)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_load_si32 (const __m32 *src)
+_mm_load_si32(const __m32 *src)
 {
   __m32 ret;
 
@@ -1245,7 +1238,7 @@ _mm_load_si32 (const __m32 *src)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_load_si64 (const __m64 *src)
+_mm_load_si64(const __m64 *src)
 {
   __m64 ret;
 
@@ -1258,55 +1251,55 @@ _mm_load_si64 (const __m64 *src)
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_loadlo_pi8 (const uint32_t *src)
+_mm_loadlo_pi8(const uint32_t *src)
 {
   return _mm_unpacklo_pi8_f(*(__m32 *)src, _mm_setzero_si64());
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_loadlo_pi8_f (__m64 src)
+_mm_loadlo_pi8_f(__m64 src)
 {
   return _mm_unpacklo_pi8_f64(src, _mm_setzero_si64());
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_loadhi_pi8_f (__m64 src)
+_mm_loadhi_pi8_f(__m64 src)
 {
   return _mm_unpackhi_pi8_f(src, _mm_setzero_si64());
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_loadlo_pi16 (__m64 src)
+_mm_loadlo_pi16(__m64 src)
 {
   return _mm_unpacklo_pi16(src, _mm_setzero_si64());
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_loadlo_pi16_f (__m64 src)
+_mm_loadlo_pi16_f(__m64 src)
 {
   return _mm_unpacklo_pi16_f(_mm_setzero_si64(), src);
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_loadhi_pi16 (__m64 src)
+_mm_loadhi_pi16(__m64 src)
 {
   return _mm_unpackhi_pi16(src, _mm_setzero_si64());
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_loadhi_pi16_f (__m64 src)
+_mm_loadhi_pi16_f(__m64 src)
 {
   return _mm_unpackhi_pi16_f(_mm_setzero_si64(), src);
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_expand_alpha (__m64 pixel)
+_mm_expand_alpha(__m64 pixel)
 {
   return _mm_shuffle_pi16(pixel, _MM_SHUFFLE(3, 3, 3, 3));
 }
 
 extern __inline __m64 FUNCTION_ATTRIBS
-_mm_expand_alpha_rev (__m64 pixel)
+_mm_expand_alpha_rev(__m64 pixel)
 {
   return _mm_shuffle_pi16(pixel, _MM_SHUFFLE(0, 0, 0, 0));
 }

@@ -24,10 +24,9 @@
 /* This file is included by jccolor-altivec.c */
 
 
-void
-jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
-                               JSAMPIMAGE output_buf, JDIMENSION output_row,
-                               int num_rows)
+void jsimd_rgb_ycc_convert_altivec(JDIMENSION img_width, JSAMPARRAY input_buf,
+                                   JSAMPIMAGE output_buf,
+                                   JDIMENSION output_row, int num_rows)
 {
   JSAMPROW inptr, outptr0, outptr1, outptr2;
   int pitch = img_width * RGB_PIXELSIZE, num_cols;
@@ -36,13 +35,13 @@ jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
 #endif
   unsigned char __attribute__((aligned(16))) tmpbuf[RGB_PIXELSIZE * 16];
 
-  __vector unsigned char rgb0, rgb1 = {0}, rgb2 = {0},
+  __vector unsigned char rgb0, rgb1 = { 0 }, rgb2 = { 0 },
     rgbg0, rgbg1, rgbg2, rgbg3, y, cb, cr;
 #if __BIG_ENDIAN__ || RGB_PIXELSIZE == 4
-  __vector unsigned char rgb3 = {0};
+  __vector unsigned char rgb3 = { 0 };
 #endif
 #if __BIG_ENDIAN__ && RGB_PIXELSIZE == 4
-  __vector unsigned char rgb4 = {0};
+  __vector unsigned char rgb4 = { 0 };
 #endif
   __vector short rg0, rg1, rg2, rg3, bg0, bg1, bg2, bg3;
   __vector unsigned short yl, yh, crl, crh, cbl, cbh;
@@ -58,9 +57,11 @@ jsimd_rgb_ycc_convert_altivec (JDIMENSION img_width, JSAMPARRAY input_buf,
     pd_onehalfm1_cj = { __4X(ONE_HALF - 1 + (CENTERJSAMPLE << SCALEBITS)) };
   __vector unsigned char pb_zero = { __16X(0) },
 #if __BIG_ENDIAN__
-    shift_pack_index = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29};
+    shift_pack_index =
+      {  0,  1,  4,  5,  8,  9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 };
 #else
-    shift_pack_index = {2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31};
+    shift_pack_index =
+      {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 };
 #endif
 
   while (--num_rows >= 0) {

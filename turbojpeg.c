@@ -39,6 +39,7 @@
 #include <setjmp.h>
 #include <errno.h>
 #include "./turbojpeg.h"
+#include "./tjutil.h"
 #include "transupp.h"
 #include "./jpegcomp.h"
 #include "./cdjpeg.h"

@@ -260,7 +260,7 @@ emit_dac(j_compress_ptr cinfo)
     for (i = 0; i < NUM_ARITH_TBLS; i++) {
       if (dc_in_use[i]) {
         emit_byte(cinfo, i);
-        emit_byte(cinfo, cinfo->arith_dc_L[i] + (cinfo->arith_dc_U[i]<<4));
+        emit_byte(cinfo, cinfo->arith_dc_L[i] + (cinfo->arith_dc_U[i] << 4));
       }
       if (ac_in_use[i]) {
         emit_byte(cinfo, i + 0x10);

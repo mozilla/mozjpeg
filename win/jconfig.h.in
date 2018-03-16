@@ -21,10 +21,10 @@
 #undef __CHAR_UNSIGNED__
 
 /* Define "boolean" as unsigned char, not int, per Windows custom */
-#ifndef __RPCNDR_H__		/* don't conflict if rpcndr.h already read */
+#ifndef __RPCNDR_H__            /* don't conflict if rpcndr.h already read */
 typedef unsigned char boolean;
 #endif
-#define HAVE_BOOLEAN		/* prevent jmorecfg.h from redefining it */
+#define HAVE_BOOLEAN            /* prevent jmorecfg.h from redefining it */
 
 /* Define "INT32" as int, not long, per Windows custom */
 #if !(defined(_BASETSD_H_) || defined(_BASETSD_H))   /* don't conflict if basetsd.h already read */

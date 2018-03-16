@@ -339,7 +339,7 @@ Switches for advanced users:
                         been compressed using lower quality levels.
         -dct float      Use floating-point DCT method.
                         The float method is mainly a legacy feature.  It does
-                        not produce significantly more accurate results than
+                        not produce significantly more accurate results than
                         the int method, and it is much slower.  The float
                         method may also give different results on different
                         machines due to varying roundoff behavior, whereas the

@@ -3,7 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2011, Nokia Corporation and/or its subsidiary(-ies).
- * Copyright (C) 2009-2011, 2013-2014, 2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, 2016, 2018, D. R. Commander.
  * Copyright (C) 2015-2016, Matthieu Darbois.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
@@ -121,7 +121,9 @@ parse_proc_cpuinfo (int bufsize)
 LOCAL(void)
 init_simd (void)
 {
+#ifndef NO_GETENV
   char *env = NULL;
+#endif
 #if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
   int bufsize = 1024; /* an initial guess for the line buffer size limit */
 #endif
@@ -140,6 +142,7 @@ init_simd (void)
   }
 #endif
 
+#ifndef NO_GETENV
   /* Force different settings through environment variables */
   env = getenv("JSIMD_FORCENEON");
   if ((env != NULL) && (strcmp(env, "1") == 0))
@@ -160,6 +163,7 @@ init_simd (void)
     simd_features |= JSIMD_FASTST3;
   if ((env != NULL) && (strcmp(env, "0") == 0))
     simd_features &= ~JSIMD_FASTST3;
+#endif
 }
 
 GLOBAL(int)

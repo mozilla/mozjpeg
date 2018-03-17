@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2017 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2018 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -796,9 +796,11 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 	cinfo->image_width=width;
 	cinfo->image_height=height;
 
+#ifndef NO_PUTENV
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
 	if(flags&TJFLAG_NOREALLOC)
 	{
@@ -912,9 +914,11 @@ DLLEXPORT int DLLCALL tjEncodeYUVPlanes(tjhandle handle,
 	cinfo->image_width=width;
 	cinfo->image_height=height;
 
+#ifndef NO_PUTENV
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
 	if(setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags)==-1) return -1;
 
@@ -1111,9 +1115,11 @@ DLLEXPORT int DLLCALL tjCompressFromYUVPlanes(tjhandle handle,
 	cinfo->image_width=width;
 	cinfo->image_height=height;
 
+#ifndef NO_PUTENV
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
 	if(flags&TJFLAG_NOREALLOC)
 	{
@@ -1392,9 +1398,11 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
 		|| height<0 || pixelFormat<0 || pixelFormat>=TJ_NUMPF)
 		_throw("tjDecompress2(): Invalid argument");
 
+#ifndef NO_PUTENV
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -1592,9 +1600,11 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	dinfo->image_width=width;
 	dinfo->image_height=height;
 
+#ifndef NO_PUTENV
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
 	if(setDecodeDefaults(dinfo, pixelFormat, subsamp, flags)==-1)
 	{
@@ -1773,9 +1783,11 @@ DLLEXPORT int DLLCALL tjDecompressToYUVPlanes(tjhandle handle,
 		|| height<0)
 		_throw("tjDecompressToYUVPlanes(): Invalid argument");
 
+#ifndef NO_PUTENV
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
@@ -2037,9 +2049,11 @@ DLLEXPORT int DLLCALL tjTransform(tjhandle handle,
 		|| t==NULL || flags<0)
 		_throw("tjTransform(): Invalid argument");
 
+#ifndef NO_PUTENV
 	if(flags&TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
 	else if(flags&TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
 	else if(flags&TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
 	if((xinfo=(jpeg_transform_info *)malloc(sizeof(jpeg_transform_info)*n))
 		==NULL)

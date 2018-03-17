@@ -2,7 +2,7 @@
  * jsimd_mips.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009-2011, 2014, 2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014, 2016, 2018, D. R. Commander.
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015, Matthieu Darbois.
  *
@@ -63,7 +63,9 @@ parse_proc_cpuinfo(const char* search_string)
 LOCAL(void)
 init_simd (void)
 {
+#ifndef NO_GETENV
   char *env = NULL;
+#endif
 
   if (simd_support != ~0U)
     return;
@@ -80,6 +82,7 @@ init_simd (void)
     return;
 #endif
 
+#ifndef NO_GETENV
   /* Force different settings through environment variables */
   env = getenv("JSIMD_FORCEDSPR2");
   if ((env != NULL) && (strcmp(env, "1") == 0))
@@ -87,6 +90,7 @@ init_simd (void)
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;
+#endif
 }
 
 static const int mips_idct_ifast_coefs[4] = {

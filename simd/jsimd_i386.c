@@ -2,7 +2,7 @@
  * jsimd_i386.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009-2011, 2013-2014, 2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, 2016, 2018, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
@@ -41,13 +41,16 @@ static unsigned int simd_huffman = 1;
 LOCAL(void)
 init_simd (void)
 {
+#ifndef NO_GETENV
   char *env = NULL;
+#endif
 
   if (simd_support != ~0U)
     return;
 
   simd_support = jpeg_simd_cpu_support();
 
+#ifndef NO_GETENV
   /* Force different settings through environment variables */
   env = getenv("JSIMD_FORCEMMX");
   if ((env != NULL) && (strcmp(env, "1") == 0))
@@ -67,6 +70,7 @@ init_simd (void)
   env = getenv("JSIMD_NOHUFFENC");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_huffman = 0;
+#endif
 }
 
 GLOBAL(int)

@@ -626,9 +626,11 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
   cinfo->image_width = width;
   cinfo->image_height = height;
 
+#ifndef NO_PUTENV
   if (flags & TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
   if (flags & TJFLAG_NOREALLOC) {
     alloc = 0;  *jpegSize = tjBufSize(width, height, jpegSubsamp);
@@ -724,9 +726,11 @@ DLLEXPORT int tjEncodeYUVPlanes(tjhandle handle, const unsigned char *srcBuf,
   cinfo->image_width = width;
   cinfo->image_height = height;
 
+#ifndef NO_PUTENV
   if (flags & TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
   if (setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags) == -1) return -1;
 
@@ -932,9 +936,11 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
   cinfo->image_width = width;
   cinfo->image_height = height;
 
+#ifndef NO_PUTENV
   if (flags & TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
   if (flags & TJFLAG_NOREALLOC) {
     alloc = 0;  *jpegSize = tjBufSize(width, height, subsamp);
@@ -1210,9 +1216,11 @@ DLLEXPORT int tjDecompress2(tjhandle handle, const unsigned char *jpegBuf,
       pitch < 0 || height < 0 || pixelFormat < 0 || pixelFormat >= TJ_NUMPF)
     _throw("tjDecompress2(): Invalid argument");
 
+#ifndef NO_PUTENV
   if (flags & TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1376,9 +1384,11 @@ DLLEXPORT int tjDecodeYUVPlanes(tjhandle handle,
   dinfo->image_width = width;
   dinfo->image_height = height;
 
+#ifndef NO_PUTENV
   if (flags & TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
   if (setDecodeDefaults(dinfo, pixelFormat, subsamp, flags) == -1) {
     retval = -1;  goto bailout;
@@ -1542,9 +1552,11 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
       width < 0 || height < 0)
     _throw("tjDecompressToYUVPlanes(): Invalid argument");
 
+#ifndef NO_PUTENV
   if (flags & TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1796,9 +1808,11 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
       dstSizes == NULL || t == NULL || flags < 0)
     _throw("tjTransform(): Invalid argument");
 
+#ifndef NO_PUTENV
   if (flags & TJFLAG_FORCEMMX) putenv("JSIMD_FORCEMMX=1");
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
+#endif
 
   if ((xinfo =
        (jpeg_transform_info *)malloc(sizeof(jpeg_transform_info) * n)) == NULL)

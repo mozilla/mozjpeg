@@ -42,13 +42,16 @@ static unsigned int simd_huffman = 1;
 LOCAL(void)
 init_simd(void)
 {
+#ifndef NO_GETENV
   char *env = NULL;
+#endif
 
   if (simd_support != ~0U)
     return;
 
   simd_support = jpeg_simd_cpu_support();
 
+#ifndef NO_GETENV
   /* Force different settings through environment variables */
   env = getenv("JSIMD_FORCESSE2");
   if ((env != NULL) && (strcmp(env, "1") == 0))
@@ -62,6 +65,7 @@ init_simd(void)
   env = getenv("JSIMD_NOHUFFENC");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_huffman = 0;
+#endif
 }
 
 GLOBAL(int)

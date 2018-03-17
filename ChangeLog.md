@@ -119,6 +119,9 @@ When using the slow integer DCT/IDCT, this speeds up the compression of RGB
 images by approximately 70-100% and the decompression of RGB images by
 approximately 2-3.5x.
 
+14. Fixed a build error when building with older MinGW releases (regression
+caused by 1.5.1[7].)
+
 
 1.5.3
 =====

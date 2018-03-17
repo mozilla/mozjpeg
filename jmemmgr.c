@@ -32,7 +32,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jmemsys.h"            /* import the system-dependent declarations */
-#ifndef _WIN32
+#if !defined(_MSC_VER) || _MSC_VER > 1600
 #include <stdint.h>
 #endif
 #include <limits.h>

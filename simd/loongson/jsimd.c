@@ -2,7 +2,7 @@
  * jsimd_loongson.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009-2011, 2014, 2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014, 2016, 2018, D. R. Commander.
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015, Matthieu Darbois.
  * Copyright (C) 2016-2017, Loongson Technology Corporation Limited, BeiJing.
@@ -34,17 +34,21 @@ static unsigned int simd_support = ~0;
 LOCAL(void)
 init_simd(void)
 {
+#ifndef NO_GETENV
   char *env = NULL;
+#endif
 
   if (simd_support != ~0U)
     return;
 
   simd_support |= JSIMD_MMI;
 
+#ifndef NO_GETENV
   /* Force different settings through environment variables */
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;
+#endif
 }
 
 GLOBAL(int)

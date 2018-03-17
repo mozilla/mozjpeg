@@ -160,8 +160,8 @@ EXTERN(void) jpeg_idct_16x16(j_decompress_ptr cinfo,
  * and may differ from one module to the next.
  */
 
-#define ONE         ((JLONG)1)
-#define CONST_SCALE (ONE << CONST_BITS)
+#define ONE          ((JLONG)1)
+#define CONST_SCALE  (ONE << CONST_BITS)
 
 /* Convert a positive real constant to an integer scaled by CONST_SCALE.
  * Caution: some C compilers fail to reduce "FIX(constant)" at compile time,

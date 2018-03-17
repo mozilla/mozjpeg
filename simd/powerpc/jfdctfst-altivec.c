@@ -32,14 +32,14 @@
 #include "jsimd_altivec.h"
 
 
-#define F_0_382 98   /* FIX(0.382683433) */
-#define F_0_541 139  /* FIX(0.541196100) */
-#define F_0_707 181  /* FIX(0.707106781) */
-#define F_1_306 334  /* FIX(1.306562965) */
+#define F_0_382  98   /* FIX(0.382683433) */
+#define F_0_541  139  /* FIX(0.541196100) */
+#define F_0_707  181  /* FIX(0.707106781) */
+#define F_1_306  334  /* FIX(1.306562965) */
 
-#define CONST_BITS 8
-#define PRE_MULTIPLY_SCALE_BITS 2
-#define CONST_SHIFT (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS - 1)
+#define CONST_BITS  8
+#define PRE_MULTIPLY_SCALE_BITS  2
+#define CONST_SHIFT  (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS - 1)
 
 
 #define DO_FDCT() { \

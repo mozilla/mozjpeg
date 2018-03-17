@@ -41,7 +41,7 @@
   printf("ERROR in line %d while %s:\n%s\n", __LINE__, op, err); \
   retval = -1;  goto bailout; \
 }
-#define _throwunix(m) _throw(m, strerror(errno))
+#define _throwunix(m)  _throw(m, strerror(errno))
 
 char tjErrorStr[JMSG_LENGTH_MAX] = "\0", tjErrorMsg[JMSG_LENGTH_MAX] = "\0";
 int tjErrorLine = -1, tjErrorCode = -1;

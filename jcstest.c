@@ -35,10 +35,10 @@
 #include <setjmp.h>
 
 #ifndef JCS_EXTENSIONS
-#define JCS_EXT_RGB 6
+#define JCS_EXT_RGB  6
 #endif
 #if !defined(JCS_EXTENSIONS) || !defined(JCS_ALPHA_EXTENSIONS)
-#define JCS_EXT_RGBA 12
+#define JCS_EXT_RGBA  12
 #endif
 
 static char lasterror[JMSG_LENGTH_MAX] = "No error";

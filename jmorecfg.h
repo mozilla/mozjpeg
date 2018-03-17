@@ -333,37 +333,37 @@ typedef int boolean;
 #define RGB_BLUE        2       /* Offset of Blue */
 #define RGB_PIXELSIZE   3       /* JSAMPLEs per RGB scanline element */
 
-#define JPEG_NUMCS 17
+#define JPEG_NUMCS  17
 
-#define EXT_RGB_RED        0
-#define EXT_RGB_GREEN      1
-#define EXT_RGB_BLUE       2
-#define EXT_RGB_PIXELSIZE  3
+#define EXT_RGB_RED         0
+#define EXT_RGB_GREEN       1
+#define EXT_RGB_BLUE        2
+#define EXT_RGB_PIXELSIZE   3
 
-#define EXT_RGBX_RED       0
-#define EXT_RGBX_GREEN     1
-#define EXT_RGBX_BLUE      2
-#define EXT_RGBX_PIXELSIZE 4
+#define EXT_RGBX_RED        0
+#define EXT_RGBX_GREEN      1
+#define EXT_RGBX_BLUE       2
+#define EXT_RGBX_PIXELSIZE  4
 
-#define EXT_BGR_RED        2
-#define EXT_BGR_GREEN      1
-#define EXT_BGR_BLUE       0
-#define EXT_BGR_PIXELSIZE  3
+#define EXT_BGR_RED         2
+#define EXT_BGR_GREEN       1
+#define EXT_BGR_BLUE        0
+#define EXT_BGR_PIXELSIZE   3
 
-#define EXT_BGRX_RED       2
-#define EXT_BGRX_GREEN     1
-#define EXT_BGRX_BLUE      0
-#define EXT_BGRX_PIXELSIZE 4
+#define EXT_BGRX_RED        2
+#define EXT_BGRX_GREEN      1
+#define EXT_BGRX_BLUE       0
+#define EXT_BGRX_PIXELSIZE  4
 
-#define EXT_XBGR_RED       3
-#define EXT_XBGR_GREEN     2
-#define EXT_XBGR_BLUE      1
-#define EXT_XBGR_PIXELSIZE 4
+#define EXT_XBGR_RED        3
+#define EXT_XBGR_GREEN      2
+#define EXT_XBGR_BLUE       1
+#define EXT_XBGR_PIXELSIZE  4
 
-#define EXT_XRGB_RED       1
-#define EXT_XRGB_GREEN     2
-#define EXT_XRGB_BLUE      3
-#define EXT_XRGB_PIXELSIZE 4
+#define EXT_XRGB_RED        1
+#define EXT_XRGB_GREEN      2
+#define EXT_XRGB_BLUE       3
+#define EXT_XRGB_PIXELSIZE  4
 
 static const int rgb_red[JPEG_NUMCS] = {
   -1, -1, RGB_RED, -1, -1, -1, EXT_RGB_RED, EXT_RGBX_RED,
@@ -404,7 +404,7 @@ static const int rgb_pixelsize[JPEG_NUMCS] = {
 #ifndef WITH_SIMD
 #define MULTIPLIER  int         /* type for fastest integer multiply */
 #else
-#define MULTIPLIER short  /* prefer 16-bit with SIMD for parellelism */
+#define MULTIPLIER  short       /* prefer 16-bit with SIMD for parellelism */
 #endif
 #endif
 

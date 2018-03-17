@@ -33,10 +33,10 @@
 
 /* Common code */
 
-#define SIZEOF_MMWORD 8
-#define BYTE_BIT 8
-#define WORD_BIT 16
-#define SCALEBITS 16
+#define SIZEOF_MMWORD  8
+#define BYTE_BIT  8
+#define WORD_BIT  16
+#define SCALEBITS  16
 
 #define _uint64_set_pi8(a, b, c, d, e, f, g, h) \
   (((uint64_t)(uint8_t)a << 56) | \
@@ -47,11 +47,11 @@
    ((uint64_t)(uint8_t)f << 16) | \
    ((uint64_t)(uint8_t)g << 8)  | \
    ((uint64_t)(uint8_t)h))
-#define _uint64_set_pi16(a, b, c, d) (((uint64_t)(uint16_t)a << 48) | \
-                                      ((uint64_t)(uint16_t)b << 32) | \
-                                      ((uint64_t)(uint16_t)c << 16) | \
-                                      ((uint64_t)(uint16_t)d))
-#define _uint64_set_pi32(a, b) (((uint64_t)(uint32_t)a << 32) | \
-                                ((uint64_t)(uint32_t)b))
+#define _uint64_set_pi16(a, b, c, d)  (((uint64_t)(uint16_t)a << 48) | \
+                                       ((uint64_t)(uint16_t)b << 32) | \
+                                       ((uint64_t)(uint16_t)c << 16) | \
+                                       ((uint64_t)(uint16_t)d))
+#define _uint64_set_pi32(a, b)  (((uint64_t)(uint32_t)a << 32) | \
+                                 ((uint64_t)(uint32_t)b))
 
-#define get_const_value(index) (*(__m64 *)&const_value[index])
+#define get_const_value(index)  (*(__m64 *)&const_value[index])

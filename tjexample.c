@@ -40,8 +40,8 @@
 
 
 #ifdef _WIN32
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
+#define strcasecmp  stricmp
+#define strncasecmp  strnicmp
 #endif
 
 #define _throw(action, message) { \
@@ -49,12 +49,12 @@
   retval = -1;  goto bailout; \
 }
 
-#define _throwtj(action) _throw(action, tjGetErrorStr2(tjInstance))
+#define _throwtj(action)  _throw(action, tjGetErrorStr2(tjInstance))
 
-#define _throwunix(action) _throw(action, strerror(errno))
+#define _throwunix(action)  _throw(action, strerror(errno))
 
-#define DEFAULT_SUBSAMP TJSAMP_444
-#define DEFAULT_QUALITY 95
+#define DEFAULT_SUBSAMP  TJSAMP_444
+#define DEFAULT_QUALITY  95
 
 
 const char *subsampName[TJ_NUMSAMP] = {

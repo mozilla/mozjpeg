@@ -37,7 +37,7 @@
 #include "java/org_libjpegturbo_turbojpeg_TJDecompressor.h"
 #include "java/org_libjpegturbo_turbojpeg_TJ.h"
 
-#define PAD(v, p) ((v + (p) - 1) & (~((p) - 1)))
+#define PAD(v, p)  ((v + (p) - 1) & (~((p) - 1)))
 
 #define bailif0(f) { \
   if (!(f) || (*env)->ExceptionCheck(env)) { \
@@ -70,7 +70,7 @@
   goto bailout; \
 }
 
-#define _throwarg(msg) _throw(msg, "java/lang/IllegalArgumentException")
+#define _throwarg(msg)  _throw(msg, "java/lang/IllegalArgumentException")
 
 #define _throwmem() \
   _throw("Memory allocation failure", "java/lang/OutOfMemoryError");
@@ -84,7 +84,7 @@
   handle = (tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);
 
 #ifdef _WIN32
-#define setenv(envvar, value, dummy) _putenv_s(envvar, value)
+#define setenv(envvar, value, dummy)  _putenv_s(envvar, value)
 #endif
 
 #define prop2env(property, envvar) { \

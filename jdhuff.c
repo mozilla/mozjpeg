@@ -491,7 +491,7 @@ jpeg_huff_decode(bitread_working_state *state,
 #define AVOID_TABLES
 #ifdef AVOID_TABLES
 
-#define NEG_1 ((unsigned int)-1)
+#define NEG_1  ((unsigned int)-1)
 #define HUFF_EXTEND(x, s) \
   ((x) + ((((x) - (1 << ((s) - 1))) >> 31) & (((NEG_1) << (s)) + 1)))
 
@@ -753,7 +753,7 @@ decode_mcu_fast(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
  * this module, since we'll just re-assign them on the next call.)
  */
 
-#define BUFSIZE (DCTSIZE2 * 8)
+#define BUFSIZE  (DCTSIZE2 * 8)
 
 METHODDEF(boolean)
 decode_mcu(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)

@@ -16,11 +16,11 @@
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
-#define close _close
-#define fstat _fstat
-#define lseek _lseek
-#define read _read
-#define stat _stat
+#define close  _close
+#define fstat  _fstat
+#define lseek  _lseek
+#define read  _read
+#define stat  _stat
 #else
 #include <unistd.h>
 #endif
@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LENGTH 16
+#define LENGTH  16
 
 #include "./md5.h"
 

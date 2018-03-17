@@ -98,13 +98,13 @@ typedef my_color_deconverter *my_cconvert_ptr;
 #undef RGB_BLUE
 #undef RGB_PIXELSIZE
 
-#define RGB_RED EXT_RGB_RED
-#define RGB_GREEN EXT_RGB_GREEN
-#define RGB_BLUE EXT_RGB_BLUE
-#define RGB_PIXELSIZE EXT_RGB_PIXELSIZE
-#define ycc_rgb_convert_internal ycc_extrgb_convert_internal
-#define gray_rgb_convert_internal gray_extrgb_convert_internal
-#define rgb_rgb_convert_internal rgb_extrgb_convert_internal
+#define RGB_RED  EXT_RGB_RED
+#define RGB_GREEN  EXT_RGB_GREEN
+#define RGB_BLUE  EXT_RGB_BLUE
+#define RGB_PIXELSIZE  EXT_RGB_PIXELSIZE
+#define ycc_rgb_convert_internal  ycc_extrgb_convert_internal
+#define gray_rgb_convert_internal  gray_extrgb_convert_internal
+#define rgb_rgb_convert_internal  rgb_extrgb_convert_internal
 #include "jdcolext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -114,48 +114,14 @@ typedef my_color_deconverter *my_cconvert_ptr;
 #undef gray_rgb_convert_internal
 #undef rgb_rgb_convert_internal
 
-#define RGB_RED EXT_RGBX_RED
-#define RGB_GREEN EXT_RGBX_GREEN
-#define RGB_BLUE EXT_RGBX_BLUE
-#define RGB_ALPHA 3
-#define RGB_PIXELSIZE EXT_RGBX_PIXELSIZE
-#define ycc_rgb_convert_internal ycc_extrgbx_convert_internal
-#define gray_rgb_convert_internal gray_extrgbx_convert_internal
-#define rgb_rgb_convert_internal rgb_extrgbx_convert_internal
-#include "jdcolext.c"
-#undef RGB_RED
-#undef RGB_GREEN
-#undef RGB_BLUE
-#undef RGB_ALPHA
-#undef RGB_PIXELSIZE
-#undef ycc_rgb_convert_internal
-#undef gray_rgb_convert_internal
-#undef rgb_rgb_convert_internal
-
-#define RGB_RED EXT_BGR_RED
-#define RGB_GREEN EXT_BGR_GREEN
-#define RGB_BLUE EXT_BGR_BLUE
-#define RGB_PIXELSIZE EXT_BGR_PIXELSIZE
-#define ycc_rgb_convert_internal ycc_extbgr_convert_internal
-#define gray_rgb_convert_internal gray_extbgr_convert_internal
-#define rgb_rgb_convert_internal rgb_extbgr_convert_internal
-#include "jdcolext.c"
-#undef RGB_RED
-#undef RGB_GREEN
-#undef RGB_BLUE
-#undef RGB_PIXELSIZE
-#undef ycc_rgb_convert_internal
-#undef gray_rgb_convert_internal
-#undef rgb_rgb_convert_internal
-
-#define RGB_RED EXT_BGRX_RED
-#define RGB_GREEN EXT_BGRX_GREEN
-#define RGB_BLUE EXT_BGRX_BLUE
-#define RGB_ALPHA 3
-#define RGB_PIXELSIZE EXT_BGRX_PIXELSIZE
-#define ycc_rgb_convert_internal ycc_extbgrx_convert_internal
-#define gray_rgb_convert_internal gray_extbgrx_convert_internal
-#define rgb_rgb_convert_internal rgb_extbgrx_convert_internal
+#define RGB_RED  EXT_RGBX_RED
+#define RGB_GREEN  EXT_RGBX_GREEN
+#define RGB_BLUE  EXT_RGBX_BLUE
+#define RGB_ALPHA  3
+#define RGB_PIXELSIZE  EXT_RGBX_PIXELSIZE
+#define ycc_rgb_convert_internal  ycc_extrgbx_convert_internal
+#define gray_rgb_convert_internal  gray_extrgbx_convert_internal
+#define rgb_rgb_convert_internal  rgb_extrgbx_convert_internal
 #include "jdcolext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -166,14 +132,30 @@ typedef my_color_deconverter *my_cconvert_ptr;
 #undef gray_rgb_convert_internal
 #undef rgb_rgb_convert_internal
 
-#define RGB_RED EXT_XBGR_RED
-#define RGB_GREEN EXT_XBGR_GREEN
-#define RGB_BLUE EXT_XBGR_BLUE
-#define RGB_ALPHA 0
-#define RGB_PIXELSIZE EXT_XBGR_PIXELSIZE
-#define ycc_rgb_convert_internal ycc_extxbgr_convert_internal
-#define gray_rgb_convert_internal gray_extxbgr_convert_internal
-#define rgb_rgb_convert_internal rgb_extxbgr_convert_internal
+#define RGB_RED  EXT_BGR_RED
+#define RGB_GREEN  EXT_BGR_GREEN
+#define RGB_BLUE  EXT_BGR_BLUE
+#define RGB_PIXELSIZE  EXT_BGR_PIXELSIZE
+#define ycc_rgb_convert_internal  ycc_extbgr_convert_internal
+#define gray_rgb_convert_internal  gray_extbgr_convert_internal
+#define rgb_rgb_convert_internal  rgb_extbgr_convert_internal
+#include "jdcolext.c"
+#undef RGB_RED
+#undef RGB_GREEN
+#undef RGB_BLUE
+#undef RGB_PIXELSIZE
+#undef ycc_rgb_convert_internal
+#undef gray_rgb_convert_internal
+#undef rgb_rgb_convert_internal
+
+#define RGB_RED  EXT_BGRX_RED
+#define RGB_GREEN  EXT_BGRX_GREEN
+#define RGB_BLUE  EXT_BGRX_BLUE
+#define RGB_ALPHA  3
+#define RGB_PIXELSIZE  EXT_BGRX_PIXELSIZE
+#define ycc_rgb_convert_internal  ycc_extbgrx_convert_internal
+#define gray_rgb_convert_internal  gray_extbgrx_convert_internal
+#define rgb_rgb_convert_internal  rgb_extbgrx_convert_internal
 #include "jdcolext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -184,14 +166,32 @@ typedef my_color_deconverter *my_cconvert_ptr;
 #undef gray_rgb_convert_internal
 #undef rgb_rgb_convert_internal
 
-#define RGB_RED EXT_XRGB_RED
-#define RGB_GREEN EXT_XRGB_GREEN
-#define RGB_BLUE EXT_XRGB_BLUE
-#define RGB_ALPHA 0
-#define RGB_PIXELSIZE EXT_XRGB_PIXELSIZE
-#define ycc_rgb_convert_internal ycc_extxrgb_convert_internal
-#define gray_rgb_convert_internal gray_extxrgb_convert_internal
-#define rgb_rgb_convert_internal rgb_extxrgb_convert_internal
+#define RGB_RED  EXT_XBGR_RED
+#define RGB_GREEN  EXT_XBGR_GREEN
+#define RGB_BLUE  EXT_XBGR_BLUE
+#define RGB_ALPHA  0
+#define RGB_PIXELSIZE  EXT_XBGR_PIXELSIZE
+#define ycc_rgb_convert_internal  ycc_extxbgr_convert_internal
+#define gray_rgb_convert_internal  gray_extxbgr_convert_internal
+#define rgb_rgb_convert_internal  rgb_extxbgr_convert_internal
+#include "jdcolext.c"
+#undef RGB_RED
+#undef RGB_GREEN
+#undef RGB_BLUE
+#undef RGB_ALPHA
+#undef RGB_PIXELSIZE
+#undef ycc_rgb_convert_internal
+#undef gray_rgb_convert_internal
+#undef rgb_rgb_convert_internal
+
+#define RGB_RED  EXT_XRGB_RED
+#define RGB_GREEN  EXT_XRGB_GREEN
+#define RGB_BLUE  EXT_XRGB_BLUE
+#define RGB_ALPHA  0
+#define RGB_PIXELSIZE  EXT_XRGB_PIXELSIZE
+#define ycc_rgb_convert_internal  ycc_extxrgb_convert_internal
+#define gray_rgb_convert_internal  gray_extxrgb_convert_internal
+#define rgb_rgb_convert_internal  rgb_extxrgb_convert_internal
 #include "jdcolext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -616,14 +616,14 @@ static INLINE boolean is_big_endian(void)
 
 /* Include inline routines for RGB565 conversion */
 
-#define PACK_SHORT_565 PACK_SHORT_565_LE
-#define PACK_TWO_PIXELS PACK_TWO_PIXELS_LE
-#define ycc_rgb565_convert_internal ycc_rgb565_convert_le
-#define ycc_rgb565D_convert_internal ycc_rgb565D_convert_le
-#define rgb_rgb565_convert_internal rgb_rgb565_convert_le
-#define rgb_rgb565D_convert_internal rgb_rgb565D_convert_le
-#define gray_rgb565_convert_internal gray_rgb565_convert_le
-#define gray_rgb565D_convert_internal gray_rgb565D_convert_le
+#define PACK_SHORT_565  PACK_SHORT_565_LE
+#define PACK_TWO_PIXELS  PACK_TWO_PIXELS_LE
+#define ycc_rgb565_convert_internal  ycc_rgb565_convert_le
+#define ycc_rgb565D_convert_internal  ycc_rgb565D_convert_le
+#define rgb_rgb565_convert_internal  rgb_rgb565_convert_le
+#define rgb_rgb565D_convert_internal  rgb_rgb565D_convert_le
+#define gray_rgb565_convert_internal  gray_rgb565_convert_le
+#define gray_rgb565D_convert_internal  gray_rgb565D_convert_le
 #include "jdcol565.c"
 #undef PACK_SHORT_565
 #undef PACK_TWO_PIXELS
@@ -634,14 +634,14 @@ static INLINE boolean is_big_endian(void)
 #undef gray_rgb565_convert_internal
 #undef gray_rgb565D_convert_internal
 
-#define PACK_SHORT_565 PACK_SHORT_565_BE
-#define PACK_TWO_PIXELS PACK_TWO_PIXELS_BE
-#define ycc_rgb565_convert_internal ycc_rgb565_convert_be
-#define ycc_rgb565D_convert_internal ycc_rgb565D_convert_be
-#define rgb_rgb565_convert_internal rgb_rgb565_convert_be
-#define rgb_rgb565D_convert_internal rgb_rgb565D_convert_be
-#define gray_rgb565_convert_internal gray_rgb565_convert_be
-#define gray_rgb565D_convert_internal gray_rgb565D_convert_be
+#define PACK_SHORT_565  PACK_SHORT_565_BE
+#define PACK_TWO_PIXELS  PACK_TWO_PIXELS_BE
+#define ycc_rgb565_convert_internal  ycc_rgb565_convert_be
+#define ycc_rgb565D_convert_internal  ycc_rgb565D_convert_be
+#define rgb_rgb565_convert_internal  rgb_rgb565_convert_be
+#define rgb_rgb565D_convert_internal  rgb_rgb565D_convert_be
+#define gray_rgb565_convert_internal  gray_rgb565_convert_be
+#define gray_rgb565D_convert_internal  gray_rgb565D_convert_be
 #include "jdcol565.c"
 #undef PACK_SHORT_565
 #undef PACK_TWO_PIXELS

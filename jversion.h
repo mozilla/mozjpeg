@@ -35,16 +35,18 @@
  *   their code
  */
 
-#define JCOPYRIGHT      "Copyright (C) 2009-2017 D. R. Commander\n" \
-                        "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
-                        "Copyright (C) 2015-2016 Matthieu Darbois\n" \
-                        "Copyright (C) 2015 Intel Corporation\n" \
-                        "Copyright (C) 2015 Google, Inc.\n" \
-                        "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
-                        "Copyright (C) 2013 Linaro Limited\n" \
-                        "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
-                        "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
-                        "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
-                        "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding"
+#define JCOPYRIGHT \
+  "Copyright (C) 2009-2017 D. R. Commander\n" \
+  "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
+  "Copyright (C) 2015-2016 Matthieu Darbois\n" \
+  "Copyright (C) 2015 Intel Corporation\n" \
+  "Copyright (C) 2015 Google, Inc.\n" \
+  "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
+  "Copyright (C) 2013 Linaro Limited\n" \
+  "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
+  "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
+  "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
+  "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding"
 
-#define JCOPYRIGHT_SHORT "Copyright (C) 1991-2017 The libjpeg-turbo Project and many others"
+#define JCOPYRIGHT_SHORT \
+  "Copyright (C) 1991-2017 The libjpeg-turbo Project and many others"

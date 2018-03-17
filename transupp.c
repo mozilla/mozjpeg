@@ -28,11 +28,11 @@
 
 
 #if JPEG_LIB_VERSION >= 70
-#define dstinfo_min_DCT_h_scaled_size dstinfo->min_DCT_h_scaled_size
-#define dstinfo_min_DCT_v_scaled_size dstinfo->min_DCT_v_scaled_size
+#define dstinfo_min_DCT_h_scaled_size  dstinfo->min_DCT_h_scaled_size
+#define dstinfo_min_DCT_v_scaled_size  dstinfo->min_DCT_v_scaled_size
 #else
-#define dstinfo_min_DCT_h_scaled_size DCTSIZE
-#define dstinfo_min_DCT_v_scaled_size DCTSIZE
+#define dstinfo_min_DCT_h_scaled_size  DCTSIZE
+#define dstinfo_min_DCT_v_scaled_size  DCTSIZE
 #endif
 
 

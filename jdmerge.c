@@ -88,12 +88,12 @@ typedef my_upsampler *my_upsample_ptr;
 #undef RGB_BLUE
 #undef RGB_PIXELSIZE
 
-#define RGB_RED EXT_RGB_RED
-#define RGB_GREEN EXT_RGB_GREEN
-#define RGB_BLUE EXT_RGB_BLUE
-#define RGB_PIXELSIZE EXT_RGB_PIXELSIZE
-#define h2v1_merged_upsample_internal extrgb_h2v1_merged_upsample_internal
-#define h2v2_merged_upsample_internal extrgb_h2v2_merged_upsample_internal
+#define RGB_RED  EXT_RGB_RED
+#define RGB_GREEN  EXT_RGB_GREEN
+#define RGB_BLUE  EXT_RGB_BLUE
+#define RGB_PIXELSIZE  EXT_RGB_PIXELSIZE
+#define h2v1_merged_upsample_internal  extrgb_h2v1_merged_upsample_internal
+#define h2v2_merged_upsample_internal  extrgb_h2v2_merged_upsample_internal
 #include "jdmrgext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -102,43 +102,13 @@ typedef my_upsampler *my_upsample_ptr;
 #undef h2v1_merged_upsample_internal
 #undef h2v2_merged_upsample_internal
 
-#define RGB_RED EXT_RGBX_RED
-#define RGB_GREEN EXT_RGBX_GREEN
-#define RGB_BLUE EXT_RGBX_BLUE
-#define RGB_ALPHA 3
-#define RGB_PIXELSIZE EXT_RGBX_PIXELSIZE
-#define h2v1_merged_upsample_internal extrgbx_h2v1_merged_upsample_internal
-#define h2v2_merged_upsample_internal extrgbx_h2v2_merged_upsample_internal
-#include "jdmrgext.c"
-#undef RGB_RED
-#undef RGB_GREEN
-#undef RGB_BLUE
-#undef RGB_ALPHA
-#undef RGB_PIXELSIZE
-#undef h2v1_merged_upsample_internal
-#undef h2v2_merged_upsample_internal
-
-#define RGB_RED EXT_BGR_RED
-#define RGB_GREEN EXT_BGR_GREEN
-#define RGB_BLUE EXT_BGR_BLUE
-#define RGB_PIXELSIZE EXT_BGR_PIXELSIZE
-#define h2v1_merged_upsample_internal extbgr_h2v1_merged_upsample_internal
-#define h2v2_merged_upsample_internal extbgr_h2v2_merged_upsample_internal
-#include "jdmrgext.c"
-#undef RGB_RED
-#undef RGB_GREEN
-#undef RGB_BLUE
-#undef RGB_PIXELSIZE
-#undef h2v1_merged_upsample_internal
-#undef h2v2_merged_upsample_internal
-
-#define RGB_RED EXT_BGRX_RED
-#define RGB_GREEN EXT_BGRX_GREEN
-#define RGB_BLUE EXT_BGRX_BLUE
-#define RGB_ALPHA 3
-#define RGB_PIXELSIZE EXT_BGRX_PIXELSIZE
-#define h2v1_merged_upsample_internal extbgrx_h2v1_merged_upsample_internal
-#define h2v2_merged_upsample_internal extbgrx_h2v2_merged_upsample_internal
+#define RGB_RED  EXT_RGBX_RED
+#define RGB_GREEN  EXT_RGBX_GREEN
+#define RGB_BLUE  EXT_RGBX_BLUE
+#define RGB_ALPHA  3
+#define RGB_PIXELSIZE  EXT_RGBX_PIXELSIZE
+#define h2v1_merged_upsample_internal  extrgbx_h2v1_merged_upsample_internal
+#define h2v2_merged_upsample_internal  extrgbx_h2v2_merged_upsample_internal
 #include "jdmrgext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -148,13 +118,27 @@ typedef my_upsampler *my_upsample_ptr;
 #undef h2v1_merged_upsample_internal
 #undef h2v2_merged_upsample_internal
 
-#define RGB_RED EXT_XBGR_RED
-#define RGB_GREEN EXT_XBGR_GREEN
-#define RGB_BLUE EXT_XBGR_BLUE
-#define RGB_ALPHA 0
-#define RGB_PIXELSIZE EXT_XBGR_PIXELSIZE
-#define h2v1_merged_upsample_internal extxbgr_h2v1_merged_upsample_internal
-#define h2v2_merged_upsample_internal extxbgr_h2v2_merged_upsample_internal
+#define RGB_RED  EXT_BGR_RED
+#define RGB_GREEN  EXT_BGR_GREEN
+#define RGB_BLUE  EXT_BGR_BLUE
+#define RGB_PIXELSIZE  EXT_BGR_PIXELSIZE
+#define h2v1_merged_upsample_internal  extbgr_h2v1_merged_upsample_internal
+#define h2v2_merged_upsample_internal  extbgr_h2v2_merged_upsample_internal
+#include "jdmrgext.c"
+#undef RGB_RED
+#undef RGB_GREEN
+#undef RGB_BLUE
+#undef RGB_PIXELSIZE
+#undef h2v1_merged_upsample_internal
+#undef h2v2_merged_upsample_internal
+
+#define RGB_RED  EXT_BGRX_RED
+#define RGB_GREEN  EXT_BGRX_GREEN
+#define RGB_BLUE  EXT_BGRX_BLUE
+#define RGB_ALPHA  3
+#define RGB_PIXELSIZE  EXT_BGRX_PIXELSIZE
+#define h2v1_merged_upsample_internal  extbgrx_h2v1_merged_upsample_internal
+#define h2v2_merged_upsample_internal  extbgrx_h2v2_merged_upsample_internal
 #include "jdmrgext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -164,13 +148,29 @@ typedef my_upsampler *my_upsample_ptr;
 #undef h2v1_merged_upsample_internal
 #undef h2v2_merged_upsample_internal
 
-#define RGB_RED EXT_XRGB_RED
-#define RGB_GREEN EXT_XRGB_GREEN
-#define RGB_BLUE EXT_XRGB_BLUE
-#define RGB_ALPHA 0
-#define RGB_PIXELSIZE EXT_XRGB_PIXELSIZE
-#define h2v1_merged_upsample_internal extxrgb_h2v1_merged_upsample_internal
-#define h2v2_merged_upsample_internal extxrgb_h2v2_merged_upsample_internal
+#define RGB_RED  EXT_XBGR_RED
+#define RGB_GREEN  EXT_XBGR_GREEN
+#define RGB_BLUE  EXT_XBGR_BLUE
+#define RGB_ALPHA  0
+#define RGB_PIXELSIZE  EXT_XBGR_PIXELSIZE
+#define h2v1_merged_upsample_internal  extxbgr_h2v1_merged_upsample_internal
+#define h2v2_merged_upsample_internal  extxbgr_h2v2_merged_upsample_internal
+#include "jdmrgext.c"
+#undef RGB_RED
+#undef RGB_GREEN
+#undef RGB_BLUE
+#undef RGB_ALPHA
+#undef RGB_PIXELSIZE
+#undef h2v1_merged_upsample_internal
+#undef h2v2_merged_upsample_internal
+
+#define RGB_RED  EXT_XRGB_RED
+#define RGB_GREEN  EXT_XRGB_GREEN
+#define RGB_BLUE  EXT_XRGB_BLUE
+#define RGB_ALPHA  0
+#define RGB_PIXELSIZE  EXT_XRGB_PIXELSIZE
+#define h2v1_merged_upsample_internal  extxrgb_h2v1_merged_upsample_internal
+#define h2v2_merged_upsample_internal  extxrgb_h2v2_merged_upsample_internal
 #include "jdmrgext.c"
 #undef RGB_RED
 #undef RGB_GREEN
@@ -463,13 +463,13 @@ static const JLONG dither_matrix[4] = {
 
 /* Include inline routines for RGB565 conversion */
 
-#define PACK_SHORT_565 PACK_SHORT_565_LE
-#define PACK_TWO_PIXELS PACK_TWO_PIXELS_LE
-#define WRITE_TWO_PIXELS WRITE_TWO_PIXELS_LE
-#define h2v1_merged_upsample_565_internal h2v1_merged_upsample_565_le
-#define h2v1_merged_upsample_565D_internal h2v1_merged_upsample_565D_le
-#define h2v2_merged_upsample_565_internal h2v2_merged_upsample_565_le
-#define h2v2_merged_upsample_565D_internal h2v2_merged_upsample_565D_le
+#define PACK_SHORT_565  PACK_SHORT_565_LE
+#define PACK_TWO_PIXELS  PACK_TWO_PIXELS_LE
+#define WRITE_TWO_PIXELS  WRITE_TWO_PIXELS_LE
+#define h2v1_merged_upsample_565_internal  h2v1_merged_upsample_565_le
+#define h2v1_merged_upsample_565D_internal  h2v1_merged_upsample_565D_le
+#define h2v2_merged_upsample_565_internal  h2v2_merged_upsample_565_le
+#define h2v2_merged_upsample_565D_internal  h2v2_merged_upsample_565D_le
 #include "jdmrg565.c"
 #undef PACK_SHORT_565
 #undef PACK_TWO_PIXELS
@@ -479,13 +479,13 @@ static const JLONG dither_matrix[4] = {
 #undef h2v2_merged_upsample_565_internal
 #undef h2v2_merged_upsample_565D_internal
 
-#define PACK_SHORT_565 PACK_SHORT_565_BE
-#define PACK_TWO_PIXELS PACK_TWO_PIXELS_BE
-#define WRITE_TWO_PIXELS WRITE_TWO_PIXELS_BE
-#define h2v1_merged_upsample_565_internal h2v1_merged_upsample_565_be
-#define h2v1_merged_upsample_565D_internal h2v1_merged_upsample_565D_be
-#define h2v2_merged_upsample_565_internal h2v2_merged_upsample_565_be
-#define h2v2_merged_upsample_565D_internal h2v2_merged_upsample_565D_be
+#define PACK_SHORT_565  PACK_SHORT_565_BE
+#define PACK_TWO_PIXELS  PACK_TWO_PIXELS_BE
+#define WRITE_TWO_PIXELS  WRITE_TWO_PIXELS_BE
+#define h2v1_merged_upsample_565_internal  h2v1_merged_upsample_565_be
+#define h2v1_merged_upsample_565D_internal  h2v1_merged_upsample_565D_be
+#define h2v2_merged_upsample_565_internal  h2v2_merged_upsample_565_be
+#define h2v2_merged_upsample_565D_internal  h2v2_merged_upsample_565D_be
 #include "jdmrg565.c"
 #undef PACK_SHORT_565
 #undef PACK_TWO_PIXELS

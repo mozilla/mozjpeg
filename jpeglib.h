@@ -211,8 +211,8 @@ struct jpeg_marker_struct {
 
 /* Known color spaces. */
 
-#define JCS_EXTENSIONS 1
-#define JCS_ALPHA_EXTENSIONS 1
+#define JCS_EXTENSIONS  1
+#define JCS_ALPHA_EXTENSIONS  1
 
 typedef enum {
   JCS_UNKNOWN,            /* error/unspecified */
@@ -822,9 +822,9 @@ struct jpeg_source_mgr {
  * successful.
  */
 
-#define JPOOL_PERMANENT 0       /* lasts until master record is destroyed */
-#define JPOOL_IMAGE     1       /* lasts until done with image/datastream */
-#define JPOOL_NUMPOOLS  2
+#define JPOOL_PERMANENT  0      /* lasts until master record is destroyed */
+#define JPOOL_IMAGE      1      /* lasts until done with image/datastream */
+#define JPOOL_NUMPOOLS   2
 
 typedef struct jvirt_sarray_control *jvirt_sarray_ptr;
 typedef struct jvirt_barray_control *jvirt_barray_ptr;
@@ -984,9 +984,9 @@ EXTERN(void) jpeg_write_icc_profile(j_compress_ptr cinfo,
 /* Decompression startup: read start of JPEG datastream to see what's there */
 EXTERN(int) jpeg_read_header(j_decompress_ptr cinfo, boolean require_image);
 /* Return value is one of: */
-#define JPEG_SUSPENDED          0 /* Suspended due to lack of input data */
-#define JPEG_HEADER_OK          1 /* Found valid image datastream */
-#define JPEG_HEADER_TABLES_ONLY 2 /* Found valid table-specs-only datastream */
+#define JPEG_SUSPENDED           0 /* Suspended due to lack of input data */
+#define JPEG_HEADER_OK           1 /* Found valid image datastream */
+#define JPEG_HEADER_TABLES_ONLY  2 /* Found valid table-specs-only datastream */
 /* If you pass require_image = TRUE (normal case), you need not check for
  * a TABLES_ONLY return code; an abbreviated file will cause an error exit.
  * JPEG_SUSPENDED is only possible if you use a data source module that can

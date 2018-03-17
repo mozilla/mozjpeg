@@ -25,23 +25,23 @@
 #include "jsimd_altivec.h"
 
 
-#define F_0_298 2446   /* FIX(0.298631336) */
-#define F_0_390 3196   /* FIX(0.390180644) */
-#define F_0_541 4433   /* FIX(0.541196100) */
-#define F_0_765 6270   /* FIX(0.765366865) */
-#define F_0_899 7373   /* FIX(0.899976223) */
-#define F_1_175 9633   /* FIX(1.175875602) */
-#define F_1_501 12299  /* FIX(1.501321110) */
-#define F_1_847 15137  /* FIX(1.847759065) */
-#define F_1_961 16069  /* FIX(1.961570560) */
-#define F_2_053 16819  /* FIX(2.053119869) */
-#define F_2_562 20995  /* FIX(2.562915447) */
-#define F_3_072 25172  /* FIX(3.072711026) */
+#define F_0_298  2446   /* FIX(0.298631336) */
+#define F_0_390  3196   /* FIX(0.390180644) */
+#define F_0_541  4433   /* FIX(0.541196100) */
+#define F_0_765  6270   /* FIX(0.765366865) */
+#define F_0_899  7373   /* FIX(0.899976223) */
+#define F_1_175  9633   /* FIX(1.175875602) */
+#define F_1_501  12299  /* FIX(1.501321110) */
+#define F_1_847  15137  /* FIX(1.847759065) */
+#define F_1_961  16069  /* FIX(1.961570560) */
+#define F_2_053  16819  /* FIX(2.053119869) */
+#define F_2_562  20995  /* FIX(2.562915447) */
+#define F_3_072  25172  /* FIX(3.072711026) */
 
-#define CONST_BITS 13
-#define PASS1_BITS 2
-#define DESCALE_P1 (CONST_BITS - PASS1_BITS)
-#define DESCALE_P2 (CONST_BITS + PASS1_BITS + 3)
+#define CONST_BITS  13
+#define PASS1_BITS  2
+#define DESCALE_P1  (CONST_BITS - PASS1_BITS)
+#define DESCALE_P2  (CONST_BITS + PASS1_BITS + 3)
 
 
 #define DO_IDCT(in, PASS) { \

@@ -21,7 +21,7 @@
 #include "jpeglib.h"
 
 
-#define NEG_1 ((unsigned int)-1)
+#define NEG_1  ((unsigned int)-1)
 
 
 /* Expanded entropy decoder object for arithmetic decoding. */
@@ -63,8 +63,8 @@ typedef arith_entropy_decoder *arith_entropy_ptr;
  * in the lower bits (mask 0x7F).
  */
 
-#define DC_STAT_BINS 64
-#define AC_STAT_BINS 256
+#define DC_STAT_BINS  64
+#define AC_STAT_BINS  256
 
 
 LOCAL(int)

@@ -49,8 +49,8 @@ extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **, unsigned long *,
 extern void jpeg_mem_src_tj(j_decompress_ptr, const unsigned char *,
                             unsigned long);
 
-#define PAD(v, p) ((v + (p) - 1) & (~((p) - 1)))
-#define isPow2(x) (((x) & (x - 1)) == 0)
+#define PAD(v, p)  ((v + (p) - 1) & (~((p) - 1)))
+#define isPow2(x)  (((x) & (x - 1)) == 0)
 
 
 /* Error handling (based on example in example.txt) */
@@ -112,7 +112,7 @@ static const JXFORM_CODE xformtypes[TJ_NUMXOP] = {
   JXFORM_TRANSVERSE, JXFORM_ROT_90, JXFORM_ROT_180, JXFORM_ROT_270
 };
 
-#define NUMSF 16
+#define NUMSF  16
 static const tjscalingfactor sf[NUMSF] = {
   { 2, 1 },
   { 15, 8 },

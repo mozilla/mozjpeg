@@ -283,7 +283,7 @@ start_pass_fdctmgr(j_compress_ptr cinfo)
          *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
          * We apply a further scale factor of 8.
          */
-#define CONST_BITS 14
+#define CONST_BITS  14
         static const INT16 aanscales[DCTSIZE2] = {
           /* precomputed values scaled up by 14 bits */
           16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,

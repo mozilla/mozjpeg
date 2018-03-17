@@ -16,16 +16,16 @@
 
 /* Bitmask for supported acceleration methods */
 
-#define JSIMD_NONE    0x00
-#define JSIMD_MMX     0x01
-#define JSIMD_3DNOW   0x02
-#define JSIMD_SSE     0x04
-#define JSIMD_SSE2    0x08
-#define JSIMD_NEON    0x10
-#define JSIMD_DSPR2   0x20
-#define JSIMD_ALTIVEC 0x40
-#define JSIMD_AVX2    0x80
-#define JSIMD_MMI     0x100
+#define JSIMD_NONE     0x00
+#define JSIMD_MMX      0x01
+#define JSIMD_3DNOW    0x02
+#define JSIMD_SSE      0x04
+#define JSIMD_SSE2     0x08
+#define JSIMD_NEON     0x10
+#define JSIMD_DSPR2    0x20
+#define JSIMD_ALTIVEC  0x40
+#define JSIMD_AVX2     0x80
+#define JSIMD_MMI      0x100
 
 /* SIMD Ext: retrieve SIMD/CPU information */
 EXTERN(unsigned int) jpeg_simd_cpu_support(void);

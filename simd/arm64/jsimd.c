@@ -27,9 +27,9 @@
 #include <string.h>
 #include <ctype.h>
 
-#define JSIMD_FASTLD3 1
-#define JSIMD_FASTST3 2
-#define JSIMD_FASTTBL 4
+#define JSIMD_FASTLD3  1
+#define JSIMD_FASTST3  2
+#define JSIMD_FASTTBL  4
 
 static unsigned int simd_support = ~0;
 static unsigned int simd_huffman = 1;
@@ -38,7 +38,7 @@ static unsigned int simd_features = JSIMD_FASTLD3 | JSIMD_FASTST3 |
 
 #if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
 
-#define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT (1024 * 1024)
+#define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT  (1024 * 1024)
 
 LOCAL(int)
 check_cpuinfo(char *buffer, const char *field, char *value)

@@ -63,8 +63,8 @@ typedef arith_entropy_encoder *arith_entropy_ptr;
  * in the lower bits (mask 0x7F).
  */
 
-#define DC_STAT_BINS 64
-#define AC_STAT_BINS 256
+#define DC_STAT_BINS  64
+#define AC_STAT_BINS  256
 
 /* NOTE: Uncomment the following #define if you want to use the
  * given formula for calculating the AC conditioning parameter Kx

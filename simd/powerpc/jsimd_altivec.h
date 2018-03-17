@@ -32,10 +32,10 @@
 
 /* Common code */
 
-#define __4X(a) a, a, a, a
-#define __4X2(a, b) a, b, a, b, a, b, a, b
-#define __8X(a) __4X(a), __4X(a)
-#define __16X(a) __8X(a), __8X(a)
+#define __4X(a)      a, a, a, a
+#define __4X2(a, b)  a, b, a, b, a, b, a, b
+#define __8X(a)      __4X(a), __4X(a)
+#define __16X(a)     __8X(a), __8X(a)
 
 #define TRANSPOSE(row, col) { \
   __vector short row04l, row04h, row15l, row15h, \
@@ -75,7 +75,7 @@
 }
 
 #ifndef min
-#define min(a, b) ((a) < (b) ? (a) : (b))
+#define min(a, b)  ((a) < (b) ? (a) : (b))
 #endif
 
 
@@ -83,16 +83,16 @@
 
 #if __BIG_ENDIAN__
 
-#define VEC_LD(a, b) vec_ld(a, b)
-#define VEC_ST(a, b, c) vec_st(a, b, c)
-#define VEC_UNPACKHU(a) vec_mergeh(pb_zero, a)
-#define VEC_UNPACKLU(a) vec_mergel(pb_zero, a)
+#define VEC_LD(a, b)     vec_ld(a, b)
+#define VEC_ST(a, b, c)  vec_st(a, b, c)
+#define VEC_UNPACKHU(a)  vec_mergeh(pb_zero, a)
+#define VEC_UNPACKLU(a)  vec_mergel(pb_zero, a)
 
 #else
 
-#define VEC_LD(a, b) vec_vsx_ld(a, b)
-#define VEC_ST(a, b, c) vec_vsx_st(a, b, c)
-#define VEC_UNPACKHU(a) vec_mergeh(a, pb_zero)
-#define VEC_UNPACKLU(a) vec_mergel(a, pb_zero)
+#define VEC_LD(a, b)     vec_vsx_ld(a, b)
+#define VEC_ST(a, b, c)  vec_vsx_st(a, b, c)
+#define VEC_UNPACKHU(a)  vec_mergeh(a, pb_zero)
+#define VEC_UNPACKLU(a)  vec_mergel(a, pb_zero)
 
 #endif

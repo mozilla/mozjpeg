@@ -45,12 +45,12 @@
 #endif
 
 #ifdef USE_CLZ_INTRINSIC
-#define JPEG_NBITS_NONZERO(x) (32 - __builtin_clz(x))
-#define JPEG_NBITS(x) (x ? JPEG_NBITS_NONZERO(x) : 0)
+#define JPEG_NBITS_NONZERO(x)  (32 - __builtin_clz(x))
+#define JPEG_NBITS(x)          (x ? JPEG_NBITS_NONZERO(x) : 0)
 #else
 #include "jpeg_nbits_table.h"
-#define JPEG_NBITS(x) (jpeg_nbits_table[x])
-#define JPEG_NBITS_NONZERO(x) JPEG_NBITS(x)
+#define JPEG_NBITS(x)          (jpeg_nbits_table[x])
+#define JPEG_NBITS_NONZERO(x)  JPEG_NBITS(x)
 #endif
 
 

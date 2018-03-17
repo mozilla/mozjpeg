@@ -33,18 +33,18 @@
 
 #ifdef __amigaos4__
 #include <machine/endian.h>
-#define le32toh(x) (((x & 0xff) << 24) | \
-                    ((x & 0xff00) << 8) | \
-                    ((x & 0xff0000) >> 8) | \
-                    ((x & 0xff000000) >> 24))
-#define htole32(x) le32toh(x)
+#define le32toh(x)  (((x & 0xff) << 24) | \
+                     ((x & 0xff00) << 8) | \
+                     ((x & 0xff0000) >> 8) | \
+                     ((x & 0xff000000) >> 24))
+#define htole32(x)  le32toh(x)
 #endif
 
 static void MD5Transform(unsigned int [4], const unsigned char [64]);
 
 #if (BYTE_ORDER == LITTLE_ENDIAN)
-#define Encode memcpy
-#define Decode memcpy
+#define Encode  memcpy
+#define Decode  memcpy
 #else
 
 /*
@@ -52,8 +52,8 @@ static void MD5Transform(unsigned int [4], const unsigned char [64]);
  */
 #ifdef __APPLE__
 #include <libkern/OSByteOrder.h>
-#define le32toh(x) OSSwapLittleToHostInt32(x)
-#define htole32(x) OSSwapHostToLittleInt32(x)
+#define le32toh(x)  OSSwapLittleToHostInt32(x)
+#define htole32(x)  OSSwapHostToLittleInt32(x)
 #endif
 
 /*
@@ -94,13 +94,13 @@ static unsigned char PADDING[64] = {
 };
 
 /* F, G, H and I are basic MD5 functions. */
-#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
-#define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
-#define H(x, y, z) ((x) ^ (y) ^ (z))
-#define I(x, y, z) ((y) ^ ((x) | (~z)))
+#define F(x, y, z)  (((x) & (y)) | ((~x) & (z)))
+#define G(x, y, z)  (((x) & (z)) | ((y) & (~z)))
+#define H(x, y, z)  ((x) ^ (y) ^ (z))
+#define I(x, y, z)  ((y) ^ ((x) | (~z)))
 
 /* ROTATE_LEFT rotates x left n bits. */
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
+#define ROTATE_LEFT(x, n)  (((x) << (n)) | ((x) >> (32 - (n))))
 
 /*
  * FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
@@ -225,10 +225,10 @@ static void MD5Transform(unsigned int state[4], const unsigned char block[64])
   Decode(x, block, 64);
 
   /* Round 1 */
-#define S11 7
-#define S12 12
-#define S13 17
-#define S14 22
+#define S11  7
+#define S12  12
+#define S13  17
+#define S14  22
   FF(a, b, c, d, x[ 0], S11, 0xd76aa478); /* 1 */
   FF(d, a, b, c, x[ 1], S12, 0xe8c7b756); /* 2 */
   FF(c, d, a, b, x[ 2], S13, 0x242070db); /* 3 */
@@ -247,10 +247,10 @@ static void MD5Transform(unsigned int state[4], const unsigned char block[64])
   FF(b, c, d, a, x[15], S14, 0x49b40821); /* 16 */
 
   /* Round 2 */
-#define S21 5
-#define S22 9
-#define S23 14
-#define S24 20
+#define S21  5
+#define S22  9
+#define S23  14
+#define S24  20
   GG(a, b, c, d, x[ 1], S21, 0xf61e2562); /* 17 */
   GG(d, a, b, c, x[ 6], S22, 0xc040b340); /* 18 */
   GG(c, d, a, b, x[11], S23, 0x265e5a51); /* 19 */
@@ -269,10 +269,10 @@ static void MD5Transform(unsigned int state[4], const unsigned char block[64])
   GG(b, c, d, a, x[12], S24, 0x8d2a4c8a); /* 32 */
 
   /* Round 3 */
-#define S31 4
-#define S32 11
-#define S33 16
-#define S34 23
+#define S31  4
+#define S32  11
+#define S33  16
+#define S34  23
   HH(a, b, c, d, x[ 5], S31, 0xfffa3942); /* 33 */
   HH(d, a, b, c, x[ 8], S32, 0x8771f681); /* 34 */
   HH(c, d, a, b, x[11], S33, 0x6d9d6122); /* 35 */
@@ -291,10 +291,10 @@ static void MD5Transform(unsigned int state[4], const unsigned char block[64])
   HH(b, c, d, a, x[ 2], S34, 0xc4ac5665); /* 48 */
 
   /* Round 4 */
-#define S41 6
-#define S42 10
-#define S43 15
-#define S44 21
+#define S41  6
+#define S42  10
+#define S43  15
+#define S44  21
   II(a, b, c, d, x[ 0], S41, 0xf4292244); /* 49 */
   II(d, a, b, c, x[ 7], S42, 0x432aff97); /* 50 */
   II(c, d, a, b, x[14], S43, 0xab9423a7); /* 51 */

@@ -268,7 +268,7 @@ bailout:
 }
 
 
-#define PAD(v, p) ((v + (p) - 1) & (~((p) - 1)))
+#define PAD(v, p)  ((v + (p) - 1) & (~((p) - 1)))
 
 int checkBufYUV(unsigned char *buf, int w, int h, int subsamp,
                 tjscalingfactor sf)

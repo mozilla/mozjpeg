@@ -73,14 +73,14 @@
  * probably need to change these scale factors.
  */
 
-#define R_SCALE 2               /* scale R distances by this much */
-#define G_SCALE 3               /* scale G distances by this much */
-#define B_SCALE 1               /* and B by this much */
+#define R_SCALE  2              /* scale R distances by this much */
+#define G_SCALE  3              /* scale G distances by this much */
+#define B_SCALE  1              /* and B by this much */
 
 static const int c_scales[3] = { R_SCALE, G_SCALE, B_SCALE };
-#define C0_SCALE c_scales[rgb_red[cinfo->out_color_space]]
-#define C1_SCALE c_scales[rgb_green[cinfo->out_color_space]]
-#define C2_SCALE c_scales[rgb_blue[cinfo->out_color_space]]
+#define C0_SCALE  c_scales[rgb_red[cinfo->out_color_space]]
+#define C1_SCALE  c_scales[rgb_green[cinfo->out_color_space]]
+#define C2_SCALE  c_scales[rgb_blue[cinfo->out_color_space]]
 
 /*
  * First we have the histogram data structure and routines for creating it.
@@ -1091,7 +1091,7 @@ init_error_limit(j_decompress_ptr cinfo)
   table += MAXJSAMPLE;          /* so can index -MAXJSAMPLE .. +MAXJSAMPLE */
   cquantize->error_limiter = table;
 
-#define STEPSIZE ((MAXJSAMPLE + 1) / 16)
+#define STEPSIZE  ((MAXJSAMPLE + 1) / 16)
   /* Map errors 1:1 up to +- MAXJSAMPLE/16 */
   out = 0;
   for (in = 0; in < STEPSIZE; in++, out++) {

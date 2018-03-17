@@ -38,7 +38,7 @@
 .syntax unified
 
 
-#define RESPECT_STRICT_ALIGNMENT 1
+#define RESPECT_STRICT_ALIGNMENT  1
 
 
 /*****************************************************************************/
@@ -68,7 +68,7 @@ _\fname:
 .endm
 
 
-#define CENTERJSAMPLE 128
+#define CENTERJSAMPLE  128
 
 /*****************************************************************************/
 
@@ -80,27 +80,27 @@ _\fname:
  *                       JSAMPARRAY output_buf, JDIMENSION output_col)
  */
 
-#define FIX_0_298631336 (2446)
-#define FIX_0_390180644 (3196)
-#define FIX_0_541196100 (4433)
-#define FIX_0_765366865 (6270)
-#define FIX_0_899976223 (7373)
-#define FIX_1_175875602 (9633)
-#define FIX_1_501321110 (12299)
-#define FIX_1_847759065 (15137)
-#define FIX_1_961570560 (16069)
-#define FIX_2_053119869 (16819)
-#define FIX_2_562915447 (20995)
-#define FIX_3_072711026 (25172)
+#define FIX_0_298631336  (2446)
+#define FIX_0_390180644  (3196)
+#define FIX_0_541196100  (4433)
+#define FIX_0_765366865  (6270)
+#define FIX_0_899976223  (7373)
+#define FIX_1_175875602  (9633)
+#define FIX_1_501321110  (12299)
+#define FIX_1_847759065  (15137)
+#define FIX_1_961570560  (16069)
+#define FIX_2_053119869  (16819)
+#define FIX_2_562915447  (20995)
+#define FIX_3_072711026  (25172)
 
-#define FIX_1_175875602_MINUS_1_961570560 (FIX_1_175875602 - FIX_1_961570560)
-#define FIX_1_175875602_MINUS_0_390180644 (FIX_1_175875602 - FIX_0_390180644)
-#define FIX_0_541196100_MINUS_1_847759065 (FIX_0_541196100 - FIX_1_847759065)
-#define FIX_3_072711026_MINUS_2_562915447 (FIX_3_072711026 - FIX_2_562915447)
-#define FIX_0_298631336_MINUS_0_899976223 (FIX_0_298631336 - FIX_0_899976223)
-#define FIX_1_501321110_MINUS_0_899976223 (FIX_1_501321110 - FIX_0_899976223)
-#define FIX_2_053119869_MINUS_2_562915447 (FIX_2_053119869 - FIX_2_562915447)
-#define FIX_0_541196100_PLUS_0_765366865  (FIX_0_541196100 + FIX_0_765366865)
+#define FIX_1_175875602_MINUS_1_961570560  (FIX_1_175875602 - FIX_1_961570560)
+#define FIX_1_175875602_MINUS_0_390180644  (FIX_1_175875602 - FIX_0_390180644)
+#define FIX_0_541196100_MINUS_1_847759065  (FIX_0_541196100 - FIX_1_847759065)
+#define FIX_3_072711026_MINUS_2_562915447  (FIX_3_072711026 - FIX_2_562915447)
+#define FIX_0_298631336_MINUS_0_899976223  (FIX_0_298631336 - FIX_0_899976223)
+#define FIX_1_501321110_MINUS_0_899976223  (FIX_1_501321110 - FIX_0_899976223)
+#define FIX_2_053119869_MINUS_2_562915447  (FIX_2_053119869 - FIX_2_562915447)
+#define FIX_0_541196100_PLUS_0_765366865   (FIX_0_541196100 + FIX_0_765366865)
 
 /*
  * Reference SIMD-friendly 1-D ISLOW iDCT C implementation.
@@ -172,18 +172,18 @@ _\fname:
     tmp13 = q1; \
 }
 
-#define XFIX_0_899976223                   d0[0]
-#define XFIX_0_541196100                   d0[1]
-#define XFIX_2_562915447                   d0[2]
-#define XFIX_0_298631336_MINUS_0_899976223 d0[3]
-#define XFIX_1_501321110_MINUS_0_899976223 d1[0]
-#define XFIX_2_053119869_MINUS_2_562915447 d1[1]
-#define XFIX_0_541196100_PLUS_0_765366865  d1[2]
-#define XFIX_1_175875602                   d1[3]
-#define XFIX_1_175875602_MINUS_0_390180644 d2[0]
-#define XFIX_0_541196100_MINUS_1_847759065 d2[1]
-#define XFIX_3_072711026_MINUS_2_562915447 d2[2]
-#define XFIX_1_175875602_MINUS_1_961570560 d2[3]
+#define XFIX_0_899976223                    d0[0]
+#define XFIX_0_541196100                    d0[1]
+#define XFIX_2_562915447                    d0[2]
+#define XFIX_0_298631336_MINUS_0_899976223  d0[3]
+#define XFIX_1_501321110_MINUS_0_899976223  d1[0]
+#define XFIX_2_053119869_MINUS_2_562915447  d1[1]
+#define XFIX_0_541196100_PLUS_0_765366865   d1[2]
+#define XFIX_1_175875602                    d1[3]
+#define XFIX_1_175875602_MINUS_0_390180644  d2[0]
+#define XFIX_0_541196100_MINUS_1_847759065  d2[1]
+#define XFIX_3_072711026_MINUS_2_562915447  d2[2]
+#define XFIX_1_175875602_MINUS_1_961570560  d2[3]
 
 .balign 16
 jsimd_idct_islow_neon_consts:
@@ -695,10 +695,10 @@ asm_function jsimd_idct_islow_neon
  * per 1-D IDCT pass, totalling to 5 VQDMULH and 35 VADD/VSUB instructions.
  */
 
-#define XFIX_1_082392200 d0[0]
-#define XFIX_1_414213562 d0[1]
-#define XFIX_1_847759065 d0[2]
-#define XFIX_2_613125930 d0[3]
+#define XFIX_1_082392200  d0[0]
+#define XFIX_1_414213562  d0[1]
+#define XFIX_1_847759065  d0[2]
+#define XFIX_2_613125930  d0[3]
 
 .balign 16
 jsimd_idct_ifast_neon_consts:
@@ -923,20 +923,20 @@ asm_function jsimd_idct_ifast_neon
 
 #define CONST_BITS  13
 
-#define FIX_0_211164243 (1730)   /* FIX(0.211164243) */
-#define FIX_0_509795579 (4176)   /* FIX(0.509795579) */
-#define FIX_0_601344887 (4926)   /* FIX(0.601344887) */
-#define FIX_0_720959822 (5906)   /* FIX(0.720959822) */
-#define FIX_0_765366865 (6270)   /* FIX(0.765366865) */
-#define FIX_0_850430095 (6967)   /* FIX(0.850430095) */
-#define FIX_0_899976223 (7373)   /* FIX(0.899976223) */
-#define FIX_1_061594337 (8697)   /* FIX(1.061594337) */
-#define FIX_1_272758580 (10426)  /* FIX(1.272758580) */
-#define FIX_1_451774981 (11893)  /* FIX(1.451774981) */
-#define FIX_1_847759065 (15137)  /* FIX(1.847759065) */
-#define FIX_2_172734803 (17799)  /* FIX(2.172734803) */
-#define FIX_2_562915447 (20995)  /* FIX(2.562915447) */
-#define FIX_3_624509785 (29692)  /* FIX(3.624509785) */
+#define FIX_0_211164243  (1730)   /* FIX(0.211164243) */
+#define FIX_0_509795579  (4176)   /* FIX(0.509795579) */
+#define FIX_0_601344887  (4926)   /* FIX(0.601344887) */
+#define FIX_0_720959822  (5906)   /* FIX(0.720959822) */
+#define FIX_0_765366865  (6270)   /* FIX(0.765366865) */
+#define FIX_0_850430095  (6967)   /* FIX(0.850430095) */
+#define FIX_0_899976223  (7373)   /* FIX(0.899976223) */
+#define FIX_1_061594337  (8697)   /* FIX(1.061594337) */
+#define FIX_1_272758580  (10426)  /* FIX(1.272758580) */
+#define FIX_1_451774981  (11893)  /* FIX(1.451774981) */
+#define FIX_1_847759065  (15137)  /* FIX(1.847759065) */
+#define FIX_2_172734803  (17799)  /* FIX(2.172734803) */
+#define FIX_2_562915447  (20995)  /* FIX(2.562915447) */
+#define FIX_3_624509785  (29692)  /* FIX(3.624509785) */
 
 .balign 16
 jsimd_idct_4x4_neon_consts:
@@ -1994,10 +1994,10 @@ asm_function jsimd_convsamp_neon
  *       rid of a bunch of VLD1.16 instructions
  */
 
-#define XFIX_0_382683433 d0[0]
-#define XFIX_0_541196100 d0[1]
-#define XFIX_0_707106781 d0[2]
-#define XFIX_1_306562965 d0[3]
+#define XFIX_0_382683433  d0[0]
+#define XFIX_0_541196100  d0[1]
+#define XFIX_0_707106781  d0[2]
+#define XFIX_1_306562965  d0[3]
 
 .balign 16
 jsimd_fdct_ifast_neon_consts:

@@ -98,7 +98,7 @@ void jsimd_convsamp_altivec(JSAMPARRAY sample_data, JDIMENSION start_col,
 }
 
 
-#define WORD_BIT 16
+#define WORD_BIT  16
 
 /* There is no AltiVec 16-bit unsigned multiply instruction, hence this.
    We basically need an unsigned equivalent of vec_madds(). */

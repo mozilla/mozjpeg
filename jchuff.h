@@ -20,9 +20,9 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
-#define MAX_COEF_BITS 10
+#define MAX_COEF_BITS  10
 #else
-#define MAX_COEF_BITS 14
+#define MAX_COEF_BITS  14
 #endif
 
 /* Derived data constructed for each Huffman table */

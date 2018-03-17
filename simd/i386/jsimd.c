@@ -26,10 +26,10 @@
  * In the PIC cases, we have no guarantee that constants will keep
  * their alignment. This macro allows us to verify it at runtime.
  */
-#define IS_ALIGNED(ptr, order) (((unsigned)ptr & ((1 << order) - 1)) == 0)
+#define IS_ALIGNED(ptr, order)  (((unsigned)ptr & ((1 << order) - 1)) == 0)
 
-#define IS_ALIGNED_SSE(ptr) (IS_ALIGNED(ptr, 4)) /* 16 byte alignment */
-#define IS_ALIGNED_AVX(ptr) (IS_ALIGNED(ptr, 5)) /* 32 byte alignment */
+#define IS_ALIGNED_SSE(ptr)  (IS_ALIGNED(ptr, 4)) /* 16 byte alignment */
+#define IS_ALIGNED_AVX(ptr)  (IS_ALIGNED(ptr, 5)) /* 32 byte alignment */
 
 static unsigned int simd_support = ~0;
 static unsigned int simd_huffman = 1;

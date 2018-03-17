@@ -47,12 +47,12 @@
 #endif
 
 #ifdef USE_CLZ_INTRINSIC
-#define JPEG_NBITS_NONZERO(x) (32 - __builtin_clz(x))
-#define JPEG_NBITS(x) (x ? JPEG_NBITS_NONZERO(x) : 0)
+#define JPEG_NBITS_NONZERO(x)  (32 - __builtin_clz(x))
+#define JPEG_NBITS(x)          (x ? JPEG_NBITS_NONZERO(x) : 0)
 #else
 #include "jpeg_nbits_table.h"
-#define JPEG_NBITS(x) (jpeg_nbits_table[x])
-#define JPEG_NBITS_NONZERO(x) JPEG_NBITS(x)
+#define JPEG_NBITS(x)          (jpeg_nbits_table[x])
+#define JPEG_NBITS_NONZERO(x)  JPEG_NBITS(x)
 #endif
 
 
@@ -425,7 +425,7 @@ dump_buffer(working_state *state)
  * scanning order-- 1, 8, 16, etc.), then this will produce an encoded block
  * larger than 200 bytes.
  */
-#define BUFSIZE (DCTSIZE2 * 4)
+#define BUFSIZE  (DCTSIZE2 * 4)
 
 #define LOAD_BUFFER() { \
   if (state->free_in_buffer < BUFSIZE) { \
@@ -882,7 +882,7 @@ encode_mcu_gather(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 GLOBAL(void)
 jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
 {
-#define MAX_CLEN 32             /* assumed maximum initial code length */
+#define MAX_CLEN  32            /* assumed maximum initial code length */
   UINT8 bits[MAX_CLEN + 1];     /* bits[k] = # of symbols with code length k */
   int codesize[257];            /* codesize[k] = code length of symbol k */
   int others[257];              /* next symbol in current branch of tree */

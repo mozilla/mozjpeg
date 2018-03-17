@@ -34,7 +34,7 @@
 .text
 
 
-#define RESPECT_STRICT_ALIGNMENT 1
+#define RESPECT_STRICT_ALIGNMENT  1
 
 
 /*****************************************************************************/
@@ -124,7 +124,7 @@ _\fname:
 .endm
 
 
-#define CENTERJSAMPLE 128
+#define CENTERJSAMPLE  128
 
 /*****************************************************************************/
 
@@ -136,21 +136,21 @@ _\fname:
  *                       JSAMPARRAY output_buf, JDIMENSION output_col)
  */
 
-#define CONST_BITS 13
-#define PASS1_BITS 2
+#define CONST_BITS  13
+#define PASS1_BITS  2
 
-#define F_0_298  2446  /* FIX(0.298631336) */
-#define F_0_390  3196  /* FIX(0.390180644) */
-#define F_0_541  4433  /* FIX(0.541196100) */
-#define F_0_765  6270  /* FIX(0.765366865) */
-#define F_0_899  7373  /* FIX(0.899976223) */
-#define F_1_175  9633  /* FIX(1.175875602) */
-#define F_1_501 12299  /* FIX(1.501321110) */
-#define F_1_847 15137  /* FIX(1.847759065) */
-#define F_1_961 16069  /* FIX(1.961570560) */
-#define F_2_053 16819  /* FIX(2.053119869) */
-#define F_2_562 20995  /* FIX(2.562915447) */
-#define F_3_072 25172  /* FIX(3.072711026) */
+#define F_0_298   2446  /* FIX(0.298631336) */
+#define F_0_390   3196  /* FIX(0.390180644) */
+#define F_0_541   4433  /* FIX(0.541196100) */
+#define F_0_765   6270  /* FIX(0.765366865) */
+#define F_0_899   7373  /* FIX(0.899976223) */
+#define F_1_175   9633  /* FIX(1.175875602) */
+#define F_1_501  12299  /* FIX(1.501321110) */
+#define F_1_847  15137  /* FIX(1.847759065) */
+#define F_1_961  16069  /* FIX(1.961570560) */
+#define F_2_053  16819  /* FIX(2.053119869) */
+#define F_2_562  20995  /* FIX(2.562915447) */
+#define F_3_072  25172  /* FIX(3.072711026) */
 
 .balign 16
 Ljsimd_idct_islow_neon_consts:
@@ -184,18 +184,18 @@ Ljsimd_idct_islow_neon_consts:
 #undef F_2_562
 #undef F_3_072
 
-#define XFIX_P_0_298 v0.h[0]
-#define XFIX_N_0_390 v0.h[1]
-#define XFIX_P_0_541 v0.h[2]
-#define XFIX_P_0_765 v0.h[3]
-#define XFIX_N_0_899 v0.h[4]
-#define XFIX_P_1_175 v0.h[5]
-#define XFIX_P_1_501 v0.h[6]
-#define XFIX_N_1_847 v0.h[7]
-#define XFIX_N_1_961 v1.h[0]
-#define XFIX_P_2_053 v1.h[1]
-#define XFIX_N_2_562 v1.h[2]
-#define XFIX_P_3_072 v1.h[3]
+#define XFIX_P_0_298  v0.h[0]
+#define XFIX_N_0_390  v0.h[1]
+#define XFIX_P_0_541  v0.h[2]
+#define XFIX_P_0_765  v0.h[3]
+#define XFIX_N_0_899  v0.h[4]
+#define XFIX_P_1_175  v0.h[5]
+#define XFIX_P_1_501  v0.h[6]
+#define XFIX_N_1_847  v0.h[7]
+#define XFIX_N_1_961  v1.h[0]
+#define XFIX_P_2_053  v1.h[1]
+#define XFIX_N_2_562  v1.h[2]
+#define XFIX_P_3_072  v1.h[3]
 
 asm_function jsimd_idct_islow_neon
     DCT_TABLE       .req x0
@@ -786,10 +786,10 @@ asm_function jsimd_idct_islow_neon
  * per 1-D IDCT pass, totalling to 5 VQDMULH and 35 VADD/VSUB instructions.
  */
 
-#define XFIX_1_082392200 v0.h[0]
-#define XFIX_1_414213562 v0.h[1]
-#define XFIX_1_847759065 v0.h[2]
-#define XFIX_2_613125930 v0.h[3]
+#define XFIX_1_082392200  v0.h[0]
+#define XFIX_1_414213562  v0.h[1]
+#define XFIX_1_847759065  v0.h[2]
+#define XFIX_2_613125930  v0.h[3]
 
 .balign 16
 Ljsimd_idct_ifast_neon_consts:
@@ -1025,20 +1025,20 @@ asm_function jsimd_idct_ifast_neon
 
 #define CONST_BITS  13
 
-#define FIX_0_211164243 (1730)   /* FIX(0.211164243) */
-#define FIX_0_509795579 (4176)   /* FIX(0.509795579) */
-#define FIX_0_601344887 (4926)   /* FIX(0.601344887) */
-#define FIX_0_720959822 (5906)   /* FIX(0.720959822) */
-#define FIX_0_765366865 (6270)   /* FIX(0.765366865) */
-#define FIX_0_850430095 (6967)   /* FIX(0.850430095) */
-#define FIX_0_899976223 (7373)   /* FIX(0.899976223) */
-#define FIX_1_061594337 (8697)   /* FIX(1.061594337) */
-#define FIX_1_272758580 (10426)  /* FIX(1.272758580) */
-#define FIX_1_451774981 (11893)  /* FIX(1.451774981) */
-#define FIX_1_847759065 (15137)  /* FIX(1.847759065) */
-#define FIX_2_172734803 (17799)  /* FIX(2.172734803) */
-#define FIX_2_562915447 (20995)  /* FIX(2.562915447) */
-#define FIX_3_624509785 (29692)  /* FIX(3.624509785) */
+#define FIX_0_211164243  (1730)   /* FIX(0.211164243) */
+#define FIX_0_509795579  (4176)   /* FIX(0.509795579) */
+#define FIX_0_601344887  (4926)   /* FIX(0.601344887) */
+#define FIX_0_720959822  (5906)   /* FIX(0.720959822) */
+#define FIX_0_765366865  (6270)   /* FIX(0.765366865) */
+#define FIX_0_850430095  (6967)   /* FIX(0.850430095) */
+#define FIX_0_899976223  (7373)   /* FIX(0.899976223) */
+#define FIX_1_061594337  (8697)   /* FIX(1.061594337) */
+#define FIX_1_272758580  (10426)  /* FIX(1.272758580) */
+#define FIX_1_451774981  (11893)  /* FIX(1.451774981) */
+#define FIX_1_847759065  (15137)  /* FIX(1.847759065) */
+#define FIX_2_172734803  (17799)  /* FIX(2.172734803) */
+#define FIX_2_562915447  (20995)  /* FIX(2.562915447) */
+#define FIX_3_624509785  (29692)  /* FIX(3.624509785) */
 
 .balign 16
 Ljsimd_idct_4x4_neon_consts:
@@ -2235,24 +2235,24 @@ asm_function jsimd_convsamp_neon
  *       rid of a bunch of VLD1.16 instructions
  */
 
-#define CONST_BITS 13
-#define PASS1_BITS 2
+#define CONST_BITS  13
+#define PASS1_BITS  2
 
-#define DESCALE_P1 (CONST_BITS - PASS1_BITS)
-#define DESCALE_P2 (CONST_BITS + PASS1_BITS)
+#define DESCALE_P1  (CONST_BITS - PASS1_BITS)
+#define DESCALE_P2  (CONST_BITS + PASS1_BITS)
 
-#define F_0_298  2446  /* FIX(0.298631336) */
-#define F_0_390  3196  /* FIX(0.390180644) */
-#define F_0_541  4433  /* FIX(0.541196100) */
-#define F_0_765  6270  /* FIX(0.765366865) */
-#define F_0_899  7373  /* FIX(0.899976223) */
-#define F_1_175  9633  /* FIX(1.175875602) */
-#define F_1_501 12299  /* FIX(1.501321110) */
-#define F_1_847 15137  /* FIX(1.847759065) */
-#define F_1_961 16069  /* FIX(1.961570560) */
-#define F_2_053 16819  /* FIX(2.053119869) */
-#define F_2_562 20995  /* FIX(2.562915447) */
-#define F_3_072 25172  /* FIX(3.072711026) */
+#define F_0_298   2446  /* FIX(0.298631336) */
+#define F_0_390   3196  /* FIX(0.390180644) */
+#define F_0_541   4433  /* FIX(0.541196100) */
+#define F_0_765   6270  /* FIX(0.765366865) */
+#define F_0_899   7373  /* FIX(0.899976223) */
+#define F_1_175   9633  /* FIX(1.175875602) */
+#define F_1_501  12299  /* FIX(1.501321110) */
+#define F_1_847  15137  /* FIX(1.847759065) */
+#define F_1_961  16069  /* FIX(1.961570560) */
+#define F_2_053  16819  /* FIX(2.053119869) */
+#define F_2_562  20995  /* FIX(2.562915447) */
+#define F_3_072  25172  /* FIX(3.072711026) */
 
 .balign 16
 Ljsimd_fdct_islow_neon_consts:
@@ -2285,18 +2285,18 @@ Ljsimd_fdct_islow_neon_consts:
 #undef F_2_053
 #undef F_2_562
 #undef F_3_072
-#define XFIX_P_0_298 v0.h[0]
-#define XFIX_N_0_390 v0.h[1]
-#define XFIX_P_0_541 v0.h[2]
-#define XFIX_P_0_765 v0.h[3]
-#define XFIX_N_0_899 v0.h[4]
-#define XFIX_P_1_175 v0.h[5]
-#define XFIX_P_1_501 v0.h[6]
-#define XFIX_N_1_847 v0.h[7]
-#define XFIX_N_1_961 v1.h[0]
-#define XFIX_P_2_053 v1.h[1]
-#define XFIX_N_2_562 v1.h[2]
-#define XFIX_P_3_072 v1.h[3]
+#define XFIX_P_0_298  v0.h[0]
+#define XFIX_N_0_390  v0.h[1]
+#define XFIX_P_0_541  v0.h[2]
+#define XFIX_P_0_765  v0.h[3]
+#define XFIX_N_0_899  v0.h[4]
+#define XFIX_P_1_175  v0.h[5]
+#define XFIX_P_1_501  v0.h[6]
+#define XFIX_N_1_847  v0.h[7]
+#define XFIX_N_1_961  v1.h[0]
+#define XFIX_P_2_053  v1.h[1]
+#define XFIX_N_2_562  v1.h[2]
+#define XFIX_P_3_072  v1.h[3]
 
 asm_function jsimd_fdct_islow_neon
 
@@ -2578,10 +2578,10 @@ asm_function jsimd_fdct_islow_neon
  */
 
 #undef XFIX_0_541196100
-#define XFIX_0_382683433 v0.h[0]
-#define XFIX_0_541196100 v0.h[1]
-#define XFIX_0_707106781 v0.h[2]
-#define XFIX_1_306562965 v0.h[3]
+#define XFIX_0_382683433  v0.h[0]
+#define XFIX_0_541196100  v0.h[1]
+#define XFIX_0_707106781  v0.h[2]
+#define XFIX_1_306562965  v0.h[3]
 
 .balign 16
 Ljsimd_fdct_ifast_neon_consts:

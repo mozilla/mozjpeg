@@ -33,23 +33,23 @@
 #include "jsimd_mmi.h"
 
 
-#define CONST_BITS 13
-#define PASS1_BITS 2
-#define DESCALE_P1 (CONST_BITS - PASS1_BITS)
-#define DESCALE_P2 (CONST_BITS + PASS1_BITS)
+#define CONST_BITS  13
+#define PASS1_BITS  2
+#define DESCALE_P1  (CONST_BITS - PASS1_BITS)
+#define DESCALE_P2  (CONST_BITS + PASS1_BITS)
 
-#define FIX_0_298 ((short)2446)   /* FIX(0.298631336) */
-#define FIX_0_390 ((short)3196)   /* FIX(0.390180644) */
-#define FIX_0_541 ((short)4433)   /* FIX(0.541196100) */
-#define FIX_0_765 ((short)6270)   /* FIX(0.765366865) */
-#define FIX_0_899 ((short)7373)   /* FIX(0.899976223) */
-#define FIX_1_175 ((short)9633)   /* FIX(1.175875602) */
-#define FIX_1_501 ((short)12299)  /* FIX(1.501321110) */
-#define FIX_1_847 ((short)15137)  /* FIX(1.847759065) */
-#define FIX_1_961 ((short)16069)  /* FIX(1.961570560) */
-#define FIX_2_053 ((short)16819)  /* FIX(2.053119869) */
-#define FIX_2_562 ((short)20995)  /* FIX(2.562915447) */
-#define FIX_3_072 ((short)25172)  /* FIX(3.072711026) */
+#define FIX_0_298  ((short)2446)   /* FIX(0.298631336) */
+#define FIX_0_390  ((short)3196)   /* FIX(0.390180644) */
+#define FIX_0_541  ((short)4433)   /* FIX(0.541196100) */
+#define FIX_0_765  ((short)6270)   /* FIX(0.765366865) */
+#define FIX_0_899  ((short)7373)   /* FIX(0.899976223) */
+#define FIX_1_175  ((short)9633)   /* FIX(1.175875602) */
+#define FIX_1_501  ((short)12299)  /* FIX(1.501321110) */
+#define FIX_1_847  ((short)15137)  /* FIX(1.847759065) */
+#define FIX_1_961  ((short)16069)  /* FIX(1.961570560) */
+#define FIX_2_053  ((short)16819)  /* FIX(2.053119869) */
+#define FIX_2_562  ((short)20995)  /* FIX(2.562915447) */
+#define FIX_3_072  ((short)25172)  /* FIX(3.072711026) */
 
 enum const_index {
   index_PW_F130_F054,
@@ -88,17 +88,17 @@ static uint64_t const_value[] = {
                    (1 << (PASS1_BITS - 1)), (1 << (PASS1_BITS - 1)))
 };
 
-#define PW_F130_F054   get_const_value(index_PW_F130_F054)
-#define PW_F054_MF130  get_const_value(index_PW_F054_MF130)
-#define PW_MF078_F117  get_const_value(index_PW_MF078_F117)
-#define PW_F117_F078   get_const_value(index_PW_F117_F078)
-#define PW_MF060_MF089 get_const_value(index_PW_MF060_MF089)
-#define PW_MF089_F060  get_const_value(index_PW_MF089_F060)
-#define PW_MF050_MF256 get_const_value(index_PW_MF050_MF256)
-#define PW_MF256_F050  get_const_value(index_PW_MF256_F050)
-#define PD_DESCALE_P1  get_const_value(index_PD_DESCALE_P1)
-#define PD_DESCALE_P2  get_const_value(index_PD_DESCALE_P2)
-#define PW_DESCALE_P2X get_const_value(index_PW_DESCALE_P2X)
+#define PW_F130_F054    get_const_value(index_PW_F130_F054)
+#define PW_F054_MF130   get_const_value(index_PW_F054_MF130)
+#define PW_MF078_F117   get_const_value(index_PW_MF078_F117)
+#define PW_F117_F078    get_const_value(index_PW_F117_F078)
+#define PW_MF060_MF089  get_const_value(index_PW_MF060_MF089)
+#define PW_MF089_F060   get_const_value(index_PW_MF089_F060)
+#define PW_MF050_MF256  get_const_value(index_PW_MF050_MF256)
+#define PW_MF256_F050   get_const_value(index_PW_MF256_F050)
+#define PD_DESCALE_P1   get_const_value(index_PD_DESCALE_P1)
+#define PD_DESCALE_P2   get_const_value(index_PD_DESCALE_P2)
+#define PW_DESCALE_P2X  get_const_value(index_PW_DESCALE_P2X)
 
 
 #define DO_FDCT_COMMON(PASS) { \

@@ -45,9 +45,9 @@ static uint64_t const_value[] = {
   _uint64_set_pi16(8, 8, 8, 8),
 };
 
-#define PW_THREE get_const_value(index_PW_THREE)
-#define PW_SEVEN get_const_value(index_PW_SEVEN)
-#define PW_EIGHT get_const_value(index_PW_EIGHT)
+#define PW_THREE  get_const_value(index_PW_THREE)
+#define PW_SEVEN  get_const_value(index_PW_SEVEN)
+#define PW_EIGHT  get_const_value(index_PW_EIGHT)
 
 
 #define PROCESS_ROW(r) { \

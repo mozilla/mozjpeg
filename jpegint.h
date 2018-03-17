@@ -27,21 +27,21 @@ typedef enum {            /* Operating modes for buffer controllers */
 } J_BUF_MODE;
 
 /* Values of global_state field (jdapi.c has some dependencies on ordering!) */
-#define CSTATE_START    100     /* after create_compress */
-#define CSTATE_SCANNING 101     /* start_compress done, write_scanlines OK */
-#define CSTATE_RAW_OK   102     /* start_compress done, write_raw_data OK */
-#define CSTATE_WRCOEFS  103     /* jpeg_write_coefficients done */
-#define DSTATE_START    200     /* after create_decompress */
-#define DSTATE_INHEADER 201     /* reading header markers, no SOS yet */
-#define DSTATE_READY    202     /* found SOS, ready for start_decompress */
-#define DSTATE_PRELOAD  203     /* reading multiscan file in start_decompress*/
-#define DSTATE_PRESCAN  204     /* performing dummy pass for 2-pass quant */
-#define DSTATE_SCANNING 205     /* start_decompress done, read_scanlines OK */
-#define DSTATE_RAW_OK   206     /* start_decompress done, read_raw_data OK */
-#define DSTATE_BUFIMAGE 207     /* expecting jpeg_start_output */
-#define DSTATE_BUFPOST  208     /* looking for SOS/EOI in jpeg_finish_output */
-#define DSTATE_RDCOEFS  209     /* reading file in jpeg_read_coefficients */
-#define DSTATE_STOPPING 210     /* looking for EOI in jpeg_finish_decompress */
+#define CSTATE_START     100    /* after create_compress */
+#define CSTATE_SCANNING  101    /* start_compress done, write_scanlines OK */
+#define CSTATE_RAW_OK    102    /* start_compress done, write_raw_data OK */
+#define CSTATE_WRCOEFS   103    /* jpeg_write_coefficients done */
+#define DSTATE_START     200    /* after create_decompress */
+#define DSTATE_INHEADER  201    /* reading header markers, no SOS yet */
+#define DSTATE_READY     202    /* found SOS, ready for start_decompress */
+#define DSTATE_PRELOAD   203    /* reading multiscan file in start_decompress*/
+#define DSTATE_PRESCAN   204    /* performing dummy pass for 2-pass quant */
+#define DSTATE_SCANNING  205    /* start_decompress done, read_scanlines OK */
+#define DSTATE_RAW_OK    206    /* start_decompress done, read_raw_data OK */
+#define DSTATE_BUFIMAGE  207    /* expecting jpeg_start_output */
+#define DSTATE_BUFPOST   208    /* looking for SOS/EOI in jpeg_finish_output */
+#define DSTATE_RDCOEFS   209    /* reading file in jpeg_read_coefficients */
+#define DSTATE_STOPPING  210    /* looking for EOI in jpeg_finish_decompress */
 
 
 /* JLONG must hold at least signed 32-bit values. */
@@ -53,7 +53,7 @@ typedef long JLONG;
  * sanitizer warnings
  */
 
-#define LEFT_SHIFT(a, b) ((JLONG)((unsigned long)(a) << (b)))
+#define LEFT_SHIFT(a, b)  ((JLONG)((unsigned long)(a) << (b)))
 
 
 /* Declarations for compression modules */

@@ -1,13 +1,13 @@
 /* Version ID for the JPEG library.
  * Might be useful for tests like "#if JPEG_LIB_VERSION >= 60".
  */
-#define JPEG_LIB_VERSION @JPEG_LIB_VERSION@
+#define JPEG_LIB_VERSION  @JPEG_LIB_VERSION@
 
 /* libjpeg-turbo version */
-#define LIBJPEG_TURBO_VERSION @VERSION@
+#define LIBJPEG_TURBO_VERSION  @VERSION@
 
 /* libjpeg-turbo version in integer form */
-#define LIBJPEG_TURBO_VERSION_NUMBER @LIBJPEG_TURBO_VERSION_NUMBER@
+#define LIBJPEG_TURBO_VERSION_NUMBER  @LIBJPEG_TURBO_VERSION_NUMBER@
 
 /* Support arithmetic encoding */
 #cmakedefine C_ARITH_CODING_SUPPORTED

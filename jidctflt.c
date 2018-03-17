@@ -83,7 +83,7 @@ jpeg_idct_float(j_decompress_ptr cinfo, jpeg_component_info *compptr,
   JSAMPLE *range_limit = cinfo->sample_range_limit;
   int ctr;
   FAST_FLOAT workspace[DCTSIZE2]; /* buffers data between passes */
-#define _0_125 ((FLOAT_MULT_TYPE)0.125)
+#define _0_125  ((FLOAT_MULT_TYPE)0.125)
 
   /* Pass 1: process columns from input, store into work array. */
 

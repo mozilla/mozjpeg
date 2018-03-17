@@ -73,8 +73,9 @@
 
 #define ODITHER_SIZE  16        /* dimension of dither matrix */
 /* NB: if ODITHER_SIZE is not a power of 2, ODITHER_MASK uses will break */
-#define ODITHER_CELLS (ODITHER_SIZE * ODITHER_SIZE)     /* # cells in matrix */
-#define ODITHER_MASK (ODITHER_SIZE - 1) /* mask for wrapping around counters */
+#define ODITHER_CELLS  (ODITHER_SIZE * ODITHER_SIZE) /* # cells in matrix */
+#define ODITHER_MASK  (ODITHER_SIZE - 1) /* mask for wrapping around
+                                            counters */
 
 typedef int ODITHER_MATRIX[ODITHER_SIZE][ODITHER_SIZE];
 typedef int (*ODITHER_MATRIX_PTR)[ODITHER_SIZE];
@@ -132,12 +133,12 @@ typedef JLONG FSERROR;          /* may need more than 16 bits */
 typedef JLONG LOCFSERROR;       /* be sure calculation temps are big enough */
 #endif
 
-typedef FSERROR *FSERRPTR;  /* pointer to error array */
+typedef FSERROR *FSERRPTR;      /* pointer to error array */
 
 
 /* Private subobject */
 
-#define MAX_Q_COMPS 4           /* max components I can handle */
+#define MAX_Q_COMPS  4          /* max components I can handle */
 
 typedef struct {
   struct jpeg_color_quantizer pub; /* public fields */

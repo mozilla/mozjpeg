@@ -25,14 +25,14 @@
 #include "jsimd_altivec.h"
 
 
-#define F_0_114 7471                 /* FIX(0.11400) */
-#define F_0_250 16384                /* FIX(0.25000) */
-#define F_0_299 19595                /* FIX(0.29900) */
-#define F_0_587 38470                /* FIX(0.58700) */
-#define F_0_337 (F_0_587 - F_0_250)  /* FIX(0.58700) - FIX(0.25000) */
+#define F_0_114  7471                 /* FIX(0.11400) */
+#define F_0_250  16384                /* FIX(0.25000) */
+#define F_0_299  19595                /* FIX(0.29900) */
+#define F_0_587  38470                /* FIX(0.58700) */
+#define F_0_337  (F_0_587 - F_0_250)  /* FIX(0.58700) - FIX(0.25000) */
 
-#define SCALEBITS 16
-#define ONE_HALF (1 << (SCALEBITS - 1))
+#define SCALEBITS  16
+#define ONE_HALF  (1 << (SCALEBITS - 1))
 
 
 #define RGBG_INDEX0 \
@@ -46,8 +46,8 @@
 #include "jcgryext-altivec.c"
 #undef RGB_PIXELSIZE
 
-#define RGB_PIXELSIZE EXT_RGB_PIXELSIZE
-#define jsimd_rgb_gray_convert_altivec jsimd_extrgb_gray_convert_altivec
+#define RGB_PIXELSIZE  EXT_RGB_PIXELSIZE
+#define jsimd_rgb_gray_convert_altivec  jsimd_extrgb_gray_convert_altivec
 #include "jcgryext-altivec.c"
 #undef RGB_PIXELSIZE
 #undef RGBG_INDEX0
@@ -56,16 +56,16 @@
 #undef RGBG_INDEX3
 #undef jsimd_rgb_gray_convert_altivec
 
-#define RGB_PIXELSIZE EXT_RGBX_PIXELSIZE
+#define RGB_PIXELSIZE  EXT_RGBX_PIXELSIZE
 #define RGBG_INDEX \
   {  0,  1,  4,  5,  8,  9, 12, 13,  2,  1,  6,  5, 10,  9, 14, 13 }
-#define jsimd_rgb_gray_convert_altivec jsimd_extrgbx_gray_convert_altivec
+#define jsimd_rgb_gray_convert_altivec  jsimd_extrgbx_gray_convert_altivec
 #include "jcgryext-altivec.c"
 #undef RGB_PIXELSIZE
 #undef RGBG_INDEX
 #undef jsimd_rgb_gray_convert_altivec
 
-#define RGB_PIXELSIZE EXT_BGR_PIXELSIZE
+#define RGB_PIXELSIZE  EXT_BGR_PIXELSIZE
 #define RGBG_INDEX0 \
   {  2,  1,  5,  4,  8,  7, 11, 10,  0,  1,  3,  4,  6,  7,  9, 10 }
 #define RGBG_INDEX1 \
@@ -74,7 +74,7 @@
   { 10,  9, 13, 12, 16, 15, 19, 18,  8,  9, 11, 12, 14, 15, 17, 18 }
 #define RGBG_INDEX3 \
   {  6,  5,  9,  8, 12, 11, 15, 14,  4,  5,  7,  8, 10, 11, 13, 14 }
-#define jsimd_rgb_gray_convert_altivec jsimd_extbgr_gray_convert_altivec
+#define jsimd_rgb_gray_convert_altivec  jsimd_extbgr_gray_convert_altivec
 #include "jcgryext-altivec.c"
 #undef RGB_PIXELSIZE
 #undef RGBG_INDEX0
@@ -83,28 +83,28 @@
 #undef RGBG_INDEX3
 #undef jsimd_rgb_gray_convert_altivec
 
-#define RGB_PIXELSIZE EXT_BGRX_PIXELSIZE
+#define RGB_PIXELSIZE  EXT_BGRX_PIXELSIZE
 #define RGBG_INDEX \
   {  2,  1,  6,  5, 10,  9, 14, 13,  0,  1,  4,  5,  8,  9, 12, 13 }
-#define jsimd_rgb_gray_convert_altivec jsimd_extbgrx_gray_convert_altivec
+#define jsimd_rgb_gray_convert_altivec  jsimd_extbgrx_gray_convert_altivec
 #include "jcgryext-altivec.c"
 #undef RGB_PIXELSIZE
 #undef RGBG_INDEX
 #undef jsimd_rgb_gray_convert_altivec
 
-#define RGB_PIXELSIZE EXT_XBGR_PIXELSIZE
+#define RGB_PIXELSIZE  EXT_XBGR_PIXELSIZE
 #define RGBG_INDEX \
   {  3,  2,  7,  6, 11, 10, 15, 14,  1,  2,  5,  6,  9, 10, 13, 14 }
-#define jsimd_rgb_gray_convert_altivec jsimd_extxbgr_gray_convert_altivec
+#define jsimd_rgb_gray_convert_altivec  jsimd_extxbgr_gray_convert_altivec
 #include "jcgryext-altivec.c"
 #undef RGB_PIXELSIZE
 #undef RGBG_INDEX
 #undef jsimd_rgb_gray_convert_altivec
 
-#define RGB_PIXELSIZE EXT_XRGB_PIXELSIZE
+#define RGB_PIXELSIZE  EXT_XRGB_PIXELSIZE
 #define RGBG_INDEX \
   {  1,  2,  5,  6,  9, 10, 13, 14,  3,  2,  7,  6, 11, 10, 15, 14 }
-#define jsimd_rgb_gray_convert_altivec jsimd_extxrgb_gray_convert_altivec
+#define jsimd_rgb_gray_convert_altivec  jsimd_extxrgb_gray_convert_altivec
 #include "jcgryext-altivec.c"
 #undef RGB_PIXELSIZE
 #undef RGBG_INDEX

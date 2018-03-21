@@ -183,11 +183,11 @@ EXTN(jconst_huff_encode_one_block):
 
 EXTN(jsimd_huff_encode_one_block_sse2):
     push        ebp
-    mov         eax, esp                       ; eax = original ebp
+    mov         eax, esp                     ; eax = original ebp
     sub         esp, byte 4
-    and         esp, byte (-SIZEOF_XMMWORD)    ; align to 128 bits
+    and         esp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
     mov         [esp], eax
-    mov         ebp, esp                       ; ebp = aligned ebp
+    mov         ebp, esp                     ; ebp = aligned ebp
     sub         esp, temp5+9*SIZEOF_DWORD-pad
     push        ebx
     push        ecx

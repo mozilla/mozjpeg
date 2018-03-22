@@ -26,7 +26,8 @@
     BITS        64
 
 ; --------------------------------------------------------------------------
-; Macros to load data for jsimd_encode_mcu_AC_refine_prepare_sse2()
+; Macros to load data for jsimd_encode_mcu_AC_first_prepare_sse2() and
+; jsimd_encode_mcu_AC_refine_prepare_sse2()
 
 %macro LOAD16 0
     pxor        N0, N0
@@ -244,6 +245,168 @@
 
     mov         MMWORD [r15], rax
 %endmacro
+
+;
+; Prepare data for jsimd_encode_mcu_AC_first().
+;
+; GLOBAL(void)
+; jsimd_encode_mcu_AC_first_prepare_sse2(const JCOEF *block,
+;                                        const int *jpeg_natural_order_start,
+;                                        int Sl, int Al, JCOEF *values,
+;                                        size_t *zerobits)
+;
+; r10 = const JCOEF *block
+; r11 = const int *jpeg_natural_order_start
+; r12 = int Sl
+; r13 = int Al
+; r14 = JCOEF *values
+; r15 = size_t *zerobits
+
+%define ZERO    xmm9
+%define X0      xmm0
+%define X1      xmm1
+%define N0      xmm2
+%define N1      xmm3
+%define AL      xmm4
+%define K       eax
+%define LUT     r11
+%define T0      rcx
+%define T0d     ecx
+%define T1      rdx
+%define T1d     edx
+%define BLOCK   r10
+%define VALUES  r14
+%define LEN     r12d
+%define LENEND  r13d
+
+    align       32
+    GLOBAL_FUNCTION(jsimd_encode_mcu_AC_first_prepare_sse2)
+
+EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
+    push        rbp
+    mov         rax, rsp                     ; rax = original rbp
+    sub         rsp, byte 4
+    and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
+    mov         [rsp], rax
+    mov         rbp, rsp                     ; rbp = aligned rbp
+    lea         rsp, [rbp - 16]
+    collect_args 6
+
+    movdqa      XMMWORD [rbp - 16], ZERO
+
+    movd        AL, r13d
+    pxor        ZERO, ZERO
+    mov         K, LEN
+    mov         LENEND, LEN
+    and         K, -16
+    and         LENEND, 7
+    shr         K, 4
+    jz          .ELOOP16
+.BLOOP16:
+    LOAD16
+    pcmpgtw     N0, X0
+    pcmpgtw     N1, X1
+    paddw       X0, N0
+    paddw       X1, N1
+    pxor        X0, N0
+    pxor        X1, N1
+    psrlw       X0, AL
+    psrlw       X1, AL
+    pxor        N0, X0
+    pxor        N1, X1
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (8) * 2], X1
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    movdqa      XMMWORD [VALUES + (8 + DCTSIZE2) * 2], N1
+    add         VALUES, 16*2
+    add         LUT, 16*SIZEOF_INT
+    dec         K
+    jnz         .BLOOP16
+.ELOOP16:
+    test        LEN, 8
+    jz          .TRY7
+    test        LEN, 7
+    jz          .TRY8
+
+    LOAD15
+    pcmpgtw     N0, X0
+    pcmpgtw     N1, X1
+    paddw       X0, N0
+    paddw       X1, N1
+    pxor        X0, N0
+    pxor        X1, N1
+    psrlw       X0, AL
+    psrlw       X1, AL
+    pxor        N0, X0
+    pxor        N1, X1
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (8) * 2], X1
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    movdqa      XMMWORD [VALUES + (8 + DCTSIZE2) * 2], N1
+    add         VALUES, 16*2
+    jmp         .PADDING
+.TRY8:
+    LOAD8
+    pcmpgtw     N0, X0
+    paddw       X0, N0
+    pxor        X0, N0
+    psrlw       X0, AL
+    pxor        N0, X0
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    add         VALUES, 8*2
+    jmp         .PADDING
+.TRY7:
+    LOAD7
+    pcmpgtw     N0, X0
+    paddw       X0, N0
+    pxor        X0, N0
+    psrlw       X0, AL
+    pxor        N0, X0
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    add         VALUES, 8*2
+.PADDING:
+    mov         K, LEN
+    add         K, 7
+    and         K, -8
+    shr         K, 3
+    sub         K, DCTSIZE2/8
+    jz          .EPADDING
+    align       16
+.ZEROLOOP:
+    movdqa      XMMWORD [VALUES + 0], ZERO
+    add         VALUES, 8*2
+    inc         K
+    jnz         .ZEROLOOP
+.EPADDING:
+    sub         VALUES, DCTSIZE2*2
+
+    REDUCE0
+
+    movdqa      ZERO, XMMWORD [rbp - 16]
+    uncollect_args 6
+    mov         rsp, rbp                ; rsp <- aligned rbp
+    pop         rsp                     ; rsp <- original rbp
+    pop         rbp
+    ret
+
+%undef ZERO
+%undef X0
+%undef X1
+%undef N0
+%undef N1
+%undef AL
+%undef K
+%undef LUT
+%undef T0
+%undef T0d
+%undef T1
+%undef T1d
+%undef BLOCK
+%undef VALUES
+%undef LEN
+%undef LENEND
 
 ;
 ; Prepare data for jsimd_encode_mcu_AC_refine().

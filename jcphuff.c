@@ -73,6 +73,10 @@
 typedef struct {
   struct jpeg_entropy_encoder pub; /* public fields */
 
+  /* Pointer to routine to prepare data for encode_mcu_AC_first() */
+  void (*AC_first_prepare) (const JCOEF *block,
+                            const int *jpeg_natural_order_start, int Sl,
+                            int Al, JCOEF *values, size_t *zerobits);
   /* Pointer to routine to prepare data for encode_mcu_AC_refine() */
   int (*AC_refine_prepare) (const JCOEF *block,
                             const int *jpeg_natural_order_start, int Sl,
@@ -144,6 +148,9 @@ typedef phuff_entropy_encoder *phuff_entropy_ptr;
 /* Forward declarations */
 METHODDEF(boolean) encode_mcu_DC_first(j_compress_ptr cinfo,
                                        JBLOCKROW *MCU_data);
+METHODDEF(void) encode_mcu_AC_first_prepare
+  (const JCOEF *block, const int *jpeg_natural_order_start, int Sl, int Al,
+   JCOEF *values, size_t *zerobits);
 METHODDEF(boolean) encode_mcu_AC_first(j_compress_ptr cinfo,
                                        JBLOCKROW *MCU_data);
 METHODDEF(boolean) encode_mcu_DC_refine(j_compress_ptr cinfo,
@@ -208,6 +215,10 @@ start_pass_phuff(j_compress_ptr cinfo, boolean gather_statistics)
       entropy->pub.encode_mcu = encode_mcu_DC_first;
     else
       entropy->pub.encode_mcu = encode_mcu_AC_first;
+      if (jsimd_can_encode_mcu_AC_first_prepare())
+        entropy->AC_first_prepare = jsimd_encode_mcu_AC_first_prepare;
+      else
+        entropy->AC_first_prepare = encode_mcu_AC_first_prepare;
   } else {
     if (is_DC_band)
       entropy->pub.encode_mcu = encode_mcu_DC_refine;
@@ -542,20 +553,115 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 
 
 /*
+ * Data preparation for encode_mcu_AC_first().
+ */
+
+#define COMPUTE_ABSVALUES_AC_FIRST(Sl) { \
+  for (k = 0; k < Sl; k++) { \
+    temp = block[jpeg_natural_order_start[k]]; \
+    if (temp == 0) \
+      continue; \
+    /* We must apply the point transform by Al.  For AC coefficients this \
+     * is an integer division with rounding towards 0.  To do this portably \
+     * in C, we shift after obtaining the absolute value; so the code is \
+     * interwoven with finding the abs value (temp) and output bits (temp2). \
+     */ \
+    temp2 = temp >> (CHAR_BIT * sizeof(int) - 1); \
+    temp ^= temp2; \
+    temp -= temp2;              /* temp is abs value of input */ \
+    temp >>= Al;                /* apply the point transform */ \
+    /* Watch out for case that nonzero coef is zero after point transform */ \
+    if (temp == 0) \
+      continue; \
+    /* For a negative coef, want temp2 = bitwise complement of abs(coef) */ \
+    temp2 ^= temp; \
+    values[k] = temp; \
+    values[k + DCTSIZE2] = temp2; \
+    zerobits |= ((size_t)1U) << k; \
+  } \
+}
+
+METHODDEF(void)
+encode_mcu_AC_first_prepare(const JCOEF *block,
+                            const int *jpeg_natural_order_start, int Sl,
+                            int Al, JCOEF *values, size_t *bits)
+{
+  register int k, temp, temp2;
+  size_t zerobits = 0U;
+  int Sl0 = Sl;
+
+#if SIZEOF_SIZE_T == 4
+  if (Sl0 > 32)
+    Sl0 = 32;
+#endif
+
+  COMPUTE_ABSVALUES_AC_FIRST(Sl0);
+
+  bits[0] = zerobits;
+#if SIZEOF_SIZE_T == 4
+  zerobits = 0U;
+
+  if (Sl > 32) {
+    Sl -= 32;
+    jpeg_natural_order_start += 32;
+    values += 32;
+
+    COMPUTE_ABSVALUES_AC_FIRST(Sl);
+  }
+  bits[1] = zerobits;
+#endif
+}
+
+/*
  * MCU encoding for AC initial scan (either spectral selection,
  * or first pass of successive approximation).
  */
+
+#define ENCODE_COEFS_AC_FIRST(label) { \
+  while (zerobits) { \
+    r = count_zeroes(&zerobits); \
+    cvalue += r; \
+label \
+    temp  = cvalue[0]; \
+    temp2 = cvalue[DCTSIZE2]; \
+    \
+    /* if run length > 15, must emit special run-length-16 codes (0xF0) */ \
+    while (r > 15) { \
+      emit_symbol(entropy, entropy->ac_tbl_no, 0xF0); \
+      r -= 16; \
+    } \
+    \
+    /* Find the number of bits needed for the magnitude of the coefficient */ \
+    nbits = JPEG_NBITS_NONZERO(temp);  /* there must be at least one 1 bit */ \
+    /* Check for out-of-range coefficient values */ \
+    if (nbits > MAX_COEF_BITS) \
+      ERREXIT(cinfo, JERR_BAD_DCT_COEF); \
+    \
+    /* Count/emit Huffman symbol for run length / number of bits */ \
+    emit_symbol(entropy, entropy->ac_tbl_no, (r << 4) + nbits); \
+    \
+    /* Emit that number of bits of the value, if positive, */ \
+    /* or the complement of its magnitude, if negative. */ \
+    emit_bits(entropy, (unsigned int)temp2, nbits); \
+    \
+    cvalue++; \
+    zerobits >>= 1; \
+  } \
+}
 
 METHODDEF(boolean)
 encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr)cinfo->entropy;
-  register int temp, temp2, temp3;
-  register int nbits;
-  register int r, k;
-  int Se = cinfo->Se;
+  register int temp, temp2;
+  register int nbits, r;
+  int Sl = cinfo->Se - cinfo->Ss + 1;
   int Al = cinfo->Al;
-  JBLOCKROW block;
+  JCOEF values_unaligned[2 * DCTSIZE2 + 15];
+  JCOEF *values;
+  const JCOEF *cvalue;
+  size_t zerobits;
+  size_t bits[8 / SIZEOF_SIZE_T];
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;
@@ -565,61 +671,48 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     if (entropy->restarts_to_go == 0)
       emit_restart(entropy, entropy->next_restart_num);
 
-  /* Encode the MCU data block */
-  block = MCU_data[0];
+#ifdef WITH_SIMD
+  cvalue = values = (JCOEF *)PAD((size_t)values_unaligned, 16);
+#else
+  /* Not using SIMD, so alignment is not needed */
+  cvalue = values = values_unaligned;
+#endif
+
+  /* Prepare data */
+  entropy->AC_first_prepare(MCU_data[0][0], jpeg_natural_order + cinfo->Ss,
+                            Sl, Al, values, bits);
+
+  zerobits = bits[0];
+#if SIZEOF_SIZE_T == 4
+  zerobits |= bits[1];
+#endif
+
+  /* Emit any pending EOBRUN */
+  if (zerobits && (entropy->EOBRUN > 0))
+    emit_eobrun(entropy);
+
+#if SIZEOF_SIZE_T == 4
+  zerobits = bits[0];
+#endif
 
   /* Encode the AC coefficients per section G.1.2.2, fig. G.3 */
 
-  r = 0;                        /* r = run length of zeros */
+  ENCODE_COEFS_AC_FIRST();
 
-  for (k = cinfo->Ss; k <= Se; k++) {
-    if ((temp = (*block)[jpeg_natural_order[k]]) == 0) {
-      r++;
-      continue;
-    }
-    /* We must apply the point transform by Al.  For AC coefficients this
-     * is an integer division with rounding towards 0.  To do this portably
-     * in C, we shift after obtaining the absolute value; so the code is
-     * interwoven with finding the abs value (temp) and output bits (temp2).
-     */
-    temp3 = temp >> (CHAR_BIT * sizeof(int) - 1);
-    temp ^= temp3;
-    temp -= temp3;              /* temp is abs value of input */
-    temp >>= Al;                /* apply the point transform */
-    /* For a negative coef, want temp2 = bitwise complement of abs(coef) */
-    temp2 = temp ^ temp3;
-    /* Watch out for case that nonzero coef is zero after point transform */
-    if (temp == 0) {
-      r++;
-      continue;
-    }
-
-    /* Emit any pending EOBRUN */
-    if (entropy->EOBRUN > 0)
-      emit_eobrun(entropy);
-    /* if run length > 15, must emit special run-length-16 codes (0xF0) */
-    while (r > 15) {
-      emit_symbol(entropy, entropy->ac_tbl_no, 0xF0);
-      r -= 16;
-    }
-
-    /* Find the number of bits needed for the magnitude of the coefficient */
-    nbits = JPEG_NBITS_NONZERO(temp);  /* there must be at least one 1 bit */
-    /* Check for out-of-range coefficient values */
-    if (nbits > MAX_COEF_BITS)
-      ERREXIT(cinfo, JERR_BAD_DCT_COEF);
-
-    /* Count/emit Huffman symbol for run length / number of bits */
-    emit_symbol(entropy, entropy->ac_tbl_no, (r << 4) + nbits);
-
-    /* Emit that number of bits of the value, if positive, */
-    /* or the complement of its magnitude, if negative. */
-    emit_bits(entropy, (unsigned int)temp2, nbits);
-
-    r = 0;                      /* reset zero run length */
+#if SIZEOF_SIZE_T == 4
+  zerobits = bits[1];
+  if (zerobits) {
+    int diff = ((values + DCTSIZE2 / 2) - cvalue);
+    r = count_zeroes(&zerobits);
+    r += diff;
+    cvalue += r;
+    goto first_iter_ac_first;
   }
 
-  if (r > 0) {                  /* If there are trailing zeroes, */
+  ENCODE_COEFS_AC_FIRST(first_iter_ac_first:);
+#endif
+
+  if (cvalue < (values + Sl)) { /* If there are trailing zeroes, */
     entropy->EOBRUN++;          /* count an EOB */
     if (entropy->EOBRUN == 0x7FFF)
       emit_eobrun(entropy);     /* force it out to avoid overflow */

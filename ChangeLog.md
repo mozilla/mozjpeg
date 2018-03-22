@@ -122,6 +122,11 @@ approximately 2-3.5x.
 14. Fixed a build error when building with older MinGW releases (regression
 caused by 1.5.1[7].)
 
+15. Added SIMD acceleration for progressive Huffman encoding on SSE2-capable
+x86 and x86-64 platforms.  This speeds up the compression of full-color
+progressive JPEGs by about 85-90% on average (relative to libjpeg-turbo 1.5.x)
+when using modern Intel and AMD CPUs.
+
 
 1.5.3
 =====

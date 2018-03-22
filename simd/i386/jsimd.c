@@ -1200,6 +1200,37 @@ jsimd_huff_encode_one_block(void *state, JOCTET *buffer, JCOEFPTR block,
 }
 
 GLOBAL(int)
+jsimd_can_encode_mcu_AC_first_prepare(void)
+{
+  init_simd();
+
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (SIZEOF_SIZE_T != 4)
+    return 0;
+  if (!(simd_support & JSIMD_SSE2))
+    return 0;
+#if defined(HAVE_BUILTIN_CTZL)
+  return 1;
+#elif defined(HAVE_BITSCANFORWARD)
+  return 1;
+#else
+  return 0;
+#endif
+}
+
+GLOBAL(void)
+jsimd_encode_mcu_AC_first_prepare(const JCOEF *block,
+                                  const int *jpeg_natural_order_start, int Sl,
+                                  int Al, JCOEF *values, size_t *zerobits)
+{
+  jsimd_encode_mcu_AC_first_prepare_sse2(block, jpeg_natural_order_start,
+                                         Sl, Al, values, zerobits);
+}
+
+GLOBAL(int)
 jsimd_can_encode_mcu_AC_refine_prepare(void)
 {
   init_simd();

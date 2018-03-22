@@ -25,7 +25,8 @@
     BITS        32
 
 ; --------------------------------------------------------------------------
-; Macros to load data for jsimd_encode_mcu_AC_refine_prepare_sse2()
+; Macros to load data for jsimd_encode_mcu_AC_first_prepare_sse2() and
+; jsimd_encode_mcu_AC_refine_prepare_sse2()
 
 %macro LOAD16 0
     pxor        N0, N0
@@ -244,6 +245,179 @@
     mov         INT [edi], eax
     mov         INT [edi+SIZEOF_INT], edx
 %endmacro
+
+;
+; Prepare data for jsimd_encode_mcu_AC_first().
+;
+; GLOBAL(void)
+; jsimd_encode_mcu_AC_first_prepare_sse2(const JCOEF *block,
+;                                        const int *jpeg_natural_order_start,
+;                                        int Sl, int Al, JCOEF *values,
+;                                        size_t *zerobits)
+;
+; eax + 8 = const JCOEF *block
+; eax + 12 = const int *jpeg_natural_order_start
+; eax + 16 = int Sl
+; eax + 20 = int Al
+; eax + 24 = JCOEF *values
+; eax + 28 = size_t *zerobits
+
+%define ZERO    xmm7
+%define X0      xmm0
+%define X1      xmm1
+%define N0      xmm2
+%define N1      xmm3
+%define AL      xmm4
+%define K       eax
+%define LENEND  eax
+%define LUT     ebx
+%define T0      ecx
+%define T1      edx
+%define BLOCK   esi
+%define VALUES  edi
+%define LEN     ebp
+
+%define ZEROBITS  INT [esp + 5 * 4]
+
+    align       32
+    GLOBAL_FUNCTION(jsimd_encode_mcu_AC_first_prepare_sse2)
+
+EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
+    push        ebp
+    mov         eax, esp                     ; eax = original ebp
+    sub         esp, byte 4
+    and         esp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
+    mov         [esp], eax
+    mov         ebp, esp                     ; ebp = aligned ebp
+    sub         esp, 4
+    push        ebx
+    push        ecx
+;   push        edx                     ; need not be preserved
+    push        esi
+    push        edi
+    push        ebp
+
+    mov         BLOCK, INT [eax + 8]
+    mov         LUT, INT [eax + 12]
+    mov         VALUES, INT [eax + 24]
+    movd        AL, INT [eax + 20]
+    mov         T0, INT [eax + 28]
+    mov         ZEROBITS, T0
+    mov         LEN, INT [eax + 16]
+    pxor        ZERO, ZERO
+    mov         K, LEN
+    and         K, -16
+    shr         K, 4
+    jz          .ELOOP16
+.BLOOP16:
+    LOAD16
+    pcmpgtw     N0, X0
+    pcmpgtw     N1, X1
+    paddw       X0, N0
+    paddw       X1, N1
+    pxor        X0, N0
+    pxor        X1, N1
+    psrlw       X0, AL
+    psrlw       X1, AL
+    pxor        N0, X0
+    pxor        N1, X1
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (8) * 2], X1
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    movdqa      XMMWORD [VALUES + (8 + DCTSIZE2) * 2], N1
+    add         VALUES, 16*2
+    add         LUT, 16*SIZEOF_INT
+    dec         K
+    jnz         .BLOOP16
+.ELOOP16:
+    mov         LENEND, LEN
+    and         LENEND, 7
+
+    test        LEN, 8
+    jz          .TRY7
+    test        LEN, 7
+    jz          .TRY8
+
+    LOAD15
+    pcmpgtw     N0, X0
+    pcmpgtw     N1, X1
+    paddw       X0, N0
+    paddw       X1, N1
+    pxor        X0, N0
+    pxor        X1, N1
+    psrlw       X0, AL
+    psrlw       X1, AL
+    pxor        N0, X0
+    pxor        N1, X1
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (8) * 2], X1
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    movdqa      XMMWORD [VALUES + (8 + DCTSIZE2) * 2], N1
+    add         VALUES, 16*2
+    jmp         .PADDING
+.TRY8:
+    LOAD8
+    pcmpgtw     N0, X0
+    paddw       X0, N0
+    pxor        X0, N0
+    psrlw       X0, AL
+    pxor        N0, X0
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    add         VALUES, 8*2
+    jmp         .PADDING
+.TRY7:
+    LOAD7
+    pcmpgtw     N0, X0
+    paddw       X0, N0
+    pxor        X0, N0
+    psrlw       X0, AL
+    pxor        N0, X0
+    movdqa      XMMWORD [VALUES + (0) * 2], X0
+    movdqa      XMMWORD [VALUES + (0 + DCTSIZE2) * 2], N0
+    add         VALUES, 8*2
+.PADDING:
+    mov         K, LEN
+    add         K, 7
+    and         K, -8
+    shr         K, 3
+    sub         K, DCTSIZE2/8
+    jz          .EPADDING
+    align       16
+.ZEROLOOP:
+    movdqa      XMMWORD [VALUES + 0], ZERO
+    add         VALUES, 8*2
+    inc         K
+    jnz         .ZEROLOOP
+.EPADDING:
+    sub         VALUES, DCTSIZE2*2
+
+    REDUCE0
+
+    pop         ebp
+    pop         edi
+    pop         esi
+;   pop         edx                     ; need not be preserved
+    pop         ecx
+    pop         ebx
+    mov         esp, ebp                ; esp <- aligned ebp
+    pop         esp                     ; esp <- original ebp
+    pop         ebp
+    ret
+
+%undef ZERO
+%undef X0
+%undef X1
+%undef N0
+%undef N1
+%undef AL
+%undef K
+%undef LUT
+%undef T0
+%undef T1
+%undef BLOCK
+%undef VALUES
+%undef LEN
 
 ;
 ; Prepare data for jsimd_encode_mcu_AC_refine().

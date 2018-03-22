@@ -6,11 +6,12 @@
 1. Added AVX2 SIMD implementations of the colorspace conversion, chroma
 downsampling and upsampling, integer quantization and sample conversion, and
 slow integer DCT/IDCT algorithms.  When using the slow integer DCT/IDCT
-algorithms, the compression of RGB images is approximately 13-36% (avg. 22%)
-faster (relative to libjpeg-turbo 1.5.x) with 64-bit code and 11-21% (avg. 17%)
-faster with 32-bit code, and the decompression of RGB images is approximately
-9-35% (avg. 17%) faster with 64-bit code and 7-17% (avg. 12%) faster with
-32-bit code.  (As tested on a 3 GHz Intel Core i7.  Actual mileage may vary.)
+algorithms on AVX2-equipped CPUs, the compression of RGB images is
+approximately 13-36% (avg. 22%) faster (relative to libjpeg-turbo 1.5.x) with
+64-bit code and 11-21% (avg. 17%) faster with 32-bit code, and the
+decompression of RGB images is approximately 9-35% (avg. 17%) faster with
+64-bit code and 7-17% (avg. 12%) faster with 32-bit code.  (As tested on a
+3 GHz Intel Core i7.  Actual mileage may vary.)
 
 2. Overhauled the build system to use CMake on all platforms, and removed the
 autotools-based build system.  This decision resulted from extensive

@@ -55,7 +55,7 @@ TURBOJPEG_1.4
     tjPlaneWidth;
 } TURBOJPEG_1.2;
 
-TURBOJPEG_1.6
+TURBOJPEG_2.0
 {
   global:
     tjGetErrorCode;

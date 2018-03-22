@@ -1,4 +1,4 @@
-1.6 pre-beta
+2.0 pre-beta
 ============
 
 ### Significant changes relative to 1.5.3:

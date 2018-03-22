@@ -697,7 +697,7 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 
   /* Encode the AC coefficients per section G.1.2.2, fig. G.3 */
 
-  ENCODE_COEFS_AC_FIRST();
+  ENCODE_COEFS_AC_FIRST((void)0;);
 
 #if SIZEOF_SIZE_T == 4
   zerobits = bits[1];
@@ -960,7 +960,7 @@ encode_mcu_AC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 #else
   signbits = bits[2];
 #endif
-  ENCODE_COEFS_AC_REFINE();
+  ENCODE_COEFS_AC_REFINE((void)0;);
 
 #if SIZEOF_SIZE_T == 4
   zerobits = bits[1];

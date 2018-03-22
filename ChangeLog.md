@@ -1,5 +1,5 @@
-2.0 pre-beta
-============
+1.5.90 (2.0 beta1)
+==================
 
 ### Significant changes relative to 1.5.3:
 

@@ -50,7 +50,8 @@ JPEG images:
   transforms on an image.  The Java interface for libjpeg-turbo is written on
   top of the TurboJPEG API.  The TurboJPEG API is recommended for first-time
   users of libjpeg-turbo.  Refer to [tjexample.c](tjexample.c) and
-  [TJExample.java](java/TJExample.java) for examples of its usage.
+  [TJExample.java](java/TJExample.java) for examples of its usage and to
+  <http://libjpeg-turbo.org/Documentation/Documentation> for API documentation.
 
 - **libjpeg API**<br>
   This is the de facto industry-standard API for compressing and decompressing
@@ -58,7 +59,8 @@ JPEG images:
   more powerful.  The libjpeg API implementation in libjpeg-turbo is both
   API/ABI-compatible and mathematically compatible with libjpeg v6b.  It can
   also optionally be configured to be API/ABI-compatible with libjpeg v7 and v8
-  (see below.)
+  (see below.)  Refer to [cjpeg.c](cjpeg.c) and [djpeg.c](djpeg.c) for examples
+  of its usage and to [libjpeg.txt](libjpeg.txt) for API documentation.
 
 There is no significant performance advantage to either API when both are used
 to perform similar operations.

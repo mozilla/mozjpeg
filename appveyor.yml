@@ -26,7 +26,7 @@ build_script:
   - cmd: >-
       for /f %%i in ('"cygpath %CD%"') do set MINGWPATH=%%i
 
-      bash c:/buildscripts/buildljt -r file://%MINGWPATH% -b /c/ljt.nightly %APPVEYOR_REPO_BRANCH% -v
+      bash c:/buildscripts/buildljt -d %MINGWPATH% -b /c/ljt.nightly -v
 
       move c:\ljt.nightly\files\*.tar.gz .
 

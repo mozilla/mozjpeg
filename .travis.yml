@@ -60,30 +60,26 @@ before_install:
         docker pull dcommander/buildljt;
       fi &&
       git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $TRAVIS_BRANCH ~/src/buildscripts &&
-      openssl aes-256-cbc -K $encrypted_f92e8533f6f1_key -iv $encrypted_f92e8533f6f1_iv -in ci/keys.enc -out ci/keys -d &&
-      tar xf ci/keys &&
-      rm ci/keys &&
-      mv ci/gpgsign ~/src/buildscripts &&
-      gpg --import ci/sign_ljt &&
-      rm ci/sign_ljt;
+      if [ -n "$encrypted_f92e8533f6f1_iv" ]; then
+        openssl aes-256-cbc -K $encrypted_f92e8533f6f1_key -iv $encrypted_f92e8533f6f1_iv -in ci/keys.enc -out ci/keys -d &&
+        tar xf ci/keys &&
+        rm ci/keys &&
+        mv ci/gpgsign ~/src/buildscripts &&
+        gpg --import ci/sign_ljt &&
+        rm ci/sign_ljt;
+      fi
     fi
 
 script:
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       mkdir -p ~/src/ljt.nightly &&
-      if [ -f .git/shallow ]; then
-        mv .git/shallow .git/shallow.bak;
-      fi &&
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -v $TRAVIS_BUILD_DIR:/root/src/libjpeg-turbo -v $HOME/.gnupg:/root/.gnupg -t dcommander/buildljt:latest bash -c "rpm --import http://pgp.mit.edu/pks/lookup?op=get\&search=0x0575F26BD5B3FDB1 && ~/src/buildscripts/buildljt -r file:///root/src/libjpeg-turbo $TRAVIS_BRANCH -v" &&
+        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -v $TRAVIS_BUILD_DIR:/root/src/libjpeg-turbo -v $HOME/.gnupg:/root/.gnupg -t dcommander/buildljt:latest bash -c "rpm --import http://pgp.mit.edu/pks/lookup?op=get\&search=0x0575F26BD5B3FDB1 && ~/src/buildscripts/buildljt -d /root/src/libjpeg-turbo -v" &&
         sudo chown -R travis:travis ~/src/ljt.nightly &&
         mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
       else
-        PATH=$PATH:~/src/gas-preprocessor ~/src/buildscripts/buildljt -r file://$TRAVIS_BUILD_DIR $TRAVIS_BRANCH -v &&
+        PATH=$PATH:~/src/gas-preprocessor ~/src/buildscripts/buildljt -d $TRAVIS_BUILD_DIR -v &&
         mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
-      fi &&
-      if [ -f .git/shallow.bak ]; then
-        mv .git/shallow.bak .git/shallow;
       fi
     fi
   - if [ "${BUILD_OFFICIAL:-}" == "" ]; then

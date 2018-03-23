@@ -215,10 +215,10 @@ start_pass_phuff(j_compress_ptr cinfo, boolean gather_statistics)
       entropy->pub.encode_mcu = encode_mcu_DC_first;
     else
       entropy->pub.encode_mcu = encode_mcu_AC_first;
-      if (jsimd_can_encode_mcu_AC_first_prepare())
-        entropy->AC_first_prepare = jsimd_encode_mcu_AC_first_prepare;
-      else
-        entropy->AC_first_prepare = encode_mcu_AC_first_prepare;
+    if (jsimd_can_encode_mcu_AC_first_prepare())
+      entropy->AC_first_prepare = jsimd_encode_mcu_AC_first_prepare;
+    else
+      entropy->AC_first_prepare = encode_mcu_AC_first_prepare;
   } else {
     if (is_DC_band)
       entropy->pub.encode_mcu = encode_mcu_DC_refine;

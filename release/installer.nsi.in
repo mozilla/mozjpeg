@@ -62,6 +62,9 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libturbojpeg.a"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg.dll.a"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg.a"
+	SetOutPath $INSTDIR\lib\pkgconfig
+	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libjpeg.pc"
+	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libturbojpeg.pc"
 !else
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}turbojpeg.lib"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}turbojpeg-static.lib"
@@ -89,6 +92,14 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_CURRENT_SOURCE_DIR@\wizard.txt"
 	File "@CMAKE_CURRENT_SOURCE_DIR@\tjexample.c"
 	File "@CMAKE_CURRENT_SOURCE_DIR@\java\TJExample.java"
+!ifdef GCC
+	SetOutPath $INSTDIR\man\man1
+	File "@CMAKE_CURRENT_SOURCE_DIR@\cjpeg.1"
+	File "@CMAKE_CURRENT_SOURCE_DIR@\djpeg.1"
+	File "@CMAKE_CURRENT_SOURCE_DIR@\jpegtran.1"
+	File "@CMAKE_CURRENT_SOURCE_DIR@\rdjpgcom.1"
+	File "@CMAKE_CURRENT_SOURCE_DIR@\wrjpgcom.1"
+!endif
 
 	WriteRegStr HKLM "SOFTWARE\@INST_REG_NAME@ @VERSION@" "Install_Dir" "$INSTDIR"
 
@@ -119,6 +130,8 @@ Section "Uninstall"
 	Delete $INSTDIR\lib\libturbojpeg.a
 	Delete $INSTDIR\lib\libjpeg.dll.a
 	Delete $INSTDIR\lib\libjpeg.a
+	Delete $INSTDIR\lib\pkgconfig\libjpeg.pc
+	Delete $INSTDIR\lib\pkgconfig\libturbojpeg.pc
 !else
 	Delete $INSTDIR\bin\jpeg@SO_MAJOR_VERSION@.dll
 	Delete $INSTDIR\bin\turbojpeg.dll
@@ -153,10 +166,24 @@ Section "Uninstall"
 	Delete $INSTDIR\doc\wizard.txt
 	Delete $INSTDIR\doc\tjexample.c
 	Delete $INSTDIR\doc\TJExample.java
+!ifdef GCC
+	Delete $INSTDIR\man\man1\cjpeg.1
+	Delete $INSTDIR\man\man1\djpeg.1
+	Delete $INSTDIR\man\man1\jpegtran.1
+	Delete $INSTDIR\man\man1\rdjpgcom.1
+	Delete $INSTDIR\man\man1\wrjpgcom.1
+!endif
 
 	RMDir "$INSTDIR\include"
+!ifdef GCC
+	RMDir "$INSTDIR\lib\pkgconfig"
+!endif
 	RMDir "$INSTDIR\lib"
 	RMDir "$INSTDIR\doc"
+!ifdef GCC
+	RMDir "$INSTDIR\man\man1"
+	RMDir "$INSTDIR\man"
+!endif
 !ifdef JAVA
 	RMDir "$INSTDIR\classes"
 !endif

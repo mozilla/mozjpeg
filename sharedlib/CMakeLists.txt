@@ -41,6 +41,9 @@ add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} $<TARGET_OBJECTS:simd>
 set_target_properties(jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
   VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
 if(APPLE)
+  if(NOT CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG)
+    set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
+  endif()
   set_target_properties(jpeg PROPERTIES MACOSX_RPATH 1)
 endif()
 if(MAPFLAG)

@@ -121,6 +121,7 @@ deploy:
     local-dir: $HOME/src/ljt.nightly/latest/files
     upload-dir: $TRAVIS_BRANCH/$TRAVIS_OS_NAME
     on:
+      repo: libjpeg-turbo/libjpeg-turbo
       branch: master
       condition: -n "$BUILD_OFFICIAL"
   - provider: s3
@@ -133,5 +134,6 @@ deploy:
     local-dir: $HOME/src/ljt.nightly/latest/files
     upload-dir: $TRAVIS_BRANCH/$TRAVIS_OS_NAME
     on:
+      repo: libjpeg-turbo/libjpeg-turbo
       branch: dev
       condition: -n "$BUILD_OFFICIAL"

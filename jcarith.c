@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, D. R. Commander.
+ * Copyright (C) 2015, 2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -142,13 +142,13 @@ finish_pass(j_compress_ptr cinfo)
 
   /* Find the e->c in the coding interval with the largest
    * number of trailing zero bits */
-  if ((temp = (e->a - 1 + e->c) & 0xFFFF0000L) < e->c)
+  if ((temp = (e->a - 1 + e->c) & 0xFFFF0000UL) < e->c)
     e->c = temp + 0x8000L;
   else
     e->c = temp;
   /* Send remaining bytes to output */
   e->c <<= e->ct;
-  if (e->c & 0xF8000000L) {
+  if (e->c & 0xF8000000UL) {
     /* One final overflow has to be handled */
     if (e->buffer >= 0) {
       if (e->zc)

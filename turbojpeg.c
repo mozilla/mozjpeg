@@ -168,7 +168,7 @@ static int cs2pf[JPEG_NUMCS] = {
 }
 #define _throw(m) { \
   snprintf(this->errStr, JMSG_LENGTH_MAX, "%s", m); \
-  this->isInstanceError = TRUE;  _throwg(m); \
+  this->isInstanceError = TRUE;  _throwg(m) \
 }
 
 #define getinstance(handle) \

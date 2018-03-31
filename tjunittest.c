@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014, 2017 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2017-2018 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -61,14 +61,14 @@ void usage(char *progName)
 
 #define _throwtj() { \
   printf("TurboJPEG ERROR:\n%s\n", tjGetErrorStr()); \
-  bailout(); \
+  bailout() \
 }
 #define _tj(f) { if ((f) == -1) _throwtj(); }
-#define _throw(m) { printf("ERROR: %s\n", m);  bailout(); }
+#define _throw(m) { printf("ERROR: %s\n", m);  bailout() }
 #define _throwmd5(filename, md5sum, ref) { \
   printf("\n%s has an MD5 sum of %s.\n   Should be %s.\n", filename, md5sum, \
          ref); \
-  bailout(); \
+  bailout() \
 }
 
 const char *subNameLong[TJ_NUMSAMP] = {
@@ -348,7 +348,7 @@ void writeJPEG(unsigned char *jpegBuf, unsigned long jpegSize, char *filename)
 
   if (!file || fwrite(jpegBuf, jpegSize, 1, file) != 1) {
     printf("ERROR: Could not write to %s.\n%s\n", filename, strerror(errno));
-    bailout();
+    bailout()
   }
 
 bailout:

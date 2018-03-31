@@ -351,6 +351,9 @@ if(SIZE_T EQUAL UNSIGNED_LONG)
   check_c_source_compiles("int main(int argc, char **argv) { unsigned long a = argc;  return __builtin_ctzl(a); }"
     HAVE_BUILTIN_CTZL)
 endif()
+if(MSVC)
+  check_include_files("intrin.h" HAVE_INTRIN_H)
+endif()
 
 if(UNIX)
   # Check for headers
@@ -415,7 +418,6 @@ if(UNIX)
 endif()
 
 if(MSVC)
-  check_include_files("intrin.h" HAVE_INTRIN_H)
   set(INLINE_OPTIONS "__inline;inline")
 else()
   set(INLINE_OPTIONS "__inline__;inline")

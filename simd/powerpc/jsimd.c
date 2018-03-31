@@ -39,7 +39,7 @@
 
 static unsigned int simd_support = ~0;
 
-#if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
+#if !defined(__ALTIVEC__) && (defined(__linux__) || defined(ANDROID) || defined(__ANDROID__))
 
 #define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT  (1024 * 1024)
 

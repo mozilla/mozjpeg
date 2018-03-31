@@ -363,9 +363,9 @@ if(UNIX)
   check_include_files(sys/types.h NEED_SYS_TYPES_H)
 
   # Check for functions
-  include(CheckFunctionExists)
-  check_function_exists(memset HAVE_MEMSET)
-  check_function_exists(memcpy HAVE_MEMCPY)
+  include(CheckSymbolExists)
+  check_symbol_exists(memset string.h HAVE_MEMSET)
+  check_symbol_exists(memcpy string.h HAVE_MEMCPY)
   if(NOT HAVE_MEMSET AND NOT HAVE_MEMCPY)
     set(NEED_BSD_STRINGS 1)
   endif()
@@ -375,7 +375,7 @@ if(UNIX)
   check_type_size("unsigned short" UNSIGNED_SHORT)
 
   # Check for compiler features
-  check_c_source_compiles("int main(void) { typedef struct undefined_structure *undef_struct_ptr; }"
+  check_c_source_compiles("int main(void) { typedef struct undefined_structure *undef_struct_ptr;  undef_struct_ptr ptr = 0;  return ptr != 0; }"
     INCOMPLETE_TYPES)
   if(INCOMPLETE_TYPES)
     message(STATUS "Compiler supports pointers to undefined structures.")
@@ -433,7 +433,7 @@ if(FORCE_INLINE)
   endif()
 endif()
 foreach(inline ${INLINE_OPTIONS})
-  check_c_source_compiles("${inline} static void foo(void) {} int main(void) { foo(); }"
+  check_c_source_compiles("${inline} static int foo(void) { return 0; } int main(void) { return foo(); }"
     INLINE_WORKS)
   if(INLINE_WORKS)
     set(INLINE ${inline})

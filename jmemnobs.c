@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1992-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, D. R. Commander.
+ * Copyright (C) 2017-2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -72,7 +72,7 @@ jpeg_mem_available(j_common_ptr cinfo, size_t min_bytes_needed,
                    size_t max_bytes_needed, size_t already_allocated)
 {
   if (cinfo->mem->max_memory_to_use) {
-    if (cinfo->mem->max_memory_to_use > already_allocated)
+    if ((size_t)cinfo->mem->max_memory_to_use > already_allocated)
       return cinfo->mem->max_memory_to_use - already_allocated;
     else
       return 0;

@@ -92,6 +92,11 @@ segfault or other user-visible errant behavior, and given that the lossless
 transformer (unlike the decompressor) is not generally exposed to arbitrary
 data exploits, this issue did not likely pose a security risk.
 
+12. Added SIMD acceleration for progressive Huffman encoding on ARM 64-bit
+(ARMv8) platforms.  This speeds up the compression of full-color progressive
+JPEGs by about 30-40% on average (relative to libjpeg-turbo 2.0.x) when using
+modern ARMv8 CPUs.
+
 
 2.0.3
 =====

@@ -214,14 +214,14 @@ Continuous-tone Still Images, Part 2: Compliance testing" and has document
 numbers ISO/IEC IS 10918-2, ITU-T T.83.
 
 The JPEG standard does not specify all details of an interchangeable file
-format.  For the omitted details we follow the "JFIF" conventions, revision
-1.02.  JFIF 1.02 has been adopted as an Ecma International Technical Report
-and thus received a formal publication status.  It is available as a free
-download in PDF format from
-http://www.ecma-international.org/publications/techreports/E-TR-098.htm.
-A PostScript version of the JFIF document is available at
-http://www.ijg.org/files/jfif.ps.gz.  There is also a plain text version at
-http://www.ijg.org/files/jfif.txt.gz, but it is missing the figures.
+format.  For the omitted details, we follow the "JFIF" conventions, revision
+1.02.  JFIF version 1 has been adopted as ISO/IEC 10918-5 (05/2013) and
+Recommendation ITU-T T.871 (05/2011): Information technology - Digital
+compression and coding of continuous-tone still images: JPEG File Interchange
+Format (JFIF).  It is available as a free download in PDF file format from
+https://www.iso.org/standard/54989.html and http://www.itu.int/rec/T-REC-T.871.
+A PDF file of the older JFIF 1.02 specification is available at
+http://www.w3.org/Graphics/JPEG/jfif3.pdf.
 
 The TIFF 6.0 file format specification can be obtained by FTP from
 ftp://ftp.sgi.com/graphics/tiff/TIFF6.ps.gz.  The JPEG incorporation scheme
@@ -253,18 +253,22 @@ with body
         send usenet/news.answers/jpeg-faq/part2
 
 
-FILE FORMAT WARS
-================
+FILE FORMAT COMPATIBILITY
+=========================
 
-The ISO/IEC JTC1/SC29/WG1 standards committee (also known as JPEG, together
-with ITU-T SG16) currently promotes different formats containing the name
-"JPEG" which are incompatible with original DCT-based JPEG.  IJG therefore does
-not support these formats (see REFERENCES).  Indeed, one of the original
-reasons for developing this free software was to help force convergence on
-common, interoperable format standards for JPEG files.
-Don't use an incompatible file format!
-(In any case, our decoder will remain capable of reading existing JPEG
-image files indefinitely.)
+This software implements ITU T.81 | ISO/IEC 10918 with some extensions from
+ITU T.871 | ISO/IEC 10918-5 (JPEG File Interchange Format-- see REFERENCES).
+Informally, the term "JPEG image" or "JPEG file" most often refers to JFIF or
+a subset thereof, but there are other formats containing the name "JPEG" that
+are incompatible with the DCT-based JPEG standard or with JFIF (for instance,
+JPEG 2000 and JPEG XR).  This software therefore does not support these
+formats.  Indeed, one of the original reasons for developing this free software
+was to help force convergence on common, interoperable format standards for
+JPEG files.
+
+JFIF is a minimal or "low end" representation.  TIFF/JPEG (TIFF revision 6.0 as
+modified by TIFF Technical Note #2) can be used for "high end" applications
+that need to record a lot of additional data about an image.
 
 
 TO DO

@@ -152,7 +152,7 @@ typedef struct {                /* Bitreading working state within an MCU */
   if (bits_left < (nbits)) { \
     if (!jpeg_fill_bit_buffer(&(state), get_buffer, bits_left, nbits)) \
       { action; } \
-    get_buffer = (state).get_buffer; bits_left = (state).bits_left; \
+    get_buffer = (state).get_buffer;  bits_left = (state).bits_left; \
   } \
 }
 
@@ -193,9 +193,9 @@ EXTERN(boolean) jpeg_fill_bit_buffer(bitread_working_state *state,
   if (bits_left < HUFF_LOOKAHEAD) { \
     if (!jpeg_fill_bit_buffer(&state, get_buffer, bits_left, 0)) \
       { failaction; } \
-    get_buffer = state.get_buffer; bits_left = state.bits_left; \
+    get_buffer = state.get_buffer;  bits_left = state.bits_left; \
     if (bits_left < HUFF_LOOKAHEAD) { \
-      nb = 1; goto slowlabel; \
+      nb = 1;  goto slowlabel; \
     } \
   } \
   look = PEEK_BITS(HUFF_LOOKAHEAD); \
@@ -207,7 +207,7 @@ slowlabel: \
     if ((result = \
          jpeg_huff_decode(&state, get_buffer, bits_left, htbl, nb)) < 0) \
       { failaction; } \
-    get_buffer = state.get_buffer; bits_left = state.bits_left; \
+    get_buffer = state.get_buffer;  bits_left = state.bits_left; \
   } \
 }
 

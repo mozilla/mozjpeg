@@ -280,7 +280,7 @@ h2v2_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
         (JSAMPLE)((GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[1]) +
                    GETJSAMPLE(*inptr1) + GETJSAMPLE(inptr1[1]) + bias) >> 2);
       bias ^= 3;                /* 1=>2, 2=>1 */
-      inptr0 += 2; inptr1 += 2;
+      inptr0 += 2;  inptr1 += 2;
     }
     inrow += 2;
   }
@@ -348,7 +348,7 @@ h2v2_smooth_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
                 GETJSAMPLE(*below_ptr) + GETJSAMPLE(below_ptr[2]);
     membersum = membersum * memberscale + neighsum * neighscale;
     *outptr++ = (JSAMPLE)((membersum + 32768) >> 16);
-    inptr0 += 2; inptr1 += 2; above_ptr += 2; below_ptr += 2;
+    inptr0 += 2;  inptr1 += 2;  above_ptr += 2;  below_ptr += 2;
 
     for (colctr = output_cols - 2; colctr > 0; colctr--) {
       /* sum of pixels directly mapped to this output element */
@@ -368,7 +368,7 @@ h2v2_smooth_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
       membersum = membersum * memberscale + neighsum * neighscale;
       /* round, descale and output it */
       *outptr++ = (JSAMPLE)((membersum + 32768) >> 16);
-      inptr0 += 2; inptr1 += 2; above_ptr += 2; below_ptr += 2;
+      inptr0 += 2;  inptr1 += 2;  above_ptr += 2;  below_ptr += 2;
     }
 
     /* Special case for last column */
@@ -437,17 +437,17 @@ fullsize_smooth_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
     neighsum = colsum + (colsum - membersum) + nextcolsum;
     membersum = membersum * memberscale + neighsum * neighscale;
     *outptr++ = (JSAMPLE)((membersum + 32768) >> 16);
-    lastcolsum = colsum; colsum = nextcolsum;
+    lastcolsum = colsum;  colsum = nextcolsum;
 
     for (colctr = output_cols - 2; colctr > 0; colctr--) {
       membersum = GETJSAMPLE(*inptr++);
-      above_ptr++; below_ptr++;
+      above_ptr++;  below_ptr++;
       nextcolsum = GETJSAMPLE(*above_ptr) + GETJSAMPLE(*below_ptr) +
                    GETJSAMPLE(*inptr);
       neighsum = lastcolsum + (colsum - membersum) + nextcolsum;
       membersum = membersum * memberscale + neighsum * neighscale;
       *outptr++ = (JSAMPLE)((membersum + 32768) >> 16);
-      lastcolsum = colsum; colsum = nextcolsum;
+      lastcolsum = colsum;  colsum = nextcolsum;
     }
 
     /* Special case for last column */

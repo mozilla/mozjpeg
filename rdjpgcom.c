@@ -301,7 +301,8 @@ process_SOFn(int marker)
   case M_SOF10: process = "Progressive, arithmetic coding";  break;
   case M_SOF11: process = "Lossless, arithmetic coding";  break;
   case M_SOF13: process = "Differential sequential, arithmetic coding";  break;
-  case M_SOF14: process = "Differential progressive, arithmetic coding"; break;
+  case M_SOF14:
+    process = "Differential progressive, arithmetic coding";  break;
   case M_SOF15: process = "Differential lossless, arithmetic coding";  break;
   default:      process = "Unknown";  break;
   }

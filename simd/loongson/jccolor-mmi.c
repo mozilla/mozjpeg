@@ -30,8 +30,8 @@
 #include "jsimd_mmi.h"
 
 
-#define F_0_081  ((short) 5329)               /* FIX(0.08131) */
-#define F_0_114  ((short) 7471)               /* FIX(0.11400) */
+#define F_0_081  ((short)5329)                /* FIX(0.08131) */
+#define F_0_114  ((short)7471)                /* FIX(0.11400) */
 #define F_0_168  ((short)11059)               /* FIX(0.16874) */
 #define F_0_250  ((short)16384)               /* FIX(0.25000) */
 #define F_0_299  ((short)19595)               /* FIX(0.29900) */

@@ -1210,15 +1210,10 @@ jsimd_can_encode_mcu_AC_first_prepare(void)
     return 0;
   if (SIZEOF_SIZE_T != 4)
     return 0;
-  if (!(simd_support & JSIMD_SSE2))
-    return 0;
-#if defined(HAVE_BUILTIN_CTZL)
-  return 1;
-#elif defined(HAVE_BITSCANFORWARD)
-  return 1;
-#else
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
   return 0;
-#endif
 }
 
 GLOBAL(void)
@@ -1241,15 +1236,10 @@ jsimd_can_encode_mcu_AC_refine_prepare(void)
     return 0;
   if (SIZEOF_SIZE_T != 4)
     return 0;
-  if (!(simd_support & JSIMD_SSE2))
-    return 0;
-#if defined(HAVE_BUILTIN_CTZL)
-  return 1;
-#elif defined(HAVE_BITSCANFORWARD)
-  return 1;
-#else
+  if (simd_support & JSIMD_SSE2)
+    return 1;
+
   return 0;
-#endif
 }
 
 GLOBAL(int)

@@ -91,19 +91,16 @@ message(STATUS "CMAKE_ASM_NASM_FLAGS = ${EFFECTIVE_ASM_NASM_FLAGS}")
 
 set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -I\"${CMAKE_CURRENT_SOURCE_DIR}/nasm/\" -I\"${CMAKE_CURRENT_SOURCE_DIR}/${CPU_TYPE}/\"")
 
-if(WIN32)
-  set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -I\"${CMAKE_CURRENT_SOURCE_DIR}/../win/\"")
-  set(JSIMDCFG_INC ${CMAKE_CURRENT_SOURCE_DIR}/../win/jsimdcfg.inc)
-else()
-  set(GREP grep)
-  if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-    set(GREP ggrep)
-  endif()
-  add_custom_command(OUTPUT jsimdcfg.inc
-    COMMAND ${CMAKE_C_COMPILER} -E -I${CMAKE_BINARY_DIR} -I${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/jsimdcfg.inc.h | ${GREP} -E '^[\;%]|^\ %' | sed 's%_cpp_protection_%%' | sed 's@% define@%define@g' >jsimdcfg.inc)
-  set(JSIMDCFG_INC ${CMAKE_CURRENT_BINARY_DIR}/jsimdcfg.inc)
-  set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -I\"${CMAKE_CURRENT_BINARY_DIR}/\"")
+set(GREP grep)
+if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+  set(GREP ggrep)
 endif()
+add_custom_target(jsimdcfg COMMAND
+  ${CMAKE_C_COMPILER} -E -I${CMAKE_BINARY_DIR} -I${CMAKE_CURRENT_BINARY_DIR}
+    -I${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/nasm/jsimdcfg.inc.h |
+  ${GREP} -E '^[\;%]|^\ %' | sed 's%_cpp_protection_%%' |
+  sed 's@% define@%define@g' >${CMAKE_CURRENT_SOURCE_DIR}/nasm/jsimdcfg.inc)
 
 if(CPU_TYPE STREQUAL "x86_64")
   set(SIMD_SOURCES x86_64/jsimdcpu.asm x86_64/jfdctflt-sse.asm
@@ -164,7 +161,7 @@ foreach(file ${SIMD_SOURCES})
     set(OBJECT_DEPENDS ${OBJECT_DEPENDS}
       ${CMAKE_CURRENT_SOURCE_DIR}/${DEPFILE})
   endif()
-  set(OBJECT_DEPENDS ${OBJECT_DEPENDS} ${INC_FILES} ${JSIMDCFG_INC})
+  set(OBJECT_DEPENDS ${OBJECT_DEPENDS} ${INC_FILES})
   if(MSVC_IDE)
     # The CMake Visual Studio generators do not work properly with the ASM_NASM
     # language, so we have to go rogue here and use a custom command like we

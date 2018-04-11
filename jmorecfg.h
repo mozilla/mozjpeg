@@ -315,10 +315,10 @@ typedef int boolean;
  * with it.  In reality, few people ever did this, because there were some
  * severe restrictions involved (cjpeg and djpeg no longer worked properly,
  * compressing/decompressing RGB JPEGs no longer worked properly, and the color
- * quantizer wouldn't work with pixel sizes other than 3.)  Further, since all
- * of the O/S-supplied versions of libjpeg were built with the default values
- * of RGB_RED, RGB_GREEN, RGB_BLUE, and RGB_PIXELSIZE, many applications have
- * come to regard these values as immutable.
+ * quantizer wouldn't work with pixel sizes other than 3.)  Furthermore, since
+ * all of the O/S-supplied versions of libjpeg were built with the default
+ * values of RGB_RED, RGB_GREEN, RGB_BLUE, and RGB_PIXELSIZE, many applications
+ * have come to regard these values as immutable.
  *
  * The libjpeg-turbo colorspace extensions provide a much cleaner way of
  * compressing from/decompressing to buffers with arbitrary component orders

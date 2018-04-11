@@ -285,8 +285,8 @@ public class TJCompressor implements Closeable {
    * <p>
    * NOTE: This method has no effect when compressing a JPEG image from a YUV
    * planar source.  In that case, the level of chrominance subsampling in
-   * the JPEG image is determined by the source.  Further, this method has no
-   * effect when encoding to a pre-allocated {@link YUVImage} instance.  In
+   * the JPEG image is determined by the source.  Furthermore, this method has
+   * no effect when encoding to a pre-allocated {@link YUVImage} instance.  In
    * that case, the level of chrominance subsampling is determined by the
    * destination.
    *

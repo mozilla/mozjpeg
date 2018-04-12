@@ -40,7 +40,7 @@
 #include "cmyk.h"
 #ifdef _WIN32
 #include <time.h>
-#define random() rand()
+#define random()  rand()
 #else
 #include <unistd.h>
 #endif

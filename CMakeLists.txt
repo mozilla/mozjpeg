@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 project(libjpeg-turbo C)
-set(VERSION 1.5.90)
+set(VERSION 1.5.91)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)

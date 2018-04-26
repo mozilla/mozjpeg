@@ -1,3 +1,17 @@
+2.0.0
+=====
+
+### Significant changes relative to 2.0 beta1:
+
+1. The TurboJPEG API can now decompress CMYK JPEG images that have subsampled M
+and Y components (not to be confused with YCCK JPEG images, in which the C/M/Y
+components have been transformed into luma and chroma.)   Previously, an error
+was generated ("Could not determine subsampling type for JPEG image") when such
+an image was passed to `tjDecompressHeader3()`, `tjTransform()`,
+`tjDecompressToYUVPlanes()`, `tjDecompressToYUV2()`, or the equivalent Java
+methods.
+
+
 1.5.90 (2.0 beta1)
 ==================
 

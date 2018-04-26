@@ -319,7 +319,8 @@ static int getSubsamp(j_decompress_ptr dinfo)
         for (k = 1; k < dinfo->num_components; k++) {
           int href = 1, vref = 1;
 
-          if (dinfo->jpeg_color_space == JCS_YCCK && k == 3) {
+          if ((dinfo->jpeg_color_space == JCS_YCCK ||
+               dinfo->jpeg_color_space == JCS_CMYK) && k == 3) {
             href = tjMCUWidth[i] / 8;  vref = tjMCUHeight[i] / 8;
           }
           if (dinfo->comp_info[k].h_samp_factor == href &&
@@ -340,7 +341,8 @@ static int getSubsamp(j_decompress_ptr dinfo)
         for (k = 1; k < dinfo->num_components; k++) {
           int href = tjMCUHeight[i] / 8, vref = tjMCUWidth[i] / 8;
 
-          if (dinfo->jpeg_color_space == JCS_YCCK && k == 3) {
+          if ((dinfo->jpeg_color_space == JCS_YCCK ||
+               dinfo->jpeg_color_space == JCS_CMYK) && k == 3) {
             href = vref = 2;
           }
           if (dinfo->comp_info[k].h_samp_factor == href &&

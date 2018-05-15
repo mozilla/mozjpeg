@@ -1,6 +1,6 @@
 /*
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
- * Copyright (C)2017 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2017-2018 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,28 +31,34 @@ package org.libjpegturbo.turbojpeg;
 
 import java.io.IOException;
 
+@SuppressWarnings("checkstyle:JavadocType")
 public class TJException extends IOException {
 
   private static final long serialVersionUID = 1L;
 
+  @SuppressWarnings("checkstyle:JavadocMethod")
   public TJException() {
     super();
   }
 
+  @SuppressWarnings("checkstyle:JavadocMethod")
   public TJException(String message, Throwable cause) {
     super(message, cause);
   }
 
+  @SuppressWarnings("checkstyle:JavadocMethod")
   public TJException(String message) {
     super(message);
   }
 
+  @SuppressWarnings("checkstyle:JavadocMethod")
   public TJException(String message, int code) {
     super(message);
     if (errorCode >= 0 && errorCode < TJ.NUMERR)
       errorCode = code;
   }
 
+  @SuppressWarnings("checkstyle:JavadocMethod")
   public TJException(Throwable cause) {
     super(cause);
   }

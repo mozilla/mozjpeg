@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2015 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015, 2018 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,7 @@ public class TJDecompressor implements Closeable {
    * @param yuvImage {@link YUVImage} instance containing a YUV planar
    * image to be decoded.  This image is not modified.
    */
+  @SuppressWarnings("checkstyle:HiddenField")
   public TJDecompressor(YUVImage yuvImage) throws TJException {
     init();
     setSourceImage(yuvImage);
@@ -109,6 +110,7 @@ public class TJDecompressor implements Closeable {
   /**
    * @deprecated Use {@link #setSourceImage(byte[], int)} instead.
    */
+  @SuppressWarnings("checkstyle:JavadocMethod")
   @Deprecated
   public void setJPEGImage(byte[] jpegImage, int imageSize)
                            throws TJException {
@@ -400,6 +402,7 @@ public class TJDecompressor implements Closeable {
    * @deprecated Use
    * {@link #decompress(byte[], int, int, int, int, int, int, int)} instead.
    */
+  @SuppressWarnings("checkstyle:JavadocMethod")
   @Deprecated
   public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
                          int desiredHeight, int pixelFormat, int flags)
@@ -494,11 +497,12 @@ public class TJDecompressor implements Closeable {
   /**
    * @deprecated Use {@link #decompressToYUV(YUVImage, int)} instead.
    */
+  @SuppressWarnings("checkstyle:JavadocMethod")
   @Deprecated
   public void decompressToYUV(byte[] dstBuf, int flags) throws TJException {
-    YUVImage dstImage = new YUVImage(dstBuf, jpegWidth, 4, jpegHeight,
-                                     jpegSubsamp);
-    decompressToYUV(dstImage, flags);
+    YUVImage dstYUVImage = new YUVImage(dstBuf, jpegWidth, 4, jpegHeight,
+                                        jpegSubsamp);
+    decompressToYUV(dstYUVImage, flags);
   }
 
   /**
@@ -553,10 +557,10 @@ public class TJDecompressor implements Closeable {
 
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
-    YUVImage yuvImage = new YUVImage(scaledWidth, null, scaledHeight,
-                                     jpegSubsamp);
-    decompressToYUV(yuvImage, flags);
-    return yuvImage;
+    YUVImage dstYUVImage = new YUVImage(scaledWidth, null, scaledHeight,
+                                        jpegSubsamp);
+    decompressToYUV(dstYUVImage, flags);
+    return dstYUVImage;
   }
 
   /**
@@ -606,20 +610,21 @@ public class TJDecompressor implements Closeable {
 
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
-    YUVImage yuvImage = new YUVImage(scaledWidth, pad, scaledHeight,
-                                     jpegSubsamp);
-    decompressToYUV(yuvImage, flags);
-    return yuvImage;
+    YUVImage dstYUVImage = new YUVImage(scaledWidth, pad, scaledHeight,
+                                        jpegSubsamp);
+    decompressToYUV(dstYUVImage, flags);
+    return dstYUVImage;
   }
 
   /**
    * @deprecated Use {@link #decompressToYUV(int, int, int, int)} instead.
    */
+  @SuppressWarnings("checkstyle:JavadocMethod")
   @Deprecated
   public byte[] decompressToYUV(int flags) throws TJException {
-    YUVImage dstImage = new YUVImage(jpegWidth, 4, jpegHeight, jpegSubsamp);
-    decompressToYUV(dstImage, flags);
-    return dstImage.getBuf();
+    YUVImage dstYUVImage = new YUVImage(jpegWidth, 4, jpegHeight, jpegSubsamp);
+    decompressToYUV(dstYUVImage, flags);
+    return dstYUVImage.getBuf();
   }
 
   /**
@@ -858,6 +863,7 @@ public class TJDecompressor implements Closeable {
       destroy();
   }
 
+  @SuppressWarnings("checkstyle:DesignForExtension")
   @Override
   protected void finalize() throws Throwable {
     try {

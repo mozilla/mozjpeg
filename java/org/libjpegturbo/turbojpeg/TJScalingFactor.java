@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2018 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,13 @@ package org.libjpegturbo.turbojpeg;
  */
 public class TJScalingFactor {
 
+  /**
+   * Create a TurboJPEG scaling factor instance.
+   *
+   * @param num numerator
+   * @param denom denominator
+   */
+  @SuppressWarnings("checkstyle:HiddenField")
   public TJScalingFactor(int num, int denom) {
     if (num < 1 || denom < 1)
       throw new IllegalArgumentException("Numerator and denominator must be >= 1");
@@ -64,6 +71,8 @@ public class TJScalingFactor {
    * performs the integer equivalent of
    * <code>ceil(dimension * scalingFactor)</code>.
    *
+   * @param dimension width or height to multiply by this scaling factor
+   *
    * @return the scaled value of <code>dimension</code>.
    */
   public int getScaled(int dimension) {
@@ -73,6 +82,8 @@ public class TJScalingFactor {
   /**
    * Returns true or false, depending on whether this instance and
    * <code>other</code> have the same numerator and denominator.
+   *
+   * @param other the scaling factor against which to compare this one
    *
    * @return true or false, depending on whether this instance and
    * <code>other</code> have the same numerator and denominator.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011, 2013 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2013, 2018 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -173,6 +173,7 @@ public class TJTransform extends Rectangle {
    * @param cf an instance of an object that implements the {@link
    * TJCustomFilter} interface, or null if no custom filter is needed
    */
+  @SuppressWarnings("checkstyle:HiddenField")
   public TJTransform(int x, int y, int w, int h, int op, int options,
                      TJCustomFilter cf) {
     super(x, y, w, h);
@@ -197,6 +198,7 @@ public class TJTransform extends Rectangle {
    * @param cf an instance of an object that implements the {@link
    * TJCustomFilter} interface, or null if no custom filter is needed
    */
+  @SuppressWarnings("checkstyle:HiddenField")
   public TJTransform(Rectangle r, int op, int options,
                      TJCustomFilter cf) {
     super(r);
@@ -208,15 +210,18 @@ public class TJTransform extends Rectangle {
   /**
    * Transform operation (one of <code>OP_*</code>)
    */
+  @SuppressWarnings("checkstyle:VisibilityModifier")
   public int op = 0;
 
   /**
    * Transform options (bitwise OR of one or more of <code>OPT_*</code>)
    */
+  @SuppressWarnings("checkstyle:VisibilityModifier")
   public int options = 0;
 
   /**
    * Custom filter instance
    */
+  @SuppressWarnings("checkstyle:VisibilityModifier")
   public TJCustomFilter cf = null;
 }

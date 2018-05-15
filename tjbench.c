@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2017 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2018 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -511,12 +511,14 @@ int decompTest(char *fileName)
   unsigned char **jpegBuf = NULL, *srcBuf = NULL;
   unsigned long *jpegSize = NULL, srcSize, totalJpegSize;
   tjtransform *t = NULL;
-  int w = 0, h = 0, subsamp = -1, cs = -1, _w, _h, _tilew, _tileh, _ntilesw,
-    _ntilesh, _subsamp;
-  char *temp = NULL, tempStr[80], tempStr2[80];
-  int row, col, i, iter, tilew, tileh, ntilesw = 1, ntilesh = 1, retval = 0;
   double start, elapsed;
-  int ps = tjPixelSize[pf], tile, decompsrc = 0;
+  int ps = tjPixelSize[pf], tile, row, col, i, iter, retval = 0, decompsrc = 0;
+  char *temp = NULL, tempStr[80], tempStr2[80];
+  /* Original image */
+  int w = 0, h = 0, tilew, tileh, ntilesw = 1, ntilesh = 1, subsamp = -1,
+    cs = -1;
+  /* Transformed image */
+  int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
 
   if ((file = fopen(fileName, "rb")) == NULL)
     _throwunix("opening file");
@@ -580,11 +582,11 @@ int decompTest(char *fileName)
           _throwunix("allocating JPEG tiles");
       }
 
-    _w = w;  _h = h;  _tilew = tilew;  _tileh = tileh;
+    tw = w;  th = h;  ttilew = tilew;  ttileh = tileh;
     if (!quiet) {
-      printf("\n%s size: %d x %d", doTile ? "Tile" : "Image", _tilew, _tileh);
+      printf("\n%s size: %d x %d", doTile ? "Tile" : "Image", ttilew, ttileh);
       if (sf.num != 1 || sf.denom != 1)
-        printf(" --> %d x %d", TJSCALED(_w, sf), TJSCALED(_h, sf));
+        printf(" --> %d x %d", TJSCALED(tw, sf), TJSCALED(th, sf));
       printf("\n");
     } else if (quiet == 1) {
       printf("%-4s (%s)  %-5s  %-5s    ", pixFormatStr[pf],
@@ -593,7 +595,7 @@ int decompTest(char *fileName)
       printf("%-5d  %-5d   ", tilew, tileh);
     }
 
-    _subsamp = subsamp;
+    tsubsamp = subsamp;
     if (doTile || xformOp != TJXOP_NONE || xformOpt != 0 || customFilter) {
       if ((t = (tjtransform *)malloc(sizeof(tjtransform) * ntilesw *
                                      ntilesh)) == NULL)
@@ -601,33 +603,33 @@ int decompTest(char *fileName)
 
       if (xformOp == TJXOP_TRANSPOSE || xformOp == TJXOP_TRANSVERSE ||
           xformOp == TJXOP_ROT90 || xformOp == TJXOP_ROT270) {
-        _w = h;  _h = w;  _tilew = tileh;  _tileh = tilew;
+        tw = h;  th = w;  ttilew = tileh;  ttileh = tilew;
       }
 
-      if (xformOpt & TJXOPT_GRAY) _subsamp = TJ_GRAYSCALE;
+      if (xformOpt & TJXOPT_GRAY) tsubsamp = TJ_GRAYSCALE;
       if (xformOp == TJXOP_HFLIP || xformOp == TJXOP_ROT180)
-        _w = _w - (_w % tjMCUWidth[_subsamp]);
+        tw = tw - (tw % tjMCUWidth[tsubsamp]);
       if (xformOp == TJXOP_VFLIP || xformOp == TJXOP_ROT180)
-        _h = _h - (_h % tjMCUHeight[_subsamp]);
+        th = th - (th % tjMCUHeight[tsubsamp]);
       if (xformOp == TJXOP_TRANSVERSE || xformOp == TJXOP_ROT90)
-        _w = _w - (_w % tjMCUHeight[_subsamp]);
+        tw = tw - (tw % tjMCUHeight[tsubsamp]);
       if (xformOp == TJXOP_TRANSVERSE || xformOp == TJXOP_ROT270)
-        _h = _h - (_h % tjMCUWidth[_subsamp]);
-      _ntilesw = (_w + _tilew - 1) / _tilew;
-      _ntilesh = (_h + _tileh - 1) / _tileh;
+        th = th - (th % tjMCUWidth[tsubsamp]);
+      tntilesw = (tw + ttilew - 1) / ttilew;
+      tntilesh = (th + ttileh - 1) / ttileh;
 
       if (xformOp == TJXOP_TRANSPOSE || xformOp == TJXOP_TRANSVERSE ||
           xformOp == TJXOP_ROT90 || xformOp == TJXOP_ROT270) {
-        if (_subsamp == TJSAMP_422) _subsamp = TJSAMP_440;
-        else if (_subsamp == TJSAMP_440) _subsamp = TJSAMP_422;
+        if (tsubsamp == TJSAMP_422) tsubsamp = TJSAMP_440;
+        else if (tsubsamp == TJSAMP_440) tsubsamp = TJSAMP_422;
       }
 
-      for (row = 0, tile = 0; row < _ntilesh; row++) {
-        for (col = 0; col < _ntilesw; col++, tile++) {
-          t[tile].r.w = min(_tilew, _w - col * _tilew);
-          t[tile].r.h = min(_tileh, _h - row * _tileh);
-          t[tile].r.x = col * _tilew;
-          t[tile].r.y = row * _tileh;
+      for (row = 0, tile = 0; row < tntilesh; row++) {
+        for (col = 0; col < tntilesw; col++, tile++) {
+          t[tile].r.w = min(ttilew, tw - col * ttilew);
+          t[tile].r.h = min(ttileh, th - row * ttileh);
+          t[tile].r.x = col * ttilew;
+          t[tile].r.y = row * ttileh;
           t[tile].op = xformOp;
           t[tile].options = xformOpt | TJXOPT_TRIM;
           t[tile].customFilter = customFilter;
@@ -641,7 +643,7 @@ int decompTest(char *fileName)
       elapsed = 0.;
       while (1) {
         start = getTime();
-        if (tjTransform(handle, srcBuf, srcSize, _ntilesw * _ntilesh, jpegBuf,
+        if (tjTransform(handle, srcBuf, srcSize, tntilesw * tntilesh, jpegBuf,
                         jpegSize, t, flags) == -1)
           _throwtj("executing tjTransform()");
         elapsed += getTime() - start;
@@ -656,7 +658,7 @@ int decompTest(char *fileName)
 
       free(t);  t = NULL;
 
-      for (tile = 0, totalJpegSize = 0; tile < _ntilesw * _ntilesh; tile++)
+      for (tile = 0, totalJpegSize = 0; tile < tntilesw * tntilesh; tile++)
         totalJpegSize += jpegSize[tile];
 
       if (quiet) {
@@ -685,12 +687,12 @@ int decompTest(char *fileName)
       decompsrc = 1;
     }
 
-    if (w == tilew) _tilew = _w;
-    if (h == tileh) _tileh = _h;
+    if (w == tilew) ttilew = tw;
+    if (h == tileh) ttileh = th;
     if (!(xformOpt & TJXOPT_NOOUTPUT)) {
       if (decomp(NULL, decompsrc ? &srcBuf : jpegBuf,
-                 decompsrc ? &srcSize : jpegSize, NULL, _w, _h, _subsamp, 0,
-                 fileName, _tilew, _tileh) == -1)
+                 decompsrc ? &srcSize : jpegSize, NULL, tw, th, tsubsamp, 0,
+                 fileName, ttilew, ttileh) == -1)
         goto bailout;
     } else if (quiet == 1) printf("N/A\n");
 

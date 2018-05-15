@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2017 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2018 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,13 +37,16 @@ import javax.imageio.*;
 import java.nio.*;
 import org.libjpegturbo.turbojpeg.*;
 
-public class TJUnitTest {
+@SuppressWarnings("checkstyle:JavadocType")
+public final class TJUnitTest {
 
-  private static final String classname =
+  private TJUnitTest() {}
+
+  private static final String CLASS_NAME =
     new TJUnitTest().getClass().getName();
 
   private static void usage() {
-    System.out.println("\nUSAGE: java " + classname + " [options]\n");
+    System.out.println("\nUSAGE: java " + CLASS_NAME + " [options]\n");
     System.out.println("Options:");
     System.out.println("-yuv = test YUV encoding/decoding support");
     System.out.println("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest");
@@ -52,39 +55,39 @@ public class TJUnitTest {
     System.exit(1);
   }
 
-  private static final String[] subNameLong = {
+  private static final String[] SUBNAME_LONG = {
     "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
   };
-  private static final String[] subName = {
+  private static final String[] SUBNAME = {
     "444", "422", "420", "GRAY", "440", "411"
   };
 
-  private static final String[] pixFormatStr = {
+  private static final String[] PIXFORMATSTR = {
     "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "Grayscale",
     "RGBA", "BGRA", "ABGR", "ARGB", "CMYK"
   };
 
-  private static final int[] _3byteFormats = {
+  private static final int[] FORMATS_3BYTE = {
     TJ.PF_RGB, TJ.PF_BGR
   };
-  private static final int[] _3byteFormatsBI = {
+  private static final int[] FORMATS_3BYTEBI = {
     BufferedImage.TYPE_3BYTE_BGR
   };
-  private static final int[] _4byteFormats = {
+  private static final int[] FORMATS_4BYTE = {
     TJ.PF_RGBX, TJ.PF_BGRX, TJ.PF_XBGR, TJ.PF_XRGB, TJ.PF_CMYK
   };
-  private static final int[] _4byteFormatsBI = {
+  private static final int[] FORMATS_4BYTEBI = {
     BufferedImage.TYPE_INT_BGR, BufferedImage.TYPE_INT_RGB,
     BufferedImage.TYPE_4BYTE_ABGR, BufferedImage.TYPE_4BYTE_ABGR_PRE,
     BufferedImage.TYPE_INT_ARGB, BufferedImage.TYPE_INT_ARGB_PRE
   };
-  private static final int[] onlyGray = {
+  private static final int[] FORMATS_GRAY = {
     TJ.PF_GRAY
   };
-  private static final int[] onlyGrayBI = {
+  private static final int[] FORMATS_GRAYBI = {
     BufferedImage.TYPE_BYTE_GRAY
   };
-  private static final int[] onlyRGB = {
+  private static final int[] FORMATS_RGB = {
     TJ.PF_RGB
   };
 
@@ -111,8 +114,9 @@ public class TJUnitTest {
     case BufferedImage.TYPE_INT_ARGB:
     case BufferedImage.TYPE_INT_ARGB_PRE:
       return TJ.PF_BGRA;
+    default:
+      return 0;
     }
-    return 0;
   }
 
   private static String biTypeStr(int biType) {
@@ -133,8 +137,9 @@ public class TJUnitTest {
       return "INT_ARGB";
     case BufferedImage.TYPE_INT_ARGB_PRE:
       return "INT_ARGB_PRE";
+    default:
+      return "Unknown";
     }
-    return "Unknown";
   }
 
   private static void initBuf(byte[] buf, int w, int pitch, int h, int pf,
@@ -519,7 +524,7 @@ public class TJUnitTest {
     }
   }
 
-  private static int PAD(int v, int p) {
+  private static int pad(int v, int p) {
     return ((v + (p) - 1) & (~((p) - 1)));
   }
 
@@ -528,9 +533,9 @@ public class TJUnitTest {
                                  throws Exception {
     int row, col;
     int hsf = TJ.getMCUWidth(subsamp) / 8, vsf = TJ.getMCUHeight(subsamp) / 8;
-    int pw = PAD(w, hsf), ph = PAD(h, vsf);
+    int pw = pad(w, hsf), ph = pad(h, vsf);
     int cw = pw / hsf, ch = ph / vsf;
-    int ypitch = PAD(pw, pad), uvpitch = PAD(cw, pad);
+    int ypitch = pad(pw, pad), uvpitch = pad(cw, pad);
     int retval = 1;
     int correctsize = ypitch * ph +
                       (subsamp == TJ.SAMP_GRAY ? 0 : uvpitch * ch * 2);
@@ -639,9 +644,9 @@ public class TJUnitTest {
     if (bi) {
       pf = biTypePF(imgType);
       pfStr = biTypeStr(imgType);
-      pfStrLong = pfStr + " (" + pixFormatStr[pf] + ")";
+      pfStrLong = pfStr + " (" + PIXFORMATSTR[pf] + ")";
     } else {
-      pfStr = pixFormatStr[pf];
+      pfStr = PIXFORMATSTR[pf];
       pfStrLong = pfStr;
     }
     ps =  TJ.getPixelSize(pf);
@@ -650,7 +655,7 @@ public class TJUnitTest {
       img = new BufferedImage(w, h, imgType);
       initImg(img, pf, flags);
       tempStr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
-                subName[subsamp] + "_Q" + jpegQual + ".png";
+                SUBNAME[subsamp] + "_Q" + jpegQual + ".png";
       File file = new File(tempStr);
       ImageIO.write(img, "png", file);
       tjc.setSourceImage(img, 0, 0, 0, 0);
@@ -665,7 +670,7 @@ public class TJUnitTest {
     tjc.setJPEGQuality(jpegQual);
     if (doYUV) {
       System.out.format("%s %s -> YUV %s ... ", pfStrLong, buStrLong,
-                        subNameLong[subsamp]);
+                        SUBNAME_LONG[subsamp]);
       YUVImage yuvImage = tjc.encodeYUV(pad, flags);
       if (checkBufYUV(yuvImage.getBuf(), yuvImage.getSize(), w, h, subsamp,
                       new TJScalingFactor(1, 1)) == 1)
@@ -675,18 +680,18 @@ public class TJUnitTest {
         exitStatus = -1;
       }
 
-      System.out.format("YUV %s %s -> JPEG Q%d ... ", subNameLong[subsamp],
+      System.out.format("YUV %s %s -> JPEG Q%d ... ", SUBNAME_LONG[subsamp],
                         buStrLong, jpegQual);
       tjc.setSourceImage(yuvImage);
     } else {
       System.out.format("%s %s -> %s Q%d ... ", pfStrLong, buStrLong,
-                        subNameLong[subsamp], jpegQual);
+                        SUBNAME_LONG[subsamp], jpegQual);
     }
     tjc.compress(dstBuf, flags);
     size = tjc.getCompressedSize();
 
     tempStr = baseName + "_enc_" + pfStr + "_" + buStr + "_" +
-              subName[subsamp] + "_Q" + jpegQual + ".jpg";
+              SUBNAME[subsamp] + "_Q" + jpegQual + ".jpg";
     writeJPEG(dstBuf, size, tempStr);
     System.out.println("Done.\n  Result in " + tempStr);
 
@@ -709,9 +714,9 @@ public class TJUnitTest {
     if (bi) {
       pf = biTypePF(imgType);
       pfStr = biTypeStr(imgType);
-      pfStrLong = pfStr + " (" + pixFormatStr[pf] + ")";
+      pfStrLong = pfStr + " (" + PIXFORMATSTR[pf] + ")";
     } else {
-      pfStr = pixFormatStr[pf];
+      pfStr = PIXFORMATSTR[pf];
       pfStrLong = pfStr;
     }
 
@@ -728,7 +733,7 @@ public class TJUnitTest {
       throw new Exception("Scaled size mismatch");
 
     if (doYUV) {
-      System.out.format("JPEG -> YUV %s ", subNameLong[subsamp]);
+      System.out.format("JPEG -> YUV %s ", SUBNAME_LONG[subsamp]);
       if (!sf.isOne())
         System.out.format("%d/%d ... ", sf.getNum(), sf.getDenom());
       else System.out.print("... ");
@@ -741,7 +746,7 @@ public class TJUnitTest {
         System.out.print("FAILED!\n");  exitStatus = -1;
       }
 
-      System.out.format("YUV %s -> %s %s ... ", subNameLong[subsamp],
+      System.out.format("YUV %s -> %s %s ... ", SUBNAME_LONG[subsamp],
                         pfStrLong, buStrLong);
       tjd.setSourceImage(yuvImage);
     } else {
@@ -758,7 +763,7 @@ public class TJUnitTest {
     if (bi) {
       tempStr = baseName + "_dec_" + pfStr + "_" +
                 (((flags & TJ.FLAG_BOTTOMUP) != 0) ? "BU" : "TD") + "_" +
-                subName[subsamp] + "_" +
+                SUBNAME[subsamp] + "_" +
                 (double)sf.getNum() / (double)sf.getDenom() + "x" + ".png";
       File file = new File(tempStr);
       ImageIO.write(img, "png", file);
@@ -911,44 +916,45 @@ public class TJUnitTest {
           usage();
       }
       if (doYUV)
-        _4byteFormats[4] = -1;
-      doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_444,
+        FORMATS_4BYTE[4] = -1;
+      doTest(35, 39, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_444,
              testName);
-      doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_444,
+      doTest(39, 41, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_444,
              testName);
-      doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_422,
+      doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_422,
              testName);
-      doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_422,
+      doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_422,
              testName);
-      doTest(39, 41, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_420,
+      doTest(39, 41, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_420,
              testName);
-      doTest(41, 35, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_420,
+      doTest(41, 35, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_420,
              testName);
-      doTest(35, 39, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_440,
+      doTest(35, 39, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_440,
              testName);
-      doTest(39, 41, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_440,
+      doTest(39, 41, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_440,
              testName);
-      doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_411,
+      doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_411,
              testName);
-      doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_411,
+      doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_411,
              testName);
-      doTest(39, 41, bi ? onlyGrayBI : onlyGray, TJ.SAMP_GRAY, testName);
-      doTest(41, 35, bi ? _3byteFormatsBI : _3byteFormats, TJ.SAMP_GRAY,
+      doTest(39, 41, bi ? FORMATS_GRAYBI : FORMATS_GRAY, TJ.SAMP_GRAY,
              testName);
-      _4byteFormats[4] = -1;
-      doTest(35, 39, bi ? _4byteFormatsBI : _4byteFormats, TJ.SAMP_GRAY,
+      doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_GRAY,
+             testName);
+      FORMATS_4BYTE[4] = -1;
+      doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_GRAY,
              testName);
       if (!bi)
         bufSizeTest();
       if (doYUV && !bi) {
         System.out.print("\n--------------------\n\n");
-        doTest(48, 48, onlyRGB, TJ.SAMP_444, "javatest_yuv0");
-        doTest(48, 48, onlyRGB, TJ.SAMP_422, "javatest_yuv0");
-        doTest(48, 48, onlyRGB, TJ.SAMP_420, "javatest_yuv0");
-        doTest(48, 48, onlyRGB, TJ.SAMP_440, "javatest_yuv0");
-        doTest(48, 48, onlyRGB, TJ.SAMP_411, "javatest_yuv0");
-        doTest(48, 48, onlyRGB, TJ.SAMP_GRAY, "javatest_yuv0");
-        doTest(48, 48, onlyGray, TJ.SAMP_GRAY, "javatest_yuv0");
+        doTest(48, 48, FORMATS_RGB, TJ.SAMP_444, "javatest_yuv0");
+        doTest(48, 48, FORMATS_RGB, TJ.SAMP_422, "javatest_yuv0");
+        doTest(48, 48, FORMATS_RGB, TJ.SAMP_420, "javatest_yuv0");
+        doTest(48, 48, FORMATS_RGB, TJ.SAMP_440, "javatest_yuv0");
+        doTest(48, 48, FORMATS_RGB, TJ.SAMP_411, "javatest_yuv0");
+        doTest(48, 48, FORMATS_RGB, TJ.SAMP_GRAY, "javatest_yuv0");
+        doTest(48, 48, FORMATS_GRAY, TJ.SAMP_GRAY, "javatest_yuv0");
       }
     } catch (Exception e) {
       e.printStackTrace();

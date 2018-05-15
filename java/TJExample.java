@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017 D. R. Commander.
- *                                         All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015, 2017-2018 D. R. Commander.
+ *                                              All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,25 +41,28 @@ import javax.swing.*;
 import org.libjpegturbo.turbojpeg.*;
 
 
+@SuppressWarnings("checkstyle:JavadocType")
 public class TJExample implements TJCustomFilter {
 
-  private static final String classname = new TJExample().getClass().getName();
+  private static final String CLASS_NAME =
+    new TJExample().getClass().getName();
 
   private static final int DEFAULT_SUBSAMP = TJ.SAMP_444;
   private static final int DEFAULT_QUALITY = 95;
 
 
-  private static final String[] subsampName = {
+  private static final String[] SUBSAMP_NAME = {
     "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1"
   };
 
-  private static final String[] colorspaceName = {
+  private static final String[] COLORSPACE_NAME = {
     "RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
   };
 
 
   /* DCT filter example.  This produces a negative of the image. */
 
+  @SuppressWarnings("checkstyle:JavadocMethod")
   public void customFilter(ShortBuffer coeffBuffer, Rectangle bufferRegion,
                            Rectangle planeRegion, int componentIndex,
                            int transformIndex, TJTransform transform)
@@ -71,7 +74,7 @@ public class TJExample implements TJCustomFilter {
 
 
   private static void usage() throws Exception {
-    System.out.println("\nUSAGE: java [Java options] " + classname +
+    System.out.println("\nUSAGE: java [Java options] " + CLASS_NAME +
                        " <Input image> <Output image> [options]\n");
 
     System.out.println("Input and output images can be in any image format that the Java Image I/O");
@@ -85,7 +88,9 @@ public class TJExample implements TJCustomFilter {
     System.out.println("     compressing the output image.  The default is to use the same level of");
     System.out.println("     subsampling as in the input image, if the input image is also a JPEG");
     System.out.println("     image, or to use grayscale if the input image is a grayscale non-JPEG");
-    System.out.println("     image, or to use " + subsampName[DEFAULT_SUBSAMP] + " subsampling otherwise.\n");
+    System.out.println("     image, or to use " +
+                       SUBSAMP_NAME[DEFAULT_SUBSAMP] +
+                       " subsampling otherwise.\n");
 
     System.out.println("-q <1-100> = Compress the output image with this JPEG quality level");
     System.out.println("     (default = " + DEFAULT_QUALITY + ").\n");
@@ -95,15 +100,15 @@ public class TJExample implements TJCustomFilter {
 
     System.out.println("-scale M/N = Scale the input image by a factor of M/N when decompressing it.");
     System.out.print("(M/N = ");
-    for (int i = 0; i < scalingFactors.length; i++) {
-      System.out.print(scalingFactors[i].getNum() + "/" +
-                       scalingFactors[i].getDenom());
-      if (scalingFactors.length == 2 && i != scalingFactors.length - 1)
+    for (int i = 0; i < SCALING_FACTORS.length; i++) {
+      System.out.print(SCALING_FACTORS[i].getNum() + "/" +
+                       SCALING_FACTORS[i].getDenom());
+      if (SCALING_FACTORS.length == 2 && i != SCALING_FACTORS.length - 1)
         System.out.print(" or ");
-      else if (scalingFactors.length > 2) {
-        if (i != scalingFactors.length - 1)
+      else if (SCALING_FACTORS.length > 2) {
+        if (i != SCALING_FACTORS.length - 1)
           System.out.print(", ");
-        if (i == scalingFactors.length - 2)
+        if (i == SCALING_FACTORS.length - 2)
           System.out.print("or ");
       }
     }
@@ -177,9 +182,9 @@ public class TJExample implements TJCustomFilter {
             TJScalingFactor tempsf =
               new TJScalingFactor(Integer.parseInt(scaleArg[0]),
                                   Integer.parseInt(scaleArg[1]));
-            for (int j = 0; j < scalingFactors.length; j++) {
-              if (tempsf.equals(scalingFactors[j])) {
-                scalingFactor = scalingFactors[j];
+            for (int j = 0; j < SCALING_FACTORS.length; j++) {
+              if (tempsf.equals(SCALING_FACTORS[j])) {
+                scalingFactor = SCALING_FACTORS[j];
                 match = 1;
                 break;
               }
@@ -302,8 +307,8 @@ public class TJExample implements TJCustomFilter {
 
         System.out.println((doTransform ? "Transformed" : "Input") +
                            " Image (jpg):  " + width + " x " + height +
-                           " pixels, " + subsampName[inSubsamp] +
-                           " subsampling, " + colorspaceName[inColorspace]);
+                           " pixels, " + SUBSAMP_NAME[inSubsamp] +
+                           " subsampling, " + COLORSPACE_NAME[inColorspace]);
 
         if (outFormat.equalsIgnoreCase("jpg") && doTransform &&
             scalingFactor.isOne() && outSubsamp < 0 && outQual < 0) {
@@ -362,7 +367,7 @@ public class TJExample implements TJCustomFilter {
         /* Output image format is JPEG.  Compress the uncompressed image. */
         if (outQual < 0)
           outQual = DEFAULT_QUALITY;
-        System.out.println(", " + subsampName[outSubsamp] +
+        System.out.println(", " + SUBSAMP_NAME[outSubsamp] +
                            " subsampling, quality = " + outQual);
 
         TJCompressor tjc = new TJCompressor();
@@ -395,5 +400,6 @@ public class TJExample implements TJCustomFilter {
     }
   }
 
-  private static final TJScalingFactor[] scalingFactors = TJ.getScalingFactors();
+  private static final TJScalingFactor[] SCALING_FACTORS =
+    TJ.getScalingFactors();
 };

@@ -247,9 +247,11 @@ public class YUVImage {
       if (planes[i] == null || offsets[i] < 0)
         throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
       if (strides[i] < 0 && offsets[i] - planeSize + pw < 0)
-        throw new IllegalArgumentException("Stride for plane " + i + " would cause memory to be accessed below plane boundary");
+        throw new IllegalArgumentException("Stride for plane " + i +
+                                           " would cause memory to be accessed below plane boundary");
       if (planes[i].length < offsets[i] + planeSize)
-        throw new IllegalArgumentException("Image plane " + i + " is not large enough");
+        throw new IllegalArgumentException("Image plane " + i +
+                                           " is not large enough");
     }
 
     yuvPlanes = planes;
@@ -294,9 +296,9 @@ public class YUVImage {
     int[] offsets = new int[nc];
 
     planes[0] = yuvImage;
-    strides[0] = PAD(TJ.planeWidth(0, width, subsamp), pad);
+    strides[0] = pad(TJ.planeWidth(0, width, subsamp), pad);
     if (subsamp != TJ.SAMP_GRAY) {
-      strides[1] = strides[2] = PAD(TJ.planeWidth(1, width, subsamp), pad);
+      strides[1] = strides[2] = pad(TJ.planeWidth(1, width, subsamp), pad);
       planes[1] = planes[2] = yuvImage;
       offsets[1] = offsets[0] +
         strides[0] * TJ.planeHeight(0, height, subsamp);
@@ -428,7 +430,7 @@ public class YUVImage {
     return TJ.bufSizeYUV(yuvWidth, yuvPad, yuvHeight, yuvSubsamp);
   }
 
-  private static int PAD(int v, int p) {
+  private static int pad(int v, int p) {
     return (v + p - 1) & (~(p - 1));
   }
 

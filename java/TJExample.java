@@ -42,20 +42,20 @@ import org.libjpegturbo.turbojpeg.*;
 
 
 @SuppressWarnings("checkstyle:JavadocType")
-public class TJExample implements TJCustomFilter {
+class TJExample implements TJCustomFilter {
 
-  private static final String CLASS_NAME =
+  static final String CLASS_NAME =
     new TJExample().getClass().getName();
 
-  private static final int DEFAULT_SUBSAMP = TJ.SAMP_444;
-  private static final int DEFAULT_QUALITY = 95;
+  static final int DEFAULT_SUBSAMP = TJ.SAMP_444;
+  static final int DEFAULT_QUALITY = 95;
 
 
-  private static final String[] SUBSAMP_NAME = {
+  static final String[] SUBSAMP_NAME = {
     "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1"
   };
 
-  private static final String[] COLORSPACE_NAME = {
+  static final String[] COLORSPACE_NAME = {
     "RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
   };
 
@@ -73,7 +73,7 @@ public class TJExample implements TJCustomFilter {
   }
 
 
-  private static void usage() throws Exception {
+  static void usage() throws Exception {
     System.out.println("\nUSAGE: java [Java options] " + CLASS_NAME +
                        " <Input image> <Output image> [options]\n");
 
@@ -400,6 +400,6 @@ public class TJExample implements TJCustomFilter {
     }
   }
 
-  private static final TJScalingFactor[] SCALING_FACTORS =
+  static final TJScalingFactor[] SCALING_FACTORS =
     TJ.getScalingFactors();
 };

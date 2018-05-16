@@ -111,11 +111,11 @@ public class TJTransformer extends TJDecompressor {
    * which specifies the transform parameters and/or cropping region for the
    * corresponding transformed output image
    *
-   * @return an array of {@link TJDecompressor} instances, each of
-   * which has a transformed JPEG image associated with it.
-   *
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
+   *
+   * @return an array of {@link TJDecompressor} instances, each of
+   * which has a transformed JPEG image associated with it.
    */
   public TJDecompressor[] transform(TJTransform[] transforms, int flags)
                                     throws TJException {

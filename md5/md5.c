@@ -58,7 +58,7 @@ static void byteReverse(unsigned char *buf, unsigned int longs)
   do {
     t = (uint32)((unsigned int)buf[3] << 8 | buf[2]) << 16 |
         ((unsigned int)buf[1] << 8 | buf[0]);
-    *(uint32 *) buf = t;
+    *(uint32 *)buf = t;
     buf += 4;
   } while (--longs);
 }

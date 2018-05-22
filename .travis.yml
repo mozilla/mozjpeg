@@ -79,7 +79,7 @@ script:
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       mkdir -p ~/src/ljt.nightly &&
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -v $TRAVIS_BUILD_DIR:/root/src/libjpeg-turbo -v $HOME/.gnupg:/root/.gnupg -t dcommander/buildljt:latest bash -c "rpm --import http://pgp.mit.edu/pks/lookup?op=get\&search=0x0575F26BD5B3FDB1 && ~/src/buildscripts/buildljt -d /root/src/libjpeg-turbo -v" &&
+        docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -v $TRAVIS_BUILD_DIR:/root/src/libjpeg-turbo -v $HOME/.gnupg:/root/.gnupg -t dcommander/buildljt:latest bash -c "rpm --import http://pool.sks-keyservers.net/pks/lookup?op=get\&search=0x0575F26BD5B3FDB1 && ~/src/buildscripts/buildljt -d /root/src/libjpeg-turbo -v" &&
         sudo chown -R travis:travis ~/src/ljt.nightly &&
         mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
       else

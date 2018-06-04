@@ -196,6 +196,7 @@ usage (void)
   fprintf(stderr, "  -tune-ms-ssim  Tune trellis optimization for MS-SSIM\n");
   fprintf(stderr, "Switches for advanced users:\n");
   fprintf(stderr, "  -noovershoot   Disable black-on-white deringing via overshoot\n");
+  fprintf(stderr, "  -nojfif        Do not write JFIF. Reduce size in 18 bytes but break standar. No know problems in web use.\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
@@ -583,6 +584,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "noovershoot", 11)) {
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_OVERSHOOT_DERINGING, FALSE);
+
+	} else if (keymatch(arg, "nojfif", 6)) {
+      cinfo->write_JFIF_header = 0;
     } else {
       fprintf(stderr, "%s: unknown option '%s'\n", progname, arg);
       usage();                  /* bogus switch */

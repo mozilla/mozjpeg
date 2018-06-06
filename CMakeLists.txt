@@ -168,7 +168,7 @@ message(STATUS "Install directory = ${CMAKE_INSTALL_PREFIX}")
 configure_file(win/jconfig.h.in jconfig.h)
 configure_file(win/jconfigint.h.in jconfigint.h)
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
 
@@ -496,7 +496,7 @@ if(ENABLE_STATIC)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} static)
 endif()
 
-set(TESTIMAGES ${CMAKE_SOURCE_DIR}/testimages)
+set(TESTIMAGES ${PROJECT_SOURCE_DIR}/testimages)
 set(MD5CMP ${CMAKE_CURRENT_BINARY_DIR}/md5/md5cmp)
 if(CMAKE_CROSSCOMPILING)
   file(RELATIVE_PATH TESTIMAGES ${CMAKE_CURRENT_BINARY_DIR} ${TESTIMAGES})
@@ -862,7 +862,7 @@ foreach(libtype ${TEST_LIBTYPES})
 endforeach()
 
 add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
-  ${CMAKE_SOURCE_DIR}/cmakescripts/testclean.cmake)
+  ${PROJECT_SOURCE_DIR}/cmakescripts/testclean.cmake)
 
 
 #
@@ -924,7 +924,7 @@ if(WITH_TURBOJPEG)
         DESTINATION bin RENAME tjbench.exe)
     endif()
   endif()
-  install(FILES ${CMAKE_SOURCE_DIR}/turbojpeg.h DESTINATION include)
+  install(FILES ${PROJECT_SOURCE_DIR}/turbojpeg.h DESTINATION include)
 endif()
 
 if(ENABLE_STATIC)
@@ -941,17 +941,17 @@ endif()
 
 install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION bin)
 
-install(FILES ${CMAKE_SOURCE_DIR}/README.ijg ${CMAKE_SOURCE_DIR}/README-mozilla.txt
-  ${CMAKE_SOURCE_DIR}/example.c ${CMAKE_SOURCE_DIR}/libjpeg.txt
-  ${CMAKE_SOURCE_DIR}/structure.txt ${CMAKE_SOURCE_DIR}/usage.txt
-  ${CMAKE_SOURCE_DIR}/wizard.txt
+install(FILES ${PROJECT_SOURCE_DIR}/README.ijg ${PROJECT_SOURCE_DIR}/README-mozilla.txt
+  ${PROJECT_SOURCE_DIR}/example.c ${PROJECT_SOURCE_DIR}/libjpeg.txt
+  ${PROJECT_SOURCE_DIR}/structure.txt ${PROJECT_SOURCE_DIR}/usage.txt
+  ${PROJECT_SOURCE_DIR}/wizard.txt
   DESTINATION doc)
 
-install(FILES ${CMAKE_BINARY_DIR}/jconfig.h ${CMAKE_SOURCE_DIR}/jerror.h
-  ${CMAKE_SOURCE_DIR}/jmorecfg.h ${CMAKE_SOURCE_DIR}/jpeglib.h
+install(FILES ${CMAKE_BINARY_DIR}/jconfig.h ${PROJECT_SOURCE_DIR}/jerror.h
+  ${PROJECT_SOURCE_DIR}/jmorecfg.h ${PROJECT_SOURCE_DIR}/jpeglib.h
   DESTINATION include)
 
-configure_file("${CMAKE_SOURCE_DIR}/cmakescripts/cmake_uninstall.cmake.in"
+configure_file("${PROJECT_SOURCE_DIR}/cmakescripts/cmake_uninstall.cmake.in"
   "cmake_uninstall.cmake" IMMEDIATE @ONLY)
 
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P cmake_uninstall.cmake)

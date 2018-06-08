@@ -537,6 +537,43 @@ the libjpeg-turbo distribution should be installed.  These variables can either
 be specified at configure time or passed as arguments to `make install`.
 
 
+Building on Windows (Visual C++ SDK commandline)
+================================================
+
+### 64-bit Visual C++ SDK Build
+- Download and install [Microsoft .NET Framework 4](https://www.microsoft.com/en-us/download/details.aspx?id=17851)
+- Download and install [Microsoft Windows SDK for Windows 7 and .NET Framework 4](http://msdn.microsoft.com/en-us/windows/bb980924.aspx) 
+- Download and install [CMake](http://www.cmake.org). Do not forget select "Add CMake to the system PATH for all users" option
+- Download and install [Netwide Assembler](https://www.nasm.us)
+- In start menu, open `Windows SDK 7.1 Command Prompt`
+- In the command prompt:
+``` SetEnv.cmd /Release /x64 /win7
+    path=%path%;C:\Program Files\NASM
+    cd {source_directory}
+    cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release .
+    nmake
+```
+
+### 32-bit Visual C++ SDK Build
+- Download and install [Microsoft .NET Framework 4](https://www.microsoft.com/en-us/download/details.aspx?id=17851)
+- Download and install [Microsoft Windows SDK for Windows 7 and .NET Framework 4](http://msdn.microsoft.com/en-us/windows/bb980924.aspx) 
+- Download and install [CMake](http://www.cmake.org). Do not forget select "Add CMake to the system PATH for all users" option
+- Download and install [Netwide Assembler](https://www.nasm.us)
+- In start menu, open `Windows SDK 7.1 Command Prompt`
+- In the command prompt:
+``` SetEnv.cmd /Release /x86 /xp 
+    path=%path%;C:\Program Files\NASM
+    cd {source_directory}
+    cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release .
+    nmake
+```
+
+### Notes
+- For `SetEnv.cmd` parameters see https://msdn.microsoft.com/en-us/library/ff660764(v=vs.100).aspx
+- The exe, dll and lib files will be generated under {source_directory}
+- In {source_directory} delete `CMakeFiles` folder and `CMakeCache.txt` file for new build (x32 or x64 bits)
+
+
 Windows (Visual C++ or MinGW)
 =============================
 
@@ -552,13 +589,6 @@ Build Requirements
   * **nasm.exe**/**yasm.exe** should be in your `PATH`.
 
 - Microsoft Visual C++ 2005 or later
-
-  If you don't already have Visual C++, then the easiest way to get it is by
-  installing the
-  [Windows SDK](http://msdn.microsoft.com/en-us/windows/bb980924.aspx).
-  The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
-  everything necessary to build libjpeg-turbo.
-
   * You can also use Microsoft Visual Studio Express/Community Edition, which
     is a free download.  (NOTE: versions prior to 2012 can only be used to
     build 32-bit code.)
@@ -601,41 +631,7 @@ Build Procedure
 ---------------
 
 NOTE: The build procedures below assume that CMake is invoked from the command
-line, but all of these procedures can be adapted to the CMake GUI as
-well.
-
-
-### Visual C++ (Command Line)
-
-    cd {build_directory}
-    cmake -G"NMake Makefiles" -DCMAKE_BUILD_TYPE=Release [additional CMake flags] {source_directory}
-    nmake
-
-This will build either a 32-bit or a 64-bit version of libjpeg-turbo, depending
-on which version of **cl.exe** is in the `PATH`.
-
-The following files will be generated under *{build_directory}*:
-
-**jpeg-static.lib**<br>
-Static link library for the libjpeg API
-
-**sharedlib/jpeg{version}.dll**<br>
-DLL for the libjpeg API
-
-**sharedlib/jpeg.lib**<br>
-Import library for the libjpeg API
-
-**turbojpeg-static.lib**<br>
-Static link library for the TurboJPEG API
-
-**turbojpeg.dll**<br>
-DLL for the TurboJPEG API
-
-**turbojpeg.lib**<br>
-Import library for the TurboJPEG API
-
-*{version}* is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or
-v8 emulation is enabled.
+line, but all of these procedures can be adapted to the CMake GUI as well.
 
 
 ### Visual C++ (IDE)

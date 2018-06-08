@@ -487,26 +487,37 @@ CFLAGS and -pie from LDFLAGS.
 
 
 *******************************************************************************
-**     Building on Windows (Visual C++ or MinGW)
+**     Building on Windows (Visual C++ SDK commandline)
 *******************************************************************************
+  Download and install Microsoft .NET Framework 4 (https://www.microsoft.com/en-us/download/details.aspx?id=17851)
+  Download and install Microsoft Windows SDK for Windows 7 and .NET Framework 4 (http://msdn.microsoft.com/en-us/windows/bb980924.aspx) 
+  Download and install CMake (http://www.cmake.org). Do not forget select "Add CMake to the system PATH for all users" option
+  Download and install Netwide Assembler (https://www.nasm.us)
+  In start menu, open "Windows SDK 7.1 Command Prompt"
+  In the command prompt:
+  SetEnv.cmd /Release /x86 /xp (for build x86)*
+  SetEnv.cmd /Release /x64 /win7 (for build x64)*
+  path=%path%;C:\Program Files\NASM
+  cd {build_directory}
+  cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release {source_directory}
+  nmake
+  
+  The exe, dll and lib files will be generated under {build_directory}:
+  
+  * See https://msdn.microsoft.com/en-us/library/ff660764(v=vs.100).aspx for more options.
 
+*******************************************************************************
+**     Building on Windows (Microsoft Visual Studio or MinGW)
+*******************************************************************************
 
 ==================
 Build Requirements
 ==================
 
 -- CMake (http://www.cmake.org) v2.8.8 or later
-
--- Microsoft Visual C++ 2005 or later
-
-   If you don't already have Visual C++, then the easiest way to get it is by
-   installing the Windows SDK:
-
-   http://msdn.microsoft.com/en-us/windows/bb980924.aspx
-
-   The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
-   everything necessary to build mozjpeg.
-
+-- NASM (http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
+   a 64-bit build)
+-- Microsoft Visual Studio 2005 or later
    * You can also use Microsoft Visual Studio Express Edition, which is a free
      download.  (NOTE: versions prior to 2012 can only be used to build 32-bit
      code.)
@@ -529,9 +540,6 @@ Build Requirements
    launch a command prompt with the appropriate compiler paths automatically
    set.
 
--- NASM (http://www.nasm.us/) 0.98 or later (NASM 2.05 or later is required for
-   a 64-bit build)
-
 -- If building the TurboJPEG Java wrapper, JDK 1.5 or later is required.  This
    can be downloaded from http://www.java.com.
 
@@ -553,36 +561,6 @@ directory.  For in-tree builds, these directories are the same.
 ================
 Building mozjpeg
 ================
-
-
-Visual C++ (Command Line)
--------------------------
-
-  cd {build_directory}
-  cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release {source_directory}
-  nmake
-
-This will build either a 32-bit or a 64-bit version of mozjpeg, depending
-on which version of cl.exe is in the PATH.
-
-The following files will be generated under {build_directory}:
-
-  jpeg-static.lib
-      Static link library for the libjpeg API
-  sharedlib/jpeg{version}.dll
-      DLL for the libjpeg API
-  sharedlib/jpeg.lib
-      Import library for the libjpeg API
-  turbojpeg-static.lib
-      Static link library for the TurboJPEG API
-  turbojpeg.dll
-      DLL for the TurboJPEG API
-  turbojpeg.lib
-      Import library for the TurboJPEG API
-
-{version} is 62, 7, or 8, depending on whether libjpeg v6b (default), v7, or
-v8 emulation is enabled.
-
 
 Visual C++ (IDE)
 ----------------

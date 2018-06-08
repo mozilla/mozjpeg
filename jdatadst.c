@@ -22,6 +22,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jerror.h"
+#include "jpegint.h"
 
 #ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc(),free() */
 extern void *malloc (size_t size);

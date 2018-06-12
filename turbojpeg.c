@@ -65,6 +65,12 @@ struct my_error_mgr {
 };
 typedef struct my_error_mgr *my_error_ptr;
 
+#define JMESSAGE(code, string)  string,
+static const char *turbojpeg_message_table[] = {
+#include "cderror.h"
+  NULL
+};
+
 static void my_error_exit(j_common_ptr cinfo)
 {
   my_error_ptr myerr = (my_error_ptr)cinfo->err;
@@ -431,6 +437,9 @@ static tjhandle _tjInitCompress(tjinstance *this)
   this->jerr.pub.output_message = my_output_message;
   this->jerr.emit_message = this->jerr.pub.emit_message;
   this->jerr.pub.emit_message = my_emit_message;
+  this->jerr.pub.addon_message_table = turbojpeg_message_table;
+  this->jerr.pub.first_addon_message = JMSG_FIRSTADDONCODE;
+  this->jerr.pub.last_addon_message = JMSG_LASTADDONCODE;
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1087,6 +1096,9 @@ static tjhandle _tjInitDecompress(tjinstance *this)
   this->jerr.pub.output_message = my_output_message;
   this->jerr.emit_message = this->jerr.pub.emit_message;
   this->jerr.pub.emit_message = my_emit_message;
+  this->jerr.pub.addon_message_table = turbojpeg_message_table;
+  this->jerr.pub.first_addon_message = JMSG_FIRSTADDONCODE;
+  this->jerr.pub.last_addon_message = JMSG_LASTADDONCODE;
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */

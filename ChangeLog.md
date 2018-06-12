@@ -25,6 +25,11 @@ the underlying library, and because it did not involve any out-of-bounds reads
 or other exploitable behaviors, it was not believed to represent a security
 threat.
 
+3. Fixed an issue whereby the `tjLoadImage()` and `tjSaveImage()` functions
+would produce a "Bogus message code" error message if the underlying bitmap and
+PPM readers/writers threw an error that was specific to the readers/writers
+(as opposed to a general libjpeg API error.)
+
 
 1.5.90 (2.0 beta1)
 ==================

@@ -11,6 +11,20 @@ an image was passed to `tjDecompressHeader3()`, `tjTransform()`,
 `tjDecompressToYUVPlanes()`, `tjDecompressToYUV2()`, or the equivalent Java
 methods.
 
+2. Fixed an issue (CVE-2018-11813) whereby a specially-crafted malformed input
+file (specifically, a file with a valid Targa header but incomplete pixel data)
+would cause cjpeg to generate a JPEG file that was potentially thousands of
+times larger than the input file.  The Targa reader in cjpeg was not properly
+detecting that the end of the input file had been reached prematurely, so after
+all valid pixels had been read from the input, the reader injected dummy pixels
+with values of 255 into the JPEG compressor until the number of pixels
+specified in the Targa header had been compressed.  The Targa reader in cjpeg
+now behaves like the PPM reader and aborts compression if the end of the input
+file is reached prematurely.  Because this issue only affected cjpeg and not
+the underlying library, and because it did not involve any out-of-bounds reads
+or other exploitable behaviors, it was not believed to represent a security
+threat.
+
 
 1.5.90 (2.0 beta1)
 ==================

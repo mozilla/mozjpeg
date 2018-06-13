@@ -30,6 +30,11 @@ would produce a "Bogus message code" error message if the underlying bitmap and
 PPM readers/writers threw an error that was specific to the readers/writers
 (as opposed to a general libjpeg API error.)
 
+4. Fixed an issue whereby a specially-crafted malformed BMP file, one in which
+the header specified an image width of 1073741824 pixels, would trigger a
+floating point exception (division by zero) in the `tjLoadImage()` function
+when attempting to load the BMP file into a 4-component image buffer.
+
 
 1.5.90 (2.0 beta1)
 ==================

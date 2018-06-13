@@ -6,7 +6,7 @@
  * Modified 2009-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Modified 2011 by Siarhei Siamashka.
- * Copyright (C) 2015, 2017, D. R. Commander.
+ * Copyright (C) 2015, 2017-2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -623,6 +623,12 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     }
   }
 
+  /* Ensure that biWidth * cinfo->input_components doesn't exceed the maximum
+     value of the JDIMENSION type.  This is only a danger with BMP files, since
+     their width and height fields are 32-bit integers. */
+  if ((unsigned long long)biWidth *
+      (unsigned long long)cinfo->input_components > 0xFFFFFFFFULL)
+    ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
   /* Allocate one-row buffer for returned data */
   source->pub.buffer = (*cinfo->mem->alloc_sarray)
     ((j_common_ptr)cinfo, JPOOL_IMAGE,

@@ -40,6 +40,10 @@ when attempting to load the BMP file into a 4-component image buffer.
 loop when decompressing progressive JPEG images that use vertical chroma
 subsampling (for instance, 4:2:0 or 4:4:0.)
 
+6. Fixed a segfault in `jpeg_skip_scanlines()` that occurred when decompressing
+a 4:2:2 or 4:2:0 JPEG image using the merged (non-fancy) upsampling algorithms
+(that is, when setting `cinfo.do_fancy_upsampling` to `FALSE`.)
+
 
 1.5.90 (2.0 beta1)
 ==================

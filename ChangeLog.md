@@ -35,6 +35,11 @@ the header specified an image width of 1073741824 pixels, would trigger a
 floating point exception (division by zero) in the `tjLoadImage()` function
 when attempting to load the BMP file into a 4-component image buffer.
 
+5. Fixed an issue whereby certain combinations of calls to
+`jpeg_skip_scanlines()` and `jpeg_read_scanlines()` could trigger an infinite
+loop when decompressing progressive JPEG images that use vertical chroma
+subsampling (for instance, 4:2:0 or 4:4:0.)
+
 
 1.5.90 (2.0 beta1)
 ==================

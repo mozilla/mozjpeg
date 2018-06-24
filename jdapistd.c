@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2017, D. R. Commander.
+ * Copyright (C) 2010, 2015-2018, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -479,7 +479,7 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
     if (cinfo->upsample->need_context_rows) {
       cinfo->output_scanline += lines_to_skip;
       cinfo->output_iMCU_row += lines_to_skip / lines_per_iMCU_row;
-      main_ptr->iMCU_row_ctr += lines_after_iMCU_row / lines_per_iMCU_row;
+      main_ptr->iMCU_row_ctr += lines_to_skip / lines_per_iMCU_row;
       /* It is complex to properly move to the middle of a context block, so
        * read the remaining lines instead of skipping them.
        */

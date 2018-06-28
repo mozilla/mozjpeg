@@ -465,3 +465,105 @@ void jsimd_h1v2_fancy_upsample_neon(int max_v_samp_factor,
     }
   }
 }
+
+
+/* The diagram below shows a row of samples produced by h2v1 downsampling.
+ *
+ *                s0        s1
+ *            +---------+---------+
+ *            |         |         |
+ *            | p0   p1 | p2   p3 |
+ *            |         |         |
+ *            +---------+---------+
+ *
+ * Samples s0 and s1 were created by averaging the original pixel component
+ * values centered at positions p0-p3 above.  To approximate those original
+ * pixel component values, we duplicate the samples horizontally:
+ *     p0(upsampled) = p1(upsampled) = s0
+ *     p2(upsampled) = p3(upsampled) = s1
+ */
+
+void jsimd_h2v1_upsample_neon(int max_v_samp_factor, JDIMENSION output_width,
+                              JSAMPARRAY input_data,
+                              JSAMPARRAY *output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  JSAMPROW inptr, outptr;
+  int inrow;
+  unsigned colctr;
+
+  for (inrow = 0; inrow < max_v_samp_factor; inrow++) {
+    inptr = input_data[inrow];
+    outptr = output_data[inrow];
+    for (colctr = 0; 2 * colctr < output_width; colctr += 16) {
+      uint8x16_t samples = vld1q_u8(inptr + colctr);
+      /* Duplicate the samples.  The store operation below interleaves them so
+       * that adjacent pixel component values take on the same sample value,
+       * per above.
+       */
+      uint8x16x2_t output_pixels = { { samples, samples } };
+      /* Store pixel component values to memory.
+       * Due to the way sample buffers are allocated, we don't need to worry
+       * about tail cases when output_width is not a multiple of 32.  See
+       * "Creation of 2-D sample arrays" in jmemmgr.c for details.
+       */
+      vst2q_u8(outptr + 2 * colctr, output_pixels);
+    }
+  }
+}
+
+
+/* The diagram below shows an array of samples produced by h2v2 downsampling.
+ *
+ *                s0        s1
+ *            +---------+---------+
+ *            | p0   p1 | p2   p3 |
+ *       sA   |         |         |
+ *            | p4   p5 | p6   p7 |
+ *            +---------+---------+
+ *            | p8   p9 | p10  p11|
+ *       sB   |         |         |
+ *            | p12  p13| p14  p15|
+ *            +---------+---------+
+ *
+ * Samples s0A-s1B were created by averaging the original pixel component
+ * values centered at positions p0-p15 above.  To approximate those original
+ * pixel component values, we duplicate the samples both horizontally and
+ * vertically:
+ *     p0(upsampled) = p1(upsampled) = p4(upsampled) = p5(upsampled) = s0A
+ *     p2(upsampled) = p3(upsampled) = p6(upsampled) = p7(upsampled) = s1A
+ *     p8(upsampled) = p9(upsampled) = p12(upsampled) = p13(upsampled) = s0B
+ *     p10(upsampled) = p11(upsampled) = p14(upsampled) = p15(upsampled) = s1B
+ */
+
+void jsimd_h2v2_upsample_neon(int max_v_samp_factor, JDIMENSION output_width,
+                              JSAMPARRAY input_data,
+                              JSAMPARRAY *output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  JSAMPROW inptr, outptr0, outptr1;
+  int inrow, outrow;
+  unsigned colctr;
+
+  for (inrow = 0, outrow = 0; outrow < max_v_samp_factor; inrow++) {
+    inptr = input_data[inrow];
+    outptr0 = output_data[outrow++];
+    outptr1 = output_data[outrow++];
+
+    for (colctr = 0; 2 * colctr < output_width; colctr += 16) {
+      uint8x16_t samples = vld1q_u8(inptr + colctr);
+      /* Duplicate the samples.  The store operation below interleaves them so
+       * that adjacent pixel component values take on the same sample value,
+       * per above.
+       */
+      uint8x16x2_t output_pixels = { { samples, samples } };
+      /* Store pixel component values for both output rows to memory.
+       * Due to the way sample buffers are allocated, we don't need to worry
+       * about tail cases when output_width is not a multiple of 32.  See
+       * "Creation of 2-D sample arrays" in jmemmgr.c for details.
+       */
+      vst2q_u8(outptr0 + 2 * colctr, output_pixels);
+      vst2q_u8(outptr1 + 2 * colctr, output_pixels);
+    }
+  }
+}

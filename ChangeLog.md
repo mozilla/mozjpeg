@@ -44,6 +44,9 @@ subsampling (for instance, 4:2:0 or 4:4:0.)
 a 4:2:2 or 4:2:0 JPEG image using the merged (non-fancy) upsampling algorithms
 (that is, when setting `cinfo.do_fancy_upsampling` to `FALSE`.)
 
+7. The new CMake-based build system will now disable the MIPS DSPr2 SIMD
+extensions if it detects that the compiler does not support DSPr2 instructions.
+
 
 1.5.90 (2.0 beta1)
 ==================

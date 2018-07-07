@@ -16,7 +16,7 @@ if(MSVC)
 endif()
 
 foreach(src ${JPEG_SOURCES})
-  list(APPEND JPEG_SRCS "${CMAKE_SOURCE_DIR}/${src}")
+  list(APPEND JPEG_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/../${src}")
 endforeach()
 
 if(WITH_SIMD)
@@ -26,10 +26,10 @@ endif()
 
 if(WITH_MEM_SRCDST AND NOT WITH_JPEG8)
   add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
-    "${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}-memsrcdst.def")
+    "${CMAKE_CURRENT_SOURCE_DIR}/../win/jpeg${DLL_VERSION}-memsrcdst.def")
 else()
   add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
-    "${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def")
+    "${CMAKE_CURRENT_SOURCE_DIR}/../win/jpeg${DLL_VERSION}.def")
 endif()
 set_target_properties(jpeg PROPERTIES SOVERSION ${DLL_VERSION}
   VERSION ${FULLVERSION})

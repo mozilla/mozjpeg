@@ -263,7 +263,7 @@ a subset thereof, but there are other formats containing the name "JPEG" that
 are incompatible with the DCT-based JPEG standard or with JFIF (for instance,
 JPEG 2000 and JPEG XR).  This software therefore does not support these
 formats.  Indeed, one of the original reasons for developing this free software
-was to help force convergence on common, interoperable format standards for
+was to help force convergence on a common, interoperable format standard for
 JPEG files.
 
 JFIF is a minimal or "low end" representation.  TIFF/JPEG (TIFF revision 6.0 as

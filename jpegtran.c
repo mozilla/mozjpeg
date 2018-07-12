@@ -589,7 +589,8 @@ main (int argc, char **argv)
 
   /* Finish compression and release memory */
   jpeg_finish_compress(&dstinfo);
-  
+
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   if (jpeg_c_int_param_supported(&dstinfo, JINT_COMPRESS_PROFILE) &&
       jpeg_c_get_int_param(&dstinfo, JINT_COMPRESS_PROFILE)
         == JCP_MAX_COMPRESSION) {
@@ -611,6 +612,7 @@ main (int argc, char **argv)
         fprintf(stderr, "%s: can't write to stdout\n", progname);
     }
   }
+#endif
     
   jpeg_destroy_compress(&dstinfo);
   (void) jpeg_finish_decompress(&srcinfo);

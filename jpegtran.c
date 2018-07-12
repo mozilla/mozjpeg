@@ -42,6 +42,7 @@
 
 static const char *progname;    /* program name for error messages */
 static char *outfilename;       /* for -outfile switch */
+static boolean prefer_smallest;  /* use smallest of input or result file (if no image-changing options supplied) */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
 boolean memsrc = FALSE;  /* for -memsrc switch */
@@ -156,6 +157,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   transformoption.crop = FALSE;
   transformoption.slow_hflip = FALSE;
   cinfo->err->trace_level = 0;
+  prefer_smallest = TRUE;
 
   /* Scan command line options, adjust parameters */
 
@@ -178,6 +180,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 
       /* No table optimization required for AC */
       cinfo->optimize_coding = FALSE;
+      prefer_smallest = FALSE;
 #else
       fprintf(stderr, "%s: sorry, arithmetic coding not supported\n",
               progname);
@@ -207,6 +210,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
                 progname, argv[argn]);
         exit(EXIT_FAILURE);
       }
+      prefer_smallest = FALSE;
 #else
       select_transform(JXFORM_NONE);    /* force an error */
 #endif
@@ -242,6 +246,8 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       else
         usage();
 
+      prefer_smallest = FALSE;
+
     } else if (keymatch(arg, "fastcrush", 4)) {
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_OPTIMIZE_SCANS, FALSE);
       
@@ -249,6 +255,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Force to grayscale. */
 #if TRANSFORMS_SUPPORTED
       transformoption.force_grayscale = TRUE;
+      prefer_smallest = FALSE;
 #else
       select_transform(JXFORM_NONE);    /* force an error */
 #endif
@@ -291,6 +298,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       /* Select simple progressive mode. */
 #ifdef C_PROGRESSIVE_SUPPORTED
       simple_progressive = TRUE;
+      prefer_smallest = FALSE;
       /* We must postpone execution until num_components is known. */
 #else
       fprintf(stderr, "%s: sorry, progressive output was not compiled\n",
@@ -320,6 +328,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "revert", 3)) {
       /* revert to old JPEG default */
       jpeg_c_set_int_param(cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
+      prefer_smallest = FALSE;
       
     } else if (keymatch(arg, "rotate", 2)) {
       /* Rotate 90, 180, or 270 degrees (measured clockwise). */
@@ -334,11 +343,14 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       else
         usage();
 
+      prefer_smallest = FALSE;
+
     } else if (keymatch(arg, "scans", 1)) {
       /* Set scan script. */
 #ifdef C_MULTISCAN_FILES_SUPPORTED
       if (++argn >= argc)       /* advance to next argument */
         usage();
+      prefer_smallest = FALSE;
       scansarg = argv[argn];
       /* We must postpone reading the file in case -progressive appears. */
 #else
@@ -350,14 +362,17 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "transpose", 1)) {
       /* Transpose (across UL-to-LR axis). */
       select_transform(JXFORM_TRANSPOSE);
+      prefer_smallest = FALSE;
 
     } else if (keymatch(arg, "transverse", 6)) {
       /* Transverse transpose (across UR-to-LL axis). */
       select_transform(JXFORM_TRANSVERSE);
+      prefer_smallest = FALSE;
 
     } else if (keymatch(arg, "trim", 3)) {
       /* Trim off any partial edge MCUs that the transform can't handle. */
       transformoption.trim = TRUE;
+      prefer_smallest = FALSE;
 
     } else {
       usage();                  /* bogus switch */
@@ -378,6 +393,7 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       if (! read_scan_script(cinfo, scansarg))
         usage();
 #endif
+
   }
 
   return argn;                  /* return index of next arg (file name) */
@@ -598,7 +614,7 @@ main (int argc, char **argv)
     
     unsigned char *buffer = outbuffer;
     unsigned long size = outsize;
-    if (insize < size) {
+    if (prefer_smallest && insize < size) {
       size = insize;
       buffer = inbuffer;
     }

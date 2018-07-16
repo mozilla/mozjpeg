@@ -349,20 +349,28 @@ jsimd_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
 
   switch (cinfo->out_color_space) {
   case JCS_EXT_RGB:
+#ifndef NEON_INTRINSICS
     if (simd_features & JSIMD_FASTST3)
+#endif
       neonfct = jsimd_ycc_extrgb_convert_neon;
+#ifndef NEON_INTRINSICS
     else
       neonfct = jsimd_ycc_extrgb_convert_neon_slowst3;
+#endif
     break;
   case JCS_EXT_RGBX:
   case JCS_EXT_RGBA:
     neonfct = jsimd_ycc_extrgbx_convert_neon;
     break;
   case JCS_EXT_BGR:
+#ifndef NEON_INTRINSICS
     if (simd_features & JSIMD_FASTST3)
+#endif
       neonfct = jsimd_ycc_extbgr_convert_neon;
+#ifndef NEON_INTRINSICS
     else
       neonfct = jsimd_ycc_extbgr_convert_neon_slowst3;
+#endif
     break;
   case JCS_EXT_BGRX:
   case JCS_EXT_BGRA:
@@ -377,10 +385,14 @@ jsimd_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
     neonfct = jsimd_ycc_extxrgb_convert_neon;
     break;
   default:
+#ifndef NEON_INTRINSICS
     if (simd_features & JSIMD_FASTST3)
+#endif
       neonfct = jsimd_ycc_extrgb_convert_neon;
+#ifndef NEON_INTRINSICS
     else
       neonfct = jsimd_ycc_extrgb_convert_neon_slowst3;
+#endif
     break;
   }
 

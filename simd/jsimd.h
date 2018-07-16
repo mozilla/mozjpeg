@@ -450,12 +450,16 @@ EXTERN(void) jsimd_ycc_rgb565_convert_neon
   (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
    JSAMPARRAY output_buf, int num_rows);
 
+#ifndef NEON_INTRINSICS
+
 EXTERN(void) jsimd_ycc_extrgb_convert_neon_slowst3
   (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
    JSAMPARRAY output_buf, int num_rows);
 EXTERN(void) jsimd_ycc_extbgr_convert_neon_slowst3
   (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
    JSAMPARRAY output_buf, int num_rows);
+
+#endif
 
 EXTERN(void) jsimd_ycc_rgb_convert_dspr2
   (JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,

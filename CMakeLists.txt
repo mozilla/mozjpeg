@@ -1310,9 +1310,7 @@ endif()
 # INSTALLATION
 ###############################################################################
 
-if(WIN32)
-  set(EXE ".exe")
-endif()
+set(EXE ${CMAKE_EXECUTABLE_SUFFIX})
 
 if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)

@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+if(CMAKE_EXECUTABLE_SUFFIX)
+  set(CMAKE_EXECUTABLE_SUFFIX_TMP ${CMAKE_EXECUTABLE_SUFFIX})
+endif()
+
 project(libjpeg-turbo C)
 set(VERSION 1.5.91)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
@@ -497,6 +501,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 ###############################################################################
 # TARGETS
 ###############################################################################
+
+if(CMAKE_EXECUTABLE_SUFFIX_TMP)
+  set(CMAKE_EXECUTABLE_SUFFIX ${CMAKE_EXECUTABLE_SUFFIX_TMP})
+endif()
+message(STATUS "CMAKE_EXECUTABLE_SUFFIX = ${CMAKE_EXECUTABLE_SUFFIX}")
 
 set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
   jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c

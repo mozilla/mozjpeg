@@ -52,6 +52,12 @@ a specially-crafted malformed color-index (8-bit-per-sample) BMP file in which
 some of the samples (color indices) exceeded the bounds of the BMP file's color
 table.
 
+9. Fixed a signed integer overflow in the progressive Huffman decoder, detected
+by the Clang and GCC undefined behavior sanitizers, that could be triggered by
+attempting to decompress a specially-crafted malformed JPEG image.  This issue
+did not pose a security threat, but removing the warning made it easier to
+detect actual security issues, should they arise in the future.
+
 
 1.5.90 (2.0 beta1)
 ==================

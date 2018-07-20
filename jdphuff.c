@@ -21,6 +21,7 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jdhuff.h"             /* Declarations shared with jdhuff.c */
+#include <limits.h>
 
 
 #ifdef D_PROGRESSIVE_SUPPORTED
@@ -340,6 +341,10 @@ decode_mcu_DC_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       }
 
       /* Convert DC difference to actual value, update last_dc_val */
+      if ((state.last_dc_val[ci] >= 0 &&
+           s > INT_MAX - state.last_dc_val[ci]) ||
+          (state.last_dc_val[ci] < 0 && s < INT_MIN - state.last_dc_val[ci]))
+        ERREXIT(cinfo, JERR_BAD_DCT_COEF);
       s += state.last_dc_val[ci];
       state.last_dc_val[ci] = s;
       /* Scale and output the coefficient (assumes jpeg_natural_order[0]=0) */

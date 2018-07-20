@@ -47,6 +47,11 @@ a 4:2:2 or 4:2:0 JPEG image using the merged (non-fancy) upsampling algorithms
 7. The new CMake-based build system will now disable the MIPS DSPr2 SIMD
 extensions if it detects that the compiler does not support DSPr2 instructions.
 
+8. Fixed out-of-bounds read in cjpeg that occurred when attempting to compress
+a specially-crafted malformed color-index (8-bit-per-sample) BMP file in which
+some of the samples (color indices) exceeded the bounds of the BMP file's color
+table.
+
 
 1.5.90 (2.0 beta1)
 ==================

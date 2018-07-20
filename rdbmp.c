@@ -3,7 +3,7 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
- * Modified 2009-2010 by Guido Vollbeding.
+ * Modified 2009-2017 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Modified 2011 by Siarhei Siamashka.
  * Copyright (C) 2015, 2017-2018, D. R. Commander.
@@ -72,6 +72,7 @@ typedef struct _bmp_source_struct {
   JDIMENSION row_width;         /* Physical width of scanlines in file */
 
   int bits_per_pixel;           /* remembers 8- or 24-bit format */
+  int cmap_length;              /* colormap length */
 
   boolean use_inversion_array;  /* TRUE = preload the whole image, which is
                                    stored in bottom-up order, and feed it to
@@ -155,6 +156,7 @@ get_8bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   bmp_source_ptr source = (bmp_source_ptr)sinfo;
   register JSAMPARRAY colormap = source->colormap;
+  int cmaplen = source->cmap_length;
   JSAMPARRAY image_ptr;
   register int t;
   register JSAMPROW inptr, outptr;
@@ -178,11 +180,15 @@ get_8bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (cinfo->in_color_space == JCS_GRAYSCALE) {
     for (col = cinfo->image_width; col > 0; col--) {
       t = GETJSAMPLE(*inptr++);
+      if (t >= cmaplen)
+        ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
       *outptr++ = colormap[0][t];
     }
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
       t = GETJSAMPLE(*inptr++);
+      if (t >= cmaplen)
+        ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
       rgb_to_cmyk(colormap[0][t], colormap[1][t], colormap[2][t], outptr,
                   outptr + 1, outptr + 2, outptr + 3);
       outptr += 4;
@@ -197,6 +203,8 @@ get_8bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (aindex >= 0) {
       for (col = cinfo->image_width; col > 0; col--) {
         t = GETJSAMPLE(*inptr++);
+        if (t >= cmaplen)
+          ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
         outptr[rindex] = colormap[0][t];
         outptr[gindex] = colormap[1][t];
         outptr[bindex] = colormap[2][t];
@@ -206,6 +214,8 @@ get_8bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     } else {
       for (col = cinfo->image_width; col > 0; col--) {
         t = GETJSAMPLE(*inptr++);
+        if (t >= cmaplen)
+          ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
         outptr[rindex] = colormap[0][t];
         outptr[gindex] = colormap[1][t];
         outptr[bindex] = colormap[2][t];
@@ -539,6 +549,7 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     /* Allocate space to store the colormap */
     source->colormap = (*cinfo->mem->alloc_sarray)
       ((j_common_ptr)cinfo, JPOOL_IMAGE, (JDIMENSION)biClrUsed, (JDIMENSION)3);
+    source->cmap_length = (int)biClrUsed;
     /* and read it from the file */
     read_colormap(source, (int)biClrUsed, mapentrysize);
     /* account for size of colormap */

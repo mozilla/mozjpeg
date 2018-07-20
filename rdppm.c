@@ -75,7 +75,7 @@ typedef struct {
   JSAMPROW pixrow;              /* compressor input buffer */
   size_t buffer_width;          /* width of I/O buffer */
   JSAMPLE *rescale;             /* => maxval-remapping array, or NULL */
-  int maxval;
+  unsigned int maxval;
 } ppm_source_struct;
 
 typedef ppm_source_struct *ppm_source_ptr;
@@ -125,7 +125,7 @@ read_pbm_integer(j_compress_ptr cinfo, FILE *infile, unsigned int maxval)
   }
 
   if (val > maxval)
-    ERREXIT(cinfo, JERR_PPM_TOOLARGE);
+    ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
 
   return val;
 }
@@ -509,7 +509,7 @@ get_word_gray_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
-      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
     *ptr++ = rescale[temp];
   }
   return 1;
@@ -536,17 +536,17 @@ get_word_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
-      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
     *ptr++ = rescale[temp];
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
-      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
     *ptr++ = rescale[temp];
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
-      ERREXIT(cinfo, JERR_PPM_TOOLARGE);
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
     *ptr++ = rescale[temp];
   }
   return 1;

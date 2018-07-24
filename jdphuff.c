@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2016, D. R. Commander.
+ * Copyright (C) 2015-2016, 2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -15,6 +15,9 @@
  * up to the start of the current MCU.  To do this, we copy state variables
  * into local working storage, and update them back to the permanent
  * storage only upon successful completion of an MCU.
+ *
+ * NOTE: All referenced figures are from
+ * Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
  */
 
 #define JPEG_INTERNALS

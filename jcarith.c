@@ -9,11 +9,14 @@
  * file.
  *
  * This file contains portable arithmetic entropy encoding routines for JPEG
- * (implementing the ISO/IEC IS 10918-1 and CCITT Recommendation ITU-T T.81).
+ * (implementing Recommendation ITU-T T.81 | ISO/IEC 10918-1).
  *
  * Both sequential and progressive modes are supported in this single module.
  *
  * Suspension is not currently supported in this module.
+ *
+ * NOTE: All referenced figures are from
+ * Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
  */
 
 #define JPEG_INTERNALS

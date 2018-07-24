@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2016, D. R. Commander.
+ * Copyright (C) 2010, 2016, 2018, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -234,10 +234,10 @@ per_scan_setup(j_decompress_ptr cinfo)
  * means that we have to save away the table actually used for each component.
  * We do this by copying the table at the start of the first scan containing
  * the component.
- * The JPEG spec prohibits the encoder from changing the contents of a Q-table
- * slot between scans of a component using that slot.  If the encoder does so
- * anyway, this decoder will simply use the Q-table values that were current
- * at the start of the first scan for the component.
+ * Rec. ITU-T T.81 | ISO/IEC 10918-1 prohibits the encoder from changing the
+ * contents of a Q-table slot between scans of a component using that slot.  If
+ * the encoder does so anyway, this decoder will simply use the Q-table values
+ * that were current at the start of the first scan for the component.
  *
  * The decompressor output side looks only at the saved quant tables,
  * not at the current Q-table slots.

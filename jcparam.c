@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2008 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, D. R. Commander.
+ * Copyright (C) 2009-2011, 2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -65,7 +65,8 @@ jpeg_add_quant_table(j_compress_ptr cinfo, int which_tbl,
 }
 
 
-/* These are the sample quantization tables given in JPEG spec section K.1.
+/* These are the sample quantization tables given in Annex K (Clause K.1) of
+ * Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
  * The spec says that the values given produce "good" quality, and
  * when divided by 2, "very good" quality.
  */

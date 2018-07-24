@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2014-2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014-2016, 2018, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -16,6 +16,9 @@
  * back up to the start of the current MCU.  To do this, we copy state
  * variables into local working storage, and update them back to the
  * permanent JPEG objects only upon successful completion of an MCU.
+ *
+ * NOTE: All referenced figures are from
+ * Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
  */
 
 #define JPEG_INTERNALS
@@ -859,13 +862,14 @@ encode_mcu_gather(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
  * one bits (so that padding bits added at the end of a compressed segment
  * can't look like a valid code).  Because of the canonical ordering of
  * codewords, this just means that there must be an unused slot in the
- * longest codeword length category.  Section K.2 of the JPEG spec suggests
- * reserving such a slot by pretending that symbol 256 is a valid symbol
- * with count 1.  In theory that's not optimal; giving it count zero but
- * including it in the symbol set anyway should give a better Huffman code.
- * But the theoretically better code actually seems to come out worse in
- * practice, because it produces more all-ones bytes (which incur stuffed
- * zero bytes in the final file).  In any case the difference is tiny.
+ * longest codeword length category.  Annex K (Clause K.2) of
+ * Rec. ITU-T T.81 (1992) | ISO/IEC 10918-1:1994 suggests reserving such a slot
+ * by pretending that symbol 256 is a valid symbol with count 1.  In theory
+ * that's not optimal; giving it count zero but including it in the symbol set
+ * anyway should give a better Huffman code.  But the theoretically better code
+ * actually seems to come out worse in practice, because it produces more
+ * all-ones bytes (which incur stuffed zero bytes in the final file).  In any
+ * case the difference is tiny.
  *
  * The JPEG standard requires Huffman codes to be no more than 16 bits long.
  * If some symbols have a very small but nonzero probability, the Huffman tree
@@ -967,13 +971,13 @@ jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
 
   /* JPEG doesn't allow symbols with code lengths over 16 bits, so if the pure
    * Huffman procedure assigned any such lengths, we must adjust the coding.
-   * Here is what the JPEG spec says about how this next bit works:
-   * Since symbols are paired for the longest Huffman code, the symbols are
-   * removed from this length category two at a time.  The prefix for the pair
-   * (which is one bit shorter) is allocated to one of the pair; then,
-   * skipping the BITS entry for that prefix length, a code word from the next
-   * shortest nonzero BITS entry is converted into a prefix for two code words
-   * one bit longer.
+   * Here is what Rec. ITU-T T.81 | ISO/IEC 10918-1 says about how this next
+   * bit works: Since symbols are paired for the longest Huffman code, the
+   * symbols are removed from this length category two at a time.  The prefix
+   * for the pair (which is one bit shorter) is allocated to one of the pair;
+   * then, skipping the BITS entry for that prefix length, a code word from the
+   * next shortest nonzero BITS entry is converted into a prefix for two code
+   * words one bit longer.
    */
 
   for (i = MAX_CLEN; i > 16; i--) {
@@ -999,7 +1003,8 @@ jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
 
   /* Return a list of the symbols sorted by code length */
   /* It's not real clear to me why we don't need to consider the codelength
-   * changes made above, but the JPEG spec seems to think this works.
+   * changes made above, but Rec. ITU-T T.81 | ISO/IEC 10918-1 seems to think
+   * this works.
    */
   p = 0;
   for (i = 1; i <= MAX_CLEN; i++) {

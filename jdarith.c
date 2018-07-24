@@ -4,16 +4,19 @@
  * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2015 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2017, D. R. Commander.
+ * Copyright (C) 2015-2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
- * This file contains portable arithmetic entropy decoding routines for JPEG
- * (implementing the ISO/IEC IS 10918-1 and CCITT Recommendation ITU-T T.81).
+ * This file contains portable arithmetic entropy encoding routines for JPEG
+ * (implementing Recommendation ITU-T T.81 | ISO/IEC 10918-1).
  *
  * Both sequential and progressive modes are supported in this single module.
  *
  * Suspension is not currently supported in this module.
+ *
+ * NOTE: All referenced figures are from
+ * Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
  */
 
 #define JPEG_INTERNALS

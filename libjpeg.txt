@@ -3,7 +3,7 @@ USING THE IJG JPEG LIBRARY
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2017, D. R. Commander.
+Copyright (C) 2010, 2014-2018, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -388,13 +388,13 @@ to the total image height.  In most applications it is convenient to pass
 just one or a few scanlines at a time.  The expected format for the passed
 data is discussed under "Data formats", above.
 
-Image data should be written in top-to-bottom scanline order.  The JPEG spec
-contains some weasel wording about how top and bottom are application-defined
-terms (a curious interpretation of the English language...) but if you want
-your files to be compatible with everyone else's, you WILL use top-to-bottom
-order.  If the source data must be read in bottom-to-top order, you can use
-the JPEG library's virtual array mechanism to invert the data efficiently.
-Examples of this can be found in the sample application cjpeg.
+Image data should be written in top-to-bottom scanline order.
+Rec. ITU-T T.81 | ISO/IEC 10918-1 says, "Applications determine which edges of
+a source image are defined as top, bottom, left, and right."  However, if you
+want your files to be compatible with everyone else's, then top-to-bottom order
+must be used.  If the source data must be read in bottom-to-top order, then you
+can use the JPEG library's virtual array mechanism to invert the data
+efficiently.  Examples of this can be found in the sample application cjpeg.
 
 The library maintains a count of the number of scanlines written so far
 in the next_scanline field of the JPEG object.  Usually you can just use
@@ -917,7 +917,8 @@ jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
 jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
                          boolean force_baseline)
         Same as jpeg_set_quality() except that the generated tables are the
-        sample tables given in the JPEC spec section K.1, multiplied by the
+        sample tables given in Annex K (Clause K.1) of
+        Rec. ITU-T T.81 (1992) | ISO/IEC 10918-1:1994, multiplied by the
         specified scale factor (which is expressed as a percentage; thus
         scale_factor = 100 reproduces the spec's tables).  Note that larger
         scale factors give lower quality.  This entry point is useful for

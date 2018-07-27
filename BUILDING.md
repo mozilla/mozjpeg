@@ -682,6 +682,8 @@ If building for Android 4.0.x (API level < 16) or earlier, remove
 `-DCMAKE_POSITION_INDEPENDENT_CODE=1` from the CMake arguments and `-pie` from
 `LDFLAGS`.
 
+If building on Windows, add `.exe` to the end of `CMAKE_C_COMPILER`.
+
 
 Advanced CMake Options
 ----------------------

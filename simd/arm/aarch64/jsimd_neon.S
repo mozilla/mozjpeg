@@ -136,6 +136,8 @@ Ljsimd_idct_2x2_neon_consts:
   .short -FIX_1_272758580  /* v14[2] */
   .short FIX_3_624509785   /* v14[3] */
 
+#ifndef NEON_INTRINSICS
+
 /* Constants for jsimd_ycc_*_neon() */
 
 .balign 16
@@ -144,8 +146,6 @@ Ljsimd_ycc_rgb_neon_consts:
   .short 22971, -11277, -23401, 29033
   .short -128,  -128,   -128,   -128
   .short -128,  -128,   -128,   -128
-
-#ifndef NEON_INTRINSICS
 
 /* Constants for jsimd_*_ycc_neon() */
 
@@ -1570,6 +1570,8 @@ asm_function jsimd_idct_2x2_neon
 .purgem idct_helper
 
 
+#ifndef NEON_INTRINSICS
+
 /*****************************************************************************/
 
 /*
@@ -1929,26 +1931,20 @@ asm_function jsimd_ycc_\colorid\()_convert_neon_slowst3
 .endm
 
 /*--------------------------------- id ----- bpp R  rsize G  gsize B  bsize defsize fast_st3*/
-#ifndef NEON_INTRINSICS
 generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,  1, .4h,  2, .4h,  .8b,    1
 generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,    1
 generate_jsimd_ycc_rgb_convert_neon extrgbx, 32, 0, .4h,  1, .4h,  2, .4h,  .8b,    1
 generate_jsimd_ycc_rgb_convert_neon extbgrx, 32, 2, .4h,  1, .4h,  0, .4h,  .8b,    1
 generate_jsimd_ycc_rgb_convert_neon extxbgr, 32, 3, .4h,  2, .4h,  1, .4h,  .8b,    1
 generate_jsimd_ycc_rgb_convert_neon extxrgb, 32, 1, .4h,  2, .4h,  3, .4h,  .8b,    1
-#endif
 generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, .4h,  0, .4h,  0, .4h,  .8b,    1
 
-#ifndef NEON_INTRINSICS
 generate_jsimd_ycc_rgb_convert_neon extrgb,  24, 0, .4h,  1, .4h,  2, .4h,  .8b,    0
 generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,    0
-#endif
 
 .purgem do_load
 .purgem do_store
 
-
-#ifndef NEON_INTRINSICS
 
 /*****************************************************************************/
 

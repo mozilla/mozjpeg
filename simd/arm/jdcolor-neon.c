@@ -131,3 +131,11 @@ ALIGN(16) static const int16_t jsimd_ycc_rgb_convert_neon_consts[] = {
 #undef RGB_ALPHA
 #undef RGB_PIXELSIZE
 #undef jsimd_ycc_rgb_convert_neon
+
+/* YCbCr -> RGB565 Conversion */
+
+#define RGB_PIXELSIZE  2
+#define jsimd_ycc_rgb_convert_neon  jsimd_ycc_rgb565_convert_neon
+#include "jdcolext-neon.c"
+#undef RGB_PIXELSIZE
+#undef jsimd_ycc_rgb_convert_neon

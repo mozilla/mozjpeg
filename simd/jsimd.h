@@ -7,6 +7,7 @@
  * Copyright (C) 2014, Linaro Limited.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
  * Copyright (C) 2016-2018, Loongson Technology Corporation Limited, BeiJing.
+ * Copyright (C) 2020, Arm Limited.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -264,6 +265,28 @@ EXTERN(void) jsimd_extxbgr_gray_convert_avx2
   (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
    JDIMENSION output_row, int num_rows);
 EXTERN(void) jsimd_extxrgb_gray_convert_avx2
+  (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+   JDIMENSION output_row, int num_rows);
+
+EXTERN(void) jsimd_rgb_gray_convert_neon
+  (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+   JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extrgb_gray_convert_neon
+  (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+   JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extrgbx_gray_convert_neon
+  (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+   JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extbgr_gray_convert_neon
+  (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+   JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extbgrx_gray_convert_neon
+  (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+   JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extxbgr_gray_convert_neon
+  (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+   JDIMENSION output_row, int num_rows);
+EXTERN(void) jsimd_extxrgb_gray_convert_neon
   (JDIMENSION img_width, JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
    JDIMENSION output_row, int num_rows);
 

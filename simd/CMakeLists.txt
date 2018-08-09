@@ -265,11 +265,12 @@ endif()
 
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S)
 
+set(SIMD_SOURCES arm/jcgray-neon.c)
 if(NEON_INTRINSICS)
-  set(SIMD_SOURCES arm/jccolor-neon.c)
-  if(BITS EQUAL 32)
-    set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS -mfpu=neon)
-  endif()
+  set(SIMD_SOURCES ${SIMD_SOURCES} arm/jccolor-neon.c)
+endif()
+if(BITS EQUAL 32)
+  set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS -mfpu=neon)
 endif()
 
 add_library(simd OBJECT ${SIMD_SOURCES} arm/aarch${BITS}/jsimd_neon.S

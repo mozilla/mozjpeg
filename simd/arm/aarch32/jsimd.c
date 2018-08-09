@@ -165,6 +165,19 @@ jsimd_can_rgb_ycc(void)
 GLOBAL(int)
 jsimd_can_rgb_gray(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (simd_support & JSIMD_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -247,6 +260,37 @@ jsimd_rgb_gray_convert(j_compress_ptr cinfo, JSAMPARRAY input_buf,
                        JSAMPIMAGE output_buf, JDIMENSION output_row,
                        int num_rows)
 {
+  void (*neonfct) (JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch (cinfo->in_color_space) {
+  case JCS_EXT_RGB:
+    neonfct = jsimd_extrgb_gray_convert_neon;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    neonfct = jsimd_extrgbx_gray_convert_neon;
+    break;
+  case JCS_EXT_BGR:
+    neonfct = jsimd_extbgr_gray_convert_neon;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    neonfct = jsimd_extbgrx_gray_convert_neon;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    neonfct = jsimd_extxbgr_gray_convert_neon;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    neonfct = jsimd_extxrgb_gray_convert_neon;
+    break;
+  default:
+    neonfct = jsimd_extrgb_gray_convert_neon;
+    break;
+  }
+
+  neonfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)

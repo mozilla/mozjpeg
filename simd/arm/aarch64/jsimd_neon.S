@@ -2251,8 +2251,6 @@ generate_jsimd_rgb_ycc_convert_neon extbgr,  24, 2, 1, 0, 0
 .purgem do_load
 .purgem do_store
 
-#endif  /* NEON_INTRINSICS */
-
 
 /*****************************************************************************/
 
@@ -2550,6 +2548,8 @@ asm_function jsimd_fdct_islow_neon
 #undef XFIX_P_2_053
 #undef XFIX_N_2_562
 #undef XFIX_P_3_072
+
+#endif  /* NEON_INTRINSICS */
 
 
 /*****************************************************************************/

@@ -68,6 +68,19 @@ METHODDEF(void)
 start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
     png_source_struct *source = (png_source_struct *)sinfo;
+    png_uint_32 width, height;
+    int bit_depth, color_type;
+    int has_srgb_chunk;
+    double gamma;
+    png_bytep profile;
+    png_charp unused1;
+    int unused2;
+    png_uint_32 proflen;
+    int has_profile;
+    size_t datalen;
+    JOCTET *dataptr;
+    struct jpeg_marker_struct *marker;
+    png_size_t rowbytes;
 
     source->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, cinfo, error_input_png, NULL);
     source->info_ptr = png_create_info_struct(source->png_ptr);
@@ -85,8 +98,6 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     png_init_io(source->png_ptr, source->pub.input_file);
     png_read_info(source->png_ptr, source->info_ptr);
 
-    png_uint_32 width, height;
-    int bit_depth, color_type;
     png_get_IHDR(source->png_ptr, source->info_ptr, &width, &height,
                  &bit_depth, &color_type, NULL, NULL, NULL);
 
@@ -111,9 +122,9 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     cinfo->image_width = width;
     cinfo->image_height = height;
 
-    int has_srgb_chunk = png_get_valid(source->png_ptr, source->info_ptr, PNG_INFO_sRGB);
+    has_srgb_chunk = png_get_valid(source->png_ptr, source->info_ptr, PNG_INFO_sRGB);
 
-    double gamma = 0.45455;
+    gamma = 0.45455;
     if (!has_srgb_chunk) {
         png_get_gAMA(source->png_ptr, source->info_ptr, &gamma);
     }
@@ -121,11 +132,11 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     sinfo->get_pixel_rows = get_pixel_rows_png;
 
     source->pub.marker_list = NULL;
-    png_bytep profile = NULL;
-    png_charp unused1 = NULL;
-    int unused2 = 0;
-    png_uint_32 proflen = 0;
-    int has_profile = 0;
+    profile = NULL;
+    unused1 = NULL;
+    unused2 = 0;
+    proflen = 0;
+    has_profile = 0;
 
     if (has_srgb_chunk) {
         /* PNG can declare use of an sRGB profile without embedding an ICC file, but JPEG doesn't have such feature */
@@ -138,11 +149,11 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
     if (has_profile && profile && proflen) {
         if (proflen < 65535-14) {
-            size_t datalen = proflen + 14;
-            JOCTET *dataptr = (*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_IMAGE, datalen);
+            datalen = proflen + 14;
+            dataptr = (*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_IMAGE, datalen);
             memcpy(dataptr, "ICC_PROFILE\0\x01\x01", 14);
             memcpy(dataptr + 14, profile, proflen);
-            struct jpeg_marker_struct *marker = (*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_IMAGE, sizeof(struct jpeg_marker_struct));
+            marker = (*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_IMAGE, sizeof(struct jpeg_marker_struct));
             marker->next = NULL;
             marker->marker = JPEG_APP0+2;
             marker->original_length = 0;
@@ -156,7 +167,7 @@ start_input_png (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
     png_read_update_info(source->png_ptr, source->info_ptr);
 
-    png_size_t rowbytes = png_get_rowbytes(source->png_ptr, source->info_ptr);
+    rowbytes = png_get_rowbytes(source->png_ptr, source->info_ptr);
 
     source->pub.buffer = (*cinfo->mem->alloc_sarray)((j_common_ptr)cinfo, JPOOL_IMAGE, (JDIMENSION)rowbytes, 1);
     source->pub.buffer_height = 1;

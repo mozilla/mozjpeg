@@ -1,3 +1,15 @@
+2.0.1
+=====
+
+### Significant changes relative to 2.0.0:
+
+1. Fixed a regression introduced with the new CMake-based Un*x build system,
+whereby jconfig.h could cause compiler warnings of the form
+`"HAVE_*_H" redefined` if it was included by downstream Autotools-based
+projects that used `AC_CHECK_HEADERS()` to check for the existence of locale.h,
+stddef.h, or stdlib.h.
+
+
 2.0.0
 =====
 

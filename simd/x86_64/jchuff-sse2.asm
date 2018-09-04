@@ -3,6 +3,7 @@
 ;
 ; Copyright (C) 2009-2011, 2014-2016, D. R. Commander.
 ; Copyright (C) 2015, Matthieu Darbois.
+; Copyright (C) 2018, Matthias Räncker.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -199,8 +200,8 @@ EXTN(jsimd_huff_encode_one_block_sse2):
 
     mov         buffer, r11                  ; r11 is now sratch
 
-    mov         put_buffer, MMWORD [r10+16]  ; put_buffer = state->cur.put_buffer;
-    mov         put_bits,    DWORD [r10+24]  ; put_bits = state->cur.put_bits;
+    mov         put_buffer, MMWORD [r10+SIZEOF_POINTER*2]    ; put_buffer = state->cur.put_buffer;
+    mov         put_bits,    DWORD [r10+SIZEOF_POINTER*2+8]  ; put_bits = state->cur.put_bits;
     push        r10                          ; r10 is now scratch
 
     ; Encode the DC coefficient difference per section F.1.2.1
@@ -332,8 +333,8 @@ EXTN(jsimd_huff_encode_one_block_sse2):
 .EFN:
     pop         r10
     ; Save put_buffer & put_bits
-    mov         MMWORD [r10+16], put_buffer  ; state->cur.put_buffer = put_buffer;
-    mov         DWORD  [r10+24], put_bits    ; state->cur.put_bits = put_bits;
+    mov         MMWORD [r10+SIZEOF_POINTER*2], put_buffer  ; state->cur.put_buffer = put_buffer;
+    mov         DWORD  [r10+SIZEOF_POINTER*2+8], put_bits  ; state->cur.put_bits = put_bits;
 
     pop         rbx
     uncollect_args 6

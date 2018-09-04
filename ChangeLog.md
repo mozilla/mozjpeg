@@ -1,3 +1,22 @@
+2.1 pre-beta
+============
+
+### Significant changes relative to 2.0.1:
+
+1. The build system, x86-64 SIMD extensions, and accelerated Huffman codec now
+support the x32 ABI on Linux, which allows for using x86-64 instructions with
+32-bit pointers.  The x32 ABI is generally enabled by adding `-mx32` to the
+compiler flags.
+
+     Caveats:
+     - CMake 3.9.0 or later is required in order for the build system to
+automatically detect an x32 build.
+     - Java does not support the x32 ABI, and thus the TurboJPEG Java API will
+automatically be disabled with x32 builds.
+     - SIMD acceleration for progressive Huffman encoding does not (currently)
+work with the x32 ABI and will be disabled in x32 builds.
+
+
 2.0.1
 =====
 

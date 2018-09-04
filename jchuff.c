@@ -6,6 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, 2014-2016, 2018, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
+ * Copyright (C) 2018, Matthias Räncker.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -65,8 +66,14 @@
  * but must not be updated permanently until we complete the MCU.
  */
 
+#if defined(__x86_64__) && defined(__ILP32__)
+typedef unsigned long long bit_buf_type;
+#else
+typedef size_t bit_buf_type;
+#endif
+
 typedef struct {
-  size_t put_buffer;                    /* current bit-accumulation buffer */
+  bit_buf_type put_buffer;              /* current bit-accumulation buffer */
   int put_bits;                         /* # of bits now in it */
   int last_dc_val[MAX_COMPS_IN_SCAN];   /* last DC coef for each component */
 } savable_state;
@@ -387,7 +394,7 @@ dump_buffer(working_state *state)
 #error Cannot determine word size
 #endif
 
-#if SIZEOF_SIZE_T == 8 || defined(_WIN64)
+#if SIZEOF_SIZE_T == 8 || defined(_WIN64) || (defined(__x86_64__) && defined(__ILP32__))
 
 #define EMIT_BITS(code, size) { \
   CHECKBUF47() \
@@ -463,7 +470,7 @@ LOCAL(boolean)
 flush_bits(working_state *state)
 {
   JOCTET _buffer[BUFSIZE], *buffer;
-  size_t put_buffer;  int put_bits;
+  bit_buf_type put_buffer;  int put_bits;
   size_t bytes, bytestocopy;  int localbuf = 0;
 
   put_buffer = state->cur.put_buffer;
@@ -509,7 +516,7 @@ encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
   int nbits;
   int r, code, size;
   JOCTET _buffer[BUFSIZE], *buffer;
-  size_t put_buffer;  int put_bits;
+  bit_buf_type put_buffer;  int put_bits;
   int code_0xf0 = actbl->ehufco[0xf0], size_0xf0 = actbl->ehufsi[0xf0];
   size_t bytes, bytestocopy;  int localbuf = 0;
 

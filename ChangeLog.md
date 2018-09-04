@@ -9,6 +9,11 @@ whereby jconfig.h could cause compiler warnings of the form
 projects that used `AC_CHECK_HEADERS()` to check for the existence of locale.h,
 stddef.h, or stdlib.h.
 
+2. The `jsimd_quantize_float_dspr2()` and `jsimd_convsamp_float_dspr2()`
+functions in the MIPS DSPr2 SIMD extensions are now disabled at compile time
+if the soft float ABI is enabled.  Those functions use instructions that are
+incompatible with the soft float ABI.
+
 
 2.0.0
 =====

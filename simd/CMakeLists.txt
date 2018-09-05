@@ -262,7 +262,7 @@ endif()
 # MIPS (GAS)
 ###############################################################################
 
-elseif(CPU_TYPE STREQUAL "mips")
+elseif(CPU_TYPE STREQUAL "mips" OR CPU_TYPE STREQUAL "mipsel")
 
 enable_language(ASM)
 
@@ -293,7 +293,7 @@ if(NOT HAVE_DSPR2)
   return()
 endif()
 
-add_library(simd OBJECT ${CPU_TYPE}/jsimd_dspr2.S ${CPU_TYPE}/jsimd.c)
+add_library(simd OBJECT mips/jsimd_dspr2.S mips/jsimd.c)
 
 if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
   set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)

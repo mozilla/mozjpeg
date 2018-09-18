@@ -267,7 +267,7 @@ file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S)
 
 set(SIMD_SOURCES arm/jcgray-neon.c arm/jcphuff-neon.c arm/jcsample-neon.c
   arm/jdmerge-neon.c arm/jdsample-neon.c arm/jfdctfst-neon.c
-  arm/jquanti-neon.c)
+  arm/jidctred-neon.c arm/jquanti-neon.c)
 if(NEON_INTRINSICS)
   set(SIMD_SOURCES ${SIMD_SOURCES} arm/jccolor-neon.c arm/jidctint-neon.c)
 endif()
@@ -281,9 +281,11 @@ endif()
 if(BITS EQUAL 32)
   set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS -mfpu=neon)
 endif()
+if(NOT NEON_INTRINSICS)
+  set(SIMD_SOURCES ${SIMD_SOURCES} arm/aarch${BITS}/jsimd_neon.S)
+endif()
 
-add_library(simd OBJECT ${SIMD_SOURCES} arm/aarch${BITS}/jsimd_neon.S
-  arm/aarch${BITS}/jsimd.c)
+add_library(simd OBJECT ${SIMD_SOURCES} arm/aarch${BITS}/jsimd.c)
 
 if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
   set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)

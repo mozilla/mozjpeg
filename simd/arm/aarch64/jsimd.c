@@ -820,12 +820,16 @@ jsimd_huff_encode_one_block(void *state, JOCTET *buffer, JCOEFPTR block,
                             int last_dc_val, c_derived_tbl *dctbl,
                             c_derived_tbl *actbl)
 {
+#ifndef NEON_INTRINSICS
   if (simd_features & JSIMD_FASTTBL)
+#endif
     return jsimd_huff_encode_one_block_neon(state, buffer, block, last_dc_val,
                                             dctbl, actbl);
+#ifndef NEON_INTRINSICS
   else
     return jsimd_huff_encode_one_block_neon_slowtbl(state, buffer, block,
                                                     last_dc_val, dctbl, actbl);
+#endif
 }
 
 GLOBAL(int)

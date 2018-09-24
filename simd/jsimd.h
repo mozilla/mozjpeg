@@ -1171,9 +1171,13 @@ EXTERN(JOCTET *) jsimd_huff_encode_one_block_neon
   (void *state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
    c_derived_tbl *dctbl, c_derived_tbl *actbl);
 
+#ifndef NEON_INTRINSICS
+
 EXTERN(JOCTET *) jsimd_huff_encode_one_block_neon_slowtbl
   (void *state, JOCTET *buffer, JCOEFPTR block, int last_dc_val,
    c_derived_tbl *dctbl, c_derived_tbl *actbl);
+
+#endif
 
 /* Progressive Huffman encoding */
 EXTERN(void) jsimd_encode_mcu_AC_first_prepare_sse2

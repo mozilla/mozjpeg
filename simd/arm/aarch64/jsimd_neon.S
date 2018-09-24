@@ -205,6 +205,8 @@ Ljsimd_fdct_islow_neon_consts:
 #undef F_2_562
 #undef F_3_072
 
+#ifndef NEON_INTRINSICS
+
 /* Constants for jsimd_huff_encode_one_block_neon() */
 
 .balign 16
@@ -235,6 +237,8 @@ Ljsimd_huff_encode_one_block_neon_consts:
            255, 255, 255, 255,   8,   9,  22,  23  /* L5 => L6 : 2 lines OK */
     .byte    4,   5,   6,   7, 255, 255, 255, 255, \
            255, 255, 255, 255, 255, 255, 255, 255  /* L7 : 1 line OK */
+
+#endif
 
 /* Constants for jsimd_encode_mcu_AC_first_prepare_neon() */
 
@@ -2549,8 +2553,6 @@ asm_function jsimd_fdct_islow_neon
 #undef XFIX_N_2_562
 #undef XFIX_P_3_072
 
-#endif  /* NEON_INTRINSICS */
-
 
 /*****************************************************************************/
 
@@ -2979,6 +2981,8 @@ generate_jsimd_huff_encode_one_block 0
 .purgem put_bits
 .purgem checkbuf31
 .purgem checkbuf47
+
+#endif  /* NEON_INTRINSICS */
 
 
 /*****************************************************************************/

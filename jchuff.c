@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2014-2016, 2018-2019, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014-2016, 2018-2020, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  * Copyright (C) 2018, Matthias Räncker.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -72,9 +72,9 @@ typedef unsigned long long bit_buf_type;
 typedef size_t bit_buf_type;
 #endif
 
-/* NOTE: The more optimal Huffman encoding algorithm has not yet been
- * implemented in the Arm Neon SIMD extensions, which is why we retain the old
- * Huffman encoder behavior for that platform.
+/* NOTE: The more optimal Huffman encoding algorithm is only used by the
+ * intrinsics implementation of the Arm Neon SIMD extensions, which is why we
+ * retain the old Huffman encoder behavior when using the GAS implementation.
  */
 #if defined(WITH_SIMD) && !(defined(__arm__) || defined(__aarch64__))
 typedef unsigned long long simd_bit_buf_type;
@@ -98,7 +98,7 @@ typedef struct {
     simd_bit_buf_type simd;
   } put_buffer;                         /* current bit accumulation buffer */
   int free_bits;                        /* # of bits available in it */
-                                        /* (Arm SIMD: # of bits now in it) */
+                                        /* (Neon GAS: # of bits now in it) */
   int last_dc_val[MAX_COMPS_IN_SCAN];   /* last DC coef for each component */
 } savable_state;
 
@@ -215,7 +215,7 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
   /* Initialize bit buffer to empty */
   if (entropy->simd) {
     entropy->saved.put_buffer.simd = 0;
-#if defined(__arm__) || defined(__aarch64__)
+#if defined(__aarch64__) && !defined(NEON_INTRINSICS)
     entropy->saved.free_bits = 0;
 #else
     entropy->saved.free_bits = SIMD_BIT_BUF_SIZE;
@@ -493,7 +493,7 @@ flush_bits(working_state *state)
   int localbuf = 0;
 
   if (state->simd) {
-#if defined(__arm__) || defined(__aarch64__)
+#if defined(__aarch64__) && !defined(NEON_INTRINSICS)
     put_bits = state->cur.free_bits;
 #else
     put_bits = SIMD_BIT_BUF_SIZE - state->cur.free_bits;
@@ -519,7 +519,7 @@ flush_bits(working_state *state)
 
   if (state->simd) {                    /* and reset bit buffer to empty */
     state->cur.put_buffer.simd = 0;
-#if defined(__arm__) || defined(__aarch64__)
+#if defined(__aarch64__) && !defined(NEON_INTRINSICS)
     state->cur.free_bits = 0;
 #else
     state->cur.free_bits = SIMD_BIT_BUF_SIZE;

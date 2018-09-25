@@ -677,6 +677,8 @@ asm_function jsimd_idct_islow_neon
     .unreq          ROW7R
 
 
+#ifndef NEON_INTRINSICS
+
 /*****************************************************************************/
 
 /*
@@ -899,6 +901,8 @@ asm_function jsimd_idct_ifast_neon
     .unreq          TMP2
     .unreq          TMP3
     .unreq          TMP4
+
+#endif  /* NEON_INTRINSICS */
 
 
 /*****************************************************************************/

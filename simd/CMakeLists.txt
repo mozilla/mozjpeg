@@ -270,6 +270,9 @@ set(SIMD_SOURCES arm/jcgray-neon.c arm/jcsample-neon.c arm/jdsample-neon.c
 if(NEON_INTRINSICS)
   set(SIMD_SOURCES ${SIMD_SOURCES} arm/jccolor-neon.c)
 endif()
+if(NEON_INTRINSICS OR BITS EQUAL 64)
+  set(SIMD_SOURCES ${SIMD_SOURCES} arm/jidctfst-neon.c)
+endif()
 if(NEON_INTRINSICS OR BITS EQUAL 32)
   set(SIMD_SOURCES ${SIMD_SOURCES} arm/aarch${BITS}/jchuff-neon.c
     arm/jdcolor-neon.c arm/jfdctint-neon.c)

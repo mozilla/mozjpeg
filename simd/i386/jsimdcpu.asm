@@ -94,9 +94,10 @@ EXTN(jpeg_simd_cpu_support):
 
     xor         ecx, ecx
     xgetbv
-    test        eax, 6                  ; O/S does not manage XMM/YMM state
+    and         eax, 6
+    cmp         eax, 6                  ; O/S does not manage XMM/YMM state
                                         ; using XSAVE
-    jz          short .no_avx2
+    jnz         short .no_avx2
 
     or          edi, JSIMD_AVX2
 .no_avx2:

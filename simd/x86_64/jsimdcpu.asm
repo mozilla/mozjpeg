@@ -60,9 +60,10 @@ EXTN(jpeg_simd_cpu_support):
 
     xor         rcx, rcx
     xgetbv
-    test        rax, 6                  ; O/S does not manage XMM/YMM state
+    and         rax, 6
+    cmp         rax, 6                  ; O/S does not manage XMM/YMM state
                                         ; using XSAVE
-    jz          short .return
+    jnz         short .return
 
     or          rdi, JSIMD_AVX2
 

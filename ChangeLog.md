@@ -14,8 +14,9 @@ functions in the MIPS DSPr2 SIMD extensions are now disabled at compile time
 if the soft float ABI is enabled.  Those functions use instructions that are
 incompatible with the soft float ABI.
 
-3. Fixed an issue in the SIMD feature detection code that caused libjpeg-turbo
-to crash on Windows 7 if Service Pack 1 was not installed.
+3. Fixed a regression in the SIMD feature detection code, introduced by
+the AVX2 SIMD extensions (2.0 beta1[1]), that caused libjpeg-turbo to crash on
+Windows 7 if Service Pack 1 was not installed.
 
 
 2.0.0

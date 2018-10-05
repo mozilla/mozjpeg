@@ -18,6 +18,11 @@ incompatible with the soft float ABI.
 the AVX2 SIMD extensions (2.0 beta1[1]), that caused libjpeg-turbo to crash on
 Windows 7 if Service Pack 1 was not installed.
 
+4. Fixed out-of-bounds read in cjpeg that occurred when attempting to compress
+a specially-crafted malformed color-index (8-bit-per-sample) Targa file in
+which some of the samples (color indices) exceeded the bounds of the Targa
+file's color table.
+
 
 2.0.0
 =====

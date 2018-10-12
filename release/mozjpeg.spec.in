@@ -8,7 +8,7 @@
 %define _datadir %{__datadir}
 
 # Path under which docs should be installed
-%define _docdir /usr/share/doc/%{name}-%{version}
+%define _docdir /opt/mozjpeg/doc/%{name}-%{version}
 
 # Path under which headers should be installed
 %define _includedir %{__includedir}
@@ -45,7 +45,7 @@ Group: System Environment/Libraries
 Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
-Prereq: /sbin/ldconfig
+Requires(pre,preun): /sbin/ldconfig
 %if "%{_bits}" == "64"
 Provides: %{name} = %{version}-%{release}, @PACKAGE_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
 %else

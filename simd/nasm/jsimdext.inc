@@ -135,6 +135,8 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 %define POINTER         qword           ; general pointer type
 %define SIZEOF_POINTER  SIZEOF_QWORD    ; sizeof(POINTER)
 %define POINTER_BIT     QWORD_BIT       ; sizeof(POINTER)*BYTE_BIT
+%define resp            resq
+%define dp              dq
 %define raxp            rax
 %define rbxp            rbx
 %define rcxp            rcx
@@ -157,6 +159,8 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 %define POINTER         dword           ; general pointer type
 %define SIZEOF_POINTER  SIZEOF_DWORD    ; sizeof(POINTER)
 %define POINTER_BIT     DWORD_BIT       ; sizeof(POINTER)*BYTE_BIT
+%define resp            resd
+%define dp              dd
 ; x86_64 ILP32 ABI (x32)
 %define raxp            eax
 %define rbxp            ebx

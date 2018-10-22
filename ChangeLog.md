@@ -45,6 +45,13 @@ longer supports 32-bit Java virtual machines.  Oracle no longer provides a
 32-bit JVM for macOS, and Apple's implementation of Java 1.6 (Java for OS X
 systems) is long obsolete.
 
+5. The SSE2 (x86 SIMD) and C Huffman encoding algorithms have been
+significantly optimized, resulting in a measured average overall compression
+speedup of 12-28% for 64-bit code and 22-52% for 32-bit code on various Intel
+and AMD CPUs, as well as a measured average overall compression speedup of
+0-23% on platforms that do not have a SIMD-accelerated Huffman encoding
+implementation.
+
 
 2.0.4
 =====

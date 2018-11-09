@@ -76,7 +76,7 @@ ycc_rgb565_convert_internal (j_decompress_ptr cinfo,
       b = range_limit[y + Cbbtab[cb]];
       rgb = PACK_TWO_PIXELS(rgb, PACK_SHORT_565(r, g, b));
 
-      WRITE_TWO_ALIGNED_PIXELS(outptr, rgb);
+      WRITE_TWO_ALIGNED_PIXELS(outptr, (int)rgb);
       outptr += 4;
     }
     if (num_cols & 1) {
@@ -161,7 +161,7 @@ ycc_rgb565D_convert_internal (j_decompress_ptr cinfo,
       d0 = DITHER_ROTATE(d0);
       rgb = PACK_TWO_PIXELS(rgb, PACK_SHORT_565(r, g, b));
 
-      WRITE_TWO_ALIGNED_PIXELS(outptr, rgb);
+      WRITE_TWO_ALIGNED_PIXELS(outptr, (int)rgb);
       outptr += 4;
     }
     if (num_cols & 1) {
@@ -221,7 +221,7 @@ rgb_rgb565_convert_internal (j_decompress_ptr cinfo,
       b = GETJSAMPLE(*inptr2++);
       rgb = PACK_TWO_PIXELS(rgb, PACK_SHORT_565(r, g, b));
 
-      WRITE_TWO_ALIGNED_PIXELS(outptr, rgb);
+      WRITE_TWO_ALIGNED_PIXELS(outptr, (int)rgb);
       outptr += 4;
     }
     if (num_cols & 1) {
@@ -280,7 +280,7 @@ rgb_rgb565D_convert_internal (j_decompress_ptr cinfo,
       d0 = DITHER_ROTATE(d0);
       rgb = PACK_TWO_PIXELS(rgb, PACK_SHORT_565(r, g, b));
 
-      WRITE_TWO_ALIGNED_PIXELS(outptr, rgb);
+      WRITE_TWO_ALIGNED_PIXELS(outptr, (int)rgb);
       outptr += 4;
     }
     if (num_cols & 1) {
@@ -322,7 +322,7 @@ gray_rgb565_convert_internal (j_decompress_ptr cinfo,
       rgb = PACK_SHORT_565(g, g, g);
       g = *inptr++;
       rgb = PACK_TWO_PIXELS(rgb, PACK_SHORT_565(g, g, g));
-      WRITE_TWO_ALIGNED_PIXELS(outptr, rgb);
+      WRITE_TWO_ALIGNED_PIXELS(outptr, (int)rgb);
       outptr += 4;
     }
     if (num_cols & 1) {
@@ -371,7 +371,7 @@ gray_rgb565D_convert_internal (j_decompress_ptr cinfo,
       rgb = PACK_TWO_PIXELS(rgb, PACK_SHORT_565(g, g, g));
       d0 = DITHER_ROTATE(d0);
 
-      WRITE_TWO_ALIGNED_PIXELS(outptr, rgb);
+      WRITE_TWO_ALIGNED_PIXELS(outptr, (int)rgb);
       outptr += 4;
     }
     if (num_cols & 1) {

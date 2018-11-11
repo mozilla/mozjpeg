@@ -43,7 +43,8 @@ appear between numbers.  Also, comments can be included: a comment starts
 with '#' and extends to the end of the line.  Here is an example file that
 duplicates the default quantization tables:
 
-        # Quantization tables given in JPEG spec, section K.1
+        # Quantization tables given in Annex K (Clause K.1) of
+        # Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
 
         # This is table 0 (the luminance table):
           16  11  10  16  24  40  51  61

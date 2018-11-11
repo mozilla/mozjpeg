@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2003-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2016, D. R. Commander.
+ * Copyright (C) 2010, 2016, 2018, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -66,8 +66,8 @@ initial_setup (j_compress_ptr cinfo, boolean transcode_only)
 #endif
 
   /* Sanity check on image dimensions */
-  if (cinfo->_jpeg_height <= 0 || cinfo->_jpeg_width <= 0
-      || cinfo->num_components <= 0 || cinfo->input_components <= 0)
+  if (cinfo->_jpeg_height <= 0 || cinfo->_jpeg_width <= 0 ||
+      cinfo->num_components <= 0 || cinfo->input_components <= 0)
     ERREXIT(cinfo, JERR_EMPTY_IMAGE);
 
   /* Make sure image isn't bigger than I can handle */
@@ -95,8 +95,10 @@ initial_setup (j_compress_ptr cinfo, boolean transcode_only)
   cinfo->max_v_samp_factor = 1;
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
-    if (compptr->h_samp_factor<=0 || compptr->h_samp_factor>MAX_SAMP_FACTOR ||
-        compptr->v_samp_factor<=0 || compptr->v_samp_factor>MAX_SAMP_FACTOR)
+    if (compptr->h_samp_factor <= 0 ||
+        compptr->h_samp_factor > MAX_SAMP_FACTOR ||
+        compptr->v_samp_factor <= 0 ||
+        compptr->v_samp_factor > MAX_SAMP_FACTOR)
       ERREXIT(cinfo, JERR_BAD_SAMPLING);
     cinfo->max_h_samp_factor = MAX(cinfo->max_h_samp_factor,
                                    compptr->h_samp_factor);
@@ -211,9 +213,9 @@ validate_script (j_compress_ptr cinfo)
     Al = scanptr->Al;
     if (cinfo->progressive_mode) {
 #ifdef C_PROGRESSIVE_SUPPORTED
-      /* The JPEG spec simply gives the ranges 0..13 for Ah and Al, but that
-       * seems wrong: the upper bound ought to depend on data precision.
-       * Perhaps they really meant 0..N+1 for N-bit precision.
+      /* Rec. ITU-T T.81 | ISO/IEC 10918-1 simply gives the ranges 0..13 for Ah
+       * and Al, but that seems wrong: the upper bound ought to depend on data
+       * precision.  Perhaps they really meant 0..N+1 for N-bit precision.
        * Here we allow 0..10 for 8-bit data; Al larger than 10 results in
        * out-of-range reconstructed DC values during the first DC scan,
        * which might cause problems for some decoders.
@@ -871,7 +873,7 @@ finish_pass_master (j_compress_ptr cinfo)
             if (q < 1) q = 1;
             cinfo->quant_tbl_ptrs[i]->quantval[j] = q;
   }
-        }
+  }
       }
     }
     break;

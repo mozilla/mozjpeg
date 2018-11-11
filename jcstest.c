@@ -35,10 +35,10 @@
 #include <setjmp.h>
 
 #ifndef JCS_EXTENSIONS
-#define JCS_EXT_RGB 6
+#define JCS_EXT_RGB  6
 #endif
 #if !defined(JCS_EXTENSIONS) || !defined(JCS_ALPHA_EXTENSIONS)
-#define JCS_EXT_RGBA 12
+#define JCS_EXT_RGBA  12
 #endif
 
 static char lasterror[JMSG_LENGTH_MAX] = "No error";
@@ -51,13 +51,13 @@ typedef struct _error_mgr {
 static void my_error_exit(j_common_ptr cinfo)
 {
   error_mgr *myerr = (error_mgr *)cinfo->err;
-  (*cinfo->err->output_message)(cinfo);
+  (*cinfo->err->output_message) (cinfo);
   longjmp(myerr->jb, 1);
 }
 
 static void my_output_message(j_common_ptr cinfo)
 {
-  (*cinfo->err->format_message)(cinfo, lasterror);
+  (*cinfo->err->format_message) (cinfo, lasterror);
 }
 
 int main(void)
@@ -67,11 +67,11 @@ int main(void)
   error_mgr jerr;
 
   printf("libjpeg-turbo colorspace extensions:\n");
-  #if JCS_EXTENSIONS
+#if JCS_EXTENSIONS
   printf("  Present at compile time\n");
-  #else
+#else
   printf("  Not present at compile time\n");
-  #endif
+#endif
 
   cinfo.err = jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = my_error_exit;
@@ -90,7 +90,7 @@ int main(void)
   jpeg_default_colorspace(&cinfo);
   jcs_valid = 1;
 
-  done:
+done:
   if (jcs_valid)
     printf("  Working properly\n");
   else
@@ -98,11 +98,11 @@ int main(void)
            lasterror);
 
   printf("libjpeg-turbo alpha colorspace extensions:\n");
-  #if JCS_ALPHA_EXTENSIONS
+#if JCS_ALPHA_EXTENSIONS
   printf("  Present at compile time\n");
-  #else
+#else
   printf("  Not present at compile time\n");
-  #endif
+#endif
 
   if (setjmp(jerr.jb)) {
     /* this will execute if libjpeg has an error */
@@ -114,7 +114,7 @@ int main(void)
   jpeg_default_colorspace(&cinfo);
   jcs_alpha_valid = 1;
 
-  done2:
+done2:
   if (jcs_alpha_valid)
     printf("  Working properly\n");
   else

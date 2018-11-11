@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2008 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, D. R. Commander.
+ * Copyright (C) 2009-2011, 2018, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -27,8 +27,8 @@
 
 GLOBAL(void)
 jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
-                      const unsigned int *basic_table,
-                      int scale_factor, boolean force_baseline)
+                     const unsigned int *basic_table, int scale_factor,
+                     boolean force_baseline)
 /* Define a quantization table equal to the basic_table times
  * a scale factor (given as a percentage).
  * If force_baseline is TRUE, the computed quantization table entries
@@ -66,7 +66,8 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
 }
 
 
-/* These are the sample quantization tables given in JPEG spec section K.1.
+/* These are the sample quantization tables given in Annex K (Clause K.1) of
+ * Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
  * The spec says that the values given produce "good" quality, and
  * when divided by 2, "very good" quality.
  */
@@ -645,8 +646,7 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
 #ifdef C_PROGRESSIVE_SUPPORTED
 
 LOCAL(jpeg_scan_info *)
-fill_a_scan (jpeg_scan_info *scanptr, int ci,
-             int Ss, int Se, int Ah, int Al)
+fill_a_scan(jpeg_scan_info *scanptr, int ci, int Ss, int Se, int Ah, int Al)
 /* Support routine: generate one scan for specified component */
 {
   scanptr->comps_in_scan = 1;
@@ -864,7 +864,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
 
-  /* Figure space needed for script. Calculation must match code below! */
+  /* Figure space needed for script.  Calculation must match code below! */
   ncomps = cinfo->num_components;
   if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
     /* Custom script for YCbCr color images. */
@@ -942,7 +942,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
       scanptr = fill_a_scan(scanptr, 1, 9, 63, 0, 0);
       scanptr = fill_a_scan(scanptr, 2, 9, 63, 0, 0);
     } else {
-      /* Initial DC scan */
+    /* Initial DC scan */
     scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
     /* Initial AC scan: get some luma data out in a hurry */
     scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 2);

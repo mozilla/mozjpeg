@@ -1,26 +1,27 @@
-Un*x Platforms (including Mac and Cygwin)
-=========================================
+Building libjpeg-turbo
+======================
 
 
 Build Requirements
 ------------------
 
-- autoconf 2.56 or later
-- automake 1.7 or later
-- libtool 1.4 or later
-  * If using Xcode 4.3 or later on OS X, autoconf and automake are no longer
-    provided.  The easiest way to obtain them is from
-    [MacPorts](http://www.MacPorts.org) or [Homebrew](http://brew.sh/).
+
+### All Systems
+
+- [CMake](http://www.cmake.org) v2.8.12 or later
 
 - [NASM](http://www.nasm.us) or [YASM](http://yasm.tortall.net)
   (if building x86 or x86-64 SIMD extensions)
-  * If using NASM, 0.98, or 2.01 or later is required for an x86 build (0.99
-    and 2.00 do not work properly with libjpeg-turbo's x86 SIMD code.)
-  * If using NASM, 2.00 or later is required for an x86-64 build.
-  * If using NASM, 2.07 or later (except 2.11.08) is required for an x86-64
-    Mac build (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD
-    code when building macho64 objects.)  NASM or YASM can be obtained from
+  * If using NASM, 2.10 or later is required.
+  * If using NASM, 2.10 or later (except 2.11.08) is required for an x86-64 Mac
+    build (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD code
+    when building macho64 objects.)  NASM or YASM can be obtained from
     [MacPorts](http://www.macports.org/) or [Homebrew](http://brew.sh/).
+  * If using YASM, 1.2.0 or later is required.
+     - NOTE: Currently, if it is desirable to hide the SIMD function symbols in
+       Mac executables or shared libraries that statically link with
+       libjpeg-turbo, then YASM must be used when building libjpeg-turbo.
+  * If building on Windows, **nasm.exe**/**yasm.exe** should be in your `PATH`.
 
   The binary RPMs released by the NASM project do not work on older Linux
   systems, such as Red Hat Enterprise Linux 5.  On such systems, you can easily
@@ -36,6 +37,9 @@ Build Requirements
 
   NOTE: the NASM build will fail if texinfo is not installed.
 
+
+### Un*x Platforms (including Linux, Mac, FreeBSD, Solaris, and Cygwin)
+
 - GCC v4.1 (or later) or Clang recommended for best performance
 
 - If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
@@ -47,509 +51,7 @@ Build Requirements
   <http://www.java.com>.
 
 
-Out-of-Tree Builds
-------------------
-
-Binary objects, libraries, and executables are generated in the directory from
-which `configure` is executed (the "binary directory"), and this directory need
-not necessarily be the same as the libjpeg-turbo source directory.  You can
-create multiple independent binary directories, in which different versions of
-libjpeg-turbo can be built from the same source tree using different compilers
-or settings.  In the sections below, *{build_directory}* refers to the binary
-directory, whereas *{source_directory}* refers to the libjpeg-turbo source
-directory.  For in-tree builds, these directories are the same.
-
-
-Build Procedure
----------------
-
-The following procedure will build libjpeg-turbo on Unix and Unix-like systems.
-(On Solaris, this generates a 32-bit build.  See "Build Recipes" below for
-64-bit build instructions.)
-
-    cd {source_directory}
-    autoreconf -fiv
-    cd {build_directory}
-    sh {source_directory}/configure [additional configure flags]
-    make
-
-NOTE: Running autoreconf in the source directory is not necessary if building
-libjpeg-turbo from one of the official release tarballs.
-
-This will generate the following files under **.libs/**:
-
-**libjpeg.a**<br>
-Static link library for the libjpeg API
-
-**libjpeg.so.{version}** (Linux, Unix)<br>
-**libjpeg.{version}.dylib** (Mac)<br>
-**cygjpeg-{version}.dll** (Cygwin)<br>
-Shared library for the libjpeg API
-
-By default, *{version}* is 62.2.0, 7.2.0, or 8.1.2, depending on whether
-libjpeg v6b (default), v7, or v8 emulation is enabled.  If using Cygwin,
-*{version}* is 62, 7, or 8.
-
-**libjpeg.so** (Linux, Unix)<br>
-**libjpeg.dylib** (Mac)<br>
-Development symlink for the libjpeg API
-
-**libjpeg.dll.a** (Cygwin)<br>
-Import library for the libjpeg API
-
-**libturbojpeg.a**<br>
-Static link library for the TurboJPEG API
-
-**libturbojpeg.so.0.1.0** (Linux, Unix)<br>
-**libturbojpeg.0.1.0.dylib** (Mac)<br>
-**cygturbojpeg-0.dll** (Cygwin)<br>
-Shared library for the TurboJPEG API
-
-**libturbojpeg.so** (Linux, Unix)<br>
-**libturbojpeg.dylib** (Mac)<br>
-Development symlink for the TurboJPEG API
-
-**libturbojpeg.dll.a** (Cygwin)<br>
-Import library for the TurboJPEG API
-
-
-### libjpeg v7 or v8 API/ABI Emulation
-
-Add `--with-jpeg7` to the `configure` command line to build a version of
-libjpeg-turbo that is API/ABI-compatible with libjpeg v7.  Add `--with-jpeg8`
-to the `configure` command to build a version of libjpeg-turbo that is
-API/ABI-compatible with libjpeg v8.  See [README.md](README.md) for more
-information about libjpeg v7 and v8 emulation.
-
-
-### In-Memory Source/Destination Managers
-
-When using libjpeg v6b or v7 API/ABI emulation, add `--without-mem-srcdst` to
-the `configure` command line to build a version of libjpeg-turbo that lacks the
-`jpeg_mem_src()` and `jpeg_mem_dest()` functions.  These functions were not
-part of the original libjpeg v6b and v7 APIs, so removing them ensures strict
-conformance with those APIs.  See [README.md](README.md) for more information.
-
-
-### Arithmetic Coding Support
-
-Since the patent on arithmetic coding has expired, this functionality has been
-included in this release of libjpeg-turbo.  libjpeg-turbo's implementation is
-based on the implementation in libjpeg v8, but it works when emulating libjpeg
-v7 or v6b as well.  The default is to enable both arithmetic encoding and
-decoding, but those who have philosophical objections to arithmetic coding can
-add `--without-arith-enc` or `--without-arith-dec` to the `configure` command
-line to disable encoding or decoding (respectively.)
-
-
-### TurboJPEG Java Wrapper
-
-Add `--with-java` to the `configure` command line to incorporate an optional
-Java Native Interface (JNI) wrapper into the TurboJPEG shared library and build
-the Java front-end classes to support it.  This allows the TurboJPEG shared
-library to be used directly from Java applications.  See
-[java/README](java/README) for more details.
-
-You can set the `JAVAC`, `JAR`, and `JAVA` configure variables to specify
-alternate commands for javac, jar, and java (respectively.)  You can also
-set the `JAVACFLAGS` configure variable to specify arguments that should be
-passed to the Java compiler when building the TurboJPEG classes, and
-`JNI_CFLAGS` to specify arguments that should be passed to the C compiler when
-building the JNI wrapper.  Run `configure --help` for more details.
-
-
-Build Recipes
--------------
-
-
-### 32-bit Build on 64-bit Linux
-
-Add
-
-    --host i686-pc-linux-gnu CFLAGS='-O3 -m32' LDFLAGS=-m32
-
-to the `configure` command line.
-
-
-### 64-bit Build on 64-bit OS X
-
-Add
-
-    --host x86_64-apple-darwin NASM=/opt/local/bin/nasm
-
-to the `configure` command line.  NASM 2.07 or later from MacPorts or Homebrew
-must be installed.  If using Homebrew, then replace `/opt/local` with
-`/usr/local`.
-
-
-### 32-bit Build on 64-bit OS X
-
-Add
-
-    --host i686-apple-darwin CFLAGS='-O3 -m32' LDFLAGS=-m32
-
-to the `configure` command line.
-
-
-### 64-bit Backward-Compatible Build on 64-bit OS X
-
-Add
-
-    --host x86_64-apple-darwin NASM=/opt/local/bin/nasm \
-      CFLAGS='-mmacosx-version-min=10.5 -O3' \
-      LDFLAGS='-mmacosx-version-min=10.5'
-
-to the `configure` command line.  NASM 2.07 or later from MacPorts or Homebrew
-must be installed.  If using Homebrew, then replace `/opt/local` with
-`/usr/local`.
-
-
-### 32-bit Backward-Compatible Build on OS X
-
-Add
-
-    --host i686-apple-darwin \
-      CFLAGS='-mmacosx-version-min=10.5 -O3 -m32' \
-      LDFLAGS='-mmacosx-version-min=10.5 -m32'
-
-to the `configure` command line.
-
-
-### 64-bit Build on 64-bit Solaris
-
-Add
-
-    --host x86_64-pc-solaris CFLAGS='-O3 -m64' LDFLAGS=-m64
-
-to the `configure` command line.
-
-
-### 32-bit Build on 64-bit FreeBSD
-
-Add
-
-    --host i386-unknown-freebsd CFLAGS='-O3 -m32' LDFLAGS=-m32
-
-to the `configure` command line.  NASM 2.07 or later from FreeBSD ports must be
-installed.
-
-
-### Oracle Solaris Studio
-
-Add
-
-    CC=cc
-
-to the `configure` command line.  libjpeg-turbo will automatically be built
-with the maximum optimization level (-xO5) unless you override `CFLAGS`.
-
-To build a 64-bit version of libjpeg-turbo using Oracle Solaris Studio, add
-
-    --host x86_64-pc-solaris CC=cc CFLAGS='-xO5 -m64' LDFLAGS=-m64
-
-to the `configure` command line.
-
-
-### MinGW Build on Cygwin
-
-Use CMake (see recipes below)
-
-
-Building libjpeg-turbo for iOS
-------------------------------
-
-iOS platforms, such as the iPhone and iPad, use ARM processors, and all
-currently supported models include NEON instructions.  Thus, they can take
-advantage of libjpeg-turbo's SIMD extensions to significantly accelerate JPEG
-compression/decompression.  This section describes how to build libjpeg-turbo
-for these platforms.
-
-
-### Additional build requirements
-
-- For configurations that require [gas-preprocessor.pl]
-  (https://raw.githubusercontent.com/libjpeg-turbo/gas-preprocessor/master/gas-preprocessor.pl),
-  it should be installed in your `PATH`.
-
-
-### ARMv7 (32-bit)
-
-**gas-preprocessor.pl required**
-
-The following scripts demonstrate how to build libjpeg-turbo to run on the
-iPhone 3GS-4S/iPad 1st-3rd Generation and newer:
-
-#### Xcode 4.2 and earlier (LLVM-GCC)
-
-    IOS_PLATFORMDIR=/Developer/Platforms/iPhoneOS.platform
-    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-
-    export host_alias=arm-apple-darwin10
-    export CC=${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
-    export CFLAGS="-mfloat-abi=softfp -isysroot ${IOS_SYSROOT[0]} -O3 -march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon -miphoneos-version-min=3.0"
-
-    cd {build_directory}
-    sh {source_directory}/configure [additional configure flags]
-    make
-
-#### Xcode 4.3-4.6 (LLVM-GCC)
-
-Same as above, but replace the first line with:
-
-    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-
-#### Xcode 5 and later (Clang)
-
-    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-
-    export host_alias=arm-apple-darwin10
-    export CC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-    export CFLAGS="-mfloat-abi=softfp -isysroot ${IOS_SYSROOT[0]} -O3 -arch armv7 -miphoneos-version-min=3.0"
-    export CCASFLAGS="$CFLAGS -no-integrated-as"
-
-    cd {build_directory}
-    sh {source_directory}/configure [additional configure flags]
-    make
-
-
-### ARMv7s (32-bit)
-
-**gas-preprocessor.pl required**
-
-The following scripts demonstrate how to build libjpeg-turbo to run on the
-iPhone 5/iPad 4th Generation and newer:
-
-#### Xcode 4.5-4.6 (LLVM-GCC)
-
-    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-
-    export host_alias=arm-apple-darwin10
-    export CC=${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
-    export CFLAGS="-mfloat-abi=softfp -isysroot ${IOS_SYSROOT[0]} -O3 -march=armv7s -mcpu=swift -mtune=swift -mfpu=neon -miphoneos-version-min=6.0"
-
-    cd {build_directory}
-    sh {source_directory}/configure [additional configure flags]
-    make
-
-#### Xcode 5 and later (Clang)
-
-Same as the ARMv7 build procedure for Xcode 5 and later, except replace the
-compiler flags as follows:
-
-    export CFLAGS="-mfloat-abi=softfp -isysroot ${IOS_SYSROOT[0]} -O3 -arch armv7s -miphoneos-version-min=6.0"
-
-
-### ARMv8 (64-bit)
-
-**gas-preprocessor.pl required if using Xcode < 6**
-
-The following script demonstrates how to build libjpeg-turbo to run on the
-iPhone 5S/iPad Mini 2/iPad Air and newer.
-
-    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-
-    export host_alias=aarch64-apple-darwin
-    export CC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-    export CFLAGS="-isysroot ${IOS_SYSROOT[0]} -O3 -arch arm64 -miphoneos-version-min=7.0 -funwind-tables"
-
-    cd {build_directory}
-    sh {source_directory}/configure [additional configure flags]
-    make
-
-Once built, lipo can be used to combine the ARMv7, v7s, and/or v8 variants into
-a universal library.
-
-
-Building libjpeg-turbo for Android
-----------------------------------
-
-Building libjpeg-turbo for Android platforms requires the
-[Android NDK](https://developer.android.com/tools/sdk/ndk) and autotools.
-
-
-### ARMv7 (32-bit)
-
-The following is a general recipe script that can be modified for your specific
-needs.
-
-    # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
-    ANDROID_VERSION={The minimum version of Android to support-- for example,
-      "16", "19", etc.}
-
-    # It should not be necessary to modify the rest
-    HOST=arm-linux-androideabi
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
-    ANDROID_CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
-      --sysroot=${SYSROOT}"
-
-    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-    export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
-    export AR=${TOOLCHAIN}/bin/${HOST}-ar
-    export NM=${TOOLCHAIN}/bin/${HOST}-nm
-    export CC=${TOOLCHAIN}/bin/${HOST}-gcc
-    export LD=${TOOLCHAIN}/bin/${HOST}-ld
-    export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
-    export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
-    export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
-    cd {build_directory}
-    sh {source_directory}/configure --host=${HOST} \
-      CFLAGS="${ANDROID_CFLAGS} -O3 -fPIE" \
-      CPPFLAGS="${ANDROID_CFLAGS}" \
-      LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
-    make
-
-
-### ARMv8 (64-bit)
-
-The following is a general recipe script that can be modified for your specific
-needs.
-
-    # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
-    ANDROID_VERSION={The minimum version of Android to support.  "21" or later
-      is required for a 64-bit build.}
-
-    # It should not be necessary to modify the rest
-    HOST=aarch64-linux-android
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm64
-    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
-
-    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-    export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
-    export AR=${TOOLCHAIN}/bin/${HOST}-ar
-    export NM=${TOOLCHAIN}/bin/${HOST}-nm
-    export CC=${TOOLCHAIN}/bin/${HOST}-gcc
-    export LD=${TOOLCHAIN}/bin/${HOST}-ld
-    export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
-    export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
-    export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
-    cd {build_directory}
-    sh {source_directory}/configure --host=${HOST} \
-      CFLAGS="${ANDROID_CFLAGS} -O3 -fPIE" \
-      CPPFLAGS="${ANDROID_CFLAGS}" \
-      LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
-    make
-
-
-### x86 (32-bit)
-
-The following is a general recipe script that can be modified for your specific
-needs.
-
-    # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
-    ANDROID_VERSION={The minimum version of Android to support-- for example,
-      "16", "19", etc.}
-
-    # It should not be necessary to modify the rest
-    HOST=i686-linux-android
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86
-    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
-
-    TOOLCHAIN=${NDK_PATH}/toolchains/x86-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-    export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
-    export AR=${TOOLCHAIN}/bin/${HOST}-ar
-    export NM=${TOOLCHAIN}/bin/${HOST}-nm
-    export CC=${TOOLCHAIN}/bin/${HOST}-gcc
-    export LD=${TOOLCHAIN}/bin/${HOST}-ld
-    export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
-    export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
-    export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
-    cd {build_directory}
-    sh {source_directory}/configure --host=${HOST} \
-      CFLAGS="${ANDROID_CFLAGS} -O3 -fPIE" \
-      CPPFLAGS="${ANDROID_CFLAGS}" \
-      LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
-    make
-
-
-### x86-64 (64-bit)
-
-The following is a general recipe script that can be modified for your specific
-needs.
-
-    # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
-    ANDROID_VERSION={The minimum version of Android to support.  "21" or later
-      is required for a 64-bit build.}
-
-    # It should not be necessary to modify the rest
-    HOST=x86_64-linux-android
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86_64
-    ANDROID_CFLAGS="--sysroot=${SYSROOT}"
-
-    TOOLCHAIN=${NDK_PATH}/toolchains/x86_64-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-    export CPP=${TOOLCHAIN}/bin/${HOST}-cpp
-    export AR=${TOOLCHAIN}/bin/${HOST}-ar
-    export NM=${TOOLCHAIN}/bin/${HOST}-nm
-    export CC=${TOOLCHAIN}/bin/${HOST}-gcc
-    export LD=${TOOLCHAIN}/bin/${HOST}-ld
-    export RANLIB=${TOOLCHAIN}/bin/${HOST}-ranlib
-    export OBJDUMP=${TOOLCHAIN}/bin/${HOST}-objdump
-    export STRIP=${TOOLCHAIN}/bin/${HOST}-strip
-    cd {build_directory}
-    sh {source_directory}/configure --host=${HOST} \
-      CFLAGS="${ANDROID_CFLAGS} -O3 -fPIE" \
-      CPPFLAGS="${ANDROID_CFLAGS}" \
-      LDFLAGS="${ANDROID_CFLAGS} -pie" --with-simd ${1+"$@"}
-    make
-
-
-If building for Android 4.0.x (API level < 16) or earlier, remove `-fPIE` from
-`CFLAGS` and `-pie` from `LDFLAGS`.
-
-
-Installing libjpeg-turbo
-------------------------
-
-To install libjpeg-turbo after it is built, replace `make` in the build
-instructions with `make install`.
-
-The `--prefix` argument to configure (or the `prefix` configure variable) can
-be used to specify an installation directory of your choosing.  If you don't
-specify an installation directory, then the default is to install libjpeg-turbo
-under **/opt/libjpeg-turbo** and to place the libraries in
-**/opt/libjpeg-turbo/lib32** (32-bit) or **/opt/libjpeg-turbo/lib64** (64-bit.)
-
-The `bindir`, `datadir`, `docdir`, `includedir`, `libdir`, and `mandir`
-configure variables allow a finer degree of control over where specific files in
-the libjpeg-turbo distribution should be installed.  These variables can either
-be specified at configure time or passed as arguments to `make install`.
-
-
-Windows (Visual C++ or MinGW)
-=============================
-
-
-Build Requirements
-------------------
-
-- [CMake](http://www.cmake.org) v2.8.11 or later
-
-- [NASM](http://www.nasm.us) or [YASM](http://yasm.tortall.net)
-  * If using NASM, 0.98 or later is required for an x86 build.
-  * If using NASM, 2.05 or later is required for an x86-64 build.
-  * **nasm.exe**/**yasm.exe** should be in your `PATH`.
+### Windows
 
 - Microsoft Visual C++ 2005 or later
 
@@ -605,6 +107,53 @@ line, but all of these procedures can be adapted to the CMake GUI as
 well.
 
 
+### Un*x
+
+The following procedure will build libjpeg-turbo on Unix and Unix-like systems.
+(On Solaris, this generates a 32-bit build.  See "Build Recipes" below for
+64-bit build instructions.)
+
+    cd {build_directory}
+    cmake -G"Unix Makefiles" [additional CMake flags] {source_directory}
+    make
+
+This will generate the following files under *{build_directory}*:
+
+**libjpeg.a**<br>
+Static link library for the libjpeg API
+
+**libjpeg.so.{version}** (Linux, Unix)<br>
+**libjpeg.{version}.dylib** (Mac)<br>
+**cygjpeg-{version}.dll** (Cygwin)<br>
+Shared library for the libjpeg API
+
+By default, *{version}* is 62.2.0, 7.2.0, or 8.1.2, depending on whether
+libjpeg v6b (default), v7, or v8 emulation is enabled.  If using Cygwin,
+*{version}* is 62, 7, or 8.
+
+**libjpeg.so** (Linux, Unix)<br>
+**libjpeg.dylib** (Mac)<br>
+Development symlink for the libjpeg API
+
+**libjpeg.dll.a** (Cygwin)<br>
+Import library for the libjpeg API
+
+**libturbojpeg.a**<br>
+Static link library for the TurboJPEG API
+
+**libturbojpeg.so.0.2.0** (Linux, Unix)<br>
+**libturbojpeg.0.2.0.dylib** (Mac)<br>
+**cygturbojpeg-0.dll** (Cygwin)<br>
+Shared library for the TurboJPEG API
+
+**libturbojpeg.so** (Linux, Unix)<br>
+**libturbojpeg.dylib** (Mac)<br>
+Development symlink for the TurboJPEG API
+
+**libturbojpeg.dll.a** (Cygwin)<br>
+Import library for the TurboJPEG API
+
+
 ### Visual C++ (Command Line)
 
     cd {build_directory}
@@ -619,10 +168,10 @@ The following files will be generated under *{build_directory}*:
 **jpeg-static.lib**<br>
 Static link library for the libjpeg API
 
-**sharedlib/jpeg{version}.dll**<br>
+**jpeg{version}.dll**<br>
 DLL for the libjpeg API
 
-**sharedlib/jpeg.lib**<br>
+**jpeg.lib**<br>
 Import library for the libjpeg API
 
 **turbojpeg-static.lib**<br>
@@ -647,9 +196,9 @@ instance:
     cd {build_directory}
     cmake -G"Visual Studio 10" [additional CMake flags] {source_directory}
 
-NOTE: Add "Win64" to the generator name (for example, "Visual Studio 10
-Win64") to build a 64-bit version of libjpeg-turbo.  A separate build directory
-must be used for 32-bit and 64-bit builds.
+NOTE: Add "Win64" to the generator name (for example, "Visual Studio 10 Win64")
+to build a 64-bit version of libjpeg-turbo.  A separate build directory must be
+used for 32-bit and 64-bit builds.
 
 You can then open **ALL_BUILD.vcproj** in Visual Studio and build one of the
 configurations in that project ("Debug", "Release", etc.) to generate a full
@@ -660,10 +209,10 @@ This will generate the following files under *{build_directory}*:
 **{configuration}/jpeg-static.lib**<br>
 Static link library for the libjpeg API
 
-**sharedlib/{configuration}/jpeg{version}.dll**<br>
+**{configuration}/jpeg{version}.dll**<br>
 DLL for the libjpeg API
 
-**sharedlib/{configuration}/jpeg.lib**<br>
+**{configuration}/jpeg.lib**<br>
 Import library for the libjpeg API
 
 **{configuration}/turbojpeg-static.lib**<br>
@@ -695,10 +244,10 @@ This will generate the following files under *{build_directory}*:
 **libjpeg.a**<br>
 Static link library for the libjpeg API
 
-**sharedlib/libjpeg-{version}.dll**<br>
+**libjpeg-{version}.dll**<br>
 DLL for the libjpeg API
 
-**sharedlib/libjpeg.dll.a**<br>
+**libjpeg.dll.a**<br>
 Import library for the libjpeg API
 
 **libturbojpeg.a**<br>
@@ -763,13 +312,40 @@ build/test libjpeg-turbo, then (prior to running CMake) set the `JAVA_HOME`
 environment variable to the location of the JDK that you wish to use.  The
 `Java_JAVAC_EXECUTABLE`, `Java_JAVA_EXECUTABLE`, and `Java_JAR_EXECUTABLE`
 CMake variables can also be used to specify alternate commands or locations for
-javac, jar, and java (respectively.)  You can also set the `JAVACFLAGS` CMake
+javac, jar, and java (respectively.)  You can also set the
+`CMAKE_JAVA_COMPILE_FLAGS` CMake variable or the `JAVAFLAGS` environment
 variable to specify arguments that should be passed to the Java compiler when
-building the TurboJPEG classes.
+building the TurboJPEG classes, and the `JAVAARGS` CMake variable to specify
+arguments that should be passed to the JRE when running the TurboJPEG Java unit
+tests.
 
 
 Build Recipes
 -------------
+
+
+### 32-bit Build on 64-bit Linux/Unix/Mac
+
+Use export/setenv to set the following environment variables before running
+CMake:
+
+    CFLAGS=-m32
+    LDFLAGS=-m32
+
+
+### 64-bit Build on Solaris
+
+Use export/setenv to set the following environment variables before running
+CMake:
+
+    CFLAGS=-m64
+    LDFLAGS=-m64
+
+
+### Other Compilers
+
+On Un*x systems, prior to running CMake, you can set the `CC` environment
+variable to the command used to invoke the C compiler.
 
 
 ### 32-bit MinGW Build on Un*x (including Mac and Cygwin)
@@ -810,8 +386,325 @@ located (usually **/usr/bin**.)  Next, execute the following commands:
     make
 
 
+Building libjpeg-turbo for iOS
+------------------------------
+
+iOS platforms, such as the iPhone and iPad, use ARM processors, and all
+currently supported models include NEON instructions.  Thus, they can take
+advantage of libjpeg-turbo's SIMD extensions to significantly accelerate JPEG
+compression/decompression.  This section describes how to build libjpeg-turbo
+for these platforms.
+
+
+### Additional build requirements
+
+- For configurations that require [gas-preprocessor.pl]
+  (https://raw.githubusercontent.com/libjpeg-turbo/gas-preprocessor/master/gas-preprocessor.pl),
+  it should be installed in your `PATH`.
+
+
+### ARMv7 (32-bit)
+
+**gas-preprocessor.pl required**
+
+The following scripts demonstrate how to build libjpeg-turbo to run on the
+iPhone 3GS-4S/iPad 1st-3rd Generation and newer:
+
+#### Xcode 4.2 and earlier (LLVM-GCC)
+
+    IOS_PLATFORMDIR=/Developer/Platforms/iPhoneOS.platform
+    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
+    export CFLAGS="-mfloat-abi=softfp -march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon -miphoneos-version-min=3.0"
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Darwin)
+    set(CMAKE_SYSTEM_PROCESSOR arm)
+    set(CMAKE_C_COMPILER ${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2)
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
+      [additional CMake flags] {source_directory}
+    make
+
+#### Xcode 4.3-4.6 (LLVM-GCC)
+
+Same as above, but replace the first line with:
+
+    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+
+#### Xcode 5 and later (Clang)
+
+    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
+    export CFLAGS="-mfloat-abi=softfp -arch armv7 -miphoneos-version-min=3.0"
+    export ASMFLAGS="-no-integrated-as"
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Darwin)
+    set(CMAKE_SYSTEM_PROCESSOR arm)
+    set(CMAKE_C_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang)
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
+      [additional CMake flags] {source_directory}
+    make
+
+
+### ARMv7s (32-bit)
+
+**gas-preprocessor.pl required**
+
+The following scripts demonstrate how to build libjpeg-turbo to run on the
+iPhone 5/iPad 4th Generation and newer:
+
+#### Xcode 4.5-4.6 (LLVM-GCC)
+
+    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
+    export CFLAGS="-Wall -mfloat-abi=softfp -march=armv7s -mcpu=swift -mtune=swift -mfpu=neon -miphoneos-version-min=6.0"
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Darwin)
+    set(CMAKE_SYSTEM_PROCESSOR arm)
+    set(CMAKE_C_COMPILER ${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2)
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
+      [additional CMake flags] {source_directory}
+    make
+
+#### Xcode 5 and later (Clang)
+
+Same as the ARMv7 build procedure for Xcode 5 and later, except replace the
+compiler flags as follows:
+
+    export CFLAGS="-Wall -mfloat-abi=softfp -arch armv7s -miphoneos-version-min=6.0"
+
+
+### ARMv8 (64-bit)
+
+**gas-preprocessor.pl required if using Xcode < 6**
+
+The following script demonstrates how to build libjpeg-turbo to run on the
+iPhone 5S/iPad Mini 2/iPad Air and newer.
+
+    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
+    export CFLAGS="-Wall -arch arm64 -miphoneos-version-min=7.0 -funwind-tables"
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Darwin)
+    set(CMAKE_SYSTEM_PROCESSOR aarch64)
+    set(CMAKE_C_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang)
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
+      [additional CMake flags] {source_directory}
+    make
+
+Once built, lipo can be used to combine the ARMv7, v7s, and/or v8 variants into
+a universal library.
+
+
+Building libjpeg-turbo for Android
+----------------------------------
+
+Building libjpeg-turbo for Android platforms requires the
+[Android NDK](https://developer.android.com/tools/sdk/ndk).
+
+
+### ARMv7 (32-bit)
+
+The following is a general recipe script that can be modified for your specific
+needs.
+
+    # Set these variables to suit your needs
+    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
+    BUILD_PLATFORM={the platform name for the NDK package you installed--
+      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+      toolchain directory under ${NDK_PATH}/toolchains/.}
+    ANDROID_VERSION={The minimum version of Android to support-- for example,
+      "16", "19", etc.}
+
+    # It should not be necessary to modify the rest
+    HOST=arm-linux-androideabi
+    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
+    export CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
+      -D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
+    export LDFLAGS=-pie
+    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Linux)
+    set(CMAKE_SYSTEM_PROCESSOR arm)
+    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
+    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+      [additional CMake flags] {source_directory}
+    make
+
+
+### ARMv8 (64-bit)
+
+The following is a general recipe script that can be modified for your specific
+needs.
+
+    # Set these variables to suit your needs
+    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
+    BUILD_PLATFORM={the platform name for the NDK package you installed--
+      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+      toolchain directory under ${NDK_PATH}/toolchains/.}
+    ANDROID_VERSION={The minimum version of Android to support.  "21" or later
+      is required for a 64-bit build.}
+
+    # It should not be necessary to modify the rest
+    HOST=aarch64-linux-android
+    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm64
+    export CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
+    export LDFLAGS=-pie
+    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Linux)
+    set(CMAKE_SYSTEM_PROCESSOR aarch64)
+    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
+    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+      [additional CMake flags] {source_directory}
+    make
+
+
+### x86 (32-bit)
+
+The following is a general recipe script that can be modified for your specific
+needs.
+
+    # Set these variables to suit your needs
+    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
+    BUILD_PLATFORM={the platform name for the NDK package you installed--
+      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+      toolchain directory under ${NDK_PATH}/toolchains/.}
+    ANDROID_VERSION={The minimum version of Android to support-- for example,
+      "16", "19", etc.}
+
+    # It should not be necessary to modify the rest
+    HOST=i686-linux-android
+    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86
+    export CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
+    export LDFLAGS=-pie
+    TOOLCHAIN=${NDK_PATH}/toolchains/x86-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Linux)
+    set(CMAKE_SYSTEM_PROCESSOR i386)
+    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
+    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+      [additional CMake flags] {source_directory}
+    make
+
+
+### x86-64 (64-bit)
+
+The following is a general recipe script that can be modified for your specific
+needs.
+
+    # Set these variables to suit your needs
+    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
+    BUILD_PLATFORM={the platform name for the NDK package you installed--
+      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
+    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
+      toolchain directory under ${NDK_PATH}/toolchains/.}
+    ANDROID_VERSION={The minimum version of Android to support.  "21" or later
+      is required for a 64-bit build.}
+
+    # It should not be necessary to modify the rest
+    HOST=x86_64-linux-android
+    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86_64
+    export CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
+      -isystem ${NDK_PATH}/sysroot/usr/include \
+      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
+    export LDFLAGS=-pie
+    TOOLCHAIN=${NDK_PATH}/toolchains/x86_64-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
+
+    cd {build_directory}
+
+    cat <<EOF >toolchain.cmake
+    set(CMAKE_SYSTEM_NAME Linux)
+    set(CMAKE_SYSTEM_PROCESSOR x86_64)
+    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
+    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
+    EOF
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+      [additional CMake flags] {source_directory}
+    make
+
+
+If building for Android 4.0.x (API level < 16) or earlier, remove
+`-DCMAKE_POSITION_INDEPENDENT_CODE=1` from the CMake arguments and `-pie` from
+`LDFLAGS`.
+
+If building on Windows, add `.exe` to the end of `CMAKE_C_COMPILER`.
+
+
+Advanced CMake Options
+----------------------
+
+To list and configure other CMake options not specifically mentioned in this
+guide, run
+
+    ccmake {source_directory}
+
+or
+
+    cmake-gui {source_directory}
+
+from the build directory after initially configuring the build.  CCMake is a
+text-based interactive version of CMake, and CMake-GUI is a GUI version.  Both
+will display all variables that are relevant to the libjpeg-turbo build, their
+current values, and a help string describing what they do.
+
+
 Installing libjpeg-turbo
-------------------------
+========================
 
 You can use the build system to install libjpeg-turbo (as opposed to creating
 an installer package.)  To do this, run `make install` or `nmake install`
@@ -834,6 +727,37 @@ MinGW 32-bit build
 
 **c:\libjpeg-turbo-gcc64**<br>
 MinGW 64-bit build
+
+**/opt/libjpeg-turbo**<br>
+Un*x
+
+The default value of `CMAKE_INSTALL_PREFIX` causes the libjpeg-turbo files to
+be installed with a directory structure resembling that of the official
+libjpeg-turbo binary packages.  Changing the value of `CMAKE_INSTALL_PREFIX`
+(for instance, to **/usr/local**) causes the libjpeg-turbo files to be
+installed with a directory structure that conforms to GNU standards.
+
+The `CMAKE_INSTALL_BINDIR`, `CMAKE_INSTALL_DATAROOTDIR`,
+`CMAKE_INSTALL_DOCDIR`, `CMAKE_INSTALL_INCLUDEDIR`, `CMAKE_INSTALL_JAVADIR`,
+`CMAKE_INSTALL_LIBDIR`, and `CMAKE_INSTALL_MANDIR` CMake variables allow a
+finer degree of control over where specific files in the libjpeg-turbo
+distribution should be installed.  These directory variables can either be
+specified as absolute paths or as paths relative to `CMAKE_INSTALL_PREFIX` (for
+instance, setting `CMAKE_INSTALL_DOCDIR` to **doc** would cause the
+documentation to be installed in **${CMAKE\_INSTALL\_PREFIX}/doc**.)  If a
+directory variable contains the name of another directory variable in angle
+brackets, then its final value will depend on the final value of that other
+variable.  For instance, the default value of `CMAKE_INSTALL_MANDIR` is
+**\<CMAKE\_INSTALL\_DATAROOTDIR\>/man**.
+
+NOTE: If setting one of these directory variables to a relative path using the
+CMake command line, you must specify that the variable is of type `PATH`.
+For example:
+
+    cmake -G"{generator type}" -DCMAKE_INSTALL_LIBDIR:PATH=lib {source_directory}
+
+Otherwise, CMake will assume that the path is relative to the build directory
+rather than the install directory.
 
 
 Creating Distribution Packages
@@ -871,40 +795,35 @@ installing Xcode 3.2.6 (with the "Unix Development" option) on OS X 10.6.
 Packages built in this manner can be installed on OS X 10.5 and later, but they
 must be built on OS X 10.6 or later.
 
-    make udmg [BUILDDIR32={32-bit build directory}]
+    make udmg
 
-On 64-bit OS X systems, this creates a Mac package/disk image that contains
-universal i386/x86-64 binaries.  You should first configure a 32-bit
-out-of-tree build of libjpeg-turbo, then configure a 64-bit out-of-tree build,
-then run `make udmg` from the 64-bit build directory.  The build system will
-look for the 32-bit build under *{source_directory}*/osxx86 by default, but you
-can override this by setting the `BUILDDIR32` variable on the make command line
-as shown above.
+This creates a Mac package/disk image that contains universal x86-64/i386/ARM
+binaries.  The following CMake variables control which architectures are
+included in the universal binaries.  Setting any of these variables to an empty
+string excludes that architecture from the package.
 
-    make iosdmg [BUILDDIR32={32-bit build directory}] \
-      [BUILDDIRARMV7={ARMv7 build directory}] \
-      [BUILDDIRARMV7S={ARMv7s build directory}] \
-      [BUILDDIRARMV8={ARMv8 build directory}]
+* `OSX_32BIT_BUILD`: Directory containing an i386 (32-bit) Mac build of
+  libjpeg-turbo (default: *{source_directory}*/osxx86)
+* `IOS_ARMV7_BUILD`: Directory containing an ARMv7 (32-bit) iOS build of
+  libjpeg-turbo (default: *{source_directory}*/iosarmv7)
+* `IOS_ARMV7S_BUILD`: Directory containing an ARMv7s (32-bit) iOS build of
+  libjpeg-turbo (default: *{source_directory}*/iosarmv7s)
+* `IOS_ARMV8_BUILD`: Directory containing an ARMv8 (64-bit) iOS build of
+  libjpeg-turbo (default: *{source_directory}*/iosarmv8)
 
-This creates a Mac package/disk image in which the libjpeg-turbo libraries
-contain ARM architectures necessary to build iOS applications.  If building on
-an x86-64 system, the binaries will also contain the i386 architecture, as with
-`make udmg` above.  You should first configure ARMv7, ARMv7s, and/or ARMv8
-out-of-tree builds of libjpeg-turbo (see "Building libjpeg-turbo for iOS"
-above.)  If you are building an x86-64 version of libjpeg-turbo, you should
-configure a 32-bit out-of-tree build as well.  Next, build libjpeg-turbo as you
-would normally, using an out-of-tree build.  When it is built, run `make
-iosdmg` from the build directory.  The build system will look for the ARMv7
-build under *{source_directory}*/iosarmv7 by default, the ARMv7s build under
-*{source_directory}*/iosarmv7s by default, the ARMv8 build under
-*{source_directory}*/iosarmv8 by default, and (if applicable) the 32-bit build
-under *{source_directory}*/osxx86 by default, but you can override this by
-setting the `BUILDDIR32`, `BUILDDIRARMV7`, `BUILDDIRARMV7S`, and/or
-`BUILDDIRARMV8` variables on the `make` command line as shown above.
+You should first use CMake to configure i386, ARMv7, ARMv7s, and/or ARMv8
+sub-builds of libjpeg-turbo (see "Build Recipes" and "Building libjpeg-turbo
+for iOS" above) in build directories that match those specified in the
+aforementioned CMake variables.  Next, configure the primary build of
+libjpeg-turbo as an out-of-tree build, and build it.  Once the primary build
+has been built, run `make udmg` from the build directory.  The packaging system
+will build the sub-builds, use lipo to combine them into a single set of
+universal binaries, then package the universal binaries in the same manner as
+`make dmg`.
 
-NOTE: If including an ARMv8 build in the package, then you may need to use
-Xcode's version of lipo instead of the operating system's.  To do this, pass
-an argument of `LIPO="xcrun lipo"` on the make command line.
+
+Cygwin
+------
 
     make cygwinpkg
 

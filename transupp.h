@@ -3,8 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2011, Thomas G. Lane, Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -22,7 +22,7 @@
 
 /* If you happen not to want the image transform support, disable it here */
 #ifndef TRANSFORMS_SUPPORTED
-#define TRANSFORMS_SUPPORTED 1          /* 0 disables transform code */
+#define TRANSFORMS_SUPPORTED  1         /* 0 disables transform code */
 #endif
 
 /*
@@ -156,25 +156,27 @@ typedef struct {
 #if TRANSFORMS_SUPPORTED
 
 /* Parse a crop specification (written in X11 geometry style) */
-EXTERN(boolean) jtransform_parse_crop_spec
-        (jpeg_transform_info *info, const char *spec);
+EXTERN(boolean) jtransform_parse_crop_spec(jpeg_transform_info *info,
+                                           const char *spec);
 /* Request any required workspace */
-EXTERN(boolean) jtransform_request_workspace
-        (j_decompress_ptr srcinfo, jpeg_transform_info *info);
+EXTERN(boolean) jtransform_request_workspace(j_decompress_ptr srcinfo,
+                                             jpeg_transform_info *info);
 /* Adjust output image parameters */
 EXTERN(jvirt_barray_ptr *) jtransform_adjust_parameters
-        (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
-         jvirt_barray_ptr *src_coef_arrays, jpeg_transform_info *info);
+  (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
+   jvirt_barray_ptr *src_coef_arrays, jpeg_transform_info *info);
 /* Execute the actual transformation, if any */
-EXTERN(void) jtransform_execute_transform
-        (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
-         jvirt_barray_ptr *src_coef_arrays, jpeg_transform_info *info);
+EXTERN(void) jtransform_execute_transform(j_decompress_ptr srcinfo,
+                                          j_compress_ptr dstinfo,
+                                          jvirt_barray_ptr *src_coef_arrays,
+                                          jpeg_transform_info *info);
 /* Determine whether lossless transformation is perfectly
  * possible for a specified image and transformation.
  */
-EXTERN(boolean) jtransform_perfect_transform
-        (JDIMENSION image_width, JDIMENSION image_height, int MCU_width,
-         int MCU_height, JXFORM_CODE transform);
+EXTERN(boolean) jtransform_perfect_transform(JDIMENSION image_width,
+                                             JDIMENSION image_height,
+                                             int MCU_width, int MCU_height,
+                                             JXFORM_CODE transform);
 
 /* jtransform_execute_transform used to be called
  * jtransform_execute_transformation, but some compilers complain about
@@ -193,15 +195,16 @@ EXTERN(boolean) jtransform_perfect_transform
 typedef enum {
   JCOPYOPT_NONE,          /* copy no optional markers */
   JCOPYOPT_COMMENTS,      /* copy only comment (COM) markers */
-  JCOPYOPT_ALL            /* copy all optional markers */
+  JCOPYOPT_ALL,           /* copy all optional markers */
+  JCOPYOPT_ALL_EXCEPT_ICC /* copy all optional markers except APP2 */
 } JCOPY_OPTION;
 
 #define JCOPYOPT_DEFAULT  JCOPYOPT_COMMENTS     /* recommended default */
 
 /* Setup decompression object to save desired markers in memory */
-EXTERN(void) jcopy_markers_setup
-        (j_decompress_ptr srcinfo, JCOPY_OPTION option);
+EXTERN(void) jcopy_markers_setup(j_decompress_ptr srcinfo,
+                                 JCOPY_OPTION option);
 /* Copy markers saved in the given source object to the destination object */
-EXTERN(void) jcopy_markers_execute
-        (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
-         JCOPY_OPTION option);
+EXTERN(void) jcopy_markers_execute(j_decompress_ptr srcinfo,
+                                   j_compress_ptr dstinfo,
+                                   JCOPY_OPTION option);

@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, D. R. Commander.
+ * Copyright (C) 2010, 2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -78,8 +78,7 @@ static int q_scale_factor[NUM_QUANT_TBLS] = {100, 100, 100, 100};
 #endif
 
 GLOBAL(boolean)
-read_quant_tables (j_compress_ptr cinfo, char *filename,
-                   boolean force_baseline)
+read_quant_tables(j_compress_ptr cinfo, char *filename, boolean force_baseline)
 /* Read a set of quantization tables from the specified file.
  * The file is plain ASCII text: decimal numbers with whitespace between.
  * Comments preceded by '#' may be included in the file.
@@ -280,7 +279,8 @@ bogus:
 
 
 #if JPEG_LIB_VERSION < 70
-/* These are the sample quantization tables given in JPEG spec section K.1.
+/* These are the sample quantization tables given in Annex K (Clause K.1) of
+ * Recommendation ITU-T T.81 (1992) | ISO/IEC 10918-1:1994.
  * The spec says that the values given produce "good" quality, and
  * when divided by 2, "very good" quality.
  */

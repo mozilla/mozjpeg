@@ -21,10 +21,10 @@
 
 
 /* Forward declarations */
-LOCAL(void) transencode_master_selection
-        (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays);
-LOCAL(void) transencode_coef_controller
-        (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays);
+LOCAL(void) transencode_master_selection(j_compress_ptr cinfo,
+                                         jvirt_barray_ptr *coef_arrays);
+LOCAL(void) transencode_coef_controller(j_compress_ptr cinfo,
+                                        jvirt_barray_ptr *coef_arrays);
 
 
 /*
@@ -69,8 +69,7 @@ jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays)
  */
 
 GLOBAL(void)
-jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo,
-                               j_compress_ptr dstinfo)
+jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo, j_compress_ptr dstinfo)
 {
   JQUANT_TBL **qtblptr;
   jpeg_component_info *incomp, *outcomp;
@@ -107,8 +106,7 @@ jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo,
       qtblptr = & dstinfo->quant_tbl_ptrs[tblno];
       if (*qtblptr == NULL)
         *qtblptr = jpeg_alloc_quant_table((j_common_ptr) dstinfo);
-      MEMCOPY((*qtblptr)->quantval,
-              srcinfo->quant_tbl_ptrs[tblno]->quantval,
+      MEMCOPY((*qtblptr)->quantval, srcinfo->quant_tbl_ptrs[tblno]->quantval,
               sizeof((*qtblptr)->quantval));
       (*qtblptr)->sent_table = FALSE;
     }
@@ -328,8 +326,8 @@ compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
       for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
         compptr = cinfo->cur_comp_info[ci];
         start_col = MCU_col_num * compptr->MCU_width;
-        blockcnt = (MCU_col_num < last_MCU_col) ? compptr->MCU_width
-                                                : compptr->last_col_width;
+        blockcnt = (MCU_col_num < last_MCU_col) ? compptr->MCU_width :
+                                                  compptr->last_col_width;
         for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
           if (coef->iMCU_row_num < last_iMCU_row ||
               yindex+yoffset < compptr->last_row_height) {

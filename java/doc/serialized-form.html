@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="Serialized Form";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="Serialized Form";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>
@@ -74,6 +78,19 @@
 <dt>serialVersionUID:</dt>
 <dd>1L</dd>
 </dl>
+<ul class="blockList">
+<li class="blockList"><a name="serializedForm">
+<!--   -->
+</a>
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockListLast">
+<h4>errorCode</h4>
+<pre>int errorCode</pre>
+</li>
+</ul>
+</li>
+</ul>
 </li>
 <li class="blockList"><a name="org.libjpegturbo.turbojpeg.TJTransform">
 <!--   -->

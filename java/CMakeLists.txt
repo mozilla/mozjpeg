@@ -1,58 +1,78 @@
-set(JAR_FILE turbojpeg.jar)
-set(MANIFEST_FILE "${CMAKE_CURRENT_SOURCE_DIR}/MANIFEST.MF")
+find_package(Java REQUIRED)
+find_package(JNI REQUIRED)
 
-set(JAVA_CLASSNAMES org/libjpegturbo/turbojpeg/TJ
-  org/libjpegturbo/turbojpeg/TJCompressor
-  org/libjpegturbo/turbojpeg/TJCustomFilter
-  org/libjpegturbo/turbojpeg/TJDecompressor
-  org/libjpegturbo/turbojpeg/TJException
-  org/libjpegturbo/turbojpeg/TJScalingFactor
-  org/libjpegturbo/turbojpeg/TJTransform
-  org/libjpegturbo/turbojpeg/TJTransformer
-  org/libjpegturbo/turbojpeg/YUVImage
-  TJUnitTest
-  TJExample
-  TJBench)
-
-if(MSVC_IDE)
-  set(OBJDIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-else()
-  set(OBJDIR "${CMAKE_CURRENT_BINARY_DIR}")
+# Allow the Java compiler flags to be set using an environment variable
+if(NOT DEFINED CMAKE_JAVA_COMPILE_FLAGS AND DEFINED ENV{JAVAFLAGS})
+  set(CMAKE_JAVA_COMPILE_FLAGS $ENV{JAVAFLAGS})
 endif()
+
+include(UseJava)
+
+set(CMAKE_JAVA_COMPILE_FLAGS "${CMAKE_JAVA_COMPILE_FLAGS} -J-Dfile.encoding=UTF8")
+message(STATUS "CMAKE_JAVA_COMPILE_FLAGS = ${CMAKE_JAVA_COMPILE_FLAGS}")
+string(REGEX REPLACE " " ";" CMAKE_JAVA_COMPILE_FLAGS "${CMAKE_JAVA_COMPILE_FLAGS}")
+
+set(JAVAARGS "" CACHE STRING "Additional arguments to pass to java when running unit tests (example: -d32)")
+message(STATUS "JAVAARGS = ${JAVAARGS}")
+
+set(JAVA_SOURCES org/libjpegturbo/turbojpeg/TJ.java
+  org/libjpegturbo/turbojpeg/TJCompressor.java
+  org/libjpegturbo/turbojpeg/TJCustomFilter.java
+  org/libjpegturbo/turbojpeg/TJDecompressor.java
+  org/libjpegturbo/turbojpeg/TJException.java
+  org/libjpegturbo/turbojpeg/TJScalingFactor.java
+  org/libjpegturbo/turbojpeg/TJTransform.java
+  org/libjpegturbo/turbojpeg/TJTransformer.java
+  org/libjpegturbo/turbojpeg/YUVImage.java
+  TJUnitTest.java
+  TJExample.java
+  TJBench.java)
 
 set(TURBOJPEG_DLL_NAME "turbojpeg")
 if(MINGW)
   set(TURBOJPEG_DLL_NAME "libturbojpeg")
 endif()
-configure_file(org/libjpegturbo/turbojpeg/TJLoader.java.in
-  "${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java")
+if(WIN32)
+  configure_file(org/libjpegturbo/turbojpeg/TJLoader-win.java.in
+    ${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java)
+else()
+  configure_file(org/libjpegturbo/turbojpeg/TJLoader-unix.java.in
+  ${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java)
+endif()
+set(JAVA_SOURCES ${JAVA_SOURCES}
+  ${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java)
 
-set(JAVA_SOURCES "")
-set(JAVA_CLASSES "")
-set(JAVA_CLASSES_FULL "")
-foreach(class ${JAVA_CLASSNAMES})
-  list(APPEND JAVA_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${class}.java")
-  list(APPEND JAVA_CLASSES "${class}.class")
-  list(APPEND JAVA_CLASSES_FULL "${OBJDIR}/${class}.class")
-endforeach()
+if(MSYS)
+  # UGLY HACK ALERT: If we don't do this, then UseJava.cmake will separate
+  # class path members with a semicolon, which is interpreted as a command
+  # separator by the MSYS shell.
+  set(CMAKE_HOST_SYSTEM_NAME_BAK ${CMAKE_HOST_SYSTEM_NAME})
+  set(CMAKE_HOST_SYSTEM_NAME "MSYS")
+endif()
+add_jar(turbojpeg-java ${JAVA_SOURCES} OUTPUT_NAME turbojpeg
+  ENTRY_POINT TJExample)
+if(MSYS)
+  set(CMAKE_HOST_SYSTEM_NAME ${CMAKE_HOST_SYSTEM_NAME_BAK})
+endif()
 
-list(APPEND JAVA_SOURCES
-  "${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java")
-list(APPEND JAVA_CLASSES org/libjpegturbo/turbojpeg/TJLoader.class)
-list(APPEND JAVA_CLASSES_FULL
-  "${OBJDIR}/org/libjpegturbo/turbojpeg/TJLoader.class")
+add_custom_target(javadoc COMMAND
+  javadoc -notimestamp -d ${CMAKE_CURRENT_SOURCE_DIR}/doc -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} org.libjpegturbo.turbojpeg)
+set(JAVACLASSPATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/turbojpeg-java.dir)
+add_custom_target(javah
+  COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJ
+  COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJCompressor
+  COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJDecompressor
+  COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJTransformer)
 
-string(REGEX REPLACE " " ";" JAVACFLAGS "${JAVACFLAGS}")
-add_custom_command(OUTPUT ${JAVA_CLASSES_FULL} DEPENDS ${JAVA_SOURCES}
-  COMMAND "${JAVA_COMPILE}" ARGS ${JAVACFLAGS} -d "${OBJDIR}" ${JAVA_SOURCES}
-  VERBATIM)
-
-add_custom_command(OUTPUT "${JAR_FILE}" DEPENDS ${JAVA_CLASSES_FULL}
-  "${MANIFEST_FILE}"
-  COMMAND "${JAVA_ARCHIVE}" cfm "${JAR_FILE}" "${MANIFEST_FILE}" ${JAVA_CLASSES}
-  WORKING_DIRECTORY "${OBJDIR}"
-  VERBATIM)
-
-add_custom_target(java ALL DEPENDS "${JAR_FILE}")
-
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${JAR_FILE}" DESTINATION classes)
+if(NOT DEFINED CMAKE_INSTALL_DEFAULT_JAVADIR)
+  set(CMAKE_INSTALL_DEFAULT_JAVADIR "<CMAKE_INSTALL_DATAROOTDIR>/java")
+endif()
+GNUInstallDirs_set_install_dir(JAVADIR
+  "The directory into which Java classes should be installed")
+GNUInstallDirs_get_absolute_install_dir(CMAKE_INSTALL_FULL_JAVADIR
+  CMAKE_INSTALL_JAVADIR)
+set(CMAKE_INSTALL_JAVADIR ${CMAKE_INSTALL_JAVADIR} PARENT_SCOPE)
+set(CMAKE_INSTALL_FULL_JAVADIR ${CMAKE_INSTALL_FULL_JAVADIR} PARENT_SCOPE)
+report_directory(JAVADIR)
+install_jar(turbojpeg-java ${CMAKE_INSTALL_JAVADIR})
+mark_as_advanced(CLEAR CMAKE_INSTALL_JAVADIR)

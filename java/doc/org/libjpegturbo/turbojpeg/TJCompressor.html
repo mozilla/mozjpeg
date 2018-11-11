@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="TJCompressor";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="TJCompressor";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>
@@ -575,8 +579,8 @@ public&nbsp;void&nbsp;setSourceImage(byte[]&nbsp;srcImage,
  <p>
  NOTE: This method has no effect when compressing a JPEG image from a YUV
  planar source.  In that case, the level of chrominance subsampling in
- the JPEG image is determined by the source.  Further, this method has no
- effect when encoding to a pre-allocated <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> instance.  In
+ the JPEG image is determined by the source.  Furthermore, this method has
+ no effect when encoding to a pre-allocated <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> instance.  In
  that case, the level of chrominance subsampling is determined by the
  destination.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>newSubsamp</code> - the level of chrominance subsampling to use in

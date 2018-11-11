@@ -209,9 +209,9 @@ jpeg_stdio_dest (j_compress_ptr cinfo, FILE *outfile)
 {
   my_dest_ptr dest;
 
-    /* The destination object is made permanent so that multiple JPEG images
-     * can be written to the same file without re-executing jpeg_stdio_dest.
-     */
+  /* The destination object is made permanent so that multiple JPEG images
+   * can be written to the same file without re-executing jpeg_stdio_dest.
+   */
   if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,

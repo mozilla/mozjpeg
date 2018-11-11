@@ -5,6 +5,10 @@
 # better yet, provide a friendly way of configuring a Windows target to use the
 # static C library.
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
+
 if(MSVC)
   # Build all configurations against shared C library
   foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
@@ -16,36 +20,52 @@ if(MSVC)
 endif()
 
 foreach(src ${JPEG_SOURCES})
-  list(APPEND JPEG_SRCS "${CMAKE_SOURCE_DIR}/${src}")
+  set(JPEG_SRCS ${JPEG_SRCS} ../${src})
 endforeach()
 
-if(WITH_SIMD)
+if(WITH_SIMD AND MSVC_IDE)
   # This tells CMake that the "source" files haven't been generated yet
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
 endif()
 
-if(WITH_MEM_SRCDST AND NOT WITH_JPEG8)
-  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
-    "${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}-memsrcdst.def")
+if(WIN32)
+  if(WITH_MEM_SRCDST)
+    set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}-memsrcdst.def)
 else()
-  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
-    "${CMAKE_SOURCE_DIR}/win/jpeg${DLL_VERSION}.def")
+    set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}.def)
+  endif()
 endif()
-set_target_properties(jpeg PROPERTIES SOVERSION ${DLL_VERSION}
-  VERSION ${FULLVERSION})
+add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} $<TARGET_OBJECTS:simd>
+  ${SIMD_OBJS})
+
+set_target_properties(jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
+  VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
+if(APPLE AND (NOT CMAKE_OSX_DEPLOYMENT_TARGET OR
+              CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER 10.4))
+  if(NOT CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG)
+    set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
+  endif()
+  set_target_properties(jpeg PROPERTIES MACOSX_RPATH 1)
+endif()
+if(MAPFLAG)
+  set_target_properties(jpeg PROPERTIES
+    LINK_FLAGS "${MAPFLAG}${CMAKE_CURRENT_BINARY_DIR}/../libjpeg.map")
+endif()
 if(MSVC)
-  set_target_properties(jpeg PROPERTIES SUFFIX ${DLL_VERSION}.dll)
-elseif(MINGW OR CYGWIN)
-  set_target_properties(jpeg PROPERTIES SUFFIX -${DLL_VERSION}.dll)
-endif(MSVC)
-if(WITH_SIMD)
-  add_dependencies(jpeg simd)
+  set_target_properties(jpeg PROPERTIES SUFFIX ${SO_MAJOR_VERSION}.dll)
+  # The jsimd_*.c file is built using /MT, so this prevents a linker warning.
+  set_target_properties(jpeg PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
+elseif(MINGW)
+  set_target_properties(jpeg PROPERTIES SUFFIX -${SO_MAJOR_VERSION}.dll)
 endif()
 
+if(WIN32)
+  set(USE_SETMODE "-DUSE_SETMODE")
+endif()
 if(WITH_12BIT)
-  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED -DUSE_SETMODE")
+  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
 else()
-  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED -DUSE_SETMODE")
+  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 	set(CJPEG_BMP_SOURCES ../rdbmp.c ../rdtarga.c)
 	set(DJPEG_BMP_SOURCES ../wrbmp.c ../wrtarga.c)
 endif()
@@ -62,12 +82,12 @@ target_link_libraries(djpeg jpeg)
 
 add_executable(jpegtran ../jpegtran.c ../cdjpeg.c ../rdswitch.c ../transupp.c)
 target_link_libraries(jpegtran jpeg)
-set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "-DUSE_SETMODE")
+set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
 
 add_executable(jcstest ../jcstest.c)
 target_link_libraries(jcstest jpeg)
 
 install(TARGETS jpeg cjpeg djpeg jpegtran
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

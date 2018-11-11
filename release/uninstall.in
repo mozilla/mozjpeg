@@ -31,15 +31,15 @@ if [ ! "`id -u`" = "0" ]; then
 	exit -1
 fi
 
-PACKAGE=@PKGNAME@
-MACPACKAGE=com.mozilla.$PACKAGE
-RECEIPT=/Library/Receipts/$PACKAGE.pkg
+PKGNAME=@PKGNAME@
+PKGID=@PKGID@
+RECEIPT=/Library/Receipts/$PKGNAME.pkg
 
 LSBOM=
 if [ -d $RECEIPT ]; then
 	LSBOM='lsbom -s -f -l '$RECEIPT'/Contents/Archive.bom'
 else
-	LSBOM='pkgutil --files '$MACPACKAGE
+	LSBOM='pkgutil --files '$PKGID
 fi
 
 mylsbom()
@@ -56,12 +56,13 @@ done
 popd
 
 echo Removing package directories ...
-PREFIX=%{__prefix}
-BINDIR=%{__bindir}
-DATADIR=%{__datadir}
-INCLUDEDIR=%{__includedir}
-LIBDIR=%{__libdir}
-MANDIR=%{__mandir}
+PREFIX=@CMAKE_INSTALL_PREFIX@
+BINDIR=@CMAKE_INSTALL_FULL_BINDIR@
+DATAROOTDIR=@CMAKE_INSTALL_FULL_DATAROOTDIR@
+INCLUDEDIR=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+JAVADIR=@CMAKE_INSTALL_FULL_JAVADIR@
+LIBDIR=@CMAKE_INSTALL_FULL_LIBDIR@
+MANDIR=@CMAKE_INSTALL_FULL_MANDIR@
 
 if [ -d $BINDIR ]; then
 	rmdir $BINDIR 2>&1 || EXITSTATUS=-1
@@ -75,7 +76,7 @@ fi
 if [ -d $INCLUDEDIR ]; then
 	rmdir $INCLUDEDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ "$PREFIX" = "/opt/mozjpeg" -a "$LIBDIR" = "/opt/mozjpeg/lib" ]; then
+if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$LIBDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/lib" ]; then
 	if [ -h $LIBDIR\32 ]; then
 		rm $LIBDIR\32 2>&1 || EXITSTATUS=-1
 	fi
@@ -89,24 +90,24 @@ fi
 if [ -d $MANDIR ]; then
 	rmdir $MANDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ -d $DATADIR/classes ]; then
-	rmdir $DATADIR/classes 2>&1 || EXITSTATUS=-1
+if [ -d $JAVADIR ]; then
+	rmdir $JAVADIR 2>&1 || EXITSTATUS=-1
 fi
-if [ -d $DATADIR -a "$DATADIR" != "$PREFIX" ]; then
-	rmdir $DATADIR 2>&1 || EXITSTATUS=-1
+if [ -d $DATAROOTDIR -a "$DATAROOTDIR" != "$PREFIX" ]; then
+	rmdir $DATAROOTDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ "$PREFIX" = "/opt/mozjpeg" -a -h "$PREFIX/doc" ]; then
+if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a -h "$PREFIX/doc" ]; then
 	rm $PREFIX/doc 2>&1 || EXITSTATUS=-1
 fi
 rmdir $PREFIX 2>&1 || EXITSTATUS=-1
-rmdir /Library/Documentation/$PACKAGE 2>&1 || EXITSTATUS=-1
+rmdir /Library/Documentation/$PKGNAME 2>&1 || EXITSTATUS=-1
 
 if [ -d $RECEIPT ]; then
 	echo Removing package receipt ...
 	rm -r $RECEIPT 2>&1 || EXITSTATUS=-1
 else
-	echo Forgetting package $MACPACKAGE ...
-	pkgutil --forget $MACPACKAGE
+	echo Forgetting package $PKGID ...
+	pkgutil --forget $PKGID
 fi
 
 exit $EXITSTATUS

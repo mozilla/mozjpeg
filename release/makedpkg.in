@@ -21,56 +21,89 @@ uid()
 	id | cut -f2 -d = | cut -f1 -d \(;
 }
 
+safedirmove ()
+{
+	if [ "$1" = "$2" ]; then
+		return 0
+	fi
+	if [ "$1" = "" -o ! -d "$1" ]; then
+		echo safedirmove: source dir $1 is not valid
+		return 1
+	fi
+	if [ "$2" = "" -o -e "$2" ]; then
+		echo safedirmove: dest dir $2 is not valid
+		return 1
+	fi
+	if [ "$3" = "" -o -e "$3" ]; then
+		echo safedirmove: tmp dir $3 is not valid
+		return 1
+	fi
+	mkdir -p $3
+	mv $1/* $3/
+	rmdir $1
+	mkdir -p $2
+	mv $3/* $2/
+	rmdir $3
+	return 0
+}
+
 makedeb()
 {
 	SUPPLEMENT=$1
-	DIRNAME=$PACKAGE_NAME
+	DIRNAME=$PKGNAME
 
 	if [ $SUPPLEMENT = 1 ]; then
-		PACKAGE_NAME=$PACKAGE_NAME\32
+		PKGNAME=$PKGNAME\32
 		DEBARCH=amd64
 	fi
 
 	umask 022
-	rm -f $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
-	TMPDIR=`mktemp -d /tmp/$PACKAGE_NAME-build.XXXXXX`
+	rm -f $PKGNAME\_$VERSION\_$DEBARCH.deb
+	TMPDIR=`mktemp -d /tmp/$PKGNAME-build.XXXXXX`
 	mkdir $TMPDIR/DEBIAN
 
 	if [ $SUPPLEMENT = 1 ]; then
-		make install DESTDIR=$TMPDIR bindir=/dummy/bin datadir=/dummy/data \
-			docdir=/dummy/doc includedir=/dummy/include mandir=/dummy/man
-		rm -f $TMPDIR$LIBDIR/*.la
-		rm -rf $TMPDIR/dummy
+		make install DESTDIR=$TMPDIR
+		rm -rf $TMPDIR$BINDIR
+		if [ "$DATAROOTDIR" != "$PREFIX" ]; then
+			rm -rf $TMPDIR$DATAROOTDIR
+		fi
+		if [ "$JAVADIR" != "" ]; then
+			rm -rf $TMPDIR$JAVADIR
+		fi
+		rm -rf $TMPDIR$DOCDIR
+		rm -rf $TMPDIR$INCLUDEDIR
+		rm -rf $TMPDIR$MANDIR
 	else
-		make install DESTDIR=$TMPDIR docdir=/usr/share/doc/$DIRNAME-$VERSION \
-			exampledir=/usr/share/doc/$DIRNAME-$VERSION
-		rm -f $TMPDIR$LIBDIR/*.la
-		if [ "$PREFIX" = "/opt/mozjpeg" -a "$DOCDIR" = "/opt/mozjpeg/doc" ]; then
+		make install DESTDIR=$TMPDIR
+		if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/doc" ]; then
+			safedirmove $TMPDIR/$DOCDIR $TMPDIR/usr/share/doc/$PKGNAME-$VERSION $TMPDIR/__tmpdoc
 			ln -fs /usr/share/doc/$DIRNAME-$VERSION $TMPDIR$DOCDIR
 		fi
 	fi
 
 	SIZE=`du -s $TMPDIR | cut -f1`
-	(cat $SRCDIR/release/deb-control.tmpl | sed s/{__PKGNAME}/$PACKAGE_NAME/g \
-		| sed s/{__VERSION}/$VERSION/g | sed s/{__BUILD}/$BUILD/g \
+	(cat pkgscripts/deb-control | sed s/{__PKGNAME}/$PKGNAME/g \
 		| sed s/{__ARCH}/$DEBARCH/g | sed s/{__SIZE}/$SIZE/g \
 		> $TMPDIR/DEBIAN/control)
-
 
 	/sbin/ldconfig -n $TMPDIR$LIBDIR
 
 	$SUDO chown -Rh root:root $TMPDIR/*
-	dpkg -b $TMPDIR $PACKAGE_NAME\_$VERSION\_$DEBARCH.deb
+	dpkg -b $TMPDIR $PKGNAME\_$VERSION\_$DEBARCH.deb
 }
 
-PACKAGE_NAME=@PKGNAME@
+PKGNAME=@PKGNAME@
 VERSION=@VERSION@
-BUILD=@BUILD@
 DEBARCH=@DEBARCH@
-SRCDIR=@abs_top_srcdir@
-PREFIX=%{__prefix}
-DOCDIR=%{__docdir}
-LIBDIR=%{__libdir}
+PREFIX=@CMAKE_INSTALL_PREFIX@
+BINDIR=@CMAKE_INSTALL_FULL_BINDIR@
+DATAROOTDIR=@CMAKE_INSTALL_FULL_DATAROOTDIR@
+DOCDIR=@CMAKE_INSTALL_FULL_DOCDIR@
+INCLUDEDIR=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+JAVADIR=@CMAKE_INSTALL_FULL_JAVADIR@
+LIBDIR=@CMAKE_INSTALL_FULL_LIBDIR@
+MANDIR=@CMAKE_INSTALL_FULL_MANDIR@
 
 if [ ! `uid` -eq 0 ]; then
 	SUDO=sudo

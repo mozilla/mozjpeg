@@ -28,11 +28,12 @@
 #ifdef PROGRESS_REPORT
 
 METHODDEF(void)
-progress_monitor (j_common_ptr cinfo)
+progress_monitor(j_common_ptr cinfo)
 {
-  cd_progress_ptr prog = (cd_progress_ptr) cinfo->progress;
+  cd_progress_ptr prog = (cd_progress_ptr)cinfo->progress;
   int total_passes = prog->pub.total_passes + prog->total_extra_passes;
-  int percent_done = (int) (prog->pub.pass_counter*100L/prog->pub.pass_limit);
+  int percent_done =
+    (int)(prog->pub.pass_counter * 100L / prog->pub.pass_limit);
 
   if (percent_done != prog->percent_done) {
     prog->percent_done = percent_done;
@@ -49,7 +50,7 @@ progress_monitor (j_common_ptr cinfo)
 
 
 GLOBAL(void)
-start_progress_monitor (j_common_ptr cinfo, cd_progress_ptr progress)
+start_progress_monitor(j_common_ptr cinfo, cd_progress_ptr progress)
 {
   /* Enable progress display, unless trace output is on */
   if (cinfo->err->trace_level == 0) {
@@ -63,7 +64,7 @@ start_progress_monitor (j_common_ptr cinfo, cd_progress_ptr progress)
 
 
 GLOBAL(void)
-end_progress_monitor (j_common_ptr cinfo)
+end_progress_monitor(j_common_ptr cinfo)
 {
   /* Clear away progress display */
   if (cinfo->err->trace_level == 0) {
@@ -82,7 +83,7 @@ end_progress_monitor (j_common_ptr cinfo)
  */
 
 GLOBAL(boolean)
-keymatch (char *arg, const char *keyword, int minchars)
+keymatch(char *arg, const char *keyword, int minchars)
 {
   register int ca, ck;
   register int nmatched = 0;
@@ -109,9 +110,9 @@ keymatch (char *arg, const char *keyword, int minchars)
  */
 
 GLOBAL(FILE *)
-read_stdin (void)
+read_stdin(void)
 {
-  FILE * input_file = stdin;
+  FILE *input_file = stdin;
 
 #ifdef USE_SETMODE              /* need to hack file mode? */
   setmode(fileno(stdin), O_BINARY);
@@ -127,9 +128,9 @@ read_stdin (void)
 
 
 GLOBAL(FILE *)
-write_stdout (void)
+write_stdout(void)
 {
-  FILE * output_file = stdout;
+  FILE *output_file = stdout;
 
 #ifdef USE_SETMODE              /* need to hack file mode? */
   setmode(fileno(stdout), O_BINARY);

@@ -69,7 +69,7 @@ static FILE *infile;            /* input JPEG file */
 
 /* Read one byte, testing for EOF */
 static int
-read_1_byte (void)
+read_1_byte(void)
 {
   int c;
 
@@ -82,7 +82,7 @@ read_1_byte (void)
 /* Read 2 bytes, convert to unsigned int */
 /* All 2-byte quantities in JPEG markers are MSB first */
 static unsigned int
-read_2_bytes (void)
+read_2_bytes(void)
 {
   int c1, c2;
 
@@ -92,7 +92,7 @@ read_2_bytes (void)
   c2 = NEXTBYTE();
   if (c2 == EOF)
     ERREXIT("Premature EOF in JPEG file");
-  return (((unsigned int) c1) << 8) + ((unsigned int) c2);
+  return (((unsigned int)c1) << 8) + ((unsigned int)c2);
 }
 
 
@@ -102,25 +102,25 @@ read_2_bytes (void)
  * in this program.  (See jdmarker.c for a more complete list.)
  */
 
-#define M_SOF0  0xC0            /* Start Of Frame N */
-#define M_SOF1  0xC1            /* N indicates which compression process */
-#define M_SOF2  0xC2            /* Only SOF0-SOF2 are now in common use */
-#define M_SOF3  0xC3
-#define M_SOF5  0xC5            /* NB: codes C4 and CC are NOT SOF markers */
-#define M_SOF6  0xC6
-#define M_SOF7  0xC7
-#define M_SOF9  0xC9
-#define M_SOF10 0xCA
-#define M_SOF11 0xCB
-#define M_SOF13 0xCD
-#define M_SOF14 0xCE
-#define M_SOF15 0xCF
-#define M_SOI   0xD8            /* Start Of Image (beginning of datastream) */
-#define M_EOI   0xD9            /* End Of Image (end of datastream) */
-#define M_SOS   0xDA            /* Start Of Scan (begins compressed data) */
-#define M_APP0  0xE0            /* Application-specific marker, type N */
-#define M_APP12 0xEC            /* (we don't bother to list all 16 APPn's) */
-#define M_COM   0xFE            /* COMment */
+#define M_SOF0   0xC0           /* Start Of Frame N */
+#define M_SOF1   0xC1           /* N indicates which compression process */
+#define M_SOF2   0xC2           /* Only SOF0-SOF2 are now in common use */
+#define M_SOF3   0xC3
+#define M_SOF5   0xC5           /* NB: codes C4 and CC are NOT SOF markers */
+#define M_SOF6   0xC6
+#define M_SOF7   0xC7
+#define M_SOF9   0xC9
+#define M_SOF10  0xCA
+#define M_SOF11  0xCB
+#define M_SOF13  0xCD
+#define M_SOF14  0xCE
+#define M_SOF15  0xCF
+#define M_SOI    0xD8           /* Start Of Image (beginning of datastream) */
+#define M_EOI    0xD9           /* End Of Image (end of datastream) */
+#define M_SOS    0xDA           /* Start Of Scan (begins compressed data) */
+#define M_APP0   0xE0           /* Application-specific marker, type N */
+#define M_APP12  0xEC           /* (we don't bother to list all 16 APPn's) */
+#define M_COM    0xFE           /* COMment */
 
 
 /*
@@ -134,7 +134,7 @@ read_2_bytes (void)
  */
 
 static int
-next_marker (void)
+next_marker(void)
 {
   int c;
   int discarded_bytes = 0;
@@ -169,7 +169,7 @@ next_marker (void)
  */
 
 static int
-first_marker (void)
+first_marker(void)
 {
   int c1, c2;
 
@@ -191,7 +191,7 @@ first_marker (void)
  */
 
 static void
-skip_variable (void)
+skip_variable(void)
 /* Skip over an unknown or uninteresting variable-length marker */
 {
   unsigned int length;
@@ -204,7 +204,7 @@ skip_variable (void)
   length -= 2;
   /* Skip over the remaining bytes */
   while (length > 0) {
-    (void) read_1_byte();
+    (void)read_1_byte();
     length--;
   }
 }
@@ -217,7 +217,7 @@ skip_variable (void)
  */
 
 static void
-process_COM (int raw)
+process_COM(int raw)
 {
   unsigned int length;
   int ch;
@@ -274,7 +274,7 @@ process_COM (int raw)
  */
 
 static void
-process_SOFn (int marker)
+process_SOFn(int marker)
 {
   unsigned int length;
   unsigned int image_height, image_width;
@@ -301,7 +301,8 @@ process_SOFn (int marker)
   case M_SOF10: process = "Progressive, arithmetic coding";  break;
   case M_SOF11: process = "Lossless, arithmetic coding";  break;
   case M_SOF13: process = "Differential sequential, arithmetic coding";  break;
-  case M_SOF14: process = "Differential progressive, arithmetic coding"; break;
+  case M_SOF14:
+    process = "Differential progressive, arithmetic coding";  break;
   case M_SOF15: process = "Differential lossless, arithmetic coding";  break;
   default:      process = "Unknown";  break;
   }
@@ -310,13 +311,13 @@ process_SOFn (int marker)
          image_width, image_height, num_components, data_precision);
   printf("JPEG process: %s\n", process);
 
-  if (length != (unsigned int) (8 + num_components * 3))
+  if (length != (unsigned int)(8 + num_components * 3))
     ERREXIT("Bogus SOF marker length");
 
   for (ci = 0; ci < num_components; ci++) {
-    (void) read_1_byte();       /* Component ID code */
-    (void) read_1_byte();       /* H, V sampling factors */
-    (void) read_1_byte();       /* Quantization table number */
+    (void)read_1_byte();        /* Component ID code */
+    (void)read_1_byte();        /* H, V sampling factors */
+    (void)read_1_byte();        /* Quantization table number */
   }
 }
 
@@ -332,7 +333,7 @@ process_SOFn (int marker)
  */
 
 static int
-scan_JPEG_header (int verbose, int raw)
+scan_JPEG_header(int verbose, int raw)
 {
   int marker;
 
@@ -401,7 +402,7 @@ static const char *progname;    /* program name for error messages */
 
 
 static void
-usage (void)
+usage(void)
 /* complain about bad command line */
 {
   fprintf(stderr, "rdjpgcom displays any textual comments in a JPEG file.\n");
@@ -417,7 +418,7 @@ usage (void)
 
 
 static int
-keymatch (char *arg, const char *keyword, int minchars)
+keymatch(char *arg, const char *keyword, int minchars)
 /* Case-insensitive matching of (possibly abbreviated) keyword switches. */
 /* keyword is the constant keyword (must be lower case already), */
 /* minchars is length of minimum legal abbreviation. */
@@ -446,7 +447,7 @@ keymatch (char *arg, const char *keyword, int minchars)
  */
 
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
   int argn;
   char *arg;
@@ -477,7 +478,7 @@ main (int argc, char **argv)
 
   /* Open the input file. */
   /* Unix style: expect zero or one file name */
-  if (argn < argc-1) {
+  if (argn < argc - 1) {
     fprintf(stderr, "%s: only one input file\n", progname);
     usage();
   }
@@ -502,7 +503,7 @@ main (int argc, char **argv)
   }
 
   /* Scan the JPEG headers. */
-  (void) scan_JPEG_header(verbose, raw);
+  (void)scan_JPEG_header(verbose, raw);
 
   /* All done. */
   exit(EXIT_SUCCESS);

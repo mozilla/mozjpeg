@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="TJException";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="TJException";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>
@@ -60,13 +64,13 @@
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
-<li><a href="#methods_inherited_from_class_java.lang.Throwable">Method</a></li>
+<li><a href="#method_summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_detail">Method</a></li>
 </ul>
 </div>
 <a name="skip-navbar_top">
@@ -138,10 +142,14 @@ extends java.io.IOException</pre>
 <td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.String)">TJException</a></strong>(java.lang.String&nbsp;message)</code>&nbsp;</td>
 </tr>
 <tr class="altColor">
+<td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.String,%20int)">TJException</a></strong>(java.lang.String&nbsp;message,
+           int&nbsp;code)</code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.String,%20java.lang.Throwable)">TJException</a></strong>(java.lang.String&nbsp;message,
            java.lang.Throwable&nbsp;cause)</code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJException.html#TJException(java.lang.Throwable)">TJException</a></strong>(java.lang.Throwable&nbsp;cause)</code>&nbsp;</td>
 </tr>
 </table>
@@ -153,6 +161,20 @@ extends java.io.IOException</pre>
 <!--   -->
 </a>
 <h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJException.html#getErrorCode()">getErrorCode</a></strong>()</code>
+<div class="block">Returns a code (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.ERR_*</code></a>) indicating the severity of the
+ last error.</div>
+</td>
+</tr>
+</table>
 <ul class="blockList">
 <li class="blockList"><a name="methods_inherited_from_class_java.lang.Throwable">
 <!--   -->
@@ -209,6 +231,16 @@ extends java.io.IOException</pre>
 <pre>public&nbsp;TJException(java.lang.String&nbsp;message)</pre>
 </li>
 </ul>
+<a name="TJException(java.lang.String, int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>TJException</h4>
+<pre>public&nbsp;TJException(java.lang.String&nbsp;message,
+           int&nbsp;code)</pre>
+</li>
+</ul>
 <a name="TJException(java.lang.Throwable)">
 <!--   -->
 </a>
@@ -216,6 +248,27 @@ extends java.io.IOException</pre>
 <li class="blockList">
 <h4>TJException</h4>
 <pre>public&nbsp;TJException(java.lang.Throwable&nbsp;cause)</pre>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="getErrorCode()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getErrorCode</h4>
+<pre>public&nbsp;int&nbsp;getErrorCode()</pre>
+<div class="block">Returns a code (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.ERR_*</code></a>) indicating the severity of the
+ last error.</div>
+<dl><dt><span class="strong">Returns:</span></dt><dd>a code (one of <a href="../../../org/libjpegturbo/turbojpeg/TJ.html" title="class in org.libjpegturbo.turbojpeg"><code>TJ.ERR_*</code></a>) indicating the severity of the
+ last error.</dd></dl>
 </li>
 </ul>
 </li>
@@ -270,13 +323,13 @@ extends java.io.IOException</pre>
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
-<li><a href="#methods_inherited_from_class_java.lang.Throwable">Method</a></li>
+<li><a href="#method_summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_detail">Method</a></li>
 </ul>
 </div>
 <a name="skip-navbar_bottom">

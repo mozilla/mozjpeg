@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="TJDecompressor";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="TJDecompressor";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>
@@ -785,7 +789,11 @@ public&nbsp;void&nbsp;setJPEGImage(byte[]&nbsp;jpegImage,
                 throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Decompress the JPEG source image or decode the YUV source image associated
  with this decompressor instance and output a grayscale, RGB, or CMYK image
- to the given destination buffer.</div>
+ to the given destination buffer.
+ <p>
+ NOTE: The output image is fully recoverable if this method throws a
+ non-fatal <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_STOPONWARNING"><code>TJ.FLAG_STOPONWARNING</code></a> is specified.)</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>dstBuf</code> - buffer that will receive the decompressed/decoded image.
  If the source image is a JPEG image, then this buffer should normally be
  <code>pitch * scaledHeight</code> bytes in size, where
@@ -895,7 +903,11 @@ public&nbsp;void&nbsp;decompress(byte[]&nbsp;dstBuf,
  <code>YUVImage</code> instance.  This method performs JPEG decompression
  but leaves out the color conversion step, so a planar YUV image is
  generated instead of an RGB or grayscale image.  This method cannot be
- used to decompress JPEG source images with the CMYK or YCCK colorspace.</div>
+ used to decompress JPEG source images with the CMYK or YCCK colorspace.
+ <p>
+ NOTE: The YUV planar output image is fully recoverable if this method
+ throws a non-fatal <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_STOPONWARNING"><code>TJ.FLAG_STOPONWARNING</code></a> is specified.)</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>dstImage</code> - <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> instance that will receive the YUV planar
  image.  The level of subsampling specified in this <code>YUVImage</code>
  instance must match that of the JPEG image, and the width and height
@@ -1035,7 +1047,11 @@ public&nbsp;byte[]&nbsp;decompressToYUV(int&nbsp;flags)
                 throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Decompress the JPEG source image or decode the YUV source image associated
  with this decompressor instance and output a grayscale, RGB, or CMYK image
- to the given destination buffer.</div>
+ to the given destination buffer.
+ <p>
+ NOTE: The output image is fully recoverable if this method throws a
+ non-fatal <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_STOPONWARNING"><code>TJ.FLAG_STOPONWARNING</code></a> is specified.)</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>dstBuf</code> - buffer that will receive the decompressed/decoded image.
  If the source image is a JPEG image, then this buffer should normally be
  <code>stride * scaledHeight</code> pixels in size, where
@@ -1092,7 +1108,11 @@ public&nbsp;byte[]&nbsp;decompressToYUV(int&nbsp;flags)
                 throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
 <div class="block">Decompress the JPEG source image or decode the YUV source image associated
  with this decompressor instance and output a decompressed/decoded image to
- the given <code>BufferedImage</code> instance.</div>
+ the given <code>BufferedImage</code> instance.
+ <p>
+ NOTE: The output image is fully recoverable if this method throws a
+ non-fatal <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_STOPONWARNING"><code>TJ.FLAG_STOPONWARNING</code></a> is specified.)</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>dstImage</code> - a <code>BufferedImage</code> instance that will receive
  the decompressed/decoded image.  If the source image is a JPEG image, then
  the width and height of the <code>BufferedImage</code> instance must match

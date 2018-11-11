@@ -7,8 +7,12 @@
 </head>
 <body>
 <script type="text/javascript"><!--
-    if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="TJScalingFactor";
+    try {
+        if (location.href.indexOf('is-external=true') == -1) {
+            parent.document.title="TJScalingFactor";
+        }
+    }
+    catch(err) {
     }
 //-->
 </script>
@@ -114,7 +118,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html#TJScalingFactor(int,%20int)">TJScalingFactor</a></strong>(int&nbsp;num,
-               int&nbsp;denom)</code>&nbsp;</td>
+               int&nbsp;denom)</code>
+<div class="block">Create a TurboJPEG scaling factor instance.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -193,6 +199,8 @@ extends java.lang.Object</pre>
 <h4>TJScalingFactor</h4>
 <pre>public&nbsp;TJScalingFactor(int&nbsp;num,
                int&nbsp;denom)</pre>
+<div class="block">Create a TurboJPEG scaling factor instance.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>num</code> - numerator</dd><dd><code>denom</code> - denominator</dd></dl>
 </li>
 </ul>
 </li>
@@ -235,7 +243,8 @@ extends java.lang.Object</pre>
 <div class="block">Returns the scaled value of <code>dimension</code>.  This function
  performs the integer equivalent of
  <code>ceil(dimension * scalingFactor)</code>.</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>the scaled value of <code>dimension</code>.</dd></dl>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>dimension</code> - width or height to multiply by this scaling factor</dd>
+<dt><span class="strong">Returns:</span></dt><dd>the scaled value of <code>dimension</code>.</dd></dl>
 </li>
 </ul>
 <a name="equals(org.libjpegturbo.turbojpeg.TJScalingFactor)">
@@ -247,7 +256,8 @@ extends java.lang.Object</pre>
 <pre>public&nbsp;boolean&nbsp;equals(<a href="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg">TJScalingFactor</a>&nbsp;other)</pre>
 <div class="block">Returns true or false, depending on whether this instance and
  <code>other</code> have the same numerator and denominator.</div>
-<dl><dt><span class="strong">Returns:</span></dt><dd>true or false, depending on whether this instance and
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>other</code> - the scaling factor against which to compare this one</dd>
+<dt><span class="strong">Returns:</span></dt><dd>true or false, depending on whether this instance and
  <code>other</code> have the same numerator and denominator.</dd></dl>
 </li>
 </ul>

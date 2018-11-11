@@ -3,7 +3,7 @@ USING THE IJG JPEG LIBRARY
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2017, D. R. Commander.
+Copyright (C) 2010, 2014-2018, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -11,7 +11,7 @@ For conditions of distribution and use, see the accompanying README.ijg file.
 This file describes how to use the IJG JPEG library within an application
 program.  Read it if you want to write a program that uses the library.
 
-The file example.c provides heavily commented skeleton code for calling the
+The file example.txt provides heavily commented skeleton code for calling the
 JPEG library.  Also see jpeglib.h (the include file to be used by application
 programs) for full details about data structures and function parameter lists.
 The library source code, of course, is the ultimate reference.
@@ -47,6 +47,7 @@ Advanced features:
         Buffered-image mode
         Abbreviated datastreams and multiple images
         Special markers
+        ICC profiles
         Raw (downsampled) image data
         Really raw data: DCT coefficients
         Progress monitoring
@@ -387,13 +388,13 @@ to the total image height.  In most applications it is convenient to pass
 just one or a few scanlines at a time.  The expected format for the passed
 data is discussed under "Data formats", above.
 
-Image data should be written in top-to-bottom scanline order.  The JPEG spec
-contains some weasel wording about how top and bottom are application-defined
-terms (a curious interpretation of the English language...) but if you want
-your files to be compatible with everyone else's, you WILL use top-to-bottom
-order.  If the source data must be read in bottom-to-top order, you can use
-the JPEG library's virtual array mechanism to invert the data efficiently.
-Examples of this can be found in the sample application cjpeg.
+Image data should be written in top-to-bottom scanline order.
+Rec. ITU-T T.81 | ISO/IEC 10918-1 says, "Applications determine which edges of
+a source image are defined as top, bottom, left, and right."  However, if you
+want your files to be compatible with everyone else's, then top-to-bottom order
+must be used.  If the source data must be read in bottom-to-top order, then you
+can use the JPEG library's virtual array mechanism to invert the data
+efficiently.  Examples of this can be found in the sample application cjpeg.
 
 The library maintains a count of the number of scanlines written so far
 in the next_scanline field of the JPEG object.  Usually you can just use
@@ -401,7 +402,7 @@ this variable as the loop counter, so that the loop test looks like
 "while (cinfo.next_scanline < cinfo.image_height)".
 
 Code for this step depends heavily on the way that you store the source data.
-example.c shows the following code for the case of a full-size 2-D source
+example.txt shows the following code for the case of a full-size 2-D source
 array containing 3-byte RGB pixels:
 
         JSAMPROW row_pointer[1];        /* pointer to a single row */
@@ -410,7 +411,7 @@ array containing 3-byte RGB pixels:
         row_stride = image_width * 3;   /* JSAMPLEs per row in image_buffer */
 
         while (cinfo.next_scanline < cinfo.image_height) {
-            row_pointer[0] = & image_buffer[cinfo.next_scanline * row_stride];
+            row_pointer[0] = &image_buffer[cinfo.next_scanline * row_stride];
             jpeg_write_scanlines(&cinfo, row_pointer, 1);
         }
 
@@ -916,7 +917,8 @@ jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
 jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
                          boolean force_baseline)
         Same as jpeg_set_quality() except that the generated tables are the
-        sample tables given in the JPEC spec section K.1, multiplied by the
+        sample tables given in Annex K (Clause K.1) of
+        Rec. ITU-T T.81 (1992) | ISO/IEC 10918-1:1994, multiplied by the
         specified scale factor (which is expressed as a percentage; thus
         scale_factor = 100 reproduces the spec's tables).  Note that larger
         scale factors give lower quality.  This entry point is useful for
@@ -960,8 +962,8 @@ jpeg_simple_progression (j_compress_ptr cinfo)
 Compression parameters (cinfo fields) include:
 
 boolean arith_code
-	If TRUE, use arithmetic coding.
-	If FALSE, use Huffman coding.
+        If TRUE, use arithmetic coding.
+        If FALSE, use Huffman coding.
 
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:
@@ -1436,7 +1438,7 @@ When the default error handler is used, any error detected inside the JPEG
 routines will cause a message to be printed on stderr, followed by exit().
 You can supply your own error handling routines to override this behavior
 and to control the treatment of nonfatal warnings and trace/debug messages.
-The file example.c illustrates the most common case, which is to have the
+The file example.txt illustrates the most common case, which is to have the
 application regain control after an error rather than exiting.
 
 The JPEG library never writes any message directly; it always goes through
@@ -1453,7 +1455,7 @@ You may, if you wish, simply replace the entire JPEG error handling module
 only replacing some of the routines depending on the behavior you need.
 This is accomplished by calling jpeg_std_error() as usual, but then overriding
 some of the method pointers in the jpeg_error_mgr struct, as illustrated by
-example.c.
+example.txt.
 
 All of the error handling routines will receive a pointer to the JPEG object
 (a j_common_ptr which points to either a jpeg_compress_struct or a
@@ -1464,7 +1466,7 @@ additional data which is not known to the JPEG library or the standard error
 handler.  The most convenient way to do this is to embed either the JPEG
 object or the jpeg_error_mgr struct in a larger structure that contains
 additional fields; then casting the passed pointer provides access to the
-additional fields.  Again, see example.c for one way to do it.  (Beginning
+additional fields.  Again, see example.txt for one way to do it.  (Beginning
 with IJG version 6b, there is also a void pointer "client_data" in each
 JPEG object, which the application can also use to find related data.
 The library does not touch client_data at all.)
@@ -1973,7 +1975,7 @@ and how to display each pass.
 The simplest approach to displaying progressive images is to do one display
 pass for each scan appearing in the input file.  In this case the outer loop
 condition is typically
-        while (! jpeg_input_complete(&cinfo))
+        while (!jpeg_input_complete(&cinfo))
 and the start-output call should read
         jpeg_start_output(&cinfo, cinfo.input_scan_number);
 The second parameter to jpeg_start_output() indicates which scan of the input
@@ -2094,7 +2096,7 @@ something like this:
             jpeg_start_output(&cinfo, cinfo.input_scan_number);
             ...
             jpeg_finish_output()
-        } while (! final_pass);
+        } while (!final_pass);
 rather than quitting as soon as jpeg_input_complete() returns TRUE.  This
 arrangement makes it simple to use higher-quality decoding parameters
 for the final pass.  But if you don't want to use special parameters for
@@ -2633,6 +2635,44 @@ A simple example of an external COM processor can be found in djpeg.c.
 Also, see jpegtran.c for an example of using jpeg_save_markers.
 
 
+ICC profiles
+------------
+
+Two functions are provided for writing and reading International Color
+Consortium (ICC) device profiles embedded in JFIF JPEG image files:
+
+        void jpeg_write_icc_profile (j_compress_ptr cinfo,
+                                     const JOCTET *icc_data_ptr,
+                                     unsigned int icc_data_len);
+        boolean jpeg_read_icc_profile (j_decompress_ptr cinfo,
+                                       JOCTET **icc_data_ptr,
+                                       unsigned int *icc_data_len);
+
+The ICC has defined a standard for including such data in JPEG "APP2" markers.
+The aforementioned functions do not know anything about the internal structure
+of the ICC profile data; they just know how to embed the profile data into a
+JPEG file while writing it, or to extract the profile data from a JPEG file
+while reading it.
+
+jpeg_write_icc_profile() must be called after calling jpeg_start_compress() and
+before the first call to jpeg_write_scanlines() or jpeg_write_raw_data().  This
+ordering ensures that the APP2 marker(s) will appear after the SOI and JFIF or
+Adobe markers, but before all other data.
+
+jpeg_read_icc_profile() returns TRUE if an ICC profile was found and FALSE
+otherwise.  If an ICC profile was found, then the function will allocate a
+memory region containing the profile and will return a pointer to that memory
+region in *icc_data_ptr, as well as the length of the region in *icc_data_len.
+This memory region is allocated by the library using malloc() and must be freed
+by the caller using free() when the memory region is no longer needed.  Callers
+wishing to use jpeg_read_icc_profile() must call
+
+        jpeg_save_markers(cinfo, JPEG_APP0 + 2, 0xFFFF);
+
+prior to calling jpeg_read_header().  jpeg_read_icc_profile() can be called at
+any point between jpeg_read_header() and jpeg_finish_decompress().
+
+
 Raw (downsampled) image data
 ----------------------------
 
@@ -2929,7 +2969,7 @@ object is destroyed.  Most data is allocated "per image" and is freed by
 jpeg_finish_compress, jpeg_finish_decompress, or jpeg_abort.  You can call the
 memory manager yourself to allocate structures that will automatically be
 freed at these times.  Typical code for this is
-  ptr = (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE, size);
+  ptr = (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE, size);
 Use JPOOL_PERMANENT to get storage that lasts as long as the JPEG object.
 Use alloc_large instead of alloc_small for anything bigger than a few Kbytes.
 There are also alloc_sarray and alloc_barray routines that automatically

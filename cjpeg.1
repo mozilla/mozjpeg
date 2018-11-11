@@ -46,7 +46,7 @@ compressing a grayscale BMP file, because
 .B cjpeg
 isn't bright enough to notice whether a BMP file uses only shades of gray.
 By saying
-.BR \-grayscale ,
+.BR \-grayscale,
 you'll get a smaller JPEG file that takes less time to process.
 .TP
 .B \-rgb
@@ -186,6 +186,9 @@ more accurate results than the int method, and it is much slower.  The float
 method may also give different results on different machines due to varying
 roundoff behavior, whereas the integer methods should give the same results on
 all machines.
+.TP
+.BI \-icc " file"
+Embed ICC color management profile contained in the specified file.
 .TP
 .BI \-restart " N"
 Emit a JPEG restart marker every N MCU rows, or every N MCU blocks if "B" is

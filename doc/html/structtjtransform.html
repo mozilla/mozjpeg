@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">TurboJPEG
-   &#160;<span id="projectnumber">1.5</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -133,7 +133,7 @@ Data Fields</h2></td></tr>
     <tr><td class="paramname">arrayRegion</td><td><a class="el" href="structtjregion.html" title="Cropping region.">tjregion</a> structure containing the width and height of the array pointed to by <code>coeffs</code> as well as its offset relative to the component plane. TurboJPEG implementations may choose to split each component plane into multiple DCT coefficient arrays and call the callback function once for each array.</td></tr>
     <tr><td class="paramname">planeRegion</td><td><a class="el" href="structtjregion.html" title="Cropping region.">tjregion</a> structure containing the width and height of the component plane to which <code>coeffs</code> belongs</td></tr>
     <tr><td class="paramname">componentID</td><td>ID number of the component plane to which <code>coeffs</code> belongs (Y, Cb, and Cr have, respectively, ID's of 0, 1, and 2 in typical JPEG images.)</td></tr>
-    <tr><td class="paramname">transformID</td><td>ID number of the transformed image to which <code>coeffs</code> belongs. This is the same as the index of the transform in the <code>transforms</code> array that was passed to <a class="el" href="group___turbo_j_p_e_g.html#gad02cd42b69f193a0623a9c801788df3a" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a>.</td></tr>
+    <tr><td class="paramname">transformID</td><td>ID number of the transformed image to which <code>coeffs</code> belongs. This is the same as the index of the transform in the <code>transforms</code> array that was passed to <a class="el" href="group___turbo_j_p_e_g.html#ga9cb8abf4cc91881e04a0329b2270be25" title="Losslessly transform a JPEG image into another JPEG image.">tjTransform()</a>.</td></tr>
     <tr><td class="paramname">transform</td><td>a pointer to a <a class="el" href="structtjtransform.html" title="Lossless transform.">tjtransform</a> structure that specifies the parameters and/or cropping region for this transform</td></tr>
   </table>
   </dd>

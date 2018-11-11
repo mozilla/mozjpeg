@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014, 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -44,8 +44,7 @@ JMESSAGE(JMSG_NOMESSAGE, "Bogus message code %d") /* Must be first entry! */
 
 /* For maintenance convenience, list is alphabetical by message code name */
 #if JPEG_LIB_VERSION < 70
-JMESSAGE(JERR_ARITH_NOTIMPL,
-         "Sorry, arithmetic coding is not implemented")
+JMESSAGE(JERR_ARITH_NOTIMPL, "Sorry, arithmetic coding is not implemented")
 #endif
 JMESSAGE(JERR_BAD_ALIGN_TYPE, "ALIGN_TYPE is wrong, please fix")
 JMESSAGE(JERR_BAD_ALLOC_CHUNK, "MAX_ALLOC_CHUNK is wrong, please fix")
@@ -154,8 +153,7 @@ JMESSAGE(JTRC_HUFFBITS, "        %3d %3d %3d %3d %3d %3d %3d %3d")
 JMESSAGE(JTRC_JFIF, "JFIF APP0 marker: version %d.%02d, density %dx%d  %d")
 JMESSAGE(JTRC_JFIF_BADTHUMBNAILSIZE,
          "Warning: thumbnail image size does not match data length %u")
-JMESSAGE(JTRC_JFIF_EXTENSION,
-         "JFIF extension marker: type 0x%02x, length %u")
+JMESSAGE(JTRC_JFIF_EXTENSION, "JFIF extension marker: type 0x%02x, length %u")
 JMESSAGE(JTRC_JFIF_THUMBNAIL, "    with %d x %d thumbnail image")
 JMESSAGE(JTRC_MISC_MARKER, "Miscellaneous marker 0x%02x, length %u")
 JMESSAGE(JTRC_PARMLESS_MARKER, "Unexpected marker 0x%02x")
@@ -212,6 +210,7 @@ JMESSAGE(JERR_BAD_PARAM, "Bogus parameter")
 JMESSAGE(JERR_BAD_PARAM_VALUE, "Bogus parameter value")
 
 JMESSAGE(JERR_UNSUPPORTED_SUSPEND, "I/O suspension not supported in scan optimization")  
+JMESSAGE(JWRN_BOGUS_ICC, "Corrupt JPEG data: bad ICC marker")
 
 #ifdef JMAKE_ENUM_LIST
 

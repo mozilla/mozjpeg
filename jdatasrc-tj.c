@@ -30,7 +30,7 @@
  */
 
 METHODDEF(void)
-init_mem_source (j_decompress_ptr cinfo)
+init_mem_source(j_decompress_ptr cinfo)
 {
   /* no work necessary here */
 }
@@ -70,10 +70,10 @@ init_mem_source (j_decompress_ptr cinfo)
  */
 
 METHODDEF(boolean)
-fill_mem_input_buffer (j_decompress_ptr cinfo)
+fill_mem_input_buffer(j_decompress_ptr cinfo)
 {
   static const JOCTET mybuffer[4] = {
-    (JOCTET) 0xFF, (JOCTET) JPEG_EOI, 0, 0
+    (JOCTET)0xFF, (JOCTET)JPEG_EOI, 0, 0
   };
 
   /* The whole JPEG data is expected to reside in the supplied memory
@@ -104,7 +104,7 @@ fill_mem_input_buffer (j_decompress_ptr cinfo)
  */
 
 METHODDEF(void)
-skip_input_data (j_decompress_ptr cinfo, long num_bytes)
+skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
   struct jpeg_source_mgr *src = cinfo->src;
 
@@ -113,15 +113,15 @@ skip_input_data (j_decompress_ptr cinfo, long num_bytes)
    * any trouble anyway --- large skips are infrequent.
    */
   if (num_bytes > 0) {
-    while (num_bytes > (long) src->bytes_in_buffer) {
-      num_bytes -= (long) src->bytes_in_buffer;
-      (void) (*src->fill_input_buffer) (cinfo);
+    while (num_bytes > (long)src->bytes_in_buffer) {
+      num_bytes -= (long)src->bytes_in_buffer;
+      (void)(*src->fill_input_buffer) (cinfo);
       /* note we assume that fill_input_buffer will never return FALSE,
        * so suspension need not be handled.
        */
     }
-    src->next_input_byte += (size_t) num_bytes;
-    src->bytes_in_buffer -= (size_t) num_bytes;
+    src->next_input_byte += (size_t)num_bytes;
+    src->bytes_in_buffer -= (size_t)num_bytes;
   }
 }
 
@@ -145,7 +145,7 @@ skip_input_data (j_decompress_ptr cinfo, long num_bytes)
  */
 
 METHODDEF(void)
-term_source (j_decompress_ptr cinfo)
+term_source(j_decompress_ptr cinfo)
 {
   /* no work necessary here */
 }
@@ -157,8 +157,8 @@ term_source (j_decompress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_mem_src_tj (j_decompress_ptr cinfo,
-                 const unsigned char *inbuffer, unsigned long insize)
+jpeg_mem_src_tj(j_decompress_ptr cinfo, const unsigned char *inbuffer,
+                unsigned long insize)
 {
   struct jpeg_source_mgr *src;
 
@@ -171,7 +171,7 @@ jpeg_mem_src_tj (j_decompress_ptr cinfo,
    */
   if (cinfo->src == NULL) {     /* first time for this JPEG object? */
     cinfo->src = (struct jpeg_source_mgr *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_PERMANENT,
                                   sizeof(struct jpeg_source_mgr));
   } else if (cinfo->src->init_source != init_mem_source) {
     /* It is unsafe to reuse the existing source manager unless it was created
@@ -186,6 +186,6 @@ jpeg_mem_src_tj (j_decompress_ptr cinfo,
   src->skip_input_data = skip_input_data;
   src->resync_to_restart = jpeg_resync_to_restart; /* use default method */
   src->term_source = term_source;
-  src->bytes_in_buffer = (size_t) insize;
-  src->next_input_byte = (const JOCTET *) inbuffer;
+  src->bytes_in_buffer = (size_t)insize;
+  src->next_input_byte = (const JOCTET *)inbuffer;
 }

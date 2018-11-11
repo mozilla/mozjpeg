@@ -116,3 +116,5 @@ EXPORTS
 	jpeg_c_set_int_param @ 207 ; 
 	jpeg_c_get_int_param @ 208 ; 
 	jpeg_float_quality_scaling @ 1000 ; 
+  jpeg_read_icc_profile @ 108 ;
+  jpeg_write_icc_profile @ 109 ;

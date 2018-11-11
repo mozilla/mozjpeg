@@ -45,7 +45,7 @@ typedef tga_dest_struct *tga_dest_ptr;
 
 
 LOCAL(void)
-write_header (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
+write_header(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
 /* Create and write a Targa header */
 {
   char targaheader[18];
@@ -55,15 +55,15 @@ write_header (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
 
   if (num_colors > 0) {
     targaheader[1] = 1;         /* color map type 1 */
-    targaheader[5] = (char) (num_colors & 0xFF);
-    targaheader[6] = (char) (num_colors >> 8);
+    targaheader[5] = (char)(num_colors & 0xFF);
+    targaheader[6] = (char)(num_colors >> 8);
     targaheader[7] = 24;        /* 24 bits per cmap entry */
   }
 
-  targaheader[12] = (char) (cinfo->output_width & 0xFF);
-  targaheader[13] = (char) (cinfo->output_width >> 8);
-  targaheader[14] = (char) (cinfo->output_height & 0xFF);
-  targaheader[15] = (char) (cinfo->output_height >> 8);
+  targaheader[12] = (char)(cinfo->output_width & 0xFF);
+  targaheader[13] = (char)(cinfo->output_width >> 8);
+  targaheader[14] = (char)(cinfo->output_height & 0xFF);
+  targaheader[15] = (char)(cinfo->output_height >> 8);
   targaheader[17] = 0x20;       /* Top-down, non-interlaced */
 
   if (cinfo->out_color_space == JCS_GRAYSCALE) {
@@ -79,7 +79,7 @@ write_header (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
     }
   }
 
-  if (JFWRITE(dinfo->output_file, targaheader, 18) != (size_t) 18)
+  if (JFWRITE(dinfo->output_file, targaheader, 18) != (size_t)18)
     ERREXIT(cinfo, JERR_FILE_WRITE);
 }
 
@@ -90,11 +90,11 @@ write_header (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
  */
 
 METHODDEF(void)
-put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-                JDIMENSION rows_supplied)
+put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
+               JDIMENSION rows_supplied)
 /* used for unquantized full-color output */
 {
-  tga_dest_ptr dest = (tga_dest_ptr) dinfo;
+  tga_dest_ptr dest = (tga_dest_ptr)dinfo;
   register JSAMPROW inptr;
   register char *outptr;
   register JDIMENSION col;
@@ -102,20 +102,20 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
   for (col = cinfo->output_width; col > 0; col--) {
-    outptr[0] = (char) GETJSAMPLE(inptr[2]); /* RGB to BGR order */
-    outptr[1] = (char) GETJSAMPLE(inptr[1]);
-    outptr[2] = (char) GETJSAMPLE(inptr[0]);
+    outptr[0] = (char)GETJSAMPLE(inptr[2]); /* RGB to BGR order */
+    outptr[1] = (char)GETJSAMPLE(inptr[1]);
+    outptr[2] = (char)GETJSAMPLE(inptr[0]);
     inptr += 3, outptr += 3;
   }
-  (void) JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
 
 METHODDEF(void)
-put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-               JDIMENSION rows_supplied)
+put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
+              JDIMENSION rows_supplied)
 /* used for grayscale OR quantized color output */
 {
-  tga_dest_ptr dest = (tga_dest_ptr) dinfo;
+  tga_dest_ptr dest = (tga_dest_ptr)dinfo;
   register JSAMPROW inptr;
   register char *outptr;
   register JDIMENSION col;
@@ -123,9 +123,9 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
   for (col = cinfo->output_width; col > 0; col--) {
-    *outptr++ = (char) GETJSAMPLE(*inptr++);
+    *outptr++ = (char)GETJSAMPLE(*inptr++);
   }
-  (void) JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
 
 
@@ -135,10 +135,10 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  */
 
 METHODDEF(void)
-put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-                   JDIMENSION rows_supplied)
+put_demapped_gray(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
+                  JDIMENSION rows_supplied)
 {
-  tga_dest_ptr dest = (tga_dest_ptr) dinfo;
+  tga_dest_ptr dest = (tga_dest_ptr)dinfo;
   register JSAMPROW inptr;
   register char *outptr;
   register JSAMPROW color_map0 = cinfo->colormap[0];
@@ -147,9 +147,9 @@ put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
   for (col = cinfo->output_width; col > 0; col--) {
-    *outptr++ = (char) GETJSAMPLE(color_map0[GETJSAMPLE(*inptr++)]);
+    *outptr++ = (char)GETJSAMPLE(color_map0[GETJSAMPLE(*inptr++)]);
   }
-  (void) JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
 
 
@@ -158,9 +158,9 @@ put_demapped_gray (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
  */
 
 METHODDEF(void)
-start_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+start_output_tga(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
-  tga_dest_ptr dest = (tga_dest_ptr) dinfo;
+  tga_dest_ptr dest = (tga_dest_ptr)dinfo;
   int num_colors, i;
   FILE *outfile;
 
@@ -202,7 +202,7 @@ start_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  */
 
 METHODDEF(void)
-finish_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+finish_output_tga(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   /* Make sure we wrote the output file OK */
   fflush(dinfo->output_file);
@@ -216,9 +216,9 @@ finish_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  */
 
 METHODDEF(void)
-calc_buffer_dimensions_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+calc_buffer_dimensions_tga(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
-  tga_dest_ptr dest = (tga_dest_ptr) dinfo;
+  tga_dest_ptr dest = (tga_dest_ptr)dinfo;
 
   dest->buffer_width = cinfo->output_width * cinfo->output_components;
 }
@@ -229,14 +229,14 @@ calc_buffer_dimensions_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  */
 
 GLOBAL(djpeg_dest_ptr)
-jinit_write_targa (j_decompress_ptr cinfo)
+jinit_write_targa(j_decompress_ptr cinfo)
 {
   tga_dest_ptr dest;
 
   /* Create module interface object, fill in method pointers */
   dest = (tga_dest_ptr)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                  sizeof(tga_dest_struct));
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                                sizeof(tga_dest_struct));
   dest->pub.start_output = start_output_tga;
   dest->pub.finish_output = finish_output_tga;
   dest->pub.calc_buffer_dimensions = calc_buffer_dimensions_tga;
@@ -245,17 +245,17 @@ jinit_write_targa (j_decompress_ptr cinfo)
   jpeg_calc_output_dimensions(cinfo);
 
   /* Create I/O buffer. */
-  dest->pub.calc_buffer_dimensions (cinfo, (djpeg_dest_ptr) dest);
+  dest->pub.calc_buffer_dimensions(cinfo, (djpeg_dest_ptr)dest);
   dest->iobuffer = (char *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                (size_t) (dest->buffer_width * sizeof(char)));
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                                (size_t)(dest->buffer_width * sizeof(char)));
 
   /* Create decompressor output buffer. */
   dest->pub.buffer = (*cinfo->mem->alloc_sarray)
-    ((j_common_ptr) cinfo, JPOOL_IMAGE, dest->buffer_width, (JDIMENSION) 1);
+    ((j_common_ptr)cinfo, JPOOL_IMAGE, dest->buffer_width, (JDIMENSION)1);
   dest->pub.buffer_height = 1;
 
-  return (djpeg_dest_ptr) dest;
+  return (djpeg_dest_ptr)dest;
 }
 
 #endif /* TARGA_SUPPORTED */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2017 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2018 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -235,10 +235,10 @@ static jint TJCompressor_compress
   if ((*env)->GetArrayLength(env, dst) < (jsize)jpegSize)
     _throwarg("Destination buffer is not large enough");
 
+  if (ProcessSystemProperties(env) < 0) goto bailout;
+
   bailif0(srcBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
   bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
-
-  if (ProcessSystemProperties(env) < 0) goto bailout;
 
   if (tjCompress2(handle, &srcBuf[y * actualPitch + x * tjPixelSize[pf]],
                   width, pitch, height, pf, &jpegBuf, &jpegSize, jpegSubsamp,
@@ -341,6 +341,8 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFrom
   if ((*env)->GetArrayLength(env, dst) < (jsize)jpegSize)
     _throwarg("Destination buffer is not large enough");
 
+  if (ProcessSystemProperties(env) < 0) goto bailout;
+
   bailif0(srcOffsets = (*env)->GetPrimitiveArrayCritical(env, jSrcOffsets, 0));
   bailif0(srcStrides = (*env)->GetPrimitiveArrayCritical(env, jSrcStrides, 0));
   for (i = 0; i < nc; i++) {
@@ -364,8 +366,6 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFrom
     srcPlanes[i] = &srcPlanes[i][srcOffsets[i]];
   }
   bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
-
-  if (ProcessSystemProperties(env) < 0) goto bailout;
 
   if (tjCompressFromYUVPlanes(handle, srcPlanes, width, srcStrides, height,
                               subsamp, &jpegBuf, &jpegSize, jpegQual,

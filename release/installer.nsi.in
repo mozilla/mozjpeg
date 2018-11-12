@@ -62,15 +62,15 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libturbojpeg.a"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg.dll.a"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg.a"
-	SetOutPath $INSTDIR\lib\pkgconfig
-	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libjpeg.pc"
-	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libturbojpeg.pc"
 !else
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}turbojpeg.lib"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}turbojpeg-static.lib"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg.lib"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg-static.lib"
 !endif
+	SetOutPath $INSTDIR\lib\pkgconfig
+	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libjpeg.pc"
+	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libturbojpeg.pc"
 !ifdef JAVA
 	SetOutPath $INSTDIR\classes
 	File "@CMAKE_CURRENT_BINARY_DIR@\java\turbojpeg.jar"
@@ -130,8 +130,6 @@ Section "Uninstall"
 	Delete $INSTDIR\lib\libturbojpeg.a
 	Delete $INSTDIR\lib\libjpeg.dll.a
 	Delete $INSTDIR\lib\libjpeg.a
-	Delete $INSTDIR\lib\pkgconfig\libjpeg.pc
-	Delete $INSTDIR\lib\pkgconfig\libturbojpeg.pc
 !else
 	Delete $INSTDIR\bin\jpeg@SO_MAJOR_VERSION@.dll
 	Delete $INSTDIR\bin\turbojpeg.dll
@@ -141,6 +139,8 @@ Section "Uninstall"
 	Delete $INSTDIR\lib\turbojpeg.lib
 	Delete $INSTDIR\lib\turbojpeg-static.lib
 !endif
+	Delete $INSTDIR\lib\pkgconfig\libjpeg.pc
+	Delete $INSTDIR\lib\pkgconfig\libturbojpeg.pc
 !ifdef JAVA
 	Delete $INSTDIR\classes\turbojpeg.jar
 !endif
@@ -175,9 +175,7 @@ Section "Uninstall"
 !endif
 
 	RMDir "$INSTDIR\include"
-!ifdef GCC
 	RMDir "$INSTDIR\lib\pkgconfig"
-!endif
 	RMDir "$INSTDIR\lib"
 	RMDir "$INSTDIR\doc"
 !ifdef GCC

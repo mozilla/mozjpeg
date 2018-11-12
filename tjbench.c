@@ -60,8 +60,8 @@ int tjErrorLine = -1, tjErrorCode = -1;
     if (strncmp(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX) || \
         strncmp(tjErrorMsg, m, JMSG_LENGTH_MAX) || \
         tjErrorCode != _tjErrorCode || tjErrorLine != __LINE__) { \
-      strncpy(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX); \
-      strncpy(tjErrorMsg, m, JMSG_LENGTH_MAX); \
+      strncpy(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX - 1); \
+      strncpy(tjErrorMsg, m, JMSG_LENGTH_MAX - 1); \
       tjErrorCode = _tjErrorCode; \
       tjErrorLine = __LINE__; \
       printf("WARNING in line %d while %s:\n%s\n", __LINE__, m, _tjErrorStr); \

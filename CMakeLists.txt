@@ -109,7 +109,9 @@ endif()
 
 include(cmakescripts/GNUInstallDirs.cmake)
 
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+if(ENABLE_SHARED)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+endif()
 
 macro(report_directory var)
   if(CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_FULL_${var})

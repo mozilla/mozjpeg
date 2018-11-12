@@ -23,6 +23,10 @@ a specially-crafted malformed color-index (8-bit-per-sample) Targa file in
 which some of the samples (color indices) exceeded the bounds of the Targa
 file's color table.
 
+5. Fixed an issue whereby installing a fully static build of libjpeg-turbo
+(a build in which `CFLAGS` contains `-static` and `ENABLE_SHARED` is `0`) would
+fail with "No valid ELF RPATH or RUNPATH entry exists in the file."
+
 
 2.0.0
 =====

@@ -108,6 +108,7 @@ start_pass(j_decompress_ptr cinfo)
   int method = 0;
   inverse_DCT_method_ptr method_ptr = NULL;
   JQUANT_TBL *qtbl;
+  my_master_ptr master;
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
@@ -233,7 +234,7 @@ start_pass(j_decompress_ptr cinfo)
     }
 
     // Allow custom idct function to be set dynamically
-    my_master_ptr master = (my_master_ptr) cinfo->master;
+    master = (my_master_ptr) cinfo->master;
 
     if (master->custom_idct_selector != NULL) {
       master->custom_idct_selector(cinfo, compptr, &method_ptr, &method);

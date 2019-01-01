@@ -1,3 +1,16 @@
+2.0.2
+=====
+
+### Significant changes relative to 2.0.1:
+
+1. Fixed a regression introduced by 2.0.1[5] that prevented a runtime search
+path (rpath) from being embedded in the libjpeg-turbo shared libraries and
+executables for macOS and iOS.  This caused a fatal error of the form
+"dyld: Library not loaded" when attempting to use one of the executables,
+unless `DYLD_LIBRARY_PATH` was explicitly set to the location of the
+libjpeg-turbo shared libraries.
+
+
 2.0.1
 =====
 

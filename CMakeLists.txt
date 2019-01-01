@@ -109,10 +109,6 @@ endif()
 
 include(cmakescripts/GNUInstallDirs.cmake)
 
-if(ENABLE_SHARED)
-  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
-endif()
-
 macro(report_directory var)
   if(CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_FULL_${var})
     message(STATUS "CMAKE_INSTALL_${var} = ${CMAKE_INSTALL_${var}}")
@@ -192,6 +188,10 @@ endif()
 
 report_option(ENABLE_SHARED "Shared libraries")
 report_option(ENABLE_STATIC "Static libraries")
+
+if(ENABLE_SHARED)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+endif()
 
 if(WITH_12BIT)
   set(WITH_ARITH_DEC 0)

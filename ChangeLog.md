@@ -10,6 +10,10 @@ executables for macOS and iOS.  This caused a fatal error of the form
 unless `DYLD_LIBRARY_PATH` was explicitly set to the location of the
 libjpeg-turbo shared libraries.
 
+2. Fixed an integer overflow and subsequent segfault (CVE-2018-20330) that
+occurred when attempting to load a BMP file with more than 1 billion pixels
+using the `tjLoadImage()` function.
+
 
 2.0.1
 =====

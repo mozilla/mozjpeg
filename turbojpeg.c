@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2019 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -1960,7 +1960,8 @@ DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
                                      int align, int *height, int *pixelFormat,
                                      int flags)
 {
-  int retval = 0, tempc, pitch;
+  int retval = 0, tempc;
+  size_t pitch;
   tjhandle handle = NULL;
   tjinstance *this;
   j_compress_ptr cinfo = NULL;
@@ -2013,7 +2014,9 @@ DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
   *pixelFormat = cs2pf[cinfo->in_color_space];
 
   pitch = PAD((*width) * tjPixelSize[*pixelFormat], align);
-  if ((dstBuf = (unsigned char *)malloc(pitch * (*height))) == NULL)
+  if ((unsigned long long)pitch * (unsigned long long)(*height) >
+      (unsigned long long)((size_t)-1) ||
+      (dstBuf = (unsigned char *)malloc(pitch * (*height))) == NULL)
     _throwg("tjLoadImage(): Memory allocation failure");
 
   if (setjmp(this->jerr.setjmp_buffer)) {

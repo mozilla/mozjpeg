@@ -17,6 +17,31 @@ automatically be disabled with x32 builds.
 work with the x32 ABI and will be disabled in x32 builds.
 
 
+2.0.2
+=====
+
+### Significant changes relative to 2.0.1:
+
+1. Fixed a regression introduced by 2.0.1[5] that prevented a runtime search
+path (rpath) from being embedded in the libjpeg-turbo shared libraries and
+executables for macOS and iOS.  This caused a fatal error of the form
+"dyld: Library not loaded" when attempting to use one of the executables,
+unless `DYLD_LIBRARY_PATH` was explicitly set to the location of the
+libjpeg-turbo shared libraries.
+
+2. Fixed an integer overflow and subsequent segfault (CVE-2018-20330) that
+occurred when attempting to load a BMP file with more than 1 billion pixels
+using the `tjLoadImage()` function.
+
+3. Fixed a buffer overrun (CVE-2018-19664) that occurred when attempting to
+decompress a specially-crafted malformed JPEG image to a 256-color BMP using
+djpeg.
+
+4. Fixed a floating-point exception that occurred when attempting to
+decompress a specially-crafted malformed JPEG image with a specified image
+width or height of 0 using the C version of TJBench.
+
+
 2.0.1
 =====
 

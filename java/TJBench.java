@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014, 2016-2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2016-2019 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -202,7 +202,9 @@ final class TJBench {
           int width = doTile ? Math.min(tilew, w - x) : scaledw;
           int height = doTile ? Math.min(tileh, h - y) : scaledh;
 
-          tjd.setSourceImage(jpegBuf[tile], jpegSize[tile]);
+          try {
+            tjd.setSourceImage(jpegBuf[tile], jpegSize[tile]);
+          } catch (TJException e) { handleTJException(e); }
           if (doYUV) {
             yuvImage.setBuf(yuvImage.getBuf(), width, yuvPad, height, subsamp);
             try {
@@ -500,7 +502,9 @@ final class TJBench {
 
     tjt = new TJTransformer();
 
-    tjt.setSourceImage(srcBuf, srcSize);
+    try {
+      tjt.setSourceImage(srcBuf, srcSize);
+    } catch (TJException e) { handleTJException(e); }
     w = tjt.getWidth();
     h = tjt.getHeight();
     subsamp = tjt.getSubsamp();
@@ -607,7 +611,9 @@ final class TJBench {
         elapsed = 0.;
         while (true) {
           start = getTime();
-          tjt.transform(jpegBuf, t, flags);
+          try {
+            tjt.transform(jpegBuf, t, flags);
+          } catch (TJException e) { handleTJException(e); }
           jpegSize = tjt.getTransformedSizes();
           elapsed += getTime() - start;
           if (iter >= 0) {

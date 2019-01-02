@@ -18,6 +18,10 @@ using the `tjLoadImage()` function.
 decompress a specially-crafted malformed JPEG image to a 256-color BMP using
 djpeg.
 
+4. Fixed a floating-point exception that occurred when attempting to
+decompress a specially-crafted malformed JPEG image with a specified image
+width or height of 0 using the C version of TJBench.
+
 
 2.0.1
 =====

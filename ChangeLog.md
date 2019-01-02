@@ -14,6 +14,10 @@ libjpeg-turbo shared libraries.
 occurred when attempting to load a BMP file with more than 1 billion pixels
 using the `tjLoadImage()` function.
 
+3. Fixed a buffer overrun (CVE-2018-19664) that occurred when attempting to
+decompress a specially-crafted malformed JPEG image to a 256-color BMP using
+djpeg.
+
 
 2.0.1
 =====

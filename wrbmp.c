@@ -502,8 +502,9 @@ jinit_write_bmp(j_decompress_ptr cinfo, boolean is_os2,
       dest->pub.put_pixel_rows = put_gray_rows;
     else
       dest->pub.put_pixel_rows = put_pixel_rows;
-  } else if (cinfo->out_color_space == JCS_RGB565 ||
-             cinfo->out_color_space == JCS_CMYK) {
+  } else if (!cinfo->quantize_colors &&
+             (cinfo->out_color_space == JCS_RGB565 ||
+              cinfo->out_color_space == JCS_CMYK)) {
     dest->pub.put_pixel_rows = put_pixel_rows;
   } else {
     ERREXIT(cinfo, JERR_BMP_COLORSPACE);

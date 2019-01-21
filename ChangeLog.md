@@ -28,6 +28,9 @@ of specifying 1x subsampling (normally 4:4:4 JPEGs have 1x1 luminance and
 chrominance sampling factors), but the JPEG format and the libjpeg API both
 allow it.
 
+6. Fixed a regression introduced by 2.0 beta1[7] that caused djpeg to generate
+incorrect PPM images when used with the `-colors` option.
+
 
 2.0.1
 =====

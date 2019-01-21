@@ -22,6 +22,12 @@ djpeg.
 decompress a specially-crafted malformed JPEG image with a specified image
 width or height of 0 using the C version of TJBench.
 
+5. The TurboJPEG API will now decompress 4:4:4 JPEG images with 2x1, 1x2, 3x1,
+or 1x3 luminance and chrominance sampling factors.  This is a non-standard way
+of specifying 1x subsampling (normally 4:4:4 JPEGs have 1x1 luminance and
+chrominance sampling factors), but the JPEG format and the libjpeg API both
+allow it.
+
 
 2.0.1
 =====

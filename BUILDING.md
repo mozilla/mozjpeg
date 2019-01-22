@@ -525,7 +525,7 @@ a universal library.
 Building libjpeg-turbo for Android
 ----------------------------------
 
-Building libjpeg-turbo for Android platforms requires the
+Building libjpeg-turbo for Android platforms requires v13b or later of the
 [Android NDK](https://developer.android.com/tools/sdk/ndk).
 
 
@@ -535,35 +535,21 @@ The following is a general recipe script that can be modified for your specific
 needs.
 
     # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
-    ANDROID_VERSION={The minimum version of Android to support-- for example,
+    NDK_PATH={full path to the NDK directory-- for example,
+      /opt/android/android-ndk-r16b}
+    TOOLCHAIN={"gcc" or "clang"-- "gcc" must be used with NDK r16b and earlier,
+      and "clang" must be used with NDK r17c and later}
+    ANDROID_VERSION={the minimum version of Android to support-- for example,
       "16", "19", etc.}
 
-    # It should not be necessary to modify the rest
-    HOST=arm-linux-androideabi
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm
-    export CFLAGS="-march=armv7-a -mfloat-abi=softfp -fprefetch-loop-arrays \
-      -D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
-      -isystem ${NDK_PATH}/sysroot/usr/include \
-      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
-    export LDFLAGS=-pie
-    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-
     cd {build_directory}
-
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Linux)
-    set(CMAKE_SYSTEM_PROCESSOR arm)
-    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
-    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
-      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+    cmake -G"Unix Makefiles" \
+      -DANDROID_ABI=armeabi-v7a \
+      -DANDROID_ARM_MODE=arm \
+      -DANDROID_PLATFORM=android-${ANDROID_VERSION} \
+      -DANDROID_TOOLCHAIN=${TOOLCHAIN} \
+      -DCMAKE_ASM_FLAGS="--target=arm-linux-androideabi${ANDROID_VERSION}" \
+      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       [additional CMake flags] {source_directory}
     make
 
@@ -574,34 +560,21 @@ The following is a general recipe script that can be modified for your specific
 needs.
 
     # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
-    ANDROID_VERSION={The minimum version of Android to support.  "21" or later
+    NDK_PATH={full path to the NDK directory-- for example,
+      /opt/android/android-ndk-r16b}
+    TOOLCHAIN={"gcc" or "clang"-- "gcc" must be used with NDK r14b and earlier,
+      and "clang" must be used with NDK r17c and later}
+    ANDROID_VERSION={the minimum version of Android to support.  "21" or later
       is required for a 64-bit build.}
 
-    # It should not be necessary to modify the rest
-    HOST=aarch64-linux-android
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-arm64
-    export CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
-      -isystem ${NDK_PATH}/sysroot/usr/include \
-      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
-    export LDFLAGS=-pie
-    TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-
     cd {build_directory}
-
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Linux)
-    set(CMAKE_SYSTEM_PROCESSOR aarch64)
-    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
-    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
-      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+    cmake -G"Unix Makefiles" \
+      -DANDROID_ABI=arm64-v8a \
+      -DANDROID_ARM_MODE=arm \
+      -DANDROID_PLATFORM=android-${ANDROID_VERSION} \
+      -DANDROID_TOOLCHAIN=${TOOLCHAIN} \
+      -DCMAKE_ASM_FLAGS="--target=aarch64-linux-android${ANDROID_VERSION}" \
+      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       [additional CMake flags] {source_directory}
     make
 
@@ -612,34 +585,19 @@ The following is a general recipe script that can be modified for your specific
 needs.
 
     # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
+    NDK_PATH={full path to the NDK directory-- for example,
+      /opt/android/android-ndk-r16b}
+    TOOLCHAIN={"gcc" or "clang"-- "gcc" must be used with NDK r14b and earlier,
+      and "clang" must be used with NDK r17c and later}
     ANDROID_VERSION={The minimum version of Android to support-- for example,
       "16", "19", etc.}
 
-    # It should not be necessary to modify the rest
-    HOST=i686-linux-android
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86
-    export CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
-      -isystem ${NDK_PATH}/sysroot/usr/include \
-      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
-    export LDFLAGS=-pie
-    TOOLCHAIN=${NDK_PATH}/toolchains/x86-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-
     cd {build_directory}
-
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Linux)
-    set(CMAKE_SYSTEM_PROCESSOR i386)
-    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
-    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
-      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+    cmake -G"Unix Makefiles" \
+      -DANDROID_ABI=x86 \
+      -DANDROID_PLATFORM=android-${ANDROID_VERSION} \
+      -DANDROID_TOOLCHAIN=${TOOLCHAIN} \
+      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       [additional CMake flags] {source_directory}
     make
 
@@ -650,43 +608,21 @@ The following is a general recipe script that can be modified for your specific
 needs.
 
     # Set these variables to suit your needs
-    NDK_PATH={full path to the "ndk" directory-- for example, /opt/android/sdk/ndk-bundle}
-    BUILD_PLATFORM={the platform name for the NDK package you installed--
-      for example, "windows-x86" or "linux-x86_64" or "darwin-x86_64"}
-    TOOLCHAIN_VERSION={"4.8", "4.9", "clang3.5", etc.  This corresponds to a
-      toolchain directory under ${NDK_PATH}/toolchains/.}
-    ANDROID_VERSION={The minimum version of Android to support.  "21" or later
+    NDK_PATH={full path to the NDK directory-- for example,
+      /opt/android/android-ndk-r16b}
+    TOOLCHAIN={"gcc" or "clang"-- "gcc" must be used with NDK r14b and earlier,
+      and "clang" must be used with NDK r17c and later}
+    ANDROID_VERSION={the minimum version of Android to support.  "21" or later
       is required for a 64-bit build.}
 
-    # It should not be necessary to modify the rest
-    HOST=x86_64-linux-android
-    SYSROOT=${NDK_PATH}/platforms/android-${ANDROID_VERSION}/arch-x86_64
-    export CFLAGS="-D__ANDROID_API__=${ANDROID_VERSION} --sysroot=${SYSROOT} \
-      -isystem ${NDK_PATH}/sysroot/usr/include \
-      -isystem ${NDK_PATH}/sysroot/usr/include/${HOST}"
-    export LDFLAGS=-pie
-    TOOLCHAIN=${NDK_PATH}/toolchains/x86_64-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
-
     cd {build_directory}
-
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Linux)
-    set(CMAKE_SYSTEM_PROCESSOR x86_64)
-    set(CMAKE_C_COMPILER ${TOOLCHAIN}/bin/${HOST}-gcc)
-    set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
-      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+    cmake -G"Unix Makefiles" \
+      -DANDROID_ABI=x86_64 \
+      -DANDROID_PLATFORM=android-${ANDROID_VERSION} \
+      -DANDROID_TOOLCHAIN=${TOOLCHAIN} \
+      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       [additional CMake flags] {source_directory}
     make
-
-
-If building for Android 4.0.x (API level < 16) or earlier, remove
-`-DCMAKE_POSITION_INDEPENDENT_CODE=1` from the CMake arguments and `-pie` from
-`LDFLAGS`.
-
-If building on Windows, add `.exe` to the end of `CMAKE_C_COMPILER`.
 
 
 Advanced CMake Options

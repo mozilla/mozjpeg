@@ -17,7 +17,9 @@ before_build:
   - cd cmake_build
   - cmake .. -G "Visual Studio 15 2017"
 
-build_script: cmake_build\mozjpeg.sln
+build_script: 
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - msbuild cmake_build\mozjpeg.sln
 
 artifacts:
  - path: cmake_build\**\Release\**\*.exe

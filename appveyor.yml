@@ -14,9 +14,9 @@ install:
 
 before_build:
   - cmake --version
-  - cmake
+  - cmake %APPVEYOR_BUILD_FOLDER%
 
-build_script: cmake_build\mozjpeg.sln
+build_script: msbuild cmake_build\mozjpeg.sln
 
 artifacts:
  - path: cmake_build\**\Release\**\*.exe

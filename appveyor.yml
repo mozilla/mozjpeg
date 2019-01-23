@@ -17,4 +17,4 @@ before_build:
 build_script: cmake c:\projects\mozjpeg
 
 artifacts:
- - path: cmake_build\Release\**\*.*
+ - path: cmake_build\**\*.*

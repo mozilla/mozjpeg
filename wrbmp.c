@@ -436,7 +436,6 @@ finish_output_bmp(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   JSAMPARRAY image_ptr;
   register JSAMPROW data_ptr;
   JDIMENSION row;
-  register JDIMENSION col;
   cd_progress_ptr progress = (cd_progress_ptr)cinfo->progress;
 
   if (dest->use_inversion_array) {

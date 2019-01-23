@@ -118,7 +118,6 @@ put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   tga_dest_ptr dest = (tga_dest_ptr)dinfo;
   register JSAMPROW inptr;
   register char *outptr;
-  register JDIMENSION col;
 
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;

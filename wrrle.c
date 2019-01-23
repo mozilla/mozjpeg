@@ -125,8 +125,7 @@ start_output_rle(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
     /* Shifting would need adjustment for JSAMPLEs wider than 8 bits. */
     for (ci = 0; ci < cinfo->out_color_components; ci++) {
       for (i = 0; i < cinfo->actual_number_of_colors; i++) {
-        dest->colormap[ci * CMAPLENGTH + i] =
-          GETJSAMPLE(cinfo->colormap[ci][i]) << 8;
+        dest->colormap[ci * CMAPLENGTH + i] = cinfo->colormap[ci][i] << 8;
       }
     }
   }
@@ -245,9 +244,9 @@ finish_output_rle(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
       green = rle_row[1];
       blue = rle_row[2];
       for (col = cinfo->output_width; col > 0; col--) {
-        *red++ = GETJSAMPLE(*output_row++);
-        *green++ = GETJSAMPLE(*output_row++);
-        *blue++ = GETJSAMPLE(*output_row++);
+        *red++ = *output_row++;
+        *green++ = *output_row++;
+        *blue++ = *output_row++;
       }
       rle_putrow(rle_row, (int)cinfo->output_width, &header);
 #ifdef PROGRESS_REPORT

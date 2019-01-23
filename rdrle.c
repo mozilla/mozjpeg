@@ -220,7 +220,7 @@ get_pseudocolor_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     ((j_common_ptr)cinfo, source->image, source->row, (JDIMENSION)1, FALSE);
 
   for (col = cinfo->image_width; col > 0; col--) {
-    val = GETJSAMPLE(*src_row++);
+    val = *src_row++;
     *dest_row++ = (JSAMPLE)(colormap[val      ] >> 8);
     *dest_row++ = (JSAMPLE)(colormap[val + 256] >> 8);
     *dest_row++ = (JSAMPLE)(colormap[val + 512] >> 8);
@@ -296,8 +296,8 @@ load_image(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
       for (col = 0; col < cinfo->image_width; col++) {
         for (channel = 0; channel < source->header.ncolors; channel++) {
-          *scanline++ = (JSAMPLE)
-            (colormap[GETJSAMPLE(rle_row[channel][col]) + 256 * channel] >> 8);
+          *scanline++ =
+            (JSAMPLE)(colormap[rle_row[channel][col] + 256 * channel] >> 8);
         }
       }
 

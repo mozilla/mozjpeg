@@ -176,7 +176,7 @@ int_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
     outptr = output_data[outrow];
     outend = outptr + cinfo->output_width;
     while (outptr < outend) {
-      invalue = *inptr++;       /* don't need GETJSAMPLE() here */
+      invalue = *inptr++;
       for (h = h_expand; h > 0; h--) {
         *outptr++ = invalue;
       }
@@ -212,7 +212,7 @@ h2v1_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
     outptr = output_data[inrow];
     outend = outptr + cinfo->output_width;
     while (outptr < outend) {
-      invalue = *inptr++;       /* don't need GETJSAMPLE() here */
+      invalue = *inptr++;
       *outptr++ = invalue;
       *outptr++ = invalue;
     }
@@ -241,7 +241,7 @@ h2v2_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
     outptr = output_data[outrow];
     outend = outptr + cinfo->output_width;
     while (outptr < outend) {
-      invalue = *inptr++;       /* don't need GETJSAMPLE() here */
+      invalue = *inptr++;
       *outptr++ = invalue;
       *outptr++ = invalue;
     }
@@ -282,20 +282,20 @@ h2v1_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
     inptr = input_data[inrow];
     outptr = output_data[inrow];
     /* Special case for first column */
-    invalue = GETJSAMPLE(*inptr++);
+    invalue = *inptr++;
     *outptr++ = (JSAMPLE)invalue;
-    *outptr++ = (JSAMPLE)((invalue * 3 + GETJSAMPLE(*inptr) + 2) >> 2);
+    *outptr++ = (JSAMPLE)((invalue * 3 + inptr[0] + 2) >> 2);
 
     for (colctr = compptr->downsampled_width - 2; colctr > 0; colctr--) {
       /* General case: 3/4 * nearer pixel + 1/4 * further pixel */
-      invalue = GETJSAMPLE(*inptr++) * 3;
-      *outptr++ = (JSAMPLE)((invalue + GETJSAMPLE(inptr[-2]) + 1) >> 2);
-      *outptr++ = (JSAMPLE)((invalue + GETJSAMPLE(*inptr) + 2) >> 2);
+      invalue = (*inptr++) * 3;
+      *outptr++ = (JSAMPLE)((invalue + inptr[-2] + 1) >> 2);
+      *outptr++ = (JSAMPLE)((invalue + inptr[0] + 2) >> 2);
     }
 
     /* Special case for last column */
-    invalue = GETJSAMPLE(*inptr);
-    *outptr++ = (JSAMPLE)((invalue * 3 + GETJSAMPLE(inptr[-1]) + 1) >> 2);
+    invalue = *inptr;
+    *outptr++ = (JSAMPLE)((invalue * 3 + inptr[-1] + 1) >> 2);
     *outptr++ = (JSAMPLE)invalue;
   }
 }
@@ -334,7 +334,7 @@ h1v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
       outptr = output_data[outrow++];
 
       for (colctr = 0; colctr < compptr->downsampled_width; colctr++) {
-        thiscolsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
+        thiscolsum = (*inptr0++) * 3 + (*inptr1++);
         *outptr++ = (JSAMPLE)((thiscolsum + 1) >> 2);
       }
     }
@@ -377,8 +377,8 @@ h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
       outptr = output_data[outrow++];
 
       /* Special case for first column */
-      thiscolsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
-      nextcolsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
+      thiscolsum = (*inptr0++) * 3 + (*inptr1++);
+      nextcolsum = (*inptr0++) * 3 + (*inptr1++);
       *outptr++ = (JSAMPLE)((thiscolsum * 4 + 8) >> 4);
       *outptr++ = (JSAMPLE)((thiscolsum * 3 + nextcolsum + 7) >> 4);
       lastcolsum = thiscolsum;  thiscolsum = nextcolsum;
@@ -386,7 +386,7 @@ h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
       for (colctr = compptr->downsampled_width - 2; colctr > 0; colctr--) {
         /* General case: 3/4 * nearer pixel + 1/4 * further pixel in each */
         /* dimension, thus 9/16, 3/16, 3/16, 1/16 overall */
-        nextcolsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
+        nextcolsum = (*inptr0++) * 3 + (*inptr1++);
         *outptr++ = (JSAMPLE)((thiscolsum * 3 + lastcolsum + 8) >> 4);
         *outptr++ = (JSAMPLE)((thiscolsum * 3 + nextcolsum + 7) >> 4);
         lastcolsum = thiscolsum;  thiscolsum = nextcolsum;

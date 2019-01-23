@@ -420,13 +420,6 @@ if(UNIX)
         exit(is_shifting_signed(-0x7F7E80B1L));
       }" RIGHT_SHIFT_IS_UNSIGNED)
   endif()
-
-  if(CMAKE_CROSSCOMPILING)
-    set(__CHAR_UNSIGNED__ 0)
-  else()
-    check_c_source_runs("int main(void) { return ((char) -1 < 0); }"
-      __CHAR_UNSIGNED__)
-  endif()
 endif()
 
 if(MSVC)

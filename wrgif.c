@@ -265,12 +265,12 @@ emit_header(gif_dest_ptr dinfo, int num_colors, JSAMPARRAY colormap)
       if (colormap != NULL) {
         if (dinfo->cinfo->out_color_space == JCS_RGB) {
           /* Normal case: RGB color map */
-          putc(GETJSAMPLE(colormap[0][i]) >> cshift, dinfo->pub.output_file);
-          putc(GETJSAMPLE(colormap[1][i]) >> cshift, dinfo->pub.output_file);
-          putc(GETJSAMPLE(colormap[2][i]) >> cshift, dinfo->pub.output_file);
+          putc(colormap[0][i] >> cshift, dinfo->pub.output_file);
+          putc(colormap[1][i] >> cshift, dinfo->pub.output_file);
+          putc(colormap[2][i] >> cshift, dinfo->pub.output_file);
         } else {
           /* Grayscale "color map": possible if quantizing grayscale image */
-          put_3bytes(dinfo, GETJSAMPLE(colormap[0][i]) >> cshift);
+          put_3bytes(dinfo, colormap[0][i] >> cshift);
         }
       } else {
         /* Create a grayscale map of num_colors values, range 0..255 */
@@ -328,7 +328,7 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
   ptr = dest->pub.buffer[0];
   for (col = cinfo->output_width; col > 0; col--) {
-    compress_pixel(dest, GETJSAMPLE(*ptr++));
+    compress_pixel(dest, *ptr++);
   }
 }
 

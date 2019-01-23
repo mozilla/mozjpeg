@@ -11,10 +11,9 @@ install:
   ## Prepare cmake
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir cmake_build
-  - cd cmake_build
-  - cmake --version
 
 before_build:
+  - cmake --version
   - cmake
 
 build_script: cmake_build\mozjpeg.sln

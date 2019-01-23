@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * Modified 2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, D. R. Commander.
+ * Copyright (C) 2017, 2019, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -256,6 +256,8 @@ start_output_ppm(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   case JCS_EXT_ABGR:
   case JCS_EXT_ARGB:
   case JCS_CMYK:
+    if (!IsExtRGB(cinfo->out_color_space) && cinfo->quantize_colors)
+      ERREXIT(cinfo, JERR_PPM_COLORSPACE);
     /* emit header for raw PPM format */
     fprintf(dest->pub.output_file, "P6\n%ld %ld\n%d\n",
             (long)cinfo->output_width, (long)cinfo->output_height, PPM_MAXVAL);
@@ -337,13 +339,14 @@ jinit_write_ppm(j_decompress_ptr cinfo)
       ((j_common_ptr)cinfo, JPOOL_IMAGE,
        cinfo->output_width * cinfo->output_components, (JDIMENSION)1);
     dest->pub.buffer_height = 1;
-    if (IsExtRGB(cinfo->out_color_space))
-      dest->pub.put_pixel_rows = put_rgb;
-    else if (cinfo->out_color_space == JCS_CMYK)
-      dest->pub.put_pixel_rows = put_cmyk;
-    else if (!cinfo->quantize_colors)
-      dest->pub.put_pixel_rows = copy_pixel_rows;
-    else if (cinfo->out_color_space == JCS_GRAYSCALE)
+    if (!cinfo->quantize_colors) {
+      if (IsExtRGB(cinfo->out_color_space))
+        dest->pub.put_pixel_rows = put_rgb;
+      else if (cinfo->out_color_space == JCS_CMYK)
+        dest->pub.put_pixel_rows = put_cmyk;
+      else
+        dest->pub.put_pixel_rows = copy_pixel_rows;
+    } else if (cinfo->out_color_space == JCS_GRAYSCALE)
       dest->pub.put_pixel_rows = put_demapped_gray;
     else
       dest->pub.put_pixel_rows = put_demapped_rgb;

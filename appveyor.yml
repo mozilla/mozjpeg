@@ -14,7 +14,8 @@ install:
 
 before_build:
   - cmake --version
-  - cmake %APPVEYOR_BUILD_FOLDER%
+  - cd cmake_build
+  - cmake .. -G "Visual Studio 15 2017"
 
 build_script: 
   - cd %APPVEYOR_BUILD_FOLDER%

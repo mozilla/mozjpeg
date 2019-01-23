@@ -1,0 +1,14 @@
+image: Visual Studio 2017
+configuration: Release
+
+before_build:
+- cmd: |-
+    cd %APPVEYOR_BUILD_FOLDER%
+    mkdir cmake_build
+    cd cmake_build
+    cmake --version
+
+build_script: cmake c:\projects\mozjpeg
+
+artifacts:
+ - path: cmake_build\Release\**\*.*

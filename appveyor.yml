@@ -15,9 +15,9 @@ install:
   - cmake --version
 
 before_build:
-  - cmake c:\projects\mozjpeg
+  - cmake
 
-build_script: msbuild "C:\projects\mozjpeg\cmake_build\mozjpeg.sln"
+build_script: cmake_build\mozjpeg.sln
 
 artifacts:
  - path: cmake_build\**\Release\**\*.exe

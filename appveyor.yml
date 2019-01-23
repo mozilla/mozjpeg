@@ -3,11 +3,10 @@ configuration: Release
 
 before_build:
   ## Download nasm
-  - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - cd %APPVEYOR_BUILD_FOLDER%
   - appveyor DownloadFile https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/win64/nasm-2.14.02-win64.zip -FileName nasm.zip
   - 7z e -y nasm.zip
   ## Prepare cmake
-  - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir cmake_build
   - cd cmake_build
   - cmake --version

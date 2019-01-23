@@ -1,7 +1,7 @@
 image: Visual Studio 2017
 configuration: Release
 
-before_build:
+install:
   ## Download nasm
   - mkdir nasm
   - cd nasm
@@ -14,7 +14,10 @@ before_build:
   - cd cmake_build
   - cmake --version
 
-build_script: cmake c:\projects\mozjpeg
+before_build:
+  - cmake c:\projects\mozjpeg
+
+build_script: msbuild "C:\projects\mozjpeg\cmake_build\mozjpeg.sln"
 
 artifacts:
- - path: cmake_build\**\*.*
+ - path: cmake_build\Release\mozjpeg*.exe

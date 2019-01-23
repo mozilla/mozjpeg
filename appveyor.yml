@@ -20,5 +20,5 @@ before_build:
 build_script: msbuild "C:\projects\mozjpeg\cmake_build\mozjpeg.sln"
 
 artifacts:
- - path: cmake_build\**\Release\**\mozjpeg*.exe
- - path: cmake_build\**\Release\**\mozjpeg*.lib
+ - path: cmake_build\**\Release\**\*.exe
+ - path: cmake_build\**\Release\**\*.lib

@@ -31,6 +31,9 @@ allow it.
 6. Fixed a regression introduced by 2.0 beta1[7] that caused djpeg to generate
 incorrect PPM images when used with the `-colors` option.
 
+7. Fixed an issue whereby a static build of libjpeg-turbo (a build in which
+`ENABLE_SHARED` is `0`) could not be installed using the Visual Studio IDE.
+
 
 2.0.1
 =====

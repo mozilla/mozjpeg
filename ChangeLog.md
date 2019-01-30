@@ -34,6 +34,9 @@ incorrect PPM images when used with the `-colors` option.
 7. Fixed an issue whereby a static build of libjpeg-turbo (a build in which
 `ENABLE_SHARED` is `0`) could not be installed using the Visual Studio IDE.
 
+8. Fixed a severe performance issue in the Loongson MMI SIMD extensions that
+occurred when compressing RGB images whose image rows were not 64-bit-aligned.
+
 
 2.0.1
 =====

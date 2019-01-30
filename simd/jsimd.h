@@ -6,7 +6,7 @@
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2014, Linaro Limited.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
- * Copyright (C) 2016-2017, Loongson Technology Corporation Limited, BeiJing.
+ * Copyright (C) 2016-2018, Loongson Technology Corporation Limited, BeiJing.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -909,6 +909,8 @@ EXTERN(void) jsimd_fdct_ifast_neon(DCTELEM *data);
 
 EXTERN(void) jsimd_fdct_ifast_dspr2(DCTELEM *data);
 
+EXTERN(void) jsimd_fdct_ifast_mmi(DCTELEM *data);
+
 EXTERN(void) jsimd_fdct_ifast_altivec(DCTELEM *data);
 
 /* Floating Point Forward DCT */
@@ -1039,6 +1041,10 @@ EXTERN(void) jsimd_idct_ifast_cols_dspr2
 EXTERN(void) jsimd_idct_ifast_rows_dspr2
   (DCTELEM *wsptr, JSAMPARRAY output_buf, JDIMENSION output_col,
    const int *idct_coefs);
+
+EXTERN(void) jsimd_idct_ifast_mmi
+  (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,
+   JDIMENSION output_col);
 
 EXTERN(void) jsimd_idct_ifast_altivec
   (void *dct_table, JCOEFPTR coef_block, JSAMPARRAY output_buf,

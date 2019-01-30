@@ -309,8 +309,9 @@ endif()
 elseif(CPU_TYPE STREQUAL "loongson")
 
 set(SIMD_SOURCES loongson/jccolor-mmi.c loongson/jcsample-mmi.c
-  loongson/jdcolor-mmi.c loongson/jdsample-mmi.c loongson/jfdctint-mmi.c
-  loongson/jidctint-mmi.c loongson/jquanti-mmi.c)
+  loongson/jdcolor-mmi.c loongson/jdsample-mmi.c loongson/jfdctfst-mmi.c
+  loongson/jfdctint-mmi.c loongson/jidctfst-mmi.c loongson/jidctint-mmi.c
+  loongson/jquanti-mmi.c)
 
 if(CMAKE_COMPILER_IS_GNUCC)
   foreach(file ${SIMD_SOURCES})

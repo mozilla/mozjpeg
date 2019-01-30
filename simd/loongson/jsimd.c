@@ -5,7 +5,7 @@
  * Copyright (C) 2009-2011, 2014, 2016, 2018, D. R. Commander.
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015, 2018, Matthieu Darbois.
- * Copyright (C) 2016-2017, Loongson Technology Corporation Limited, BeiJing.
+ * Copyright (C) 2016-2018, Loongson Technology Corporation Limited, BeiJing.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -397,6 +397,17 @@ jsimd_can_fdct_islow(void)
 GLOBAL(int)
 jsimd_can_fdct_ifast(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_MMI)
+    return 1;
+
   return 0;
 }
 
@@ -415,6 +426,7 @@ jsimd_fdct_islow(DCTELEM *data)
 GLOBAL(void)
 jsimd_fdct_ifast(DCTELEM *data)
 {
+  jsimd_fdct_ifast_mmi(data);
 }
 
 GLOBAL(void)
@@ -537,6 +549,25 @@ jsimd_can_idct_islow(void)
 GLOBAL(int)
 jsimd_can_idct_ifast(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JCOEF) != 2)
+    return 0;
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if (sizeof(IFAST_MULT_TYPE) != 2)
+    return 0;
+  if (IFAST_SCALE_BITS != 2)
+    return 0;
+
+  if (simd_support & JSIMD_MMI)
+    return 1;
+
   return 0;
 }
 
@@ -559,6 +590,7 @@ jsimd_idct_ifast(j_decompress_ptr cinfo, jpeg_component_info *compptr,
                  JCOEFPTR coef_block, JSAMPARRAY output_buf,
                  JDIMENSION output_col)
 {
+  jsimd_idct_ifast_mmi(compptr->dct_table, coef_block, output_buf, output_col);
 }
 
 GLOBAL(void)

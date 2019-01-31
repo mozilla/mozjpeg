@@ -1,7 +1,7 @@
 /*
  * Loongson MMI optimizations for libjpeg-turbo
  *
- * Copyright (C) 2015, 2018, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2015, 2018-2019, D. R. Commander.  All Rights Reserved.
  * Copyright (C) 2016-2017, Loongson Technology Corporation Limited, BeiJing.
  *                          All Rights Reserved.
  * Authors:  ZhuChen     <zhuchen@loongson.cn>
@@ -51,56 +51,53 @@ static uint64_t const_value[] = {
 
 
 #define PROCESS_ROW(r) { \
-  mm7 = _mm_load_si64((__m64 *)outptr##r);      /* mm7=IntrL=( 0 1 2 3) */ \
-  mm3 = _mm_load_si64((__m64 *)outptr##r + 1);  /* mm3=IntrH=( 4 5 6 7) */ \
+  __m64 samp0123, samp123X, samp3XXX, samp1234, sampX012, samp_1012; \
+  __m64 samp4567, sampXXX4, sampX456, samp3456, samp567X, samp7XXX, samp5678; \
+  __m64 outle, outhe, outlo, outho, outl, outh; \
   \
-  mm0 = mm7; \
-  mm4 = mm3; \
-  mm0 = _mm_srli_si64(mm0, 2 * BYTE_BIT);                   /* mm0=( 1 2 3 -) */ \
-  mm4 = _mm_slli_si64(mm4, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm4=( - - - 4) */ \
-  mm5 = mm7; \
-  mm6 = mm3; \
-  mm5 = _mm_srli_si64(mm5, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm5=( 3 - - -) */ \
-  mm6 = _mm_slli_si64(mm6, 2 * BYTE_BIT);                   /* mm6=( - 4 5 6) */ \
+  samp0123 = _mm_load_si64((__m64 *)outptr##r);      /* ( 0 1 2 3) */ \
+  samp4567 = _mm_load_si64((__m64 *)outptr##r + 1);  /* ( 4 5 6 7) */ \
   \
-  mm0 = _mm_or_si64(mm0, mm4);                /* mm0=( 1 2 3 4) */ \
-  mm5 = _mm_or_si64(mm5, mm6);                /* mm5=( 3 4 5 6) */ \
+  samp123X = _mm_srli_si64(samp0123, 2 * BYTE_BIT);  /* ( 1 2 3 -) */ \
+  sampXXX4 = _mm_slli_si64(samp4567, (SIZEOF_MMWORD - 2) * BYTE_BIT);  /* ( - - - 4) */ \
+  samp3XXX = _mm_srli_si64(samp0123, (SIZEOF_MMWORD - 2) * BYTE_BIT);  /* ( 3 - - -) */ \
+  sampX456 = _mm_slli_si64(samp4567, 2 * BYTE_BIT);  /* ( - 4 5 6) */ \
   \
-  mm1 = mm7; \
-  mm2 = mm3; \
-  mm1 = _mm_slli_si64(mm1, 2 * BYTE_BIT);     /* mm1=( - 0 1 2) */ \
-  mm2 = _mm_srli_si64(mm2, 2 * BYTE_BIT);     /* mm2=( 5 6 7 -) */ \
-  mm4 = mm3; \
-  mm4 = _mm_srli_si64(mm4, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm4=( 7 - - -) */ \
+  samp1234 = _mm_or_si64(samp123X, sampXXX4);  /* ( 1 2 3 4) */ \
+  samp3456 = _mm_or_si64(samp3XXX, sampX456);  /* ( 3 4 5 6) */ \
   \
-  mm1 = _mm_or_si64(mm1, wk[r]);              /* mm1=(-1 0 1 2) */ \
-  mm2 = _mm_or_si64(mm2, wk[r + 2]);          /* mm2=( 5 6 6 8) */ \
+  sampX012 = _mm_slli_si64(samp0123, 2 * BYTE_BIT);  /* ( - 0 1 2) */ \
+  samp567X = _mm_srli_si64(samp4567, 2 * BYTE_BIT);  /* ( 5 6 7 -) */ \
+  samp7XXX = _mm_srli_si64(samp4567, (SIZEOF_MMWORD - 2) * BYTE_BIT);  /* ( 7 - - -) */ \
   \
-  wk[r] = mm4; \
+  samp_1012 = _mm_or_si64(sampX012, wk[r]);     /* (-1 0 1 2) */ \
+  samp5678 = _mm_or_si64(samp567X, wk[r + 2]);  /* ( 5 6 7 8) */ \
   \
-  mm7 = _mm_mullo_pi16(mm7, PW_THREE); \
-  mm3 = _mm_mullo_pi16(mm3, PW_THREE); \
-  mm1 = _mm_add_pi16(mm1, PW_EIGHT); \
-  mm5 = _mm_add_pi16(mm5, PW_EIGHT); \
-  mm0 = _mm_add_pi16(mm0, PW_SEVEN); \
-  mm2 = _mm_add_pi16(mm2, PW_SEVEN); \
+  wk[r] = samp7XXX; \
   \
-  mm1 = _mm_add_pi16(mm1, mm7); \
-  mm5 = _mm_add_pi16(mm5, mm3); \
-  mm1 = _mm_srli_pi16(mm1, 4);                /* mm1=OutrLE=( 0  2  4  6) */ \
-  mm5 = _mm_srli_pi16(mm5, 4);                /* mm5=OutrHE=( 8 10 12 14) */ \
-  mm0 = _mm_add_pi16(mm0, mm7); \
-  mm2 = _mm_add_pi16(mm2, mm3); \
-  mm0 = _mm_srli_pi16(mm0, 4);                /* mm0=OutrLO=( 1  3  5  7) */ \
-  mm2 = _mm_srli_pi16(mm2, 4);                /* mm2=OutrHO=( 9 11 13 15) */ \
+  samp0123 = _mm_mullo_pi16(samp0123, PW_THREE); \
+  samp4567 = _mm_mullo_pi16(samp4567, PW_THREE); \
+  samp_1012 = _mm_add_pi16(samp_1012, PW_EIGHT); \
+  samp3456 = _mm_add_pi16(samp3456, PW_EIGHT); \
+  samp1234 = _mm_add_pi16(samp1234, PW_SEVEN); \
+  samp5678 = _mm_add_pi16(samp5678, PW_SEVEN); \
   \
-  mm0 = _mm_slli_pi16(mm0, BYTE_BIT); \
-  mm2 = _mm_slli_pi16(mm2, BYTE_BIT); \
-  mm1 = _mm_or_si64(mm1, mm0);     /* mm1=OutrL=( 0  1  2  3  4  5  6  7) */ \
-  mm5 = _mm_or_si64(mm5, mm2);     /* mm5=OutrH=( 8  9 10 11 12 13 14 15) */ \
+  outle = _mm_add_pi16(samp_1012, samp0123); \
+  outhe = _mm_add_pi16(samp3456, samp4567); \
+  outle = _mm_srli_pi16(outle, 4);            /* ( 0  2  4  6) */ \
+  outhe = _mm_srli_pi16(outhe, 4);            /* ( 8 10 12 14) */ \
+  outlo = _mm_add_pi16(samp1234, samp0123); \
+  outho = _mm_add_pi16(samp5678, samp4567); \
+  outlo = _mm_srli_pi16(outlo, 4);            /* ( 1  3  5  7) */ \
+  outho = _mm_srli_pi16(outho, 4);            /* ( 9 11 13 15) */ \
   \
-  _mm_store_si64((__m64 *)outptr##r, mm1); \
-  _mm_store_si64((__m64 *)outptr##r + 1, mm5); \
+  outlo = _mm_slli_pi16(outlo, BYTE_BIT); \
+  outho = _mm_slli_pi16(outho, BYTE_BIT); \
+  outl = _mm_or_si64(outle, outlo);           /* ( 0  1  2  3  4  5  6  7) */ \
+  outh = _mm_or_si64(outhe, outho);           /* ( 8  9 10 11 12 13 14 15) */ \
+  \
+  _mm_store_si64((__m64 *)outptr##r, outl); \
+  _mm_store_si64((__m64 *)outptr##r + 1, outh); \
 }
 
 void jsimd_h2v2_fancy_upsample_mmi(int max_v_samp_factor,
@@ -111,8 +108,17 @@ void jsimd_h2v2_fancy_upsample_mmi(int max_v_samp_factor,
   JSAMPARRAY output_data = *output_data_ptr;
   JSAMPROW inptr_1, inptr0, inptr1, outptr0, outptr1;
   int inrow, outrow, incol, tmp, tmp1;
-  __m64 mm0, mm1, mm2, mm3 = 0.0, mm4, mm5, mm6, mm7 = 0.0;
-  __m64 wk[4], mm_tmp;
+  __m64 this_1l, this_1h, this_1, thiscolsum_1l, thiscolsum_1h;
+  __m64 this0l, this0h, this0;
+  __m64 this1l, this1h, this1, thiscolsum1l, thiscolsum1h;
+  __m64 next_1l, next_1h, next_1, nextcolsum_1l, nextcolsum_1h;
+  __m64 next0l, next0h, next0;
+  __m64 next1l, next1h, next1, nextcolsum1l, nextcolsum1h;
+  __m64 zero = 0.0, mask0 = 0.0, masklast, wk[4];
+
+  mask0 = _mm_cmpeq_pi8(mask0, mask0);
+  masklast = _mm_slli_si64(mask0, (SIZEOF_MMWORD - 2) * BYTE_BIT);
+  mask0 = _mm_srli_si64(mask0, (SIZEOF_MMWORD - 2) * BYTE_BIT);
 
   for (inrow = 0, outrow = 0; outrow < max_v_samp_factor; inrow++) {
 
@@ -124,7 +130,7 @@ void jsimd_h2v2_fancy_upsample_mmi(int max_v_samp_factor,
 
     if (downsampled_width & 7) {
       tmp = (downsampled_width - 1) * sizeof(JSAMPLE);
-      tmp1 =  downsampled_width * sizeof(JSAMPLE);
+      tmp1 = downsampled_width * sizeof(JSAMPLE);
       asm("daddu  $8, %3, %6\r\n"
           "lb     $9, ($8)\r\n"
           "daddu  $8, %3, %7\r\n"
@@ -144,42 +150,33 @@ void jsimd_h2v2_fancy_upsample_mmi(int max_v_samp_factor,
     }
 
     /* process the first column block */
-    mm0 = _mm_load_si64((__m64 *)inptr0);     /* mm0 = row[ 0][0] */
-    mm1 = _mm_load_si64((__m64 *)inptr_1);    /* mm1 = row[-1][0] */
-    mm2 = _mm_load_si64((__m64 *)inptr1);     /* mm2 = row[ 1][0] */
+    this0 = _mm_load_si64((__m64 *)inptr0);    /* row[ 0][0] */
+    this_1 = _mm_load_si64((__m64 *)inptr_1);  /* row[-1][0] */
+    this1 = _mm_load_si64((__m64 *)inptr1);    /* row[ 1][0] */
 
-    mm3 = _mm_xor_si64(mm3, mm3);             /* mm3 = (all 0's) */
-    mm4 = mm0;
-    mm0 = _mm_unpacklo_pi8(mm0, mm3);         /* mm0 = row[ 0][0]( 0 1 2 3) */
-    mm4 = _mm_unpackhi_pi8(mm4, mm3);         /* mm4 = row[ 0][0]( 4 5 6 7) */
-    mm5 = mm1;
-    mm1 = _mm_unpacklo_pi8(mm1, mm3);         /* mm1 = row[-1][0]( 0 1 2 3) */
-    mm5 = _mm_unpackhi_pi8(mm5, mm3);         /* mm5 = row[-1][0]( 4 5 6 7) */
-    mm6 = mm2;
-    mm2 = _mm_unpacklo_pi8(mm2, mm3);         /* mm2 = row[+1][0]( 0 1 2 3) */
-    mm6 = _mm_unpackhi_pi8(mm6, mm3);         /* mm6 = row[+1][0]( 4 5 6 7) */
+    this0l = _mm_unpacklo_pi8(this0, zero);    /* row[ 0][0]( 0 1 2 3) */
+    this0h = _mm_unpackhi_pi8(this0, zero);    /* row[ 0][0]( 4 5 6 7) */
+    this_1l = _mm_unpacklo_pi8(this_1, zero);  /* row[-1][0]( 0 1 2 3) */
+    this_1h = _mm_unpackhi_pi8(this_1, zero);  /* row[-1][0]( 4 5 6 7) */
+    this1l = _mm_unpacklo_pi8(this1, zero);    /* row[+1][0]( 0 1 2 3) */
+    this1h = _mm_unpackhi_pi8(this1, zero);    /* row[+1][0]( 4 5 6 7) */
 
-    mm0 = _mm_mullo_pi16(mm0, PW_THREE);
-    mm4 = _mm_mullo_pi16(mm4, PW_THREE);
+    this0l = _mm_mullo_pi16(this0l, PW_THREE);
+    this0h = _mm_mullo_pi16(this0h, PW_THREE);
 
-    mm7 = _mm_cmpeq_pi8(mm7, mm7);
-    mm7 = _mm_srli_si64(mm7, (SIZEOF_MMWORD - 2) * BYTE_BIT);
+    thiscolsum_1l = _mm_add_pi16(this_1l, this0l);  /* ( 0 1 2 3) */
+    thiscolsum_1h = _mm_add_pi16(this_1h, this0h);  /* ( 4 5 6 7) */
+    thiscolsum1l = _mm_add_pi16(this0l, this1l);    /* ( 0 1 2 3) */
+    thiscolsum1h = _mm_add_pi16(this0h, this1h);    /* ( 4 5 6 7) */
 
-    mm1 = _mm_add_pi16(mm1, mm0);             /* mm1=Int0L=( 0 1 2 3) */
-    mm5 = _mm_add_pi16(mm5, mm4);             /* mm5=Int0H=( 4 5 6 7) */
-    mm2 = _mm_add_pi16(mm2, mm0);             /* mm2=Int1L=( 0 1 2 3) */
-    mm6 = _mm_add_pi16(mm6, mm4);             /* mm6=Int1H=( 4 5 6 7) */
+    /* temporarily save the intermediate data */
+    _mm_store_si64((__m64 *)outptr0, thiscolsum_1l);
+    _mm_store_si64((__m64 *)outptr0 + 1, thiscolsum_1h);
+    _mm_store_si64((__m64 *)outptr1, thiscolsum1l);
+    _mm_store_si64((__m64 *)outptr1 + 1, thiscolsum1h);
 
-    _mm_store_si64((__m64 *)outptr0, mm1);      /* temporarily save */
-    _mm_store_si64((__m64 *)outptr0 + 1, mm5);  /* the intermediate data */
-    _mm_store_si64((__m64 *)outptr1, mm2);
-    _mm_store_si64((__m64 *)outptr1 + 1, mm6);
-
-    mm1 = _mm_and_si64(mm1, mm7);             /* mm1=( 0 - - -) */
-    mm2 = _mm_and_si64(mm2, mm7);             /* mm2=( 0 - - -) */
-
-    wk[0] = mm1;
-    wk[1] = mm2;
+    wk[0] = _mm_and_si64(thiscolsum_1l, mask0);  /* ( 0 - - -) */
+    wk[1] = _mm_and_si64(thiscolsum1l, mask0);   /* ( 0 - - -) */
 
     for (incol = downsampled_width; incol > 0;
          incol -= 8, inptr_1 += 8, inptr0 += 8, inptr1 += 8,
@@ -187,52 +184,41 @@ void jsimd_h2v2_fancy_upsample_mmi(int max_v_samp_factor,
 
       if (incol > 8) {
         /* process the next column block */
-        mm0 = _mm_load_si64((__m64 *)inptr0 + 1);   /* mm0 = row[ 0][1] */
-        mm1 = _mm_load_si64((__m64 *)inptr_1 + 1);  /* mm1 = row[-1][1] */
-        mm2 = _mm_load_si64((__m64 *)inptr1 + 1);   /* mm2 = row[+1][1] */
+        next0 = _mm_load_si64((__m64 *)inptr0 + 1);    /* row[ 0][1] */
+        next_1 = _mm_load_si64((__m64 *)inptr_1 + 1);  /* row[-1][1] */
+        next1 = _mm_load_si64((__m64 *)inptr1 + 1);    /* row[+1][1] */
 
-        mm3 = _mm_setzero_si64();             /* mm3 = (all 0's) */
-        mm4 = mm0;
-        mm0 = _mm_unpacklo_pi8(mm0, mm3);     /* mm0 = row[ 0][1]( 0 1 2 3) */
-        mm4 = _mm_unpackhi_pi8(mm4, mm3);     /* mm4 = row[ 0][1]( 4 5 6 7) */
-        mm5 = mm1;
-        mm1 = _mm_unpacklo_pi8(mm1, mm3);     /* mm1 = row[-1][1]( 0 1 2 3) */
-        mm5 = _mm_unpackhi_pi8(mm5, mm3);     /* mm5 = row[-1][1]( 4 5 6 7) */
-        mm6 = mm2;
-        mm2 = _mm_unpacklo_pi8(mm2, mm3);     /* mm2 = row[+1][1]( 0 1 2 3) */
-        mm6 = _mm_unpackhi_pi8(mm6, mm3);     /* mm6 = row[+1][1]( 4 5 6 7) */
+        next0l = _mm_unpacklo_pi8(next0, zero);    /* row[ 0][1]( 0 1 2 3) */
+        next0h = _mm_unpackhi_pi8(next0, zero);    /* row[ 0][1]( 4 5 6 7) */
+        next_1l = _mm_unpacklo_pi8(next_1, zero);  /* row[-1][1]( 0 1 2 3) */
+        next_1h = _mm_unpackhi_pi8(next_1, zero);  /* row[-1][1]( 4 5 6 7) */
+        next1l = _mm_unpacklo_pi8(next1, zero);    /* row[+1][1]( 0 1 2 3) */
+        next1h = _mm_unpackhi_pi8(next1, zero);    /* row[+1][1]( 4 5 6 7) */
 
-        mm0 = _mm_mullo_pi16(mm0, PW_THREE);
-        mm4 = _mm_mullo_pi16(mm4, PW_THREE);
+        next0l = _mm_mullo_pi16(next0l, PW_THREE);
+        next0h = _mm_mullo_pi16(next0h, PW_THREE);
 
-        mm1 = _mm_add_pi16(mm1, mm0);         /* mm1 = Int0L = ( 0 1 2 3) */
-        mm5 = _mm_add_pi16(mm5, mm4);         /* mm5 = Int0H = ( 4 5 6 7) */
-        mm2 = _mm_add_pi16(mm2, mm0);         /* mm2 = Int1L = ( 0 1 2 3) */
-        mm6 = _mm_add_pi16(mm6, mm4);         /* mm6 = Int1H = ( 4 5 6 7) */
+        nextcolsum_1l = _mm_add_pi16(next_1l, next0l);  /* ( 0 1 2 3) */
+        nextcolsum_1h = _mm_add_pi16(next_1h, next0h);  /* ( 4 5 6 7) */
+        nextcolsum1l = _mm_add_pi16(next0l, next1l);    /* ( 0 1 2 3) */
+        nextcolsum1h = _mm_add_pi16(next0h, next1h);    /* ( 4 5 6 7) */
 
-        _mm_store_si64((__m64 *)outptr0 + 2, mm1);  /* temporarily save */
-        _mm_store_si64((__m64 *)outptr0 + 3, mm5);  /* the intermediate data */
-        _mm_store_si64((__m64 *)outptr1 + 2, mm2);
-        _mm_store_si64((__m64 *)outptr1 + 3, mm6);
+        /* temporarily save the intermediate data */
+        _mm_store_si64((__m64 *)outptr0 + 2, nextcolsum_1l);
+        _mm_store_si64((__m64 *)outptr0 + 3, nextcolsum_1h);
+        _mm_store_si64((__m64 *)outptr1 + 2, nextcolsum1l);
+        _mm_store_si64((__m64 *)outptr1 + 3, nextcolsum1h);
 
-        mm1 = _mm_slli_si64(mm1, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm1=( - - - 0) */
-        mm2 = _mm_slli_si64(mm2, (SIZEOF_MMWORD - 2) * BYTE_BIT); /* mm2=( - - - 0) */
-
-        wk[2] = mm1;
-        wk[3] = mm2;
+        wk[2] = _mm_slli_si64(nextcolsum_1l, (SIZEOF_MMWORD - 2) * BYTE_BIT);  /* ( - - - 0) */
+        wk[3] = _mm_slli_si64(nextcolsum1l, (SIZEOF_MMWORD - 2) * BYTE_BIT);   /* ( - - - 0) */
       } else {
+        __m64 tmp;
+
         /* process the last column block */
-        mm1 = _mm_cmpeq_pi8(mm1, mm1);
-        mm1 = _mm_slli_si64(mm1, (SIZEOF_MMWORD - 2) * BYTE_BIT);
-        mm2 = mm1;
-
-        mm_tmp = _mm_load_si64((__m64 *)outptr0 + 1);
-        mm1 = _mm_and_si64(mm1, mm_tmp);      /* mm1=( - - - 7) */
-        mm_tmp = _mm_load_si64((__m64 *)outptr1 + 1);
-        mm2 = _mm_and_si64(mm2, mm_tmp);      /* mm2=( - - - 7) */
-
-        wk[2] = mm1;
-        wk[3] = mm2;
+        tmp = _mm_load_si64((__m64 *)outptr0 + 1);
+        wk[2] = _mm_and_si64(masklast, tmp);        /* ( - - - 7) */
+        tmp = _mm_load_si64((__m64 *)outptr1 + 1);
+        wk[3] = _mm_and_si64(masklast, tmp);        /* ( - - - 7) */
       }
 
       /* process the upper row */

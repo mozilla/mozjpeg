@@ -6,7 +6,7 @@
  * Authors:  ZhuChen     <zhuchen@loongson.cn>
  *           CaiWanwei   <caiwanwei@loongson.cn>
  *           SunZhangzhi <sunzhangzhi-cq@loongson.cn>
- * Copyright (C) 2018, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2018-2019, D. R. Commander.  All Rights Reserved.
  *
  * Based on the x86 SIMD extension for IJG JPEG library
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -34,77 +34,73 @@
 
 
 #define DO_QUANT() { \
-  mm2 = _mm_load_si64((__m64 *)&workspace[0]); \
-  mm3 = _mm_load_si64((__m64 *)&workspace[4]); \
+  __m64 rowl, rowh, rowls, rowhs, rowlsave, rowhsave; \
+  __m64 corrl, corrh, recipl, reciph, scalel, scaleh; \
   \
-  mm0 = mm2; \
-  mm1 = mm3; \
+  rowl = _mm_load_si64((__m64 *)&workspace[0]); \
+  rowh = _mm_load_si64((__m64 *)&workspace[4]); \
   \
-  mm2 = _mm_srai_pi16(mm2, (WORD_BIT - 1));   /* -1 if value < 0, */ \
-                                              /* 0 otherwise */ \
-  mm3 = _mm_srai_pi16(mm3, (WORD_BIT - 1)); \
+  /* Branch-less absolute value */ \
+  rowls = _mm_srai_pi16(rowl, (WORD_BIT - 1));  /* -1 if value < 0, */ \
+                                                /* 0 otherwise */ \
+  rowhs = _mm_srai_pi16(rowh, (WORD_BIT - 1)); \
   \
-  mm0 = _mm_xor_si64(mm0, mm2);               /* val = -val */ \
-  mm1 = _mm_xor_si64(mm1, mm3); \
-  mm0 = _mm_sub_pi16(mm0, mm2); \
-  mm1 = _mm_sub_pi16(mm1, mm3); \
+  rowl = _mm_xor_si64(rowl, rowls);           /* val = -val */ \
+  rowh = _mm_xor_si64(rowh, rowhs); \
+  rowl = _mm_sub_pi16(rowl, rowls); \
+  rowh = _mm_sub_pi16(rowh, rowhs); \
   \
-  corr0 = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 1]);  /* correction */ \
-  corr1 = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 1 + 4]); \
+  corrl = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 1]);  /* correction */ \
+  corrh = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 1 + 4]); \
   \
-  mm0 = _mm_add_pi16(mm0, corr0);             /* correction + roundfactor */ \
-  mm1 = _mm_add_pi16(mm1, corr1); \
+  rowlsave = rowl = _mm_add_pi16(rowl, corrl);  /* correction + roundfactor */ \
+  rowhsave = rowh = _mm_add_pi16(rowh, corrh); \
   \
-  mm4 = mm0; \
-  mm5 = mm1; \
+  recipl = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 0]);  /* reciprocal */ \
+  reciph = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 0 + 4]); \
   \
-  recip0 = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 0]);  /* reciprocal */ \
-  recip1 = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 0 + 4]); \
+  rowl = _mm_mulhi_pi16(rowl, recipl); \
+  rowh = _mm_mulhi_pi16(rowh, reciph); \
   \
-  mm0 = _mm_mulhi_pi16(mm0, recip0); \
-  mm1 = _mm_mulhi_pi16(mm1, recip1); \
+  /* reciprocal is always negative (MSB=1), so we always need to add the */ \
+  /* initial value (input value is never negative as we inverted it at the */ \
+  /* start of this routine) */ \
+  rowlsave = rowl = _mm_add_pi16(rowl, rowlsave); \
+  rowhsave = rowh = _mm_add_pi16(rowh, rowhsave); \
   \
-  mm0 = _mm_add_pi16(mm0, mm4);  /* reciprocal is always negative */ \
-  mm1 = _mm_add_pi16(mm1, mm5);  /* (MSB=1), so we always need to add the */ \
-                                 /* initial value (input value is never */ \
-                                 /* negative as we inverted it at the */ \
-                                 /* start of this routine) */ \
+  scalel = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 2]);  /* scale */ \
+  scaleh = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 2 + 4]); \
   \
-  scale0 = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 2]);  /* scale */ \
-  scale1 = _mm_load_si64((__m64 *)&divisors[DCTSIZE2 * 2 + 4]); \
+  rowl = _mm_mulhi_pi16(rowl, scalel); \
+  rowh = _mm_mulhi_pi16(rowh, scaleh); \
   \
-  mm6 = scale0; \
-  mm7 = scale1; \
-  mm4 = mm0; \
-  mm5 = mm1; \
+  /* determine if scale is negative */ \
+  scalel = _mm_srai_pi16(scalel, (WORD_BIT - 1)); \
+  scaleh = _mm_srai_pi16(scaleh, (WORD_BIT - 1)); \
   \
-  mm0 = _mm_mulhi_pi16(mm0, mm6); \
-  mm1 = _mm_mulhi_pi16(mm1, mm7); \
+  /* and add input if it is */ \
+  scalel = _mm_and_si64(scalel, rowlsave); \
+  scaleh = _mm_and_si64(scaleh, rowhsave); \
+  rowl = _mm_add_pi16(rowl, scalel); \
+  rowh = _mm_add_pi16(rowh, scaleh); \
   \
-  mm6 = _mm_srai_pi16(mm6, (WORD_BIT - 1));   /* determine if scale... */ \
-                                              /* is negative */ \
-  mm7 = _mm_srai_pi16(mm7, (WORD_BIT - 1)); \
+  /* then check if negative input */ \
+  rowlsave = _mm_srai_pi16(rowlsave, (WORD_BIT - 1)); \
+  rowhsave = _mm_srai_pi16(rowhsave, (WORD_BIT - 1)); \
   \
-  mm6 = _mm_and_si64(mm6, mm4);               /* and add input if it is */ \
-  mm7 = _mm_and_si64(mm7, mm5); \
-  mm0 = _mm_add_pi16(mm0, mm6); \
-  mm1 = _mm_add_pi16(mm1, mm7); \
+  /* and add scale if it is */ \
+  rowlsave = _mm_and_si64(rowlsave, scalel); \
+  rowhsave = _mm_and_si64(rowhsave, scaleh); \
+  rowl = _mm_add_pi16(rowl, rowlsave); \
+  rowh = _mm_add_pi16(rowh, rowhsave); \
   \
-  mm4 = _mm_srai_pi16(mm4, (WORD_BIT - 1));   /* then check if... */ \
-  mm5 = _mm_srai_pi16(mm5, (WORD_BIT - 1));   /* negative input */ \
+  rowl = _mm_xor_si64(rowl, rowls);           /* val = -val */ \
+  rowh = _mm_xor_si64(rowh, rowhs); \
+  rowl = _mm_sub_pi16(rowl, rowls); \
+  rowh = _mm_sub_pi16(rowh, rowhs); \
   \
-  mm4 = _mm_and_si64(mm4, scale0);            /* and add scale if it is */ \
-  mm5 = _mm_and_si64(mm5, scale1); \
-  mm0 = _mm_add_pi16(mm0, mm4); \
-  mm1 = _mm_add_pi16(mm1, mm5); \
-  \
-  mm0 = _mm_xor_si64(mm0, mm2);               /* val = -val */ \
-  mm1 = _mm_xor_si64(mm1, mm3); \
-  mm0 = _mm_sub_pi16(mm0, mm2); \
-  mm1 = _mm_sub_pi16(mm1, mm3); \
-  \
-  _mm_store_si64((__m64 *)&output_ptr[0], mm0); \
-  _mm_store_si64((__m64 *)&output_ptr[4], mm1); \
+  _mm_store_si64((__m64 *)&output_ptr[0], rowl); \
+  _mm_store_si64((__m64 *)&output_ptr[4], rowh); \
   \
   workspace += DCTSIZE; \
   divisors += DCTSIZE; \
@@ -116,8 +112,6 @@ void jsimd_quantize_mmi(JCOEFPTR coef_block, DCTELEM *divisors,
                         DCTELEM *workspace)
 {
   JCOEFPTR output_ptr = coef_block;
-  __m64 mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7;
-  __m64 corr0, corr1, recip0, recip1, scale0, scale1;
 
   DO_QUANT()
   DO_QUANT()

@@ -73,6 +73,19 @@ jsimd_can_rgb_ycc(void)
 GLOBAL(int)
 jsimd_can_rgb_gray(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (simd_support & JSIMD_MMI)
+    return 1;
+
   return 0;
 }
 
@@ -150,6 +163,37 @@ jsimd_rgb_gray_convert(j_compress_ptr cinfo, JSAMPARRAY input_buf,
                        JSAMPIMAGE output_buf, JDIMENSION output_row,
                        int num_rows)
 {
+  void (*mmifct) (JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch (cinfo->in_color_space) {
+  case JCS_EXT_RGB:
+    mmifct = jsimd_extrgb_gray_convert_mmi;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    mmifct = jsimd_extrgbx_gray_convert_mmi;
+    break;
+  case JCS_EXT_BGR:
+    mmifct = jsimd_extbgr_gray_convert_mmi;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    mmifct = jsimd_extbgrx_gray_convert_mmi;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    mmifct = jsimd_extxbgr_gray_convert_mmi;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    mmifct = jsimd_extxrgb_gray_convert_mmi;
+    break;
+  default:
+    mmifct = jsimd_rgb_gray_convert_mmi;
+    break;
+  }
+
+  mmifct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)

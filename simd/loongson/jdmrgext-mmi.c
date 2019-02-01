@@ -404,7 +404,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
       _mm_store_si64((__m64 *)(outptr + 56), mmH);
       outptr += RGB_PIXELSIZE * 16;
     } else {
-      if(output_width & 1)
+      if (output_width & 1)
         col = num_cols * 2 + 1;
       else
         col = num_cols * 2;

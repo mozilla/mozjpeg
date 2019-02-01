@@ -341,10 +341,17 @@ void jsimd_ycc_rgb_convert_mmi(JDIMENSION out_width, JSAMPIMAGE input_buf,
       mmC = _mm_unpacklo_pi32(mmC, mmG);      /* (04 14 24 34 05 15 25 35) */
 
       if (num_cols >= 8) {
-        _mm_store_si64((__m64 *)outptr, mmA);
-        _mm_store_si64((__m64 *)(outptr + 8), mmD);
-        _mm_store_si64((__m64 *)(outptr + 16), mmC);
-        _mm_store_si64((__m64 *)(outptr + 24), mmH);
+        if (!(((long)outptr) & 7)) {
+          _mm_store_si64((__m64 *)outptr, mmA);
+          _mm_store_si64((__m64 *)(outptr + 8), mmD);
+          _mm_store_si64((__m64 *)(outptr + 16), mmC);
+          _mm_store_si64((__m64 *)(outptr + 24), mmH);
+        } else {
+          _mm_storeu_si64((__m64 *)outptr, mmA);
+          _mm_storeu_si64((__m64 *)(outptr + 8), mmD);
+          _mm_storeu_si64((__m64 *)(outptr + 16), mmC);
+          _mm_storeu_si64((__m64 *)(outptr + 24), mmH);
+        }
         outptr += RGB_PIXELSIZE * 8;
       } else {
         col = num_cols;

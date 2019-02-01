@@ -254,12 +254,21 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
     mmG = _mm_unpackhi_pi32(mmH, mmG);        /* (1D 2D 0E 1E 2E 0F 1F 2F) */
 
     if (num_cols >= 8) {
-      _mm_store_si64((__m64 *)outptr, mmA);
-      _mm_store_si64((__m64 *)(outptr + 8), mmB);
-      _mm_store_si64((__m64 *)(outptr + 16), mmC);
-      _mm_store_si64((__m64 *)(outptr + 24), mmE);
-      _mm_store_si64((__m64 *)(outptr + 32), mmF);
-      _mm_store_si64((__m64 *)(outptr + 40), mmG);
+      if (!(((long)outptr) & 7)) {
+        _mm_store_si64((__m64 *)outptr, mmA);
+        _mm_store_si64((__m64 *)(outptr + 8), mmB);
+        _mm_store_si64((__m64 *)(outptr + 16), mmC);
+        _mm_store_si64((__m64 *)(outptr + 24), mmE);
+        _mm_store_si64((__m64 *)(outptr + 32), mmF);
+        _mm_store_si64((__m64 *)(outptr + 40), mmG);
+      } else {
+        _mm_storeu_si64((__m64 *)outptr, mmA);
+        _mm_storeu_si64((__m64 *)(outptr + 8), mmB);
+        _mm_storeu_si64((__m64 *)(outptr + 16), mmC);
+        _mm_storeu_si64((__m64 *)(outptr + 24), mmE);
+        _mm_storeu_si64((__m64 *)(outptr + 32), mmF);
+        _mm_storeu_si64((__m64 *)(outptr + 40), mmG);
+      }
       outptr += RGB_PIXELSIZE * 16;
     } else {
       if (output_width & 1)
@@ -394,14 +403,25 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
     mmE = _mm_unpacklo_pi32(mm9, mmE);        /* (08 18 28 38 09 19 29 39) */
 
     if (num_cols >= 8) {
-      _mm_store_si64((__m64 *)outptr, mmA);
-      _mm_store_si64((__m64 *)(outptr + 8), mmB);
-      _mm_store_si64((__m64 *)(outptr + 16), mmC);
-      _mm_store_si64((__m64 *)(outptr + 24), mmD);
-      _mm_store_si64((__m64 *)(outptr + 32), mmE);
-      _mm_store_si64((__m64 *)(outptr + 40), mmF);
-      _mm_store_si64((__m64 *)(outptr + 48), mmG);
-      _mm_store_si64((__m64 *)(outptr + 56), mmH);
+      if (!(((long)outptr) & 7)) {
+        _mm_store_si64((__m64 *)outptr, mmA);
+        _mm_store_si64((__m64 *)(outptr + 8), mmB);
+        _mm_store_si64((__m64 *)(outptr + 16), mmC);
+        _mm_store_si64((__m64 *)(outptr + 24), mmD);
+        _mm_store_si64((__m64 *)(outptr + 32), mmE);
+        _mm_store_si64((__m64 *)(outptr + 40), mmF);
+        _mm_store_si64((__m64 *)(outptr + 48), mmG);
+        _mm_store_si64((__m64 *)(outptr + 56), mmH);
+      } else {
+        _mm_storeu_si64((__m64 *)outptr, mmA);
+        _mm_storeu_si64((__m64 *)(outptr + 8), mmB);
+        _mm_storeu_si64((__m64 *)(outptr + 16), mmC);
+        _mm_storeu_si64((__m64 *)(outptr + 24), mmD);
+        _mm_storeu_si64((__m64 *)(outptr + 32), mmE);
+        _mm_storeu_si64((__m64 *)(outptr + 40), mmF);
+        _mm_storeu_si64((__m64 *)(outptr + 48), mmG);
+        _mm_storeu_si64((__m64 *)(outptr + 56), mmH);
+      }
       outptr += RGB_PIXELSIZE * 16;
     } else {
       if (output_width & 1)

@@ -275,10 +275,17 @@ void jsimd_rgb_ycc_convert_mmi(JDIMENSION image_width, JSAMPARRAY input_buf,
             : "$f0", "$f2", "$8", "$9", "$10", "$11", "$13", "memory"
            );
       } else {
-        mmA = _mm_load_si64((__m64 *)&inptr[0]);
-        mmF = _mm_load_si64((__m64 *)&inptr[8]);
-        mmD = _mm_load_si64((__m64 *)&inptr[16]);
-        mmC = _mm_load_si64((__m64 *)&inptr[24]);
+        if (!(((long)inptr) & 7)) {
+          mmA = _mm_load_si64((__m64 *)&inptr[0]);
+          mmF = _mm_load_si64((__m64 *)&inptr[8]);
+          mmD = _mm_load_si64((__m64 *)&inptr[16]);
+          mmC = _mm_load_si64((__m64 *)&inptr[24]);
+        } else {
+          mmA = _mm_loadu_si64((__m64 *)&inptr[0]);
+          mmF = _mm_loadu_si64((__m64 *)&inptr[8]);
+          mmD = _mm_loadu_si64((__m64 *)&inptr[16]);
+          mmC = _mm_loadu_si64((__m64 *)&inptr[24]);
+        }
         inptr += RGB_PIXELSIZE * 8;
       }
       mmB = mmA;

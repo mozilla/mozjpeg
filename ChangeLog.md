@@ -16,6 +16,25 @@ automatically be disabled with x32 builds.
      - SIMD acceleration for progressive Huffman encoding does not (currently)
 work with the x32 ABI and will be disabled in x32 builds.
 
+2. Added Loongson MMI SIMD implementations of the RGB-to-grayscale, 4:2:2 fancy
+chroma upsampling, 4:2:2 and 4:2:0 merged chroma upsampling/color conversion,
+and fast integer DCT/IDCT algorithms.  Relative to libjpeg-turbo 2.0.x, this
+speeds up:
+
+     - the compression of RGB source images into grayscale JPEG images by
+approximately 20%
+     - the decompression of 4:2:2 JPEG images by approximately 40-60% when
+using fancy upsampling
+     - the decompression of 4:2:2 and 4:2:0 JPEG images by approximately
+15-20% when using merged upsampling
+     - the compression of RGB source images by approximately 30-45% when using
+the fast integer DCT
+     - the decompression of JPEG images into RGB destination images by
+approximately 2x when using the fast integer IDCT
+
+    The overall decompression speedup for RGB images is now approximately
+2.3-3.7x (compared to 2-3.5x with libjpeg-turbo 2.0.x.)
+
 
 2.0.2
 =====

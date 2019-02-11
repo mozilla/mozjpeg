@@ -52,7 +52,8 @@ if(MAPFLAG)
     LINK_FLAGS "${MAPFLAG}${CMAKE_CURRENT_BINARY_DIR}/../libjpeg.map")
 endif()
 if(MSVC)
-  set_target_properties(jpeg PROPERTIES SUFFIX ${SO_MAJOR_VERSION}.dll)
+  set_target_properties(jpeg PROPERTIES
+    RUNTIME_OUTPUT_NAME jpeg${SO_MAJOR_VERSION})
   # The jsimd_*.c file is built using /MT, so this prevents a linker warning.
   set_target_properties(jpeg PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
 elseif(MINGW)
@@ -91,3 +92,8 @@ install(TARGETS jpeg cjpeg djpeg jpegtran
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
+  CMAKE_C_LINKER_SUPPORTS_PDB)
+  install(FILES "$<TARGET_PDB_FILE:jpeg>"
+    DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+endif()

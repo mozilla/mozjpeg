@@ -43,7 +43,7 @@ Group: System Environment/Libraries
 Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
-Prereq: /sbin/ldconfig
+Requires: /sbin/ldconfig
 %if "%{_bits}" == "64"
 Provides: %{name} = %{version}-%{release}, @CMAKE_PROJECT_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
 %else

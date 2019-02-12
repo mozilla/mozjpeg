@@ -139,7 +139,7 @@ int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
            unsigned long *jpegSize, unsigned char *dstBuf, int w, int h,
            int subsamp, int jpegQual, char *fileName, int tilew, int tileh)
 {
-  char tempStr[1024], sizeStr[20] = "\0", qualStr[6] = "\0", *ptr;
+  char tempStr[1024], sizeStr[20] = "\0", qualStr[13] = "\0", *ptr;
   FILE *file = NULL;
   tjhandle handle = NULL;
   int row, col, iter = 0, dstBufAlloc = 0, retval = 0;
@@ -152,8 +152,8 @@ int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
   unsigned char *dstPtr, *dstPtr2, *yuvBuf = NULL;
 
   if (jpegQual > 0) {
-    snprintf(qualStr, 6, "_Q%d", jpegQual);
-    qualStr[5] = 0;
+    snprintf(qualStr, 13, "_Q%d", jpegQual);
+    qualStr[12] = 0;
   }
 
   if ((handle = tjInitDecompress()) == NULL)

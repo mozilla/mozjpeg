@@ -1,7 +1,7 @@
+%global _docdir %{_defaultdocdir}/%{name}-%{version}
 %define _prefix @CMAKE_INSTALL_PREFIX@
 %define _bindir @CMAKE_INSTALL_FULL_BINDIR@
 %define _datarootdir @CMAKE_INSTALL_FULL_DATAROOTDIR@
-%define _docdir %{_defaultdocdir}/%{name}-%{version}
 %define _includedir @CMAKE_INSTALL_FULL_INCLUDEDIR@
 %define _javadir @CMAKE_INSTALL_FULL_JAVADIR@
 %define _mandir @CMAKE_INSTALL_FULL_MANDIR@
@@ -43,7 +43,7 @@ Group: System Environment/Libraries
 Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}
-Prereq: /sbin/ldconfig
+Requires: /sbin/ldconfig
 %if "%{_bits}" == "64"
 Provides: %{name} = %{version}-%{release}, @CMAKE_PROJECT_NAME@ = %{version}-%{release}, libturbojpeg.so()(64bit)
 %else
@@ -183,7 +183,7 @@ rm -rf $RPM_BUILD_ROOT
 %if "%{_enable_static}" == "1"
  %{_libdir}/libjpeg.a
 %endif
-%{_libdir}/pkgconfig
+%dir %{_libdir}/pkgconfig
 %{_libdir}/pkgconfig/libjpeg.pc
 %if "%{_with_turbojpeg}" == "1"
  %if "%{_enable_shared}" == "1" || "%{_with_java}" == "1"

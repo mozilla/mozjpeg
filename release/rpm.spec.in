@@ -183,7 +183,7 @@ rm -rf $RPM_BUILD_ROOT
 %if "%{_enable_static}" == "1"
  %{_libdir}/libjpeg.a
 %endif
-%{_libdir}/pkgconfig
+%dir %{_libdir}/pkgconfig
 %{_libdir}/pkgconfig/libjpeg.pc
 %if "%{_with_turbojpeg}" == "1"
  %if "%{_enable_shared}" == "1" || "%{_with_java}" == "1"

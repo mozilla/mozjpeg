@@ -1,7 +1,7 @@
+%global _docdir %{_defaultdocdir}/%{name}-%{version}
 %define _prefix @CMAKE_INSTALL_PREFIX@
 %define _bindir @CMAKE_INSTALL_FULL_BINDIR@
 %define _datarootdir @CMAKE_INSTALL_FULL_DATAROOTDIR@
-%define _docdir %{_defaultdocdir}/%{name}-%{version}
 %define _includedir @CMAKE_INSTALL_FULL_INCLUDEDIR@
 %define _javadir @CMAKE_INSTALL_FULL_JAVADIR@
 %define _mandir @CMAKE_INSTALL_FULL_MANDIR@

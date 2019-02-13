@@ -646,8 +646,8 @@ else()
   set(DJPEG_BMP_SOURCES wrbmp.c wrtarga.c)
 
   if(PNG_SUPPORTED)
-    set(COMPILE_FLAGS ${COMPILE_FLAGS} -DPNG_SUPPORTED)
-    set(CJPEG_BMP_SOURCES ${CJPG_BMP_SOURCES} rdpng.c)
+    set(COMPILE_FLAGS "${COMPILE_FLAGS} -DPNG_SUPPORTED")
+    set(CJPEG_BMP_SOURCES ${CJPEG_BMP_SOURCES} rdpng.c)
   endif()
 endif()
 

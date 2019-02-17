@@ -1,10 +1,10 @@
 install:
   - cmd: >-
-      mkdir c:\installers
+      if not exist c:\installers mkdir c:\installers
 
       mkdir c:\temp
 
-      curl -fSL -o c:\installers\nasm-2.10.01-win32.zip http://www.nasm.us/pub/nasm/releasebuilds/2.10.01/win32/nasm-2.10.01-win32.zip
+      if not exist c:\installers\nasm-2.10.01-win32.zip curl -fSL -o c:\installers\nasm-2.10.01-win32.zip http://www.nasm.us/pub/nasm/releasebuilds/2.10.01/win32/nasm-2.10.01-win32.zip
 
       7z x c:\installers\nasm-2.10.01-win32.zip -oc:\ > c:\installers\nasm.install.log
 
@@ -21,6 +21,9 @@ install:
       mklink /d "%ProgramData%\Oracle\Java32" "c:\Program Files (x86)\Java\jdk1.6.0"
 
       git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b %APPVEYOR_REPO_BRANCH% c:/buildscripts
+
+cache:
+  - c:\installers\nasm-2.10.01-win32.zip -> appveyor.yml
 
 build_script:
   - cmd: >-

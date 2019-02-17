@@ -237,7 +237,9 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo, int pixelFormat,
                            int subsamp, int jpegQual, int flags)
 {
   int retval = 0;
+#ifndef NO_GETENV
   char *env = NULL;
+#endif
 
   cinfo->in_color_space = pf2cs[pixelFormat];
   cinfo->input_components = tjPixelSize[pixelFormat];

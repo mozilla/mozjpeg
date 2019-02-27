@@ -499,9 +499,9 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
 
   if (!((output_width >> 1) & 7)) {
     if (output_width & 1) {
-      cb = _mm_load_si32((__m32 *)inptr1);
-      cr = _mm_load_si32((__m32 *)inptr2);
-      y = _mm_load_si32((__m32 *)inptr0);
+      cb = _mm_load_si64((__m64 *)inptr1);
+      cr = _mm_load_si64((__m64 *)inptr2);
+      y = _mm_load_si64((__m64 *)inptr0);
 
       decenter = 0.0;
       decenter = _mm_cmpeq_pi16(decenter, decenter);

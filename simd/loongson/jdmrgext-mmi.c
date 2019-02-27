@@ -296,7 +296,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "mov.s    $f6, %5\r\n"
           "mov.s    $f8, %6\r\n"
           "subu     $9, $9, 24\r\n"
-          "daddu    $10, $10, 24\r\n"
+          PTR_ADDU  "$10, $10, 24\r\n"
 
           "1:       \r\n"
           "li       $8, 16\r\n"               /* st16 */
@@ -308,7 +308,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "gssdrc1  $f6, 8($10)\r\n"
           "mov.s    $f4, $f8\r\n"
           "subu     $9, $9, 16\r\n"
-          "daddu    $10, $10, 16\r\n"
+          PTR_ADDU  "$10, $10, 16\r\n"
 
           "2:       \r\n"
           "li       $8,  8\r\n"               /* st8 */
@@ -318,7 +318,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "gssdrc1  $f4, 0($10)\r\n"
           "mov.s    $f4, $f6\r\n"
           "subu     $9, $9, 8\r\n"
-          "daddu    $10, $10, 8\r\n"
+          PTR_ADDU  "$10, $10, 8\r\n"
 
           "3:       \r\n"
           "li       $8,  4\r\n"               /* st4 */
@@ -332,7 +332,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "dsrl     $f4, $f4, $f6\r\n"
           "mfc1     $11, $f4\r\n"
           "subu     $9, $9, 4\r\n"
-          "daddu    $10, $10, 4\r\n"
+          PTR_ADDU  "$10, $10, 4\r\n"
 
           "4:       \r\n"
           "li       $8, 2\r\n"                /* st2 */
@@ -341,7 +341,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "ush      $11, 0($10)\r\n"
           "srl      $11, 16\r\n"
           "subu     $9, $9, 2\r\n"
-          "daddu    $10, $10, 2\r\n"
+          PTR_ADDU  "$10, $10, 2\r\n"
 
           "5:       \r\n"
           "li       $8, 1\r\n"                /* st1 */
@@ -440,7 +440,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "bltu     $9, $8, 1f\r\n"
           "nop      \r\n"
           "gssdlc1  $f4, 7($10)\r\n"
-          "gssdrc1  $f4, ($10)\r\n"
+          "gssdrc1  $f4, 0($10)\r\n"
           "gssdlc1  $f6, 7+8($10)\r\n"
           "gssdrc1  $f6, 8($10)\r\n"
           "gssdlc1  $f8, 7+16($10)\r\n"
@@ -452,7 +452,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "mov.s    $f8, %8\r\n"
           "mov.s    $f10, %9\r\n"
           "subu     $9, $9, 8\r\n"
-          "daddu    $10, $10, 32\r\n"
+          PTR_ADDU  "$10, $10, 32\r\n"
 
           "1:       \r\n"
           "li       $8, 4\r\n"                /* st16 */
@@ -465,7 +465,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "mov.s    $f4, $f8\r\n"
           "mov.s    $f6, $f10\r\n"
           "subu     $9, $9, 4\r\n"
-          "daddu    $10, $10, 16\r\n"
+          PTR_ADDU  "$10, $10, 16\r\n"
 
           "2:       \r\n"
           "li       $8, 2\r\n"                /* st8 */
@@ -475,7 +475,7 @@ void jsimd_h2v1_merged_upsample_mmi(JDIMENSION output_width,
           "gssdrc1  $f4, 0($10)\r\n"
           "mov.s    $f4, $f6\r\n"
           "subu     $9, $9, 2\r\n"
-          "daddu    $10, $10, 8\r\n"
+          PTR_ADDU  "$10, $10, 8\r\n"
 
           "3:       \r\n"
           "li       $8, 1\r\n"                /* st4 */

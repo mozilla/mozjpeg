@@ -135,18 +135,18 @@ void jsimd_h2v2_fancy_upsample_mmi(int max_v_samp_factor,
     if (downsampled_width & 7) {
       tmp = (downsampled_width - 1) * sizeof(JSAMPLE);
       tmp1 = downsampled_width * sizeof(JSAMPLE);
-      asm("daddu  $8, %3, %6\r\n"
-          "lb     $9, ($8)\r\n"
-          "daddu  $8, %3, %7\r\n"
-          "sb     $9, ($8)\r\n"
-          "daddu  $8, %4, %6\r\n"
-          "lb     $9, ($8)\r\n"
-          "daddu  $8, %4, %7\r\n"
-          "sb     $9, ($8)\r\n"
-          "daddu  $8, %5, %6\r\n"
-          "lb     $9, ($8)\r\n"
-          "daddu  $8, %5, %7\r\n"
-          "sb     $9, ($8)\r\n"
+      asm(PTR_ADDU  "$8, %3, %6\r\n"
+          "lb       $9, ($8)\r\n"
+          PTR_ADDU  "$8, %3, %7\r\n"
+          "sb       $9, ($8)\r\n"
+          PTR_ADDU  "$8, %4, %6\r\n"
+          "lb       $9, ($8)\r\n"
+          PTR_ADDU  "$8, %4, %7\r\n"
+          "sb       $9, ($8)\r\n"
+          PTR_ADDU  "$8, %5, %6\r\n"
+          "lb       $9, ($8)\r\n"
+          PTR_ADDU  "$8, %5, %7\r\n"
+          "sb       $9, ($8)\r\n"
           : "=m" (*inptr_1), "=m" (*inptr0), "=m" (*inptr1)
           : "r" (inptr_1), "r" (inptr0), "r" (inptr1), "r" (tmp), "r" (tmp1)
           : "$8", "$9"
@@ -262,10 +262,10 @@ void jsimd_h2v1_fancy_upsample_mmi(int max_v_samp_factor,
     if (downsampled_width & 7) {
       tmp = (downsampled_width - 1) * sizeof(JSAMPLE);
       tmp1 = downsampled_width * sizeof(JSAMPLE);
-      asm("daddu  $8, %1, %2\r\n"
-          "lb     $9, ($8)\r\n"
-          "daddu  $8, %1, %3\r\n"
-          "sb     $9, ($8)\r\n"
+      asm(PTR_ADDU  "$8, %1, %2\r\n"
+          "lb       $9, ($8)\r\n"
+          PTR_ADDU  "$8, %1, %3\r\n"
+          "sb       $9, ($8)\r\n"
           : "=m" (*inptr0)
           : "r" (inptr0), "r" (tmp), "r" (tmp1)
           : "$8", "$9"

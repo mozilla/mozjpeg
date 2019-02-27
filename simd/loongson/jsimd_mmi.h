@@ -33,6 +33,13 @@
 
 
 /* Common code */
+#if defined(_ABI64) && _MIPS_SIM == _ABI64
+# define PTR_ADDU  "daddu "
+# define PTR_SLL   "dsll "
+#else
+# define PTR_ADDU  "addu "
+# define PTR_SLL   "sll "
+#endif
 
 #define SIZEOF_MMWORD  8
 #define BYTE_BIT  8

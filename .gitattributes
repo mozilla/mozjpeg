@@ -2,3 +2,4 @@
 /appveyor.yml export-ignore
 /ci export-ignore
 /.gitattributes export-ignore
+/.github export-ignore

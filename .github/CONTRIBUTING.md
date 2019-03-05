@@ -73,11 +73,11 @@ are unlikely to be accepted unless:
       upstream libjpeg-turbo users/developers.  (If the enhancement is only
       beneficial to a downstream project, then it does not belong here.)
     - The enhancement has been tested with the following CMake versions:
-          - The earliest version of CMake that libjpeg-turbo currently supports
-            (refer to CMakeLists.txt)
-          - The most recent major version of CMake
-          - (if applicable) The earliest version of CMake with which the
-            enhancement can be used
+        - The earliest version of CMake that libjpeg-turbo currently supports
+          (refer to CMakeLists.txt)
+        - The most recent major version of CMake
+        - (if applicable) The earliest version of CMake with which the
+          enhancement can be used
     - The enhancement has been tested on all of the major platforms (Mac,
       Linux, Windows/Visual C++, Windows/MinGW) that are potentially affected
       by it.

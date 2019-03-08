@@ -80,6 +80,27 @@ limit the number of allowable scans in the input file.
      - Both programs now accept a `-strict` argument, which can be used to
 treat all warnings as fatal.
 
+10. CMake package config files are now included for both the libjpeg and
+TurboJPEG API libraries.  This facilitates using libjpeg-turbo with CMake's
+`find_package()` function.  For example:
+
+        find_package(libjpeg-turbo CONFIG REQUIRED)
+
+        add_executable(libjpeg_program libjpeg_program.c)
+        target_link_libraries(libjpeg_program PUBLIC libjpeg-turbo::jpeg)
+
+        add_executable(libjpeg_program_static libjpeg_program.c)
+        target_link_libraries(libjpeg_program_static PUBLIC
+          libjpeg-turbo::jpeg-static)
+
+        add_executable(turbojpeg_program turbojpeg_program.c)
+        target_link_libraries(turbojpeg_program PUBLIC
+          libjpeg-turbo::turbojpeg)
+
+        add_executable(turbojpeg_program_static turbojpeg_program.c)
+        target_link_libraries(turbojpeg_program_static PUBLIC
+          libjpeg-turbo::turbojpeg-static)
+
 
 2.0.6
 =====

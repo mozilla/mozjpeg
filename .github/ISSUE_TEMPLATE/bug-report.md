@@ -31,7 +31,7 @@ assignees: dcommander
 **Platform(s) (compiler version, operating system version, CPU) on which the bug was observed:**
 
 
-**libjpeg-turbo version(s) in which the bug was observed:**
+**libjpeg-turbo release(s), commit(s), or branch(es) in which the bug was observed (always test the tip of the master branch or the latest [stable pre-release](https://libjpeg-turbo.org/DeveloperInfo/PreReleases) to verify that the bug hasn't already been fixed):**
 
 
 **If the bug is a regression, the specific commit that introduced the regression (use `git bisect` to determine this):**

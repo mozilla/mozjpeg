@@ -3,10 +3,10 @@ Contributing to libjpeg-turbo
 
 libjpeg-turbo is a stable and mature product with a worldwide reach, it is an
 ISO/ITU-T reference implementation of the JPEG standard, and its maintainer
-does not earn a salary for maintaining it.  As such, not every code
-contribution can or will be accepted into the libjpeg-turbo code base.  In
-order to maximize the chances that a code contribution is acceptable, please
-adhere to the following guidelines:
+does not earn a salary for maintaining it.  Thus, not every code contribution
+can or will be accepted into the libjpeg-turbo code base.  In order to maximize
+the chances that a code contribution is acceptable, please adhere to the
+following guidelines:
 
 1. If the code contribution is a bug fix, then please ensure that enough
 information is provided so that the maintainer can readily reproduce and

@@ -688,7 +688,7 @@ decode_mcu_fast(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
     if (entropy->dc_needed[blkn]) {
       int ci = cinfo->MCU_membership[blkn];
-      s += state.last_dc_val[ci];
+      s = (int)((unsigned int)s + (unsigned int)state.last_dc_val[ci]);
       state.last_dc_val[ci] = s;
       if (block)
         (*block)[0] = (JCOEF)s;

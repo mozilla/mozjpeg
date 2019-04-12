@@ -39,55 +39,55 @@
 
 #define PAD(v, p)  ((v + (p) - 1) & (~((p) - 1)))
 
-#define bailif0(f) { \
+#define BAILIF0(f) { \
   if (!(f) || (*env)->ExceptionCheck(env)) { \
     goto bailout; \
   } \
 }
 
-#define _throw(msg, exceptionClass) { \
+#define THROW(msg, exceptionClass) { \
   jclass _exccls = (*env)->FindClass(env, exceptionClass); \
   \
-  bailif0(_exccls); \
+  BAILIF0(_exccls); \
   (*env)->ThrowNew(env, _exccls, msg); \
   goto bailout; \
 }
 
-#define _throwtj() { \
+#define THROW_TJ() { \
   jclass _exccls; \
   jmethodID _excid; \
   jobject _excobj; \
   jstring _errstr; \
   \
-  bailif0(_errstr = (*env)->NewStringUTF(env, tjGetErrorStr2(handle))); \
-  bailif0(_exccls = (*env)->FindClass(env, \
+  BAILIF0(_errstr = (*env)->NewStringUTF(env, tjGetErrorStr2(handle))); \
+  BAILIF0(_exccls = (*env)->FindClass(env, \
     "org/libjpegturbo/turbojpeg/TJException")); \
-  bailif0(_excid = (*env)->GetMethodID(env, _exccls, "<init>", \
+  BAILIF0(_excid = (*env)->GetMethodID(env, _exccls, "<init>", \
                                        "(Ljava/lang/String;I)V")); \
-  bailif0(_excobj = (*env)->NewObject(env, _exccls, _excid, _errstr, \
+  BAILIF0(_excobj = (*env)->NewObject(env, _exccls, _excid, _errstr, \
                                       tjGetErrorCode(handle))); \
   (*env)->Throw(env, _excobj); \
   goto bailout; \
 }
 
-#define _throwarg(msg)  _throw(msg, "java/lang/IllegalArgumentException")
+#define THROW_ARG(msg)  THROW(msg, "java/lang/IllegalArgumentException")
 
-#define _throwmem() \
-  _throw("Memory allocation failure", "java/lang/OutOfMemoryError");
+#define THROW_MEM() \
+  THROW("Memory allocation failure", "java/lang/OutOfMemoryError");
 
-#define gethandle() \
+#define GET_HANDLE() \
   jclass _cls = (*env)->GetObjectClass(env, obj); \
   jfieldID _fid; \
   \
-  bailif0(_cls); \
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "handle", "J")); \
+  BAILIF0(_cls); \
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "handle", "J")); \
   handle = (tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);
 
 #ifdef _WIN32
 #define setenv(envvar, value, dummy)  _putenv_s(envvar, value)
 #endif
 
-#define prop2env(property, envvar) { \
+#define PROP2ENV(property, envvar) { \
   if ((jName = (*env)->NewStringUTF(env, property)) != NULL && \
       (jValue = (*env)->CallStaticObjectMethod(env, cls, mid, \
                                                jName)) != NULL) { \
@@ -105,14 +105,14 @@ int ProcessSystemProperties(JNIEnv *env)
   jstring jName, jValue;
   const char *value;
 
-  bailif0(cls = (*env)->FindClass(env, "java/lang/System"));
-  bailif0(mid = (*env)->GetStaticMethodID(env, cls, "getProperty",
+  BAILIF0(cls = (*env)->FindClass(env, "java/lang/System"));
+  BAILIF0(mid = (*env)->GetStaticMethodID(env, cls, "getProperty",
     "(Ljava/lang/String;)Ljava/lang/String;"));
 
-  prop2env("turbojpeg.optimize", "TJ_OPTIMIZE");
-  prop2env("turbojpeg.arithmetic", "TJ_ARITHMETIC");
-  prop2env("turbojpeg.restart", "TJ_RESTART");
-  prop2env("turbojpeg.progressive", "TJ_PROGRESSIVE");
+  PROP2ENV("turbojpeg.optimize", "TJ_OPTIMIZE");
+  PROP2ENV("turbojpeg.arithmetic", "TJ_ARITHMETIC");
+  PROP2ENV("turbojpeg.restart", "TJ_RESTART");
+  PROP2ENV("turbojpeg.progressive", "TJ_PROGRESSIVE");
   return 0;
 
 bailout:
@@ -125,7 +125,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
 {
   jint retval = (jint)tjBufSize(width, height, jpegSubsamp);
 
-  if (retval == -1) _throwarg(tjGetErrorStr());
+  if (retval == -1) THROW_ARG(tjGetErrorStr());
 
 bailout:
   return retval;
@@ -137,7 +137,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII
 {
   jint retval = (jint)tjBufSizeYUV2(width, pad, height, subsamp);
 
-  if (retval == -1) _throwarg(tjGetErrorStr());
+  if (retval == -1) THROW_ARG(tjGetErrorStr());
 
 bailout:
   return retval;
@@ -160,7 +160,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeSizeYUV__IIIII
   jint retval = (jint)tjPlaneSizeYUV(componentID, width, stride, height,
                                      subsamp);
 
-  if (retval == -1) _throwarg(tjGetErrorStr());
+  if (retval == -1) THROW_ARG(tjGetErrorStr());
 
 bailout:
   return retval;
@@ -172,7 +172,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeWidth__III
 {
   jint retval = (jint)tjPlaneWidth(componentID, width, subsamp);
 
-  if (retval == -1) _throwarg(tjGetErrorStr());
+  if (retval == -1) THROW_ARG(tjGetErrorStr());
 
 bailout:
   return retval;
@@ -184,7 +184,7 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeHeight__III
 {
   jint retval = (jint)tjPlaneHeight(componentID, height, subsamp);
 
-  if (retval == -1) _throwarg(tjGetErrorStr());
+  if (retval == -1) THROW_ARG(tjGetErrorStr());
 
 bailout:
   return retval;
@@ -199,10 +199,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_init
   tjhandle handle;
 
   if ((handle = tjInitCompress()) == NULL)
-    _throw(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
+    THROW(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
 
-  bailif0(cls = (*env)->GetObjectClass(env, obj));
-  bailif0(fid = (*env)->GetFieldID(env, cls, "handle", "J"));
+  BAILIF0(cls = (*env)->GetObjectClass(env, obj));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "handle", "J"));
   (*env)->SetLongField(env, obj, fid, (size_t)handle);
 
 bailout:
@@ -219,31 +219,31 @@ static jint TJCompressor_compress
   jsize arraySize = 0, actualPitch;
   unsigned char *srcBuf = NULL, *jpegBuf = NULL;
 
-  gethandle();
+  GET_HANDLE();
 
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF || width < 1 ||
       height < 1 || pitch < 0)
-    _throwarg("Invalid argument in compress()");
+    THROW_ARG("Invalid argument in compress()");
   if (org_libjpegturbo_turbojpeg_TJ_NUMPF != TJ_NUMPF)
-    _throwarg("Mismatch between Java and C API");
+    THROW_ARG("Mismatch between Java and C API");
 
   actualPitch = (pitch == 0) ? width * tjPixelSize[pf] : pitch;
   arraySize = (y + height - 1) * actualPitch + (x + width) * tjPixelSize[pf];
   if ((*env)->GetArrayLength(env, src) * srcElementSize < arraySize)
-    _throwarg("Source buffer is not large enough");
+    THROW_ARG("Source buffer is not large enough");
   jpegSize = tjBufSize(width, height, jpegSubsamp);
   if ((*env)->GetArrayLength(env, dst) < (jsize)jpegSize)
-    _throwarg("Destination buffer is not large enough");
+    THROW_ARG("Destination buffer is not large enough");
 
   if (ProcessSystemProperties(env) < 0) goto bailout;
 
-  bailif0(srcBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
-  bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
+  BAILIF0(srcBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
+  BAILIF0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
   if (tjCompress2(handle, &srcBuf[y * actualPitch + x * tjPixelSize[pf]],
                   width, pitch, height, pf, &jpegBuf, &jpegSize, jpegSubsamp,
                   jpegQual, flags | TJFLAG_NOREALLOC) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (jpegBuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, jpegBuf, 0);
@@ -278,9 +278,9 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
    jint jpegQual, jint flags)
 {
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in compress()");
+    THROW_ARG("Invalid argument in compress()");
   if (tjPixelSize[pf] != sizeof(jint))
-    _throwarg("Pixel format must be 32-bit when compressing from an integer buffer.");
+    THROW_ARG("Pixel format must be 32-bit when compressing from an integer buffer.");
 
   return TJCompressor_compress(env, obj, src, sizeof(jint), x, y, width,
                                stride * sizeof(jint), height, pf, dst,
@@ -297,9 +297,9 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3
    jint flags)
 {
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in compress()");
+    THROW_ARG("Invalid argument in compress()");
   if (tjPixelSize[pf] != sizeof(jint))
-    _throwarg("Pixel format must be 32-bit when compressing from an integer buffer.");
+    THROW_ARG("Pixel format must be 32-bit when compressing from an integer buffer.");
 
   return TJCompressor_compress(env, obj, src, sizeof(jint), 0, 0, width,
                                stride * sizeof(jint), height, pf, dst,
@@ -323,54 +323,54 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFrom
   int *srcOffsets = NULL, *srcStrides = NULL;
   int nc = (subsamp == org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY ? 1 : 3), i;
 
-  gethandle();
+  GET_HANDLE();
 
   if (subsamp < 0 || subsamp >= org_libjpegturbo_turbojpeg_TJ_NUMSAMP)
-    _throwarg("Invalid argument in compressFromYUV()");
+    THROW_ARG("Invalid argument in compressFromYUV()");
   if (org_libjpegturbo_turbojpeg_TJ_NUMSAMP != TJ_NUMSAMP)
-    _throwarg("Mismatch between Java and C API");
+    THROW_ARG("Mismatch between Java and C API");
 
   if ((*env)->GetArrayLength(env, srcobjs) < nc)
-    _throwarg("Planes array is too small for the subsampling type");
+    THROW_ARG("Planes array is too small for the subsampling type");
   if ((*env)->GetArrayLength(env, jSrcOffsets) < nc)
-    _throwarg("Offsets array is too small for the subsampling type");
+    THROW_ARG("Offsets array is too small for the subsampling type");
   if ((*env)->GetArrayLength(env, jSrcStrides) < nc)
-    _throwarg("Strides array is too small for the subsampling type");
+    THROW_ARG("Strides array is too small for the subsampling type");
 
   jpegSize = tjBufSize(width, height, subsamp);
   if ((*env)->GetArrayLength(env, dst) < (jsize)jpegSize)
-    _throwarg("Destination buffer is not large enough");
+    THROW_ARG("Destination buffer is not large enough");
 
   if (ProcessSystemProperties(env) < 0) goto bailout;
 
-  bailif0(srcOffsets = (*env)->GetPrimitiveArrayCritical(env, jSrcOffsets, 0));
-  bailif0(srcStrides = (*env)->GetPrimitiveArrayCritical(env, jSrcStrides, 0));
+  BAILIF0(srcOffsets = (*env)->GetPrimitiveArrayCritical(env, jSrcOffsets, 0));
+  BAILIF0(srcStrides = (*env)->GetPrimitiveArrayCritical(env, jSrcStrides, 0));
   for (i = 0; i < nc; i++) {
     int planeSize = tjPlaneSizeYUV(i, width, srcStrides[i], height, subsamp);
     int pw = tjPlaneWidth(i, width, subsamp);
 
     if (planeSize < 0 || pw < 0)
-      _throwarg(tjGetErrorStr());
+      THROW_ARG(tjGetErrorStr());
 
     if (srcOffsets[i] < 0)
-      _throwarg("Invalid argument in compressFromYUV()");
+      THROW_ARG("Invalid argument in compressFromYUV()");
     if (srcStrides[i] < 0 && srcOffsets[i] - planeSize + pw < 0)
-      _throwarg("Negative plane stride would cause memory to be accessed below plane boundary");
+      THROW_ARG("Negative plane stride would cause memory to be accessed below plane boundary");
 
-    bailif0(jSrcPlanes[i] = (*env)->GetObjectArrayElement(env, srcobjs, i));
+    BAILIF0(jSrcPlanes[i] = (*env)->GetObjectArrayElement(env, srcobjs, i));
     if ((*env)->GetArrayLength(env, jSrcPlanes[i]) < srcOffsets[i] + planeSize)
-      _throwarg("Source plane is not large enough");
+      THROW_ARG("Source plane is not large enough");
 
-    bailif0(srcPlanes[i] =
+    BAILIF0(srcPlanes[i] =
             (*env)->GetPrimitiveArrayCritical(env, jSrcPlanes[i], 0));
     srcPlanes[i] = &srcPlanes[i][srcOffsets[i]];
   }
-  bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
+  BAILIF0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
   if (tjCompressFromYUVPlanes(handle, srcPlanes, width, srcStrides, height,
                               subsamp, &jpegBuf, &jpegSize, jpegQual,
                               flags | TJFLAG_NOREALLOC) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (jpegBuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, jpegBuf, 0);
@@ -398,56 +398,56 @@ static void TJCompressor_encodeYUV
   int *dstOffsets = NULL, *dstStrides = NULL;
   int nc = (subsamp == org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY ? 1 : 3), i;
 
-  gethandle();
+  GET_HANDLE();
 
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF || width < 1 ||
       height < 1 || pitch < 0 || subsamp < 0 ||
       subsamp >= org_libjpegturbo_turbojpeg_TJ_NUMSAMP)
-    _throwarg("Invalid argument in encodeYUV()");
+    THROW_ARG("Invalid argument in encodeYUV()");
   if (org_libjpegturbo_turbojpeg_TJ_NUMPF != TJ_NUMPF ||
       org_libjpegturbo_turbojpeg_TJ_NUMSAMP != TJ_NUMSAMP)
-    _throwarg("Mismatch between Java and C API");
+    THROW_ARG("Mismatch between Java and C API");
 
   if ((*env)->GetArrayLength(env, dstobjs) < nc)
-    _throwarg("Planes array is too small for the subsampling type");
+    THROW_ARG("Planes array is too small for the subsampling type");
   if ((*env)->GetArrayLength(env, jDstOffsets) < nc)
-    _throwarg("Offsets array is too small for the subsampling type");
+    THROW_ARG("Offsets array is too small for the subsampling type");
   if ((*env)->GetArrayLength(env, jDstStrides) < nc)
-    _throwarg("Strides array is too small for the subsampling type");
+    THROW_ARG("Strides array is too small for the subsampling type");
 
   actualPitch = (pitch == 0) ? width * tjPixelSize[pf] : pitch;
   arraySize = (y + height - 1) * actualPitch + (x + width) * tjPixelSize[pf];
   if ((*env)->GetArrayLength(env, src) * srcElementSize < arraySize)
-    _throwarg("Source buffer is not large enough");
+    THROW_ARG("Source buffer is not large enough");
 
-  bailif0(dstOffsets = (*env)->GetPrimitiveArrayCritical(env, jDstOffsets, 0));
-  bailif0(dstStrides = (*env)->GetPrimitiveArrayCritical(env, jDstStrides, 0));
+  BAILIF0(dstOffsets = (*env)->GetPrimitiveArrayCritical(env, jDstOffsets, 0));
+  BAILIF0(dstStrides = (*env)->GetPrimitiveArrayCritical(env, jDstStrides, 0));
   for (i = 0; i < nc; i++) {
     int planeSize = tjPlaneSizeYUV(i, width, dstStrides[i], height, subsamp);
     int pw = tjPlaneWidth(i, width, subsamp);
 
     if (planeSize < 0 || pw < 0)
-      _throwarg(tjGetErrorStr());
+      THROW_ARG(tjGetErrorStr());
 
     if (dstOffsets[i] < 0)
-      _throwarg("Invalid argument in encodeYUV()");
+      THROW_ARG("Invalid argument in encodeYUV()");
     if (dstStrides[i] < 0 && dstOffsets[i] - planeSize + pw < 0)
-      _throwarg("Negative plane stride would cause memory to be accessed below plane boundary");
+      THROW_ARG("Negative plane stride would cause memory to be accessed below plane boundary");
 
-    bailif0(jDstPlanes[i] = (*env)->GetObjectArrayElement(env, dstobjs, i));
+    BAILIF0(jDstPlanes[i] = (*env)->GetObjectArrayElement(env, dstobjs, i));
     if ((*env)->GetArrayLength(env, jDstPlanes[i]) < dstOffsets[i] + planeSize)
-      _throwarg("Destination plane is not large enough");
+      THROW_ARG("Destination plane is not large enough");
 
-    bailif0(dstPlanes[i] =
+    BAILIF0(dstPlanes[i] =
             (*env)->GetPrimitiveArrayCritical(env, jDstPlanes[i], 0));
     dstPlanes[i] = &dstPlanes[i][dstOffsets[i]];
   }
-  bailif0(srcBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
+  BAILIF0(srcBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
 
   if (tjEncodeYUVPlanes(handle, &srcBuf[y * actualPitch + x * tjPixelSize[pf]],
                         width, pitch, height, pf, dstPlanes, dstStrides,
                         subsamp, flags) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (srcBuf) (*env)->ReleasePrimitiveArrayCritical(env, src, srcBuf, 0);
@@ -479,9 +479,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
    jintArray jDstOffsets, jintArray jDstStrides, jint subsamp, jint flags)
 {
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in encodeYUV()");
+    THROW_ARG("Invalid argument in encodeYUV()");
   if (tjPixelSize[pf] != sizeof(jint))
-    _throwarg("Pixel format must be 32-bit when encoding from an integer buffer.");
+    THROW_ARG("Pixel format must be 32-bit when encoding from an integer buffer.");
 
   TJCompressor_encodeYUV(env, obj, src, sizeof(jint), x, y, width,
                          stride * sizeof(jint), height, pf, dstobjs,
@@ -499,27 +499,27 @@ JNIEXPORT void JNICALL TJCompressor_encodeYUV_12
   jsize arraySize = 0;
   unsigned char *srcBuf = NULL, *dstBuf = NULL;
 
-  gethandle();
+  GET_HANDLE();
 
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF || width < 1 ||
       height < 1 || pitch < 0)
-    _throwarg("Invalid argument in encodeYUV()");
+    THROW_ARG("Invalid argument in encodeYUV()");
   if (org_libjpegturbo_turbojpeg_TJ_NUMPF != TJ_NUMPF)
-    _throwarg("Mismatch between Java and C API");
+    THROW_ARG("Mismatch between Java and C API");
 
   arraySize = (pitch == 0) ? width * tjPixelSize[pf] * height : pitch * height;
   if ((*env)->GetArrayLength(env, src) * srcElementSize < arraySize)
-    _throwarg("Source buffer is not large enough");
+    THROW_ARG("Source buffer is not large enough");
   if ((*env)->GetArrayLength(env, dst) <
       (jsize)tjBufSizeYUV(width, height, subsamp))
-    _throwarg("Destination buffer is not large enough");
+    THROW_ARG("Destination buffer is not large enough");
 
-  bailif0(srcBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
-  bailif0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
+  BAILIF0(srcBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
+  BAILIF0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
   if (tjEncodeYUV2(handle, srcBuf, width, pitch, height, pf, dstBuf, subsamp,
                    flags) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (dstBuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstBuf, 0);
@@ -541,9 +541,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___
    jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
 {
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in encodeYUV()");
+    THROW_ARG("Invalid argument in encodeYUV()");
   if (tjPixelSize[pf] != sizeof(jint))
-    _throwarg("Pixel format must be 32-bit when encoding from an integer buffer.");
+    THROW_ARG("Pixel format must be 32-bit when encoding from an integer buffer.");
 
   TJCompressor_encodeYUV_12(env, obj, src, sizeof(jint), width,
                             stride * sizeof(jint), height, pf, dst, subsamp,
@@ -559,9 +559,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
 {
   tjhandle handle = 0;
 
-  gethandle();
+  GET_HANDLE();
 
-  if (tjDestroy(handle) == -1) _throwtj();
+  if (tjDestroy(handle) == -1) THROW_TJ();
   (*env)->SetLongField(env, obj, _fid, 0);
 
 bailout:
@@ -577,10 +577,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_init
   tjhandle handle;
 
   if ((handle = tjInitDecompress()) == NULL)
-    _throw(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
+    THROW(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
 
-  bailif0(cls = (*env)->GetObjectClass(env, obj));
-  bailif0(fid = (*env)->GetFieldID(env, cls, "handle", "J"));
+  BAILIF0(cls = (*env)->GetObjectClass(env, obj));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "handle", "J"));
   (*env)->SetLongField(env, obj, fid, (size_t)handle);
 
 bailout:
@@ -599,17 +599,17 @@ JNIEXPORT jobjectArray JNICALL Java_org_libjpegturbo_turbojpeg_TJ_getScalingFact
   jobjectArray sfjava = NULL;
 
   if ((sf = tjGetScalingFactors(&n)) == NULL || n == 0)
-    _throwarg(tjGetErrorStr());
+    THROW_ARG(tjGetErrorStr());
 
-  bailif0(sfcls = (*env)->FindClass(env,
+  BAILIF0(sfcls = (*env)->FindClass(env,
     "org/libjpegturbo/turbojpeg/TJScalingFactor"));
-  bailif0(sfjava = (jobjectArray)(*env)->NewObjectArray(env, n, sfcls, 0));
+  BAILIF0(sfjava = (jobjectArray)(*env)->NewObjectArray(env, n, sfcls, 0));
 
   for (i = 0; i < n; i++) {
-    bailif0(sfobj = (*env)->AllocObject(env, sfcls));
-    bailif0(fid = (*env)->GetFieldID(env, sfcls, "num", "I"));
+    BAILIF0(sfobj = (*env)->AllocObject(env, sfcls));
+    BAILIF0(fid = (*env)->GetFieldID(env, sfcls, "num", "I"));
     (*env)->SetIntField(env, sfobj, fid, sf[i].num);
-    bailif0(fid = (*env)->GetFieldID(env, sfcls, "denom", "I"));
+    BAILIF0(fid = (*env)->GetFieldID(env, sfcls, "denom", "I"));
     (*env)->SetIntField(env, sfobj, fid, sf[i].denom);
     (*env)->SetObjectArrayElement(env, sfjava, i, sfobj);
   }
@@ -626,29 +626,29 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
   unsigned char *jpegBuf = NULL;
   int width = 0, height = 0, jpegSubsamp = -1, jpegColorspace = -1;
 
-  gethandle();
+  GET_HANDLE();
 
   if ((*env)->GetArrayLength(env, src) < jpegSize)
-    _throwarg("Source buffer is not large enough");
+    THROW_ARG("Source buffer is not large enough");
 
-  bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
+  BAILIF0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
 
   if (tjDecompressHeader3(handle, jpegBuf, (unsigned long)jpegSize, &width,
                           &height, &jpegSubsamp, &jpegColorspace) == -1)
-    _throwtj();
+    THROW_TJ();
 
   (*env)->ReleasePrimitiveArrayCritical(env, src, jpegBuf, 0);
   jpegBuf = NULL;
 
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
   (*env)->SetIntField(env, obj, _fid, jpegSubsamp);
   if ((_fid = (*env)->GetFieldID(env, _cls, "jpegColorspace", "I")) == 0)
     (*env)->ExceptionClear(env);
   else
     (*env)->SetIntField(env, obj, _fid, jpegColorspace);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
   (*env)->SetIntField(env, obj, _fid, width);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
   (*env)->SetIntField(env, obj, _fid, height);
 
 bailout:
@@ -664,27 +664,27 @@ static void TJDecompressor_decompress
   jsize arraySize = 0, actualPitch;
   unsigned char *jpegBuf = NULL, *dstBuf = NULL;
 
-  gethandle();
+  GET_HANDLE();
 
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in decompress()");
+    THROW_ARG("Invalid argument in decompress()");
   if (org_libjpegturbo_turbojpeg_TJ_NUMPF != TJ_NUMPF)
-    _throwarg("Mismatch between Java and C API");
+    THROW_ARG("Mismatch between Java and C API");
 
   if ((*env)->GetArrayLength(env, src) < jpegSize)
-    _throwarg("Source buffer is not large enough");
+    THROW_ARG("Source buffer is not large enough");
   actualPitch = (pitch == 0) ? width * tjPixelSize[pf] : pitch;
   arraySize = (y + height - 1) * actualPitch + (x + width) * tjPixelSize[pf];
   if ((*env)->GetArrayLength(env, dst) * dstElementSize < arraySize)
-    _throwarg("Destination buffer is not large enough");
+    THROW_ARG("Destination buffer is not large enough");
 
-  bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
-  bailif0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
+  BAILIF0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
+  BAILIF0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
   if (tjDecompress2(handle, jpegBuf, (unsigned long)jpegSize,
                     &dstBuf[y * actualPitch + x * tjPixelSize[pf]], width,
                     pitch, height, pf, flags) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (dstBuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstBuf, 0);
@@ -715,9 +715,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
    jint x, jint y, jint width, jint stride, jint height, jint pf, jint flags)
 {
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in decompress()");
+    THROW_ARG("Invalid argument in decompress()");
   if (tjPixelSize[pf] != sizeof(jint))
-    _throwarg("Pixel format must be 32-bit when decompressing to an integer buffer.");
+    THROW_ARG("Pixel format must be 32-bit when decompressing to an integer buffer.");
 
   TJDecompressor_decompress(env, obj, src, jpegSize, dst, sizeof(jint), x, y,
                             width, stride * sizeof(jint), height, pf, flags);
@@ -732,9 +732,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
    jint width, jint stride, jint height, jint pf, jint flags)
 {
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in decompress()");
+    THROW_ARG("Invalid argument in decompress()");
   if (tjPixelSize[pf] != sizeof(jint))
-    _throwarg("Pixel format must be 32-bit when decompressing to an integer buffer.");
+    THROW_ARG("Pixel format must be 32-bit when decompressing to an integer buffer.");
 
   TJDecompressor_decompress(env, obj, src, jpegSize, dst, sizeof(jint), 0, 0,
                             width, stride * sizeof(jint), height, pf, flags);
@@ -757,15 +757,15 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
   int nc = 0, i, width, height, scaledWidth, scaledHeight, nsf = 0;
   tjscalingfactor *sf;
 
-  gethandle();
+  GET_HANDLE();
 
   if ((*env)->GetArrayLength(env, src) < jpegSize)
-    _throwarg("Source buffer is not large enough");
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
+    THROW_ARG("Source buffer is not large enough");
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
   jpegSubsamp = (int)(*env)->GetIntField(env, obj, _fid);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
   jpegWidth = (int)(*env)->GetIntField(env, obj, _fid);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
   jpegHeight = (int)(*env)->GetIntField(env, obj, _fid);
 
   nc = (jpegSubsamp == org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY ? 1 : 3);
@@ -776,7 +776,7 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
   if (height == 0) height = jpegHeight;
   sf = tjGetScalingFactors(&nsf);
   if (!sf || nsf < 1)
-    _throwarg(tjGetErrorStr());
+    THROW_ARG(tjGetErrorStr());
   for (i = 0; i < nsf; i++) {
     scaledWidth = TJSCALED(jpegWidth, sf[i]);
     scaledHeight = TJSCALED(jpegHeight, sf[i]);
@@ -784,37 +784,37 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
       break;
   }
   if (i >= nsf)
-    _throwarg("Could not scale down to desired image dimensions");
+    THROW_ARG("Could not scale down to desired image dimensions");
 
-  bailif0(dstOffsets = (*env)->GetPrimitiveArrayCritical(env, jDstOffsets, 0));
-  bailif0(dstStrides = (*env)->GetPrimitiveArrayCritical(env, jDstStrides, 0));
+  BAILIF0(dstOffsets = (*env)->GetPrimitiveArrayCritical(env, jDstOffsets, 0));
+  BAILIF0(dstStrides = (*env)->GetPrimitiveArrayCritical(env, jDstStrides, 0));
   for (i = 0; i < nc; i++) {
     int planeSize = tjPlaneSizeYUV(i, scaledWidth, dstStrides[i], scaledHeight,
                                    jpegSubsamp);
     int pw = tjPlaneWidth(i, scaledWidth, jpegSubsamp);
 
     if (planeSize < 0 || pw < 0)
-      _throwarg(tjGetErrorStr());
+      THROW_ARG(tjGetErrorStr());
 
     if (dstOffsets[i] < 0)
-      _throwarg("Invalid argument in decompressToYUV()");
+      THROW_ARG("Invalid argument in decompressToYUV()");
     if (dstStrides[i] < 0 && dstOffsets[i] - planeSize + pw < 0)
-      _throwarg("Negative plane stride would cause memory to be accessed below plane boundary");
+      THROW_ARG("Negative plane stride would cause memory to be accessed below plane boundary");
 
-    bailif0(jDstPlanes[i] = (*env)->GetObjectArrayElement(env, dstobjs, i));
+    BAILIF0(jDstPlanes[i] = (*env)->GetObjectArrayElement(env, dstobjs, i));
     if ((*env)->GetArrayLength(env, jDstPlanes[i]) < dstOffsets[i] + planeSize)
-      _throwarg("Destination plane is not large enough");
+      THROW_ARG("Destination plane is not large enough");
 
-    bailif0(dstPlanes[i] =
+    BAILIF0(dstPlanes[i] =
             (*env)->GetPrimitiveArrayCritical(env, jDstPlanes[i], 0));
     dstPlanes[i] = &dstPlanes[i][dstOffsets[i]];
   }
-  bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
+  BAILIF0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
 
   if (tjDecompressToYUVPlanes(handle, jpegBuf, (unsigned long)jpegSize,
                               dstPlanes, desiredWidth, dstStrides,
                               desiredHeight, flags) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (jpegBuf) (*env)->ReleasePrimitiveArrayCritical(env, src, jpegBuf, 0);
@@ -838,26 +838,26 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
   unsigned char *jpegBuf = NULL, *dstBuf = NULL;
   int jpegSubsamp = -1, jpegWidth = 0, jpegHeight = 0;
 
-  gethandle();
+  GET_HANDLE();
 
   if ((*env)->GetArrayLength(env, src) < jpegSize)
-    _throwarg("Source buffer is not large enough");
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
+    THROW_ARG("Source buffer is not large enough");
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
   jpegSubsamp = (int)(*env)->GetIntField(env, obj, _fid);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
   jpegWidth = (int)(*env)->GetIntField(env, obj, _fid);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
   jpegHeight = (int)(*env)->GetIntField(env, obj, _fid);
   if ((*env)->GetArrayLength(env, dst) <
       (jsize)tjBufSizeYUV(jpegWidth, jpegHeight, jpegSubsamp))
-    _throwarg("Destination buffer is not large enough");
+    THROW_ARG("Destination buffer is not large enough");
 
-  bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
-  bailif0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
+  BAILIF0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
+  BAILIF0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
   if (tjDecompressToYUV(handle, jpegBuf, (unsigned long)jpegSize, dstBuf,
                         flags) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (dstBuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstBuf, 0);
@@ -877,55 +877,55 @@ static void TJDecompressor_decodeYUV
   int *srcOffsets = NULL, *srcStrides = NULL;
   int nc = (subsamp == org_libjpegturbo_turbojpeg_TJ_SAMP_GRAY ? 1 : 3), i;
 
-  gethandle();
+  GET_HANDLE();
 
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF || subsamp < 0 ||
       subsamp >= org_libjpegturbo_turbojpeg_TJ_NUMSAMP)
-    _throwarg("Invalid argument in decodeYUV()");
+    THROW_ARG("Invalid argument in decodeYUV()");
   if (org_libjpegturbo_turbojpeg_TJ_NUMPF != TJ_NUMPF ||
       org_libjpegturbo_turbojpeg_TJ_NUMSAMP != TJ_NUMSAMP)
-    _throwarg("Mismatch between Java and C API");
+    THROW_ARG("Mismatch between Java and C API");
 
   if ((*env)->GetArrayLength(env, srcobjs) < nc)
-    _throwarg("Planes array is too small for the subsampling type");
+    THROW_ARG("Planes array is too small for the subsampling type");
   if ((*env)->GetArrayLength(env, jSrcOffsets) < nc)
-    _throwarg("Offsets array is too small for the subsampling type");
+    THROW_ARG("Offsets array is too small for the subsampling type");
   if ((*env)->GetArrayLength(env, jSrcStrides) < nc)
-    _throwarg("Strides array is too small for the subsampling type");
+    THROW_ARG("Strides array is too small for the subsampling type");
 
   actualPitch = (pitch == 0) ? width * tjPixelSize[pf] : pitch;
   arraySize = (y + height - 1) * actualPitch + (x + width) * tjPixelSize[pf];
   if ((*env)->GetArrayLength(env, dst) * dstElementSize < arraySize)
-    _throwarg("Destination buffer is not large enough");
+    THROW_ARG("Destination buffer is not large enough");
 
-  bailif0(srcOffsets = (*env)->GetPrimitiveArrayCritical(env, jSrcOffsets, 0));
-  bailif0(srcStrides = (*env)->GetPrimitiveArrayCritical(env, jSrcStrides, 0));
+  BAILIF0(srcOffsets = (*env)->GetPrimitiveArrayCritical(env, jSrcOffsets, 0));
+  BAILIF0(srcStrides = (*env)->GetPrimitiveArrayCritical(env, jSrcStrides, 0));
   for (i = 0; i < nc; i++) {
     int planeSize = tjPlaneSizeYUV(i, width, srcStrides[i], height, subsamp);
     int pw = tjPlaneWidth(i, width, subsamp);
 
     if (planeSize < 0 || pw < 0)
-      _throwarg(tjGetErrorStr());
+      THROW_ARG(tjGetErrorStr());
 
     if (srcOffsets[i] < 0)
-      _throwarg("Invalid argument in decodeYUV()");
+      THROW_ARG("Invalid argument in decodeYUV()");
     if (srcStrides[i] < 0 && srcOffsets[i] - planeSize + pw < 0)
-      _throwarg("Negative plane stride would cause memory to be accessed below plane boundary");
+      THROW_ARG("Negative plane stride would cause memory to be accessed below plane boundary");
 
-    bailif0(jSrcPlanes[i] = (*env)->GetObjectArrayElement(env, srcobjs, i));
+    BAILIF0(jSrcPlanes[i] = (*env)->GetObjectArrayElement(env, srcobjs, i));
     if ((*env)->GetArrayLength(env, jSrcPlanes[i]) < srcOffsets[i] + planeSize)
-      _throwarg("Source plane is not large enough");
+      THROW_ARG("Source plane is not large enough");
 
-    bailif0(srcPlanes[i] =
+    BAILIF0(srcPlanes[i] =
             (*env)->GetPrimitiveArrayCritical(env, jSrcPlanes[i], 0));
     srcPlanes[i] = &srcPlanes[i][srcOffsets[i]];
   }
-  bailif0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
+  BAILIF0(dstBuf = (*env)->GetPrimitiveArrayCritical(env, dst, 0));
 
   if (tjDecodeYUVPlanes(handle, srcPlanes, srcStrides, subsamp,
                         &dstBuf[y * actualPitch + x * tjPixelSize[pf]], width,
                         pitch, height, pf, flags) == -1)
-    _throwtj();
+    THROW_TJ();
 
 bailout:
   if (dstBuf) (*env)->ReleasePrimitiveArrayCritical(env, dst, dstBuf, 0);
@@ -958,9 +958,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decodeYUV_
    jint width, jint stride, jint height, jint pf, jint flags)
 {
   if (pf < 0 || pf >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
-    _throwarg("Invalid argument in decodeYUV()");
+    THROW_ARG("Invalid argument in decodeYUV()");
   if (tjPixelSize[pf] != sizeof(jint))
-    _throwarg("Pixel format must be 32-bit when decoding to an integer buffer.");
+    THROW_ARG("Pixel format must be 32-bit when decoding to an integer buffer.");
 
   TJDecompressor_decodeYUV(env, obj, srcobjs, jSrcOffsets, jSrcStrides,
                            subsamp, dst, sizeof(jint), x, y, width,
@@ -979,10 +979,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_init
   tjhandle handle;
 
   if ((handle = tjInitTransform()) == NULL)
-    _throw(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
+    THROW(tjGetErrorStr(), "org/libjpegturbo/turbojpeg/TJException");
 
-  bailif0(cls = (*env)->GetObjectClass(env, obj));
-  bailif0(fid = (*env)->GetFieldID(env, cls, "handle", "J"));
+  BAILIF0(cls = (*env)->GetObjectClass(env, obj));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "handle", "J"));
   (*env)->SetLongField(env, obj, fid, (size_t)handle);
 
 bailout:
@@ -1007,43 +1007,43 @@ static int JNICustomFilter(short *coeffs, tjregion arrayRegion,
   jmethodID mid;
   jfieldID fid;
 
-  bailif0(bufobj = (*env)->NewDirectByteBuffer(env, coeffs,
+  BAILIF0(bufobj = (*env)->NewDirectByteBuffer(env, coeffs,
     sizeof(short) * arrayRegion.w * arrayRegion.h));
-  bailif0(cls = (*env)->FindClass(env, "java/nio/ByteOrder"));
-  bailif0(mid = (*env)->GetStaticMethodID(env, cls, "nativeOrder",
+  BAILIF0(cls = (*env)->FindClass(env, "java/nio/ByteOrder"));
+  BAILIF0(mid = (*env)->GetStaticMethodID(env, cls, "nativeOrder",
                                           "()Ljava/nio/ByteOrder;"));
-  bailif0(borobj = (*env)->CallStaticObjectMethod(env, cls, mid));
-  bailif0(cls = (*env)->GetObjectClass(env, bufobj));
-  bailif0(mid = (*env)->GetMethodID(env, cls, "order",
+  BAILIF0(borobj = (*env)->CallStaticObjectMethod(env, cls, mid));
+  BAILIF0(cls = (*env)->GetObjectClass(env, bufobj));
+  BAILIF0(mid = (*env)->GetMethodID(env, cls, "order",
     "(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;"));
   (*env)->CallObjectMethod(env, bufobj, mid, borobj);
-  bailif0(mid = (*env)->GetMethodID(env, cls, "asShortBuffer",
+  BAILIF0(mid = (*env)->GetMethodID(env, cls, "asShortBuffer",
                                     "()Ljava/nio/ShortBuffer;"));
-  bailif0(bufobj = (*env)->CallObjectMethod(env, bufobj, mid));
+  BAILIF0(bufobj = (*env)->CallObjectMethod(env, bufobj, mid));
 
-  bailif0(cls = (*env)->FindClass(env, "java/awt/Rectangle"));
-  bailif0(arrayRegionObj = (*env)->AllocObject(env, cls));
-  bailif0(fid = (*env)->GetFieldID(env, cls, "x", "I"));
+  BAILIF0(cls = (*env)->FindClass(env, "java/awt/Rectangle"));
+  BAILIF0(arrayRegionObj = (*env)->AllocObject(env, cls));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "x", "I"));
   (*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.x);
-  bailif0(fid = (*env)->GetFieldID(env, cls, "y", "I"));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "y", "I"));
   (*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.y);
-  bailif0(fid = (*env)->GetFieldID(env, cls, "width", "I"));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "width", "I"));
   (*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.w);
-  bailif0(fid = (*env)->GetFieldID(env, cls, "height", "I"));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "height", "I"));
   (*env)->SetIntField(env, arrayRegionObj, fid, arrayRegion.h);
 
-  bailif0(planeRegionObj = (*env)->AllocObject(env, cls));
-  bailif0(fid = (*env)->GetFieldID(env, cls, "x", "I"));
+  BAILIF0(planeRegionObj = (*env)->AllocObject(env, cls));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "x", "I"));
   (*env)->SetIntField(env, planeRegionObj, fid, planeRegion.x);
-  bailif0(fid = (*env)->GetFieldID(env, cls, "y", "I"));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "y", "I"));
   (*env)->SetIntField(env, planeRegionObj, fid, planeRegion.y);
-  bailif0(fid = (*env)->GetFieldID(env, cls, "width", "I"));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "width", "I"));
   (*env)->SetIntField(env, planeRegionObj, fid, planeRegion.w);
-  bailif0(fid = (*env)->GetFieldID(env, cls, "height", "I"));
+  BAILIF0(fid = (*env)->GetFieldID(env, cls, "height", "I"));
   (*env)->SetIntField(env, planeRegionObj, fid, planeRegion.h);
 
-  bailif0(cls = (*env)->GetObjectClass(env, cfobj));
-  bailif0(mid = (*env)->GetMethodID(env, cls, "customFilter",
+  BAILIF0(cls = (*env)->GetObjectClass(env, cfobj));
+  BAILIF0(mid = (*env)->GetMethodID(env, cls, "customFilter",
     "(Ljava/nio/ShortBuffer;Ljava/awt/Rectangle;Ljava/awt/Rectangle;IILorg/libjpegturbo/turbojpeg/TJTransform;)V"));
   (*env)->CallVoidMethod(env, cfobj, mid, bufobj, arrayRegionObj,
                          planeRegionObj, componentIndex, transformIndex, tobj);
@@ -1070,33 +1070,33 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
   jint *dstSizesi = NULL;
   JNICustomFilterParams *params = NULL;
 
-  gethandle();
+  GET_HANDLE();
 
   if ((*env)->GetArrayLength(env, jsrcBuf) < jpegSize)
-    _throwarg("Source buffer is not large enough");
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
+    THROW_ARG("Source buffer is not large enough");
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
   jpegWidth = (int)(*env)->GetIntField(env, obj, _fid);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));
   jpegHeight = (int)(*env)->GetIntField(env, obj, _fid);
-  bailif0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
+  BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegSubsamp", "I"));
   jpegSubsamp = (int)(*env)->GetIntField(env, obj, _fid);
 
   n = (*env)->GetArrayLength(env, dstobjs);
   if (n != (*env)->GetArrayLength(env, tobjs))
-    _throwarg("Mismatch between size of transforms array and destination buffers array");
+    THROW_ARG("Mismatch between size of transforms array and destination buffers array");
 
   if ((dstBufs =
        (unsigned char **)malloc(sizeof(unsigned char *) * n)) == NULL)
-    _throwmem();
+    THROW_MEM();
   if ((jdstBufs = (jbyteArray *)malloc(sizeof(jbyteArray) * n)) == NULL)
-    _throwmem();
+    THROW_MEM();
   if ((dstSizes = (unsigned long *)malloc(sizeof(unsigned long) * n)) == NULL)
-    _throwmem();
+    THROW_MEM();
   if ((t = (tjtransform *)malloc(sizeof(tjtransform) * n)) == NULL)
-    _throwmem();
+    THROW_MEM();
   if ((params = (JNICustomFilterParams *)malloc(sizeof(JNICustomFilterParams) *
                                                 n)) == NULL)
-    _throwmem();
+    THROW_MEM();
   for (i = 0; i < n; i++) {
     dstBufs[i] = NULL;  jdstBufs[i] = NULL;  dstSizes[i] = 0;
     memset(&t[i], 0, sizeof(tjtransform));
@@ -1106,22 +1106,22 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
   for (i = 0; i < n; i++) {
     jobject tobj, cfobj;
 
-    bailif0(tobj = (*env)->GetObjectArrayElement(env, tobjs, i));
-    bailif0(_cls = (*env)->GetObjectClass(env, tobj));
-    bailif0(_fid = (*env)->GetFieldID(env, _cls, "op", "I"));
+    BAILIF0(tobj = (*env)->GetObjectArrayElement(env, tobjs, i));
+    BAILIF0(_cls = (*env)->GetObjectClass(env, tobj));
+    BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "op", "I"));
     t[i].op = (*env)->GetIntField(env, tobj, _fid);
-    bailif0(_fid = (*env)->GetFieldID(env, _cls, "options", "I"));
+    BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "options", "I"));
     t[i].options = (*env)->GetIntField(env, tobj, _fid);
-    bailif0(_fid = (*env)->GetFieldID(env, _cls, "x", "I"));
+    BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "x", "I"));
     t[i].r.x = (*env)->GetIntField(env, tobj, _fid);
-    bailif0(_fid = (*env)->GetFieldID(env, _cls, "y", "I"));
+    BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "y", "I"));
     t[i].r.y = (*env)->GetIntField(env, tobj, _fid);
-    bailif0(_fid = (*env)->GetFieldID(env, _cls, "width", "I"));
+    BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "width", "I"));
     t[i].r.w = (*env)->GetIntField(env, tobj, _fid);
-    bailif0(_fid = (*env)->GetFieldID(env, _cls, "height", "I"));
+    BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "height", "I"));
     t[i].r.h = (*env)->GetIntField(env, tobj, _fid);
 
-    bailif0(_fid = (*env)->GetFieldID(env, _cls, "cf",
+    BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "cf",
       "Lorg/libjpegturbo/turbojpeg/TJCustomFilter;"));
     cfobj = (*env)->GetObjectField(env, tobj, _fid);
     if (cfobj) {
@@ -1138,19 +1138,19 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
 
     if (t[i].r.w != 0) w = t[i].r.w;
     if (t[i].r.h != 0) h = t[i].r.h;
-    bailif0(jdstBufs[i] = (*env)->GetObjectArrayElement(env, dstobjs, i));
+    BAILIF0(jdstBufs[i] = (*env)->GetObjectArrayElement(env, dstobjs, i));
     if ((unsigned long)(*env)->GetArrayLength(env, jdstBufs[i]) <
         tjBufSize(w, h, jpegSubsamp))
-      _throwarg("Destination buffer is not large enough");
+      THROW_ARG("Destination buffer is not large enough");
   }
-  bailif0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, jsrcBuf, 0));
+  BAILIF0(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, jsrcBuf, 0));
   for (i = 0; i < n; i++)
-    bailif0(dstBufs[i] =
+    BAILIF0(dstBufs[i] =
             (*env)->GetPrimitiveArrayCritical(env, jdstBufs[i], 0));
 
   if (tjTransform(handle, jpegBuf, jpegSize, n, dstBufs, dstSizes, t,
                   flags | TJFLAG_NOREALLOC) == -1)
-    _throwtj();
+    THROW_TJ();
 
   for (i = 0; i < n; i++) {
     (*env)->ReleasePrimitiveArrayCritical(env, jdstBufs[i], dstBufs[i], 0);
@@ -1160,7 +1160,7 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
   jpegBuf = NULL;
 
   jdstSizes = (*env)->NewIntArray(env, n);
-  bailif0(dstSizesi = (*env)->GetIntArrayElements(env, jdstSizes, 0));
+  BAILIF0(dstSizesi = (*env)->GetIntArrayElements(env, jdstSizes, 0));
   for (i = 0; i < n; i++) dstSizesi[i] = (int)dstSizes[i];
 
 bailout:

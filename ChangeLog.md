@@ -1,3 +1,13 @@
+2.0.3
+=====
+
+### Significant changes relative to 2.0.2:
+
+1. Fixed "using JNI after critical get" errors that occurred on Android
+platforms when passing invalid arguments to certain methods in the TurboJPEG
+Java API.
+
+
 2.0.2
 =====
 

@@ -36,6 +36,16 @@ approximately 2x when using the fast integer IDCT
 2.3-3.7x (compared to 2-3.5x with libjpeg-turbo 2.0.x.)
 
 
+2.0.3
+=====
+
+### Significant changes relative to 2.0.2:
+
+1. Fixed "using JNI after critical get" errors that occurred on Android
+platforms when passing invalid arguments to certain methods in the TurboJPEG
+Java API.
+
+
 2.0.2
 =====
 

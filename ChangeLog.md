@@ -7,6 +7,12 @@
 platforms when passing invalid arguments to certain methods in the TurboJPEG
 Java API.
 
+2. Fixed a regression in the SIMD feature detection code, introduced by
+the AVX2 SIMD extensions (2.0 beta1[1]), that was known to cause an illegal
+instruction exception, in rare cases, on CPUs that lack support for CPUID leaf
+07H (or on which the maximum CPUID leaf has been limited by way of a BIOS
+setting.)
+
 
 2.0.2
 =====

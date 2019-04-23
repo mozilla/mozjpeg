@@ -118,7 +118,6 @@ read_2_bytes(void)
 #define M_SOI    0xD8           /* Start Of Image (beginning of datastream) */
 #define M_EOI    0xD9           /* End Of Image (end of datastream) */
 #define M_SOS    0xDA           /* Start Of Scan (begins compressed data) */
-#define M_APP0   0xE0           /* Application-specific marker, type N */
 #define M_APP12  0xEC           /* (we don't bother to list all 16 APPn's) */
 #define M_COM    0xFE           /* COMment */
 

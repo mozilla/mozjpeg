@@ -1364,12 +1364,12 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 }
 
 
-int my_read_markers(j_decompress_ptr dinfo)
+static int my_read_markers(j_decompress_ptr dinfo)
 {
   return JPEG_REACHED_SOS;
 }
 
-void my_reset_marker_reader(j_decompress_ptr dinfo)
+static void my_reset_marker_reader(j_decompress_ptr dinfo)
 {
 }
 

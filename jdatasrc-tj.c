@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, 2016, D. R. Commander.
+ * Copyright (C) 2011, 2016, 2019, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -22,6 +22,9 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jerror.h"
+
+void jpeg_mem_src_tj(j_decompress_ptr cinfo, const unsigned char *inbuffer,
+                     unsigned long insize);
 
 
 /*

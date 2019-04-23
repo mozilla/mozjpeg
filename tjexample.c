@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017 D. R. Commander.
- *                                         All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015, 2017, 2019 D. R. Commander.
+ *                                               All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -71,9 +71,9 @@ int numScalingFactors = 0;
 
 /* DCT filter example.  This produces a negative of the image. */
 
-int customFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
-                 int componentIndex, int transformIndex,
-                 tjtransform *transform)
+static int customFilter(short *coeffs, tjregion arrayRegion,
+                        tjregion planeRegion, int componentIndex,
+                        int transformIndex, tjtransform *transform)
 {
   int i;
 
@@ -84,7 +84,7 @@ int customFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
 }
 
 
-void usage(char *programName)
+static void usage(char *programName)
 {
   int i;
 
@@ -355,8 +355,9 @@ int main(int argc, char **argv)
 
   if (!strcasecmp(outFormat, "jpg")) {
     /* Output image format is JPEG.  Compress the uncompressed image. */
-    unsigned char *jpegBuf = NULL;  /* Dynamically allocate the JPEG buffer */
     unsigned long jpegSize = 0;
+
+    jpegBuf = NULL;  /* Dynamically allocate the JPEG buffer */
 
     if (outQual < 0)
       outQual = DEFAULT_QUALITY;

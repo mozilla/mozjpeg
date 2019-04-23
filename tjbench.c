@@ -95,7 +95,7 @@ int (*customFilter) (short *, tjregion, tjregion, int, int, tjtransform *);
 double benchTime = 5.0, warmup = 1.0;
 
 
-char *formatName(int subsamp, int cs, char *buf)
+static char *formatName(int subsamp, int cs, char *buf)
 {
   if (cs == TJCS_YCbCr)
     return (char *)subNameLong[subsamp];
@@ -107,7 +107,7 @@ char *formatName(int subsamp, int cs, char *buf)
 }
 
 
-char *sigfig(double val, int figs, char *buf, int len)
+static char *sigfig(double val, int figs, char *buf, int len)
 {
   char format[80];
   int digitsAfterDecimal = figs - (int)ceil(log10(fabs(val)));
@@ -122,9 +122,9 @@ char *sigfig(double val, int figs, char *buf, int len)
 
 
 /* Custom DCT filter which produces a negative of the image */
-int dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
-                   int componentIndex, int transformIndex,
-                   tjtransform *transform)
+static int dummyDCTFilter(short *coeffs, tjregion arrayRegion,
+                          tjregion planeRegion, int componentIndex,
+                          int transformIndex, tjtransform *transform)
 {
   int i;
 
@@ -135,11 +135,12 @@ int dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
 
 
 /* Decompression test */
-int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
-           unsigned long *jpegSize, unsigned char *dstBuf, int w, int h,
-           int subsamp, int jpegQual, char *fileName, int tilew, int tileh)
+static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
+                  unsigned long *jpegSize, unsigned char *dstBuf, int w, int h,
+                  int subsamp, int jpegQual, char *fileName, int tilew,
+                  int tileh)
 {
-  char tempStr[1024], sizeStr[20] = "\0", qualStr[13] = "\0", *ptr;
+  char tempStr[1024], sizeStr[24] = "\0", qualStr[13] = "\0", *ptr;
   FILE *file = NULL;
   tjhandle handle = NULL;
   int row, col, iter = 0, dstBufAlloc = 0, retval = 0;
@@ -249,10 +250,10 @@ int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
   if (!doWrite) goto bailout;
 
   if (sf.num != 1 || sf.denom != 1)
-    snprintf(sizeStr, 20, "%d_%d", sf.num, sf.denom);
+    snprintf(sizeStr, 24, "%d_%d", sf.num, sf.denom);
   else if (tilew != w || tileh != h)
-    snprintf(sizeStr, 20, "%dx%d", tilew, tileh);
-  else snprintf(sizeStr, 20, "full");
+    snprintf(sizeStr, 24, "%dx%d", tilew, tileh);
+  else snprintf(sizeStr, 24, "full");
   if (decompOnly)
     snprintf(tempStr, 1024, "%s_%s.%s", fileName, sizeStr, ext);
   else
@@ -303,8 +304,8 @@ bailout:
 }
 
 
-int fullTest(unsigned char *srcBuf, int w, int h, int subsamp, int jpegQual,
-             char *fileName)
+static int fullTest(unsigned char *srcBuf, int w, int h, int subsamp,
+                    int jpegQual, char *fileName)
 {
   char tempStr[1024], tempStr2[80];
   FILE *file = NULL;
@@ -504,7 +505,7 @@ bailout:
 }
 
 
-int decompTest(char *fileName)
+static int decompTest(char *fileName)
 {
   FILE *file = NULL;
   tjhandle handle = NULL;
@@ -724,7 +725,7 @@ bailout:
 }
 
 
-void usage(char *progName)
+static void usage(char *progName)
 {
   int i;
 
@@ -902,14 +903,14 @@ int main(int argc, char *argv[])
       else if (!strcasecmp(argv[i], "-copynone"))
         xformOpt |= TJXOPT_COPYNONE;
       else if (!strcasecmp(argv[i], "-benchtime") && i < argc - 1) {
-        double temp = atof(argv[++i]);
+        double tempd = atof(argv[++i]);
 
-        if (temp > 0.0) benchTime = temp;
+        if (tempd > 0.0) benchTime = tempd;
         else usage(argv[0]);
       } else if (!strcasecmp(argv[i], "-warmup") && i < argc - 1) {
-        double temp = atof(argv[++i]);
+        double tempd = atof(argv[++i]);
 
-        if (temp >= 0.0) warmup = temp;
+        if (tempd >= 0.0) warmup = tempd;
         else usage(argv[0]);
         printf("Warmup time = %.1f seconds\n\n", warmup);
       } else if (!strcasecmp(argv[i], "-alloc"))
@@ -920,16 +921,16 @@ int main(int argc, char *argv[])
         printf("Testing YUV planar encoding/decoding\n\n");
         doYUV = 1;
       } else if (!strcasecmp(argv[i], "-yuvpad") && i < argc - 1) {
-        int temp = atoi(argv[++i]);
+        int tempi = atoi(argv[++i]);
 
-        if (temp >= 1) yuvPad = temp;
+        if (tempi >= 1) yuvPad = tempi;
       } else if (!strcasecmp(argv[i], "-subsamp") && i < argc - 1) {
         i++;
         if (toupper(argv[i][0]) == 'G') subsamp = TJSAMP_GRAY;
         else {
-          int temp = atoi(argv[i]);
+          int tempi = atoi(argv[i]);
 
-          switch (temp) {
+          switch (tempi) {
           case 444:  subsamp = TJSAMP_444;  break;
           case 422:  subsamp = TJSAMP_422;  break;
           case 440:  subsamp = TJSAMP_440;  break;

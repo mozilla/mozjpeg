@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2019 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,9 +35,8 @@
 #include <jni.h>
 #include "java/org_libjpegturbo_turbojpeg_TJCompressor.h"
 #include "java/org_libjpegturbo_turbojpeg_TJDecompressor.h"
+#include "java/org_libjpegturbo_turbojpeg_TJTransformer.h"
 #include "java/org_libjpegturbo_turbojpeg_TJ.h"
-
-#define PAD(v, p)  ((v + (p) - 1) & (~((p) - 1)))
 
 #define BAILIF0(f) { \
   if (!(f) || (*env)->ExceptionCheck(env)) { \
@@ -104,7 +103,7 @@
   cArray = NULL; \
 }
 
-int ProcessSystemProperties(JNIEnv *env)
+static int ProcessSystemProperties(JNIEnv *env)
 {
   jclass cls;
   jmethodID mid;
@@ -520,7 +519,7 @@ bailout:
   return;
 }
 
-JNIEXPORT void JNICALL TJCompressor_encodeYUV_12
+static void JNICALL TJCompressor_encodeYUV_12
   (JNIEnv *env, jobject obj, jarray src, jint srcElementSize, jint width,
    jint pitch, jint height, jint pf, jbyteArray dst, jint subsamp, jint flags)
 {

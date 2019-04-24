@@ -117,11 +117,11 @@ JMESSAGE(JERR_BAD_CMAP_FILE,
 JMESSAGE(JERR_TOO_MANY_COLORS,
          "Output file format cannot handle %d colormap entries")
 JMESSAGE(JERR_UNGETC_FAILED, "ungetc failed")
-#ifdef TARGA_SUPPORTED
+#ifdef PNG_SUPPORTED
 JMESSAGE(JERR_UNKNOWN_FORMAT,
-         "Unrecognized input file format --- perhaps you need -targa")
+         "MozJPEG can't read the image (JPEG, PNG and old BMP and Targa are supported)")
 #else
-JMESSAGE(JERR_UNKNOWN_FORMAT, "Unrecognized input file format")
+JMESSAGE(JERR_UNKNOWN_FORMAT, "MozJPEG can't read the image (PNG support is disabled in this build)")
 #endif
 JMESSAGE(JERR_UNSUPPORTED_FORMAT, "Unsupported output file format")
 

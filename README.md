@@ -1,4 +1,4 @@
-Mozilla JPEG Encoder Project [![Build Status](https://ci.appveyor.com/api/projects/status/github/mozilla/mozjpeg?branch=master&svg=true)](https://ci.appveyor.com/project/pornel/mozjpeg)
+Mozilla JPEG Encoder Project [![Build Status](https://ci.appveyor.com/api/projects/status/github/mozilla/mozjpeg?branch=master&svg=true)](https://ci.appveyor.com/project/kornel/mozjpeg-4ekrx)
 ============================
 
 MozJPEG reduces file sizes of JPEG images while retaining quality and compatibility with the vast majority of the world's deployed decoders.

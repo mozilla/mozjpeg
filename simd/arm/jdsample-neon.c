@@ -372,3 +372,96 @@ void jsimd_h2v2_fancy_upsample_neon(int max_v_samp_factor,
     inrow++;
   }
 }
+
+
+/* The diagram below shows a column of samples produced by h1v2 downsampling
+ * (or by losslessly rotating or transposing an h2v1-downsampled image.)
+ *
+ *            +---------+
+ *            |   p0    |
+ *     sA     |         |
+ *            |   p1    |
+ *            +---------+
+ *            |   p2    |
+ *     sB     |         |
+ *            |   p3    |
+ *            +---------+
+ *            |   p4    |
+ *     sC     |         |
+ *            |   p5    |
+ *            +---------+
+ *
+ * Samples sA-sC were created by averaging the original pixel component values
+ * centered at positions p0-p5 above.  To approximate those original pixel
+ * component values, we proportionally blend the adjacent samples in each
+ * column.
+ *
+ * An upsampled pixel component value is computed by blending the sample
+ * containing the pixel center with the nearest neighboring sample, in the
+ * ratio 3:1.  For example:
+ *     p1(upsampled) = 3/4 * sA + 1/4 * sB
+ *     p2(upsampled) = 3/4 * sB + 1/4 * sA
+ * When computing the first and last pixel component values in the column,
+ * there is no adjacent sample to blend, so:
+ *     p0(upsampled) = sA
+ *     p5(upsampled) = sC
+ */
+
+void jsimd_h1v2_fancy_upsample_neon(int max_v_samp_factor,
+                                    JDIMENSION downsampled_width,
+                                    JSAMPARRAY input_data,
+                                    JSAMPARRAY *output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  JSAMPROW inptr0, inptr1, inptr2, outptr0, outptr1;
+  int inrow, outrow;
+  unsigned colctr;
+  /* Set up constants. */
+  const uint16x8_t one_u16 = vdupq_n_u16(1);
+  const uint8x8_t three_u8 = vdup_n_u8(3);
+
+  inrow = outrow = 0;
+  while (outrow < max_v_samp_factor) {
+    inptr0 = input_data[inrow - 1];
+    inptr1 = input_data[inrow];
+    inptr2 = input_data[inrow + 1];
+    /* Suffixes 0 and 1 denote the upper and lower rows of output pixels,
+     * respectively.
+     */
+    outptr0 = output_data[outrow++];
+    outptr1 = output_data[outrow++];
+    inrow++;
+
+    /* The size of the input and output buffers is always a multiple of 32
+     * bytes => no need to worry about buffer overflow when reading/writing
+     * memory.  See "Creation of 2-D sample arrays" in jmemmgr.c for more
+     * details.
+     */
+    for (colctr = 0; colctr < downsampled_width; colctr += 16) {
+      /* Load samples. */
+      uint8x16_t sA = vld1q_u8(inptr0 + colctr);
+      uint8x16_t sB = vld1q_u8(inptr1 + colctr);
+      uint8x16_t sC = vld1q_u8(inptr2 + colctr);
+      /* Blend samples vertically. */
+      uint16x8_t colsum0_l = vmlal_u8(vmovl_u8(vget_low_u8(sA)),
+                                      vget_low_u8(sB), three_u8);
+      uint16x8_t colsum0_h = vmlal_u8(vmovl_u8(vget_high_u8(sA)),
+                                      vget_high_u8(sB), three_u8);
+      uint16x8_t colsum1_l = vmlal_u8(vmovl_u8(vget_low_u8(sC)),
+                                      vget_low_u8(sB), three_u8);
+      uint16x8_t colsum1_h = vmlal_u8(vmovl_u8(vget_high_u8(sC)),
+                                      vget_high_u8(sB), three_u8);
+      /* Add ordered dithering bias to pixel values in even output rows. */
+      colsum0_l = vaddq_u16(colsum0_l, one_u16);
+      colsum0_h = vaddq_u16(colsum0_h, one_u16);
+      /* Right-shift by 2 (divide by 4), narrow to 8-bit, and combine. */
+      uint8x16_t output_pixels0 = vcombine_u8(vshrn_n_u16(colsum0_l, 2),
+                                              vshrn_n_u16(colsum0_h, 2));
+      uint8x16_t output_pixels1 = vcombine_u8(vrshrn_n_u16(colsum1_l, 2),
+                                              vrshrn_n_u16(colsum1_h, 2));
+      /* Store pixel component values to memory. */
+      vst1q_u8(outptr0 + colctr, output_pixels0);
+      vst1q_u8(outptr1 + colctr, output_pixels1);
+    }
+  }
+}

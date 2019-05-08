@@ -8,7 +8,7 @@
  * Copyright (C) 2010, 2015-2016, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015, Google, Inc.
- * Copyright (C) 2019, Arm Limited.
+ * Copyright (C) 2019-2020, Arm Limited.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -477,7 +477,12 @@ jinit_upsampler(j_decompress_ptr cinfo)
     } else if (h_in_group == h_out_group &&
                v_in_group * 2 == v_out_group && do_fancy) {
       /* Non-fancy upsampling is handled by the generic method */
-      upsample->methods[ci] = h1v2_fancy_upsample;
+#if defined(__arm__) || defined(__aarch64__)
+      if (jsimd_can_h1v2_fancy_upsample())
+        upsample->methods[ci] = jsimd_h1v2_fancy_upsample;
+      else
+#endif
+        upsample->methods[ci] = h1v2_fancy_upsample;
       upsample->pub.need_context_rows = TRUE;
     } else if (h_in_group * 2 == h_out_group &&
                v_in_group * 2 == v_out_group) {

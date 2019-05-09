@@ -13,6 +13,14 @@ instruction exception, in rare cases, on CPUs that lack support for CPUID leaf
 07H (or on which the maximum CPUID leaf has been limited by way of a BIOS
 setting.)
 
+3. The 4:4:0 (h1v2) fancy (smooth) chroma upsampling algorithm in the
+decompressor now uses a similar bias pattern to that of the 4:2:2 (h2v1) fancy
+chroma upsampling algorithm, rounding up or down the upsampled result for
+alternate pixels rather than always rounding down.  This ensures that the final
+result will be similar regardless of whether a 4:2:2 JPEG image is rotated or
+transposed prior to decompression (in the frequency domain) or after
+decompression (in the spatial domain.)
+
 
 2.0.2
 =====

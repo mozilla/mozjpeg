@@ -35,6 +35,11 @@ approximately 2x when using the fast integer IDCT
     The overall decompression speedup for RGB images is now approximately
 2.3-3.7x (compared to 2-3.5x with libjpeg-turbo 2.0.x.)
 
+3. 32-bit (ARMv7 or ARMv7s) iOS builds of libjpeg-turbo are no longer
+supported, and the libjpeg-turbo build system can no longer be used to package
+such builds.  32-bit iOS apps cannot run in iOS 11 and later, and the App Store
+no longer allows them.
+
 
 2.0.3
 =====

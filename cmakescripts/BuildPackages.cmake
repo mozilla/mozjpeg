@@ -135,12 +135,6 @@ if(APPLE)
 set(DEFAULT_OSX_32BIT_BUILD ${CMAKE_SOURCE_DIR}/osxx86)
 set(OSX_32BIT_BUILD ${DEFAULT_OSX_32BIT_BUILD} CACHE PATH
   "Directory containing 32-bit (i386) Mac build to include in universal binaries (default: ${DEFAULT_OSX_32BIT_BUILD})")
-set(DEFAULT_IOS_ARMV7_BUILD ${CMAKE_SOURCE_DIR}/iosarmv7)
-set(IOS_ARMV7_BUILD ${DEFAULT_IOS_ARMV7_BUILD} CACHE PATH
-  "Directory containing ARMv7 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7_BUILD})")
-set(DEFAULT_IOS_ARMV7S_BUILD ${CMAKE_SOURCE_DIR}/iosarmv7s)
-set(IOS_ARMV7S_BUILD ${DEFAULT_IOS_ARMV7S_BUILD} CACHE PATH
-  "Directory containing ARMv7s iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7S_BUILD})")
 set(DEFAULT_IOS_ARMV8_BUILD ${CMAKE_SOURCE_DIR}/iosarmv8)
 set(IOS_ARMV8_BUILD ${DEFAULT_IOS_ARMV8_BUILD} CACHE PATH
   "Directory containing ARMv8 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV8_BUILD})")

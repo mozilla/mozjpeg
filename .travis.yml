@@ -14,7 +14,7 @@ matrix:
         - docker
     - os: osx
       env: BUILD_OFFICIAL=1
-      osx_image: xcode7.3
+      osx_image: xcode8.3
     - os: linux
       dist: trusty
       compiler: clang
@@ -55,11 +55,9 @@ matrix:
 addons:
   homebrew:
     brewfile: true
-    update: true
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      ln -fs /usr/local/bin/gpg1 /usr/local/bin/gpg &&
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
       ln -fs /Applications/Xcode.app /Applications/Xcode72.app;
     fi
@@ -73,7 +71,7 @@ before_install:
         tar xf ci/keys &&
         rm ci/keys &&
         mv ci/gpgsign ~/src/buildscripts &&
-        gpg --import ci/sign_ljt &&
+        gpg --batch --import ci/sign_ljt &&
         rm ci/sign_ljt;
       fi
     fi

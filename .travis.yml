@@ -59,7 +59,7 @@ addons:
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
-      ln -fs /Applications/Xcode.app /Applications/Xcode72.app;
+      ln -fs /Applications/Xcode.app /Applications/Xcode83.app;
     fi
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then

@@ -58,6 +58,8 @@ BUILDDIRARMV7=@IOS_ARMV7_BUILD@
 BUILDDIRARMV7S=@IOS_ARMV7S_BUILD@
 BUILDDIRARMV8=@IOS_ARMV8_BUILD@
 WITH_JAVA=@WITH_JAVA@
+OSX_APP_CERT_NAME="@OSX_APP_CERT_NAME@"
+OSX_INST_CERT_NAME="@OSX_INST_CERT_NAME@"
 LIPO=lipo
 
 PREFIX=@CMAKE_INSTALL_PREFIX@
@@ -258,11 +260,25 @@ cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadM
 mkdir $TMPDIR/dmg
 pkgbuild --root $PKGROOT --version $VERSION.$BUILD --identifier @PKGID@ \
 	$TMPDIR/pkg/$PKGNAME.pkg
+SUFFIX=
+if [ "$OSX_INST_CERT_NAME" != "" ]; then
+	SUFFIX=-unsigned
+fi
 productbuild --distribution pkgscripts/Distribution.xml \
 	--package-path $TMPDIR/pkg/ --resources $TMPDIR/pkg/ \
-	$TMPDIR/dmg/$PKGNAME.pkg
+	$TMPDIR/dmg/$PKGNAME$SUFFIX.pkg
+if [ "$OSX_INST_CERT_NAME" != "" ]; then
+	productsign --sign "$OSX_INST_CERT_NAME" --timestamp \
+		$TMPDIR/dmg/$PKGNAME$SUFFIX.pkg $TMPDIR/dmg/$PKGNAME.pkg
+	rm -r $TMPDIR/dmg/$PKGNAME$SUFFIX.pkg
+	pkgutil --check-signature $TMPDIR/dmg/$PKGNAME.pkg
+fi
 hdiutil create -fs HFS+ -volname $PKGNAME-$VERSION \
 	-srcfolder "$TMPDIR/dmg" $TMPDIR/$PKGNAME-$VERSION.dmg
+if [ "$OSX_APP_CERT_NAME" != "" ]; then
+	codesign -s "$OSX_APP_CERT_NAME" --timestamp $TMPDIR/$PKGNAME-$VERSION.dmg
+	codesign -vv $TMPDIR/$PKGNAME-$VERSION.dmg
+fi
 cp $TMPDIR/$PKGNAME-$VERSION.dmg .
 
 exit

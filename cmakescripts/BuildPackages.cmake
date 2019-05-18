@@ -145,6 +145,11 @@ set(DEFAULT_IOS_ARMV8_BUILD ${CMAKE_SOURCE_DIR}/iosarmv8)
 set(IOS_ARMV8_BUILD ${DEFAULT_IOS_ARMV8_BUILD} CACHE PATH
   "Directory containing ARMv8 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV8_BUILD})")
 
+set(OSX_APP_CERT_NAME "" CACHE STRING
+  "Name of the Developer ID Application certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo DMG.  Leave this blank to generate an unsigned DMG.")
+set(OSX_INST_CERT_NAME "" CACHE STRING
+  "Name of the Developer ID Installer certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo installer package.  Leave this blank to generate an unsigned package.")
+
 configure_file(release/makemacpkg.in pkgscripts/makemacpkg)
 configure_file(release/Distribution.xml.in pkgscripts/Distribution.xml)
 configure_file(release/uninstall.in pkgscripts/uninstall)

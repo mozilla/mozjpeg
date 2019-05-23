@@ -1,15 +1,35 @@
 Pod::Spec.new do |spec|
   spec.name = "mozjpeg"
-  spec.version = "3.3.1"
+  spec.version = "3.3.2"
   spec.license = { :type => "BSD" }
   spec.homepage = "https://github.com/mozilla/mozjpeg"
   spec.summary = "Improved JPEG encoder."
   spec.authors = "Mozilla"
-  spec.source = { :git => "https://github.com/mozilla/mozjpeg.git", :tag => "v#{spec.version}" }
+  spec.source = { :git => "https://github.com/mozilla/mozjpeg.git", :tag => "v3.3.1" }
   spec.module_name = "mozjpeg"
   spec.header_dir = "mozjpeg"
   spec.platforms = { :ios => "8.0" }
   spec.prepare_command = <<-CMD
+    cat << EOF > ctransupp.h
+    #ifdef __cplusplus
+    #ifndef DONT_USE_EXTERN_C
+    extern "C" {
+    #endif
+    #endif
+    EOF
+
+    cat transupp.h >> ctransupp.h
+
+    cat << EOF >> ctransupp.h
+    #ifdef __cplusplus
+    #ifndef DONT_USE_EXTERN_C
+    }
+    #endif
+    #endif
+    EOF
+
+    mv ctransupp.h transupp.h
+
     cat << EOF > jconfig.h
     #define JPEG_LIB_VERSION  80	/* Version 6b */
     #define LIBJPEG_TURBO_VERSION 3.1.m
@@ -145,7 +165,8 @@ Pod::Spec.new do |spec|
                       "jsimd.h",
                       "jsimddct.h",
                       "jversion.h",
-                      "wrppm.h"
+                      "wrppm.h",
+                      "transupp.h"
 
   # Despite their extensions, these are header files that shouldn't be compiled
   # on their own but should still be present for other files to include.

@@ -20,6 +20,12 @@
  * jpegtran.c for an example of correct usage.
  */
 
+#ifdef __cplusplus
+#ifndef DONT_USE_EXTERN_C
+extern "C" {
+#endif
+#endif
+
 /* If you happen not to want the image transform support, disable it here */
 #ifndef TRANSFORMS_SUPPORTED
 #define TRANSFORMS_SUPPORTED  1         /* 0 disables transform code */
@@ -208,3 +214,9 @@ EXTERN(void) jcopy_markers_setup(j_decompress_ptr srcinfo,
 EXTERN(void) jcopy_markers_execute(j_decompress_ptr srcinfo,
                                    j_compress_ptr dstinfo,
                                    JCOPY_OPTION option);
+
+#ifdef __cplusplus
+#ifndef DONT_USE_EXTERN_C
+}
+#endif
+#endif

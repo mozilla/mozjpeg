@@ -68,6 +68,8 @@ _\fname:
 .endm
 
 
+#ifndef NEON_INTRINSICS
+
 #define CENTERJSAMPLE  128
 
 /*****************************************************************************/
@@ -676,8 +678,6 @@ asm_function jsimd_idct_islow_neon
     .unreq          ROW7L
     .unreq          ROW7R
 
-
-#ifndef NEON_INTRINSICS
 
 /*****************************************************************************/
 

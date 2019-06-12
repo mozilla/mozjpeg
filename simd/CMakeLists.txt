@@ -268,7 +268,7 @@ file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S)
 set(SIMD_SOURCES arm/jcgray-neon.c arm/jcsample-neon.c arm/jdsample-neon.c
   arm/jfdctfst-neon.c arm/jquanti-neon.c)
 if(NEON_INTRINSICS)
-  set(SIMD_SOURCES ${SIMD_SOURCES} arm/jccolor-neon.c)
+  set(SIMD_SOURCES ${SIMD_SOURCES} arm/jccolor-neon.c arm/jidctint-neon.c)
 endif()
 if(NEON_INTRINSICS OR BITS EQUAL 64)
   set(SIMD_SOURCES ${SIMD_SOURCES} arm/jidctfst-neon.c)

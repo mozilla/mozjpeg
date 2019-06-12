@@ -39,6 +39,8 @@
 .section .rodata, "a", %progbits
 #endif
 
+#ifndef NEON_INTRINSICS
+
 /* Constants for jsimd_idct_islow_neon() */
 
 #define F_0_298   2446  /* FIX(0.298631336) */
@@ -85,6 +87,8 @@ Ljsimd_idct_islow_neon_consts:
 #undef F_2_053
 #undef F_2_562
 #undef F_3_072
+
+#endif
 
 /* Constants for jsimd_idct_4x4_neon() and jsimd_idct_2x2_neon() */
 
@@ -318,6 +322,8 @@ _\fname:
     transpose_4x4_16 \x0, .4h, \x1, .4h, \x2, .4h, \x3, .4h, \x5, .16b
     transpose_4x4_32 \x0, .2s, \x1, .2s, \x2, .2s, \x3, .2s, \x5, .16b
 .endm
+
+#ifndef NEON_INTRINSICS
 
 .macro transpose_8x8 l0, l1, l2, l3, l4, l5, l6, l7, t0, t1, t2, t3
     trn1            \t0\().8h, \l0\().8h, \l1\().8h
@@ -946,6 +952,8 @@ asm_function jsimd_idct_islow_neon
 #undef XFIX_P_2_053
 #undef XFIX_N_2_562
 #undef XFIX_P_3_072
+
+#endif  /* NEON_INTRINSICS */
 
 
 /*****************************************************************************/

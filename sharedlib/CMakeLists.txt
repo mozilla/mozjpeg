@@ -23,7 +23,7 @@ foreach(src ${JPEG_SOURCES})
   set(JPEG_SRCS ${JPEG_SRCS} ../${src})
 endforeach()
 
-if(WITH_SIMD AND MSVC_IDE)
+if(WITH_SIMD AND (MSVC_IDE OR XCODE))
   # This tells CMake that the "source" files haven't been generated yet
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
 endif()

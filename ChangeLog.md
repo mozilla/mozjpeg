@@ -21,6 +21,10 @@ result will be similar regardless of whether a 4:2:2 JPEG image is rotated or
 transposed prior to decompression (in the frequency domain) or after
 decompression (in the spatial domain.)
 
+4. Fixed an integer overflow and subsequent segfault that occurred when
+attempting to compress or decompress images with more than 1 billion pixels
+using the TurboJPEG API.
+
 
 2.0.2
 =====

@@ -701,7 +701,7 @@ static int decompTest(char *fileName)
       }
     } else {
       if (quiet == 1) printf("N/A     N/A     ");
-      if(jpegBuf[0]) tjFree(jpegBuf[0]);
+      if (jpegBuf[0]) tjFree(jpegBuf[0]);
       jpegBuf[0] = NULL;
       decompsrc = 1;
     }
@@ -716,7 +716,7 @@ static int decompTest(char *fileName)
     } else if (quiet == 1) printf("N/A\n");
 
     for (i = 0; i < ntilesw * ntilesh; i++) {
-      if(jpegBuf[i]) tjFree(jpegBuf[i]);
+      if (jpegBuf[i]) tjFree(jpegBuf[i]);
       jpegBuf[i] = NULL;
     }
     free(jpegBuf);  jpegBuf = NULL;

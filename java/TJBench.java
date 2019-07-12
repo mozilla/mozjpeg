@@ -720,7 +720,7 @@ final class TJBench {
     System.out.println("     bytes to which each row of each plane in the intermediate YUV image is");
     System.out.println("     padded (default = 1)");
     System.out.println("-scale M/N = Scale down the width/height of the decompressed JPEG image by a");
-    System.out.print  ("     factor of M/N (M/N = ");
+    System.out.print("     factor of M/N (M/N = ");
     for (i = 0; i < nsf; i++) {
       System.out.format("%d/%d", scalingFactors[i].getNum(),
                         scalingFactors[i].getDenom());

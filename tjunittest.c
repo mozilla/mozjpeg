@@ -554,6 +554,42 @@ bailout:
 }
 
 
+#if SIZEOF_SIZE_T == 8
+#define CHECKSIZE(function) { \
+  if ((unsigned long long)size < (unsigned long long)0xFFFFFFFF) \
+    THROW(#function " overflow"); \
+}
+#else
+#define CHECKSIZE(function) { \
+  if (size != (unsigned long)(-1) || \
+      !strcmp(tjGetErrorStr2(NULL), "No error")) \
+    THROW(#function " overflow"); \
+}
+#endif
+
+static void overflowTest(void)
+{
+  /* Ensure that the various buffer size functions don't overflow */
+  unsigned long size;
+
+  size = tjBufSize(26755, 26755, TJSAMP_444);
+  CHECKSIZE(tjBufSize());
+  size = TJBUFSIZE(26755, 26755);
+  CHECKSIZE(TJBUFSIZE());
+  size = tjBufSizeYUV2(37838, 1, 37838, TJSAMP_444);
+  CHECKSIZE(tjBufSizeYUV2());
+  size = TJBUFSIZEYUV(37838, 37838, TJSAMP_444);
+  CHECKSIZE(TJBUFSIZEYUV());
+  size = tjBufSizeYUV(37838, 37838, TJSAMP_444);
+  CHECKSIZE(tjBufSizeYUV());
+  size = tjPlaneSizeYUV(0, 65536, 0, 65536, TJSAMP_444);
+  CHECKSIZE(tjPlaneSizeYUV());
+
+bailout:
+  return;
+}
+
+
 static void bufSizeTest(void)
 {
   int w, h, i, subsamp;
@@ -865,6 +901,7 @@ int main(int argc, char *argv[])
   }
   if (alloc) printf("Testing automatic buffer allocation\n");
   if (doYUV) num4bf = 4;
+  overflowTest();
   doTest(35, 39, _3byteFormats, 2, TJSAMP_444, "test");
   doTest(39, 41, _4byteFormats, num4bf, TJSAMP_444, "test");
   doTest(41, 35, _3byteFormats, 2, TJSAMP_422, "test");

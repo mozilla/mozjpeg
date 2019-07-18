@@ -121,6 +121,8 @@ final class TJBench {
     int rindex = TJ.getRedOffset(pixelFormat);
     int gindex = TJ.getGreenOffset(pixelFormat);
     int bindex = TJ.getBlueOffset(pixelFormat);
+    if ((long)w[0] * (long)h[0] * (long)ps > (long)Integer.MAX_VALUE)
+      throw new Exception("Image is too large");
     byte[] dstBuf = new byte[w[0] * h[0] * ps];
     int pixels = w[0] * h[0], dstPtr = 0, rgbPtr = 0;
 
@@ -175,8 +177,11 @@ final class TJBench {
 
     tjd = new TJDecompressor();
 
-    if (dstBuf == null)
+    if (dstBuf == null) {
+      if ((long)pitch * (long)scaledh > (long)Integer.MAX_VALUE)
+        throw new Exception("Image is too large");
       dstBuf = new byte[pitch * scaledh];
+    }
 
     /* Set the destination buffer to gray so we know whether the decompressor
        attempted to write to it */
@@ -331,6 +336,8 @@ final class TJBench {
     String pfStr = PIXFORMATSTR[pf];
     YUVImage yuvImage = null;
 
+    if ((long)pitch * (long)h > (long)Integer.MAX_VALUE)
+      throw new Exception("Image is too large");
     tmpBuf = new byte[pitch * h];
 
     if (quiet == 0)
@@ -491,6 +498,8 @@ final class TJBench {
     int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
 
     FileInputStream fis = new FileInputStream(fileName);
+    if (fis.getChannel().size() > (long)Integer.MAX_VALUE)
+      throw new Exception("Image is too large");
     int srcSize = (int)fis.getChannel().size();
     srcBuf = new byte[srcSize];
     fis.read(srcBuf, 0, srcSize);
@@ -711,7 +720,7 @@ final class TJBench {
     System.out.println("     bytes to which each row of each plane in the intermediate YUV image is");
     System.out.println("     padded (default = 1)");
     System.out.println("-scale M/N = Scale down the width/height of the decompressed JPEG image by a");
-    System.out.print  ("     factor of M/N (M/N = ");
+    System.out.print("     factor of M/N (M/N = ");
     for (i = 0; i < nsf; i++) {
       System.out.format("%d/%d", scalingFactors[i].getNum(),
                         scalingFactors[i].getDenom());

@@ -26,11 +26,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tjutil.h"
-
 #ifdef _WIN32
 
 #include <windows.h>
+#include "tjutil.h"
 
 static double getFreq(void)
 {
@@ -58,6 +57,7 @@ double getTime(void)
 
 #include <stdlib.h>
 #include <sys/time.h>
+#include "tjutil.h"
 
 double getTime(void)
 {

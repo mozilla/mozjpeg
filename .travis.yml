@@ -57,6 +57,13 @@ addons:
     brewfile: true
     update: true
 
+cache:
+  directories:
+    - $HOME/Library/Caches/Homebrew
+
+before_cache:
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew cleanup; fi
+
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&

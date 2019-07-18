@@ -55,6 +55,7 @@ matrix:
 addons:
   homebrew:
     brewfile: true
+    update: true
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then

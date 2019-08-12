@@ -202,7 +202,7 @@ usage(void)
   fprintf(stderr, "  -tune-ms-ssim  Tune trellis optimization for MS-SSIM\n");
   fprintf(stderr, "Switches for advanced users:\n");
   fprintf(stderr, "  -noovershoot   Disable black-on-white deringing via overshoot\n");
-  fprintf(stderr, "  -nojfif        Do not write JFIF. Reduce size in 18 bytes but break standar. No know problems in web use.\n");
+  fprintf(stderr, "  -nojfif        Do not write JFIF (reduces size by 18 bytes but breaks standards; no known problems in Web browsers)\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif

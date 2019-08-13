@@ -16,41 +16,47 @@ matrix:
       env: BUILD_OFFICIAL=1
       osx_image: xcode8.3
     - os: linux
-      dist: trusty
       compiler: clang
       env:
         CMAKE_BUILD_TYPE=RelWithDebInfo
-        CFLAGS_RELWITHDEBINFO="-O1 -g -fsanitize=address -fno-omit-frame-pointer"
+        CFLAGS_RELWITHDEBINFO="-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer"
         CMAKE_FLAGS="-DENABLE_SHARED=0"
         ASAN_OPTIONS="detect_leaks=1 symbolize=1"
+        CTEST_OUTPUT_ON_FAILURE=1
       addons:
         apt:
           packages:
             - nasm
     - os: linux
-      dist: trusty
       compiler: gcc
-      env: CMAKE_FLAGS="-DWITH_12BIT=1"
+      env:
+        CMAKE_FLAGS="-DWITH_12BIT=1"
+        CTEST_OUTPUT_ON_FAILURE=1
     - os: linux
-      dist: trusty
       compiler: gcc
-      env: CMAKE_FLAGS="-DWITH_JPEG7=1"
+      env:
+        CMAKE_FLAGS="-DWITH_JPEG7=1"
+        CTEST_OUTPUT_ON_FAILURE=1
       addons:
         apt:
           packages:
             - nasm
     - os: linux
-      dist: trusty
       compiler: gcc
-      env: CMAKE_FLAGS="-DWITH_JPEG8=1"
+      env:
+        CMAKE_FLAGS="-DWITH_JPEG8=1"
+        CTEST_OUTPUT_ON_FAILURE=1
       addons:
         apt:
           packages:
             - nasm
     - os: linux
-      dist: trusty
-      compiler: gcc
-      env: CMAKE_FLAGS="-DWITH_SIMD=0"
+      compiler: clang
+      env:
+        CMAKE_BUILD_TYPE=RelWithDebInfo
+        CFLAGS_RELWITHDEBINFO="-O3 -g -fsanitize=memory -fPIE"
+        CMAKE_FLAGS="-DWITH_SIMD=0"
+        CTEST_OUTPUT_ON_FAILURE=1
 
 addons:
   homebrew:

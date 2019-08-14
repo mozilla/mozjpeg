@@ -25,6 +25,11 @@ decompression (in the spatial domain.)
 attempting to compress or decompress images with more than 1 billion pixels
 using the TurboJPEG API.
 
+5. Fixed a regression introduced by 2.0 beta1[15] whereby attempting to
+generate a progressive JPEG image on an SSE2-capable CPU using a scan script
+containing one or more scans with lengths divisible by 16 would result in an
+error ("Missing Huffman code table entry") and an invalid JPEG image.
+
 
 2.0.2
 =====

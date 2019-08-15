@@ -1432,6 +1432,9 @@ DLLEXPORT int tjDecodeYUVPlanes(tjhandle handle,
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
 
+  dinfo->progressive_mode = dinfo->inputctl->has_multiple_scans = FALSE;
+  dinfo->Ss = dinfo->Ah = dinfo->Al = 0;
+  dinfo->Se = DCTSIZE2 - 1;
   if (setDecodeDefaults(dinfo, pixelFormat, subsamp, flags) == -1) {
     retval = -1;  goto bailout;
   }

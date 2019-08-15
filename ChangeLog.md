@@ -30,6 +30,11 @@ generate a progressive JPEG image on an SSE2-capable CPU using a scan script
 containing one or more scans with lengths divisible by 16 would result in an
 error ("Missing Huffman code table entry") and an invalid JPEG image.
 
+6. Fixed an issue whereby `tjDecodeYUV()` and `tjDecodeYUVPlanes()` would throw
+an error ("Invalid progressive parameters") or a warning ("Inconsistent
+progression sequence") if passed a TurboJPEG instance that was previously used
+to decompress a progressive JPEG image.
+
 
 2.0.2
 =====

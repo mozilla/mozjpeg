@@ -342,3 +342,15 @@ quality of 98-100.  Thus, libjpeg-turbo must use the non-SIMD quantization
 function in those cases.  This causes performance to drop by as much as 40%.
 It is therefore strongly advised that you use the slow integer forward DCT
 whenever encoding images with a JPEG quality of 98 or higher.
+
+
+Memory Debugger Pitfalls
+========================
+
+Valgrind and Memory Sanitizer (MSan) can generate false positives
+(specifically, incorrect reports of uninitialized memory accesses) when used
+with libjpeg-turbo's SIMD extensions.  It is generally recommended that the
+SIMD extensions be disabled, either by passing an argument of `-DWITH_SIMD=0`
+to `cmake` when configuring the build or by setting the environment variable
+`JSIMD_FORCENONE` to `1` at run time, when testing libjpeg-turbo with Valgrind,
+MSan, or other memory debuggers.

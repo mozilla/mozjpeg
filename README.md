@@ -9,6 +9,9 @@ It's compatible with libjpeg API and ABI, and can be used as a drop-in replaceme
 
 MozJPEG is meant to be used as a library in graphics programs and image processing tools. We include a demo `cjpeg` tool, but it's not intended for serious use. We encourage authors of graphics programs to use MozJPEG's [C API](libjpeg.txt) instead.
 
+For online usage visit:
+https://mozjpeg.com
+
 ## Features
 
 * Progressive encoding with "jpegrescan" optimization. It can be applied to any JPEG file (with `jpegtran`) to losslessly reduce file size.

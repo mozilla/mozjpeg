@@ -22,6 +22,9 @@ Build Requirements
        Mac executables or shared libraries that statically link with
        libjpeg-turbo, then YASM must be used when building libjpeg-turbo.
   * If building on Windows, **nasm.exe**/**yasm.exe** should be in your `PATH`.
+  * NASM and YASM are located in the CRB (Code Ready Builder) repository on
+    Red Hat Enterprise Linux 8 and in the PowerTools repository on CentOS 8,
+    which is not enabled by default.
 
   The binary RPMs released by the NASM project do not work on older Linux
   systems, such as Red Hat Enterprise Linux 5.  On such systems, you can easily

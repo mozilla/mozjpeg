@@ -47,10 +47,8 @@ Build Requirements
 
 - If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
   required.  Most modern Linux distributions, as well as Solaris 10 and later,
-  include JDK or OpenJDK.  On OS X 10.5 and 10.6, it will be necessary to
-  install the Java Developer Package, which can be downloaded from
-  <http://developer.apple.com/downloads> (Apple ID required.)  For other
-  systems, you can obtain the Oracle Java Development Kit from
+  include JDK or OpenJDK.  For other systems, you can obtain the Oracle Java
+  Development Kit from
   <http://www.oracle.com/technetwork/java/javase/downloads>.
 
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.

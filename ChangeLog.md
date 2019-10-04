@@ -40,6 +40,11 @@ supported, and the libjpeg-turbo build system can no longer be used to package
 such builds.  32-bit iOS apps cannot run in iOS 11 and later, and the App Store
 no longer allows them.
 
+4. The TurboJPEG Java wrapper in the "official" libjpeg-turbo SDK for macOS no
+longer supports 32-bit Java virtual machines.  Oracle no longer provides a
+32-bit JVM for macOS, and Apple's implementation of Java 1.6 (Java for OS X
+systems) is long obsolete.
+
 
 2.0.3
 =====

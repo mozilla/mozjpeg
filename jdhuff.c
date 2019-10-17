@@ -40,24 +40,6 @@ typedef struct {
   int last_dc_val[MAX_COMPS_IN_SCAN]; /* last DC coef for each component */
 } savable_state;
 
-/* This macro is to work around compilers with missing or broken
- * structure assignment.  You'll need to fix this code if you have
- * such a compiler and you change MAX_COMPS_IN_SCAN.
- */
-
-#ifndef NO_STRUCT_ASSIGN
-#define ASSIGN_STATE(dest, src)  ((dest) = (src))
-#else
-#if MAX_COMPS_IN_SCAN == 4
-#define ASSIGN_STATE(dest, src) \
-  ((dest).last_dc_val[0] = (src).last_dc_val[0], \
-   (dest).last_dc_val[1] = (src).last_dc_val[1], \
-   (dest).last_dc_val[2] = (src).last_dc_val[2], \
-   (dest).last_dc_val[3] = (src).last_dc_val[3])
-#endif
-#endif
-
-
 typedef struct {
   struct jpeg_entropy_decoder pub; /* public fields */
 
@@ -569,7 +551,7 @@ decode_mcu_slow(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
   /* Load up working state */
   BITREAD_LOAD_STATE(cinfo, entropy->bitstate);
-  ASSIGN_STATE(state, entropy->saved);
+  state = entropy->saved;
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
     JBLOCKROW block = MCU_data ? MCU_data[blkn] : NULL;
@@ -654,7 +636,7 @@ decode_mcu_slow(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
   /* Completed MCU, so update state */
   BITREAD_SAVE_STATE(cinfo, entropy->bitstate);
-  ASSIGN_STATE(entropy->saved, state);
+  entropy->saved = state;
   return TRUE;
 }
 
@@ -672,7 +654,7 @@ decode_mcu_fast(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   /* Load up working state */
   BITREAD_LOAD_STATE(cinfo, entropy->bitstate);
   buffer = (JOCTET *)br_state.next_input_byte;
-  ASSIGN_STATE(state, entropy->saved);
+  state = entropy->saved;
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
     JBLOCKROW block = MCU_data ? MCU_data[blkn] : NULL;
@@ -741,7 +723,7 @@ decode_mcu_fast(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   br_state.bytes_in_buffer -= (buffer - br_state.next_input_byte);
   br_state.next_input_byte = buffer;
   BITREAD_SAVE_STATE(cinfo, entropy->bitstate);
-  ASSIGN_STATE(entropy->saved, state);
+  entropy->saved = state;
   return TRUE;
 }
 

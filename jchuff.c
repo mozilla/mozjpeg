@@ -78,26 +78,6 @@ typedef struct {
   int last_dc_val[MAX_COMPS_IN_SCAN];   /* last DC coef for each component */
 } savable_state;
 
-/* This macro is to work around compilers with missing or broken
- * structure assignment.  You'll need to fix this code if you have
- * such a compiler and you change MAX_COMPS_IN_SCAN.
- */
-
-#ifndef NO_STRUCT_ASSIGN
-#define ASSIGN_STATE(dest, src)  ((dest) = (src))
-#else
-#if MAX_COMPS_IN_SCAN == 4
-#define ASSIGN_STATE(dest, src) \
-  ((dest).put_buffer = (src).put_buffer, \
-   (dest).put_bits = (src).put_bits, \
-   (dest).last_dc_val[0] = (src).last_dc_val[0], \
-   (dest).last_dc_val[1] = (src).last_dc_val[1], \
-   (dest).last_dc_val[2] = (src).last_dc_val[2], \
-   (dest).last_dc_val[3] = (src).last_dc_val[3])
-#endif
-#endif
-
-
 typedef struct {
   struct jpeg_entropy_encoder pub; /* public fields */
 
@@ -661,7 +641,7 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   /* Load up working state */
   state.next_output_byte = cinfo->dest->next_output_byte;
   state.free_in_buffer = cinfo->dest->free_in_buffer;
-  ASSIGN_STATE(state.cur, entropy->saved);
+  state.cur = entropy->saved;
   state.cinfo = cinfo;
 
   /* Emit restart marker if needed */
@@ -701,7 +681,7 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   /* Completed MCU, so update state */
   cinfo->dest->next_output_byte = state.next_output_byte;
   cinfo->dest->free_in_buffer = state.free_in_buffer;
-  ASSIGN_STATE(entropy->saved, state.cur);
+  entropy->saved = state.cur;
 
   /* Update restart-interval state too */
   if (cinfo->restart_interval) {
@@ -730,7 +710,7 @@ finish_pass_huff(j_compress_ptr cinfo)
   /* Load up working state ... flush_bits needs it */
   state.next_output_byte = cinfo->dest->next_output_byte;
   state.free_in_buffer = cinfo->dest->free_in_buffer;
-  ASSIGN_STATE(state.cur, entropy->saved);
+  state.cur = entropy->saved;
   state.cinfo = cinfo;
 
   /* Flush out the last data */
@@ -740,7 +720,7 @@ finish_pass_huff(j_compress_ptr cinfo)
   /* Update state */
   cinfo->dest->next_output_byte = state.next_output_byte;
   cinfo->dest->free_in_buffer = state.free_in_buffer;
-  ASSIGN_STATE(entropy->saved, state.cur);
+  entropy->saved = state.cur;
 }
 
 

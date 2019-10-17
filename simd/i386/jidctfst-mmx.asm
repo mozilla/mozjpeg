@@ -18,8 +18,6 @@
 ; the inverse DCT (Discrete Cosine Transform). The following code is
 ; based directly on the IJG's original jidctfst.c; see the jidctfst.c
 ; for more details.
-;
-; [TAB8]
 
 %include "jsimdext.inc"
 %include "jdct.inc"

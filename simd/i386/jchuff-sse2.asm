@@ -17,8 +17,6 @@
 ; This file contains an SSE2 implementation for Huffman coding of one block.
 ; The following code is based directly on jchuff.c; see jchuff.c for more
 ; details.
-;
-; [TAB8]
 
 %include "jsimdext.inc"
 

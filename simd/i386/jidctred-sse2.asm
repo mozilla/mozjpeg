@@ -18,8 +18,6 @@
 ; output: either 4x4 or 2x2 pixels from an 8x8 DCT block.
 ; The following code is based directly on the IJG's original jidctred.c;
 ; see the jidctred.c for more details.
-;
-; [TAB8]
 
 %include "jsimdext.inc"
 %include "jdct.inc"

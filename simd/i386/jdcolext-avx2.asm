@@ -346,7 +346,7 @@ EXTN(jsimd_ycc_rgb_convert_avx2):
     vmovd       eax, xmmA
     cmp         ecx, byte SIZEOF_WORD
     jb          short .column_st1
-    mov         WORD [edi], ax
+    mov         word [edi], ax
     add         edi, byte SIZEOF_WORD
     sub         ecx, byte SIZEOF_WORD
     shr         eax, 16
@@ -355,7 +355,7 @@ EXTN(jsimd_ycc_rgb_convert_avx2):
     ; space.
     test        ecx, ecx
     jz          short .nextrow
-    mov         BYTE [edi], al
+    mov         byte [edi], al
 
 %else  ; RGB_PIXELSIZE == 4 ; -----------
 

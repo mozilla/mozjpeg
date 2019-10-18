@@ -85,12 +85,12 @@ EXTN(jsimd_rgb_gray_convert_sse2):
     test        cl, SIZEOF_BYTE
     jz          short .column_ld2
     sub         rcx, byte SIZEOF_BYTE
-    movzx       rax, BYTE [rsi+rcx]
+    movzx       rax, byte [rsi+rcx]
 .column_ld2:
     test        cl, SIZEOF_WORD
     jz          short .column_ld4
     sub         rcx, byte SIZEOF_WORD
-    movzx       rdx, WORD [rsi+rcx]
+    movzx       rdx, word [rsi+rcx]
     shl         rax, WORD_BIT
     or          rax, rdx
 .column_ld4:

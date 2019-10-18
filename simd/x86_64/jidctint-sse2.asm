@@ -122,8 +122,8 @@ EXTN(jsimd_idct_islow_sse2):
     mov         rsi, r11                ; inptr
 
 %ifndef NO_ZERO_COLUMN_TEST_ISLOW_SSE2
-    mov         eax, DWORD [DWBLOCK(1,0,rsi,SIZEOF_JCOEF)]
-    or          eax, DWORD [DWBLOCK(2,0,rsi,SIZEOF_JCOEF)]
+    mov         eax, dword [DWBLOCK(1,0,rsi,SIZEOF_JCOEF)]
+    or          eax, dword [DWBLOCK(2,0,rsi,SIZEOF_JCOEF)]
     jnz         near .columnDCT
 
     movdqa      xmm0, XMMWORD [XMMBLOCK(1,0,rsi,SIZEOF_JCOEF)]

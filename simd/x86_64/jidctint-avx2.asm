@@ -290,8 +290,8 @@ EXTN(jsimd_idct_islow_avx2):
     ; ---- Pass 1: process columns.
 
 %ifndef NO_ZERO_COLUMN_TEST_ISLOW_AVX2
-    mov         eax, DWORD [DWBLOCK(1,0,r11,SIZEOF_JCOEF)]
-    or          eax, DWORD [DWBLOCK(2,0,r11,SIZEOF_JCOEF)]
+    mov         eax, dword [DWBLOCK(1,0,r11,SIZEOF_JCOEF)]
+    or          eax, dword [DWBLOCK(2,0,r11,SIZEOF_JCOEF)]
     jnz         near .columnDCT
 
     movdqa      xmm0, XMMWORD [XMMBLOCK(1,0,r11,SIZEOF_JCOEF)]

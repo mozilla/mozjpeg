@@ -134,8 +134,8 @@ EXTN(jsimd_idct_islow_mmx):
     alignx      16, 7
 .columnloop:
 %ifndef NO_ZERO_COLUMN_TEST_ISLOW_MMX
-    mov         eax, DWORD [DWBLOCK(1,0,esi,SIZEOF_JCOEF)]
-    or          eax, DWORD [DWBLOCK(2,0,esi,SIZEOF_JCOEF)]
+    mov         eax, dword [DWBLOCK(1,0,esi,SIZEOF_JCOEF)]
+    or          eax, dword [DWBLOCK(2,0,esi,SIZEOF_JCOEF)]
     jnz         short .columnDCT
 
     movq        mm0, MMWORD [MMBLOCK(1,0,esi,SIZEOF_JCOEF)]

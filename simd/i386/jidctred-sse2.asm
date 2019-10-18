@@ -137,8 +137,8 @@ EXTN(jsimd_idct_4x4_sse2):
     mov         esi, JCOEFPTR [coef_block(eax)]  ; inptr
 
 %ifndef NO_ZERO_COLUMN_TEST_4X4_SSE2
-    mov         eax, DWORD [DWBLOCK(1,0,esi,SIZEOF_JCOEF)]
-    or          eax, DWORD [DWBLOCK(2,0,esi,SIZEOF_JCOEF)]
+    mov         eax, dword [DWBLOCK(1,0,esi,SIZEOF_JCOEF)]
+    or          eax, dword [DWBLOCK(2,0,esi,SIZEOF_JCOEF)]
     jnz         short .columnDCT
 
     movdqa      xmm0, XMMWORD [XMMBLOCK(1,0,esi,SIZEOF_JCOEF)]
@@ -576,8 +576,8 @@ EXTN(jsimd_idct_2x2_sse2):
 
     mov         edx, JSAMPROW [edi+0*SIZEOF_JSAMPROW]
     mov         esi, JSAMPROW [edi+1*SIZEOF_JSAMPROW]
-    mov         WORD [edx+eax*SIZEOF_JSAMPLE], bx
-    mov         WORD [esi+eax*SIZEOF_JSAMPLE], cx
+    mov         word [edx+eax*SIZEOF_JSAMPLE], bx
+    mov         word [esi+eax*SIZEOF_JSAMPLE], cx
 
     pop         edi
     pop         esi

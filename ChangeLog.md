@@ -46,6 +46,17 @@ longer supports 32-bit Java virtual machines.  Oracle no longer provides a
 systems) is long obsolete.
 
 
+2.0.4
+=====
+
+### Significant changes relative to 2.0.3:
+
+1. Fixed a regression in the Windows packaging system (introduced by
+2.0 beta1[2]) whereby, if both the 64-bit libjpeg-turbo SDK for GCC and the
+64-bit libjpeg-turbo SDK for Visual C++ were installed on the same system, only
+one of them could be uninstalled.
+
+
 2.0.3
 =====
 

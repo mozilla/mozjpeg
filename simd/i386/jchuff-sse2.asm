@@ -252,8 +252,7 @@ times 1 << 14 db 15
     call        %%.geteip
 %%.ref:
     %4
-    add         %1, %2
-    sub         %1, %%.ref
+    add         %1, %2 - %%.ref
     jmp         short %%.done
     align       32
 %%.geteip:

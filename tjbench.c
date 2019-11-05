@@ -486,7 +486,7 @@ static int fullTest(unsigned char *srcBuf, int w, int h, int subsamp,
       if (decomp(srcBuf, jpegBuf, jpegSize, tmpBuf, w, h, subsamp, jpegQual,
                  fileName, tilew, tileh) == -1)
         goto bailout;
-    }
+    } else if (quiet == 1) printf("N/A\n");
 
     for (i = 0; i < ntilesw * ntilesh; i++) {
       if (jpegBuf[i]) tjFree(jpegBuf[i]);

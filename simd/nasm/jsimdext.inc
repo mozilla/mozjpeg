@@ -2,7 +2,7 @@
 ; jsimdext.inc - common declarations
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2010, 2016, 2018, D. R. Commander.
+; Copyright (C) 2010, 2016, 2018-2019, D. R. Commander.
 ; Copyright (C) 2018, Matthieu Darbois.
 ; Copyright (C) 2018, Matthias Räncker.
 ;
@@ -237,6 +237,11 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 %ifdef __YASM_VER__
 %define GLOBAL_FUNCTION(name)  global EXTN(name):private_extern
 %define GLOBAL_DATA(name)      global EXTN(name):private_extern
+%else
+%if __NASM_VERSION_ID__ >= 0x020E0000
+%define GLOBAL_FUNCTION(name)  global EXTN(name):private_extern
+%define GLOBAL_DATA(name)      global EXTN(name):private_extern
+%endif
 %endif
 %endif
 

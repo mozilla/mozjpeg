@@ -1,7 +1,7 @@
 2.1 pre-beta
 ============
 
-### Significant changes relative to 2.0.1:
+### Significant changes relative to 2.0.3:
 
 1. The build system, x86-64 SIMD extensions, and accelerated Huffman codec now
 support the x32 ABI on Linux, which allows for using x86-64 instructions with
@@ -45,14 +45,19 @@ longer supports 32-bit Java virtual machines.  Oracle no longer provides a
 32-bit JVM for macOS, and Apple's implementation of Java 1.6 (Java for OS X
 systems) is long obsolete.
 
-5. The SSE2 (x86 SIMD) and C Huffman encoding algorithms have been
+5. Fixed a regression in the Windows packaging system (introduced by
+2.0 beta1[2]) whereby, if both the 64-bit libjpeg-turbo SDK for GCC and the
+64-bit libjpeg-turbo SDK for Visual C++ were installed on the same system, only
+one of them could be uninstalled.
+
+6. The SSE2 (x86 SIMD) and C Huffman encoding algorithms have been
 significantly optimized, resulting in a measured average overall compression
 speedup of 12-28% for 64-bit code and 22-52% for 32-bit code on various Intel
 and AMD CPUs, as well as a measured average overall compression speedup of
 0-23% on platforms that do not have a SIMD-accelerated Huffman encoding
 implementation.
 
-6. The block smoothing algorithm that the libjpeg API library optionally
+7. The block smoothing algorithm that the libjpeg API library optionally
 applies when decompressing multi-scan images is now more fault-tolerant.
 Previously, if a particular scan was incomplete, then the smoothing parameters
 for the incomplete scan would be applied to the entire output image, including
@@ -62,17 +67,6 @@ scans if they were followed by an incomplete higher-frequency scan.
 libjpeg-turbo now applies block smoothing parameters to each iMCU row based on
 which scan generated the pixels in that row, rather than always using the block
 smoothing parameters for the most recent scan.
-
-
-2.0.4
-=====
-
-### Significant changes relative to 2.0.3:
-
-1. Fixed a regression in the Windows packaging system (introduced by
-2.0 beta1[2]) whereby, if both the 64-bit libjpeg-turbo SDK for GCC and the
-64-bit libjpeg-turbo SDK for Visual C++ were installed on the same system, only
-one of them could be uninstalled.
 
 
 2.0.3

@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2002-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2016, D. R. Commander.
+ * Copyright (C) 2009-2011, 2016, 2019, D. R. Commander.
  * Copyright (C) 2013, Linaro Limited.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -580,6 +580,7 @@ master_selection(j_decompress_ptr cinfo)
    */
   cinfo->master->first_iMCU_col = 0;
   cinfo->master->last_iMCU_col = cinfo->MCUs_per_row - 1;
+  cinfo->master->last_good_iMCU_row = 0;
 
 #ifdef D_MULTISCAN_FILES_SUPPORTED
   /* If jpeg_start_decompress will read the whole file, initialize

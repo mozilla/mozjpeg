@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2018, D. R. Commander.
+ * Copyright (C) 2010, 2015-2019, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -506,6 +506,8 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
          * decoded coefficients.  This is ~5% faster for large subsets, but
          * it's tough to tell a difference for smaller images.
          */
+        if (!cinfo->entropy->insufficient_data)
+          cinfo->master->last_good_iMCU_row = cinfo->input_iMCU_row;
         (*cinfo->entropy->decode_mcu) (cinfo, NULL);
       }
     }

@@ -83,7 +83,7 @@ start_pass_phuff_decoder(j_decompress_ptr cinfo)
   boolean is_DC_band, bad;
   int ci, coefi, tbl;
   d_derived_tbl **pdtbl;
-  int *coef_bit_ptr;
+  int *coef_bit_ptr, *prev_coef_bit_ptr;
   jpeg_component_info *compptr;
 
   is_DC_band = (cinfo->Ss == 0);
@@ -124,12 +124,15 @@ start_pass_phuff_decoder(j_decompress_ptr cinfo)
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     int cindex = cinfo->cur_comp_info[ci]->component_index;
     coef_bit_ptr = &cinfo->coef_bits[cindex][0];
+    prev_coef_bit_ptr = &cinfo->coef_bits[cindex + cinfo->num_components][0];
     if (!is_DC_band && coef_bit_ptr[0] < 0) /* AC without prior DC scan */
       WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, 0);
     for (coefi = cinfo->Ss; coefi <= cinfo->Se; coefi++) {
       int expected = (coef_bit_ptr[coefi] < 0) ? 0 : coef_bit_ptr[coefi];
       if (cinfo->Ah != expected)
         WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, coefi);
+      if (cinfo->input_scan_number > 1)
+        prev_coef_bit_ptr[coefi] = coef_bit_ptr[coefi];
       coef_bit_ptr[coefi] = cinfo->Al;
     }
   }
@@ -657,7 +660,7 @@ jinit_phuff_decoder(j_decompress_ptr cinfo)
   /* Create progression status table */
   cinfo->coef_bits = (int (*)[DCTSIZE2])
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
-                                cinfo->num_components * DCTSIZE2 *
+                                cinfo->num_components * 2 * DCTSIZE2 *
                                 sizeof(int));
   coef_bit_ptr = &cinfo->coef_bits[0][0];
   for (ci = 0; ci < cinfo->num_components; ci++)

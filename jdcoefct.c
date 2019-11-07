@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015-2016, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, 2019, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -102,6 +102,8 @@ decompress_onepass(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
       /* Try to fetch an MCU.  Entropy decoder expects buffer to be zeroed. */
       jzero_far((void *)coef->MCU_buffer[0],
                 (size_t)(cinfo->blocks_in_MCU * sizeof(JBLOCK)));
+      if (!cinfo->entropy->insufficient_data)
+        cinfo->master->last_good_iMCU_row = cinfo->input_iMCU_row;
       if (!(*cinfo->entropy->decode_mcu) (cinfo, coef->MCU_buffer)) {
         /* Suspension forced; update state counters and exit */
         coef->MCU_vert_offset = yoffset;
@@ -227,6 +229,8 @@ consume_data(j_decompress_ptr cinfo)
           }
         }
       }
+      if (!cinfo->entropy->insufficient_data)
+        cinfo->master->last_good_iMCU_row = cinfo->input_iMCU_row;
       /* Try to fetch the MCU. */
       if (!(*cinfo->entropy->decode_mcu) (cinfo, coef->MCU_buffer)) {
         /* Suspension forced; update state counters and exit */
@@ -356,8 +360,8 @@ smoothing_ok(j_decompress_ptr cinfo)
   int ci, coefi;
   jpeg_component_info *compptr;
   JQUANT_TBL *qtable;
-  int *coef_bits;
-  int *coef_bits_latch;
+  int *coef_bits, *prev_coef_bits;
+  int *coef_bits_latch, *prev_coef_bits_latch;
 
   if (!cinfo->progressive_mode || cinfo->coef_bits == NULL)
     return FALSE;
@@ -366,9 +370,11 @@ smoothing_ok(j_decompress_ptr cinfo)
   if (coef->coef_bits_latch == NULL)
     coef->coef_bits_latch = (int *)
       (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
-                                  cinfo->num_components *
+                                  cinfo->num_components * 2 *
                                   (SAVED_COEFS * sizeof(int)));
   coef_bits_latch = coef->coef_bits_latch;
+  prev_coef_bits_latch =
+    &coef->coef_bits_latch[cinfo->num_components * SAVED_COEFS];
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
@@ -385,15 +391,19 @@ smoothing_ok(j_decompress_ptr cinfo)
       return FALSE;
     /* DC values must be at least partly known for all components. */
     coef_bits = cinfo->coef_bits[ci];
+    prev_coef_bits = cinfo->coef_bits[ci + cinfo->num_components];
     if (coef_bits[0] < 0)
       return FALSE;
     /* Block smoothing is helpful if some AC coefficients remain inaccurate. */
     for (coefi = 1; coefi <= 5; coefi++) {
+      if (cinfo->input_scan_number > 1)
+        prev_coef_bits_latch[coefi] = prev_coef_bits[coefi];
       coef_bits_latch[coefi] = coef_bits[coefi];
       if (coef_bits[coefi] != 0)
         smoothing_useful = TRUE;
     }
     coef_bits_latch += SAVED_COEFS;
+    prev_coef_bits_latch += SAVED_COEFS;
   }
 
   return smoothing_useful;
@@ -478,8 +488,15 @@ decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
          (JDIMENSION)0, (JDIMENSION)access_rows, FALSE);
       first_row = TRUE;
     }
-    /* Fetch component-dependent info */
-    coef_bits = coef->coef_bits_latch + (ci * SAVED_COEFS);
+    /* Fetch component-dependent info.
+     * If the current scan is incomplete, then we use the component-dependent
+     * info from the previous scan.
+     */
+    if (cinfo->output_iMCU_row > cinfo->master->last_good_iMCU_row)
+      coef_bits =
+        coef->coef_bits_latch + ((ci + cinfo->num_components) * SAVED_COEFS);
+    else
+      coef_bits = coef->coef_bits_latch + (ci * SAVED_COEFS);
     quanttbl = compptr->quant_table;
     Q00 = quanttbl->quantval[0];
     Q01 = quanttbl->quantval[Q01_POS];

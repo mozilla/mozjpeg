@@ -731,6 +731,7 @@ bad:
   entropy->c = 0;
   entropy->a = 0;
   entropy->ct = -16;    /* force reading 2 initial bytes to fill C */
+  entropy->pub.insufficient_data = FALSE;
 
   /* Initialize restart counter */
   entropy->restarts_to_go = cinfo->restart_interval;

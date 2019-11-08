@@ -33,9 +33,11 @@ matrix:
         CMAKE_FLAGS="-DWITH_12BIT=1"
         CTEST_OUTPUT_ON_FAILURE=1
     - os: linux
+      dist: bionic
       compiler: gcc
       env:
-        CMAKE_FLAGS="-DWITH_JPEG7=1"
+        BUILD_X32=1
+        CMAKE_FLAGS="-DWITH_JPEG7=1 -DCMAKE_C_FLAGS=-mx32"
         CTEST_OUTPUT_ON_FAILURE=1
       addons:
         apt:
@@ -71,6 +73,9 @@ before_cache:
   - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew cleanup; fi
 
 before_install:
+  - if [ "$BUILD_X32" = "1" ]; then
+      sudo apt -y --install-recommends install libc6-dev-x32;
+    fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
       ln -fs /Applications/Xcode.app /Applications/Xcode83.app;

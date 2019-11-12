@@ -171,7 +171,7 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
   }
   /* Set the destination buffer to gray so we know whether the decompressor
      attempted to write to it */
-  memset(dstBuf, 127, pitch * scaledh);
+  memset(dstBuf, 127, (size_t)pitch * scaledh);
 
   if (doYUV) {
     int width = doTile ? tilew : scaledw;
@@ -193,7 +193,7 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
     double start = getTime();
 
     for (row = 0, dstPtr = dstBuf; row < ntilesh;
-         row++, dstPtr += pitch * tileh) {
+         row++, dstPtr += (size_t)pitch * tileh) {
       for (col = 0, dstPtr2 = dstPtr; col < ntilesw;
            col++, tile++, dstPtr2 += ps * tilew) {
         int width = doTile ? min(tilew, w - col * tilew) : scaledw;

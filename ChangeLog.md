@@ -8,6 +8,10 @@
 64-bit libjpeg-turbo SDK for Visual C++ were installed on the same system, only
 one of them could be uninstalled.
 
+2. Fixed a signed integer overflow and subsequent segfault that occurred when
+attempting to decompress images with more than 715827882 pixels using the
+64-bit C version of TJBench.
+
 
 2.0.3
 =====

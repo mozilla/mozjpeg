@@ -66,6 +66,16 @@ higher-frequency scan.  libjpeg-turbo now applies block smoothing parameters to
 each iMCU row based on which scan generated the pixels in that row, rather than
 always using the block smoothing parameters for the most recent scan.
 
+8. Fixed a signed integer overflow and subsequent segfault that occurred when
+attempting to decompress images with more than 715827882 pixels using the
+64-bit C version of TJBench.
+
+9. Fixed out-of-bounds write in `tjDecompressToYUV2()` and
+`tjDecompressToYUVPlanes()` (sometimes manifesting as a double free) that
+occurred when attempting to decompress grayscale JPEG images that were
+compressed with a sampling factor other than 1 (for instance, with
+`cjpeg -grayscale -sample 2x2`).
+
 
 2.0.3
 =====

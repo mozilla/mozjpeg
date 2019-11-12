@@ -1648,10 +1648,8 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
 
     iw[i] = compptr->width_in_blocks * dctsize;
     ih = compptr->height_in_blocks * dctsize;
-    pw[i] = PAD(dinfo->output_width, dinfo->max_h_samp_factor) *
-            compptr->h_samp_factor / dinfo->max_h_samp_factor;
-    ph[i] = PAD(dinfo->output_height, dinfo->max_v_samp_factor) *
-            compptr->v_samp_factor / dinfo->max_v_samp_factor;
+    pw[i] = tjPlaneWidth(i, dinfo->output_width, jpegSubsamp);
+    ph[i] = tjPlaneHeight(i, dinfo->output_height, jpegSubsamp);
     if (iw[i] != pw[i] || ih != ph[i]) usetmpbuf = 1;
     th[i] = compptr->v_samp_factor * dctsize;
     tmpbufsize += iw[i] * th[i];

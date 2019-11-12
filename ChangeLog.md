@@ -12,6 +12,12 @@ one of them could be uninstalled.
 attempting to decompress images with more than 715827882 pixels using the
 64-bit C version of TJBench.
 
+3. Fixed out-of-bounds write in `tjDecompressToYUV2()` and
+`tjDecompressToYUVPlanes()` (sometimes manifesting as a double free) that
+occurred when attempting to decompress grayscale JPEG images that were
+compressed with a sampling factor other than 1 (for instance, with
+`cjpeg -grayscale -sample 2x2`).
+
 
 2.0.3
 =====

@@ -646,7 +646,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     por         mm_put_buffer, mm_code                    ;     put_buffer |= code;
     cmp         size, 16                                  ;     if (size <= 16)
     jle        .ERLOOP2                                   ;       goto .ERLOOP2;
-    jmp        .BRLOOP2                                   ; } while(1);
+    jmp        .BRLOOP2                                   ; } while (1);
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -728,11 +728,11 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     align       16
 .EMIT_ERLOOP1:
     EMIT_QWORD  size, sizeb, sizeh, \
-      {xor      size, size}, \
-      {tzcnt    size, index}, \
-      {inc      size}, \
-      {test     index, index}, \
-      {jnz      .BLOOP1}, \
+      { xor     size, size }, \
+      { tzcnt   size, index }, \
+      { inc     size }, \
+      { test    index, index }, \
+      { jnz     .BLOOP1 }, \
       .ELOOP1
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -740,8 +740,8 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     align       16
 .EMIT_BRLOOP2:
     EMIT_QWORD  emit_temp, emit_tempb, emit_temph, , , , \
-      {cmp      size, 16}, \
-      {jle      .ERLOOP2}, \
+      { cmp     size, 16 }, \
+      { jle     .ERLOOP2 }, \
       .BRLOOP2
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -749,11 +749,11 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     align       16
 .EMIT_ERLOOP2:
     EMIT_QWORD  size, sizeb, sizeh, \
-      {xor      size, size}, \
-      {tzcnt    size, index}, \
-      {inc      size}, \
-      {test     index, index}, \
-      {jnz      .BLOOP2}, \
+      { xor     size, size }, \
+      { tzcnt   size, index }, \
+      { inc     size }, \
+      { test    index, index }, \
+      { jnz     .BLOOP2 }, \
       .ELOOP2
 
 ; For some reason, the OS X linker does not honor the request to align the

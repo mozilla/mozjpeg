@@ -493,7 +493,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     or          put_buffer, codeq                         ;   put_buffer |= code;
     cmp         nbits, 16                                 ;   if (nbits <= 16)
     jle         .ERLOOP                                   ;     break;
-    jmp         .BRLOOP                                   ; } while(1);
+    jmp         .BRLOOP                                   ; } while (1);
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -573,8 +573,9 @@ EXTN(jsimd_huff_encode_one_block_sse2):
 
     align       16
 .EMIT_BRLOOP_CODE:
-    EMIT_QWORD  .EMIT_BRLOOP_CODE_END, {mov nbits, code_temp}  ; insert code, flush buffer,
-                                                               ; nbits = code_temp, goto .EMIT_BRLOOP_CODE_END
+    EMIT_QWORD  .EMIT_BRLOOP_CODE_END, { mov nbits, code_temp }
+                                                          ; insert code, flush buffer,
+                                                          ; nbits = code_temp, goto .EMIT_BRLOOP_CODE_END
 
 ; For some reason, the OS X linker does not honor the request to align the
 ; segment unless we do this.

@@ -493,7 +493,7 @@ flush_bits(working_state *state)
   int localbuf = 0;
 
   if (state->simd) {
-#if defined __arm__ || defined __aarch64__
+#if defined(__arm__) || defined(__aarch64__)
     put_bits = state->cur.free_bits;
 #else
     put_bits = SIMD_BIT_BUF_SIZE - state->cur.free_bits;
@@ -519,7 +519,7 @@ flush_bits(working_state *state)
 
   if (state->simd) {                    /* and reset bit buffer to empty */
     state->cur.put_buffer.simd = 0;
-#if defined __arm__ || defined __aarch64__
+#if defined(__arm__) || defined(__aarch64__)
     state->cur.free_bits = 0;
 #else
     state->cur.free_bits = SIMD_BIT_BUF_SIZE;

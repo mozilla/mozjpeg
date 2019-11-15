@@ -76,6 +76,12 @@ occurred when attempting to decompress grayscale JPEG images that were
 compressed with a sampling factor other than 1 (for instance, with
 `cjpeg -grayscale -sample 2x2`).
 
+10. Fixed a regression introduced by 2.0.2[5] that caused the TurboJPEG API to
+incorrectly identify some JPEG images with unusual sampling factors as 4:4:4
+JPEG images.  This was known to cause a buffer overflow when attempting to
+decompress some such images using `tjDecompressToYUV2()` or
+`tjDecompressToYUVPlanes()`.
+
 
 2.0.3
 =====
@@ -217,10 +223,11 @@ would produce a "Bogus message code" error message if the underlying bitmap and
 PPM readers/writers threw an error that was specific to the readers/writers
 (as opposed to a general libjpeg API error.)
 
-4. Fixed an issue whereby a specially-crafted malformed BMP file, one in which
-the header specified an image width of 1073741824 pixels, would trigger a
-floating point exception (division by zero) in the `tjLoadImage()` function
-when attempting to load the BMP file into a 4-component image buffer.
+4. Fixed an issue (CVE-2018-1152) whereby a specially-crafted malformed BMP
+file, one in which the header specified an image width of 1073741824 pixels,
+would trigger a floating point exception (division by zero) in the
+`tjLoadImage()` function when attempting to load the BMP file into a
+4-component image buffer.
 
 5. Fixed an issue whereby certain combinations of calls to
 `jpeg_skip_scanlines()` and `jpeg_read_scanlines()` could trigger an infinite
@@ -234,10 +241,10 @@ a 4:2:2 or 4:2:0 JPEG image using the merged (non-fancy) upsampling algorithms
 7. The new CMake-based build system will now disable the MIPS DSPr2 SIMD
 extensions if it detects that the compiler does not support DSPr2 instructions.
 
-8. Fixed out-of-bounds read in cjpeg that occurred when attempting to compress
-a specially-crafted malformed color-index (8-bit-per-sample) BMP file in which
-some of the samples (color indices) exceeded the bounds of the BMP file's color
-table.
+8. Fixed out-of-bounds read in cjpeg (CVE-2018-14498) that occurred when
+attempting to compress a specially-crafted malformed color-index
+(8-bit-per-sample) BMP file in which some of the samples (color indices)
+exceeded the bounds of the BMP file's color table.
 
 9. Fixed a signed integer overflow in the progressive Huffman decoder, detected
 by the Clang and GCC undefined behavior sanitizers, that could be triggered by
@@ -397,8 +404,8 @@ write scanlines in bottom-up order.)  djpeg will now exit gracefully if an
 output format other than PPM/PGM, GIF, or Targa is selected along with the
 `-crop` option.
 
-4. Fixed an issue whereby `jpeg_skip_scanlines()` would segfault if color
-quantization was enabled.
+4. Fixed an issue (CVE-2017-15232) whereby `jpeg_skip_scanlines()` would
+segfault if color quantization was enabled.
 
 5. TJBench (both C and Java versions) will now display usage information if any
 command-line argument is unrecognized.  This prevents the program from silently
@@ -1025,13 +1032,13 @@ and IDCT algorithms (both are used during JPEG decompression.)  For unknown
 reasons (probably related to clang), this code cannot currently be compiled for
 iOS.
 
-15. Fixed an extremely rare bug that could cause the Huffman encoder's local
-buffer to overrun when a very high-frequency MCU is compressed using quality
-100 and no subsampling, and when the JPEG output buffer is being dynamically
-resized by the destination manager.  This issue was so rare that, even with a
-test program specifically designed to make the bug occur (by injecting random
-high-frequency YUV data into the compressor), it was reproducible only once in
-about every 25 million iterations.
+15. Fixed an extremely rare bug (CVE-2014-9092) that could cause the Huffman
+encoder's local buffer to overrun when a very high-frequency MCU is compressed
+using quality 100 and no subsampling, and when the JPEG output buffer is being
+dynamically resized by the destination manager.  This issue was so rare that,
+even with a test program specifically designed to make the bug occur (by
+injecting random high-frequency YUV data into the compressor), it was
+reproducible only once in about every 25 million iterations.
 
 16. Fixed an oversight in the TurboJPEG C wrapper:  if any of the JPEG
 compression functions was called repeatedly with the same
@@ -1066,8 +1073,9 @@ entropy coding (by passing arguments of `-progressive -arithmetic` to cjpeg or
 jpegtran, for instance) would result in an error, `Requested feature was
 omitted at compile time`.
 
-4. Fixed a couple of issues whereby malformed JPEG images would cause
-libjpeg-turbo to use uninitialized memory during decompression.
+4. Fixed a couple of issues (CVE-2013-6629 and CVE-2013-6630) whereby malformed
+JPEG images would cause libjpeg-turbo to use uninitialized memory during
+decompression.
 
 5. Fixed an error (`Buffer passed to JPEG library is too small`) that occurred
 when calling the TurboJPEG YUV encoding function with a very small (< 5x5)
@@ -1206,9 +1214,9 @@ correct behavior of the colorspace extensions when merged upsampling is used.
 upper 64 bits of xmm6 and xmm7 on Win64 platforms, which violated the Win64
 calling conventions.
 
-4. Fixed a regression caused by 1.2.0[6] whereby decompressing corrupt JPEG
-images (specifically, images in which the component count was erroneously set
-to a large value) would cause libjpeg-turbo to segfault.
+4. Fixed a regression (CVE-2012-2806) caused by 1.2.0[6] whereby decompressing
+corrupt JPEG images (specifically, images in which the component count was
+erroneously set to a large value) would cause libjpeg-turbo to segfault.
 
 5. Worked around a severe performance issue with "Bobcat" (AMD Embedded APU)
 processors.  The `MASKMOVDQU` instruction, which was used by the libjpeg-turbo

@@ -368,9 +368,9 @@ static int getSubsamp(j_decompress_ptr dinfo)
           D_MAX_BLOCKS_IN_MCU / pixelsize[i] && i == TJSAMP_444) {
         int match = 0;
         for (k = 1; k < dinfo->num_components; k++) {
-          if (dinfo->comp_info[i].h_samp_factor ==
+          if (dinfo->comp_info[k].h_samp_factor ==
               dinfo->comp_info[0].h_samp_factor &&
-              dinfo->comp_info[i].v_samp_factor ==
+              dinfo->comp_info[k].v_samp_factor ==
               dinfo->comp_info[0].v_samp_factor)
             match++;
           if (match == dinfo->num_components - 1) {

@@ -18,6 +18,12 @@ occurred when attempting to decompress grayscale JPEG images that were
 compressed with a sampling factor other than 1 (for instance, with
 `cjpeg -grayscale -sample 2x2`).
 
+4. Fixed a regression introduced by 2.0.2[5] that caused the TurboJPEG API to
+incorrectly identify some JPEG images with unusual sampling factors as 4:4:4
+JPEG images.  This was known to cause a buffer overflow when attempting to
+decompress some such images using `tjDecompressToYUV2()` or
+`tjDecompressToYUVPlanes()`.
+
 
 2.0.3
 =====

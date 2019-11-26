@@ -145,6 +145,8 @@ Ljsimd_ycc_rgb_neon_consts:
   .short -128,  -128,   -128,   -128
   .short -128,  -128,   -128,   -128
 
+#ifndef NEON_INTRINSICS
+
 /* Constants for jsimd_*_ycc_neon() */
 
 .balign 16
@@ -153,6 +155,8 @@ Ljsimd_rgb_ycc_neon_consts:
   .short 21709, 32768, 27439, 5329
   .short 32767, 128, 32767, 128
   .short 32767, 128, 32767, 128
+
+#endif
 
 /* Constants for jsimd_fdct_islow_neon() */
 
@@ -1982,6 +1986,8 @@ generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,
 .purgem do_store
 
 
+#ifndef NEON_INTRINSICS
+
 /*****************************************************************************/
 
 /*
@@ -2290,6 +2296,8 @@ generate_jsimd_rgb_ycc_convert_neon extbgr,  24, 2, 1, 0, 0
 
 .purgem do_load
 .purgem do_store
+
+#endif  /* NEON_INTRINSICS */
 
 
 /*****************************************************************************/

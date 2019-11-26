@@ -1607,6 +1607,8 @@ generate_jsimd_ycc_rgb_convert_neon rgb565,  16, 0, 0, 0
 .purgem do_store
 
 
+#ifndef NEON_INTRINSICS
+
 /*****************************************************************************/
 
 /*
@@ -1915,6 +1917,8 @@ generate_jsimd_rgb_ycc_convert_neon extxrgb, 32, 1, 2, 3
 
 .purgem do_load
 .purgem do_store
+
+#endif  /* NEON_INTRINSICS */
 
 
 /*****************************************************************************/

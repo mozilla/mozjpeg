@@ -208,7 +208,7 @@ endif()
 
 
 ###############################################################################
-# Arm (GAS)
+# Arm (Intrinsics or GAS)
 ###############################################################################
 
 elseif(CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm")
@@ -265,7 +265,15 @@ endif()
 
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S)
 
-add_library(simd OBJECT ${CPU_TYPE}/jsimd_neon.S ${CPU_TYPE}/jsimd.c)
+if(NEON_INTRINSICS)
+  set(SIMD_SOURCES arm/jccolor-neon.c)
+  if(BITS EQUAL 32)
+    set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS -mfpu=neon)
+  endif()
+endif()
+
+add_library(simd OBJECT ${SIMD_SOURCES} arm/aarch${BITS}/jsimd_neon.S
+  arm/aarch${BITS}/jsimd.c)
 
 if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
   set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)

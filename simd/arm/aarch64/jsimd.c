@@ -3,8 +3,9 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2011, Nokia Corporation and/or its subsidiary(-ies).
- * Copyright (C) 2009-2011, 2013-2014, 2016, 2018, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, 2016, 2018, 2020, D. R. Commander.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
+ * Copyright (C) 2020, Arm Limited.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -16,12 +17,12 @@
  */
 
 #define JPEG_INTERNALS
-#include "../../jinclude.h"
-#include "../../jpeglib.h"
+#include "../../../jinclude.h"
+#include "../../../jpeglib.h"
+#include "../../../jsimd.h"
+#include "../../../jdct.h"
+#include "../../../jsimddct.h"
 #include "../../jsimd.h"
-#include "../../jdct.h"
-#include "../../jsimddct.h"
-#include "../jsimd.h"
 #include "jconfigint.h"
 
 #include <stdio.h>
@@ -238,20 +239,28 @@ jsimd_rgb_ycc_convert(j_compress_ptr cinfo, JSAMPARRAY input_buf,
 
   switch (cinfo->in_color_space) {
   case JCS_EXT_RGB:
+#ifndef NEON_INTRINSICS
     if (simd_features & JSIMD_FASTLD3)
+#endif
       neonfct = jsimd_extrgb_ycc_convert_neon;
+#ifndef NEON_INTRINSICS
     else
       neonfct = jsimd_extrgb_ycc_convert_neon_slowld3;
+#endif
     break;
   case JCS_EXT_RGBX:
   case JCS_EXT_RGBA:
     neonfct = jsimd_extrgbx_ycc_convert_neon;
     break;
   case JCS_EXT_BGR:
+#ifndef NEON_INTRINSICS
     if (simd_features & JSIMD_FASTLD3)
+#endif
       neonfct = jsimd_extbgr_ycc_convert_neon;
+#ifndef NEON_INTRINSICS
     else
       neonfct = jsimd_extbgr_ycc_convert_neon_slowld3;
+#endif
     break;
   case JCS_EXT_BGRX:
   case JCS_EXT_BGRA:
@@ -266,10 +275,14 @@ jsimd_rgb_ycc_convert(j_compress_ptr cinfo, JSAMPARRAY input_buf,
     neonfct = jsimd_extxrgb_ycc_convert_neon;
     break;
   default:
+#ifndef NEON_INTRINSICS
     if (simd_features & JSIMD_FASTLD3)
+#endif
       neonfct = jsimd_extrgb_ycc_convert_neon;
+#ifndef NEON_INTRINSICS
     else
       neonfct = jsimd_extrgb_ycc_convert_neon_slowld3;
+#endif
     break;
   }
 

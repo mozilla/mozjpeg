@@ -39,7 +39,7 @@
 #define JCOPYRIGHT \
   "Copyright (C) 2009-2020 D. R. Commander\n" \
   "Copyright (C) 2015, 2020 Google, Inc.\n" \
-  "Copyright (C) 2019 Arm Limited\n" \
+  "Copyright (C) 2019-2020 Arm Limited\n" \
   "Copyright (C) 2015-2016, 2018 Matthieu Darbois\n" \
   "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
   "Copyright (C) 2015 Intel Corporation\n" \

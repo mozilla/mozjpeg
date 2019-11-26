@@ -548,6 +548,27 @@ if(WITH_ARITH_DEC)
 endif()
 
 if(WITH_SIMD)
+  if(CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm")
+    # GCC doesn't yet have a full or optimal set of Neon intrinsics, so for
+    # performance reasons, when using GCC, we default to using the older GAS
+    # implementation of the Neon SIMD extensions for certain algorithms.
+    if(CMAKE_COMPILER_IS_GNUCC)
+      set(DEFAULT_NEON_INTRINSICS 0)
+    else()
+      set(DEFAULT_NEON_INTRINSICS 1)
+    endif()
+    option(NEON_INTRINSICS
+      "Because GCC doesn't yet have a full or optimal set of Neon intrinsics, for performance reasons, the default when building libjpeg-turbo with GCC is to continue using the older GAS implementation of the Neon SIMD extensions for certain algorithms.  Setting this option forces the full Neon intrinsics implementation to be used with all compilers.  Unsetting this option forces the hybrid GAS/intrinsics implementation to be used with all compilers."
+      ${DEFAULT_NEON_INTRINSICS})
+    boolean_number(NEON_INTRINSICS)
+    if(NEON_INTRINSICS)
+      add_definitions(-DNEON_INTRINSICS)
+      message(STATUS "Use full Neon SIMD intrinsics implementation (NEON_INTRINSICS = ${NEON_INTRINSICS})")
+    else()
+      message(STATUS "Use partial Neon SIMD intrinsics implementation (NEON_INTRINSICS = ${NEON_INTRINSICS})")
+    endif()
+  endif()
+
   add_subdirectory(simd)
 elseif(NOT WITH_12BIT)
   message(STATUS "SIMD extensions: None (WITH_SIMD = ${WITH_SIMD})")

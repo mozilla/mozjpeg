@@ -432,7 +432,7 @@ dump_buffer(working_state *state)
  * scanning order-- 1, 8, 16, etc.), then this will produce an encoded block
  * larger than 200 bytes.
  */
-#define BUFSIZE  (DCTSIZE2 * 4)
+#define BUFSIZE  (DCTSIZE2 * 8)
 
 #define LOAD_BUFFER() { \
   if (state->free_in_buffer < BUFSIZE) { \

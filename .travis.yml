@@ -58,20 +58,17 @@ matrix:
         CMAKE_FLAGS="-DWITH_SIMD=0"
         CTEST_OUTPUT_ON_FAILURE=1
 
-addons:
-  homebrew:
-    brewfile: true
-    update: true
-
-cache:
-  directories:
-    - $HOME/Library/Caches/Homebrew
-
-before_cache:
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew cleanup; fi
-
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      pushd $HOME/Downloads &&
+      curl -LO https://updates.cdn-apple.com/2019/cert/041-88384-20191011-3d8da658-dca4-4a5b-b67c-26e686876403/JavaForOSX.dmg &&
+      hdid JavaForOSX.dmg &&
+      sudo installer -pkg /Volumes/Java\ for\ macOS\ 2017-001/JavaForOSX.pkg -target / &&
+      hdiutil detach /Volumes/Java\ for\ macOS\ 2017-001 &&
+      curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci &&
+      . ./macports-ci install &&
+      sudo /opt/local/bin/port -N install gcc5 yasm md5sha1sum &&
+      popd &&
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
       ln -fs /Applications/Xcode.app /Applications/Xcode72.app;
     fi

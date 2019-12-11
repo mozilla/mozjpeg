@@ -1190,47 +1190,47 @@ adjust_exif_parameters(JOCTET *data, unsigned int length, JDIMENSION new_width,
   if (length < 12) return; /* Length of an IFD entry */
 
   /* Discover byte order */
-  if (GETJOCTET(data[0]) == 0x49 && GETJOCTET(data[1]) == 0x49)
+  if (data[0] == 0x49 && data[1] == 0x49)
     is_motorola = FALSE;
-  else if (GETJOCTET(data[0]) == 0x4D && GETJOCTET(data[1]) == 0x4D)
+  else if (data[0] == 0x4D && data[1] == 0x4D)
     is_motorola = TRUE;
   else
     return;
 
   /* Check Tag Mark */
   if (is_motorola) {
-    if (GETJOCTET(data[2]) != 0) return;
-    if (GETJOCTET(data[3]) != 0x2A) return;
+    if (data[2] != 0) return;
+    if (data[3] != 0x2A) return;
   } else {
-    if (GETJOCTET(data[3]) != 0) return;
-    if (GETJOCTET(data[2]) != 0x2A) return;
+    if (data[3] != 0) return;
+    if (data[2] != 0x2A) return;
   }
 
   /* Get first IFD offset (offset to IFD0) */
   if (is_motorola) {
-    if (GETJOCTET(data[4]) != 0) return;
-    if (GETJOCTET(data[5]) != 0) return;
-    firstoffset = GETJOCTET(data[6]);
+    if (data[4] != 0) return;
+    if (data[5] != 0) return;
+    firstoffset = data[6];
     firstoffset <<= 8;
-    firstoffset += GETJOCTET(data[7]);
+    firstoffset += data[7];
   } else {
-    if (GETJOCTET(data[7]) != 0) return;
-    if (GETJOCTET(data[6]) != 0) return;
-    firstoffset = GETJOCTET(data[5]);
+    if (data[7] != 0) return;
+    if (data[6] != 0) return;
+    firstoffset = data[5];
     firstoffset <<= 8;
-    firstoffset += GETJOCTET(data[4]);
+    firstoffset += data[4];
   }
   if (firstoffset > length - 2) return; /* check end of data segment */
 
   /* Get the number of directory entries contained in this IFD */
   if (is_motorola) {
-    number_of_tags = GETJOCTET(data[firstoffset]);
+    number_of_tags = data[firstoffset];
     number_of_tags <<= 8;
-    number_of_tags += GETJOCTET(data[firstoffset + 1]);
+    number_of_tags += data[firstoffset + 1];
   } else {
-    number_of_tags = GETJOCTET(data[firstoffset + 1]);
+    number_of_tags = data[firstoffset + 1];
     number_of_tags <<= 8;
-    number_of_tags += GETJOCTET(data[firstoffset]);
+    number_of_tags += data[firstoffset];
   }
   if (number_of_tags == 0) return;
   firstoffset += 2;
@@ -1240,13 +1240,13 @@ adjust_exif_parameters(JOCTET *data, unsigned int length, JDIMENSION new_width,
     if (firstoffset > length - 12) return; /* check end of data segment */
     /* Get Tag number */
     if (is_motorola) {
-      tagnum = GETJOCTET(data[firstoffset]);
+      tagnum = data[firstoffset];
       tagnum <<= 8;
-      tagnum += GETJOCTET(data[firstoffset + 1]);
+      tagnum += data[firstoffset + 1];
     } else {
-      tagnum = GETJOCTET(data[firstoffset + 1]);
+      tagnum = data[firstoffset + 1];
       tagnum <<= 8;
-      tagnum += GETJOCTET(data[firstoffset]);
+      tagnum += data[firstoffset];
     }
     if (tagnum == 0x8769) break; /* found ExifSubIFD offset Tag */
     if (--number_of_tags == 0) return;
@@ -1255,29 +1255,29 @@ adjust_exif_parameters(JOCTET *data, unsigned int length, JDIMENSION new_width,
 
   /* Get the ExifSubIFD offset */
   if (is_motorola) {
-    if (GETJOCTET(data[firstoffset + 8]) != 0) return;
-    if (GETJOCTET(data[firstoffset + 9]) != 0) return;
-    offset = GETJOCTET(data[firstoffset + 10]);
+    if (data[firstoffset + 8] != 0) return;
+    if (data[firstoffset + 9] != 0) return;
+    offset = data[firstoffset + 10];
     offset <<= 8;
-    offset += GETJOCTET(data[firstoffset + 11]);
+    offset += data[firstoffset + 11];
   } else {
-    if (GETJOCTET(data[firstoffset + 11]) != 0) return;
-    if (GETJOCTET(data[firstoffset + 10]) != 0) return;
-    offset = GETJOCTET(data[firstoffset + 9]);
+    if (data[firstoffset + 11] != 0) return;
+    if (data[firstoffset + 10] != 0) return;
+    offset = data[firstoffset + 9];
     offset <<= 8;
-    offset += GETJOCTET(data[firstoffset + 8]);
+    offset += data[firstoffset + 8];
   }
   if (offset > length - 2) return; /* check end of data segment */
 
   /* Get the number of directory entries contained in this SubIFD */
   if (is_motorola) {
-    number_of_tags = GETJOCTET(data[offset]);
+    number_of_tags = data[offset];
     number_of_tags <<= 8;
-    number_of_tags += GETJOCTET(data[offset + 1]);
+    number_of_tags += data[offset + 1];
   } else {
-    number_of_tags = GETJOCTET(data[offset + 1]);
+    number_of_tags = data[offset + 1];
     number_of_tags <<= 8;
-    number_of_tags += GETJOCTET(data[offset]);
+    number_of_tags += data[offset];
   }
   if (number_of_tags < 2) return;
   offset += 2;
@@ -1287,13 +1287,13 @@ adjust_exif_parameters(JOCTET *data, unsigned int length, JDIMENSION new_width,
     if (offset > length - 12) return; /* check end of data segment */
     /* Get Tag number */
     if (is_motorola) {
-      tagnum = GETJOCTET(data[offset]);
+      tagnum = data[offset];
       tagnum <<= 8;
-      tagnum += GETJOCTET(data[offset + 1]);
+      tagnum += data[offset + 1];
     } else {
-      tagnum = GETJOCTET(data[offset + 1]);
+      tagnum = data[offset + 1];
       tagnum <<= 8;
-      tagnum += GETJOCTET(data[offset]);
+      tagnum += data[offset];
     }
     if (tagnum == 0xA002 || tagnum == 0xA003) {
       if (tagnum == 0xA002)
@@ -1411,12 +1411,12 @@ jtransform_adjust_parameters(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
   if (srcinfo->marker_list != NULL &&
       srcinfo->marker_list->marker == JPEG_APP0 + 1 &&
       srcinfo->marker_list->data_length >= 6 &&
-      GETJOCTET(srcinfo->marker_list->data[0]) == 0x45 &&
-      GETJOCTET(srcinfo->marker_list->data[1]) == 0x78 &&
-      GETJOCTET(srcinfo->marker_list->data[2]) == 0x69 &&
-      GETJOCTET(srcinfo->marker_list->data[3]) == 0x66 &&
-      GETJOCTET(srcinfo->marker_list->data[4]) == 0 &&
-      GETJOCTET(srcinfo->marker_list->data[5]) == 0) {
+      srcinfo->marker_list->data[0] == 0x45 &&
+      srcinfo->marker_list->data[1] == 0x78 &&
+      srcinfo->marker_list->data[2] == 0x69 &&
+      srcinfo->marker_list->data[3] == 0x66 &&
+      srcinfo->marker_list->data[4] == 0 &&
+      srcinfo->marker_list->data[5] == 0) {
     /* Suppress output of JFIF marker */
     dstinfo->write_JFIF_header = FALSE;
     /* Adjust Exif image parameters */
@@ -1607,20 +1607,20 @@ jcopy_markers_execute(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
     if (dstinfo->write_JFIF_header &&
         marker->marker == JPEG_APP0 &&
         marker->data_length >= 5 &&
-        GETJOCTET(marker->data[0]) == 0x4A &&
-        GETJOCTET(marker->data[1]) == 0x46 &&
-        GETJOCTET(marker->data[2]) == 0x49 &&
-        GETJOCTET(marker->data[3]) == 0x46 &&
-        GETJOCTET(marker->data[4]) == 0)
+        marker->data[0] == 0x4A &&
+        marker->data[1] == 0x46 &&
+        marker->data[2] == 0x49 &&
+        marker->data[3] == 0x46 &&
+        marker->data[4] == 0)
       continue;                 /* reject duplicate JFIF */
     if (dstinfo->write_Adobe_marker &&
         marker->marker == JPEG_APP0 + 14 &&
         marker->data_length >= 5 &&
-        GETJOCTET(marker->data[0]) == 0x41 &&
-        GETJOCTET(marker->data[1]) == 0x64 &&
-        GETJOCTET(marker->data[2]) == 0x6F &&
-        GETJOCTET(marker->data[3]) == 0x62 &&
-        GETJOCTET(marker->data[4]) == 0x65)
+        marker->data[0] == 0x41 &&
+        marker->data[1] == 0x64 &&
+        marker->data[2] == 0x6F &&
+        marker->data[3] == 0x62 &&
+        marker->data[4] == 0x65)
       continue;                 /* reject duplicate Adobe */
     jpeg_write_marker(dstinfo, marker->marker,
                       marker->data, marker->data_length);

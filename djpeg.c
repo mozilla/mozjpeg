@@ -444,7 +444,7 @@ jpeg_getc(j_decompress_ptr cinfo)
       ERREXIT(cinfo, JERR_CANT_SUSPEND);
   }
   datasrc->bytes_in_buffer--;
-  return GETJOCTET(*datasrc->next_input_byte++);
+  return *datasrc->next_input_byte++;
 }
 
 

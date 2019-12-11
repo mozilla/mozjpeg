@@ -80,7 +80,7 @@ get_byte(j_decompress_ptr cinfo)
     if (!(*src->fill_input_buffer) (cinfo))
       ERREXIT(cinfo, JERR_CANT_SUSPEND);
   src->bytes_in_buffer--;
-  return GETJOCTET(*src->next_input_byte++);
+  return *src->next_input_byte++;
 }
 
 

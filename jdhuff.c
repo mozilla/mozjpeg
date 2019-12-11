@@ -308,7 +308,7 @@ jpeg_fill_bit_buffer(bitread_working_state *state,
         bytes_in_buffer = cinfo->src->bytes_in_buffer;
       }
       bytes_in_buffer--;
-      c = GETJOCTET(*next_input_byte++);
+      c = *next_input_byte++;
 
       /* If it's 0xFF, check and discard stuffed zero byte */
       if (c == 0xFF) {
@@ -325,7 +325,7 @@ jpeg_fill_bit_buffer(bitread_working_state *state,
             bytes_in_buffer = cinfo->src->bytes_in_buffer;
           }
           bytes_in_buffer--;
-          c = GETJOCTET(*next_input_byte++);
+          c = *next_input_byte++;
         } while (c == 0xFF);
 
         if (c == 0) {
@@ -388,8 +388,8 @@ no_more_bytes:
 
 #define GET_BYTE { \
   register int c0, c1; \
-  c0 = GETJOCTET(*buffer++); \
-  c1 = GETJOCTET(*buffer); \
+  c0 = *buffer++; \
+  c1 = *buffer; \
   /* Pre-execute most common case */ \
   get_buffer = (get_buffer << 8) | c0; \
   bits_left += 8; \

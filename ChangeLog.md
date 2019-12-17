@@ -97,6 +97,10 @@ data exploits, this issue did not likely pose a security risk.
 JPEGs by about 30-40% on average (relative to libjpeg-turbo 2.0.x) when using
 modern ARMv8 CPUs.
 
+13. Added configure-time and run-time auto-detection of Loongson MMI SIMD
+instructions, so that the Loongson MMI SIMD extensions can be included in any
+MIPS64 libjpeg-turbo build.
+
 
 2.0.3
 =====

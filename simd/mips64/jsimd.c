@@ -1,5 +1,5 @@
 /*
- * jsimd_loongson.c
+ * jsimd_mips64.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2009-2011, 2014, 2016, 2018, D. R. Commander.
@@ -13,7 +13,7 @@
  *
  * This file contains the interface between the "normal" portions
  * of the library and the SIMD implementations when running on a
- * Loongson architecture.
+ * 64-bit MIPS architecture.
  */
 
 #define JPEG_INTERNALS
@@ -24,7 +24,75 @@
 #include "../../jsimddct.h"
 #include "../jsimd.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
 static unsigned int simd_support = ~0;
+
+#if defined(__linux__)
+
+#define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT  (1024 * 1024)
+
+LOCAL(int)
+check_feature(char *buffer, char *feature)
+{
+  char *p;
+
+  if (*feature == 0)
+    return 0;
+  if (strncmp(buffer, "ASEs implemented", 16) != 0)
+    return 0;
+  buffer += 16;
+  while (isspace(*buffer))
+    buffer++;
+
+  /* Check if 'feature' is present in the buffer as a separate word */
+  while ((p = strstr(buffer, feature))) {
+    if (p > buffer && !isspace(*(p - 1))) {
+      buffer++;
+      continue;
+    }
+    p += strlen(feature);
+    if (*p != 0 && !isspace(*p)) {
+      buffer++;
+      continue;
+    }
+    return 1;
+  }
+  return 0;
+}
+
+LOCAL(int)
+parse_proc_cpuinfo(int bufsize)
+{
+  char *buffer = (char *)malloc(bufsize);
+  FILE *fd;
+
+  simd_support = 0;
+
+  if (!buffer)
+    return 0;
+
+  fd = fopen("/proc/cpuinfo", "r");
+  if (fd) {
+    while (fgets(buffer, bufsize, fd)) {
+      if (!strchr(buffer, '\n') && !feof(fd)) {
+        /* "impossible" happened - insufficient size of the buffer! */
+        fclose(fd);
+        free(buffer);
+        return 0;
+      }
+      if (check_feature(buffer, "loongson-mmi"))
+        simd_support |= JSIMD_MMI;
+    }
+    fclose(fd);
+  }
+  free(buffer);
+  return 1;
+}
+
+#endif
 
 /*
  * Check what SIMD accelerations are supported.
@@ -37,14 +105,32 @@ init_simd(void)
 #ifndef NO_GETENV
   char *env = NULL;
 #endif
+#if defined(__linux__)
+  int bufsize = 1024; /* an initial guess for the line buffer size limit */
+#endif
 
   if (simd_support != ~0U)
     return;
 
+  simd_support = 0;
+
+#if defined(__linux__)
+  while (!parse_proc_cpuinfo(bufsize)) {
+    bufsize *= 2;
+    if (bufsize > SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT)
+      break;
+  }
+#elif defined(__mips_loongson_vector_rev)
+  /* Only enable MMI by default on non-Linux platforms when the compiler flags
+   * support it. */
   simd_support |= JSIMD_MMI;
+#endif
 
 #ifndef NO_GETENV
   /* Force different settings through environment variables */
+  env = getenv("JSIMD_FORCEMMI");
+  if ((env != NULL) && (strcmp(env, "1") == 0))
+    simd_support = JSIMD_MMI;
   env = getenv("JSIMD_FORCENONE");
   if ((env != NULL) && (strcmp(env, "1") == 0))
     simd_support = 0;

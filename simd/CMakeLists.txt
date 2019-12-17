@@ -314,15 +314,35 @@ if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
 endif()
 
 ###############################################################################
-# Loongson (Intrinsics)
+# MIPS64 (Intrinsics)
 ###############################################################################
 
-elseif(CPU_TYPE STREQUAL "loongson")
+elseif(CPU_TYPE STREQUAL "loongson" OR CPU_TYPE MATCHES "mips64*")
 
-set(SIMD_SOURCES loongson/jccolor-mmi.c loongson/jcgray-mmi.c
-  loongson/jcsample-mmi.c loongson/jdcolor-mmi.c loongson/jdsample-mmi.c
-  loongson/jdmerge-mmi.c loongson/jfdctfst-mmi.c loongson/jfdctint-mmi.c
-  loongson/jidctfst-mmi.c loongson/jidctint-mmi.c loongson/jquanti-mmi.c)
+set(CMAKE_REQUIRED_FLAGS -Wa,-mloongson-mmi,-mloongson-ext)
+
+check_c_source_compiles("
+  int main(void) {
+    int c = 0, a = 0, b = 0;
+    asm (
+      \"paddb %0, %1, %2\"
+      : \"=f\" (c)
+      : \"f\" (a), \"f\" (b)
+    );
+    return c;
+  }" HAVE_MMI)
+
+unset(CMAKE_REQUIRED_FLAGS)
+
+if(NOT HAVE_MMI)
+  simd_fail("SIMD extensions not available for this CPU")
+  return()
+endif()
+
+set(SIMD_SOURCES mips64/jccolor-mmi.c mips64/jcgray-mmi.c mips64/jcsample-mmi.c
+  mips64/jdcolor-mmi.c mips64/jdmerge-mmi.c mips64/jdsample-mmi.c
+  mips64/jfdctfst-mmi.c mips64/jfdctint-mmi.c mips64/jidctfst-mmi.c
+  mips64/jidctint-mmi.c mips64/jquanti-mmi.c)
 
 if(CMAKE_COMPILER_IS_GNUCC)
   foreach(file ${SIMD_SOURCES})
@@ -330,8 +350,12 @@ if(CMAKE_COMPILER_IS_GNUCC)
       " -fno-strict-aliasing")
   endforeach()
 endif()
+foreach(file ${SIMD_SOURCES})
+  set_property(SOURCE ${file} APPEND_STRING PROPERTY COMPILE_FLAGS
+    " -Wa,-mloongson-mmi,-mloongson-ext")
+endforeach()
 
-add_library(simd OBJECT ${SIMD_SOURCES} loongson/jsimd.c)
+add_library(simd OBJECT ${SIMD_SOURCES} mips64/jsimd.c)
 
 if(CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED)
   set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)

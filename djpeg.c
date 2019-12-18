@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2017, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, 2019, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -94,11 +94,14 @@ static IMAGE_FORMATS requested_fmt;
 
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
+JDIMENSION max_scans;           /* for -maxscans switch */
 static char *outfilename;       /* for -outfile switch */
 boolean memsrc;                 /* for -memsrc switch */
+boolean report;                 /* for -report switch */
 boolean skip, crop;
 JDIMENSION skip_start, skip_end;
 JDIMENSION crop_x, crop_y, crop_width, crop_height;
+boolean strict;                 /* for -strict switch */
 #define INPUT_BUF_SIZE  4096
 
 
@@ -171,14 +174,16 @@ usage(void)
   fprintf(stderr, "  -onepass       Use 1-pass quantization (fast, low quality)\n");
 #endif
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
+  fprintf(stderr, "  -maxscans N    Maximum number of scans to allow in input file\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   fprintf(stderr, "  -memsrc        Load input file into memory before decompressing\n");
 #endif
-
+  fprintf(stderr, "  -report        Report decompression progress\n");
   fprintf(stderr, "  -skip Y0,Y1    Decompress all rows except those between Y0 and Y1 (inclusive)\n");
   fprintf(stderr, "  -crop WxH+X+Y  Decompress only a rectangular subregion of the image\n");
   fprintf(stderr, "                 [requires PBMPLUS (PPM/PGM), GIF, or Targa output format]\n");
+  fprintf(stderr, "  -strict        Treat all warnings as fatal\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   exit(EXIT_FAILURE);
@@ -203,10 +208,13 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
   requested_fmt = DEFAULT_FMT;  /* set default output file format */
   icc_filename = NULL;
+  max_scans = 0;
   outfilename = NULL;
   memsrc = FALSE;
+  report = FALSE;
   skip = FALSE;
   crop = FALSE;
+  strict = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -351,6 +359,12 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
         lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
+    } else if (keymatch(arg, "maxscans", 4)) {
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (sscanf(argv[argn], "%u", &max_scans) != 1)
+        usage();
+
     } else if (keymatch(arg, "nosmooth", 3)) {
       /* Suppress fancy upsampling */
       cinfo->do_fancy_upsampling = FALSE;
@@ -383,6 +397,9 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
       /* PPM/PGM output format. */
       requested_fmt = FMT_PPM;
 
+    } else if (keymatch(arg, "report", 2)) {
+      report = TRUE;
+
     } else if (keymatch(arg, "rle", 1)) {
       /* RLE output format. */
       requested_fmt = FMT_RLE;
@@ -412,6 +429,9 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
           (c != 'X' && c != 'x') || crop_width < 1 || crop_height < 1)
         usage();
       crop = TRUE;
+
+    } else if (keymatch(arg, "strict", 2)) {
+      strict = TRUE;
 
     } else if (keymatch(arg, "targa", 1)) {
       /* Targa output format. */
@@ -499,6 +519,19 @@ print_text_marker(j_decompress_ptr cinfo)
 }
 
 
+METHODDEF(void)
+my_emit_message(j_common_ptr cinfo, int msg_level)
+{
+  if (msg_level < 0) {
+    /* Treat warning as fatal */
+    cinfo->err->error_exit(cinfo);
+  } else {
+    if (cinfo->err->trace_level >= msg_level)
+      cinfo->err->output_message(cinfo);
+  }
+}
+
+
 /*
  * The main program.
  */
@@ -508,9 +541,7 @@ main(int argc, char **argv)
 {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
-#ifdef PROGRESS_REPORT
   struct cdjpeg_progress_mgr progress;
-#endif
   int file_index;
   djpeg_dest_ptr dest_mgr = NULL;
   FILE *input_file;
@@ -554,6 +585,9 @@ main(int argc, char **argv)
    */
 
   file_index = parse_switches(&cinfo, argc, argv, 0, FALSE);
+
+  if (strict)
+    jerr.emit_message = my_emit_message;
 
 #ifdef TWO_FILE_COMMANDLINE
   /* Must have either -outfile switch or explicit output file name */
@@ -601,9 +635,11 @@ main(int argc, char **argv)
     output_file = write_stdout();
   }
 
-#ifdef PROGRESS_REPORT
-  start_progress_monitor((j_common_ptr)&cinfo, &progress);
-#endif
+  if (report || max_scans != 0) {
+    start_progress_monitor((j_common_ptr)&cinfo, &progress);
+    progress.report = report;
+    progress.max_scans = max_scans;
+  }
 
   /* Specify data source for decompression */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
@@ -763,12 +799,11 @@ main(int argc, char **argv)
     }
   }
 
-#ifdef PROGRESS_REPORT
   /* Hack: count final pass as done in case finish_output does an extra pass.
    * The library won't have updated completed_passes.
    */
-  progress.pub.completed_passes = progress.pub.total_passes;
-#endif
+  if (report || max_scans != 0)
+    progress.pub.completed_passes = progress.pub.total_passes;
 
   if (icc_filename != NULL) {
     FILE *icc_file;
@@ -807,9 +842,8 @@ main(int argc, char **argv)
   if (output_file != stdout)
     fclose(output_file);
 
-#ifdef PROGRESS_REPORT
-  end_progress_monitor((j_common_ptr)&cinfo);
-#endif
+  if (report || max_scans != 0)
+    end_progress_monitor((j_common_ptr)&cinfo);
 
   if (memsrc && inbuffer != NULL)
     free(inbuffer);

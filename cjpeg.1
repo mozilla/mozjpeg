@@ -1,4 +1,4 @@
-.TH CJPEG 1 "18 March 2017"
+.TH CJPEG 1 "18 December 2019"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -214,6 +214,9 @@ Send output image to the named file, not to standard output.
 Compress to memory instead of a file.  This feature was implemented mainly as a
 way of testing the in-memory destination manager (jpeg_mem_dest()), but it is
 also useful for benchmarking, since it reduces the I/O overhead.
+.TP
+.BI \-report
+Report compression progress.
 .TP
 .B \-verbose
 Enable debug printout.  More

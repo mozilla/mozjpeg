@@ -101,6 +101,16 @@ modern ARMv8 CPUs.
 instructions, so that the Loongson MMI SIMD extensions can be included in any
 MIPS64 libjpeg-turbo build.
 
+14. Added fault tolerance features to djpeg and jpegtran, mainly to demonstrate
+methods by which applications can guard against the exploits of the JPEG format
+described in the report
+["Two Issues with the JPEG Standard"](https://libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf).
+
+     - Both programs now accept a `-maxscans` argument, which can be used to
+limit the number of allowable scans in the input file.
+     - Both programs now accept a `-strict` argument, which can be used to
+treat all warnings as fatal.
+
 
 2.0.3
 =====

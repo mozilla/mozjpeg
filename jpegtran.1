@@ -1,4 +1,4 @@
-.TH JPEGTRAN 1 "18 March 2017"
+.TH JPEGTRAN 1 "18 December 2019"
 .SH NAME
 jpegtran \- lossless transformation of JPEG files
 .SH SYNOPSIS
@@ -229,8 +229,30 @@ number.  For example,
 .B \-max 4m
 selects 4000000 bytes.  If more space is needed, an error will occur.
 .TP
+.BI \-maxscans " N"
+Abort if the input image contains more than
+.I N
+scans.  This feature demonstrates a method by which applications can guard
+against denial-of-service attacks instigated by specially-crafted malformed
+JPEG images containing numerous scans with missing image data or image data
+consisting only of "EOB runs" (a feature of progressive JPEG images that allows
+potentially hundreds of thousands of adjoining zero-value pixels to be
+represented using only a few bytes.)  Attempting to transform such malformed
+JPEG images can cause excessive CPU activity, since the decompressor must fully
+process each scan (even if the scan is corrupt) before it can proceed to the
+next scan.
+.TP
 .BI \-outfile " name"
 Send output image to the named file, not to standard output.
+.TP
+.BI \-report
+Report transformation progress.
+.TP
+.BI \-strict
+Treat all warnings as fatal.  This feature also demonstrates a method by which
+applications can guard against attacks instigated by specially-crafted
+malformed JPEG images.  Enabling this option will cause the decompressor to
+abort if the input image contains incomplete or corrupt image data.
 .TP
 .B \-verbose
 Enable debug printout.  More

@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2014, 2017, D. R. Commander.
+ * Copyright (C) 2010, 2014, 2017, 2019, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -41,7 +41,10 @@
 
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
+JDIMENSION max_scans;           /* for -maxscans switch */
 static char *outfilename;       /* for -outfile switch */
+boolean report;                 /* for -report switch */
+boolean strict;                 /* for -strict switch */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
 
@@ -87,7 +90,10 @@ usage(void)
   fprintf(stderr, "  -icc FILE      Embed ICC profile contained in FILE\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
+  fprintf(stderr, "  -maxscans N    Maximum number of scans to allow in input file\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
+  fprintf(stderr, "  -report        Report transformation progress\n");
+  fprintf(stderr, "  -strict        Treat all warnings as fatal\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
@@ -141,7 +147,10 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
   simple_progressive = FALSE;
   icc_filename = NULL;
+  max_scans = 0;
   outfilename = NULL;
+  report = FALSE;
+  strict = FALSE;
   copyoption = JCOPYOPT_DEFAULT;
   transformoption.transform = JXFORM_NONE;
   transformoption.perfect = FALSE;
@@ -261,6 +270,12 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
         lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
+    } else if (keymatch(arg, "maxscans", 4)) {
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (sscanf(argv[argn], "%u", &max_scans) != 1)
+        usage();
+
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */
 #ifdef ENTROPY_OPT_SUPPORTED
@@ -292,6 +307,9 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
               progname);
       exit(EXIT_FAILURE);
 #endif
+
+    } else if (keymatch(arg, "report", 3)) {
+      report = TRUE;
 
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
@@ -338,6 +356,9 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       exit(EXIT_FAILURE);
 #endif
 
+    } else if (keymatch(arg, "strict", 2)) {
+      strict = TRUE;
+
     } else if (keymatch(arg, "transpose", 1)) {
       /* Transpose (across UL-to-LR axis). */
       select_transform(JXFORM_TRANSPOSE);
@@ -375,6 +396,19 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
 }
 
 
+METHODDEF(void)
+my_emit_message(j_common_ptr cinfo, int msg_level)
+{
+  if (msg_level < 0) {
+    /* Treat warning as fatal */
+    cinfo->err->error_exit(cinfo);
+  } else {
+    if (cinfo->err->trace_level >= msg_level)
+      cinfo->err->output_message(cinfo);
+  }
+}
+
+
 /*
  * The main program.
  */
@@ -385,9 +419,7 @@ main(int argc, char **argv)
   struct jpeg_decompress_struct srcinfo;
   struct jpeg_compress_struct dstinfo;
   struct jpeg_error_mgr jsrcerr, jdsterr;
-#ifdef PROGRESS_REPORT
-  struct cdjpeg_progress_mgr progress;
-#endif
+  struct cdjpeg_progress_mgr src_progress, dst_progress;
   jvirt_barray_ptr *src_coef_arrays;
   jvirt_barray_ptr *dst_coef_arrays;
   int file_index;
@@ -426,6 +458,9 @@ main(int argc, char **argv)
   file_index = parse_switches(&dstinfo, argc, argv, 0, FALSE);
   jsrcerr.trace_level = jdsterr.trace_level;
   srcinfo.mem->max_memory_to_use = dstinfo.mem->max_memory_to_use;
+
+  if (strict)
+    jsrcerr.emit_message = my_emit_message;
 
 #ifdef TWO_FILE_COMMANDLINE
   /* Must have either -outfile switch or explicit output file name */
@@ -492,9 +527,15 @@ main(int argc, char **argv)
       copyoption = JCOPYOPT_ALL_EXCEPT_ICC;
   }
 
-#ifdef PROGRESS_REPORT
-  start_progress_monitor((j_common_ptr)&dstinfo, &progress);
-#endif
+  if (report) {
+    start_progress_monitor((j_common_ptr)&dstinfo, &dst_progress);
+    dst_progress.report = report;
+  }
+  if (report || max_scans != 0) {
+    start_progress_monitor((j_common_ptr)&srcinfo, &src_progress);
+    src_progress.report = report;
+    src_progress.max_scans = max_scans;
+  }
 
   /* Specify data source for decompression */
   jpeg_stdio_src(&srcinfo, fp);
@@ -587,9 +628,10 @@ main(int argc, char **argv)
   if (fp != stdout)
     fclose(fp);
 
-#ifdef PROGRESS_REPORT
-  end_progress_monitor((j_common_ptr)&dstinfo);
-#endif
+  if (report)
+    end_progress_monitor((j_common_ptr)&dstinfo);
+  if (report || max_scans != 0)
+    end_progress_monitor((j_common_ptr)&srcinfo);
 
   if (icc_profile != NULL)
     free(icc_profile);

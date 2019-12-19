@@ -15,8 +15,7 @@ djpeg \- decompress a JPEG file to an image file
 .B djpeg
 decompresses the named JPEG file, or the standard input if no file is named,
 and produces an image file on the standard output.  PBMPLUS (PPM/PGM), BMP,
-GIF, Targa, or RLE (Utah Raster Toolkit) output format can be selected.
-(RLE is supported only if the URT library is available.)
+GIF, or Targa output format can be selected.
 .SH OPTIONS
 All switch names may be abbreviated; for example,
 .B \-grayscale
@@ -99,9 +98,6 @@ Select PBMPLUS (PPM/PGM) output format (this is the default format).
 PGM is emitted if the JPEG file is grayscale or if
 .B \-grayscale
 is specified; otherwise PPM is emitted.
-.TP
-.B \-rle
-Select RLE output format.  (Requires URT library.)
 .TP
 .B \-targa
 Select Targa output format.  Grayscale format is emitted if the JPEG file is

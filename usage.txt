@@ -50,11 +50,9 @@ or
 This syntax works on all systems, so it is useful for scripts.
 
 The currently supported image file formats are: PPM (PBMPLUS color format),
-PGM (PBMPLUS grayscale format), BMP, Targa, and RLE (Utah Raster Toolkit
-format).  (RLE is supported only if the URT library is available, which it
-isn't on most non-Unix systems.)  cjpeg recognizes the input image format
-automatically, with the exception of some Targa files.  You have to tell djpeg
-which format to generate.
+PGM (PBMPLUS grayscale format), BMP, and Targa.  cjpeg recognizes the input
+image format automatically, with the exception of some Targa files.  You have
+to tell djpeg which format to generate.
 
 JPEG files are in the defacto standard JFIF file format.  There are other,
 less widely used JPEG-based file formats, but we don't support them.
@@ -304,8 +302,6 @@ The basic command line switches for djpeg are:
                         default format).  PGM is emitted if the JPEG file is
                         grayscale or if -grayscale is specified; otherwise
                         PPM is emitted.
-
-        -rle            Select RLE output format.  (Requires URT library.)
 
         -targa          Select Targa output format.  Grayscale format is
                         emitted if the JPEG file is grayscale or if

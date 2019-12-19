@@ -69,9 +69,9 @@ static const char * const cdjpeg_message_table[] = {
  *     2) assume we can push back more than one character (works in
  *        some C implementations, but unportable);
  *     3) provide our own buffering (breaks input readers that want to use
- *        stdio directly, such as the RLE library);
+ *        stdio directly);
  * or  4) don't put back the data, and modify the input_init methods to assume
- *        they start reading after the start of file (also breaks RLE library).
+ *        they start reading after the start of file.
  * #1 is attractive for MS-DOS but is untenable on Unix.
  *
  * The most portable solution for file types that can't be identified by their
@@ -116,10 +116,6 @@ select_file_type(j_compress_ptr cinfo, FILE *infile)
 #ifdef PPM_SUPPORTED
   case 'P':
     return jinit_read_ppm(cinfo);
-#endif
-#ifdef RLE_SUPPORTED
-  case 'R':
-    return jinit_read_rle(cinfo);
 #endif
 #ifdef TARGA_SUPPORTED
   case 0x00:

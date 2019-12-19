@@ -56,9 +56,9 @@ struct djpeg_dest_struct {
   void (*finish_output) (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo);
   /* Re-calculate buffer dimensions based on output dimensions (for use with
      partial image decompression.)  If this is NULL, then the output format
-     does not support partial image decompression (BMP and RLE, in particular,
-     cannot support partial decompression because they use an inversion buffer
-     to write the image in bottom-up order.) */
+     does not support partial image decompression (BMP, in particular, cannot
+     support partial decompression because it uses an inversion buffer to write
+     the image in bottom-up order.) */
   void (*calc_buffer_dimensions) (j_decompress_ptr cinfo,
                                   djpeg_dest_ptr dinfo);
 
@@ -107,8 +107,6 @@ EXTERN(cjpeg_source_ptr) jinit_read_gif(j_compress_ptr cinfo);
 EXTERN(djpeg_dest_ptr) jinit_write_gif(j_decompress_ptr cinfo);
 EXTERN(cjpeg_source_ptr) jinit_read_ppm(j_compress_ptr cinfo);
 EXTERN(djpeg_dest_ptr) jinit_write_ppm(j_decompress_ptr cinfo);
-EXTERN(cjpeg_source_ptr) jinit_read_rle(j_compress_ptr cinfo);
-EXTERN(djpeg_dest_ptr) jinit_write_rle(j_decompress_ptr cinfo);
 EXTERN(cjpeg_source_ptr) jinit_read_targa(j_compress_ptr cinfo);
 EXTERN(djpeg_dest_ptr) jinit_write_targa(j_decompress_ptr cinfo);
 

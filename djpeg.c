@@ -71,7 +71,6 @@ typedef enum {
   FMT_GIF,                      /* GIF format */
   FMT_OS2,                      /* BMP format (OS/2 flavor) */
   FMT_PPM,                      /* PPM/PGM (PBMPLUS formats) */
-  FMT_RLE,                      /* RLE format */
   FMT_TARGA,                    /* Targa format */
   FMT_TIFF                      /* TIFF format */
 } IMAGE_FORMATS;
@@ -140,10 +139,6 @@ usage(void)
 #ifdef PPM_SUPPORTED
   fprintf(stderr, "  -pnm           Select PBMPLUS (PPM/PGM) output format%s\n",
           (DEFAULT_FMT == FMT_PPM ? " (default)" : ""));
-#endif
-#ifdef RLE_SUPPORTED
-  fprintf(stderr, "  -rle           Select Utah RLE output format%s\n",
-          (DEFAULT_FMT == FMT_RLE ? " (default)" : ""));
 #endif
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Select Targa output format%s\n",
@@ -399,10 +394,6 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "report", 2)) {
       report = TRUE;
-
-    } else if (keymatch(arg, "rle", 1)) {
-      /* RLE output format. */
-      requested_fmt = FMT_RLE;
 
     } else if (keymatch(arg, "scale", 2)) {
       /* Scale the output image by a fraction M/N. */
@@ -693,11 +684,6 @@ main(int argc, char **argv)
 #ifdef PPM_SUPPORTED
   case FMT_PPM:
     dest_mgr = jinit_write_ppm(&cinfo);
-    break;
-#endif
-#ifdef RLE_SUPPORTED
-  case FMT_RLE:
-    dest_mgr = jinit_write_rle(&cinfo);
     break;
 #endif
 #ifdef TARGA_SUPPORTED

@@ -33,7 +33,7 @@ progress_monitor(j_common_ptr cinfo)
   if (prog->max_scans != 0 && cinfo->is_decompressor) {
     int scan_no = ((j_decompress_ptr)cinfo)->input_scan_number;
 
-    if (scan_no > prog->max_scans) {
+    if (scan_no > (int)prog->max_scans) {
       fprintf(stderr, "Scan number %d exceeds maximum scans (%d)\n", scan_no,
               prog->max_scans);
       exit(EXIT_FAILURE);

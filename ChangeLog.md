@@ -34,6 +34,10 @@ other user-visible errant behavior, and given that the lossless transformer
 (unlike the decompressor) is not generally exposed to arbitrary data exploits,
 this issue did not likely pose a security risk.
 
+6. The ARM 64-bit (ARMv8) NEON SIMD assembly code now stores constants in a
+separate read-only data section rather than in the text section, to support
+execute-only memory layouts.
+
 
 2.0.3
 =====

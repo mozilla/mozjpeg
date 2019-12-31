@@ -1906,10 +1906,11 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
     if (xinfo[i].crop) {
       if ((t[i].r.x % xinfo[i].iMCU_sample_width) != 0 ||
           (t[i].r.y % xinfo[i].iMCU_sample_height) != 0) {
-        snprintf(errStr, JMSG_LENGTH_MAX,
+        snprintf(this->errStr, JMSG_LENGTH_MAX,
                  "To crop this JPEG image, x must be a multiple of %d\n"
                  "and y must be a multiple of %d.\n",
                  xinfo[i].iMCU_sample_width, xinfo[i].iMCU_sample_height);
+        this->isInstanceError = TRUE;
         retval = -1;  goto bailout;
       }
     }

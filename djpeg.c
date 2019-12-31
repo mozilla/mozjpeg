@@ -516,7 +516,9 @@ main(int argc, char **argv)
   FILE *input_file;
   FILE *output_file;
   unsigned char *inbuffer = NULL;
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   unsigned long insize = 0;
+#endif
   JDIMENSION num_scanlines;
 
   /* On Mac, fetch a command line. */

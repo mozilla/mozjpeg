@@ -32,7 +32,7 @@
 #endif
 
 #if defined(__APPLE__)
-.section __DATA,__const
+.section __DATA, __const
 #else
 .section .rodata, "a", %progbits
 #endif

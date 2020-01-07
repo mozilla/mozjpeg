@@ -410,8 +410,8 @@ static void compTest(tjhandle handle, unsigned char **dstBuf,
   printf("Done.\n  Result in %s\n", tempStr);
 
 bailout:
-  if (yuvBuf) free(yuvBuf);
-  if (srcBuf) free(srcBuf);
+  free(yuvBuf);
+  free(srcBuf);
 }
 
 
@@ -478,8 +478,8 @@ static void _decompTest(tjhandle handle, unsigned char *jpegBuf,
   printf("\n");
 
 bailout:
-  if (yuvBuf) free(yuvBuf);
-  if (dstBuf) free(dstBuf);
+  free(yuvBuf);
+  free(dstBuf);
 }
 
 
@@ -665,7 +665,7 @@ static void bufSizeTest(void)
   printf("Done.      \n");
 
 bailout:
-  if (srcBuf) free(srcBuf);
+  free(srcBuf);
   if (dstBuf) tjFree(dstBuf);
   if (handle) tjDestroy(handle);
 }

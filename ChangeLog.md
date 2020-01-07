@@ -61,10 +61,9 @@ higher-frequency scan.  libjpeg-turbo now applies block smoothing parameters to
 each iMCU row based on which scan generated the pixels in that row, rather than
 always using the block smoothing parameters for the most recent scan.
 
-7. Added SIMD acceleration for progressive Huffman encoding on Arm 64-bit
-(Armv8) platforms.  This speeds up the compression of full-color progressive
-JPEGs by about 30-40% on average (relative to libjpeg-turbo 2.0.x) when using
-modern Armv8 CPUs.
+7. Added SIMD acceleration for progressive Huffman encoding on Arm platforms.
+This speeds up the compression of full-color progressive JPEGs by about 30-40%
+on average (relative to libjpeg-turbo 2.0.x) when using modern Arm CPUs.
 
 8. Added configure-time and run-time auto-detection of Loongson MMI SIMD
 instructions, so that the Loongson MMI SIMD extensions can be included in any

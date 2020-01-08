@@ -813,7 +813,7 @@ main(int argc, char **argv)
   end_progress_monitor((j_common_ptr)&cinfo);
 #endif
 
-  if (memsrc && inbuffer != NULL)
+  if (memsrc)
     free(inbuffer);
 
   /* All done. */

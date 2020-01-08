@@ -550,7 +550,7 @@ static void doTest(int w, int h, const int *formats, int nformats, int subsamp,
 bailout:
   if (chandle) tjDestroy(chandle);
   if (dhandle) tjDestroy(dhandle);
-  if (dstBuf) tjFree(dstBuf);
+  tjFree(dstBuf);
 }
 
 
@@ -666,7 +666,7 @@ static void bufSizeTest(void)
 
 bailout:
   free(srcBuf);
-  if (dstBuf) tjFree(dstBuf);
+  tjFree(dstBuf);
   if (handle) tjDestroy(handle);
 }
 
@@ -839,7 +839,7 @@ static int doBmpTest(const char *ext, int width, int align, int height, int pf,
   unlink(filename);
 
 bailout:
-  if (buf) tjFree(buf);
+  tjFree(buf);
   if (exitStatus < 0) return exitStatus;
   return retval;
 }

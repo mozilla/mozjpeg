@@ -633,8 +633,7 @@ main(int argc, char **argv)
   if (report || max_scans != 0)
     end_progress_monitor((j_common_ptr)&srcinfo);
 
-  if (icc_profile != NULL)
-    free(icc_profile);
+  free(icc_profile);
 
   /* All done. */
   exit(jsrcerr.num_warnings + jdsterr.num_warnings ?

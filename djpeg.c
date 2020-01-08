@@ -833,7 +833,7 @@ main(int argc, char **argv)
   if (report || max_scans != 0)
     end_progress_monitor((j_common_ptr)&cinfo);
 
-  if (memsrc && inbuffer != NULL)
+  if (memsrc)
     free(inbuffer);
 
   /* All done. */

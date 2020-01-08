@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2015, 2017 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015, 2017, 2020 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -1636,7 +1636,8 @@ DLLEXPORT int tjSaveImage(const char *filename, unsigned char *buffer,
  * (re)allocated by the compression and transform functions or that were
  * manually allocated using #tjAlloc().
  *
- * @param buffer address of the buffer to free
+ * @param buffer address of the buffer to free.  If the address is NULL, then
+ * this function has no effect.
  *
  * @sa tjAlloc()
  */

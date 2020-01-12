@@ -39,9 +39,9 @@ MKFILES= configure Makefile.in makefile.ansi makefile.unix makefile.b32 \
         makejmak.vc6 makecdep.vc6 makecdsp.vc6 makecmak.vc6 makeddep.vc6 \
         makeddsp.vc6 makedmak.vc6 maketdep.vc6 maketdsp.vc6 maketmak.vc6 \
         makerdep.vc6 makerdsp.vc6 makermak.vc6 makewdep.vc6 makewdsp.vc6 \
-        makewmak.vc6 makejsln.v15 makeasln.v15 makejvcx.v15 makejfil.v15 \
-        makecvcx.v15 makecfil.v15 makedvcx.v15 makedfil.v15 maketvcx.v15 \
-        maketfil.v15 makervcx.v15 makerfil.v15 makewvcx.v15 makewfil.v15 \
+        makewmak.vc6 makejsln.v16 makeasln.v16 makejvcx.v16 makejfil.v16 \
+        makecvcx.v16 makecfil.v16 makedvcx.v16 makedfil.v16 maketvcx.v16 \
+        maketfil.v16 makervcx.v16 makerfil.v16 makewvcx.v16 makewfil.v16 \
         makeproj.mac makcjpeg.st makdjpeg.st makljpeg.st maktjpeg.st \
         makefile.manx makefile.sas makefile.mms makefile.vms makvms.opt
 
@@ -58,8 +58,8 @@ CONFIGUREFILES= config.guess config.sub install-sh ltmain.sh depcomp \
 OTHERFILES= jconfig.txt ckconfig.c jmemdosa.asm libjpeg.map libjpeg.pc.in
 
 # Test support files
-TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \
-        testimgp.jpg
+TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.bmp testimg.jpg \
+        testprog.jpg testimgp.jpg
 
 # libtool libraries to build
 lib_LTLIBRARIES = libjpeg.la
@@ -108,8 +108,8 @@ pkgconfigdir = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = libjpeg.pc
 
 # Files to be cleaned
-CLEANFILES = testout.ppm testout.bmp testout.jpg testoutp.ppm testoutp.jpg \
-        testoutt.jpg
+CLEANFILES = testout.ppm testout.gif testout.bmp testout.jpg testoutp.ppm \
+        testoutp.jpg testoutt.jpg
 
 # Install jconfig.h
 install-data-local:
@@ -124,13 +124,15 @@ uninstall-local:
 test: check-local
 check-local:
 	rm -f testout*
-	./djpeg -dct int -ppm -outfile testout.ppm  $(srcdir)/testorig.jpg
-	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp  $(srcdir)/testorig.jpg
-	./cjpeg -dct int -outfile testout.jpg  $(srcdir)/testimg.ppm
+	./djpeg -dct int -ppm -outfile testout.ppm $(srcdir)/testorig.jpg
+	./djpeg -dct int -gif -outfile testout.gif $(srcdir)/testorig.jpg
+	./djpeg -dct int -bmp -colors 256 -outfile testout.bmp $(srcdir)/testorig.jpg
+	./cjpeg -dct int -outfile testout.jpg $(srcdir)/testimg.ppm
 	./djpeg -dct int -ppm -outfile testoutp.ppm $(srcdir)/testprog.jpg
 	./cjpeg -dct int -progressive -opt -outfile testoutp.jpg $(srcdir)/testimg.ppm
 	./jpegtran -outfile testoutt.jpg $(srcdir)/testprog.jpg
 	cmp $(srcdir)/testimg.ppm testout.ppm
+	cmp $(srcdir)/testimg.gif testout.gif
 	cmp $(srcdir)/testimg.bmp testout.bmp
 	cmp $(srcdir)/testimg.jpg testout.jpg
 	cmp $(srcdir)/testimg.ppm testoutp.ppm

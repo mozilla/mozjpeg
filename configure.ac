@@ -5,7 +5,7 @@
 # Configure script for IJG libjpeg
 #
 
-AC_INIT([libjpeg], [9.3.0])
+AC_INIT([libjpeg], [9.4.0])
 
 # Directory where autotools helper scripts lives.
 AC_CONFIG_AUX_DIR([.])
@@ -357,9 +357,10 @@ AC_SUBST([MEMORYMGR])
 AC_MSG_CHECKING([libjpeg version number])
 [major=`sed -ne 's/^#define JPEG_LIB_VERSION_MAJOR *\([0-9][0-9]*\).*$/\1/p' $srcdir/jpeglib.h`
 minor=`sed -ne 's/^#define JPEG_LIB_VERSION_MINOR *\([0-9][0-9]*\).*$/\1/p' $srcdir/jpeglib.h`]
-AC_SUBST([JPEG_LIB_VERSION],
-         [`expr $major + $minor`:0:$minor])
-AC_MSG_RESULT([$JPEG_LIB_VERSION])
+AC_SUBST([JPEG_LIB_VERSION], [`expr $major + $minor`:0:$minor])
+AC_SUBST([JPEG_LIB_VERSION_MAJOR], [$major])
+AC_SUBST([JPEG_LIB_VERSION_MINOR], [$minor])
+AC_MSG_RESULT([$major.$minor.0])
 
 AC_CONFIG_FILES([Makefile libjpeg.pc])
 AC_OUTPUT

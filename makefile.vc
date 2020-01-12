@@ -63,9 +63,9 @@ MKFILES= configure Makefile.in makefile.ansi makefile.unix makefile.b32 \
         makejmak.vc6 makecdep.vc6 makecdsp.vc6 makecmak.vc6 makeddep.vc6 \
         makeddsp.vc6 makedmak.vc6 maketdep.vc6 maketdsp.vc6 maketmak.vc6 \
         makerdep.vc6 makerdsp.vc6 makermak.vc6 makewdep.vc6 makewdsp.vc6 \
-        makewmak.vc6 makejsln.v15 makeasln.v15 makejvcx.v15 makejfil.v15 \
-        makecvcx.v15 makecfil.v15 makedvcx.v15 makedfil.v15 maketvcx.v15 \
-        maketfil.v15 makervcx.v15 makerfil.v15 makewvcx.v15 makewfil.v15 \
+        makewmak.vc6 makejsln.v16 makeasln.v16 makejvcx.v16 makejfil.v16 \
+        makecvcx.v16 makecfil.v16 makedvcx.v16 makedfil.v16 maketvcx.v16 \
+        maketfil.v16 makervcx.v16 makerfil.v16 makewvcx.v16 makewfil.v16 \
         makeproj.mac makcjpeg.st makdjpeg.st makljpeg.st maktjpeg.st \
         makefile.manx makefile.sas makefile.mms makefile.vms makvms.opt
 CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat \
@@ -74,8 +74,8 @@ CONFIGFILES= jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat \
 CONFIGUREFILES= config.guess config.sub install-sh ltmain.sh depcomp \
         missing ar-lib
 OTHERFILES= jconfig.txt ckconfig.c jmemdosa.asm libjpeg.map libjpeg.pc.in
-TESTFILES= testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg \
-        testimgp.jpg
+TESTFILES= testorig.jpg testimg.ppm testimg.gif testimg.bmp testimg.jpg \
+        testprog.jpg testimgp.jpg
 DISTFILES= $(DOCS) $(MKFILES) $(CONFIGFILES) $(SOURCES) $(INCLUDES) \
         $(CONFIGUREFILES) $(OTHERFILES) $(TESTFILES)
 # library object files common to compression and decompression
@@ -154,32 +154,74 @@ setup-vc6:
 	ren makewdep.vc6 wrjpgcom.dep
 	ren makewdsp.vc6 wrjpgcom.dsp
 
-setup-v15:
+setupcopy-vc6:
+	copy /y jconfig.vc jconfig.h
+	copy /y makejdsw.vc6 jpeg.dsw
+	copy /y makeadsw.vc6 apps.dsw
+	copy /y makejmak.vc6 jpeg.mak
+	copy /y makejdep.vc6 jpeg.dep
+	copy /y makejdsp.vc6 jpeg.dsp
+	copy /y makecmak.vc6 cjpeg.mak
+	copy /y makecdep.vc6 cjpeg.dep
+	copy /y makecdsp.vc6 cjpeg.dsp
+	copy /y makedmak.vc6 djpeg.mak
+	copy /y makeddep.vc6 djpeg.dep
+	copy /y makeddsp.vc6 djpeg.dsp
+	copy /y maketmak.vc6 jpegtran.mak
+	copy /y maketdep.vc6 jpegtran.dep
+	copy /y maketdsp.vc6 jpegtran.dsp
+	copy /y makermak.vc6 rdjpgcom.mak
+	copy /y makerdep.vc6 rdjpgcom.dep
+	copy /y makerdsp.vc6 rdjpgcom.dsp
+	copy /y makewmak.vc6 wrjpgcom.mak
+	copy /y makewdep.vc6 wrjpgcom.dep
+	copy /y makewdsp.vc6 wrjpgcom.dsp
+
+setup-v16:
 	ren jconfig.vc jconfig.h
-	ren makejsln.v15 jpeg.sln
-	ren makeasln.v15 apps.sln
-	ren makejvcx.v15 jpeg.vcxproj
-	ren makejfil.v15 jpeg.vcxproj.filters
-	ren makecvcx.v15 cjpeg.vcxproj
-	ren makecfil.v15 cjpeg.vcxproj.filters
-	ren makedvcx.v15 djpeg.vcxproj
-	ren makedfil.v15 djpeg.vcxproj.filters
-	ren maketvcx.v15 jpegtran.vcxproj
-	ren maketfil.v15 jpegtran.vcxproj.filters
-	ren makervcx.v15 rdjpgcom.vcxproj
-	ren makerfil.v15 rdjpgcom.vcxproj.filters
-	ren makewvcx.v15 wrjpgcom.vcxproj
-	ren makewfil.v15 wrjpgcom.vcxproj.filters
+	ren makejsln.v16 jpeg.sln
+	ren makeasln.v16 apps.sln
+	ren makejvcx.v16 jpeg.vcxproj
+	ren makejfil.v16 jpeg.vcxproj.filters
+	ren makecvcx.v16 cjpeg.vcxproj
+	ren makecfil.v16 cjpeg.vcxproj.filters
+	ren makedvcx.v16 djpeg.vcxproj
+	ren makedfil.v16 djpeg.vcxproj.filters
+	ren maketvcx.v16 jpegtran.vcxproj
+	ren maketfil.v16 jpegtran.vcxproj.filters
+	ren makervcx.v16 rdjpgcom.vcxproj
+	ren makerfil.v16 rdjpgcom.vcxproj.filters
+	ren makewvcx.v16 wrjpgcom.vcxproj
+	ren makewfil.v16 wrjpgcom.vcxproj.filters
+
+setupcopy-v16:
+	copy /y jconfig.vc jconfig.h
+	copy /y makejsln.v16 jpeg.sln
+	copy /y makeasln.v16 apps.sln
+	copy /y makejvcx.v16 jpeg.vcxproj
+	copy /y makejfil.v16 jpeg.vcxproj.filters
+	copy /y makecvcx.v16 cjpeg.vcxproj
+	copy /y makecfil.v16 cjpeg.vcxproj.filters
+	copy /y makedvcx.v16 djpeg.vcxproj
+	copy /y makedfil.v16 djpeg.vcxproj.filters
+	copy /y maketvcx.v16 jpegtran.vcxproj
+	copy /y maketfil.v16 jpegtran.vcxproj.filters
+	copy /y makervcx.v16 rdjpgcom.vcxproj
+	copy /y makerfil.v16 rdjpgcom.vcxproj.filters
+	copy /y makewvcx.v16 wrjpgcom.vcxproj
+	copy /y makewfil.v16 wrjpgcom.vcxproj.filters
 
 test:
 	IF EXIST testout* $(RM) testout*
-	.\djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg
-	.\djpeg -dct int -bmp -colors 256 -outfile testout.bmp  testorig.jpg
-	.\cjpeg -dct int -outfile testout.jpg  testimg.ppm
+	.\djpeg -dct int -ppm -outfile testout.ppm testorig.jpg
+	.\djpeg -dct int -gif -outfile testout.gif testorig.jpg
+	.\djpeg -dct int -bmp -colors 256 -outfile testout.bmp testorig.jpg
+	.\cjpeg -dct int -outfile testout.jpg testimg.ppm
 	.\djpeg -dct int -ppm -outfile testoutp.ppm testprog.jpg
 	.\cjpeg -dct int -progressive -opt -outfile testoutp.jpg testimg.ppm
 	.\jpegtran -outfile testoutt.jpg testprog.jpg
 	fc /b testimg.ppm testout.ppm
+	fc /b testimg.gif testout.gif
 	fc /b testimg.bmp testout.bmp
 	fc /b testimg.jpg testout.jpg
 	fc /b testimg.ppm testoutp.ppm
@@ -187,19 +229,55 @@ test:
 	fc /b testorig.jpg testoutt.jpg
 
 test-build:
-	IF EXIST testout* $(RM) testout*
-	.\djpeg\Release\djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg
-	.\djpeg\Release\djpeg -dct int -bmp -colors 256 -outfile testout.bmp  testorig.jpg
-	.\cjpeg\Release\cjpeg -dct int -outfile testout.jpg  testimg.ppm
-	.\djpeg\Release\djpeg -dct int -ppm -outfile testoutp.ppm testprog.jpg
-	.\cjpeg\Release\cjpeg -dct int -progressive -opt -outfile testoutp.jpg testimg.ppm
-	.\jpegtran\Release\jpegtran -outfile testoutt.jpg testprog.jpg
-	fc /b testimg.ppm testout.ppm
-	fc /b testimg.bmp testout.bmp
-	fc /b testimg.jpg testout.jpg
-	fc /b testimg.ppm testoutp.ppm
-	fc /b testimgp.jpg testoutp.jpg
-	fc /b testorig.jpg testoutt.jpg
+	IF EXIST .\Release\testout* $(RM) .\Release\testout*
+	.\Release\djpeg -dct int -ppm -outfile .\Release\testout.ppm testorig.jpg
+	.\Release\djpeg -dct int -gif -outfile .\Release\testout.gif testorig.jpg
+	.\Release\djpeg -dct int -bmp -colors 256 -outfile .\Release\testout.bmp testorig.jpg
+	.\Release\cjpeg -dct int -outfile .\Release\testout.jpg testimg.ppm
+	.\Release\djpeg -dct int -ppm -outfile .\Release\testoutp.ppm testprog.jpg
+	.\Release\cjpeg -dct int -progressive -opt -outfile .\Release\testoutp.jpg testimg.ppm
+	.\Release\jpegtran -outfile .\Release\testoutt.jpg testprog.jpg
+	fc /b testimg.ppm .\Release\testout.ppm
+	fc /b testimg.gif .\Release\testout.gif
+	fc /b testimg.bmp .\Release\testout.bmp
+	fc /b testimg.jpg .\Release\testout.jpg
+	fc /b testimg.ppm .\Release\testoutp.ppm
+	fc /b testimgp.jpg .\Release\testoutp.jpg
+	fc /b testorig.jpg .\Release\testoutt.jpg
+
+test-32:
+	IF EXIST .\Release\testout* $(RM) .\Release\testout*
+	.\Release\Win32\djpeg -dct int -ppm -outfile .\Release\testout.ppm testorig.jpg
+	.\Release\Win32\djpeg -dct int -gif -outfile .\Release\testout.gif testorig.jpg
+	.\Release\Win32\djpeg -dct int -bmp -colors 256 -outfile .\Release\testout.bmp testorig.jpg
+	.\Release\Win32\cjpeg -dct int -outfile .\Release\testout.jpg testimg.ppm
+	.\Release\Win32\djpeg -dct int -ppm -outfile .\Release\testoutp.ppm testprog.jpg
+	.\Release\Win32\cjpeg -dct int -progressive -opt -outfile .\Release\testoutp.jpg testimg.ppm
+	.\Release\Win32\jpegtran -outfile .\Release\testoutt.jpg testprog.jpg
+	fc /b testimg.ppm .\Release\testout.ppm
+	fc /b testimg.gif .\Release\testout.gif
+	fc /b testimg.bmp .\Release\testout.bmp
+	fc /b testimg.jpg .\Release\testout.jpg
+	fc /b testimg.ppm .\Release\testoutp.ppm
+	fc /b testimgp.jpg .\Release\testoutp.jpg
+	fc /b testorig.jpg .\Release\testoutt.jpg
+
+test-64:
+	IF EXIST .\Release\testout* $(RM) .\Release\testout*
+	.\Release\x64\djpeg -dct int -ppm -outfile .\Release\testout.ppm testorig.jpg
+	.\Release\x64\djpeg -dct int -gif -outfile .\Release\testout.gif testorig.jpg
+	.\Release\x64\djpeg -dct int -bmp -colors 256 -outfile .\Release\testout.bmp testorig.jpg
+	.\Release\x64\cjpeg -dct int -outfile .\Release\testout.jpg testimg.ppm
+	.\Release\x64\djpeg -dct int -ppm -outfile .\Release\testoutp.ppm testprog.jpg
+	.\Release\x64\cjpeg -dct int -progressive -opt -outfile .\Release\testoutp.jpg testimg.ppm
+	.\Release\x64\jpegtran -outfile .\Release\testoutt.jpg testprog.jpg
+	fc /b testimg.ppm .\Release\testout.ppm
+	fc /b testimg.gif .\Release\testout.gif
+	fc /b testimg.bmp .\Release\testout.bmp
+	fc /b testimg.jpg .\Release\testout.jpg
+	fc /b testimg.ppm .\Release\testoutp.ppm
+	fc /b testimgp.jpg .\Release\testoutp.jpg
+	fc /b testorig.jpg .\Release\testoutt.jpg
 
 
 jaricom.obj: jaricom.c jinclude.h jconfig.h jpeglib.h jmorecfg.h jpegint.h jerror.h

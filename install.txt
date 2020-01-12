@@ -1,6 +1,6 @@
 INSTALLATION INSTRUCTIONS for the Independent JPEG Group's JPEG software
 
-Copyright (C) 1991-2017, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1991-2019, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -150,8 +150,8 @@ makefile.wat	jconfig.wat	MS-DOS, OS/2, or Windows NT, Watcom C
 makefile.vc	jconfig.vc	Windows, MS Visual C++
 makefile.vs	jconfig.vc	Windows, MS Visual C++ 6 Developer Studio
 make*.vc6
-makefile.vs	jconfig.vc	Windows, Visual Studio 2017 (v15)
-make*.v15
+makefile.vs	jconfig.vc	Windows, Visual Studio 2019 (v16)
+make*.v16
 makefile.b32	jconfig.vc	Windows, Borland C++ 32-bit (bcc32)
 makefile.mms	jconfig.vms	Digital VMS, with MMS software
 makefile.vms	jconfig.vms	Digital VMS, without MMS software
@@ -1029,48 +1029,66 @@ library, we recommend building the applications so that you can run the
 self-test.)
 
 To use:
-1. Open the command prompt, change to the main directory and execute the
-   command line
-	NMAKE /f makefile.vs  setup-vc6
+1. Open the command prompt, change to the source directory and execute
+   the command line
+	NMAKE /f makefile.vs setup-vc6
+   If you get an error message saying that the "NMAKE" command could
+   not be found, execute the command
+	"%ProgramFiles%\Microsoft Visual Studio\VC98\Bin\VCVARS32"
+   to set the environment for using Microsoft Visual C++ tools,
+   and repeat the NMAKE call.
    This will move jconfig.vc to jconfig.h and makefiles to project files.
    (Note that the renaming is critical!)
+   Alternatively you can use
+	NMAKE /f makefile.vs setupcopy-vc6
+   This will create renamed copies of the files, which allows to repeat
+   the setup later.
 2. Open the workspace file jpeg.dsw, build the library project.
    (If you are using Developer Studio more recent than 6.0, you'll
    probably get a message saying that the project files are being updated.)
 3. Open the workspace file apps.dsw, build the application projects.
 4. To perform the self-test, execute the command line
-	NMAKE /f makefile.vs  test-build
-5. Move the application .exe files from `app`\Release to an
+	NMAKE /f makefile.vs test-build
+5. Move the application .exe files from the Release folder to an
    appropriate location on your path.
 
 
-Microsoft Windows, Visual Studio 2017 (v15):
+Microsoft Windows, Visual Studio 2019 (v16):
 
 We include makefiles that should work as project files in Visual Studio
-2017 (v15) or later.  There is a library makefile that builds the IJG
-library as a static Win32 library, and application makefiles that build
-the sample applications as Win32 console applications.  (Even if you only
-want the library, we recommend building the applications so that you can
-run the self-test.)
+2019 (v16) or later.  There is a library makefile that builds the IJG
+library as a static Win32/x64 library, and application makefiles that
+build the sample applications as Win32/x64 console applications.  (Even
+if you only want the library, we recommend building the applications so
+that you can run the self-test.)
 
 To use:
-1. Open the Developer Command Prompt, change to the main directory and
-   execute the command line
-	NMAKE /f makefile.vs  setup-v15
+1. Open the Developer Command Prompt for VS 2019, change to the source
+   directory and execute the command line
+	NMAKE /f makefile.vs setup-v16
    This will move jconfig.vc to jconfig.h and makefiles to project files.
    (Note that the renaming is critical!)
+   Alternatively you can use
+	NMAKE /f makefile.vs setupcopy-v16
+   This will create renamed copies of the files, which allows to repeat
+   the setup later.
 2. Open the solution file jpeg.sln, build the library project.
      a) If you are using Visual Studio more recent than
-	2017 (v15), you'll probably get a message saying
+	2019 (v16), you'll probably get a message saying
 	that the project files are being updated.
      b) If necessary, open the project properties and
 	adapt the Windows Target Platform Version in
 	the Configuration Properties, General section;
 	we support the latest version at the time of release.
+     c) If you want to build x64 code, change the platform setting from
+	Win32 to x64.  You can build Win32 and x64 versions side by side.
 3. Open the solution file apps.sln, build the application projects.
 4. To perform the self-test, execute the command line
-	NMAKE /f makefile.vs  test-build
-5. Move the application .exe files from `app`\Release to an
+	NMAKE /f makefile.vs test-32
+   for the Win32 build, or on a 64-bit system
+	NMAKE /f makefile.vs test-64
+   for the x64 build.
+5. Move the application .exe files from the Release folder to an
    appropriate location on your path.
 
 

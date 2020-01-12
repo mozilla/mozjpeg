@@ -1,6 +1,6 @@
 IJG JPEG LIBRARY:  FILE LIST
 
-Copyright (C) 1994-2017, Thomas G. Lane, Guido Vollbeding.
+Copyright (C) 1994-2019, Thomas G. Lane, Guido Vollbeding.
 This file is part of the Independent JPEG Group's software.
 For conditions of distribution and use, see the accompanying README file.
 
@@ -151,7 +151,7 @@ transupp.c	Support code for jpegtran: lossless image manipulations.
 Image file reader modules for cjpeg:
 
 rdbmp.c		BMP file input.
-rdgif.c		GIF file input (now just a stub).
+rdgif.c		GIF file input.
 rdppm.c		PPM/PGM file input.
 rdrle.c		Utah RLE file input.
 rdtarga.c	Targa file input.
@@ -159,7 +159,7 @@ rdtarga.c	Targa file input.
 Image file writer modules for djpeg:
 
 wrbmp.c		BMP file output.
-wrgif.c		GIF file output (a mere shadow of its former self).
+wrgif.c		GIF file output.
 wrppm.c		PPM/PGM file output.
 wrrle.c		Utah RLE file output.
 wrtarga.c	Targa file output.

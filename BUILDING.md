@@ -57,22 +57,22 @@ Build Requirements
 - Microsoft Visual C++ 2005 or later
 
   If you don't already have Visual C++, then the easiest way to get it is by
-  installing the
-  [Windows SDK](http://msdn.microsoft.com/en-us/windows/bb980924.aspx).
-  The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
-  everything necessary to build libjpeg-turbo.
+  installing
+  [Visual Studio Community Edition](https://visualstudio.microsoft.com),
+  which includes everything necessary to build libjpeg-turbo.
 
-  * You can also use Microsoft Visual Studio Express/Community Edition, which
-    is a free download.  (NOTE: versions prior to 2012 can only be used to
-    build 32-bit code.)
+  * You can also download and install the standalone Windows SDK (for Windows 7
+    or later), which includes command-line versions of the 32-bit and 64-bit
+    Visual C++ compilers.
   * If you intend to build libjpeg-turbo from the command line, then add the
     appropriate compiler and SDK directories to the `INCLUDE`, `LIB`, and
     `PATH` environment variables.  This is generally accomplished by
-    executing `vcvars32.bat` or `vcvars64.bat` and `SetEnv.cmd`.
-    `vcvars32.bat` and `vcvars64.bat` are part of Visual C++ and are located in
-    the same directory as the compiler.  `SetEnv.cmd` is part of the Windows
-    SDK.  You can pass optional arguments to `SetEnv.cmd` to specify a 32-bit
-    or 64-bit build environment.
+    executing `vcvars32.bat` or `vcvars64.bat`, which are located in the same
+    directory as the compiler.
+  * If built with Visual C++ 2015 or later, the libjpeg-turbo static libraries
+    cannot be used with earlier versions of Visual C++, and vice versa.
+  * The libjpeg API DLL (**jpeg{version}.dll**) will depend on the C run-time
+    DLLs corresponding to the version of Visual C++ that was used to build it.
 
    ... OR ...
 

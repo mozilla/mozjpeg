@@ -20,11 +20,15 @@ install:
 
       7z x c:\installers\x86_64-6.4.0-release-posix-seh-rt_v5-rev0.7z -o"c:\Program Files\mingw-w64\x86_64-6.4.0-posix-seh-rt_v5-rev0" > c:\installers\mingw64.install.log
 
-      set INCLUDE=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\include
+      set PATH=c:\nasm-2.10.01;c:\Program Files (x86)\NSIS;c:\msys64\usr\bin;%PATH%
 
-      set LIB=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib\amd64;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib\x64
+      "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\vcvars64.bat"
 
-      set PATH=c:\nasm-2.10.01;c:\Program Files (x86)\NSIS;c:\msys64\usr\bin;c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64;c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\bin\x64;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\bin;%PATH%
+      set INCLUDE
+
+      set LIB
+
+      set PATH
 
       set MSYSTEM=MINGW32
 

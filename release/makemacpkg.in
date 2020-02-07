@@ -230,7 +230,7 @@ if [ $UNIVERSAL = 1 -a "$BUILDDIRARMV7S" != "" ]; then
 	install_ios $BUILDDIRARMV7S ARMv7s armv7s arm
 fi
 
-if [ $UNIVERSAL = 1 -a "BUILDDIRARMV8" != "" ]; then
+if [ $UNIVERSAL = 1 -a "$BUILDDIRARMV8" != "" ]; then
 	install_ios $BUILDDIRARMV8 ARMv8 armv8 arm64
 fi
 

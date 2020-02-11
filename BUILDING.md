@@ -645,26 +645,23 @@ installing Xcode 3.2.6 (with the "Unix Development" option) on OS X 10.6.
 Packages built in this manner can be installed on OS X 10.5 and later, but they
 must be built on OS X 10.6 or later.
 
-    make udmg
+In order to create a Mac package/disk image that contains universal
+x86-64/i386/ARM binaries, set any of the following CMake variables:
 
-This creates a Mac package/disk image that contains universal x86-64/i386/ARM
-binaries.  The following CMake variables control which architectures are
-included in the universal binaries.  Setting any of these variables to an empty
-string excludes that architecture from the package.
-
-* `OSX_32BIT_BUILD`: Directory containing an i386 (32-bit) Mac build of
-  libjpeg-turbo (default: *{source_directory}*/osxx86)
+* `OSX_32BIT_BUILD`: Directory containing an i386 (32-bit) Mac or iOS build of
+  libjpeg-turbo to include in the universal binaries
 * `IOS_ARMV8_BUILD`: Directory containing an ARMv8 (64-bit) iOS build of
-  libjpeg-turbo (default: *{source_directory}*/iosarmv8)
+  libjpeg-turbo to include in the universal binaries
 
 You should first use CMake to configure i386 and/or ARMv8 sub-builds of
 libjpeg-turbo (see "Build Recipes" and "Building libjpeg-turbo for iOS" above)
 in build directories that match those specified in the aforementioned CMake
 variables.  Next, configure the primary build of libjpeg-turbo as an
-out-of-tree build, and build it.  Once the primary build has been built, run
-`make udmg` from the build directory.  The packaging system will build the
+out-of-tree build, specifying one or more of the aforementioned CMake
+variables, and build it.  Once the primary build has been built, run
+`make dmg` from the build directory.  The packaging system will build the
 sub-builds, use lipo to combine them into a single set of universal binaries,
-then package the universal binaries in the same manner as `make dmg`.
+then package the universal binaries.
 
 
 Cygwin

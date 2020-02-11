@@ -9,7 +9,7 @@
 \
 \pard\pardeftab720\ql\qnatural
 
-\f1 \cf0   /opt/libjpeg-turbo/bin/uninstall\
+\f1 \cf0   @CMAKE_INSTALL_FULL_BINDIR@/uninstall\
 \pard\pardeftab720\ql\qnatural
 
 \f0 \cf0 \

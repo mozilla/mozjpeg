@@ -90,7 +90,7 @@ fi
 if [ -d $MANDIR ]; then
 	rmdir $MANDIR 2>&1 || EXITSTATUS=-1
 fi
-if [ -d $JAVADIR ]; then
+if [ -d "$JAVADIR" ]; then
 	rmdir $JAVADIR 2>&1 || EXITSTATUS=-1
 fi
 if [ -d $DATAROOTDIR -a "$DATAROOTDIR" != "$PREFIX" ]; then

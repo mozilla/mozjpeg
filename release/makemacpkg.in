@@ -43,11 +43,9 @@ safedirmove ()
 
 usage()
 {
-	echo "$0 [universal] [-lipo [path to lipo]]"
+	echo "$0 [-lipo [path to lipo]]"
 	exit 1
 }
-
-UNIVERSAL=0
 
 PKGNAME=@PKGNAME@
 VERSION=@VERSION@
@@ -80,9 +78,6 @@ while [ $# -gt 0 ]; do
 			fi
 		fi
 		;;
-	universal)
-		UNIVERSAL=1
-		;;
 	esac
 	shift
 done
@@ -104,7 +99,7 @@ if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL
 	ln -fs /Library/Documentation/$PKGNAME $PKGROOT$DOCDIR
 fi
 
-if [ $UNIVERSAL = 1 -a "$BUILDDIR32" != "" ]; then
+if [ "$BUILDDIR32" != "" ]; then
 	if [ ! -d $BUILDDIR32 ]; then
 		echo ERROR: 32-bit build directory $BUILDDIR32 does not exist
 		exit 1
@@ -220,7 +215,7 @@ install_ios()
 		-output $PKGROOT/$BINDIR/wrjpgcom
 }
 
-if [ $UNIVERSAL = 1 -a "$BUILDDIRARMV8" != "" ]; then
+if [ "$BUILDDIRARMV8" != "" ]; then
 	install_ios $BUILDDIRARMV8 ARMv8 armv8 arm64
 fi
 
@@ -245,7 +240,7 @@ install -m 755 pkgscripts/uninstall $PKGROOT/$BINDIR/
 
 find $PKGROOT -type f | while read file; do xattr -c $file; done
 
-cp $SRCDIR/release/License.rtf $SRCDIR/release/Welcome.rtf $SRCDIR/release/ReadMe.txt $TMPDIR/pkg/
+cp $SRCDIR/release/License.rtf pkgscripts/Welcome.rtf $SRCDIR/release/ReadMe.txt $TMPDIR/pkg/
 
 mkdir $TMPDIR/dmg
 pkgbuild --root $PKGROOT --version $VERSION.$BUILD --identifier @PKGID@ \

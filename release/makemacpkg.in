@@ -220,7 +220,7 @@ install_ios()
 		-output $PKGROOT/$BINDIR/wrjpgcom
 }
 
-if [ $UNIVERSAL = 1 -a "BUILDDIRARMV8" != "" ]; then
+if [ $UNIVERSAL = 1 -a "$BUILDDIRARMV8" != "" ]; then
 	install_ios $BUILDDIRARMV8 ARMv8 armv8 arm64
 fi
 

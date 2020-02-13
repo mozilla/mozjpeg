@@ -118,7 +118,7 @@
 #   absolute paths where necessary, using the same logic.
 
 #=============================================================================
-# Copyright 2016 D. R. Commander
+# Copyright 2016, 2019 D. R. Commander
 # Copyright 2016 Dmitry Marakasov
 # Copyright 2016 Roger Leigh
 # Copyright 2015 Alex Turbov
@@ -184,7 +184,7 @@ macro(GNUInstallDirs_set_install_dir var docstring)
     "${docstring} (Default: ${CMAKE_INSTALL_DEFAULT_${var}})"
     ${_GNUInstallDirs_CMAKE_INSTALL_FORCE_${var}})
 
-  if(NOT "${CMAKE_INSTALL_${var}}" STREQUAL "${CMAKE_INSTALL_DEFAULT_${var}}")
+  if(NOT CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_DEFAULT_${var})
     unset(_GNUInstallDirs_CMAKE_INSTALL_DEFAULT_${var} CACHE)
   endif()
 

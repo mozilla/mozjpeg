@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2012 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, 2014, 2016, D. R. Commander.
+ * Copyright (C) 2011, 2014, 2016, 2019, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -27,6 +27,8 @@
 extern void *malloc(size_t size);
 extern void free(void *ptr);
 #endif
+void jpeg_mem_dest_tj(j_compress_ptr cinfo, unsigned char **outbuffer,
+                      unsigned long *outsize, boolean alloc);
 
 
 #define OUTPUT_BUF_SIZE  4096   /* choose an efficiently fwrite'able size */
@@ -101,8 +103,7 @@ empty_mem_output_buffer(j_compress_ptr cinfo)
 
   MEMCOPY(nextbuffer, dest->buffer, dest->bufsize);
 
-  if (dest->newbuffer != NULL)
-    free(dest->newbuffer);
+  free(dest->newbuffer);
 
   dest->newbuffer = nextbuffer;
 

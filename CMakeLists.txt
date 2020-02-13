@@ -109,8 +109,6 @@ endif()
 
 include(cmakescripts/GNUInstallDirs.cmake)
 
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
-
 macro(report_directory var)
   if(CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_FULL_${var})
     message(STATUS "CMAKE_INSTALL_${var} = ${CMAKE_INSTALL_${var}}")
@@ -192,6 +190,10 @@ endif()
 
 report_option(ENABLE_SHARED "Shared libraries")
 report_option(ENABLE_STATIC "Static libraries")
+
+if(ENABLE_SHARED)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+endif()
 
 if(WITH_12BIT)
   set(WITH_ARITH_DEC 0)
@@ -333,7 +335,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
       endif()
       if(${var} MATCHES "-xO2")
         string(REGEX REPLACE "-xO2" "-xO5" ${var} "${${var}}")
-  endif()
+      endif()
     endforeach()
   endif()
 endif()
@@ -470,8 +472,8 @@ if(UNIX AND NOT APPLE)
       # still work.
       file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/conftest.map
         "VERS_1 { global: foo;  local: *; }; VERS_2 { global: foo2; } VERS_1;")
-      set(CMAKE_REQUIRED_FLAGS "-Wl,-M,${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
-      check_c_source_compiles("void foo() {} void foo2() {} int main(void) { return 0; }"
+      set(CMAKE_REQUIRED_FLAGS "-Wl,-M,${CMAKE_CURRENT_BINARY_DIR}/conftest.map -shared")
+      check_c_source_compiles("int foo() { return 0; } int foo2() { return 2; }"
         HAVE_MAPFILE)
       set(CMAKE_REQUIRED_FLAGS)
       file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/conftest.map)
@@ -536,7 +538,7 @@ elseif(NOT WITH_12BIT)
 endif()
 if(WITH_SIMD)
   message(STATUS "SIMD extensions: ${CPU_TYPE} (WITH_SIMD = ${WITH_SIMD})")
-  if(MSVC_IDE)
+  if(MSVC_IDE OR XCODE)
     set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
   endif()
 else()
@@ -565,16 +567,16 @@ if(WITH_TURBOJPEG)
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
       wrbmp.c wrppm.c)
     set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile)
-  if(WITH_JAVA)
-    set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
-    include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+    if(WITH_JAVA)
+      set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
+      include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
       set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile.jni)
-  endif()
+    endif()
     add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
     set_property(TARGET turbojpeg PROPERTY COMPILE_FLAGS
       "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(WIN32)
-    set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
+      set_target_properties(turbojpeg PROPERTIES DEFINE_SYMBOL DLLDEFINE)
     endif()
     if(MINGW)
       set_target_properties(turbojpeg PROPERTIES LINK_FLAGS -Wl,--kill-at)
@@ -609,7 +611,7 @@ if(WITH_TURBOJPEG)
     target_link_libraries(tjexample turbojpeg)
     if(UNIX)
       target_link_libraries(tjexample m)
-    endif()
+  endif()
   endif()
 
   if(ENABLE_STATIC)
@@ -699,7 +701,7 @@ add_executable(wrjpgcom wrjpgcom.c)
 
 add_subdirectory(md5)
 
-if(MSVC_IDE)
+if(MSVC_IDE OR XCODE)
   set(OBJDIR "\${CTEST_CONFIGURATION_TYPE}/")
 else()
   set(OBJDIR "")
@@ -715,7 +717,7 @@ if(WITH_12BIT)
   set(MD5_JPEG_422_IFAST_OPT 7322e3bd2f127f7de4b40d4480ce60e4)
   set(MD5_PPM_422_IFAST 79807fa552899e66a04708f533e16950)
   set(MD5_PPM_422M_IFAST 07737bfe8a7c1c87aaa393a0098d16b0)
-  set(MD5_JPEG_420_IFAST_Q100_PROG a1da220b5604081863a504297ed59e55)
+  set(MD5_JPEG_420_IFAST_Q100_PROG 008ab68d6ddbba04a8f01deee4e0f9f8)
   set(MD5_PPM_420_Q100_IFAST 1b3730122709f53d007255e8dfd3305e)
   set(MD5_PPM_420M_Q100_IFAST 980a1a3c5bf9510022869d30b7d26566)
   set(MD5_JPEG_GRAY_ISLOW 235c90707b16e2e069f37c888b2636d9)
@@ -765,7 +767,7 @@ else()
   set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
   set(MD5_BMP_422M_IFAST_565 3294bd4d9a1f2b3d08ea6020d0db7065)
   set(MD5_BMP_422M_IFAST_565D da98c9c7b6039511be4a79a878a9abc1)
-  set(MD5_JPEG_420_IFAST_Q100_PROG 990cbe0329c882420a2094da7e5adade)
+  set(MD5_JPEG_420_IFAST_Q100_PROG e59bb462016a8d9a748c330a3474bb55)
   set(MD5_PPM_420_Q100_IFAST 5a732542015c278ff43635e473a8a294)
   set(MD5_PPM_420M_Q100_IFAST ff692ee9323a3b424894862557c092f1)
   set(MD5_JPEG_GRAY_ISLOW 72b51f894b8f4a10b3ee3066770aa38d)
@@ -1032,6 +1034,8 @@ foreach(libtype ${TEST_LIBTYPES})
 
   add_test(djpeg-${libtype}-rgb-islow-icc-cmp
     ${MD5CMP} b06a39d730129122e85c1363ed1bbc9e testout_rgb_islow.icc)
+  set_tests_properties(djpeg-${libtype}-rgb-islow-icc-cmp PROPERTIES
+    DEPENDS djpeg-${libtype}-rgb-islow)
 
   add_bittest(jpegtran icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
     testout_rgb_islow2.jpg testout_rgb_islow.jpg ${MD5_JPEG_RGB_ISLOW2})
@@ -1078,7 +1082,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
   # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
   add_bittest(cjpeg 420-q100-ifast-prog
-    "-sample;2x2;-quality;100;-dct;fast;-prog"
+    "-sample;2x2;-quality;100;-dct;fast;-scans;${TESTIMAGES}/test.scan"
     testout_420_q100_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_420_IFAST_Q100_PROG})
 
@@ -1126,12 +1130,12 @@ foreach(libtype ${TEST_LIBTYPES})
     ${MD5_JPEG_420S_IFAST_OPT})
 
   if(FLOATTEST)
-  # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
+    # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
     add_bittest(cjpeg 3x2-float-prog "-sample;3x2;-dct;float;-prog"
       testout_3x2_float_prog.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_3x2_FLOAT_PROG_${FLOATTEST_UC}})
 
-  # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
+    # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
     add_bittest(djpeg 3x2-float-prog "-dct;float"
       testout_3x2_float.ppm testout_3x2_float_prog.jpg
       ${MD5_PPM_3x2_FLOAT_${FLOATTEST_UC}} cjpeg-${libtype}-3x2-float-prog)
@@ -1321,6 +1325,8 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
       COMMAND echo tjbenchtest -progressive
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive
+      COMMAND echo tjbenchtest -progressive -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive -yuv
       COMMAND echo tjexampletest
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
       COMMAND echo tjbenchtest.java
@@ -1329,6 +1335,9 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -yuv
       COMMAND echo tjbenchtest.java -progressive
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -progressive
+      COMMAND echo tjexampletest.java -progressive -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
+        -progressive -yuv
       COMMAND echo tjexampletest.java
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest.java
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
@@ -1344,6 +1353,10 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv
       COMMAND echo tjbenchtest -yuv -alloc
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
+      COMMAND echo tjbenchtest -progressive
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive
+      COMMAND echo tjbenchtest -progressive -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive -yuv
       COMMAND echo tjexampletest
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest)
@@ -1363,12 +1376,22 @@ if(WITH_TURBOJPEG)
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
+      CMAKE_C_LINKER_SUPPORTS_PDB)
+      install(FILES "$<TARGET_PDB_FILE:turbojpeg>"
+        DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+    endif()
   endif()
   if(ENABLE_STATIC)
     install(TARGETS turbojpeg-static ARCHIVE
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
     if(NOT ENABLE_SHARED)
-      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/tjbench-static${EXE}
+      if(MSVC_IDE OR XCODE)
+        set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
+      else()
+        set(DIR ${CMAKE_CURRENT_BINARY_DIR})
+      endif()
+      install(PROGRAMS ${DIR}/tjbench-static${EXE}
         DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME tjbench${EXE})
     endif()
   endif()
@@ -1379,11 +1402,16 @@ endif()
 if(ENABLE_STATIC)
   install(TARGETS jpeg-static ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
   if(NOT ENABLE_SHARED)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/cjpeg-static${EXE}
+    if(MSVC_IDE OR XCODE)
+      set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
+    else()
+      set(DIR ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+    install(PROGRAMS ${DIR}/cjpeg-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME cjpeg${EXE})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/djpeg-static${EXE}
+    install(PROGRAMS ${DIR}/djpeg-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME djpeg${EXE})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/jpegtran-static${EXE}
+    install(PROGRAMS ${DIR}/jpegtran-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpegtran${EXE})
   endif()
 endif()
@@ -1408,10 +1436,10 @@ if(UNIX OR MINGW)
     ${CMAKE_CURRENT_SOURCE_DIR}/rdjpgcom.1
     ${CMAKE_CURRENT_SOURCE_DIR}/wrjpgcom.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
+endif()
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
     ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h

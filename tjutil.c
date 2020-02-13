@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2019 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,7 @@
 #ifdef _WIN32
 
 #include <windows.h>
+#include "tjutil.h"
 
 static double getFreq(void)
 {
@@ -56,6 +57,7 @@ double getTime(void)
 
 #include <stdlib.h>
 #include <sys/time.h>
+#include "tjutil.h"
 
 double getTime(void)
 {

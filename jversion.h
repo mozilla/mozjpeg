@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2012-2018, D. R. Commander.
+ * Copyright (C) 2010, 2012-2020, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -37,18 +37,18 @@
  */
 
 #define JCOPYRIGHT \
-  "Copyright (C) 2009-2018 D. R. Commander\n" \
-                        "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
+  "Copyright (C) 2009-2020 D. R. Commander\n" \
+  "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
   "Copyright (C) 2015-2016, 2018 Matthieu Darbois\n" \
   "Copyright (C) 2015 Intel Corporation\n" \
-                        "Copyright (C) 2015 Google, Inc.\n" \
+  "Copyright (C) 2015 Google, Inc.\n" \
                         "Copyright (C) 2014 Mozilla Corporation\n" \
-                        "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
-                        "Copyright (C) 2013 Linaro Limited\n" \
-                        "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
-                        "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
-                        "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
+  "Copyright (C) 2013-2014 MIPS Technologies, Inc.\n" \
+  "Copyright (C) 2013 Linaro Limited\n" \
+  "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
+  "Copyright (C) 2009 Pierre Ossman for Cendio AB\n" \
+  "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
   "Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding"
 
 #define JCOPYRIGHT_SHORT \
-  "Copyright (C) 1991-2018 The libjpeg-turbo Project and many others"
+  "Copyright (C) 1991-2020 The libjpeg-turbo Project and many others"

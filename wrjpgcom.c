@@ -580,7 +580,7 @@ main(int argc, char **argv)
     }
   }
   /* Duplicate the remainder of the source file.
-   * Note that any COM markers occuring after SOF will not be touched.
+   * Note that any COM markers occurring after SOF will not be touched.
    */
   write_marker(marker);
   copy_rest_of_file();

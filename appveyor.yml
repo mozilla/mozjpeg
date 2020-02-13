@@ -17,7 +17,7 @@ before_build:
   - cd cmake_build
   - cmake .. -G "Visual Studio 15 2017" -DPNG_SUPPORTED=NO
 
-build_script: 
+build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - msbuild cmake_build\mozjpeg.sln
 

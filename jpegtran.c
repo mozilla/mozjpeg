@@ -129,7 +129,7 @@ select_transform (JXFORM_CODE transform)
 
 LOCAL(int)
 parse_switches (j_compress_ptr cinfo, int argc, char **argv,
-                int last_file_arg_seen, boolean for_real)
+               int last_file_arg_seen, boolean for_real)
 /* Parse optional switches.
  * Returns argv[] index of first file-name argument (== argc if none).
  * Any file names with indexes <= last_file_arg_seen are ignored;

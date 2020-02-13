@@ -476,6 +476,7 @@ static tjhandle _tjInitCompress(tjinstance *this)
   }
 
   jpeg_create_compress(&this->cinfo);
+  jpeg_c_set_int_param(&this->cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
   /* Make an initial call so it will create the destination manager */
   jpeg_mem_dest_tj(&this->cinfo, &buf, &size, 0);
 

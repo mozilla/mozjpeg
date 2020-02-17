@@ -2,7 +2,7 @@
  * jsimd_mips.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009-2011, 2014, 2016, 2018, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014, 2016, 2018, 2020, D. R. Commander.
  * Copyright (C) 2013-2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
  *
@@ -31,7 +31,7 @@ static unsigned int simd_support = ~0;
 
 #if defined(__linux__)
 
-LOCAL(int)
+LOCAL(void)
 parse_proc_cpuinfo(const char *search_string)
 {
   const char *file_name = "/proc/cpuinfo";
@@ -45,13 +45,12 @@ parse_proc_cpuinfo(const char *search_string)
       if (strstr(cpuinfo_line, search_string) != NULL) {
         fclose(f);
         simd_support |= JSIMD_DSPR2;
-        return 1;
+        return;
       }
     }
     fclose(f);
   }
   /* Did not find string in the proc file, or not Linux ELF. */
-  return 0;
 }
 
 #endif
@@ -79,8 +78,7 @@ init_simd(void)
   /* We still have a chance to use MIPS DSPR2 regardless of globally used
    * -mdspr2 options passed to gcc by performing runtime detection via
    * /proc/cpuinfo parsing on linux */
-  if (!parse_proc_cpuinfo("MIPS 74K"))
-    return;
+  parse_proc_cpuinfo("MIPS 74K");
 #endif
 
 #ifndef NO_GETENV

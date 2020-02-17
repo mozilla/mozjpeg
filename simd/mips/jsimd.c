@@ -29,7 +29,7 @@
 
 static unsigned int simd_support = ~0;
 
-#if defined(__linux__)
+#if !(defined(__MIPSEL__) && defined(__mips_dsp) && (__mips_dsp_rev >= 2)) && defined(__linux__)
 
 LOCAL(void)
 parse_proc_cpuinfo(const char *search_string)

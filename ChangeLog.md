@@ -1,3 +1,14 @@
+2.0.5
+=====
+
+1. Worked around issues in the MIPS DSPr2 SIMD extensions that caused failures
+in the libjpeg-turbo regression tests.  Specifically, the
+`jsimd_h2v1_downsample_dspr2()` and `jsimd_h2v2_downsample_dspr2()` functions
+in the MIPS DSPr2 SIMD extensions are now disabled until/unless they can be
+fixed, and other functions that are incompatible with big endian MIPS CPUs are
+disabled when building libjpeg-turbo for such CPUs.
+
+
 2.0.4
 =====
 

@@ -94,7 +94,6 @@ Build Requirements
 
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.
 
-
 - Vcpkg
   
   You can download and install mozjpeg using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:

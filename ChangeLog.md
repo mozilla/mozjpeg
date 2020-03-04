@@ -87,6 +87,11 @@ in the MIPS DSPr2 SIMD extensions are now disabled until/unless they can be
 fixed, and other functions that are incompatible with big endian MIPS CPUs are
 disabled when building libjpeg-turbo for such CPUs.
 
+11. Fixed an oversight in the `TJCompressor.compress(int)` method in the
+TurboJPEG Java API that caused an error ("java.lang.IllegalStateException: No
+source image is associated with this instance") when attempting to use that
+method to compress a YUV image.
+
 
 2.0.4
 =====

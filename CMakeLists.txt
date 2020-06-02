@@ -1016,7 +1016,8 @@ foreach(libtype ${TEST_LIBTYPES})
     DEPENDS djpeg-${libtype}-rgb-islow)
 
   add_bittest(jpegtran icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
-    testout_rgb_islow2.jpg testout_rgb_islow.jpg ${MD5_JPEG_RGB_ISLOW2})
+    testout_rgb_islow2.jpg testout_rgb_islow.jpg
+    ${MD5_JPEG_RGB_ISLOW2} cjpeg-${libtype}-rgb-islow)
 
   if(NOT WITH_12BIT)
     # CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff

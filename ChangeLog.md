@@ -1,6 +1,8 @@
 2.0.5
 =====
 
+### Significant changes relative to 2.0.4:
+
 1. Worked around issues in the MIPS DSPr2 SIMD extensions that caused failures
 in the libjpeg-turbo regression tests.  Specifically, the
 `jsimd_h2v1_downsample_dspr2()` and `jsimd_h2v2_downsample_dspr2()` functions

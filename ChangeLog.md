@@ -13,11 +13,12 @@ TurboJPEG Java API that caused an error ("java.lang.IllegalStateException: No
 source image is associated with this instance") when attempting to use that
 method to compress a YUV image.
 
-3. Fixed an issue in the PPM reader that caused a buffer overrun in cjpeg,
-TJBench, or the `tjLoadImage()` function if one of the values in a binary
-PPM/PGM input file exceeded the maximum value defined in the file's header and
-that maximum value was less than 255.  libjpeg-turbo 1.5.0 already included a
-similar fix for binary PPM/PGM files with maximum values greater than 255.
+3. Fixed an issue (CVE-2020-13790) in the PPM reader that caused a buffer
+overrun in cjpeg, TJBench, or the `tjLoadImage()` function if one of the values
+in a binary PPM/PGM input file exceeded the maximum value defined in the file's
+header and that maximum value was less than 255.  libjpeg-turbo 1.5.0 already
+included a similar fix for binary PPM/PGM files with maximum values greater
+than 255.
 
 
 2.0.4

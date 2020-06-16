@@ -22,6 +22,11 @@ header and that maximum value was less than 255.  libjpeg-turbo 1.5.0 already
 included a similar fix for binary PPM/PGM files with maximum values greater
 than 255.
 
+4. The TurboJPEG API library's global error handler, which is used in functions
+such as `tjBufSize()` and `tjLoadImage()` that do not require a TurboJPEG
+instance handle, is now thread-safe on platforms that support thread-local
+storage.
+
 
 2.0.4
 =====

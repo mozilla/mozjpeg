@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2019 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2020 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,6 +43,7 @@
 #include "transupp.h"
 #include "./jpegcomp.h"
 #include "./cdjpeg.h"
+#include "jconfigint.h"
 
 extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **, unsigned long *,
                              boolean);
@@ -55,7 +56,7 @@ extern void jpeg_mem_src_tj(j_decompress_ptr, const unsigned char *,
 
 /* Error handling (based on example in example.txt) */
 
-static char errStr[JMSG_LENGTH_MAX] = "No error";
+static THREAD_LOCAL char errStr[JMSG_LENGTH_MAX] = "No error";
 
 struct my_error_mgr {
   struct jpeg_error_mgr pub;

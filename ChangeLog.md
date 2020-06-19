@@ -1,7 +1,7 @@
 2.1 pre-beta
 ============
 
-### Significant changes relative to 2.0.4:
+### Significant changes relative to 2.0.5:
 
 1. The build system, x86-64 SIMD extensions, and accelerated Huffman codec now
 support the x32 ABI on Linux, which allows for using x86-64 instructions with
@@ -80,23 +80,35 @@ limit the number of allowable scans in the input file.
      - Both programs now accept a `-strict` argument, which can be used to
 treat all warnings as fatal.
 
-10. Worked around issues in the MIPS DSPr2 SIMD extensions that caused failures
+
+2.0.5
+=====
+
+### Significant changes relative to 2.0.4:
+
+1. Worked around issues in the MIPS DSPr2 SIMD extensions that caused failures
 in the libjpeg-turbo regression tests.  Specifically, the
 `jsimd_h2v1_downsample_dspr2()` and `jsimd_h2v2_downsample_dspr2()` functions
 in the MIPS DSPr2 SIMD extensions are now disabled until/unless they can be
 fixed, and other functions that are incompatible with big endian MIPS CPUs are
 disabled when building libjpeg-turbo for such CPUs.
 
-11. Fixed an oversight in the `TJCompressor.compress(int)` method in the
+2. Fixed an oversight in the `TJCompressor.compress(int)` method in the
 TurboJPEG Java API that caused an error ("java.lang.IllegalStateException: No
 source image is associated with this instance") when attempting to use that
 method to compress a YUV image.
 
-3. Fixed an issue in the PPM reader that caused a buffer overrun in cjpeg,
-TJBench, or the `tjLoadImage()` function if one of the values in a binary
-PPM/PGM input file exceeded the maximum value defined in the file's header and
-that maximum value was less than 255.  libjpeg-turbo 1.5.0 already included a
-similar fix for binary PPM/PGM files with maximum values greater than 255.
+3. Fixed an issue (CVE-2020-13790) in the PPM reader that caused a buffer
+overrun in cjpeg, TJBench, or the `tjLoadImage()` function if one of the values
+in a binary PPM/PGM input file exceeded the maximum value defined in the file's
+header and that maximum value was less than 255.  libjpeg-turbo 1.5.0 already
+included a similar fix for binary PPM/PGM files with maximum values greater
+than 255.
+
+4. The TurboJPEG API library's global error handler, which is used in functions
+such as `tjBufSize()` and `tjLoadImage()` that do not require a TurboJPEG
+instance handle, is now thread-safe on platforms that support thread-local
+storage.
 
 
 2.0.4

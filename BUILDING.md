@@ -328,7 +328,7 @@ Build Recipes
 -------------
 
 
-### 32-bit Build on 64-bit Linux/Unix/Mac
+### 32-bit Build on 64-bit Linux/Unix
 
 Use export/setenv to set the following environment variables before running
 CMake:
@@ -640,28 +640,22 @@ Mac
     make dmg
 
 Create Mac package/disk image.  This requires pkgbuild and productbuild, which
-are installed by default on OS X 10.7 and later and which can be obtained by
-installing Xcode 3.2.6 (with the "Unix Development" option) on OS X 10.6.
-Packages built in this manner can be installed on OS X 10.5 and later, but they
-must be built on OS X 10.6 or later.
+are installed by default on OS X 10.7 and later.
 
 In order to create a Mac package/disk image that contains universal
-x86-64/i386/ARM binaries, set any of the following CMake variables:
+x86-64/ARM binaries, set the following CMake variable:
 
-* `OSX_32BIT_BUILD`: Directory containing an i386 (32-bit) Mac or iOS build of
-  libjpeg-turbo to include in the universal binaries
 * `IOS_ARMV8_BUILD`: Directory containing an ARMv8 (64-bit) iOS build of
   libjpeg-turbo to include in the universal binaries
 
-You should first use CMake to configure i386 and/or ARMv8 sub-builds of
-libjpeg-turbo (see "Build Recipes" and "Building libjpeg-turbo for iOS" above)
-in build directories that match those specified in the aforementioned CMake
-variables.  Next, configure the primary build of libjpeg-turbo as an
-out-of-tree build, specifying one or more of the aforementioned CMake
-variables, and build it.  Once the primary build has been built, run
-`make dmg` from the build directory.  The packaging system will build the
-sub-builds, use lipo to combine them into a single set of universal binaries,
-then package the universal binaries.
+You should first use CMake to configure an ARMv8 sub-build of libjpeg-turbo
+(see "Building libjpeg-turbo for iOS" above) in a build directory that matches
+the one specified in the aforementioned CMake variable.  Next, configure the
+primary (x86-64) build of libjpeg-turbo as an out-of-tree build, specifying the
+aforementioned CMake variable, and build it.  Once the primary build has been
+built, run `make dmg` from the build directory.  The packaging system will
+build the sub-build, use lipo to combine it with the primary build into a
+single set of universal binaries, then package the universal binaries.
 
 
 Windows

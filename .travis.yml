@@ -68,7 +68,7 @@ before_install:
       pushd $HOME/Downloads &&
       curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci &&
       . ./macports-ci install &&
-      sudo /opt/local/bin/port -N install gcc6 yasm md5sha1sum &&
+      sudo /opt/local/bin/port -N install yasm md5sha1sum &&
       popd &&
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
       ln -fs /Applications/Xcode.app /Applications/Xcode83.app;

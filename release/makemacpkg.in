@@ -51,7 +51,6 @@ PKGNAME=@PKGNAME@
 VERSION=@VERSION@
 BUILD=@BUILD@
 SRCDIR=@CMAKE_CURRENT_SOURCE_DIR@
-BUILDDIR32=@OSX_32BIT_BUILD@
 BUILDDIRARMV8=@IOS_ARMV8_BUILD@
 WITH_JAVA=@WITH_JAVA@
 OSX_APP_CERT_NAME="@OSX_APP_CERT_NAME@"
@@ -97,61 +96,6 @@ if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL
 	mkdir -p $PKGROOT/Library/Documentation
 	safedirmove $PKGROOT$DOCDIR $PKGROOT/Library/Documentation/$PKGNAME $TMPDIR/__tmpdoc
 	ln -fs /Library/Documentation/$PKGNAME $PKGROOT$DOCDIR
-fi
-
-if [ "$BUILDDIR32" != "" ]; then
-	if [ ! -d $BUILDDIR32 ]; then
-		echo ERROR: 32-bit build directory $BUILDDIR32 does not exist
-		exit 1
-	fi
-	if [ ! -f $BUILDDIR32/Makefile ]; then
-		echo ERROR: 32-bit build directory $BUILDDIR32 is not configured
-		exit 1
-	fi
-	mkdir -p $TMPDIR/dist.x86
-	pushd $BUILDDIR32
-	make install DESTDIR=$TMPDIR/dist.x86
-	popd
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$LIBDIR/$LIBJPEG_DSO_NAME \
-		-arch x86_64 $PKGROOT/$LIBDIR/$LIBJPEG_DSO_NAME \
-		-output $PKGROOT/$LIBDIR/$LIBJPEG_DSO_NAME
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$LIBDIR/libjpeg.a \
-		-arch x86_64 $PKGROOT/$LIBDIR/libjpeg.a \
-		-output $PKGROOT/$LIBDIR/libjpeg.a
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$LIBDIR/$TURBOJPEG_DSO_NAME \
-		-arch x86_64 $PKGROOT/$LIBDIR/$TURBOJPEG_DSO_NAME \
-		-output $PKGROOT/$LIBDIR/$TURBOJPEG_DSO_NAME
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$LIBDIR/libturbojpeg.a \
-		-arch x86_64 $PKGROOT/$LIBDIR/libturbojpeg.a \
-		-output $PKGROOT/$LIBDIR/libturbojpeg.a
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$BINDIR/cjpeg \
-		-arch x86_64 $PKGROOT/$BINDIR/cjpeg \
-		-output $PKGROOT/$BINDIR/cjpeg
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$BINDIR/djpeg \
-		-arch x86_64 $PKGROOT/$BINDIR/djpeg \
-		-output $PKGROOT/$BINDIR/djpeg
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$BINDIR/jpegtran \
-		-arch x86_64 $PKGROOT/$BINDIR/jpegtran \
-		-output $PKGROOT/$BINDIR/jpegtran
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$BINDIR/tjbench \
-		-arch x86_64 $PKGROOT/$BINDIR/tjbench \
-		-output $PKGROOT/$BINDIR/tjbench
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$BINDIR/rdjpgcom \
-		-arch x86_64 $PKGROOT/$BINDIR/rdjpgcom \
-		-output $PKGROOT/$BINDIR/rdjpgcom
-	$LIPO -create \
-		-arch i386 $TMPDIR/dist.x86/$BINDIR/wrjpgcom \
-		-arch x86_64 $PKGROOT/$BINDIR/wrjpgcom \
-		-output $PKGROOT/$BINDIR/wrjpgcom
 fi
 
 install_ios()

@@ -119,8 +119,6 @@ endif() # WIN32
 
 if(APPLE)
 
-set(OSX_32BIT_BUILD "" CACHE PATH
-  "Directory containing 32-bit (i386) Mac build to include in universal binaries")
 set(IOS_ARMV8_BUILD "" CACHE PATH
   "Directory containing ARMv8 iOS build to include in universal binaries")
 

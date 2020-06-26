@@ -166,9 +166,6 @@ fi
 install_name_tool -id $LIBDIR/$LIBJPEG_DSO_NAME $PKGROOT/$LIBDIR/$LIBJPEG_DSO_NAME
 install_name_tool -id $LIBDIR/$TURBOJPEG_DSO_NAME $PKGROOT/$LIBDIR/$TURBOJPEG_DSO_NAME
 
-if [ $WITH_JAVA = 1 ]; then
-	ln -fs $TURBOJPEG_DSO_NAME $PKGROOT/$LIBDIR/libturbojpeg.jnilib
-fi
 if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$LIBDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/lib" ]; then
 	if [ ! -h $PKGROOT/$PREFIX/lib32 ]; then
 		ln -fs lib $PKGROOT/$PREFIX/lib32

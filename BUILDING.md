@@ -664,14 +664,6 @@ sub-builds, use lipo to combine them into a single set of universal binaries,
 then package the universal binaries.
 
 
-Cygwin
-------
-
-    make cygwinpkg
-
-Build a Cygwin binary package.
-
-
 Windows
 -------
 

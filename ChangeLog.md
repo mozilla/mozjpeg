@@ -1,3 +1,33 @@
+2.0.5
+=====
+
+### Significant changes relative to 2.0.4:
+
+1. Worked around issues in the MIPS DSPr2 SIMD extensions that caused failures
+in the libjpeg-turbo regression tests.  Specifically, the
+`jsimd_h2v1_downsample_dspr2()` and `jsimd_h2v2_downsample_dspr2()` functions
+in the MIPS DSPr2 SIMD extensions are now disabled until/unless they can be
+fixed, and other functions that are incompatible with big endian MIPS CPUs are
+disabled when building libjpeg-turbo for such CPUs.
+
+2. Fixed an oversight in the `TJCompressor.compress(int)` method in the
+TurboJPEG Java API that caused an error ("java.lang.IllegalStateException: No
+source image is associated with this instance") when attempting to use that
+method to compress a YUV image.
+
+3. Fixed an issue (CVE-2020-13790) in the PPM reader that caused a buffer
+overrun in cjpeg, TJBench, or the `tjLoadImage()` function if one of the values
+in a binary PPM/PGM input file exceeded the maximum value defined in the file's
+header and that maximum value was less than 255.  libjpeg-turbo 1.5.0 already
+included a similar fix for binary PPM/PGM files with maximum values greater
+than 255.
+
+4. The TurboJPEG API library's global error handler, which is used in functions
+such as `tjBufSize()` and `tjLoadImage()` that do not require a TurboJPEG
+instance handle, is now thread-safe on platforms that support thread-local
+storage.
+
+
 2.0.4
 =====
 
@@ -562,10 +592,10 @@ application was linked against.
 
 3. Fixed a couple of issues in the PPM reader that would cause buffer overruns
 in cjpeg if one of the values in a binary PPM/PGM input file exceeded the
-maximum value defined in the file's header.  libjpeg-turbo 1.4.2 already
-included a similar fix for ASCII PPM/PGM files.  Note that these issues were
-not security bugs, since they were confined to the cjpeg program and did not
-affect any of the libjpeg-turbo libraries.
+maximum value defined in the file's header and that maximum value was greater
+than 255.  libjpeg-turbo 1.4.2 already included a similar fix for ASCII PPM/PGM
+files.  Note that these issues were not security bugs, since they were confined
+to the cjpeg program and did not affect any of the libjpeg-turbo libraries.
 
 4. Fixed an issue whereby attempting to decompress a JPEG file with a corrupt
 header using the `tjDecompressToYUV2()` function would cause the function to

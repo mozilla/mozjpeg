@@ -1,6 +1,8 @@
 2.0.6
 =====
 
+### Significant changes relative to 2.0.5:
+
 1. Fixed "using JNI after critical get" errors that occurred on Android
 platforms when using any of the YUV encoding/compression/decompression/decoding
 methods in the TurboJPEG Java API.

@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2018, D. R. Commander.
+ * Copyright (C) 2010, 2015-2018, 2020, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -21,6 +21,8 @@
 #include "jinclude.h"
 #include "jdmainct.h"
 #include "jdcoefct.h"
+#include "jdmaster.h"
+#include "jdmerge.h"
 #include "jdsample.h"
 #include "jmemsys.h"
 
@@ -304,6 +306,16 @@ noop_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 }
 
 
+/* Dummy postprocessing function used by jpeg_skip_scanlines() */
+LOCAL(void)
+noop_post_process (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                   JDIMENSION *in_row_group_ctr,
+                   JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf,
+                   JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
+{
+}
+
+
 /*
  * In some cases, it is best to call jpeg_read_scanlines() and discard the
  * output, rather than skipping the scanlines, because this allows us to
@@ -316,11 +328,17 @@ LOCAL(void)
 read_and_discard_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
 {
   JDIMENSION n;
+  my_master_ptr master = (my_master_ptr)cinfo->master;
   void (*color_convert) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                          JDIMENSION input_row, JSAMPARRAY output_buf,
                          int num_rows) = NULL;
   void (*color_quantize) (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
                           JSAMPARRAY output_buf, int num_rows) = NULL;
+  void (*post_process_data) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+                             JDIMENSION *in_row_group_ctr,
+                             JDIMENSION in_row_groups_avail,
+                             JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+                             JDIMENSION out_rows_avail) = NULL;
 
   if (cinfo->cconvert && cinfo->cconvert->color_convert) {
     color_convert = cinfo->cconvert->color_convert;
@@ -332,6 +350,12 @@ read_and_discard_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
     cinfo->cquantize->color_quantize = noop_quantize;
   }
 
+  if (master->using_merged_upsample && cinfo->post &&
+      cinfo->post->post_process_data) {
+    post_process_data = cinfo->post->post_process_data;
+    cinfo->post->post_process_data = noop_post_process;
+  }
+
   for (n = 0; n < num_lines; n++)
     jpeg_read_scanlines(cinfo, NULL, 1);
 
@@ -340,6 +364,9 @@ read_and_discard_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
 
   if (color_quantize)
     cinfo->cquantize->color_quantize = color_quantize;
+
+  if (post_process_data)
+    cinfo->post->post_process_data = post_process_data;
 }
 
 
@@ -382,7 +409,7 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
 {
   my_main_ptr main_ptr = (my_main_ptr)cinfo->main;
   my_coef_ptr coef = (my_coef_ptr)cinfo->coef;
-  my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
+  my_master_ptr master = (my_master_ptr)cinfo->master;
   JDIMENSION i, x;
   int y;
   JDIMENSION lines_per_iMCU_row, lines_left_in_iMCU_row, lines_after_iMCU_row;
@@ -445,8 +472,16 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
     main_ptr->buffer_full = FALSE;
     main_ptr->rowgroup_ctr = 0;
     main_ptr->context_state = CTX_PREPARE_FOR_IMCU;
-    upsample->next_row_out = cinfo->max_v_samp_factor;
-    upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    if (master->using_merged_upsample) {
+      my_merged_upsample_ptr upsample =
+        (my_merged_upsample_ptr)cinfo->upsample;
+      upsample->spare_full = FALSE;
+      upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    } else {
+      my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
+      upsample->next_row_out = cinfo->max_v_samp_factor;
+      upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    }
   }
 
   /* Skipping is much simpler when context rows are not required. */
@@ -458,8 +493,16 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
       cinfo->output_scanline += lines_left_in_iMCU_row;
       main_ptr->buffer_full = FALSE;
       main_ptr->rowgroup_ctr = 0;
-      upsample->next_row_out = cinfo->max_v_samp_factor;
-      upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+      if (master->using_merged_upsample) {
+        my_merged_upsample_ptr upsample =
+          (my_merged_upsample_ptr)cinfo->upsample;
+        upsample->spare_full = FALSE;
+        upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+      } else {
+        my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
+        upsample->next_row_out = cinfo->max_v_samp_factor;
+        upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+      }
     }
   }
 
@@ -494,7 +537,14 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
       cinfo->output_iMCU_row += lines_to_skip / lines_per_iMCU_row;
       increment_simple_rowgroup_ctr(cinfo, lines_to_read);
     }
-    upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    if (master->using_merged_upsample) {
+      my_merged_upsample_ptr upsample =
+        (my_merged_upsample_ptr)cinfo->upsample;
+      upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    } else {
+      my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
+      upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+    }
     return num_lines;
   }
 
@@ -535,7 +585,13 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
    * bit odd, since "rows_to_go" seems to be redundantly keeping track of
    * output_scanline.
    */
-  upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+  if (master->using_merged_upsample) {
+    my_merged_upsample_ptr upsample = (my_merged_upsample_ptr)cinfo->upsample;
+    upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+  } else {
+    my_upsample_ptr upsample = (my_upsample_ptr)cinfo->upsample;
+    upsample->rows_to_go = cinfo->output_height - cinfo->output_scanline;
+  }
 
   /* Always skip the requested number of lines. */
   return num_lines;

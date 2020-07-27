@@ -772,7 +772,7 @@ else()
   set(MD5_PPM_3x2_IFAST fd283664b3b49127984af0a7f118fccd)
   set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
   set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
-  set(MD5_PPM_420M_IFAST_ARI 72b59a99bcf1de24c5b27d151bde2437)
+  set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
   set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
   set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
   set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
@@ -1163,7 +1163,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
   if(WITH_ARITH_DEC)
     # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
-    add_bittest(djpeg 420m-ifast-ari "-fast;-ppm"
+    add_bittest(djpeg 420m-ifast-ari "-fast;-skip;1,20;-ppm"
       testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
       ${MD5_PPM_420M_IFAST_ARI})
 
@@ -1298,6 +1298,11 @@ endforeach()
 
 add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
   ${CMAKE_CURRENT_SOURCE_DIR}/cmakescripts/testclean.cmake)
+
+configure_file(croptest.in croptest @ONLY)
+add_custom_target(croptest
+  COMMAND echo croptest
+  COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/croptest)
 
 if(WITH_TURBOJPEG)
   configure_file(tjbenchtest.in tjbenchtest @ONLY)

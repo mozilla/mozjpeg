@@ -17,6 +17,8 @@ similar fix, but it did not cover all cases.
      - `jpeg_skip_scanlines()` now throws an error if two-pass color
 quantization is enabled.  Two-pass color quantization never worked properly
 with `jpeg_skip_scanlines()`, and the issues could not readily be fixed.
+     - Fixed an issue whereby `jpeg_skip_scanlines()` always returned 0 when
+skipping past the end of an image.
 
 
 2.0.5

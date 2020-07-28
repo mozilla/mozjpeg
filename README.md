@@ -179,8 +179,8 @@ supported and which aren't.
 
 NOTE:  As of this writing, extensive research has been conducted into the
 usefulness of DCT scaling as a means of data reduction and SmartScale as a
-means of quality improvement.  The reader is invited to peruse the research at
-<http://www.libjpeg-turbo.org/About/SmartScale> and draw his/her own conclusions,
+means of quality improvement.  Readers are invited to peruse the research at
+<http://www.libjpeg-turbo.org/About/SmartScale> and draw their own conclusions,
 but it is the general belief of our project that these features have not
 demonstrated sufficient usefulness to justify inclusion in libjpeg-turbo.
 

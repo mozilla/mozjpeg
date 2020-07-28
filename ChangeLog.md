@@ -80,6 +80,23 @@ limit the number of allowable scans in the input file.
      - Both programs now accept a `-strict` argument, which can be used to
 treat all warnings as fatal.
 
+10. Fixed "using JNI after critical get" errors that occurred on Android
+platforms when using any of the YUV encoding/compression/decompression/decoding
+methods in the TurboJPEG Java API.
+
+11. Fixed or worked around multiple issues with `jpeg_skip_scanlines()`:
+
+     - Fixed segfaults or "Corrupt JPEG data: premature end of data segment"
+errors in `jpeg_skip_scanlines()` that occurred when decompressing 4:2:2 or
+4:2:0 JPEG images using merged (non-fancy) upsampling/color conversion (that
+is, when setting `cinfo.do_fancy_upsampling` to `FALSE`.)  2.0.0[6] was a
+similar fix, but it did not cover all cases.
+     - `jpeg_skip_scanlines()` now throws an error if two-pass color
+quantization is enabled.  Two-pass color quantization never worked properly
+with `jpeg_skip_scanlines()`, and the issues could not readily be fixed.
+     - Fixed an issue whereby `jpeg_skip_scanlines()` always returned 0 when
+skipping past the end of an image.
+
 
 2.0.5
 =====

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2015, 2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015, 2018, 2020 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -377,8 +377,15 @@ public class TJCompressor implements Closeable {
    * #getCompressedSize} to obtain the size of the JPEG image.
    */
   public byte[] compress(int flags) throws TJException {
-    checkSourceImage();
-    byte[] buf = new byte[TJ.bufSize(srcWidth, srcHeight, subsamp)];
+    byte[] buf;
+    if (srcYUVImage != null) {
+      buf = new byte[TJ.bufSize(srcYUVImage.getWidth(),
+                                srcYUVImage.getHeight(),
+                                srcYUVImage.getSubsamp())];
+    } else {
+      checkSourceImage();
+      buf = new byte[TJ.bufSize(srcWidth, srcHeight, subsamp)];
+    }
     compress(buf, flags);
     return buf;
   }

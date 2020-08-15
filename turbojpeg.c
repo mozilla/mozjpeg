@@ -1,5 +1,7 @@
 /*
- * Copyright (C)2009-2019 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2020 D. R. Commander.  All Rights Reserved.
+ * mozjpeg Modifications:
+ * Copyright (C) 2014, Mozilla Corporation.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,6 +45,7 @@
 #include "transupp.h"
 #include "./jpegcomp.h"
 #include "./cdjpeg.h"
+#include "jconfigint.h"
 
 extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **, unsigned long *,
                              boolean);
@@ -55,7 +58,7 @@ extern void jpeg_mem_src_tj(j_decompress_ptr, const unsigned char *,
 
 /* Error handling (based on example in example.txt) */
 
-static char errStr[JMSG_LENGTH_MAX] = "No error";
+static THREAD_LOCAL char errStr[JMSG_LENGTH_MAX] = "No error";
 
 struct my_error_mgr {
   struct jpeg_error_mgr pub;
@@ -243,6 +246,8 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo, int pixelFormat,
 
   cinfo->in_color_space = pf2cs[pixelFormat];
   cinfo->input_components = tjPixelSize[pixelFormat];
+	if((env=getenv("TJ_REVERT"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
+		cinfo->master->compress_profile=JCP_FASTEST;
   jpeg_set_defaults(cinfo);
 
 #ifndef NO_GETENV
@@ -288,6 +293,10 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo, int pixelFormat,
            !strcmp(env, "1"))
     jpeg_simple_progression(cinfo);
 #endif
+
+	/* Set scan pattern again as colorspace might have changed */
+	if(cinfo->master->compress_profile == JCP_MAX_COMPRESSION)
+		jpeg_simple_progression(cinfo);
 
   cinfo->comp_info[0].h_samp_factor = tjMCUWidth[subsamp] / 8;
   cinfo->comp_info[1].h_samp_factor = 1;

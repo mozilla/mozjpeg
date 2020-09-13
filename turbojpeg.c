@@ -234,10 +234,10 @@ static int getPixelFormat(int pixelSize, int flags)
   return -1;
 }
 
-static int setCompDefaults(struct jpeg_compress_struct *cinfo, int pixelFormat,
-                           int subsamp, int jpegQual, int flags)
+static void setCompDefaults(struct jpeg_compress_struct *cinfo,
+                            int pixelFormat, int subsamp, int jpegQual,
+                            int flags)
 {
-  int retval = 0;
 #ifndef NO_GETENV
   char *env = NULL;
 #endif
@@ -300,8 +300,6 @@ static int setCompDefaults(struct jpeg_compress_struct *cinfo, int pixelFormat,
   cinfo->comp_info[2].v_samp_factor = 1;
   if (cinfo->num_components > 3)
     cinfo->comp_info[3].v_samp_factor = tjMCUHeight[subsamp] / 8;
-
-  return retval;
 }
 
 
@@ -676,8 +674,7 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
     alloc = 0;  *jpegSize = tjBufSize(width, height, jpegSubsamp);
   }
   jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
-  if (setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual, flags) == -1)
-    return -1;
+  setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual, flags);
 
   jpeg_start_compress(cinfo, TRUE);
   for (i = 0; i < height; i++) {
@@ -772,7 +769,7 @@ DLLEXPORT int tjEncodeYUVPlanes(tjhandle handle, const unsigned char *srcBuf,
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
 
-  if (setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags) == -1) return -1;
+  setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags);
 
   /* Execute only the parts of jpeg_start_compress() that we need.  If we
      were to call the whole jpeg_start_compress() function, then it would try
@@ -986,8 +983,7 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
     alloc = 0;  *jpegSize = tjBufSize(width, height, subsamp);
   }
   jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
-  if (setCompDefaults(cinfo, TJPF_RGB, subsamp, jpegQual, flags) == -1)
-    return -1;
+  setCompDefaults(cinfo, TJPF_RGB, subsamp, jpegQual, flags);
   cinfo->raw_data_in = TRUE;
 
   jpeg_start_compress(cinfo, TRUE);

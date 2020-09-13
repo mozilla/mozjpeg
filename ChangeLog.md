@@ -97,6 +97,9 @@ with `jpeg_skip_scanlines()`, and the issues could not readily be fixed.
      - Fixed an issue whereby `jpeg_skip_scanlines()` always returned 0 when
 skipping past the end of an image.
 
+12. The ARM 64-bit (ARMv8) NEON SIMD extensions can now be built using MinGW
+toolchains targetting ARM64 (AArch64) Windows binaries.
+
 
 2.0.5
 =====

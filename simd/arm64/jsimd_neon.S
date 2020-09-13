@@ -33,6 +33,8 @@
 
 #if defined(__APPLE__)
 .section __DATA, __const
+#elif defined(_WIN32)
+.section .rdata
 #else
 .section .rodata, "a", %progbits
 #endif

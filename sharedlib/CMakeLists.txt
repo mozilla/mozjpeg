@@ -72,12 +72,33 @@ else()
   set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 	set(CJPEG_BMP_SOURCES ../rdbmp.c ../rdtarga.c)
 	set(DJPEG_BMP_SOURCES ../wrbmp.c ../wrtarga.c)
+
+  if(PNG_SUPPORTED)
+    report_option(PNG_SUPPORTED "PNG reading support")
+    set(COMPILE_FLAGS "${COMPILE_FLAGS} -DPNG_SUPPORTED")
+    set(CJPEG_BMP_SOURCES ${CJPEG_BMP_SOURCES} ../rdpng.c)
+  endif()
 endif()
 
 add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c ../rdjpeg.c
   ../rdswitch.c ${CJPEG_BMP_SOURCES})
 set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(cjpeg jpeg)
+
+if(PNG_SUPPORTED)
+  # to avoid finding static library from CMake cache
+  unset(PNG_LIBRARY CACHE)
+  unset(PNG_LIBRARY_RELEASE CACHE)
+  unset(PNG_LIBRARY_DEBUG CACHE)
+  unset(ZLIB_LIBRARY CACHE)
+  unset(ZLIB_LIBRARY_RELEASE CACHE)
+  unset(ZLIB_LIBRARY_DEBUG CACHE)
+
+  find_package(PNG 1.6 REQUIRED)
+  find_package(ZLIB REQUIRED)
+  target_include_directories(cjpeg PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+  target_link_libraries(cjpeg ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+endif()
 
 add_executable(djpeg ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
   ../wrgif.c ../wrppm.c ${DJPEG_BMP_SOURCES})

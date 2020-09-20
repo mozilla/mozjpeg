@@ -681,6 +681,14 @@ if(ENABLE_STATIC)
   endif()
 
   if(PNG_SUPPORTED)
+    # to avoid finding shared library from CMake cache
+    unset(PNG_LIBRARY CACHE)
+    unset(PNG_LIBRARY_RELEASE CACHE)
+    unset(PNG_LIBRARY_DEBUG CACHE)
+    unset(ZLIB_LIBRARY CACHE)
+    unset(ZLIB_LIBRARY_RELEASE CACHE)
+    unset(ZLIB_LIBRARY_DEBUG CACHE)
+
     if (APPLE)
       find_package(ZLIB REQUIRED) # macos doesn't have static zlib
     endif()

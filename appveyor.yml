@@ -1,7 +1,7 @@
 image: Visual Studio 2017
 configuration: Release
 platform:
-  - Win32
+  - x86
   - x64
 
 install:
@@ -10,8 +10,7 @@ install:
   - set PATH=%PATH%;"C:\Program Files\NASM"
   ## Set up libpng
   - cd C:\Tools\vcpkg
-  - vcpkg install libpng:x86-windows
-  - vcpkg install libpng:x64-windows
+  - vcpkg install libpng:%platform%-windows
   ## Prepare cmake
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir cmake_build
@@ -19,7 +18,7 @@ install:
 before_build:
   - cmake --version
   - cd cmake_build
-  - cmake .. -DWITH_CRT_DLL=ON -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+  - cmake .. -A %platform% -DWITH_CRT_DLL=ON -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

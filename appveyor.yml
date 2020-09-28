@@ -16,9 +16,10 @@ install:
   - mkdir cmake_build
 
 before_build:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %platform%
   - cmake --version
   - cd cmake_build
-  - cmake .. -A %platform% -DWITH_CRT_DLL=ON -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+  - cmake .. -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

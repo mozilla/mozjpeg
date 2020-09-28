@@ -19,7 +19,7 @@ install:
 before_build:
   - cmake --version
   - cd cmake_build
-  - cmake .. -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+  - cmake .. -A %platform% -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
@@ -28,9 +28,3 @@ build_script:
 artifacts:
  - path: cmake_build\**\Release\**\*.exe
  - path: cmake_build\**\Release\**\*.lib
-
-cache:
-  - C:\ProgramData\chocolatey\bin
-  - C:\ProgramData\chocolatey\lib
-  - C:\Program Files\NASM
-  - c:\tools\vcpkg\installed\

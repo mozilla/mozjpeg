@@ -9,7 +9,7 @@ install:
   - if %PLATFORM% == x64 (set ARCH=x64)
   ## Set up nasm
   - choco install nasm
-  - set PATH=%PATH%;"C:\Program Files\NASM"
+  - set PATH=%PATH%;C:\Program Files\NASM
   ## Set up libpng
   - cd C:\Tools\vcpkg
   - vcpkg install libpng:%ARCH%-windows

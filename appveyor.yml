@@ -19,7 +19,6 @@ install:
   - mkdir cmake_build
 
 before_build:
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   - cmake --version
   - cd cmake_build
   - cmake .. -A %PLATFORM% -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
@@ -31,3 +30,9 @@ build_script:
 artifacts:
  - path: cmake_build\**\Release\**\*.exe
  - path: cmake_build\**\Release\**\*.lib
+
+cache:
+  - C:\ProgramData\chocolatey\bin
+  - C:\ProgramData\chocolatey\lib
+  - C:\Program Files\NASM
+  - c:\tools\vcpkg\installed\

@@ -1,7 +1,7 @@
 image: Visual Studio 2017
 configuration: Release
 platform:
-  - x86
+  - Win32
   - x64
 
 install:
@@ -10,13 +10,13 @@ install:
   - set PATH=%PATH%;"C:\Program Files\NASM"
   ## Set up libpng
   - cd C:\Tools\vcpkg
-  - vcpkg install libpng:%platform%-windows
+  - vcpkg install libpng:x86-windows
+  - vcpkg install libpng:x64-windows
   ## Prepare cmake
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir cmake_build
 
 before_build:
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %platform%
   - cmake --version
   - cd cmake_build
   - cmake .. -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
@@ -33,3 +33,4 @@ cache:
   - C:\ProgramData\chocolatey\bin
   - C:\ProgramData\chocolatey\lib
   - C:\Program Files\NASM
+  - c:\tools\vcpkg\installed\

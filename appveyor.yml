@@ -5,25 +5,28 @@ platform:
   - x64
 
 install:
+  - if %PLATFORM% == Win32 (set ARCH x86)
+  - if %PLATFORM% == x64 (set ARCH x64)
   ## Set up nasm
   - choco install nasm
   - set PATH=%PATH%;"C:\Program Files\NASM"
   ## Set up libpng
   - cd C:\Tools\vcpkg
-  - vcpkg install libpng:x86-windows
-  - vcpkg install libpng:x64-windows
+  - vcpkg install libpng:%ARCH%-windows
+  - vcpkg install libpng:%ARCH%-windows-static
   ## Prepare cmake
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir cmake_build
 
 before_build:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   - cmake --version
   - cd cmake_build
-  - cmake .. -A %platform% -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+  - cmake .. -A %PLATFORM% -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - msbuild cmake_build\mozjpeg.sln
+  - cmake --build cmake_build --config Release
 
 artifacts:
  - path: cmake_build\**\Release\**\*.exe

@@ -8,6 +8,8 @@ install:
   - appveyor DownloadFile https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/win64/nasm-2.14.02-win64.zip -FileName nasm.zip
   - 7z e -y nasm.zip
   - set PATH=%PATH%;%CD%
+  - cd C:\Tools\vcpkg
+  - vcpkg install libpng
   ## Prepare cmake
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir cmake_build
@@ -15,7 +17,7 @@ install:
 before_build:
   - cmake --version
   - cd cmake_build
-  - cmake .. -G "Visual Studio 15 2017" -DPNG_SUPPORTED=NO
+  - cmake .. -G "Visual Studio 15 2017" -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

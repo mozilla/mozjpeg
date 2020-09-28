@@ -19,6 +19,7 @@ install:
   - mkdir cmake_build
 
 before_build:
+  - nasm -v
   - cmake --version
   - cd cmake_build
   - cmake .. -A %PLATFORM% -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake

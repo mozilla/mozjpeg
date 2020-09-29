@@ -14,23 +14,35 @@ install:
   - cd C:\Tools\vcpkg
   - vcpkg install libpng:%ARCH%-windows
   - vcpkg install libpng:%ARCH%-windows-static
-  ## Prepare cmake
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - mkdir cmake_build
 
 before_build:
   - nasm -v
   - cmake --version
-  - cd cmake_build
-  - cmake .. -A %PLATFORM% -DWITH_CRT_DLL=1 -DREQUIRE_SIMD=1 -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - cmake --build cmake_build --config Release
 
+  ## Build shared
+  - cmake -B shared -A %PLATFORM%
+          -DENABLE_SHARED=1 -DENABLE_STATIC=0
+          -DREQUIRE_SIMD=1
+          -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+  - cmake --build shared --config Release
+
+  ## Build static
+  - cmake -B static -A %PLATFORM%
+          -DENABLE_SHARED=0 -DENABLE_STATIC=1
+          -DREQUIRE_SIMD=1
+          -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DVCPKG_TARGET_TRIPLET=x86-windows-static
+
+  - cmake --build static --config Release
+
+after_build:
+  - 7z a mozjpeg-build.zip shared static
 artifacts:
- - path: cmake_build\**\Release\**\*.exe
- - path: cmake_build\**\Release\**\*.lib
+  - path: *.zip
 
 cache:
   - C:\ProgramData\chocolatey\bin

@@ -16,14 +16,13 @@ install:
   - vcpkg install libpng:%ARCH%-windows-static
 
 before_build:
+  - cd %APPVEYOR_BUILD_FOLDER%
   - nasm -v
   - cmake --version
   - git describe --always --tags --dirty
-  - FOR /F %a in ('git describe --always --tags --dirty') do set GIT_VERSION=%a
+  - FOR /F %%a in ('git describe --always --tags --dirty') do set GIT_VERSION=%%a
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-
   ## Build shared
   - cmake -B shared -A %PLATFORM%
           -DENABLE_SHARED=1 -DENABLE_STATIC=0

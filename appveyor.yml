@@ -56,7 +56,7 @@ deploy:
   description: 'Automated build using Appveyor'
   provider: GitHub
   auth_token:
-    secure: UyY8O91YcxiumO2NkBUGNKDzKDSW0chVj134u+7+haPlc4Naagggt4a//7hRowjL
+    secure: 2Jj47Q5HnaPob9U4yX2t4q4TYTw4JWU6cS56mM12aoRLgfYkZ4gRZPySIzfmTPqC
   artifact: /.*\.zip/
   on:
     APPVEYOR_REPO_TAG: true        # deploy on tag push only

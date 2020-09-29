@@ -1,3 +1,11 @@
+> ## News: About Instagram's flaw
+>
+> Instagram had [a security vulnerability](https://m.facebook.com/security/advisories/cve-2020-1895). Instagram uses MozJPEG. These two facts were somewhat conflated in the [vulnerability report](https://research.checkpoint.com/2020/instagram_rce-code-execution-vulnerability-in-instagram-app-for-android-and-ios/) that gets reposted all over the Internet right now. 
+
+> MozJPEG is **NOT** affected by this vulnerability. The issue was in Facebook's own integration code, unique to only Instagram, and not in MozJPEG. There will be no MozJPEG patches in response to that report, because it's not a MozJPEG issue.
+
+----
+
 Mozilla JPEG Encoder Project [![Build Status](https://ci.appveyor.com/api/projects/status/github/mozilla/mozjpeg?branch=master&svg=true)](https://ci.appveyor.com/project/kornel/mozjpeg-4ekrx)
 ============================
 

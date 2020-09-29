@@ -1,26 +1,62 @@
 image: Visual Studio 2017
 configuration: Release
+platform:
+  - Win32
+  - x64
 
 install:
-  ## Download nasm
-  - mkdir nasm
-  - cd nasm
-  - appveyor DownloadFile https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/win64/nasm-2.14.02-win64.zip -FileName nasm.zip
-  - 7z e -y nasm.zip
-  - set PATH=%PATH%;%CD%
-  ## Prepare cmake
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - mkdir cmake_build
+  - if %PLATFORM% == Win32 (set ARCH=x86)
+  - if %PLATFORM% == x64 (set ARCH=x64)
+  ## Set up nasm
+  - choco install nasm
+  - set PATH=%PATH%;C:\Program Files\NASM
+  ## Set up libpng
+  - cd C:\Tools\vcpkg
+  - vcpkg install libpng:%ARCH%-windows
+  - vcpkg install libpng:%ARCH%-windows-static
 
 before_build:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - nasm -v
   - cmake --version
-  - cd cmake_build
-  - cmake .. -G "Visual Studio 15 2017" -DPNG_SUPPORTED=NO
+  - git describe --always --tags --dirty
+  - FOR /F %%a in ('git describe --always --tags --dirty') do set GIT_VERSION=%%a
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - msbuild cmake_build\mozjpeg.sln
+  ## Build shared
+  - cmake -B shared -A %PLATFORM%
+          -DENABLE_SHARED=1 -DENABLE_STATIC=0
+          -DREQUIRE_SIMD=1
+          -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+  - cmake --build shared --config Release
+
+  ## Build static
+  - cmake -B static -A %PLATFORM%
+          -DENABLE_SHARED=0 -DENABLE_STATIC=1
+          -DREQUIRE_SIMD=1
+          -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DVCPKG_TARGET_TRIPLET=%ARCH%-windows-static
+
+  - cmake --build static --config Release
+
+after_build:
+  - 7z a mozjpeg-%GIT_VERSION%-win-%ARCH%.zip shared/Release static/Release
 
 artifacts:
- - path: cmake_build\**\Release\**\*.exe
- - path: cmake_build\**\Release\**\*.lib
+  - path: '*.zip'
+
+cache:
+  - C:\ProgramData\chocolatey\bin
+  - C:\ProgramData\chocolatey\lib
+  - C:\Program Files\NASM
+  - C:\tools\vcpkg\installed
+
+deploy:
+  description: 'Automated build using Appveyor'
+  provider: GitHub
+  auth_token:
+    secure: UyY8O91YcxiumO2NkBUGNKDzKDSW0chVj134u+7+haPlc4Naagggt4a//7hRowjL
+  artifact: /.*\.zip/
+  on:
+    APPVEYOR_REPO_TAG: true        # deploy on tag push only

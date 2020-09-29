@@ -42,10 +42,10 @@ build_script:
 after_build:
   - 7z a mozjpeg-build.zip shared static
 artifacts:
-  - path: *.zip
+  - path: '*.zip'
 
 cache:
   - C:\ProgramData\chocolatey\bin
   - C:\ProgramData\chocolatey\lib
   - C:\Program Files\NASM
-  - c:\tools\vcpkg\installed\
+  - C:\tools\vcpkg\installed

@@ -35,12 +35,12 @@ build_script:
           -DENABLE_SHARED=0 -DENABLE_STATIC=1
           -DREQUIRE_SIMD=1
           -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
-          -DVCPKG_TARGET_TRIPLET=x86-windows-static
+          -DVCPKG_TARGET_TRIPLET=%ARCH%-windows-static
 
   - cmake --build static --config Release
 
 after_build:
-  - 7z a mozjpeg-build.zip shared static
+  - 7z a mozjpeg-win-%ARCH%.zip shared/Release static/Release
 artifacts:
   - path: '*.zip'
 

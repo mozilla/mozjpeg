@@ -18,6 +18,8 @@ install:
 before_build:
   - nasm -v
   - cmake --version
+  - git describe --always --tags --dirty
+  - FOR /F %a in ('git describe --always --tags --dirty') do set GIT_VERSION=%a
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
@@ -40,7 +42,8 @@ build_script:
   - cmake --build static --config Release
 
 after_build:
-  - 7z a mozjpeg-win-%ARCH%.zip shared/Release static/Release
+  - 7z a mozjpeg-%GIT_VERSION%-win-%ARCH%.zip shared/Release static/Release
+
 artifacts:
   - path: '*.zip'
 
@@ -49,3 +52,12 @@ cache:
   - C:\ProgramData\chocolatey\lib
   - C:\Program Files\NASM
   - C:\tools\vcpkg\installed
+
+deploy:
+  description: 'Automated build using Appveyor'
+  provider: GitHub
+  auth_token:
+    secure: UyY8O91YcxiumO2NkBUGNKDzKDSW0chVj134u+7+haPlc4Naagggt4a//7hRowjL
+  artifact: /.*\.zip/
+  on:
+    APPVEYOR_REPO_TAG: true        # deploy on tag push only

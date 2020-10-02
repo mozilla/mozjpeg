@@ -439,9 +439,9 @@ end of a single-scan (non-progressive) image, subsequent calls to
 `jpeg_consume_input()` would return `JPEG_SUSPENDED` rather than
 `JPEG_REACHED_EOI`.
 
-9. `jpeg_crop_scanlines()` now works correctly when decompressing grayscale
-JPEG images that were compressed with a sampling factor other than 1 (for
-instance, with `cjpeg -grayscale -sample 2x2`).
+9. `jpeg_crop_scanline()` now works correctly when decompressing grayscale JPEG
+images that were compressed with a sampling factor other than 1 (for instance,
+with `cjpeg -grayscale -sample 2x2`).
 
 
 1.5.2
@@ -465,7 +465,7 @@ on PowerPC-based AmigaOS 4 and OpenBSD systems.
 5. Fixed build and runtime errors on Windows that occurred when building
 libjpeg-turbo with libjpeg v7 API/ABI emulation and the in-memory
 source/destination managers.  Due to an oversight, the `jpeg_skip_scanlines()`
-and `jpeg_crop_scanlines()` functions were not being included in jpeg7.dll when
+and `jpeg_crop_scanline()` functions were not being included in jpeg7.dll when
 libjpeg-turbo was built with `-DWITH_JPEG7=1` and `-DWITH_MEMSRCDST=1`.
 
 6. Fixed "Bogus virtual array access" error that occurred when using the

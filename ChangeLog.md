@@ -23,6 +23,10 @@ skipping past the end of an image.
 3. The ARM 64-bit (ARMv8) NEON SIMD extensions can now be built using MinGW
 toolchains targetting ARM64 (AArch64) Windows binaries.
 
+4. Fixed unexpected visual artifacts that occurred when using
+`jpeg_crop_scanline()` and interblock smoothing while decompressing only the
+DC scan of a progressive JPEG image.
+
 
 2.0.5
 =====

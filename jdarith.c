@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2015 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2019, D. R. Commander.
+ * Copyright (C) 2015-2020, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -669,12 +669,14 @@ bad:
         &cinfo->coef_bits[cindex + cinfo->num_components][0];
       if (cinfo->Ss && coef_bit_ptr[0] < 0) /* AC without prior DC scan */
         WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, 0);
+      for (coefi = MIN(cinfo->Ss, 1); coefi <= MAX(cinfo->Se, 9); coefi++) {
+        if (cinfo->input_scan_number > 1)
+          prev_coef_bit_ptr[coefi] = coef_bit_ptr[coefi];
+      }
       for (coefi = cinfo->Ss; coefi <= cinfo->Se; coefi++) {
         int expected = (coef_bit_ptr[coefi] < 0) ? 0 : coef_bit_ptr[coefi];
         if (cinfo->Ah != expected)
           WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, coefi);
-        if (cinfo->input_scan_number > 1)
-          prev_coef_bit_ptr[coefi] = coef_bit_ptr[coefi];
         coef_bit_ptr[coefi] = cinfo->Al;
       }
     }

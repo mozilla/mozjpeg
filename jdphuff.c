@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2016, 2018-2019, D. R. Commander.
+ * Copyright (C) 2015-2016, 2018-2020, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -127,12 +127,14 @@ start_pass_phuff_decoder(j_decompress_ptr cinfo)
     prev_coef_bit_ptr = &cinfo->coef_bits[cindex + cinfo->num_components][0];
     if (!is_DC_band && coef_bit_ptr[0] < 0) /* AC without prior DC scan */
       WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, 0);
+    for (coefi = MIN(cinfo->Ss, 1); coefi <= MAX(cinfo->Se, 9); coefi++) {
+      if (cinfo->input_scan_number > 1)
+        prev_coef_bit_ptr[coefi] = coef_bit_ptr[coefi];
+    }
     for (coefi = cinfo->Ss; coefi <= cinfo->Se; coefi++) {
       int expected = (coef_bit_ptr[coefi] < 0) ? 0 : coef_bit_ptr[coefi];
       if (cinfo->Ah != expected)
         WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, coefi);
-      if (cinfo->input_scan_number > 1)
-        prev_coef_bit_ptr[coefi] = coef_bit_ptr[coefi];
       coef_bit_ptr[coefi] = cinfo->Al;
     }
   }

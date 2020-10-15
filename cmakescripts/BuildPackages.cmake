@@ -45,19 +45,19 @@ boolean_number(CMAKE_POSITION_INDEPENDENT_CODE)
 configure_file(release/makerpm.in pkgscripts/makerpm)
 configure_file(release/rpm.spec.in pkgscripts/rpm.spec @ONLY)
 
-add_custom_target(rpm sh pkgscripts/makerpm
+add_custom_target(rpm pkgscripts/makerpm
   SOURCES pkgscripts/makerpm)
 
 configure_file(release/makesrpm.in pkgscripts/makesrpm)
 
-add_custom_target(srpm sh pkgscripts/makesrpm
+add_custom_target(srpm pkgscripts/makesrpm
   SOURCES pkgscripts/makesrpm
   DEPENDS dist)
 
 configure_file(release/makedpkg.in pkgscripts/makedpkg)
 configure_file(release/deb-control.in pkgscripts/deb-control)
 
-add_custom_target(deb sh pkgscripts/makedpkg
+add_custom_target(deb pkgscripts/makedpkg
   SOURCES pkgscripts/makedpkg)
 
 endif() # Linux
@@ -132,7 +132,7 @@ configure_file(release/Distribution.xml.in pkgscripts/Distribution.xml)
 configure_file(release/Welcome.rtf.in pkgscripts/Welcome.rtf)
 configure_file(release/uninstall.in pkgscripts/uninstall)
 
-add_custom_target(dmg sh pkgscripts/makemacpkg
+add_custom_target(dmg pkgscripts/makemacpkg
   SOURCES pkgscripts/makemacpkg)
 
 endif() # APPLE
@@ -149,7 +149,7 @@ add_custom_target(dist
 
 configure_file(release/maketarball.in pkgscripts/maketarball)
 
-add_custom_target(tarball sh pkgscripts/maketarball
+add_custom_target(tarball pkgscripts/maketarball
   SOURCES pkgscripts/maketarball)
 
 configure_file(release/libjpeg.pc.in pkgscripts/libjpeg.pc @ONLY)

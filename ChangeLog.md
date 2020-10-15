@@ -101,8 +101,8 @@ skipping past the end of an image.
 toolchains targetting ARM64 (AArch64) Windows binaries.
 
 4. Fixed unexpected visual artifacts that occurred when using
-`jpeg_crop_scanline()` and interblock smoothing while decompressing only the
-DC scan of a progressive JPEG image.
+`jpeg_crop_scanline()` and interblock smoothing while decompressing only the DC
+scan of a progressive JPEG image.
 
 
 2.0.5

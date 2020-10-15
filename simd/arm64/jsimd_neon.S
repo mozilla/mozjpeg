@@ -1,5 +1,5 @@
 /*
- * ARMv8 NEON optimizations for libjpeg-turbo
+ * Armv8 Neon optimizations for libjpeg-turbo
  *
  * Copyright (C) 2009-2011, Nokia Corporation and/or its subsidiary(-ies).
  *                          All Rights Reserved.
@@ -611,7 +611,7 @@ asm_function jsimd_idct_islow_neon
     shrn2           v5.8h, v15.4s, #16  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS+PASS1_BITS+3) */
     shrn2           v6.8h, v17.4s, #16  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS+PASS1_BITS+3) */
     movi            v0.16b, #(CENTERJSAMPLE)
-    /* Prepare pointers (dual-issue with NEON instructions) */
+    /* Prepare pointers (dual-issue with Neon instructions) */
       ldp             TMP1, TMP2, [OUTPUT_BUF], 16
     sqrshrn         v28.8b, v2.8h, #(CONST_BITS+PASS1_BITS+3-16)
       ldp             TMP3, TMP4, [OUTPUT_BUF], 16
@@ -992,7 +992,7 @@ asm_function jsimd_idct_islow_neon
  * function from jidctfst.c
  *
  * Normally 1-D AAN DCT needs 5 multiplications and 29 additions.
- * But in ARM NEON case some extra additions are required because VQDMULH
+ * But in Arm Neon case some extra additions are required because VQDMULH
  * instruction can't handle the constants larger than 1. So the expressions
  * like "x * 1.082392200" have to be converted to "x * 0.082392200 + x",
  * which introduces an extra addition. Overall, there are 6 extra additions
@@ -1024,7 +1024,7 @@ asm_function jsimd_idct_ifast_neon
        instruction ensures that those bits are set to zero. */
     uxtw x3, w3
 
-    /* Load and dequantize coefficients into NEON registers
+    /* Load and dequantize coefficients into Neon registers
      * with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
@@ -1037,7 +1037,7 @@ asm_function jsimd_idct_ifast_neon
      *   6 | d28     | d29     ( v22.8h )
      *   7 | d30     | d31     ( v23.8h )
      */
-    /* Save NEON registers used in fast IDCT */
+    /* Save Neon registers used in fast IDCT */
     get_symbol_loc  TMP5, Ljsimd_idct_ifast_neon_consts
     ld1             {v16.8h, v17.8h}, [COEF_BLOCK], 32
     ld1             {v0.8h, v1.8h}, [DCT_TABLE], 32
@@ -1142,7 +1142,7 @@ asm_function jsimd_idct_ifast_neon
     add             v20.8h, v20.8h, v1.8h
     /* Descale to 8-bit and range limit */
     movi            v0.16b, #0x80
-      /* Prepare pointers (dual-issue with NEON instructions) */
+      /* Prepare pointers (dual-issue with Neon instructions) */
       ldp             TMP1, TMP2, [OUTPUT_BUF], 16
     sqshrn          v28.8b, v16.8h, #5
       ldp             TMP3, TMP4, [OUTPUT_BUF], 16
@@ -1221,7 +1221,7 @@ asm_function jsimd_idct_ifast_neon
  *
  * NOTE: jpeg-8 has an improved implementation of 4x4 inverse-DCT, which
  *       requires much less arithmetic operations and hence should be faster.
- *       The primary purpose of this particular NEON optimized function is
+ *       The primary purpose of this particular Neon optimized function is
  *       bit exact compatibility with jpeg-6b.
  *
  * TODO: a bit better instructions scheduling can be achieved by expanding
@@ -1291,7 +1291,7 @@ asm_function jsimd_idct_4x4_neon
        instruction ensures that those bits are set to zero. */
     uxtw x3, w3
 
-    /* Save all used NEON registers */
+    /* Save all used Neon registers */
     sub             sp, sp, 64
     mov             x9, sp
     /* Load constants (v3.4h is just used for padding) */
@@ -1300,7 +1300,7 @@ asm_function jsimd_idct_4x4_neon
     st1             {v12.8b, v13.8b, v14.8b, v15.8b}, [x9], 32
     ld1             {v0.4h, v1.4h, v2.4h, v3.4h}, [TMP4]
 
-    /* Load all COEF_BLOCK into NEON registers with the following allocation:
+    /* Load all COEF_BLOCK into Neon registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
      *   0 | v4.4h   | v5.4h
@@ -1434,7 +1434,7 @@ asm_function jsimd_idct_4x4_neon
  *
  * NOTE: jpeg-8 has an improved implementation of 2x2 inverse-DCT, which
  *       requires much less arithmetic operations and hence should be faster.
- *       The primary purpose of this particular NEON optimized function is
+ *       The primary purpose of this particular Neon optimized function is
  *       bit exact compatibility with jpeg-6b.
  */
 
@@ -1483,7 +1483,7 @@ asm_function jsimd_idct_2x2_neon
     st1             {v12.8b, v13.8b, v14.8b, v15.8b}, [x9], 32
     ld1             {v14.4h}, [TMP2]
 
-    /* Load all COEF_BLOCK into NEON registers with the following allocation:
+    /* Load all COEF_BLOCK into Neon registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
      *   0 | v4.4h   | v5.4h
@@ -1857,7 +1857,7 @@ asm_function jsimd_ycc_\colorid\()_convert_neon_slowst3
     /* Load constants to d1, d2, d3 (v0.4h is just used for padding) */
     get_symbol_loc  x15, Ljsimd_ycc_rgb_neon_consts
 
-    /* Save NEON registers */
+    /* Save Neon registers */
     st1             {v8.8b, v9.8b, v10.8b, v11.8b}, [x9], 32
     st1             {v12.8b, v13.8b, v14.8b, v15.8b}, [x9], 32
     ld1             {v0.4h, v1.4h}, [x15], 16
@@ -2142,7 +2142,7 @@ generate_jsimd_ycc_rgb_convert_neon extbgr,  24, 2, .4h,  1, .4h,  0, .4h,  .8b,
 .endm
 
 /* TODO: expand macros and interleave instructions if some in-order
- *       ARM64 processor actually can dual-issue LOAD/STORE with ALU */
+ *       AArch64 processor actually can dual-issue LOAD/STORE with ALU */
 .macro do_rgb_to_yuv_stage2_store_load_stage1 fast_ld3
     do_rgb_to_yuv_stage2
     do_load         \bpp, 8, \fast_ld3
@@ -2182,7 +2182,7 @@ asm_function jsimd_\colorid\()_ycc_convert_neon_slowld3
     ldr             OUTPUT_BUF2, [OUTPUT_BUF, #16]
     .unreq          OUTPUT_BUF
 
-    /* Save NEON registers */
+    /* Save Neon registers */
     sub             sp, sp, #64
     mov             x9, sp
     st1             {v8.8b, v9.8b, v10.8b, v11.8b}, [x9], 32
@@ -2396,13 +2396,13 @@ asm_function jsimd_fdct_islow_neon
     get_symbol_loc  TMP, Ljsimd_fdct_islow_neon_consts
     ld1             {v0.8h, v1.8h}, [TMP]
 
-    /* Save NEON registers */
+    /* Save Neon registers */
     sub             sp, sp, #64
     mov             x10, sp
     st1             {v8.8b, v9.8b, v10.8b, v11.8b}, [x10], 32
     st1             {v12.8b, v13.8b, v14.8b, v15.8b}, [x10], 32
 
-    /* Load all DATA into NEON registers with the following allocation:
+    /* Load all DATA into Neon registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
      *   0 | d16     | d17    | v16.8h
@@ -2629,7 +2629,7 @@ asm_function jsimd_fdct_islow_neon
     st1             {v16.8h, v17.8h, v18.8h, v19.8h}, [DATA], 64
     st1             {v20.8h, v21.8h, v22.8h, v23.8h}, [DATA]
 
-    /* Restore NEON registers */
+    /* Restore Neon registers */
     ld1             {v8.8b, v9.8b, v10.8b, v11.8b}, [sp], 32
     ld1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], 32
 
@@ -2681,7 +2681,7 @@ asm_function jsimd_fdct_ifast_neon
     get_symbol_loc  TMP, Ljsimd_fdct_ifast_neon_consts
     ld1             {v0.4h}, [TMP]
 
-    /* Load all DATA into NEON registers with the following allocation:
+    /* Load all DATA into Neon registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
      *   0 | d16     | d17    | v0.8h
@@ -3066,7 +3066,7 @@ asm_function jsimd_huff_encode_one_block_neon_slowtbl
 .endif
     sub             sp, sp, 272
     sub             BUFFER, BUFFER, #0x1    /* BUFFER=buffer-- */
-    /* Save ARM registers */
+    /* Save Arm registers */
     stp             x19, x20, [sp]
     get_symbol_loc  x15, Ljsimd_huff_encode_one_block_neon_consts
     ldr             PUT_BUFFER, [x0, #0x10]

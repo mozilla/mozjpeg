@@ -1,5 +1,5 @@
 /*
- * ARMv7 NEON optimizations for libjpeg-turbo
+ * Armv7 Neon optimizations for libjpeg-turbo
  *
  * Copyright (C) 2009-2011, Nokia Corporation and/or its subsidiary(-ies).
  *                          All Rights Reserved.
@@ -229,7 +229,7 @@ asm_function jsimd_idct_islow_neon
     ROW7L           .req d30
     ROW7R           .req d31
 
-    /* Load and dequantize coefficients into NEON registers
+    /* Load and dequantize coefficients into Neon registers
      * with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
@@ -261,7 +261,7 @@ asm_function jsimd_idct_islow_neon
     vld1.16         {d0, d1, d2, d3}, [ip, :128]  /* load constants */
     add             ip, ip, #16
     vmul.s16        q15, q15, q3
-    vpush           {d8-d15}                      /* save NEON registers */
+    vpush           {d8-d15}                      /* save Neon registers */
     /* 1-D IDCT, pass 1, left 4x8 half */
     vadd.s16        d4, ROW7L, ROW3L
     vadd.s16        d5, ROW5L, ROW1L
@@ -507,7 +507,7 @@ asm_function jsimd_idct_islow_neon
     vqrshrn.s16     d17, q9, #2
     vqrshrn.s16     d18, q10, #2
     vqrshrn.s16     d19, q11, #2
-    vpop            {d8-d15}                      /* restore NEON registers */
+    vpop            {d8-d15}                      /* restore Neon registers */
     vqrshrn.s16     d20, q12, #2
       /* Transpose the final 8-bit samples and do signed->unsigned conversion */
       vtrn.16         q8, q9
@@ -688,7 +688,7 @@ asm_function jsimd_idct_islow_neon
  * function from jidctfst.c
  *
  * Normally 1-D AAN DCT needs 5 multiplications and 29 additions.
- * But in ARM NEON case some extra additions are required because VQDMULH
+ * But in Arm Neon case some extra additions are required because VQDMULH
  * instruction can't handle the constants larger than 1. So the expressions
  * like "x * 1.082392200" have to be converted to "x * 0.082392200 + x",
  * which introduces an extra addition. Overall, there are 6 extra additions
@@ -718,7 +718,7 @@ asm_function jsimd_idct_ifast_neon
     TMP3            .req r2
     TMP4            .req ip
 
-    /* Load and dequantize coefficients into NEON registers
+    /* Load and dequantize coefficients into Neon registers
      * with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
@@ -749,7 +749,7 @@ asm_function jsimd_idct_ifast_neon
     vmul.s16        q13, q13, q1
     vld1.16         {d0}, [ip, :64]  /* load constants */
     vmul.s16        q15, q15, q3
-    vpush           {d8-d13}         /* save NEON registers */
+    vpush           {d8-d13}         /* save Neon registers */
     /* 1-D IDCT, pass 1 */
     vsub.s16        q2, q10, q14
     vadd.s16        q14, q10, q14
@@ -842,7 +842,7 @@ asm_function jsimd_idct_ifast_neon
     vadd.s16        q14, q5, q3
     vsub.s16        q9, q5, q3
     vsub.s16        q13, q10, q2
-    vpop            {d8-d13}      /* restore NEON registers */
+    vpop            {d8-d13}      /* restore Neon registers */
     vadd.s16        q10, q10, q2
     vsub.s16        q11, q12, q1
     vadd.s16        q12, q12, q1
@@ -913,7 +913,7 @@ asm_function jsimd_idct_ifast_neon
  *
  * NOTE: jpeg-8 has an improved implementation of 4x4 inverse-DCT, which
  *       requires much less arithmetic operations and hence should be faster.
- *       The primary purpose of this particular NEON optimized function is
+ *       The primary purpose of this particular Neon optimized function is
  *       bit exact compatibility with jpeg-6b.
  *
  * TODO: a bit better instructions scheduling can be achieved by expanding
@@ -1016,7 +1016,7 @@ asm_function jsimd_idct_4x4_neon
     adr             TMP4, jsimd_idct_4x4_neon_consts
     vld1.16         {d0, d1, d2, d3}, [TMP4, :128]
 
-    /* Load all COEF_BLOCK into NEON registers with the following allocation:
+    /* Load all COEF_BLOCK into Neon registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
      *   0 | d4      | d5
@@ -1126,7 +1126,7 @@ asm_function jsimd_idct_4x4_neon
  *
  * NOTE: jpeg-8 has an improved implementation of 2x2 inverse-DCT, which
  *       requires much less arithmetic operations and hence should be faster.
- *       The primary purpose of this particular NEON optimized function is
+ *       The primary purpose of this particular Neon optimized function is
  *       bit exact compatibility with jpeg-6b.
  */
 
@@ -1173,7 +1173,7 @@ asm_function jsimd_idct_2x2_neon
     adr             TMP2, jsimd_idct_2x2_neon_consts
     vld1.16         {d0}, [TMP2, :64]
 
-    /* Load all COEF_BLOCK into NEON registers with the following allocation:
+    /* Load all COEF_BLOCK into Neon registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
      *   0 | d4      | d5
@@ -1499,7 +1499,7 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     adr             ip, jsimd_ycc_\colorid\()_neon_consts
     vld1.16         {d0, d1, d2, d3}, [ip, :128]
 
-    /* Save ARM registers and handle input arguments */
+    /* Save Arm registers and handle input arguments */
     push            {r4, r5, r6, r7, r8, r9, r10, lr}
     ldr             NUM_ROWS, [sp, #(4 * 8)]
     ldr             INPUT_BUF0, [INPUT_BUF]
@@ -1507,7 +1507,7 @@ asm_function jsimd_ycc_\colorid\()_convert_neon
     ldr             INPUT_BUF2, [INPUT_BUF, #8]
     .unreq          INPUT_BUF
 
-    /* Save NEON registers */
+    /* Save Neon registers */
     vpush           {d8-d15}
 
     /* Initially set d10, d11, d12, d13 to 0xFF */
@@ -1814,7 +1814,7 @@ asm_function jsimd_\colorid\()_ycc_convert_neon
     adr             ip, jsimd_\colorid\()_ycc_neon_consts
     vld1.16         {d0, d1, d2, d3}, [ip, :128]
 
-    /* Save ARM registers and handle input arguments */
+    /* Save Arm registers and handle input arguments */
     push            {r4, r5, r6, r7, r8, r9, r10, lr}
     ldr             NUM_ROWS, [sp, #(4 * 8)]
     ldr             OUTPUT_BUF0, [OUTPUT_BUF]
@@ -1822,7 +1822,7 @@ asm_function jsimd_\colorid\()_ycc_convert_neon
     ldr             OUTPUT_BUF2, [OUTPUT_BUF, #8]
     .unreq          OUTPUT_BUF
 
-    /* Save NEON registers */
+    /* Save Neon registers */
     vpush           {d8-d15}
 
     /* Outer loop over scanlines */
@@ -2017,7 +2017,7 @@ asm_function jsimd_fdct_ifast_neon
     adr             TMP, jsimd_fdct_ifast_neon_consts
     vld1.16         {d0}, [TMP, :64]
 
-    /* Load all DATA into NEON registers with the following allocation:
+    /* Load all DATA into Neon registers with the following allocation:
      *       0 1 2 3 | 4 5 6 7
      *      ---------+--------
      *   0 | d16     | d17    | q8
@@ -2112,8 +2112,8 @@ asm_function jsimd_fdct_ifast_neon
  *
  * Note: the code uses 2 stage pipelining in order to improve instructions
  *       scheduling and eliminate stalls (this provides ~15% better
- *       performance for this function on both ARM Cortex-A8 and
- *       ARM Cortex-A9 when compared to the non-pipelined variant).
+ *       performance for this function on both Arm Cortex-A8 and
+ *       Arm Cortex-A9 when compared to the non-pipelined variant).
  *       The instructions which belong to the second stage use different
  *       indentation for better readiability.
  */

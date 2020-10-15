@@ -398,8 +398,8 @@ located (usually **/usr/bin**.)  Next, execute the following commands:
 Building libjpeg-turbo for iOS
 ------------------------------
 
-iOS platforms, such as the iPhone and iPad, use ARM processors, and all
-currently supported models include NEON instructions.  Thus, they can take
+iOS platforms, such as the iPhone and iPad, use Arm processors, and all
+currently supported models include Neon instructions.  Thus, they can take
 advantage of libjpeg-turbo's SIMD extensions to significantly accelerate JPEG
 compression/decompression.  This section describes how to build libjpeg-turbo
 for these platforms.
@@ -412,7 +412,7 @@ for these platforms.
   it should be installed in your `PATH`.
 
 
-### ARMv7 (32-bit)
+### Armv7 (32-bit)
 
 **gas-preprocessor.pl required**
 
@@ -465,7 +465,7 @@ Same as above, but replace the first line with:
     make
 
 
-### ARMv7s (32-bit)
+### Armv7s (32-bit)
 
 **gas-preprocessor.pl required**
 
@@ -493,13 +493,13 @@ iPhone 5/iPad 4th Generation and newer:
 
 #### Xcode 5 and later (Clang)
 
-Same as the ARMv7 build procedure for Xcode 5 and later, except replace the
+Same as the Armv7 build procedure for Xcode 5 and later, except replace the
 compiler flags as follows:
 
     export CFLAGS="-Wall -mfloat-abi=softfp -arch armv7s -miphoneos-version-min=6.0"
 
 
-### ARMv8 (64-bit)
+### Armv8 (64-bit)
 
 **gas-preprocessor.pl required if using Xcode < 6**
 
@@ -523,7 +523,7 @@ iPhone 5S/iPad Mini 2/iPad Air and newer.
       [additional CMake flags] {source_directory}
     make
 
-Once built, lipo can be used to combine the ARMv7, v7s, and/or v8 variants into
+Once built, lipo can be used to combine the Armv7, v7s, and/or v8 variants into
 a universal library.
 
 
@@ -534,7 +534,7 @@ Building libjpeg-turbo for Android platforms requires v13b or later of the
 [Android NDK](https://developer.android.com/tools/sdk/ndk).
 
 
-### ARMv7 (32-bit)
+### Armv7 (32-bit)
 
 The following is a general recipe script that can be modified for your specific
 needs.
@@ -559,7 +559,7 @@ needs.
     make
 
 
-### ARMv8 (64-bit)
+### Armv8 (64-bit)
 
 The following is a general recipe script that can be modified for your specific
 needs.
@@ -742,21 +742,21 @@ must be built on OS X 10.6 or later.
 
     make udmg
 
-This creates a Mac package/disk image that contains universal x86-64/i386/ARM
+This creates a Mac package/disk image that contains universal x86-64/i386/Arm
 binaries.  The following CMake variables control which architectures are
 included in the universal binaries.  Setting any of these variables to an empty
 string excludes that architecture from the package.
 
 * `OSX_32BIT_BUILD`: Directory containing an i386 (32-bit) Mac build of
   libjpeg-turbo (default: *{source_directory}*/osxx86)
-* `IOS_ARMV7_BUILD`: Directory containing an ARMv7 (32-bit) iOS build of
+* `IOS_ARMV7_BUILD`: Directory containing an Armv7 (32-bit) iOS build of
   libjpeg-turbo (default: *{source_directory}*/iosarmv7)
-* `IOS_ARMV7S_BUILD`: Directory containing an ARMv7s (32-bit) iOS build of
+* `IOS_ARMV7S_BUILD`: Directory containing an Armv7s (32-bit) iOS build of
   libjpeg-turbo (default: *{source_directory}*/iosarmv7s)
-* `IOS_ARMV8_BUILD`: Directory containing an ARMv8 (64-bit) iOS build of
+* `IOS_ARMV8_BUILD`: Directory containing an Armv8 (64-bit) iOS build of
   libjpeg-turbo (default: *{source_directory}*/iosarmv8)
 
-You should first use CMake to configure i386, ARMv7, ARMv7s, and/or ARMv8
+You should first use CMake to configure i386, Armv7, Armv7s, and/or Armv8
 sub-builds of libjpeg-turbo (see "Build Recipes" and "Building libjpeg-turbo
 for iOS" above) in build directories that match those specified in the
 aforementioned CMake variables.  Next, configure the primary build of

@@ -160,7 +160,7 @@ install_ios()
 }
 
 if [ "$BUILDDIRARMV8" != "" ]; then
-	install_ios $BUILDDIRARMV8 ARMv8 armv8 arm64
+	install_ios $BUILDDIRARMV8 Armv8 armv8 arm64
 fi
 
 install_name_tool -id $LIBDIR/$LIBJPEG_DSO_NAME $PKGROOT/$LIBDIR/$LIBJPEG_DSO_NAME

@@ -33,7 +33,7 @@ approximately 2x when using the fast integer IDCT
     The overall decompression speedup for RGB images is now approximately
 2.3-3.7x (compared to 2-3.5x with libjpeg-turbo 2.0.x.)
 
-3. 32-bit (ARMv7 or ARMv7s) iOS builds of libjpeg-turbo are no longer
+3. 32-bit (Armv7 or Armv7s) iOS builds of libjpeg-turbo are no longer
 supported, and the libjpeg-turbo build system can no longer be used to package
 such builds.  32-bit iOS apps cannot run in iOS 11 and later, and the App Store
 no longer allows them.
@@ -61,10 +61,10 @@ higher-frequency scan.  libjpeg-turbo now applies block smoothing parameters to
 each iMCU row based on which scan generated the pixels in that row, rather than
 always using the block smoothing parameters for the most recent scan.
 
-7. Added SIMD acceleration for progressive Huffman encoding on ARM 64-bit
-(ARMv8) platforms.  This speeds up the compression of full-color progressive
+7. Added SIMD acceleration for progressive Huffman encoding on Arm 64-bit
+(Armv8) platforms.  This speeds up the compression of full-color progressive
 JPEGs by about 30-40% on average (relative to libjpeg-turbo 2.0.x) when using
-modern ARMv8 CPUs.
+modern Armv8 CPUs.
 
 8. Added configure-time and run-time auto-detection of Loongson MMI SIMD
 instructions, so that the Loongson MMI SIMD extensions can be included in any
@@ -124,8 +124,8 @@ with `jpeg_skip_scanlines()`, and the issues could not readily be fixed.
      - Fixed an issue whereby `jpeg_skip_scanlines()` always returned 0 when
 skipping past the end of an image.
 
-3. The ARM 64-bit (ARMv8) NEON SIMD extensions can now be built using MinGW
-toolchains targetting ARM64 (AArch64) Windows binaries.
+3. The Arm 64-bit (Armv8) Neon SIMD extensions can now be built using MinGW
+toolchains targetting Arm64 (AArch64) Windows binaries.
 
 4. Fixed unexpected visual artifacts that occurred when using
 `jpeg_crop_scanline()` and interblock smoothing while decompressing only the DC
@@ -198,7 +198,7 @@ other user-visible errant behavior, and given that the lossless transformer
 (unlike the decompressor) is not generally exposed to arbitrary data exploits,
 this issue did not likely pose a security risk.
 
-6. The ARM 64-bit (ARMv8) NEON SIMD assembly code now stores constants in a
+6. The Arm 64-bit (Armv8) Neon SIMD assembly code now stores constants in a
 separate read-only data section rather than in the text section, to support
 execute-only memory layouts.
 
@@ -484,7 +484,7 @@ algorithm that caused incorrect dithering in the output image.  This algorithm
 now produces bitwise-identical results to the unmerged algorithms.
 
 12. The SIMD function symbols for x86[-64]/ELF, MIPS/ELF, macOS/x86[-64] (if
-libjpeg-turbo is built with YASM), and iOS/ARM[64] builds are now private.
+libjpeg-turbo is built with YASM), and iOS/Arm[64] builds are now private.
 This prevents those symbols from being exposed in applications or shared
 libraries that link statically with libjpeg-turbo.
 

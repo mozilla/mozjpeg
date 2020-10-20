@@ -23,11 +23,18 @@ set(RPMARCH ${CMAKE_SYSTEM_PROCESSOR})
 if(CPU_TYPE STREQUAL "x86_64")
   set(DEBARCH amd64)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7*")
+  set(RPMARCH armv7hl)
   set(DEBARCH armhf)
 elseif(CPU_TYPE STREQUAL "arm64")
   set(DEBARCH ${CPU_TYPE})
 elseif(CPU_TYPE STREQUAL "arm")
-  set(DEBARCH armel)
+  if(CMAKE_C_COMPILER MATCHES "gnueabihf")
+    set(RPMARCH armv7hl)
+    set(DEBARCH armhf)
+  else()
+    set(RPMARCH armel)
+    set(DEBARCH armel)
+  endif()
 elseif(CMAKE_SYSTEM_PROCESSOR_LC STREQUAL "ppc64le")
   set(DEBARCH ppc64el)
 elseif(CPU_TYPE STREQUAL "powerpc" AND BITS EQUAL 32)
@@ -128,7 +135,7 @@ endif() # WIN32
 if(APPLE)
 
 set(IOS_ARMV8_BUILD "" CACHE PATH
-  "Directory containing ARMv8 iOS build to include in universal binaries")
+  "Directory containing Armv8 iOS build to include in universal binaries")
 
 set(OSX_APP_CERT_NAME "" CACHE STRING
   "Name of the Developer ID Application certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo DMG.  Leave this blank to generate an unsigned DMG.")

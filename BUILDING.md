@@ -393,8 +393,8 @@ located (usually **/usr/bin**.)  Next, execute the following commands:
 Building libjpeg-turbo for iOS
 ------------------------------
 
-iOS platforms, such as the iPhone and iPad, use ARM processors, and all
-currently supported models include NEON instructions.  Thus, they can take
+iOS platforms, such as the iPhone and iPad, use Arm processors, and all
+currently supported models include Neon instructions.  Thus, they can take
 advantage of libjpeg-turbo's SIMD extensions to significantly accelerate JPEG
 compression/decompression.  This section describes how to build libjpeg-turbo
 for these platforms.
@@ -407,7 +407,7 @@ for these platforms.
   it should be installed in your `PATH`.
 
 
-### ARMv8 (64-bit)
+### Armv8 (64-bit)
 
 **gas-preprocessor.pl required if using Xcode < 6**
 
@@ -439,7 +439,7 @@ Building libjpeg-turbo for Android platforms requires v13b or later of the
 [Android NDK](https://developer.android.com/tools/sdk/ndk).
 
 
-### ARMv7 (32-bit)
+### Armv7 (32-bit)
 
 The following is a general recipe script that can be modified for your specific
 needs.
@@ -464,7 +464,7 @@ needs.
     make
 
 
-### ARMv8 (64-bit)
+### Armv8 (64-bit)
 
 The following is a general recipe script that can be modified for your specific
 needs.
@@ -643,12 +643,12 @@ Create Mac package/disk image.  This requires pkgbuild and productbuild, which
 are installed by default on OS X 10.7 and later.
 
 In order to create a Mac package/disk image that contains universal
-x86-64/ARM binaries, set the following CMake variable:
+x86-64/Arm binaries, set the following CMake variable:
 
-* `IOS_ARMV8_BUILD`: Directory containing an ARMv8 (64-bit) iOS build of
+* `IOS_ARMV8_BUILD`: Directory containing an Armv8 (64-bit) iOS build of
   libjpeg-turbo to include in the universal binaries
 
-You should first use CMake to configure an ARMv8 sub-build of libjpeg-turbo
+You should first use CMake to configure an Armv8 sub-build of libjpeg-turbo
 (see "Building libjpeg-turbo for iOS" above) in a build directory that matches
 the one specified in the aforementioned CMake variable.  Next, configure the
 primary (x86-64) build of libjpeg-turbo as an out-of-tree build, specifying the

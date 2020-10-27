@@ -344,8 +344,9 @@ start_input_tga(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   unsigned int width, height, maplen;
   boolean is_bottom_up;
 
-#define GET_2B(offset)  ((unsigned int)UCH(targaheader[offset]) + \
-                         (((unsigned int)UCH(targaheader[offset + 1])) << 8))
+#define GET_2B(offset) \
+  ((unsigned int)UCH(targaheader[offset]) + \
+   (((unsigned int)UCH(targaheader[offset + 1])) << 8))
 
   if (!ReadOK(source->pub.input_file, targaheader, 18))
     ERREXIT(cinfo, JERR_INPUT_EOF);

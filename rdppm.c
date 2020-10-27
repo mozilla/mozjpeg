@@ -659,11 +659,12 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (maxval > 255) {
       source->pub.get_pixel_rows = get_word_rgb_row;
     } else if (maxval == MAXJSAMPLE && sizeof(JSAMPLE) == sizeof(U_CHAR) &&
-               (cinfo->in_color_space == JCS_EXT_RGB
 #if RGB_RED == 0 && RGB_GREEN == 1 && RGB_BLUE == 2 && RGB_PIXELSIZE == 3
-                || cinfo->in_color_space == JCS_RGB
+               (cinfo->in_color_space == JCS_EXT_RGB ||
+                cinfo->in_color_space == JCS_RGB)) {
+#else
+               cinfo->in_color_space == JCS_EXT_RGB) {
 #endif
-               )) {
       source->pub.get_pixel_rows = get_raw_row;
       use_raw_buffer = TRUE;
       need_rescale = FALSE;

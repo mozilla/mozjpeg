@@ -101,6 +101,14 @@ TurboJPEG API libraries.  This facilitates using libjpeg-turbo with CMake's
         target_link_libraries(turbojpeg_program_static PUBLIC
           libjpeg-turbo::turbojpeg-static)
 
+11. Since the Unisys LZW patent has long expired, cjpeg and djpeg can now
+read/write both LZW-compressed and uncompressed GIF files (feature ported from
+jpeg-6a and jpeg-9d.)
+
+12. jpegtran now includes the `-wipe` and `-drop` options from jpeg-9a and
+jpeg-9d, as well as the ability to expand the image size using the `-crop`
+option.  Refer to jpegtran.1 or usage.txt for more details.
+
 
 2.0.6
 =====

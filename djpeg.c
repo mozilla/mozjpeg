@@ -3,7 +3,7 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * Modified 2013 by Guido Vollbeding.
+ * Modified 2013-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010-2011, 2013-2017, 2019-2020, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
@@ -68,7 +68,8 @@ static const char * const cdjpeg_message_table[] = {
 
 typedef enum {
   FMT_BMP,                      /* BMP format (Windows flavor) */
-  FMT_GIF,                      /* GIF format */
+  FMT_GIF,                      /* GIF format (LZW-compressed) */
+  FMT_GIF0,                     /* GIF format (uncompressed) */
   FMT_OS2,                      /* BMP format (OS/2 flavor) */
   FMT_PPM,                      /* PPM/PGM (PBMPLUS formats) */
   FMT_TARGA,                    /* Targa format */
@@ -129,8 +130,10 @@ usage(void)
           (DEFAULT_FMT == FMT_BMP ? " (default)" : ""));
 #endif
 #ifdef GIF_SUPPORTED
-  fprintf(stderr, "  -gif           Select GIF output format%s\n",
+  fprintf(stderr, "  -gif           Select GIF output format (LZW-compressed)%s\n",
           (DEFAULT_FMT == FMT_GIF ? " (default)" : ""));
+  fprintf(stderr, "  -gif0          Select GIF output format (uncompressed)%s\n",
+          (DEFAULT_FMT == FMT_GIF0 ? " (default)" : ""));
 #endif
 #ifdef BMP_SUPPORTED
   fprintf(stderr, "  -os2           Select BMP output format (OS/2 style)%s\n",
@@ -227,7 +230,7 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
     arg++;                      /* advance past switch marker character */
 
     if (keymatch(arg, "bmp", 1)) {
-      /* BMP output format. */
+      /* BMP output format (Windows flavor). */
       requested_fmt = FMT_BMP;
 
     } else if (keymatch(arg, "colors", 1) || keymatch(arg, "colours", 1) ||
@@ -298,8 +301,12 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
       cinfo->do_fancy_upsampling = FALSE;
 
     } else if (keymatch(arg, "gif", 1)) {
-      /* GIF output format. */
+      /* GIF output format (LZW-compressed). */
       requested_fmt = FMT_GIF;
+
+    } else if (keymatch(arg, "gif0", 4)) {
+      /* GIF output format (uncompressed). */
+      requested_fmt = FMT_GIF0;
 
     } else if (keymatch(arg, "grayscale", 2) ||
                keymatch(arg, "greyscale", 2)) {
@@ -680,7 +687,10 @@ main(int argc, char **argv)
 #endif
 #ifdef GIF_SUPPORTED
   case FMT_GIF:
-    dest_mgr = jinit_write_gif(&cinfo);
+    dest_mgr = jinit_write_gif(&cinfo, TRUE);
+    break;
+  case FMT_GIF0:
+    dest_mgr = jinit_write_gif(&cinfo, FALSE);
     break;
 #endif
 #ifdef PPM_SUPPORTED

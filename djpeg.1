@@ -80,9 +80,20 @@ is specified, or if the JPEG file is grayscale; otherwise, 24-bit full-color
 format is emitted.
 .TP
 .B \-gif
-Select GIF output format.  Since GIF does not support more than 256 colors,
+Select GIF output format (LZW-compressed).  Since GIF does not support more
+than 256 colors,
 .B \-colors 256
-is assumed (unless you specify a smaller number of colors).
+is assumed (unless you specify a smaller number of colors).  If you specify
+.BR \-fast,
+the default number of colors is 216.
+.TP
+.B \-gif0
+Select GIF output format (uncompressed).  Since GIF does not support more than
+256 colors,
+.B \-colors 256
+is assumed (unless you specify a smaller number of colors).  If you specify
+.BR \-fast,
+the default number of colors is 216.
 .TP
 .B \-os2
 Select BMP output format (OS/2 1.x flavor).  8-bit colormapped format is
@@ -305,10 +316,3 @@ Independent JPEG Group
 This file was modified by The libjpeg-turbo Project to include only information
 relevant to libjpeg-turbo, to wordsmith certain sections, and to describe
 features not present in libjpeg.
-.SH ISSUES
-Support for compressed GIF output files was removed in djpeg v6b due to
-concerns over the Unisys LZW patent.  Although this patent expired in 2006,
-djpeg still lacks compressed GIF support, for these historical reasons.
-(Conversion of JPEG files to GIF is usually a bad idea anyway, since GIF is a
-256-color format.)  The uncompressed GIF files that djpeg generates are larger
-than they should be, but they are readable by standard GIF decoders.

@@ -2,7 +2,7 @@
  * jversion.h
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
+ * Copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, 2012-2020, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -48,7 +48,7 @@
   "Copyright (C) 2009, 2012 Pierre Ossman for Cendio AB\n" \
   "Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)\n" \
   "Copyright (C) 1999-2006 MIYASAKA Masaru\n" \
-  "Copyright (C) 1991-2017 Thomas G. Lane, Guido Vollbeding"
+  "Copyright (C) 1991-2020 Thomas G. Lane, Guido Vollbeding"
 
 #define JCOPYRIGHT_SHORT \
   "Copyright (C) 1991-2020 The libjpeg-turbo Project and many others"

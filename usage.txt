@@ -50,9 +50,9 @@ or
 This syntax works on all systems, so it is useful for scripts.
 
 The currently supported image file formats are: PPM (PBMPLUS color format),
-PGM (PBMPLUS grayscale format), BMP, and Targa.  cjpeg recognizes the input
-image format automatically, with the exception of some Targa files.  You have
-to tell djpeg which format to generate.
+PGM (PBMPLUS grayscale format), BMP, GIF, and Targa.  cjpeg recognizes the
+input image format automatically, with the exception of some Targa files.  You
+have to tell djpeg which format to generate.
 
 JPEG files are in the defacto standard JFIF file format.  There are other,
 less widely used JPEG-based file formats, but we don't support them.
@@ -74,10 +74,10 @@ The basic command line switches for cjpeg are:
 
         -grayscale      Create monochrome JPEG file from color input.
                         Be sure to use this switch when compressing a grayscale
-                        BMP file, because cjpeg isn't bright enough to notice
-                        whether a BMP file uses only shades of gray.  By
-                        saying -grayscale, you'll get a smaller JPEG file that
-                        takes less time to process.
+                        BMP or GIF file, because cjpeg isn't bright enough to
+                        notice whether a BMP or GIF file uses only shades of
+                        gray.  By saying -grayscale, you'll get a smaller JPEG
+                        file that takes less time to process.
 
         -rgb            Create RGB JPEG file.
                         Using this switch suppresses the conversion from RGB
@@ -288,10 +288,17 @@ The basic command line switches for djpeg are:
                         is specified, or if the JPEG file is grayscale;
                         otherwise, 24-bit full-color format is emitted.
 
-        -gif            Select GIF output format.  Since GIF does not support
-                        more than 256 colors, -colors 256 is assumed (unless
-                        you specify a smaller number of colors).  If you
-                        specify -fast, the default number of colors is 216.
+        -gif            Select GIF output format (LZW-compressed).  Since GIF
+                        does not support more than 256 colors, -colors 256 is
+                        assumed (unless you specify a smaller number of
+                        colors).  If you specify -fast, the default number of
+                        colors is 216.
+
+        -gif0           Select GIF output format (uncompressed).  Since GIF
+                        does not support more than 256 colors, -colors 256 is
+                        assumed (unless you specify a smaller number of
+                        colors).  If you specify -fast, the default number of
+                        colors is 216.
 
         -os2            Select BMP output format (OS/2 1.x flavor).  8-bit
                         colormapped format is emitted if -colors or -grayscale
@@ -400,11 +407,6 @@ quality settings to make very small JPEG files; the percentage improvement
 is often a lot more than it is on larger files.  (At present, -optimize
 mode is always selected when generating progressive JPEG files.)
 
-Support for GIF input files was removed in cjpeg v6b due to concerns over
-the Unisys LZW patent.  Although this patent expired in 2006, cjpeg still
-lacks GIF support, for these historical reasons.  (Conversion of GIF files to
-JPEG is usually a bad idea anyway.)
-
 
 HINTS FOR DJPEG
 
@@ -418,10 +420,6 @@ Several options are available that trade off image quality to gain speed.
 When producing a color-quantized image, "-onepass -dither ordered" is fast but
 much lower quality than the default behavior.  "-dither none" may give
 acceptable results in two-pass mode, but is seldom tolerable in one-pass mode.
-
-To avoid the Unisys LZW patent (now expired), djpeg produces uncompressed GIF
-files.  These are larger than they should be, but are readable by standard GIF
-decoders.
 
 
 HINTS FOR BOTH PROGRAMS
@@ -528,6 +526,43 @@ adjustment of the region dimensions may be optionally disabled by attaching an
 The image can be losslessly cropped by giving the switch:
         -crop WxH+X+Y   Crop to a rectangular region of width W and height H,
                         starting at point X,Y.
+
+If W or H is larger than the width/height of the input image, then the output
+image is expanded in size, and the expanded region is filled in with zeros
+(neutral gray).  Attaching an 'f' character ("flatten") to the width number
+will cause each block in the expanded region to be filled in with the DC
+coefficient of the nearest block in the input image rather than grayed out.
+Attaching an 'r' character ("reflect") to the width number will cause the
+expanded region to be filled in with repeated reflections of the input image
+rather than grayed out.
+
+A complementary lossless wipe option is provided to discard (gray out) data
+inside a given image region while losslessly preserving what is outside:
+        -wipe WxH+X+Y   Wipe (gray out) a rectangular region of width W and
+                        height H from the input image, starting at point X,Y.
+
+Attaching an 'f' character ("flatten") to the width number will cause the
+region to be filled with the average of adjacent blocks rather than grayed out.
+If the wipe region and the region outside the wipe region, when adjusted to the
+nearest iMCU boundary, form two horizontally adjacent rectangles, then
+attaching an 'r' character ("reflect") to the width number will cause the wipe
+region to be filled with repeated reflections of the outside region rather than
+grayed out.
+
+A lossless drop option is also provided, which allows another JPEG image to be
+inserted ("dropped") into the input image data at a given position, replacing
+the existing image data at that position:
+        -drop +X+Y filename     Drop (insert) another image at point X,Y
+
+Both the input image and the drop image must have the same subsampling level.
+It is best if they also have the same quantization (quality.)  Otherwise, the
+quantization of the output image will be adapted to accommodate the higher of
+the input image quality and the drop image quality.  The trim option can be
+used with the drop option to requantize the drop image to match the input
+image.  Note that a grayscale image can be dropped into a full-color image or
+vice versa, as long as the full-color image has no vertical subsampling.  If
+the input image is grayscale and the drop image is full-color, then the
+chrominance channels from the drop image will be discarded.
 
 Other not-strictly-lossless transformation switches are:
 

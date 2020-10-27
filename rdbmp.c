@@ -12,7 +12,7 @@
  *
  * This file contains routines to read input images in Microsoft "BMP"
  * format (MS Windows 3.x, OS/2 1.x, and OS/2 2.x flavors).
- * Currently, only 8-bit and 24-bit images are supported, not 1-bit or
+ * Currently, only 8-, 24-, and 32-bit images are supported, not 1-bit or
  * 4-bit (feeding such low-depth images into JPEG would be silly anyway).
  * Also, we don't support RLE-compressed files.
  *
@@ -61,7 +61,7 @@ typedef struct _bmp_source_struct {
   JDIMENSION source_row;        /* Current source row number */
   JDIMENSION row_width;         /* Physical width of scanlines in file */
 
-  int bits_per_pixel;           /* remembers 8- or 24-bit format */
+  int bits_per_pixel;           /* remembers 8-, 24-, or 32-bit format */
   int cmap_length;              /* colormap length */
 
   boolean use_inversion_array;  /* TRUE = preload the whole image, which is
@@ -469,7 +469,9 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       TRACEMS2(cinfo, 1, JTRC_BMP_OS2_MAPPED, biWidth, biHeight);
       break;
     case 24:                    /* RGB image */
-      TRACEMS2(cinfo, 1, JTRC_BMP_OS2, biWidth, biHeight);
+    case 32:                    /* RGB image + Alpha channel */
+      TRACEMS3(cinfo, 1, JTRC_BMP_OS2, biWidth, biHeight,
+               source->bits_per_pixel);
       break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
@@ -496,10 +498,8 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       TRACEMS2(cinfo, 1, JTRC_BMP_MAPPED, biWidth, biHeight);
       break;
     case 24:                    /* RGB image */
-      TRACEMS2(cinfo, 1, JTRC_BMP, biWidth, biHeight);
-      break;
     case 32:                    /* RGB image + Alpha channel */
-      TRACEMS2(cinfo, 1, JTRC_BMP, biWidth, biHeight);
+      TRACEMS3(cinfo, 1, JTRC_BMP, biWidth, biHeight, source->bits_per_pixel);
       break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);

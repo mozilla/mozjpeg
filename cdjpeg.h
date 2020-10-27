@@ -125,7 +125,6 @@ EXTERN(void) read_color_map(j_decompress_ptr cinfo, FILE *infile);
 
 /* common support routines (in cdjpeg.c) */
 
-EXTERN(void) enable_signal_catcher(j_common_ptr cinfo);
 EXTERN(void) start_progress_monitor(j_common_ptr cinfo,
                                     cd_progress_ptr progress);
 EXTERN(void) end_progress_monitor(j_common_ptr cinfo);

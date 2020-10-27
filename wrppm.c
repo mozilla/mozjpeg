@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * Modified 2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, 2019, D. R. Commander.
+ * Copyright (C) 2017, 2019-2020, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -326,11 +326,12 @@ jinit_write_ppm(j_decompress_ptr cinfo)
 
   if (cinfo->quantize_colors || BITS_IN_JSAMPLE != 8 ||
       sizeof(JSAMPLE) != sizeof(char) ||
-      (cinfo->out_color_space != JCS_EXT_RGB
 #if RGB_RED == 0 && RGB_GREEN == 1 && RGB_BLUE == 2 && RGB_PIXELSIZE == 3
-       && cinfo->out_color_space != JCS_RGB
+      (cinfo->out_color_space != JCS_EXT_RGB &&
+       cinfo->out_color_space != JCS_RGB)) {
+#else
+      cinfo->out_color_space != JCS_EXT_RGB) {
 #endif
-      )) {
     /* When quantizing, we need an output buffer for colormap indexes
      * that's separate from the physical I/O buffer.  We also need a
      * separate buffer if pixel format translation must take place.

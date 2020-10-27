@@ -56,12 +56,14 @@
    ((uint64_t)(uint8_t)g << 8)  | \
    ((uint64_t)(uint8_t)h))
 #define _uint64_set1_pi8(a)  _uint64_set_pi8(a, a, a, a, a, a, a, a)
-#define _uint64_set_pi16(a, b, c, d)  (((uint64_t)(uint16_t)a << 48) | \
-                                       ((uint64_t)(uint16_t)b << 32) | \
-                                       ((uint64_t)(uint16_t)c << 16) | \
-                                       ((uint64_t)(uint16_t)d))
+#define _uint64_set_pi16(a, b, c, d) \
+  (((uint64_t)(uint16_t)a << 48) | \
+   ((uint64_t)(uint16_t)b << 32) | \
+   ((uint64_t)(uint16_t)c << 16) | \
+   ((uint64_t)(uint16_t)d))
 #define _uint64_set1_pi16(a)  _uint64_set_pi16(a, a, a, a)
-#define _uint64_set_pi32(a, b)  (((uint64_t)(uint32_t)a << 32) | \
-                                 ((uint64_t)(uint32_t)b))
+#define _uint64_set_pi32(a, b) \
+  (((uint64_t)(uint32_t)a << 32) | \
+   ((uint64_t)(uint32_t)b))
 
 #define get_const_value(index)  (*(__m64 *)&const_value[index])

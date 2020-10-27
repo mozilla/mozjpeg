@@ -627,21 +627,21 @@ asm_function jsimd_idct_islow_neon
     movi            v0.16b, #(CENTERJSAMPLE)
     /* Prepare pointers (dual-issue with Neon instructions) */
       ldp             TMP1, TMP2, [OUTPUT_BUF], 16
-    sqrshrn         v28.8b, v2.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn         v28.8b, v2.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       ldp             TMP3, TMP4, [OUTPUT_BUF], 16
-    sqrshrn         v29.8b, v3.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn         v29.8b, v3.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       add             TMP1, TMP1, OUTPUT_COL
-    sqrshrn         v30.8b, v4.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn         v30.8b, v4.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       add             TMP2, TMP2, OUTPUT_COL
-    sqrshrn         v31.8b, v5.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn         v31.8b, v5.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       add             TMP3, TMP3, OUTPUT_COL
-    sqrshrn2        v28.16b, v6.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn2        v28.16b, v6.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       add             TMP4, TMP4, OUTPUT_COL
-    sqrshrn2        v29.16b, v7.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn2        v29.16b, v7.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       ldp             TMP5, TMP6, [OUTPUT_BUF], 16
-    sqrshrn2        v30.16b, v8.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn2        v30.16b, v8.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       ldp             TMP7, TMP8, [OUTPUT_BUF], 16
-    sqrshrn2        v31.16b, v9.8h, #(CONST_BITS+PASS1_BITS+3-16)
+    sqrshrn2        v31.16b, v9.8h, #(CONST_BITS + PASS1_BITS + 3 - 16)
       add             TMP5, TMP5, OUTPUT_COL
     add             v16.16b, v28.16b, v0.16b
       add             TMP6, TMP6, OUTPUT_COL
@@ -753,14 +753,14 @@ asm_function jsimd_idct_islow_neon
     add             v14.4s, v6.4s, v10.4s  /* tmp13 + tmp0 */
     sub             v16.4s, v6.4s, v10.4s  /* tmp13 - tmp0 */
 
-    rshrn           v2.4h, v18.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v3.4h, v22.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v4.4h, v26.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v5.4h, v14.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v2.8h, v16.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v3.8h, v28.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v4.8h, v24.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v5.8h, v20.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v2.4h, v18.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v3.4h, v22.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v4.4h, v26.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v5.4h, v14.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v2.8h, v16.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v3.8h, v28.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v4.8h, v24.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v5.8h, v20.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
     mov             v6.16b, v15.16b
     mov             v7.16b, v15.16b
     mov             v8.16b, v15.16b
@@ -837,14 +837,14 @@ asm_function jsimd_idct_islow_neon
     mov             v3.16b, v14.16b
     mov             v4.16b, v14.16b
     mov             v5.16b, v14.16b
-    rshrn           v6.4h, v19.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v7.4h, v23.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v8.4h, v27.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v9.4h, v15.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v6.8h, v17.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v7.8h, v29.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v8.8h, v25.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v9.8h, v21.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v6.4h, v19.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v7.4h, v23.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v8.4h, v27.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v9.4h, v15.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v6.8h, v17.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v7.8h, v29.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v8.8h, v25.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v9.8h, v21.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
     b               1b
 
 .balign 16
@@ -947,22 +947,22 @@ asm_function jsimd_idct_islow_neon
     sub             v16.4s, v6.4s, v10.4s   /* tmp13 - tmp0 */
     sub             v17.4s, v31.4s, v11.4s  /* tmp13 - tmp0 */
 
-    rshrn           v2.4h, v18.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v3.4h, v22.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v4.4h, v26.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v5.4h, v14.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn           v6.4h, v19.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn           v7.4h, v23.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn           v8.4h, v27.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn           v9.4h, v15.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v2.8h, v16.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v3.8h, v28.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v4.8h, v24.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v5.8h, v20.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
-    rshrn2          v6.8h, v17.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
-    rshrn2          v7.8h, v29.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
-    rshrn2          v8.8h, v25.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
-    rshrn2          v9.8h, v21.4s, #(CONST_BITS-PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v2.4h, v18.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v3.4h, v22.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v4.4h, v26.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v5.4h, v14.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn           v6.4h, v19.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*0] = (int)DESCALE(tmp10 + tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn           v7.4h, v23.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*1] = (int)DESCALE(tmp11 + tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn           v8.4h, v27.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*2] = (int)DESCALE(tmp12 + tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn           v9.4h, v15.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*3] = (int)DESCALE(tmp13 + tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v2.8h, v16.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v3.8h, v28.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v4.8h, v24.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v5.8h, v20.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
+    rshrn2          v6.8h, v17.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*4] = (int)DESCALE(tmp13 - tmp0, CONST_BITS-PASS1_BITS) */
+    rshrn2          v7.8h, v29.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*5] = (int)DESCALE(tmp12 - tmp1, CONST_BITS-PASS1_BITS) */
+    rshrn2          v8.8h, v25.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*6] = (int)DESCALE(tmp11 - tmp2, CONST_BITS-PASS1_BITS) */
+    rshrn2          v9.8h, v21.4s, #(CONST_BITS - PASS1_BITS)  /* wsptr[DCTSIZE*7] = (int)DESCALE(tmp10 - tmp3, CONST_BITS-PASS1_BITS) */
     b               1b
 
     .unreq          DCT_TABLE
@@ -1419,7 +1419,7 @@ asm_function jsimd_idct_4x4_neon
     st1             {v27.b}[7], [TMP4], 1
 #endif
 
-    /* vpop            {v8.4h - v15.4h}    ;not available */
+    /* vpop            {v8.4h - v15.4h}    (not available) */
     ld1             {v8.8b, v9.8b, v10.8b, v11.8b}, [sp], 32
     ld1             {v12.8b, v13.8b, v14.8b, v15.8b}, [sp], 32
     blr             x30
@@ -1487,7 +1487,7 @@ asm_function jsimd_idct_2x2_neon
        instruction ensures that those bits are set to zero. */
     uxtw x3, w3
 
-    /* vpush           {v8.4h - v15.4h}            ; not available */
+    /* vpush           {v8.4h - v15.4h}    (not available) */
     sub             sp, sp, 64
     mov             x9, sp
 
@@ -3457,136 +3457,136 @@ generate_jsimd_huff_encode_one_block 0
  */
 
 .macro LOAD16
-    ldr             T0d, [LUT, #(0*4)]
-    ldr             T1d, [LUT, #(8*4)]
+    ldr             T0d, [LUT, #(0 * 4)]
+    ldr             T1d, [LUT, #(8 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[0], [T0]
     ld1             {Y1.h}[0], [T1]
 
-    ldr             T0d, [LUT, #(1*4)]
-    ldr             T1d, [LUT, #(9*4)]
+    ldr             T0d, [LUT, #(1 * 4)]
+    ldr             T1d, [LUT, #(9 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[1], [T0]
     ld1             {Y1.h}[1], [T1]
 
-    ldr             T0d, [LUT, #(2*4)]
-    ldr             T1d, [LUT, #(10*4)]
+    ldr             T0d, [LUT, #(2 * 4)]
+    ldr             T1d, [LUT, #(10 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[2], [T0]
     ld1             {Y1.h}[2], [T1]
 
-    ldr             T0d, [LUT, #(3*4)]
-    ldr             T1d, [LUT, #(11*4)]
+    ldr             T0d, [LUT, #(3 * 4)]
+    ldr             T1d, [LUT, #(11 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[3], [T0]
     ld1             {Y1.h}[3], [T1]
 
-    ldr             T0d, [LUT, #(4*4)]
-    ldr             T1d, [LUT, #(12*4)]
+    ldr             T0d, [LUT, #(4 * 4)]
+    ldr             T1d, [LUT, #(12 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[4], [T0]
     ld1             {Y1.h}[4], [T1]
 
-    ldr             T0d, [LUT, #(5*4)]
-    ldr             T1d, [LUT, #(13*4)]
+    ldr             T0d, [LUT, #(5 * 4)]
+    ldr             T1d, [LUT, #(13 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[5], [T0]
     ld1             {Y1.h}[5], [T1]
 
-    ldr             T0d, [LUT, #(6*4)]
-    ldr             T1d, [LUT, #(14*4)]
+    ldr             T0d, [LUT, #(6 * 4)]
+    ldr             T1d, [LUT, #(14 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[6], [T0]
     ld1             {Y1.h}[6], [T1]
 
-    ldr             T0d, [LUT, #(7*4)]
-    ldr             T1d, [LUT, #(15*4)]
+    ldr             T0d, [LUT, #(7 * 4)]
+    ldr             T1d, [LUT, #(15 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[7], [T0]
     ld1             {Y1.h}[7], [T1]
 
-    add             LUT, LUT, #(16*4)
+    add             LUT, LUT, #(16 * 4)
 .endm
 
 .macro LOAD15
     eor             Y1.16b, Y1.16b, Y1.16b
 
-    ldr             T0d, [LUT, #(0*4)]
-    ldr             T1d, [LUT, #(8*4)]
+    ldr             T0d, [LUT, #(0 * 4)]
+    ldr             T1d, [LUT, #(8 * 4)]
     add             T0, BLOCK, T0, lsl #1
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[0], [T0]
     ld1             {Y1.h}[0], [T1]
 
-    ldr             T0d, [LUT, #(1*4)]
+    ldr             T0d, [LUT, #(1 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[1], [T0]
 
-    ldr             T0d, [LUT, #(2*4)]
+    ldr             T0d, [LUT, #(2 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[2], [T0]
 
-    ldr             T0d, [LUT, #(3*4)]
+    ldr             T0d, [LUT, #(3 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[3], [T0]
 
-    ldr             T0d, [LUT, #(4*4)]
+    ldr             T0d, [LUT, #(4 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[4], [T0]
 
-    ldr             T0d, [LUT, #(5*4)]
+    ldr             T0d, [LUT, #(5 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[5], [T0]
 
-    ldr             T0d, [LUT, #(6*4)]
+    ldr             T0d, [LUT, #(6 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[6], [T0]
 
-    ldr             T0d, [LUT, #(7*4)]
+    ldr             T0d, [LUT, #(7 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[7], [T0]
 
     cmp             LENEND, #2
     b.lt            1515f
-    ldr             T1d, [LUT, #(9*4)]
+    ldr             T1d, [LUT, #(9 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y1.h}[1], [T1]
 
     cmp             LENEND, #3
     b.lt            1515f
-    ldr             T1d, [LUT, #(10*4)]
+    ldr             T1d, [LUT, #(10 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y1.h}[2], [T1]
 
     cmp             LENEND, #4
     b.lt            1515f
-    ldr             T1d, [LUT, #(11*4)]
+    ldr             T1d, [LUT, #(11 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y1.h}[3], [T1]
 
     cmp             LENEND, #5
     b.lt            1515f
-    ldr             T1d, [LUT, #(12*4)]
+    ldr             T1d, [LUT, #(12 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y1.h}[4], [T1]
 
     cmp             LENEND, #6
     b.lt            1515f
-    ldr             T1d, [LUT, #(13*4)]
+    ldr             T1d, [LUT, #(13 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y1.h}[5], [T1]
 
     cmp             LENEND, #7
     b.lt            1515f
-    ldr             T1d, [LUT, #(14*4)]
+    ldr             T1d, [LUT, #(14 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y1.h}[6], [T1]
 
@@ -3594,35 +3594,35 @@ generate_jsimd_huff_encode_one_block 0
 .endm
 
 .macro LOAD8
-    ldr             T0d, [LUT, #(0*4)]
+    ldr             T0d, [LUT, #(0 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[0], [T0]
 
-    ldr             T0d, [LUT, #(1*4)]
+    ldr             T0d, [LUT, #(1 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[1], [T0]
 
-    ldr             T0d, [LUT, #(2*4)]
+    ldr             T0d, [LUT, #(2 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[2], [T0]
 
-    ldr             T0d, [LUT, #(3*4)]
+    ldr             T0d, [LUT, #(3 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[3], [T0]
 
-    ldr             T0d, [LUT, #(4*4)]
+    ldr             T0d, [LUT, #(4 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[4], [T0]
 
-    ldr             T0d, [LUT, #(5*4)]
+    ldr             T0d, [LUT, #(5 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[5], [T0]
 
-    ldr             T0d, [LUT, #(6*4)]
+    ldr             T0d, [LUT, #(6 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[6], [T0]
 
-    ldr             T0d, [LUT, #(7*4)]
+    ldr             T0d, [LUT, #(7 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[7], [T0]
 .endm
@@ -3630,43 +3630,43 @@ generate_jsimd_huff_encode_one_block 0
 .macro LOAD7
     eor             Y0.16b, Y0.16b, Y0.16b
 
-    ldr             T0d, [LUT, #(0*4)]
+    ldr             T0d, [LUT, #(0 * 4)]
     add             T0, BLOCK, T0, lsl #1
     ld1             {Y0.h}[0], [T0]
 
     cmp             LENEND, #2
     b.lt            77f
-    ldr             T1d, [LUT, #(1*4)]
+    ldr             T1d, [LUT, #(1 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[1], [T1]
 
     cmp             LENEND, #3
     b.lt            77f
-    ldr             T1d, [LUT, #(2*4)]
+    ldr             T1d, [LUT, #(2 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[2], [T1]
 
     cmp             LENEND, #4
     b.lt            77f
-    ldr             T1d, [LUT, #(3*4)]
+    ldr             T1d, [LUT, #(3 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[3], [T1]
 
     cmp             LENEND, #5
     b.lt            77f
-    ldr             T1d, [LUT, #(4*4)]
+    ldr             T1d, [LUT, #(4 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[4], [T1]
 
     cmp             LENEND, #6
     b.lt            77f
-    ldr             T1d, [LUT, #(5*4)]
+    ldr             T1d, [LUT, #(5 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[5], [T1]
 
     cmp             LENEND, #7
     b.lt            77f
-    ldr             T1d, [LUT, #(6*4)]
+    ldr             T1d, [LUT, #(6 * 4)]
     add             T1, BLOCK, T1, lsl #1
     ld1             {Y0.h}[6], [T1]
 

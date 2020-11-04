@@ -170,35 +170,43 @@ Switches for advanced users:
                         be unable to view an arithmetic coded JPEG file at
                         all.
 
-        -dct int        Use integer DCT method (default).
-        -dct fast       Use fast integer DCT (less accurate).
-                        In libjpeg-turbo, the fast method is generally about
-                        5-15% faster than the int method when using the
-                        x86/x86-64 SIMD extensions (results may vary with other
-                        SIMD implementations, or when using libjpeg-turbo
-                        without SIMD extensions.)  For quality levels of 90 and
-                        below, there should be little or no perceptible
-                        difference between the two algorithms.  For quality
-                        levels above 90, however, the difference between
-                        the fast and the int methods becomes more pronounced.
-                        With quality=97, for instance, the fast method incurs
-                        generally about a 1-3 dB loss (in PSNR) relative to
-                        the int method, but this can be larger for some images.
-                        Do not use the fast method with quality levels above
-                        97.  The algorithm often degenerates at quality=98 and
-                        above and can actually produce a more lossy image than
-                        if lower quality levels had been used.  Also, in
-                        libjpeg-turbo, the fast method is not fully accerated
-                        for quality levels above 97, so it will be slower than
-                        the int method.
-        -dct float      Use floating-point DCT method.
-                        The float method is mainly a legacy feature.  It does
-                        not produce significantly more accurate results than
-                        the int method, and it is much slower.  The float
-                        method may also give different results on different
-                        machines due to varying roundoff behavior, whereas the
-                        integer methods should give the same results on all
-                        machines.
+        -dct int        Use accurate integer DCT method (default).
+        -dct fast       Use less accurate integer DCT method [legacy feature].
+                        When the Independent JPEG Group's software was first
+                        released in 1991, the compression time for a
+                        1-megapixel JPEG image on a mainstream PC was measured
+                        in minutes.  Thus, the fast integer DCT algorithm
+                        provided noticeable performance benefits.  On modern
+                        CPUs running libjpeg-turbo, however, the compression
+                        time for a 1-megapixel JPEG image is measured in
+                        milliseconds, and thus the performance benefits of the
+                        fast algorithm are much less noticeable.  On modern
+                        x86/x86-64 CPUs that support AVX2 instructions, the
+                        fast and int methods have similar performance.  On
+                        other types of CPUs, the fast method is generally about
+                        5-15% faster than the int method.
+
+                        For quality levels of 90 and below, there should be
+                        little or no perceptible quality difference between the
+                        two algorithms.  For quality levels above 90, however,
+                        the difference between the fast and int methods becomes
+                        more pronounced.  With quality=97, for instance, the
+                        fast method incurs generally about a 1-3 dB loss in
+                        PSNR relative to the int method, but this can be larger
+                        for some images.  Do not use the fast method with
+                        quality levels above 97.  The algorithm often
+                        degenerates at quality=98 and above and can actually
+                        produce a more lossy image than if lower quality levels
+                        had been used.  Also, in libjpeg-turbo, the fast method
+                        is not fully accelerated for quality levels above 97,
+                        so it will be slower than the int method.
+        -dct float      Use floating-point DCT method [legacy feature].
+                        The float method does not produce significantly more
+                        accurate results than the int method, and it is much
+                        slower.  The float method may also give different
+                        results on different machines due to varying roundoff
+                        behavior, whereas the integer methods should give the
+                        same results on all machines.
 
         -restart N      Emit a JPEG restart marker every N MCU rows, or every
                         N MCU blocks if "B" is attached to the number.
@@ -315,36 +323,45 @@ The basic command line switches for djpeg are:
 
 Switches for advanced users:
 
-        -dct int        Use integer DCT method (default).
-        -dct fast       Use fast integer DCT (less accurate).
-                        In libjpeg-turbo, the fast method is generally about
-                        5-15% faster than the int method when using the
-                        x86/x86-64 SIMD extensions (results may vary with other
-                        SIMD implementations, or when using libjpeg-turbo
-                        without SIMD extensions.)  If the JPEG image was
-                        compressed using a quality level of 85 or below, then
-                        there should be little or no perceptible difference
-                        between the two algorithms.  When decompressing images
-                        that were compressed using quality levels above 85,
-                        however, the difference between the fast and int
-                        methods becomes more pronounced.  With images
-                        compressed using quality=97, for instance, the fast
-                        method incurs generally about a 4-6 dB loss (in PSNR)
-                        relative to the int method, but this can be larger for
-                        some images.  If you can avoid it, do not use the fast
-                        method when decompressing images that were compressed
-                        using quality levels above 97.  The algorithm often
-                        degenerates for such images and can actually produce
-                        a more lossy output image than if the JPEG image had
-                        been compressed using lower quality levels.
-        -dct float      Use floating-point DCT method.
-                        The float method is mainly a legacy feature.  It does
-                        not produce significantly more accurate results than
-                        the int method, and it is much slower.  The float
-                        method may also give different results on different
-                        machines due to varying roundoff behavior, whereas the
-                        integer methods should give the same results on all
-                        machines.
+        -dct int        Use accurate integer DCT method (default).
+        -dct fast       Use less accurate integer DCT method [legacy feature].
+                        When the Independent JPEG Group's software was first
+                        released in 1991, the decompression time for a
+                        1-megapixel JPEG image on a mainstream PC was measured
+                        in minutes.  Thus, the fast integer DCT algorithm
+                        provided noticeable performance benefits.  On modern
+                        CPUs running libjpeg-turbo, however, the decompression
+                        time for a 1-megapixel JPEG image is measured in
+                        milliseconds, and thus the performance benefits of the
+                        fast algorithm are much less noticeable.  On modern
+                        x86/x86-64 CPUs that support AVX2 instructions, the
+                        fast and int methods have similar performance.  On
+                        other types of CPUs, the fast method is generally about
+                        5-15% faster than the int method.
+
+                        If the JPEG image was compressed using a quality level
+                        of 85 or below, then there should be little or no
+                        perceptible quality difference between the two
+                        algorithms.  When decompressing images that were
+                        compressed using quality levels above 85, however, the
+                        difference between the fast and int methods becomes
+                        more pronounced.  With images compressed using
+                        quality=97, for instance, the fast method incurs
+                        generally about a 4-6 dB loss in PSNR relative to the
+                        int method, but this can be larger for some images.  If
+                        you can avoid it, do not use the fast method when
+                        decompressing images that were compressed using quality
+                        levels above 97.  The algorithm often degenerates for
+                        such images and can actually produce a more lossy
+                        output image than if the JPEG image had been compressed
+                        using lower quality levels.
+        -dct float      Use floating-point DCT method [legacy feature].
+                        The float method does not produce significantly more
+                        accurate results than the int method, and it is much
+                        slower.  The float method may also give different
+                        results on different machines due to varying roundoff
+                        behavior, whereas the integer methods should give the
+                        same results on all machines.
 
         -dither fs      Use Floyd-Steinberg dithering in color quantization.
         -dither ordered Use ordered dithering in color quantization.

@@ -1,4 +1,4 @@
-.TH DJPEG 1 "13 November 2017"
+.TH DJPEG 1 "4 November 2020"
 .SH NAME
 djpeg \- decompress a JPEG file to an image file
 .SH SYNOPSIS
@@ -114,32 +114,40 @@ is specified; otherwise, 24-bit full-color format is emitted.
 Switches for advanced users:
 .TP
 .B \-dct int
-Use integer DCT method (default).
+Use accurate integer DCT method (default).
 .TP
 .B \-dct fast
-Use fast integer DCT (less accurate).
-In libjpeg-turbo, the fast method is generally about 5-15% faster than the int
-method when using the x86/x86-64 SIMD extensions (results may vary with other
-SIMD implementations, or when using libjpeg-turbo without SIMD extensions.)  If
-the JPEG image was compressed using a quality level of 85 or below, then there
-should be little or no perceptible difference between the two algorithms.  When
-decompressing images that were compressed using quality levels above 85,
-however, the difference between the fast and int methods becomes more
-pronounced.  With images compressed using quality=97, for instance, the fast
-method incurs generally about a 4-6 dB loss (in PSNR) relative to the int
-method, but this can be larger for some images.  If you can avoid it, do not
-use the fast method when decompressing images that were compressed using
-quality levels above 97.  The algorithm often degenerates for such images and
-can actually produce a more lossy output image than if the JPEG image had been
-compressed using lower quality levels.
+Use less accurate integer DCT method [legacy feature].
+When the Independent JPEG Group's software was first released in 1991, the
+decompression time for a 1-megapixel JPEG image on a mainstream PC was measured
+in minutes.  Thus, the \fBfast\fR integer DCT algorithm provided noticeable
+performance benefits.  On modern CPUs running libjpeg-turbo, however, the
+decompression time for a 1-megapixel JPEG image is measured in milliseconds,
+and thus the performance benefits of the \fBfast\fR algorithm are much less
+noticeable.  On modern x86/x86-64 CPUs that support AVX2 instructions, the
+\fBfast\fR and \fBint\fR methods have similar performance.  On other types of
+CPUs, the \fBfast\fR method is generally about 5-15% faster than the \fBint\fR
+method.
+
+If the JPEG image was compressed using a quality level of 85 or below, then
+there should be little or no perceptible quality difference between the two
+algorithms.  When decompressing images that were compressed using quality
+levels above 85, however, the difference between the \fBfast\fR and \fBint\fR
+methods becomes more pronounced.  With images compressed using quality=97, for
+instance, the \fBfast\fR method incurs generally about a 4-6 dB loss in PSNR
+relative to the \fBint\fR method, but this can be larger for some images.  If
+you can avoid it, do not use the \fBfast\fR method when decompressing images
+that were compressed using quality levels above 97.  The algorithm often
+degenerates for such images and can actually produce a more lossy output image
+than if the JPEG image had been compressed using lower quality levels.
 .TP
 .B \-dct float
-Use floating-point DCT method.
-The float method is mainly a legacy feature.  It does not produce significantly
-more accurate results than the int method, and it is much slower.  The float
-method may also give different results on different machines due to varying
-roundoff behavior, whereas the integer methods should give the same results on
-all machines.
+Use floating-point DCT method [legacy feature].
+The \fBfloat\fR method does not produce significantly more accurate results
+than the \fBint\fR method, and it is much slower.  The \fBfloat\fR method may
+also give different results on different machines due to varying roundoff
+behavior, whereas the integer methods should give the same results on all
+machines.
 .TP
 .B \-dither fs
 Use Floyd-Steinberg dithering in color quantization.
@@ -253,12 +261,6 @@ is fast but much lower quality than the default behavior.
 .B \-dither none
 may give acceptable results in two-pass mode, but is seldom tolerable in
 one-pass mode.
-.PP
-If you are fortunate enough to have very fast floating point hardware,
-\fB\-dct float\fR may be even faster than \fB\-dct fast\fR.  But on most
-machines \fB\-dct float\fR is slower than \fB\-dct int\fR; in this case it is
-not worth using, because its theoretical accuracy advantage is too small to be
-significant in practice.
 .SH ENVIRONMENT
 .TP
 .B JPEGMEM

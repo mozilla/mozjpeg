@@ -6,7 +6,7 @@
  * Author:  Siarhei Siamashka <siarhei.siamashka@nokia.com>
  * Copyright (C) 2013-2014, Linaro Limited.  All Rights Reserved.
  * Author:  Ragesh Radhakrishnan <ragesh.r@linaro.org>
- * Copyright (C) 2014-2016, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2014-2016, 2020, D. R. Commander.  All Rights Reserved.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.  All Rights Reserved.
  * Copyright (C) 2016, Siarhei Siamashka.  All Rights Reserved.
  *
@@ -2359,7 +2359,7 @@ asm_function jsimd_convsamp_neon
 /*
  * jsimd_fdct_islow_neon
  *
- * This file contains a slow-but-accurate integer implementation of the
+ * This file contains a slower but more accurate integer implementation of the
  * forward DCT (Discrete Cosine Transform). The following code is based
  * directly on the IJG''s original jfdctint.c; see the jfdctint.c for
  * more details.

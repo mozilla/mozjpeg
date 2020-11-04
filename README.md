@@ -287,12 +287,13 @@ following reasons:
   (and slightly faster) floating point IDCT algorithm introduced in libjpeg
   v8a as opposed to the algorithm used in libjpeg v6b.  It should be noted,
   however, that this algorithm basically brings the accuracy of the floating
-  point IDCT in line with the accuracy of the slow integer IDCT.  The floating
-  point DCT/IDCT algorithms are mainly a legacy feature, and they do not
-  produce significantly more accuracy than the slow integer algorithms (to put
-  numbers on this, the typical difference in PNSR between the two algorithms
-  is less than 0.10 dB, whereas changing the quality level by 1 in the upper
-  range of the quality scale is typically more like a 1.0 dB difference.)
+  point IDCT in line with the accuracy of the accurate integer IDCT.  The
+  floating point DCT/IDCT algorithms are mainly a legacy feature, and they do
+  not produce significantly more accuracy than the accurate integer algorithms
+  (to put numbers on this, the typical difference in PNSR between the two
+  algorithms is less than 0.10 dB, whereas changing the quality level by 1 in
+  the upper range of the quality scale is typically more like a 1.0 dB
+  difference.)
 
 - If the floating point algorithms in libjpeg-turbo are not implemented using
   SIMD instructions on a particular platform, then the accuracy of the
@@ -340,7 +341,7 @@ The algorithm used by the SIMD-accelerated quantization function cannot produce
 correct results whenever the fast integer forward DCT is used along with a JPEG
 quality of 98-100.  Thus, libjpeg-turbo must use the non-SIMD quantization
 function in those cases.  This causes performance to drop by as much as 40%.
-It is therefore strongly advised that you use the slow integer forward DCT
+It is therefore strongly advised that you use the accurate integer forward DCT
 whenever encoding images with a JPEG quality of 98 or higher.
 
 

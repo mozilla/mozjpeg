@@ -388,7 +388,7 @@ detect actual security issues, should they arise in the future.
 
 1. Added AVX2 SIMD implementations of the colorspace conversion, chroma
 downsampling and upsampling, integer quantization and sample conversion, and
-slow integer DCT/IDCT algorithms.  When using the slow integer DCT/IDCT
+accurate integer DCT/IDCT algorithms.  When using the accurate integer DCT/IDCT
 algorithms on AVX2-equipped CPUs, the compression of RGB images is
 approximately 13-36% (avg. 22%) faster (relative to libjpeg-turbo 1.5.x) with
 64-bit code and 11-21% (avg. 17%) faster with 32-bit code, and the
@@ -498,10 +498,10 @@ libraries that link statically with libjpeg-turbo.
 
 13. Added Loongson MMI SIMD implementations of the RGB-to-YCbCr and
 YCbCr-to-RGB colorspace conversion, 4:2:0 chroma downsampling, 4:2:0 fancy
-chroma upsampling, integer quantization, and slow integer DCT/IDCT algorithms.
-When using the slow integer DCT/IDCT, this speeds up the compression of RGB
-images by approximately 70-100% and the decompression of RGB images by
-approximately 2-3.5x.
+chroma upsampling, integer quantization, and accurate integer DCT/IDCT
+algorithms.  When using the accurate integer DCT/IDCT, this speeds up the
+compression of RGB images by approximately 70-100% and the decompression of RGB
+images by approximately 2-3.5x.
 
 14. Fixed a build error when building with older MinGW releases (regression
 caused by 1.5.1[7].)
@@ -833,8 +833,8 @@ benchmarking or regression testing, SIMD-accelerated Huffman encoding can be
 disabled by setting the `JSIMD_NOHUFFENC` environment variable to `1`.
 
 13. Added ARM 64-bit (ARMv8) NEON SIMD implementations of the commonly-used
-compression algorithms (including the slow integer forward DCT and h2v2 & h2v1
-downsampling algorithms, which are not accelerated in the 32-bit NEON
+compression algorithms (including the accurate integer forward DCT and h2v2 &
+h2v1 downsampling algorithms, which are not accelerated in the 32-bit NEON
 implementation.)  This speeds up the compression of full-color JPEGs by about
 75% on average on a Cavium ThunderX processor and by about 2-2.5x on average on
 Cortex-A53 and Cortex-A57 cores.
@@ -965,8 +965,8 @@ platforms other than Windows or Linux.  Oops.
 
 7. Fixed an extremely rare bug in the Huffman encoder that caused 64-bit
 builds of libjpeg-turbo to incorrectly encode a few specific test images when
-quality=98, an optimized Huffman table, and the slow integer forward DCT were
-used.
+quality=98, an optimized Huffman table, and the accurate integer forward DCT
+were used.
 
 8. The Windows (CMake) build system now supports building only static or only
 shared libraries.  This is accomplished by adding either `-DENABLE_STATIC=0` or
@@ -1125,8 +1125,8 @@ floating point inverse DCT (using code borrowed from libjpeg v8a and later.)
 The accuracy of this implementation now matches the accuracy of the SSE/SSE2
 implementation.  Note, however, that the floating point DCT/IDCT algorithms are
 mainly a legacy feature.  They generally do not produce significantly better
-accuracy than the slow integer DCT/IDCT algorithms, and they are quite a bit
-slower.
+accuracy than the accurate integer DCT/IDCT algorithms, and they are quite a
+bit slower.
 
 8. Added a new output colorspace (`JCS_RGB565`) to the libjpeg API that allows
 for decompressing JPEG images into RGB565 (16-bit) pixels.  If dithering is not
@@ -1536,8 +1536,8 @@ cases.
 
 2. Despite the above, the fast integer forward DCT still degrades somewhat for
 JPEG qualities greater than 95, so the TurboJPEG wrapper will now automatically
-use the slow integer forward DCT when generating JPEG images of quality 96 or
-greater.  This reduces compression performance by as much as 15% for these
+use the accurate integer forward DCT when generating JPEG images of quality 96
+or greater.  This reduces compression performance by as much as 15% for these
 high-quality images but is necessary to ensure that the images are perceptually
 lossless.  It also ensures that the library can avoid the performance pitfall
 created by [1].

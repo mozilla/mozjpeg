@@ -774,7 +774,29 @@ else()
   set(MD5_PPM_3x2_IFAST fd283664b3b49127984af0a7f118fccd)
   set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
   set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
-  set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
+  # Since v1.5.1, libjpeg-turbo uses the separate non-fancy upsampling and
+  # YCbCr -> RGB color conversion routines rather than merged upsampling/color
+  # conversion when fancy upsampling is disabled on platforms that have a SIMD
+  # implementation of YCbCr -> RGB color conversion but no SIMD implementation
+  # of merged upsampling/color conversion.  This was intended to improve the
+  # performance of the Arm Neon SIMD extensions, the only SIMD extensions for
+  # which those circumstances currently apply.  The separate non-fancy
+  # upsampling and color conversion routines usually produce bitwise-identical
+  # output to the merged upsampling/color conversion routines, but that is not
+  # the case when skipping scanlines starting at an odd-numbered scanline.  In
+  # libjpeg-turbo 2.0.5 and prior, doing that while using merged h2v2
+  # upsampling caused a segfault, so this test validates the fix for that
+  # segfault.  Unfortunately, however, the test also produces different bitwise
+  # output when using the Neon SIMD extensions, because of the aforementioned
+  # optimization.  The easiest workaround is to use the old test from
+  # libjpeg-turbo 2.0.5 and prior when using the Neon SIMD extensions.  The
+  # aforementioned segfault never would have occurred with the Neon SIMD
+  # extensions anyhow, since merged upsampling is disabled when using them.
+  if((CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm") AND WITH_SIMD)
+    set(MD5_PPM_420M_IFAST_ARI 72b59a99bcf1de24c5b27d151bde2437)
+  else()
+    set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
+  endif()
   set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
   set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
   set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
@@ -1165,9 +1187,17 @@ foreach(libtype ${TEST_LIBTYPES})
 
   if(WITH_ARITH_DEC)
     # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
-    add_bittest(djpeg 420m-ifast-ari "-fast;-skip;1,20;-ppm"
-      testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
-      ${MD5_PPM_420M_IFAST_ARI})
+    if((CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm") AND WITH_SIMD)
+      # Refer to the comment above the definition of MD5_PPM_420M_IFAST_ARI for
+      # an explanation of why this is necessary.
+      add_bittest(djpeg 420m-ifast-ari "-fast;-ppm"
+        testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
+        ${MD5_PPM_420M_IFAST_ARI})
+    else()
+      add_bittest(djpeg 420m-ifast-ari "-fast;-skip;1,20;-ppm"
+        testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
+        ${MD5_PPM_420M_IFAST_ARI})
+    endif()
 
     add_bittest(jpegtran 420-islow ""
       testout_420_islow.jpg ${TESTIMAGES}/testimgari.jpg

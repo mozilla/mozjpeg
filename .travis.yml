@@ -34,38 +34,22 @@ matrix:
         CTEST_OUTPUT_ON_FAILURE=1
     - os: linux
       compiler: gcc
+      arch: ppc64le
       env:
         CMAKE_FLAGS="-DWITH_JPEG7=1"
         CTEST_OUTPUT_ON_FAILURE=1
-      addons:
-        apt:
-          packages:
-            - nasm
     - os: linux
       compiler: gcc
+      arch: arm64
       env:
         CMAKE_FLAGS="-DWITH_JPEG8=1"
         CTEST_OUTPUT_ON_FAILURE=1
-      addons:
-        apt:
-          packages:
-            - nasm
     - os: linux
       compiler: clang
       env:
         CMAKE_BUILD_TYPE=RelWithDebInfo
         CFLAGS_RELWITHDEBINFO="-O3 -g -fsanitize=memory -fPIE"
         CMAKE_FLAGS="-DWITH_SIMD=0"
-        CTEST_OUTPUT_ON_FAILURE=1
-    - os: linux
-      compiler: gcc
-      arch: arm64
-      env:
-        CTEST_OUTPUT_ON_FAILURE=1
-    - os: linux
-      compiler: gcc
-      arch: ppc64le
-      env:
         CTEST_OUTPUT_ON_FAILURE=1
 
 before_install:

@@ -61,6 +61,11 @@ matrix:
       arch: arm64
       env:
         CTEST_OUTPUT_ON_FAILURE=1
+    - os: linux
+      compiler: clang
+      arch: arm64
+      env:
+        CTEST_OUTPUT_ON_FAILURE=1
 
 before_install:
   - if [ "$BUILD_X32" = "1" ]; then
@@ -72,7 +77,6 @@ before_install:
       . ./macports-ci install &&
       sudo /opt/local/bin/port -N install yasm md5sha1sum &&
       popd &&
-      git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
       ln -fs /Applications/Xcode.app /Applications/Xcode83.app;
     fi
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
@@ -100,7 +104,7 @@ script:
         sudo chown -R travis:travis ~/src/ljt.nightly &&
         mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
       else
-        PATH=$PATH:~/src/gas-preprocessor ~/src/buildscripts/buildljt -d $TRAVIS_BUILD_DIR -v &&
+        ~/src/buildscripts/buildljt -d $TRAVIS_BUILD_DIR -v &&
         mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
       fi
     fi

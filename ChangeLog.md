@@ -108,6 +108,28 @@ jpeg-6a and jpeg-9d.)
 jpeg-9d, as well as the ability to expand the image size using the `-crop`
 option.  Refer to jpegtran.1 or usage.txt for more details.
 
+13. Added a complete intrinsics implementation of the Arm Neon SIMD extensions,
+thus providing SIMD acceleration on Arm platforms for all of the algorithms
+that are SIMD-accelerated on x86 platforms.  This new implementation is
+significantly faster in some cases than the old GAS implementation--
+depending on the algorithms used, the type of CPU core, and the compiler.  GCC,
+as of this writing, does not provide a full or optimal set of Neon intrinsics,
+so for performance reasons, the default when building libjpeg-turbo with GCC is
+to continue using the GAS implementation of the following algorithms:
+
+     - 32-bit RGB-to-YCbCr color conversion
+     - 32-bit fast and accurate inverse DCT
+     - 64-bit RGB-to-YCbCr and YCbCr-to-RGB color conversion
+     - 64-bit accurate forward and inverse DCT
+     - 64-bit Huffman encoding
+
+    A new CMake variable (`NEON_INTRINSICS`) can be used to override this
+default.
+
+    Since the new intrinsics implementation includes SIMD acceleration
+for merged upsampling/color conversion, 1.5.1[5] is no longer necessary and has
+been reverted.
+
 
 2.0.6
 =====

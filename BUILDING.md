@@ -400,16 +400,9 @@ compression/decompression.  This section describes how to build libjpeg-turbo
 for these platforms.
 
 
-### Additional build requirements
-
-- For configurations that require [gas-preprocessor.pl]
-  (https://raw.githubusercontent.com/libjpeg-turbo/gas-preprocessor/master/gas-preprocessor.pl),
-  it should be installed in your `PATH`.
-
-
 ### Armv8 (64-bit)
 
-**gas-preprocessor.pl required if using Xcode < 6**
+**Xcode 6.3.x or later required**
 
 The following script demonstrates how to build libjpeg-turbo to run on the
 iPhone 5S/iPad Mini 2/iPad Air and newer.

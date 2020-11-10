@@ -45,13 +45,10 @@ matrix:
             - nasm
     - os: linux
       compiler: gcc
+      arch: ppc64le
       env:
         CMAKE_FLAGS="-DWITH_JPEG8=1"
         CTEST_OUTPUT_ON_FAILURE=1
-      addons:
-        apt:
-          packages:
-            - nasm
     - os: linux
       compiler: clang
       env:
@@ -62,11 +59,6 @@ matrix:
     - os: linux
       compiler: gcc
       arch: arm64
-      env:
-        CTEST_OUTPUT_ON_FAILURE=1
-    - os: linux
-      compiler: gcc
-      arch: ppc64le
       env:
         CTEST_OUTPUT_ON_FAILURE=1
 

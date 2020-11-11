@@ -27,6 +27,10 @@ toolchains targetting Arm64 (AArch64) Windows binaries.
 `jpeg_crop_scanline()` and interblock smoothing while decompressing only the DC
 scan of a progressive JPEG image.
 
+5. Fixed an issue whereby libjpeg-turbo would not build if 12-bit-per-component
+JPEG support (`WITH_12BIT`) was enabled along with libjpeg v7 or libjpeg v8
+API/ABI emulation (`WITH_JPEG7` or `WITH_JPEG8`.)
+
 
 2.0.5
 =====

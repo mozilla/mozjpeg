@@ -2,6 +2,7 @@
  * jchuff-neon.c - Huffman entropy encoding (64-bit Arm Neon)
  *
  * Copyright (C) 2020, Arm Limited.  All Rights Reserved.
+ * Copyright (C) 2020, D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +33,7 @@
 #include "../../jsimd.h"
 #include "../align.h"
 #include "../jchuff.h"
+#include "neon-compat.h"
 
 #include <limits.h>
 
@@ -65,7 +67,7 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
   uint16_t block_diff[DCTSIZE2];
 
   /* Load lookup table indices for rows of zig-zag ordering. */
-#if defined(__clang__) || defined(_MSC_VER)
+#ifdef HAVE_VLD1Q_U8_X4
   const uint8x16x4_t idx_rows_0123 =
     vld1q_u8_x4(jsimd_huff_encode_one_block_consts + 0 * DCTSIZE);
   const uint8x16x4_t idx_rows_4567 =
@@ -87,7 +89,7 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
 #endif
 
   /* Load 8x8 block of DCT coefficients. */
-#if defined(__clang__) || defined(_MSC_VER)
+#ifdef HAVE_VLD1Q_U8_X4
   const int8x16x4_t tbl_rows_0123 =
     vld1q_s8_x4((int8_t *)(block + 0 * DCTSIZE));
   const int8x16x4_t tbl_rows_4567 =

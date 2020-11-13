@@ -30,6 +30,7 @@
 #include "../../jsimddct.h"
 #include "../jsimd.h"
 #include "align.h"
+#include "neon-compat.h"
 
 #include <arm_neon.h>
 
@@ -354,7 +355,7 @@ static INLINE void jsimd_idct_islow_pass1_regular(int16x4_t row0,
                                                   int16_t *workspace_2)
 {
   /* Load constants for IDCT computation. */
-#if defined(__clang__) || defined(_MSC_VER)
+#ifdef HAVE_VLD1_S16_X3
   const int16x4x3_t consts = vld1_s16_x3(jsimd_idct_islow_neon_consts);
 #else
   const int16x4_t consts1 = vld1_s16(jsimd_idct_islow_neon_consts);
@@ -481,7 +482,7 @@ static INLINE void jsimd_idct_islow_pass1_sparse(int16x4_t row0,
                                                  int16_t *workspace_2)
 {
   /* Load constants for IDCT computation. */
-#if defined(__clang__) || defined(_MSC_VER)
+#ifdef HAVE_VLD1_S16_X3
   const int16x4x3_t consts = vld1_s16_x3(jsimd_idct_islow_neon_consts);
 #else
   const int16x4_t consts1 = vld1_s16(jsimd_idct_islow_neon_consts);
@@ -565,7 +566,7 @@ static INLINE void jsimd_idct_islow_pass2_regular(int16_t *workspace,
                                                   unsigned buf_offset)
 {
   /* Load constants for IDCT computation. */
-#if defined(__clang__) || defined(_MSC_VER)
+#ifdef HAVE_VLD1_S16_X3
   const int16x4x3_t consts = vld1_s16_x3(jsimd_idct_islow_neon_consts);
 #else
   const int16x4_t consts1 = vld1_s16(jsimd_idct_islow_neon_consts);
@@ -712,7 +713,7 @@ static INLINE void jsimd_idct_islow_pass2_sparse(int16_t *workspace,
                                                  unsigned buf_offset)
 {
   /* Load constants for IDCT computation. */
-#if defined(__clang__) || defined(_MSC_VER)
+#ifdef HAVE_VLD1_S16_X3
   const int16x4x3_t consts = vld1_s16_x3(jsimd_idct_islow_neon_consts);
 #else
   const int16x4_t consts1 = vld1_s16(jsimd_idct_islow_neon_consts);

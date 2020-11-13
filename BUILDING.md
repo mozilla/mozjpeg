@@ -402,7 +402,7 @@ for these platforms.
 
 ### Armv8 (64-bit)
 
-**Xcode 6.3.x or later required**
+**Xcode 5 or later required, Xcode 6.3.x or later recommended**
 
 The following script demonstrates how to build libjpeg-turbo to run on the
 iPhone 5S/iPad Mini 2/iPad Air and newer.
@@ -434,6 +434,8 @@ Building libjpeg-turbo for Android platforms requires v13b or later of the
 
 ### Armv7 (32-bit)
 
+**NDK r19 or later with Clang recommended**
+
 The following is a general recipe script that can be modified for your specific
 needs.
 
@@ -458,6 +460,8 @@ needs.
 
 
 ### Armv8 (64-bit)
+
+**Clang recommended**
 
 The following is a general recipe script that can be modified for your specific
 needs.

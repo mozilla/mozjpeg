@@ -2,6 +2,7 @@
  * jidctred-neon.c - reduced-size IDCT (Arm Neon)
  *
  * Copyright (C) 2020, Arm Limited.  All Rights Reserved.
+ * Copyright (C) 2020, D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +29,7 @@
 #include "../../jsimddct.h"
 #include "../jsimd.h"
 #include "align.h"
+#include "neon-compat.h"
 
 #include <arm_neon.h>
 
@@ -221,7 +223,7 @@ void jsimd_idct_4x4_neon(void *dct_table, JCOEFPTR coef_block,
   int64_t right_ac_bitmap = vgetq_lane_s64(vreinterpretq_s64_s16(bitmap), 1);
 
   /* Load constants for IDCT computation. */
-#if defined(__clang__) || defined(_MSC_VER)
+#ifdef HAVE_VLD1_S16_X3
   const int16x4x3_t consts = vld1_s16_x3(jsimd_idct_4x4_neon_consts);
 #else
   /* GCC does not currently support the intrinsic vld1_<type>_x3(). */

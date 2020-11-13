@@ -213,6 +213,42 @@ endif()
 
 elseif(CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm")
 
+include(CheckSymbolExists)
+if(BITS EQUAL 32)
+  set(CMAKE_REQUIRED_FLAGS -mfpu=neon)
+endif()
+check_symbol_exists(vld1_s16_x3 arm_neon.h HAVE_VLD1_S16_X3)
+check_symbol_exists(vld1_u16_x2 arm_neon.h HAVE_VLD1_U16_X2)
+check_symbol_exists(vld1q_u8_x4 arm_neon.h HAVE_VLD1Q_U8_X4)
+if(BITS EQUAL 32)
+  unset(CMAKE_REQUIRED_FLAGS)
+endif()
+configure_file(arm/neon-compat.h.in arm/neon-compat.h @ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/arm)
+
+# GCC (as of this writing) and some older versions of Clang do not have a full
+# or optimal set of Neon intrinsics, so for performance reasons, when using
+# those compilers, we default to using the older GAS implementation of the Neon
+# SIMD extensions for certain algorithms.  The presence or absence of the three
+# intrinsics we tested above is a reasonable proxy for this.  We always default
+# to using the full Neon intrinsics implementation when building for macOS or
+# iOS, to avoid the need for gas-preprocessor.
+if((HAVE_VLD1_S16_X3 AND HAVE_VLD1_U16_X2 AND HAVE_VLD1Q_U8_X4) OR APPLE)
+  set(DEFAULT_NEON_INTRINSICS 1)
+else()
+  set(DEFAULT_NEON_INTRINSICS 0)
+endif()
+option(NEON_INTRINSICS
+  "Because GCC (as of this writing) and some older versions of Clang do not have a full or optimal set of Neon intrinsics, for performance reasons, the default when building libjpeg-turbo with those compilers is to continue using the older GAS implementation of the Neon SIMD extensions for certain algorithms.  Setting this option forces the full Neon intrinsics implementation to be used with all compilers.  Unsetting this option forces the hybrid GAS/intrinsics implementation to be used with all compilers."
+  ${DEFAULT_NEON_INTRINSICS})
+boolean_number(NEON_INTRINSICS PARENT_SCOPE)
+if(NEON_INTRINSICS)
+  add_definitions(-DNEON_INTRINSICS)
+  message(STATUS "Use full Neon SIMD intrinsics implementation (NEON_INTRINSICS = ${NEON_INTRINSICS})")
+else()
+  message(STATUS "Use partial Neon SIMD intrinsics implementation (NEON_INTRINSICS = ${NEON_INTRINSICS})")
+endif()
+
 set(SIMD_SOURCES arm/jcgray-neon.c arm/jcphuff-neon.c arm/jcsample-neon.c
   arm/jdmerge-neon.c arm/jdsample-neon.c arm/jfdctfst-neon.c
   arm/jidctred-neon.c arm/jquanti-neon.c)

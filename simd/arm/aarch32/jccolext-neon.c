@@ -2,6 +2,7 @@
  * jccolext-neon.c - colorspace conversion (32-bit Arm Neon)
  *
  * Copyright (C) 2020, Arm Limited.  All Rights Reserved.
+ * Copyright (C) 2020, D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +54,7 @@ void jsimd_rgb_ycc_convert_neon(JDIMENSION image_width, JSAMPARRAY input_buf,
   JSAMPROW outptr0, outptr1, outptr2;
 
   /* Set up conversion constants. */
-#if defined(__clang__)
+#ifdef HAVE_VLD1_U16_X2
   const uint16x4x2_t consts = vld1_u16_x2(jsimd_rgb_ycc_neon_consts);
 #else
   /* GCC does not currently support the intrinsic vld1_<type>_x2(). */

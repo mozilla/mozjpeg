@@ -508,7 +508,7 @@ iPhone 5S/iPad Mini 2/iPad Air and newer.
 
     IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
     IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-    export CFLAGS="-Wall -arch arm64 -miphoneos-version-min=7.0 -funwind-tables"
+    export CFLAGS="-Wall -arch arm64 -miphoneos-version-min=8.0 -funwind-tables"
 
     cd {build_directory}
 

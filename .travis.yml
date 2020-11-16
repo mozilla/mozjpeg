@@ -51,6 +51,11 @@ matrix:
         CFLAGS_RELWITHDEBINFO="-O3 -g -fsanitize=memory -fPIE"
         CMAKE_FLAGS="-DWITH_SIMD=0"
         CTEST_OUTPUT_ON_FAILURE=1
+    - os: linux
+      compiler: clang
+      arch: arm64
+      env:
+        CTEST_OUTPUT_ON_FAILURE=1
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
@@ -106,7 +111,7 @@ script:
             ! "${CMAKE_FLAGS[0]}" =~ "WITH_SIMD" &&
             "$TRAVIS_CPU_ARCH" = "amd64" ]]; then
         JSIMD_FORCESSE2=1 make test &&
-        cmake -DFLOATTEST=32bit .. &&
+        cmake -DFLOATTEST=no-fp-contract .. &&
         JSIMD_FORCENONE=1 make test;
       fi &&
       popd;

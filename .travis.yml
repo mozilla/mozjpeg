@@ -64,8 +64,9 @@ before_install:
       hdid JavaForOSX.dmg &&
       sudo installer -pkg /Volumes/Java\ for\ macOS\ 2017-001/JavaForOSX.pkg -target / &&
       hdiutil detach /Volumes/Java\ for\ macOS\ 2017-001 &&
-      curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci &&
-      . ./macports-ci install &&
+      curl -LO https://distfiles.macports.org/MacPorts/MacPorts-2.6.4-10.12-Sierra.pkg &&
+      sudo installer -pkg MacPorts-2.6.4-10.12-Sierra.pkg -target / &&
+      rm MacPorts-2.6.4-10.12-Sierra.pkg &&
       sudo /opt/local/bin/port -N install gcc5 yasm md5sha1sum &&
       popd &&
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&

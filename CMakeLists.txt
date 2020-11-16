@@ -715,10 +715,11 @@ if(WITH_12BIT)
 
   set(MD5_JPEG_3x2_FLOAT_PROG_SSE a8c17daf77b457725ec929e215b603f8)
   set(MD5_PPM_3x2_FLOAT_SSE 42876ab9e5c2f76a87d08db5fbd57956)
-  set(MD5_JPEG_3x2_FLOAT_PROG_32BIT a8c17daf77b457725ec929e215b603f8)
-  set(MD5_PPM_3x2_FLOAT_32BIT ${MD5_PPM_3x2_FLOAT_SSE})
-  set(MD5_JPEG_3x2_FLOAT_PROG_64BIT ${MD5_JPEG_3x2_FLOAT_PROG_32BIT})
-  set(MD5_PPM_3x2_FLOAT_64BIT ${MD5_PPM_3x2_FLOAT_SSE})
+  set(MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT a8c17daf77b457725ec929e215b603f8)
+  set(MD5_PPM_3x2_FLOAT_NO_FP_CONTRACT ${MD5_PPM_3x2_FLOAT_SSE})
+  set(MD5_JPEG_3x2_FLOAT_PROG_FP_CONTRACT
+    ${MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT})
+  set(MD5_PPM_3x2_FLOAT_FP_CONTRACT ${MD5_PPM_3x2_FLOAT_SSE})
   set(MD5_JPEG_3x2_FLOAT_PROG_387 bc6dbbefac2872f6b9d6c4a0ae60c3c0)
   set(MD5_PPM_3x2_FLOAT_387 bcc5723c61560463ac60f772e742d092)
   set(MD5_JPEG_3x2_FLOAT_PROG_MSVC e27840755870fa849872e58aa0cd1400)
@@ -769,10 +770,11 @@ else()
 
   set(MD5_JPEG_3x2_FLOAT_PROG_SSE 343e3f8caf8af5986ebaf0bdc13b5c71)
   set(MD5_PPM_3x2_FLOAT_SSE 1a75f36e5904d6fc3a85a43da9ad89bb)
-  set(MD5_JPEG_3x2_FLOAT_PROG_32BIT 9bca803d2042bd1eb03819e2bf92b3e5)
-  set(MD5_PPM_3x2_FLOAT_32BIT f6bfab038438ed8f5522fbd33595dcdc)
-  set(MD5_JPEG_3x2_FLOAT_PROG_64BIT ${MD5_JPEG_3x2_FLOAT_PROG_32BIT})
-  set(MD5_PPM_3x2_FLOAT_64BIT 0e917a34193ef976b679a6b069b1be26)
+  set(MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT 9bca803d2042bd1eb03819e2bf92b3e5)
+  set(MD5_PPM_3x2_FLOAT_NO_FP_CONTRACT f6bfab038438ed8f5522fbd33595dcdc)
+  set(MD5_JPEG_3x2_FLOAT_PROG_FP_CONTRACT
+    ${MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT})
+  set(MD5_PPM_3x2_FLOAT_FP_CONTRACT 0e917a34193ef976b679a6b069b1be26)
   set(MD5_JPEG_3x2_FLOAT_PROG_387 1657664a410e0822c924b54f6f65e6e9)
   set(MD5_PPM_3x2_FLOAT_387 cb0a1f027f3d2917c902b5640214e025)
   set(MD5_JPEG_3x2_FLOAT_PROG_MSVC 7999ce9cd0ee9b6c7043b7351ab7639d)
@@ -860,11 +862,16 @@ endif()
 #
 # sse = validate against the expected results from the libjpeg-turbo SSE SIMD
 #       extensions
-# 32bit = validate against the expected results from the C code when running on
-#         a 32-bit FPU (or when SSE is being used for floating point math,
-#         which is generally the default with x86-64 compilers)
-# 64bit = validate against the expected results from the C code when running
-#         on a 64-bit FPU
+# no-fp-contract = validate against the expected results from the C code when
+#                  floating point expression contraction is disabled (the
+#                  default with Clang, with GCC when building for platforms
+#                  that lack fused multiply-add [FMA] instructions, or when
+#                  passing -ffp-contract=off to the compiler)
+# fp-contract = validate against the expected results from the C code when
+#               floating point expression contraction is enabled (the default
+#               with GCC when building for platforms that have fused multiply-
+#               add [FMA] instructions or when passing -ffp-contract=fast to
+#               the compiler)
 # 387 = validate against the expected results from the C code when the 387 FPU
 #       is being used for floating point math (which is generally the default
 #       with x86 compilers)
@@ -875,15 +882,20 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
   if(WITH_SIMD)
     set(DEFAULT_FLOATTEST sse)
   elseif(CPU_TYPE STREQUAL "x86_64")
-    set(DEFAULT_FLOATTEST 32bit)
+    set(DEFAULT_FLOATTEST no-fp-contract)
   elseif(CPU_TYPE STREQUAL "i386" AND MSVC)
     set(DEFAULT_FLOATTEST msvc)
+  # else we can't really set an intelligent default for i386.  The appropriate
+  # value could be 387, no-fp-contract, or fp-contract, depending on the
+  # compiler and compiler options.  We leave it to the user to set FLOATTEST
+  # manually.
   endif()
 else()
-  if(BITS EQUAL 64)
-    set(DEFAULT_FLOATTEST 64bit)
-  elseif(BITS EQUAL 32)
-    set(DEFAULT_FLOATTEST 32bit)
+  if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
+    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    set(DEFAULT_FLOATTEST fp-contract)
+  else()
+    set(DEFAULT_FLOATTEST no-fp-contract)
   endif()
 endif()
 
@@ -894,15 +906,17 @@ if(DEFINED WITH_SIMD_INT AND NOT WITH_SIMD EQUAL WITH_SIMD_INT)
 endif()
 set(WITH_SIMD_INT ${WITH_SIMD} CACHE INTERNAL "")
 set(FLOATTEST ${DEFAULT_FLOATTEST} CACHE STRING
-  "The type of floating point math used by the floating point DCT/IDCT algorithms.  This tells the testing system which numerical results it should expect from those tests.  [sse = libjpeg-turbo x86/x86-64 SIMD extensions, 32bit = generic 32-bit FPU or SSE, 64bit = generic 64-bit FPU, 387 = 387 FPU, msvc = 32-bit Visual Studio] (default = ${DEFAULT_FLOATTEST})"
+  "The type of floating point math used by the floating point DCT/IDCT algorithms.  This tells the testing system which numerical results it should expect from those tests.  [sse = libjpeg-turbo x86/x86-64 SIMD extensions, no-fp-contract = generic FPU with floating point expression contraction disabled, fp-contract = generic FPU with floating point expression contraction enabled, 387 = 387 FPU, msvc = 32-bit Visual Studio] (default = ${DEFAULT_FLOATTEST})"
   ${FORCE_FLOATTEST})
 message(STATUS "FLOATTEST = ${FLOATTEST}")
 
 if(FLOATTEST)
   string(TOUPPER ${FLOATTEST} FLOATTEST_UC)
+  string(REGEX REPLACE "-" "_" FLOATTEST_UC ${FLOATTEST_UC})
   string(TOLOWER ${FLOATTEST} FLOATTEST)
-  if(NOT FLOATTEST STREQUAL "sse" AND NOT FLOATTEST STREQUAL "32bit" AND
-    NOT FLOATTEST STREQUAL "64bit" AND NOT FLOATTEST STREQUAL "387" AND
+  if(NOT FLOATTEST STREQUAL "sse" AND
+    NOT FLOATTEST STREQUAL "no-fp-contract" AND
+    NOT FLOATTEST STREQUAL "fp-contract" AND NOT FLOATTEST STREQUAL "387" AND
     NOT FLOATTEST STREQUAL "msvc")
     message(FATAL_ERROR "\"${FLOATTEST}\" is not a valid value for FLOATTEST.")
   endif()

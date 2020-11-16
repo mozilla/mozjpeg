@@ -119,7 +119,7 @@ script:
             ! "${CMAKE_FLAGS[0]}" =~ "WITH_SIMD" &&
             "$TRAVIS_CPU_ARCH" = "amd64" ]]; then
         JSIMD_FORCESSE2=1 make test &&
-        cmake -DFLOATTEST=32bit .. &&
+        cmake -DFLOATTEST=no-fp-contract .. &&
         JSIMD_FORCENONE=1 make test;
       fi &&
       popd;

@@ -637,7 +637,7 @@ Mac
     make dmg
 
 Create Mac package/disk image.  This requires pkgbuild and productbuild, which
-are installed by default on OS X 10.7 and later.
+are installed by default on OS X/macOS 10.7 and later.
 
 In order to create a Mac package/disk image that contains universal
 x86-64/Arm binaries, set the following CMake variable:

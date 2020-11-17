@@ -137,9 +137,9 @@ if(APPLE)
 set(IOS_ARMV8_BUILD "" CACHE PATH
   "Directory containing Armv8 iOS build to include in universal binaries")
 
-set(OSX_APP_CERT_NAME "" CACHE STRING
+set(MACOS_APP_CERT_NAME "" CACHE STRING
   "Name of the Developer ID Application certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo DMG.  Leave this blank to generate an unsigned DMG.")
-set(OSX_INST_CERT_NAME "" CACHE STRING
+set(MACOS_INST_CERT_NAME "" CACHE STRING
   "Name of the Developer ID Installer certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo installer package.  Leave this blank to generate an unsigned package.")
 
 configure_file(release/makemacpkg.in pkgscripts/makemacpkg)

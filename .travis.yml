@@ -73,8 +73,9 @@ before_install:
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       pushd $HOME/Downloads &&
-      curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci &&
-      . ./macports-ci install &&
+      curl -LO https://distfiles.macports.org/MacPorts/MacPorts-2.6.4-10.12-Sierra.pkg &&
+      sudo installer -pkg MacPorts-2.6.4-10.12-Sierra.pkg -target / &&
+      rm MacPorts-2.6.4-10.12-Sierra.pkg &&
       sudo /opt/local/bin/port -N install yasm md5sha1sum &&
       popd &&
       ln -fs /Applications/Xcode.app /Applications/Xcode83.app;

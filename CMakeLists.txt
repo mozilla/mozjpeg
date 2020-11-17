@@ -892,7 +892,7 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
   endif()
 else()
   if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
-    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
     set(DEFAULT_FLOATTEST fp-contract)
   else()
     set(DEFAULT_FLOATTEST no-fp-contract)

@@ -135,7 +135,9 @@ default.
 for merged upsampling/color conversion, 1.5.1[5] is no longer necessary and has
 been reverted.
 
-14. The build system can now be used to generate a universal x86-64 + Armv8
+14. The Arm Neon SIMD extensions can now be built using Visual Studio.
+
+15. The build system can now be used to generate a universal x86-64 + Armv8
 libjpeg-turbo SDK package for both iOS and macOS.
 
 

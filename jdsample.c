@@ -477,7 +477,8 @@ jinit_upsampler(j_decompress_ptr cinfo)
     } else if (h_in_group == h_out_group &&
                v_in_group * 2 == v_out_group && do_fancy) {
       /* Non-fancy upsampling is handled by the generic method */
-#if defined(__arm__) || defined(__aarch64__)
+#if defined(__arm__) || defined(__aarch64__) || \
+    defined(_M_ARM) || defined(_M_ARM64)
       if (jsimd_can_h1v2_fancy_upsample())
         upsample->methods[ci] = jsimd_h1v2_fancy_upsample;
       else

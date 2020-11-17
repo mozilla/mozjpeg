@@ -84,7 +84,8 @@ void jsimd_h2v1_downsample_neon(JDIMENSION image_width, int max_v_samp_factor,
   const uint8x16_t expand_mask =
     vld1q_u8(&jsimd_h2_downsample_consts[mask_offset]);
   /* Load bias pattern (alternating every pixel.) */
-  const uint16x8_t bias = { 0, 1, 0, 1, 0, 1, 0, 1 };
+  /* { 0, 1, 0, 1, 0, 1, 0, 1 } */
+  const uint16x8_t bias = vreinterpretq_u16_u32(vdupq_n_u32(0x00010000));
   unsigned i, outrow;
 
   for (outrow = 0; outrow < v_samp_factor; outrow++) {
@@ -104,7 +105,7 @@ void jsimd_h2v1_downsample_neon(JDIMENSION image_width, int max_v_samp_factor,
 
     /* Load pixels in last DCT block into a table. */
     uint8x16_t pixels = vld1q_u8(inptr + (width_in_blocks - 1) * 2 * DCTSIZE);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     /* Pad the empty elements with the value of the last pixel. */
     pixels = vqtbl1q_u8(pixels, expand_mask);
 #else
@@ -137,7 +138,8 @@ void jsimd_h2v2_downsample_neon(JDIMENSION image_width, int max_v_samp_factor,
   const uint8x16_t expand_mask =
     vld1q_u8(&jsimd_h2_downsample_consts[mask_offset]);
   /* Load bias pattern (alternating every pixel.) */
-  const uint16x8_t bias = { 1, 2, 1, 2, 1, 2, 1, 2 };
+  /* { 1, 2, 1, 2, 1, 2, 1, 2 } */
+  const uint16x8_t bias = vreinterpretq_u16_u32(vdupq_n_u32(0x00020001));
   unsigned i, outrow;
 
   for (outrow = 0; outrow < v_samp_factor; outrow++) {
@@ -165,7 +167,7 @@ void jsimd_h2v2_downsample_neon(JDIMENSION image_width, int max_v_samp_factor,
       vld1q_u8(inptr0 + (width_in_blocks - 1) * 2 * DCTSIZE);
     uint8x16_t pixels_r1 =
       vld1q_u8(inptr1 + (width_in_blocks - 1) * 2 * DCTSIZE);
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     /* Pad the empty elements with the value of the last pixel. */
     pixels_r0 = vqtbl1q_u8(pixels_r0, expand_mask);
     pixels_r1 = vqtbl1q_u8(pixels_r1, expand_mask);

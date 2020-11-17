@@ -17,7 +17,7 @@
  * but must not be updated permanently until we complete the MCU.
  */
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
 #define BIT_BUF_SIZE  64
 #else
 #define BIT_BUF_SIZE  32
@@ -54,7 +54,25 @@ typedef struct {
  * directly to the output buffer.  Otherwise, use the EMIT_BYTE() macro to
  * encode 0xFF as 0xFF 0x00.
  */
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#define SPLAT() { \
+  buffer[0] = (JOCTET)(put_buffer >> 56); \
+  buffer[1] = (JOCTET)(put_buffer >> 48); \
+  buffer[2] = (JOCTET)(put_buffer >> 40); \
+  buffer[3] = (JOCTET)(put_buffer >> 32); \
+  buffer[4] = (JOCTET)(put_buffer >> 24); \
+  buffer[5] = (JOCTET)(put_buffer >> 16); \
+  buffer[6] = (JOCTET)(put_buffer >>  8); \
+  buffer[7] = (JOCTET)(put_buffer      ); \
+}
+#else
+#define SPLAT() { \
+  __asm__("rev %x0, %x1" : "=r"(put_buffer) : "r"(put_buffer)); \
+  *((uint64_t *)buffer) = put_buffer; \
+}
+#endif
 
 #define FLUSH() { \
   if (put_buffer & 0x8080808080808080 & ~(put_buffer + 0x0101010101010101)) { \
@@ -67,13 +85,26 @@ typedef struct {
     EMIT_BYTE(put_buffer >>  8) \
     EMIT_BYTE(put_buffer      ) \
   } else { \
-    __asm__("rev %x0, %x1" : "=r"(put_buffer) : "r"(put_buffer)); \
-    *((uint64_t *)buffer) = put_buffer; \
+    SPLAT() \
     buffer += 8; \
   } \
 }
 
 #else
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#define SPLAT() { \
+  buffer[0] = (JOCTET)(put_buffer >> 24); \
+  buffer[1] = (JOCTET)(put_buffer >> 16); \
+  buffer[2] = (JOCTET)(put_buffer >>  8); \
+  buffer[3] = (JOCTET)(put_buffer      ); \
+}
+#else
+#define SPLAT() { \
+  __asm__("rev %0, %1" : "=r"(put_buffer) : "r"(put_buffer)); \
+  *((uint32_t *)buffer) = put_buffer; \
+}
+#endif
 
 #define FLUSH() { \
   if (put_buffer & 0x80808080 & ~(put_buffer + 0x01010101)) { \
@@ -82,8 +113,7 @@ typedef struct {
     EMIT_BYTE(put_buffer >>  8) \
     EMIT_BYTE(put_buffer      ) \
   } else { \
-    __asm__("rev %0, %1" : "=r"(put_buffer) : "r"(put_buffer)); \
-    *((uint32_t *)buffer) = put_buffer; \
+    SPLAT() \
     buffer += 4; \
   } \
 }

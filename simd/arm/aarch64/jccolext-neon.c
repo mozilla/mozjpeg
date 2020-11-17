@@ -51,6 +51,8 @@ void jsimd_rgb_ycc_convert_neon(JDIMENSION image_width, JSAMPARRAY input_buf,
   JSAMPROW inptr;
   /* Pointers to Y, Cb, and Cr output data */
   JSAMPROW outptr0, outptr1, outptr2;
+  /* Allocate temporary buffer for final (image_width % 16) pixels in row. */
+  ALIGN(16) uint8_t tmp_buf[16 * RGB_PIXELSIZE];
 
   /* Set up conversion constants. */
   const uint16x8_t consts = vld1q_u16(jsimd_rgb_ycc_neon_consts);
@@ -162,7 +164,6 @@ void jsimd_rgb_ycc_convert_neon(JDIMENSION image_width, JSAMPARRAY input_buf,
        * (image_width % 16) columns of data are first memcopied to a temporary
        * buffer large enough to accommodate the vector load.
        */
-      ALIGN(16) uint8_t tmp_buf[16 * RGB_PIXELSIZE];
       memcpy(tmp_buf, inptr, cols_remaining * RGB_PIXELSIZE);
       inptr = tmp_buf;
 
@@ -255,7 +256,6 @@ void jsimd_rgb_ycc_convert_neon(JDIMENSION image_width, JSAMPARRAY input_buf,
        * (image_width % 8) columns of data are first memcopied to a temporary
        * buffer large enough to accommodate the vector load.
        */
-      ALIGN(16) uint8_t tmp_buf[8 * RGB_PIXELSIZE];
       memcpy(tmp_buf, inptr, cols_remaining * RGB_PIXELSIZE);
       inptr = tmp_buf;
 

@@ -31,6 +31,7 @@
 #include "../../../jsimddct.h"
 #include "../../jsimd.h"
 #include "../jchuff.h"
+#include "neon-compat.h"
 
 #include <limits.h>
 
@@ -231,8 +232,9 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
   uint8x8_t row6_nbits_gt0 = vcgt_u8(row6_nbits, vdup_n_u8(0));
   uint8x8_t row7_nbits_gt0 = vcgt_u8(row7_nbits, vdup_n_u8(0));
 
+  /* { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 } */
   const uint8x8_t bitmap_mask =
-    { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+    vreinterpret_u8_u64(vmov_n_u64(0x0102040810204080));
 
   row0_nbits_gt0 = vand_u8(row0_nbits_gt0, bitmap_mask);
   row1_nbits_gt0 = vand_u8(row1_nbits_gt0, bitmap_mask);
@@ -278,7 +280,7 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
   const unsigned int size_0xf0 = actbl->ehufsi[0xf0];
 
   while (bitmap_1_32 != 0) {
-    r = __builtin_clz(bitmap_1_32);
+    r = BUILTIN_CLZ(bitmap_1_32);
     i += r;
     bitmap_1_32 <<= r;
     nbits = block_nbits[i];
@@ -299,7 +301,7 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
   i = 33;
 
   while (bitmap_33_63 != 0) {
-    unsigned int leading_zeros = __builtin_clz(bitmap_33_63);
+    unsigned int leading_zeros = BUILTIN_CLZ(bitmap_33_63);
     r += leading_zeros;
     i += leading_zeros;
     bitmap_33_63 <<= leading_zeros;

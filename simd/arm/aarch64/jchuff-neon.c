@@ -205,8 +205,9 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
   uint8x8_t abs_row7_gt0 = vmovn_u16(vcgtq_u16(vreinterpretq_u16_s16(abs_row7),
                                                vdupq_n_u16(0)));
 
+  /* { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 } */
   const uint8x8_t bitmap_mask =
-    { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+    vreinterpret_u8_u64(vmov_n_u64(0x0102040810204080));
 
   abs_row0_gt0 = vand_u8(abs_row0_gt0, bitmap_mask);
   abs_row1_gt0 = vand_u8(abs_row1_gt0, bitmap_mask);
@@ -241,8 +242,12 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
   /* Encode DC coefficient. */
 
   /* Find nbits required to specify sign and amplitude of coefficient. */
+#if defined(_MSC_VER) && !defined(__clang__)
+  unsigned int lz = BUILTIN_CLZ(vgetq_lane_s16(abs_row0, 0));
+#else
   unsigned int lz;
   __asm__("clz %w0, %w1" : "=r"(lz) : "r"(vgetq_lane_s16(abs_row0, 0)));
+#endif
   unsigned int nbits = 32 - lz;
   /* Emit Huffman-coded symbol and additional diff bits. */
   unsigned int diff = (unsigned int)(vgetq_lane_u16(row0_diff, 0) << lz) >> lz;
@@ -326,7 +331,7 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
     vst1q_u16(block_diff + 7 * DCTSIZE, row7_diff);
 
     while (bitmap != 0) {
-      r = __builtin_clzl(bitmap);
+      r = BUILTIN_CLZL(bitmap);
       i += r;
       bitmap <<= r;
       nbits = block_nbits[i];
@@ -365,10 +370,10 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
 
     /* Same as above but must mask diff bits and compute nbits on demand. */
     while (bitmap != 0) {
-      r = __builtin_clzl(bitmap);
+      r = BUILTIN_CLZL(bitmap);
       i += r;
       bitmap <<= r;
-      lz = __builtin_clz(block_abs[i]);
+      lz = BUILTIN_CLZ(block_abs[i]);
       nbits = 32 - lz;
       diff = (unsigned int)(block_diff[i] << lz) >> lz;
       while (r > 15) {

@@ -41,6 +41,8 @@ void jsimd_rgb_gray_convert_neon(JDIMENSION image_width, JSAMPARRAY input_buf,
 {
   JSAMPROW inptr;
   JSAMPROW outptr;
+  /* Allocate temporary buffer for final (image_width % 16) pixels in row. */
+  ALIGN(16) uint8_t tmp_buf[16 * RGB_PIXELSIZE];
 
   while (--num_rows >= 0) {
     inptr = *input_buf++;
@@ -55,7 +57,6 @@ void jsimd_rgb_gray_convert_neon(JDIMENSION image_width, JSAMPARRAY input_buf,
        * buffer large enough to accommodate the vector load.
        */
       if (cols_remaining < 16) {
-        ALIGN(16) uint8_t tmp_buf[16 * RGB_PIXELSIZE];
         memcpy(tmp_buf, inptr, cols_remaining * RGB_PIXELSIZE);
         inptr = tmp_buf;
       }

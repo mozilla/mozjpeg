@@ -27,6 +27,7 @@
 #include "../../jdct.h"
 #include "../../jsimddct.h"
 #include "../jsimd.h"
+#include "neon-compat.h"
 
 #include <arm_neon.h>
 
@@ -212,8 +213,9 @@ void jsimd_encode_mcu_AC_first_prepare_neon
   uint8x8_t row6_eq0 = vmovn_u16(vceqq_s16(row6, vdupq_n_s16(0)));
   uint8x8_t row7_eq0 = vmovn_u16(vceqq_s16(row7, vdupq_n_s16(0)));
 
+  /* { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 } */
   const uint8x8_t bitmap_mask =
-    { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+    vreinterpret_u8_u64(vmov_n_u64(0x8040201008040201));
 
   row0_eq0 = vand_u8(row0_eq0, bitmap_mask);
   row1_eq0 = vand_u8(row1_eq0, bitmap_mask);
@@ -232,7 +234,7 @@ void jsimd_encode_mcu_AC_first_prepare_neon
   uint8x8_t bitmap_rows_4567 = vpadd_u8(bitmap_rows_45, bitmap_rows_67);
   uint8x8_t bitmap_all = vpadd_u8(bitmap_rows_0123, bitmap_rows_4567);
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
   /* Move bitmap to a 64-bit scalar register. */
   uint64_t bitmap = vget_lane_u64(vreinterpret_u64_u8(bitmap_all), 0);
   /* Store zerobits bitmap. */
@@ -456,8 +458,9 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
   uint8x8_t abs_row6_eq0 = vmovn_u16(vceqq_s16(abs_row6, vdupq_n_s16(0)));
   uint8x8_t abs_row7_eq0 = vmovn_u16(vceqq_s16(abs_row7, vdupq_n_s16(0)));
 
+  /* { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 } */
   const uint8x8_t bitmap_mask =
-    { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+    vreinterpret_u8_u64(vmov_n_u64(0x8040201008040201));
 
   abs_row0_eq0 = vand_u8(abs_row0_eq0, bitmap_mask);
   abs_row1_eq0 = vand_u8(abs_row1_eq0, bitmap_mask);
@@ -476,7 +479,7 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
   uint8x8_t bitmap_rows_4567 = vpadd_u8(bitmap_rows_45, bitmap_rows_67);
   uint8x8_t bitmap_all = vpadd_u8(bitmap_rows_0123, bitmap_rows_4567);
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
   /* Move bitmap to a 64-bit scalar register. */
   uint64_t bitmap = vget_lane_u64(vreinterpret_u64_u8(bitmap_all), 0);
   /* Store zerobits bitmap. */
@@ -517,7 +520,7 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
   bitmap_rows_4567 = vpadd_u8(bitmap_rows_45, bitmap_rows_67);
   bitmap_all = vpadd_u8(bitmap_rows_0123, bitmap_rows_4567);
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
   /* Move bitmap to a 64-bit scalar register. */
   bitmap = vget_lane_u64(vreinterpret_u64_u8(bitmap_all), 0);
   /* Store signbits bitmap. */
@@ -560,7 +563,7 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
   bitmap_rows_4567 = vpadd_u8(bitmap_rows_45, bitmap_rows_67);
   bitmap_all = vpadd_u8(bitmap_rows_0123, bitmap_rows_4567);
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
   /* Move bitmap to a 64-bit scalar register. */
   bitmap = vget_lane_u64(vreinterpret_u64_u8(bitmap_all), 0);
 
@@ -569,7 +572,7 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
     /* EOB position is defined to be 0 if all coefficients != 1. */
     return 0;
   } else {
-    return 63 - __builtin_clzl(bitmap);
+    return 63 - BUILTIN_CLZL(bitmap);
   }
 #else
   /* Move bitmap to two 32-bit scalar registers. */
@@ -580,9 +583,9 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
   if (bitmap0 == 0 && bitmap1 == 0) {
     return 0;
   } else if (bitmap1 != 0) {
-    return 63 - __builtin_clz(bitmap1);
+    return 63 - BUILTIN_CLZ(bitmap1);
   } else {
-    return 31 - __builtin_clz(bitmap0);
+    return 31 - BUILTIN_CLZ(bitmap0);
   }
 #endif
 }

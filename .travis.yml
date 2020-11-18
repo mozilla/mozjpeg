@@ -14,7 +14,7 @@ matrix:
         - docker
     - os: osx
       env: BUILD_OFFICIAL=1
-      osx_image: xcode8.3
+      osx_image: xcode12.2
     - os: linux
       compiler: clang
       env:
@@ -72,14 +72,13 @@ before_install:
       sudo apt -y --install-recommends install libc6-dev-x32;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      pushd $HOME/Downloads &&
-      curl -LO https://distfiles.macports.org/MacPorts/MacPorts-2.6.4-10.12-Sierra.pkg &&
-      sudo installer -pkg MacPorts-2.6.4-10.12-Sierra.pkg -target / &&
-      rm MacPorts-2.6.4-10.12-Sierra.pkg &&
+      curl -LO https://distfiles.macports.org/MacPorts/MacPorts-2.6.4-10.15-Catalina.pkg &&
+      sudo installer -pkg MacPorts-2.6.4-10.15-Catalina.pkg -target / &&
+      rm MacPorts-2.6.4-10.15-Catalina.pkg &&
       sudo /opt/local/bin/port -N install yasm md5sha1sum &&
       export PATH=/opt/local/bin:$PATH &&
-      popd &&
       ln -fs /Applications/Xcode.app /Applications/Xcode83.app;
+      ln -fs /Applications/Xcode.app /Applications/Xcode122.app;
     fi
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then

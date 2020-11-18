@@ -642,17 +642,18 @@ are installed by default on OS X/macOS 10.7 and later.
 In order to create a Mac package/disk image that contains universal
 x86-64/Arm binaries, set the following CMake variable:
 
-* `IOS_ARMV8_BUILD`: Directory containing an Armv8 (64-bit) iOS build of
+* `ARMV8_BUILD`: Directory containing an Armv8 (64-bit) iOS or macOS build of
   libjpeg-turbo to include in the universal binaries
 
 You should first use CMake to configure an Armv8 sub-build of libjpeg-turbo
-(see "Building libjpeg-turbo for iOS" above) in a build directory that matches
-the one specified in the aforementioned CMake variable.  Next, configure the
-primary (x86-64) build of libjpeg-turbo as an out-of-tree build, specifying the
-aforementioned CMake variable, and build it.  Once the primary build has been
-built, run `make dmg` from the build directory.  The packaging system will
-build the sub-build, use lipo to combine it with the primary build into a
-single set of universal binaries, then package the universal binaries.
+(see "Building libjpeg-turbo for iOS" above, if applicable) in a build
+directory that matches the one specified in the aforementioned CMake variable.
+Next, configure the primary (x86-64) build of libjpeg-turbo as an out-of-tree
+build, specifying the aforementioned CMake variable, and build it.  Once the
+primary build has been built, run `make dmg` from the build directory.  The
+packaging system will build the sub-build, use lipo to combine it with the
+primary build into a single set of universal binaries, then package the
+universal binaries.
 
 
 Windows

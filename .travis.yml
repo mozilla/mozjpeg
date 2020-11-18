@@ -68,6 +68,7 @@ before_install:
       sudo installer -pkg MacPorts-2.6.4-10.12-Sierra.pkg -target / &&
       rm MacPorts-2.6.4-10.12-Sierra.pkg &&
       sudo /opt/local/bin/port -N install gcc5 yasm md5sha1sum &&
+      export PATH=/opt/local/bin:$PATH &&
       popd &&
       git clone --depth=1 https://github.com/libjpeg-turbo/gas-preprocessor.git ~/src/gas-preprocessor &&
       ln -fs /Applications/Xcode.app /Applications/Xcode72.app;

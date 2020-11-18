@@ -77,6 +77,7 @@ before_install:
       sudo installer -pkg MacPorts-2.6.4-10.12-Sierra.pkg -target / &&
       rm MacPorts-2.6.4-10.12-Sierra.pkg &&
       sudo /opt/local/bin/port -N install yasm md5sha1sum &&
+      export PATH=/opt/local/bin:$PATH &&
       popd &&
       ln -fs /Applications/Xcode.app /Applications/Xcode83.app;
     fi

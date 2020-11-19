@@ -3,8 +3,8 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=@CMAKE_INSTALL_FULL_LIBDIR@
 includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
-Name: libjpeg
-Description: A SIMD-accelerated JPEG codec that provides the libjpeg API
+Name: lib@MOZPREFIX@jpeg
+Description: MozJPEG's improvements of libjpeg-turbo providing the libjpeg API
 Version: @VERSION@
-Libs: -L${libdir} -ljpeg
-Cflags: -I${includedir}
+Libs: -L${libdir} -l@MOZPREFIX@jpeg
+Cflags: -I${includedir}/@MOZJPEG_INCLUDE_SUBDIR@

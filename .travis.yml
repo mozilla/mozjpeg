@@ -106,7 +106,11 @@ script:
         mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
       else
         ~/src/buildscripts/buildljt -d $TRAVIS_BUILD_DIR -v &&
-        mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
+        if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+          mv ~/src/ljt.nightly/latest/log-macos.txt ~/src/ljt.nightly/latest/files/;
+        else
+          mv ~/src/ljt.nightly/latest/log-$TRAVIS_OS_NAME.txt ~/src/ljt.nightly/latest/files/;
+        fi
       fi
     fi
   - if [ "${BUILD_OFFICIAL:-}" == "" ]; then

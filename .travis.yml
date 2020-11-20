@@ -77,7 +77,6 @@ before_install:
       rm MacPorts-2.6.4-10.15-Catalina.pkg &&
       sudo /opt/local/bin/port -N install yasm md5sha1sum &&
       export PATH=/opt/local/bin:$PATH &&
-      ln -fs /Applications/Xcode.app /Applications/Xcode83.app;
       ln -fs /Applications/Xcode.app /Applications/Xcode122.app;
     fi
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then

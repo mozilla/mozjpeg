@@ -1062,7 +1062,7 @@ foreach(libtype ${TEST_LIBTYPES})
   endmacro()
 
   # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
-  add_bittest(cjpeg rgb-islow "-rgb;-dct;int;-icc;${TESTIMAGES}/test1.icc"
+  add_bittest(cjpeg rgb-islow "-revert;-rgb;-dct;int;-icc;${TESTIMAGES}/test1.icc"
     testout_rgb_islow.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_RGB_ISLOW})
 
@@ -1077,7 +1077,7 @@ foreach(libtype ${TEST_LIBTYPES})
   set_tests_properties(djpeg-${libtype}-rgb-islow-icc-cmp PROPERTIES
     DEPENDS djpeg-${libtype}-rgb-islow)
 
-  add_bittest(jpegtran icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
+  add_bittest(jpegtran icc "-revert;-copy;all;-icc;${TESTIMAGES}/test2.icc"
     testout_rgb_islow2.jpg testout_rgb_islow.jpg
     ${MD5_JPEG_RGB_ISLOW2} cjpeg-${libtype}-rgb-islow)
 
@@ -1094,7 +1094,7 @@ foreach(libtype ${TEST_LIBTYPES})
   endif()
 
   # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
-  add_bittest(cjpeg 422-ifast-opt "-sample;2x1;-dct;fast;-opt"
+  add_bittest(cjpeg 422-ifast-opt "-revert;-sample;2x1;-dct;fast;-opt"
     testout_422_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_422_IFAST_OPT})
 
@@ -1123,7 +1123,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
   # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
   add_bittest(cjpeg 420-q100-ifast-prog
-    "-sample;2x2;-quality;100;-dct;fast;-scans;${TESTIMAGES}/test.scan"
+    "-revert;-sample;2x2;-quality;100;-dct;fast;-scans;${TESTIMAGES}/test.scan"
     testout_420_q100_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_420_IFAST_Q100_PROG})
 
@@ -1138,7 +1138,7 @@ foreach(libtype ${TEST_LIBTYPES})
     ${MD5_PPM_420M_Q100_IFAST} cjpeg-${libtype}-420-q100-ifast-prog)
 
   # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
-  add_bittest(cjpeg gray-islow "-gray;-dct;int"
+  add_bittest(cjpeg gray-islow "-revert;-gray;-dct;int"
     testout_gray_islow.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_GRAY_ISLOW})
 
@@ -1166,13 +1166,13 @@ foreach(libtype ${TEST_LIBTYPES})
 
   # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
   # ENT: 2-pass huff
-  add_bittest(cjpeg 420s-ifast-opt "-sample;2x2;-smooth;1;-dct;int;-opt"
+  add_bittest(cjpeg 420s-ifast-opt "-revert;-sample;2x2;-smooth;1;-dct;int;-opt"
     testout_420s_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_420S_IFAST_OPT})
 
   if(FLOATTEST)
     # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
-    add_bittest(cjpeg 3x2-float-prog "-sample;3x2;-dct;float;-prog"
+    add_bittest(cjpeg 3x2-float-prog "-revert;-sample;3x2;-dct;float;-prog"
       testout_3x2_float_prog.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_3x2_FLOAT_PROG_${FLOATTEST_UC}})
 
@@ -1183,7 +1183,7 @@ foreach(libtype ${TEST_LIBTYPES})
   endif()
 
     # CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
-  add_bittest(cjpeg 3x2-ifast-prog "-sample;3x2;-dct;fast;-prog"
+  add_bittest(cjpeg 3x2-ifast-prog "-revert;-sample;3x2;-dct;fast;-prog"
     testout_3x2_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_3x2_IFAST_PROG})
 
@@ -1194,17 +1194,17 @@ foreach(libtype ${TEST_LIBTYPES})
 
   if(WITH_ARITH_ENC)
     # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
-    add_bittest(cjpeg 420-islow-ari "-dct;int;-arithmetic"
+    add_bittest(cjpeg 420-islow-ari "-revert;-dct;int;-arithmetic"
       testout_420_islow_ari.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_420_ISLOW_ARI})
 
-    add_bittest(jpegtran 420-islow-ari "-arithmetic"
+    add_bittest(jpegtran 420-islow-ari "--revert;arithmetic"
       testout_420_islow_ari2.jpg ${TESTIMAGES}/testimgint.jpg
       ${MD5_JPEG_420_ISLOW_ARI})
 
     # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
     add_bittest(cjpeg 444-islow-progari
-      "-sample;1x1;-dct;int;-prog;-arithmetic"
+      "-revert;-sample;1x1;-dct;int;-prog;-arithmetic"
       testout_444_islow_progari.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_444_ISLOW_PROGARI})
   endif()
@@ -1215,7 +1215,7 @@ foreach(libtype ${TEST_LIBTYPES})
       testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
       ${MD5_PPM_420M_IFAST_ARI})
 
-    add_bittest(jpegtran 420-islow ""
+    add_bittest(jpegtran 420-islow "-revert"
       testout_420_islow.jpg ${TESTIMAGES}/testimgari.jpg
       ${MD5_JPEG_420_ISLOW})
   endif()
@@ -1338,7 +1338,7 @@ foreach(libtype ${TEST_LIBTYPES})
     endif()
   endif()
 
-  add_bittest(jpegtran crop "-crop;120x90+20+50;-transpose;-perfect"
+  add_bittest(jpegtran crop "-revert;-crop;120x90+20+50;-transpose;-perfect"
     testout_crop.jpg ${TESTIMAGES}/${TESTORIG}
     ${MD5_JPEG_CROP})
 

@@ -587,7 +587,7 @@ decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
           DC19 = (int)next_block_row[1][0];
           DC24 = (int)next_next_block_row[1][0];
         }
-        if (block_num < last_block_column - 1) {
+        if (block_num + 1 < last_block_column) {
           DC05 = (int)prev_prev_block_row[2][0];
           DC10 = (int)prev_block_row[2][0];
           DC15 = (int)buffer_ptr[2][0];

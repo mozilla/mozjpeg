@@ -1,3 +1,13 @@
+2.1 post-beta
+=============
+
+### Significant changes relative to 2.1 beta1
+
+1. Fixed a regression introduced by 2.1 beta1[6(b)] whereby attempting to
+decompress certain progressive JPEG images with one or more component planes of
+width 8 or less caused a buffer overrun.
+
+
 2.0.90 (2.1 beta1)
 ==================
 

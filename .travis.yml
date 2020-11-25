@@ -81,7 +81,7 @@ before_install:
     fi
   - if [ "${BUILD_OFFICIAL:-}" != "" ]; then
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-        docker pull dcommander/buildljt;
+        docker pull dcommander/buildljt:$TRAVIS_BRANCH;
       fi &&
       git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $TRAVIS_BRANCH ~/src/buildscripts &&
       if [ -n "$encrypted_f92e8533f6f1_iv" ]; then

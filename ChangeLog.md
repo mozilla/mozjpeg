@@ -135,6 +135,9 @@ default.
 for merged upsampling/color conversion, 1.5.1[5] is no longer necessary and has
 been reverted.
 
+14. The build system can now be used to generate a universal x86-64 + Armv8
+libjpeg-turbo SDK package for both iOS and macOS.
+
 
 2.0.6
 =====

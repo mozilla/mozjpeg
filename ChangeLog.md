@@ -7,6 +7,10 @@
 decompress certain progressive JPEG images with one or more component planes of
 width 8 or less caused a buffer overrun.
 
+2. Fixed a regression introduced by 2.1 beta1[6(b)] whereby attempting to
+decompress a specially-crafted malformed progressive JPEG image caused the
+block smoothing algorithm to read from uninitialized memory.
+
 
 2.0.90 (2.1 beta1)
 ==================

@@ -406,6 +406,8 @@ smoothing_ok(j_decompress_ptr cinfo)
     for (coefi = 1; coefi < SAVED_COEFS; coefi++) {
       if (cinfo->input_scan_number > 1)
         prev_coef_bits_latch[coefi] = prev_coef_bits[coefi];
+      else
+        prev_coef_bits_latch[coefi] = -1;
       coef_bits_latch[coefi] = coef_bits[coefi];
       if (coef_bits[coefi] != 0)
         smoothing_useful = TRUE;

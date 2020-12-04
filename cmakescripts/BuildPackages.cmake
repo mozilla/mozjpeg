@@ -22,13 +22,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 set(RPMARCH ${CMAKE_SYSTEM_PROCESSOR})
 if(CPU_TYPE STREQUAL "x86_64")
   set(DEBARCH amd64)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7*")
-  set(RPMARCH armv7hl)
-  set(DEBARCH armhf)
 elseif(CPU_TYPE STREQUAL "arm64")
   set(DEBARCH ${CPU_TYPE})
 elseif(CPU_TYPE STREQUAL "arm")
-  if(CMAKE_C_COMPILER MATCHES "gnueabihf")
+  check_c_source_compiles("
+    #if __ARM_PCS_VFP != 1
+    #error \"float ABI = softfp\"
+    #endif
+    int main(void) { return 0; }" HAVE_HARD_FLOAT)
+  if(HAVE_HARD_FLOAT)
     set(RPMARCH armv7hl)
     set(DEBARCH armhf)
   else()

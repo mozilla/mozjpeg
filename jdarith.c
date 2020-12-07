@@ -672,6 +672,8 @@ bad:
       for (coefi = MIN(cinfo->Ss, 1); coefi <= MAX(cinfo->Se, 9); coefi++) {
         if (cinfo->input_scan_number > 1)
           prev_coef_bit_ptr[coefi] = coef_bit_ptr[coefi];
+        else
+          prev_coef_bit_ptr[coefi] = 0;
       }
       for (coefi = cinfo->Ss; coefi <= cinfo->Se; coefi++) {
         int expected = (coef_bit_ptr[coefi] < 0) ? 0 : coef_bit_ptr[coefi];

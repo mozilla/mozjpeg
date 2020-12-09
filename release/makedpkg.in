@@ -67,7 +67,7 @@ makedeb()
 	mkdir $TMPDIR/DEBIAN
 
 	if [ $SUPPLEMENT = 1 ]; then
-		make install DESTDIR=$TMPDIR
+		DESTDIR=$TMPDIR @CMAKE_MAKE_PROGRAM@ install
 		rm -rf $TMPDIR$BINDIR
 		if [ "$DATAROOTDIR" != "$PREFIX" ]; then
 			rm -rf $TMPDIR$DATAROOTDIR
@@ -79,7 +79,7 @@ makedeb()
 		rm -rf $TMPDIR$INCLUDEDIR
 		rm -rf $TMPDIR$MANDIR
 	else
-		make install DESTDIR=$TMPDIR
+		DESTDIR=$TMPDIR @CMAKE_MAKE_PROGRAM@ install
 		if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/doc" ]; then
 			safedirmove $TMPDIR/$DOCDIR $TMPDIR/usr/share/doc/$PKGNAME-$VERSION $TMPDIR/__tmpdoc
 			ln -fs /usr/share/doc/$DIRNAME-$VERSION $TMPDIR$DOCDIR

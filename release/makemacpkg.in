@@ -90,7 +90,7 @@ TMPDIR=`mktemp -d /tmp/$PKGNAME-build.XXXXXX`
 PKGROOT=$TMPDIR/pkg/Package_Root
 mkdir -p $PKGROOT
 
-make install DESTDIR=$PKGROOT
+DESTDIR=$PKGROOT @CMAKE_MAKE_PROGRAM@ install
 
 if [ "$PREFIX" = "@CMAKE_INSTALL_DEFAULT_PREFIX@" -a "$DOCDIR" = "@CMAKE_INSTALL_DEFAULT_PREFIX@/doc" ]; then
 	mkdir -p $PKGROOT/Library/Documentation
@@ -109,13 +109,13 @@ install_subbuild()
 		echo ERROR: $ARCHNAME build directory $BUILDDIR does not exist
 		exit 1
 	fi
-	if [ ! -f $BUILDDIR/Makefile ]; then
+	if [ ! -f $BUILDDIR/Makefile -a ! -f $BUILDDIR/build.ninja ]; then
 		echo ERROR: $ARCHNAME build directory $BUILDDIR is not configured
 		exit 1
 	fi
 	mkdir -p $TMPDIR/dist.$DIRNAME
 	pushd $BUILDDIR
-	make install DESTDIR=$TMPDIR/dist.$DIRNAME
+	DESTDIR=$TMPDIR/dist.$DIRNAME @CMAKE_MAKE_PROGRAM@ install
 	popd
 	$LIPO -create \
 		$PKGROOT/$LIBDIR/$LIBJPEG_DSO_NAME \

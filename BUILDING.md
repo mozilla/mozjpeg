@@ -103,6 +103,13 @@ directory, whereas *{source_directory}* refers to the libjpeg-turbo source
 directory.  For in-tree builds, these directories are the same.
 
 
+Ninja
+-----
+
+In all of the procedures and recipes below, replace `make` with `ninja` and
+`Unix Makefiles` with `Ninja` if using Ninja.
+
+
 Build Procedure
 ---------------
 

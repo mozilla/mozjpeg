@@ -1,7 +1,7 @@
 /*
  * jcphuff-neon.c - prepare data for progressive Huffman encoding (Arm Neon)
  *
- * Copyright (C) 2020, Arm Limited.  All Rights Reserved.
+ * Copyright (C) 2020-2021, Arm Limited.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -572,7 +572,7 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
     /* EOB position is defined to be 0 if all coefficients != 1. */
     return 0;
   } else {
-    return 63 - BUILTIN_CLZL(bitmap);
+    return 63 - BUILTIN_CLZLL(bitmap);
   }
 #else
   /* Move bitmap to two 32-bit scalar registers. */

@@ -11,6 +11,10 @@ width 8 or less caused a buffer overrun.
 decompress a specially-crafted malformed progressive JPEG image caused the
 block smoothing algorithm to read from uninitialized memory.
 
+3. Fixed an issue in the Arm Neon SIMD Huffman encoders that caused the
+encoders to generate incorrect results when using the Clang compiler with
+Visual Studio.
+
 
 2.0.90 (2.1 beta1)
 ==================

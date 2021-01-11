@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, 2015, 2018, D. R. Commander.
+ * Copyright (C) 2011, 2015, 2018, 2021, D. R. Commander.
  * Copyright (C) 2016, 2018, Matthieu Darbois.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -169,24 +169,26 @@ INLINE
 METHODDEF(int)
 count_zeroes(size_t *x)
 {
-  int result;
 #if defined(HAVE_BUILTIN_CTZL)
+  int result;
   result = __builtin_ctzl(*x);
   *x >>= result;
 #elif defined(HAVE_BITSCANFORWARD64)
+  unsigned long result;
   _BitScanForward64(&result, *x);
   *x >>= result;
 #elif defined(HAVE_BITSCANFORWARD)
+  unsigned long result;
   _BitScanForward(&result, *x);
   *x >>= result;
 #else
-  result = 0;
+  int result = 0;
   while ((*x & 1) == 0) {
     ++result;
     *x >>= 1;
   }
 #endif
-  return result;
+  return (int)result;
 }
 
 

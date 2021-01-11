@@ -67,6 +67,10 @@ elseif(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "ppc*" OR
 else()
   set(CPU_TYPE ${CMAKE_SYSTEM_PROCESSOR_LC})
 endif()
+if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")
+  set(CPU_TYPE arm64)
+endif()
+
 message(STATUS "${BITS}-bit build (${CPU_TYPE})")
 
 

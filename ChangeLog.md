@@ -15,6 +15,10 @@ block smoothing algorithm to read from uninitialized memory.
 encoders to generate incorrect results when using the Clang compiler with
 Visual Studio.
 
+4. Fixed a floating point exception that occurred when attempting to compress a
+specially-crafted malformed GIF image with a specified image width of 0 using
+cjpeg.
+
 
 2.0.90 (2.1 beta1)
 ==================

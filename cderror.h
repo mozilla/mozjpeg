@@ -1,9 +1,11 @@
 /*
  * cderror.h
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 2009-2017 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -60,6 +62,7 @@ JMESSAGE(JTRC_BMP_OS2_MAPPED, "%ux%u 8-bit colormapped OS2 BMP image")
 JMESSAGE(JERR_GIF_BUG, "GIF output got confused")
 JMESSAGE(JERR_GIF_CODESIZE, "Bogus GIF codesize %d")
 JMESSAGE(JERR_GIF_COLORSPACE, "GIF output must be grayscale or RGB")
+JMESSAGE(JERR_GIF_EMPTY, "Empty GIF image")
 JMESSAGE(JERR_GIF_IMAGENOTFOUND, "Too few images in GIF file")
 JMESSAGE(JERR_GIF_NOT, "Not a GIF file")
 JMESSAGE(JTRC_GIF, "%ux%ux%d GIF image")

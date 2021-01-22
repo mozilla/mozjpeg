@@ -885,6 +885,7 @@ static int bmpTest(void)
 
 int main(int argc, char *argv[])
 {
+  setenv("TJ_REVERT", "1", 1);
   int i, num4bf = 5;
 
 #ifdef _WIN32

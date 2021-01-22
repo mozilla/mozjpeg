@@ -246,8 +246,10 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
 
   cinfo->in_color_space = pf2cs[pixelFormat];
   cinfo->input_components = tjPixelSize[pixelFormat];
+#ifndef NO_GETENV
 	if((env=getenv("TJ_REVERT"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
 		cinfo->master->compress_profile=JCP_FASTEST;
+#endif
   jpeg_set_defaults(cinfo);
 
 #ifndef NO_GETENV
@@ -474,7 +476,14 @@ static tjhandle _tjInitCompress(tjinstance *this)
   }
 
   jpeg_create_compress(&this->cinfo);
-  jpeg_c_set_int_param(&this->cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
+
+#ifndef NO_GETENV
+  /* This is used in unit tests */
+  char *env = NULL;
+  if((env=getenv("TJ_REVERT"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
+    jpeg_c_set_int_param(&this->cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
+#endif
+
   /* Make an initial call so it will create the destination manager */
   jpeg_mem_dest_tj(&this->cinfo, &buf, &size, 0);
 

@@ -1002,22 +1002,22 @@ foreach(libtype ${TEST_LIBTYPES})
     add_test(tjunittest-${libtype}-bmp
       ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -bmp)
 
-    set(MD5_PPM_GRAY_TILE 89d3ca21213d9d864b50b4e4e7de4ca6)
-    set(MD5_PPM_420_8x8_TILE 847fceab15c5b7b911cb986cf0f71de3)
-    set(MD5_PPM_420_16x16_TILE ca45552a93687e078f7137cc4126a7b0)
-    set(MD5_PPM_420_32x32_TILE d8676f1d6b68df358353bba9844f4a00)
+    set(MD5_PPM_GRAY_TILE b8f5defbd8e76a1d557b860b457bcd05)
+    set(MD5_PPM_420_8x8_TILE cb8bb3f7de153b4cfbf6cc6f36b43bf0)
+    set(MD5_PPM_420_16x16_TILE a144f52396cba331bb85c6b43d1deedc)
+    set(MD5_PPM_420_32x32_TILE 5d6a7c35bb44adc89581466b253ef920)
     set(MD5_PPM_420_64x64_TILE 4e4c1a3d7ea4bace4f868bcbe83b7050)
-    set(MD5_PPM_420_128x128_TILE f24c3429c52265832beab9df72a0ceae)
+    set(MD5_PPM_420_128x128_TILE d8b12baac07d24d9705d712359ae2181)
     set(MD5_PPM_420M_8x8_TILE bc25320e1f4c31ce2e610e43e9fd173c)
-    set(MD5_PPM_420M_TILE 75ffdf14602258c5c189522af57fa605)
+    set(MD5_PPM_420M_TILE 391df0063a66d7656f18f3a5cb107357)
     set(MD5_PPM_422_8x8_TILE d83dacd9fc73b0a6f10c09acad64eb1e)
     set(MD5_PPM_422_16x16_TILE 35077fb610d72dd743b1eb0cbcfe10fb)
-    set(MD5_PPM_422_32x32_TILE e6902ed8a449ecc0f0d6f2bf945f65f7)
-    set(MD5_PPM_422_64x64_TILE 2b4502a8f316cedbde1da7bce3d2231e)
+    set(MD5_PPM_422_32x32_TILE 06a45b730ffa26990af4930140c3233b)
+    set(MD5_PPM_422_64x64_TILE 007d991538e571e6e56c54b6224b060a)
     set(MD5_PPM_422_128x128_TILE f0b5617d578f5e13c8eee215d64d4877)
     set(MD5_PPM_422M_8x8_TILE 828941d7f41cd6283abd6beffb7fd51d)
-    set(MD5_PPM_422M_TILE e877ae1324c4a280b95376f7f018172f)
-    set(MD5_PPM_444_TILE 7964e41e67cfb8d0a587c0aa4798f9c3)
+    set(MD5_PPM_422M_TILE df4b4c784feb513d250c2dd76d61fa1a)
+    set(MD5_PPM_444_TILE c757cfea44ac6439fea03ef57d04b7de)
 
     # Test compressing from/decompressing to an arbitrary subregion of a larger
     # image buffer
@@ -1030,25 +1030,6 @@ foreach(libtype ${TEST_LIBTYPES})
     set_tests_properties(tjbench-${libtype}-tile
       PROPERTIES DEPENDS tjbench-${libtype}-tile-cp)
 
-    foreach(tile 8 16 32 64 128)
-      add_test(tjbench-${libtype}-tile-gray-${tile}x${tile}-cmp
-        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_GRAY_TILE}
-          testout_tile_GRAY_Q95_${tile}x${tile}.ppm)
-      foreach(subsamp 420 422)
-        add_test(tjbench-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
-          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
-            ${MD5_PPM_${subsamp}_${tile}x${tile}_TILE}
-            testout_tile_${subsamp}_Q95_${tile}x${tile}.ppm)
-      endforeach()
-      add_test(tjbench-${libtype}-tile-444-${tile}x${tile}-cmp
-        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_444_TILE}
-          testout_tile_444_Q95_${tile}x${tile}.ppm)
-      foreach(subsamp gray 420 422 444)
-        set_tests_properties(tjbench-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
-          PROPERTIES DEPENDS tjbench-${libtype}-tile)
-      endforeach()
-    endforeach()
-
     add_test(tjbench-${libtype}-tilem-cp
       ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
         testout_tilem.ppm)
@@ -1057,27 +1038,6 @@ foreach(libtype ${TEST_LIBTYPES})
         -rgb -fastupsample -quiet -tile -benchtime 0.01 -warmup 0)
     set_tests_properties(tjbench-${libtype}-tilem
       PROPERTIES DEPENDS tjbench-${libtype}-tilem-cp)
-
-    add_test(tjbench-${libtype}-tile-420m-8x8-cmp
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_420M_8x8_TILE}
-        testout_tilem_420_Q95_8x8.ppm)
-    add_test(tjbench-${libtype}-tile-422m-8x8-cmp
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_422M_8x8_TILE}
-        testout_tilem_422_Q95_8x8.ppm)
-    foreach(tile 16 32 64 128)
-      foreach(subsamp 420 422)
-        add_test(tjbench-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
-          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
-            ${MD5_PPM_${subsamp}M_TILE}
-            testout_tilem_${subsamp}_Q95_${tile}x${tile}.ppm)
-      endforeach()
-    endforeach()
-    foreach(tile 8 16 32 64 128)
-      foreach(subsamp 420 422)
-        set_tests_properties(tjbench-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
-          PROPERTIES DEPENDS tjbench-${libtype}-tilem)
-      endforeach()
-    endforeach()
   endif()
 
   # These tests are carefully crafted to provide full coverage of as many of

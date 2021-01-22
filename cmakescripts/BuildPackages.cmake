@@ -23,11 +23,18 @@ set(RPMARCH ${CMAKE_SYSTEM_PROCESSOR})
 if(CPU_TYPE STREQUAL "x86_64")
   set(DEBARCH amd64)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7*")
+  set(RPMARCH armv7hl)
   set(DEBARCH armhf)
 elseif(CPU_TYPE STREQUAL "arm64")
   set(DEBARCH ${CPU_TYPE})
 elseif(CPU_TYPE STREQUAL "arm")
-  set(DEBARCH armel)
+  if(CMAKE_C_COMPILER MATCHES "gnueabihf")
+    set(RPMARCH armv7hl)
+    set(DEBARCH armhf)
+  else()
+    set(RPMARCH armel)
+    set(DEBARCH armel)
+  endif()
 elseif(CMAKE_SYSTEM_PROCESSOR_LC STREQUAL "ppc64le")
   set(DEBARCH ppc64el)
 elseif(CPU_TYPE STREQUAL "powerpc" AND BITS EQUAL 32)
@@ -45,19 +52,19 @@ boolean_number(CMAKE_POSITION_INDEPENDENT_CODE)
 configure_file(release/makerpm.in pkgscripts/makerpm)
 configure_file(release/rpm.spec.in pkgscripts/rpm.spec @ONLY)
 
-add_custom_target(rpm sh pkgscripts/makerpm
+add_custom_target(rpm pkgscripts/makerpm
   SOURCES pkgscripts/makerpm)
 
 configure_file(release/makesrpm.in pkgscripts/makesrpm)
 
-add_custom_target(srpm sh pkgscripts/makesrpm
+add_custom_target(srpm pkgscripts/makesrpm
   SOURCES pkgscripts/makesrpm
   DEPENDS dist)
 
 configure_file(release/makedpkg.in pkgscripts/makedpkg)
 configure_file(release/deb-control.in pkgscripts/deb-control)
 
-add_custom_target(deb sh pkgscripts/makedpkg
+add_custom_target(deb pkgscripts/makedpkg
   SOURCES pkgscripts/makedpkg)
 
 endif() # Linux
@@ -121,7 +128,7 @@ if(CYGWIN)
 
 configure_file(release/makecygwinpkg.in pkgscripts/makecygwinpkg)
 
-add_custom_target(cygwinpkg sh pkgscripts/makecygwinpkg)
+add_custom_target(cygwinpkg pkgscripts/makecygwinpkg)
 
 endif() # CYGWIN
 
@@ -137,13 +144,13 @@ set(OSX_32BIT_BUILD ${DEFAULT_OSX_32BIT_BUILD} CACHE PATH
   "Directory containing 32-bit (i386) Mac build to include in universal binaries (default: ${DEFAULT_OSX_32BIT_BUILD})")
 set(DEFAULT_IOS_ARMV7_BUILD ${CMAKE_SOURCE_DIR}/iosarmv7)
 set(IOS_ARMV7_BUILD ${DEFAULT_IOS_ARMV7_BUILD} CACHE PATH
-  "Directory containing ARMv7 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7_BUILD})")
+  "Directory containing Armv7 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7_BUILD})")
 set(DEFAULT_IOS_ARMV7S_BUILD ${CMAKE_SOURCE_DIR}/iosarmv7s)
 set(IOS_ARMV7S_BUILD ${DEFAULT_IOS_ARMV7S_BUILD} CACHE PATH
-  "Directory containing ARMv7s iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7S_BUILD})")
+  "Directory containing Armv7s iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7S_BUILD})")
 set(DEFAULT_IOS_ARMV8_BUILD ${CMAKE_SOURCE_DIR}/iosarmv8)
 set(IOS_ARMV8_BUILD ${DEFAULT_IOS_ARMV8_BUILD} CACHE PATH
-  "Directory containing ARMv8 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV8_BUILD})")
+  "Directory containing Armv8 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV8_BUILD})")
 
 set(OSX_APP_CERT_NAME "" CACHE STRING
   "Name of the Developer ID Application certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo DMG.  Leave this blank to generate an unsigned DMG.")
@@ -154,10 +161,10 @@ configure_file(release/makemacpkg.in pkgscripts/makemacpkg)
 configure_file(release/Distribution.xml.in pkgscripts/Distribution.xml)
 configure_file(release/uninstall.in pkgscripts/uninstall)
 
-add_custom_target(dmg sh pkgscripts/makemacpkg
+add_custom_target(dmg pkgscripts/makemacpkg
   SOURCES pkgscripts/makemacpkg)
 
-add_custom_target(udmg sh pkgscripts/makemacpkg universal
+add_custom_target(udmg pkgscripts/makemacpkg universal
   SOURCES pkgscripts/makemacpkg)
 
 endif() # APPLE
@@ -174,7 +181,7 @@ add_custom_target(dist
 
 configure_file(release/maketarball.in pkgscripts/maketarball)
 
-add_custom_target(tarball sh pkgscripts/maketarball
+add_custom_target(tarball pkgscripts/maketarball
   SOURCES pkgscripts/maketarball)
 
 configure_file(release/libjpeg.pc.in pkgscripts/libjpeg.pc @ONLY)

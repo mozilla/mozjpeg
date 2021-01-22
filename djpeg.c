@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2017, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, 2020, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -148,15 +148,15 @@ usage(void)
 #endif
   fprintf(stderr, "Switches for advanced users:\n");
 #ifdef DCT_ISLOW_SUPPORTED
-  fprintf(stderr, "  -dct int       Use integer DCT method%s\n",
+  fprintf(stderr, "  -dct int       Use accurate integer DCT method%s\n",
           (JDCT_DEFAULT == JDCT_ISLOW ? " (default)" : ""));
 #endif
 #ifdef DCT_IFAST_SUPPORTED
-  fprintf(stderr, "  -dct fast      Use fast integer DCT (less accurate)%s\n",
+  fprintf(stderr, "  -dct fast      Use less accurate integer DCT method [legacy feature]%s\n",
           (JDCT_DEFAULT == JDCT_IFAST ? " (default)" : ""));
 #endif
 #ifdef DCT_FLOAT_SUPPORTED
-  fprintf(stderr, "  -dct float     Use floating-point DCT method%s\n",
+  fprintf(stderr, "  -dct float     Use floating-point DCT method [legacy feature]%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
   fprintf(stderr, "  -dither fs     Use F-S dithering (default)\n");
@@ -708,7 +708,12 @@ main(int argc, char **argv)
                                           dest_mgr->buffer_height);
       (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
     }
-    jpeg_skip_scanlines(&cinfo, skip_end - skip_start + 1);
+    if ((tmp = jpeg_skip_scanlines(&cinfo, skip_end - skip_start + 1)) !=
+        skip_end - skip_start + 1) {
+      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %d rather than %d\n",
+              progname, tmp, skip_end - skip_start + 1);
+      exit(EXIT_FAILURE);
+    }
     while (cinfo.output_scanline < cinfo.output_height) {
       num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
                                           dest_mgr->buffer_height);
@@ -744,13 +749,24 @@ main(int argc, char **argv)
     cinfo.output_height = tmp;
 
     /* Process data */
-    jpeg_skip_scanlines(&cinfo, crop_y);
+    if ((tmp = jpeg_skip_scanlines(&cinfo, crop_y)) != crop_y) {
+      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %d rather than %d\n",
+              progname, tmp, crop_y);
+      exit(EXIT_FAILURE);
+    }
     while (cinfo.output_scanline < crop_y + crop_height) {
       num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
                                           dest_mgr->buffer_height);
       (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
     }
-    jpeg_skip_scanlines(&cinfo, cinfo.output_height - crop_y - crop_height);
+    if ((tmp =
+         jpeg_skip_scanlines(&cinfo,
+                             cinfo.output_height - crop_y - crop_height)) !=
+        cinfo.output_height - crop_y - crop_height) {
+      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %d rather than %d\n",
+              progname, tmp, cinfo.output_height - crop_y - crop_height);
+      exit(EXIT_FAILURE);
+    }
 
   /* Normal full-image decompress */
   } else {

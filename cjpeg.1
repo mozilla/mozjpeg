@@ -1,4 +1,4 @@
-.TH CJPEG 1 "18 March 2017"
+.TH CJPEG 1 "4 November 2020"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -161,31 +161,40 @@ arithmetic coded JPEG is not yet widely implemented, so many decoders will be
 unable to view an arithmetic coded JPEG file at all.
 .TP
 .B \-dct int
-Use integer DCT method (default).
+Use accurate integer DCT method (default).
 .TP
 .B \-dct fast
-Use fast integer DCT (less accurate).
-In libjpeg-turbo, the fast method is generally about 5-15% faster than the int
-method when using the x86/x86-64 SIMD extensions (results may vary with other
-SIMD implementations, or when using libjpeg-turbo without SIMD extensions.)
+Use less accurate integer DCT method [legacy feature].
+When the Independent JPEG Group's software was first released in 1991, the
+compression time for a 1-megapixel JPEG image on a mainstream PC was measured
+in minutes.  Thus, the \fBfast\fR integer DCT algorithm provided noticeable
+performance benefits.  On modern CPUs running libjpeg-turbo, however, the
+compression time for a 1-megapixel JPEG image is measured in milliseconds, and
+thus the performance benefits of the \fBfast\fR algorithm are much less
+noticeable.  On modern x86/x86-64 CPUs that support AVX2 instructions, the
+\fBfast\fR and \fBint\fR methods have similar performance.  On other types of
+CPUs, the \fBfast\fR method is generally about 5-15% faster than the \fBint\fR
+method.
+
 For quality levels of 90 and below, there should be little or no perceptible
-difference between the two algorithms.  For quality levels above 90, however,
-the difference between the fast and the int methods becomes more pronounced.
-With quality=97, for instance, the fast method incurs generally about a 1-3 dB
-loss (in PSNR) relative to the int method, but this can be larger for some
-images.  Do not use the fast method with quality levels above 97.  The
-algorithm often degenerates at quality=98 and above and can actually produce a
-more lossy image than if lower quality levels had been used.  Also, in
-libjpeg-turbo, the fast method is not fully accelerated for quality levels
-above 97, so it will be slower than the int method.
+quality difference between the two algorithms.  For quality levels above 90,
+however, the difference between the \fBfast\fR and \fBint\fR methods becomes
+more pronounced.  With quality=97, for instance, the \fBfast\fR method incurs
+generally about a 1-3 dB loss in PSNR relative to the \fBint\fR method, but
+this can be larger for some images.  Do not use the \fBfast\fR method with
+quality levels above 97.  The algorithm often degenerates at quality=98 and
+above and can actually produce a more lossy image than if lower quality levels
+had been used.  Also, in libjpeg-turbo, the \fBfast\fR method is not fully
+accelerated for quality levels above 97, so it will be slower than the
+\fBint\fR method.
 .TP
 .B \-dct float
-Use floating-point DCT method.
-The float method is mainly a legacy feature.  It does not produce significantly
-more accurate results than the int method, and it is much slower.  The float
-method may also give different results on different machines due to varying
-roundoff behavior, whereas the integer methods should give the same results on
-all machines.
+Use floating-point DCT method [legacy feature].
+The \fBfloat\fR method does not produce significantly more accurate results
+than the \fBint\fR method, and it is much slower.  The \fBfloat\fR method may
+also give different results on different machines due to varying roundoff
+behavior, whereas the integer methods should give the same results on all
+machines.
 .TP
 .BI \-icc " file"
 Embed ICC color management profile contained in the specified file.

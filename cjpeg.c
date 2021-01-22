@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013-2014, 2017, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, 2017, 2020, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -207,15 +207,15 @@ usage(void)
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
 #ifdef DCT_ISLOW_SUPPORTED
-  fprintf(stderr, "  -dct int       Use integer DCT method%s\n",
+  fprintf(stderr, "  -dct int       Use accurate integer DCT method%s\n",
           (JDCT_DEFAULT == JDCT_ISLOW ? " (default)" : ""));
 #endif
 #ifdef DCT_IFAST_SUPPORTED
-  fprintf(stderr, "  -dct fast      Use fast integer DCT (less accurate)%s\n",
+  fprintf(stderr, "  -dct fast      Use less accurate integer DCT method [legacy feature]%s\n",
           (JDCT_DEFAULT == JDCT_IFAST ? " (default)" : ""));
 #endif
 #ifdef DCT_FLOAT_SUPPORTED
-  fprintf(stderr, "  -dct float     Use floating-point DCT method%s\n",
+  fprintf(stderr, "  -dct float     Use floating-point DCT method [legacy feature]%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
   fprintf(stderr, "  -quant-baseline Use 8-bit quantization table entries for baseline JPEG compatibility\n");
@@ -251,7 +251,7 @@ usage(void)
 
 LOCAL(int)
 parse_switches(j_compress_ptr cinfo, int argc, char **argv,
-                int last_file_arg_seen, boolean for_real)
+               int last_file_arg_seen, boolean for_real)
 /* Parse optional switches.
  * Returns argv[] index of first file-name argument (== argc if none).
  * Any file names with indexes <= last_file_arg_seen are ignored;
@@ -850,7 +850,7 @@ main(int argc, char **argv)
   }
   if (icc_profile != NULL)
     jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
-  
+
   /* Process data */
   while (cinfo.next_scanline < cinfo.image_height) {
     num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);

@@ -1,5 +1,6 @@
 /*
- * Copyright (C)2011-2013, 2017-2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2013, 2017-2018, 2020 D. R. Commander.
+ *                                         All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -332,15 +333,16 @@ public final class TJ {
    * mathematical transformation of RGB designed solely for storage and
    * transmission.  YCbCr images must be converted to RGB before they can
    * actually be displayed.  In the YCbCr colorspace, the Y (luminance)
-   * component represents the black & white portion of the original image, and
-   * the Cb and Cr (chrominance) components represent the color portion of the
-   * original image.  Originally, the analog equivalent of this transformation
-   * allowed the same signal to drive both black & white and color televisions,
-   * but JPEG images use YCbCr primarily because it allows the color data to be
-   * optionally subsampled for the purposes of reducing bandwidth or disk
-   * space.  YCbCr is the most common JPEG colorspace, and YCbCr JPEG images
-   * can be compressed from and decompressed to any of the extended RGB pixel
-   * formats or grayscale, or they can be decompressed to YUV planar images.
+   * component represents the black &amp; white portion of the original image,
+   * and the Cb and Cr (chrominance) components represent the color portion of
+   * the original image.  Originally, the analog equivalent of this
+   * transformation allowed the same signal to drive both black &amp; white and
+   * color televisions, but JPEG images use YCbCr primarily because it allows
+   * the color data to be optionally subsampled for the purposes of reducing
+   * bandwidth or disk space.  YCbCr is the most common JPEG colorspace, and
+   * YCbCr JPEG images can be compressed from and decompressed to any of the
+   * extended RGB pixel formats or grayscale, or they can be decompressed to
+   * YUV planar images.
    */
   @SuppressWarnings("checkstyle:ConstantName")
   public static final int CS_YCbCr = 1;

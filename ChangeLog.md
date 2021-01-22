@@ -1,3 +1,37 @@
+2.0.6
+=====
+
+### Significant changes relative to 2.0.5:
+
+1. Fixed "using JNI after critical get" errors that occurred on Android
+platforms when using any of the YUV encoding/compression/decompression/decoding
+methods in the TurboJPEG Java API.
+
+2. Fixed or worked around multiple issues with `jpeg_skip_scanlines()`:
+
+     - Fixed segfaults or "Corrupt JPEG data: premature end of data segment"
+errors in `jpeg_skip_scanlines()` that occurred when decompressing 4:2:2 or
+4:2:0 JPEG images using merged (non-fancy) upsampling/color conversion (that
+is, when setting `cinfo.do_fancy_upsampling` to `FALSE`.)  2.0.0[6] was a
+similar fix, but it did not cover all cases.
+     - `jpeg_skip_scanlines()` now throws an error if two-pass color
+quantization is enabled.  Two-pass color quantization never worked properly
+with `jpeg_skip_scanlines()`, and the issues could not readily be fixed.
+     - Fixed an issue whereby `jpeg_skip_scanlines()` always returned 0 when
+skipping past the end of an image.
+
+3. The Arm 64-bit (Armv8) Neon SIMD extensions can now be built using MinGW
+toolchains targetting Arm64 (AArch64) Windows binaries.
+
+4. Fixed unexpected visual artifacts that occurred when using
+`jpeg_crop_scanline()` and interblock smoothing while decompressing only the DC
+scan of a progressive JPEG image.
+
+5. Fixed an issue whereby libjpeg-turbo would not build if 12-bit-per-component
+JPEG support (`WITH_12BIT`) was enabled along with libjpeg v7 or libjpeg v8
+API/ABI emulation (`WITH_JPEG7` or `WITH_JPEG8`.)
+
+
 2.0.5
 =====
 
@@ -64,7 +98,7 @@ other user-visible errant behavior, and given that the lossless transformer
 (unlike the decompressor) is not generally exposed to arbitrary data exploits,
 this issue did not likely pose a security risk.
 
-6. The ARM 64-bit (ARMv8) NEON SIMD assembly code now stores constants in a
+6. The Arm 64-bit (Armv8) Neon SIMD assembly code now stores constants in a
 separate read-only data section rather than in the text section, to support
 execute-only memory layouts.
 
@@ -246,7 +280,7 @@ detect actual security issues, should they arise in the future.
 
 1. Added AVX2 SIMD implementations of the colorspace conversion, chroma
 downsampling and upsampling, integer quantization and sample conversion, and
-slow integer DCT/IDCT algorithms.  When using the slow integer DCT/IDCT
+accurate integer DCT/IDCT algorithms.  When using the accurate integer DCT/IDCT
 algorithms on AVX2-equipped CPUs, the compression of RGB images is
 approximately 13-36% (avg. 22%) faster (relative to libjpeg-turbo 1.5.x) with
 64-bit code and 11-21% (avg. 17%) faster with 32-bit code, and the
@@ -350,16 +384,16 @@ algorithm that caused incorrect dithering in the output image.  This algorithm
 now produces bitwise-identical results to the unmerged algorithms.
 
 12. The SIMD function symbols for x86[-64]/ELF, MIPS/ELF, macOS/x86[-64] (if
-libjpeg-turbo is built with YASM), and iOS/ARM[64] builds are now private.
+libjpeg-turbo is built with YASM), and iOS/Arm[64] builds are now private.
 This prevents those symbols from being exposed in applications or shared
 libraries that link statically with libjpeg-turbo.
 
 13. Added Loongson MMI SIMD implementations of the RGB-to-YCbCr and
 YCbCr-to-RGB colorspace conversion, 4:2:0 chroma downsampling, 4:2:0 fancy
-chroma upsampling, integer quantization, and slow integer DCT/IDCT algorithms.
-When using the slow integer DCT/IDCT, this speeds up the compression of RGB
-images by approximately 70-100% and the decompression of RGB images by
-approximately 2-3.5x.
+chroma upsampling, integer quantization, and accurate integer DCT/IDCT
+algorithms.  When using the accurate integer DCT/IDCT, this speeds up the
+compression of RGB images by approximately 70-100% and the decompression of RGB
+images by approximately 2-3.5x.
 
 14. Fixed a build error when building with older MinGW releases (regression
 caused by 1.5.1[7].)
@@ -409,9 +443,9 @@ end of a single-scan (non-progressive) image, subsequent calls to
 `jpeg_consume_input()` would return `JPEG_SUSPENDED` rather than
 `JPEG_REACHED_EOI`.
 
-9. `jpeg_crop_scanlines()` now works correctly when decompressing grayscale
-JPEG images that were compressed with a sampling factor other than 1 (for
-instance, with `cjpeg -grayscale -sample 2x2`).
+9. `jpeg_crop_scanline()` now works correctly when decompressing grayscale JPEG
+images that were compressed with a sampling factor other than 1 (for instance,
+with `cjpeg -grayscale -sample 2x2`).
 
 
 1.5.2
@@ -435,7 +469,7 @@ on PowerPC-based AmigaOS 4 and OpenBSD systems.
 5. Fixed build and runtime errors on Windows that occurred when building
 libjpeg-turbo with libjpeg v7 API/ABI emulation and the in-memory
 source/destination managers.  Due to an oversight, the `jpeg_skip_scanlines()`
-and `jpeg_crop_scanlines()` functions were not being included in jpeg7.dll when
+and `jpeg_crop_scanline()` functions were not being included in jpeg7.dll when
 libjpeg-turbo was built with `-DWITH_JPEG7=1` and `-DWITH_MEMSRCDST=1`.
 
 6. Fixed "Bogus virtual array access" error that occurred when using the
@@ -691,8 +725,8 @@ benchmarking or regression testing, SIMD-accelerated Huffman encoding can be
 disabled by setting the `JSIMD_NOHUFFENC` environment variable to `1`.
 
 13. Added ARM 64-bit (ARMv8) NEON SIMD implementations of the commonly-used
-compression algorithms (including the slow integer forward DCT and h2v2 & h2v1
-downsampling algorithms, which are not accelerated in the 32-bit NEON
+compression algorithms (including the accurate integer forward DCT and h2v2 &
+h2v1 downsampling algorithms, which are not accelerated in the 32-bit NEON
 implementation.)  This speeds up the compression of full-color JPEGs by about
 75% on average on a Cavium ThunderX processor and by about 2-2.5x on average on
 Cortex-A53 and Cortex-A57 cores.
@@ -823,8 +857,8 @@ platforms other than Windows or Linux.  Oops.
 
 7. Fixed an extremely rare bug in the Huffman encoder that caused 64-bit
 builds of libjpeg-turbo to incorrectly encode a few specific test images when
-quality=98, an optimized Huffman table, and the slow integer forward DCT were
-used.
+quality=98, an optimized Huffman table, and the accurate integer forward DCT
+were used.
 
 8. The Windows (CMake) build system now supports building only static or only
 shared libraries.  This is accomplished by adding either `-DENABLE_STATIC=0` or
@@ -983,8 +1017,8 @@ floating point inverse DCT (using code borrowed from libjpeg v8a and later.)
 The accuracy of this implementation now matches the accuracy of the SSE/SSE2
 implementation.  Note, however, that the floating point DCT/IDCT algorithms are
 mainly a legacy feature.  They generally do not produce significantly better
-accuracy than the slow integer DCT/IDCT algorithms, and they are quite a bit
-slower.
+accuracy than the accurate integer DCT/IDCT algorithms, and they are quite a
+bit slower.
 
 8. Added a new output colorspace (`JCS_RGB565`) to the libjpeg API that allows
 for decompressing JPEG images into RGB565 (16-bit) pixels.  If dithering is not
@@ -1394,8 +1428,8 @@ cases.
 
 2. Despite the above, the fast integer forward DCT still degrades somewhat for
 JPEG qualities greater than 95, so the TurboJPEG wrapper will now automatically
-use the slow integer forward DCT when generating JPEG images of quality 96 or
-greater.  This reduces compression performance by as much as 15% for these
+use the accurate integer forward DCT when generating JPEG images of quality 96
+or greater.  This reduces compression performance by as much as 15% for these
 high-quality images but is necessary to ensure that the images are perceptually
 lossless.  It also ensures that the library can avoid the performance pitfall
 created by [1].

@@ -113,13 +113,11 @@ do_crop(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         ((j_common_ptr)srcinfo, dst_coef_arrays[ci], dst_blk_y,
          (JDIMENSION)compptr->v_samp_factor, TRUE);
       src_buffer = (*srcinfo->mem->access_virt_barray)
-        ((j_common_ptr)srcinfo, src_coef_arrays[ci],
-         dst_blk_y + y_crop_blocks,
+        ((j_common_ptr)srcinfo, src_coef_arrays[ci], dst_blk_y + y_crop_blocks,
          (JDIMENSION)compptr->v_samp_factor, FALSE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
         jcopy_block_row(src_buffer[offset_y] + x_crop_blocks,
-                        dst_buffer[offset_y],
-                        compptr->width_in_blocks);
+                        dst_buffer[offset_y], compptr->width_in_blocks);
       }
     }
   }
@@ -224,8 +222,7 @@ do_flip_h(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         ((j_common_ptr)srcinfo, dst_coef_arrays[ci], dst_blk_y,
          (JDIMENSION)compptr->v_samp_factor, TRUE);
       src_buffer = (*srcinfo->mem->access_virt_barray)
-        ((j_common_ptr)srcinfo, src_coef_arrays[ci],
-         dst_blk_y + y_crop_blocks,
+        ((j_common_ptr)srcinfo, src_coef_arrays[ci], dst_blk_y + y_crop_blocks,
          (JDIMENSION)compptr->v_samp_factor, FALSE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
         dst_row_ptr = dst_buffer[offset_y];
@@ -238,8 +235,9 @@ do_flip_h(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
             src_ptr = src_row_ptr[comp_width - x_crop_blocks - dst_blk_x - 1];
             /* this unrolled loop doesn't need to know which row it's on... */
             for (k = 0; k < DCTSIZE2; k += 2) {
-              *dst_ptr++ = *src_ptr++;   /* copy even column */
-              *dst_ptr++ = - *src_ptr++; /* copy odd column with sign change */
+              *dst_ptr++ = *src_ptr++;    /* copy even column */
+              *dst_ptr++ = -(*src_ptr++); /* copy odd column with sign
+                                             change */
             }
           } else {
             /* Copy last partial block(s) verbatim */
@@ -318,14 +316,13 @@ do_flip_v(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
                 *dst_ptr++ = *src_ptr++;
               /* copy odd row with sign change */
               for (j = 0; j < DCTSIZE; j++)
-                *dst_ptr++ = - *src_ptr++;
+                *dst_ptr++ = -(*src_ptr++);
             }
           }
         } else {
           /* Just copy row verbatim. */
           jcopy_block_row(src_buffer[offset_y] + x_crop_blocks,
-                          dst_buffer[offset_y],
-                          compptr->width_in_blocks);
+                          dst_buffer[offset_y], compptr->width_in_blocks);
         }
       }
     }
@@ -599,11 +596,11 @@ do_rot_180(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
                 /* For even row, negate every odd column. */
                 for (j = 0; j < DCTSIZE; j += 2) {
                   *dst_ptr++ = *src_ptr++;
-                  *dst_ptr++ = - *src_ptr++;
+                  *dst_ptr++ = -(*src_ptr++);
                 }
                 /* For odd row, negate every even column. */
                 for (j = 0; j < DCTSIZE; j += 2) {
-                  *dst_ptr++ = - *src_ptr++;
+                  *dst_ptr++ = -(*src_ptr++);
                   *dst_ptr++ = *src_ptr++;
                 }
               }
@@ -614,7 +611,7 @@ do_rot_180(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
                 for (j = 0; j < DCTSIZE; j++)
                   *dst_ptr++ = *src_ptr++;
                 for (j = 0; j < DCTSIZE; j++)
-                  *dst_ptr++ = - *src_ptr++;
+                  *dst_ptr++ = -(*src_ptr++);
               }
             }
           }
@@ -630,7 +627,7 @@ do_rot_180(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
                 src_row_ptr[comp_width - x_crop_blocks - dst_blk_x - 1];
               for (i = 0; i < DCTSIZE2; i += 2) {
                 *dst_ptr++ = *src_ptr++;
-                *dst_ptr++ = - *src_ptr++;
+                *dst_ptr++ = -(*src_ptr++);
               }
             } else {
               /* Any remaining right-edge blocks are only copied. */

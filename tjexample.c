@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017, 2019 D. R. Commander.
- *                                               All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015, 2017, 2019, 2021 D. R. Commander.
+ *                                                     All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -288,8 +288,10 @@ int main(int argc, char **argv)
         THROW_TJ("initializing transformer");
       xform.options |= TJXOPT_TRIM;
       if (tjTransform(tjInstance, jpegBuf, jpegSize, 1, &dstBuf, &dstSize,
-                      &xform, flags) < 0)
+                      &xform, flags) < 0) {
+        tjFree(dstBuf);
         THROW_TJ("transforming input image");
+      }
       tjFree(jpegBuf);
       jpegBuf = dstBuf;
       jpegSize = dstSize;

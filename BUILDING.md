@@ -12,10 +12,7 @@ Build Requirements
 
 - [NASM](http://www.nasm.us) or [YASM](http://yasm.tortall.net)
   (if building x86 or x86-64 SIMD extensions)
-  * If using NASM, 2.10 or later is required.
-  * If using NASM, 2.10 or later (except 2.11.08) is required for an x86-64 Mac
-    build (2.11.08 does not work properly with libjpeg-turbo's x86-64 SIMD code
-    when building macho64 objects.)
+  * If using NASM, 2.13 or later is required.
   * If using YASM, 1.2.0 or later is required.
   * If building on macOS, NASM or YASM can be obtained from
     [MacPorts](http://www.macports.org/) or [Homebrew](http://brew.sh/).
@@ -49,10 +46,8 @@ Build Requirements
 
 - If building the TurboJPEG Java wrapper, JDK or OpenJDK 1.5 or later is
   required.  Most modern Linux distributions, as well as Solaris 10 and later,
-  include JDK or OpenJDK.  On OS X 10.5 and 10.6, it will be necessary to
-  install the Java Developer Package, which can be downloaded from
-  <http://developer.apple.com/downloads> (Apple ID required.)  For other
-  systems, you can obtain the Oracle Java Development Kit from
+  include JDK or OpenJDK.  For other systems, you can obtain the Oracle Java
+  Development Kit from
   <http://www.oracle.com/technetwork/java/javase/downloads>.
 
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.
@@ -62,22 +57,22 @@ Build Requirements
 - Microsoft Visual C++ 2005 or later
 
   If you don't already have Visual C++, then the easiest way to get it is by
-  installing the
-  [Windows SDK](http://msdn.microsoft.com/en-us/windows/bb980924.aspx).
-  The Windows SDK includes both 32-bit and 64-bit Visual C++ compilers and
-  everything necessary to build libjpeg-turbo.
+  installing
+  [Visual Studio Community Edition](https://visualstudio.microsoft.com),
+  which includes everything necessary to build libjpeg-turbo.
 
-  * You can also use Microsoft Visual Studio Express/Community Edition, which
-    is a free download.  (NOTE: versions prior to 2012 can only be used to
-    build 32-bit code.)
+  * You can also download and install the standalone Windows SDK (for Windows 7
+    or later), which includes command-line versions of the 32-bit and 64-bit
+    Visual C++ compilers.
   * If you intend to build libjpeg-turbo from the command line, then add the
     appropriate compiler and SDK directories to the `INCLUDE`, `LIB`, and
     `PATH` environment variables.  This is generally accomplished by
-    executing `vcvars32.bat` or `vcvars64.bat` and `SetEnv.cmd`.
-    `vcvars32.bat` and `vcvars64.bat` are part of Visual C++ and are located in
-    the same directory as the compiler.  `SetEnv.cmd` is part of the Windows
-    SDK.  You can pass optional arguments to `SetEnv.cmd` to specify a 32-bit
-    or 64-bit build environment.
+    executing `vcvars32.bat` or `vcvars64.bat`, which are located in the same
+    directory as the compiler.
+  * If built with Visual C++ 2015 or later, the libjpeg-turbo static libraries
+    cannot be used with earlier versions of Visual C++, and vice versa.
+  * The libjpeg API DLL (**jpeg{version}.dll**) will depend on the C run-time
+    DLLs corresponding to the version of Visual C++ that was used to build it.
 
    ... OR ...
 
@@ -118,6 +113,13 @@ libjpeg-turbo can be built from the same source tree using different compilers
 or settings.  In the sections below, *{build_directory}* refers to the binary
 directory, whereas *{source_directory}* refers to the libjpeg-turbo source
 directory.  For in-tree builds, these directories are the same.
+
+
+Ninja
+-----
+
+In all of the procedures and recipes below, replace `make` with `ninja` and
+`Unix Makefiles` with `Ninja` if using Ninja.
 
 
 Build Procedure
@@ -345,7 +347,7 @@ Build Recipes
 -------------
 
 
-### 32-bit Build on 64-bit Linux/Unix/Mac
+### 32-bit Build on 64-bit Linux/Unix
 
 Use export/setenv to set the following environment variables before running
 CMake:
@@ -417,103 +419,9 @@ compression/decompression.  This section describes how to build libjpeg-turbo
 for these platforms.
 
 
-### Additional build requirements
-
-- For configurations that require [gas-preprocessor.pl]
-  (https://raw.githubusercontent.com/libjpeg-turbo/gas-preprocessor/master/gas-preprocessor.pl),
-  it should be installed in your `PATH`.
-
-
-### Armv7 (32-bit)
-
-**gas-preprocessor.pl required**
-
-The following scripts demonstrate how to build libjpeg-turbo to run on the
-iPhone 3GS-4S/iPad 1st-3rd Generation and newer:
-
-#### Xcode 4.2 and earlier (LLVM-GCC)
-
-    IOS_PLATFORMDIR=/Developer/Platforms/iPhoneOS.platform
-    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-    export CFLAGS="-mfloat-abi=softfp -march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon -miphoneos-version-min=3.0"
-
-    cd {build_directory}
-
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Darwin)
-    set(CMAKE_SYSTEM_PROCESSOR arm)
-    set(CMAKE_C_COMPILER ${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2)
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
-      -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
-      [additional CMake flags] {source_directory}
-    make
-
-#### Xcode 4.3-4.6 (LLVM-GCC)
-
-Same as above, but replace the first line with:
-
-    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-
-#### Xcode 5 and later (Clang)
-
-    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-    export CFLAGS="-mfloat-abi=softfp -arch armv7 -miphoneos-version-min=3.0"
-    export ASMFLAGS="-no-integrated-as"
-
-    cd {build_directory}
-
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Darwin)
-    set(CMAKE_SYSTEM_PROCESSOR arm)
-    set(CMAKE_C_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang)
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
-      -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
-      [additional CMake flags] {source_directory}
-    make
-
-
-### Armv7s (32-bit)
-
-**gas-preprocessor.pl required**
-
-The following scripts demonstrate how to build libjpeg-turbo to run on the
-iPhone 5/iPad 4th Generation and newer:
-
-#### Xcode 4.5-4.6 (LLVM-GCC)
-
-    IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-    IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-    export CFLAGS="-Wall -mfloat-abi=softfp -march=armv7s -mcpu=swift -mtune=swift -mfpu=neon -miphoneos-version-min=6.0"
-
-    cd {build_directory}
-
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Darwin)
-    set(CMAKE_SYSTEM_PROCESSOR arm)
-    set(CMAKE_C_COMPILER ${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2)
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
-      -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
-      [additional CMake flags] {source_directory}
-    make
-
-#### Xcode 5 and later (Clang)
-
-Same as the Armv7 build procedure for Xcode 5 and later, except replace the
-compiler flags as follows:
-
-    export CFLAGS="-Wall -mfloat-abi=softfp -arch armv7s -miphoneos-version-min=6.0"
-
-
 ### Armv8 (64-bit)
 
-**gas-preprocessor.pl required if using Xcode < 6**
+**Xcode 5 or later required, Xcode 6.3.x or later recommended**
 
 The following script demonstrates how to build libjpeg-turbo to run on the
 iPhone 5S/iPad Mini 2/iPad Air and newer.
@@ -535,9 +443,6 @@ iPhone 5S/iPad Mini 2/iPad Air and newer.
       [additional CMake flags] {source_directory}
     make
 
-Once built, lipo can be used to combine the Armv7, v7s, and/or v8 variants into
-a universal library.
-
 
 Building libjpeg-turbo for Android
 ----------------------------------
@@ -547,6 +452,8 @@ Building libjpeg-turbo for Android platforms requires v13b or later of the
 
 
 ### Armv7 (32-bit)
+
+**NDK r19 or later with Clang recommended**
 
 The following is a general recipe script that can be modified for your specific
 needs.
@@ -572,6 +479,8 @@ needs.
 
 
 ### Armv8 (64-bit)
+
+**Clang recommended**
 
 The following is a general recipe script that can be modified for your specific
 needs.
@@ -747,44 +656,23 @@ Mac
     make dmg
 
 Create Mac package/disk image.  This requires pkgbuild and productbuild, which
-are installed by default on OS X 10.7 and later and which can be obtained by
-installing Xcode 3.2.6 (with the "Unix Development" option) on OS X 10.6.
-Packages built in this manner can be installed on OS X 10.5 and later, but they
-must be built on OS X 10.6 or later.
+are installed by default on OS X/macOS 10.7 and later.
 
-    make udmg
+In order to create a Mac package/disk image that contains universal
+x86-64/Arm binaries, set the following CMake variable:
 
-This creates a Mac package/disk image that contains universal x86-64/i386/Arm
-binaries.  The following CMake variables control which architectures are
-included in the universal binaries.  Setting any of these variables to an empty
-string excludes that architecture from the package.
+* `ARMV8_BUILD`: Directory containing an Armv8 (64-bit) iOS or macOS build of
+  libjpeg-turbo to include in the universal binaries
 
-* `OSX_32BIT_BUILD`: Directory containing an i386 (32-bit) Mac build of
-  libjpeg-turbo (default: *{source_directory}*/osxx86)
-* `IOS_ARMV7_BUILD`: Directory containing an Armv7 (32-bit) iOS build of
-  libjpeg-turbo (default: *{source_directory}*/iosarmv7)
-* `IOS_ARMV7S_BUILD`: Directory containing an Armv7s (32-bit) iOS build of
-  libjpeg-turbo (default: *{source_directory}*/iosarmv7s)
-* `IOS_ARMV8_BUILD`: Directory containing an Armv8 (64-bit) iOS build of
-  libjpeg-turbo (default: *{source_directory}*/iosarmv8)
-
-You should first use CMake to configure i386, Armv7, Armv7s, and/or Armv8
-sub-builds of libjpeg-turbo (see "Build Recipes" and "Building libjpeg-turbo
-for iOS" above) in build directories that match those specified in the
-aforementioned CMake variables.  Next, configure the primary build of
-libjpeg-turbo as an out-of-tree build, and build it.  Once the primary build
-has been built, run `make udmg` from the build directory.  The packaging system
-will build the sub-builds, use lipo to combine them into a single set of
-universal binaries, then package the universal binaries in the same manner as
-`make dmg`.
-
-
-Cygwin
-------
-
-    make cygwinpkg
-
-Build a Cygwin binary package.
+You should first use CMake to configure an Armv8 sub-build of libjpeg-turbo
+(see "Building libjpeg-turbo for iOS" above, if applicable) in a build
+directory that matches the one specified in the aforementioned CMake variable.
+Next, configure the primary (x86-64) build of libjpeg-turbo as an out-of-tree
+build, specifying the aforementioned CMake variable, and build it.  Once the
+primary build has been built, run `make dmg` from the build directory.  The
+packaging system will build the sub-build, use lipo to combine it with the
+primary build into a single set of universal binaries, then package the
+universal binaries.
 
 
 Windows

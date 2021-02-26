@@ -3,9 +3,9 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * Modified 2013 by Guido Vollbeding.
+ * Modified 2013-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2017, 2020, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, 2019-2020, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -68,10 +68,10 @@ static const char * const cdjpeg_message_table[] = {
 
 typedef enum {
   FMT_BMP,                      /* BMP format (Windows flavor) */
-  FMT_GIF,                      /* GIF format */
+  FMT_GIF,                      /* GIF format (LZW-compressed) */
+  FMT_GIF0,                     /* GIF format (uncompressed) */
   FMT_OS2,                      /* BMP format (OS/2 flavor) */
   FMT_PPM,                      /* PPM/PGM (PBMPLUS formats) */
-  FMT_RLE,                      /* RLE format */
   FMT_TARGA,                    /* Targa format */
   FMT_TIFF                      /* TIFF format */
 } IMAGE_FORMATS;
@@ -94,11 +94,14 @@ static IMAGE_FORMATS requested_fmt;
 
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
+JDIMENSION max_scans;           /* for -maxscans switch */
 static char *outfilename;       /* for -outfile switch */
 boolean memsrc;                 /* for -memsrc switch */
+boolean report;                 /* for -report switch */
 boolean skip, crop;
 JDIMENSION skip_start, skip_end;
 JDIMENSION crop_x, crop_y, crop_width, crop_height;
+boolean strict;                 /* for -strict switch */
 #define INPUT_BUF_SIZE  4096
 
 
@@ -127,8 +130,10 @@ usage(void)
           (DEFAULT_FMT == FMT_BMP ? " (default)" : ""));
 #endif
 #ifdef GIF_SUPPORTED
-  fprintf(stderr, "  -gif           Select GIF output format%s\n",
+  fprintf(stderr, "  -gif           Select GIF output format (LZW-compressed)%s\n",
           (DEFAULT_FMT == FMT_GIF ? " (default)" : ""));
+  fprintf(stderr, "  -gif0          Select GIF output format (uncompressed)%s\n",
+          (DEFAULT_FMT == FMT_GIF0 ? " (default)" : ""));
 #endif
 #ifdef BMP_SUPPORTED
   fprintf(stderr, "  -os2           Select BMP output format (OS/2 style)%s\n",
@@ -137,10 +142,6 @@ usage(void)
 #ifdef PPM_SUPPORTED
   fprintf(stderr, "  -pnm           Select PBMPLUS (PPM/PGM) output format%s\n",
           (DEFAULT_FMT == FMT_PPM ? " (default)" : ""));
-#endif
-#ifdef RLE_SUPPORTED
-  fprintf(stderr, "  -rle           Select Utah RLE output format%s\n",
-          (DEFAULT_FMT == FMT_RLE ? " (default)" : ""));
 #endif
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Select Targa output format%s\n",
@@ -171,14 +172,16 @@ usage(void)
   fprintf(stderr, "  -onepass       Use 1-pass quantization (fast, low quality)\n");
 #endif
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
+  fprintf(stderr, "  -maxscans N    Maximum number of scans to allow in input file\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   fprintf(stderr, "  -memsrc        Load input file into memory before decompressing\n");
 #endif
-
+  fprintf(stderr, "  -report        Report decompression progress\n");
   fprintf(stderr, "  -skip Y0,Y1    Decompress all rows except those between Y0 and Y1 (inclusive)\n");
   fprintf(stderr, "  -crop WxH+X+Y  Decompress only a rectangular subregion of the image\n");
   fprintf(stderr, "                 [requires PBMPLUS (PPM/PGM), GIF, or Targa output format]\n");
+  fprintf(stderr, "  -strict        Treat all warnings as fatal\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   exit(EXIT_FAILURE);
@@ -203,10 +206,13 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
   /* Set up default JPEG parameters. */
   requested_fmt = DEFAULT_FMT;  /* set default output file format */
   icc_filename = NULL;
+  max_scans = 0;
   outfilename = NULL;
   memsrc = FALSE;
+  report = FALSE;
   skip = FALSE;
   crop = FALSE;
+  strict = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -224,7 +230,7 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
     arg++;                      /* advance past switch marker character */
 
     if (keymatch(arg, "bmp", 1)) {
-      /* BMP output format. */
+      /* BMP output format (Windows flavor). */
       requested_fmt = FMT_BMP;
 
     } else if (keymatch(arg, "colors", 1) || keymatch(arg, "colours", 1) ||
@@ -295,8 +301,12 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
       cinfo->do_fancy_upsampling = FALSE;
 
     } else if (keymatch(arg, "gif", 1)) {
-      /* GIF output format. */
+      /* GIF output format (LZW-compressed). */
       requested_fmt = FMT_GIF;
+
+    } else if (keymatch(arg, "gif0", 4)) {
+      /* GIF output format (uncompressed). */
+      requested_fmt = FMT_GIF0;
 
     } else if (keymatch(arg, "grayscale", 2) ||
                keymatch(arg, "greyscale", 2)) {
@@ -351,6 +361,12 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
         lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
+    } else if (keymatch(arg, "maxscans", 4)) {
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (sscanf(argv[argn], "%u", &max_scans) != 1)
+        usage();
+
     } else if (keymatch(arg, "nosmooth", 3)) {
       /* Suppress fancy upsampling */
       cinfo->do_fancy_upsampling = FALSE;
@@ -383,9 +399,8 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
       /* PPM/PGM output format. */
       requested_fmt = FMT_PPM;
 
-    } else if (keymatch(arg, "rle", 1)) {
-      /* RLE output format. */
-      requested_fmt = FMT_RLE;
+    } else if (keymatch(arg, "report", 2)) {
+      report = TRUE;
 
     } else if (keymatch(arg, "scale", 2)) {
       /* Scale the output image by a fraction M/N. */
@@ -412,6 +427,9 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
           (c != 'X' && c != 'x') || crop_width < 1 || crop_height < 1)
         usage();
       crop = TRUE;
+
+    } else if (keymatch(arg, "strict", 2)) {
+      strict = TRUE;
 
     } else if (keymatch(arg, "targa", 1)) {
       /* Targa output format. */
@@ -444,7 +462,7 @@ jpeg_getc(j_decompress_ptr cinfo)
       ERREXIT(cinfo, JERR_CANT_SUSPEND);
   }
   datasrc->bytes_in_buffer--;
-  return GETJOCTET(*datasrc->next_input_byte++);
+  return *datasrc->next_input_byte++;
 }
 
 
@@ -499,6 +517,19 @@ print_text_marker(j_decompress_ptr cinfo)
 }
 
 
+METHODDEF(void)
+my_emit_message(j_common_ptr cinfo, int msg_level)
+{
+  if (msg_level < 0) {
+    /* Treat warning as fatal */
+    cinfo->err->error_exit(cinfo);
+  } else {
+    if (cinfo->err->trace_level >= msg_level)
+      cinfo->err->output_message(cinfo);
+  }
+}
+
+
 /*
  * The main program.
  */
@@ -508,9 +539,7 @@ main(int argc, char **argv)
 {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
-#ifdef PROGRESS_REPORT
   struct cdjpeg_progress_mgr progress;
-#endif
   int file_index;
   djpeg_dest_ptr dest_mgr = NULL;
   FILE *input_file;
@@ -556,6 +585,9 @@ main(int argc, char **argv)
    */
 
   file_index = parse_switches(&cinfo, argc, argv, 0, FALSE);
+
+  if (strict)
+    jerr.emit_message = my_emit_message;
 
 #ifdef TWO_FILE_COMMANDLINE
   /* Must have either -outfile switch or explicit output file name */
@@ -603,9 +635,11 @@ main(int argc, char **argv)
     output_file = write_stdout();
   }
 
-#ifdef PROGRESS_REPORT
-  start_progress_monitor((j_common_ptr)&cinfo, &progress);
-#endif
+  if (report || max_scans != 0) {
+    start_progress_monitor((j_common_ptr)&cinfo, &progress);
+    progress.report = report;
+    progress.max_scans = max_scans;
+  }
 
   /* Specify data source for decompression */
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
@@ -653,17 +687,15 @@ main(int argc, char **argv)
 #endif
 #ifdef GIF_SUPPORTED
   case FMT_GIF:
-    dest_mgr = jinit_write_gif(&cinfo);
+    dest_mgr = jinit_write_gif(&cinfo, TRUE);
+    break;
+  case FMT_GIF0:
+    dest_mgr = jinit_write_gif(&cinfo, FALSE);
     break;
 #endif
 #ifdef PPM_SUPPORTED
   case FMT_PPM:
     dest_mgr = jinit_write_ppm(&cinfo);
-    break;
-#endif
-#ifdef RLE_SUPPORTED
-  case FMT_RLE:
-    dest_mgr = jinit_write_rle(&cinfo);
     break;
 #endif
 #ifdef TARGA_SUPPORTED
@@ -781,12 +813,11 @@ main(int argc, char **argv)
     }
   }
 
-#ifdef PROGRESS_REPORT
   /* Hack: count final pass as done in case finish_output does an extra pass.
    * The library won't have updated completed_passes.
    */
-  progress.pub.completed_passes = progress.pub.total_passes;
-#endif
+  if (report || max_scans != 0)
+    progress.pub.completed_passes = progress.pub.total_passes;
 
   if (icc_filename != NULL) {
     FILE *icc_file;
@@ -825,9 +856,8 @@ main(int argc, char **argv)
   if (output_file != stdout)
     fclose(output_file);
 
-#ifdef PROGRESS_REPORT
-  end_progress_monitor((j_common_ptr)&cinfo);
-#endif
+  if (report || max_scans != 0)
+    end_progress_monitor((j_common_ptr)&cinfo);
 
   if (memsrc)
     free(inbuffer);

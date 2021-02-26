@@ -12,7 +12,7 @@
  *
  * This file contains routines to read input images in Microsoft "BMP"
  * format (MS Windows 3.x, OS/2 1.x, and OS/2 2.x flavors).
- * Currently, only 8-bit and 24-bit images are supported, not 1-bit or
+ * Currently, only 8-, 24-, and 32-bit images are supported, not 1-bit or
  * 4-bit (feeding such low-depth images into JPEG would be silly anyway).
  * Also, we don't support RLE-compressed files.
  *
@@ -34,18 +34,8 @@
 
 /* Macros to deal with unsigned chars as efficiently as compiler allows */
 
-#ifdef HAVE_UNSIGNED_CHAR
 typedef unsigned char U_CHAR;
 #define UCH(x)  ((int)(x))
-#else /* !HAVE_UNSIGNED_CHAR */
-#ifdef __CHAR_UNSIGNED__
-typedef char U_CHAR;
-#define UCH(x)  ((int)(x))
-#else
-typedef char U_CHAR;
-#define UCH(x)  ((int)(x) & 0xFF)
-#endif
-#endif /* HAVE_UNSIGNED_CHAR */
 
 
 #define ReadOK(file, buffer, len) \
@@ -71,7 +61,7 @@ typedef struct _bmp_source_struct {
   JDIMENSION source_row;        /* Current source row number */
   JDIMENSION row_width;         /* Physical width of scanlines in file */
 
-  int bits_per_pixel;           /* remembers 8- or 24-bit format */
+  int bits_per_pixel;           /* remembers 8-, 24-, or 32-bit format */
   int cmap_length;              /* colormap length */
 
   boolean use_inversion_array;  /* TRUE = preload the whole image, which is
@@ -179,14 +169,14 @@ get_8bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   outptr = source->pub.buffer[0];
   if (cinfo->in_color_space == JCS_GRAYSCALE) {
     for (col = cinfo->image_width; col > 0; col--) {
-      t = GETJSAMPLE(*inptr++);
+      t = *inptr++;
       if (t >= cmaplen)
         ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
       *outptr++ = colormap[0][t];
     }
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
-      t = GETJSAMPLE(*inptr++);
+      t = *inptr++;
       if (t >= cmaplen)
         ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
       rgb_to_cmyk(colormap[0][t], colormap[1][t], colormap[2][t], outptr,
@@ -202,7 +192,7 @@ get_8bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
     if (aindex >= 0) {
       for (col = cinfo->image_width; col > 0; col--) {
-        t = GETJSAMPLE(*inptr++);
+        t = *inptr++;
         if (t >= cmaplen)
           ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
         outptr[rindex] = colormap[0][t];
@@ -213,7 +203,7 @@ get_8bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       }
     } else {
       for (col = cinfo->image_width; col > 0; col--) {
-        t = GETJSAMPLE(*inptr++);
+        t = *inptr++;
         if (t >= cmaplen)
           ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);
         outptr[rindex] = colormap[0][t];
@@ -258,7 +248,6 @@ get_24bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     MEMCOPY(outptr, inptr, source->row_width);
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
-      /* can omit GETJSAMPLE() safely */
       JSAMPLE b = *inptr++, g = *inptr++, r = *inptr++;
       rgb_to_cmyk(r, g, b, outptr, outptr + 1, outptr + 2, outptr + 3);
       outptr += 4;
@@ -272,7 +261,7 @@ get_24bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
     if (aindex >= 0) {
       for (col = cinfo->image_width; col > 0; col--) {
-        outptr[bindex] = *inptr++;      /* can omit GETJSAMPLE() safely */
+        outptr[bindex] = *inptr++;
         outptr[gindex] = *inptr++;
         outptr[rindex] = *inptr++;
         outptr[aindex] = 0xFF;
@@ -280,7 +269,7 @@ get_24bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       }
     } else {
       for (col = cinfo->image_width; col > 0; col--) {
-        outptr[bindex] = *inptr++;      /* can omit GETJSAMPLE() safely */
+        outptr[bindex] = *inptr++;
         outptr[gindex] = *inptr++;
         outptr[rindex] = *inptr++;
         outptr += ps;
@@ -323,7 +312,6 @@ get_32bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     MEMCOPY(outptr, inptr, source->row_width);
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
-      /* can omit GETJSAMPLE() safely */
       JSAMPLE b = *inptr++, g = *inptr++, r = *inptr++;
       rgb_to_cmyk(r, g, b, outptr, outptr + 1, outptr + 2, outptr + 3);
       inptr++;                          /* skip the 4th byte (Alpha channel) */
@@ -338,7 +326,7 @@ get_32bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
     if (aindex >= 0) {
       for (col = cinfo->image_width; col > 0; col--) {
-        outptr[bindex] = *inptr++;      /* can omit GETJSAMPLE() safely */
+        outptr[bindex] = *inptr++;
         outptr[gindex] = *inptr++;
         outptr[rindex] = *inptr++;
         outptr[aindex] = *inptr++;
@@ -346,7 +334,7 @@ get_32bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       }
     } else {
       for (col = cinfo->image_width; col > 0; col--) {
-        outptr[bindex] = *inptr++;      /* can omit GETJSAMPLE() safely */
+        outptr[bindex] = *inptr++;
         outptr[gindex] = *inptr++;
         outptr[rindex] = *inptr++;
         inptr++;                        /* skip the 4th byte (Alpha channel) */
@@ -481,7 +469,9 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       TRACEMS2(cinfo, 1, JTRC_BMP_OS2_MAPPED, biWidth, biHeight);
       break;
     case 24:                    /* RGB image */
-      TRACEMS2(cinfo, 1, JTRC_BMP_OS2, biWidth, biHeight);
+    case 32:                    /* RGB image + Alpha channel */
+      TRACEMS3(cinfo, 1, JTRC_BMP_OS2, biWidth, biHeight,
+               source->bits_per_pixel);
       break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
@@ -508,10 +498,8 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       TRACEMS2(cinfo, 1, JTRC_BMP_MAPPED, biWidth, biHeight);
       break;
     case 24:                    /* RGB image */
-      TRACEMS2(cinfo, 1, JTRC_BMP, biWidth, biHeight);
-      break;
     case 32:                    /* RGB image + Alpha channel */
-      TRACEMS2(cinfo, 1, JTRC_BMP, biWidth, biHeight);
+      TRACEMS3(cinfo, 1, JTRC_BMP, biWidth, biHeight, source->bits_per_pixel);
       break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);

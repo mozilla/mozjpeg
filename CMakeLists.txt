@@ -5,7 +5,7 @@ if(CMAKE_EXECUTABLE_SUFFIX)
 endif()
 
 project(mozjpeg C)
-set(VERSION 4.0.3)
+set(VERSION 4.0.4)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -41,12 +41,19 @@ message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 # Detect CPU type and whether we're building 64-bit or 32-bit code
 math(EXPR BITS "${CMAKE_SIZEOF_VOID_P} * 8")
 string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} CMAKE_SYSTEM_PROCESSOR_LC)
+set(COUNT 1)
+foreach(ARCH ${CMAKE_OSX_ARCHITECTURES})
+  if(COUNT GREATER 1)
+    message(FATAL_ERROR "The libjpeg-turbo build system does not support multiple values in CMAKE_OSX_ARCHITECTURES.")
+  endif()
+  math(EXPR COUNT "${COUNT}+1")
+endforeach()
 if(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "x86_64" OR
   CMAKE_SYSTEM_PROCESSOR_LC MATCHES "amd64" OR
   CMAKE_SYSTEM_PROCESSOR_LC MATCHES "i[0-9]86" OR
   CMAKE_SYSTEM_PROCESSOR_LC MATCHES "x86" OR
   CMAKE_SYSTEM_PROCESSOR_LC MATCHES "ia32")
-  if(BITS EQUAL 64)
+  if(BITS EQUAL 64 OR CMAKE_C_COMPILER_ABI MATCHES "ELF X32")
     set(CPU_TYPE x86_64)
   else()
     set(CPU_TYPE i386)
@@ -57,9 +64,9 @@ if(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "x86_64" OR
 elseif(CMAKE_SYSTEM_PROCESSOR_LC STREQUAL "aarch64" OR
   CMAKE_SYSTEM_PROCESSOR_LC MATCHES "arm*")
   if(BITS EQUAL 64)
-  set(CPU_TYPE arm64)
+    set(CPU_TYPE arm64)
   else()
-  set(CPU_TYPE arm)
+    set(CPU_TYPE arm)
   endif()
 elseif(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "ppc*" OR
   CMAKE_SYSTEM_PROCESSOR_LC MATCHES "powerpc*")
@@ -67,6 +74,18 @@ elseif(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "ppc*" OR
 else()
   set(CPU_TYPE ${CMAKE_SYSTEM_PROCESSOR_LC})
 endif()
+if(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64" OR
+  CMAKE_OSX_ARCHITECTURES MATCHES "arm64" OR
+  CMAKE_OSX_ARCHITECTURES MATCHES "i386")
+  set(CPU_TYPE ${CMAKE_OSX_ARCHITECTURES})
+endif()
+if(CMAKE_OSX_ARCHITECTURES MATCHES "ppc")
+  set(CPU_TYPE powerpc)
+endif()
+if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")
+  set(CPU_TYPE arm64)
+endif()
+
 message(STATUS "${BITS}-bit build (${CPU_TYPE})")
 
 
@@ -84,7 +103,9 @@ if(WIN32)
     set(CMAKE_INSTALL_DEFAULT_PREFIX "${CMAKE_INSTALL_DEFAULT_PREFIX}64")
   endif()
 else()
+  if(NOT CMAKE_INSTALL_DEFAULT_PREFIX)
   set(CMAKE_INSTALL_DEFAULT_PREFIX /opt/${CMAKE_PROJECT_NAME})
+  endif()
 endif()
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_DEFAULT_PREFIX}" CACHE PATH
@@ -103,6 +124,8 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "${CMAKE_INSTALL_DEFAULT_PREFIX}")
   if(UNIX AND NOT APPLE)
     if(BITS EQUAL 64)
       set(CMAKE_INSTALL_DEFAULT_LIBDIR "lib64")
+    elseif(CMAKE_C_COMPILER_ABI MATCHES "ELF X32")
+      set(CMAKE_INSTALL_DEFAULT_LIBDIR "libx32")
     else()
       set(CMAKE_INSTALL_DEFAULT_LIBDIR "lib32")
     endif()
@@ -135,9 +158,9 @@ endforeach()
 
 macro(boolean_number var)
   if(${var})
-    set(${var} 1)
+    set(${var} 1 ${ARGN})
   else()
-    set(${var} 0)
+    set(${var} 0 ${ARGN})
   endif()
 endmacro()
 
@@ -155,8 +178,12 @@ option(WITH_ARITH_DEC "Include arithmetic decoding support when emulating the li
 boolean_number(WITH_ARITH_DEC)
 option(WITH_ARITH_ENC "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI" FALSE)
 boolean_number(WITH_ARITH_ENC)
-option(WITH_JAVA "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)" FALSE)
-boolean_number(WITH_JAVA)
+if(CMAKE_C_COMPILER_ABI MATCHES "ELF X32")
+  set(WITH_JAVA 0)
+else()
+  option(WITH_JAVA "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)" FALSE)
+  boolean_number(WITH_JAVA)
+endif()
 option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
 boolean_number(WITH_JPEG7)
 option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
@@ -418,13 +445,6 @@ if(UNIX)
         exit(is_shifting_signed(-0x7F7E80B1L));
       }" RIGHT_SHIFT_IS_UNSIGNED)
   endif()
-
-  if(CMAKE_CROSSCOMPILING)
-    set(__CHAR_UNSIGNED__ 0)
-  else()
-    check_c_source_runs("int main(void) { return ((char) -1 < 0); }"
-      __CHAR_UNSIGNED__)
-  endif()
 endif()
 
 if(MSVC)
@@ -550,6 +570,9 @@ endif()
 
 if(WITH_SIMD)
   add_subdirectory(simd)
+  if(NEON_INTRINSICS)
+    add_definitions(-DNEON_INTRINSICS)
+  endif()
 elseif(NOT WITH_12BIT)
   message(STATUS "SIMD extensions: None (WITH_SIMD = ${WITH_SIMD})")
 endif()
@@ -746,6 +769,8 @@ if(WITH_12BIT)
   set(MD5_PPM_RGB_ISLOW f3301d2219783b8b3d942b7239fa50c0)
   set(MD5_JPEG_422_IFAST_OPT 7322e3bd2f127f7de4b40d4480ce60e4)
   set(MD5_PPM_422_IFAST 79807fa552899e66a04708f533e16950)
+  set(MD5_JPEG_440_ISLOW e25c1912e38367be505a89c410c1c2d2)
+  set(MD5_PPM_440_ISLOW e7d2e26288870cfcb30f3114ad01e380)
   set(MD5_PPM_422M_IFAST 07737bfe8a7c1c87aaa393a0098d16b0)
   set(MD5_JPEG_420_IFAST_Q100_PROG 008ab68d6ddbba04a8f01deee4e0f9f8)
   set(MD5_PPM_420_Q100_IFAST 1b3730122709f53d007255e8dfd3305e)
@@ -795,6 +820,8 @@ else()
   set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
   set(MD5_JPEG_422_IFAST_OPT 2540287b79d913f91665e660303ab2c8)
   set(MD5_PPM_422_IFAST 35bd6b3f833bad23de82acea847129fa)
+  set(MD5_JPEG_440_ISLOW 538bc02bd4b4658fd85de6ece6cbeda6)
+  set(MD5_PPM_440_ISLOW 11e7eab7ef7ef3276934bb7e7b6bb377)
   set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
   set(MD5_BMP_422M_IFAST_565 3294bd4d9a1f2b3d08ea6020d0db7065)
   set(MD5_BMP_422M_IFAST_565D da98c9c7b6039511be4a79a878a9abc1)
@@ -824,29 +851,7 @@ else()
   set(MD5_PPM_3x2_IFAST fd283664b3b49127984af0a7f118fccd)
   set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
   set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
-  # Since v1.5.1, libjpeg-turbo uses the separate non-fancy upsampling and
-  # YCbCr -> RGB color conversion routines rather than merged upsampling/color
-  # conversion when fancy upsampling is disabled on platforms that have a SIMD
-  # implementation of YCbCr -> RGB color conversion but no SIMD implementation
-  # of merged upsampling/color conversion.  This was intended to improve the
-  # performance of the Arm Neon SIMD extensions, the only SIMD extensions for
-  # which those circumstances currently apply.  The separate non-fancy
-  # upsampling and color conversion routines usually produce bitwise-identical
-  # output to the merged upsampling/color conversion routines, but that is not
-  # the case when skipping scanlines starting at an odd-numbered scanline.  In
-  # libjpeg-turbo 2.0.5 and prior, doing that while using merged h2v2
-  # upsampling caused a segfault, so this test validates the fix for that
-  # segfault.  Unfortunately, however, the test also produces different bitwise
-  # output when using the Neon SIMD extensions, because of the aforementioned
-  # optimization.  The easiest workaround is to use the old test from
-  # libjpeg-turbo 2.0.5 and prior when using the Neon SIMD extensions.  The
-  # aforementioned segfault never would have occurred with the Neon SIMD
-  # extensions anyhow, since merged upsampling is disabled when using them.
-  if((CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm") AND WITH_SIMD)
-  set(MD5_PPM_420M_IFAST_ARI 72b59a99bcf1de24c5b27d151bde2437)
-  else()
     set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
-  endif()
   set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
   set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
   set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
@@ -954,7 +959,7 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
   endif()
 else()
   if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
-    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
     set(DEFAULT_FLOATTEST fp-contract)
   else()
     set(DEFAULT_FLOATTEST no-fp-contract)
@@ -1101,6 +1106,16 @@ foreach(libtype ${TEST_LIBTYPES})
     testout_422_ifast.ppm testout_422_ifast_opt.jpg
     ${MD5_PPM_422_IFAST} cjpeg-${libtype}-422-ifast-opt)
 
+  # CC: RGB->YCC  SAMP: fullsize/h1v2  FDCT: islow  ENT: huff
+  add_bittest(cjpeg 440-islow "-sample;1x2;-dct;int"
+    testout_440_islow.jpg ${TESTIMAGES}/testorig.ppm
+    ${MD5_JPEG_440_ISLOW})
+
+  # CC: YCC->RGB  SAMP: fullsize/h1v2 fancy  IDCT: islow  ENT: huff
+  add_bittest(djpeg 440-islow "-dct;int"
+    testout_440_islow.ppm testout_440_islow.jpg
+    ${MD5_PPM_440_ISLOW} cjpeg-${libtype}-440-islow)
+
   # CC: YCC->RGB  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
   add_bittest(djpeg 422m-ifast "-dct;fast;-nosmooth"
     testout_422m_ifast.ppm testout_422_ifast_opt.jpg
@@ -1209,17 +1224,9 @@ foreach(libtype ${TEST_LIBTYPES})
 
   if(WITH_ARITH_DEC)
     # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
-    if((CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm") AND WITH_SIMD)
-      # Refer to the comment above the definition of MD5_PPM_420M_IFAST_ARI for
-      # an explanation of why this is necessary.
-    add_bittest(djpeg 420m-ifast-ari "-fast;-ppm"
-      testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
-      ${MD5_PPM_420M_IFAST_ARI})
-    else()
       add_bittest(djpeg 420m-ifast-ari "-fast;-skip;1,20;-ppm"
         testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
         ${MD5_PPM_420M_IFAST_ARI})
-    endif()
 
     add_bittest(jpegtran 420-islow "-revert"
       testout_420_islow.jpg ${TESTIMAGES}/testimgari.jpg
@@ -1425,9 +1432,12 @@ set(EXE ${CMAKE_EXECUTABLE_SUFFIX})
 
 if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
-    install(TARGETS turbojpeg tjbench
+    install(TARGETS turbojpeg EXPORT ${CMAKE_PROJECT_NAME}Targets
+      INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS tjbench
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
       CMAKE_C_LINKER_SUPPORTS_PDB)
@@ -1436,8 +1446,9 @@ if(WITH_TURBOJPEG)
     endif()
   endif()
   if(ENABLE_STATIC)
-    install(TARGETS turbojpeg-static ARCHIVE
-      DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(TARGETS turbojpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
+      INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
     if(NOT ENABLE_SHARED)
       if(MSVC_IDE OR XCODE)
         set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
@@ -1453,7 +1464,9 @@ if(WITH_TURBOJPEG)
 endif()
 
 if(ENABLE_STATIC)
-  install(TARGETS jpeg-static ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(TARGETS jpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
   if(NOT ENABLE_SHARED)
     if(MSVC_IDE OR XCODE)
       set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
@@ -1493,6 +1506,13 @@ endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
   ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/${CMAKE_PROJECT_NAME}Config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/${CMAKE_PROJECT_NAME}ConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
+install(EXPORT ${CMAKE_PROJECT_NAME}Targets
+  NAMESPACE ${CMAKE_PROJECT_NAME}::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h

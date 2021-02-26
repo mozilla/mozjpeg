@@ -43,18 +43,8 @@
 
 /* Macros to deal with unsigned chars as efficiently as compiler allows */
 
-#ifdef HAVE_UNSIGNED_CHAR
 typedef unsigned char U_CHAR;
 #define UCH(x)  ((int)(x))
-#else /* !HAVE_UNSIGNED_CHAR */
-#ifdef __CHAR_UNSIGNED__
-typedef char U_CHAR;
-#define UCH(x)  ((int)(x))
-#else
-typedef char U_CHAR;
-#define UCH(x)  ((int)(x) & 0xFF)
-#endif
-#endif /* HAVE_UNSIGNED_CHAR */
 
 
 #define ReadOK(file, buffer, len) \

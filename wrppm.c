@@ -108,17 +108,17 @@ copy_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   ppm_dest_ptr dest = (ppm_dest_ptr)dinfo;
   register char *bufferptr;
   register JSAMPROW ptr;
-#if BITS_IN_JSAMPLE != 8 || (!defined(HAVE_UNSIGNED_CHAR) && !defined(__CHAR_UNSIGNED__))
+#if BITS_IN_JSAMPLE != 8
   register JDIMENSION col;
 #endif
 
   ptr = dest->pub.buffer[0];
   bufferptr = dest->iobuffer;
-#if BITS_IN_JSAMPLE == 8 && (defined(HAVE_UNSIGNED_CHAR) || defined(__CHAR_UNSIGNED__))
+#if BITS_IN_JSAMPLE == 8
   MEMCOPY(bufferptr, ptr, dest->samples_per_row);
 #else
   for (col = dest->samples_per_row; col > 0; col--) {
-    PUTPPMSAMPLE(bufferptr, GETJSAMPLE(*ptr++));
+    PUTPPMSAMPLE(bufferptr, *ptr++);
   }
 #endif
   (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
@@ -200,10 +200,10 @@ put_demapped_rgb(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   ptr = dest->pub.buffer[0];
   bufferptr = dest->iobuffer;
   for (col = cinfo->output_width; col > 0; col--) {
-    pixval = GETJSAMPLE(*ptr++);
-    PUTPPMSAMPLE(bufferptr, GETJSAMPLE(color_map0[pixval]));
-    PUTPPMSAMPLE(bufferptr, GETJSAMPLE(color_map1[pixval]));
-    PUTPPMSAMPLE(bufferptr, GETJSAMPLE(color_map2[pixval]));
+    pixval = *ptr++;
+    PUTPPMSAMPLE(bufferptr, color_map0[pixval]);
+    PUTPPMSAMPLE(bufferptr, color_map1[pixval]);
+    PUTPPMSAMPLE(bufferptr, color_map2[pixval]);
   }
   (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
@@ -222,7 +222,7 @@ put_demapped_gray(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   ptr = dest->pub.buffer[0];
   bufferptr = dest->iobuffer;
   for (col = cinfo->output_width; col > 0; col--) {
-    PUTPPMSAMPLE(bufferptr, GETJSAMPLE(color_map[GETJSAMPLE(*ptr++)]));
+    PUTPPMSAMPLE(bufferptr, color_map[*ptr++]);
   }
   (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }

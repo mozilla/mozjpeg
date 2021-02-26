@@ -53,7 +53,7 @@ Provides: %{name} = %{version}-%{release}, @CMAKE_PROJECT_NAME@ = %{version}-%{r
 %description
 libjpeg-turbo is a JPEG image codec that uses SIMD instructions to accelerate
 baseline JPEG compression and decompression on x86, x86-64, Arm, PowerPC, and
-MIPS systems, as well as progressive JPEG compression on x86 and x86-64
+MIPS systems, as well as progressive JPEG compression on x86, x86-64, and Arm
 systems.  On such systems, libjpeg-turbo is generally 2-6x as fast as libjpeg,
 all else being equal.  On other types of systems, libjpeg-turbo can still
 outperform libjpeg by a significant amount, by virtue of its highly-optimized
@@ -102,7 +102,7 @@ broader range of users and developers.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT
+DESTDIR=$RPM_BUILD_ROOT @CMAKE_MAKE_PROGRAM@ install
 /sbin/ldconfig -n $RPM_BUILD_ROOT%{_libdir}
 
 #-->%if 0
@@ -184,6 +184,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %dir %{_libdir}/pkgconfig
 %{_libdir}/pkgconfig/libjpeg.pc
+%dir %{_libdir}/cmake
+%dir %{_libdir}/cmake/@CMAKE_PROJECT_NAME@
+%{_libdir}/cmake/@CMAKE_PROJECT_NAME@
 %if "%{_with_turbojpeg}" == "1"
 	%if "%{_enable_shared}" == "1" || "%{_with_java}" == "1"
 		%{_libdir}/libturbojpeg.so.@TURBOJPEG_SO_VERSION@

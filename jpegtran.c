@@ -2,9 +2,9 @@
  * jpegtran.c
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1995-2010, Thomas G. Lane, Guido Vollbeding.
+ * Copyright (C) 1995-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2014, 2017, 2020, D. R. Commander.
+ * Copyright (C) 2010, 2014, 2017, 2019-2020, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -42,7 +42,11 @@
 
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
+JDIMENSION max_scans;           /* for -maxscans switch */
 static char *outfilename;       /* for -outfile switch */
+static char *dropfilename;      /* for -drop switch */
+boolean report;                 /* for -report switch */
+boolean strict;                 /* for -strict switch */
 static boolean prefer_smallest;  /* use smallest of input or result file (if no image-changing options supplied) */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
@@ -76,8 +80,9 @@ usage(void)
   fprintf(stderr, "Switches for modifying the image:\n");
 #if TRANSFORMS_SUPPORTED
   fprintf(stderr, "  -crop WxH+X+Y  Crop to a rectangular region\n");
-  fprintf(stderr, "  -grayscale     Reduce to grayscale (omit color data)\n");
+  fprintf(stderr, "  -drop +X+Y filename          Drop (insert) another image\n");
   fprintf(stderr, "  -flip [horizontal|vertical]  Mirror image (left-right or top-bottom)\n");
+  fprintf(stderr, "  -grayscale     Reduce to grayscale (omit color data)\n");
   fprintf(stderr, "  -perfect       Fail if there is non-transformable edge blocks\n");
   fprintf(stderr, "  -rotate [90|180|270]         Rotate image (degrees clockwise)\n");
 #endif
@@ -85,6 +90,8 @@ usage(void)
   fprintf(stderr, "  -transpose     Transpose image\n");
   fprintf(stderr, "  -transverse    Transverse transpose image\n");
   fprintf(stderr, "  -trim          Drop non-transformable edge blocks\n");
+  fprintf(stderr, "                 with -drop: Requantize drop file to match source file\n");
+  fprintf(stderr, "  -wipe WxH+X+Y  Wipe (gray out) a rectangular region\n");
 #endif
   fprintf(stderr, "Switches for advanced users:\n");
 #ifdef C_ARITH_CODING_SUPPORTED
@@ -93,7 +100,10 @@ usage(void)
   fprintf(stderr, "  -icc FILE      Embed ICC profile contained in FILE\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
+  fprintf(stderr, "  -maxscans N    Maximum number of scans to allow in input file\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
+  fprintf(stderr, "  -report        Report transformation progress\n");
+  fprintf(stderr, "  -strict        Treat all warnings as fatal\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
@@ -151,7 +161,10 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
   simple_progressive = FALSE;
 #endif
   icc_filename = NULL;
+  max_scans = 0;
   outfilename = NULL;
+  report = FALSE;
+  strict = FALSE;
   copyoption = JCOPYOPT_DEFAULT;
   transformoption.transform = JXFORM_NONE;
   transformoption.perfect = FALSE;
@@ -208,12 +221,33 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
 #if TRANSFORMS_SUPPORTED
       if (++argn >= argc)       /* advance to next argument */
         usage();
-      if (!jtransform_parse_crop_spec(&transformoption, argv[argn])) {
+      if (transformoption.crop /* reject multiple crop/drop/wipe requests */ ||
+          !jtransform_parse_crop_spec(&transformoption, argv[argn])) {
         fprintf(stderr, "%s: bogus -crop argument '%s'\n",
                 progname, argv[argn]);
         exit(EXIT_FAILURE);
       }
       prefer_smallest = FALSE;
+#else
+      select_transform(JXFORM_NONE);    /* force an error */
+#endif
+
+    } else if (keymatch(arg, "drop", 2)) {
+#if TRANSFORMS_SUPPORTED
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (transformoption.crop /* reject multiple crop/drop/wipe requests */ ||
+          !jtransform_parse_crop_spec(&transformoption, argv[argn]) ||
+          transformoption.crop_width_set != JCROP_UNSET ||
+          transformoption.crop_height_set != JCROP_UNSET) {
+        fprintf(stderr, "%s: bogus -drop argument '%s'\n",
+                progname, argv[argn]);
+        exit(EXIT_FAILURE);
+      }
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      dropfilename = argv[argn];
+      select_transform(JXFORM_DROP);
 #else
       select_transform(JXFORM_NONE);    /* force an error */
 #endif
@@ -282,6 +316,12 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
         lval *= 1000L;
       cinfo->mem->max_memory_to_use = lval * 1000L;
 
+    } else if (keymatch(arg, "maxscans", 4)) {
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (sscanf(argv[argn], "%u", &max_scans) != 1)
+        usage();
+
     } else if (keymatch(arg, "optimize", 1) || keymatch(arg, "optimise", 1)) {
       /* Enable entropy parm optimization. */
 #ifdef ENTROPY_OPT_SUPPORTED
@@ -314,6 +354,9 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
               progname);
       exit(EXIT_FAILURE);
 #endif
+
+    } else if (keymatch(arg, "report", 3)) {
+      report = TRUE;
 
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
@@ -368,6 +411,9 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       exit(EXIT_FAILURE);
 #endif
 
+    } else if (keymatch(arg, "strict", 2)) {
+      strict = TRUE;
+
     } else if (keymatch(arg, "transpose", 1)) {
       /* Transpose (across UL-to-LR axis). */
       select_transform(JXFORM_TRANSPOSE);
@@ -382,6 +428,21 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       /* Trim off any partial edge MCUs that the transform can't handle. */
       transformoption.trim = TRUE;
       prefer_smallest = FALSE;
+
+    } else if (keymatch(arg, "wipe", 1)) {
+#if TRANSFORMS_SUPPORTED
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (transformoption.crop /* reject multiple crop/drop/wipe requests */ ||
+          !jtransform_parse_crop_spec(&transformoption, argv[argn])) {
+        fprintf(stderr, "%s: bogus -wipe argument '%s'\n",
+                progname, argv[argn]);
+        exit(EXIT_FAILURE);
+      }
+      select_transform(JXFORM_WIPE);
+#else
+      select_transform(JXFORM_NONE);    /* force an error */
+#endif
 
     } else {
       usage();                  /* bogus switch */
@@ -409,6 +470,19 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
 }
 
 
+METHODDEF(void)
+my_emit_message(j_common_ptr cinfo, int msg_level)
+{
+  if (msg_level < 0) {
+    /* Treat warning as fatal */
+    cinfo->err->error_exit(cinfo);
+  } else {
+    if (cinfo->err->trace_level >= msg_level)
+      cinfo->err->output_message(cinfo);
+  }
+}
+
+
 /*
  * The main program.
  */
@@ -417,11 +491,14 @@ int
 main(int argc, char **argv)
 {
   struct jpeg_decompress_struct srcinfo;
+#if TRANSFORMS_SUPPORTED
+  struct jpeg_decompress_struct dropinfo;
+  struct jpeg_error_mgr jdroperr;
+  FILE *drop_file;
+#endif
   struct jpeg_compress_struct dstinfo;
   struct jpeg_error_mgr jsrcerr, jdsterr;
-#ifdef PROGRESS_REPORT
-  struct cdjpeg_progress_mgr progress;
-#endif
+  struct cdjpeg_progress_mgr src_progress, dst_progress;
   jvirt_barray_ptr *src_coef_arrays;
   jvirt_barray_ptr *dst_coef_arrays;
   int file_index;
@@ -458,12 +535,15 @@ main(int argc, char **argv)
    * values read here are mostly ignored; we will rescan the switches after
    * opening the input file.  Also note that most of the switches affect the
    * destination JPEG object, so we parse into that and then copy over what
-   * needs to affects the source too.
+   * needs to affect the source too.
    */
 
   file_index = parse_switches(&dstinfo, argc, argv, 0, FALSE);
   jsrcerr.trace_level = jdsterr.trace_level;
   srcinfo.mem->max_memory_to_use = dstinfo.mem->max_memory_to_use;
+
+  if (strict)
+    jsrcerr.emit_message = my_emit_message;
 
 #ifdef TWO_FILE_COMMANDLINE
   /* Must have either -outfile switch or explicit output file name */
@@ -530,8 +610,29 @@ main(int argc, char **argv)
       copyoption = JCOPYOPT_ALL_EXCEPT_ICC;
   }
 
-#ifdef PROGRESS_REPORT
-  start_progress_monitor((j_common_ptr)&dstinfo, &progress);
+  if (report) {
+    start_progress_monitor((j_common_ptr)&dstinfo, &dst_progress);
+    dst_progress.report = report;
+  }
+  if (report || max_scans != 0) {
+    start_progress_monitor((j_common_ptr)&srcinfo, &src_progress);
+    src_progress.report = report;
+    src_progress.max_scans = max_scans;
+  }
+#if TRANSFORMS_SUPPORTED
+  /* Open the drop file. */
+  if (dropfilename != NULL) {
+    if ((drop_file = fopen(dropfilename, READ_BINARY)) == NULL) {
+      fprintf(stderr, "%s: can't open %s for reading\n", progname,
+              dropfilename);
+      exit(EXIT_FAILURE);
+    }
+    dropinfo.err = jpeg_std_error(&jdroperr);
+    jpeg_create_decompress(&dropinfo);
+    jpeg_stdio_src(&dropinfo, drop_file);
+  } else {
+    drop_file = NULL;
+  }
 #endif
 
   /* Specify data source for decompression */
@@ -569,6 +670,17 @@ main(int argc, char **argv)
   /* Read file header */
   (void)jpeg_read_header(&srcinfo, TRUE);
 
+#if TRANSFORMS_SUPPORTED
+  if (dropfilename != NULL) {
+    (void)jpeg_read_header(&dropinfo, TRUE);
+    transformoption.crop_width = dropinfo.image_width;
+    transformoption.crop_width_set = JCROP_POS;
+    transformoption.crop_height = dropinfo.image_height;
+    transformoption.crop_height_set = JCROP_POS;
+    transformoption.drop_ptr = &dropinfo;
+  }
+#endif
+
   /* Any space needed by a transform option must be requested before
    * jpeg_read_coefficients so that memory allocation will be done right.
    */
@@ -583,6 +695,12 @@ main(int argc, char **argv)
 
   /* Read source file as DCT coefficients */
   src_coef_arrays = jpeg_read_coefficients(&srcinfo);
+
+#if TRANSFORMS_SUPPORTED
+  if (dropfilename != NULL) {
+    transformoption.drop_coef_arrays = jpeg_read_coefficients(&dropinfo);
+  }
+#endif
 
   /* Initialize destination compression parameters from source values */
   jpeg_copy_critical_parameters(&srcinfo, &dstinfo);
@@ -672,20 +790,28 @@ main(int argc, char **argv)
       else
         fprintf(stderr, "%s: can't write to stdout\n", progname);
     }
+  jpeg_destroy_compress(&dstinfo);
+#if TRANSFORMS_SUPPORTED
+  if (dropfilename != NULL) {
+    (void)jpeg_finish_decompress(&dropinfo);
+    jpeg_destroy_decompress(&dropinfo);
   }
 #endif
-    
-  jpeg_destroy_compress(&dstinfo);
   (void)jpeg_finish_decompress(&srcinfo);
   jpeg_destroy_decompress(&srcinfo);
 
   /* Close output file, if we opened it */
   if (fp != stdout)
     fclose(fp);
-
-#ifdef PROGRESS_REPORT
-  end_progress_monitor((j_common_ptr)&dstinfo);
+#if TRANSFORMS_SUPPORTED
+  if (drop_file != NULL)
+    fclose(drop_file);
 #endif
+
+  if (report)
+  end_progress_monitor((j_common_ptr)&dstinfo);
+  if (report || max_scans != 0)
+    end_progress_monitor((j_common_ptr)&srcinfo);
 
   free(inbuffer);
   free(outbuffer);
@@ -693,6 +819,11 @@ main(int argc, char **argv)
   free(icc_profile);
 
   /* All done. */
+#if TRANSFORMS_SUPPORTED
+  if (dropfilename != NULL)
+    exit(jsrcerr.num_warnings + jdroperr.num_warnings +
+         jdsterr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
+#endif
   exit(jsrcerr.num_warnings + jdsterr.num_warnings ?
        EXIT_WARNING : EXIT_SUCCESS);
   return 0;                     /* suppress no-return-value warnings */

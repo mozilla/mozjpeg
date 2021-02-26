@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013-2014, 2017, 2020, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, 2017, 2019-2020, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README file.
@@ -70,9 +70,9 @@ static const char * const cdjpeg_message_table[] = {
  *     2) assume we can push back more than one character (works in
  *        some C implementations, but unportable);
  *     3) provide our own buffering (breaks input readers that want to use
- *        stdio directly, such as the RLE library);
+ *        stdio directly);
  * or  4) don't put back the data, and modify the input_init methods to assume
- *        they start reading after the start of file (also breaks RLE library).
+ *        they start reading after the start of file.
  * #1 is attractive for MS-DOS but is untenable on Unix.
  *
  * The most portable solution for file types that can't be identified by their
@@ -124,10 +124,6 @@ select_file_type(j_compress_ptr cinfo, FILE *infile)
     copy_markers = TRUE;
     return jinit_read_png(cinfo);
 #endif
-#ifdef RLE_SUPPORTED
-  case 'R':
-    return jinit_read_rle(cinfo);
-#endif
 #ifdef TARGA_SUPPORTED
   case 0x00:
     return jinit_read_targa(cinfo);
@@ -158,6 +154,7 @@ static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
 boolean memdst;                 /* for -memdst switch */
+boolean report;                 /* for -report switch */
 
 
 LOCAL(void)
@@ -236,6 +233,7 @@ usage(void)
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   fprintf(stderr, "  -memdst        Compress to memory instead of file (useful for benchmarking)\n");
 #endif
+  fprintf(stderr, "  -report        Report compression progress\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
@@ -283,6 +281,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
   icc_filename = NULL;
   outfilename = NULL;
   memdst = FALSE;
+  report = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -470,6 +469,8 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       qtablefile = argv[argn];
       /* We postpone actually reading the file in case -quality comes later. */
 
+    } else if (keymatch(arg, "report", 3)) {
+      report = TRUE;
     } else if (keymatch(arg, "quant-table", 7)) {
       int val;
       if (++argn >= argc)       /* advance to next argument */
@@ -485,7 +486,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "quant-baseline", 7)) {
       /* Force quantization table to meet baseline requirements */
       force_baseline = TRUE;
-    
+
     } else if (keymatch(arg, "restart", 1)) {
       /* Restart interval in MCU rows (or in MCUs with 'b'). */
       long lval;
@@ -662,9 +663,7 @@ main(int argc, char **argv)
 {
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;
-#ifdef PROGRESS_REPORT
   struct cdjpeg_progress_mgr progress;
-#endif
   int file_index;
   cjpeg_source_ptr src_mgr;
   FILE *input_file;
@@ -785,9 +784,10 @@ main(int argc, char **argv)
     fclose(icc_file);
   }
 
-#ifdef PROGRESS_REPORT
+  if (report) {
   start_progress_monitor((j_common_ptr)&cinfo, &progress);
-#endif
+    progress.report = report;
+  }
 
   /* Figure out the input file format, and set up to read it. */
   src_mgr = select_file_type(&cinfo, input_file);
@@ -873,9 +873,8 @@ main(int argc, char **argv)
   if (output_file != stdout && output_file != NULL)
     fclose(output_file);
 
-#ifdef PROGRESS_REPORT
+  if (report)
   end_progress_monitor((j_common_ptr)&cinfo);
-#endif
 
   if (memdst) {
     fprintf(stderr, "Compressed size:  %lu bytes\n", outsize);

@@ -22,13 +22,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 set(RPMARCH ${CMAKE_SYSTEM_PROCESSOR})
 if(CPU_TYPE STREQUAL "x86_64")
   set(DEBARCH amd64)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7*")
-  set(RPMARCH armv7hl)
-  set(DEBARCH armhf)
 elseif(CPU_TYPE STREQUAL "arm64")
   set(DEBARCH ${CPU_TYPE})
 elseif(CPU_TYPE STREQUAL "arm")
-  if(CMAKE_C_COMPILER MATCHES "gnueabihf")
+  check_c_source_compiles("
+    #if __ARM_PCS_VFP != 1
+    #error \"float ABI = softfp\"
+    #endif
+    int main(void) { return 0; }" HAVE_HARD_FLOAT)
+  if(HAVE_HARD_FLOAT)
     set(RPMARCH armv7hl)
     set(DEBARCH armhf)
   else()
@@ -78,12 +80,14 @@ if(WIN32)
 
 if(MSVC)
   set(INST_PLATFORM "Visual C++")
-  set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION}-vc)
+  set(INST_ID vc)
+  set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION}-${INST_ID})
   set(INST_REG_NAME ${CMAKE_PROJECT_NAME})
 elseif(MINGW)
   set(INST_PLATFORM GCC)
-  set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION}-gcc)
-  set(INST_REG_NAME ${CMAKE_PROJECT_NAME}-gcc)
+  set(INST_ID gcc)
+  set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION}-${INST_ID})
+  set(INST_REG_NAME ${CMAKE_PROJECT_NAME}-${INST_ID})
   set(INST_DEFS -DGCC)
 endif()
 
@@ -107,6 +111,12 @@ endif()
 string(REGEX REPLACE "/" "\\\\" INST_DIR ${CMAKE_INSTALL_PREFIX})
 
 configure_file(release/installer.nsi.in installer.nsi @ONLY)
+# TODO: It would be nice to eventually switch to CPack and eliminate this mess,
+# but not today.
+configure_file(win/projectTargets.cmake.in
+  win/${CMAKE_PROJECT_NAME}Targets.cmake @ONLY)
+configure_file(win/${INST_ID}/projectTargets-release.cmake.in
+  win/${CMAKE_PROJECT_NAME}Targets-release.cmake @ONLY)
 
 if(WITH_JAVA)
   set(JAVA_DEPEND turbojpeg-java)
@@ -121,50 +131,25 @@ endif() # WIN32
 
 
 ###############################################################################
-# Cygwin Package
-###############################################################################
-
-if(CYGWIN)
-
-configure_file(release/makecygwinpkg.in pkgscripts/makecygwinpkg)
-
-add_custom_target(cygwinpkg pkgscripts/makecygwinpkg)
-
-endif() # CYGWIN
-
-
-###############################################################################
 # Mac DMG
 ###############################################################################
 
 if(APPLE)
 
-set(DEFAULT_OSX_32BIT_BUILD ${CMAKE_SOURCE_DIR}/osxx86)
-set(OSX_32BIT_BUILD ${DEFAULT_OSX_32BIT_BUILD} CACHE PATH
-  "Directory containing 32-bit (i386) Mac build to include in universal binaries (default: ${DEFAULT_OSX_32BIT_BUILD})")
-set(DEFAULT_IOS_ARMV7_BUILD ${CMAKE_SOURCE_DIR}/iosarmv7)
-set(IOS_ARMV7_BUILD ${DEFAULT_IOS_ARMV7_BUILD} CACHE PATH
-  "Directory containing Armv7 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7_BUILD})")
-set(DEFAULT_IOS_ARMV7S_BUILD ${CMAKE_SOURCE_DIR}/iosarmv7s)
-set(IOS_ARMV7S_BUILD ${DEFAULT_IOS_ARMV7S_BUILD} CACHE PATH
-  "Directory containing Armv7s iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV7S_BUILD})")
-set(DEFAULT_IOS_ARMV8_BUILD ${CMAKE_SOURCE_DIR}/iosarmv8)
-set(IOS_ARMV8_BUILD ${DEFAULT_IOS_ARMV8_BUILD} CACHE PATH
-  "Directory containing Armv8 iOS build to include in universal binaries (default: ${DEFAULT_IOS_ARMV8_BUILD})")
+set(ARMV8_BUILD "" CACHE PATH
+  "Directory containing Armv8 iOS or macOS build to include in universal binaries")
 
-set(OSX_APP_CERT_NAME "" CACHE STRING
+set(MACOS_APP_CERT_NAME "" CACHE STRING
   "Name of the Developer ID Application certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo DMG.  Leave this blank to generate an unsigned DMG.")
-set(OSX_INST_CERT_NAME "" CACHE STRING
+set(MACOS_INST_CERT_NAME "" CACHE STRING
   "Name of the Developer ID Installer certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo installer package.  Leave this blank to generate an unsigned package.")
 
 configure_file(release/makemacpkg.in pkgscripts/makemacpkg)
 configure_file(release/Distribution.xml.in pkgscripts/Distribution.xml)
+configure_file(release/Welcome.rtf.in pkgscripts/Welcome.rtf)
 configure_file(release/uninstall.in pkgscripts/uninstall)
 
 add_custom_target(dmg pkgscripts/makemacpkg
-  SOURCES pkgscripts/makemacpkg)
-
-add_custom_target(udmg pkgscripts/makemacpkg universal
   SOURCES pkgscripts/makemacpkg)
 
 endif() # APPLE
@@ -187,3 +172,12 @@ add_custom_target(tarball pkgscripts/maketarball
 configure_file(release/libjpeg.pc.in pkgscripts/libjpeg.pc @ONLY)
 
 configure_file(release/libturbojpeg.pc.in pkgscripts/libturbojpeg.pc @ONLY)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  pkgscripts/${CMAKE_PROJECT_NAME}ConfigVersion.cmake
+  VERSION ${VERSION} COMPATIBILITY AnyNewerVersion)
+
+configure_package_config_file(release/Config.cmake.in
+  pkgscripts/${CMAKE_PROJECT_NAME}Config.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})

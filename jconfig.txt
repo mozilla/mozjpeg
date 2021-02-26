@@ -42,12 +42,6 @@
  */
 /* #define const */
 
-/* Define this if an ordinary "char" type is unsigned.
- * If you're not sure, leaving it undefined will work at some cost in speed.
- * If you defined HAVE_UNSIGNED_CHAR then the speed difference is minimal.
- */
-#undef __CHAR_UNSIGNED__
-
 /* Define this if your system has an ANSI-conforming <stddef.h> file.
  */
 #define HAVE_STDDEF_H
@@ -119,7 +113,6 @@ typedef unsigned char boolean;
 #define BMP_SUPPORTED           /* BMP image file format */
 #define GIF_SUPPORTED           /* GIF image file format */
 #define PPM_SUPPORTED           /* PBMPLUS PPM/PGM image file format */
-#undef RLE_SUPPORTED            /* Utah RLE image file format */
 #define TARGA_SUPPORTED         /* Targa image file format */
 
 /* Define this if you want to name both input and output files on the command

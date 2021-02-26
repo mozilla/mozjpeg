@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, D. R. Commander.
+ * Copyright (C) 2017, 2019, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -102,9 +102,9 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
   for (col = cinfo->output_width; col > 0; col--) {
-    outptr[0] = (char)GETJSAMPLE(inptr[2]); /* RGB to BGR order */
-    outptr[1] = (char)GETJSAMPLE(inptr[1]);
-    outptr[2] = (char)GETJSAMPLE(inptr[0]);
+    outptr[0] = inptr[2]; /* RGB to BGR order */
+    outptr[1] = inptr[1];
+    outptr[2] = inptr[0];
     inptr += 3, outptr += 3;
   }
   (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
@@ -118,13 +118,10 @@ put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   tga_dest_ptr dest = (tga_dest_ptr)dinfo;
   register JSAMPROW inptr;
   register char *outptr;
-  register JDIMENSION col;
 
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
-  for (col = cinfo->output_width; col > 0; col--) {
-    *outptr++ = (char)GETJSAMPLE(*inptr++);
-  }
+  MEMCOPY(outptr, inptr, cinfo->output_width);
   (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
 
@@ -147,7 +144,7 @@ put_demapped_gray(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
   for (col = cinfo->output_width; col > 0; col--) {
-    *outptr++ = (char)GETJSAMPLE(color_map0[GETJSAMPLE(*inptr++)]);
+    *outptr++ = color_map0[*inptr++];
   }
   (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
@@ -182,9 +179,9 @@ start_output_tga(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
       /* Write the colormap.  Note Targa uses BGR byte order */
       outfile = dest->pub.output_file;
       for (i = 0; i < num_colors; i++) {
-        putc(GETJSAMPLE(cinfo->colormap[2][i]), outfile);
-        putc(GETJSAMPLE(cinfo->colormap[1][i]), outfile);
-        putc(GETJSAMPLE(cinfo->colormap[0][i]), outfile);
+        putc(cinfo->colormap[2][i], outfile);
+        putc(cinfo->colormap[1][i], outfile);
+        putc(cinfo->colormap[0][i], outfile);
       }
       dest->pub.put_pixel_rows = put_gray_rows;
     } else {

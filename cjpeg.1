@@ -16,8 +16,7 @@ cjpeg \- compress an image file to a JPEG file
 compresses the named image file, or the standard input if no file is
 named, and produces a JPEG/JFIF file on the standard output.
 The currently supported input file formats are: PPM (PBMPLUS color
-format), PGM (PBMPLUS grayscale format), BMP, Targa, and RLE (Utah Raster
-Toolkit format).  (RLE is supported only if the URT library is available.)
+format), PGM (PBMPLUS grayscale format), BMP, GIF, and Targa.
 .SH OPTIONS
 All switch names may be abbreviated; for example,
 .B \-grayscale
@@ -42,10 +41,10 @@ Scale quantization tables to adjust image quality.  Quality is 0 (worst) to
 .TP
 .B \-grayscale
 Create monochrome JPEG file from color input.  Be sure to use this switch when
-compressing a grayscale BMP file, because
+compressing a grayscale BMP or GIF file, because
 .B cjpeg
-isn't bright enough to notice whether a BMP file uses only shades of gray.
-By saying
+isn't bright enough to notice whether a BMP or GIF file uses only shades of
+gray.  By saying
 .BR \-grayscale,
 you'll get a smaller JPEG file that takes less time to process.
 .TP
@@ -224,6 +223,9 @@ Compress to memory instead of a file.  This feature was implemented mainly as a
 way of testing the in-memory destination manager (jpeg_mem_dest()), but it is
 also useful for benchmarking, since it reduces the I/O overhead.
 .TP
+.BI \-report
+Report compression progress.
+.TP
 .B \-verbose
 Enable debug printout.  More
 .BR \-v 's
@@ -350,11 +352,6 @@ This file was modified by The libjpeg-turbo Project to include only information
 relevant to libjpeg-turbo, to wordsmith certain sections, and to describe
 features not present in libjpeg.
 .SH ISSUES
-Support for GIF input files was removed in cjpeg v6b due to concerns over
-the Unisys LZW patent.  Although this patent expired in 2006, cjpeg still
-lacks GIF support, for these historical reasons.  (Conversion of GIF files to
-JPEG is usually a bad idea anyway, since GIF is a 256-color format.)
-.PP
 Not all variants of BMP and Targa file formats are supported.
 .PP
 The

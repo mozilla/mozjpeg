@@ -141,7 +141,6 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     }
   } else if (cinfo->out_color_space == JCS_CMYK) {
     for (col = cinfo->output_width; col > 0; col--) {
-      /* can omit GETJSAMPLE() safely */
       JSAMPLE c = *inptr++, m = *inptr++, y = *inptr++, k = *inptr++;
       cmyk_to_rgb(c, m, y, k, outptr + 2, outptr + 1, outptr);
       outptr += 3;
@@ -153,7 +152,6 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     register int ps = rgb_pixelsize[cinfo->out_color_space];
 
     for (col = cinfo->output_width; col > 0; col--) {
-      /* can omit GETJSAMPLE() safely */
       outptr[0] = inptr[bindex];
       outptr[1] = inptr[gindex];
       outptr[2] = inptr[rindex];
@@ -372,18 +370,18 @@ write_colormap(j_decompress_ptr cinfo, bmp_dest_ptr dest, int map_colors,
     if (cinfo->out_color_components == 3) {
       /* Normal case with RGB colormap */
       for (i = 0; i < num_colors; i++) {
-        putc(GETJSAMPLE(colormap[2][i]), outfile);
-        putc(GETJSAMPLE(colormap[1][i]), outfile);
-        putc(GETJSAMPLE(colormap[0][i]), outfile);
+        putc(colormap[2][i], outfile);
+        putc(colormap[1][i], outfile);
+        putc(colormap[0][i], outfile);
         if (map_entry_size == 4)
           putc(0, outfile);
       }
     } else {
       /* Grayscale colormap (only happens with grayscale quantization) */
       for (i = 0; i < num_colors; i++) {
-        putc(GETJSAMPLE(colormap[0][i]), outfile);
-        putc(GETJSAMPLE(colormap[0][i]), outfile);
-        putc(GETJSAMPLE(colormap[0][i]), outfile);
+        putc(colormap[0][i], outfile);
+        putc(colormap[0][i], outfile);
+        putc(colormap[0][i], outfile);
         if (map_entry_size == 4)
           putc(0, outfile);
       }
@@ -438,7 +436,6 @@ finish_output_bmp(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   JSAMPARRAY image_ptr;
   register JSAMPROW data_ptr;
   JDIMENSION row;
-  register JDIMENSION col;
   cd_progress_ptr progress = (cd_progress_ptr)cinfo->progress;
 
   if (dest->use_inversion_array) {
@@ -459,10 +456,7 @@ finish_output_bmp(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
         ((j_common_ptr)cinfo, dest->whole_image, row - 1, (JDIMENSION)1,
          FALSE);
       data_ptr = image_ptr[0];
-      for (col = dest->row_width; col > 0; col--) {
-        putc(GETJSAMPLE(*data_ptr), outfile);
-        data_ptr++;
-      }
+      (void)JFWRITE(outfile, data_ptr, dest->row_width);
     }
     if (progress != NULL)
       progress->completed_extra_passes++;

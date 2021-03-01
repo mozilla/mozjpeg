@@ -463,7 +463,6 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       if (!read_scan_script(cinfo, scansarg))
         usage();
 #endif
-
   }
 
   return argn;                  /* return index of next arg (file name) */
@@ -790,15 +789,19 @@ main(int argc, char **argv)
       else
         fprintf(stderr, "%s: can't write to stdout\n", progname);
     }
+  }
+#endif
+
   jpeg_destroy_compress(&dstinfo);
+  (void)jpeg_finish_decompress(&srcinfo);
+  jpeg_destroy_decompress(&srcinfo);
+
 #if TRANSFORMS_SUPPORTED
   if (dropfilename != NULL) {
     (void)jpeg_finish_decompress(&dropinfo);
     jpeg_destroy_decompress(&dropinfo);
   }
 #endif
-  (void)jpeg_finish_decompress(&srcinfo);
-  jpeg_destroy_decompress(&srcinfo);
 
   /* Close output file, if we opened it */
   if (fp != stdout)
@@ -809,7 +812,7 @@ main(int argc, char **argv)
 #endif
 
   if (report)
-  end_progress_monitor((j_common_ptr)&dstinfo);
+    end_progress_monitor((j_common_ptr)&dstinfo);
   if (report || max_scans != 0)
     end_progress_monitor((j_common_ptr)&srcinfo);
 

@@ -52,9 +52,9 @@ endif()
 enable_language(ASM_NASM)
 message(STATUS "CMAKE_ASM_NASM_COMPILER = ${CMAKE_ASM_NASM_COMPILER}")
 
-if(CMAKE_ASM_NASM_OBJECT_FORMAT MATCHES "macho*")
+if(CMAKE_ASM_NASM_OBJECT_FORMAT MATCHES "^macho")
   set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -DMACHO")
-elseif(CMAKE_ASM_NASM_OBJECT_FORMAT MATCHES "elf*")
+elseif(CMAKE_ASM_NASM_OBJECT_FORMAT MATCHES "^elf")
   set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -DELF")
   set(CMAKE_ASM_NASM_DEBUG_FORMAT "dwarf2")
 endif()
@@ -329,7 +329,7 @@ endif()
 # MIPS64 (Intrinsics)
 ###############################################################################
 
-elseif(CPU_TYPE STREQUAL "loongson" OR CPU_TYPE MATCHES "mips64*")
+elseif(CPU_TYPE STREQUAL "loongson" OR CPU_TYPE MATCHES "^mips64")
 
 set(CMAKE_REQUIRED_FLAGS -Wa,-mloongson-mmi,-mloongson-ext)
 

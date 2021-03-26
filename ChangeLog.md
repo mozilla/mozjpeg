@@ -19,6 +19,13 @@ Visual Studio.
 attempting to compress a specially-crafted malformed GIF image with a specified
 image width of 0 using cjpeg.
 
+5. Fixed a regression introduced by 2.0 beta1[15] whereby attempting to
+generate a progressive JPEG image on an SSE2-capable CPU using a scan script
+containing one or more scans with lengths divisible by 32 and non-zero
+successive approximation low bit positions would, under certain circumstances,
+result in an error ("Missing Huffman code table entry") and an invalid JPEG
+image.
+
 
 2.0.90 (2.1 beta1)
 ==================

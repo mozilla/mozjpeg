@@ -192,6 +192,7 @@ option(WITH_SIMD "Include SIMD extensions, if available for this platform" TRUE)
 boolean_number(WITH_SIMD)
 option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" TRUE)
 boolean_number(WITH_TURBOJPEG)
+option(WITH_FUZZ "Build fuzz targets" FALSE)
 
 macro(report_option var desc)
   if(${var})
@@ -703,6 +704,10 @@ add_executable(wrjpgcom wrjpgcom.c)
 ###############################################################################
 # TESTS
 ###############################################################################
+
+if(WITH_FUZZ)
+  add_subdirectory(fuzz)
+endif()
 
 add_subdirectory(md5)
 

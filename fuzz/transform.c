@@ -40,8 +40,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   tjhandle handle = NULL;
   unsigned char *dstBufs[NUMXFORMS] = { NULL, NULL, NULL };
   unsigned long dstSizes[NUMXFORMS] = { 0, 0, 0 }, maxBufSize;
-  int width, height, jpegSubsamp, jpegColorspace, i, t;
+  int width = 0, height = 0, jpegSubsamp, jpegColorspace, i, t;
   tjtransform transforms[NUMXFORMS];
+
+#if defined(__has_feature) && __has_feature(memory_sanitizer)
+  /* The libjpeg-turbo SIMD extensions produce false positives with
+     MemorySanitizer. */
+  putenv("JSIMD_FORCENONE=1");
+#endif
 
   if ((handle = tjInitTransform()) == NULL)
     goto bailout;
@@ -73,14 +79,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   transforms[1].r.h = (height + 1) / 2;
   transforms[1].op = TJXOP_TRANSPOSE;
   transforms[1].options = TJXOPT_GRAY | TJXOPT_CROP | TJXOPT_COPYNONE;
+#if defined(__has_feature) && __has_feature(memory_sanitizer)
+  /* The libjpeg-turbo baseline Huffman encoder produces false positives with
+     MemorySanitizer. */
+  transforms[1].options |= TJXOPT_PROGRESSIVE;
+#endif
   dstBufs[1] =
     (unsigned char *)malloc(tjBufSize((width + 1) / 2, (height + 1) / 2,
-                                      jpegSubsamp));
+                                      TJSAMP_GRAY));
   if (!dstBufs[1])
     goto bailout;
 
   transforms[2].op = TJXOP_ROT90;
   transforms[2].options = TJXOPT_TRIM | TJXOPT_COPYNONE;
+#if defined(__has_feature) && __has_feature(memory_sanitizer)
+  transforms[2].options |= TJXOPT_PROGRESSIVE;
+#endif
   dstBufs[2] = (unsigned char *)malloc(tjBufSize(height, width, jpegSubsamp));
   if (!dstBufs[2])
     goto bailout;

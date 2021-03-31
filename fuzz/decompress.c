@@ -38,12 +38,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
   tjhandle handle = NULL;
   unsigned char *dstBuf = NULL;
-  int width, height, jpegSubsamp, jpegColorspace, pfi;
+  int width = 0, height = 0, jpegSubsamp, jpegColorspace, pfi;
   /* TJPF_RGB-TJPF_BGR share the same code paths, as do TJPF_RGBX-TJPF_XRGB and
      TJPF_RGBA-TJPF_ARGB.  Thus, the pixel formats below should be the minimum
      necessary to achieve full coverage. */
   enum TJPF pixelFormats[NUMPF] =
     { TJPF_RGB, TJPF_BGRX, TJPF_GRAY, TJPF_CMYK };
+
+#if defined(__has_feature) && __has_feature(memory_sanitizer)
+  /* The libjpeg-turbo SIMD extensions produce false positives with
+     MemorySanitizer. */
+  putenv("JSIMD_FORCENONE=1");
+#endif
 
   if ((handle = tjInitDecompress()) == NULL)
     goto bailout;
@@ -75,12 +81,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     if ((dstBuf = (unsigned char *)malloc(w * h * tjPixelSize[pf])) == NULL)
       goto bailout;
 
-    tjDecompress2(handle, data, size, dstBuf, w, 0, h, pf, flags);
-
-    /* Touch all of the output pixels in order to catch uninitialized reads
-       when using MemorySanitizer. */
-    for (i = 0; i < w * h * tjPixelSize[pf]; i++)
-      sum += dstBuf[i];
+    if (tjDecompress2(handle, data, size, dstBuf, w, 0, h, pf, flags) == 0) {
+      /* Touch all of the output pixels in order to catch uninitialized reads
+         when using MemorySanitizer. */
+      for (i = 0; i < w * h * tjPixelSize[pf]; i++)
+        sum += dstBuf[i];
+    }
 
     free(dstBuf);
     dstBuf = NULL;

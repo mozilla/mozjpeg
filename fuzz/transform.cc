@@ -35,7 +35,7 @@
 #define NUMXFORMS  3
 
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
   tjhandle handle = NULL;
   unsigned char *dstBufs[NUMXFORMS] = { NULL, NULL, NULL };

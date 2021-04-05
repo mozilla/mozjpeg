@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2019 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2019, 2021 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -800,6 +800,8 @@ static void usage(char *progName)
   printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
   printf("-nowrite = Do not write reference or output images (improves consistency of\n");
   printf("     performance measurements.)\n");
+  printf("-limitscans = Refuse to decompress or transform progressive JPEG images that\n");
+  printf("     have an unreasonably large number of scans\n");
   printf("-stoponwarning = Immediately discontinue the current\n");
   printf("     compression/decompression/transform operation if the underlying codec\n");
   printf("     throws a warning (non-fatal error)\n\n");
@@ -955,6 +957,8 @@ int main(int argc, char *argv[])
         compOnly = 1;
       else if (!strcasecmp(argv[i], "-nowrite"))
         doWrite = 0;
+      else if (!strcasecmp(argv[i], "-limitscans"))
+        flags |= TJFLAG_LIMITSCANS;
       else if (!strcasecmp(argv[i], "-stoponwarning"))
         flags |= TJFLAG_STOPONWARNING;
       else usage(argv[0]);

@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2011-2013, 2017-2018, 2020 D. R. Commander.
- *                                         All Rights Reserved.
+ * Copyright (C)2011-2013, 2017-2018, 2020-2021 D. R. Commander.
+ *                                              All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -438,6 +438,16 @@ public final class TJ {
    * reduce compression and decompression performance considerably.
    */
   public static final int FLAG_PROGRESSIVE   = 16384;
+  /**
+   * Limit the number of progressive JPEG scans that the decompression and
+   * transform operations will process.  If a progressive JPEG image contains
+   * an unreasonably large number of scans, then this flag will cause the
+   * decompression and transform operations to throw an error.  The primary
+   * purpose of this is to allow security-critical applications to guard
+   * against an exploit of the progressive JPEG format described in
+   * <a href="https://libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf" target="_blank">this report</a>.
+   */
+  public static final int FLAG_LIMITSCANS    = 32768;
 
 
   /**

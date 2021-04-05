@@ -67,11 +67,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     goto bailout;
 
   for (pfi = 0; pfi < NUMPF; pfi++) {
-    int pf = pixelFormats[pfi], flags = 0, i, sum = 0, w = width, h = height;
+    int pf = pixelFormats[pfi], flags = TJFLAG_LIMITSCANS, i, sum = 0;
+    int w = width, h = height;
 
     /* Test non-default decompression options on the first iteration. */
     if (pf == TJPF_RGB)
-      flags = TJFLAG_BOTTOMUP | TJFLAG_FASTUPSAMPLE | TJFLAG_FASTDCT;
+      flags |= TJFLAG_BOTTOMUP | TJFLAG_FASTUPSAMPLE | TJFLAG_FASTDCT;
     /* Test IDCT scaling on the second iteration. */
     if (pf == TJPF_BGRX) {
       w = (width + 1) / 2;

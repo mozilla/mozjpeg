@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2020 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2021 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -111,6 +111,32 @@ typedef struct _tjinstance {
   char errStr[JMSG_LENGTH_MAX];
   boolean isInstanceError;
 } tjinstance;
+
+struct my_progress_mgr {
+  struct jpeg_progress_mgr pub;
+  tjinstance *this;
+};
+typedef struct my_progress_mgr *my_progress_ptr;
+
+static void my_progress_monitor(j_common_ptr dinfo)
+{
+  my_error_ptr myerr = (my_error_ptr)dinfo->err;
+  my_progress_ptr myprog = (my_progress_ptr)dinfo->progress;
+
+  if (dinfo->is_decompressor) {
+    int scan_no = ((j_decompress_ptr)dinfo)->input_scan_number;
+
+    if (scan_no > 500) {
+      snprintf(myprog->this->errStr, JMSG_LENGTH_MAX,
+               "Progressive JPEG image has more than 500 scans");
+      snprintf(errStr, JMSG_LENGTH_MAX,
+               "Progressive JPEG image has more than 500 scans");
+      myprog->this->isInstanceError = TRUE;
+      myerr->warning = FALSE;
+      longjmp(myerr->setjmp_buffer, 1);
+    }
+  }
+}
 
 static const int pixelsize[TJ_NUMSAMP] = { 3, 3, 3, 1, 3, 3 };
 
@@ -1245,6 +1271,7 @@ DLLEXPORT int tjDecompress2(tjhandle handle, const unsigned char *jpegBuf,
 {
   JSAMPROW *row_pointer = NULL;
   int i, retval = 0, jpegwidth, jpegheight, scaledw, scaledh;
+  struct my_progress_mgr progress;
 
   GET_DINSTANCE(handle);
   this->jerr.stopOnWarning = (flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -1260,6 +1287,14 @@ DLLEXPORT int tjDecompress2(tjhandle handle, const unsigned char *jpegBuf,
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
+
+  if (flags & TJFLAG_LIMITSCANS) {
+    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    progress.pub.progress_monitor = my_progress_monitor;
+    progress.this = this;
+    dinfo->progress = &progress.pub;
+  } else
+    dinfo->progress = NULL;
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1579,6 +1614,7 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
   JSAMPLE *_tmpbuf = NULL, *ptr;
   JSAMPROW *outbuf[MAX_COMPONENTS], *tmpbuf[MAX_COMPONENTS];
   int dctsize;
+  struct my_progress_mgr progress;
 
   GET_DINSTANCE(handle);
   this->jerr.stopOnWarning = (flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -1599,6 +1635,14 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
+
+  if (flags & TJFLAG_LIMITSCANS) {
+    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    progress.pub.progress_monitor = my_progress_monitor;
+    progress.this = this;
+    dinfo->progress = &progress.pub;
+  } else
+    dinfo->progress = NULL;
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1838,6 +1882,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   jpeg_transform_info *xinfo = NULL;
   jvirt_barray_ptr *srccoefs, *dstcoefs;
   int retval = 0, i, jpegSubsamp, saveMarkers = 0;
+  struct my_progress_mgr progress;
 
   GET_INSTANCE(handle);
   this->jerr.stopOnWarning = (flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -1853,6 +1898,14 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
+
+  if (flags & TJFLAG_LIMITSCANS) {
+    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    progress.pub.progress_monitor = my_progress_monitor;
+    progress.this = this;
+    dinfo->progress = &progress.pub;
+  } else
+    dinfo->progress = NULL;
 
   if ((xinfo =
        (jpeg_transform_info *)malloc(sizeof(jpeg_transform_info) * n)) == NULL)

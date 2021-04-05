@@ -1,5 +1,6 @@
 /*
- * Copyright (C)2009-2015, 2017, 2020 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2015, 2017, 2020-2021 D. R. Commander.
+ *                                         All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -418,6 +419,16 @@ enum TJCS {
  * reduce compression and decompression performance considerably.
  */
 #define TJFLAG_PROGRESSIVE  16384
+/**
+ * Limit the number of progressive JPEG scans that the decompression and
+ * transform functions will process.  If a progressive JPEG image contains an
+ * unreasonably large number of scans, then this flag will cause the
+ * decompression and transform functions to return an error.  The primary
+ * purpose of this is to allow security-critical applications to guard against
+ * an exploit of the progressive JPEG format described in
+ * <a href="https://libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf" target="_blank">this report</a>.
+ */
+#define TJFLAG_LIMITSCANS  32768
 
 
 /**

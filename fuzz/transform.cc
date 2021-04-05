@@ -100,7 +100,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     goto bailout;
 
   tjTransform(handle, data, size, NUMXFORMS, dstBufs, dstSizes, transforms,
-              TJFLAG_NOREALLOC);
+              TJFLAG_LIMITSCANS | TJFLAG_NOREALLOC);
 
   maxBufSize = tjBufSize(width, height, jpegSubsamp);
 

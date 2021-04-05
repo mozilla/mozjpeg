@@ -26,6 +26,15 @@ successive approximation low bit positions would, under certain circumstances,
 result in an error ("Missing Huffman code table entry") and an invalid JPEG
 image.
 
+6. Introduced a new flag (`TJFLAG_LIMITSCANS` in the TurboJPEG C API and
+`TJ.FLAG_LIMIT_SCANS` in the TurboJPEG Java API) and a corresponding TJBench
+command-line argument (`-limitscans`) that causes the TurboJPEG decompression
+and transform functions/operations to return/throw an error if a progressive
+JPEG image contains an unreasonably large number of scans.  This allows
+applications that use the TurboJPEG API to guard against an exploit of the
+progressive JPEG format described in the report
+["Two Issues with the JPEG Standard"](https://libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf).
+
 
 2.0.90 (2.1 beta1)
 ==================

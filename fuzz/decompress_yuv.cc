@@ -68,10 +68,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     int w = width, h = height;
 
     /* Test non-default decompression options on the first iteration. */
-    if (pf == TJPF_RGB)
+    if (pfi == 0)
       flags |= TJFLAG_BOTTOMUP | TJFLAG_FASTUPSAMPLE | TJFLAG_FASTDCT;
     /* Test IDCT scaling on the second iteration. */
-    if (pf == TJPF_XRGB) {
+    else if (pfi == 1) {
       w = (width + 3) / 4;
       h = (height + 3) / 4;
     }

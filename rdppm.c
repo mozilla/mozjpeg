@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2017, 2020, D. R. Commander.
+ * Copyright (C) 2015-2017, 2020-2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -516,6 +516,11 @@ get_word_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   register JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
+  register int rindex = rgb_red[cinfo->in_color_space];
+  register int gindex = rgb_green[cinfo->in_color_space];
+  register int bindex = rgb_blue[cinfo->in_color_space];
+  register int aindex = alpha_index[cinfo->in_color_space];
+  register int ps = rgb_pixelsize[cinfo->in_color_space];
 
   if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
     ERREXIT(cinfo, JERR_INPUT_EOF);
@@ -527,17 +532,20 @@ get_word_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
       ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
-    *ptr++ = rescale[temp];
+    ptr[rindex] = rescale[temp];
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
       ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
-    *ptr++ = rescale[temp];
+    ptr[gindex] = rescale[temp];
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
       ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
-    *ptr++ = rescale[temp];
+    ptr[bindex] = rescale[temp];
+    if (aindex >= 0)
+      ptr[aindex] = 0xFF;
+    ptr += ps;
   }
   return 1;
 }
@@ -624,7 +632,10 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       cinfo->in_color_space = JCS_GRAYSCALE;
     TRACEMS2(cinfo, 1, JTRC_PGM, w, h);
     if (maxval > 255) {
-      source->pub.get_pixel_rows = get_word_gray_row;
+      if (cinfo->in_color_space == JCS_GRAYSCALE)
+        source->pub.get_pixel_rows = get_word_gray_row;
+      else
+        ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     } else if (maxval == MAXJSAMPLE && sizeof(JSAMPLE) == sizeof(U_CHAR) &&
                cinfo->in_color_space == JCS_GRAYSCALE) {
       source->pub.get_pixel_rows = get_raw_row;
@@ -647,7 +658,10 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       cinfo->in_color_space = JCS_EXT_RGB;
     TRACEMS2(cinfo, 1, JTRC_PPM, w, h);
     if (maxval > 255) {
-      source->pub.get_pixel_rows = get_word_rgb_row;
+      if (IsExtRGB(cinfo->in_color_space))
+        source->pub.get_pixel_rows = get_word_rgb_row;
+      else
+        ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     } else if (maxval == MAXJSAMPLE && sizeof(JSAMPLE) == sizeof(U_CHAR) &&
 #if RGB_RED == 0 && RGB_GREEN == 1 && RGB_BLUE == 2 && RGB_PIXELSIZE == 3
                (cinfo->in_color_space == JCS_EXT_RGB ||

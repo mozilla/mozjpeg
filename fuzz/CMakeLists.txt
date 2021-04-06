@@ -31,6 +31,8 @@ macro(add_fuzz_target target source_file)
   install(TARGETS ${target}_fuzzer RUNTIME DESTINATION ${FUZZ_BINDIR})
 endmacro()
 
+add_fuzz_target(compress compress.cc)
+
 # NOTE: This target is named libjpeg_turbo_fuzzer instead of decompress_fuzzer
 # in order to preserve the corpora from Google's OSS-Fuzz target for
 # libjpeg-turbo, which this target replaces.

@@ -42,11 +42,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   unsigned long dstSizes[NUMXFORMS] = { 0, 0, 0 }, maxBufSize;
   int width = 0, height = 0, jpegSubsamp, jpegColorspace, i, t;
   tjtransform transforms[NUMXFORMS];
-
 #if defined(__has_feature) && __has_feature(memory_sanitizer)
+  char env[18] = "JSIMD_FORCENONE=1";
+
   /* The libjpeg-turbo SIMD extensions produce false positives with
      MemorySanitizer. */
-  putenv("JSIMD_FORCENONE=1");
+  putenv(env);
 #endif
 
   if ((handle = tjInitTransform()) == NULL)

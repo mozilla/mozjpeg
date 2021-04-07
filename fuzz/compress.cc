@@ -39,8 +39,7 @@
 #define TJFLAG_FUZZING  (1 << 31)
 
 
-struct test
-{
+struct test {
   enum TJPF pf;
   enum TJSAMP subsamp;
   int quality;

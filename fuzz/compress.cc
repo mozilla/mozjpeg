@@ -35,6 +35,8 @@
 
 
 #define NUMTESTS  7
+/* Private flag that triggers different TurboJPEG API behavior when fuzzing */
+#define TJFLAG_FUZZING  (1 << 31)
 
 
 struct test
@@ -76,7 +78,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     goto bailout;
 
   for (ti = 0; ti < NUMTESTS; ti++) {
-    int flags = TJFLAG_NOREALLOC, sum = 0, pf = tests[ti].pf;
+    int flags = TJFLAG_FUZZING | TJFLAG_NOREALLOC, sum = 0, pf = tests[ti].pf;
     unsigned long dstSize = 0, maxBufSize;
 
     /* Test non-default compression options on the first and second

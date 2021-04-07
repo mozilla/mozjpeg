@@ -204,6 +204,11 @@ static int cs2pf[JPEG_NUMCS] = {
   this->isInstanceError = TRUE;  THROWG(m) \
 }
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+/* Private flag that triggers different TurboJPEG API behavior when fuzzing */
+#define TJFLAG_FUZZING  (1 << 31)
+#endif
+
 #define GET_INSTANCE(handle) \
   tjinstance *this = (tjinstance *)handle; \
   j_compress_ptr cinfo = NULL; \
@@ -2097,8 +2102,9 @@ DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
   /* Ignore 0-pixel images and images larger than 1 Megapixel when fuzzing.
      Casting *width to (unsigned long long) prevents integer overflow if
      (*width) * (*height) > INT_MAX. */
-  if (*width < 1 || *height < 1 ||
-      (unsigned long long)(*width) * (*height) > 1048576)
+  if (flags & TJFLAG_FUZZING &&
+      (*width < 1 || *height < 1 ||
+       (unsigned long long)(*width) * (*height) > 1048576))
     THROWG("tjLoadImage(): Uncompressed image is too large");
 #endif
 

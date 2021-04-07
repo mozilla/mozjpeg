@@ -6,7 +6,7 @@
  * Modified 2009-2017 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Modified 2011 by Siarhei Siamashka.
- * Copyright (C) 2015, 2017-2018, D. R. Commander.
+ * Copyright (C) 2015, 2017-2018, 2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -631,7 +631,7 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Allocate one-row buffer for returned data */
   source->pub.buffer = (*cinfo->mem->alloc_sarray)
     ((j_common_ptr)cinfo, JPOOL_IMAGE,
-     (JDIMENSION)(biWidth * cinfo->input_components), (JDIMENSION)1);
+     (JDIMENSION)biWidth * (JDIMENSION)cinfo->input_components, (JDIMENSION)1);
   source->pub.buffer_height = 1;
 
   cinfo->data_precision = 8;

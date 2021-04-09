@@ -424,14 +424,14 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
    (((unsigned int)UCH(array[offset + 2])) << 16) + \
    (((unsigned int)UCH(array[offset + 3])) << 24))
 
-  unsigned int bfOffBits;
-  unsigned int headerSize;
+  int bfOffBits;
+  int headerSize;
   int biWidth;
   int biHeight;
   unsigned short biPlanes;
   unsigned int biCompression;
   int biXPelsPerMeter, biYPelsPerMeter;
-  unsigned int biClrUsed = 0;
+  int biClrUsed = 0;
   int mapentrysize = 0;         /* 0 indicates no colormap */
   int bPad;
   JDIMENSION row_width = 0;
@@ -575,6 +575,8 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       cinfo->input_components = 4;
     else
       ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
+    if ((unsigned long long)biWidth * 3ULL > 0xFFFFFFFFULL)
+      ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
     row_width = (JDIMENSION)(biWidth * 3);
     break;
   case 32:
@@ -586,6 +588,8 @@ start_input_bmp(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       cinfo->input_components = 4;
     else
       ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
+    if ((unsigned long long)biWidth * 4ULL > 0xFFFFFFFFULL)
+      ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
     row_width = (JDIMENSION)(biWidth * 4);
     break;
   default:

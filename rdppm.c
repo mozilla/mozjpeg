@@ -112,10 +112,9 @@ read_pbm_integer(j_compress_ptr cinfo, FILE *infile, unsigned int maxval)
   while ((ch = pbm_getc(infile)) >= '0' && ch <= '9') {
     val *= 10;
     val += ch - '0';
+    if (val > maxval)
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
   }
-
-  if (val > maxval)
-    ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
 
   return val;
 }

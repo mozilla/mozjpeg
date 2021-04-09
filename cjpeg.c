@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013-2014, 2017, 2019-2020, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, 2017, 2019-2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -27,6 +27,9 @@
  * works regardless of which command line style is used.
  */
 
+#ifdef CJPEG_FUZZER
+#define JPEG_INTERNALS
+#endif
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"           /* for version message */
 #include "jconfigint.h"
@@ -144,6 +147,45 @@ static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
 boolean memdst;                 /* for -memdst switch */
 boolean report;                 /* for -report switch */
+
+
+#ifdef CJPEG_FUZZER
+
+#include <setjmp.h>
+
+struct my_error_mgr {
+  struct jpeg_error_mgr pub;
+  jmp_buf setjmp_buffer;
+};
+
+void my_error_exit(j_common_ptr cinfo)
+{
+  struct my_error_mgr *myerr = (struct my_error_mgr *)cinfo->err;
+
+  longjmp(myerr->setjmp_buffer, 1);
+}
+
+static void my_emit_message(j_common_ptr cinfo, int msg_level)
+{
+  if (msg_level < 0)
+    cinfo->err->num_warnings++;
+}
+
+#define HANDLE_ERROR() {  \
+  if (cinfo.global_state > CSTATE_START) {  \
+    if (memdst && outbuffer)  \
+      (*cinfo.dest->term_destination) (&cinfo);  \
+    jpeg_abort_compress(&cinfo);  \
+  }  \
+  jpeg_destroy_compress(&cinfo);  \
+  if (input_file != stdin && input_file != NULL) \
+    fclose(input_file);  \
+  if (memdst)  \
+    free(outbuffer);  \
+  return EXIT_FAILURE;  \
+}
+
+#endif
 
 
 LOCAL(void)
@@ -506,11 +548,16 @@ int
 main(int argc, char **argv)
 {
   struct jpeg_compress_struct cinfo;
+#ifdef CJPEG_FUZZER
+  struct my_error_mgr myerr;
+  struct jpeg_error_mgr &jerr = myerr.pub;
+#else
   struct jpeg_error_mgr jerr;
+#endif
   struct cdjpeg_progress_mgr progress;
   int file_index;
   cjpeg_source_ptr src_mgr;
-  FILE *input_file;
+  FILE *input_file = NULL;
   FILE *icc_file;
   JOCTET *icc_profile = NULL;
   long icc_len = 0;
@@ -628,6 +675,13 @@ main(int argc, char **argv)
     fclose(icc_file);
   }
 
+#ifdef CJPEG_FUZZER
+  jerr.error_exit = my_error_exit;
+  jerr.emit_message = my_emit_message;
+  if (setjmp(myerr.setjmp_buffer))
+    HANDLE_ERROR()
+#endif
+
   if (report) {
     start_progress_monitor((j_common_ptr)&cinfo, &progress);
     progress.report = report;
@@ -653,6 +707,13 @@ main(int argc, char **argv)
   else
 #endif
     jpeg_stdio_dest(&cinfo, output_file);
+
+#ifdef CJPEG_FUZZER
+  if (cinfo.image_width < 1 || cinfo.image_height < 1 ||
+      (unsigned long long)cinfo.image_width * cinfo.image_height > 1048576 ||
+      setjmp(myerr.setjmp_buffer))
+    HANDLE_ERROR()
+#endif
 
   /* Start compressor */
   jpeg_start_compress(&cinfo, TRUE);
@@ -681,13 +742,14 @@ main(int argc, char **argv)
     end_progress_monitor((j_common_ptr)&cinfo);
 
   if (memdst) {
+#ifndef CJPEG_FUZZER
     fprintf(stderr, "Compressed size:  %lu bytes\n", outsize);
+#endif
     free(outbuffer);
   }
 
   free(icc_profile);
 
   /* All done. */
-  exit(jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
-  return 0;                     /* suppress no-return-value warnings */
+  return (jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
 }

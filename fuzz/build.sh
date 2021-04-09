@@ -10,6 +10,7 @@ cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_STATIC=1 -DENABLE_SHARED=0 \
 make "-j$(nproc)" "--load-average=$(nproc)"
 make install
 
+cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/cjpeg_fuzzer_seed_corpus.zip
 cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress_fuzzer_seed_corpus.zip
 cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress_yuv_fuzzer_seed_corpus.zip
 cp $SRC/decompress_fuzzer_seed_corpus.zip $OUT/libjpeg_turbo_fuzzer_seed_corpus.zip

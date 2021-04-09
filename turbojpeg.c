@@ -206,7 +206,7 @@ static int cs2pf[JPEG_NUMCS] = {
 
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 /* Private flag that triggers different TurboJPEG API behavior when fuzzing */
-#define TJFLAG_FUZZING  (1 << 31)
+#define TJFLAG_FUZZING  (1 << 30)
 #endif
 
 #define GET_INSTANCE(handle) \

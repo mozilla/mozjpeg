@@ -36,7 +36,7 @@
 
 #define NUMTESTS  7
 /* Private flag that triggers different TurboJPEG API behavior when fuzzing */
-#define TJFLAG_FUZZING  (1 << 31)
+#define TJFLAG_FUZZING  (1 << 30)
 
 
 struct test {

@@ -68,7 +68,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   putenv(env);
 #endif
 
-  snprintf(filename, FILENAME_MAX, "/tmp/libjpeg-turbo_compress_fuzz.XXXXXX");
+  snprintf(filename, FILENAME_MAX, "/tmp/libjpeg-turbo_compress_yuv_fuzz.XXXXXX");
   if ((fd = mkstemp(filename)) < 0 || write(fd, data, size) < 0)
     goto bailout;
 

@@ -54,7 +54,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   char filename[FILENAME_MAX] = { 0 };
   struct test tests[NUMTESTS] = {
     { TJPF_XBGR, TJSAMP_444, 100 },
-    { TJPF_RGBX, TJSAMP_422, 90 },
+    { TJPF_XRGB, TJSAMP_422, 90 },
     { TJPF_BGR, TJSAMP_420, 80 },
     { TJPF_RGB, TJSAMP_411, 70 },
     { TJPF_BGR, TJSAMP_GRAY, 60 },

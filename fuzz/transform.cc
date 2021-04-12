@@ -80,11 +80,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   transforms[1].r.h = (height + 1) / 2;
   transforms[1].op = TJXOP_TRANSPOSE;
   transforms[1].options = TJXOPT_GRAY | TJXOPT_CROP | TJXOPT_COPYNONE;
-#if defined(__has_feature) && __has_feature(memory_sanitizer)
-  /* The libjpeg-turbo baseline Huffman encoder produces false positives with
-     MemorySanitizer. */
-  transforms[1].options |= TJXOPT_PROGRESSIVE;
-#endif
   dstBufs[1] =
     (unsigned char *)malloc(tjBufSize((width + 1) / 2, (height + 1) / 2,
                                       TJSAMP_GRAY));
@@ -93,9 +88,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   transforms[2].op = TJXOP_ROT90;
   transforms[2].options = TJXOPT_TRIM | TJXOPT_COPYNONE;
-#if defined(__has_feature) && __has_feature(memory_sanitizer)
-  transforms[2].options |= TJXOPT_PROGRESSIVE;
-#endif
   dstBufs[2] = (unsigned char *)malloc(tjBufSize(height, width, jpegSubsamp));
   if (!dstBufs[2])
     goto bailout;

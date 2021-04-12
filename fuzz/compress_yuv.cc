@@ -83,11 +83,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
        iterations. */
     if (ti == 0)
       flags |= TJFLAG_BOTTOMUP | TJFLAG_ACCURATEDCT;
-#if !defined(__has_feature) || !__has_feature(memory_sanitizer)
-  /* The libjpeg-turbo baseline Huffman encoder produces false positives with
-     MemorySanitizer. */
     else if (ti == 1)
-#endif
       flags |= TJFLAG_PROGRESSIVE;
 
     /* tjLoadImage() ignores 0-pixel images and images larger than 1 Megapixel

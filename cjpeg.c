@@ -171,18 +171,18 @@ static void my_emit_message(j_common_ptr cinfo, int msg_level)
     cinfo->err->num_warnings++;
 }
 
-#define HANDLE_ERROR() {  \
-  if (cinfo.global_state > CSTATE_START) {  \
-    if (memdst && outbuffer)  \
-      (*cinfo.dest->term_destination) (&cinfo);  \
-    jpeg_abort_compress(&cinfo);  \
-  }  \
-  jpeg_destroy_compress(&cinfo);  \
+#define HANDLE_ERROR() { \
+  if (cinfo.global_state > CSTATE_START) { \
+    if (memdst && outbuffer) \
+      (*cinfo.dest->term_destination) (&cinfo); \
+    jpeg_abort_compress(&cinfo); \
+  } \
+  jpeg_destroy_compress(&cinfo); \
   if (input_file != stdin && input_file != NULL) \
-    fclose(input_file);  \
-  if (memdst)  \
-    free(outbuffer);  \
-  return EXIT_FAILURE;  \
+    fclose(input_file); \
+  if (memdst) \
+    free(outbuffer); \
+  return EXIT_FAILURE; \
 }
 
 #endif

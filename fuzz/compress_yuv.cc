@@ -60,13 +60,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     { TJPF_BGR, TJSAMP_GRAY, 60 },
     { TJPF_GRAY, TJSAMP_GRAY, 50 }
   };
+  char arithEnv[16] = "TJ_ARITHMETIC=0";
+  char restartEnv[13] = "TJ_RESTART=0";
 #if defined(__has_feature) && __has_feature(memory_sanitizer)
-  char env[18] = "JSIMD_FORCENONE=1";
+  char simdEnv[18] = "JSIMD_FORCENONE=1";
 
   /* The libjpeg-turbo SIMD extensions produce false positives with
      MemorySanitizer. */
-  putenv(env);
+  putenv(simdEnv);
 #endif
+  putenv(arithEnv);
+  putenv(restartEnv);
 
   snprintf(filename, FILENAME_MAX, "/tmp/libjpeg-turbo_compress_yuv_fuzz.XXXXXX");
   if ((fd = mkstemp(filename)) < 0 || write(fd, data, size) < 0)
@@ -79,12 +83,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     int flags = TJFLAG_FUZZING | TJFLAG_NOREALLOC, sum = 0, pf = tests[ti].pf;
     unsigned long dstSize = 0, maxBufSize;
 
-    /* Test non-default compression options on the first and second
-       iterations. */
+    /* Test non-default compression options on specific iterations. */
     if (ti == 0)
       flags |= TJFLAG_BOTTOMUP | TJFLAG_ACCURATEDCT;
-    else if (ti == 1)
+    else if (ti == 1 || ti == 3)
       flags |= TJFLAG_PROGRESSIVE;
+    if (ti == 2 || ti == 3)
+      arithEnv[14] = '1';
+    else
+      arithEnv[14] = '0';
+    if (ti == 1 || ti == 2)
+      restartEnv[11] = '2';
+    else
+      restartEnv[11] = '0';
 
     /* tjLoadImage() ignores 0-pixel images and images larger than 1 Megapixel
        when FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is defined (yes, that's

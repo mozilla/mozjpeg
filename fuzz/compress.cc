@@ -56,7 +56,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     { TJPF_RGB, TJSAMP_444, 100 },
     { TJPF_BGR, TJSAMP_422, 90 },
     { TJPF_RGBX, TJSAMP_420, 80 },
-    { TJPF_BGRX, TJSAMP_411, 70 },
+    { TJPF_BGRA, TJSAMP_411, 70 },
     { TJPF_XRGB, TJSAMP_GRAY, 60 },
     { TJPF_GRAY, TJSAMP_GRAY, 50 },
     { TJPF_CMYK, TJSAMP_440, 40 }
@@ -77,15 +77,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     goto bailout;
 
   for (ti = 0; ti < NUMTESTS; ti++) {
-    int flags = TJFLAG_FUZZING | TJFLAG_NOREALLOC, sum = 0, pf = tests[ti].pf;
+    int flags = TJFLAG_FUZZING, sum = 0, pf = tests[ti].pf;
     unsigned long dstSize = 0, maxBufSize;
 
-    /* Test non-default compression options on the first and second
-       iterations. */
+    /* Test non-default compression options on specific iterations. */
     if (ti == 0)
       flags |= TJFLAG_BOTTOMUP | TJFLAG_ACCURATEDCT;
     else if (ti == 1)
       flags |= TJFLAG_PROGRESSIVE;
+    if (ti != 2)
+      flags |= TJFLAG_NOREALLOC;
 
     /* tjLoadImage() ignores 0-pixel images and images larger than 1 Megapixel
        when FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is defined (yes, that's
@@ -95,8 +96,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
       continue;
 
     maxBufSize = tjBufSize(width, height, tests[ti].subsamp);
-    if ((dstBuf = (unsigned char *)malloc(maxBufSize)) == NULL)
-      goto bailout;
+    if (flags & TJFLAG_NOREALLOC) {
+      if ((dstBuf = (unsigned char *)malloc(maxBufSize)) == NULL)
+        goto bailout;
+    } else
+      dstBuf = NULL;
 
     if (tjCompress2(handle, srcBuf, width, 0, height, pf, &dstBuf, &dstSize,
                     tests[ti].subsamp, tests[ti].quality, flags) == 0) {

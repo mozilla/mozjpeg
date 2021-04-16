@@ -2092,21 +2092,16 @@ DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
     THROWG("tjLoadImage(): Unsupported file type");
 
   src->input_file = file;
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  /* Ignore images larger than 1 Megapixel when fuzzing. */
+  if (flags & TJFLAG_FUZZING)
+    src->max_pixels = 1048576;
+#endif
   (*src->start_input) (cinfo, src);
   (*cinfo->mem->realize_virt_arrays) ((j_common_ptr)cinfo);
 
   *width = cinfo->image_width;  *height = cinfo->image_height;
   *pixelFormat = cs2pf[cinfo->in_color_space];
-
-#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-  /* Ignore 0-pixel images and images larger than 1 Megapixel when fuzzing.
-     Casting *width to (unsigned long long) prevents integer overflow if
-     (*width) * (*height) > INT_MAX. */
-  if (flags & TJFLAG_FUZZING &&
-      (*width < 1 || *height < 1 ||
-       (unsigned long long)(*width) * (*height) > 1048576))
-    THROWG("tjLoadImage(): Uncompressed image is too large");
-#endif
 
   pitch = PAD((*width) * tjPixelSize[*pixelFormat], align);
   if ((unsigned long long)pitch * (unsigned long long)(*height) >

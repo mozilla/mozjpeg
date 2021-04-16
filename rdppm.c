@@ -586,6 +586,10 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   if (w <= 0 || h <= 0 || maxval <= 0) /* error check */
     ERREXIT(cinfo, JERR_PPM_NOT);
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  if (sinfo->max_pixels && (unsigned long long)w * h > sinfo->max_pixels)
+    ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
+#endif
 
   cinfo->data_precision = BITS_IN_JSAMPLE; /* we always rescale data to this */
   cinfo->image_width = (JDIMENSION)w;
@@ -765,6 +769,9 @@ jinit_read_ppm(j_compress_ptr cinfo)
   /* Fill in method ptrs, except get_pixel_rows which start_input sets */
   source->pub.start_input = start_input_ppm;
   source->pub.finish_input = finish_input_ppm;
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  source->pub.max_pixels = 0;
+#endif
 
   return (cjpeg_source_ptr)source;
 }

@@ -690,6 +690,9 @@ main(int argc, char **argv)
   /* Figure out the input file format, and set up to read it. */
   src_mgr = select_file_type(&cinfo, input_file);
   src_mgr->input_file = input_file;
+#ifdef CJPEG_FUZZER
+  src_mgr->max_pixels = 1048576;
+#endif
 
   /* Read the input file header to obtain file size & colorspace. */
   (*src_mgr->start_input) (&cinfo, src_mgr);
@@ -709,9 +712,7 @@ main(int argc, char **argv)
     jpeg_stdio_dest(&cinfo, output_file);
 
 #ifdef CJPEG_FUZZER
-  if (cinfo.image_width < 1 || cinfo.image_height < 1 ||
-      (unsigned long long)cinfo.image_width * cinfo.image_height > 1048576 ||
-      setjmp(myerr.setjmp_buffer))
+  if (setjmp(myerr.setjmp_buffer))
     HANDLE_ERROR()
 #endif
 

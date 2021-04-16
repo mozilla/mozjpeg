@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2016, 2018-2020, D. R. Commander.
+ * Copyright (C) 2015-2016, 2018-2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -348,7 +348,8 @@ decode_mcu_DC_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   }
 
   /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
+  if (cinfo->restart_interval)
+    entropy->restarts_to_go--;
 
   return TRUE;
 }
@@ -432,7 +433,8 @@ decode_mcu_AC_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   }
 
   /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
+  if (cinfo->restart_interval)
+    entropy->restarts_to_go--;
 
   return TRUE;
 }
@@ -483,7 +485,8 @@ decode_mcu_DC_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   BITREAD_SAVE_STATE(cinfo, entropy->bitstate);
 
   /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
+  if (cinfo->restart_interval)
+    entropy->restarts_to_go--;
 
   return TRUE;
 }
@@ -626,7 +629,8 @@ decode_mcu_AC_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   }
 
   /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
+  if (cinfo->restart_interval)
+    entropy->restarts_to_go--;
 
   return TRUE;
 

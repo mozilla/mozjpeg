@@ -237,7 +237,7 @@ slowlabel: \
     if (nb > 16) \
       s = 0; \
     else \
-      s = htbl->pub->huffval[(int)(s + htbl->valoffset[nb])]; \
+      s = htbl->pub->huffval[(int)(s + htbl->valoffset[nb]) & 0xFF]; \
   }
 
 /* Out-of-line case for Huffman code fetching */

@@ -97,9 +97,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     else
       restartEnv[11] = '0';
 
-    /* tjLoadImage() ignores 0-pixel images and images larger than 1 Megapixel
-       when FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is defined (yes, that's
-       a dirty hack), so we don't need to check the width and height here. */
+    /* tjLoadImage() refuses to load images larger than 1 Megapixel when
+       FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is defined (yes, that's a dirty
+       hack), so we don't need to check the width and height here. */
     if ((srcBuf = tjLoadImage(filename, &width, 1, &height, &pf,
                               flags)) == NULL)
       continue;

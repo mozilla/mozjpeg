@@ -2093,7 +2093,7 @@ DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
 
   src->input_file = file;
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-  /* Ignore images larger than 1 Megapixel when fuzzing. */
+  /* Refuse to load images larger than 1 Megapixel when fuzzing. */
   if (flags & TJFLAG_FUZZING)
     src->max_pixels = 1048576;
 #endif

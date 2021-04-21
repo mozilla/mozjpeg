@@ -45,6 +45,11 @@ a 16-bit binary PGM file into an RGB image buffer.
 generated when using the `tjLoadImage()` function to load a 16-bit binary PPM
 file into an extended RGB image buffer.
 
+9. Fixed an issue whereby, if a JPEG buffer was automatically re-allocated by
+one of the TurboJPEG compression or transform functions and an error
+subsequently occurred during compression or transformation, the JPEG buffer
+pointer passed by the application was not updated when the function returned.
+
 
 2.0.90 (2.1 beta1)
 ==================

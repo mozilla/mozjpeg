@@ -92,21 +92,37 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   if (!dstBufs[2])
     goto bailout;
 
-  tjTransform(handle, data, size, NUMXFORMS, dstBufs, dstSizes, transforms,
-              TJFLAG_LIMITSCANS | TJFLAG_NOREALLOC);
-
   maxBufSize = tjBufSize(width, height, jpegSubsamp);
 
-  /* Touch all of the output pixels in order to catch uninitialized reads
-     when using MemorySanitizer. */
-  for (t = 0; t < NUMXFORMS; t++) {
+  if (tjTransform(handle, data, size, NUMXFORMS, dstBufs, dstSizes, transforms,
+                  TJFLAG_LIMITSCANS | TJFLAG_NOREALLOC) == 0) {
+    /* Touch all of the output pixels in order to catch uninitialized reads
+       when using MemorySanitizer. */
+    for (t = 0; t < NUMXFORMS; t++) {
+      int sum = 0;
+
+      for (i = 0; i < dstSizes[t]; i++)
+        sum += dstBufs[t][i];
+
+      /* Prevent the code above from being optimized out.  This test should
+         never be true, but the compiler doesn't know that. */
+      if (sum > 255 * maxBufSize)
+        goto bailout;
+    }
+  }
+
+  transforms[0].options &= ~TJXOPT_COPYNONE;
+  free(dstBufs[0]);
+  dstBufs[0] = NULL;
+  dstSizes[0] = 0;
+
+  if (tjTransform(handle, data, size, 1, dstBufs, dstSizes, transforms,
+                  TJFLAG_LIMITSCANS) == 0) {
     int sum = 0;
 
-    for (i = 0; i < dstSizes[t]; i++)
-      sum += dstBufs[t][i];
+    for (i = 0; i < dstSizes[0]; i++)
+      sum += dstBufs[0][i];
 
-    /* Prevent the code above from being optimized out.  This test should never
-       be true, but the compiler doesn't know that. */
     if (sum > 255 * maxBufSize)
       goto bailout;
   }

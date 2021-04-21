@@ -720,7 +720,10 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
   jpeg_finish_compress(cinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) jpeg_abort_compress(cinfo);
+  if (cinfo->global_state > CSTATE_START) {
+    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+    jpeg_abort_compress(cinfo);
+  }
   free(row_pointer);
   if (this->jerr.warning) retval = -1;
   this->jerr.stopOnWarning = FALSE;
@@ -1088,7 +1091,10 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
   jpeg_finish_compress(cinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) jpeg_abort_compress(cinfo);
+  if (cinfo->global_state > CSTATE_START) {
+    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+    jpeg_abort_compress(cinfo);
+  }
   for (i = 0; i < MAX_COMPONENTS; i++) {
     free(tmpbuf[i]);
     free(inbuf[i]);
@@ -1886,7 +1892,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
 {
   jpeg_transform_info *xinfo = NULL;
   jvirt_barray_ptr *srccoefs, *dstcoefs;
-  int retval = 0, i, jpegSubsamp, saveMarkers = 0;
+  int retval = 0, alloc = 1, i, jpegSubsamp, saveMarkers = 0;
   struct my_progress_mgr progress;
 
   GET_INSTANCE(handle);
@@ -1974,7 +1980,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   srccoefs = jpeg_read_coefficients(dinfo);
 
   for (i = 0; i < n; i++) {
-    int w, h, alloc = 1;
+    int w, h;
 
     if (!xinfo[i].crop) {
       w = dinfo->image_width;  h = dinfo->image_height;
@@ -2032,7 +2038,10 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   jpeg_finish_decompress(dinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) jpeg_abort_compress(cinfo);
+  if (cinfo->global_state > CSTATE_START) {
+    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+    jpeg_abort_compress(cinfo);
+  }
   if (dinfo->global_state > DSTATE_START) jpeg_abort_decompress(dinfo);
   free(xinfo);
   if (this->jerr.warning) retval = -1;

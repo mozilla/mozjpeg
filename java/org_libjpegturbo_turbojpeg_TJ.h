@@ -79,6 +79,8 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_FLAG_STOPONWARNING 8192L
 #undef org_libjpegturbo_turbojpeg_TJ_FLAG_PROGRESSIVE
 #define org_libjpegturbo_turbojpeg_TJ_FLAG_PROGRESSIVE 16384L
+#undef org_libjpegturbo_turbojpeg_TJ_FLAG_LIMITSCANS
+#define org_libjpegturbo_turbojpeg_TJ_FLAG_LIMITSCANS 32768L
 #undef org_libjpegturbo_turbojpeg_TJ_NUMERR
 #define org_libjpegturbo_turbojpeg_TJ_NUMERR 2L
 #undef org_libjpegturbo_turbojpeg_TJ_ERR_WARNING

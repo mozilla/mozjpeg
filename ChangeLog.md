@@ -1,5 +1,5 @@
-2.1 post-beta
-=============
+2.1.0
+=====
 
 ### Significant changes relative to 2.1 beta1
 

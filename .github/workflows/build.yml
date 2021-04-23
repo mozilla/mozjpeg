@@ -1,6 +1,13 @@
 name: Build
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   linux:

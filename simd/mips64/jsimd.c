@@ -64,6 +64,10 @@ check_feature(char *buffer, char *feature)
 LOCAL(int)
 parse_proc_cpuinfo(int bufsize)
 {
+#ifdef NO_PROC_FOPEN
+  return 1;
+#endif
+
   char *buffer = (char *)malloc(bufsize);
   FILE *fd;
 

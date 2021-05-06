@@ -32,6 +32,10 @@ static THREAD_LOCAL unsigned int simd_support = ~0;
 LOCAL(void)
 parse_proc_cpuinfo(const char *search_string)
 {
+#ifdef NO_PROC_FOPEN
+  return;
+#endif
+
   const char *file_name = "/proc/cpuinfo";
   char cpuinfo_line[256];
   FILE *f = NULL;

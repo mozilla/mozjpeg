@@ -71,6 +71,10 @@ check_cpuinfo(char *buffer, const char *field, char *value)
 LOCAL(int)
 parse_proc_cpuinfo(int bufsize)
 {
+#ifdef NO_PROC_FOPEN
+  return 1;
+#endif
+
   char *buffer = (char *)malloc(bufsize);
   FILE *fd;
 

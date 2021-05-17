@@ -1,3 +1,12 @@
+2.1.1
+=====
+
+### Significant changes relative to 2.1.0
+
+1. Fixed a regression introduced in 2.1.0 that caused build failures with
+non-GCC-compatible compilers for Un*x/Arm platforms.
+
+
 2.1.0
 =====
 

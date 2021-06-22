@@ -58,8 +58,7 @@ Build Requirements
 
   If you don't already have Visual C++, then the easiest way to get it is by
   installing
-  [Visual Studio Community Edition](https://visualstudio.microsoft.com),
-  which includes everything necessary to build libjpeg-turbo.
+  [Visual Studio Community Edition](https://visualstudio.microsoft.com).
 
   * You can also download and install the standalone Windows SDK (for Windows 7
     or later), which includes command-line versions of the 32-bit and 64-bit
@@ -73,8 +72,27 @@ Build Requirements
     cannot be used with earlier versions of Visual C++, and vice versa.
   * The libjpeg API DLL (**jpeg{version}.dll**) will depend on the C run-time
     DLLs corresponding to the version of Visual C++ that was used to build it.
+    
+- Vcpkg
+  
+  You need to download and install libpng using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+
+      git clone https://github.com/Microsoft/vcpkg.git
+      cd vcpkg
+      ./bootstrap-vcpkg.sh
+      ./vcpkg integrate install
+      vcpkg install libpng:x64-windows
+      vcpkg install libpng:x64-windows-static
+      
+  Actually, you can just download and install MozJPEG using vcpkg dependency manager:
+      
+      vcpkg install mozjpeg
+  
+  The mozjpeg port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
 
    ... OR ...
+
 
 - MinGW
 
@@ -88,18 +106,6 @@ Build Requirements
   <http://www.oracle.com/technetwork/java/javase/downloads>.
 
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.
-
-- Vcpkg
-  
-  You can download and install mozjpeg using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
-
-      git clone https://github.com/Microsoft/vcpkg.git
-      cd vcpkg
-      ./bootstrap-vcpkg.sh
-      ./vcpkg integrate install
-      vcpkg install mozjpeg
-  
-  The mozjpeg port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
 
 
 Out-of-Tree Builds

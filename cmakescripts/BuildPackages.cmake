@@ -27,7 +27,7 @@ elseif(CPU_TYPE STREQUAL "arm64")
 elseif(CPU_TYPE STREQUAL "arm")
   check_c_source_compiles("
     #if __ARM_PCS_VFP != 1
-    #error \"float ABI = softfp\"
+    #error \"float ABI != hard\"
     #endif
     int main(void) { return 0; }" HAVE_HARD_FLOAT)
   if(HAVE_HARD_FLOAT)

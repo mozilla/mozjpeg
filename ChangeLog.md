@@ -6,6 +6,10 @@
 1. Fixed a regression introduced in 2.1.0 that caused build failures with
 non-GCC-compatible compilers for Un*x/Arm platforms.
 
+2. Fixed a regression introduced by 2.1 beta1[13] that prevented the Arm 32-bit
+(AArch32) Neon SIMD extensions from building unless the C compiler flags
+included `-mfloat-abi=softfp` or `-mfloat-abi=hard`.
+
 
 2.1.0
 =====

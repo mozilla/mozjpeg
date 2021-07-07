@@ -213,9 +213,37 @@ endif()
 
 elseif(CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm")
 
+# If Neon instructions are not explicitly enabled at compile time (e.g. using
+# -mfpu=neon) with an AArch32 Linux or Android build, then the AArch32 SIMD
+# dispatcher will parse /proc/cpuinfo to determine whether the Neon SIMD
+# extensions can be enabled at run time.  In order to support all AArch32 CPUs
+# using the same code base, i.e. to support run-time FPU and Neon
+# auto-detection, it is necessary to compile the scalar C source code using
+# -mfloat-abi=soft (which is usually the default) but compile the intrinsics
+# implementation of the Neon SIMD extensions using -mfloat-abi=softfp.  The
+# following test determines whether -mfloat-abi=softfp should be explicitly
+# added to the compile flags for the intrinsics implementation of the Neon SIMD
+# extensions.
+if(BITS EQUAL 32)
+  check_c_source_compiles("
+    #if defined(__ARM_NEON__) || (!defined(__linux__) && !defined(ANDROID) && !defined(__ANDROID__))
+    #error \"Neon run-time auto-detection will not be used\"
+    #endif
+    #if __ARM_PCS_VFP == 1
+    #error \"float ABI = hard\"
+    #endif
+    #if __SOFTFP__ != 1
+    #error \"float ABI = softfp\"
+    #endif
+    int main(void) { return 0; }" NEED_SOFTFP_FOR_INTRINSICS)
+  if(NEED_SOFTFP_FOR_INTRINSICS)
+    set(SOFTFP_FLAG -mfloat-abi=softfp)
+  endif()
+endif()
+
 include(CheckSymbolExists)
 if(BITS EQUAL 32)
-  set(CMAKE_REQUIRED_FLAGS -mfpu=neon)
+  set(CMAKE_REQUIRED_FLAGS "-mfpu=neon ${SOFTFP_FLAG}")
 endif()
 check_symbol_exists(vld1_s16_x3 arm_neon.h HAVE_VLD1_S16_X3)
 check_symbol_exists(vld1_u16_x2 arm_neon.h HAVE_VLD1_U16_X2)
@@ -263,7 +291,7 @@ if(NEON_INTRINSICS OR BITS EQUAL 32)
     arm/jdcolor-neon.c arm/jfdctint-neon.c)
 endif()
 if(BITS EQUAL 32)
-  set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS -mfpu=neon)
+  set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS "-mfpu=neon ${SOFTFP_FLAG}")
 endif()
 if(NOT NEON_INTRINSICS)
   enable_language(ASM)

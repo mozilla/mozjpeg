@@ -21,6 +21,12 @@
 %endif
 %endif
 
+%if "%{_bits}" == "64"
+%define _syslibdir /usr/lib64
+%else
+%define _syslibdir /usr/lib
+%endif
+
 #-->%if 1
 %if "%{_bits}" == "64"
 %define _libdir  %{_exec_prefix}/lib64
@@ -173,7 +179,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %{_bindir}/rdjpgcom
 %{_bindir}/wrjpgcom
+%if "%{_libdir}" != "%{_syslibdir}"
 %dir %{_libdir}
+%endif
 %if "%{_enable_shared}" == "1"
 	%{_libdir}/libjpeg.so.@SO_MAJOR_VERSION@.@SO_AGE@.@SO_MINOR_VERSION@
 	%{_libdir}/libjpeg.so.@SO_MAJOR_VERSION@

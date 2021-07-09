@@ -10,6 +10,11 @@ non-GCC-compatible compilers for Un*x/Arm platforms.
 (AArch32) Neon SIMD extensions from building unless the C compiler flags
 included `-mfloat-abi=softfp` or `-mfloat-abi=hard`.
 
+3. Fixed an issue in the AArch32 Neon SIMD Huffman encoder whereby reliance on
+undefined C compiler behavior led to crashes ("SIGBUS: illegal alignment") on
+Android systems when running AArch32/Thumb builds of libjpeg-turbo built with
+recent versions of Clang.
+
 
 2.1.0
 =====

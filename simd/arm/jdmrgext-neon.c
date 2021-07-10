@@ -226,35 +226,49 @@ void jsimd_h2v1_merged_upsample_neon(JDIMENSION output_width,
     switch (cols_remaining) {
     case 15:
       vst4_lane_u8(outptr + 14 * RGB_PIXELSIZE, rgba_h, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 14:
       vst4_lane_u8(outptr + 13 * RGB_PIXELSIZE, rgba_h, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 13:
       vst4_lane_u8(outptr + 12 * RGB_PIXELSIZE, rgba_h, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 12:
       vst4_lane_u8(outptr + 11 * RGB_PIXELSIZE, rgba_h, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 11:
       vst4_lane_u8(outptr + 10 * RGB_PIXELSIZE, rgba_h, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 10:
       vst4_lane_u8(outptr + 9 * RGB_PIXELSIZE, rgba_h, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 9:
       vst4_lane_u8(outptr + 8 * RGB_PIXELSIZE, rgba_h, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 8:
       vst4_u8(outptr, rgba_l);
       break;
     case 7:
       vst4_lane_u8(outptr + 6 * RGB_PIXELSIZE, rgba_l, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 6:
       vst4_lane_u8(outptr + 5 * RGB_PIXELSIZE, rgba_l, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 5:
       vst4_lane_u8(outptr + 4 * RGB_PIXELSIZE, rgba_l, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 4:
       vst4_lane_u8(outptr + 3 * RGB_PIXELSIZE, rgba_l, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 3:
       vst4_lane_u8(outptr + 2 * RGB_PIXELSIZE, rgba_l, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 2:
       vst4_lane_u8(outptr + RGB_PIXELSIZE, rgba_l, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 1:
       vst4_lane_u8(outptr, rgba_l, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }
@@ -271,35 +285,49 @@ void jsimd_h2v1_merged_upsample_neon(JDIMENSION output_width,
     switch (cols_remaining) {
     case 15:
       vst3_lane_u8(outptr + 14 * RGB_PIXELSIZE, rgb_h, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 14:
       vst3_lane_u8(outptr + 13 * RGB_PIXELSIZE, rgb_h, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 13:
       vst3_lane_u8(outptr + 12 * RGB_PIXELSIZE, rgb_h, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 12:
       vst3_lane_u8(outptr + 11 * RGB_PIXELSIZE, rgb_h, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 11:
       vst3_lane_u8(outptr + 10 * RGB_PIXELSIZE, rgb_h, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 10:
       vst3_lane_u8(outptr + 9 * RGB_PIXELSIZE, rgb_h, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 9:
       vst3_lane_u8(outptr + 8 * RGB_PIXELSIZE, rgb_h, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 8:
       vst3_u8(outptr, rgb_l);
       break;
     case 7:
       vst3_lane_u8(outptr + 6 * RGB_PIXELSIZE, rgb_l, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 6:
       vst3_lane_u8(outptr + 5 * RGB_PIXELSIZE, rgb_l, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 5:
       vst3_lane_u8(outptr + 4 * RGB_PIXELSIZE, rgb_l, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 4:
       vst3_lane_u8(outptr + 3 * RGB_PIXELSIZE, rgb_l, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 3:
       vst3_lane_u8(outptr + 2 * RGB_PIXELSIZE, rgb_l, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 2:
       vst3_lane_u8(outptr + RGB_PIXELSIZE, rgb_l, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 1:
       vst3_lane_u8(outptr, rgb_l, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }
@@ -549,24 +577,31 @@ void jsimd_h2v2_merged_upsample_neon(JDIMENSION output_width,
     case 15:
       vst4_lane_u8(outptr0 + 14 * RGB_PIXELSIZE, rgba0_h, 6);
       vst4_lane_u8(outptr1 + 14 * RGB_PIXELSIZE, rgba1_h, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 14:
       vst4_lane_u8(outptr0 + 13 * RGB_PIXELSIZE, rgba0_h, 5);
       vst4_lane_u8(outptr1 + 13 * RGB_PIXELSIZE, rgba1_h, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 13:
       vst4_lane_u8(outptr0 + 12 * RGB_PIXELSIZE, rgba0_h, 4);
       vst4_lane_u8(outptr1 + 12 * RGB_PIXELSIZE, rgba1_h, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 12:
       vst4_lane_u8(outptr0 + 11 * RGB_PIXELSIZE, rgba0_h, 3);
       vst4_lane_u8(outptr1 + 11 * RGB_PIXELSIZE, rgba1_h, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 11:
       vst4_lane_u8(outptr0 + 10 * RGB_PIXELSIZE, rgba0_h, 2);
       vst4_lane_u8(outptr1 + 10 * RGB_PIXELSIZE, rgba1_h, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 10:
       vst4_lane_u8(outptr0 + 9 * RGB_PIXELSIZE, rgba0_h, 1);
       vst4_lane_u8(outptr1 + 9 * RGB_PIXELSIZE, rgba1_h, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 9:
       vst4_lane_u8(outptr0 + 8 * RGB_PIXELSIZE, rgba0_h, 0);
       vst4_lane_u8(outptr1 + 8 * RGB_PIXELSIZE, rgba1_h, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 8:
       vst4_u8(outptr0, rgba0_l);
       vst4_u8(outptr1, rgba1_l);
@@ -574,24 +609,31 @@ void jsimd_h2v2_merged_upsample_neon(JDIMENSION output_width,
     case 7:
       vst4_lane_u8(outptr0 + 6 * RGB_PIXELSIZE, rgba0_l, 6);
       vst4_lane_u8(outptr1 + 6 * RGB_PIXELSIZE, rgba1_l, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 6:
       vst4_lane_u8(outptr0 + 5 * RGB_PIXELSIZE, rgba0_l, 5);
       vst4_lane_u8(outptr1 + 5 * RGB_PIXELSIZE, rgba1_l, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 5:
       vst4_lane_u8(outptr0 + 4 * RGB_PIXELSIZE, rgba0_l, 4);
       vst4_lane_u8(outptr1 + 4 * RGB_PIXELSIZE, rgba1_l, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 4:
       vst4_lane_u8(outptr0 + 3 * RGB_PIXELSIZE, rgba0_l, 3);
       vst4_lane_u8(outptr1 + 3 * RGB_PIXELSIZE, rgba1_l, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 3:
       vst4_lane_u8(outptr0 + 2 * RGB_PIXELSIZE, rgba0_l, 2);
       vst4_lane_u8(outptr1 + 2 * RGB_PIXELSIZE, rgba1_l, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 2:
       vst4_lane_u8(outptr0 + 1 * RGB_PIXELSIZE, rgba0_l, 1);
       vst4_lane_u8(outptr1 + 1 * RGB_PIXELSIZE, rgba1_l, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 1:
       vst4_lane_u8(outptr0, rgba0_l, 0);
       vst4_lane_u8(outptr1, rgba1_l, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }
@@ -616,24 +658,31 @@ void jsimd_h2v2_merged_upsample_neon(JDIMENSION output_width,
     case 15:
       vst3_lane_u8(outptr0 + 14 * RGB_PIXELSIZE, rgb0_h, 6);
       vst3_lane_u8(outptr1 + 14 * RGB_PIXELSIZE, rgb1_h, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 14:
       vst3_lane_u8(outptr0 + 13 * RGB_PIXELSIZE, rgb0_h, 5);
       vst3_lane_u8(outptr1 + 13 * RGB_PIXELSIZE, rgb1_h, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 13:
       vst3_lane_u8(outptr0 + 12 * RGB_PIXELSIZE, rgb0_h, 4);
       vst3_lane_u8(outptr1 + 12 * RGB_PIXELSIZE, rgb1_h, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 12:
       vst3_lane_u8(outptr0 + 11 * RGB_PIXELSIZE, rgb0_h, 3);
       vst3_lane_u8(outptr1 + 11 * RGB_PIXELSIZE, rgb1_h, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 11:
       vst3_lane_u8(outptr0 + 10 * RGB_PIXELSIZE, rgb0_h, 2);
       vst3_lane_u8(outptr1 + 10 * RGB_PIXELSIZE, rgb1_h, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 10:
       vst3_lane_u8(outptr0 + 9 * RGB_PIXELSIZE, rgb0_h, 1);
       vst3_lane_u8(outptr1 + 9 * RGB_PIXELSIZE, rgb1_h, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 9:
       vst3_lane_u8(outptr0 + 8 * RGB_PIXELSIZE, rgb0_h, 0);
       vst3_lane_u8(outptr1 + 8 * RGB_PIXELSIZE, rgb1_h, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 8:
       vst3_u8(outptr0, rgb0_l);
       vst3_u8(outptr1, rgb1_l);
@@ -641,24 +690,31 @@ void jsimd_h2v2_merged_upsample_neon(JDIMENSION output_width,
     case 7:
       vst3_lane_u8(outptr0 + 6 * RGB_PIXELSIZE, rgb0_l, 6);
       vst3_lane_u8(outptr1 + 6 * RGB_PIXELSIZE, rgb1_l, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 6:
       vst3_lane_u8(outptr0 + 5 * RGB_PIXELSIZE, rgb0_l, 5);
       vst3_lane_u8(outptr1 + 5 * RGB_PIXELSIZE, rgb1_l, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 5:
       vst3_lane_u8(outptr0 + 4 * RGB_PIXELSIZE, rgb0_l, 4);
       vst3_lane_u8(outptr1 + 4 * RGB_PIXELSIZE, rgb1_l, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 4:
       vst3_lane_u8(outptr0 + 3 * RGB_PIXELSIZE, rgb0_l, 3);
       vst3_lane_u8(outptr1 + 3 * RGB_PIXELSIZE, rgb1_l, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 3:
       vst3_lane_u8(outptr0 + 2 * RGB_PIXELSIZE, rgb0_l, 2);
       vst3_lane_u8(outptr1 + 2 * RGB_PIXELSIZE, rgb1_l, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 2:
       vst3_lane_u8(outptr0 + 1 * RGB_PIXELSIZE, rgb0_l, 1);
       vst3_lane_u8(outptr1 + 1 * RGB_PIXELSIZE, rgb1_l, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 1:
       vst3_lane_u8(outptr0, rgb0_l, 0);
       vst3_lane_u8(outptr1, rgb1_l, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }

@@ -21,6 +21,7 @@
  */
 
 #define JPEG_INTERNALS
+#include "jconfigint.h"
 #include "../../jinclude.h"
 #include "../../jpeglib.h"
 #include "../../jsimd.h"
@@ -105,18 +106,25 @@ void jsimd_encode_mcu_AC_first_prepare_neon
     switch (remaining_coefs) {
     case 15:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[14], coefs2, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 14:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[13], coefs2, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 13:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[12], coefs2, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 12:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[11], coefs2, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 11:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[10], coefs2, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 10:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[9], coefs2, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 9:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[8], coefs2, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }
@@ -149,20 +157,28 @@ void jsimd_encode_mcu_AC_first_prepare_neon
     switch (remaining_coefs) {
     case 8:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[7], coefs, 7);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 7:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[6], coefs, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 6:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[5], coefs, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 5:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[4], coefs, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 4:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[3], coefs, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 3:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[2], coefs, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 2:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[1], coefs, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 1:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[0], coefs, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }
@@ -337,18 +353,25 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
     switch (remaining_coefs) {
     case 15:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[14], coefs2, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 14:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[13], coefs2, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 13:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[12], coefs2, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 12:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[11], coefs2, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 11:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[10], coefs2, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 10:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[9], coefs2, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 9:
       coefs2 = vld1q_lane_s16(block + jpeg_natural_order_start[8], coefs2, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }
@@ -389,20 +412,28 @@ int jsimd_encode_mcu_AC_refine_prepare_neon
     switch (remaining_coefs) {
     case 8:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[7], coefs, 7);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 7:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[6], coefs, 6);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 6:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[5], coefs, 5);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 5:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[4], coefs, 4);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 4:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[3], coefs, 3);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 3:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[2], coefs, 2);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 2:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[1], coefs, 1);
+      FALLTHROUGH               /*FALLTHROUGH*/
     case 1:
       coefs = vld1q_lane_s16(block + jpeg_natural_order_start[0], coefs, 0);
+      FALLTHROUGH               /*FALLTHROUGH*/
     default:
       break;
     }

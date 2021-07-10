@@ -21,6 +21,7 @@
  */
 
 #define JPEG_INTERNALS
+#include "jconfigint.h"
 #include "../../jinclude.h"
 #include "../../jpeglib.h"
 #include "../../jsimd.h"

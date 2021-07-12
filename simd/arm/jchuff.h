@@ -85,7 +85,7 @@ typedef struct {
 #else
 #define SPLAT() { \
   put_buffer = __builtin_bswap32(put_buffer); \
-  __asm__("str %1, [%0], #4" : "=r" (buffer) : "r" (put_buffer)); \
+  __asm__("str %1, [%0], #4" : "+r" (buffer) : "r" (put_buffer)); \
 }
 #endif
 

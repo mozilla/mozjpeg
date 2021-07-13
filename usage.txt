@@ -601,6 +601,9 @@ markers, such as comment blocks:
         -copy comments  Copy only comment markers.  This setting copies
                         comments from the source file but discards any other
                         metadata.
+        -copy icc       Copy only ICC profile markers.  This setting copies the
+                        ICC profile from the source file but discards any other
+                        metadata.
         -copy all       Copy all extra markers.  This setting preserves
                         miscellaneous markers found in the source file, such
                         as JFIF thumbnails, Exif data, and Photoshop settings.

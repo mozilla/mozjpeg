@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, D. R. Commander.
+ * Copyright (C) 2017, 2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -213,10 +213,11 @@ EXTERN(boolean) jtransform_perfect_transform(JDIMENSION image_width,
  */
 
 typedef enum {
-  JCOPYOPT_NONE,          /* copy no optional markers */
-  JCOPYOPT_COMMENTS,      /* copy only comment (COM) markers */
-  JCOPYOPT_ALL,           /* copy all optional markers */
-  JCOPYOPT_ALL_EXCEPT_ICC /* copy all optional markers except APP2 */
+  JCOPYOPT_NONE,           /* copy no optional markers */
+  JCOPYOPT_COMMENTS,       /* copy only comment (COM) markers */
+  JCOPYOPT_ALL,            /* copy all optional markers */
+  JCOPYOPT_ALL_EXCEPT_ICC, /* copy all optional markers except APP2 */
+  JCOPYOPT_ICC             /* copy only ICC profile (APP2) markers */
 } JCOPY_OPTION;
 
 #define JCOPYOPT_DEFAULT  JCOPYOPT_COMMENTS     /* recommended default */

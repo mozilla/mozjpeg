@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2014, 2017, 2019-2020, D. R. Commander.
+ * Copyright (C) 2010, 2014, 2017, 2019-2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -64,6 +64,7 @@ usage(void)
   fprintf(stderr, "Switches (names may be abbreviated):\n");
   fprintf(stderr, "  -copy none     Copy no extra markers from source file\n");
   fprintf(stderr, "  -copy comments Copy only comment markers (default)\n");
+  fprintf(stderr, "  -copy icc      Copy only ICC profile markers\n");
   fprintf(stderr, "  -copy all      Copy all extra markers\n");
 #ifdef ENTROPY_OPT_SUPPORTED
   fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
@@ -196,6 +197,8 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
         copyoption = JCOPYOPT_NONE;
       } else if (keymatch(argv[argn], "comments", 1)) {
         copyoption = JCOPYOPT_COMMENTS;
+      } else if (keymatch(argv[argn], "icc", 1)) {
+        copyoption = JCOPYOPT_ICC;
       } else if (keymatch(argv[argn], "all", 1)) {
         copyoption = JCOPYOPT_ALL;
       } else
@@ -570,6 +573,8 @@ main(int argc, char **argv)
     fclose(icc_file);
     if (copyoption == JCOPYOPT_ALL)
       copyoption = JCOPYOPT_ALL_EXCEPT_ICC;
+    if (copyoption == JCOPYOPT_ICC)
+      copyoption = JCOPYOPT_NONE;
   }
 
   if (report) {

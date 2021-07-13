@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2017, D. R. Commander.
+ * Copyright (C) 2010, 2017, 2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -2310,7 +2310,7 @@ jcopy_markers_setup(j_decompress_ptr srcinfo, JCOPY_OPTION option)
   int m;
 
   /* Save comments except under NONE option */
-  if (option != JCOPYOPT_NONE) {
+  if (option != JCOPYOPT_NONE && option != JCOPYOPT_ICC) {
     jpeg_save_markers(srcinfo, JPEG_COM, 0xFFFF);
   }
   /* Save all types of APPn markers iff ALL option */
@@ -2320,6 +2320,10 @@ jcopy_markers_setup(j_decompress_ptr srcinfo, JCOPY_OPTION option)
         continue;
       jpeg_save_markers(srcinfo, JPEG_APP0 + m, 0xFFFF);
     }
+  }
+  /* Save only APP2 markers if ICC option selected */
+  if (option == JCOPYOPT_ICC) {
+    jpeg_save_markers(srcinfo, JPEG_APP0 + 2, 0xFFFF);
   }
 #endif /* SAVE_MARKERS_SUPPORTED */
 }

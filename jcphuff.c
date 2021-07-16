@@ -7,6 +7,7 @@
  * Copyright (C) 2011, 2015, 2018, 2021, D. R. Commander.
  * Copyright (C) 2016, 2018, Matthieu Darbois.
  * Copyright (C) 2020, Arm Limited.
+ * Copyright (C) 2021, Alex Richardson.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -680,7 +681,7 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       emit_restart(entropy, entropy->next_restart_num);
 
 #ifdef WITH_SIMD
-  cvalue = values = (JCOEF *)PAD((size_t)values_unaligned, 16);
+  cvalue = values = (JCOEF *)PAD((JUINTPTR)values_unaligned, 16);
 #else
   /* Not using SIMD, so alignment is not needed */
   cvalue = values = values_unaligned;
@@ -945,7 +946,7 @@ encode_mcu_AC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       emit_restart(entropy, entropy->next_restart_num);
 
 #ifdef WITH_SIMD
-  cabsvalue = absvalues = (JCOEF *)PAD((size_t)absvalues_unaligned, 16);
+  cabsvalue = absvalues = (JCOEF *)PAD((JUINTPTR)absvalues_unaligned, 16);
 #else
   /* Not using SIMD, so alignment is not needed */
   cabsvalue = absvalues = absvalues_unaligned;

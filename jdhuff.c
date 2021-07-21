@@ -540,6 +540,12 @@ process_restart(j_decompress_ptr cinfo)
 }
 
 
+#if defined(__has_feature)
+#if __has_feature(undefined_behavior_sanitizer)
+__attribute__((no_sanitize("signed-integer-overflow"),
+               no_sanitize("unsigned-integer-overflow")))
+#endif
+#endif
 LOCAL(boolean)
 decode_mcu_slow(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
@@ -572,11 +578,15 @@ decode_mcu_slow(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
     if (entropy->dc_needed[blkn]) {
       /* Convert DC difference to actual value, update last_dc_val */
       int ci = cinfo->MCU_membership[blkn];
-      /* This is really just
-       *   s += state.last_dc_val[ci];
-       * It is written this way in order to shut up UBSan.
+      /* Certain malformed JPEG images produce repeated DC coefficient
+       * differences of 2047 or -2047, which causes state.last_dc_val[ci] to
+       * grow until it overflows or underflows a 32-bit signed integer.  This
+       * behavior is, to the best of our understanding, innocuous, and it is
+       * unclear how to work around it without potentially affecting
+       * performance.  Thus, we (hopefully temporarily) suppress UBSan integer
+       * overflow errors for this function.
        */
-      s = (int)((unsigned int)s + (unsigned int)state.last_dc_val[ci]);
+      s += state.last_dc_val[ci];
       state.last_dc_val[ci] = s;
       if (block) {
         /* Output the DC coefficient (assumes jpeg_natural_order[0] = 0) */
@@ -671,7 +681,7 @@ decode_mcu_fast(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 
     if (entropy->dc_needed[blkn]) {
       int ci = cinfo->MCU_membership[blkn];
-      s = (int)((unsigned int)s + (unsigned int)state.last_dc_val[ci]);
+      s += state.last_dc_val[ci];
       state.last_dc_val[ci] = s;
       if (block)
         (*block)[0] = (JCOEF)s;
@@ -778,7 +788,8 @@ use_slow:
   }
 
   /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
+  if (cinfo->restart_interval)
+    entropy->restarts_to_go--;
 
   return TRUE;
 }

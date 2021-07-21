@@ -1,5 +1,5 @@
-2.1 post-beta
-=============
+2.1.0
+=====
 
 ### Significant changes relative to 2.1 beta1
 
@@ -15,9 +15,40 @@ block smoothing algorithm to read from uninitialized memory.
 encoders to generate incorrect results when using the Clang compiler with
 Visual Studio.
 
-4. Fixed a floating point exception that occurred when attempting to compress a
-specially-crafted malformed GIF image with a specified image width of 0 using
-cjpeg.
+4. Fixed a floating point exception (CVE-2021-20205) that occurred when
+attempting to compress a specially-crafted malformed GIF image with a specified
+image width of 0 using cjpeg.
+
+5. Fixed a regression introduced by 2.0 beta1[15] whereby attempting to
+generate a progressive JPEG image on an SSE2-capable CPU using a scan script
+containing one or more scans with lengths divisible by 32 and non-zero
+successive approximation low bit positions would, under certain circumstances,
+result in an error ("Missing Huffman code table entry") and an invalid JPEG
+image.
+
+6. Introduced a new flag (`TJFLAG_LIMITSCANS` in the TurboJPEG C API and
+`TJ.FLAG_LIMIT_SCANS` in the TurboJPEG Java API) and a corresponding TJBench
+command-line argument (`-limitscans`) that causes the TurboJPEG decompression
+and transform functions/operations to return/throw an error if a progressive
+JPEG image contains an unreasonably large number of scans.  This allows
+applications that use the TurboJPEG API to guard against an exploit of the
+progressive JPEG format described in the report
+["Two Issues with the JPEG Standard"](https://libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf).
+
+7. The PPM reader now throws an error, rather than segfaulting (due to a buffer
+overrun) or generating incorrect pixels, if an application attempts to use the
+`tjLoadImage()` function to load a 16-bit binary PPM file (a binary PPM file
+with a maximum value greater than 255) into a grayscale image buffer or to load
+a 16-bit binary PGM file into an RGB image buffer.
+
+8. Fixed an issue in the PPM reader that caused incorrect pixels to be
+generated when using the `tjLoadImage()` function to load a 16-bit binary PPM
+file into an extended RGB image buffer.
+
+9. Fixed an issue whereby, if a JPEG buffer was automatically re-allocated by
+one of the TurboJPEG compression or transform functions and an error
+subsequently occurred during compression or transformation, the JPEG buffer
+pointer passed by the application was not updated when the function returned.
 
 
 2.0.90 (2.1 beta1)

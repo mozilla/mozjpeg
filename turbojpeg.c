@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2020 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2021 D. R. Commander.  All Rights Reserved.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  *
@@ -114,6 +114,32 @@ typedef struct _tjinstance {
   boolean isInstanceError;
 } tjinstance;
 
+struct my_progress_mgr {
+  struct jpeg_progress_mgr pub;
+  tjinstance *this;
+};
+typedef struct my_progress_mgr *my_progress_ptr;
+
+static void my_progress_monitor(j_common_ptr dinfo)
+{
+  my_error_ptr myerr = (my_error_ptr)dinfo->err;
+  my_progress_ptr myprog = (my_progress_ptr)dinfo->progress;
+
+  if (dinfo->is_decompressor) {
+    int scan_no = ((j_decompress_ptr)dinfo)->input_scan_number;
+
+    if (scan_no > 500) {
+      snprintf(myprog->this->errStr, JMSG_LENGTH_MAX,
+               "Progressive JPEG image has more than 500 scans");
+      snprintf(errStr, JMSG_LENGTH_MAX,
+               "Progressive JPEG image has more than 500 scans");
+      myprog->this->isInstanceError = TRUE;
+      myerr->warning = FALSE;
+      longjmp(myerr->setjmp_buffer, 1);
+    }
+  }
+}
+
 static const int pixelsize[TJ_NUMSAMP] = { 3, 3, 3, 1, 3, 3 };
 
 static const JXFORM_CODE xformtypes[TJ_NUMXOP] = {
@@ -179,6 +205,11 @@ static int cs2pf[JPEG_NUMCS] = {
   snprintf(this->errStr, JMSG_LENGTH_MAX, "%s", m); \
   this->isInstanceError = TRUE;  THROWG(m) \
 }
+
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+/* Private flag that triggers different TurboJPEG API behavior when fuzzing */
+#define TJFLAG_FUZZING  (1 << 30)
+#endif
 
 #define GET_INSTANCE(handle) \
   tjinstance *this = (tjinstance *)handle; \
@@ -386,8 +417,8 @@ static int getSubsamp(j_decompress_ptr dinfo)
             retval = i;  break;
           }
         }
+      }
     }
-  }
   }
   return retval;
 }
@@ -707,7 +738,10 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
   jpeg_finish_compress(cinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) jpeg_abort_compress(cinfo);
+  if (cinfo->global_state > CSTATE_START) {
+    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+    jpeg_abort_compress(cinfo);
+  }
   free(row_pointer);
   if (this->jerr.warning) retval = -1;
   this->jerr.stopOnWarning = FALSE;
@@ -1075,7 +1109,10 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
   jpeg_finish_compress(cinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) jpeg_abort_compress(cinfo);
+  if (cinfo->global_state > CSTATE_START) {
+    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+    jpeg_abort_compress(cinfo);
+  }
   for (i = 0; i < MAX_COMPONENTS; i++) {
     free(tmpbuf[i]);
     free(inbuf[i]);
@@ -1263,6 +1300,7 @@ DLLEXPORT int tjDecompress2(tjhandle handle, const unsigned char *jpegBuf,
 {
   JSAMPROW *row_pointer = NULL;
   int i, retval = 0, jpegwidth, jpegheight, scaledw, scaledh;
+  struct my_progress_mgr progress;
 
   GET_DINSTANCE(handle);
   this->jerr.stopOnWarning = (flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -1278,6 +1316,14 @@ DLLEXPORT int tjDecompress2(tjhandle handle, const unsigned char *jpegBuf,
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
+
+  if (flags & TJFLAG_LIMITSCANS) {
+    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    progress.pub.progress_monitor = my_progress_monitor;
+    progress.this = this;
+    dinfo->progress = &progress.pub;
+  } else
+    dinfo->progress = NULL;
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1597,6 +1643,7 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
   JSAMPLE *_tmpbuf = NULL, *ptr;
   JSAMPROW *outbuf[MAX_COMPONENTS], *tmpbuf[MAX_COMPONENTS];
   int dctsize;
+  struct my_progress_mgr progress;
 
   GET_DINSTANCE(handle);
   this->jerr.stopOnWarning = (flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -1617,6 +1664,14 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
+
+  if (flags & TJFLAG_LIMITSCANS) {
+    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    progress.pub.progress_monitor = my_progress_monitor;
+    progress.this = this;
+    dinfo->progress = &progress.pub;
+  } else
+    dinfo->progress = NULL;
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1855,7 +1910,8 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
 {
   jpeg_transform_info *xinfo = NULL;
   jvirt_barray_ptr *srccoefs, *dstcoefs;
-  int retval = 0, i, jpegSubsamp, saveMarkers = 0;
+  int retval = 0, alloc = 1, i, jpegSubsamp, saveMarkers = 0;
+  struct my_progress_mgr progress;
 
   GET_INSTANCE(handle);
   this->jerr.stopOnWarning = (flags & TJFLAG_STOPONWARNING) ? TRUE : FALSE;
@@ -1871,6 +1927,14 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   else if (flags & TJFLAG_FORCESSE) putenv("JSIMD_FORCESSE=1");
   else if (flags & TJFLAG_FORCESSE2) putenv("JSIMD_FORCESSE2=1");
 #endif
+
+  if (flags & TJFLAG_LIMITSCANS) {
+    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    progress.pub.progress_monitor = my_progress_monitor;
+    progress.this = this;
+    dinfo->progress = &progress.pub;
+  } else
+    dinfo->progress = NULL;
 
   if ((xinfo =
        (jpeg_transform_info *)malloc(sizeof(jpeg_transform_info) * n)) == NULL)
@@ -1934,7 +1998,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   srccoefs = jpeg_read_coefficients(dinfo);
 
   for (i = 0; i < n; i++) {
-    int w, h, alloc = 1;
+    int w, h;
 
     if (!xinfo[i].crop) {
       w = dinfo->image_width;  h = dinfo->image_height;
@@ -1992,7 +2056,10 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   jpeg_finish_decompress(dinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) jpeg_abort_compress(cinfo);
+  if (cinfo->global_state > CSTATE_START) {
+    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+    jpeg_abort_compress(cinfo);
+  }
   if (dinfo->global_state > DSTATE_START) jpeg_abort_decompress(dinfo);
   free(xinfo);
   if (this->jerr.warning) retval = -1;
@@ -2052,6 +2119,11 @@ DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
     THROWG("tjLoadImage(): Unsupported file type");
 
   src->input_file = file;
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  /* Refuse to load images larger than 1 Megapixel when fuzzing. */
+  if (flags & TJFLAG_FUZZING)
+    src->max_pixels = 1048576;
+#endif
   (*src->start_input) (cinfo, src);
   (*cinfo->mem->realize_virt_arrays) ((j_common_ptr)cinfo);
 

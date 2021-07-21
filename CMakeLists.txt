@@ -5,7 +5,7 @@ if(CMAKE_EXECUTABLE_SUFFIX)
 endif()
 
 project(mozjpeg C)
-set(VERSION 4.0.4)
+set(VERSION 4.1.0)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -62,14 +62,14 @@ if(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "x86_64" OR
     set(CMAKE_SYSTEM_PROCESSOR ${CPU_TYPE})
   endif()
 elseif(CMAKE_SYSTEM_PROCESSOR_LC STREQUAL "aarch64" OR
-  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "arm*")
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "^arm")
   if(BITS EQUAL 64)
     set(CPU_TYPE arm64)
   else()
     set(CPU_TYPE arm)
   endif()
-elseif(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "ppc*" OR
-  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "powerpc*")
+elseif(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "^ppc" OR
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "^powerpc")
   set(CPU_TYPE powerpc)
 else()
   set(CPU_TYPE ${CMAKE_SYSTEM_PROCESSOR_LC})
@@ -104,7 +104,7 @@ if(WIN32)
   endif()
 else()
   if(NOT CMAKE_INSTALL_DEFAULT_PREFIX)
-  set(CMAKE_INSTALL_DEFAULT_PREFIX /opt/${CMAKE_PROJECT_NAME})
+    set(CMAKE_INSTALL_DEFAULT_PREFIX /opt/${CMAKE_PROJECT_NAME})
   endif()
 endif()
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -194,6 +194,7 @@ option(WITH_SIMD "Include SIMD extensions, if available for this platform" TRUE)
 boolean_number(WITH_SIMD)
 option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" TRUE)
 boolean_number(WITH_TURBOJPEG)
+option(WITH_FUZZ "Build fuzz targets" FALSE)
 
 macro(report_option var desc)
   if(${var})
@@ -752,6 +753,10 @@ add_executable(wrjpgcom wrjpgcom.c)
 # TESTS
 ###############################################################################
 
+if(WITH_FUZZ)
+  add_subdirectory(fuzz)
+endif()
+
 add_subdirectory(md5)
 
 if(MSVC_IDE OR XCODE)
@@ -772,7 +777,7 @@ if(WITH_12BIT)
   set(MD5_JPEG_440_ISLOW e25c1912e38367be505a89c410c1c2d2)
   set(MD5_PPM_440_ISLOW e7d2e26288870cfcb30f3114ad01e380)
   set(MD5_PPM_422M_IFAST 07737bfe8a7c1c87aaa393a0098d16b0)
-  set(MD5_JPEG_420_IFAST_Q100_PROG 008ab68d6ddbba04a8f01deee4e0f9f8)
+  set(MD5_JPEG_420_IFAST_Q100_PROG 9447cef4803d9b0f74bcf333cc710a29)
   set(MD5_PPM_420_Q100_IFAST 1b3730122709f53d007255e8dfd3305e)
   set(MD5_PPM_420M_Q100_IFAST 980a1a3c5bf9510022869d30b7d26566)
   set(MD5_JPEG_GRAY_ISLOW 235c90707b16e2e069f37c888b2636d9)
@@ -820,12 +825,12 @@ else()
   set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
   set(MD5_JPEG_422_IFAST_OPT 2540287b79d913f91665e660303ab2c8)
   set(MD5_PPM_422_IFAST 35bd6b3f833bad23de82acea847129fa)
-  set(MD5_JPEG_440_ISLOW 538bc02bd4b4658fd85de6ece6cbeda6)
-  set(MD5_PPM_440_ISLOW 11e7eab7ef7ef3276934bb7e7b6bb377)
+  set(MD5_JPEG_440_ISLOW 368200a98a9d5041170a6232491522f9)
+  set(MD5_PPM_440_ISLOW 59d718725c83d37a0b59b7e4e355d2fb)
   set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
   set(MD5_BMP_422M_IFAST_565 3294bd4d9a1f2b3d08ea6020d0db7065)
   set(MD5_BMP_422M_IFAST_565D da98c9c7b6039511be4a79a878a9abc1)
-  set(MD5_JPEG_420_IFAST_Q100_PROG e59bb462016a8d9a748c330a3474bb55)
+  set(MD5_JPEG_420_IFAST_Q100_PROG 0ba15f9dab81a703505f835f9dbbac6d)
   set(MD5_PPM_420_Q100_IFAST 5a732542015c278ff43635e473a8a294)
   set(MD5_PPM_420M_Q100_IFAST ff692ee9323a3b424894862557c092f1)
   set(MD5_JPEG_GRAY_ISLOW 72b51f894b8f4a10b3ee3066770aa38d)
@@ -851,7 +856,7 @@ else()
   set(MD5_PPM_3x2_IFAST fd283664b3b49127984af0a7f118fccd)
   set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
   set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
-    set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
+  set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
   set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
   set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
   set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
@@ -1224,9 +1229,9 @@ foreach(libtype ${TEST_LIBTYPES})
 
   if(WITH_ARITH_DEC)
     # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
-      add_bittest(djpeg 420m-ifast-ari "-fast;-skip;1,20;-ppm"
-        testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
-        ${MD5_PPM_420M_IFAST_ARI})
+    add_bittest(djpeg 420m-ifast-ari "-fast;-skip;1,20;-ppm"
+      testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
+      ${MD5_PPM_420M_IFAST_ARI})
 
     add_bittest(jpegtran 420-islow "-revert"
       testout_420_islow.jpg ${TESTIMAGES}/testimgari.jpg

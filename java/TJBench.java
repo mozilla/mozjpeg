@@ -1,5 +1,6 @@
 /*
- * Copyright (C)2009-2014, 2016-2019 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2016-2019, 2021 D. R. Commander.
+ *                                         All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -752,6 +753,8 @@ final class TJBench {
     System.out.println("-componly = Stop after running compression tests.  Do not test decompression.");
     System.out.println("-nowrite = Do not write reference or output images (improves consistency");
     System.out.println("     of performance measurements.)");
+    System.out.println("-limitscans = Refuse to decompress or transform progressive JPEG images that");
+    System.out.println("     have an unreasonably large number of scans");
     System.out.println("-stoponwarning = Immediately discontinue the current");
     System.out.println("     compression/decompression/transform operation if the underlying codec");
     System.out.println("     throws a warning (non-fatal error)\n");
@@ -929,6 +932,8 @@ final class TJBench {
             compOnly = true;
           else if (argv[i].equalsIgnoreCase("-nowrite"))
             write = false;
+          else if (argv[i].equalsIgnoreCase("-limitscans"))
+            flags |= TJ.FLAG_LIMITSCANS;
           else if (argv[i].equalsIgnoreCase("-stoponwarning"))
             flags |= TJ.FLAG_STOPONWARNING;
           else usage();

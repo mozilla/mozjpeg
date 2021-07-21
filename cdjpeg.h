@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, 2019, D. R. Commander.
+ * Copyright (C) 2017, 2019, 2021, D. R. Commander.
  * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg file.
@@ -38,7 +38,9 @@ struct cjpeg_source_struct {
 
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  JDIMENSION max_pixels;
+#endif
 #if JPEG_RAW_READER
   // For reading JPEG
   JSAMPARRAY plane_pointer[4];

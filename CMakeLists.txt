@@ -25,6 +25,15 @@ pad_number(VERSION_MINOR 3)
 pad_number(VERSION_REVISION 3)
 set(LIBJPEG_TURBO_VERSION_NUMBER ${VERSION_MAJOR}${VERSION_MINOR}${VERSION_REVISION})
 
+# CMake 3.14 and later sets CMAKE_MACOSX_BUNDLE to TRUE by default when
+# CMAKE_SYSTEM_NAME is iOS, tvOS, or watchOS, which breaks the libjpeg-turbo
+# build.  (Specifically, when CMAKE_MACOSX_BUNDLE is TRUE, executables for
+# Apple platforms are built as application bundles, which causes CMake to
+# complain that our install() directives for executables do not specify a
+# BUNDLE DESTINATION.  Even if CMake did not complain, building executables as
+# application bundles would break our iOS packages.)
+set(CMAKE_MACOSX_BUNDLE FALSE)
+
 string(TIMESTAMP DEFAULT_BUILD "%Y%m%d")
 set(BUILD ${DEFAULT_BUILD} CACHE STRING "Build string (default: ${DEFAULT_BUILD})")
 

@@ -1,7 +1,7 @@
 ;
 ; jchuff-sse2.asm - Huffman entropy encoding (64-bit SSE2)
 ;
-; Copyright (C) 2009-2011, 2014-2016, 2019, D. R. Commander.
+; Copyright (C) 2009-2011, 2014-2016, 2019, 2021, D. R. Commander.
 ; Copyright (C) 2015, Matthieu Darbois.
 ; Copyright (C) 2018, Matthias Räncker.
 ;
@@ -83,6 +83,7 @@ times 1 << 11 db 12
 times 1 << 12 db 13
 times 1 << 13 db 14
 times 1 << 14 db 15
+times 1 << 15 db 16
 
     alignz      32
 

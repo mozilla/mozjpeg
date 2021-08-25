@@ -1,3 +1,15 @@
+2.1.2
+=====
+
+1. Fixed a regression introduced by 2.1 beta1[13] that caused the remaining
+GAS implementations of AArch64 (Arm 64-bit) Neon SIMD functions (which are used
+by default with GCC for performance reasons) to be placed in the `.rodata`
+section rather than in the `.text` section.  This caused the GNU linker to
+automatically place the `.rodata` section in an executable segment, which
+prevented libjpeg-turbo from working properly with other linkers and also
+represented a potential security risk.
+
+
 2.1.1
 =====
 

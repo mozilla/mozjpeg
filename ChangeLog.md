@@ -11,6 +11,11 @@ automatically place the `.rodata` section in an executable segment, which
 prevented libjpeg-turbo from working properly with other linkers and also
 represented a potential security risk.
 
+2. Fixed an issue whereby the `tjTransform()` function incorrectly computed the
+MCU block size for 4:4:4 JPEG images with non-unary sampling factors and thus
+unduly rejected some cropping regions, even though those regions aligned with
+8x8 MCU block boundaries.
+
 
 2.1.1
 =====

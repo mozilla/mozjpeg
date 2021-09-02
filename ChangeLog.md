@@ -1,6 +1,8 @@
 2.1.2
 =====
 
+### Significant changes relative to 2.1.1
+
 1. Fixed a regression introduced by 2.1 beta1[13] that caused the remaining
 GAS implementations of AArch64 (Arm 64-bit) Neon SIMD functions (which are used
 by default with GCC for performance reasons) to be placed in the `.rodata`

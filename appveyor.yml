@@ -51,6 +51,8 @@ build_script:
 
       move c:\ljt.nightly\files\*.exe .
 
+      move c:\ljt.nightly\files\*.html .
+
       move c:\ljt.nightly\log-windows.txt .
 
 artifacts:
@@ -66,6 +68,20 @@ artifacts:
   - path: 'log-windows.txt'
     name: Build log
 
+  - path: 'index.html'
+    name: MD5 checksums
+
 test: off
 
-deploy: off
+deploy:
+  provider: S3
+  access_key_id:
+    secure: Z74OYogQ6bNV/I+6b5ZEXig74+6MW2WLER0v/bPM/uk=
+  secret_access_key:
+    secure: cyGZhHVCFwZ9jgf5lXoW69mVtECmqwx3eLo61ha8ueWbMYlHho7lwDXwVvxOFiCa
+  bucket: libjpeg-turbo-pr
+  region:
+    secure: qSElYBgBRcEUf88M6Osthw==
+  folder: $(APPVEYOR_REPO_BRANCH)/windows
+  set_public: true
+  remove_files: true

@@ -41,9 +41,9 @@ metadata.
 5. libjpeg-turbo should now build and run on CHERI-enabled architectures, which
 use capability pointers that are larger than the size of `size_t`.
 
-6. Fixed a regression introduced by 2.1 beta1[5] that caused a segfault in the
-64-bit SSE2 Huffman encoder when attempting to losslessly transform a
-specially-crafted malformed JPEG image.
+6. Fixed a regression (CVE-2021-37972) introduced by 2.1 beta1[5] that caused a
+segfault in the 64-bit SSE2 Huffman encoder when attempting to losslessly
+transform a specially-crafted malformed JPEG image.
 
 
 2.1.0

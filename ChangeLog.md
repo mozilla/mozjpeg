@@ -10,6 +10,9 @@ used.
 2. cjpeg now automatically compresses GIF and 8-bit BMP input files into
 grayscale JPEG images if the input files contain only shades of gray.
 
+3. The build system now enables the intrinsics implementation of the AArch64
+(Arm 64-bit) Neon SIMD extensions by default when using GCC 12 or later.
+
 
 2.1.2
 =====

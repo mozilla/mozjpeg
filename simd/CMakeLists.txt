@@ -241,7 +241,6 @@ if(BITS EQUAL 32)
   endif()
 endif()
 
-include(CheckSymbolExists)
 if(BITS EQUAL 32)
   set(CMAKE_REQUIRED_FLAGS "-mfpu=neon ${SOFTFP_FLAG}")
   check_c_source_compiles("
@@ -256,23 +255,68 @@ if(BITS EQUAL 32)
     return()
   endif()
 endif()
-check_symbol_exists(vld1_s16_x3 arm_neon.h HAVE_VLD1_S16_X3)
-check_symbol_exists(vld1_u16_x2 arm_neon.h HAVE_VLD1_U16_X2)
-check_symbol_exists(vld1q_u8_x4 arm_neon.h HAVE_VLD1Q_U8_X4)
+check_c_source_compiles("
+  #include <arm_neon.h>
+  int main(int argc, char **argv) {
+    const int16_t input[] = {
+      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
+      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
+      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc
+    };
+    int16x4x3_t output = vld1_s16_x3(input);
+    return (int)output.val[0][0];
+  }" HAVE_VLD1_S16_X3)
+check_c_source_compiles("
+  #include <arm_neon.h>
+  int main(int argc, char **argv) {
+    const uint16_t input[] = {
+      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc,
+      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc
+    };
+    uint16x4x2_t output = vld1_u16_x2(input);
+    return (int)output.val[0][0];
+  }" HAVE_VLD1_U16_X2)
+check_c_source_compiles("
+  #include <arm_neon.h>
+  int main(int argc, char **argv) {
+    const uint8_t input[] = {
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc
+    };
+    uint8x16x4_t output = vld1q_u8_x4(input);
+    return (int)output.val[0][0];
+  }" HAVE_VLD1Q_U8_X4)
 if(BITS EQUAL 32)
   unset(CMAKE_REQUIRED_FLAGS)
 endif()
 configure_file(arm/neon-compat.h.in arm/neon-compat.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/arm)
 
-# GCC (as of this writing) and some older versions of Clang do not have a full
-# or optimal set of Neon intrinsics, so for performance reasons, when using
-# those compilers, we default to using the older GAS implementation of the Neon
-# SIMD extensions for certain algorithms.  The presence or absence of the three
-# intrinsics we tested above is a reasonable proxy for this.  We always default
-# to using the full Neon intrinsics implementation when building for macOS or
-# iOS, to avoid the need for gas-preprocessor.
-if((HAVE_VLD1_S16_X3 AND HAVE_VLD1_U16_X2 AND HAVE_VLD1Q_U8_X4) OR APPLE)
+# GCC 11 and earlier and some older versions of Clang do not have a full or
+# optimal set of Neon intrinsics, so for performance reasons, when using those
+# compilers, we default to using the older GAS implementation of the Neon SIMD
+# extensions for certain algorithms.  The presence or absence of the three
+# intrinsics we tested above is a reasonable proxy for this, except with GCC 10
+# and 11.  We always default to using the full Neon intrinsics implementation
+# when building for macOS or iOS, to avoid the need for gas-preprocessor.
+if((HAVE_VLD1_S16_X3 AND HAVE_VLD1_U16_X2 AND HAVE_VLD1Q_U8_X4 AND
+  (NOT CMAKE_COMPILER_IS_GNUCC OR
+  CMAKE_C_COMPILER_VERSION VERSION_EQUAL 12.0.0 OR
+  CMAKE_C_COMPILER_VERSION VERSION_GREATER 12.0.0)) OR APPLE)
   set(DEFAULT_NEON_INTRINSICS 1)
 else()
   set(DEFAULT_NEON_INTRINSICS 0)

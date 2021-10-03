@@ -16,6 +16,10 @@ MCU block size for 4:4:4 JPEG images with non-unary sampling factors and thus
 unduly rejected some cropping regions, even though those regions aligned with
 8x8 MCU block boundaries.
 
+3. Fixed a regression introduced by 2.1 beta1[13] that caused the build system
+to enable the Arm Neon SIMD extensions when targetting Armv6 and other legacy
+architectures that do not support Neon instructions.
+
 
 2.1.1
 =====

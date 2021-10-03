@@ -244,6 +244,17 @@ endif()
 include(CheckSymbolExists)
 if(BITS EQUAL 32)
   set(CMAKE_REQUIRED_FLAGS "-mfpu=neon ${SOFTFP_FLAG}")
+  check_c_source_compiles("
+    #include <arm_neon.h>
+    int main(int argc, char **argv) {
+      uint16x8_t input = vdupq_n_u16((uint16_t)argc);
+      uint8x8_t output = vmovn_u16(input);
+      return (int)output[0];
+    }" HAVE_NEON)
+  if(NOT HAVE_NEON)
+    simd_fail("SIMD extensions not available for this architecture")
+    return()
+  endif()
 endif()
 check_symbol_exists(vld1_s16_x3 arm_neon.h HAVE_VLD1_S16_X3)
 check_symbol_exists(vld1_u16_x2 arm_neon.h HAVE_VLD1_U16_X2)

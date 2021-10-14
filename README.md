@@ -1,7 +1,7 @@
 Mozilla JPEG Encoder Project [![Build Status](https://ci.appveyor.com/api/projects/status/github/mozilla/mozjpeg?branch=master&svg=true)](https://ci.appveyor.com/project/kornel/mozjpeg-4ekrx)
 ============================
 
-MozJPEG improves JPEG compression efficiency achieving higher visual quality and smaller file sizes at the same time. It is compatible the JPEG standard, and the vast majority of the world's deployed JPEG decoders.
+MozJPEG improves JPEG compression efficiency achieving higher visual quality and smaller file sizes at the same time. It is compatible with the JPEG standard, and the vast majority of the world's deployed JPEG decoders.
 
 MozJPEG is a patch for [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo). **Please send pull requests to libjpeg-turbo** if the changes aren't specific to newly-added MozJPEG-only compression code. This project aims to keep differences with libjpeg-turbo minimal, so whenever possible, improvements and bug fixes should go there first.
 

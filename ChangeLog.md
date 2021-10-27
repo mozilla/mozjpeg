@@ -20,6 +20,11 @@ unduly rejected some cropping regions, even though those regions aligned with
 to enable the Arm Neon SIMD extensions when targetting Armv6 and other legacy
 architectures that do not support Neon instructions.
 
+4. libjpeg-turbo now performs run-time detection of AltiVec instructions on
+FreeBSD/PowerPC systems if AltiVec instructions are not enabled at compile
+time.  This allows both AltiVec-equipped and non-AltiVec-equipped CPUs to be
+supported using the same build of libjpeg-turbo.
+
 
 2.1.1
 =====

@@ -166,7 +166,7 @@ void my_error_exit(j_common_ptr cinfo)
   longjmp(myerr->setjmp_buffer, 1);
 }
 
-static void my_emit_message(j_common_ptr cinfo, int msg_level)
+static void my_emit_message_fuzzer(j_common_ptr cinfo, int msg_level)
 {
   if (msg_level < 0)
     cinfo->err->num_warnings++;
@@ -699,7 +699,7 @@ main(int argc, char **argv)
 
 #ifdef CJPEG_FUZZER
   jerr.error_exit = my_error_exit;
-  jerr.emit_message = my_emit_message;
+  jerr.emit_message = my_emit_message_fuzzer;
   if (setjmp(myerr.setjmp_buffer))
     HANDLE_ERROR()
 #endif

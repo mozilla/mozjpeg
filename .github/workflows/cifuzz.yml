@@ -1,0 +1,35 @@
+name: CIFuzz
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  Fuzzing:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build Fuzzers
+      id: build
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'libjpeg-turbo'
+        dry-run: false
+        language: c
+    - name: Run Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'libjpeg-turbo'
+        fuzz-seconds: 600
+        language: c
+        dry-run: false
+    - name: Upload Crash
+      uses: actions/upload-artifact@v1
+      if: failure() && steps.build.outcome == 'success'
+      with:
+        name: artifacts
+        path: ./out/artifacts

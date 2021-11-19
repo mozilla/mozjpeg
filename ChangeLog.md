@@ -25,6 +25,10 @@ FreeBSD/PowerPC systems if AltiVec instructions are not enabled at compile
 time.  This allows both AltiVec-equipped and non-AltiVec-equipped CPUs to be
 supported using the same build of libjpeg-turbo.
 
+5. cjpeg now accepts a `-strict` argument similar to that of djpeg and
+jpegtran, which causes the compressor to abort if an LZW-compressed GIF input
+image contains incomplete or corrupt image data.
+
 
 2.1.1
 =====

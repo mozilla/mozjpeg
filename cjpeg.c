@@ -147,6 +147,7 @@ static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
 boolean memdst;                 /* for -memdst switch */
 boolean report;                 /* for -report switch */
+boolean strict;                 /* for -strict switch */
 
 
 #ifdef CJPEG_FUZZER
@@ -240,6 +241,7 @@ usage(void)
   fprintf(stderr, "  -memdst        Compress to memory instead of file (useful for benchmarking)\n");
 #endif
   fprintf(stderr, "  -report        Report compression progress\n");
+  fprintf(stderr, "  -strict        Treat all warnings as fatal\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   fprintf(stderr, "  -version       Print version information and exit\n");
   fprintf(stderr, "Switches for wizards:\n");
@@ -285,6 +287,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
   outfilename = NULL;
   memdst = FALSE;
   report = FALSE;
+  strict = FALSE;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -493,6 +496,9 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
         usage();
       cinfo->smoothing_factor = val;
 
+    } else if (keymatch(arg, "strict", 2)) {
+      strict = TRUE;
+
     } else if (keymatch(arg, "targa", 1)) {
       /* Input file is Targa format. */
       is_targa = TRUE;
@@ -537,6 +543,19 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
   }
 
   return argn;                  /* return index of next arg (file name) */
+}
+
+
+METHODDEF(void)
+my_emit_message(j_common_ptr cinfo, int msg_level)
+{
+  if (msg_level < 0) {
+    /* Treat warning as fatal */
+    cinfo->err->error_exit(cinfo);
+  } else {
+    if (cinfo->err->trace_level >= msg_level)
+      cinfo->err->output_message(cinfo);
+  }
 }
 
 
@@ -599,6 +618,9 @@ main(int argc, char **argv)
    */
 
   file_index = parse_switches(&cinfo, argc, argv, 0, FALSE);
+
+  if (strict)
+    jerr.emit_message = my_emit_message;
 
 #ifdef TWO_FILE_COMMANDLINE
   if (!memdst) {

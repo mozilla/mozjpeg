@@ -1,4 +1,4 @@
-.TH CJPEG 1 "4 November 2020"
+.TH CJPEG 1 "18 November 2021"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -225,6 +225,11 @@ also useful for benchmarking, since it reduces the I/O overhead.
 .TP
 .BI \-report
 Report compression progress.
+.TP
+.BI \-strict
+Treat all warnings as fatal.  Enabling this option will cause the compressor to
+abort if an LZW-compressed GIF input image contains incomplete or corrupt image
+data.
 .TP
 .B \-verbose
 Enable debug printout.  More

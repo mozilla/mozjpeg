@@ -698,8 +698,8 @@ bad:
     /* Check that the scan parameters Ss, Se, Ah/Al are OK for sequential JPEG.
      * This ought to be an error condition, but we make it a warning.
      */
-    if (cinfo->Ss != 0 || cinfo->Ah != 0 || cinfo->Al != 0 ||
-        (cinfo->Se < DCTSIZE2 && cinfo->Se != DCTSIZE2 - 1))
+    if (cinfo->Ss != 0 || cinfo->Se != DCTSIZE2 - 1 ||
+        cinfo->Ah != 0 || cinfo->Al != 0)
       WARNMS(cinfo, JWRN_NOT_SEQUENTIAL);
     /* Select MCU decoding routine */
     entropy->pub.decode_mcu = decode_mcu;

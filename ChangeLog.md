@@ -7,6 +7,9 @@
 input files into full-color JPEG images unless the `-grayscale` option was
 used.
 
+2. cjpeg now automatically compresses GIF and 8-bit BMP input files into
+grayscale JPEG images if the input files contain only shades of gray.
+
 
 2.1.2
 =====

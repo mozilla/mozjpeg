@@ -125,7 +125,8 @@ read_colormap(bmp_source_ptr sinfo, int cmaplen, int mapentrysize)
     break;
   }
 
-  if (sinfo->cinfo->in_color_space == JCS_UNKNOWN && gray)
+  if ((sinfo->cinfo->in_color_space == JCS_UNKNOWN ||
+       sinfo->cinfo->in_color_space == JCS_RGB) && gray)
     sinfo->cinfo->in_color_space = JCS_GRAYSCALE;
 
   if (sinfo->cinfo->in_color_space == JCS_GRAYSCALE && !gray)

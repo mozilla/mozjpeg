@@ -1,4 +1,4 @@
-.TH CJPEG 1 "18 November 2021"
+.TH CJPEG 1 "30 November 2021"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -40,11 +40,7 @@ Scale quantization tables to adjust image quality.  Quality is 0 (worst) to
 100 (best); default is 75.  (See below for more info.)
 .TP
 .B \-grayscale
-Create monochrome JPEG file from color input.  Be sure to use this switch when
-compressing a grayscale BMP or GIF file, because
-.B cjpeg
-isn't bright enough to notice whether a BMP or GIF file uses only shades of
-gray.  By saying
+Create monochrome JPEG file from color input.  By saying
 .BR \-grayscale,
 you'll get a smaller JPEG file that takes less time to process.
 .TP

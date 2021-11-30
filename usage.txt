@@ -72,12 +72,9 @@ The basic command line switches for cjpeg are:
                           Quality is 0 (worst) to 100 (best); default is 75.
                           (See below for more info.)
 
-        -grayscale      Create monochrome JPEG file from color input.
-                        Be sure to use this switch when compressing a grayscale
-                        BMP or GIF file, because cjpeg isn't bright enough to
-                        notice whether a BMP or GIF file uses only shades of
-                        gray.  By saying -grayscale, you'll get a smaller JPEG
-                        file that takes less time to process.
+        -grayscale      Create monochrome JPEG file from color input.  By
+                        saying -grayscale, you'll get a smaller JPEG file that
+                        takes less time to process.
 
         -rgb            Create RGB JPEG file.
                         Using this switch suppresses the conversion from RGB

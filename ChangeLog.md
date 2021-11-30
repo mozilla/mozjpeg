@@ -1,3 +1,13 @@
+2.1.3
+=====
+
+### Significant changes relative to 2.1.2
+
+1. Fixed a regression introduced by 2.0 beta1[7] whereby cjpeg compressed PGM
+input files into full-color JPEG images unless the `-grayscale` option was
+used.
+
+
 2.1.2
 =====
 

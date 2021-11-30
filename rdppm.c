@@ -603,7 +603,8 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   switch (c) {
   case '2':                     /* it's a text-format PGM file */
-    if (cinfo->in_color_space == JCS_UNKNOWN)
+    if (cinfo->in_color_space == JCS_UNKNOWN ||
+        cinfo->in_color_space == JCS_RGB)
       cinfo->in_color_space = JCS_GRAYSCALE;
     TRACEMS2(cinfo, 1, JTRC_PGM_TEXT, w, h);
     if (cinfo->in_color_space == JCS_GRAYSCALE)
@@ -631,7 +632,8 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
 
   case '5':                     /* it's a raw-format PGM file */
-    if (cinfo->in_color_space == JCS_UNKNOWN)
+    if (cinfo->in_color_space == JCS_UNKNOWN ||
+        cinfo->in_color_space == JCS_RGB)
       cinfo->in_color_space = JCS_GRAYSCALE;
     TRACEMS2(cinfo, 1, JTRC_PGM, w, h);
     if (maxval > 255) {

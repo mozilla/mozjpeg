@@ -311,12 +311,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/arm)
 # compilers, we default to using the older GAS implementation of the Neon SIMD
 # extensions for certain algorithms.  The presence or absence of the three
 # intrinsics we tested above is a reasonable proxy for this, except with GCC 10
-# and 11.  We always default to using the full Neon intrinsics implementation
-# when building for macOS or iOS, to avoid the need for gas-preprocessor.
+# and 11.
 if((HAVE_VLD1_S16_X3 AND HAVE_VLD1_U16_X2 AND HAVE_VLD1Q_U8_X4 AND
   (NOT CMAKE_COMPILER_IS_GNUCC OR
   CMAKE_C_COMPILER_VERSION VERSION_EQUAL 12.0.0 OR
-  CMAKE_C_COMPILER_VERSION VERSION_GREATER 12.0.0)) OR APPLE)
+  CMAKE_C_COMPILER_VERSION VERSION_GREATER 12.0.0)))
   set(DEFAULT_NEON_INTRINSICS 1)
 else()
   set(DEFAULT_NEON_INTRINSICS 0)
@@ -324,6 +323,40 @@ endif()
 option(NEON_INTRINSICS
   "Because GCC (as of this writing) and some older versions of Clang do not have a full or optimal set of Neon intrinsics, for performance reasons, the default when building libjpeg-turbo with those compilers is to continue using the older GAS implementation of the Neon SIMD extensions for certain algorithms.  Setting this option forces the full Neon intrinsics implementation to be used with all compilers.  Unsetting this option forces the hybrid GAS/intrinsics implementation to be used with all compilers."
   ${DEFAULT_NEON_INTRINSICS})
+if(NOT NEON_INTRINSICS)
+  enable_language(ASM)
+
+  set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_ASM_FLAGS}")
+
+  # Test whether gas-preprocessor.pl would be needed to build the GAS
+  # implementation of the Neon SIMD extensions.  If so, then automatically
+  # enable the full Neon intrinsics implementation.
+  if(CPU_TYPE STREQUAL "arm")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S "
+      .text
+      .fpu neon
+      .arch armv7a
+      .object_arch armv4
+      .arm
+      pld [r0]
+      vmovn.u16 d0, q0")
+  else()
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S "
+      .text
+      MYVAR .req x0
+      movi v0.16b, #100
+      mov MYVAR, #100
+      .unreq MYVAR")
+  endif()
+  separate_arguments(CMAKE_ASM_FLAGS_SEP UNIX_COMMAND "${CMAKE_ASM_FLAGS}")
+  execute_process(COMMAND ${CMAKE_ASM_COMPILER} ${CMAKE_ASM_FLAGS_SEP}
+      -x assembler-with-cpp -c ${CMAKE_CURRENT_BINARY_DIR}/gastest.S
+    RESULT_VARIABLE RESULT OUTPUT_VARIABLE OUTPUT ERROR_VARIABLE ERROR)
+  if(NOT RESULT EQUAL 0)
+    message(WARNING "GAS appears to be broken.  Using the full Neon SIMD intrinsics implementation.")
+    set(NEON_INTRINSICS 1 CACHE INTERNAL "" FORCE)
+  endif()
+endif()
 boolean_number(NEON_INTRINSICS PARENT_SCOPE)
 if(NEON_INTRINSICS)
   add_definitions(-DNEON_INTRINSICS)
@@ -349,10 +382,6 @@ if(BITS EQUAL 32)
   set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS "-mfpu=neon ${SOFTFP_FLAG}")
 endif()
 if(NOT NEON_INTRINSICS)
-  enable_language(ASM)
-
-  set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_ASM_FLAGS}")
-
   string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
   set(EFFECTIVE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_ASM_FLAGS_${CMAKE_BUILD_TYPE_UC}}")
   message(STATUS "CMAKE_ASM_FLAGS = ${EFFECTIVE_ASM_FLAGS}")

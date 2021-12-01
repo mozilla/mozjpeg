@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2018, D. R. Commander.
+ * Copyright (C) 2015, 2018, 2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -836,7 +836,7 @@ start_pass(j_compress_ptr cinfo, boolean gather_statistics)
      * We are fully adaptive here and need no extra
      * statistics gathering pass!
      */
-    ERREXIT(cinfo, JERR_NOT_COMPILED);
+    ERREXIT(cinfo, JERR_NOTIMPL);
 
   /* We assume jcmaster.c already validated the progressive scan parameters. */
 

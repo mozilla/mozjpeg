@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, 2017, D. R. Commander.
+ * Copyright (C) 2014, 2017, 2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -103,7 +103,7 @@ JMESSAGE(JERR_MISMATCHED_QUANT_TABLE,
          "Cannot transcode due to multiple use of quantization table %d")
 JMESSAGE(JERR_MISSING_DATA, "Scan script does not transmit all data")
 JMESSAGE(JERR_MODE_CHANGE, "Invalid color quantization mode change")
-JMESSAGE(JERR_NOTIMPL, "Not implemented yet")
+JMESSAGE(JERR_NOTIMPL, "Requested features are incompatible")
 JMESSAGE(JERR_NOT_COMPILED, "Requested feature was omitted at compile time")
 #if JPEG_LIB_VERSION >= 70
 JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")

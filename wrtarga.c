@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, 2019, D. R. Commander.
+ * Copyright (C) 2017, 2019, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -51,7 +51,7 @@ write_header(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
   char targaheader[18];
 
   /* Set unused fields of header to 0 */
-  MEMZERO(targaheader, sizeof(targaheader));
+  memset(targaheader, 0, sizeof(targaheader));
 
   if (num_colors > 0) {
     targaheader[1] = 1;         /* color map type 1 */
@@ -121,7 +121,7 @@ put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
-  MEMCOPY(outptr, inptr, cinfo->output_width);
+  memcpy(outptr, inptr, cinfo->output_width);
   (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
 }
 

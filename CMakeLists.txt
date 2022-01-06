@@ -406,34 +406,6 @@ if(MSVC)
 endif()
 
 if(UNIX)
-  # Check for headers
-  check_include_files(locale.h HAVE_LOCALE_H)
-  check_include_files(stddef.h HAVE_STDDEF_H)
-  check_include_files(stdlib.h HAVE_STDLIB_H)
-  check_include_files(sys/types.h NEED_SYS_TYPES_H)
-
-  # Check for functions
-  include(CheckSymbolExists)
-  check_symbol_exists(memset string.h HAVE_MEMSET)
-  check_symbol_exists(memcpy string.h HAVE_MEMCPY)
-  if(NOT HAVE_MEMSET AND NOT HAVE_MEMCPY)
-    set(NEED_BSD_STRINGS 1)
-  endif()
-
-  # Check for types
-  check_type_size("unsigned char" UNSIGNED_CHAR)
-  check_type_size("unsigned short" UNSIGNED_SHORT)
-
-  # Check for compiler features
-  check_c_source_compiles("int main(void) { typedef struct undefined_structure *undef_struct_ptr;  undef_struct_ptr ptr = 0;  return ptr != 0; }"
-    INCOMPLETE_TYPES)
-  if(INCOMPLETE_TYPES)
-    message(STATUS "Compiler supports pointers to undefined structures.")
-  else()
-    set(INCOMPLETE_TYPES_BROKEN 1)
-    message(STATUS "Compiler does not support pointers to undefined structures.")
-  endif()
-
   if(CMAKE_CROSSCOMPILING)
     set(RIGHT_SHIFT_IS_UNSIGNED 0)
   else()

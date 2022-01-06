@@ -37,12 +37,6 @@
 #endif
 #include <limits.h>
 
-#ifndef NO_GETENV
-#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare getenv() */
-extern char *getenv(const char *name);
-#endif
-#endif
-
 
 LOCAL(size_t)
 round_up_pow2(size_t a, size_t b)

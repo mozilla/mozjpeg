@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2018, D. R. Commander.
+ * Copyright (C) 2010, 2018, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -263,7 +263,7 @@ bogus:
     scanptr = (jpeg_scan_info *)
       (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                   scanno * sizeof(jpeg_scan_info));
-    MEMCOPY(scanptr, scans, scanno * sizeof(jpeg_scan_info));
+    memcpy(scanptr, scans, scanno * sizeof(jpeg_scan_info));
     cinfo->scan_info = scanptr;
     cinfo->num_scans = scanno;
   }

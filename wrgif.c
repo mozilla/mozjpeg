@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2015-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2017, D. R. Commander.
+ * Copyright (C) 2015, 2017, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -169,7 +169,7 @@ clear_hash(gif_dest_ptr dinfo)
 /* Fill the hash table with empty entries */
 {
   /* It's sufficient to zero hash_code[] */
-  MEMZERO(dinfo->hash_code, HSIZE * sizeof(code_int));
+  memset(dinfo->hash_code, 0, HSIZE * sizeof(code_int));
 }
 
 

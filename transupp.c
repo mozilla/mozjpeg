@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2017, 2021, D. R. Commander.
+ * Copyright (C) 2010, 2017, 2021-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -262,8 +262,8 @@ do_drop(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         }
       } else {
         for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-          MEMZERO(dst_buffer[offset_y] + x_drop_blocks,
-                  comp_width * sizeof(JBLOCK));
+          memset(dst_buffer[offset_y] + x_drop_blocks, 0,
+                 comp_width * sizeof(JBLOCK));
         }
       }
     }
@@ -345,8 +345,8 @@ do_crop_ext_zero(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         if (dst_blk_y < y_crop_blocks ||
             dst_blk_y >= y_crop_blocks + comp_height) {
           for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-            MEMZERO(dst_buffer[offset_y],
-                    compptr->width_in_blocks * sizeof(JBLOCK));
+            memset(dst_buffer[offset_y], 0,
+                   compptr->width_in_blocks * sizeof(JBLOCK));
           }
           continue;
         }
@@ -363,14 +363,14 @@ do_crop_ext_zero(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
         if (dstinfo->_jpeg_width > srcinfo->output_width) {
           if (x_crop_blocks > 0) {
-            MEMZERO(dst_buffer[offset_y], x_crop_blocks * sizeof(JBLOCK));
+            memset(dst_buffer[offset_y], 0, x_crop_blocks * sizeof(JBLOCK));
           }
           jcopy_block_row(src_buffer[offset_y],
                           dst_buffer[offset_y] + x_crop_blocks, comp_width);
           if (compptr->width_in_blocks > x_crop_blocks + comp_width) {
-            MEMZERO(dst_buffer[offset_y] + x_crop_blocks + comp_width,
-                    (compptr->width_in_blocks - x_crop_blocks - comp_width) *
-                    sizeof(JBLOCK));
+            memset(dst_buffer[offset_y] + x_crop_blocks + comp_width, 0,
+                   (compptr->width_in_blocks - x_crop_blocks - comp_width) *
+                   sizeof(JBLOCK));
           }
         } else {
           jcopy_block_row(src_buffer[offset_y] + x_crop_blocks,
@@ -421,8 +421,8 @@ do_crop_ext_flat(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         if (dst_blk_y < y_crop_blocks ||
             dst_blk_y >= y_crop_blocks + comp_height) {
           for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-            MEMZERO(dst_buffer[offset_y],
-                    compptr->width_in_blocks * sizeof(JBLOCK));
+            memset(dst_buffer[offset_y], 0,
+                   compptr->width_in_blocks * sizeof(JBLOCK));
           }
           continue;
         }
@@ -438,7 +438,7 @@ do_crop_ext_flat(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
       }
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
         if (x_crop_blocks > 0) {
-          MEMZERO(dst_buffer[offset_y], x_crop_blocks * sizeof(JBLOCK));
+          memset(dst_buffer[offset_y], 0, x_crop_blocks * sizeof(JBLOCK));
           dc = src_buffer[offset_y][0][0];
           for (dst_blk_x = 0; dst_blk_x < x_crop_blocks; dst_blk_x++) {
             dst_buffer[offset_y][dst_blk_x][0] = dc;
@@ -447,9 +447,9 @@ do_crop_ext_flat(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         jcopy_block_row(src_buffer[offset_y],
                         dst_buffer[offset_y] + x_crop_blocks, comp_width);
         if (compptr->width_in_blocks > x_crop_blocks + comp_width) {
-          MEMZERO(dst_buffer[offset_y] + x_crop_blocks + comp_width,
-                  (compptr->width_in_blocks - x_crop_blocks - comp_width) *
-                  sizeof(JBLOCK));
+          memset(dst_buffer[offset_y] + x_crop_blocks + comp_width, 0,
+                 (compptr->width_in_blocks - x_crop_blocks - comp_width) *
+                 sizeof(JBLOCK));
           dc = src_buffer[offset_y][comp_width - 1][0];
           for (dst_blk_x = x_crop_blocks + comp_width;
                dst_blk_x < compptr->width_in_blocks; dst_blk_x++) {
@@ -502,8 +502,8 @@ do_crop_ext_reflect(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         if (dst_blk_y < y_crop_blocks ||
             dst_blk_y >= y_crop_blocks + comp_height) {
           for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-            MEMZERO(dst_buffer[offset_y],
-                    compptr->width_in_blocks * sizeof(JBLOCK));
+            memset(dst_buffer[offset_y], 0,
+                   compptr->width_in_blocks * sizeof(JBLOCK));
           }
           continue;
         }
@@ -591,7 +591,8 @@ do_wipe(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         ((j_common_ptr)srcinfo, src_coef_arrays[ci], y_wipe_blocks,
          (JDIMENSION)compptr->v_samp_factor, TRUE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-        MEMZERO(buffer[offset_y] + x_wipe_blocks, wipe_width * sizeof(JBLOCK));
+        memset(buffer[offset_y] + x_wipe_blocks, 0,
+               wipe_width * sizeof(JBLOCK));
       }
     }
   }
@@ -626,7 +627,8 @@ do_flatten(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
         ((j_common_ptr)srcinfo, src_coef_arrays[ci], y_wipe_blocks,
          (JDIMENSION)compptr->v_samp_factor, TRUE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-        MEMZERO(buffer[offset_y] + x_wipe_blocks, wipe_width * sizeof(JBLOCK));
+        memset(buffer[offset_y] + x_wipe_blocks, 0,
+               wipe_width * sizeof(JBLOCK));
         if (x_wipe_blocks > 0) {
           dc_left_value = buffer[offset_y][x_wipe_blocks - 1][0];
           if (wipe_right < compptr->width_in_blocks) {
@@ -709,8 +711,8 @@ do_reflect(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
             }
           }
         } else {
-          MEMZERO(buffer[offset_y] + x_wipe_blocks,
-                  wipe_width * sizeof(JBLOCK));
+          memset(buffer[offset_y] + x_wipe_blocks, 0,
+                 wipe_width * sizeof(JBLOCK));
         }
       }
     }

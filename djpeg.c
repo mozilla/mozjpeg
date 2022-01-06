@@ -32,10 +32,6 @@
 #include "jversion.h"           /* for version message */
 #include "jconfigint.h"
 
-#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare free() */
-extern void free(void *ptr);
-#endif
-
 #include <ctype.h>              /* to declare isprint() */
 
 #ifdef USE_CCOMMAND             /* command-line reader for Macintosh */

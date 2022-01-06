@@ -18,9 +18,7 @@
 #define JPEG_CJPEG_DJPEG        /* to get the command-line config symbols */
 #include "jinclude.h"           /* get auto-config symbols, <stdio.h> */
 
-#ifdef HAVE_LOCALE_H
 #include <locale.h>             /* Bill Allombert: use locale for isprint */
-#endif
 #include <ctype.h>              /* to declare isupper(), tolower() */
 #ifdef USE_SETMODE
 #include <fcntl.h>              /* to declare setmode()'s parameter macros */
@@ -223,9 +221,7 @@ process_COM(int raw)
   int lastch = 0;
 
   /* Bill Allombert: set locale properly for isprint */
-#ifdef HAVE_LOCALE_H
   setlocale(LC_CTYPE, "");
-#endif
 
   /* Get the marker parameter length count */
   length = read_2_bytes();
@@ -261,9 +257,7 @@ process_COM(int raw)
   printf("\n");
 
   /* Bill Allombert: revert to C locale */
-#ifdef HAVE_LOCALE_H
   setlocale(LC_CTYPE, "C");
-#endif
 }
 
 

@@ -6,7 +6,7 @@
  * Modified 2009-2017 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Modified 2011 by Siarhei Siamashka.
- * Copyright (C) 2015, 2017-2018, 2021, D. R. Commander.
+ * Copyright (C) 2015, 2017-2018, 2021-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -246,7 +246,7 @@ get_24bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
    */
   outptr = source->pub.buffer[0];
   if (cinfo->in_color_space == JCS_EXT_BGR) {
-    MEMCOPY(outptr, inptr, source->row_width);
+    memcpy(outptr, inptr, source->row_width);
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
       JSAMPLE b = *inptr++, g = *inptr++, r = *inptr++;
@@ -310,7 +310,7 @@ get_32bit_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   outptr = source->pub.buffer[0];
   if (cinfo->in_color_space == JCS_EXT_BGRX ||
       cinfo->in_color_space == JCS_EXT_BGRA) {
-    MEMCOPY(outptr, inptr, source->row_width);
+    memcpy(outptr, inptr, source->row_width);
   } else if (cinfo->in_color_space == JCS_CMYK) {
     for (col = cinfo->image_width; col > 0; col--) {
       JSAMPLE b = *inptr++, g = *inptr++, r = *inptr++;

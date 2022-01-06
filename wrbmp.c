@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2013, Linaro Limited.
- * Copyright (C) 2014-2015, 2017, 2019, D. R. Commander.
+ * Copyright (C) 2014-2015, 2017, 2019, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -121,7 +121,7 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
 
   if (cinfo->out_color_space == JCS_EXT_BGR) {
-    MEMCOPY(outptr, inptr, dest->row_width);
+    memcpy(outptr, inptr, dest->row_width);
     outptr += cinfo->output_width * 3;
   } else if (cinfo->out_color_space == JCS_RGB565) {
     boolean big_endian = is_big_endian();
@@ -191,7 +191,7 @@ put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
   /* Transfer data. */
   inptr = dest->pub.buffer[0];
-  MEMCOPY(outptr, inptr, cinfo->output_width);
+  memcpy(outptr, inptr, cinfo->output_width);
   outptr += cinfo->output_width;
 
   /* Zero out the pad bytes. */
@@ -256,8 +256,8 @@ write_bmp_header(j_decompress_ptr cinfo, bmp_dest_ptr dest)
   bfSize = headersize + (long)dest->row_width * (long)cinfo->output_height;
 
   /* Set unused fields of header to 0 */
-  MEMZERO(bmpfileheader, sizeof(bmpfileheader));
-  MEMZERO(bmpinfoheader, sizeof(bmpinfoheader));
+  memset(bmpfileheader, 0, sizeof(bmpfileheader));
+  memset(bmpinfoheader, 0, sizeof(bmpinfoheader));
 
   /* Fill the file header */
   bmpfileheader[0] = 0x42;      /* first 2 bytes are ASCII 'B', 'M' */
@@ -325,8 +325,8 @@ write_os2_header(j_decompress_ptr cinfo, bmp_dest_ptr dest)
   bfSize = headersize + (long)dest->row_width * (long)cinfo->output_height;
 
   /* Set unused fields of header to 0 */
-  MEMZERO(bmpfileheader, sizeof(bmpfileheader));
-  MEMZERO(bmpcoreheader, sizeof(bmpcoreheader));
+  memset(bmpfileheader, 0, sizeof(bmpfileheader));
+  memset(bmpcoreheader, 0, sizeof(bmpcoreheader));
 
   /* Fill the file header */
   bmpfileheader[0] = 0x42;      /* first 2 bytes are ASCII 'B', 'M' */

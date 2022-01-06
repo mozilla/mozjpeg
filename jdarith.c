@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Developed 1997-2015 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2020, D. R. Commander.
+ * Copyright (C) 2015-2020, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -210,13 +210,13 @@ process_restart(j_decompress_ptr cinfo)
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
     if (!cinfo->progressive_mode || (cinfo->Ss == 0 && cinfo->Ah == 0)) {
-      MEMZERO(entropy->dc_stats[compptr->dc_tbl_no], DC_STAT_BINS);
+      memset(entropy->dc_stats[compptr->dc_tbl_no], 0, DC_STAT_BINS);
       /* Reset DC predictions to 0 */
       entropy->last_dc_val[ci] = 0;
       entropy->dc_context[ci] = 0;
     }
     if (!cinfo->progressive_mode || cinfo->Ss) {
-      MEMZERO(entropy->ac_stats[compptr->ac_tbl_no], AC_STAT_BINS);
+      memset(entropy->ac_stats[compptr->ac_tbl_no], 0, AC_STAT_BINS);
     }
   }
 
@@ -715,7 +715,7 @@ bad:
       if (entropy->dc_stats[tbl] == NULL)
         entropy->dc_stats[tbl] = (unsigned char *)(*cinfo->mem->alloc_small)
           ((j_common_ptr)cinfo, JPOOL_IMAGE, DC_STAT_BINS);
-      MEMZERO(entropy->dc_stats[tbl], DC_STAT_BINS);
+      memset(entropy->dc_stats[tbl], 0, DC_STAT_BINS);
       /* Initialize DC predictions to 0 */
       entropy->last_dc_val[ci] = 0;
       entropy->dc_context[ci] = 0;
@@ -727,7 +727,7 @@ bad:
       if (entropy->ac_stats[tbl] == NULL)
         entropy->ac_stats[tbl] = (unsigned char *)(*cinfo->mem->alloc_small)
           ((j_common_ptr)cinfo, JPOOL_IMAGE, AC_STAT_BINS);
-      MEMZERO(entropy->ac_stats[tbl], AC_STAT_BINS);
+      memset(entropy->ac_stats[tbl], 0, AC_STAT_BINS);
     }
   }
 

@@ -17,9 +17,6 @@
 #define JPEG_CJPEG_DJPEG        /* to get the command-line config symbols */
 #include "jinclude.h"           /* get auto-config symbols, <stdio.h> */
 
-#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc() */
-extern void *malloc();
-#endif
 #include <ctype.h>              /* to declare isupper(), tolower() */
 #ifdef USE_SETMODE
 #include <fcntl.h>              /* to declare setmode()'s parameter macros */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2021 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2022 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2021 Alex Richardson.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -514,7 +514,7 @@ DLLEXPORT tjhandle tjInitCompress(void)
              "tjInitCompress(): Memory allocation failure");
     return NULL;
   }
-  MEMZERO(this, sizeof(tjinstance));
+  memset(this, 0, sizeof(tjinstance));
   snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
   return _tjInitCompress(this);
 }
@@ -1186,7 +1186,7 @@ DLLEXPORT tjhandle tjInitDecompress(void)
              "tjInitDecompress(): Memory allocation failure");
     return NULL;
   }
-  MEMZERO(this, sizeof(tjinstance));
+  memset(this, 0, sizeof(tjinstance));
   snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
   return _tjInitDecompress(this);
 }
@@ -1301,7 +1301,7 @@ DLLEXPORT int tjDecompress2(tjhandle handle, const unsigned char *jpegBuf,
 #endif
 
   if (flags & TJFLAG_LIMITSCANS) {
-    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    memset(&progress, 0, sizeof(struct my_progress_mgr));
     progress.pub.progress_monitor = my_progress_monitor;
     progress.this = this;
     dinfo->progress = &progress.pub;
@@ -1649,7 +1649,7 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
 #endif
 
   if (flags & TJFLAG_LIMITSCANS) {
-    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    memset(&progress, 0, sizeof(struct my_progress_mgr));
     progress.pub.progress_monitor = my_progress_monitor;
     progress.this = this;
     dinfo->progress = &progress.pub;
@@ -1877,7 +1877,7 @@ DLLEXPORT tjhandle tjInitTransform(void)
              "tjInitTransform(): Memory allocation failure");
     return NULL;
   }
-  MEMZERO(this, sizeof(tjinstance));
+  memset(this, 0, sizeof(tjinstance));
   snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
   handle = _tjInitCompress(this);
   if (!handle) return NULL;
@@ -1912,7 +1912,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
 #endif
 
   if (flags & TJFLAG_LIMITSCANS) {
-    MEMZERO(&progress, sizeof(struct my_progress_mgr));
+    memset(&progress, 0, sizeof(struct my_progress_mgr));
     progress.pub.progress_monitor = my_progress_monitor;
     progress.this = this;
     dinfo->progress = &progress.pub;
@@ -1922,7 +1922,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   if ((xinfo =
        (jpeg_transform_info *)malloc(sizeof(jpeg_transform_info) * n)) == NULL)
     THROW("tjTransform(): Memory allocation failure");
-  MEMZERO(xinfo, sizeof(jpeg_transform_info) * n);
+  memset(xinfo, 0, sizeof(jpeg_transform_info) * n);
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */

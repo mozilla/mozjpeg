@@ -24,57 +24,16 @@
 #define JCONFIG_INCLUDED        /* so that jpeglib.h doesn't do it again */
 
 /*
- * We need the NULL macro and size_t typedef.
- * On an ANSI-conforming system it is sufficient to include <stddef.h>.
- * Otherwise, we get them from <stdlib.h> or <stdio.h>; we may have to
- * pull in <sys/types.h> as well.
  * Note that the core JPEG library does not require <stdio.h>;
  * only the default error handler and data source/destination modules do.
  * But we must pull it in because of the references to FILE in jpeglib.h.
  * You can remove those references if you want to compile without <stdio.h>.
  */
 
-#ifdef HAVE_STDDEF_H
 #include <stddef.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
-
-#ifdef NEED_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
 #include <stdio.h>
-
-/*
- * We need memory copying and zeroing functions, plus strncpy().
- * ANSI and System V implementations declare these in <string.h>.
- * BSD doesn't have the mem() functions, but it does have bcopy()/bzero().
- * Some systems may declare memset and memcpy in <memory.h>.
- *
- * NOTE: we assume the size parameters to these functions are of type size_t.
- * Change the casts in these macros if not!
- */
-
-#ifdef NEED_BSD_STRINGS
-
-#include <strings.h>
-#define MEMZERO(target, size) \
-  bzero((void *)(target), (size_t)(size))
-#define MEMCOPY(dest, src, size) \
-  bcopy((const void *)(src), (void *)(dest), (size_t)(size))
-
-#else /* not BSD, assume ANSI/SysV string lib */
-
 #include <string.h>
-#define MEMZERO(target, size) \
-  memset((void *)(target), 0, (size_t)(size))
-#define MEMCOPY(dest, src, size) \
-  memcpy((void *)(dest), (const void *)(src), (size_t)(size))
-
-#endif
 
 /*
  * The modules that use fread() and fwrite() always invoke them through

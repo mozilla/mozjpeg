@@ -181,13 +181,13 @@ get_text_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       GRAY_RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),
                          ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),)
+      GRAY_RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval), {})
   } else {
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],
                          ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],)
+      GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)], {})
   }
   return 1;
 }
@@ -255,13 +255,13 @@ get_text_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),
                     ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),)
+      RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval), {})
   } else {
     if (aindex >= 0)
       RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],
                     ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],)
+      RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)], {})
   }
   return 1;
 }
@@ -347,12 +347,12 @@ get_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP(*bufferptr++, ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(*bufferptr++,)
+      GRAY_RGB_READ_LOOP(*bufferptr++, {})
   } else {
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)], ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)],)
+      GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)], {})
   }
   return 1;
 }
@@ -415,12 +415,12 @@ get_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (aindex >= 0)
       RGB_READ_LOOP(*bufferptr++, ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(*bufferptr++,)
+      RGB_READ_LOOP(*bufferptr++, {})
   } else {
     if (aindex >= 0)
       RGB_READ_LOOP(rescale[UCH(*bufferptr++)], ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(rescale[UCH(*bufferptr++)],)
+      RGB_READ_LOOP(rescale[UCH(*bufferptr++)], {})
   }
   return 1;
 }

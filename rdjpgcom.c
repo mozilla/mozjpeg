@@ -4,8 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -249,7 +249,7 @@ process_COM(int raw)
     } else if (isprint(ch)) {
       putc(ch, stdout);
     } else {
-      printf("\\%03o", ch);
+      printf("\\%03o", (unsigned int)ch);
     }
     lastch = ch;
     length--;

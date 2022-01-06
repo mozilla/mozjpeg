@@ -2010,13 +2010,13 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
 
       for (ci = 0; ci < cinfo->num_components; ci++) {
         jpeg_component_info *compptr = &cinfo->comp_info[ci];
-        tjregion arrayRegion = {
-          0, 0, compptr->width_in_blocks * DCTSIZE, DCTSIZE
-        };
-        tjregion planeRegion = {
-          0, 0, compptr->width_in_blocks * DCTSIZE,
-          compptr->height_in_blocks * DCTSIZE
-        };
+        tjregion arrayRegion = { 0, 0, 0, 0 };
+        tjregion planeRegion = { 0, 0, 0, 0 };
+
+        arrayRegion.w = compptr->width_in_blocks * DCTSIZE;
+        arrayRegion.h = DCTSIZE;
+        planeRegion.w = compptr->width_in_blocks * DCTSIZE;
+        planeRegion.h = compptr->height_in_blocks * DCTSIZE;
 
         for (by = 0; by < compptr->height_in_blocks;
              by += compptr->v_samp_factor) {

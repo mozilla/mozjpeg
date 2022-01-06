@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2017, 2019-2020, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, 2019-2020, 2022, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -717,7 +717,7 @@ main(int argc, char **argv)
      * that skip_start <= skip_end.
      */
     if (skip_end > cinfo.output_height - 1) {
-      fprintf(stderr, "%s: skip region exceeds image height %d\n", progname,
+      fprintf(stderr, "%s: skip region exceeds image height %u\n", progname,
               cinfo.output_height);
       exit(EXIT_FAILURE);
     }
@@ -738,7 +738,7 @@ main(int argc, char **argv)
     }
     if ((tmp = jpeg_skip_scanlines(&cinfo, skip_end - skip_start + 1)) !=
         skip_end - skip_start + 1) {
-      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %d rather than %d\n",
+      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
               progname, tmp, skip_end - skip_start + 1);
       exit(EXIT_FAILURE);
     }
@@ -757,7 +757,7 @@ main(int argc, char **argv)
      */
     if (crop_x + crop_width > cinfo.output_width ||
         crop_y + crop_height > cinfo.output_height) {
-      fprintf(stderr, "%s: crop dimensions exceed image dimensions %d x %d\n",
+      fprintf(stderr, "%s: crop dimensions exceed image dimensions %u x %u\n",
               progname, cinfo.output_width, cinfo.output_height);
       exit(EXIT_FAILURE);
     }
@@ -778,7 +778,7 @@ main(int argc, char **argv)
 
     /* Process data */
     if ((tmp = jpeg_skip_scanlines(&cinfo, crop_y)) != crop_y) {
-      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %d rather than %d\n",
+      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
               progname, tmp, crop_y);
       exit(EXIT_FAILURE);
     }
@@ -791,7 +791,7 @@ main(int argc, char **argv)
          jpeg_skip_scanlines(&cinfo,
                              cinfo.output_height - crop_y - crop_height)) !=
         cinfo.output_height - crop_y - crop_height) {
-      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %d rather than %d\n",
+      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
               progname, tmp, cinfo.output_height - crop_y - crop_height);
       exit(EXIT_FAILURE);
     }

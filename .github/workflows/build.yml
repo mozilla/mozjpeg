@@ -51,7 +51,7 @@ jobs:
         run: |
           aws s3 sync --acl public-read --delete $HOME/src/ljt.nightly/latest/files/ s3://libjpeg-turbo-pr/${{env.BRANCH}}/${{github.job}}/
   macos:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
       - name: Set global environment variables
         run: |

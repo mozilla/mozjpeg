@@ -685,7 +685,7 @@ static int decompTest(char *fileName)
                sigfig((double)(w * h * ps) / (double)totalJpegSize, 4,
                       tempStr2, 80),
                quiet == 2 ? "\n" : "  ");
-      } else if (!quiet) {
+      } else {
         printf("Transform     --> Frame rate:         %f fps\n",
                1.0 / elapsed);
         printf("                  Output image size:  %lu bytes\n",

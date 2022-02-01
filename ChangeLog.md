@@ -13,6 +13,14 @@ grayscale JPEG images if the input files contain only shades of gray.
 3. The build system now enables the intrinsics implementation of the AArch64
 (Arm 64-bit) Neon SIMD extensions by default when using GCC 12 or later.
 
+4. Fixed a segfault that occurred while decompressing a 4:2:0 JPEG image using
+the merged (non-fancy) upsampling algorithms (that is, with
+`cinfo.do_fancy_upsampling` set to `FALSE`) along with `jpeg_crop_scanline()`.
+Specifically, the segfault occurred if the number of bytes remaining in the
+output buffer was less than the number of bytes required to represent one
+uncropped scanline of the output image.  For that reason, the issue could only
+be reproduced using the libjpeg API, not using djpeg.
+
 
 2.1.2
 =====

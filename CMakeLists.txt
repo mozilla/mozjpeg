@@ -11,6 +11,7 @@ endif()
 
 project(libjpeg-turbo C)
 set(VERSION 2.1.3)
+set(COPYRIGHT_YEAR "1991-2022")
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -51,6 +52,8 @@ endif()
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
 message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
+
+include(cmakescripts/PackageInfo.cmake)
 
 # Detect CPU type and whether we're building 64-bit or 32-bit code
 math(EXPR BITS "${CMAKE_SIZEOF_VOID_P} * 8")
@@ -336,7 +339,8 @@ message(STATUS "libjpeg API shared library version = ${SO_MAJOR_VERSION}.${SO_AG
 # minor SO versions don't change.  However, we increase the middle number (the
 # SO "age") whenever functions are added to the API.
 set(TURBOJPEG_SO_MAJOR_VERSION 0)
-set(TURBOJPEG_SO_VERSION 0.2.0)
+set(TURBOJPEG_SO_AGE 2)
+set(TURBOJPEG_SO_VERSION 0.${TURBOJPEG_SO_AGE}.0)
 
 
 ###############################################################################
@@ -516,6 +520,7 @@ else()
   configure_file(jconfig.h.in jconfig.h)
 endif()
 configure_file(jconfigint.h.in jconfigint.h)
+configure_file(jversion.h.in jversion.h)
 if(UNIX)
   configure_file(libjpeg.map.in libjpeg.map)
 endif()
@@ -599,6 +604,12 @@ if(WITH_TURBOJPEG)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
       include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
       set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile.jni)
+    endif()
+    if(MSVC)
+      configure_file(${CMAKE_SOURCE_DIR}/win/turbojpeg.rc.in
+        ${CMAKE_BINARY_DIR}/win/turbojpeg.rc)
+      set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES}
+        ${CMAKE_BINARY_DIR}/win/turbojpeg.rc)
     endif()
     add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
     set_property(TARGET turbojpeg PROPERTY COMPILE_FLAGS

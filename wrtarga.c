@@ -79,7 +79,7 @@ write_header(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, int num_colors)
     }
   }
 
-  if (JFWRITE(dinfo->output_file, targaheader, 18) != (size_t)18)
+  if (fwrite(targaheader, 1, 18, dinfo->output_file) != (size_t)18)
     ERREXIT(cinfo, JERR_FILE_WRITE);
 }
 
@@ -107,7 +107,7 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     outptr[2] = inptr[0];
     inptr += 3, outptr += 3;
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 METHODDEF(void)
@@ -122,7 +122,7 @@ put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   inptr = dest->pub.buffer[0];
   outptr = dest->iobuffer;
   memcpy(outptr, inptr, cinfo->output_width);
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -146,7 +146,7 @@ put_demapped_gray(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   for (col = cinfo->output_width; col > 0; col--) {
     *outptr++ = color_map0[*inptr++];
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 

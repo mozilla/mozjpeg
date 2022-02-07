@@ -92,7 +92,7 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   ppm_dest_ptr dest = (ppm_dest_ptr)dinfo;
 
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -121,7 +121,7 @@ copy_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     PUTPPMSAMPLE(bufferptr, *ptr++);
   }
 #endif
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -149,7 +149,7 @@ put_rgb(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, JDIMENSION rows_supplied)
     PUTPPMSAMPLE(bufferptr, ptr[bindex]);
     ptr += ps;
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -175,7 +175,7 @@ put_cmyk(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     PUTPPMSAMPLE(bufferptr, g);
     PUTPPMSAMPLE(bufferptr, b);
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -205,7 +205,7 @@ put_demapped_rgb(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     PUTPPMSAMPLE(bufferptr, color_map1[pixval]);
     PUTPPMSAMPLE(bufferptr, color_map2[pixval]);
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -224,7 +224,7 @@ put_demapped_gray(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   for (col = cinfo->output_width; col > 0; col--) {
     PUTPPMSAMPLE(bufferptr, color_map[*ptr++]);
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 

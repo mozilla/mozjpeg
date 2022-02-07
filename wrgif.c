@@ -114,8 +114,8 @@ flush_packet(gif_dest_ptr dinfo)
 {
   if (dinfo->bytesinpkt > 0) {  /* never write zero-length packet */
     dinfo->packetbuf[0] = (char)dinfo->bytesinpkt++;
-    if (JFWRITE(dinfo->pub.output_file, dinfo->packetbuf, dinfo->bytesinpkt) !=
-        (size_t)dinfo->bytesinpkt)
+    if (fwrite(dinfo->packetbuf, 1, dinfo->bytesinpkt,
+               dinfo->pub.output_file) != (size_t)dinfo->bytesinpkt)
       ERREXIT(dinfo->cinfo, JERR_FILE_WRITE);
     dinfo->bytesinpkt = 0;
   }

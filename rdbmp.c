@@ -39,7 +39,7 @@ typedef unsigned char U_CHAR;
 
 
 #define ReadOK(file, buffer, len) \
-  (JFREAD(file, buffer, len) == ((size_t)(len)))
+  (fread(buffer, 1, len, file) == ((size_t)(len)))
 
 static int alpha_index[JPEG_NUMCS] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0, -1

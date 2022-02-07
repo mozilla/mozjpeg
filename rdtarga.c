@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * Modified 2017 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2018, 2021, D. R. Commander.
+ * Copyright (C) 2018, 2021-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -33,7 +33,7 @@ typedef unsigned char U_CHAR;
 
 
 #define ReadOK(file, buffer, len) \
-  (JFREAD(file, buffer, len) == ((size_t)(len)))
+  (fread(buffer, 1, len, file) == ((size_t)(len)))
 
 
 /* Private version of data source object */

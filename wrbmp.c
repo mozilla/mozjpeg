@@ -165,7 +165,7 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     *outptr++ = 0;
 
   if (!dest->use_inversion_array)
-    (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->row_width);
+    fwrite(dest->iobuffer, 1, dest->row_width, dest->pub.output_file);
 }
 
 METHODDEF(void)
@@ -200,7 +200,7 @@ put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     *outptr++ = 0;
 
   if (!dest->use_inversion_array)
-    (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->row_width);
+    fwrite(dest->iobuffer, 1, dest->row_width, dest->pub.output_file);
 }
 
 
@@ -281,9 +281,9 @@ write_bmp_header(j_decompress_ptr cinfo, bmp_dest_ptr dest)
   PUT_2B(bmpinfoheader, 32, cmap_entries); /* biClrUsed */
   /* we leave biClrImportant = 0 */
 
-  if (JFWRITE(dest->pub.output_file, bmpfileheader, 14) != (size_t)14)
+  if (fwrite(bmpfileheader, 1, 14, dest->pub.output_file) != (size_t)14)
     ERREXIT(cinfo, JERR_FILE_WRITE);
-  if (JFWRITE(dest->pub.output_file, bmpinfoheader, 40) != (size_t)40)
+  if (fwrite(bmpinfoheader, 1, 40, dest->pub.output_file) != (size_t)40)
     ERREXIT(cinfo, JERR_FILE_WRITE);
 
   if (cmap_entries > 0)
@@ -342,9 +342,9 @@ write_os2_header(j_decompress_ptr cinfo, bmp_dest_ptr dest)
   PUT_2B(bmpcoreheader, 8, 1);  /* bcPlanes - must be 1 */
   PUT_2B(bmpcoreheader, 10, bits_per_pixel); /* bcBitCount */
 
-  if (JFWRITE(dest->pub.output_file, bmpfileheader, 14) != (size_t)14)
+  if (fwrite(bmpfileheader, 1, 14, dest->pub.output_file) != (size_t)14)
     ERREXIT(cinfo, JERR_FILE_WRITE);
-  if (JFWRITE(dest->pub.output_file, bmpcoreheader, 12) != (size_t)12)
+  if (fwrite(bmpcoreheader, 1, 12, dest->pub.output_file) != (size_t)12)
     ERREXIT(cinfo, JERR_FILE_WRITE);
 
   if (cmap_entries > 0)
@@ -456,7 +456,7 @@ finish_output_bmp(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
         ((j_common_ptr)cinfo, dest->whole_image, row - 1, (JDIMENSION)1,
          FALSE);
       data_ptr = image_ptr[0];
-      (void)JFWRITE(outfile, data_ptr, dest->row_width);
+      fwrite(data_ptr, 1, dest->row_width, outfile);
     }
     if (progress != NULL)
       progress->completed_extra_passes++;

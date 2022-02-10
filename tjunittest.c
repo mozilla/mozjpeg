@@ -1,5 +1,6 @@
 /*
- * Copyright (C)2009-2014, 2017-2019 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2014, 2017-2019, 2022 D. R. Commander.
+ *                                         All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,6 +30,10 @@
 /*
  * This program tests the various code paths in the TurboJPEG C Wrapper
  */
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -360,7 +360,7 @@ if(MSVC)
       endif()
     endforeach()
   endif()
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W3 /wd4996")
+  add_definitions(-D_CRT_NONSTDC_NO_WARNINGS)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
@@ -708,6 +708,8 @@ add_executable(wrjpgcom wrjpgcom.c)
 if(WITH_FUZZ)
   add_subdirectory(fuzz)
 endif()
+
+add_executable(strtest strtest.c)
 
 add_subdirectory(md5)
 

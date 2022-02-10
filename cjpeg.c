@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013-2014, 2017, 2019-2021, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, 2017, 2019-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -26,6 +26,10 @@
  *      cjpeg [options]  -outfile outputfile  inputfile
  * works regardless of which command line style is used.
  */
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
 
 #ifdef CJPEG_FUZZER
 #define JPEG_INTERNALS

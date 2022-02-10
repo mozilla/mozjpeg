@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017, 2019, 2021 D. R. Commander.
- *                                                     All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015, 2017, 2019, 2021-2022
+ *           D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,6 +31,10 @@
  * This program demonstrates how to compress, decompress, and transform JPEG
  * images using the TurboJPEG C API
  */
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

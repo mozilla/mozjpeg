@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2014, 2017, 2019-2021, D. R. Commander.
+ * Copyright (C) 2010, 2014, 2017, 2019-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -13,6 +13,10 @@
  * lossless transcoding between different JPEG file formats.  It also
  * provides some lossless and sort-of-lossless transformations of JPEG data.
  */
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
 
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "transupp.h"           /* Support routines for jpegtran */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2021 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2022 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,9 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "turbojpeg.h"
-#ifdef WIN32
-#include "tjutil.h"
-#endif
+#include "jinclude.h"
 #include <jni.h>
 #include "java/org_libjpegturbo_turbojpeg_TJCompressor.h"
 #include "java/org_libjpegturbo_turbojpeg_TJDecompressor.h"
@@ -88,10 +86,7 @@
   BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "handle", "J")); \
   handle = (tjhandle)(size_t)(*env)->GetLongField(env, obj, _fid);
 
-#ifdef _WIN32
-#define setenv(envvar, value, dummy)  _putenv_s(envvar, value)
-#endif
-
+#ifndef NO_PUTENV
 #define PROP2ENV(property, envvar) { \
   if ((jName = (*env)->NewStringUTF(env, property)) != NULL) { \
     jboolean exception; \
@@ -99,11 +94,12 @@
     exception = (*env)->ExceptionCheck(env); \
     if (jValue && !exception && \
         (value = (*env)->GetStringUTFChars(env, jValue, 0)) != NULL) { \
-      setenv(envvar, value, 1); \
+      PUTENV_S(envvar, value); \
       (*env)->ReleaseStringUTFChars(env, jValue, value); \
     } \
   } \
 }
+#endif
 
 #define SAFE_RELEASE(javaArray, cArray) { \
   if (javaArray && cArray) \
@@ -122,10 +118,12 @@ static int ProcessSystemProperties(JNIEnv *env)
   BAILIF0(mid = (*env)->GetStaticMethodID(env, cls, "getProperty",
     "(Ljava/lang/String;)Ljava/lang/String;"));
 
+#ifndef NO_PUTENV
   PROP2ENV("turbojpeg.optimize", "TJ_OPTIMIZE");
   PROP2ENV("turbojpeg.arithmetic", "TJ_ARITHMETIC");
   PROP2ENV("turbojpeg.restart", "TJ_RESTART");
   PROP2ENV("turbojpeg.progressive", "TJ_PROGRESSIVE");
+#endif
   return 0;
 
 bailout:

@@ -17,6 +17,10 @@
  *      -sample HxV[,HxV,...]   Set component sampling factors
  */
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include <ctype.h>              /* to declare isdigit(), isspace() */
 

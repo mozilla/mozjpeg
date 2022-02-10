@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, 2017, 2021, D. R. Commander.
+ * Copyright (C) 2014, 2017, 2021-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -268,6 +268,7 @@ JMESSAGE(JERR_BAD_DROP_SAMPLING,
 #define ERREXITS(cinfo, code, str) \
   ((cinfo)->err->msg_code = (code), \
    strncpy((cinfo)->err->msg_parm.s, (str), JMSG_STR_PARM_MAX), \
+   (cinfo)->err->msg_parm.s[JMSG_STR_PARM_MAX - 1] = '\0', \
    (*(cinfo)->err->error_exit) ((j_common_ptr)(cinfo)))
 
 #define MAKESTMT(stuff)         do { stuff } while (0)
@@ -324,6 +325,7 @@ JMESSAGE(JERR_BAD_DROP_SAMPLING,
 #define TRACEMSS(cinfo, lvl, code, str) \
   ((cinfo)->err->msg_code = (code), \
    strncpy((cinfo)->err->msg_parm.s, (str), JMSG_STR_PARM_MAX), \
+   (cinfo)->err->msg_parm.s[JMSG_STR_PARM_MAX - 1] = '\0', \
    (*(cinfo)->err->emit_message) ((j_common_ptr)(cinfo), (lvl)))
 
 #endif /* JERROR_H */

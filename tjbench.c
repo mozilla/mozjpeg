@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2019, 2021 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2019, 2021-2022 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -61,8 +61,10 @@ int tjErrorLine = -1, tjErrorCode = -1;
     if (strncmp(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX) || \
         strncmp(tjErrorMsg, m, JMSG_LENGTH_MAX) || \
         tjErrorCode != _tjErrorCode || tjErrorLine != __LINE__) { \
-      strncpy(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX - 1); \
-      strncpy(tjErrorMsg, m, JMSG_LENGTH_MAX - 1); \
+      strncpy(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX); \
+      tjErrorStr[JMSG_LENGTH_MAX - 1] = '\0'; \
+      strncpy(tjErrorMsg, m, JMSG_LENGTH_MAX); \
+      tjErrorMsg[JMSG_LENGTH_MAX - 1] = '\0'; \
       tjErrorCode = _tjErrorCode; \
       tjErrorLine = __LINE__; \
       printf("WARNING in line %d while %s:\n%s\n", __LINE__, m, _tjErrorStr); \

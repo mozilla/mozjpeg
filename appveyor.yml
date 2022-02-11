@@ -47,6 +47,18 @@ build_script:
 
       bash c:/buildscripts/buildljt -d %MINGWPATH% -b /c/ljt.nightly -v
 
+      cmake --build . --target clean
+
+      md win64
+
+      cd win64
+
+      bash c:/buildscripts/setupscripts/win64 -DCMAKE_C_FLAGS='-DWIN32 -D_WINDOWS -W4 -wd4100 -wd4127 -wd4245 -wd4324 -wd4701 -wd4702 -wd4706 -WX'
+
+      cd ..
+
+      ninja
+
       move c:\ljt.nightly\files\*.tar.gz .
 
       move c:\ljt.nightly\files\*.exe .

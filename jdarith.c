@@ -471,17 +471,17 @@ decode_mcu_AC_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       if (*thiscoef) {                          /* previously nonzero coef */
         if (arith_decode(cinfo, st + 2)) {
           if (*thiscoef < 0)
-            *thiscoef += m1;
+            *thiscoef += (JCOEF)m1;
           else
-            *thiscoef += p1;
+            *thiscoef += (JCOEF)p1;
         }
         break;
       }
       if (arith_decode(cinfo, st + 1)) {        /* newly nonzero coef */
         if (arith_decode(cinfo, entropy->fixed_bin))
-          *thiscoef = m1;
+          *thiscoef = (JCOEF)m1;
         else
-          *thiscoef = p1;
+          *thiscoef = (JCOEF)p1;
         break;
       }
       st += 3;  k++;

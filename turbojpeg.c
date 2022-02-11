@@ -680,7 +680,8 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
                           unsigned char **jpegBuf, unsigned long *jpegSize,
                           int jpegSubsamp, int jpegQual, int flags)
 {
-  int i, retval = 0, alloc = 1;
+  int i, retval = 0;
+  boolean alloc = TRUE;
   JSAMPROW *row_pointer = NULL;
 
   GET_CINSTANCE(handle)
@@ -714,7 +715,7 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 #endif
 
   if (flags & TJFLAG_NOREALLOC) {
-    alloc = 0;  *jpegSize = tjBufSize(width, height, jpegSubsamp);
+    alloc = FALSE;  *jpegSize = tjBufSize(width, height, jpegSubsamp);
   }
   jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
   setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual, flags);
@@ -988,7 +989,8 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
                                       unsigned long *jpegSize, int jpegQual,
                                       int flags)
 {
-  int i, row, retval = 0, alloc = 1;
+  int i, row, retval = 0;
+  boolean alloc = TRUE;
   int pw[MAX_COMPONENTS], ph[MAX_COMPONENTS], iw[MAX_COMPONENTS],
     tmpbufsize = 0, usetmpbuf = 0, th[MAX_COMPONENTS];
   JSAMPLE *_tmpbuf = NULL, *ptr;
@@ -1026,7 +1028,7 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
 #endif
 
   if (flags & TJFLAG_NOREALLOC) {
-    alloc = 0;  *jpegSize = tjBufSize(width, height, subsamp);
+    alloc = FALSE;  *jpegSize = tjBufSize(width, height, subsamp);
   }
   jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
   setCompDefaults(cinfo, TJPF_RGB, subsamp, jpegQual, flags);
@@ -1904,7 +1906,8 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
 {
   jpeg_transform_info *xinfo = NULL;
   jvirt_barray_ptr *srccoefs, *dstcoefs;
-  int retval = 0, alloc = 1, i, jpegSubsamp, saveMarkers = 0;
+  int retval = 0, i, jpegSubsamp, saveMarkers = 0;
+  boolean alloc = TRUE;
   struct my_progress_mgr progress;
 
   GET_INSTANCE(handle);
@@ -2000,7 +2003,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
       w = xinfo[i].crop_width;  h = xinfo[i].crop_height;
     }
     if (flags & TJFLAG_NOREALLOC) {
-      alloc = 0;  dstSizes[i] = tjBufSize(w, h, jpegSubsamp);
+      alloc = FALSE;  dstSizes[i] = tjBufSize(w, h, jpegSubsamp);
     }
     if (!(t[i].options & TJXOPT_NOOUTPUT))
       jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i], alloc);

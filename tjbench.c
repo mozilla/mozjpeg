@@ -292,16 +292,17 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
 
           if (y > 255) y = 255;
           if (y < 0) y = 0;
-          dstBuf[rindex] = abs(dstBuf[rindex] - y);
-          dstBuf[gindex] = abs(dstBuf[gindex] - y);
-          dstBuf[bindex] = abs(dstBuf[bindex] - y);
+          dstBuf[rindex] = (unsigned char)abs(dstBuf[rindex] - y);
+          dstBuf[gindex] = (unsigned char)abs(dstBuf[gindex] - y);
+          dstBuf[bindex] = (unsigned char)abs(dstBuf[bindex] - y);
         }
       }
     } else {
       for (row = 0; row < h; row++)
         for (col = 0; col < w * ps; col++)
           dstBuf[pitch * row + col] =
-            abs(dstBuf[pitch * row + col] - srcBuf[pitch * row + col]);
+            (unsigned char)abs(dstBuf[pitch * row + col] -
+                               srcBuf[pitch * row + col]);
     }
     if (tjSaveImage(tempStr, dstBuf, w, 0, h, pf, flags) == -1)
       THROW_TJG("saving bitmap");

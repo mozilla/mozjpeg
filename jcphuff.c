@@ -584,8 +584,8 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       continue; \
     /* For a negative coef, want temp2 = bitwise complement of abs(coef) */ \
     temp2 ^= temp; \
-    values[k] = temp; \
-    values[k + DCTSIZE2] = temp2; \
+    values[k] = (JCOEF)temp; \
+    values[k + DCTSIZE2] = (JCOEF)temp2; \
     zerobits |= ((size_t)1U) << k; \
   } \
 }

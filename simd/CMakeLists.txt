@@ -258,28 +258,30 @@ endif()
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    const int16_t input[] = {
+    int16_t input[] = {
       (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
       (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
       (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc
     };
     int16x4x3_t output = vld1_s16_x3(input);
-    return (int)output.val[0][0];
+    vst3_s16(input, output);
+    return (int)input[0];
   }" HAVE_VLD1_S16_X3)
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    const uint16_t input[] = {
+    uint16_t input[] = {
       (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc,
       (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc
     };
     uint16x4x2_t output = vld1_u16_x2(input);
-    return (int)output.val[0][0];
+    vst2_u16(input, output);
+    return (int)input[0];
   }" HAVE_VLD1_U16_X2)
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    const uint8_t input[] = {
+    uint8_t input[] = {
       (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
       (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
       (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
@@ -298,7 +300,8 @@ check_c_source_compiles("
       (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc
     };
     uint8x16x4_t output = vld1q_u8_x4(input);
-    return (int)output.val[0][0];
+    vst4q_u8(input, output);
+    return (int)input[0];
   }" HAVE_VLD1Q_U8_X4)
 if(BITS EQUAL 32)
   unset(CMAKE_REQUIRED_FLAGS)

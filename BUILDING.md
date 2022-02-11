@@ -29,21 +29,6 @@ Build Requirements
     Red Hat Enterprise Linux 8 and in the PowerTools repository on CentOS 8,
     which is not enabled by default.
 
-  The binary RPMs released by the NASM project do not work on older Linux
-  systems, such as Red Hat Enterprise Linux 5.  On such systems, you can easily
-  build and install NASM from a source RPM by downloading one of the SRPMs from
-
-  <http://www.nasm.us/pub/nasm/releasebuilds>
-
-  and executing the following as root:
-
-        ARCH=`uname -m`
-        rpmbuild --rebuild nasm-{version}.src.rpm
-        rpm -Uvh /usr/src/redhat/RPMS/$ARCH/nasm-{version}.$ARCH.rpm
-
-  NOTE: the NASM build will fail if texinfo is not installed.
-
-
 ### Un*x Platforms (including Linux, Mac, FreeBSD, Solaris, and Cygwin)
 
 - GCC v4.1 (or later) or Clang recommended for best performance

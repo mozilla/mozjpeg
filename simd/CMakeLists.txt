@@ -21,7 +21,7 @@ set(CMAKE_ASM_NASM_FLAGS_RELWITHDEBINFO_INIT "-g")
 # environment variable.  This should happen automatically, but unfortunately
 # enable_language(ASM_NASM) doesn't parse the ASM_NASM environment variable
 # until after CMAKE_ASM_NASM_COMPILER has been populated with the results of
-# searching for NASM or YASM in the PATH.
+# searching for NASM or Yasm in the PATH.
 if(NOT DEFINED CMAKE_ASM_NASM_COMPILER AND DEFINED ENV{ASM_NASM})
   set(CMAKE_ASM_NASM_COMPILER $ENV{ASM_NASM})
 endif()

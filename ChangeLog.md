@@ -665,7 +665,7 @@ algorithm that caused incorrect dithering in the output image.  This algorithm
 now produces bitwise-identical results to the unmerged algorithms.
 
 12. The SIMD function symbols for x86[-64]/ELF, MIPS/ELF, macOS/x86[-64] (if
-libjpeg-turbo is built with YASM), and iOS/Arm[64] builds are now private.
+libjpeg-turbo is built with Yasm), and iOS/Arm[64] builds are now private.
 This prevents those symbols from being exposed in applications or shared
 libraries that link statically with libjpeg-turbo.
 
@@ -1550,8 +1550,8 @@ either the fast or the accurate DCT/IDCT algorithms in the underlying codec.
 
 ### Significant changes relative to 1.2 beta1:
 
-1. Fixed build issue with YASM on Unix systems (the libjpeg-turbo build system
-was not adding the current directory to the assembler include path, so YASM
+1. Fixed build issue with Yasm on Unix systems (the libjpeg-turbo build system
+was not adding the current directory to the assembler include path, so Yasm
 was not able to find jsimdcfg.inc.)
 
 2. Fixed out-of-bounds read in SSE2 SIMD code that occurred when decompressing
@@ -1619,7 +1619,7 @@ transposed or rotated 90 degrees.
 8. All legacy VirtualGL code has been re-factored, and this has allowed
 libjpeg-turbo, in its entirety, to be re-licensed under a BSD-style license.
 
-9. libjpeg-turbo can now be built with YASM.
+9. libjpeg-turbo can now be built with Yasm.
 
 10. Added SIMD acceleration for ARM Linux and iOS platforms that support
 NEON instructions.

@@ -10,18 +10,18 @@ Build Requirements
 
 - [CMake](http://www.cmake.org) v2.8.12 or later
 
-- [NASM](http://www.nasm.us) or [YASM](http://yasm.tortall.net)
+- [NASM](http://www.nasm.us) or [Yasm](http://yasm.tortall.net)
   (if building x86 or x86-64 SIMD extensions)
   * If using NASM, 2.13 or later is required.
-  * If using YASM, 1.2.0 or later is required.
-  * If building on macOS, NASM or YASM can be obtained from
+  * If using Yasm, 1.2.0 or later is required.
+  * If building on macOS, NASM or Yasm can be obtained from
     [MacPorts](http://www.macports.org/) or [Homebrew](http://brew.sh/).
      - NOTE: Currently, if it is desirable to hide the SIMD function symbols in
        Mac executables or shared libraries that statically link with
-       libjpeg-turbo, then NASM 2.14 or later or YASM must be used when
+       libjpeg-turbo, then NASM 2.14 or later or Yasm must be used when
        building libjpeg-turbo.
   * If building on Windows, **nasm.exe**/**yasm.exe** should be in your `PATH`.
-  * NASM and YASM are located in the CRB (Code Ready Builder) repository on
+  * NASM and Yasm are located in the CRB (Code Ready Builder) repository on
     Red Hat Enterprise Linux 8 and in the PowerTools repository on CentOS 8,
     which is not enabled by default.
 

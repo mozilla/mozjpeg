@@ -100,8 +100,8 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   bmp_dest_ptr dest = (bmp_dest_ptr)dinfo;
   JSAMPARRAY image_ptr;
-  register JSAMPROW inptr, outptr;
-  register JDIMENSION col;
+  JSAMPROW inptr, outptr;
+  JDIMENSION col;
   int pad;
 
   if (dest->use_inversion_array) {
@@ -146,10 +146,10 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
       outptr += 3;
     }
   } else {
-    register int rindex = rgb_red[cinfo->out_color_space];
-    register int gindex = rgb_green[cinfo->out_color_space];
-    register int bindex = rgb_blue[cinfo->out_color_space];
-    register int ps = rgb_pixelsize[cinfo->out_color_space];
+    int rindex = rgb_red[cinfo->out_color_space];
+    int gindex = rgb_green[cinfo->out_color_space];
+    int bindex = rgb_blue[cinfo->out_color_space];
+    int ps = rgb_pixelsize[cinfo->out_color_space];
 
     for (col = cinfo->output_width; col > 0; col--) {
       outptr[0] = inptr[bindex];
@@ -175,7 +175,7 @@ put_gray_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   bmp_dest_ptr dest = (bmp_dest_ptr)dinfo;
   JSAMPARRAY image_ptr;
-  register JSAMPROW inptr, outptr;
+  JSAMPROW inptr, outptr;
   int pad;
 
   if (dest->use_inversion_array) {
@@ -432,9 +432,9 @@ METHODDEF(void)
 finish_output_bmp(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   bmp_dest_ptr dest = (bmp_dest_ptr)dinfo;
-  register FILE *outfile = dest->pub.output_file;
+  FILE *outfile = dest->pub.output_file;
   JSAMPARRAY image_ptr;
-  register JSAMPROW data_ptr;
+  JSAMPROW data_ptr;
   JDIMENSION row;
   cd_progress_ptr progress = (cd_progress_ptr)cinfo->progress;
 

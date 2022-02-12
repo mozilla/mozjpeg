@@ -76,7 +76,7 @@ pbm_getc(FILE *infile)
 /* Read next char, skipping over any comments */
 /* A comment/newline sequence is returned as a newline */
 {
-  register int ch;
+  int ch;
 
   ch = getc(infile);
   if (ch == '#') {
@@ -95,8 +95,8 @@ read_pbm_integer(j_compress_ptr cinfo, FILE *infile, unsigned int maxval)
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
 /* This should not be a problem in practice. */
 {
-  register int ch;
-  register unsigned int val;
+  int ch;
+  unsigned int val;
 
   /* Skip any leading whitespace */
   do {
@@ -137,8 +137,8 @@ get_text_gray_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
   FILE *infile = source->pub.input_file;
-  register JSAMPROW ptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
 
@@ -165,15 +165,15 @@ get_text_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
   FILE *infile = source->pub.input_file;
-  register JSAMPROW ptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
-  register int rindex = rgb_red[cinfo->in_color_space];
-  register int gindex = rgb_green[cinfo->in_color_space];
-  register int bindex = rgb_blue[cinfo->in_color_space];
-  register int aindex = alpha_index[cinfo->in_color_space];
-  register int ps = rgb_pixelsize[cinfo->in_color_space];
+  int rindex = rgb_red[cinfo->in_color_space];
+  int gindex = rgb_green[cinfo->in_color_space];
+  int bindex = rgb_blue[cinfo->in_color_space];
+  int aindex = alpha_index[cinfo->in_color_space];
+  int ps = rgb_pixelsize[cinfo->in_color_space];
 
   ptr = source->pub.buffer[0];
   if (maxval == MAXJSAMPLE) {
@@ -200,8 +200,8 @@ get_text_gray_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
   FILE *infile = source->pub.input_file;
-  register JSAMPROW ptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
 
@@ -239,15 +239,15 @@ get_text_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
   FILE *infile = source->pub.input_file;
-  register JSAMPROW ptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
-  register int rindex = rgb_red[cinfo->in_color_space];
-  register int gindex = rgb_green[cinfo->in_color_space];
-  register int bindex = rgb_blue[cinfo->in_color_space];
-  register int aindex = alpha_index[cinfo->in_color_space];
-  register int ps = rgb_pixelsize[cinfo->in_color_space];
+  int rindex = rgb_red[cinfo->in_color_space];
+  int gindex = rgb_green[cinfo->in_color_space];
+  int bindex = rgb_blue[cinfo->in_color_space];
+  int aindex = alpha_index[cinfo->in_color_space];
+  int ps = rgb_pixelsize[cinfo->in_color_space];
 
   ptr = source->pub.buffer[0];
   if (maxval == MAXJSAMPLE) {
@@ -274,8 +274,8 @@ get_text_rgb_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
   FILE *infile = source->pub.input_file;
-  register JSAMPROW ptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
 
@@ -306,9 +306,9 @@ get_scaled_gray_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading raw-byte-format PGM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
-  register JSAMPROW ptr;
-  register U_CHAR *bufferptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  U_CHAR *bufferptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
 
   if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
@@ -328,16 +328,16 @@ get_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
    and converting to extended RGB */
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
-  register JSAMPROW ptr;
-  register U_CHAR *bufferptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  U_CHAR *bufferptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
-  register int rindex = rgb_red[cinfo->in_color_space];
-  register int gindex = rgb_green[cinfo->in_color_space];
-  register int bindex = rgb_blue[cinfo->in_color_space];
-  register int aindex = alpha_index[cinfo->in_color_space];
-  register int ps = rgb_pixelsize[cinfo->in_color_space];
+  int rindex = rgb_red[cinfo->in_color_space];
+  int gindex = rgb_green[cinfo->in_color_space];
+  int bindex = rgb_blue[cinfo->in_color_space];
+  int aindex = alpha_index[cinfo->in_color_space];
+  int ps = rgb_pixelsize[cinfo->in_color_space];
 
   if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
     ERREXIT(cinfo, JERR_INPUT_EOF);
@@ -364,9 +364,9 @@ get_gray_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
    and converting to CMYK */
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
-  register JSAMPROW ptr;
-  register U_CHAR *bufferptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  U_CHAR *bufferptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
 
@@ -396,16 +396,16 @@ get_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading raw-byte-format PPM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
-  register JSAMPROW ptr;
-  register U_CHAR *bufferptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  U_CHAR *bufferptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
-  register int rindex = rgb_red[cinfo->in_color_space];
-  register int gindex = rgb_green[cinfo->in_color_space];
-  register int bindex = rgb_blue[cinfo->in_color_space];
-  register int aindex = alpha_index[cinfo->in_color_space];
-  register int ps = rgb_pixelsize[cinfo->in_color_space];
+  int rindex = rgb_red[cinfo->in_color_space];
+  int gindex = rgb_green[cinfo->in_color_space];
+  int bindex = rgb_blue[cinfo->in_color_space];
+  int aindex = alpha_index[cinfo->in_color_space];
+  int ps = rgb_pixelsize[cinfo->in_color_space];
 
   if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
     ERREXIT(cinfo, JERR_INPUT_EOF);
@@ -432,9 +432,9 @@ get_rgb_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
    converting to CMYK */
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
-  register JSAMPROW ptr;
-  register U_CHAR *bufferptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  U_CHAR *bufferptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
 
@@ -483,9 +483,9 @@ get_word_gray_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading raw-word-format PGM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
-  register JSAMPROW ptr;
-  register U_CHAR *bufferptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  U_CHAR *bufferptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
 
@@ -494,7 +494,7 @@ get_word_gray_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   ptr = source->pub.buffer[0];
   bufferptr = source->iobuffer;
   for (col = cinfo->image_width; col > 0; col--) {
-    register unsigned int temp;
+    unsigned int temp;
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)
@@ -510,23 +510,23 @@ get_word_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading raw-word-format PPM files with any maxval */
 {
   ppm_source_ptr source = (ppm_source_ptr)sinfo;
-  register JSAMPROW ptr;
-  register U_CHAR *bufferptr;
-  register JSAMPLE *rescale = source->rescale;
+  JSAMPROW ptr;
+  U_CHAR *bufferptr;
+  JSAMPLE *rescale = source->rescale;
   JDIMENSION col;
   unsigned int maxval = source->maxval;
-  register int rindex = rgb_red[cinfo->in_color_space];
-  register int gindex = rgb_green[cinfo->in_color_space];
-  register int bindex = rgb_blue[cinfo->in_color_space];
-  register int aindex = alpha_index[cinfo->in_color_space];
-  register int ps = rgb_pixelsize[cinfo->in_color_space];
+  int rindex = rgb_red[cinfo->in_color_space];
+  int gindex = rgb_green[cinfo->in_color_space];
+  int bindex = rgb_blue[cinfo->in_color_space];
+  int aindex = alpha_index[cinfo->in_color_space];
+  int ps = rgb_pixelsize[cinfo->in_color_space];
 
   if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
     ERREXIT(cinfo, JERR_INPUT_EOF);
   ptr = source->pub.buffer[0];
   bufferptr = source->iobuffer;
   for (col = cinfo->image_width; col > 0; col--) {
-    register unsigned int temp;
+    unsigned int temp;
     temp  = UCH(*bufferptr++) << 8;
     temp |= UCH(*bufferptr++);
     if (temp > maxval)

@@ -345,8 +345,8 @@ emit_bits (phuff_entropy_ptr entropy, unsigned int code, int size)
 /* Emit some bits, unless we are in gather mode */
 {
   /* This routine is heavily used, so it's worth coding tightly. */
-  register size_t put_buffer = (size_t) code;
-  register int put_bits = entropy->put_bits;
+  size_t put_buffer = (size_t) code;
+  int put_bits = entropy->put_bits;
 
   /* if size is 0, caller used an invalid Huffman table entry */
   if (size == 0)
@@ -430,7 +430,7 @@ emit_buffered_bits (phuff_entropy_ptr entropy, char *bufstart,
 LOCAL(void)
 emit_eobrun (phuff_entropy_ptr entropy)
 {
-  register int temp, nbits;
+  int temp, nbits;
 
   if (entropy->EOBRUN > 0) {    /* if there is any pending EOBRUN */
     temp = entropy->EOBRUN;
@@ -490,8 +490,8 @@ METHODDEF(boolean)
 encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  register int temp, temp2, temp3;
-  register int nbits;
+  int temp, temp2, temp3;
+  int nbits;
   int blkn, ci;
   int Al = cinfo->Al;
   JBLOCKROW block;
@@ -602,7 +602,7 @@ encode_mcu_AC_first_prepare(const JCOEF *block,
                             const int *jpeg_natural_order_start, int Sl,
                             int Al, JCOEF *values, size_t *bits)
 {
-  register int k, temp, temp2;
+  int k, temp, temp2;
   size_t zerobits = 0U;
   int Sl0 = Sl;
 
@@ -669,8 +669,8 @@ METHODDEF(boolean)
 encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  register int temp, temp2;
-  register int nbits, r;
+  int temp, temp2;
+  int nbits, r;
   int Sl = cinfo->Se - cinfo->Ss + 1;
   int Al = cinfo->Al;
   JCOEF values_unaligned[2 * DCTSIZE2 + 15];
@@ -761,7 +761,7 @@ METHODDEF(boolean)
 encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  register int temp;
+  int temp;
   int blkn;
   int Al = cinfo->Al;
   JBLOCKROW block;
@@ -833,7 +833,7 @@ encode_mcu_AC_refine_prepare(const JCOEF *block,
                              const int *jpeg_natural_order_start, int Sl,
                              int Al, JCOEF *absvalues, size_t *bits)
 {
-  register int k, temp, temp2;
+  int k, temp, temp2;
   int EOB = 0;
   size_t zerobits = 0U, signbits = 0U;
   int Sl0 = Sl;
@@ -933,7 +933,7 @@ METHODDEF(boolean)
 encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  register int temp, r, idx;
+  int temp, r, idx;
   char *BR_buffer;
   unsigned int BR;
   int Sl = cinfo->Se - cinfo->Ss + 1;

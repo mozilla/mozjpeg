@@ -119,8 +119,8 @@ typedef struct {                /* Bitreading working state within an MCU */
 
 /* Macros to declare and load/save bitread local variables. */
 #define BITREAD_STATE_VARS \
-  register bit_buf_type get_buffer; \
-  register int bits_left; \
+  bit_buf_type get_buffer; \
+  int bits_left; \
   bitread_working_state br_state
 
 #define BITREAD_LOAD_STATE(cinfop, permstate) \
@@ -173,8 +173,8 @@ typedef struct {                /* Bitreading working state within an MCU */
 
 /* Load up the bit buffer to a depth of at least nbits */
 EXTERN(boolean) jpeg_fill_bit_buffer(bitread_working_state *state,
-                                     register bit_buf_type get_buffer,
-                                     register int bits_left, int nbits);
+                                     bit_buf_type get_buffer,
+                                     int bits_left, int nbits);
 
 
 /*
@@ -195,7 +195,7 @@ EXTERN(boolean) jpeg_fill_bit_buffer(bitread_working_state *state,
  */
 
 #define HUFF_DECODE(result, state, htbl, failaction, slowlabel) { \
-  register int nb, look; \
+  int nb, look; \
   if (bits_left < HUFF_LOOKAHEAD) { \
     if (!jpeg_fill_bit_buffer(&state, get_buffer, bits_left, 0)) \
       { failaction; } \
@@ -242,6 +242,6 @@ slowlabel: \
 
 /* Out-of-line case for Huffman code fetching */
 EXTERN(int) jpeg_huff_decode(bitread_working_state *state,
-                             register bit_buf_type get_buffer,
-                             register int bits_left, d_derived_tbl *htbl,
+                             bit_buf_type get_buffer,
+                             int bits_left, d_derived_tbl *htbl,
                              int min_bits);

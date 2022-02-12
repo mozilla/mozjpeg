@@ -797,9 +797,9 @@ LOCAL(void)
 htest_one_block(j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
                 long dc_counts[], long ac_counts[])
 {
-  register int temp;
-  register int nbits;
-  register int k, r;
+  int temp;
+  int nbits;
+  int k, r;
 
   /* Encode the DC coefficient difference per section F.1.2.1 */
 

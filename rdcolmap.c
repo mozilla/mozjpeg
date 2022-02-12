@@ -122,7 +122,7 @@ pbm_getc(FILE *infile)
 /* Read next char, skipping over any comments */
 /* A comment/newline sequence is returned as a newline */
 {
-  register int ch;
+  int ch;
 
   ch = getc(infile);
   if (ch == '#') {
@@ -141,8 +141,8 @@ read_pbm_integer(j_decompress_ptr cinfo, FILE *infile)
 /* Note that on a 16-bit-int machine, only values up to 64k can be read. */
 /* This should not be a problem in practice. */
 {
-  register int ch;
-  register unsigned int val;
+  int ch;
+  unsigned int val;
 
   /* Skip any leading whitespace */
   do {

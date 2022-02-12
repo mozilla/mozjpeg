@@ -11,9 +11,9 @@ LOCAL(void)
 expand_right_edge(JSAMPARRAY image_data, int num_rows, JDIMENSION input_cols,
                   JDIMENSION output_cols)
 {
-  register JSAMPROW ptr;
-  register JSAMPLE pixval;
-  register int count;
+  JSAMPROW ptr;
+  JSAMPLE pixval;
+  int count;
   int row;
   int numcols = (int)(output_cols - input_cols);
 

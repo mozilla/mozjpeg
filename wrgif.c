@@ -358,12 +358,12 @@ put_LZW_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
                    JDIMENSION rows_supplied)
 {
   gif_dest_ptr dest = (gif_dest_ptr)dinfo;
-  register JSAMPROW ptr;
-  register JDIMENSION col;
+  JSAMPROW ptr;
+  JDIMENSION col;
   code_int c;
-  register hash_int i;
-  register hash_int disp;
-  register hash_entry probe_value;
+  hash_int i;
+  hash_int disp;
+  hash_entry probe_value;
 
   ptr = dest->pub.buffer[0];
   for (col = cinfo->output_width; col > 0; col--) {
@@ -459,8 +459,8 @@ put_raw_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
                    JDIMENSION rows_supplied)
 {
   gif_dest_ptr dest = (gif_dest_ptr)dinfo;
-  register JSAMPROW ptr;
-  register JDIMENSION col;
+  JSAMPROW ptr;
+  JDIMENSION col;
   code_int c;
 
   ptr = dest->pub.buffer[0];

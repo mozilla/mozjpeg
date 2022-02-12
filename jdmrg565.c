@@ -20,13 +20,13 @@ h2v1_merged_upsample_565_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                                   JSAMPARRAY output_buf)
 {
   my_merged_upsample_ptr upsample = (my_merged_upsample_ptr)cinfo->upsample;
-  register int y, cred, cgreen, cblue;
+  int y, cred, cgreen, cblue;
   int cb, cr;
-  register JSAMPROW outptr;
+  JSAMPROW outptr;
   JSAMPROW inptr0, inptr1, inptr2;
   JDIMENSION col;
   /* copy these pointers into registers if possible */
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
   int *Crrtab = upsample->Cr_r_tab;
   int *Cbbtab = upsample->Cb_b_tab;
   JLONG *Crgtab = upsample->Cr_g_tab;
@@ -91,13 +91,13 @@ h2v1_merged_upsample_565D_internal(j_decompress_ptr cinfo,
                                    JSAMPARRAY output_buf)
 {
   my_merged_upsample_ptr upsample = (my_merged_upsample_ptr)cinfo->upsample;
-  register int y, cred, cgreen, cblue;
+  int y, cred, cgreen, cblue;
   int cb, cr;
-  register JSAMPROW outptr;
+  JSAMPROW outptr;
   JSAMPROW inptr0, inptr1, inptr2;
   JDIMENSION col;
   /* copy these pointers into registers if possible */
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
   int *Crrtab = upsample->Cr_r_tab;
   int *Cbbtab = upsample->Cb_b_tab;
   JLONG *Crgtab = upsample->Cr_g_tab;
@@ -164,13 +164,13 @@ h2v2_merged_upsample_565_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                                   JSAMPARRAY output_buf)
 {
   my_merged_upsample_ptr upsample = (my_merged_upsample_ptr)cinfo->upsample;
-  register int y, cred, cgreen, cblue;
+  int y, cred, cgreen, cblue;
   int cb, cr;
-  register JSAMPROW outptr0, outptr1;
+  JSAMPROW outptr0, outptr1;
   JSAMPROW inptr00, inptr01, inptr1, inptr2;
   JDIMENSION col;
   /* copy these pointers into registers if possible */
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
   int *Crrtab = upsample->Cr_r_tab;
   int *Cbbtab = upsample->Cb_b_tab;
   JLONG *Crgtab = upsample->Cr_g_tab;
@@ -260,13 +260,13 @@ h2v2_merged_upsample_565D_internal(j_decompress_ptr cinfo,
                                    JSAMPARRAY output_buf)
 {
   my_merged_upsample_ptr upsample = (my_merged_upsample_ptr)cinfo->upsample;
-  register int y, cred, cgreen, cblue;
+  int y, cred, cgreen, cblue;
   int cb, cr;
-  register JSAMPROW outptr0, outptr1;
+  JSAMPROW outptr0, outptr1;
   JSAMPROW inptr00, inptr01, inptr1, inptr2;
   JDIMENSION col;
   /* copy these pointers into registers if possible */
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
   int *Crrtab = upsample->Cr_r_tab;
   int *Cbbtab = upsample->Cb_b_tab;
   JLONG *Crgtab = upsample->Cr_g_tab;

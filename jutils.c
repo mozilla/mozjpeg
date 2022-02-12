@@ -100,9 +100,9 @@ jcopy_sample_rows(JSAMPARRAY input_array, int source_row,
  * The source and destination arrays must be at least as wide as num_cols.
  */
 {
-  register JSAMPROW inptr, outptr;
-  register size_t count = (size_t)(num_cols * sizeof(JSAMPLE));
-  register int row;
+  JSAMPROW inptr, outptr;
+  size_t count = (size_t)(num_cols * sizeof(JSAMPLE));
+  int row;
 
   input_array += source_row;
   output_array += dest_row;

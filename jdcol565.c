@@ -22,17 +22,17 @@ ycc_rgb565_convert_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                             int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
-  register int y, cb, cr;
-  register JSAMPROW outptr;
-  register JSAMPROW inptr0, inptr1, inptr2;
-  register JDIMENSION col;
+  int y, cb, cr;
+  JSAMPROW outptr;
+  JSAMPROW inptr0, inptr1, inptr2;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
   /* copy these pointers into registers if possible */
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
-  register int *Crrtab = cconvert->Cr_r_tab;
-  register int *Cbbtab = cconvert->Cb_b_tab;
-  register JLONG *Crgtab = cconvert->Cr_g_tab;
-  register JLONG *Cbgtab = cconvert->Cb_g_tab;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
+  int *Crrtab = cconvert->Cr_r_tab;
+  int *Cbbtab = cconvert->Cb_b_tab;
+  JLONG *Crgtab = cconvert->Cr_g_tab;
+  JLONG *Cbgtab = cconvert->Cb_g_tab;
   SHIFT_TEMPS
 
   while (--num_rows >= 0) {
@@ -101,17 +101,17 @@ ycc_rgb565D_convert_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                              int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
-  register int y, cb, cr;
-  register JSAMPROW outptr;
-  register JSAMPROW inptr0, inptr1, inptr2;
-  register JDIMENSION col;
+  int y, cb, cr;
+  JSAMPROW outptr;
+  JSAMPROW inptr0, inptr1, inptr2;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
   /* copy these pointers into registers if possible */
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
-  register int *Crrtab = cconvert->Cr_r_tab;
-  register int *Cbbtab = cconvert->Cb_b_tab;
-  register JLONG *Crgtab = cconvert->Cr_g_tab;
-  register JLONG *Cbgtab = cconvert->Cb_g_tab;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
+  int *Crrtab = cconvert->Cr_r_tab;
+  int *Cbbtab = cconvert->Cb_b_tab;
+  JLONG *Crgtab = cconvert->Cr_g_tab;
+  JLONG *Cbgtab = cconvert->Cb_g_tab;
   JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
   SHIFT_TEMPS
 
@@ -186,9 +186,9 @@ rgb_rgb565_convert_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                             JDIMENSION input_row, JSAMPARRAY output_buf,
                             int num_rows)
 {
-  register JSAMPROW outptr;
-  register JSAMPROW inptr0, inptr1, inptr2;
-  register JDIMENSION col;
+  JSAMPROW outptr;
+  JSAMPROW inptr0, inptr1, inptr2;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
   SHIFT_TEMPS
 
@@ -241,10 +241,10 @@ rgb_rgb565D_convert_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                              JDIMENSION input_row, JSAMPARRAY output_buf,
                              int num_rows)
 {
-  register JSAMPROW outptr;
-  register JSAMPROW inptr0, inptr1, inptr2;
-  register JDIMENSION col;
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
+  JSAMPROW outptr;
+  JSAMPROW inptr0, inptr1, inptr2;
+  JDIMENSION col;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
   JDIMENSION num_cols = cinfo->output_width;
   JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
   SHIFT_TEMPS
@@ -300,8 +300,8 @@ gray_rgb565_convert_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                              JDIMENSION input_row, JSAMPARRAY output_buf,
                              int num_rows)
 {
-  register JSAMPROW inptr, outptr;
-  register JDIMENSION col;
+  JSAMPROW inptr, outptr;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
 
   while (--num_rows >= 0) {
@@ -340,9 +340,9 @@ gray_rgb565D_convert_internal(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                               JDIMENSION input_row, JSAMPARRAY output_buf,
                               int num_rows)
 {
-  register JSAMPROW inptr, outptr;
-  register JDIMENSION col;
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
+  JSAMPROW inptr, outptr;
+  JDIMENSION col;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
   JDIMENSION num_cols = cinfo->output_width;
   JLONG d0 = dither_matrix[cinfo->output_scanline & DITHER_MASK];
 

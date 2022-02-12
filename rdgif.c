@@ -141,8 +141,8 @@ LOCAL(int)
 ReadByte(gif_source_ptr sinfo)
 /* Read next byte from GIF file */
 {
-  register FILE *infile = sinfo->pub.input_file;
-  register int c;
+  FILE *infile = sinfo->pub.input_file;
+  int c;
 
   if ((c = getc(infile)) == EOF)
     ERREXIT(sinfo->cinfo, JERR_INPUT_EOF);
@@ -214,7 +214,7 @@ GetCode(gif_source_ptr sinfo)
 /* Fetch the next code_size bits from the GIF data */
 /* We assume code_size is less than 16 */
 {
-  register int accum;
+  int accum;
   int offs, count;
 
   while (sinfo->cur_bit + sinfo->code_size > sinfo->last_bit) {
@@ -262,7 +262,7 @@ LOCAL(int)
 LZWReadByte(gif_source_ptr sinfo)
 /* Read an LZW-compressed byte */
 {
-  register int code;            /* current working code */
+  int code;            /* current working code */
   int incode;                   /* saves actual input code */
 
   /* If any codes are stacked from a previously read symbol, return them */
@@ -550,10 +550,10 @@ METHODDEF(JDIMENSION)
 get_pixel_rows(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   gif_source_ptr source = (gif_source_ptr)sinfo;
-  register int c;
-  register JSAMPROW ptr;
-  register JDIMENSION col;
-  register JSAMPARRAY colormap = source->colormap;
+  int c;
+  JSAMPROW ptr;
+  JDIMENSION col;
+  JSAMPARRAY colormap = source->colormap;
 
   ptr = source->pub.buffer[0];
   for (col = cinfo->image_width; col > 0; col--) {
@@ -576,8 +576,8 @@ METHODDEF(JDIMENSION)
 load_interlaced_image(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   gif_source_ptr source = (gif_source_ptr)sinfo;
-  register JSAMPROW sptr;
-  register JDIMENSION col;
+  JSAMPROW sptr;
+  JDIMENSION col;
   JDIMENSION row;
   cd_progress_ptr progress = (cd_progress_ptr)cinfo->progress;
 
@@ -620,10 +620,10 @@ METHODDEF(JDIMENSION)
 get_interlaced_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   gif_source_ptr source = (gif_source_ptr)sinfo;
-  register int c;
-  register JSAMPROW sptr, ptr;
-  register JDIMENSION col;
-  register JSAMPARRAY colormap = source->colormap;
+  int c;
+  JSAMPROW sptr, ptr;
+  JDIMENSION col;
+  JSAMPARRAY colormap = source->colormap;
   JDIMENSION irow;
 
   /* Figure out which row of interlaced image is needed, and access it. */

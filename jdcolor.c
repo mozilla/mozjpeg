@@ -327,11 +327,11 @@ rgb_gray_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                  JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
-  register int r, g, b;
-  register JLONG *ctab = cconvert->rgb_y_tab;
-  register JSAMPROW outptr;
-  register JSAMPROW inptr0, inptr1, inptr2;
-  register JDIMENSION col;
+  int r, g, b;
+  JLONG *ctab = cconvert->rgb_y_tab;
+  JSAMPROW outptr;
+  JSAMPROW inptr0, inptr1, inptr2;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
 
   while (--num_rows >= 0) {
@@ -361,9 +361,9 @@ METHODDEF(void)
 null_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
              JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)
 {
-  register JSAMPROW inptr, inptr0, inptr1, inptr2, inptr3, outptr;
-  register JDIMENSION col;
-  register int num_components = cinfo->num_components;
+  JSAMPROW inptr, inptr0, inptr1, inptr2, inptr3, outptr;
+  JDIMENSION col;
+  int num_components = cinfo->num_components;
   JDIMENSION num_cols = cinfo->output_width;
   int ci;
 
@@ -529,17 +529,17 @@ ycck_cmyk_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                   JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
-  register int y, cb, cr;
-  register JSAMPROW outptr;
-  register JSAMPROW inptr0, inptr1, inptr2, inptr3;
-  register JDIMENSION col;
+  int y, cb, cr;
+  JSAMPROW outptr;
+  JSAMPROW inptr0, inptr1, inptr2, inptr3;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->output_width;
   /* copy these pointers into registers if possible */
-  register JSAMPLE *range_limit = cinfo->sample_range_limit;
-  register int *Crrtab = cconvert->Cr_r_tab;
-  register int *Cbbtab = cconvert->Cb_b_tab;
-  register JLONG *Crgtab = cconvert->Cr_g_tab;
-  register JLONG *Cbgtab = cconvert->Cb_g_tab;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
+  int *Crrtab = cconvert->Cr_r_tab;
+  int *Cbbtab = cconvert->Cb_b_tab;
+  JLONG *Crgtab = cconvert->Cr_g_tab;
+  JLONG *Cbgtab = cconvert->Cb_g_tab;
   SHIFT_TEMPS
 
   while (--num_rows >= 0) {

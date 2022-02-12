@@ -34,11 +34,11 @@ rgb_ycc_convert_internal(j_compress_ptr cinfo, JSAMPARRAY input_buf,
                          int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
-  register int r, g, b;
-  register JLONG *ctab = cconvert->rgb_ycc_tab;
-  register JSAMPROW inptr;
-  register JSAMPROW outptr0, outptr1, outptr2;
-  register JDIMENSION col;
+  int r, g, b;
+  JLONG *ctab = cconvert->rgb_ycc_tab;
+  JSAMPROW inptr;
+  JSAMPROW outptr0, outptr1, outptr2;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->image_width;
 
   while (--num_rows >= 0) {
@@ -88,11 +88,11 @@ rgb_gray_convert_internal(j_compress_ptr cinfo, JSAMPARRAY input_buf,
                           int num_rows)
 {
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
-  register int r, g, b;
-  register JLONG *ctab = cconvert->rgb_ycc_tab;
-  register JSAMPROW inptr;
-  register JSAMPROW outptr;
-  register JDIMENSION col;
+  int r, g, b;
+  JLONG *ctab = cconvert->rgb_ycc_tab;
+  JSAMPROW inptr;
+  JSAMPROW outptr;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->image_width;
 
   while (--num_rows >= 0) {
@@ -123,9 +123,9 @@ rgb_rgb_convert_internal(j_compress_ptr cinfo, JSAMPARRAY input_buf,
                          JSAMPIMAGE output_buf, JDIMENSION output_row,
                          int num_rows)
 {
-  register JSAMPROW inptr;
-  register JSAMPROW outptr0, outptr1, outptr2;
-  register JDIMENSION col;
+  JSAMPROW inptr;
+  JSAMPROW outptr0, outptr1, outptr2;
+  JDIMENSION col;
   JDIMENSION num_cols = cinfo->image_width;
 
   while (--num_rows >= 0) {

@@ -95,8 +95,9 @@ directory.  For in-tree builds, these directories are the same.
 Ninja
 -----
 
-In all of the procedures and recipes below, replace `make` with `ninja` and
-`Unix Makefiles` with `Ninja` if using Ninja.
+If using Ninja, then replace `make` or `nmake` with `ninja`, and replace the
+CMake generator (specified with the `-G` option) with `Ninja`, in all of the
+procedures and recipes below.
 
 
 Build Procedure

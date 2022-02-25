@@ -2,7 +2,7 @@
  * jchuff-neon.c - Huffman entropy encoding (64-bit Arm Neon)
  *
  * Copyright (C) 2020-2021, Arm Limited.  All Rights Reserved.
- * Copyright (C) 2020, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2020, 2022, D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,6 +59,17 @@ ALIGN(16) static const uint8_t jsimd_huff_encode_one_block_consts[] = {
    14,  15,  30,  31,  44,  45,  46,  47
 };
 
+/* The AArch64 implementation of the FLUSH() macro triggers a UBSan misaligned
+ * address warning because the macro sometimes writes a 64-bit value to a
+ * non-64-bit-aligned address.  That behavior is technically undefined per
+ * the C specification, but it is supported by the AArch64 architecture and
+ * compilers.
+ */
+#if defined(__has_feature)
+#if __has_feature(undefined_behavior_sanitizer)
+__attribute__((no_sanitize("alignment")))
+#endif
+#endif
 JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
                                          JCOEFPTR block, int last_dc_val,
                                          c_derived_tbl *dctbl,
@@ -372,7 +383,7 @@ JOCTET *jsimd_huff_encode_one_block_neon(void *state, JOCTET *buffer,
       bitmap <<= r;
       lz = BUILTIN_CLZ(block_abs[i]);
       nbits = 32 - lz;
-      diff = (unsigned int)(block_diff[i] << lz) >> lz;
+      diff = ((unsigned int)block_diff[i] << lz) >> lz;
       while (r > 15) {
         /* If run length > 15, emit special run-length-16 codes. */
         PUT_BITS(code_0xf0, size_0xf0)

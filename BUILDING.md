@@ -79,6 +79,14 @@ Build Requirements
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.
 
 
+Sub-Project Builds
+------------------
+
+The libjpeg-turbo build system does not support being included as a sub-project
+using the CMake `add_subdirectory()` function.  Use the CMake
+`ExternalProject_Add()` function instead.
+
+
 Out-of-Tree Builds
 ------------------
 

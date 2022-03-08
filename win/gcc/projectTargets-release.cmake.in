@@ -15,6 +15,16 @@ set_target_properties(@CMAKE_PROJECT_NAME@::jpeg PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::jpeg )
 list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::jpeg "${_IMPORT_PREFIX}/lib/libjpeg.dll.a" "${_IMPORT_PREFIX}/bin/libjpeg-62.dll" )
 
+# Import target "@CMAKE_PROJECT_NAME@::jpeg12" for configuration "Release"
+set_property(TARGET @CMAKE_PROJECT_NAME@::jpeg12 APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(@CMAKE_PROJECT_NAME@::jpeg12 PROPERTIES
+  IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/libjpeg12.dll.a"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/libjpeg12-62.dll"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::jpeg12 )
+list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::jpeg12 "${_IMPORT_PREFIX}/lib/libjpeg12.dll.a" "${_IMPORT_PREFIX}/bin/libjpeg12-62.dll" )
+
 # Import target "@CMAKE_PROJECT_NAME@::turbojpeg" for configuration "Release"
 set_property(TARGET @CMAKE_PROJECT_NAME@::turbojpeg APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(@CMAKE_PROJECT_NAME@::turbojpeg PROPERTIES
@@ -44,6 +54,16 @@ set_target_properties(@CMAKE_PROJECT_NAME@::jpeg-static PROPERTIES
 
 list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::jpeg-static )
 list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::jpeg-static "${_IMPORT_PREFIX}/lib/libjpeg.a" )
+
+# Import target "@CMAKE_PROJECT_NAME@::jpeg12-static" for configuration "Release"
+set_property(TARGET @CMAKE_PROJECT_NAME@::jpeg12-static APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(@CMAKE_PROJECT_NAME@::jpeg12-static PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libjpeg12.a"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::jpeg12-static )
+list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::jpeg12-static "${_IMPORT_PREFIX}/lib/libjpeg12.a" )
 
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)

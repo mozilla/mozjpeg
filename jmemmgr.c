@@ -30,7 +30,7 @@
 #define JPEG_INTERNALS
 #define AM_MEMORY_MANAGER       /* we define jvirt_Xarray_control structs */
 #include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglibint.h"
 #include "jmemsys.h"            /* import the system-dependent declarations */
 #if !defined(_MSC_VER) || _MSC_VER > 1600
 #include <stdint.h>

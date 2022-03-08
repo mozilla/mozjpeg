@@ -57,10 +57,7 @@ Within these limits, any set of compression parameters allowed by the JPEG
 spec should be readable for decompression.  (We can be more restrictive about
 what formats we can generate.)  Although the system design allows for all
 parameter values, some uncommon settings are not yet implemented and may
-never be; nonintegral sampling ratios are the prime example.  Furthermore,
-we treat 8-bit vs. 12-bit data precision as a compile-time switch, not a
-run-time option, because most machines can store 8-bit pixels much more
-compactly than 12-bit.
+never be; nonintegral sampling ratios are the prime example.
 
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by

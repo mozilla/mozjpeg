@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009, 2011, 2014-2015, 2018, 2020, D. R. Commander.
+ * Copyright (C) 2009, 2011, 2014-2015, 2018, 2020, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -13,6 +13,9 @@
  * JPEG software for special applications or support machine-dependent
  * optimizations.  Most users will not need to touch this file.
  */
+
+#ifndef JMORECFG_H
+#define JMORECFG_H
 
 
 /*
@@ -41,7 +44,6 @@
  * arrays is very slow on your hardware, you might want to change these.
  */
 
-#if BITS_IN_JSAMPLE == 8
 /* JSAMPLE should be the smallest type that will hold the values 0..255.
  */
 
@@ -51,21 +53,15 @@ typedef unsigned char JSAMPLE;
 #define MAXJSAMPLE      255
 #define CENTERJSAMPLE   128
 
-#endif /* BITS_IN_JSAMPLE == 8 */
 
-
-#if BITS_IN_JSAMPLE == 12
-/* JSAMPLE should be the smallest type that will hold the values 0..4095.
+/* J12SAMPLE should be the smallest type that will hold the values 0..4095.
  * On nearly all machines "short" will do nicely.
  */
 
-typedef short JSAMPLE;
-#define GETJSAMPLE(value)  ((int)(value))
+typedef short J12SAMPLE;
 
-#define MAXJSAMPLE      4095
-#define CENTERJSAMPLE   2048
-
-#endif /* BITS_IN_JSAMPLE == 12 */
+#define MAXJ12SAMPLE    4095
+#define CENTERJ12SAMPLE 2048
 
 
 /* Representation of a DCT frequency coefficient.
@@ -380,3 +376,5 @@ static const int rgb_pixelsize[JPEG_NUMCS] = {
 #endif
 
 #endif /* JPEG_INTERNAL_OPTIONS */
+
+#endif /* JMORECFG_H */

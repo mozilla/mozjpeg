@@ -11,10 +11,11 @@ For conditions of distribution and use, see the accompanying README.ijg file.
 This file describes how to use the IJG JPEG library within an application
 program.  Read it if you want to write a program that uses the library.
 
-The file example.txt provides heavily commented skeleton code for calling the
-JPEG library.  Also see jpeglib.h (the include file to be used by application
-programs) for full details about data structures and function parameter lists.
-The library source code, of course, is the ultimate reference.
+The file example.c provides heavily commented code for calling the JPEG
+library.  Also see jpeglib.h and jpeg12lib.h (the include files to be used by
+application programs) for full details about data structures and function
+parameter lists.  The library source code, of course, is the ultimate
+reference.
 
 Note that there have been *major* changes from the application interface
 presented by IJG version 4 and earlier versions.  The old design had several
@@ -29,6 +30,7 @@ TABLE OF CONTENTS
 
 Overview:
         Functions provided by the library
+        12-bit Data Precision
         Outline of typical usage
 Basic library usage:
         Data formats
@@ -99,15 +101,45 @@ use.)  Unsupported ISO options include:
         * Lossless JPEG
         * DNL marker
         * Nonintegral subsampling ratios
-We support both 8- and 12-bit data precision, but this is a compile-time
-choice rather than a run-time choice; hence it is difficult to use both
-precisions in a single application.
+We support both 8- and 12-bit data precision.
 
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
 surrounding code to process interchange or abbreviated JPEG datastreams that
 are embedded in more complex file formats.  (For example, this library is
 used by the free LIBTIFF library to support JPEG compression in TIFF.)
+
+
+12-bit Data Precision
+---------------------
+
+Support for JPEG images with 12-bit, rather than 8-bit, samples is provided
+through a separate library, API, and header file (jpeg12lib.h instead of
+jpeglib.h).  Functions supporting 12-bit samples have a prefix of "jpeg12_"
+instead of "jpeg_" and use the following data types, structures, and macros:
+
+  * J12SAMPLE instead of JSAMPLE
+  * J12SAMPROW instead of JSAMPROW
+  * J12SAMPARRAY instead of JSAMPARRAY
+  * J12SAMPIMAGE instead of JSAMPIMAGE
+  * MAXJ12SAMPLE instead of MAXJSAMPLE
+  * CENTERJ12SAMPLE instead of CENTERJSAMPLE
+  * jpeg12_common_struct instead of jpeg_common_struct
+  * j12_common_ptr instead of j_common_ptr
+  * jpeg12_compress_struct instead of jpeg_compress_struct
+  * j12_compress_ptr instead of j_compress_ptr
+  * jpeg12_decompress_struct instead of jpeg_decompress_struct
+  * j12_decompress_ptr instead of j_decompress_ptr
+  * jpeg12_error_mgr instead of jpeg_error_mgr
+  * jpeg12_progress_mgr instead of jpeg_progress_mgr
+  * jpeg12_destination_mgr instead of jpeg_destination_mgr
+  * jpeg12_source_mgr instead of jpeg_source_mgr
+  * jpeg12_memory_mgr instead of jpeg_memory_mgr
+  * jpeg12_marker_parser_method instead of jpeg_marker_parser_method
+
+This allows both 8-bit and 12-bit precision to be used in a single application.
+(Refer to example.c).  Arithmetic coding and SIMD acceleration are not
+currently implemented for 12-bit samples.
 
 
 Outline of typical usage
@@ -402,16 +434,13 @@ this variable as the loop counter, so that the loop test looks like
 "while (cinfo.next_scanline < cinfo.image_height)".
 
 Code for this step depends heavily on the way that you store the source data.
-example.txt shows the following code for the case of a full-size 2-D source
+example.c shows the following code for the case of a full-size 2-D source
 array containing 3-byte RGB pixels:
 
         JSAMPROW row_pointer[1];        /* pointer to a single row */
-        int row_stride;                 /* physical row width in buffer */
-
-        row_stride = image_width * 3;   /* JSAMPLEs per row in image_buffer */
 
         while (cinfo.next_scanline < cinfo.image_height) {
-            row_pointer[0] = &image_buffer[cinfo.next_scanline * row_stride];
+            row_pointer[0] = image_buffer[cinfo.next_scanline];
             jpeg_write_scanlines(&cinfo, row_pointer, 1);
         }
 
@@ -1445,7 +1474,7 @@ When the default error handler is used, any error detected inside the JPEG
 routines will cause a message to be printed on stderr, followed by exit().
 You can supply your own error handling routines to override this behavior
 and to control the treatment of nonfatal warnings and trace/debug messages.
-The file example.txt illustrates the most common case, which is to have the
+The file example.c illustrates the most common case, which is to have the
 application regain control after an error rather than exiting.
 
 The JPEG library never writes any message directly; it always goes through
@@ -1462,7 +1491,7 @@ You may, if you wish, simply replace the entire JPEG error handling module
 only replacing some of the routines depending on the behavior you need.
 This is accomplished by calling jpeg_std_error() as usual, but then overriding
 some of the method pointers in the jpeg_error_mgr struct, as illustrated by
-example.txt.
+example.c.
 
 All of the error handling routines will receive a pointer to the JPEG object
 (a j_common_ptr which points to either a jpeg_compress_struct or a
@@ -1473,7 +1502,7 @@ additional data which is not known to the JPEG library or the standard error
 handler.  The most convenient way to do this is to embed either the JPEG
 object or the jpeg_error_mgr struct in a larger structure that contains
 additional fields; then casting the passed pointer provides access to the
-additional fields.  Again, see example.txt for one way to do it.  (Beginning
+additional fields.  Again, see example.c for one way to do it.  (Beginning
 with IJG version 6b, there is also a void pointer "client_data" in each
 JPEG object, which the application can also use to find related data.
 The library does not touch client_data at all.)
@@ -3064,8 +3093,7 @@ BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
 larger than a char, so it affects the surrounding application's image data.
 The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
 and GIF file formats; you must disable the other file formats to compile a
-12-bit cjpeg or djpeg.  At present, a 12-bit library can handle *only* 12-bit
-images, not both precisions.
+12-bit cjpeg or djpeg.
 
 Note that a 12-bit library always compresses in Huffman optimization mode,
 in order to generate valid Huffman tables.  This is necessary because our

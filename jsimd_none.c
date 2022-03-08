@@ -2,7 +2,7 @@
  * jsimd_none.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2009-2011, 2014, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014, 2022, D. R. Commander.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
  * Copyright (C) 2020, Arm Limited.
  *
@@ -15,7 +15,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglibint.h"
 #include "jsimd.h"
 #include "jdct.h"
 #include "jsimddct.h"

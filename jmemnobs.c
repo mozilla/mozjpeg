@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1992-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017-2018, D. R. Commander.
+ * Copyright (C) 2017-2018, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -19,7 +19,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglibint.h"
 #include "jmemsys.h"            /* import the system-dependent declarations */
 
 

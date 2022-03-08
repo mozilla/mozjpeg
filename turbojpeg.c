@@ -53,7 +53,7 @@ extern void jpeg_mem_src_tj(j_decompress_ptr, const unsigned char *,
 #define IS_POW2(x)  (((x) & (x - 1)) == 0)
 
 
-/* Error handling (based on example in example.txt) */
+/* Error handling (based on example in example.c) */
 
 static THREAD_LOCAL char errStr[JMSG_LENGTH_MAX] = "No error";
 
@@ -490,7 +490,7 @@ static tjhandle _tjInitCompress(tjinstance *this)
   unsigned char *buf = buffer;
   unsigned long size = 1;
 
-  /* This is also straight out of example.txt */
+  /* This is also straight out of example.c */
   this->cinfo.err = jpeg_std_error(&this->jerr.pub);
   this->jerr.pub.error_exit = my_error_exit;
   this->jerr.pub.output_message = my_output_message;
@@ -1164,7 +1164,7 @@ static tjhandle _tjInitDecompress(tjinstance *this)
 {
   static unsigned char buffer[1];
 
-  /* This is also straight out of example.txt */
+  /* This is also straight out of example.c */
   this->dinfo.err = jpeg_std_error(&this->jerr.pub);
   this->jerr.pub.error_exit = my_error_exit;
   this->jerr.pub.output_message = my_output_message;

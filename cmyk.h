@@ -1,7 +1,7 @@
 /*
  * cmyk.h
  *
- * Copyright (C) 2017-2018, D. R. Commander.
+ * Copyright (C) 2017-2018, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -16,7 +16,7 @@
 
 #include <jinclude.h>
 #define JPEG_INTERNALS
-#include <jpeglib.h>
+#include "jpeglibint.h"
 #include "jconfigint.h"
 
 

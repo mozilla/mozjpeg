@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1998, Thomas G. Lane.
  * Modified 2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -42,7 +42,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglibint.h"
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 
 #ifdef DCT_FLOAT_SUPPORTED

@@ -25,7 +25,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglibint.h"
 #include "jsimd.h"
 #include "jconfigint.h"
 #include <limits.h>

@@ -19,7 +19,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglibint.h"
 #include "jpegcomp.h"
 #include "jdmaster.h"
 

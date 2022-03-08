@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2016, 2019, 2021, D. R. Commander.
+ * Copyright (C) 2015-2016, 2019, 2021-2022, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * Copyright (C) 2021, Alex Richardson.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -16,6 +16,11 @@
  * applications using the library shouldn't need to include this file.
  */
 
+#ifndef JPEGINT_H
+#define JPEGINT_H
+
+
+#ifndef JPEG12INT_H
 
 /* Declarations for both compression & decompression */
 
@@ -67,6 +72,8 @@ typedef size_t JUINTPTR;
  */
 
 #define LEFT_SHIFT(a, b)  ((JLONG)((unsigned long)(a) << (b)))
+
+#endif /* JPEG12INT_H */
 
 
 /* Declarations for compression modules */
@@ -356,12 +363,15 @@ EXTERN(void) jinit_merged_upsampler(j_decompress_ptr cinfo);
 /* Memory manager initialization */
 EXTERN(void) jinit_memory_mgr(j_common_ptr cinfo);
 
+#ifndef JPEG12INT_H
 /* Utility routines in jutils.c */
 EXTERN(long) jdiv_round_up(long a, long b);
 EXTERN(long) jround_up(long a, long b);
+#endif
 EXTERN(void) jcopy_sample_rows(JSAMPARRAY input_array, int source_row,
                                JSAMPARRAY output_array, int dest_row,
                                int num_rows, JDIMENSION num_cols);
+#ifndef JPEG12INT_H
 EXTERN(void) jcopy_block_row(JBLOCKROW input_row, JBLOCKROW output_row,
                              JDIMENSION num_blocks);
 EXTERN(void) jzero_far(void *target, size_t bytestozero);
@@ -373,3 +383,6 @@ extern const int jpeg_natural_order[]; /* zigzag coef order to natural order */
 
 /* Arithmetic coding probability estimation tables in jaricom.c */
 extern const JLONG jpeg_aritab[];
+#endif
+
+#endif /* JPEGINT_H */

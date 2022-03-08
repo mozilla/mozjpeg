@@ -1,3 +1,18 @@
+2.2 pre-beta
+============
+
+### Significant changes relative to 2.1.3
+
+1. By default, the build system now builds, packages, and tests a separate
+12-bit-per-component flavor of the libjpeg API library, cjpeg, djpeg, and
+jpegtran.  The 12-bit-per-component libjpeg API library mangles the names of
+libjpeg API functions, data types, structures, and macros to enable calling
+applications to more easily support both 8-bit-per-component and
+12-bit-per-component JPEG images.  (Refer to [libjpeg.txt](libjpeg.txt) for
+more details.)  The `WITH_12BIT` CMake variable can be used to disable
+12-bit-per-component JPEG support.
+
+
 2.1.3
 =====
 

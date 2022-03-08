@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, 2019, 2021, D. R. Commander.
+ * Copyright (C) 2017, 2019, 2021-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -16,7 +16,7 @@
 #define JPEG_CJPEG_DJPEG        /* define proper options in jconfig.h */
 #define JPEG_INTERNAL_OPTIONS   /* cjpeg.c,djpeg.c need to see xxx_SUPPORTED */
 #include "jinclude.h"
-#include "jpeglib.h"
+#include "jpeglibint.h"
 #include "jerror.h"             /* get library error codes too */
 #include "cderror.h"            /* get application-specific error codes */
 

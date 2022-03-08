@@ -187,7 +187,7 @@ option(ENABLE_STATIC "Build static libraries" TRUE)
 boolean_number(ENABLE_STATIC)
 option(REQUIRE_SIMD "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)" FALSE)
 boolean_number(REQUIRE_SIMD)
-option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_ARITH_DEC=0 WITH_ARITH_ENC=0 WITH_JAVA=0 WITH_SIMD=0 WITH_TURBOJPEG=0 )" FALSE)
+option(WITH_12BIT "Include 12-bit JPEG support" TRUE)
 boolean_number(WITH_12BIT)
 option(WITH_ARITH_DEC "Include arithmetic decoding support when emulating the libjpeg v6b API/ABI" TRUE)
 boolean_number(WITH_ARITH_DEC)
@@ -248,40 +248,23 @@ if(WITH_JPEG8)
   set(WITH_MEM_SRCDST 0)
 endif()
 
-if(WITH_12BIT)
-  set(WITH_ARITH_DEC 0)
-  set(WITH_ARITH_ENC 0)
-  set(WITH_JAVA 0)
-  set(WITH_SIMD 0)
-  set(WITH_TURBOJPEG 0)
-  set(BITS_IN_JSAMPLE 12)
-else()
-  set(BITS_IN_JSAMPLE 8)
-endif()
 report_option(WITH_12BIT "12-bit JPEG support")
 
 if(WITH_ARITH_DEC)
   set(D_ARITH_CODING_SUPPORTED 1)
 endif()
-if(NOT WITH_12BIT)
-  report_option(WITH_ARITH_DEC "Arithmetic decoding support")
-endif()
+report_option(WITH_ARITH_DEC "Arithmetic decoding support")
 
 if(WITH_ARITH_ENC)
   set(C_ARITH_CODING_SUPPORTED 1)
 endif()
-if(NOT WITH_12BIT)
-  report_option(WITH_ARITH_ENC "Arithmetic encoding support")
-endif()
+report_option(WITH_ARITH_ENC "Arithmetic encoding support")
 
-if(NOT WITH_12BIT)
-  report_option(WITH_TURBOJPEG "TurboJPEG API library")
-  report_option(WITH_JAVA "TurboJPEG Java wrapper")
-endif()
+report_option(WITH_TURBOJPEG "TurboJPEG API library")
+report_option(WITH_JAVA "TurboJPEG Java wrapper")
 
 if(WITH_MEM_SRCDST)
   set(MEM_SRCDST_SUPPORTED 1)
-  set(MEM_SRCDST_FUNCTIONS "global:  jpeg_mem_dest;  jpeg_mem_src;")
 endif()
 if(NOT WITH_JPEG8)
   report_option(WITH_MEM_SRCDST "In-memory source/destination managers")
@@ -514,15 +497,22 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # Generate files
-if(WIN32)
-  configure_file(win/jconfig.h.in jconfig.h)
-else()
-  configure_file(jconfig.h.in jconfig.h)
-endif()
+configure_file(jconfig.h.in jconfig.h)
 configure_file(jconfigint.h.in jconfigint.h)
 configure_file(jversion.h.in jversion.h)
 if(UNIX)
+  if(WITH_MEM_SRCDST)
+    set(MEM_SRCDST_FUNCTIONS "global:  jpeg_mem_dest;  jpeg_mem_src;")
+  endif()
+  set(SIMD_FUNCTIONS "jsimd_*")
   configure_file(libjpeg.map.in libjpeg.map)
+  if(WITH_12BIT)
+    if(WITH_MEM_SRCDST)
+      set(MEM_SRCDST_FUNCTIONS "global:  jpeg12_mem_dest;  jpeg12_mem_src;")
+    endif()
+    set(SIMD_FUNCTIONS "jsimd12_*")
+    configure_file(libjpeg.map.in libjpeg12.map)
+  endif()
 endif()
 
 # Include directories and compiler definitions
@@ -538,13 +528,15 @@ if(CMAKE_EXECUTABLE_SUFFIX_TMP)
 endif()
 message(STATUS "CMAKE_EXECUTABLE_SUFFIX = ${CMAKE_EXECUTABLE_SUFFIX}")
 
-set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
-  jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
-  jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
-  jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c jdinput.c
-  jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c
-  jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
-  jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
+set(JPEG12_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c
+  jchuff.c jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c
+  jcparam.c jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c
+  jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c
+  jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c
+  jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c
+  jidctfst.c jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c
+  jmemnobs.c)
+set(JPEG_SOURCES ${JPEG12_SOURCES})
 
 if(WITH_ARITH_ENC OR WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jaricom.c)
@@ -563,7 +555,7 @@ if(WITH_SIMD)
   if(NEON_INTRINSICS)
     add_definitions(-DNEON_INTRINSICS)
   endif()
-elseif(NOT WITH_12BIT)
+else()
   message(STATUS "SIMD extensions: None (WITH_SIMD = ${WITH_SIMD})")
 endif()
 if(WITH_SIMD)
@@ -591,6 +583,15 @@ if(ENABLE_STATIC)
     ${SIMD_OBJS})
   if(NOT MSVC)
     set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
+  endif()
+
+  if(WITH_12BIT)
+    add_library(jpeg12-static STATIC ${JPEG12_SOURCES} jsimd_none.c)
+    set_property(TARGET jpeg12-static PROPERTY COMPILE_FLAGS
+      "-DBITS_IN_JSAMPLE=12")
+    if(NOT MSVC)
+      set_target_properties(jpeg12-static PROPERTIES OUTPUT_NAME jpeg12)
+    endif()
   endif()
 endif()
 
@@ -672,28 +673,49 @@ endif()
 if(WIN32)
   set(USE_SETMODE "-DUSE_SETMODE")
 endif()
-if(WITH_12BIT)
-  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
-else()
-  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
-  set(CJPEG_BMP_SOURCES rdbmp.c rdtarga.c)
-  set(DJPEG_BMP_SOURCES wrbmp.c wrtarga.c)
-endif()
 
 if(ENABLE_STATIC)
-  add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c
-    ${CJPEG_BMP_SOURCES})
-  set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+  add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c
+    rdswitch.c rdtarga.c)
+  set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
+    "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
   target_link_libraries(cjpeg-static jpeg-static)
 
-  add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrgif.c
-    wrppm.c ${DJPEG_BMP_SOURCES})
-  set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+  add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c
+    wrgif.c wrppm.c wrtarga.c)
+  set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
+    "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
   target_link_libraries(djpeg-static jpeg-static)
 
   add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
   target_link_libraries(jpegtran-static jpeg-static)
   set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
+
+  if(WITH_12BIT)
+    add_executable(cjpeg12-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c)
+    set_property(TARGET cjpeg12-static PROPERTY COMPILE_FLAGS
+      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
+    target_link_libraries(cjpeg12-static jpeg12-static)
+
+    add_executable(djpeg12-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c
+      wrgif.c wrppm.c)
+    set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
+      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
+    target_link_libraries(djpeg12-static jpeg12-static)
+
+    add_executable(jpeg12tran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
+    target_link_libraries(jpeg12tran-static jpeg12-static)
+    set_property(TARGET jpeg12tran-static PROPERTY COMPILE_FLAGS
+      "-DBITS_IN_JSAMPLE=12 ${USE_SETMODE}")
+  endif()
+
+  add_executable(example-static ../example.c)
+  if(WITH_12BIT)
+    target_link_libraries(example-static jpeg-static jpeg12-static)
+    set_property(TARGET example-static PROPERTY COMPILE_FLAGS "-DWITH_12BIT")
+  else()
+    target_link_libraries(example-static jpeg-static)
+  endif()
 endif()
 
 add_executable(rdjpgcom rdjpgcom.c)
@@ -720,124 +742,6 @@ else()
 endif()
 
 enable_testing()
-
-if(WITH_12BIT)
-  set(TESTORIG testorig12.jpg)
-  set(MD5_JPEG_RGB_ISLOW 9d7369207c520d37f2c1cbfcb82b2964)
-  set(MD5_JPEG_RGB_ISLOW2 a00bd20d8ae49684640ef7177d2e0b64)
-  set(MD5_PPM_RGB_ISLOW f3301d2219783b8b3d942b7239fa50c0)
-  set(MD5_JPEG_422_IFAST_OPT 7322e3bd2f127f7de4b40d4480ce60e4)
-  set(MD5_PPM_422_IFAST 79807fa552899e66a04708f533e16950)
-  set(MD5_JPEG_440_ISLOW e25c1912e38367be505a89c410c1c2d2)
-  set(MD5_PPM_440_ISLOW e7d2e26288870cfcb30f3114ad01e380)
-  set(MD5_PPM_422M_IFAST 07737bfe8a7c1c87aaa393a0098d16b0)
-  set(MD5_JPEG_420_IFAST_Q100_PROG 9447cef4803d9b0f74bcf333cc710a29)
-  set(MD5_PPM_420_Q100_IFAST 1b3730122709f53d007255e8dfd3305e)
-  set(MD5_PPM_420M_Q100_IFAST 980a1a3c5bf9510022869d30b7d26566)
-  set(MD5_JPEG_GRAY_ISLOW 235c90707b16e2e069f37c888b2636d9)
-  set(MD5_PPM_GRAY_ISLOW 7213c10af507ad467da5578ca5ee1fca)
-  set(MD5_PPM_GRAY_ISLOW_RGB e96ee81c30a6ed422d466338bd3de65d)
-  set(MD5_JPEG_420S_IFAST_OPT 7af8e60be4d9c227ec63ac9b6630855e)
-
-  set(MD5_JPEG_3x2_FLOAT_PROG_SSE a8c17daf77b457725ec929e215b603f8)
-  set(MD5_PPM_3x2_FLOAT_SSE 42876ab9e5c2f76a87d08db5fbd57956)
-  set(MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT a8c17daf77b457725ec929e215b603f8)
-  set(MD5_PPM_3x2_FLOAT_NO_FP_CONTRACT ${MD5_PPM_3x2_FLOAT_SSE})
-  set(MD5_JPEG_3x2_FLOAT_PROG_FP_CONTRACT
-    ${MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT})
-  set(MD5_PPM_3x2_FLOAT_FP_CONTRACT ${MD5_PPM_3x2_FLOAT_SSE})
-  set(MD5_JPEG_3x2_FLOAT_PROG_387 bc6dbbefac2872f6b9d6c4a0ae60c3c0)
-  set(MD5_PPM_3x2_FLOAT_387 bcc5723c61560463ac60f772e742d092)
-  set(MD5_JPEG_3x2_FLOAT_PROG_MSVC e27840755870fa849872e58aa0cd1400)
-  set(MD5_PPM_3x2_FLOAT_MSVC 6c2880b83bb1aa41dfe330e7a9768690)
-
-  set(MD5_JPEG_3x2_IFAST_PROG 1396cc2b7185cfe943d408c9d305339e)
-  set(MD5_PPM_3x2_IFAST 3975985ef6eeb0a2cdc58daa651ccc00)
-  set(MD5_PPM_420M_ISLOW_2_1 4ca6be2a6f326ff9eaab63e70a8259c0)
-  set(MD5_PPM_420M_ISLOW_15_8 12aa9f9534c1b3d7ba047322226365eb)
-  set(MD5_PPM_420M_ISLOW_13_8 f7e22817c7b25e1393e4ec101e9d4e96)
-  set(MD5_PPM_420M_ISLOW_11_8 800a16f9f4dc9b293197bfe11be10a82)
-  set(MD5_PPM_420M_ISLOW_9_8 06b7a92a9bc69f4dc36ec40f1937d55c)
-  set(MD5_PPM_420M_ISLOW_7_8 3ec444a14a4ab4eab88ffc49c48eca43)
-  set(MD5_PPM_420M_ISLOW_3_4 3e726b7ea872445b19437d1c1d4f0d93)
-  set(MD5_PPM_420M_ISLOW_5_8 a8a771abdc94301d20ffac119b2caccd)
-  set(MD5_PPM_420M_ISLOW_1_2 b419124dd5568b085787234866102866)
-  set(MD5_PPM_420M_ISLOW_3_8 343d19015531b7bbe746124127244fa8)
-  set(MD5_PPM_420M_ISLOW_1_4 35fd59d866e44659edfa3c18db2a3edb)
-  set(MD5_PPM_420M_ISLOW_1_8 ccaed48ac0aedefda5d4abe4013f4ad7)
-  set(MD5_PPM_420_ISLOW_SKIP15_31 86664cd9dc956536409e44e244d20a97)
-  set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71 452a21656115a163029cfba5c04fa76a)
-  set(MD5_PPM_444_ISLOW_SKIP1_6 ef63901f71ef7a75cd78253fc0914f84)
-  set(MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13 15b173fb5872d9575572fbcc1b05956f)
-  set(MD5_JPEG_CROP cdb35ff4b4519392690ea040c56ea99c)
-else()
-  set(TESTORIG testorig.jpg)
-  set(MD5_JPEG_RGB_ISLOW 1d44a406f61da743b5fd31c0a9abdca3)
-  set(MD5_JPEG_RGB_ISLOW2 31d121e57b6c2934c890a7fc7763bcd4)
-  set(MD5_PPM_RGB_ISLOW 00a257f5393fef8821f2b88ac7421291)
-  set(MD5_BMP_RGB_ISLOW_565 f07d2e75073e4bb10f6c6f4d36e2e3be)
-  set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
-  set(MD5_JPEG_422_IFAST_OPT 2540287b79d913f91665e660303ab2c8)
-  set(MD5_PPM_422_IFAST 35bd6b3f833bad23de82acea847129fa)
-  set(MD5_JPEG_440_ISLOW 538bc02bd4b4658fd85de6ece6cbeda6)
-  set(MD5_PPM_440_ISLOW 11e7eab7ef7ef3276934bb7e7b6bb377)
-  set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
-  set(MD5_BMP_422M_IFAST_565 3294bd4d9a1f2b3d08ea6020d0db7065)
-  set(MD5_BMP_422M_IFAST_565D da98c9c7b6039511be4a79a878a9abc1)
-  set(MD5_JPEG_420_IFAST_Q100_PROG 0ba15f9dab81a703505f835f9dbbac6d)
-  set(MD5_PPM_420_Q100_IFAST 5a732542015c278ff43635e473a8a294)
-  set(MD5_PPM_420M_Q100_IFAST ff692ee9323a3b424894862557c092f1)
-  set(MD5_JPEG_GRAY_ISLOW 72b51f894b8f4a10b3ee3066770aa38d)
-  set(MD5_PPM_GRAY_ISLOW 8d3596c56eace32f205deccc229aa5ed)
-  set(MD5_PPM_GRAY_ISLOW_RGB 116424ac07b79e5e801f00508eab48ec)
-  set(MD5_BMP_GRAY_ISLOW_565 12f78118e56a2f48b966f792fedf23cc)
-  set(MD5_BMP_GRAY_ISLOW_565D bdbbd616441a24354c98553df5dc82db)
-  set(MD5_JPEG_420S_IFAST_OPT 388708217ac46273ca33086b22827ed8)
-
-  set(MD5_JPEG_3x2_FLOAT_PROG_SSE 343e3f8caf8af5986ebaf0bdc13b5c71)
-  set(MD5_PPM_3x2_FLOAT_SSE 1a75f36e5904d6fc3a85a43da9ad89bb)
-  set(MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT 9bca803d2042bd1eb03819e2bf92b3e5)
-  set(MD5_PPM_3x2_FLOAT_NO_FP_CONTRACT f6bfab038438ed8f5522fbd33595dcdc)
-  set(MD5_JPEG_3x2_FLOAT_PROG_FP_CONTRACT
-    ${MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT})
-  set(MD5_PPM_3x2_FLOAT_FP_CONTRACT 0e917a34193ef976b679a6b069b1be26)
-  set(MD5_JPEG_3x2_FLOAT_PROG_387 1657664a410e0822c924b54f6f65e6e9)
-  set(MD5_PPM_3x2_FLOAT_387 cb0a1f027f3d2917c902b5640214e025)
-  set(MD5_JPEG_3x2_FLOAT_PROG_MSVC 7999ce9cd0ee9b6c7043b7351ab7639d)
-  set(MD5_PPM_3x2_FLOAT_MSVC 28cdc448a6b75e97892f0e0f8d4b21f3)
-
-  set(MD5_JPEG_3x2_IFAST_PROG 1ee5d2c1a77f2da495f993c8c7cceca5)
-  set(MD5_PPM_3x2_IFAST fd283664b3b49127984af0a7f118fccd)
-  set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
-  set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
-  set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
-  set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
-  set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
-  set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
-  set(MD5_PPM_420M_ISLOW_13_8 bc3452573c8152f6ae552939ee19f82f)
-  set(MD5_PPM_420M_ISLOW_11_8 d8cc73c0aaacd4556569b59437ba00a5)
-  set(MD5_PPM_420M_ISLOW_9_8 d25e61bc7eac0002f5b393aa223747b6)
-  set(MD5_PPM_420M_ISLOW_7_8 ddb564b7c74a09494016d6cd7502a946)
-  set(MD5_PPM_420M_ISLOW_3_4 8ed8e68808c3fbc4ea764fc9d2968646)
-  set(MD5_PPM_420M_ISLOW_5_8 a3363274999da2366a024efae6d16c9b)
-  set(MD5_PPM_420M_ISLOW_1_2 e692a315cea26b988c8e8b29a5dbcd81)
-  set(MD5_PPM_420M_ISLOW_3_8 79eca9175652ced755155c90e785a996)
-  set(MD5_PPM_420M_ISLOW_1_4 79cd778f8bf1a117690052cacdd54eca)
-  set(MD5_PPM_420M_ISLOW_1_8 391b3d4aca640c8567d6f8745eb2142f)
-  set(MD5_BMP_420_ISLOW_256 4980185e3776e89bd931736e1cddeee6)
-  set(MD5_BMP_420_ISLOW_565 bf9d13e16c4923b92e1faa604d7922cb)
-  set(MD5_BMP_420_ISLOW_565D 6bde71526acc44bcff76f696df8638d2)
-  set(MD5_BMP_420M_ISLOW_565 8dc0185245353cfa32ad97027342216f)
-  set(MD5_BMP_420M_ISLOW_565D ce034037d212bc403330df6f915c161b)
-  set(MD5_PPM_420_ISLOW_SKIP15_31 c4c65c1e43d7275cd50328a61e6534f0)
-  set(MD5_PPM_420_ISLOW_ARI_SKIP16_139 087c6b123db16ac00cb88c5b590bb74a)
-  set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71 26eb36ccc7d1f0cb80cdabb0ac8b5d99)
-  set(MD5_PPM_420_ISLOW_ARI_CROP53x53_4_4 886c6775af22370257122f8b16207e6d)
-  set(MD5_PPM_444_ISLOW_SKIP1_6 5606f86874cf26b8fcee1117a0a436a6)
-  set(MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13 db87dc7ce26bcdc7a6b56239ce2b9d6c)
-  set(MD5_PPM_444_ISLOW_ARI_CROP37x37_0_0 cb57b32bd6d03e35432362f7bf184b6d)
-  set(MD5_JPEG_CROP b4197f377e621c4e9b1d20471432610d)
-endif()
 
 if(WITH_JAVA)
   add_test(TJUnitTest
@@ -872,6 +776,11 @@ if(ENABLE_SHARED)
 endif()
 if(ENABLE_STATIC)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} static)
+endif()
+
+set(TEST_SAMPLE_BITS 8)
+if(WITH_12BIT)
+  set(TEST_SAMPLE_BITS ${TEST_SAMPLE_BITS} 12)
 endif()
 
 set(TESTIMAGES ${CMAKE_CURRENT_SOURCE_DIR}/testimages)
@@ -1063,296 +972,472 @@ foreach(libtype ${TEST_LIBTYPES})
     endif()
   endmacro()
 
-  # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
-  add_bittest(cjpeg rgb-islow "-rgb;-dct;int;-icc;${TESTIMAGES}/test1.icc"
-    testout_rgb_islow.jpg ${TESTIMAGES}/testorig.ppm
-    ${MD5_JPEG_RGB_ISLOW})
+  foreach(sample_bits ${TEST_SAMPLE_BITS})
 
-  # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_bittest(djpeg rgb-islow "-dct;int;-ppm;-icc;testout_rgb_islow.icc"
-    testout_rgb_islow.ppm testout_rgb_islow.jpg
-    ${MD5_PPM_RGB_ISLOW} cjpeg-${libtype}-rgb-islow)
+    if(sample_bits EQUAL 12)
+      set(cjpeg cjpeg12)
+      set(djpeg djpeg12)
+      set(jpegtran jpeg12tran)
+      set(testout testout12)
 
-  add_test(djpeg-${libtype}-rgb-islow-icc-cmp
-    ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
-      b06a39d730129122e85c1363ed1bbc9e testout_rgb_islow.icc)
-  set_tests_properties(djpeg-${libtype}-rgb-islow-icc-cmp PROPERTIES
-    DEPENDS djpeg-${libtype}-rgb-islow)
+      set(TESTORIG testorig12.jpg)
+      set(MD5_JPEG_RGB_ISLOW 9d7369207c520d37f2c1cbfcb82b2964)
+      set(MD5_JPEG_RGB_ISLOW2 a00bd20d8ae49684640ef7177d2e0b64)
+      set(MD5_PPM_RGB_ISLOW f3301d2219783b8b3d942b7239fa50c0)
+      set(MD5_JPEG_422_IFAST_OPT 7322e3bd2f127f7de4b40d4480ce60e4)
+      set(MD5_PPM_422_IFAST 79807fa552899e66a04708f533e16950)
+      set(MD5_JPEG_440_ISLOW e25c1912e38367be505a89c410c1c2d2)
+      set(MD5_PPM_440_ISLOW e7d2e26288870cfcb30f3114ad01e380)
+      set(MD5_PPM_422M_IFAST 07737bfe8a7c1c87aaa393a0098d16b0)
+      set(MD5_JPEG_420_IFAST_Q100_PROG 9447cef4803d9b0f74bcf333cc710a29)
+      set(MD5_PPM_420_Q100_IFAST 1b3730122709f53d007255e8dfd3305e)
+      set(MD5_PPM_420M_Q100_IFAST 980a1a3c5bf9510022869d30b7d26566)
+      set(MD5_JPEG_GRAY_ISLOW 235c90707b16e2e069f37c888b2636d9)
+      set(MD5_PPM_GRAY_ISLOW 7213c10af507ad467da5578ca5ee1fca)
+      set(MD5_PPM_GRAY_ISLOW_RGB e96ee81c30a6ed422d466338bd3de65d)
+      set(MD5_JPEG_420S_IFAST_OPT 7af8e60be4d9c227ec63ac9b6630855e)
 
-  add_bittest(jpegtran icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
-    testout_rgb_islow2.jpg testout_rgb_islow.jpg
-    ${MD5_JPEG_RGB_ISLOW2} cjpeg-${libtype}-rgb-islow)
+      set(MD5_JPEG_3x2_FLOAT_PROG_SSE a8c17daf77b457725ec929e215b603f8)
+      set(MD5_PPM_3x2_FLOAT_SSE 42876ab9e5c2f76a87d08db5fbd57956)
+      set(MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT
+        a8c17daf77b457725ec929e215b603f8)
+      set(MD5_PPM_3x2_FLOAT_NO_FP_CONTRACT ${MD5_PPM_3x2_FLOAT_SSE})
+      set(MD5_JPEG_3x2_FLOAT_PROG_FP_CONTRACT
+        ${MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT})
+      set(MD5_PPM_3x2_FLOAT_FP_CONTRACT ${MD5_PPM_3x2_FLOAT_SSE})
+      set(MD5_JPEG_3x2_FLOAT_PROG_387 bc6dbbefac2872f6b9d6c4a0ae60c3c0)
+      set(MD5_PPM_3x2_FLOAT_387 bcc5723c61560463ac60f772e742d092)
+      set(MD5_JPEG_3x2_FLOAT_PROG_MSVC e27840755870fa849872e58aa0cd1400)
+      set(MD5_PPM_3x2_FLOAT_MSVC 6c2880b83bb1aa41dfe330e7a9768690)
 
-  if(NOT WITH_12BIT)
-    # CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
-    add_bittest(djpeg rgb-islow-565 "-dct;int;-rgb565;-dither;none;-bmp"
-      testout_rgb_islow_565.bmp testout_rgb_islow.jpg
-      ${MD5_BMP_RGB_ISLOW_565} cjpeg-${libtype}-rgb-islow)
+      set(MD5_JPEG_3x2_IFAST_PROG 1396cc2b7185cfe943d408c9d305339e)
+      set(MD5_PPM_3x2_IFAST 3975985ef6eeb0a2cdc58daa651ccc00)
+      set(MD5_PPM_420M_ISLOW_2_1 4ca6be2a6f326ff9eaab63e70a8259c0)
+      set(MD5_PPM_420M_ISLOW_15_8 12aa9f9534c1b3d7ba047322226365eb)
+      set(MD5_PPM_420M_ISLOW_13_8 f7e22817c7b25e1393e4ec101e9d4e96)
+      set(MD5_PPM_420M_ISLOW_11_8 800a16f9f4dc9b293197bfe11be10a82)
+      set(MD5_PPM_420M_ISLOW_9_8 06b7a92a9bc69f4dc36ec40f1937d55c)
+      set(MD5_PPM_420M_ISLOW_7_8 3ec444a14a4ab4eab88ffc49c48eca43)
+      set(MD5_PPM_420M_ISLOW_3_4 3e726b7ea872445b19437d1c1d4f0d93)
+      set(MD5_PPM_420M_ISLOW_5_8 a8a771abdc94301d20ffac119b2caccd)
+      set(MD5_PPM_420M_ISLOW_1_2 b419124dd5568b085787234866102866)
+      set(MD5_PPM_420M_ISLOW_3_8 343d19015531b7bbe746124127244fa8)
+      set(MD5_PPM_420M_ISLOW_1_4 35fd59d866e44659edfa3c18db2a3edb)
+      set(MD5_PPM_420M_ISLOW_1_8 ccaed48ac0aedefda5d4abe4013f4ad7)
+      set(MD5_PPM_420_ISLOW_SKIP15_31 86664cd9dc956536409e44e244d20a97)
+      set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71
+        452a21656115a163029cfba5c04fa76a)
+      set(MD5_PPM_444_ISLOW_SKIP1_6 ef63901f71ef7a75cd78253fc0914f84)
+      set(MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13
+        15b173fb5872d9575572fbcc1b05956f)
+      set(MD5_JPEG_CROP cdb35ff4b4519392690ea040c56ea99c)
 
-    # CC: RGB->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
-    add_bittest(djpeg rgb-islow-565D "-dct;int;-rgb565;-bmp"
-      testout_rgb_islow_565D.bmp testout_rgb_islow.jpg
-      ${MD5_BMP_RGB_ISLOW_565D} cjpeg-${libtype}-rgb-islow)
-  endif()
+      set(MD5_JPEG_EXAMPLE_COMPRESS 5e502da0c3c0f957a58c536f31e973dc)
+      set(MD5_PPM_EXAMPLE_DECOMPRESS 2ff0e8505ee6e0ffaeb24037d5650b57)
+    else()
+      set(cjpeg cjpeg)
+      set(djpeg djpeg)
+      set(jpegtran jpegtran)
+      set(testout testout)
 
-  # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
-  add_bittest(cjpeg 422-ifast-opt "-sample;2x1;-dct;fast;-opt"
-    testout_422_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
-    ${MD5_JPEG_422_IFAST_OPT})
+      set(TESTORIG testorig.jpg)
+      set(MD5_JPEG_RGB_ISLOW 1d44a406f61da743b5fd31c0a9abdca3)
+      set(MD5_JPEG_RGB_ISLOW2 31d121e57b6c2934c890a7fc7763bcd4)
+      set(MD5_PPM_RGB_ISLOW 00a257f5393fef8821f2b88ac7421291)
+      set(MD5_BMP_RGB_ISLOW_565 f07d2e75073e4bb10f6c6f4d36e2e3be)
+      set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
+      set(MD5_JPEG_422_IFAST_OPT 2540287b79d913f91665e660303ab2c8)
+      set(MD5_PPM_422_IFAST 35bd6b3f833bad23de82acea847129fa)
+      set(MD5_JPEG_440_ISLOW 538bc02bd4b4658fd85de6ece6cbeda6)
+      set(MD5_PPM_440_ISLOW 11e7eab7ef7ef3276934bb7e7b6bb377)
+      set(MD5_PPM_422M_IFAST 8dbc65323d62cca7c91ba02dd1cfa81d)
+      set(MD5_BMP_422M_IFAST_565 3294bd4d9a1f2b3d08ea6020d0db7065)
+      set(MD5_BMP_422M_IFAST_565D da98c9c7b6039511be4a79a878a9abc1)
+      set(MD5_JPEG_420_IFAST_Q100_PROG 0ba15f9dab81a703505f835f9dbbac6d)
+      set(MD5_PPM_420_Q100_IFAST 5a732542015c278ff43635e473a8a294)
+      set(MD5_PPM_420M_Q100_IFAST ff692ee9323a3b424894862557c092f1)
+      set(MD5_JPEG_GRAY_ISLOW 72b51f894b8f4a10b3ee3066770aa38d)
+      set(MD5_PPM_GRAY_ISLOW 8d3596c56eace32f205deccc229aa5ed)
+      set(MD5_PPM_GRAY_ISLOW_RGB 116424ac07b79e5e801f00508eab48ec)
+      set(MD5_BMP_GRAY_ISLOW_565 12f78118e56a2f48b966f792fedf23cc)
+      set(MD5_BMP_GRAY_ISLOW_565D bdbbd616441a24354c98553df5dc82db)
+      set(MD5_JPEG_420S_IFAST_OPT 388708217ac46273ca33086b22827ed8)
 
-  # CC: YCC->RGB  SAMP: fullsize/h2v1 fancy  IDCT: ifast  ENT: huff
-  add_bittest(djpeg 422-ifast "-dct;fast"
-    testout_422_ifast.ppm testout_422_ifast_opt.jpg
-    ${MD5_PPM_422_IFAST} cjpeg-${libtype}-422-ifast-opt)
+      set(MD5_JPEG_3x2_FLOAT_PROG_SSE 343e3f8caf8af5986ebaf0bdc13b5c71)
+      set(MD5_PPM_3x2_FLOAT_SSE 1a75f36e5904d6fc3a85a43da9ad89bb)
+      set(MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT
+        9bca803d2042bd1eb03819e2bf92b3e5)
+      set(MD5_PPM_3x2_FLOAT_NO_FP_CONTRACT f6bfab038438ed8f5522fbd33595dcdc)
+      set(MD5_JPEG_3x2_FLOAT_PROG_FP_CONTRACT
+        ${MD5_JPEG_3x2_FLOAT_PROG_NO_FP_CONTRACT})
+      set(MD5_PPM_3x2_FLOAT_FP_CONTRACT 0e917a34193ef976b679a6b069b1be26)
+      set(MD5_JPEG_3x2_FLOAT_PROG_387 1657664a410e0822c924b54f6f65e6e9)
+      set(MD5_PPM_3x2_FLOAT_387 cb0a1f027f3d2917c902b5640214e025)
+      set(MD5_JPEG_3x2_FLOAT_PROG_MSVC 7999ce9cd0ee9b6c7043b7351ab7639d)
+      set(MD5_PPM_3x2_FLOAT_MSVC 28cdc448a6b75e97892f0e0f8d4b21f3)
 
-  # CC: RGB->YCC  SAMP: fullsize/h1v2  FDCT: islow  ENT: huff
-  add_bittest(cjpeg 440-islow "-sample;1x2;-dct;int"
-    testout_440_islow.jpg ${TESTIMAGES}/testorig.ppm
-    ${MD5_JPEG_440_ISLOW})
+      set(MD5_JPEG_3x2_IFAST_PROG 1ee5d2c1a77f2da495f993c8c7cceca5)
+      set(MD5_PPM_3x2_IFAST fd283664b3b49127984af0a7f118fccd)
+      set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
+      set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
+      set(MD5_PPM_420M_IFAST_ARI 57251da28a35b46eecb7177d82d10e0e)
+      set(MD5_JPEG_420_ISLOW 9a68f56bc76e466aa7e52f415d0f4a5f)
+      set(MD5_PPM_420M_ISLOW_2_1 9f9de8c0612f8d06869b960b05abf9c9)
+      set(MD5_PPM_420M_ISLOW_15_8 b6875bc070720b899566cc06459b63b7)
+      set(MD5_PPM_420M_ISLOW_13_8 bc3452573c8152f6ae552939ee19f82f)
+      set(MD5_PPM_420M_ISLOW_11_8 d8cc73c0aaacd4556569b59437ba00a5)
+      set(MD5_PPM_420M_ISLOW_9_8 d25e61bc7eac0002f5b393aa223747b6)
+      set(MD5_PPM_420M_ISLOW_7_8 ddb564b7c74a09494016d6cd7502a946)
+      set(MD5_PPM_420M_ISLOW_3_4 8ed8e68808c3fbc4ea764fc9d2968646)
+      set(MD5_PPM_420M_ISLOW_5_8 a3363274999da2366a024efae6d16c9b)
+      set(MD5_PPM_420M_ISLOW_1_2 e692a315cea26b988c8e8b29a5dbcd81)
+      set(MD5_PPM_420M_ISLOW_3_8 79eca9175652ced755155c90e785a996)
+      set(MD5_PPM_420M_ISLOW_1_4 79cd778f8bf1a117690052cacdd54eca)
+      set(MD5_PPM_420M_ISLOW_1_8 391b3d4aca640c8567d6f8745eb2142f)
+      set(MD5_BMP_420_ISLOW_256 4980185e3776e89bd931736e1cddeee6)
+      set(MD5_BMP_420_ISLOW_565 bf9d13e16c4923b92e1faa604d7922cb)
+      set(MD5_BMP_420_ISLOW_565D 6bde71526acc44bcff76f696df8638d2)
+      set(MD5_BMP_420M_ISLOW_565 8dc0185245353cfa32ad97027342216f)
+      set(MD5_BMP_420M_ISLOW_565D ce034037d212bc403330df6f915c161b)
+      set(MD5_PPM_420_ISLOW_SKIP15_31 c4c65c1e43d7275cd50328a61e6534f0)
+      set(MD5_PPM_420_ISLOW_ARI_SKIP16_139 087c6b123db16ac00cb88c5b590bb74a)
+      set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71
+        26eb36ccc7d1f0cb80cdabb0ac8b5d99)
+      set(MD5_PPM_420_ISLOW_ARI_CROP53x53_4_4 886c6775af22370257122f8b16207e6d)
+      set(MD5_PPM_444_ISLOW_SKIP1_6 5606f86874cf26b8fcee1117a0a436a6)
+      set(MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13
+        db87dc7ce26bcdc7a6b56239ce2b9d6c)
+      set(MD5_PPM_444_ISLOW_ARI_CROP37x37_0_0 cb57b32bd6d03e35432362f7bf184b6d)
+      set(MD5_JPEG_CROP b4197f377e621c4e9b1d20471432610d)
 
-  # CC: YCC->RGB  SAMP: fullsize/h1v2 fancy  IDCT: islow  ENT: huff
-  add_bittest(djpeg 440-islow "-dct;int"
-    testout_440_islow.ppm testout_440_islow.jpg
-    ${MD5_PPM_440_ISLOW} cjpeg-${libtype}-440-islow)
-
-  # CC: YCC->RGB  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
-  add_bittest(djpeg 422m-ifast "-dct;fast;-nosmooth"
-    testout_422m_ifast.ppm testout_422_ifast_opt.jpg
-    ${MD5_PPM_422M_IFAST} cjpeg-${libtype}-422-ifast-opt)
-
-  if(NOT WITH_12BIT)
-    # CC: YCC->RGB565  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
-    add_bittest(djpeg 422m-ifast-565
-      "-dct;int;-nosmooth;-rgb565;-dither;none;-bmp"
-      testout_422m_ifast_565.bmp testout_422_ifast_opt.jpg
-      ${MD5_BMP_422M_IFAST_565} cjpeg-${libtype}-422-ifast-opt)
-
-    # CC: YCC->RGB565 (dithered)  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
-    add_bittest(djpeg 422m-ifast-565D "-dct;int;-nosmooth;-rgb565;-bmp"
-      testout_422m_ifast_565D.bmp testout_422_ifast_opt.jpg
-      ${MD5_BMP_422M_IFAST_565D} cjpeg-${libtype}-422-ifast-opt)
-  endif()
-
-  # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
-  add_bittest(cjpeg 420-q100-ifast-prog
-    "-sample;2x2;-quality;100;-dct;fast;-scans;${TESTIMAGES}/test.scan"
-    testout_420_q100_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
-    ${MD5_JPEG_420_IFAST_Q100_PROG})
-
-  # CC: YCC->RGB  SAMP: fullsize/h2v2 fancy  IDCT: ifast  ENT: prog huff
-  add_bittest(djpeg 420-q100-ifast-prog "-dct;fast"
-    testout_420_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
-    ${MD5_PPM_420_Q100_IFAST} cjpeg-${libtype}-420-q100-ifast-prog)
-
-  # CC: YCC->RGB  SAMP: h2v2 merged  IDCT: ifast  ENT: prog huff
-  add_bittest(djpeg 420m-q100-ifast-prog "-dct;fast;-nosmooth"
-    testout_420m_q100_ifast.ppm testout_420_q100_ifast_prog.jpg
-    ${MD5_PPM_420M_Q100_IFAST} cjpeg-${libtype}-420-q100-ifast-prog)
-
-  # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
-  add_bittest(cjpeg gray-islow "-gray;-dct;int"
-    testout_gray_islow.jpg ${TESTIMAGES}/testorig.ppm
-    ${MD5_JPEG_GRAY_ISLOW})
-
-  # CC: Gray->Gray  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_bittest(djpeg gray-islow "-dct;int"
-    testout_gray_islow.ppm testout_gray_islow.jpg
-    ${MD5_PPM_GRAY_ISLOW} cjpeg-${libtype}-gray-islow)
-
-  # CC: Gray->RGB  SAMP: fullsize  IDCT: islow  ENT: huff
-  add_bittest(djpeg gray-islow-rgb "-dct;int;-rgb"
-    testout_gray_islow_rgb.ppm testout_gray_islow.jpg
-    ${MD5_PPM_GRAY_ISLOW_RGB} cjpeg-${libtype}-gray-islow)
-
-  if(NOT WITH_12BIT)
-    # CC: Gray->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
-    add_bittest(djpeg gray-islow-565 "-dct;int;-rgb565;-dither;none;-bmp"
-      testout_gray_islow_565.bmp testout_gray_islow.jpg
-      ${MD5_BMP_GRAY_ISLOW_565} cjpeg-${libtype}-gray-islow)
-
-    # CC: Gray->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
-    add_bittest(djpeg gray-islow-565D "-dct;int;-rgb565;-bmp"
-      testout_gray_islow_565D.bmp testout_gray_islow.jpg
-      ${MD5_BMP_GRAY_ISLOW_565D} cjpeg-${libtype}-gray-islow)
-  endif()
-
-  # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
-  # ENT: 2-pass huff
-  add_bittest(cjpeg 420s-ifast-opt "-sample;2x2;-smooth;1;-dct;int;-opt"
-    testout_420s_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
-    ${MD5_JPEG_420S_IFAST_OPT})
-
-  if(FLOATTEST)
-    # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
-    add_bittest(cjpeg 3x2-float-prog "-sample;3x2;-dct;float;-prog"
-      testout_3x2_float_prog.jpg ${TESTIMAGES}/testorig.ppm
-      ${MD5_JPEG_3x2_FLOAT_PROG_${FLOATTEST_UC}})
-
-    # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
-    add_bittest(djpeg 3x2-float-prog "-dct;float"
-      testout_3x2_float.ppm testout_3x2_float_prog.jpg
-      ${MD5_PPM_3x2_FLOAT_${FLOATTEST_UC}} cjpeg-${libtype}-3x2-float-prog)
-  endif()
-
-    # CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
-  add_bittest(cjpeg 3x2-ifast-prog "-sample;3x2;-dct;fast;-prog"
-    testout_3x2_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
-    ${MD5_JPEG_3x2_IFAST_PROG})
-
-  # CC: YCC->RGB  SAMP: fullsize/int  IDCT: ifast  ENT: prog huff
-  add_bittest(djpeg 3x2-ifast-prog "-dct;fast"
-    testout_3x2_ifast.ppm testout_3x2_ifast_prog.jpg
-    ${MD5_PPM_3x2_IFAST} cjpeg-${libtype}-3x2-ifast-prog)
-
-  if(WITH_ARITH_ENC)
-    # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
-    add_bittest(cjpeg 420-islow-ari "-dct;int;-arithmetic"
-      testout_420_islow_ari.jpg ${TESTIMAGES}/testorig.ppm
-      ${MD5_JPEG_420_ISLOW_ARI})
-
-    add_bittest(jpegtran 420-islow-ari "-arithmetic"
-      testout_420_islow_ari2.jpg ${TESTIMAGES}/testimgint.jpg
-      ${MD5_JPEG_420_ISLOW_ARI})
-
-    # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
-    add_bittest(cjpeg 444-islow-progari
-      "-sample;1x1;-dct;int;-prog;-arithmetic"
-      testout_444_islow_progari.jpg ${TESTIMAGES}/testorig.ppm
-      ${MD5_JPEG_444_ISLOW_PROGARI})
-  endif()
-
-  if(WITH_ARITH_DEC)
-    # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
-    add_bittest(djpeg 420m-ifast-ari "-fast;-skip;1,20;-ppm"
-      testout_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
-      ${MD5_PPM_420M_IFAST_ARI})
-
-    add_bittest(jpegtran 420-islow ""
-      testout_420_islow.jpg ${TESTIMAGES}/testimgari.jpg
-      ${MD5_JPEG_420_ISLOW})
-  endif()
-
-  # 2/1--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 16x16 islow  ENT: huff
-  # 15/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 15x15 islow  ENT: huff
-  # 13/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 13x13 islow  ENT: huff
-  # 11/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 11x11 islow  ENT: huff
-  # 9/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 9x9 islow  ENT: huff
-  # 7/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 7x7 islow/14x14 islow
-  #         ENT: huff
-  # 3/4--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 6x6 islow/12x12 islow
-  #         ENT: huff
-  # 5/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 5x5 islow/10x10 islow
-  #         ENT: huff
-  # 1/2--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 4x4 islow/8x8 islow
-  #         ENT: huff
-  # 3/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 3x3 islow/6x6 islow
-  #         ENT: huff
-  # 1/4--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 2x2 islow/4x4 islow
-  #         ENT: huff
-  # 1/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 1x1 islow/2x2 islow
-  #         ENT: huff
-  foreach(scale 2_1 15_8 13_8 11_8 9_8 7_8 3_4 5_8 1_2 3_8 1_4 1_8)
-    string(REGEX REPLACE "_" "/" scalearg ${scale})
-    add_bittest(djpeg 420m-islow-${scale}
-      "-dct;int;-scale;${scalearg};-nosmooth;-ppm"
-      testout_420m_islow_${scale}.ppm ${TESTIMAGES}/${TESTORIG}
-      ${MD5_PPM_420M_ISLOW_${scale}})
-  endforeach()
-
-  if(NOT WITH_12BIT)
-    # CC: YCC->RGB (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
-    add_bittest(djpeg 420-islow-256 "-dct;int;-colors;256;-bmp"
-      testout_420_islow_256.bmp ${TESTIMAGES}/${TESTORIG}
-      ${MD5_BMP_420_ISLOW_256})
-
-    # CC: YCC->RGB565  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
-    add_bittest(djpeg 420-islow-565 "-dct;int;-rgb565;-dither;none;-bmp"
-      testout_420_islow_565.bmp ${TESTIMAGES}/${TESTORIG}
-      ${MD5_BMP_420_ISLOW_565})
-
-    # CC: YCC->RGB565 (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
-    add_bittest(djpeg 420-islow-565D "-dct;int;-rgb565;-bmp"
-      testout_420_islow_565D.bmp ${TESTIMAGES}/${TESTORIG}
-      ${MD5_BMP_420_ISLOW_565D})
-
-    # CC: YCC->RGB565  SAMP: h2v2 merged  IDCT: islow  ENT: huff
-    add_bittest(djpeg 420m-islow-565
-      "-dct;int;-nosmooth;-rgb565;-dither;none;-bmp"
-      testout_420m_islow_565.bmp ${TESTIMAGES}/${TESTORIG}
-      ${MD5_BMP_420M_ISLOW_565})
-
-    # CC: YCC->RGB565 (dithered)  SAMP: h2v2 merged  IDCT: islow  ENT: huff
-    add_bittest(djpeg 420m-islow-565D "-dct;int;-nosmooth;-rgb565;-bmp"
-      testout_420m_islow_565D.bmp ${TESTIMAGES}/${TESTORIG}
-      ${MD5_BMP_420M_ISLOW_565D})
-  endif()
-
-  # Partial decode tests.  These tests are designed to cover all of the
-  # possible code paths in jpeg_skip_scanlines().
-
-  # Context rows: Yes  Intra-iMCU row: Yes  iMCU row prefetch: No   ENT: huff
-  add_bittest(djpeg 420-islow-skip15_31 "-dct;int;-skip;15,31;-ppm"
-    testout_420_islow_skip15,31.ppm ${TESTIMAGES}/${TESTORIG}
-    ${MD5_PPM_420_ISLOW_SKIP15_31})
-
-  # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: Yes  ENT: arith
-  if(WITH_ARITH_DEC)
-    add_bittest(djpeg 420-islow-ari-skip16_139 "-dct;int;-skip;16,139;-ppm"
-      testout_420_islow_ari_skip16,139.ppm ${TESTIMAGES}/testimgari.jpg
-      ${MD5_PPM_420_ISLOW_ARI_SKIP16_139})
-  endif()
-
-  # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No   ENT: prog huff
-  add_test(cjpeg-${libtype}-420-islow-prog
-    ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -prog
-      -outfile testout_420_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
-  add_bittest(djpeg 420-islow-prog-crop62x62_71_71
-    "-dct;int;-crop;62x62+71+71;-ppm"
-    testout_420_islow_prog_crop62x62,71,71.ppm testout_420_islow_prog.jpg
-    ${MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71} cjpeg-${libtype}-420-islow-prog)
-
-  # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No   ENT: arith
-  if(WITH_ARITH_DEC)
-    add_bittest(djpeg 420-islow-ari-crop53x53_4_4
-      "-dct;int;-crop;53x53+4+4;-ppm"
-      testout_420_islow_ari_crop53x53,4,4.ppm ${TESTIMAGES}/testimgari.jpg
-      ${MD5_PPM_420_ISLOW_ARI_CROP53x53_4_4})
-  endif()
-
-  # Context rows: No   Intra-iMCU row: Yes  ENT: huff
-  add_test(cjpeg-${libtype}-444-islow
-    ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -sample 1x1
-      -outfile testout_444_islow.jpg ${TESTIMAGES}/testorig.ppm)
-  add_bittest(djpeg 444-islow-skip1_6 "-dct;int;-skip;1,6;-ppm"
-    testout_444_islow_skip1,6.ppm testout_444_islow.jpg
-    ${MD5_PPM_444_ISLOW_SKIP1_6} cjpeg-${libtype}-444-islow)
-
-  # Context rows: No   Intra-iMCU row: No   ENT: prog huff
-  add_test(cjpeg-${libtype}-444-islow-prog
-    ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -prog -sample 1x1
-      -outfile testout_444_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
-  add_bittest(djpeg 444-islow-prog-crop98x98_13_13
-    "-dct;int;-crop;98x98+13+13;-ppm"
-    testout_444_islow_prog_crop98x98,13,13.ppm testout_444_islow_prog.jpg
-    ${MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13} cjpeg-${libtype}-444-islow-prog)
-
-  # Context rows: No   Intra-iMCU row: No   ENT: arith
-  if(WITH_ARITH_ENC)
-    add_test(cjpeg-${libtype}-444-islow-ari
-      ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -arithmetic
-        -sample 1x1 -outfile testout_444_islow_ari.jpg
-        ${TESTIMAGES}/testorig.ppm)
-    if(WITH_ARITH_DEC)
-      add_bittest(djpeg 444-islow-ari-crop37x37_0_0
-        "-dct;int;-crop;37x37+0+0;-ppm"
-        testout_444_islow_ari_crop37x37,0,0.ppm testout_444_islow_ari.jpg
-        ${MD5_PPM_444_ISLOW_ARI_CROP37x37_0_0} cjpeg-${libtype}-444-islow-ari)
+      set(MD5_JPEG_EXAMPLE_COMPRESS 95d4d72e2ef127332654c2599afb47bf)
+      set(MD5_PPM_EXAMPLE_DECOMPRESS 6fdde7301575bfd711e295b969b6b3de)
     endif()
-  endif()
 
-  add_bittest(jpegtran crop "-crop;120x90+20+50;-transpose;-perfect"
-    testout_crop.jpg ${TESTIMAGES}/${TESTORIG}
-    ${MD5_JPEG_CROP})
+    # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
+    add_bittest(${cjpeg} rgb-islow "-rgb;-dct;int;-icc;${TESTIMAGES}/test1.icc"
+      ${testout}_rgb_islow.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_RGB_ISLOW})
+
+    # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
+    add_bittest(${djpeg} rgb-islow "-dct;int;-ppm;-icc;${testout}_rgb_islow.icc"
+      ${testout}_rgb_islow.ppm ${testout}_rgb_islow.jpg ${MD5_PPM_RGB_ISLOW}
+      ${cjpeg}-${libtype}-rgb-islow)
+
+    add_test(${djpeg}-${libtype}-rgb-islow-icc-cmp
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
+        b06a39d730129122e85c1363ed1bbc9e ${testout}_rgb_islow.icc)
+    set_tests_properties(${djpeg}-${libtype}-rgb-islow-icc-cmp PROPERTIES
+      DEPENDS ${djpeg}-${libtype}-rgb-islow)
+
+    add_bittest(${jpegtran} icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
+      ${testout}_rgb_islow2.jpg ${testout}_rgb_islow.jpg
+      ${MD5_JPEG_RGB_ISLOW2} ${cjpeg}-${libtype}-rgb-islow)
+
+    if(sample_bits EQUAL 8)
+      # CC: RGB->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} rgb-islow-565 "-dct;int;-rgb565;-dither;none;-bmp"
+        ${testout}_rgb_islow_565.bmp ${testout}_rgb_islow.jpg
+        ${MD5_BMP_RGB_ISLOW_565} ${cjpeg}-${libtype}-rgb-islow)
+
+      # CC: RGB->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} rgb-islow-565D "-dct;int;-rgb565;-bmp"
+        ${testout}_rgb_islow_565D.bmp ${testout}_rgb_islow.jpg
+        ${MD5_BMP_RGB_ISLOW_565D} ${cjpeg}-${libtype}-rgb-islow)
+    endif()
+
+    # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
+    add_bittest(${cjpeg} 422-ifast-opt "-sample;2x1;-dct;fast;-opt"
+      ${testout}_422_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_422_IFAST_OPT})
+
+    # CC: YCC->RGB  SAMP: fullsize/h2v1 fancy  IDCT: ifast  ENT: huff
+    add_bittest(${djpeg} 422-ifast "-dct;fast"
+      ${testout}_422_ifast.ppm ${testout}_422_ifast_opt.jpg
+      ${MD5_PPM_422_IFAST} ${cjpeg}-${libtype}-422-ifast-opt)
+
+    # CC: RGB->YCC  SAMP: fullsize/h1v2  FDCT: islow  ENT: huff
+    add_bittest(${cjpeg} 440-islow "-sample;1x2;-dct;int"
+      ${testout}_440_islow.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_440_ISLOW})
+
+    # CC: YCC->RGB  SAMP: fullsize/h1v2 fancy  IDCT: islow  ENT: huff
+    add_bittest(${djpeg} 440-islow "-dct;int"
+      ${testout}_440_islow.ppm ${testout}_440_islow.jpg
+      ${MD5_PPM_440_ISLOW} ${cjpeg}-${libtype}-440-islow)
+
+    # CC: YCC->RGB  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+    add_bittest(${djpeg} 422m-ifast "-dct;fast;-nosmooth"
+      ${testout}_422m_ifast.ppm ${testout}_422_ifast_opt.jpg
+      ${MD5_PPM_422M_IFAST} ${cjpeg}-${libtype}-422-ifast-opt)
+
+    if(sample_bits EQUAL 8)
+      # CC: YCC->RGB565  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+      add_bittest(${djpeg} 422m-ifast-565
+        "-dct;int;-nosmooth;-rgb565;-dither;none;-bmp"
+        ${testout}_422m_ifast_565.bmp ${testout}_422_ifast_opt.jpg
+        ${MD5_BMP_422M_IFAST_565} ${cjpeg}-${libtype}-422-ifast-opt)
+
+      # CC: YCC->RGB565 (dithered)  SAMP: h2v1 merged  IDCT: ifast  ENT: huff
+      add_bittest(${djpeg} 422m-ifast-565D "-dct;int;-nosmooth;-rgb565;-bmp"
+        ${testout}_422m_ifast_565D.bmp ${testout}_422_ifast_opt.jpg
+        ${MD5_BMP_422M_IFAST_565D} ${cjpeg}-${libtype}-422-ifast-opt)
+    endif()
+
+    # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
+    add_bittest(${cjpeg} 420-q100-ifast-prog
+      "-sample;2x2;-quality;100;-dct;fast;-scans;${TESTIMAGES}/test.scan"
+      ${testout}_420_q100_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_420_IFAST_Q100_PROG})
+
+    # CC: YCC->RGB  SAMP: fullsize/h2v2 fancy  IDCT: ifast  ENT: prog huff
+    add_bittest(${djpeg} 420-q100-ifast-prog "-dct;fast"
+      ${testout}_420_q100_ifast.ppm ${testout}_420_q100_ifast_prog.jpg
+      ${MD5_PPM_420_Q100_IFAST} ${cjpeg}-${libtype}-420-q100-ifast-prog)
+
+    # CC: YCC->RGB  SAMP: h2v2 merged  IDCT: ifast  ENT: prog huff
+    add_bittest(${djpeg} 420m-q100-ifast-prog "-dct;fast;-nosmooth"
+      ${testout}_420m_q100_ifast.ppm ${testout}_420_q100_ifast_prog.jpg
+      ${MD5_PPM_420M_Q100_IFAST} ${cjpeg}-${libtype}-420-q100-ifast-prog)
+
+    # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
+    add_bittest(${cjpeg} gray-islow "-gray;-dct;int"
+      ${testout}_gray_islow.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_GRAY_ISLOW})
+
+    # CC: Gray->Gray  SAMP: fullsize  IDCT: islow  ENT: huff
+    add_bittest(${djpeg} gray-islow "-dct;int"
+      ${testout}_gray_islow.ppm ${testout}_gray_islow.jpg
+      ${MD5_PPM_GRAY_ISLOW} ${cjpeg}-${libtype}-gray-islow)
+
+    # CC: Gray->RGB  SAMP: fullsize  IDCT: islow  ENT: huff
+    add_bittest(${djpeg} gray-islow-rgb "-dct;int;-rgb"
+      ${testout}_gray_islow_rgb.ppm ${testout}_gray_islow.jpg
+      ${MD5_PPM_GRAY_ISLOW_RGB} ${cjpeg}-${libtype}-gray-islow)
+
+    if(sample_bits EQUAL 8)
+      # CC: Gray->RGB565  SAMP: fullsize  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} gray-islow-565 "-dct;int;-rgb565;-dither;none;-bmp"
+        ${testout}_gray_islow_565.bmp ${testout}_gray_islow.jpg
+        ${MD5_BMP_GRAY_ISLOW_565} ${cjpeg}-${libtype}-gray-islow)
+
+      # CC: Gray->RGB565 (dithered)  SAMP: fullsize  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} gray-islow-565D "-dct;int;-rgb565;-bmp"
+        ${testout}_gray_islow_565D.bmp ${testout}_gray_islow.jpg
+        ${MD5_BMP_GRAY_ISLOW_565D} ${cjpeg}-${libtype}-gray-islow)
+    endif()
+
+    # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
+    # ENT: 2-pass huff
+    add_bittest(${cjpeg} 420s-ifast-opt "-sample;2x2;-smooth;1;-dct;int;-opt"
+      ${testout}_420s_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_420S_IFAST_OPT})
+
+    if(FLOATTEST)
+      # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
+      add_bittest(${cjpeg} 3x2-float-prog "-sample;3x2;-dct;float;-prog"
+        ${testout}_3x2_float_prog.jpg ${TESTIMAGES}/testorig.ppm
+        ${MD5_JPEG_3x2_FLOAT_PROG_${FLOATTEST_UC}})
+
+      # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
+      add_bittest(${djpeg} 3x2-float-prog "-dct;float"
+        ${testout}_3x2_float.ppm ${testout}_3x2_float_prog.jpg
+        ${MD5_PPM_3x2_FLOAT_${FLOATTEST_UC}}
+        ${cjpeg}-${libtype}-3x2-float-prog)
+    endif()
+
+      # CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
+    add_bittest(${cjpeg} 3x2-ifast-prog "-sample;3x2;-dct;fast;-prog"
+      ${testout}_3x2_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_3x2_IFAST_PROG})
+
+    # CC: YCC->RGB  SAMP: fullsize/int  IDCT: ifast  ENT: prog huff
+    add_bittest(${djpeg} 3x2-ifast-prog "-dct;fast"
+      ${testout}_3x2_ifast.ppm ${testout}_3x2_ifast_prog.jpg
+      ${MD5_PPM_3x2_IFAST} ${cjpeg}-${libtype}-3x2-ifast-prog)
+
+    if(WITH_ARITH_ENC AND sample_bits EQUAL 8)
+      # CC: YCC->RGB  SAMP: fullsize/h2v2  FDCT: islow  ENT: arith
+      add_bittest(${cjpeg} 420-islow-ari "-dct;int;-arithmetic"
+        ${testout}_420_islow_ari.jpg ${TESTIMAGES}/testorig.ppm
+        ${MD5_JPEG_420_ISLOW_ARI})
+
+      add_bittest(${jpegtran} 420-islow-ari "-arithmetic"
+        ${testout}_420_islow_ari2.jpg ${TESTIMAGES}/testimgint.jpg
+        ${MD5_JPEG_420_ISLOW_ARI})
+
+      # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
+      add_bittest(${cjpeg} 444-islow-progari
+        "-sample;1x1;-dct;int;-prog;-arithmetic"
+        ${testout}_444_islow_progari.jpg ${TESTIMAGES}/testorig.ppm
+        ${MD5_JPEG_444_ISLOW_PROGARI})
+    endif()
+
+    if(WITH_ARITH_DEC AND sample_bits EQUAL 8)
+      # CC: RGB->YCC  SAMP: h2v2 merged  IDCT: ifast  ENT: arith
+      add_bittest(${djpeg} 420m-ifast-ari "-fast;-skip;1,20;-ppm"
+        ${testout}_420m_ifast_ari.ppm ${TESTIMAGES}/testimgari.jpg
+        ${MD5_PPM_420M_IFAST_ARI})
+
+      add_bittest(${jpegtran} 420-islow ""
+        ${testout}_420_islow.jpg ${TESTIMAGES}/testimgari.jpg
+        ${MD5_JPEG_420_ISLOW})
+    endif()
+
+    # 2/1--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 16x16 islow  ENT: huff
+    # 15/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 15x15 islow  ENT: huff
+    # 13/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 13x13 islow  ENT: huff
+    # 11/8--  CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 11x11 islow  ENT: huff
+    # 9/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 9x9 islow  ENT: huff
+    # 7/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 7x7 islow/14x14 islow
+    #         ENT: huff
+    # 3/4--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 6x6 islow/12x12 islow
+    #         ENT: huff
+    # 5/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 5x5 islow/10x10 islow
+    #         ENT: huff
+    # 1/2--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 4x4 islow/8x8 islow
+    #         ENT: huff
+    # 3/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 3x3 islow/6x6 islow
+    #         ENT: huff
+    # 1/4--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 2x2 islow/4x4 islow
+    #         ENT: huff
+    # 1/8--   CC: YCC->RGB  SAMP: h2v2 merged  IDCT: 1x1 islow/2x2 islow
+    #         ENT: huff
+    foreach(scale 2_1 15_8 13_8 11_8 9_8 7_8 3_4 5_8 1_2 3_8 1_4 1_8)
+      string(REGEX REPLACE "_" "/" scalearg ${scale})
+      add_bittest(${djpeg} 420m-islow-${scale}
+        "-dct;int;-scale;${scalearg};-nosmooth;-ppm"
+        ${testout}_420m_islow_${scale}.ppm ${TESTIMAGES}/${TESTORIG}
+        ${MD5_PPM_420M_ISLOW_${scale}})
+    endforeach()
+
+    if(sample_bits EQUAL 8)
+      # CC: YCC->RGB (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} 420-islow-256 "-dct;int;-colors;256;-bmp"
+        ${testout}_420_islow_256.bmp ${TESTIMAGES}/${TESTORIG}
+        ${MD5_BMP_420_ISLOW_256})
+
+      # CC: YCC->RGB565  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} 420-islow-565 "-dct;int;-rgb565;-dither;none;-bmp"
+        ${testout}_420_islow_565.bmp ${TESTIMAGES}/${TESTORIG}
+        ${MD5_BMP_420_ISLOW_565})
+
+      # CC: YCC->RGB565 (dithered)  SAMP: h2v2 fancy  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} 420-islow-565D "-dct;int;-rgb565;-bmp"
+        ${testout}_420_islow_565D.bmp ${TESTIMAGES}/${TESTORIG}
+        ${MD5_BMP_420_ISLOW_565D})
+
+      # CC: YCC->RGB565  SAMP: h2v2 merged  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} 420m-islow-565
+        "-dct;int;-nosmooth;-rgb565;-dither;none;-bmp"
+        ${testout}_420m_islow_565.bmp ${TESTIMAGES}/${TESTORIG}
+        ${MD5_BMP_420M_ISLOW_565})
+
+      # CC: YCC->RGB565 (dithered)  SAMP: h2v2 merged  IDCT: islow  ENT: huff
+      add_bittest(${djpeg} 420m-islow-565D "-dct;int;-nosmooth;-rgb565;-bmp"
+        ${testout}_420m_islow_565D.bmp ${TESTIMAGES}/${TESTORIG}
+        ${MD5_BMP_420M_ISLOW_565D})
+    endif()
+
+    # Partial decode tests.  These tests are designed to cover all of the
+    # possible code paths in jpeg_skip_scanlines().
+
+    # Context rows: Yes  Intra-iMCU row: Yes  iMCU row prefetch: No
+    # ENT: huff
+    add_bittest(${djpeg} 420-islow-skip15_31 "-dct;int;-skip;15,31;-ppm"
+      ${testout}_420_islow_skip15,31.ppm ${TESTIMAGES}/${TESTORIG}
+      ${MD5_PPM_420_ISLOW_SKIP15_31})
+
+    # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: Yes
+    # ENT: arith
+    if(WITH_ARITH_DEC AND sample_bits EQUAL 8)
+      add_bittest(${djpeg} 420-islow-ari-skip16_139
+        "-dct;int;-skip;16,139;-ppm" ${testout}_420_islow_ari_skip16,139.ppm
+        ${TESTIMAGES}/testimgari.jpg ${MD5_PPM_420_ISLOW_ARI_SKIP16_139})
+    endif()
+
+    # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No
+    # ENT: prog huff
+    add_test(${cjpeg}-${libtype}-420-islow-prog
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -prog
+        -outfile ${testout}_420_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
+    add_bittest(${djpeg} 420-islow-prog-crop62x62_71_71
+      "-dct;int;-crop;62x62+71+71;-ppm"
+      ${testout}_420_islow_prog_crop62x62,71,71.ppm
+      ${testout}_420_islow_prog.jpg ${MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71}
+      ${cjpeg}-${libtype}-420-islow-prog)
+
+    # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No
+    # ENT: arith
+    if(WITH_ARITH_DEC AND sample_bits EQUAL 8)
+      add_bittest(${djpeg} 420-islow-ari-crop53x53_4_4
+        "-dct;int;-crop;53x53+4+4;-ppm"
+        ${testout}_420_islow_ari_crop53x53,4,4.ppm ${TESTIMAGES}/testimgari.jpg
+        ${MD5_PPM_420_ISLOW_ARI_CROP53x53_4_4})
+    endif()
+
+    # Context rows: No   Intra-iMCU row: Yes  ENT: huff
+    add_test(${cjpeg}-${libtype}-444-islow
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -sample 1x1
+        -outfile ${testout}_444_islow.jpg ${TESTIMAGES}/testorig.ppm)
+    add_bittest(${djpeg} 444-islow-skip1_6 "-dct;int;-skip;1,6;-ppm"
+      ${testout}_444_islow_skip1,6.ppm ${testout}_444_islow.jpg
+      ${MD5_PPM_444_ISLOW_SKIP1_6} ${cjpeg}-${libtype}-444-islow)
+
+    # Context rows: No   Intra-iMCU row: No   ENT: prog huff
+    add_test(${cjpeg}-${libtype}-444-islow-prog
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -prog
+        -sample 1x1 -outfile ${testout}_444_islow_prog.jpg
+        ${TESTIMAGES}/testorig.ppm)
+    add_bittest(${djpeg} 444-islow-prog-crop98x98_13_13
+      "-dct;int;-crop;98x98+13+13;-ppm"
+      ${testout}_444_islow_prog_crop98x98,13,13.ppm
+      ${testout}_444_islow_prog.jpg ${MD5_PPM_444_ISLOW_PROG_CROP98x98_13_13}
+      ${cjpeg}-${libtype}-444-islow-prog)
+
+    # Context rows: No   Intra-iMCU row: No   ENT: arith
+    if(WITH_ARITH_ENC AND sample_bits EQUAL 8)
+      add_test(${cjpeg}-${libtype}-444-islow-ari
+        ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -arithmetic
+          -sample 1x1 -outfile ${testout}_444_islow_ari.jpg
+          ${TESTIMAGES}/testorig.ppm)
+      if(WITH_ARITH_DEC)
+        add_bittest(${djpeg} 444-islow-ari-crop37x37_0_0
+          "-dct;int;-crop;37x37+0+0;-ppm"
+          ${testout}_444_islow_ari_crop37x37,0,0.ppm
+          ${testout}_444_islow_ari.jpg ${MD5_PPM_444_ISLOW_ARI_CROP37x37_0_0}
+          ${cjpeg}-${libtype}-444-islow-ari)
+      endif()
+    endif()
+
+    add_bittest(${jpegtran} crop "-crop;120x90+20+50;-transpose;-perfect"
+      ${testout}_crop.jpg ${TESTIMAGES}/${TESTORIG}
+      ${MD5_JPEG_CROP})
+
+    unset(EXAMPLE_12BIT_ARG)
+    if(sample_bits EQUAL 12)
+      set(EXAMPLE_12BIT_ARG "-12bit")
+    endif()
+
+    add_test(example-${sample_bits}bit-${libtype}-compress
+      ${CMAKE_CROSSCOMPILING_EMULATOR} example${suffix} compress -q 95
+        ${EXAMPLE_12BIT_ARG} ${testout}-example.jpg)
+    add_test(example-${sample_bits}bit-${libtype}-compress-cmp
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_JPEG_EXAMPLE_COMPRESS}
+        ${testout}-example.jpg)
+    set_tests_properties(example-${sample_bits}bit-${libtype}-compress-cmp
+      PROPERTIES DEPENDS example-${sample_bits}bit-${libtype}-compress)
+
+    add_test(example-${sample_bits}bit-${libtype}-decompress
+      ${CMAKE_CROSSCOMPILING_EMULATOR} example${suffix} decompress
+        ${EXAMPLE_12BIT_ARG} ${testout}-example.jpg ${testout}-example.ppm)
+    add_test(example-${sample_bits}bit-${libtype}-decompress-cmp
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_EXAMPLE_DECOMPRESS}
+        ${testout}-example.ppm)
+    set_tests_properties(example-${sample_bits}bit-${libtype}-decompress-cmp
+      PROPERTIES DEPENDS example-${sample_bits}bit-${libtype}-decompress)
+
+  endforeach()
 
 endforeach()
 
@@ -1479,12 +1564,26 @@ if(ENABLE_STATIC)
     install(PROGRAMS ${DIR}/jpegtran-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpegtran${EXE})
   endif()
+
+  if(WITH_12BIT)
+    install(TARGETS jpeg12-static EXPORT ${CMAKE_PROJECT_NAME}Targets
+      INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    if(NOT ENABLE_SHARED)
+      install(PROGRAMS ${DIR}/cjpeg12-static${EXE}
+        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME cjpeg12${EXE})
+      install(PROGRAMS ${DIR}/djpeg12-static${EXE}
+        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME djpeg12${EXE})
+      install(PROGRAMS ${DIR}/jpeg12tran-static${EXE}
+        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpeg12tran${EXE})
+    endif()
+  endif()
 endif()
 
 install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.ijg
-  ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.txt
+  ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.c
   ${CMAKE_CURRENT_SOURCE_DIR}/tjexample.c
   ${CMAKE_CURRENT_SOURCE_DIR}/libjpeg.txt
   ${CMAKE_CURRENT_SOURCE_DIR}/structure.txt
@@ -1505,6 +1604,10 @@ endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
   ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+if(WITH_12BIT)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg12.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/${CMAKE_PROJECT_NAME}Config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/${CMAKE_PROJECT_NAME}ConfigVersion.cmake
@@ -1517,6 +1620,10 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jpeglib.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+if(WITH_12BIT)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/jpeg12lib.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
 
 include(cmakescripts/BuildPackages.cmake)
 

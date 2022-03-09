@@ -1216,7 +1216,7 @@ foreach(libtype ${TEST_LIBTYPES})
       testout_420_islow_ari.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_420_ISLOW_ARI})
 
-    add_bittest(jpegtran 420-islow-ari "--revert;arithmetic"
+    add_bittest(jpegtran 420-islow-ari "-revert;-arithmetic"
       testout_420_islow_ari2.jpg ${TESTIMAGES}/testimgint.jpg
       ${MD5_JPEG_420_ISLOW_ARI})
 

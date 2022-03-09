@@ -3,7 +3,7 @@ USING THE IJG JPEG LIBRARY
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2018, 2020, D. R. Commander.
+Copyright (C) 2010, 2014-2018, 2020, 2022, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -840,18 +840,7 @@ is to prepare a library file ("libjpeg.a", or a corresponding name on non-Unix
 machines) and reference it at your link step.  If you use only half of the
 library (only compression or only decompression), only that much code will be
 included from the library, unless your linker is hopelessly brain-damaged.
-The supplied makefiles build libjpeg.a automatically (see install.txt).
-
-While you can build the JPEG library as a shared library if the whim strikes
-you, we don't really recommend it.  The trouble with shared libraries is that
-at some point you'll probably try to substitute a new version of the library
-without recompiling the calling applications.  That generally doesn't work
-because the parameter struct declarations usually change with each new
-version.  In other words, the library's API is *not* guaranteed binary
-compatible across versions; we only try to ensure source-code compatibility.
-(In hindsight, it might have been smarter to hide the parameter structs from
-applications and introduce a ton of access functions instead.  Too late now,
-however.)
+The supplied build system builds libjpeg.a automatically.
 
 It may be worth pointing out that the core JPEG library does not actually
 require the stdio library: only the default source/destination managers and
@@ -3075,9 +3064,8 @@ BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
 larger than a char, so it affects the surrounding application's image data.
 The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
 and GIF file formats; you must disable the other file formats to compile a
-12-bit cjpeg or djpeg.  (install.txt has more information about that.)
-At present, a 12-bit library can handle *only* 12-bit images, not both
-precisions.
+12-bit cjpeg or djpeg.  At present, a 12-bit library can handle *only* 12-bit
+images, not both precisions.
 
 Note that a 12-bit library always compresses in Huffman optimization mode,
 in order to generate valid Huffman tables.  This is necessary because our

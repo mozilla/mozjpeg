@@ -30,8 +30,6 @@
 /* TurboJPEG/LJT:  this implements the TurboJPEG API using libjpeg or
    libjpeg-turbo */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <jinclude.h>
 #define JPEG_INTERNALS

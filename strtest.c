@@ -27,6 +27,7 @@
  */
 
 #include "jinclude.h"
+#include <errno.h>
 
 
 #define CHECK_VALUE(actual, expected, desc) \

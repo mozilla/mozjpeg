@@ -13,6 +13,15 @@ more details.)  The `WITH_12BIT` CMake variable can be used to disable
 12-bit-per-component JPEG support.
 
 
+2.1.4
+=====
+
+### Significant changes relative to 2.1.3
+
+1. Fixed a regression introduced in 2.1.3 that caused build failures with
+Visual Studio 2010.
+
+
 2.1.3
 =====
 

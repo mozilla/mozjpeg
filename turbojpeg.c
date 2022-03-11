@@ -126,9 +126,9 @@ static void my_progress_monitor(j_common_ptr dinfo)
     int scan_no = ((j_decompress_ptr)dinfo)->input_scan_number;
 
     if (scan_no > 500) {
-      snprintf(myprog->this->errStr, JMSG_LENGTH_MAX,
+      SNPRINTF(myprog->this->errStr, JMSG_LENGTH_MAX,
                "Progressive JPEG image has more than 500 scans");
-      snprintf(errStr, JMSG_LENGTH_MAX,
+      SNPRINTF(errStr, JMSG_LENGTH_MAX,
                "Progressive JPEG image has more than 500 scans");
       myprog->this->isInstanceError = TRUE;
       myerr->warning = FALSE;
@@ -191,24 +191,24 @@ static int cs2pf[JPEG_NUMCS] = {
 };
 
 #define THROWG(m) { \
-  snprintf(errStr, JMSG_LENGTH_MAX, "%s", m); \
+  SNPRINTF(errStr, JMSG_LENGTH_MAX, "%s", m); \
   retval = -1;  goto bailout; \
 }
 #ifdef _MSC_VER
 #define THROW_UNIX(m) { \
   char strerrorBuf[80] = { 0 }; \
   strerror_s(strerrorBuf, 80, errno); \
-  snprintf(errStr, JMSG_LENGTH_MAX, "%s\n%s", m, strerrorBuf); \
+  SNPRINTF(errStr, JMSG_LENGTH_MAX, "%s\n%s", m, strerrorBuf); \
   retval = -1;  goto bailout; \
 }
 #else
 #define THROW_UNIX(m) { \
-  snprintf(errStr, JMSG_LENGTH_MAX, "%s\n%s", m, strerror(errno)); \
+  SNPRINTF(errStr, JMSG_LENGTH_MAX, "%s\n%s", m, strerror(errno)); \
   retval = -1;  goto bailout; \
 }
 #endif
 #define THROW(m) { \
-  snprintf(this->errStr, JMSG_LENGTH_MAX, "%s", m); \
+  SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "%s", m); \
   this->isInstanceError = TRUE;  THROWG(m) \
 }
 
@@ -223,7 +223,7 @@ static int cs2pf[JPEG_NUMCS] = {
   j_decompress_ptr dinfo = NULL; \
   \
   if (!this) { \
-    snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle"); \
+    SNPRINTF(errStr, JMSG_LENGTH_MAX, "Invalid handle"); \
     return -1; \
   } \
   cinfo = &this->cinfo;  dinfo = &this->dinfo; \
@@ -235,7 +235,7 @@ static int cs2pf[JPEG_NUMCS] = {
   j_compress_ptr cinfo = NULL; \
   \
   if (!this) { \
-    snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle"); \
+    SNPRINTF(errStr, JMSG_LENGTH_MAX, "Invalid handle"); \
     return -1; \
   } \
   cinfo = &this->cinfo; \
@@ -247,7 +247,7 @@ static int cs2pf[JPEG_NUMCS] = {
   j_decompress_ptr dinfo = NULL; \
   \
   if (!this) { \
-    snprintf(errStr, JMSG_LENGTH_MAX, "Invalid handle"); \
+    SNPRINTF(errStr, JMSG_LENGTH_MAX, "Invalid handle"); \
     return -1; \
   } \
   dinfo = &this->dinfo; \
@@ -519,12 +519,12 @@ DLLEXPORT tjhandle tjInitCompress(void)
   tjinstance *this = NULL;
 
   if ((this = (tjinstance *)malloc(sizeof(tjinstance))) == NULL) {
-    snprintf(errStr, JMSG_LENGTH_MAX,
+    SNPRINTF(errStr, JMSG_LENGTH_MAX,
              "tjInitCompress(): Memory allocation failure");
     return NULL;
   }
   memset(this, 0, sizeof(tjinstance));
-  snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
+  SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "No error");
   return _tjInitCompress(this);
 }
 
@@ -1193,12 +1193,12 @@ DLLEXPORT tjhandle tjInitDecompress(void)
   tjinstance *this;
 
   if ((this = (tjinstance *)malloc(sizeof(tjinstance))) == NULL) {
-    snprintf(errStr, JMSG_LENGTH_MAX,
+    SNPRINTF(errStr, JMSG_LENGTH_MAX,
              "tjInitDecompress(): Memory allocation failure");
     return NULL;
   }
   memset(this, 0, sizeof(tjinstance));
-  snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
+  SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "No error");
   return _tjInitDecompress(this);
 }
 
@@ -1277,7 +1277,7 @@ DLLEXPORT int tjDecompressHeader(tjhandle handle, unsigned char *jpegBuf,
 DLLEXPORT tjscalingfactor *tjGetScalingFactors(int *numscalingfactors)
 {
   if (numscalingfactors == NULL) {
-    snprintf(errStr, JMSG_LENGTH_MAX,
+    SNPRINTF(errStr, JMSG_LENGTH_MAX,
              "tjGetScalingFactors(): Invalid argument");
     return NULL;
   }
@@ -1884,12 +1884,12 @@ DLLEXPORT tjhandle tjInitTransform(void)
   tjhandle handle = NULL;
 
   if ((this = (tjinstance *)malloc(sizeof(tjinstance))) == NULL) {
-    snprintf(errStr, JMSG_LENGTH_MAX,
+    SNPRINTF(errStr, JMSG_LENGTH_MAX,
              "tjInitTransform(): Memory allocation failure");
     return NULL;
   }
   memset(this, 0, sizeof(tjinstance));
-  snprintf(this->errStr, JMSG_LENGTH_MAX, "No error");
+  SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "No error");
   handle = _tjInitCompress(this);
   if (!handle) return NULL;
   handle = _tjInitDecompress(this);
@@ -1980,7 +1980,7 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
     if (xinfo[i].crop) {
       if ((t[i].r.x % tjMCUWidth[jpegSubsamp]) != 0 ||
           (t[i].r.y % tjMCUHeight[jpegSubsamp]) != 0) {
-        snprintf(this->errStr, JMSG_LENGTH_MAX,
+        SNPRINTF(this->errStr, JMSG_LENGTH_MAX,
                  "To crop this JPEG image, x must be a multiple of %d\n"
                  "and y must be a multiple of %d.\n",
                  tjMCUWidth[jpegSubsamp], tjMCUHeight[jpegSubsamp]);

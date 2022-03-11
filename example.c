@@ -737,9 +737,8 @@ main(int argc, char **argv)
     arg++;                      /* advance past switch marker character */
 
 #ifdef WITH_12BIT
-    if (!strncasecmp(arg, "1", 1)) {
+    if (!strncasecmp(arg, "1", 1))
       _12bit = 1;
-    }
     else
 #endif
     if (!strncasecmp(arg, "q", 1)) {

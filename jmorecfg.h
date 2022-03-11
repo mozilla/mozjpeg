@@ -50,8 +50,8 @@
 typedef unsigned char JSAMPLE;
 #define GETJSAMPLE(value)  ((int)(value))
 
-#define MAXJSAMPLE      255
-#define CENTERJSAMPLE   128
+#define MAXJSAMPLE       255
+#define CENTERJSAMPLE    128
 
 
 /* J12SAMPLE should be the smallest type that will hold the values 0..4095.
@@ -60,8 +60,8 @@ typedef unsigned char JSAMPLE;
 
 typedef short J12SAMPLE;
 
-#define MAXJ12SAMPLE    4095
-#define CENTERJ12SAMPLE 2048
+#define MAXJ12SAMPLE     4095
+#define CENTERJ12SAMPLE  2048
 
 
 /* Representation of a DCT frequency coefficient.

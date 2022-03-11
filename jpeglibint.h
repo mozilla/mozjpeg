@@ -197,7 +197,7 @@
 #define jinit_memory_mgr  j12init_memory_mgr
 #define jdiv_round_up  j12div_round_up
 #define jround_up  j12round_up
-#define jcopy_sample_rows j12copy_sample_rows
+#define jcopy_sample_rows  j12copy_sample_rows
 #define jcopy_block_row  j12copy_block_row
 #define jzero_far  j12zero_far
 

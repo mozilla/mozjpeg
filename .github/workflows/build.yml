@@ -108,7 +108,7 @@ jobs:
           cmake -DFLOATTEST=no-fp-contract ..
           JSIMD_FORCENONE=1 make test
           popd
-  linux-12bit:
+  linux-no12bit:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code

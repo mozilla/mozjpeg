@@ -709,7 +709,7 @@ if(ENABLE_STATIC)
       "-DBITS_IN_JSAMPLE=12 ${USE_SETMODE}")
   endif()
 
-  add_executable(example-static ../example.c)
+  add_executable(example-static example.c)
   if(WITH_12BIT)
     target_link_libraries(example-static jpeg-static jpeg12-static)
     set_property(TARGET example-static PROPERTY COMPILE_FLAGS "-DWITH_12BIT")

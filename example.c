@@ -714,7 +714,7 @@ main(int argc, char **argv)
 #ifdef WITH_12BIT
   int _12bit = 0;
 #endif
-  EXAMPLE_MODE mode;
+  EXAMPLE_MODE mode = -1;
   char *arg, *filename = NULL;
 
   if (argc < 3)

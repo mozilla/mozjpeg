@@ -791,9 +791,9 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 # The output of the floating point DCT/IDCT algorithms differs depending on the
-# type of floating point math used, so the FLOATTEST CMake variable must be
-# set in order to tell the testing system which floating point results it
-# should expect:
+# type of floating point math used, so the FLOATTEST8 and FLOATTEST12 CMake
+# variables must be set in order to tell the testing system which floating
+# point results it should expect:
 #
 # sse = validate against the expected results from the libjpeg-turbo SSE SIMD
 #       extensions
@@ -815,9 +815,9 @@ endif()
 
 if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
   if(WITH_SIMD)
-    set(DEFAULT_FLOATTEST sse)
+    set(DEFAULT_FLOATTEST8 sse)
   elseif(CPU_TYPE STREQUAL "x86_64")
-    set(DEFAULT_FLOATTEST no-fp-contract)
+    set(DEFAULT_FLOATTEST8 no-fp-contract)
   # else we can't really set an intelligent default for i386.  The appropriate
   # value could be no-fp-contract, fp-contract, 387, or msvc, depending on the
   # compiler and compiler options.  We leave it to the user to set FLOATTEST
@@ -826,32 +826,62 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
 else()
   if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
     NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
-    set(DEFAULT_FLOATTEST fp-contract)
+    set(DEFAULT_FLOATTEST8 fp-contract)
   else()
-    set(DEFAULT_FLOATTEST no-fp-contract)
+    set(DEFAULT_FLOATTEST8 no-fp-contract)
   endif()
 endif()
 
-# This causes FLOATTEST to reset to the default value if WITH_SIMD has
+# This causes FLOATTEST8 to reset to the default value if WITH_SIMD has
 # changed.
 if(DEFINED WITH_SIMD_INT AND NOT WITH_SIMD EQUAL WITH_SIMD_INT)
-  set(FORCE_FLOATTEST "FORCE")
+  set(FORCE_FLOATTEST8 "FORCE")
 endif()
 set(WITH_SIMD_INT ${WITH_SIMD} CACHE INTERNAL "")
-set(FLOATTEST ${DEFAULT_FLOATTEST} CACHE STRING
-  "The type of floating point math used by the floating point DCT/IDCT algorithms.  This tells the testing system which numerical results it should expect from those tests.  [sse = libjpeg-turbo x86/x86-64 SIMD extensions, no-fp-contract = generic FPU with floating point expression contraction disabled, fp-contract = generic FPU with floating point expression contraction enabled, 387 = 387 FPU, msvc = 32-bit Visual Studio] (default = ${DEFAULT_FLOATTEST})"
-  ${FORCE_FLOATTEST})
-message(STATUS "FLOATTEST = ${FLOATTEST}")
+set(FLOATTEST8 ${DEFAULT_FLOATTEST8} CACHE STRING
+  "The type of floating point math used by the 8-bit-per-sample floating point DCT/IDCT algorithms.  This tells the testing system which numerical results it should expect from those tests.  [sse = libjpeg-turbo x86/x86-64 SIMD extensions, no-fp-contract = generic FPU with floating point expression contraction disabled, fp-contract = generic FPU with floating point expression contraction enabled, 387 = 387 FPU, msvc = 32-bit Visual Studio] (default = ${DEFAULT_FLOATTEST8})"
+  ${FORCE_FLOATTEST8})
+message(STATUS "FLOATTEST8 = ${FLOATTEST8}")
 
-if(FLOATTEST)
-  string(TOUPPER ${FLOATTEST} FLOATTEST_UC)
-  string(REGEX REPLACE "-" "_" FLOATTEST_UC ${FLOATTEST_UC})
-  string(TOLOWER ${FLOATTEST} FLOATTEST)
-  if(NOT FLOATTEST STREQUAL "sse" AND
-    NOT FLOATTEST STREQUAL "no-fp-contract" AND
-    NOT FLOATTEST STREQUAL "fp-contract" AND NOT FLOATTEST STREQUAL "387" AND
-    NOT FLOATTEST STREQUAL "msvc")
-    message(FATAL_ERROR "\"${FLOATTEST}\" is not a valid value for FLOATTEST.")
+if(FLOATTEST8)
+  string(TOUPPER ${FLOATTEST8} FLOATTEST8_UC)
+  string(REGEX REPLACE "-" "_" FLOATTEST8_UC ${FLOATTEST8_UC})
+  string(TOLOWER ${FLOATTEST8} FLOATTEST8)
+  if(NOT FLOATTEST8 STREQUAL "sse" AND
+    NOT FLOATTEST8 STREQUAL "no-fp-contract" AND
+    NOT FLOATTEST8 STREQUAL "fp-contract" AND NOT FLOATTEST8 STREQUAL "387" AND
+    NOT FLOATTEST8 STREQUAL "msvc")
+    message(FATAL_ERROR "\"${FLOATTEST8}\" is not a valid value for FLOATTEST8.")
+  endif()
+endif()
+
+if(WITH_12BIT)
+  if(CPU_TYPE STREQUAL "x86_64")
+    set(DEFAULT_FLOATTEST12 no-fp-contract)
+  elseif(NOT CPU_TYPE STREQUAL "i386")
+    if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
+      NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
+      set(DEFAULT_FLOATTEST12 fp-contract)
+    else()
+      set(DEFAULT_FLOATTEST12 no-fp-contract)
+    endif()
+  endif()
+
+  set(FLOATTEST12 ${DEFAULT_FLOATTEST12} CACHE STRING
+    "The type of floating point math used by the 12-bit-per-sample floating point DCT/IDCT algorithms.  This tells the testing system which numerical results it should expect from those tests.  [sse = libjpeg-turbo x86/x86-64 SIMD extensions, no-fp-contract = generic FPU with floating point expression contraction disabled, fp-contract = generic FPU with floating point expression contraction enabled, 387 = 387 FPU, msvc = 32-bit Visual Studio] (default = ${DEFAULT_FLOATTEST12})")
+  message(STATUS "FLOATTEST12 = ${FLOATTEST12}")
+
+  if(FLOATTEST12)
+    string(TOUPPER ${FLOATTEST12} FLOATTEST12_UC)
+    string(REGEX REPLACE "-" "_" FLOATTEST12_UC ${FLOATTEST12_UC})
+    string(TOLOWER ${FLOATTEST12} FLOATTEST12)
+    if(NOT FLOATTEST12 STREQUAL "sse" AND
+      NOT FLOATTEST12 STREQUAL "no-fp-contract" AND
+      NOT FLOATTEST12 STREQUAL "fp-contract" AND
+      NOT FLOATTEST12 STREQUAL "387" AND
+      NOT FLOATTEST12 STREQUAL "msvc")
+      message(FATAL_ERROR "\"${FLOATTEST12}\" is not a valid value for FLOATTEST12.")
+    endif()
   endif()
 endif()
 
@@ -1231,16 +1261,16 @@ foreach(libtype ${TEST_LIBTYPES})
       ${testout}_420s_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_420S_IFAST_OPT})
 
-    if(FLOATTEST)
+    if(FLOATTEST${sample_bits})
       # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
       add_bittest(${cjpeg} 3x2-float-prog "-sample;3x2;-dct;float;-prog"
         ${testout}_3x2_float_prog.jpg ${TESTIMAGES}/testorig.ppm
-        ${MD5_JPEG_3x2_FLOAT_PROG_${FLOATTEST_UC}})
+        ${MD5_JPEG_3x2_FLOAT_PROG_${FLOATTEST${sample_bits}_UC}})
 
       # CC: YCC->RGB  SAMP: fullsize/int  IDCT: float  ENT: prog huff
       add_bittest(${djpeg} 3x2-float-prog "-dct;float"
         ${testout}_3x2_float.ppm ${testout}_3x2_float_prog.jpg
-        ${MD5_PPM_3x2_FLOAT_${FLOATTEST_UC}}
+        ${MD5_PPM_3x2_FLOAT_${FLOATTEST${sample_bits}_UC}}
         ${cjpeg}-${libtype}-3x2-float-prog)
     endif()
 

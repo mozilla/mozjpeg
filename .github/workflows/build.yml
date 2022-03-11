@@ -105,7 +105,7 @@ jobs:
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test
           JSIMD_FORCESSE2=1 make test
-          cmake -DFLOATTEST=no-fp-contract ..
+          cmake -DFLOATTEST8=no-fp-contract ..
           JSIMD_FORCENONE=1 make test
           popd
   linux-no12bit:
@@ -148,7 +148,7 @@ jobs:
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test
           JSIMD_FORCESSE2=1 make test
-          cmake -DFLOATTEST=no-fp-contract ..
+          cmake -DFLOATTEST8=no-fp-contract ..
           JSIMD_FORCENONE=1 make test
           popd
   linux-jpeg8:
@@ -172,7 +172,7 @@ jobs:
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test
           JSIMD_FORCESSE2=1 make test
-          cmake -DFLOATTEST=no-fp-contract ..
+          cmake -DFLOATTEST8=no-fp-contract ..
           JSIMD_FORCENONE=1 make test
           popd
   linux-msan:

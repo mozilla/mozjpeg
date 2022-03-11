@@ -909,10 +909,8 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
     set(DEFAULT_FLOATTEST sse)
   elseif(CPU_TYPE STREQUAL "x86_64")
     set(DEFAULT_FLOATTEST no-fp-contract)
-  elseif(CPU_TYPE STREQUAL "i386" AND MSVC)
-    set(DEFAULT_FLOATTEST msvc)
   # else we can't really set an intelligent default for i386.  The appropriate
-  # value could be 387, no-fp-contract, or fp-contract, depending on the
+  # value could be no-fp-contract, fp-contract, 387, or msvc, depending on the
   # compiler and compiler options.  We leave it to the user to set FLOATTEST
   # manually.
   endif()

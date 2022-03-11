@@ -109,10 +109,13 @@ configure_file(win/${INST_ID}/projectTargets-release.cmake.in
 if(WITH_JAVA)
   set(JAVA_DEPEND turbojpeg-java)
 endif()
+if(WITH_TURBOJPEG)
+  set(TURBOJPEG_DEPEND turbojpeg turbojpeg-static tjbench)
+endif()
 add_custom_target(installer
   makensis -nocd ${INST_DEFS} installer.nsi
-  DEPENDS jpeg jpeg-static turbojpeg turbojpeg-static rdjpgcom wrjpgcom
-    cjpeg djpeg jpegtran tjbench ${JAVA_DEPEND}
+  DEPENDS jpeg jpeg-static rdjpgcom wrjpgcom cjpeg djpeg jpegtran
+    ${JAVA_DEPEND} ${TURBOJPEG_DEPEND}
   SOURCES installer.nsi)
 
 endif() # WIN32

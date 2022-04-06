@@ -25,16 +25,20 @@ set(EFFECTIVE_CXX_FLAGS
   "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE_UC}}")
 message(STATUS "C++ Compiler flags = ${EFFECTIVE_CXX_FLAGS}")
 
-add_executable(cjpeg_fuzzer cjpeg.cc ../cdjpeg.c ../rdbmp.c ../rdgif.c
-  ../rdppm.c ../rdswitch.c ../rdtarga.c)
-set_property(TARGET cjpeg_fuzzer PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
-target_link_libraries(cjpeg_fuzzer ${FUZZ_LIBRARY} jpeg-static)
-install(TARGETS cjpeg_fuzzer RUNTIME DESTINATION ${FUZZ_BINDIR})
+add_executable(cjpeg_fuzzer${FUZZER_SUFFIX} cjpeg.cc ../cdjpeg.c ../rdbmp.c
+  ../rdgif.c ../rdppm.c ../rdswitch.c ../rdtarga.c)
+set_property(TARGET cjpeg_fuzzer${FUZZER_SUFFIX} PROPERTY COMPILE_FLAGS
+  ${COMPILE_FLAGS})
+target_link_libraries(cjpeg_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY} jpeg-static)
+install(TARGETS cjpeg_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
+  ${FUZZ_BINDIR})
 
 macro(add_fuzz_target target source_file)
-  add_executable(${target}_fuzzer ${source_file})
-  target_link_libraries(${target}_fuzzer ${FUZZ_LIBRARY} turbojpeg-static)
-  install(TARGETS ${target}_fuzzer RUNTIME DESTINATION ${FUZZ_BINDIR})
+  add_executable(${target}_fuzzer${FUZZER_SUFFIX} ${source_file})
+  target_link_libraries(${target}_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}
+    turbojpeg-static)
+  install(TARGETS ${target}_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
+    ${FUZZ_BINDIR})
 endmacro()
 
 add_fuzz_target(compress compress.cc)

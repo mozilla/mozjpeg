@@ -162,7 +162,9 @@ add_custom_target(tarball pkgscripts/maketarball
 
 configure_file(release/libjpeg.pc.in pkgscripts/libjpeg.pc @ONLY)
 
-configure_file(release/libturbojpeg.pc.in pkgscripts/libturbojpeg.pc @ONLY)
+if(WITH_TURBOJPEG)
+  configure_file(release/libturbojpeg.pc.in pkgscripts/libturbojpeg.pc @ONLY)
+endif()
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(

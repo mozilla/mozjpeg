@@ -27,8 +27,12 @@
  */
 
 #ifdef _WIN32
+#ifndef strcasecmp
 #define strcasecmp  stricmp
+#endif
+#ifndef strncasecmp
 #define strncasecmp  strnicmp
+#endif
 #endif
 
 #ifdef _MSC_VER

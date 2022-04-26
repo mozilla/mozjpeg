@@ -6,6 +6,7 @@ set -e
 FUZZER_SUFFIX=
 if [ $# -ge 1 ]; then
 	FUZZER_SUFFIX="$1"
+	FUZZER_SUFFIX="`echo $1 | sed 's/\./_/g'`"
 fi
 
 cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_STATIC=1 -DENABLE_SHARED=0 \

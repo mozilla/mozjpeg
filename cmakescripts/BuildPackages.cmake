@@ -173,7 +173,9 @@ if(WITH_12BIT)
   configure_file(release/libjpeg12.pc.in pkgscripts/libjpeg12.pc @ONLY)
 endif()
 
-configure_file(release/libturbojpeg.pc.in pkgscripts/libturbojpeg.pc @ONLY)
+if(WITH_TURBOJPEG)
+  configure_file(release/libturbojpeg.pc.in pkgscripts/libturbojpeg.pc @ONLY)
+endif()
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(

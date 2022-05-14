@@ -449,6 +449,9 @@ elseif(CPU_TYPE STREQUAL "loongson" OR CPU_TYPE MATCHES "^mips64")
 set(CMAKE_REQUIRED_FLAGS -Wa,-mloongson-mmi,-mloongson-ext)
 
 check_c_source_compiles("
+  #if !(defined(__mips__) && __mips_isa_rev < 6)
+  #error Loongson MMI can't work with MIPS Release 6+
+  #endif
   int main(void) {
     int c = 0, a = 0, b = 0;
     asm (

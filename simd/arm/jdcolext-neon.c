@@ -283,18 +283,25 @@ void jsimd_ycc_rgb_convert_neon(JDIMENSION output_width, JSAMPIMAGE input_buf,
       switch (cols_remaining) {
       case 7:
         vst4_lane_u8(outptr + 6 * RGB_PIXELSIZE, rgba, 6);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 6:
         vst4_lane_u8(outptr + 5 * RGB_PIXELSIZE, rgba, 5);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 5:
         vst4_lane_u8(outptr + 4 * RGB_PIXELSIZE, rgba, 4);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 4:
         vst4_lane_u8(outptr + 3 * RGB_PIXELSIZE, rgba, 3);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 3:
         vst4_lane_u8(outptr + 2 * RGB_PIXELSIZE, rgba, 2);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 2:
         vst4_lane_u8(outptr + RGB_PIXELSIZE, rgba, 1);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 1:
         vst4_lane_u8(outptr, rgba, 0);
+        FALLTHROUGH             /*FALLTHROUGH*/
       default:
         break;
       }
@@ -308,18 +315,25 @@ void jsimd_ycc_rgb_convert_neon(JDIMENSION output_width, JSAMPIMAGE input_buf,
       switch (cols_remaining) {
       case 7:
         vst3_lane_u8(outptr + 6 * RGB_PIXELSIZE, rgb, 6);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 6:
         vst3_lane_u8(outptr + 5 * RGB_PIXELSIZE, rgb, 5);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 5:
         vst3_lane_u8(outptr + 4 * RGB_PIXELSIZE, rgb, 4);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 4:
         vst3_lane_u8(outptr + 3 * RGB_PIXELSIZE, rgb, 3);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 3:
         vst3_lane_u8(outptr + 2 * RGB_PIXELSIZE, rgb, 2);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 2:
         vst3_lane_u8(outptr + RGB_PIXELSIZE, rgb, 1);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 1:
         vst3_lane_u8(outptr, rgb, 0);
+        FALLTHROUGH             /*FALLTHROUGH*/
       default:
         break;
       }
@@ -332,18 +346,25 @@ void jsimd_ycc_rgb_convert_neon(JDIMENSION output_width, JSAMPIMAGE input_buf,
       switch (cols_remaining) {
       case 7:
         vst1q_lane_u16((uint16_t *)(outptr + 6 * RGB_PIXELSIZE), rgb565, 6);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 6:
         vst1q_lane_u16((uint16_t *)(outptr + 5 * RGB_PIXELSIZE), rgb565, 5);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 5:
         vst1q_lane_u16((uint16_t *)(outptr + 4 * RGB_PIXELSIZE), rgb565, 4);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 4:
         vst1q_lane_u16((uint16_t *)(outptr + 3 * RGB_PIXELSIZE), rgb565, 3);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 3:
         vst1q_lane_u16((uint16_t *)(outptr + 2 * RGB_PIXELSIZE), rgb565, 2);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 2:
         vst1q_lane_u16((uint16_t *)(outptr + RGB_PIXELSIZE), rgb565, 1);
+        FALLTHROUGH             /*FALLTHROUGH*/
       case 1:
         vst1q_lane_u16((uint16_t *)outptr, rgb565, 0);
+        FALLTHROUGH             /*FALLTHROUGH*/
       default:
         break;
       }

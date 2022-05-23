@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, D. R. Commander.
+ * Copyright (C) 2014, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -14,12 +14,13 @@
  * JPEG markers.
  */
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 #define JPEG_CJPEG_DJPEG        /* to get the command-line config symbols */
 #include "jinclude.h"           /* get auto-config symbols, <stdio.h> */
 
-#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc() */
-extern void *malloc();
-#endif
 #include <ctype.h>              /* to declare isupper(), tolower() */
 #ifdef USE_SETMODE
 #include <fcntl.h>              /* to declare setmode()'s parameter macros */

@@ -649,7 +649,7 @@ final class TJBench {
                             sigFig((double)(w * h * ps) /
                                    (double)totalJpegSize, 4),
                             quiet == 2 ? "\n" : "  ");
-        } else if (quiet == 0) {
+        } else {
           System.out.format("Transform     --> Frame rate:         %f fps\n",
                             1.0 / elapsed);
           System.out.format("                  Output image size:  %d bytes\n",

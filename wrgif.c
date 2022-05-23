@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2015-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2017, D. R. Commander.
+ * Copyright (C) 2015, 2017, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -114,8 +114,8 @@ flush_packet(gif_dest_ptr dinfo)
 {
   if (dinfo->bytesinpkt > 0) {  /* never write zero-length packet */
     dinfo->packetbuf[0] = (char)dinfo->bytesinpkt++;
-    if (JFWRITE(dinfo->pub.output_file, dinfo->packetbuf, dinfo->bytesinpkt) !=
-        (size_t)dinfo->bytesinpkt)
+    if (fwrite(dinfo->packetbuf, 1, dinfo->bytesinpkt,
+               dinfo->pub.output_file) != (size_t)dinfo->bytesinpkt)
       ERREXIT(dinfo->cinfo, JERR_FILE_WRITE);
     dinfo->bytesinpkt = 0;
   }
@@ -169,7 +169,7 @@ clear_hash(gif_dest_ptr dinfo)
 /* Fill the hash table with empty entries */
 {
   /* It's sufficient to zero hash_code[] */
-  MEMZERO(dinfo->hash_code, HSIZE * sizeof(code_int));
+  memset(dinfo->hash_code, 0, HSIZE * sizeof(code_int));
 }
 
 

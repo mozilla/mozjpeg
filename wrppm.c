@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * Modified 2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, 2019-2020, D. R. Commander.
+ * Copyright (C) 2017, 2019-2020, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -92,7 +92,7 @@ put_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   ppm_dest_ptr dest = (ppm_dest_ptr)dinfo;
 
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -115,13 +115,13 @@ copy_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   ptr = dest->pub.buffer[0];
   bufferptr = dest->iobuffer;
 #if BITS_IN_JSAMPLE == 8
-  MEMCOPY(bufferptr, ptr, dest->samples_per_row);
+  memcpy(bufferptr, ptr, dest->samples_per_row);
 #else
   for (col = dest->samples_per_row; col > 0; col--) {
     PUTPPMSAMPLE(bufferptr, *ptr++);
   }
 #endif
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -149,7 +149,7 @@ put_rgb(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, JDIMENSION rows_supplied)
     PUTPPMSAMPLE(bufferptr, ptr[bindex]);
     ptr += ps;
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -175,7 +175,7 @@ put_cmyk(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     PUTPPMSAMPLE(bufferptr, g);
     PUTPPMSAMPLE(bufferptr, b);
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -205,7 +205,7 @@ put_demapped_rgb(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
     PUTPPMSAMPLE(bufferptr, color_map1[pixval]);
     PUTPPMSAMPLE(bufferptr, color_map2[pixval]);
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 
@@ -224,7 +224,7 @@ put_demapped_gray(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   for (col = cinfo->output_width; col > 0; col--) {
     PUTPPMSAMPLE(bufferptr, color_map[*ptr++]);
   }
-  (void)JFWRITE(dest->pub.output_file, dest->iobuffer, dest->buffer_width);
+  fwrite(dest->iobuffer, 1, dest->buffer_width, dest->pub.output_file);
 }
 
 

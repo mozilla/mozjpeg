@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2019, D. R. Commander.
+ * Copyright (C) 2019, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -34,7 +34,7 @@ progress_monitor(j_common_ptr cinfo)
     int scan_no = ((j_decompress_ptr)cinfo)->input_scan_number;
 
     if (scan_no > (int)prog->max_scans) {
-      fprintf(stderr, "Scan number %d exceeds maximum scans (%d)\n", scan_no,
+      fprintf(stderr, "Scan number %d exceeds maximum scans (%u)\n", scan_no,
               prog->max_scans);
       exit(EXIT_FAILURE);
     }

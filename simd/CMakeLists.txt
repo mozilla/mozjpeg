@@ -21,7 +21,7 @@ set(CMAKE_ASM_NASM_FLAGS_RELWITHDEBINFO_INIT "-g")
 # environment variable.  This should happen automatically, but unfortunately
 # enable_language(ASM_NASM) doesn't parse the ASM_NASM environment variable
 # until after CMAKE_ASM_NASM_COMPILER has been populated with the results of
-# searching for NASM or YASM in the PATH.
+# searching for NASM or Yasm in the PATH.
 if(NOT DEFINED CMAKE_ASM_NASM_COMPILER AND DEFINED ENV{ASM_NASM})
   set(CMAKE_ASM_NASM_COMPILER $ENV{ASM_NASM})
 endif()
@@ -213,27 +213,112 @@ endif()
 
 elseif(CPU_TYPE STREQUAL "arm64" OR CPU_TYPE STREQUAL "arm")
 
-include(CheckSymbolExists)
+# If Neon instructions are not explicitly enabled at compile time (e.g. using
+# -mfpu=neon) with an AArch32 Linux or Android build, then the AArch32 SIMD
+# dispatcher will parse /proc/cpuinfo to determine whether the Neon SIMD
+# extensions can be enabled at run time.  In order to support all AArch32 CPUs
+# using the same code base, i.e. to support run-time FPU and Neon
+# auto-detection, it is necessary to compile the scalar C source code using
+# -mfloat-abi=soft (which is usually the default) but compile the intrinsics
+# implementation of the Neon SIMD extensions using -mfloat-abi=softfp.  The
+# following test determines whether -mfloat-abi=softfp should be explicitly
+# added to the compile flags for the intrinsics implementation of the Neon SIMD
+# extensions.
 if(BITS EQUAL 32)
-  set(CMAKE_REQUIRED_FLAGS -mfpu=neon)
+  check_c_source_compiles("
+    #if defined(__ARM_NEON__) || (!defined(__linux__) && !defined(ANDROID) && !defined(__ANDROID__))
+    #error \"Neon run-time auto-detection will not be used\"
+    #endif
+    #if __ARM_PCS_VFP == 1
+    #error \"float ABI = hard\"
+    #endif
+    #if __SOFTFP__ != 1
+    #error \"float ABI = softfp\"
+    #endif
+    int main(void) { return 0; }" NEED_SOFTFP_FOR_INTRINSICS)
+  if(NEED_SOFTFP_FOR_INTRINSICS)
+    set(SOFTFP_FLAG -mfloat-abi=softfp)
+  endif()
 endif()
-check_symbol_exists(vld1_s16_x3 arm_neon.h HAVE_VLD1_S16_X3)
-check_symbol_exists(vld1_u16_x2 arm_neon.h HAVE_VLD1_U16_X2)
-check_symbol_exists(vld1q_u8_x4 arm_neon.h HAVE_VLD1Q_U8_X4)
+
+if(BITS EQUAL 32)
+  set(CMAKE_REQUIRED_FLAGS "-mfpu=neon ${SOFTFP_FLAG}")
+  check_c_source_compiles("
+    #include <arm_neon.h>
+    int main(int argc, char **argv) {
+      uint16x8_t input = vdupq_n_u16((uint16_t)argc);
+      uint8x8_t output = vmovn_u16(input);
+      return (int)output[0];
+    }" HAVE_NEON)
+  if(NOT HAVE_NEON)
+    simd_fail("SIMD extensions not available for this architecture")
+    return()
+  endif()
+endif()
+check_c_source_compiles("
+  #include <arm_neon.h>
+  int main(int argc, char **argv) {
+    int16_t input[] = {
+      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
+      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
+      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc
+    };
+    int16x4x3_t output = vld1_s16_x3(input);
+    vst3_s16(input, output);
+    return (int)input[0];
+  }" HAVE_VLD1_S16_X3)
+check_c_source_compiles("
+  #include <arm_neon.h>
+  int main(int argc, char **argv) {
+    uint16_t input[] = {
+      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc,
+      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc
+    };
+    uint16x4x2_t output = vld1_u16_x2(input);
+    vst2_u16(input, output);
+    return (int)input[0];
+  }" HAVE_VLD1_U16_X2)
+check_c_source_compiles("
+  #include <arm_neon.h>
+  int main(int argc, char **argv) {
+    uint8_t input[] = {
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
+      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc
+    };
+    uint8x16x4_t output = vld1q_u8_x4(input);
+    vst4q_u8(input, output);
+    return (int)input[0];
+  }" HAVE_VLD1Q_U8_X4)
 if(BITS EQUAL 32)
   unset(CMAKE_REQUIRED_FLAGS)
 endif()
 configure_file(arm/neon-compat.h.in arm/neon-compat.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/arm)
 
-# GCC (as of this writing) and some older versions of Clang do not have a full
-# or optimal set of Neon intrinsics, so for performance reasons, when using
-# those compilers, we default to using the older GAS implementation of the Neon
-# SIMD extensions for certain algorithms.  The presence or absence of the three
-# intrinsics we tested above is a reasonable proxy for this.  We always default
-# to using the full Neon intrinsics implementation when building for macOS or
-# iOS, to avoid the need for gas-preprocessor.
-if((HAVE_VLD1_S16_X3 AND HAVE_VLD1_U16_X2 AND HAVE_VLD1Q_U8_X4) OR APPLE)
+# GCC 11 and earlier and some older versions of Clang do not have a full or
+# optimal set of Neon intrinsics, so for performance reasons, when using those
+# compilers, we default to using the older GAS implementation of the Neon SIMD
+# extensions for certain algorithms.  The presence or absence of the three
+# intrinsics we tested above is a reasonable proxy for this, except with GCC 10
+# and 11.
+if((HAVE_VLD1_S16_X3 AND HAVE_VLD1_U16_X2 AND HAVE_VLD1Q_U8_X4 AND
+  (NOT CMAKE_COMPILER_IS_GNUCC OR
+  CMAKE_C_COMPILER_VERSION VERSION_EQUAL 12.0.0 OR
+  CMAKE_C_COMPILER_VERSION VERSION_GREATER 12.0.0)))
   set(DEFAULT_NEON_INTRINSICS 1)
 else()
   set(DEFAULT_NEON_INTRINSICS 0)
@@ -241,6 +326,40 @@ endif()
 option(NEON_INTRINSICS
   "Because GCC (as of this writing) and some older versions of Clang do not have a full or optimal set of Neon intrinsics, for performance reasons, the default when building libjpeg-turbo with those compilers is to continue using the older GAS implementation of the Neon SIMD extensions for certain algorithms.  Setting this option forces the full Neon intrinsics implementation to be used with all compilers.  Unsetting this option forces the hybrid GAS/intrinsics implementation to be used with all compilers."
   ${DEFAULT_NEON_INTRINSICS})
+if(NOT NEON_INTRINSICS)
+  enable_language(ASM)
+
+  set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_ASM_FLAGS}")
+
+  # Test whether gas-preprocessor.pl would be needed to build the GAS
+  # implementation of the Neon SIMD extensions.  If so, then automatically
+  # enable the full Neon intrinsics implementation.
+  if(CPU_TYPE STREQUAL "arm")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S "
+      .text
+      .fpu neon
+      .arch armv7a
+      .object_arch armv4
+      .arm
+      pld [r0]
+      vmovn.u16 d0, q0")
+  else()
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gastest.S "
+      .text
+      MYVAR .req x0
+      movi v0.16b, #100
+      mov MYVAR, #100
+      .unreq MYVAR")
+  endif()
+  separate_arguments(CMAKE_ASM_FLAGS_SEP UNIX_COMMAND "${CMAKE_ASM_FLAGS}")
+  execute_process(COMMAND ${CMAKE_ASM_COMPILER} ${CMAKE_ASM_FLAGS_SEP}
+      -x assembler-with-cpp -c ${CMAKE_CURRENT_BINARY_DIR}/gastest.S
+    RESULT_VARIABLE RESULT OUTPUT_VARIABLE OUTPUT ERROR_VARIABLE ERROR)
+  if(NOT RESULT EQUAL 0)
+    message(WARNING "GAS appears to be broken.  Using the full Neon SIMD intrinsics implementation.")
+    set(NEON_INTRINSICS 1 CACHE INTERNAL "" FORCE)
+  endif()
+endif()
 boolean_number(NEON_INTRINSICS PARENT_SCOPE)
 if(NEON_INTRINSICS)
   add_definitions(-DNEON_INTRINSICS)
@@ -263,13 +382,9 @@ if(NEON_INTRINSICS OR BITS EQUAL 32)
     arm/jdcolor-neon.c arm/jfdctint-neon.c)
 endif()
 if(BITS EQUAL 32)
-  set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS -mfpu=neon)
+  set_source_files_properties(${SIMD_SOURCES} COMPILE_FLAGS "-mfpu=neon ${SOFTFP_FLAG}")
 endif()
 if(NOT NEON_INTRINSICS)
-  enable_language(ASM)
-
-  set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_ASM_FLAGS}")
-
   string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
   set(EFFECTIVE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_ASM_FLAGS_${CMAKE_BUILD_TYPE_UC}}")
   message(STATUS "CMAKE_ASM_FLAGS = ${EFFECTIVE_ASM_FLAGS}")

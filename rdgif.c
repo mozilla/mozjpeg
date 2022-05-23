@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2021, D. R. Commander.
+ * Copyright (C) 2021-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -45,7 +45,7 @@ typedef unsigned char U_CHAR;
 
 
 #define ReadOK(file, buffer, len) \
-  (JFREAD(file, buffer, len) == ((size_t)(len)))
+  (fread(buffer, 1, len, file) == ((size_t)(len)))
 
 
 #define MAXCOLORMAPSIZE  256    /* max # of colors in a GIF colormap */
@@ -345,7 +345,7 @@ LOCAL(void)
 ReadColorMap(gif_source_ptr sinfo, int cmaplen, JSAMPARRAY cmap)
 /* Read a GIF colormap */
 {
-  int i;
+  int i, gray = 1;
 
   for (i = 0; i < cmaplen; i++) {
 #if BITS_IN_JSAMPLE == 8
@@ -356,6 +356,14 @@ ReadColorMap(gif_source_ptr sinfo, int cmaplen, JSAMPARRAY cmap)
     cmap[CM_RED][i]   = (JSAMPLE)UPSCALE(ReadByte(sinfo));
     cmap[CM_GREEN][i] = (JSAMPLE)UPSCALE(ReadByte(sinfo));
     cmap[CM_BLUE][i]  = (JSAMPLE)UPSCALE(ReadByte(sinfo));
+    if (cmap[CM_RED][i] != cmap[CM_GREEN][i] ||
+        cmap[CM_GREEN][i] != cmap[CM_BLUE][i])
+      gray = 0;
+  }
+
+  if (sinfo->cinfo->in_color_space == JCS_RGB && gray) {
+    sinfo->cinfo->in_color_space = JCS_GRAYSCALE;
+    sinfo->cinfo->input_components = 1;
   }
 }
 
@@ -516,10 +524,15 @@ start_input_gif(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     source->pub.get_pixel_rows = get_pixel_rows;
   }
 
+  if (cinfo->in_color_space != JCS_GRAYSCALE) {
+    cinfo->in_color_space = JCS_RGB;
+    cinfo->input_components = NUMCOLORS;
+  }
+
   /* Create compressor input buffer. */
   source->pub.buffer = (*cinfo->mem->alloc_sarray)
-    ((j_common_ptr)cinfo, JPOOL_IMAGE, (JDIMENSION)width * NUMCOLORS,
-     (JDIMENSION)1);
+    ((j_common_ptr)cinfo, JPOOL_IMAGE,
+     (JDIMENSION)width * cinfo->input_components, (JDIMENSION)1);
   source->pub.buffer_height = 1;
 
   /* Pad colormap for safety. */
@@ -530,8 +543,6 @@ start_input_gif(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   }
 
   /* Return info about the image. */
-  cinfo->in_color_space = JCS_RGB;
-  cinfo->input_components = NUMCOLORS;
   cinfo->data_precision = BITS_IN_JSAMPLE; /* we always rescale data to this */
   cinfo->image_width = width;
   cinfo->image_height = height;
@@ -556,11 +567,18 @@ get_pixel_rows(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   register JSAMPARRAY colormap = source->colormap;
 
   ptr = source->pub.buffer[0];
-  for (col = cinfo->image_width; col > 0; col--) {
-    c = LZWReadByte(source);
-    *ptr++ = colormap[CM_RED][c];
-    *ptr++ = colormap[CM_GREEN][c];
-    *ptr++ = colormap[CM_BLUE][c];
+  if (cinfo->in_color_space == JCS_GRAYSCALE) {
+    for (col = cinfo->image_width; col > 0; col--) {
+      c = LZWReadByte(source);
+      *ptr++ = colormap[CM_RED][c];
+    }
+  } else {
+    for (col = cinfo->image_width; col > 0; col--) {
+      c = LZWReadByte(source);
+      *ptr++ = colormap[CM_RED][c];
+      *ptr++ = colormap[CM_GREEN][c];
+      *ptr++ = colormap[CM_BLUE][c];
+    }
   }
   return 1;
 }
@@ -646,11 +664,18 @@ get_interlaced_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
      FALSE);
   /* Scan the row, expand colormap, and output */
   ptr = source->pub.buffer[0];
-  for (col = cinfo->image_width; col > 0; col--) {
-    c = *sptr++;
-    *ptr++ = colormap[CM_RED][c];
-    *ptr++ = colormap[CM_GREEN][c];
-    *ptr++ = colormap[CM_BLUE][c];
+  if (cinfo->in_color_space == JCS_GRAYSCALE) {
+    for (col = cinfo->image_width; col > 0; col--) {
+      c = *sptr++;
+      *ptr++ = colormap[CM_RED][c];
+    }
+  } else {
+    for (col = cinfo->image_width; col > 0; col--) {
+      c = *sptr++;
+      *ptr++ = colormap[CM_RED][c];
+      *ptr++ = colormap[CM_GREEN][c];
+      *ptr++ = colormap[CM_BLUE][c];
+    }
   }
   source->cur_row_number++;     /* for next time */
   return 1;

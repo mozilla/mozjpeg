@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 2.8.12)
+# When using CMake 3.4 and later, don't export symbols from executables unless
+# the CMAKE_ENABLE_EXPORTS variable is set.
+if(POLICY CMP0065)
+  cmake_policy(SET CMP0065 NEW)
+endif()
 
 if(CMAKE_EXECUTABLE_SUFFIX)
   set(CMAKE_EXECUTABLE_SUFFIX_TMP ${CMAKE_EXECUTABLE_SUFFIX})
 endif()
 
 project(mozjpeg C)
-set(VERSION 4.1.0)
+set(VERSION 4.1.1)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -25,6 +30,15 @@ pad_number(VERSION_MINOR 3)
 pad_number(VERSION_REVISION 3)
 set(LIBJPEG_TURBO_VERSION_NUMBER ${VERSION_MAJOR}${VERSION_MINOR}${VERSION_REVISION})
 
+# CMake 3.14 and later sets CMAKE_MACOSX_BUNDLE to TRUE by default when
+# CMAKE_SYSTEM_NAME is iOS, tvOS, or watchOS, which breaks the libjpeg-turbo
+# build.  (Specifically, when CMAKE_MACOSX_BUNDLE is TRUE, executables for
+# Apple platforms are built as application bundles, which causes CMake to
+# complain that our install() directives for executables do not specify a
+# BUNDLE DESTINATION.  Even if CMake did not complain, building executables as
+# application bundles would break our iOS packages.)
+set(CMAKE_MACOSX_BUNDLE FALSE)
+
 string(TIMESTAMP DEFAULT_BUILD "%Y%m%d")
 set(BUILD ${DEFAULT_BUILD} CACHE STRING "Build string (default: ${DEFAULT_BUILD})")
 
@@ -37,6 +51,8 @@ endif()
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
 message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
+
+include(cmakescripts/PackageInfo.cmake)
 
 # Detect CPU type and whether we're building 64-bit or 32-bit code
 math(EXPR BITS "${CMAKE_SIZEOF_VOID_P} * 8")
@@ -324,7 +340,8 @@ message(STATUS "libjpeg API shared library version = ${SO_MAJOR_VERSION}.${SO_AG
 # minor SO versions don't change.  However, we increase the middle number (the
 # SO "age") whenever functions are added to the API.
 set(TURBOJPEG_SO_MAJOR_VERSION 0)
-set(TURBOJPEG_SO_VERSION 0.2.0)
+set(TURBOJPEG_SO_AGE 2)
+set(TURBOJPEG_SO_VERSION 0.${TURBOJPEG_SO_AGE}.0)
 
 
 ###############################################################################
@@ -344,7 +361,7 @@ if(MSVC)
       endif()
     endforeach()
   endif()
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W3 /wd4996")
+  add_definitions(-D_CRT_NONSTDC_NO_WARNINGS)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
@@ -394,34 +411,6 @@ if(MSVC)
 endif()
 
 if(UNIX)
-  # Check for headers
-  check_include_files(locale.h HAVE_LOCALE_H)
-  check_include_files(stddef.h HAVE_STDDEF_H)
-  check_include_files(stdlib.h HAVE_STDLIB_H)
-  check_include_files(sys/types.h NEED_SYS_TYPES_H)
-
-  # Check for functions
-  include(CheckSymbolExists)
-  check_symbol_exists(memset string.h HAVE_MEMSET)
-  check_symbol_exists(memcpy string.h HAVE_MEMCPY)
-  if(NOT HAVE_MEMSET AND NOT HAVE_MEMCPY)
-    set(NEED_BSD_STRINGS 1)
-  endif()
-
-  # Check for types
-  check_type_size("unsigned char" UNSIGNED_CHAR)
-  check_type_size("unsigned short" UNSIGNED_SHORT)
-
-  # Check for compiler features
-  check_c_source_compiles("int main(void) { typedef struct undefined_structure *undef_struct_ptr;  undef_struct_ptr ptr = 0;  return ptr != 0; }"
-    INCOMPLETE_TYPES)
-  if(INCOMPLETE_TYPES)
-    message(STATUS "Compiler supports pointers to undefined structures.")
-  else()
-    set(INCOMPLETE_TYPES_BROKEN 1)
-    message(STATUS "Compiler does not support pointers to undefined structures.")
-  endif()
-
   if(CMAKE_CROSSCOMPILING)
     set(RIGHT_SHIFT_IS_UNSIGNED 0)
   else()
@@ -532,6 +521,7 @@ else()
   configure_file(jconfig.h.in jconfig.h)
 endif()
 configure_file(jconfigint.h.in jconfigint.h)
+configure_file(jversion.h.in jversion.h)
 if(UNIX)
   configure_file(libjpeg.map.in libjpeg.map)
 endif()
@@ -584,6 +574,9 @@ if(WITH_SIMD)
   endif()
 else()
   add_library(simd OBJECT jsimd_none.c)
+  if(NOT WIN32 AND (CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED))
+    set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)
+  endif()
 endif()
 
 if(WITH_JAVA)
@@ -612,6 +605,12 @@ if(WITH_TURBOJPEG)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
       include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
       set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile.jni)
+    endif()
+    if(MSVC)
+      configure_file(${CMAKE_SOURCE_DIR}/win/turbojpeg.rc.in
+        ${CMAKE_BINARY_DIR}/win/turbojpeg.rc)
+      set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES}
+        ${CMAKE_BINARY_DIR}/win/turbojpeg.rc)
     endif()
     add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
     set_property(TARGET turbojpeg PROPERTY COMPILE_FLAGS
@@ -756,6 +755,8 @@ add_executable(wrjpgcom wrjpgcom.c)
 if(WITH_FUZZ)
   add_subdirectory(fuzz)
 endif()
+
+add_executable(strtest strtest.c)
 
 add_subdirectory(md5)
 

@@ -4,8 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -15,12 +15,14 @@
  * JPEG markers.
  */
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 #define JPEG_CJPEG_DJPEG        /* to get the command-line config symbols */
 #include "jinclude.h"           /* get auto-config symbols, <stdio.h> */
 
-#ifdef HAVE_LOCALE_H
 #include <locale.h>             /* Bill Allombert: use locale for isprint */
-#endif
 #include <ctype.h>              /* to declare isupper(), tolower() */
 #ifdef USE_SETMODE
 #include <fcntl.h>              /* to declare setmode()'s parameter macros */
@@ -224,9 +226,7 @@ process_COM(int raw)
   int lastch = 0;
 
   /* Bill Allombert: set locale properly for isprint */
-#ifdef HAVE_LOCALE_H
   setlocale(LC_CTYPE, "");
-#endif
 
   /* Get the marker parameter length count */
   length = read_2_bytes();
@@ -254,7 +254,7 @@ process_COM(int raw)
     } else if (isprint(ch)) {
       putc(ch, stdout);
     } else {
-      printf("\\%03o", ch);
+      printf("\\%03o", (unsigned int)ch);
     }
     lastch = ch;
     length--;
@@ -262,9 +262,7 @@ process_COM(int raw)
   printf("\n");
 
   /* Bill Allombert: revert to C locale */
-#ifdef HAVE_LOCALE_H
   setlocale(LC_CTYPE, "C");
-#endif
 }
 
 

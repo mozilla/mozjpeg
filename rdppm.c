@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2017, 2020-2021, D. R. Commander.
+ * Copyright (C) 2015-2017, 2020-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -48,7 +48,7 @@ typedef unsigned char U_CHAR;
 
 
 #define ReadOK(file, buffer, len) \
-  (JFREAD(file, buffer, len) == ((size_t)(len)))
+  (fread(buffer, 1, len, file) == ((size_t)(len)))
 
 static int alpha_index[JPEG_NUMCS] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3, 3, 0, 0, -1
@@ -178,16 +178,16 @@ get_text_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   ptr = source->pub.buffer[0];
   if (maxval == MAXJSAMPLE) {
     if (aindex >= 0)
-      GRAY_RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),
+      GRAY_RGB_READ_LOOP((JSAMPLE)read_pbm_integer(cinfo, infile, maxval),
                          ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),)
+      GRAY_RGB_READ_LOOP((JSAMPLE)read_pbm_integer(cinfo, infile, maxval), {})
   } else {
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],
                          ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],)
+      GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)], {})
   }
   return 1;
 }
@@ -208,7 +208,7 @@ get_text_gray_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   ptr = source->pub.buffer[0];
   if (maxval == MAXJSAMPLE) {
     for (col = cinfo->image_width; col > 0; col--) {
-      JSAMPLE gray = read_pbm_integer(cinfo, infile, maxval);
+      JSAMPLE gray = (JSAMPLE)read_pbm_integer(cinfo, infile, maxval);
       rgb_to_cmyk(gray, gray, gray, ptr, ptr + 1, ptr + 2, ptr + 3);
       ptr += 4;
     }
@@ -252,16 +252,16 @@ get_text_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   ptr = source->pub.buffer[0];
   if (maxval == MAXJSAMPLE) {
     if (aindex >= 0)
-      RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),
+      RGB_READ_LOOP((JSAMPLE)read_pbm_integer(cinfo, infile, maxval),
                     ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(read_pbm_integer(cinfo, infile, maxval),)
+      RGB_READ_LOOP((JSAMPLE)read_pbm_integer(cinfo, infile, maxval), {})
   } else {
     if (aindex >= 0)
       RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],
                     ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],)
+      RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)], {})
   }
   return 1;
 }
@@ -282,9 +282,9 @@ get_text_rgb_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   ptr = source->pub.buffer[0];
   if (maxval == MAXJSAMPLE) {
     for (col = cinfo->image_width; col > 0; col--) {
-      JSAMPLE r = read_pbm_integer(cinfo, infile, maxval);
-      JSAMPLE g = read_pbm_integer(cinfo, infile, maxval);
-      JSAMPLE b = read_pbm_integer(cinfo, infile, maxval);
+      JSAMPLE r = (JSAMPLE)read_pbm_integer(cinfo, infile, maxval);
+      JSAMPLE g = (JSAMPLE)read_pbm_integer(cinfo, infile, maxval);
+      JSAMPLE b = (JSAMPLE)read_pbm_integer(cinfo, infile, maxval);
       rgb_to_cmyk(r, g, b, ptr, ptr + 1, ptr + 2, ptr + 3);
       ptr += 4;
     }
@@ -347,12 +347,12 @@ get_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP(*bufferptr++, ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(*bufferptr++,)
+      GRAY_RGB_READ_LOOP(*bufferptr++, {})
   } else {
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)], ptr[aindex] = 0xFF;)
     else
-      GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)],)
+      GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)], {})
   }
   return 1;
 }
@@ -415,12 +415,12 @@ get_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (aindex >= 0)
       RGB_READ_LOOP(*bufferptr++, ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(*bufferptr++,)
+      RGB_READ_LOOP(*bufferptr++, {})
   } else {
     if (aindex >= 0)
       RGB_READ_LOOP(rescale[UCH(*bufferptr++)], ptr[aindex] = 0xFF;)
     else
-      RGB_READ_LOOP(rescale[UCH(*bufferptr++)],)
+      RGB_READ_LOOP(rescale[UCH(*bufferptr++)], {})
   }
   return 1;
 }
@@ -603,7 +603,8 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
   switch (c) {
   case '2':                     /* it's a text-format PGM file */
-    if (cinfo->in_color_space == JCS_UNKNOWN)
+    if (cinfo->in_color_space == JCS_UNKNOWN ||
+        cinfo->in_color_space == JCS_RGB)
       cinfo->in_color_space = JCS_GRAYSCALE;
     TRACEMS2(cinfo, 1, JTRC_PGM_TEXT, w, h);
     if (cinfo->in_color_space == JCS_GRAYSCALE)
@@ -631,7 +632,8 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
 
   case '5':                     /* it's a raw-format PGM file */
-    if (cinfo->in_color_space == JCS_UNKNOWN)
+    if (cinfo->in_color_space == JCS_UNKNOWN ||
+        cinfo->in_color_space == JCS_RGB)
       cinfo->in_color_space = JCS_GRAYSCALE;
     TRACEMS2(cinfo, 1, JTRC_PGM, w, h);
     if (maxval > 255) {
@@ -730,8 +732,8 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                   (size_t)(((long)MAX(maxval, 255) + 1L) *
                                            sizeof(JSAMPLE)));
-    MEMZERO(source->rescale, (size_t)(((long)MAX(maxval, 255) + 1L) *
-                                      sizeof(JSAMPLE)));
+    memset(source->rescale, 0, (size_t)(((long)MAX(maxval, 255) + 1L) *
+                                        sizeof(JSAMPLE)));
     half_maxval = maxval / 2;
     for (val = 0; val <= (long)maxval; val++) {
       /* The multiplication here must be done in 32 bits to avoid overflow */

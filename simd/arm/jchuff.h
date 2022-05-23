@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009, 2018, D. R. Commander.
+ * Copyright (C) 2009, 2018, 2021, D. R. Commander.
  * Copyright (C) 2018, Matthias Räncker.
  * Copyright (C) 2020-2021, Arm Limited.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -74,6 +74,21 @@ typedef struct {
 
 #else
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#define SPLAT() { \
+  buffer[0] = (JOCTET)(put_buffer >> 24); \
+  buffer[1] = (JOCTET)(put_buffer >> 16); \
+  buffer[2] = (JOCTET)(put_buffer >>  8); \
+  buffer[3] = (JOCTET)(put_buffer      ); \
+  buffer += 4; \
+}
+#else
+#define SPLAT() { \
+  put_buffer = __builtin_bswap32(put_buffer); \
+  __asm__("str %1, [%0], #4" : "+r" (buffer) : "r" (put_buffer)); \
+}
+#endif
+
 #define FLUSH() { \
   if (put_buffer & 0x80808080 & ~(put_buffer + 0x01010101)) { \
     EMIT_BYTE(put_buffer >> 24) \
@@ -81,8 +96,7 @@ typedef struct {
     EMIT_BYTE(put_buffer >>  8) \
     EMIT_BYTE(put_buffer      ) \
   } else { \
-    *((uint32_t *)buffer) = BUILTIN_BSWAP32(put_buffer); \
-    buffer += 4; \
+    SPLAT(); \
   } \
 }
 

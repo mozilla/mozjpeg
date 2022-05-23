@@ -1,4 +1,4 @@
-.TH JPEGTRAN 1 "26 October 2020"
+.TH JPEGTRAN 1 "13 July 2021"
 .SH NAME
 jpegtran \- lossless transformation of JPEG files
 .SH SYNOPSIS
@@ -247,6 +247,10 @@ comments and other metadata in the source file.
 Copy only comment markers.  This setting copies comments from the source file
 but discards any other metadata.
 .TP
+.B \-copy icc
+Copy only ICC profile markers.  This setting copies the ICC profile from the
+source file but discards any other metadata.
+.TP
 .B \-copy all
 Copy all extra markers.  This setting preserves miscellaneous markers
 found in the source file, such as JFIF thumbnails, Exif data, and Photoshop
@@ -261,7 +265,7 @@ Additional switches recognized by jpegtran are:
 .BI \-icc " file"
 Embed ICC color management profile contained in the specified file.  Note that
 this will cause \fBjpegtran\fR to ignore any APP2 markers in the input file,
-even if \fB-copy all\fR is specified.
+even if \fB-copy all\fR or \fB-copy icc\fR is specified.
 .TP
 .BI \-maxmemory " N"
 Set limit for amount of memory to use in processing large images.  Value is

@@ -603,7 +603,7 @@ copy_buffer (j_compress_ptr cinfo, int scan_idx)
   
   while (size >= cinfo->dest->free_in_buffer)
   {
-    MEMCOPY(cinfo->dest->next_output_byte, src, cinfo->dest->free_in_buffer);
+    memcpy(cinfo->dest->next_output_byte, src, cinfo->dest->free_in_buffer);
     src += cinfo->dest->free_in_buffer;
     size -= cinfo->dest->free_in_buffer;
     cinfo->dest->next_output_byte += cinfo->dest->free_in_buffer;
@@ -613,7 +613,7 @@ copy_buffer (j_compress_ptr cinfo, int scan_idx)
       ERREXIT(cinfo, JERR_UNSUPPORTED_SUSPEND);
   }
 
-  MEMCOPY(cinfo->dest->next_output_byte, src, size);
+  memcpy(cinfo->dest->next_output_byte, src, size);
   cinfo->dest->next_output_byte += size;
   cinfo->dest->free_in_buffer -= size;
 }

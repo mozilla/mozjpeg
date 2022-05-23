@@ -657,7 +657,7 @@ main(int argc, char **argv)
         fprintf(stderr, "%s: memory allocation failure\n", progname);
         exit(EXIT_FAILURE);
       }
-      nbytes = JFREAD(fp, &inbuffer[insize], INPUT_BUF_SIZE);
+      nbytes = fread(&inbuffer[insize], 1, INPUT_BUF_SIZE, fp);
       if (nbytes < INPUT_BUF_SIZE && ferror(fp)) {
         if (file_index < argc)
           fprintf(stderr, "%s: can't read from %s\n", progname,
@@ -790,7 +790,7 @@ main(int argc, char **argv)
       buffer = inbuffer;
     }
 
-    nbytes = JFWRITE(fp, buffer, size);
+    nbytes = fwrite(buffer, 1, size, fp);
     if (nbytes < size && ferror(fp)) {
       if (file_index < argc)
         fprintf(stderr, "%s: can't write to %s\n", progname,

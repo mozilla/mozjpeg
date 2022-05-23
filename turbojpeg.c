@@ -288,7 +288,7 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
   cinfo->in_color_space = pf2cs[pixelFormat];
   cinfo->input_components = tjPixelSize[pixelFormat];
 #ifndef NO_GETENV
-	if((env=getenv("TJ_REVERT"))!=NULL && strlen(env)>0 && !strcmp(env, "1"))
+	if (!GETENV_S(env, 7, "TJ_REVERTe") && !strcmp(env, "1"))
 		cinfo->master->compress_profile=JCP_FASTEST;
 #endif
   jpeg_set_defaults(cinfo);

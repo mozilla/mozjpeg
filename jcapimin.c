@@ -101,7 +101,7 @@ jpeg_CreateCompress(j_compress_ptr cinfo, int version, size_t structsize)
   cinfo->master = (struct jpeg_comp_master *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   sizeof(my_comp_master));
-  MEMZERO(cinfo->master, sizeof(my_comp_master));
+  memset(cinfo->master, 0, sizeof(my_comp_master));
 
   cinfo->master->compress_profile = JCP_MAX_COMPRESSION;
 }

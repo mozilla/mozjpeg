@@ -12,6 +12,11 @@ applications to more easily support both 8-bit-per-component and
 more details.)  The `WITH_12BIT` CMake variable can be used to disable
 12-bit-per-component JPEG support.
 
+2. Significantly sped up the computation of optimal Huffman tables.  This
+speeds up the compression of tiny images by as much as 2x and provides a
+noticeable speedup for images as large as 256x256 when using optimal Huffman
+tables.
+
 
 2.1.4
 =====

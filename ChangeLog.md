@@ -1,7 +1,7 @@
 2.2 pre-beta
 ============
 
-### Significant changes relative to 2.1.3
+### Significant changes relative to 2.1.4
 
 1. By default, the build system now builds, packages, and tests a separate
 12-bit-per-component flavor of the libjpeg API library, cjpeg, djpeg, and

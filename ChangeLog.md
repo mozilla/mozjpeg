@@ -6,6 +6,12 @@
 1. Fixed a regression introduced in 2.1.3 that caused build failures with
 Visual Studio 2010.
 
+2. The `tjDecompressHeader3()` function in the TurboJPEG C API and the
+`TJDecompressor.setSourceImage()` method in the TurboJPEG Java API now accept
+"abbreviated table specification" (AKA "tables-only") datastreams, which can be
+used to prime the decompressor with quantization and Huffman tables that can be
+used when decompressing subsequent "abbreviated image" datastreams.
+
 
 2.1.3
 =====

@@ -1129,27 +1129,38 @@ DLLEXPORT tjhandle tjInitDecompress(void);
 
 
 /**
- * Retrieve information about a JPEG image without decompressing it.
+ * Retrieve information about a JPEG image without decompressing it, or prime
+ * the decompressor with quantization and Huffman tables.
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  *
- * @param jpegBuf pointer to a buffer containing a JPEG image
+ * @param jpegBuf pointer to a buffer containing a JPEG image or an
+ * "abbreviated table specification" (AKA "tables-only") datastream.  Passing a
+ * tables-only datastream to this function primes the decompressor with
+ * quantization and Huffman tables that can be used when decompressing
+ * subsequent "abbreviated image" datastreams.  This is useful, for instance,
+ * when decompressing video streams in which all frames share the same
+ * quantization and Huffman tables.
  *
- * @param jpegSize size of the JPEG image (in bytes)
+ * @param jpegSize size of the JPEG image or tables-only datastream (in bytes)
  *
  * @param width pointer to an integer variable that will receive the width (in
- * pixels) of the JPEG image
+ * pixels) of the JPEG image.  If <tt>jpegBuf</tt> points to a tables-only
+ * datastream, then <tt>width</tt> is ignored.
  *
  * @param height pointer to an integer variable that will receive the height
- * (in pixels) of the JPEG image
+ * (in pixels) of the JPEG image.  If <tt>jpegBuf</tt> points to a tables-only
+ * datastream, then <tt>height</tt> is ignored.
  *
  * @param jpegSubsamp pointer to an integer variable that will receive the
  * level of chrominance subsampling used when the JPEG image was compressed
- * (see @ref TJSAMP "Chrominance subsampling options".)
+ * (see @ref TJSAMP "Chrominance subsampling options".)  If <tt>jpegBuf</tt>
+ * points to a tables-only datastream, then <tt>jpegSubsamp</tt> is ignored.
  *
  * @param jpegColorspace pointer to an integer variable that will receive one
  * of the JPEG colorspace constants, indicating the colorspace of the JPEG
- * image (see @ref TJCS "JPEG colorspaces".)
+ * image (see @ref TJCS "JPEG colorspaces".)  If <tt>jpegBuf</tt>
+ * points to a tables-only datastream, then <tt>jpegColorspace</tt> is ignored.
  *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2()
  * and #tjGetErrorCode().)

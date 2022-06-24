@@ -1225,7 +1225,13 @@ DLLEXPORT int tjDecompressHeader3(tjhandle handle,
   }
 
   jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
-  jpeg_read_header(dinfo, TRUE);
+
+  /* jpeg_read_header() calls jpeg_abort() and returns JPEG_HEADER_TABLES_ONLY
+     if the datastream is a tables-only datastream.  Since we aren't using a
+     suspending data source, the only other value it can return is
+     JPEG_HEADER_OK. */
+  if (jpeg_read_header(dinfo, FALSE) == JPEG_HEADER_TABLES_ONLY)
+    return 0;
 
   *width = dinfo->image_width;
   *height = dinfo->image_height;

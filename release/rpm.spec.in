@@ -230,6 +230,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/jpeglib.h
 %if "%{_with_12bit}" == "1"
 	%{_includedir}/jpeg12lib.h
+	%{_includedir}/j12error.h
 %endif
 %if "%{_with_turbojpeg}" == "1"
 	%{_includedir}/turbojpeg.h

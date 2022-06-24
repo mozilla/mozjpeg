@@ -16,7 +16,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglibint.h"
-#include "jerror.h"
+#include "jerrorint.h"
 
 
 #define ICC_MARKER  (JPEG_APP0 + 2)     /* JPEG marker code for ICC */

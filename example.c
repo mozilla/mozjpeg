@@ -46,7 +46,9 @@
  */
 
 #include "jpeglib.h"
+#include "jerror.h"
 #include "jpeg12lib.h"
+#include "j12error.h"
 
 /*
  * <setjmp.h> is used for the optional error recovery mechanism shown in
@@ -135,10 +137,8 @@ write_JPEG_file(char *filename, int quality)
    * VERY IMPORTANT: use "b" option to fopen() if you are on a machine that
    * requires it in order to write binary files.
    */
-  if ((outfile = fopen(filename, "wb")) == NULL) {
-    fprintf(stderr, "can't open %s\n", filename);
-    exit(1);
-  }
+  if ((outfile = fopen(filename, "wb")) == NULL)
+    ERREXIT(&cinfo, JERR_FILE_WRITE);
   jpeg_stdio_dest(&cinfo, outfile);
 
   /* Step 3: set parameters for compression */
@@ -275,10 +275,8 @@ write_JPEG12_file(char *filename, int quality)
   cinfo.err = jpeg12_std_error(&jerr);
   jpeg12_create_compress(&cinfo);
 
-  if ((outfile = fopen(filename, "wb")) == NULL) {
-    fprintf(stderr, "can't open %s\n", filename);
-    exit(1);
-  }
+  if ((outfile = fopen(filename, "wb")) == NULL)
+    J12ERREXIT(&cinfo, JERR_FILE_WRITE);
   jpeg12_stdio_dest(&cinfo, outfile);
 
   cinfo.image_width = WIDTH;

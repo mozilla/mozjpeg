@@ -26,7 +26,7 @@
 #include "jinclude.h"
 #include "jpeglibint.h"
 #include "jversion.h"
-#include "jerror.h"
+#include "jerrorint.h"
 
 #ifdef USE_WINDOWS_MESSAGEBOX
 #include <windows.h>
@@ -48,7 +48,7 @@
 #define JMESSAGE(code, string)  string,
 
 const char * const jpeg_std_message_table[] = {
-#include "jerror.h"
+#include "jerrorint.h"
   NULL
 };
 

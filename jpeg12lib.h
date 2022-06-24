@@ -12,7 +12,7 @@
  *
  * This file defines the application interface for the JPEG library.
  * Most applications using the library need only include this file,
- * and perhaps jerror.h if they want to know the exact error codes.
+ * and perhaps j12error.h if they want to know the exact error codes.
  */
 
 #ifndef JPEG12LIB_H
@@ -1136,12 +1136,12 @@ struct jpeg12_color_quantizer { long dummy; };
  * The JPEG library modules define JPEG_INTERNALS before including this file.
  * The internal structure declarations are read only when that is true.
  * Applications using the library should not include jpeg12int.h, but may wish
- * to include jerror.h.
+ * to include j12error.h.
  */
 
 #ifdef JPEG_INTERNALS
 #include "jpeg12int.h"          /* fetch private declarations */
-#include "jerror.h"             /* fetch error codes too */
+#include "j12error.h"           /* fetch error codes too */
 #endif
 
 #ifdef __cplusplus

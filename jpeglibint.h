@@ -15,7 +15,8 @@
 #include "jpeg12lib.h"
 
 
-/* Rename all external types and functions that are affected by JSAMPLE. */
+/* Rename all external types, functions, and macros that are affected by
+   JSAMPLE. */
 
 #define JSAMPLE  J12SAMPLE
 
@@ -27,6 +28,25 @@
 #define JSAMPROW  J12SAMPROW
 #define JSAMPARRAY  J12SAMPARRAY
 #define JSAMPIMAGE  J12SAMPIMAGE
+
+#define ERREXIT  J12ERREXIT
+#define ERREXIT1  J12ERREXIT1
+#define ERREXIT2  J12ERREXIT2
+#define ERREXIT3  J12ERREXIT3
+#define ERREXIT4  J12ERREXIT4
+#define ERREXIT6  J12ERREXIT6
+#define ERREXITS  J12ERREXITS
+#define WARNMS  J12WARNMS
+#define WARNMS1  J12WARNMS1
+#define WARNMS2  J12WARNMS2
+#define TRACEMS  J12TRACEMS
+#define TRACEMS1  J12TRACEMS1
+#define TRACEMS2  J12TRACEMS2
+#define TRACEMS3  J12TRACEMS3
+#define TRACEMS4  J12TRACEMS4
+#define TRACEMS5  J12TRACEMS5
+#define TRACEMS8  J12TRACEMS8
+#define TRACEMSS  J12TRACEMSS
 
 #define jpeg_common_struct  jpeg12_common_struct
 

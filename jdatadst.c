@@ -21,7 +21,7 @@
 /* this is not a core library module, so it doesn't define JPEG_INTERNALS */
 #include "jinclude.h"
 #include "jpeglibint.h"
-#include "jerror.h"
+#include "jerrorint.h"
 
 
 /* Expanded data destination object for stdio output */

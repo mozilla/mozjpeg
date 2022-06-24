@@ -17,7 +17,7 @@
 #define JPEG_INTERNAL_OPTIONS   /* cjpeg.c,djpeg.c need to see xxx_SUPPORTED */
 #include "jinclude.h"
 #include "jpeglibint.h"
-#include "jerror.h"             /* get library error codes too */
+#include "jerrorint.h"          /* get library error codes too */
 #include "cderror.h"            /* get application-specific error codes */
 
 

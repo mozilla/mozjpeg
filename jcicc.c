@@ -16,7 +16,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglibint.h"
-#include "jerror.h"
+#include "jerrorint.h"
 
 
 /*

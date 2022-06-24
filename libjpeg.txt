@@ -115,8 +115,9 @@ used by the free LIBTIFF library to support JPEG compression in TIFF.)
 
 Support for JPEG images with 12-bit, rather than 8-bit, samples is provided
 through a separate library, API, and header file (jpeg12lib.h instead of
-jpeglib.h).  Functions supporting 12-bit samples have a prefix of "jpeg12_"
-instead of "jpeg_" and use the following data types, structures, and macros:
+jpeglib.h and j12error.h instead of jerror.h).  Functions supporting 12-bit
+samples have a prefix of "jpeg12_" instead of "jpeg_" and use the following
+data types, structures, and macros:
 
   * J12SAMPLE instead of JSAMPLE
   * J12SAMPROW instead of JSAMPROW
@@ -124,6 +125,9 @@ instead of "jpeg_" and use the following data types, structures, and macros:
   * J12SAMPIMAGE instead of JSAMPIMAGE
   * MAXJ12SAMPLE instead of MAXJSAMPLE
   * CENTERJ12SAMPLE instead of CENTERJSAMPLE
+  * J12ERREXIT*() instead of ERREXIT*()
+  * J12WARNMS*() instead of WARNMS*()
+  * J12TRACEMS*() instead of TRACEMS*()
   * jpeg12_common_struct instead of jpeg_common_struct
   * j12_common_ptr instead of j_common_ptr
   * jpeg12_compress_struct instead of jpeg_compress_struct

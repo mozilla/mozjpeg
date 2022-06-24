@@ -109,6 +109,7 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_CURRENT_SOURCE_DIR@\jpeglib.h"
 !ifdef 12BIT
 	File "@CMAKE_CURRENT_SOURCE_DIR@\jpeg12lib.h"
+	File "@CMAKE_CURRENT_SOURCE_DIR@\j12error.h"
 !endif
 	File "@CMAKE_CURRENT_SOURCE_DIR@\turbojpeg.h"
 	SetOutPath $INSTDIR\doc

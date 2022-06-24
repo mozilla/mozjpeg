@@ -261,10 +261,13 @@ usage(void)
   fprintf(stderr, "  -quant-table N Use predefined quantization table N:\n");
   fprintf(stderr, "                 - 0 JPEG Annex K\n");
   fprintf(stderr, "                 - 1 Flat\n");
-  fprintf(stderr, "                 - 2 Custom, tuned for MS-SSIM\n");
-  fprintf(stderr, "                 - 3 ImageMagick table by N. Robidoux\n");
-  fprintf(stderr, "                 - 4 Custom, tuned for PSNR-HVS\n");
+  fprintf(stderr, "                 - 2 Tuned for MS-SSIM on Kodak image set\n");
+  fprintf(stderr, "                 - 3 ImageMagick table by N. Robidoux (default)\n");
+  fprintf(stderr, "                 - 4 Tuned for PSNR-HVS on Kodak image set\n");
   fprintf(stderr, "                 - 5 Table from paper by Klein, Silverstein and Carney\n");
+  fprintf(stderr, "                 - 6 Table from paper by Watson, Taylor and Borthwick\n");
+  fprintf(stderr, "                 - 7 Table from paper by Ahumada, Watson, Peterson\n");
+  fprintf(stderr, "                 - 8 Table from paper by Peterson, Ahumada and Watson\n");
   fprintf(stderr, "  -icc FILE      Embed ICC profile contained in FILE\n");
   fprintf(stderr, "  -restart N     Set restart interval in rows, or in blocks with B\n");
 #ifdef INPUT_SMOOTHING_SUPPORTED

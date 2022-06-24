@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2015, 2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015, 2018, 2022 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,11 +89,20 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Associate the JPEG image of length <code>imageSize</code> bytes stored in
-   * <code>jpegImage</code> with this decompressor instance.  This image will
-   * be used as the source image for subsequent decompress operations.
+   * Associate the JPEG image or "abbreviated table specification" (AKA
+   * "tables-only") datastream of length <code>imageSize</code> bytes stored in
+   * <code>jpegImage</code> with this decompressor instance.  If
+   * <code>jpegImage</code> contains a JPEG image, then this image will be used
+   * as the source image for subsequent decompress operations.  Passing a
+   * tables-only datastream to this method primes the decompressor with
+   * quantization and Huffman tables that can be used when decompressing
+   * subsequent "abbreviated image" datastreams.  This is useful, for instance,
+   * when decompressing video streams in which all frames share the same
+   * quantization and Huffman tables.
    *
-   * @param jpegImage JPEG image buffer.  This buffer is not modified.
+   * @param jpegImage buffer containing a JPEG image or an "abbreviated table
+   * specification" (AKA "tables-only") datastream.  This buffer is not
+   * modified.
    *
    * @param imageSize size of the JPEG image (in bytes)
    */

@@ -418,7 +418,8 @@ implements java.io.Closeable</pre>
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(byte[],%20int)">setSourceImage</a></strong>(byte[]&nbsp;jpegImage,
               int&nbsp;imageSize)</code>
-<div class="block">Associate the JPEG image of length <code>imageSize</code> bytes stored in
+<div class="block">Associate the JPEG image or "abbreviated table specification" (AKA
+ "tables-only") datastream of length <code>imageSize</code> bytes stored in
  <code>jpegImage</code> with this decompressor instance.</div>
 </td>
 </tr>
@@ -611,10 +612,19 @@ implements java.io.Closeable</pre>
 <pre>public&nbsp;void&nbsp;setSourceImage(byte[]&nbsp;jpegImage,
                   int&nbsp;imageSize)
                     throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
-<div class="block">Associate the JPEG image of length <code>imageSize</code> bytes stored in
- <code>jpegImage</code> with this decompressor instance.  This image will
- be used as the source image for subsequent decompress operations.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - JPEG image buffer.  This buffer is not modified.</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
+<div class="block">Associate the JPEG image or "abbreviated table specification" (AKA
+ "tables-only") datastream of length <code>imageSize</code> bytes stored in
+ <code>jpegImage</code> with this decompressor instance.  If
+ <code>jpegImage</code> contains a JPEG image, then this image will be used
+ as the source image for subsequent decompress operations.  Passing a
+ tables-only datastream to this method primes the decompressor with
+ quantization and Huffman tables that can be used when decompressing
+ subsequent "abbreviated image" datastreams.  This is useful, for instance,
+ when decompressing video streams in which all frames share the same
+ quantization and Huffman tables.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>jpegImage</code> - buffer containing a JPEG image or an "abbreviated table
+ specification" (AKA "tables-only") datastream.  This buffer is not
+ modified.</dd><dd><code>imageSize</code> - size of the JPEG image (in bytes)</dd>
 <dt><span class="strong">Throws:</span></dt>
 <dd><code><a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd></dl>
 </li>

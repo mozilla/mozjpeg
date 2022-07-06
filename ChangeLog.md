@@ -12,6 +12,11 @@ Visual Studio 2010.
 used to prime the decompressor with quantization and Huffman tables that can be
 used when decompressing subsequent "abbreviated image" datastreams.
 
+3. libjpeg-turbo now performs run-time detection of AltiVec instructions on
+OS X/PowerPC systems if AltiVec instructions are not enabled at compile time.
+This allows both AltiVec-equipped (PowerPC G4 and G5) and non-AltiVec-equipped
+(PowerPC G3) CPUs to be supported using the same build of libjpeg-turbo.
+
 
 2.1.3
 =====

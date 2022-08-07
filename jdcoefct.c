@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015-2016, 2019-2020, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, 2019-2020, 2022, D. R. Commander.
  * Copyright (C) 2015, 2020, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -835,18 +835,21 @@ jinit_d_coef_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
 
     for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
          ci++, compptr++) {
+      JDIMENSION num_rows =
+        (JDIMENSION)jround_up((long)compptr->height_in_blocks,
+                              (long)compptr->v_samp_factor);
       access_rows = compptr->v_samp_factor;
 #ifdef BLOCK_SMOOTHING_SUPPORTED
       /* If block smoothing could be used, need a bigger window */
-      if (cinfo->progressive_mode)
+      if (cinfo->progressive_mode) {
         access_rows *= 5;
+        num_rows = MAX(num_rows, access_rows);
+      }
 #endif
       coef->whole_image[ci] = (*cinfo->mem->request_virt_barray)
         ((j_common_ptr)cinfo, JPOOL_IMAGE, TRUE,
          (JDIMENSION)jround_up((long)compptr->width_in_blocks,
-                               (long)compptr->h_samp_factor),
-         (JDIMENSION)jround_up((long)compptr->height_in_blocks,
-                               (long)compptr->v_samp_factor),
+                               (long)compptr->h_samp_factor), num_rows,
          (JDIMENSION)access_rows);
     }
     coef->pub.consume_data = consume_data;

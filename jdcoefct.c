@@ -843,7 +843,7 @@ jinit_d_coef_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
       /* If block smoothing could be used, need a bigger window */
       if (cinfo->progressive_mode) {
         access_rows *= 5;
-        num_rows = MAX(num_rows, access_rows);
+        num_rows = MAX(num_rows, (JDIMENSION)access_rows);
       }
 #endif
       coef->whole_image[ci] = (*cinfo->mem->request_virt_barray)

@@ -23,6 +23,15 @@ iMCU (8 * the vertical sampling factor) using buffered-image mode with
 interblock smoothing enabled.  This was a regression introduced by
 2.1 beta1[6(b)].
 
+5. Fixed two issues that prevented partial image decompression from working
+properly with buffered-image mode:
+
+     - Attempting to call `jpeg_crop_scanline()` after
+`jpeg_start_decompress()` but before `jpeg_start_output()` resulted in an error
+("Improper call to JPEG library in state 207".)
+     - Attempting to use `jpeg_skip_scanlines()` resulted in an error ("Bogus
+virtual array access") under certain circumstances.
+
 
 2.1.3
 =====

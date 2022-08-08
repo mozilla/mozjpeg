@@ -17,6 +17,9 @@ speeds up the compression of tiny images by as much as 2x and provides a
 noticeable speedup for images as large as 256x256 when using optimal Huffman
 tables.
 
+3. All deprecated fields, constructors, and methods in the TurboJPEG Java API
+have been removed.
+
 
 2.1.4
 =====

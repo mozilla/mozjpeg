@@ -117,16 +117,6 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * @deprecated Use {@link #setSourceImage(byte[], int)} instead.
-   */
-  @SuppressWarnings("checkstyle:JavadocMethod")
-  @Deprecated
-  public void setJPEGImage(byte[] jpegImage, int imageSize)
-                           throws TJException {
-    setSourceImage(jpegImage, imageSize);
-  }
-
-  /**
    * Associate the specified YUV planar source image with this decompressor
    * instance.  Subsequent decompress operations will decode this image into an
    * RGB or grayscale destination image.
@@ -397,27 +387,9 @@ public class TJDecompressor implements Closeable {
                 yuvImage.getStrides(), yuvImage.getSubsamp(), dstBuf, x, y,
                 yuvImage.getWidth(), pitch, yuvImage.getHeight(), pixelFormat,
                 flags);
-    else {
-      if (x > 0 || y > 0)
-        decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, pitch,
-                   desiredHeight, pixelFormat, flags);
-      else
-        decompress(jpegBuf, jpegBufSize, dstBuf, desiredWidth, pitch,
-                   desiredHeight, pixelFormat, flags);
-    }
-  }
-
-  /**
-   * @deprecated Use
-   * {@link #decompress(byte[], int, int, int, int, int, int, int)} instead.
-   */
-  @SuppressWarnings("checkstyle:JavadocMethod")
-  @Deprecated
-  public void decompress(byte[] dstBuf, int desiredWidth, int pitch,
-                         int desiredHeight, int pixelFormat, int flags)
-                         throws TJException {
-    decompress(dstBuf, 0, 0, desiredWidth, pitch, desiredHeight, pixelFormat,
-               flags);
+    else
+      decompress(jpegBuf, jpegBufSize, dstBuf, x, y, desiredWidth, pitch,
+                 desiredHeight, pixelFormat, flags);
   }
 
   /**
@@ -456,7 +428,8 @@ public class TJDecompressor implements Closeable {
     if (pitch == 0)
       pitch = scaledWidth * pixelSize;
     byte[] buf = new byte[pitch * scaledHeight];
-    decompress(buf, desiredWidth, pitch, desiredHeight, pixelFormat, flags);
+    decompress(buf, 0, 0, desiredWidth, pitch, desiredHeight, pixelFormat,
+               flags);
     return buf;
   }
 
@@ -501,17 +474,6 @@ public class TJDecompressor implements Closeable {
     decompressToYUV(jpegBuf, jpegBufSize, dstImage.getPlanes(),
                     dstImage.getOffsets(), dstImage.getWidth(),
                     dstImage.getStrides(), dstImage.getHeight(), flags);
-  }
-
-  /**
-   * @deprecated Use {@link #decompressToYUV(YUVImage, int)} instead.
-   */
-  @SuppressWarnings("checkstyle:JavadocMethod")
-  @Deprecated
-  public void decompressToYUV(byte[] dstBuf, int flags) throws TJException {
-    YUVImage dstYUVImage = new YUVImage(dstBuf, jpegWidth, 4, jpegHeight,
-                                        jpegSubsamp);
-    decompressToYUV(dstYUVImage, flags);
   }
 
   /**
@@ -623,17 +585,6 @@ public class TJDecompressor implements Closeable {
                                         jpegSubsamp);
     decompressToYUV(dstYUVImage, flags);
     return dstYUVImage;
-  }
-
-  /**
-   * @deprecated Use {@link #decompressToYUV(int, int, int, int)} instead.
-   */
-  @SuppressWarnings("checkstyle:JavadocMethod")
-  @Deprecated
-  public byte[] decompressToYUV(int flags) throws TJException {
-    YUVImage dstYUVImage = new YUVImage(jpegWidth, 4, jpegHeight, jpegSubsamp);
-    decompressToYUV(dstYUVImage, flags);
-    return dstYUVImage.getBuf();
   }
 
   /**
@@ -890,26 +841,12 @@ public class TJDecompressor implements Closeable {
   private native void decompressHeader(byte[] srcBuf, int size)
     throws TJException;
 
-  @Deprecated
-  private native void decompress(byte[] srcBuf, int size, byte[] dstBuf,
-    int desiredWidth, int pitch, int desiredHeight, int pixelFormat, int flags)
-    throws TJException;
-
   private native void decompress(byte[] srcBuf, int size, byte[] dstBuf, int x,
     int y, int desiredWidth, int pitch, int desiredHeight, int pixelFormat,
     int flags) throws TJException;
 
-  @Deprecated
-  private native void decompress(byte[] srcBuf, int size, int[] dstBuf,
-    int desiredWidth, int stride, int desiredHeight, int pixelFormat,
-    int flags) throws TJException;
-
   private native void decompress(byte[] srcBuf, int size, int[] dstBuf, int x,
     int y, int desiredWidth, int stride, int desiredHeight, int pixelFormat,
-    int flags) throws TJException;
-
-  @Deprecated
-  private native void decompressToYUV(byte[] srcBuf, int size, byte[] dstBuf,
     int flags) throws TJException;
 
   private native void decompressToYUV(byte[] srcBuf, int size,

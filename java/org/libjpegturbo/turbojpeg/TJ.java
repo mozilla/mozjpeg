@@ -379,19 +379,6 @@ public final class TJ {
    */
   public static final int FLAG_BOTTOMUP      = 2;
 
-  @SuppressWarnings("checkstyle:JavadocVariable")
-  @Deprecated
-  public static final int FLAG_FORCEMMX      = 8;
-  @SuppressWarnings("checkstyle:JavadocVariable")
-  @Deprecated
-  public static final int FLAG_FORCESSE      = 16;
-  @SuppressWarnings("checkstyle:JavadocVariable")
-  @Deprecated
-  public static final int FLAG_FORCESSE2     = 32;
-  @SuppressWarnings("checkstyle:JavadocVariable")
-  @Deprecated
-  public static final int FLAG_FORCESSE3     = 128;
-
   /**
    * When decompressing an image that was compressed using chrominance
    * subsampling, use the fastest chrominance upsampling algorithm available in
@@ -505,13 +492,6 @@ public final class TJ {
    */
   public static native int bufSizeYUV(int width, int pad, int height,
                                       int subsamp);
-
-  /**
-   * @deprecated Use {@link #bufSizeYUV(int, int, int, int)} instead.
-   */
-  @SuppressWarnings("checkstyle:JavadocMethod")
-  @Deprecated
-  public static native int bufSizeYUV(int width, int height, int subsamp);
 
   /**
    * Returns the size of the buffer (in bytes) required to hold a YUV image

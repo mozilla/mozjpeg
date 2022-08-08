@@ -475,7 +475,7 @@ decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
     if (!compptr->component_needed)
       continue;
     /* Count non-dummy DCT block rows in this iMCU row. */
-    if (cinfo->output_iMCU_row < last_iMCU_row - 1) {
+    if (cinfo->output_iMCU_row + 1 < last_iMCU_row) {
       block_rows = compptr->v_samp_factor;
       access_rows = block_rows * 3; /* this and next two iMCU rows */
     } else if (cinfo->output_iMCU_row < last_iMCU_row) {
@@ -560,7 +560,7 @@ decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
         next_block_row = buffer_ptr;
 
       if (block_row < block_rows - 2 ||
-          cinfo->output_iMCU_row < last_iMCU_row - 1)
+          cinfo->output_iMCU_row + 1 < last_iMCU_row)
         next_next_block_row =
           buffer[block_row + 2] + cinfo->master->first_MCU_col[ci];
       else
@@ -835,21 +835,18 @@ jinit_d_coef_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
 
     for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
          ci++, compptr++) {
-      JDIMENSION num_rows =
-        (JDIMENSION)jround_up((long)compptr->height_in_blocks,
-                              (long)compptr->v_samp_factor);
       access_rows = compptr->v_samp_factor;
 #ifdef BLOCK_SMOOTHING_SUPPORTED
       /* If block smoothing could be used, need a bigger window */
-      if (cinfo->progressive_mode) {
+      if (cinfo->progressive_mode)
         access_rows *= 5;
-        num_rows = MAX(num_rows, (JDIMENSION)access_rows);
-      }
 #endif
       coef->whole_image[ci] = (*cinfo->mem->request_virt_barray)
         ((j_common_ptr)cinfo, JPOOL_IMAGE, TRUE,
          (JDIMENSION)jround_up((long)compptr->width_in_blocks,
-                               (long)compptr->h_samp_factor), num_rows,
+                               (long)compptr->h_samp_factor),
+         (JDIMENSION)jround_up((long)compptr->height_in_blocks,
+                               (long)compptr->v_samp_factor),
          (JDIMENSION)access_rows);
     }
     coef->pub.consume_data = consume_data;

@@ -18,9 +18,10 @@ This allows both AltiVec-equipped (PowerPC G4 and G5) and non-AltiVec-equipped
 (PowerPC G3) CPUs to be supported using the same build of libjpeg-turbo.
 
 4. Fixed an error ("Bogus virtual array access") that occurred when attempting
-to decompress a progressive JPEG image with a height less than or equal to
-(32 * the vertical sampling factor) using buffered image mode.  This was a
-regression introduced by 2.1 beta1[6(b)].
+to decompress a progressive JPEG image with a height less than or equal to one
+iMCU (8 * the vertical sampling factor) using buffered-image mode with
+interblock smoothing enabled.  This was a regression introduced by
+2.1 beta1[6(b)].
 
 
 2.1.3

@@ -163,7 +163,8 @@ jpeg_crop_scanline(j_decompress_ptr cinfo, JDIMENSION *xoffset,
   my_master_ptr master = (my_master_ptr)cinfo->master;
 #endif
 
-  if (cinfo->global_state != DSTATE_SCANNING || cinfo->output_scanline != 0)
+  if ((cinfo->global_state != DSTATE_SCANNING &&
+       cinfo->global_state != DSTATE_BUFIMAGE) || cinfo->output_scanline != 0)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
 
   if (!xoffset || !width)
@@ -525,7 +526,7 @@ jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
    * all of the entropy decoding occurs in jpeg_start_decompress(), assuming
    * that the input data source is non-suspending.  This makes skipping easy.
    */
-  if (cinfo->inputctl->has_multiple_scans) {
+  if (cinfo->inputctl->has_multiple_scans || cinfo->buffered_image) {
     if (cinfo->upsample->need_context_rows) {
       cinfo->output_scanline += lines_to_skip;
       cinfo->output_iMCU_row += lines_to_skip / lines_per_iMCU_row;

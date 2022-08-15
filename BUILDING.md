@@ -26,8 +26,8 @@ Build Requirements
     slashes rather than backslashes in the path (for example,
     **c:/nasm/nasm.exe**).
   * NASM and Yasm are located in the CRB (Code Ready Builder) repository on
-    Red Hat Enterprise Linux 8 and in the PowerTools repository on CentOS 8,
-    which is not enabled by default.
+    Red Hat Enterprise Linux 8 and in the PowerTools repository on RHEL
+    derivatives, which is not enabled by default.
 
 ### Un*x Platforms (including Linux, Mac, FreeBSD, Solaris, and Cygwin)
 
@@ -95,6 +95,14 @@ Build Requirements
   <http://www.oracle.com/technetwork/java/javase/downloads>.
 
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.
+
+
+Sub-Project Builds
+------------------
+
+The libjpeg-turbo build system does not support being included as a sub-project
+using the CMake `add_subdirectory()` function.  Use the CMake
+`ExternalProject_Add()` function instead.
 
 
 Out-of-Tree Builds

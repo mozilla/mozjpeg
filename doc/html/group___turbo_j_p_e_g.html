@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">TurboJPEG
-   &#160;<span id="projectnumber">2.1</span>
+   &#160;<span id="projectnumber">2.1.4</span>
    </div>
   </td>
  </tr>
@@ -273,7 +273,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga52300eac3f3d9ef4bab303bc244f62d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a TurboJPEG decompressor instance.  <a href="group___turbo_j_p_e_g.html#ga52300eac3f3d9ef4bab303bc244f62d3">More...</a><br /></td></tr>
 <tr class="separator:ga52300eac3f3d9ef4bab303bc244f62d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0595681096bba7199cc6f3533cb25f77"><td class="memItemLeft" align="right" valign="top">DLLEXPORT int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0595681096bba7199cc6f3533cb25f77">tjDecompressHeader3</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, const unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height, int *jpegSubsamp, int *jpegColorspace)</td></tr>
-<tr class="memdesc:ga0595681096bba7199cc6f3533cb25f77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve information about a JPEG image without decompressing it.  <a href="group___turbo_j_p_e_g.html#ga0595681096bba7199cc6f3533cb25f77">More...</a><br /></td></tr>
+<tr class="memdesc:ga0595681096bba7199cc6f3533cb25f77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve information about a JPEG image without decompressing it, or prime the decompressor with quantization and Huffman tables.  <a href="group___turbo_j_p_e_g.html#ga0595681096bba7199cc6f3533cb25f77">More...</a><br /></td></tr>
 <tr class="separator:ga0595681096bba7199cc6f3533cb25f77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac3854476006b10787bd128f7ede48057"><td class="memItemLeft" align="right" valign="top">DLLEXPORT <a class="el" href="structtjscalingfactor.html">tjscalingfactor</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gac3854476006b10787bd128f7ede48057">tjGetScalingFactors</a> (int *numscalingfactors)</td></tr>
 <tr class="memdesc:gac3854476006b10787bd128f7ede48057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of TurboJPEG supports.  <a href="group___turbo_j_p_e_g.html#gac3854476006b10787bd128f7ede48057">More...</a><br /></td></tr>
@@ -1725,16 +1725,16 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
       </table>
 </div><div class="memdoc">
 
-<p>Retrieve information about a JPEG image without decompressing it. </p>
+<p>Retrieve information about a JPEG image without decompressing it, or prime the decompressor with quantization and Huffman tables. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">handle</td><td>a handle to a TurboJPEG decompressor or transformer instance</td></tr>
-    <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing a JPEG image</td></tr>
-    <tr><td class="paramname">jpegSize</td><td>size of the JPEG image (in bytes)</td></tr>
-    <tr><td class="paramname">width</td><td>pointer to an integer variable that will receive the width (in pixels) of the JPEG image</td></tr>
-    <tr><td class="paramname">height</td><td>pointer to an integer variable that will receive the height (in pixels) of the JPEG image</td></tr>
-    <tr><td class="paramname">jpegSubsamp</td><td>pointer to an integer variable that will receive the level of chrominance subsampling used when the JPEG image was compressed (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.)</td></tr>
-    <tr><td class="paramname">jpegColorspace</td><td>pointer to an integer variable that will receive one of the JPEG colorspace constants, indicating the colorspace of the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga4f83ad3368e0e29d1957be0efa7c3720">JPEG colorspaces</a>.)</td></tr>
+    <tr><td class="paramname">jpegBuf</td><td>pointer to a buffer containing a JPEG image or an "abbreviated table specification" (AKA "tables-only") datastream. Passing a tables-only datastream to this function primes the decompressor with quantization and Huffman tables that can be used when decompressing subsequent "abbreviated image" datastreams. This is useful, for instance, when decompressing video streams in which all frames share the same quantization and Huffman tables.</td></tr>
+    <tr><td class="paramname">jpegSize</td><td>size of the JPEG image or tables-only datastream (in bytes)</td></tr>
+    <tr><td class="paramname">width</td><td>pointer to an integer variable that will receive the width (in pixels) of the JPEG image. If <code>jpegBuf</code> points to a tables-only datastream, then <code>width</code> is ignored.</td></tr>
+    <tr><td class="paramname">height</td><td>pointer to an integer variable that will receive the height (in pixels) of the JPEG image. If <code>jpegBuf</code> points to a tables-only datastream, then <code>height</code> is ignored.</td></tr>
+    <tr><td class="paramname">jpegSubsamp</td><td>pointer to an integer variable that will receive the level of chrominance subsampling used when the JPEG image was compressed (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.) If <code>jpegBuf</code> points to a tables-only datastream, then <code>jpegSubsamp</code> is ignored.</td></tr>
+    <tr><td class="paramname">jpegColorspace</td><td>pointer to an integer variable that will receive one of the JPEG colorspace constants, indicating the colorspace of the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga4f83ad3368e0e29d1957be0efa7c3720">JPEG colorspaces</a>.) If <code>jpegBuf</code> points to a tables-only datastream, then <code>jpegColorspace</code> is ignored.</td></tr>
   </table>
   </dd>
 </dl>

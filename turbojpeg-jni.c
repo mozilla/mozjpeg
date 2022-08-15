@@ -26,8 +26,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include "turbojpeg.h"
 #include "jinclude.h"
 #include <jni.h>

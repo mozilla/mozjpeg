@@ -26,26 +26,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_destroy
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    compress
- * Signature: ([BIIII[BIII)I
- */
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3BIIII_3BIII
-  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
-
-/*
- * Class:     org_libjpegturbo_turbojpeg_TJCompressor
- * Method:    compress
  * Signature: ([BIIIIII[BIII)I
  */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3BIIIIII_3BIII
   (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
-
-/*
- * Class:     org_libjpegturbo_turbojpeg_TJCompressor
- * Method:    compress
- * Signature: ([IIIII[BIII)I
- */
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compress___3IIIII_3BIII
-  (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
@@ -66,26 +50,10 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_compressFrom
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor
  * Method:    encodeYUV
- * Signature: ([BIIII[BII)V
- */
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIII_3BII
-  (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jbyteArray, jint, jint);
-
-/*
- * Class:     org_libjpegturbo_turbojpeg_TJCompressor
- * Method:    encodeYUV
  * Signature: ([BIIIIII[[B[I[III)V
  */
 JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3BIIIIII_3_3B_3I_3III
   (JNIEnv *, jobject, jbyteArray, jint, jint, jint, jint, jint, jint, jobjectArray, jintArray, jintArray, jint, jint);
-
-/*
- * Class:     org_libjpegturbo_turbojpeg_TJCompressor
- * Method:    encodeYUV
- * Signature: ([IIIII[BII)V
- */
-JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_encodeYUV___3IIIII_3BII
-  (JNIEnv *, jobject, jintArray, jint, jint, jint, jint, jbyteArray, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJCompressor

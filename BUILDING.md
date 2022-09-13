@@ -25,9 +25,9 @@ Build Requirements
     variable or the `ASM_NASM` environment variable.  On Windows, use forward
     slashes rather than backslashes in the path (for example,
     **c:/nasm/nasm.exe**).
-  * NASM and Yasm are located in the CRB (Code Ready Builder) repository on
-    Red Hat Enterprise Linux 8 and in the PowerTools repository on RHEL
-    derivatives, which is not enabled by default.
+  * NASM and Yasm are located in the CRB (Code Ready Builder) or PowerTools
+    repository on Red Hat Enterprise Linux 8+ and derivatives, which is not
+    enabled by default.
 
 ### Un*x Platforms (including Linux, Mac, FreeBSD, Solaris, and Cygwin)
 

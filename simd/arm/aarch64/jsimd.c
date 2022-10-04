@@ -23,7 +23,6 @@
 #include "../../../jdct.h"
 #include "../../../jsimddct.h"
 #include "../../jsimd.h"
-#include "jconfigint.h"
 
 #include <ctype.h>
 

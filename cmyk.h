@@ -17,7 +17,6 @@
 #include <jinclude.h>
 #define JPEG_INTERNALS
 #include "jpeglibint.h"
-#include "jconfigint.h"
 
 
 /* Fully reversible */

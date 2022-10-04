@@ -42,7 +42,6 @@
 #include "transupp.h"
 #include "./jpegcomp.h"
 #include "./cdjpeg.h"
-#include "jconfigint.h"
 
 extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **, unsigned long *,
                              boolean);

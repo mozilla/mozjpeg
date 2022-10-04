@@ -21,7 +21,6 @@
 #include "../../jdct.h"
 #include "../../jsimddct.h"
 #include "../jsimd.h"
-#include "jconfigint.h"
 
 /*
  * In the PIC cases, we have no guarantee that constants will keep

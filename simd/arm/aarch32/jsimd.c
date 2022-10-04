@@ -27,8 +27,8 @@
 
 #include <ctype.h>
 
-static unsigned int simd_support = ~0;
-static unsigned int simd_huffman = 1;
+static THREAD_LOCAL unsigned int simd_support = ~0;
+static THREAD_LOCAL unsigned int simd_huffman = 1;
 
 #if !defined(__ARM_NEON__) && (defined(__linux__) || defined(ANDROID) || defined(__ANDROID__))
 
@@ -96,8 +96,6 @@ parse_proc_cpuinfo(int bufsize)
 
 /*
  * Check what SIMD accelerations are supported.
- *
- * FIXME: This code is racy under a multi-threaded environment.
  */
 LOCAL(void)
 init_simd(void)

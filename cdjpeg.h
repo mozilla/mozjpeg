@@ -135,6 +135,7 @@ EXTERN(boolean) read_quant_tables JPP((j_compress_ptr cinfo, char * filename,
 EXTERN(boolean) read_scan_script JPP((j_compress_ptr cinfo, char * filename));
 EXTERN(boolean) set_quant_slots JPP((j_compress_ptr cinfo, char *arg));
 EXTERN(boolean) set_sample_factors JPP((j_compress_ptr cinfo, char *arg));
+EXTERN(boolean) set_simple_lossless JPP((j_compress_ptr cinfo, char *arg));
 
 /* djpeg support routines (in rdcolmap.c) */
 

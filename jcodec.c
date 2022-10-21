@@ -1,8 +1,10 @@
 /*
  * jcodec.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1998, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains utility functions for the JPEG codec(s).

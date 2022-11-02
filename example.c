@@ -47,8 +47,6 @@
 
 #include "jpeglib.h"
 #include "jerror.h"
-#include "jpeg12lib.h"
-#include "j12error.h"
 
 /*
  * <setjmp.h> is used for the optional error recovery mechanism shown in
@@ -72,10 +70,10 @@
  *
  * The standard input image format is a rectangular array of pixels, with
  * each pixel having the same number of "component" values (color channels).
- * Each pixel row is an array of JSAMPLEs (which typically are unsigned chars).
- * If you are working with color data, then the color values for each pixel
- * must be adjacent in the row; for example, R,G,B,R,G,B,R,G,B,... for 24-bit
- * RGB color.
+ * Each pixel row is an array of JSAMPLEs (which typically are unsigned chars)
+ * or J12SAMPLEs (which typically are shorts).  If you are working with color
+ * data, then the color values for each pixel must be adjacent in the row; for
+ * example, R,G,B,R,G,B,R,G,B,... for 24-bit RGB color.
  *
  * For this example, we'll assume that this data structure matches the way
  * our application has stored the image in memory, so we can just pass a
@@ -88,12 +86,12 @@
 
 
 /*
- * Sample routine for JPEG compression with 8-bit data precision.  We assume
- * that the target file name and a compression quality factor are passed in.
+ * Sample routine for JPEG compression.  We assume that the target file name,
+ * a compression quality factor, and a data precision are passed in.
  */
 
 METHODDEF(void)
-write_JPEG_file(char *filename, int quality)
+write_JPEG_file(char *filename, int quality, int data_precision)
 {
   /* This struct contains the JPEG compression parameters and pointers to
    * working space (which is allocated as needed by the JPEG library).
@@ -113,8 +111,15 @@ write_JPEG_file(char *filename, int quality)
   struct jpeg_error_mgr jerr;
   /* More stuff */
   FILE *outfile;                /* target file */
-  JSAMPARRAY image_buffer;      /* Points to large array of R,G,B-order data */
+  JSAMPARRAY image_buffer = NULL;
+                                /* Points to large array of R,G,B-order data */
   JSAMPROW row_pointer[1];      /* pointer to JSAMPLE row[s] */
+#ifdef WITH_12BIT
+  J12SAMPARRAY image_buffer12 = NULL;
+                                /* Points to large array of R,G,B-order 12-bit
+                                   data */
+  J12SAMPROW row_pointer12[1];  /* pointer to J12SAMPLE row[s] */
+#endif
   int row_stride;               /* physical row width in image buffer */
   int row, col;
 
@@ -150,6 +155,7 @@ write_JPEG_file(char *filename, int quality)
   cinfo.image_height = HEIGHT;
   cinfo.input_components = 3;           /* # of color components per pixel */
   cinfo.in_color_space = JCS_RGB;       /* colorspace of input image */
+  cinfo.data_precision = data_precision; /* data precision of input image */
   /* Now use the library's routine to set default compression parameters.
    * (You must set at least cinfo.in_color_space before calling this,
    * since the defaults depend on the source color space.)
@@ -171,25 +177,45 @@ write_JPEG_file(char *filename, int quality)
 
   /* Step 5: allocate and initialize image buffer */
 
-  row_stride = WIDTH * 3;       /* JSAMPLEs per row in image_buffer */
+  row_stride = WIDTH * 3;       /* J[12]SAMPLEs per row in image_buffer */
   /* Make a sample array that will go away when done with image.  Note that,
    * for the purposes of this example, we could also create a one-row-high
    * sample array and initialize it for each successive scanline written in the
    * scanline loop below.
    */
-  image_buffer = (*cinfo.mem->alloc_sarray)
-    ((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, HEIGHT);
+#ifdef WITH_12BIT
+  if (cinfo.data_precision == 12) {
+    image_buffer12 = (J12SAMPARRAY)(*cinfo.mem->alloc_sarray)
+      ((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, HEIGHT);
 
-  /* Initialize image buffer with a repeating pattern */
-  for (row = 0; row < HEIGHT; row++) {
-    for (col = 0; col < WIDTH; col++) {
-      image_buffer[row][col * 3] =
-        (col * (MAXJSAMPLE + 1) / WIDTH) % (MAXJSAMPLE + 1);
-      image_buffer[row][col * 3 + 1] =
-        (row * (MAXJSAMPLE + 1) / HEIGHT) % (MAXJSAMPLE + 1);
-      image_buffer[row][col * 3 + 2] =
-        (row * (MAXJSAMPLE + 1) / HEIGHT + col * (MAXJSAMPLE + 1) / WIDTH) %
-        (MAXJSAMPLE + 1);
+    /* Initialize image buffer with a repeating pattern */
+    for (row = 0; row < HEIGHT; row++) {
+      for (col = 0; col < WIDTH; col++) {
+        image_buffer12[row][col * 3] =
+          (col * (MAXJ12SAMPLE + 1) / WIDTH) % (MAXJ12SAMPLE + 1);
+        image_buffer12[row][col * 3 + 1] =
+          (row * (MAXJ12SAMPLE + 1) / HEIGHT) % (MAXJ12SAMPLE + 1);
+        image_buffer12[row][col * 3 + 2] =
+          (row * (MAXJ12SAMPLE + 1) / HEIGHT +
+           col * (MAXJ12SAMPLE + 1) / WIDTH) % (MAXJ12SAMPLE + 1);
+      }
+    }
+  } else
+#endif
+  {
+    image_buffer = (*cinfo.mem->alloc_sarray)
+      ((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, HEIGHT);
+
+    for (row = 0; row < HEIGHT; row++) {
+      for (col = 0; col < WIDTH; col++) {
+        image_buffer[row][col * 3] =
+          (col * (MAXJSAMPLE + 1) / WIDTH) % (MAXJSAMPLE + 1);
+        image_buffer[row][col * 3 + 1] =
+          (row * (MAXJSAMPLE + 1) / HEIGHT) % (MAXJSAMPLE + 1);
+        image_buffer[row][col * 3 + 2] =
+          (row * (MAXJSAMPLE + 1) / HEIGHT + col * (MAXJSAMPLE + 1) / WIDTH) %
+          (MAXJSAMPLE + 1);
+      }
     }
   }
 
@@ -201,13 +227,27 @@ write_JPEG_file(char *filename, int quality)
    * To keep things simple, we pass one scanline per call; you can pass
    * more if you wish, though.
    */
-  while (cinfo.next_scanline < cinfo.image_height) {
-    /* jpeg_write_scanlines expects an array of pointers to scanlines.
-     * Here the array is only one element long, but you could pass
-     * more than one scanline at a time if that's more convenient.
-     */
-    row_pointer[0] = image_buffer[cinfo.next_scanline];
-    (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
+#ifdef WITH_12BIT
+  if (cinfo.data_precision == 12) {
+    while (cinfo.next_scanline < cinfo.image_height) {
+      /* jpeg12_write_scanlines expects an array of pointers to scanlines.
+       * Here the array is only one element long, but you could pass
+       * more than one scanline at a time if that's more convenient.
+       */
+      row_pointer12[0] = image_buffer12[cinfo.next_scanline];
+      (void)jpeg12_write_scanlines(&cinfo, row_pointer12, 1);
+    }
+  } else
+#endif
+  {
+    while (cinfo.next_scanline < cinfo.image_height) {
+      /* jpeg_write_scanlines expects an array of pointers to scanlines.
+       * Here the array is only one element long, but you could pass
+       * more than one scanline at a time if that's more convenient.
+       */
+      row_pointer[0] = image_buffer[cinfo.next_scanline];
+      (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
   }
 
   /* Step 7: Finish compression */
@@ -254,74 +294,6 @@ write_JPEG_file(char *filename, int quality)
  */
 
 
-/*
- * Sample routine for JPEG compression with 12-bit data precision.  We assume
- * that the target file name and a compression quality factor are passed in.
- */
-
-#ifdef WITH_12BIT
-
-METHODDEF(void)
-write_JPEG12_file(char *filename, int quality)
-{
-  struct jpeg12_compress_struct cinfo;
-  struct jpeg12_error_mgr jerr;
-  FILE *outfile;
-  J12SAMPARRAY image_buffer;
-  J12SAMPROW row_pointer[1];
-  int row_stride;
-  int row, col;
-
-  cinfo.err = jpeg12_std_error(&jerr);
-  jpeg12_create_compress(&cinfo);
-
-  if ((outfile = fopen(filename, "wb")) == NULL)
-    J12ERREXIT(&cinfo, JERR_FILE_WRITE);
-  jpeg12_stdio_dest(&cinfo, outfile);
-
-  cinfo.image_width = WIDTH;
-  cinfo.image_height = HEIGHT;
-  cinfo.input_components = 3;
-  cinfo.in_color_space = JCS_RGB;
-  jpeg12_set_defaults(&cinfo);
-  jpeg12_set_quality(&cinfo, quality, TRUE);
-  cinfo.comp_info[0].h_samp_factor = cinfo.comp_info[0].v_samp_factor = 1;
-
-  jpeg12_start_compress(&cinfo, TRUE);
-
-  row_stride = WIDTH * 3;
-  image_buffer = (*cinfo.mem->alloc_sarray)
-    ((j12_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, HEIGHT);
-
-  /* Initialize image buffer with a repeating pattern */
-  for (row = 0; row < HEIGHT; row++) {
-    for (col = 0; col < WIDTH; col++) {
-      image_buffer[row][col * 3] =
-        (col * (MAXJ12SAMPLE + 1) / WIDTH) % (MAXJ12SAMPLE + 1);
-      image_buffer[row][col * 3 + 1] =
-        (row * (MAXJ12SAMPLE + 1) / HEIGHT) % (MAXJ12SAMPLE + 1);
-      image_buffer[row][col * 3 + 2] =
-        (row * (MAXJ12SAMPLE + 1) / HEIGHT +
-         col * (MAXJ12SAMPLE + 1) / WIDTH) % (MAXJ12SAMPLE + 1);
-    }
-  }
-
-  row_stride = WIDTH * 3;
-
-  while (cinfo.next_scanline < cinfo.image_height) {
-    row_pointer[0] = image_buffer[cinfo.next_scanline];
-    (void)jpeg12_write_scanlines(&cinfo, row_pointer, 1);
-  }
-
-  jpeg12_finish_compress(&cinfo);
-  fclose(outfile);
-
-  jpeg12_destroy_compress(&cinfo);
-}
-
-#endif
-
-
 
 /******************** JPEG DECOMPRESSION SAMPLE INTERFACE *******************/
 
@@ -333,10 +305,11 @@ write_JPEG12_file(char *filename, int quality)
  * Just to make this example a little different from the first one, we'll
  * assume that we do not intend to put the whole image into an in-memory
  * buffer, but to send it line-by-line someplace else.  We need a one-
- * scanline-high JSAMPLE array as a work buffer, and we will let the JPEG
- * memory manager allocate it for us.  This approach is actually quite useful
- * because we don't need to remember to deallocate the buffer separately: it
- * will go away automatically when the JPEG object is cleaned up.
+ * scanline-high JSAMPLE or J12SAMPLE array as a work buffer, and we will let
+ * the JPEG memory manager allocate it for us.  This approach is actually quite
+ * useful because we don't need to remember to deallocate the buffer
+ * separately: it will go away automatically when the JPEG object is cleaned
+ * up.
  */
 
 
@@ -394,9 +367,8 @@ METHODDEF(int) do_read_JPEG_file(struct jpeg_decompress_struct *cinfo,
                                  char *infilename, char *outfilename);
 
 /*
- * Sample routine for JPEG decompression with 8-bit data precision.  We assume
- * that the source file name is passed in.  We want to return 1 on success, 0
- * on error.
+ * Sample routine for JPEG decompression.  We assume that the source file name
+ * is passed in.  We want to return 1 on success, 0 on error.
  */
 
 METHODDEF(int)
@@ -431,6 +403,10 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
   FILE *infile;                 /* source file */
   FILE *outfile;                /* output file */
   JSAMPARRAY buffer;            /* Output row buffer */
+#ifdef WITH_12BIT
+  J12SAMPARRAY buffer12;        /* 12-bit output row buffer */
+  int col;
+#endif
   int row_stride;               /* physical row width in output buffer */
 
   /* In this example we want to open the input and output files before doing
@@ -450,8 +426,6 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
     fclose(infile);
     return 0;
   }
-  /* emit header for raw PPM format */
-  fprintf(outfile, "P6\n%d %d\n%d\n", WIDTH, HEIGHT, MAXJSAMPLE);
 
   /* Step 1: allocate and initialize JPEG decompression object */
 
@@ -484,6 +458,14 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
    * See libjpeg.txt for more info.
    */
 
+  /* emit header for raw PPM format */
+#ifdef WITH_12BIT
+  fprintf(outfile, "P6\n%d %d\n%d\n", WIDTH, HEIGHT,
+          cinfo->data_precision == 12 ? MAXJ12SAMPLE : MAXJSAMPLE);
+#else
+  fprintf(outfile, "P6\n%d %d\n%d\n", WIDTH, HEIGHT, MAXJSAMPLE);
+#endif
+
   /* Step 4: set parameters for decompression */
 
   /* In this example, we don't need to change any of the defaults set by
@@ -503,11 +485,17 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
    * if we asked for color quantization.
    * In this example, we need to make an output work buffer of the right size.
    */
-  /* JSAMPLEs per row in output buffer */
+  /* Samples per row in output buffer */
   row_stride = cinfo->output_width * cinfo->output_components;
   /* Make a one-row-high sample array that will go away when done with image */
-  buffer = (*cinfo->mem->alloc_sarray)
-    ((j_common_ptr)cinfo, JPOOL_IMAGE, row_stride, 1);
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12)
+    buffer12 = (J12SAMPARRAY)(*cinfo->mem->alloc_sarray)
+      ((j_common_ptr)cinfo, JPOOL_IMAGE, row_stride, 1);
+  else
+#endif
+    buffer = (*cinfo->mem->alloc_sarray)
+      ((j_common_ptr)cinfo, JPOOL_IMAGE, row_stride, 1);
 
   /* Step 6: while (scan lines remain to be read) */
   /*           jpeg_read_scanlines(...); */
@@ -515,13 +503,31 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
   /* Here we use the library's state variable cinfo->output_scanline as the
    * loop counter, so that we don't have to keep track ourselves.
    */
-  while (cinfo->output_scanline < cinfo->output_height) {
-    /* jpeg_read_scanlines expects an array of pointers to scanlines.
-     * Here the array is only one element long, but you could ask for
-     * more than one scanline at a time if that's more convenient.
-     */
-    (void)jpeg_read_scanlines(cinfo, buffer, 1);
-    fwrite(buffer[0], 1, row_stride, outfile);
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12) {
+    while (cinfo->output_scanline < cinfo->output_height) {
+      /* jpeg12_read_scanlines expects an array of pointers to scanlines.
+       * Here the array is only one element long, but you could ask for
+       * more than one scanline at a time if that's more convenient.
+       */
+      (void)jpeg12_read_scanlines(cinfo, buffer12, 1);
+      /* Swap MSB and LSB in each sample */
+      for (col = 0; col < row_stride; col++)
+        buffer12[0][col] = ((buffer12[0][col] & 0xFF) << 8) |
+                           ((buffer12[0][col] >> 8) & 0xFF);
+      fwrite(buffer12[0], 1, row_stride * sizeof(J12SAMPLE), outfile);
+    }
+  } else
+#endif
+  {
+    while (cinfo->output_scanline < cinfo->output_height) {
+      /* jpeg_read_scanlines expects an array of pointers to scanlines.
+       * Here the array is only one element long, but you could ask for
+       * more than one scanline at a time if that's more convenient.
+       */
+      (void)jpeg_read_scanlines(cinfo, buffer, 1);
+      fwrite(buffer[0], 1, row_stride, outfile);
+    }
   }
 
   /* Step 7: Finish decompression */
@@ -579,108 +585,6 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
  */
 
 
-#ifdef WITH_12BIT
-
-struct my12_error_mgr {
-  struct jpeg12_error_mgr pub;
-
-  jmp_buf setjmp_buffer;
-};
-
-typedef struct my12_error_mgr *my12_error_ptr;
-
-METHODDEF(void)
-my12_error_exit(j12_common_ptr cinfo)
-{
-  my12_error_ptr myerr = (my12_error_ptr)cinfo->err;
-
-  (*cinfo->err->output_message) (cinfo);
-
-  longjmp(myerr->setjmp_buffer, 1);
-}
-
-METHODDEF(int) do_read_JPEG12_file(struct jpeg12_decompress_struct *cinfo,
-                                   char *infilename, char *outfilename);
-
-/*
- * Sample routine for JPEG decompression with 12-bit data precision.  We assume
- * that the source file name is passed in.  We want to return 1 on success, 0
- * on error.
- */
-
-METHODDEF(int)
-read_JPEG12_file(char *infilename, char *outfilename)
-{
-  struct jpeg12_decompress_struct cinfo;
-
-  return do_read_JPEG12_file(&cinfo, infilename, outfilename);
-}
-
-METHODDEF(int)
-do_read_JPEG12_file(struct jpeg12_decompress_struct *cinfo, char *infilename,
-                    char *outfilename)
-{
-  struct my12_error_mgr jerr;
-  FILE *infile;
-  FILE *outfile;
-  J12SAMPARRAY buffer;
-  int row_stride;
-  int col;
-
-  if ((infile = fopen(infilename, "rb")) == NULL) {
-    fprintf(stderr, "can't open %s\n", infilename);
-    return 0;
-  }
-  if ((outfile = fopen(outfilename, "wb")) == NULL) {
-    fprintf(stderr, "can't open %s\n", outfilename);
-    fclose(infile);
-    return 0;
-  }
-  fprintf(outfile, "P6\n%d %d\n%d\n", WIDTH, HEIGHT, MAXJ12SAMPLE);
-
-  cinfo->err = jpeg12_std_error(&jerr.pub);
-  jerr.pub.error_exit = my12_error_exit;
-  if (setjmp(jerr.setjmp_buffer)) {
-    jpeg12_destroy_decompress(cinfo);
-    fclose(infile);
-    fclose(outfile);
-    return 0;
-  }
-  jpeg12_create_decompress(cinfo);
-
-  jpeg12_stdio_src(cinfo, infile);
-
-  (void)jpeg12_read_header(cinfo, TRUE);
-
-  (void)jpeg12_start_decompress(cinfo);
-
-  row_stride = cinfo->output_width * cinfo->output_components;
-  buffer = (*cinfo->mem->alloc_sarray)
-    ((j12_common_ptr)cinfo, JPOOL_IMAGE, row_stride, 1);
-
-  while (cinfo->output_scanline < cinfo->output_height) {
-    (void)jpeg12_read_scanlines(cinfo, buffer, 1);
-    /* Swap MSB and LSB in each sample */
-    for (col = 0; col < row_stride; col++)
-      buffer[0][col] = ((buffer[0][col] & 0xFF) << 8) |
-                       ((buffer[0][col] >> 8) & 0xFF);
-    fwrite(buffer[0], 1, row_stride * sizeof(J12SAMPLE), outfile);
-  }
-
-  (void)jpeg12_finish_decompress(cinfo);
-
-  jpeg12_destroy_decompress(cinfo);
-
-  fclose(infile);
-  fclose(outfile);
-
-  return 1;
-}
-
-#endif
-
-
-
 LOCAL(void)
 usage(const char *progname)
 {
@@ -690,7 +594,8 @@ usage(const char *progname)
           progname);
   fprintf(stderr, "Switches (names may be abbreviated):\n");
 #ifdef WITH_12BIT
-  fprintf(stderr, "  -12bit         Compress/decompress JPEG file with 12-bit data precision\n");
+  fprintf(stderr, "  -precision N   Create JPEG file with N-bit data precision\n");
+  fprintf(stderr, "                 (N is 8 or 12; default is 8)\n");
 #endif
   fprintf(stderr, "  -quality N     Compression quality (0..100; 5-95 is most useful range,\n");
   fprintf(stderr, "                 default is 75)\n");
@@ -709,9 +614,7 @@ int
 main(int argc, char **argv)
 {
   int argn, quality = 75;
-#ifdef WITH_12BIT
-  int _12bit = 0;
-#endif
+  int data_precision = 8;
   EXAMPLE_MODE mode = -1;
   char *arg, *filename = NULL;
 
@@ -735,9 +638,14 @@ main(int argc, char **argv)
     arg++;                      /* advance past switch marker character */
 
 #ifdef WITH_12BIT
-    if (!strncasecmp(arg, "1", 1))
-      _12bit = 1;
-    else
+    if (!strncasecmp(arg, "p", 1)) {
+      /* Set data precision. */
+      if (++argn >= argc)       /* advance to next argument */
+        usage(argv[0]);
+      if (sscanf(argv[argn], "%d", &data_precision) < 1 ||
+          (data_precision != 8 && data_precision != 12))
+        usage(argv[0]);
+    } else
 #endif
     if (!strncasecmp(arg, "q", 1)) {
       /* Quality rating (quantization table scaling factor). */
@@ -754,23 +662,13 @@ main(int argc, char **argv)
   if (!filename)
     usage(argv[0]);
 
-  if (mode == COMPRESS) {
-#ifdef WITH_12BIT
-    if (_12bit)
-      write_JPEG12_file(filename, quality);
-    else
-#endif
-      write_JPEG_file(filename, quality);
-  } else if (mode == DECOMPRESS) {
+  if (mode == COMPRESS)
+    write_JPEG_file(filename, quality, data_precision);
+  else if (mode == DECOMPRESS) {
     if (argc - argn < 2)
       usage(argv[0]);
 
-#ifdef WITH_12BIT
-    if (_12bit)
-      read_JPEG12_file(argv[argn], argv[argn + 1]);
-    else
-#endif
-      read_JPEG_file(argv[argn], argv[argn + 1]);
+    read_JPEG_file(argv[argn], argv[argn + 1]);
   }
 
   return 0;

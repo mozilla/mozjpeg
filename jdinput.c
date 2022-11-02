@@ -17,8 +17,8 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
-#include "jpegcomp.h"
+#include "jpeglib.h"
+#include "jpegapicomp.h"
 
 
 /* Private state */
@@ -53,7 +53,7 @@ initial_setup(j_decompress_ptr cinfo)
     ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int)JPEG_MAX_DIMENSION);
 
   /* For now, precision must match compiled-in value... */
-  if (cinfo->data_precision != BITS_IN_JSAMPLE)
+  if (cinfo->data_precision != 8 && cinfo->data_precision != 12)
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 
   /* Check that number of components won't exceed internal array sizes */

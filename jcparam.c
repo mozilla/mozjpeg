@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2008 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2018, 2022, D. R. Commander.
+ * Copyright (C) 2009-2011, 2018, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -16,7 +16,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
+#include "jpeglib.h"
 #include "jstdhuff.c"
 
 
@@ -202,7 +202,6 @@ jpeg_set_defaults(j_compress_ptr cinfo)
   cinfo->scale_num = 1;         /* 1:1 scaling */
   cinfo->scale_denom = 1;
 #endif
-  cinfo->data_precision = BITS_IN_JSAMPLE;
   /* Set up two quantization tables using default quality of 75 */
   jpeg_set_quality(cinfo, 75, TRUE);
   /* Set up two Huffman tables */

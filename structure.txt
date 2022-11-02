@@ -450,9 +450,9 @@ shown are:
   is not used for full-color output.  Works on one pixel row at a time; may
   require two passes to generate a color map.  Note that the output will
   always be a single component representing colormap indexes.  In the current
-  design, the output values are JSAMPLEs, so an 8-bit compilation cannot
-  quantize to more than 256 colors.  This is unlikely to be a problem in
-  practice.
+  design, the output values are JSAMPLEs or J12SAMPLEs, so the library cannot
+  quantize to more than 256 colors when using 8-bit data precision.  This is
+  unlikely to be a problem in practice.
 
 * Color reduction: this module handles color precision reduction, e.g.,
   generating 15-bit color (5 bits/primary) from JPEG's 24-bit output.
@@ -538,28 +538,35 @@ there isn't any real need for it.
 
 *** Data formats ***
 
-Arrays of pixel sample values use the following data structure:
+Arrays of 8-bit pixel sample values use the following data structure:
 
     typedef something JSAMPLE;          a pixel component value, 0..MAXJSAMPLE
     typedef JSAMPLE *JSAMPROW;          ptr to a row of samples
     typedef JSAMPROW *JSAMPARRAY;       ptr to a list of rows
     typedef JSAMPARRAY *JSAMPIMAGE;     ptr to a list of color-component arrays
 
-The basic element type JSAMPLE will be one of unsigned char or short.  Short
-will be used if samples wider than 8 bits are to be supported (this is a
-compile-time option).  Otherwise, unsigned char is used.
+Arrays of 12-bit pixel sample values use the following data structure:
 
-With these conventions, JSAMPLE values can be assumed to be >= 0.  This helps
+    typedef something J12SAMPLE;        a pixel component value, 0..MAXJ12SAMPLE
+    typedef J12SAMPLE *J12SAMPROW;      ptr to a row of samples
+    typedef J12SAMPROW *J12SAMPARRAY;   ptr to a list of rows
+    typedef J12SAMPARRAY *J12SAMPIMAGE; ptr to a list of color-component arrays
+
+The basic element type JSAMPLE (8-bit sample) will be unsigned char, and the
+basic element type J12SAMPLE (12-bit sample) with be short.
+
+With these conventions, J*SAMPLE values can be assumed to be >= 0.  This helps
 simplify correct rounding during downsampling, etc.  The JPEG standard's
-specification that sample values run from -128..127 is accommodated by
+specification that 8-bit sample values run from -128..127 is accommodated by
 subtracting 128 from the sample value in the DCT step.  Similarly, during
 decompression the output of the IDCT step will be immediately shifted back to
-0..255.  (NB: different values are required when 12-bit samples are in use.
-The code is written in terms of MAXJSAMPLE and CENTERJSAMPLE, which will be
-defined as 255 and 128 respectively in an 8-bit implementation, and as 4095
-and 2048 in a 12-bit implementation.)
+0..255.  (NOTE: different values are required when 12-bit samples are in use.
+When 8-bit samples are in use, the code uses MAXJSAMPLE and CENTERJSAMPLE,
+which are defined as 255 and 128 respectively.  When 12-bit samples are in use,
+the code uses MAXJ12SAMPLE and CENTERJ12SAMPLE, which are defined as 4095 and
+2048 respectively.)
 
-We use a pointer per row, rather than a two-dimensional JSAMPLE array.  This
+We use a pointer per row, rather than a two-dimensional J*SAMPLE array.  This
 choice costs only a small amount of memory and has several benefits:
 * Code using the data structure doesn't need to know the allocated width of
   the rows.  This simplifies edge expansion/compression, since we can work
@@ -589,9 +596,9 @@ be precomputed by copying the relevant pointer.
 Since most image-processing applications prefer to work on images in which
 the components of a pixel are stored together, the data passed to or from the
 surrounding application uses the traditional convention: a single pixel is
-represented by N consecutive JSAMPLE values, and an image row is an array of
-(# of color components)*(image width) JSAMPLEs.  One or more rows of data can
-be represented by a pointer of type JSAMPARRAY in this scheme.  This scheme is
+represented by N consecutive J*SAMPLE values, and an image row is an array of
+(# of color components)*(image width) J*SAMPLEs.  One or more rows of data can
+be represented by a pointer of type J*SAMPARRAY in this scheme.  This scheme is
 converted to component-wise storage inside the JPEG library.  (Applications
 that want to skip JPEG preprocessing or postprocessing will have to contend
 with component-wise storage.)
@@ -730,17 +737,17 @@ The memory manager deals with three kinds of object:
    pointers on MS-DOS machines.)  Note that individual "large" objects cannot
    exceed the size allowed by type size_t, which may be 64K or less on some
    machines.
-3. "Virtual" objects.  These are large 2-D arrays of JSAMPLEs or JBLOCKs
+3. "Virtual" objects.  These are large 2-D arrays of J*SAMPLEs or JBLOCKs
    (typically large enough for the entire image being processed).  The
    memory manager provides stripwise access to these arrays.  On machines
    without virtual memory, the rest of the array may be swapped out to a
    temporary file.
 
-(Note: JSAMPARRAY and JBLOCKARRAY data structures are a combination of large
+(Note: J*SAMPARRAY and JBLOCKARRAY data structures are a combination of large
 objects for the data proper and small objects for the row pointers.  For
 convenience and speed, the memory manager provides single routines to create
 these structures.  Similarly, virtual arrays include a small control block
-and a JSAMPARRAY or JBLOCKARRAY working buffer, all created with one call.)
+and a J*SAMPARRAY or JBLOCKARRAY working buffer, all created with one call.)
 
 In the present implementation, virtual arrays are only permitted to have image
 lifespan.  (Permanent lifespan would not be reasonable, and pass lifespan is
@@ -767,7 +774,7 @@ To support all this, we establish the following protocol for doing business
 with the memory manager:
   1. Modules must request virtual arrays (which may have only image lifespan)
      during the initial setup phase, i.e., in their jinit_xxx routines.
-  2. All "large" objects (including JSAMPARRAYs and JBLOCKARRAYs) must also be
+  2. All "large" objects (including J*SAMPARRAYs and JBLOCKARRAYs) must also be
      allocated during initial setup.
   3. realize_virt_arrays will be called at the completion of initial setup.
      The above conventions ensure that sufficient information is available

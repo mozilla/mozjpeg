@@ -47,23 +47,12 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 !endif
 !ifdef GCC
 	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg-@SO_MAJOR_VERSION@.dll"
-!ifdef 12BIT
-	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg12-@SO_MAJOR_VERSION@.dll"
-!endif
 !else
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg@SO_MAJOR_VERSION@.dll"
-!ifdef 12BIT
-	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg12-@SO_MAJOR_VERSION@.dll"
-!endif
 !endif
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}cjpeg.exe"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}djpeg.exe"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpegtran.exe"
-!ifdef 12BIT
-	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}cjpeg12.exe"
-	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}djpeg12.exe"
-	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg12tran.exe"
-!endif
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}tjbench.exe"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}rdjpgcom.exe"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}wrjpgcom.exe"
@@ -73,25 +62,14 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libturbojpeg.a"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg.dll.a"
 	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg.a"
-!ifdef 12BIT
-	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg12.dll.a"
-	File "@CMAKE_CURRENT_BINARY_DIR@\libjpeg12.a"
-!endif
 !else
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}turbojpeg.lib"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}turbojpeg-static.lib"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg.lib"
 	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg-static.lib"
-!ifdef 12BIT
-	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg12.lib"
-	File "@CMAKE_CURRENT_BINARY_DIR@\${BUILDDIR}jpeg12-static.lib"
-!endif
 !endif
 	SetOutPath $INSTDIR\lib\pkgconfig
 	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libjpeg.pc"
-!ifdef 12BIT
-	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libjpeg12.pc"
-!endif
 	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\libturbojpeg.pc"
 	SetOutPath $INSTDIR\lib\cmake\@CMAKE_PROJECT_NAME@
 	File "@CMAKE_CURRENT_BINARY_DIR@\pkgscripts\@CMAKE_PROJECT_NAME@Config.cmake"
@@ -107,10 +85,6 @@ Section "@CMAKE_PROJECT_NAME@ SDK for @INST_PLATFORM@ (required)"
 	File "@CMAKE_CURRENT_SOURCE_DIR@\jerror.h"
 	File "@CMAKE_CURRENT_SOURCE_DIR@\jmorecfg.h"
 	File "@CMAKE_CURRENT_SOURCE_DIR@\jpeglib.h"
-!ifdef 12BIT
-	File "@CMAKE_CURRENT_SOURCE_DIR@\jpeg12lib.h"
-	File "@CMAKE_CURRENT_SOURCE_DIR@\j12error.h"
-!endif
 	File "@CMAKE_CURRENT_SOURCE_DIR@\turbojpeg.h"
 	SetOutPath $INSTDIR\doc
 	File "@CMAKE_CURRENT_SOURCE_DIR@\README.ijg"
@@ -155,39 +129,22 @@ Section "Uninstall"
 
 !ifdef GCC
 	Delete $INSTDIR\bin\libjpeg-@SO_MAJOR_VERSION@.dll
-!ifdef 12BIT
-	Delete $INSTDIR\bin\libjpeg12-@SO_MAJOR_VERSION@.dll
-!endif
 	Delete $INSTDIR\bin\libturbojpeg.dll
 	Delete $SYSDIR\libturbojpeg.dll
 	Delete $INSTDIR\lib\libturbojpeg.dll.a
 	Delete $INSTDIR\lib\libturbojpeg.a
 	Delete $INSTDIR\lib\libjpeg.dll.a
 	Delete $INSTDIR\lib\libjpeg.a
-!ifdef 12BIT
-	Delete $INSTDIR\lib\libjpeg12.dll.a
-	Delete $INSTDIR\lib\libjpeg12.a
-!endif
 !else
 	Delete $INSTDIR\bin\jpeg@SO_MAJOR_VERSION@.dll
-!ifdef 12BIT
-	Delete $INSTDIR\bin\jpeg12-@SO_MAJOR_VERSION@.dll
-!endif
 	Delete $INSTDIR\bin\turbojpeg.dll
 	Delete $SYSDIR\turbojpeg.dll
 	Delete $INSTDIR\lib\jpeg.lib
 	Delete $INSTDIR\lib\jpeg-static.lib
-!ifdef 12BIT
-	Delete $INSTDIR\lib\jpeg12.lib
-	Delete $INSTDIR\lib\jpeg12-static.lib
-!endif
 	Delete $INSTDIR\lib\turbojpeg.lib
 	Delete $INSTDIR\lib\turbojpeg-static.lib
 !endif
 	Delete $INSTDIR\lib\pkgconfig\libjpeg.pc
-!ifdef 12BIT
-	Delete $INSTDIR\lib\pkgconfig\libjpeg12.pc
-!endif
 	Delete $INSTDIR\lib\pkgconfig\libturbojpeg.pc
 	Delete $INSTDIR\lib\cmake\@CMAKE_PROJECT_NAME@\@CMAKE_PROJECT_NAME@Config.cmake
 	Delete $INSTDIR\lib\cmake\@CMAKE_PROJECT_NAME@\@CMAKE_PROJECT_NAME@ConfigVersion.cmake
@@ -199,11 +156,6 @@ Section "Uninstall"
 	Delete $INSTDIR\bin\cjpeg.exe
 	Delete $INSTDIR\bin\djpeg.exe
 	Delete $INSTDIR\bin\jpegtran.exe
-!ifdef 12BIT
-	Delete $INSTDIR\bin\cjpeg12.exe
-	Delete $INSTDIR\bin\djpeg12.exe
-	Delete $INSTDIR\bin\jpeg12tran.exe
-!endif
 	Delete $INSTDIR\bin\tjbench.exe
 	Delete $INSTDIR\bin\rdjpgcom.exe
 	Delete $INSTDIR\bin\wrjpgcom.exe
@@ -211,9 +163,6 @@ Section "Uninstall"
 	Delete $INSTDIR\include\jerror.h
 	Delete $INSTDIR\include\jmorecfg.h
 	Delete $INSTDIR\include\jpeglib.h
-!ifdef 12BIT
-	Delete $INSTDIR\include\jpeg12lib.h
-!endif
 	Delete $INSTDIR\include\turbojpeg.h
 	Delete $INSTDIR\uninstall_@VERSION@.exe
 	Delete $INSTDIR\doc\README.ijg

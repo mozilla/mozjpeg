@@ -10,14 +10,15 @@
  */
 
 #define JPEG_INTERNALS
-#include "jpeglibint.h"
+#include "jpeglib.h"
+#include "jsamplecomp.h"
 
 
 /* Pointer to routine to upsample a single component */
 typedef void (*upsample1_ptr) (j_decompress_ptr cinfo,
                                jpeg_component_info *compptr,
-                               JSAMPARRAY input_data,
-                               JSAMPARRAY *output_data_ptr);
+                               _JSAMPARRAY input_data,
+                               _JSAMPARRAY *output_data_ptr);
 
 /* Private subobject */
 
@@ -31,7 +32,7 @@ typedef struct {
    * ie do not need rescaling.  The corresponding entry of color_buf[] is
    * simply set to point to the input data array, thereby avoiding copying.
    */
-  JSAMPARRAY color_buf[MAX_COMPONENTS];
+  _JSAMPARRAY color_buf[MAX_COMPONENTS];
 
   /* Per-component upsampling method pointers */
   upsample1_ptr methods[MAX_COMPONENTS];

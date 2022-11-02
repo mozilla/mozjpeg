@@ -2,7 +2,7 @@
  * jcicc.c
  *
  * Copyright (C) 1997-1998, Thomas G. Lane, Todd Newman.
- * Copyright (C) 2017, 2022, D. R. Commander.
+ * Copyright (C) 2017, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -15,8 +15,8 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
-#include "jerrorint.h"
+#include "jpeglib.h"
+#include "jerror.h"
 
 
 /*

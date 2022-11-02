@@ -19,8 +19,8 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
-#include "jpegcomp.h"
+#include "jpeglib.h"
+#include "jpegapicomp.h"
 #include "jdmaster.h"
 
 
@@ -409,27 +409,58 @@ prepare_range_limit_table(j_decompress_ptr cinfo)
 /* Allocate and fill in the sample_range_limit table */
 {
   JSAMPLE *table;
+#ifdef WITH_12BIT
+  J12SAMPLE *table12;
+#endif
   int i;
 
-  table = (JSAMPLE *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
-                (5 * (MAXJSAMPLE + 1) + CENTERJSAMPLE) * sizeof(JSAMPLE));
-  table += (MAXJSAMPLE + 1);    /* allow negative subscripts of simple table */
-  cinfo->sample_range_limit = table;
-  /* First segment of "simple" table: limit[x] = 0 for x < 0 */
-  memset(table - (MAXJSAMPLE + 1), 0, (MAXJSAMPLE + 1) * sizeof(JSAMPLE));
-  /* Main part of "simple" table: limit[x] = x */
-  for (i = 0; i <= MAXJSAMPLE; i++)
-    table[i] = (JSAMPLE)i;
-  table += CENTERJSAMPLE;       /* Point to where post-IDCT table starts */
-  /* End of simple table, rest of first half of post-IDCT table */
-  for (i = CENTERJSAMPLE; i < 2 * (MAXJSAMPLE + 1); i++)
-    table[i] = MAXJSAMPLE;
-  /* Second half of post-IDCT table */
-  memset(table + (2 * (MAXJSAMPLE + 1)), 0,
-         (2 * (MAXJSAMPLE + 1) - CENTERJSAMPLE) * sizeof(JSAMPLE));
-  memcpy(table + (4 * (MAXJSAMPLE + 1) - CENTERJSAMPLE),
-         cinfo->sample_range_limit, CENTERJSAMPLE * sizeof(JSAMPLE));
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12) {
+    table12 = (J12SAMPLE *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                  (5 * (MAXJ12SAMPLE + 1) + CENTERJ12SAMPLE) *
+                  sizeof(J12SAMPLE));
+    table12 += (MAXJ12SAMPLE + 1);  /* allow negative subscripts of simple
+                                       table */
+    cinfo->sample_range_limit = (JSAMPLE *)table12;
+    /* First segment of "simple" table: limit[x] = 0 for x < 0 */
+    memset(table12 - (MAXJ12SAMPLE + 1), 0,
+           (MAXJ12SAMPLE + 1) * sizeof(J12SAMPLE));
+    /* Main part of "simple" table: limit[x] = x */
+    for (i = 0; i <= MAXJ12SAMPLE; i++)
+      table12[i] = (J12SAMPLE)i;
+    table12 += CENTERJ12SAMPLE; /* Point to where post-IDCT table starts */
+    /* End of simple table, rest of first half of post-IDCT table */
+    for (i = CENTERJ12SAMPLE; i < 2 * (MAXJ12SAMPLE + 1); i++)
+      table12[i] = MAXJ12SAMPLE;
+    /* Second half of post-IDCT table */
+    memset(table12 + (2 * (MAXJ12SAMPLE + 1)), 0,
+           (2 * (MAXJ12SAMPLE + 1) - CENTERJ12SAMPLE) * sizeof(J12SAMPLE));
+    memcpy(table12 + (4 * (MAXJ12SAMPLE + 1) - CENTERJ12SAMPLE),
+           cinfo->sample_range_limit, CENTERJ12SAMPLE * sizeof(J12SAMPLE));
+  } else
+#endif
+  {
+    table = (JSAMPLE *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                  (5 * (MAXJSAMPLE + 1) + CENTERJSAMPLE) * sizeof(JSAMPLE));
+    table += (MAXJSAMPLE + 1);  /* allow negative subscripts of simple table */
+    cinfo->sample_range_limit = table;
+    /* First segment of "simple" table: limit[x] = 0 for x < 0 */
+    memset(table - (MAXJSAMPLE + 1), 0, (MAXJSAMPLE + 1) * sizeof(JSAMPLE));
+    /* Main part of "simple" table: limit[x] = x */
+    for (i = 0; i <= MAXJSAMPLE; i++)
+      table[i] = (JSAMPLE)i;
+    table += CENTERJSAMPLE;     /* Point to where post-IDCT table starts */
+    /* End of simple table, rest of first half of post-IDCT table */
+    for (i = CENTERJSAMPLE; i < 2 * (MAXJSAMPLE + 1); i++)
+      table[i] = MAXJSAMPLE;
+    /* Second half of post-IDCT table */
+    memset(table + (2 * (MAXJSAMPLE + 1)), 0,
+           (2 * (MAXJSAMPLE + 1) - CENTERJSAMPLE) * sizeof(JSAMPLE));
+    memcpy(table + (4 * (MAXJSAMPLE + 1) - CENTERJSAMPLE),
+           cinfo->sample_range_limit, CENTERJSAMPLE * sizeof(JSAMPLE));
+  }
 }
 
 
@@ -495,7 +526,12 @@ master_selection(j_decompress_ptr cinfo)
 
     if (cinfo->enable_1pass_quant) {
 #ifdef QUANT_1PASS_SUPPORTED
-      jinit_1pass_quantizer(cinfo);
+#ifdef WITH_12BIT
+      if (cinfo->data_precision == 12)
+        j12init_1pass_quantizer(cinfo);
+      else
+#endif
+        jinit_1pass_quantizer(cinfo);
       master->quantizer_1pass = cinfo->cquantize;
 #else
       ERREXIT(cinfo, JERR_NOT_COMPILED);
@@ -505,7 +541,12 @@ master_selection(j_decompress_ptr cinfo)
     /* We use the 2-pass code to map to external colormaps. */
     if (cinfo->enable_2pass_quant || cinfo->enable_external_quant) {
 #ifdef QUANT_2PASS_SUPPORTED
-      jinit_2pass_quantizer(cinfo);
+#ifdef WITH_12BIT
+      if (cinfo->data_precision == 12)
+        j12init_2pass_quantizer(cinfo);
+      else
+#endif
+        jinit_2pass_quantizer(cinfo);
       master->quantizer_2pass = cinfo->cquantize;
 #else
       ERREXIT(cinfo, JERR_NOT_COMPILED);
@@ -516,22 +557,44 @@ master_selection(j_decompress_ptr cinfo)
      */
   }
 
-  /* Post-processing: in particular, color conversion first */
-  if (!cinfo->raw_data_out) {
-    if (master->using_merged_upsample) {
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12) {
+    /* Post-processing: in particular, color conversion first */
+    if (!cinfo->raw_data_out) {
+      if (master->using_merged_upsample) {
 #ifdef UPSAMPLE_MERGING_SUPPORTED
-      jinit_merged_upsampler(cinfo); /* does color conversion too */
+        j12init_merged_upsampler(cinfo); /* does color conversion too */
 #else
-      ERREXIT(cinfo, JERR_NOT_COMPILED);
+        ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
-    } else {
-      jinit_color_deconverter(cinfo);
-      jinit_upsampler(cinfo);
+      } else {
+        j12init_color_deconverter(cinfo);
+        j12init_upsampler(cinfo);
+      }
+      j12init_d_post_controller(cinfo, cinfo->enable_2pass_quant);
     }
-    jinit_d_post_controller(cinfo, cinfo->enable_2pass_quant);
+    /* Inverse DCT */
+    j12init_inverse_dct(cinfo);
+  } else
+#endif
+  {
+    /* Post-processing: in particular, color conversion first */
+    if (!cinfo->raw_data_out) {
+      if (master->using_merged_upsample) {
+#ifdef UPSAMPLE_MERGING_SUPPORTED
+        jinit_merged_upsampler(cinfo); /* does color conversion too */
+#else
+        ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+      } else {
+        jinit_color_deconverter(cinfo);
+        jinit_upsampler(cinfo);
+      }
+      jinit_d_post_controller(cinfo, cinfo->enable_2pass_quant);
+    }
+    /* Inverse DCT */
+    jinit_inverse_dct(cinfo);
   }
-  /* Inverse DCT */
-  jinit_inverse_dct(cinfo);
   /* Entropy decoding: either Huffman or arithmetic coding. */
   if (cinfo->arith_code) {
 #ifdef D_ARITH_CODING_SUPPORTED
@@ -552,10 +615,21 @@ master_selection(j_decompress_ptr cinfo)
 
   /* Initialize principal buffer controllers. */
   use_c_buffer = cinfo->inputctl->has_multiple_scans || cinfo->buffered_image;
-  jinit_d_coef_controller(cinfo, use_c_buffer);
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12) {
+    j12init_d_coef_controller(cinfo, use_c_buffer);
 
-  if (!cinfo->raw_data_out)
-    jinit_d_main_controller(cinfo, FALSE /* never need full buffer here */);
+    if (!cinfo->raw_data_out)
+      j12init_d_main_controller(cinfo,
+                                FALSE /* never need full buffer here */);
+  } else
+#endif
+  {
+    jinit_d_coef_controller(cinfo, use_c_buffer);
+
+    if (!cinfo->raw_data_out)
+      jinit_d_main_controller(cinfo, FALSE /* never need full buffer here */);
+  }
 
   /* We can now tell the memory manager to allocate virtual arrays. */
   (*cinfo->mem->realize_virt_arrays) ((j_common_ptr)cinfo);

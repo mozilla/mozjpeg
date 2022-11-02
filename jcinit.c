@@ -20,8 +20,8 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
-#include "jpegcomp.h"
+#include "jpeglib.h"
+#include "jpegapicomp.h"
 
 
 /*
@@ -36,14 +36,29 @@ jinit_compress_master(j_compress_ptr cinfo)
   /* Initialize master control (includes parameter checking/processing) */
   jinit_c_master_control(cinfo, FALSE /* full compression */);
 
-  /* Preprocessing */
-  if (!cinfo->raw_data_in) {
-    jinit_color_converter(cinfo);
-    jinit_downsampler(cinfo);
-    jinit_c_prep_controller(cinfo, FALSE /* never need full buffer here */);
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12) {
+    /* Preprocessing */
+    if (!cinfo->raw_data_in) {
+      j12init_color_converter(cinfo);
+      j12init_downsampler(cinfo);
+      j12init_c_prep_controller(cinfo,
+                                FALSE /* never need full buffer here */);
+    }
+    /* Forward DCT */
+    j12init_forward_dct(cinfo);
+  } else
+#endif
+  {
+    /* Preprocessing */
+    if (!cinfo->raw_data_in) {
+      jinit_color_converter(cinfo);
+      jinit_downsampler(cinfo);
+      jinit_c_prep_controller(cinfo, FALSE /* never need full buffer here */);
+    }
+    /* Forward DCT */
+    jinit_forward_dct(cinfo);
   }
-  /* Forward DCT */
-  jinit_forward_dct(cinfo);
   /* Entropy encoding: either Huffman or arithmetic coding. */
   if (cinfo->arith_code) {
 #ifdef C_ARITH_CODING_SUPPORTED
@@ -63,9 +78,18 @@ jinit_compress_master(j_compress_ptr cinfo)
   }
 
   /* Need a full-image coefficient buffer in any multi-pass mode. */
-  jinit_c_coef_controller(cinfo, (boolean)(cinfo->num_scans > 1 ||
-                                           cinfo->optimize_coding));
-  jinit_c_main_controller(cinfo, FALSE /* never need full buffer here */);
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12) {
+    j12init_c_coef_controller(cinfo, (boolean)(cinfo->num_scans > 1 ||
+                                               cinfo->optimize_coding));
+    j12init_c_main_controller(cinfo, FALSE /* never need full buffer here */);
+  } else
+#endif
+  {
+    jinit_c_coef_controller(cinfo, (boolean)(cinfo->num_scans > 1 ||
+                                             cinfo->optimize_coding));
+    jinit_c_main_controller(cinfo, FALSE /* never need full buffer here */);
+  }
 
   jinit_marker_writer(cinfo);
 

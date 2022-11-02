@@ -267,19 +267,32 @@ report_option(WITH_ARITH_ENC "Arithmetic encoding support")
 report_option(WITH_TURBOJPEG "TurboJPEG API library")
 report_option(WITH_JAVA "TurboJPEG Java wrapper")
 
+if(NOT WITH_JPEG8)
+  set(MEM_SRCDST_FUNCTIONS "global:  jpeg_mem_dest;  jpeg_mem_src;")
+endif()
+
 # 0: Original libjpeg v6b/v7/v8 API/ABI
 #
 # libjpeg v6b/v7 API/ABI emulation:
 # 1: + In-memory source/destination managers (libjpeg-turbo 1.3.x)
 # 2: + Partial image decompression functions (libjpeg-turbo 1.5.x)
 # 3: + ICC functions (libjpeg-turbo 2.0.x)
+# 4: + 12-bit-per-component functions (libjpeg-turbo 2.2.x)
 #
 # libjpeg v8 API/ABI emulation:
 # 1: + Partial image decompression functions (libjpeg-turbo 1.5.x)
 # 2: + ICC functions (libjpeg-turbo 2.0.x)
-set(SO_AGE 2)
-if(NOT WITH_JPEG8)
+# 3: + 12-bit-per-component functions (libjpeg-turbo 2.2.x)
+if(WITH_12BIT)
   set(SO_AGE 3)
+  if(NOT WITH_JPEG8)
+    set(SO_AGE 4)
+  endif()
+else()
+  set(SO_AGE 2)
+  if(NOT WITH_JPEG8)
+    set(SO_AGE 3)
+  endif()
 endif()
 
 if(WITH_JPEG8)
@@ -519,18 +532,7 @@ configure_file(jconfig.h.in jconfig.h)
 configure_file(jconfigint.h.in jconfigint.h)
 configure_file(jversion.h.in jversion.h)
 if(UNIX)
-  if(NOT WITH_JPEG8)
-    set(MEM_SRCDST_FUNCTIONS "global:  jpeg_mem_dest;  jpeg_mem_src;")
-  endif()
-  set(SIMD_FUNCTIONS "jsimd_*")
   configure_file(libjpeg.map.in libjpeg.map)
-  if(WITH_12BIT)
-    if(NOT WITH_JPEG8)
-      set(MEM_SRCDST_FUNCTIONS "global:  jpeg12_mem_dest;  jpeg12_mem_src;")
-    endif()
-    set(SIMD_FUNCTIONS "jsimd12_*")
-    configure_file(libjpeg.map.in libjpeg12.map)
-  endif()
 endif()
 
 # Include directories and compiler definitions
@@ -546,15 +548,13 @@ if(CMAKE_EXECUTABLE_SUFFIX_TMP)
 endif()
 message(STATUS "CMAKE_EXECUTABLE_SUFFIX = ${CMAKE_EXECUTABLE_SUFFIX}")
 
-set(JPEG12_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c
-  jchuff.c jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c
-  jcparam.c jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c
-  jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c
-  jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c
-  jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c
-  jidctfst.c jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c
-  jmemnobs.c)
-set(JPEG_SOURCES ${JPEG12_SOURCES})
+set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
+  jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
+  jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
+  jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c jdinput.c
+  jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c
+  jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
+  jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
 
 if(WITH_ARITH_ENC OR WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jaricom.c)
@@ -566,6 +566,17 @@ endif()
 
 if(WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jdarith.c)
+endif()
+
+if(WITH_12BIT)
+  # Compile a separate version of these source files with 12-bit data
+  # precision.
+  add_library(jpeg12 OBJECT jcapistd.c jccoefct.c jccolor.c jcdctmgr.c
+    jcmainct.c jcprepct.c jcsample.c jdapistd.c jdcoefct.c jdcolor.c jddctmgr.c
+    jdmainct.c jdmerge.c jdpostct.c jdsample.c jfdctfst.c jfdctint.c jidctflt.c
+    jidctfst.c jidctint.c jidctred.c jquant1.c jquant2.c jutils.c)
+  set_property(TARGET jpeg12 PROPERTY COMPILE_FLAGS "-DBITS_IN_JSAMPLE=12")
+  set(JPEG12_OBJS $<TARGET_OBJECTS:jpeg12>)
 endif()
 
 if(WITH_SIMD)
@@ -598,18 +609,9 @@ endif()
 
 if(ENABLE_STATIC)
   add_library(jpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
-    ${SIMD_OBJS})
+    ${SIMD_OBJS} ${JPEG12_OBJS})
   if(NOT MSVC)
     set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
-  endif()
-
-  if(WITH_12BIT)
-    add_library(jpeg12-static STATIC ${JPEG12_SOURCES} jsimd_none.c)
-    set_property(TARGET jpeg12-static PROPERTY COMPILE_FLAGS
-      "-DBITS_IN_JSAMPLE=12")
-    if(NOT MSVC)
-      set_target_properties(jpeg12-static PROPERTIES OUTPUT_NAME jpeg12)
-    endif()
   endif()
 endif()
 
@@ -617,7 +619,7 @@ if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} $<TARGET_OBJECTS:simd> ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
-      wrbmp.c wrppm.c)
+      wrbmp.c wrppm.c ${JPEG12_OBJS})
     set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile)
     if(WITH_JAVA)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
@@ -669,7 +671,7 @@ if(WITH_TURBOJPEG)
   if(ENABLE_STATIC)
     add_library(turbojpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
       ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c
-      rdppm.c wrbmp.c wrppm.c)
+      rdppm.c wrbmp.c wrppm.c ${JPEG12_OBJS})
     set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS
       "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(NOT MSVC)
@@ -691,49 +693,44 @@ endif()
 if(WIN32)
   set(USE_SETMODE "-DUSE_SETMODE")
 endif()
+set(CDJPEG_COMPILE_FLAGS
+  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 
 if(ENABLE_STATIC)
+  if(WITH_12BIT)
+    # Compile a separate version of these source files with 12-bit data
+    # precision.
+    add_library(cjpeg12-static OBJECT rdgif.c rdppm.c)
+    set_property(TARGET cjpeg12-static PROPERTY COMPILE_FLAGS
+      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+    set(CJPEG12_OBJS $<TARGET_OBJECTS:cjpeg12-static>)
+  endif()
   add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c
-    rdswitch.c rdtarga.c)
+    rdswitch.c rdtarga.c ${CJPEG12_OBJS})
   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
-    "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
+    ${CDJPEG_COMPILE_FLAGS})
   target_link_libraries(cjpeg-static jpeg-static)
 
+  if(WITH_12BIT)
+    # Compile a separate version of these source files with 12-bit data
+    # precision.
+    add_library(djpeg12-static OBJECT rdcolmap.c wrgif.c wrppm.c)
+    set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
+      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+    set(DJPEG12_OBJS $<TARGET_OBJECTS:djpeg12-static>)
+  endif()
   add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c
-    wrgif.c wrppm.c wrtarga.c)
+    wrgif.c wrppm.c wrtarga.c ${DJPEG12_OBJS})
   set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
-    "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
+    ${CDJPEG_COMPILE_FLAGS})
   target_link_libraries(djpeg-static jpeg-static)
 
   add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
   target_link_libraries(jpegtran-static jpeg-static)
   set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
 
-  if(WITH_12BIT)
-    add_executable(cjpeg12-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c)
-    set_property(TARGET cjpeg12-static PROPERTY COMPILE_FLAGS
-      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
-    target_link_libraries(cjpeg12-static jpeg12-static)
-
-    add_executable(djpeg12-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c
-      wrgif.c wrppm.c)
-    set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
-      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
-    target_link_libraries(djpeg12-static jpeg12-static)
-
-    add_executable(jpeg12tran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
-    target_link_libraries(jpeg12tran-static jpeg12-static)
-    set_property(TARGET jpeg12tran-static PROPERTY COMPILE_FLAGS
-      "-DBITS_IN_JSAMPLE=12 ${USE_SETMODE}")
-  endif()
-
   add_executable(example-static example.c)
-  if(WITH_12BIT)
-    target_link_libraries(example-static jpeg-static jpeg12-static)
-    set_property(TARGET example-static PROPERTY COMPILE_FLAGS "-DWITH_12BIT")
-  else()
-    target_link_libraries(example-static jpeg-static)
-  endif()
+  target_link_libraries(example-static jpeg-static)
 endif()
 
 add_executable(rdjpgcom rdjpgcom.c)
@@ -1004,8 +1001,14 @@ foreach(libtype ${TEST_LIBTYPES})
   # SIMD-accelerated ones.)
 
   macro(add_bittest PROG NAME ARGS OUTFILE INFILE MD5SUM)
+    if(${PROG} STREQUAL "cjpeg12")
+      set(ACTUAL_ARGS "${ARGS};-precision;12")
+    else()
+      set(ACTUAL_ARGS ${ARGS})
+    endif()
+    string(REGEX REPLACE "12" "" ACTUAL_PROG ${PROG})
     add_test(${PROG}-${libtype}-${NAME}
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${PROG}${suffix} ${ARGS}
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${ACTUAL_PROG}${suffix} ${ACTUAL_ARGS}
         -outfile ${OUTFILE} ${INFILE})
     add_test(${PROG}-${libtype}-${NAME}-cmp
       ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5SUM} ${OUTFILE})
@@ -1023,7 +1026,7 @@ foreach(libtype ${TEST_LIBTYPES})
     if(sample_bits EQUAL 12)
       set(cjpeg cjpeg12)
       set(djpeg djpeg12)
-      set(jpegtran jpeg12tran)
+      set(jpegtran jpegtran12)
       set(testout testout12)
 
       set(TESTORIG testorig12.jpg)
@@ -1166,9 +1169,10 @@ foreach(libtype ${TEST_LIBTYPES})
       ${MD5_JPEG_RGB_ISLOW})
 
     # CC: null  SAMP: fullsize  IDCT: islow  ENT: huff
-    add_bittest(${djpeg} rgb-islow "-dct;int;-ppm;-icc;${testout}_rgb_islow.icc"
-      ${testout}_rgb_islow.ppm ${testout}_rgb_islow.jpg ${MD5_PPM_RGB_ISLOW}
-      ${cjpeg}-${libtype}-rgb-islow)
+    add_bittest(${djpeg} rgb-islow
+      "-dct;int;-ppm;-icc;${testout}_rgb_islow.icc"
+      ${testout}_rgb_islow.ppm ${testout}_rgb_islow.jpg
+      ${MD5_PPM_RGB_ISLOW} ${cjpeg}-${libtype}-rgb-islow)
 
     add_test(${djpeg}-${libtype}-rgb-islow-icc-cmp
       ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
@@ -1292,7 +1296,7 @@ foreach(libtype ${TEST_LIBTYPES})
         ${cjpeg}-${libtype}-3x2-float-prog)
     endif()
 
-      # CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
+    # CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
     add_bittest(${cjpeg} 3x2-ifast-prog "-sample;3x2;-dct;fast;-prog"
       ${testout}_3x2_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_3x2_IFAST_PROG})
@@ -1398,15 +1402,17 @@ foreach(libtype ${TEST_LIBTYPES})
     # ENT: arith
     if(WITH_ARITH_DEC AND sample_bits EQUAL 8)
       add_bittest(${djpeg} 420-islow-ari-skip16_139
-        "-dct;int;-skip;16,139;-ppm" ${testout}_420_islow_ari_skip16,139.ppm
-        ${TESTIMAGES}/testimgari.jpg ${MD5_PPM_420_ISLOW_ARI_SKIP16_139})
+        "-dct;int;-skip;16,139;-ppm"
+        ${testout}_420_islow_ari_skip16,139.ppm ${TESTIMAGES}/testimgari.jpg
+        ${MD5_PPM_420_ISLOW_ARI_SKIP16_139})
     endif()
 
     # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No
     # ENT: prog huff
     add_test(${cjpeg}-${libtype}-420-islow-prog
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -prog
-        -outfile ${testout}_420_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
+      ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -prog
+        -precision ${sample_bits} -outfile ${testout}_420_islow_prog.jpg
+        ${TESTIMAGES}/testorig.ppm)
     add_bittest(${djpeg} 420-islow-prog-crop62x62_71_71
       "-dct;int;-crop;62x62+71+71;-ppm"
       ${testout}_420_islow_prog_crop62x62,71,71.ppm
@@ -1424,17 +1430,18 @@ foreach(libtype ${TEST_LIBTYPES})
 
     # Context rows: No   Intra-iMCU row: Yes  ENT: huff
     add_test(${cjpeg}-${libtype}-444-islow
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -sample 1x1
-        -outfile ${testout}_444_islow.jpg ${TESTIMAGES}/testorig.ppm)
+      ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -sample 1x1
+        -precision ${sample_bits} -outfile ${testout}_444_islow.jpg
+        ${TESTIMAGES}/testorig.ppm)
     add_bittest(${djpeg} 444-islow-skip1_6 "-dct;int;-skip;1,6;-ppm"
       ${testout}_444_islow_skip1,6.ppm ${testout}_444_islow.jpg
       ${MD5_PPM_444_ISLOW_SKIP1_6} ${cjpeg}-${libtype}-444-islow)
 
     # Context rows: No   Intra-iMCU row: No   ENT: prog huff
     add_test(${cjpeg}-${libtype}-444-islow-prog
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -prog
-        -sample 1x1 -outfile ${testout}_444_islow_prog.jpg
-        ${TESTIMAGES}/testorig.ppm)
+      ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -prog
+        -precision ${sample_bits} -sample 1x1
+        -outfile ${testout}_444_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
     add_bittest(${djpeg} 444-islow-prog-crop98x98_13_13
       "-dct;int;-crop;98x98+13+13;-ppm"
       ${testout}_444_islow_prog_crop98x98,13,13.ppm
@@ -1444,9 +1451,9 @@ foreach(libtype ${TEST_LIBTYPES})
     # Context rows: No   Intra-iMCU row: No   ENT: arith
     if(WITH_ARITH_ENC AND sample_bits EQUAL 8)
       add_test(${cjpeg}-${libtype}-444-islow-ari
-        ${CMAKE_CROSSCOMPILING_EMULATOR} ${cjpeg}${suffix} -dct int -arithmetic
-          -sample 1x1 -outfile ${testout}_444_islow_ari.jpg
-          ${TESTIMAGES}/testorig.ppm)
+        ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -arithmetic
+          -sample 1x1 -precision ${sample_bits}
+          -outfile ${testout}_444_islow_ari.jpg ${TESTIMAGES}/testorig.ppm)
       if(WITH_ARITH_DEC)
         add_bittest(${djpeg} 444-islow-ari-crop37x37_0_0
           "-dct;int;-crop;37x37+0+0;-ppm"
@@ -1462,7 +1469,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
     unset(EXAMPLE_12BIT_ARG)
     if(sample_bits EQUAL 12)
-      set(EXAMPLE_12BIT_ARG "-12bit")
+      set(EXAMPLE_12BIT_ARG "-precision;12")
     endif()
 
     add_test(example-${sample_bits}bit-${libtype}-compress
@@ -1610,20 +1617,6 @@ if(ENABLE_STATIC)
     install(PROGRAMS ${DIR}/jpegtran-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpegtran${EXE})
   endif()
-
-  if(WITH_12BIT)
-    install(TARGETS jpeg12-static EXPORT ${CMAKE_PROJECT_NAME}Targets
-      INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    if(NOT ENABLE_SHARED)
-      install(PROGRAMS ${DIR}/cjpeg12-static${EXE}
-        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME cjpeg12${EXE})
-      install(PROGRAMS ${DIR}/djpeg12-static${EXE}
-        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME djpeg12${EXE})
-      install(PROGRAMS ${DIR}/jpeg12tran-static${EXE}
-        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpeg12tran${EXE})
-    endif()
-  endif()
 endif()
 
 install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -1649,10 +1642,6 @@ if(UNIX OR MINGW)
 endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-if(WITH_12BIT)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg12.pc
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
 if(WITH_TURBOJPEG)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
@@ -1669,11 +1658,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jpeglib.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-if(WITH_12BIT)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/jpeg12lib.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/j12error.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endif()
 
 include(cmakescripts/BuildPackages.cmake)
 

@@ -10,7 +10,8 @@
  */
 
 #define JPEG_INTERNALS
-#include "jpeglibint.h"
+#include "jpeglib.h"
+#include "jsamplecomp.h"
 
 #ifdef UPSAMPLE_MERGING_SUPPORTED
 
@@ -21,8 +22,8 @@ typedef struct {
   struct jpeg_upsampler pub;    /* public fields */
 
   /* Pointer to routine to do actual upsampling/conversion of one row group */
-  void (*upmethod) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
-                    JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf);
+  void (*upmethod) (j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
+                    JDIMENSION in_row_group_ctr, _JSAMPARRAY output_buf);
 
   /* Private state for YCC->RGB conversion */
   int *Cr_r_tab;                /* => table for Cr to R conversion */
@@ -35,7 +36,7 @@ typedef struct {
    * application provides just a one-row buffer; we also use the spare
    * to discard the dummy last row if the image height is odd.
    */
-  JSAMPROW spare_row;
+  _JSAMPROW spare_row;
   boolean spare_full;           /* T if spare buffer is occupied */
 
   JDIMENSION out_row_width;     /* samples per output row */

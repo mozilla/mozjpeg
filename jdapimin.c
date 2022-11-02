@@ -21,7 +21,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
+#include "jpeglib.h"
 #include "jdmaster.h"
 
 
@@ -81,6 +81,8 @@ jpeg_CreateDecompress(j_decompress_ptr cinfo, int version, size_t structsize)
 
   /* And initialize the overall input controller. */
   jinit_input_controller(cinfo);
+
+  cinfo->data_precision = BITS_IN_JSAMPLE;
 
   /* OK, I'm ready */
   cinfo->global_state = DSTATE_START;

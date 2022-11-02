@@ -16,8 +16,8 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
-#include "jpegcomp.h"
+#include "jpeglib.h"
+#include "jpegapicomp.h"
 
 
 /* Forward declarations */
@@ -364,6 +364,17 @@ compress_output(j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 }
 
 
+#ifdef WITH_12BIT
+
+METHODDEF(boolean)
+compress_output_12(j_compress_ptr cinfo, J12SAMPIMAGE input_buf)
+{
+  return compress_output(cinfo, (JSAMPIMAGE)input_buf);
+}
+
+#endif
+
+
 /*
  * Initialize coefficient buffer controller.
  *
@@ -386,6 +397,9 @@ transencode_coef_controller(j_compress_ptr cinfo,
   cinfo->coef = (struct jpeg_c_coef_controller *)coef;
   coef->pub.start_pass = start_pass_coef;
   coef->pub.compress_data = compress_output;
+#ifdef WITH_12BIT
+  coef->pub.compress_data_12 = compress_output_12;
+#endif
 
   /* Save pointer to virtual arrays */
   coef->whole_image = coef_arrays;

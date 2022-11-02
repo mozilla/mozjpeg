@@ -103,11 +103,21 @@ select_file_type(j_compress_ptr cinfo, FILE *infile)
 #endif
 #ifdef GIF_SUPPORTED
   case 'G':
-    return jinit_read_gif(cinfo);
+#ifdef WITH_12BIT
+    if (cinfo->data_precision == 12)
+      return j12init_read_gif(cinfo);
+    else
+#endif
+      return jinit_read_gif(cinfo);
 #endif
 #ifdef PPM_SUPPORTED
   case 'P':
-    return jinit_read_ppm(cinfo);
+#ifdef WITH_12BIT
+    if (cinfo->data_precision == 12)
+      return j12init_read_ppm(cinfo);
+    else
+#endif
+      return jinit_read_ppm(cinfo);
 #endif
 #ifdef TARGA_SUPPORTED
   case 0x00:
@@ -204,6 +214,8 @@ usage(void)
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
   fprintf(stderr, "Switches for advanced users:\n");
+  fprintf(stderr, "  -precision N   Create JPEG file with N-bit data precision\n");
+  fprintf(stderr, "                 (N is 8 or 12; default is 8)\n");
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
@@ -382,7 +394,19 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
         usage();
       outfilename = argv[argn]; /* save it away for later use */
 
-    } else if (keymatch(arg, "progressive", 1)) {
+    } else if (keymatch(arg, "precision", 3)) {
+      /* Set data precision. */
+      int val;
+
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (sscanf(argv[argn], "%d", &val) != 1)
+        usage();
+      if (val != 8 && val != 12)
+        usage();
+      cinfo->data_precision = val;
+
+    } else if (keymatch(arg, "progressive", 3)) {
       /* Select simple progressive mode. */
 #ifdef C_PROGRESSIVE_SUPPORTED
       simple_progressive = TRUE;
@@ -719,9 +743,19 @@ main(int argc, char **argv)
     jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
 
   /* Process data */
-  while (cinfo.next_scanline < cinfo.image_height) {
-    num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
-    (void)jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);
+#ifdef WITH_12BIT
+  if (cinfo.data_precision == 12) {
+    while (cinfo.next_scanline < cinfo.image_height) {
+      num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
+      (void)jpeg12_write_scanlines(&cinfo, src_mgr->buffer12, num_scanlines);
+    }
+  } else
+#endif
+  {
+    while (cinfo.next_scanline < cinfo.image_height) {
+      num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
+      (void)jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);
+    }
   }
 
   /* Finish compression and release memory */

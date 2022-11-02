@@ -70,7 +70,14 @@ typedef JSAMPLE *JSAMPROW;      /* ptr to one image row of pixel samples. */
 typedef JSAMPROW *JSAMPARRAY;   /* ptr to some rows (a 2-D sample array) */
 typedef JSAMPARRAY *JSAMPIMAGE; /* a 3-D sample array: top index is color */
 
-#ifndef JPEG12LIB_H
+#ifdef WITH_12BIT
+typedef J12SAMPLE *J12SAMPROW;      /* ptr to one image row of 12-bit pixel
+                                       samples. */
+typedef J12SAMPROW *J12SAMPARRAY;   /* ptr to some 12-bit sample rows (a 2-D
+                                       12-bit sample array) */
+typedef J12SAMPARRAY *J12SAMPIMAGE; /* a 3-D 12-bit sample array: top index is
+                                       color */
+#endif
 
 typedef JCOEF JBLOCK[DCTSIZE2]; /* one block of coefficients */
 typedef JBLOCK *JBLOCKROW;      /* pointer to one row of coefficient blocks */
@@ -265,8 +272,6 @@ typedef enum {
   JDITHER_ORDERED,        /* simple ordered dither */
   JDITHER_FS              /* Floyd-Steinberg error diffusion dither */
 } J_DITHER_MODE;
-
-#endif /* JPEG12LIB_H */
 
 
 /* Common fields between JPEG compression and decompression master structs. */
@@ -541,7 +546,11 @@ struct jpeg_decompress_struct {
    * The map has out_color_components rows and actual_number_of_colors columns.
    */
   int actual_number_of_colors;  /* number of entries in use */
-  JSAMPARRAY colormap;          /* The color map as a 2-D pixel array */
+  JSAMPARRAY colormap;          /* The color map as a 2-D pixel array
+                                   If data_precision is 12, then this is
+                                   actually a J12SAMPARRAY, so callers must
+                                   type-cast it in order to read/write 12-bit
+                                   samples from/to the array. */
 
   /* State variables: these variables indicate the progress of decompression.
    * The application may examine these but must not modify them.
@@ -659,7 +668,11 @@ struct jpeg_decompress_struct {
    * v_samp_factor*DCT_[v_]scaled_size sample rows of a component per iMCU row.
    */
 
-  JSAMPLE *sample_range_limit;  /* table for fast range-limiting */
+  JSAMPLE *sample_range_limit;  /* table for fast range-limiting
+                                   If data_precision is 12, then this is
+                                   actually a J12SAMPLE pointer, so callers
+                                   must type-cast it in order to read 12-bit
+                                   samples from the array. */
 
   /*
    * These fields are valid during any one scan.
@@ -826,8 +839,6 @@ struct jpeg_source_mgr {
  * successful.
  */
 
-#ifndef JPEG12LIB_H
-
 #define JPOOL_PERMANENT  0      /* lasts until master record is destroyed */
 #define JPOOL_IMAGE      1      /* lasts until done with image/datastream */
 #define JPOOL_NUMPOOLS   2
@@ -835,14 +846,17 @@ struct jpeg_source_mgr {
 typedef struct jvirt_sarray_control *jvirt_sarray_ptr;
 typedef struct jvirt_barray_control *jvirt_barray_ptr;
 
-#endif
-
 
 struct jpeg_memory_mgr {
   /* Method pointers */
   void *(*alloc_small) (j_common_ptr cinfo, int pool_id, size_t sizeofobject);
   void *(*alloc_large) (j_common_ptr cinfo, int pool_id,
                         size_t sizeofobject);
+  /* If cinfo->data_precision is 12, then this method and the
+   * access_virt_sarray method actually return a J12SAMPARRAY, so callers must
+   * type-cast the return value in order to read/write 12-bit samples from/to
+   * the array.
+   */
   JSAMPARRAY (*alloc_sarray) (j_common_ptr cinfo, int pool_id,
                               JDIMENSION samplesperrow, JDIMENSION numrows);
   JBLOCKARRAY (*alloc_barray) (j_common_ptr cinfo, int pool_id,
@@ -959,6 +973,11 @@ EXTERN(void) jpeg_start_compress(j_compress_ptr cinfo,
 EXTERN(JDIMENSION) jpeg_write_scanlines(j_compress_ptr cinfo,
                                         JSAMPARRAY scanlines,
                                         JDIMENSION num_lines);
+#ifdef WITH_12BIT
+EXTERN(JDIMENSION) jpeg12_write_scanlines(j_compress_ptr cinfo,
+                                          J12SAMPARRAY scanlines,
+                                          JDIMENSION num_lines);
+#endif
 EXTERN(void) jpeg_finish_compress(j_compress_ptr cinfo);
 
 #if JPEG_LIB_VERSION >= 70
@@ -969,6 +988,11 @@ EXTERN(void) jpeg_calc_jpeg_dimensions(j_compress_ptr cinfo);
 /* Replaces jpeg_write_scanlines when writing raw downsampled data. */
 EXTERN(JDIMENSION) jpeg_write_raw_data(j_compress_ptr cinfo, JSAMPIMAGE data,
                                        JDIMENSION num_lines);
+#ifdef WITH_12BIT
+EXTERN(JDIMENSION) jpeg12_write_raw_data(j_compress_ptr cinfo,
+                                         J12SAMPIMAGE data,
+                                         JDIMENSION num_lines);
+#endif
 
 /* Write a special marker.  See libjpeg.txt concerning safe usage. */
 EXTERN(void) jpeg_write_marker(j_compress_ptr cinfo, int marker,
@@ -1004,15 +1028,33 @@ EXTERN(boolean) jpeg_start_decompress(j_decompress_ptr cinfo);
 EXTERN(JDIMENSION) jpeg_read_scanlines(j_decompress_ptr cinfo,
                                        JSAMPARRAY scanlines,
                                        JDIMENSION max_lines);
+#ifdef WITH_12BIT
+EXTERN(JDIMENSION) jpeg12_read_scanlines(j_decompress_ptr cinfo,
+                                         J12SAMPARRAY scanlines,
+                                         JDIMENSION max_lines);
+#endif
 EXTERN(JDIMENSION) jpeg_skip_scanlines(j_decompress_ptr cinfo,
                                        JDIMENSION num_lines);
+#ifdef WITH_12BIT
+EXTERN(JDIMENSION) jpeg12_skip_scanlines(j_decompress_ptr cinfo,
+                                         JDIMENSION num_lines);
+#endif
 EXTERN(void) jpeg_crop_scanline(j_decompress_ptr cinfo, JDIMENSION *xoffset,
                                 JDIMENSION *width);
+#ifdef WITH_12BIT
+EXTERN(void) jpeg12_crop_scanline(j_decompress_ptr cinfo, JDIMENSION *xoffset,
+                                  JDIMENSION *width);
+#endif
 EXTERN(boolean) jpeg_finish_decompress(j_decompress_ptr cinfo);
 
 /* Replaces jpeg_read_scanlines when reading raw downsampled data. */
 EXTERN(JDIMENSION) jpeg_read_raw_data(j_decompress_ptr cinfo, JSAMPIMAGE data,
                                       JDIMENSION max_lines);
+#ifdef WITH_12BIT
+EXTERN(JDIMENSION) jpeg12_read_raw_data(j_decompress_ptr cinfo,
+                                        J12SAMPIMAGE data,
+                                        JDIMENSION max_lines);
+#endif
 
 /* Additional entry points for buffered-image mode. */
 EXTERN(boolean) jpeg_has_multiple_scans(j_decompress_ptr cinfo);

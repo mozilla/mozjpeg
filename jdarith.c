@@ -752,6 +752,9 @@ jinit_arith_decoder(j_decompress_ptr cinfo)
   arith_entropy_ptr entropy;
   int i;
 
+  if (cinfo->data_precision != 8)
+    ERREXIT(cinfo, JERR_NOTIMPL);
+
   entropy = (arith_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 sizeof(arith_entropy_decoder));

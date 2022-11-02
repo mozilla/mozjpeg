@@ -2,7 +2,7 @@
  * jsimd.h
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011, 2014, D. R. Commander.
+ * Copyright (C) 2011, 2014, 2022, D. R. Commander.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
  * Copyright (C) 2020, Arm Limited.
  *
@@ -11,6 +11,8 @@
  * For conditions of distribution and use, see copyright notice in jsimdext.inc
  *
  */
+
+#ifdef WITH_SIMD
 
 #include "jchuff.h"             /* Declarations shared with jcphuff.c */
 
@@ -121,3 +123,5 @@ EXTERN(int) jsimd_can_encode_mcu_AC_refine_prepare(void);
 EXTERN(int) jsimd_encode_mcu_AC_refine_prepare
   (const JCOEF *block, const int *jpeg_natural_order_start, int Sl, int Al,
    JCOEF *absvalues, size_t *bits);
+
+#endif /* WITH_SIMD */

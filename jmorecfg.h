@@ -14,9 +14,6 @@
  * optimizations.  Most users will not need to touch this file.
  */
 
-#ifndef JMORECFG_H
-#define JMORECFG_H
-
 
 /*
  * Maximum number of components (color channels) allowed in JPEG image.
@@ -44,8 +41,7 @@
  * arrays is very slow on your hardware, you might want to change these.
  */
 
-/* JSAMPLE should be the smallest type that will hold the values 0..255.
- */
+/* JSAMPLE should be the smallest type that will hold the values 0..255. */
 
 typedef unsigned char JSAMPLE;
 #define GETJSAMPLE(value)  ((int)(value))
@@ -54,14 +50,16 @@ typedef unsigned char JSAMPLE;
 #define CENTERJSAMPLE    128
 
 
-/* J12SAMPLE should be the smallest type that will hold the values 0..4095.
- * On nearly all machines "short" will do nicely.
- */
+#ifdef WITH_12BIT
+
+/* J12SAMPLE should be the smallest type that will hold the values 0..4095. */
 
 typedef short J12SAMPLE;
 
 #define MAXJ12SAMPLE     4095
 #define CENTERJ12SAMPLE  2048
+
+#endif
 
 
 /* Representation of a DCT frequency coefficient.
@@ -376,5 +374,3 @@ static const int rgb_pixelsize[JPEG_NUMCS] = {
 #endif
 
 #endif /* JPEG_INTERNAL_OPTIONS */
-
-#endif /* JMORECFG_H */

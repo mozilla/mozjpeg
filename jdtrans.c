@@ -15,8 +15,8 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
-#include "jpegcomp.h"
+#include "jpeglib.h"
+#include "jpegapicomp.h"
 
 
 /* Forward declarations */
@@ -127,7 +127,12 @@ transdecode_master_selection(j_decompress_ptr cinfo)
   }
 
   /* Always get a full-image coefficient buffer. */
-  jinit_d_coef_controller(cinfo, TRUE);
+#ifdef WITH_12BIT
+  if (cinfo->data_precision == 12)
+    j12init_d_coef_controller(cinfo, TRUE);
+  else
+#endif
+    jinit_d_coef_controller(cinfo, TRUE);
 
   /* We can now tell the memory manager to allocate virtual arrays. */
   (*cinfo->mem->realize_virt_arrays) ((j_common_ptr)cinfo);

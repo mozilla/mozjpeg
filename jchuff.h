@@ -19,12 +19,6 @@
  * Hence the magnitude should always fit in 10 or 14 bits respectively.
  */
 
-#if BITS_IN_JSAMPLE == 8
-#define MAX_COEF_BITS  10
-#else
-#define MAX_COEF_BITS  14
-#endif
-
 /* Derived data constructed for each Huffman table */
 
 typedef struct {

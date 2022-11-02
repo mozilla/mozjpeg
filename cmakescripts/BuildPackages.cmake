@@ -90,10 +90,6 @@ if(WITH_JAVA)
   set(INST_DEFS ${INST_DEFS} -DJAVA)
 endif()
 
-if(WITH_12BIT)
-  set(INST_DEFS ${INST_DEFS} -D12BIT)
-endif()
-
 if(GENERATOR_IS_MULTI_CONFIG)
   set(INST_DEFS ${INST_DEFS} "-DBUILDDIR=${CMAKE_CFG_INTDIR}\\")
 else()
@@ -116,13 +112,10 @@ endif()
 if(WITH_TURBOJPEG)
   set(TURBOJPEG_DEPEND turbojpeg turbojpeg-static tjbench)
 endif()
-if(WITH_12BIT)
-  set(12BIT_DEPEND jpeg12 jpeg12-static cjpeg12 djpeg12 jpeg12tran)
-endif()
 add_custom_target(installer
   makensis -nocd ${INST_DEFS} installer.nsi
   DEPENDS jpeg jpeg-static rdjpgcom wrjpgcom cjpeg djpeg jpegtran
-    ${JAVA_DEPEND} ${TURBOJPEG_DEPEND} ${12BIT_DEPEND}
+    ${JAVA_DEPEND} ${TURBOJPEG_DEPEND}
   SOURCES installer.nsi)
 
 endif() # WIN32
@@ -168,10 +161,6 @@ add_custom_target(tarball pkgscripts/maketarball
   SOURCES pkgscripts/maketarball)
 
 configure_file(release/libjpeg.pc.in pkgscripts/libjpeg.pc @ONLY)
-
-if(WITH_12BIT)
-  configure_file(release/libjpeg12.pc.in pkgscripts/libjpeg12.pc @ONLY)
-endif()
 
 if(WITH_TURBOJPEG)
   configure_file(release/libturbojpeg.pc.in pkgscripts/libturbojpeg.pc @ONLY)

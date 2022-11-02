@@ -23,10 +23,6 @@ foreach(src ${JPEG_SOURCES})
   set(JPEG_SRCS ${JPEG_SRCS} ../${src})
 endforeach()
 
-foreach(src ${JPEG12_SOURCES})
-  set(JPEG12_SRCS ${JPEG12_SRCS} ../${src})
-endforeach()
-
 if(WITH_SIMD AND (MSVC_IDE OR XCODE))
   # This tells CMake that the "source" files haven't been generated yet
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
@@ -41,7 +37,7 @@ if(MSVC)
   set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_BINARY_DIR}/win/jpeg.rc)
 endif()
 add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} $<TARGET_OBJECTS:simd>
-  ${SIMD_OBJS})
+  ${SIMD_OBJS} ${JPEG12_OBJS})
 
 set_target_properties(jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
   VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
@@ -66,78 +62,42 @@ elseif(MINGW)
   set_target_properties(jpeg PROPERTIES SUFFIX -${SO_MAJOR_VERSION}.dll)
 endif()
 
-if(WITH_12BIT)
-  if(WIN32)
-    set(DEFFILE ../win/jpeg12-${SO_MAJOR_VERSION}.def)
-  endif()
-  add_library(jpeg12 SHARED ${JPEG12_SRCS} ${DEFFILE} ../jsimd_none.c)
-  set_property(TARGET jpeg12 PROPERTY COMPILE_FLAGS "-DBITS_IN_JSAMPLE=12")
-
-  set_target_properties(jpeg12 PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
-    VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
-  if(APPLE AND (NOT CMAKE_OSX_DEPLOYMENT_TARGET OR
-                CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER 10.4))
-    set_target_properties(jpeg12 PROPERTIES MACOSX_RPATH 1)
-  endif()
-  if(MAPFLAG)
-    set_target_properties(jpeg12 PROPERTIES
-      LINK_FLAGS "${MAPFLAG}${CMAKE_CURRENT_BINARY_DIR}/../libjpeg12.map")
-  endif()
-  if(MSVC)
-    set_target_properties(jpeg12 PROPERTIES
-      RUNTIME_OUTPUT_NAME jpeg12-${SO_MAJOR_VERSION})
-  elseif(MINGW)
-    set_target_properties(jpeg12 PROPERTIES SUFFIX -${SO_MAJOR_VERSION}.dll)
-  endif()
-endif()
-
 if(WIN32)
   set(USE_SETMODE "-DUSE_SETMODE")
 endif()
-
-add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdbmp.c ../rdgif.c ../rdppm.c
-  ../rdswitch.c ../rdtarga.c)
-set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS
+set(CDJPEG_COMPILE_FLAGS
   "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
+
+# Compile a separate version of these source files with 12-bit data precision.
+if(WITH_12BIT)
+  add_library(cjpeg12 OBJECT ../rdgif.c ../rdppm.c)
+  set_property(TARGET cjpeg12 PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+  set(CJPEG12_OBJS $<TARGET_OBJECTS:cjpeg12>)
+endif()
+add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdbmp.c ../rdgif.c ../rdppm.c
+  ../rdswitch.c ../rdtarga.c ${CJPEG12_OBJS})
+set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${CDJPEG_COMPILE_FLAGS})
 target_link_libraries(cjpeg jpeg)
 
+# Compile a separate version of these source files with 12-bit data precision.
+if(WITH_12BIT)
+  add_library(djpeg12 OBJECT ../rdcolmap.c ../wrgif.c ../wrppm.c)
+  set_property(TARGET djpeg12 PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+  set(DJPEG12_OBJS $<TARGET_OBJECTS:djpeg12>)
+endif()
 add_executable(djpeg ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
-  ../wrbmp.c ../wrgif.c ../wrppm.c ../wrtarga.c)
-set_property(TARGET djpeg PROPERTY COMPILE_FLAGS
-  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
+  ../wrbmp.c ../wrgif.c ../wrppm.c ../wrtarga.c ${DJPEG12_OBJS})
+set_property(TARGET djpeg PROPERTY COMPILE_FLAGS ${CDJPEG_COMPILE_FLAGS})
 target_link_libraries(djpeg jpeg)
 
 add_executable(jpegtran ../jpegtran.c ../cdjpeg.c ../rdswitch.c ../transupp.c)
 target_link_libraries(jpegtran jpeg)
 set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
 
-if(WITH_12BIT)
-  add_executable(cjpeg12 ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c
-    ../rdswitch.c)
-  set_property(TARGET cjpeg12 PROPERTY COMPILE_FLAGS
-    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
-  target_link_libraries(cjpeg12 jpeg12)
-
-  add_executable(djpeg12 ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
-    ../wrgif.c ../wrppm.c)
-  set_property(TARGET djpeg12 PROPERTY COMPILE_FLAGS
-    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
-  target_link_libraries(djpeg12 jpeg12)
-
-  add_executable(jpeg12tran ../jpegtran.c ../cdjpeg.c ../rdswitch.c
-    ../transupp.c)
-  target_link_libraries(jpeg12tran jpeg12)
-  set_property(TARGET jpeg12tran PROPERTY COMPILE_FLAGS
-    "-DBITS_IN_JSAMPLE=12 ${USE_SETMODE}")
-endif()
-
 add_executable(example ../example.c)
-if(WITH_12BIT)
-  target_link_libraries(example jpeg jpeg12)
-  set_property(TARGET example PROPERTY COMPILE_FLAGS "-DWITH_12BIT")
-else()
-  target_link_libraries(example jpeg)
-endif()
+target_link_libraries(example jpeg)
 
 add_executable(jcstest ../jcstest.c)
 target_link_libraries(jcstest jpeg)
@@ -153,19 +113,4 @@ if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
   CMAKE_C_LINKER_SUPPORTS_PDB)
   install(FILES "$<TARGET_PDB_FILE:jpeg>"
     DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
-endif()
-
-if(WITH_12BIT)
-  install(TARGETS jpeg12 EXPORT ${CMAKE_PROJECT_NAME}Targets
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  install(TARGETS cjpeg12 djpeg12 jpeg12tran
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
-    CMAKE_C_LINKER_SUPPORTS_PDB)
-    install(FILES "$<TARGET_PDB_FILE:jpeg12>"
-      DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
-  endif()
 endif()

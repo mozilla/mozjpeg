@@ -20,7 +20,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
+#include "jpeglib.h"
 #include "jsimd.h"
 #include <limits.h>
 
@@ -489,6 +489,7 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   JBLOCKROW block;
   jpeg_component_info *compptr;
   ISHIFT_TEMPS
+  int max_coef_bits = cinfo->data_precision + 2;
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;
@@ -531,7 +532,7 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     /* Check for out-of-range coefficient values.
      * Since we're encoding a difference, the range limit is twice as much.
      */
-    if (nbits > MAX_COEF_BITS + 1)
+    if (nbits > max_coef_bits + 1)
       ERREXIT(cinfo, JERR_BAD_DCT_COEF);
 
     /* Count/emit the Huffman-coded symbol for the number of bits */
@@ -642,7 +643,7 @@ label \
     /* Find the number of bits needed for the magnitude of the coefficient */ \
     nbits = JPEG_NBITS_NONZERO(temp);  /* there must be at least one 1 bit */ \
     /* Check for out-of-range coefficient values */ \
-    if (nbits > MAX_COEF_BITS) \
+    if (nbits > max_coef_bits) \
       ERREXIT(cinfo, JERR_BAD_DCT_COEF); \
     \
     /* Count/emit Huffman symbol for run length / number of bits */ \
@@ -670,6 +671,7 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   const JCOEF *cvalue;
   size_t zerobits;
   size_t bits[8 / SIZEOF_SIZE_T];
+  int max_coef_bits = cinfo->data_precision + 2;
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;

@@ -23,7 +23,7 @@
  * again with a suitable JMESSAGE definition (see jerror.c for an example).
  */
 #ifndef JMESSAGE
-#if !defined(JERROR_H) && !defined(J12ERROR_H)
+#ifndef JERROR_H
 /* First time through, define the enum list */
 #define JMAKE_ENUM_LIST
 #else

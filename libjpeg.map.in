@@ -1,7 +1,7 @@
 LIBJPEGTURBO_@JPEG_LIB_VERSION_DECIMAL@ {
   @MEM_SRCDST_FUNCTIONS@
   local:
-    @SIMD_FUNCTIONS@;
+    jsimd_*;
     jconst_*;
 };
 

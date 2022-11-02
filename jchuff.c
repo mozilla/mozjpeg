@@ -26,7 +26,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
+#include "jpeglib.h"
 #include "jsimd.h"
 #include <limits.h>
 
@@ -801,6 +801,7 @@ htest_one_block(j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
   register int temp;
   register int nbits;
   register int k, r;
+  int max_coef_bits = cinfo->data_precision + 2;
 
   /* Encode the DC coefficient difference per section F.1.2.1 */
 
@@ -817,7 +818,7 @@ htest_one_block(j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
   /* Check for out-of-range coefficient values.
    * Since we're encoding a difference, the range limit is twice as much.
    */
-  if (nbits > MAX_COEF_BITS + 1)
+  if (nbits > max_coef_bits + 1)
     ERREXIT(cinfo, JERR_BAD_DCT_COEF);
 
   /* Count the Huffman symbol for the number of bits */
@@ -846,7 +847,7 @@ htest_one_block(j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
       while ((temp >>= 1))
         nbits++;
       /* Check for out-of-range coefficient values */
-      if (nbits > MAX_COEF_BITS)
+      if (nbits > max_coef_bits)
         ERREXIT(cinfo, JERR_BAD_DCT_COEF);
 
       /* Count Huffman symbol for run length / number of bits */

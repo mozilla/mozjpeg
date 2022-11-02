@@ -490,6 +490,9 @@ jinit_read_targa(j_compress_ptr cinfo)
 {
   tga_source_ptr source;
 
+  if (cinfo->data_precision != 8)
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+
   /* Create module interface object */
   source = (tga_source_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,

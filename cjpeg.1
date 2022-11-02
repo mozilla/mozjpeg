@@ -1,4 +1,4 @@
-.TH CJPEG 1 "30 November 2021"
+.TH CJPEG 1 "2 November 2022"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -148,6 +148,12 @@ standard JPEG file of the same quality setting, and the total file size is
 about the same --- often a little smaller.
 .PP
 Switches for advanced users:
+.TP
+.BI \-precision " N"
+Create JPEG file with N-bit data precision.  N is 8 or 12; default is 8.
+.B Caution:
+12-bit JPEG is not yet widely implemented, so many decoders will be unable to
+view a 12-bit JPEG file at all.
 .TP
 .B \-arithmetic
 Use arithmetic coding.

@@ -660,7 +660,12 @@ main(int argc, char **argv)
 #endif
 #ifdef GIF_SUPPORTED
   case FMT_GIF:
-    dest_mgr = jinit_write_gif(&cinfo, TRUE);
+#ifdef WITH_12BIT
+    if (cinfo.data_precision == 12)
+      dest_mgr = j12init_write_gif(&cinfo, TRUE);
+    else
+#endif
+      dest_mgr = jinit_write_gif(&cinfo, TRUE);
     break;
   case FMT_GIF0:
     dest_mgr = jinit_write_gif(&cinfo, FALSE);
@@ -668,7 +673,12 @@ main(int argc, char **argv)
 #endif
 #ifdef PPM_SUPPORTED
   case FMT_PPM:
-    dest_mgr = jinit_write_ppm(&cinfo);
+#ifdef WITH_12BIT
+    if (cinfo.data_precision == 12)
+      dest_mgr = j12init_write_ppm(&cinfo);
+    else
+#endif
+      dest_mgr = jinit_write_ppm(&cinfo);
     break;
 #endif
 #ifdef TARGA_SUPPORTED
@@ -707,22 +717,45 @@ main(int argc, char **argv)
     (*dest_mgr->start_output) (&cinfo, dest_mgr);
     cinfo.output_height = tmp;
 
-    /* Process data */
-    while (cinfo.output_scanline < skip_start) {
-      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                          dest_mgr->buffer_height);
-      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
-    }
-    if ((tmp = jpeg_skip_scanlines(&cinfo, skip_end - skip_start + 1)) !=
-        skip_end - skip_start + 1) {
-      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
-              progname, tmp, skip_end - skip_start + 1);
-      exit(EXIT_FAILURE);
-    }
-    while (cinfo.output_scanline < cinfo.output_height) {
-      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                          dest_mgr->buffer_height);
-      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+#ifdef WITH_12BIT
+    if (cinfo.data_precision == 12) {
+      /* Process data */
+      while (cinfo.output_scanline < skip_start) {
+        num_scanlines = jpeg12_read_scanlines(&cinfo, dest_mgr->buffer12,
+                                              dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+      if ((tmp = jpeg12_skip_scanlines(&cinfo, skip_end - skip_start + 1)) !=
+          skip_end - skip_start + 1) {
+        fprintf(stderr, "%s: jpeg12_skip_scanlines() returned %u rather than %u\n",
+                progname, tmp, skip_end - skip_start + 1);
+        exit(EXIT_FAILURE);
+      }
+      while (cinfo.output_scanline < cinfo.output_height) {
+        num_scanlines = jpeg12_read_scanlines(&cinfo, dest_mgr->buffer12,
+                                              dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+    } else
+#endif
+    {
+      /* Process data */
+      while (cinfo.output_scanline < skip_start) {
+        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                            dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+      if ((tmp = jpeg_skip_scanlines(&cinfo, skip_end - skip_start + 1)) !=
+          skip_end - skip_start + 1) {
+        fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
+                progname, tmp, skip_end - skip_start + 1);
+        exit(EXIT_FAILURE);
+      }
+      while (cinfo.output_scanline < cinfo.output_height) {
+        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                            dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
     }
 
   /* Decompress a subregion */
@@ -739,7 +772,12 @@ main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
 
-    jpeg_crop_scanline(&cinfo, &crop_x, &crop_width);
+#ifdef WITH_12BIT
+    if (cinfo.data_precision == 12)
+      jpeg12_crop_scanline(&cinfo, &crop_x, &crop_width);
+    else
+#endif
+      jpeg_crop_scanline(&cinfo, &crop_x, &crop_width);
     if (dest_mgr->calc_buffer_dimensions)
       (*dest_mgr->calc_buffer_dimensions) (&cinfo, dest_mgr);
     else
@@ -753,24 +791,49 @@ main(int argc, char **argv)
     (*dest_mgr->start_output) (&cinfo, dest_mgr);
     cinfo.output_height = tmp;
 
-    /* Process data */
-    if ((tmp = jpeg_skip_scanlines(&cinfo, crop_y)) != crop_y) {
-      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
-              progname, tmp, crop_y);
-      exit(EXIT_FAILURE);
-    }
-    while (cinfo.output_scanline < crop_y + crop_height) {
-      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                          dest_mgr->buffer_height);
-      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
-    }
-    if ((tmp =
-         jpeg_skip_scanlines(&cinfo,
-                             cinfo.output_height - crop_y - crop_height)) !=
-        cinfo.output_height - crop_y - crop_height) {
-      fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
-              progname, tmp, cinfo.output_height - crop_y - crop_height);
-      exit(EXIT_FAILURE);
+#ifdef WITH_12BIT
+    if (cinfo.data_precision == 12) {
+      /* Process data */
+      if ((tmp = jpeg12_skip_scanlines(&cinfo, crop_y)) != crop_y) {
+        fprintf(stderr, "%s: jpeg12_skip_scanlines() returned %u rather than %u\n",
+                progname, tmp, crop_y);
+        exit(EXIT_FAILURE);
+      }
+      while (cinfo.output_scanline < crop_y + crop_height) {
+        num_scanlines = jpeg12_read_scanlines(&cinfo, dest_mgr->buffer12,
+                                              dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+      if ((tmp =
+           jpeg12_skip_scanlines(&cinfo, cinfo.output_height - crop_y -
+                                         crop_height)) !=
+          cinfo.output_height - crop_y - crop_height) {
+        fprintf(stderr, "%s: jpeg12_skip_scanlines() returned %u rather than %u\n",
+                progname, tmp, cinfo.output_height - crop_y - crop_height);
+        exit(EXIT_FAILURE);
+      }
+    } else
+#endif
+    {
+      /* Process data */
+      if ((tmp = jpeg_skip_scanlines(&cinfo, crop_y)) != crop_y) {
+        fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
+                progname, tmp, crop_y);
+        exit(EXIT_FAILURE);
+      }
+      while (cinfo.output_scanline < crop_y + crop_height) {
+        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                            dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+      if ((tmp =
+           jpeg_skip_scanlines(&cinfo,
+                               cinfo.output_height - crop_y - crop_height)) !=
+          cinfo.output_height - crop_y - crop_height) {
+        fprintf(stderr, "%s: jpeg_skip_scanlines() returned %u rather than %u\n",
+                progname, tmp, cinfo.output_height - crop_y - crop_height);
+        exit(EXIT_FAILURE);
+      }
     }
 
   /* Normal full-image decompress */
@@ -778,11 +841,23 @@ main(int argc, char **argv)
     /* Write output file header */
     (*dest_mgr->start_output) (&cinfo, dest_mgr);
 
-    /* Process data */
-    while (cinfo.output_scanline < cinfo.output_height) {
-      num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
-                                          dest_mgr->buffer_height);
-      (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+#ifdef WITH_12BIT
+    if (cinfo.data_precision == 12) {
+      /* Process data */
+      while (cinfo.output_scanline < cinfo.output_height) {
+        num_scanlines = jpeg12_read_scanlines(&cinfo, dest_mgr->buffer12,
+                                              dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
+    } else
+#endif
+    {
+      /* Process data */
+      while (cinfo.output_scanline < cinfo.output_height) {
+        num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+                                            dest_mgr->buffer_height);
+        (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
+      }
     }
   }
 

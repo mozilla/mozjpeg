@@ -480,6 +480,9 @@ jinit_write_bmp(j_decompress_ptr cinfo, boolean is_os2,
   bmp_dest_ptr dest;
   JDIMENSION row_width;
 
+  if (cinfo->data_precision != 8)
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+
   /* Create module interface object, fill in method pointers */
   dest = (bmp_dest_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,

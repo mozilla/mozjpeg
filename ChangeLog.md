@@ -1,15 +1,26 @@
 2.2 pre-beta
 ============
 
-### Significant changes relative to 2.1.4
+### Significant changes relative to 2.1.4:
 
-1. By default, the build system now builds, packages, and tests a separate
-12-bit-per-component flavor of the libjpeg API library, cjpeg, djpeg, and
-jpegtran.  The 12-bit-per-component libjpeg API library mangles the names of
-libjpeg API functions, data types, structures, and macros to enable calling
-applications to more easily support both 8-bit-per-component and
-12-bit-per-component JPEG images.  (Refer to [libjpeg.txt](libjpeg.txt) for
-more details.)  The `WITH_12BIT` CMake variable can be used to disable
+1. 12-bit-per-component JPEG support is now included in the libjpeg API
+library, cjpeg, djpeg, and jpegtran by default:
+
+     - The existing `data_precision` field in `jpeg_compress_struct` and
+`jpeg_decompress_struct` has been repurposed to enable the creation of
+12-bit-per-component JPEG images or to detect whether a 12-bit-per-component
+JPEG image is being decompressed.
+     - New 12-bit-per-component versions of `jpeg_write_scanlines()`,
+`jpeg_write_raw_data()`, `jpeg_read_scanlines()`, `jpeg_skip_scanlines()`,
+`jpeg_crop_scanline()`, and `jpeg_read_raw_data()` provide interfaces for
+compressing from/decompressing to 12-bit-per-component uncompressed image
+buffers.
+     - A new cjpeg command-line argument (`-precision`) can be used to enable
+the creation of 12-bit-per-component JPEG images.  (djpeg and jpegtran handle
+12-bit-per-component JPEG images automatically.)
+
+    Refer to [libjpeg.txt](libjpeg.txt) and [usage.txt](usage.txt) for more
+details.  The `WITH_12BIT` CMake variable can be used to disable
 12-bit-per-component JPEG support.
 
 2. Significantly sped up the computation of optimal Huffman tables.  This

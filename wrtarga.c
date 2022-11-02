@@ -230,6 +230,9 @@ jinit_write_targa(j_decompress_ptr cinfo)
 {
   tga_dest_ptr dest;
 
+  if (cinfo->data_precision != 8)
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+
   /* Create module interface object, fill in method pointers */
   dest = (tga_dest_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,

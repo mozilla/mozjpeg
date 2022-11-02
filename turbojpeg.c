@@ -40,7 +40,7 @@
 #include "./turbojpeg.h"
 #include "./tjutil.h"
 #include "transupp.h"
-#include "./jpegcomp.h"
+#include "./jpegapicomp.h"
 #include "./cdjpeg.h"
 
 extern void jpeg_mem_dest_tj(j_compress_ptr, unsigned char **, unsigned long *,

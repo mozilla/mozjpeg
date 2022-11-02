@@ -28,7 +28,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
+#include "jpeglib.h"
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 
 #ifdef DCT_ISLOW_SUPPORTED
@@ -140,7 +140,7 @@
  */
 
 GLOBAL(void)
-jpeg_fdct_islow(DCTELEM *data)
+_jpeg_fdct_islow(DCTELEM *data)
 {
   JLONG tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   JLONG tmp10, tmp11, tmp12, tmp13;

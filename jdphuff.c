@@ -22,7 +22,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
+#include "jpeglib.h"
 #include "jdhuff.h"             /* Declarations shared with jdhuff.c */
 #include <limits.h>
 

@@ -68,6 +68,9 @@ CJPEG DETAILS
 
 The basic command line switches for cjpeg are:
 
+        -precision N   Create JPEG file with N-bit data precision.
+                       N is 8 or 12; default is 8.
+
         -quality N[,...]  Scale quantization tables to adjust image quality.
                           Quality is 0 (worst) to 100 (best); default is 75.
                           (See below for more info.)

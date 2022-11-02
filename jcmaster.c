@@ -17,8 +17,8 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
-#include "jpegcomp.h"
+#include "jpeglib.h"
+#include "jpegapicomp.h"
 
 
 /* Private state */
@@ -109,8 +109,7 @@ initial_setup(j_compress_ptr cinfo, boolean transcode_only)
   if ((long)jd_samplesperrow != samplesperrow)
     ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
 
-  /* For now, precision must match compiled-in value... */
-  if (cinfo->data_precision != BITS_IN_JSAMPLE)
+  if (cinfo->data_precision != 8 && cinfo->data_precision != 12)
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 
   /* Check that number of components won't exceed internal array sizes */
@@ -240,13 +239,10 @@ validate_script(j_compress_ptr cinfo)
        * out-of-range reconstructed DC values during the first DC scan,
        * which might cause problems for some decoders.
        */
-#if BITS_IN_JSAMPLE == 8
-#define MAX_AH_AL  10
-#else
-#define MAX_AH_AL  13
-#endif
+      int max_Ah_Al = cinfo->data_precision == 12 ? 13 : 10;
+
       if (Ss < 0 || Ss >= DCTSIZE2 || Se < Ss || Se >= DCTSIZE2 ||
-          Ah < 0 || Ah > MAX_AH_AL || Al < 0 || Al > MAX_AH_AL)
+          Ah < 0 || Ah > max_Ah_Al || Al < 0 || Al > max_Ah_Al)
         ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
       if (Ss == 0) {
         if (Se != 0)            /* DC and AC together not OK */
@@ -615,7 +611,11 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
   }
 
   if (cinfo->progressive_mode && !cinfo->arith_code)  /*  TEMPORARY HACK ??? */
-    cinfo->optimize_coding = TRUE; /* assume default tables no good for progressive mode */
+    cinfo->optimize_coding = TRUE; /* assume default tables no good for
+                                      progressive mode */
+  if (cinfo->data_precision == 12)
+    cinfo->optimize_coding = TRUE; /* assume default tables no good for 12-bit
+                                      data precision */
 
   /* Initialize my private state */
   if (transcode_only) {

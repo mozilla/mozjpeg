@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2022, D. R. Commander.
+ * Copyright (C) 2015, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -35,7 +35,7 @@
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
-#include "jpeglibint.h"
+#include "jpeglib.h"
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 
 #ifdef DCT_IFAST_SUPPORTED
@@ -114,7 +114,7 @@
  */
 
 GLOBAL(void)
-jpeg_fdct_ifast(DCTELEM *data)
+_jpeg_fdct_ifast(DCTELEM *data)
 {
   DCTELEM tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   DCTELEM tmp10, tmp11, tmp12, tmp13;

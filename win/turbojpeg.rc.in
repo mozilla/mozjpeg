@@ -24,7 +24,7 @@ BEGIN
             VALUE "ProductVersion", "@VERSION@"
             VALUE "ProductName", "@CMAKE_PROJECT_NAME@"
             VALUE "InternalName", "turbojpeg"
-            VALUE "LegalCopyright", "Copyright \xA9 @COPYRIGHT_YEAR@ The libjpeg-turbo Project and many others"
+            VALUE "LegalCopyright", L"Copyright \xA9 @COPYRIGHT_YEAR@ The libjpeg-turbo Project and many others"
             VALUE "OriginalFilename", "turbojpeg.dll"
         END
     END

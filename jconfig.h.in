@@ -15,9 +15,6 @@
 /* Support arithmetic decoding when using 8-bit samples */
 #cmakedefine D_ARITH_CODING_SUPPORTED 1
 
-/* Support in-memory source/destination managers */
-#cmakedefine MEM_SRCDST_SUPPORTED 1
-
 /* Use accelerated SIMD routines when using 8-bit samples */
 #cmakedefine WITH_SIMD 1
 

@@ -100,7 +100,9 @@ EXPORTS
   jpeg12_write_tables @ 99 ;
   j12round_up @ 100 ;
   j12zero_far @ 101 ;
-  jpeg12_skip_scanlines @ 102 ;
-  jpeg12_crop_scanline @ 103 ;
-  jpeg12_read_icc_profile @ 104 ;
-  jpeg12_write_icc_profile @ 105 ;
+  jpeg12_mem_dest @ 102 ;
+  jpeg12_mem_src @ 103 ;
+  jpeg12_skip_scanlines @ 104 ;
+  jpeg12_crop_scanline @ 105 ;
+  jpeg12_read_icc_profile @ 106 ;
+  jpeg12_write_icc_profile @ 107 ;

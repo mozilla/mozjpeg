@@ -245,16 +245,6 @@ programs that need them, without breaking ABI compatibility for programs that
 don't, and it allows those functions to be provided in the "official"
 libjpeg-turbo binaries.
 
-Those who are concerned about maintaining strict conformance with the libjpeg
-v6b or v7 API can pass an argument of `-DWITH_MEM_SRCDST=0` to `cmake` prior to
-building libjpeg-turbo.  This will restore the pre-1.3 behavior, in which
-`jpeg_mem_src()` and `jpeg_mem_dest()` are only included when emulating the
-libjpeg v8 API/ABI.
-
-On Un*x systems, including the in-memory source/destination managers changes
-the dynamic library version from 62.2.0 to 62.3.0 if using libjpeg v6b API/ABI
-emulation and from 7.2.0 to 7.3.0 if using libjpeg v7 API/ABI emulation.
-
 Note that, on most Un*x systems, the dynamic linker will not look for a
 function in a library until that function is actually used.  Thus, if a program
 is built against libjpeg-turbo 1.3+ and uses `jpeg_mem_src()` or

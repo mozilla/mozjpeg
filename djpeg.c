@@ -164,9 +164,7 @@ usage(void)
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -maxscans N    Maximum number of scans to allow in input file\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   fprintf(stderr, "  -memsrc        Load input file into memory before decompressing\n");
-#endif
   fprintf(stderr, "  -report        Report decompression progress\n");
   fprintf(stderr, "  -skip Y0,Y1    Decompress all rows except those between Y0 and Y1 (inclusive)\n");
   fprintf(stderr, "  -crop WxH+X+Y  Decompress only a rectangular subregion of the image\n");
@@ -377,13 +375,7 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "memsrc", 2)) {
       /* Use in-memory source manager */
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
       memsrc = TRUE;
-#else
-      fprintf(stderr, "%s: sorry, in-memory source manager was not compiled in\n",
-              progname);
-      exit(EXIT_FAILURE);
-#endif
 
     } else if (keymatch(arg, "pnm", 1) || keymatch(arg, "ppm", 1)) {
       /* PPM/PGM output format. */
@@ -535,9 +527,7 @@ main(int argc, char **argv)
   FILE *input_file;
   FILE *output_file;
   unsigned char *inbuffer = NULL;
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   unsigned long insize = 0;
-#endif
   JDIMENSION num_scanlines;
 
   progname = argv[0];
@@ -627,7 +617,6 @@ main(int argc, char **argv)
   }
 
   /* Specify data source for decompression */
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   if (memsrc) {
     size_t nbytes;
     do {
@@ -649,7 +638,6 @@ main(int argc, char **argv)
     fprintf(stderr, "Compressed size:  %lu bytes\n", insize);
     jpeg_mem_src(&cinfo, inbuffer, insize);
   } else
-#endif
     jpeg_stdio_src(&cinfo, input_file);
 
   /* Read file header, set default decompression parameters */

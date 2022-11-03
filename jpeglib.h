@@ -924,13 +924,11 @@ EXTERN(void) jpeg_destroy_decompress(j_decompress_ptr cinfo);
 EXTERN(void) jpeg_stdio_dest(j_compress_ptr cinfo, FILE *outfile);
 EXTERN(void) jpeg_stdio_src(j_decompress_ptr cinfo, FILE *infile);
 
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
 /* Data source and destination managers: memory buffers. */
 EXTERN(void) jpeg_mem_dest(j_compress_ptr cinfo, unsigned char **outbuffer,
                            unsigned long *outsize);
 EXTERN(void) jpeg_mem_src(j_decompress_ptr cinfo,
                           const unsigned char *inbuffer, unsigned long insize);
-#endif
 
 /* Default parameter setup for compression */
 EXTERN(void) jpeg_set_defaults(j_compress_ptr cinfo);

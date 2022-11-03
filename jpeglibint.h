@@ -82,10 +82,8 @@
 #define jpeg_stdio_dest  jpeg12_stdio_dest
 #define jpeg_stdio_src  jpeg12_stdio_src
 
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
 #define jpeg_mem_dest  jpeg12_mem_dest
 #define jpeg_mem_src  jpeg12_mem_src
-#endif
 
 #define jpeg_set_defaults  jpeg12_set_defaults
 #define jpeg_set_colorspace  jpeg12_set_colorspace

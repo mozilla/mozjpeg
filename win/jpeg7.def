@@ -102,7 +102,9 @@ EXPORTS
   jpeg_write_tables @ 101 ;
   jround_up @ 102 ;
   jzero_far @ 103 ;
-  jpeg_skip_scanlines @ 104 ;
-  jpeg_crop_scanline @ 105 ;
-  jpeg_read_icc_profile @ 106 ;
-  jpeg_write_icc_profile @ 107 ;
+  jpeg_mem_dest @ 104 ;
+  jpeg_mem_src @ 105 ;
+  jpeg_skip_scanlines @ 106 ;
+  jpeg_crop_scanline @ 107 ;
+  jpeg_read_icc_profile @ 108 ;
+  jpeg_write_icc_profile @ 109 ;

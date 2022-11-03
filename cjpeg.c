@@ -226,9 +226,7 @@ usage(void)
 #endif
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   fprintf(stderr, "  -memdst        Compress to memory instead of file (useful for benchmarking)\n");
-#endif
   fprintf(stderr, "  -report        Report compression progress\n");
   fprintf(stderr, "  -strict        Treat all warnings as fatal\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
@@ -397,13 +395,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
 
     } else if (keymatch(arg, "memdst", 2)) {
       /* Use in-memory destination manager */
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
       memdst = TRUE;
-#else
-      fprintf(stderr, "%s: sorry, in-memory destination manager was not compiled in\n",
-              progname);
-      exit(EXIT_FAILURE);
-#endif
 
     } else if (keymatch(arg, "quality", 1)) {
       /* Quality ratings (quantization table scaling factors). */
@@ -710,11 +702,9 @@ main(int argc, char **argv)
   file_index = parse_switches(&cinfo, argc, argv, 0, TRUE);
 
   /* Specify data destination for compression */
-#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   if (memdst)
     jpeg_mem_dest(&cinfo, &outbuffer, &outsize);
   else
-#endif
     jpeg_stdio_dest(&cinfo, output_file);
 
 #ifdef CJPEG_FUZZER

@@ -21,10 +21,21 @@ tables.
 have been removed.
 
 
+2.1.5
+=====
+
+### Significant changes relative to 2.1.4:
+
+1. Fixed issues in the build system whereby, when using the Ninja Multi-Config
+CMake generator, a static build of libjpeg-turbo (a build in which
+`ENABLE_SHARED` is `0`) could not be installed, a Windows installer could not
+be built, and the Java regression tests failed.
+
+
 2.1.4
 =====
 
-### Significant changes relative to 2.1.3
+### Significant changes relative to 2.1.3:
 
 1. Fixed a regression introduced in 2.1.3 that caused build failures with
 Visual Studio 2010.
@@ -59,7 +70,7 @@ virtual array access") under certain circumstances.
 2.1.3
 =====
 
-### Significant changes relative to 2.1.2
+### Significant changes relative to 2.1.2:
 
 1. Fixed a regression introduced by 2.0 beta1[7] whereby cjpeg compressed PGM
 input files into full-color JPEG images unless the `-grayscale` option was
@@ -83,7 +94,7 @@ be reproduced using the libjpeg API, not using djpeg.
 2.1.2
 =====
 
-### Significant changes relative to 2.1.1
+### Significant changes relative to 2.1.1:
 
 1. Fixed a regression introduced by 2.1 beta1[13] that caused the remaining
 GAS implementations of AArch64 (Arm 64-bit) Neon SIMD functions (which are used
@@ -115,7 +126,7 @@ image contains incomplete or corrupt image data.
 2.1.1
 =====
 
-### Significant changes relative to 2.1.0
+### Significant changes relative to 2.1.0:
 
 1. Fixed a regression introduced in 2.1.0 that caused build failures with
 non-GCC-compatible compilers for Un*x/Arm platforms.
@@ -144,7 +155,7 @@ transform a specially-crafted malformed JPEG image.
 2.1.0
 =====
 
-### Significant changes relative to 2.1 beta1
+### Significant changes relative to 2.1 beta1:
 
 1. Fixed a regression introduced by 2.1 beta1[6(b)] whereby attempting to
 decompress certain progressive JPEG images with one or more component planes of

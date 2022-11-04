@@ -528,8 +528,6 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # Generate files
-configure_file(jconfig.h.in jconfig.h)
-configure_file(jconfigint.h.in jconfigint.h)
 configure_file(jversion.h.in jversion.h)
 if(UNIX)
   configure_file(libjpeg.map.in libjpeg.map)
@@ -587,16 +585,18 @@ if(WITH_SIMD)
 else()
   message(STATUS "SIMD extensions: None (WITH_SIMD = ${WITH_SIMD})")
 endif()
+
+# We have to generate these here, because if the build system tries and fails
+# to enable the SIMD extensions, the value of WITH_SIMD will have changed.
+configure_file(jconfig.h.in jconfig.h)
+configure_file(jconfigint.h.in jconfigint.h)
+
 if(WITH_SIMD)
   message(STATUS "SIMD extensions: ${CPU_TYPE} (WITH_SIMD = ${WITH_SIMD})")
   if(MSVC_IDE OR XCODE)
     set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
   endif()
-else()
-  add_library(simd OBJECT jsimd_none.c)
-  if(NOT WIN32 AND (CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED))
-    set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)
-  endif()
+  set(SIMD_TARGET_OBJECTS $<TARGET_OBJECTS:simd>)
 endif()
 
 if(WITH_JAVA)
@@ -608,7 +608,7 @@ if(ENABLE_SHARED)
 endif()
 
 if(ENABLE_STATIC)
-  add_library(jpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
+  add_library(jpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
     ${SIMD_OBJS} ${JPEG12_OBJS})
   if(NOT MSVC)
     set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
@@ -617,7 +617,7 @@ endif()
 
 if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
-    set(TURBOJPEG_SOURCES ${JPEG_SOURCES} $<TARGET_OBJECTS:simd> ${SIMD_OBJS}
+    set(TURBOJPEG_SOURCES ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS} ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
       wrbmp.c wrppm.c ${JPEG12_OBJS})
     set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile)
@@ -669,7 +669,7 @@ if(WITH_TURBOJPEG)
   endif()
 
   if(ENABLE_STATIC)
-    add_library(turbojpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
+    add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
       ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c
       rdppm.c wrbmp.c wrppm.c ${JPEG12_OBJS})
     set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS

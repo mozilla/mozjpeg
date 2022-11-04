@@ -264,10 +264,14 @@ start_pass_fdctmgr(j_compress_ptr cinfo)
       }
       dtbl = fdct->divisors[qtblno];
       for (i = 0; i < DCTSIZE2; i++) {
-#if defined(WITH_SIMD) && BITS_IN_JSAMPLE == 8
+#if BITS_IN_JSAMPLE == 8
+#ifdef WITH_SIMD
         if (!compute_reciprocal(qtbl->quantval[i] << 3, &dtbl[i]) &&
             fdct->quantize == jsimd_quantize)
           fdct->quantize = quantize;
+#else
+        compute_reciprocal(qtbl->quantval[i] << 3, &dtbl[i]);
+#endif
 #else
         dtbl[i] = ((DCTELEM)qtbl->quantval[i]) << 3;
 #endif
@@ -304,13 +308,20 @@ start_pass_fdctmgr(j_compress_ptr cinfo)
         }
         dtbl = fdct->divisors[qtblno];
         for (i = 0; i < DCTSIZE2; i++) {
-#if defined(WITH_SIMD) && BITS_IN_JSAMPLE == 8
+#if BITS_IN_JSAMPLE == 8
+#ifdef WITH_SIMD
           if (!compute_reciprocal(
                 DESCALE(MULTIPLY16V16((JLONG)qtbl->quantval[i],
                                       (JLONG)aanscales[i]),
                         CONST_BITS - 3), &dtbl[i]) &&
               fdct->quantize == jsimd_quantize)
             fdct->quantize = quantize;
+#else
+          compute_reciprocal(
+            DESCALE(MULTIPLY16V16((JLONG)qtbl->quantval[i],
+                                  (JLONG)aanscales[i]),
+                    CONST_BITS-3), &dtbl[i]);
+#endif
 #else
           dtbl[i] = (DCTELEM)
             DESCALE(MULTIPLY16V16((JLONG)qtbl->quantval[i],

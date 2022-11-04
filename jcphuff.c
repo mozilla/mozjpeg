@@ -21,7 +21,11 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#ifdef WITH_SIMD
 #include "jsimd.h"
+#else
+#include "jchuff.h"
+#endif
 #include <limits.h>
 
 #ifdef HAVE_INTRIN_H
@@ -223,18 +227,22 @@ start_pass_phuff(j_compress_ptr cinfo, boolean gather_statistics)
       entropy->pub.encode_mcu = encode_mcu_DC_first;
     else
       entropy->pub.encode_mcu = encode_mcu_AC_first;
+#ifdef WITH_SIMD
     if (jsimd_can_encode_mcu_AC_first_prepare())
       entropy->AC_first_prepare = jsimd_encode_mcu_AC_first_prepare;
     else
+#endif
       entropy->AC_first_prepare = encode_mcu_AC_first_prepare;
   } else {
     if (is_DC_band)
       entropy->pub.encode_mcu = encode_mcu_DC_refine;
     else {
       entropy->pub.encode_mcu = encode_mcu_AC_refine;
+#ifdef WITH_SIMD
       if (jsimd_can_encode_mcu_AC_refine_prepare())
         entropy->AC_refine_prepare = jsimd_encode_mcu_AC_refine_prepare;
       else
+#endif
         entropy->AC_refine_prepare = encode_mcu_AC_refine_prepare;
       /* AC refinement needs a correction bit buffer */
       if (entropy->bit_buffer == NULL)

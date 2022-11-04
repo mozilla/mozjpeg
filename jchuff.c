@@ -27,7 +27,11 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#ifdef WITH_SIMD
 #include "jsimd.h"
+#else
+#include "jchuff.h"
+#endif
 #include <limits.h>
 
 /*
@@ -180,7 +184,9 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
     entropy->pub.finish_pass = finish_pass_huff;
   }
 
+#ifdef WITH_SIMD
   entropy->simd = jsimd_can_huff_encode_one_block();
+#endif
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
@@ -220,6 +226,7 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
   }
 
   /* Initialize bit buffer to empty */
+#ifdef WITH_SIMD
   if (entropy->simd) {
     entropy->saved.put_buffer.simd = 0;
 #if defined(__aarch64__) && !defined(NEON_INTRINSICS)
@@ -227,7 +234,9 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
 #else
     entropy->saved.free_bits = SIMD_BIT_BUF_SIZE;
 #endif
-  } else {
+  } else
+#endif
+  {
     entropy->saved.put_buffer.c = 0;
     entropy->saved.free_bits = BIT_BUF_SIZE;
   }
@@ -542,6 +551,8 @@ flush_bits(working_state *state)
 }
 
 
+#ifdef WITH_SIMD
+
 /* Encode a single block's worth of coefficients */
 
 LOCAL(boolean)
@@ -560,6 +571,8 @@ encode_one_block_simd(working_state *state, JCOEFPTR block, int last_dc_val,
 
   return TRUE;
 }
+
+#endif
 
 LOCAL(boolean)
 encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
@@ -705,6 +718,7 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   }
 
   /* Encode the MCU data blocks */
+#ifdef WITH_SIMD
   if (entropy->simd) {
     for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
       ci = cinfo->MCU_membership[blkn];
@@ -717,7 +731,9 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       /* Update last_dc_val */
       state.cur.last_dc_val[ci] = MCU_data[blkn][0][0];
     }
-  } else {
+  } else
+#endif
+  {
     for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
       ci = cinfo->MCU_membership[blkn];
       compptr = cinfo->cur_comp_info[ci];

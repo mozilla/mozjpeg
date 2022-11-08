@@ -2,9 +2,10 @@
  * jdlhuff.c
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1991-1998, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains Huffman entropy decoding routines for lossless JPEG.
@@ -30,11 +31,16 @@ typedef struct {
 } lhd_output_ptr_info;
 
 /*
- * Private entropy decoder object for lossless Huffman decoding.
+ * Expanded entropy decoder object for Huffman decoding in lossless mode.
  */
 
 typedef struct {
-  huffd_common_fields;		/* Fields shared with other entropy decoders */
+  struct jpeg_entropy_decoder pub; /* public fields */
+
+  /* These fields are loaded into local variables at start of each MCU.
+   * In case of suspension, we exit WITHOUT updating them.
+   */
+  bitread_perm_state bitstate;	/* Bit buffer at start of MCU */
 
   /* Pointers to derived tables (these workspaces have image lifespan) */
   d_derived_tbl * derived_tbls[NUM_HUFF_TBLS];
@@ -42,12 +48,12 @@ typedef struct {
   /* Precalculated info set up by start_pass for use in decode_mcus: */
 
   /* Pointers to derived tables to be used for each data unit within an MCU */
-  d_derived_tbl * cur_tbls[D_MAX_DATA_UNITS_IN_MCU];
+  d_derived_tbl * cur_tbls[D_MAX_BLOCKS_IN_MCU];
 
   /* Pointers to the proper output difference row for each group of data units
    * within an MCU.  For each component, there are Vi groups of Hi data units.
    */
-  JDIFFROW output_ptr[D_MAX_DATA_UNITS_IN_MCU];
+  JDIFFROW output_ptr[D_MAX_BLOCKS_IN_MCU];
 
   /* Number of output pointers in use for the current MCU.  This is the sum
    * of all Vi in the MCU.
@@ -57,10 +63,10 @@ typedef struct {
   /* Information used for positioning the output pointers within the output
    * difference rows.
    */
-  lhd_output_ptr_info output_ptr_info[D_MAX_DATA_UNITS_IN_MCU];
+  lhd_output_ptr_info output_ptr_info[D_MAX_BLOCKS_IN_MCU];
 
   /* Index of the proper output pointer for each data unit within an MCU */
-  int output_ptr_index[D_MAX_DATA_UNITS_IN_MCU];
+  int output_ptr_index[D_MAX_BLOCKS_IN_MCU];
 
 } lhuff_entropy_decoder;
 
@@ -74,8 +80,7 @@ typedef lhuff_entropy_decoder * lhuff_entropy_ptr;
 METHODDEF(void)
 start_pass_lhuff_decoder (j_decompress_ptr cinfo)
 {
-  j_lossless_d_ptr losslsd = (j_lossless_d_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsd->entropy_private;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
   int ci, dctbl, sampn, ptrn, yoffset, xoffset;
   jpeg_component_info * compptr;
 
@@ -93,7 +98,7 @@ start_pass_lhuff_decoder (j_decompress_ptr cinfo)
   }
 
   /* Precalculate decoding info for each sample in an MCU of this scan */
-  for (sampn = 0, ptrn = 0; sampn < cinfo->data_units_in_MCU;) {
+  for (sampn = 0, ptrn = 0; sampn < cinfo->blocks_in_MCU;) {
     compptr = cinfo->cur_comp_info[cinfo->MCU_membership[sampn]];
     ci = compptr->component_index;
     for (yoffset = 0; yoffset < compptr->MCU_height; yoffset++, ptrn++) {
@@ -114,7 +119,7 @@ start_pass_lhuff_decoder (j_decompress_ptr cinfo)
   /* Initialize bitread state variables */
   entropy->bitstate.bits_left = 0;
   entropy->bitstate.get_buffer = 0; /* unnecessary, but keeps Purify quiet */
-  entropy->insufficient_data = FALSE;
+  entropy->pub.insufficient_data = FALSE;
 }
 
 
@@ -149,12 +154,10 @@ static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
  * Returns FALSE if must suspend.
  */
 
-METHODDEF(boolean)
+LOCAL(boolean)
 process_restart (j_decompress_ptr cinfo)
 {
-  j_lossless_d_ptr losslsd = (j_lossless_d_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsd->entropy_private;
-  int ci;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
 
   /* Throw away any unused bits remaining in bit buffer; */
   /* include any full bytes in next_marker's count of discarded bytes */
@@ -171,23 +174,23 @@ process_restart (j_decompress_ptr cinfo)
    * leaving the flag set.
    */
   if (cinfo->unread_marker == 0)
-    entropy->insufficient_data = FALSE;
+    entropy->pub.insufficient_data = FALSE;
 
   return TRUE;
 }
 
 
 /*
- * Decode and return nMCU's worth of Huffman-compressed differences.
+ * Decode and return nMCU MCUs' worth of Huffman-compressed differences.
  * Each MCU is also disassembled and placed accordingly in diff_buf.
  *
  * MCU_col_num specifies the column of the first MCU being requested within
- * the MCU-row.  This tells us where to position the output row pointers in
+ * the MCU row.  This tells us where to position the output row pointers in
  * diff_buf.
  *
- * Returns the number of MCUs decoded.  This may be less than nMCU if data
- * source requested suspension.  In that case no changes have been made to
- * permanent state.  (Exception: some output differences may already have
+ * Returns the number of MCUs decoded.  This may be less than nMCU MCUs if
+ * data source requested suspension.  In that case no changes have been made
+ * to permanent state.  (Exception: some output differences may already have
  * been assigned.  This is harmless for this module, since we'll just
  * re-assign them on the next call.)
  */
@@ -196,8 +199,8 @@ METHODDEF(JDIMENSION)
 decode_mcus (j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
 	     JDIMENSION MCU_row_num, JDIMENSION MCU_col_num, JDIMENSION nMCU)
 {
-  j_lossless_d_ptr losslsd = (j_lossless_d_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsd->entropy_private;
+  lossless_decomp_ptr losslessd = (lossless_decomp_ptr) cinfo->idct;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
   int mcu_num, sampn, ci, yoffset, MCU_width, ptrn;
   BITREAD_STATE_VARS;
 
@@ -217,12 +220,12 @@ decode_mcus (j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
    * NB: We should find a way to do this without interacting with the
    * undifferencer module directly.
    */
-  if (entropy->insufficient_data) {
+  if (entropy->pub.insufficient_data) {
     for (ptrn = 0; ptrn < entropy->num_output_ptrs; ptrn++)
       jzero_far((void FAR *) entropy->output_ptr[ptrn],
 		nMCU * entropy->output_ptr_info[ptrn].MCU_width * SIZEOF(JDIFF));
 
-    (*losslsd->predict_process_restart) (cinfo);
+    (*losslessd->predict_process_restart) (cinfo);
   }
 
   else {
@@ -230,12 +233,12 @@ decode_mcus (j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
     /* Load up working state */
     BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
 
-    /* Outer loop handles the number of MCU requested */
+    /* Outer loop handles the number of MCUs requested */
 
     for (mcu_num = 0; mcu_num < nMCU; mcu_num++) {
 
       /* Inner loop handles the samples in the MCU */
-      for (sampn = 0; sampn < cinfo->data_units_in_MCU; sampn++) {
+      for (sampn = 0; sampn < cinfo->blocks_in_MCU; sampn++) {
 	d_derived_tbl * dctbl = entropy->cur_tbls[sampn];
 	register int s, r;
 
@@ -265,23 +268,22 @@ decode_mcus (j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
 
 
 /*
- * Module initialization routine for lossless Huffman entropy decoding.
+ * Module initialization routine for lossless mode Huffman entropy decoding.
  */
 
 GLOBAL(void)
 jinit_lhuff_decoder (j_decompress_ptr cinfo)
 {
-  j_lossless_d_ptr losslsd = (j_lossless_d_ptr) cinfo->codec;
   lhuff_entropy_ptr entropy;
   int i;
 
   entropy = (lhuff_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(lhuff_entropy_decoder));
-  losslsd->entropy_private = (void *) entropy;
-  losslsd->entropy_start_pass = start_pass_lhuff_decoder;
-  losslsd->entropy_process_restart = process_restart;
-  losslsd->entropy_decode_mcus = decode_mcus;
+  cinfo->entropy = (struct jpeg_entropy_decoder *) entropy;
+  entropy->pub.start_pass = start_pass_lhuff_decoder;
+  entropy->pub.decode_mcus = decode_mcus;
+  entropy->pub.process_restart = process_restart;
 
   /* Mark tables unallocated */
   for (i = 0; i < NUM_HUFF_TBLS; i++) {

@@ -2,7 +2,7 @@
  * jmorecfg.h
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1991-1998, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * For conditions of distribution and use, see the accompanying README file.
@@ -126,13 +126,6 @@ typedef short JSAMPLE;
  */
 
 typedef short JCOEF;
-
-
-/* Representation of a spatial difference value.
- * This should be a signed value of at least 16 bits; int is usually OK.
- */
-
-typedef int JDIFF;
 
 
 /* Compressed datastreams are represented as arrays of JOCTET.
@@ -309,7 +302,7 @@ typedef int boolean;
 #define ENTROPY_OPT_SUPPORTED	    /* Optimization of entropy coding parms? */
 /* Note: if you selected 12-bit data precision, it is dangerous to turn off
  * ENTROPY_OPT_SUPPORTED.  The standard Huffman tables are only good for 8-bit
- * precision, so jcshuff.c normally uses entropy optimization to compute
+ * precision, so jchuff.c normally uses entropy optimization to compute
  * usable tables for higher precision.  If you don't want to do optimization,
  * you'll have to supply different default Huffman tables.
  * The exact same statements apply for progressive and lossless JPEG:

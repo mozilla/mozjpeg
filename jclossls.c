@@ -5,9 +5,11 @@
  * Copyright (C) 1998, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
- * This file contains the control logic for the lossless JPEG compressor.
+ * This file contains prediction, sample differencing, and point transform
+ * routines for the lossless JPEG compressor.
  */
 
 #define JPEG_INTERNALS
@@ -15,66 +17,301 @@
 #include "jpeglib.h"
 #include "jlossls.h"
 
-
 #ifdef C_LOSSLESS_SUPPORTED
+
+
+/************************** Sample differencing **************************/
+
+/*
+ * In order to avoid a performance penalty for checking which predictor is
+ * being used and which row is being processed for each call of the
+ * undifferencer, and to promote optimization, we have separate differencing
+ * functions for each predictor selection value.
+ *
+ * We are able to avoid duplicating source code by implementing the predictors
+ * and differencers as macros.  Each of the differencing functions is simply a
+ * wrapper around a DIFFERENCE macro with the appropriate PREDICTOR macro
+ * passed as an argument.
+ */
+
+/* Forward declarations */
+LOCAL(void) reset_predictor JPP((j_compress_ptr cinfo, int ci));
+
+
+/* Predictor for the first column of the first row: 2^(P-Pt-1) */
+#define INITIAL_PREDICTORx	(1 << (cinfo->data_precision - cinfo->Al - 1))
+
+/* Predictor for the first column of the remaining rows: Rb */
+#define INITIAL_PREDICTOR2	GETJSAMPLE(prev_row[0])
+
+
+/*
+ * 1-Dimensional differencer routine.
+ *
+ * This macro implements the 1-D horizontal predictor (1).  INITIAL_PREDICTOR
+ * is used as the special case predictor for the first column, which must be
+ * either INITIAL_PREDICTOR2 or INITIAL_PREDICTORx.  The remaining samples
+ * use PREDICTOR1.
+ */
+
+#define DIFFERENCE_1D(INITIAL_PREDICTOR) \
+  lossless_comp_ptr losslessc = (lossless_comp_ptr) cinfo->fdct; \
+  boolean restart = FALSE; \
+  int samp, Ra; \
+  \
+  samp = GETJSAMPLE(*input_buf++); \
+  *diff_buf++ = samp - INITIAL_PREDICTOR; \
+  \
+  while (--width) { \
+    Ra = samp; \
+    samp = GETJSAMPLE(*input_buf++); \
+    *diff_buf++ = samp - PREDICTOR1; \
+  } \
+  \
+  /* Account for restart interval (no-op if not using restarts) */ \
+  if (cinfo->restart_interval) { \
+    if (--(losslessc->restart_rows_to_go[ci]) == 0) { \
+      reset_predictor(cinfo, ci); \
+      restart = TRUE; \
+    } \
+  }
+
+
+/*
+ * 2-Dimensional differencer routine.
+ *
+ * This macro implements the 2-D horizontal predictors (#2-7).  PREDICTOR2 is
+ * used as the special case predictor for the first column.  The remaining
+ * samples use PREDICTOR, which is a function of Ra, Rb, and Rc.
+ *
+ * Because prev_row and output_buf may point to the same storage area (in an
+ * interleaved image with Vi=1, for example), we must take care to buffer Rb/Rc
+ * before writing the current reconstructed sample value into output_buf.
+ */
+
+#define DIFFERENCE_2D(PREDICTOR) \
+  lossless_comp_ptr losslessc = (lossless_comp_ptr) cinfo->fdct; \
+  int samp, Ra, Rb, Rc; \
+  \
+  Rb = GETJSAMPLE(*prev_row++); \
+  samp = GETJSAMPLE(*input_buf++); \
+  *diff_buf++ = samp - PREDICTOR2; \
+  \
+  while (--width) { \
+    Rc = Rb; \
+    Rb = GETJSAMPLE(*prev_row++); \
+    Ra = samp; \
+    samp = GETJSAMPLE(*input_buf++); \
+    *diff_buf++ = samp - PREDICTOR; \
+  } \
+  \
+  /* Account for restart interval (no-op if not using restarts) */ \
+  if (cinfo->restart_interval) { \
+    if (--losslessc->restart_rows_to_go[ci] == 0) \
+      reset_predictor(cinfo, ci); \
+  }
+
+
+/*
+ * Differencers for the second and subsequent rows in a scan or restart
+ * interval.  The first sample in the row is differenced using the vertical
+ * predictor (2).  The rest of the samples are differenced using the predictor
+ * specified in the scan header.
+ */
+
+METHODDEF(void)
+jpeg_difference1(j_compress_ptr cinfo, int ci,
+		 JSAMPROW input_buf, JSAMPROW prev_row,
+		 JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_1D(INITIAL_PREDICTOR2);
+  (void)(restart);
+}
+
+METHODDEF(void)
+jpeg_difference2(j_compress_ptr cinfo, int ci,
+		 JSAMPROW input_buf, JSAMPROW prev_row,
+		 JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_2D(PREDICTOR2);
+  (void)(Ra);
+  (void)(Rc);
+}
+
+METHODDEF(void)
+jpeg_difference3(j_compress_ptr cinfo, int ci,
+		 JSAMPROW input_buf, JSAMPROW prev_row,
+		 JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_2D(PREDICTOR3);
+  (void)(Ra);
+}
+
+METHODDEF(void)
+jpeg_difference4(j_compress_ptr cinfo, int ci,
+		 JSAMPROW input_buf, JSAMPROW prev_row,
+		 JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_2D(PREDICTOR4);
+}
+
+METHODDEF(void)
+jpeg_difference5(j_compress_ptr cinfo, int ci,
+		 JSAMPROW input_buf, JSAMPROW prev_row,
+		 JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_2D(PREDICTOR5);
+}
+
+METHODDEF(void)
+jpeg_difference6(j_compress_ptr cinfo, int ci,
+		 JSAMPROW input_buf, JSAMPROW prev_row,
+		 JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_2D(PREDICTOR6);
+}
+
+METHODDEF(void)
+jpeg_difference7(j_compress_ptr cinfo, int ci,
+		 JSAMPROW input_buf, JSAMPROW prev_row,
+		 JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_2D(PREDICTOR7);
+  (void)(Rc);
+}
+
+
+/*
+ * Differencer for the first row in a scan or restart interval.  The first
+ * sample in the row is differenced using the special predictor constant
+ * x=2^(P-Pt-1).  The rest of the samples are differenced using the
+ * 1-D horizontal predictor (1).
+ */
+
+METHODDEF(void)
+jpeg_difference_first_row(j_compress_ptr cinfo, int ci,
+			  JSAMPROW input_buf, JSAMPROW prev_row,
+			  JDIFFROW diff_buf, JDIMENSION width)
+{
+  DIFFERENCE_1D(INITIAL_PREDICTORx);
+
+  /*
+   * Now that we have differenced the first row, we want to use the
+   * differencer that corresponds to the predictor specified in the
+   * scan header.
+   *
+   * Note that we don't do this if we have just reset the predictor
+   * for a new restart interval.
+   */
+  if (! restart) {
+    switch (cinfo->Ss) {
+    case 1:
+      losslessc->predict_difference[ci] = jpeg_difference1;
+      break;
+    case 2:
+      losslessc->predict_difference[ci] = jpeg_difference2;
+      break;
+    case 3:
+      losslessc->predict_difference[ci] = jpeg_difference3;
+      break;
+    case 4:
+      losslessc->predict_difference[ci] = jpeg_difference4;
+      break;
+    case 5:
+      losslessc->predict_difference[ci] = jpeg_difference5;
+      break;
+    case 6:
+      losslessc->predict_difference[ci] = jpeg_difference6;
+      break;
+    case 7:
+      losslessc->predict_difference[ci] = jpeg_difference7;
+      break;
+    }
+  }
+}
+
+/*
+ * Reset predictor at the start of a pass or restart interval.
+ */
+
+LOCAL(void)
+reset_predictor (j_compress_ptr cinfo, int ci)
+{
+  lossless_comp_ptr losslessc = (lossless_comp_ptr) cinfo->fdct;
+
+  /* Initialize restart counter */
+  losslessc->restart_rows_to_go[ci] =
+    cinfo->restart_interval / cinfo->MCUs_per_row;
+
+  /* Set difference function to first row function */
+  losslessc->predict_difference[ci] = jpeg_difference_first_row;
+}
+
+
+/********************** Sample downscaling by 2^Pt ***********************/
+
+METHODDEF(void)
+simple_downscale(j_compress_ptr cinfo,
+		 JSAMPROW input_buf, JSAMPROW output_buf, JDIMENSION width)
+{
+  while (width--)
+    *output_buf++ = (JSAMPLE) RIGHT_SHIFT(GETJSAMPLE(*input_buf++), cinfo->Al);
+}
+
+
+METHODDEF(void)
+noscale(j_compress_ptr cinfo,
+	JSAMPROW input_buf, JSAMPROW output_buf, JDIMENSION width)
+{
+  MEMCOPY(output_buf, input_buf, width * SIZEOF(JSAMPLE));
+  return;
+}
+
 
 /*
  * Initialize for a processing pass.
  */
 
 METHODDEF(void)
-start_pass (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
+start_pass_lossless (j_compress_ptr cinfo)
 {
-  j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
+  lossless_comp_ptr losslessc = (lossless_comp_ptr) cinfo->fdct;
+  int ci;
 
-  (*losslsc->scaler_start_pass) (cinfo);
-  (*losslsc->predict_start_pass) (cinfo);
-  (*losslsc->diff_start_pass) (cinfo, pass_mode);
+  /* Set scaler function based on Pt */
+  if (cinfo->Al)
+    losslessc->scaler_scale = simple_downscale;
+  else
+    losslessc->scaler_scale = noscale;
+
+  /* Check that the restart interval is an integer multiple of the number 
+   * of MCUs in an MCU row.
+   */
+  if (cinfo->restart_interval % cinfo->MCUs_per_row != 0)
+    ERREXIT2(cinfo, JERR_BAD_RESTART,
+	     cinfo->restart_interval, cinfo->MCUs_per_row);
+
+  /* Set predictors for start of pass */
+  for (ci = 0; ci < cinfo->num_components; ci++)
+    reset_predictor(cinfo, ci);
 }
 
 
 /*
- * Initialize the lossless compression codec.
- * This is called only once, during master selection.
+ * Initialize the lossless compressor.
  */
 
 GLOBAL(void) 
-jinit_lossless_c_codec(j_compress_ptr cinfo)
+jinit_lossless_compressor(j_compress_ptr cinfo)
 {
-  j_lossless_c_ptr losslsc;
+  lossless_comp_ptr losslessc;
 
   /* Create subobject in permanent pool */
-  losslsc = (j_lossless_c_ptr)
+  losslessc = (lossless_comp_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				SIZEOF(jpeg_lossless_c_codec));
-  cinfo->codec = (struct jpeg_c_codec *) losslsc;
-
-  /* Initialize sub-modules */
-
-  /* Scaler */
-  jinit_c_scaler(cinfo);
-
-  /* Differencer */
-  jinit_differencer(cinfo);
-
-  /* Entropy encoding: either Huffman or arithmetic coding. */
-  if (cinfo->arith_code) {
-    ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
-  } else {
-    jinit_lhuff_encoder(cinfo);
-  }
-
-  /* Need a full-image difference buffer in any multi-pass mode. */
-  jinit_c_diff_controller(cinfo,
-			  (boolean) (cinfo->num_scans > 1 ||
-				     cinfo->optimize_coding));
-
-  /* Initialize method pointers.
-   *
-   * Note: entropy_start_pass and entropy_finish_pass are assigned in
-   * jclhuff.c and compress_data is assigned in jcdiffct.c.
-   */
-  losslsc->pub.start_pass = start_pass;
+				SIZEOF(jpeg_lossless_compressor));
+  cinfo->fdct = (struct jpeg_forward_dct *) losslessc;
+  losslessc->pub.start_pass = start_pass_lossless;
 }
 
 #endif /* C_LOSSLESS_SUPPORTED */

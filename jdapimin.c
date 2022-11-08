@@ -5,6 +5,7 @@
  * Copyright (C) 1994-1998, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the decompression half
@@ -21,6 +22,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jdmaster.h"
 
 
 /*
@@ -82,6 +84,14 @@ jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
 
   /* OK, I'm ready */
   cinfo->global_state = DSTATE_START;
+
+  /* The master struct is used to store extension parameters, so we allocate it
+   * here.
+   */
+  cinfo->master = (struct jpeg_decomp_master *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+				  SIZEOF(my_decomp_master));
+  MEMZERO(cinfo->master, SIZEOF(my_decomp_master));
 }
 
 
@@ -151,14 +161,11 @@ default_decompress_parms (j_decompress_ptr cinfo)
       else if (cid0 == 82 && cid1 == 71 && cid2 == 66)
 	cinfo->jpeg_color_space = JCS_RGB; /* ASCII 'R', 'G', 'B' */
       else {
-	if (cinfo->process == JPROC_LOSSLESS) {
-	  TRACEMS3(cinfo, 1, JTRC_UNKNOWN_LOSSLESS_IDS, cid0, cid1, cid2);
+	TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);
+	if (cinfo->master->lossless)
 	  cinfo->jpeg_color_space = JCS_RGB; /* assume it's RGB */
-	}
-	else {  /* Lossy processes */
-	  TRACEMS3(cinfo, 1, JTRC_UNKNOWN_LOSSY_IDS, cid0, cid1, cid2);
+	else
 	  cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
-	}
       }
     }
     /* Always guess RGB is proper output colorspace. */

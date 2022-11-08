@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Lossless JPEG Modifications:
- * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the compression half
@@ -124,6 +124,9 @@ jpeg_write_raw_data (j_compress_ptr cinfo, JSAMPIMAGE data,
 {
   JDIMENSION lines_per_iMCU_row;
 
+  if (cinfo->master->lossless)
+    ERREXIT(cinfo, JERR_NOTIMPL);
+
   if (cinfo->global_state != CSTATE_RAW_OK)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
   if (cinfo->next_scanline >= cinfo->image_height) {
@@ -147,12 +150,12 @@ jpeg_write_raw_data (j_compress_ptr cinfo, JSAMPIMAGE data,
     (*cinfo->master->pass_startup) (cinfo);
 
   /* Verify that at least one iMCU row has been passed. */
-  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->data_unit;
+  lines_per_iMCU_row = cinfo->max_v_samp_factor * DCTSIZE;
   if (num_lines < lines_per_iMCU_row)
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Directly compress the row. */
-  if (! (*cinfo->codec->compress_data) (cinfo, data)) {
+  if (! (*cinfo->coef->compress_data) (cinfo, data)) {
     /* If compressor did not consume the whole row, suspend processing. */
     return 0;
   }

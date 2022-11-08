@@ -2,9 +2,10 @@
  * jcmainct.c
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1994-1998, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the main buffer controller for compression.
@@ -117,7 +118,7 @@ process_data_simple_main (j_compress_ptr cinfo,
 			  JDIMENSION in_rows_avail)
 {
   my_main_ptr main = (my_main_ptr) cinfo->main;
-  int data_unit = cinfo->data_unit;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   while (main->cur_iMCU_row < cinfo->total_iMCU_rows) {
     /* Read input data if we haven't filled the main buffer yet */
@@ -135,7 +136,7 @@ process_data_simple_main (j_compress_ptr cinfo,
       return;
 
     /* Send the completed row to the compressor */
-    if (! (*cinfo->codec->compress_data) (cinfo, main->buffer)) {
+    if (! (*cinfo->coef->compress_data) (cinfo, main->buffer)) {
       /* If compressor did not consume the whole row, then we must need to
        * suspend processing and return to the application.  In this situation
        * we pretend we didn't yet consume the last input row; otherwise, if
@@ -177,7 +178,7 @@ process_data_buffer_main (j_compress_ptr cinfo,
   int ci;
   jpeg_component_info *compptr;
   boolean writing = (main->pass_mode != JBUF_CRANK_DEST);
-  int data_unit = cinfo->data_unit;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   while (main->cur_iMCU_row < cinfo->total_iMCU_rows) {
     /* Realign the virtual buffers if at the start of an iMCU row. */
@@ -210,7 +211,7 @@ process_data_buffer_main (j_compress_ptr cinfo,
 
     /* Emit data, unless this is a sink-only pass. */
     if (main->pass_mode != JBUF_SAVE_SOURCE) {
-      if (! (*cinfo->codec->compress_data) (cinfo, main->buffer)) {
+      if (! (*cinfo->coef->compress_data) (cinfo, main->buffer)) {
 	/* If compressor did not consume the whole row, then we must need to
 	 * suspend processing and return to the application.  In this situation
 	 * we pretend we didn't yet consume the last input row; otherwise, if
@@ -251,7 +252,7 @@ jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
   my_main_ptr main;
   int ci;
   jpeg_component_info *compptr;
-  int data_unit = cinfo->data_unit;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   main = (my_main_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
@@ -274,8 +275,8 @@ jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 	 ci++, compptr++) {
       main->whole_image[ci] = (*cinfo->mem->request_virt_sarray)
 	((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
-	 compptr->width_in_data_units * data_unit,
-	 (JDIMENSION) jround_up((long) compptr->height_in_data_units,
+	 compptr->width_in_blocks * data_unit,
+	 (JDIMENSION) jround_up((long) compptr->height_in_blocks,
 				(long) compptr->v_samp_factor) * data_unit,
 	 (JDIMENSION) (compptr->v_samp_factor * data_unit));
     }
@@ -291,7 +292,7 @@ jinit_c_main_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 	 ci++, compptr++) {
       main->buffer[ci] = (*cinfo->mem->alloc_sarray)
 	((j_common_ptr) cinfo, JPOOL_IMAGE,
-	 compptr->width_in_data_units * data_unit,
+	 compptr->width_in_blocks * data_unit,
 	 (JDIMENSION) (compptr->v_samp_factor * data_unit));
     }
   }

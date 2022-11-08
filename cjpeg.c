@@ -5,6 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains a command-line user interface for the JPEG compressor.
@@ -159,13 +160,13 @@ usage (void)
 #ifdef C_PROGRESSIVE_SUPPORTED
   fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
 #endif
-#ifdef C_LOSSLESS_SUPPORTED
-  fprintf(stderr, "  -lossless psv[,Pt]  Create lossless JPEG file\n");
-#endif
 #ifdef TARGA_SUPPORTED
   fprintf(stderr, "  -targa         Input file is Targa format (usually not needed)\n");
 #endif
   fprintf(stderr, "Switches for advanced users:\n");
+#ifdef C_LOSSLESS_SUPPORTED
+  fprintf(stderr, "  -lossless psv[,Pt]  Create lossless JPEG file\n");
+#endif
 #ifdef DCT_ISLOW_SUPPORTED
   fprintf(stderr, "  -dct int       Use integer DCT method%s\n",
 	  (JDCT_DEFAULT == JDCT_ISLOW ? " (default)" : ""));
@@ -214,6 +215,9 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 {
   int argn;
   char * arg;
+#ifdef C_LOSSLESS_SUPPORTED
+  int psv, pt = 0;
+#endif
   int quality;			/* -quality parameter */
   int q_scale_factor;		/* scaling percentage for -qtables */
   boolean force_baseline;
@@ -222,7 +226,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
   char * qslotsarg = NULL;	/* saves -qslots parm if any */
   char * samplearg = NULL;	/* saves -sample parm if any */
   char * scansarg = NULL;	/* saves -scans parm if any */
-  char * losslsarg = NULL;	/* saves -lossless parm if any */
 
   /* Set up default JPEG parameters. */
   /* Note that default -quality level need not, and does not,
@@ -294,12 +297,20 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
       jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
 
     } else if (keymatch(arg, "lossless", 1)) {
-/* Select simple lossless mode. */
+      /* Enable lossless mode. */
 #ifdef C_LOSSLESS_SUPPORTED
+      char ch = ',', *ptr;
+
       if (++argn >= argc)	/* advance to next argument */
 	usage();
-      losslsarg = argv[argn];
-      /* We must postpone execution until num_components is known. */
+      if (sscanf(argv[argn], "%d%c", &psv, &ch) < 1 || ch != ',')
+	usage();
+      ptr = argv[argn];
+      while (*ptr && *ptr++ != ',') /* advance to next segment of arg string */
+	;
+      if (*ptr)
+	sscanf(ptr, "%d", &pt);
+      jpeg_enable_lossless(cinfo, psv, pt);
 #else
       fprintf(stderr, "%s: sorry, lossless output was not compiled\n",
 	      progname);
@@ -459,12 +470,6 @@ parse_switches (j_compress_ptr cinfo, int argc, char **argv,
 #ifdef C_PROGRESSIVE_SUPPORTED
     if (simple_progressive)	/* process -progressive; -scans can override */
       jpeg_simple_progression(cinfo);
-#endif
-
-#ifdef C_LOSSLESS_SUPPORTED
-    if (losslsarg != NULL)	/* process -lossless if it was present */
-      if (! set_simple_lossless(cinfo, losslsarg))
-	usage();
 #endif
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED

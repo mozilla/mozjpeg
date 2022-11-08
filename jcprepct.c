@@ -2,9 +2,10 @@
  * jcprepct.c
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1994-1998, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the compression preprocessing controller.
@@ -137,6 +138,7 @@ pre_process_data (j_compress_ptr cinfo,
   int numrows, ci;
   JDIMENSION inrows;
   jpeg_component_info * compptr;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   while (*in_row_ctr < in_rows_avail &&
 	 *out_row_group_ctr < out_row_groups_avail) {
@@ -176,7 +178,7 @@ pre_process_data (j_compress_ptr cinfo,
       for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
 	   ci++, compptr++) {
 	expand_bottom_edge(output_buf[ci],
-			   compptr->width_in_data_units * cinfo->data_unit,
+			   compptr->width_in_blocks * data_unit,
 			   (int) (*out_row_group_ctr * compptr->v_samp_factor),
 			   (int) (out_row_groups_avail * compptr->v_samp_factor));
       }
@@ -273,6 +275,7 @@ create_context_buffer (j_compress_ptr cinfo)
   int ci, i;
   jpeg_component_info * compptr;
   JSAMPARRAY true_buffer, fake_buffer;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   /* Grab enough space for fake row pointers for all the components;
    * we need five row groups' worth of pointers for each component.
@@ -290,7 +293,7 @@ create_context_buffer (j_compress_ptr cinfo)
      */
     true_buffer = (*cinfo->mem->alloc_sarray)
       ((j_common_ptr) cinfo, JPOOL_IMAGE,
-       (JDIMENSION) (((long) compptr->width_in_data_units * cinfo->data_unit *
+       (JDIMENSION) (((long) compptr->width_in_blocks * data_unit *
 		      cinfo->max_h_samp_factor) / compptr->h_samp_factor),
        (JDIMENSION) (3 * rgroup_height));
     /* Copy true buffer row pointers into the middle of the fake row array */
@@ -319,6 +322,7 @@ jinit_c_prep_controller (j_compress_ptr cinfo, boolean need_full_buffer)
   my_prep_ptr prep;
   int ci;
   jpeg_component_info * compptr;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   if (need_full_buffer)		/* safety check */
     ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
@@ -348,7 +352,7 @@ jinit_c_prep_controller (j_compress_ptr cinfo, boolean need_full_buffer)
 	 ci++, compptr++) {
       prep->color_buf[ci] = (*cinfo->mem->alloc_sarray)
 	((j_common_ptr) cinfo, JPOOL_IMAGE,
-	 (JDIMENSION) (((long) compptr->width_in_data_units * cinfo->data_unit *
+	 (JDIMENSION) (((long) compptr->width_in_blocks * data_unit *
 			cinfo->max_h_samp_factor) / compptr->h_samp_factor),
 	 (JDIMENSION) cinfo->max_v_samp_factor);
     }

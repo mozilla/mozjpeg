@@ -5,6 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to write JPEG datastream markers.
@@ -324,7 +325,7 @@ emit_sos (j_compress_ptr cinfo)
     emit_byte(cinfo, compptr->component_id);
     td = compptr->dc_tbl_no;
     ta = compptr->ac_tbl_no;
-    if (cinfo->process == JPROC_PROGRESSIVE) {
+    if (cinfo->progressive_mode) {
       /* Progressive mode: only DC or only AC tables are used in one scan;
        * furthermore, Huffman coding of DC refinement uses no table at all.
        * We emit 0 for unused field(s); this is recommended by the P&M text
@@ -495,15 +496,14 @@ write_file_header (j_compress_ptr cinfo)
 METHODDEF(void)
 write_frame_header (j_compress_ptr cinfo)
 {
-  int ci, prec;
+  int ci, prec = 0;
   boolean is_baseline;
   jpeg_component_info *compptr;
 
-  if (cinfo->process != JPROC_LOSSLESS) {
+  if (! cinfo->master->lossless) {
     /* Emit DQT for each quantization table.
      * Note that emit_dqt() suppresses any duplicate tables.
      */
-    prec = 0;
     for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
 	 ci++, compptr++) {
       prec += emit_dqt(cinfo, compptr->quant_tbl_no);
@@ -514,8 +514,8 @@ write_frame_header (j_compress_ptr cinfo)
   /* Check for a non-baseline specification.
    * Note we assume that Huffman table numbers won't be changed later.
    */
-  if (cinfo->arith_code || cinfo->process != JPROC_SEQUENTIAL ||
-      cinfo->data_precision != 8) {
+  if (cinfo->arith_code || cinfo->progressive_mode ||
+      cinfo->master->lossless || cinfo->data_precision != 8) {
     is_baseline = FALSE;
   } else {
     is_baseline = TRUE;
@@ -535,9 +535,9 @@ write_frame_header (j_compress_ptr cinfo)
   if (cinfo->arith_code) {
     emit_sof(cinfo, M_SOF9);	/* SOF code for arithmetic coding */
   } else {
-    if (cinfo->process == JPROC_PROGRESSIVE)
+    if (cinfo->progressive_mode)
       emit_sof(cinfo, M_SOF2);	/* SOF code for progressive Huffman */
-    else if (cinfo->process == JPROC_LOSSLESS)
+    else if (cinfo->master->lossless)
       emit_sof(cinfo, M_SOF3);	/* SOF code for lossless Huffman */
     else if (is_baseline)
       emit_sof(cinfo, M_SOF0);	/* SOF code for baseline implementation */
@@ -572,7 +572,7 @@ write_scan_header (j_compress_ptr cinfo)
      */
     for (i = 0; i < cinfo->comps_in_scan; i++) {
       compptr = cinfo->cur_comp_info[i];
-      if (cinfo->process == JPROC_PROGRESSIVE) {
+      if (cinfo->progressive_mode) {
 	/* Progressive mode: only DC or only AC tables are used in one scan */
 	if (cinfo->Ss == 0) {
 	  if (cinfo->Ah == 0)	/* DC needs no table for refinement scan */
@@ -580,7 +580,7 @@ write_scan_header (j_compress_ptr cinfo)
 	} else {
 	  emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
 	}
-      } else if (cinfo->process == JPROC_LOSSLESS) {
+      } else if (cinfo->master->lossless) {
 	/* Lossless mode: only DC tables are used */
 	emit_dht(cinfo, compptr->dc_tbl_no, FALSE);
       } else {

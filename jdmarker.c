@@ -5,6 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains routines to decode JPEG datastream markers.
@@ -236,8 +237,8 @@ get_soi (j_decompress_ptr cinfo)
 
 
 LOCAL(boolean)
-get_sof (j_decompress_ptr cinfo, J_CODEC_PROCESS process, boolean is_arith,
-	 int data_unit)
+get_sof (j_decompress_ptr cinfo, boolean is_prog, boolean is_lossless,
+	 boolean is_arith)
 /* Process a SOFn marker */
 {
   INT32 length;
@@ -245,8 +246,8 @@ get_sof (j_decompress_ptr cinfo, J_CODEC_PROCESS process, boolean is_arith,
   jpeg_component_info * compptr;
   INPUT_VARS(cinfo);
 
-  cinfo->data_unit = data_unit;
-  cinfo->process = process;
+  cinfo->progressive_mode = is_prog;
+  cinfo->master->lossless = is_lossless;
   cinfo->arith_code = is_arith;
 
   INPUT_2BYTES(cinfo, length, return FALSE);
@@ -980,32 +981,32 @@ read_markers (j_decompress_ptr cinfo)
 
     case M_SOF0:		/* Baseline */
     case M_SOF1:		/* Extended sequential, Huffman */
-      if (! get_sof(cinfo, JPROC_SEQUENTIAL, FALSE, DCTSIZE))
+      if (! get_sof(cinfo, FALSE, FALSE, FALSE))
 	return JPEG_SUSPENDED;
       break;
 
     case M_SOF2:		/* Progressive, Huffman */
-      if (! get_sof(cinfo, JPROC_PROGRESSIVE, FALSE, DCTSIZE))
+      if (! get_sof(cinfo, TRUE, FALSE, FALSE))
 	return JPEG_SUSPENDED;
       break;
 
     case M_SOF3:		/* Lossless, Huffman */
-      if (! get_sof(cinfo, JPROC_LOSSLESS, FALSE, 1))
+      if (! get_sof(cinfo, FALSE, TRUE, FALSE))
 	return JPEG_SUSPENDED;
       break;
 
     case M_SOF9:		/* Extended sequential, arithmetic */
-      if (! get_sof(cinfo, JPROC_SEQUENTIAL, TRUE, DCTSIZE))
+      if (! get_sof(cinfo, FALSE, FALSE, TRUE))
 	return JPEG_SUSPENDED;
       break;
 
     case M_SOF10:		/* Progressive, arithmetic */
-      if (! get_sof(cinfo, JPROC_PROGRESSIVE, TRUE, DCTSIZE))
+      if (! get_sof(cinfo, TRUE, FALSE, TRUE))
 	return JPEG_SUSPENDED;
       break;
 
     case M_SOF11:		/* Lossless, arithmetic */
-      if (! get_sof(cinfo, JPROC_LOSSLESS, TRUE, 1))
+      if (! get_sof(cinfo, FALSE, TRUE, TRUE))
 	return JPEG_SUSPENDED;
       break;
 

@@ -1,10 +1,8 @@
 /*
  * transupp.c
  *
- * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1997-1998, Thomas G. Lane.
- * Lossless JPEG Modifications:
- * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 1997, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains image transformation routines and other utility code
@@ -86,7 +84,7 @@ do_flip_h (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
     comp_width = MCU_cols * compptr->h_samp_factor;
-    for (blk_y = 0; blk_y < compptr->height_in_data_units;
+    for (blk_y = 0; blk_y < compptr->height_in_blocks;
 	 blk_y += compptr->v_samp_factor) {
       buffer = (*srcinfo->mem->access_virt_barray)
 	((j_common_ptr) srcinfo, src_coef_arrays[ci], blk_y,
@@ -138,7 +136,7 @@ do_flip_v (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
     comp_height = MCU_rows * compptr->v_samp_factor;
-    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_data_units;
+    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_blocks;
 	 dst_blk_y += compptr->v_samp_factor) {
       dst_buffer = (*srcinfo->mem->access_virt_barray)
 	((j_common_ptr) srcinfo, dst_coef_arrays[ci], dst_blk_y,
@@ -160,7 +158,7 @@ do_flip_v (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
 	  /* Row is within the mirrorable area. */
 	  dst_row_ptr = dst_buffer[offset_y];
 	  src_row_ptr = src_buffer[compptr->v_samp_factor - offset_y - 1];
-	  for (dst_blk_x = 0; dst_blk_x < compptr->width_in_data_units;
+	  for (dst_blk_x = 0; dst_blk_x < compptr->width_in_blocks;
 	       dst_blk_x++) {
 	    dst_ptr = dst_row_ptr[dst_blk_x];
 	    src_ptr = src_row_ptr[dst_blk_x];
@@ -176,7 +174,7 @@ do_flip_v (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
 	} else {
 	  /* Just copy row verbatim. */
 	  jcopy_block_row(src_buffer[offset_y], dst_buffer[offset_y],
-			  compptr->width_in_data_units);
+			  compptr->width_in_blocks);
 	}
       }
     }
@@ -203,13 +201,13 @@ do_transpose (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
    */
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
-    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_data_units;
+    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_blocks;
 	 dst_blk_y += compptr->v_samp_factor) {
       dst_buffer = (*srcinfo->mem->access_virt_barray)
 	((j_common_ptr) srcinfo, dst_coef_arrays[ci], dst_blk_y,
 	 (JDIMENSION) compptr->v_samp_factor, TRUE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_data_units;
+	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_blocks;
 	     dst_blk_x += compptr->h_samp_factor) {
 	  src_buffer = (*srcinfo->mem->access_virt_barray)
 	    ((j_common_ptr) srcinfo, src_coef_arrays[ci], dst_blk_x,
@@ -253,13 +251,13 @@ do_rot_90 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
     comp_width = MCU_cols * compptr->h_samp_factor;
-    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_data_units;
+    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_blocks;
 	 dst_blk_y += compptr->v_samp_factor) {
       dst_buffer = (*srcinfo->mem->access_virt_barray)
 	((j_common_ptr) srcinfo, dst_coef_arrays[ci], dst_blk_y,
 	 (JDIMENSION) compptr->v_samp_factor, TRUE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_data_units;
+	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_blocks;
 	     dst_blk_x += compptr->h_samp_factor) {
 	  src_buffer = (*srcinfo->mem->access_virt_barray)
 	    ((j_common_ptr) srcinfo, src_coef_arrays[ci], dst_blk_x,
@@ -317,13 +315,13 @@ do_rot_270 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
   for (ci = 0; ci < dstinfo->num_components; ci++) {
     compptr = dstinfo->comp_info + ci;
     comp_height = MCU_rows * compptr->v_samp_factor;
-    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_data_units;
+    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_blocks;
 	 dst_blk_y += compptr->v_samp_factor) {
       dst_buffer = (*srcinfo->mem->access_virt_barray)
 	((j_common_ptr) srcinfo, dst_coef_arrays[ci], dst_blk_y,
 	 (JDIMENSION) compptr->v_samp_factor, TRUE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_data_units;
+	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_blocks;
 	     dst_blk_x += compptr->h_samp_factor) {
 	  src_buffer = (*srcinfo->mem->access_virt_barray)
 	    ((j_common_ptr) srcinfo, src_coef_arrays[ci], dst_blk_x,
@@ -380,7 +378,7 @@ do_rot_180 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
     compptr = dstinfo->comp_info + ci;
     comp_width = MCU_cols * compptr->h_samp_factor;
     comp_height = MCU_rows * compptr->v_samp_factor;
-    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_data_units;
+    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_blocks;
 	 dst_blk_y += compptr->v_samp_factor) {
       dst_buffer = (*srcinfo->mem->access_virt_barray)
 	((j_common_ptr) srcinfo, dst_coef_arrays[ci], dst_blk_y,
@@ -420,7 +418,7 @@ do_rot_180 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
 	    }
 	  }
 	  /* Any remaining right-edge blocks are only mirrored vertically. */
-	  for (; dst_blk_x < compptr->width_in_data_units; dst_blk_x++) {
+	  for (; dst_blk_x < compptr->width_in_blocks; dst_blk_x++) {
 	    dst_ptr = dst_row_ptr[dst_blk_x];
 	    src_ptr = src_row_ptr[dst_blk_x];
 	    for (i = 0; i < DCTSIZE; i += 2) {
@@ -444,7 +442,7 @@ do_rot_180 (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
 	    }
 	  }
 	  /* Any remaining right-edge blocks are only copied. */
-	  for (; dst_blk_x < compptr->width_in_data_units; dst_blk_x++) {
+	  for (; dst_blk_x < compptr->width_in_blocks; dst_blk_x++) {
 	    dst_ptr = dst_row_ptr[dst_blk_x];
 	    src_ptr = src_row_ptr[dst_blk_x];
 	    for (i = 0; i < DCTSIZE2; i++)
@@ -484,13 +482,13 @@ do_transverse (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
     compptr = dstinfo->comp_info + ci;
     comp_width = MCU_cols * compptr->h_samp_factor;
     comp_height = MCU_rows * compptr->v_samp_factor;
-    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_data_units;
+    for (dst_blk_y = 0; dst_blk_y < compptr->height_in_blocks;
 	 dst_blk_y += compptr->v_samp_factor) {
       dst_buffer = (*srcinfo->mem->access_virt_barray)
 	((j_common_ptr) srcinfo, dst_coef_arrays[ci], dst_blk_y,
 	 (JDIMENSION) compptr->v_samp_factor, TRUE);
       for (offset_y = 0; offset_y < compptr->v_samp_factor; offset_y++) {
-	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_data_units;
+	for (dst_blk_x = 0; dst_blk_x < compptr->width_in_blocks;
 	     dst_blk_x += compptr->h_samp_factor) {
 	  src_buffer = (*srcinfo->mem->access_virt_barray)
 	    ((j_common_ptr) srcinfo, src_coef_arrays[ci], dst_blk_x,
@@ -602,9 +600,9 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
       compptr = srcinfo->comp_info + ci;
       coef_arrays[ci] = (*srcinfo->mem->request_virt_barray)
 	((j_common_ptr) srcinfo, JPOOL_IMAGE, FALSE,
-	 (JDIMENSION) jround_up((long) compptr->width_in_data_units,
+	 (JDIMENSION) jround_up((long) compptr->width_in_blocks,
 				(long) compptr->h_samp_factor),
-	 (JDIMENSION) jround_up((long) compptr->height_in_data_units,
+	 (JDIMENSION) jround_up((long) compptr->height_in_blocks,
 				(long) compptr->v_samp_factor),
 	 (JDIMENSION) compptr->v_samp_factor);
     }
@@ -624,9 +622,9 @@ jtransform_request_workspace (j_decompress_ptr srcinfo,
       compptr = srcinfo->comp_info + ci;
       coef_arrays[ci] = (*srcinfo->mem->request_virt_barray)
 	((j_common_ptr) srcinfo, JPOOL_IMAGE, FALSE,
-	 (JDIMENSION) jround_up((long) compptr->height_in_data_units,
+	 (JDIMENSION) jround_up((long) compptr->height_in_blocks,
 				(long) compptr->v_samp_factor),
-	 (JDIMENSION) jround_up((long) compptr->width_in_data_units,
+	 (JDIMENSION) jround_up((long) compptr->width_in_blocks,
 				(long) compptr->h_samp_factor),
 	 (JDIMENSION) compptr->h_samp_factor);
     }

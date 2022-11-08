@@ -1,8 +1,10 @@
 /*
  * jdcolor.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains output colorspace conversion routines.
@@ -340,10 +342,15 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
   /* Set out_color_components and conversion method based on requested space.
    * Also clear the component_needed flags for any unused components,
    * so that earlier pipeline stages can avoid useless computation.
+   * NOTE: We do not allow any lossy color conversion algorithms in lossless
+   * mode.
    */
 
   switch (cinfo->out_color_space) {
   case JCS_GRAYSCALE:
+    if (cinfo->master->lossless &&
+	cinfo->jpeg_color_space != cinfo->out_color_space)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     cinfo->out_color_components = 1;
     if (cinfo->jpeg_color_space == JCS_GRAYSCALE ||
 	cinfo->jpeg_color_space == JCS_YCbCr) {
@@ -356,6 +363,9 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     break;
 
   case JCS_RGB:
+    if (cinfo->master->lossless &&
+	cinfo->jpeg_color_space != JCS_RGB)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     cinfo->out_color_components = RGB_PIXELSIZE;
     if (cinfo->jpeg_color_space == JCS_YCbCr) {
       cconvert->pub.color_convert = ycc_rgb_convert;
@@ -369,6 +379,9 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     break;
 
   case JCS_CMYK:
+    if (cinfo->master->lossless &&
+	cinfo->jpeg_color_space != cinfo->out_color_space)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     cinfo->out_color_components = 4;
     if (cinfo->jpeg_color_space == JCS_YCCK) {
       cconvert->pub.color_convert = ycck_cmyk_convert;

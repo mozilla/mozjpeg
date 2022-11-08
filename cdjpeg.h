@@ -1,10 +1,8 @@
 /*
  * cdjpeg.h
  *
- * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
- * Lossless JPEG Modifications:
- * Copyright (C) 1999, Ken Murchison.
+ * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains common declarations for the sample applications
@@ -137,7 +135,6 @@ EXTERN(boolean) read_quant_tables JPP((j_compress_ptr cinfo, char * filename,
 EXTERN(boolean) read_scan_script JPP((j_compress_ptr cinfo, char * filename));
 EXTERN(boolean) set_quant_slots JPP((j_compress_ptr cinfo, char *arg));
 EXTERN(boolean) set_sample_factors JPP((j_compress_ptr cinfo, char *arg));
-EXTERN(boolean) set_simple_lossless JPP((j_compress_ptr cinfo, char *arg));
 
 /* djpeg support routines (in rdcolmap.c) */
 

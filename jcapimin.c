@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1998, Thomas G. Lane.
  * Lossless JPEG Modifications:
- * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the compression half
@@ -21,6 +21,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jcmaster.h"
 
 
 /*
@@ -79,6 +80,14 @@ jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
 
   /* OK, I'm ready */
   cinfo->global_state = CSTATE_START;
+
+  /* The master struct is used to store extension parameters, so we allocate it
+   * here.
+   */
+  cinfo->master = (struct jpeg_comp_master *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+				  SIZEOF(my_comp_master));
+  MEMZERO(cinfo->master, SIZEOF(my_comp_master));
 }
 
 
@@ -170,7 +179,7 @@ jpeg_finish_compress (j_compress_ptr cinfo)
       /* We bypass the main controller and invoke coef controller directly;
        * all work is being done from the coefficient buffer.
        */
-      if (! (*cinfo->codec->compress_data) (cinfo, (JSAMPIMAGE) NULL))
+      if (! (*cinfo->coef->compress_data) (cinfo, (JSAMPIMAGE) NULL))
 	ERREXIT(cinfo, JERR_CANT_SUSPEND);
     }
     (*cinfo->master->finish_pass) (cinfo);

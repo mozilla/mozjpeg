@@ -1,10 +1,8 @@
 /*
  * jddctmgr.c
  *
- * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1994-1998, Thomas G. Lane.
- * Lossless JPEG Modifications:
- * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains the inverse-DCT management logic.
@@ -20,7 +18,6 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jlossy.h"		/* Private declarations for lossy subsystem */
 #include "jdct.h"		/* Private declarations for DCT subsystem */
 
 
@@ -44,15 +41,17 @@
 /* Private subobject for this module */
 
 typedef struct {
+  struct jpeg_inverse_dct pub;	/* public fields */
+
   /* This array contains the IDCT method code that each multiplier table
    * is currently set up for, or -1 if it's not yet set up.
    * The actual multiplier tables are pointed to by dct_table in the
    * per-component comp_info structures.
    */
   int cur_method[MAX_COMPONENTS];
-} idct_controller;
+} my_idct_controller;
 
-typedef idct_controller * idct_ptr;
+typedef my_idct_controller * my_idct_ptr;
 
 
 /* Allocated multiplier tables: big enough for any supported variant */
@@ -89,8 +88,7 @@ typedef union {
 METHODDEF(void)
 start_pass (j_decompress_ptr cinfo)
 {
-  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
-  idct_ptr idct = (idct_ptr) lossyd->idct_private;
+  my_idct_ptr idct = (my_idct_ptr) cinfo->idct;
   int ci, i;
   jpeg_component_info *compptr;
   int method = 0;
@@ -100,7 +98,7 @@ start_pass (j_decompress_ptr cinfo)
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
     /* Select the proper IDCT routine for this component's scaling */
-    switch (compptr->codec_data_unit) {
+    switch (compptr->DCT_scaled_size) {
 #ifdef IDCT_SCALING_SUPPORTED
     case 1:
       method_ptr = jpeg_idct_1x1;
@@ -141,10 +139,10 @@ start_pass (j_decompress_ptr cinfo)
       }
       break;
     default:
-      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, compptr->codec_data_unit);
+      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, compptr->DCT_scaled_size);
       break;
     }
-    lossyd->inverse_DCT[ci] = method_ptr;
+    idct->pub.inverse_DCT[ci] = method_ptr;
     /* Create multiplier table from quant table.
      * However, we can skip this if the component is uninteresting
      * or if we already built the table.  Also, if no quant table
@@ -248,16 +246,15 @@ start_pass (j_decompress_ptr cinfo)
 GLOBAL(void)
 jinit_inverse_dct (j_decompress_ptr cinfo)
 {
-  j_lossy_d_ptr lossyd = (j_lossy_d_ptr) cinfo->codec;
-  idct_ptr idct;
+  my_idct_ptr idct;
   int ci;
   jpeg_component_info *compptr;
 
-  idct = (idct_ptr)
+  idct = (my_idct_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(idct_controller));
-  lossyd->idct_private = (void *) idct;
-  lossyd->idct_start_pass = start_pass;
+				SIZEOF(my_idct_controller));
+  cinfo->idct = (struct jpeg_inverse_dct *) idct;
+  idct->pub.start_pass = start_pass;
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {

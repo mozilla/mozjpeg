@@ -2,9 +2,10 @@
  * jclhuff.c
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1991-1998, Thomas G. Lane.
+ * Copyright (C) 1991-1997, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains Huffman entropy encoding routines for lossless JPEG.
@@ -23,7 +24,17 @@
 #include "jchuff.h"		/* Declarations shared with jc*huff.c */
 
 
-/* Expanded entropy encoder object for Huffman encoding.
+#ifdef C_LOSSLESS_SUPPORTED
+
+/* The legal range of a spatial difference is
+ * -32767 .. +32768.
+ * Hence the magnitude should always fit in 16 bits.
+ */
+
+#define MAX_DIFF_BITS 16
+
+
+/* Expanded entropy encoder object for Huffman encoding in lossless mode.
  *
  * The savable_state subrecord contains fields that change within an MCU,
  * but must not be updated permanently until we complete the MCU.
@@ -54,6 +65,8 @@ typedef struct {
 
 
 typedef struct {
+  struct jpeg_entropy_encoder pub; /* public fields */
+
   savable_state saved;		/* Bit buffer at start of MCU */
 
   /* These fields are NOT loaded into local working state. */
@@ -64,19 +77,19 @@ typedef struct {
   c_derived_tbl * derived_tbls[NUM_HUFF_TBLS];
 
   /* Pointers to derived tables to be used for each data unit within an MCU */
-  c_derived_tbl * cur_tbls[C_MAX_DATA_UNITS_IN_MCU];
+  c_derived_tbl * cur_tbls[C_MAX_BLOCKS_IN_MCU];
 
 #ifdef ENTROPY_OPT_SUPPORTED	/* Statistics tables for optimization */
   long * count_ptrs[NUM_HUFF_TBLS];
 
   /* Pointers to stats tables to be used for each data unit within an MCU */
-  long * cur_counts[C_MAX_DATA_UNITS_IN_MCU];
+  long * cur_counts[C_MAX_BLOCKS_IN_MCU];
 #endif
 
   /* Pointers to the proper input difference row for each group of data units
    * within an MCU.  For each component, there are Vi groups of Hi data units.
    */
-  JDIFFROW input_ptr[C_MAX_DATA_UNITS_IN_MCU];
+  JDIFFROW input_ptr[C_MAX_BLOCKS_IN_MCU];
 
   /* Number of input pointers in use for the current MCU.  This is the sum
    * of all Vi in the MCU.
@@ -86,10 +99,10 @@ typedef struct {
   /* Information used for positioning the input pointers within the input
    * difference rows.
    */
-  lhe_input_ptr_info input_ptr_info[C_MAX_DATA_UNITS_IN_MCU];
+  lhe_input_ptr_info input_ptr_info[C_MAX_BLOCKS_IN_MCU];
 
   /* Index of the proper input pointer for each data unit within an MCU */
-  int input_ptr_index[C_MAX_DATA_UNITS_IN_MCU];
+  int input_ptr_index[C_MAX_BLOCKS_IN_MCU];
 
 } lhuff_entropy_encoder;
 
@@ -131,23 +144,22 @@ METHODDEF(void) finish_pass_gather JPP((j_compress_ptr cinfo));
  */
 
 METHODDEF(void)
-start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
+start_pass_lhuff (j_compress_ptr cinfo, boolean gather_statistics)
 {
-  j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsc->entropy_private;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
   int ci, dctbl, sampn, ptrn, yoffset, xoffset;
   jpeg_component_info * compptr;
 
   if (gather_statistics) {
 #ifdef ENTROPY_OPT_SUPPORTED
-    losslsc->entropy_encode_mcus = encode_mcus_gather;
-    losslsc->pub.entropy_finish_pass = finish_pass_gather;
+    entropy->pub.encode_mcus = encode_mcus_gather;
+    entropy->pub.finish_pass = finish_pass_gather;
 #else
     ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
   } else {
-    losslsc->entropy_encode_mcus = encode_mcus_huff;
-    losslsc->pub.entropy_finish_pass = finish_pass_huff;
+    entropy->pub.encode_mcus = encode_mcus_huff;
+    entropy->pub.finish_pass = finish_pass_huff;
   }
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
@@ -176,11 +188,9 @@ start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
   }
 
   /* Precalculate encoding info for each sample in an MCU of this scan */
-  for (sampn = 0, ptrn = 0; sampn < cinfo->data_units_in_MCU;) {
+  for (sampn = 0, ptrn = 0; sampn < cinfo->blocks_in_MCU;) {
     compptr = cinfo->cur_comp_info[cinfo->MCU_membership[sampn]];
     ci = compptr->component_index;
-    /*    ci = cinfo->MCU_membership[sampn];
-    compptr = cinfo->cur_comp_info[ci];*/
     for (yoffset = 0; yoffset < compptr->MCU_height; yoffset++, ptrn++) {
       /* Precalculate the setup info for each input pointer */
       entropy->input_ptr_info[ptrn].ci = ci;
@@ -297,8 +307,6 @@ flush_bits (working_state * state)
 LOCAL(boolean)
 emit_restart (working_state * state, int restart_num)
 {
-  int ci;
-
   if (! flush_bits(state))
     return FALSE;
 
@@ -312,7 +320,7 @@ emit_restart (working_state * state, int restart_num)
 
 
 /*
- * Encode and output one nMCU's worth of Huffman-compressed differences.
+ * Encode and output nMCU MCUs' worth of Huffman-compressed differences.
  */
 
 METHODDEF(JDIMENSION)
@@ -320,11 +328,9 @@ encode_mcus_huff (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
 		  JDIMENSION MCU_row_num, JDIMENSION MCU_col_num,
 		  JDIMENSION nMCU)
 {
-  j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsc->entropy_private;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
   working_state state;
   int mcu_num, sampn, ci, yoffset, MCU_width, ptrn;
-  jpeg_component_info * compptr;
 
   /* Load up working state */
   state.next_output_byte = cinfo->dest->next_output_byte;
@@ -351,8 +357,8 @@ encode_mcus_huff (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
   for (mcu_num = 0; mcu_num < nMCU; mcu_num++) {
 
     /* Inner loop handles the samples in the MCU */
-    for (sampn = 0; sampn < cinfo->data_units_in_MCU; sampn++) {
-      register int temp, temp2, temp3;
+    for (sampn = 0; sampn < cinfo->blocks_in_MCU; sampn++) {
+      register int temp, temp2;
       register int nbits;
       c_derived_tbl *dctbl = entropy->cur_tbls[sampn];
   
@@ -380,7 +386,7 @@ encode_mcus_huff (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
       /* Check for out-of-range difference values.
        */
       if (nbits > MAX_DIFF_BITS)
-	ERREXIT(cinfo, JERR_BAD_DIFF);
+	ERREXIT(cinfo, JERR_BAD_DCT_COEF);
   
       /* Emit the Huffman-coded symbol for the number of bits */
       if (! emit_bits(&state, dctbl->ehufco[nbits], dctbl->ehufsi[nbits]))
@@ -422,8 +428,7 @@ encode_mcus_huff (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
 METHODDEF(void)
 finish_pass_huff (j_compress_ptr cinfo)
 {
-  j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsc->entropy_private;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
   working_state state;
 
   /* Load up working state ... flush_bits needs it */
@@ -457,7 +462,7 @@ finish_pass_huff (j_compress_ptr cinfo)
 #ifdef ENTROPY_OPT_SUPPORTED
 
 /*
- * Trial-encode one nMCU's worth of Huffman-compressed differences.
+ * Trial-encode nMCU MCUs' worth of Huffman-compressed differences.
  * No data is actually output, so no suspension return is possible.
  */
 
@@ -466,10 +471,8 @@ encode_mcus_gather (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
 		    JDIMENSION MCU_row_num, JDIMENSION MCU_col_num,
 		    JDIMENSION nMCU)
 {
-  j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsc->entropy_private;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
   int mcu_num, sampn, ci, yoffset, MCU_width, ptrn;
-  jpeg_component_info * compptr;
 
   /* Take care of restart intervals if needed */
   if (cinfo->restart_interval) {
@@ -492,10 +495,9 @@ encode_mcus_gather (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
   for (mcu_num = 0; mcu_num < nMCU; mcu_num++) {
 
     /* Inner loop handles the samples in the MCU */
-    for (sampn = 0; sampn < cinfo->data_units_in_MCU; sampn++) {
+    for (sampn = 0; sampn < cinfo->blocks_in_MCU; sampn++) {
       register int temp;
       register int nbits;
-      c_derived_tbl *dctbl = entropy->cur_tbls[sampn];
       long * counts = entropy->cur_counts[sampn];
   
       /* Encode the difference per section H.1.2.2 */
@@ -519,7 +521,7 @@ encode_mcus_gather (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
       /* Check for out-of-range difference values.
        */
       if (nbits > MAX_DIFF_BITS)
-	ERREXIT(cinfo, JERR_BAD_DIFF);
+	ERREXIT(cinfo, JERR_BAD_DCT_COEF);
   
       /* Count the Huffman symbol for the number of bits */
       counts[nbits]++;
@@ -537,8 +539,7 @@ encode_mcus_gather (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
 METHODDEF(void)
 finish_pass_gather (j_compress_ptr cinfo)
 {
-  j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
-  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) losslsc->entropy_private;
+  lhuff_entropy_ptr entropy = (lhuff_entropy_ptr) cinfo->entropy;
   int ci, dctbl;
   jpeg_component_info * compptr;
   JHUFF_TBL **htblptr;
@@ -566,30 +567,21 @@ finish_pass_gather (j_compress_ptr cinfo)
 #endif /* ENTROPY_OPT_SUPPORTED */
 
 
-METHODDEF(boolean)
-need_optimization_pass (j_compress_ptr cinfo)
-{
-  return TRUE;
-}
-
-
 /*
- * Module initialization routine for Huffman entropy encoding.
+ * Module initialization routine for lossless mode Huffman entropy encoding.
  */
 
 GLOBAL(void)
 jinit_lhuff_encoder (j_compress_ptr cinfo)
 {
-  j_lossless_c_ptr losslsc = (j_lossless_c_ptr) cinfo->codec;
   lhuff_entropy_ptr entropy;
   int i;
 
   entropy = (lhuff_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(lhuff_entropy_encoder));
-  losslsc->entropy_private = (struct jpeg_entropy_encoder *) entropy;
-  losslsc->pub.entropy_start_pass = start_pass_huff;
-  losslsc->pub.need_optimization_pass = need_optimization_pass;
+  cinfo->entropy = (struct jpeg_entropy_encoder *) entropy;
+  entropy->pub.start_pass = start_pass_lhuff;
 
   /* Mark tables unallocated */
   for (i = 0; i < NUM_HUFF_TBLS; i++) {
@@ -599,3 +591,5 @@ jinit_lhuff_encoder (j_compress_ptr cinfo)
 #endif
   }
 }
+
+#endif /* C_LOSSLESS_SUPPORTED */

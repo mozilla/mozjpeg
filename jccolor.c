@@ -1,8 +1,10 @@
 /*
  * jccolor.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains input colorspace conversion routines.
@@ -391,9 +393,15 @@ jinit_color_converter (j_compress_ptr cinfo)
     break;
   }
 
-  /* Check num_components, set conversion method based on requested space */
+  /* Check num_components, set conversion method based on requested space.
+   * NOTE: We do not allow any lossy color conversion algorithms in lossless
+   * mode.
+   */
   switch (cinfo->jpeg_color_space) {
   case JCS_GRAYSCALE:
+    if (cinfo->master->lossless &&
+	cinfo->in_color_space != cinfo->jpeg_color_space)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     if (cinfo->num_components != 1)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
     if (cinfo->in_color_space == JCS_GRAYSCALE)
@@ -408,6 +416,9 @@ jinit_color_converter (j_compress_ptr cinfo)
     break;
 
   case JCS_RGB:
+    if (cinfo->master->lossless &&
+	cinfo->in_color_space != cinfo->jpeg_color_space)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     if (cinfo->num_components != 3)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
     if (cinfo->in_color_space == JCS_RGB && RGB_PIXELSIZE == 3)
@@ -417,6 +428,9 @@ jinit_color_converter (j_compress_ptr cinfo)
     break;
 
   case JCS_YCbCr:
+    if (cinfo->master->lossless &&
+	cinfo->in_color_space != cinfo->jpeg_color_space)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     if (cinfo->num_components != 3)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
     if (cinfo->in_color_space == JCS_RGB) {
@@ -429,6 +443,9 @@ jinit_color_converter (j_compress_ptr cinfo)
     break;
 
   case JCS_CMYK:
+    if (cinfo->master->lossless &&
+	cinfo->in_color_space != cinfo->jpeg_color_space)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     if (cinfo->num_components != 4)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
     if (cinfo->in_color_space == JCS_CMYK)
@@ -438,6 +455,9 @@ jinit_color_converter (j_compress_ptr cinfo)
     break;
 
   case JCS_YCCK:
+    if (cinfo->master->lossless &&
+	cinfo->in_color_space != cinfo->jpeg_color_space)
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     if (cinfo->num_components != 4)
       ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
     if (cinfo->in_color_space == JCS_CMYK) {

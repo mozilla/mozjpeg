@@ -2,9 +2,9 @@
  * jdapistd.c
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1994-1998, Thomas G. Lane.
+ * Copyright (C) 1994-1996, Thomas G. Lane.
  * Lossless JPEG Modifications:
- * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains application interface code for the decompression half
@@ -189,6 +189,9 @@ jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
 {
   JDIMENSION lines_per_iMCU_row;
 
+  if (cinfo->master->lossless)
+    ERREXIT(cinfo, JERR_NOTIMPL);
+
   if (cinfo->global_state != DSTATE_RAW_OK)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
   if (cinfo->output_scanline >= cinfo->output_height) {
@@ -204,12 +207,12 @@ jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
   }
 
   /* Verify that at least one iMCU row can be returned. */
-  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->min_codec_data_unit;
+  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size;
   if (max_lines < lines_per_iMCU_row)
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Decompress directly into user's buffer. */
-  if (! (*cinfo->codec->decompress_data) (cinfo, data))
+  if (! (*cinfo->coef->decompress_data) (cinfo, data))
     return 0;			/* suspension forced, can do nothing more */
 
   /* OK, we processed one iMCU row. */

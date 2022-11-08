@@ -1,4 +1,4 @@
-.TH CJPEG 1 "27 April 1999"
+.TH CJPEG 1 "11 November 2022"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -62,13 +62,6 @@ decompression are unaffected by
 .B \-progressive
 Create progressive JPEG file (see below).
 .TP
-.BI \-lossless " psv[,Pt]"
-Create a lossless JPEG file using the specified predictor selection value (1-7)
-and optional point transform.
-.B Caution:
-lossless JPEG is not widely implemented, so many decoders will be
-unable to view a lossless JPEG file at all.
-.TP
 .B \-targa
 Input file is Targa format.  Targa files that contain an "identification"
 field will not be automatically recognized by
@@ -130,6 +123,43 @@ unable to view a progressive JPEG file at all.
 .PP
 Switches for advanced users:
 .TP
+.BI \-lossless " psv[,Pt]"
+Create a lossless JPEG file using the specified predictor selection value
+(1 through 7) and optional point transform (0 through
+.nh
+.I precision
+.hy
+- 1, where
+.nh
+.I precision
+.hy
+is the JPEG data precision in bits).  A point transform value of 0 (the
+default) is necessary in order to create a fully lossless JPEG file.  (A
+non-zero point transform value right-shifts the input samples by the specified
+number of bits, which is effectively a form of lossy color quantization.)
+.B Caution:
+lossless JPEG is not yet widely implemented, so many decoders will be unable to
+view a lossless JPEG file at all.  Note that the following features will be
+unavailable when compressing or decompressing a lossless JPEG file:
+.IP
+- Quality/quantization table selection
+.IP
+- Color conversion (the JPEG image will use the same color space as the input
+image)
+.IP
+- DCT/IDCT algorithm selection
+.IP
+- Smoothing
+.IP
+- Downsampling/upsampling
+.IP
+- IDCT scaling
+.IP
+- Transformations using
+.B jpegtran
+.IP
+Any switches used to enable or configure those features will be ignored.
+.TP
 .B \-dct int
 Use integer DCT method (default).
 .TP
@@ -145,8 +175,8 @@ machines, while the integer methods should give the same results everywhere.
 The fast integer method is much less accurate than the other two.
 .TP
 .BI \-restart " N"
-Emit a JPEG restart marker every N MCU rows, or every N MCU blocks if "B" is
-attached to the number.
+Emit a JPEG restart marker every N MCU rows, or every N MCU blocks (samples in
+lossless mode) if "B" is attached to the number.
 .B \-restart 0
 (the default) means no restart markers.
 .TP

@@ -1,10 +1,8 @@
 /*
  * jchuff.h
  *
- * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * Lossless JPEG Modifications:
- * Copyright (C) 1999, Ken Murchison.
+ * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains declarations for Huffman entropy encoding routines
@@ -23,13 +21,6 @@
 #else
 #define MAX_COEF_BITS 14
 #endif
-
-/* The legal range of a spatial difference is
- * -32767 .. +32768.
- * Hence the magnitude should always fit in 16 bits.
- */
-
-#define MAX_DIFF_BITS 16
 
 /* Derived data constructed for each Huffman table */
 

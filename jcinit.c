@@ -5,6 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains initialization logic for the JPEG compressor.
@@ -34,14 +35,50 @@ jinit_compress_master (j_compress_ptr cinfo)
   /* Initialize master control (includes parameter checking/processing) */
   jinit_c_master_control(cinfo, FALSE /* full compression */);
 
-  /* Initialize compression codec */
-  jinit_c_codec(cinfo);
-
   /* Preprocessing */
   if (! cinfo->raw_data_in) {
     jinit_color_converter(cinfo);
     jinit_downsampler(cinfo);
     jinit_c_prep_controller(cinfo, FALSE /* never need full buffer here */);
+  }
+
+  if (cinfo->master->lossless) {
+#ifdef C_LOSSLESS_SUPPORTED
+    /* Prediction, sample differencing, and point transform */
+    jinit_lossless_compressor(cinfo);
+    /* Entropy encoding: either Huffman or arithmetic coding. */
+    if (cinfo->arith_code) {
+      ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
+    } else {
+      jinit_lhuff_encoder(cinfo);
+    }
+
+    /* Need a full-image difference buffer in any multi-pass mode. */
+    jinit_c_diff_controller(cinfo,
+		(boolean) (cinfo->num_scans > 1 || cinfo->optimize_coding));
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+  } else {
+    /* Forward DCT */
+    jinit_forward_dct(cinfo);
+    /* Entropy encoding: either Huffman or arithmetic coding. */
+    if (cinfo->arith_code) {
+      ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
+    } else {
+      if (cinfo->progressive_mode) {
+#ifdef C_PROGRESSIVE_SUPPORTED
+	jinit_phuff_encoder(cinfo);
+#else
+	ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+      } else
+	jinit_huff_encoder(cinfo);
+    }
+
+    /* Need a full-image coefficient buffer in any multi-pass mode. */
+    jinit_c_coef_controller(cinfo,
+		(boolean) (cinfo->num_scans > 1 || cinfo->optimize_coding));
   }
 
   jinit_c_main_controller(cinfo, FALSE /* never need full buffer here */);

@@ -1,8 +1,10 @@
 /*
  * jdcolor.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file contains output colorspace conversion routines.
@@ -387,6 +389,15 @@ jinit_color_deconverter (j_decompress_ptr cinfo)
     } else			/* unsupported non-null conversion */
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
     break;
+  }
+
+  /* Prevent lossy color conversion in lossless mode */
+  if (cinfo->master->lossless) {
+    if ((cinfo->out_color_space == JCS_GRAYSCALE &&
+	 cinfo->jpeg_color_space != JCS_GRAYSCALE) ||
+	(cinfo->out_color_space != JCS_GRAYSCALE &&
+	 cconvert->pub.color_convert != null_convert))
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
   }
 
   if (cinfo->quantize_colors)

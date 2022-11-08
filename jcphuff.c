@@ -2,7 +2,7 @@
  * jcphuff.c
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1995-1998, Thomas G. Lane.
+ * Copyright (C) 1995-1997, Thomas G. Lane.
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * For conditions of distribution and use, see the accompanying README file.
@@ -17,7 +17,6 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jlossy.h"		/* Private declarations for lossy codec */
 #include "jchuff.h"		/* Declarations shared with jc*huff.c */
 
 #ifdef C_PROGRESSIVE_SUPPORTED
@@ -25,6 +24,8 @@
 /* Expanded entropy encoder object for progressive Huffman encoding. */
 
 typedef struct {
+  struct jpeg_entropy_encoder pub; /* public fields */
+
   /* Mode flag: TRUE for optimization, FALSE for actual data output */
   boolean gather_statistics;
 
@@ -106,8 +107,7 @@ METHODDEF(void) finish_pass_gather_phuff JPP((j_compress_ptr cinfo));
 METHODDEF(void)
 start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
 {  
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   boolean is_DC_band;
   int ci, tbl;
   jpeg_component_info * compptr;
@@ -122,14 +122,14 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
   /* Select execution routines */
   if (cinfo->Ah == 0) {
     if (is_DC_band)
-      lossyc->entropy_encode_mcu = encode_mcu_DC_first;
+      entropy->pub.encode_mcu = encode_mcu_DC_first;
     else
-      lossyc->entropy_encode_mcu = encode_mcu_AC_first;
+      entropy->pub.encode_mcu = encode_mcu_AC_first;
   } else {
     if (is_DC_band)
-      lossyc->entropy_encode_mcu = encode_mcu_DC_refine;
+      entropy->pub.encode_mcu = encode_mcu_DC_refine;
     else {
-      lossyc->entropy_encode_mcu = encode_mcu_AC_refine;
+      entropy->pub.encode_mcu = encode_mcu_AC_refine;
       /* AC refinement needs a correction bit buffer */
       if (entropy->bit_buffer == NULL)
 	entropy->bit_buffer = (char *)
@@ -138,9 +138,9 @@ start_pass_phuff (j_compress_ptr cinfo, boolean gather_statistics)
     }
   }
   if (gather_statistics)
-    lossyc->pub.entropy_finish_pass = finish_pass_gather_phuff;
+    entropy->pub.finish_pass = finish_pass_gather_phuff;
   else
-    lossyc->pub.entropy_finish_pass = finish_pass_phuff;
+    entropy->pub.finish_pass = finish_pass_phuff;
 
   /* Only DC coefficients may be interleaved, so cinfo->comps_in_scan = 1
    * for AC coefficients.
@@ -378,8 +378,7 @@ emit_restart (phuff_entropy_ptr entropy, int restart_num)
 METHODDEF(boolean)
 encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   register int temp, temp2;
   register int nbits;
   int blkn, ci;
@@ -397,7 +396,7 @@ encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       emit_restart(entropy, entropy->next_restart_num);
 
   /* Encode the MCU data blocks */
-  for (blkn = 0; blkn < cinfo->data_units_in_MCU; blkn++) {
+  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
     block = MCU_data[blkn];
     ci = cinfo->MCU_membership[blkn];
     compptr = cinfo->cur_comp_info[ci];
@@ -466,8 +465,7 @@ encode_mcu_DC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(boolean)
 encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   register int temp, temp2;
   register int nbits;
   register int r, k;
@@ -574,8 +572,7 @@ encode_mcu_AC_first (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(boolean)
 encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   register int temp;
   int blkn;
   int Al = cinfo->Al;
@@ -590,7 +587,7 @@ encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       emit_restart(entropy, entropy->next_restart_num);
 
   /* Encode the MCU data blocks */
-  for (blkn = 0; blkn < cinfo->data_units_in_MCU; blkn++) {
+  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
     block = MCU_data[blkn];
 
     /* We simply emit the Al'th bit of the DC coefficient value. */
@@ -622,8 +619,7 @@ encode_mcu_DC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(boolean)
 encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   register int temp;
   register int r, k;
   int EOB;
@@ -751,8 +747,7 @@ encode_mcu_AC_refine (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(void)
 finish_pass_phuff (j_compress_ptr cinfo)
 {   
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;
@@ -773,8 +768,7 @@ finish_pass_phuff (j_compress_ptr cinfo)
 METHODDEF(void)
 finish_pass_gather_phuff (j_compress_ptr cinfo)
 {
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) lossyc->entropy_private;
+  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
   boolean is_DC_band;
   int ci, tbl;
   jpeg_component_info * compptr;
@@ -814,13 +808,6 @@ finish_pass_gather_phuff (j_compress_ptr cinfo)
 }
 
 
-METHODDEF(boolean)
-need_optimization_pass (j_compress_ptr cinfo)
-{
-  return (cinfo->Ss != 0 || cinfo->Ah == 0);
-}
-
-
 /*
  * Module initialization routine for progressive Huffman entropy encoding.
  */
@@ -828,16 +815,14 @@ need_optimization_pass (j_compress_ptr cinfo)
 GLOBAL(void)
 jinit_phuff_encoder (j_compress_ptr cinfo)
 {
-  j_lossy_c_ptr lossyc = (j_lossy_c_ptr) cinfo->codec;
   phuff_entropy_ptr entropy;
   int i;
 
   entropy = (phuff_entropy_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(phuff_entropy_encoder));
-  lossyc->entropy_private = (struct jpeg_entropy_encoder *) entropy;
-  lossyc->pub.entropy_start_pass = start_pass_phuff;
-  lossyc->pub.need_optimization_pass = need_optimization_pass;
+  cinfo->entropy = (struct jpeg_entropy_encoder *) entropy;
+  entropy->pub.start_pass = start_pass_phuff;
 
   /* Mark tables unallocated */
   for (i = 0; i < NUM_HUFF_TBLS; i++) {

@@ -4,6 +4,7 @@ This file was part of the Independent JPEG Group's software:
 Copyright (C) 1991-1995, Thomas G. Lane.
 Lossless JPEG Modifications:
 Copyright (C) 1999, Ken Murchison.
+Copyright (C) 2022, D. R. Commander.
 For conditions of distribution and use, see the accompanying README file.
 
 
@@ -23,7 +24,7 @@ In this document, JPEG-specific terminology follows the JPEG standard:
   A "sample" is a single component value (i.e., one number in the image data).
   A "coefficient" is a frequency coefficient (a DCT transform output number).
   A "block" is an 8x8 group of samples or coefficients.
-  A "data unit" is an abstract data type which is either a block for lossy
+  A "data unit" is an abstract data type that is either a block for lossy
 	(DCT-based) codecs or a sample for lossless (predictive) codecs.
   An "MCU" (minimum coded unit) is an interleaved set of data units of size
 	determined by the sampling factors, or a single data unit in a
@@ -47,8 +48,8 @@ command-line user interface and I/O routines for several uncompressed image
 formats.  This document concentrates on the library itself.
 
 We desire the library to be capable of supporting all JPEG baseline, extended
-sequential, and progressive DCT processes, as well as the lossless (spatial)
-process.  Hierarchical processes are not supported.
+sequential, progressive DCT, and lossless (spatial) processes.  Hierarchical
+processes are not supported.
 
 Within these limits, any set of compression parameters allowed by the JPEG
 spec should be readable for decompression.  (We can be more restrictive about
@@ -319,52 +320,31 @@ overall system structuring principle, not as a complete description of the
 task performed by any one controller.
 
 
-*** Codec object structure ***
-
-As noted above, this library supports both the lossy (DCT-based) and lossless
-JPEG processes.  Because these processes have little in common with one another
-(and their implementations share very little code), we need to provide a way to
-isloate the underlying JPEG process from the rest of the library.  This is
-accomplished by introducing an abstract "codec object" which acts a generic
-interface to the JPEG (de)compressor proper.  
-
-Using the power of the object-oriented scheme described above, we build the
-lossy and lossless modules as two separate implementations of the codec object.
-Switching between lossy and lossless processes then becomes as trivial as
-assigning the appropriate method pointers during initialization of the library.
-
-
 *** Compression object structure ***
 
-Here is a sketch of the logical structure of the JPEG compression library:
+Here is a sketch of the logical structure of the JPEG compression library in
+lossy mode:
 
                                                  |-- Colorspace conversion
                   |-- Preprocessing controller --|
                   |                              |-- Downsampling
-                  |
 Main controller --|
-                  |                       /--> Lossy codec
-                  |                      /
-                  |-- Compression codec <          *OR*
-                                         \
-                                          \--> Lossless codec
+                  |                            |-- Forward DCT, quantize
+                  |-- Coefficient controller --|
+                                               |-- Entropy encoding
 
+... and in lossless mode:
 
-where the lossy codec looks like:
-
-                             |-- Forward DCT, quantize
-<-- Coefficient controller --|
-                             |-- Entropy encoding
-
-
-and the lossless codec looks like:
-
-                            |-- Point transformation
-                            |
-<-- Difference controller --|-- Prediction, differencing
-                            |
-                            |-- Lossless entropy encoding
-
+                                                 |-- Colorspace conversion
+                  |-- Preprocessing controller --|
+                  |                              |-- Downsampling
+Main controller --|
+                  |                           |-- Point transform
+                  |                           |
+                  |-- Difference controller --|-- Prediction, differencing
+                                              |
+                                              |-- Lossless mode entropy
+                                                  encoding
 
 This sketch also describes the flow of control (subroutine calls) during
 typical image data processing.  Each of the components shown in the diagram is
@@ -425,16 +405,15 @@ The objects shown above are:
   of subsampled data is processed per call, even when the JPEG file is
   noninterleaved.
 
-* Point transformation: Scale the data down by the point transformation
-  parameter.
+* Point transform: Downscale the data by the point transform value.
 
 * Prediction and differencing: Calculate the predictor and subtract it
   from the input.  Works on one scanline per call.  The difference
-  controller supplies the prior scanline which is used for prediction.
+  controller supplies the prior scanline, which is used for prediction.
 
-* Lossless entropy encoding: Perform Huffman or arithmetic entropy coding and
-  emit the coded data to the data destination module.  This module handles MCU
-  assembly.  Works on one MCU-row per call.
+* Lossless mode entropy encoding: Perform Huffman or arithmetic entropy coding
+  and emit the coded data to the data destination module.  This module handles
+  MCU assembly.  Works on one MCU row per call.
 
 In addition to the above objects, the compression library includes these
 objects:
@@ -475,36 +454,32 @@ decompression; the progress monitor, if used, may be shared as well.
 
 *** Decompression object structure ***
 
-Here is a sketch of the logical structure of the JPEG decompression library:
+Here is a sketch of the logical structure of the JPEG decompression library in
+lossy mode:
 
-                                            /--> Lossy codec
-                                           /
-                  |-- Decompression codec <          *OR*
-                  |                        \
-                  |                         \--> Lossless codec
+                                               |-- Entropy decoding
+                  |-- Coefficient controller --|
+                  |                            |-- Dequantize, Inverse DCT
 Main controller --|
-                  |
                   |                               |-- Upsampling
                   |-- Postprocessing controller --|   |-- Colorspace conversion
                                                   |-- Color quantization
                                                   |-- Color precision reduction
 
+... and in lossless mode:
 
-where the lossy codec looks like:
-
-                             |-- Entropy decoding
-<-- Coefficient controller --|
-                             |-- Dequantize, Inverse DCT
-
-
-and the lossless codec looks like:
-
-                            |-- Lossless entropy decoding
-                            |
-<-- Difference controller --|-- Prediction, undifferencing
-                            |
-                            |-- Point transformation, sample size scaling
-
+                                              |-- Lossless mode entropy
+                                              |   decoding
+                                              |
+                  |-- Difference controller --|-- Prediction, undifferencing
+                  |                           |
+                  |                           |-- Point transform, sample size
+                  |                               scaling
+Main controller --|
+                  |                               |-- Upsampling
+                  |-- Postprocessing controller --|   |-- Colorspace conversion
+                                                  |-- Color quantization
+                                                  |-- Color precision reduction
 
 As before, this diagram also represents typical control flow.  The objects
 shown are:
@@ -544,17 +519,16 @@ shown are:
   buffering the full image. The equivalent of one fully interleaved MCU row
   is processed per call, even when the source JPEG file is noninterleaved.
 
-* Lossless entropy decoding: Read coded data from the data source module and
-  perform Huffman or arithmetic entropy decoding.  Works on one MCU-row per
+* Lossless mode entropy decoding: Read coded data from the data source module
+  and perform Huffman or arithmetic entropy decoding.  Works on one MCU row per
   call.
 
 * Prediction and undifferencing: Calculate the predictor and add it to the
   decoded difference.  Works on one scanline per call.  The difference
-  controller supplies the prior scanline which is used for prediction.
+  controller supplies the prior scanline, which is used for prediction.
 
-* Point transform and sample size scaling: Scale the data up by the point
-  transformation parameter and scale it down to fit into the compiled-in
-  sample size.
+* Point transform and sample size scaling: Upscale the data by the point
+  transform value and downscale it to fit into the compiled-in sample size.
 
 * Postprocessing controller: buffer controller for the color quantization
   input buffer, when quantization is in use.  (Without quantization, this

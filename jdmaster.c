@@ -409,12 +409,9 @@ prepare_range_limit_table(j_decompress_ptr cinfo)
 /* Allocate and fill in the sample_range_limit table */
 {
   JSAMPLE *table;
-#ifdef WITH_12BIT
   J12SAMPLE *table12;
-#endif
   int i;
 
-#ifdef WITH_12BIT
   if (cinfo->data_precision == 12) {
     table12 = (J12SAMPLE *)
       (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
@@ -438,9 +435,7 @@ prepare_range_limit_table(j_decompress_ptr cinfo)
            (2 * (MAXJ12SAMPLE + 1) - CENTERJ12SAMPLE) * sizeof(J12SAMPLE));
     memcpy(table12 + (4 * (MAXJ12SAMPLE + 1) - CENTERJ12SAMPLE),
            cinfo->sample_range_limit, CENTERJ12SAMPLE * sizeof(J12SAMPLE));
-  } else
-#endif
-  {
+  } else {
     table = (JSAMPLE *)
       (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                   (5 * (MAXJSAMPLE + 1) + CENTERJSAMPLE) * sizeof(JSAMPLE));
@@ -526,11 +521,9 @@ master_selection(j_decompress_ptr cinfo)
 
     if (cinfo->enable_1pass_quant) {
 #ifdef QUANT_1PASS_SUPPORTED
-#ifdef WITH_12BIT
       if (cinfo->data_precision == 12)
         j12init_1pass_quantizer(cinfo);
       else
-#endif
         jinit_1pass_quantizer(cinfo);
       master->quantizer_1pass = cinfo->cquantize;
 #else
@@ -541,11 +534,9 @@ master_selection(j_decompress_ptr cinfo)
     /* We use the 2-pass code to map to external colormaps. */
     if (cinfo->enable_2pass_quant || cinfo->enable_external_quant) {
 #ifdef QUANT_2PASS_SUPPORTED
-#ifdef WITH_12BIT
       if (cinfo->data_precision == 12)
         j12init_2pass_quantizer(cinfo);
       else
-#endif
         jinit_2pass_quantizer(cinfo);
       master->quantizer_2pass = cinfo->cquantize;
 #else
@@ -557,7 +548,6 @@ master_selection(j_decompress_ptr cinfo)
      */
   }
 
-#ifdef WITH_12BIT
   if (cinfo->data_precision == 12) {
     /* Post-processing: in particular, color conversion first */
     if (!cinfo->raw_data_out) {
@@ -575,9 +565,7 @@ master_selection(j_decompress_ptr cinfo)
     }
     /* Inverse DCT */
     j12init_inverse_dct(cinfo);
-  } else
-#endif
-  {
+  } else {
     /* Post-processing: in particular, color conversion first */
     if (!cinfo->raw_data_out) {
       if (master->using_merged_upsample) {
@@ -615,16 +603,13 @@ master_selection(j_decompress_ptr cinfo)
 
   /* Initialize principal buffer controllers. */
   use_c_buffer = cinfo->inputctl->has_multiple_scans || cinfo->buffered_image;
-#ifdef WITH_12BIT
   if (cinfo->data_precision == 12) {
     j12init_d_coef_controller(cinfo, use_c_buffer);
 
     if (!cinfo->raw_data_out)
       j12init_d_main_controller(cinfo,
                                 FALSE /* never need full buffer here */);
-  } else
-#endif
-  {
+  } else {
     jinit_d_coef_controller(cinfo, use_c_buffer);
 
     if (!cinfo->raw_data_out)

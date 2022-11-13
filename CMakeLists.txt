@@ -196,8 +196,6 @@ option(ENABLE_STATIC "Build static libraries" TRUE)
 boolean_number(ENABLE_STATIC)
 option(REQUIRE_SIMD "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)" FALSE)
 boolean_number(REQUIRE_SIMD)
-option(WITH_12BIT "Include 12-bit JPEG support" TRUE)
-boolean_number(WITH_12BIT)
 option(WITH_ARITH_DEC "Include arithmetic decoding support when emulating the libjpeg v6b API/ABI" TRUE)
 boolean_number(WITH_ARITH_DEC)
 option(WITH_ARITH_ENC "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI" TRUE)
@@ -252,8 +250,6 @@ if(WITH_JPEG8 OR WITH_JPEG7)
   set(WITH_ARITH_DEC 1)
 endif()
 
-report_option(WITH_12BIT "12-bit JPEG support")
-
 if(WITH_ARITH_DEC)
   set(D_ARITH_CODING_SUPPORTED 1)
 endif()
@@ -283,16 +279,9 @@ endif()
 # 1: + Partial image decompression functions (libjpeg-turbo 1.5.x)
 # 2: + ICC functions (libjpeg-turbo 2.0.x)
 # 3: + 12-bit-per-component functions (libjpeg-turbo 2.2.x)
-if(WITH_12BIT)
-  set(SO_AGE 3)
-  if(NOT WITH_JPEG8)
-    set(SO_AGE 4)
-  endif()
-else()
-  set(SO_AGE 2)
-  if(NOT WITH_JPEG8)
-    set(SO_AGE 3)
-  endif()
+set(SO_AGE 3)
+if(NOT WITH_JPEG8)
+  set(SO_AGE 4)
 endif()
 
 if(WITH_JPEG8)
@@ -566,16 +555,13 @@ if(WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jdarith.c)
 endif()
 
-if(WITH_12BIT)
-  # Compile a separate version of these source files with 12-bit data
-  # precision.
-  add_library(jpeg12 OBJECT jcapistd.c jccoefct.c jccolor.c jcdctmgr.c
-    jcmainct.c jcprepct.c jcsample.c jdapistd.c jdcoefct.c jdcolor.c jddctmgr.c
-    jdmainct.c jdmerge.c jdpostct.c jdsample.c jfdctfst.c jfdctint.c jidctflt.c
-    jidctfst.c jidctint.c jidctred.c jquant1.c jquant2.c jutils.c)
-  set_property(TARGET jpeg12 PROPERTY COMPILE_FLAGS "-DBITS_IN_JSAMPLE=12")
-  set(JPEG12_OBJS $<TARGET_OBJECTS:jpeg12>)
-endif()
+# Compile a separate version of these source files with 12-bit data
+# precision.
+add_library(jpeg12 OBJECT jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jcmainct.c
+  jcprepct.c jcsample.c jdapistd.c jdcoefct.c jdcolor.c jddctmgr.c jdmainct.c
+  jdmerge.c jdpostct.c jdsample.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
+  jidctint.c jidctred.c jquant1.c jquant2.c jutils.c)
+set_property(TARGET jpeg12 PROPERTY COMPILE_FLAGS "-DBITS_IN_JSAMPLE=12")
 
 if(WITH_SIMD)
   add_subdirectory(simd)
@@ -609,7 +595,7 @@ endif()
 
 if(ENABLE_STATIC)
   add_library(jpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
-    ${SIMD_OBJS} ${JPEG12_OBJS})
+    ${SIMD_OBJS} $<TARGET_OBJECTS:jpeg12>)
   if(NOT MSVC)
     set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
   endif()
@@ -619,7 +605,7 @@ if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS} ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
-      wrbmp.c wrppm.c ${JPEG12_OBJS})
+      wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12>)
     set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile)
     if(WITH_JAVA)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
@@ -671,7 +657,7 @@ if(WITH_TURBOJPEG)
   if(ENABLE_STATIC)
     add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
       ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c
-      rdppm.c wrbmp.c wrppm.c ${JPEG12_OBJS})
+      rdppm.c wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12>)
     set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS
       "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(NOT MSVC)
@@ -697,30 +683,24 @@ set(CDJPEG_COMPILE_FLAGS
   "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 
 if(ENABLE_STATIC)
-  if(WITH_12BIT)
-    # Compile a separate version of these source files with 12-bit data
-    # precision.
-    add_library(cjpeg12-static OBJECT rdgif.c rdppm.c)
-    set_property(TARGET cjpeg12-static PROPERTY COMPILE_FLAGS
-      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-    set(CJPEG12_OBJS $<TARGET_OBJECTS:cjpeg12-static>)
-  endif()
+  # Compile a separate version of these source files with 12-bit data
+  # precision.
+  add_library(cjpeg12-static OBJECT rdgif.c rdppm.c)
+  set_property(TARGET cjpeg12-static PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
   add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c
-    rdswitch.c rdtarga.c ${CJPEG12_OBJS})
+    rdswitch.c rdtarga.c $<TARGET_OBJECTS:cjpeg12-static>)
   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
     ${CDJPEG_COMPILE_FLAGS})
   target_link_libraries(cjpeg-static jpeg-static)
 
-  if(WITH_12BIT)
-    # Compile a separate version of these source files with 12-bit data
-    # precision.
-    add_library(djpeg12-static OBJECT rdcolmap.c wrgif.c wrppm.c)
-    set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
-      "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-    set(DJPEG12_OBJS $<TARGET_OBJECTS:djpeg12-static>)
-  endif()
+  # Compile a separate version of these source files with 12-bit data
+  # precision.
+  add_library(djpeg12-static OBJECT rdcolmap.c wrgif.c wrppm.c)
+  set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
   add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c
-    wrgif.c wrppm.c wrtarga.c ${DJPEG12_OBJS})
+    wrgif.c wrppm.c wrtarga.c $<TARGET_OBJECTS:djpeg12-static>)
   set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
     ${CDJPEG_COMPILE_FLAGS})
   target_link_libraries(djpeg-static jpeg-static)
@@ -791,11 +771,6 @@ if(ENABLE_SHARED)
 endif()
 if(ENABLE_STATIC)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} static)
-endif()
-
-set(TEST_SAMPLE_BITS 8)
-if(WITH_12BIT)
-  set(TEST_SAMPLE_BITS ${TEST_SAMPLE_BITS} 12)
 endif()
 
 set(TESTIMAGES ${CMAKE_CURRENT_SOURCE_DIR}/testimages)
@@ -870,33 +845,31 @@ if(FLOATTEST8)
   endif()
 endif()
 
-if(WITH_12BIT)
-  if(CPU_TYPE STREQUAL "x86_64")
+if(CPU_TYPE STREQUAL "x86_64")
+  set(DEFAULT_FLOATTEST12 no-fp-contract)
+elseif(NOT CPU_TYPE STREQUAL "i386")
+  if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
+    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
+    set(DEFAULT_FLOATTEST12 fp-contract)
+  else()
     set(DEFAULT_FLOATTEST12 no-fp-contract)
-  elseif(NOT CPU_TYPE STREQUAL "i386")
-    if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
-      NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
-      set(DEFAULT_FLOATTEST12 fp-contract)
-    else()
-      set(DEFAULT_FLOATTEST12 no-fp-contract)
-    endif()
   endif()
+endif()
 
-  set(FLOATTEST12 ${DEFAULT_FLOATTEST12} CACHE STRING
-    "The type of floating point math used by the 12-bit-per-sample floating point DCT/IDCT algorithms.  This tells the testing system which numerical results it should expect from those tests.  [sse = libjpeg-turbo x86/x86-64 SIMD extensions, no-fp-contract = generic FPU with floating point expression contraction disabled, fp-contract = generic FPU with floating point expression contraction enabled, 387 = 387 FPU, msvc = 32-bit Visual Studio] (default = ${DEFAULT_FLOATTEST12})")
-  message(STATUS "FLOATTEST12 = ${FLOATTEST12}")
+set(FLOATTEST12 ${DEFAULT_FLOATTEST12} CACHE STRING
+  "The type of floating point math used by the 12-bit-per-sample floating point DCT/IDCT algorithms.  This tells the testing system which numerical results it should expect from those tests.  [sse = libjpeg-turbo x86/x86-64 SIMD extensions, no-fp-contract = generic FPU with floating point expression contraction disabled, fp-contract = generic FPU with floating point expression contraction enabled, 387 = 387 FPU, msvc = 32-bit Visual Studio] (default = ${DEFAULT_FLOATTEST12})")
+message(STATUS "FLOATTEST12 = ${FLOATTEST12}")
 
-  if(FLOATTEST12)
-    string(TOUPPER ${FLOATTEST12} FLOATTEST12_UC)
-    string(REGEX REPLACE "-" "_" FLOATTEST12_UC ${FLOATTEST12_UC})
-    string(TOLOWER ${FLOATTEST12} FLOATTEST12)
-    if(NOT FLOATTEST12 STREQUAL "sse" AND
-      NOT FLOATTEST12 STREQUAL "no-fp-contract" AND
-      NOT FLOATTEST12 STREQUAL "fp-contract" AND
-      NOT FLOATTEST12 STREQUAL "387" AND
-      NOT FLOATTEST12 STREQUAL "msvc")
-      message(FATAL_ERROR "\"${FLOATTEST12}\" is not a valid value for FLOATTEST12.")
-    endif()
+if(FLOATTEST12)
+  string(TOUPPER ${FLOATTEST12} FLOATTEST12_UC)
+  string(REGEX REPLACE "-" "_" FLOATTEST12_UC ${FLOATTEST12_UC})
+  string(TOLOWER ${FLOATTEST12} FLOATTEST12)
+  if(NOT FLOATTEST12 STREQUAL "sse" AND
+    NOT FLOATTEST12 STREQUAL "no-fp-contract" AND
+    NOT FLOATTEST12 STREQUAL "fp-contract" AND
+    NOT FLOATTEST12 STREQUAL "387" AND
+    NOT FLOATTEST12 STREQUAL "msvc")
+    message(FATAL_ERROR "\"${FLOATTEST12}\" is not a valid value for FLOATTEST12.")
   endif()
 endif()
 
@@ -1021,7 +994,7 @@ foreach(libtype ${TEST_LIBTYPES})
     endif()
   endmacro()
 
-  foreach(sample_bits ${TEST_SAMPLE_BITS})
+  foreach(sample_bits 8 12)
 
     if(sample_bits EQUAL 12)
       set(cjpeg cjpeg12)

@@ -103,20 +103,16 @@ select_file_type(j_compress_ptr cinfo, FILE *infile)
 #endif
 #ifdef GIF_SUPPORTED
   case 'G':
-#ifdef WITH_12BIT
     if (cinfo->data_precision == 12)
       return j12init_read_gif(cinfo);
     else
-#endif
       return jinit_read_gif(cinfo);
 #endif
 #ifdef PPM_SUPPORTED
   case 'P':
-#ifdef WITH_12BIT
     if (cinfo->data_precision == 12)
       return j12init_read_ppm(cinfo);
     else
-#endif
       return jinit_read_ppm(cinfo);
 #endif
 #ifdef TARGA_SUPPORTED
@@ -743,15 +739,12 @@ main(int argc, char **argv)
     jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
 
   /* Process data */
-#ifdef WITH_12BIT
   if (cinfo.data_precision == 12) {
     while (cinfo.next_scanline < cinfo.image_height) {
       num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
       (void)jpeg12_write_scanlines(&cinfo, src_mgr->buffer12, num_scanlines);
     }
-  } else
-#endif
-  {
+  } else {
     while (cinfo.next_scanline < cinfo.image_height) {
       num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
       (void)jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);

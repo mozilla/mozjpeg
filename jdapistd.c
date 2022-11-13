@@ -123,13 +123,11 @@ output_pass_setup(j_decompress_ptr cinfo)
       }
       /* Process some data */
       last_scanline = cinfo->output_scanline;
-#ifdef WITH_12BIT
       if (cinfo->data_precision == 12)
         (*cinfo->main->process_data_12) (cinfo, (J12SAMPARRAY)NULL,
                                          &cinfo->output_scanline,
                                          (JDIMENSION)0);
       else
-#endif
         (*cinfo->main->process_data) (cinfo, (JSAMPARRAY)NULL,
                                       &cinfo->output_scanline, (JDIMENSION)0);
       if (cinfo->output_scanline == last_scanline)

@@ -20,8 +20,7 @@ the creation of 12-bit-per-component JPEG images.  (djpeg and jpegtran handle
 12-bit-per-component JPEG images automatically.)
 
     Refer to [libjpeg.txt](libjpeg.txt) and [usage.txt](usage.txt) for more
-details.  The `WITH_12BIT` CMake variable can be used to disable
-12-bit-per-component JPEG support.
+details.
 
 2. Significantly sped up the computation of optimal Huffman tables.  This
 speeds up the compression of tiny images by as much as 2x and provides a

@@ -37,7 +37,7 @@ if(MSVC)
   set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_BINARY_DIR}/win/jpeg.rc)
 endif()
 add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} ${SIMD_TARGET_OBJECTS}
-  ${SIMD_OBJS} ${JPEG12_OBJS})
+  ${SIMD_OBJS} $<TARGET_OBJECTS:jpeg12>)
 
 set_target_properties(jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
   VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
@@ -69,26 +69,20 @@ set(CDJPEG_COMPILE_FLAGS
   "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 
 # Compile a separate version of these source files with 12-bit data precision.
-if(WITH_12BIT)
-  add_library(cjpeg12 OBJECT ../rdgif.c ../rdppm.c)
-  set_property(TARGET cjpeg12 PROPERTY COMPILE_FLAGS
-    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-  set(CJPEG12_OBJS $<TARGET_OBJECTS:cjpeg12>)
-endif()
+add_library(cjpeg12 OBJECT ../rdgif.c ../rdppm.c)
+set_property(TARGET cjpeg12 PROPERTY COMPILE_FLAGS
+  "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
 add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdbmp.c ../rdgif.c ../rdppm.c
-  ../rdswitch.c ../rdtarga.c ${CJPEG12_OBJS})
+  ../rdswitch.c ../rdtarga.c $<TARGET_OBJECTS:cjpeg12>)
 set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${CDJPEG_COMPILE_FLAGS})
 target_link_libraries(cjpeg jpeg)
 
 # Compile a separate version of these source files with 12-bit data precision.
-if(WITH_12BIT)
-  add_library(djpeg12 OBJECT ../rdcolmap.c ../wrgif.c ../wrppm.c)
-  set_property(TARGET djpeg12 PROPERTY COMPILE_FLAGS
-    "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-  set(DJPEG12_OBJS $<TARGET_OBJECTS:djpeg12>)
-endif()
+add_library(djpeg12 OBJECT ../rdcolmap.c ../wrgif.c ../wrppm.c)
+set_property(TARGET djpeg12 PROPERTY COMPILE_FLAGS
+  "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
 add_executable(djpeg ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
-  ../wrbmp.c ../wrgif.c ../wrppm.c ../wrtarga.c ${DJPEG12_OBJS})
+  ../wrbmp.c ../wrgif.c ../wrppm.c ../wrtarga.c $<TARGET_OBJECTS:djpeg12>)
 set_property(TARGET djpeg PROPERTY COMPILE_FLAGS ${CDJPEG_COMPILE_FLAGS})
 target_link_libraries(djpeg jpeg)
 

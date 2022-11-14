@@ -3,6 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, 2014-2016, 2018-2022, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
@@ -30,7 +32,7 @@
 #ifdef WITH_SIMD
 #include "jsimd.h"
 #else
-#include "jchuff.h"
+#include "jchuff.h"             /* Declarations shared with jc*huff.c */
 #endif
 #include <limits.h>
 
@@ -251,7 +253,7 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
  * Compute the derived values for a Huffman table.
  * This routine also performs some validation checks on the table.
  *
- * Note this is also used by jcphuff.c.
+ * Note this is also used by jcphuff.c and jclhuff.c.
  */
 
 GLOBAL(void)
@@ -327,12 +329,12 @@ jpeg_make_c_derived_tbl(j_compress_ptr cinfo, boolean isDC, int tblno,
   memset(dtbl->ehufco, 0, sizeof(dtbl->ehufco));
   memset(dtbl->ehufsi, 0, sizeof(dtbl->ehufsi));
 
-  /* This is also a convenient place to check for out-of-range
-   * and duplicated VAL entries.  We allow 0..255 for AC symbols
-   * but only 0..15 for DC.  (We could constrain them further
-   * based on data depth and mode, but this seems enough.)
+  /* This is also a convenient place to check for out-of-range and duplicated
+   * VAL entries.  We allow 0..255 for AC symbols but only 0..15 for DC in
+   * lossy mode and 0..16 for DC in lossless mode.  (We could constrain them
+   * further based on data depth and mode, but this seems enough.)
    */
-  maxsymbol = isDC ? 15 : 255;
+  maxsymbol = isDC ? (cinfo->master->lossless ? 16 : 15) : 255;
 
   for (p = 0; p < lastp; p++) {
     i = htbl->huffval[p];
@@ -918,7 +920,7 @@ encode_mcu_gather(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 
 /*
  * Generate the best Huffman code table for the given counts, fill htbl.
- * Note this is also used by jcphuff.c.
+ * Note this is also used by jcphuff.c and jclhuff.c.
  *
  * The JPEG standard requires that no symbol be assigned a codeword of all
  * one bits (so that padding bits added at the end of a compressed segment

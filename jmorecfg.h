@@ -4,6 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009, 2011, 2014-2015, 2018, 2020, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -232,14 +234,16 @@ typedef int boolean;
 
 #define C_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
 #define C_PROGRESSIVE_SUPPORTED     /* Progressive JPEG? (Requires MULTISCAN)*/
+#define C_LOSSLESS_SUPPORTED        /* Lossless JPEG? */
 #define ENTROPY_OPT_SUPPORTED       /* Optimization of entropy coding parms? */
 /* Note: if you selected 12-bit data precision, it is dangerous to turn off
  * ENTROPY_OPT_SUPPORTED.  The standard Huffman tables are only good for 8-bit
  * precision, so jchuff.c normally uses entropy optimization to compute
  * usable tables for higher precision.  If you don't want to do optimization,
  * you'll have to supply different default Huffman tables.
- * The exact same statements apply for progressive JPEG: the default tables
- * don't work for progressive mode.  (This may get fixed, however.)
+ * The exact same statements apply for progressive and lossless JPEG:
+ * the default tables don't work for progressive mode or lossless mode.
+ * (This may get fixed, however.)
  */
 #define INPUT_SMOOTHING_SUPPORTED   /* Input image smoothing option? */
 
@@ -247,6 +251,7 @@ typedef int boolean;
 
 #define D_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
 #define D_PROGRESSIVE_SUPPORTED     /* Progressive JPEG? (Requires MULTISCAN)*/
+#define D_LOSSLESS_SUPPORTED        /* Lossless JPEG? */
 #define SAVE_MARKERS_SUPPORTED      /* jpeg_save_markers() needed? */
 #define BLOCK_SMOOTHING_SUPPORTED   /* Block smoothing? (Progressive only) */
 #define IDCT_SCALING_SUPPORTED      /* Output rescaling via IDCT? */

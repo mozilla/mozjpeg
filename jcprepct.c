@@ -1,8 +1,10 @@
 /*
  * jcprepct.c
  *
- * This file is part of the Independent JPEG Group's software:
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -138,6 +140,7 @@ pre_process_data(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
   int numrows, ci;
   JDIMENSION inrows;
   jpeg_component_info *compptr;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   while (*in_row_ctr < in_rows_avail &&
          *out_row_group_ctr < out_row_groups_avail) {
@@ -175,7 +178,8 @@ pre_process_data(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
     if (prep->rows_to_go == 0 && *out_row_group_ctr < out_row_groups_avail) {
       for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
            ci++, compptr++) {
-        expand_bottom_edge(output_buf[ci], compptr->width_in_blocks * DCTSIZE,
+        expand_bottom_edge(output_buf[ci],
+                           compptr->width_in_blocks * data_unit,
                            (int)(*out_row_group_ctr * compptr->v_samp_factor),
                            (int)(out_row_groups_avail * compptr->v_samp_factor));
       }
@@ -269,6 +273,7 @@ create_context_buffer(j_compress_ptr cinfo)
   int ci, i;
   jpeg_component_info *compptr;
   _JSAMPARRAY true_buffer, fake_buffer;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   /* Grab enough space for fake row pointers for all the components;
    * we need five row groups' worth of pointers for each component.
@@ -286,7 +291,7 @@ create_context_buffer(j_compress_ptr cinfo)
      */
     true_buffer = (_JSAMPARRAY)(*cinfo->mem->alloc_sarray)
       ((j_common_ptr)cinfo, JPOOL_IMAGE,
-       (JDIMENSION)(((long)compptr->width_in_blocks * DCTSIZE *
+       (JDIMENSION)(((long)compptr->width_in_blocks * data_unit *
                      cinfo->max_h_samp_factor) / compptr->h_samp_factor),
        (JDIMENSION)(3 * rgroup_height));
     /* Copy true buffer row pointers into the middle of the fake row array */
@@ -315,6 +320,7 @@ _jinit_c_prep_controller(j_compress_ptr cinfo, boolean need_full_buffer)
   my_prep_ptr prep;
   int ci;
   jpeg_component_info *compptr;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   if (cinfo->data_precision != BITS_IN_JSAMPLE)
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
@@ -347,7 +353,7 @@ _jinit_c_prep_controller(j_compress_ptr cinfo, boolean need_full_buffer)
          ci++, compptr++) {
       prep->color_buf[ci] = (_JSAMPARRAY)(*cinfo->mem->alloc_sarray)
         ((j_common_ptr)cinfo, JPOOL_IMAGE,
-         (JDIMENSION)(((long)compptr->width_in_blocks * DCTSIZE *
+         (JDIMENSION)(((long)compptr->width_in_blocks * data_unit *
                        cinfo->max_h_samp_factor) / compptr->h_samp_factor),
          (JDIMENSION)cinfo->max_v_samp_factor);
     }

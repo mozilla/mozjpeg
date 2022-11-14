@@ -42,6 +42,9 @@ LOCAL(void) transencode_coef_controller(j_compress_ptr cinfo,
 GLOBAL(void)
 jpeg_write_coefficients(j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays)
 {
+  if (cinfo->master->lossless)
+    ERREXIT(cinfo, JERR_NOTIMPL);
+
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
   /* Mark all tables to be written */
@@ -71,6 +74,9 @@ jpeg_copy_critical_parameters(j_decompress_ptr srcinfo, j_compress_ptr dstinfo)
   jpeg_component_info *incomp, *outcomp;
   JQUANT_TBL *c_quant, *slot_quant;
   int tblno, ci, coefi;
+
+  if (srcinfo->master->lossless)
+    ERREXIT(dstinfo, JERR_NOTIMPL);
 
   /* Safety check to ensure start_compress not called yet. */
   if (dstinfo->global_state != CSTATE_START)

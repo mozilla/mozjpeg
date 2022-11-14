@@ -2,6 +2,8 @@ USING THE IJG JPEG LIBRARY
 
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
+Lossless JPEG Modifications:
+Copyright (C) 1999, Ken Murchison.
 libjpeg-turbo Modifications:
 Copyright (C) 2010, 2014-2018, 2020, 2022, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
@@ -97,7 +99,6 @@ the ISO JPEG standard; most baseline, extended-sequential, and progressive
 JPEG processes are supported.  (Our subset includes all features now in common
 use.)  Unsupported ISO options include:
         * Hierarchical storage
-        * Lossless JPEG
         * DNL marker
         * Nonintegral subsampling ratios
 We support both 8- and 12-bit data precision.
@@ -994,6 +995,29 @@ jpeg_simple_progression (j_compress_ptr cinfo)
         unless you want to make a custom scan sequence.  You must ensure that
         the JPEG color space is set correctly before calling this routine.
 
+jpeg_enable_lossless (j_compress_ptr cinfo, int predictor_selection_value,
+                      int point_transform)
+        Enables lossless mode with the specified predictor selection value
+        (1 - 7) and optional point transform (0 - {precision}-1, where
+        {precision} is the JPEG data precision).  A point transform value of 0
+        is necessary in order to create a fully lossless JPEG image.  (A
+        non-zero point transform value right-shifts the input samples by the
+        specified number of bits, which is effectively a form of lossy color
+        quantization.)  Note that the following features will be unavailable
+        when compressing or decompressing lossless JPEG images:
+          * Partial image decompression
+          * Quality/quantization table selection
+          * DCT/IDCT algorithm selection
+          * Smoothing
+          * Downsampling/upsampling
+          * Color conversion (the JPEG image will use the same color space as
+            the input image)
+          * IDCT scaling
+          * Raw (downsampled) data input/output
+          * Transcoding of DCT coefficients
+        Any parameters used to enable or configure those features will be
+        ignored.
+
 
 Compression parameters (cinfo fields) include:
 
@@ -1061,15 +1085,15 @@ boolean optimize_coding
 unsigned int restart_interval
 int restart_in_rows
         To emit restart markers in the JPEG file, set one of these nonzero.
-        Set restart_interval to specify the exact interval in MCU blocks.
-        Set restart_in_rows to specify the interval in MCU rows.  (If
-        restart_in_rows is not 0, then restart_interval is set after the
-        image width in MCUs is computed.)  Defaults are zero (no restarts).
-        One restart marker per MCU row is often a good choice.
-        NOTE: the overhead of restart markers is higher in grayscale JPEG
-        files than in color files, and MUCH higher in progressive JPEGs.
-        If you use restarts, you may want to use larger intervals in those
-        cases.
+        Set restart_interval to specify the exact interval in MCU blocks
+        (samples in lossless mode).  Set restart_in_rows to specify the
+        interval in MCU rows.  (If restart_in_rows is not 0, then
+        restart_interval is set after the image width in MCUs is computed.)
+        Defaults are zero (no restarts).  One restart marker per MCU row is
+        often a good choice.  NOTE: the overhead of restart markers is higher
+        in grayscale JPEG files than in color files, and MUCH higher in
+        progressive JPEGs.  If you use restarts, you may want to use larger
+        intervals in those cases.
 
 const jpeg_scan_info *scan_info
 int num_scans

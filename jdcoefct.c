@@ -11,7 +11,7 @@
  * file.
  *
  * This file contains the coefficient buffer controller for decompression.
- * This controller is the top level of the JPEG decompressor proper.
+ * This controller is the top level of the lossy JPEG decompressor proper.
  * The coefficient buffer lies between entropy decoding and inverse-DCT steps.
  *
  * In buffered-image mode, this controller is the interface between

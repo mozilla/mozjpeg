@@ -9,7 +9,7 @@
  * file.
  *
  * This file contains the coefficient buffer controller for compression.
- * This controller is the top level of the JPEG compressor proper.
+ * This controller is the top level of the lossy JPEG compressor proper.
  * The coefficient buffer lies between forward-DCT and entropy encoding steps.
  */
 

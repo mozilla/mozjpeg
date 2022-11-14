@@ -48,6 +48,9 @@ LOCAL(void) transdecode_master_selection(j_decompress_ptr cinfo);
 GLOBAL(jvirt_barray_ptr *)
 jpeg_read_coefficients(j_decompress_ptr cinfo)
 {
+  if (cinfo->master->lossless)
+    ERREXIT(cinfo, JERR_NOTIMPL);
+
   if (cinfo->global_state == DSTATE_READY) {
     /* First call: initialize active modules */
     transdecode_master_selection(cinfo);

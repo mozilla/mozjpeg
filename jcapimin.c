@@ -23,6 +23,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#include "jcmaster.h"
 
 
 /*
@@ -94,6 +95,14 @@ jpeg_CreateCompress(j_compress_ptr cinfo, int version, size_t structsize)
 
   /* OK, I'm ready */
   cinfo->global_state = CSTATE_START;
+
+  /* The master struct is used to store extension parameters, so we allocate it
+   * here.
+   */
+  cinfo->master = (struct jpeg_comp_master *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_PERMANENT,
+                                  sizeof(my_comp_master));
+  memset(cinfo->master, 0, sizeof(my_comp_master));
 }
 
 

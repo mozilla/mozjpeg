@@ -73,6 +73,10 @@
 #define _jinit_color_converter  j12init_color_converter
 #define _jinit_downsampler  j12init_downsampler
 #define _jinit_forward_dct  j12init_forward_dct
+#ifdef C_LOSSLESS_SUPPORTED
+#define _jinit_c_diff_controller  j12init_c_diff_controller
+#define _jinit_lossless_compressor  j12init_lossless_compressor
+#endif
 
 #define _jinit_d_main_controller  j12init_d_main_controller
 #define _jinit_d_coef_controller  j12init_d_coef_controller
@@ -83,6 +87,10 @@
 #define _jinit_1pass_quantizer  j12init_1pass_quantizer
 #define _jinit_2pass_quantizer  j12init_2pass_quantizer
 #define _jinit_merged_upsampler  j12init_merged_upsampler
+#ifdef D_LOSSLESS_SUPPORTED
+#define _jinit_d_diff_controller  j12init_d_diff_controller
+#define _jinit_lossless_decompressor  j12init_lossless_decompressor
+#endif
 
 #define _jcopy_sample_rows  j12copy_sample_rows
 
@@ -180,6 +188,10 @@
 #define _jinit_color_converter  jinit_color_converter
 #define _jinit_downsampler  jinit_downsampler
 #define _jinit_forward_dct  jinit_forward_dct
+#ifdef C_LOSSLESS_SUPPORTED
+#define _jinit_c_diff_controller  jinit_c_diff_controller
+#define _jinit_lossless_compressor  jinit_lossless_compressor
+#endif
 
 #define _jinit_d_main_controller  jinit_d_main_controller
 #define _jinit_d_coef_controller  jinit_d_coef_controller
@@ -190,6 +202,10 @@
 #define _jinit_1pass_quantizer  jinit_1pass_quantizer
 #define _jinit_2pass_quantizer  jinit_2pass_quantizer
 #define _jinit_merged_upsampler  jinit_merged_upsampler
+#ifdef D_LOSSLESS_SUPPORTED
+#define _jinit_d_diff_controller  jinit_d_diff_controller
+#define _jinit_lossless_decompressor  jinit_lossless_decompressor
+#endif
 
 #define _jcopy_sample_rows  jcopy_sample_rows
 

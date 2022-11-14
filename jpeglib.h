@@ -4,6 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2002-2009 by Guido Vollbeding.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, 2013-2014, 2016-2017, 2020, 2022, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
@@ -43,6 +45,13 @@ extern "C" {
  * if you want to be compatible.
  */
 
+/* NOTE: In lossless mode, an MCU contains one or more samples rather than one
+ * or more 8x8 DCT blocks, so the term "data unit" is used to generically
+ * describe a sample in lossless mode or an 8x8 DCT block in lossy mode.  To
+ * preserve backward API/ABI compatibility, the field and macro names retain
+ * the "block" terminology.
+ */
+
 #define DCTSIZE             8   /* The basic DCT block is 8x8 samples */
 #define DCTSIZE2            64  /* DCTSIZE squared; # of elements in a block */
 #define NUM_QUANT_TBLS      4   /* Quantization tables are numbered 0..3 */
@@ -57,9 +66,9 @@ extern "C" {
  * we strongly discourage changing C_MAX_BLOCKS_IN_MCU; just because Adobe
  * sometimes emits noncompliant files doesn't mean you should too.
  */
-#define C_MAX_BLOCKS_IN_MCU   10 /* compressor's limit on blocks per MCU */
+#define C_MAX_BLOCKS_IN_MCU   10 /* compressor's limit on data units/MCU */
 #ifndef D_MAX_BLOCKS_IN_MCU
-#define D_MAX_BLOCKS_IN_MCU   10 /* decompressor's limit on blocks per MCU */
+#define D_MAX_BLOCKS_IN_MCU   10 /* decompressor's limit on data units/MCU */
 #endif
 
 
@@ -142,17 +151,20 @@ typedef struct {
   /* Remaining fields should be treated as private by applications. */
 
   /* These values are computed during compression or decompression startup: */
-  /* Component's size in DCT blocks.
-   * Any dummy blocks added to complete an MCU are not counted; therefore
-   * these values do not depend on whether a scan is interleaved or not.
+  /* Component's size in data units.
+   * In lossy mode, any dummy blocks added to complete an MCU are not counted;
+   * therefore these values do not depend on whether a scan is interleaved or
+   * not.  In lossless mode, these are always equal to the image width and
+   * height.
    */
   JDIMENSION width_in_blocks;
   JDIMENSION height_in_blocks;
-  /* Size of a DCT block in samples.  Always DCTSIZE for compression.
-   * For decompression this is the size of the output from one DCT block,
+  /* Size of a data unit in samples.  Always DCTSIZE for lossy compression.
+   * For lossy decompression this is the size of the output from one DCT block,
    * reflecting any scaling we choose to apply during the IDCT step.
-   * Values from 1 to 16 are supported.
-   * Note that different components may receive different IDCT scalings.
+   * Values from 1 to 16 are supported.  Note that different components may
+   * receive different IDCT scalings.  In lossless mode, this is always equal
+   * to 1.
    */
 #if JPEG_LIB_VERSION >= 70
   int DCT_h_scaled_size;
@@ -163,8 +175,10 @@ typedef struct {
   /* The downsampled dimensions are the component's actual, unpadded number
    * of samples at the main buffer (preprocessing/compression interface), thus
    * downsampled_width = ceil(image_width * Hi/Hmax)
-   * and similarly for height.  For decompression, IDCT scaling is included, so
+   * and similarly for height.  For lossy decompression, IDCT scaling is
+   * included, so
    * downsampled_width = ceil(image_width * Hi/Hmax * DCT_[h_]scaled_size/DCTSIZE)
+   * In lossless mode, these are always equal to the image width and height.
    */
   JDIMENSION downsampled_width;  /* actual width in samples */
   JDIMENSION downsampled_height; /* actual height in samples */
@@ -176,12 +190,12 @@ typedef struct {
 
   /* These values are computed before starting a scan of the component. */
   /* The decompressor output side may not use these variables. */
-  int MCU_width;                /* number of blocks per MCU, horizontally */
-  int MCU_height;               /* number of blocks per MCU, vertically */
+  int MCU_width;                /* number of data units per MCU, horizontally */
+  int MCU_height;               /* number of data units per MCU, vertically */
   int MCU_blocks;               /* MCU_width * MCU_height */
   int MCU_sample_width;         /* MCU width in samples, MCU_width*DCT_[h_]scaled_size */
-  int last_col_width;           /* # of non-dummy blocks across in last MCU */
-  int last_row_height;          /* # of non-dummy blocks down in last MCU */
+  int last_col_width;           /* # of non-dummy data units across in last MCU */
+  int last_row_height;          /* # of non-dummy data units down in last MCU */
 
   /* Saved quantization table for component; NULL if none yet saved.
    * See jdinput.c comments about the need for this information.
@@ -199,8 +213,12 @@ typedef struct {
 typedef struct {
   int comps_in_scan;            /* number of components encoded in this scan */
   int component_index[MAX_COMPS_IN_SCAN]; /* their SOF/comp_info[] indexes */
-  int Ss, Se;                   /* progressive JPEG spectral selection parms */
-  int Ah, Al;                   /* progressive JPEG successive approx. parms */
+  int Ss, Se;                   /* progressive JPEG spectral selection parms
+                                   (Ss is the predictor selection value in
+                                   lossless mode) */
+  int Ah, Al;                   /* progressive JPEG successive approx. parms
+                                   (Al is the point transform value in lossless
+                                   mode) */
 } jpeg_scan_info;
 
 /* The decompressor can save APPn and COM markers in a list of these: */
@@ -426,11 +444,13 @@ struct jpeg_compress_struct {
   int min_DCT_v_scaled_size;    /* smallest DCT_v_scaled_size of any component */
 #endif
 
-  JDIMENSION total_iMCU_rows;   /* # of iMCU rows to be input to coef ctlr */
-  /* The coefficient controller receives data in units of MCU rows as defined
-   * for fully interleaved scans (whether the JPEG file is interleaved or not).
-   * There are v_samp_factor * DCTSIZE sample rows of each component in an
-   * "iMCU" (interleaved MCU) row.
+  JDIMENSION total_iMCU_rows;   /* # of iMCU rows to be input to coefficient or
+                                   difference controller */
+  /* The coefficient or difference controller receives data in units of MCU
+   * rows as defined for fully interleaved scans (whether the JPEG file is
+   * interleaved or not).  In lossy mode, there are v_samp_factor * DCTSIZE
+   * sample rows of each component in an "iMCU" (interleaved MCU) row.  In
+   * lossless mode, total_iMCU_rows is always equal to the image height.
    */
 
   /*
@@ -444,12 +464,13 @@ struct jpeg_compress_struct {
   JDIMENSION MCUs_per_row;      /* # of MCUs across the image */
   JDIMENSION MCU_rows_in_scan;  /* # of MCU rows in the image */
 
-  int blocks_in_MCU;            /* # of DCT blocks per MCU */
+  int blocks_in_MCU;            /* # of data units per MCU */
   int MCU_membership[C_MAX_BLOCKS_IN_MCU];
   /* MCU_membership[i] is index in cur_comp_info of component owning */
-  /* i'th block in an MCU */
+  /* i'th data unit in an MCU */
 
-  int Ss, Se, Ah, Al;           /* progressive JPEG parameters for scan */
+  int Ss, Se, Ah, Al;           /* progressive/lossless JPEG parameters for
+                                   scan */
 
 #if JPEG_LIB_VERSION >= 80
   int block_size;               /* the basic DCT block size: 1..16 */
@@ -658,12 +679,13 @@ struct jpeg_decompress_struct {
 #endif
 
   JDIMENSION total_iMCU_rows;   /* # of iMCU rows in image */
-  /* The coefficient controller's input and output progress is measured in
-   * units of "iMCU" (interleaved MCU) rows.  These are the same as MCU rows
-   * in fully interleaved JPEG scans, but are used whether the scan is
-   * interleaved or not.  We define an iMCU row as v_samp_factor DCT block
-   * rows of each component.  Therefore, the IDCT output contains
+  /* The coefficient or difference controller's input and output progress is
+   * measured in units of "iMCU" (interleaved MCU) rows.  These are the same as
+   * MCU rows in fully interleaved JPEG scans, but are used whether the scan is
+   * interleaved or not.  In lossy mode, we define an iMCU row as v_samp_factor
+   * DCT block rows of each component.  Therefore, the IDCT output contains
    * v_samp_factor*DCT_[v_]scaled_size sample rows of a component per iMCU row.
+   * In lossless mode, total_iMCU_rows is always equal to the image height.
    */
 
   JSAMPLE *sample_range_limit;  /* table for fast range-limiting
@@ -684,12 +706,13 @@ struct jpeg_decompress_struct {
   JDIMENSION MCUs_per_row;      /* # of MCUs across the image */
   JDIMENSION MCU_rows_in_scan;  /* # of MCU rows in the image */
 
-  int blocks_in_MCU;            /* # of DCT blocks per MCU */
+  int blocks_in_MCU;            /* # of data units per MCU */
   int MCU_membership[D_MAX_BLOCKS_IN_MCU];
   /* MCU_membership[i] is index in cur_comp_info of component owning */
-  /* i'th block in an MCU */
+  /* i'th data unit in an MCU */
 
-  int Ss, Se, Ah, Al;           /* progressive JPEG parameters for scan */
+  int Ss, Se, Ah, Al;           /* progressive/lossless JPEG parameters for
+                                   scan */
 
 #if JPEG_LIB_VERSION >= 80
   /* These fields are derived from Se of first SOS marker.
@@ -960,6 +983,9 @@ EXTERN(void) jpeg_add_quant_table(j_compress_ptr cinfo, int which_tbl,
                                   const unsigned int *basic_table,
                                   int scale_factor, boolean force_baseline);
 EXTERN(int) jpeg_quality_scaling(int quality);
+EXTERN(void) jpeg_enable_lossless(j_compress_ptr cinfo,
+                                  int predictor_selection_value,
+                                  int point_transform);
 EXTERN(void) jpeg_simple_progression(j_compress_ptr cinfo);
 EXTERN(void) jpeg_suppress_tables(j_compress_ptr cinfo, boolean suppress);
 EXTERN(JQUANT_TBL *) jpeg_alloc_quant_table(j_common_ptr cinfo);

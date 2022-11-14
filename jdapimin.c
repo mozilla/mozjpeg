@@ -3,6 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1998, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2016, 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -164,7 +166,10 @@ default_decompress_parms(j_decompress_ptr cinfo)
         cinfo->jpeg_color_space = JCS_RGB; /* ASCII 'R', 'G', 'B' */
       else {
         TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);
-        cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+        if (cinfo->master->lossless)
+          cinfo->jpeg_color_space = JCS_RGB; /* assume it's RGB */
+        else
+          cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
       }
     }
     /* Always guess RGB is proper output colorspace. */

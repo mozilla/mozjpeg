@@ -3,6 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2014, MIPS Technologies, Inc., California.
@@ -150,7 +152,8 @@ int_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
 {
   int inrow, outrow, h_expand, v_expand, numpix, numpix2, h, v;
   JDIMENSION outcol, outcol_h;  /* outcol_h == outcol*h_expand */
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_blocks * data_unit;
   _JSAMPROW inptr, outptr;
   JLONG outvalue;
 
@@ -195,12 +198,14 @@ METHODDEF(void)
 fullsize_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
                     _JSAMPARRAY input_data, _JSAMPARRAY output_data)
 {
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
+
   /* Copy the data */
   _jcopy_sample_rows(input_data, 0, output_data, 0, cinfo->max_v_samp_factor,
                      cinfo->image_width);
   /* Edge-expand */
   expand_right_edge(output_data, cinfo->max_v_samp_factor, cinfo->image_width,
-                    compptr->width_in_blocks * DCTSIZE);
+                    compptr->width_in_blocks * data_unit);
 }
 
 
@@ -222,7 +227,8 @@ h2v1_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
 {
   int outrow;
   JDIMENSION outcol;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_blocks * data_unit;
   register _JSAMPROW inptr, outptr;
   register int bias;
 
@@ -258,7 +264,8 @@ h2v2_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
 {
   int inrow, outrow;
   JDIMENSION outcol;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_blocks * data_unit;
   register _JSAMPROW inptr0, inptr1, outptr;
   register int bias;
 
@@ -300,7 +307,8 @@ h2v2_smooth_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
 {
   int inrow, outrow;
   JDIMENSION colctr;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_blocks * data_unit;
   register _JSAMPROW inptr0, inptr1, above_ptr, below_ptr, outptr;
   JLONG membersum, neighsum, memberscale, neighscale;
 
@@ -388,7 +396,8 @@ fullsize_smooth_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
 {
   int outrow;
   JDIMENSION colctr;
-  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
+  JDIMENSION output_cols = compptr->width_in_blocks * data_unit;
   register _JSAMPROW inptr, above_ptr, below_ptr, outptr;
   JLONG membersum, neighsum, memberscale, neighscale;
   int colsum, lastcolsum, nextcolsum;

@@ -4,6 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2003-2011 by Guido Vollbeding.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, 2013-2014, 2017, 2019-2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -212,6 +214,9 @@ usage(void)
   fprintf(stderr, "Switches for advanced users:\n");
   fprintf(stderr, "  -precision N   Create JPEG file with N-bit data precision\n");
   fprintf(stderr, "                 (N is 8 or 12; default is 8)\n");
+#ifdef C_LOSSLESS_SUPPORTED
+  fprintf(stderr, "  -lossless psv[,Pt]  Create lossless JPEG file\n");
+#endif
 #ifdef C_ARITH_CODING_SUPPORTED
   fprintf(stderr, "  -arithmetic    Use arithmetic coding\n");
 #endif
@@ -265,6 +270,9 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
 {
   int argn;
   char *arg;
+#ifdef C_LOSSLESS_SUPPORTED
+  int psv, pt = 0;
+#endif
   boolean force_baseline;
   boolean simple_progressive;
   char *qualityarg = NULL;      /* saves -quality parm if any */
@@ -360,6 +368,27 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       if (++argn >= argc)       /* advance to next argument */
         usage();
       icc_filename = argv[argn];
+
+    } else if (keymatch(arg, "lossless", 1)) {
+      /* Enable lossless mode. */
+#ifdef C_LOSSLESS_SUPPORTED
+      char ch = ',', *ptr;
+
+      if (++argn >= argc)       /* advance to next argument */
+        usage();
+      if (sscanf(argv[argn], "%d%c", &psv, &ch) < 1 || ch != ',')
+        usage();
+      ptr = argv[argn];
+      while (*ptr && *ptr++ != ','); /* advance to next segment of arg
+                                        string */
+      if (*ptr)
+        sscanf(ptr, "%d", &pt);
+      jpeg_enable_lossless(cinfo, psv, pt);
+#else
+      fprintf(stderr, "%s: sorry, lossless output was not compiled\n",
+              progname);
+      exit(EXIT_FAILURE);
+#endif
 
     } else if (keymatch(arg, "maxmemory", 3)) {
       /* Maximum memory in Kb (or Mb with 'm'). */

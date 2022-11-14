@@ -30,6 +30,11 @@ tables.
 3. All deprecated fields, constructors, and methods in the TurboJPEG Java API
 have been removed.
 
+4. Added support for 8-bit and 12-bit lossless JPEG images.  A new libjpeg API
+function (`jpeg_enable_lossless()`) and cjpeg command-line argument
+(`-lossless`) can be used to create a lossless JPEG image.  (Decompression of
+lossless JPEG images is handled automatically.)
+
 
 2.1.5
 =====

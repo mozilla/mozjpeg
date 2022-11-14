@@ -3,6 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2011, 2015, 2018, 2021-2022, D. R. Commander.
  * Copyright (C) 2016, 2018, Matthieu Darbois.
@@ -24,7 +26,7 @@
 #ifdef WITH_SIMD
 #include "jsimd.h"
 #else
-#include "jchuff.h"
+#include "jchuff.h"             /* Declarations shared with jc*huff.c */
 #endif
 #include <limits.h>
 

@@ -273,12 +273,12 @@ endif()
 # 1: + In-memory source/destination managers (libjpeg-turbo 1.3.x)
 # 2: + Partial image decompression functions (libjpeg-turbo 1.5.x)
 # 3: + ICC functions (libjpeg-turbo 2.0.x)
-# 4: + 12-bit-per-component functions (libjpeg-turbo 2.2.x)
+# 4: + 12-bit-per-component and lossless functions (libjpeg-turbo 2.2.x)
 #
 # libjpeg v8 API/ABI emulation:
 # 1: + Partial image decompression functions (libjpeg-turbo 1.5.x)
 # 2: + ICC functions (libjpeg-turbo 2.0.x)
-# 3: + 12-bit-per-component functions (libjpeg-turbo 2.2.x)
+# 3: + 12-bit-per-component and lossless functions (libjpeg-turbo 2.2.x)
 set(SO_AGE 3)
 if(NOT WITH_JPEG8)
   set(SO_AGE 4)
@@ -535,10 +535,11 @@ if(CMAKE_EXECUTABLE_SUFFIX_TMP)
 endif()
 message(STATUS "CMAKE_EXECUTABLE_SUFFIX = ${CMAKE_EXECUTABLE_SUFFIX}")
 
-set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
-  jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
-  jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
-  jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c jdinput.c
+set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c
+  jcdiffct.c jchuff.c jcicc.c jcinit.c jclhuff.c jclossls.c jcmainct.c
+  jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c jcprepct.c jcsample.c
+  jctrans.c jdapimin.c jdapistd.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c
+  jddctmgr.c jddiffct.c jdhuff.c jdicc.c jdinput.c jdlhuff.c jdlossls.c
   jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c
   jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
   jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
@@ -557,10 +558,11 @@ endif()
 
 # Compile a separate version of these source files with 12-bit data
 # precision.
-add_library(jpeg12 OBJECT jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jcmainct.c
-  jcprepct.c jcsample.c jdapistd.c jdcoefct.c jdcolor.c jddctmgr.c jdmainct.c
-  jdmerge.c jdpostct.c jdsample.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
-  jidctint.c jidctred.c jquant1.c jquant2.c jutils.c)
+add_library(jpeg12 OBJECT jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jcdiffct.c
+  jclossls.c jcmainct.c jcprepct.c jcsample.c jdapistd.c jdcoefct.c jdcolor.c
+  jddctmgr.c jddiffct.c jdlossls.c jdmainct.c jdmerge.c jdpostct.c jdsample.c
+  jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c jquant1.c
+  jquant2.c jutils.c)
 set_property(TARGET jpeg12 PROPERTY COMPILE_FLAGS "-DBITS_IN_JSAMPLE=12")
 
 if(WITH_SIMD)
@@ -1046,6 +1048,8 @@ foreach(libtype ${TEST_LIBTYPES})
       set(MD5_PPM_420M_ISLOW_3_8 343d19015531b7bbe746124127244fa8)
       set(MD5_PPM_420M_ISLOW_1_4 35fd59d866e44659edfa3c18db2a3edb)
       set(MD5_PPM_420M_ISLOW_1_8 ccaed48ac0aedefda5d4abe4013f4ad7)
+      set(MD5_JPEG_LOSSLESS a153297ef3ae6e51357be06fc5efca2a)
+      set(MD5_PPM_LOSSLESS 1da3fb2620e5a4e258e0fcb891bc67e8)
       set(MD5_PPM_420_ISLOW_SKIP15_31 86664cd9dc956536409e44e244d20a97)
       set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71
         452a21656115a163029cfba5c04fa76a)
@@ -1121,6 +1125,8 @@ foreach(libtype ${TEST_LIBTYPES})
       set(MD5_BMP_420_ISLOW_565D 6bde71526acc44bcff76f696df8638d2)
       set(MD5_BMP_420M_ISLOW_565 8dc0185245353cfa32ad97027342216f)
       set(MD5_BMP_420M_ISLOW_565D ce034037d212bc403330df6f915c161b)
+      set(MD5_JPEG_LOSSLESS dd21c541d22a87cccabdb48b796d8bcd)
+      set(MD5_PPM_LOSSLESS 64072f1dbdc5b3a187777788604971a5)
       set(MD5_PPM_420_ISLOW_SKIP15_31 c4c65c1e43d7275cd50328a61e6534f0)
       set(MD5_PPM_420_ISLOW_ARI_SKIP16_139 087c6b123db16ac00cb88c5b590bb74a)
       set(MD5_PPM_420_ISLOW_PROG_CROP62x62_71_71
@@ -1361,6 +1367,16 @@ foreach(libtype ${TEST_LIBTYPES})
         ${testout}_420m_islow_565D.bmp ${TESTIMAGES}/${TESTORIG}
         ${MD5_BMP_420M_ISLOW_565D})
     endif()
+
+    # Lossless (all arguments other than -lossless should have no effect)
+    add_bittest(${cjpeg} lossless
+      "-lossless;4;-quality;1;-grayscale;-optimize;-dct;float;-smooth;100;-baseline;-qslots;1,0,0;-sample;1x2,3x4,2x1"
+      ${testout}_lossless.jpg ${TESTIMAGES}/testorig.ppm
+      ${MD5_JPEG_LOSSLESS})
+    add_bittest(${djpeg} lossless
+      "-fast;-scale;1/8;-dct;float;-dither;none;-nosmooth;-onepass"
+      ${testout}_lossless.ppm ${testout}_lossless.jpg
+      ${MD5_PPM_LOSSLESS} ${cjpeg}-${libtype}-lossless)
 
     # Partial decode tests.  These tests are designed to cover all of the
     # possible code paths in jpeg_skip_scanlines().

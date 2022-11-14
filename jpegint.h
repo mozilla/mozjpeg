@@ -4,6 +4,8 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 1997-2009 by Guido Vollbeding.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2015-2016, 2019, 2021-2022, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
@@ -15,6 +17,17 @@
  * These declarations are considered internal to the JPEG library; most
  * applications using the library shouldn't need to include this file.
  */
+
+
+/* Representation of a spatial difference value.
+ * This should be a signed value of at least 16 bits; int is usually OK.
+ */
+
+typedef int JDIFF;
+
+typedef JDIFF FAR *JDIFFROW;    /* pointer to one row of difference values */
+typedef JDIFFROW *JDIFFARRAY;   /* ptr to some rows (a 2-D diff array) */
+typedef JDIFFARRAY *JDIFFIMAGE; /* a 3-D diff array: top index is color */
 
 
 /* Declarations for both compression & decompression */
@@ -80,6 +93,7 @@ struct jpeg_comp_master {
   /* State variables made visible to other modules */
   boolean call_pass_startup;    /* True if pass_startup must be called */
   boolean is_last_pass;         /* True during last pass */
+  boolean lossless;             /* True if lossless mode is enabled */
 };
 
 /* Main buffer control (downsampled-data buffer) */
@@ -107,7 +121,9 @@ struct jpeg_c_prep_controller {
                                JDIMENSION out_row_groups_avail);
 };
 
-/* Coefficient buffer control */
+/* Lossy mode: Coefficient buffer control
+ * Lossless mode: Difference buffer control
+ */
 struct jpeg_c_coef_controller {
   void (*start_pass) (j_compress_ptr cinfo, J_BUF_MODE pass_mode);
   boolean (*compress_data) (j_compress_ptr cinfo, JSAMPIMAGE input_buf);
@@ -138,9 +154,13 @@ struct jpeg_downsampler {
   boolean need_context_rows;    /* TRUE if need rows above & below */
 };
 
-/* Forward DCT (also controls coefficient quantization) */
+/* Lossy mode: Forward DCT (also controls coefficient quantization)
+ * Lossless mode: Prediction, sample differencing, and point transform
+ */
 struct jpeg_forward_dct {
   void (*start_pass) (j_compress_ptr cinfo);
+
+  /* Lossy mode */
   /* perhaps this should be an array??? */
   void (*forward_DCT) (j_compress_ptr cinfo, jpeg_component_info *compptr,
                        JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
@@ -155,7 +175,14 @@ struct jpeg_forward_dct {
 /* Entropy encoding */
 struct jpeg_entropy_encoder {
   void (*start_pass) (j_compress_ptr cinfo, boolean gather_statistics);
+
+  /* Lossy mode */
   boolean (*encode_mcu) (j_compress_ptr cinfo, JBLOCKROW *MCU_data);
+  /* Lossless mode */
+  JDIMENSION (*encode_mcus) (j_compress_ptr cinfo, JDIFFIMAGE diff_buf,
+                             JDIMENSION MCU_row_num, JDIMENSION MCU_col_num,
+                             JDIMENSION nMCU);
+
   void (*finish_pass) (j_compress_ptr cinfo);
 };
 
@@ -183,6 +210,7 @@ struct jpeg_decomp_master {
 
   /* State variables made visible to other modules */
   boolean is_dummy_pass;        /* True during 1st pass for 2-pass quant */
+  boolean lossless;             /* True if decompressing a lossless image */
 
   /* Partial decompression variables */
   JDIMENSION first_iMCU_col;
@@ -216,13 +244,25 @@ struct jpeg_d_main_controller {
                            JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
 };
 
-/* Coefficient buffer control */
+/* Lossy mode: Coefficient buffer control
+ * Lossless mode: Difference buffer control
+ */
 struct jpeg_d_coef_controller {
   void (*start_input_pass) (j_decompress_ptr cinfo);
   int (*consume_data) (j_decompress_ptr cinfo);
   void (*start_output_pass) (j_decompress_ptr cinfo);
   int (*decompress_data) (j_decompress_ptr cinfo, JSAMPIMAGE output_buf);
   int (*decompress_data_12) (j_decompress_ptr cinfo, J12SAMPIMAGE output_buf);
+
+  /* These variables keep track of the current location of the input side. */
+  /* cinfo->input_iMCU_row is also used for this. */
+  JDIMENSION MCU_ctr;           /* counts MCUs processed in current row */
+  int MCU_vert_offset;          /* counts MCU rows within iMCU row */
+  int MCU_rows_per_iMCU_row;    /* number of such rows needed */
+
+  /* The output side's location is represented by cinfo->output_iMCU_row. */
+
+  /* Lossy mode */
   /* Pointer to array of coefficient virtual arrays, or NULL if none */
   jvirt_barray_ptr *coef_arrays;
 };
@@ -266,14 +306,24 @@ struct jpeg_marker_reader {
 /* Entropy decoding */
 struct jpeg_entropy_decoder {
   void (*start_pass) (j_decompress_ptr cinfo);
+
+  /* Lossy mode */
   boolean (*decode_mcu) (j_decompress_ptr cinfo, JBLOCKROW *MCU_data);
+  /* Lossless mode */
+  JDIMENSION (*decode_mcus) (j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
+                             JDIMENSION MCU_row_num, JDIMENSION MCU_col_num,
+                             JDIMENSION nMCU);
+  boolean (*process_restart) (j_decompress_ptr cinfo);
 
   /* This is here to share code between baseline and progressive decoders; */
   /* other modules probably should not use it */
   boolean insufficient_data;    /* set TRUE after emitting warning */
 };
 
-/* Inverse DCT (also performs dequantization) */
+/* Lossy mode: Inverse DCT (also performs dequantization)
+ * Lossless mode: Prediction, sample undifferencing, point transform, and
+ * sample size scaling
+ */
 typedef void (*inverse_DCT_method_ptr) (j_decompress_ptr cinfo,
                                         jpeg_component_info *compptr,
                                         JCOEFPTR coef_block,
@@ -287,6 +337,8 @@ typedef void (*inverse_DCT_12_method_ptr) (j_decompress_ptr cinfo,
 
 struct jpeg_inverse_dct {
   void (*start_pass) (j_decompress_ptr cinfo);
+
+  /* Lossy mode */
   /* It is useful to allow each component to have a separate IDCT method. */
   inverse_DCT_method_ptr inverse_DCT[MAX_COMPONENTS];
   inverse_DCT_12_method_ptr inverse_DCT_12[MAX_COMPONENTS];
@@ -386,6 +438,15 @@ EXTERN(void) jinit_huff_encoder(j_compress_ptr cinfo);
 EXTERN(void) jinit_phuff_encoder(j_compress_ptr cinfo);
 EXTERN(void) jinit_arith_encoder(j_compress_ptr cinfo);
 EXTERN(void) jinit_marker_writer(j_compress_ptr cinfo);
+#ifdef C_LOSSLESS_SUPPORTED
+EXTERN(void) jinit_c_diff_controller(j_compress_ptr cinfo,
+                                     boolean need_full_buffer);
+EXTERN(void) j12init_c_diff_controller(j_compress_ptr cinfo,
+                                       boolean need_full_buffer);
+EXTERN(void) jinit_lhuff_encoder(j_compress_ptr cinfo);
+EXTERN(void) jinit_lossless_compressor(j_compress_ptr cinfo);
+EXTERN(void) j12init_lossless_compressor(j_compress_ptr cinfo);
+#endif
 
 /* Decompression module initialization routines */
 EXTERN(void) jinit_master_decompress(j_decompress_ptr cinfo);
@@ -418,6 +479,15 @@ EXTERN(void) jinit_2pass_quantizer(j_decompress_ptr cinfo);
 EXTERN(void) j12init_2pass_quantizer(j_decompress_ptr cinfo);
 EXTERN(void) jinit_merged_upsampler(j_decompress_ptr cinfo);
 EXTERN(void) j12init_merged_upsampler(j_decompress_ptr cinfo);
+#ifdef D_LOSSLESS_SUPPORTED
+EXTERN(void) jinit_d_diff_controller(j_decompress_ptr cinfo,
+                                     boolean need_full_buffer);
+EXTERN(void) j12init_d_diff_controller(j_decompress_ptr cinfo,
+                                       boolean need_full_buffer);
+EXTERN(void) jinit_lhuff_decoder(j_decompress_ptr cinfo);
+EXTERN(void) jinit_lossless_decompressor(j_decompress_ptr cinfo);
+EXTERN(void) j12init_lossless_decompressor(j_decompress_ptr cinfo);
+#endif
 
 /* Memory manager initialization */
 EXTERN(void) jinit_memory_mgr(j_common_ptr cinfo);

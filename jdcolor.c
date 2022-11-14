@@ -884,6 +884,15 @@ _jinit_color_deconverter(j_decompress_ptr cinfo)
     break;
   }
 
+  /* Prevent lossy color conversion in lossless mode */
+  if (cinfo->master->lossless) {
+    if ((cinfo->out_color_space == JCS_GRAYSCALE &&
+         cinfo->jpeg_color_space != JCS_GRAYSCALE) ||
+        (cinfo->out_color_space != JCS_GRAYSCALE &&
+         cconvert->pub._color_convert != null_convert))
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+  }
+
   if (cinfo->quantize_colors)
     cinfo->output_components = 1; /* single colormapped output component */
   else

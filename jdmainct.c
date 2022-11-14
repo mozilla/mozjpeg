@@ -22,10 +22,11 @@
 
 /*
  * In the current system design, the main buffer need never be a full-image
- * buffer; any full-height buffers will be found inside the coefficient or
- * postprocessing controllers.  Nonetheless, the main controller is not
- * trivial.  Its responsibility is to provide context rows for upsampling/
- * rescaling, and doing this in an efficient fashion is a bit tricky.
+ * buffer; any full-height buffers will be found inside the coefficient,
+ * difference, or postprocessing controllers.  Nonetheless, the main controller
+ * is not trivial.  Its responsibility is to provide context rows for
+ * upsampling/rescaling, and doing this in an efficient fashion is a bit
+ * tricky.
  *
  * Postprocessor input data is counted in "row groups".  A row group
  * is defined to be (v_samp_factor * DCT_scaled_size / min_DCT_scaled_size)
@@ -37,20 +38,20 @@
  * row group (times any additional scale factor that the upsampler is
  * applying).
  *
- * The coefficient controller will deliver data to us one iMCU row at a time;
- * each iMCU row contains v_samp_factor * DCT_scaled_size sample rows, or
- * exactly min_DCT_scaled_size row groups.  (This amount of data corresponds
- * to one row of MCUs when the image is fully interleaved.)  Note that the
- * number of sample rows varies across components, but the number of row
- * groups does not.  Some garbage sample rows may be included in the last iMCU
- * row at the bottom of the image.
+ * The coefficient or difference controller will deliver data to us one iMCU
+ * row at a time; each iMCU row contains v_samp_factor * DCT_scaled_size sample
+ * rows, or exactly min_DCT_scaled_size row groups.  (This amount of data
+ * corresponds to one row of MCUs when the image is fully interleaved.)  Note
+ * that the number of sample rows varies across components, but the number of
+ * row groups does not.  Some garbage sample rows may be included in the last
+ * iMCU row at the bottom of the image.
  *
  * Depending on the vertical scaling algorithm used, the upsampler may need
  * access to the sample row(s) above and below its current input row group.
  * The upsampler is required to set need_context_rows TRUE at global selection
  * time if so.  When need_context_rows is FALSE, this controller can simply
- * obtain one iMCU row at a time from the coefficient controller and dole it
- * out as row groups to the postprocessor.
+ * obtain one iMCU row at a time from the coefficient or difference controller
+ * and dole it out as row groups to the postprocessor.
  *
  * When need_context_rows is TRUE, this controller guarantees that the buffer
  * passed to postprocessing contains at least one row group's worth of samples

@@ -3,6 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -81,20 +83,20 @@ process_data_simple_main(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
                          JDIMENSION *in_row_ctr, JDIMENSION in_rows_avail)
 {
   my_main_ptr main_ptr = (my_main_ptr)cinfo->main;
+  JDIMENSION data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   while (main_ptr->cur_iMCU_row < cinfo->total_iMCU_rows) {
     /* Read input data if we haven't filled the main buffer yet */
-    if (main_ptr->rowgroup_ctr < DCTSIZE)
+    if (main_ptr->rowgroup_ctr < data_unit)
       (*cinfo->prep->_pre_process_data) (cinfo, input_buf, in_row_ctr,
                                          in_rows_avail, main_ptr->buffer,
-                                         &main_ptr->rowgroup_ctr,
-                                         (JDIMENSION)DCTSIZE);
+                                         &main_ptr->rowgroup_ctr, data_unit);
 
     /* If we don't have a full iMCU row buffered, return to application for
      * more data.  Note that preprocessor will always pad to fill the iMCU row
      * at the bottom of the image.
      */
-    if (main_ptr->rowgroup_ctr != DCTSIZE)
+    if (main_ptr->rowgroup_ctr != data_unit)
       return;
 
     /* Send the completed row to the compressor */
@@ -134,6 +136,7 @@ _jinit_c_main_controller(j_compress_ptr cinfo, boolean need_full_buffer)
   my_main_ptr main_ptr;
   int ci;
   jpeg_component_info *compptr;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   if (cinfo->data_precision != BITS_IN_JSAMPLE)
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
@@ -159,8 +162,8 @@ _jinit_c_main_controller(j_compress_ptr cinfo, boolean need_full_buffer)
          ci++, compptr++) {
       main_ptr->buffer[ci] = (_JSAMPARRAY)(*cinfo->mem->alloc_sarray)
         ((j_common_ptr)cinfo, JPOOL_IMAGE,
-         compptr->width_in_blocks * DCTSIZE,
-         (JDIMENSION)(compptr->v_samp_factor * DCTSIZE));
+         compptr->width_in_blocks * data_unit,
+         (JDIMENSION)(compptr->v_samp_factor * data_unit));
     }
   }
 }

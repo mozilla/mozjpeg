@@ -4,7 +4,7 @@
 ### Significant changes relative to 2.1.4:
 
 1. 12-bit-per-component JPEG support is now included in the libjpeg API
-library, cjpeg, djpeg, and jpegtran by default:
+library, cjpeg, djpeg, and jpegtran:
 
      - The existing `data_precision` field in `jpeg_compress_struct` and
 `jpeg_decompress_struct` has been repurposed to enable the creation of
@@ -15,8 +15,8 @@ JPEG image is being decompressed.
 `jpeg_crop_scanline()`, and `jpeg_read_raw_data()` provide interfaces for
 compressing from/decompressing to 12-bit-per-component uncompressed image
 buffers.
-     - A new cjpeg command-line argument (`-precision`) can be used to enable
-the creation of 12-bit-per-component JPEG images.  (djpeg and jpegtran handle
+     - A new cjpeg command-line argument (`-precision`) can be used to create
+a 12-bit-per-component JPEG image.  (djpeg and jpegtran handle
 12-bit-per-component JPEG images automatically.)
 
     Refer to [libjpeg.txt](libjpeg.txt) and [usage.txt](usage.txt) for more

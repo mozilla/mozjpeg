@@ -8,6 +8,17 @@ CMake generator, a static build of libjpeg-turbo (a build in which
 `ENABLE_SHARED` is `0`) could not be installed, a Windows installer could not
 be built, and the Java regression tests failed.
 
+2. Fixed a regression introduced by 2.0 beta1[15] that caused a buffer overrun
+in the progressive Huffman encoder when attempting to transform a
+specially-crafted malformed 12-bit-per-component JPEG image into a progressive
+12-bit-per-component JPEG image using a 12-bit-per-component build of
+libjpeg-turbo (`-DWITH_12BIT=1`.)  Given that the buffer overrun was fully
+contained within the progressive Huffman encoder structure and did not cause a
+segfault or other user-visible errant behavior, given that the lossless
+transformer (unlike the decompressor) is not generally exposed to arbitrary
+data exploits, and given that 12-bit-per-component builds of libjpeg-turbo are
+uncommon, this issue did not likely pose a security risk.
+
 
 2.1.4
 =====

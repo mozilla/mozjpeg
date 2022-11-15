@@ -1392,8 +1392,8 @@ DLLEXPORT int tjDecompress(tjhandle handle, unsigned char *jpegBuf,
 }
 
 
-static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
-                             int pixelFormat, int subsamp, int flags)
+static void setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
+                              int pixelFormat, int subsamp, int flags)
 {
   int i;
 
@@ -1428,8 +1428,6 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
     if (dinfo->quant_tbl_ptrs[i] == NULL)
       dinfo->quant_tbl_ptrs[i] = jpeg_alloc_quant_table((j_common_ptr)dinfo);
   }
-
-  return 0;
 }
 
 
@@ -1495,9 +1493,7 @@ DLLEXPORT int tjDecodeYUVPlanes(tjhandle handle,
   dinfo->progressive_mode = dinfo->inputctl->has_multiple_scans = FALSE;
   dinfo->Ss = dinfo->Ah = dinfo->Al = 0;
   dinfo->Se = DCTSIZE2 - 1;
-  if (setDecodeDefaults(dinfo, pixelFormat, subsamp, flags) == -1) {
-    retval = -1;  goto bailout;
-  }
+  setDecodeDefaults(dinfo, pixelFormat, subsamp, flags);
   old_read_markers = dinfo->marker->read_markers;
   dinfo->marker->read_markers = my_read_markers;
   old_reset_marker_reader = dinfo->marker->reset_marker_reader;

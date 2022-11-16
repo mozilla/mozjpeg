@@ -394,8 +394,8 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
   /* More stuff */
   FILE *infile;                 /* source file */
   FILE *outfile;                /* output file */
-  JSAMPARRAY buffer;            /* Output row buffer */
-  J12SAMPARRAY buffer12;        /* 12-bit output row buffer */
+  JSAMPARRAY buffer = NULL;     /* Output row buffer */
+  J12SAMPARRAY buffer12 = NULL; /* 12-bit output row buffer */
   int col;
   int row_stride;               /* physical row width in output buffer */
 

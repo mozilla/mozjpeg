@@ -56,6 +56,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     (char *)"-quality", (char *)"90,80,70", (char *)"-rgb",
     (char *)"-sample", (char *)"2x1", (char *)"-smooth", (char *)"50", NULL
   };
+  char *argv3[] = {
+    (char *)"cjpeg", (char *)"-precision", (char *)"12",
+    (char *)"-lossless", (char *)"1,4", NULL
+  };
+  char *argv4[] = {
+    (char *)"cjpeg", (char *)"-precision", (char *)"12",
+    (char *)"-lossless", (char *)"4,0", NULL
+  };
   int fd = -1;
 #if defined(__has_feature) && __has_feature(memory_sanitizer)
   char env[18] = "JSIMD_FORCENONE=1";
@@ -69,10 +77,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   if ((fd = mkstemp(filename)) < 0 || write(fd, data, size) < 0)
     goto bailout;
 
-  argv1[12] = argv2[13] = filename;
+  argv1[12] = argv2[13] = argv3[5] = argv4[5] = filename;
 
   cjpeg_main(13, argv1);
   cjpeg_main(14, argv2);
+  cjpeg_main(6, argv3);
+  cjpeg_main(6, argv4);
 
 bailout:
   if (fd >= 0) {

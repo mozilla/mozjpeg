@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2022 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -87,7 +87,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     goto bailout;
 
   transforms[2].op = TJXOP_ROT90;
-  transforms[2].options = TJXOPT_TRIM | TJXOPT_COPYNONE;
+  transforms[2].options = TJXOPT_TRIM | TJXOPT_COPYNONE | TJXOPT_ARITHMETIC;
   dstBufs[2] = (unsigned char *)malloc(tjBufSize(height, width, jpegSubsamp));
   if (!dstBufs[2])
     goto bailout;

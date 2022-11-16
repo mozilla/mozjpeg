@@ -287,8 +287,6 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
 #ifndef NO_GETENV
   if (!GETENV_S(env, 7, "TJ_OPTIMIZE") && !strcmp(env, "1"))
     cinfo->optimize_coding = TRUE;
-  if (!GETENV_S(env, 7, "TJ_ARITHMETIC") && !strcmp(env, "1"))
-    cinfo->arith_code = TRUE;
   if (!GETENV_S(env, 7, "TJ_RESTART") && strlen(env) > 0) {
     int temp = -1;
     char tempc = 0;
@@ -328,6 +326,12 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
 #ifndef NO_GETENV
   else if (!GETENV_S(env, 7, "TJ_PROGRESSIVE") && !strcmp(env, "1"))
     jpeg_simple_progression(cinfo);
+#endif
+  if (flags & TJFLAG_ARITHMETIC)
+    cinfo->arith_code = TRUE;
+#ifndef NO_GETENV
+  else if (!GETENV_S(env, 7, "TJ_ARITHMETIC") && !strcmp(env, "1"))
+    cinfo->arith_code = TRUE;
 #endif
 
   cinfo->comp_info[0].h_samp_factor = tjMCUWidth[subsamp] / 8;
@@ -2010,6 +2014,8 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
     dstcoefs = jtransform_adjust_parameters(dinfo, cinfo, srccoefs, &xinfo[i]);
     if (flags & TJFLAG_PROGRESSIVE || t[i].options & TJXOPT_PROGRESSIVE)
       jpeg_simple_progression(cinfo);
+    if (flags & TJFLAG_ARITHMETIC || t[i].options & TJXOPT_ARITHMETIC)
+      cinfo->arith_code = TRUE;
     if (!(t[i].options & TJXOPT_NOOUTPUT)) {
       jpeg_write_coefficients(cinfo, dstcoefs);
       jcopy_markers_execute(dinfo, cinfo, t[i].options & TJXOPT_COPYNONE ?

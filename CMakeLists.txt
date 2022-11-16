@@ -1513,6 +1513,10 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive
       COMMAND echo tjbenchtest -progressive -yuv
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive -yuv
+      COMMAND echo tjbenchtest -arithmetic
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic
+      COMMAND echo tjbenchtest -arithmetic -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic -yuv
       COMMAND echo tjexampletest
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
       COMMAND echo tjbenchtest.java
@@ -1524,6 +1528,11 @@ if(WITH_TURBOJPEG)
       COMMAND echo tjbenchtest.java -progressive -yuv
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
         -progressive -yuv
+      COMMAND echo tjbenchtest.java -arithmetic
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -arithmetic
+      COMMAND echo tjbenchtest.java -arithmetic -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -arithmetic
+        -yuv
       COMMAND echo tjexampletest.java
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest.java
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest

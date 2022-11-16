@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2022 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -60,7 +60,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     { TJPF_BGR, TJSAMP_GRAY, 60 },
     { TJPF_GRAY, TJSAMP_GRAY, 50 }
   };
-  char arithEnv[16] = "TJ_ARITHMETIC=0";
   char restartEnv[13] = "TJ_RESTART=0";
 #if defined(__has_feature) && __has_feature(memory_sanitizer)
   char simdEnv[18] = "JSIMD_FORCENONE=1";
@@ -69,7 +68,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
      MemorySanitizer. */
   putenv(simdEnv);
 #endif
-  putenv(arithEnv);
   putenv(restartEnv);
 
   snprintf(filename, FILENAME_MAX, "/tmp/libjpeg-turbo_compress_yuv_fuzz.XXXXXX");
@@ -89,9 +87,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     else if (ti == 1 || ti == 3)
       flags |= TJFLAG_PROGRESSIVE;
     if (ti == 2 || ti == 3)
-      arithEnv[14] = '1';
-    else
-      arithEnv[14] = '0';
+      flags |= TJFLAG_ARITHMETIC;
     if (ti == 1 || ti == 2)
       restartEnv[11] = '2';
     else

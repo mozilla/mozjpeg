@@ -1521,7 +1521,7 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -yuv
       COMMAND echo tjbenchtest.java -progressive
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -progressive
-      COMMAND echo tjexampletest.java -progressive -yuv
+      COMMAND echo tjbenchtest.java -progressive -yuv
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
         -progressive -yuv
       COMMAND echo tjexampletest.java

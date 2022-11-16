@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2018, 2022 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -51,6 +51,7 @@ final class TJUnitTest {
     System.out.println("-yuv = test YUV encoding/decoding support");
     System.out.println("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest");
     System.out.println("            4-byte boundary");
+    System.out.println("-lossless = test lossless JPEG compression/decompression");
     System.out.println("-bi = test BufferedImage support\n");
     System.exit(1);
   }
@@ -92,6 +93,8 @@ final class TJUnitTest {
   };
 
   private static boolean doYUV = false;
+  private static boolean lossless = false;
+  private static int psv = 1;
   private static int pad = 4;
   private static boolean bi = false;
 
@@ -269,7 +272,7 @@ final class TJUnitTest {
   static void checkVal(int row, int col, int v, String vname, int cv)
                        throws Exception {
     v = (v < 0) ? v + 256 : v;
-    if (v < cv - 1 || v > cv + 1) {
+    if (v < cv - (lossless ? 0 : 1) || v > cv + (lossless ? 0 : 1)) {
       throw new Exception("Comp. " + vname + " at " + row + "," + col +
                           " should be " + cv + ", not " + v);
     }
@@ -278,7 +281,7 @@ final class TJUnitTest {
   static void checkVal0(int row, int col, int v, String vname)
                         throws Exception {
     v = (v < 0) ? v + 256 : v;
-    if (v > 1) {
+    if (v > (lossless ? 0 : 1)) {
       throw new Exception("Comp. " + vname + " at " + row + "," + col +
                           " should be 0, not " + v);
     }
@@ -287,7 +290,7 @@ final class TJUnitTest {
   static void checkVal255(int row, int col, int v, String vname)
                           throws Exception {
     v = (v < 0) ? v + 256 : v;
-    if (v < 254) {
+    if (v < 255 - (lossless ? 0 : 1)) {
       throw new Exception("Comp. " + vname + " at " + row + "," + col +
                           " should be 255, not " + v);
     }
@@ -717,6 +720,8 @@ final class TJUnitTest {
     }
 
     tjd.setSourceImage(jpegBuf, jpegSize);
+    if (lossless && subsamp != TJ.SAMP_444 && subsamp != TJ.SAMP_GRAY)
+      subsamp = TJ.SAMP_444;
     if (tjd.getWidth() != w || tjd.getHeight() != h ||
         tjd.getSubsamp() != subsamp)
       throw new Exception("Incorrect JPEG header");
@@ -780,6 +785,14 @@ final class TJUnitTest {
                          int w, int h, int pf, String baseName, int subsamp,
                          int flags) throws Exception {
     int i;
+    TJScalingFactor sf1 = new TJScalingFactor(1, 1);
+
+    if (lossless) {
+      decompTest(tjd, jpegBuf, jpegSize, w, h, pf, baseName, subsamp, flags,
+                 sf1);
+      return;
+    }
+
     TJScalingFactor[] sf = TJ.getScalingFactors();
     for (i = 0; i < sf.length; i++) {
       int num = sf[i].getNum();
@@ -798,7 +811,7 @@ final class TJUnitTest {
                      throws Exception {
     TJCompressor tjc = null;
     TJDecompressor tjd = null;
-    int size;
+    int size, quality = 100;
     byte[] dstBuf;
 
     dstBuf = new byte[TJ.bufSize(w, h, subsamp)];
@@ -811,12 +824,16 @@ final class TJUnitTest {
         if (pf < 0) continue;
         for (int i = 0; i < 2; i++) {
           int flags = 0;
+          if (lossless) {
+            flags |= TJ.FLAG_LOSSLESS;
+            quality = (((psv++ - 1) % 7) + 1) * 10;
+          }
           if (subsamp == TJ.SAMP_422 || subsamp == TJ.SAMP_420 ||
               subsamp == TJ.SAMP_440 || subsamp == TJ.SAMP_411)
             flags |= TJ.FLAG_FASTUPSAMPLE;
           if (i == 1)
             flags |= TJ.FLAG_BOTTOMUP;
-          size = compTest(tjc, dstBuf, w, h, pf, baseName, subsamp, 100,
+          size = compTest(tjc, dstBuf, w, h, pf, baseName, subsamp, quality,
                           flags);
           decompTest(tjd, dstBuf, size, w, h, pf, baseName, subsamp, flags);
           if (pf >= TJ.PF_RGBX && pf <= TJ.PF_XRGB && !bi) {
@@ -838,16 +855,22 @@ final class TJUnitTest {
   }
 
   static void bufSizeTest() throws Exception {
-    int w, h, i, subsamp;
+    int w, h, i, subsamp, flags = 0, quality = 100, numSamp = TJ.NUMSAMP;
     byte[] srcBuf, dstBuf = null;
     YUVImage dstImage = null;
     TJCompressor tjc = null;
     Random r = new Random();
 
     try {
+      if (lossless) {
+        flags |= TJ.FLAG_LOSSLESS;
+        quality = (((psv++ - 1) % 7) + 1) * 10;
+        numSamp = 1;
+      }
+
       tjc = new TJCompressor();
       System.out.println("Buffer size regression test");
-      for (subsamp = 0; subsamp < TJ.NUMSAMP; subsamp++) {
+      for (subsamp = 0; subsamp < numSamp; subsamp++) {
         for (w = 1; w < 48; w++) {
           int maxh = (w == 1) ? 2048 : 48;
           for (h = 1; h < maxh; h++) {
@@ -863,11 +886,11 @@ final class TJUnitTest {
             }
             tjc.setSourceImage(srcBuf, 0, 0, w, 0, h, TJ.PF_BGRX);
             tjc.setSubsamp(subsamp);
-            tjc.setJPEGQuality(100);
+            tjc.setJPEGQuality(quality);
             if (doYUV)
               tjc.encodeYUV(dstImage, 0);
             else
-              tjc.compress(dstBuf, 0);
+              tjc.compress(dstBuf, flags);
 
             srcBuf = new byte[h * w * 4];
             if (doYUV)
@@ -881,7 +904,7 @@ final class TJUnitTest {
             if (doYUV)
               tjc.encodeYUV(dstImage, 0);
             else
-              tjc.compress(dstBuf, 0);
+              tjc.compress(dstBuf, flags);
           }
           dstImage = null;
           dstBuf = null;
@@ -904,12 +927,16 @@ final class TJUnitTest {
           doYUV = true;
         else if (argv[i].equalsIgnoreCase("-noyuvpad"))
           pad = 1;
+        else if (argv[i].equalsIgnoreCase("-lossless"))
+          lossless = true;
         else if (argv[i].equalsIgnoreCase("-bi")) {
           bi = true;
           testName = "javabitest";
         } else
           usage();
       }
+      if (lossless && doYUV)
+        throw new Exception("Lossless JPEG and YUV encoding/decoding are incompatible.");
       if (doYUV)
         FORMATS_4BYTE[4] = -1;
       doTest(35, 39, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_444,
@@ -918,27 +945,31 @@ final class TJUnitTest {
              testName);
       doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_422,
              testName);
-      doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_422,
-             testName);
-      doTest(39, 41, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_420,
-             testName);
-      doTest(41, 35, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_420,
-             testName);
-      doTest(35, 39, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_440,
-             testName);
-      doTest(39, 41, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_440,
-             testName);
-      doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_411,
-             testName);
-      doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_411,
-             testName);
+      if (!lossless) {
+        doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_422,
+               testName);
+        doTest(39, 41, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_420,
+               testName);
+        doTest(41, 35, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_420,
+               testName);
+        doTest(35, 39, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_440,
+               testName);
+        doTest(39, 41, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_440,
+               testName);
+        doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_411,
+               testName);
+        doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_411,
+               testName);
+      }
       doTest(39, 41, bi ? FORMATS_GRAYBI : FORMATS_GRAY, TJ.SAMP_GRAY,
              testName);
-      doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_GRAY,
-             testName);
-      FORMATS_4BYTE[4] = -1;
-      doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_GRAY,
-             testName);
+      if (!lossless) {
+        doTest(41, 35, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_GRAY,
+               testName);
+        FORMATS_4BYTE[4] = -1;
+        doTest(35, 39, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_GRAY,
+               testName);
+      }
       if (!bi)
         bufSizeTest();
       if (doYUV && !bi) {

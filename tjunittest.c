@@ -58,6 +58,7 @@ static void usage(char *progName)
   printf("-yuv = test YUV encoding/decoding support\n");
   printf("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest\n");
   printf("            4-byte boundary\n");
+  printf("-lossless = test lossless JPEG compression/decompression\n");
   printf("-alloc = test automatic buffer allocation\n");
   printf("-bmp = tjLoadImage()/tjSaveImage() unit test\n\n");
   exit(1);
@@ -95,7 +96,7 @@ const int _4byteFormats[] = {
 const int _onlyGray[] = { TJPF_GRAY };
 const int _onlyRGB[] = { TJPF_RGB };
 
-int doYUV = 0, alloc = 0, pad = 4;
+int doYUV = 0, lossless = 0, alloc = 0, pad = 4, psv = 1;
 
 int exitStatus = 0;
 #define BAILOUT() { exitStatus = -1;  goto bailout; }
@@ -157,7 +158,7 @@ static void initBuf(unsigned char *buf, int w, int h, int pf, int flags)
 
 
 #define CHECKVAL(v, cv) { \
-  if (v < cv - 1 || v > cv + 1) { \
+  if (v < cv - (1 - lossless) || v > cv + (1 - lossless)) { \
     printf("\nComp. %s at %d,%d should be %d, not %d\n", #v, row, col, cv, \
            v); \
     retval = 0;  exitStatus = -1;  goto bailout; \
@@ -165,14 +166,14 @@ static void initBuf(unsigned char *buf, int w, int h, int pf, int flags)
 }
 
 #define CHECKVAL0(v) { \
-  if (v > 1) { \
+  if (v > (1 - lossless)) { \
     printf("\nComp. %s at %d,%d should be 0, not %d\n", #v, row, col, v); \
     retval = 0;  exitStatus = -1;  goto bailout; \
   } \
 }
 
 #define CHECKVAL255(v) { \
-  if (v < 254) { \
+  if (v < 255 - (1 - lossless)) { \
     printf("\nComp. %s at %d,%d should be 255, not %d\n", #v, row, col, v); \
     retval = 0;  exitStatus = -1;  goto bailout; \
   } \
@@ -433,6 +434,8 @@ static void _decompTest(tjhandle handle, unsigned char *jpegBuf,
 
   TRY_TJ(tjDecompressHeader2(handle, jpegBuf, jpegSize, &_hdrw, &_hdrh,
                              &_hdrsubsamp));
+  if (lossless && subsamp != TJSAMP_444 && subsamp != TJSAMP_GRAY)
+    subsamp = TJSAMP_444;
   if (_hdrw != w || _hdrh != h || _hdrsubsamp != subsamp)
     THROW("Incorrect JPEG header");
 
@@ -493,8 +496,15 @@ static void decompTest(tjhandle handle, unsigned char *jpegBuf,
                        char *basename, int subsamp, int flags)
 {
   int i, n = 0;
-  tjscalingfactor *sf = tjGetScalingFactors(&n);
+  tjscalingfactor *sf = NULL, sf1 = { 1, 1 };
 
+  if (lossless) {
+    _decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp, flags,
+                sf1);
+    return;
+  }
+
+  sf = tjGetScalingFactors(&n);
   if (!sf || !n) THROW_TJ();
 
   for (i = 0; i < n; i++) {
@@ -518,7 +528,7 @@ static void doTest(int w, int h, const int *formats, int nformats, int subsamp,
   tjhandle chandle = NULL, dhandle = NULL;
   unsigned char *dstBuf = NULL;
   unsigned long size = 0;
-  int pfi, pf, i;
+  int pfi, pf, i, quality = 100;
 
   if (!alloc)
     size = tjBufSize(w, h, subsamp);
@@ -534,12 +544,16 @@ static void doTest(int w, int h, const int *formats, int nformats, int subsamp,
     for (i = 0; i < 2; i++) {
       int flags = 0;
 
+      if (lossless) {
+        flags |= TJFLAG_LOSSLESS;
+        quality = (((psv++ - 1) % 7) + 1) * 10;
+      }
       if (subsamp == TJSAMP_422 || subsamp == TJSAMP_420 ||
           subsamp == TJSAMP_440 || subsamp == TJSAMP_411)
         flags |= TJFLAG_FASTUPSAMPLE;
       if (i == 1) flags |= TJFLAG_BOTTOMUP;
       pf = formats[pfi];
-      compTest(chandle, &dstBuf, &size, w, h, pf, basename, subsamp, 100,
+      compTest(chandle, &dstBuf, &size, w, h, pf, basename, subsamp, quality,
                flags);
       decompTest(dhandle, dstBuf, size, w, h, pf, basename, subsamp, flags);
       if (pf >= TJPF_RGBX && pf <= TJPF_XRGB) {
@@ -601,11 +615,19 @@ static void bufSizeTest(void)
   unsigned char *srcBuf = NULL, *dstBuf = NULL;
   tjhandle handle = NULL;
   unsigned long dstSize = 0;
+  int flags = 0, quality = 100, numSamp = TJ_NUMSAMP;
+
+  if (!alloc) flags |= TJFLAG_NOREALLOC;
+  if (lossless) {
+    flags |= TJFLAG_LOSSLESS;
+    quality = (((psv++ - 1) % 7) + 1) * 10;
+    numSamp = 1;
+  }
 
   if ((handle = tjInitCompress()) == NULL) THROW_TJ();
 
   printf("Buffer size regression test\n");
-  for (subsamp = 0; subsamp < TJ_NUMSAMP; subsamp++) {
+  for (subsamp = 0; subsamp < numSamp; subsamp++) {
     for (w = 1; w < 48; w++) {
       int maxh = (w == 1) ? 2048 : 48;
 
@@ -630,8 +652,7 @@ static void bufSizeTest(void)
                               subsamp, 0));
         } else {
           TRY_TJ(tjCompress2(handle, srcBuf, w, 0, h, TJPF_BGRX, &dstBuf,
-                             &dstSize, subsamp, 100,
-                             alloc ? 0 : TJFLAG_NOREALLOC));
+                             &dstSize, subsamp, quality, flags));
         }
         free(srcBuf);  srcBuf = NULL;
         if (!alloc || doYUV) {
@@ -657,8 +678,7 @@ static void bufSizeTest(void)
                               subsamp, 0));
         } else {
           TRY_TJ(tjCompress2(handle, srcBuf, h, 0, w, TJPF_BGRX, &dstBuf,
-                             &dstSize, subsamp, 100,
-                             alloc ? 0 : TJFLAG_NOREALLOC));
+                             &dstSize, subsamp, quality, flags));
         }
         free(srcBuf);  srcBuf = NULL;
         if (!alloc || doYUV) {
@@ -899,27 +919,34 @@ int main(int argc, char *argv[])
     for (i = 1; i < argc; i++) {
       if (!strcasecmp(argv[i], "-yuv")) doYUV = 1;
       else if (!strcasecmp(argv[i], "-noyuvpad")) pad = 1;
+      else if (!strcasecmp(argv[i], "-lossless")) lossless = 1;
       else if (!strcasecmp(argv[i], "-alloc")) alloc = 1;
       else if (!strcasecmp(argv[i], "-bmp")) return bmpTest();
       else usage(argv[0]);
     }
   }
+  if (lossless && doYUV)
+    THROW("Lossless JPEG and YUV encoding/decoding are incompatible.");
   if (alloc) printf("Testing automatic buffer allocation\n");
   if (doYUV) num4bf = 4;
   overflowTest();
   doTest(35, 39, _3byteFormats, 2, TJSAMP_444, "test");
   doTest(39, 41, _4byteFormats, num4bf, TJSAMP_444, "test");
   doTest(41, 35, _3byteFormats, 2, TJSAMP_422, "test");
-  doTest(35, 39, _4byteFormats, num4bf, TJSAMP_422, "test");
-  doTest(39, 41, _3byteFormats, 2, TJSAMP_420, "test");
-  doTest(41, 35, _4byteFormats, num4bf, TJSAMP_420, "test");
-  doTest(35, 39, _3byteFormats, 2, TJSAMP_440, "test");
-  doTest(39, 41, _4byteFormats, num4bf, TJSAMP_440, "test");
-  doTest(41, 35, _3byteFormats, 2, TJSAMP_411, "test");
-  doTest(35, 39, _4byteFormats, num4bf, TJSAMP_411, "test");
+  if (!lossless) {
+    doTest(35, 39, _4byteFormats, num4bf, TJSAMP_422, "test");
+    doTest(39, 41, _3byteFormats, 2, TJSAMP_420, "test");
+    doTest(41, 35, _4byteFormats, num4bf, TJSAMP_420, "test");
+    doTest(35, 39, _3byteFormats, 2, TJSAMP_440, "test");
+    doTest(39, 41, _4byteFormats, num4bf, TJSAMP_440, "test");
+    doTest(41, 35, _3byteFormats, 2, TJSAMP_411, "test");
+    doTest(35, 39, _4byteFormats, num4bf, TJSAMP_411, "test");
+  }
   doTest(39, 41, _onlyGray, 1, TJSAMP_GRAY, "test");
-  doTest(41, 35, _3byteFormats, 2, TJSAMP_GRAY, "test");
-  doTest(35, 39, _4byteFormats, 4, TJSAMP_GRAY, "test");
+  if (!lossless) {
+    doTest(41, 35, _3byteFormats, 2, TJSAMP_GRAY, "test");
+    doTest(35, 39, _4byteFormats, 4, TJSAMP_GRAY, "test");
+  }
   bufSizeTest();
   if (doYUV) {
     printf("\n--------------------\n\n");
@@ -932,5 +959,6 @@ int main(int argc, char *argv[])
     doTest(48, 48, _onlyGray, 1, TJSAMP_GRAY, "test_yuv0");
   }
 
+  bailout:
   return exitStatus;
 }

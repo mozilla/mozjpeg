@@ -753,6 +753,10 @@ if(WITH_JAVA)
     ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
       -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
       TJUnitTest -yuv -noyuvpad)
+  add_test(TJUnitTest-lossless
+    ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -lossless)
   add_test(TJUnitTest-bi
     ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
       -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
@@ -765,6 +769,10 @@ if(WITH_JAVA)
     ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
       -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
       TJUnitTest -bi -yuv -noyuvpad)
+  add_test(TJUnitTest-bi-lossless
+    ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -bi -lossless)
 endif()
 
 set(TEST_LIBTYPES "")
@@ -890,6 +898,10 @@ foreach(libtype ${TEST_LIBTYPES})
       ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -yuv -alloc)
     add_test(tjunittest-${libtype}-yuv-nopad
       ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -yuv -noyuvpad)
+    add_test(tjunittest-${libtype}-lossless
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -lossless)
+    add_test(tjunittest-${libtype}-lossless-alloc
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -lossless -alloc)
     add_test(tjunittest-${libtype}-bmp
       ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -bmp)
 

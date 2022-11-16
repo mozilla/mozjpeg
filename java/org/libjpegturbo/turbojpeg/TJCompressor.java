@@ -1,5 +1,6 @@
 /*
- * Copyright (C)2011-2015, 2018, 2020 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015, 2018, 2020, 2022 D. R. Commander.
+ *                                          All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -283,7 +284,14 @@ public class TJCompressor implements Closeable {
    * Set the JPEG image quality level for subsequent compress operations.
    *
    * @param quality the new JPEG image quality level (1 to 100, 1 = worst,
-   * 100 = best)
+   * 100 = best.)  When generating a lossless JPEG image (see
+   * {@link TJ#FLAG_LOSSLESS}), <code>quality</code> is
+   * <code>psv * 10 + Pt</code>, where <code>psv</code> is the predictor
+   * selection value (1-7) and <code>Pt</code> is the point transform (0-7).  A
+   * point transform value of 0 is necessary in order to create a fully
+   * lossless JPEG image.  (A non-zero point transform value right-shifts the
+   * input samples by the specified number of bits, which is effectively a form
+   * of lossy color quantization.)
    */
   public void setJPEGQuality(int quality) {
     if (quality < 1 || quality > 100)

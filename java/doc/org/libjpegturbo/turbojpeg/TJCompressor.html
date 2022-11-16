@@ -471,7 +471,14 @@ implements java.io.Closeable</pre>
 <pre>public&nbsp;void&nbsp;setJPEGQuality(int&nbsp;quality)</pre>
 <div class="block">Set the JPEG image quality level for subsequent compress operations.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>quality</code> - the new JPEG image quality level (1 to 100, 1 = worst,
- 100 = best)</dd></dl>
+ 100 = best.)  When generating a lossless JPEG image (see
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_LOSSLESS"><code>TJ.FLAG_LOSSLESS</code></a>), <code>quality</code> is
+ <code>psv * 10 + Pt</code>, where <code>psv</code> is the predictor
+ selection value (1-7) and <code>Pt</code> is the point transform (0-7).  A
+ point transform value of 0 is necessary in order to create a fully
+ lossless JPEG image.  (A non-zero point transform value right-shifts the
+ input samples by the specified number of bits, which is effectively a form
+ of lossy color quantization.)</dd></dl>
 </li>
 </ul>
 <a name="compress(byte[], int)">

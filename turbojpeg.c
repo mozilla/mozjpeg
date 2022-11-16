@@ -272,13 +272,14 @@ static int getPixelFormat(int pixelSize, int flags)
   return -1;
 }
 
-static void setCompDefaults(struct jpeg_compress_struct *cinfo,
-                            int pixelFormat, int subsamp, int jpegQual,
-                            int flags)
+static int setCompDefaults(tjhandle handle, int pixelFormat, int subsamp,
+                           int jpegQual, int flags)
 {
 #ifndef NO_GETENV
   char env[7] = { 0 };
 #endif
+  int retval = 0;
+  GET_CINSTANCE(handle);
 
   cinfo->in_color_space = pf2cs[pixelFormat];
   cinfo->input_components = tjPixelSize[pixelFormat];
@@ -307,7 +308,13 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
   }
 #endif
 
-  if (jpegQual >= 0) {
+  if (flags & TJFLAG_LOSSLESS) {
+    int psv = jpegQual / 10, pt = jpegQual % 10;
+
+    if (psv < 1 || psv > 7 || pt < 0 || pt > 7)
+      THROW("Invalid lossless parameters");
+    jpeg_enable_lossless(cinfo, psv, pt);
+  } else if (jpegQual >= 0) {
     jpeg_set_quality(cinfo, jpegQual, TRUE);
     if (jpegQual >= 96 || flags & TJFLAG_ACCURATEDCT)
       cinfo->dct_method = JDCT_ISLOW;
@@ -344,6 +351,9 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
   cinfo->comp_info[2].v_samp_factor = 1;
   if (cinfo->num_components > 3)
     cinfo->comp_info[3].v_samp_factor = tjMCUHeight[subsamp] / 8;
+
+  bailout:
+  return retval;
 }
 
 
@@ -719,7 +729,10 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
     alloc = FALSE;  *jpegSize = tjBufSize(width, height, jpegSubsamp);
   }
   jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
-  setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual, flags);
+  if (setCompDefaults(cinfo, pixelFormat, jpegSubsamp, jpegQual,
+                      flags) == -1) {
+    retval = -1;  goto bailout;
+  }
 
   jpeg_start_compress(cinfo, TRUE);
   for (i = 0; i < height; i++) {
@@ -817,7 +830,9 @@ DLLEXPORT int tjEncodeYUVPlanes(tjhandle handle, const unsigned char *srcBuf,
   else if (flags & TJFLAG_FORCESSE2) PUTENV_S("JSIMD_FORCESSE2", "1");
 #endif
 
-  setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags);
+  if (setCompDefaults(cinfo, pixelFormat, subsamp, -1, flags) == -1) {
+    retval = -1;  goto bailout;
+  }
 
   /* Execute only the parts of jpeg_start_compress() that we need.  If we
      were to call the whole jpeg_start_compress() function, then it would try
@@ -1032,7 +1047,9 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
     alloc = FALSE;  *jpegSize = tjBufSize(width, height, subsamp);
   }
   jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
-  setCompDefaults(cinfo, TJPF_RGB, subsamp, jpegQual, flags);
+  if (setCompDefaults(cinfo, TJPF_RGB, subsamp, jpegQual, flags) == -1) {
+    retval = -1;  goto bailout;
+  }
   cinfo->raw_data_in = TRUE;
 
   jpeg_start_compress(cinfo, TRUE);

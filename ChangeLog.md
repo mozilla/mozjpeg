@@ -31,9 +31,12 @@ tables.
 have been removed.
 
 4. Added support for 8-bit and 12-bit lossless JPEG images.  A new libjpeg API
-function (`jpeg_enable_lossless()`) and cjpeg command-line argument
-(`-lossless`) can be used to create a lossless JPEG image.  (Decompression of
-lossless JPEG images is handled automatically.)
+function (`jpeg_enable_lossless()`), TurboJPEG API flag (`TJFLAG_LOSSLESS` in
+the C API and `TJ.FLAG_LOSSLESS` in the Java API), and cjpeg/TJBench
+command-line argument (`-lossless`) can be used to create a lossless JPEG
+image.  (Decompression of lossless JPEG images is handled automatically.)  Note
+that the TurboJPEG API and TJBench can currently only be used to create and
+decompress 8-bit lossless JPEG images.
 
 5. Introduced a new flag in the TurboJPEG C and Java APIs (`TJFLAG_ARITHMETIC`
 and `TJ.FLAG_ARITHMETIC`, respectively) that causes the library to use

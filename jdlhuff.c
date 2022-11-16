@@ -207,7 +207,6 @@ METHODDEF(JDIMENSION)
 decode_mcus(j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
             JDIMENSION MCU_row_num, JDIMENSION MCU_col_num, JDIMENSION nMCU)
 {
-  lossless_decomp_ptr losslessd = (lossless_decomp_ptr)cinfo->idct;
   lhuff_entropy_ptr entropy = (lhuff_entropy_ptr)cinfo->entropy;
   int sampn, ci, yoffset, MCU_width, ptrn;
   JDIMENSION mcu_num;
@@ -235,7 +234,7 @@ decode_mcus(j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
                 nMCU * entropy->output_ptr_info[ptrn].MCU_width *
                 sizeof(JDIFF));
 
-    (*losslessd->predict_process_restart) (cinfo);
+    (*cinfo->idct->start_pass) (cinfo);
 
   } else {
 

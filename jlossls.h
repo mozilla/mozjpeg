@@ -86,9 +86,6 @@ typedef void (*predict_undifference_method_ptr) (j_decompress_ptr cinfo,
 typedef struct {
   struct jpeg_inverse_dct pub;  /* public fields */
 
-  /* Prediction, undifferencing */
-  void (*predict_process_restart) (j_decompress_ptr cinfo);
-
   /* It is useful to allow each component to have a separate undiff method. */
   predict_undifference_method_ptr predict_undifference[MAX_COMPONENTS];
 

@@ -125,12 +125,11 @@ METHODDEF(boolean)
 process_restart(j_decompress_ptr cinfo)
 {
   my_diff_ptr diff = (my_diff_ptr)cinfo->coef;
-  lossless_decomp_ptr losslessd = (lossless_decomp_ptr)cinfo->idct;
 
   if (!(*cinfo->entropy->process_restart) (cinfo))
     return FALSE;
 
-  (*losslessd->predict_process_restart) (cinfo);
+  (*cinfo->idct->start_pass) (cinfo);
 
   /* Reset restart counter */
   diff->restart_rows_to_go = cinfo->restart_interval / cinfo->MCUs_per_row;

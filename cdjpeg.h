@@ -164,6 +164,3 @@ EXTERN(FILE *) write_stdout(void);
 #ifndef EXIT_WARNING
 #define EXIT_WARNING  2
 #endif
-
-#define IsExtRGB(cs) \
-  (cs == JCS_RGB || (cs >= JCS_EXT_RGB && cs <= JCS_EXT_ARGB))

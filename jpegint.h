@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2016, 2019, 2021-2022, D. R. Commander.
+ * Copyright (C) 2015-2017, 2019, 2021-2022, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * Copyright (C) 2021, Alex Richardson.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -73,6 +73,9 @@ typedef __UINTPTR_TYPE__ JUINTPTR;
 #else
 typedef size_t JUINTPTR;
 #endif
+
+#define IsExtRGB(cs) \
+  (cs == JCS_RGB || (cs >= JCS_EXT_RGB && cs <= JCS_EXT_ARGB))
 
 /*
  * Left shift macro that handles a negative operand without causing any

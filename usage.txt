@@ -177,8 +177,8 @@ Switches for advanced users:
                         following features will be unavailable when compressing
                         or decompressing a lossless JPEG file:
                           * Quality/quantization table selection
-                          * Color conversion (the JPEG image will use the same
-                            color space as the input image)
+                          * Color space conversion (the JPEG image will use the
+                            same color space as the input image)
                           * DCT/IDCT algorithm selection
                           * Smoothing
                           * Downsampling/upsampling

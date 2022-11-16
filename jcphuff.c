@@ -7,7 +7,7 @@
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2011, 2015, 2018, 2021-2022, D. R. Commander.
- * Copyright (C) 2016, 2018, Matthieu Darbois.
+ * Copyright (C) 2016, 2018, 2022, Matthieu Darbois.
  * Copyright (C) 2020, Arm Limited.
  * Copyright (C) 2021, Alex Richardson.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -88,11 +88,11 @@ typedef struct {
   /* Pointer to routine to prepare data for encode_mcu_AC_first() */
   void (*AC_first_prepare) (const JCOEF *block,
                             const int *jpeg_natural_order_start, int Sl,
-                            int Al, JCOEF *values, size_t *zerobits);
+                            int Al, UJCOEF *values, size_t *zerobits);
   /* Pointer to routine to prepare data for encode_mcu_AC_refine() */
   int (*AC_refine_prepare) (const JCOEF *block,
                             const int *jpeg_natural_order_start, int Sl,
-                            int Al, JCOEF *absvalues, size_t *bits);
+                            int Al, UJCOEF *absvalues, size_t *bits);
 
   /* Mode flag: TRUE for optimization, FALSE for actual data output */
   boolean gather_statistics;
@@ -162,14 +162,14 @@ METHODDEF(boolean) encode_mcu_DC_first(j_compress_ptr cinfo,
                                        JBLOCKROW *MCU_data);
 METHODDEF(void) encode_mcu_AC_first_prepare
   (const JCOEF *block, const int *jpeg_natural_order_start, int Sl, int Al,
-   JCOEF *values, size_t *zerobits);
+   UJCOEF *values, size_t *zerobits);
 METHODDEF(boolean) encode_mcu_AC_first(j_compress_ptr cinfo,
                                        JBLOCKROW *MCU_data);
 METHODDEF(boolean) encode_mcu_DC_refine(j_compress_ptr cinfo,
                                         JBLOCKROW *MCU_data);
 METHODDEF(int) encode_mcu_AC_refine_prepare
   (const JCOEF *block, const int *jpeg_natural_order_start, int Sl, int Al,
-   JCOEF *absvalues, size_t *bits);
+   UJCOEF *absvalues, size_t *bits);
 METHODDEF(boolean) encode_mcu_AC_refine(j_compress_ptr cinfo,
                                         JBLOCKROW *MCU_data);
 METHODDEF(void) finish_pass_phuff(j_compress_ptr cinfo);
@@ -594,8 +594,8 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       continue; \
     /* For a negative coef, want temp2 = bitwise complement of abs(coef) */ \
     temp2 ^= temp; \
-    values[k] = (JCOEF)temp; \
-    values[k + DCTSIZE2] = (JCOEF)temp2; \
+    values[k] = (UJCOEF)temp; \
+    values[k + DCTSIZE2] = (UJCOEF)temp2; \
     zerobits |= ((size_t)1U) << k; \
   } \
 }
@@ -603,7 +603,7 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(void)
 encode_mcu_AC_first_prepare(const JCOEF *block,
                             const int *jpeg_natural_order_start, int Sl,
-                            int Al, JCOEF *values, size_t *bits)
+                            int Al, UJCOEF *values, size_t *bits)
 {
   register int k, temp, temp2;
   size_t zerobits = 0U;
@@ -676,9 +676,9 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   register int nbits, r;
   int Sl = cinfo->Se - cinfo->Ss + 1;
   int Al = cinfo->Al;
-  JCOEF values_unaligned[2 * DCTSIZE2 + 15];
-  JCOEF *values;
-  const JCOEF *cvalue;
+  UJCOEF values_unaligned[2 * DCTSIZE2 + 15];
+  UJCOEF *values;
+  const UJCOEF *cvalue;
   size_t zerobits;
   size_t bits[8 / SIZEOF_SIZE_T];
   int max_coef_bits = cinfo->data_precision + 2;
@@ -692,7 +692,7 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       emit_restart(entropy, entropy->next_restart_num);
 
 #ifdef WITH_SIMD
-  cvalue = values = (JCOEF *)PAD((JUINTPTR)values_unaligned, 16);
+  cvalue = values = (UJCOEF *)PAD((JUINTPTR)values_unaligned, 16);
 #else
   /* Not using SIMD, so alignment is not needed */
   cvalue = values = values_unaligned;
@@ -826,7 +826,7 @@ encode_mcu_DC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       zerobits |= ((size_t)1U) << k; \
       signbits |= ((size_t)(temp2 + 1)) << k; \
     } \
-    absvalues[k] = (JCOEF)temp; /* save abs value for main pass */ \
+    absvalues[k] = (UJCOEF)temp; /* save abs value for main pass */ \
     if (temp == 1) \
       EOB = k + koffset;        /* EOB = index of last newly-nonzero coef */ \
   } \
@@ -835,7 +835,7 @@ encode_mcu_DC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 METHODDEF(int)
 encode_mcu_AC_refine_prepare(const JCOEF *block,
                              const int *jpeg_natural_order_start, int Sl,
-                             int Al, JCOEF *absvalues, size_t *bits)
+                             int Al, UJCOEF *absvalues, size_t *bits)
 {
   register int k, temp, temp2;
   int EOB = 0;
@@ -942,9 +942,9 @@ encode_mcu_AC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   unsigned int BR;
   int Sl = cinfo->Se - cinfo->Ss + 1;
   int Al = cinfo->Al;
-  JCOEF absvalues_unaligned[DCTSIZE2 + 15];
-  JCOEF *absvalues;
-  const JCOEF *cabsvalue, *EOBPTR;
+  UJCOEF absvalues_unaligned[DCTSIZE2 + 15];
+  UJCOEF *absvalues;
+  const UJCOEF *cabsvalue, *EOBPTR;
   size_t zerobits, signbits;
   size_t bits[16 / SIZEOF_SIZE_T];
 
@@ -957,7 +957,7 @@ encode_mcu_AC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       emit_restart(entropy, entropy->next_restart_num);
 
 #ifdef WITH_SIMD
-  cabsvalue = absvalues = (JCOEF *)PAD((JUINTPTR)absvalues_unaligned, 16);
+  cabsvalue = absvalues = (UJCOEF *)PAD((JUINTPTR)absvalues_unaligned, 16);
 #else
   /* Not using SIMD, so alignment is not needed */
   cabsvalue = absvalues = absvalues_unaligned;

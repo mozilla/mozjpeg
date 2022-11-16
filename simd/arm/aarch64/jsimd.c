@@ -4,7 +4,7 @@
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright (C) 2011, Nokia Corporation and/or its subsidiary(-ies).
  * Copyright (C) 2009-2011, 2013-2014, 2016, 2018, 2020, 2022, D. R. Commander.
- * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
+ * Copyright (C) 2015-2016, 2018, 2022, Matthieu Darbois.
  * Copyright (C) 2020, Arm Limited.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
@@ -1018,7 +1018,7 @@ jsimd_can_encode_mcu_AC_first_prepare(void)
 GLOBAL(void)
 jsimd_encode_mcu_AC_first_prepare(const JCOEF *block,
                                   const int *jpeg_natural_order_start, int Sl,
-                                  int Al, JCOEF *values, size_t *zerobits)
+                                  int Al, UJCOEF *values, size_t *zerobits)
 {
   jsimd_encode_mcu_AC_first_prepare_neon(block, jpeg_natural_order_start,
                                          Sl, Al, values, zerobits);
@@ -1045,7 +1045,7 @@ jsimd_can_encode_mcu_AC_refine_prepare(void)
 GLOBAL(int)
 jsimd_encode_mcu_AC_refine_prepare(const JCOEF *block,
                                    const int *jpeg_natural_order_start, int Sl,
-                                   int Al, JCOEF *absvalues, size_t *bits)
+                                   int Al, UJCOEF *absvalues, size_t *bits)
 {
   return jsimd_encode_mcu_AC_refine_prepare_neon(block,
                                                  jpeg_natural_order_start,

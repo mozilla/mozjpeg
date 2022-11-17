@@ -216,16 +216,18 @@ METHODDEF(void)
 simple_upscale(j_decompress_ptr cinfo,
                JDIFFROW diff_buf, _JSAMPROW output_buf, JDIMENSION width)
 {
-  while (width--)
+  do {
     *output_buf++ = (_JSAMPLE)(*diff_buf++ << cinfo->Al);
+  } while (--width);
 }
 
 METHODDEF(void)
 noscale(j_decompress_ptr cinfo,
         JDIFFROW diff_buf, _JSAMPROW output_buf, JDIMENSION width)
 {
-  while (width--)
+  do {
     *output_buf++ = (_JSAMPLE)(*diff_buf++);
+  } while (--width);
 }
 
 

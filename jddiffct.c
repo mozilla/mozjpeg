@@ -196,7 +196,8 @@ decompress_data(j_decompress_ptr cinfo, _JSAMPIMAGE output_buf)
     }
 
     /* Account for restart interval (no-op if not using restarts) */
-    diff->restart_rows_to_go--;
+    if (cinfo->restart_interval)
+      diff->restart_rows_to_go--;
 
     /* Completed an MCU row, but perhaps not an iMCU row */
     diff->MCU_ctr = 0;

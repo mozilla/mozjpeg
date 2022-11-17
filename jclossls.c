@@ -256,8 +256,9 @@ METHODDEF(void)
 simple_downscale(j_compress_ptr cinfo,
                  _JSAMPROW input_buf, _JSAMPROW output_buf, JDIMENSION width)
 {
-  while (width--)
+  do {
     *output_buf++ = (_JSAMPLE)RIGHT_SHIFT(*input_buf++, cinfo->Al);
+  } while (--width);
 }
 
 

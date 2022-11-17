@@ -54,7 +54,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     (char *)"cjpeg", (char *)"-precision", (char *)"12",
     (char *)"-dct", (char *)"fast", (char *)"-memdst",
     (char *)"-quality", (char *)"90,80,70", (char *)"-rgb",
-    (char *)"-sample", (char *)"2x1", (char *)"-smooth", (char *)"50", NULL
+    (char *)"-sample", (char *)"2x2", (char *)"-smooth", (char *)"50", NULL
   };
   char *argv3[] = {
     (char *)"cjpeg", (char *)"-precision", (char *)"12",

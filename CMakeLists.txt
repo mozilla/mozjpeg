@@ -1429,7 +1429,8 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest.java
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
         ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
-        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
+        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
+        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest.java)
   else()
     add_custom_target(tjtest
       COMMAND echo tjbenchtest
@@ -1446,7 +1447,8 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive -yuv
       COMMAND echo tjexampletest
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest)
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
+        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
   endif()
 endif()
 

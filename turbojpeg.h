@@ -1201,14 +1201,20 @@ DLLEXPORT tjhandle tjInitDecompress(void);
  * image (see @ref TJCS "JPEG colorspaces".)  If <tt>jpegBuf</tt>
  * points to a tables-only datastream, then <tt>jpegColorspace</tt> is ignored.
  *
+ * @param jpegFlags pointer to an integer variable that will receive the
+ * bitwise OR of one or more of the @ref TJFLAG_ACCURATEDCT "flags", such as
+ * #TJFLAG_PROGRESSIVE and #TJFLAG_LOSSLESS, that describe the JPEG image.  If
+ * <tt>jpegBuf</tt> points to a tables-only datastream, then <tt>jpegFlags</tt>
+ * is ignored.
+ *
  * @return 0 if successful, or -1 if an error occurred (see #tjGetErrorStr2()
  * and #tjGetErrorCode().)
 */
-DLLEXPORT int tjDecompressHeader3(tjhandle handle,
+DLLEXPORT int tjDecompressHeader4(tjhandle handle,
                                   const unsigned char *jpegBuf,
                                   unsigned long jpegSize, int *width,
                                   int *height, int *jpegSubsamp,
-                                  int *jpegColorspace);
+                                  int *jpegColorspace, int *jpegFlags);
 
 
 /**
@@ -1782,6 +1788,12 @@ DLLEXPORT int tjDecompressHeader(tjhandle handle, unsigned char *jpegBuf,
 DLLEXPORT int tjDecompressHeader2(tjhandle handle, unsigned char *jpegBuf,
                                   unsigned long jpegSize, int *width,
                                   int *height, int *jpegSubsamp);
+
+DLLEXPORT int tjDecompressHeader3(tjhandle handle,
+                                  const unsigned char *jpegBuf,
+                                  unsigned long jpegSize, int *width,
+                                  int *height, int *jpegSubsamp,
+                                  int *jpegColorspace);
 
 DLLEXPORT int tjDecompress(tjhandle handle, unsigned char *jpegBuf,
                            unsigned long jpegSize, unsigned char *dstBuf,

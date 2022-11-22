@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">TurboJPEG
-   &#160;<span id="projectnumber">2.1.4</span>
+   &#160;<span id="projectnumber">2.2</span>
    </div>
   </td>
  </tr>
@@ -281,9 +281,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga52300eac3f3d9ef4bab303bc244f62d3"><td class="memItemLeft" align="right" valign="top">DLLEXPORT <a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga52300eac3f3d9ef4bab303bc244f62d3">tjInitDecompress</a> (void)</td></tr>
 <tr class="memdesc:ga52300eac3f3d9ef4bab303bc244f62d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a TurboJPEG decompressor instance.  <a href="group___turbo_j_p_e_g.html#ga52300eac3f3d9ef4bab303bc244f62d3">More...</a><br /></td></tr>
 <tr class="separator:ga52300eac3f3d9ef4bab303bc244f62d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0595681096bba7199cc6f3533cb25f77"><td class="memItemLeft" align="right" valign="top">DLLEXPORT int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga0595681096bba7199cc6f3533cb25f77">tjDecompressHeader3</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, const unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height, int *jpegSubsamp, int *jpegColorspace)</td></tr>
-<tr class="memdesc:ga0595681096bba7199cc6f3533cb25f77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve information about a JPEG image without decompressing it, or prime the decompressor with quantization and Huffman tables.  <a href="group___turbo_j_p_e_g.html#ga0595681096bba7199cc6f3533cb25f77">More...</a><br /></td></tr>
-<tr class="separator:ga0595681096bba7199cc6f3533cb25f77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac104e6e729f57f195009405949d198dc"><td class="memItemLeft" align="right" valign="top">DLLEXPORT int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gac104e6e729f57f195009405949d198dc">tjDecompressHeader4</a> (<a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a> handle, const unsigned char *jpegBuf, unsigned long jpegSize, int *width, int *height, int *jpegSubsamp, int *jpegColorspace, int *jpegFlags)</td></tr>
+<tr class="memdesc:gac104e6e729f57f195009405949d198dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve information about a JPEG image without decompressing it, or prime the decompressor with quantization and Huffman tables.  <a href="group___turbo_j_p_e_g.html#gac104e6e729f57f195009405949d198dc">More...</a><br /></td></tr>
+<tr class="separator:gac104e6e729f57f195009405949d198dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac3854476006b10787bd128f7ede48057"><td class="memItemLeft" align="right" valign="top">DLLEXPORT <a class="el" href="structtjscalingfactor.html">tjscalingfactor</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gac3854476006b10787bd128f7ede48057">tjGetScalingFactors</a> (int *numscalingfactors)</td></tr>
 <tr class="memdesc:gac3854476006b10787bd128f7ede48057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of TurboJPEG supports.  <a href="group___turbo_j_p_e_g.html#gac3854476006b10787bd128f7ede48057">More...</a><br /></td></tr>
 <tr class="separator:gac3854476006b10787bd128f7ede48057"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1739,14 +1739,14 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
 
 </div>
 </div>
-<a id="ga0595681096bba7199cc6f3533cb25f77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga0595681096bba7199cc6f3533cb25f77">&#9670;&nbsp;</a></span>tjDecompressHeader3()</h2>
+<a id="gac104e6e729f57f195009405949d198dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac104e6e729f57f195009405949d198dc">&#9670;&nbsp;</a></span>tjDecompressHeader4()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">DLLEXPORT int tjDecompressHeader3 </td>
+          <td class="memname">DLLEXPORT int tjDecompressHeader4 </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="group___turbo_j_p_e_g.html#ga758d2634ecb4949de7815cba621f5763">tjhandle</a>&#160;</td>
           <td class="paramname"><em>handle</em>, </td>
@@ -1785,7 +1785,13 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>jpegColorspace</em>&#160;</td>
+          <td class="paramname"><em>jpegColorspace</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>jpegFlags</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1805,6 +1811,7 @@ If you choose option 1, <code>*jpegSize</code> should be set to the size of your
     <tr><td class="paramname">height</td><td>pointer to an integer variable that will receive the height (in pixels) of the JPEG image. If <code>jpegBuf</code> points to a tables-only datastream, then <code>height</code> is ignored.</td></tr>
     <tr><td class="paramname">jpegSubsamp</td><td>pointer to an integer variable that will receive the level of chrominance subsampling used when the JPEG image was compressed (see <a class="el" href="group___turbo_j_p_e_g.html#ga1d047060ea80bb9820d540bb928e9074">Chrominance subsampling options</a>.) If <code>jpegBuf</code> points to a tables-only datastream, then <code>jpegSubsamp</code> is ignored.</td></tr>
     <tr><td class="paramname">jpegColorspace</td><td>pointer to an integer variable that will receive one of the JPEG colorspace constants, indicating the colorspace of the JPEG image (see <a class="el" href="group___turbo_j_p_e_g.html#ga4f83ad3368e0e29d1957be0efa7c3720">JPEG colorspaces</a>.) If <code>jpegBuf</code> points to a tables-only datastream, then <code>jpegColorspace</code> is ignored.</td></tr>
+    <tr><td class="paramname">jpegFlags</td><td>pointer to an integer variable that will receive the bitwise OR of one or more of the <a class="el" href="group___turbo_j_p_e_g.html#gacb233cfd722d66d1ccbf48a7de81f0e0">flags</a>, such as <a class="el" href="group___turbo_j_p_e_g.html#ga43b426750b46190a25d34a67ef76df1b" title="Use progressive entropy coding in JPEG images generated by the compression and transform functions.">TJFLAG_PROGRESSIVE</a> and <a class="el" href="group___turbo_j_p_e_g.html#gaaf0e8b612bb5b981329db9f30e2115bd" title="Generate a lossless JPEG image when compressing.">TJFLAG_LOSSLESS</a>, that describe the JPEG image. If <code>jpegBuf</code> points to a tables-only datastream, then <code>jpegFlags</code> is ignored.</td></tr>
   </table>
   </dd>
 </dl>

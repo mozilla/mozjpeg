@@ -153,11 +153,16 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
   int row, col, iter = 0, dstBufAlloc = 0, retval = 0;
   double elapsed, elapsedDecode;
   int ps = tjPixelSize[pf];
-  int scaledw = TJSCALED(w, sf);
-  int scaledh = TJSCALED(h, sf);
-  int pitch = scaledw * ps;
+  int scaledw, scaledh, pitch;
   int ntilesw = (w + tilew - 1) / tilew, ntilesh = (h + tileh - 1) / tileh;
   unsigned char *dstPtr, *dstPtr2, *yuvBuf = NULL;
+
+  if (flags & TJFLAG_LOSSLESS)
+    sf.num = sf.denom = 1;
+
+  scaledw = TJSCALED(w, sf);
+  scaledh = TJSCALED(h, sf);
+  pitch = scaledw * ps;
 
   if (jpegQual > 0) {
     SNPRINTF(qualStr, 13, "_Q%d", jpegQual);
@@ -537,7 +542,7 @@ static int decompTest(char *fileName)
   int w = 0, h = 0, tilew, tileh, ntilesw = 1, ntilesh = 1, subsamp = -1,
     cs = -1;
   /* Transformed image */
-  int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
+  int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp, jpegFlags;
 
   if ((file = fopen(fileName, "rb")) == NULL)
     THROW_UNIX("opening file");
@@ -557,14 +562,16 @@ static int decompTest(char *fileName)
 
   if ((handle = tjInitTransform()) == NULL)
     THROW_TJ("executing tjInitTransform()");
-  if (tjDecompressHeader3(handle, srcBuf, srcSize, &w, &h, &subsamp,
-                          &cs) == -1)
-    THROW_TJ("executing tjDecompressHeader3()");
+  if (tjDecompressHeader4(handle, srcBuf, srcSize, &w, &h, &subsamp, &cs,
+                          &jpegFlags) == -1)
+    THROW_TJ("executing tjDecompressHeader4()");
   if (w < 1 || h < 1)
     THROW("reading JPEG header", "Invalid image dimensions");
   if (cs == TJCS_YCCK || cs == TJCS_CMYK) {
     pf = TJPF_CMYK;  ps = tjPixelSize[pf];
   }
+  if (jpegFlags & TJFLAG_LOSSLESS)
+    sf.num = sf.denom = 1;
 
   if (quiet == 1) {
     printf("All performance values in Mpixels/sec\n\n");

@@ -36,7 +36,8 @@ the C API and `TJ.FLAG_LOSSLESS` in the Java API), and cjpeg/TJBench
 command-line argument (`-lossless`) can be used to create a lossless JPEG
 image.  (Decompression of lossless JPEG images is handled automatically.)  Note
 that the TurboJPEG API and TJBench can currently only be used to create and
-decompress 8-bit lossless JPEG images.
+decompress 8-bit lossless JPEG images.  Refer to [libjpeg.txt](libjpeg.txt),
+[usage.txt](usage.txt), and the TurboJPEG API documentation for more details.
 
 5. Introduced a new flag in the TurboJPEG C and Java APIs (`TJFLAG_ARITHMETIC`
 and `TJ.FLAG_ARITHMETIC`, respectively) that causes the library to use
@@ -45,6 +46,11 @@ operations.  Additionally, a new transform option (`TJXOPT_ARITHMETIC` in the C
 API and `TJTransform.OPT_ARITHMETIC` in the Java API) has been introduced,
 allowing arithmetic entropy coding to be enabled for selected transforms in a
 multi-transform operation.
+
+6. Added a new TurboJPEG C API function (`tjDecompressHeader4()`) and Java API
+method (`TJDecompressor.getFlags()`) that allow calling programs to determine
+whether the JPEG image being decompressed uses progressive and/or arithmetic
+entropy coding or is a lossless JPEG image.
 
 
 2.1.5

@@ -200,6 +200,21 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
+   * Returns the bitwise OR of one or more of the
+   * {@link TJ#FLAG_BOTTOMUP flags}, such as
+   * {@link TJ#FLAG_PROGRESSIVE TJ.FLAG_PROGRESSIVE} and
+   * {@link TJ#FLAG_LOSSLESS TJ.FLAG_LOSSLESS}, that describe the JPEG image.
+   *
+   * @return the bitwise OR of one or more of the
+   * {@link TJ#FLAG_BOTTOMUP flags} that describe the JPEG image.
+   */
+  public int getFlags() {
+    if (jpegFlags < 0)
+      throw new IllegalStateException(NO_ASSOC_ERROR);
+    return jpegFlags;
+  }
+
+  /**
    * Returns the JPEG image buffer associated with this decompressor instance.
    *
    * @return the JPEG image buffer associated with this decompressor instance.
@@ -873,5 +888,6 @@ public class TJDecompressor implements Closeable {
   protected int jpegHeight = 0;
   protected int jpegSubsamp = -1;
   protected int jpegColorspace = -1;
+  protected int jpegFlags = -1;
   private ByteOrder byteOrder = null;
 }

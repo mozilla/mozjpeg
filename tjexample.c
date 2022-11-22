@@ -263,7 +263,7 @@ int main(int argc, char **argv)
   if (!strcasecmp(inFormat, "jpg")) {
     /* Input image is a JPEG image.  Decompress and/or transform it. */
     long size;
-    int inSubsamp, inColorspace;
+    int inSubsamp, inColorspace, inFlags;
     int doTransform = (xform.op != TJXOP_NONE || xform.options != 0 ||
                        xform.customFilter != NULL);
     unsigned long jpegSize;
@@ -304,9 +304,12 @@ int main(int argc, char **argv)
         THROW_TJ("initializing decompressor");
     }
 
-    if (tjDecompressHeader3(tjInstance, jpegBuf, jpegSize, &width, &height,
-                            &inSubsamp, &inColorspace) < 0)
+    if (tjDecompressHeader4(tjInstance, jpegBuf, jpegSize, &width, &height,
+                            &inSubsamp, &inColorspace, &inFlags) < 0)
       THROW_TJ("reading JPEG header");
+
+    if (inFlags & TJFLAG_LOSSLESS)
+      scalingFactor.num = scalingFactor.denom = 1;
 
     printf("%s Image:  %d x %d pixels, %s subsampling, %s colorspace\n",
            (doTransform ? "Transformed" : "Input"), width, height,

@@ -144,17 +144,21 @@ implements java.io.Closeable</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected int</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegHeight">jpegHeight</a></strong></code>&nbsp;</td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegFlags">jpegFlags</a></strong></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected int</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegSubsamp">jpegSubsamp</a></strong></code>&nbsp;</td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegHeight">jpegHeight</a></strong></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected int</code></td>
-<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegWidth">jpegWidth</a></strong></code>&nbsp;</td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegSubsamp">jpegSubsamp</a></strong></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>protected int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#jpegWidth">jpegWidth</a></strong></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a></code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#yuvImage">yuvImage</a></strong></code>&nbsp;</td>
 </tr>
@@ -324,25 +328,34 @@ implements java.io.Closeable</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getFlags()">getFlags</a></strong>()</code>
+<div class="block">Returns the bitwise OR of one or more of the
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>flags</code></a>, such as
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_PROGRESSIVE"><code>TJ.FLAG_PROGRESSIVE</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_LOSSLESS"><code>TJ.FLAG_LOSSLESS</code></a>, that describe the JPEG image.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getHeight()">getHeight</a></strong>()</code>
 <div class="block">Returns the height of the source image (JPEG or YUV) associated with this
  decompressor instance.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>byte[]</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGBuf()">getJPEGBuf</a></strong>()</code>
 <div class="block">Returns the JPEG image buffer associated with this decompressor instance.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getJPEGSize()">getJPEGSize</a></strong>()</code>
 <div class="block">Returns the size of the JPEG image (in bytes) associated with this
  decompressor instance.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getScaledHeight(int,%20int)">getScaledHeight</a></strong>(int&nbsp;desiredWidth,
                int&nbsp;desiredHeight)</code>
@@ -351,7 +364,7 @@ implements java.io.Closeable</pre>
  height.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getScaledWidth(int,%20int)">getScaledWidth</a></strong>(int&nbsp;desiredWidth,
               int&nbsp;desiredHeight)</code>
@@ -360,21 +373,21 @@ implements java.io.Closeable</pre>
  height.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getSubsamp()">getSubsamp</a></strong>()</code>
 <div class="block">Returns the level of chrominance subsampling used in the source image
  (JPEG or YUV) associated with this decompressor instance.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getWidth()">getWidth</a></strong>()</code>
 <div class="block">Returns the width of the source image (JPEG or YUV) associated with this
  decompressor instance.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(byte[],%20int)">setSourceImage</a></strong>(byte[]&nbsp;jpegImage,
               int&nbsp;imageSize)</code>
@@ -383,7 +396,7 @@ implements java.io.Closeable</pre>
  <code>jpegImage</code> with this decompressor instance.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#setSourceImage(org.libjpegturbo.turbojpeg.YUVImage)">setSourceImage</a></strong>(<a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a>&nbsp;srcImage)</code>
 <div class="block">Associate the specified YUV planar source image with this decompressor
@@ -478,10 +491,19 @@ implements java.io.Closeable</pre>
 <a name="jpegColorspace">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>jpegColorspace</h4>
 <pre>protected&nbsp;int jpegColorspace</pre>
+</li>
+</ul>
+<a name="jpegFlags">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>jpegFlags</h4>
+<pre>protected&nbsp;int jpegFlags</pre>
 </li>
 </ul>
 </li>
@@ -655,6 +677,21 @@ implements java.io.Closeable</pre>
  source image is YUV, then this always returns <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#CS_YCbCr"><code>TJ.CS_YCbCr</code></a>.</div>
 <dl><dt><span class="strong">Returns:</span></dt><dd>the colorspace used in the source image (JPEG or YUV) associated
  with this decompressor instance.</dd></dl>
+</li>
+</ul>
+<a name="getFlags()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFlags</h4>
+<pre>public&nbsp;int&nbsp;getFlags()</pre>
+<div class="block">Returns the bitwise OR of one or more of the
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>flags</code></a>, such as
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_PROGRESSIVE"><code>TJ.FLAG_PROGRESSIVE</code></a> and
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_LOSSLESS"><code>TJ.FLAG_LOSSLESS</code></a>, that describe the JPEG image.</div>
+<dl><dt><span class="strong">Returns:</span></dt><dd>the bitwise OR of one or more of the
+ <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#FLAG_BOTTOMUP"><code>flags</code></a> that describe the JPEG image.</dd></dl>
 </li>
 </ul>
 <a name="getJPEGBuf()">

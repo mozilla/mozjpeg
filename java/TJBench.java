@@ -168,10 +168,15 @@ final class TJBench {
     TJDecompressor tjd;
     double elapsed, elapsedDecode;
     int ps = TJ.getPixelSize(pf), i, iter = 0;
-    int scaledw = sf.getScaled(w);
-    int scaledh = sf.getScaled(h);
-    int pitch = scaledw * ps;
+    int scaledw, scaledh, pitch;
     YUVImage yuvImage = null;
+
+    if ((flags & TJ.FLAG_LOSSLESS) != 0)
+      sf = new TJScalingFactor(1, 1);
+
+    scaledw = sf.getScaled(w);
+    scaledh = sf.getScaled(h);
+    pitch = scaledw * ps;
 
     if (jpegQual > 0)
       qualStr = new String("_Q" + jpegQual);
@@ -498,7 +503,7 @@ final class TJBench {
     // Original image
     int w = 0, h = 0, ntilesw = 1, ntilesh = 1, subsamp = -1, cs = -1;
     // Transformed image
-    int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
+    int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp, jpegFlags;
 
     FileInputStream fis = new FileInputStream(fileName);
     if (fis.getChannel().size() > (long)Integer.MAX_VALUE)
@@ -521,6 +526,10 @@ final class TJBench {
     h = tjt.getHeight();
     subsamp = tjt.getSubsamp();
     cs = tjt.getColorspace();
+    jpegFlags = tjt.getFlags();
+
+    if ((jpegFlags & TJ.FLAG_LOSSLESS) != 0)
+      sf = new TJScalingFactor(1, 1);
 
     if (quiet == 1) {
       System.out.println("All performance values in Mpixels/sec\n");

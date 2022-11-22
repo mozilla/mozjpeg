@@ -1223,21 +1223,21 @@ DLLEXPORT tjhandle tjInitDecompress(void)
 }
 
 
-DLLEXPORT int tjDecompressHeader3(tjhandle handle,
+DLLEXPORT int tjDecompressHeader4(tjhandle handle,
                                   const unsigned char *jpegBuf,
                                   unsigned long jpegSize, int *width,
                                   int *height, int *jpegSubsamp,
-                                  int *jpegColorspace)
+                                  int *jpegColorspace, int *jpegFlags)
 {
   int retval = 0;
 
   GET_DINSTANCE(handle);
   if ((this->init & DECOMPRESS) == 0)
-    THROW("tjDecompressHeader3(): Instance has not been initialized for decompression");
+    THROW("tjDecompressHeader4(): Instance has not been initialized for decompression");
 
   if (jpegBuf == NULL || jpegSize <= 0 || width == NULL || height == NULL ||
-      jpegSubsamp == NULL || jpegColorspace == NULL)
-    THROW("tjDecompressHeader3(): Invalid argument");
+      jpegSubsamp == NULL || jpegColorspace == NULL || jpegFlags == NULL)
+    THROW("tjDecompressHeader4(): Invalid argument");
 
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
@@ -1264,19 +1264,35 @@ DLLEXPORT int tjDecompressHeader3(tjhandle handle,
   case JCS_YCCK:       *jpegColorspace = TJCS_YCCK;  break;
   default:             *jpegColorspace = -1;  break;
   }
+  *jpegFlags = 0;
+  if (dinfo->progressive_mode) *jpegFlags |= TJFLAG_PROGRESSIVE;
+  if (dinfo->arith_code) *jpegFlags |= TJFLAG_ARITHMETIC;
+  if (dinfo->master->lossless) *jpegFlags |= TJFLAG_LOSSLESS;
 
   jpeg_abort_decompress(dinfo);
 
   if (*jpegSubsamp < 0)
-    THROW("tjDecompressHeader3(): Could not determine subsampling type for JPEG image");
+    THROW("tjDecompressHeader4(): Could not determine subsampling type for JPEG image");
   if (*jpegColorspace < 0)
-    THROW("tjDecompressHeader3(): Could not determine colorspace of JPEG image");
+    THROW("tjDecompressHeader4(): Could not determine colorspace of JPEG image");
   if (*width < 1 || *height < 1)
-    THROW("tjDecompressHeader3(): Invalid data returned in header");
+    THROW("tjDecompressHeader4(): Invalid data returned in header");
 
 bailout:
   if (this->jerr.warning) retval = -1;
   return retval;
+}
+
+DLLEXPORT int tjDecompressHeader3(tjhandle handle,
+                                  const unsigned char *jpegBuf,
+                                  unsigned long jpegSize, int *width,
+                                  int *height, int *jpegSubsamp,
+                                  int *jpegColorspace)
+{
+  int flags;
+
+  return tjDecompressHeader4(handle, jpegBuf, jpegSize, width, height,
+                             jpegSubsamp, jpegColorspace, &flags);
 }
 
 DLLEXPORT int tjDecompressHeader2(tjhandle handle, unsigned char *jpegBuf,

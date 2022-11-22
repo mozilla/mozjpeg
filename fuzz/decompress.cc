@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2022 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,7 +38,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
   tjhandle handle = NULL;
   unsigned char *dstBuf = NULL;
-  int width = 0, height = 0, jpegSubsamp, jpegColorspace, pfi;
+  int width = 0, height = 0, jpegSubsamp, jpegColorspace, jpegFlags, pfi;
   /* TJPF_RGB-TJPF_BGR share the same code paths, as do TJPF_RGBX-TJPF_XRGB and
      TJPF_RGBA-TJPF_ARGB.  Thus, the pixel formats below should be the minimum
      necessary to achieve full coverage. */
@@ -58,8 +58,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   /* We ignore the return value of tjDecompressHeader3(), because some JPEG
      images may have unusual subsampling configurations that the TurboJPEG API
      cannot identify but can still decompress. */
-  tjDecompressHeader3(handle, data, size, &width, &height, &jpegSubsamp,
-                      &jpegColorspace);
+  tjDecompressHeader4(handle, data, size, &width, &height, &jpegSubsamp,
+                      &jpegColorspace, &jpegFlags);
 
   /* Ignore 0-pixel images and images larger than 1 Megapixel, as Google's
      OSS-Fuzz target for libjpeg-turbo did.  Casting width to (uint64_t)
@@ -75,7 +75,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     if (pfi == 0)
       flags |= TJFLAG_BOTTOMUP | TJFLAG_FASTUPSAMPLE | TJFLAG_FASTDCT;
     /* Test IDCT scaling on the second iteration. */
-    else if (pfi == 1) {
+    else if (pfi == 1 && !(jpegFlags & TJFLAG_LOSSLESS)) {
       w = (width + 1) / 2;
       h = (height + 1) / 2;
     }

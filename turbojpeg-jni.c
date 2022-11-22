@@ -555,7 +555,8 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 {
   tjhandle handle = 0;
   unsigned char *jpegBuf = NULL;
-  int width = 0, height = 0, jpegSubsamp = -1, jpegColorspace = -1;
+  int width = 0, height = 0, jpegSubsamp = -1, jpegColorspace = -1,
+    jpegFlags = -1;
 
   GET_HANDLE();
 
@@ -564,8 +565,9 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
 
   BAILIF0NOEC(jpegBuf = (*env)->GetPrimitiveArrayCritical(env, src, 0));
 
-  if (tjDecompressHeader3(handle, jpegBuf, (unsigned long)jpegSize, &width,
-                          &height, &jpegSubsamp, &jpegColorspace) == -1) {
+  if (tjDecompressHeader4(handle, jpegBuf, (unsigned long)jpegSize, &width,
+                          &height, &jpegSubsamp, &jpegColorspace,
+                          &jpegFlags) == -1) {
     SAFE_RELEASE(src, jpegBuf);
     THROW_TJ();
   }
@@ -578,6 +580,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_decompress
     (*env)->ExceptionClear(env);
   else
     (*env)->SetIntField(env, obj, _fid, jpegColorspace);
+  if ((_fid = (*env)->GetFieldID(env, _cls, "jpegFlags", "I")) == 0)
+    (*env)->ExceptionClear(env);
+  else
+    (*env)->SetIntField(env, obj, _fid, jpegFlags);
   BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegWidth", "I"));
   (*env)->SetIntField(env, obj, _fid, width);
   BAILIF0(_fid = (*env)->GetFieldID(env, _cls, "jpegHeight", "I"));

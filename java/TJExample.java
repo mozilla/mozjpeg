@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017-2018 D. R. Commander.
- *                                              All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015, 2017-2018, 2022 D. R. Commander.
+ *                                                    All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -304,6 +304,10 @@ class TJExample implements TJCustomFilter {
         height = tjd.getHeight();
         int inSubsamp = tjd.getSubsamp();
         int inColorspace = tjd.getColorspace();
+        int inFlags = tjd.getFlags();
+
+        if ((inFlags & TJ.FLAG_LOSSLESS) != 0)
+          scalingFactor = new TJScalingFactor(1, 1);
 
         System.out.println((doTransform ? "Transformed" : "Input") +
                            " Image (jpg):  " + width + " x " + height +

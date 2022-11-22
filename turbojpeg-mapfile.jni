@@ -99,3 +99,9 @@ TURBOJPEG_2.0
     tjLoadImage;
     tjSaveImage;
 } TURBOJPEG_1.4;
+
+TURBOJPEG_2.2
+{
+  global:
+    tjDecompressHeader4;
+} TURBOJPEG_2.0;

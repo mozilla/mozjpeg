@@ -1572,6 +1572,10 @@ if(WITH_TURBOJPEG)
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive
       COMMAND echo tjbenchtest -progressive -yuv
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive -yuv
+      COMMAND echo tjbenchtest -arithmetic
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic
+      COMMAND echo tjbenchtest -arithmetic -yuv
+      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic -yuv
       COMMAND echo tjbenchtest -lossless
       COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -lossless
       COMMAND echo tjbenchtest -lossless -alloc

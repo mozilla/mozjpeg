@@ -308,18 +308,20 @@ static int setCompDefaults(tjhandle handle, int pixelFormat, int subsamp,
   }
 #endif
 
-  if (flags & TJFLAG_LOSSLESS) {
-    int psv = jpegQual / 10, pt = jpegQual % 10;
+  if (jpegQual >= 0) {
+    if (flags & TJFLAG_LOSSLESS) {
+      int psv = jpegQual / 10, pt = jpegQual % 10;
 
-    if (psv < 1 || psv > 7 || pt < 0 || pt > 7)
-      THROW("Invalid lossless parameters");
-    jpeg_enable_lossless(cinfo, psv, pt);
-  } else if (jpegQual >= 0) {
-    jpeg_set_quality(cinfo, jpegQual, TRUE);
-    if (jpegQual >= 96 || flags & TJFLAG_ACCURATEDCT)
-      cinfo->dct_method = JDCT_ISLOW;
-    else
-      cinfo->dct_method = JDCT_FASTEST;
+      if (psv < 1 || psv > 7 || pt < 0 || pt > 7)
+        THROW("Invalid lossless parameters");
+      jpeg_enable_lossless(cinfo, psv, pt);
+    } else {
+      jpeg_set_quality(cinfo, jpegQual, TRUE);
+      if (jpegQual >= 96 || flags & TJFLAG_ACCURATEDCT)
+        cinfo->dct_method = JDCT_ISLOW;
+      else
+        cinfo->dct_method = JDCT_FASTEST;
+    }
   }
   if (subsamp == TJSAMP_GRAY)
     jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);

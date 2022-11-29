@@ -74,6 +74,11 @@ transformer (unlike the decompressor) is not generally exposed to arbitrary
 data exploits, and given that 12-bit-per-component builds of libjpeg-turbo are
 uncommon, this issue did not likely pose a security risk.
 
+3. Fixed an issue whereby, when using a 12-bit-per-component build of
+libjpeg-turbo (`-DWITH_12BIT=1`), passing samples with values greater than 4095
+or less than 0 to `jpeg_write_scanlines()` caused a buffer overrun or underrun
+in the RGB-to-YCbCr color converter.
+
 
 2.1.4
 =====

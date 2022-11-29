@@ -84,6 +84,18 @@ typedef my_color_converter *my_cconvert_ptr;
 #define B_CR_OFF        (7 * (_MAXJSAMPLE + 1))
 #define TABLE_SIZE      (8 * (_MAXJSAMPLE + 1))
 
+/* 12-bit samples use a 16-bit data type, so it is possible to pass
+ * out-of-range sample values (< 0 or > 4095) to jpeg_write_scanlines().
+ * Thus, we mask the incoming 12-bit samples to guard against overrunning
+ * or underrunning the conversion tables.
+ */
+
+#if BITS_IN_JSAMPLE == 12
+#define RANGE_LIMIT(value)  ((value) & 0xFFF)
+#else
+#define RANGE_LIMIT(value)  (value)
+#endif
+
 
 /* Include inline routines for colorspace extensions */
 
@@ -392,9 +404,9 @@ cmyk_ycck_convert(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
     outptr3 = output_buf[3][output_row];
     output_row++;
     for (col = 0; col < num_cols; col++) {
-      r = _MAXJSAMPLE - inptr[0];
-      g = _MAXJSAMPLE - inptr[1];
-      b = _MAXJSAMPLE - inptr[2];
+      r = _MAXJSAMPLE - RANGE_LIMIT(inptr[0]);
+      g = _MAXJSAMPLE - RANGE_LIMIT(inptr[1]);
+      b = _MAXJSAMPLE - RANGE_LIMIT(inptr[2]);
       /* K passes through as-is */
       outptr3[col] = inptr[3];
       inptr += 4;

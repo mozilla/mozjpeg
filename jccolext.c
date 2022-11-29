@@ -48,9 +48,9 @@ rgb_ycc_convert_internal(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
     outptr2 = output_buf[2][output_row];
     output_row++;
     for (col = 0; col < num_cols; col++) {
-      r = inptr[RGB_RED];
-      g = inptr[RGB_GREEN];
-      b = inptr[RGB_BLUE];
+      r = RANGE_LIMIT(inptr[RGB_RED]);
+      g = RANGE_LIMIT(inptr[RGB_GREEN]);
+      b = RANGE_LIMIT(inptr[RGB_BLUE]);
       inptr += RGB_PIXELSIZE;
       /* If the inputs are 0.._MAXJSAMPLE, the outputs of these equations
        * must be too; we do not need an explicit range-limiting operation.
@@ -100,9 +100,9 @@ rgb_gray_convert_internal(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
     outptr = output_buf[0][output_row];
     output_row++;
     for (col = 0; col < num_cols; col++) {
-      r = inptr[RGB_RED];
-      g = inptr[RGB_GREEN];
-      b = inptr[RGB_BLUE];
+      r = RANGE_LIMIT(inptr[RGB_RED]);
+      g = RANGE_LIMIT(inptr[RGB_GREEN]);
+      b = RANGE_LIMIT(inptr[RGB_BLUE]);
       inptr += RGB_PIXELSIZE;
       /* Y */
       outptr[col] = (_JSAMPLE)((ctab[r + R_Y_OFF] + ctab[g + G_Y_OFF] +

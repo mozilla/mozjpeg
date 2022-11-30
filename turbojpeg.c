@@ -314,7 +314,9 @@ static int setCompDefaults(tjhandle handle, int pixelFormat, int subsamp,
 
       if (psv < 1 || psv > 7 || pt < 0 || pt > 7)
         THROW("Invalid lossless parameters");
+#ifdef C_LOSSLESS_SUPPORTED
       jpeg_enable_lossless(cinfo, psv, pt);
+#endif
     } else {
       jpeg_set_quality(cinfo, jpegQual, TRUE);
       if (jpegQual >= 96 || flags & TJFLAG_ACCURATEDCT)

@@ -330,11 +330,13 @@ static int setCompDefaults(tjhandle handle, int pixelFormat, int subsamp,
   else
     jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
+#ifdef C_PROGRESSIVE_SUPPORTED
   if (flags & TJFLAG_PROGRESSIVE)
     jpeg_simple_progression(cinfo);
 #ifndef NO_GETENV
   else if (!GETENV_S(env, 7, "TJ_PROGRESSIVE") && !strcmp(env, "1"))
     jpeg_simple_progression(cinfo);
+#endif
 #endif
   if (flags & TJFLAG_ARITHMETIC)
     cinfo->arith_code = TRUE;
@@ -2047,8 +2049,10 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
       jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i], alloc);
     jpeg_copy_critical_parameters(dinfo, cinfo);
     dstcoefs = jtransform_adjust_parameters(dinfo, cinfo, srccoefs, &xinfo[i]);
+#ifdef C_PROGRESSIVE_SUPPORTED
     if (flags & TJFLAG_PROGRESSIVE || t[i].options & TJXOPT_PROGRESSIVE)
       jpeg_simple_progression(cinfo);
+#endif
     if (flags & TJFLAG_ARITHMETIC || t[i].options & TJXOPT_ARITHMETIC)
       cinfo->arith_code = TRUE;
     if (!(t[i].options & TJXOPT_NOOUTPUT)) {

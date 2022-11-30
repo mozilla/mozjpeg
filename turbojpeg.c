@@ -323,11 +323,13 @@ static void setCompDefaults(struct jpeg_compress_struct *cinfo,
   else
     jpeg_set_colorspace(cinfo, JCS_YCbCr);
 
+#ifdef C_PROGRESSIVE_SUPPORTED
   if (flags & TJFLAG_PROGRESSIVE)
     jpeg_simple_progression(cinfo);
 #ifndef NO_GETENV
   else if (!GETENV_S(env, 7, "TJ_PROGRESSIVE") && !strcmp(env, "1"))
     jpeg_simple_progression(cinfo);
+#endif
 #endif
 
   cinfo->comp_info[0].h_samp_factor = tjMCUWidth[subsamp] / 8;
@@ -2008,8 +2010,10 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
       jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i], alloc);
     jpeg_copy_critical_parameters(dinfo, cinfo);
     dstcoefs = jtransform_adjust_parameters(dinfo, cinfo, srccoefs, &xinfo[i]);
+#ifdef C_PROGRESSIVE_SUPPORTED
     if (flags & TJFLAG_PROGRESSIVE || t[i].options & TJXOPT_PROGRESSIVE)
       jpeg_simple_progression(cinfo);
+#endif
     if (!(t[i].options & TJXOPT_NOOUTPUT)) {
       jpeg_write_coefficients(cinfo, dstcoefs);
       jcopy_markers_execute(dinfo, cinfo, t[i].options & TJXOPT_COPYNONE ?

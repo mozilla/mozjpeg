@@ -429,6 +429,10 @@ iPhone 5S/iPad Mini 2/iPad Air and newer.
       [additional CMake flags] {source_directory}
     make
 
+Replace `iPhoneOS` with `iPhoneSimulator` and `-miphoneos-version-min` with
+`-miphonesimulator-version-min` to build libjpeg-turbo for the iOS simulator on
+Macs with Apple silicon CPUs.
+
 
 Building libjpeg-turbo for Android
 ----------------------------------

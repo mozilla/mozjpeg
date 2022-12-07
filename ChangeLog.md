@@ -24,6 +24,10 @@ libjpeg-turbo (`-DWITH_12BIT=1`), passing samples with values greater than 4095
 or less than 0 to `jpeg_write_scanlines()` caused a buffer overrun or underrun
 in the RGB-to-YCbCr color converter.
 
+4. Fixed a floating point exception that occurred when attempting to use the
+jpegtran `-drop` and `-trim` options to losslessly transform a
+specially-crafted malformed JPEG image.
+
 
 2.1.4
 =====

@@ -57,7 +57,7 @@ accepted unless:
     Specific types of features that *will not* be accepted:
 
     - Features that extend the scope of libjpeg-turbo to support image formats
-      other than DCT-based JPEG and JFIF
+      other than DCT-based and lossless JPEG and JFIF
     - Features that extend the scope of libjpeg-turbo to support image
       processing algorithms that are not necessary for JPEG compression or
       decompression

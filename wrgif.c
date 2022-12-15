@@ -33,7 +33,8 @@
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "jsamplecomp.h"
 
-#ifdef GIF_SUPPORTED
+#if defined(GIF_SUPPORTED) && \
+    (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED))
 
 
 #define MAX_LZW_BITS     12     /* maximum LZW code size (4096 symbols) */
@@ -582,4 +583,5 @@ _jinit_write_gif(j_decompress_ptr cinfo, boolean is_lzw)
   return (djpeg_dest_ptr)dest;
 }
 
-#endif /* GIF_SUPPORTED */
+#endif /* defined(GIF_SUPPORTED) &&
+          (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)) */

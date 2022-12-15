@@ -20,13 +20,17 @@
 #include "jsamplecomp.h"
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+
 /* Private subobject */
 
 typedef struct {
   struct jpeg_color_converter pub; /* public fields */
 
+#if BITS_IN_JSAMPLE != 16
   /* Private state for RGB->YCC conversion */
   JLONG *rgb_ycc_tab;           /* => table for RGB to YCbCr conversion */
+#endif
 } my_color_converter;
 
 typedef my_color_converter *my_cconvert_ptr;
@@ -209,6 +213,7 @@ typedef my_color_converter *my_cconvert_ptr;
 METHODDEF(void)
 rgb_ycc_start(j_compress_ptr cinfo)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   JLONG *rgb_ycc_tab;
   JLONG i;
@@ -235,6 +240,9 @@ rgb_ycc_start(j_compress_ptr cinfo)
     rgb_ycc_tab[i + G_CR_OFF] = (-FIX(0.41869)) * i;
     rgb_ycc_tab[i + B_CR_OFF] = (-FIX(0.08131)) * i;
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -388,6 +396,7 @@ METHODDEF(void)
 cmyk_ycck_convert(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
                   _JSAMPIMAGE output_buf, JDIMENSION output_row, int num_rows)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   register int r, g, b;
   register JLONG *ctab = cconvert->rgb_ycc_tab;
@@ -426,6 +435,9 @@ cmyk_ycck_convert(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
                                  ctab[b + B_CR_OFF]) >> SCALEBITS);
     }
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -716,3 +728,5 @@ _jinit_color_converter(j_compress_ptr cinfo)
     break;
   }
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED) */

@@ -105,14 +105,28 @@ select_file_type(j_compress_ptr cinfo, FILE *infile)
 #endif
 #ifdef GIF_SUPPORTED
   case 'G':
-    if (cinfo->data_precision == 12)
+    if (cinfo->data_precision == 16) {
+#ifdef C_LOSSLESS_SUPPORTED
+      return j16init_read_gif(cinfo);
+#else
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+      break;
+#endif
+    } else if (cinfo->data_precision == 12)
       return j12init_read_gif(cinfo);
     else
       return jinit_read_gif(cinfo);
 #endif
 #ifdef PPM_SUPPORTED
   case 'P':
-    if (cinfo->data_precision == 12)
+    if (cinfo->data_precision == 16) {
+#ifdef C_LOSSLESS_SUPPORTED
+      return j16init_read_ppm(cinfo);
+#else
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+      break;
+#endif
+    } else if (cinfo->data_precision == 12)
       return j12init_read_ppm(cinfo);
     else
       return jinit_read_ppm(cinfo);
@@ -213,7 +227,12 @@ usage(void)
 #endif
   fprintf(stderr, "Switches for advanced users:\n");
   fprintf(stderr, "  -precision N   Create JPEG file with N-bit data precision\n");
+#ifdef C_LOSSLESS_SUPPORTED
+  fprintf(stderr, "                 (N is 8, 12, or 16; default is 8; if N is 16, then -lossless\n");
+  fprintf(stderr, "                 must also be specified)\n");
+#else
   fprintf(stderr, "                 (N is 8 or 12; default is 8)\n");
+#endif
 #ifdef C_LOSSLESS_SUPPORTED
   fprintf(stderr, "  -lossless psv[,Pt]  Create lossless JPEG file\n");
 #endif
@@ -427,7 +446,11 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
         usage();
       if (sscanf(argv[argn], "%d", &val) != 1)
         usage();
+#ifdef C_LOSSLESS_SUPPORTED
+      if (val != 8 && val != 12 && val != 16)
+#else
       if (val != 8 && val != 12)
+#endif
         usage();
       cinfo->data_precision = val;
 
@@ -768,7 +791,16 @@ main(int argc, char **argv)
     jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
 
   /* Process data */
-  if (cinfo.data_precision == 12) {
+  if (cinfo.data_precision == 16) {
+#ifdef C_LOSSLESS_SUPPORTED
+    while (cinfo.next_scanline < cinfo.image_height) {
+      num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
+      (void)jpeg16_write_scanlines(&cinfo, src_mgr->buffer16, num_scanlines);
+    }
+#else
+    ERREXIT1(&cinfo, JERR_BAD_PRECISION, cinfo.data_precision);
+#endif
+  } else if (cinfo.data_precision == 12) {
     while (cinfo.next_scanline < cinfo.image_height) {
       num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
       (void)jpeg12_write_scanlines(&cinfo, src_mgr->buffer12, num_scanlines);

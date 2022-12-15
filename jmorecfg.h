@@ -60,6 +60,14 @@ typedef short J12SAMPLE;
 #define CENTERJ12SAMPLE  2048
 
 
+/* J16SAMPLE should be the smallest type that will hold the values 0..65535. */
+
+typedef unsigned short J16SAMPLE;
+
+#define MAXJ16SAMPLE     65535
+#define CENTERJ16SAMPLE  32768
+
+
 /* Representation of a DCT frequency coefficient.
  * This should be a signed value of at least 16 bits; "short" is usually OK.
  * Again, we allocate large arrays of these, but you can change to int

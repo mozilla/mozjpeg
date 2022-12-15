@@ -21,11 +21,14 @@
 #include "jsamplecomp.h"
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
+
 /* Private subobject */
 
 typedef struct {
   struct jpeg_color_deconverter pub; /* public fields */
 
+#if BITS_IN_JSAMPLE != 16
   /* Private state for YCC->RGB conversion */
   int *Cr_r_tab;                /* => table for Cr to R conversion */
   int *Cb_b_tab;                /* => table for Cb to B conversion */
@@ -34,6 +37,7 @@ typedef struct {
 
   /* Private state for RGB->Y conversion */
   JLONG *rgb_y_tab;             /* => table for RGB to Y conversion */
+#endif
 } my_color_deconverter;
 
 typedef my_color_deconverter *my_cconvert_ptr;
@@ -210,6 +214,7 @@ typedef my_color_deconverter *my_cconvert_ptr;
 LOCAL(void)
 build_ycc_rgb_table(j_decompress_ptr cinfo)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   int i;
   JLONG x;
@@ -243,6 +248,9 @@ build_ycc_rgb_table(j_decompress_ptr cinfo)
     /* We also add in ONE_HALF so that need not do it in inner loop */
     cconvert->Cb_g_tab[i] = (-FIX(0.34414)) * x + ONE_HALF;
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -301,6 +309,7 @@ ycc_rgb_convert(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
 LOCAL(void)
 build_rgb_y_table(j_decompress_ptr cinfo)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   JLONG *rgb_y_tab;
   JLONG i;
@@ -315,6 +324,9 @@ build_rgb_y_table(j_decompress_ptr cinfo)
     rgb_y_tab[i + G_Y_OFF] = FIX(0.58700) * i;
     rgb_y_tab[i + B_Y_OFF] = FIX(0.11400) * i + ONE_HALF;
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -326,6 +338,7 @@ METHODDEF(void)
 rgb_gray_convert(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
                  JDIMENSION input_row, _JSAMPARRAY output_buf, int num_rows)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   register int r, g, b;
   register JLONG *ctab = cconvert->rgb_y_tab;
@@ -349,6 +362,9 @@ rgb_gray_convert(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
                                 ctab[b + B_Y_OFF]) >> SCALEBITS);
     }
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -528,6 +544,7 @@ METHODDEF(void)
 ycck_cmyk_convert(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
                   JDIMENSION input_row, _JSAMPARRAY output_buf, int num_rows)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   register int y, cb, cr;
   register _JSAMPROW outptr;
@@ -564,6 +581,9 @@ ycck_cmyk_convert(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
       outptr += 4;
     }
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -901,3 +921,5 @@ _jinit_color_deconverter(j_decompress_ptr cinfo)
   else
     cinfo->output_components = cinfo->out_color_components;
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED) */

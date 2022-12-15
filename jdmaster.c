@@ -414,9 +414,39 @@ prepare_range_limit_table(j_decompress_ptr cinfo)
 {
   JSAMPLE *table;
   J12SAMPLE *table12;
+#ifdef D_LOSSLESS_SUPPORTED
+  J16SAMPLE *table16;
+#endif
   int i;
 
-  if (cinfo->data_precision == 12) {
+  if (cinfo->data_precision == 16) {
+#ifdef D_LOSSLESS_SUPPORTED
+    table16 = (J16SAMPLE *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                  (5 * (MAXJ16SAMPLE + 1) + CENTERJ16SAMPLE) *
+                  sizeof(J16SAMPLE));
+    table16 += (MAXJ16SAMPLE + 1);  /* allow negative subscripts of simple
+                                       table */
+    cinfo->sample_range_limit = (JSAMPLE *)table16;
+    /* First segment of "simple" table: limit[x] = 0 for x < 0 */
+    memset(table16 - (MAXJ16SAMPLE + 1), 0,
+           (MAXJ16SAMPLE + 1) * sizeof(J16SAMPLE));
+    /* Main part of "simple" table: limit[x] = x */
+    for (i = 0; i <= MAXJ16SAMPLE; i++)
+      table16[i] = (J16SAMPLE)i;
+    table16 += CENTERJ16SAMPLE; /* Point to where post-IDCT table starts */
+    /* End of simple table, rest of first half of post-IDCT table */
+    for (i = CENTERJ16SAMPLE; i < 2 * (MAXJ16SAMPLE + 1); i++)
+      table16[i] = MAXJ16SAMPLE;
+    /* Second half of post-IDCT table */
+    memset(table16 + (2 * (MAXJ16SAMPLE + 1)), 0,
+           (2 * (MAXJ16SAMPLE + 1) - CENTERJ16SAMPLE) * sizeof(J16SAMPLE));
+    memcpy(table16 + (4 * (MAXJ16SAMPLE + 1) - CENTERJ16SAMPLE),
+           cinfo->sample_range_limit, CENTERJ16SAMPLE * sizeof(J16SAMPLE));
+#else
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+#endif
+  } else if (cinfo->data_precision == 12) {
     table12 = (J12SAMPLE *)
       (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                   (5 * (MAXJ12SAMPLE + 1) + CENTERJ12SAMPLE) *
@@ -536,7 +566,13 @@ master_selection(j_decompress_ptr cinfo)
 
     if (cinfo->enable_1pass_quant) {
 #ifdef QUANT_1PASS_SUPPORTED
-      if (cinfo->data_precision == 12)
+      if (cinfo->data_precision == 16)
+#ifdef D_LOSSLESS_SUPPORTED
+        j16init_1pass_quantizer(cinfo);
+#else
+        ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+#endif
+      else if (cinfo->data_precision == 12)
         j12init_1pass_quantizer(cinfo);
       else
         jinit_1pass_quantizer(cinfo);
@@ -549,7 +585,13 @@ master_selection(j_decompress_ptr cinfo)
     /* We use the 2-pass code to map to external colormaps. */
     if (cinfo->enable_2pass_quant || cinfo->enable_external_quant) {
 #ifdef QUANT_2PASS_SUPPORTED
-      if (cinfo->data_precision == 12)
+      if (cinfo->data_precision == 16)
+#ifdef D_LOSSLESS_SUPPORTED
+        j16init_2pass_quantizer(cinfo);
+#else
+        ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+#endif
+      else if (cinfo->data_precision == 12)
         j12init_2pass_quantizer(cinfo);
       else
         jinit_2pass_quantizer(cinfo);
@@ -567,7 +609,9 @@ master_selection(j_decompress_ptr cinfo)
   if (!cinfo->raw_data_out) {
     if (master->using_merged_upsample) {
 #ifdef UPSAMPLE_MERGING_SUPPORTED
-      if (cinfo->data_precision == 12)
+      if (cinfo->data_precision == 16)
+        ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+      else if (cinfo->data_precision == 12)
         j12init_merged_upsampler(cinfo); /* does color conversion too */
       else
         jinit_merged_upsampler(cinfo); /* does color conversion too */
@@ -575,7 +619,14 @@ master_selection(j_decompress_ptr cinfo)
       ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
     } else {
-      if (cinfo->data_precision == 12) {
+      if (cinfo->data_precision == 16) {
+#ifdef D_LOSSLESS_SUPPORTED
+        j16init_color_deconverter(cinfo);
+        j16init_upsampler(cinfo);
+#else
+        ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+#endif
+      } else if (cinfo->data_precision == 12) {
         j12init_color_deconverter(cinfo);
         j12init_upsampler(cinfo);
       } else {
@@ -583,7 +634,13 @@ master_selection(j_decompress_ptr cinfo)
         jinit_upsampler(cinfo);
       }
     }
-    if (cinfo->data_precision == 12)
+    if (cinfo->data_precision == 16)
+#ifdef D_LOSSLESS_SUPPORTED
+      j16init_d_post_controller(cinfo, cinfo->enable_2pass_quant);
+#else
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+#endif
+    else if (cinfo->data_precision == 12)
       j12init_d_post_controller(cinfo, cinfo->enable_2pass_quant);
     else
       jinit_d_post_controller(cinfo, cinfo->enable_2pass_quant);
@@ -594,7 +651,9 @@ master_selection(j_decompress_ptr cinfo)
     /* Prediction, sample undifferencing, point transform, and sample size
      * scaling
      */
-    if (cinfo->data_precision == 12)
+    if (cinfo->data_precision == 16)
+      j16init_lossless_decompressor(cinfo);
+    else if (cinfo->data_precision == 12)
       j12init_lossless_decompressor(cinfo);
     else
       jinit_lossless_decompressor(cinfo);
@@ -608,7 +667,9 @@ master_selection(j_decompress_ptr cinfo)
     /* Initialize principal buffer controllers. */
     use_c_buffer = cinfo->inputctl->has_multiple_scans ||
                    cinfo->buffered_image;
-    if (cinfo->data_precision == 12)
+    if (cinfo->data_precision == 16)
+      j16init_d_diff_controller(cinfo, use_c_buffer);
+    else if (cinfo->data_precision == 12)
       j12init_d_diff_controller(cinfo, use_c_buffer);
     else
       jinit_d_diff_controller(cinfo, use_c_buffer);
@@ -616,6 +677,8 @@ master_selection(j_decompress_ptr cinfo)
     ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
   } else {
+    if (cinfo->data_precision == 16)
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
     /* Inverse DCT */
     if (cinfo->data_precision == 12)
       j12init_inverse_dct(cinfo);
@@ -649,7 +712,14 @@ master_selection(j_decompress_ptr cinfo)
   }
 
   if (!cinfo->raw_data_out) {
-    if (cinfo->data_precision == 12)
+    if (cinfo->data_precision == 16)
+#ifdef D_LOSSLESS_SUPPORTED
+      j16init_d_main_controller(cinfo,
+                                FALSE /* never need full buffer here */);
+#else
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+#endif
+    else if (cinfo->data_precision == 12)
       j12init_d_main_controller(cinfo,
                                 FALSE /* never need full buffer here */);
     else

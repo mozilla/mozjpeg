@@ -556,7 +556,7 @@ if(WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jdarith.c)
 endif()
 
-# Compile a separate version of these source files with 12-bit data
+# Compile a separate version of these source files with 12-bit and 16-bit data
 # precision.
 add_library(jpeg12 OBJECT jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jcdiffct.c
   jclossls.c jcmainct.c jcprepct.c jcsample.c jdapistd.c jdcoefct.c jdcolor.c
@@ -564,6 +564,10 @@ add_library(jpeg12 OBJECT jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jcdiffct.c
   jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jidctred.c jquant1.c
   jquant2.c jutils.c)
 set_property(TARGET jpeg12 PROPERTY COMPILE_FLAGS "-DBITS_IN_JSAMPLE=12")
+add_library(jpeg16 OBJECT jcapistd.c jccolor.c jcdiffct.c jclossls.c jcmainct.c
+  jcprepct.c jcsample.c jdapistd.c jdcolor.c jddiffct.c jdlossls.c jdmainct.c
+  jdpostct.c jdsample.c jquant1.c jquant2.c jutils.c)
+set_property(TARGET jpeg16 PROPERTY COMPILE_FLAGS "-DBITS_IN_JSAMPLE=16")
 
 if(WITH_SIMD)
   add_subdirectory(simd)
@@ -597,7 +601,7 @@ endif()
 
 if(ENABLE_STATIC)
   add_library(jpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
-    ${SIMD_OBJS} $<TARGET_OBJECTS:jpeg12>)
+    ${SIMD_OBJS} $<TARGET_OBJECTS:jpeg12> $<TARGET_OBJECTS:jpeg16>)
   if(NOT MSVC)
     set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
   endif()
@@ -607,7 +611,7 @@ if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS} ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
-      wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12>)
+      wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12> $<TARGET_OBJECTS:jpeg16>)
     set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile)
     if(WITH_JAVA)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES} turbojpeg-jni.c)
@@ -659,7 +663,8 @@ if(WITH_TURBOJPEG)
   if(ENABLE_STATIC)
     add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
       ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c
-      rdppm.c wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12>)
+      rdppm.c wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12>
+      $<TARGET_OBJECTS:jpeg16>)
     set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS
       "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(NOT MSVC)
@@ -685,24 +690,32 @@ set(CDJPEG_COMPILE_FLAGS
   "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 
 if(ENABLE_STATIC)
-  # Compile a separate version of these source files with 12-bit data
-  # precision.
+  # Compile a separate version of these source files with 12-bit and 16-bit
+  # data precision.
   add_library(cjpeg12-static OBJECT rdgif.c rdppm.c)
   set_property(TARGET cjpeg12-static PROPERTY COMPILE_FLAGS
     "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+  add_library(cjpeg16-static OBJECT rdgif.c rdppm.c)
+  set_property(TARGET cjpeg16-static PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=16 -DGIF_SUPPORTED -DPPM_SUPPORTED")
   add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c
-    rdswitch.c rdtarga.c $<TARGET_OBJECTS:cjpeg12-static>)
+    rdswitch.c rdtarga.c $<TARGET_OBJECTS:cjpeg12-static>
+    $<TARGET_OBJECTS:cjpeg16-static>)
   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
     ${CDJPEG_COMPILE_FLAGS})
   target_link_libraries(cjpeg-static jpeg-static)
 
-  # Compile a separate version of these source files with 12-bit data
-  # precision.
+  # Compile a separate version of these source files with 12-bit and 16-bit
+  # data precision.
   add_library(djpeg12-static OBJECT rdcolmap.c wrgif.c wrppm.c)
   set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
     "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+  add_library(djpeg16-static OBJECT rdcolmap.c wrgif.c wrppm.c)
+  set_property(TARGET djpeg16-static PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=16 -DGIF_SUPPORTED -DPPM_SUPPORTED")
   add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c
-    wrgif.c wrppm.c wrtarga.c $<TARGET_OBJECTS:djpeg12-static>)
+    wrgif.c wrppm.c wrtarga.c $<TARGET_OBJECTS:djpeg12-static>
+    $<TARGET_OBJECTS:djpeg16-static>)
   set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
     ${CDJPEG_COMPILE_FLAGS})
   target_link_libraries(djpeg-static jpeg-static)
@@ -988,12 +1001,15 @@ foreach(libtype ${TEST_LIBTYPES})
   # SIMD-accelerated ones.)
 
   macro(add_bittest PROG NAME ARGS OUTFILE INFILE MD5SUM)
-    if(${PROG} STREQUAL "cjpeg12")
+    if(${PROG} STREQUAL "cjpeg16")
+      set(ACTUAL_ARGS "${ARGS};-precision;16")
+    elseif(${PROG} STREQUAL "cjpeg12")
       set(ACTUAL_ARGS "${ARGS};-precision;12")
     else()
       set(ACTUAL_ARGS ${ARGS})
     endif()
-    string(REGEX REPLACE "12" "" ACTUAL_PROG ${PROG})
+    string(REGEX REPLACE "16" "" ACTUAL_PROG ${PROG})
+    string(REGEX REPLACE "12" "" ACTUAL_PROG ${ACTUAL_PROG})
     add_test(${PROG}-${libtype}-${NAME}
       ${CMAKE_CROSSCOMPILING_EMULATOR} ${ACTUAL_PROG}${suffix} ${ACTUAL_ARGS}
         -outfile ${OUTFILE} ${INFILE})
@@ -1007,6 +1023,20 @@ foreach(libtype ${TEST_LIBTYPES})
         DEPENDS ${DEPENDS})
     endif()
   endmacro()
+
+  set(MD5_JPEG_LOSSLESS fe99437df4e9976fe5e841969242b208)
+  set(MD5_PPM_LOSSLESS 01d9642a2b8723fefebbe9cb074ccd02)
+
+  # Lossless (all arguments other than -lossless and -restart should have no
+  # effect)
+  add_bittest(cjpeg16 lossless
+    "-lossless;4;-restart;1;-quality;1;-grayscale;-optimize;-dct;float;-smooth;100;-baseline;-qslots;1,0,0;-sample;1x2,3x4,2x1"
+    testout16_lossless.jpg ${TESTIMAGES}/testorig.ppm
+    ${MD5_JPEG_LOSSLESS})
+  add_bittest(djpeg16 lossless
+    "-fast;-scale;1/8;-dct;float;-dither;none;-nosmooth;-onepass"
+    testout16_lossless.ppm testout16_lossless.jpg
+    ${MD5_PPM_LOSSLESS} cjpeg16-${libtype}-lossless)
 
   foreach(sample_bits 8 12)
 

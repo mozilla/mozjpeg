@@ -85,6 +85,7 @@ GLOBAL(JDIMENSION)
 _jpeg_write_scanlines(j_compress_ptr cinfo, _JSAMPARRAY scanlines,
                       JDIMENSION num_lines)
 {
+#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
   JDIMENSION row_ctr, rows_left;
 
   if (cinfo->data_precision != BITS_IN_JSAMPLE)
@@ -119,8 +120,14 @@ _jpeg_write_scanlines(j_compress_ptr cinfo, _JSAMPARRAY scanlines,
   (*cinfo->main->_process_data) (cinfo, scanlines, &row_ctr, num_lines);
   cinfo->next_scanline += row_ctr;
   return row_ctr;
+#else
+  ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+  return 0;
+#endif
 }
 
+
+#if BITS_IN_JSAMPLE != 16
 
 /*
  * Alternate entry point to write raw data.
@@ -176,3 +183,5 @@ _jpeg_write_raw_data(j_compress_ptr cinfo, _JSAMPIMAGE data,
   cinfo->next_scanline += lines_per_iMCU_row;
   return lines_per_iMCU_row;
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 */

@@ -519,9 +519,9 @@ shown are:
   is not used for full-color output.  Works on one pixel row at a time; may
   require two passes to generate a color map.  Note that the output will
   always be a single component representing colormap indexes.  In the current
-  design, the output values are JSAMPLEs or J12SAMPLEs, so the library cannot
-  quantize to more than 256 colors when using 8-bit data precision.  This is
-  unlikely to be a problem in practice.
+  design, the output values are JSAMPLEs, J12SAMPLEs, or J16SAMPLEs, so the
+  library cannot quantize to more than 256 colors when using 8-bit data
+  precision.  This is unlikely to be a problem in practice.
 
 * Color reduction: this module handles color precision reduction, e.g.,
   generating 15-bit color (5 bits/primary) from JPEG's 24-bit output.
@@ -621,8 +621,16 @@ Arrays of 12-bit pixel sample values use the following data structure:
     typedef J12SAMPROW *J12SAMPARRAY;   ptr to a list of rows
     typedef J12SAMPARRAY *J12SAMPIMAGE; ptr to a list of color-component arrays
 
-The basic element type JSAMPLE (8-bit sample) will be unsigned char, and the
-basic element type J12SAMPLE (12-bit sample) with be short.
+Arrays of 16-bit pixel sample values use the following data structure:
+
+    typedef something J16SAMPLE;        a pixel component value, 0..MAXJ16SAMPLE
+    typedef J16SAMPLE *J16SAMPROW;      ptr to a row of samples
+    typedef J16SAMPROW *J16SAMPARRAY;   ptr to a list of rows
+    typedef J16SAMPARRAY *J16SAMPIMAGE; ptr to a list of color-component arrays
+
+The basic element type JSAMPLE (8-bit sample) will be unsigned char, the basic
+element type J12SAMPLE (12-bit sample) will be short, and the basic element
+type J16SAMPLE (16-bit sample) will be unsigned short.
 
 With these conventions, J*SAMPLE values can be assumed to be >= 0.  This helps
 simplify correct rounding during downsampling, etc.  The JPEG standard's
@@ -633,7 +641,8 @@ decompression the output of the IDCT step will be immediately shifted back to
 When 8-bit samples are in use, the code uses MAXJSAMPLE and CENTERJSAMPLE,
 which are defined as 255 and 128 respectively.  When 12-bit samples are in use,
 the code uses MAXJ12SAMPLE and CENTERJ12SAMPLE, which are defined as 4095 and
-2048 respectively.)
+2048 respectively.  When 16-bit samples are in use, the code uses MAXJ16SAMPLE
+and CENTERJ16SAMPLE, which are defined as 65535 and 32768 respectively.)
 
 We use a pointer per row, rather than a two-dimensional J*SAMPLE array.  This
 choice costs only a small amount of memory and has several benefits:

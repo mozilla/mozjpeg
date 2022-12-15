@@ -353,9 +353,10 @@ alloc_small(j_common_ptr cinfo, int pool_id, size_t sizeofobject)
  * request is large enough that it may as well be passed directly to
  * jpeg_get_large; the pool management just links everything together
  * so that we can free it all on demand.
- * Note: the major use of "large" objects is in JSAMPARRAY/J12SAMPARRAY and
- * JBLOCKARRAY structures.  The routines that create these structures (see
- * below) deliberately bunch rows together to ensure a large request size.
+ * Note: the major use of "large" objects is in
+ * JSAMPARRAY/J12SAMPARRAY/J16SAMPARRAY and JBLOCKARRAY structures.  The
+ * routines that create these structures (see below) deliberately bunch rows
+ * together to ensure a large request size.
  */
 
 METHODDEF(void *)
@@ -441,11 +442,17 @@ alloc_sarray(j_common_ptr cinfo, int pool_id, JDIMENSION samplesperrow,
   long ltemp;
   J12SAMPARRAY result12;
   J12SAMPROW workspace12;
+#if defined(C_LOSSLESS_SUPPORTED) || defined(D_LOSSLESS_SUPPORTED)
+  J16SAMPARRAY result16;
+  J16SAMPROW workspace16;
+#endif
   int data_precision = cinfo->is_decompressor ?
                         ((j_decompress_ptr)cinfo)->data_precision :
                         ((j_compress_ptr)cinfo)->data_precision;
-  size_t sample_size = data_precision == 12 ?
-                       sizeof(J12SAMPLE) : sizeof(JSAMPLE);
+  size_t sample_size = data_precision == 16 ?
+                       sizeof(J16SAMPLE) : (data_precision == 12 ?
+                                            sizeof(J12SAMPLE) :
+                                            sizeof(JSAMPLE));
 
   /* Make sure each row is properly aligned */
   if ((ALIGN_SIZE % sample_size) != 0)
@@ -470,7 +477,31 @@ alloc_sarray(j_common_ptr cinfo, int pool_id, JDIMENSION samplesperrow,
     rowsperchunk = numrows;
   mem->last_rowsperchunk = rowsperchunk;
 
-  if (data_precision == 12) {
+  if (data_precision == 16) {
+#if defined(C_LOSSLESS_SUPPORTED) || defined(D_LOSSLESS_SUPPORTED)
+    /* Get space for row pointers (small object) */
+    result16 = (J16SAMPARRAY)alloc_small(cinfo, pool_id,
+                                         (size_t)(numrows *
+                                                  sizeof(J16SAMPROW)));
+
+    /* Get the rows themselves (large objects) */
+    currow = 0;
+    while (currow < numrows) {
+      rowsperchunk = MIN(rowsperchunk, numrows - currow);
+      workspace16 = (J16SAMPROW)alloc_large(cinfo, pool_id,
+        (size_t)((size_t)rowsperchunk * (size_t)samplesperrow * sample_size));
+      for (i = rowsperchunk; i > 0; i--) {
+        result16[currow++] = workspace16;
+        workspace16 += samplesperrow;
+      }
+    }
+
+    return (JSAMPARRAY)result16;
+#else
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, data_precision);
+    return NULL;
+#endif
+  } else if (data_precision == 12) {
     /* Get space for row pointers (small object) */
     result12 = (J12SAMPARRAY)alloc_small(cinfo, pool_id,
                                          (size_t)(numrows *
@@ -672,8 +703,10 @@ realize_virt_arrays(j_common_ptr cinfo)
   int data_precision = cinfo->is_decompressor ?
                         ((j_decompress_ptr)cinfo)->data_precision :
                         ((j_compress_ptr)cinfo)->data_precision;
-  size_t sample_size = data_precision == 12 ?
-                       sizeof(J12SAMPLE) : sizeof(JSAMPLE);
+  size_t sample_size = data_precision == 16 ?
+                       sizeof(J16SAMPLE) : (data_precision == 12 ?
+                                            sizeof(J12SAMPLE) :
+                                            sizeof(JSAMPLE));
 
   /* Compute the minimum space needed (maxaccess rows in each buffer)
    * and the maximum space needed (full image height in each buffer).
@@ -788,8 +821,10 @@ do_sarray_io(j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)
   int data_precision = cinfo->is_decompressor ?
                         ((j_decompress_ptr)cinfo)->data_precision :
                         ((j_compress_ptr)cinfo)->data_precision;
-  size_t sample_size = data_precision == 12 ?
-                       sizeof(J12SAMPLE) : sizeof(JSAMPLE);
+  size_t sample_size = data_precision == 16 ?
+                       sizeof(J16SAMPLE) : (data_precision == 12 ?
+                                            sizeof(J12SAMPLE) :
+                                            sizeof(JSAMPLE));
 
   bytesperrow = (long)ptr->samplesperrow * (long)sample_size;
   file_offset = ptr->cur_start_row * bytesperrow;
@@ -805,7 +840,22 @@ do_sarray_io(j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)
     if (rows <= 0)              /* this chunk might be past end of file! */
       break;
     byte_count = rows * bytesperrow;
-    if (data_precision == 12) {
+    if (data_precision == 16) {
+#if defined(C_LOSSLESS_SUPPORTED) || defined(D_LOSSLESS_SUPPORTED)
+      J16SAMPARRAY mem_buffer16 = (J16SAMPARRAY)ptr->mem_buffer;
+
+      if (writing)
+        (*ptr->b_s_info.write_backing_store) (cinfo, &ptr->b_s_info,
+                                              (void *)mem_buffer16[i],
+                                              file_offset, byte_count);
+      else
+        (*ptr->b_s_info.read_backing_store) (cinfo, &ptr->b_s_info,
+                                             (void *)mem_buffer16[i],
+                                             file_offset, byte_count);
+#else
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, data_precision);
+#endif
+    } else if (data_precision == 12) {
       J12SAMPARRAY mem_buffer12 = (J12SAMPARRAY)ptr->mem_buffer;
 
       if (writing)
@@ -876,8 +926,10 @@ access_virt_sarray(j_common_ptr cinfo, jvirt_sarray_ptr ptr,
   int data_precision = cinfo->is_decompressor ?
                         ((j_decompress_ptr)cinfo)->data_precision :
                         ((j_compress_ptr)cinfo)->data_precision;
-  size_t sample_size = data_precision == 12 ?
-                       sizeof(J12SAMPLE) : sizeof(JSAMPLE);
+  size_t sample_size = data_precision == 16 ?
+                       sizeof(J16SAMPLE) : (data_precision == 12 ?
+                                            sizeof(J12SAMPLE) :
+                                            sizeof(JSAMPLE));
 
   /* debugging check */
   if (end_row > ptr->rows_in_array || num_rows > ptr->maxaccess ||

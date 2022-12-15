@@ -25,7 +25,8 @@
 #include "cmyk.h"
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
-#ifdef PPM_SUPPORTED
+#if defined(PPM_SUPPORTED) && \
+    (BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED))
 
 
 /* Portions of this code are based on the PBMPLUS library, which is:
@@ -781,4 +782,5 @@ _jinit_read_ppm(j_compress_ptr cinfo)
   return (cjpeg_source_ptr)source;
 }
 
-#endif /* PPM_SUPPORTED */
+#endif /* defined(PPM_SUPPORTED) &&
+          (BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)) */

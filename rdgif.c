@@ -36,7 +36,8 @@
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "jsamplecomp.h"
 
-#ifdef GIF_SUPPORTED
+#if defined(GIF_SUPPORTED) && \
+    (BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED))
 
 
 /* Macros to deal with unsigned chars as efficiently as compiler allows */
@@ -721,4 +722,5 @@ _jinit_read_gif(j_compress_ptr cinfo)
   return (cjpeg_source_ptr)source;
 }
 
-#endif /* GIF_SUPPORTED */
+#endif /* defined(GIF_SUPPORTED) &&
+          (BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)) */

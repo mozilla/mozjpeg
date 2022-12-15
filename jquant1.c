@@ -18,7 +18,8 @@
 #include "jpeglib.h"
 #include "jsamplecomp.h"
 
-#ifdef QUANT_1PASS_SUPPORTED
+#if defined(QUANT_1PASS_SUPPORTED) && \
+    (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED))
 
 
 /*
@@ -857,4 +858,5 @@ _jinit_1pass_quantizer(j_decompress_ptr cinfo)
     alloc_fs_workspace(cinfo);
 }
 
-#endif /* QUANT_1PASS_SUPPORTED */
+#endif /* defined(QUANT_1PASS_SUPPORTED) &&
+          (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)) */

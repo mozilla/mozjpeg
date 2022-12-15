@@ -25,6 +25,8 @@
 #include "jsamplecomp.h"
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+
 /* At present, jcsample.c can request context rows only for smoothing.
  * In the future, we might also need context rows for CCIR601 sampling
  * or other more-complex downsampling procedures.  The code to support
@@ -359,3 +361,5 @@ _jinit_c_prep_controller(j_compress_ptr cinfo, boolean need_full_buffer)
     }
   }
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED) */

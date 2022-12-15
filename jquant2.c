@@ -25,7 +25,8 @@
 #include "jpeglib.h"
 #include "jsamplecomp.h"
 
-#ifdef QUANT_2PASS_SUPPORTED
+#if defined(QUANT_2PASS_SUPPORTED) && \
+    (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED))
 
 
 /*
@@ -1289,4 +1290,5 @@ _jinit_2pass_quantizer(j_decompress_ptr cinfo)
   }
 }
 
-#endif /* QUANT_2PASS_SUPPORTED */
+#endif /* defined(QUANT_2PASS_SUPPORTED) &&
+          (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)) */

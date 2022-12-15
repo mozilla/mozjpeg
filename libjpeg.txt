@@ -31,7 +31,7 @@ TABLE OF CONTENTS
 
 Overview:
         Functions provided by the library
-        12-bit Data Precision
+        12-bit and 16-bit Data Precision
         Outline of typical usage
 Basic library usage:
         Data formats
@@ -101,7 +101,8 @@ use.)  Unsupported ISO options include:
         * Hierarchical storage
         * DNL marker
         * Nonintegral subsampling ratios
-We support both 8- and 12-bit data precision.
+We support 8-bit (lossy and lossless), 12-bit (lossy and lossless), and 16-bit
+(lossless) data precision.
 
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
@@ -110,15 +111,17 @@ are embedded in more complex file formats.  (For example, this library is
 used by the free LIBTIFF library to support JPEG compression in TIFF.)
 
 
-12-bit Data Precision
----------------------
+12-bit and 16-bit Data Precision
+--------------------------------
 
-The JPEG standard provides for both the baseline 8-bit DCT process and a 12-bit
-DCT process.  The IJG code supports 12-bit-per-component lossy JPEG if you set
-cinfo->data_precision to 12.  Note that this causes the sample size to be
+The JPEG standard provides for baseline 8-bit and 12-bit DCT processes as well
+as 8-bit, 12-bit, and 16-bit lossless (predictive) processes.  This code
+supports 12-bit-per-component lossy or lossless JPEG if you set
+cinfo->data_precision to 12 and 16-bit-per-component lossless JPEG if you set
+cinfo->data_precision to 16.  Note that this causes the sample size to be
 larger than a char, so it affects the surrounding application's image data.
-The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
-and GIF file formats.
+The sample applications cjpeg and djpeg can support 12-bit and 16-bit mode only
+for PPM and GIF file formats.
 
 Note that, when 12-bit data precision is enabled, the library always compresses
 in Huffman optimization mode, in order to generate valid Huffman tables.  This
@@ -138,15 +141,26 @@ instead of "jpeg_" and use the following data types and macros:
   * MAXJ12SAMPLE instead of MAXJSAMPLE
   * CENTERJ12SAMPLE instead of CENTERJSAMPLE
 
-This allows both 8-bit and 12-bit data precision to be used in a single
+Functions that are specific to 16-bit data precision have a prefix of "jpeg16_"
+instead of "jpeg_" and use the following data types and macros:
+
+  * J16SAMPLE instead of JSAMPLE
+  * J16SAMPROW instead of JSAMPROW
+  * J16SAMPARRAY instead of JSAMPARRAY
+  * J16SAMPIMAGE instead of JSAMPIMAGE
+  * MAXJ16SAMPLE instead of MAXJSAMPLE
+  * CENTERJ16SAMPLE instead of CENTERJSAMPLE
+
+This allows 8-bit, 12-bit, and 16-bit data precision to be used in a single
 application.  (Refer to example.c).  Arithmetic coding and SIMD acceleration
-are not currently implemented for 12-bit data precision.
+are not currently implemented for 12-bit data precision, nor are they
+implemented for lossless mode with any data precision.
 
 Refer to the descriptions of the data_precision compression and decompression
 parameters below for further information.
 
 This documentation uses "J*SAMPLE", "J*SAMPROW", "J*SAMPARRAY", and
-"J*SAMPIMAGE" to generically refer to either the 8-bit or 12-bit data types.
+"J*SAMPIMAGE" to generically refer to the 8-bit, 12-bit, or 16-bit data types.
 
 
 Outline of typical usage
@@ -160,7 +174,9 @@ The rough outline of a JPEG compression operation is:
         jpeg_start_compress(...);
         while (scan lines remain to be written)
                 jpeg_write_scanlines(...);  /* Use jpeg12_write_scanlines() for
-                                               12-bit data precision. */
+                                               12-bit data precision and
+                                               jpeg16_write_scanlines() for
+                                               16-bit data precision. */
         jpeg_finish_compress(...);
         Release the JPEG compression object
 
@@ -188,7 +204,9 @@ Similarly, the rough outline of a JPEG decompression operation is:
         jpeg_start_decompress(...);
         while (scan lines remain to be read)
                 jpeg_read_scanlines(...);  /* Use jpeg12_read_scanlines() for
-                                              12-bit data precision. */
+                                              12-bit data precision and
+                                              jpeg16_read_scanlines() for
+                                              16-bit data precision. */
         jpeg_finish_decompress(...);
         Release the JPEG decompression object
 
@@ -270,7 +288,7 @@ For best results, source data values should have the precision specified by
 cinfo->data_precision (normally 8 bits).  For instance, if you choose to
 compress data that's only 6 bits/channel, you should left-justify each value in
 a byte before passing it to the compressor.  If you need to compress data
-that has more than 8 bits/channel, set cinfo->data_precision = 12.
+that has more than 8 bits/channel, set cinfo->data_precision = 12 or 16.
 
 
 The data format returned by the decompressor is the same in all details,
@@ -283,8 +301,8 @@ a 2-D J*SAMPARRAY in which each row holds the values of one color component,
 that is, colormap[i][j] is the value of the i'th color component for pixel
 value (map index) j.  Note that since the colormap indexes are stored in
 J*SAMPLEs, the maximum number of colors is limited by the size of J*SAMPLE
-(ie, at most 256 colors for 8-bit data precision and 4096 colors for 12-bit
-data precision).
+(ie, at most 256 colors for 8-bit data precision, 4096 colors for 12-bit data
+precision, and 65536 colors for 16-bit data precision).
 
 
 Compression details
@@ -422,7 +440,9 @@ the compression cycle.
 
 5. while (scan lines remain to be written)
         jpeg_write_scanlines(...);  /* Use jpeg12_write_scanlines() for 12-bit
-                                       data precision. */
+                                       data precision and
+                                       jpeg16_write_scanlines() for 16-bit data
+                                       precision. */
 
 Now write all the required image data by calling jpeg*_write_scanlines()
 one or more times.  You can pass one or more scanlines in each call, up
@@ -449,13 +469,16 @@ array containing 3-byte RGB pixels:
 
         JSAMPROW row_pointer[1];        /* pointer to a single row
                                            Use J12SAMPROW for 12-bit data
-                                           precision. */
+                                           precision and J16SAMPROW for 16-bit
+                                           data precision. */
 
         while (cinfo.next_scanline < cinfo.image_height) {
             row_pointer[0] = image_buffer[cinfo.next_scanline];
             jpeg_write_scanlines(&cinfo, row_pointer, 1);
                                         /* Use jpeg12_write_scanlines() for
-                                           12-bit data precision. */
+                                           12-bit data precision and
+                                           jpeg16_write_scanlines() for 16-bit
+                                           data precision. */
         }
 
 jpeg*_write_scanlines() returns the number of scanlines actually written.
@@ -700,7 +723,9 @@ relevant parameters (scaling, output color space, and quantization flag).
 
 6. while (scan lines remain to be read)
         jpeg_read_scanlines(...);  /* Use jpeg12_read_scanlines() for 12-bit
-                                      data precision. */
+                                      data precision and
+                                      jpeg16_read_scanlines() for 16-bit data
+                                      precision. */
 
 Now you can read the decompressed image data by calling jpeg*_read_scanlines()
 one or more times.  At each call, you pass in the maximum number of scanlines
@@ -1029,7 +1054,10 @@ int data_precision
         To create a 12-bit-per-component JPEG file, set data_precision to 12
         prior to calling jpeg_start_compress() or using the memory manager,
         then use jpeg12_write_scanlines() or jpeg12_write_raw_data() instead of
-        jpeg_write_scanlines() or jpeg_write_raw_data().
+        jpeg_write_scanlines() or jpeg_write_raw_data().  To create a
+        16-bit-per-component lossless JPEG file, set data_precision to 16 prior
+        to calling jpeg_start_compress() or using the memory manager, then use
+        jpeg16_write_scanlines() instead of jpeg_write_scanlines().
 
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:
@@ -1256,7 +1284,8 @@ int data_precision                      Data precision (bits per component)
         jpeg12_skip_scanlines(), jpeg12_crop_scanline(), and/or
         jpeg12_read_raw_data() instead of jpeg_read_scanlines(),
         jpeg_skip_scanlines(), jpeg_crop_scanline(), and/or
-        jpeg_read_raw_data().
+        jpeg_read_raw_data().  If data_precision is 16, then use
+        jpeg16_read_scanlines() instead of jpeg_read_scanlines().
 
 JDIMENSION image_width                  Width and height of image
 JDIMENSION image_height
@@ -1341,9 +1370,9 @@ JSAMPARRAY colormap
         CAUTION: if the JPEG library creates its own colormap, the storage
         pointed to by this field is released by jpeg_finish_decompress().
         Copy the colormap somewhere else first, if you want to save it.
-        CAUTION: if data_precision is 12, then this is actually a J12SAMPARRAY,
-        so it must be type-cast in order to read 12-bit samples from or write
-        12-bit samples to the array.
+        CAUTION: if data_precision is 12 or 16, then this is actually a
+        J12SAMPARRAY or a J16SAMPARRAY, so it must be type-cast in order to
+        read/write 12-bit or 16-bit samples from/to the array.
 
 int actual_number_of_colors
         The number of colors in the color map.
@@ -2053,7 +2082,9 @@ The basic control flow for buffered-image decoding is
             jpeg_start_output()         /* start a new output pass */
             for (all scanlines in image) {
                 jpeg_read_scanlines()   /* Use jpeg12_read_scanlines() for
-                                           12-bit data precision. */
+                                           12-bit data precision and
+                                           jpeg16_read_scanlines() for 16-bit
+                                           data precision. */
                 display scanlines
             }
             jpeg_finish_output()        /* terminate output pass */
@@ -3121,9 +3152,9 @@ This does not count any memory allocated by the application, such as a
 buffer to hold the final output image.
 
 The above figures are valid for 8-bit JPEG data precision and a machine with
-32-bit ints.  For 12-bit JPEG data, double the size of the strip buffers and
-quantization pixel buffer.  The "fixed-size" data will be somewhat smaller
-with 16-bit ints, larger with 64-bit ints.  Also, CMYK or other unusual
+32-bit ints.  For 12-bit and 16-bit JPEG data, double the size of the strip
+buffers and quantization pixel buffer.  The "fixed-size" data will be somewhat
+smaller with 16-bit ints, larger with 64-bit ints.  Also, CMYK or other unusual
 color spaces will require different amounts of space.
 
 The full-image coefficient and pixel buffers, if needed at all, do not

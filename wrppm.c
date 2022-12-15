@@ -22,7 +22,8 @@
 #include "cmyk.h"
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
-#ifdef PPM_SUPPORTED
+#if defined(PPM_SUPPORTED) && \
+    (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED))
 
 
 /*
@@ -366,4 +367,5 @@ _jinit_write_ppm(j_decompress_ptr cinfo)
   return (djpeg_dest_ptr)dest;
 }
 
-#endif /* PPM_SUPPORTED */
+#endif /* defined(PPM_SUPPORTED) &&
+          (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)) */

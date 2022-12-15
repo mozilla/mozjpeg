@@ -59,6 +59,8 @@
 #include "jsamplecomp.h"
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+
 /* Pointer to routine to downsample a single component */
 typedef void (*downsample1_ptr) (j_compress_ptr cinfo,
                                  jpeg_component_info *compptr,
@@ -537,3 +539,5 @@ _jinit_downsampler(j_compress_ptr cinfo)
     TRACEMS(cinfo, 0, JTRC_SMOOTH_NOTIMPL);
 #endif
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED) */

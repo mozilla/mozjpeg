@@ -19,8 +19,13 @@
  */
 
 #include "jinclude.h"
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
 #include "jdmainct.h"
 #include "jdcoefct.h"
+#else
+#define JPEG_INTERNALS
+#include "jpeglib.h"
+#endif
 #include "jdmaster.h"
 #include "jdmerge.h"
 #include "jdsample.h"
@@ -151,6 +156,8 @@ output_pass_setup(j_decompress_ptr cinfo)
 #endif /* BITS_IN_JSAMPLE == 8 */
 
 
+#if BITS_IN_JSAMPLE != 16
+
 /*
  * Enable partial scanline decompression
  *
@@ -274,6 +281,8 @@ _jpeg_crop_scanline(j_decompress_ptr cinfo, JDIMENSION *xoffset,
   }
 }
 
+#endif /* BITS_IN_JSAMPLE != 16 */
+
 
 /*
  * Read some scanlines of data from the JPEG decompressor.
@@ -292,6 +301,7 @@ GLOBAL(JDIMENSION)
 _jpeg_read_scanlines(j_decompress_ptr cinfo, _JSAMPARRAY scanlines,
                      JDIMENSION max_lines)
 {
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
   JDIMENSION row_ctr;
 
   if (cinfo->data_precision != BITS_IN_JSAMPLE)
@@ -316,8 +326,14 @@ _jpeg_read_scanlines(j_decompress_ptr cinfo, _JSAMPARRAY scanlines,
   (*cinfo->main->_process_data) (cinfo, scanlines, &row_ctr, max_lines);
   cinfo->output_scanline += row_ctr;
   return row_ctr;
+#else
+  ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+  return 0;
+#endif
 }
 
+
+#if BITS_IN_JSAMPLE != 16
 
 /* Dummy color convert function used by _jpeg_skip_scanlines() */
 LOCAL(void)
@@ -659,6 +675,8 @@ _jpeg_read_raw_data(j_decompress_ptr cinfo, _JSAMPIMAGE data,
   cinfo->output_scanline += lines_per_iMCU_row;
   return lines_per_iMCU_row;
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 */
 
 
 #if BITS_IN_JSAMPLE == 8

@@ -33,6 +33,7 @@ rgb_ycc_convert_internal(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
                          _JSAMPIMAGE output_buf, JDIMENSION output_row,
                          int num_rows)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   register int r, g, b;
   register JLONG *ctab = cconvert->rgb_ycc_tab;
@@ -68,6 +69,9 @@ rgb_ycc_convert_internal(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
                                  ctab[b + B_CR_OFF]) >> SCALEBITS);
     }
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -87,6 +91,7 @@ rgb_gray_convert_internal(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
                           _JSAMPIMAGE output_buf, JDIMENSION output_row,
                           int num_rows)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   register int r, g, b;
   register JLONG *ctab = cconvert->rgb_ycc_tab;
@@ -109,6 +114,9 @@ rgb_gray_convert_internal(j_compress_ptr cinfo, _JSAMPARRAY input_buf,
                                 ctab[b + B_Y_OFF]) >> SCALEBITS);
     }
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 

@@ -1,4 +1,4 @@
-.TH CJPEG 1 "16 November 2022"
+.TH CJPEG 1 "30 November 2022"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -150,10 +150,13 @@ about the same --- often a little smaller.
 Switches for advanced users:
 .TP
 .BI \-precision " N"
-Create JPEG file with N-bit data precision.  N is 8 or 12; default is 8.
+Create JPEG file with N-bit data precision.  N is 8, 12, or 16; default is 8.
+If N is 16, then
+.B -lossless
+must also be specified.
 .B Caution:
-12-bit JPEG is not yet widely implemented, so many decoders will be unable to
-view a 12-bit JPEG file at all.
+12-bit and 16-bit JPEG is not yet widely implemented, so many decoders will be
+unable to view a 12-bit or 16-bit JPEG file at all.
 .TP
 .BI \-lossless " psv[,Pt]"
 Create a lossless JPEG file using the specified predictor selection value

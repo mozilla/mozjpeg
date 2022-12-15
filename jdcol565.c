@@ -21,6 +21,7 @@ ycc_rgb565_convert_internal(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
                             JDIMENSION input_row, _JSAMPARRAY output_buf,
                             int num_rows)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   register int y, cb, cr;
   register _JSAMPROW outptr;
@@ -91,6 +92,9 @@ ycc_rgb565_convert_internal(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
       *(INT16 *)outptr = (INT16)rgb;
     }
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 
@@ -100,6 +104,7 @@ ycc_rgb565D_convert_internal(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
                              JDIMENSION input_row, _JSAMPARRAY output_buf,
                              int num_rows)
 {
+#if BITS_IN_JSAMPLE != 16
   my_cconvert_ptr cconvert = (my_cconvert_ptr)cinfo->cconvert;
   register int y, cb, cr;
   register _JSAMPROW outptr;
@@ -177,6 +182,9 @@ ycc_rgb565D_convert_internal(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
       *(INT16 *)outptr = (INT16)rgb;
     }
   }
+#else
+  ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
 }
 
 

@@ -83,7 +83,12 @@ initial_setup(j_compress_ptr cinfo, boolean transcode_only)
   if ((long)jd_samplesperrow != samplesperrow)
     ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
 
+#ifdef C_LOSSLESS_SUPPORTED
+  if (cinfo->data_precision != 8 && cinfo->data_precision != 12 &&
+      cinfo->data_precision != 16)
+#else
   if (cinfo->data_precision != 8 && cinfo->data_precision != 12)
+#endif
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 
   /* Check that number of components won't exceed internal array sizes */

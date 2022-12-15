@@ -20,6 +20,8 @@
 #include "jdmainct.h"
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
+
 /*
  * In the current system design, the main buffer need never be a full-image
  * buffer; any full-height buffers will be found inside the coefficient,
@@ -463,3 +465,5 @@ _jinit_d_main_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
                          (JDIMENSION)(rgroup * ngroups));
   }
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED) */

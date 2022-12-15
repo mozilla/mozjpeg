@@ -161,7 +161,11 @@ file size is about the same --- often a little smaller.
 Switches for advanced users:
 
         -precision N   Create JPEG file with N-bit data precision.
-                       N is 8 or 12; default is 8.
+                       N is 8, 12, or 16; default is 8.  If N is 16, then
+                       -lossless must also be specified.  CAUTION: 12-bit and
+                       16-bit JPEG is not yet widely implemented, so many
+                       decoders will be unable to view a 12-bit or 16-bit JPEG
+                       file at all.
 
         -lossless psv[,Pt] Create a lossless JPEG file using the specified
                         predictor selection value (1 - 7) and optional point

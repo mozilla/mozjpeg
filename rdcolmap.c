@@ -28,6 +28,7 @@
 #include "jsamplecomp.h"
 
 #ifdef QUANT_2PASS_SUPPORTED    /* otherwise can't quantize to supplied map */
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
 
 /* Portions of this code are based on the PBMPLUS library, which is:
 **
@@ -256,4 +257,5 @@ _read_color_map(j_decompress_ptr cinfo, FILE *infile)
   }
 }
 
+#endif /* BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED) */
 #endif /* QUANT_2PASS_SUPPORTED */

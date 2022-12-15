@@ -95,6 +95,9 @@ jround_up(long a, long b)
 #endif /* BITS_IN_JSAMPLE == 8 */
 
 
+#if BITS_IN_JSAMPLE != 16 || \
+    defined(C_LOSSLESS_SUPPORTED) || defined(D_LOSSLESS_SUPPORTED)
+
 GLOBAL(void)
 _jcopy_sample_rows(_JSAMPARRAY input_array, int source_row,
                    _JSAMPARRAY output_array, int dest_row, int num_rows,
@@ -118,6 +121,9 @@ _jcopy_sample_rows(_JSAMPARRAY input_array, int source_row,
     memcpy(outptr, inptr, count);
   }
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 ||
+          defined(C_LOSSLESS_SUPPORTED) || defined(D_LOSSLESS_SUPPORTED) */
 
 
 #if BITS_IN_JSAMPLE == 8

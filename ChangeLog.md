@@ -3,41 +3,46 @@
 
 ### Significant changes relative to 2.1.4:
 
-1. 12-bit-per-component JPEG support is now included in the libjpeg API
-library, cjpeg, djpeg, and jpegtran:
-
-     - The existing `data_precision` field in `jpeg_compress_struct` and
-`jpeg_decompress_struct` has been repurposed to enable the creation of
-12-bit-per-component JPEG images or to detect whether a 12-bit-per-component
-JPEG image is being decompressed.
-     - New 12-bit-per-component versions of `jpeg_write_scanlines()`,
-`jpeg_write_raw_data()`, `jpeg_read_scanlines()`, `jpeg_skip_scanlines()`,
-`jpeg_crop_scanline()`, and `jpeg_read_raw_data()` provide interfaces for
-compressing from/decompressing to 12-bit-per-component uncompressed image
-buffers.
-     - A new cjpeg command-line argument (`-precision`) can be used to create
-a 12-bit-per-component JPEG image.  (djpeg and jpegtran handle
-12-bit-per-component JPEG images automatically.)
-
-    Refer to [libjpeg.txt](libjpeg.txt) and [usage.txt](usage.txt) for more
-details.
-
-2. Significantly sped up the computation of optimal Huffman tables.  This
+1. Significantly sped up the computation of optimal Huffman tables.  This
 speeds up the compression of tiny images by as much as 2x and provides a
 noticeable speedup for images as large as 256x256 when using optimal Huffman
 tables.
 
-3. All deprecated fields, constructors, and methods in the TurboJPEG Java API
+2. All deprecated fields, constructors, and methods in the TurboJPEG Java API
 have been removed.
 
-4. Added support for 8-bit and 12-bit lossless JPEG images.  A new libjpeg API
-function (`jpeg_enable_lossless()`), TurboJPEG API flag (`TJFLAG_LOSSLESS` in
-the C API and `TJ.FLAG_LOSSLESS` in the Java API), and cjpeg/TJBench
-command-line argument (`-lossless`) can be used to create a lossless JPEG
-image.  (Decompression of lossless JPEG images is handled automatically.)  Note
-that the TurboJPEG API and TJBench can currently only be used to create and
-decompress 8-bit lossless JPEG images.  Refer to [libjpeg.txt](libjpeg.txt),
-[usage.txt](usage.txt), and the TurboJPEG API documentation for more details.
+3. Added support for 8-bit, 12-bit, and 16-bit lossless JPEG images.  A new
+libjpeg API function (`jpeg_enable_lossless()`), TurboJPEG API flag
+(`TJFLAG_LOSSLESS` in the C API and `TJ.FLAG_LOSSLESS` in the Java API), and
+cjpeg/TJBench command-line argument (`-lossless`) can be used to create a
+lossless JPEG image.  (Decompression of lossless JPEG images is handled
+automatically.)  Note that the TurboJPEG API and TJBench can currently only be
+used to create and decompress 8-bit lossless JPEG images.  Refer to
+[libjpeg.txt](libjpeg.txt), [usage.txt](usage.txt), and the TurboJPEG API
+documentation for more details.
+
+4. 12-bit-per-component (lossy and lossless) and 16-bit-per-component
+(lossless) JPEG support is now included in the libjpeg API library, cjpeg,
+djpeg, and jpegtran:
+
+     - The existing `data_precision` field in `jpeg_compress_struct` and
+`jpeg_decompress_struct` has been repurposed to enable the creation of
+12-bit-per-component and 16-bit-per-component JPEG images or to detect whether
+a 12-bit-per-component or 16-bit-per-component JPEG image is being
+decompressed.
+     - New 12-bit-per-component and 16-bit-per-component versions of
+`jpeg_write_scanlines()` and `jpeg_read_scanlines()`, as well as new
+12-bit-per-component versions of `jpeg_write_raw_data()`,
+`jpeg_skip_scanlines()`, `jpeg_crop_scanline()`, and `jpeg_read_raw_data()`,
+provide interfaces for compressing from/decompressing to 12-bit-per-component
+and 16-bit-per-component uncompressed image buffers.
+     - A new cjpeg command-line argument (`-precision`) can be used to create
+a 12-bit-per-component or 16-bit-per-component JPEG image.  (djpeg and jpegtran
+handle 12-bit-per-component and 16-bit-per-component JPEG images
+automatically.)
+
+    Refer to [libjpeg.txt](libjpeg.txt) and [usage.txt](usage.txt) for more
+details.
 
 5. Introduced a new flag in the TurboJPEG C and Java APIs (`TJFLAG_ARITHMETIC`
 and `TJ.FLAG_ARITHMETIC`, respectively) that causes the library to use

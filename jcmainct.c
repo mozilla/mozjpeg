@@ -21,6 +21,8 @@
 #include "jsamplecomp.h"
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+
 /* Private buffer controller object */
 
 typedef struct {
@@ -167,3 +169,5 @@ _jinit_c_main_controller(j_compress_ptr cinfo, boolean need_full_buffer)
     }
   }
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED) */

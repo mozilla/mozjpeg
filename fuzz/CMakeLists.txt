@@ -42,6 +42,15 @@ target_link_libraries(cjpeg12_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}
 install(TARGETS cjpeg12_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
   ${FUZZ_BINDIR})
 
+add_executable(cjpeg16_fuzzer${FUZZER_SUFFIX} cjpeg16.cc ../cdjpeg.c ../rdbmp.c
+  ../rdgif.c ../rdppm.c ../rdswitch.c ../rdtarga.c)
+set_property(TARGET cjpeg16_fuzzer${FUZZER_SUFFIX} PROPERTY COMPILE_FLAGS
+  ${COMPILE_FLAGS})
+target_link_libraries(cjpeg16_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}
+  jpeg-static)
+install(TARGETS cjpeg16_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
+  ${FUZZ_BINDIR})
+
 macro(add_fuzz_target target source_file)
   add_executable(${target}_fuzzer${FUZZER_SUFFIX} ${source_file})
   target_link_libraries(${target}_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}

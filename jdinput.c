@@ -57,7 +57,12 @@ initial_setup(j_decompress_ptr cinfo)
     ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int)JPEG_MAX_DIMENSION);
 
   /* For now, precision must match compiled-in value... */
+#ifdef D_LOSSLESS_SUPPORTED
+  if (cinfo->data_precision != 8 && cinfo->data_precision != 12 &&
+      cinfo->data_precision != 16)
+#else
   if (cinfo->data_precision != 8 && cinfo->data_precision != 12)
+#endif
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 
   /* Check that number of components won't exceed internal array sizes */

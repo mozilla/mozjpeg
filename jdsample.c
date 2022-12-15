@@ -32,6 +32,8 @@
 
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
+
 /*
  * Initialize for an upsampling pass.
  */
@@ -534,3 +536,5 @@ _jinit_upsampler(j_decompress_ptr cinfo)
     }
   }
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED) */

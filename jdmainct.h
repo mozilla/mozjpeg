@@ -15,6 +15,8 @@
 #include "jsamplecomp.h"
 
 
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
+
 /* Private buffer controller object */
 
 typedef struct {
@@ -72,3 +74,5 @@ set_wraparound_pointers(j_decompress_ptr cinfo)
     }
   }
 }
+
+#endif /* BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED) */

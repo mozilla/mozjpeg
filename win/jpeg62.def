@@ -129,3 +129,5 @@ EXPORTS
   jpeg12_skip_scanlines @ 128 ;
   jpeg12_crop_scanline @ 129 ;
   jpeg_enable_lossless @ 130 ;
+  jpeg16_read_scanlines @ 131 ;
+  jpeg16_write_scanlines @ 132 ;

@@ -128,6 +128,13 @@ output_pass_setup(j_decompress_ptr cinfo)
       }
       /* Process some data */
       last_scanline = cinfo->output_scanline;
+#ifdef D_LOSSLESS_SUPPORTED
+      if (cinfo->data_precision == 16)
+        (*cinfo->main->process_data_16) (cinfo, (J16SAMPARRAY)NULL,
+                                         &cinfo->output_scanline,
+                                         (JDIMENSION)0);
+      else
+#endif
       if (cinfo->data_precision == 12)
         (*cinfo->main->process_data_12) (cinfo, (J12SAMPARRAY)NULL,
                                          &cinfo->output_scanline,

@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2009-2014, 2017-2019, 2022 D. R. Commander.
- *                                         All Rights Reserved.
+ * Copyright (C)2009-2014, 2017-2019, 2022-2023 D. R. Commander.
+ *                                              All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -582,6 +582,10 @@ static void overflowTest(void)
   size = TJBUFSIZE(26755, 26755);
   CHECKSIZE(TJBUFSIZE());
   size = tjBufSizeYUV2(37838, 1, 37838, TJSAMP_444);
+  CHECKSIZE(tjBufSizeYUV2());
+  size = tjBufSizeYUV2(37837, 3, 37837, TJSAMP_444);
+  CHECKSIZE(tjBufSizeYUV2());
+  size = tjBufSizeYUV2(37837, -1, 37837, TJSAMP_444);
   CHECKSIZE(tjBufSizeYUV2());
   size = TJBUFSIZEYUV(37838, 37838, TJSAMP_444);
   CHECKSIZE(TJBUFSIZEYUV());

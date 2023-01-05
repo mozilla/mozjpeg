@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2023 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2021 Alex Richardson.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -577,7 +577,7 @@ DLLEXPORT unsigned long tjBufSizeYUV2(int width, int pad, int height,
   unsigned long long retval = 0;
   int nc, i;
 
-  if (subsamp < 0 || subsamp >= NUMSUBOPT)
+  if (pad < 1 || !IS_POW2(pad) || subsamp < 0 || subsamp >= NUMSUBOPT)
     THROWG("tjBufSizeYUV2(): Invalid argument");
 
   nc = (subsamp == TJSAMP_GRAY ? 1 : 3);
@@ -935,7 +935,7 @@ DLLEXPORT int tjEncodeYUV3(tjhandle handle, const unsigned char *srcBuf,
   if (!this) THROWG("tjEncodeYUV3(): Invalid handle");
   this->isInstanceError = FALSE;
 
-  if (width <= 0 || height <= 0 || dstBuf == NULL || pad < 0 ||
+  if (width <= 0 || height <= 0 || dstBuf == NULL || pad < 1 ||
       !IS_POW2(pad) || subsamp < 0 || subsamp >= NUMSUBOPT)
     THROW("tjEncodeYUV3(): Invalid argument");
 
@@ -1131,8 +1131,8 @@ DLLEXPORT int tjCompressFromYUV(tjhandle handle, const unsigned char *srcBuf,
   if (!this) THROWG("tjCompressFromYUV(): Invalid handle");
   this->isInstanceError = FALSE;
 
-  if (srcBuf == NULL || width <= 0 || pad < 1 || height <= 0 || subsamp < 0 ||
-      subsamp >= NUMSUBOPT)
+  if (srcBuf == NULL || width <= 0 || pad < 1 || !IS_POW2(pad) ||
+      height <= 0 || subsamp < 0 || subsamp >= NUMSUBOPT)
     THROW("tjCompressFromYUV(): Invalid argument");
 
   pw0 = tjPlaneWidth(0, width, subsamp);
@@ -1600,7 +1600,7 @@ DLLEXPORT int tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
   if (!this) THROWG("tjDecodeYUV(): Invalid handle");
   this->isInstanceError = FALSE;
 
-  if (srcBuf == NULL || pad < 0 || !IS_POW2(pad) || subsamp < 0 ||
+  if (srcBuf == NULL || pad < 1 || !IS_POW2(pad) || subsamp < 0 ||
       subsamp >= NUMSUBOPT || width <= 0 || height <= 0)
     THROW("tjDecodeYUV(): Invalid argument");
 

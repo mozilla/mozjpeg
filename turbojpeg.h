@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2009-2015, 2017, 2020-2021 D. R. Commander.
- *                                         All Rights Reserved.
+ * Copyright (C)2009-2015, 2017, 2020-2021, 2023 D. R. Commander.
+ *                                               All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -773,9 +773,9 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
  * even multiple of the MCU block width (see #tjMCUWidth), then an intermediate
  * buffer copy will be performed within TurboJPEG.
  *
- * @param pad the line padding used in the source image.  For instance, if each
- * line in each plane of the YUV image is padded to the nearest multiple of 4
- * bytes, then <tt>pad</tt> should be set to 4.
+ * @param pad the line padding used in the source image (must be a power of 2.)
+ * For instance, if each line in each plane of the YUV image is padded to the
+ * nearest multiple of 4 bytes, then <tt>pad</tt> should be set to 4.
  *
  * @param height height (in pixels) of the source image.  If the height is not
  * an even multiple of the MCU block height (see #tjMCUHeight), then an

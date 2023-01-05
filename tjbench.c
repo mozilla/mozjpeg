@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2019, 2021-2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2019, 2021-2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -278,7 +278,7 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
   SNPRINTF(ptr, 1024 - (ptr - tempStr), "-err.%s", ext);
   if (srcBuf && sf.num == 1 && sf.denom == 1) {
     if (!quiet) printf("Compression error written to %s.\n", tempStr);
-    if (subsamp == TJ_GRAYSCALE) {
+    if (subsamp == TJSAMP_GRAY) {
       unsigned long index, index2;
 
       for (row = 0, index = 0; row < h; row++, index += pitch) {
@@ -630,7 +630,7 @@ static int decompTest(char *fileName)
         tw = h;  th = w;  ttilew = tileh;  ttileh = tilew;
       }
 
-      if (xformOpt & TJXOPT_GRAY) tsubsamp = TJ_GRAYSCALE;
+      if (xformOpt & TJXOPT_GRAY) tsubsamp = TJSAMP_GRAY;
       if (xformOp == TJXOP_HFLIP || xformOp == TJXOP_ROT180)
         tw = tw - (tw % tjMCUWidth[tsubsamp]);
       if (xformOp == TJXOP_VFLIP || xformOp == TJXOP_ROT180)

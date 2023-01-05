@@ -356,7 +356,7 @@ static int getSubsamp(j_decompress_ptr dinfo)
   if (dinfo->num_components == 1 && dinfo->jpeg_color_space == JCS_GRAYSCALE)
     return TJSAMP_GRAY;
 
-  for (i = 0; i < NUMSUBOPT; i++) {
+  for (i = 0; i < TJ_NUMSAMP; i++) {
     if (dinfo->num_components == pixelsize[i] ||
         ((dinfo->jpeg_color_space == JCS_YCCK ||
           dinfo->jpeg_color_space == JCS_CMYK) &&
@@ -535,7 +535,7 @@ DLLEXPORT unsigned long tjBufSize(int width, int height, int jpegSubsamp)
   unsigned long long retval = 0;
   int mcuw, mcuh, chromasf;
 
-  if (width < 1 || height < 1 || jpegSubsamp < 0 || jpegSubsamp >= NUMSUBOPT)
+  if (width < 1 || height < 1 || jpegSubsamp < 0 || jpegSubsamp >= TJ_NUMSAMP)
     THROWG("tjBufSize(): Invalid argument");
 
   /* This allows for rare corner cases in which a JPEG image can actually be
@@ -577,7 +577,7 @@ DLLEXPORT unsigned long tjBufSizeYUV2(int width, int pad, int height,
   unsigned long long retval = 0;
   int nc, i;
 
-  if (pad < 1 || !IS_POW2(pad) || subsamp < 0 || subsamp >= NUMSUBOPT)
+  if (pad < 1 || !IS_POW2(pad) || subsamp < 0 || subsamp >= TJ_NUMSAMP)
     THROWG("tjBufSizeYUV2(): Invalid argument");
 
   nc = (subsamp == TJSAMP_GRAY ? 1 : 3);
@@ -655,7 +655,7 @@ DLLEXPORT unsigned long tjPlaneSizeYUV(int componentID, int width, int stride,
   unsigned long long retval = 0;
   int pw, ph;
 
-  if (width < 1 || height < 1 || subsamp < 0 || subsamp >= NUMSUBOPT)
+  if (width < 1 || height < 1 || subsamp < 0 || subsamp >= TJ_NUMSAMP)
     THROWG("tjPlaneSizeYUV(): Invalid argument");
 
   pw = tjPlaneWidth(componentID, width, subsamp);
@@ -690,7 +690,7 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
 
   if (srcBuf == NULL || width <= 0 || pitch < 0 || height <= 0 ||
       pixelFormat < 0 || pixelFormat >= TJ_NUMPF || jpegBuf == NULL ||
-      jpegSize == NULL || jpegSubsamp < 0 || jpegSubsamp >= NUMSUBOPT ||
+      jpegSize == NULL || jpegSubsamp < 0 || jpegSubsamp >= TJ_NUMSAMP ||
       jpegQual < 0 || jpegQual > 100)
     THROW("tjCompress2(): Invalid argument");
 
@@ -791,7 +791,7 @@ DLLEXPORT int tjEncodeYUVPlanes(tjhandle handle, const unsigned char *srcBuf,
 
   if (srcBuf == NULL || width <= 0 || pitch < 0 || height <= 0 ||
       pixelFormat < 0 || pixelFormat >= TJ_NUMPF || !dstPlanes ||
-      !dstPlanes[0] || subsamp < 0 || subsamp >= NUMSUBOPT)
+      !dstPlanes[0] || subsamp < 0 || subsamp >= TJ_NUMSAMP)
     THROW("tjEncodeYUVPlanes(): Invalid argument");
   if (subsamp != TJSAMP_GRAY && (!dstPlanes[1] || !dstPlanes[2]))
     THROW("tjEncodeYUVPlanes(): Invalid argument");
@@ -936,7 +936,7 @@ DLLEXPORT int tjEncodeYUV3(tjhandle handle, const unsigned char *srcBuf,
   this->isInstanceError = FALSE;
 
   if (width <= 0 || height <= 0 || dstBuf == NULL || pad < 1 ||
-      !IS_POW2(pad) || subsamp < 0 || subsamp >= NUMSUBOPT)
+      !IS_POW2(pad) || subsamp < 0 || subsamp >= TJ_NUMSAMP)
     THROW("tjEncodeYUV3(): Invalid argument");
 
   pw0 = tjPlaneWidth(0, width, subsamp);
@@ -1006,7 +1006,7 @@ DLLEXPORT int tjCompressFromYUVPlanes(tjhandle handle,
     THROW("tjCompressFromYUVPlanes(): Instance has not been initialized for compression");
 
   if (!srcPlanes || !srcPlanes[0] || width <= 0 || height <= 0 ||
-      subsamp < 0 || subsamp >= NUMSUBOPT || jpegBuf == NULL ||
+      subsamp < 0 || subsamp >= TJ_NUMSAMP || jpegBuf == NULL ||
       jpegSize == NULL || jpegQual < 0 || jpegQual > 100)
     THROW("tjCompressFromYUVPlanes(): Invalid argument");
   if (subsamp != TJSAMP_GRAY && (!srcPlanes[1] || !srcPlanes[2]))
@@ -1132,7 +1132,7 @@ DLLEXPORT int tjCompressFromYUV(tjhandle handle, const unsigned char *srcBuf,
   this->isInstanceError = FALSE;
 
   if (srcBuf == NULL || width <= 0 || pad < 1 || !IS_POW2(pad) ||
-      height <= 0 || subsamp < 0 || subsamp >= NUMSUBOPT)
+      height <= 0 || subsamp < 0 || subsamp >= TJ_NUMSAMP)
     THROW("tjCompressFromYUV(): Invalid argument");
 
   pw0 = tjPlaneWidth(0, width, subsamp);
@@ -1467,7 +1467,7 @@ DLLEXPORT int tjDecodeYUVPlanes(tjhandle handle,
   if ((this->init & DECOMPRESS) == 0)
     THROW("tjDecodeYUVPlanes(): Instance has not been initialized for decompression");
 
-  if (!srcPlanes || !srcPlanes[0] || subsamp < 0 || subsamp >= NUMSUBOPT ||
+  if (!srcPlanes || !srcPlanes[0] || subsamp < 0 || subsamp >= TJ_NUMSAMP ||
       dstBuf == NULL || width <= 0 || pitch < 0 || height <= 0 ||
       pixelFormat < 0 || pixelFormat >= TJ_NUMPF)
     THROW("tjDecodeYUVPlanes(): Invalid argument");
@@ -1601,7 +1601,7 @@ DLLEXPORT int tjDecodeYUV(tjhandle handle, const unsigned char *srcBuf,
   this->isInstanceError = FALSE;
 
   if (srcBuf == NULL || pad < 1 || !IS_POW2(pad) || subsamp < 0 ||
-      subsamp >= NUMSUBOPT || width <= 0 || height <= 0)
+      subsamp >= TJ_NUMSAMP || width <= 0 || height <= 0)
     THROW("tjDecodeYUV(): Invalid argument");
 
   pw0 = tjPlaneWidth(0, width, subsamp);
@@ -1760,7 +1760,7 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
     for (i = 0; i < dinfo->num_components; i++) {
       jpeg_component_info *compptr = &dinfo->comp_info[i];
 
-      if (jpegSubsamp == TJ_420) {
+      if (jpegSubsamp == TJSAMP_420) {
         /* When 4:2:0 subsampling is used with IDCT scaling, libjpeg will try
            to be clever and use the IDCT to perform upsampling on the U and V
            planes.  For instance, if the output image is to be scaled by 1/2

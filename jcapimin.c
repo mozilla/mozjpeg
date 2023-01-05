@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1998, Thomas G. Lane.
  * Modified 2003-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2022, D. R. Commander.
+ * Copyright (C) 2022-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -240,10 +240,11 @@ jpeg_write_marker(j_compress_ptr cinfo, int marker, const JOCTET *dataptr,
 
   (*cinfo->marker->write_marker_header) (cinfo, marker, datalen);
   write_marker_byte = cinfo->marker->write_marker_byte; /* copy for speed */
-  while (datalen--) {
+  do {
     (*write_marker_byte) (cinfo, *dataptr);
     dataptr++;
   }
+  while (--datalen);
 }
 
 /* Same, but piecemeal. */

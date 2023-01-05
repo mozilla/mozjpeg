@@ -18,11 +18,12 @@ make "-j$(nproc)" "--load-average=$(nproc)"
 make install
 
 cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/cjpeg_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
-cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/cjpeg12_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
-cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/cjpeg16_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
 cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
 cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress_yuv_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
 cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress_lossless_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
+cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress12_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
+cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress12_lossless_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
+cp $SRC/compress_fuzzer_seed_corpus.zip $OUT/compress16_lossless_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
 cp $SRC/decompress_fuzzer_seed_corpus.zip $OUT/libjpeg_turbo_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
 cp $SRC/decompress_fuzzer_seed_corpus.zip $OUT/decompress_yuv_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip
 cp $SRC/decompress_fuzzer_seed_corpus.zip $OUT/transform_fuzzer${FUZZER_SUFFIX}_seed_corpus.zip

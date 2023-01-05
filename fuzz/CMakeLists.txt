@@ -33,24 +33,6 @@ target_link_libraries(cjpeg_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY} jpeg-static)
 install(TARGETS cjpeg_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
   ${FUZZ_BINDIR})
 
-add_executable(cjpeg12_fuzzer${FUZZER_SUFFIX} cjpeg12.cc ../cdjpeg.c ../rdbmp.c
-  ../rdgif.c ../rdppm.c ../rdswitch.c ../rdtarga.c)
-set_property(TARGET cjpeg12_fuzzer${FUZZER_SUFFIX} PROPERTY COMPILE_FLAGS
-  ${COMPILE_FLAGS})
-target_link_libraries(cjpeg12_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}
-  jpeg-static)
-install(TARGETS cjpeg12_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
-  ${FUZZ_BINDIR})
-
-add_executable(cjpeg16_fuzzer${FUZZER_SUFFIX} cjpeg16.cc ../cdjpeg.c ../rdbmp.c
-  ../rdgif.c ../rdppm.c ../rdswitch.c ../rdtarga.c)
-set_property(TARGET cjpeg16_fuzzer${FUZZER_SUFFIX} PROPERTY COMPILE_FLAGS
-  ${COMPILE_FLAGS})
-target_link_libraries(cjpeg16_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}
-  jpeg-static)
-install(TARGETS cjpeg16_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
-  ${FUZZ_BINDIR})
-
 macro(add_fuzz_target target source_file)
   add_executable(${target}_fuzzer${FUZZER_SUFFIX} ${source_file})
   target_link_libraries(${target}_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}
@@ -64,6 +46,12 @@ add_fuzz_target(compress compress.cc)
 add_fuzz_target(compress_yuv compress_yuv.cc)
 
 add_fuzz_target(compress_lossless compress_lossless.cc)
+
+add_fuzz_target(compress12 compress12.cc)
+
+add_fuzz_target(compress12_lossless compress12.cc)
+
+add_fuzz_target(compress16_lossless compress16_lossless.cc)
 
 # NOTE: This target is named libjpeg_turbo_fuzzer instead of decompress_fuzzer
 # in order to preserve the corpora from Google's OSS-Fuzz target for

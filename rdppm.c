@@ -508,6 +508,70 @@ get_word_gray_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 
 
 METHODDEF(JDIMENSION)
+get_word_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
+/* This version is for reading raw-word-format PGM files with any maxval */
+{
+  ppm_source_ptr source = (ppm_source_ptr)sinfo;
+  register _JSAMPROW ptr;
+  register U_CHAR *bufferptr;
+  register _JSAMPLE *rescale = source->rescale;
+  JDIMENSION col;
+  unsigned int maxval = source->maxval;
+  register int rindex = rgb_red[cinfo->in_color_space];
+  register int gindex = rgb_green[cinfo->in_color_space];
+  register int bindex = rgb_blue[cinfo->in_color_space];
+  register int aindex = alpha_index[cinfo->in_color_space];
+  register int ps = rgb_pixelsize[cinfo->in_color_space];
+
+  if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
+    ERREXIT(cinfo, JERR_INPUT_EOF);
+  ptr = source->pub._buffer[0];
+  bufferptr = source->iobuffer;
+  for (col = cinfo->image_width; col > 0; col--) {
+    register unsigned int temp;
+    temp  = UCH(*bufferptr++) << 8;
+    temp |= UCH(*bufferptr++);
+    if (temp > maxval)
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
+    ptr[rindex] = ptr[gindex] = ptr[bindex] = rescale[temp];
+    if (aindex >= 0)
+      ptr[aindex] = _MAXJSAMPLE;
+    ptr += ps;
+  }
+  return 1;
+}
+
+
+METHODDEF(JDIMENSION)
+get_word_gray_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
+/* This version is for reading raw-word-format PGM files with any maxval */
+{
+  ppm_source_ptr source = (ppm_source_ptr)sinfo;
+  register _JSAMPROW ptr;
+  register U_CHAR *bufferptr;
+  register _JSAMPLE *rescale = source->rescale;
+  JDIMENSION col;
+  unsigned int maxval = source->maxval;
+
+  if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
+    ERREXIT(cinfo, JERR_INPUT_EOF);
+  ptr = source->pub._buffer[0];
+  bufferptr = source->iobuffer;
+  for (col = cinfo->image_width; col > 0; col--) {
+    register unsigned int gray;
+    gray  = UCH(*bufferptr++) << 8;
+    gray |= UCH(*bufferptr++);
+    if (gray > maxval)
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
+    rgb_to_cmyk(rescale[gray], rescale[gray], rescale[gray], ptr, ptr + 1,
+                ptr + 2, ptr + 3);
+    ptr += 4;
+  }
+  return 1;
+}
+
+
+METHODDEF(JDIMENSION)
 get_word_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 /* This version is for reading raw-word-format PPM files with any maxval */
 {
@@ -547,6 +611,43 @@ get_word_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (aindex >= 0)
       ptr[aindex] = _MAXJSAMPLE;
     ptr += ps;
+  }
+  return 1;
+}
+
+
+METHODDEF(JDIMENSION)
+get_word_rgb_cmyk_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
+/* This version is for reading raw-word-format PPM files with any maxval */
+{
+  ppm_source_ptr source = (ppm_source_ptr)sinfo;
+  register _JSAMPROW ptr;
+  register U_CHAR *bufferptr;
+  register _JSAMPLE *rescale = source->rescale;
+  JDIMENSION col;
+  unsigned int maxval = source->maxval;
+
+  if (!ReadOK(source->pub.input_file, source->iobuffer, source->buffer_width))
+    ERREXIT(cinfo, JERR_INPUT_EOF);
+  ptr = source->pub._buffer[0];
+  bufferptr = source->iobuffer;
+  for (col = cinfo->image_width; col > 0; col--) {
+    register unsigned int r, g, b;
+    r  = UCH(*bufferptr++) << 8;
+    r |= UCH(*bufferptr++);
+    if (r > maxval)
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
+    g  = UCH(*bufferptr++) << 8;
+    g |= UCH(*bufferptr++);
+    if (g > maxval)
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
+    b  = UCH(*bufferptr++) << 8;
+    b |= UCH(*bufferptr++);
+    if (b > maxval)
+      ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
+    rgb_to_cmyk(rescale[r], rescale[g], rescale[b], ptr, ptr + 1, ptr + 2,
+                ptr + 3);
+    ptr += 4;
   }
   return 1;
 }
@@ -641,6 +742,10 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (maxval > 255) {
       if (cinfo->in_color_space == JCS_GRAYSCALE)
         source->pub.get_pixel_rows = get_word_gray_row;
+      else if (IsExtRGB(cinfo->in_color_space))
+        source->pub.get_pixel_rows = get_word_gray_rgb_row;
+      else if (cinfo->in_color_space == JCS_CMYK)
+        source->pub.get_pixel_rows = get_word_gray_cmyk_row;
       else
         ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     } else if (maxval == _MAXJSAMPLE && sizeof(_JSAMPLE) == sizeof(U_CHAR) &&
@@ -667,6 +772,8 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (maxval > 255) {
       if (IsExtRGB(cinfo->in_color_space))
         source->pub.get_pixel_rows = get_word_rgb_row;
+      else if (cinfo->in_color_space == JCS_CMYK)
+        source->pub.get_pixel_rows = get_word_rgb_cmyk_row;
       else
         ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
     } else if (maxval == _MAXJSAMPLE && sizeof(_JSAMPLE) == sizeof(U_CHAR) &&

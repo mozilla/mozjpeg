@@ -342,7 +342,8 @@ set(TURBOJPEG_SO_MAJOR_VERSION 0)
 #    function so that it accepts "abbreviated table specification" (AKA
 #    "tables-only") datastreams as well as JPEG images, but that did not affect
 #    forward API/ABI compatibility.
-set(TURBOJPEG_SO_AGE 2)
+# 3: TurboJPEG 3 API
+set(TURBOJPEG_SO_AGE 3)
 set(TURBOJPEG_SO_VERSION 0.${TURBOJPEG_SO_AGE}.0)
 
 
@@ -608,6 +609,12 @@ if(ENABLE_STATIC)
 endif()
 
 if(WITH_TURBOJPEG)
+  add_library(turbojpeg12 OBJECT rdppm.c wrppm.c)
+  set_property(TARGET turbojpeg12 PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=12 -DPPM_SUPPORTED")
+  add_library(turbojpeg16 OBJECT rdppm.c wrppm.c)
+  set_property(TARGET turbojpeg16 PROPERTY COMPILE_FLAGS
+    "-DBITS_IN_JSAMPLE=16 -DPPM_SUPPORTED")
   if(ENABLE_SHARED)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS} ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
@@ -624,7 +631,8 @@ if(WITH_TURBOJPEG)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES}
         ${CMAKE_BINARY_DIR}/win/turbojpeg.rc)
     endif()
-    add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES})
+    add_library(turbojpeg SHARED ${TURBOJPEG_SOURCES}
+      $<TARGET_OBJECTS:turbojpeg12> $<TARGET_OBJECTS:turbojpeg16>)
     set_property(TARGET turbojpeg PROPERTY COMPILE_FLAGS
       "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(WIN32)
@@ -664,7 +672,8 @@ if(WITH_TURBOJPEG)
     add_library(turbojpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
       ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c
       rdppm.c wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12>
-      $<TARGET_OBJECTS:jpeg16>)
+      $<TARGET_OBJECTS:jpeg16> $<TARGET_OBJECTS:turbojpeg12>
+      $<TARGET_OBJECTS:turbojpeg16>)
     set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS
       "-DBMP_SUPPORTED -DPPM_SUPPORTED")
     if(NOT MSVC)
@@ -786,6 +795,18 @@ if(WITH_JAVA)
     ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
       -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
       TJUnitTest -bi -lossless)
+  add_test(TJUnitTest12
+    ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -precision 12)
+  add_test(TJUnitTest12-lossless
+    ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -precision 12 -lossless)
+  add_test(TJUnitTest16-lossless
+    ${Java_JAVA_EXECUTABLE} ${JAVAARGS} -cp java/turbojpeg.jar
+      -Djava.library.path=${CMAKE_CURRENT_BINARY_DIR}/${OBJDIR}
+      TJUnitTest -precision 16)
 endif()
 
 set(TEST_LIBTYPES "")
@@ -917,83 +938,137 @@ foreach(libtype ${TEST_LIBTYPES})
       ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -lossless -alloc)
     add_test(tjunittest-${libtype}-bmp
       ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -bmp)
+    add_test(tjunittest12-${libtype}
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 12)
+    add_test(tjunittest12-${libtype}-alloc
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 12
+        -alloc)
+    add_test(tjunittest12-${libtype}-lossless
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 12
+        -lossless)
+    add_test(tjunittest12-${libtype}-lossless-alloc
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 12
+        -lossless -alloc)
+    add_test(tjunittest12-${libtype}-bmp
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 12 -bmp)
+    add_test(tjunittest16-${libtype}-lossless
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 16)
+    add_test(tjunittest16-${libtype}-lossless-alloc
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 16
+        -alloc)
+    add_test(tjunittest16-${libtype}-bmp
+      ${CMAKE_CROSSCOMPILING_EMULATOR} tjunittest${suffix} -precision 16 -bmp)
 
-    set(MD5_PPM_GRAY_TILE 89d3ca21213d9d864b50b4e4e7de4ca6)
-    set(MD5_PPM_420_8x8_TILE 847fceab15c5b7b911cb986cf0f71de3)
-    set(MD5_PPM_420_16x16_TILE ca45552a93687e078f7137cc4126a7b0)
-    set(MD5_PPM_420_32x32_TILE d8676f1d6b68df358353bba9844f4a00)
-    set(MD5_PPM_420_64x64_TILE 4e4c1a3d7ea4bace4f868bcbe83b7050)
-    set(MD5_PPM_420_128x128_TILE f24c3429c52265832beab9df72a0ceae)
-    set(MD5_PPM_420M_8x8_TILE bc25320e1f4c31ce2e610e43e9fd173c)
-    set(MD5_PPM_420M_TILE 75ffdf14602258c5c189522af57fa605)
-    set(MD5_PPM_422_8x8_TILE d83dacd9fc73b0a6f10c09acad64eb1e)
-    set(MD5_PPM_422_16x16_TILE 35077fb610d72dd743b1eb0cbcfe10fb)
-    set(MD5_PPM_422_32x32_TILE e6902ed8a449ecc0f0d6f2bf945f65f7)
-    set(MD5_PPM_422_64x64_TILE 2b4502a8f316cedbde1da7bce3d2231e)
-    set(MD5_PPM_422_128x128_TILE f0b5617d578f5e13c8eee215d64d4877)
-    set(MD5_PPM_422M_8x8_TILE 828941d7f41cd6283abd6beffb7fd51d)
-    set(MD5_PPM_422M_TILE e877ae1324c4a280b95376f7f018172f)
-    set(MD5_PPM_444_TILE 7964e41e67cfb8d0a587c0aa4798f9c3)
+    foreach(sample_bits 8 12)
 
-    # Test compressing from/decompressing to an arbitrary subregion of a larger
-    # image buffer
-    add_test(tjbench-${libtype}-tile-cp
-      ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
-        testout_tile.ppm)
-    add_test(tjbench-${libtype}-tile
-      ${CMAKE_CROSSCOMPILING_EMULATOR} tjbench${suffix} testout_tile.ppm 95
-        -rgb -quiet -tile -benchtime 0.01 -warmup 0)
-    set_tests_properties(tjbench-${libtype}-tile
-      PROPERTIES DEPENDS tjbench-${libtype}-tile-cp)
+      if(sample_bits EQUAL 12)
+        set(tjbench tjbench12)
+        set(testout testout12)
 
-    foreach(tile 8 16 32 64 128)
-      add_test(tjbench-${libtype}-tile-gray-${tile}x${tile}-cmp
-        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_GRAY_TILE}
-          testout_tile_GRAY_Q95_${tile}x${tile}.ppm)
-      foreach(subsamp 420 422)
-        add_test(tjbench-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
-          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
-            ${MD5_PPM_${subsamp}_${tile}x${tile}_TILE}
-            testout_tile_${subsamp}_Q95_${tile}x${tile}.ppm)
+        set(MD5_PPM_GRAY_TILE 2f799249148b1a9d0e61fa4408f6c397)
+        set(MD5_PPM_420_8x8_TILE b25684e1af37be504ee3fd137757353f)
+        set(MD5_PPM_420_16x16_TILE 2c1af444a63d19167eb3f4c1fa7f1b67)
+        set(MD5_PPM_420_32x32_TILE cce091fe18688f39bc0b5ba29238e1e2)
+        set(MD5_PPM_420_64x64_TILE f770ec8f710a014606dee662bc88606d)
+        set(MD5_PPM_420_128x128_TILE a841bc82e9eda34cbdefe53f808b339c)
+        set(MD5_PPM_420M_8x8_TILE 9de845a8d805affb9ae3a7b2712eaa46)
+        set(MD5_PPM_420M_TILE 455d273be0e229b9c8aabb16481bce5b)
+        set(MD5_PPM_422_8x8_TILE 5e9f784a98a7eae2789ea1458ed43748)
+        set(MD5_PPM_422_16x16_TILE c8df65a792d371a30c8fb7352f320314)
+        set(MD5_PPM_422_32x32_TILE b523b630237e3305a5c4d353ff4ee19b)
+        set(MD5_PPM_422_64x64_TILE eb30bdd20337079745b039e24e613bfd)
+        set(MD5_PPM_422_128x128_TILE 7997458635973b004da46863e2da55ea)
+        set(MD5_PPM_422M_8x8_TILE f8443fffd32cce7681dd36010ce43c07)
+        set(MD5_PPM_422M_TILE a0d45368343a63ca2c8ee87cc4ef9ded)
+        set(MD5_PPM_444_TILE 2f571a032e4dbc8ef40f75219d336b0b)
+      else()
+        set(tjbench tjbench)
+        set(testout testout)
+
+        set(MD5_PPM_GRAY_TILE 2c3b567086e6ca0c5e6d34ad8d6f6fe8)
+        set(MD5_PPM_420_8x8_TILE efca1bdf0226df01777137778cf986ec)
+        set(MD5_PPM_420_16x16_TILE 8c92c7453870d9e11c6d1dec3a8c9101)
+        set(MD5_PPM_420_32x32_TILE 3f7651872a95e469d1c7115f1b11ecef)
+        set(MD5_PPM_420_64x64_TILE f64c71af03fdea12363b62f1a3096aab)
+        set(MD5_PPM_420_128x128_TILE 5a5ef57517558c671bf5e75793588d69)
+        set(MD5_PPM_420M_8x8_TILE 66bd869b315a32a00fef1a025661ce72)
+        set(MD5_PPM_420M_TILE bf9ec2ab4875abb2efcce8f876fe2c2a)
+        set(MD5_PPM_422_8x8_TILE c300553ce1b3b90fd414ec96b62fe988)
+        set(MD5_PPM_422_16x16_TILE 6559ddb1191f5b2d3eb41081b254c4e0)
+        set(MD5_PPM_422_32x32_TILE 58691797f4584c4c5ed5965a6bb9aec0)
+        set(MD5_PPM_422_64x64_TILE 7f9e34942ae46af7b784f459ec133f5e)
+        set(MD5_PPM_422_128x128_TILE 6afcb77580d85dd3eacb04b3c2bc7710)
+        set(MD5_PPM_422M_8x8_TILE 55df1f96bcfb631aedeb940cf3f011f5)
+        set(MD5_PPM_422M_TILE 6502031018c2d2f69bc6353347f8df4d)
+        set(MD5_PPM_444_TILE 87bd58005eec73f0f313c8e38d0d793c)
+      endif()
+
+      # Test compressing from/decompressing to an arbitrary subregion of a larger
+      # image buffer
+      add_test(${tjbench}-${libtype}-tile-cp
+        ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
+          ${testout}_tile.ppm)
+      add_test(${tjbench}-${libtype}-tile
+        ${CMAKE_CROSSCOMPILING_EMULATOR} tjbench${suffix} ${testout}_tile.ppm
+          95 -precision ${sample_bits} -rgb -quiet -tile -benchtime 0.01
+          -warmup 0)
+      set_tests_properties(${tjbench}-${libtype}-tile
+        PROPERTIES DEPENDS ${tjbench}-${libtype}-tile-cp)
+
+      foreach(tile 8 16 32 64 128)
+        add_test(${tjbench}-${libtype}-tile-gray-${tile}x${tile}-cmp
+          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_GRAY_TILE}
+            ${testout}_tile_GRAY_Q95_${tile}x${tile}.ppm)
+        foreach(subsamp 420 422)
+          add_test(${tjbench}-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
+            ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
+              ${MD5_PPM_${subsamp}_${tile}x${tile}_TILE}
+              ${testout}_tile_${subsamp}_Q95_${tile}x${tile}.ppm)
+        endforeach()
+        add_test(${tjbench}-${libtype}-tile-444-${tile}x${tile}-cmp
+          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_444_TILE}
+            ${testout}_tile_444_Q95_${tile}x${tile}.ppm)
+        foreach(subsamp gray 420 422 444)
+          set_tests_properties(
+            ${tjbench}-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
+            PROPERTIES DEPENDS ${tjbench}-${libtype}-tile)
+        endforeach()
       endforeach()
-      add_test(tjbench-${libtype}-tile-444-${tile}x${tile}-cmp
-        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_444_TILE}
-          testout_tile_444_Q95_${tile}x${tile}.ppm)
-      foreach(subsamp gray 420 422 444)
-        set_tests_properties(tjbench-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
-          PROPERTIES DEPENDS tjbench-${libtype}-tile)
+
+      add_test(${tjbench}-${libtype}-tilem-cp
+        ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
+          ${testout}_tilem.ppm)
+      add_test(${tjbench}-${libtype}-tilem
+        ${CMAKE_CROSSCOMPILING_EMULATOR} tjbench${suffix} ${testout}_tilem.ppm
+          95 -precision ${sample_bits} -rgb -fastupsample -quiet -tile
+          -benchtime 0.01 -warmup 0)
+      set_tests_properties(${tjbench}-${libtype}-tilem
+        PROPERTIES DEPENDS ${tjbench}-${libtype}-tilem-cp)
+
+      add_test(${tjbench}-${libtype}-tile-420m-8x8-cmp
+        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_420M_8x8_TILE}
+          ${testout}_tilem_420_Q95_8x8.ppm)
+      add_test(${tjbench}-${libtype}-tile-422m-8x8-cmp
+        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_422M_8x8_TILE}
+          ${testout}_tilem_422_Q95_8x8.ppm)
+      foreach(tile 16 32 64 128)
+        foreach(subsamp 420 422)
+          add_test(${tjbench}-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
+            ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
+              ${MD5_PPM_${subsamp}M_TILE}
+              ${testout}_tilem_${subsamp}_Q95_${tile}x${tile}.ppm)
+        endforeach()
       endforeach()
+      foreach(tile 8 16 32 64 128)
+        foreach(subsamp 420 422)
+          set_tests_properties(
+            ${tjbench}-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
+            PROPERTIES DEPENDS ${tjbench}-${libtype}-tilem)
+        endforeach()
+      endforeach()
+
     endforeach()
 
-    add_test(tjbench-${libtype}-tilem-cp
-      ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
-        testout_tilem.ppm)
-    add_test(tjbench-${libtype}-tilem
-      ${CMAKE_CROSSCOMPILING_EMULATOR} tjbench${suffix} testout_tilem.ppm 95
-        -rgb -fastupsample -quiet -tile -benchtime 0.01 -warmup 0)
-    set_tests_properties(tjbench-${libtype}-tilem
-      PROPERTIES DEPENDS tjbench-${libtype}-tilem-cp)
-
-    add_test(tjbench-${libtype}-tile-420m-8x8-cmp
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_420M_8x8_TILE}
-        testout_tilem_420_Q95_8x8.ppm)
-    add_test(tjbench-${libtype}-tile-422m-8x8-cmp
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_422M_8x8_TILE}
-        testout_tilem_422_Q95_8x8.ppm)
-    foreach(tile 16 32 64 128)
-      foreach(subsamp 420 422)
-        add_test(tjbench-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
-          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
-            ${MD5_PPM_${subsamp}M_TILE}
-            testout_tilem_${subsamp}_Q95_${tile}x${tile}.ppm)
-      endforeach()
-    endforeach()
-    foreach(tile 8 16 32 64 128)
-      foreach(subsamp 420 422)
-        set_tests_properties(tjbench-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
-          PROPERTIES DEPENDS tjbench-${libtype}-tilem)
-      endforeach()
-    endforeach()
   endif()
 
   # These tests are carefully crafted to provide full coverage of as many of
@@ -1540,81 +1615,21 @@ if(WITH_TURBOJPEG)
   if(WIN32)
     set(BASH bash)
   endif()
-  if(WITH_JAVA)
-    configure_file(tjbenchtest.java.in tjbenchtest.java @ONLY)
-    configure_file(tjexampletest.java.in tjexampletest.java @ONLY)
-    add_custom_target(tjtest
-      COMMAND echo tjbenchtest
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
-      COMMAND echo tjbenchtest -alloc
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -alloc
-      COMMAND echo tjbenchtest -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv
-      COMMAND echo tjbenchtest -yuv -alloc
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
-      COMMAND echo tjbenchtest -progressive
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive
-      COMMAND echo tjbenchtest -progressive -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive -yuv
-      COMMAND echo tjbenchtest -arithmetic
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic
-      COMMAND echo tjbenchtest -arithmetic -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic -yuv
-      COMMAND echo tjbenchtest -lossless
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -lossless
-      COMMAND echo tjbenchtest -lossless -alloc
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -lossless -alloc
-      COMMAND echo tjexampletest
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
-      COMMAND echo tjbenchtest.java
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
-      COMMAND echo tjbenchtest.java -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -yuv
-      COMMAND echo tjbenchtest.java -progressive
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -progressive
-      COMMAND echo tjbenchtest.java -progressive -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
-        -progressive -yuv
-      COMMAND echo tjbenchtest.java -arithmetic
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -arithmetic
-      COMMAND echo tjbenchtest.java -arithmetic -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -arithmetic
-        -yuv
-      COMMAND echo tjbenchtest.java -lossless
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java -lossless
-      COMMAND echo tjexampletest.java
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest.java
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
-        ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest.java
-        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
-        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest.java)
-  else()
-    add_custom_target(tjtest
-      COMMAND echo tjbenchtest
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
-      COMMAND echo tjbenchtest -alloc
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -alloc
-      COMMAND echo tjbenchtest -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv
-      COMMAND echo tjbenchtest -yuv -alloc
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -yuv -alloc
-      COMMAND echo tjbenchtest -progressive
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive
-      COMMAND echo tjbenchtest -progressive -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -progressive -yuv
-      COMMAND echo tjbenchtest -arithmetic
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic
-      COMMAND echo tjbenchtest -arithmetic -yuv
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -arithmetic -yuv
-      COMMAND echo tjbenchtest -lossless
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -lossless
-      COMMAND echo tjbenchtest -lossless -alloc
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest -lossless -alloc
-      COMMAND echo tjexampletest
-      COMMAND ${BASH} ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
-        ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
-  endif()
+  add_custom_target(tjtest COMMAND ${CMAKE_COMMAND} -DWITH_JAVA=${WITH_JAVA}
+    -DPRECISION=8 -P ${CMAKE_SOURCE_DIR}/cmakescripts/tjbenchtest.cmake
+    DEPENDS ${CMAKE_SOURCE_DIR}/cmakescripts/tjbenchtest.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
+      ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
+  add_custom_target(tjtest12 COMMAND ${CMAKE_COMMAND} -DWITH_JAVA=${WITH_JAVA}
+    -DPRECISION=12 -P ${CMAKE_SOURCE_DIR}/cmakescripts/tjbenchtest.cmake
+    DEPENDS ${CMAKE_SOURCE_DIR}/cmakescripts/tjbenchtest.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
+      ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
+  add_custom_target(tjtest16 COMMAND ${CMAKE_COMMAND} -DWITH_JAVA=${WITH_JAVA}
+    -DPRECISION=16 -P ${CMAKE_SOURCE_DIR}/cmakescripts/tjbenchtest.cmake
+    DEPENDS ${CMAKE_SOURCE_DIR}/cmakescripts/tjbenchtest.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/tjbenchtest
+      ${CMAKE_CURRENT_BINARY_DIR}/tjexampletest)
 endif()
 
 

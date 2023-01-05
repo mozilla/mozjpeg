@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, 2016, 2019, D. R. Commander.
+ * Copyright (C) 2011, 2016, 2019, 2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -24,7 +24,7 @@
 #include "jerror.h"
 
 void jpeg_mem_src_tj(j_decompress_ptr cinfo, const unsigned char *inbuffer,
-                     unsigned long insize);
+                     size_t insize);
 
 
 /*
@@ -161,7 +161,7 @@ term_source(j_decompress_ptr cinfo)
 
 GLOBAL(void)
 jpeg_mem_src_tj(j_decompress_ptr cinfo, const unsigned char *inbuffer,
-                unsigned long insize)
+                size_t insize)
 {
   struct jpeg_source_mgr *src;
 
@@ -189,6 +189,6 @@ jpeg_mem_src_tj(j_decompress_ptr cinfo, const unsigned char *inbuffer,
   src->skip_input_data = skip_input_data;
   src->resync_to_restart = jpeg_resync_to_restart; /* use default method */
   src->term_source = term_source;
-  src->bytes_in_buffer = (size_t)insize;
+  src->bytes_in_buffer = insize;
   src->next_input_byte = (const JOCTET *)inbuffer;
 }

@@ -121,8 +121,8 @@ public class YUVImage {
    * @param planes an array of buffers representing the Y, U (Cb), and V (Cr)
    * image planes (or just the Y plane, if the image is grayscale.)   These
    * planes can be contiguous or non-contiguous in memory.  Plane
-   * <code>i</code> should be at least <code>offsets[i] + </code>
-   * {@link TJ#planeSizeYUV TJ.planeSizeYUV}<code>(i, width, strides[i], height, subsamp)</code>
+   * <code>i</code> should be at least <code>offsets[i] +
+   * {@link TJ#planeSizeYUV TJ.planeSizeYUV}(i, width, strides[i], height, subsamp)</code>
    * bytes in size.
    *
    * @param offsets If this <code>YUVImage</code> instance represents a
@@ -158,10 +158,10 @@ public class YUVImage {
    * buffer.
    *
    * @param yuvImage buffer that contains or will receive a unified planar YUV
-   * image.  Use {@link TJ#bufSizeYUV} to determine the minimum size for this
-   * buffer.  The Y, U (Cb), and V (Cr) image planes are stored sequentially in
-   * the buffer.  (See {@link YUVImage above} for a description of the image
-   * format.)
+   * image.  Use {@link TJ#bufSizeYUV TJ.bufSizeYUV()} to determine the minimum
+   * size for this buffer.  The Y, U (Cb), and V (Cr) image planes are stored
+   * sequentially in the buffer.  (See {@link YUVImage above} for a description
+   * of the image format.)
    *
    * @param width width (in pixels) of the YUV image
    *
@@ -186,8 +186,8 @@ public class YUVImage {
    * @param planes an array of buffers representing the Y, U (Cb), and V (Cr)
    * image planes (or just the Y plane, if the image is grayscale.)  These
    * planes can be contiguous or non-contiguous in memory.  Plane
-   * <code>i</code> should be at least <code>offsets[i] + </code>
-   * {@link TJ#planeSizeYUV TJ.planeSizeYUV}<code>(i, width, strides[i], height, subsamp)</code>
+   * <code>i</code> should be at least <code>offsets[i] +
+   * {@link TJ#planeSizeYUV TJ.planeSizeYUV}(i, width, strides[i], height, subsamp)</code>
    * bytes in size.
    *
    * @param offsets If this <code>YUVImage</code> instance represents a
@@ -271,10 +271,10 @@ public class YUVImage {
    * Assign a unified buffer to this <code>YUVImage</code> instance.
    *
    * @param yuvImage buffer that contains or will receive a unified planar YUV
-   * image.  Use {@link TJ#bufSizeYUV} to determine the minimum size for this
-   * buffer.  The Y, U (Cb), and V (Cr) image planes are stored sequentially in
-   * the buffer.  (See {@link YUVImage above} for a description of the image
-   * format.)
+   * image.  Use {@link TJ#bufSizeYUV TJ.bufSizeYUV()} to determine the minimum
+   * size for this buffer.  The Y, U (Cb), and V (Cr) image planes are stored
+   * sequentially in the buffer.  (See {@link YUVImage above} for a description
+   * of the image format.)
    *
    * @param width width (in pixels) of the YUV image
    *
@@ -441,12 +441,12 @@ public class YUVImage {
     return (v + p - 1) & (~(p - 1));
   }
 
-  protected long handle = 0;
-  protected byte[][] yuvPlanes = null;
-  protected int[] yuvOffsets = null;
-  protected int[] yuvStrides = null;
-  protected int yuvAlign = 1;
-  protected int yuvWidth = 0;
-  protected int yuvHeight = 0;
-  protected int yuvSubsamp = -1;
+  private long handle = 0;
+  private byte[][] yuvPlanes = null;
+  private int[] yuvOffsets = null;
+  private int[] yuvStrides = null;
+  private int yuvAlign = 1;
+  private int yuvWidth = 0;
+  private int yuvHeight = 0;
+  private int yuvSubsamp = -1;
 }

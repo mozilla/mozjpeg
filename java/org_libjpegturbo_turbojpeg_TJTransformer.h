@@ -18,10 +18,10 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_init
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJTransformer
  * Method:    transform
- * Signature: ([BI[[B[Lorg/libjpegturbo/turbojpeg/TJTransform;I)[I
+ * Signature: ([BI[[B[Lorg/libjpegturbo/turbojpeg/TJTransform;)[I
  */
 JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transform
-  (JNIEnv *, jobject, jbyteArray, jint, jobjectArray, jobjectArray, jint);
+  (JNIEnv *, jobject, jbyteArray, jint, jobjectArray, jobjectArray);
 
 #ifdef __cplusplus
 }

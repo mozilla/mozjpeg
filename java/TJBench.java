@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2009-2014, 2016-2019, 2021 D. R. Commander.
- *                                         All Rights Reserved.
+ * Copyright (C)2009-2014, 2016-2019, 2021, 2023 D. R. Commander.
+ *                                               All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,7 +37,7 @@ final class TJBench {
 
   private TJBench() {}
 
-  private static int flags = 0, quiet = 0, pf = TJ.PF_BGR, yuvPad = 1;
+  private static int flags = 0, quiet = 0, pf = TJ.PF_BGR, yuvAlign = 1;
   private static boolean compOnly, decompOnly, doTile, doYUV, write = true;
 
   static final String[] PIXFORMATSTR = {
@@ -192,7 +192,7 @@ final class TJBench {
       int width = doTile ? tilew : scaledw;
       int height = doTile ? tileh : scaledh;
 
-      yuvImage = new YUVImage(width, yuvPad, height, subsamp);
+      yuvImage = new YUVImage(width, yuvAlign, height, subsamp);
       Arrays.fill(yuvImage.getBuf(), (byte)127);
     }
 
@@ -212,7 +212,8 @@ final class TJBench {
             tjd.setSourceImage(jpegBuf[tile], jpegSize[tile]);
           } catch (TJException e) { handleTJException(e); }
           if (doYUV) {
-            yuvImage.setBuf(yuvImage.getBuf(), width, yuvPad, height, subsamp);
+            yuvImage.setBuf(yuvImage.getBuf(), width, yuvAlign, height,
+                            subsamp);
             try {
               tjd.decompressToYUV(yuvImage, flags);
             } catch (TJException e) { handleTJException(e); }
@@ -372,7 +373,7 @@ final class TJBench {
       tjc.setSubsamp(subsamp);
 
       if (doYUV) {
-        yuvImage = new YUVImage(tilew, yuvPad, tileh, subsamp);
+        yuvImage = new YUVImage(tilew, yuvAlign, tileh, subsamp);
         Arrays.fill(yuvImage.getBuf(), (byte)127);
       }
 
@@ -393,7 +394,7 @@ final class TJBench {
             if (doYUV) {
               double startEncode = getTime();
 
-              yuvImage.setBuf(yuvImage.getBuf(), width, yuvPad, height,
+              yuvImage.setBuf(yuvImage.getBuf(), width, yuvAlign, height,
                               subsamp);
               tjc.encodeYUV(yuvImage, flags);
               if (iter >= 0)
@@ -720,8 +721,8 @@ final class TJBench {
     System.out.println("-quiet = Output results in tabular rather than verbose format");
     System.out.println("-yuv = Test YUV encoding/decoding functions");
     System.out.println("-yuvpad <p> = If testing YUV encoding/decoding, this specifies the number of");
-    System.out.println("     bytes to which each row of each plane in the intermediate YUV image is");
-    System.out.println("     padded (default = 1)");
+    System.out.println("     bytes by which each row of each plane in the intermediate YUV image is");
+    System.out.println("     evenly divisible (default = 1)");
     System.out.println("-scale M/N = Scale down the width/height of the decompressed JPEG image by a");
     System.out.print("     factor of M/N (M/N = ");
     for (i = 0; i < nsf; i++) {
@@ -902,7 +903,7 @@ final class TJBench {
             } else
               usage();
           } else if (argv[i].equalsIgnoreCase("-yuv")) {
-            System.out.println("Testing YUV planar encoding/decoding\n");
+            System.out.println("Testing planar YUV encoding/decoding\n");
             doYUV = true;
           } else if (argv[i].equalsIgnoreCase("-yuvpad") &&
                      i < argv.length - 1) {
@@ -912,7 +913,7 @@ final class TJBench {
               temp = Integer.parseInt(argv[++i]);
             } catch (NumberFormatException e) {}
             if (temp >= 1)
-              yuvPad = temp;
+              yuvAlign = temp;
           } else if (argv[i].equalsIgnoreCase("-subsamp") &&
                      i < argv.length - 1) {
             i++;

@@ -1,5 +1,6 @@
 /*
- * Copyright (C)2011-2015, 2018, 2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2015, 2018, 2022-2023 D. R. Commander.
+ *                                         All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,10 +51,12 @@ public class TJDecompressor implements Closeable {
 
   /**
    * Create a TurboJPEG decompressor instance and associate the JPEG source
-   * image stored in <code>jpegImage</code> with the newly created instance.
+   * image or "abbreviated table specification" (AKA "tables-only") datastream
+   * stored in <code>jpegImage</code> with the newly created instance.
    *
-   * @param jpegImage JPEG image buffer (size of the JPEG image is assumed to
-   * be the length of the array.)  This buffer is not modified.
+   * @param jpegImage buffer containing a JPEG source image or tables-only
+   * datastream.  (The size of the JPEG image or datastream is assumed to be
+   * the length of the array.)  This buffer is not modified.
    */
   public TJDecompressor(byte[] jpegImage) throws TJException {
     init();
@@ -62,12 +65,15 @@ public class TJDecompressor implements Closeable {
 
   /**
    * Create a TurboJPEG decompressor instance and associate the JPEG source
-   * image of length <code>imageSize</code> bytes stored in
-   * <code>jpegImage</code> with the newly created instance.
+   * image or "abbreviated table specification" (AKA "tables-only") datastream
+   * of length <code>imageSize</code> bytes stored in <code>jpegImage</code>
+   * with the newly created instance.
    *
-   * @param jpegImage JPEG image buffer.  This buffer is not modified.
+   * @param jpegImage buffer containing a JPEG source image or tables-only
+   * datastream.  This buffer is not modified.
    *
-   * @param imageSize size of the JPEG image (in bytes)
+   * @param imageSize size of the JPEG source image or tables-only datastream
+   * (in bytes)
    */
   public TJDecompressor(byte[] jpegImage, int imageSize) throws TJException {
     init();
@@ -75,11 +81,11 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Create a TurboJPEG decompressor instance and associate the YUV planar
+   * Create a TurboJPEG decompressor instance and associate the planar YUV
    * source image stored in <code>yuvImage</code> with the newly created
    * instance.
    *
-   * @param yuvImage {@link YUVImage} instance containing a YUV planar
+   * @param yuvImage {@link YUVImage} instance containing a planar YUV source
    * image to be decoded.  This image is not modified.
    */
   @SuppressWarnings("checkstyle:HiddenField")
@@ -100,11 +106,11 @@ public class TJDecompressor implements Closeable {
    * when decompressing video streams in which all frames share the same
    * quantization and Huffman tables.
    *
-   * @param jpegImage buffer containing a JPEG image or an "abbreviated table
-   * specification" (AKA "tables-only") datastream.  This buffer is not
-   * modified.
+   * @param jpegImage buffer containing a JPEG source image or tables-only
+   * datastream.  This buffer is not modified.
    *
-   * @param imageSize size of the JPEG image (in bytes)
+   * @param imageSize size of the JPEG source image or tables-only datastream
+   * (in bytes)
    */
   public void setSourceImage(byte[] jpegImage, int imageSize)
                              throws TJException {
@@ -127,12 +133,12 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Associate the specified YUV planar source image with this decompressor
-   * instance.  Subsequent decompress operations will decode this image into an
-   * RGB or grayscale destination image.
+   * Associate the specified planar YUV source image with this decompressor
+   * instance.  Subsequent decompress operations will decode this image into a
+   * packed-pixel RGB or grayscale destination image.
    *
-   * @param srcImage {@link YUVImage} instance containing a YUV planar image to
-   * be decoded.  This image is not modified.
+   * @param srcImage {@link YUVImage} instance containing a planar YUV source
+   * image to be decoded.  This image is not modified.
    */
   public void setSourceImage(YUVImage srcImage) {
     if (srcImage == null)
@@ -210,9 +216,9 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Returns the JPEG image buffer associated with this decompressor instance.
+   * Returns the JPEG buffer associated with this decompressor instance.
    *
-   * @return the JPEG image buffer associated with this decompressor instance.
+   * @return the JPEG buffer associated with this decompressor instance.
    */
   public byte[] getJPEGBuf() {
     if (jpegBuf == null)
@@ -239,14 +245,14 @@ public class TJDecompressor implements Closeable {
    * height.
    *
    * @param desiredWidth desired width (in pixels) of the decompressed image.
-   * Setting this to 0 is the same as setting it to the width of the JPEG image
-   * (in other words, the width will not be considered when determining the
-   * scaled image size.)
+   * Setting this to 0 is the same as setting it to the width of the JPEG
+   * image.  (In other words, the width will not be considered when determining
+   * the scaled image size.)
    *
    * @param desiredHeight desired height (in pixels) of the decompressed image.
    * Setting this to 0 is the same as setting it to the height of the JPEG
-   * image (in other words, the height will not be considered when determining
-   * the scaled image size.)
+   * image.  (In other words, the height will not be considered when
+   * determining the scaled image size.)
    *
    * @return the width of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
@@ -280,14 +286,14 @@ public class TJDecompressor implements Closeable {
    * height.
    *
    * @param desiredWidth desired width (in pixels) of the decompressed image.
-   * Setting this to 0 is the same as setting it to the width of the JPEG image
-   * (in other words, the width will not be considered when determining the
-   * scaled image size.)
+   * Setting this to 0 is the same as setting it to the width of the JPEG
+   * image.  (In other words, the width will not be considered when determining
+   * the scaled image size.)
    *
    * @param desiredHeight desired height (in pixels) of the decompressed image.
    * Setting this to 0 is the same as setting it to the height of the JPEG
-   * image (in other words, the height will not be considered when determining
-   * the scaled image size.)
+   * image.  (In other words, the height will not be considered when
+   * determining the scaled image size.)
    *
    * @return the height of the largest scaled-down image that the TurboJPEG
    * decompressor can generate without exceeding the desired image width and
@@ -316,27 +322,27 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Decompress the JPEG source image or decode the YUV source image associated
-   * with this decompressor instance and output a grayscale, RGB, or CMYK image
-   * to the given destination buffer.
+   * Decompress the JPEG source image or decode the planar YUV source image
+   * associated with this decompressor instance and output a packed-pixel
+   * grayscale, RGB, or CMYK image to the given destination buffer.
    * <p>
-   * NOTE: The output image is fully recoverable if this method throws a
+   * NOTE: The destination image is fully recoverable if this method throws a
    * non-fatal {@link TJException} (unless
    * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
-   * @param dstBuf buffer that will receive the decompressed/decoded image.
-   * If the source image is a JPEG image, then this buffer should normally be
-   * <code>pitch * scaledHeight</code> bytes in size, where
-   * <code>scaledHeight</code> can be determined by calling <code>
-   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegHeight)
-   * </code> with one of the scaling factors returned from {@link
-   * TJ#getScalingFactors} or by calling {@link #getScaledHeight}.  If the
-   * source image is a YUV image, then this buffer should normally be
-   * <code>pitch * height</code> bytes in size, where <code>height</code> is
-   * the height of the YUV image.  However, the buffer may also be larger than
-   * the dimensions of the source image, in which case the <code>x</code>,
-   * <code>y</code>, and <code>pitch</code> parameters can be used to specify
-   * the region into which the source image should be decompressed/decoded.
+   * @param dstBuf buffer that will receive the packed-pixel
+   * decompressed/decoded image.  If the source image is a JPEG image, then
+   * this buffer should normally be <code>pitch * scaledHeight</code> bytes in
+   * size, where <code>scaledHeight</code> can be determined by calling
+   * <code>scalingFactor.</code>{@link TJScalingFactor#getScaled getScaled}<code>(jpegHeight)</code>
+   * with one of the scaling factors returned from {@link TJ#getScalingFactors}
+   * or by calling {@link #getScaledHeight}.  If the source image is a YUV
+   * image, then this buffer should normally be <code>pitch * height</code>
+   * bytes in size, where <code>height</code> is the height of the YUV image.
+   * However, the buffer may also be larger than the dimensions of the source
+   * image, in which case the <code>x</code>, <code>y</code>, and
+   * <code>pitch</code> parameters can be used to specify the region into which
+   * the source image should be decompressed/decoded.
    *
    * @param x x offset (in pixels) of the region in the destination image into
    * which the source image should be decompressed/decoded
@@ -350,20 +356,20 @@ public class TJDecompressor implements Closeable {
    * than the source image dimensions, then TurboJPEG will use scaling in the
    * JPEG decompressor to generate the largest possible image that will fit
    * within the desired dimensions.  Setting this to 0 is the same as setting
-   * it to the width of the JPEG image (in other words, the width will not be
+   * it to the width of the JPEG image.  (In other words, the width will not be
    * considered when determining the scaled image size.)  This parameter is
    * ignored if the source image is a YUV image.
    *
-   * @param pitch bytes per line of the destination image.  Normally, this
-   * should be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code> if
-   * the destination image is unpadded, but you can use this to, for instance,
-   * pad each line of the destination image to a 4-byte boundary or to
-   * decompress/decode the source image into a region of a larger image.  NOTE:
-   * if the source image is a JPEG image, then <code>scaledWidth</code> can be
-   * determined by calling <code>
-   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegWidth)
-   * </code> or by calling {@link #getScaledWidth}.  If the source image is a
-   * YUV image, then <code>scaledWidth</code> is the width of the YUV image.
+   * @param pitch bytes per row in the destination image.  Normally this should
+   * be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>, if the
+   * destination image will be unpadded.  However, you can use this to, for
+   * instance, pad each row of the destination image to the nearest multiple of
+   * 4 bytes or to decompress/decode the source image into a region of a larger
+   * image.  NOTE: if the source image is a JPEG image, then
+   * <code>scaledWidth</code> can be determined by calling
+   * <code>scalingFactor.</code>{@link TJScalingFactor#getScaled getScaled}<code>(jpegWidth)</code>
+   * or by calling {@link #getScaledWidth}.  If the source image is a YUV
+   * image, then <code>scaledWidth</code> is the width of the YUV image.
    * Setting this parameter to 0 is the equivalent of setting it to
    * <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>.
    *
@@ -373,8 +379,8 @@ public class TJDecompressor implements Closeable {
    * than the source image dimensions, then TurboJPEG will use scaling in the
    * JPEG decompressor to generate the largest possible image that will fit
    * within the desired dimensions.  Setting this to 0 is the same as setting
-   * it to the height of the JPEG image (in other words, the height will not be
-   * considered when determining the scaled image size.)  This parameter is
+   * it to the height of the JPEG image.  (In other words, the height will not
+   * be considered when determining the scaled image size.)  This parameter is
    * ignored if the source image is a YUV image.
    *
    * @param pixelFormat pixel format of the decompressed/decoded image (one of
@@ -421,8 +427,9 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Decompress the JPEG source image associated with this decompressor
-   * instance and return a buffer containing the decompressed image.
+   * Decompress the JPEG source image or decode the planar YUV source image
+   * associated with this decompressor instance and return a buffer containing
+   * the packed-pixel decompressed image.
    *
    * @param desiredWidth see
    * {@link #decompress(byte[], int, int, int, int, int, int, int)}
@@ -442,7 +449,7 @@ public class TJDecompressor implements Closeable {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
-   * @return a buffer containing the decompressed image.
+   * @return a buffer containing the packed-pixel decompressed image.
    */
   public byte[] decompress(int desiredWidth, int pitch, int desiredHeight,
                            int pixelFormat, int flags) throws TJException {
@@ -462,22 +469,22 @@ public class TJDecompressor implements Closeable {
 
   /**
    * Decompress the JPEG source image associated with this decompressor
-   * instance into a YUV planar image and store it in the given
-   * <code>YUVImage</code> instance.  This method performs JPEG decompression
-   * but leaves out the color conversion step, so a planar YUV image is
-   * generated instead of an RGB or grayscale image.  This method cannot be
-   * used to decompress JPEG source images with the CMYK or YCCK colorspace.
+   * instance into a planar YUV image and store it in the given
+   * {@link YUVImage} instance.  This method performs JPEG decompression but
+   * leaves out the color conversion step, so a planar YUV image is generated
+   * instead of a packed-pixel image.  This method cannot be used to decompress
+   * JPEG source images with the CMYK or YCCK colorspace.
    * <p>
-   * NOTE: The YUV planar output image is fully recoverable if this method
+   * NOTE: The planar YUV destination image is fully recoverable if this method
    * throws a non-fatal {@link TJException} (unless
    * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
-   * @param dstImage {@link YUVImage} instance that will receive the YUV planar
-   * image.  The level of subsampling specified in this <code>YUVImage</code>
-   * instance must match that of the JPEG image, and the width and height
-   * specified in the <code>YUVImage</code> instance must match one of the
-   * scaled image sizes that TurboJPEG is capable of generating from the JPEG
-   * source image.
+   * @param dstImage {@link YUVImage} instance that will receive the planar YUV
+   * decompressed image.  The level of subsampling specified in this
+   * {@link YUVImage} instance must match that of the JPEG image, and the width
+   * and height specified in the {@link YUVImage} instance must match one of
+   * the scaled image sizes that the decompressor is capable of generating from
+   * the JPEG source image.
    *
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
@@ -494,7 +501,7 @@ public class TJDecompressor implements Closeable {
                                        dstImage.getHeight());
     if (scaledWidth != dstImage.getWidth() ||
         scaledHeight != dstImage.getHeight())
-      throw new IllegalArgumentException("YUVImage dimensions do not match one of the scaled image sizes that TurboJPEG is capable of generating.");
+      throw new IllegalArgumentException("YUVImage dimensions do not match one of the scaled image sizes that the decompressor is capable of generating.");
     if (jpegSubsamp != dstImage.getSubsamp())
       throw new IllegalArgumentException("YUVImage subsampling level does not match that of the JPEG image");
 
@@ -517,40 +524,41 @@ public class TJDecompressor implements Closeable {
   /**
    * Decompress the JPEG source image associated with this decompressor
    * instance into a set of Y, U (Cb), and V (Cr) image planes and return a
-   * <code>YUVImage</code> instance containing the decompressed image planes.
-   * This method performs JPEG decompression but leaves out the color
-   * conversion step, so a planar YUV image is generated instead of an RGB or
-   * grayscale image.  This method cannot be used to decompress JPEG source
-   * images with the CMYK or YCCK colorspace.
+   * {@link YUVImage} instance containing the decompressed image planes.  This
+   * method performs JPEG decompression but leaves out the color conversion
+   * step, so a planar YUV image is generated instead of a packed-pixel image.
+   * This method cannot be used to decompress JPEG source images with the CMYK
+   * or YCCK colorspace.
    *
    * @param desiredWidth desired width (in pixels) of the YUV image.  If the
    * desired image dimensions are different than the dimensions of the JPEG
    * image being decompressed, then TurboJPEG will use scaling in the JPEG
    * decompressor to generate the largest possible image that will fit within
    * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the width of the JPEG image (in other words, the width will not be
+   * the width of the JPEG image.  (In other words, the width will not be
    * considered when determining the scaled image size.)
    *
    * @param strides an array of integers, each specifying the number of bytes
-   * per line in the corresponding plane of the output image.  Setting the
-   * stride for any plane to 0 is the same as setting it to the scaled
-   * component width of the plane.  If <tt>strides</tt> is NULL, then the
-   * strides for all planes will be set to their respective scaled component
-   * widths.  You can adjust the strides in order to add an arbitrary amount of
-   * line padding to each plane.
+   * per row in the corresponding plane of the YUV image.  Setting the stride
+   * for any plane to 0 is the same as setting it to the scaled plane width
+   * (see {@link YUVImage}.)  If <code>strides</code> is null, then the strides
+   * for all planes will be set to their respective scaled plane widths.  You
+   * can adjust the strides in order to add an arbitrary amount of row padding
+   * to each plane.
    *
    * @param desiredHeight desired height (in pixels) of the YUV image.  If the
    * desired image dimensions are different than the dimensions of the JPEG
    * image being decompressed, then TurboJPEG will use scaling in the JPEG
    * decompressor to generate the largest possible image that will fit within
    * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the height of the JPEG image (in other words, the height will not be
+   * the height of the JPEG image.  (In other words, the height will not be
    * considered when determining the scaled image size.)
    *
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
-   * @return a YUV planar image.
+   * @return a {@link YUVImage} instance containing the decompressed image
+   * planes
    */
   public YUVImage decompressToYUV(int desiredWidth, int[] strides,
                                   int desiredHeight,
@@ -574,40 +582,41 @@ public class TJDecompressor implements Closeable {
 
   /**
    * Decompress the JPEG source image associated with this decompressor
-   * instance into a unified YUV planar image buffer and return a
-   * <code>YUVImage</code> instance containing the decompressed image.  This
-   * method performs JPEG decompression but leaves out the color conversion
-   * step, so a planar YUV image is generated instead of an RGB or grayscale
-   * image.  This method cannot be used to decompress JPEG source images with
-   * the CMYK or YCCK colorspace.
+   * instance into a unified planar YUV image and return a {@link YUVImage}
+   * instance containing the decompressed image.  This method performs JPEG
+   * decompression but leaves out the color conversion step, so a planar YUV
+   * image is generated instead of a packed-pixel image.  This method cannot be
+   * used to decompress JPEG source images with the CMYK or YCCK colorspace.
    *
    * @param desiredWidth desired width (in pixels) of the YUV image.  If the
    * desired image dimensions are different than the dimensions of the JPEG
    * image being decompressed, then TurboJPEG will use scaling in the JPEG
    * decompressor to generate the largest possible image that will fit within
    * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the width of the JPEG image (in other words, the width will not be
+   * the width of the JPEG image.  (In other words, the width will not be
    * considered when determining the scaled image size.)
    *
-   * @param pad the width of each line in each plane of the YUV image will be
-   * padded to the nearest multiple of this number of bytes (must be a power of
-   * 2.)
+   * @param align row alignment (in bytes) of the YUV image (must be a power of
+   * 2.)  Setting this parameter to n will cause each row in each plane of the
+   * YUV image to be padded to the nearest multiple of n bytes (1 = unpadded.)
    *
    * @param desiredHeight desired height (in pixels) of the YUV image.  If the
    * desired image dimensions are different than the dimensions of the JPEG
    * image being decompressed, then TurboJPEG will use scaling in the JPEG
    * decompressor to generate the largest possible image that will fit within
    * the desired dimensions.  Setting this to 0 is the same as setting it to
-   * the height of the JPEG image (in other words, the height will not be
+   * the height of the JPEG image.  (In other words, the height will not be
    * considered when determining the scaled image size.)
    *
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
-   * @return a YUV planar image.
+   * @return a {@link YUVImage} instance containing the unified planar YUV
+   * decompressed image
    */
-  public YUVImage decompressToYUV(int desiredWidth, int pad, int desiredHeight,
-                                  int flags) throws TJException {
+  public YUVImage decompressToYUV(int desiredWidth, int align,
+                                  int desiredHeight, int flags)
+                                  throws TJException {
     if (flags < 0)
       throw new IllegalArgumentException("Invalid argument in decompressToYUV()");
     if (jpegWidth < 1 || jpegHeight < 1 || jpegSubsamp < 0)
@@ -619,7 +628,7 @@ public class TJDecompressor implements Closeable {
 
     int scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
     int scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
-    YUVImage dstYUVImage = new YUVImage(scaledWidth, pad, scaledHeight,
+    YUVImage dstYUVImage = new YUVImage(scaledWidth, align, scaledHeight,
                                         jpegSubsamp);
     decompressToYUV(dstYUVImage, flags);
     return dstYUVImage;
@@ -637,27 +646,27 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Decompress the JPEG source image or decode the YUV source image associated
-   * with this decompressor instance and output a grayscale, RGB, or CMYK image
-   * to the given destination buffer.
+   * Decompress the JPEG source image or decode the planar YUV source image
+   * associated with this decompressor instance and output a packed-pixel
+   * grayscale, RGB, or CMYK image to the given destination buffer.
    * <p>
-   * NOTE: The output image is fully recoverable if this method throws a
+   * NOTE: The destination image is fully recoverable if this method throws a
    * non-fatal {@link TJException} (unless
    * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
-   * @param dstBuf buffer that will receive the decompressed/decoded image.
-   * If the source image is a JPEG image, then this buffer should normally be
-   * <code>stride * scaledHeight</code> pixels in size, where
-   * <code>scaledHeight</code> can be determined by calling <code>
-   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegHeight)
-   * </code> with one of the scaling factors returned from {@link
-   * TJ#getScalingFactors} or by calling {@link #getScaledHeight}.  If the
-   * source image is a YUV image, then this buffer should normally be
-   * <code>stride * height</code> pixels in size, where <code>height</code> is
-   * the height of the YUV image.  However, the buffer may also be larger than
-   * the dimensions of the JPEG image, in which case the <code>x</code>,
-   * <code>y</code>, and <code>stride</code> parameters can be used to specify
-   * the region into which the source image should be decompressed.
+   * @param dstBuf buffer that will receive the packed-pixel
+   * decompressed/decoded image.  If the source image is a JPEG image, then
+   * this buffer should normally be <code>stride * scaledHeight</code> pixels
+   * in size, where <code>scaledHeight</code> can be determined by calling
+   * <code>scalingFactor.</code>{@link TJScalingFactor#getScaled getScaled}<code>(jpegHeight)</code>
+   * with one of the scaling factors returned from {@link TJ#getScalingFactors}
+   * or by calling {@link #getScaledHeight}.  If the source image is a YUV
+   * image, then this buffer should normally be <code>stride * height</code>
+   * pixels in size, where <code>height</code> is the height of the YUV image.
+   * However, the buffer may also be larger than the dimensions of the JPEG
+   * image, in which case the <code>x</code>, <code>y</code>, and
+   * <code>stride</code> parameters can be used to specify the region into
+   * which the source image should be decompressed.
    *
    * @param x x offset (in pixels) of the region in the destination image into
    * which the source image should be decompressed/decoded
@@ -671,18 +680,18 @@ public class TJDecompressor implements Closeable {
    * than the source image dimensions, then TurboJPEG will use scaling in the
    * JPEG decompressor to generate the largest possible image that will fit
    * within the desired dimensions.  Setting this to 0 is the same as setting
-   * it to the width of the JPEG image (in other words, the width will not be
+   * it to the width of the JPEG image.  (In other words, the width will not be
    * considered when determining the scaled image size.)  This parameter is
    * ignored if the source image is a YUV image.
    *
-   * @param stride pixels per line of the destination image.  Normally, this
+   * @param stride pixels per row in the destination image.  Normally this
    * should be set to <code>scaledWidth</code>, but you can use this to, for
    * instance, decompress the JPEG image into a region of a larger image.
    * NOTE: if the source image is a JPEG image, then <code>scaledWidth</code>
-   * can be determined by calling <code>
-   * scalingFactor.{@link TJScalingFactor#getScaled getScaled}(jpegWidth)
-   * </code> or by calling {@link #getScaledWidth}.  If the source image is a
-   * YUV image, then <code>scaledWidth</code> is the width of the YUV image.
+   * can be determined by calling
+   * <code>scalingFactor.</code>{@link TJScalingFactor#getScaled getScaled}<code>(jpegWidth)</code>
+   * or by calling {@link #getScaledWidth}.  If the source image is a YUV
+   * image, then <code>scaledWidth</code> is the width of the YUV image.
    * Setting this parameter to 0 is the equivalent of setting it to
    * <code>scaledWidth</code>.
    *
@@ -692,8 +701,8 @@ public class TJDecompressor implements Closeable {
    * than the source image dimensions, then TurboJPEG will use scaling in the
    * JPEG decompressor to generate the largest possible image that will fit
    * within the desired dimensions.  Setting this to 0 is the same as setting
-   * it to the height of the JPEG image (in other words, the height will not be
-   * considered when determining the scaled image size.)  This parameter is
+   * it to the height of the JPEG image.  (In other words, the height will not
+   * be considered when determining the scaled image size.)  This parameter is
    * ignored if the source image is a YUV image.
    *
    * @param pixelFormat pixel format of the decompressed image (one of
@@ -722,21 +731,22 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Decompress the JPEG source image or decode the YUV source image associated
-   * with this decompressor instance and output a decompressed/decoded image to
-   * the given <code>BufferedImage</code> instance.
+   * Decompress the JPEG source image or decode the planar YUV source image
+   * associated with this decompressor instance and output a packed-pixel
+   * decompressed/decoded image to the given <code>BufferedImage</code>
+   * instance.
    * <p>
-   * NOTE: The output image is fully recoverable if this method throws a
+   * NOTE: The destination image is fully recoverable if this method throws a
    * non-fatal {@link TJException} (unless
    * {@link TJ#FLAG_STOPONWARNING TJ.FLAG_STOPONWARNING} is specified.)
    *
    * @param dstImage a <code>BufferedImage</code> instance that will receive
-   * the decompressed/decoded image.  If the source image is a JPEG image, then
-   * the width and height of the <code>BufferedImage</code> instance must match
-   * one of the scaled image sizes that TurboJPEG is capable of generating from
-   * the JPEG image.  If the source image is a YUV image, then the width and
-   * height of the <code>BufferedImage</code> instance must match the width and
-   * height of the YUV image.
+   * the packed-pixel decompressed/decoded image.  If the source image is a
+   * JPEG image, then the width and height of the <code>BufferedImage</code>
+   * instance must match one of the scaled image sizes that the decompressor is
+   * capable of generating from the JPEG image.  If the source image is a YUV
+   * image, then the width and height of the <code>BufferedImage</code>
+   * instance must match the width and height of the YUV image.
    *
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
@@ -759,7 +769,7 @@ public class TJDecompressor implements Closeable {
       scaledWidth = getScaledWidth(desiredWidth, desiredHeight);
       scaledHeight = getScaledHeight(desiredWidth, desiredHeight);
       if (scaledWidth != desiredWidth || scaledHeight != desiredHeight)
-        throw new IllegalArgumentException("BufferedImage dimensions do not match one of the scaled image sizes that TurboJPEG is capable of generating.");
+        throw new IllegalArgumentException("BufferedImage dimensions do not match one of the scaled image sizes that the decompressor is capable of generating.");
     }
     int pixelFormat;  boolean intPixels = false;
     if (byteOrder == null)
@@ -829,7 +839,7 @@ public class TJDecompressor implements Closeable {
   /**
    * Decompress the JPEG source image or decode the YUV source image associated
    * with this decompressor instance and return a <code>BufferedImage</code>
-   * instance containing the decompressed/decoded image.
+   * instance containing the packed-pixel decompressed/decoded image.
    *
    * @param desiredWidth see
    * {@link #decompress(byte[], int, int, int, int, int, int, int)} for
@@ -846,7 +856,7 @@ public class TJDecompressor implements Closeable {
    * @param flags the bitwise OR of one or more of
    * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    *
-   * @return a <code>BufferedImage</code> instance containing the
+   * @return a <code>BufferedImage</code> instance containing the packed-pixel
    * decompressed/decoded image.
    */
   public BufferedImage decompress(int desiredWidth, int desiredHeight,

@@ -82,7 +82,7 @@ int tjErrorLine = -1, tjErrorCode = -1;
 }
 
 int flags = TJFLAG_NOREALLOC, compOnly = 0, decompOnly = 0, doYUV = 0,
-  quiet = 0, doTile = 0, pf = TJPF_BGR, yuvPad = 1, doWrite = 1;
+  quiet = 0, doTile = 0, pf = TJPF_BGR, yuvAlign = 1, doWrite = 1;
 char *ext = "ppm";
 const char *pixFormatStr[TJ_NUMPF] = {
   "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY", "", "", "", "", "CMYK"
@@ -182,7 +182,7 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
   if (doYUV) {
     int width = doTile ? tilew : scaledw;
     int height = doTile ? tileh : scaledh;
-    unsigned long yuvSize = tjBufSizeYUV2(width, yuvPad, height, subsamp);
+    unsigned long yuvSize = tjBufSizeYUV2(width, yuvAlign, height, subsamp);
 
     if (yuvSize == (unsigned long)-1)
       THROW_TJ("allocating YUV buffer");
@@ -209,10 +209,10 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
           double startDecode;
 
           if (tjDecompressToYUV2(handle, jpegBuf[tile], jpegSize[tile], yuvBuf,
-                                 width, yuvPad, height, flags) == -1)
+                                 width, yuvAlign, height, flags) == -1)
             THROW_TJ("executing tjDecompressToYUV2()");
           startDecode = getTime();
-          if (tjDecodeYUV(handle, yuvBuf, yuvPad, subsamp, dstPtr2, width,
+          if (tjDecodeYUV(handle, yuvBuf, yuvAlign, subsamp, dstPtr2, width,
                           pitch, height, pf, flags) == -1)
             THROW_TJ("executing tjDecodeYUV()");
           if (iter >= 0) elapsedDecode += getTime() - startDecode;
@@ -380,7 +380,7 @@ static int fullTest(unsigned char *srcBuf, int w, int h, int subsamp,
       THROW_TJ("executing tjInitCompress()");
 
     if (doYUV) {
-      yuvSize = tjBufSizeYUV2(tilew, yuvPad, tileh, subsamp);
+      yuvSize = tjBufSizeYUV2(tilew, yuvAlign, tileh, subsamp);
       if (yuvSize == (unsigned long)-1)
         THROW_TJ("allocating YUV buffer");
       if ((yuvBuf = (unsigned char *)malloc(yuvSize)) == NULL)
@@ -407,10 +407,10 @@ static int fullTest(unsigned char *srcBuf, int w, int h, int subsamp,
             double startEncode = getTime();
 
             if (tjEncodeYUV3(handle, srcPtr2, width, pitch, height, pf, yuvBuf,
-                             yuvPad, subsamp, flags) == -1)
+                             yuvAlign, subsamp, flags) == -1)
               THROW_TJ("executing tjEncodeYUV3()");
             if (iter >= 0) elapsedEncode += getTime() - startEncode;
-            if (tjCompressFromYUV(handle, yuvBuf, width, yuvPad, height,
+            if (tjCompressFromYUV(handle, yuvBuf, width, yuvAlign, height,
                                   subsamp, &jpegBuf[tile], &jpegSize[tile],
                                   jpegQual, flags) == -1)
               THROW_TJ("executing tjCompressFromYUV()");
@@ -779,8 +779,8 @@ static void usage(char *progName)
   printf("-quiet = Output results in tabular rather than verbose format\n");
   printf("-yuv = Test YUV encoding/decoding functions\n");
   printf("-yuvpad <p> = If testing YUV encoding/decoding, this specifies the number of\n");
-  printf("     bytes to which each row of each plane in the intermediate YUV image is\n");
-  printf("     padded (default = 1)\n");
+  printf("     bytes by which each row of each plane in the intermediate YUV image is\n");
+  printf("     evenly divisible (default = 1)\n");
   printf("-scale M/N = Scale down the width/height of the decompressed JPEG image by a\n");
   printf("     factor of M/N (M/N = ");
   for (i = 0; i < nsf; i++) {
@@ -940,12 +940,12 @@ int main(int argc, char *argv[])
       else if (!strcasecmp(argv[i], "-bmp"))
         ext = "bmp";
       else if (!strcasecmp(argv[i], "-yuv")) {
-        printf("Testing YUV planar encoding/decoding\n\n");
+        printf("Testing planar YUV encoding/decoding\n\n");
         doYUV = 1;
       } else if (!strcasecmp(argv[i], "-yuvpad") && i < argc - 1) {
         int tempi = atoi(argv[++i]);
 
-        if (tempi >= 1) yuvPad = tempi;
+        if (tempi >= 1) yuvAlign = tempi;
       } else if (!strcasecmp(argv[i], "-subsamp") && i < argc - 1) {
         i++;
         if (toupper(argv[i][0]) == 'G') subsamp = TJSAMP_GRAY;

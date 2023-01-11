@@ -34,6 +34,13 @@ Fixed a similar issue in `tjCompressFromYUV()` whereby it generated a corrupt
 JPEG image in certain cases, rather than throwing an error, if the `align`
 parameter was not a power of 2.
 
+6. Fixed an issue whereby `tjDecompressToYUV2()`, which is a wrapper for
+`tjDecompressToYUVPlanes()`, used the desired YUV image dimensions rather than
+the actual scaled image dimensions when computing the plane pointers and
+strides to pass to `tjDecompressToYUVPlanes()`.  This caused a buffer overrun
+and subsequent segfault if the desired image dimensions exceeded the scaled
+image dimensions.
+
 
 2.1.4
 =====

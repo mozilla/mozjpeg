@@ -1879,6 +1879,8 @@ DLLEXPORT int tjDecompressToYUV2(tjhandle handle, const unsigned char *jpegBuf,
   if (i >= NUMSF)
     THROW("tjDecompressToYUV2(): Could not scale down to desired image dimensions");
 
+  width = scaledw;  height = scaledh;
+
   pw0 = tjPlaneWidth(0, width, jpegSubsamp);
   ph0 = tjPlaneHeight(0, height, jpegSubsamp);
   dstPlanes[0] = dstBuf;

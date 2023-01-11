@@ -456,8 +456,12 @@ static void _decompTest(tjhandle handle, unsigned char *jpegBuf,
     if (sf.num != 1 || sf.denom != 1)
       printf("%d/%d ... ", sf.num, sf.denom);
     else printf("... ");
-    TRY_TJ(tjDecompressToYUV2(handle, jpegBuf, jpegSize, yuvBuf, scaledWidth,
-                              yuvAlign, scaledHeight, flags));
+    /* We pass scaledWidth + 1 and scaledHeight + 1 to validate that
+       tjDecompressToYUV2() generates the largest possible scaled image that
+       fits within the desired dimensions, as documented. */
+    TRY_TJ(tjDecompressToYUV2(handle, jpegBuf, jpegSize, yuvBuf,
+                              scaledWidth + 1, yuvAlign, scaledHeight + 1,
+                              flags));
     if (checkBufYUV(yuvBuf, scaledWidth, scaledHeight, subsamp, sf))
       printf("Passed.\n");
     else printf("FAILED!\n");
@@ -473,8 +477,11 @@ static void _decompTest(tjhandle handle, unsigned char *jpegBuf,
     if (sf.num != 1 || sf.denom != 1)
       printf("%d/%d ... ", sf.num, sf.denom);
     else printf("... ");
-    TRY_TJ(tjDecompress2(handle, jpegBuf, jpegSize, dstBuf, scaledWidth, 0,
-                         scaledHeight, pf, flags));
+    /* We pass scaledWidth + 1 and scaledHeight + 1 to validate that
+       tjDecompress2() generates the largest possible scaled image that fits
+       within the desired dimensions, as documented. */
+    TRY_TJ(tjDecompress2(handle, jpegBuf, jpegSize, dstBuf, scaledWidth + 1, 0,
+                         scaledHeight + 1, pf, flags));
   }
 
   if (checkBuf(dstBuf, scaledWidth, scaledHeight, pf, subsamp, sf, flags))

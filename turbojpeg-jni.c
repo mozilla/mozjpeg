@@ -231,6 +231,8 @@ static jint TJCompressor_compress
   arraySize = (y + height - 1) * actualPitch + (x + width) * tjPixelSize[pf];
   if ((*env)->GetArrayLength(env, src) * srcElementSize < arraySize)
     THROW_ARG("Source buffer is not large enough");
+  if (flags & TJFLAG_LOSSLESS && jpegSubsamp != TJSAMP_GRAY)
+    jpegSubsamp = TJSAMP_444;
   jpegSize = tjBufSize(width, height, jpegSubsamp);
   if ((*env)->GetArrayLength(env, dst) < (jsize)jpegSize)
     THROW_ARG("Destination buffer is not large enough");

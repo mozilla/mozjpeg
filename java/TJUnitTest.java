@@ -814,6 +814,9 @@ final class TJUnitTest {
     int size, quality = 100;
     byte[] dstBuf;
 
+    if (lossless && subsamp != TJ.SAMP_GRAY)
+      subsamp = TJ.SAMP_444;
+
     dstBuf = new byte[TJ.bufSize(w, h, subsamp)];
 
     try {

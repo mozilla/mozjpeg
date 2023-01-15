@@ -746,6 +746,8 @@ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
   else if (flags & TJFLAG_FORCESSE) PUTENV_S("JSIMD_FORCESSE", "1");
   else if (flags & TJFLAG_FORCESSE2) PUTENV_S("JSIMD_FORCESSE2", "1");
 #endif
+  if (flags & TJFLAG_LOSSLESS && jpegSubsamp != TJSAMP_GRAY)
+    jpegSubsamp = TJSAMP_444;
 
   if (flags & TJFLAG_NOREALLOC) {
     alloc = FALSE;  *jpegSize = tjBufSize(width, height, jpegSubsamp);

@@ -537,6 +537,9 @@ static void doTest(int w, int h, const int *formats, int nformats, int subsamp,
   unsigned long size = 0;
   int pfi, pf, i, quality = 100;
 
+  if (lossless && subsamp != TJSAMP_GRAY)
+    subsamp = TJSAMP_444;
+
   if (!alloc)
     size = tjBufSize(w, h, subsamp);
   if (size != 0)

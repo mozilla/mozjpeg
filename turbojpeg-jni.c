@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -142,9 +142,9 @@ bailout:
 
 /* TurboJPEG 1.4.x: TJ::bufSizeYUV() */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII
-  (JNIEnv *env, jclass cls, jint width, jint pad, jint height, jint subsamp)
+  (JNIEnv *env, jclass cls, jint width, jint align, jint height, jint subsamp)
 {
-  jint retval = (jint)tjBufSizeYUV2(width, pad, height, subsamp);
+  jint retval = (jint)tjBufSizeYUV2(width, align, height, subsamp);
 
   if (retval == -1) THROW_ARG(tjGetErrorStr());
 

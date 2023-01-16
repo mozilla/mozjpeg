@@ -132,24 +132,28 @@ bailout:
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
   (JNIEnv *env, jclass cls, jint width, jint height, jint jpegSubsamp)
 {
-  jint retval = (jint)tjBufSize(width, height, jpegSubsamp);
+  unsigned long retval = tjBufSize(width, height, jpegSubsamp);
 
-  if (retval == -1) THROW_ARG(tjGetErrorStr());
+  if (retval == (unsigned long)-1) THROW_ARG(tjGetErrorStr());
+  if (retval > (unsigned long)((unsigned int)-1))
+    THROW_ARG("Image is too large");
 
 bailout:
-  return retval;
+  return (jint)retval;
 }
 
 /* TurboJPEG 1.4.x: TJ::bufSizeYUV() */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII
   (JNIEnv *env, jclass cls, jint width, jint align, jint height, jint subsamp)
 {
-  jint retval = (jint)tjBufSizeYUV2(width, align, height, subsamp);
+  unsigned long retval = tjBufSizeYUV2(width, align, height, subsamp);
 
-  if (retval == -1) THROW_ARG(tjGetErrorStr());
+  if (retval == (unsigned long)-1) THROW_ARG(tjGetErrorStr());
+  if (retval > (unsigned long)((unsigned int)-1))
+    THROW_ARG("Image is too large");
 
 bailout:
-  return retval;
+  return (jint)retval;
 }
 
 /* TurboJPEG 1.2.x: TJ::bufSizeYUV() */
@@ -166,13 +170,15 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeSizeYUV__IIIII
   (JNIEnv *env, jclass cls, jint componentID, jint width, jint stride,
    jint height, jint subsamp)
 {
-  jint retval = (jint)tjPlaneSizeYUV(componentID, width, stride, height,
-                                     subsamp);
+  unsigned long retval = tjPlaneSizeYUV(componentID, width, stride, height,
+                                        subsamp);
 
-  if (retval == -1) THROW_ARG(tjGetErrorStr());
+  if (retval == (unsigned long)-1) THROW_ARG(tjGetErrorStr());
+  if (retval > (unsigned long)((unsigned int)-1))
+    THROW_ARG("Image is too large");
 
 bailout:
-  return retval;
+  return (jint)retval;
 }
 
 /* TurboJPEG 1.4.x: TJ::planeWidth() */

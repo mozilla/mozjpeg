@@ -837,6 +837,43 @@ final class TJUnitTest {
     if (tjd != null) tjd.close();
   }
 
+  static void overflowTest() throws Exception {
+    /* Ensure that the various buffer size methods don't overflow */
+    int size = 0;
+    boolean exception = false;
+
+    try {
+      exception = false;
+      size = TJ.bufSize(26755, 26755, TJ.SAMP_444);
+    } catch (Exception e) { exception = true; }
+    if (!exception || size != 0)
+      throw new Exception("TJ.bufSize() overflow");
+    try {
+      exception = false;
+      size = TJ.bufSizeYUV(37838, 1, 37838, TJ.SAMP_444);
+    } catch (Exception e) { exception = true; }
+    if (!exception || size != 0)
+      throw new Exception("TJ.bufSizeYUV() overflow");
+    try {
+      exception = false;
+      size = TJ.bufSizeYUV(37837, 3, 37837, TJ.SAMP_444);
+    } catch (Exception e) { exception = true; }
+    if (!exception || size != 0)
+      throw new Exception("TJ.bufSizeYUV() overflow");
+    try {
+      exception = false;
+      size = TJ.bufSizeYUV(37837, -1, 37837, TJ.SAMP_444);
+    } catch (Exception e) { exception = true; }
+    if (!exception || size != 0)
+      throw new Exception("TJ.bufSizeYUV() overflow");
+    try {
+      exception = false;
+      size = TJ.planeSizeYUV(0, 65536, 0, 65536, TJ.SAMP_444);
+    } catch (Exception e) { exception = true; }
+    if (!exception || size != 0)
+      throw new Exception("TJ.planeSizeYUV() overflow");
+  }
+
   static void bufSizeTest() throws Exception {
     int w, h, i, subsamp;
     byte[] srcBuf, dstBuf = null;
@@ -912,6 +949,7 @@ final class TJUnitTest {
       }
       if (doYUV)
         FORMATS_4BYTE[4] = -1;
+      overflowTest();
       doTest(35, 39, bi ? FORMATS_3BYTEBI : FORMATS_3BYTE, TJ.SAMP_444,
              testName);
       doTest(39, 41, bi ? FORMATS_4BYTEBI : FORMATS_4BYTE, TJ.SAMP_444,

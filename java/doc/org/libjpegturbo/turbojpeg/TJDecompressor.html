@@ -281,9 +281,10 @@ implements java.io.Closeable</pre>
           int&nbsp;desiredHeight,
           int&nbsp;bufferedImageType,
           int&nbsp;flags)</code>
-<div class="block">Decompress the JPEG source image or decode the YUV source image associated
- with this decompressor instance and return a <code>BufferedImage</code>
- instance containing the packed-pixel decompressed/decoded image.</div>
+<div class="block">Decompress the JPEG source image or decode the planar YUV source image
+ associated with this decompressor instance and return a
+ <code>BufferedImage</code> instance containing the packed-pixel
+ decompressed/decoded image.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -1160,9 +1161,10 @@ public&nbsp;byte[]&nbsp;decompressToYUV(int&nbsp;flags)
                                       int&nbsp;bufferedImageType,
                                       int&nbsp;flags)
                                         throws <a href="../../../org/libjpegturbo/turbojpeg/TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
-<div class="block">Decompress the JPEG source image or decode the YUV source image associated
- with this decompressor instance and return a <code>BufferedImage</code>
- instance containing the packed-pixel decompressed/decoded image.</div>
+<div class="block">Decompress the JPEG source image or decode the planar YUV source image
+ associated with this decompressor instance and return a
+ <code>BufferedImage</code> instance containing the packed-pixel
+ decompressed/decoded image.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>desiredWidth</code> - see
  <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#decompress(byte[],%20int,%20int,%20int,%20int,%20int,%20int,%20int)"><code>decompress(byte[], int, int, int, int, int, int, int)</code></a> for
  description</dd><dd><code>desiredHeight</code> - see

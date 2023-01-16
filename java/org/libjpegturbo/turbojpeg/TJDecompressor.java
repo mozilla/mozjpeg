@@ -837,9 +837,10 @@ public class TJDecompressor implements Closeable {
   }
 
   /**
-   * Decompress the JPEG source image or decode the YUV source image associated
-   * with this decompressor instance and return a <code>BufferedImage</code>
-   * instance containing the packed-pixel decompressed/decoded image.
+   * Decompress the JPEG source image or decode the planar YUV source image
+   * associated with this decompressor instance and return a
+   * <code>BufferedImage</code> instance containing the packed-pixel
+   * decompressed/decoded image.
    *
    * @param desiredWidth see
    * {@link #decompress(byte[], int, int, int, int, int, int, int)} for

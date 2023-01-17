@@ -41,6 +41,10 @@ strides to pass to `tjDecompressToYUVPlanes()`.  This caused a buffer overrun
 and subsequent segfault if the desired image dimensions exceeded the scaled
 image dimensions.
 
+7. Fixed an issue whereby, when decompressing a 12-bit-per-component JPEG image
+(`-DWITH_12BIT=1`) using an alpha-enabled output color space such as
+`JCS_EXT_RGBA`, the alpha channel was set to 255 rather than 4095.
+
 
 2.1.4
 =====

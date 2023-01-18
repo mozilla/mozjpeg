@@ -626,7 +626,7 @@ implements java.io.Closeable</pre>
  "tables-only") datastream of length <code>imageSize</code> bytes stored in
  <code>jpegImage</code> with this decompressor instance.  If
  <code>jpegImage</code> contains a JPEG image, then this image will be used
- as the source image for subsequent decompress operations.  Passing a
+ as the source image for subsequent decompression operations.  Passing a
  tables-only datastream to this method primes the decompressor with
  quantization and Huffman tables that can be used when decompressing
  subsequent "abbreviated image" datastreams.  This is useful, for instance,
@@ -662,8 +662,8 @@ public&nbsp;void&nbsp;setJPEGImage(byte[]&nbsp;jpegImage,
 <h4>setSourceImage</h4>
 <pre>public&nbsp;void&nbsp;setSourceImage(<a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg">YUVImage</a>&nbsp;srcImage)</pre>
 <div class="block">Associate the specified planar YUV source image with this decompressor
- instance.  Subsequent decompress operations will decode this image into a
- packed-pixel RGB or grayscale destination image.</div>
+ instance.  Subsequent decompression operations will decode this image into
+ a packed-pixel RGB or grayscale destination image.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>srcImage</code> - <a href="../../../org/libjpegturbo/turbojpeg/YUVImage.html" title="class in org.libjpegturbo.turbojpeg"><code>YUVImage</code></a> instance containing a planar YUV source
  image to be decoded.  This image is not modified.</dd></dl>
 </li>

@@ -48,10 +48,10 @@ final class TJUnitTest {
   static void usage() {
     System.out.println("\nUSAGE: java " + CLASS_NAME + " [options]\n");
     System.out.println("Options:");
-    System.out.println("-yuv = test YUV encoding/decoding support");
-    System.out.println("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest");
+    System.out.println("-yuv = test YUV encoding/compression/decompression/decoding");
+    System.out.println("-noyuvpad = do not pad each row in each Y, U, and V plane to the nearest");
     System.out.println("            multiple of 4 bytes");
-    System.out.println("-bi = test BufferedImage support\n");
+    System.out.println("-bi = test BufferedImage I/O\n");
     System.exit(1);
   }
 

@@ -55,11 +55,11 @@ static void usage(char *progName)
 {
   printf("\nUSAGE: %s [options]\n\n", progName);
   printf("Options:\n");
-  printf("-yuv = test YUV encoding/decoding support\n");
-  printf("-noyuvpad = do not pad each line of each Y, U, and V plane to the nearest\n");
+  printf("-yuv = test YUV encoding/compression/decompression/decoding\n");
+  printf("-noyuvpad = do not pad each row in each Y, U, and V plane to the nearest\n");
   printf("            multiple of 4 bytes\n");
-  printf("-alloc = test automatic buffer allocation\n");
-  printf("-bmp = tjLoadImage()/tjSaveImage() unit test\n\n");
+  printf("-alloc = test automatic JPEG buffer allocation\n");
+  printf("-bmp = test packed-pixel image I/O\n");
   exit(1);
 }
 

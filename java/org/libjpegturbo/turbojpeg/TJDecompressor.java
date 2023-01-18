@@ -99,7 +99,7 @@ public class TJDecompressor implements Closeable {
    * "tables-only") datastream of length <code>imageSize</code> bytes stored in
    * <code>jpegImage</code> with this decompressor instance.  If
    * <code>jpegImage</code> contains a JPEG image, then this image will be used
-   * as the source image for subsequent decompress operations.  Passing a
+   * as the source image for subsequent decompression operations.  Passing a
    * tables-only datastream to this method primes the decompressor with
    * quantization and Huffman tables that can be used when decompressing
    * subsequent "abbreviated image" datastreams.  This is useful, for instance,
@@ -134,8 +134,8 @@ public class TJDecompressor implements Closeable {
 
   /**
    * Associate the specified planar YUV source image with this decompressor
-   * instance.  Subsequent decompress operations will decode this image into a
-   * packed-pixel RGB or grayscale destination image.
+   * instance.  Subsequent decompression operations will decode this image into
+   * a packed-pixel RGB or grayscale destination image.
    *
    * @param srcImage {@link YUVImage} instance containing a planar YUV source
    * image to be decoded.  This image is not modified.

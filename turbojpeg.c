@@ -2158,7 +2158,7 @@ DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
     invert = (flags & TJFLAG_BOTTOMUP) == 0;
   } else if (tempc == 'P') {
     if ((src = jinit_read_ppm(cinfo)) == NULL)
-      THROWG("tjLoadImage(): Could not initialize bitmap loader");
+      THROWG("tjLoadImage(): Could not initialize PPM loader");
     invert = (flags & TJFLAG_BOTTOMUP) != 0;
   } else
     THROWG("tjLoadImage(): Unsupported file type");

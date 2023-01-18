@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2017, 2020-2022, D. R. Commander.
+ * Copyright (C) 2015-2017, 2020-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -180,13 +180,13 @@ get_text_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (maxval == _MAXJSAMPLE) {
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP((_JSAMPLE)read_pbm_integer(cinfo, infile, maxval),
-                         ptr[aindex] = 0xFF;)
+                         ptr[aindex] = _MAXJSAMPLE;)
     else
       GRAY_RGB_READ_LOOP((_JSAMPLE)read_pbm_integer(cinfo, infile, maxval), {})
   } else {
     if (aindex >= 0)
       GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],
-                         ptr[aindex] = 0xFF;)
+                         ptr[aindex] = _MAXJSAMPLE;)
     else
       GRAY_RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)], {})
   }
@@ -254,13 +254,13 @@ get_text_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (maxval == _MAXJSAMPLE) {
     if (aindex >= 0)
       RGB_READ_LOOP((_JSAMPLE)read_pbm_integer(cinfo, infile, maxval),
-                    ptr[aindex] = 0xFF;)
+                    ptr[aindex] = _MAXJSAMPLE;)
     else
       RGB_READ_LOOP((_JSAMPLE)read_pbm_integer(cinfo, infile, maxval), {})
   } else {
     if (aindex >= 0)
       RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)],
-                    ptr[aindex] = 0xFF;)
+                    ptr[aindex] = _MAXJSAMPLE;)
     else
       RGB_READ_LOOP(rescale[read_pbm_integer(cinfo, infile, maxval)], {})
   }
@@ -346,12 +346,13 @@ get_gray_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   bufferptr = source->iobuffer;
   if (maxval == _MAXJSAMPLE) {
     if (aindex >= 0)
-      GRAY_RGB_READ_LOOP(*bufferptr++, ptr[aindex] = 0xFF;)
+      GRAY_RGB_READ_LOOP(*bufferptr++, ptr[aindex] = _MAXJSAMPLE;)
     else
       GRAY_RGB_READ_LOOP(*bufferptr++, {})
   } else {
     if (aindex >= 0)
-      GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)], ptr[aindex] = 0xFF;)
+      GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)],
+                         ptr[aindex] = _MAXJSAMPLE;)
     else
       GRAY_RGB_READ_LOOP(rescale[UCH(*bufferptr++)], {})
   }
@@ -414,12 +415,12 @@ get_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   bufferptr = source->iobuffer;
   if (maxval == _MAXJSAMPLE) {
     if (aindex >= 0)
-      RGB_READ_LOOP(*bufferptr++, ptr[aindex] = 0xFF;)
+      RGB_READ_LOOP(*bufferptr++, ptr[aindex] = _MAXJSAMPLE;)
     else
       RGB_READ_LOOP(*bufferptr++, {})
   } else {
     if (aindex >= 0)
-      RGB_READ_LOOP(rescale[UCH(*bufferptr++)], ptr[aindex] = 0xFF;)
+      RGB_READ_LOOP(rescale[UCH(*bufferptr++)], ptr[aindex] = _MAXJSAMPLE;)
     else
       RGB_READ_LOOP(rescale[UCH(*bufferptr++)], {})
   }
@@ -544,7 +545,7 @@ get_word_rgb_row(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       ERREXIT(cinfo, JERR_PPM_OUTOFRANGE);
     ptr[bindex] = rescale[temp];
     if (aindex >= 0)
-      ptr[aindex] = 0xFF;
+      ptr[aindex] = _MAXJSAMPLE;
     ptr += ps;
   }
   return 1;

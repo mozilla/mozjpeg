@@ -775,7 +775,8 @@ static void usage(char *progName)
   printf("-quiet = Output results in tabular rather than verbose format\n");
   printf("-yuv = Compress from/decompress to intermediate planar YUV images\n");
   printf("-yuvpad <p> = The number of bytes by which each row in each plane of an\n");
-  printf("     intermediate YUV image is evenly divisible [default = 1]\n");
+  printf("     intermediate YUV image is evenly divisible (must be a power of 2)\n");
+  printf("     [default = 1]\n");
   printf("-scale M/N = When decompressing, scale the width/height of the JPEG image by a\n");
   printf("     factor of M/N (M/N = ");
   for (i = 0; i < nsf; i++) {
@@ -940,7 +941,8 @@ int main(int argc, char *argv[])
       } else if (!strcasecmp(argv[i], "-yuvpad") && i < argc - 1) {
         int tempi = atoi(argv[++i]);
 
-        if (tempi >= 1) yuvAlign = tempi;
+        if (tempi >= 1 && (tempi & (tempi - 1)) == 0) yuvAlign = tempi;
+        else usage(argv[0]);
       } else if (!strcasecmp(argv[i], "-subsamp") && i < argc - 1) {
         i++;
         if (toupper(argv[i][0]) == 'G') subsamp = TJSAMP_GRAY;
@@ -953,6 +955,7 @@ int main(int argc, char *argv[])
           case 440:  subsamp = TJSAMP_440;  break;
           case 420:  subsamp = TJSAMP_420;  break;
           case 411:  subsamp = TJSAMP_411;  break;
+          default:  usage(argv[0]);
           }
         }
       } else if (!strcasecmp(argv[i], "-componly"))

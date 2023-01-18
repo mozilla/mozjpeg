@@ -717,7 +717,8 @@ final class TJBench {
     System.out.println("-quiet = Output results in tabular rather than verbose format");
     System.out.println("-yuv = Compress from/decompress to intermediate planar YUV images");
     System.out.println("-yuvpad <p> = The number of bytes by which each row in each plane of an");
-    System.out.println("     intermediate YUV image is evenly divisible [default = 1]");
+    System.out.println("     intermediate YUV image is evenly divisible (must be a power of 2)");
+    System.out.println("     [default = 1]");
     System.out.println("-scale M/N = When decompressing, scale the width/height of the JPEG image by a");
     System.out.print("     factor of M/N (M/N = ");
     for (i = 0; i < nsf; i++) {
@@ -907,8 +908,10 @@ final class TJBench {
             try {
               temp = Integer.parseInt(argv[++i]);
             } catch (NumberFormatException e) {}
-            if (temp >= 1)
+            if (temp >= 1 && (temp & (temp - 1)) == 0)
               yuvAlign = temp;
+            else
+              usage();
           } else if (argv[i].equalsIgnoreCase("-subsamp") &&
                      i < argv.length - 1) {
             i++;
@@ -924,6 +927,8 @@ final class TJBench {
               subsamp = TJ.SAMP_420;
             else if (argv[i].equals("411"))
               subsamp = TJ.SAMP_411;
+            else
+              usage();
           } else if (argv[i].equalsIgnoreCase("-componly"))
             compOnly = true;
           else if (argv[i].equalsIgnoreCase("-nowrite"))

@@ -782,18 +782,18 @@ final class TJBench {
         minArg = 2;
         if (argv.length < minArg)
           usage();
+        String[] quals = argv[1].split("-", 2);
         try {
-          minQual = Integer.parseInt(argv[1]);
+          minQual = Integer.parseInt(quals[0]);
         } catch (NumberFormatException e) {}
         if (minQual < 1 || minQual > 100)
           throw new Exception("Quality must be between 1 and 100.");
-        int dashIndex = argv[1].indexOf('-');
-        if (dashIndex > 0 && argv[1].length() > dashIndex + 1) {
+        if (quals.length > 1) {
           try {
-            maxQual = Integer.parseInt(argv[1].substring(dashIndex + 1));
+            maxQual = Integer.parseInt(quals[1]);
           } catch (NumberFormatException e) {}
         }
-        if (maxQual < 1 || maxQual > 100)
+        if (maxQual < 1 || maxQual > 100 || maxQual < minQual)
           maxQual = minQual;
       }
 

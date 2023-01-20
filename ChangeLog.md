@@ -105,6 +105,13 @@ image dimensions.
 (`-DWITH_12BIT=1`) using an alpha-enabled output color space such as
 `JCS_EXT_RGBA`, the alpha channel was set to 255 rather than 4095.
 
+8. Fixed an issue whereby the Java version of TJBench did not accept a range of
+quality values.
+
+9. Fixed an issue whereby, when `-progressive` was passed to TJBench, the JPEG
+input image was not transformed into a progressive JPEG image prior to
+decompression.
+
 
 2.1.4
 =====

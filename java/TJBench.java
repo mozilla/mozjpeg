@@ -813,6 +813,7 @@ final class TJBench {
           } else if (argv[i].equalsIgnoreCase("-progressive")) {
             System.out.println("Using progressive entropy coding\n");
             flags |= TJ.FLAG_PROGRESSIVE;
+            xformOpt |= TJTransform.OPT_PROGRESSIVE;
           } else if (argv[i].equalsIgnoreCase("-rgb"))
             pf = TJ.PF_RGB;
           else if (argv[i].equalsIgnoreCase("-rgbx"))

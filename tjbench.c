@@ -864,6 +864,7 @@ int main(int argc, char *argv[])
       } else if (!strcasecmp(argv[i], "-progressive")) {
         printf("Using progressive entropy coding\n\n");
         flags |= TJFLAG_PROGRESSIVE;
+        xformOpt |= TJXOPT_PROGRESSIVE;
       } else if (!strcasecmp(argv[i], "-rgb"))
         pf = TJPF_RGB;
       else if (!strcasecmp(argv[i], "-rgbx"))

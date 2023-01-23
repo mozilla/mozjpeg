@@ -995,14 +995,14 @@ int main(int argc, char *argv[])
 
   if ((sf.num != 1 || sf.denom != 1) && doTile) {
     printf("Disabling tiled compression/decompression tests, because those tests do not\n");
-    printf("work when scaled decompression is enabled.\n");
-    doTile = 0;
+    printf("work when scaled decompression is enabled.\n\n");
+    doTile = 0;  xformOpt &= (~TJXOPT_CROP);
   }
 
   if ((flags & TJFLAG_NOREALLOC) == 0 && doTile) {
     printf("Disabling tiled compression/decompression tests, because those tests do not\n");
     printf("work when dynamic JPEG buffer allocation is enabled.\n\n");
-    doTile = 0;
+    doTile = 0;  xformOpt &= (~TJXOPT_CROP);
   }
 
   if (!decompOnly) {

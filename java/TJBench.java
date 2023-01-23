@@ -971,8 +971,9 @@ final class TJBench {
 
       if ((sf.getNum() != 1 || sf.getDenom() != 1) && doTile) {
         System.out.println("Disabling tiled compression/decompression tests, because those tests do not");
-        System.out.println("work when scaled decompression is enabled.");
+        System.out.println("work when scaled decompression is enabled.\n");
         doTile = false;
+        xformOpt &= (~TJTransform.OPT_CROP);
       }
 
       if (!decompOnly) {

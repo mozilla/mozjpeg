@@ -837,17 +837,19 @@ public&nbsp;void&nbsp;setJPEGImage(byte[]&nbsp;jpegImage,
  it to the width of the JPEG image.  (In other words, the width will not be
  considered when determining the scaled image size.)  This parameter is
  ignored if the source image is a YUV image.</dd><dd><code>pitch</code> - bytes per row in the destination image.  Normally this should
- be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>, if the
- destination image will be unpadded.  However, you can use this to, for
- instance, pad each row of the destination image to the nearest multiple of
- 4 bytes or to decompress/decode the source image into a region of a larger
- image.  NOTE: if the source image is a JPEG image, then
+ be set to <code>scaledWidth *
+ </code><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getPixelSize(int)"><code>TJ.getPixelSize</code></a><code>(pixelFormat)</code>,
+ if the destination image will be unpadded.  However, you can use this to,
+ for instance, pad each row of the destination image to the nearest
+ multiple of 4 bytes or to decompress/decode the source image into a region
+ of a larger image.  NOTE: if the source image is a JPEG image, then
  <code>scaledWidth</code> can be determined by calling
  <code>scalingFactor.</code><a href="../../../org/libjpegturbo/turbojpeg/TJScalingFactor.html#getScaled(int)"><code>getScaled</code></a><code>(jpegWidth)</code>
  or by calling <a href="../../../org/libjpegturbo/turbojpeg/TJDecompressor.html#getScaledWidth(int,%20int)"><code>getScaledWidth(int, int)</code></a>.  If the source image is a YUV
  image, then <code>scaledWidth</code> is the width of the YUV image.
  Setting this parameter to 0 is the equivalent of setting it to
- <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>.</dd><dd><code>desiredHeight</code> - If the source image is a JPEG image, then this
+ <code>scaledWidth *
+ </code><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getPixelSize(int)"><code>TJ.getPixelSize</code></a><code>(pixelFormat)</code>.</dd><dd><code>desiredHeight</code> - If the source image is a JPEG image, then this
  specifies the desired height (in pixels) of the decompressed image (or
  image region.)  If the desired destination image dimensions are different
  than the source image dimensions, then TurboJPEG will use scaling in the

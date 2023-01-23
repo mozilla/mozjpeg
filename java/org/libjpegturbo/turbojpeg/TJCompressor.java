@@ -127,13 +127,15 @@ public class TJCompressor implements Closeable {
    * which the JPEG or YUV image should be compressed/encoded
    *
    * @param pitch bytes per row in the source image.  Normally this should be
-   * <code>width * TJ.pixelSize(pixelFormat)</code>, if the source image is
-   * unpadded.  However, you can use this parameter to, for instance, specify
-   * that the rows in the source image are padded to the nearest multiple of 4
-   * bytes or to compress/encode a JPEG or YUV image from a region of a larger
-   * source image.  You can also be clever and use this parameter to skip rows,
-   * etc.  Setting this parameter to 0 is the equivalent of setting it to
-   * <code>width * TJ.pixelSize(pixelFormat)</code>.
+   * <code>width *
+   * </code>{@link TJ#getPixelSize TJ.getPixelSize}<code>(pixelFormat)</code>,
+   * if the source image is unpadded.  However, you can use this parameter to,
+   * for instance, specify that the rows in the source image are padded to the
+   * nearest multiple of 4 bytes or to compress/encode a JPEG or YUV image from
+   * a region of a larger source image.  You can also be clever and use this
+   * parameter to skip rows, etc.  Setting this parameter to 0 is the
+   * equivalent of setting it to <code>width *
+   * </code>{@link TJ#getPixelSize TJ.getPixelSize}<code>(pixelFormat)</code>.
    *
    * @param height height (in pixels) of the region in the source image from
    * which the JPEG or YUV image should be compressed/encoded

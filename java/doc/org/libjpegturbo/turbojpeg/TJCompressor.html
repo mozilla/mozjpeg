@@ -487,13 +487,15 @@ public&nbsp;TJCompressor(byte[]&nbsp;srcImage,
  the JPEG or YUV image should be compressed/encoded</dd><dd><code>y</code> - y offset (in pixels) of the region in the source image from which
  the JPEG or YUV image should be compressed/encoded</dd><dd><code>width</code> - width (in pixels) of the region in the source image from
  which the JPEG or YUV image should be compressed/encoded</dd><dd><code>pitch</code> - bytes per row in the source image.  Normally this should be
- <code>width * TJ.pixelSize(pixelFormat)</code>, if the source image is
- unpadded.  However, you can use this parameter to, for instance, specify
- that the rows in the source image are padded to the nearest multiple of 4
- bytes or to compress/encode a JPEG or YUV image from a region of a larger
- source image.  You can also be clever and use this parameter to skip rows,
- etc.  Setting this parameter to 0 is the equivalent of setting it to
- <code>width * TJ.pixelSize(pixelFormat)</code>.</dd><dd><code>height</code> - height (in pixels) of the region in the source image from
+ <code>width *
+ </code><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getPixelSize(int)"><code>TJ.getPixelSize</code></a><code>(pixelFormat)</code>,
+ if the source image is unpadded.  However, you can use this parameter to,
+ for instance, specify that the rows in the source image are padded to the
+ nearest multiple of 4 bytes or to compress/encode a JPEG or YUV image from
+ a region of a larger source image.  You can also be clever and use this
+ parameter to skip rows, etc.  Setting this parameter to 0 is the
+ equivalent of setting it to <code>width *
+ </code><a href="../../../org/libjpegturbo/turbojpeg/TJ.html#getPixelSize(int)"><code>TJ.getPixelSize</code></a><code>(pixelFormat)</code>.</dd><dd><code>height</code> - height (in pixels) of the region in the source image from
  which the JPEG or YUV image should be compressed/encoded</dd><dd><code>pixelFormat</code> - pixel format of the source image (one of
  <a href="../../../org/libjpegturbo/turbojpeg/TJ.html#PF_RGB"><code>TJ.PF_*</code></a>)</dd>
 <dt><span class="strong">Throws:</span></dt>

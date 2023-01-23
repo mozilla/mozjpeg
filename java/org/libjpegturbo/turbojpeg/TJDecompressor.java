@@ -361,17 +361,19 @@ public class TJDecompressor implements Closeable {
    * ignored if the source image is a YUV image.
    *
    * @param pitch bytes per row in the destination image.  Normally this should
-   * be set to <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>, if the
-   * destination image will be unpadded.  However, you can use this to, for
-   * instance, pad each row of the destination image to the nearest multiple of
-   * 4 bytes or to decompress/decode the source image into a region of a larger
-   * image.  NOTE: if the source image is a JPEG image, then
+   * be set to <code>scaledWidth *
+   * </code>{@link TJ#getPixelSize TJ.getPixelSize}<code>(pixelFormat)</code>,
+   * if the destination image will be unpadded.  However, you can use this to,
+   * for instance, pad each row of the destination image to the nearest
+   * multiple of 4 bytes or to decompress/decode the source image into a region
+   * of a larger image.  NOTE: if the source image is a JPEG image, then
    * <code>scaledWidth</code> can be determined by calling
    * <code>scalingFactor.</code>{@link TJScalingFactor#getScaled getScaled}<code>(jpegWidth)</code>
    * or by calling {@link #getScaledWidth}.  If the source image is a YUV
    * image, then <code>scaledWidth</code> is the width of the YUV image.
    * Setting this parameter to 0 is the equivalent of setting it to
-   * <code>scaledWidth * TJ.pixelSize(pixelFormat)</code>.
+   * <code>scaledWidth *
+   * </code>{@link TJ#getPixelSize TJ.getPixelSize}<code>(pixelFormat)</code>.
    *
    * @param desiredHeight If the source image is a JPEG image, then this
    * specifies the desired height (in pixels) of the decompressed image (or

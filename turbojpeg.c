@@ -31,6 +31,7 @@
    libjpeg-turbo */
 
 #include <ctype.h>
+#include <limits.h>
 #include <jinclude.h>
 #define JPEG_INTERNALS
 #include <jpeglib.h>
@@ -640,7 +641,8 @@ DLLEXPORT unsigned long TJBUFSIZEYUV(int width, int height, int subsamp)
 /* TurboJPEG 1.4+ */
 DLLEXPORT int tjPlaneWidth(int componentID, int width, int subsamp)
 {
-  int pw, nc, retval = 0;
+  unsigned long long pw, retval = 0;
+  int nc;
 
   if (width < 1 || subsamp < 0 || subsamp >= TJ_NUMSAMP)
     THROWG("tjPlaneWidth(): Invalid argument");
@@ -648,21 +650,25 @@ DLLEXPORT int tjPlaneWidth(int componentID, int width, int subsamp)
   if (componentID < 0 || componentID >= nc)
     THROWG("tjPlaneWidth(): Invalid argument");
 
-  pw = PAD(width, tjMCUWidth[subsamp] / 8);
+  pw = PAD((unsigned long long)width, tjMCUWidth[subsamp] / 8);
   if (componentID == 0)
     retval = pw;
   else
     retval = pw * 8 / tjMCUWidth[subsamp];
 
+  if (retval > (unsigned long long)INT_MAX)
+    THROWG("tjPlaneWidth(): Width is too large");
+
 bailout:
-  return retval;
+  return (int)retval;
 }
 
 
 /* TurboJPEG 1.4+ */
 DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp)
 {
-  int ph, nc, retval = 0;
+  unsigned long long ph, retval = 0;
+  int nc;
 
   if (height < 1 || subsamp < 0 || subsamp >= TJ_NUMSAMP)
     THROWG("tjPlaneHeight(): Invalid argument");
@@ -670,14 +676,17 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp)
   if (componentID < 0 || componentID >= nc)
     THROWG("tjPlaneHeight(): Invalid argument");
 
-  ph = PAD(height, tjMCUHeight[subsamp] / 8);
+  ph = PAD((unsigned long long)height, tjMCUHeight[subsamp] / 8);
   if (componentID == 0)
     retval = ph;
   else
     retval = ph * 8 / tjMCUHeight[subsamp];
 
+  if (retval > (unsigned long long)INT_MAX)
+    THROWG("tjPlaneHeight(): Height is too large");
+
 bailout:
-  return retval;
+  return (int)retval;
 }
 
 

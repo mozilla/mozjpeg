@@ -844,34 +844,46 @@ final class TJUnitTest {
 
     try {
       exception = false;
-      size = TJ.bufSize(26755, 26755, TJ.SAMP_444);
+      size = TJ.bufSize(18919, 18919, TJ.SAMP_444);
     } catch (Exception e) { exception = true; }
     if (!exception || size != 0)
       throw new Exception("TJ.bufSize() overflow");
     try {
       exception = false;
-      size = TJ.bufSizeYUV(37838, 1, 37838, TJ.SAMP_444);
+      size = TJ.bufSizeYUV(26755, 1, 26755, TJ.SAMP_444);
     } catch (Exception e) { exception = true; }
     if (!exception || size != 0)
       throw new Exception("TJ.bufSizeYUV() overflow");
     try {
       exception = false;
-      size = TJ.bufSizeYUV(37837, 3, 37837, TJ.SAMP_444);
+      size = TJ.bufSizeYUV(26754, 3, 26754, TJ.SAMP_444);
     } catch (Exception e) { exception = true; }
     if (!exception || size != 0)
       throw new Exception("TJ.bufSizeYUV() overflow");
     try {
       exception = false;
-      size = TJ.bufSizeYUV(37837, -1, 37837, TJ.SAMP_444);
+      size = TJ.bufSizeYUV(26754, -1, 26754, TJ.SAMP_444);
     } catch (Exception e) { exception = true; }
     if (!exception || size != 0)
       throw new Exception("TJ.bufSizeYUV() overflow");
     try {
       exception = false;
-      size = TJ.planeSizeYUV(0, 65536, 0, 65536, TJ.SAMP_444);
+      size = TJ.planeSizeYUV(0, 46341, 0, 46341, TJ.SAMP_444);
     } catch (Exception e) { exception = true; }
     if (!exception || size != 0)
       throw new Exception("TJ.planeSizeYUV() overflow");
+    try {
+      exception = false;
+      size = TJ.planeWidth(0, Integer.MAX_VALUE, TJ.SAMP_420);
+    } catch (Exception e) { exception = true; }
+    if (!exception || size != 0)
+      throw new Exception("TJ.planeWidth() overflow");
+    try {
+      exception = false;
+      size = TJ.planeHeight(0, Integer.MAX_VALUE, TJ.SAMP_420);
+    } catch (Exception e) { exception = true; }
+    if (!exception || size != 0)
+      throw new Exception("TJ.planeHeight() overflow");
   }
 
   static void bufSizeTest() throws Exception {

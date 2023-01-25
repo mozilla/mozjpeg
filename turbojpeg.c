@@ -632,7 +632,7 @@ DLLEXPORT int tjPlaneWidth(int componentID, int width, int subsamp)
   if (componentID < 0 || componentID >= nc)
     THROWG("tjPlaneWidth(): Invalid argument");
 
-  pw = PAD(width, tjMCUWidth[subsamp] / 8);
+  pw = PAD((unsigned long long)width, tjMCUWidth[subsamp] / 8);
   if (componentID == 0)
     retval = pw;
   else
@@ -658,7 +658,7 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp)
   if (componentID < 0 || componentID >= nc)
     THROWG("tjPlaneHeight(): Invalid argument");
 
-  ph = PAD(height, tjMCUHeight[subsamp] / 8);
+  ph = PAD((unsigned long long)height, tjMCUHeight[subsamp] / 8);
   if (componentID == 0)
     retval = ph;
   else

@@ -84,10 +84,18 @@ while [ $# -gt 0 ]; do
 		ENTROPYARG=-optimize
 		;;
 	-progressive)
-		ENTROPYARG=-progressive
+		if [ "$ENTROPYARG" = "-arithmetic" ]; then
+			ENTROPYARG=-progressive-arithmetic
+		else
+			ENTROPYARG=-progressive
+		fi
 		;;
 	-arithmetic)
-		ENTROPYARG=-arithmetic
+		if [ "$ENTROPYARG" = "-progressive" ]; then
+			ENTROPYARG=-progressive-arithmetic
+		else
+			ENTROPYARG=-arithmetic
+		fi
 		;;
 	-lossless)
 		LOSSLSARG="-lossless"
@@ -115,12 +123,17 @@ if [ $PRECISION = 8 -a "$YUVARG" = "" ]; then
 		IMAGES="vgl_6434_0018a.${EXT}"
 	elif [ "$ENTROPYARG" = "-progressive" ]; then
 		IMAGES="vgl_6548_0026a.${EXT}"
-	elif [ "$ENTROPYARG" = "-arithmetic" ]; then
+	elif [ "$ENTROPYARG" = "-arithmetic" -o \
+		"$ENTROPYARG" = "-progressive-arithmetic" ]; then
 		IMAGES="big_tree8.${EXT}"
 	fi
 fi
 
 exec >$EXEDIR/tjbenchtest$JAVAARG$YUVARG$ALLOCARG$ENTROPYARG$LOSSLSARG-$PRECISION.log
+
+if [ "$ENTROPYARG" = "-progressive-arithmetic" ]; then
+	ENTROPYARG="-progressive -arithmetic"
+fi
 
 # Standard tests
 for image in $IMAGES; do

@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2016, 2018, 2022, D. R. Commander.
+ * Copyright (C) 2010, 2016, 2018, 2022-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -646,7 +646,7 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
       (cinfo->progressive_mode && !cinfo->arith_code))
     cinfo->optimize_coding = TRUE; /* assume default tables no good for
                                       progressive mode or lossless mode */
-  if (cinfo->data_precision == 12)
+  if (cinfo->data_precision == 12 && !cinfo->arith_code)
     cinfo->optimize_coding = TRUE; /* assume default tables no good for 12-bit
                                       data precision */
 

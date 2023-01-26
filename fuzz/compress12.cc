@@ -83,6 +83,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     tj3Set(handle, TJPARAM_BOTTOMUP, ti == 0);
     tj3Set(handle, TJPARAM_FASTDCT, ti == 0);
     tj3Set(handle, TJPARAM_PROGRESSIVE, ti == 1 || ti == 3);
+    tj3Set(handle, TJPARAM_ARITHMETIC, ti == 2 || ti == 3);
     tj3Set(handle, TJPARAM_NOREALLOC, ti != 2);
     tj3Set(handle, TJPARAM_RESTARTROWS, ti == 1 || ti == 2 ? 2 : 0);
 

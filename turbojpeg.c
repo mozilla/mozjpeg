@@ -2728,8 +2728,10 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
     if (this->progressive || t[i].options & TJXOPT_PROGRESSIVE)
       jpeg_simple_progression(cinfo);
 #endif
-    if (this->arithmetic || t[i].options & TJXOPT_ARITHMETIC)
+    if (this->arithmetic || t[i].options & TJXOPT_ARITHMETIC) {
       cinfo->arith_code = TRUE;
+      cinfo->optimize_coding = FALSE;
+    }
     if (!(t[i].options & TJXOPT_NOOUTPUT)) {
       jpeg_write_coefficients(cinfo, dstcoefs);
       jcopy_markers_execute(dinfo, cinfo, t[i].options & TJXOPT_COPYNONE ?

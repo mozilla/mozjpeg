@@ -1367,7 +1367,8 @@ extends java.lang.Object</pre>
  <li> <code>8</code>, <code>12</code>, or <code>16</code>
  </ul>
 
- <p>12-bit data precision implies <a href="#PARAM_OPTIMIZE"><code>PARAM_OPTIMIZE</code></a>.</div>
+ <p>12-bit data precision implies <a href="#PARAM_OPTIMIZE"><code>PARAM_OPTIMIZE</code></a> unless
+ <a href="#PARAM_ARITHMETIC"><code>PARAM_ARITHMETIC</code></a> is set.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.PARAM_PRECISION">Constant Field Values</a></dd>
@@ -1511,8 +1512,9 @@ extends java.lang.Object</pre>
 
  <p>Progressive entropy coding will generally improve compression relative
  to baseline entropy coding, but it will reduce compression and
- decompression performance considerably.  Implies <a href="#PARAM_OPTIMIZE"><code>PARAM_OPTIMIZE</code></a>.
- Can be combined with <a href="#PARAM_ARITHMETIC"><code>PARAM_ARITHMETIC</code></a>.</div>
+ decompression performance considerably.  Can be combined with
+ <a href="#PARAM_ARITHMETIC"><code>PARAM_ARITHMETIC</code></a>.  Implies <a href="#PARAM_OPTIMIZE"><code>PARAM_OPTIMIZE</code></a> unless
+ <a href="#PARAM_ARITHMETIC"><code>PARAM_ARITHMETIC</code></a> is also set.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.PARAM_PROGRESSIVE">Constant Field Values</a></dd>
@@ -1572,8 +1574,7 @@ extends java.lang.Object</pre>
  <p>Arithmetic entropy coding will generally improve compression relative
  to Huffman entropy coding, but it will reduce compression and
  decompression performance considerably.  Can be combined with
- <a href="#PARAM_PROGRESSIVE"><code>PARAM_PROGRESSIVE</code></a>.  Arithmetic entropy coding is currently only
- implemented for 8-bit samples.</div>
+ <a href="#PARAM_PROGRESSIVE"><code>PARAM_PROGRESSIVE</code></a>.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.PARAM_ARITHMETIC">Constant Field Values</a></dd>

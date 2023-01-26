@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2018, D. R. Commander.
+ * Copyright (C) 2009-2011, 2018, 2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -233,7 +233,7 @@ jpeg_set_defaults(j_compress_ptr cinfo)
    * tables will be computed.  This test can be removed if default tables
    * are supplied that are valid for the desired precision.
    */
-  if (cinfo->data_precision > 8)
+  if (cinfo->data_precision == 12 && !cinfo->arith_code)
     cinfo->optimize_coding = TRUE;
 
   /* By default, use the simpler non-cosited sampling alignment */

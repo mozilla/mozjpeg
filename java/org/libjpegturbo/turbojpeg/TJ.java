@@ -465,7 +465,8 @@ public final class TJ {
    * <li> <code>8</code>, <code>12</code>, or <code>16</code>
    * </ul>
    *
-   * <p>12-bit data precision implies {@link #PARAM_OPTIMIZE}.
+   * <p>12-bit data precision implies {@link #PARAM_OPTIMIZE} unless
+   * {@link #PARAM_ARITHMETIC} is set.
    */
   public static final int PARAM_PRECISION = 7;
   /**
@@ -559,8 +560,9 @@ public final class TJ {
    *
    * <p>Progressive entropy coding will generally improve compression relative
    * to baseline entropy coding, but it will reduce compression and
-   * decompression performance considerably.  Implies {@link #PARAM_OPTIMIZE}.
-   * Can be combined with {@link #PARAM_ARITHMETIC}.
+   * decompression performance considerably.  Can be combined with
+   * {@link #PARAM_ARITHMETIC}.  Implies {@link #PARAM_OPTIMIZE} unless
+   * {@link #PARAM_ARITHMETIC} is also set.
    */
   public static final int PARAM_PROGRESSIVE = 12;
   /**
@@ -601,8 +603,7 @@ public final class TJ {
    * <p>Arithmetic entropy coding will generally improve compression relative
    * to Huffman entropy coding, but it will reduce compression and
    * decompression performance considerably.  Can be combined with
-   * {@link #PARAM_PROGRESSIVE}.  Arithmetic entropy coding is currently only
-   * implemented for 8-bit samples.
+   * {@link #PARAM_PROGRESSIVE}.
    */
   public static final int PARAM_ARITHMETIC = 14;
   /**

@@ -51,7 +51,7 @@
 char tjErrorStr[JMSG_LENGTH_MAX] = "\0";
 int tjErrorLine = -1, tjErrorCode = -1;
 
-#define THROW_TJG(m) { \
+#define THROW_TJG() { \
   printf("ERROR in line %d\n%s\n", __LINE__, tj3GetErrorStr(NULL)); \
   retval = -1;  goto bailout; \
 }

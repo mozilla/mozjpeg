@@ -283,6 +283,9 @@ DLLEXPORT _JSAMPLE *GET_NAME(tj3LoadImage, BITS_IN_JSAMPLE)
 {
   static const char FUNCTION_NAME[] =
     GET_STRING(tj3LoadImage, BITS_IN_JSAMPLE);
+
+#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+
   int retval = 0, tempc;
   size_t pitch;
   tjhandle handle2 = NULL;
@@ -392,6 +395,23 @@ bailout:
   if (file) fclose(file);
   if (retval < 0) { free(dstBuf);  dstBuf = NULL; }
   return dstBuf;
+
+#else /* BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED) */
+
+  static const char ERROR_MSG[] =
+    "16-bit data precision requires lossless JPEG,\n"
+    "which was disabled at build time.";
+  _JSAMPLE *retval = NULL;
+
+  GET_TJINSTANCE(handle, NULL)
+  SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "%s(): %s", FUNCTION_NAME,
+           ERROR_MSG);
+  this->isInstanceError = TRUE;  THROWG(ERROR_MSG, NULL)
+
+bailout:
+  return retval;
+
+#endif
 }
 
 
@@ -403,6 +423,9 @@ DLLEXPORT int GET_NAME(tj3SaveImage, BITS_IN_JSAMPLE)
   static const char FUNCTION_NAME[] =
     GET_STRING(tj3SaveImage, BITS_IN_JSAMPLE);
   int retval = 0;
+
+#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
+
   tjhandle handle2 = NULL;
   tjinstance *this2;
   j_decompress_ptr dinfo = NULL;
@@ -483,6 +506,16 @@ bailout:
   tj3Destroy(handle2);
   if (file) fclose(file);
   return retval;
+
+#else /* BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED) */
+
+  GET_TJINSTANCE(handle, -1)
+  THROW("16-bit data precision requires lossless JPEG,\n"
+        "which was disabled at build time.")
+bailout:
+  return retval;
+
+#endif
 }
 
 

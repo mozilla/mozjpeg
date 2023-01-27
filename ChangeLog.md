@@ -1,7 +1,7 @@
-2.2 pre-beta
-============
+3.0 beta1
+=========
 
-### Significant changes relative to 2.1.4:
+### Significant changes relative to 2.1.5:
 
 1. Significantly sped up the computation of optimal Huffman tables.  This
 speeds up the compression of tiny images by as much as 2x and provides a

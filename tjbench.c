@@ -48,35 +48,31 @@
 }
 #define THROW_UNIX(m)  THROW(m, strerror(errno))
 
-char tjErrorStr[JMSG_LENGTH_MAX] = "\0", tjErrorMsg[JMSG_LENGTH_MAX] = "\0";
+char tjErrorStr[JMSG_LENGTH_MAX] = "\0";
 int tjErrorLine = -1, tjErrorCode = -1;
 
 #define THROW_TJG(m) { \
-  printf("ERROR in line %d while %s:\n%s\n", __LINE__, m, \
-         tj3GetErrorStr(NULL)); \
+  printf("ERROR in line %d\n%s\n", __LINE__, tj3GetErrorStr(NULL)); \
   retval = -1;  goto bailout; \
 }
 
-#define THROW_TJ(m) { \
+#define THROW_TJ() { \
   int _tjErrorCode = tj3GetErrorCode(handle); \
   char *_tjErrorStr = tj3GetErrorStr(handle); \
   \
   if (!tj3Get(handle, TJPARAM_STOPONWARNING) && \
       _tjErrorCode == TJERR_WARNING) { \
     if (strncmp(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX) || \
-        strncmp(tjErrorMsg, m, JMSG_LENGTH_MAX) || \
         tjErrorCode != _tjErrorCode || tjErrorLine != __LINE__) { \
       strncpy(tjErrorStr, _tjErrorStr, JMSG_LENGTH_MAX); \
       tjErrorStr[JMSG_LENGTH_MAX - 1] = '\0'; \
-      strncpy(tjErrorMsg, m, JMSG_LENGTH_MAX); \
-      tjErrorMsg[JMSG_LENGTH_MAX - 1] = '\0'; \
       tjErrorCode = _tjErrorCode; \
       tjErrorLine = __LINE__; \
-      printf("WARNING in line %d while %s:\n%s\n", __LINE__, m, _tjErrorStr); \
+      printf("WARNING in line %d:\n%s\n", __LINE__, _tjErrorStr); \
     } \
   } else { \
-    printf("%s in line %d while %s:\n%s\n", \
-           _tjErrorCode == TJERR_WARNING ? "WARNING" : "ERROR", __LINE__, m, \
+    printf("%s in line %d:\n%s\n", \
+           _tjErrorCode == TJERR_WARNING ? "WARNING" : "ERROR", __LINE__, \
            _tjErrorStr); \
     retval = -1;  goto bailout; \
   } \
@@ -194,26 +190,26 @@ static int decomp(unsigned char **jpegBufs, size_t *jpegSizes, void *dstBuf,
   }
 
   if ((handle = tj3Init(TJINIT_DECOMPRESS)) == NULL)
-    THROW_TJ("executing tj3Init()");
+    THROW_TJG();
   if (tj3Set(handle, TJPARAM_STOPONWARNING, stopOnWarning) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_BOTTOMUP, bottomUp) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_FASTUPSAMPLE, fastUpsample) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_FASTDCT, fastDCT) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_SCANLIMIT, limitScans ? 500 : 0) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
 
   if (IS_CROPPED(cr)) {
     if (tj3DecompressHeader(handle, jpegBufs[0], jpegSizes[0]) == -1)
-      THROW_TJ("executing tj3DecompressHeader()");
+      THROW_TJ();
   }
   if (tj3SetScalingFactor(handle, sf) == -1)
-    THROW_TJ("executing tj3SetScalingFactor()");
+    THROW_TJ();
   if (tj3SetCroppingRegion(handle, cr) == -1)
-    THROW_TJ("executing tj3SetCroppingRegion()");
+    THROW_TJ();
   if (IS_CROPPED(cr)) {
     scaledw = cr.w ? cr.w : scaledw - cr.x;
     scaledh = cr.h ? cr.h : scaledh - cr.y;
@@ -247,7 +243,7 @@ static int decomp(unsigned char **jpegBufs, size_t *jpegSizes, void *dstBuf,
     size_t yuvSize = tj3YUVBufSize(width, yuvAlign, height, subsamp);
 
     if (yuvSize == 0)
-      THROW_TJ("allocating YUV buffer");
+      THROW_TJG();
     if ((yuvBuf = (unsigned char *)malloc(yuvSize)) == NULL)
       THROW_UNIX("allocating YUV buffer");
     memset(yuvBuf, 127, yuvSize);
@@ -272,25 +268,25 @@ static int decomp(unsigned char **jpegBufs, size_t *jpegSizes, void *dstBuf,
 
           if (tj3DecompressToYUV8(handle, jpegBufs[tile], jpegSizes[tile],
                                   yuvBuf, yuvAlign) == -1)
-            THROW_TJ("executing tj3DecompressToYUV8()");
+            THROW_TJ();
           startDecode = getTime();
           if (tj3DecodeYUV8(handle, yuvBuf, yuvAlign, dstPtr2, width, pitch,
                             height, pf) == -1)
-            THROW_TJ("executing tj3DecodeYUV8()");
+            THROW_TJ();
           if (iter >= 0) elapsedDecode += getTime() - startDecode;
         } else {
           if (precision == 8) {
             if (tj3Decompress8(handle, jpegBufs[tile], jpegSizes[tile],
                                dstPtr2, pitch, pf) == -1)
-              THROW_TJ("executing tj3Decompress8()");
+              THROW_TJ();
           } else if (precision == 12) {
             if (tj3Decompress12(handle, jpegBufs[tile], jpegSizes[tile],
                                 (short *)dstPtr2, pitch, pf) == -1)
-              THROW_TJ("executing tj3Decompress12()");
+              THROW_TJ();
           } else {
             if (tj3Decompress16(handle, jpegBufs[tile], jpegSizes[tile],
                                 (unsigned short *)dstPtr2, pitch, pf) == -1)
-              THROW_TJ("executing tj3Decompress16()");
+              THROW_TJ();
           }
         }
       }
@@ -345,15 +341,15 @@ static int decomp(unsigned char **jpegBufs, size_t *jpegSizes, void *dstBuf,
   if (precision == 8) {
     if (tj3SaveImage8(handle, tempStr, (unsigned char *)dstBuf, scaledw, 0,
                       scaledh, pf) == -1)
-      THROW_TJG("saving output image");
+      THROW_TJ();
   } else if (precision == 12) {
     if (tj3SaveImage12(handle, tempStr, (short *)dstBuf, scaledw, 0, scaledh,
                        pf) == -1)
-      THROW_TJG("saving output image");
+      THROW_TJ();
   } else {
     if (tj3SaveImage16(handle, tempStr, (unsigned short *)dstBuf, scaledw, 0,
                       scaledh, pf) == -1)
-      THROW_TJG("saving output image");
+      THROW_TJ();
   }
 
 bailout:
@@ -411,8 +407,9 @@ static int fullTest(tjhandle handle, void *srcBuf, int w, int h, int subsamp,
     if (noRealloc) {
       for (i = 0; i < ntilesw * ntilesh; i++) {
         size_t jpegBufSize = tj3JPEGBufSize(tilew, tileh, subsamp);
+
         if (jpegBufSize == 0)
-          THROW_TJ("getting buffer size");
+          THROW_TJG();
         if (jpegBufSize > (size_t)INT_MAX)
           THROW("getting buffer size", "Image is too large");
         if ((jpegBufs[i] = tj3Alloc(jpegBufSize)) == NULL)
@@ -435,35 +432,35 @@ static int fullTest(tjhandle handle, void *srcBuf, int w, int h, int subsamp,
     }
 
     if (tj3Set(handle, TJPARAM_NOREALLOC, noRealloc) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_SUBSAMP, subsamp) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_FASTDCT, fastDCT) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_OPTIMIZE, optimize) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_PROGRESSIVE, progressive) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_ARITHMETIC, arithmetic) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_LOSSLESS, lossless) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (lossless) {
       if (tj3Set(handle, TJPARAM_LOSSLESSPSV, jpegQual) == -1)
-        THROW_TJ("executing tj3Set()");
+        THROW_TJ();
     } else {
       if (tj3Set(handle, TJPARAM_QUALITY, jpegQual) == -1)
-        THROW_TJ("executing tj3Set()");
+        THROW_TJ();
     }
     if (tj3Set(handle, TJPARAM_RESTARTBLOCKS, restartIntervalBlocks) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_RESTARTROWS, restartIntervalRows) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
 
     if (doYUV) {
       yuvSize = tj3YUVBufSize(tilew, yuvAlign, tileh, subsamp);
       if (yuvSize == 0)
-        THROW_TJ("allocating YUV buffer");
+        THROW_TJG();
       if ((yuvBuf = (unsigned char *)malloc(yuvSize)) == NULL)
         THROW_UNIX("allocating YUV buffer");
       memset(yuvBuf, 127, yuvSize);
@@ -489,25 +486,25 @@ static int fullTest(tjhandle handle, void *srcBuf, int w, int h, int subsamp,
 
             if (tj3EncodeYUV8(handle, srcPtr2, width, pitch, height, pf,
                               yuvBuf, yuvAlign) == -1)
-              THROW_TJ("executing tj3EncodeYUV8()");
+              THROW_TJ();
             if (iter >= 0) elapsedEncode += getTime() - startEncode;
             if (tj3CompressFromYUV8(handle, yuvBuf, width, yuvAlign, height,
                                     &jpegBufs[tile], &jpegSizes[tile]) == -1)
-              THROW_TJ("executing tj3CompressFromYUV8()");
+              THROW_TJ();
           } else {
             if (precision == 8) {
               if (tj3Compress8(handle, srcPtr2, width, pitch, height, pf,
                                &jpegBufs[tile], &jpegSizes[tile]) == -1)
-              THROW_TJ("executing tj3Compress8()");
+                THROW_TJ();
             } else if (precision == 12) {
               if (tj3Compress12(handle, (short *)srcPtr2, width, pitch, height,
                                 pf, &jpegBufs[tile], &jpegSizes[tile]) == -1)
-              THROW_TJ("executing tj3Compress12()");
+                THROW_TJ();
             } else {
               if (tj3Compress16(handle, (unsigned short *)srcPtr2, width,
                                 pitch, height, pf, &jpegBufs[tile],
                                 &jpegSizes[tile]) == -1)
-              THROW_TJ("executing tj3Compress16()");
+                THROW_TJ();
             }
           }
           totalJpegSize += jpegSizes[tile];
@@ -644,22 +641,22 @@ static int decompTest(char *fileName)
   if (temp != NULL) *temp = '\0';
 
   if ((handle = tj3Init(TJINIT_TRANSFORM)) == NULL)
-    THROW_TJ("executing tj3Init()");
+    THROW_TJG();
   if (tj3Set(handle, TJPARAM_STOPONWARNING, stopOnWarning) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_BOTTOMUP, bottomUp) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_NOREALLOC, noRealloc) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_FASTUPSAMPLE, fastUpsample) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_FASTDCT, fastDCT) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_SCANLIMIT, limitScans ? 500 : 0) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
 
   if (tj3DecompressHeader(handle, srcBuf, srcSize) == -1)
-    THROW_TJ("executing tj3DecompressHeader()");
+    THROW_TJ();
   w = tj3Get(handle, TJPARAM_JPEGWIDTH);
   h = tj3Get(handle, TJPARAM_JPEGHEIGHT);
   subsamp = tj3Get(handle, TJPARAM_SUBSAMP);
@@ -669,9 +666,9 @@ static int decompTest(char *fileName)
   if (tj3Get(handle, TJPARAM_ARITHMETIC) == 1)
     printf("JPEG image uses arithmetic entropy coding\n\n");
   if (tj3Set(handle, TJPARAM_PROGRESSIVE, progressive) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
   if (tj3Set(handle, TJPARAM_ARITHMETIC, arithmetic) == -1)
-    THROW_TJ("executing tj3Set()");
+    THROW_TJ();
 
   lossless = tj3Get(handle, TJPARAM_LOSSLESS);
   sampleSize = (precision == 8 ? sizeof(unsigned char) : sizeof(short));
@@ -684,9 +681,9 @@ static int decompTest(char *fileName)
   if (lossless) sf = TJUNSCALED;
 
   if (tj3SetScalingFactor(handle, sf) == -1)
-    THROW_TJ("executing tj3SetScalingFactor()");
+    THROW_TJ();
   if (tj3SetCroppingRegion(handle, cr) == -1)
-    THROW_TJ("executing tj3SetCroppingRegion()");
+    THROW_TJ();
 
   if (quiet == 1) {
     printf("All performance values in Mpixels/sec\n\n");
@@ -722,8 +719,9 @@ static int decompTest(char *fileName)
         (doTile || xformOp != TJXOP_NONE || xformOpt != 0 || customFilter)) {
       for (i = 0; i < ntilesw * ntilesh; i++) {
         size_t jpegBufSize = tj3JPEGBufSize(tilew, tileh, subsamp);
+
         if (jpegBufSize == 0)
-          THROW_TJ("getting buffer size");
+          THROW_TJG();
         if (jpegBufSize > (size_t)INT_MAX)
           THROW("getting buffer size", "Image is too large");
         if ((jpegBufs[i] = tj3Alloc(jpegBufSize)) == NULL)
@@ -797,7 +795,7 @@ static int decompTest(char *fileName)
         start = getTime();
         if (tj3Transform(handle, srcBuf, srcSize, tntilesw * tntilesh,
                          jpegBufs, jpegSizes, t) == -1)
-          THROW_TJ("executing tj3Transform()");
+          THROW_TJ();
         elapsed += getTime() - start;
         if (iter >= 0) {
           iter++;
@@ -1199,21 +1197,21 @@ int main(int argc, char *argv[])
 
   if (!decompOnly) {
     if ((handle = tj3Init(TJINIT_COMPRESS)) == NULL)
-      THROW_TJ("executing tj3Init()");
+      THROW_TJG();
     if (tj3Set(handle, TJPARAM_STOPONWARNING, stopOnWarning) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
     if (tj3Set(handle, TJPARAM_BOTTOMUP, bottomUp) == -1)
-      THROW_TJ("executing tj3Set()");
+      THROW_TJ();
 
     if (precision == 8) {
       if ((srcBuf = tj3LoadImage8(handle, argv[1], &w, 1, &h, &pf)) == NULL)
-        THROW_TJG("loading input image");
+        THROW_TJ();
     } else if (precision == 12) {
       if ((srcBuf = tj3LoadImage12(handle, argv[1], &w, 1, &h, &pf)) == NULL)
-        THROW_TJG("loading input image");
+        THROW_TJ();
     } else {
       if ((srcBuf = tj3LoadImage16(handle, argv[1], &w, 1, &h, &pf)) == NULL)
-        THROW_TJG("loading input image");
+        THROW_TJ();
     }
     temp = strrchr(argv[1], '.');
     if (temp != NULL) *temp = '\0';

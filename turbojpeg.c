@@ -921,14 +921,13 @@ DLLEXPORT tjhandle tjInitCompress(void)
 /* TurboJPEG 3+ */
 DLLEXPORT size_t tj3JPEGBufSize(int width, int height, int jpegSubsamp)
 {
+  static const char FUNCTION_NAME[] = "tj3JPEGBufSize";
   unsigned long long retval = 0;
   int mcuw, mcuh, chromasf;
 
   if (width < 1 || height < 1 || jpegSubsamp < TJSAMP_UNKNOWN ||
-      jpegSubsamp >= TJ_NUMSAMP) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX, "tj3JPEGBufSize(): Invalid argument");
-    return 0;
-  }
+      jpegSubsamp >= TJ_NUMSAMP)
+    THROWG("Invalid argument", 0);
 
   if (jpegSubsamp == TJSAMP_UNKNOWN)
     jpegSubsamp = TJSAMP_444;
@@ -940,25 +939,25 @@ DLLEXPORT size_t tj3JPEGBufSize(int width, int height, int jpegSubsamp)
   mcuh = tjMCUHeight[jpegSubsamp];
   chromasf = jpegSubsamp == TJSAMP_GRAY ? 0 : 4 * 64 / (mcuw * mcuh);
   retval = PAD(width, mcuw) * PAD(height, mcuh) * (2ULL + chromasf) + 2048ULL;
-  if (retval > (unsigned long long)((unsigned long)-1)) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX, "tj3JPEGBufSize(): Image is too large");
-    return 0;
-  }
+  if (retval > (unsigned long long)((unsigned long)-1))
+    THROWG("Image is too large", 0);
 
+bailout:
   return (size_t)retval;
 }
 
 /* TurboJPEG 1.2+ */
 DLLEXPORT unsigned long tjBufSize(int width, int height, int jpegSubsamp)
 {
+  static const char FUNCTION_NAME[] = "tjBufSize";
   size_t retval;
 
-  if (jpegSubsamp < 0) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX, "tjBufSize(): Invalid argument");
-    return (unsigned long)-1;
-  }
+  if (jpegSubsamp < 0)
+    THROWG("Invalid argument", 0);
 
   retval = tj3JPEGBufSize(width, height, jpegSubsamp);
+
+bailout:
   return (retval == 0) ? (unsigned long)-1 : (unsigned long)retval;
 }
 
@@ -986,13 +985,12 @@ bailout:
 /* TurboJPEG 3+ */
 DLLEXPORT size_t tj3YUVBufSize(int width, int align, int height, int subsamp)
 {
+  static const char FUNCTION_NAME[] = "tj3YUVBufSize";
   unsigned long long retval = 0;
   int nc, i;
 
-  if (align < 1 || !IS_POW2(align) || subsamp < 0 || subsamp >= TJ_NUMSAMP) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX, "tj3YUVBufSize(): Invalid argument");
-    return 0;
-  }
+  if (align < 1 || !IS_POW2(align) || subsamp < 0 || subsamp >= TJ_NUMSAMP)
+    THROWG("Invalid argument", 0);
 
   nc = (subsamp == TJSAMP_GRAY ? 1 : 3);
   for (i = 0; i < nc; i++) {
@@ -1003,11 +1001,10 @@ DLLEXPORT size_t tj3YUVBufSize(int width, int align, int height, int subsamp)
     if (pw == 0 || ph == 0) return 0;
     else retval += (unsigned long long)stride * ph;
   }
-  if (retval > (unsigned long long)((unsigned long)-1)) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX, "tj3YUVBufSize(): Image is too large");
-    return 0;
-  }
+  if (retval > (unsigned long long)((unsigned long)-1))
+    THROWG("Image is too large", 0);
 
+bailout:
   return (size_t)retval;
 }
 
@@ -1104,13 +1101,12 @@ DLLEXPORT int tjPlaneHeight(int componentID, int height, int subsamp)
 DLLEXPORT size_t tj3YUVPlaneSize(int componentID, int width, int stride,
                                  int height, int subsamp)
 {
+  static const char FUNCTION_NAME[] = "tj3YUVPlaneSize";
   unsigned long long retval = 0;
   int pw, ph;
 
-  if (width < 1 || height < 1 || subsamp < 0 || subsamp >= TJ_NUMSAMP) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX, "tj3YUVPlaneSize(): Invalid argument");
-    return 0;
-  }
+  if (width < 1 || height < 1 || subsamp < 0 || subsamp >= TJ_NUMSAMP)
+    THROWG("Invalid argument", 0);
 
   pw = tj3YUVPlaneWidth(componentID, width, subsamp);
   ph = tj3YUVPlaneHeight(componentID, height, subsamp);
@@ -1120,11 +1116,10 @@ DLLEXPORT size_t tj3YUVPlaneSize(int componentID, int width, int stride,
   else stride = abs(stride);
 
   retval = (unsigned long long)stride * (ph - 1) + pw;
-  if (retval > (unsigned long long)((unsigned long)-1)) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX, "tj3YUVPlaneSize(): Image is too large");
-    return 0;
-  }
+  if (retval > (unsigned long long)((unsigned long)-1))
+    THROWG("Image is too large", 0);
 
+bailout:
   return (size_t)retval;
 }
 
@@ -1841,14 +1836,16 @@ DLLEXPORT int tjDecompressHeader(tjhandle handle, unsigned char *jpegBuf,
 /* TurboJPEG 3+ */
 DLLEXPORT tjscalingfactor *tj3GetScalingFactors(int *numScalingFactors)
 {
-  if (numScalingFactors == NULL) {
-    SNPRINTF(errStr, JMSG_LENGTH_MAX,
-             "tj3GetScalingFactors(): Invalid argument");
-    return NULL;
-  }
+  static const char FUNCTION_NAME[] = "tj3GetScalingFactors";
+  tjscalingfactor *retval = (tjscalingfactor *)sf;
+
+  if (numScalingFactors == NULL)
+    THROWG("Invalid argument", NULL);
 
   *numScalingFactors = NUMSF;
-  return (tjscalingfactor *)sf;
+
+bailout:
+  return retval;
 }
 
 /* TurboJPEG 1.2+ */

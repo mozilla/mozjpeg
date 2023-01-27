@@ -11,19 +11,102 @@ tables.
 2. All deprecated fields, constructors, and methods in the TurboJPEG Java API
 have been removed.
 
-3. Added support for 8-bit, 12-bit, and 16-bit lossless JPEG images.  A new
-libjpeg API function (`jpeg_enable_lossless()`), TurboJPEG API flag
-(`TJFLAG_LOSSLESS` in the C API and `TJ.FLAG_LOSSLESS` in the Java API), and
-cjpeg/TJBench command-line argument (`-lossless`) can be used to create a
-lossless JPEG image.  (Decompression of lossless JPEG images is handled
-automatically.)  Note that the TurboJPEG API and TJBench can currently only be
-used to create and decompress 8-bit lossless JPEG images.  Refer to
+3. Arithmetic entropy coding is now supported with 12-bit-per-component JPEG
+images.
+
+4. Overhauled the TurboJPEG API to address long-standing limitations and to
+make the API more extensible and intuitive:
+
+     - All C function names are now prefixed with `tj3`, and all version
+suffixes have been removed from the function names.  Future API overhauls will
+increment the prefix to `tj4`, etc., thus retaining backward API/ABI
+compatibility without versioning each individual function.
+     - Stateless boolean flags have been replaced with stateful integer API
+parameters, the values of which persist between function calls.  New
+functions/methods (`tj3Set()`/`TJCompressor.set()`/`TJDecompressor.set()` and
+`tj3Get()`/`TJCompressor.get()`/`TJDecompressor.get()`) can be used to set and
+query the value of a particular API parameter.
+     - The JPEG quality and subsampling are now implemented using API
+parameters rather than stateless function arguments (C) or dedicated set/get
+methods (Java.)
+     - `tj3DecompressHeader()` now stores all relevant information about the
+JPEG image, including the width, height, subsampling type, entropy coding
+algorithm, etc., in API parameters rather than returning that information
+through pointer arguments.
+     - `TJFLAG_LIMITSCANS`/`TJ.FLAG_LIMITSCANS` has been reimplemented as an
+API parameter (`TJPARAM_SCANLIMIT`/`TJ.PARAM_SCANLIMIT`) that allows the number
+of scans to be specified.
+     - Optimized baseline entropy coding (the computation of optimal Huffman
+tables, as opposed to using the default Huffman tables) can now be specified,
+using a new API parameter (`TJPARAM_OPTIMIZE`/`TJ.PARAM_OPTIMIZE`), a new
+transform option (`TJXOPT_OPTIMIZE`/`TJTransform.OPT_OPTIMIZE`), and a new
+TJBench option (`-optimize`.)
+     - Arithmetic entropy coding can now be specified or queried, using a new
+API parameter (`TJPARAM_ARITHMETIC`/`TJ.PARAM_ARITHMETIC`), a new transform
+option (`TJXOPT_ARITHMETIC`/`TJTransform.OPT_ARITHMETIC`), and a new TJBench
+option (`-arithmetic`.)
+     - The restart marker interval can now be specified, using new API
+parameters (`TJPARAM_RESTARTROWS`/`TJ.PARAM_RESTARTROWS` and
+`TJPARAM_RESTARTBLOCKS`/`TJ.PARAM_RESTARTBLOCKS`) and a new TJBench option
+(`-restart`.)
+     - Pixel density can now be specified or queried, using new API parameters
+(`TJPARAM_XDENSITY`/`TJ.PARAM_XDENSITY`,
+`TJPARAM_YDENSITY`/`TJ.PARAM_YDENSITY`, and
+`TJPARAM_DENSITYUNITS`/`TJ.PARAM_DENSITYUNITS`.)
+     - The accurate DCT/IDCT algorithms are now the default for both
+compression and decompression, since the "fast" algorithms are considered to be
+a legacy feature.  (The "fast" algorithms do not pass the ISO compliance tests,
+and those algorithms are not any faster than the accurate algorithms on modern
+x86 CPUs.)
+     - All C initialization functions have been combined into a single function
+(`tj3Init()`) that accepts an integer argument specifying the subsystems to
+initialize.
+     - All C functions now use the `const` keyword for pointer arguments that
+point to unmodified buffers (and for both dimensions of pointer arguments that
+point to sets of unmodified buffers.)
+     - All C functions now use `size_t` rather than `unsigned long` to
+represent buffer sizes, for compatibility with `malloc()` and to avoid
+disparities in the size of `unsigned long` between LP64 (Un*x) and LLP64
+(Windows) operating systems.
+     - All C buffer size functions now return 0 if an error occurs, rather than
+trying to awkwardly return -1 in an unsigned data type (which could easily be
+misinterpreted as a very large value.)
+     - Decompression scaling is now enabled explicitly, using a new
+function/method (`tj3SetScalingFactor()`/`TJDecompressor.setScalingFactor()`),
+rather than implicitly using awkward "desired width"/"desired height"
+arguments.
+     - Partial image decompression has been implemented, using a new
+function/method (`tj3SetCroppingRegion()`/`TJDecompressor.setCroppingRegion()`)
+and a new TJBench option (`-crop`.)
+     - The JPEG colorspace can now be specified explicitly when compressing,
+using a new API parameter (`TJPARAM_COLORSPACE`/`TJ.PARAM_COLORSPACE`.)  This
+allows JPEG images with the RGB and CMYK colorspaces to be created.
+     - TJBench no longer generates error/difference images, since identical
+functionality is already available in ImageMagick.
+     - JPEG images with unknown subsampling configurations can now be
+fully decompressed into packed-pixel images or losslessly transformed (with the
+exception of lossless cropping.)  They cannot currently be partially
+decompressed or decompressed into planar YUV images.
+     - `tj3Destroy()` now silently accepts a NULL handle.
+     - `tj3Alloc()` and `tj3Free()` now return/accept void pointers, as
+`malloc()` and `free()` do.
+     - The C image I/O functions now accept a TurboJPEG instance handle, which
+is used to transmit/receive API parameter values and to receive error
+information.
+
+5. Added support for 8-bit-per-component, 12-bit-per-component, and
+16-bit-per-component lossless JPEG images.  A new libjpeg API function
+(`jpeg_enable_lossless()`), TurboJPEG API parameters
+(`TJPARAM_LOSSLESS`/`TJ.PARAM_LOSSLESS`,
+`TJPARAM_LOSSLESSPSV`/`TJ.PARAM_LOSSLESSPSV`, and
+`TJPARAM_LOSSLESSPT`/`TJ.PARAM_LOSSLESSPT`), and a cjpeg/TJBench option
+(`-lossless`) can be used to create a lossless JPEG image.  (Decompression of
+lossless JPEG images is handled automatically.)  Refer to
 [libjpeg.txt](libjpeg.txt), [usage.txt](usage.txt), and the TurboJPEG API
 documentation for more details.
 
-4. 12-bit-per-component (lossy and lossless) and 16-bit-per-component
-(lossless) JPEG support is now included in the libjpeg API library, cjpeg,
-djpeg, and jpegtran:
+6. Added support for 12-bit-per-component (lossy and lossless) and
+16-bit-per-component (lossless) JPEG images to the libjpeg and TurboJPEG APIs:
 
      - The existing `data_precision` field in `jpeg_compress_struct` and
 `jpeg_decompress_struct` has been repurposed to enable the creation of
@@ -35,27 +118,20 @@ decompressed.
 12-bit-per-component versions of `jpeg_write_raw_data()`,
 `jpeg_skip_scanlines()`, `jpeg_crop_scanline()`, and `jpeg_read_raw_data()`,
 provide interfaces for compressing from/decompressing to 12-bit-per-component
-and 16-bit-per-component uncompressed image buffers.
-     - A new cjpeg command-line argument (`-precision`) can be used to create
-a 12-bit-per-component or 16-bit-per-component JPEG image.  (djpeg and jpegtran
-handle 12-bit-per-component and 16-bit-per-component JPEG images
-automatically.)
+and 16-bit-per-component packed-pixel and planar YUV image buffers.
+     - New 12-bit-per-component and 16-bit-per-component compression,
+decompression, and image I/O functions/methods have been added to the TurboJPEG
+API, and a new API parameter (`TJPARAM_PRECISION`/`TJ.PARAM_PRECISION`) can be
+used to query the data precision of a JPEG image.  (YUV functions are currently
+limited to 8-bit data precision but can be expanded to accommodate 12-bit data
+precision in the future, if such is deemed beneficial.)
+     - A new cjpeg and TJBench command-line argument (`-precision`) can be used
+to create a 12-bit-per-component or 16-bit-per-component JPEG image.
+(Decompression and transformation of 12-bit-per-component and
+16-bit-per-component JPEG images is handled automatically.)
 
-    Refer to [libjpeg.txt](libjpeg.txt) and [usage.txt](usage.txt) for more
-details.
-
-5. Introduced a new flag in the TurboJPEG C and Java APIs (`TJFLAG_ARITHMETIC`
-and `TJ.FLAG_ARITHMETIC`, respectively) that causes the library to use
-arithmetic entropy coding in JPEG images generated by compression and transform
-operations.  Additionally, a new transform option (`TJXOPT_ARITHMETIC` in the C
-API and `TJTransform.OPT_ARITHMETIC` in the Java API) has been introduced,
-allowing arithmetic entropy coding to be enabled for selected transforms in a
-multi-transform operation.
-
-6. Added a new TurboJPEG C API function (`tjDecompressHeader4()`) and Java API
-method (`TJDecompressor.getFlags()`) that allow calling programs to determine
-whether the JPEG image being decompressed uses progressive and/or arithmetic
-entropy coding or is a lossless JPEG image.
+    Refer to [libjpeg.txt](libjpeg.txt), [usage.txt](usage.txt), and the
+TurboJPEG API documentation for more details.
 
 
 2.1.5
@@ -1479,7 +1555,7 @@ features (such as the colorspace extensions), but in general, it performs no
 faster than libjpeg v6b.
 
 14. Added ARM 64-bit SIMD acceleration for the YCC-to-RGB color conversion
-and IDCT algorithms (both are used during JPEG decompression.)  For unknown
+and IDCT algorithms (both are used during JPEG decompression.)  For
 reasons (probably related to clang), this code cannot currently be compiled for
 iOS.
 

@@ -106,7 +106,6 @@ typedef struct _tjinstance {
   struct jpeg_decompress_struct dinfo;
   struct my_error_mgr jerr;
   int init;
-  boolean headerRead;
   char errStr[JMSG_LENGTH_MAX];
   boolean isInstanceError;
   /* Parameters */
@@ -1972,7 +1971,6 @@ DLLEXPORT int tjDecompress2(tjhandle handle, const unsigned char *jpegBuf,
 
   processFlags(handle, flags, DECOMPRESS);
 
-  this->headerRead = TRUE;
   if (tj3SetScalingFactor(handle, sf[i]) == -1)
     return -1;
   if (tj3SetCroppingRegion(handle, TJUNCROPPED) == -1)
@@ -2321,11 +2319,10 @@ DLLEXPORT int tj3DecompressToYUVPlanes8(tjhandle handle,
     retval = -1;  goto bailout;
   }
 
-  if (!this->headerRead) {
+  if (dinfo->global_state <= DSTATE_START) {
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
     jpeg_read_header(dinfo, TRUE);
   }
-  this->headerRead = FALSE;
   setDecompParameters(this);
   if (this->subsamp == TJSAMP_UNKNOWN)
     THROW("Could not determine subsampling level of JPEG image");
@@ -2477,7 +2474,6 @@ DLLEXPORT int tjDecompressToYUVPlanes(tjhandle handle,
 
   processFlags(handle, flags, DECOMPRESS);
 
-  this->headerRead = TRUE;
   if (tj3SetScalingFactor(handle, sf[i]) == -1)
     return -1;
   return tj3DecompressToYUVPlanes8(handle, jpegBuf, jpegSize, dstPlanes,
@@ -2512,7 +2508,7 @@ DLLEXPORT int tj3DecompressToYUV8(tjhandle handle,
     retval = -1;  goto bailout;
   }
 
-  if (!this->headerRead) {
+  if (dinfo->global_state <= DSTATE_START) {
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
     jpeg_read_header(dinfo, TRUE);
   }
@@ -2539,7 +2535,6 @@ DLLEXPORT int tj3DecompressToYUV8(tjhandle handle,
     dstPlanes[2] = dstPlanes[1] + strides[1] * ph1;
   }
 
-  this->headerRead = TRUE;
   return tj3DecompressToYUVPlanes8(handle, jpegBuf, jpegSize, dstPlanes,
                                    strides);
 
@@ -2587,7 +2582,6 @@ DLLEXPORT int tjDecompressToYUV2(tjhandle handle, const unsigned char *jpegBuf,
 
   processFlags(handle, flags, DECOMPRESS);
 
-  this->headerRead = TRUE;
   if (tj3SetScalingFactor(handle, sf[i]) == -1)
     return -1;
   return tj3DecompressToYUV8(handle, jpegBuf, (size_t)jpegSize, dstBuf, align);
@@ -2654,7 +2648,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
     retval = -1;  goto bailout;
   }
 
-  if (!this->headerRead)
+  if (dinfo->global_state <= DSTATE_START)
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 
   for (i = 0; i < n; i++) {
@@ -2682,7 +2676,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
   }
 
   jcopy_markers_setup(dinfo, saveMarkers ? JCOPYOPT_ALL : JCOPYOPT_NONE);
-  if (!this->headerRead)
+  if (dinfo->global_state <= DSTATE_START)
     jpeg_read_header(dinfo, TRUE);
   this->subsamp = getSubsamp(&this->dinfo);
 
@@ -2816,7 +2810,6 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
     THROW("Memory allocation failure");
   for (i = 0; i < n; i++)
     sizes[i] = (size_t)dstSizes[i];
-  this->headerRead = TRUE;
   retval = tj3Transform(handle, jpegBuf, (size_t)jpegSize, n, dstBufs, sizes,
                         t);
   for (i = 0; i < n; i++)

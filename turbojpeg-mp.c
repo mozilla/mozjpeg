@@ -172,11 +172,10 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
     retval = -1;  goto bailout;
   }
 
-  if (!this->headerRead) {
+  if (dinfo->global_state <= DSTATE_START) {
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
     jpeg_read_header(dinfo, TRUE);
   }
-  this->headerRead = FALSE;
   setDecompParameters(this);
   this->dinfo.out_color_space = pf2cs[pixelFormat];
 #if BITS_IN_JSAMPLE != 16

@@ -249,11 +249,12 @@ static int cs2pf[JPEG_NUMCS] = {
   SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "%s(): %s", FUNCTION_NAME, m); \
   this->isInstanceError = TRUE;  THROWG(m, -1) \
 }
-#define THROWI(format, val) { \
+#define THROWI(format, val1, val2) { \
   SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "%s(): " format, FUNCTION_NAME, \
-           val); \
+           val1, val2); \
   this->isInstanceError = TRUE; \
-  SNPRINTF(errStr, JMSG_LENGTH_MAX, "%s(): " format, FUNCTION_NAME, val); \
+  SNPRINTF(errStr, JMSG_LENGTH_MAX, "%s(): " format, FUNCTION_NAME, val1, \
+           val2); \
   retval = -1;  goto bailout; \
 }
 
@@ -1911,7 +1912,9 @@ DLLEXPORT int tj3SetCroppingRegion(tjhandle handle, tjregion croppingRegion)
 
   if (croppingRegion.x %
       TJSCALED(tjMCUWidth[this->subsamp], this->scalingFactor) != 0)
-    THROWI("The left boundary of the cropping region is not divisible by the scaled MCU width (%d)",
+    THROWI("The left boundary of the cropping region (%d) is not\n"
+           "divisible by the scaled MCU width (%d)",
+           croppingRegion.x,
            TJSCALED(tjMCUWidth[this->subsamp], this->scalingFactor));
   if (croppingRegion.w == 0)
     croppingRegion.w = scaledWidth - croppingRegion.x;
@@ -2685,14 +2688,10 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
       if (this->subsamp == TJSAMP_UNKNOWN)
         THROW("Could not determine subsampling level of JPEG image");
       if ((t[i].r.x % tjMCUWidth[this->subsamp]) != 0 ||
-          (t[i].r.y % tjMCUHeight[this->subsamp]) != 0) {
-        SNPRINTF(this->errStr, JMSG_LENGTH_MAX,
-                 "To crop this JPEG image, x must be a multiple of %d\n"
-                 "and y must be a multiple of %d.\n",
-                 tjMCUWidth[this->subsamp], tjMCUHeight[this->subsamp]);
-        this->isInstanceError = TRUE;
-        retval = -1;  goto bailout;
-      }
+          (t[i].r.y % tjMCUHeight[this->subsamp]) != 0)
+        THROWI("To crop this JPEG image, x must be a multiple of %d\n"
+               "and y must be a multiple of %d.", tjMCUWidth[this->subsamp],
+               tjMCUHeight[this->subsamp]);
     }
   }
 

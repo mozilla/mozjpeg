@@ -197,11 +197,13 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
 
     _jpeg_crop_scanline(dinfo, &crop_x, &crop_w);
     if ((int)crop_x != this->croppingRegion.x)
-      THROWI("Unexplained mismatch between specified and actual (%d) cropping region left boundary",
-             (int)crop_x);
+      THROWI("Unexplained mismatch between specified (%d) and\n"
+             "actual (%d) cropping region left boundary",
+             this->croppingRegion.x, (int)crop_x);
     if ((int)crop_w != this->croppingRegion.w)
-      THROWI("Unexplained mismatch between specified and actual (%d) cropping region width",
-             (int)crop_w);
+      THROWI("Unexplained mismatch between specified (%d) and\n"
+             "actual (%d) cropping region width",
+             this->croppingRegion.w, (int)crop_w);
   }
 #endif
 
@@ -232,8 +234,9 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
       JDIMENSION lines = _jpeg_skip_scanlines(dinfo, this->croppingRegion.y);
 
       if ((int)lines != this->croppingRegion.y)
-        THROWI("Unexplained mismatch between specified and actual (%d) cropping region upper boundary",
-               (int)lines);
+        THROWI("Unexplained mismatch between specified (%d) and\n"
+               "actual (%d) cropping region upper boundary",
+               this->croppingRegion.y, (int)lines);
     }
     while ((int)dinfo->output_scanline <
            this->croppingRegion.y + this->croppingRegion.h)
@@ -249,7 +252,9 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
 
       if (lines != dinfo->output_height - this->croppingRegion.y -
                    this->croppingRegion.h)
-        THROWI("Unexplained mismatch between specified and actual (%d) cropping region lower boundary",
+        THROWI("Unexplained mismatch between specified (%d) and\n"
+               "actual (%d) cropping region lower boundary",
+               this->croppingRegion.y + this->croppingRegion.h,
                (int)(dinfo->output_height - lines));
     }
   } else

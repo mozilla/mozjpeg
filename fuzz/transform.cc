@@ -39,7 +39,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
   tjhandle handle = NULL;
   unsigned char *dstBufs[NUMXFORMS] = { NULL, NULL, NULL };
-  unsigned long dstSizes[NUMXFORMS] = { 0, 0, 0 }, maxBufSize;
+  size_t dstSizes[NUMXFORMS] = { 0, 0, 0 }, maxBufSize;
   int width = 0, height = 0, jpegSubsamp, i, t;
   tjtransform transforms[NUMXFORMS];
 #if defined(__has_feature) && __has_feature(memory_sanitizer)

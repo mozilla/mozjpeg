@@ -372,8 +372,12 @@ located (usually **/usr/bin**.)  Next, execute the following commands:
 
     cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_INSTALL_PREFIX={install_path} \
       [additional CMake flags] {source_directory}
     make
+
+*{install\_path}* is the path under which the libjpeg-turbo binaries should be
+installed.
 
 
 ### 64-bit MinGW Build on Un*x (including Mac and Cygwin)
@@ -391,8 +395,12 @@ located (usually **/usr/bin**.)  Next, execute the following commands:
 
     cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_INSTALL_PREFIX={install_path} \
       [additional CMake flags] {source_directory}
     make
+
+*{install\_path}* is the path under which the libjpeg-turbo binaries should be
+installed.
 
 
 Building libjpeg-turbo for iOS

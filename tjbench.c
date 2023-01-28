@@ -410,8 +410,6 @@ static int fullTest(tjhandle handle, void *srcBuf, int w, int h, int subsamp,
 
         if (jpegBufSize == 0)
           THROW_TJG();
-        if (jpegBufSize > (size_t)INT_MAX)
-          THROW("getting buffer size", "Image is too large");
         if ((jpegBufs[i] = tj3Alloc(jpegBufSize)) == NULL)
           THROW_UNIX("allocating JPEG tiles");
       }
@@ -722,8 +720,6 @@ static int decompTest(char *fileName)
 
         if (jpegBufSize == 0)
           THROW_TJG();
-        if (jpegBufSize > (size_t)INT_MAX)
-          THROW("getting buffer size", "Image is too large");
         if ((jpegBufs[i] = tj3Alloc(jpegBufSize)) == NULL)
           THROW_UNIX("allocating JPEG tiles");
       }

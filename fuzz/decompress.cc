@@ -71,6 +71,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   tj3Set(handle, TJPARAM_SCANLIMIT, 500);
 
   for (pfi = 0; pfi < NUMPF; pfi++) {
+    int w = width, h = height;
     int pf = pixelFormats[pfi], i;
     int64_t sum = 0;
 
@@ -84,20 +85,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
       if (pfi == 1) {
         tjscalingfactor sf = { 1, 2 };
         tj3SetScalingFactor(handle, sf);
+        w = TJSCALED(width, sf);
+        h = TJSCALED(height, sf);
       } else
         tj3SetScalingFactor(handle, TJUNSCALED);
 
       /* Test partial image decompression on the fourth iteration, if the image
          is large enough. */
-      if (pfi == 3 && width >= 97 && height >= 75) {
+      if (pfi == 3 && w >= 97 && h >= 75) {
         tjregion cr = { 32, 16, 65, 59 };
         tj3SetCroppingRegion(handle, cr);
       } else
         tj3SetCroppingRegion(handle, TJUNCROPPED);
     }
 
-    if ((dstBuf = malloc(width * height * tjPixelSize[pf] *
-                         sampleSize)) == NULL)
+    if ((dstBuf = malloc(w * h * tjPixelSize[pf] * sampleSize)) == NULL)
       goto bailout;
 
     if (precision == 8) {
@@ -105,14 +107,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
                          pf) == 0) {
         /* Touch all of the output pixels in order to catch uninitialized reads
            when using MemorySanitizer. */
-        for (i = 0; i < width * height * tjPixelSize[pf]; i++)
+        for (i = 0; i < w * h * tjPixelSize[pf]; i++)
           sum += ((unsigned char *)dstBuf)[i];
       }
     } else if (precision == 12) {
       if (tj3Decompress12(handle, data, size, (short *)dstBuf, 0, pf) == 0) {
         /* Touch all of the output pixels in order to catch uninitialized reads
            when using MemorySanitizer. */
-        for (i = 0; i < width * height * tjPixelSize[pf]; i++)
+        for (i = 0; i < w * h * tjPixelSize[pf]; i++)
           sum += ((short *)dstBuf)[i];
       }
     } else {
@@ -120,7 +122,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
                           pf) == 0) {
         /* Touch all of the output pixels in order to catch uninitialized reads
            when using MemorySanitizer. */
-        for (i = 0; i < width * height * tjPixelSize[pf]; i++)
+        for (i = 0; i < w * h * tjPixelSize[pf]; i++)
           sum += ((unsigned short *)dstBuf)[i];
       }
     }

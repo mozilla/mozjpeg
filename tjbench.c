@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2019, 2021-2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2019, 2021-2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -82,7 +82,7 @@ int tjErrorLine = -1, tjErrorCode = -1;
 }
 
 int flags = TJFLAG_NOREALLOC, compOnly = 0, decompOnly = 0, doYUV = 0,
-  quiet = 0, doTile = 0, pf = TJPF_BGR, yuvPad = 1, doWrite = 1;
+  quiet = 0, doTile = 0, pf = TJPF_BGR, yuvAlign = 1, doWrite = 1;
 char *ext = "ppm";
 const char *pixFormatStr[TJ_NUMPF] = {
   "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY", "", "", "", "", "CMYK"
@@ -182,7 +182,7 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
   if (doYUV) {
     int width = doTile ? tilew : scaledw;
     int height = doTile ? tileh : scaledh;
-    unsigned long yuvSize = tjBufSizeYUV2(width, yuvPad, height, subsamp);
+    unsigned long yuvSize = tjBufSizeYUV2(width, yuvAlign, height, subsamp);
 
     if (yuvSize == (unsigned long)-1)
       THROW_TJ("allocating YUV buffer");
@@ -209,10 +209,10 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
           double startDecode;
 
           if (tjDecompressToYUV2(handle, jpegBuf[tile], jpegSize[tile], yuvBuf,
-                                 width, yuvPad, height, flags) == -1)
+                                 width, yuvAlign, height, flags) == -1)
             THROW_TJ("executing tjDecompressToYUV2()");
           startDecode = getTime();
-          if (tjDecodeYUV(handle, yuvBuf, yuvPad, subsamp, dstPtr2, width,
+          if (tjDecodeYUV(handle, yuvBuf, yuvAlign, subsamp, dstPtr2, width,
                           pitch, height, pf, flags) == -1)
             THROW_TJ("executing tjDecodeYUV()");
           if (iter >= 0) elapsedDecode += getTime() - startDecode;
@@ -273,12 +273,12 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
              qualStr, sizeStr, ext);
 
   if (tjSaveImage(tempStr, dstBuf, scaledw, 0, scaledh, pf, flags) == -1)
-    THROW_TJG("saving bitmap");
+    THROW_TJG("saving output image");
   ptr = strrchr(tempStr, '.');
   SNPRINTF(ptr, 1024 - (ptr - tempStr), "-err.%s", ext);
   if (srcBuf && sf.num == 1 && sf.denom == 1) {
     if (!quiet) printf("Compression error written to %s.\n", tempStr);
-    if (subsamp == TJ_GRAYSCALE) {
+    if (subsamp == TJSAMP_GRAY) {
       unsigned long index, index2;
 
       for (row = 0, index = 0; row < h; row++, index += pitch) {
@@ -305,7 +305,7 @@ static int decomp(unsigned char *srcBuf, unsigned char **jpegBuf,
                                srcBuf[pitch * row + col]);
     }
     if (tjSaveImage(tempStr, dstBuf, w, 0, h, pf, flags) == -1)
-      THROW_TJG("saving bitmap");
+      THROW_TJG("saving output image");
   }
 
 bailout:
@@ -380,7 +380,7 @@ static int fullTest(unsigned char *srcBuf, int w, int h, int subsamp,
       THROW_TJ("executing tjInitCompress()");
 
     if (doYUV) {
-      yuvSize = tjBufSizeYUV2(tilew, yuvPad, tileh, subsamp);
+      yuvSize = tjBufSizeYUV2(tilew, yuvAlign, tileh, subsamp);
       if (yuvSize == (unsigned long)-1)
         THROW_TJ("allocating YUV buffer");
       if ((yuvBuf = (unsigned char *)malloc(yuvSize)) == NULL)
@@ -407,10 +407,10 @@ static int fullTest(unsigned char *srcBuf, int w, int h, int subsamp,
             double startEncode = getTime();
 
             if (tjEncodeYUV3(handle, srcPtr2, width, pitch, height, pf, yuvBuf,
-                             yuvPad, subsamp, flags) == -1)
+                             yuvAlign, subsamp, flags) == -1)
               THROW_TJ("executing tjEncodeYUV3()");
             if (iter >= 0) elapsedEncode += getTime() - startEncode;
-            if (tjCompressFromYUV(handle, yuvBuf, width, yuvPad, height,
+            if (tjCompressFromYUV(handle, yuvBuf, width, yuvAlign, height,
                                   subsamp, &jpegBuf[tile], &jpegSize[tile],
                                   jpegQual, flags) == -1)
               THROW_TJ("executing tjCompressFromYUV()");
@@ -568,7 +568,7 @@ static int decompTest(char *fileName)
 
   if (quiet == 1) {
     printf("All performance values in Mpixels/sec\n\n");
-    printf("Bitmap     JPEG   JPEG     %s  %s   Xform   Comp    Decomp  ",
+    printf("Pixel      JPEG   JPEG     %s  %s   Xform   Comp    Decomp  ",
            doTile ? "Tile " : "Image", doTile ? "Tile " : "Image");
     if (doYUV) printf("Decode");
     printf("\n");
@@ -630,7 +630,7 @@ static int decompTest(char *fileName)
         tw = h;  th = w;  ttilew = tileh;  ttileh = tilew;
       }
 
-      if (xformOpt & TJXOPT_GRAY) tsubsamp = TJ_GRAYSCALE;
+      if (xformOpt & TJXOPT_GRAY) tsubsamp = TJSAMP_GRAY;
       if (xformOp == TJXOP_HFLIP || xformOp == TJXOP_ROT180)
         tw = tw - (tw % tjMCUWidth[tsubsamp]);
       if (xformOp == TJXOP_VFLIP || xformOp == TJXOP_ROT180)
@@ -750,38 +750,34 @@ static void usage(char *progName)
   int i;
 
   printf("USAGE: %s\n", progName);
-  printf("       <Inputfile (BMP|PPM)> <Quality> [options]\n\n");
+  printf("       <Inputimage (BMP|PPM)> <Quality> [options]\n\n");
   printf("       %s\n", progName);
-  printf("       <Inputfile (JPG)> [options]\n\n");
+  printf("       <Inputimage (JPG)> [options]\n\n");
   printf("Options:\n\n");
-  printf("-alloc = Dynamically allocate JPEG image buffers\n");
-  printf("-bmp = Generate output images in Windows Bitmap format (default = PPM)\n");
-  printf("-bottomup = Test bottom-up compression/decompression\n");
-  printf("-tile = Test performance of the codec when the image is encoded as separate\n");
-  printf("     tiles of varying sizes.\n");
+  printf("-alloc = Dynamically allocate JPEG buffers\n");
+  printf("-bmp = Use Windows Bitmap format for output images [default = PPM]\n");
+  printf("-bottomup = Use bottom-up row order for packed-pixel source/destination buffers\n");
+  printf("-tile = Compress/transform the input image into separate JPEG tiles of varying\n");
+  printf("     sizes (useful for measuring JPEG overhead)\n");
   printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
-  printf("     Test the specified color conversion path in the codec (default = BGR)\n");
-  printf("-cmyk = Indirectly test YCCK JPEG compression/decompression (the source\n");
-  printf("     and destination bitmaps are still RGB.  The conversion is done\n");
-  printf("     internally prior to compression or after decompression.)\n");
-  printf("-fastupsample = Use the fastest chrominance upsampling algorithm available in\n");
-  printf("     the underlying codec\n");
-  printf("-fastdct = Use the fastest DCT/IDCT algorithms available in the underlying\n");
-  printf("     codec\n");
-  printf("-accuratedct = Use the most accurate DCT/IDCT algorithms available in the\n");
-  printf("     underlying codec\n");
+  printf("     Use the specified pixel format for packed-pixel source/destination buffers\n");
+  printf("     [default = BGR]\n");
+  printf("-cmyk = Indirectly test YCCK JPEG compression/decompression\n");
+  printf("     (use the CMYK pixel format for packed-pixel source/destination buffers)\n");
+  printf("-fastupsample = Use the fastest chrominance upsampling algorithm available\n");
+  printf("-fastdct = Use the fastest DCT/IDCT algorithm available\n");
+  printf("-accuratedct = Use the most accurate DCT/IDCT algorithm available\n");
   printf("-progressive = Use progressive entropy coding in JPEG images generated by\n");
-  printf("     compression and transform operations.\n");
-  printf("-subsamp <s> = When testing JPEG compression, this option specifies the level\n");
-  printf("     of chrominance subsampling to use (<s> = 444, 422, 440, 420, 411, or\n");
-  printf("     GRAY).  The default is to test Grayscale, 4:2:0, 4:2:2, and 4:4:4 in\n");
-  printf("     sequence.\n");
+  printf("     compression and transform operations\n");
+  printf("-subsamp <s> = When compressing, use the specified level of chrominance\n");
+  printf("     subsampling (<s> = 444, 422, 440, 420, 411, or GRAY) [default = test\n");
+  printf("     Grayscale, 4:2:0, 4:2:2, and 4:4:4 in sequence]\n");
   printf("-quiet = Output results in tabular rather than verbose format\n");
-  printf("-yuv = Test YUV encoding/decoding functions\n");
-  printf("-yuvpad <p> = If testing YUV encoding/decoding, this specifies the number of\n");
-  printf("     bytes to which each row of each plane in the intermediate YUV image is\n");
-  printf("     padded (default = 1)\n");
-  printf("-scale M/N = Scale down the width/height of the decompressed JPEG image by a\n");
+  printf("-yuv = Compress from/decompress to intermediate planar YUV images\n");
+  printf("-yuvpad <p> = The number of bytes by which each row in each plane of an\n");
+  printf("     intermediate YUV image is evenly divisible (must be a power of 2)\n");
+  printf("     [default = 1]\n");
+  printf("-scale M/N = When decompressing, scale the width/height of the JPEG image by a\n");
   printf("     factor of M/N (M/N = ");
   for (i = 0; i < nsf; i++) {
     printf("%d/%d", scalingFactors[i].num, scalingFactors[i].denom);
@@ -794,24 +790,24 @@ static void usage(char *progName)
   }
   printf(")\n");
   printf("-hflip, -vflip, -transpose, -transverse, -rot90, -rot180, -rot270 =\n");
-  printf("     Perform the corresponding lossless transform prior to\n");
-  printf("     decompression (these options are mutually exclusive)\n");
-  printf("-grayscale = Perform lossless grayscale conversion prior to decompression\n");
-  printf("     test (can be combined with the other transforms above)\n");
+  printf("     Perform the specified lossless transform operation on the input image\n");
+  printf("     prior to decompression (these operations are mutually exclusive)\n");
+  printf("-grayscale = Transform the input image into a grayscale JPEG image prior to\n");
+  printf("     decompression (can be combined with the other transform operations above)\n");
   printf("-copynone = Do not copy any extra markers (including EXIF and ICC profile data)\n");
-  printf("     when transforming the image.\n");
-  printf("-benchtime <t> = Run each benchmark for at least <t> seconds (default = 5.0)\n");
-  printf("-warmup <t> = Run each benchmark for <t> seconds (default = 1.0) prior to\n");
+  printf("     when transforming the input image\n");
+  printf("-benchtime <t> = Run each benchmark for at least <t> seconds [default = 5.0]\n");
+  printf("-warmup <t> = Run each benchmark for <t> seconds [default = 1.0] prior to\n");
   printf("     starting the timer, in order to prime the caches and thus improve the\n");
-  printf("     consistency of the results.\n");
+  printf("     consistency of the benchmark results\n");
   printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
   printf("-nowrite = Do not write reference or output images (improves consistency of\n");
-  printf("     performance measurements.)\n");
+  printf("     benchmark results)\n");
   printf("-limitscans = Refuse to decompress or transform progressive JPEG images that\n");
   printf("     have an unreasonably large number of scans\n");
   printf("-stoponwarning = Immediately discontinue the current\n");
-  printf("     compression/decompression/transform operation if the underlying codec\n");
-  printf("     throws a warning (non-fatal error)\n\n");
+  printf("     compression/decompression/transform operation if a warning (non-fatal\n");
+  printf("     error) occurs\n\n");
   printf("NOTE:  If the quality is specified as a range (e.g. 90-100), a separate\n");
   printf("test will be performed for all quality values in the range.\n\n");
   exit(1);
@@ -857,7 +853,7 @@ int main(int argc, char *argv[])
       if (!strcasecmp(argv[i], "-tile")) {
         doTile = 1;  xformOpt |= TJXOPT_CROP;
       } else if (!strcasecmp(argv[i], "-fastupsample")) {
-        printf("Using fast upsampling code\n\n");
+        printf("Using fastest upsampling algorithm\n\n");
         flags |= TJFLAG_FASTUPSAMPLE;
       } else if (!strcasecmp(argv[i], "-fastdct")) {
         printf("Using fastest DCT/IDCT algorithm\n\n");
@@ -868,6 +864,7 @@ int main(int argc, char *argv[])
       } else if (!strcasecmp(argv[i], "-progressive")) {
         printf("Using progressive entropy coding\n\n");
         flags |= TJFLAG_PROGRESSIVE;
+        xformOpt |= TJXOPT_PROGRESSIVE;
       } else if (!strcasecmp(argv[i], "-rgb"))
         pf = TJPF_RGB;
       else if (!strcasecmp(argv[i], "-rgbx"))
@@ -940,12 +937,13 @@ int main(int argc, char *argv[])
       else if (!strcasecmp(argv[i], "-bmp"))
         ext = "bmp";
       else if (!strcasecmp(argv[i], "-yuv")) {
-        printf("Testing YUV planar encoding/decoding\n\n");
+        printf("Testing planar YUV encoding/decoding\n\n");
         doYUV = 1;
       } else if (!strcasecmp(argv[i], "-yuvpad") && i < argc - 1) {
         int tempi = atoi(argv[++i]);
 
-        if (tempi >= 1) yuvPad = tempi;
+        if (tempi >= 1 && (tempi & (tempi - 1)) == 0) yuvAlign = tempi;
+        else usage(argv[0]);
       } else if (!strcasecmp(argv[i], "-subsamp") && i < argc - 1) {
         i++;
         if (toupper(argv[i][0]) == 'G') subsamp = TJSAMP_GRAY;
@@ -958,6 +956,7 @@ int main(int argc, char *argv[])
           case 440:  subsamp = TJSAMP_440;  break;
           case 420:  subsamp = TJSAMP_420;  break;
           case 411:  subsamp = TJSAMP_411;  break;
+          default:  usage(argv[0]);
           }
         }
       } else if (!strcasecmp(argv[i], "-componly"))
@@ -974,26 +973,26 @@ int main(int argc, char *argv[])
 
   if ((sf.num != 1 || sf.denom != 1) && doTile) {
     printf("Disabling tiled compression/decompression tests, because those tests do not\n");
-    printf("work when scaled decompression is enabled.\n");
-    doTile = 0;
+    printf("work when scaled decompression is enabled.\n\n");
+    doTile = 0;  xformOpt &= (~TJXOPT_CROP);
   }
 
   if ((flags & TJFLAG_NOREALLOC) == 0 && doTile) {
     printf("Disabling tiled compression/decompression tests, because those tests do not\n");
     printf("work when dynamic JPEG buffer allocation is enabled.\n\n");
-    doTile = 0;
+    doTile = 0;  xformOpt &= (~TJXOPT_CROP);
   }
 
   if (!decompOnly) {
     if ((srcBuf = tjLoadImage(argv[1], &w, 1, &h, &pf, flags)) == NULL)
-      THROW_TJG("loading bitmap");
+      THROW_TJG("loading input image");
     temp = strrchr(argv[1], '.');
     if (temp != NULL) *temp = '\0';
   }
 
   if (quiet == 1 && !decompOnly) {
     printf("All performance values in Mpixels/sec\n\n");
-    printf("Bitmap     JPEG     JPEG  %s  %s   ",
+    printf("Pixel      JPEG     JPEG  %s  %s   ",
            doTile ? "Tile " : "Image", doTile ? "Tile " : "Image");
     if (doYUV) printf("Encode  ");
     printf("Comp    Comp    Decomp  ");

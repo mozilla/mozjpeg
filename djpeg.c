@@ -316,7 +316,9 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
       if (++argn >= argc)       /* advance to next argument */
         usage();
       icc_filename = argv[argn];
+#ifdef SAVE_MARKERS_SUPPORTED
       jpeg_save_markers(cinfo, JPEG_APP0 + 2, 0xFFFF);
+#endif
 
     } else if (keymatch(arg, "map", 3)) {
       /* Quantize to a color map taken from an input file. */

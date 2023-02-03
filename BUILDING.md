@@ -25,9 +25,9 @@ Build Requirements
     variable or the `ASM_NASM` environment variable.  On Windows, use forward
     slashes rather than backslashes in the path (for example,
     **c:/nasm/nasm.exe**).
-  * NASM and Yasm are located in the CRB (Code Ready Builder) repository on
-    Red Hat Enterprise Linux 8 and in the PowerTools repository on RHEL
-    derivatives, which is not enabled by default.
+  * NASM and Yasm are located in the CRB (Code Ready Builder) or PowerTools
+    repository on Red Hat Enterprise Linux 8+ and derivatives, which is not
+    enabled by default.
 
 ### Un*x Platforms (including Linux, Mac, FreeBSD, Solaris, and Cygwin)
 
@@ -390,8 +390,12 @@ located (usually **/usr/bin**.)  Next, execute the following commands:
 
     cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_INSTALL_PREFIX={install_path} \
       [additional CMake flags] {source_directory}
     make
+
+*{install\_path}* is the path under which the libjpeg-turbo binaries should be
+installed.
 
 
 ### 64-bit MinGW Build on Un*x (including Mac and Cygwin)
@@ -409,8 +413,12 @@ located (usually **/usr/bin**.)  Next, execute the following commands:
 
     cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+      -DCMAKE_INSTALL_PREFIX={install_path} \
       [additional CMake flags] {source_directory}
     make
+
+*{install\_path}* is the path under which the libjpeg-turbo binaries should be
+installed.
 
 
 Building libjpeg-turbo for iOS
@@ -446,6 +454,10 @@ iPhone 5S/iPad Mini 2/iPad Air and newer.
       -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
       [additional CMake flags] {source_directory}
     make
+
+Replace `iPhoneOS` with `iPhoneSimulator` and `-miphoneos-version-min` with
+`-miphonesimulator-version-min` to build libjpeg-turbo for the iOS simulator on
+Macs with Apple silicon CPUs.
 
 
 Building libjpeg-turbo for Android

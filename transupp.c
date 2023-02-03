@@ -143,7 +143,7 @@ requant_comp(j_decompress_ptr cinfo, jpeg_component_info *compptr,
         for (k = 0; k < DCTSIZE2; k++) {
           temp = qtblptr->quantval[k];
           qval = qtblptr1->quantval[k];
-          if (temp != qval) {
+          if (temp != qval && qval != 0) {
             temp *= ptr[k];
             /* The following quantization code is copied from jcdctmgr.c */
 #ifdef FAST_DIVIDE

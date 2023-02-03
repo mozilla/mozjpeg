@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,6 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <limits.h>
 #include "turbojpeg.h"
 #include "jinclude.h"
 #include <jni.h>
@@ -132,24 +133,28 @@ bailout:
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
   (JNIEnv *env, jclass cls, jint width, jint height, jint jpegSubsamp)
 {
-  jint retval = (jint)tjBufSize(width, height, jpegSubsamp);
+  unsigned long retval = tjBufSize(width, height, jpegSubsamp);
 
-  if (retval == -1) THROW_ARG(tjGetErrorStr());
+  if (retval == (unsigned long)-1) THROW_ARG(tjGetErrorStr());
+  if (retval > (unsigned long)INT_MAX)
+    THROW_ARG("Image is too large");
 
 bailout:
-  return retval;
+  return (jint)retval;
 }
 
 /* TurboJPEG 1.4.x: TJ::bufSizeYUV() */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII
-  (JNIEnv *env, jclass cls, jint width, jint pad, jint height, jint subsamp)
+  (JNIEnv *env, jclass cls, jint width, jint align, jint height, jint subsamp)
 {
-  jint retval = (jint)tjBufSizeYUV2(width, pad, height, subsamp);
+  unsigned long retval = tjBufSizeYUV2(width, align, height, subsamp);
 
-  if (retval == -1) THROW_ARG(tjGetErrorStr());
+  if (retval == (unsigned long)-1) THROW_ARG(tjGetErrorStr());
+  if (retval > (unsigned long)INT_MAX)
+    THROW_ARG("Image is too large");
 
 bailout:
-  return retval;
+  return (jint)retval;
 }
 
 /* TurboJPEG 1.2.x: TJ::bufSizeYUV() */
@@ -166,13 +171,15 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_planeSizeYUV__IIIII
   (JNIEnv *env, jclass cls, jint componentID, jint width, jint stride,
    jint height, jint subsamp)
 {
-  jint retval = (jint)tjPlaneSizeYUV(componentID, width, stride, height,
-                                     subsamp);
+  unsigned long retval = tjPlaneSizeYUV(componentID, width, stride, height,
+                                        subsamp);
 
-  if (retval == -1) THROW_ARG(tjGetErrorStr());
+  if (retval == (unsigned long)-1) THROW_ARG(tjGetErrorStr());
+  if (retval > (unsigned long)INT_MAX)
+    THROW_ARG("Image is too large");
 
 bailout:
-  return retval;
+  return (jint)retval;
 }
 
 /* TurboJPEG 1.4.x: TJ::planeWidth() */

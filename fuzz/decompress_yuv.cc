@@ -100,7 +100,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
          when using MemorySanitizer. */
       for (i = 0; i < w * h * tjPixelSize[pf]; i++)
         sum += dstBuf[i];
-    }
+    } else
+      goto bailout;
 
     free(dstBuf);
     dstBuf = NULL;

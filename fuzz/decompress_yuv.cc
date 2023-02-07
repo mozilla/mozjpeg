@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021, 2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -90,7 +90,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
          when using MemorySanitizer. */
       for (i = 0; i < w * h * tjPixelSize[pf]; i++)
         sum += dstBuf[i];
-    }
+    } else
+      goto bailout;
 
     free(dstBuf);
     dstBuf = NULL;

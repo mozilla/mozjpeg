@@ -1,7 +1,7 @@
-3.0 beta1
+3.0 beta2
 =========
 
-### Significant changes relative to 2.1.5:
+### Significant changes relative to 2.1.5.1:
 
 1. Significantly sped up the computation of optimal Huffman tables.  This
 speeds up the compression of tiny images by as much as 2x and provides a
@@ -132,6 +132,27 @@ to create a 12-bit-per-component or 16-bit-per-component JPEG image.
 
     Refer to [libjpeg.txt](libjpeg.txt), [usage.txt](usage.txt), and the
 TurboJPEG API documentation for more details.
+
+
+2.1.5.1
+=======
+
+### Significant changes relative to 2.1.5:
+
+1. The SIMD dispatchers in libjpeg-turbo 2.1.4 and prior stored the list of
+supported SIMD instruction sets in a global variable, which caused an innocuous
+race condition whereby the variable could have been initialized multiple times
+if `jpeg_start_*compress()` was called simultaneously in multiple threads.
+libjpeg-turbo 2.1.5 included an undocumented attempt to fix this race condition
+by making the SIMD support variable thread-local.  However, that caused another
+issue whereby, if `jpeg_start_*compress()` was called in one thread and
+`jpeg_read_*()` or `jpeg_write_*()` was called in a second thread, the SIMD
+support variable was never initialized in the second thread.  On x86 systems,
+this led the second thread to incorrectly assume that AVX2 instructions were
+always available, and when it attempted to use those instructions on older x86
+CPUs that do not support them, an illegal instruction error occurred.  The SIMD
+dispatchers now ensure that the SIMD support variable is initialized before
+dispatching based on its value.
 
 
 2.1.5

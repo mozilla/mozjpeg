@@ -31,6 +31,34 @@ pad_number(VERSION_MINOR 3)
 pad_number(VERSION_REVISION 3)
 set(LIBJPEG_TURBO_VERSION_NUMBER ${VERSION_MAJOR}${VERSION_MINOR}${VERSION_REVISION})
 
+# The libjpeg-turbo build system has never supported and will never support
+# being integrated into another build system using add_subdirectory(), because
+# doing so would require that we (minimally):
+#
+# 1. avoid using certain CMake variables, such as CMAKE_SOURCE_DIR,
+#    CMAKE_BINARY_DIR, and CMAKE_PROJECT_NAME;
+# 2. avoid using implicit include directories and relative paths;
+# 3. optionally provide a way to skip the installation of libjpeg-turbo
+#    components when the 'install' target is built;
+# 4. optionally provide a way to postfix target names, to avoid namespace
+#    conflicts;
+# 5. restructure the top-level CMakeLists.txt so that it properly sets the
+#    PROJECT_VERSION variable; and
+# 6. design automated regression tests to ensure that new commits don't break
+#    any of the above.
+#
+# Even if we did all of that, issues would still arise, because it is
+# impossible for an upstream build system to anticipate the widely varying
+# needs of every downstream build system.  That's why the CMake
+# ExternalProject_Add() function exists.  Downstream projects that wish to
+# integrate libjpeg-turbo as a subdirectory should either use
+# ExternalProject_Add() or make downstream modifications to the libjpeg-turbo
+# build system to suit their specific needs.  Please do not file bug reports,
+# feature requests, or pull requests regarding this.
+if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  message(FATAL_ERROR "The libjpeg-turbo build system cannot be integrated into another build system using add_subdirectory().  Use ExternalProject_Add() instead.")
+endif()
+
 # CMake 3.14 and later sets CMAKE_MACOSX_BUNDLE to TRUE by default when
 # CMAKE_SYSTEM_NAME is iOS, tvOS, or watchOS, which breaks the libjpeg-turbo
 # build.  (Specifically, when CMAKE_MACOSX_BUNDLE is TRUE, executables for

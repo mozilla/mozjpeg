@@ -82,10 +82,10 @@ static void usage(char *progName)
 }
 
 const char *subNameLong[TJ_NUMSAMP] = {
-  "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
+  "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1", "4:4:1"
 };
 const char *subName[TJ_NUMSAMP] = {
-  "444", "422", "420", "GRAY", "440", "411"
+  "444", "422", "420", "GRAY", "440", "411", "441"
 };
 
 const char *pixFormatStr[TJ_NUMPF] = {
@@ -575,9 +575,9 @@ static void decompTest(tjhandle handle, unsigned char *jpegBuf,
 
   for (i = 0; i < n; i++) {
     if (subsamp == TJSAMP_444 || subsamp == TJSAMP_GRAY ||
-        (subsamp == TJSAMP_411 && sf[i].num == 1 &&
+        ((subsamp == TJSAMP_411 || subsamp == TJSAMP_441) && sf[i].num == 1 &&
          (sf[i].denom == 2 || sf[i].denom == 1)) ||
-        (subsamp != TJSAMP_411 && sf[i].num == 1 &&
+        (subsamp != TJSAMP_411 && subsamp != TJSAMP_441 && sf[i].num == 1 &&
          (sf[i].denom == 4 || sf[i].denom == 2 || sf[i].denom == 1)))
       _decompTest(handle, jpegBuf, jpegSize, w, h, pf, basename, subsamp,
                   sf[i]);
@@ -617,7 +617,8 @@ static void doTest(int w, int h, const int *formats, int nformats, int subsamp,
   } else {
     TRY_TJ(chandle, tj3Set(chandle, TJPARAM_QUALITY, 100));
     if (subsamp == TJSAMP_422 || subsamp == TJSAMP_420 ||
-        subsamp == TJSAMP_440 || subsamp == TJSAMP_411)
+        subsamp == TJSAMP_440 || subsamp == TJSAMP_411 ||
+        subsamp == TJSAMP_441)
       TRY_TJ(dhandle, tj3Set(dhandle, TJPARAM_FASTUPSAMPLE, 1));
   }
   TRY_TJ(chandle, tj3Set(chandle, TJPARAM_SUBSAMP, subsamp));
@@ -1186,6 +1187,8 @@ int main(int argc, char *argv[])
     doTest(39, 41, _4sampleFormats, num4bf, TJSAMP_440, "test");
     doTest(41, 35, _3sampleFormats, 2, TJSAMP_411, "test");
     doTest(35, 39, _4sampleFormats, num4bf, TJSAMP_411, "test");
+    doTest(39, 41, _3sampleFormats, 2, TJSAMP_441, "test");
+    doTest(41, 35, _4sampleFormats, num4bf, TJSAMP_441, "test");
   }
   doTest(39, 41, _onlyGray, 1, TJSAMP_GRAY, "test");
   if (!lossless) {
@@ -1200,6 +1203,7 @@ int main(int argc, char *argv[])
     doTest(48, 48, _onlyRGB, 1, TJSAMP_420, "test_yuv0");
     doTest(48, 48, _onlyRGB, 1, TJSAMP_440, "test_yuv0");
     doTest(48, 48, _onlyRGB, 1, TJSAMP_411, "test_yuv0");
+    doTest(48, 48, _onlyRGB, 1, TJSAMP_441, "test_yuv0");
     doTest(48, 48, _onlyRGB, 1, TJSAMP_GRAY, "test_yuv0");
     doTest(48, 48, _onlyGray, 1, TJSAMP_GRAY, "test_yuv0");
   }

@@ -48,16 +48,16 @@ package org.libjpegturbo.turbojpeg;
  * image.  The width and height of each plane are determined by the image
  * width, height, and level of chrominance subsampling.  The luminance plane
  * width is the image width padded to the nearest multiple of the horizontal
- * subsampling factor (1 in the case of 4:4:4, grayscale, or 4:4:0; 2 in the
- * case of 4:2:2 or 4:2:0; 4 in the case of 4:1:1.)  Similarly, the luminance
- * plane height is the image height padded to the nearest multiple of the
- * vertical subsampling factor (1 in the case of 4:4:4, 4:2:2, grayscale, or
- * 4:1:1; 2 in the case of 4:2:0 or 4:4:0.)  This is irrespective of any
- * additional padding that may be specified as an argument to the various
- * YUVImage methods.  The chrominance plane width is equal to the luminance
- * plane width divided by the horizontal subsampling factor, and the
- * chrominance plane height is equal to the luminance plane height divided by
- * the vertical subsampling factor.
+ * subsampling factor (1 in the case of 4:4:4, grayscale, 4:4:0, or 4:4:1; 2 in
+ * the case of 4:2:2 or 4:2:0; 4 in the case of 4:1:1.)  Similarly, the
+ * luminance plane height is the image height padded to the nearest multiple of
+ * the vertical subsampling factor (1 in the case of 4:4:4, 4:2:2, grayscale,
+ * or 4:1:1; 2 in the case of 4:2:0 or 4:4:0; 4 in the case of 4:4:1.)  This is
+ * irrespective of any additional padding that may be specified as an argument
+ * to the various YUVImage methods.  The chrominance plane width is equal to
+ * the luminance plane width divided by the horizontal subsampling factor, and
+ * the chrominance plane height is equal to the luminance plane height divided
+ * by the vertical subsampling factor.
  * <p>
  * For example, if the source image is 35 x 35 pixels and 4:2:2 subsampling is
  * used, then the luminance plane would be 36 x 35 bytes, and each of the

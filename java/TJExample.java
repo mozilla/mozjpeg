@@ -52,7 +52,7 @@ class TJExample implements TJCustomFilter {
 
 
   static final String[] SUBSAMP_NAME = {
-    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1"
+    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1", "4:4:1"
   };
 
   static final String[] COLORSPACE_NAME = {

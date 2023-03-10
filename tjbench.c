@@ -98,13 +98,13 @@ const char *pixFormatStr[TJ_NUMPF] = {
   "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY", "", "", "", "", "CMYK"
 };
 const char *subNameLong[TJ_NUMSAMP] = {
-  "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
+  "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1", "4:4:1"
 };
 const char *csName[TJ_NUMCS] = {
   "RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
 };
 const char *subName[TJ_NUMSAMP] = {
-  "444", "422", "420", "GRAY", "440", "411"
+  "444", "422", "420", "GRAY", "440", "411", "441"
 };
 tjscalingfactor *scalingFactors = NULL, sf = { 1, 1 };
 tjregion cr = { 0, 0, 0, 0 };
@@ -941,7 +941,7 @@ static void usage(char *progName)
   }
   printf(")\n");
   printf("-subsamp S = When compressing, use the specified level of chrominance\n");
-  printf("     subsampling (S = 444, 422, 440, 420, 411, or GRAY) [default = test\n");
+  printf("     subsampling (S = 444, 422, 440, 420, 411, 441, or GRAY) [default = test\n");
   printf("     Grayscale, 4:2:0, 4:2:2, and 4:4:4 in sequence]\n");
   printf("-hflip, -vflip, -transpose, -transverse, -rot90, -rot180, -rot270 =\n");
   printf("     Perform the specified lossless transform operation on the input image\n");
@@ -1122,6 +1122,7 @@ int main(int argc, char *argv[])
           case 440:  subsamp = TJSAMP_440;  break;
           case 420:  subsamp = TJSAMP_420;  break;
           case 411:  subsamp = TJSAMP_411;  break;
+          case 441:  subsamp = TJSAMP_441;  break;
           default:  usage(argv[0]);
           }
         }

@@ -565,33 +565,40 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#SAMP_441">SAMP_441</a></span></code></th>
+<td class="colLast">
+<div class="block">4:4:1 chrominance subsampling.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#SAMP_444">SAMP_444</a></span></code></th>
 <td class="colLast">
 <div class="block">4:4:4 chrominance subsampling (no chrominance subsampling).</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#SAMP_GRAY">SAMP_GRAY</a></span></code></th>
 <td class="colLast">
 <div class="block">Grayscale.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#SAMP_UNKNOWN">SAMP_UNKNOWN</a></span></code></th>
 <td class="colLast">
 <div class="block">Unknown subsampling.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static java.awt.Rectangle</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#UNCROPPED">UNCROPPED</a></span></code></th>
 <td class="colLast">
 <div class="block">A <code>java.awt.Rectangle</code> instance that specifies no cropping</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static <a href="TJScalingFactor.html" title="class in org.libjpegturbo.turbojpeg">TJScalingFactor</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#UNSCALED">UNSCALED</a></span></code></th>
 <td class="colLast">
@@ -864,6 +871,27 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.SAMP_411">Constant Field Values</a></dd>
+</dl>
+</li>
+</ul>
+<a id="SAMP_441">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>SAMP_441</h4>
+<pre>public static final&nbsp;int SAMP_441</pre>
+<div class="block">4:4:1 chrominance subsampling.  The JPEG or YUV image will contain one
+ chrominance component for every 1x4 block of pixels in the source image.
+ JPEG images compressed with 4:4:1 subsampling will be almost exactly the
+ same size as those compressed with 4:2:0 subsampling, and in the
+ aggregate, both subsampling methods produce approximately the same
+ perceptual quality.  However, 4:4:1 is better able to reproduce sharp
+ vertical features.  Note that 4:4:1 subsampling is not fully accelerated
+ in libjpeg-turbo.</div>
+<dl>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJ.SAMP_441">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>

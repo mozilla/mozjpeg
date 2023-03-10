@@ -52,11 +52,11 @@ final class TJBench {
   };
 
   static final String[] SUBNAME_LONG = {
-    "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1"
+    "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1", "4:4:1"
   };
 
   static final String[] SUBNAME = {
-    "444", "422", "420", "GRAY", "440", "411"
+    "444", "422", "420", "GRAY", "440", "411", "441"
   };
 
   static final String[] CSNAME = {
@@ -826,7 +826,7 @@ final class TJBench {
     }
     System.out.println(")");
     System.out.println("-subsamp S = When compressing, use the specified level of chrominance");
-    System.out.println("     subsampling (S = 444, 422, 440, 420, 411, or GRAY) [default = test");
+    System.out.println("     subsampling (S = 444, 422, 440, 420, 411, 441, or GRAY) [default = test");
     System.out.println("     Grayscale, 4:2:0, 4:2:2, and 4:4:4 in sequence]");
     System.out.println("-hflip, -vflip, -transpose, -transverse, -rot90, -rot180, -rot270 =");
     System.out.println("     Perform the specified lossless transform operation on the input image");
@@ -1055,6 +1055,8 @@ final class TJBench {
               subsamp = TJ.SAMP_420;
             else if (argv[i].equals("411"))
               subsamp = TJ.SAMP_411;
+            else if (argv[i].equals("441"))
+              subsamp = TJ.SAMP_441;
             else
               usage();
           } else if (argv[i].equalsIgnoreCase("-componly"))

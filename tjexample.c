@@ -62,7 +62,7 @@
 
 
 const char *subsampName[TJ_NUMSAMP] = {
-  "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1"
+  "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1", "4:4:1"
 };
 
 const char *colorspaceName[TJ_NUMCS] = {

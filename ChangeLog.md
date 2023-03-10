@@ -1,3 +1,14 @@
+3.0.0
+=====
+
+### Significant changes relative to 3.0 beta2:
+
+1. The TurboJPEG API now supports 4:4:1 (transposed 4:1:1) chrominance
+subsampling, which allows losslessly transposed or rotated 4:1:1 JPEG images to
+be losslessly cropped, partially decompressed, or decompressed to planar YUV
+images.
+
+
 2.1.91 (3.0 beta2)
 ==================
 

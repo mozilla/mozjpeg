@@ -58,16 +58,16 @@
  * image.  The width and height of each plane are determined by the image
  * width, height, and level of chrominance subsampling.  The luminance plane
  * width is the image width padded to the nearest multiple of the horizontal
- * subsampling factor (1 in the case of 4:4:4, grayscale, or 4:4:0; 2 in the
- * case of 4:2:2 or 4:2:0; 4 in the case of 4:1:1.)  Similarly, the luminance
- * plane height is the image height padded to the nearest multiple of the
- * vertical subsampling factor (1 in the case of 4:4:4, 4:2:2, grayscale, or
- * 4:1:1; 2 in the case of 4:2:0 or 4:4:0.)  This is irrespective of any
- * additional padding that may be specified as an argument to the various YUV
- * functions.  The chrominance plane width is equal to the luminance plane
- * width divided by the horizontal subsampling factor, and the chrominance
- * plane height is equal to the luminance plane height divided by the vertical
- * subsampling factor.
+ * subsampling factor (1 in the case of 4:4:4, grayscale, 4:4:0, or 4:4:1; 2 in
+ * the case of 4:2:2 or 4:2:0; 4 in the case of 4:1:1.)  Similarly, the
+ * luminance plane height is the image height padded to the nearest multiple of
+ * the vertical subsampling factor (1 in the case of 4:4:4, 4:2:2, grayscale,
+ * or 4:1:1; 2 in the case of 4:2:0 or 4:4:0; 4 in the case of 4:4:1.)  This is
+ * irrespective of any additional padding that may be specified as an argument
+ * to the various YUV functions.  The chrominance plane width is equal to the
+ * luminance plane width divided by the horizontal subsampling factor, and the
+ * chrominance plane height is equal to the luminance plane height divided by
+ * the vertical subsampling factor.
  *
  * For example, if the source image is 35 x 35 pixels and 4:2:2 subsampling is
  * used, then the luminance plane would be 36 x 35 bytes, and each of the
@@ -107,7 +107,7 @@ enum TJINIT {
 /**
  * The number of chrominance subsampling options
  */
-#define TJ_NUMSAMP  6
+#define TJ_NUMSAMP  7
 
 /**
  * Chrominance subsampling options.
@@ -159,6 +159,18 @@ enum TJSAMP {
    */
   TJSAMP_411,
   /**
+   * 4:4:1 chrominance subsampling.  The JPEG or YUV image will contain one
+   * chrominance component for every 1x4 block of pixels in the source image.
+   * JPEG images compressed with 4:4:1 subsampling will be almost exactly the
+   * same size as those compressed with 4:2:0 subsampling, and in the
+   * aggregate, both subsampling methods produce approximately the same
+   * perceptual quality.  However, 4:4:1 is better able to reproduce sharp
+   * vertical features.
+   *
+   * @note 4:4:1 subsampling is not fully accelerated in libjpeg-turbo.
+   */
+  TJSAMP_441,
+  /**
    * Unknown subsampling.  The JPEG image uses an unusual type of chrominance
    * subsampling.  Such images can be decompressed into packed-pixel images,
    * but they cannot be
@@ -177,8 +189,9 @@ enum TJSAMP {
  * - 8x16 for 4:4:0
  * - 16x16 for 4:2:0
  * - 32x8 for 4:1:1
+ * - 8x32 for 4:4:1
  */
-static const int tjMCUWidth[TJ_NUMSAMP]  = { 8, 16, 16, 8, 8, 32 };
+static const int tjMCUWidth[TJ_NUMSAMP]  = { 8, 16, 16, 8, 8, 32, 8 };
 
 /**
  * MCU block height (in pixels) for a given level of chrominance subsampling.
@@ -188,8 +201,9 @@ static const int tjMCUWidth[TJ_NUMSAMP]  = { 8, 16, 16, 8, 8, 32 };
  * - 8x16 for 4:4:0
  * - 16x16 for 4:2:0
  * - 32x8 for 4:1:1
+ * - 8x32 for 4:4:1
  */
-static const int tjMCUHeight[TJ_NUMSAMP] = { 8, 8, 16, 8, 16, 8 };
+static const int tjMCUHeight[TJ_NUMSAMP] = { 8, 8, 16, 8, 16, 8, 32 };
 
 
 /**

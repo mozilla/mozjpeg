@@ -169,6 +169,7 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074accf740e6f3aa6ba20ba922cad13cb974">TJSAMP_440</a>, 
 <a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a28ec62575e5ea295c3fde3001dc628e2">TJSAMP_411</a>, 
+<a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074a3351696e1dd34a083a35b6be8b90122d">TJSAMP_441</a>, 
 <a class="el" href="group___turbo_j_p_e_g.html#gga1d047060ea80bb9820d540bb928e9074ac124fa8f6cb41147e3d670dfbdfb7173">TJSAMP_UNKNOWN</a>
 <br />
  }</td></tr>
@@ -413,7 +414,7 @@ Variables</h2></td></tr>
 <h2><a class="anchor" id="autotoc_md0"></a>
 YUV Image Format Notes</h2>
 <p>Technically, the JPEG format uses the YCbCr colorspace (which is technically not a colorspace but a color transform), but per the convention of the digital video community, the TurboJPEG API uses "YUV" to refer to an image format consisting of Y, Cb, and Cr image planes.</p>
-<p>Each plane is simply a 2D array of bytes, each byte representing the value of one of the components (Y, Cb, or Cr) at a particular location in the image. The width and height of each plane are determined by the image width, height, and level of chrominance subsampling. The luminance plane width is the image width padded to the nearest multiple of the horizontal subsampling factor (1 in the case of 4:4:4, grayscale, or 4:4:0; 2 in the case of 4:2:2 or 4:2:0; 4 in the case of 4:1:1.) Similarly, the luminance plane height is the image height padded to the nearest multiple of the vertical subsampling factor (1 in the case of 4:4:4, 4:2:2, grayscale, or 4:1:1; 2 in the case of 4:2:0 or 4:4:0.) This is irrespective of any additional padding that may be specified as an argument to the various YUV functions. The chrominance plane width is equal to the luminance plane width divided by the horizontal subsampling factor, and the chrominance plane height is equal to the luminance plane height divided by the vertical subsampling factor.</p>
+<p>Each plane is simply a 2D array of bytes, each byte representing the value of one of the components (Y, Cb, or Cr) at a particular location in the image. The width and height of each plane are determined by the image width, height, and level of chrominance subsampling. The luminance plane width is the image width padded to the nearest multiple of the horizontal subsampling factor (1 in the case of 4:4:4, grayscale, 4:4:0, or 4:4:1; 2 in the case of 4:2:2 or 4:2:0; 4 in the case of 4:1:1.) Similarly, the luminance plane height is the image height padded to the nearest multiple of the vertical subsampling factor (1 in the case of 4:4:4, 4:2:2, grayscale, or 4:1:1; 2 in the case of 4:2:0 or 4:4:0; 4 in the case of 4:4:1.) This is irrespective of any additional padding that may be specified as an argument to the various YUV functions. The chrominance plane width is equal to the luminance plane width divided by the horizontal subsampling factor, and the chrominance plane height is equal to the luminance plane height divided by the vertical subsampling factor.</p>
 <p>For example, if the source image is 35 x 35 pixels and 4:2:2 subsampling is used, then the luminance plane would be 36 x 35 bytes, and each of the chrominance planes would be 18 x 35 bytes. If you specify a row alignment of 4 bytes on top of this, then the luminance plane would be 36 x 35 bytes, and each of the chrominance planes would be 20 x 35 bytes. </p>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ga39f57a6fb02d9cf32e7b6890099b5a71"></a>
@@ -1091,6 +1092,10 @@ YUV Image Format Notes</h2>
 <tr><td class="fieldname"><a id="gga1d047060ea80bb9820d540bb928e9074a28ec62575e5ea295c3fde3001dc628e2"></a>TJSAMP_411&#160;</td><td class="fielddoc"><p>4:1:1 chrominance subsampling. </p>
 <p>The JPEG or YUV image will contain one chrominance component for every 4x1 block of pixels in the source image. JPEG images compressed with 4:1:1 subsampling will be almost exactly the same size as those compressed with 4:2:0 subsampling, and in the aggregate, both subsampling methods produce approximately the same perceptual quality. However, 4:1:1 is better able to reproduce sharp horizontal features.</p>
 <dl class="section note"><dt>Note</dt><dd>4:1:1 subsampling is not fully accelerated in libjpeg-turbo. </dd></dl>
+</td></tr>
+<tr><td class="fieldname"><a id="gga1d047060ea80bb9820d540bb928e9074a3351696e1dd34a083a35b6be8b90122d"></a>TJSAMP_441&#160;</td><td class="fielddoc"><p>4:4:1 chrominance subsampling. </p>
+<p>The JPEG or YUV image will contain one chrominance component for every 1x4 block of pixels in the source image. JPEG images compressed with 4:4:1 subsampling will be almost exactly the same size as those compressed with 4:2:0 subsampling, and in the aggregate, both subsampling methods produce approximately the same perceptual quality. However, 4:4:1 is better able to reproduce sharp vertical features.</p>
+<dl class="section note"><dt>Note</dt><dd>4:4:1 subsampling is not fully accelerated in libjpeg-turbo. </dd></dl>
 </td></tr>
 <tr><td class="fieldname"><a id="gga1d047060ea80bb9820d540bb928e9074ac124fa8f6cb41147e3d670dfbdfb7173"></a>TJSAMP_UNKNOWN&#160;</td><td class="fielddoc"><p>Unknown subsampling. </p>
 <p>The JPEG image uses an unusual type of chrominance subsampling. Such images can be decompressed into packed-pixel images, but they cannot be</p><ul>
@@ -3461,7 +3466,8 @@ If you choose option 1, then <code>dstSizes[i]</code> should be set to the size 
 <li>16x8 for 4:2:2</li>
 <li>8x16 for 4:4:0</li>
 <li>16x16 for 4:2:0</li>
-<li>32x8 for 4:1:1 </li>
+<li>32x8 for 4:1:1</li>
+<li>8x32 for 4:4:1 </li>
 </ul>
 
 </div>
@@ -3492,7 +3498,8 @@ If you choose option 1, then <code>dstSizes[i]</code> should be set to the size 
 <li>16x8 for 4:2:2</li>
 <li>8x16 for 4:4:0</li>
 <li>16x16 for 4:2:0</li>
-<li>32x8 for 4:1:1 </li>
+<li>32x8 for 4:1:1</li>
+<li>8x32 for 4:4:1 </li>
 </ul>
 
 </div>

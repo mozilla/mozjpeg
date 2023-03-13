@@ -499,7 +499,7 @@ final class TJBench {
     // Original image
     int w = 0, h = 0, ntilesw = 1, ntilesh = 1, subsamp = -1, cs = -1;
     // Transformed image
-    int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
+    int minTile, tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
 
     FileInputStream fis = new FileInputStream(fileName);
     if (fis.getChannel().size() > (long)Integer.MAX_VALUE)
@@ -541,7 +541,8 @@ final class TJBench {
                         (flags & TJ.FLAG_BOTTOMUP) != 0 ?
                         "Bottom-up" : "Top-down");
 
-    for (int tilew = doTile ? 16 : w, tileh = doTile ? 16 : h; ;
+    minTile = Math.max(TJ.getMCUWidth(subsamp), TJ.getMCUHeight(subsamp));
+    for (int tilew = doTile ? minTile : w, tileh = doTile ? minTile : h; ;
          tilew *= 2, tileh *= 2) {
       if (tilew > w)
         tilew = w;

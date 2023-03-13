@@ -534,8 +534,8 @@ static int decompTest(char *fileName)
   int ps = tjPixelSize[pf], tile, row, col, i, iter, retval = 0, decompsrc = 0;
   char *temp = NULL, tempStr[80], tempStr2[80];
   /* Original image */
-  int w = 0, h = 0, tilew, tileh, ntilesw = 1, ntilesh = 1, subsamp = -1,
-    cs = -1;
+  int w = 0, h = 0, minTile, tilew, tileh, ntilesw = 1, ntilesh = 1,
+    subsamp = -1, cs = -1;
   /* Transformed image */
   int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
 
@@ -580,7 +580,8 @@ static int decompTest(char *fileName)
            formatName(subsamp, cs, tempStr), pixFormatStr[pf],
            (flags & TJFLAG_BOTTOMUP) ? "Bottom-up" : "Top-down");
 
-  for (tilew = doTile ? 16 : w, tileh = doTile ? 16 : h; ;
+  minTile = max(tjMCUWidth[subsamp], tjMCUHeight[subsamp]);
+  for (tilew = doTile ? minTile : w, tileh = doTile ? minTile : h; ;
        tilew *= 2, tileh *= 2) {
     if (tilew > w) tilew = w;
     if (tileh > h) tileh = h;

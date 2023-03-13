@@ -656,6 +656,10 @@ final class TJBench {
             tsubsamp = TJ.SAMP_440;
           else if (tsubsamp == TJ.SAMP_440)
             tsubsamp = TJ.SAMP_422;
+          else if (tsubsamp == TJ.SAMP_411)
+            tsubsamp = TJ.SAMP_441;
+          else if (tsubsamp == TJ.SAMP_441)
+            tsubsamp = TJ.SAMP_411;
         }
 
         TJTransform[] t = new TJTransform[tntilesw * tntilesh];

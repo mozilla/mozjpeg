@@ -769,6 +769,8 @@ static int decompTest(char *fileName)
           xformOp == TJXOP_ROT90 || xformOp == TJXOP_ROT270) {
         if (tsubsamp == TJSAMP_422) tsubsamp = TJSAMP_440;
         else if (tsubsamp == TJSAMP_440) tsubsamp = TJSAMP_422;
+        else if (tsubsamp == TJSAMP_411) tsubsamp = TJSAMP_441;
+        else if (tsubsamp == TJSAMP_441) tsubsamp = TJSAMP_411;
       }
 
       for (row = 0, tile = 0; row < tntilesh; row++) {

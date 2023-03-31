@@ -530,7 +530,7 @@ final class TJBench {
     // Original image
     int w = 0, h = 0, ntilesw = 1, ntilesh = 1, subsamp = -1, cs = -1;
     // Transformed image
-    int minTile, tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
+    int minTile = 16, tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
 
     FileInputStream fis = new FileInputStream(fileName);
     if (fis.getChannel().size() > (long)Integer.MAX_VALUE)
@@ -593,7 +593,11 @@ final class TJBench {
                         precision, formatName(subsamp, cs), PIXFORMATSTR[pf],
                         bottomUp ? "Bottom-up" : "Top-down");
 
-    minTile = Math.max(TJ.getMCUWidth(subsamp), TJ.getMCUHeight(subsamp));
+    if (doTile) {
+      if (subsamp == TJ.SAMP_UNKNOWN)
+        throw new Exception("Could not determine subsampling level of JPEG image");
+      minTile = Math.max(TJ.getMCUWidth(subsamp), TJ.getMCUHeight(subsamp));
+    }
     for (int tilew = doTile ? minTile : w, tileh = doTile ? minTile : h; ;
          tilew *= 2, tileh *= 2) {
       if (tilew > w)

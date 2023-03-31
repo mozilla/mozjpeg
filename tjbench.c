@@ -617,7 +617,7 @@ static int decompTest(char *fileName)
   int ps = tjPixelSize[pf], tile, row, col, i, iter, retval = 0, decompsrc = 0;
   char *temp = NULL, tempStr[80], tempStr2[80];
   /* Original image */
-  int w = 0, h = 0, minTile, tilew, tileh, ntilesw = 1, ntilesh = 1,
+  int w = 0, h = 0, minTile = 16, tilew, tileh, ntilesw = 1, ntilesh = 1,
     subsamp = -1, cs = -1;
   /* Transformed image */
   int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
@@ -697,7 +697,12 @@ static int decompTest(char *fileName)
            formatName(subsamp, cs, tempStr), pixFormatStr[pf],
            bottomUp ? "Bottom-up" : "Top-down");
 
-  minTile = max(tjMCUWidth[subsamp], tjMCUHeight[subsamp]);
+  if (doTile) {
+    if (subsamp == TJSAMP_UNKNOWN)
+      THROW("transforming",
+            "Could not determine subsampling level of JPEG image");
+    minTile = max(tjMCUWidth[subsamp], tjMCUHeight[subsamp]);
+  }
   for (tilew = doTile ? minTile : w, tileh = doTile ? minTile : h; ;
        tilew *= 2, tileh *= 2) {
     if (tilew > w) tilew = w;

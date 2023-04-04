@@ -53,7 +53,7 @@
  *
  * The reconstructed sample is supposed to be calculated modulo 2^16, so we
  * logically AND the result with 0xFFFF.
-*/
+ */
 
 #define UNDIFFERENCE_1D(INITIAL_PREDICTOR) \
   int Ra; \

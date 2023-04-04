@@ -8,6 +8,13 @@ subsampling, which allows losslessly transposed or rotated 4:1:1 JPEG images to
 be losslessly cropped, partially decompressed, or decompressed to planar YUV
 images.
 
+2. Fixed various segfaults and buffer overruns that occurred when attempting to
+decompress various specially-crafted malformed 12-bit-per-component lossless
+JPEG images.  These issues were caused by out-of-range sample values that were
+not range-limited before being used as array indices.  The issues were specific
+to 12-bit data precision, since that is the only data precision for which the
+range of the sample data type exceeds the valid sample range.
+
 
 2.1.91 (3.0 beta2)
 ==================

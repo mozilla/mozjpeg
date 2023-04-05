@@ -1,3 +1,15 @@
+2.1.6
+=====
+
+### Significant changes relative to 2.1.5.1:
+
+1. Fixed an oversight in 1.4 beta1[8] that caused various segfaults and buffer
+overruns when attempting to decompress various specially-crafted malformed
+12-bit-per-component JPEG images using a 12-bit-per-component build of djpeg
+(`-DWITH_12BIT=1`) with both color quantization and RGB565 color conversion
+enabled.
+
+
 2.1.5.1
 =======
 

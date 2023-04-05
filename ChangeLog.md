@@ -15,6 +15,11 @@ not range-limited before being used as array indices.  The issues were specific
 to 12-bit data precision, since that is the only data precision for which the
 range of the sample data type exceeds the valid sample range.
 
+3. Fixed an oversight in 1.4 beta1[8] that caused various segfaults and buffer
+overruns when attempting to decompress various specially-crafted malformed
+12-bit-per-component JPEG images using djpeg with both color quantization and
+RGB565 color conversion enabled.
+
 
 2.1.91 (3.0 beta2)
 ==================

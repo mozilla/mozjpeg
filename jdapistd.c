@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2020, 2022, D. R. Commander.
+ * Copyright (C) 2010, 2015-2020, 2022-2023, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -265,9 +265,11 @@ _jpeg_crop_scanline(j_decompress_ptr cinfo, JDIMENSION *xoffset,
     /* Set downsampled_width to the new output width. */
     orig_downsampled_width = compptr->downsampled_width;
     compptr->downsampled_width =
-      (JDIMENSION)jdiv_round_up((long)(cinfo->output_width *
-                                       compptr->h_samp_factor),
-                                (long)cinfo->max_h_samp_factor);
+      (JDIMENSION)jdiv_round_up((long)cinfo->output_width *
+                                (long)(compptr->h_samp_factor *
+                                       compptr->_DCT_scaled_size),
+                                (long)(cinfo->max_h_samp_factor *
+                                       cinfo->_min_DCT_scaled_size));
     if (compptr->downsampled_width < 2 && orig_downsampled_width >= 2)
       reinit_upsampler = TRUE;
 

@@ -20,6 +20,14 @@ overruns when attempting to decompress various specially-crafted malformed
 12-bit-per-component JPEG images using djpeg with both color quantization and
 RGB565 color conversion enabled.
 
+4. Fixed an issue whereby `jpeg_crop_scanline()` sometimes miscalculated the
+downsampled width for components with 4x2 or 2x4 subsampling factors if
+decompression scaling was enabled.  This caused the components to be upsampled
+incompletely, which caused the color converter to read from uninitialized
+memory.  With 12-bit data precision, this caused a buffer overrun or underrun
+and subsequent segfault if the sample value read from unitialized memory was
+outside of the valid sample range.
+
 
 2.1.91 (3.0 beta2)
 ==================

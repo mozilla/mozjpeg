@@ -76,9 +76,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     int64_t sum = 0;
 
     /* Test non-default decompression options on the first iteration. */
+    tj3Set(handle, TJPARAM_BOTTOMUP, pfi == 0);
+    tj3Set(handle, TJPARAM_FASTUPSAMPLE, pfi == 0);
+
     if (!tj3Get(handle, TJPARAM_LOSSLESS)) {
-      tj3Set(handle, TJPARAM_BOTTOMUP, pfi == 0);
-      tj3Set(handle, TJPARAM_FASTUPSAMPLE, pfi == 0);
       tj3Set(handle, TJPARAM_FASTDCT, pfi == 0);
 
       /* Test IDCT scaling on the second iteration. */

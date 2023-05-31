@@ -35,6 +35,9 @@ LOCAL(boolean)
 use_merged_upsample(j_decompress_ptr cinfo)
 {
 #ifdef UPSAMPLE_MERGING_SUPPORTED
+  /* Colorspace conversion is not supported with lossless JPEG images */
+  if (cinfo->master->lossless)
+    return FALSE;
   /* Merging is the equivalent of plain box-filter upsampling */
   if (cinfo->do_fancy_upsampling || cinfo->CCIR601_sampling)
     return FALSE;

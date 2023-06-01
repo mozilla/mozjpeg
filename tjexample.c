@@ -338,7 +338,12 @@ int main(int argc, char **argv)
       outSubsamp = inSubsamp;
 
     pixelFormat = TJPF_BGRX;
-    if ((imgBuf = tj3Alloc(width * height * tjPixelSize[pixelFormat])) == NULL)
+    if ((unsigned long long)width * height * tjPixelSize[pixelFormat] >
+        (unsigned long long)((size_t)-1))
+      THROW("allocating uncompressed image buffer", "Image is too large");
+    if ((imgBuf =
+         (unsigned char *)malloc(sizeof(unsigned char) * width * height *
+                                 tjPixelSize[pixelFormat])) == NULL)
       THROW_UNIX("allocating uncompressed image buffer");
 
     if (tj3Decompress8(tjInstance, jpegBuf, jpegSize, imgBuf, 0,

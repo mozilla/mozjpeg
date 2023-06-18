@@ -69,7 +69,7 @@ build_script:
 
       move c:\ljt.nightly\log-windows.txt .
 
-      zip libjpeg-turbo-installers.zip *.exe
+      zip libjpeg-turbo-installers.zip libjpeg-turbo-*.exe
 
 artifacts:
   - path: '*.tar.gz'

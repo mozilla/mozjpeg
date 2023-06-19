@@ -23,6 +23,8 @@ early 2010, libjpeg-turbo spun off into an independent project, with the goal
 of making high-speed JPEG compression/decompression technology available to a
 broader range of users and developers.
 
+More information about libjpeg-turbo can be found at
+<https://libjpeg-turbo.org>.
 
 License
 =======

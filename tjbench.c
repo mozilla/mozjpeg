@@ -600,10 +600,16 @@ static int decompTest(char *fileName)
     if ((flags & TJFLAG_NOREALLOC) != 0 &&
         (doTile || xformOp != TJXOP_NONE || xformOpt != 0 || customFilter))
       for (i = 0; i < ntilesw * ntilesh; i++) {
-        if (tjBufSize(tilew, tileh, subsamp) > (unsigned long)INT_MAX)
+        unsigned long jpegBufSize;
+
+        if (xformOp == TJXOP_TRANSPOSE || xformOp == TJXOP_TRANSVERSE ||
+            xformOp == TJXOP_ROT90 || xformOp == TJXOP_ROT270)
+          jpegBufSize = tjBufSize(tileh, tilew, subsamp);
+        else
+          jpegBufSize = tjBufSize(tilew, tileh, subsamp);
+        if (jpegBufSize > (unsigned long)INT_MAX)
           THROW("getting buffer size", "Image is too large");
-        if ((jpegBuf[i] = (unsigned char *)
-                          tjAlloc(tjBufSize(tilew, tileh, subsamp))) == NULL)
+        if ((jpegBuf[i] = (unsigned char *)tjAlloc(jpegBufSize)) == NULL)
           THROW_UNIX("allocating JPEG tiles");
       }
 

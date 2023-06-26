@@ -722,8 +722,13 @@ static int decompTest(char *fileName)
     if (noRealloc &&
         (doTile || xformOp != TJXOP_NONE || xformOpt != 0 || customFilter)) {
       for (i = 0; i < ntilesw * ntilesh; i++) {
-        size_t jpegBufSize = tj3JPEGBufSize(tilew, tileh, subsamp);
+        size_t jpegBufSize;
 
+        if (xformOp == TJXOP_TRANSPOSE || xformOp == TJXOP_TRANSVERSE ||
+            xformOp == TJXOP_ROT90 || xformOp == TJXOP_ROT270)
+          jpegBufSize = tj3JPEGBufSize(tileh, tilew, subsamp);
+        else
+          jpegBufSize = tj3JPEGBufSize(tilew, tileh, subsamp);
         if (jpegBufSize == 0)
           THROW_TJG();
         if ((jpegBufs[i] = tj3Alloc(jpegBufSize)) == NULL)

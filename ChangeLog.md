@@ -29,6 +29,22 @@ memory.  With 12-bit data precision, this caused a buffer overrun or underrun
 and subsequent segfault if the sample value read from unitialized memory was
 outside of the valid sample range.
 
+5. Fixed a long-standing issue whereby the `tj3Transform()` function, when used
+with the `TJXOP_TRANSPOSE`, `TJXOP_TRANSVERSE`, `TJXOP_ROT90`, or
+`TJXOP_ROT270` transform operation and without automatic JPEG destination
+buffer (re)allocation or lossless cropping, computed the worst-case transformed
+JPEG image size based on the source image dimensions rather than the
+transformed image dimensions.  If a calling program allocated the JPEG
+destination buffer based on the transformed image dimensions, as the API
+documentation instructs, and attempted to transform a specially-crafted 4:2:2,
+4:4:0, 4:1:1, or 4:4:1 JPEG source image containing a large amount of metadata,
+the issue caused `tj3Transform()` to overflow the JPEG destination buffer
+rather than fail gracefully.  The issue could be worked around by setting
+`TJXOPT_COPYNONE`.  Note that, irrespective of this issue, `tj3Transform()`
+cannot reliably transform JPEG source images that contain a large amount of
+metadata unless automatic JPEG destination buffer (re)allocation is used or
+`TJXOPT_COPYNONE` is set.
+
 
 2.1.91 (3.0 beta2)
 ==================

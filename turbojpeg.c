@@ -2702,6 +2702,10 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
 
     if (!xinfo[i].crop) {
       w = dinfo->image_width;  h = dinfo->image_height;
+      if (t[i].op == TJXOP_TRANSPOSE || t[i].op == TJXOP_TRANSVERSE ||
+          t[i].op == TJXOP_ROT90 || t[i].op == TJXOP_ROT270) {
+        w = dinfo->image_height;  h = dinfo->image_width;
+      }
     } else {
       w = xinfo[i].crop_width;  h = xinfo[i].crop_height;
     }

@@ -1213,6 +1213,10 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
   for (i = 0; i < n; i++) {
     int w = jpegWidth, h = jpegHeight;
 
+    if (t[i].op == TJXOP_TRANSPOSE || t[i].op == TJXOP_TRANSVERSE ||
+        t[i].op == TJXOP_ROT90 || t[i].op == TJXOP_ROT270) {
+      w = jpegHeight;  h = jpegWidth;
+    }
     if (t[i].r.w != 0) w = t[i].r.w;
     if (t[i].r.h != 0) h = t[i].r.h;
     BAILIF0(jdstBufs[i] = (*env)->GetObjectArrayElement(env, dstobjs, i));

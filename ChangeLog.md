@@ -14,7 +14,7 @@ downsampled width for components with 4x2 or 2x4 subsampling factors if
 decompression scaling was enabled.  This caused the components to be upsampled
 incompletely, which caused the color converter to read from uninitialized
 memory.  With 12-bit data precision, this caused a buffer overrun or underrun
-and subsequent segfault if the sample value read from unitialized memory was
+and subsequent segfault if the sample value read from uninitialized memory was
 outside of the valid sample range.
 
 3. Fixed a long-standing issue whereby the `tjTransform()` function, when used

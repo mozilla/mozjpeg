@@ -51,6 +51,10 @@ cannot reliably transform JPEG source images that contain a large amount of
 metadata unless automatic JPEG destination buffer (re)allocation is used or
 `TJXOPT_COPYNONE` is set.
 
+6. Fixed a regression introduced by 3.0 beta2[6] that prevented the djpeg
+`-map` option from working when decompressing 12-bit-per-component lossy JPEG
+images.
+
 
 2.1.91 (3.0 beta2)
 ==================

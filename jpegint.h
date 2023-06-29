@@ -431,10 +431,6 @@ struct jpeg_color_quantizer {
                           JSAMPARRAY output_buf, int num_rows);
   void (*color_quantize_12) (j_decompress_ptr cinfo, J12SAMPARRAY input_buf,
                              J12SAMPARRAY output_buf, int num_rows);
-#ifdef D_LOSSLESS_SUPPORTED
-  void (*color_quantize_16) (j_decompress_ptr cinfo, J16SAMPARRAY input_buf,
-                             J16SAMPARRAY output_buf, int num_rows);
-#endif
   void (*finish_pass) (j_decompress_ptr cinfo);
   void (*new_color_map) (j_decompress_ptr cinfo);
 };
@@ -553,8 +549,6 @@ EXTERN(void) j16init_d_post_controller(j_decompress_ptr cinfo,
                                        boolean need_full_buffer);
 EXTERN(void) j16init_upsampler(j_decompress_ptr cinfo);
 EXTERN(void) j16init_color_deconverter(j_decompress_ptr cinfo);
-EXTERN(void) j16init_1pass_quantizer(j_decompress_ptr cinfo);
-EXTERN(void) j16init_2pass_quantizer(j_decompress_ptr cinfo);
 EXTERN(void) jinit_d_diff_controller(j_decompress_ptr cinfo,
                                      boolean need_full_buffer);
 EXTERN(void) j12init_d_diff_controller(j_decompress_ptr cinfo,

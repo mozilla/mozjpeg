@@ -183,6 +183,7 @@ Switches for advanced users:
                           * Quality/quantization table selection
                           * Color space conversion (the JPEG image will use the
                             same color space as the input image)
+                          * Color quantization
                           * DCT/IDCT algorithm selection
                           * Smoothing
                           * Downsampling/upsampling

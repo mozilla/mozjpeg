@@ -10,11 +10,17 @@ images.
 
 2. Fixed various segfaults and buffer overruns (CVE-2023-2804) that occurred
 when attempting to decompress various specially-crafted malformed
-12-bit-per-component lossless JPEG images.  These issues were caused by
-out-of-range sample values that were not range-limited before being used as
-array indices.  The issues were specific to 12-bit data precision, since that
-is the only data precision for which the range of the sample data type exceeds
-the valid sample range.
+12-bit-per-component and 16-bit-per-component lossless JPEG images using color
+quantization or merged chroma upsampling/color conversion.  The underlying
+cause of these issues was that the color quantization and merged chroma
+upsampling/color conversion algorithms were not designed with lossless
+decompression in mind.  Since libjpeg-turbo explicitly does not support color
+conversion when compressing or decompressing lossless JPEG images, merged
+chroma upsampling/color conversion never should have been enabled for such
+images.  Color quantization is a legacy feature that serves little or no
+purpose with lossless JPEG images, so it is also now disabled when
+decompressing such images.  (As a result, djpeg can no longer decompress a
+lossless JPEG image into a GIF image.)
 
 3. Fixed an oversight in 1.4 beta1[8] that caused various segfaults and buffer
 overruns when attempting to decompress various specially-crafted malformed

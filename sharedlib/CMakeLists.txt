@@ -87,9 +87,9 @@ target_link_libraries(cjpeg jpeg)
 add_library(djpeg12 OBJECT ../rdcolmap.c ../wrgif.c ../wrppm.c)
 set_property(TARGET djpeg12 PROPERTY COMPILE_FLAGS
   "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-add_library(djpeg16 OBJECT ../rdcolmap.c ../wrgif.c ../wrppm.c)
+add_library(djpeg16 OBJECT ../wrppm.c)
 set_property(TARGET djpeg16 PROPERTY COMPILE_FLAGS
-  "-DBITS_IN_JSAMPLE=16 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+  "-DBITS_IN_JSAMPLE=16 -DPPM_SUPPORTED")
 add_executable(djpeg ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
   ../wrbmp.c ../wrgif.c ../wrppm.c ../wrtarga.c $<TARGET_OBJECTS:djpeg12>
   $<TARGET_OBJECTS:djpeg16>)

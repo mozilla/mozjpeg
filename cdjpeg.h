@@ -123,10 +123,6 @@ EXTERN(cjpeg_source_ptr) j16init_read_gif(j_compress_ptr cinfo);
 EXTERN(djpeg_dest_ptr) jinit_write_gif(j_decompress_ptr cinfo, boolean is_lzw);
 EXTERN(djpeg_dest_ptr) j12init_write_gif(j_decompress_ptr cinfo,
                                          boolean is_lzw);
-#ifdef D_LOSSLESS_SUPPORTED
-EXTERN(djpeg_dest_ptr) j16init_write_gif(j_decompress_ptr cinfo,
-                                         boolean is_lzw);
-#endif
 EXTERN(cjpeg_source_ptr) jinit_read_ppm(j_compress_ptr cinfo);
 EXTERN(cjpeg_source_ptr) j12init_read_ppm(j_compress_ptr cinfo);
 #ifdef C_LOSSLESS_SUPPORTED
@@ -154,9 +150,6 @@ EXTERN(boolean) set_sample_factors(j_compress_ptr cinfo, char *arg);
 
 EXTERN(void) read_color_map(j_decompress_ptr cinfo, FILE *infile);
 EXTERN(void) read_color_map_12(j_decompress_ptr cinfo, FILE *infile);
-#ifdef D_LOSSLESS_SUPPORTED
-EXTERN(void) read_color_map_16(j_decompress_ptr cinfo, FILE *infile);
-#endif
 
 /* common support routines (in cdjpeg.c) */
 

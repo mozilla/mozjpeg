@@ -564,10 +564,10 @@ message(STATUS "CMAKE_EXECUTABLE_SUFFIX = ${CMAKE_EXECUTABLE_SUFFIX}")
 
 set(JPEG16_SOURCES jcapistd.c jccolor.c jcdiffct.c jclossls.c jcmainct.c
   jcprepct.c jcsample.c jdapistd.c jdcolor.c jddiffct.c jdlossls.c jdmainct.c
-  jdpostct.c jdsample.c jquant1.c jquant2.c jutils.c)
+  jdpostct.c jdsample.c jutils.c)
 set(JPEG12_SOURCES ${JPEG16_SOURCES} jccoefct.c jcdctmgr.c jdcoefct.c
-  jddctmgr.c jdmerge.c jdpostct.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
-  jidctint.c jidctred.c)
+  jddctmgr.c jdmerge.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c
+  jidctred.c jquant1.c jquant2.c)
 set(JPEG_SOURCES ${JPEG12_SOURCES} jcapimin.c jchuff.c jcicc.c jcinit.c
   jclhuff.c jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c jctrans.c
   jdapimin.c jdatadst.c jdatasrc.c jdhuff.c jdicc.c jdinput.c jdlhuff.c
@@ -760,9 +760,9 @@ if(ENABLE_STATIC)
   add_library(djpeg12-static OBJECT rdcolmap.c wrgif.c wrppm.c)
   set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
     "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-  add_library(djpeg16-static OBJECT rdcolmap.c wrgif.c wrppm.c)
+  add_library(djpeg16-static OBJECT wrppm.c)
   set_property(TARGET djpeg16-static PROPERTY COMPILE_FLAGS
-    "-DBITS_IN_JSAMPLE=16 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+    "-DBITS_IN_JSAMPLE=16 -DPPM_SUPPORTED")
   add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c
     wrgif.c wrppm.c wrtarga.c $<TARGET_OBJECTS:djpeg12-static>
     $<TARGET_OBJECTS:djpeg16-static>)

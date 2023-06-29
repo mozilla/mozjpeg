@@ -57,8 +57,6 @@
 #define _upsample  upsample_16
 /* Use the 16-bit method in the jpeg_color_converter structure. */
 #define _color_convert  color_convert_16
-/* Use the 16-bit method in the jpeg_color_quantizer structure. */
-#define _color_quantize  color_quantize_16
 #endif
 
 /* Global internal functions (jpegint.h) */
@@ -76,8 +74,6 @@
 #define _jinit_d_post_controller  j16init_d_post_controller
 #define _jinit_upsampler  j16init_upsampler
 #define _jinit_color_deconverter  j16init_color_deconverter
-#define _jinit_1pass_quantizer  j16init_1pass_quantizer
-#define _jinit_2pass_quantizer  j16init_2pass_quantizer
 #define _jinit_merged_upsampler  j16init_merged_upsampler
 #define _jinit_d_diff_controller  j16init_d_diff_controller
 #define _jinit_lossless_decompressor  j16init_lossless_decompressor
@@ -102,10 +98,7 @@
 #endif
 
 #ifdef D_LOSSLESS_SUPPORTED
-#define _jinit_write_gif  j16init_write_gif
 #define _jinit_write_ppm  j16init_write_ppm
-
-#define _read_color_map  read_color_map_16
 #endif
 
 #elif BITS_IN_JSAMPLE == 12

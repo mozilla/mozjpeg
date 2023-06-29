@@ -5,7 +5,7 @@ Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 Lossless JPEG Modifications:
 Copyright (C) 1999, Ken Murchison.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2018, 2020, 2022, D. R. Commander.
+Copyright (C) 2010, 2014-2018, 2020, 2022-2023, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -120,8 +120,8 @@ supports 12-bit-per-component lossy or lossless JPEG if you set
 cinfo->data_precision to 12 and 16-bit-per-component lossless JPEG if you set
 cinfo->data_precision to 16.  Note that this causes the sample size to be
 larger than a char, so it affects the surrounding application's image data.
-The sample applications cjpeg and djpeg can support 12-bit and 16-bit mode only
-for PPM and GIF file formats.
+The sample applications cjpeg and djpeg can support 12-bit mode only for PPM,
+PGM, and GIF file formats and 16-bit mode only for PPM and PGM file formats.
 
 Note that, when 12-bit data precision is enabled, the library always compresses
 in Huffman optimization mode, in order to generate valid Huffman tables.  This
@@ -1037,6 +1037,7 @@ jpeg_enable_lossless (j_compress_ptr cinfo, int predictor_selection_value,
           * Downsampling/upsampling
           * Color space conversion (the JPEG image will use the same color
             space as the input image)
+          * Color quantization
           * IDCT scaling
           * Raw (downsampled) data input/output
           * Transcoding of DCT coefficients

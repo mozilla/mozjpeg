@@ -662,14 +662,9 @@ main(int argc, char **argv)
 #endif
 #ifdef GIF_SUPPORTED
   case FMT_GIF:
-    if (cinfo.data_precision == 16) {
-#ifdef D_LOSSLESS_SUPPORTED
-      dest_mgr = j16init_write_gif(&cinfo, TRUE);
-#else
+    if (cinfo.data_precision == 16)
       ERREXIT1(&cinfo, JERR_BAD_PRECISION, cinfo.data_precision);
-      break;
-#endif
-    } else if (cinfo.data_precision == 12)
+    else if (cinfo.data_precision == 12)
       dest_mgr = j12init_write_gif(&cinfo, TRUE);
     else
       dest_mgr = jinit_write_gif(&cinfo, TRUE);
@@ -680,14 +675,13 @@ main(int argc, char **argv)
 #endif
 #ifdef PPM_SUPPORTED
   case FMT_PPM:
-    if (cinfo.data_precision == 16) {
+    if (cinfo.data_precision == 16)
 #ifdef D_LOSSLESS_SUPPORTED
       dest_mgr = j16init_write_ppm(&cinfo);
 #else
       ERREXIT1(&cinfo, JERR_BAD_PRECISION, cinfo.data_precision);
-      break;
 #endif
-    } else if (cinfo.data_precision == 12)
+    else if (cinfo.data_precision == 12)
       dest_mgr = j12init_write_ppm(&cinfo);
     else
       dest_mgr = jinit_write_ppm(&cinfo);

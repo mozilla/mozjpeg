@@ -5,7 +5,7 @@ Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
 Lossless JPEG Modifications:
 Copyright (C) 1999, Ken Murchison.
 libjpeg-turbo Modifications:
-Copyright (C) 2022, D. R. Commander.
+Copyright (C) 2022-2023, D. R. Commander.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
 
@@ -443,8 +443,7 @@ Main controller --|
                   |                               scaling
 Main controller --|
                   |                               |-- Upsampling
-                  |-- Postprocessing controller --|   |-- Colorspace conversion
-                                                  |-- Color quantization
+                  |-- Postprocessing controller --|
                                                   |-- Color precision reduction
 
 As before, this diagram also represents typical control flow.  The objects

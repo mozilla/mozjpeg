@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2022, D. R. Commander.
+ * Copyright (C) 2022-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -49,6 +49,7 @@ typedef my_post_controller *my_post_ptr;
 
 
 /* Forward declarations */
+#if BITS_IN_JSAMPLE != 16
 METHODDEF(void) post_process_1pass(j_decompress_ptr cinfo,
                                    _JSAMPIMAGE input_buf,
                                    JDIMENSION *in_row_group_ctr,
@@ -56,7 +57,8 @@ METHODDEF(void) post_process_1pass(j_decompress_ptr cinfo,
                                    _JSAMPARRAY output_buf,
                                    JDIMENSION *out_row_ctr,
                                    JDIMENSION out_rows_avail);
-#ifdef QUANT_2PASS_SUPPORTED
+#endif
+#if defined(QUANT_2PASS_SUPPORTED) && BITS_IN_JSAMPLE != 16
 METHODDEF(void) post_process_prepass(j_decompress_ptr cinfo,
                                      _JSAMPIMAGE input_buf,
                                      JDIMENSION *in_row_group_ctr,
@@ -85,6 +87,7 @@ start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
 
   switch (pass_mode) {
   case JBUF_PASS_THRU:
+#if BITS_IN_JSAMPLE != 16
     if (cinfo->quantize_colors) {
       /* Single-pass processing with color quantization. */
       post->pub._post_process_data = post_process_1pass;
@@ -97,14 +100,16 @@ start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
           ((j_common_ptr)cinfo, post->whole_image,
            (JDIMENSION)0, post->strip_height, TRUE);
       }
-    } else {
+    } else
+#endif
+    {
       /* For single-pass processing without color quantization,
        * I have no work to do; just call the upsampler directly.
        */
       post->pub._post_process_data = cinfo->upsample->_upsample;
     }
     break;
-#ifdef QUANT_2PASS_SUPPORTED
+#if defined(QUANT_2PASS_SUPPORTED) && BITS_IN_JSAMPLE != 16
   case JBUF_SAVE_AND_PASS:
     /* First pass of 2-pass quantization */
     if (post->whole_image == NULL)
@@ -117,7 +122,7 @@ start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
       ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
     post->pub._post_process_data = post_process_2pass;
     break;
-#endif /* QUANT_2PASS_SUPPORTED */
+#endif /* defined(QUANT_2PASS_SUPPORTED) && BITS_IN_JSAMPLE != 16 */
   default:
     ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
     break;
@@ -130,6 +135,8 @@ start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
  * Process some data in the one-pass (strip buffer) case.
  * This is used for color precision reduction as well as one-pass quantization.
  */
+
+#if BITS_IN_JSAMPLE != 16
 
 METHODDEF(void)
 post_process_1pass(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
@@ -156,8 +163,10 @@ post_process_1pass(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
   *out_row_ctr += num_rows;
 }
 
+#endif
 
-#ifdef QUANT_2PASS_SUPPORTED
+
+#if defined(QUANT_2PASS_SUPPORTED) && BITS_IN_JSAMPLE != 16
 
 /*
  * Process some data in the first pass of 2-pass quantization.
@@ -246,7 +255,7 @@ post_process_2pass(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
   }
 }
 
-#endif /* QUANT_2PASS_SUPPORTED */
+#endif /* defined(QUANT_2PASS_SUPPORTED) && BITS_IN_JSAMPLE != 16 */
 
 
 /*
@@ -271,6 +280,7 @@ _jinit_d_post_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
 
   /* Create the quantization buffer, if needed */
   if (cinfo->quantize_colors) {
+#if BITS_IN_JSAMPLE != 16
     /* The buffer strip height is max_v_samp_factor, which is typically
      * an efficient number of rows for upsampling to return.
      * (In the presence of output rescaling, we might want to be smarter?)
@@ -296,6 +306,9 @@ _jinit_d_post_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
          cinfo->output_width * cinfo->out_color_components,
          post->strip_height);
     }
+#else
+    ERREXIT(cinfo, JERR_NOTIMPL);
+#endif
   }
 }
 

@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009, 2015, 2022, D. R. Commander.
+ * Copyright (C) 2009, 2015, 2022-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -18,8 +18,7 @@
 #include "jpeglib.h"
 #include "jsamplecomp.h"
 
-#if defined(QUANT_1PASS_SUPPORTED) && \
-    (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED))
+#if defined(QUANT_1PASS_SUPPORTED) && BITS_IN_JSAMPLE != 16
 
 
 /*
@@ -827,6 +826,10 @@ _jinit_1pass_quantizer(j_decompress_ptr cinfo)
   if (cinfo->data_precision != BITS_IN_JSAMPLE)
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 
+  /* Color quantization is not supported with lossless JPEG images */
+  if (cinfo->master->lossless)
+    ERREXIT(cinfo, JERR_NOTIMPL);
+
   cquantize = (my_cquantize_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 sizeof(my_cquantizer));
@@ -858,5 +861,4 @@ _jinit_1pass_quantizer(j_decompress_ptr cinfo)
     alloc_fs_workspace(cinfo);
 }
 
-#endif /* defined(QUANT_1PASS_SUPPORTED) &&
-          (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)) */
+#endif /* defined(QUANT_1PASS_SUPPORTED) && BITS_IN_JSAMPLE != 16 */

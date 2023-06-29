@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2015-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2017, 2022, D. R. Commander.
+ * Copyright (C) 2015, 2017, 2022-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -33,8 +33,7 @@
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "jsamplecomp.h"
 
-#if defined(GIF_SUPPORTED) && \
-    (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED))
+#if defined(GIF_SUPPORTED) && BITS_IN_JSAMPLE != 16
 
 
 #define MAX_LZW_BITS     12     /* maximum LZW code size (4096 symbols) */
@@ -583,5 +582,4 @@ _jinit_write_gif(j_decompress_ptr cinfo, boolean is_lzw)
   return (djpeg_dest_ptr)dest;
 }
 
-#endif /* defined(GIF_SUPPORTED) &&
-          (BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)) */
+#endif /* defined(GIF_SUPPORTED) && BITS_IN_JSAMPLE != 16 */

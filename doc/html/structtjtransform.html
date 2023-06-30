@@ -89,21 +89,21 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a688fe8f1a8ecc12a538d9e561cf338e3"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtjtransform.html#a688fe8f1a8ecc12a538d9e561cf338e3">data</a></td></tr>
 <tr class="memdesc:a688fe8f1a8ecc12a538d9e561cf338e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Arbitrary data that can be accessed within the body of the callback function.  <a href="structtjtransform.html#a688fe8f1a8ecc12a538d9e561cf338e3">More...</a><br /></td></tr>
 <tr class="separator:a688fe8f1a8ecc12a538d9e561cf338e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd7fc262df33f741e120ef4183202ef5"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtjtransform.html#afd7fc262df33f741e120ef4183202ef5">customFilter</a> )(short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentIndex, int transformIndex, struct <a class="el" href="structtjtransform.html">tjtransform</a> *transform)</td></tr>
-<tr class="memdesc:afd7fc262df33f741e120ef4183202ef5"><td class="mdescLeft">&#160;</td><td class="mdescRight">A callback function that can be used to modify the DCT coefficients after they are losslessly transformed but before they are transcoded to a new JPEG image.  <a href="structtjtransform.html#afd7fc262df33f741e120ef4183202ef5">More...</a><br /></td></tr>
-<tr class="separator:afd7fc262df33f741e120ef4183202ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dc7697d59a7abe48afc629e96cbc1d2"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtjtransform.html#a0dc7697d59a7abe48afc629e96cbc1d2">customFilter</a> )(short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentID, int transformID, struct <a class="el" href="structtjtransform.html">tjtransform</a> *transform)</td></tr>
+<tr class="memdesc:a0dc7697d59a7abe48afc629e96cbc1d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">A callback function that can be used to modify the DCT coefficients after they are losslessly transformed but before they are transcoded to a new JPEG image.  <a href="structtjtransform.html#a0dc7697d59a7abe48afc629e96cbc1d2">More...</a><br /></td></tr>
+<tr class="separator:a0dc7697d59a7abe48afc629e96cbc1d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Lossless transform. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
-<a id="afd7fc262df33f741e120ef4183202ef5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afd7fc262df33f741e120ef4183202ef5">&#9670;&nbsp;</a></span>customFilter</h2>
+<a id="a0dc7697d59a7abe48afc629e96cbc1d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dc7697d59a7abe48afc629e96cbc1d2">&#9670;&nbsp;</a></span>customFilter</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int(* tjtransform::customFilter) (short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentIndex, int transformIndex, struct <a class="el" href="structtjtransform.html">tjtransform</a> *transform)</td>
+          <td class="memname">int(* tjtransform::customFilter) (short *coeffs, <a class="el" href="structtjregion.html">tjregion</a> arrayRegion, <a class="el" href="structtjregion.html">tjregion</a> planeRegion, int componentID, int transformID, struct <a class="el" href="structtjtransform.html">tjtransform</a> *transform)</td>
         </tr>
       </table>
 </div><div class="memdoc">

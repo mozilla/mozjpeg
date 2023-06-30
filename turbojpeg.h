@@ -1004,8 +1004,8 @@ typedef struct tjtransform {
    * @return 0 if the callback was successful, or -1 if an error occurred.
    */
   int (*customFilter) (short *coeffs, tjregion arrayRegion,
-                       tjregion planeRegion, int componentIndex,
-                       int transformIndex, struct tjtransform *transform);
+                       tjregion planeRegion, int componentID, int transformID,
+                       struct tjtransform *transform);
 } tjtransform;
 
 /**

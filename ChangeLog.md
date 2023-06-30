@@ -33,6 +33,11 @@ cannot reliably transform JPEG source images that contain a large amount of
 metadata unless automatic JPEG destination buffer (re)allocation is used or
 `TJXOPT_COPYNONE` is set.
 
+4. Fixed an issue that caused the C Huffman encoder (which is not used by
+default on x86 and Arm CPUs) to read from uninitialized memory when attempting
+to transform a specially-crafted malformed arithmetic-coded JPEG source image
+into a baseline Huffman-coded JPEG destination image.
+
 
 2.1.5.1
 =======

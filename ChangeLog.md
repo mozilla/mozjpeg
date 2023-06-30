@@ -55,6 +55,11 @@ metadata unless automatic JPEG destination buffer (re)allocation is used or
 `-map` option from working when decompressing 12-bit-per-component lossy JPEG
 images.
 
+7. Fixed an issue that caused the C Huffman encoder (which is not used by
+default on x86 and Arm CPUs) to read from uninitialized memory when attempting
+to transform a specially-crafted malformed arithmetic-coded JPEG source image
+into a baseline Huffman-coded JPEG destination image.
+
 
 2.1.91 (3.0 beta2)
 ==================

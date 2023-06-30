@@ -6,7 +6,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2014-2016, 2018-2022, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014-2016, 2018-2023, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  * Copyright (C) 2018, Matthias Räncker.
  * Copyright (C) 2020, Arm Limited.
@@ -584,6 +584,7 @@ encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
   bit_buf_type put_buffer;
   JOCTET _buffer[BUFSIZE], *buffer;
   int localbuf = 0;
+  int max_coef_bits = state->cinfo->data_precision + 2;
 
   free_bits = state->cur.free_bits;
   put_buffer = state->cur.put_buffer.c;
@@ -604,6 +605,11 @@ encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
 
   /* Find the number of bits needed for the magnitude of the coefficient */
   nbits = JPEG_NBITS(nbits);
+  /* Check for out-of-range coefficient values.
+   * Since we're encoding a difference, the range limit is twice as much.
+   */
+  if (nbits > max_coef_bits + 1)
+    ERREXIT(state->cinfo, JERR_BAD_DCT_COEF);
 
   /* Emit the Huffman-coded symbol for the number of bits.
    * Emit that number of bits of the value, if positive,
@@ -629,6 +635,9 @@ encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
     temp += nbits; \
     nbits ^= temp; \
     nbits = JPEG_NBITS_NONZERO(nbits); \
+    /* Check for out-of-range coefficient values */ \
+    if (nbits > max_coef_bits) \
+      ERREXIT(state->cinfo, JERR_BAD_DCT_COEF); \
     /* if run length > 15, must emit special run-length-16 codes (0xF0) */ \
     while (r >= 16 * 16) { \
       r -= 16 * 16; \

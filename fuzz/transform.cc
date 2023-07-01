@@ -55,6 +55,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   width = tj3Get(handle, TJPARAM_JPEGWIDTH);
   height = tj3Get(handle, TJPARAM_JPEGHEIGHT);
   jpegSubsamp = tj3Get(handle, TJPARAM_SUBSAMP);
+  /* Let the transform options dictate the entropy coding algorithm. */
+  tj3Set(handle, TJPARAM_ARITHMETIC, 0);
+  tj3Set(handle, TJPARAM_PROGRESSIVE, 0);
+  tj3Set(handle, TJPARAM_OPTIMIZE, 0);
 
   /* Ignore 0-pixel images and images larger than 1 Megapixel.  Casting width
      to (uint64_t) prevents integer overflow if width * height > INT_MAX. */

@@ -94,9 +94,11 @@ test: off
 
 deploy:
   - provider: Webhook
-    url: https://app.signpath.io/API/v1/3bc964ce-257b-4362-829f-1df1f087f5a0/Integrations/AppVeyor?ProjectSlug=libjpeg-turbo&SigningPolicySlug=test-signing
+    url: https://app.signpath.io/API/v1/3bc964ce-257b-4362-829f-1df1f087f5a0/Integrations/AppVeyor?ProjectSlug=libjpeg-turbo&SigningPolicySlug=release-signing
     authorization:
       secure: rrx5wnu5VWQqrFZJv75WdPc1H5gyYqp7cV/xVhsx1TnVR7VyUaVEiCYm/64Fcx1zmEPHGyEBrlrbjuRHgDjURA==
+    on:
+      appveyor_repo_tag: true
   - provider: S3
     access_key_id:
       secure: Z74OYogQ6bNV/I+6b5ZEXig74+6MW2WLER0v/bPM/uk=

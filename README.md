@@ -28,6 +28,21 @@ More information about libjpeg-turbo can be found at
 <https://libjpeg-turbo.org>.
 
 
+Funding
+=======
+
+libjpeg-turbo is an independent open source project, but we rely on patronage
+and funded development in order to maintain that independence.  The easiest way
+to ensure that libjpeg-turbo remains community-focused and free of any one
+organization's agenda is to
+[sponsor our project through GitHub](https://github.com/sponsors/libjpeg-turbo).
+All sponsorship money goes directly toward funding the labor necessary to
+maintain libjpeg-turbo, support the user community, and implement bug fixes and
+strategically important features.
+
+[![Sponsor libjpeg-turbo](https://img.shields.io/github/sponsors/libjpeg-turbo?label=Sponsor&logo=GitHub)](https://github.com/sponsors/libjpeg-turbo)
+
+
 License
 =======
 

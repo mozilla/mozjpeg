@@ -98,11 +98,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   transforms[0].options = TJXOPT_GRAY | TJXOPT_CROP | TJXOPT_COPYNONE;
   dstBufs[0] =
     (unsigned char *)malloc(tjBufSize((height + 1) / 2, (width + 1) / 2,
-                                      TJSAMP_GRAY));
+                                      jpegSubsamp));
   if (!dstBufs[0])
     goto bailout;
 
-  maxBufSize = tjBufSize((height + 1) / 2, (width + 1) / 2, TJSAMP_GRAY);
+  maxBufSize = tjBufSize((height + 1) / 2, (width + 1) / 2, jpegSubsamp);
 
   if (tjTransform(handle, data, size, 1, dstBufs, dstSizes, transforms,
                   TJFLAG_LIMITSCANS | TJFLAG_NOREALLOC) == 0) {

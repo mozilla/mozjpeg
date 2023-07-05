@@ -21,10 +21,12 @@ derivative of libjpeg v6b developed by Miyasaka Masaru.  The TigerVNC and
 VirtualGL projects made numerous enhancements to the codec in 2009, and in
 early 2010, libjpeg-turbo spun off into an independent project, with the goal
 of making high-speed JPEG compression/decompression technology available to a
-broader range of users and developers.
+broader range of users and developers.  libjpeg-turbo is an ISO/IEC and ITU-T
+reference implementation of the JPEG standard.
 
 More information about libjpeg-turbo can be found at
 <https://libjpeg-turbo.org>.
+
 
 License
 =======

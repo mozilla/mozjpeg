@@ -46,7 +46,9 @@
 #include "jconfigint.h"
 #ifdef _WIN32
 #include <time.h>
+#include <process.h>
 #define random()  rand()
+#define getpid()  _getpid()
 #else
 #include <unistd.h>
 #endif

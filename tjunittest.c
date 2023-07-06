@@ -977,8 +977,8 @@ static int doBmpTest(const char *ext, int width, int align, int height, int pf,
     THROW("Could not allocate memory");
   initBitmap(buf, width, pitch, height, pf, bottomUp);
 
-  SNPRINTF(filename, 80, "test_bmp%d_%s_%d_%s.%s", precision, pixFormatStr[pf],
-           align, bottomUp ? "bu" : "td", ext);
+  SNPRINTF(filename, 80, "test_bmp%d_%s_%d_%s_%d.%s", precision, pixFormatStr[pf],
+           align, bottomUp ? "bu" : "td", getpid(), ext);
   if (precision == 8) {
     TRY_TJ(handle, tj3SaveImage8(handle, filename, (unsigned char *)buf, width,
                                  pitch, height, pf));
@@ -990,6 +990,10 @@ static int doBmpTest(const char *ext, int width, int align, int height, int pf,
                                   width, pitch, height, pf));
   }
   md5sum = MD5File(filename, md5buf);
+  if (!md5sum) {
+    printf("\n   Could not determine MD5 sum of %s\n", filename);
+    retval = -1;  goto bailout;
+  }
   if (strcasecmp(md5sum, md5ref))
     THROW_MD5(filename, md5sum, md5ref);
 

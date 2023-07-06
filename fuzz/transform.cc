@@ -151,6 +151,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   transforms[0].options |= TJXOPT_OPTIMIZE;
   free(dstBufs[0]);
   dstBufs[0] = NULL;
+
+  transforms[0].op = TJXOP_NONE;
+  transforms[0].options = TJXOPT_PROGRESSIVE;
   dstSizes[0] = 0;
 
   tj3Set(handle, TJPARAM_NOREALLOC, 0);

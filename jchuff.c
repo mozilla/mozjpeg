@@ -518,7 +518,7 @@ flush_bits(working_state *state)
     temp = (JOCTET)(put_buffer >> put_bits);
     EMIT_BYTE(temp)
   }
-  if (put_bits) {
+  if (put_bits > 0) {
     /* fill partial byte with ones */
     temp = (JOCTET)((put_buffer << (8 - put_bits)) | (0xFF >> put_bits));
     EMIT_BYTE(temp)

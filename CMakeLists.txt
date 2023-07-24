@@ -895,7 +895,7 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
     set(DEFAULT_FLOATTEST8 no-fp-contract)
   # else we can't really set an intelligent default for i386.  The appropriate
   # value could be no-fp-contract, fp-contract, 387, or msvc, depending on the
-  # compiler and compiler options.  We leave it to the user to set FLOATTEST
+  # compiler and compiler options.  We leave it to the user to set FLOATTEST8
   # manually.
   endif()
 else()

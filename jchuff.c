@@ -500,6 +500,8 @@ flush_bits(working_state *state)
   int localbuf = 0;
 
   if (state->simd) {
+    if (state->cur.free_bits < 0)
+      ERREXIT(state->cinfo, JERR_BAD_DCT_COEF);
 #if defined(__aarch64__) && !defined(NEON_INTRINSICS)
     put_bits = state->cur.free_bits;
 #else

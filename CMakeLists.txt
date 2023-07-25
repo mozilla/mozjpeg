@@ -893,18 +893,11 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
     set(DEFAULT_FLOATTEST8 sse)
   elseif(CPU_TYPE STREQUAL "x86_64")
     set(DEFAULT_FLOATTEST8 no-fp-contract)
-  # else we can't really set an intelligent default for i386.  The appropriate
-  # value could be no-fp-contract, fp-contract, 387, or msvc, depending on the
-  # compiler and compiler options.  We leave it to the user to set FLOATTEST8
-  # manually.
   endif()
-else()
-  if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
-    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
-    set(DEFAULT_FLOATTEST8 fp-contract)
-  else()
-    set(DEFAULT_FLOATTEST8 no-fp-contract)
-  endif()
+# else we can't really set an intelligent default for FLOATTEST8.  The
+# appropriate value could be no-fp-contract, fp-contract, 387, or msvc,
+# depending on the compiler and compiler options.  We leave it to the user to
+# set FLOATTEST8 manually.
 endif()
 
 # This causes FLOATTEST8 to reset to the default value if WITH_SIMD has
@@ -932,13 +925,10 @@ endif()
 
 if(CPU_TYPE STREQUAL "x86_64")
   set(DEFAULT_FLOATTEST12 no-fp-contract)
-elseif(NOT CPU_TYPE STREQUAL "i386")
-  if((CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64") AND
-    NOT CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
-    set(DEFAULT_FLOATTEST12 fp-contract)
-  else()
-    set(DEFAULT_FLOATTEST12 no-fp-contract)
-  endif()
+# else we can't really set an intelligent default for FLOATTEST12.  The
+# appropriate value could be no-fp-contract, fp-contract, or something else,
+# depending on the compiler and compiler options.  We leave it to the user to
+# set FLOATTEST12 manually.
 endif()
 
 set(FLOATTEST12 ${DEFAULT_FLOATTEST12} CACHE STRING

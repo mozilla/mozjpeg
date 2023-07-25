@@ -105,7 +105,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   transforms[0].r.w = (height + 1) / 2;
   transforms[0].r.h = (width + 1) / 2;
   transforms[0].op = TJXOP_TRANSPOSE;
-  transforms[0].options = TJXOPT_GRAY | TJXOPT_CROP | TJXOPT_COPYNONE;
+  transforms[0].options = TJXOPT_GRAY | TJXOPT_CROP | TJXOPT_COPYNONE |
+                          TJXOPT_OPTIMIZE;
   dstBufs[0] =
     (unsigned char *)malloc(tj3JPEGBufSize((height + 1) / 2, (width + 1) / 2,
                                            jpegSubsamp));
@@ -148,7 +149,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
       goto bailout;
   }
 
-  transforms[0].options |= TJXOPT_OPTIMIZE;
   free(dstBufs[0]);
   dstBufs[0] = NULL;
 

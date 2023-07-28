@@ -3,6 +3,7 @@
 ; (64-bit SSE2)
 ;
 ; Copyright (C) 2016, 2018, Matthieu Darbois
+; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -282,15 +283,11 @@
 
 EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
     push        rbp
-    mov         rax, rsp                     ; rax = original rbp
-    sub         rsp, byte 4
+    mov         rbp, rsp
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
-    mov         [rsp], rax
-    mov         rbp, rsp                     ; rbp = aligned rbp
-    lea         rsp, [rbp - 16]
+    sub         rsp, SIZEOF_XMMWORD
+    movdqa      XMMWORD [rsp], ZERO
     collect_args 6
-
-    movdqa      XMMWORD [rbp - 16], ZERO
 
     movd        AL, r13d
     pxor        ZERO, ZERO
@@ -384,10 +381,9 @@ EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
 
     REDUCE0
 
-    movdqa      ZERO, XMMWORD [rbp - 16]
     uncollect_args 6
-    mov         rsp, rbp                ; rsp <- aligned rbp
-    pop         rsp                     ; rsp <- original rbp
+    movdqa      ZERO, XMMWORD [rsp]
+    mov         rsp, rbp
     pop         rbp
     ret
 
@@ -450,15 +446,11 @@ EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
 
 EXTN(jsimd_encode_mcu_AC_refine_prepare_sse2):
     push        rbp
-    mov         rax, rsp                     ; rax = original rbp
-    sub         rsp, byte 4
+    mov         rbp, rsp
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
-    mov         [rsp], rax
-    mov         rbp, rsp                     ; rbp = aligned rbp
-    lea         rsp, [rbp - 16]
+    sub         rsp, SIZEOF_XMMWORD
+    movdqa      XMMWORD [rsp], ZERO
     collect_args 6
-
-    movdqa      XMMWORD [rbp - 16], ZERO
 
     xor         SIGN, SIGN
     xor         EOB, EOB
@@ -606,10 +598,9 @@ EXTN(jsimd_encode_mcu_AC_refine_prepare_sse2):
     REDUCE0
 
     mov         eax, EOB
-    movdqa      ZERO, XMMWORD [rbp - 16]
     uncollect_args 6
-    mov         rsp, rbp                ; rsp <- aligned rbp
-    pop         rsp                     ; rsp <- original rbp
+    movdqa      ZERO, XMMWORD [rsp]
+    mov         rsp, rbp
     pop         rbp
     ret
 

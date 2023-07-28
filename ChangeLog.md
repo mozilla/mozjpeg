@@ -1,3 +1,13 @@
+3.0.1
+=====
+
+### Significant changes relative to 3.0.0:
+
+1. The x86-64 SIMD functions now use a standard stack frame, prologue, and
+epilogue so that debuggers and profilers can reliably capture backtraces from
+within the functions.
+
+
 3.0.0
 =====
 

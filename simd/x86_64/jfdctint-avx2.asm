@@ -261,7 +261,6 @@ PW_1_NEG1                  times 8  dw  1
 
 EXTN(jsimd_fdct_islow_avx2):
     push        rbp
-    mov         rax, rsp
     mov         rbp, rsp
     collect_args 1
 

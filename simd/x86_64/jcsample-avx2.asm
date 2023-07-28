@@ -45,7 +45,6 @@
 
 EXTN(jsimd_h2v1_downsample_avx2):
     push        rbp
-    mov         rax, rsp
     mov         rbp, rsp
     collect_args 6
 
@@ -207,7 +206,6 @@ EXTN(jsimd_h2v1_downsample_avx2):
 
 EXTN(jsimd_h2v2_downsample_avx2):
     push        rbp
-    mov         rax, rsp
     mov         rbp, rsp
     collect_args 6
 

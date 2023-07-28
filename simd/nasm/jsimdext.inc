@@ -5,6 +5,7 @@
 ; Copyright (C) 2010, 2016, 2018-2019, D. R. Commander.
 ; Copyright (C) 2018, Matthieu Darbois.
 ; Copyright (C) 2018, Matthias Räncker.
+; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library - version 1.02
 ;
@@ -397,11 +398,11 @@ const_base:
 %endif
 %if %1 > 4
     push        r14
-    mov         r14, [rax+48]
+    mov         r14, [rbp+48]
 %endif
 %if %1 > 5
     push        r15
-    mov         r15, [rax+56]
+    mov         r15, [rbp+56]
 %endif
     push        rsi
     push        rdi

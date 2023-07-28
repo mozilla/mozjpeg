@@ -3,6 +3,7 @@
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
 ; Copyright (C) 2009, 2016, 2020, D. R. Commander.
+; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -94,7 +95,7 @@ PW_DESCALE_P2X times 8 dw  1 << (PASS1_BITS - 1)
 
 ; r10 = DCTELEM *data
 
-%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
+%define wk(i)   r15 - (WK_NUM - (i)) * SIZEOF_XMMWORD  ; xmmword wk[WK_NUM]
 %define WK_NUM  6
 
     align       32
@@ -102,12 +103,12 @@ PW_DESCALE_P2X times 8 dw  1 << (PASS1_BITS - 1)
 
 EXTN(jsimd_fdct_islow_sse2):
     push        rbp
-    mov         rax, rsp                     ; rax = original rbp
-    sub         rsp, byte 4
+    mov         rbp, rsp
+    push        r15
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
-    mov         [rsp], rax
-    mov         rbp, rsp                     ; rbp = aligned rbp
-    lea         rsp, [wk(0)]
+    ; Allocate stack space for wk array.  r15 is used to access it.
+    mov         r15, rsp
+    sub         rsp, byte (SIZEOF_XMMWORD * WK_NUM)
     collect_args 1
 
     ; ---- Pass 1: process rows.
@@ -609,8 +610,8 @@ EXTN(jsimd_fdct_islow_sse2):
     movdqa      XMMWORD [XMMBLOCK(3,0,rdx,SIZEOF_DCTELEM)], xmm3
 
     uncollect_args 1
-    mov         rsp, rbp                ; rsp <- aligned rbp
-    pop         rsp                     ; rsp <- original rbp
+    lea         rsp, [rbp-8]
+    pop         r15
     pop         rbp
     ret
 

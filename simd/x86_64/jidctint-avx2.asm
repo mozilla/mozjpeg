@@ -283,7 +283,6 @@ PW_1_NEG1                  times 8  dw  1
 
 EXTN(jsimd_idct_islow_avx2):
     push        rbp
-    mov         rax, rsp                     ; rax = original rbp
     mov         rbp, rsp                     ; rbp = aligned rbp
     push_xmm    4
     collect_args 4

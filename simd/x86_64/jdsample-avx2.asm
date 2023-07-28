@@ -5,6 +5,7 @@
 ; Copyright (C) 2009, 2016, D. R. Commander.
 ; Copyright (C) 2015, Intel Corporation.
 ; Copyright (C) 2018, Matthias Räncker.
+; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -62,7 +63,6 @@ PW_EIGHT times 16 dw 8
 
 EXTN(jsimd_h2v1_fancy_upsample_avx2):
     push        rbp
-    mov         rax, rsp
     mov         rbp, rsp
     push_xmm    3
     collect_args 4
@@ -208,7 +208,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
 ; r12 = JSAMPARRAY input_data
 ; r13 = JSAMPARRAY *output_data_ptr
 
-%define wk(i)   rbp - (WK_NUM - (i)) * SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
+%define wk(i)   r15 - (WK_NUM - (i)) * SIZEOF_YMMWORD  ; ymmword wk[WK_NUM]
 %define WK_NUM  4
 
     align       32
@@ -216,12 +216,12 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
 
 EXTN(jsimd_h2v2_fancy_upsample_avx2):
     push        rbp
-    mov         rax, rsp                     ; rax = original rbp
-    sub         rsp, byte 4
-    and         rsp, byte (-SIZEOF_YMMWORD)  ; align to 256 bits
-    mov         [rsp], rax
-    mov         rbp, rsp                     ; rbp = aligned rbp
-    lea         rsp, [wk(0)]
+    mov         rbp, rsp
+    push        r15
+    and         rsp, byte (-SIZEOF_YMMWORD)  ; align to 128 bits
+    ; Allocate stack space for wk array.  r15 is used to access it.
+    mov         r15, rsp
+    sub         rsp, (SIZEOF_YMMWORD * WK_NUM)
     push_xmm    3
     collect_args 4
     push        rbx
@@ -500,8 +500,8 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     vzeroupper
     uncollect_args 4
     pop_xmm     3
-    mov         rsp, rbp                ; rsp <- aligned rbp
-    pop         rsp                     ; rsp <- original rbp
+    lea         rsp, [rbp-8]
+    pop         r15
     pop         rbp
     ret
 
@@ -525,7 +525,6 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
 
 EXTN(jsimd_h2v1_upsample_avx2):
     push        rbp
-    mov         rax, rsp
     mov         rbp, rsp
     collect_args 4
 
@@ -614,7 +613,6 @@ EXTN(jsimd_h2v1_upsample_avx2):
 
 EXTN(jsimd_h2v2_upsample_avx2):
     push        rbp
-    mov         rax, rsp
     mov         rbp, rsp
     collect_args 4
     push        rbx

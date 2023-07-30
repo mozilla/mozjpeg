@@ -350,6 +350,7 @@ int main(int argc, char **argv)
                        pixelFormat) < 0)
       THROW_TJ("decompressing JPEG image");
     tj3Free(jpegBuf);  jpegBuf = NULL;
+    tj3Destroy(tjInstance);  tjInstance = NULL;
   } else {
     /* Input image is not a JPEG image.  Load it into memory. */
     if ((tjInstance = tj3Init(TJINIT_COMPRESS)) == NULL)
@@ -379,6 +380,8 @@ int main(int argc, char **argv)
     printf(", %s subsampling, quality = %d\n", subsampName[outSubsamp],
            outQual);
 
+    if (!tjInstance && (tjInstance = tj3Init(TJINIT_COMPRESS)) == NULL)
+      THROW_TJ("initializing compressor");
     if (tj3Set(tjInstance, TJPARAM_SUBSAMP, outSubsamp) < 0)
       THROW_TJ("setting TJPARAM_SUBSAMP");
     if (tj3Set(tjInstance, TJPARAM_QUALITY, outQual) < 0)

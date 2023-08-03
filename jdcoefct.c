@@ -584,11 +584,11 @@ decompress_smooth_data(j_decompress_ptr cinfo, _JSAMPIMAGE output_buf)
         /* Update DC values */
         if (block_num == cinfo->master->first_MCU_col[ci] &&
             block_num < last_block_column) {
-          DC04 = (int)prev_prev_block_row[1][0];
-          DC09 = (int)prev_block_row[1][0];
-          DC14 = (int)buffer_ptr[1][0];
-          DC19 = (int)next_block_row[1][0];
-          DC24 = (int)next_next_block_row[1][0];
+          DC04 = DC05 = (int)prev_prev_block_row[1][0];
+          DC09 = DC10 = (int)prev_block_row[1][0];
+          DC14 = DC15 = (int)buffer_ptr[1][0];
+          DC19 = DC20 = (int)next_block_row[1][0];
+          DC24 = DC25 = (int)next_next_block_row[1][0];
         }
         if (block_num + 1 < last_block_column) {
           DC05 = (int)prev_prev_block_row[2][0];

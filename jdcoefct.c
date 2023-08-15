@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015-2016, 2019-2020, 2022, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, 2019-2020, 2022-2023, D. R. Commander.
  * Copyright (C) 2015, 2020, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -431,7 +431,8 @@ decompress_smooth_data(j_decompress_ptr cinfo, _JSAMPIMAGE output_buf)
   my_coef_ptr coef = (my_coef_ptr)cinfo->coef;
   JDIMENSION last_iMCU_row = cinfo->total_iMCU_rows - 1;
   JDIMENSION block_num, last_block_column;
-  int ci, block_row, block_rows, access_rows;
+  int ci, block_row, block_rows, access_rows, image_block_row,
+    image_block_rows;
   JBLOCKARRAY buffer;
   JBLOCKROW buffer_ptr, prev_prev_block_row, prev_block_row;
   JBLOCKROW next_block_row, next_next_block_row;
@@ -497,6 +498,7 @@ decompress_smooth_data(j_decompress_ptr cinfo, _JSAMPIMAGE output_buf)
          (JDIMENSION)access_rows, FALSE);
       buffer += 2 * compptr->v_samp_factor; /* point to current iMCU row */
     } else if (cinfo->output_iMCU_row > 0) {
+      access_rows += compptr->v_samp_factor; /* prior iMCU row too */
       buffer = (*cinfo->mem->access_virt_barray)
         ((j_common_ptr)cinfo, coef->whole_image[ci],
          (cinfo->output_iMCU_row - 1) * compptr->v_samp_factor,
@@ -539,29 +541,30 @@ decompress_smooth_data(j_decompress_ptr cinfo, _JSAMPIMAGE output_buf)
     inverse_DCT = cinfo->idct->_inverse_DCT[ci];
     output_ptr = output_buf[ci];
     /* Loop over all DCT blocks to be processed. */
+    image_block_rows = block_rows * cinfo->total_iMCU_rows;
     for (block_row = 0; block_row < block_rows; block_row++) {
+      image_block_row = cinfo->output_iMCU_row * block_rows + block_row;
       buffer_ptr = buffer[block_row] + cinfo->master->first_MCU_col[ci];
 
-      if (block_row > 0 || cinfo->output_iMCU_row > 0)
+      if (image_block_row > 0)
         prev_block_row =
           buffer[block_row - 1] + cinfo->master->first_MCU_col[ci];
       else
         prev_block_row = buffer_ptr;
 
-      if (block_row > 1 || cinfo->output_iMCU_row > 1)
+      if (image_block_row > 1)
         prev_prev_block_row =
           buffer[block_row - 2] + cinfo->master->first_MCU_col[ci];
       else
         prev_prev_block_row = prev_block_row;
 
-      if (block_row < block_rows - 1 || cinfo->output_iMCU_row < last_iMCU_row)
+      if (image_block_row < image_block_rows - 1)
         next_block_row =
           buffer[block_row + 1] + cinfo->master->first_MCU_col[ci];
       else
         next_block_row = buffer_ptr;
 
-      if (block_row < block_rows - 2 ||
-          cinfo->output_iMCU_row + 1 < last_iMCU_row)
+      if (image_block_row < image_block_rows - 2)
         next_next_block_row =
           buffer[block_row + 2] + cinfo->master->first_MCU_col[ci];
       else

@@ -38,6 +38,11 @@ default on x86 and Arm CPUs) to read from uninitialized memory when attempting
 to transform a specially-crafted malformed arithmetic-coded JPEG source image
 into a baseline Huffman-coded JPEG destination image.
 
+5. Fixed two minor issues in the interblock smoothing algorithm that caused
+mathematical (but not necessarily perceptible) edge block errors when
+decompressing progressive JPEG images exactly two MCU blocks in width or that
+use vertical chrominance subsampling.
+
 
 2.1.5.1
 =======

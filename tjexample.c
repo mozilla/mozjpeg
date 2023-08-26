@@ -36,6 +36,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -274,6 +275,8 @@ int main(int argc, char **argv)
     if (size == 0)
       THROW("determining input file size", "Input file contains no data");
     jpegSize = (unsigned long)size;
+    if (jpegSize > (unsigned long)INT_MAX)
+      THROW("allocating JPEG buffer", "Input file is too large");
     if ((jpegBuf = (unsigned char *)tjAlloc(jpegSize)) == NULL)
       THROW_UNIX("allocating JPEG buffer");
     if (fread(jpegBuf, jpegSize, 1, jpegFile) < 1)
@@ -331,8 +334,12 @@ int main(int argc, char **argv)
       outSubsamp = inSubsamp;
 
     pixelFormat = TJPF_BGRX;
-    if ((imgBuf = (unsigned char *)tjAlloc(width * height *
-                                           tjPixelSize[pixelFormat])) == NULL)
+    if ((unsigned long long)width * height * tjPixelSize[pixelFormat] >
+        (unsigned long long)((size_t)-1))
+      THROW("allocating uncompressed image buffer", "Image is too large");
+    if ((imgBuf =
+         (unsigned char *)malloc(sizeof(unsigned char) * width * height *
+                                 tjPixelSize[pixelFormat])) == NULL)
       THROW_UNIX("allocating uncompressed image buffer");
 
     if (tjDecompress2(tjInstance, jpegBuf, jpegSize, imgBuf, width, 0, height,

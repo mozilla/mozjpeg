@@ -534,8 +534,8 @@ static int decompTest(char *fileName)
   int ps = tjPixelSize[pf], tile, row, col, i, iter, retval = 0, decompsrc = 0;
   char *temp = NULL, tempStr[80], tempStr2[80];
   /* Original image */
-  int w = 0, h = 0, tilew, tileh, ntilesw = 1, ntilesh = 1, subsamp = -1,
-    cs = -1;
+  int w = 0, h = 0, minTile, tilew, tileh, ntilesw = 1, ntilesh = 1,
+    subsamp = -1, cs = -1;
   /* Transformed image */
   int tw, th, ttilew, ttileh, tntilesw, tntilesh, tsubsamp;
 
@@ -580,7 +580,8 @@ static int decompTest(char *fileName)
            formatName(subsamp, cs, tempStr), pixFormatStr[pf],
            (flags & TJFLAG_BOTTOMUP) ? "Bottom-up" : "Top-down");
 
-  for (tilew = doTile ? 16 : w, tileh = doTile ? 16 : h; ;
+  minTile = max(tjMCUWidth[subsamp], tjMCUHeight[subsamp]);
+  for (tilew = doTile ? minTile : w, tileh = doTile ? minTile : h; ;
        tilew *= 2, tileh *= 2) {
     if (tilew > w) tilew = w;
     if (tileh > h) tileh = h;
@@ -599,10 +600,16 @@ static int decompTest(char *fileName)
     if ((flags & TJFLAG_NOREALLOC) != 0 &&
         (doTile || xformOp != TJXOP_NONE || xformOpt != 0 || customFilter))
       for (i = 0; i < ntilesw * ntilesh; i++) {
-        if (tjBufSize(tilew, tileh, subsamp) > (unsigned long)INT_MAX)
+        unsigned long jpegBufSize;
+
+        if (xformOp == TJXOP_TRANSPOSE || xformOp == TJXOP_TRANSVERSE ||
+            xformOp == TJXOP_ROT90 || xformOp == TJXOP_ROT270)
+          jpegBufSize = tjBufSize(tileh, tilew, subsamp);
+        else
+          jpegBufSize = tjBufSize(tilew, tileh, subsamp);
+        if (jpegBufSize > (unsigned long)INT_MAX)
           THROW("getting buffer size", "Image is too large");
-        if ((jpegBuf[i] = (unsigned char *)
-                          tjAlloc(tjBufSize(tilew, tileh, subsamp))) == NULL)
+        if ((jpegBuf[i] = (unsigned char *)tjAlloc(jpegBufSize)) == NULL)
           THROW_UNIX("allocating JPEG tiles");
       }
 

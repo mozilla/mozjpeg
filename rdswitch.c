@@ -193,7 +193,7 @@ read_scan_script (j_compress_ptr cinfo, char *filename)
   int scanno, ncomps, termchar;
   long val;
   jpeg_scan_info *scanptr;
-#define MAX_SCANS  100          /* quite arbitrary limit */
+#define MAX_SCANS  64          /* must match scan_buffer size */
   jpeg_scan_info scans[MAX_SCANS];
 
   if ((fp = fopen(filename, "r")) == NULL) {

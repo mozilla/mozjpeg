@@ -38,6 +38,11 @@ default on x86 and Arm CPUs) to read from uninitialized memory when attempting
 to transform a specially-crafted malformed arithmetic-coded JPEG source image
 into a baseline Huffman-coded JPEG destination image.
 
+5. Fixed two minor issues in the interblock smoothing algorithm that caused
+mathematical (but not necessarily perceptible) edge block errors when
+decompressing progressive JPEG images exactly two MCU blocks in width or that
+use vertical chrominance subsampling.
+
 
 2.1.5.1
 =======
@@ -240,9 +245,9 @@ transform a specially-crafted malformed JPEG image.
 
 ### Significant changes relative to 2.1 beta1:
 
-1. Fixed a regression introduced by 2.1 beta1[6(b)] whereby attempting to
-decompress certain progressive JPEG images with one or more component planes of
-width 8 or less caused a buffer overrun.
+1. Fixed a regression (CVE-2021-29390) introduced by 2.1 beta1[6(b)] whereby
+attempting to decompress certain progressive JPEG images with one or more
+component planes of width 8 or less caused a buffer overrun.
 
 2. Fixed a regression introduced by 2.1 beta1[6(b)] whereby attempting to
 decompress a specially-crafted malformed progressive JPEG image caused the

@@ -110,7 +110,7 @@ jobs:
           JSIMD_FORCENONE=1 make test
           popd
   linux-jpeg7-x32:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out code
         uses: actions/checkout@v3

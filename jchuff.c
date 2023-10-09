@@ -108,7 +108,9 @@ typedef bit_buf_type simd_bit_buf_type;
 typedef struct {
   union {
     bit_buf_type c;
+#ifdef WITH_SIMD
     simd_bit_buf_type simd;
+#endif
   } put_buffer;                         /* current bit accumulation buffer */
   int free_bits;                        /* # of bits available in it */
                                         /* (Neon GAS: # of bits now in it) */
@@ -133,7 +135,9 @@ typedef struct {
   long *ac_count_ptrs[NUM_HUFF_TBLS];
 #endif
 
+#ifdef WITH_SIMD
   int simd;
+#endif
 } huff_entropy_encoder;
 
 typedef huff_entropy_encoder *huff_entropy_ptr;
@@ -147,7 +151,9 @@ typedef struct {
   size_t free_in_buffer;        /* # of byte spaces remaining in buffer */
   savable_state cur;            /* Current bit buffer & DC state */
   j_compress_ptr cinfo;         /* dump_buffer needs access to this */
+#ifdef WITH_SIMD
   int simd;
+#endif
 } working_state;
 
 
@@ -511,6 +517,7 @@ flush_bits(working_state *state)
   simd_bit_buf_type put_buffer;  int put_bits;
   int localbuf = 0;
 
+#ifdef WITH_SIMD
   if (state->simd) {
 #if defined(__aarch64__) && !defined(NEON_INTRINSICS)
     put_bits = state->cur.free_bits;
@@ -518,7 +525,9 @@ flush_bits(working_state *state)
     put_bits = SIMD_BIT_BUF_SIZE - state->cur.free_bits;
 #endif
     put_buffer = state->cur.put_buffer.simd;
-  } else {
+  } else
+#endif
+  {
     put_bits = BIT_BUF_SIZE - state->cur.free_bits;
     put_buffer = state->cur.put_buffer.c;
   }
@@ -536,6 +545,7 @@ flush_bits(working_state *state)
     EMIT_BYTE(temp)
   }
 
+#ifdef WITH_SIMD
   if (state->simd) {                    /* and reset bit buffer to empty */
     state->cur.put_buffer.simd = 0;
 #if defined(__aarch64__) && !defined(NEON_INTRINSICS)
@@ -543,7 +553,9 @@ flush_bits(working_state *state)
 #else
     state->cur.free_bits = SIMD_BIT_BUF_SIZE;
 #endif
-  } else {
+  } else
+#endif
+  {
     state->cur.put_buffer.c = 0;
     state->cur.free_bits = BIT_BUF_SIZE;
   }
@@ -719,7 +731,9 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   state.free_in_buffer = cinfo->dest->free_in_buffer;
   state.cur = entropy->saved;
   state.cinfo = cinfo;
+#ifdef WITH_SIMD
   state.simd = entropy->simd;
+#endif
 
   /* Emit restart marker if needed */
   if (cinfo->restart_interval) {
@@ -792,7 +806,9 @@ finish_pass_huff(j_compress_ptr cinfo)
   state.free_in_buffer = cinfo->dest->free_in_buffer;
   state.cur = entropy->saved;
   state.cinfo = cinfo;
+#ifdef WITH_SIMD
   state.simd = entropy->simd;
+#endif
 
   /* Flush out the last data */
   if (!flush_bits(&state))

@@ -12,6 +12,12 @@ mathematical (but not necessarily perceptible) edge block errors when
 decompressing progressive JPEG images exactly two MCU blocks in width or that
 use vertical chrominance subsampling.
 
+3. Fixed a regression introduced by 3.0 beta2[6] that, in rare cases, caused
+the C Huffman encoder (which is not used by default on x86 and Arm CPUs) to
+generate incorrect results if the Neon SIMD extensions were explicitly disabled
+at build time (by setting the `WITH_SIMD` CMake variable to `0`) in an AArch64
+build of libjpeg-turbo.
+
 
 3.0.0
 =====

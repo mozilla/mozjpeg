@@ -894,6 +894,17 @@ if(CPU_TYPE STREQUAL "x86_64" OR CPU_TYPE STREQUAL "i386")
   elseif(CPU_TYPE STREQUAL "x86_64")
     set(DEFAULT_FLOATTEST8 no-fp-contract)
   endif()
+elseif(CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64")
+  if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_C_COMPILER_VERSION VERSION_EQUAL 14.0.0 OR
+      CMAKE_C_COMPILER_VERSION VERSION_GREATER 14.0.0)
+      set(DEFAULT_FLOATTEST8 fp-contract)
+    else()
+      set(DEFAULT_FLOATTEST8 no-fp-contract)
+    endif()
+  elseif(CMAKE_COMPILER_IS_GNUCC)
+    set(DEFAULT_FLOATTEST8 fp-contract)
+  endif()
 # else we can't really set an intelligent default for FLOATTEST8.  The
 # appropriate value could be no-fp-contract, fp-contract, 387, or msvc,
 # depending on the compiler and compiler options.  We leave it to the user to
@@ -925,6 +936,17 @@ endif()
 
 if(CPU_TYPE STREQUAL "x86_64")
   set(DEFAULT_FLOATTEST12 no-fp-contract)
+elseif(CPU_TYPE STREQUAL "powerpc" OR CPU_TYPE STREQUAL "arm64")
+  if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_C_COMPILER_VERSION VERSION_EQUAL 14.0.0 OR
+      CMAKE_C_COMPILER_VERSION VERSION_GREATER 14.0.0)
+      set(DEFAULT_FLOATTEST12 fp-contract)
+    else()
+      set(DEFAULT_FLOATTEST12 no-fp-contract)
+    endif()
+  elseif(CMAKE_COMPILER_IS_GNUCC)
+    set(DEFAULT_FLOATTEST12 fp-contract)
+  endif()
 # else we can't really set an intelligent default for FLOATTEST12.  The
 # appropriate value could be no-fp-contract, fp-contract, or something else,
 # depending on the compiler and compiler options.  We leave it to the user to

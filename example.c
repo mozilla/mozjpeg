@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software.
  * Copyright (C) 1992-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, 2019, 2022, D. R. Commander.
+ * Copyright (C) 2017, 2019, 2022-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -398,6 +398,7 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
   J12SAMPARRAY buffer12 = NULL; /* 12-bit output row buffer */
   int col;
   int row_stride;               /* physical row width in output buffer */
+  int little_endian = 1;
 
   /* In this example we want to open the input and output files before doing
    * anything else, so that the setjmp() error recovery below can assume the
@@ -494,10 +495,12 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
        * more than one scanline at a time if that's more convenient.
        */
       (void)jpeg12_read_scanlines(cinfo, buffer12, 1);
-      /* Swap MSB and LSB in each sample */
-      for (col = 0; col < row_stride; col++)
-        buffer12[0][col] = ((buffer12[0][col] & 0xFF) << 8) |
-                           ((buffer12[0][col] >> 8) & 0xFF);
+      if (*(char *)&little_endian == 1) {
+        /* Swap MSB and LSB in each sample */
+        for (col = 0; col < row_stride; col++)
+          buffer12[0][col] = ((buffer12[0][col] & 0xFF) << 8) |
+                             ((buffer12[0][col] >> 8) & 0xFF);
+      }
       fwrite(buffer12[0], 1, row_stride * sizeof(J12SAMPLE), outfile);
     }
   } else {

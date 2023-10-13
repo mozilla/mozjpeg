@@ -40,32 +40,32 @@ if(MSVC)
     ${CMAKE_BINARY_DIR}/win/jpeg.rc)
   set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_BINARY_DIR}/win/jpeg.rc)
 endif()
-add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} $<TARGET_OBJECTS:simd>
+add_library(${MOZPREFIX}jpeg SHARED ${JPEG_SRCS} ${DEFFILE} $<TARGET_OBJECTS:simd>
   ${SIMD_OBJS})
 if(UNIX)
-  target_link_libraries(jpeg m)
+  target_link_libraries(${MOZPREFIX}jpeg m)
 endif()
 
-set_target_properties(jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
+set_target_properties(${MOZPREFIX}jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
   VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
 if(APPLE AND (NOT CMAKE_OSX_DEPLOYMENT_TARGET OR
               CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER 10.4))
   if(NOT CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG)
     set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
   endif()
-  set_target_properties(jpeg PROPERTIES MACOSX_RPATH 1)
+  set_target_properties(${MOZPREFIX}jpeg PROPERTIES MACOSX_RPATH 1)
 endif()
 if(MAPFLAG)
-  set_target_properties(jpeg PROPERTIES
+  set_target_properties(${MOZPREFIX}jpeg PROPERTIES
     LINK_FLAGS "${MAPFLAG}${CMAKE_CURRENT_BINARY_DIR}/../libjpeg.map")
 endif()
 if(MSVC)
-  set_target_properties(jpeg PROPERTIES
-    RUNTIME_OUTPUT_NAME jpeg${SO_MAJOR_VERSION})
+  set_target_properties(${MOZPREFIX}jpeg PROPERTIES
+    RUNTIME_OUTPUT_NAME ${MOZPREFIX}jpeg${SO_MAJOR_VERSION})
   # The jsimd_*.c file is built using /MT, so this prevents a linker warning.
-  set_target_properties(jpeg PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
+  set_target_properties(${MOZPREFIX}jpeg PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
 elseif(MINGW)
-  set_target_properties(jpeg PROPERTIES SUFFIX -${SO_MAJOR_VERSION}.dll)
+  set_target_properties(${MOZPREFIX}jpeg PROPERTIES SUFFIX -${SO_MAJOR_VERSION}.dll)
 endif()
 
 if(WIN32)
@@ -85,10 +85,10 @@ else()
   endif()
 endif()
 
-add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c ../rdjpeg.c
+add_executable(${MOZPREFIX}cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c ../rdjpeg.c
   ../rdswitch.c ${CJPEG_BMP_SOURCES})
-set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
-target_link_libraries(cjpeg jpeg)
+set_property(TARGET ${MOZPREFIX}cjpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+target_link_libraries(${MOZPREFIX}cjpeg ${MOZPREFIX}jpeg)
 
 if(PNG_SUPPORTED)
   # to avoid finding static library from CMake cache
@@ -101,31 +101,31 @@ if(PNG_SUPPORTED)
 
   find_package(PNG 1.6 REQUIRED)
   find_package(ZLIB REQUIRED)
-  target_include_directories(cjpeg PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
-  target_link_libraries(cjpeg ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+  target_include_directories(${MOZPREFIX}cjpeg PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+  target_link_libraries(${MOZPREFIX}cjpeg ${PNG_LIBRARY} ${ZLIB_LIBRARY})
 endif()
 
-add_executable(djpeg ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
+add_executable(${MOZPREFIX}djpeg ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
   ../wrgif.c ../wrppm.c ${DJPEG_BMP_SOURCES})
-set_property(TARGET djpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
-target_link_libraries(djpeg jpeg)
+set_property(TARGET ${MOZPREFIX}djpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+target_link_libraries(${MOZPREFIX}djpeg ${MOZPREFIX}jpeg)
 
-add_executable(jpegtran ../jpegtran.c ../cdjpeg.c ../rdswitch.c ../transupp.c)
-target_link_libraries(jpegtran jpeg)
-set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
+add_executable(${MOZPREFIX}jpegtran ../jpegtran.c ../cdjpeg.c ../rdswitch.c ../transupp.c)
+target_link_libraries(${MOZPREFIX}jpegtran ${MOZPREFIX}jpeg)
+set_property(TARGET ${MOZPREFIX}jpegtran PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
 
 add_executable(jcstest ../jcstest.c)
-target_link_libraries(jcstest jpeg)
+target_link_libraries(jcstest ${MOZPREFIX}jpeg)
 
-install(TARGETS jpeg EXPORT ${CMAKE_PROJECT_NAME}Targets
+install(TARGETS ${MOZPREFIX}jpeg EXPORT ${CMAKE_PROJECT_NAME}Targets
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(TARGETS cjpeg djpeg jpegtran
+install(TARGETS ${MOZPREFIX}cjpeg ${MOZPREFIX}djpeg ${MOZPREFIX}jpegtran
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
   CMAKE_C_LINKER_SUPPORTS_PDB)
-  install(FILES "$<TARGET_PDB_FILE:jpeg>"
+  install(FILES "$<TARGET_PDB_FILE:${MOZPREFIX}jpeg>"
     DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
 endif()

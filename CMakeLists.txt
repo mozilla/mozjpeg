@@ -246,9 +246,40 @@ option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions w
 boolean_number(WITH_MEM_SRCDST)
 option(WITH_SIMD "Include SIMD extensions, if available for this platform" TRUE)
 boolean_number(WITH_SIMD)
-option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" TRUE)
+option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" FALSE)
 boolean_number(WITH_TURBOJPEG)
 option(WITH_FUZZ "Build fuzz targets" FALSE)
+
+# MozJPEG build differences from upstream jpeg-turbo:
+# 1. WITH_TURBOJPEG is OFF by default.
+# 2. WITH_MOZPREFIX set to ON does the following:
+#    * it adds a "moz" prefix to the libraries (libmozjpeg.so*, .a, .dll, etc.),
+#      the utilities (mozcpjeg, mozjpegtran, etc.) and the man pages.
+#    * It renames the pkg-config file mozjpeg.pc.
+#    * It installs header files inside ${includedir}/mozjpeg/ which is properly
+#      advertized in the pkg-config file.
+#    This makes upstream jpeg-turbo and mozjpeg side-by-side installable and
+#    gives the ability to know when you are building against mozjpeg in
+#    particular.
+# 3. WITH_LIBJPEG_PKG_CONFIG will install both mozjpeg.pc and libjpeg.pc
+#    (libraries are still prefixed yet these can be discovered when searching a
+#    generic libjpeg with pkg-config).
+# 4. If WITH_MOZPREFIX is OFF, everything will be named generically without
+#    prefix and headers installed in ${includedir}/.
+#    WITH_LIBJPEG_PKG_CONFIG is ignored in this case.
+#    WITH_MOZPREFIX is OFF by default on Windows and ON by default on other
+#    OSes.
+
+if(WIN32)
+  option(WITH_MOZPREFIX "Rename the library mozjpeg" FALSE)
+else()
+  option(WITH_MOZPREFIX "Rename the library mozjpeg" TRUE)
+endif()
+option(WITH_LIBJPEG_PKG_CONFIG "Install libjpeg.pc additionally to mozjpeg.pc (ignored when WITH_MOZPREFIX=OFF)" FALSE)
+
+if(WITH_MOZPREFIX)
+  set(MOZPREFIX "moz")
+endif()
 
 macro(report_option var desc)
   if(${var})
@@ -645,10 +676,10 @@ if(ENABLE_SHARED)
 endif()
 
 if(ENABLE_STATIC)
-  add_library(jpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
+  add_library(${MOZPREFIX}jpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
     ${SIMD_OBJS})
   if(NOT MSVC)
-    set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
+    set_target_properties(${MOZPREFIX}jpeg-static PROPERTIES OUTPUT_NAME ${MOZPREFIX}jpeg)
   endif()
 endif()
 
@@ -754,12 +785,12 @@ else()
 endif()
 
 if(ENABLE_STATIC)
-  add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdjpeg.c rdswitch.c
+  add_executable(${MOZPREFIX}cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdjpeg.c rdswitch.c
     ${CJPEG_BMP_SOURCES})
-  set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
-  target_link_libraries(cjpeg-static jpeg-static)
+  set_property(TARGET ${MOZPREFIX}cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+  target_link_libraries(${MOZPREFIX}cjpeg-static ${MOZPREFIX}jpeg-static)
   if(UNIX)
-    target_link_libraries(cjpeg-static m)
+    target_link_libraries(${MOZPREFIX}cjpeg-static m)
   endif()
 
   if(PNG_SUPPORTED)
@@ -779,30 +810,30 @@ if(ENABLE_STATIC)
     if (NOT APPLE)
       find_package(ZLIB REQUIRED)
     endif()
-    target_include_directories(cjpeg-static PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
-    target_link_libraries(cjpeg-static ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+    target_include_directories(${MOZPREFIX}cjpeg-static PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+    target_link_libraries(${MOZPREFIX}cjpeg-static ${PNG_LIBRARY} ${ZLIB_LIBRARY})
   endif()
 
-  add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrgif.c
+  add_executable(${MOZPREFIX}djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrgif.c
     wrppm.c ${DJPEG_BMP_SOURCES})
-  set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
-  target_link_libraries(djpeg-static jpeg-static)
+  set_property(TARGET ${MOZPREFIX}djpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+  target_link_libraries(${MOZPREFIX}djpeg-static ${MOZPREFIX}jpeg-static)
   if(UNIX)
-    target_link_libraries(djpeg-static m)
+    target_link_libraries(${MOZPREFIX}djpeg-static m)
   endif()
 
-  add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
-  target_link_libraries(jpegtran-static jpeg-static)
+  add_executable(${MOZPREFIX}jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
+  target_link_libraries(${MOZPREFIX}jpegtran-static ${MOZPREFIX}jpeg-static)
   if(UNIX)
-    target_link_libraries(jpegtran-static m)
+    target_link_libraries(${MOZPREFIX}jpegtran-static m)
   endif()
 
-  set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
+  set_property(TARGET ${MOZPREFIX}jpegtran-static PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
 endif()
 
-add_executable(rdjpgcom rdjpgcom.c)
+add_executable(${MOZPREFIX}rdjpgcom rdjpgcom.c)
 
-add_executable(wrjpgcom wrjpgcom.c)
+add_executable(${MOZPREFIX}wrjpgcom wrjpgcom.c)
 
 
 ###############################################################################
@@ -1112,7 +1143,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
   macro(add_bittest PROG NAME ARGS OUTFILE INFILE MD5SUM)
     add_test(${PROG}-${libtype}-${NAME}
-      ${CMAKE_CROSSCOMPILING_EMULATOR} ${PROG}${suffix} ${ARGS}
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MOZPREFIX}${PROG}${suffix} ${ARGS}
         -outfile ${OUTFILE} ${INFILE})
     add_test(${PROG}-${libtype}-${NAME}-cmp
       ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5SUM} ${OUTFILE})
@@ -1366,7 +1397,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
   # Context rows: Yes  Intra-iMCU row: No   iMCU row prefetch: No   ENT: prog huff
   add_test(cjpeg-${libtype}-420-islow-prog
-    ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -prog
+    ${CMAKE_CROSSCOMPILING_EMULATOR} ${MOZPREFIX}cjpeg${suffix} -dct int -prog
       -outfile testout_420_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
   add_bittest(djpeg 420-islow-prog-crop62x62_71_71
     "-dct;int;-crop;62x62+71+71;-ppm"
@@ -1383,7 +1414,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
   # Context rows: No   Intra-iMCU row: Yes  ENT: huff
   add_test(cjpeg-${libtype}-444-islow
-    ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -sample 1x1
+    ${CMAKE_CROSSCOMPILING_EMULATOR} ${MOZPREFIX}cjpeg${suffix} -dct int -sample 1x1
       -outfile testout_444_islow.jpg ${TESTIMAGES}/testorig.ppm)
   add_bittest(djpeg 444-islow-skip1_6 "-dct;int;-skip;1,6;-ppm"
     testout_444_islow_skip1,6.ppm testout_444_islow.jpg
@@ -1391,7 +1422,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
   # Context rows: No   Intra-iMCU row: No   ENT: prog huff
   add_test(cjpeg-${libtype}-444-islow-prog
-    ${CMAKE_CROSSCOMPILING_EMULATOR} cjpeg${suffix} -dct int -prog -sample 1x1
+    ${CMAKE_CROSSCOMPILING_EMULATOR} ${MOZPREFIX}cjpeg${suffix} -dct int -prog -sample 1x1
       -outfile testout_444_islow_prog.jpg ${TESTIMAGES}/testorig.ppm)
   add_bittest(djpeg 444-islow-prog-crop98x98_13_13
     "-dct;int;-crop;98x98+13+13;-ppm"
@@ -1527,7 +1558,7 @@ if(WITH_TURBOJPEG)
 endif()
 
 if(ENABLE_STATIC)
-  install(TARGETS jpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
+  install(TARGETS ${MOZPREFIX}jpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
   if(NOT ENABLE_SHARED)
@@ -1545,7 +1576,7 @@ if(ENABLE_STATIC)
   endif()
 endif()
 
-install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS ${MOZPREFIX}rdjpgcom ${MOZPREFIX}wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.ijg
   ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.txt
@@ -1561,13 +1592,34 @@ endif()
 
 if(UNIX OR MINGW)
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cjpeg.1
-    ${CMAKE_CURRENT_SOURCE_DIR}/djpeg.1 ${CMAKE_CURRENT_SOURCE_DIR}/jpegtran.1
-    ${CMAKE_CURRENT_SOURCE_DIR}/rdjpgcom.1
-    ${CMAKE_CURRENT_SOURCE_DIR}/wrjpgcom.1
-    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+    RENAME ${MOZPREFIX}cjpeg.1)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/djpeg.1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+    RENAME ${MOZPREFIX}djpeg.1)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/jpegtran.1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+    RENAME ${MOZPREFIX}jpegtran.1)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/rdjpgcom.1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+    RENAME ${MOZPREFIX}rdjpgcom.1)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/wrjpgcom.1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+    RENAME ${MOZPREFIX}wrjpgcom.1)
 endif()
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+if(WITH_MOZPREFIX)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+      RENAME mozjpeg.pc)
+  if(WITH_LIBJPEG_PKG_CONFIG)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  endif()
+else()
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
 if(WITH_TURBOJPEG)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
@@ -1580,10 +1632,13 @@ install(EXPORT ${CMAKE_PROJECT_NAME}Targets
   NAMESPACE ${CMAKE_PROJECT_NAME}::
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
 
+if(WITH_MOZPREFIX)
+  set(MOZJPEG_INCLUDE_SUBDIR "${MOZPREFIX}jpeg")
+endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jpeglib.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${MOZJPEG_INCLUDE_SUBDIR})
 
 include(cmakescripts/BuildPackages.cmake)
 

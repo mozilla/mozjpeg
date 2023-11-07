@@ -1,3 +1,16 @@
+3.0.2
+=====
+
+### Significant changes relative to 3.0.1:
+
+1. Fixed a signed integer overflow in the `tj3CompressFromYUV8()`,
+`tj3DecodeYUV8()`, `tj3DecompressToYUV8()`, and `tj3EncodeYUV8()` functions,
+detected by the Clang and GCC undefined behavior sanitizers, that could be
+triggered by setting the `align` parameter to an unreasonably large value.
+This issue did not pose a security threat, but removing the warning made it
+easier to detect actual security issues, should they arise in the future.
+
+
 3.0.1
 =====
 

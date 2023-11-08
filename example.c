@@ -271,13 +271,6 @@ write_JPEG_file(char *filename, int quality, int data_precision)
  * destination module that can demand suspension of the compressor.
  * (If you don't know what that's for, you don't need it.)
  *
- * If the compressor requires full-image buffers (for entropy-coding
- * optimization or a multi-scan JPEG file), it will create temporary
- * files for anything that doesn't fit within the maximum-memory setting.
- * (Note that temp files are NOT needed if you use the default parameters.)
- * On some systems you may need to set up a signal handler to ensure that
- * temporary files are deleted if the program is interrupted.  See libjpeg.txt.
- *
  * Scanlines MUST be supplied in top-to-bottom order if you want your JPEG
  * files to be compatible with everyone else's.  If you cannot readily read
  * your data in that order, you'll need an intermediate array to hold the
@@ -562,10 +555,6 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
  * which is standardly top-to-bottom.  If you must emit data bottom-to-top,
  * you can use one of the virtual arrays provided by the JPEG memory manager
  * to invert the data.  See wrbmp.c for an example.
- *
- * As with compression, some operating modes may require temporary files.
- * On some systems you may need to set up a signal handler to ensure that
- * temporary files are deleted if the program is interrupted.  See libjpeg.txt.
  */
 
 

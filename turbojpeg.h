@@ -715,10 +715,10 @@ enum TJPARAM {
    * the contents of the JPEG image.  Note that this parameter is set by
    * #tj3LoadImage8() when loading a Windows BMP file that contains pixel
    * density information, and the value of this parameter is stored to a
-   * Windows BMP file by #tj3SaveImage8() if the value of #TJPARAM_DENSITYUNIT
+   * Windows BMP file by #tj3SaveImage8() if the value of #TJPARAM_DENSITYUNITS
    * is `2`.
    *
-   * @see TJPARAM_DENSITYUNIT
+   * @see TJPARAM_DENSITYUNITS
    */
   TJPARAM_XDENSITY,
   /**
@@ -732,10 +732,10 @@ enum TJPARAM {
    * the contents of the JPEG image.  Note that this parameter is set by
    * #tj3LoadImage8() when loading a Windows BMP file that contains pixel
    * density information, and the value of this parameter is stored to a
-   * Windows BMP file by #tj3SaveImage8() if the value of #TJPARAM_DENSITYUNIT
+   * Windows BMP file by #tj3SaveImage8() if the value of #TJPARAM_DENSITYUNITS
    * is `2`.
    *
-   * @see TJPARAM_DENSITYUNIT
+   * @see TJPARAM_DENSITYUNITS
    */
   TJPARAM_YDENSITY,
   /**

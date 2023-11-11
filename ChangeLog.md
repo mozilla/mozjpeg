@@ -10,6 +10,16 @@ triggered by setting the `align` parameter to an unreasonably large value.
 This issue did not pose a security threat, but removing the warning made it
 easier to detect actual security issues, should they arise in the future.
 
+2. Introduced a new parameter (`TJPARAM_MAXMEMORY` in the TurboJPEG C API and
+`TJ.PARAM_MAXMEMORY` in the TurboJPEG Java API) and a corresponding TJBench
+option (`-maxmemory`) for specifying the maximum amount of memory (in
+megabytes) that will be allocated for intermediate buffers, which are used with
+progressive JPEG compression and decompression, optimized baseline entropy
+coding, lossless JPEG compression, and lossless transformation.  The new
+parameter and option serve the same purpose as the `max_memory_to_use` field in
+the `jpeg_memory_mgr` struct in the libjpeg API, the `JPEGMEM` environment
+variable, and the cjpeg/djpeg/jpegtran `-maxmemory` option.
+
 
 3.0.1
 =====

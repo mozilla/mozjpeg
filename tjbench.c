@@ -89,8 +89,9 @@ int tjErrorLine = -1, tjErrorCode = -1;
                     TJSCALED(height, sf))
 
 int stopOnWarning = 0, bottomUp = 0, noRealloc = 1, fastUpsample = 0,
-  fastDCT = 0, optimize = 0, progressive = 0, limitScans = 0, arithmetic = 0,
-  lossless = 0, restartIntervalBlocks = 0, restartIntervalRows = 0;
+  fastDCT = 0, optimize = 0, progressive = 0, limitScans = 0, maxMemory = 0,
+  arithmetic = 0, lossless = 0, restartIntervalBlocks = 0,
+  restartIntervalRows = 0;
 int precision = 8, sampleSize, compOnly = 0, decompOnly = 0, doYUV = 0,
   quiet = 0, doTile = 0, pf = TJPF_BGR, yuvAlign = 1, doWrite = 1;
 char *ext = "ppm";
@@ -200,6 +201,8 @@ static int decomp(unsigned char **jpegBufs, size_t *jpegSizes, void *dstBuf,
   if (tj3Set(handle, TJPARAM_FASTDCT, fastDCT) == -1)
     THROW_TJ();
   if (tj3Set(handle, TJPARAM_SCANLIMIT, limitScans ? 500 : 0) == -1)
+    THROW_TJ();
+  if (tj3Set(handle, TJPARAM_MAXMEMORY, maxMemory) == -1)
     THROW_TJ();
 
   if (IS_CROPPED(cr)) {
@@ -454,6 +457,8 @@ static int fullTest(tjhandle handle, void *srcBuf, int w, int h, int subsamp,
       THROW_TJ();
     if (tj3Set(handle, TJPARAM_RESTARTROWS, restartIntervalRows) == -1)
       THROW_TJ();
+    if (tj3Set(handle, TJPARAM_MAXMEMORY, maxMemory) == -1)
+      THROW_TJ();
 
     if (doYUV) {
       yuvSize = tj3YUVBufSize(tilew, yuvAlign, tileh, subsamp);
@@ -651,6 +656,8 @@ static int decompTest(char *fileName)
   if (tj3Set(handle, TJPARAM_FASTDCT, fastDCT) == -1)
     THROW_TJ();
   if (tj3Set(handle, TJPARAM_SCANLIMIT, limitScans ? 500 : 0) == -1)
+    THROW_TJ();
+  if (tj3Set(handle, TJPARAM_MAXMEMORY, maxMemory) == -1)
     THROW_TJ();
 
   if (tj3DecompressHeader(handle, srcBuf, srcSize) == -1)
@@ -899,6 +906,10 @@ static void usage(char *progName)
   printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
   printf("-lossless = Generate lossless JPEG images when compressing (implies\n");
   printf("     -subsamp 444).  PSV is the predictor selection value (1-7).\n");
+  printf("-maxmemory = Memory limit (in megabytes) for intermediate buffers used with\n");
+  printf("     progressive JPEG compression and decompression, optimized baseline entropy\n");
+  printf("     coding, lossless JPEG compression, and lossless transformation\n");
+  printf("     [default = no limit]\n");
   printf("-nowrite = Do not write reference or output images (improves consistency of\n");
   printf("     benchmark results)\n");
   printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
@@ -1145,7 +1156,12 @@ int main(int argc, char *argv[])
         doWrite = 0;
       else if (!strcasecmp(argv[i], "-limitscans"))
         limitScans = 1;
-      else if (!strcasecmp(argv[i], "-restart") && i < argc - 1) {
+      else if (!strcasecmp(argv[i], "-maxmemory") && i < argc - 1) {
+        int tempi = atoi(argv[++i]);
+
+        if (tempi < 0) usage(argv[0]);
+        maxMemory = tempi;
+      } else if (!strcasecmp(argv[i], "-restart") && i < argc - 1) {
         int tempi = -1, nscan;  char tempc = 0;
 
         if ((nscan = sscanf(argv[++i], "%d%c", &tempi, &tempc)) < 1 ||

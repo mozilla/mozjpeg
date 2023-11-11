@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">TurboJPEG
-   &#160;<span id="projectnumber">3</span>
+   &#160;<span id="projectnumber">3.0.1</span>
    </div>
   </td>
  </tr>
@@ -104,9 +104,6 @@ Macros</h2></td></tr>
 <tr class="memitem:ga39f57a6fb02d9cf32e7b6890099b5a71"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga39f57a6fb02d9cf32e7b6890099b5a71">TJ_NUMCS</a></td></tr>
 <tr class="memdesc:ga39f57a6fb02d9cf32e7b6890099b5a71"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of JPEG colorspaces.  <a href="group___turbo_j_p_e_g.html#ga39f57a6fb02d9cf32e7b6890099b5a71">More...</a><br /></td></tr>
 <tr class="separator:ga39f57a6fb02d9cf32e7b6890099b5a71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaa628be5db276fc3676dfba205d45d780"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#gaa628be5db276fc3676dfba205d45d780">TJ_NUMPARAM</a></td></tr>
-<tr class="memdesc:gaa628be5db276fc3676dfba205d45d780"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of parameters.  <a href="group___turbo_j_p_e_g.html#gaa628be5db276fc3676dfba205d45d780">More...</a><br /></td></tr>
-<tr class="separator:gaa628be5db276fc3676dfba205d45d780"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga79bde1b4a3e2351e00887e47781b966e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___turbo_j_p_e_g.html#ga79bde1b4a3e2351e00887e47781b966e">TJ_NUMERR</a></td></tr>
 <tr class="memdesc:ga79bde1b4a3e2351e00887e47781b966e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of error codes.  <a href="group___turbo_j_p_e_g.html#ga79bde1b4a3e2351e00887e47781b966e">More...</a><br /></td></tr>
 <tr class="separator:ga79bde1b4a3e2351e00887e47781b966e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -235,7 +232,8 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a4de5c9d7cab5be806143a43c3b0e0877">TJPARAM_XDENSITY</a>, 
 <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82abda48f2df7eb9b88e2b7621efb017eba">TJPARAM_YDENSITY</a>, 
-<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a4c045981bd8a303521a401dbbe1df208">TJPARAM_DENSITYUNITS</a>
+<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a4c045981bd8a303521a401dbbe1df208">TJPARAM_DENSITYUNITS</a>, 
+<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a0de0a8281da45d1fc984edc8918f7dd2">TJPARAM_MAXMEMORY</a>
 <br />
  }</td></tr>
 <tr class="memdesc:gaa0f6be63ba78278299c9f5c12031fe82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameters.  <a href="group___turbo_j_p_e_g.html#gaa0f6be63ba78278299c9f5c12031fe82">More...</a><br /></td></tr>
@@ -462,22 +460,6 @@ YUV Image Format Notes</h2>
 </div><div class="memdoc">
 
 <p>The number of initialization options. </p>
-
-</div>
-</div>
-<a id="gaa628be5db276fc3676dfba205d45d780"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa628be5db276fc3676dfba205d45d780">&#9670;&nbsp;</a></span>TJ_NUMPARAM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TJ_NUMPARAM</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>The number of parameters. </p>
 
 </div>
 </div>
@@ -996,6 +978,11 @@ YUV Image Format Notes</h2>
 </ul>
 <p>This value is stored in or read from the JPEG header. It does not affect the contents of the JPEG image. Note that this parameter is set by <a class="el" href="group___turbo_j_p_e_g.html#ga565aaae7be3f8ca9099b56655c893251" title="Load an 8-bit-per-sample packed-pixel image from disk into memory.">tj3LoadImage8()</a> when loading a Windows BMP file that contains pixel density information, and the value of this parameter is stored to a Windows BMP file by <a class="el" href="group___turbo_j_p_e_g.html#gaa4ec838988e469cc15618e4690cc8722" title="Save an 8-bit-per-sample packed-pixel image from memory to disk.">tj3SaveImage8()</a> if the value is <code>2</code>.</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a4de5c9d7cab5be806143a43c3b0e0877" title="JPEG horizontal pixel density.">TJPARAM_XDENSITY</a>, <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82abda48f2df7eb9b88e2b7621efb017eba" title="JPEG vertical pixel density.">TJPARAM_YDENSITY</a> </dd></dl>
+</td></tr>
+<tr><td class="fieldname"><a id="ggaa0f6be63ba78278299c9f5c12031fe82a0de0a8281da45d1fc984edc8918f7dd2"></a>TJPARAM_MAXMEMORY&#160;</td><td class="fielddoc"><p>Memory limit for intermediate buffers. </p>
+<p><b>Value</b></p><ul>
+<li>the maximum amount of memory (in megabytes) that will be allocated for intermediate buffers, which are used with progressive JPEG compression and decompression, optimized baseline entropy coding, lossless JPEG compression, and lossless transformation <em>[default: <code>0</code> (no limit)]</em> </li>
+</ul>
 </td></tr>
 </table>
 

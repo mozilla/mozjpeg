@@ -167,6 +167,8 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
   } else
     dinfo->progress = NULL;
 
+  dinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
+
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
     retval = -1;  goto bailout;
@@ -342,6 +344,8 @@ DLLEXPORT _JSAMPLE *GET_NAME(tj3LoadImage, BITS_IN_JSAMPLE)
   } else
     THROW("Unsupported file type");
 
+  cinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
+
   src->input_file = file;
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
   /* Refuse to load images larger than 1 Megapixel when fuzzing. */
@@ -479,6 +483,8 @@ DLLEXPORT int GET_NAME(tj3SaveImage, BITS_IN_JSAMPLE)
       THROW("Could not initialize PPM writer");
     invert = this->bottomUp;
   }
+
+  dinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
 
   dst->output_file = file;
   (*dst->start_output) (dinfo, dst);

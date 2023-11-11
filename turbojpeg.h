@@ -426,11 +426,6 @@ enum TJCS {
 
 
 /**
- * The number of parameters
- */
-#define TJ_NUMPARAM
-
-/**
  * Parameters
  */
 enum TJPARAM {
@@ -758,7 +753,17 @@ enum TJPARAM {
    *
    * @see TJPARAM_XDENSITY, TJPARAM_YDENSITY
    */
-  TJPARAM_DENSITYUNITS
+  TJPARAM_DENSITYUNITS,
+  /**
+   * Memory limit for intermediate buffers
+   *
+   * **Value**
+   * - the maximum amount of memory (in megabytes) that will be allocated for
+   * intermediate buffers, which are used with progressive JPEG compression and
+   * decompression, optimized baseline entropy coding, lossless JPEG
+   * compression, and lossless transformation *[default: `0` (no limit)]*
+   */
+  TJPARAM_MAXMEMORY
 };
 
 

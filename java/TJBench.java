@@ -41,8 +41,8 @@ final class TJBench {
 
   private static boolean stopOnWarning, bottomUp, fastUpsample, fastDCT,
     optimize, progressive, limitScans, arithmetic, lossless;
-  private static int precision = 8, quiet = 0, pf = TJ.PF_BGR, yuvAlign = 1,
-    restartIntervalBlocks, restartIntervalRows = 0;
+  private static int maxMemory = 0, precision = 8, quiet = 0, pf = TJ.PF_BGR,
+    yuvAlign = 1, restartIntervalBlocks, restartIntervalRows = 0;
   private static boolean compOnly, decompOnly, doTile, doYUV, write = true,
     bmp = false;
 
@@ -183,6 +183,7 @@ final class TJBench {
     tjd.set(TJ.PARAM_FASTUPSAMPLE, fastUpsample ? 1 : 0);
     tjd.set(TJ.PARAM_FASTDCT, fastDCT ? 1 : 0);
     tjd.set(TJ.PARAM_SCANLIMIT, limitScans ? 500 : 0);
+    tjd.set(TJ.PARAM_MAXMEMORY, maxMemory);
 
     if (isCropped(cr)) {
       try {
@@ -364,6 +365,7 @@ final class TJBench {
       tjc.set(TJ.PARAM_QUALITY, jpegQual);
     tjc.set(TJ.PARAM_RESTARTBLOCKS, restartIntervalBlocks);
     tjc.set(TJ.PARAM_RESTARTROWS, restartIntervalRows);
+    tjc.set(TJ.PARAM_MAXMEMORY, maxMemory);
 
     for (tilew = doTile ? 8 : w, tileh = doTile ? 8 : h; ;
          tilew *= 2, tileh *= 2) {
@@ -550,6 +552,7 @@ final class TJBench {
     tjt.set(TJ.PARAM_FASTUPSAMPLE, fastUpsample ? 1 : 0);
     tjt.set(TJ.PARAM_FASTDCT, fastDCT ? 1 : 0);
     tjt.set(TJ.PARAM_SCANLIMIT, limitScans ? 500 : 0);
+    tjt.set(TJ.PARAM_MAXMEMORY, maxMemory);
 
     try {
       tjt.setSourceImage(srcBuf, srcSize);
@@ -775,6 +778,10 @@ final class TJBench {
     System.out.println("-componly = Stop after running compression tests.  Do not test decompression.");
     System.out.println("-lossless = Generate lossless JPEG images when compressing (implies");
     System.out.println("     -subsamp 444).  PSV is the predictor selection value (1-7).");
+    System.out.println("-maxmemory = Memory limit (in megabytes) for intermediate buffers used with");
+    System.out.println("     progressive JPEG compression and decompression, optimized baseline entropy");
+    System.out.println("     coding, lossless JPEG compression, and lossless transformation");
+    System.out.println("     [default = no limit]");
     System.out.println("-nowrite = Do not write reference or output images (improves consistency of");
     System.out.println("     benchmark results)");
     System.out.println("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =");
@@ -1074,7 +1081,17 @@ final class TJBench {
             write = false;
           else if (argv[i].equalsIgnoreCase("-limitscans"))
             limitScans = true;
-          else if (argv[i].equalsIgnoreCase("-restart") &&
+          else if (argv[i].equalsIgnoreCase("-maxmemory") &&
+                   i < argv.length - 1) {
+            int temp = -1;
+
+            try {
+              temp = Integer.parseInt(argv[++i]);
+            } catch (NumberFormatException e) {}
+            if (temp < 0)
+              usage();
+            maxMemory = temp;
+          } else if (argv[i].equalsIgnoreCase("-restart") &&
                    i < argv.length - 1) {
             int temp = -1;
             String arg = argv[++i];

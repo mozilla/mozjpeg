@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, 2017, 2021-2022, D. R. Commander.
+ * Copyright (C) 2014, 2017, 2021-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -111,7 +111,7 @@ JMESSAGE(JERR_NOT_COMPILED, "Requested feature was omitted at compile time")
 #if JPEG_LIB_VERSION >= 70
 JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")
 #endif
-JMESSAGE(JERR_NO_BACKING_STORE, "Backing store not supported")
+JMESSAGE(JERR_NO_BACKING_STORE, "Memory limit exceeded")
 JMESSAGE(JERR_NO_HUFF_TABLE, "Huffman table 0x%02x was not defined")
 JMESSAGE(JERR_NO_IMAGE, "JPEG datastream contains no image")
 JMESSAGE(JERR_NO_QUANT_TABLE, "Quantization table 0x%02x was not defined")

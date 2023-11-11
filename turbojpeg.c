@@ -136,6 +136,7 @@ typedef struct _tjinstance {
   int densityUnits;
   tjscalingfactor scalingFactor;
   tjregion croppingRegion;
+  int maxMemory;
 } tjinstance;
 
 static tjhandle _tjInitCompress(tjinstance *this);
@@ -335,6 +336,7 @@ static void setCompDefaults(tjinstance *this, int pixelFormat)
   this->cinfo.X_density = (UINT16)this->xDensity;
   this->cinfo.Y_density = (UINT16)this->yDensity;
   this->cinfo.density_unit = (UINT8)this->densityUnits;
+  this->cinfo.mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
 
   if (this->lossless) {
 #ifdef C_LOSSLESS_SUPPORTED
@@ -704,6 +706,9 @@ DLLEXPORT int tj3Set(tjhandle handle, int param, int value)
       THROW("TJPARAM_DENSITYUNITS is read-only in decompression instances.");
     SET_PARAM(densityUnits, 0, 2);
     break;
+  case TJPARAM_MAXMEMORY:
+    SET_PARAM(maxMemory, 0, (int)(min(LONG_MAX / 1048576L, (long)INT_MAX)));
+    break;
   default:
     THROW("Invalid parameter");
   }
@@ -766,6 +771,8 @@ DLLEXPORT int tj3Get(tjhandle handle, int param)
     return this->yDensity;
   case TJPARAM_DENSITYUNITS:
     return this->densityUnits;
+  case TJPARAM_MAXMEMORY:
+    return this->maxMemory;
   }
 
   return -1;
@@ -2043,6 +2050,8 @@ static void setDecodeDefaults(tjinstance *this, int pixelFormat)
       this->dinfo.quant_tbl_ptrs[i] =
         jpeg_alloc_quant_table((j_common_ptr)&this->dinfo);
   }
+
+  this->dinfo.mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
 }
 
 
@@ -2329,6 +2338,8 @@ DLLEXPORT int tj3DecompressToYUVPlanes8(tjhandle handle,
   } else
     dinfo->progress = NULL;
 
+  dinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
+
   if (setjmp(this->jerr.setjmp_buffer)) {
     /* If we get here, the JPEG code has signaled an error. */
     retval = -1;  goto bailout;
@@ -2395,6 +2406,8 @@ DLLEXPORT int tj3DecompressToYUVPlanes8(tjhandle handle,
   dinfo->do_fancy_upsampling = !this->fastUpsample;
   dinfo->dct_method = this->fastDCT ? JDCT_FASTEST : JDCT_ISLOW;
   dinfo->raw_data_out = TRUE;
+
+  dinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
 
   jpeg_start_decompress(dinfo);
   for (row = 0; row < (int)dinfo->output_height;
@@ -2657,6 +2670,8 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
     dinfo->progress = &progress.pub;
   } else
     dinfo->progress = NULL;
+
+  dinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
 
   if ((xinfo =
        (jpeg_transform_info *)malloc(sizeof(jpeg_transform_info) * n)) == NULL)

@@ -774,6 +774,19 @@ public final class TJ {
    * @see #PARAM_YDENSITY
    */
   public static final int PARAM_DENSITYUNITS = 22;
+  /**
+   * Memory limit for intermediate buffers
+   *
+   * <p><b>Value</b>
+   * <ul>
+   * <li> the maximum amount of memory (in megabytes) that will be allocated
+   * for intermediate buffers, which are used with progressive JPEG compression
+   * and decompression, optimized baseline entropy coding, lossless JPEG
+   * compression, and lossless transformation <i>[default: <code>0</code> (no
+   * limit)]</i>
+   * </ul>
+   */
+  public static final int PARAM_MAXMEMORY = 23;
 
 
   /**

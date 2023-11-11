@@ -125,10 +125,10 @@ DLLEXPORT int GET_NAME(tj3Compress, BITS_IN_JSAMPLE)
   jpeg_finish_compress(cinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) {
-    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+  if (cinfo->global_state > CSTATE_START && alloc)
+    (*cinfo->dest->term_destination) (cinfo);
+  if (cinfo->global_state > CSTATE_START || retval == -1)
     jpeg_abort_compress(cinfo);
-  }
   free(row_pointer);
   if (this->jerr.warning) retval = -1;
   return retval;

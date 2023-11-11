@@ -1589,10 +1589,10 @@ DLLEXPORT int tj3CompressFromYUVPlanes8(tjhandle handle,
   jpeg_finish_compress(cinfo);
 
 bailout:
-  if (cinfo->global_state > CSTATE_START) {
-    if (alloc) (*cinfo->dest->term_destination) (cinfo);
+  if (cinfo->global_state > CSTATE_START && alloc)
+    (*cinfo->dest->term_destination) (cinfo);
+  if (cinfo->global_state > CSTATE_START || retval == -1)
     jpeg_abort_compress(cinfo);
-  }
   for (i = 0; i < MAX_COMPONENTS; i++) {
     free(tmpbuf[i]);
     free(inbuf[i]);

@@ -2345,7 +2345,7 @@ DLLEXPORT int tj3DecompressToYUVPlanes8(tjhandle handle,
     retval = -1;  goto bailout;
   }
 
-  if (dinfo->global_state <= DSTATE_START) {
+  if (dinfo->global_state <= DSTATE_INHEADER) {
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
     jpeg_read_header(dinfo, TRUE);
   }
@@ -2536,7 +2536,7 @@ DLLEXPORT int tj3DecompressToYUV8(tjhandle handle,
     retval = -1;  goto bailout;
   }
 
-  if (dinfo->global_state <= DSTATE_START) {
+  if (dinfo->global_state <= DSTATE_INHEADER) {
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
     jpeg_read_header(dinfo, TRUE);
   }
@@ -2683,7 +2683,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
     retval = -1;  goto bailout;
   }
 
-  if (dinfo->global_state <= DSTATE_START)
+  if (dinfo->global_state <= DSTATE_INHEADER)
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 
   for (i = 0; i < n; i++) {
@@ -2711,7 +2711,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
   }
 
   jcopy_markers_setup(dinfo, saveMarkers ? JCOPYOPT_ALL : JCOPYOPT_NONE);
-  if (dinfo->global_state <= DSTATE_START)
+  if (dinfo->global_state <= DSTATE_INHEADER)
     jpeg_read_header(dinfo, TRUE);
   this->subsamp = getSubsamp(&this->dinfo);
 

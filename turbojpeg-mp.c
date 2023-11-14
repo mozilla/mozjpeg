@@ -174,7 +174,7 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
     retval = -1;  goto bailout;
   }
 
-  if (dinfo->global_state <= DSTATE_START) {
+  if (dinfo->global_state <= DSTATE_INHEADER) {
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
     jpeg_read_header(dinfo, TRUE);
   }

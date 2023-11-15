@@ -2687,6 +2687,8 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
 
   for (i = 0; i < n; i++) {
+    if (t[i].op < 0 || t[i].op >= TJ_NUMXOP)
+      THROW("Invalid transform operation");
     xinfo[i].transform = xformtypes[t[i].op];
     xinfo[i].perfect = (t[i].options & TJXOPT_PERFECT) ? 1 : 0;
     xinfo[i].trim = (t[i].options & TJXOPT_TRIM) ? 1 : 0;

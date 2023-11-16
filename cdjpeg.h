@@ -40,9 +40,7 @@ struct cjpeg_source_struct {
   J16SAMPARRAY buffer16;
 #endif
   JDIMENSION buffer_height;
-#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
   JDIMENSION max_pixels;
-#endif
 };
 
 

@@ -233,7 +233,9 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a4de5c9d7cab5be806143a43c3b0e0877">TJPARAM_XDENSITY</a>, 
 <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82abda48f2df7eb9b88e2b7621efb017eba">TJPARAM_YDENSITY</a>, 
 <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a4c045981bd8a303521a401dbbe1df208">TJPARAM_DENSITYUNITS</a>, 
-<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a0de0a8281da45d1fc984edc8918f7dd2">TJPARAM_MAXMEMORY</a>
+<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a0de0a8281da45d1fc984edc8918f7dd2">TJPARAM_MAXMEMORY</a>, 
+<br />
+&#160;&#160;<a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82ac4e95dd2ecd766854feee579406eae68">TJPARAM_MAXPIXELS</a>
 <br />
  }</td></tr>
 <tr class="memdesc:gaa0f6be63ba78278299c9f5c12031fe82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameters.  <a href="group___turbo_j_p_e_g.html#gaa0f6be63ba78278299c9f5c12031fe82">More...</a><br /></td></tr>
@@ -982,6 +984,12 @@ YUV Image Format Notes</h2>
 <tr><td class="fieldname"><a id="ggaa0f6be63ba78278299c9f5c12031fe82a0de0a8281da45d1fc984edc8918f7dd2"></a>TJPARAM_MAXMEMORY&#160;</td><td class="fielddoc"><p>Memory limit for intermediate buffers. </p>
 <p><b>Value</b></p><ul>
 <li>the maximum amount of memory (in megabytes) that will be allocated for intermediate buffers, which are used with progressive JPEG compression and decompression, optimized baseline entropy coding, lossless JPEG compression, and lossless transformation <em>[default: <code>0</code> (no limit)]</em> </li>
+</ul>
+</td></tr>
+<tr><td class="fieldname"><a id="ggaa0f6be63ba78278299c9f5c12031fe82ac4e95dd2ecd766854feee579406eae68"></a>TJPARAM_MAXPIXELS&#160;</td><td class="fielddoc"><p>Image size limit [decompression, lossless transformation, packed-pixel image loading]. </p>
+<p>Setting this parameter will cause the decompression, transform, and image loading functions to return an error if the number of pixels in the source image exceeds the specified limit. This allows security-critical applications to guard against excessive memory consumption.</p>
+<p><b>Value</b></p><ul>
+<li>maximum number of pixels that the decompression, transform, and image loading functions will process <em>[default: <code>0</code> (no limit)]</em> </li>
 </ul>
 </td></tr>
 </table>

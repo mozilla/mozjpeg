@@ -429,9 +429,6 @@ enum TJCS {
  * Parameters
  */
 enum TJPARAM {
-#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-  TJPARAM_MAXPIXELS = -1,
-#endif
   /**
    * Error handling behavior
    *
@@ -763,7 +760,21 @@ enum TJPARAM {
    * decompression, optimized baseline entropy coding, lossless JPEG
    * compression, and lossless transformation *[default: `0` (no limit)]*
    */
-  TJPARAM_MAXMEMORY
+  TJPARAM_MAXMEMORY,
+  /**
+   * Image size limit [decompression, lossless transformation, packed-pixel
+   * image loading]
+   *
+   * Setting this parameter will cause the decompression, transform, and image
+   * loading functions to return an error if the number of pixels in the source
+   * image exceeds the specified limit.  This allows security-critical
+   * applications to guard against excessive memory consumption.
+   *
+   * **Value**
+   * - maximum number of pixels that the decompression, transform, and image
+   * loading functions will process *[default: `0` (no limit)]*
+   */
+  TJPARAM_MAXPIXELS
 };
 
 

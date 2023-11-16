@@ -179,6 +179,9 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
     jpeg_read_header(dinfo, TRUE);
   }
   setDecompParameters(this);
+  if (this->maxPixels &&
+      (unsigned long long)this->jpegWidth * this->jpegHeight > this->maxPixels)
+    THROW("Image is too large");
   this->dinfo.out_color_space = pf2cs[pixelFormat];
 #if BITS_IN_JSAMPLE != 16
   scaledWidth = TJSCALED(dinfo->image_width, this->scalingFactor);
@@ -347,10 +350,8 @@ DLLEXPORT _JSAMPLE *GET_NAME(tj3LoadImage, BITS_IN_JSAMPLE)
   cinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
 
   src->input_file = file;
-#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-  /* Refuse to load images larger than 1 Megapixel when fuzzing. */
+  /* Refuse to load images larger than the specified size. */
   src->max_pixels = this->maxPixels;
-#endif
   (*src->start_input) (cinfo, src);
   if (tempc == 'B') {
     if (cinfo->X_density && cinfo->Y_density) {

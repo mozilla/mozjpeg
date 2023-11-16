@@ -20,6 +20,12 @@ parameter and option serve the same purpose as the `max_memory_to_use` field in
 the `jpeg_memory_mgr` struct in the libjpeg API, the `JPEGMEM` environment
 variable, and the cjpeg/djpeg/jpegtran `-maxmemory` option.
 
+3. Introduced a new parameter (`TJPARAM_MAXPIXELS` in the TurboJPEG C API and
+`TJ.PARAM_MAXPIXELS` in the TurboJPEG Java API) and a corresponding TJBench
+option (`-maxpixels`) for specifying the maximum number of pixels that the
+decompression, lossless transformation, and packed-pixel image loading
+functions/methods will process.
+
 
 3.0.1
 =====

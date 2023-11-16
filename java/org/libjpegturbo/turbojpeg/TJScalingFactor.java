@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011, 2018 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2018, 2023 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,9 +67,9 @@ public class TJScalingFactor {
   }
 
   /**
-   * Returns the scaled value of <code>dimension</code>.  This function
-   * performs the integer equivalent of
-   * <code>ceil(dimension * scalingFactor)</code>.
+   * Returns the scaled value of <code>dimension</code>.  This method performs
+   * the integer equivalent of
+   * <code>Math.ceil(dimension * scalingFactor)</code>.
    *
    * @param dimension width or height to multiply by this scaling factor
    *

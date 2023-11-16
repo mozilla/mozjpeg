@@ -37,7 +37,7 @@ import java.nio.*;
 public interface TJCustomFilter {
 
   /**
-   * A callback function that can be used to modify the DCT coefficients after
+   * A callback method that can be used to modify the DCT coefficients after
    * they are losslessly transformed but before they are transcoded to a new
    * JPEG image.  This allows for custom filters or other transformations to be
    * applied in the frequency domain.
@@ -45,13 +45,13 @@ public interface TJCustomFilter {
    * @param coeffBuffer a buffer containing transformed DCT coefficients.
    * (NOTE: this buffer is not guaranteed to be valid once the callback
    * returns, so applications wishing to hand off the DCT coefficients to
-   * another function or library should make a copy of them within the body of
-   * the callback.)
+   * another method should make a copy of them within the body of the
+   * callback.)
    *
    * @param bufferRegion rectangle containing the width and height of
    * <code>coeffBuffer</code> as well as its offset relative to the component
    * plane.  TurboJPEG implementations may choose to split each component plane
-   * into multiple DCT coefficient buffers and call the callback function once
+   * into multiple DCT coefficient buffers and call the callback method once
    * for each buffer.
    *
    * @param planeRegion rectangle containing the width and height of the

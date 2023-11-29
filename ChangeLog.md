@@ -2175,7 +2175,7 @@ and unit tests now work on those architectures.
 0.0.93
 ======
 
-### Significant changes since 0.0.91:
+### Significant changes relative to 0.0.91:
 
 1. 2982659: Fixed x86-64 build on FreeBSD systems
 

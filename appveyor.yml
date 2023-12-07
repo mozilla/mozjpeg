@@ -25,7 +25,7 @@ before_build:
 build_script:
   ## Build shared
   - cmake -B shared -A %PLATFORM%
-          -DENABLE_SHARED=1 -DENABLE_STATIC=0
+          -DBUILD_SHARED_LIBS=1
           -DREQUIRE_SIMD=1
           -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
@@ -33,7 +33,7 @@ build_script:
 
   ## Build static
   - cmake -B static -A %PLATFORM%
-          -DENABLE_SHARED=0 -DENABLE_STATIC=1
+          -DBUILD_SHARED_LIBS=0
           -DREQUIRE_SIMD=1
           -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
           -DVCPKG_TARGET_TRIPLET=%ARCH%-windows-static

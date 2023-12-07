@@ -1,4 +1,4 @@
-if(NOT ENABLE_STATIC)
+if(BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Fuzz targets require static libraries.")
 endif()
 if(NOT WITH_TURBOJPEG)

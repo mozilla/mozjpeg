@@ -91,14 +91,6 @@ set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(cjpeg jpeg)
 
 if(PNG_SUPPORTED)
-  # to avoid finding static library from CMake cache
-  unset(PNG_LIBRARY CACHE)
-  unset(PNG_LIBRARY_RELEASE CACHE)
-  unset(PNG_LIBRARY_DEBUG CACHE)
-  unset(ZLIB_LIBRARY CACHE)
-  unset(ZLIB_LIBRARY_RELEASE CACHE)
-  unset(ZLIB_LIBRARY_DEBUG CACHE)
-
   find_package(PNG 1.6 REQUIRED)
   find_package(ZLIB REQUIRED)
   target_include_directories(cjpeg PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})

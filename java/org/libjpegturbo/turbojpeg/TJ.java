@@ -629,9 +629,11 @@ public final class TJ {
    * </ul>
    *
    * <p>In most cases, compressing and decompressing lossless JPEG images is
-   * considerably slower than compressing and decompressing lossy JPEG images.
-   * Also note that the following features are not available with lossless JPEG
-   * images:
+   * considerably slower than compressing and decompressing lossy JPEG images,
+   * and lossless JPEG images are much larger than lossy JPEG images.  Thus,
+   * lossless JPEG images are typically used only for applications that require
+   * mathematically lossless compression.  Also note that the following
+   * features are not available with lossless JPEG images:
    * <ul>
    * <li> Colorspace conversion (lossless JPEG images always use
    * {@link #CS_RGB}, {@link #CS_GRAY}, or {@link #CS_CMYK}, depending on the
@@ -659,6 +661,32 @@ public final class TJ {
    * <li> <code>1</code>-<code>7</code> <i>[default for compression:
    * <code>1</code>]</i>
    * </ul>
+   *
+   * <p>Lossless JPEG compression shares no algorithms with lossy JPEG
+   * compression.  Instead, it uses differential pulse-code modulation (DPCM),
+   * an algorithm whereby each sample is encoded as the difference between the
+   * sample's value and a "predictor", which is based on the values of
+   * neighboring samples.  If Ra is the sample immediately to the left of the
+   * current sample, Rb is the sample immediately above the current sample, and
+   * Rc is the sample diagonally to the left and above the current sample, then
+   * the relationship between the predictor selection value and the predictor
+   * is as follows:
+   *
+   * <table border=1>
+   *   <caption></caption>
+   *   <tr> <th>PSV</th> <th>Predictor</th> </tr>
+   *   <tr> <td>1</td>   <td>Ra</td> </tr>
+   *   <tr> <td>2</td>   <td>Rb</td> </tr>
+   *   <tr> <td>3</td>   <td>Rc</td> </tr>
+   *   <tr> <td>4</td>   <td>Ra + Rb – Rc</td> </tr>
+   *   <tr> <td>5</td>   <td>Ra + (Rb – Rc) / 2</td> </tr>
+   *   <tr> <td>6</td>   <td>Rb + (Ra – Rc) / 2</td> </tr>
+   *   <tr> <td>7</td>   <td>(Ra + Rb) / 2</td> </tr>
+   * </table>
+   *
+   * <p>Predictors 1-3 are 1-dimensional predictors, whereas Predictors 4-7 are
+   * 2-dimensional predictors.  The best predictor for a particular image
+   * depends on the image.
    *
    * @see #PARAM_LOSSLESS
    */

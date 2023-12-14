@@ -177,7 +177,11 @@ Switches for advanced users:
                         number of bits, which is effectively a form of lossy
                         color quantization.)  CAUTION: lossless JPEG is not yet
                         widely implemented, so many decoders will be unable to
-                        view a lossless JPEG file at all.  Note that the
+                        view a lossless JPEG file at all.  In most cases,
+                        compressing and decompressing a lossless JPEG file is
+                        considerably slower than compressing and decompressing
+                        a lossy JPEG file, and lossless JPEG files are much
+                        larger than lossy JPEG files.  Also note that the
                         following features will be unavailable when compressing
                         or decompressing a lossless JPEG file:
                           * Quality/quantization table selection

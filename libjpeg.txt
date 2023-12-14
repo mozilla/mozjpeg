@@ -1028,8 +1028,11 @@ jpeg_enable_lossless (j_compress_ptr cinfo, int predictor_selection_value,
         is necessary in order to create a fully lossless JPEG image.  (A
         non-zero point transform value right-shifts the input samples by the
         specified number of bits, which is effectively a form of lossy color
-        quantization.)  Note that the following features will be unavailable
-        when compressing or decompressing lossless JPEG images:
+        quantization.)  In most cases, lossless mode is considerably slower
+        than, and does not compress as effectively as, lossy mode.  Thus, it is
+        typically used only for applications that require mathematically
+        lossless compression.  Note that the following features will be
+        unavailable when compressing or decompressing lossless JPEG images:
           * Partial image decompression
           * Quality/quantization table selection
           * DCT/IDCT algorithm selection
@@ -1043,6 +1046,30 @@ jpeg_enable_lossless (j_compress_ptr cinfo, int predictor_selection_value,
           * Transcoding of DCT coefficients
         Any parameters used to enable or configure those features will be
         ignored.
+
+        Lossless mode shares no algorithms with lossy mode.  Instead, it uses
+        differential pulse-code modulation (DPCM), an algorithm whereby each
+        sample is encoded as the difference between the sample's value and a
+        "predictor", which is based on the values of neighboring samples.  If
+        Ra is the sample immediately to the left of the current sample, Rb is
+        the sample immediately above the current sample, and Rc is the sample
+        diagonally to the left and above the current sample, then the
+        relationship between the predictor selection value and the predictor is
+        as follows:
+
+        PSV  Predictor
+        --------------
+        1    Ra
+        2    Rb
+        3    Rc
+        4    Ra + Rb – Rc
+        5    Ra + (Rb – Rc) / 2
+        6    Rb + (Ra – Rc) / 2
+        7    (Ra + Rb) / 2
+
+        Predictors 1-3 are 1-dimensional predictors, whereas Predictors 4-7 are
+        2-dimensional predictors.  The best predictor for a particular image
+        depends on the image.
 
 
 Compression parameters (cinfo fields) include:
@@ -1058,7 +1085,9 @@ int data_precision
         jpeg_write_scanlines() or jpeg_write_raw_data().  To create a
         16-bit-per-component lossless JPEG file, set data_precision to 16 prior
         to calling jpeg_start_compress() or using the memory manager, then use
-        jpeg16_write_scanlines() instead of jpeg_write_scanlines().
+        jpeg16_write_scanlines() instead of jpeg_write_scanlines().  Note that
+        16-bit data precision requires lossless mode.  (See
+        jpeg_enable_lossless().)
 
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:

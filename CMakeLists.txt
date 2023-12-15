@@ -218,10 +218,8 @@ macro(boolean_number var)
   endif()
 endmacro()
 
-option(ENABLE_SHARED "Build shared libraries" TRUE)
-boolean_number(ENABLE_SHARED)
-option(ENABLE_STATIC "Build static libraries" TRUE)
-boolean_number(ENABLE_STATIC)
+option(BUILD_SHARED_LIBS "Build shared libraries(.dll/.so) instead of static ones(.lib/.a)" TRUE)
+boolean_number(BUILD_SHARED_LIBS)
 option(REQUIRE_SIMD "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)" FALSE)
 boolean_number(REQUIRE_SIMD)
 option(PNG_SUPPORTED "Enable PNG support (requires libpng)" TRUE)
@@ -235,7 +233,7 @@ boolean_number(WITH_ARITH_ENC)
 if(CMAKE_C_COMPILER_ABI MATCHES "ELF X32")
   set(WITH_JAVA 0)
 else()
-  option(WITH_JAVA "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)" FALSE)
+  option(WITH_JAVA "Build Java wrapper for the TurboJPEG API library (implies BUILD_SHARED_LIBS=1)" FALSE)
   boolean_number(WITH_JAVA)
 endif()
 option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
@@ -259,23 +257,12 @@ macro(report_option var desc)
 endmacro()
 
 if(WITH_JAVA)
-  set(ENABLE_SHARED 1)
+  set(BUILD_SHARED_LIBS 1)
 endif()
 
-# Explicitly setting CMAKE_POSITION_INDEPENDENT_CODE=FALSE disables PIC for all
-# targets, which will cause the shared library builds to fail.  Thus, if shared
-# libraries are enabled and CMAKE_POSITION_INDEPENDENT_CODE is explicitly set
-# to FALSE, we need to unset it, thus restoring the default behavior
-# (automatically using PIC for shared library targets.)
-if(DEFINED CMAKE_POSITION_INDEPENDENT_CODE AND
-  NOT CMAKE_POSITION_INDEPENDENT_CODE AND ENABLE_SHARED)
-  unset(CMAKE_POSITION_INDEPENDENT_CODE CACHE)
-endif()
+report_option(BUILD_SHARED_LIBS "Shared libraries")
 
-report_option(ENABLE_SHARED "Shared libraries")
-report_option(ENABLE_STATIC "Static libraries")
-
-if(ENABLE_SHARED)
+if(BUILD_SHARED_LIBS)
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 endif()
 
@@ -631,7 +618,7 @@ if(WITH_SIMD)
   endif()
 else()
   add_library(simd OBJECT jsimd_none.c)
-  if(NOT WIN32 AND (CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED))
+  if(NOT WIN32 AND (CMAKE_POSITION_INDEPENDENT_CODE OR BUILD_SHARED_LIBS))
     set_target_properties(simd PROPERTIES POSITION_INDEPENDENT_CODE 1)
   endif()
 endif()
@@ -640,11 +627,11 @@ if(WITH_JAVA)
   add_subdirectory(java)
 endif()
 
-if(ENABLE_SHARED)
+if(BUILD_SHARED_LIBS)
   add_subdirectory(sharedlib)
 endif()
 
-if(ENABLE_STATIC)
+if(NOT BUILD_SHARED_LIBS)
   add_library(jpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
     ${SIMD_OBJS})
   if(NOT MSVC)
@@ -653,7 +640,7 @@ if(ENABLE_STATIC)
 endif()
 
 if(WITH_TURBOJPEG)
-  if(ENABLE_SHARED)
+  if(BUILD_SHARED_LIBS)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} $<TARGET_OBJECTS:simd> ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
       wrbmp.c wrppm.c)
@@ -708,10 +695,10 @@ if(WITH_TURBOJPEG)
     target_link_libraries(tjexample turbojpeg)
     if(UNIX)
       target_link_libraries(tjexample m)
-  endif()
+    endif()
   endif()
 
-  if(ENABLE_STATIC)
+  if(NOT BUILD_SHARED_LIBS)
     add_library(turbojpeg-static STATIC ${JPEG_SOURCES} $<TARGET_OBJECTS:simd>
       ${SIMD_OBJS} turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c
       rdppm.c wrbmp.c wrppm.c)
@@ -753,7 +740,7 @@ else()
   endif()
 endif()
 
-if(ENABLE_STATIC)
+if(NOT BUILD_SHARED_LIBS)
   add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdjpeg.c rdswitch.c
     ${CJPEG_BMP_SOURCES})
   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
@@ -763,14 +750,6 @@ if(ENABLE_STATIC)
   endif()
 
   if(PNG_SUPPORTED)
-    # to avoid finding shared library from CMake cache
-    unset(PNG_LIBRARY CACHE)
-    unset(PNG_LIBRARY_RELEASE CACHE)
-    unset(PNG_LIBRARY_DEBUG CACHE)
-    unset(ZLIB_LIBRARY CACHE)
-    unset(ZLIB_LIBRARY_RELEASE CACHE)
-    unset(ZLIB_LIBRARY_DEBUG CACHE)
-
     if (APPLE)
       find_package(ZLIB REQUIRED) # macos doesn't have static zlib
     endif()
@@ -971,10 +950,9 @@ if(WITH_JAVA)
 endif()
 
 set(TEST_LIBTYPES "")
-if(ENABLE_SHARED)
+if(BUILD_SHARED_LIBS)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} shared)
-endif()
-if(ENABLE_STATIC)
+else()
   set(TEST_LIBTYPES ${TEST_LIBTYPES} static)
 endif()
 
@@ -1494,7 +1472,7 @@ endif()
 set(EXE ${CMAKE_EXECUTABLE_SUFFIX})
 
 if(WITH_TURBOJPEG)
-  if(ENABLE_SHARED)
+  if(BUILD_SHARED_LIBS)
     install(TARGETS turbojpeg EXPORT ${CMAKE_PROJECT_NAME}Targets
       INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -1508,11 +1486,11 @@ if(WITH_TURBOJPEG)
         DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
     endif()
   endif()
-  if(ENABLE_STATIC)
+  if(NOT BUILD_SHARED_LIBS)
     install(TARGETS turbojpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
       INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    if(NOT ENABLE_SHARED)
+    if(NOT BUILD_SHARED_LIBS)
       if(GENERATOR_IS_MULTI_CONFIG)
         set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
       else()
@@ -1526,11 +1504,11 @@ if(WITH_TURBOJPEG)
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
-if(ENABLE_STATIC)
+if(NOT BUILD_SHARED_LIBS)
   install(TARGETS jpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  if(NOT ENABLE_SHARED)
+  if(NOT BUILD_SHARED_LIBS)
     if(GENERATOR_IS_MULTI_CONFIG)
       set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
     else()

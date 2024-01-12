@@ -1,7 +1,7 @@
 ;
 ; jchuff-sse2.asm - Huffman entropy encoding (SSE2)
 ;
-; Copyright (C) 2009-2011, 2014-2017, 2019, D. R. Commander.
+; Copyright (C) 2009-2011, 2014-2017, 2019, 2024, D. R. Commander.
 ; Copyright (C) 2015, Matthieu Darbois.
 ; Copyright (C) 2018, Matthias Räncker.
 ;
@@ -65,7 +65,8 @@ times 1 <<  2 db  3
 times 1 <<  1 db  2
 times 1 <<  0 db  1
 times 1       db  0
-jpeg_nbits_table:
+GLOBAL_DATA(jpeg_nbits_table)
+EXTN(jpeg_nbits_table):
 times 1       db  0
 times 1 <<  0 db  1
 times 1 <<  1 db  2
@@ -88,9 +89,9 @@ times 1 << 14 db 15
 %ifdef PIC
 %define NBITS(x)      nbits_base + x
 %else
-%define NBITS(x)      jpeg_nbits_table + x
+%define NBITS(x)      EXTN(jpeg_nbits_table) + x
 %endif
-%define MASK_BITS(x)  NBITS((x) * 8) + (jpeg_mask_bits - jpeg_nbits_table)
+%define MASK_BITS(x)  NBITS((x) * 8) + (jpeg_mask_bits - EXTN(jpeg_nbits_table))
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -469,7 +470,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     pcmpeqw     mm_all_0xff, mm_all_0xff                  ;Z:     all_0xff[i] = 0xFF;
 %endmacro
 
-    GET_SYM     nbits_base, jpeg_nbits_table, GET_SYM_BEFORE, GET_SYM_AFTER
+    GET_SYM     nbits_base, EXTN(jpeg_nbits_table), GET_SYM_BEFORE, GET_SYM_AFTER
 
     psrldq      xmm4, 1 * SIZEOF_WORD                     ;G: w4 = 37 44 45 38 39 46 47 --
     shufpd      xmm1, xmm5, 10b                           ;F: w1 = 36 37 44 45 50 51 58 59

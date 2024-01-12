@@ -468,6 +468,15 @@ if(UNIX)
   endif()
 endif()
 
+if(NOT MSVC OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  check_c_source_compiles("const int __attribute__((visibility(\"hidden\"))) table[1] = { 0 }; int main(void) { return table[0]; }"
+    HIDDEN_WORKS)
+  if(HIDDEN_WORKS)
+    set(HIDDEN "__attribute__((visibility(\"hidden\")))")
+    message(STATUS "HIDDEN = ${HIDDEN}")
+  endif()
+endif()
+
 if(MSVC)
   set(INLINE_OPTIONS "__inline;inline")
 else()
@@ -572,7 +581,7 @@ set(JPEG_SOURCES ${JPEG12_SOURCES} jcapimin.c jchuff.c jcicc.c jcinit.c
   jclhuff.c jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c jctrans.c
   jdapimin.c jdatadst.c jdatasrc.c jdhuff.c jdicc.c jdinput.c jdlhuff.c
   jdmarker.c jdmaster.c jdphuff.c jdtrans.c jerror.c jfdctflt.c jmemmgr.c
-  jmemnobs.c)
+  jmemnobs.c jpeg_nbits.c)
 
 if(WITH_ARITH_ENC OR WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jaricom.c)

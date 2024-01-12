@@ -1,7 +1,7 @@
 ;
 ; jchuff-sse2.asm - Huffman entropy encoding (64-bit SSE2)
 ;
-; Copyright (C) 2009-2011, 2014-2016, 2019, 2021, 2023, D. R. Commander.
+; Copyright (C) 2009-2011, 2014-2016, 2019, 2021, 2023-2024, D. R. Commander.
 ; Copyright (C) 2015, Matthieu Darbois.
 ; Copyright (C) 2018, Matthias Räncker.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
@@ -67,7 +67,8 @@ times 1 <<  2 db  3
 times 1 <<  1 db  2
 times 1 <<  0 db  1
 times 1       db  0
-jpeg_nbits_table:
+GLOBAL_DATA(jpeg_nbits_table)
+EXTN(jpeg_nbits_table):
 times 1       db  0
 times 1 <<  0 db  1
 times 1 <<  1 db  2
@@ -89,7 +90,7 @@ times 1 << 15 db 16
     alignz      32
 
 %define NBITS(x)      nbits_base + x
-%define MASK_BITS(x)  NBITS((x) * 4) + (jpeg_mask_bits - jpeg_nbits_table)
+%define MASK_BITS(x)  NBITS((x) * 4) + (jpeg_mask_bits - EXTN(jpeg_nbits_table))
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -290,7 +291,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         dctbl, POINTER [rbp+48]
     mov         actbl, POINTER [rbp+56]
     punpckldq   xmm0, xmm1                                ;A: w0 = xx 01 08 09 02 03 10 11
-    lea         nbits_base, [rel jpeg_nbits_table]
+    lea         nbits_base, [rel EXTN(jpeg_nbits_table)]
 
 %else
 
@@ -312,7 +313,7 @@ EXTN(jsimd_huff_encode_one_block_sse2):
     mov         buffer, rsi
     movups      xmm1, XMMWORD [block + 8 * SIZEOF_WORD]   ;B: w1 = 08 09 10 11 12 13 14 15
     movsx       codeq, word [block]                       ;Z:     code = block[0];
-    lea         nbits_base, [rel jpeg_nbits_table]
+    lea         nbits_base, [rel EXTN(jpeg_nbits_table)]
     pxor        xmm4, xmm4                                ;A: w4[i] = 0;
     sub         codeq, rcx                                ;Z:     code -= last_dc_val;
     punpckldq   xmm0, xmm1                                ;A: w0 = xx 01 08 09 02 03 10 11

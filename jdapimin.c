@@ -6,7 +6,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2016, 2022, D. R. Commander.
+ * Copyright (C) 2016, 2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -160,9 +160,12 @@ default_decompress_parms(j_decompress_ptr cinfo)
       int cid1 = cinfo->comp_info[1].component_id;
       int cid2 = cinfo->comp_info[2].component_id;
 
-      if (cid0 == 1 && cid1 == 2 && cid2 == 3)
-        cinfo->jpeg_color_space = JCS_YCbCr; /* assume JFIF w/out marker */
-      else if (cid0 == 82 && cid1 == 71 && cid2 == 66)
+      if (cid0 == 1 && cid1 == 2 && cid2 == 3) {
+        if (cinfo->master->lossless)
+          cinfo->jpeg_color_space = JCS_RGB; /* assume RGB w/out marker */
+        else
+          cinfo->jpeg_color_space = JCS_YCbCr; /* assume JFIF w/out marker */
+      } else if (cid0 == 82 && cid1 == 71 && cid2 == 66)
         cinfo->jpeg_color_space = JCS_RGB; /* ASCII 'R', 'G', 'B' */
       else {
         TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);

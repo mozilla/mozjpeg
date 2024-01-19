@@ -26,6 +26,12 @@ option (`-maxpixels`) for specifying the maximum number of pixels that the
 decompression, lossless transformation, and packed-pixel image loading
 functions/methods will process.
 
+4. Fixed an error ("Unsupported color conversion request") that occurred when
+attempting to decompress a 3-component lossless JPEG image without an Adobe
+APP14 marker.  The decompressor now assumes that a 3-component lossless JPEG
+image without an Adobe APP14 marker uses the RGB colorspace if its component
+IDs are 1, 2, and 3.
+
 
 3.0.1
 =====

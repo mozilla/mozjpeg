@@ -605,15 +605,6 @@ brackets, then its final value will depend on the final value of that other
 variable.  For instance, the default value of `CMAKE_INSTALL_MANDIR` is
 **\<CMAKE\_INSTALL\_DATAROOTDIR\>/man**.
 
-NOTE: If setting one of these directory variables to a relative path using the
-CMake command line, you must specify that the variable is of type `PATH`.
-For example:
-
-    cmake -G"{generator type}" -DCMAKE_INSTALL_LIBDIR:PATH=lib {source_directory}
-
-Otherwise, CMake will assume that the path is relative to the build directory
-rather than the install directory.
-
 
 Creating Distribution Packages
 ==============================

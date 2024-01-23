@@ -710,6 +710,9 @@ if(WITH_TURBOJPEG)
 
     add_executable(tjexample tjexample.c)
     target_link_libraries(tjexample turbojpeg)
+
+    add_custom_target(tjdoc COMMAND doxygen -s doxygen.config
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   endif()
 
   if(ENABLE_STATIC)

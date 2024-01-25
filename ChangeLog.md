@@ -1,3 +1,14 @@
+3.0.3
+=====
+
+### Significant changes relative to 3.0.2:
+
+1. Fixed an issue in the build system, introduced in 3.0.2, that caused all
+libjpeg-turbo components to depend on the Visual C++ run-time DLL when built
+with Visual C++ and CMake 3.15 or later, regardless of value of the
+`WITH_CRT_DLL` CMake variable.
+
+
 3.0.2
 =====
 

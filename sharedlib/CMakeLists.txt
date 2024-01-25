@@ -11,12 +11,21 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
 
 if(MSVC)
   # Build all configurations against shared C library
-  foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-    CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-    if(${var} MATCHES "/MT")
-      string(REGEX REPLACE "/MT" "/MD" ${var} "${${var}}")
+  if(CMAKE_VERSION VERSION_EQUAL "3.15" OR
+    CMAKE_VERSION VERSION_GREATER "3.15")
+    if(CMAKE_BUILD_TYPE_UC STREQUAL "DEBUG")
+      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDebugDLL)
+    else()
+      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
     endif()
-  endforeach()
+  else()
+    foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+      CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      if(${var} MATCHES "/MT")
+        string(REGEX REPLACE "/MT" "/MD" ${var} "${${var}}")
+      endif()
+    endforeach()
+  endif()
 endif()
 
 foreach(src ${JPEG_SOURCES})

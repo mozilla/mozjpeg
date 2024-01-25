@@ -10,7 +10,7 @@ if(CMAKE_EXECUTABLE_SUFFIX)
 endif()
 
 project(libjpeg-turbo C)
-set(VERSION 3.0.2)
+set(VERSION 3.0.3)
 set(COPYRIGHT_YEAR "1991-2024")
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
@@ -379,18 +379,29 @@ set(TURBOJPEG_SO_VERSION 0.${TURBOJPEG_SO_AGE}.0)
 # COMPILER SETTINGS
 ###############################################################################
 
+string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
+
 if(MSVC)
   option(WITH_CRT_DLL
     "Link all ${CMAKE_PROJECT_NAME} libraries and executables with the C run-time DLL (msvcr*.dll) instead of the static C run-time library (libcmt*.lib.)  The default is to use the C run-time DLL only with the libraries and executables that need it."
     FALSE)
   if(NOT WITH_CRT_DLL)
     # Use the static C library for all build types
-    foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-      CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-      if(${var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
+    if(CMAKE_VERSION VERSION_EQUAL "3.15" OR
+      CMAKE_VERSION VERSION_GREATER "3.15")
+      if(CMAKE_BUILD_TYPE_UC STREQUAL "DEBUG")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
+      else()
+        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
       endif()
-    endforeach()
+    else()
+      foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+        if(${var} MATCHES "/MD")
+          string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
+        endif()
+      endforeach()
+    endif()
   endif()
   add_definitions(-D_CRT_NONSTDC_NO_WARNINGS)
 endif()
@@ -417,8 +428,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
     endforeach()
   endif()
 endif()
-
-string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
 
 set(EFFECTIVE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_UC}}")
 message(STATUS "Compiler flags = ${EFFECTIVE_C_FLAGS}")

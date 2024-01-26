@@ -385,6 +385,7 @@ if(MSVC)
   option(WITH_CRT_DLL
     "Link all ${CMAKE_PROJECT_NAME} libraries and executables with the C run-time DLL (msvcr*.dll) instead of the static C run-time library (libcmt*.lib.)  The default is to use the C run-time DLL only with the libraries and executables that need it."
     FALSE)
+  boolean_number(WITH_CRT_DLL)
   if(NOT WITH_CRT_DLL)
     # Use the static C library for all build types
     if(CMAKE_VERSION VERSION_EQUAL "3.15" OR
@@ -394,6 +395,7 @@ if(MSVC)
       else()
         set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
       endif()
+      message(STATUS "Visual C++ run-time library: ${CMAKE_MSVC_RUNTIME_LIBRARY} (WITH_CRT_DLL = ${WITH_CRT_DLL})")
     else()
       foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
         CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)

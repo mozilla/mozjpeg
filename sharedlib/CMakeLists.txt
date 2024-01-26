@@ -18,6 +18,7 @@ if(MSVC)
     else()
       set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
     endif()
+    message(STATUS "Visual C++ run-time library for libjpeg API DLL: ${CMAKE_MSVC_RUNTIME_LIBRARY}")
   else()
     foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
       CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)

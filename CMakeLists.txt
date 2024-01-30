@@ -222,25 +222,38 @@ option(ENABLE_SHARED "Build shared libraries" TRUE)
 boolean_number(ENABLE_SHARED)
 option(ENABLE_STATIC "Build static libraries" TRUE)
 boolean_number(ENABLE_STATIC)
-option(REQUIRE_SIMD "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)" FALSE)
+option(REQUIRE_SIMD
+  "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)"
+  FALSE)
 boolean_number(REQUIRE_SIMD)
-option(WITH_ARITH_DEC "Include arithmetic decoding support when emulating the libjpeg v6b API/ABI" TRUE)
+option(WITH_ARITH_DEC
+  "Include arithmetic decoding support when emulating the libjpeg v6b API/ABI"
+  TRUE)
 boolean_number(WITH_ARITH_DEC)
-option(WITH_ARITH_ENC "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI" TRUE)
+option(WITH_ARITH_ENC
+  "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI"
+  TRUE)
 boolean_number(WITH_ARITH_ENC)
 if(CMAKE_C_COMPILER_ABI MATCHES "ELF X32")
   set(WITH_JAVA 0)
 else()
-  option(WITH_JAVA "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)" FALSE)
+  option(WITH_JAVA
+    "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)"
+    FALSE)
   boolean_number(WITH_JAVA)
 endif()
-option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG7
+  "Emulate libjpeg v7 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)"
+  FALSE)
 boolean_number(WITH_JPEG7)
-option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG8
+  "Emulate libjpeg v8 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)"
+  FALSE)
 boolean_number(WITH_JPEG8)
 option(WITH_SIMD "Include SIMD extensions, if available for this platform" TRUE)
 boolean_number(WITH_SIMD)
-option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" TRUE)
+option(WITH_TURBOJPEG
+  "Include the TurboJPEG API library and associated test programs" TRUE)
 boolean_number(WITH_TURBOJPEG)
 option(WITH_FUZZ "Build fuzz targets" FALSE)
 
@@ -521,7 +534,8 @@ if(MSVC)
 else()
   set(THREAD_LOCAL "__thread")
 endif()
-check_c_source_compiles("${THREAD_LOCAL} int i;  int main(void) { i = 0;  return i; }" HAVE_THREAD_LOCAL)
+check_c_source_compiles("${THREAD_LOCAL} int i;  int main(void) { i = 0;  return i; }"
+  HAVE_THREAD_LOCAL)
 if(HAVE_THREAD_LOCAL)
   message(STATUS "THREAD_LOCAL = ${THREAD_LOCAL}")
 else()
@@ -1079,8 +1093,8 @@ foreach(libtype ${TEST_LIBTYPES})
         set(MD5_PPM_444_TILE 87bd58005eec73f0f313c8e38d0d793c)
       endif()
 
-      # Test compressing from/decompressing to an arbitrary subregion of a larger
-      # image buffer
+      # Test compressing from/decompressing to an arbitrary subregion of a
+      # larger image buffer
       add_test(${tjbench}-${libtype}-tile-cp
         ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
           ${testout}_tile.ppm)

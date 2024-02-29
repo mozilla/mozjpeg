@@ -4,6 +4,7 @@
 ;
 ; Copyright (C) 2016, 2018, Matthieu Darbois
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
+; Copyright (C) 2024, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -287,7 +288,7 @@ EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
     sub         rsp, SIZEOF_XMMWORD
     movdqa      XMMWORD [rsp], ZERO
-    collect_args 6
+    COLLECT_ARGS 6
 
     movd        AL, r13d
     pxor        ZERO, ZERO
@@ -381,7 +382,7 @@ EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
 
     REDUCE0
 
-    uncollect_args 6
+    UNCOLLECT_ARGS 6
     movdqa      ZERO, XMMWORD [rsp]
     mov         rsp, rbp
     pop         rbp
@@ -450,7 +451,7 @@ EXTN(jsimd_encode_mcu_AC_refine_prepare_sse2):
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
     sub         rsp, SIZEOF_XMMWORD
     movdqa      XMMWORD [rsp], ZERO
-    collect_args 6
+    COLLECT_ARGS 6
 
     xor         SIGN, SIGN
     xor         EOB, EOB
@@ -598,7 +599,7 @@ EXTN(jsimd_encode_mcu_AC_refine_prepare_sse2):
     REDUCE0
 
     mov         eax, EOB
-    uncollect_args 6
+    UNCOLLECT_ARGS 6
     movdqa      ZERO, XMMWORD [rsp]
     mov         rsp, rbp
     pop         rbp

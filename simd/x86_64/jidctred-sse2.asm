@@ -2,7 +2,7 @@
 ; jidctred.asm - reduced-size IDCT (64-bit SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2016, D. R. Commander.
+; Copyright (C) 2009, 2016, 2024, D. R. Commander.
 ; Copyright (C) 2018, Matthias Räncker.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
@@ -71,7 +71,7 @@ F_3_624 equ DESCALE(3891787747, 30 - CONST_BITS)  ; FIX(3.624509785)
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      32
+    ALIGNZ      32
     GLOBAL_DATA(jconst_idct_red_sse2)
 
 EXTN(jconst_idct_red_sse2):
@@ -89,7 +89,7 @@ PD_DESCALE_P1_2 times 4  dd  1 << (DESCALE_P1_2 - 1)
 PD_DESCALE_P2_2 times 4  dd  1 << (DESCALE_P2_2 - 1)
 PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
 
-    alignz      32
+    ALIGNZ      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -123,7 +123,7 @@ EXTN(jsimd_idct_4x4_sse2):
     ; Allocate stack space for wk array.  r15 is used to access it.
     mov         r15, rsp
     sub         rsp, byte (SIZEOF_XMMWORD * WK_NUM)
-    collect_args 4
+    COLLECT_ARGS 4
 
     ; ---- Pass 1: process columns from input.
 
@@ -388,7 +388,7 @@ EXTN(jsimd_idct_4x4_sse2):
     movd        XMM_DWORD [rdx+rax*SIZEOF_JSAMPLE], xmm1
     movd        XMM_DWORD [rsi+rax*SIZEOF_JSAMPLE], xmm3
 
-    uncollect_args 4
+    UNCOLLECT_ARGS 4
     lea         rsp, [rbp-8]
     pop         r15
     pop         rbp
@@ -415,7 +415,7 @@ EXTN(jsimd_idct_4x4_sse2):
 EXTN(jsimd_idct_2x2_sse2):
     push        rbp
     mov         rbp, rsp
-    collect_args 4
+    COLLECT_ARGS 4
     push        rbx
 
     ; ---- Pass 1: process columns from input.
@@ -563,7 +563,7 @@ EXTN(jsimd_idct_2x2_sse2):
     mov         word [rsi+rax*SIZEOF_JSAMPLE], cx
 
     pop         rbx
-    uncollect_args 4
+    UNCOLLECT_ARGS 4
     pop         rbp
     ret
 

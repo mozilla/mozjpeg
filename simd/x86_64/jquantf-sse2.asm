@@ -2,7 +2,7 @@
 ; jquantf.asm - sample data conversion and quantization (64-bit SSE & SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2016, D. R. Commander.
+; Copyright (C) 2009, 2016, 2024, D. R. Commander.
 ; Copyright (C) 2018, Matthias Räncker.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
@@ -39,7 +39,7 @@
 EXTN(jsimd_convsamp_float_sse2):
     push        rbp
     mov         rbp, rsp
-    collect_args 3
+    COLLECT_ARGS 3
     push        rbx
 
     pcmpeqw     xmm7, xmm7
@@ -88,7 +88,7 @@ EXTN(jsimd_convsamp_float_sse2):
     jnz         short .convloop
 
     pop         rbx
-    uncollect_args 3
+    UNCOLLECT_ARGS 3
     pop         rbp
     ret
 
@@ -111,7 +111,7 @@ EXTN(jsimd_convsamp_float_sse2):
 EXTN(jsimd_quantize_float_sse2):
     push        rbp
     mov         rbp, rsp
-    collect_args 3
+    COLLECT_ARGS 3
 
     mov         rsi, r12
     mov         rdx, r11
@@ -144,7 +144,7 @@ EXTN(jsimd_quantize_float_sse2):
     dec         rax
     jnz         short .quantloop
 
-    uncollect_args 3
+    UNCOLLECT_ARGS 3
     pop         rbp
     ret
 

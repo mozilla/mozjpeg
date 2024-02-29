@@ -2,7 +2,7 @@
 ; jidctfst.asm - fast integer IDCT (64-bit SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2016, D. R. Commander.
+; Copyright (C) 2009, 2016, 2024, D. R. Commander.
 ; Copyright (C) 2018, Matthias Räncker.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
@@ -58,7 +58,7 @@ F_1_613 equ (F_2_613 - (1 << CONST_BITS))         ; FIX(2.613125930) - FIX(1)
 %define PRE_MULTIPLY_SCALE_BITS  2
 %define CONST_SHIFT              (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
 
-    alignz      32
+    ALIGNZ      32
     GLOBAL_DATA(jconst_idct_ifast_sse2)
 
 EXTN(jconst_idct_ifast_sse2):
@@ -69,7 +69,7 @@ PW_MF1613      times 8  dw -F_1_613 << CONST_SHIFT
 PW_F1082       times 8  dw  F_1_082 << CONST_SHIFT
 PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 
-    alignz      32
+    ALIGNZ      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -102,7 +102,7 @@ EXTN(jsimd_idct_ifast_sse2):
     ; Allocate stack space for wk array.  r15 is used to access it.
     mov         r15, rsp
     sub         rsp, byte (SIZEOF_XMMWORD * WK_NUM)
-    collect_args 4
+    COLLECT_ARGS 4
 
     ; ---- Pass 1: process columns from input.
 
@@ -478,7 +478,7 @@ EXTN(jsimd_idct_ifast_sse2):
     movq        XMM_MMWORD [rdx+rax*SIZEOF_JSAMPLE], xmm6
     movq        XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE], xmm2
 
-    uncollect_args 4
+    UNCOLLECT_ARGS 4
     lea         rsp, [rbp-8]
     pop         r15
     pop         rbp

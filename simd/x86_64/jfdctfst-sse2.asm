@@ -2,7 +2,7 @@
 ; jfdctfst.asm - fast integer FDCT (64-bit SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2016, D. R. Commander.
+; Copyright (C) 2009, 2016, 2024, D. R. Commander.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
@@ -50,7 +50,7 @@ F_1_306 equ DESCALE(1402911301, 30 - CONST_BITS)  ; FIX(1.306562965)
 %define PRE_MULTIPLY_SCALE_BITS  2
 %define CONST_SHIFT              (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
 
-    alignz      32
+    ALIGNZ      32
     GLOBAL_DATA(jconst_fdct_ifast_sse2)
 
 EXTN(jconst_fdct_ifast_sse2):
@@ -60,7 +60,7 @@ PW_F0382 times 8 dw F_0_382 << CONST_SHIFT
 PW_F0541 times 8 dw F_0_541 << CONST_SHIFT
 PW_F1306 times 8 dw F_1_306 << CONST_SHIFT
 
-    alignz      32
+    ALIGNZ      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -88,7 +88,7 @@ EXTN(jsimd_fdct_ifast_sse2):
     ; Allocate stack space for wk array.  r15 is used to access it.
     mov         r15, rsp
     sub         rsp, byte (SIZEOF_XMMWORD * WK_NUM)
-    collect_args 1
+    COLLECT_ARGS 1
 
     ; ---- Pass 1: process rows.
 
@@ -379,7 +379,7 @@ EXTN(jsimd_fdct_ifast_sse2):
     movdqa      XMMWORD [XMMBLOCK(5,0,rdx,SIZEOF_DCTELEM)], xmm6
     movdqa      XMMWORD [XMMBLOCK(1,0,rdx,SIZEOF_DCTELEM)], xmm2
 
-    uncollect_args 1
+    UNCOLLECT_ARGS 1
     lea         rsp, [rbp-8]
     pop         r15
     pop         rbp

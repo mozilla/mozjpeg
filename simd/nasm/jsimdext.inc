@@ -2,7 +2,7 @@
 ; jsimdext.inc - common declarations
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2010, 2016, 2018-2019, D. R. Commander.
+; Copyright (C) 2010, 2016, 2018-2019, 2024, D. R. Commander.
 ; Copyright (C) 2018, Matthieu Darbois.
 ; Copyright (C) 2018, Matthias Räncker.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
@@ -272,7 +272,7 @@ const_base:
 
 %define GOTOFF(got, sym)  (got) + (sym) - const_base
 
-%imacro get_GOT 1
+%imacro GET_GOT 1
     ; NOTE: this macro destroys ecx resister.
     call        %%geteip
     add         ecx, byte (%%ref - $)
@@ -304,7 +304,7 @@ const_base:
 
 %define GOTOFF(got, sym)  (got) + (sym) wrt ..gotoff
 
-%imacro get_GOT 1
+%imacro GET_GOT 1
     extern      GOT_SYMBOL
     call        %%geteip
     add         %1, GOT_SYMBOL + $$ - $ wrt ..gotpc
@@ -317,13 +317,13 @@ const_base:
 
 %endif    ; GOT_SYMBOL == _MACHO_PIC_ ----------------
 
-%imacro pushpic 1.nolist
+%imacro PUSHPIC 1.nolist
     push        %1
 %endmacro
-%imacro poppic  1.nolist
+%imacro POPPIC  1.nolist
     pop         %1
 %endmacro
-%imacro movpic  2.nolist
+%imacro MOVPIC  2.nolist
     mov         %1, %2
 %endmacro
 
@@ -331,13 +331,13 @@ const_base:
 
 %define GOTOFF(got, sym)  (sym)
 
-%imacro get_GOT 1.nolist
+%imacro GET_GOT 1.nolist
 %endmacro
-%imacro pushpic 1.nolist
+%imacro PUSHPIC 1.nolist
 %endmacro
-%imacro poppic  1.nolist
+%imacro POPPIC  1.nolist
 %endmacro
-%imacro movpic  2.nolist
+%imacro MOVPIC  2.nolist
 %endmacro
 
 %endif   ;  PIC -----------------------------------------
@@ -349,7 +349,7 @@ const_base:
 %define MSKLE(x, y)  (~(((y) & 0xFFFF) - ((x) & 0xFFFF)) >> 16)
 %define FILLB(b, n)  (($$-(b)) & ((n)-1))
 
-%imacro alignx 1-2.nolist 0xFFFF
+%imacro ALIGNX 1-2.nolist 0xFFFF
 %%bs: \
   times MSKLE(FILLB(%%bs, %1), %2) & MSKLE(16, FILLB($, %1)) & FILLB($, %1) \
         db 0x90                                      ; nop
@@ -371,7 +371,7 @@ const_base:
 
 ; Align the next data on {2,4,8,16,..}-byte boundary.
 ;
-%imacro alignz 1.nolist
+%imacro ALIGNZ 1.nolist
     align       %1, db 0                ; filling zeros
 %endmacro
 
@@ -379,7 +379,7 @@ const_base:
 
 %ifdef WIN64
 
-%imacro collect_args 1
+%imacro COLLECT_ARGS 1
     sub         rsp, SIZEOF_XMMWORD
     movaps      XMMWORD [rsp], xmm6
     sub         rsp, SIZEOF_XMMWORD
@@ -408,7 +408,7 @@ const_base:
     push        rdi
 %endmacro
 
-%imacro uncollect_args 1
+%imacro UNCOLLECT_ARGS 1
     pop         rdi
     pop         rsi
 %if %1 > 5
@@ -429,7 +429,7 @@ const_base:
     add         rsp, SIZEOF_XMMWORD
 %endmacro
 
-%imacro push_xmm 1
+%imacro PUSH_XMM 1
     sub         rsp, %1 * SIZEOF_XMMWORD
     movaps      XMMWORD [rsp+0*SIZEOF_XMMWORD], xmm8
 %if %1 > 1
@@ -443,7 +443,7 @@ const_base:
 %endif
 %endmacro
 
-%imacro pop_xmm 1
+%imacro POP_XMM 1
     movaps      xmm8, XMMWORD [rsp+0*SIZEOF_XMMWORD]
 %if %1 > 1
     movaps      xmm9, XMMWORD [rsp+1*SIZEOF_XMMWORD]
@@ -459,7 +459,7 @@ const_base:
 
 %else
 
-%imacro collect_args 1
+%imacro COLLECT_ARGS 1
     push        r10
     mov         r10, rdi
 %if %1 > 1
@@ -484,7 +484,7 @@ const_base:
 %endif
 %endmacro
 
-%imacro uncollect_args 1
+%imacro UNCOLLECT_ARGS 1
 %if %1 > 5
     pop         r15
 %endif
@@ -503,10 +503,10 @@ const_base:
     pop         r10
 %endmacro
 
-%imacro push_xmm 1
+%imacro PUSH_XMM 1
 %endmacro
 
-%imacro pop_xmm 1
+%imacro POP_XMM 1
 %endmacro
 
 %endif

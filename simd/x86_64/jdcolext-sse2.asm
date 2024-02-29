@@ -2,7 +2,7 @@
 ; jdcolext.asm - colorspace conversion (64-bit SSE2)
 ;
 ; Copyright 2009, 2012 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2012, 2016, D. R. Commander.
+; Copyright (C) 2009, 2012, 2016, 2024, D. R. Commander.
 ; Copyright (C) 2018, Matthias Räncker.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
@@ -48,7 +48,7 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
     ; Allocate stack space for wk array.  r15 is used to access it.
     mov         r15, rsp
     sub         rsp, byte (SIZEOF_XMMWORD * WK_NUM)
-    collect_args 5
+    COLLECT_ARGS 5
     push        rbx
 
     mov         ecx, r10d               ; num_cols
@@ -429,7 +429,7 @@ EXTN(jsimd_ycc_rgb_convert_sse2):
 
 .return:
     pop         rbx
-    uncollect_args 5
+    UNCOLLECT_ARGS 5
     lea         rsp, [rbp-8]
     pop         r15
     pop         rbp

@@ -2,7 +2,7 @@
 ; jidctint.asm - accurate integer IDCT (64-bit SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2016, 2020, D. R. Commander.
+; Copyright (C) 2009, 2016, 2020, 2024, D. R. Commander.
 ; Copyright (C) 2018, Matthias Räncker.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
 ;
@@ -65,7 +65,7 @@ F_3_072 equ DESCALE(3299298341, 30 - CONST_BITS)  ; FIX(3.072711026)
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      32
+    ALIGNZ      32
     GLOBAL_DATA(jconst_idct_islow_sse2)
 
 EXTN(jconst_idct_islow_sse2):
@@ -82,7 +82,7 @@ PD_DESCALE_P1  times 4  dd  1 << (DESCALE_P1 - 1)
 PD_DESCALE_P2  times 4  dd  1 << (DESCALE_P2 - 1)
 PB_CENTERJSAMP times 16 db  CENTERJSAMPLE
 
-    alignz      32
+    ALIGNZ      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -115,7 +115,7 @@ EXTN(jsimd_idct_islow_sse2):
     ; Allocate stack space for wk array.  r15 is used to access it.
     mov         r15, rsp
     sub         rsp, (SIZEOF_XMMWORD * WK_NUM)
-    collect_args 4
+    COLLECT_ARGS 4
 
     ; ---- Pass 1: process columns from input.
 
@@ -835,7 +835,7 @@ EXTN(jsimd_idct_islow_sse2):
     movq        XMM_MMWORD [rdx+rax*SIZEOF_JSAMPLE], xmm2
     movq        XMM_MMWORD [rsi+rax*SIZEOF_JSAMPLE], xmm5
 
-    uncollect_args 4
+    UNCOLLECT_ARGS 4
     lea         rsp, [rbp-8]
     pop         r15
     pop         rbp

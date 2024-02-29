@@ -39,7 +39,7 @@ endstruc
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      32
+    ALIGNZ      32
     GLOBAL_DATA(jconst_huff_encode_one_block)
 
 EXTN(jconst_huff_encode_one_block):
@@ -49,7 +49,7 @@ jpeg_mask_bits dd 0x0000, 0x0001, 0x0003, 0x0007
                dd 0x00ff, 0x01ff, 0x03ff, 0x07ff
                dd 0x0fff, 0x1fff, 0x3fff, 0x7fff
 
-    alignz      32
+    ALIGNZ      32
 
 times 1 << 14 db 15
 times 1 << 13 db 14
@@ -87,7 +87,7 @@ times 1 << 13 db 14
 times 1 << 14 db 15
 times 1 << 15 db 16
 
-    alignz      32
+    ALIGNZ      32
 
 %define NBITS(x)      nbits_base + x
 %define MASK_BITS(x)  NBITS((x) * 4) + (jpeg_mask_bits - EXTN(jpeg_nbits_table))

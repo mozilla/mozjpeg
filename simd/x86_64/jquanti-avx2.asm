@@ -2,7 +2,7 @@
 ; jquanti.asm - sample data conversion and quantization (64-bit AVX2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2009, 2016, 2018, D. R. Commander.
+; Copyright (C) 2009, 2016, 2018, 2024, D. R. Commander.
 ; Copyright (C) 2016, Matthieu Darbois.
 ; Copyright (C) 2018, Matthias Räncker.
 ;
@@ -40,7 +40,7 @@
 EXTN(jsimd_convsamp_avx2):
     push        rbp
     mov         rbp, rsp
-    collect_args 3
+    COLLECT_ARGS 3
 
     mov         eax, r11d
 
@@ -83,7 +83,7 @@ EXTN(jsimd_convsamp_avx2):
     vmovdqu     YMMWORD [YMMBLOCK(6,0,r12,SIZEOF_DCTELEM)], ymm3
 
     vzeroupper
-    uncollect_args 3
+    UNCOLLECT_ARGS 3
     pop         rbp
     ret
 
@@ -117,7 +117,7 @@ EXTN(jsimd_convsamp_avx2):
 EXTN(jsimd_quantize_avx2):
     push        rbp
     mov         rbp, rsp
-    collect_args 3
+    COLLECT_ARGS 3
 
     vmovdqu     ymm4, [YMMBLOCK(0,0,r12,SIZEOF_DCTELEM)]
     vmovdqu     ymm5, [YMMBLOCK(2,0,r12,SIZEOF_DCTELEM)]
@@ -152,7 +152,7 @@ EXTN(jsimd_quantize_avx2):
     vmovdqu     [YMMBLOCK(6,0,r10,SIZEOF_DCTELEM)], ymm3
 
     vzeroupper
-    uncollect_args 3
+    UNCOLLECT_ARGS 3
     pop         rbp
     ret
 

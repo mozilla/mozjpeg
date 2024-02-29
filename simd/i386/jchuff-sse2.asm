@@ -42,7 +42,7 @@ endstruc
 
 EXTN(jconst_huff_encode_one_block):
 
-    alignz      32
+    ALIGNZ      32
 
 jpeg_mask_bits dq 0x0000, 0x0001, 0x0003, 0x0007
                dq 0x000f, 0x001f, 0x003f, 0x007f
@@ -84,7 +84,7 @@ times 1 << 12 db 13
 times 1 << 13 db 14
 times 1 << 14 db 15
 
-    alignz      32
+    ALIGNZ      32
 
 %ifdef PIC
 %define NBITS(x)      nbits_base + x
@@ -236,7 +236,7 @@ times 1 << 14 db 15
 
 ; If PIC is defined, load the address of a symbol defined in this file into a
 ; register.  Equivalent to
-;   get_GOT     %1
+;   GET_GOT     %1
 ;   lea         %1, [GOTOFF(%1, %2)]
 ; without using the GOT.
 ;

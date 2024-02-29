@@ -1,7 +1,7 @@
 ;
 ; jcgryext.asm - grayscale colorspace conversion (64-bit AVX2)
 ;
-; Copyright (C) 2011, 2016, D. R. Commander.
+; Copyright (C) 2011, 2016, 2024, D. R. Commander.
 ; Copyright (C) 2015, Intel Corporation.
 ; Copyright (C) 2018, Matthias Räncker.
 ; Copyright (C) 2023, Aliaksiej Kandracienka.
@@ -48,7 +48,7 @@ EXTN(jsimd_rgb_gray_convert_avx2):
     ; Allocate stack space for wk array.  r15 is used to access it.
     mov         r15, rsp
     sub         rsp, byte (SIZEOF_YMMWORD * WK_NUM)
-    collect_args 5
+    COLLECT_ARGS 5
     push        rbx
 
     mov         ecx, r10d
@@ -428,7 +428,7 @@ EXTN(jsimd_rgb_gray_convert_avx2):
 .return:
     pop         rbx
     vzeroupper
-    uncollect_args 5
+    UNCOLLECT_ARGS 5
     lea         rsp, [rbp-8]
     pop         r15
     pop         rbp

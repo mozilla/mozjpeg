@@ -76,6 +76,7 @@ PB_CENTERJSAMP  times 16 db  CENTERJSAMPLE
     GLOBAL_FUNCTION(jsimd_idct_float_sse2)
 
 EXTN(jsimd_idct_float_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     push        r15

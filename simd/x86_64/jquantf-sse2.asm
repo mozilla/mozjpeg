@@ -37,6 +37,7 @@
     GLOBAL_FUNCTION(jsimd_convsamp_float_sse2)
 
 EXTN(jsimd_convsamp_float_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     COLLECT_ARGS 3
@@ -109,6 +110,7 @@ EXTN(jsimd_convsamp_float_sse2):
     GLOBAL_FUNCTION(jsimd_quantize_float_sse2)
 
 EXTN(jsimd_quantize_float_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     COLLECT_ARGS 3

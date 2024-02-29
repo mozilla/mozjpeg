@@ -282,6 +282,7 @@ PW_1_NEG1                  times 8  dw  1
     GLOBAL_FUNCTION(jsimd_idct_islow_avx2)
 
 EXTN(jsimd_idct_islow_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp                     ; rbp = aligned rbp
     PUSH_XMM    4

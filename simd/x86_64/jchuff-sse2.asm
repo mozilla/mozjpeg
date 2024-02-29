@@ -261,6 +261,7 @@ times 1 << 15 db 16
     GLOBAL_FUNCTION(jsimd_huff_encode_one_block_sse2)
 
 EXTN(jsimd_huff_encode_one_block_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
 

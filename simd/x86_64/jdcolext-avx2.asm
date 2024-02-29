@@ -42,6 +42,7 @@
     GLOBAL_FUNCTION(jsimd_ycc_rgb_convert_avx2)
 
 EXTN(jsimd_ycc_rgb_convert_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     push        r15

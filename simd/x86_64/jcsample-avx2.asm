@@ -44,6 +44,7 @@
     GLOBAL_FUNCTION(jsimd_h2v1_downsample_avx2)
 
 EXTN(jsimd_h2v1_downsample_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     COLLECT_ARGS 6
@@ -205,6 +206,7 @@ EXTN(jsimd_h2v1_downsample_avx2):
     GLOBAL_FUNCTION(jsimd_h2v2_downsample_avx2)
 
 EXTN(jsimd_h2v2_downsample_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     COLLECT_ARGS 6

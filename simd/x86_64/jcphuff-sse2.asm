@@ -283,6 +283,7 @@
     GLOBAL_FUNCTION(jsimd_encode_mcu_AC_first_prepare_sse2)
 
 EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits
@@ -446,6 +447,7 @@ EXTN(jsimd_encode_mcu_AC_first_prepare_sse2):
     GLOBAL_FUNCTION(jsimd_encode_mcu_AC_refine_prepare_sse2)
 
 EXTN(jsimd_encode_mcu_AC_refine_prepare_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     and         rsp, byte (-SIZEOF_XMMWORD)  ; align to 128 bits

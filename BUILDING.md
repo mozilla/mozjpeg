@@ -14,6 +14,8 @@ Build Requirements
   (if building x86 or x86-64 SIMD extensions)
   * If using NASM, 2.13 or later is required.
   * If using Yasm, 1.2.0 or later is required.
+  * NASM 2.15 or later is required if building libjpeg-turbo with Intel
+    Control-flow Enforcement Technology (CET) support.
   * If building on macOS, NASM or Yasm can be obtained from
     [MacPorts](http://www.macports.org/) or [Homebrew](http://brew.sh/).
      - NOTE: Currently, if it is desirable to hide the SIMD function symbols in

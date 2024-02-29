@@ -8,6 +8,10 @@ libjpeg-turbo components to depend on the Visual C++ run-time DLL when built
 with Visual C++ and CMake 3.15 or later, regardless of value of the
 `WITH_CRT_DLL` CMake variable.
 
+2. The x86-64 SIMD extensions now include support for Intel Control-flow
+Enforcement Technology (CET), which is enabled automatically if CET is enabled
+in the C compiler.
+
 
 3.0.2
 =====

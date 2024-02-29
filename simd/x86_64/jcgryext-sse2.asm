@@ -40,6 +40,7 @@
     GLOBAL_FUNCTION(jsimd_rgb_gray_convert_sse2)
 
 EXTN(jsimd_rgb_gray_convert_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     push        r15

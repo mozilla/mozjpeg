@@ -76,6 +76,14 @@
 ; mark stack as non-executable
 section .note.GNU-stack noalloc noexec nowrite progbits
 
+%ifdef __CET__
+%ifdef __x86_64__
+section .note.gnu.property note alloc noexec align=8
+    dd 0x00000004, 0x00000010, 0x00000005, 0x00554e47
+    dd 0xc0000002, 0x00000004, 0x00000003, 0x00000000
+%endif
+%endif
+
 ; -- segment definition --
 ;
 %ifdef __x86_64__
@@ -510,6 +518,19 @@ const_base:
 %endmacro
 
 %endif
+
+%endif
+
+%ifdef __CET__
+
+%imacro ENDBR64 0
+    dd 0xfa1e0ff3
+%endmacro
+
+%else
+
+%imacro ENDBR64 0
+%endmacro
 
 %endif
 

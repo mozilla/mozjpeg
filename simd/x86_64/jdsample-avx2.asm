@@ -62,6 +62,7 @@ PW_EIGHT times 16 dw 8
     GLOBAL_FUNCTION(jsimd_h2v1_fancy_upsample_avx2)
 
 EXTN(jsimd_h2v1_fancy_upsample_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     PUSH_XMM    3
@@ -215,6 +216,7 @@ EXTN(jsimd_h2v1_fancy_upsample_avx2):
     GLOBAL_FUNCTION(jsimd_h2v2_fancy_upsample_avx2)
 
 EXTN(jsimd_h2v2_fancy_upsample_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     push        r15
@@ -524,6 +526,7 @@ EXTN(jsimd_h2v2_fancy_upsample_avx2):
     GLOBAL_FUNCTION(jsimd_h2v1_upsample_avx2)
 
 EXTN(jsimd_h2v1_upsample_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     COLLECT_ARGS 4
@@ -612,6 +615,7 @@ EXTN(jsimd_h2v1_upsample_avx2):
     GLOBAL_FUNCTION(jsimd_h2v2_upsample_avx2)
 
 EXTN(jsimd_h2v2_upsample_avx2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     COLLECT_ARGS 4

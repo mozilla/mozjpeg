@@ -81,6 +81,7 @@ PW_F1306 times 8 dw F_1_306 << CONST_SHIFT
     GLOBAL_FUNCTION(jsimd_fdct_ifast_sse2)
 
 EXTN(jsimd_fdct_ifast_sse2):
+    ENDBR64
     push        rbp
     mov         rbp, rsp
     push        r15

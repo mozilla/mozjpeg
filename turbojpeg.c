@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2024 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2021 Alex Richardson.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -370,7 +370,8 @@ static void setCompDefaults(tjinstance *this, int pixelFormat)
       jpeg_set_colorspace(&this->cinfo, JCS_YCbCr);
   }
 
-  this->cinfo.optimize_coding = this->optimize;
+  if (this->cinfo.data_precision == 8)
+    this->cinfo.optimize_coding = this->optimize;
 #ifdef C_PROGRESSIVE_SUPPORTED
   if (this->progressive) jpeg_simple_progression(&this->cinfo);
 #endif

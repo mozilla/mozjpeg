@@ -12,6 +12,10 @@ with Visual C++ and CMake 3.15 or later, regardless of value of the
 Enforcement Technology (CET), which is enabled automatically if CET is enabled
 in the C compiler.
 
+3. Fixed a regression introduced by 3.0 beta2[6] that made it impossible for
+calling applications to supply custom Huffman tables when generating
+12-bit-per-component lossy JPEG images using the libjpeg API.
+
 
 3.0.2
 =====

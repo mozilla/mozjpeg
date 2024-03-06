@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2017, 2019-2020, 2022-2023, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, 2019-2020, 2022-2024, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -84,14 +84,14 @@ static IMAGE_FORMATS requested_fmt;
 
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
-JDIMENSION max_scans;           /* for -maxscans switch */
+static JDIMENSION max_scans;    /* for -maxscans switch */
 static char *outfilename;       /* for -outfile switch */
-boolean memsrc;                 /* for -memsrc switch */
-boolean report;                 /* for -report switch */
-boolean skip, crop;
-JDIMENSION skip_start, skip_end;
-JDIMENSION crop_x, crop_y, crop_width, crop_height;
-boolean strict;                 /* for -strict switch */
+static boolean memsrc;          /* for -memsrc switch */
+static boolean report;          /* for -report switch */
+static boolean skip, crop;
+static JDIMENSION skip_start, skip_end;
+static JDIMENSION crop_x, crop_y, crop_width, crop_height;
+static boolean strict;          /* for -strict switch */
 #define INPUT_BUF_SIZE  4096
 
 

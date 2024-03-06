@@ -475,7 +475,7 @@ if(UNIX)
     check_c_source_runs("
       #include <stdio.h>
       #include <stdlib.h>
-      int is_shifting_signed (long arg) {
+      static int is_shifting_signed (long arg) {
         long res = arg >> 4;
         if (res == -0x7F7E80CL)
           return 1; /* right shift is signed */
@@ -495,7 +495,7 @@ if(UNIX)
 endif()
 
 if(NOT MSVC OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  check_c_source_compiles("const int __attribute__((visibility(\"hidden\"))) table[1] = { 0 }; int main(void) { return table[0]; }"
+  check_c_source_compiles("extern const int table[1]; const int __attribute__((visibility(\"hidden\"))) table[1] = { 0 }; int main(void) { return table[0]; }"
     HIDDEN_WORKS)
   if(HIDDEN_WORKS)
     set(HIDDEN "__attribute__((visibility(\"hidden\")))")
@@ -536,7 +536,7 @@ if(MSVC)
 else()
   set(THREAD_LOCAL "__thread")
 endif()
-check_c_source_compiles("${THREAD_LOCAL} int i;  int main(void) { i = 0;  return i; }"
+check_c_source_compiles("static ${THREAD_LOCAL} int i;  int main(void) { i = 0;  return i; }"
   HAVE_THREAD_LOCAL)
 if(HAVE_THREAD_LOCAL)
   message(STATUS "THREAD_LOCAL = ${THREAD_LOCAL}")

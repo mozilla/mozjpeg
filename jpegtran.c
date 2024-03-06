@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2014, 2017, 2019-2022, D. R. Commander.
+ * Copyright (C) 2010, 2014, 2017, 2019-2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -35,11 +35,11 @@
 
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
-JDIMENSION max_scans;           /* for -maxscans switch */
+static JDIMENSION max_scans;    /* for -maxscans switch */
 static char *outfilename;       /* for -outfile switch */
 static char *dropfilename;      /* for -drop switch */
-boolean report;                 /* for -report switch */
-boolean strict;                 /* for -strict switch */
+static boolean report;          /* for -report switch */
+static boolean strict;          /* for -strict switch */
 static JCOPY_OPTION copyoption; /* -copy switch */
 static jpeg_transform_info transformoption; /* image transformation options */
 

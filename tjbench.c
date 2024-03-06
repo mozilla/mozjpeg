@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2019, 2021-2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2019, 2021-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -48,8 +48,8 @@
 }
 #define THROW_UNIX(m)  THROW(m, strerror(errno))
 
-char tjErrorStr[JMSG_LENGTH_MAX] = "\0";
-int tjErrorLine = -1, tjErrorCode = -1;
+static char tjErrorStr[JMSG_LENGTH_MAX] = "\0";
+static int tjErrorLine = -1, tjErrorCode = -1;
 
 #define THROW_TJG() { \
   printf("ERROR in line %d\n%s\n", __LINE__, tj3GetErrorStr(NULL)); \
@@ -88,30 +88,31 @@ int tjErrorLine = -1, tjErrorCode = -1;
   (IS_CROPPED(cr) ? (cr.h != 0 ? cr.h : TJSCALED(height, sf) - cr.y) : \
                     TJSCALED(height, sf))
 
-int stopOnWarning = 0, bottomUp = 0, noRealloc = 1, fastUpsample = 0,
+static int stopOnWarning = 0, bottomUp = 0, noRealloc = 1, fastUpsample = 0,
   fastDCT = 0, optimize = 0, progressive = 0, limitScans = 0, maxMemory = 0,
   maxPixels = 0, arithmetic = 0, lossless = 0, restartIntervalBlocks = 0,
   restartIntervalRows = 0;
-int precision = 8, sampleSize, compOnly = 0, decompOnly = 0, doYUV = 0,
+static int precision = 8, sampleSize, compOnly = 0, decompOnly = 0, doYUV = 0,
   quiet = 0, doTile = 0, pf = TJPF_BGR, yuvAlign = 1, doWrite = 1;
-char *ext = "ppm";
-const char *pixFormatStr[TJ_NUMPF] = {
+static char *ext = "ppm";
+static const char *pixFormatStr[TJ_NUMPF] = {
   "RGB", "BGR", "RGBX", "BGRX", "XBGR", "XRGB", "GRAY", "", "", "", "", "CMYK"
 };
-const char *subNameLong[TJ_NUMSAMP] = {
+static const char *subNameLong[TJ_NUMSAMP] = {
   "4:4:4", "4:2:2", "4:2:0", "GRAY", "4:4:0", "4:1:1", "4:4:1"
 };
-const char *csName[TJ_NUMCS] = {
+static const char *csName[TJ_NUMCS] = {
   "RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
 };
-const char *subName[TJ_NUMSAMP] = {
+static const char *subName[TJ_NUMSAMP] = {
   "444", "422", "420", "GRAY", "440", "411", "441"
 };
-tjscalingfactor *scalingFactors = NULL, sf = { 1, 1 };
-tjregion cr = { 0, 0, 0, 0 };
-int nsf = 0, xformOp = TJXOP_NONE, xformOpt = 0;
-int (*customFilter) (short *, tjregion, tjregion, int, int, tjtransform *);
-double benchTime = 5.0, warmup = 1.0;
+static tjscalingfactor *scalingFactors = NULL, sf = { 1, 1 };
+static tjregion cr = { 0, 0, 0, 0 };
+static int nsf = 0, xformOp = TJXOP_NONE, xformOpt = 0;
+static int (*customFilter) (short *, tjregion, tjregion, int, int,
+                            tjtransform *);
+static double benchTime = 5.0, warmup = 1.0;
 
 
 static char *formatName(int subsamp, int cs, char *buf)

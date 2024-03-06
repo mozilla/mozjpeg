@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2022, D. R. Commander.
+ * Copyright (C) 2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -46,7 +46,7 @@
 
 #define JMESSAGE(code, string)  string,
 
-const char * const jpeg_std_message_table[] = {
+static const char * const jpeg_std_message_table[] = {
 #include "jerror.h"
   NULL
 };

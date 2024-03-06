@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017, 2019, 2021-2023
+ * Copyright (C)2011-2012, 2014-2015, 2017, 2019, 2021-2024
  *           D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,16 +61,16 @@
 #define DEFAULT_QUALITY  95
 
 
-const char *subsampName[TJ_NUMSAMP] = {
+static const char *subsampName[TJ_NUMSAMP] = {
   "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1", "4:4:1"
 };
 
-const char *colorspaceName[TJ_NUMCS] = {
+static const char *colorspaceName[TJ_NUMCS] = {
   "RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
 };
 
-tjscalingfactor *scalingFactors = NULL;
-int numScalingFactors = 0;
+static tjscalingfactor *scalingFactors = NULL;
+static int numScalingFactors = 0;
 
 
 /* DCT filter example.  This produces a negative of the image. */

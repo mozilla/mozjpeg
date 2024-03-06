@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013-2014, 2017, 2019-2022, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, 2017, 2019-2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -156,9 +156,9 @@ select_file_type(j_compress_ptr cinfo, FILE *infile)
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
-boolean memdst;                 /* for -memdst switch */
-boolean report;                 /* for -report switch */
-boolean strict;                 /* for -strict switch */
+static boolean memdst;          /* for -memdst switch */
+static boolean report;          /* for -report switch */
+static boolean strict;          /* for -strict switch */
 
 
 #ifdef CJPEG_FUZZER

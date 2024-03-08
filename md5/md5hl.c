@@ -6,7 +6,8 @@
  * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
  * ----------------------------------------------------------------------------
  * libjpeg-turbo Modifications:
- * Copyright (C)2016, 2018-2019, 2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2016, 2018-2019, 2022, 2024 D. R. Commander.
+ *                                          All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -111,7 +112,7 @@ char *MD5FileChunk(const char *filename, char *buf, off_t ofs, off_t len)
   n = len;
   i = 0;
   while (n > 0) {
-    if (n > sizeof(buffer))
+    if ((size_t)n > sizeof(buffer))
       i = read(f, buffer, sizeof(buffer));
     else
       i = read(f, buffer, n);

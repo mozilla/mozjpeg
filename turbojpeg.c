@@ -2361,7 +2361,8 @@ DLLEXPORT int tj3DecompressToYUVPlanes8(tjhandle handle,
   }
   setDecompParameters(this);
   if (this->maxPixels &&
-      (unsigned long long)this->jpegWidth * this->jpegHeight > this->maxPixels)
+      (unsigned long long)this->jpegWidth * this->jpegHeight >
+      (unsigned long long)this->maxPixels)
     THROW("Image is too large");
   if (this->subsamp == TJSAMP_UNKNOWN)
     THROW("Could not determine subsampling level of JPEG image");
@@ -2730,7 +2731,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
     jpeg_read_header(dinfo, TRUE);
   if (this->maxPixels &&
       (unsigned long long)dinfo->image_width * dinfo->image_height >
-      this->maxPixels)
+      (unsigned long long)this->maxPixels)
     THROW("Image is too large");
   this->subsamp = getSubsamp(&this->dinfo);
 

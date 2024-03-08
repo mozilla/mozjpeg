@@ -180,7 +180,8 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
   }
   setDecompParameters(this);
   if (this->maxPixels &&
-      (unsigned long long)this->jpegWidth * this->jpegHeight > this->maxPixels)
+      (unsigned long long)this->jpegWidth * this->jpegHeight >
+      (unsigned long long)this->maxPixels)
     THROW("Image is too large");
   this->dinfo.out_color_space = pf2cs[pixelFormat];
 #if BITS_IN_JSAMPLE != 16

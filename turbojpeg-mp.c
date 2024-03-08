@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -366,8 +366,11 @@ DLLEXPORT _JSAMPLE *GET_NAME(tj3LoadImage, BITS_IN_JSAMPLE)
   *pixelFormat = cs2pf[cinfo->in_color_space];
 
   pitch = PAD((*width) * tjPixelSize[*pixelFormat], align);
-  if ((unsigned long long)pitch * (unsigned long long)(*height) >
+  if (
+#if ULLONG_MAX > SIZE_MAX
+      (unsigned long long)pitch * (unsigned long long)(*height) >
       (unsigned long long)((size_t)-1) ||
+#endif
       (dstBuf = (_JSAMPLE *)malloc(pitch * (*height) *
                                    sizeof(_JSAMPLE))) == NULL)
     THROW("Memory allocation failure");

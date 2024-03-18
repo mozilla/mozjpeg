@@ -94,6 +94,7 @@ jobs:
       - name: Set up build
         run: |
           sudo apt install -y nasm
+          sudo sysctl vm.mmap_rnd_bits=28
       - name: Build
         env:
           ASAN_OPTIONS: "detect_leaks=1 symbolize=1"
@@ -164,6 +165,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+      - name: Set up build
+        run: |
+          sudo sysctl vm.mmap_rnd_bits=28
       - name: Build
         env:
           CTEST_OUTPUT_ON_FAILURE: 1

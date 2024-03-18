@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 2.8.12...3.28)
-# When using CMake 3.4 and later, don't export symbols from executables unless
-# the CMAKE_ENABLE_EXPORTS variable is set.
-if(POLICY CMP0065)
-  cmake_policy(SET CMP0065 NEW)
-endif()
 
 if(CMAKE_EXECUTABLE_SUFFIX)
   set(CMAKE_EXECUTABLE_SUFFIX_TMP ${CMAKE_EXECUTABLE_SUFFIX})

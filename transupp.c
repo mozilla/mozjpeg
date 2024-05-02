@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1997-2019, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2017, 2021-2022, D. R. Commander.
+ * Copyright (C) 2010, 2017, 2021-2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -201,7 +201,11 @@ adjust_quant(j_decompress_ptr srcinfo, jvirt_barray_ptr *src_coef_arrays,
     compptr1 = srcinfo->comp_info + ci;
     compptr2 = dropinfo->comp_info + ci;
     qtblptr1 = compptr1->quant_table;
+    if (qtblptr1 == NULL)
+      ERREXIT1(srcinfo, JERR_NO_QUANT_TABLE, compptr1->quant_tbl_no);
     qtblptr2 = compptr2->quant_table;
+    if (qtblptr2 == NULL)
+      ERREXIT1(dropinfo, JERR_NO_QUANT_TABLE, compptr2->quant_tbl_no);
     for (k = 0; k < DCTSIZE2; k++) {
       if (qtblptr1->quantval[k] != qtblptr2->quantval[k]) {
         if (trim)

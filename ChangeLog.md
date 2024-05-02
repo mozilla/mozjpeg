@@ -16,6 +16,11 @@ in the C compiler.
 calling applications to supply custom Huffman tables when generating
 12-bit-per-component lossy JPEG images using the libjpeg API.
 
+4. Fixed a segfault that occurred when attempting to use the jpegtran `-drop`
+option with a specially-crafted malformed input image or drop image
+(specifically an image in which all of the scans contain fewer components than
+the number of components specified in the Start Of Frame segment.)
+
 
 3.0.2
 =====

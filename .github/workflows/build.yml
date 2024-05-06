@@ -174,7 +174,7 @@ jobs:
         run: |
           mkdir build
           pushd build
-          cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS_RELWITHDEBINFO="-O0 -g -fsanitize=memory -fno-sanitize-recover=all -fPIE" -DWITH_SIMD=0 ..
+          cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS_RELWITHDEBINFO="-O0 -g -fsanitize=memory -fsanitize-memory-param-retval -fno-sanitize-recover=all -fPIE" -DWITH_SIMD=0 ..
           export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test

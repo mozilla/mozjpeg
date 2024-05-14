@@ -6,7 +6,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2012, 2015, 2022, D. R. Commander.
+ * Copyright (C) 2012, 2015, 2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -819,13 +819,11 @@ save_marker(j_decompress_ptr cinfo)
   /* Done reading what we want to read */
   if (cur_marker != NULL) {     /* will be NULL if bogus length word */
     /* Add new marker to end of list */
-    if (cinfo->marker_list == NULL) {
-      cinfo->marker_list = cur_marker;
+    if (cinfo->marker_list == NULL || cinfo->master->marker_list_end == NULL) {
+      cinfo->marker_list = cinfo->master->marker_list_end = cur_marker;
     } else {
-      jpeg_saved_marker_ptr prev = cinfo->marker_list;
-      while (prev->next != NULL)
-        prev = prev->next;
-      prev->next = cur_marker;
+      cinfo->master->marker_list_end->next = cur_marker;
+      cinfo->master->marker_list_end = cur_marker;
     }
     /* Reset pointer & calc remaining data length */
     data = cur_marker->data;

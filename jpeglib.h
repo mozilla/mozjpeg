@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2013-2014, 2016-2017, 2020, 2022-2023,
+ * Copyright (C) 2009-2011, 2013-2014, 2016-2017, 2020, 2022-2024,
              D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -16,6 +16,16 @@
  * This file defines the application interface for the JPEG library.
  * Most applications using the library need only include this file,
  * and perhaps jerror.h if they want to know the exact error codes.
+ */
+
+/* NOTE: This header file does not include stdio.h, despite the fact that it
+ * uses FILE and size_t.  That is by design, since the libjpeg API predates the
+ * widespread adoption of ANSI/ISO C.  Referring to libjpeg.txt, it is a
+ * documented requirement that calling programs "include system headers that
+ * define at least the typedefs FILE and size_t" before including jpeglib.h.
+ * Technically speaking, changing that requirement by including stdio.h here
+ * would break backward API compatibility.  Please do not file bug reports,
+ * feature requests, or pull requests regarding this.
  */
 
 #ifndef JPEGLIB_H

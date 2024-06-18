@@ -582,7 +582,7 @@ public class TJDecompressor implements Closeable {
    * @param pixelFormat pixel format of the decompressed image (one of
    * {@link TJ#PF_RGB TJ.PF_*})
    *
-   * @return a buffer containing an 8-bit-per-sample packed-pixel decompressed
+   * @return a buffer containing a 12-bit-per-sample packed-pixel decompressed
    * image.
    */
   public short[] decompress12(int pitch, int pixelFormat) throws TJException {
@@ -655,7 +655,7 @@ public class TJDecompressor implements Closeable {
    * @param pixelFormat pixel format of the decompressed image (one of
    * {@link TJ#PF_RGB TJ.PF_*})
    *
-   * @return a buffer containing an 8-bit-per-sample packed-pixel decompressed
+   * @return a buffer containing a 16-bit-per-sample packed-pixel decompressed
    * image.
    */
   public short[] decompress16(int pitch, int pixelFormat) throws TJException {

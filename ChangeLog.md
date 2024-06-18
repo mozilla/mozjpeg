@@ -13,8 +13,8 @@ type.
 2. Hardened the default marker processor in the decompressor to guard against
 an issue (exposed by 3.0 beta2[6]) whereby attempting to decompress a
 specially-crafted malformed JPEG image (specifically an image with a complete
-12-bit-per-component Start Of Frame segment followed by an incomplete
-8-bit-per-component Start Of Frame segment) using buffered-image mode and input
+12-bit-per-sample Start Of Frame segment followed by an incomplete
+8-bit-per-sample Start Of Frame segment) using buffered-image mode and input
 prefetching caused a segfault if the `fill_input_buffer()` method in the
 calling application's custom source manager incorrectly returned `FALSE` in
 response to a prematurely-terminated JPEG data stream.

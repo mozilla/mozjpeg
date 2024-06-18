@@ -263,7 +263,7 @@ public class TJCompressor implements Closeable {
   }
 
   /**
-   * Associate an 8-bit-per-pixel packed-pixel RGB or grayscale source image
+   * Associate an 8-bit-per-sample packed-pixel RGB or grayscale source image
    * with this compressor instance.
    *
    * @param srcImage a <code>BufferedImage</code> instance containing a

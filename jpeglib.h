@@ -585,11 +585,10 @@ struct jpeg_decompress_struct {
    */
   int actual_number_of_colors;  /* number of entries in use */
   JSAMPARRAY colormap;          /* The color map as a 2-D pixel array
-                                   If data_precision is 12 or 16, then this is
-                                   actually a J12SAMPARRAY or a J16SAMPARRAY,
-                                   so callers must type-cast it in order to
-                                   read/write 12-bit or 16-bit samples from/to
-                                   the array. */
+                                   If data_precision is 12, then this is
+                                   actually a J12SAMPARRAY, so callers must
+                                   type-cast it in order to read/write 12-bit
+                                   samples from/to the array. */
 
   /* State variables: these variables indicate the progress of decompression.
    * The application may examine these but must not modify them.

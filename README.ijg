@@ -89,9 +89,9 @@ The library is intended to be reused in other applications.
 In order to support file conversion and viewing software, we have included
 considerable functionality beyond the bare JPEG coding/decoding capability;
 for example, the color quantization modules are not strictly part of JPEG
-decoding, but they are essential for output to colormapped file formats or
-colormapped displays.  These extra functions can be compiled out of the
-library if not required for a particular application.
+decoding, but they are essential for output to colormapped file formats.  These
+extra functions can be compiled out of the library if not required for a
+particular application.
 
 We have also included "jpegtran", a utility for lossless transcoding between
 different JPEG processes, and "rdjpgcom" and "wrjpgcom", two simple

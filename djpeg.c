@@ -107,8 +107,8 @@ usage(void)
 #endif
 
   fprintf(stderr, "Switches (names may be abbreviated):\n");
-  fprintf(stderr, "  -colors N      Reduce image to no more than N colors\n");
-  fprintf(stderr, "  -fast          Fast, low-quality processing\n");
+  fprintf(stderr, "  -colors N      Reduce image to no more than N colors [legacy feature]\n");
+  fprintf(stderr, "  -fast          Low-quality processing [legacy feature]\n");
   fprintf(stderr, "  -grayscale     Force grayscale output\n");
   fprintf(stderr, "  -rgb           Force RGB output\n");
   fprintf(stderr, "  -rgb565        Force RGB565 output\n");
@@ -120,13 +120,13 @@ usage(void)
           (DEFAULT_FMT == FMT_BMP ? " (default)" : ""));
 #endif
 #ifdef GIF_SUPPORTED
-  fprintf(stderr, "  -gif           Select GIF output format (LZW-compressed)%s\n",
+  fprintf(stderr, "  -gif           Select GIF output format (LZW-compressed)%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_GIF ? " (default)" : ""));
-  fprintf(stderr, "  -gif0          Select GIF output format (uncompressed)%s\n",
+  fprintf(stderr, "  -gif0          Select GIF output format (uncompressed)%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_GIF0 ? " (default)" : ""));
 #endif
 #ifdef BMP_SUPPORTED
-  fprintf(stderr, "  -os2           Select BMP output format (OS/2 style)%s\n",
+  fprintf(stderr, "  -os2           Select BMP output format (OS/2 style)%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_OS2 ? " (default)" : ""));
 #endif
 #ifdef PPM_SUPPORTED
@@ -134,7 +134,7 @@ usage(void)
           (DEFAULT_FMT == FMT_PPM ? " (default)" : ""));
 #endif
 #ifdef TARGA_SUPPORTED
-  fprintf(stderr, "  -targa         Select Targa output format%s\n",
+  fprintf(stderr, "  -targa         Select Targa output format%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_TARGA ? " (default)" : ""));
 #endif
   fprintf(stderr, "Switches for advanced users:\n");
@@ -150,16 +150,18 @@ usage(void)
   fprintf(stderr, "  -dct float     Use floating-point DCT method [legacy feature]%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
-  fprintf(stderr, "  -dither fs     Use F-S dithering (default)\n");
-  fprintf(stderr, "  -dither none   Don't use dithering in quantization\n");
-  fprintf(stderr, "  -dither ordered  Use ordered dither (medium speed, quality)\n");
+  fprintf(stderr, "  -dither fs     Use Floyd-Steinberg dithering when quantizing colors (default)\n");
+  fprintf(stderr, "                 [legacy feature]\n");
+  fprintf(stderr, "  -dither none   Don't use dithering when quantizing colors [legacy feature]\n");
+  fprintf(stderr, "  -dither ordered  Use ordered dithering when quantizing colors\n");
+  fprintf(stderr, "                   [legacy feature]\n");
   fprintf(stderr, "  -icc FILE      Extract ICC profile to FILE\n");
 #ifdef QUANT_2PASS_SUPPORTED
-  fprintf(stderr, "  -map FILE      Map to colors used in named image file\n");
+  fprintf(stderr, "  -map FILE      Quantize to colors used in named image file [legacy feature]\n");
 #endif
-  fprintf(stderr, "  -nosmooth      Don't use high-quality upsampling\n");
+  fprintf(stderr, "  -nosmooth      Use faster, lower-quality upsampling\n");
 #ifdef QUANT_1PASS_SUPPORTED
-  fprintf(stderr, "  -onepass       Use 1-pass quantization (fast, low quality)\n");
+  fprintf(stderr, "  -onepass       Use 1-pass color quantization (low quality) [legacy feature]\n");
 #endif
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -maxscans N    Maximum number of scans to allow in input file\n");

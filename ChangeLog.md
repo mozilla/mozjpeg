@@ -19,6 +19,11 @@ prefetching caused a segfault if the `fill_input_buffer()` method in the
 calling application's custom source manager incorrectly returned `FALSE` in
 response to a prematurely-terminated JPEG data stream.
 
+3. Fixed an issue in cjpeg whereby, when generating a 12-bit-per-sample or
+16-bit-per-sample lossless JPEG image, specifying a point transform value
+greater than 7 resulted in an error ("Invalid progressive/lossless parameters")
+unless the `-precision` option was specified before the `-lossless` option.
+
 
 3.0.3
 =====

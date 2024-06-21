@@ -171,10 +171,15 @@ Switches for advanced users:
                        PBMPLUS input file format supports data precisions other
                        than 8.  (For historical reasons, cjpeg allows GIF input
                        files to be converted into 12-bit-per-sample JPEG files,
-                       but this is not a useful conversion.)  CAUTION: 12-bit
-                       and 16-bit data precision is not yet widely implemented,
-                       so many decoders will be unable to handle a
-                       12-bit-per-sample or 16-bit-per-sample JPEG file at all.
+                       but this is not a useful conversion.)  Note also that
+                       PBMPLUS input files are silently scaled to the target
+                       data precision, even if it is lower than the precision
+                       of the input file.  Passing an argument of -verbose to
+                       cjpeg will cause it to print information about the
+                       precision of the input file.  CAUTION: 12-bit and 16-bit
+                       data precision is not yet widely implemented, so many
+                       decoders will be unable to handle a 12-bit-per-sample or
+                       16-bit-per-sample JPEG file at all.
 
         -lossless psv[,Pt] Create a lossless JPEG file using the specified
                         predictor selection value (1 - 7) and optional point

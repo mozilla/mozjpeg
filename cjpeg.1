@@ -157,7 +157,13 @@ must also be specified.  Note that only the PBMPLUS input file format supports
 data precisions other than 8.  (For historical reasons,
 .B cjpeg
 allows GIF input files to be converted into 12-bit-per-sample JPEG files, but
-this is not a useful conversion.)
+this is not a useful conversion.)  Note also that PBMPLUS input files are
+silently scaled to the target data precision, even if it is lower than the
+precision of the input file.  Passing an argument of
+.B \-verbose
+to
+.B cjpeg
+will cause it to print information about the precision of the input file.
 .B Caution:
 12-bit and 16-bit data precision is not yet widely implemented, so many
 decoders will be unable to handle a 12-bit-per-sample or 16-bit-per-sample JPEG

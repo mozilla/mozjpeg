@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * Modified 2009-2017 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2021, D. R. Commander.
+ * Copyright (C) 2021, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -76,10 +76,10 @@ JMESSAGE(JERR_PPM_COLORSPACE, "PPM output must be grayscale or RGB")
 JMESSAGE(JERR_PPM_NONNUMERIC, "Nonnumeric data in PPM file")
 JMESSAGE(JERR_PPM_NOT, "Not a PPM/PGM file")
 JMESSAGE(JERR_PPM_OUTOFRANGE, "Numeric value out of range in PPM file")
-JMESSAGE(JTRC_PGM, "%ux%u PGM image")
-JMESSAGE(JTRC_PGM_TEXT, "%ux%u text PGM image")
-JMESSAGE(JTRC_PPM, "%ux%u PPM image")
-JMESSAGE(JTRC_PPM_TEXT, "%ux%u text PPM image")
+JMESSAGE(JTRC_PGM, "%ux%u PGM image (maximum color value = %u)")
+JMESSAGE(JTRC_PGM_TEXT, "%ux%u text PGM image (maximum color value = %u)")
+JMESSAGE(JTRC_PPM, "%ux%u PPM image (maximum color value = %u)")
+JMESSAGE(JTRC_PPM_TEXT, "%ux%u text PPM image (maximum color value = %u)")
 
 JMESSAGE(JERR_TGA_BADCMAP, "Unsupported Targa colormap format")
 JMESSAGE(JERR_TGA_BADPARMS, "Invalid or unsupported Targa file")

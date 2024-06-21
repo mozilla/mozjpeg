@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2009 by Bill Allombert, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015-2017, 2020-2023, D. R. Commander.
+ * Copyright (C) 2015-2017, 2020-2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -707,7 +707,7 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (cinfo->in_color_space == JCS_UNKNOWN ||
         cinfo->in_color_space == JCS_RGB)
       cinfo->in_color_space = JCS_GRAYSCALE;
-    TRACEMS2(cinfo, 1, JTRC_PGM_TEXT, w, h);
+    TRACEMS3(cinfo, 1, JTRC_PGM_TEXT, w, h, maxval);
     if (cinfo->in_color_space == JCS_GRAYSCALE)
       source->pub.get_pixel_rows = get_text_gray_row;
     else if (IsExtRGB(cinfo->in_color_space))
@@ -722,7 +722,7 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   case '3':                     /* it's a text-format PPM file */
     if (cinfo->in_color_space == JCS_UNKNOWN)
       cinfo->in_color_space = JCS_EXT_RGB;
-    TRACEMS2(cinfo, 1, JTRC_PPM_TEXT, w, h);
+    TRACEMS3(cinfo, 1, JTRC_PPM_TEXT, w, h, maxval);
     if (IsExtRGB(cinfo->in_color_space))
       source->pub.get_pixel_rows = get_text_rgb_row;
     else if (cinfo->in_color_space == JCS_CMYK)
@@ -736,7 +736,7 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     if (cinfo->in_color_space == JCS_UNKNOWN ||
         cinfo->in_color_space == JCS_RGB)
       cinfo->in_color_space = JCS_GRAYSCALE;
-    TRACEMS2(cinfo, 1, JTRC_PGM, w, h);
+    TRACEMS3(cinfo, 1, JTRC_PGM, w, h, maxval);
     if (maxval > 255) {
       if (cinfo->in_color_space == JCS_GRAYSCALE)
         source->pub.get_pixel_rows = get_word_gray_row;
@@ -766,7 +766,7 @@ start_input_ppm(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   case '6':                     /* it's a raw-format PPM file */
     if (cinfo->in_color_space == JCS_UNKNOWN)
       cinfo->in_color_space = JCS_EXT_RGB;
-    TRACEMS2(cinfo, 1, JTRC_PPM, w, h);
+    TRACEMS3(cinfo, 1, JTRC_PPM, w, h, maxval);
     if (maxval > 255) {
       if (IsExtRGB(cinfo->in_color_space))
         source->pub.get_pixel_rows = get_word_rgb_row;

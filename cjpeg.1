@@ -1,4 +1,4 @@
-.TH CJPEG 1 "21 June 2024"
+.TH CJPEG 1 "24 June 2024"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -60,7 +60,11 @@ decompression are unaffected by
 .BR \-optimize .
 .TP
 .B \-progressive
-Create progressive JPEG file (see below).
+Create progressive JPEG file (see below).  Implies
+.B \-optimize
+unless
+.B \-arithmetic
+is also specified.
 .TP
 .B \-targa
 Input file is Targa format [legacy feature].  Targa files that contain an
@@ -168,6 +172,13 @@ will cause it to print information about the precision of the input file.
 12-bit and 16-bit data precision is not yet widely implemented, so many
 decoders will be unable to handle a 12-bit-per-sample or 16-bit-per-sample JPEG
 file at all.
+.IP
+.B \-precision\ 12
+implies
+.B \-optimize
+unless
+.B \-arithmetic
+is also specified.
 .TP
 .BI \-lossless " psv[,Pt]"
 Create a lossless JPEG file using the specified predictor selection value

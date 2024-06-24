@@ -1141,10 +1141,11 @@ boolean optimize_coding
         Huffman tables.  In most cases optimal tables save only a few percent
         of file size compared to the default tables.  Note that when this is
         TRUE, you need not supply Huffman tables at all, and any you do
-        supply will be overwritten.  This parameter has no effect in
-        progressive mode or lossless mode, in which optimal Huffman tables are
-        always computed, and it defaults to TRUE for 12-bit data precision
-        unless Huffman tables have been supplied.
+        supply will be overwritten.  Optimal Huffman tables are always
+        computed, and this parameter has no effect, in progressive mode or
+        lossless mode or with 12-bit data precision (unless Huffman tables have
+        been supplied.)  This parameter also has no effect when using
+        arithmetic coding.
 
 unsigned int restart_interval
 int restart_in_rows

@@ -24,6 +24,10 @@ response to a prematurely-terminated JPEG data stream.
 greater than 7 resulted in an error ("Invalid progressive/lossless parameters")
 unless the `-precision` option was specified before the `-lossless` option.
 
+4. Fixed a regression introduced by 3.0.3[3] that made it impossible for
+calling applications to generate 12-bit-per-sample arithmetic-coded lossy JPEG
+images using the TurboJPEG API.
+
 
 3.0.3
 =====

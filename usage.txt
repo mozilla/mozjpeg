@@ -91,7 +91,8 @@ The basic command line switches for cjpeg are:
                         memory.  Image quality and speed of decompression are
                         unaffected by -optimize.
 
-        -progressive    Create progressive JPEG file (see below).
+        -progressive    Create progressive JPEG file (see below).  Implies
+                        -optimize unless -arithmetic is also specified.
 
         -targa          Input file is Targa format [legacy feature].  Targa
                         files that contain an "identification" field will not
@@ -180,6 +181,9 @@ Switches for advanced users:
                        data precision is not yet widely implemented, so many
                        decoders will be unable to handle a 12-bit-per-sample or
                        16-bit-per-sample JPEG file at all.
+
+                       "-precision 12" implies -optimize unless -arithmetic is
+                       also specified.
 
         -lossless psv[,Pt] Create a lossless JPEG file using the specified
                         predictor selection value (1 - 7) and optional point

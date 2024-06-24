@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014, 2016-2019, 2021-2023 D. R. Commander.
+ * Copyright (C)2009-2014, 2016-2019, 2021-2024 D. R. Commander.
  *                                              All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -926,7 +926,6 @@ final class TJBench {
             System.out.println("Using fastest DCT/IDCT algorithm\n");
             fastDCT = true;
           } else if (argv[i].equalsIgnoreCase("-optimize")) {
-            System.out.println("Using optimized baseline entropy coding\n");
             optimize = true;
             xformOpt |= TJTransform.OPT_OPTIMIZE;
           } else if (argv[i].equalsIgnoreCase("-progressive")) {
@@ -1126,6 +1125,10 @@ final class TJBench {
           else usage();
         }
       }
+
+      if (optimize && !progressive && !arithmetic && !lossless &&
+          precision != 12)
+        System.out.println("Using optimized baseline entropy coding\n");
 
       if (precision == 16 && !lossless)
         throw new Exception("-lossless must be specified along with -precision 16");

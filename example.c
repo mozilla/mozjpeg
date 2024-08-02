@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software.
  * Copyright (C) 1992-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2017, 2019, 2022-2023, D. R. Commander.
+ * Copyright (C) 2017, 2019, 2022-2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -443,7 +443,7 @@ do_read_JPEG_file(struct jpeg_decompress_struct *cinfo, char *infilename,
    */
 
   /* emit header for raw PPM format */
-  fprintf(outfile, "P6\n%d %d\n%d\n", WIDTH, HEIGHT,
+  fprintf(outfile, "P6\n%u %u\n%d\n", cinfo->image_width, cinfo->image_height,
           cinfo->data_precision == 12 ? MAXJ12SAMPLE : MAXJSAMPLE);
 
   /* Step 4: set parameters for decompression */

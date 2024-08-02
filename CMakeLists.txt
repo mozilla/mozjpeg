@@ -1259,7 +1259,7 @@ foreach(libtype ${TEST_LIBTYPES})
       set(MD5_JPEG_CROP cdb35ff4b4519392690ea040c56ea99c)
 
       set(MD5_JPEG_EXAMPLE_COMPRESS 5e502da0c3c0f957a58c536f31e973dc)
-      set(MD5_PPM_EXAMPLE_DECOMPRESS 2ff0e8505ee6e0ffaeb24037d5650b57)
+      set(MD5_PPM_EXAMPLE_DECOMPRESS 70194fdcb73370ee7ba0db868d0c6fc8)
     else()
       set(cjpeg cjpeg)
       set(djpeg djpeg)
@@ -1343,7 +1343,7 @@ foreach(libtype ${TEST_LIBTYPES})
       set(MD5_JPEG_CROP b4197f377e621c4e9b1d20471432610d)
 
       set(MD5_JPEG_EXAMPLE_COMPRESS 95d4d72e2ef127332654c2599afb47bf)
-      set(MD5_PPM_EXAMPLE_DECOMPRESS 6fdde7301575bfd711e295b969b6b3de)
+      set(MD5_PPM_EXAMPLE_DECOMPRESS dea1d7bbc37e39adf628342c86096641)
     endif()
 
     # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
@@ -1673,9 +1673,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
     add_test(NAME example-${sample_bits}bit-${libtype}-decompress
       COMMAND example${suffix} decompress ${EXAMPLE_12BIT_ARG}
-        ${testout}-example.jpg ${testout}-example.ppm)
-    set_tests_properties(example-${sample_bits}bit-${libtype}-decompress
-      PROPERTIES DEPENDS example-${sample_bits}bit-${libtype}-compress)
+        ${TESTIMAGES}/${TESTORIG} ${testout}-example.ppm)
     add_test(NAME example-${sample_bits}bit-${libtype}-decompress-cmp
       COMMAND md5cmp ${MD5_PPM_EXAMPLE_DECOMPRESS} ${testout}-example.ppm)
     set_tests_properties(example-${sample_bits}bit-${libtype}-decompress-cmp

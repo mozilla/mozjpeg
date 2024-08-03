@@ -68,14 +68,14 @@ Build Requirements
 
       git clone https://github.com/Microsoft/vcpkg.git
       cd vcpkg
-      ./bootstrap-vcpkg.sh
+      ./bootstrap-vcpkg.bat
       ./vcpkg integrate install
-      vcpkg install libpng:x64-windows
-      vcpkg install libpng:x64-windows-static
+      ./vcpkg install libpng:x64-windows
+      ./vcpkg install libpng:x64-windows-static
       
   Actually, you can just download and install MozJPEG using vcpkg dependency manager:
       
-      vcpkg install mozjpeg
+      ./vcpkg install mozjpeg
   
   The mozjpeg port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
 

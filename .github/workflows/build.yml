@@ -167,6 +167,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Set up build
         run: |
+          sudo apt install -y nasm
           sudo sysctl vm.mmap_rnd_bits=28
       - name: Build
         env:
@@ -174,7 +175,7 @@ jobs:
         run: |
           mkdir build
           pushd build
-          cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS_RELWITHDEBINFO="-O0 -g -fsanitize=memory -fsanitize-memory-param-retval -fno-sanitize-recover=all -fPIE" -DWITH_SIMD=0 ..
+          cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS_RELWITHDEBINFO="-O0 -g -fsanitize=memory -fsanitize-memory-param-retval -fno-sanitize-recover=all -fPIE -DZERO_BUFFERS=1" -DREQUIRE_SIMD=1 ..
           export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test

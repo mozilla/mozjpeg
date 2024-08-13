@@ -446,6 +446,12 @@ struct jpeg_color_quantizer {
 #undef MIN
 #define MIN(a, b)       ((a) < (b) ? (a) : (b))
 
+#ifdef ZERO_BUFFERS
+#define MALLOC(size)  calloc(1, size)
+#else
+#define MALLOC(size)  malloc(size)
+#endif
+
 
 /* We assume that right shift corresponds to signed division by 2 with
  * rounding towards minus infinity.  This is correct for typical "arithmetic

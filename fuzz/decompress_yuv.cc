@@ -44,13 +44,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
      necessary to achieve full coverage. */
   enum TJPF pixelFormats[NUMPF] =
     { TJPF_BGR, TJPF_XRGB, TJPF_GRAY };
-#if defined(__has_feature) && __has_feature(memory_sanitizer)
-  char env[18] = "JSIMD_FORCENONE=1";
-
-  /* The libjpeg-turbo SIMD extensions produce false positives with
-     MemorySanitizer. */
-  putenv(env);
-#endif
 
   if ((handle = tj3Init(TJINIT_DECOMPRESS)) == NULL)
     goto bailout;

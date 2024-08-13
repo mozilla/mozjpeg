@@ -59,13 +59,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     { TJPF_GRAY, 6, 3 },
     { TJPF_CMYK, 7, 0 }
   };
-#if defined(__has_feature) && __has_feature(memory_sanitizer)
-  char env[18] = "JSIMD_FORCENONE=1";
-
-  /* The libjpeg-turbo SIMD extensions produce false positives with
-     MemorySanitizer. */
-  putenv(env);
-#endif
 
   snprintf(filename, FILENAME_MAX, "/tmp/libjpeg-turbo_compress_fuzz.XXXXXX");
   if ((fd = mkstemp(filename)) < 0 || write(fd, data, size) < 0)

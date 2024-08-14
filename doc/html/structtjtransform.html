@@ -118,7 +118,7 @@ Data Fields</h2></td></tr>
 <p>This allows for custom filters or other transformations to be applied in the frequency domain.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">coeffs</td><td>pointer to an array of transformed DCT coefficients. (NOTE: this pointer is not guaranteed to be valid once the callback returns, so applications wishing to hand off the DCT coefficients to another function or library should make a copy of them within the body of the callback.)</td></tr>
+    <tr><td class="paramname">coeffs</td><td>pointer to an array of transformed DCT coefficients. (NOTE: This pointer is not guaranteed to be valid once the callback returns, so applications wishing to hand off the DCT coefficients to another function or library should make a copy of them within the body of the callback.)</td></tr>
     <tr><td class="paramname">arrayRegion</td><td><a class="el" href="structtjregion.html" title="Cropping region.">tjregion</a> structure containing the width and height of the array pointed to by <code>coeffs</code> as well as its offset relative to the component plane. TurboJPEG implementations may choose to split each component plane into multiple DCT coefficient arrays and call the callback function once for each array.</td></tr>
     <tr><td class="paramname">planeRegion</td><td><a class="el" href="structtjregion.html" title="Cropping region.">tjregion</a> structure containing the width and height of the component plane to which <code>coeffs</code> belongs</td></tr>
     <tr><td class="paramname">componentID</td><td>ID number of the component plane to which <code>coeffs</code> belongs. (Y, Cb, and Cr have, respectively, ID's of 0, 1, and 2 in typical JPEG images.)</td></tr>

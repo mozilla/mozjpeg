@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011, 2013, 2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011, 2013, 2023-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,7 +43,7 @@ public interface TJCustomFilter {
    * applied in the frequency domain.
    *
    * @param coeffBuffer a buffer containing transformed DCT coefficients.
-   * (NOTE: this buffer is not guaranteed to be valid once the callback
+   * (NOTE: This buffer is not guaranteed to be valid once the callback
    * returns, so applications wishing to hand off the DCT coefficients to
    * another method should make a copy of them within the body of the
    * callback.)

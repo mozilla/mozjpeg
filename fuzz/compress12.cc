@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021, 2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021, 2023-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -89,7 +89,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     maxBufSize = tj3JPEGBufSize(width, height, tests[ti].subsamp);
     if (tj3Get(handle, TJPARAM_NOREALLOC)) {
-      if ((dstBuf = (unsigned char *)malloc(maxBufSize)) == NULL)
+      if ((dstBuf = (unsigned char *)tj3Alloc(maxBufSize)) == NULL)
         goto bailout;
     } else
       dstBuf = NULL;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021-2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -95,7 +95,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         tj3SetCroppingRegion(handle, TJUNCROPPED);
     }
 
-    if ((dstBuf = malloc(w * h * tjPixelSize[pf] * sampleSize)) == NULL)
+    if ((dstBuf = tj3Alloc(w * h * tjPixelSize[pf] * sampleSize)) == NULL)
       goto bailout;
 
     if (precision == 8) {

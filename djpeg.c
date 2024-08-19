@@ -392,7 +392,7 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "report", 2)) {
       report = TRUE;
 
-    } else if (keymatch(arg, "scale", 2)) {
+    } else if (keymatch(arg, "scale", 1)) {
       /* Scale the output image by a fraction M/N. */
       if (++argn >= argc)       /* advance to next argument */
         usage();

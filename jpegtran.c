@@ -183,7 +183,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       exit(EXIT_FAILURE);
 #endif
 
-    } else if (keymatch(arg, "copy", 2)) {
+    } else if (keymatch(arg, "copy", 1)) {
       /* Select which extra markers to copy. */
       if (++argn >= argc)       /* advance to next argument */
         usage();
@@ -320,7 +320,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
        * handle. */
       transformoption.perfect = TRUE;
 
-    } else if (keymatch(arg, "progressive", 2)) {
+    } else if (keymatch(arg, "progressive", 1)) {
       /* Select simple progressive mode. */
 #ifdef C_PROGRESSIVE_SUPPORTED
       simple_progressive = TRUE;

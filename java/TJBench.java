@@ -42,7 +42,7 @@ final class TJBench {
   private static boolean stopOnWarning, bottomUp, fastUpsample, fastDCT,
     optimize, progressive, limitScans, arithmetic, lossless;
   private static int maxMemory = 0, maxPixels = 0, precision = 8, quiet = 0,
-    pf = TJ.PF_BGR, yuvAlign = 1, restartIntervalBlocks,
+    pf = TJ.PF_BGR, yuvAlign = 1, restartIntervalBlocks = 0,
     restartIntervalRows = 0;
   private static boolean compOnly, decompOnly, doTile, doYUV, write = true,
     bmp = false;

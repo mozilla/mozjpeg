@@ -499,8 +499,8 @@ public final class TJ {
    *
    * <p><b>Value</b>
    * <ul>
-   * <li> One of {@link TJ#SAMP_444 TJ.SAMP_*} <i>[no default; must be
-   * explicitly specified for lossy compression, encoding, and decoding]</i>
+   * <li> One of {@link #SAMP_444 TJ.SAMP_*} <i>[no default; must be explicitly
+   * specified for lossy compression, encoding, and decoding]</i>
    * </ul>
    */
   public static final int PARAM_SUBSAMP = 4;
@@ -534,7 +534,7 @@ public final class TJ {
    *
    * <p><b>Value</b>
    * <ul>
-   * <li> One of {@link TJ#CS_RGB TJ.CS_*} <i>[default for lossy compression:
+   * <li> One of {@link #CS_RGB TJ.CS_*} <i>[default for lossy compression:
    * automatically selected based on the subsampling level and pixel
    * format]</i>
    * </ul>

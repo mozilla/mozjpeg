@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2011-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -90,6 +90,8 @@
     (*env)->ReleasePrimitiveArrayCritical(env, javaArray, (void *)cArray, 0); \
   cArray = NULL; \
 }
+
+#define PAD(v, p)  ((v + (p) - 1) & (~((p) - 1)))
 
 /* TurboJPEG 1.2.x: TJ::bufSize() */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
@@ -1274,7 +1276,8 @@ JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_loadImage
 {
   tjhandle handle = NULL;
   void *dstBuf = NULL, *jdstPtr;
-  int width, *warr, height, *harr, pixelFormat, *pfarr, n;
+  int width, *warr, height, *harr, pixelFormat, *pfarr;
+  jsize arraySize, pitch;
   const char *filename = NULL;
   jboolean isCopy;
   jobject jdstBuf = NULL;
@@ -1331,13 +1334,14 @@ JNIEXPORT jobject JNICALL Java_org_libjpegturbo_turbojpeg_TJCompressor_loadImage
   pfarr[0] = pixelFormat;
   (*env)->ReleasePrimitiveArrayCritical(env, jpixelFormat, pfarr, 0);
 
-  n = width * height * tjPixelSize[pixelFormat];
+  pitch = PAD(width * tjPixelSize[pixelFormat], align);
+  arraySize = pitch * height;
   if (precision == 8)
-    jdstBuf = (*env)->NewByteArray(env, n);
+    jdstBuf = (*env)->NewByteArray(env, arraySize);
   else
-    jdstBuf = (*env)->NewShortArray(env, n);
+    jdstBuf = (*env)->NewShortArray(env, arraySize);
   BAILIF0NOEC(jdstPtr = (*env)->GetPrimitiveArrayCritical(env, jdstBuf, 0));
-  memcpy(jdstPtr, dstBuf, n * (precision > 8 ? 2 : 1));
+  memcpy(jdstPtr, dstBuf, arraySize * (precision > 8 ? 2 : 1));
   (*env)->ReleasePrimitiveArrayCritical(env, jdstBuf, jdstPtr, 0);
 
 bailout:
@@ -1354,29 +1358,33 @@ JNIEXPORT void JNICALL Java_org_libjpegturbo_turbojpeg_TJDecompressor_saveImage
   tjhandle handle = NULL;
   void *srcBuf = NULL, *jsrcPtr;
   const char *filename = NULL;
-  int n;
+  jsize arraySize, actualPitch;
   jboolean isCopy;
 
   GET_HANDLE();
 
   if ((precision != 8 && precision != 12 && precision != 16) ||
-      jfilename == NULL || jsrcBuf == NULL || width < 1 || height < 1 ||
-      pixelFormat < 0 || pixelFormat >= TJ_NUMPF)
+      jfilename == NULL || jsrcBuf == NULL || width < 1 || pitch < 0 ||
+      height < 1 || pixelFormat < 0 ||
+      pixelFormat >= org_libjpegturbo_turbojpeg_TJ_NUMPF)
     THROW_ARG("Invalid argument in saveImage()");
+  if (org_libjpegturbo_turbojpeg_TJ_NUMPF != TJ_NUMPF)
+    THROW_ARG("Mismatch between Java and C API");
 
   if ((unsigned long long)width * (unsigned long long)height *
       (unsigned long long)tjPixelSize[pixelFormat] >
       (unsigned long long)((unsigned int)-1))
     THROW_ARG("Image is too large");
-  n = width * height * tjPixelSize[pixelFormat];
-  if ((*env)->GetArrayLength(env, jsrcBuf) < n)
+  actualPitch = (pitch == 0) ? width * tjPixelSize[pixelFormat] : pitch;
+  arraySize = actualPitch * height;
+  if ((*env)->GetArrayLength(env, jsrcBuf) < arraySize)
     THROW_ARG("Source buffer is not large enough");
 
-  if ((srcBuf = malloc(n * (precision > 8 ? 2 : 1))) == NULL)
+  if ((srcBuf = malloc(arraySize * (precision > 8 ? 2 : 1))) == NULL)
     THROW_MEM();
 
   BAILIF0NOEC(jsrcPtr = (*env)->GetPrimitiveArrayCritical(env, jsrcBuf, 0));
-  memcpy(srcBuf, jsrcPtr, n * (precision > 8 ? 2 : 1));
+  memcpy(srcBuf, jsrcPtr, arraySize * (precision > 8 ? 2 : 1));
   (*env)->ReleasePrimitiveArrayCritical(env, jsrcBuf, jsrcPtr, 0);
   BAILIF0(filename = (*env)->GetStringUTFChars(env, jfilename, &isCopy));
 

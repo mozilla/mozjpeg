@@ -485,6 +485,8 @@ public class TJCompressor implements Closeable {
     } else {
       checkSubsampling();
       int subsamp = get(TJ.PARAM_SUBSAMP);
+      if (get(TJ.PARAM_LOSSLESS) == 1 && subsamp != TJ.SAMP_GRAY)
+        subsamp = TJ.SAMP_444;
       buf = new byte[TJ.bufSize(srcWidth, srcHeight, subsamp)];
     }
     compress(buf);

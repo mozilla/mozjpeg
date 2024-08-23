@@ -28,6 +28,11 @@ unless the `-precision` option was specified before the `-lossless` option.
 calling applications to generate 12-bit-per-sample arithmetic-coded lossy JPEG
 images using the TurboJPEG API.
 
+5. Fixed an error ("Destination buffer is not large enough") that occurred when
+attempting to generate a full-color lossless JPEG image using the TurboJPEG
+Java API's `byte[] TJCompressor.compress()` method if the value of
+`TJ.PARAM_SUBSAMP` was not `TJ.SAMP_444`.
+
 
 3.0.3
 =====

@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2020, 2022-2023, D. R. Commander.
+ * Copyright (C) 2010, 2015-2020, 2022-2024, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -200,7 +200,8 @@ _jpeg_crop_scanline(j_decompress_ptr cinfo, JDIMENSION *xoffset,
     ERREXIT(cinfo, JERR_BAD_CROP_SPEC);
 
   /* xoffset and width must fall within the output image dimensions. */
-  if (*width == 0 || *xoffset + *width > cinfo->output_width)
+  if (*width == 0 ||
+      (unsigned long long)(*xoffset) + *width > cinfo->output_width)
     ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
 
   /* No need to do anything if the caller wants the entire width. */
@@ -482,7 +483,8 @@ _jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
 
   /* Do not skip past the bottom of the image. */
-  if (cinfo->output_scanline + num_lines >= cinfo->output_height) {
+  if ((unsigned long long)cinfo->output_scanline + num_lines >=
+      cinfo->output_height) {
     num_lines = cinfo->output_height - cinfo->output_scanline;
     cinfo->output_scanline = cinfo->output_height;
     (*cinfo->inputctl->finish_input_pass) (cinfo);

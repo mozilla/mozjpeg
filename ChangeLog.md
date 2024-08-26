@@ -33,6 +33,16 @@ attempting to generate a full-color lossless JPEG image using the TurboJPEG
 Java API's `byte[] TJCompressor.compress()` method if the value of
 `TJ.PARAM_SUBSAMP` was not `TJ.SAMP_444`.
 
+6. Fixed a segfault in djpeg that occurred if a negative width was specified
+with the `-crop` option.  Since the cropping region width was read into an
+unsigned 32-bit integer, a negative width was interpreted as a very large
+value.  With certain negative width and positive left boundary values, the
+bounds checks in djpeg and `jpeg_crop_scanline()` overflowed and did not detect
+the out-of-bounds width, which caused a buffer overrun in the upsampling or
+color conversion routine.  Both bounds checks now use 64-bit integers to guard
+against overflow, and djpeg now checks for negative numbers when it parses the
+crop specification from the command line.
+
 
 3.0.3
 =====

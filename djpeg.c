@@ -401,22 +401,31 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
         usage();
 
     } else if (keymatch(arg, "skip", 2)) {
+      int temp_start = -1, temp_end = -1;
       if (++argn >= argc)
         usage();
-      if (sscanf(argv[argn], "%u,%u", &skip_start, &skip_end) != 2 ||
-          skip_start > skip_end)
+      if (sscanf(argv[argn], "%d,%d", &temp_start, &temp_end) != 2 ||
+          temp_start < 0 || temp_end < 0 || temp_start > temp_end)
         usage();
       skip = TRUE;
+      skip_start = temp_start;
+      skip_end = temp_end;
 
     } else if (keymatch(arg, "crop", 2)) {
+      int temp_width = -1, temp_height = -1, temp_x = -1, temp_y = -1;
       char c;
       if (++argn >= argc)
         usage();
-      if (sscanf(argv[argn], "%u%c%u+%u+%u", &crop_width, &c, &crop_height,
-                 &crop_x, &crop_y) != 5 ||
-          (c != 'X' && c != 'x') || crop_width < 1 || crop_height < 1)
+      if (sscanf(argv[argn], "%d%c%d+%d+%d", &temp_width, &c, &temp_height,
+                 &temp_x, &temp_y) != 5 ||
+          (c != 'X' && c != 'x') || temp_width < 1 || temp_height < 1 ||
+          temp_x < 0 || temp_y < 0)
         usage();
       crop = TRUE;
+      crop_width = temp_width;
+      crop_height = temp_height;
+      crop_x = temp_x;
+      crop_y = temp_y;
 
     } else if (keymatch(arg, "strict", 2)) {
       strict = TRUE;
@@ -776,8 +785,8 @@ main(int argc, char **argv)
     /* Check for valid crop dimensions.  We cannot check these values until
      * after jpeg_start_decompress() is called.
      */
-    if (crop_x + crop_width > cinfo.output_width ||
-        crop_y + crop_height > cinfo.output_height) {
+    if ((unsigned long long)crop_x + crop_width > cinfo.output_width ||
+        (unsigned long long)crop_y + crop_height > cinfo.output_height) {
       fprintf(stderr, "%s: crop dimensions exceed image dimensions %u x %u\n",
               progname, cinfo.output_width, cinfo.output_height);
       exit(EXIT_FAILURE);

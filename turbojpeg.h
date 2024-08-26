@@ -1663,7 +1663,7 @@ DLLEXPORT int tj3SetScalingFactor(tjhandle handle,
  * @param croppingRegion #tjregion structure that specifies a subregion of the
  * JPEG image to decompress, or <tt>#TJUNCROPPED</tt> for no cropping.  The
  * left boundary of the cropping region must be evenly divisible by the scaled
- * MCU block width (<tt>#TJSCALED(#tjMCUWidth[subsamp], scalingFactor)</tt>,
+ * MCU block width-- <tt>#TJSCALED(#tjMCUWidth[subsamp], scalingFactor)</tt>,
  * where `subsamp` is the level of chrominance subsampling in the JPEG image
  * (see #TJPARAM_SUBSAMP) and `scalingFactor` is the decompression scaling
  * factor (see #tj3SetScalingFactor().)  The cropping region should be

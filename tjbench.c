@@ -1085,8 +1085,9 @@ int main(int argc, char *argv[])
 
         if (sscanf(argv[++i], "%d/%d", &temp1, &temp2) == 2) {
           for (j = 0; j < nsf; j++) {
-            if (temp1 == scalingFactors[j].num &&
-                temp2 == scalingFactors[j].denom) {
+            if ((double)temp1 / (double)temp2 ==
+                (double)scalingFactors[j].num /
+                (double)scalingFactors[j].denom) {
               sf = scalingFactors[j];
               match = 1;  break;
             }

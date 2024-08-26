@@ -317,13 +317,13 @@ for image in $IMAGES; do
 			runme cmp $OUTDIR/${basename}_${samp}_Q${TJQUAL}_full.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 			rm $OUTDIR/${basename}_${samp}_Q${TJQUAL}_full.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 
-			runme $EXEDIR/djpeg -rgb -scale 7/8 -crop ${CROPW7_8}x81+${CROPL7_8}+3 $NSARG -outfile $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm $OUTDIR/${basename}_${samp}_accurate_cjpeg.jpg
+			runme $EXEDIR/djpeg -rgb -scale 14/16 -crop ${CROPW7_8}x81+${CROPL7_8}+3 $NSARG -outfile $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm $OUTDIR/${basename}_${samp}_accurate_cjpeg.jpg
 			runme $TJBENCH $OUTDIR/${basename}_${samp}_Q${TJQUAL}.jpg -scale 7/8 -crop ${CROPW7_8}x81+${CROPL7_8}+3 -quiet -benchtime 0.01 -warmup 0 ${dctarg} $YUVARG $ALLOCARG $ENTROPYARG $LOSSLSARG
 			runme cmp $OUTDIR/${basename}_${samp}_Q${TJQUAL}_7_8.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 			rm $OUTDIR/${basename}_${samp}_Q${TJQUAL}_7_8.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 
 			runme $EXEDIR/djpeg -rgb -scale 1/2 -crop 40x40+0+0 $NSARG -outfile $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm $OUTDIR/${basename}_${samp}_accurate_cjpeg.jpg
-			runme $TJBENCH $OUTDIR/${basename}_${samp}_Q${TJQUAL}.jpg -scale 1/2 -crop 40x40+0+0 -quiet -benchtime 0.01 -warmup 0 ${dctarg} $YUVARG $ALLOCARG $ENTROPYARG $LOSSLSARG
+			runme $TJBENCH $OUTDIR/${basename}_${samp}_Q${TJQUAL}.jpg -scale 4/8 -crop 40x40+0+0 -quiet -benchtime 0.01 -warmup 0 ${dctarg} $YUVARG $ALLOCARG $ENTROPYARG $LOSSLSARG
 			runme cmp $OUTDIR/${basename}_${samp}_Q${TJQUAL}_1_2.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 			rm $OUTDIR/${basename}_${samp}_Q${TJQUAL}_1_2.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 		done

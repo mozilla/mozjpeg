@@ -1097,8 +1097,8 @@ int main(int argc, char *argv[])
         int temp1 = -1, temp2 = -1, temp3 = -1, temp4 = -1;
 
         if (sscanf(argv[++i], "%dx%d+%d+%d", &temp1, &temp2, &temp3,
-                   &temp4) == 4 && temp1 >= 0 && temp2 >= 0 && temp3 >= 0 &&
-                   temp4 >= 0) {
+                   &temp4) == 4 &&
+            temp1 >= 0 && temp2 >= 0 && temp3 >= 0 && temp4 >= 0) {
           cr.w = temp1;  cr.h = temp2;  cr.x = temp3;  cr.y = temp4;
         } else usage(argv[0]);
       } else if (!strcasecmp(argv[i], "-hflip"))

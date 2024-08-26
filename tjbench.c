@@ -918,11 +918,11 @@ static void usage(char *progName)
   printf("-componly = Stop after running compression tests.  Do not test decompression.\n");
   printf("-lossless = Generate lossless JPEG images when compressing (implies\n");
   printf("     -subsamp 444).  PSV is the predictor selection value (1-7).\n");
-  printf("-maxmemory = Memory limit (in megabytes) for intermediate buffers used with\n");
+  printf("-maxmemory N = Memory limit (in megabytes) for intermediate buffers used with\n");
   printf("     progressive JPEG compression and decompression, Huffman table\n");
   printf("     optimization, lossless JPEG compression, and lossless transformation\n");
   printf("     [default = no limit]\n");
-  printf("-maxpixels = Input image size limit (in pixels) [default = no limit]\n");
+  printf("-maxpixels N = Input image size limit (in pixels) [default = no limit]\n");
   printf("-nowrite = Do not write reference or output images (improves consistency of\n");
   printf("     benchmark results)\n");
   printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");

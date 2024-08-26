@@ -781,11 +781,11 @@ final class TJBench {
     System.out.println("-componly = Stop after running compression tests.  Do not test decompression.");
     System.out.println("-lossless = Generate lossless JPEG images when compressing (implies");
     System.out.println("     -subsamp 444).  PSV is the predictor selection value (1-7).");
-    System.out.println("-maxmemory = Memory limit (in megabytes) for intermediate buffers used with");
+    System.out.println("-maxmemory N = Memory limit (in megabytes) for intermediate buffers used with");
     System.out.println("     progressive JPEG compression and decompression, Huffman table");
     System.out.println("     optimization, lossless JPEG compression, and lossless transformation");
     System.out.println("     [default = no limit]");
-    System.out.println("-maxpixels = Input image size limit (in pixels) [default = no limit]");
+    System.out.println("-maxpixels N = Input image size limit (in pixels) [default = no limit]");
     System.out.println("-nowrite = Do not write reference or output images (improves consistency of");
     System.out.println("     benchmark results)");
     System.out.println("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =");

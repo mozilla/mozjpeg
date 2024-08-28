@@ -972,19 +972,19 @@ scalingFactor)</code>. </p>
 <p>A point transform value of <code>0</code> is necessary in order to generate a fully lossless JPEG image. (A non-zero point transform value right-shifts the input samples by the specified number of bits, which is effectively a form of lossy color quantization.)</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a249f35f0770792b19f995e603bb17c6f" title="Lossless JPEG.">TJPARAM_LOSSLESS</a>, <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a781db82741934e8cd008d308597c59d8" title="JPEG data precision (bits per sample) [decompression only, read-only].">TJPARAM_PRECISION</a> </dd></dl>
 </td></tr>
-<tr><td class="fieldname"><a id="ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec" name="ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec"></a>TJPARAM_RESTARTBLOCKS&#160;</td><td class="fielddoc"><p>JPEG restart marker interval in MCU blocks (lossy) or samples (lossless) [compression only]. </p>
+<tr><td class="fieldname"><a id="ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec" name="ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec"></a>TJPARAM_RESTARTBLOCKS&#160;</td><td class="fielddoc"><p>JPEG restart marker interval in MCU blocks [lossy compression only]. </p>
 <p>The nature of entropy coding is such that a corrupt JPEG image cannot be decompressed beyond the point of corruption unless it contains restart markers. A restart marker stops and restarts the entropy coding algorithm so that, if a JPEG image is corrupted, decompression can resume at the next marker. Thus, adding more restart markers improves the fault tolerance of the JPEG image, but adding too many restart markers can adversely affect the compression ratio and performance.</p>
 <p><b>Value</b></p><ul>
-<li>the number of MCU blocks or samples between each restart marker <em>[default: <code>0</code> (no restart markers)]</em></li>
+<li>the number of MCU blocks between each restart marker <em>[default: <code>0</code> (no restart markers)]</em></li>
 </ul>
 <p>Setting this parameter to a non-zero value sets <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a714367585952fe5c863f0dba5bd37e5c" title="JPEG restart marker interval in MCU rows (lossy) or sample rows (lossless) [compression only].">TJPARAM_RESTARTROWS</a> to 0. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="ggaa0f6be63ba78278299c9f5c12031fe82a714367585952fe5c863f0dba5bd37e5c" name="ggaa0f6be63ba78278299c9f5c12031fe82a714367585952fe5c863f0dba5bd37e5c"></a>TJPARAM_RESTARTROWS&#160;</td><td class="fielddoc"><p>JPEG restart marker interval in MCU rows (lossy) or sample rows (lossless) [compression only]. </p>
-<p>See <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec" title="JPEG restart marker interval in MCU blocks (lossy) or samples (lossless) [compression only].">TJPARAM_RESTARTBLOCKS</a> for a description of restart markers.</p>
+<p>See <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec" title="JPEG restart marker interval in MCU blocks [lossy compression only].">TJPARAM_RESTARTBLOCKS</a> for a description of restart markers.</p>
 <p><b>Value</b></p><ul>
 <li>the number of MCU rows or sample rows between each restart marker <em>[default: <code>0</code> (no restart markers)]</em></li>
 </ul>
-<p>Setting this parameter to a non-zero value sets <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec" title="JPEG restart marker interval in MCU blocks (lossy) or samples (lossless) [compression only].">TJPARAM_RESTARTBLOCKS</a> to 0. </p>
+<p>Setting this parameter to a non-zero value sets <a class="el" href="group___turbo_j_p_e_g.html#ggaa0f6be63ba78278299c9f5c12031fe82a343c72883b7160f23f3ef46fc548a0ec" title="JPEG restart marker interval in MCU blocks [lossy compression only].">TJPARAM_RESTARTBLOCKS</a> to 0. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="ggaa0f6be63ba78278299c9f5c12031fe82a4de5c9d7cab5be806143a43c3b0e0877" name="ggaa0f6be63ba78278299c9f5c12031fe82a4de5c9d7cab5be806143a43c3b0e0877"></a>TJPARAM_XDENSITY&#160;</td><td class="fielddoc"><p>JPEG horizontal pixel density. </p>
 <p><b>Value</b></p><ul>

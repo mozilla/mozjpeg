@@ -417,8 +417,7 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PARAM_RESTARTBLOCKS">PARAM_RESTARTBLOCKS</a></span></code></th>
 <td class="colLast">
-<div class="block">JPEG restart marker interval in MCU blocks (lossy) or samples (lossless)
- [compression only]</div>
+<div class="block">JPEG restart marker interval in MCU blocks [lossy compression only]</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -1804,8 +1803,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>PARAM_RESTARTBLOCKS</h4>
 <pre>public static final&nbsp;int PARAM_RESTARTBLOCKS</pre>
-<div class="block">JPEG restart marker interval in MCU blocks (lossy) or samples (lossless)
- [compression only]
+<div class="block">JPEG restart marker interval in MCU blocks [lossy compression only]
 
  <p>The nature of entropy coding is such that a corrupt JPEG image cannot
  be decompressed beyond the point of corruption unless it contains restart
@@ -1817,8 +1815,8 @@ extends java.lang.Object</pre>
 
  <p><b>Value</b>
  <ul>
- <li> the number of MCU blocks or samples between each restart marker
- <i>[default: <code>0</code> (no restart markers)]</i>
+ <li> the number of MCU blocks between each restart marker <i>[default:
+ <code>0</code> (no restart markers)]</i>
  </ul>
 
  <p> Setting this parameter to a non-zero value sets

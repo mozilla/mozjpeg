@@ -1057,10 +1057,9 @@ int main(int argc, char *argv[])
         printf("Using arithmetic entropy coding\n\n");
         arithmetic = 1;
         xformOpt |= TJXOPT_ARITHMETIC;
-      } else if (!strcasecmp(argv[i], "-lossless")) {
+      } else if (!strcasecmp(argv[i], "-lossless"))
         lossless = 1;
-        subsamp = TJSAMP_444;
-      } else if (!strcasecmp(argv[i], "-rgb"))
+      else if (!strcasecmp(argv[i], "-rgb"))
         pf = TJPF_RGB;
       else if (!strcasecmp(argv[i], "-rgbx"))
         pf = TJPF_RGBX;
@@ -1199,6 +1198,9 @@ int main(int argc, char *argv[])
 
   if (optimize && !progressive && !arithmetic && !lossless && precision != 12)
     printf("Computing optimal Huffman tables\n\n");
+
+  if (lossless)
+    subsamp = TJSAMP_444;
 
   if (precision == 16 && !lossless) {
     printf("ERROR: -lossless must be specified along with -precision 16\n");

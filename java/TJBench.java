@@ -936,10 +936,9 @@ final class TJBench {
             System.out.println("Using arithmetic entropy coding\n");
             arithmetic = true;
             xformOpt |= TJTransform.OPT_ARITHMETIC;
-          } else if (argv[i].equalsIgnoreCase("-lossless")) {
+          } else if (argv[i].equalsIgnoreCase("-lossless"))
             lossless = true;
-            subsamp = TJ.SAMP_444;
-          } else if (argv[i].equalsIgnoreCase("-rgb"))
+          else if (argv[i].equalsIgnoreCase("-rgb"))
             pf = TJ.PF_RGB;
           else if (argv[i].equalsIgnoreCase("-rgbx"))
             pf = TJ.PF_RGBX;
@@ -1129,6 +1128,9 @@ final class TJBench {
       if (optimize && !progressive && !arithmetic && !lossless &&
           precision != 12)
         System.out.println("Computing optimal Huffman tables\n");
+
+      if (lossless)
+        subsamp = TJ.SAMP_444;
 
       if (precision == 16 && !lossless)
         throw new Exception("-lossless must be specified along with -precision 16");

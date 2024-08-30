@@ -48,13 +48,13 @@ public class TJTransform extends Rectangle {
   public static final int OP_NONE       = 0;
   /**
    * Flip (mirror) image horizontally.  This transform is imperfect if there
-   * are any partial MCU blocks on the right edge.
+   * are any partial iMCUs on the right edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_HFLIP      = 1;
   /**
    * Flip (mirror) image vertically.  This transform is imperfect if there are
-   * any partial MCU blocks on the bottom edge.
+   * any partial iMCUs on the bottom edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_VFLIP      = 2;
@@ -66,26 +66,26 @@ public class TJTransform extends Rectangle {
   public static final int OP_TRANSPOSE  = 3;
   /**
    * Transverse transpose image (flip/mirror along upper right to lower left
-   * axis).  This transform is imperfect if there are any partial MCU blocks in
-   * the image.
+   * axis).  This transform is imperfect if there are any partial iMCUs in the
+   * image.
    * @see #OPT_PERFECT
    */
   public static final int OP_TRANSVERSE = 4;
   /**
    * Rotate image clockwise by 90 degrees.  This transform is imperfect if
-   * there are any partial MCU blocks on the bottom edge.
+   * there are any partial iMCUs on the bottom edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_ROT90      = 5;
   /**
    * Rotate image 180 degrees.  This transform is imperfect if there are any
-   * partial MCU blocks in the image.
+   * partial iMCUs in the image.
    * @see #OPT_PERFECT
    */
   public static final int OP_ROT180     = 6;
   /**
    * Rotate image counter-clockwise by 90 degrees.  This transform is imperfect
-   * if there are any partial MCU blocks on the right edge.
+   * if there are any partial iMCUs on the right edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_ROT270     = 7;
@@ -94,20 +94,20 @@ public class TJTransform extends Rectangle {
   /**
    * This option causes {@link TJTransformer#transform
    * TJTransformer.transform()} to throw an exception if the transform is not
-   * perfect.  Lossless transforms operate on MCU blocks, the size of which
-   * depends on the level of chrominance subsampling used.  If the image's
-   * width or height is not evenly divisible by the MCU block size (see
-   * {@link TJ#getMCUWidth TJ.getMCUWidth()} and {@link TJ#getMCUHeight
-   * TJ.getMCUHeight()}), then there will be partial MCU blocks on the right
-   * and/or bottom edges.  It is not possible to move these partial MCU blocks
-   * to the top or left of the image, so any transform that would require that
-   * is "imperfect."  If this option is not specified, then any partial MCU
-   * blocks that cannot be transformed will be left in place, which will create
-   * odd-looking strips on the right or bottom edge of the image.
+   * perfect.  Lossless transforms operate on iMCUs, the size of which depends
+   * on the level of chrominance subsampling used.  If the image's width or
+   * height is not evenly divisible by the iMCU size (see {@link TJ#getMCUWidth
+   * TJ.getMCUWidth()} and {@link TJ#getMCUHeight TJ.getMCUHeight()}), then
+   * there will be partial iMCUs on the right and/or bottom edges.  It is not
+   * possible to move these partial iMCUs to the top or left of the image, so
+   * any transform that would require that is "imperfect."  If this option is
+   * not specified, then any partial iMCUs that cannot be transformed will be
+   * left in place, which will create odd-looking strips on the right or bottom
+   * edge of the image.
    */
   public static final int OPT_PERFECT     = (1 << 0);
   /**
-   * Discard any partial MCU blocks that cannot be transformed.
+   * Discard any partial iMCUs that cannot be transformed.
    */
   public static final int OPT_TRIM        = (1 << 1);
   /**
@@ -164,11 +164,10 @@ public class TJTransform extends Rectangle {
    * Create a new lossless transform instance with the given parameters.
    *
    * @param x the left boundary of the cropping region.  This must be evenly
-   * divisible by the MCU block width (see {@link TJ#getMCUWidth
-   * TJ.getMCUWidth()})
+   * divisible by the iMCU width (see {@link TJ#getMCUWidth TJ.getMCUWidth()})
    *
    * @param y the upper boundary of the cropping region.  This must be evenly
-   * divisible by the MCU block height (see {@link TJ#getMCUHeight
+   * divisible by the iMCU height (see {@link TJ#getMCUHeight
    * TJ.getMCUHeight()})
    *
    * @param w the width of the cropping region.  Setting this to 0 is the

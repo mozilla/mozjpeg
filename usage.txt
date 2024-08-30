@@ -261,10 +261,22 @@ Switches for advanced users:
         -icc FILE       Embed ICC color management profile contained in the
                         specified file.
 
-        -restart N      Emit a JPEG restart marker every N MCU rows, or every
-                        N MCU blocks (samples in lossless mode) if "B" is
-                        attached to the number.  -restart 0 (the default) means
-                        no restart markers.
+        -restart N      Emit a JPEG restart marker every N MCU rows, or every N
+                        MCUs if "B" is attached to the number.
+
+                        In typical JPEG images, an MCU (Minimum Coded Unit) is
+                        the minimum set of interleaved "data units" (8x8 DCT
+                        blocks if the image is lossy or samples if the image is
+                        lossless) necessary to represent at least one data unit
+                        per component.  (For example, an MCU in an interleaved
+                        lossy JPEG image that uses 4:2:2 subsampling consists
+                        of two luminance blocks followed by one block for each
+                        chrominance component.)  In single-component or
+                        non-interleaved JPEG images, an MCU is the same as a
+                        data unit.  An MCU row is a row of MCUs spanning the
+                        entire width of the image.
+
+                        -restart 0 (the default) means no restart markers.
 
         -smooth N       Smooth the input image to eliminate dithering noise.
                         N, ranging from 1 to 100, indicates the strength of
@@ -604,7 +616,7 @@ jpegtran accepts a subset of the switches recognized by cjpeg:
         -progressive    Create progressive JPEG file.
         -arithmetic     Use arithmetic coding.
         -restart N      Emit a JPEG restart marker every N MCU rows, or every
-                        N MCU blocks if "B" is attached to the number.
+                        N MCUs if "B" is attached to the number.
         -scans file     Use the scan script given in the specified text file.
 See the previous discussion of cjpeg for more details about these switches.
 If you specify none of these switches, you get a plain baseline-JPEG output

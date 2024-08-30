@@ -1150,15 +1150,14 @@ boolean optimize_coding
 unsigned int restart_interval
 int restart_in_rows
         To emit restart markers in the JPEG file, set one of these nonzero.
-        Set restart_interval to specify the exact interval in MCU blocks
-        (samples in lossless mode).  Set restart_in_rows to specify the
-        interval in MCU rows.  (If restart_in_rows is not 0, then
-        restart_interval is set after the image width in MCUs is computed.)
-        Defaults are zero (no restarts).  One restart marker per MCU row is
-        often a good choice.  NOTE: the overhead of restart markers is higher
-        in grayscale JPEG files than in color files, and MUCH higher in
-        progressive JPEGs.  If you use restarts, you may want to use larger
-        intervals in those cases.
+        Set restart_interval to specify the exact interval in MCUs.  Set
+        restart_in_rows to specify the interval in MCU rows.  (If
+        restart_in_rows is not 0, then restart_interval is set after the image
+        width in MCUs is computed.)  Defaults are zero (no restarts).  One
+        restart marker per MCU row is often a good choice.  NOTE: the overhead
+        of restart markers is higher in grayscale JPEG files than in color
+        files, and MUCH higher in progressive JPEGs.  If you use restarts, you
+        may want to use larger intervals in those cases.
 
 const jpeg_scan_info *scan_info
 int num_scans

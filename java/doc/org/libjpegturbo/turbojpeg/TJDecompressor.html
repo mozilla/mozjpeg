@@ -838,8 +838,8 @@ implements java.io.Closeable</pre>
  with the JPEG image width and height (see <a href="#getWidth()"><code>getWidth()</code></a> and
  <a href="#getHeight()"><code>getHeight()</code></a>.)  When decompressing into a planar YUV image, an
  intermediate buffer copy will be performed if the width or height of the
- scaled destination image is not an even multiple of the MCU block size
- (see <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a> and <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>.)  Note that decompression scaling is not available
+ scaled destination image is not an even multiple of the iMCU size (see
+ <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a> and <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>.)  Note that decompression scaling is not available
  (and the specified scaling factor is ignored) when decompressing lossless
  JPEG images (see <a href="TJ.html#PARAM_LOSSLESS"><code>TJ.PARAM_LOSSLESS</code></a>), since the IDCT algorithm is
  not used with those images.  Note also that <a href="TJ.html#PARAM_FASTDCT"><code>TJ.PARAM_FASTDCT</code></a> is
@@ -862,10 +862,10 @@ implements java.io.Closeable</pre>
 <dd><code>croppingRegion</code> - <code>java.awt.Rectangle</code> instance that
  specifies a subregion of the JPEG image to decompress, or
  <a href="TJ.html#UNCROPPED"><code>TJ.UNCROPPED</code></a> for no cropping.  The left boundary of the cropping
- region must be evenly divisible by the scaled MCU block width, which can
- be determined by calling <a href="TJScalingFactor.html#getScaled(int)"><code>TJScalingFactor.getScaled()</code></a> with the specified scaling factor (see
- <a href="#setScalingFactor(org.libjpegturbo.turbojpeg.TJScalingFactor)"><code>setScalingFactor()</code></a>) and the MCU block width
- (see <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a>) for the level of chrominance
+ region must be evenly divisible by the scaled iMCU width, which can be
+ determined by calling <a href="TJScalingFactor.html#getScaled(int)"><code>TJScalingFactor.getScaled()</code></a> with the specified scaling factor (see
+ <a href="#setScalingFactor(org.libjpegturbo.turbojpeg.TJScalingFactor)"><code>setScalingFactor()</code></a>) and the iMCU width (see
+ <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a>) for the level of chrominance
  subsampling in the JPEG image (see <a href="TJ.html#PARAM_SUBSAMP"><code>TJ.PARAM_SUBSAMP</code></a>.)  The
  cropping region should be specified relative to the scaled image
  dimensions.  Unless <code>croppingRegion</code> is <a href="TJ.html#UNCROPPED"><code>TJ.UNCROPPED</code></a>,

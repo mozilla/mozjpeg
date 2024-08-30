@@ -1,4 +1,4 @@
-.TH CJPEG 1 "24 June 2024"
+.TH CJPEG 1 "30 August 2024"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -270,8 +270,18 @@ machines.
 Embed ICC color management profile contained in the specified file.
 .TP
 .BI \-restart " N"
-Emit a JPEG restart marker every N MCU rows, or every N MCU blocks (samples in
-lossless mode) if "B" is attached to the number.
+Emit a JPEG restart marker every N MCU rows, or every N MCUs if "B" is attached
+to the number.
+.IP
+In typical JPEG images, an MCU (Minimum Coded Unit) is the minimum set of
+interleaved "data units" (8x8 DCT blocks if the image is lossy or samples if
+the image is lossless) necessary to represent at least one data unit per
+component.  (For example, an MCU in an interleaved lossy JPEG image that uses
+4:2:2 subsampling consists of two luminance blocks followed by one block for
+each chrominance component.)  In single-component or non-interleaved JPEG
+images, an MCU is the same as a data unit.  An MCU row is a row of MCUs
+spanning the entire width of the image.
+.IP
 .B \-restart 0
 (the default) means no restart markers.
 .TP

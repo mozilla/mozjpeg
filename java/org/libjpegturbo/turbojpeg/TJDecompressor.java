@@ -222,8 +222,8 @@ public class TJDecompressor implements Closeable {
    * with the JPEG image width and height (see {@link #getWidth} and
    * {@link #getHeight}.)  When decompressing into a planar YUV image, an
    * intermediate buffer copy will be performed if the width or height of the
-   * scaled destination image is not an even multiple of the MCU block size
-   * (see {@link TJ#getMCUWidth TJ.getMCUWidth()} and {@link TJ#getMCUHeight
+   * scaled destination image is not an even multiple of the iMCU size (see
+   * {@link TJ#getMCUWidth TJ.getMCUWidth()} and {@link TJ#getMCUHeight
    * TJ.getMCUHeight()}.)  Note that decompression scaling is not available
    * (and the specified scaling factor is ignored) when decompressing lossless
    * JPEG images (see {@link TJ#PARAM_LOSSLESS}), since the IDCT algorithm is
@@ -255,11 +255,11 @@ public class TJDecompressor implements Closeable {
    * @param croppingRegion <code>java.awt.Rectangle</code> instance that
    * specifies a subregion of the JPEG image to decompress, or
    * {@link TJ#UNCROPPED} for no cropping.  The left boundary of the cropping
-   * region must be evenly divisible by the scaled MCU block width, which can
-   * be determined by calling {@link TJScalingFactor#getScaled
+   * region must be evenly divisible by the scaled iMCU width, which can be
+   * determined by calling {@link TJScalingFactor#getScaled
    * TJScalingFactor.getScaled()} with the specified scaling factor (see
-   * {@link #setScalingFactor setScalingFactor()}) and the MCU block width
-   * (see {@link TJ#getMCUWidth TJ.getMCUWidth()}) for the level of chrominance
+   * {@link #setScalingFactor setScalingFactor()}) and the iMCU width (see
+   * {@link TJ#getMCUWidth TJ.getMCUWidth()}) for the level of chrominance
    * subsampling in the JPEG image (see {@link TJ#PARAM_SUBSAMP}.)  The
    * cropping region should be specified relative to the scaled image
    * dimensions.  Unless <code>croppingRegion</code> is {@link TJ#UNCROPPED},

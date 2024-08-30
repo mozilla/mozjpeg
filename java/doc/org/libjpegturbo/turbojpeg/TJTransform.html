@@ -329,7 +329,7 @@ extends java.awt.Rectangle</pre>
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#OPT_TRIM">OPT_TRIM</a></span></code></th>
 <td class="colLast">
-<div class="block">Discard any partial MCU blocks that cannot be transformed.</div>
+<div class="block">Discard any partial iMCUs that cannot be transformed.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -496,7 +496,7 @@ extends java.awt.Rectangle</pre>
 <h4>OP_HFLIP</h4>
 <pre>public static final&nbsp;int OP_HFLIP</pre>
 <div class="block">Flip (mirror) image horizontally.  This transform is imperfect if there
- are any partial MCU blocks on the right edge.</div>
+ are any partial iMCUs on the right edge.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
@@ -512,7 +512,7 @@ extends java.awt.Rectangle</pre>
 <h4>OP_VFLIP</h4>
 <pre>public static final&nbsp;int OP_VFLIP</pre>
 <div class="block">Flip (mirror) image vertically.  This transform is imperfect if there are
- any partial MCU blocks on the bottom edge.</div>
+ any partial iMCUs on the bottom edge.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
@@ -544,8 +544,8 @@ extends java.awt.Rectangle</pre>
 <h4>OP_TRANSVERSE</h4>
 <pre>public static final&nbsp;int OP_TRANSVERSE</pre>
 <div class="block">Transverse transpose image (flip/mirror along upper right to lower left
- axis).  This transform is imperfect if there are any partial MCU blocks in
- the image.</div>
+ axis).  This transform is imperfect if there are any partial iMCUs in the
+ image.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
@@ -561,7 +561,7 @@ extends java.awt.Rectangle</pre>
 <h4>OP_ROT90</h4>
 <pre>public static final&nbsp;int OP_ROT90</pre>
 <div class="block">Rotate image clockwise by 90 degrees.  This transform is imperfect if
- there are any partial MCU blocks on the bottom edge.</div>
+ there are any partial iMCUs on the bottom edge.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
@@ -577,7 +577,7 @@ extends java.awt.Rectangle</pre>
 <h4>OP_ROT180</h4>
 <pre>public static final&nbsp;int OP_ROT180</pre>
 <div class="block">Rotate image 180 degrees.  This transform is imperfect if there are any
- partial MCU blocks in the image.</div>
+ partial iMCUs in the image.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
@@ -593,7 +593,7 @@ extends java.awt.Rectangle</pre>
 <h4>OP_ROT270</h4>
 <pre>public static final&nbsp;int OP_ROT270</pre>
 <div class="block">Rotate image counter-clockwise by 90 degrees.  This transform is imperfect
- if there are any partial MCU blocks on the right edge.</div>
+ if there are any partial iMCUs on the right edge.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="#OPT_PERFECT"><code>OPT_PERFECT</code></a>, 
@@ -609,15 +609,15 @@ extends java.awt.Rectangle</pre>
 <h4>OPT_PERFECT</h4>
 <pre>public static final&nbsp;int OPT_PERFECT</pre>
 <div class="block">This option causes <a href="TJTransformer.html#transform(byte%5B%5D%5B%5D,org.libjpegturbo.turbojpeg.TJTransform%5B%5D)"><code>TJTransformer.transform()</code></a> to throw an exception if the transform is not
- perfect.  Lossless transforms operate on MCU blocks, the size of which
- depends on the level of chrominance subsampling used.  If the image's
- width or height is not evenly divisible by the MCU block size (see
- <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a> and <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>), then there will be partial MCU blocks on the right
- and/or bottom edges.  It is not possible to move these partial MCU blocks
- to the top or left of the image, so any transform that would require that
- is "imperfect."  If this option is not specified, then any partial MCU
- blocks that cannot be transformed will be left in place, which will create
- odd-looking strips on the right or bottom edge of the image.</div>
+ perfect.  Lossless transforms operate on iMCUs, the size of which depends
+ on the level of chrominance subsampling used.  If the image's width or
+ height is not evenly divisible by the iMCU size (see <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a> and <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>), then
+ there will be partial iMCUs on the right and/or bottom edges.  It is not
+ possible to move these partial iMCUs to the top or left of the image, so
+ any transform that would require that is "imperfect."  If this option is
+ not specified, then any partial iMCUs that cannot be transformed will be
+ left in place, which will create odd-looking strips on the right or bottom
+ edge of the image.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_PERFECT">Constant Field Values</a></dd>
@@ -631,7 +631,7 @@ extends java.awt.Rectangle</pre>
 <li class="blockList">
 <h4>OPT_TRIM</h4>
 <pre>public static final&nbsp;int OPT_TRIM</pre>
-<div class="block">Discard any partial MCU blocks that cannot be transformed.</div>
+<div class="block">Discard any partial iMCUs that cannot be transformed.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.libjpegturbo.turbojpeg.TJTransform.OPT_TRIM">Constant Field Values</a></dd>
@@ -818,9 +818,9 @@ extends java.awt.Rectangle</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>x</code> - the left boundary of the cropping region.  This must be evenly
- divisible by the MCU block width (see <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a>)</dd>
+ divisible by the iMCU width (see <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a>)</dd>
 <dd><code>y</code> - the upper boundary of the cropping region.  This must be evenly
- divisible by the MCU block height (see <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>)</dd>
+ divisible by the iMCU height (see <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>)</dd>
 <dd><code>w</code> - the width of the cropping region.  Setting this to 0 is the
  equivalent of setting it to (width of the source JPEG image -
  <code>x</code>).</dd>

@@ -1940,7 +1940,7 @@ DLLEXPORT int tj3SetCroppingRegion(tjhandle handle, tjregion croppingRegion)
   if (croppingRegion.x %
       TJSCALED(tjMCUWidth[this->subsamp], this->scalingFactor) != 0)
     THROWI("The left boundary of the cropping region (%d) is not\n"
-           "divisible by the scaled MCU width (%d)",
+           "divisible by the scaled iMCU width (%d)",
            croppingRegion.x,
            TJSCALED(tjMCUWidth[this->subsamp], this->scalingFactor));
   if (croppingRegion.w == 0)

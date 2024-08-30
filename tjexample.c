@@ -145,8 +145,8 @@ static void usage(char *programName)
   printf("-crop WxH+X+Y = Perform lossless cropping on the input image prior to\n");
   printf("     decompressing it.  X and Y specify the upper left corner of the cropping\n");
   printf("     region, and W and H specify the width and height of the cropping region.\n");
-  printf("     X and Y must be evenly divible by the MCU block size (8x8 if the input\n");
-  printf("     image was compressed using no subsampling or grayscale, 16x8 if it was\n");
+  printf("     X and Y must be evenly divible by the iMCU size (8x8 if the input image\n");
+  printf("     was compressed using no subsampling or grayscale, 16x8 if it was\n");
   printf("     compressed using 4:2:2 subsampling, or 16x16 if it was compressed using\n");
   printf("     4:2:0 subsampling.)\n\n");
 

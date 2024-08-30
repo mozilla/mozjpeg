@@ -417,15 +417,14 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PARAM_RESTARTBLOCKS">PARAM_RESTARTBLOCKS</a></span></code></th>
 <td class="colLast">
-<div class="block">JPEG restart marker interval in MCU blocks [lossy compression only]</div>
+<div class="block">JPEG restart marker interval in MCUs [lossy compression only]</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PARAM_RESTARTROWS">PARAM_RESTARTROWS</a></span></code></th>
 <td class="colLast">
-<div class="block">JPEG restart marker interval in MCU rows (lossy) or sample rows (lossless)
- [compression only]</div>
+<div class="block">JPEG restart marker interval in MCU rows [compression only]</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -687,16 +686,14 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getMCUHeight(int)">getMCUHeight</a></span>&#8203;(int&nbsp;subsamp)</code></th>
 <td class="colLast">
-<div class="block">Returns the MCU block height for the given level of chrominance
- subsampling.</div>
+<div class="block">Returns the iMCU height for the given level of chrominance subsampling.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getMCUWidth(int)">getMCUWidth</a></span>&#8203;(int&nbsp;subsamp)</code></th>
 <td class="colLast">
-<div class="block">Returns the MCU block width for the given level of chrominance
- subsampling.</div>
+<div class="block">Returns the iMCU width for the given level of chrominance subsampling.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
@@ -1590,8 +1587,8 @@ extends java.lang.Object</pre>
  and refined with subsequent higher-quality scans containing
  higher-frequency DCT coefficients.  When using Huffman entropy coding, the
  progressive JPEG format also provides an "end-of-bands (EOB) run" feature
- that allows large groups of zeroes, potentially spanning multiple MCU
- blocks, to be represented using only a few bytes.
+ that allows large groups of zeroes, potentially spanning multiple MCUs, to
+ be represented using only a few bytes.
 
  <p><b>Value</b>
  <ul>
@@ -1803,7 +1800,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>PARAM_RESTARTBLOCKS</h4>
 <pre>public static final&nbsp;int PARAM_RESTARTBLOCKS</pre>
-<div class="block">JPEG restart marker interval in MCU blocks [lossy compression only]
+<div class="block">JPEG restart marker interval in MCUs [lossy compression only]
 
  <p>The nature of entropy coding is such that a corrupt JPEG image cannot
  be decompressed beyond the point of corruption unless it contains restart
@@ -1813,9 +1810,18 @@ extends java.lang.Object</pre>
  tolerance of the JPEG image, but adding too many restart markers can
  adversely affect the compression ratio and performance.
 
+ <p>In typical JPEG images, an MCU (Minimum Coded Unit) is the minimum set
+ of interleaved "data units" (8x8 DCT blocks if the image is lossy or
+ samples if the image is lossless) necessary to represent at least one data
+ unit per component.  (For example, an MCU in an interleaved lossy JPEG
+ image that uses 4:2:2 subsampling consists of two luminance blocks
+ followed by one block for each chrominance component.)  In
+ single-component or non-interleaved JPEG images, an MCU is the same as a
+ data unit.
+
  <p><b>Value</b>
  <ul>
- <li> the number of MCU blocks between each restart marker <i>[default:
+ <li> the number of MCUs between each restart marker <i>[default:
  <code>0</code> (no restart markers)]</i>
  </ul>
 
@@ -1834,15 +1840,16 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>PARAM_RESTARTROWS</h4>
 <pre>public static final&nbsp;int PARAM_RESTARTROWS</pre>
-<div class="block">JPEG restart marker interval in MCU rows (lossy) or sample rows (lossless)
- [compression only]
+<div class="block">JPEG restart marker interval in MCU rows [compression only]
 
- <p>See <a href="#PARAM_RESTARTBLOCKS"><code>PARAM_RESTARTBLOCKS</code></a> for a description of restart markers.
+ <p>See <a href="#PARAM_RESTARTBLOCKS"><code>PARAM_RESTARTBLOCKS</code></a> for a description of restart markers
+ and MCUs.  An MCU row is a row of MCUs spanning the entire width of the
+ image.
 
  <p><b>Value</b>
  <ul>
- <li> the number of MCU rows or sample rows between each restart marker
- <i>[default: <code>0</code> (no restart markers)]</i>
+ <li> the number of MCU rows between each restart marker <i>[default:
+ <code>0</code> (no restart markers)]</i>
  </ul>
 
  <p>Setting this parameter to a non-zero value sets
@@ -2186,15 +2193,25 @@ public static final&nbsp;int FLAG_LIMITSCANS</pre>
 <li class="blockList">
 <h4>getMCUWidth</h4>
 <pre class="methodSignature">public static&nbsp;int&nbsp;getMCUWidth&#8203;(int&nbsp;subsamp)</pre>
-<div class="block">Returns the MCU block width for the given level of chrominance
- subsampling.</div>
+<div class="block">Returns the iMCU width for the given level of chrominance subsampling.
+
+ <p>In a typical lossy JPEG image, 8x8 blocks of DCT coefficients for each
+ component are interleaved in a single scan.  If the image uses chrominance
+ subsampling, then multiple luminance blocks are stored together, followed
+ by a single block for each chrominance component.  The combination of the
+ full-resolution luminance block(s) and the (possibly subsampled)
+ chrominance blocks corresponding to the same pixels is called a "Minimum
+ Coded Unit" (MCU.)  In a non-interleaved lossy JPEG image, each component
+ is stored in a separate scan, and an MCU is a single DCT block, so we use
+ the term "iMCU" (interleaved MCU) to refer to the equivalent of an MCU in
+ an interleaved JPEG image.  For the common case of interleaved JPEG
+ images, an iMCU is the same as an MCU.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>subsamp</code> - the level of chrominance subsampling (one of
  <a href="#SAMP_444"><code>SAMP_*</code></a>)</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>the MCU block width for the given level of chrominance
- subsampling.</dd>
+<dd>the iMCU width for the given level of chrominance subsampling.</dd>
 </dl>
 </li>
 </ul>
@@ -2205,15 +2222,25 @@ public static final&nbsp;int FLAG_LIMITSCANS</pre>
 <li class="blockList">
 <h4>getMCUHeight</h4>
 <pre class="methodSignature">public static&nbsp;int&nbsp;getMCUHeight&#8203;(int&nbsp;subsamp)</pre>
-<div class="block">Returns the MCU block height for the given level of chrominance
- subsampling.</div>
+<div class="block">Returns the iMCU height for the given level of chrominance subsampling.
+
+ <p>In a typical lossy JPEG image, 8x8 blocks of DCT coefficients for each
+ component are interleaved in a single scan.  If the image uses chrominance
+ subsampling, then multiple luminance blocks are stored together, followed
+ by a single block for each chrominance component.  The combination of the
+ full-resolution luminance block(s) and the (possibly subsampled)
+ chrominance blocks corresponding to the same pixels is called a "Minimum
+ Coded Unit" (MCU.)  In a non-interleaved lossy JPEG image, each component
+ is stored in a separate scan, and an MCU is a single DCT block, so we use
+ the term "iMCU" (interleaved MCU) to refer to the equivalent of an MCU in
+ an interleaved JPEG image.  For the common case of interleaved JPEG
+ images, an iMCU is the same as an MCU.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>subsamp</code> - the level of chrominance subsampling (one of
  <a href="#SAMP_444"><code>SAMP_*</code></a>)</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>the MCU block height for the given level of chrominance
- subsampling.</dd>
+<dd>the iMCU height for the given level of chrominance subsampling.</dd>
 </dl>
 </li>
 </ul>

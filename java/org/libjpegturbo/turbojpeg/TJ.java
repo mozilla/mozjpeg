@@ -120,14 +120,24 @@ public final class TJ {
   public static final int SAMP_UNKNOWN = -1;
 
   /**
-   * Returns the MCU block width for the given level of chrominance
-   * subsampling.
+   * Returns the iMCU width for the given level of chrominance subsampling.
+   *
+   * <p>In a typical lossy JPEG image, 8x8 blocks of DCT coefficients for each
+   * component are interleaved in a single scan.  If the image uses chrominance
+   * subsampling, then multiple luminance blocks are stored together, followed
+   * by a single block for each chrominance component.  The combination of the
+   * full-resolution luminance block(s) and the (possibly subsampled)
+   * chrominance blocks corresponding to the same pixels is called a "Minimum
+   * Coded Unit" (MCU.)  In a non-interleaved lossy JPEG image, each component
+   * is stored in a separate scan, and an MCU is a single DCT block, so we use
+   * the term "iMCU" (interleaved MCU) to refer to the equivalent of an MCU in
+   * an interleaved JPEG image.  For the common case of interleaved JPEG
+   * images, an iMCU is the same as an MCU.
    *
    * @param subsamp the level of chrominance subsampling (one of
    * {@link #SAMP_444 SAMP_*})
    *
-   * @return the MCU block width for the given level of chrominance
-   * subsampling.
+   * @return the iMCU width for the given level of chrominance subsampling.
    */
   public static int getMCUWidth(int subsamp) {
     checkSubsampling(subsamp);
@@ -140,14 +150,24 @@ public final class TJ {
 
 
   /**
-   * Returns the MCU block height for the given level of chrominance
-   * subsampling.
+   * Returns the iMCU height for the given level of chrominance subsampling.
+   *
+   * <p>In a typical lossy JPEG image, 8x8 blocks of DCT coefficients for each
+   * component are interleaved in a single scan.  If the image uses chrominance
+   * subsampling, then multiple luminance blocks are stored together, followed
+   * by a single block for each chrominance component.  The combination of the
+   * full-resolution luminance block(s) and the (possibly subsampled)
+   * chrominance blocks corresponding to the same pixels is called a "Minimum
+   * Coded Unit" (MCU.)  In a non-interleaved lossy JPEG image, each component
+   * is stored in a separate scan, and an MCU is a single DCT block, so we use
+   * the term "iMCU" (interleaved MCU) to refer to the equivalent of an MCU in
+   * an interleaved JPEG image.  For the common case of interleaved JPEG
+   * images, an iMCU is the same as an MCU.
    *
    * @param subsamp the level of chrominance subsampling (one of
    * {@link #SAMP_444 SAMP_*})
    *
-   * @return the MCU block height for the given level of chrominance
-   * subsampling.
+   * @return the iMCU height for the given level of chrominance subsampling.
    */
   public static int getMCUHeight(int subsamp) {
     checkSubsampling(subsamp);
@@ -608,8 +628,8 @@ public final class TJ {
    * and refined with subsequent higher-quality scans containing
    * higher-frequency DCT coefficients.  When using Huffman entropy coding, the
    * progressive JPEG format also provides an "end-of-bands (EOB) run" feature
-   * that allows large groups of zeroes, potentially spanning multiple MCU
-   * blocks, to be represented using only a few bytes.
+   * that allows large groups of zeroes, potentially spanning multiple MCUs, to
+   * be represented using only a few bytes.
    *
    * <p><b>Value</b>
    * <ul>
@@ -765,7 +785,7 @@ public final class TJ {
    */
   public static final int PARAM_LOSSLESSPT = 17;
   /**
-   * JPEG restart marker interval in MCU blocks [lossy compression only]
+   * JPEG restart marker interval in MCUs [lossy compression only]
    *
    * <p>The nature of entropy coding is such that a corrupt JPEG image cannot
    * be decompressed beyond the point of corruption unless it contains restart
@@ -775,9 +795,18 @@ public final class TJ {
    * tolerance of the JPEG image, but adding too many restart markers can
    * adversely affect the compression ratio and performance.
    *
+   * <p>In typical JPEG images, an MCU (Minimum Coded Unit) is the minimum set
+   * of interleaved "data units" (8x8 DCT blocks if the image is lossy or
+   * samples if the image is lossless) necessary to represent at least one data
+   * unit per component.  (For example, an MCU in an interleaved lossy JPEG
+   * image that uses 4:2:2 subsampling consists of two luminance blocks
+   * followed by one block for each chrominance component.)  In
+   * single-component or non-interleaved JPEG images, an MCU is the same as a
+   * data unit.
+   *
    * <p><b>Value</b>
    * <ul>
-   * <li> the number of MCU blocks between each restart marker <i>[default:
+   * <li> the number of MCUs between each restart marker <i>[default:
    * <code>0</code> (no restart markers)]</i>
    * </ul>
    *
@@ -786,15 +815,16 @@ public final class TJ {
    */
   public static final int PARAM_RESTARTBLOCKS = 18;
   /**
-   * JPEG restart marker interval in MCU rows (lossy) or sample rows (lossless)
-   * [compression only]
+   * JPEG restart marker interval in MCU rows [compression only]
    *
-   * <p>See {@link #PARAM_RESTARTBLOCKS} for a description of restart markers.
+   * <p>See {@link #PARAM_RESTARTBLOCKS} for a description of restart markers
+   * and MCUs.  An MCU row is a row of MCUs spanning the entire width of the
+   * image.
    *
    * <p><b>Value</b>
    * <ul>
-   * <li> the number of MCU rows or sample rows between each restart marker
-   * <i>[default: <code>0</code> (no restart markers)]</i>
+   * <li> the number of MCU rows between each restart marker <i>[default:
+   * <code>0</code> (no restart markers)]</i>
    * </ul>
    *
    * <p>Setting this parameter to a non-zero value sets

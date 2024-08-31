@@ -136,7 +136,7 @@ public class TJTransform extends Rectangle {
    */
   public static final int OPT_PROGRESSIVE = (1 << 5);
   /**
-   * Do not copy any extra markers (including EXIF and ICC profile data) from
+   * Do not copy any extra markers (including Exif and ICC profile data) from
    * the source image to the destination image.
    */
   public static final int OPT_COPYNONE    = (1 << 6);

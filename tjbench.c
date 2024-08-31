@@ -984,7 +984,7 @@ static void usage(char *progName)
   printf("     prior to decompression (these operations are mutually exclusive)\n");
   printf("-grayscale = Transform the input image into a grayscale JPEG image prior to\n");
   printf("     decompression (can be combined with the other transform operations above)\n");
-  printf("-copynone = Do not copy any extra markers (including EXIF and ICC profile data)\n");
+  printf("-copynone = Do not copy any extra markers (including Exif and ICC profile data)\n");
   printf("     when transforming the input image\n");
   printf("-yuv = Compress from/decompress to intermediate planar YUV images\n");
   printf("     ** 8-bit data precision only **\n");

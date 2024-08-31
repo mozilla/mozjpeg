@@ -852,7 +852,7 @@ final class TJBench {
     System.out.println("     prior to decompression (these operations are mutually exclusive)");
     System.out.println("-grayscale = Transform the input image into a grayscale JPEG image prior to");
     System.out.println("     decompression (can be combined with the other transform operations above)");
-    System.out.println("-copynone = Do not copy any extra markers (including EXIF and ICC profile data)");
+    System.out.println("-copynone = Do not copy any extra markers (including Exif and ICC profile data)");
     System.out.println("     when transforming the input image");
     System.out.println("-yuv = Compress from/decompress to intermediate planar YUV images");
     System.out.println("     ** 8-bit data precision only **");

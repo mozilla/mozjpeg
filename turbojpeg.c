@@ -2665,7 +2665,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
   static const char FUNCTION_NAME[] = "tj3Transform";
   jpeg_transform_info *xinfo = NULL;
   jvirt_barray_ptr *srccoefs, *dstcoefs;
-  int retval = 0, i, saveMarkers = 0;
+  int retval = 0, i, saveMarkers = 0, srcSubsamp;
   boolean alloc = TRUE;
   struct my_progress_mgr progress;
 
@@ -2733,20 +2733,31 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
       (unsigned long long)dinfo->image_width * dinfo->image_height >
       (unsigned long long)this->maxPixels)
     THROW("Image is too large");
-  this->subsamp = getSubsamp(&this->dinfo);
+  srcSubsamp = getSubsamp(&this->dinfo);
 
   for (i = 0; i < n; i++) {
+    int dstSubsamp = (t[i].options & TJXOPT_GRAY) ? TJSAMP_GRAY : srcSubsamp;
+
     if (!jtransform_request_workspace(dinfo, &xinfo[i]))
       THROW("Transform is not perfect");
 
     if (xinfo[i].crop) {
-      if (this->subsamp == TJSAMP_UNKNOWN)
+      if (dstSubsamp == TJSAMP_UNKNOWN)
         THROW("Could not determine subsampling level of JPEG image");
-      if ((t[i].r.x % tjMCUWidth[this->subsamp]) != 0 ||
-          (t[i].r.y % tjMCUHeight[this->subsamp]) != 0)
-        THROWI("To crop this JPEG image, x must be a multiple of %d\n"
-               "and y must be a multiple of %d.", tjMCUWidth[this->subsamp],
-               tjMCUHeight[this->subsamp]);
+      if (t[i].op == TJXOP_TRANSPOSE || t[i].op == TJXOP_TRANSVERSE ||
+          t[i].op == TJXOP_ROT90 || t[i].op == TJXOP_ROT270) {
+        if ((t[i].r.x % tjMCUHeight[dstSubsamp]) != 0 ||
+            (t[i].r.y % tjMCUWidth[dstSubsamp]) != 0)
+          THROWI("To crop this JPEG image, x must be a multiple of %d\n"
+                 "and y must be a multiple of %d.", tjMCUHeight[dstSubsamp],
+                 tjMCUWidth[dstSubsamp]);
+      } else {
+        if ((t[i].r.x % tjMCUWidth[dstSubsamp]) != 0 ||
+            (t[i].r.y % tjMCUHeight[dstSubsamp]) != 0)
+          THROWI("To crop this JPEG image, x must be a multiple of %d\n"
+                 "and y must be a multiple of %d.", tjMCUWidth[dstSubsamp],
+                 tjMCUHeight[dstSubsamp]);
+      }
     }
   }
 
@@ -2754,6 +2765,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
 
   for (i = 0; i < n; i++) {
     int w, h;
+    int dstSubsamp = (t[i].options & TJXOPT_GRAY) ? TJSAMP_GRAY : srcSubsamp;
 
     if (!xinfo[i].crop) {
       w = dinfo->image_width;  h = dinfo->image_height;
@@ -2765,7 +2777,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
       w = xinfo[i].crop_width;  h = xinfo[i].crop_height;
     }
     if (this->noRealloc) {
-      alloc = FALSE;  dstSizes[i] = tj3JPEGBufSize(w, h, this->subsamp);
+      alloc = FALSE;  dstSizes[i] = tj3JPEGBufSize(w, h, dstSubsamp);
     }
     if (!(t[i].options & TJXOPT_NOOUTPUT))
       jpeg_mem_dest_tj(cinfo, &dstBufs[i], &dstSizes[i], alloc);
@@ -2843,22 +2855,13 @@ DLLEXPORT int tjTransform(tjhandle handle, const unsigned char *jpegBuf,
   int i, retval = 0;
   size_t *sizes = NULL;
 
-  GET_DINSTANCE(handle);
+  GET_TJINSTANCE(handle, -1);
   if ((this->init & DECOMPRESS) == 0)
     THROW("Instance has not been initialized for decompression");
 
   if (n < 1 || dstSizes == NULL)
     THROW("Invalid argument");
 
-  if (setjmp(this->jerr.setjmp_buffer)) {
-    /* If we get here, the JPEG code has signaled an error. */
-    retval = -1;  goto bailout;
-  }
-
-  jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
-  jpeg_read_header(dinfo, TRUE);
-  if (getSubsamp(dinfo) == TJSAMP_UNKNOWN)
-    THROW("Could not determine subsampling level of JPEG image");
   processFlags(handle, flags, COMPRESS);
 
   if ((sizes = (size_t *)malloc(n * sizeof(size_t))) == NULL)

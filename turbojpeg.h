@@ -188,7 +188,8 @@ enum TJSAMP {
    * The JPEG image uses an unusual type of chrominance subsampling.  Such
    * images can be decompressed into packed-pixel images, but they cannot be
    * - decompressed into planar YUV images,
-   * - losslessly transformed if #TJXOPT_CROP is specified, or
+   * - losslessly transformed if #TJXOPT_CROP is specified and #TJXOPT_GRAY is
+   * not specified, or
    * - partially decompressed using a cropping region.
    */
   TJSAMP_UNKNOWN = -1
@@ -1050,13 +1051,16 @@ typedef struct {
  */
 typedef struct {
   /**
-   * The left boundary of the cropping region.  This must be evenly divisible
-   * by the iMCU width (see #tjMCUWidth.)
+   * The left boundary of the cropping region.  For lossless transformation,
+   * this must be evenly divisible by the iMCU width (see #tjMCUWidth) of the
+   * destination image.  For decompression, this must be evenly divisible by
+   * the scaled iMCU width of the source image.
    */
   int x;
   /**
    * The upper boundary of the cropping region.  For lossless transformation,
-   * this must be evenly divisible by the iMCU height (see #tjMCUHeight.)
+   * this must be evenly divisible by the iMCU height (see #tjMCUHeight) of the
+   * destination image.
    */
   int y;
   /**

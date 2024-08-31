@@ -1124,7 +1124,7 @@ scalingFactor)</code>. </p>
 <tr><td class="fieldname"><a id="gga1d047060ea80bb9820d540bb928e9074ac124fa8f6cb41147e3d670dfbdfb7173" name="gga1d047060ea80bb9820d540bb928e9074ac124fa8f6cb41147e3d670dfbdfb7173"></a>TJSAMP_UNKNOWN&#160;</td><td class="fielddoc"><p>Unknown subsampling. </p>
 <p>The JPEG image uses an unusual type of chrominance subsampling. Such images can be decompressed into packed-pixel images, but they cannot be</p><ul>
 <li>decompressed into planar YUV images,</li>
-<li>losslessly transformed if <a class="el" href="group___turbo_j_p_e_g.html#ga9c771a757fc1294add611906b89ab2d2" title="Enable lossless cropping.">TJXOPT_CROP</a> is specified, or</li>
+<li>losslessly transformed if <a class="el" href="group___turbo_j_p_e_g.html#ga9c771a757fc1294add611906b89ab2d2" title="Enable lossless cropping.">TJXOPT_CROP</a> is specified and <a class="el" href="group___turbo_j_p_e_g.html#ga3acee7b48ade1b99e5588736007c2589" title="Discard the color data in the source image, and generate a grayscale destination image.">TJXOPT_GRAY</a> is not specified, or</li>
 <li>partially decompressed using a cropping region. </li>
 </ul>
 </td></tr>

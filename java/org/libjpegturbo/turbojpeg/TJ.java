@@ -112,7 +112,8 @@ public final class TJ {
    * images can be decompressed into packed-pixel images, but they cannot be
    * <ul>
    * <li> decompressed into planar YUV images,
-   * <li> losslessly transformed if {@link TJTransform#OPT_CROP} is specified,
+   * <li> losslessly transformed if {@link TJTransform#OPT_CROP} is specified
+   * and {@link TJTransform#OPT_GRAY} is not specified,
    * or
    * <li> partially decompressed using a cropping region.
    * </ul>

@@ -146,7 +146,7 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The left boundary of the cropping region. </p>
-<p>This must be evenly divisible by the iMCU width (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="iMCU width (in pixels) for a given level of chrominance subsampling">tjMCUWidth</a>.) </p>
+<p>For lossless transformation, this must be evenly divisible by the iMCU width (see <a class="el" href="group___turbo_j_p_e_g.html#ga9e61e7cd47a15a173283ba94e781308c" title="iMCU width (in pixels) for a given level of chrominance subsampling">tjMCUWidth</a>) of the destination image. For decompression, this must be evenly divisible by the scaled iMCU width of the source image. </p>
 
 </div>
 </div>
@@ -163,7 +163,7 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The upper boundary of the cropping region. </p>
-<p>For lossless transformation, this must be evenly divisible by the iMCU height (see <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="iMCU height (in pixels) for a given level of chrominance subsampling">tjMCUHeight</a>.) </p>
+<p>For lossless transformation, this must be evenly divisible by the iMCU height (see <a class="el" href="group___turbo_j_p_e_g.html#gabd247bb9fecb393eca57366feb8327bf" title="iMCU height (in pixels) for a given level of chrominance subsampling">tjMCUHeight</a>) of the destination image. </p>
 
 </div>
 </div>

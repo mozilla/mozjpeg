@@ -165,10 +165,11 @@ public class TJTransform extends Rectangle {
    *
    * @param x the left boundary of the cropping region.  This must be evenly
    * divisible by the iMCU width (see {@link TJ#getMCUWidth TJ.getMCUWidth()})
+   * of the destination image.
    *
    * @param y the upper boundary of the cropping region.  This must be evenly
    * divisible by the iMCU height (see {@link TJ#getMCUHeight
-   * TJ.getMCUHeight()})
+   * TJ.getMCUHeight()}) of the destination image.
    *
    * @param w the width of the cropping region.  Setting this to 0 is the
    * equivalent of setting it to (width of the source JPEG image -

@@ -43,6 +43,14 @@ color conversion routine.  Both bounds checks now use 64-bit integers to guard
 against overflow, and djpeg now checks for negative numbers when it parses the
 crop specification from the command line.
 
+7. Fixed an issue whereby the TurboJPEG lossless transformation function and
+methods checked the specified cropping region against the source image
+dimensions and level of chrominance subsampling rather than the destination
+image dimensions and level of chrominance subsampling, which caused some
+cropping regions to be unduly rejected when performing 90-degree rotation,
+270-degree rotation, transposition, transverse transposition, or grayscale
+conversion.
+
 
 3.0.3
 =====

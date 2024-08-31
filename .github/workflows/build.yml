@@ -24,7 +24,7 @@ jobs:
           docker pull dcommander/buildljt:$BRANCH
           git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $BRANCH $HOME/src/buildscripts
           mkdir $HOME/rpmkeys
-          wget --no-check-certificate "http://www.libjpeg-turbo.org/key/LJTPR-GPG-KEY" -O $HOME/rpmkeys/LJTPR-GPG-KEY
+          wget --no-check-certificate "https://libjpeg-turbo.org/key/LJTPR-GPG-KEY" -O $HOME/rpmkeys/LJTPR-GPG-KEY
       - name: Configure GPG signing
         if: ${{github.event_name != 'pull_request'}}
         run: |

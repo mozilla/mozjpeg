@@ -8,16 +8,16 @@ Build Requirements
 
 ### All Systems
 
-- [CMake](http://www.cmake.org) v2.8.12 or later
+- [CMake](https://cmake.org) v2.8.12 or later
 
-- [NASM](http://www.nasm.us) or [Yasm](http://yasm.tortall.net)
+- [NASM](https://nasm.us) or [Yasm](https://yasm.tortall.net)
   (if building x86 or x86-64 SIMD extensions)
   * If using NASM, 2.13 or later is required.
   * If using Yasm, 1.2.0 or later is required.
   * NASM 2.15 or later is required if building libjpeg-turbo with Intel
     Control-flow Enforcement Technology (CET) support.
   * If building on macOS, NASM or Yasm can be obtained from
-    [MacPorts](http://www.macports.org/) or [Homebrew](http://brew.sh/).
+    [MacPorts](https://macports.org) or [Homebrew](https://brew.sh).
      - NOTE: Currently, if it is desirable to hide the SIMD function symbols in
        Mac executables or shared libraries that statically link with
        libjpeg-turbo, then NASM 2.14 or later or Yasm must be used when
@@ -39,7 +39,7 @@ Build Requirements
   required.  Most modern Linux distributions, as well as Solaris 10 and later,
   include JDK or OpenJDK.  For other systems, you can obtain the Oracle Java
   Development Kit from
-  <http://www.oracle.com/technetwork/java/javase/downloads>.
+  <https://oracle.com/java/technologies/downloads>.
 
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.
 
@@ -69,14 +69,14 @@ Build Requirements
 
 - MinGW
 
-  [MSYS2](http://msys2.github.io/) or [tdm-gcc](http://tdm-gcc.tdragon.net/)
+  [MSYS2](https://msys2.org) or [tdm-gcc](https://jmeubank.github.io/tdm-gcc)
   recommended if building on a Windows machine.  Both distributions install a
   Start Menu link that can be used to launch a command prompt with the
   appropriate compiler paths automatically set.
 
 - If building the TurboJPEG Java wrapper, JDK 1.5 or later is required.  This
   can be downloaded from
-  <http://www.oracle.com/technetwork/java/javase/downloads>.
+  <https://oracle.com/java/technologies/downloads>.
 
   * If using JDK 11 or later, CMake 3.10.x or later must also be used.
 
@@ -439,7 +439,7 @@ Building libjpeg-turbo for Android
 ----------------------------------
 
 Building libjpeg-turbo for Android platforms requires v13b or later of the
-[Android NDK](https://developer.android.com/tools/sdk/ndk).
+[Android NDK](https://developer.android.com/ndk).
 
 
 ### Armv7 (32-bit)
@@ -679,7 +679,7 @@ as the configuration you built (such as *{build_directory}*\Debug\ or
 *{build_directory}*\Release\).
 
 Building a Windows installer requires the
-[Nullsoft Install System](http://nsis.sourceforge.net/).  makensis.exe should
+[Nullsoft Install System](https://nsis.sourceforge.io).  makensis.exe should
 be in your `PATH`.
 
 

@@ -1230,7 +1230,7 @@ for two reasons:  it allows testers to more easily work around the 2 GB limit
 in libFuzzer, and it allows developers of security-sensitive applications to
 more easily defend against one of the progressive JPEG exploits (LJT-01-004)
 identified in
-[this report](http://www.libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf).
+[this report](https://libjpeg-turbo.org/pmwiki/uploads/About/TwoIssueswiththeJPEGStandard.pdf).
 
 10. TJBench will now run each benchmark for 1 second prior to starting the
 timer, in order to improve the consistency of the results.  Furthermore, the

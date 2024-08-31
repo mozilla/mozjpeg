@@ -71,7 +71,8 @@ JPEG images:
   top of the TurboJPEG API.  The TurboJPEG API is recommended for first-time
   users of libjpeg-turbo.  Refer to [tjexample.c](tjexample.c) and
   [TJExample.java](java/TJExample.java) for examples of its usage and to
-  <http://libjpeg-turbo.org/Documentation/Documentation> for API documentation.
+  <https://libjpeg-turbo.org/Documentation/Documentation> for API
+  documentation.
 
 - **libjpeg API**<br>
   This is the de facto industry-standard API for compressing and decompressing
@@ -199,7 +200,7 @@ supported and which aren't.
 NOTE:  As of this writing, extensive research has been conducted into the
 usefulness of DCT scaling as a means of data reduction and SmartScale as a
 means of quality improvement.  Readers are invited to peruse the research at
-<http://www.libjpeg-turbo.org/About/SmartScale> and draw their own conclusions,
+<https://libjpeg-turbo.org/About/SmartScale> and draw their own conclusions,
 but it is the general belief of our project that these features have not
 demonstrated sufficient usefulness to justify inclusion in libjpeg-turbo.
 

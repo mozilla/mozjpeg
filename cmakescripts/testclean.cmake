@@ -38,6 +38,7 @@ file(GLOB FILES
   *_LOSSL*S_*.bmp
   *_LOSSL*S_*.ppm
   *_LOSSL*S_*.jpg
+  croptest.log
   tjbenchtest*.log
   tjexampletest*.log)
 

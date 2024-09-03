@@ -1202,7 +1202,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
       set(TESTORIG testorig12.jpg)
       set(MD5_JPEG_RGB_ISLOW 9d7369207c520d37f2c1cbfcb82b2964)
-      set(MD5_JPEG_RGB_ISLOW2 a00bd20d8ae49684640ef7177d2e0b64)
+      set(MD5_JPEG_RGB_ISLOW2 e619791332a99813bdca9f56fd60f9f9)
       set(MD5_PPM_RGB_ISLOW f3301d2219783b8b3d942b7239fa50c0)
       set(MD5_JPEG_422_IFAST_OPT 7322e3bd2f127f7de4b40d4480ce60e4)
       set(MD5_PPM_422_IFAST 79807fa552899e66a04708f533e16950)
@@ -1268,7 +1268,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
       set(TESTORIG testorig.jpg)
       set(MD5_JPEG_RGB_ISLOW 1d44a406f61da743b5fd31c0a9abdca3)
-      set(MD5_JPEG_RGB_ISLOW2 31d121e57b6c2934c890a7fc7763bcd4)
+      set(MD5_JPEG_RGB_ISLOW2 b811e5ad807beb9384e51ef6a47f715d)
       set(MD5_PPM_RGB_ISLOW 00a257f5393fef8821f2b88ac7421291)
       set(MD5_BMP_RGB_ISLOW_565 f07d2e75073e4bb10f6c6f4d36e2e3be)
       set(MD5_BMP_RGB_ISLOW_565D 4cfa0928ef3e6bb626d7728c924cfda4)
@@ -1362,7 +1362,7 @@ foreach(libtype ${TEST_LIBTYPES})
     set_tests_properties(${djpeg}-${libtype}-rgb-islow-icc-cmp PROPERTIES
       DEPENDS ${djpeg}-${libtype}-rgb-islow)
 
-    add_bittest(${jpegtran} icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
+    add_bittest(${jpegtran} icc "-copy;all;-icc;${TESTIMAGES}/test3.icc"
       ${testout}_rgb_islow2.jpg ${testout}_rgb_islow.jpg
       ${MD5_JPEG_RGB_ISLOW2} ${cjpeg}-${libtype}-rgb-islow)
 

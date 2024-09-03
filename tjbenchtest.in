@@ -20,7 +20,7 @@ runme()
 }
 
 EXT=bmp
-IMAGES="vgl_5674_0098.${EXT} vgl_6434_0018a.${EXT} vgl_6548_0026a.${EXT} big_tree8.${EXT}"
+IMAGES="vgl_5674_0098.${EXT} vgl_6434_0018a.${EXT} vgl_6548_0026a.${EXT} shira_bird8.${EXT}"
 IMGDIR=@CMAKE_CURRENT_SOURCE_DIR@/testimages
 OUTDIR=`mktemp -d /tmp/__tjbenchtest_output.XXXXXX`
 EXEDIR=@CMAKE_CURRENT_BINARY_DIR@
@@ -64,7 +64,7 @@ while [ $# -gt 0 ]; do
 # each downsampled dimension is an odd number or is evenly divisible by the MCU
 # width/height.  This disagreement basically amounts to a round-off error, but
 # there is no easy way around it, so for now, we just test the only image that
-# works.  (NOTE: big_tree8 does not suffer from the above issue, but it suffers
+# works.  (NOTE: shira_bird8 does not suffer from the above issue, but it suffers
 # from an unrelated problem whereby the combination of tj3DecompressToYUV*()
 # and tj3DecodeYUV*() do not produce bitwise-identical results to
 # tj3Decompress*() if decompression scaling is enabled.  This latter phenomenon
@@ -110,7 +110,7 @@ while [ $# -gt 0 ]; do
 		PRECISION=$1
 		if [ $PRECISION != 8 ]; then
 			EXT=ppm
-			IMAGES="big_building16.${EXT}"
+			IMAGES="monkey16.${EXT}"
 			BMPARG=
 		fi
 		;;
@@ -125,7 +125,7 @@ if [ $PRECISION = 8 -a "$YUVARG" = "" ]; then
 		IMAGES="vgl_6548_0026a.${EXT}"
 	elif [ "$ENTROPYARG" = "-arithmetic" -o \
 		"$ENTROPYARG" = "-progressive-arithmetic" ]; then
-		IMAGES="big_tree8.${EXT}"
+		IMAGES="shira_bird8.${EXT}"
 	fi
 fi
 

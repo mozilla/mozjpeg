@@ -19,7 +19,7 @@ runme()
 	$*
 }
 
-IMAGES="vgl_5674_0098.bmp vgl_6434_0018a.bmp vgl_6548_0026a.bmp big_tree8.bmp"
+IMAGES="vgl_5674_0098.bmp vgl_6434_0018a.bmp vgl_6548_0026a.bmp shira_bird8.bmp"
 IMGDIR=@CMAKE_CURRENT_SOURCE_DIR@/testimages
 OUTDIR=`mktemp -d /tmp/__tjexampletest_output.XXXXXX`
 EXEDIR=@CMAKE_CURRENT_BINARY_DIR@
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
 		JAVAARG=-java
 		TJEXAMPLE="$JAVA $JAVAARGS TJExample"
 		# The Java version of TJExample can't currently handle pixel density
-		# information, so it fails on big_tree8.bmp.
+		# information, so it fails on shira_bird8.bmp.
 		IMAGES="vgl_5674_0098.bmp vgl_6434_0018a.bmp vgl_6548_0026a.bmp"
 		;;
 	esac

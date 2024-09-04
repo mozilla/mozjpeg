@@ -64,12 +64,12 @@ while [ $# -gt 0 ]; do
 # each downsampled dimension is an odd number or is evenly divisible by the MCU
 # width/height.  This disagreement basically amounts to a round-off error, but
 # there is no easy way around it, so for now, we just test the only image that
-# works.  (NOTE: shira_bird8 does not suffer from the above issue, but it suffers
-# from an unrelated problem whereby the combination of tj3DecompressToYUV*()
-# and tj3DecodeYUV*() do not produce bitwise-identical results to
-# tj3Decompress*() if decompression scaling is enabled.  This latter phenomenon
-# is not yet fully understood but is also believed to be some sort of round-off
-# error.)
+# works.  (NOTE: shira_bird8 does not suffer from the above issue, but it
+# suffers from an unrelated problem whereby the combination of
+# tj3DecompressToYUV*() and tj3DecodeYUV*() do not produce bitwise-identical
+# results to tj3Decompress*() if decompression scaling is enabled.  This latter
+# phenomenon is not yet fully understood but is also believed to be some sort
+# of round-off error.)
 		IMAGES="vgl_6548_0026a.${EXT}"
 		;;
 	-alloc)

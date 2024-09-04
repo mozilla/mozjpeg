@@ -2315,19 +2315,20 @@ jcopy_markers_setup(j_decompress_ptr srcinfo, JCOPY_OPTION option)
 #ifdef SAVE_MARKERS_SUPPORTED
   int m;
 
-  /* Save comments except under NONE option */
+  /* Save comments unless JCOPYOPT_NONE or JCOPYOPT_ICC specified */
   if (option != JCOPYOPT_NONE && option != JCOPYOPT_ICC) {
     jpeg_save_markers(srcinfo, JPEG_COM, 0xFFFF);
   }
-  /* Save all types of APPn markers iff ALL option */
+  /* Save all APPn markers iff JCOPYOPT_ALL* specified ... */
   if (option == JCOPYOPT_ALL || option == JCOPYOPT_ALL_EXCEPT_ICC) {
     for (m = 0; m < 16; m++) {
+      /* ... except APP2 markers if JCOPYOPT_ALL_EXCEPT_ICC specified */
       if (option == JCOPYOPT_ALL_EXCEPT_ICC && m == 2)
         continue;
       jpeg_save_markers(srcinfo, JPEG_APP0 + m, 0xFFFF);
     }
   }
-  /* Save only APP2 markers if ICC option selected */
+  /* Save only APP2 markers if JCOPYOPT_ICC specified */
   if (option == JCOPYOPT_ICC) {
     jpeg_save_markers(srcinfo, JPEG_APP0 + 2, 0xFFFF);
   }
@@ -2347,12 +2348,22 @@ jcopy_markers_execute(j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
 {
   jpeg_saved_marker_ptr marker;
 
-  /* In the current implementation, we don't actually need to examine the
-   * option flag here; we just copy everything that got saved.
-   * But to avoid confusion, we do not output JFIF and Adobe APP14 markers
-   * if the encoder library already wrote one.
-   */
   for (marker = srcinfo->marker_list; marker != NULL; marker = marker->next) {
+    if (option == JCOPYOPT_NONE)
+      continue;
+    else if (option == JCOPYOPT_COMMENTS) {
+      if (marker->marker != JPEG_COM)
+        continue;
+    } else if (option == JCOPYOPT_ALL_EXCEPT_ICC) {
+      if (marker->marker == JPEG_APP0 + 2)
+        continue;
+    } else if (option == JCOPYOPT_ICC) {
+      if (marker->marker != JPEG_APP0 + 2)
+        continue;
+    }
+    /* To avoid confusion, we do not output JFIF and Adobe APP14 markers if the
+     * encoder library already wrote one.
+     */
     if (dstinfo->write_JFIF_header &&
         marker->marker == JPEG_APP0 &&
         marker->data_length >= 5 &&

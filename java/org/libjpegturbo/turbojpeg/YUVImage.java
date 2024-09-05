@@ -222,13 +222,13 @@ public class YUVImage {
                      int height, int subsamp, boolean alloc) {
     if ((planes == null && !alloc) || width < 1 || height < 1 || subsamp < 0 ||
         subsamp >= TJ.NUMSAMP)
-      throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
+      throw new IllegalArgumentException("Invalid argument in YUVImage.setBuf()");
 
     int nc = (subsamp == TJ.SAMP_GRAY ? 1 : 3);
     if ((planes != null && planes.length != nc) ||
         (offsets != null && offsets.length != nc) ||
         (strides != null && strides.length != nc))
-      throw new IllegalArgumentException("YUVImage::setBuf(): planes, offsets, or strides array is the wrong size");
+      throw new IllegalArgumentException("YUVImage.setBuf(): planes, offsets, or strides array is the wrong size");
 
     if (planes == null)
       planes = new byte[nc][];
@@ -250,7 +250,7 @@ public class YUVImage {
         planes[i] = new byte[strides[i] * ph];
       }
       if (planes[i] == null || offsets[i] < 0)
-        throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
+        throw new IllegalArgumentException("Invalid argument in YUVImage.setBuf()");
       if (strides[i] < 0 && offsets[i] - planeSize + pw < 0)
         throw new IllegalArgumentException("Stride for plane " + i +
                                            " would cause memory to be accessed below plane boundary");
@@ -293,7 +293,7 @@ public class YUVImage {
     if (yuvImage == null || width < 1 || align < 1 ||
         ((align & (align - 1)) != 0) || height < 1 || subsamp < 0 ||
         subsamp >= TJ.NUMSAMP)
-      throw new IllegalArgumentException("Invalid argument in YUVImage::setBuf()");
+      throw new IllegalArgumentException("Invalid argument in YUVImage.setBuf()");
     if (yuvImage.length < TJ.bufSizeYUV(width, align, height, subsamp))
       throw new IllegalArgumentException("YUV buffer is not large enough");
 

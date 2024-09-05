@@ -2766,7 +2766,7 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
   srccoefs = jpeg_read_coefficients(dinfo);
 
   for (i = 0; i < n; i++) {
-    int dstWidth = dinfo->image_width, dstHeight = dinfo->image_height;
+    JDIMENSION dstWidth = dinfo->image_width, dstHeight = dinfo->image_height;
     int dstSubsamp = (t[i].options & TJXOPT_GRAY) ? TJSAMP_GRAY : srcSubsamp;
 
     if (t[i].op == TJXOP_TRANSPOSE || t[i].op == TJXOP_TRANSVERSE ||
@@ -2775,8 +2775,10 @@ DLLEXPORT int tj3Transform(tjhandle handle, const unsigned char *jpegBuf,
     }
 
     if (xinfo[i].crop) {
-      if (t[i].r.x >= dstWidth || t[i].r.x + xinfo[i].crop_width > dstWidth ||
-          t[i].r.y >= dstHeight || t[i].r.y + xinfo[i].crop_height > dstHeight)
+      if ((JDIMENSION)t[i].r.x >= dstWidth ||
+          t[i].r.x + xinfo[i].crop_width > dstWidth ||
+          (JDIMENSION)t[i].r.y >= dstHeight ||
+          t[i].r.y + xinfo[i].crop_height > dstHeight)
         THROW("The cropping region exceeds the destination image dimensions");
       dstWidth = xinfo[i].crop_width;  dstHeight = xinfo[i].crop_height;
     }

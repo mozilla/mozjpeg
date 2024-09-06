@@ -263,7 +263,7 @@ public class TJDecompressor implements Closeable {
    * subsampling in the JPEG image (see {@link TJ#PARAM_SUBSAMP}.)  The
    * cropping region should be specified relative to the scaled image
    * dimensions.  Unless <code>croppingRegion</code> is {@link TJ#UNCROPPED},
-   * the JPEG header must be read (see {@link #setSourceImage(byte[], int)}
+   * the JPEG header must be read (see {@link #setSourceImage(byte[], int)})
    * prior to calling this method.
    */
   @SuppressWarnings("checkstyle:HiddenField")

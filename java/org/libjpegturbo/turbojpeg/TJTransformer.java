@@ -89,7 +89,7 @@ public class TJTransformer extends TJDecompressor {
    * transformed using the parameters in <code>transforms[i]</code>.  Use
    * {@link TJ#bufSize TJ.bufSize()} to determine the maximum size for each
    * buffer based on the transformed or cropped width and height and the level
-   * of subsampling used in the source image.
+   * of subsampling used in the destination image.
    *
    * @param transforms an array of {@link TJTransform} instances, each of
    * which specifies the transform parameters and/or cropping region for the

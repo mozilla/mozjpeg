@@ -1218,6 +1218,10 @@ JNIEXPORT jintArray JNICALL Java_org_libjpegturbo_turbojpeg_TJTransformer_transf
     if (t[i].op == TJXOP_TRANSPOSE || t[i].op == TJXOP_TRANSVERSE ||
         t[i].op == TJXOP_ROT90 || t[i].op == TJXOP_ROT270) {
       w = jpegHeight;  h = jpegWidth;
+      if (dstSubsamp == TJSAMP_422) dstSubsamp = TJSAMP_440;
+      else if (dstSubsamp == TJSAMP_440) dstSubsamp = TJSAMP_422;
+      else if (dstSubsamp == TJSAMP_411) dstSubsamp = TJSAMP_441;
+      else if (dstSubsamp == TJSAMP_441) dstSubsamp = TJSAMP_411;
     }
     if (t[i].r.w != 0) w = t[i].r.w;
     if (t[i].r.h != 0) h = t[i].r.h;

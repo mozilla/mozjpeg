@@ -102,11 +102,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
                           TJXOPT_OPTIMIZE;
   dstBufs[0] =
     (unsigned char *)tj3Alloc(tj3JPEGBufSize((height + 1) / 2, (width + 1) / 2,
-                                             jpegSubsamp));
+                                             TJSAMP_GRAY));
   if (!dstBufs[0])
     goto bailout;
 
-  maxBufSize = tj3JPEGBufSize((height + 1) / 2, (width + 1) / 2, jpegSubsamp);
+  maxBufSize = tj3JPEGBufSize((height + 1) / 2, (width + 1) / 2, TJSAMP_GRAY);
 
   if (tj3Transform(handle, data, size, 1, dstBufs, dstSizes,
                    transforms) == 0) {

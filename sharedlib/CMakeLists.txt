@@ -9,7 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..)
 
-if(MSVC)
+if(MSVC_LIKE)
   # Build all configurations against shared C library
   if(CMAKE_VERSION VERSION_EQUAL "3.15" OR
     CMAKE_VERSION VERSION_GREATER "3.15")
@@ -21,7 +21,7 @@ if(MSVC)
       set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
     endif()
     message(STATUS "Visual C++ run-time library for libjpeg API DLL: ${CMAKE_MSVC_RUNTIME_LIBRARY}")
-  else()
+  elseif(MSVC)
     foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
       CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
       if(${var} MATCHES "/MT")
@@ -43,7 +43,7 @@ endif()
 if(WIN32)
   set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}.def)
 endif()
-if(MSVC)
+if(MSVC_LIKE)
   configure_file(${CMAKE_SOURCE_DIR}/win/jpeg.rc.in
     ${CMAKE_BINARY_DIR}/win/jpeg.rc)
   set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_BINARY_DIR}/win/jpeg.rc)
@@ -64,12 +64,18 @@ if(MAPFLAG)
   set_target_properties(jpeg PROPERTIES
     LINK_FLAGS "${MAPFLAG}${CMAKE_CURRENT_BINARY_DIR}/../libjpeg.map")
 endif()
-if(MSVC)
+if(MSVC_LIKE)
   set_target_properties(jpeg PROPERTIES
     RUNTIME_OUTPUT_NAME jpeg${SO_MAJOR_VERSION})
-  # The jsimd_*.c file is built using /MT, so this prevents a linker warning.
-  set_target_properties(jpeg PROPERTIES LINK_FLAGS
-    "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
+  # The jsimd_*.c file is built to use libcmt or libcmtd, so this prevents a
+  # linker warning.
+  if(MSVC)
+    set_target_properties(jpeg PROPERTIES LINK_FLAGS
+      "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
+  else()
+    set_target_properties(jpeg PROPERTIES LINK_FLAGS
+      "-Wl,-nodefaultlib:libcmt -Wl,-nodefaultlib:libcmtd")
+  endif()
 elseif(MINGW)
   set_target_properties(jpeg PROPERTIES SUFFIX -${SO_MAJOR_VERSION}.dll)
 endif()
@@ -125,7 +131,7 @@ install(TARGETS jpeg EXPORT ${CMAKE_PROJECT_NAME}Targets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
 install(TARGETS cjpeg djpeg jpegtran
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
-if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
+if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC_LIKE AND
   CMAKE_C_LINKER_SUPPORTS_PDB)
   install(FILES "$<TARGET_PDB_FILE:jpeg>"
     DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin OPTIONAL)

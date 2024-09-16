@@ -66,7 +66,7 @@ endif() # Linux
 
 if(WIN32)
 
-if(MSVC)
+if(MSVC_LIKE)
   set(INST_PLATFORM "Visual C++")
   set(INST_ID vc)
   set(INST_NAME ${CMAKE_PROJECT_NAME}-${VERSION}-${INST_ID})

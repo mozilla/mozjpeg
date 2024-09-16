@@ -22,9 +22,16 @@ function(pad_number NUMBER OUTPUT_LEN)
     set(${NUMBER} ${NUM} PARENT_SCOPE)
   endif()
 endfunction()
-pad_number(VERSION_MINOR 3)
-pad_number(VERSION_REVISION 3)
-set(LIBJPEG_TURBO_VERSION_NUMBER ${VERSION_MAJOR}${VERSION_MINOR}${VERSION_REVISION})
+set(TMP_VERSION_MINOR ${VERSION_MINOR})
+set(TMP_VERSION_REVISION ${VERSION_REVISION})
+pad_number(TMP_VERSION_MINOR 3)
+pad_number(TMP_VERSION_REVISION 3)
+set(LIBJPEG_TURBO_VERSION_NUMBER
+  ${VERSION_MAJOR}${TMP_VERSION_MINOR}${TMP_VERSION_REVISION})
+set(MSVC_LIKE 0)
+if(MSVC OR CMAKE_C_SIMULATE_ID STREQUAL "MSVC")
+  set(MSVC_LIKE 1)
+endif()
 
 # The libjpeg-turbo build system has never supported and will never support
 # being integrated into another build system using add_subdirectory(), because
@@ -143,7 +150,7 @@ message(STATUS "${BITS}-bit build (${CPU_TYPE})")
 ###############################################################################
 
 if(WIN32)
-  if(MSVC)
+  if(MSVC_LIKE)
     set(CMAKE_INSTALL_DEFAULT_PREFIX "c:/${CMAKE_PROJECT_NAME}")
   else()
     set(CMAKE_INSTALL_DEFAULT_PREFIX "c:/${CMAKE_PROJECT_NAME}-gcc")
@@ -389,7 +396,7 @@ set(TURBOJPEG_SO_VERSION 0.${TURBOJPEG_SO_AGE}.0)
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
 
-if(MSVC)
+if(MSVC_LIKE)
   option(WITH_CRT_DLL
     "Link all ${CMAKE_PROJECT_NAME} libraries and executables with the C run-time DLL (msvcr*.dll) instead of the static C run-time library (libcmt*.lib.)  The default is to use the C run-time DLL only with the libraries and executables that need it."
     FALSE)
@@ -406,7 +413,7 @@ if(MSVC)
         set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
       endif()
       message(STATUS "Visual C++ run-time library: ${CMAKE_MSVC_RUNTIME_LIBRARY} (WITH_CRT_DLL = ${WITH_CRT_DLL})")
-    else()
+    elseif(MSVC)
       foreach(var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
         CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
         if(${var} MATCHES "/MD")
@@ -458,7 +465,7 @@ if(SIZE_T EQUAL UNSIGNED_LONG)
   check_c_source_compiles("int main(int argc, char **argv) { unsigned long a = argc;  return __builtin_ctzl(a); }"
     HAVE_BUILTIN_CTZL)
 endif()
-if(MSVC)
+if(MSVC_LIKE)
   check_include_files("intrin.h" HAVE_INTRIN_H)
 endif()
 
@@ -667,7 +674,7 @@ if(ENABLE_STATIC)
   add_library(jpeg-static STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
     ${SIMD_OBJS} $<TARGET_OBJECTS:jpeg12-static>
     $<TARGET_OBJECTS:jpeg16-static>)
-  if(NOT MSVC)
+  if(NOT MSVC_LIKE)
     set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
   endif()
 endif()
@@ -683,7 +690,7 @@ if(WITH_TURBOJPEG)
       include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
       set(TJMAPFILE ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg-mapfile.jni)
     endif()
-    if(MSVC)
+    if(MSVC_LIKE)
       configure_file(${CMAKE_SOURCE_DIR}/win/turbojpeg.rc.in
         ${CMAKE_BINARY_DIR}/win/turbojpeg.rc)
       set(TURBOJPEG_SOURCES ${TURBOJPEG_SOURCES}
@@ -751,7 +758,7 @@ if(WITH_TURBOJPEG)
       $<TARGET_OBJECTS:turbojpeg16-static>)
     set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS
       "-DBMP_SUPPORTED -DPPM_SUPPORTED")
-    if(NOT MSVC)
+    if(NOT MSVC_LIKE)
       set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
     endif()
 
@@ -1730,7 +1737,7 @@ if(WITH_TURBOJPEG)
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
     install(TARGETS tjbench
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
-    if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
+    if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC_LIKE AND
       CMAKE_C_LINKER_SUPPORTS_PDB)
       install(FILES "$<TARGET_PDB_FILE:turbojpeg>"
         DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin OPTIONAL)

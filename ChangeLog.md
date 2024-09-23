@@ -62,7 +62,11 @@ cropping regions to be unduly rejected when performing 90-degree rotation,
 270-degree rotation, transposition, transverse transposition, or grayscale
 conversion.
 
-8. Fixed an issue whereby the TurboJPEG lossless transformation function and
+8. Fixed a regression, introduced by 3.0 beta2[4], that prevented the
+`tjTransform()` backward compatibility function from copying extra markers from
+the source image to the destination image.
+
+9. Fixed an issue whereby the TurboJPEG lossless transformation function and
 methods did not honor `TJXOPT_COPYNONE`/`TJTransform.OPT_COPYNONE` unless it
 was specified for all lossless transforms.
 

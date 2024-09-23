@@ -751,7 +751,7 @@ DLLEXPORT int tj3Set(tjhandle handle, int param, int value)
   case TJPARAM_LOSSLESSPT:
     if (!(this->init & COMPRESS))
       THROW("TJPARAM_LOSSLESSPT is read-only in decompression instances.");
-    SET_PARAM(losslessPt, 0, this->precision - 1);
+    SET_PARAM(losslessPt, 0, 15);
     break;
   case TJPARAM_RESTARTBLOCKS:
     if (!(this->init & COMPRESS))

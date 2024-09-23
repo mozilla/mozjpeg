@@ -1,3 +1,14 @@
+3.0.5
+=====
+
+### Significant changes relative to 3.0.4:
+
+1. Fixed an issue in the TurboJPEG API whereby, when generating a
+12-bit-per-sample or 16-bit-per-sample lossless JPEG image, specifying a point
+transform value greater than 7 resulted in an error ("Parameter value out of
+range".)
+
+
 3.0.4
 =====
 

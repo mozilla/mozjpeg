@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2018, 2023, D. R. Commander.
+ * Copyright (C) 2009-2011, 2018, 2023-2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -219,6 +219,9 @@ jpeg_set_defaults(j_compress_ptr cinfo)
   /* Default is no multiple-scan output */
   cinfo->scan_info = NULL;
   cinfo->num_scans = 0;
+
+  /* Default is lossy output */
+  cinfo->master->lossless = FALSE;
 
   /* Expect normal source image, not raw downsampled data */
   cinfo->raw_data_in = FALSE;

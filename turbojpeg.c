@@ -328,6 +328,8 @@ static int getPixelFormat(int pixelSize, int flags)
 
 static void setCompDefaults(tjinstance *this, int pixelFormat)
 {
+  int subsamp = this->subsamp;
+
   this->cinfo.in_color_space = pf2cs[pixelFormat];
   this->cinfo.input_components = tjPixelSize[pixelFormat];
   jpeg_set_defaults(&this->cinfo);
@@ -344,9 +346,9 @@ static void setCompDefaults(tjinstance *this, int pixelFormat)
     jpeg_enable_lossless(&this->cinfo, this->losslessPSV, this->losslessPt);
 #endif
     if (pixelFormat == TJPF_GRAY)
-      this->subsamp = TJSAMP_GRAY;
-    else if (this->subsamp != TJSAMP_GRAY)
-      this->subsamp = TJSAMP_444;
+      subsamp = TJSAMP_GRAY;
+    else if (subsamp != TJSAMP_GRAY)
+      subsamp = TJSAMP_444;
     return;
   }
 
@@ -365,7 +367,7 @@ static void setCompDefaults(tjinstance *this, int pixelFormat)
   case TJCS_YCCK:
     jpeg_set_colorspace(&this->cinfo, JCS_YCCK);  break;
   default:
-    if (this->subsamp == TJSAMP_GRAY)
+    if (subsamp == TJSAMP_GRAY)
       jpeg_set_colorspace(&this->cinfo, JCS_GRAYSCALE);
     else if (pixelFormat == TJPF_CMYK)
       jpeg_set_colorspace(&this->cinfo, JCS_YCCK);
@@ -380,16 +382,16 @@ static void setCompDefaults(tjinstance *this, int pixelFormat)
 #endif
   this->cinfo.arith_code = this->arithmetic;
 
-  this->cinfo.comp_info[0].h_samp_factor = tjMCUWidth[this->subsamp] / 8;
+  this->cinfo.comp_info[0].h_samp_factor = tjMCUWidth[subsamp] / 8;
   this->cinfo.comp_info[1].h_samp_factor = 1;
   this->cinfo.comp_info[2].h_samp_factor = 1;
   if (this->cinfo.num_components > 3)
-    this->cinfo.comp_info[3].h_samp_factor = tjMCUWidth[this->subsamp] / 8;
-  this->cinfo.comp_info[0].v_samp_factor = tjMCUHeight[this->subsamp] / 8;
+    this->cinfo.comp_info[3].h_samp_factor = tjMCUWidth[subsamp] / 8;
+  this->cinfo.comp_info[0].v_samp_factor = tjMCUHeight[subsamp] / 8;
   this->cinfo.comp_info[1].v_samp_factor = 1;
   this->cinfo.comp_info[2].v_samp_factor = 1;
   if (this->cinfo.num_components > 3)
-    this->cinfo.comp_info[3].v_samp_factor = tjMCUHeight[this->subsamp] / 8;
+    this->cinfo.comp_info[3].v_samp_factor = tjMCUHeight[subsamp] / 8;
 }
 
 

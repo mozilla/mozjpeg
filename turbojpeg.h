@@ -836,6 +836,9 @@ enum TJPARAM {
    * Windows BMP file by #tj3SaveImage8() if the value of #TJPARAM_DENSITYUNITS
    * is `2`.
    *
+   * This parameter has no effect unless the JPEG colorspace (see
+   * #TJPARAM_COLORSPACE) is #TJCS_YCbCr or #TJCS_GRAY.
+   *
    * @see TJPARAM_DENSITYUNITS
    */
   TJPARAM_XDENSITY,
@@ -852,6 +855,9 @@ enum TJPARAM {
    * density information, and the value of this parameter is stored to a
    * Windows BMP file by #tj3SaveImage8() if the value of #TJPARAM_DENSITYUNITS
    * is `2`.
+   *
+   * This parameter has no effect unless the JPEG colorspace (see
+   * #TJPARAM_COLORSPACE) is #TJCS_YCbCr or #TJCS_GRAY.
    *
    * @see TJPARAM_DENSITYUNITS
    */
@@ -873,6 +879,9 @@ enum TJPARAM {
    * #tj3LoadImage8() when loading a Windows BMP file that contains pixel
    * density information, and the value of this parameter is stored to a
    * Windows BMP file by #tj3SaveImage8() if the value is `2`.
+   *
+   * This parameter has no effect unless the JPEG colorspace (see
+   * #TJPARAM_COLORSPACE) is #TJCS_YCbCr or #TJCS_GRAY.
    *
    * @see TJPARAM_XDENSITY, TJPARAM_YDENSITY
    */

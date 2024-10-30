@@ -851,6 +851,9 @@ public final class TJ {
    * <p>This value is stored in or read from the JPEG header.  It does not
    * affect the contents of the JPEG image.
    *
+   * <p>This parameter has no effect unless the JPEG colorspace (see
+   * {@link #PARAM_COLORSPACE}) is {@link #CS_YCbCr} or {@link #CS_GRAY}.
+   *
    * @see #PARAM_DENSITYUNITS
    */
   public static final int PARAM_XDENSITY = 20;
@@ -866,6 +869,9 @@ public final class TJ {
    *
    * <p>This value is stored in or read from the JPEG header.  It does not
    * affect the contents of the JPEG image.
+   *
+   * <p>This parameter has no effect unless the JPEG colorspace (see
+   * {@link #PARAM_COLORSPACE}) is {@link #CS_YCbCr} or {@link #CS_GRAY}.
    *
    * @see #PARAM_DENSITYUNITS
    */
@@ -887,6 +893,9 @@ public final class TJ {
    *
    * <p>This value is stored in or read from the JPEG header.  It does not
    * affect the contents of the JPEG image.
+   *
+   * <p>This parameter has no effect unless the JPEG colorspace (see
+   * {@link #PARAM_COLORSPACE}) is {@link #CS_YCbCr} or {@link #CS_GRAY}.
    *
    * @see #PARAM_XDENSITY
    * @see #PARAM_YDENSITY

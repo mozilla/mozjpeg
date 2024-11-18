@@ -521,10 +521,12 @@ master_selection(j_decompress_ptr cinfo)
    * particularly useful without subsampling and has not been tested in
    * lossless mode.
    */
+#ifdef D_LOSSLESS_SUPPORTED
   if (cinfo->master->lossless) {
     cinfo->raw_data_out = FALSE;
     cinfo->scale_num = cinfo->scale_denom = 1;
   }
+#endif
 
   /* Initialize dimensions and other stuff */
   jpeg_calc_output_dimensions(cinfo);

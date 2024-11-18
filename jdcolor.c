@@ -802,9 +802,11 @@ _jinit_color_deconverter(j_decompress_ptr cinfo)
 
   switch (cinfo->out_color_space) {
   case JCS_GRAYSCALE:
+#ifdef D_LOSSLESS_SUPPORTED
     if (cinfo->master->lossless &&
         cinfo->jpeg_color_space != cinfo->out_color_space)
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
     cinfo->out_color_components = 1;
     if (cinfo->jpeg_color_space == JCS_GRAYSCALE ||
         cinfo->jpeg_color_space == JCS_YCbCr) {
@@ -830,8 +832,10 @@ _jinit_color_deconverter(j_decompress_ptr cinfo)
   case JCS_EXT_BGRA:
   case JCS_EXT_ABGR:
   case JCS_EXT_ARGB:
+#ifdef D_LOSSLESS_SUPPORTED
     if (cinfo->master->lossless && cinfo->jpeg_color_space != JCS_RGB)
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
     cinfo->out_color_components = rgb_pixelsize[cinfo->out_color_space];
     if (cinfo->jpeg_color_space == JCS_YCbCr) {
 #ifdef WITH_SIMD
@@ -858,8 +862,10 @@ _jinit_color_deconverter(j_decompress_ptr cinfo)
     break;
 
   case JCS_RGB565:
+#ifdef D_LOSSLESS_SUPPORTED
     if (cinfo->master->lossless)
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
     cinfo->out_color_components = 3;
     if (cinfo->dither_mode == JDITHER_NONE) {
       if (cinfo->jpeg_color_space == JCS_YCbCr) {
@@ -893,9 +899,11 @@ _jinit_color_deconverter(j_decompress_ptr cinfo)
     break;
 
   case JCS_CMYK:
+#ifdef D_LOSSLESS_SUPPORTED
     if (cinfo->master->lossless &&
         cinfo->jpeg_color_space != cinfo->out_color_space)
       ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+#endif
     cinfo->out_color_components = 4;
     if (cinfo->jpeg_color_space == JCS_YCCK) {
       cconvert->pub._color_convert = ycck_cmyk_convert;

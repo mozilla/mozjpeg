@@ -731,6 +731,7 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
     cinfo->num_scans = 1;
   }
 
+#ifdef C_LOSSLESS_SUPPORTED
   /* Disable smoothing and subsampling in lossless mode, since those are lossy
    * algorithms.  Set the JPEG colorspace to the input colorspace.  Disable raw
    * (downsampled) data input, because it isn't particularly useful without
@@ -747,6 +748,7 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
          ci++, compptr++)
       compptr->h_samp_factor = compptr->v_samp_factor = 1;
   }
+#endif
 
   /* Validate parameters, determine derived values */
   initial_setup(cinfo, transcode_only);

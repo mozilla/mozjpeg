@@ -270,48 +270,33 @@ endif()
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    int16_t input[] = {
-      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
-      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
-      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc
-    };
-    int16x4x3_t output = vld1_s16_x3(input);
+    int16_t input[12];
+    int16x4x3_t output;
+    int i;
+    for (i = 0; i < 12; i++) input[i] = (int16_t)argc;
+    output = vld1_s16_x3(input);
     vst3_s16(input, output);
     return (int)input[0];
   }" HAVE_VLD1_S16_X3)
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    uint16_t input[] = {
-      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc,
-      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc
-    };
-    uint16x4x2_t output = vld1_u16_x2(input);
+    uint16_t input[8];
+    uint16x4x2_t output;
+    int i;
+    for (i = 0; i < 8; i++) input[i] = (uint16_t)argc;
+    output = vld1_u16_x2(input);
     vst2_u16(input, output);
     return (int)input[0];
   }" HAVE_VLD1_U16_X2)
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    uint8_t input[] = {
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc
-    };
-    uint8x16x4_t output = vld1q_u8_x4(input);
+    uint8_t input[64];
+    uint8x16x4_t output;
+    int i;
+    for (i = 0; i < 64; i++) input[i] = (uint8_t)argc;
+    output = vld1q_u8_x4(input);
     vst4q_u8(input, output);
     return (int)input[0];
   }" HAVE_VLD1Q_U8_X4)

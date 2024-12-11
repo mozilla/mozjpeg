@@ -127,8 +127,8 @@ endif() # WIN32
 
 if(APPLE)
 
-set(ARMV8_BUILD "" CACHE PATH
-  "Directory containing Armv8 iOS or macOS build to include in universal binaries")
+set(SECONDARY_BUILD "" CACHE PATH
+  "Directory containing cross-compiled x86-64 or Armv8 (64-bit) iOS or macOS build to include in universal binaries")
 
 set(MACOS_APP_CERT_NAME "" CACHE STRING
   "Name of the Developer ID Application certificate (in the macOS keychain) that should be used to sign the libjpeg-turbo DMG.  Leave this blank to generate an unsigned DMG.")

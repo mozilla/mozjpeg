@@ -415,17 +415,13 @@ iPhone 5S/iPad Mini 2/iPad Air and newer.
 
     IOS_PLATFORMDIR=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
     IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
-    export CFLAGS="-Wall -arch arm64 -miphoneos-version-min=8.0 -funwind-tables"
+    export CFLAGS="-Wall -miphoneos-version-min=8.0 -funwind-tables"
 
     cd {build_directory}
 
-    cat <<EOF >toolchain.cmake
-    set(CMAKE_SYSTEM_NAME Darwin)
-    set(CMAKE_SYSTEM_PROCESSOR aarch64)
-    set(CMAKE_C_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang)
-    EOF
-
-    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
+    cmake -G"Unix Makefiles" \
+      -DCMAKE_C_COMPILER=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
+      -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
       [additional CMake flags] {source_directory}
     make
@@ -643,18 +639,19 @@ are installed by default on OS X/macOS 10.7 and later.
 In order to create a Mac package/disk image that contains universal
 x86-64/Arm binaries, set the following CMake variable:
 
-* `ARMV8_BUILD`: Directory containing an Armv8 (64-bit) iOS or macOS build of
-  libjpeg-turbo to include in the universal binaries
+* `SECONDARY_BUILD`: Directory containing a cross-compiled x86-64 or Armv8
+  (64-bit) iOS or macOS build of libjpeg-turbo to include in the universal
+  binaries
 
-You should first use CMake to configure an Armv8 sub-build of libjpeg-turbo
-(see "Building libjpeg-turbo for iOS" above, if applicable) in a build
-directory that matches the one specified in the aforementioned CMake variable.
-Next, configure the primary (x86-64) build of libjpeg-turbo as an out-of-tree
-build, specifying the aforementioned CMake variable, and build it.  Once the
-primary build has been built, run `make dmg` from the build directory.  The
-packaging system will build the sub-build, use lipo to combine it with the
-primary build into a single set of universal binaries, then package the
-universal binaries.
+You should first use CMake to configure the cross-compiled x86-64 or Armv8
+secondary build of libjpeg-turbo (see "Building libjpeg-turbo for iOS" above,
+if applicable) in a build directory that matches the one specified in the
+aforementioned CMake variable.  Next, configure the primary (native) build of
+libjpeg-turbo as an out-of-tree build, specifying the aforementioned CMake
+variable, and build it.  Once the primary build has been built, run `make dmg`
+from the build directory.  The packaging system will build the secondary build,
+use lipo to combine it with the primary build into a single set of universal
+binaries, then package the universal binaries.
 
 
 Windows

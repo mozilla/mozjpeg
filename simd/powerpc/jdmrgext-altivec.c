@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2015, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2015, 2024, D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,14 +30,14 @@ void jsimd_h2v1_merged_upsample_altivec(JDIMENSION output_width,
 {
   JSAMPROW outptr, inptr0, inptr1, inptr2;
   int pitch = output_width * RGB_PIXELSIZE, num_cols, yloop;
-#if __BIG_ENDIAN__
+#ifdef __BIG_ENDIAN__
   int offset;
 #endif
   unsigned char __attribute__((aligned(16))) tmpbuf[RGB_PIXELSIZE * 16];
 
   __vector unsigned char rgb0, rgb1, rgb2, rgbx0, rgbx1, rgbx2, rgbx3,
     y, cb, cr;
-#if __BIG_ENDIAN__
+#ifdef __BIG_ENDIAN__
   __vector unsigned char edgel, edgeh, edges, out0, out1, out2, out3;
 #if RGB_PIXELSIZE == 4
   __vector unsigned char out4;
@@ -62,7 +62,7 @@ void jsimd_h2v1_merged_upsample_altivec(JDIMENSION output_width,
     pw_cj = { __8X(CENTERJSAMPLE) };
   __vector int pd_onehalf = { __4X(ONE_HALF) };
   __vector unsigned char pb_zero = { __16X(0) },
-#if __BIG_ENDIAN__
+#ifdef __BIG_ENDIAN__
     shift_pack_index =
       {  0,  1,  4,  5,  8,  9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 },
     even_index =
@@ -225,7 +225,7 @@ void jsimd_h2v1_merged_upsample_altivec(JDIMENSION output_width,
       rgb3 = vec_perm(rgbx3, rgbx3, (__vector unsigned char)RGB_INDEX);
 #endif
 
-#if __BIG_ENDIAN__
+#ifdef __BIG_ENDIAN__
       offset = (size_t)outptr & 15;
       if (offset) {
         __vector unsigned char unaligned_shift_index;
@@ -297,7 +297,7 @@ void jsimd_h2v1_merged_upsample_altivec(JDIMENSION output_width,
             VEC_ST(rgb3, 48, outptr);
 #endif
         }
-#if __BIG_ENDIAN__
+#ifdef __BIG_ENDIAN__
       }
 #endif
     }

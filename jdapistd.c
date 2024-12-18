@@ -128,20 +128,28 @@ output_pass_setup(j_decompress_ptr cinfo)
       }
       /* Process some data */
       last_scanline = cinfo->output_scanline;
+      if (cinfo->data_precision == 16) {
 #ifdef D_LOSSLESS_SUPPORTED
-      if (cinfo->data_precision == 16)
+        if (cinfo->main->process_data_16 == NULL)
+          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
         (*cinfo->main->process_data_16) (cinfo, (J16SAMPARRAY)NULL,
                                          &cinfo->output_scanline,
                                          (JDIMENSION)0);
-      else
+#else
+        ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 #endif
-      if (cinfo->data_precision == 12)
+      } else if (cinfo->data_precision == 12) {
+        if (cinfo->main->process_data_12 == NULL)
+          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
         (*cinfo->main->process_data_12) (cinfo, (J12SAMPARRAY)NULL,
                                          &cinfo->output_scanline,
                                          (JDIMENSION)0);
-      else
+      } else {
+        if (cinfo->main->process_data == NULL)
+          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
         (*cinfo->main->process_data) (cinfo, (JSAMPARRAY)NULL,
                                       &cinfo->output_scanline, (JDIMENSION)0);
+      }
       if (cinfo->output_scanline == last_scanline)
         return FALSE;           /* No progress made, must suspend */
     }
@@ -333,6 +341,8 @@ _jpeg_read_scanlines(j_decompress_ptr cinfo, _JSAMPARRAY scanlines,
 
   /* Process some data */
   row_ctr = 0;
+  if (cinfo->main->_process_data == NULL)
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
   (*cinfo->main->_process_data) (cinfo, scanlines, &row_ctr, max_lines);
   cinfo->output_scanline += row_ctr;
   return row_ctr;
@@ -679,6 +689,8 @@ _jpeg_read_raw_data(j_decompress_ptr cinfo, _JSAMPIMAGE data,
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Decompress directly into user's buffer. */
+  if (cinfo->coef->_decompress_data == NULL)
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
   if (!(*cinfo->coef->_decompress_data) (cinfo, data))
     return 0;                   /* suspension forced, can do nothing more */
 

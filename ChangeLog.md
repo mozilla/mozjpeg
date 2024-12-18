@@ -19,6 +19,11 @@ was previously enabled in a libjpeg or TurboJPEG instance.
 instance, and setting `TJPARAM_LOSSLESS`/`TJ.PARAM_LOSSLESS` to `0` now
 disables lossless JPEG compression in a TurboJPEG instance.
 
+4. Hardened the libjpeg API against hypothetical calling applications that may
+erroneously change the value of the `data_precision` field in
+`jpeg_compress_struct` or `jpeg_decompress_struct` after calling
+`jpeg_start_compress()` or `jpeg_start_decompress()`.
+
 
 3.0.4
 =====

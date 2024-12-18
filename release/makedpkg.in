@@ -56,6 +56,8 @@ makedeb()
 		PKGNAME=$PKGNAME\32
 		if [ "$DEBARCH" = "i386" ]; then
 			DEBARCH=amd64
+		elif [ "$DEBARCH" = "ppc" ]; then
+			DEBARCH=ppc64
 		else
 			DEBARCH=arm64
 		fi
@@ -114,7 +116,8 @@ if [ ! `uid` -eq 0 ]; then
 fi
 
 makedeb 0
-if [ "$DEBARCH" = "i386" -o "$DEBARCH" = "armel" -o "$DEBARCH" = "armhf" ]; then
+if [ "$DEBARCH" = "i386" -o "$DEBARCH" = "armel" -o "$DEBARCH" = "armhf" -o \
+	"$DEBARCH" = "ppc" ]; then
 	makedeb 1
 fi
 
